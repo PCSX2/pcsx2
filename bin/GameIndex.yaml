@@ -18859,6 +18859,11 @@ SLKA-25026:
   region: "NTSC-K"
   clampModes:
     vuClampMode: 2  # Fixes SPS in item menu.
+SLKA-25029:
+  name: "MVP Baseball 2003"
+  region: "NTSC-K"
+  clampModes:
+    vuClampMode: 3  # Fixes missing environment.
 SLKA-25030:
   name: "WWE SmackDown! Shut Your Mouth"
   region: "NTSC-K"
@@ -30086,6 +30091,8 @@ SLPS-25250:
 SLPS-25251:
   name: "MVP Baseball 2003"
   region: "NTSC-J"
+  clampModes:
+    vuClampMode: 3  # Fixes missing environment.
 SLPS-25252:
   name: "Star wars - Jango Fett"
   region: "NTSC-J"
@@ -35396,6 +35403,8 @@ SLUS-20649:
 SLUS-20650:
   name: "MVP Baseball 2003"
   region: "NTSC-U"
+  clampModes:
+    vuClampMode: 3  # Fixes missing environment. 
 SLUS-20651:
   name: "NBA Street Vol. 2"
   region: "NTSC-U"
