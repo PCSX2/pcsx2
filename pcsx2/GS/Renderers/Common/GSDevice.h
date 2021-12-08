@@ -234,7 +234,7 @@ public:
 
 	/// Scale the region `sRect` of `src` to the size `dSize` using `ps_shader` and store the result in `out_map`
 	/// `out_map` will be valid a call to `DownloadTextureComplete`
-	virtual bool DownloadTextureConvert(GSTexture* src, const GSVector4& sRect, const GSVector2i& dSize, GSTexture::Format format, ShaderConvert ps_shader, GSTexture::GSMap& out_map);
+	virtual bool DownloadTextureConvert(GSTexture* src, const GSVector4& sRect, const GSVector2i& dSize, GSTexture::Format format, ShaderConvert ps_shader, GSTexture::GSMap& out_map, bool linear);
 
 	/// Must be called to free resources after calling `DownloadTexture` or `DownloadTextureConvert`
 	virtual void DownloadTextureComplete() {}
