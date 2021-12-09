@@ -52,8 +52,7 @@ layout(std140, binding = 15) uniform cb15
 
     int EMODA;
     int EMODC;
-    int _pad0;
-    int _pad1;
+    ivec2 pad_cb15;
 };
 #endif
 
@@ -81,7 +80,7 @@ layout(std140, binding = 21) uniform cb21
     vec4 WH;
 
     vec2 TA;
-    float pad0_cb21;
+    float MaxDepthPS;
     float Af;
 
     uvec4 MskFix;
@@ -92,11 +91,8 @@ layout(std140, binding = 21) uniform cb21
 
     vec4 MinMax;
 
-    vec2 pad1_cb21;
+    vec2 pad_cb21;
     vec2 TC_OffsetHack;
-
-    vec3 pad2_cb21;
-    float MaxDepthPS;
 
     mat4 DitherMatrix;
 };

@@ -135,7 +135,7 @@ void GSRendererOGL::EmulateZbuffer()
 	const bool clamp_z = (u32)(GSVector4i(m_vt.m_max.p).z) > max_z;
 
 	vs_cb.MaxDepth = GSVector2i(0xFFFFFFFF);
-	//ps_cb.MaxDepth = GSVector4(0.0f, 0.0f, 0.0f, 1.0f);
+	//ps_cb.TA_MaxDepth_Af.z = 1.0f;
 	m_ps_sel.zclamp = 0;
 
 	if (clamp_z)
@@ -146,7 +146,7 @@ void GSRendererOGL::EmulateZbuffer()
 		}
 		else if (!m_context->ZBUF.ZMSK)
 		{
-			ps_cb.MaxDepth = GSVector4(0.0f, 0.0f, 0.0f, max_z * ldexpf(1, -32));
+			ps_cb.TA_MaxDepth_Af.z = max_z * ldexpf(1, -32);
 			m_ps_sel.zclamp = 1;
 		}
 	}
@@ -665,7 +665,7 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 		// Require the fix alpha vlaue
 		if (ALPHA.C == 2)
 		{
-			ps_cb.TA_Af.a = (float)ALPHA.FIX / 128.0f;
+			ps_cb.TA_MaxDepth_Af.a = (float)ALPHA.FIX / 128.0f;
 		}
 	}
 	else
@@ -753,8 +753,8 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
 		ta /= 255.0f;
 		// FIXME rely on compiler for the optimization
-		ps_cb.TA_Af.x = ta.x;
-		ps_cb.TA_Af.y = ta.y;
+		ps_cb.TA_MaxDepth_Af.x = ta.x;
+		ps_cb.TA_MaxDepth_Af.y = ta.y;
 
 		// The purpose of texture shuffle is to move color channel. Extra interpolation is likely a bad idea.
 		bilinear &= m_vt.IsLinear();
@@ -778,8 +778,8 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 			GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
 			ta /= 255.0f;
 			// FIXME rely on compiler for the optimization
-			ps_cb.TA_Af.x = ta.x;
-			ps_cb.TA_Af.y = ta.y;
+			ps_cb.TA_MaxDepth_Af.x = ta.x;
+			ps_cb.TA_MaxDepth_Af.y = ta.y;
 		}
 
 		// Select the index format
