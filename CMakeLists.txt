@@ -58,10 +58,7 @@ endif()
 
 # Install some files to ease package creation
 if(PACKAGE_MODE)
-	if(NOT DISABLE_CHEATS_ZIP)
-		INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/cheats_ws.zip" DESTINATION "${CMAKE_INSTALL_DATADIR}/PCSX2")
-	endif()
-	INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/GameIndex.yaml" DESTINATION "${CMAKE_INSTALL_DATADIR}/PCSX2")
+	INSTALL(DIRECTORY "${CMAKE_SOURCE_DIR}/bin/resources" DESTINATION "${CMAKE_INSTALL_DATADIR}/PCSX2")
 
 	# set categories depending on system/distribution in pcsx2.desktop
 	if(openSUSE)
