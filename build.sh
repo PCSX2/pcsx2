@@ -164,8 +164,8 @@ cleanBuild=0
 useClang=0
 useIcc=0
 
-# 0 => no, 1 => yes, 2 => force yes
-useCross=2
+# 0 => no, 1 => yes
+useCross=0
 
 CoverityBuild=0
 cppcheck=0
@@ -183,7 +183,6 @@ set_make
 for ARG in "$@"; do
     case "$ARG" in
         --clean             ) cleanBuild=1 ;;
-        --clean-plugins     ) cleanBuild=2 ;;
         --clang-tidy        ) flags="$flags -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"; clangTidy=1 ; useClang=1;;
         --ftime-trace       ) flags="$flags -DTIMETRACE=TRUE"; useClang=1;;
         --clang             ) useClang=1 ;;
@@ -220,11 +219,11 @@ for ARG in "$@"; do
             echo "--release       : Build PCSX2 as a Release build."
             echo
             echo "--clean         : Do a clean build."
-            echo "--clean-plugins : Do a clean build of plugins, but not of pcsx2."
             echo "--no-simd       : Only allow sse2"
             echo
             echo "** Developer option **"
             echo "--cross-multilib: Build a 32bit PCSX2 on a 64bit machine using multilib."
+            echo "--no-cross-multilib: Build a native version of PCSX2 (default)"
             echo
             echo "** Distribution Compatibilities **"
             echo "--sdl12         : Build with SDL1.2 (requires if wx is linked against SDL1.2)"
@@ -233,7 +232,6 @@ for ARG in "$@"; do
             echo
             echo "** Expert Developer option **"
             echo "--gtk2          : use GTK 2 instead of GTK 3"
-            echo "--no-cross-multilib: Build a native PCSX2 (nonfunctional recompiler)"
             echo "--no-trans      : Don't regenerate mo files when building."
             echo "--clang         : Build with Clang/llvm"
             echo "--intel         : Build with ICC (Intel compiler)"
@@ -257,16 +255,14 @@ if [ "$cleanBuild" -eq 1 ]; then
     echo "Doing a clean build."
     # allow to keep build as a symlink (for example to a ramdisk)
     rm -fr "$build"/*
-elif [ "$cleanBuild" -eq 2 ]; then
-    echo "Doing a clean build on the plugins, but not pcsx2."
-    rm -fr "$build"/plugins/*
 fi
 
-if [ "$useCross" -eq 2 ] && [ "$(getconf LONG_BIT 2> /dev/null)" != 32 ]; then
-    echo "Forcing cross compilation."
+if [ "$useCross" -eq 1 ]; then
+    echo "Cross compiling."
     flags="$flags $i386_flag"
 elif [ "$useCross" -ne 1 ]; then
     useCross=0
+    echo "Compiling natively."
 fi
 
 switch_wxconfig
