@@ -102,7 +102,7 @@
 		pxAssert(EnumIsValid(id)); \
 	} \
 \
-	extern const wxChar* EnumToString(enumName id)
+	extern const char* EnumToString(enumName id)
 
 class pxEnumEnd_t
 {
