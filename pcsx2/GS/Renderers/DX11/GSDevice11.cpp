@@ -655,7 +655,7 @@ bool GSDevice11::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTextu
 	m_download_tex.reset(static_cast<GSTexture11*>(CreateOffscreen(rect.width(), rect.height(), src->GetFormat())));
 	if (!m_download_tex)
 		return false;
-	m_ctx->CopyResource(*m_download_tex, *static_cast<GSTexture11*>(src));
+	CopyRect(src, m_download_tex.get(), rect);
 	return m_download_tex->Map(out_map);
 }
 
