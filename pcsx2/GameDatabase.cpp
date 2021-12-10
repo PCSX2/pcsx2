@@ -103,7 +103,7 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 			bool fixValidated = false;
 			for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; id++)
 			{
-				std::string validFix = fmt::format("{}Hack", wxString(EnumToString(id)).ToUTF8());
+				std::string validFix = fmt::format("{}Hack", EnumToString(id));
 				if (validFix == fix)
 				{
 					fixValidated = true;
@@ -129,7 +129,7 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 				bool speedHackValidated = false;
 				for (SpeedhackId id = SpeedhackId_FIRST; id < pxEnumEnd; id++)
 				{
-					std::string validSpeedHack = fmt::format("{}SpeedHack", wxString(EnumToString(id)).ToUTF8());
+					std::string validSpeedHack = fmt::format("{}SpeedHack", EnumToString(id));
 					if (validSpeedHack == speedHack)
 					{
 						speedHackValidated = true;

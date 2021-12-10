@@ -21,23 +21,21 @@
 // AND'ing this mask against an MXCSR prior to LDMXCSR.
 SSE_MXCSR MXCSR_Mask;
 
-const wxChar* EnumToString(SSE_RoundMode sse)
+const char* EnumToString(SSE_RoundMode sse)
 {
 	switch (sse)
 	{
 		case SSEround_Nearest:
-			return L"Nearest";
+			return "Nearest";
 		case SSEround_NegInf:
-			return L"NegativeInfinity";
+			return "NegativeInfinity";
 		case SSEround_PosInf:
-			return L"PositiveInfinity";
+			return "PositiveInfinity";
 		case SSEround_Chop:
-			return L"Chop";
+			return "Chop";
 		default:
-			return L"Invalid";
+			return "Invalid";
 	}
-
-	return L"Invalid";
 }
 
 SSE_RoundMode SSE_MXCSR::GetRoundMode() const

@@ -57,12 +57,12 @@ void TraceLogFilters::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(IOP.bitset);
 }
 
-const wxChar* const tbl_SpeedhackNames[] =
+const char* const tbl_SpeedhackNames[] =
 	{
-		L"mvuFlag",
-		L"InstantVU1"};
+		"mvuFlag",
+		"InstantVU1"};
 
-const __fi wxChar* EnumToString(SpeedhackId id)
+const char* EnumToString(SpeedhackId id)
 {
 	return tbl_SpeedhackNames[id];
 }
@@ -306,25 +306,25 @@ int Pcsx2Config::GSOptions::GetVsync() const
 	}
 }
 
-const wxChar* const tbl_GamefixNames[] =
+const char* const tbl_GamefixNames[] =
 	{
-		L"FpuMul",
-		L"FpuNegDiv",
-		L"GoemonTlb",
-		L"SkipMPEG",
-		L"OPHFlag",
-		L"EETiming",
-		L"DMABusy",
-		L"GIFFIFO",
-		L"VIFFIFO",
-		L"VIF1Stall",
-		L"VuAddSub",
-		L"Ibit",
-		L"VUKickstart",
-		L"VUOverflow",
-		L"XGKick"};
+		"FpuMul",
+		"FpuNegDiv",
+		"GoemonTlb",
+		"SkipMPEG",
+		"OPHFlag",
+		"EETiming",
+		"DMABusy",
+		"GIFFIFO",
+		"VIFFIFO",
+		"VIF1Stall",
+		"VuAddSub",
+		"Ibit",
+		"VUKickstart",
+		"VUOverflow",
+		"XGKick"};
 
-const __fi wxChar* EnumToString(GamefixId id)
+const char* EnumToString(GamefixId id)
 {
 	return tbl_GamefixNames[id];
 }
