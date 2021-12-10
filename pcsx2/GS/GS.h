@@ -98,6 +98,16 @@ enum class CRCHackLevel : s8
 	Aggressive
 };
 
+enum class AccBlendLevel : u8
+{
+	None,
+	Basic,
+	Medium,
+	High,
+	Full,
+	Ultra,
+};
+
 void GSsetBaseMem(u8* mem);
 int GSinit();
 void GSshutdown();
