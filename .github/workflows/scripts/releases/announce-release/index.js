@@ -44,7 +44,8 @@ const embed = new MessageEmbed()
     { name: 'Version', value: releaseInfo.tag_name, inline: true },
     { name: 'Release Link', value: `[Github Release](${releaseInfo.html_url})`, inline: true },
     { name: 'Installation Steps', value: '[See Here](https://github.com/PCSX2/pcsx2/wiki/Nightly-Build-Usage-Guide)', inline: true },
-    { name: 'Included Changes', value: releaseInfo.body, inline: false }
+    { name: 'Included Changes', value: releaseInfo.body, inline: false },
+    { name: 'Previous Builds', value: "[See Here](https://pcsx2.github.io/downloads.html#nightly-anchor)", inline: false }
   );
 
 if (windowsAssetLinks != "") {
