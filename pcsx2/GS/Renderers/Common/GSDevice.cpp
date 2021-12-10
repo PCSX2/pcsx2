@@ -273,7 +273,7 @@ bool GSDevice::DownloadTextureConvert(GSTexture* src, const GSVector4& sRect, co
 	GSVector4i dRect(0, 0, dSize.x, dSize.y);
 	StretchRect(src, sRect, dst, GSVector4(dRect), ps_shader);
 
-	bool ret = DownloadTexture(src, dRect, out_map);
+	bool ret = DownloadTexture(dst, dRect, out_map);
 	Recycle(dst);
 	return ret;
 }
