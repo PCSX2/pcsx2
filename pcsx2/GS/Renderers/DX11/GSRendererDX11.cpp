@@ -18,7 +18,7 @@
 
 GSRendererDX11::GSRendererDX11()
 {
-	m_sw_blending = theApp.GetConfigI("accurate_blending_unit_d3d11");
+	m_sw_blending = static_cast<AccBlendLevel>(theApp.GetConfigI("accurate_blending_unit_d3d11"));
 
 	ResetStates();
 }
@@ -158,23 +158,23 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 	bool enable_fbmask_emulation = false;
 	switch (m_sw_blending)
 	{
-		case ACC_BLEND_HIGH_D3D11:
+		case AccBlendLevel::High:
 			// Fully enable Fbmask emulation like on opengl, note misses sw blending to work as opengl on some games (Genji).
 			// Debug
 			enable_fbmask_emulation = true;
 			break;
-		case ACC_BLEND_MEDIUM_D3D11:
+		case AccBlendLevel::Medium:
 			// Enable Fbmask emulation excluding triangle class because it is quite slow.
 			// Exclude 0x80000000 because Genji needs sw blending, otherwise it breaks some effects.
 			enable_fbmask_emulation = ((m_vt.m_primclass != GS_TRIANGLE_CLASS) && (m_context->FRAME.FBMSK != 0x80000000));
 			break;
-		case ACC_BLEND_BASIC_D3D11:
+		case AccBlendLevel::Basic:
 			// Enable Fbmask emulation excluding triangle class because it is quite slow.
 			// Exclude 0x80000000 because Genji needs sw blending, otherwise it breaks some effects.
 			// Also exclude fbmask emulation on texture shuffle just in case, it is probably safe tho.
 			enable_fbmask_emulation = (!m_texture_shuffle && (m_vt.m_primclass != GS_TRIANGLE_CLASS) && (m_context->FRAME.FBMSK != 0x80000000));
 			break;
-		case ACC_BLEND_NONE_D3D11:
+		case AccBlendLevel::None:
 		default:
 			break;
 	}
@@ -473,9 +473,9 @@ void GSRendererDX11::EmulateBlending(u8& afix)
 	bool sw_blending = false;
 	switch (m_sw_blending)
 	{
-		case ACC_BLEND_HIGH_D3D11:
-		case ACC_BLEND_MEDIUM_D3D11:
-		case ACC_BLEND_BASIC_D3D11:
+		case AccBlendLevel::High:
+		case AccBlendLevel::Medium:
+		case AccBlendLevel::Basic:
 			sw_blending |= accumulation_blend || blend_non_recursive;
 			[[fallthrough]];
 		default:
@@ -483,7 +483,7 @@ void GSRendererDX11::EmulateBlending(u8& afix)
 	}
 
 	// Do not run BLEND MIX if sw blending is already present, it's less accurate
-	if (m_sw_blending)
+	if (m_sw_blending != AccBlendLevel::None)
 	{
 		blend_mix &= !sw_blending;
 		sw_blending |= blend_mix;

@@ -28,16 +28,6 @@ class GSRendererOGL final : public GSRendererHW
 		PRIM_OVERLAP_NO
 	};
 
-	enum ACC_BLEND
-	{
-		ACC_BLEND_NONE   = 0,
-		ACC_BLEND_BASIC  = 1,
-		ACC_BLEND_MEDIUM = 2,
-		ACC_BLEND_HIGH   = 3,
-		ACC_BLEND_FULL   = 4,
-		ACC_BLEND_ULTRA  = 5
-	};
-
 private:
 	PRIM_OVERLAP m_prim_overlap;
 	std::vector<size_t> m_drawlist;

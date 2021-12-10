@@ -159,7 +159,7 @@ protected:
 	float m_userhacks_tcoffset_y;
 
 	bool m_accurate_date;
-	int m_sw_blending;
+	AccBlendLevel m_sw_blending;
 
 	bool m_channel_shuffle;
 
