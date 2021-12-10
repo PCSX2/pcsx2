@@ -43,7 +43,6 @@ option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option
 # Path and lib option
 #-------------------------------------------------------------------------------
 option(PACKAGE_MODE "Use this option to ease packaging of PCSX2 (developer/distribution option)")
-option(DISABLE_CHEATS_ZIP "Disable including the cheats_ws.zip file")
 option(DISABLE_PCSX2_WRAPPER "Disable including the PCSX2-linux.sh file")
 option(DISABLE_SETCAP "Do not set files capabilities")
 option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
@@ -59,7 +58,7 @@ endif()
 if(PACKAGE_MODE)
 	# Compile all source codes with those defines
 	list(APPEND PCSX2_DEFS
-		GAMEINDEX_DIR_COMPILATION=${CMAKE_INSTALL_FULL_DATADIR}/PCSX2
+		PCSX2_APP_DATADIR="${CMAKE_INSTALL_FULL_DATADIR}/PCSX2"
 		DOC_DIR_COMPILATION=${CMAKE_INSTALL_FULL_DOCDIR})
 endif()
 
