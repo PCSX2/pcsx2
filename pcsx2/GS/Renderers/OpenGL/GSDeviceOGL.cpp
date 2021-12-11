@@ -1301,8 +1301,7 @@ bool GSDeviceOGL::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSText
 // Copy a sub part of texture (same as below but force a conversion)
 void GSDeviceOGL::BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2i& dsize, bool at_origin, bool linear)
 {
-	const GLuint sid = static_cast<GSTextureOGL*>(sTex)->GetID();
-	GL_PUSH(format("CopyRectConv from %d", sid).c_str());
+	GL_PUSH(format("CopyRectConv from %d", static_cast<GSTextureOGL*>(sTex)->GetID()).c_str());
 
 	// NOTE: This previously used glCopyTextureSubImage2D(), but this appears to leak memory in
 	// the loading screens of Evolution Snowboarding in Intel/NVIDIA drivers.
