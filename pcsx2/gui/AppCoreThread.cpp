@@ -309,40 +309,28 @@ static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEnt
 		gf++;
 	}
 
-	// TODO - config - this could be simplified with maps instead of bitfields and enums
-	for (SpeedhackId id = SpeedhackId_FIRST; id < pxEnumEnd; id++)
+	for (const auto& [id, mode] : game.speedHacks)
 	{
-		std::string key = fmt::format("{}SpeedHack", EnumToString(id));
-
 		// Gamefixes are already guaranteed to be valid, any invalid ones are dropped
-		if (game.speedHacks.count(key) == 1)
-		{
-			// Legacy note - speedhacks are setup in the GameDB as integer values, but
-			// are effectively booleans like the gamefixes
-			bool mode = game.speedHacks.at(key) ? 1 : 0;
-			dest.Speedhacks.Set(id, mode);
-			PatchesCon->WriteLn(fmt::format("(GameDB) Setting Speedhack '{}' to [mode={}]", key, (int)mode));
-			gf++;
-		}
+		// Legacy note - speedhacks are setup in the GameDB as integer values, but
+		// are effectively booleans like the gamefixes
+		dest.Speedhacks.Set(id, mode != 0);
+		PatchesCon->WriteLn("(GameDB) Setting Speedhack '%s' to [mode=%d]", EnumToString(id), static_cast<int>(mode != 0));
+		gf++;
 	}
 
 	// TODO - config - this could be simplified with maps instead of bitfields and enums
-	for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; id++)
+	for (const GamefixId id : game.gameFixes)
 	{
-		std::string key = fmt::format("{}Hack", EnumToString(id));
-
 		// Gamefixes are already guaranteed to be valid, any invalid ones are dropped
-		if (std::find(game.gameFixes.begin(), game.gameFixes.end(), key) != game.gameFixes.end())
-		{
-			// if the fix is present, it is said to be enabled
-			dest.Gamefixes.Set(id, true);
-			PatchesCon->WriteLn("(GameDB) Enabled Gamefix: " + key);
-			gf++;
+		// if the fix is present, it is said to be enabled
+		dest.Gamefixes.Set(id, true);
+		PatchesCon->WriteLn("(GameDB) Enabled Gamefix: %s", EnumToString(id));
+		gf++;
 
-			// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
-			if (id == Fix_GoemonTlbMiss && true)
-				vtlb_Alloc_Ppmap();
-		}
+		// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
+		if (id == Fix_GoemonTlbMiss && true)
+			vtlb_Alloc_Ppmap();
 	}
 
 	return gf;

@@ -19,6 +19,9 @@
 #include <vector>
 #include <string>
 
+enum GamefixId;
+enum SpeedhackId;
+
 // Since this is kinda yaml specific, might be a good idea to
 // relocate this into the yaml class
 // or put the serialization methods inside the yaml
@@ -65,8 +68,8 @@ public:
 		RoundMode vuRoundMode = RoundMode::Undefined;
 		ClampMode eeClampMode = ClampMode::Undefined;
 		ClampMode vuClampMode = ClampMode::Undefined;
-		std::vector<std::string> gameFixes;
-		std::unordered_map<std::string, int> speedHacks;
+		std::vector<GamefixId> gameFixes;
+		std::vector<std::pair<SpeedhackId, int>> speedHacks;
 		std::vector<std::string> memcardFilters;
 		std::unordered_map<std::string, Patch> patches;
 
