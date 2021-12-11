@@ -127,51 +127,63 @@ static bool parseAndInsert(std::string serial, const YAML::Node& node)
 		}
 
 		// Validate game fixes, invalid ones will be dropped!
-		for (std::string& fix : node["gameFixes"].as<std::vector<std::string>>(std::vector<std::string>()))
+		if (auto gameFixes = node["gameFixes"])
 		{
-			bool fixValidated = false;
-			for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; id++)
+			gameEntry.gameFixes.reserve(gameFixes.size());
+			for (std::string& fix : gameFixes.as<std::vector<std::string>>(std::vector<std::string>()))
 			{
-				std::string validFix = fmt::format("{}Hack", EnumToString(id));
-				if (validFix == fix)
+				// Enum values don't end with Hack, but gamedb does, so remove it before comparing.
+				bool fixValidated = false;
+				if (StringUtil::EndsWith(fix, "Hack"))
 				{
-					fixValidated = true;
-					break;
+					fix.erase(fix.size() - 4);
+					for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; id++)
+					{
+						if (fix.compare(EnumToString(id)) == 0 &&
+								std::find(gameEntry.gameFixes.begin(), gameEntry.gameFixes.end(), id) == gameEntry.gameFixes.end())
+						{
+							gameEntry.gameFixes.push_back(id);
+							fixValidated = true;
+							break;
+						}
+					}
 				}
-			}
-			if (fixValidated)
-			{
-				gameEntry.gameFixes.push_back(fix);
-			}
-			else
-			{
-				Console.Error(fmt::format("[GameDB] Invalid gamefix: '{}', specified for serial: '{}'. Dropping!", fix, serial));
+
+				if (!fixValidated)
+				{
+					Console.Error("[GameDB] Invalid gamefix: '%s', specified for serial: '%s'. Dropping!", fix.c_str(), serial.c_str());
+				}
 			}
 		}
 
 		// Validate speed hacks, invalid ones will be dropped!
-		if (YAML::Node speedHacksNode = node["speedHacks"])
+		if (auto speedHacksNode = node["speedHacks"])
 		{
+			gameEntry.speedHacks.reserve(speedHacksNode.size());
 			for (const auto& entry : speedHacksNode)
 			{
-				std::string speedHack = entry.first.as<std::string>();
 				bool speedHackValidated = false;
-				for (SpeedhackId id = SpeedhackId_FIRST; id < pxEnumEnd; id++)
+				std::string speedHack(entry.first.as<std::string>());
+
+				// Same deal with SpeedHacks
+				if (StringUtil::EndsWith(speedHack, "SpeedHack"))
 				{
-					std::string validSpeedHack = fmt::format("{}SpeedHack", EnumToString(id));
-					if (validSpeedHack == speedHack)
+					speedHack.erase(speedHack.size() - 9);
+					for (SpeedhackId id = SpeedhackId_FIRST; id < pxEnumEnd; id++)
 					{
-						speedHackValidated = true;
-						break;
+						if (speedHack.compare(EnumToString(id)) == 0 &&
+								std::none_of(gameEntry.speedHacks.begin(), gameEntry.speedHacks.end(), [id](const auto& it) { return it.first == id; }))
+						{
+							gameEntry.speedHacks.emplace_back(id, entry.second.as<int>());
+							speedHackValidated = true;
+							break;
+						}
 					}
 				}
-				if (speedHackValidated)
+
+				if (!speedHackValidated)
 				{
-					gameEntry.speedHacks[speedHack] = entry.second.as<int>();
-				}
-				else
-				{
-					Console.Error(fmt::format("[GameDB] Invalid speedhack: '{}', specified for serial: '{}'. Dropping!", speedHack, serial));
+					Console.Error("[GameDB] Invalid speedhack: '%s', specified for serial: '%s'. Dropping!", speedHack.c_str(), serial.c_str());
 				}
 			}
 		}
