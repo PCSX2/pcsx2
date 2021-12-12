@@ -40,13 +40,6 @@ if (QT_BUILD)
 	add_subdirectory(pcsx2-qt)
 endif()
 
-if(NOT NO_TRANSLATION AND NOT PCSX2_CORE)
-	# make the translation
-	if(EXISTS "${CMAKE_SOURCE_DIR}/locales")
-		add_subdirectory(locales)
-	endif()
-endif()
-
 # tests
 if(ACTUALLY_ENABLE_TESTS)
 	set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)

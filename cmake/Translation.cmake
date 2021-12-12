@@ -88,11 +88,8 @@ MACRO(GETTEXT_CREATE_TRANSLATIONS_PCSX2 _potFile _firstPoFileArg)
 		ENDIF (CMAKE_BUILD_PO)
 
 		IF(APPLE)
-			set_source_files_properties(${_moFile} TARGET_DIRECTORY PCSX2 PROPERTIES
-				MACOSX_PACKAGE_LOCATION Resources/locale/${_lang}
-				GENERATED 1
-			)
 			target_sources(PCSX2 PRIVATE ${_moFile})
+			set_source_files_properties(${_moFile} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/locale/${_lang})
 			source_group(Resources/locale/${__lang} FILES ${_moFile})
 		ELSEIF(PACKAGE_MODE)
 			INSTALL(FILES ${_moFile} DESTINATION ${CMAKE_INSTALL_DATADIR}/PCSX2/resources/locale/${_lang})
@@ -104,12 +101,8 @@ MACRO(GETTEXT_CREATE_TRANSLATIONS_PCSX2 _potFile _firstPoFileArg)
 
 	ENDFOREACH (_currentPoFile)
 
-	if(APPLE)
-		# CMake doesn't properly add dependencies because PCSX2 is not in the same directory as locales
-		add_custom_target(translations_${_potBasename} DEPENDS ${_moFiles})
-		add_dependencies(PCSX2 translations_${_potBasename})
-	ELSEIF(NOT LINUX_PACKAGE)
+	IF(NOT LINUX_PACKAGE AND NOT APPLE)
 		ADD_CUSTOM_TARGET(translations_${_potBasename} ${_addToAll} DEPENDS ${_moFiles})
-	ENDIF()
+	ENDIF(NOT LINUX_PACKAGE AND NOT APPLE)
 
 ENDMACRO(GETTEXT_CREATE_TRANSLATIONS_PCSX2)
