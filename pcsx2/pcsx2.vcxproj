@@ -486,11 +486,9 @@
     <ClCompile Include="GS\GSRingHeap.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSRasterizer.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSRenderer.cpp" />
-    <ClCompile Include="GS\Renderers\DX11\GSRendererDX11.cpp" />
     <ClCompile Include="GS\Renderers\HW\GSRendererHW.cpp" />
     <ClCompile Include="GS\Renderers\HW\GSRendererNew.cpp" />
     <ClCompile Include="GS\Renderers\Null\GSRendererNull.cpp" />
-    <ClCompile Include="GS\Renderers\OpenGL\GSRendererOGL.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSRendererSW.cpp" />
     <ClCompile Include="GS\Window\GSSetting.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.cpp" />
@@ -848,11 +846,9 @@
     <ClInclude Include="GS\GSRingHeap.h" />
     <ClInclude Include="GS\Renderers\SW\GSRasterizer.h" />
     <ClInclude Include="GS\Renderers\Common\GSRenderer.h" />
-    <ClInclude Include="GS\Renderers\DX11\GSRendererDX11.h" />
     <ClInclude Include="GS\Renderers\HW\GSRendererHW.h" />
     <ClInclude Include="GS\Renderers\HW\GSRendererNew.h" />
     <ClInclude Include="GS\Renderers\Null\GSRendererNull.h" />
-    <ClInclude Include="GS\Renderers\OpenGL\GSRendererOGL.h" />
     <ClInclude Include="GS\Renderers\SW\GSRendererSW.h" />
     <ClInclude Include="GS\Renderers\SW\GSScanlineEnvironment.h" />
     <ClInclude Include="GS\Window\GSSetting.h" />

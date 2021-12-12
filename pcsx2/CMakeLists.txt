@@ -629,7 +629,6 @@ set(pcsx2GSSources
 	GS/Renderers/OpenGL/GLLoader.cpp
 	GS/Renderers/OpenGL/GLState.cpp
 	GS/Renderers/OpenGL/GSDeviceOGL.cpp
-	GS/Renderers/OpenGL/GSRendererOGL.cpp
 	GS/Renderers/OpenGL/GSShaderOGL.cpp
 	GS/Renderers/OpenGL/GSTextureOGL.cpp
 	GS/Window/GSSetting.cpp
@@ -700,7 +699,6 @@ set(pcsx2GSHeaders
 	GS/Renderers/OpenGL/GLLoader.h
 	GS/Renderers/OpenGL/GLState.h
 	GS/Renderers/OpenGL/GSDeviceOGL.h
-	GS/Renderers/OpenGL/GSRendererOGL.h
 	GS/Renderers/OpenGL/GSShaderOGL.h
 	GS/Renderers/OpenGL/GSTextureOGL.h
 	GS/Renderers/OpenGL/GSUniformBufferOGL.h
@@ -774,7 +772,6 @@ if(WIN32)
 	list(APPEND pcsx2GSSources
 		GS/Renderers/DX11/D3D.cpp
 		GS/Renderers/DX11/GSDevice11.cpp
-		GS/Renderers/DX11/GSRendererDX11.cpp
 		GS/Renderers/DX11/GSTexture11.cpp
 		GS/Renderers/DX11/GSTextureFX11.cpp
 		GS/Window/GSCaptureDlg.cpp
@@ -783,7 +780,6 @@ if(WIN32)
 	list(APPEND pcsx2GSHeaders
 		GS/Renderers/DX11/D3D.h
 		GS/Renderers/DX11/GSDevice11.h
-		GS/Renderers/DX11/GSRendererDX11.h
 		GS/Renderers/DX11/GSTexture11.h
 	)
 else(WIN32)
