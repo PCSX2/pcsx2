@@ -20925,6 +20925,8 @@ SLPM-62485:
 SLPM-62486:
   name: "Chou Saisoku! Zokusha King B.U. [Simple Series DX]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes white shadows.
 SLPM-62488:
   name: "Hot Gimmick Cosplay Mahjong"
   region: "NTSC-J"
