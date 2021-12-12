@@ -87,7 +87,7 @@ namespace PathDefs
 
 		const wxDirName& Langs()
 		{
-			static const wxDirName retval(L"Langs");
+			static const wxDirName retval(L"locale");
 			return retval;
 		}
 
@@ -240,15 +240,6 @@ namespace PathDefs
 		return GetDocuments() + Base::Logs();
 	}
 
-	wxDirName GetLangs()
-	{
-#ifdef __APPLE__
-		return wxDirName(wxStandardPaths::Get().GetResourcesDir());
-#else
-		return AppRoot() + Base::Langs();
-#endif
-	}
-
 	wxDirName GetResources()
 	{
 		// ifdef is only needed here because mac doesn't put its resources in a subdirectory..
@@ -257,6 +248,11 @@ namespace PathDefs
 #else
 		return GetProgramDataDir() + Base::Resources();
 #endif
+	}
+
+	wxDirName GetLangs()
+	{
+		return GetResources() + Base::Langs();
 	}
 
 	wxDirName GetCache()
