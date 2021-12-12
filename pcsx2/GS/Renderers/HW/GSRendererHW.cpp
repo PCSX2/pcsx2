@@ -863,12 +863,14 @@ void GSRendererHW::SwSpriteRender()
 
 	const GSVector4i r = m_r;
 
+#ifndef NDEBUG
 	const int tw = 1 << m_context->TEX0.TW;
 	const int th = 1 << m_context->TEX0.TH;
 	const float meas_tw = m_vt.m_max.t.x - m_vt.m_min.t.x;
 	const float meas_th = m_vt.m_max.t.y - m_vt.m_min.t.y;
 	ASSERT(!PRIM->TME || (abs(meas_tw - r.width()) <= SSR_UV_TOLERANCE && abs(meas_th - r.height()) <= SSR_UV_TOLERANCE)); // No input texture min/mag, if any.
 	ASSERT(!PRIM->TME || (abs(m_vt.m_min.t.x) <= SSR_UV_TOLERANCE && abs(m_vt.m_min.t.y) <= SSR_UV_TOLERANCE && abs(meas_tw - tw) <= SSR_UV_TOLERANCE && abs(meas_th - th) <= SSR_UV_TOLERANCE)); // No texture UV wrap, if any.
+#endif
 
 	GIFRegTRXPOS trxpos = {};
 
