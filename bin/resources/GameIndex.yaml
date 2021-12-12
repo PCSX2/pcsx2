@@ -48,6 +48,12 @@ PAPX-90223:
 PAPX-90231:
   name: "Kaitou Sly Cooper [Demo, Taikenban]"
   region: "NTSC-J"
+PAPX-90506:
+  name: "Dark Chronicle[Demo, Taikenban]"
+  region: "NTSC-J"
+  compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes textbox.
 PAPX-90512:
   name: "Gran Turismo 4 - Toyota Prius [Trial]"
   region: "NTSC-J"
@@ -2372,6 +2378,8 @@ SCES-51190:
   name: "Dark Chronicle"
   region: "PAL-M5"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes textbox.
 SCES-51224:
   name: "War of the Monsters"
   region: "PAL-E"
@@ -3694,6 +3702,8 @@ SCKA-20014:
   name: "Dark Cloud 2"
   region: "NTSC-K"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes textbox.
 SCKA-20015:
   name: "Time Crisis 3"
   region: "NTSC-K"
@@ -4262,6 +4272,8 @@ SCPS-15032:
 SCPS-15033:
   name: "Dark Chronicle"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes textbox.
 SCPS-15034:
   name: "This is Football 2003"
   region: "NTSC-J"
@@ -4748,6 +4760,8 @@ SCPS-19214:
 SCPS-19215:
   name: "Dark Chronicle [PlayStation 2 The Best]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes textbox.
 SCPS-19251:
   name: "Wild ARMs - Alter Code F [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -4807,6 +4821,8 @@ SCPS-19305:
 SCPS-19306:
   name: "Dark Chronicle [PlayStation 2 The Best]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes textbox.
 SCPS-19307:
   name: "Popolocrois - The First Adventure [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -5161,6 +5177,8 @@ SCPS-55047:
 SCPS-55048:
   name: "Dark Chronicle"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes textbox.
 SCPS-55049:
   name: "King of Fighters 2000, The"
   region: "NTSC-J"
@@ -5658,6 +5676,8 @@ SCUS-97213:
   name: "Dark Cloud 2"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes textbox.
 SCUS-97214:
   name: "NCAA GameBreaker 2003"
   region: "NTSC-U"
@@ -5709,6 +5729,8 @@ SCUS-97227:
 SCUS-97229:
   name: "Dark Cloud 2 [Demo]"
   region: "NTSC-U"
+  clampModes:
+    eeClampMode: 3 # Fixes textbox.
 SCUS-97230:
   name: "SOCOM - U.S. Navy SEALs (Online)"
   region: "NTSC-U"
