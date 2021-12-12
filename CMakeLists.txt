@@ -34,13 +34,6 @@ include(SearchForStuff)
 get_git_version_info()
 write_svnrev_h()
 
-if(NOT NO_TRANSLATION AND NOT PCSX2_CORE)
-	# make the translation
-	if(EXISTS "${CMAKE_SOURCE_DIR}/locales")
-		add_subdirectory(locales)
-	endif()
-endif()
-
 # make common
 add_subdirectory(common)
 
@@ -49,6 +42,13 @@ add_subdirectory(pcsx2)
 
 if (QT_BUILD)
 	add_subdirectory(pcsx2-qt)
+endif()
+
+if(NOT NO_TRANSLATION AND NOT PCSX2_CORE)
+	# make the translation
+	if(EXISTS "${CMAKE_SOURCE_DIR}/locales")
+		add_subdirectory(locales)
+	endif()
 endif()
 
 # tests
