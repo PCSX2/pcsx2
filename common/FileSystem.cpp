@@ -1557,6 +1557,7 @@ std::string FileSystem::GetWorkingDirectory()
 		buffer.resize(buffer.size() * 2);
 	}
 
+	buffer.resize(std::strlen(buffer.c_str())); // Remove excess nulls
 	return buffer;
 }
 
