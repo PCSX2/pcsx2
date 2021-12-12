@@ -58,8 +58,6 @@ endif()
 
 # Install some files to ease package creation
 if(PACKAGE_MODE)
-	INSTALL(DIRECTORY "${CMAKE_SOURCE_DIR}/bin/resources" DESTINATION "${CMAKE_INSTALL_DATADIR}/PCSX2")
-
 	# set categories depending on system/distribution in pcsx2.desktop
 	if(openSUSE)
 		set(PCSX2_MENU_CATEGORIES "System;Emulator;")
