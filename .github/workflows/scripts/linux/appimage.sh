@@ -12,8 +12,6 @@ else
   ARCH="x86_64"
   LIBARCH="x86_64-linux-gnu"
 fi
-BUILDPATH="$GITHUB_WORKSPACE"/build
-BUILDBIN="$BUILDPATH"/pcsx2
 cd /tmp
 curl -sSfLO "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$ARCH.AppImage"
 chmod a+x linuxdeploy*.AppImage
@@ -23,10 +21,7 @@ chmod a+x /tmp/squashfs-root/usr/bin/linuxdeploy-plugin-gtk.sh
 mv /tmp/squashfs-root/usr/bin/patchelf /tmp/squashfs-root/usr/bin/patchelf.orig
 sudo cp /usr/local/bin/patchelf /tmp/squashfs-root/usr/bin/patchelf
 cd "$GITHUB_WORKSPACE"
-mkdir -p squashfs-root/usr/bin
-ls -al "$BUILDBIN"
-cp -P "$BUILDBIN"/pcsx2 "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/
-patchelf --set-rpath /tmp/PCSX2 "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/pcsx2
+ninja -C build install
 cp ./pcsx2/gui/Resources/AppIcon64.png ./squashfs-root/PCSX2.png
 cp ./linux_various/PCSX2.desktop.in ./squashfs-root/PCSX2.desktop 
 sed -i -e 's|Categories=@PCSX2_MENU_CATEGORIES@|Categories=Game;Emulator;|g' ./squashfs-root/PCSX2.desktop
@@ -47,10 +42,7 @@ chmod a+x ./squashfs-root/runtime
 chmod a+x ./squashfs-root/AppRun-patched
 chmod a+x ./squashfs-root/usr/optional/exec.so
 echo "$name" > "$GITHUB_WORKSPACE"/squashfs-root/version.txt
-mkdir -p "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/app
 mkdir -p "$GITHUB_WORKSPACE"/squashfs-root/apprun-hooks
-cp -r "$GITHUB_WORKSPACE"/bin/resources "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/app/
-cp "$GITHUB_WORKSPACE"/bin/docs/{Configuration_Guide.pdf,PCSX2_FAQ.pdf} "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/app
 cp /usr/lib/$LIBARCH/libthai.so.0 "$GITHUB_WORKSPACE"/squashfs-root/usr/lib/
 cp --dereference /usr/lib/"$LIBARCH"/libstdc++.so.6 "$GITHUB_WORKSPACE"/squashfs-root/usr/optional/libstdc++/libstdc++.so.6
 cp --dereference /lib/"$LIBARCH"/libgcc_s.so.1 "$GITHUB_WORKSPACE"/squashfs-root/usr/optional/libgcc_s/libgcc_s.so.1

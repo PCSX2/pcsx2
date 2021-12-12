@@ -190,7 +190,7 @@ namespace PathDefs
 #else
 		// Each linux distributions have his rules for path so we give them the possibility to
 		// change it with compilation flags. -- Gregory
-		return wxDirName(PCSX2_APP_DATADIR);
+		return wxDirName(PCSX2_APP_DATADIR).MakeAbsolute(AppRoot().ToString());
 #endif
 	}
 
@@ -202,7 +202,6 @@ namespace PathDefs
 	wxDirName GetBios()
 	{
 		return GetDocuments() + Base::Bios();
-		;
 	}
 
 	wxDirName GetCheats()
@@ -217,7 +216,11 @@ namespace PathDefs
 
 	wxDirName GetDocs()
 	{
+#if !defined(PCSX2_APP_DOCDIR)
 		return AppRoot() + Base::Docs();
+#else
+		return wxDirName(PCSX2_APP_DOCDIR).MakeAbsolute(AppRoot().ToString());
+#endif
 	}
 
 	wxDirName GetSavestates()

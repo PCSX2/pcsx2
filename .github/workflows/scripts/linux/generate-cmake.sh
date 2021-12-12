@@ -22,9 +22,8 @@ cmake                                       \
 -DPACKAGE_MODE=TRUE                         \
 -DWAYLAND_API=TRUE                          \
 -DDISABLE_ADVANCE_SIMD=TRUE                 \
--DCMAKE_INSTALL_LIBDIR="/tmp/"              \
--DCMAKE_INSTALL_DATADIR="/tmp/"             \
--DCMAKE_INSTALL_DOCDIR="/tmp/PCSX2"         \
+-DDISABLE_PCSX2_WRAPPER=TRUE                \
+-DCMAKE_INSTALL_PREFIX="squashfs-root/usr/" \
 -DOpenGL_GL_PREFERENCE="LEGACY"             \
 -DOPENGL_opengl_LIBRARY=""                  \
 -DXDG_STD=TRUE                              \
