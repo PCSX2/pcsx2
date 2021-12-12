@@ -32,21 +32,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-MACRO(GETTEXT_CREATE_TRANSLATIONS_PCSX2 _potFile _firstPoFileArg)
-	# make it a real variable, so we can modify it here
-	SET(_firstPoFile "${_firstPoFileArg}")
-
+MACRO(GETTEXT_CREATE_TRANSLATIONS_PCSX2 _potFile)
 	SET(_moFiles)
 	GET_FILENAME_COMPONENT(_potBasename ${_potFile} NAME_WE)
 	GET_FILENAME_COMPONENT(_absPotFile ${_potFile} ABSOLUTE)
 
-	SET(_addToAll)
-	IF(${_firstPoFile} STREQUAL "ALL")
-		SET(_addToAll "ALL")
-		SET(_firstPoFile)
-	ENDIF(${_firstPoFile} STREQUAL "ALL")
-
-	FOREACH (_currentPoFile ${_firstPoFile} ${ARGN})
+	FOREACH (_currentPoFile ${ARGN})
 		GET_FILENAME_COMPONENT(_absFile ${_currentPoFile} ABSOLUTE)
 		GET_FILENAME_COMPONENT(_abs_PATH ${_absFile} DIRECTORY)
 		GET_FILENAME_COMPONENT(_lang ${_abs_PATH} NAME_WE)
@@ -102,7 +93,7 @@ MACRO(GETTEXT_CREATE_TRANSLATIONS_PCSX2 _potFile _firstPoFileArg)
 	ENDFOREACH (_currentPoFile)
 
 	IF(NOT LINUX_PACKAGE AND NOT APPLE)
-		ADD_CUSTOM_TARGET(translations_${_potBasename} ${_addToAll} DEPENDS ${_moFiles})
+		ADD_CUSTOM_TARGET(translations_${_potBasename} ALL DEPENDS ${_moFiles})
 	ENDIF(NOT LINUX_PACKAGE AND NOT APPLE)
 
 ENDMACRO(GETTEXT_CREATE_TRANSLATIONS_PCSX2)

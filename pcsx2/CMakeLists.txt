@@ -1663,8 +1663,8 @@ if(GETTEXT_FOUND AND NOT NO_TRANSLATION AND NOT PCSX2_CORE)
 	file(GLOB_RECURSE PO_MAIN_FILES ${CMAKE_SOURCE_DIR}/locales/*/pcsx2_Main.po)
 
 	# Macro to compile po file and install them
-	GETTEXT_CREATE_TRANSLATIONS_PCSX2(${CMAKE_SOURCE_DIR}/locales/templates/pcsx2_Iconized.pot ALL ${PO_ICO_FILES})
-	GETTEXT_CREATE_TRANSLATIONS_PCSX2(${CMAKE_SOURCE_DIR}/locales/templates/pcsx2_Main.pot     ALL ${PO_MAIN_FILES})
+	GETTEXT_CREATE_TRANSLATIONS_PCSX2(${CMAKE_SOURCE_DIR}/locales/templates/pcsx2_Iconized.pot ${PO_ICO_FILES})
+	GETTEXT_CREATE_TRANSLATIONS_PCSX2(${CMAKE_SOURCE_DIR}/locales/templates/pcsx2_Main.pot     ${PO_MAIN_FILES})
 endif()
 
 if (APPLE)
