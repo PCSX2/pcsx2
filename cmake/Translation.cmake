@@ -36,7 +36,7 @@ MACRO(GETTEXT_CREATE_TRANSLATIONS_PCSX2 _potFile _firstPoFileArg)
 	# make it a real variable, so we can modify it here
 	SET(_firstPoFile "${_firstPoFileArg}")
 
-	SET(_gmoFiles)
+	SET(_moFiles)
 	GET_FILENAME_COMPONENT(_potBasename ${_potFile} NAME_WE)
 	GET_FILENAME_COMPONENT(_absPotFile ${_potFile} ABSOLUTE)
 
@@ -48,24 +48,24 @@ MACRO(GETTEXT_CREATE_TRANSLATIONS_PCSX2 _potFile _firstPoFileArg)
 
 	FOREACH (_currentPoFile ${_firstPoFile} ${ARGN})
 		GET_FILENAME_COMPONENT(_absFile ${_currentPoFile} ABSOLUTE)
-		GET_FILENAME_COMPONENT(_abs_PATH ${_absFile} PATH)
-		GET_FILENAME_COMPONENT(_gmoBase ${_absFile} NAME_WE)
+		GET_FILENAME_COMPONENT(_abs_PATH ${_absFile} DIRECTORY)
 		GET_FILENAME_COMPONENT(_lang ${_abs_PATH} NAME_WE)
-		SET(_gmoFile ${CMAKE_BINARY_DIR}/${_lang}__${_gmoBase}.gmo)
+		SET(_moFile ${CMAKE_CURRENT_BINARY_DIR}/${_lang}/${_potBasename}.mo)
 		IF (APPLE)
-			# CMake doesn't support generator expressions as the OUTPUT of a custom command
-			# Instead, use ${_gmoFile} to detect changes, and output to the bundle as a side effect
-			# In addition, we have have to preprocess the po files to remove mnemonics:
+			# On MacOS, we have have to preprocess the po files to remove mnemonics:
 			# On Windows, menu items have "mnemonics", the items with a letter underlined that you can use with alt to select menu items.  MacOS doesn't do this.
 			# Some languages don't use easily-typable characters, so it's common to add a dedicated character for the mnemonic (e.g. in Japanese on Windows, the File menu would be "ファイル(&F)").
 			# On MacOS, these extra letters in parentheses are useless and should be avoided.
-			SET(_mnemonicless "${CMAKE_BINARY_DIR}/${_lang}__${_gmoBase}.nomnemonic.po")
-			SET(_extraCommands
+			SET(_mnemonicless "${CMAKE_CURRENT_BINARY_DIR}/${_lang}/${_potBasename}.nomnemonic.po")
+			SET(_compileCommand
 				COMMAND sed -e "\"s/[(]&[A-Za-z][)]//g\"" "${_absFile}" > "${_mnemonicless}"
-				COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PCSX2>/../Resources/locale/${_lang}/"
-				COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o "$<TARGET_FILE_DIR:PCSX2>/../Resources/locale/${_lang}/${_potBasename}.mo" ${_mnemonicless})
+				COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o ${_moFile} ${_mnemonicless}
+				BYPRODUCTS ${_mnemonicless}
+			)
 		ELSE (APPLE)
-			SET(_extraCommands)
+			SET(_compileCommand
+				COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o ${_moFile} ${_absFile}
+			)
 		ENDIF (APPLE)
 
 		IF (_currentPoFile MATCHES "\\.git")
@@ -73,30 +73,43 @@ MACRO(GETTEXT_CREATE_TRANSLATIONS_PCSX2 _potFile _firstPoFileArg)
 		ENDIF (_currentPoFile MATCHES "\\.git")
 
 		IF (CMAKE_BUILD_PO)
-			ADD_CUSTOM_COMMAND( OUTPUT ${_gmoFile}
+			ADD_CUSTOM_COMMAND(OUTPUT ${_moFile}
+				COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${_lang}
 				COMMAND ${GETTEXT_MSGMERGE_EXECUTABLE} --quiet --update --backup=none -s ${_absFile} ${_absPotFile}
-				COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o ${_gmoFile} ${_absFile}
-				${_extraCommands}
-				DEPENDS ${_absPotFile} ${_absFile} )
+				${_compileCommand}
+				DEPENDS ${_absPotFile} ${_absFile}
+			)
 		ELSE (CMAKE_BUILD_PO)
-			ADD_CUSTOM_COMMAND( OUTPUT ${_gmoFile}
-				COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o ${_gmoFile} ${_absFile}
-				${_extraCommands}
-				DEPENDS ${_absPotFile} ${_absFile} )
+			ADD_CUSTOM_COMMAND(OUTPUT ${_moFile}
+				COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${_lang}
+				${_compileCommand}
+				DEPENDS ${_absFile}
+			)
 		ENDIF (CMAKE_BUILD_PO)
 
-		IF (PACKAGE_MODE)
-			INSTALL(FILES ${_gmoFile} DESTINATION ${CMAKE_INSTALL_DATADIR}/PCSX2/resources/locale/${_lang} RENAME ${_potBasename}.mo)
-		ELSE (PACKAGE_MODE)
-			INSTALL(FILES ${_gmoFile} DESTINATION ${CMAKE_SOURCE_DIR}/bin/resources/locale/${_lang} RENAME ${_potBasename}.mo)
-		ENDIF (PACKAGE_MODE)
+		IF(APPLE)
+			set_source_files_properties(${_moFile} TARGET_DIRECTORY PCSX2 PROPERTIES
+				MACOSX_PACKAGE_LOCATION Resources/locale/${_lang}
+				GENERATED 1
+			)
+			target_sources(PCSX2 PRIVATE ${_moFile})
+			source_group(Resources/locale/${__lang} FILES ${_moFile})
+		ELSEIF(PACKAGE_MODE)
+			INSTALL(FILES ${_moFile} DESTINATION ${CMAKE_INSTALL_DATADIR}/PCSX2/resources/locale/${_lang})
+		ELSE()
+			INSTALL(FILES ${_moFile} DESTINATION ${CMAKE_SOURCE_DIR}/bin/resources/locale/${_lang})
+		ENDIF()
 
-		SET(_gmoFiles ${_gmoFiles} ${_gmoFile})
+		LIST(APPEND _moFiles ${_moFile})
 
-	ENDFOREACH (_currentPoFile )
+	ENDFOREACH (_currentPoFile)
 
-	IF(NOT LINUX_PACKAGE)
-		ADD_CUSTOM_TARGET(translations_${_potBasename} ${_addToAll} DEPENDS ${_gmoFiles})
-	ENDIF(NOT LINUX_PACKAGE)
+	if(APPLE)
+		# CMake doesn't properly add dependencies because PCSX2 is not in the same directory as locales
+		add_custom_target(translations_${_potBasename} DEPENDS ${_moFiles})
+		add_dependencies(PCSX2 translations_${_potBasename})
+	ELSEIF(NOT LINUX_PACKAGE)
+		ADD_CUSTOM_TARGET(translations_${_potBasename} ${_addToAll} DEPENDS ${_moFiles})
+	ENDIF()
 
-ENDMACRO(GETTEXT_CREATE_TRANSLATIONS_PCSX2 )
+ENDMACRO(GETTEXT_CREATE_TRANSLATIONS_PCSX2)
