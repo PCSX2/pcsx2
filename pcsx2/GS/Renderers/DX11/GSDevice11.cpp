@@ -969,7 +969,7 @@ void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	{
 		try
 		{
-			std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/dx11/fxaa.fx");
+			std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/common/fxaa.fx");
 			if (shader.has_value())
 			{
 				ShaderMacro sm(m_shader.model);

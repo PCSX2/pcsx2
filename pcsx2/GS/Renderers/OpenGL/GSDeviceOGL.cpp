@@ -1611,7 +1611,7 @@ void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 		std::string fxaa_macro = "#define FXAA_GLSL_130 1\n";
 		fxaa_macro += "#extension GL_ARB_gpu_shader5 : enable\n";
 
-		std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/opengl/fxaa.fx");
+		std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/common/fxaa.fx");
 		if (!shader.has_value())
 			return;
 
