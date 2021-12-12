@@ -205,34 +205,6 @@ bool GSRenderer::Merge(int field)
 		src_hw[i] = (GSVector4(r) + GSVector4(0, y_offset[i], 0, y_offset[i])) * scale / GSVector4(tex[i]->GetSize()).xyxy();
 
 		GSVector2 off(0);
-		GSVector2i display_diff(dr[i].left - display_baseline.x, dr[i].top - display_baseline.y);
-		GSVector2i frame_diff(fr[i].left - frame_baseline.x, fr[i].top - frame_baseline.y);
-
-		// Time Crisis 2/3 uses two side by side images when in split screen mode.
-		// Though ignore cases where baseline and display rectangle offsets only differ by 1 pixel, causes blurring and wrong resolution output on FFXII
-		if (display_diff.x > 2)
-		{
-			off.x = tex[i]->GetScale().x * display_diff.x;
-		}
-		// If the DX offset is too small then consider the status of frame memory offsets, prevents blurring on Tenchu: Fatal Shadows, Worms 3D
-		else if (display_diff.x != frame_diff.x)
-		{
-			off.x = tex[i]->GetScale().x * frame_diff.x;
-		}
-
-		if (display_diff.y >= 4) // Shouldn't this be >= 2?
-		{
-			off.y = tex[i]->GetScale().y * display_diff.y;
-
-			if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
-			{
-				off.y /= 2;
-			}
-		}
-		else if (display_diff.y != frame_diff.y)
-		{
-			off.y = tex[i]->GetScale().y * frame_diff.y;
-		}
 
 		dst[i] = GSVector4(off).xyxy() + scale * GSVector4(r.rsize());
 
