@@ -22,7 +22,6 @@
 #include "Renderers/Null/GSRendererNull.h"
 #include "Renderers/Null/GSDeviceNull.h"
 #include "Renderers/OpenGL/GSDeviceOGL.h"
-#include "Renderers/OpenGL/GSRendererOGL.h"
 #include "Renderers/HW/GSRendererNew.h"
 #include "GSLzma.h"
 
@@ -31,7 +30,6 @@
 
 #ifdef _WIN32
 
-#include "Renderers/DX11/GSRendererDX11.h"
 #include "Renderers/DX11/GSDevice11.h"
 #include "GS/Renderers/DX11/D3D.h"
 
