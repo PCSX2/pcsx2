@@ -1,7 +1,3 @@
 #!/bin/bash
 
-ln -sf $APPDIR/usr/bin/app /tmp/PCSX2 
-
 $APPDIR/AppRun-patched
-
-unlink /tmp/PCSX2
