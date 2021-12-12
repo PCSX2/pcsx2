@@ -62,8 +62,8 @@ MACRO(GETTEXT_CREATE_TRANSLATIONS_PCSX2 _potFile _firstPoFileArg)
 			SET(_mnemonicless "${CMAKE_BINARY_DIR}/${_lang}__${_gmoBase}.nomnemonic.po")
 			SET(_extraCommands
 				COMMAND sed -e "\"s/[(]&[A-Za-z][)]//g\"" "${_absFile}" > "${_mnemonicless}"
-				COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PCSX2>/../Resources/${_lang}/"
-				COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o "$<TARGET_FILE_DIR:PCSX2>/../Resources/${_lang}/${_potBasename}.mo" ${_mnemonicless})
+				COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PCSX2>/../Resources/locale/${_lang}/"
+				COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o "$<TARGET_FILE_DIR:PCSX2>/../Resources/locale/${_lang}/${_potBasename}.mo" ${_mnemonicless})
 		ELSE (APPLE)
 			SET(_extraCommands)
 		ENDIF (APPLE)
@@ -86,9 +86,9 @@ MACRO(GETTEXT_CREATE_TRANSLATIONS_PCSX2 _potFile _firstPoFileArg)
 		ENDIF (CMAKE_BUILD_PO)
 
 		IF (PACKAGE_MODE)
-			INSTALL(FILES ${_gmoFile} DESTINATION ${CMAKE_INSTALL_LOCALEDIR}/${_lang}/LC_MESSAGES RENAME ${_potBasename}.mo)
+			INSTALL(FILES ${_gmoFile} DESTINATION ${CMAKE_INSTALL_DATADIR}/PCSX2/resources/locale/${_lang} RENAME ${_potBasename}.mo)
 		ELSE (PACKAGE_MODE)
-			INSTALL(FILES ${_gmoFile} DESTINATION ${CMAKE_SOURCE_DIR}/bin/Langs/${_lang} RENAME ${_potBasename}.mo)
+			INSTALL(FILES ${_gmoFile} DESTINATION ${CMAKE_SOURCE_DIR}/bin/resources/locale/${_lang} RENAME ${_potBasename}.mo)
 		ENDIF (PACKAGE_MODE)
 
 		SET(_gmoFiles ${_gmoFiles} ${_gmoFile})

@@ -49,7 +49,6 @@ chmod a+x ./squashfs-root/usr/optional/exec.so
 echo "$name" > "$GITHUB_WORKSPACE"/squashfs-root/version.txt
 mkdir -p "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/app
 mkdir -p "$GITHUB_WORKSPACE"/squashfs-root/apprun-hooks
-cp -r "$GITHUB_WORKSPACE"/bin/Langs "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/
 cp -r "$GITHUB_WORKSPACE"/bin/resources "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/app/
 cp "$GITHUB_WORKSPACE"/bin/docs/{Configuration_Guide.pdf,PCSX2_FAQ.pdf} "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/app
 cp /usr/lib/$LIBARCH/libthai.so.0 "$GITHUB_WORKSPACE"/squashfs-root/usr/lib/

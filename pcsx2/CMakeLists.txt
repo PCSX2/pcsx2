@@ -1641,6 +1641,9 @@ foreach(path IN LISTS RESOURCE_FILES)
 	if (NOT WIN32 AND "${path}" MATCHES "/dx11/") # Don't include unneccessary stuff
 		continue()
 	endif()
+	if ((GETTEXT_FOUND OR NO_TRANSLATION) AND "${path}" MATCHES "/locale/") # Generate locales with gettext instead of copying them from bin
+		continue()
+	endif()
 	pcsx2_resource(${path} ${CMAKE_SOURCE_DIR}/bin/resources/)
 endforeach()
 
