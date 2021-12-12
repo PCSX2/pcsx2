@@ -26041,6 +26041,13 @@ SLPM-66398:
 SLPM-66399:
   name: "Samurai 7 [Limited Edition]"
   region: "NTSC-J"
+  patches:
+    836F4606:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,00157F78,word,10000003
 SLPM-66400:
   name: "Samurai 7"
   region: "NTSC-J"
@@ -28699,6 +28706,15 @@ SLPS-20187:
   name: "Black Matrix 2"
   region: "NTSC-J"
   compat: 5
+SLPS-20190:
+  name: "Netsu Chu! Pro Yakyuu 2002"
+  region: "NTSC-J"
+  patches:
+    78E100AD:
+      content: |-
+        author=Prafull
+        comment=fixes hang before ingame
+        patch=1,EE,001022c0,word,00000000
 SLPS-20194:
   name: "Underwater Unit"
   region: "NTSC-J"
@@ -28786,7 +28802,7 @@ SLPS-20272:
   region: "NTSC-J"
   compat: 5
 SLPS-20273:
-  name: "Netsu Chu! Pro Baseball 2003"
+  name: "Netsu Chu! Pro Yakyuu 2003"
   region: "NTSC-J"
   patches:
     34fb1fb7:
@@ -28872,8 +28888,14 @@ SLPS-20321:
   region: "NTSC-J"
   compat: 5
 SLPS-20322:
-  name: "Netsu Chu! Pro Baseball 2003 Fall"
+  name: "Netsu Chu! Pro Yakyuu 2003: Aki no Night Matsuri"
   region: "NTSC-J"
+  patches:
+    D3DAF7F4:
+      content: |-
+        author=Prafull
+        comment=fixes hang before ingame
+        patch=1,EE,00102398,word,00000000
 SLPS-20323:
   name: "Pochi to Nyaa"
   region: "NTSC-J"
