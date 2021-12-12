@@ -1469,6 +1469,28 @@ if(COMMAND target_precompile_headers)
 	target_precompile_headers(PCSX2_FLAGS INTERFACE PrecompiledHeader.h)
 endif()
 
+# Copy resource files if needed
+function(pcsx2_resource path basedir)
+	get_filename_component(dir ${path} DIRECTORY)
+	file(RELATIVE_PATH subdir ${basedir} ${dir})
+	if(APPLE)
+		target_sources(PCSX2 PRIVATE ${path})
+		set_source_files_properties(${path} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/${subdir})
+	elseif(PACKAGE_MODE)
+		install(FILES ${path} DESTINATION ${CMAKE_INSTALL_DATADIR}/PCSX2/resources/${subdir})
+	endif()
+	source_group(Resources/${subdir} FILES ${path})
+endfunction()
+
+file(GLOB_RECURSE RESOURCE_FILES ${CMAKE_SOURCE_DIR}/bin/resources/*)
+foreach(path IN LISTS RESOURCE_FILES)
+	get_filename_component(file ${path} NAME)
+	if("${file}" MATCHES "^\\.") # Don't copy macOS garbage (mainly Finder's .DS_Store files) into application
+		continue()
+	endif()
+	pcsx2_resource(${path} ${CMAKE_SOURCE_DIR}/bin/resources/)
+endforeach()
+
 if (APPLE)
 	# MacOS defaults to having a maximum protection of the __DATA segment of rw (non-executable)
 	# We have a bunch of page-sized arrays in bss that we use for jit
@@ -1481,22 +1503,7 @@ if (APPLE)
 		OUTPUT_NAME PCSX2
 	)
 
-	target_sources(PCSX2 PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/gui/Resources/PCSX2.icns")
-	set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/gui/Resources/PCSX2.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-
-	# Add in shaders and other resources.
-	file(GLOB resource_files "${CMAKE_SOURCE_DIR}/bin/resources/*")
-	foreach(file ${resource_files})
-		target_sources(PCSX2 PRIVATE "${file}")
-		set_source_files_properties("${file}" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-	endforeach()
-
-	# Add in shaders and other resources.
-	file(GLOB resource_files "${CMAKE_SOURCE_DIR}/bin/resources/*")
-	foreach(file ${resource_files})
-		target_sources(PCSX2 PRIVATE "${file}")
-		set_source_files_properties("${file}" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-	endforeach()
+	pcsx2_resource(${CMAKE_CURRENT_SOURCE_DIR}/gui/Resources/PCSX2.icns ${CMAKE_CURRENT_SOURCE_DIR}/gui/Resources)
 
 	# If they say to skip postprocess bundle, leave the target in but make it so they have
 	# to manually run it
@@ -1541,5 +1548,4 @@ source_group(System/Ps2/USB REGULAR_EXPRESSION USB/*)
 source_group(Resources/GUI FILES ${pcsx2GuiResources})
 source_group(Resources/PAD FILES ${pcsx2PADResources})
 source_group(Resources/Recording FILES ${pcsx2RecordingVirtualPadResources})
-source_group(Resources FILES gui/Resources/PCSX2.icns)
 source_group(Resources REGULAR_EXPRESSION ${CMAKE_CURRENT_BINARY_DIR}/*)
