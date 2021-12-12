@@ -1488,6 +1488,9 @@ foreach(path IN LISTS RESOURCE_FILES)
 	if("${file}" MATCHES "^\\.") # Don't copy macOS garbage (mainly Finder's .DS_Store files) into application
 		continue()
 	endif()
+	if (NOT WIN32 AND "${path}" MATCHES "/dx11/") # Don't include unneccessary stuff
+		continue()
+	endif()
 	pcsx2_resource(${path} ${CMAKE_SOURCE_DIR}/bin/resources/)
 endforeach()
 
