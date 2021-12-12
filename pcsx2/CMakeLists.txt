@@ -1653,6 +1653,10 @@ if (NOT APPLE)
 	)
 endif()
 
+if(APPLE AND NOT GETTEXT_FOUND AND NOT NO_TRANSLATION AND NOT PCSX2_CORE)
+	message(FATAL_ERROR "MacOS cannot use the precompiled translation files.  Please install gettext or disable translations with NO_TRANSLATION")
+endif()
+
 # Translation files
 # CMake is dumb and can't properly associate custom command outputs with targets if they're made in different directories
 # So this has to be here (and not in a CMakeLists.txt file in locales/)
