@@ -155,8 +155,8 @@ void GSClut::Write(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
 	m_write.TEX0 = TEX0;
 	m_write.TEXCLUT = TEXCLUT;
-	m_write.dirty = false;
 	m_read.dirty = true;
+	m_write.dirty = false;
 
 	(this->*m_wc[TEX0.CSM][TEX0.CPSM][TEX0.PSM])(TEX0, TEXCLUT);
 }

@@ -2546,8 +2546,13 @@ __forceinline void GSState::VertexKick(u32 skip)
 			__assume(0);
 	}
 
-	if (auto_flush && PRIM->TME && (m_context->FRAME.Block() == m_context->TEX0.TBP0))
-		FlushPrim();
+	if (m_context->FRAME.FBMSK != 0xFFFFFFFF)
+	{
+		m_mem.m_clut.Invalidate(m_context->FRAME.Block());
+
+		if (auto_flush && PRIM->TME && (m_context->FRAME.Block() == m_context->TEX0.TBP0))
+			FlushPrim();
+	}
 }
 
 void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFRegCLAMP& CLAMP, bool linear)
