@@ -232,6 +232,10 @@ if(NOT USE_SYSTEM_YAML)
 	endif()
 endif()
 
+if(QT_BUILD)
+	find_package(Qt6 COMPONENTS Core Gui Widgets Network LinguistTools REQUIRED)
+endif()
+
 add_subdirectory(3rdparty/libchdr/libchdr EXCLUDE_FROM_ALL)
 
 if(USE_NATIVE_TOOLS)

@@ -1,0 +1,15 @@
+[Icon Theme]
+Name=Black Icon Theme
+Comment=Black Icon Theme
+
+[16]
+Size=16
+Type=Fixed
+
+[32]
+Size=32
+Type=Fixed
+
+[64]
+Size=64
+Type=Fixed
