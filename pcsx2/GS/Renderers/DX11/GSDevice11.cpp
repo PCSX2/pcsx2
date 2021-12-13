@@ -1524,17 +1524,6 @@ static GSDevice11::PSConstantBuffer convertCB(const GSHWDrawConfig::PSConstantBu
 	return out;
 }
 
-static GSDevice11::OMDepthStencilSelector convertSel(GSHWDrawConfig::DepthStencilSelector sel)
-{
-	GSDevice11::OMDepthStencilSelector out;
-	out.zwe = sel.zwe;
-	out.ztst = sel.ztst;
-	out.date = sel.date;
-	out.date_one = sel.date_one;
-	out.fba = 0; // No longer seems to be in use?
-	return out;
-}
-
 static GSDevice11::OMBlendSelector convertSel(GSHWDrawConfig::ColorMaskSelector cm, GSHWDrawConfig::BlendState blend)
 {
 	GSDevice11::OMBlendSelector out;
@@ -1546,89 +1535,29 @@ static GSDevice11::OMBlendSelector convertSel(GSHWDrawConfig::ColorMaskSelector 
 	return out;
 }
 
-static GSDevice11::VSSelector convertSel(GSHWDrawConfig::VSSelector sel)
+/// Checks that we weren't sent things we declared we don't support
+/// Clears things we don't support that can be quietly disabled
+static void preprocessSel(GSDevice11::PSSelector& sel)
 {
-	GSDevice11::VSSelector out;
-	out.tme = sel.tme;
-	out.fst = sel.fst;
-	return out;
+	ASSERT(sel.date      == 0); // In-shader destination alpha not supported and shouldn't be sent
+	ASSERT(sel.write_rg  == 0); // Not supported, shouldn't be sent
+	ASSERT(sel.tex_is_fb == 0); // Not supported, shouldn't be sent
+	sel.iip           = 0; // Handled in GS, not PS in DX11
+	sel.automatic_lod = 0; // Not currently supported in DX11
+	sel.manual_lod    = 0; // Not currently supported in DX11
 }
 
-static GSDevice11::PSSelector convertSel(GSHWDrawConfig::PSSelector sel)
+static void preprocessSel(GSDevice11::PSSamplerSelector& sel)
 {
-	GSDevice11::PSSelector out;
-	out.fmt     = sel.pal_fmt << 2 | sel.aem_fmt;
-	out.dfmt    = sel.dfmt;
-	out.depth_fmt = sel.depth_fmt;
-	out.aem     = sel.aem;
-	out.fba     = sel.fba;
-	out.fog     = sel.fog;
-	out.atst    = sel.atst;
-	out.fst     = sel.fst;
-	out.tfx     = sel.tfx;
-	out.tcc     = sel.tcc;
-	out.wms     = sel.wms;
-	out.wmt     = sel.wmt;
-	out.ltf     = sel.ltf;
-	out.shuffle = sel.shuffle;
-	out.read_ba = sel.read_ba;
-	out.fbmask  = sel.fbmask;
-	out.hdr     = sel.hdr;
-	out.blend_a = sel.blend_a;
-	out.blend_b = sel.blend_b;
-	out.blend_c = sel.blend_c;
-	out.blend_d = sel.blend_d;
-	out.clr1    = sel.clr1;
-	out.colclip = sel.colclip;
-	out.pabe    = sel.pabe;
-	out.channel = sel.channel;
-	out.dither  = sel.dither;
-	out.zclamp  = sel.zclamp;
-	out.tcoffsethack       = sel.tcoffsethack;
-	out.urban_chaos_hle    = sel.urban_chaos_hle;
-	out.tales_of_abyss_hle = sel.tales_of_abyss_hle;
-	out.point_sampler      = sel.point_sampler;
-	out.invalid_tex0       = sel.invalid_tex0;
-	return out;
-}
-
-static GSDevice11::GSSelector convertSel(GSHWDrawConfig::GSSelector sel)
-{
-	GSDevice11::GSSelector out;
-	out.iip = sel.iip;
-	switch (sel.topology)
-	{
-		case GSHWDrawConfig::GSTopology::Point:
-			out.point = sel.expand;
-			out.prim = GS_POINT_CLASS;
-			break;
-		case GSHWDrawConfig::GSTopology::Line:
-			out.line = sel.expand;
-			out.prim = GS_LINE_CLASS;
-			break;
-		case GSHWDrawConfig::GSTopology::Triangle:
-			out.prim = GS_TRIANGLE_CLASS;
-			break;
-		case GSHWDrawConfig::GSTopology::Sprite:
-			out.cpu_sprite = !sel.expand;
-			out.prim = GS_SPRITE_CLASS;
-			break;
-	}
-	return out;
-}
-
-static GSDevice11::PSSamplerSelector convertSel(GSHWDrawConfig::SamplerSelector sel)
-{
-	GSDevice11::PSSamplerSelector out;
-	out.tau = sel.tau;
-	out.tav = sel.tav;
-	out.ltf = sel.biln;
-	return out;
+	sel.aniso = 0; // Not currently supported
+	sel.triln = 0; // Not currently supported
 }
 
 void GSDevice11::RenderHW(GSHWDrawConfig& config)
 {
 	ASSERT(!config.require_full_barrier); // We always specify no support so it shouldn't request this
+	preprocessSel(config.ps);
+	preprocessSel(config.sampler);
 
 	if (config.destination_alpha != GSHWDrawConfig::DestinationAlphaMode::Off)
 	{
@@ -1693,10 +1622,10 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	const GSConstantBuffer cb_gs = convertCBGS(config.cb_vs);
 	PSConstantBuffer cb_ps = convertCB(config.cb_ps, config.ps.atst);
 
-	SetupOM(convertSel(config.depth), convertSel(config.colormask, config.blend), config.blend.factor);
-	SetupVS(convertSel(config.vs), &cb_vs);
-	SetupGS(convertSel(config.gs), &cb_gs);
-	SetupPS(convertSel(config.ps), &cb_ps, convertSel(config.sampler));
+	SetupOM(config.depth, convertSel(config.colormask, config.blend), config.blend.factor);
+	SetupVS(config.vs, &cb_vs);
+	SetupGS(config.gs, &cb_gs);
+	SetupPS(config.ps, &cb_ps, config.sampler);
 
 	OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
 
@@ -1704,12 +1633,13 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	if (config.alpha_second_pass.enable)
 	{
+		preprocessSel(config.alpha_second_pass.ps);
 		if (config.cb_ps != config.alpha_second_pass.cb_ps)
 		{
 			cb_ps = convertCB(config.alpha_second_pass.cb_ps, config.alpha_second_pass.ps.atst);
 		}
-		SetupPS(convertSel(config.alpha_second_pass.ps), &cb_ps, convertSel(config.sampler));
-		SetupOM(convertSel(config.alpha_second_pass.depth), convertSel(config.alpha_second_pass.colormask, config.blend), config.blend.factor);
+		SetupPS(config.alpha_second_pass.ps, &cb_ps, config.sampler);
+		SetupOM(config.alpha_second_pass.depth, convertSel(config.alpha_second_pass.colormask, config.blend), config.blend.factor);
 
 		DrawIndexedPrimitive();
 	}
