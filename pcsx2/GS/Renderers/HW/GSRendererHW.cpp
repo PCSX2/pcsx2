@@ -1009,7 +1009,6 @@ void GSRendererHW::SwSpriteRender()
 	}
 
 	m_tc->InvalidateVideoMem(dpo, m_r);
-	m_mem.m_clut.Invalidate();
 }
 
 bool GSRendererHW::CanUseSwSpriteRender()
@@ -2279,7 +2278,6 @@ bool GSRendererHW::OI_PointListPalette(GSTexture* rt, GSTexture* ds, GSTextureCa
 			m_mem.WritePixel32(x, y, c, FBP, FBW);
 		}
 		m_tc->InvalidateVideoMem(m_context->offset.fb, m_r);
-		m_mem.m_clut.Invalidate();
 		return false;
 	}
 	return true;
