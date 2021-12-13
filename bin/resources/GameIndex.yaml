@@ -9502,6 +9502,8 @@ SLES-51145:
 SLES-51150:
   name: "Scrabble Interactive - 2003 Edition"
   region: "PAL-M3"
+  clampModes:
+    vuClampMode: 0 # Fixes missing UI and game elements.
 SLES-51151:
   name: "NHL 2003"
   region: "PAL-M6"
@@ -13131,6 +13133,14 @@ SLES-53021:
 SLES-53022:
   name: "ESPN NBA 2K5"
   region: "PAL-E"
+  gameFixes:
+    - SkipMPEGHack # Fixes videos.
+  patches:
+    CA37B42E:
+      content: |-
+        author=Prafull
+        comment=fixes hang at start
+        patch=1,EE,0034DA98,word,00000000  
 SLES-53023:
   name: "RTL Ski Jump 2005"
   region: "PAL-E-G"
@@ -14549,6 +14559,12 @@ SLES-53686:
 SLES-53687:
   name: "NBA 2K6"
   region: "PAL-M5"
+  patches:
+    04808D11:
+      content: |-
+        author=Prafull
+        comment=fixes hang at start
+        patch=1,EE,00441ff8,word,00000000
 SLES-53689:
   name: "World Poker Tour 2K6"
   region: "PAL-M3"
@@ -15650,6 +15666,12 @@ SLES-54209:
 SLES-54210:
   name: "NBA 2K7"
   region: "PAL-M5"
+  patches:
+    04808D11:
+      content: |-
+        author=Prafull
+        comment=fixes hang at start
+        patch=1,EE,0044f0f8,word,00000000
 SLES-54211:
   name: "NHL 2K7"
   region: "PAL-M5"
@@ -26242,6 +26264,12 @@ SLPM-66450:
 SLPM-66451:
   name: "Major League Baseball 2K6"
   region: "NTSC-J"
+  patches:
+    F0393708:
+      content: |-
+        author=Prafull
+        comment=fixes hang at start
+        patch=1,EE,0035d8b8,word,00000000
 SLPM-66452:
   name: "Kamaitachi no Yoru 3"
   region: "NTSC-J"
@@ -39434,6 +39462,12 @@ SLUS-21560:
 SLUS-21561:
   name: "Major League Baseball 2K7"
   region: "NTSC-U"
+  patches:
+    73D6D171:
+      content: |-
+        author=Prafull
+        comment=fixes hang at start
+        patch=1,EE,003CDE10,word,00000000
 SLUS-21563:
   name: "Horsez"
   region: "NTSC-U"
@@ -40732,6 +40766,12 @@ SLUS-21870:
 SLUS-21871:
   name: "Major League Baseball 2K9"
   region: "NTSC-U"
+  patches:
+    72905002:
+      content: |-
+        author=Prafull
+        comment=fixes hang at start
+        patch=1,EE,003CC5D8,word,00000000
 SLUS-21872:
   name: "MTV Pimp my Ride - Street Racing"
   region: "NTSC-U"
