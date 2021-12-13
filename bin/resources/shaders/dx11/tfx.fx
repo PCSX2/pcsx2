@@ -12,15 +12,14 @@
 #ifndef GS_IIP
 #define GS_IIP 0
 #define GS_PRIM 3
-#define GS_POINT 0
-#define GS_LINE 0
+#define GS_EXPAND 0
 #endif
 
 #ifndef PS_FST
 #define PS_FST 0
 #define PS_WMS 0
 #define PS_WMT 0
-#define PS_FMT FMT_32
+#define PS_AEM_FMT FMT_32
 #define PS_AEM 0
 #define PS_TFX 0
 #define PS_TCC 1
@@ -54,7 +53,6 @@
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
-#define PS_AEM_FMT (PS_FMT & 3)
 
 struct VS_INPUT
 {
@@ -846,7 +844,7 @@ VS_OUTPUT vs_main(VS_INPUT input)
 // Geometry Shader
 //////////////////////////////////////////////////////////////////////
 
-#if GS_PRIM == 0 && GS_POINT == 0
+#if GS_PRIM == 0 && GS_EXPAND == 0
 
 [maxvertexcount(1)]
 void gs_main(point VS_OUTPUT input[1], inout PointStream<VS_OUTPUT> stream)
@@ -854,7 +852,7 @@ void gs_main(point VS_OUTPUT input[1], inout PointStream<VS_OUTPUT> stream)
 	stream.Append(input[0]);
 }
 
-#elif GS_PRIM == 0 && GS_POINT == 1
+#elif GS_PRIM == 0 && GS_EXPAND == 1
 
 [maxvertexcount(6)]
 void gs_main(point VS_OUTPUT input[1], inout TriangleStream<VS_OUTPUT> stream)
@@ -891,7 +889,7 @@ void gs_main(point VS_OUTPUT input[1], inout TriangleStream<VS_OUTPUT> stream)
 	stream.Append(Point);
 }
 
-#elif GS_PRIM == 1 && GS_LINE == 0
+#elif GS_PRIM == 1 && GS_EXPAND == 0
 
 [maxvertexcount(2)]
 void gs_main(line VS_OUTPUT input[2], inout LineStream<VS_OUTPUT> stream)
@@ -904,7 +902,7 @@ void gs_main(line VS_OUTPUT input[2], inout LineStream<VS_OUTPUT> stream)
 	stream.Append(input[1]);
 }
 
-#elif GS_PRIM == 1 && GS_LINE == 1
+#elif GS_PRIM == 1 && GS_EXPAND == 1
 
 [maxvertexcount(6)]
 void gs_main(line VS_OUTPUT input[2], inout TriangleStream<VS_OUTPUT> stream)

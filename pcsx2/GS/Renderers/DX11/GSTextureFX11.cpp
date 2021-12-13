@@ -93,7 +93,7 @@ bool GSDevice11::CreateTextureFX()
 
 void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 {
-	auto i = std::as_const(m_vs).find(sel);
+	auto i = std::as_const(m_vs).find(sel.key);
 
 	if (i == m_vs.end())
 	{
@@ -116,9 +116,7 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 		GSVertexShader11 vs;
 		CreateShader(m_tfx_source, "tfx.fx", nullptr, "vs_main", sm.GetPtr(), &vs.vs, layout, std::size(layout), vs.il.put());
 
-		m_vs[sel] = vs;
-
-		i = m_vs.try_emplace(sel, std::move(vs)).first;
+		i = m_vs.try_emplace(sel.key, std::move(vs)).first;
 	}
 
 	if (m_vs_cb_cache.Update(cb))
@@ -135,11 +133,11 @@ void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
 {
 	wil::com_ptr_nothrow<ID3D11GeometryShader> gs;
 
-	const bool unscale_pt_ln = (sel.point == 1 || sel.line == 1);
+	const bool flat_shading_needs_gs = sel.topology == GSHWDrawConfig::GSTopology::Line || sel.topology == GSHWDrawConfig::GSTopology::Triangle;
 	// Geometry shader is disabled if sprite conversion is done on the cpu (sel.cpu_sprite).
-	if ((sel.prim > 0 && sel.cpu_sprite == 0 && (sel.iip == 0 || sel.prim == 3)) || unscale_pt_ln)
+	if (sel.expand || (sel.iip == 0 && flat_shading_needs_gs))
 	{
-		const auto i = std::as_const(m_gs).find(sel);
+		const auto i = std::as_const(m_gs).find(sel.key);
 
 		if (i != m_gs.end())
 		{
@@ -150,13 +148,12 @@ void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
 			ShaderMacro sm(m_shader.model);
 
 			sm.AddMacro("GS_IIP", sel.iip);
-			sm.AddMacro("GS_PRIM", sel.prim);
-			sm.AddMacro("GS_POINT", sel.point);
-			sm.AddMacro("GS_LINE", sel.line);
+			sm.AddMacro("GS_PRIM", static_cast<int>(sel.topology));
+			sm.AddMacro("GS_EXPAND", sel.expand);
 
 			CreateShader(m_tfx_source, "tfx.fx", nullptr, "gs_main", sm.GetPtr(), gs.put());
 
-			m_gs[sel] = gs;
+			m_gs[sel.key] = gs;
 		}
 	}
 
@@ -171,7 +168,7 @@ void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
 
 void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSelector ssel)
 {
-	auto i = std::as_const(m_ps).find(sel);
+	auto i = std::as_const(m_ps).find(sel.key);
 
 	if (i == m_ps.end())
 	{
@@ -181,7 +178,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		sm.AddMacro("PS_FST", sel.fst);
 		sm.AddMacro("PS_WMS", sel.wms);
 		sm.AddMacro("PS_WMT", sel.wmt);
-		sm.AddMacro("PS_FMT", sel.fmt);
+		sm.AddMacro("PS_AEM_FMT", sel.aem_fmt);
 		sm.AddMacro("PS_AEM", sel.aem);
 		sm.AddMacro("PS_TFX", sel.tfx);
 		sm.AddMacro("PS_TCC", sel.tcc);
@@ -200,7 +197,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		sm.AddMacro("PS_URBAN_CHAOS_HLE", sel.urban_chaos_hle);
 		sm.AddMacro("PS_DFMT", sel.dfmt);
 		sm.AddMacro("PS_DEPTH_FMT", sel.depth_fmt);
-		sm.AddMacro("PS_PAL_FMT", sel.fmt >> 2);
+		sm.AddMacro("PS_PAL_FMT", sel.pal_fmt);
 		sm.AddMacro("PS_INVALID_TEX0", sel.invalid_tex0);
 		sm.AddMacro("PS_HDR", sel.hdr);
 		sm.AddMacro("PS_COLCLIP", sel.colclip);
@@ -215,7 +212,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps;
 		CreateShader(m_tfx_source, "tfx.fx", nullptr, "ps_main", sm.GetPtr(), ps.put());
 
-		i = m_ps.try_emplace(sel, std::move(ps)).first;
+		i = m_ps.try_emplace(sel.key, std::move(ps)).first;
 	}
 
 	if (m_ps_cb_cache.Update(cb))
@@ -227,12 +224,12 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 
 	if (sel.tfx != 4)
 	{
-		if (!(sel.fmt < 3 && sel.wms < 3 && sel.wmt < 3))
+		if (sel.pal_fmt || sel.wms >= 3 || sel.wmt >= 3)
 		{
-			ssel.ltf = 0;
+			ASSERT(ssel.biln == 0);
 		}
 
-		auto i = std::as_const(m_ps_ss).find(ssel);
+		auto i = std::as_const(m_ps_ss).find(ssel.key);
 
 		if (i != m_ps_ss.end())
 		{
@@ -245,7 +242,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 			memset(&sd, 0, sizeof(sd));
 
 			af.Filter = m_aniso_filter ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-			sd.Filter = ssel.ltf ? af.Filter : D3D11_FILTER_MIN_MAG_MIP_POINT;
+			sd.Filter = ssel.biln ? af.Filter : D3D11_FILTER_MIN_MAG_MIP_POINT;
 
 			sd.AddressU = ssel.tau ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
 			sd.AddressV = ssel.tav ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -257,10 +254,10 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 
 			m_dev->CreateSamplerState(&sd, &ss0);
 
-			m_ps_ss[ssel] = ss0;
+			m_ps_ss[ssel.key] = ss0;
 		}
 
-		if (sel.fmt >= 3)
+		if (sel.pal_fmt)
 		{
 			ss1 = m_palette_ss;
 		}
@@ -273,7 +270,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 
 void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 afix)
 {
-	auto i = std::as_const(m_om_dss).find(dssel);
+	auto i = std::as_const(m_om_dss).find(dssel.key);
 
 	if (i == m_om_dss.end())
 	{
@@ -314,7 +311,7 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 
 		wil::com_ptr_nothrow<ID3D11DepthStencilState> dss;
 		m_dev->CreateDepthStencilState(&dsd, dss.put());
 
-		i = m_om_dss.try_emplace(dssel, std::move(dss)).first;
+		i = m_om_dss.try_emplace(dssel.key, std::move(dss)).first;
 	}
 
 	OMSetDepthStencilState(i->second.get(), 1);
