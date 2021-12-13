@@ -20,6 +20,7 @@
 #include "GSTexture.h"
 #include "GSVertex.h"
 #include "GS/GSAlignedClass.h"
+#include "GS/GSExtra.h"
 #include "GSOsdManager.h"
 #include <array>
 #ifdef _WIN32
@@ -328,7 +329,7 @@ struct GSHWDrawConfig
 		ColorMaskSelector(): key(0xF) {}
 		ColorMaskSelector(u32 c): key(0) { wrgba = c; }
 	};
-	struct VSConstantBuffer
+	struct alignas(16) VSConstantBuffer
 	{
 		GSVector2 vertex_scale;
 		GSVector2 vertex_offset;
@@ -336,8 +337,29 @@ struct GSHWDrawConfig
 		GSVector2 texture_offset;
 		GSVector2 point_size;
 		GSVector2i max_depth;
+		VSConstantBuffer()
+		{
+			memset(this, 0, sizeof(*this));
+		}
+		VSConstantBuffer(const VSConstantBuffer& other)
+		{
+			memcpy(this, &other, sizeof(*this));
+		}
+		VSConstantBuffer& operator=(const VSConstantBuffer& other)
+		{
+			new (this) VSConstantBuffer(other);
+			return *this;
+		}
+		bool operator==(const VSConstantBuffer& other) const
+		{
+			return BitEqual(*this, other);
+		}
+		bool operator!=(const VSConstantBuffer& other) const
+		{
+			return !(*this == other);
+		}
 	};
-	struct PSConstantBuffer
+	struct alignas(16) PSConstantBuffer
 	{
 		union
 		{
@@ -396,6 +418,27 @@ struct GSHWDrawConfig
 
 		GSVector4 half_texel;
 		GSVector4 uv_min_max;
+		PSConstantBuffer()
+		{
+			memset(this, 0, sizeof(*this));
+		}
+		PSConstantBuffer(const PSConstantBuffer& other)
+		{
+			memcpy(this, &other, sizeof(*this));
+		}
+		PSConstantBuffer& operator=(const PSConstantBuffer& other)
+		{
+			new (this) PSConstantBuffer(other);
+			return *this;
+		}
+		bool operator==(const PSConstantBuffer& other) const
+		{
+			return BitEqual(*this, other);
+		}
+		bool operator!=(const PSConstantBuffer& other) const
+		{
+			return !(*this == other);
+		}
 	};
 	struct BlendState
 	{
@@ -466,10 +509,10 @@ struct GSHWDrawConfig
 	struct AlphaSecondPass
 	{
 		bool enable;
-		PSSelector ps;
-		PSConstantBuffer cb_ps;
 		ColorMaskSelector colormask;
 		DepthStencilSelector depth;
+		PSSelector ps;
+		PSConstantBuffer cb_ps;
 	} alpha_second_pass;
 };
 

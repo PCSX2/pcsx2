@@ -2199,7 +2199,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	if (config.alpha_second_pass.enable)
 	{
-		if (0 != memcmp(&config.cb_ps, &config.alpha_second_pass.cb_ps, sizeof(config.cb_ps)))
+		if (config.cb_ps != config.alpha_second_pass.cb_ps)
 		{
 			cb_ps = convertCB(config.alpha_second_pass.cb_ps, config.alpha_second_pass.ps.atst);
 			SetupCB(&cb_vs, &cb_ps);
