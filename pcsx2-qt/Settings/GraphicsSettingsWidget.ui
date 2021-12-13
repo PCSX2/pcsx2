@@ -1,0 +1,997 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GraphicsSettingsWidget</class>
+ <widget class="QWidget" name="GraphicsSettingsWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>747</width>
+    <height>890</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Renderer</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Renderer:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="renderer"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Adapter:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="adapter"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTabWidget" name="hardwareRendererGroup">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <property name="documentMode">
+      <bool>true</bool>
+     </property>
+     <widget class="QGroupBox" name="gameDisplayTab">
+      <attribute name="title">
+       <string>Display</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout_7">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_28">
+         <property name="text">
+          <string>Fullscreen Mode:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="fullscreenModes"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_27">
+         <property name="text">
+          <string>Aspect Ratio:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="aspectRatio">
+         <item>
+          <property name="text">
+           <string>Fit to Window/Screen</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Standard (4:3)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Widescreen (16:9)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_22">
+         <property name="text">
+          <string>FMV Aspect Ratio:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="fmvAspectRatio">
+         <item>
+          <property name="text">
+           <string>Off (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Standard (4:3)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Widescreen (16:9)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_23">
+         <property name="text">
+          <string>Interlacing:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="interlacing">
+         <item>
+          <property name="text">
+           <string>None</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Weave (Top Field First, Sawtooth)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Weave (Bottom Field First, Sawtooth)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Bob (Top Field First)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Bob (Bottom Field First)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Blend (Top Field First, Half FPS)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Blend (Bottom Field First, Half FPS)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Automatic (Default)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_21">
+         <property name="text">
+          <string>Zoom:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QSpinBox" name="zoom">
+         <property name="suffix">
+          <string>%</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>300</number>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_24">
+         <property name="text">
+          <string>Stretch Height:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QSpinBox" name="stretchY">
+         <property name="suffix">
+          <string>%</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>300</number>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_26">
+         <property name="text">
+          <string>Offset:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0,1">
+         <item>
+          <widget class="QSpinBox" name="offsetX">
+           <property name="suffix">
+            <string>px</string>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_25">
+           <property name="text">
+            <string>x</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="offsetY">
+           <property name="suffix">
+            <string>px</string>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="0" colspan="2">
+        <layout class="QGridLayout" name="gridLayout_5">
+         <item row="0" column="2">
+          <widget class="QCheckBox" name="integerScaling">
+           <property name="text">
+            <string>Integer Upscaling</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="bilinearFiltering">
+           <property name="text">
+            <string>Bilinear Filtering</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="vsync">
+           <property name="text">
+            <string>Sync To Host Refresh (VSync)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QCheckBox" name="internalResolutionScreenshots">
+           <property name="text">
+            <string>Internal Resolution Screenshots</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QGroupBox" name="hardwareRenderingTab">
+      <attribute name="title">
+       <string>Rendering</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout_4">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Internal Resolution:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="upscaleMultiplier">
+         <item>
+          <property name="text">
+           <string>Custom</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Native (PS2)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2x Native (~720p)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>3x Native (~1080p)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>4x Native (~1440p/2K)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>5x Native (~1620p)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>6x Native (~2160p/4K)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>7x Native (~2520p)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>8x Native (~2280p)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Mipmapping:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="mipmapping">
+         <item>
+          <property name="text">
+           <string>Automatic (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Off</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Basic (Generated Mipmaps)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Full (PS2 Mipmaps)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_13">
+         <property name="text">
+          <string>Texture Filtering:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="textureFiltering">
+         <item>
+          <property name="text">
+           <string>Nearest</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Bilinear (Forced)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Bilinear (PS2)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Bilinear (Forced excluding sprite)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_11">
+         <property name="text">
+          <string>Trilinear Filtering:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="trilinearFiltering">
+         <item>
+          <property name="text">
+           <string>None (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Trilinear (PS2)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Trilinear (Forced)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Anisotropic Filtering:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QComboBox" name="anisotropicFiltering"/>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Dithering:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QComboBox" name="dithering">
+         <item>
+          <property name="text">
+           <string>Off</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Scaled</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Unscaled (Default)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>CRC Fix Level:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QComboBox" name="crcFixLevel">
+         <item>
+          <property name="text">
+           <string>Automatic (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>None (Debug)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Minimum (Debug)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Partial (OpenGL)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Full (Direct3D)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Aggressive</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="7" column="0">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Blending Accuracy:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QComboBox" name="blending">
+         <item>
+          <property name="text">
+           <string>Minimum (Fastest)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Basic (Recommended)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Medium</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>High</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Full (Very Slow)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Ultra (Ultra Slow)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="8" column="0" colspan="2">
+        <layout class="QGridLayout" name="basicCheckboxGridLayout">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="accurateDATE">
+           <property name="text">
+            <string>Accurate Destination Alpha Test</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="conservativeBufferAllocation">
+           <property name="text">
+            <string>Conservative Buffer Allocation</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="gpuPaletteConversion">
+           <property name="text">
+            <string>GPU Palette Conversion</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="preloadTexture">
+           <property name="text">
+            <string>Preload Textures</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="enableHWFixes">
+           <property name="text">
+            <string>Enable Hardware Renderer Fixes</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QGroupBox" name="hardwareFixesTab">
+      <attribute name="title">
+       <string>Hardware Fixes</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout_2">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>Half Screen Fix:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="halfScreenFix">
+         <item>
+          <property name="text">
+           <string>Automatic (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Force Disabled</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Force Enabled</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_12">
+         <property name="text">
+          <string>Skipdraw Range:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QSpinBox" name="skipDrawRangeStart"/>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="skipDrawRangeCount"/>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="hwAutoFlush">
+           <property name="text">
+            <string>Auto Flush</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="frameBufferConversion">
+           <property name="text">
+            <string>Frame Buffer Conversion</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="disableDepthEmulation">
+           <property name="text">
+            <string>Disable Depth Emulation</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="memoryWrapping">
+           <property name="text">
+            <string>Memory Wrapping</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="disableSafeFeatures">
+           <property name="text">
+            <string>Disable Safe Features</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QCheckBox" name="preloadFrameData">
+           <property name="text">
+            <string>Preload Frame Data</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QCheckBox" name="fastTextureInvalidation">
+           <property name="text">
+            <string>Fast Texture Invalidation</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QGroupBox" name="upscalingFixesTab">
+      <attribute name="title">
+       <string>Upscaling Fixes</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout_5">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_14">
+         <property name="text">
+          <string>Half Pixel Offset:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="halfPixelOffset">
+         <item>
+          <property name="text">
+           <string>Off (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Normal (Vertex)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Special (Texture)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Special (Texture - Aggressive)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_15">
+         <property name="text">
+          <string>Round Sprite:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="roundSprite">
+         <item>
+          <property name="text">
+           <string>Off (Default</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Half</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Full</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_16">
+         <property name="text">
+          <string>Texture Offsets:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,1">
+         <item>
+          <widget class="QLabel" name="label_17">
+           <property name="text">
+            <string>X:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="textureOffsetX"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_18">
+           <property name="text">
+            <string>Y:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="textureOffsetY"/>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="mergeSprite">
+           <property name="text">
+            <string>Merge Sprite</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="alignSprite">
+           <property name="text">
+            <string>Align Sprite</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="wildHack">
+           <property name="text">
+            <string>Wild Arms Hack</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QGroupBox" name="osdTab">
+      <attribute name="title">
+       <string>On-Screen Display</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout_8">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_29">
+         <property name="text">
+          <string>OSD Scale:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSpinBox" name="osdScale">
+         <property name="suffix">
+          <string>%</string>
+         </property>
+         <property name="minimum">
+          <number>100</number>
+         </property>
+         <property name="maximum">
+          <number>500</number>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <layout class="QGridLayout" name="gridLayout_6">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="osdShowMessages">
+           <property name="text">
+            <string>Show Notifications</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="osdShowSpeed">
+           <property name="text">
+            <string>Show Speed</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="osdShowFPS">
+           <property name="text">
+            <string>Show FPS</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="osdShowResolution">
+           <property name="text">
+            <string>Show Resolution</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="osdShowCPU">
+           <property name="text">
+            <string>Show CPU Usage</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QCheckBox" name="osdShowGSStats">
+           <property name="text">
+            <string>Show Statistics</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QGroupBox" name="advancedTab">
+      <attribute name="title">
+       <string>Advanced</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout_6">
+       <item row="0" column="0" colspan="2">
+        <layout class="QGridLayout" name="gridLayout_4">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="useBlitSwapChain">
+           <property name="text">
+            <string>Use Blit Swap Chain</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="useDebugDevice">
+           <property name="text">
+            <string>Use Debug Device</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTabWidget" name="softwareRendererGroup">
+     <property name="documentMode">
+      <bool>true</bool>
+     </property>
+     <widget class="QGroupBox" name="softwareRendererSettings">
+      <attribute name="title">
+       <string>Rendering</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout_3">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Extra Rendering Threads:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSpinBox" name="extraSWThreads">
+         <property name="suffix">
+          <string> threads</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="swAutoFlush">
+           <property name="text">
+            <string>Auto Flush</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="swMipmap">
+           <property name="text">
+            <string>Mipmapping</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="swAA1">
+           <property name="text">
+            <string>Edge Anti-Aliasing</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

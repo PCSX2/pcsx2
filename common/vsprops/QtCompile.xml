@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ProjectSchemaDefinitions xmlns="http://schemas.microsoft.com/build/2009/properties">
+  <ItemType Name="QtResource" DisplayName="Qt Resource File" />
+  <ItemType Name="QtUi" DisplayName="Qt User Interface File" />
+  <ItemType Name="QtMoc" DisplayName="Qt Meta Object File" />
+  <ItemType Name="QtTs" DisplayName="Qt Translation File" />
+  <ContentType Name="QtUi" DisplayName="Qt User Interface Compiler" />
+  <ContentType Name="QtResource" DisplayName="Qt Resource Compiler" />
+  <ContentType Name="QtMoc" DisplayName="Qt Meta Object Compiler" />
+  <ContentType Name="QtTs" DisplayName="Qt Translation Compiler" />
+  <FileExtension Name="*.qrc" ContentType="QtResource" />
+  <FileExtension Name="*.ui" ContentType="QtUi" />
+  <FileExtension Name="*.ts" ContentType="QtTs" />
+</ProjectSchemaDefinitions>

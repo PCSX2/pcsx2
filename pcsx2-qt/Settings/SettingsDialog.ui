@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SettingsDialog</class>
+ <widget class="QDialog" name="SettingsDialog">
+  <property name="windowModality">
+   <enum>Qt::WindowModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>780</width>
+    <height>650</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>PCSX2 Settings</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
+   <item row="0" column="0">
+    <widget class="QListWidget" name="settingsCategory">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>150</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>150</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>32</width>
+       <height>32</height>
+      </size>
+     </property>
+     <item>
+      <property name="text">
+       <string>Interface</string>
+      </property>
+      <property name="icon">
+       <iconset theme="settings-3-line"/>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Game List</string>
+      </property>
+      <property name="icon">
+       <iconset theme="folder-settings-line"/>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>BIOS</string>
+      </property>
+      <property name="icon">
+       <iconset theme="hard-drive-2-line"/>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Emulation</string>
+      </property>
+      <property name="icon">
+       <iconset theme="dashboard-line"/>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>System</string>
+      </property>
+      <property name="icon">
+       <iconset theme="artboard-2-line"/>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Advanced System</string>
+      </property>
+      <property name="icon">
+       <iconset theme="artboard-2-line"/>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Game Fixes</string>
+      </property>
+      <property name="icon">
+       <iconset theme="close-line"/>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Graphics</string>
+      </property>
+      <property name="icon">
+       <iconset theme="brush-line"/>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Audio</string>
+      </property>
+      <property name="icon">
+       <iconset theme="volume-up-line"/>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Memory Cards</string>
+      </property>
+      <property name="icon">
+       <iconset theme="sd-card-line"/>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QStackedWidget" name="settingsContainer">
+     <property name="minimumSize">
+      <size>
+       <width>500</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="page"/>
+     <widget class="QWidget" name="page_2"/>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="QTextEdit" name="helpText">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>120</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>120</height>
+      </size>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QComboBox" name="settingsPreset">
+       <item>
+        <property name="text">
+         <string>Preset: Custom</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Preset: Safe (Default)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Preset: Fast</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="restoreDefaultsButton">
+       <property name="text">
+        <string>Restore Defaults</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeButton">
+       <property name="text">
+        <string>Close</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="../resources/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>
