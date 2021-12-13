@@ -7,9 +7,6 @@
 #define FMT_24 1
 #define FMT_16 2
 
-#define PS_PAL_FMT (PS_TEX_FMT >> 2)
-#define PS_AEM_FMT (PS_TEX_FMT & 3)
-
 // APITRACE_DEBUG enables forced pixel output to easily detect
 // the fragment computed by primitive
 #define APITRACE_DEBUG 0

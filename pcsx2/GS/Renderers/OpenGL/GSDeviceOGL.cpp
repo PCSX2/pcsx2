@@ -586,9 +586,9 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 	// Basic to ensure structures are correctly packed
 	static_assert(sizeof(VSSelector) == 4, "Wrong VSSelector size");
 	static_assert(sizeof(PSSelector) == 8, "Wrong PSSelector size");
-	static_assert(sizeof(PSSamplerSelector) == 4, "Wrong PSSamplerSelector size");
-	static_assert(sizeof(OMDepthStencilSelector) == 4, "Wrong OMDepthStencilSelector size");
-	static_assert(sizeof(OMColorMaskSelector) == 4, "Wrong OMColorMaskSelector size");
+	static_assert(sizeof(PSSamplerSelector) == 1, "Wrong PSSamplerSelector size");
+	static_assert(sizeof(OMDepthStencilSelector) == 1, "Wrong OMDepthStencilSelector size");
+	static_assert(sizeof(OMColorMaskSelector) == 1, "Wrong OMColorMaskSelector size");
 
 	return true;
 }
@@ -880,7 +880,7 @@ GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 
 GLuint GSDeviceOGL::GetSamplerID(PSSamplerSelector ssel)
 {
-	return m_ps_ss[ssel];
+	return m_ps_ss[ssel.key];
 }
 
 GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
@@ -973,7 +973,8 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 	std::string macro = format("#define PS_FST %d\n", sel.fst)
 		+ format("#define PS_WMS %d\n", sel.wms)
 		+ format("#define PS_WMT %d\n", sel.wmt)
-		+ format("#define PS_TEX_FMT %d\n", sel.tex_fmt)
+		+ format("#define PS_AEM_FMT %d\n", sel.aem_fmt)
+		+ format("#define PS_PAL_FMT %d\n", sel.pal_fmt)
 		+ format("#define PS_DFMT %d\n", sel.dfmt)
 		+ format("#define PS_DEPTH_FMT %d\n", sel.depth_fmt)
 		+ format("#define PS_CHANNEL_FETCH %d\n", sel.channel)
@@ -1216,7 +1217,8 @@ void GSDeviceOGL::SelfShaderTest()
 							sel.depth_fmt = depth;
 							sel.ltf       = ltf;
 							sel.aem       = aem;
-							sel.tex_fmt   = fmt;
+							sel.aem_fmt   = fmt & 3;
+							sel.pal_fmt   = fmt >> 2;
 							sel.wms       = wms;
 							sel.wmt       = wmt;
 							std::string file = format("Shader_Ltf_%d__Aem_%d__TFmt_%d__Wms_%d__Wmt_%d__DepthFmt_%d.glsl.asm",
@@ -1930,13 +1932,13 @@ void GSDeviceOGL::SetupCBMisc(const GSVector4i& channel)
 
 void GSDeviceOGL::SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, const PSSelector& psel)
 {
-	auto i = m_ps.find(psel);
+	auto i = m_ps.find(psel.key);
 	GLuint ps;
 
 	if (i == m_ps.end())
 	{
 		ps = CompilePS(psel);
-		m_ps[psel] = ps;
+		m_ps[psel.key] = ps;
 	}
 	else
 	{
@@ -2004,7 +2006,7 @@ void GSDeviceOGL::SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, 
 
 void GSDeviceOGL::SetupSampler(PSSamplerSelector ssel)
 {
-	PSSetSamplerState(m_ps_ss[ssel]);
+	PSSetSamplerState(m_ps_ss[ssel.key]);
 }
 
 GLuint GSDeviceOGL::GetPaletteSamplerID()
@@ -2014,7 +2016,7 @@ GLuint GSDeviceOGL::GetPaletteSamplerID()
 
 void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel)
 {
-	OMSetDepthStencilState(m_om_dss[dssel]);
+	OMSetDepthStencilState(m_om_dss[dssel.key]);
 }
 
 static GSDeviceOGL::VSConstantBuffer convertCB(const GSHWDrawConfig::VSConstantBuffer& cb)
@@ -2130,10 +2132,10 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	// Always bind the RT. This way special effect can use it.
 	PSSetShaderResource(3, config.rt);
 
-	SetupSampler(PSSamplerSelector(config.sampler.key));
+	SetupSampler(config.sampler);
 	OMSetBlendState(config.blend.index, config.blend.factor, config.blend.is_constant, config.blend.is_accumulation, config.blend.is_mixed_hw_sw);
-	OMSetColorMaskState(OMColorMaskSelector(config.colormask.key));
-	SetupOM(OMDepthStencilSelector(config.depth.key));
+	OMSetColorMaskState(config.colormask);
+	SetupOM(config.depth);
 
 	VSConstantBuffer cb_vs = convertCB(config.cb_vs);
 	PSConstantBuffer cb_ps = convertCB(config.cb_ps, config.ps.atst);
@@ -2156,10 +2158,8 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	PSSelector pssel;
-	pssel.key = config.ps.key;
 	const VSSelector vssel = convertSel(config.vs);
-	SetupPipeline(vssel, gssel, pssel);
+	SetupPipeline(vssel, gssel, config.ps);
 
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
 	{
@@ -2184,10 +2184,9 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		// Ask PS to discard shader above the primitiveID max
 		glDepthMask(GLState::depth_mask);
 
-		pssel.date = 3;
 		config.ps.date = 3;
 		config.alpha_second_pass.ps.date = 3;
-		SetupPipeline(vssel, gssel, pssel);
+		SetupPipeline(vssel, gssel, config.ps);
 
 		// Be sure that first pass is finished !
 		Barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
@@ -2204,10 +2203,9 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			cb_ps = convertCB(config.alpha_second_pass.cb_ps, config.alpha_second_pass.ps.atst);
 			SetupCB(&cb_vs, &cb_ps);
 		}
-		pssel.key = config.alpha_second_pass.ps.key;
-		SetupPipeline(vssel, gssel, pssel);
-		OMSetColorMaskState(OMColorMaskSelector(config.alpha_second_pass.colormask.key));
-		SetupOM(OMDepthStencilSelector(config.alpha_second_pass.depth.key));
+		SetupPipeline(vssel, gssel, config.alpha_second_pass.ps);
+		OMSetColorMaskState(config.alpha_second_pass.colormask);
+		SetupOM(config.alpha_second_pass.depth);
 
 		SendHWDraw(config);
 	}
