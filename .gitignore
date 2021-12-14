@@ -76,9 +76,13 @@ oprofile_data/
 /bin/PCSX2-linux.sh
 /bin/*ReplayLoader
 /bin/GS*.txt
+/bin/qt.conf
 /bin/bios
 /bin/cache
+/bin/cheats
+/bin/covers
 /bin/dumps
+/bin/gamesettings
 /bin/help
 /bin/inis
 /bin/logs
@@ -86,6 +90,7 @@ oprofile_data/
 /bin/plugins
 /bin/snaps
 /bin/sstates
+/bin/translations
 /deps
 /ipch
 
