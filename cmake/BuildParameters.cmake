@@ -49,6 +49,7 @@ option(DISABLE_SETCAP "Do not set files capabilities")
 option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
 option(CUBEB_API "Build Cubeb support on SPU2" ON)
 option(GTK2_API "Use GTK2 api (legacy)")
+option(QT_BUILD "Build Qt frontend instead of wx" OFF)
 
 if(UNIX AND NOT APPLE)
 	option(X11_API "Enable X11 support" ON)
@@ -318,6 +319,11 @@ set(PCSX2_WARNINGS ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING})
 
 if(CMAKE_BUILD_STRIP)
 	add_link_options(-s)
+endif()
+
+if(QT_BUILD)
+	# We want the core PCSX2 library.
+	set(PCSX2_CORE TRUE)
 endif()
 
 # Enable special stuff for CI builds

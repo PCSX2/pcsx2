@@ -3,7 +3,15 @@ include(macros/GlibCompileResourcesSupport)
 # All flags, libraries, etc, that are shared between PCSX2 compilation files
 add_library(PCSX2_FLAGS INTERFACE)
 
-add_executable(PCSX2)
+if (NOT PCSX2_CORE)
+	add_executable(PCSX2)
+else()
+	add_library(PCSX2)
+	target_compile_definitions(PCSX2_FLAGS INTERFACE
+		"PCSX2_CORE"
+		"DISABLE_RECORDING"
+	)
+endif()
 target_link_libraries(PCSX2 PRIVATE PCSX2_FLAGS)
 
 target_compile_features(PCSX2_FLAGS INTERFACE cxx_std_17)
@@ -350,7 +358,6 @@ set(pcsx2DEV9Sources
 	DEV9/PacketReader/IP/IP_Packet.cpp
 	DEV9/PacketReader/EthernetFrame.cpp
 	DEV9/PacketReader/NetLib.cpp
-	DEV9/ConfigUI.cpp
 	DEV9/smap.cpp
 	DEV9/DEV9.cpp
 	DEV9/DEV9Config.cpp
@@ -385,6 +392,12 @@ set(pcsx2DEV9Headers
 	DEV9/SimpleQueue.h
 	DEV9/smap.h
 	)
+
+if(NOT PCSX2_CORE)
+	list(APPEND pcsx2DEV9Sources
+		DEV9/ConfigUI.cpp
+	)
+endif()
 
 # USBNull
 set(pcsx2USBNullSources USB/USBNull.cpp)
@@ -474,7 +487,20 @@ if(TARGET PulseAudio::PulseAudio)
 	list(APPEND pcsx2USBHeaders USB/usb-mic/audiodev-pulse.h)
 endif()
 
-if(WIN32)
+if(PCSX2_CORE)
+	# Host PAD
+	set(pcsx2PADSources
+		PAD/Host/KeyStatus.cpp
+		PAD/Host/PAD.cpp
+		PAD/Host/StateManagement.cpp
+	)
+	set(pcsx2PADHeaders
+		PAD/Host/Global.h
+		PAD/Host/KeyStatus.h
+		PAD/Host/PAD.h
+		PAD/Host/StateManagement.h
+	)
+elseif(WIN32)
 	set(pcsx2PADSources
 		PAD/Windows/PADConfig.cpp
 		PAD/Windows/DeviceEnumerator.cpp
@@ -517,7 +543,7 @@ if(WIN32)
 		PAD/Windows/WndProcEater.h
 		PAD/Windows/XInputEnum.h
 	)
-else(WIN32)
+else()
 	# PAD resources pre-compilation
 	set(PADImgHeader "${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/ImgHeader")
 	set(PADImg "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/Img")
@@ -591,7 +617,7 @@ else(WIN32)
 		${PADImgHeader}/arrow_left.h
 		${PADImgHeader}/arrow_right.h
 	)
-endif(WIN32)
+endif()
 
 # GS sources
 set(pcsx2GSSources
@@ -641,7 +667,6 @@ set(pcsx2GSSources
 	GS/Renderers/OpenGL/GSDeviceOGL.cpp
 	GS/Renderers/OpenGL/GSTextureOGL.cpp
 	GS/Window/GSSetting.cpp
-	GS/Window/GSwxDialog.cpp
 	)
 
 # GS headers
@@ -712,7 +737,6 @@ set(pcsx2GSHeaders
 	GS/Window/GSCaptureDlg.h
 	GS/Window/GSDialog.h
 	GS/Window/GSSetting.h
-	GS/Window/GSwxDialog.h
 	)
 
 if(USE_VULKAN)
@@ -726,7 +750,36 @@ if(USE_VULKAN)
 	)
 endif()
 
-if(WIN32)
+if(NOT PCSX2_CORE)
+	list(APPEND pcsx2GSSources
+		GS/Window/GSwxDialog.cpp
+	)
+	list(APPEND pcsx2GSHeaders
+		GS/Window/GSwxDialog.h
+	)
+endif()
+
+if(PCSX2_CORE)
+	list(APPEND pcsx2SPU2Headers
+		SPU2/Host/CfgHelpers.cpp
+		SPU2/Host/Config.cpp
+		SPU2/Host/ConfigDebug.cpp
+		SPU2/Host/ConfigSoundTouch.cpp
+		SPU2/Host/Dialogs.cpp
+	)
+	list(APPEND pcsx2SPU2Headers
+		SPU2/Host/Config.h
+		SPU2/Host/Dialogs.h
+	)
+	if(NOT WIN32)
+		list(APPEND pcsx2SPU2Headers
+			SPU2/WavFile.cpp
+		)
+		list(APPEND pcsx2DEV9Sources
+			DEV9/Linux/Config.cpp
+		)
+	endif()
+elseif(WIN32)
 	list(APPEND pcsx2SPU2Sources
 		SPU2/Windows/CfgHelpers.cpp
 		SPU2/Windows/Config.cpp
@@ -800,7 +853,7 @@ if(WIN32)
 		GS/Renderers/DX11/GSDevice11.h
 		GS/Renderers/DX11/GSTexture11.h
 	)
-else(WIN32)
+else()
 	list(APPEND pcsx2SPU2Sources
 		SPU2/Linux/CfgHelpers.cpp
 		SPU2/Linux/Config.cpp
@@ -853,7 +906,7 @@ else(WIN32)
 		USB/usb-pad/evdev/evdev.h
 		USB/usb-pad/evdev/shared.h
 	)
-endif(WIN32)
+endif()
 
 
 # DebugTools sources
@@ -920,6 +973,26 @@ if(WIN32)
 	list(APPEND pcsx2FrontendHeaders
 		Frontend/D3D11HostDisplay.h
 	)
+endif()
+
+if(PCSX2_CORE)
+	list(APPEND pcsx2FrontendSources
+		Frontend/GameList.cpp
+		Frontend/INISettingsInterface.cpp
+		Frontend/InputManager.cpp
+		Frontend/InputSource.cpp
+		Frontend/LayeredSettingsInterface.cpp
+		HostSettings.cpp
+		VMManager.cpp
+	)
+	list(APPEND pcsx2FrontendHeaders
+		Frontend/GameList.h
+		Frontend/INISettingsInterface.h
+		Frontend/InputManager.h
+		Frontend/InputSource.h
+		Frontend/LayeredSettingsInterface.h
+		HostSettings.h
+		VMManager.h)
 endif()
 
 # gui sources
@@ -1090,26 +1163,34 @@ set(pcsx2IPUHeaders
 set(pcsx2LinuxSources
 	CDVD/Linux/DriveUtility.cpp
 	CDVD/Linux/IOCtlSrc.cpp
-	Linux/LnxConsolePipe.cpp
-	Linux/LnxKeyCodes.cpp
 	Linux/LnxFlatFileReader.cpp
 	)
 
 set(pcsx2OSXSources
 	CDVD/Linux/DriveUtility.cpp
 	CDVD/Linux/IOCtlSrc.cpp
-	Linux/LnxConsolePipe.cpp
-#	Linux/LnxKeyCodes.cpp
 	Darwin/DarwinFlatFileReader.cpp
 	)
 
 set(pcsx2FreeBSDSources
 	CDVD/Linux/DriveUtility.cpp
 	CDVD/Linux/IOCtlSrc.cpp
-	Linux/LnxConsolePipe.cpp
-	Linux/LnxKeyCodes.cpp
 	Darwin/DarwinFlatFileReader.cpp
 	)
+
+if(NOT PCSX2_CORE)
+	list(APPEND pcsx2LinuxSources
+		Linux/LnxConsolePipe.cpp
+		Linux/LnxKeyCodes.cpp
+	)
+	list(APPEND pcsx2OSXSources
+		Linux/LnxConsolePipe.cpp
+	)
+	list(APPEND pcsx2FreeBSDSources
+		Linux/LnxConsolePipe.cpp
+		Linux/LnxKeyCodes.cpp
+	)
+endif()
 
 # Linux headers
 set(pcsx2LinuxHeaders
@@ -1208,8 +1289,12 @@ set(pcsx2RecordingVirtualPadResources
 
 # System sources
 set(pcsx2SystemSources
-	System/SysCoreThread.cpp
 	System/SysThreadBase.cpp)
+if(NOT PCSX2_CORE)
+	list(APPEND pcsx2SystemSources
+		System/SysCoreThread.cpp
+	)
+endif()
 
 # System headers
 set(pcsx2SystemHeaders
@@ -1383,7 +1468,7 @@ if(Linux)
 	)
 endif()
 
-if(UNIX AND NOT APPLE)
+if(UNIX AND NOT APPLE AND NOT PCSX2_CORE)
 	if(X11_API)
 		target_link_libraries(PCSX2_FLAGS INTERFACE
 			PkgConfig::X11_XCB
@@ -1413,9 +1498,15 @@ if(UNIX AND NOT Linux)
 		${pcsx2USBNullSources}
 		${pcsx2USBNullHeaders})
 else()
-	target_sources(PCSX2 PRIVATE
-		${pcsx2USBSources}
-		${pcsx2USBHeaders})
+	if(NOT PCSX2_CORE)
+		target_sources(PCSX2 PRIVATE
+			${pcsx2USBSources}
+			${pcsx2USBHeaders})
+	else()
+		target_sources(PCSX2 PRIVATE
+			${pcsx2USBNullSources}
+			${pcsx2USBNullHeaders})
+	endif()
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
@@ -1439,6 +1530,12 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	LibLZMA::LibLZMA
 	${LIBC_LIBRARIES}
 )
+
+if(PCSX2_CORE)
+	target_link_libraries(PCSX2_FLAGS INTERFACE
+		simpleini
+	)
+endif()
 
 if(WIN32)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
@@ -1467,8 +1564,12 @@ elseif(APPLE)
 		LibXml2::LibXml2
 	)
 else()
+	if (NOT PCSX2_CORE)
+		target_link_libraries(PCSX2_FLAGS INTERFACE
+			GTK::gtk
+		)
+	endif()
 	target_link_libraries(PCSX2_FLAGS INTERFACE
-		GTK::gtk
 		OpenGL::GL
 		PCAP::PCAP
 		LibXml2::LibXml2
@@ -1476,30 +1577,32 @@ else()
 endif()
 
 ### Generate the resources files
-file(MAKE_DIRECTORY ${res_bin})
+if(NOT PCSX2_CORE)
+	file(MAKE_DIRECTORY ${res_bin})
 
-foreach(res_file IN ITEMS
-		AppIcon16 AppIcon32 AppIcon64 BackgroundLogo Logo NoIcon ButtonIcon_Camera
-		ConfigIcon_Cpu ConfigIcon_Gamefixes ConfigIcon_MemoryCard
-		ConfigIcon_Paths ConfigIcon_Speedhacks ConfigIcon_Video Breakpoint_Active Breakpoint_Inactive)
-	add_custom_command(
-		OUTPUT "${res_bin}/${res_file}.h"
-		DEPENDS ${BIN2CPPDEP} "${res_src}/${res_file}.png"
-		COMMAND ${BIN2CPP} "${res_src}/${res_file}.png" "${res_bin}/${res_file}"
-	)
-endforeach()
+	foreach(res_file IN ITEMS
+			AppIcon16 AppIcon32 AppIcon64 BackgroundLogo Logo NoIcon ButtonIcon_Camera
+			ConfigIcon_Cpu ConfigIcon_Gamefixes ConfigIcon_MemoryCard
+			ConfigIcon_Paths ConfigIcon_Speedhacks ConfigIcon_Video Breakpoint_Active Breakpoint_Inactive)
+		add_custom_command(
+			OUTPUT "${res_bin}/${res_file}.h"
+			DEPENDS ${BIN2CPPDEP} "${res_src}/${res_file}.png"
+			COMMAND ${BIN2CPP} "${res_src}/${res_file}.png" "${res_bin}/${res_file}"
+		)
+	endforeach()
 
-### Generate Recording resource files
-### Drop them into the folder alongside the png files
-foreach(res_file IN ITEMS
-		circlePressed controllerFull controllerHalf controllerThreeQuarters crossPressed downPressed l1Pressed l2Pressed l3Pressed leftPressed
-		r1Pressed r2Pressed r3Pressed rightPressed selectPressed squarePressed startPressed trianglePressed upPressed)
-	add_custom_command(
-		OUTPUT "${res_rec_vp_src}/${res_file}.h"
-		DEPENDS ${BIN2CPPDEP} "${res_rec_vp_src}/${res_file}.png"
-		COMMAND ${BIN2CPP} "${res_rec_vp_src}/${res_file}.png" "${res_rec_vp_src}/${res_file}"
-	)
-endforeach()
+	### Generate Recording resource files
+	### Drop them into the folder alongside the png files
+	foreach(res_file IN ITEMS
+			circlePressed controllerFull controllerHalf controllerThreeQuarters crossPressed downPressed l1Pressed l2Pressed l3Pressed leftPressed
+			r1Pressed r2Pressed r3Pressed rightPressed selectPressed squarePressed startPressed trianglePressed upPressed)
+		add_custom_command(
+			OUTPUT "${res_rec_vp_src}/${res_file}.h"
+			DEPENDS ${BIN2CPPDEP} "${res_rec_vp_src}/${res_file}.png"
+			COMMAND ${BIN2CPP} "${res_rec_vp_src}/${res_file}.png" "${res_rec_vp_src}/${res_file}"
+		)
+	endforeach()
+endif()
 
 # additonal include directories
 target_include_directories(PCSX2_FLAGS INTERFACE
@@ -1584,7 +1687,7 @@ if (APPLE)
 	endforeach()
 endif()
 
-if(NOT DISABLE_SETCAP)
+if(NOT DISABLE_SETCAP AND NOT PCSX2_CORE)
 	if(PACKAGE_MODE)
 		install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f '${CMAKE_INSTALL_FULL_BINDIR}/pcsx2' ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' '${CMAKE_INSTALL_FULL_BINDIR}/pcsx2'; set +x\")")
 	else()
