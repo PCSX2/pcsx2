@@ -300,7 +300,7 @@ bool GzippedFileReader::OkIndex()
 
 	// Try to read index from disk
 	const std::string indexfile(iso2indexname(m_filename));
-	if (indexfile.empty() == 0)
+	if (indexfile.empty())
 		return false; // iso2indexname(...) will print errors if it can't apply the template
 
 	if (FileSystem::FileExists(indexfile.c_str()) && (m_pIndex = ReadIndexFromFile(indexfile.c_str())))
