@@ -19,7 +19,7 @@
 #include "IPU/IPUdma.h"
 #include "mpeg2lib/Mpeg.h"
 
-static IPUStatus IPU1Status;
+IPUStatus IPU1Status;
 static tIPU_DMA g_nDMATransfer;
 
 void ipuDmaReset()
@@ -119,6 +119,13 @@ int IPU1dma()
 		return 0;
 	}
 
+	if (IPU1Status.DataRequested == false)
+	{
+		cpuRegs.eCycle[4] = 0x9999;
+		return 0;
+	}
+	
+
 	IPU_LOG("IPU1 DMA Called QWC %x Finished %d In Progress %d tadr %x", ipu1ch.qwc, IPU1Status.DMAFinished, IPU1Status.InProgress, ipu1ch.tadr);
 
 	switch(IPU1Status.DMAMode)
@@ -174,15 +181,26 @@ int IPU1dma()
 	}
 
 	//Do this here to prevent double settings on Chain DMA's
-	if(totalqwc > 0 || ipu1ch.qwc == 0)
+	if(totalqwc == 0 || (IPU1Status.DMAFinished && !IPU1Status.InProgress))
 	{
-		IPU_INT_TO(totalqwc * BIAS);
-		IPUProcessInterrupt();
+		totalqwc = std::min(4, totalqwc);
+		IPU_INT_TO(4);
 	}
 	else 
 	{
-		cpuRegs.eCycle[4] = 0x9999;//IPU_INT_TO(2048);
+		
+		if (g_BP.IFC == 8)
+		{
+			IPU1Status.DataRequested = false;
+			cpuRegs.eCycle[4] = 0x9999;//IPU_INT_TO(2048);
+		}
+		else
+		{
+			IPU_INT_TO(totalqwc*BIAS);
+		}
 	}
+
+	IPUProcessInterrupt();
 
 	IPU_LOG("Completed Call IPU1 DMA QWC Remaining %x Finished %d In Progress %d tadr %x", ipu1ch.qwc, IPU1Status.DMAFinished, IPU1Status.InProgress, ipu1ch.tadr);
 	return totalqwc;
@@ -296,7 +314,10 @@ __fi void dmaIPU1() // toIPU
 		}
 
 		IPU1Status.DMAMode = DMA_MODE_CHAIN;
-		IPU1dma();
+		if(ipuRegs.ctrl.BUSY || IPU1Status.DataRequested)
+			IPU1dma();
+		else
+			cpuRegs.eCycle[4] = 0x9999;
 	}
 	else //Normal Mode
 	{
@@ -304,7 +325,10 @@ __fi void dmaIPU1() // toIPU
 			IPU1Status.InProgress = true;
 			IPU1Status.DMAFinished = true;
 			IPU1Status.DMAMode = DMA_MODE_NORMAL;
-			IPU1dma();
+			if (ipuRegs.ctrl.BUSY || IPU1Status.DataRequested)
+				IPU1dma();
+			else
+				cpuRegs.eCycle[4] = 0x9999;
 	}
 }
 

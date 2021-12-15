@@ -16,6 +16,7 @@
 #pragma once
 
 #include "IPU_Fifo.h"
+#include "IPUdma.h"
 
 #define ipumsk( src ) ( (src) & 0xff )
 #define ipucase( src ) case ipumsk(src)

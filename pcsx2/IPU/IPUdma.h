@@ -29,6 +29,7 @@ struct IPUStatus {
 	bool stalled;
 	u8 ChainMode;
 	u32 NextMem;
+	bool DataRequested;
 };
 
 #define DMA_MODE_NORMAL 0
@@ -91,3 +92,4 @@ extern void IPU0dma();
 extern int IPU1dma();
 
 extern void ipuDmaReset();
+extern IPUStatus IPU1Status;
