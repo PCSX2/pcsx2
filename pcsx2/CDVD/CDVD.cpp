@@ -1217,6 +1217,28 @@ __fi void cdvdReadInterrupt()
 	}
 	else
 	{
+		if (cdvd.nSectors <= 0)
+		{
+			cdvd.PwOff |= (1 << Irq_CommandComplete) | (1 << Irq_DataReady);
+			//psxHu32(0x1070) |= 0x4;
+			iopIntcIrq(2);
+			cdvd.Ready |= CDVD_DRIVE_READY;
+
+			cdvd.Status = CDVD_STATUS_PAUSE;
+
+			cdvd.nCommand = 0;
+
+			if (!HW_DMA3_BCR_H16)
+			{
+				if (HW_DMA3_CHCR & 0x01000000)
+				{
+					HW_DMA3_CHCR &= ~0x01000000;
+					psxDmaInterrupt(3);
+				}
+			}
+
+			return;
+		}
 		CDVDREAD_INT((cdvd.BlockSize / 4) * 12);
 		return;
 	}
@@ -1599,6 +1621,10 @@ static void cdvdWrite04(u8 rt)
 		case N_CD_STOP: // CdStop
 			DevCon.Warning("CdStop : %d", rt);
 			cdvd.Action = cdvdAction_Stop;
+			cdvd.nextSectorsBuffered = 0;
+			cdvd.triggerDataReady = true;
+			psxRegs.interrupt &= ~(1 << IopEvt_CdvdSectorReady);
+			cdvd.Status = CDVD_STATUS_SPIN;
 			CDVD_INT(PSXCLK / 6); // 166ms delay?
 			break;
 
