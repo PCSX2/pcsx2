@@ -12450,6 +12450,8 @@ SLES-52710:
 SLES-52711:
   name: "Titeuf Mega Compet"
   region: "PAL-F"
+  gameFixes:
+    - GIFFIFOHack # Fixes corrupted textures.
   patches:
     958e5086:
       content: |-
@@ -25778,6 +25780,13 @@ SLPM-66294:
 SLPM-66295:
   name: "Yamiyo ni Sasayaku - Tantei Sagara Kyouichirou [Limited Edition]"
   region: "NTSC-J"
+  patches:
+    23A9A026:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,00156888,word,10000003
 SLPM-66296:
   name: "Yamiyo ni Sasayaku - Tantei Sagara Kyouichirou"
   region: "NTSC-J"
