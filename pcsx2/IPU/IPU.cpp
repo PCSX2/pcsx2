@@ -296,7 +296,7 @@ void ipuSoftReset()
 	ipu_cmd.clear();
 	ipuRegs.cmd.BUSY = 0;
 	ipuRegs.cmd.DATA = 0; // required for Enthusia - Professional Racing after fix, or will freeze at start of next video.
-
+	IPU1Status.DataRequested = true;
 	memzero(g_BP);
 	hwIntcIrq(INTC_IPU); // required for FightBox
 }
@@ -363,14 +363,12 @@ __fi bool ipuWrite64(u32 mem, u64 value)
 
 static void ipuBCLR(u32 val)
 {
-	// The Input FIFO shouldn't be cleared when the DMA is running, however if it is the DMA should drain
-	// as it is constantly fighting it....
-	while(ipu1ch.chcr.STR)
-	{
-		ipu_fifo.in.clear();
+	if (ipu1ch.chcr.STR && g_BP.IFC < 8 && IPU1Status.DataRequested)
 		ipu1Interrupt();
-	}
-	
+
+	if(!ipu1ch.chcr.STR)
+		psHu32(DMAC_STAT) &= ~(1 << DMAC_TO_IPU);
+
 	ipu_fifo.in.clear();
 
 	memzero(g_BP);
@@ -878,6 +876,12 @@ __fi void IPUCMD_WRITE(u32 val)
 			ipuBCLR(val);
 			hwIntcIrq(INTC_IPU); //DMAC_TO_IPU
 			ipuRegs.ctrl.BUSY = 0;
+
+			IPU1Status.DataRequested = true;
+			if (ipu1ch.chcr.STR && cpuRegs.eCycle[4] == 0x9999)
+			{
+				CPU_INT(DMAC_TO_IPU, 32);
+			}
 			return;
 
 		case SCE_IPU_SETTH:
@@ -1005,10 +1009,4 @@ __noinline void IPUWorker()
 	ipuRegs.ctrl.BUSY = 0;
 	//ipu_cmd.current = 0xffffffff;
 	hwIntcIrq(INTC_IPU);
-
-	// Fill the FIFO ready for the next command
-	if (ipu1ch.chcr.STR && cpuRegs.eCycle[4] == 0x9999)
-	{
-		CPU_INT(DMAC_TO_IPU, 32);
-	}
 }
