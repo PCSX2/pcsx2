@@ -41050,6 +41050,12 @@ SLUS-21944:
 SLUS-21945:
   name: "Major League Baseball 2K11"
   region: "NTSC-U"
+  patches:
+    3D621C56:
+      content: |-
+        author=By Prafull
+        comment=fixes hang at start
+        patch=1,EE,003CFE58,word,00000000
 SLUS-21946:
   name: "Madden NFL 12"
   region: "NTSC-U"
@@ -41072,6 +41078,12 @@ SLUS-21950:
 SLUS-21951:
   name: "Major League Baseball 2K12"
   region: "NTSC-U"
+  patches:
+    C26C70A9:
+      content: |-
+        author=By Prafull
+        comment=fixes hang at start
+        patch=1,EE,003D4098,word,00000000
 SLUS-21954:
   name: "FIFA 13"
   region: "NTSC-U" # Latin America with En,Fr,Es
