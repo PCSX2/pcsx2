@@ -35,6 +35,8 @@ struct HostKeyEvent
 
 namespace Host
 {
+	/// Report a major fault to the user
+	void ReportErrorAsync(std::string_view header, std::string_view message);
 	/// Reads a file from the resources directory of the application.
 	/// This may be outside of the "normally" filesystem on platforms such as Mac.
 	std::optional<std::vector<u8>> ReadResourceFile(const char* filename);

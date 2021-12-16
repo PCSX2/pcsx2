@@ -15,12 +15,50 @@
 
 #include "PrecompiledHeader.h"
 
+#include "Host.h"
+
+#include "App.h"
+#include "AppConfig.h"
+#include "pxEvents.h"
+
 #include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 
-#include "AppConfig.h"
-#include "Host.h"
+namespace
+{
+	class MessageDialogEvent : public pxActionEvent
+	{
+		wxString header;
+		wxString message;
+		MessageDialogEvent(const MessageDialogEvent&) = default;
+	public:
+		MessageDialogEvent(wxString header, wxString message)
+			: header(std::move(header))
+			, message(std::move(message))
+		{
+		}
+
+		MessageDialogEvent* Clone() const override
+		{
+			return new MessageDialogEvent(*this);
+		}
+
+		void InvokeEvent() override
+		{
+			wxMessageDialog dialog(nullptr, message, header);
+			dialog.ShowModal();
+		}
+	};
+}
+
+void Host::ReportErrorAsync(std::string_view header, std::string_view message)
+{
+	wxString wxHeader (header.data(),  wxConvUTF8, header.length());
+	wxString wxMessage(message.data(), wxConvUTF8, message.length());
+	Console.Error("%s", WX_STR(wxMessage));
+	wxGetApp().QueueEvent(new MessageDialogEvent(std::move(wxHeader), std::move(wxMessage)));
+}
 
 static auto OpenResourceCFile(const char* filename, const char* mode)
 {
