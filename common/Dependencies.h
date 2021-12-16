@@ -268,6 +268,8 @@ static const s64 _4gb = _1gb * 4;
 
 extern const wxChar* __fastcall pxExpandMsg(const wxChar* message);
 extern const wxChar* __fastcall pxGetTranslation(const wxChar* message);
+/// Get translatable string as std::string (rather than wxChar*)
+extern std::string __fastcall pxSt(const char* message);
 extern bool pxIsEnglish(int id);
 
 extern wxString fromUTF8(const std::string& str);

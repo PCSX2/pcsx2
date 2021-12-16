@@ -34,3 +34,9 @@ const wxChar* __fastcall pxGetTranslation(const wxChar* message)
 {
 	return wxGetTranslation(message).wc_str();
 }
+
+std::string __fastcall pxSt(const char* message)
+{
+	wxScopedCharBuffer str = wxGetTranslation(wxString::FromUTF8(message)).ToUTF8();
+	return std::string(str.data(), str.data() + str.length());
+}
