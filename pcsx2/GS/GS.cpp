@@ -327,11 +327,18 @@ int GSopen2(const WindowInfo& wi, u32 flags)
 	}
 	stored_toggle_state = toggle_state;
 
-	int retval = _GSopen(wi, "", current_renderer);
+	try
+	{
+		int retval = _GSopen(wi, "", current_renderer);
 
-	gsopen_done = true;
+		gsopen_done = true;
 
-	return retval;
+		return retval;
+	}
+	catch (GSRecoverableError&)
+	{
+		return -1;
+	}
 }
 
 void GSreset()

@@ -327,7 +327,8 @@ void SysCoreThread::OnResumeInThread(SystemsMask systemsToReinstate)
 {
 	PerformanceMetrics::SetCPUThreadTimer(Common::ThreadCPUTimer::GetForCallingThread());
 
-	GetMTGS().WaitForOpen();
+	if (!GetMTGS().WaitForOpen())
+		Suspend();
 	if (systemsToReinstate & System_DEV9) DEV9open();
 	if (systemsToReinstate & System_USB) USBopen(g_gs_window_info);
 	if (systemsToReinstate & System_FW) FWopen();

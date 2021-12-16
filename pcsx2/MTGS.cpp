@@ -21,6 +21,7 @@
 
 #include "GS.h"
 #include "Gif_Unit.h"
+#include "Host.h"
 #include "MTVU.h"
 #include "Elfheader.h"
 #include "PerformanceMetrics.h"
@@ -241,14 +242,21 @@ void SysMtgsThread::OpenGS()
 	memcpy(RingBuffer.Regs, PS2MEM_GS, sizeof(PS2MEM_GS));
 	GSsetBaseMem(RingBuffer.Regs);
 
-	pxAssertMsg((GSopen2(g_gs_window_info, 1 | (renderswitch ? 4 : 0)) == 0), "GS failed to open!");
+	int ret = GSopen2(g_gs_window_info, 1 | (renderswitch ? 4 : 0));
+	if (ret == 0)
+	{
+		GSsetVsync(EmuConfig.GS.GetVsync());
 
-	GSsetVsync(EmuConfig.GS.GetVsync());
+		m_Opened = true;
+		m_sem_OpenDone.Post();
 
-	m_Opened = true;
-	m_sem_OpenDone.Post();
-
-	GSsetGameCRC(ElfCRC, 0);
+		GSsetGameCRC(ElfCRC, 0);
+	}
+	else
+	{
+		Host::ReportErrorAsync(pxSt("Failed to Start GS"), pxSt("The GS failed to start.  See emulog or log viewer for details."));
+		m_sem_OpenDone.Post();
+	}
 }
 
 class RingBufferLock
@@ -893,10 +901,10 @@ void SysMtgsThread::SendGameCRC(u32 crc)
 	SendSimplePacket(GS_RINGTYPE_CRC, crc, 0, 0);
 }
 
-void SysMtgsThread::WaitForOpen()
+bool SysMtgsThread::WaitForOpen()
 {
 	if (m_Opened)
-		return;
+		return true;
 	Resume();
 
 	// Two-phase timeout on MTGS opening, so that possible errors are handled
@@ -917,6 +925,8 @@ void SysMtgsThread::WaitForOpen()
 	}
 
 	RethrowException();
+
+	return m_Opened;
 }
 
 void SysMtgsThread::Freeze(FreezeAction mode, MTGS_FreezeData& data)
@@ -929,6 +939,8 @@ void SysMtgsThread::Freeze(FreezeAction mode, MTGS_FreezeData& data)
 	// we'll end up in a state where the main thread is stuck on WaitGS
 	// and MTGS stuck on sApp.OpenGSPanel, which post an event to the main
 	// thread. Obviously this ends up in a deadlock. -- govanify
-	WaitForOpen();
-	WaitGS();
+	if (WaitForOpen())
+		WaitGS();
+	else
+		GetCoreThread().Suspend();
 }
