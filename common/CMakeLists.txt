@@ -19,6 +19,7 @@ target_sources(common PRIVATE
 	FastFormatString.cpp
 	FastJmp.cpp
 	GL/Context.cpp
+	GL/Program.cpp
 	GL/StreamBuffer.cpp
 	FileSystem.cpp
 	IniInterface.cpp
@@ -76,6 +77,7 @@ target_sources(common PRIVATE
 	FileSystem.h
 	General.h
 	GL/Context.h
+	GL/Program.h
 	GL/StreamBuffer.h
 	HashCombine.h
 	MemcpyFast.h
