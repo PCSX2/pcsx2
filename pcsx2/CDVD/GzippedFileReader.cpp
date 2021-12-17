@@ -80,7 +80,7 @@ static void WriteIndexToFile(Access* index, const char* filename)
 		return;
 	}
 
-	auto fp = FileSystem::OpenManagedCFile(filename, "rb");
+	auto fp = FileSystem::OpenManagedCFile(filename, "wb");
 	if (!fp)
 		return;
 
