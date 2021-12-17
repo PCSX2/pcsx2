@@ -51,6 +51,7 @@
     </ClCompile>
     <ClCompile Include="GL\Context.cpp" />
     <ClCompile Include="GL\ContextWGL.cpp" />
+    <ClCompile Include="GL\Program.cpp" />
     <ClCompile Include="GL\StreamBuffer.cpp" />
     <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="IniInterface.cpp" />
@@ -111,6 +112,7 @@
     <ClInclude Include="FastJmp.h" />
     <ClInclude Include="GL\Context.h" />
     <ClInclude Include="GL\ContextWGL.h" />
+    <ClInclude Include="GL\Program.h" />
     <ClInclude Include="GL\StreamBuffer.h" />
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="HashCombine.h" />
