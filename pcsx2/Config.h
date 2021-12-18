@@ -695,6 +695,8 @@ extern Pcsx2Config EmuConfig;
 
 namespace EmuFolders
 {
+	extern wxDirName AppRoot;
+	extern wxDirName DataRoot;
 	extern wxDirName Settings;
 	extern wxDirName Bios;
 	extern wxDirName Snapshots;
@@ -706,6 +708,14 @@ namespace EmuFolders
 	extern wxDirName CheatsWS;
 	extern wxDirName Resources;
 	extern wxDirName Cache;
+	extern wxDirName Covers;
+	extern wxDirName GameSettings;
+
+	// Assumes that AppRoot and DataRoot have been initialized.
+	void SetDefaults();
+	bool EnsureFoldersExist();
+	void LoadConfig(SettingsInterface& si);
+	void Save(SettingsInterface& si);
 } // namespace EmuFolders
 
 /////////////////////////////////////////////////////////////////////////////////////////
