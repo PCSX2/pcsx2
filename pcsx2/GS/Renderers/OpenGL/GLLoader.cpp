@@ -17,6 +17,7 @@
 #include "GLLoader.h"
 #include "GS/GS.h"
 #include <unordered_set>
+#include "Host.h"
 
 namespace GLExtension
 {
@@ -161,15 +162,15 @@ namespace GLLoader
 	bool found_GL_ARB_get_texture_sub_image = false;
 #endif
 
-	static void mandatory(const std::string& ext)
+	static bool mandatory(const std::string& ext)
 	{
 		if (!GLExtension::Has(ext))
 		{
-			fprintf(stderr, "ERROR: %s is NOT SUPPORTED\n", ext.c_str());
-			throw GSRecoverableError();
+			Host::ReportFormattedErrorAsync("GS", "ERROR: %s is NOT SUPPORTED\n", ext.c_str());
+			return false;
 		}
 
-		return;
+		return true;
 	}
 
 	static bool optional(const std::string& name)
@@ -198,7 +199,7 @@ namespace GLLoader
 		return found;
 	}
 
-	void check_gl_version(int major, int minor)
+	bool check_gl_version(int major, int minor)
 	{
 		const char* vendor = (const char*)glGetString(GL_VENDOR);
 		if (strstr(vendor, "Advanced Micro Devices") || strstr(vendor, "ATI Technologies Inc.") || strstr(vendor, "ATI"))
@@ -226,12 +227,14 @@ namespace GLLoader
 		glGetIntegerv(GL_MINOR_VERSION, &minor_gl);
 		if ((major_gl < major) || (major_gl == major && minor_gl < minor))
 		{
-			fprintf(stderr, "OpenGL %d.%d is not supported. Only OpenGL %d.%d\n was found", major, minor, major_gl, minor_gl);
-			throw GSRecoverableError();
+			Host::ReportFormattedErrorAsync("GS", "OpenGL %d.%d is not supported. Only OpenGL %d.%d\n was found", major, minor, major_gl, minor_gl);
+			return false;
 		}
+
+		return true;
 	}
 
-	void check_gl_supported_extension()
+	bool check_gl_supported_extension()
 	{
 		int max_ext = 0;
 		glGetIntegerv(GL_NUM_EXTENSIONS, &max_ext);
@@ -243,24 +246,27 @@ namespace GLLoader
 		}
 
 		// Mandatory for both renderer
+		bool ok = true;
 		{
 			// GL4.1
-			mandatory("GL_ARB_separate_shader_objects");
+			ok = ok && mandatory("GL_ARB_separate_shader_objects");
 			// GL4.2
-			mandatory("GL_ARB_shading_language_420pack");
-			mandatory("GL_ARB_texture_storage");
+			ok = ok && mandatory("GL_ARB_shading_language_420pack");
+			ok = ok && mandatory("GL_ARB_texture_storage");
 			// GL4.3
-			mandatory("GL_KHR_debug");
+			ok = ok && mandatory("GL_KHR_debug");
 			// GL4.4
-			mandatory("GL_ARB_buffer_storage");
+			ok = ok && mandatory("GL_ARB_buffer_storage");
 		}
 
 		// Only for HW renderer
-		if (theApp.GetCurrentRendererType() == GSRendererType::OGL_HW)
+		if (GSConfig.UseHardwareRenderer())
 		{
-			mandatory("GL_ARB_copy_image");
-			mandatory("GL_ARB_clip_control");
+			ok = ok && mandatory("GL_ARB_copy_image");
+			ok = ok && mandatory("GL_ARB_clip_control");
 		}
+		if (!ok)
+			return false;
 
 		// Extra
 		{
@@ -319,6 +325,8 @@ namespace GLLoader
 			Emulate_DSA::Init();
 		}
 #endif
+
+		return true;
 	}
 
 	bool is_sparse2_compatible(const char* name, GLenum internal_fmt, int x_max, int y_max)
@@ -385,11 +393,13 @@ namespace GLLoader
 		fprintf_once(stdout, "INFO: sparse depth texture is %s\n", found_compatible_sparse_depth ? "available" : "NOT SUPPORTED");
 	}
 
-	void check_gl_requirements()
+	bool check_gl_requirements()
 	{
-		check_gl_version(3, 3);
+		if (!check_gl_version(3, 3))
+			return false;
 
-		check_gl_supported_extension();
+		if (!check_gl_supported_extension())
+			return false;
 
 		// Bonus for sparse texture
 		check_sparse_compatibility();
@@ -397,5 +407,6 @@ namespace GLLoader
 		fprintf_once(stdout, "\n");
 
 		s_first_load = false;
+		return true;
 	}
 } // namespace GLLoader

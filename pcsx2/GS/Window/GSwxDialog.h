@@ -187,7 +187,6 @@ namespace GSSettingsDialog
 		wxChoice* m_renderer_select;
 		wxChoice* m_adapter_select;
 		wxChoice* m_bifilter_select;
-		wxArrayString m_adapter_arr_string;
 		RendererTab* m_renderer_panel;
 		HacksTab* m_hacks_panel;
 		DebugTab* m_debug_panel;

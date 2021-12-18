@@ -47,8 +47,6 @@
 
 using namespace Dialogs;
 
-extern std::atomic_bool init_gspanel;
-
 void MainEmuFrame::Menu_SysSettings_Click(wxCommandEvent& event)
 {
 	AppOpenModalDialog<SysConfigDialog>(wxEmptyString, this);
@@ -88,29 +86,30 @@ void MainEmuFrame::Menu_PADSettings_Click(wxCommandEvent& event)
 
 void MainEmuFrame::Menu_GSSettings_Click(wxCommandEvent& event)
 {
-	ScopedCoreThreadPause paused_core;
-	bool is_frame_init = !(wxGetApp().GetGsFramePtr() == nullptr);
-	bool need_shutdown = GetMTGS().IsClosed();
-	init_gspanel = false;
-	freezeData fP = {0, nullptr};
-	MTGS_FreezeData sstate = {&fP, 0};
-	if (is_frame_init)
-	{
-		GetMTGS().Freeze(FreezeAction::Size, sstate);
-		fP.data = new u8[fP.size];
-		GetMTGS().Freeze(FreezeAction::Save, sstate);
-		GetMTGS().Suspend(true);
-	}
 	GSconfigure();
-	if (is_frame_init)
+
+	// this is a bit of an ugly hack, but so is the whole of the threading nonsense.
+	// we need to tear down USB/PAD before we apply settings, because the window handle
+	// will change on renderer change. but we can't do that in ApplySettings() because
+	// that happens on the UI thread instead of the core thread....
+	GSFrame* gs_frame = wxGetApp().GetGsFramePtr();
+	const bool gs_frame_open = gs_frame && gs_frame->IsShown();
+	const Pcsx2Config::GSOptions old_options(g_Conf->EmuOptions.GS);
+	g_Conf->EmuOptions.GS.ReloadIniSettings();
+	if (!g_Conf->EmuOptions.GS.RestartOptionsAreEqual(old_options))
 	{
-		GetMTGS().Freeze(FreezeAction::Load, sstate);
-		delete[] fP.data;
+		ScopedCoreThreadPause pauser(static_cast<SystemsMask>(System_USB | System_PAD));
+		wxGetApp().SysApplySettings();
 	}
-	if (need_shutdown)
-		GetMTGS().Suspend(true);
-	init_gspanel = true;
-	paused_core.AllowResume();
+	else
+	{
+		wxGetApp().SysApplySettings();
+	}
+
+	// re-hide the GS window after changing renderers if we were paused
+	gs_frame = wxGetApp().GetGsFramePtr();
+	if (!gs_frame_open && gs_frame && gs_frame->IsShown())
+		gs_frame->Hide();
 }
 
 void MainEmuFrame::Menu_WindowSettings_Click(wxCommandEvent& event)

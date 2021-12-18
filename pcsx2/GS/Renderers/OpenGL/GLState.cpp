@@ -52,23 +52,23 @@ namespace GLState
 	void Clear()
 	{
 		fbo = 0;
-		viewport = GSVector2i(0, 0);
-		scissor = GSVector4i(0, 0, 0, 0);
+		viewport = GSVector2i(1, 1);
+		scissor = GSVector4i(0, 0, 1, 1);
 
 		blend = false;
-		eq_RGB = 0;
-		f_sRGB = 0;
-		f_dRGB = 0;
+		eq_RGB = GL_FUNC_ADD;
+		f_sRGB = GL_ONE;
+		f_dRGB = GL_ZERO;
 		bf = 0;
 		wrgba = 0xF;
 
 		depth = false;
-		depth_func = 0;
-		depth_mask = true;
+		depth_func = GL_LESS;
+		depth_mask = false;
 
 		stencil = false;
-		stencil_func = 0;
-		stencil_pass = 0xFFFF; // Note 0 is valid (GL_ZERO)
+		stencil_func = GL_ALWAYS;
+		stencil_pass = GL_KEEP;
 
 		ps_ss = 0;
 

@@ -29,7 +29,4 @@ private:
 
 public:
 	GSDeviceNull() {}
-
-	bool Create(const WindowInfo& wi);
-	bool Reset(int w, int h);
 };

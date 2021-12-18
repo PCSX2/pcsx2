@@ -11,7 +11,6 @@ if (WIN32)
 	add_subdirectory(3rdparty/libjpeg EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/libsamplerate EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/baseclasses EXCLUDE_FROM_ALL)
-	add_subdirectory(3rdparty/freetype EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/pthreads4w EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/soundtouch EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/wil EXCLUDE_FROM_ALL)
@@ -26,7 +25,6 @@ else()
 	find_package(PCAP REQUIRED)
 	find_package(LibXml2 REQUIRED)
 	make_imported_target_if_missing(LibXml2::LibXml2 LibXml2)
-	find_package(Freetype REQUIRED) # GS OSD
 	find_package(Gettext) # translation tool
 	find_package(LibLZMA REQUIRED)
 	make_imported_target_if_missing(LibLZMA::LibLZMA LIBLZMA)
@@ -168,12 +166,6 @@ else()
 	if(WAYLAND_API)
 		find_package(Wayland REQUIRED)
 	endif()
-
-	#----------------------------------------
-	#           Use system include
-	#----------------------------------------
-	find_package(HarfBuzz)
-
 endif(WIN32)
 
 # Require threads on all OSes.

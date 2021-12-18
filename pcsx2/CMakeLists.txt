@@ -109,6 +109,8 @@ set(pcsx2Sources
 	Gif_Unit.cpp
 	GS.cpp
 	GSState.cpp
+	Host.cpp
+	HostDisplay.cpp
 	Hw.cpp
 	HwRead.cpp
 	HwWrite.cpp
@@ -187,6 +189,7 @@ set(pcsx2Headers
 	GS.h
 	Hardware.h
 	Host.h
+	HostDisplay.h
 	Hw.h
 	IopBios.h
 	IopCommon.h
@@ -607,7 +610,6 @@ set(pcsx2GSSources
 	GS/Renderers/Common/GSDevice.cpp
 	GS/Renderers/Common/GSDirtyRect.cpp
 	GS/Renderers/Common/GSFunctionMap.cpp
-	GS/Renderers/Common/GSOsdManager.cpp
 	GS/Renderers/Common/GSRenderer.cpp
 	GS/Renderers/Common/GSTexture.cpp
 	GS/Renderers/Common/GSVertexTrace.cpp
@@ -672,7 +674,6 @@ set(pcsx2GSHeaders
 	GS/Renderers/Common/GSDirtyRect.h
 	GS/Renderers/Common/GSFastList.h
 	GS/Renderers/Common/GSFunctionMap.h
-	GS/Renderers/Common/GSOsdManager.h
 	GS/Renderers/Common/GSRenderer.h
 	GS/Renderers/Common/GSTexture.h
 	GS/Renderers/Common/GSVertex.h
@@ -872,6 +873,27 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/DisVUops.h
 	DebugTools/BiosDebugData.h)
 
+# Frontend sources
+set(pcsx2FrontendSources
+	Frontend/ImGuiManager.cpp
+	Frontend/OpenGLHostDisplay.cpp
+)
+
+# Frontend headers
+set(pcsx2FrontendHeaders
+	Frontend/ImGuiManager.h
+	Frontend/OpenGLHostDisplay.h
+)
+
+if(WIN32)
+	list(APPEND pcsx2FrontendSources
+		Frontend/D3D11HostDisplay.cpp
+	)
+	list(APPEND pcsx2FrontendHeaders
+		Frontend/D3D11HostDisplay.h
+	)
+endif()
+
 # gui sources
 set(pcsx2GuiSources
 	gui/AppAssert.cpp
@@ -952,6 +974,7 @@ set(pcsx2GuiHeaders
 	gui/AppConfig.h
 	gui/AppCoreThread.h
 	gui/AppEventListeners.h
+	gui/AppHost.h
 	gui/AppForwardDefs.h
 	gui/App.h
 	gui/ApplyState.h
@@ -1296,18 +1319,26 @@ target_sources(PCSX2 PRIVATE
 	${pcsx2GSSources}
 	${pcsx2DebugToolsSources}
 	${pcsx2DebugToolsHeaders}
-	${pcsx2GuiSources}
-	${pcsx2GuiResources}
-	${pcsx2GuiHeaders}
+	${pcsx2FrontendSources}
+	${pcsx2FrontendHeaders}
 	${pcsx2ps2Sources}
 	${pcsx2ps2Headers}
-	${pcsx2RecordingSources}
-	${pcsx2RecordingVirtualPadResources}
-	${pcsx2RecordingHeaders}
 	${pcsx2SystemSources}
 	${pcsx2SystemHeaders}
 	${pcsx2UtilitiesSources}
 	${pcsx2UtilitiesHeaders})
+
+# gui sources when not doing a qt build
+if (NOT PCSX2_CORE)
+	target_sources(PCSX2 PRIVATE
+		${pcsx2GuiSources}
+		${pcsx2GuiResources}
+		${pcsx2GuiHeaders}
+		${pcsx2RecordingSources}
+		${pcsx2RecordingVirtualPadResources}
+		${pcsx2RecordingHeaders}
+	)
+endif()
 
 # platform sources
 # Linux
@@ -1368,6 +1399,7 @@ endif()
 target_link_libraries(PCSX2_FLAGS INTERFACE
 	common
 	glad
+	imgui
 	fmt::fmt
 	ryml
 	chdr-static
@@ -1376,7 +1408,6 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	PkgConfig::SOUNDTOUCH
 	PkgConfig::SAMPLERATE
 	PNG::PNG
-	Freetype::Freetype
 	LibLZMA::LibLZMA
 	${LIBC_LIBRARIES}
 )
@@ -1410,7 +1441,6 @@ elseif(APPLE)
 else()
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		GTK::gtk
-		HarfBuzz::HarfBuzz
 		OpenGL::GL
 		PCAP::PCAP
 		LibXml2::LibXml2

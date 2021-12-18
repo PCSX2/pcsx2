@@ -26,8 +26,6 @@ class GSState;
 
 class alignas(32) GSVertexTrace : public GSAlignedClass<32>
 {
-	BiFiltering m_force_filter;
-
 public:
 	struct Vertex
 	{

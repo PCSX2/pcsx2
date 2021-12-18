@@ -31,7 +31,6 @@ GSState::GSState()
 	, m_q(1.0f)
 	, m_scanmask_used(false)
 	, m_vt(this)
-	, m_dev(nullptr)
 	, m_regs(NULL)
 	, m_crc(0)
 	, m_options(0)
@@ -46,15 +45,11 @@ GSState::GSState()
 	{
 		m_userhacks_auto_flush = theApp.GetConfigB("UserHacks_AutoFlush");
 		m_userhacks_wildhack = theApp.GetConfigB("UserHacks_WildHack");
-		m_userhacks_skipdraw = theApp.GetConfigI("UserHacks_SkipDraw");
-		m_userhacks_skipdraw_offset = theApp.GetConfigI("UserHacks_SkipDraw_Offset");
 	}
 	else
 	{
 		m_userhacks_auto_flush = false;
 		m_userhacks_wildhack = false;
-		m_userhacks_skipdraw = 0;
-		m_userhacks_skipdraw_offset = 0;
 	}
 
 	s_n = 0;
@@ -76,7 +71,7 @@ GSState::GSState()
 
 	m_crc_hack_level = theApp.GetConfigT<CRCHackLevel>("crc_hack_level");
 	if (m_crc_hack_level == CRCHackLevel::Automatic)
-		m_crc_hack_level = GSUtil::GetRecommendedCRCHackLevel(theApp.GetCurrentRendererType());
+		m_crc_hack_level = GSUtil::GetRecommendedCRCHackLevel(GSConfig.Renderer);
 
 	memset(&m_v, 0, sizeof(m_v));
 	memset(&m_vertex, 0, sizeof(m_vertex));
@@ -150,13 +145,6 @@ GSState::~GSState()
 		_aligned_free(m_vertex.buff);
 	if (m_index.buff)
 		_aligned_free(m_index.buff);
-}
-
-void GSState::SetRegsMem(u8* basemem)
-{
-	ASSERT(basemem);
-
-	m_regs = (GSPrivRegSet*)basemem;
 }
 
 void GSState::SetFrameSkip(int skip)
@@ -269,9 +257,7 @@ void GSState::ResetHandlers()
 	m_fpGIFPackedRegHandlers[GIF_REG_NOP] = &GSState::GIFPackedRegHandlerNOP;
 
 	// swap first/last indices when the provoking vertex is the first (D3D/Vulkan)
-	const GSRendererType renderer = theApp.GetCurrentRendererType();
-	const bool is_hardware_renderer = (renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::OGL_HW);
-	const bool index_swap = is_hardware_renderer && m_dev && !m_dev->Features().provoking_vertex_last;
+	const bool index_swap = GSConfig.UseHardwareRenderer() && !g_gs_device->Features().provoking_vertex_last;
 	if (m_userhacks_auto_flush)
 		index_swap ? SetPrimHandlers<true, true>() : SetPrimHandlers<true, false>();
 	else
@@ -728,9 +714,7 @@ __forceinline void GSState::ApplyPRIM(u32 prim)
 	if (GSUtil::GetPrimClass(m_env.PRIM.PRIM) == GSUtil::GetPrimClass(prim & 7)) // NOTE: assume strips/fans are converted to lists
 	{
 		u32 prim_mask = 0x7f8;
-		const bool is_hardware_renderer =
-			((theApp.GetCurrentRendererType() == GSRendererType::OGL_HW) || (theApp.GetCurrentRendererType() == GSRendererType::DX1011_HW));
-		if (is_hardware_renderer && GSUtil::GetPrimClass(prim & 7) == GS_TRIANGLE_CLASS)
+		if (GSConfig.UseHardwareRenderer() && GSUtil::GetPrimClass(prim & 7) == GS_TRIANGLE_CLASS)
 			prim_mask &= ~0x80; // Mask out AA1.
 
 		if (m_env.PRMODECONT.AC == 1 && (m_env.PRIM.U32[0] ^ prim) & prim_mask) // all fields except PRIM
@@ -1067,9 +1051,7 @@ void GSState::GIFRegHandlerPRMODE(const GIFReg* RESTRICT r)
 	if (!m_env.PRMODECONT.AC)
 	{
 		u32 prim_mask = 0x7f8;
-		const bool is_hardware_renderer =
-			((theApp.GetCurrentRendererType() == GSRendererType::OGL_HW) || (theApp.GetCurrentRendererType() == GSRendererType::DX1011_HW));
-		if (is_hardware_renderer && GSUtil::GetPrimClass(m_env.PRIM.PRIM) == GS_TRIANGLE_CLASS)
+		if (GSConfig.UseHardwareRenderer() && GSUtil::GetPrimClass(m_env.PRIM.PRIM) == GS_TRIANGLE_CLASS)
 			prim_mask &= ~0x80; // Mask out AA1.
 
 		if ((m_env.PRIM.U32[0] ^ r->PRMODE.U32[0]) & prim_mask)
@@ -2235,7 +2217,7 @@ void GSState::SetGameCRC(u32 crc, int options)
 {
 	m_crc = crc;
 	m_options = options;
-	m_game = CRC::Lookup(m_crc_hack_level != CRCHackLevel::None ? crc : 0);
+	m_game = CRC::Lookup(m_crc_hack_level != CRCHackLevel::Off ? crc : 0);
 	SetupCrcHack();
 }
 

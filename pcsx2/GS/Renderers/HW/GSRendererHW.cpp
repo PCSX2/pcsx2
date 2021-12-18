@@ -18,11 +18,11 @@
 #include "GS/GSGL.h"
 
 GSRendererHW::GSRendererHW()
-	: m_width(default_rt_size.x)
+	: GSRenderer()
+	, m_width(default_rt_size.x)
 	, m_height(default_rt_size.y)
 	, m_custom_width(1024)
 	, m_custom_height(1024)
-	, m_reset(false)
 	, m_userhacks_ts_half_bottom(-1)
 	, m_tc(new GSTextureCache(this))
 	, m_src(nullptr)
@@ -30,12 +30,12 @@ GSRendererHW::GSRendererHW()
 	, m_userhacks_tcoffset_x(0)
 	, m_userhacks_tcoffset_y(0)
 	, m_channel_shuffle(false)
+	, m_reset(false)
 	, m_lod(GSVector2i(0, 0))
 {
 	m_mipmap = theApp.GetConfigI("mipmap_hw");
 	m_upscale_multiplier = std::max(0, theApp.GetConfigI("upscale_multiplier"));
 	m_conservative_framebuffer = theApp.GetConfigB("conservative_framebuffer");
-	m_accurate_date = theApp.GetConfigB("accurate_date");
 
 	if (theApp.GetConfigB("UserHacks"))
 	{
@@ -45,7 +45,6 @@ GSRendererHW::GSRendererHW()
 		m_userHacks_merge_sprite         = theApp.GetConfigB("UserHacks_merge_pp_sprite");
 		m_userhacks_ts_half_bottom       = theApp.GetConfigI("UserHacks_Half_Bottom_Override");
 		m_userhacks_round_sprite_offset  = theApp.GetConfigI("UserHacks_round_sprite_offset");
-		m_userHacks_HPO                  = theApp.GetConfigI("UserHacks_HalfPixelOffset");
 		m_userhacks_tcoffset_x           = theApp.GetConfigI("UserHacks_TCOffsetX") / -1000.0f;
 		m_userhacks_tcoffset_y           = theApp.GetConfigI("UserHacks_TCOffsetY") / -1000.0f;
 		m_userhacks_tcoffset             = m_userhacks_tcoffset_x < 0.0f || m_userhacks_tcoffset_y < 0.0f;
@@ -58,7 +57,6 @@ GSRendererHW::GSRendererHW()
 		m_userHacks_merge_sprite         = false;
 		m_userhacks_ts_half_bottom       = -1;
 		m_userhacks_round_sprite_offset  = 0;
-		m_userHacks_HPO                  = 0;
 	}
 
 	if (!m_upscale_multiplier) // Custom Resolution
@@ -278,7 +276,7 @@ void GSRendererHW::Reset()
 	GSRenderer::Reset();
 }
 
-void GSRendererHW::VSync(int field)
+void GSRendererHW::VSync(u32 field)
 {
 	//Check if the frame buffer width or display width has changed
 	SetScaling();
@@ -295,17 +293,10 @@ void GSRendererHW::VSync(int field)
 	m_tc->IncAge();
 
 	m_tc->PrintMemoryUsage();
-	m_dev->PrintMemoryUsage();
+	g_gs_device->PrintMemoryUsage();
 
 	m_skip = 0;
 	m_skip_offset = 0;
-}
-
-void GSRendererHW::ResetDevice()
-{
-	m_tc->RemoveAll();
-
-	GSRenderer::ResetDevice();
 }
 
 GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
@@ -393,7 +384,7 @@ void GSRendererHW::Lines2Sprites()
 
 		alignas(16) static constexpr std::array<int, 8> tri_normal_indices = {{0, 1, 2, 1, 2, 3}};
 		alignas(16) static constexpr std::array<int, 8> tri_swapped_indices = {{0, 1, 2, 1, 2, 3}};
-		const bool index_swap = !m_dev->Features().provoking_vertex_last;
+		const bool index_swap = !g_gs_device->Features().provoking_vertex_last;
 		const int* tri_indices = index_swap ? tri_swapped_indices.data() : tri_normal_indices.data();
 		const GSVector4i indices_low(GSVector4i::load<true>(tri_indices));
 		const GSVector4i indices_high(GSVector4i::loadl(tri_indices + 4));
@@ -641,7 +632,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 
 GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Source* tex)
 {
-	if (m_userHacks_HPO <= 1 || GetUpscaleMultiplier() == 1)
+	if (GSConfig.UserHacks_HalfPixelOffset <= 1 || GetUpscaleMultiplier() == 1)
 		return GSVector4(0.0f);
 
 	const GSVertex* v = &m_vertex.buff[0];
@@ -656,7 +647,7 @@ GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Sou
 	if (PRIM->FST)
 	{
 
-		if (m_userHacks_HPO == 3)
+		if (GSConfig.UserHacks_HalfPixelOffset == 3)
 		{
 			if (!linear && t_position == 8)
 			{
@@ -1202,7 +1193,7 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
-	if (m_dev->IsLost() || IsBadFrame())
+	if (IsBadFrame())
 	{
 		GL_INS("Warning skipping a draw call (%d)", s_n);
 		return;
@@ -1508,11 +1499,11 @@ void GSRendererHW::Draw()
 				{
 					const bool is_rt = t == rt;
 					t->m_texture = is_rt ?
-						m_dev->CreateSparseRenderTarget(new_w, new_h, tex->GetFormat()) :
-						m_dev->CreateSparseDepthStencil(new_w, new_h, tex->GetFormat());
+						g_gs_device->CreateSparseRenderTarget(new_w, new_h, tex->GetFormat()) :
+						g_gs_device->CreateSparseDepthStencil(new_w, new_h, tex->GetFormat());
 					const GSVector4i r{ 0, 0, w, h };
-					m_dev->CopyRect(tex, t->m_texture, r);
-					m_dev->Recycle(tex);
+					g_gs_device->CopyRect(tex, t->m_texture, r);
+					g_gs_device->Recycle(tex);
 					t->m_texture->SetScale(up_s);
 					(is_rt ? rt_tex : ds_tex) = t->m_texture;
 				}
@@ -1832,11 +1823,11 @@ void GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds)
 			{
 				// Only pure clear are supported for depth
 				ASSERT(color == 0);
-				m_dev->ClearDepth(t);
+				g_gs_device->ClearDepth(t);
 			}
 			else
 			{
-				m_dev->ClearRenderTarget(t, color);
+				g_gs_device->ClearRenderTarget(t, color);
 			}
 		}
 	}
@@ -1949,15 +1940,15 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		// Do the blit. With a Copy mess to avoid issue with limited API (dx)
 		// m_dev->StretchRect(tex->m_texture, sRect, tex->m_texture, dRect);
 		const GSVector4i r_full(0, 0, tw, th);
-		if (GSTexture* rt = m_dev->CreateRenderTarget(tw, th, GSTexture::Format::Color))
+		if (GSTexture* rt = g_gs_device->CreateRenderTarget(tw, th, GSTexture::Format::Color))
 		{
-			m_dev->CopyRect(tex->m_texture, rt, r_full);
+			g_gs_device->CopyRect(tex->m_texture, rt, r_full);
 
-			m_dev->StretchRect(tex->m_texture, sRect, rt, dRect);
+			g_gs_device->StretchRect(tex->m_texture, sRect, rt, dRect);
 
-			m_dev->CopyRect(rt, tex->m_texture, r_full);
+			g_gs_device->CopyRect(rt, tex->m_texture, r_full);
 
-			m_dev->Recycle(rt);
+			g_gs_device->Recycle(rt);
 		}
 
 		// Copy back the texture into the GS mem. I don't know why but it will be
@@ -2077,9 +2068,9 @@ bool GSRendererHW::OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source
 				// normally, this step would copy the video onto screen with 512 texture mapped horizontal lines,
 				// but we use the stored video data to create a new texture, and replace the lines with two triangles
 
-				m_dev->Recycle(t->m_texture);
+				g_gs_device->Recycle(t->m_texture);
 
-				t->m_texture = m_dev->CreateTexture(512, 512, GSTexture::Format::Color);
+				t->m_texture = g_gs_device->CreateTexture(512, 512, GSTexture::Format::Color);
 
 				t->m_texture->Update(GSVector4i(0, 0, 448, lines), video, 448 * 4);
 
@@ -2120,7 +2111,7 @@ bool GSRendererHW::OI_FFX(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* 
 		GL_INS("OI_FFX ZB clear");
 		if (ds)
 			ds->Commit(); // Don't bother to save few MB for a single game
-		m_dev->ClearDepth(ds);
+		g_gs_device->ClearDepth(ds);
 	}
 
 	return true;
@@ -2172,7 +2163,7 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 			{
 				GL_INS("OI_RozenMaidenGebetGarden FB clear");
 				tmp_rt->m_texture->Commit(); // Don't bother to save few MB for a single game
-				m_dev->ClearRenderTarget(tmp_rt->m_texture, 0);
+				g_gs_device->ClearRenderTarget(tmp_rt->m_texture, 0);
 			}
 
 			return false;
@@ -2191,7 +2182,7 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 			{
 				GL_INS("OI_RozenMaidenGebetGarden ZB clear");
 				tmp_ds->m_texture->Commit(); // Don't bother to save few MB for a single game
-				m_dev->ClearDepth(tmp_ds->m_texture);
+				g_gs_device->ClearDepth(tmp_ds->m_texture);
 			}
 
 			return false;
@@ -2232,7 +2223,7 @@ bool GSRendererHW::OI_SonicUnleashed(GSTexture* rt, GSTexture* ds, GSTextureCach
 	const GSVector4 sRect(0, 0, 1, 1);
 	const GSVector4 dRect(0, 0, size.x, size.y);
 
-	m_dev->StretchRect(src->m_texture, sRect, rt, dRect, true, true, true, false);
+	g_gs_device->StretchRect(src->m_texture, sRect, rt, dRect, true, true, true, false);
 
 	return false;
 }
@@ -2308,7 +2299,7 @@ bool GSRendererHW::OI_SuperManReturns(GSTexture* rt, GSTexture* ds, GSTextureCac
 	// Do a direct write
 	if (rt)
 		rt->Commit(); // Don't bother to save few MB for a single game
-	m_dev->ClearRenderTarget(rt, GSVector4(m_vt.m_min.c));
+	g_gs_device->ClearRenderTarget(rt, GSVector4(m_vt.m_min.c));
 
 	m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, ctx->FRAME.Block());
 	GL_INS("OI_SuperManReturns");
@@ -2346,7 +2337,7 @@ bool GSRendererHW::OI_ArTonelico2(GSTexture* rt, GSTexture* ds, GSTextureCache::
 		GL_INS("OI_ArTonelico2");
 		if (ds)
 			ds->Commit(); // Don't bother to save few MB for a single game
-		m_dev->ClearDepth(ds);
+		g_gs_device->ClearDepth(ds);
 	}
 
 	return true;

@@ -26,7 +26,6 @@ private:
 	int m_height;
 	int m_custom_width;
 	int m_custom_height;
-	bool m_reset;
 	int m_upscale_multiplier;
 	int m_userhacks_ts_half_bottom;
 
@@ -151,29 +150,26 @@ protected:
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) = 0;
 
 	int m_userhacks_round_sprite_offset;
-	int m_userHacks_HPO;
 	bool m_userHacks_enabled_unscale_ptln;
 
 	bool m_userhacks_tcoffset;
 	float m_userhacks_tcoffset_x;
 	float m_userhacks_tcoffset_y;
 
-	bool m_accurate_date;
-	AccBlendLevel m_sw_blending;
-
 	bool m_channel_shuffle;
+	bool m_reset;
 
 	GSVector2i m_lod; // Min & Max level of detail
 	void CustomResolutionScaling();
 
 public:
 	GSRendererHW();
-	virtual ~GSRendererHW();
+	virtual ~GSRendererHW() override;
 
-	void SetGameCRC(u32 crc, int options);
-	bool CanUpscale();
-	int GetUpscaleMultiplier();
-	GSVector2i GetCustomResolution();
+	void SetGameCRC(u32 crc, int options) override;
+	bool CanUpscale() override;
+	int GetUpscaleMultiplier() override;
+	GSVector2i GetCustomResolution() override;
 	void SetScaling();
 	void Lines2Sprites();
 	void EmulateAtst(GSVector4& FogColor_AREF, u8& atst, const bool pass_2);
@@ -181,16 +177,16 @@ public:
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
 	GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
 	void MergeSprite(GSTextureCache::Source* tex);
-	GSVector2 GetTextureScaleFactor();
+	GSVector2 GetTextureScaleFactor() override;
 
-	void Reset();
-	void VSync(int field);
-	void ResetDevice();
-	GSTexture* GetOutput(int i, int& y_offset);
-	GSTexture* GetFeedbackOutput();
-	void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r);
-	void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false);
-	void Draw();
+	void Reset() override;
+	void VSync(u32 field) override;
+
+	GSTexture* GetOutput(int i, int& y_offset) override;
+	GSTexture* GetFeedbackOutput() override;
+	void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r) override;
+	void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false) override;
+	void Draw() override;
 
 	// Called by the texture cache to know if current texture is useful
 	virtual bool IsDummyTexture() const { return false; }

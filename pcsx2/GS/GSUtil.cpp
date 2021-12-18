@@ -185,28 +185,16 @@ bool GSUtil::CheckSSE()
 
 CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)
 {
-	return type == GSRendererType::OGL_HW ? CRCHackLevel::Partial : CRCHackLevel::Full;
+	return type == GSRendererType::OGL ? CRCHackLevel::Partial : CRCHackLevel::Full;
 }
 
 GSRendererType GSUtil::GetPreferredRenderer()
 {
 #ifdef _WIN32
 	if (D3D::ShouldPreferD3D())
-		return GSRendererType::DX1011_HW;
+		return GSRendererType::DX11;
 #endif
-	return GSRendererType::OGL_HW;
-}
-
-std::vector<std::string> GSUtil::GetAdapterList(GSRendererType renderer)
-{
-#ifdef _WIN32
-	if (renderer == GSRendererType::DX1011_HW)
-	{
-		auto factory = D3D::CreateFactory(false);
-		return D3D::GetAdapterList(factory.get());
-	}
-#endif
-	return {};
+	return GSRendererType::OGL;
 }
 
 #ifdef _WIN32

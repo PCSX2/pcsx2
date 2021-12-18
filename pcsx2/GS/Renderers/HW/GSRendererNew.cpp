@@ -18,12 +18,8 @@
 #include "GS/GSGL.h"
 
 GSRendererNew::GSRendererNew()
+	: GSRendererHW()
 {
-	if (theApp.GetConfigB("UserHacks"))
-		UserHacks_tri_filter = static_cast<TriFiltering>(theApp.GetConfigI("UserHacks_TriFilter"));
-	else
-		UserHacks_tri_filter = TriFiltering::None;
-
 	// Hope nothing requires too many draw calls.
 	m_drawlist.reserve(2048);
 
@@ -31,19 +27,6 @@ GSRendererNew::GSRendererNew()
 
 	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 	ResetStates();
-}
-
-bool GSRendererNew::CreateDevice(GSDevice* dev, const WindowInfo& wi)
-{
-	if (!GSRendererHW::CreateDevice(dev, wi))
-		return false;
-
-	if (dev->Features().texture_barrier)
-		m_sw_blending = static_cast<AccBlendLevel>(theApp.GetConfigI("accurate_blending_unit"));
-	else
-		m_sw_blending = static_cast<AccBlendLevel>(theApp.GetConfigI("accurate_blending_unit_d3d11"));
-
-	return true;
 }
 
 void GSRendererNew::SetupIA(const float& sx, const float& sy)
@@ -56,7 +39,7 @@ void GSRendererNew::SetupIA(const float& sx, const float& sy)
 			m_vertex.buff[i].UV &= 0x3FEF3FEF;
 	}
 	const bool unscale_pt_ln = m_userHacks_enabled_unscale_ptln && (GetUpscaleMultiplier() != 1);
-	const GSDevice::FeatureSupport features = m_dev->Features();
+	const GSDevice::FeatureSupport features = g_gs_device->Features();
 
 	switch (m_vt.m_primclass)
 	{
@@ -117,7 +100,7 @@ void GSRendererNew::SetupIA(const float& sx, const float& sy)
 			// the extra validation cost of the extra stage.
 			//
 			// Note: keep Geometry Shader in the replayer to ease debug.
-			if (m_dev->Features().geometry_shader && !m_vt.m_accurate_stq && (m_vertex.next > 32 || GLLoader::in_replayer)) // <=> 16 sprites (based on Shadow Hearts)
+			if (g_gs_device->Features().geometry_shader && !m_vt.m_accurate_stq && (m_vertex.next > 32 || GLLoader::in_replayer)) // <=> 16 sprites (based on Shadow Hearts)
 			{
 				m_conf.gs.expand = true;
 
@@ -200,9 +183,9 @@ void GSRendererNew::EmulateTextureShuffleAndFbmask()
 	// m_texture_shuffle = false;
 
 	bool enable_fbmask_emulation = false;
-	if (m_dev->Features().texture_barrier)
+	if (g_gs_device->Features().texture_barrier)
 	{
-		enable_fbmask_emulation = m_sw_blending != AccBlendLevel::None;
+		enable_fbmask_emulation = GSConfig.AccurateBlendingUnit != AccBlendLevel::Minimum;
 	}
 	else
 	{
@@ -211,7 +194,7 @@ void GSRendererNew::EmulateTextureShuffleAndFbmask()
 		// 1. D3D sucks.
 		// 2. FB copy is slow, especially on triangle primitives which is unplayable with some games.
 		// 3. SW blending isn't implemented yet.
-		switch (m_sw_blending)
+		switch (GSConfig.AccurateBlendingUnit)
 		{
 			case AccBlendLevel::Ultra:
 			case AccBlendLevel::Full:
@@ -231,7 +214,7 @@ void GSRendererNew::EmulateTextureShuffleAndFbmask()
 				// Also exclude fbmask emulation on texture shuffle just in case, it is probably safe tho.
 				enable_fbmask_emulation = (!m_texture_shuffle && (m_vt.m_primclass != GS_TRIANGLE_CLASS) && (m_context->FRAME.FBMSK != 0x80000000));
 				break;
-			case AccBlendLevel::None:
+			case AccBlendLevel::Minimum:
 				break;
 		}
 	}
@@ -249,7 +232,7 @@ void GSRendererNew::EmulateTextureShuffleAndFbmask()
 		// If date is enabled you need to test the green channel instead of the
 		// alpha channel. Only enable this code in DATE mode to reduce the number
 		// of shader.
-		m_conf.ps.write_rg = !write_ba && m_dev->Features().texture_barrier && m_context->TEST.DATE;
+		m_conf.ps.write_rg = !write_ba && g_gs_device->Features().texture_barrier && m_context->TEST.DATE;
 
 		m_conf.ps.read_ba = read_ba;
 
@@ -303,7 +286,7 @@ void GSRendererNew::EmulateTextureShuffleAndFbmask()
 			m_conf.cb_ps.FbMask.a = ba_mask;
 
 			// No blending so hit unsafe path.
-			if (!PRIM->ABE || !m_dev->Features().texture_barrier)
+			if (!PRIM->ABE || !g_gs_device->Features().texture_barrier)
 			{
 				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on tex shuffle", fbmask);
 				m_conf.require_one_barrier = true;
@@ -354,7 +337,7 @@ void GSRendererNew::EmulateTextureShuffleAndFbmask()
 			   have been invalidated before subsequent Draws are executed.
 			 */
 			// No blending so hit unsafe path.
-			if (!PRIM->ABE || !(~ff_fbmask & ~zero_fbmask & 0x7) || !m_dev->Features().texture_barrier)
+			if (!PRIM->ABE || !(~ff_fbmask & ~zero_fbmask & 0x7) || !g_gs_device->Features().texture_barrier)
 			{
 				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
 					(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
@@ -504,7 +487,7 @@ void GSRendererNew::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 	if (m_channel_shuffle)
 	{
 		m_conf.raw_tex = tex->m_from_target;
-		if (m_dev->Features().texture_barrier)
+		if (g_gs_device->Features().texture_barrier)
 			m_conf.require_one_barrier = true;
 
 		// Replace current draw with a fullscreen sprite
@@ -545,7 +528,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 	// Compute the blending equation to detect special case
 	const GIFRegALPHA& ALPHA = m_context->ALPHA;
 	u8 blend_index = u8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
-	const int blend_flag = m_dev->GetBlendFlags(blend_index);
+	const int blend_flag = g_gs_device->GetBlendFlags(blend_index);
 
 	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
 	bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
@@ -569,9 +552,9 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 	// Warning no break on purpose
 	// Note: the [[fallthrough]] attribute tell compilers not to complain about not having breaks.
 	bool sw_blending = false;
-	if (m_dev->Features().texture_barrier)
+	if (g_gs_device->Features().texture_barrier)
 	{
-		switch (m_sw_blending)
+		switch (GSConfig.AccurateBlendingUnit)
 		{
 			case AccBlendLevel::Ultra:
 				sw_blending |= true;
@@ -591,18 +574,18 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 			case AccBlendLevel::Basic:
 				sw_blending |= impossible_or_free_blend;
 				[[fallthrough]];
-			case AccBlendLevel::None:
+			case AccBlendLevel::Minimum:
 				/*sw_blending |= accumulation_blend*/;
 		}
 	}
 	else
 	{
-		if (static_cast<u8>(m_sw_blending) >= static_cast<u8>(AccBlendLevel::Basic))
+		if (static_cast<u8>(GSConfig.AccurateBlendingUnit) >= static_cast<u8>(AccBlendLevel::Basic))
 			sw_blending |= accumulation_blend || blend_non_recursive;
 	}
 
 	// Do not run BLEND MIX if sw blending is already present, it's less accurate
-	if (m_sw_blending != AccBlendLevel::None)
+	if (GSConfig.AccurateBlendingUnit != AccBlendLevel::Minimum)
 	{
 		blend_mix &= !sw_blending;
 		sw_blending |= blend_mix;
@@ -615,7 +598,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 		// fixes shadows in Superman shadows of Apokolips.
 		const bool sw_fbmask_colclip = !m_conf.require_one_barrier && m_conf.ps.fbmask;
 		bool free_colclip = false;
-		if (m_dev->Features().texture_barrier)
+		if (g_gs_device->Features().texture_barrier)
 			free_colclip = m_prim_overlap == PRIM_OVERLAP_NO || blend_non_recursive || sw_fbmask_colclip;
 		else
 			free_colclip = blend_non_recursive;
@@ -637,7 +620,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 			m_conf.ps.hdr = 1;
 			sw_blending = true; // Enable sw blending for the HDR algo
 		}
-		else if (sw_blending && m_dev->Features().texture_barrier)
+		else if (sw_blending && g_gs_device->Features().texture_barrier)
 		{
 			// A slow algo that could requires several passes (barely used)
 			GL_INS("COLCLIP SW mode ENABLED");
@@ -658,7 +641,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 		if (sw_blending)
 		{
 			GL_INS("PABE mode ENABLED");
-			if (m_dev->Features().texture_barrier)
+			if (g_gs_device->Features().texture_barrier)
 			{
 				// Disable hw/sw blend and do pure sw blend with reading the framebuffer.
 				accumulation_blend = false;
@@ -753,7 +736,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 			m_conf.require_full_barrier |= !blend_non_recursive;
 
 			// Only BLEND_NO_REC should hit this code path for now
-			if (!m_dev->Features().texture_barrier)
+			if (!g_gs_device->Features().texture_barrier)
 				ASSERT(blend_non_recursive);
 		}
 
@@ -795,7 +778,7 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	bool bilinear = m_vt.IsLinear();
 	int trilinear = 0;
 	bool trilinear_auto = false;
-	switch (UserHacks_tri_filter)
+	switch (GSConfig.UserHacks_TriFilter)
 	{
 		case TriFiltering::Forced:
 			trilinear = static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Linear);
@@ -810,7 +793,7 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 			}
 			break;
 
-		case TriFiltering::None:
+		case TriFiltering::Off:
 		default:
 			break;
 	}
@@ -936,7 +919,7 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	m_conf.ps.tcc = m_context->TEX0.TCC;
 
 	m_conf.ps.ltf = bilinear && shader_emulated_sampler;
-	m_conf.ps.point_sampler = m_dev->Features().broken_point_sampler && (!bilinear || shader_emulated_sampler);
+	m_conf.ps.point_sampler = g_gs_device->Features().broken_point_sampler && (!bilinear || shader_emulated_sampler);
 
 	const int w = tex->m_texture->GetWidth();
 	const int h = tex->m_texture->GetHeight();
@@ -1200,7 +1183,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	m_conf.cb_vs.texture_offset = GSVector2(0, 0);
 	m_conf.ps.scanmsk = m_env.SCANMSK.MSK;
 
-	ASSERT(m_dev != NULL);
+	ASSERT(g_gs_device != NULL);
 
 	// HLE implementation of the channel selection effect
 	//
@@ -1213,13 +1196,13 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	MergeSprite(tex);
 
 	// Always check if primitive overlap as it is used in plenty of effects.
-	if (m_dev->Features().texture_barrier)
+	if (g_gs_device->Features().texture_barrier)
 		m_prim_overlap = PrimitiveOverlap();
 	else
 		m_prim_overlap = PRIM_OVERLAP_UNKNOW; // Prim overlap check is useless without texture barrier
 
 	// Detect framebuffer read that will need special handling
-	if (m_dev->Features().texture_barrier && (m_context->FRAME.Block() == m_context->TEX0.TBP0) && PRIM->TME && m_sw_blending != AccBlendLevel::None)
+	if (g_gs_device->Features().texture_barrier && (m_context->FRAME.Block() == m_context->TEX0.TBP0) && PRIM->TME && GSConfig.AccurateBlendingUnit != AccBlendLevel::Minimum)
 	{
 		if ((m_context->FRAME.FBMSK == 0x00FFFFFF) && (m_vt.m_primclass == GS_TRIANGLE_CLASS))
 		{
@@ -1248,7 +1231,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			// It is way too complex to emulate texture shuffle with DATE. So just use
 			// the slow but accurate algo
 			GL_PERF("DATE: With %s", m_texture_shuffle ? "texture shuffle" : "no prim overlap");
-			if (m_dev->Features().texture_barrier)
+			if (g_gs_device->Features().texture_barrier)
 			{
 				m_conf.require_full_barrier = true;
 				DATE_GL45 = true;
@@ -1276,21 +1259,21 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				// texture barrier will split the draw call into n draw call. It is very efficient for
 				// few primitive draws. Otherwise it sucks.
 				GL_PERF("DATE: Slow with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				if (m_dev->Features().texture_barrier)
+				if (g_gs_device->Features().texture_barrier)
 				{
 					m_conf.require_full_barrier = true;
 					DATE_GL45 = true;
 				}
 			}
-			else if (m_accurate_date)
+			else if (GSConfig.AccurateDATE)
 			{
 				// Note: Fast level (DATE_one) was removed as it's less accurate.
 				GL_PERF("DATE: Full AD with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				if (m_dev->Features().image_load_store)
+				if (g_gs_device->Features().image_load_store)
 				{
 					DATE_GL42 = true;
 				}
-				else if (m_dev->Features().texture_barrier)
+				else if (g_gs_device->Features().texture_barrier)
 				{
 					m_conf.require_full_barrier = true;
 					DATE_GL45 = true;
@@ -1371,7 +1354,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	//The resulting shifted output aligns better with common blending / corona / blurring effects,
 	//but introduces a few bad pixels on the edges.
 
-	if (rt && rt->LikelyOffset && m_userHacks_HPO == 1)
+	if (rt && rt->LikelyOffset && GSConfig.UserHacks_HalfPixelOffset == 1)
 	{
 		ox2 *= rt->OffsetHack_modx;
 		oy2 *= rt->OffsetHack_mody;
@@ -1392,7 +1375,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 	else if (DATE_one)
 	{
-		if (m_dev->Features().texture_barrier)
+		if (g_gs_device->Features().texture_barrier)
 		{
 			m_conf.require_one_barrier = true;
 			m_conf.ps.date = 5 + m_context->TEST.DATM;
@@ -1409,13 +1392,13 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	m_conf.ps.fba = m_context->FBA.FBA;
-	m_conf.ps.dither = m_dithering > 0 && m_conf.ps.dfmt == 2 && m_env.DTHE.DTHE;
+	m_conf.ps.dither = GSConfig.Dithering > 0 && m_conf.ps.dfmt == 2 && m_env.DTHE.DTHE;
 
 	if (m_conf.ps.dither)
 	{
 		GL_DBG("DITHERING mode ENABLED (%d)", m_dithering);
 
-		m_conf.ps.dither = m_dithering;
+		m_conf.ps.dither = GSConfig.Dithering;
 		m_conf.cb_ps.DitherMatrix[0] = GSVector4(m_env.DIMX.DM00, m_env.DIMX.DM01, m_env.DIMX.DM02, m_env.DIMX.DM03);
 		m_conf.cb_ps.DitherMatrix[1] = GSVector4(m_env.DIMX.DM10, m_env.DIMX.DM11, m_env.DIMX.DM12, m_env.DIMX.DM13);
 		m_conf.cb_ps.DitherMatrix[2] = GSVector4(m_env.DIMX.DM20, m_env.DIMX.DM21, m_env.DIMX.DM22, m_env.DIMX.DM23);
@@ -1619,12 +1602,12 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	m_conf.rt = rt;
 	m_conf.ds = ds;
-	m_dev->RenderHW(m_conf);
+	g_gs_device->RenderHW(m_conf);
 }
 
 bool GSRendererNew::IsDummyTexture() const
 {
 	// Texture is actually the frame buffer. Stencil emulation to compute shadow (Jak series/tri-ace game)
 	// Will hit the "m_ps_sel.tex_is_fb = 1" path in the draw
-	return m_dev->Features().texture_barrier && (m_context->FRAME.Block() == m_context->TEX0.TBP0) && PRIM->TME && m_sw_blending != AccBlendLevel::None && m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_context->FRAME.FBMSK == 0x00FFFFFF);
+	return g_gs_device->Features().texture_barrier && (m_context->FRAME.Block() == m_context->TEX0.TBP0) && PRIM->TME && GSConfig.AccurateBlendingUnit != AccBlendLevel::Minimum && m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_context->FRAME.FBMSK == 0x00FFFFFF);
 }

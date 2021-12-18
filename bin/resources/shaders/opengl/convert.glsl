@@ -272,13 +272,6 @@ void ps_convert_rgba_8i()
 }
 #endif
 
-#ifdef ps_osd
-void ps_osd()
-{
-    SV_Target0 = PSin_c * vec4(1.0, 1.0, 1.0, sample_c().r);
-}
-#endif
-
 #ifdef ps_filter_transparency
 void ps_filter_transparency()
 {

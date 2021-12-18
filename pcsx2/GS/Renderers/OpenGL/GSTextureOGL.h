@@ -63,6 +63,8 @@ public:
 	explicit GSTextureOGL(Type type, int w, int h, Format format, GLuint fbo_read, bool mipmap);
 	virtual ~GSTextureOGL();
 
+	void* GetNativeHandle() const override;
+
 	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) final;
 	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) final;
 	void Unmap() final;
@@ -70,7 +72,6 @@ public:
 	bool Save(const std::string& fn) final;
 
 	GSMap Read(const GSVector4i& r, AlignedBuffer<u8, 32>& buffer);
-	bool IsBackbuffer() { return (m_type == Type::Backbuffer); }
 	bool IsDss() { return (m_type == Type::DepthStencil || m_type == Type::SparseDepthStencil); }
 
 	u32 GetID() final { return m_texture_id; }

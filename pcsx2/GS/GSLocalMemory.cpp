@@ -62,14 +62,9 @@ GSLocalMemory::GSLocalMemory()
 	: m_clut(this)
 {
 	m_use_fifo_alloc = theApp.GetConfigB("UserHacks") && theApp.GetConfigB("wrap_gs_mem");
-	switch (theApp.GetCurrentRendererType())
-	{
-		case GSRendererType::OGL_SW:
-			m_use_fifo_alloc = true;
-			break;
-		default:
-			break;
-	}
+
+	if (!GSConfig.UseHardwareRenderer())
+		m_use_fifo_alloc = true;
 
 	if (m_use_fifo_alloc)
 		m_vm8 = (u8*)fifo_alloc(m_vmsize, 4);

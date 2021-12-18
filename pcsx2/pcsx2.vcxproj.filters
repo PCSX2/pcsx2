@@ -1583,9 +1583,6 @@
     <ClCompile Include="GS\Renderers\Common\GSFunctionMap.cpp">
       <Filter>System\Ps2\GS\Renderers\Common</Filter>
     </ClCompile>
-    <ClCompile Include="GS\Renderers\Common\GSOsdManager.cpp">
-      <Filter>System\Ps2\GS\Renderers\Common</Filter>
-    </ClCompile>
     <ClCompile Include="GS\GSCapture.cpp">
       <Filter>System\Ps2\GS\Window</Filter>
     </ClCompile>
@@ -1648,6 +1645,21 @@
     </ClCompile>
     <ClCompile Include="SPU2\SndOut_Cubeb.cpp">
       <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="HostDisplay.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\OpenGLHostDisplay.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\D3D11HostDisplay.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\AppHost.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\ImGuiManager.cpp">
+      <Filter>Host</Filter>
     </ClCompile>
     <ClCompile Include="Host.cpp">
       <Filter>Host</Filter>
@@ -2689,9 +2701,6 @@
     <ClInclude Include="GS\Renderers\Common\GSFunctionMap.h">
       <Filter>System\Ps2\GS\Renderers\Common</Filter>
     </ClInclude>
-    <ClInclude Include="GS\Renderers\Common\GSOsdManager.h">
-      <Filter>System\Ps2\GS\Renderers\Common</Filter>
-    </ClInclude>
     <ClInclude Include="GS\GSCapture.h">
       <Filter>System\Ps2\GS\Window</Filter>
     </ClInclude>
@@ -2753,6 +2762,21 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="Host.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="HostDisplay.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\OpenGLHostDisplay.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\D3D11HostDisplay.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\AppHost.h">
+      <Filter>AppHost\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\ImGuiManager.h">
       <Filter>Host</Filter>
     </ClInclude>
   </ItemGroup>

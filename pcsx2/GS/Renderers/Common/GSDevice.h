@@ -21,11 +21,12 @@
 #include "GSVertex.h"
 #include "GS/GSAlignedClass.h"
 #include "GS/GSExtra.h"
-#include "GSOsdManager.h"
 #include <array>
 #ifdef _WIN32
 #include <dxgi.h>
 #endif
+
+class HostDisplay;
 
 enum class ShaderConvert
 {
@@ -48,7 +49,6 @@ enum class ShaderConvert
 	RGB5A1_TO_FLOAT16,
 	RGBA_TO_8I = 17,
 	YUV,
-	OSD,
 	Count
 };
 
@@ -526,9 +526,8 @@ protected:
 	static const int m_NO_BLEND = 0;
 	static const int m_MERGE_BLEND = m_blendMap.size() - 1;
 
-	int m_vsync;
 	bool m_rbswapped;
-	GSTexture* m_backbuffer;
+	HostDisplay* m_display;
 	GSTexture* m_merge;
 	GSTexture* m_weavebob;
 	GSTexture* m_blend;
@@ -557,10 +556,10 @@ protected:
 	virtual u16 ConvertBlendEnum(u16 generic) = 0; // Convert blend factors/ops from the generic enum to DX11/OGl specific.
 
 public:
-	GSOsdManager m_osd;
-
 	GSDevice();
 	virtual ~GSDevice();
+
+	__fi HostDisplay* GetDisplay() const { return m_display; }
 
 	void Recycle(GSTexture* t);
 
@@ -571,14 +570,11 @@ public:
 		DontCare
 	};
 
-	virtual bool Create(const WindowInfo& wi);
-	virtual bool Reset(int w, int h);
-	virtual bool IsLost(bool update = false) { return false; }
-	virtual void Present(const GSVector4i& r, int shader);
-	virtual void Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY);
-	virtual void Flip() {}
+	virtual bool Create(HostDisplay* display);
+	virtual void Destroy();
 
-	virtual void SetVSync(int vsync) { m_vsync = vsync; }
+	virtual void ResetAPIState();
+	virtual void RestoreAPIState();
 
 	virtual void BeginScene() {}
 	virtual void EndScene();
@@ -626,7 +622,6 @@ public:
 	void FXAA();
 	void ShadeBoost();
 	void ExternalFX();
-	virtual void RenderOsd(GSTexture* dt) {};
 
 	bool ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h);
 	bool ResizeTexture(GSTexture** t, int w, int h);
@@ -634,8 +629,6 @@ public:
 	bool ResizeTarget(GSTexture** t);
 
 	bool IsRBSwapped() { return m_rbswapped; }
-	int GetBackbufferWidth() const { return m_backbuffer ? m_backbuffer->GetWidth() : 0; }
-	int GetBackbufferHeight() const { return m_backbuffer ? m_backbuffer->GetHeight() : 0; }
 
 	void AgePool();
 	void PurgePool();
@@ -673,3 +666,5 @@ struct GSAdapter
 	// TODO
 #endif
 };
+
+extern std::unique_ptr<GSDevice> g_gs_device;

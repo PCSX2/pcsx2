@@ -361,46 +361,11 @@ wxAppTraits* Pcsx2App::CreateTraits()
 // LogicalVsync - Event received from the AppCoreThread (EEcore) for each vsync,
 // roughly 50/60 times a second when frame limiting is enabled, and up to 10,000 
 // times a second if not (ok, not quite, but you get the idea... I hope.)
-extern uint eecount_on_last_vdec;
-extern bool FMVstarted;
-extern bool EnableFMV;
-extern bool renderswitch;
-
 void Pcsx2App::LogicalVsync()
 {
 	if( AppRpc_TryInvokeAsync( &Pcsx2App::LogicalVsync ) ) return;
 
 	if( !SysHasValidState() ) return;
-
-	// Update / Calculate framerate!
-
-	if (EmuConfig.GS.FMVAspectRatioSwitch != FMVAspectRatioSwitchType::Off) {
-		if (EnableFMV) {
-			DevCon.Warning("FMV on");
-
-			switch (EmuConfig.GS.FMVAspectRatioSwitch)
-			{
-			case FMVAspectRatioSwitchType::R4_3:
-				EmuConfig.CurrentAspectRatio = AspectRatioType::R4_3;
-				break;
-			case FMVAspectRatioSwitchType::R16_9:
-				EmuConfig.CurrentAspectRatio = AspectRatioType::R16_9;
-				break;
-			default:
-				break;
-			}
-			EnableFMV = false;
-		}
-
-		if (FMVstarted) {
-			int diff = cpuRegs.cycle - eecount_on_last_vdec;
-			if (diff > 60000000 ) {
-				DevCon.Warning("FMV off");
-				EmuConfig.CurrentAspectRatio = EmuConfig.GS.AspectRatio;
-				FMVstarted = false;
-			}
-		}
-	}
 
 	if( (wxGetApp().GetGsFramePtr() != NULL) )
 		PADupdate(0);
@@ -763,8 +728,6 @@ void Pcsx2App::OpenGsPanel()
 		gsFrame->SetSize( oldsize );
 	}
 
-    pxAssertDev( !gsopen_done, "GS must be closed prior to opening a new Gs Panel!" );
-
 	gsFrame->ShowFullScreen(g_Conf->GSWindow.IsFullscreen);
 	wxApp::ProcessPendingEvents();
 
@@ -784,10 +747,19 @@ void Pcsx2App::OpenGsPanel()
 #endif
 }
 
+
 void Pcsx2App::CloseGsPanel()
 {
 	if (AppRpc_TryInvoke(&Pcsx2App::CloseGsPanel))
 		return;
+
+	GSFrame* gsFrame = GetGsFramePtr();
+	if (gsFrame)
+	{
+		// we unreference the window first, that way it doesn't try to suspend on close and deadlock
+		OnGsFrameDestroyed(gsFrame->GetId());
+		gsFrame->Destroy();
+	}
 }
 
 void Pcsx2App::OnGsFrameClosed(wxWindowID id)
@@ -803,6 +775,16 @@ void Pcsx2App::OnGsFrameClosed(wxWindowID id)
 		// right now there's no way to resume from suspend without GUI.
 		PrepForExit();
 	}
+}
+
+void Pcsx2App::OnGsFrameDestroyed(wxWindowID id)
+{
+	if ((m_id_GsFrame == wxID_ANY) || (m_id_GsFrame != id))
+		return;
+
+	m_id_GsFrame = wxID_ANY;
+	g_gs_window_info = {};
+
 #ifndef DISABLE_RECORDING
 	// Disable recording controls that only make sense if the game is running
 	sMainFrame.enableRecordingMenuItem(MenuId_Recording_FrameAdvance, false);

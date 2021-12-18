@@ -244,5 +244,4 @@ void OSDlog(ConsoleColors color, bool console, const std::string& format, Args .
 	OSDlog(color, console, buf.data());
 }
 
-void OSDmonitor(ConsoleColors color, const std::string key, const std::string value);
 

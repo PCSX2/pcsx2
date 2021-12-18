@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -13,10 +13,26 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "PrecompiledHeader.h"
-#include "GSDeviceNull.h"
+#pragma once
 
-GSTexture* GSDeviceNull::CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format format)
+namespace ImGuiManager
 {
-	return new GSTextureNull(type, w, h, format);
-}
+	/// Initializes ImGui, creates fonts, etc.
+	bool Initialize();
+
+	/// Frees all ImGui resources.
+	void Shutdown();
+
+	/// Updates internal state when the window is size.
+	void WindowResized();
+
+	/// Updates scaling of the on-screen elements.
+	void UpdateScale();
+
+	/// Call at the beginning of the frame to set up ImGui state.
+	void NewFrame();
+
+	/// Renders any on-screen display elements.
+	void RenderOSD();
+} // namespace ImGuiManager
+

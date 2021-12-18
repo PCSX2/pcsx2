@@ -22,11 +22,13 @@
 #include "common/StringUtil.h"
 #include "Config.h"
 #include "GS.h"
+#include "HostDisplay.h"
 #include "CDVD/CDVDaccess.h"
 #include "MemoryCardFile.h"
 
 #ifndef PCSX2_CORE
 #include "gui/AppConfig.h"
+#include "GS/GS.h"
 #endif
 
 namespace EmuFolders
@@ -245,6 +247,152 @@ void Pcsx2Config::CpuOptions::LoadSave(SettingsWrapper& wrap)
 	Recompiler.LoadSave(wrap);
 }
 
+const char* Pcsx2Config::GSOptions::AspectRatioNames[] = {
+	"Stretch",
+	"4:3",
+	"16:9",
+	nullptr};
+
+const char* Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames[] = {
+	"Off",
+	"4:3",
+	"16:9",
+	nullptr};
+
+const char* Pcsx2Config::GSOptions::GetRendererName(GSRendererType type)
+{
+	switch (type)
+	{
+	case GSRendererType::Auto: return "Auto";
+	case GSRendererType::DX11: return "Direct3D 11";
+	case GSRendererType::OGL: return "OpenGL";
+	case GSRendererType::SW: return "Software";
+	case GSRendererType::Null: return "Null";
+	default: return "";
+	}
+}
+
+Pcsx2Config::GSOptions::GSOptions()
+{
+	bitset = 0;
+
+	IntegerScaling = false;
+	LinearPresent = true;
+	UseDebugDevice = false;
+	UseBlitSwapChain = false;
+	DisableShaderCache = false;
+	OsdShowMessages = true;
+	OsdShowSpeed = false;
+	OsdShowFPS = false;
+	OsdShowCPU = false;
+	OsdShowResolution = false;
+	OsdShowGSStats = false;
+
+	HWDisableReadbacks = false;
+	AccurateDATE = true;
+	GPUPaletteConversion = false;
+	ConservativeFramebuffer = true;
+	AutoFlushSW = true;
+	PreloadFrameWithGSData = false;
+	WrapGSMem = false;
+	UserHacks = false;
+	UserHacks_AlignSpriteX = false;
+	UserHacks_AutoFlush = false;
+	UserHacks_CPUFBConversion = false;
+	UserHacks_DisableDepthSupport = false;
+	UserHacks_DisablePartialInvalidation = false;
+	UserHacks_DisableSafeFeatures = false;
+	UserHacks_MergePPSprite = false;
+	UserHacks_WildHack = false;
+
+	ShaderFX_Conf = "shaders/GS_FX_Settings.ini";
+	ShaderFX_GLSL = "shaders/GS.fx";
+}
+
+bool Pcsx2Config::GSOptions::operator==(const GSOptions& right) const
+{
+	return (
+		OpEqu(SynchronousMTGS) &&
+		OpEqu(VsyncQueueSize) &&
+
+		OpEqu(FrameSkipEnable) &&
+		OpEqu(FrameLimitEnable) &&
+		OpEqu(VsyncEnable) &&
+
+		OpEqu(FramesToDraw) &&
+		OpEqu(FramesToSkip) &&
+
+		OpEqu(LimitScalar) &&
+		OpEqu(FramerateNTSC) &&
+		OpEqu(FrameratePAL) &&
+
+		OpEqu(AspectRatio) &&
+		OpEqu(FMVAspectRatioSwitch) &&
+
+		OptionsAreEqual(right)
+		);
+}
+
+bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
+{
+	return (
+		   OpEqu(bitset) &&
+
+		   OpEqu(InterlaceMode) &&
+
+		   OpEqu(Zoom) &&
+		   OpEqu(StretchY) &&
+		   OpEqu(OffsetX) &&
+		   OpEqu(OffsetY) &&
+		   OpEqu(OsdScale) &&
+
+		   OpEqu(Renderer) &&
+		   OpEqu(UpscaleMultiplier) &&
+
+		   OpEqu(HWMipmap) &&
+		   OpEqu(AccurateBlendingUnit) &&
+		   OpEqu(CRCHack) &&
+		   OpEqu(TextureFiltering) &&
+		   OpEqu(Dithering) &&
+		   OpEqu(MaxAnisotropy) &&
+		   OpEqu(SWExtraThreads) &&
+		   OpEqu(SWExtraThreadsHeight) &&
+		   OpEqu(TVShader) &&
+		   OpEqu(SkipDraw) &&
+		   OpEqu(SkipDrawOffset) &&
+
+		   OpEqu(UserHacks_HalfBottomOverride) &&
+		   OpEqu(UserHacks_HalfPixelOffset) &&
+		   OpEqu(UserHacks_RoundSprite) &&
+		   OpEqu(UserHacks_TCOffsetX) &&
+		   OpEqu(UserHacks_TCOffsetY) &&
+		   OpEqu(UserHacks_TriFilter) &&
+
+		   OpEqu(ShadeBoost_Brightness) &&
+		   OpEqu(ShadeBoost_Contrast) &&
+		   OpEqu(ShadeBoost_Saturation) &&
+		   OpEqu(SaveN) &&
+		   OpEqu(SaveL) &&
+		   OpEqu(Adapter) &&
+		   OpEqu(ShaderFX_Conf) &&
+		   OpEqu(ShaderFX_GLSL));
+}
+
+bool Pcsx2Config::GSOptions::operator!=(const GSOptions& right) const
+{
+	return !operator==(right);
+}
+
+bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) const
+{
+	return 
+		OpEqu(Renderer) &&
+		OpEqu(Adapter) &&
+		OpEqu(UseDebugDevice) &&
+		OpEqu(UseBlitSwapChain) &&
+		OpEqu(DisableShaderCache);
+}
+
 void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 {
 	SettingsWrapSection("EmuCore/GS");
@@ -258,7 +406,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(FrameSkipEnable);
 	wrap.EnumEntry(CURRENT_SETTINGS_SECTION, "VsyncEnable", VsyncEnable, NULL, VsyncEnable);
 
-	SettingsWrapEntry(LimitScalar);
+	// LimitScalar is set at runtime.
 	SettingsWrapEntry(FramerateNTSC);
 	SettingsWrapEntry(FrameratePAL);
 
@@ -266,48 +414,181 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(FramesToSkip);
 
 #ifdef PCSX2_CORE
-	static const char* AspectRatioNames[] =
-		{
-			"Stretch",
-			"4:3",
-			"16:9",
-			// WARNING: array must be NULL terminated to compute it size
-			NULL};
-
-	wrap.EnumEntry("AspectRatio", AspectRatio, AspectRatioNames, AspectRatio);
-
-	static const char* FMVAspectRatioSwitchNames[] =
-		{
-			"Off",
-			"4:3",
-			"16:9",
-			// WARNING: array must be NULL terminated to compute it size
-			NULL};
-	wrap.EnumEntry("FMVAspectRatioSwitch", FMVAspectRatioSwitch, FMVAspectRatioSwitchNames, FMVAspectRatioSwitch);
-
+	// These are loaded from GSWindow in wx.
+	SettingsWrapEnumEx(AspectRatio, "AspectRatio", AspectRatioNames);
+	SettingsWrapEnumEx(FMVAspectRatioSwitch, "FMVAspectRatioSwitch", FMVAspectRatioSwitchNames);
 	SettingsWrapEntry(Zoom);
+	SettingsWrapEntry(StretchY);
+	SettingsWrapEntry(OffsetX);
+	SettingsWrapEntry(OffsetY);
+#endif
+
+#ifndef PCSX2_CORE
+	if (wrap.IsLoading())
+		ReloadIniSettings();
+#else
+	LoadSaveIniSettings(wrap);
 #endif
 }
 
-int Pcsx2Config::GSOptions::GetVsync() const
+#ifdef PCSX2_CORE
+void Pcsx2Config::GSOptions::LoadSaveIniSettings(SettingsWrapper& wrap)
 {
-	if (EmuConfig.LimiterMode == LimiterModeType::Turbo || !FrameLimitEnable)
-		return 0;
+	SettingsWrapSection("EmuCore/GS");
 
-	// D3D only support a boolean state. OpenGL waits a number of vsync
-	// interrupt (negative value for late vsync).
-	switch (VsyncEnable)
+#define GSSettingInt(var) SettingsWrapBitfield(var)
+#define GSSettingIntEx(var, name) SettingsWrapBitfieldEx(var, name)
+#define GSSettingBool(var) SettingsWrapBitBool(var)
+#define GSSettingBoolEx(var, name) SettingsWrapBitBoolEx(var, name)
+#define GSSettingFloat(var) SettingsWrapBitfield(var)
+#define GSSettingIntEnumEx(var, name) SettingsWrapIntEnumEx(var, name)
+#define GSSettingString(var) SettingsWrapEntry(var)
+#define GSSettingStringEx(var, name) SettingsWrapEntryEx(var, name)
+#else
+void Pcsx2Config::GSOptions::ReloadIniSettings()
+{
+	// ensure theApp is loaded.
+	GSinitConfig();
+
+#define GSSettingInt(var) var = theApp.GetConfigI(#var)
+#define GSSettingIntEx(var, name) var = theApp.GetConfigI(name)
+#define GSSettingBool(var) var = theApp.GetConfigB(#var)
+#define GSSettingBoolEx(var, name) var = theApp.GetConfigB(name)
+#define GSSettingFloat(var) var = static_cast<double>(theApp.GetConfigI(#var))
+#define GSSettingIntEnumEx(var, name) var = static_cast<decltype(var)>(theApp.GetConfigI(name))
+#define GSSettingString(var) var = theApp.GetConfigS(#var)
+#define GSSettingStringEx(var, name) var = theApp.GetConfigS(name)
+#endif
+
+	// Unfortunately, because code in the GS still reads the setting by key instead of
+	// using these variables, we need to use the old names. Maybe post 2.0 we can change this.
+	GSSettingBool(IntegerScaling);
+	GSSettingBoolEx(LinearPresent, "linear_present");
+	GSSettingBool(UseDebugDevice);
+	GSSettingBool(UseBlitSwapChain);
+	GSSettingBoolEx(DisableShaderCache, "disable_shader_cache");
+	GSSettingBool(OsdShowMessages);
+	GSSettingBool(OsdShowSpeed);
+	GSSettingBool(OsdShowFPS);
+	GSSettingBool(OsdShowCPU);
+	GSSettingBool(OsdShowResolution);
+	GSSettingBool(OsdShowGSStats);
+
+	GSSettingBool(HWDisableReadbacks);
+	GSSettingBoolEx(AccurateDATE, "accurate_date");
+	GSSettingBoolEx(GPUPaletteConversion, "paltex");
+	GSSettingBoolEx(ConservativeFramebuffer, "conservative_framebuffer");
+	GSSettingBoolEx(AutoFlushSW, "autoflush_sw");
+	GSSettingBoolEx(PreloadFrameWithGSData, "preload_frame_with_gs_data");
+	GSSettingBoolEx(WrapGSMem, "wrap_gs_mem");
+	GSSettingBoolEx(Mipmap, "mipmap");
+	GSSettingBoolEx(AA1, "aa1");
+	GSSettingBoolEx(UserHacks, "UserHacks");
+	GSSettingBoolEx(UserHacks_AlignSpriteX, "UserHacks_align_sprite_X");
+	GSSettingBoolEx(UserHacks_AutoFlush, "UserHacks_AutoFlush");
+	GSSettingBoolEx(UserHacks_CPUFBConversion, "UserHacks_CPU_FB_Conversion");
+	GSSettingBoolEx(UserHacks_DisableDepthSupport, "UserHacks_DisableDepthSupport");
+	GSSettingBoolEx(UserHacks_DisablePartialInvalidation, "UserHacks_DisablePartialInvalidation");
+	GSSettingBoolEx(UserHacks_DisableSafeFeatures, "UserHacks_Disable_Safe_Features");
+	GSSettingBoolEx(UserHacks_MergePPSprite, "UserHacks_merge_pp_sprite");
+	GSSettingBoolEx(UserHacks_WildHack, "UserHacks_WildHack");
+	GSSettingBoolEx(UserHacks_TextureInsideRt, "UserHacks_TextureInsideRt");
+	GSSettingBoolEx(FXAA, "fxaa");
+	GSSettingBool(ShadeBoost);
+	GSSettingBoolEx(ShaderFX, "shaderfx");
+	GSSettingBoolEx(DumpGSData, "dump");
+	GSSettingBoolEx(SaveRT, "save");
+	GSSettingBoolEx(SaveFrame, "savef");
+	GSSettingBoolEx(SaveTexture, "savet");
+	GSSettingBoolEx(SaveDepth, "savez");
+
+	GSSettingIntEnumEx(InterlaceMode, "interlace");
+
+	GSSettingFloat(OsdScale);
+
+	GSSettingIntEnumEx(Renderer, "Renderer");
+	GSSettingIntEx(UpscaleMultiplier, "upscale_multiplier");
+
+	GSSettingIntEnumEx(HWMipmap, "mipmap_hw");
+	GSSettingIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
+	GSSettingIntEnumEx(CRCHack, "crc_hack_level");
+	GSSettingIntEnumEx(TextureFiltering, "filter");
+	GSSettingIntEx(Dithering, "dithering_ps2");
+	GSSettingIntEx(MaxAnisotropy, "MaxAnisotropy");
+	GSSettingIntEx(SWExtraThreads, "extrathreads");
+	GSSettingIntEx(SWExtraThreadsHeight, "extrathreads_height");
+	GSSettingIntEx(TVShader, "TVShader");
+	GSSettingIntEx(SkipDraw, "UserHacks_SkipDraw");
+	GSSettingIntEx(SkipDrawOffset, "UserHacks_SkipDraw_Offset");
+
+	GSSettingIntEx(UserHacks_HalfBottomOverride, "UserHacks_Half_Bottom_Override");
+	GSSettingIntEx(UserHacks_HalfPixelOffset, "UserHacks_HalfPixelOffset");
+	GSSettingIntEx(UserHacks_RoundSprite, "UserHacks_round_sprite_offset");
+	GSSettingIntEx(UserHacks_TCOffsetX, "UserHacks_TCOffsetX");
+	GSSettingIntEx(UserHacks_TCOffsetY, "UserHacks_TCOffsetY");
+	GSSettingIntEnumEx(UserHacks_TriFilter, "UserHacks_TriFilter");
+
+	GSSettingInt(ShadeBoost_Brightness);
+	GSSettingInt(ShadeBoost_Contrast);
+	GSSettingInt(ShadeBoost_Saturation);
+	GSSettingIntEx(SaveN, "saven");
+	GSSettingIntEx(SaveL, "savel");
+
+	GSSettingString(Adapter);
+	GSSettingStringEx(ShaderFX_Conf, "shaderfx_conf");
+	GSSettingStringEx(ShaderFX_GLSL, "shaderfx_glsl");
+
+#undef GSSettingInt
+#undef GSSettingIntEx
+#undef GSSettingBool
+#undef GSSettingBoolEx
+#undef GSSettingFloat
+#undef GSSettingEnumEx
+#undef GSSettingIntEnumEx
+#undef GSSettingString
+#undef GSSettingStringEx
+}
+
+void Pcsx2Config::GSOptions::MaskUserHacks()
+{
+	if (UserHacks)
+		return;
+
+	UserHacks_AlignSpriteX = false;
+	UserHacks_MergePPSprite = false;
+	UserHacks_DisableSafeFeatures = false;
+	UserHacks_HalfBottomOverride = -1;
+	UserHacks_HalfPixelOffset = 0;
+	UserHacks_RoundSprite = 0;
+	PreloadFrameWithGSData = false;
+	UserHacks_DisablePartialInvalidation = false;
+	UserHacks_DisableDepthSupport = false;
+	UserHacks_CPUFBConversion = false;
+	UserHacks_TextureInsideRt = false;
+	UserHacks_TCOffsetX = 0;
+	UserHacks_TCOffsetY = 0;
+
+	// in wx, we put trilinear filtering behind user hacks, but not in qt.
+#ifndef PCSX2_CORE
+	UserHacks_TriFilter = TriFiltering::Off;
+#endif
+}
+
+bool Pcsx2Config::GSOptions::UseHardwareRenderer() const
+{
+	return (Renderer == GSRendererType::DX11 || Renderer == GSRendererType::OGL);
+}
+
+VsyncMode Pcsx2Config::GetEffectiveVsyncMode() const
+{
+	if (GS.LimitScalar != 1.0)
 	{
-		case VsyncMode::Adaptive:
-			return -1;
-		case VsyncMode::Off:
-			return 0;
-		case VsyncMode::On:
-			return 1;
-
-		default:
-			return 0;
+		Console.WriteLn("Vsync is OFF");
+		return VsyncMode::Off;
 	}
+
+	Console.WriteLn("Vsync is %s", GS.VsyncEnable == VsyncMode::Off ? "OFF" : (GS.VsyncEnable == VsyncMode::Adaptive ? "ADAPTIVE" : "ON"));
+	return GS.VsyncEnable;
 }
 
 Pcsx2Config::SPU2Options::SPU2Options()
@@ -348,6 +629,7 @@ static const char* const tbl_GamefixNames[] =
 		"FpuMul",
 		"FpuNegDiv",
 		"GoemonTlb",
+		"SoftwareRendererFMV",
 		"SkipMPEG",
 		"OPHFlag",
 		"EETiming",
@@ -422,6 +704,9 @@ void Pcsx2Config::GamefixOptions::Set(GamefixId id, bool enabled)
 		case Fix_EETiming:
 			EETimingHack = enabled;
 			break;
+		case Fix_SoftwareRendererFMV:
+			SoftwareRendererFMVHack = enabled;
+			break;
 		case Fix_SkipMpeg:
 			SkipMPEGHack = enabled;
 			break;
@@ -471,6 +756,8 @@ bool Pcsx2Config::GamefixOptions::Get(GamefixId id) const
 			return XgKickHack;
 		case Fix_EETiming:
 			return EETimingHack;
+		case Fix_SoftwareRendererFMV:
+			return SoftwareRendererFMVHack;
 		case Fix_SkipMpeg:
 			return SkipMPEGHack;
 		case Fix_OPHFlag:
@@ -505,6 +792,7 @@ void Pcsx2Config::GamefixOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(FpuNegDivHack);
 	SettingsWrapBitBool(XgKickHack);
 	SettingsWrapBitBool(EETimingHack);
+	SettingsWrapBitBool(SoftwareRendererFMVHack);
 	SettingsWrapBitBool(SkipMPEGHack);
 	SettingsWrapBitBool(OPHFlagHack);
 	SettingsWrapBitBool(DMABusyHack);
@@ -765,6 +1053,8 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 #ifdef __WXMSW__
 	McdCompressNTFS = cfg.McdCompressNTFS;
 #endif
+
+	LimiterMode = cfg.LimiterMode;
 }
 
 void EmuFolders::SetDefaults()

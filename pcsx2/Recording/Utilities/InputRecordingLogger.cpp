@@ -22,6 +22,7 @@
 #include "GS.h"				// GSosdlog
 #include "gui/App.h"	// GetRGBA
 #include "gui/ConsoleLogger.h"
+#include "Host.h"
 
 #include <fmt/core.h>
 
@@ -35,7 +36,7 @@ namespace inputRec
 		recordingConLog(fmt::format("[REC]: {}\n", log));
 
 		// NOTE - Color is not currently used for OSD logs
-		GSosdLog(log.c_str(), wxGetApp().GetProgramLog()->GetRGBA(ConsoleColors::Color_StrongMagenta));
+		Host::AddOSDMessage(log, 15.0f);
 	}
 
 	void consoleLog(const std::string& log)

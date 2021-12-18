@@ -24,6 +24,7 @@
 #include "common/EmbeddedImage.h"
 #include "gui/Resources/NoIcon.h"
 #include "GS.h"
+#include "HostDisplay.h"
 
 #include "PathDefs.h"
 #include "gui/AppConfig.h"
@@ -199,6 +200,7 @@ void Dialogs::GSDumpDialog::CloseDump(wxCommandEvent& event)
 	m_gif_packet->DeleteAllItems();
 	m_debug_mode->SetValue(false);
 	m_run->Enable();
+	m_settings->Enable();
 }
 
 // --------------------------------------------------------------------------------------
@@ -219,6 +221,7 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 		return;
 	}
 	m_run->Disable();
+	m_settings->Disable();
 	m_debug_mode->Enable();
 	m_thread->m_renderer = m_renderer_overrides->GetSelection();
 	m_thread->Start();
@@ -278,6 +281,9 @@ void Dialogs::GSDumpDialog::ToVSync(wxCommandEvent& event)
 void Dialogs::GSDumpDialog::OpenSettings(wxCommandEvent& event)
 {
 	GSconfigure();
+
+	// config has to be reloaded here, otherwise it won't apply when we restart
+	g_Conf->EmuOptions.GS.ReloadIniSettings();
 }
 
 void Dialogs::GSDumpDialog::ToStart(wxCommandEvent& event)
@@ -654,10 +660,8 @@ void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSData& event, char* regs)
 		case VSync:
 		{
 			GSvsync((*((int*)(regs + 4096)) & 0x2000) > 0 ? (u8)1 : (u8)0);
+			PerformanceMetrics::Update();
 			g_FrameCount++;
-			Pcsx2App* app = (Pcsx2App*)wxApp::GetInstance();
-			if (app)
-				PerformanceMetrics::Update();
 			break;
 		}
 		case ReadFIFO2:
@@ -788,8 +792,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		g_FrameCount = 0;
 	}
 
-	GSsetBaseMem((u8*)regs);
-	if (GSopen2(g_gs_window_info, (renderer_override<<24)) != 0)
+	if (!GSopen(g_Conf->EmuOptions.GS, static_cast<GSRendererType>(renderer_override), (u8*)regs))
 	{
 		OnStop();
 		return;
@@ -801,7 +804,6 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		GSDump::isRunning = false;
 	GSvsync(1);
 	GSreset();
-	GSsetBaseMem((u8*)regs);
 	GSfreeze(FreezeAction::Load, &fd);
 
 	size_t i = 0;

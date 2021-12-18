@@ -61,7 +61,6 @@ public:
 protected:
 	void AppStatusEvent_OnSettingsApplied();
 
-	void OnCloseWindow( wxCloseEvent& evt );
 	void OnResize(wxSizeEvent& event);
 	void OnMouseEvent( wxMouseEvent& evt );
 	void OnHideMouseTimeout( wxTimerEvent& evt );
@@ -118,6 +117,7 @@ public:
 
 protected:
 	void OnCloseWindow( wxCloseEvent& evt );
+	void OnDestroyWindow( wxWindowDestroyEvent& evt );
 	void OnMove( wxMoveEvent& evt );
 	void OnResize( wxSizeEvent& evt );
 	void OnFocus( wxFocusEvent& evt );

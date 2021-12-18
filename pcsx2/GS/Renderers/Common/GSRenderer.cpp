@@ -15,68 +15,32 @@
 
 #include "PrecompiledHeader.h"
 #include "GSRenderer.h"
-#include "gui/AppConfig.h"
 #include "GS/GSGL.h"
+#include "Host.h"
+#include "HostDisplay.h"
+#include "PerformanceMetrics.h"
+#include "pcsx2/Config.h"
+#include "common/StringUtil.h"
 #if defined(__unix__)
 #include <X11/keysym.h>
 #endif
 
-const unsigned int s_interlace_nb = 8;
-const unsigned int s_post_shader_nb = 5;
 const unsigned int s_mipmap_nb = 3;
 
 GSRenderer::GSRenderer()
-	: m_shader(0)
-	, m_shift_key(false)
+	: m_shift_key(false)
 	, m_control_key(false)
 	, m_texture_shuffle(false)
 	, m_real_size(0, 0)
 {
-	m_GStitleInfoBuffer[0] = 0;
-
-	m_interlace   = theApp.GetConfigI("interlace") % s_interlace_nb;
-	m_shader      = theApp.GetConfigI("TVShader") % s_post_shader_nb;
-	m_vsync       = theApp.GetConfigI("vsync");
-	m_aa1         = theApp.GetConfigB("aa1");
-	m_fxaa        = theApp.GetConfigB("fxaa");
-	m_shaderfx    = theApp.GetConfigB("shaderfx");
-	m_shadeboost  = theApp.GetConfigB("ShadeBoost");
-	m_dithering   = theApp.GetConfigI("dithering_ps2"); // 0 off, 1 auto, 2 auto no scale
 }
 
 GSRenderer::~GSRenderer()
 {
-	/*if(m_dev)
-	{
-		m_dev->Reset(1, 1, GSDevice::Windowed);
-	}*/
-
-	delete m_dev;
 }
 
-bool GSRenderer::CreateDevice(GSDevice* dev, const WindowInfo& wi)
+void GSRenderer::Destroy()
 {
-	ASSERT(dev);
-	ASSERT(!m_dev);
-
-	if (!dev->Create(wi))
-	{
-		return false;
-	}
-
-	m_dev = dev;
-	m_dev->SetVSync(m_vsync);
-
-	// reset handlers to pick up index swap if needed
-	ResetHandlers();
-
-	return true;
-}
-
-void GSRenderer::ResetDevice()
-{
-	if (m_dev)
-		m_dev->Reset(1, 1);
 }
 
 bool GSRenderer::Merge(int field)
@@ -265,37 +229,37 @@ bool GSRenderer::Merge(int field)
 
 		GSVector4 c = GSVector4((int)m_regs->BGCOLOR.R, (int)m_regs->BGCOLOR.G, (int)m_regs->BGCOLOR.B, (int)m_regs->PMODE.ALP) / 255;
 
-		m_dev->Merge(tex, src_hw, dst, fs, m_regs->PMODE, m_regs->EXTBUF, c);
+		g_gs_device->Merge(tex, src_hw, dst, fs, m_regs->PMODE, m_regs->EXTBUF, c);
 
-		if (m_regs->SMODE2.INT && m_interlace > 0)
+		if (m_regs->SMODE2.INT && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 		{
-			if (m_interlace == 7 && m_regs->SMODE2.FFMD) // Auto interlace enabled / Odd frame interlace setting
+			if (GSConfig.InterlaceMode == GSInterlaceMode::Automatic && m_regs->SMODE2.FFMD) // Auto interlace enabled / Odd frame interlace setting
 			{
 				int field2 = 0;
 				int mode = 2;
-				m_dev->Interlace(ds, field ^ field2, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
+				g_gs_device->Interlace(ds, field ^ field2, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
 			}
 			else
 			{
-				int field2 = 1 - ((m_interlace - 1) & 1);
-				int mode = (m_interlace - 1) >> 1;
-				m_dev->Interlace(ds, field ^ field2, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
+				int field2 = 1 - ((static_cast<int>(GSConfig.InterlaceMode) - 1) & 1);
+				int mode = (static_cast<int>(GSConfig.InterlaceMode) - 1) >> 1;
+				g_gs_device->Interlace(ds, field ^ field2, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
 			}
 		}
 
-		if (m_shadeboost)
+		if (GSConfig.ShadeBoost)
 		{
-			m_dev->ShadeBoost();
+			g_gs_device->ShadeBoost();
 		}
 
-		if (m_shaderfx)
+		if (GSConfig.ShaderFX)
 		{
-			m_dev->ExternalFX();
+			g_gs_device->ExternalFX();
 		}
 
-		if (m_fxaa)
+		if (GSConfig.FXAA)
 		{
-			m_dev->FXAA();
+			g_gs_device->FXAA();
 		}
 	}
 
@@ -307,64 +271,118 @@ GSVector2i GSRenderer::GetInternalResolution()
 	return m_real_size;
 }
 
-GSVector4i GSRenderer::ComputeDrawRectangle(int width, int height) const
+static float GetCurrentAspectRatioFloat()
 {
-	const double f_width = static_cast<double>(width);
-	const double f_height = static_cast<double>(height);
-	const double clientAr = f_width / f_height;
+	static constexpr std::array<float, static_cast<size_t>(AspectRatioType::MaxCount)> ars = { {4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f} };
+	return ars[static_cast<u32>(GSConfig.AspectRatio)];
+}
 
-	double targetAr = clientAr;
+static GSVector4 CalculateDrawRect(s32 window_width, s32 window_height, s32 texture_width, s32 texture_height, HostDisplay::Alignment alignment, bool flip_y)
+{
+	const float f_width = static_cast<float>(window_width);
+	const float f_height = static_cast<float>(window_height);
+	const float clientAr = f_width / f_height;
 
+	float targetAr = clientAr;
 	if (EmuConfig.CurrentAspectRatio == AspectRatioType::R4_3)
-		targetAr = 4.0 / 3.0;
+		targetAr = 4.0f / 3.0f;
 	else if (EmuConfig.CurrentAspectRatio == AspectRatioType::R16_9)
-		targetAr = 16.0 / 9.0;
+		targetAr = 16.0f / 9.0f;
 
 	const double arr = targetAr / clientAr;
-	double target_width = f_width;
-	double target_height = f_height;
+	float target_width = f_width;
+	float target_height = f_height;
 	if (arr < 1)
-		target_width = std::floor(f_width * arr + 0.5);
+		target_width = std::floor(f_width * arr + 0.5f);
 	else if (arr > 1)
-		target_height = std::floor(f_height / arr + 0.5);
+		target_height = std::floor(f_height / arr + 0.5f);
 
-	float zoom = EmuConfig.GS.Zoom / 100.0;
+	float zoom = GSConfig.Zoom / 100.0;
 	if (zoom == 0) //auto zoom in untill black-bars are gone (while keeping the aspect ratio).
 		zoom = std::max((float)arr, (float)(1.0 / arr));
 
 	target_width *= zoom;
-	target_height *= zoom * EmuConfig.GS.StretchY / 100.0;
+	target_height *= zoom * GSConfig.StretchY / 100.0f;
 
-	double target_x, target_y;
-	if (target_width > f_width)
-		target_x = -((target_width - f_width) * 0.5);
+	if (GSConfig.IntegerScaling)
+	{
+		// make target width/height an integer multiple of the texture width/height
+		const float t_width = static_cast<double>(texture_width);
+		const float t_height = static_cast<double>(texture_height);
+
+		float scale;
+		if ((t_width / t_height) >= 1.0)
+			scale = target_width / t_width;
+		else
+			scale = target_height / t_height;
+
+		if (scale > 1.0)
+		{
+			const float adjust = std::floor(scale)  / scale;
+			target_width = target_width * adjust;
+			target_height = target_height * adjust;
+		}
+	}
+
+	float target_x, target_y;
+	if (target_width >= f_width)
+	{
+		target_x = -((target_width - f_width) * 0.5f);
+	}
 	else
-		target_x = (f_width - target_width) * 0.5;
-	if (target_height > f_height)
-		target_y = -((target_height - f_height) * 0.5);
+	{
+		switch (alignment)
+		{
+		case HostDisplay::Alignment::Center:
+			target_x = (f_width - target_width) * 0.5f;
+			break;
+		case HostDisplay::Alignment::RightOrBottom:
+			target_x = (f_width - target_width);
+			break;
+		case HostDisplay::Alignment::LeftOrTop:
+		default:
+			target_x = 0.0f;
+			break;
+		}
+	}
+	if (target_height >= f_height)
+	{
+		target_y = -((target_height - f_height) * 0.5f);
+	}
 	else
-		target_y = (f_height - target_height) * 0.5;
+	{
+		switch (alignment)
+		{
+		case HostDisplay::Alignment::Center:
+			target_y = (f_height - target_height) * 0.5f;
+			break;
+		case HostDisplay::Alignment::RightOrBottom:
+			target_y = (f_height - target_height);
+			break;
+		case HostDisplay::Alignment::LeftOrTop:
+		default:
+			target_y = 0.0f;
+			break;
+		}
+	}
 
-	const double unit = .01 * std::min(target_x, target_y);
-	target_x += unit * EmuConfig.GS.OffsetX;
-	target_y += unit * EmuConfig.GS.OffsetY;
+	const float unit = .01f * std::min(target_x, target_y);
+	target_x += unit * GSConfig.OffsetX;
+	target_y += unit * GSConfig.OffsetY;
 
-	return GSVector4i(
-		static_cast<int>(std::floor(target_x)),
-		static_cast<int>(std::floor(target_y)),
-		static_cast<int>(std::round(target_x + target_width)),
-		static_cast<int>(std::round(target_y + target_height)));
+	GSVector4 ret(target_x, target_y, target_x + target_width, target_y + target_height);
+
+	if (flip_y)
+	{
+		const float height = ret.w - ret.y;
+		ret.y = static_cast<float>(window_height) - ret.w;
+		ret.w = ret.y + height;
+	}
+
+	return ret;
 }
 
-void GSRenderer::SetVSync(int vsync)
-{
-	m_vsync = vsync;
-
-	if (m_dev)
-		m_dev->SetVSync(m_vsync);
-}
-
-void GSRenderer::VSync(int field)
+void GSRenderer::VSync(u32 field)
 {
 	GSPerfMonAutoTimer pmat(&m_perfmon);
 
@@ -377,104 +395,43 @@ void GSRenderer::VSync(int field)
 		m_regs->Dump(root_sw + format("%05d_f%lld_gs_reg.txt", s_n, m_perfmon.GetFrame()));
 	}
 
-	if (!m_dev->IsLost(true))
+	g_gs_device->AgePool();
+
+	const bool blank_frame = !Merge(field ? 1 : 0);
+	const bool skip_frame = m_frameskip;
+
+	if (blank_frame || skip_frame)
 	{
-		if (!Merge(field ? 1 : 0))
-		{
-			return;
-		}
-	}
-	else
-	{
-		ResetDevice();
-	}
-
-	m_dev->AgePool();
-
-	// osd
-
-	if ((m_perfmon.GetFrame() & 0x1f) == 0)
-	{
-		m_perfmon.Update();
-
-		std::string s;
-
-#ifdef GSTITLEINFO_API_FORCE_VERBOSE
-		{
-			const double fps = 1000.0f / m_perfmon.Get(GSPerfMon::Frame);
-			//GS owns the window's title, be verbose.
-			static const char* aspect_ratio_names[static_cast<int>(AspectRatioType::MaxCount)] = { "Stretch", "4:3", "16:9" };
-
-			std::string s2 = m_regs->SMODE2.INT ? (std::string("Interlaced ") + (m_regs->SMODE2.FFMD ? "(frame)" : "(field)")) : "Progressive";
-
-			s = format(
-				"%lld | %d x %d | %.2f fps (%d%%) | %s - %s | %s | %d S/%d P/%d D | %d%% CPU | %.2f | %.2f",
-				m_perfmon.GetFrame(), GetInternalResolution().x, GetInternalResolution().y, fps, (int)(100.0 * fps / GetTvRefreshRate()),
-				s2.c_str(),
-				theApp.m_gs_interlace[m_interlace].name.c_str(),
-				aspect_ratio_names[static_cast<int>(EmuConfig.GS.AspectRatio)],
-				(int)m_perfmon.Get(GSPerfMon::SyncPoint),
-				(int)m_perfmon.Get(GSPerfMon::Prim),
-				(int)m_perfmon.Get(GSPerfMon::Draw),
-				m_perfmon.CPU(),
-				m_perfmon.Get(GSPerfMon::Swizzle) / 1024,
-				m_perfmon.Get(GSPerfMon::Unswizzle) / 1024);
-
-			double fillrate = m_perfmon.Get(GSPerfMon::Fillrate);
-
-			if (fillrate > 0)
-			{
-				s += format(" | %.2f mpps", fps * fillrate / (1024 * 1024));
-
-				int sum = 0;
-
-				for (int i = 0; i < 16; i++)
-				{
-					sum += m_perfmon.CPU(GSPerfMon::WorkerDraw0 + i);
-				}
-
-				s += format(" | %d%% CPU", sum);
-			}
-		}
-#else
-		{
-			// Satisfy PCSX2's request for title info: minimal verbosity due to more external title text
-
-			s = format("%dx%d | %s", GetInternalResolution().x, GetInternalResolution().y, theApp.m_gs_interlace[m_interlace].name.c_str());
-		}
-#endif
-
-		if (m_capture.IsCapturing())
-		{
-			s += " | Recording...";
-		}
-
-		// note: do not use TryEnterCriticalSection.  It is unnecessary code complication in
-		// an area that absolutely does not matter (even if it were 100 times slower, it wouldn't
-		// be noticeable).  Besides, these locks are extremely short -- overhead of conditional
-		// is way more expensive than just waiting for the CriticalSection in 1 of 10,000,000 tries. --air
-
-		std::lock_guard<std::mutex> lock(m_pGSsetTitle_Crit);
-
-        strncpy(m_GStitleInfoBuffer, s.c_str(), std::size(m_GStitleInfoBuffer) - 1);
-
-		m_GStitleInfoBuffer[sizeof(m_GStitleInfoBuffer) - 1] = 0; // make sure null terminated even if text overflows
-	}
-
-	if (m_frameskip)
-	{
+		g_gs_device->ResetAPIState();
+		if (Host::BeginPresentFrame(skip_frame))
+			Host::EndPresentFrame();
+		g_gs_device->RestoreAPIState();
 		return;
 	}
 
-	// present
+	if ((m_perfmon.GetFrame() & 0x1f) == 0)
+		m_perfmon.Update();
 
-	// This will scale the OSD to the window's size.
-	// Will maintiain the font size no matter what size the window is.
-	GSVector4i window_size(0, 0, m_dev->GetBackbufferWidth(), m_dev->GetBackbufferHeight());
-	m_dev->m_osd.m_real_size.x = window_size.v[2];
-	m_dev->m_osd.m_real_size.y = window_size.v[3];
+	g_gs_device->ResetAPIState();
+	if (Host::BeginPresentFrame(false))
+	{
+		GSTexture* current = g_gs_device->GetCurrent();
+		if (current)
+		{
+			HostDisplay* const display = g_gs_device->GetDisplay();
+			const GSVector4 draw_rect(CalculateDrawRect(display->GetWindowWidth(), display->GetWindowHeight(),
+				current->GetWidth(), current->GetHeight(), display->GetDisplayAlignment(), display->UsesLowerLeftOrigin()));
 
-	m_dev->Present(ComputeDrawRectangle(window_size.z, window_size.w), m_shader);
+			static constexpr ShaderConvert s_shader[5] = {ShaderConvert::COPY, ShaderConvert::SCANLINE,
+				ShaderConvert::DIAGONAL_FILTER, ShaderConvert::TRIANGULAR_FILTER,
+				ShaderConvert::COMPLEX_FILTER}; // FIXME
+
+			g_gs_device->StretchRect(current, nullptr, draw_rect, s_shader[GSConfig.TVShader], GSConfig.LinearPresent);
+		}
+
+		Host::EndPresentFrame();
+	}
+	g_gs_device->RestoreAPIState();
 
 	// snapshot
 
@@ -495,7 +452,7 @@ void GSRenderer::VSync(int field)
 			delete[] fd.data;
 		}
 
-		if (GSTexture* t = m_dev->GetCurrent())
+		if (GSTexture* t = g_gs_device->GetCurrent())
 		{
 			t->Save(m_snapshot + ".png");
 		}
@@ -512,21 +469,21 @@ void GSRenderer::VSync(int field)
 
 	if (m_capture.IsCapturing())
 	{
-		if (GSTexture* current = m_dev->GetCurrent())
+		if (GSTexture* current = g_gs_device->GetCurrent())
 		{
 			GSVector2i size = m_capture.GetSize();
 
 			bool res;
 			GSTexture::GSMap m;
 			if (size == current->GetSize())
-				res = m_dev->DownloadTexture(current, GSVector4i(0, 0, size.x, size.y), m);
+				res = g_gs_device->DownloadTexture(current, GSVector4i(0, 0, size.x, size.y), m);
 			else
-				res = m_dev->DownloadTextureConvert(current, GSVector4(0, 0, 1, 1), size, GSTexture::Format::Color, ShaderConvert::COPY, m, true);
+				res = g_gs_device->DownloadTextureConvert(current, GSVector4(0, 0, 1, 1), size, GSTexture::Format::Color, ShaderConvert::COPY, m, true);
 
 			if (res)
 			{
-				m_capture.DeliverFrame(m.bits, m.pitch, !m_dev->IsRBSwapped());
-				m_dev->DownloadTextureComplete();
+				m_capture.DeliverFrame(m.bits, m.pitch, !g_gs_device->IsRBSwapped());
+				g_gs_device->DownloadTextureComplete();
 			}
 		}
 	}
@@ -569,10 +526,7 @@ bool GSRenderer::MakeSnapshot(const std::string& path)
 
 bool GSRenderer::BeginCapture(std::string& filename)
 {
-	GSVector4i disp = ComputeDrawRectangle(m_dev->GetBackbufferWidth(), m_dev->GetBackbufferHeight());
-	float aspect = (float)disp.width() / std::max(1, disp.height());
-
-	return m_capture.BeginCapture(GetTvRefreshRate(), GetInternalResolution(), aspect, filename);
+	return m_capture.BeginCapture(GetTvRefreshRate(), GetInternalResolution(), GetCurrentAspectRatioFloat(), filename);
 }
 
 void GSRenderer::EndCapture()
@@ -618,34 +572,24 @@ void GSRenderer::KeyEvent(const HostKeyEvent& e)
 		switch (e.key)
 		{
 			case VK_F5:
-				m_interlace = (m_interlace + s_interlace_nb + step) % s_interlace_nb;
-				theApp.SetConfig("interlace", m_interlace);
-				printf("GS: Set deinterlace mode to %d (%s).\n", m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
+				GSConfig.InterlaceMode = static_cast<GSInterlaceMode>((static_cast<int>(GSConfig.InterlaceMode) + static_cast<int>(GSInterlaceMode::Count) + step) % static_cast<int>(GSInterlaceMode::Count));
+				theApp.SetConfig("interlace", static_cast<int>(GSConfig.InterlaceMode));
+				printf("GS: Set deinterlace mode to %d (%s).\n", static_cast<int>(GSConfig.InterlaceMode), theApp.m_gs_interlace.at(static_cast<int>(GSConfig.InterlaceMode)).name.c_str());
 				return;
 			case VK_DELETE:
-				m_aa1 = !m_aa1;
-				theApp.SetConfig("aa1", m_aa1);
-				printf("GS: (Software) Edge anti-aliasing is now %s.\n", m_aa1 ? "enabled" : "disabled");
+				GSConfig.AA1 = !GSConfig.AA1;
+				theApp.SetConfig("aa1", GSConfig.AA1);
+				printf("GS: (Software) Edge anti-aliasing is now %s.\n", GSConfig.AA1 ? "enabled" : "disabled");
 				return;
 			case VK_INSERT:
 				m_mipmap = (m_mipmap + s_mipmap_nb + step) % s_mipmap_nb;
 				theApp.SetConfig("mipmap_hw", m_mipmap);
 				printf("GS: Mipmapping is now %s.\n", theApp.m_gs_hack.at(m_mipmap).name.c_str());
 				return;
-			case VK_PRIOR:
-				m_fxaa = !m_fxaa;
-				theApp.SetConfig("fxaa", m_fxaa);
-				printf("GS: FXAA anti-aliasing is now %s.\n", m_fxaa ? "enabled" : "disabled");
-				return;
-			case VK_HOME:
-				m_shaderfx = !m_shaderfx;
-				theApp.SetConfig("shaderfx", m_shaderfx);
-				printf("GS: External post-processing is now %s.\n", m_shaderfx ? "enabled" : "disabled");
-				return;
 			case VK_NEXT: // As requested by Prafull, to be removed later
 				char dither_msg[3][16] = {"disabled", "auto", "auto unscaled"};
-				m_dithering = (m_dithering + 1) % 3;
-				printf("GS: Dithering is now %s.\n", dither_msg[m_dithering]);
+				GSConfig.Dithering = (GSConfig.Dithering + 1) % 3;
+				printf("GS: Dithering is now %s.\n", dither_msg[GSConfig.Dithering]);
 				return;
 		}
 	}
@@ -654,5 +598,47 @@ void GSRenderer::KeyEvent(const HostKeyEvent& e)
 
 void GSRenderer::PurgePool()
 {
-	m_dev->PurgePool();
+	g_gs_device->PurgePool();
+}
+
+bool GSRenderer::SaveSnapshotToMemory(u32 width, u32 height, std::vector<u32>* pixels)
+{
+	GSTexture* const current = g_gs_device->GetCurrent();
+	if (!current)
+		return false;
+
+	GSVector4 draw_rect(CalculateDrawRect(width, height, current->GetWidth(), current->GetHeight(),
+		HostDisplay::Alignment::LeftOrTop, false));
+	u32 draw_width = static_cast<u32>(draw_rect.z - draw_rect.x);
+	u32 draw_height = static_cast<u32>(draw_rect.w - draw_rect.y);
+	if (draw_width > width)
+	{
+		draw_width = width;
+		draw_rect.left = 0;
+		draw_rect.right = width;
+	}
+	if (draw_height > height)
+	{
+		draw_height = height;
+		draw_rect.top = 0;
+		draw_rect.bottom = height;
+	}
+
+	GSTexture::GSMap map;
+	const bool result = g_gs_device->DownloadTextureConvert(
+		current, GSVector4(0.0f, 0.0f, 1.0f, 1.0f),
+		GSVector2i(draw_width, draw_height), GSTexture::Format::Color,
+		ShaderConvert::COPY, map, true);
+	if (result)
+	{
+		const u32 pad_x = (width - draw_width) / 2;
+		const u32 pad_y = (height - draw_height) / 2;
+		pixels->resize(width * height, 0);
+		StringUtil::StrideMemCpy(pixels->data() + pad_y * width + pad_x, width * sizeof(u32),
+			map.bits, map.pitch, draw_width * sizeof(u32), draw_height);
+
+		g_gs_device->DownloadTextureComplete();
+	}
+
+	return result;
 }

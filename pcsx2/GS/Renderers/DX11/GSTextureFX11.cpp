@@ -225,7 +225,7 @@ void GSDevice11::SetupPS(PSSelector sel, const GSHWDrawConfig::PSConstantBuffer*
 
 			memset(&sd, 0, sizeof(sd));
 
-			const int anisotropy = theApp.GetConfigI("MaxAnisotropy");
+			const int anisotropy = GSConfig.MaxAnisotropy;
 			if (anisotropy && ssel.aniso)
 				sd.Filter = D3D11_FILTER_ANISOTROPIC;
 			else if (ssel.biln)
