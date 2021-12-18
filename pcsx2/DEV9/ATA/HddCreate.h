@@ -15,7 +15,9 @@
 
 #pragma once
 
+#ifndef PCSX2_CORE
 #include <wx/progdlg.h>
+#endif
 
 #include <string>
 #include <thread>
@@ -33,7 +35,9 @@ public:
 	std::atomic_bool errored{false};
 
 private:
+#ifndef PCSX2_CORE
 	wxProgressDialog* progressDialog;
+#endif
 	std::atomic_int written{0};
 
 	std::thread fileThread;
