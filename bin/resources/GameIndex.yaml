@@ -3040,13 +3040,19 @@ SCES-53881:
 SCES-53882:
   name: "Buzz! The Big Quiz"
   region: "PAL-I"
+  gameFixes:
+    - EETimingHack # Fixes freezes.
 SCES-53883:
   name: "Buzz! The Big Quiz"
   region: "PAL-G"
+  gameFixes:
+    - EETimingHack # Fixes freezes.
 SCES-53884:
   name: "Buzz! The Big Quiz"
   region: "PAL-S"
   compat: 2
+  gameFixes:
+    - EETimingHack # Fixes freezes.
 SCES-53889:
   name: "SingStar Rocks!"
   region: "PAL-E"
@@ -4331,6 +4337,12 @@ SCPS-15050:
   name: "Flipnic"
   region: "NTSC-J"
   compat: 5
+  patches:
+    25433CBD:
+      content: |-
+        comment=Patch by Prafull
+        //Fixes hang in some stages due to ipu issues
+        patch=1,EE,0011c000,word,000000000
 SCPS-15051:
   name: "MLB 2003"
   region: "NTSC-J"
@@ -28502,6 +28514,8 @@ SLPS-20034:
 SLPS-20035:
   name: "Pro Mahjong Kiwame Next"
   region: "NTSC-J"
+  gameFixes:
+    - SkipMPEGHack # Fixes black screen.
 SLPS-20036:
   name: "Magical Sports - 2000 Koushien"
   region: "NTSC-J"
@@ -30646,6 +30660,8 @@ SLPS-25382:
 SLPS-25383:
   name: "Digimon Battle Chronicle"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes impossible  menu selection issue.
 SLPS-25384:
   name: "Tenchu Kurenai"
   region: "NTSC-J"
@@ -37714,6 +37730,12 @@ SLUS-21157:
   name: "Flipnic - Ultimate Pinball"
   region: "NTSC-U"
   compat: 5
+  patches:
+    EADDB48E:
+      content: |-
+        comment=Patch by Prafull
+        // Fixes ufo shootdown mission hang 
+        patch=1,EE,0011c310,word,00000000
 SLUS-21158:
   name: "Rugby 2005"
   region: "NTSC-U"
