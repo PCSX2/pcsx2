@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #ifdef _WIN32
+#include "common/RedtapeWindows.h"
 
 //This ensures that the nVidia graphics card is used for PCSX2 on an Optimus-enabled system.
 //302 or higher driver required.

@@ -27,7 +27,11 @@
 #include "vtlb.h"
 #include "Dump.h"
 
+#ifndef PCSX2_CORE
 #include "System/SysThreads.h"
+#else
+#include "VMManager.h"
+#endif
 #include "GS.h"
 #include "CDVD/CDVD.h"
 #include "Elfheader.h"
@@ -727,7 +731,11 @@ static void recExitExecution()
 
 static void recCheckExecutionState()
 {
+#ifndef PCSX2_CORE
 	if (SETJMP_CODE(m_cpuException || m_Exception ||) eeRecIsReset || GetCoreThread().HasPendingStateChangeRequest())
+#else
+	if (SETJMP_CODE(m_cpuException || m_Exception ||) eeRecIsReset || VMManager::Internal::IsExecutionInterrupted())
+#endif
 	{
 		recExitExecution();
 	}
@@ -1307,7 +1315,9 @@ void dynarecCheckBreakpoint()
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true);
+#ifndef PCSX2_CORE
 	GetCoreThread().PauseSelfDebug();
+#endif
 	recExitExecution();
 }
 
@@ -1318,7 +1328,9 @@ void dynarecMemcheck()
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true);
+#ifndef PCSX2_CORE
 	GetCoreThread().PauseSelfDebug();
+#endif
 	recExitExecution();
 }
 

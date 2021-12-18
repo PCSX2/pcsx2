@@ -171,7 +171,7 @@ protected:
 	virtual void OnResumeInThread(SystemsMask systemsToReinstate) = 0;
 };
 
-
+#ifndef PCSX2_CORE
 // --------------------------------------------------------------------------------------
 //  SysCoreThread class
 // --------------------------------------------------------------------------------------
@@ -249,6 +249,7 @@ private:
 };
 
 
+
 struct SysStateUnlockedParams
 {
 	SysStateUnlockedParams() {}
@@ -288,3 +289,5 @@ namespace PINESettings
 {
 	extern unsigned int slot;
 };
+
+#endif

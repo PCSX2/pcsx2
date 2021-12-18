@@ -126,8 +126,10 @@ extern void ForgetLoadedPatches();
 
 extern const IConsoleWriter *PatchesCon;
 
+#ifndef PCSX2_CORE
 // Patch loading is verbose only once after the crc changes, this makes it think that the crc changed.
 extern void PatchesVerboseReset();
+#endif
 
 // The following prototypes seem unused in PCSX2, but maybe part of the cheats browser?
 // regardless, they don't seem to have an implementation anywhere.

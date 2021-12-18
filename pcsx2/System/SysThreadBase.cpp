@@ -332,6 +332,7 @@ bool SysThreadBase::StateCheckInThread()
 			m_RunningLock.Acquire();
 			if (m_ExecMode != ExecMode_Closing)
 			{
+#ifndef PCSX2_CORE
 				if (g_CDVDReset)
 					// AppCoreThread deals with Reseting CDVD
 					// Reinit all but GS, USB, DEV9, CDVD (just like with isSuspend = false previously)
@@ -341,6 +342,7 @@ bool SysThreadBase::StateCheckInThread()
 					OnResumeInThread(systemsToTearDown);
 					
 				g_CDVDReset = false;
+#endif
 				break;
 			}
 			m_sem_ChangingExecMode.Post();
@@ -363,7 +365,9 @@ bool SysThreadBase::StateCheckInThread()
 
 			m_RunningLock.Acquire();
 			OnResumeInThread(static_cast<SystemsMask>(-1)); // All systems
+#ifndef PCSX2_CORE
 			g_CDVDReset = false;
+#endif
 			break;
 
 			jNO_DEFAULT;

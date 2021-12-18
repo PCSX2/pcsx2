@@ -316,9 +316,11 @@ void FileMemoryCard::Open()
 
 			if (!Create(str, 8))
 			{
+#ifndef PCSX2_CORE
 				Msgbox::Alert(
 					wxsFormat(_("Could not create a memory card: \n\n%s\n\n"), str.c_str()) +
 					GetDisabledMessage(slot));
+#endif
 			}
 		}
 
@@ -345,9 +347,11 @@ void FileMemoryCard::Open()
 		{
 			// Translation note: detailed description should mention that the memory card will be disabled
 			// for the duration of this session.
+#ifndef PCSX2_CORE
 			Msgbox::Alert(
 				wxsFormat(_("Access denied to memory card: \n\n%s\n\n"), str.c_str()) +
 				GetDisabledMessage(slot));
+#endif
 		}
 		else // Load checksum
 		{
