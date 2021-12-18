@@ -1496,6 +1496,9 @@
     <ClCompile Include="GS\GSLocalMemory.cpp">
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>
+    <ClCompile Include="GS\GSLocalMemoryMultiISA.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
     <ClCompile Include="GS\GSPerfMon.cpp">
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>

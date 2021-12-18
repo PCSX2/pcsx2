@@ -2685,7 +2685,7 @@ void GSTextureCache::Source::Flush(u32 count, int layer)
 
 		if ((r > tr).mask() & 0xff00)
 		{
-			(mem.*rtx)(off, r, buff, pitch, m_TEXA);
+			rtx(mem, off, r, buff, pitch, m_TEXA);
 
 			m_texture->Update(r.rintersect(tr), buff, pitch, layer);
 		}
@@ -2695,13 +2695,13 @@ void GSTextureCache::Source::Flush(u32 count, int layer)
 
 			if (m_texture->Map(m, &r, layer))
 			{
-				(mem.*rtx)(off, r, m.bits, m.pitch, m_TEXA);
+				rtx(mem, off, r, m.bits, m.pitch, m_TEXA);
 
 				m_texture->Unmap();
 			}
 			else
 			{
-				(mem.*rtx)(off, r, buff, pitch, m_TEXA);
+				rtx(mem, off, r, buff, pitch, m_TEXA);
 
 				m_texture->Update(r, buff, pitch, layer);
 			}
@@ -3433,7 +3433,7 @@ static void HashTextureLevel(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Blo
 		const GSLocalMemory::readTexture rtx = psm.rtxP;
 
 		// Use temp buffer for expanding, since we may not need to update.
-		(mem.*rtx)(off, block_rect, temp, pitch, TEXA);
+		rtx(mem, off, block_rect, temp, pitch, TEXA);
 
 		// Hash the expanded texture.
 		u8* ptr = temp;
@@ -3499,7 +3499,7 @@ void GSTextureCache::PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TE
 	GSTexture::GSMap map;
 	if (rect.eq(block_rect) && tex->Map(map, &rect, level))
 	{
-		(mem.*rtx)(off, block_rect, map.bits, map.pitch, TEXA);
+		rtx(mem, off, block_rect, map.bits, map.pitch, TEXA);
 		tex->Unmap();
 	}
 	else
@@ -3508,7 +3508,7 @@ void GSTextureCache::PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TE
 		pitch = Common::AlignUpPow2(pitch, 32);
 
 		u8* buff = m_temp;
-		(mem.*rtx)(off, block_rect, buff, pitch, TEXA);
+		rtx(mem, off, block_rect, buff, pitch, TEXA);
 		tex->Update(rect, buff, pitch, level);
 	}
 }

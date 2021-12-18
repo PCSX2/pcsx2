@@ -279,7 +279,7 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 				{
 					m_valid[row] |= col;
 
-					(mem.*rtxbP)(block, &dst[bn.blkX() << shift], pitch, m_TEXA);
+					rtxbP(mem, block, &dst[bn.blkX() << shift], pitch, m_TEXA);
 
 					blocks++;
 				}
@@ -301,7 +301,7 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 				{
 					m_valid[row] |= col;
 
-					(mem.*rtxbP)(block, &dst[bn.blkX() << shift], pitch, m_TEXA);
+					rtxbP(mem, block, &dst[bn.blkX() << shift], pitch, m_TEXA);
 
 					blocks++;
 				}

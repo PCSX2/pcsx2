@@ -665,6 +665,7 @@ set(pcsx2GSSources
 	GS/GSDrawingContext.cpp
 	GS/GSDump.cpp
 	GS/GSLocalMemory.cpp
+	GS/GSLocalMemoryMultiISA.cpp
 	GS/GSLzma.cpp
 	GS/GSPerfMon.cpp
 	GS/GSPng.cpp

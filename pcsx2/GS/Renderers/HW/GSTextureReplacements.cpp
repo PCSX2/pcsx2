@@ -615,7 +615,7 @@ void GSTextureReplacements::DumpTexture(const GSTextureCache::HashCacheKey& hash
 	// use per-texture buffer so we can compress the texture asynchronously and not block the GS thread
 	// must be 32 byte aligned for ReadTexture().
 	AlignedBuffer<u8, 32> buffer(pitch * static_cast<u32>(read_height));
-	(mem.*psm.rtx)(mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM), block_rect, buffer.GetPtr(), pitch, TEXA);
+	psm.rtx(mem, mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM), block_rect, buffer.GetPtr(), pitch, TEXA);
 
 	// okay, now we can actually dump it
 	QueueWorkerThreadItem([filename = std::move(filename), tw, th, pitch, buffer = std::move(buffer)]() {
