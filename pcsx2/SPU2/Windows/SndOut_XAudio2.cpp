@@ -218,7 +218,7 @@ private:
 	std::unique_ptr<BaseStreamingVoice> m_voiceContext;
 
 public:
-	s32 Init() override
+	bool Init() override
 	{
 		xaudio2CoInitialize = wil::CoInitializeEx_failfast(COINIT_MULTITHREADED);
 
@@ -321,10 +321,10 @@ public:
 		{
 			SysMessage(ex.what());
 			Close();
-			return -1;
+			return false;
 		}
 
-		return 0;
+		return true;
 	}
 
 	void Close() override
@@ -342,15 +342,6 @@ public:
 		xaudio2CoInitialize.reset();
 	}
 
-	void Configure(uptr parent) override
-	{
-	}
-
-	s32 Test() const override
-	{
-		return 0;
-	}
-
 	int GetEmptySampleCount() override
 	{
 		if (m_voiceContext == nullptr)
@@ -366,18 +357,6 @@ public:
 	const wchar_t* GetLongName() const override
 	{
 		return L"XAudio 2 (Recommended)";
-	}
-
-	void ReadSettings() override
-	{
-	}
-
-	void SetApiSettings(wxString api) override
-	{
-	}
-
-	void WriteSettings() const override
-	{
 	}
 
 } static XA2;

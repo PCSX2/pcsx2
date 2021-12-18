@@ -49,10 +49,8 @@ StereoOut32 StereoOut16::UpSample() const
 class NullOutModule : public SndOutModule
 {
 public:
-	s32 Init() override { return 0; }
+	bool Init() override { return true; }
 	void Close() override {}
-	s32 Test() const override { return 0; }
-	void Configure(uptr parent) override {}
 	int GetEmptySampleCount() override { return 0; }
 
 	const wchar_t* GetIdent() const override
@@ -64,19 +62,6 @@ public:
 	{
 		return L"No Sound (Emulate SPU2 only)";
 	}
-
-	void ReadSettings() override
-	{
-	}
-
-	void SetApiSettings(wxString api) override
-	{
-	}
-
-	void WriteSettings() const override
-	{
-	}
-
 };
 
 static NullOutModule s_NullOut;
@@ -410,7 +395,7 @@ void SndBuffer::Init()
 	soundtouchInit(); // initializes the timestretching
 
 	// initialize module
-	if (mods[OutputModule]->Init() == -1)
+	if (!mods[OutputModule]->Init())
 		_InitFail();
 }
 
@@ -505,12 +490,4 @@ void SndBuffer::Write(const StereoOut32& Sample)
 		else
 			_WriteSamples(sndTempBuffer, SndOutPacketSize);
 	}
-}
-
-s32 SndBuffer::Test()
-{
-	if (mods[OutputModule] == nullptr)
-		return -1;
-
-	return mods[OutputModule]->Test();
 }

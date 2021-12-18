@@ -617,7 +617,6 @@ public:
 	static void Init();
 	static void Cleanup();
 	static void Write(const StereoOut32& Sample);
-	static s32 Test();
 	static void ClearContents();
 
 	// Note: When using with 32 bit output buffers, the user of this function is responsible
@@ -642,21 +641,8 @@ public:
 	// (for use in configuration screen)
 	virtual const wchar_t* GetLongName() const = 0;
 
-	virtual s32 Init() = 0;
+	virtual bool Init() = 0;
 	virtual void Close() = 0;
-	virtual s32 Test() const = 0;
-
-	// Gui function: Used to open the configuration box for this driver.
-	virtual void Configure(uptr parent) = 0;
-
-	// Loads settings from the INI file for this driver
-	virtual void ReadSettings() = 0;
-
-	// Set output API for this driver
-	virtual void SetApiSettings(wxString api) = 0;
-
-	// Saves settings to the INI file for this driver
-	virtual void WriteSettings() const = 0;
 
 	// Returns the number of empty samples in the output buffer.
 	// (which is effectively the amount of data played since the last update)
