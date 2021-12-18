@@ -95,11 +95,6 @@ int GSinit()
 
 	GSUtil::Init();
 
-	if (g_const == nullptr)
-		return -1;
-	else
-		g_const->Init();
-
 #ifdef _WIN32
 	s_hr = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
 #endif
