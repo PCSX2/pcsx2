@@ -221,7 +221,8 @@ bool InputIsoFile::Open(std::string srcfile, bool testOnly)
 		m_reader = new FlatFileReader(EmuConfig.CdvdShareWrite);
 	}
 
-	m_reader->Open(m_filename);
+	if (!m_reader->Open(m_filename))
+		return false;
 
 	// It might actually be a blockdump file.
 	// Check that before continuing with the FlatFileReader.
