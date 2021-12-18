@@ -167,26 +167,38 @@ private:
 
 bool DebugInterface::isAlive()
 {
+#ifndef PCSX2_CORE
 	return GetCoreThread().IsOpen() && g_FrameCount > 0;
+#else
+  return false;
+#endif
 }
 
 bool DebugInterface::isCpuPaused()
 {
+#ifndef PCSX2_CORE
 	return GetCoreThread().IsPaused();
+#else
+  return false;
+#endif
 }
 
 void DebugInterface::pauseCpu()
 {
+#ifndef PCSX2_CORE
 	SysCoreThread& core = GetCoreThread();
 	if (!core.IsPaused())
 		core.Pause({}, true);
+#endif
 }
 
 void DebugInterface::resumeCpu()
 {
+#ifndef PCSX2_CORE
 	SysCoreThread& core = GetCoreThread();
 	if (core.IsPaused())
 		core.Resume();
+#endif
 }
 
 

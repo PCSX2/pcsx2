@@ -173,9 +173,13 @@ static void TestTemplate(const wxDirName &base, const wxString &fname, bool canE
 
 static std::string iso2indexname(const std::string& isoname)
 {
+#ifndef PCSX2_CORE
 	//testTemplate(isoname);
 	wxDirName appRoot = // TODO: have only one of this in PCSX2. Right now have few...
 		(wxDirName)(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath());
+#else
+	const wxDirName& appRoot = EmuFolders::DataRoot;
+#endif
 	//TestTemplate(appRoot, isoname, false);
 	return StringUtil::wxStringToUTF8String(ApplyTemplate(L"gzip index", appRoot, EmuConfig.GzipIsoIndexTemplate, isoname, false));
 }

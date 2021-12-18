@@ -17,7 +17,7 @@
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
 #include "Config.h"
-#include "gui/AppCoreThread.h"
+#include "System/SysThreads.h"
 
 #include "R5900OpcodeTables.h"
 #include "DebugTools/Breakpoints.h"
@@ -141,7 +141,9 @@ void psxBreakpoint(bool memcheck)
 	}
 
 	CBreakPoints::SetBreakpointTriggered(true);
+#ifndef PCSX2_CORE
 	GetCoreThread().PauseSelfDebug();
+#endif
 	throw Exception::ExitCpuExecute();
 }
 

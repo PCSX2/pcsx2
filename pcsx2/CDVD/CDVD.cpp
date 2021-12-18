@@ -35,6 +35,12 @@
 #include "Recording/InputRecording.h"
 #endif
 
+#ifndef PCSX2_CORE
+#include "System/SysThreads.h"
+#else
+#include "VMManager.h"
+#endif
+
 // This typically reflects the Sony-assigned serial code for the Disc, if one exists.
 //  (examples:  SLUS-2113, etc).
 // If the disc is homebrew then it probably won't have a valid serial; in which case
@@ -492,8 +498,18 @@ void cdvdReloadElfInfo(wxString elfoverride)
 	}
 	catch (Exception::FileNotFound& e)
 	{
+#ifdef PCSX2_CORE
+		Console.Error("Failed to load ELF info");
+		LastELF.clear();
+		DiscSerial.clear();
+		ElfCRC = 0;
+		ElfEntry = 0;
+		ElfTextRange = {};
+		return;
+#else
 		pxFail("Not in my back yard!");
 		Cpu->ThrowException(e);
+#endif
 	}
 }
 
@@ -2146,7 +2162,11 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 
 			case 0x0F: // sceCdPowerOff (0:1)- Call74 from Xcdvdman
 				Console.WriteLn(Color_StrongBlack, "sceCdPowerOff called. Resetting VM.");
+#ifndef PCSX2_CORE
 				GetCoreThread().Reset();
+#else
+				VMManager::Reset();
+#endif
 				break;
 
 			case 0x12: // sceCdReadILinkId (0:9)

@@ -1127,7 +1127,9 @@ void psxDynarecCheckBreakpoint()
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true);
+#ifndef PCSX2_CORE
 	GetCoreThread().PauseSelfDebug();
+#endif
 	iopBreakpoint = true;
 }
 
@@ -1138,7 +1140,9 @@ void psxDynarecMemcheck()
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true);
+#ifndef PCSX2_CORE
 	GetCoreThread().PauseSelfDebug();
+#endif
 	iopBreakpoint = true;
 }
 
