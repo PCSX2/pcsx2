@@ -95,7 +95,7 @@ GSDrawScanlineCodeGenerator2::GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator*
 	, t0(r8) , t1(r9)
 	, t2(rcx), t3(rsi)
 #endif
-	, _g_const(chooseLocal(&*g_const, _64_g_const))
+	, _g_const(chooseLocal(&g_const, _64_g_const))
 	, _m_local(chooseLocal(&m_local, _64_m_local))
 	, _m_local__gd(chooseLocal(m_local.gd, _64_m_local__gd))
 	, _m_local__gd__vm(chooseLocal(m_local.gd->vm, _64_m_local__gd__vm))
@@ -366,7 +366,7 @@ void GSDrawScanlineCodeGenerator2::Generate()
 	mov(ptr[rsp + _64_rz_r14], r14);
 	mov(ptr[rsp + _64_rz_r15], r15);
 #endif
-	mov(_64_g_const, (size_t)&*g_const);
+	mov(_64_g_const, (size_t)&g_const);
 	if (!m_rip)
 	{
 		mov(_64_m_local, (size_t)&m_local);
