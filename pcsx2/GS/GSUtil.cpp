@@ -17,6 +17,7 @@
 #include "GS.h"
 #include "GSExtra.h"
 #include "GSUtil.h"
+#include "MultiISA.h"
 #include "common/StringUtil.h"
 
 #ifdef _WIN32
@@ -28,8 +29,6 @@
 #define SVN_REV 0
 #define SVN_MODS 0
 #endif
-
-Xbyak::util::Cpu g_cpu;
 
 static class GSUtilMaps
 {
@@ -149,37 +148,30 @@ bool GSUtil::HasCompatibleBits(u32 spsm, u32 dpsm)
 
 bool GSUtil::CheckSSE()
 {
-	bool status = true;
-
 	struct ISA
 	{
-		Xbyak::util::Cpu::Type type;
+		ProcessorFeatures::VectorISA isa;
 		const char* name;
 	};
 
 	ISA checks[] = {
-		{Xbyak::util::Cpu::tSSE41, "SSE41"},
+		{ProcessorFeatures::VectorISA::SSE4, "SSE 4.1"},
 #if _M_SSE >= 0x500
-		{Xbyak::util::Cpu::tAVX, "AVX1"},
+		{ProcessorFeatures::VectorISA::AVX, "AVX"},
 #endif
 #if _M_SSE >= 0x501
-		{Xbyak::util::Cpu::tAVX2, "AVX2"},
-		{Xbyak::util::Cpu::tBMI1, "BMI1"},
-		{Xbyak::util::Cpu::tBMI2, "BMI2"},
+		{ProcessorFeatures::VectorISA::AVX2, "AVX2"},
 #endif
 	};
-
 	for (const ISA& check : checks)
 	{
-		if (!g_cpu.has(check.type))
+		if (g_cpu.vectorISA < check.isa)
 		{
-			fprintf(stderr, "This CPU does not support %s\n", check.name);
-
-			status = false;
+			Console.Error("This CPU does not support %s", check.name);
+			return false;
 		}
 	}
-
-	return status;
+	return true;
 }
 
 CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)

@@ -1520,6 +1520,9 @@
     <ClCompile Include="GS\GSLzma.cpp">
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>
+    <ClCompile Include="GS\MultiISA.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
     <ClCompile Include="gui\Dialogs\PINEDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
@@ -2720,6 +2723,9 @@
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
     <ClInclude Include="GS\GSLzma.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\MultiISA.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\Common\GSFastList.h">
