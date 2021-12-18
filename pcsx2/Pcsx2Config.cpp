@@ -306,6 +306,39 @@ int Pcsx2Config::GSOptions::GetVsync() const
 	}
 }
 
+Pcsx2Config::SPU2Options::SPU2Options()
+{
+	OutputModule = "cubeb";
+}
+
+void Pcsx2Config::SPU2Options::LoadSave(SettingsWrapper& wrap)
+{
+	{
+		SettingsWrapSection("SPU2/Mixing");
+
+		Interpolation = static_cast<InterpolationMode>(wrap.EntryBitfield(CURRENT_SETTINGS_SECTION, "Interpolation", static_cast<int>(Interpolation), static_cast<int>(Interpolation)));
+		SettingsWrapEntry(FinalVolume);
+
+		SettingsWrapEntry(VolumeAdjustC);
+		SettingsWrapEntry(VolumeAdjustFL);
+		SettingsWrapEntry(VolumeAdjustFR);
+		SettingsWrapEntry(VolumeAdjustBL);
+		SettingsWrapEntry(VolumeAdjustBR);
+		SettingsWrapEntry(VolumeAdjustSL);
+		SettingsWrapEntry(VolumeAdjustSR);
+		SettingsWrapEntry(VolumeAdjustLFE);
+	}
+
+	{
+		SettingsWrapSection("SPU2/Output");
+
+		SettingsWrapEntry(OutputModule);
+		SettingsWrapEntry(Latency);
+		SynchMode = static_cast<SynchronizationMode>(wrap.EntryBitfield(CURRENT_SETTINGS_SECTION, "SynchMode", static_cast<int>(SynchMode), static_cast<int>(SynchMode)));
+		SettingsWrapEntry(SpeakerConfiguration);
+	}
+}
+
 const char* const tbl_GamefixNames[] =
 	{
 		"FpuMul",
@@ -591,6 +624,10 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	Speedhacks.LoadSave(wrap);
 	Cpu.LoadSave(wrap);
 	GS.LoadSave(wrap);
+#ifdef PCSX2_CORE
+	// SPU2 is in a separate ini in wx.
+	SPU2.LoadSave(wrap);
+#endif
 	Gamefixes.LoadSave(wrap);
 	Profiler.LoadSave(wrap);
 

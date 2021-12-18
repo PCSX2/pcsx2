@@ -378,6 +378,82 @@ struct Pcsx2Config
 		}
 	};
 
+	struct SPU2Options
+	{
+		enum class InterpolationMode
+		{
+			Nearest,
+			Linear,
+			Cubic,
+			Hermite,
+			CatmullRom,
+			Gaussian
+		};
+
+		enum class SynchronizationMode
+		{
+			TimeStretch,
+			ASync,
+			NoSync,
+		};
+
+
+		BITFIELD32()
+		bool
+			AdvancedVolumeControl : 1;
+		BITFIELD_END
+
+		InterpolationMode Interpolation = InterpolationMode::Gaussian;
+		SynchronizationMode SynchMode = SynchronizationMode::TimeStretch;
+
+		s32 FinalVolume = 100;
+		s32 Latency{100};
+		s32 SpeakerConfiguration{0};
+
+		double VolumeAdjustC{ 0.0f };
+		double VolumeAdjustFL{ 0.0f };
+		double VolumeAdjustFR{ 0.0f };
+		double VolumeAdjustBL{ 0.0f };
+		double VolumeAdjustBR{ 0.0f };
+		double VolumeAdjustSL{ 0.0f };
+		double VolumeAdjustSR{ 0.0f };
+		double VolumeAdjustLFE{ 0.0f };
+
+		std::string OutputModule;
+
+		SPU2Options();
+
+		void LoadSave(SettingsWrapper& wrap);
+
+		bool operator==(const SPU2Options& right) const
+		{
+			return OpEqu(bitset) &&
+
+				OpEqu(Interpolation) &&
+				OpEqu(SynchMode) &&
+
+				OpEqu(FinalVolume) &&
+				OpEqu(Latency) &&
+				OpEqu(SpeakerConfiguration) &&
+
+				OpEqu(VolumeAdjustC) &&
+				OpEqu(VolumeAdjustFL) &&
+				OpEqu(VolumeAdjustFR) &&
+				OpEqu(VolumeAdjustBL) &&
+				OpEqu(VolumeAdjustBR) &&
+				OpEqu(VolumeAdjustSL) &&
+				OpEqu(VolumeAdjustSR) &&
+				OpEqu(VolumeAdjustLFE) &&
+
+				OpEqu(OutputModule);
+		}
+
+		bool operator!=(const SPU2Options& right) const
+		{
+			return !this->operator==(right);
+		}
+	};
+
 	// ------------------------------------------------------------------------
 	// NOTE: The GUI's GameFixes panel is dependent on the order of bits in this structure.
 	struct GamefixOptions
@@ -576,6 +652,7 @@ struct Pcsx2Config
 	ProfilerOptions Profiler;
 	DebugOptions Debugger;
 	FramerateOptions Framerate;
+	SPU2Options SPU2;
 
 	TraceLogFilters Trace;
 
