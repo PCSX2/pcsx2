@@ -134,7 +134,7 @@ public:
 		DestroyContextAndStream();
 	}
 
-	s32 Init() override
+	bool Init() override
 	{
 		ReadSettings();
 
@@ -145,8 +145,8 @@ public:
 		m_COMInitializedByUs = SUCCEEDED(hr);
 		if (FAILED(hr) && hr != RPC_E_CHANGED_MODE)
 		{
-			Console.Error("Failed to initialize COM");
-			return -1;
+			Console.Error("(Cubeb) Failed to initialize COM");
+			return false;
 		}
 #endif
 
@@ -157,8 +157,8 @@ public:
 		int rv = cubeb_init(&m_context, "PCSX2", m_Backend.empty() ? nullptr : m_Backend.c_str());
 		if (rv != CUBEB_OK)
 		{
-			Console.Error("Could not initialize cubeb context: %d", rv);
-			return -1;
+			Console.Error("(Cubeb) Could not initialize cubeb context: %d", rv);
+			return false;
 		}
 
 		switch (numSpeakers) // speakers = (numSpeakers + 1) *2; ?
@@ -255,9 +255,9 @@ public:
 		{
 			if (rv != CUBEB_OK)
 			{
-				Console.Error("Could not get minimum latency: %d", rv);
+				Console.Error("(Cubeb) Could not get minimum latency: %d", rv);
 				DestroyContextAndStream();
-				return -1;
+				return false;
 			}
 
 			const float minimum_latency_ms = static_cast<float>(latency_frames * 1000u) / static_cast<float>(SampleRate);
@@ -283,20 +283,20 @@ public:
 			latency_frames, &Cubeb::DataCallback, &Cubeb::StateCallback, this);
 		if (rv != CUBEB_OK)
 		{
-			Console.Error("Could not create stream: %d", rv);
+			Console.Error("(Cubeb) Could not create stream: %d", rv);
 			DestroyContextAndStream();
-			return -1;
+			return false;
 		}
 
 		rv = cubeb_stream_start(stream);
 		if (rv != CUBEB_OK)
 		{
-			Console.Error("Could not start stream: %d", rv);
+			Console.Error("(Cubeb) Could not start stream: %d", rv);
 			DestroyContextAndStream();
-			return -1;
+			return false;
 		}
 
-		return 0;
+		return true;
 	}
 
 	void Close() override
@@ -312,16 +312,6 @@ public:
 	{
 		static_cast<Cubeb*>(user_ptr)->ActualReader->ReadSamples(output_buffer, nframes);
 		return nframes;
-	}
-
-
-	void Configure(uptr parent) override
-	{
-	}
-
-	s32 Test() const override
-	{
-		return 0;
 	}
 
 	int GetEmptySampleCount() override
@@ -346,7 +336,7 @@ public:
 		return L"Cubeb (Cross-platform)";
 	}
 
-	void ReadSettings() override
+	void ReadSettings()
 	{
 		m_SuggestedLatencyMinimal = CfgReadBool(L"Cubeb", L"MinimalSuggestedLatency", false);
 		m_SuggestedLatencyMS = std::clamp(CfgReadInt(L"Cubeb", L"ManualSuggestedLatencyMS", MINIMUM_LATENCY_MS), MINIMUM_LATENCY_MS, MAXIMUM_LATENCY_MS);
@@ -355,14 +345,6 @@ public:
 		wxString backend;
 		CfgReadStr(L"Cubeb", L"BackendName", backend, L"");
 		m_Backend = StringUtil::wxStringToUTF8String(backend);
-	}
-
-	void SetApiSettings(wxString api) override
-	{
-	}
-
-	void WriteSettings() const override
-	{
 	}
 };
 
