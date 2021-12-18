@@ -20,6 +20,7 @@
 #include "common/Path.h"
 
 #include "Host.h"
+#include "HostSettings.h"
 
 #include "gui/App.h"
 #include "gui/AppConfig.h"
@@ -68,6 +69,16 @@ std::optional<std::string> Host::ReadResourceFileToString(const char* filename)
 	}
 
 	return ret;
+}
+
+bool Host::GetBoolSettingValue(const char* section, const char* key, bool default_value /* = false */)
+{
+	return default_value;
+}
+
+std::string Host::GetStringSettingValue(const char* section, const char* key, const char* default_value /* = "" */)
+{
+	return default_value;
 }
 
 void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)
