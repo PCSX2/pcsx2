@@ -100,10 +100,18 @@ namespace PboPool
 
 		for (GLsync fence : m_fence)
 		{
-			glDeleteSync(fence);
+			if (fence != 0)
+			{
+				glDeleteSync(fence);
+				fence = 0;
+			}
 		}
 
-		glDeleteBuffers(1, &m_buffer);
+		if (m_buffer != 0)
+		{
+			glDeleteBuffers(1, &m_buffer);
+			m_buffer = 0;
+		}
 	}
 
 	void BindPbo()
