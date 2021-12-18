@@ -1,0 +1,48 @@
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+
+#include "PAD/Host/Global.h"
+
+class KeyStatus
+{
+private:
+	static constexpr u8 m_analog_released_val = 0x7F;
+
+	struct PADAnalog
+	{
+		u8 lx, ly;
+		u8 rx, ry;
+	};
+
+	u16 m_button[GAMEPAD_NUMBER];
+	u8 m_button_pressure[GAMEPAD_NUMBER][MAX_KEYS];
+	PADAnalog m_analog[GAMEPAD_NUMBER];
+	float m_axis_scale[GAMEPAD_NUMBER];
+
+public:
+	KeyStatus();
+	void Init();
+
+	void Set(u32 pad, u32 index, float value);
+
+	void SetAxisScale(u32 pad, float scale) { m_axis_scale[pad] = scale; }
+
+	u16 GetButtons(u32 pad);
+	u8 GetPressure(u32 pad, u32 index);
+};
+
+extern KeyStatus g_key_status;
