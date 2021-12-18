@@ -172,7 +172,7 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 		const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[DISPFB.PSM];
 
 		// Top left rect
-		(m_mem.*psm.rtx)(m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), r.ralign<Align_Outside>(psm.bs), m_output, pitch, m_env.TEXA);
+		psm.rtx(m_mem, m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), r.ralign<Align_Outside>(psm.bs), m_output, pitch, m_env.TEXA);
 
 		int top = (h_wrap) ? ((r.bottom - r.top) * pitch) : 0;
 		int left = (w_wrap) ? (r.right - r.left) * (GSLocalMemory::m_psm[DISPFB.PSM].bpp / 8) : 0;
@@ -181,18 +181,18 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 
 		// Top right rect
 		if (w_wrap)
-			(m_mem.*psm.rtx)(m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rw.ralign<Align_Outside>(psm.bs), &m_output[left], pitch, m_env.TEXA);
+			psm.rtx(m_mem, m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rw.ralign<Align_Outside>(psm.bs), &m_output[left], pitch, m_env.TEXA);
 
 		// Bottom left rect
 		if (h_wrap)
-			(m_mem.*psm.rtx)(m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rh.ralign<Align_Outside>(psm.bs), &m_output[top], pitch, m_env.TEXA);
+			psm.rtx(m_mem, m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rh.ralign<Align_Outside>(psm.bs), &m_output[top], pitch, m_env.TEXA);
 
 		// Bottom right rect
 		if (h_wrap && w_wrap)
 		{
 			// Needs also rw with the start/end height of rh, fills in the bottom right rect which will be missing if both overflow.
 			const GSVector4i rwh(rw.left, rh.top, rw.right, rh.bottom);
-			(m_mem.*psm.rtx)(m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rwh.ralign<Align_Outside>(psm.bs), &m_output[top + left], pitch, m_env.TEXA);
+			psm.rtx(m_mem, m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rwh.ralign<Align_Outside>(psm.bs), &m_output[top + left], pitch, m_env.TEXA);
 		}
 
 		m_texture[i]->Update(out_r, m_output, pitch);
