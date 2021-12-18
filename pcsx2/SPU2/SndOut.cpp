@@ -46,11 +46,12 @@ StereoOut32 StereoOut16::UpSample() const
 }
 
 
-class NullOutModule : public SndOutModule
+class NullOutModule final : public SndOutModule
 {
 public:
 	bool Init() override { return true; }
 	void Close() override {}
+	void SetPaused(bool paused) override {}
 	int GetEmptySampleCount() override { return 0; }
 
 	const wchar_t* GetIdent() const override
@@ -419,6 +420,11 @@ void SndBuffer::ClearContents()
 {
 	SndBuffer::soundtouchClearContents();
 	SndBuffer::ssFreeze = 256; //Delays sound output for about 1 second.
+}
+
+void SndBuffer::SetPaused(bool paused)
+{
+	mods[OutputModule]->SetPaused(paused);
 }
 
 void SndBuffer::Write(const StereoOut32& Sample)
