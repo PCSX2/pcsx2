@@ -19,8 +19,11 @@
 #include "common/FileSystem.h"
 #include "common/Path.h"
 
-#include "AppConfig.h"
 #include "Host.h"
+
+#include "gui/App.h"
+#include "gui/AppConfig.h"
+#include "gui/pxEvents.h"
 
 static auto OpenResourceCFile(const char* filename, const char* mode)
 {
@@ -65,5 +68,13 @@ std::optional<std::string> Host::ReadResourceFileToString(const char* filename)
 	}
 
 	return ret;
+}
+
+void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)
+{
+	wxGetApp().PostEvent(pxMessageBoxEvent(
+		title.empty() ? wxString() : wxString::FromUTF8(title.data(), title.length()),
+		message.empty() ? wxString() : wxString::FromUTF8(message.data(), message.length()),
+		MsgButtons().OK()));
 }
 

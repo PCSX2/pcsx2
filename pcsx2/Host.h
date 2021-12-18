@@ -16,8 +16,10 @@
 #pragma once
 
 #include "common/Pcsx2Defs.h"
-#include <optional>
+
 #include <string>
+#include <string_view>
+#include <optional>
 #include <vector>
 
 struct HostKeyEvent
@@ -36,9 +38,13 @@ struct HostKeyEvent
 namespace Host
 {
 	/// Reads a file from the resources directory of the application.
-	/// This may be outside of the "normally" filesystem on platforms such as Mac.
+	/// This may be outside of the "normal" filesystem on platforms such as Mac.
 	std::optional<std::vector<u8>> ReadResourceFile(const char* filename);
 
 	/// Reads a resource file file from the resources directory as a string.
 	std::optional<std::string> ReadResourceFileToString(const char* filename);
+
+	/// Displays an asynchronous error on the UI thread, i.e. doesn't block the caller.
+	void ReportErrorAsync(const std::string_view& title, const std::string_view& message);
+	void ReportFormattedErrorAsync(const std::string_view& title, const char* format, ...);
 } // namespace Host
