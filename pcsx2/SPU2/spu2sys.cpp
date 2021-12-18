@@ -415,7 +415,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 	}
 
 // Visual debug display showing all core's activity! Disabled via #define on release builds.
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(PCSX2_CORE)
 	UpdateDebugDialog();
 #endif
 

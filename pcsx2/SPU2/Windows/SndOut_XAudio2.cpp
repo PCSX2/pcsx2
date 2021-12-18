@@ -58,7 +58,11 @@ private:
 		}
 
 		BaseStreamingVoice(uint numChannels)
+#ifndef PCSX2_CORE
 			: m_nBuffers(Config_XAudio2.NumBuffers)
+#else
+			: m_nBuffers(2)
+#endif
 			, m_nChannels(numChannels)
 			, m_BufferSize(SndOutPacketSize * m_nChannels * PacketsPerBuffer)
 			, m_BufferSizeBytes(m_BufferSize * sizeof(s16))
