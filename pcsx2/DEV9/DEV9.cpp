@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #ifdef _WIN32
-//#include <winsock2.h>
+#include "common/RedtapeWindows.h"
 #include <Winioctl.h>
 #include <windows.h>
 #else

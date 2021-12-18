@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/RedtapeWindows.h"
+
 #include <stdio.h>
 #include <windows.h>
 #include <winsock2.h>

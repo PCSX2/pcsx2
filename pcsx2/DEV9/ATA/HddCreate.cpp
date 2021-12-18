@@ -20,6 +20,7 @@
 
 void HddCreate::Start()
 {
+#ifndef PCSX2_CORE
 	//This can be called from the EE Core thread
 	//ensure that UI creation/deletaion is done on main thread
 	if (!wxIsMainThread())
@@ -33,6 +34,7 @@ void HddCreate::Start()
 
 	//This creates a modeless dialog
 	progressDialog = new wxProgressDialog(_("Creating HDD file"), _("Creating HDD file"), neededSize, nullptr, wxPD_APP_MODAL | wxPD_AUTO_HIDE | wxPD_CAN_ABORT | wxPD_ELAPSED_TIME | wxPD_REMAINING_TIME);
+#endif
 
 	fileThread = std::thread(&HddCreate::WriteImage, this, filePath, neededSize);
 
@@ -47,8 +49,10 @@ void HddCreate::Start()
 	{
 		msg.Printf(_("%i / %i MiB"), written.load(), neededSize);
 
+#ifndef PCSX2_CORE
 		if (!progressDialog->Update(currentSize, msg))
 			canceled.store(true);
+#endif
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	}
@@ -57,11 +61,15 @@ void HddCreate::Start()
 
 	if (errored.load())
 	{
+#ifndef PCSX2_CORE
 		wxMessageDialog dialog(nullptr, _("Failed to create HDD file"), _("Info"), wxOK);
 		dialog.ShowModal();
+#endif
 	}
 
+#ifndef PCSX2_CORE
 	delete progressDialog;
+#endif
 	//Signal calling thread to resume
 	{
 		std::lock_guard ioSignallock(completedMutex);
