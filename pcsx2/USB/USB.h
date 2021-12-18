@@ -57,5 +57,6 @@ s64 get_clock();
 
 /* usb-pad-raw.cpp */
 #if _WIN32
+#include "common/RedtapeWindows.h"
 extern HWND gsWnd;
 #endif
