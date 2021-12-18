@@ -103,7 +103,7 @@ GSDeviceOGL::~GSDeviceOGL()
 
 	// Clean vertex buffer state
 	if (m_vertex_array_object)
-		glDeleteVertexArrays(0, &m_vertex_array_object);
+		glDeleteVertexArrays(1, &m_vertex_array_object);
 	m_vertex_stream_buffer.reset();
 	m_index_stream_buffer.reset();
 
