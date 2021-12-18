@@ -673,6 +673,7 @@ set(pcsx2GSSources
 	GS/GSTables.cpp
 	GS/GSUtil.cpp
 	GS/GSVector.cpp
+	GS/MultiISA.cpp
 	GS/Renderers/Common/GSDevice.cpp
 	GS/Renderers/Common/GSDirtyRect.cpp
 	GS/Renderers/Common/GSFunctionMap.cpp
@@ -732,6 +733,7 @@ set(pcsx2GSHeaders
 	GS/GSVector4i.h
 	GS/GSVector8.h
 	GS/GSVector8i.h
+	GS/MultiISA.h
 	GS/Renderers/Common/GSDevice.h
 	GS/Renderers/Common/GSDirtyRect.h
 	GS/Renderers/Common/GSFastList.h
