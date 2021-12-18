@@ -49,50 +49,47 @@ StereoOut32 StereoOut16::UpSample() const
 class NullOutModule : public SndOutModule
 {
 public:
-	s32 Init() { return 0; }
-	void Close() {}
-	s32 Test() const { return 0; }
-	void Configure(uptr parent) {}
-	int GetEmptySampleCount() { return 0; }
+	s32 Init() override { return 0; }
+	void Close() override {}
+	s32 Test() const override { return 0; }
+	void Configure(uptr parent) override {}
+	int GetEmptySampleCount() override { return 0; }
 
-	const wchar_t* GetIdent() const
+	const wchar_t* GetIdent() const override
 	{
 		return L"nullout";
 	}
 
-	const wchar_t* GetLongName() const
+	const wchar_t* GetLongName() const override
 	{
 		return L"No Sound (Emulate SPU2 only)";
 	}
 
-	void ReadSettings()
+	void ReadSettings() override
 	{
 	}
 
-	void SetApiSettings(wxString api)
+	void SetApiSettings(wxString api) override
 	{
 	}
 
-	void WriteSettings() const
+	void WriteSettings() const override
 	{
 	}
 
-} NullOut;
+};
+
+static NullOutModule s_NullOut;
+SndOutModule* NullOut = &s_NullOut;
 
 SndOutModule* mods[] =
 	{
-		&NullOut,
-#ifdef _MSC_VER
+		NullOut,
+#ifdef _WIN32
 		XAudio2Out,
-#endif
-#if defined(SPU2X_PORTAUDIO)
-		PortaudioOut,
 #endif
 #if defined(SPU2X_CUBEB)
 		CubebOut,
-#endif
-#if defined(__linux__) || defined(__APPLE__)
-		SDLOut,
 #endif
 		nullptr // signals the end of our list
 };
@@ -169,7 +166,7 @@ void SndBuffer::_InitFail()
 {
 	// If a failure occurs, just initialize the NoSound driver.  This'll allow
 	// the game to emulate properly (hopefully), albeit without sound.
-	OutputModule = FindOutputModuleById(NullOut.GetIdent());
+	OutputModule = FindOutputModuleById(NullOut->GetIdent());
 	mods[OutputModule]->Init();
 }
 
@@ -447,7 +444,7 @@ void SndBuffer::Write(const StereoOut32& Sample)
 	if (WavRecordEnabled)
 		RecordWrite(Sample.DownSample());
 
-	if (mods[OutputModule] == &NullOut) // null output doesn't need buffering or stretching! :p
+	if (mods[OutputModule] == NullOut) // null output doesn't need buffering or stretching! :p
 		return;
 
 	sndTempBuffer[sndTempProgress++] = Sample;
@@ -464,7 +461,7 @@ void SndBuffer::Write(const StereoOut32& Sample)
 		// Play silence
 		std::fill_n(sndTempBuffer, SndOutPacketSize, StereoOut32{});
 	}
-#ifndef __POSIX__
+#if defined(_WIN32) && !defined(PCSX2_CORE)
 	if (dspPluginEnabled)
 	{
 		// Convert in, send to winamp DSP, and convert out.

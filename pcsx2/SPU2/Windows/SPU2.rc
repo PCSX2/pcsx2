@@ -7,7 +7,6 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "svnrev.h"
 #include "common/afxresmw.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -175,25 +174,22 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 // Dialog
 //
 
-IDD_PORTAUDIO DIALOGEX 0, 0, 316, 166
+IDD_CUBEB DIALOGEX 0, 0, 316, 166
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Portaudio Output Module Settings"
+CAPTION "Cubeb Output Module Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,105,144,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,161,144,50,14
-    COMBOBOX        IDC_PA_HOSTAPI,7,17,95,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Host API:",IDC_STATIC,7,7,32,8
-    COMBOBOX        IDC_PA_DEVICE,108,17,201,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Device Name:",IDC_STATIC,107,7,45,8
+    COMBOBOX        IDC_BACKEND,7,17,95,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Backend:",IDC_STATIC,7,7,32,8
     CONTROL         "",IDC_LATENCY,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,96,93,155,10
-    LTEXT           "NOTE: Depending on the hardware and drivers, the suggested manual latency might not be used, and portaudio will choose the closest possible value.",IDC_STATIC,12,111,286,19
+    LTEXT           "NOTE: Depending on the hardware and drivers, the suggested manual latency might not be used, and Cubeb will choose the closest possible value.",IDC_STATIC,12,111,286,19
     CTEXT           "20ms",IDC_LATENCY_LABEL,264,93,35,11
     GROUPBOX        "Output Latency",IDC_STATIC,7,57,302,79
     CONTROL         "Use smallest possible (may cause issues if the actual value is too small)",IDC_MINIMIZE,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,75,258,10
     CONTROL         "Use this latency:",IDC_MANUAL,"Button",BS_AUTORADIOBUTTON,12,93,69,10
-    CONTROL         "WASAPI Exclusive Mode",IDC_EXCLUSIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,39,93,10
 END
 
 
@@ -205,7 +201,7 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
-    IDD_PORTAUDIO, DIALOG
+    IDD_CUBEB, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 309

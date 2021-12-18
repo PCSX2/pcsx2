@@ -663,17 +663,13 @@ public:
 	virtual int GetEmptySampleCount() = 0;
 };
 
-#ifdef _MSC_VER
-//internal
+extern SndOutModule* NullOut;
+#ifdef _WIN32
 extern SndOutModule* XAudio2Out;
-#endif
-#if defined(SPU2X_PORTAUDIO)
-extern SndOutModule* PortaudioOut;
 #endif
 #if defined(SPU2X_CUBEB)
 extern SndOutModule* CubebOut;
 #endif
-extern SndOutModule* const SDLOut;
 extern SndOutModule* mods[];
 
 // =====================================================================================================

@@ -17,9 +17,21 @@
 #include "SPU2/Config.h"
 #if !defined(_WIN32) // BSD, Macos
 #include "SPU2/Linux/Config.h"
+#include "SPU2/Linux/Dialogs.h"
 #endif
 #include "SPU2/Global.h"
 #include "wxConfig.h"
+
+static const wchar_t* s_backend_names[][2] = {
+	{L"Automatic", L""},
+#ifdef __linux__
+	{L"ALSA", L"alsa"},
+	{L"JACK", L"jack"},
+	{L"PulseAudio", L"pulseaudio"},
+#elif defined(__APPLE__)
+	{L"AudioUnit", L"audiounit"},
+#endif
+};
 
 MixerTab::MixerTab(wxWindow* parent)
 	: wxPanel(parent, wxID_ANY)
@@ -352,49 +364,27 @@ Dialog::Dialog()
 
 	wxArrayString module_entries;
 	module_entries.Add("No Sound (Emulate SPU2 only)");
-#ifdef SPU2X_PORTAUDIO
-	module_entries.Add("PortAudio (Cross-platform)");
+#ifdef SPU2X_CUBEB
+	module_entries.Add("Cubeb (Cross-platform)");
 #endif
-	module_entries.Add("SDL Audio (Recommended for PulseAudio)");
 	m_module_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, module_entries);
 	module_box->Add(m_module_select, wxSizerFlags().Centre());
 
-#ifdef SPU2X_PORTAUDIO
+#ifdef SPU2X_CUBEB
 	// Portaudio
-	m_portaudio_box = new wxBoxSizer(wxVERTICAL);
-	m_portaudio_text = new wxStaticText(this, wxID_ANY, "Portaudio API");
-	m_portaudio_box->Add(m_portaudio_text, wxSizerFlags().Centre());
+	m_cubeb_box = new wxBoxSizer(wxVERTICAL);
+	m_cubeb_text = new wxStaticText(this, wxID_ANY, "Backend");
+	m_cubeb_box->Add(m_cubeb_text, wxSizerFlags().Centre());
 
-	wxArrayString portaudio_entries;
-#ifdef __linux__
-	portaudio_entries.Add("ALSA (recommended)");
-	portaudio_entries.Add("OSS (legacy)");
-	portaudio_entries.Add("JACK");
-#elif defined(__APPLE__)
-	portaudio_entries.Add("CoreAudio");
-#else
-	portaudio_entries.Add("OSS");
-#endif
-	m_portaudio_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, portaudio_entries);
-	m_portaudio_box->Add(m_portaudio_select, wxSizerFlags().Centre());
+	m_cubeb_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+	for (size_t i = 0; i < std::size(s_backend_names); i++)
+		m_cubeb_select->Append(s_backend_names[i][0]);
+	m_cubeb_box->Add(m_cubeb_select, wxSizerFlags().Centre());
 #endif
 
-	// SDL
-	m_sdl_box = new wxBoxSizer(wxVERTICAL);
-	m_sdl_text = new wxStaticText(this, wxID_ANY, "SDL API");
-	m_sdl_box->Add(m_sdl_text, wxSizerFlags().Centre());
-
-	wxArrayString sdl_entries;
-	for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i)
-		sdl_entries.Add(SDL_GetAudioDriver(i));
-
-	m_sdl_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, sdl_entries);
-	m_sdl_box->Add(m_sdl_select, wxSizerFlags().Centre());
-
-#ifdef SPU2X_PORTAUDIO
-	module_box->Add(m_portaudio_box, wxSizerFlags().Expand());
+#ifdef SPU2X_CUBEB
+	module_box->Add(m_cubeb_box, wxSizerFlags().Expand());
 #endif
-	module_box->Add(m_sdl_box, wxSizerFlags().Expand());
 
 	m_top_box->Add(module_box, wxSizerFlags().Centre().Border(wxALL, 5));
 
@@ -423,34 +413,25 @@ Dialog::~Dialog()
 void Dialog::Reconfigure()
 {
 	const int mod = m_module_select->GetCurrentSelection();
-	bool show_portaudio = false, show_sdl = false;
+	bool show_cubeb = false;
 
 	switch (mod)
 	{
 		case 0:
-			show_portaudio = false;
-			show_sdl = false;
+			show_cubeb = false;
 			break;
 
 		case 1:
-			show_portaudio = true;
-			show_sdl = false;
-			break;
-
-		case 2:
-			show_portaudio = false;
-			show_sdl = true;
+			show_cubeb = true;
 			break;
 
 		default:
-			show_portaudio = false;
-			show_sdl = false;
+			show_cubeb = false;
 			break;
 	}
-#ifdef SPU2X_PORTAUDIO
-	m_top_box->Show(m_portaudio_box, show_portaudio, true);
+#ifdef SPU2X_CUBEB
+	m_top_box->Show(m_cubeb_box, show_cubeb, true);
 #endif
-	m_top_box->Show(m_sdl_box, show_sdl, true);
 
 	// Recalculating both of these accounts for if neither was showing initially.
 	m_top_box->Layout();
@@ -465,10 +446,18 @@ void Dialog::CallReconfigure(wxCommandEvent& event)
 void Dialog::Load()
 {
 	m_module_select->SetSelection(OutputModule);
-#ifdef SPU2X_PORTAUDIO
-	m_portaudio_select->SetSelection(OutputAPI);
+#ifdef SPU2X_CUBEB
+	wxString backend;
+	CfgReadStr(L"Cubeb", L"BackendName", backend, L"");
+	for (size_t i = 0; i < std::size(s_backend_names); i++)
+	{
+		if (backend == s_backend_names[i][1])
+		{
+			m_cubeb_select->SetSelection(static_cast<int>(i));
+			break;
+		}
+	}
 #endif
-	m_sdl_select->SetSelection(SdlOutputAPI);
 
 	m_mixer_panel->Load();
 	m_sync_panel->Load();
@@ -481,18 +470,11 @@ void Dialog::Save()
 {
 	OutputModule = m_module_select->GetSelection();
 
-#ifdef SPU2X_PORTAUDIO
-	OutputAPI = m_portaudio_select->GetSelection();
-	wxString p_api(m_portaudio_select->GetStringSelection());
-	if (p_api.Find("ALSA") != wxNOT_FOUND)
-		p_api = "ALSA";
-	if (p_api.Find("OSS") != wxNOT_FOUND)
-		p_api = "OSS";
-	PortaudioOut->SetApiSettings(p_api);
+#ifdef SPU2X_CUBEB
+	const int backend_selection = m_cubeb_select->GetSelection();
+	if (backend_selection >= 0)
+		CfgWriteStr(L"Cubeb", L"BackendName", s_backend_names[backend_selection][1]);
 #endif
-
-	SdlOutputAPI = m_sdl_select->GetSelection();
-	SDLOut->SetApiSettings(m_sdl_select->GetStringSelection());
 
 	m_mixer_panel->Save();
 	m_sync_panel->Save();
