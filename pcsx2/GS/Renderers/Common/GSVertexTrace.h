@@ -17,15 +17,22 @@
 
 #include "GS/GS.h"
 #include "GS/GSDrawingContext.h"
+#include "GS/MultiISA.h"
 #include "GSVertex.h"
 #include "GS/Renderers/SW/GSVertexSW.h"
 #include "GS/Renderers/HW/GSVertexHW.h"
 #include "GSFunctionMap.h"
 
 class GSState;
+class GSVertexTrace;
+
+MULTI_ISA_DEF(class GSVertexTraceFMM;)
+MULTI_ISA_DEF(void GSVertexTracePopulateFunctions(GSVertexTrace& vt, bool provoking_vertex_first);)
 
 class alignas(32) GSVertexTrace : public GSAlignedClass<32>
 {
+	MULTI_ISA_FRIEND(GSVertexTraceFMM)
+
 public:
 	struct Vertex
 	{
@@ -42,17 +49,9 @@ public:
 protected:
 	const GSState* m_state;
 
-	static const GSVector4 s_minmax;
-
-	typedef void (GSVertexTrace::*FindMinMaxPtr)(const void* vertex, const u32* index, int count);
+	typedef void (*FindMinMaxPtr)(GSVertexTrace& vt, const void* vertex, const u32* index, int count);
 
 	FindMinMaxPtr m_fmm[2][2][2][2][4];
-
-	template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color, bool provoking_vertex_first>
-	void FindMinMax(const void* vertex, const u32* index, int count);
-
-	template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color>
-	FindMinMaxPtr GetFMM(bool provoking_vertex_first);
 
 public:
 	GS_PRIM_CLASS m_primclass;

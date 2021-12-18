@@ -681,6 +681,7 @@ set(pcsx2GSSources
 	GS/Renderers/Common/GSRenderer.cpp
 	GS/Renderers/Common/GSTexture.cpp
 	GS/Renderers/Common/GSVertexTrace.cpp
+	GS/Renderers/Common/GSVertexTraceFMM.cpp
 	GS/Renderers/Null/GSDeviceNull.cpp
 	GS/Renderers/Null/GSRendererNull.cpp
 	GS/Renderers/Null/GSTextureNull.cpp
