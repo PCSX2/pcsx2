@@ -1819,6 +1819,8 @@ GSOffset::PageLooper GSOffset::pageLooperForRect(const GSVector4i& rect) const
 	out.yCnt = botPg - topPg;
 	out.firstRowPgXStart = out.midRowPgXStart = out.lastRowPgXStart = rect.left >> m_pageShiftX;
 	out.firstRowPgXEnd = out.midRowPgXEnd = out.lastRowPgXEnd = ((rect.right + m_pageMask.x) >> m_pageShiftX) + !aligned;
+	out.slowPath = static_cast<u32>(out.yCnt * out.yInc + out.midRowPgXEnd - out.midRowPgXStart) > MAX_PAGES;
+
 	// Page-aligned bp is easy, all tiles touch their lower page but not the upper
 	if (aligned)
 		return out;
