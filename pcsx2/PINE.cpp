@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
+#ifndef PCSX2_CORE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <thread>
@@ -521,3 +523,5 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 	}
 	return IPCBuffer{(int)ret_cnt, MakeOkIPC(ret_buffer, ret_cnt)};
 }
+
+#endif
