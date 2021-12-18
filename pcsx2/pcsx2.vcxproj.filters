@@ -274,6 +274,9 @@
     <Filter Include="System\Ps2\GS\GIF">
       <UniqueIdentifier>{78f5077b-255e-435e-9a51-352171dfaee8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Host">
+      <UniqueIdentifier>{65f21394-287a-471b-a0c1-d8f0d5d95a81}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Utilities\folderdesc.txt">
@@ -1640,6 +1643,9 @@
     <ClCompile Include="SPU2\SndOut_Cubeb.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
+    <ClCompile Include="Host.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2722,9 +2728,6 @@
     <ClInclude Include="MemoryCardFile.h">
       <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
-    <ClInclude Include="Host.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
     <ClInclude Include="gui\wxSettingsInterface.h">
       <Filter>AppHost</Filter>
     </ClInclude>
@@ -2738,7 +2741,10 @@
       <Filter>System\Ps2\PAD</Filter>
     </ClInclude>
     <ClInclude Include="PerformanceMetrics.h">
-      <Filter>System</Filter>
+      <Filter>System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Host.h">
+      <Filter>Host</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
