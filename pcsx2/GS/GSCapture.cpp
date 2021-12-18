@@ -397,11 +397,6 @@ GSCapture::GSCapture()
 	: m_capturing(false), m_frame(0)
 	, m_out_dir("/tmp/GS_Capture") // FIXME Later add an option
 {
-	m_out_dir = theApp.GetConfigS("capture_out_dir");
-	m_threads = theApp.GetConfigI("capture_threads");
-#if defined(__unix__)
-	m_compression_level = theApp.GetConfigI("png_compression_level");
-#endif
 }
 
 GSCapture::~GSCapture()
@@ -417,6 +412,13 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	ASSERT(fps != 0);
 
 	EndCapture();
+
+	// reload settings because they may have changed
+	m_out_dir = theApp.GetConfigS("capture_out_dir");
+	m_threads = theApp.GetConfigI("capture_threads");
+#if defined(__unix__)
+	m_compression_level = theApp.GetConfigI("png_compression_level");
+#endif
 
 #ifdef _WIN32
 

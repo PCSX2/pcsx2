@@ -31,8 +31,6 @@ private:
 	PRIM_OVERLAP m_prim_overlap;
 	std::vector<size_t> m_drawlist;
 
-	TriFiltering UserHacks_tri_filter;
-
 	GSHWDrawConfig m_conf;
 
 private:
@@ -49,7 +47,6 @@ public:
 	GSRendererNew();
 	~GSRendererNew() override {}
 
-	bool CreateDevice(GSDevice* dev, const WindowInfo& wi) override;
 	void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) override;
 
 	PRIM_OVERLAP PrimitiveOverlap();

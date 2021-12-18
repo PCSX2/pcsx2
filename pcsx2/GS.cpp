@@ -47,20 +47,31 @@ void gsReset()
 
 void gsUpdateFrequency(Pcsx2Config& config)
 {
-	switch (EmuConfig.LimiterMode)
+	if (config.GS.FrameLimitEnable)
 	{
-	case LimiterModeType::Nominal:
-		config.GS.LimitScalar = EmuConfig.Framerate.NominalScalar;
-		break;
-	case LimiterModeType::Slomo:
-		config.GS.LimitScalar = EmuConfig.Framerate.SlomoScalar;
-		break;
-	case LimiterModeType::Turbo:
-		config.GS.LimitScalar = EmuConfig.Framerate.TurboScalar;
-		break;
-	default:
-		pxAssert("Unknown framelimiter mode!");
+		switch (config.LimiterMode)
+		{
+		case LimiterModeType::Nominal:
+			config.GS.LimitScalar = config.Framerate.NominalScalar;
+			break;
+		case LimiterModeType::Slomo:
+			config.GS.LimitScalar = config.Framerate.SlomoScalar;
+			break;
+		case LimiterModeType::Turbo:
+			config.GS.LimitScalar = config.Framerate.TurboScalar;
+			break;
+		case LimiterModeType::Unlimited:
+			config.GS.LimitScalar = 0.0;
+			break;
+		default:
+			pxAssert("Unknown framelimiter mode!");
+		}
 	}
+	else
+	{
+		config.GS.LimitScalar = 0.0;
+	}
+
 	UpdateVSyncRate();
 }
 
@@ -369,34 +380,34 @@ void gsIrq() {
 //   This function does not regulate frame limiting, meaning it does no stalling. Stalling
 //   functions are performed by the EE, which itself uses thread sleep logic to avoid spin
 //   waiting as much as possible (maximizes CPU resource availability for the GS).
+static bool s_isSkippingCurrentFrame = false;
 
 __fi void gsFrameSkip()
 {
 	static int consec_skipped = 0;
 	static int consec_drawn = 0;
-	static bool isSkipping = false;
 
 	if( !EmuConfig.GS.FrameSkipEnable )
 	{
-		if( isSkipping )
+		if( s_isSkippingCurrentFrame )
 		{
 			// Frameskipping disabled on-the-fly .. make sure the GS is restored to non-skip
 			// behavior.
 			GSsetFrameSkip( false );
-			isSkipping = false;
+			s_isSkippingCurrentFrame = false;
 		}
 		return;
 	}
 
-	GSsetFrameSkip( isSkipping );
+	GSsetFrameSkip( s_isSkippingCurrentFrame );
 
-	if( isSkipping )
+	if( s_isSkippingCurrentFrame )
 	{
 		++consec_skipped;
 		if( consec_skipped >= EmuConfig.GS.FramesToSkip )
 		{
 			consec_skipped = 0;
-			isSkipping = false;
+			s_isSkippingCurrentFrame = false;
 		}
 	}
 	else
@@ -405,9 +416,14 @@ __fi void gsFrameSkip()
 		if( consec_drawn >= EmuConfig.GS.FramesToDraw )
 		{
 			consec_drawn = 0;
-			isSkipping = true;
+			s_isSkippingCurrentFrame = true;
 		}
 	}
+}
+
+extern bool gsIsSkippingCurrentFrame()
+{
+	return s_isSkippingCurrentFrame;
 }
 
 //These are done at VSync Start.  Drawing is done when VSync is off, then output the screen when Vsync is on
@@ -436,3 +452,4 @@ void SaveStateBase::gsFreeze()
 	FreezeMem(PS2MEM_GS, 0x2000);
 	Freeze(gsVideoMode);
 }
+

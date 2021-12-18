@@ -30,7 +30,7 @@ namespace GLExtension
 
 namespace GLLoader
 {
-	void check_gl_requirements();
+	bool check_gl_requirements();
 
 	extern bool vendor_id_amd;
 	extern bool vendor_id_nvidia;

@@ -27,7 +27,7 @@ CONSTINIT const GSVector8 GSRendererSW::m_pos_scale2 = GSVector8::cxpr(1.0f / 16
 #endif
 
 GSRendererSW::GSRendererSW(int threads)
-	: m_fzb(NULL)
+	: GSRenderer(), m_fzb(NULL)
 {
 	m_nativeres = true; // ignore ini, sw is always native
 
@@ -91,7 +91,7 @@ void GSRendererSW::Reset()
 	GSRenderer::Reset();
 }
 
-void GSRendererSW::VSync(int field)
+void GSRendererSW::VSync(u32 field)
 {
 	Sync(0); // IncAge might delete a cached texture in use
 
@@ -135,16 +135,6 @@ void GSRendererSW::VSync(int field)
 	// if((m_perfmon.GetFrame() & 255) == 0) m_rl->PrintStats();
 }
 
-void GSRendererSW::ResetDevice()
-{
-	for (GSTexture*& tex : m_texture)
-	{
-		delete tex;
-
-		tex = NULL;
-	}
-}
-
 GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 {
 	Sync(1);
@@ -156,7 +146,7 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 
 	// TODO: round up bottom
 
-	if (m_dev->ResizeTexture(&m_texture[i], w, h))
+	if (g_gs_device->ResizeTexture(&m_texture[i], w, h))
 	{
 		static int pitch = 1024 * 4;
 
@@ -1300,7 +1290,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 				gd.sel.pabe = 1;
 			}
 
-			if (m_aa1 && PRIM->AA1 && (primclass == GS_LINE_CLASS || primclass == GS_TRIANGLE_CLASS))
+			if (GSConfig.AA1 && PRIM->AA1 && (primclass == GS_LINE_CLASS || primclass == GS_TRIANGLE_CLASS))
 			{
 				gd.sel.aa1 = 1;
 			}

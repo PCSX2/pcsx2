@@ -104,8 +104,10 @@ void SysCoreThread::OnStart()
 
 void SysCoreThread::OnSuspendInThread()
 {
-	TearDownSystems(static_cast<SystemsMask>(-1)); // All systems
-	GetMTGS().Suspend();
+	// We deliberately don't tear down GS here, because the state isn't saved.
+	// Which means when it reopens, you'll lose everything in VRAM. Anything
+	// which needs GS to be torn down should manually save its state.
+	TearDownSystems(static_cast<SystemsMask>(-1 & ~System_GS)); // All systems
 }
 
 void SysCoreThread::Start()
@@ -183,7 +185,19 @@ void SysCoreThread::ApplySettings(const Pcsx2Config& src)
 	m_resetProfilers = (src.Profiler != EmuConfig.Profiler);
 	m_resetVsyncTimers = (src.GS != EmuConfig.GS);
 
+	const bool gs_settings_changed = !src.GS.OptionsAreEqual(EmuConfig.GS);
+
 	EmuConfig.CopyConfig(src);
+
+	// handle GS setting changes
+	if (GetMTGS().IsOpen() && gs_settings_changed)
+	{
+		// if by change we reopen the GS, the window handles will invalidate.
+		// so, we should block here until GS has finished reinitializing, if needed.
+		Console.WriteLn("Applying GS settings...");
+		GetMTGS().ApplySettings();
+		GetMTGS().WaitGS();
+	}
 }
 
 // --------------------------------------------------------------------------------------
@@ -326,6 +340,7 @@ void SysCoreThread::TearDownSystems(SystemsMask systemsToTearDown)
 void SysCoreThread::OnResumeInThread(SystemsMask systemsToReinstate)
 {
 	PerformanceMetrics::SetCPUThreadTimer(Common::ThreadCPUTimer::GetForCallingThread());
+	PerformanceMetrics::Reset();
 
 	GetMTGS().WaitForOpen();
 	if (systemsToReinstate & System_DEV9) DEV9open();

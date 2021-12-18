@@ -120,7 +120,7 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, 
 		th = extend(uv.y, th);
 	}
 
-	if ((theApp.GetCurrentRendererType() == GSRendererType::OGL_SW) && ((int)TEX0.TW != tw || (int)TEX0.TH != th))
+	if (GSConfig.Renderer == GSRendererType::SW && ((int)TEX0.TW != tw || (int)TEX0.TH != th))
 	{
 		GL_DBG("FixedTEX0 %05x %d %d tw %d=>%d th %d=>%d st (%.0f,%.0f,%.0f,%.0f) uvmax %d,%d wm %d,%d (%d,%d,%d,%d)",
 			(int)TEX0.TBP0, (int)TEX0.TBW, (int)TEX0.PSM,

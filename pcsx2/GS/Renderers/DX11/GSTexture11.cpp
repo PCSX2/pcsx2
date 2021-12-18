@@ -44,6 +44,11 @@ GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, GSTextur
 	m_max_layer = m_desc.MipLevels;
 }
 
+void* GSTexture11::GetNativeHandle() const
+{
+	return static_cast<ID3D11ShaderResourceView*>(*const_cast<GSTexture11*>(this));
+}
+
 bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
 	if (layer >= m_max_layer)

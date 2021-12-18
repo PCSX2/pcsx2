@@ -24,7 +24,6 @@ CONSTINIT const GSVector4 GSVertexTrace::s_minmax = GSVector4::cxpr(FLT_MAX, -FL
 GSVertexTrace::GSVertexTrace(const GSState* state)
 	: m_accurate_stq(false), m_state(state), m_primclass(GS_INVALID_CLASS)
 {
-	m_force_filter = static_cast<BiFiltering>(theApp.GetConfigI("filter"));
 	memset(&m_alpha, 0, sizeof(m_alpha));
 
 	#define InitUpdate3(P, IIP, TME, FST, COLOR) \
@@ -126,7 +125,7 @@ void GSVertexTrace::Update(const void* vertex, const u32* index, int v_count, in
 			}
 		}
 
-		switch (m_force_filter)
+		switch (GSConfig.TextureFiltering)
 		{
 			case BiFiltering::Nearest:
 				m_filter.opt_linear = 0;

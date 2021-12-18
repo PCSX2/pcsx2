@@ -32,6 +32,7 @@ enum GamefixId
 	Fix_FpuMultiply = GamefixId_FIRST,
 	Fix_FpuNegDiv,
 	Fix_GoemonTlbMiss,
+	Fix_SoftwareRendererFMV,
 	Fix_SkipMpeg,
 	Fix_OPHFlag,
 	Fix_EETiming,
@@ -97,6 +98,73 @@ enum class LimiterModeType : u8
 	Nominal,
 	Turbo,
 	Slomo,
+	Unlimited,
+};
+
+enum class GSRendererType : s8
+{
+	Auto = -1,
+	DX11 = 3,
+	Null = 11,
+	OGL = 12,
+	SW = 13,
+};
+
+enum class GSInterlaceMode : u8
+{
+	Off,
+	WeaveTFF,
+	WeaveBFF,
+	BobTFF,
+	BobBFF,
+	BlendTFF,
+	BlendBFF,
+	Automatic,
+	Count
+};
+
+// Ordering was done to keep compatibility with older ini file.
+enum class BiFiltering : u8
+{
+	Nearest,
+	Forced,
+	PS2,
+	Forced_But_Sprite,
+};
+
+enum class TriFiltering : u8
+{
+	Off,
+	PS2,
+	Forced,
+};
+
+enum class HWMipmapLevel : s8
+{
+	Automatic = -1,
+	Off,
+	Basic,
+	Full
+};
+
+enum class CRCHackLevel : s8
+{
+	Automatic = -1,
+	Off,
+	Minimum,
+	Partial,
+	Full,
+	Aggressive
+};
+
+enum class AccBlendLevel : u8
+{
+	Minimum,
+	Basic,
+	Medium,
+	High,
+	Full,
+	Ultra,
 };
 
 // Template function for casting enumerations to their underlying type
@@ -318,6 +386,61 @@ struct Pcsx2Config
 	// ------------------------------------------------------------------------
 	struct GSOptions
 	{
+		static const char* AspectRatioNames[];
+		static const char* FMVAspectRatioSwitchNames[];
+
+		static const char* GetRendererName(GSRendererType type);
+
+		union
+		{
+			u64 bitset;
+
+			struct
+			{
+				bool
+					IntegerScaling : 1,
+					LinearPresent : 1,
+					UseDebugDevice : 1,
+					UseBlitSwapChain : 1,
+					DisableShaderCache : 1,
+					OsdShowMessages : 1,
+					OsdShowSpeed : 1,
+					OsdShowFPS : 1,
+					OsdShowCPU : 1,
+					OsdShowResolution : 1,
+					OsdShowGSStats : 1;
+
+				bool
+					HWDisableReadbacks : 1,
+					AccurateDATE : 1,
+					GPUPaletteConversion : 1,
+					ConservativeFramebuffer : 1,
+					AutoFlushSW : 1,
+					PreloadFrameWithGSData : 1,
+					WrapGSMem : 1,
+					Mipmap : 1,
+					AA1 : 1,
+					UserHacks : 1,
+					UserHacks_AlignSpriteX : 1,
+					UserHacks_AutoFlush : 1,
+					UserHacks_CPUFBConversion : 1,
+					UserHacks_DisableDepthSupport : 1,
+					UserHacks_DisablePartialInvalidation : 1,
+					UserHacks_DisableSafeFeatures : 1,
+					UserHacks_MergePPSprite : 1,
+					UserHacks_WildHack : 1,
+					UserHacks_TextureInsideRt : 1,
+					FXAA : 1,
+					ShadeBoost : 1,
+					ShaderFX : 1,
+					DumpGSData : 1,
+					SaveRT : 1,
+					SaveFrame : 1,
+					SaveTexture : 1,
+					SaveDepth : 1;
+			};
+		};
+
 		int VsyncQueueSize{2};
 
 		// forces the MTGS to execute tags/tasks in fully blocking/synchronous
@@ -337,45 +460,73 @@ struct Pcsx2Config
 
 		AspectRatioType AspectRatio{AspectRatioType::R4_3};
 		FMVAspectRatioSwitchType FMVAspectRatioSwitch{FMVAspectRatioSwitchType::Off};
+		GSInterlaceMode InterlaceMode{GSInterlaceMode::Automatic};
 
 		double Zoom{100.0};
 		double StretchY{100.0};
 		double OffsetX{0.0};
 		double OffsetY{0.0};
 
+		double OsdScale{100.0};
+
+		GSRendererType Renderer{GSRendererType::Auto};
+		uint UpscaleMultiplier{1};
+
+		HWMipmapLevel HWMipmap{HWMipmapLevel::Automatic};
+		AccBlendLevel AccurateBlendingUnit{AccBlendLevel::Basic};
+		CRCHackLevel CRCHack{CRCHackLevel::Automatic};
+		BiFiltering TextureFiltering{BiFiltering::PS2};
+		int Dithering{2};
+		int MaxAnisotropy{0};
+		int SWExtraThreads{2};
+		int SWExtraThreadsHeight{4};
+		int TVShader{0};
+		int SkipDraw{0};
+		int SkipDrawOffset{0};
+
+		int UserHacks_HalfBottomOverride{-1};
+		int UserHacks_HalfPixelOffset{0};
+		int UserHacks_RoundSprite{0};
+		int UserHacks_TCOffsetX{0};
+		int UserHacks_TCOffsetY{0};
+		TriFiltering UserHacks_TriFilter{TriFiltering::Off};
+
+		int ShadeBoost_Brightness{50};
+		int ShadeBoost_Contrast{50};
+		int ShadeBoost_Saturation{50};
+		int SaveN{0};
+		int SaveL{5000};
+		std::string Adapter;
+		std::string ShaderFX_Conf;
+		std::string ShaderFX_GLSL;
+
+		GSOptions();
+
 		void LoadSave(SettingsWrapper& wrap);
 
-		int GetVsync() const;
+#ifndef PCSX2_CORE
+		/// Because some GS settings are stored in a separate INI in wx, we need a way to reload them.
+		/// This is because the SettingsWrapper is only created on full save/load.
+		void ReloadIniSettings();
+#else
+		void LoadSaveIniSettings(SettingsWrapper& wrap);
+#endif
 
-		bool operator==(const GSOptions& right) const
-		{
-			return OpEqu(SynchronousMTGS) &&
-				   OpEqu(VsyncQueueSize) &&
+		/// Sets user hack values to defaults when user hacks are not enabled.
+		void MaskUserHacks();
 
-				   OpEqu(FrameSkipEnable) &&
-				   OpEqu(FrameLimitEnable) &&
-				   OpEqu(VsyncEnable) &&
+		/// Returns true if any of the hardware renderers are selected.
+		bool UseHardwareRenderer() const;
 
-				   OpEqu(LimitScalar) &&
-				   OpEqu(FramerateNTSC) &&
-				   OpEqu(FrameratePAL) &&
+		/// Returns false if the compared to the old settings, we need to reopen GS.
+		/// (i.e. renderer change, swap chain mode change, etc.)
+		bool RestartOptionsAreEqual(const GSOptions& right) const;
 
-				   OpEqu(FramesToDraw) &&
-				   OpEqu(FramesToSkip) &&
+		/// Returns false if any options need to be applied to the MTGS.
+		bool OptionsAreEqual(const GSOptions& right) const;
 
-				   OpEqu(AspectRatio) &&
-				   OpEqu(FMVAspectRatioSwitch) &&
-
-				   OpEqu(Zoom) &&
-				   OpEqu(StretchY) &&
-				   OpEqu(OffsetX) &&
-				   OpEqu(OffsetY);
-		}
-
-		bool operator!=(const GSOptions& right) const
-		{
-			return !this->operator==(right);
-		}
+		bool operator==(const GSOptions& right) const;
+		bool operator!=(const GSOptions& right) const;
 	};
 
 	struct SPU2Options
@@ -463,6 +614,7 @@ struct Pcsx2Config
 			FpuMulHack : 1, // Tales of Destiny hangs.
 			FpuNegDivHack : 1, // Gundam games messed up camera-view.
 			GoemonTlbHack : 1, // Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
+			SoftwareRendererFMVHack : 1, // Switches to software renderer for FMVs
 			SkipMPEGHack : 1, // Skips MPEG videos (Katamari and other games need this)
 			OPHFlagHack : 1, // Bleach Blade Battlers
 			EETimingHack : 1, // General purpose timing hack.
@@ -679,6 +831,8 @@ struct Pcsx2Config
 	wxString FullpathToMcd(uint slot) const;
 
 	bool MultitapEnabled(uint port) const;
+
+	VsyncMode GetEffectiveVsyncMode() const;
 
 	bool operator==(const Pcsx2Config& right) const;
 	bool operator!=(const Pcsx2Config& right) const

@@ -18,13 +18,13 @@
 #include "MainFrame.h"
 #include "ConsoleLogger.h"
 #include "MSWstuff.h"
+#include "Host.h"
 
 #include "common/Console.h"
 #include "common/IniInterface.h"
 #include "common/SafeArray.inl"
 #include "Dialogs/LogOptionsDialog.h"
 #include "DebugTools/Debug.h"
-
 #include <wx/textfile.h>
 
 wxDECLARE_EVENT(pxEvt_SetTitleText, wxCommandEvent);
@@ -1266,13 +1266,8 @@ void Pcsx2App::DisableWindowLogging() const
 
 void OSDlog(ConsoleColors color, bool console, const std::string& str)
 {
-	GSosdLog(str.c_str(), wxGetApp().GetProgramLog()->GetRGBA(color));
+	Host::AddOSDMessage(str, 15.0f);
 
 	if (console)
 		Console.WriteLn(color, str.c_str());
 }
-
-void OSDmonitor(ConsoleColors color, const std::string key, const std::string value) {
-	GSosdMonitor(key.c_str(), value.c_str(), wxGetApp().GetProgramLog()->GetRGBA(color));
-}
-

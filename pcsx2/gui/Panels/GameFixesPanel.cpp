@@ -49,6 +49,10 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			wxEmptyString
 		},
 		{
+			_("Switch to Software renderer for FMVs"),
+			wxEmptyString
+		},
+		{
 			_("Skip MPEG hack - Skips videos/FMVs in games to avoid game hanging/freezes."),
 			wxEmptyString
 		},

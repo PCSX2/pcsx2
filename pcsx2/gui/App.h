@@ -526,6 +526,7 @@ public:
 	void OpenGsPanel();
 	void CloseGsPanel();
 	void OnGsFrameClosed(wxWindowID id);
+	void OnGsFrameDestroyed(wxWindowID id);
 	void OnMainFrameClosed(wxWindowID id);
 
 	// --------------------------------------------------------------------------

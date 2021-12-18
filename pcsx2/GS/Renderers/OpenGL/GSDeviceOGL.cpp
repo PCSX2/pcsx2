@@ -20,6 +20,7 @@
 #include "GLState.h"
 #include "GS/GSUtil.h"
 #include "Host.h"
+#include "HostDisplay.h"
 #include <fstream>
 #include <sstream>
 
@@ -40,7 +41,6 @@ static constexpr u32 INDEX_BUFFER_SIZE = 16 * 1024 * 1024;
 static constexpr u32 VERTEX_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024;
 static constexpr u32 FRAGMENT_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024;
 
-bool  GSDeviceOGL::m_debug_gl_call = false;
 int   GSDeviceOGL::m_shader_inst = 0;
 int   GSDeviceOGL::m_shader_reg  = 0;
 FILE* GSDeviceOGL::m_debug_gl_file = NULL;
@@ -61,24 +61,14 @@ GSDeviceOGL::GSDeviceOGL()
 	memset(&m_shadeboost, 0, sizeof(m_shadeboost));
 	memset(&m_om_dss, 0, sizeof(m_om_dss));
 	memset(&m_profiler, 0, sizeof(m_profiler));
-	GLState::Clear();
 
 	m_mipmap = theApp.GetConfigI("mipmap");
 	m_upscale_multiplier = std::max(1, theApp.GetConfigI("upscale_multiplier"));
-	if (theApp.GetConfigB("UserHacks"))
-		m_filter = static_cast<TriFiltering>(theApp.GetConfigI("UserHacks_TriFilter"));
-	else
-		m_filter = TriFiltering::None;
 
 	// Reset the debug file
 #ifdef ENABLE_OGL_DEBUG
-	if (theApp.GetCurrentRendererType() == GSRendererType::OGL_SW)
-		m_debug_gl_file = fopen("GS_opengl_debug_sw.txt", "w");
-	else
-		m_debug_gl_file = fopen("GS_opengl_debug_hw.txt", "w");
+	m_debug_gl_file = fopen("GS_opengl_debug.txt", "w");
 #endif
-
-	m_debug_gl_call = theApp.GetConfigB("debug_opengl");
 
 	m_disable_hw_gl_draw = theApp.GetConfigB("disable_hw_gl_draw");
 }
@@ -215,29 +205,23 @@ GSTexture* GSDeviceOGL::CreateSurface(GSTexture::Type type, int w, int h, GSText
 	GL_PUSH("Create surface");
 
 	// A wrapper to call GSTextureOGL, with the different kind of parameters.
-	GSTextureOGL* t = new GSTextureOGL(type, w, h, fmt, m_fbo_read, m_mipmap > 1 || m_filter != TriFiltering::None);
+	GSTextureOGL* t = new GSTextureOGL(type, w, h, fmt, m_fbo_read, m_mipmap > 1 || GSConfig.UserHacks_TriFilter != TriFiltering::Off);
 
 	return t;
 }
 
-bool GSDeviceOGL::Create(const WindowInfo& wi)
+bool GSDeviceOGL::Create(HostDisplay* display)
 {
-	m_gl_context = GL::Context::Create(wi, GL::Context::GetAllVersionsList());
-	if (!m_gl_context || !m_gl_context->MakeCurrent())
+	if (!GSDevice::Create(display))
+		return false;
+
+	if (display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGL)
 		return false;
 
 	// Check openGL requirement as soon as possible so we can switch to another
 	// renderer/device
-	try
-	{
-		GLLoader::check_gl_requirements();
-	}
-	catch (std::exception& ex)
-	{
-		printf("GS error: Exception caught in GSDeviceOGL::Create: %s", ex.what());
-		m_gl_context->DoneCurrent();
+	if (!GLLoader::check_gl_requirements())
 		return false;
-	}
 
 	if (!theApp.GetConfigB("disable_shader_cache"))
 	{
@@ -268,16 +252,22 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 	{
 		auto shader = Host::ReadResourceFileToString("shaders/opengl/common_header.glsl");
 		if (!shader.has_value())
+		{
+			Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/common_header.glsl.");
 			return false;
+		}
 
 		m_shader_common_header = std::move(*shader);
 	}
+
+	// because of fbo bindings below...
+	GLState::Clear();
 
 	// ****************************************************************
 	// Debug helper
 	// ****************************************************************
 #ifdef ENABLE_OGL_DEBUG
-	if (theApp.GetConfigB("debug_opengl"))
+	if (GSConfig.UseDebugDevice)
 	{
 		glDebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
@@ -334,7 +324,7 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 		glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &m_uniform_buffer_alignment);
 		if (!m_vertex_stream_buffer || !m_index_stream_buffer || !m_vertex_uniform_stream_buffer || !m_fragment_uniform_stream_buffer)
 		{
-			Console.Error("Failed to create vertex/index/uniform streaming buffers");
+			Host::ReportErrorAsync("GS", "Failed to create vertex/index/uniform streaming buffers");
 			return false;
 		}
 
@@ -355,6 +345,10 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 		glVertexAttribIPointer(6, 2, GL_UNSIGNED_SHORT, sizeof(GSVertex), (const GLvoid*)(24));
 		glVertexAttribPointer(7, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GSVertex), (const GLvoid*)(28));
 	}
+
+	// must be done after va is created
+	GLState::Clear();
+	RestoreAPIState();
 
 	// ****************************************************************
 	// Pre Generate the different sampler object
@@ -377,7 +371,10 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 		// these all share the same vertex shader
 		const auto shader = Host::ReadResourceFileToString("shaders/opengl/convert.glsl");
 		if (!shader.has_value())
+		{
+			Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/convert.glsl.");
 			return false;
+		}
 
 		m_convert.vs = GetShaderSource("vs_main", GL_VERTEX_SHADER, m_shader_common_header, *shader, {});
 
@@ -417,7 +414,10 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 
 		const auto shader = Host::ReadResourceFileToString("shaders/opengl/merge.glsl");
 		if (!shader.has_value())
+		{
+			Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/merge.glsl.");
 			return false;
+		}
 
 		for (size_t i = 0; i < std::size(m_merge_obj.ps); i++)
 		{
@@ -437,7 +437,10 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 
 		const auto shader = Host::ReadResourceFileToString("shaders/opengl/interlace.glsl");
 		if (!shader.has_value())
+		{
+			Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/interlace.glsl.");
 			return false;
+		}
 
 		for (size_t i = 0; i < std::size(m_interlace.ps); i++)
 		{
@@ -465,7 +468,10 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 
 		const auto shader = Host::ReadResourceFileToString("shaders/opengl/shadeboost.glsl");
 		if (!shader.has_value())
+		{
+			Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/shadeboost.glsl.");
 			return false;
+		}
 
 		const std::string ps(GetShaderSource("ps_main", GL_FRAGMENT_SHADER, m_shader_common_header, *shader, shade_macro));
 		if (!m_shader_cache.GetProgram(&m_shadeboost.ps, m_convert.vs, {}, ps))
@@ -563,23 +569,6 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 
 	fprintf(stdout, "Available VRAM/RAM:%lldMB for textures\n", GLState::available_vram >> 20u);
 
-	// ****************************************************************
-	// Texture Font (OSD)
-	// ****************************************************************
-	const GSVector2i tex_font = m_osd.get_texture_font_size();
-
-	m_font = std::unique_ptr<GSTexture>(
-		new GSTextureOGL(GSTexture::Type::Texture, tex_font.x, tex_font.y, GSTexture::Format::UNorm8, m_fbo_read, false)
-	);
-
-	// ****************************************************************
-	// Finish window setup and backbuffer
-	// ****************************************************************
-	if (!GSDevice::Create(wi))
-		return false;
-
-	Reset(wi.surface_width, wi.surface_height);
-
 	// Basic to ensure structures are correctly packed
 	static_assert(sizeof(VSSelector) == 4, "Wrong VSSelector size");
 	static_assert(sizeof(PSSelector) == 8, "Wrong PSSelector size");
@@ -597,7 +586,10 @@ bool GSDeviceOGL::CreateTextureFX()
 	auto vertex_shader = Host::ReadResourceFileToString("shaders/opengl/tfx_vgs.glsl");
 	auto fragment_shader = Host::ReadResourceFileToString("shaders/opengl/tfx_fs.glsl");
 	if (!vertex_shader.has_value() || !fragment_shader.has_value())
+	{
+		Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/tfx_{vgs,fs}.glsl.");
 		return false;
+	}
 
 	m_shader_tfx_vgs = std::move(*vertex_shader);
 	m_shader_tfx_fs = std::move(*fragment_shader);
@@ -615,37 +607,75 @@ bool GSDeviceOGL::CreateTextureFX()
 		m_om_dss[key] = CreateDepthStencil(OMDepthStencilSelector(key));
 	}
 
-	return true;
-}
-
-bool GSDeviceOGL::Reset(int w, int h)
-{
-	if (!GSDevice::Reset(w, h))
-		return false;
-
-	// Opengl allocate the backbuffer with the window. The render is done in the backbuffer when
-	// there isn't any FBO. Only a dummy texture is created to easily detect when the rendering is done
-	// in the backbuffer
-	m_gl_context->ResizeSurface(w, h);
-	m_backbuffer = new GSTextureOGL(GSTexture::Type::Backbuffer, m_gl_context->GetSurfaceWidth(),
-		m_gl_context->GetSurfaceHeight(), GSTexture::Format::Backbuffer, m_fbo_read, false);
-	return true;
-}
-
-void GSDeviceOGL::SetVSync(int vsync)
-{
-	m_gl_context->SetSwapInterval(vsync);
-}
-
-void GSDeviceOGL::Flip()
-{
-	m_gl_context->SwapBuffers();
-
 	if (GLLoader::in_replayer)
 	{
 		glQueryCounter(m_profiler.timer(), GL_TIMESTAMP);
 		m_profiler.last_query++;
 	}
+
+	return true;
+}
+
+void GSDeviceOGL::ResetAPIState()
+{
+	if (GLState::point_size)
+		glDisable(GL_PROGRAM_POINT_SIZE);
+	if (GLState::line_width != 1.0f)
+		glLineWidth(1.0f);
+}
+
+void GSDeviceOGL::RestoreAPIState()
+{
+	glBindVertexArray(m_vertex_array_object);
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLState::fbo);
+
+	glViewportIndexedf(0, 0, 0, static_cast<float>(GLState::viewport.x), static_cast<float>(GLState::viewport.y));
+	glScissorIndexed(0, GLState::scissor.x, GLState::scissor.y, GLState::scissor.width(), GLState::scissor.height());
+
+	glBlendEquationSeparate(GLState::eq_RGB, GL_FUNC_ADD);
+	glBlendFuncSeparate(GLState::f_sRGB, GLState::f_dRGB, GL_ONE, GL_ZERO);
+	
+	const float bf = static_cast<float>(GLState::bf) / 128.0f;
+	glBlendColor(bf, bf, bf, bf);
+
+	if (GLState::blend)
+	{
+		glEnable(GL_BLEND);
+	}
+	else
+	{
+		glDisable(GL_BLEND);
+	}
+
+	const OMColorMaskSelector msel{ GLState::wrgba };
+	glColorMask(msel.wr, msel.wg, msel.wb, msel.wa);
+
+	GLState::depth ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+	glDepthFunc(GLState::depth_func);
+	glDepthMask(GLState::depth_mask);
+
+	if (GLState::stencil)
+	{
+		glEnable(GL_STENCIL_TEST);
+	}
+	else
+	{
+		glDisable(GL_STENCIL_TEST);
+	}
+
+	glStencilFunc(GLState::stencil_func, 1, 1);
+	glStencilOp(GL_KEEP, GL_KEEP, GLState::stencil_pass);
+
+	glBindSampler(0, GLState::ps_ss);
+	
+	for (GLuint i = 0; i < sizeof(GLState::tex_unit) / sizeof(GLState::tex_unit[0]); i++)
+		glBindTextureUnit(i, GLState::tex_unit[i]);
+
+	if (GLState::point_size)
+		glEnable(GL_PROGRAM_POINT_SIZE);
+	if (GLState::line_width != 1.0f)
+		glLineWidth(GLState::line_width);
 }
 
 void GSDeviceOGL::DrawPrimitive()
@@ -680,7 +710,7 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 		return;
 
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
-	if (T->HasBeenCleaned() && !T->IsBackbuffer())
+	if (T->HasBeenCleaned())
 		return;
 
 	// Performance note: potentially T->Clear() could be used. Main purpose of
@@ -698,21 +728,10 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 	const u32 old_color_mask = GLState::wrgba;
 	OMSetColorMaskState();
 
-	if (T->IsBackbuffer())
-	{
-		OMSetFBO(0);
+	OMSetFBO(m_fbo);
+	OMAttachRt(T);
 
-		// glDrawBuffer(GL_BACK); // this is the default when there is no FB
-		// 0 will select the first drawbuffer ie GL_BACK
-		glClearBufferfv(GL_COLOR, 0, c.v);
-	}
-	else
-	{
-		OMSetFBO(m_fbo);
-		OMAttachRt(T);
-
-		glClearBufferfv(GL_COLOR, 0, c.v);
-	}
+	glClearBufferfv(GL_COLOR, 0, c.v);
 
 	OMSetColorMaskState(OMColorMaskSelector(old_color_mask));
 
@@ -1167,11 +1186,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GL::Program& ps, int bs, OMColorMaskSelector cms, bool linear)
 {
-	if (!sTex || !dTex)
-	{
-		ASSERT(0);
-		return;
-	}
+	ASSERT(sTex);
 
 	const bool draw_in_depth = ps == m_convert.ps[static_cast<int>(ShaderConvert::RGBA8_TO_FLOAT32)]
 	                        || ps == m_convert.ps[static_cast<int>(ShaderConvert::RGBA8_TO_FLOAT24)]
@@ -1182,15 +1197,27 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// instead to emulate it with shader
 	// see https://www.opengl.org/wiki/Framebuffer#Blitting
 
-	GL_PUSH("StretchRect from %d to %d", sTex->GetID(), dTex->GetID());
-
 	// ************************************
 	// Init
 	// ************************************
 
 	BeginScene();
 
-	GSVector2i ds = dTex->GetSize();
+	GSVector2i ds;
+	if (dTex)
+	{
+		GL_PUSH("StretchRect from %d to %d", sTex->GetID(), dTex->GetID());
+		ds = dTex->GetSize();
+		dTex->CommitRegion(GSVector2i((int)dRect.z + 1, (int)dRect.w + 1));
+		if (draw_in_depth)
+			OMSetRenderTargets(NULL, dTex);
+		else
+			OMSetRenderTargets(dTex, NULL);
+	}
+	else
+	{
+		ds = GSVector2i(m_display->GetWindowWidth(), m_display->GetWindowHeight());
+	}
 
 	ps.Bind();
 
@@ -1202,11 +1229,6 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 		OMSetDepthStencilState(m_convert.dss_write);
 	else
 		OMSetDepthStencilState(m_convert.dss);
-
-	if (draw_in_depth)
-		OMSetRenderTargets(NULL, dTex);
-	else
-		OMSetRenderTargets(dTex, NULL);
 
 	OMSetBlendState((u8)bs);
 	OMSetColorMaskState(cms);
@@ -1222,7 +1244,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// 2/ in case some GS code expect thing in dx order.
 	// Only flipping the backbuffer is transparent (I hope)...
 	GSVector4 flip_sr = sRect;
-	if (static_cast<GSTextureOGL*>(dTex)->IsBackbuffer())
+	if (!dTex)
 	{
 		flip_sr.y = sRect.w;
 		flip_sr.w = sRect.y;
@@ -1238,7 +1260,6 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// ************************************
 	// Draw
 	// ************************************
-	dTex->CommitRegion(GSVector2i((int)dRect.z + 1, (int)dRect.w + 1));
 	DrawStretchRect(flip_sr, dRect, ds);
 
 	// ************************************
@@ -1274,39 +1295,6 @@ void GSDeviceOGL::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect
 	IASetVertexBuffer(vertices, 4);
 	IASetPrimitiveTopology(GL_TRIANGLE_STRIP);
 	DrawPrimitive();
-}
-
-void GSDeviceOGL::RenderOsd(GSTexture* dt)
-{
-	BeginScene();
-
-	m_convert.ps[static_cast<int>(ShaderConvert::OSD)].Bind();
-
-	OMSetDepthStencilState(m_convert.dss);
-	OMSetBlendState((u8)GSDeviceOGL::m_MERGE_BLEND);
-	OMSetRenderTargets(dt, NULL);
-
-	if (m_osd.m_texture_dirty)
-	{
-		m_osd.upload_texture_atlas(m_font.get());
-	}
-
-	PSSetShaderResource(0, m_font.get());
-	PSSetSamplerState(m_convert.pt);
-
-	IASetPrimitiveTopology(GL_TRIANGLES);
-
-	// Note scaling could also be done in shader (require gl3/dx10)
-	size_t count = m_osd.Size();
-	auto res = m_vertex_stream_buffer->Map(sizeof(GSVertexPT1), static_cast<u32>(count) * sizeof(GSVertexPT1));
-	count = m_osd.GeneratePrimitives(reinterpret_cast<GSVertexPT1*>(res.pointer), count);
-	m_vertex.start = res.index_aligned;
-	m_vertex.count = count;
-	m_vertex_stream_buffer->Unmap(static_cast<u32>(count) * sizeof(GSVertexPT1));
-
-	DrawPrimitive();
-
-	EndScene();
 }
 
 void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
@@ -1705,30 +1693,21 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	GSTextureOGL* RT = static_cast<GSTextureOGL*>(rt);
 	GSTextureOGL* DS = static_cast<GSTextureOGL*>(ds);
 
-	if (rt == NULL || !RT->IsBackbuffer())
+	OMSetFBO(m_fbo);
+	if (rt)
 	{
-		OMSetFBO(m_fbo);
-		if (rt)
-		{
-			OMAttachRt(RT);
-		}
-		else
-		{
-			OMAttachRt();
-		}
-
-		// Note: it must be done after OMSetFBO
-		if (ds)
-			OMAttachDs(DS);
-		else
-			OMAttachDs();
+		OMAttachRt(RT);
 	}
 	else
 	{
-		// Render in the backbuffer
-		OMSetFBO(0);
+		OMAttachRt();
 	}
 
+	// Note: it must be done after OMSetFBO
+	if (ds)
+		OMAttachDs(DS);
+	else
+		OMAttachDs();
 
 	const GSVector2i size = rt ? rt->GetSize() : ds ? ds->GetSize() : GLState::viewport;
 	if (GLState::viewport != size)

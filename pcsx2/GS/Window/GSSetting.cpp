@@ -85,8 +85,6 @@ const char* dialog_message(int ID, bool* updateText)
 				"  0500 0500, fixes Persona 3 minimap, helps Haunting Ground.");
 		case IDC_OSD_LOG:
 			return cvtString("Prints log messages from the Function keys onscreen.");
-		case IDC_OSD_MONITOR:
-			return cvtString("Continuously prints/overlays the FPS counter and the EE ('CPU-usage') ,\nGS ('GPU-usage') and VU(if the MTVU speedhack is enabled) percentages onscreen.");
 		case IDC_PALTEX:
 			return cvtString("Enabled: GPU converts colormap-textures.\n"
 				"Disabled: CPU converts colormap-textures.\n\n"
@@ -167,10 +165,6 @@ const char* dialog_message(int ID, bool* updateText)
 		case IDC_SPARSE_TEXTURE:
 			return cvtString("Allows to reduce VRAM usage on the GPU.\n\n"
 				"Note: Feature is currently experimental and works only on Nvidia GPUs.");
-		case IDC_OSD_MAX_LOG_EDIT:
-		case IDC_OSD_MAX_LOG:
-			return cvtString("Sets the maximum number of log messages on the screen or in the buffer at the same time.\n\n"
-				"The maximum number of messages visible on the screen at the same time also depends on the character size.");
 		case IDC_LINEAR_PRESENT:
 			return cvtString("Use bilinear filtering when Upscaling/Downscaling the image to the screen. Disable it if you want a sharper/pixelated output.");
 		// Exclusive for Hardware Renderer

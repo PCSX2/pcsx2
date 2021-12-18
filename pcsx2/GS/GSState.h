@@ -155,8 +155,6 @@ protected:
 	GetSkipCount m_gsc;
 	int m_skip;
 	int m_skip_offset;
-	int m_userhacks_skipdraw;
-	int m_userhacks_skipdraw_offset;
 	bool m_userhacks_auto_flush;
 
 	GSVertex m_v;
@@ -208,7 +206,6 @@ protected:
 	GIFRegTEX0 GetTex0Layer(u32 lod);
 
 public:
-	GSDevice* m_dev;
 	GIFPath m_path[4];
 	GIFRegPRIM* PRIM;
 	GSPrivRegSet* m_regs;
@@ -272,7 +269,13 @@ public:
 	template<int index> void Transfer(const u8* mem, u32 size);
 	int Freeze(freezeData* fd, bool sizeonly);
 	int Defrost(const freezeData* fd);
+
+	u32 GetGameCRC() const { return m_crc; }
+	int GetGameCRCOptions() const { return m_options; }
 	virtual void SetGameCRC(u32 crc, int options);
+
+	u8* GetRegsMem() const { return reinterpret_cast<u8*>(m_regs); }
+	void SetRegsMem(u8* basemem) { m_regs = reinterpret_cast<GSPrivRegSet*>(basemem); }
+
 	void SetFrameSkip(int skip);
-	void SetRegsMem(u8* basemem);
 };

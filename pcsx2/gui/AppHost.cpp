@@ -18,9 +18,26 @@
 #include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
+#include "common/StringUtil.h"
 
 #include "Host.h"
 #include "HostSettings.h"
+#include "HostDisplay.h"
+#include "GS/GS.h"
+
+#include "common/Assertions.h"
+#include "Frontend/ImGuiManager.h"
+#include "Frontend/OpenGLHostDisplay.h"
+#ifdef _WIN32
+#include "Frontend/D3D11HostDisplay.h"
+#endif
+
+#include "gui/App.h"
+#include "gui/AppHost.h"
+#include "gui/pxEvents.h"
+
+#include <atomic>
+#include <mutex>
 
 #include "gui/App.h"
 #include "gui/AppConfig.h"
@@ -87,5 +104,106 @@ void Host::ReportErrorAsync(const std::string_view& title, const std::string_vie
 		title.empty() ? wxString() : wxString::FromUTF8(title.data(), title.length()),
 		message.empty() ? wxString() : wxString::FromUTF8(message.data(), message.length()),
 		MsgButtons().OK()));
+}
+
+static std::unique_ptr<HostDisplay> s_host_display;
+
+HostDisplay* Host::AcquireHostDisplay(HostDisplay::RenderAPI api)
+{
+	sApp.OpenGsPanel();
+
+	// can't go anywhere if we don't have a window to render into!
+	if (g_gs_window_info.type == WindowInfo::Type::Surfaceless)
+		return nullptr;
+
+	s_host_display = HostDisplay::CreateDisplayForAPI(api);
+	if (!s_host_display)
+		return nullptr;
+
+	if (!s_host_display->CreateRenderDevice(g_gs_window_info, GSConfig.Adapter, GSConfig.UseDebugDevice) ||
+		!s_host_display->InitializeRenderDevice(StringUtil::wxStringToUTF8String(EmuFolders::Cache.ToString()), GSConfig.UseDebugDevice) ||
+		!ImGuiManager::Initialize())
+	{
+		s_host_display->DestroyRenderDevice();
+		s_host_display.reset();
+		return nullptr;
+	}
+
+	return s_host_display.get();
+}
+
+void Host::ReleaseHostDisplay()
+{
+	ImGuiManager::Shutdown();
+
+	if (s_host_display)
+	{
+		s_host_display->DestroyRenderDevice();
+		s_host_display.reset();
+	}
+
+	sApp.CloseGsPanel();
+}
+
+HostDisplay* Host::GetHostDisplay()
+{
+	return s_host_display.get();
+}
+
+bool Host::BeginPresentFrame(bool frame_skip)
+{
+	CheckForGSWindowResize();
+	return s_host_display->BeginPresent(frame_skip);
+}
+
+void Host::EndPresentFrame()
+{
+	ImGuiManager::RenderOSD();
+	s_host_display->EndPresent();
+	ImGuiManager::NewFrame();
+}
+
+void Host::UpdateHostDisplay()
+{
+	// not used for wx
+}
+
+void Host::ResizeHostDisplay(u32 new_window_width, u32 new_window_height, float new_window_scale)
+{
+	// not used for wx (except for osd scale changes)
+	ImGuiManager::WindowResized();
+}
+
+static std::atomic_bool s_gs_window_resized{false};
+static std::mutex s_gs_window_resized_lock;
+static int s_new_gs_window_width = 0;
+static int s_new_gs_window_height = 0;
+
+void Host::GSWindowResized(int width, int height)
+{
+	std::unique_lock lock(s_gs_window_resized_lock);
+	s_new_gs_window_width = width;
+	s_new_gs_window_height = height;
+	s_gs_window_resized.store(true);
+}
+
+void Host::CheckForGSWindowResize()
+{
+	if (!s_gs_window_resized.load())
+		return;
+
+	int width, height;
+	{
+		std::unique_lock lock(s_gs_window_resized_lock);
+		width = s_new_gs_window_width;
+		height = s_new_gs_window_height;
+		s_gs_window_resized.store(false);
+	}
+
+	if (!s_host_display)
+		return;
+
+	s_host_display->ResizeRenderWindow(width, height, s_host_display ? s_host_display->GetWindowScale() : 1.0f);
+	ImGuiManager::WindowResized();
 }
 

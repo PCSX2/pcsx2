@@ -17,6 +17,11 @@
 #include "GSwxDialog.h"
 #include "gui/AppConfig.h"
 #include "GS/GSUtil.h"
+#include "HostDisplay.h"
+
+#ifdef _WIN32
+#include "Frontend/D3D11HostDisplay.h"
+#endif
 
 using namespace GSSettingsDialog;
 
@@ -317,7 +322,7 @@ RendererTab::RendererTab(wxWindow* parent)
 void RendererTab::UpdateBlendMode(GSRendererType renderer)
 {
 #ifdef _WIN32
-	if (renderer == GSRendererType::DX1011_HW)
+	if (renderer == GSRendererType::DX11)
 	{
 		m_blend_mode_d3d11.first ->Show();
 		m_blend_mode_d3d11.second->Show();
@@ -510,30 +515,25 @@ OSDTab::OSDTab(wxWindow* parent)
 	const int space = wxSizerFlags().Border().GetBorderInPixels();
 	PaddedBoxSizer<wxBoxSizer> tab_box(wxVERTICAL);
 
-	CheckboxPrereq monitor_check(m_ui.addCheckBox(tab_box.inner, "Enable Monitor", "osd_monitor_enabled", IDC_OSD_MONITOR));
-
-	PaddedBoxSizer<wxStaticBoxSizer> font_box(wxVERTICAL, this, "Font");
+	PaddedBoxSizer<wxStaticBoxSizer> font_box(wxVERTICAL, this, "Visuals");
 	auto* font_grid = new wxFlexGridSizer(2, space, space);
 	font_grid->AddGrowableCol(1);
 
-	m_ui.addSpinAndLabel(font_grid, "Size:", "osd_fontsize", 1, 100, 25, -1, monitor_check);
-
-	m_ui.addSliderAndLabel(font_grid, "Red:",     "osd_color_r",       0, 255,   0, -1, monitor_check);
-	m_ui.addSliderAndLabel(font_grid, "Green:",   "osd_color_g",       0, 255,   0, -1, monitor_check);
-	m_ui.addSliderAndLabel(font_grid, "Blue:",    "osd_color_b",       0, 255,   0, -1, monitor_check);
-	m_ui.addSliderAndLabel(font_grid, "Opacity:", "osd_color_opacity", 0, 100, 100, -1, monitor_check);
+	m_ui.addSliderAndLabel(font_grid, "Scale:",   "OsdScale", 50, 300, 100, -1);
 
 	font_box->Add(font_grid, wxSizerFlags().Expand());
 	tab_box->Add(font_box.outer, wxSizerFlags().Expand());
-
-	CheckboxPrereq log_check(m_ui.addCheckBox(tab_box.inner, "Enable Log", "osd_log_enabled", IDC_OSD_LOG));
 
 	PaddedBoxSizer<wxStaticBoxSizer> log_box(wxVERTICAL, this, "Log Messages");
 	auto* log_grid = new wxFlexGridSizer(2, space, space);
 	log_grid->AddGrowableCol(1);
 
-	m_ui.addSpinAndLabel(log_grid, "Timeout (seconds):",      "osd_log_timeout",      2, 10, 4,              -1, log_check);
-	m_ui.addSpinAndLabel(log_grid, "Max On-Screen Messages:", "osd_max_log_messages", 1, 10, 2, IDC_OSD_MAX_LOG, log_check);
+	m_ui.addCheckBox(log_grid, "Show Messages", "OsdShowMessages", -1);
+	m_ui.addCheckBox(log_grid, "Show Speed", "OsdShowSpeed", -1);
+	m_ui.addCheckBox(log_grid, "Show FPS", "OsdShowFPS", -1);
+	m_ui.addCheckBox(log_grid, "Show CPU Usage", "OsdShowCPU", -1);
+	m_ui.addCheckBox(log_grid, "Show Resolution", "OsdShowResolution", -1);
+	m_ui.addCheckBox(log_grid, "Show Statistics", "OsdShowGSStats", -1);
 
 	log_box->Add(log_grid, wxSizerFlags().Expand());
 	tab_box->Add(log_box.outer, wxSizerFlags().Expand());
@@ -554,11 +554,9 @@ DebugTab::DebugTab(wxWindow* parent)
 	{
 		PaddedBoxSizer<wxStaticBoxSizer> debug_box(wxVERTICAL, this, "Debug");
 		auto* debug_check_box = new wxWrapSizer(wxHORIZONTAL);
+		m_ui.addCheckBox(debug_check_box, "Use Blit Swap Chain", "UseBlitSwapChain");
 		m_ui.addCheckBox(debug_check_box, "Disable Shader Cache", "disable_shader_cache");
-		m_ui.addCheckBox(debug_check_box, "Print GL error", "debug_opengl");
-#ifdef _WIN32
-		m_ui.addCheckBox(debug_check_box, "D3D Debug Layer", "debug_d3d");
-#endif
+		m_ui.addCheckBox(debug_check_box, "Use Debug Device", "UseDebugDevice");
 		m_ui.addCheckBox(debug_check_box, "Dump GS data", "dump");
 
 		auto* debug_save_check_box = new wxWrapSizer(wxHORIZONTAL);
@@ -667,43 +665,47 @@ void Dialog::OnRendererChange(wxCommandEvent&)
 
 GSRendererType Dialog::GetSelectedRendererType()
 {
-	int index = m_renderer_select->GetSelection();
+	const int index = m_renderer_select->GetSelection();
 
 	// there is no currently selected renderer or the combo box has more entries than the renderer list or the current selection is negative
 	// make sure you haven't made a mistake initializing everything
 	ASSERT(index < static_cast<int>(theApp.m_gs_renderers.size()) || index >= 0);
 
-	const GSRendererType type = static_cast<GSRendererType>(
-		theApp.m_gs_renderers[index].value
-	);
-
-	return type;
+	const GSRendererType type = static_cast<GSRendererType>(theApp.m_gs_renderers[index].value);
+	return (type == GSRendererType::Auto) ? GSUtil::GetPreferredRenderer() : type;
 }
 
 void Dialog::RendererChange()
 {
-	GSRendererType renderer = GetSelectedRendererType();
-	std::string current;
-	int current_sel = m_adapter_select->GetSelection();
-	if (current_sel >= 0 && current_sel < static_cast<int>(m_adapter_arr_string.Count()))
-		current = m_adapter_arr_string[current_sel].ToUTF8();
-	bool explicitly_selected_default = m_adapter_arr_string.Count() > 1 && current_sel == 0;
+	const GSRendererType renderer = GetSelectedRendererType();
+	const std::string current_adapter(theApp.GetConfigS("Adapter"));
 
-	std::vector<std::string> adapters = GSUtil::GetAdapterList(renderer);
-
-	m_adapter_arr_string.Clear();
-	m_adapter_arr_string.Add(_("Default Adapter"));
-	int new_sel = theApp.GetConfigI("adapter_index") + 1;
-	if (new_sel < 0 || new_sel >= static_cast<int>(adapters.size() + 1) || explicitly_selected_default)
-		new_sel = 0;
-	for (std::string& adapter : adapters)
+	HostDisplay::AdapterAndModeList list;
+	switch (renderer)
 	{
-		if (adapter == current)
-			new_sel = m_adapter_arr_string.Count();
-		m_adapter_arr_string.Add(fromUTF8(adapter));
+#ifdef _WIN32
+	case GSRendererType::DX11:
+		list = D3D11HostDisplay::StaticGetAdapterAndModeList();
+		break;
+#endif
+	default:
+		break;
 	}
-	m_adapter_select->Set(m_adapter_arr_string);
-	m_adapter_select->SetSelection(new_sel);
+
+	m_adapter_select->Clear();
+	m_adapter_select->Insert(_("Default Adapter"), 0);
+	if (current_adapter.empty())
+		m_adapter_select->SetSelection(0);
+
+	for (const std::string& name : list.adapter_names)
+	{
+		m_adapter_select->Insert(fromUTF8(name), m_adapter_select->GetCount());
+		if (current_adapter == name)
+			m_adapter_select->SetSelection(m_adapter_select->GetCount() - 1);
+	}
+
+	m_adapter_select->Enable(!list.adapter_names.empty());
+
 #ifdef _WIN32
 	m_renderer_panel->UpdateBlendMode(renderer);
 
@@ -714,9 +716,8 @@ void Dialog::RendererChange()
 void Dialog::Load()
 {
 	m_ui.Load();
-	GSRendererType renderer = GSRendererType(theApp.GetConfigI("Renderer"));
-	if (renderer == GSRendererType::Undefined)
-		renderer = GSUtil::GetPreferredRenderer();
+
+	const GSRendererType renderer = GSRendererType(theApp.GetConfigI("Renderer"));
 	m_renderer_select->SetSelection(get_config_index(theApp.m_gs_renderers, static_cast<int>(renderer)));
 
 	RendererChange();
@@ -735,7 +736,7 @@ void Dialog::Save()
 	// only save the adapter when it makes sense to
 	// prevents changing the adapter, switching to another renderer and saving
 	if (m_adapter_select->GetCount() > 1) // First option is system default
-		theApp.SetConfig("adapter_index", m_adapter_select->GetSelection() - 1);
+		theApp.SetConfig("Adapter", m_adapter_select->GetStringSelection().c_str());
 
 	m_hacks_panel->Save();
 	m_renderer_panel->Save();
@@ -762,14 +763,14 @@ void Dialog::Update()
 	else
 	{
 		// cross-tab dependencies yay
-		const bool is_hw = renderer == GSRendererType::OGL_HW || renderer == GSRendererType::DX1011_HW;
+		const bool is_hw = renderer == GSRendererType::OGL || renderer == GSRendererType::DX11;
 		const bool is_upscale = m_renderer_panel->m_internal_resolution->GetSelection() != 0;
 		m_hacks_panel->m_is_native_res = !is_hw || !is_upscale;
 		m_hacks_panel->m_is_hardware = is_hw;
-		m_hacks_panel->m_is_ogl_hw = renderer == GSRendererType::OGL_HW;
+		m_hacks_panel->m_is_ogl_hw = renderer == GSRendererType::OGL;
 		m_renderer_panel->m_is_hardware = is_hw;
 		m_renderer_panel->m_is_native_res = !is_hw || !is_upscale;
-		m_debug_panel->m_is_ogl_hw = renderer == GSRendererType::OGL_HW;
+		m_debug_panel->m_is_ogl_hw = renderer == GSRendererType::OGL;
 
 		m_ui.Update();
 		m_hacks_panel->DoUpdate();

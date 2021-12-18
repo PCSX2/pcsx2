@@ -367,13 +367,4 @@ PS_OUTPUT ps_yuv(PS_INPUT input)
 	return output;
 }
 
-PS_OUTPUT ps_osd(PS_INPUT input)
-{
-	PS_OUTPUT output;
-
-	output.c = input.c * float4(1.0, 1.0, 1.0, sample_c(input.t).a);
-
-	return output;
-}
-
 #endif

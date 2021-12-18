@@ -17,6 +17,7 @@
 
 #include "GS/GSState.h"
 #include "GS/GSCapture.h"
+#include <memory>
 
 struct HostKeyEvent;
 
@@ -24,7 +25,6 @@ class GSRenderer : public GSState
 {
 	GSCapture m_capture;
 	std::string m_snapshot;
-	int m_shader;
 
 	bool Merge(int field);
 
@@ -32,13 +32,6 @@ class GSRenderer : public GSState
 	bool m_control_key;
 
 protected:
-	int m_dithering;
-	int m_interlace;
-	int m_vsync;
-	bool m_aa1;
-	bool m_shaderfx;
-	bool m_fxaa;
-	bool m_shadeboost;
 	bool m_texture_shuffle;
 	GSVector2i m_real_size;
 
@@ -49,9 +42,9 @@ public:
 	GSRenderer();
 	virtual ~GSRenderer();
 
-	virtual bool CreateDevice(GSDevice* dev, const WindowInfo& wi);
-	virtual void ResetDevice();
-	virtual void VSync(int field);
+	virtual void Destroy();
+
+	virtual void VSync(u32 field);
 	virtual bool MakeSnapshot(const std::string& path);
 	virtual void KeyEvent(const HostKeyEvent& e);
 	virtual bool CanUpscale() { return false; }
@@ -59,17 +52,11 @@ public:
 	virtual GSVector2i GetCustomResolution() { return GSVector2i(0, 0); }
 	virtual GSVector2 GetTextureScaleFactor() { return { 1.0f, 1.0f }; }
 	GSVector2i GetInternalResolution();
-	void SetVSync(int vsync);
 
 	virtual bool BeginCapture(std::string& filename);
 	virtual void EndCapture();
 
 	void PurgePool();
 
-	GSVector4i ComputeDrawRectangle(int width, int height) const;
-
-public:
-	std::mutex m_pGSsetTitle_Crit;
-
-	char m_GStitleInfoBuffer[128];
+	bool SaveSnapshotToMemory(u32 width, u32 height, std::vector<u32>* pixels);
 };

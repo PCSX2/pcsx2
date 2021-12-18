@@ -19,7 +19,6 @@
 #include <time.h>
 #include <cmath>
 
-#include "gui/App.h"
 #include "Common.h"
 #include "R3000A.h"
 #include "Counters.h"
@@ -28,9 +27,16 @@
 #include "GS.h"
 #include "VUmicro.h"
 #include "PerformanceMetrics.h"
+#include "Patch.h"
 
 #include "ps2/HwInternal.h"
 #include "Sio.h"
+
+#ifndef PCSX2_CORE
+#include "gui/App.h"
+#else
+#include "VMManager.h"
+#endif
 
 #ifndef DISABLE_RECORDING
 #	include "Recording/InputRecordingControls.h"
@@ -283,6 +289,12 @@ const char* ReportVideoMode()
 	}
 }
 
+const char* ReportInterlaceMode()
+{
+	const u64& smode2 = *(u64*)PS2GS_BASE(GS_SMODE2);
+	return (smode2 & 1) ? ((smode2 & 2) ? "Interlaced (Frame)" : "Interlaced (Field)") : "Progressive";
+}
+
 double GetVerticalFrequency()
 {
 	// Note about NTSC/PAL "double strike" modes:
@@ -416,10 +428,68 @@ void frameLimitReset()
 	m_iStart = GetCPUTicks();
 }
 
+// FMV switch stuff
+extern uint eecount_on_last_vdec;
+extern bool FMVstarted;
+extern bool EnableFMV;
+static bool s_last_fmv_state = false;
+
+static __fi void DoFMVSwitch()
+{
+	bool new_fmv_state = s_last_fmv_state;
+	if (EnableFMV)
+	{
+		DevCon.WriteLn("FMV started");
+		new_fmv_state = true;
+		EnableFMV = false;
+	}
+	else if (FMVstarted)
+	{
+		const int diff = cpuRegs.cycle - eecount_on_last_vdec;
+		if (diff > 60000000)
+		{
+			DevCon.WriteLn("FMV ended");
+			new_fmv_state = false;
+			FMVstarted = false;
+		}
+	}
+
+	if (new_fmv_state == s_last_fmv_state)
+		return;
+
+	s_last_fmv_state = new_fmv_state;
+
+	switch (EmuConfig.GS.FMVAspectRatioSwitch)
+	{
+		case FMVAspectRatioSwitchType::Off:
+			break;
+		case FMVAspectRatioSwitchType::R4_3:
+			EmuConfig.CurrentAspectRatio = new_fmv_state ? AspectRatioType::R4_3 : EmuConfig.GS.AspectRatio;
+			break;
+		case FMVAspectRatioSwitchType::R16_9:
+			EmuConfig.CurrentAspectRatio = new_fmv_state ? AspectRatioType::R16_9 : EmuConfig.GS.AspectRatio;
+			break;
+		default:
+			break;
+	}
+
+	if (EmuConfig.Gamefixes.SoftwareRendererFMVHack && EmuConfig.GS.UseHardwareRenderer())
+	{
+		// we don't use the sw toggle here, because it'll change back to auto if set to sw
+		GetMTGS().SwitchRenderer(new_fmv_state ? GSRendererType::SW : EmuConfig.GS.Renderer, false);
+	}
+}
+
 // Convenience function to update UI thread and set patches. 
 static __fi void frameLimitUpdateCore()
 {
+	DoFMVSwitch();
+
+#ifndef PCSX2_CORE
 	GetCoreThread().VsyncInThread();
+#else
+	VMManager::Internal::VSyncOnCPUThread();
+#endif
 	Cpu->CheckExecutionState();
 }
 
@@ -429,7 +499,7 @@ static __fi void frameLimitUpdateCore()
 static __fi void frameLimit()
 {
 	// Framelimiter off in settings? Framelimiter go brrr.
-	if (!EmuConfig.GS.FrameLimitEnable)
+	if (EmuConfig.GS.LimitScalar == 0.0)
 	{
 		frameLimitUpdateCore();
 		return;
@@ -481,6 +551,8 @@ static __fi void VSyncStart(u32 sCycle)
 		g_InputRecordingControls.HandlePausingAndLocking();
 	}
 #endif
+
+	PerformanceMetrics::Update();
 
 	frameLimit(); // limit FPS
 	gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!

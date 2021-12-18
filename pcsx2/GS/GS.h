@@ -18,7 +18,7 @@
 #include "common/WindowInfo.h"
 #include "Window/GSSetting.h"
 #include "SaveState.h"
-#include "Host.h"
+#include "pcsx2/Config.h"
 
 #include <map>
 
@@ -26,18 +26,6 @@
 	// X11 seems to like to define this, not fun
 	#undef None
 #endif
-
-enum class GSRendererType : int8_t
-{
-	Undefined = -1,
-	NO_RENDERER = 0,
-	DX1011_HW = 3,
-	Null = 11,
-	OGL_HW = 12,
-	OGL_SW = 13,
-
-	Default = Undefined
-};
 
 // ST_WRITE is defined in libc, avoid this
 enum stateType
@@ -58,59 +46,18 @@ enum class GSVideoMode : u8
 	HDTV_1080I
 };
 
-// Ordering was done to keep compatibility with older ini file.
-enum class BiFiltering : u8
-{
-	Nearest,
-	Forced,
-	PS2,
-	Forced_But_Sprite,
-};
+extern Pcsx2Config::GSOptions GSConfig;
 
-enum class TriFiltering : u8
-{
-	None,
-	PS2,
-	Forced,
-};
+struct HostKeyEvent;
+class HostDisplay;
 
-enum class HWMipmapLevel : int
-{
-	Automatic = -1,
-	Off,
-	Basic,
-	Full
-};
-
-enum class CRCHackLevel : s8
-{
-	Automatic = -1,
-	None,
-	Minimum,
-	Partial,
-	Full,
-	Aggressive
-};
-
-enum class AccBlendLevel : u8
-{
-	None,
-	Basic,
-	Medium,
-	High,
-	Full,
-	Ultra,
-};
-
-void GSsetBaseMem(u8* mem);
 int GSinit();
+void GSinitConfig();
 void GSshutdown();
-void GSclose();
-int _GSopen(const WindowInfo& wi, const char* title, GSRendererType renderer, int threads);
-void GSosdLog(const char* utf8, u32 color);
-void GSosdMonitor(const char* key, const char* value, u32 color);
-int GSopen2(const WindowInfo & wi, u32 flags);
+bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* basemem);
+bool GSreopen(bool recreate_display);
 void GSreset();
+void GSclose();
 void GSgifSoftReset(u32 mask);
 void GSwriteCSR(u32 csr);
 void GSinitReadFIFO(u8* mem);
@@ -121,32 +68,34 @@ void GSgifTransfer(const u8* mem, u32 size);
 void GSgifTransfer1(u8* mem, u32 addr);
 void GSgifTransfer2(u8* mem, u32 size);
 void GSgifTransfer3(u8* mem, u32 size);
-void GSvsync(int field);
+void GSvsync(u32 field);
 u32 GSmakeSnapshot(char* path);
-void GSkeyEvent(const HostKeyEvent& e);
 int GSfreeze(FreezeAction mode, freezeData* data);
+#ifndef PCSX2_CORE
+void GSkeyEvent(const HostKeyEvent& e);
 void GSconfigure();
 int GStest();
+#endif
 bool GSsetupRecording(std::string& filename);
 void GSendRecording();
 void GSsetGameCRC(u32 crc, int options);
-void GSgetTitleInfo2(char* dest, size_t length);
 void GSsetFrameSkip(int frameskip);
-void GSsetVsync(int vsync);
-void GSsetExclusive(int enabled);
 
-#ifndef PCSX2_CORE
-// Needed for window resizing in wx. Can be safely called from the UI thread.
-void GSResizeWindow(int width, int height);
-bool GSCheckForWindowResize(int* new_width, int* new_height);
-#endif
+void GSgetInternalResolution(int* width, int* height);
+void GSgetStats(std::string& info);
+void GSgetTitleStats(std::string& info);
+
+void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config);
+void GSSwitchRenderer(GSRendererType new_renderer);
+void GSResetAPIState();
+void GSRestoreAPIState();
+bool GSSaveSnapshotToMemory(u32 width, u32 height, std::vector<u32>* pixels);
 
 class GSApp
 {
 	std::string m_section;
 	std::map<std::string, std::string> m_default_configuration;
 	std::map<std::string, std::string> m_configuration_map;
-	GSRendererType m_current_renderer_type;
 
 public:
 	std::string m_ini;
@@ -154,12 +103,14 @@ public:
 
 	void Init();
 
+#ifndef PCSX2_CORE
 	void BuildConfigurationMap(const char* lpFileName);
 	void ReloadConfig();
+	int GetIniInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName);
+#endif
 
 	size_t GetIniString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName);
 	bool WriteIniString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName);
-	int GetIniInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName);
 
 	void SetConfig(const char* entry, const char* value);
 	void SetConfig(const char* entry, int value);
@@ -172,9 +123,6 @@ public:
 	int GetConfigI(const char* entry);
 	bool GetConfigB(const char* entry);
 	std::string GetConfigS(const char* entry);
-
-	void SetCurrentRendererType(GSRendererType type);
-	GSRendererType GetCurrentRendererType() const;
 
 	void SetConfigDir();
 
@@ -206,5 +154,3 @@ struct GSErrorGlVertexArrayTooSmall : GSError
 };
 
 extern GSApp theApp;
-
-extern bool gsopen_done;

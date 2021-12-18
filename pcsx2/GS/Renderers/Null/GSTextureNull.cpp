@@ -28,3 +28,8 @@ GSTextureNull::GSTextureNull(Type type, int w, int h, GSTexture::Format format)
 	m_desc.h = h;
 	m_desc.format = format;
 }
+
+void* GSTextureNull::GetNativeHandle() const
+{
+	return nullptr;
+}

@@ -98,7 +98,7 @@ namespace PboPool
 		m_map = NULL;
 		m_offset = 0;
 
-		for (GLsync fence : m_fence)
+		for (GLsync& fence : m_fence)
 		{
 			if (fence != 0)
 			{
@@ -238,13 +238,6 @@ GSTextureOGL::GSTextureOGL(Type type, int w, int h, Format format, GLuint fbo_re
 			m_int_shift     = 3; // 4 bytes for depth + 4 bytes for stencil by texels
 			break;
 
-		// Backbuffer
-		case Format::Backbuffer:
-			m_int_format    = 0;
-			m_int_type      = 0;
-			m_int_shift     = 2; // 4 bytes by texels
-			break;
-
 		case Format::Invalid:
 			m_int_format    = 0;
 			m_int_type      = 0;
@@ -254,8 +247,6 @@ GSTextureOGL::GSTextureOGL(Type type, int w, int h, Format format, GLuint fbo_re
 
 	switch (m_type)
 	{
-		case Type::Backbuffer:
-			return; // backbuffer isn't a real texture
 		case Type::Texture:
 			// Only 32 bits input texture will be supported for mipmap
 			m_max_layer = mipmap && m_format == Format::Color ? (int)log2(std::max(w, h)) : 1;
@@ -279,7 +270,6 @@ GSTextureOGL::GSTextureOGL(Type type, int w, int h, Format format, GLuint fbo_re
 		case Format::Color:
 		case Format::UInt32:
 		case Format::Int32:
-		case Format::Backbuffer:
 			m_sparse &= GLLoader::found_compatible_GL_ARB_sparse_texture2;
 			SetGpuPageSize(GSVector2i(127, 127));
 			break;
@@ -355,6 +345,11 @@ GSTextureOGL::~GSTextureOGL()
 	glDeleteTextures(1, &m_texture_id);
 
 	GLState::available_vram += m_mem_usage;
+}
+
+void* GSTextureOGL::GetNativeHandle() const
+{
+	return reinterpret_cast<void*>(static_cast<uintptr_t>(m_texture_id));
 }
 
 void GSTextureOGL::Clear(const void* data)
@@ -587,11 +582,7 @@ bool GSTextureOGL::Save(const std::string& fn)
 	GSPng::Format fmt = GSPng::RGB_PNG;
 #endif
 
-	if (IsBackbuffer())
-	{
-		glReadPixels(0, 0, m_committed_size.x, m_committed_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image.get());
-	}
-	else if (IsDss())
+	if (IsDss())
 	{
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 

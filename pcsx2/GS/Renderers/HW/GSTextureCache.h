@@ -219,7 +219,6 @@ protected:
 	u8* m_temp;
 	bool m_can_convert_depth;
 	bool m_cpu_fb_conversion;
-	CRCHackLevel m_crc_hack_level;
 	static bool m_disable_partial_invalidation;
 	bool m_texture_inside_rt;
 	static bool m_wrap_gs_mem;
