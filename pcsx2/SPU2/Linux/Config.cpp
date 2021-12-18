@@ -64,10 +64,6 @@ bool _visual_debug_enabled = false; // Windows-only feature
 u32 OutputModule = 0;
 int SndOutLatencyMS = 100;
 int SynchMode = 0; // Time Stretch, Async or Disabled.
-#ifdef SPU2X_PORTAUDIO
-u32 OutputAPI = 0;
-#endif
-u32 SdlOutputAPI = 0;
 
 int numSpeakers = 0;
 int dplLevel = 0;
@@ -105,54 +101,20 @@ void ReadSettings()
 	VolumeAdjustSR = powf(10, VolumeAdjustSRdb / 10);
 	VolumeAdjustLFE = powf(10, VolumeAdjustLFEdb / 10);
 
+#ifdef SPU2X_CUBEB
+	const SndOutModule* const defaultModule = CubebOut;
+#else
+	const SndOutModule* const defaultModule = NullOut;
+#endif
+
 	wxString temp;
-
-#if SDL_MAJOR_VERSION >= 2 || !defined(SPU2X_PORTAUDIO)
-	CfgReadStr(L"OUTPUT", L"Output_Module", temp, SDLOut->GetIdent());
-#else
-	CfgReadStr(L"OUTPUT", L"Output_Module", temp, PortaudioOut->GetIdent());
-#endif
+	CfgReadStr(L"OUTPUT", L"Output_Module", temp, defaultModule->GetIdent());
 	OutputModule = FindOutputModuleById(temp.c_str()); // Find the driver index of this module...
-
-// Find current API.
-#ifdef SPU2X_PORTAUDIO
-#ifdef __linux__
-	CfgReadStr(L"PORTAUDIO", L"HostApi", temp, L"ALSA");
-	if (temp == L"OSS")
-		OutputAPI = 1;
-	else if (temp == L"JACK")
-		OutputAPI = 2;
-	else // L"ALSA"
-		OutputAPI = 0;
-#else
-	CfgReadStr(L"PORTAUDIO", L"HostApi", temp, L"OSS");
-	OutputAPI = 0; // L"OSS"
-#endif
-#endif
-
-#if defined(__unix__) || defined(__APPLE__)
-	CfgReadStr(L"SDL", L"HostApi", temp, L"pulseaudio");
-	SdlOutputAPI = 0;
-#if SDL_MAJOR_VERSION >= 2
-	// Yes, it sucks ...
-	for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i)
-	{
-		if (!temp.Cmp(wxString(SDL_GetAudioDriver(i), wxConvUTF8)))
-			SdlOutputAPI = i;
-	}
-#endif
-#endif
 
 	SndOutLatencyMS = CfgReadInt(L"OUTPUT", L"Latency", 100);
 	SynchMode = CfgReadInt(L"OUTPUT", L"Synch_Mode", 0);
 	numSpeakers = CfgReadInt(L"OUTPUT", L"SpeakerConfiguration", 0);
 
-#ifdef SPU2X_PORTAUDIO
-	PortaudioOut->ReadSettings();
-#endif
-#if defined(__unix__) || defined(__APPLE__)
-	SDLOut->ReadSettings();
-#endif
 	SoundtouchCfg::ReadSettings();
 	DebugConfig::ReadSettings();
 
@@ -164,8 +126,8 @@ void ReadSettings()
 	if (mods[OutputModule] == nullptr)
 	{
 		Console.Warning("* SPU2: Unknown output module '%s' specified in configuration file.", temp.wc_str());
-		Console.Warning("* SPU2: Defaulting to SDL (%s).", SDLOut->GetIdent());
-		OutputModule = FindOutputModuleById(SDLOut->GetIdent());
+		Console.Warning("* SPU2: Defaulting to %s (%s).", defaultModule->GetLongName(), defaultModule->GetIdent());
+		OutputModule = FindOutputModuleById(defaultModule->GetIdent());
 	}
 
 	WriteSettings();
@@ -200,12 +162,6 @@ void WriteSettings()
 	CfgWriteInt(L"OUTPUT", L"Synch_Mode", SynchMode);
 	CfgWriteInt(L"OUTPUT", L"SpeakerConfiguration", numSpeakers);
 
-#ifdef SPU2X_PORTAUDIO
-	PortaudioOut->WriteSettings();
-#endif
-#if defined(__unix__) || defined(__APPLE__)
-	SDLOut->WriteSettings();
-#endif
 	SoundtouchCfg::WriteSettings();
 	DebugConfig::WriteSettings();
 }

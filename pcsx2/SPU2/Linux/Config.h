@@ -78,11 +78,6 @@ extern int dspPluginModule;
 extern bool dspPluginEnabled;
 extern int SynchMode;
 
-#ifdef SPU2X_PORTAUDIO
-extern u32 OutputAPI;
-#endif
-extern u32 SdlOutputAPI;
-
 #ifdef PCSX2_DEVBUILD
 const int LATENCY_MAX = 3000;
 #else

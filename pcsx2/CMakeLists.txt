@@ -51,11 +51,6 @@ elseif("${PGO}" STREQUAL "use")
 	target_compile_options(PCSX2_FLAGS INTERFACE -fprofile-use)
 endif()
 
-if(TARGET PkgConfig::PORTAUDIO)
-	target_compile_definitions(PCSX2_FLAGS INTERFACE SPU2X_PORTAUDIO)
-	target_link_libraries(PCSX2_FLAGS INTERFACE PkgConfig::PORTAUDIO)
-endif()
-
 if(TARGET PulseAudio::PulseAudio)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE SPU2X_PULSEAUDIO)
 	target_link_libraries(PCSX2_FLAGS INTERFACE PulseAudio::PulseAudio)
@@ -293,16 +288,11 @@ set(pcsx2SPU2Sources
 	SPU2/RegTable.cpp
 	SPU2/Reverb.cpp
 	SPU2/SndOut.cpp
-	SPU2/SndOut_SDL.cpp
 	SPU2/spu2freeze.cpp
 	SPU2/spu2sys.cpp
 	SPU2/Timestretcher.cpp
 	SPU2/Wavedump_wav.cpp
 	)
-
-if(TARGET PkgConfig::PORTAUDIO)
-	list(APPEND pcsx2SPU2Sources SPU2/SndOut_Portaudio.cpp)
-endif()
 
 if(CUBEB_API)
 	list(APPEND pcsx2SPU2Sources SPU2/SndOut_Cubeb.cpp)
