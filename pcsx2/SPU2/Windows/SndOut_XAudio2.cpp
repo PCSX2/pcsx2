@@ -125,8 +125,18 @@ private:
 				pSourceVoice->SubmitSourceBuffer(&buf);
 			}
 
-			pSourceVoice->Start(0, 0);
+			Start();
 			return true;
+		}
+
+		void Stop()
+		{
+			pSourceVoice->Stop();
+		}
+
+		void Start()
+		{
+			pSourceVoice->Start(0, 0);
 		}
 
 	protected:
@@ -187,6 +197,7 @@ private:
 	wil::com_ptr_nothrow<IXAudio2> pXAudio2;
 	IXAudio2MasteringVoice* pMasteringVoice = nullptr;
 	std::unique_ptr<BaseStreamingVoice> m_voiceContext;
+	bool m_paused = false;
 
 public:
 	bool Init() override
@@ -304,6 +315,7 @@ public:
 			return false;
 		}
 
+		m_paused = false;
 		return true;
 	}
 
@@ -327,6 +339,19 @@ public:
 		if (m_voiceContext == nullptr)
 			return 0;
 		return m_voiceContext->GetEmptySampleCount();
+	}
+
+	void SetPaused(bool paused) override
+	{
+		if (m_voiceContext == nullptr || m_paused == paused)
+			return;
+
+		if (paused)
+			m_voiceContext->Stop();
+		else
+			m_voiceContext->Start();
+
+		m_paused = paused;
 	}
 
 	const wchar_t* GetIdent() const override

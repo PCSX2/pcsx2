@@ -618,6 +618,7 @@ public:
 	static void Cleanup();
 	static void Write(const StereoOut32& Sample);
 	static void ClearContents();
+	static void SetPaused(bool paused);
 
 	// Note: When using with 32 bit output buffers, the user of this function is responsible
 	// for shifting the values to where they need to be manually.  The fixed point depth of
@@ -643,6 +644,9 @@ public:
 
 	virtual bool Init() = 0;
 	virtual void Close() = 0;
+
+	// Temporarily pauses the stream, preventing it from requesting data.
+	virtual void SetPaused(bool paused) = 0;
 
 	// Returns the number of empty samples in the output buffer.
 	// (which is effectively the amount of data played since the last update)

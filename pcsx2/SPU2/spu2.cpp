@@ -351,6 +351,11 @@ void SPU2shutdown()
 #endif
 }
 
+void SPU2SetOutputPaused(bool paused)
+{
+	SndBuffer::SetPaused(paused);
+}
+
 #ifdef DEBUG_KEYS
 static u32 lastTicks;
 static bool lState[6];

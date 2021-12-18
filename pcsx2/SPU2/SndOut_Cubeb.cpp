@@ -296,6 +296,7 @@ public:
 			return false;
 		}
 
+		m_paused = false;
 		return true;
 	}
 
@@ -312,6 +313,21 @@ public:
 	{
 		static_cast<Cubeb*>(user_ptr)->ActualReader->ReadSamples(output_buffer, nframes);
 		return nframes;
+	}
+
+	void SetPaused(bool paused) override
+	{
+		if (paused == m_paused || !stream)
+			return;
+
+		const int rv = paused ? cubeb_stream_stop(stream) : cubeb_stream_start(stream);
+		if (rv != CUBEB_OK)
+		{
+			Console.Error("(Cubeb) Could not %s stream: %d", paused ? "pause" : "resume", rv);
+			return;
+		}
+
+		m_paused = paused;
 	}
 
 	int GetEmptySampleCount() override
