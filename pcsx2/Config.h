@@ -439,7 +439,8 @@ struct Pcsx2Config
 					SaveRT : 1,
 					SaveFrame : 1,
 					SaveTexture : 1,
-					SaveDepth : 1;
+					SaveDepth : 1,
+					PreloadTexture : 1;
 			};
 		};
 

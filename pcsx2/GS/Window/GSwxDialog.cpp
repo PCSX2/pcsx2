@@ -285,6 +285,7 @@ RendererTab::RendererTab(wxWindow* parent)
 
 	auto* paltex_prereq = m_ui.addCheckBox(hw_checks_box, "GPU Palette Conversion", "paltex", IDC_PALTEX, hw_prereq);
 	auto aniso_prereq = [this, paltex_prereq]{ return m_is_hardware && paltex_prereq->GetValue() == false; };
+	m_ui.addCheckBox(hw_checks_box, "Preload Textures", "preload_texture", -1, hw_prereq);
 
 	auto* hw_choice_grid = new wxFlexGridSizer(2, space, space);
 

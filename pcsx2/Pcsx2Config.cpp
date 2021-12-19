@@ -506,6 +506,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBoolEx(SaveFrame, "savef");
 	GSSettingBoolEx(SaveTexture, "savet");
 	GSSettingBoolEx(SaveDepth, "savez");
+	GSSettingBoolEx(PreloadTexture, "preload_texture");
 
 	GSSettingIntEnumEx(InterlaceMode, "interlace");
 

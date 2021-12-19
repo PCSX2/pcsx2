@@ -110,6 +110,9 @@ static const GSVector2i default_rt_size(2048, 2048);
 static const GSVector2i default_rt_size(1280, 1024);
 #endif
 
+// Maximum texture size to skip preload/hash path.
+static constexpr int MAXIMUM_PRELOAD_TEXTURE_SIZE = 512;
+
 // Helper path to dump texture
 extern const std::string root_sw;
 extern const std::string root_hw;
