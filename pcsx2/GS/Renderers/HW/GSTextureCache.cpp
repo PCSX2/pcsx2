@@ -1687,7 +1687,7 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 		case PSM_PSMZ16:
 		case PSM_PSMZ16S:
 			fmt = GSTexture::Format::UInt16;
-			ps_shader = ShaderConvert::FLOAT32_TO_32_BITS;
+			ps_shader = ShaderConvert::FLOAT32_TO_16_BITS;
 			break;
 
 		default:
