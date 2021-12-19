@@ -32,6 +32,7 @@ const char* shaderName(ShaderConvert value)
 		case ShaderConvert::TRANSPARENCY_FILTER: return "ps_filter_transparency";
 		case ShaderConvert::TRIANGULAR_FILTER:   return "ps_filter_triangular";
 		case ShaderConvert::COMPLEX_FILTER:      return "ps_filter_complex";
+		case ShaderConvert::FLOAT32_TO_16_BITS:  return "ps_convert_float32_32bits";
 		case ShaderConvert::FLOAT32_TO_32_BITS:  return "ps_convert_float32_32bits";
 		case ShaderConvert::FLOAT32_TO_RGBA8:    return "ps_convert_float32_rgba8";
 		case ShaderConvert::FLOAT16_TO_RGB5A1:   return "ps_convert_float16_rgb5a1";
