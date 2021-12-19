@@ -18,6 +18,9 @@
 #include "GSRegs.h"
 #include "GSTables.h"
 #include "GSVector.h"
+#include "MultiISA.h"
+
+MULTI_ISA_UNSHARED_START
 
 class GSBlock
 {
@@ -1940,3 +1943,5 @@ public:
 
 	// TODO: ReadAndExpandBlock4HH_16
 };
+
+MULTI_ISA_UNSHARED_END

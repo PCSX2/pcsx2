@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSLocalMemory.h"
 #include "GS.h"
+#include "GSBlock.h"
 #include "GSExtra.h"
 
 class CURRENT_ISA::GSLocalMemoryFunctions

@@ -16,8 +16,11 @@
 #include "PrecompiledHeader.h"
 #include "GSBlock.h"
 #include "GSClut.h"
+#include "MultiISA.h"
 #include <gtest/gtest.h>
 #include <string.h>
+
+using namespace CURRENT_ISA;
 
 static void swizzle(const u8* table, u8* dst, const u8* src, int bpp, bool deswizzle)
 {

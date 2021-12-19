@@ -15,8 +15,6 @@
 
 #include <cassert>
 
-#if _M_SSE >= 0x500
-
 class alignas(32) GSVector8
 {
 	struct cxpr_init_tag {};
@@ -53,7 +51,9 @@ public:
 		u16 U16[16];
 		u32 U32[8];
 		u64 U64[4];
+#if _M_SSE >= 0x500
 		__m256 m;
+#endif
 		__m128 m0, m1;
 	};
 
@@ -103,6 +103,8 @@ public:
 	{
 		return GSVector8(cxpr_init, x, x, x, x);
 	}
+
+#if _M_SSE >= 0x500
 
 	__forceinline GSVector8(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1)
 	{
@@ -948,6 +950,5 @@ public:
 	// TODO: v.(x0|y0|z0|w0|x1|y1|z1|w1) // broadcast element
 
 #endif
-};
-
 #endif
+};
