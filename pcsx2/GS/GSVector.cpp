@@ -71,8 +71,6 @@ CONSTINIT const GSVector4 GSVector4::m_xc1e00000000fffff = cxpr64(0xc1e00000000f
 CONSTINIT const GSVector4 GSVector4::m_max = cxpr(FLT_MAX);
 CONSTINIT const GSVector4 GSVector4::m_min = cxpr(FLT_MIN);
 
-#if _M_SSE >= 0x500
-
 CONSTINIT const GSVector8 GSVector8::m_half = cxpr(0.5f);
 CONSTINIT const GSVector8 GSVector8::m_one = cxpr(1.0f);
 CONSTINIT const GSVector8 GSVector8::m_x7fffffff = cxpr(0x7fffffff);
@@ -83,9 +81,6 @@ CONSTINIT const GSVector8 GSVector8::m_xc1e00000000fffff = cxpr64(0xc1e00000000f
 CONSTINIT const GSVector8 GSVector8::m_max = cxpr(FLT_MAX);
 CONSTINIT const GSVector8 GSVector8::m_min = cxpr(FLT_MAX);
 
-#endif
-
-#if _M_SSE >= 0x501
 CONSTINIT const GSVector8i GSVector8i::m_xff[33] =
 {
 	cxpr(0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000),
@@ -159,7 +154,6 @@ CONSTINIT const GSVector8i GSVector8i::m_x0f[33] =
 	cxpr(0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x000f0f0f),
 	cxpr(0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f),
 };
-#endif
 
 GSVector4i GSVector4i::fit(int arx, int ary) const
 {

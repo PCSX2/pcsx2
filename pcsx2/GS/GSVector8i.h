@@ -15,8 +15,6 @@
 
 #include <cassert>
 
-#if _M_SSE >= 0x501
-
 class alignas(32) GSVector8i
 {
 	static const GSVector8i m_xff[33];
@@ -45,7 +43,9 @@ public:
 		u16 U16[16];
 		u32 U32[8];
 		u64 U64[4];
+#if _M_SSE >= 0x501
 		__m256i m;
+#endif
 		__m128i m0, m1;
 	};
 
@@ -60,6 +60,8 @@ public:
 	{
 		return GSVector8i(cxpr_init, x, x, x, x, x, x, x, x);
 	}
+
+#if _M_SSE >= 0x501
 
 	__forceinline explicit GSVector8i(const GSVector8& v, bool truncate = true);
 
@@ -1887,6 +1889,6 @@ public:
 
 	__forceinline static GSVector8i xff(int n) { return m_xff[n]; }
 	__forceinline static GSVector8i x0f(int n) { return m_x0f[n]; }
+#endif
 };
 
-#endif

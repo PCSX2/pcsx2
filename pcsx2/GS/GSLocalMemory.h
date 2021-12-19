@@ -17,7 +17,6 @@
 
 #include "GSTables.h"
 #include "GSVector.h"
-#include "GSBlock.h"
 #include "GSClut.h"
 #include "MultiISA.h"
 #include <array>
