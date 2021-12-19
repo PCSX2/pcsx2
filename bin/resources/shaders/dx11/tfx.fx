@@ -672,7 +672,7 @@ void ps_dither(inout float3 C, float2 pos_xy)
 		else
 			fpos = int2(pos_xy / (float)PS_SCALE_FACTOR);
 
-		C += DitherMatrix[fpos.y & 3][fpos.x & 3];
+		C += DitherMatrix[fpos.x & 3][fpos.y & 3];
 	}
 }
 
