@@ -103,7 +103,7 @@ void GSDevice::RestoreAPIState()
 {
 }
 
-GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int w, int h, GSTexture::Format format)
+GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int w, int h, GSTexture::Format format, bool clear)
 {
 	const GSVector2i size(w, h);
 
@@ -135,10 +135,20 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int w, int h, GSTexture:
 	switch (type)
 	{
 	case GSTexture::Type::RenderTarget:
-		ClearRenderTarget(t, 0);
+		{
+			if (clear)
+				ClearRenderTarget(t, 0);
+			else
+				InvalidateRenderTarget(t);
+		}
 		break;
 	case GSTexture::Type::DepthStencil:
-		ClearDepth(t);
+		{
+			if (clear)
+				ClearDepth(t);
+			else
+				InvalidateRenderTarget(t);
+		}
 		break;
 	default:
 		break;
@@ -212,34 +222,34 @@ void GSDevice::PurgePool()
 	m_pool.clear();
 }
 
-GSTexture* GSDevice::CreateSparseRenderTarget(int w, int h, GSTexture::Format format)
+GSTexture* GSDevice::CreateSparseRenderTarget(int w, int h, GSTexture::Format format, bool clear)
 {
-	return FetchSurface(HasColorSparse() ? GSTexture::Type::SparseRenderTarget : GSTexture::Type::RenderTarget, w, h, format);
+	return FetchSurface(HasColorSparse() ? GSTexture::Type::SparseRenderTarget : GSTexture::Type::RenderTarget, w, h, format, clear);
 }
 
-GSTexture* GSDevice::CreateSparseDepthStencil(int w, int h, GSTexture::Format format)
+GSTexture* GSDevice::CreateSparseDepthStencil(int w, int h, GSTexture::Format format, bool clear)
 {
-	return FetchSurface(HasDepthSparse() ? GSTexture::Type::SparseDepthStencil : GSTexture::Type::DepthStencil, w, h, format);
+	return FetchSurface(HasDepthSparse() ? GSTexture::Type::SparseDepthStencil : GSTexture::Type::DepthStencil, w, h, format, clear);
 }
 
-GSTexture* GSDevice::CreateRenderTarget(int w, int h, GSTexture::Format format)
+GSTexture* GSDevice::CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear)
 {
-	return FetchSurface(GSTexture::Type::RenderTarget, w, h, format);
+	return FetchSurface(GSTexture::Type::RenderTarget, w, h, format, clear);
 }
 
-GSTexture* GSDevice::CreateDepthStencil(int w, int h, GSTexture::Format format)
+GSTexture* GSDevice::CreateDepthStencil(int w, int h, GSTexture::Format format, bool clear)
 {
-	return FetchSurface(GSTexture::Type::DepthStencil, w, h, format);
+	return FetchSurface(GSTexture::Type::DepthStencil, w, h, format, clear);
 }
 
 GSTexture* GSDevice::CreateTexture(int w, int h, GSTexture::Format format)
 {
-	return FetchSurface(GSTexture::Type::Texture, w, h, format);
+	return FetchSurface(GSTexture::Type::Texture, w, h, format, false);
 }
 
 GSTexture* GSDevice::CreateOffscreen(int w, int h, GSTexture::Format format)
 {
-	return FetchSurface(GSTexture::Type::Offscreen, w, h, format);
+	return FetchSurface(GSTexture::Type::Offscreen, w, h, format, false);
 }
 
 GSTexture::Format GSDevice::GetDefaultTextureFormat(GSTexture::Type type)
@@ -387,7 +397,7 @@ void GSDevice::ShadeBoost()
 	}
 }
 
-bool GSDevice::ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h)
+bool GSDevice::ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h, bool clear)
 {
 	if (t == NULL)
 	{
@@ -402,7 +412,7 @@ bool GSDevice::ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h)
 		GSTexture::Format fmt = t2 ? t2->GetFormat() : GetDefaultTextureFormat(type);
 		delete t2;
 
-		t2 = FetchSurface(type, w, h, fmt);
+		t2 = FetchSurface(type, w, h, fmt, clear);
 
 		*t = t2;
 	}
@@ -410,9 +420,9 @@ bool GSDevice::ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h)
 	return t2 != NULL;
 }
 
-bool GSDevice::ResizeTexture(GSTexture** t, int w, int h)
+bool GSDevice::ResizeTexture(GSTexture** t, int w, int h, bool clear)
 {
-	return ResizeTexture(t, GSTexture::Type::Texture, w, h);
+	return ResizeTexture(t, GSTexture::Type::Texture, w, h, clear);
 }
 
 bool GSDevice::ResizeTarget(GSTexture** t, int w, int h)

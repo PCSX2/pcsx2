@@ -752,6 +752,31 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, u32 c)
 	ClearRenderTarget(t, color);
 }
 
+void GSDeviceOGL::InvalidateRenderTarget(GSTexture* t)
+{
+	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
+	if (!T || T->HasBeenCleaned())
+		return;
+
+	if (GLAD_GL_VERSION_4_3 || GLAD_GL_ES_VERSION_3_0)
+	{
+		OMSetFBO(m_fbo);
+
+		if (T->GetType() == GSTexture::Type::DepthStencil || T->GetType() == GSTexture::Type::SparseDepthStencil)
+		{
+			OMAttachDs(T);
+			const GLenum attachments[] = {GL_DEPTH_STENCIL_ATTACHMENT};
+			glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, std::size(attachments), attachments);
+		}
+		else
+		{
+			OMAttachRt(T);
+			const GLenum attachments[] = {GL_COLOR_ATTACHMENT0};
+			glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, std::size(attachments), attachments);
+		}
+	}
+}
+
 void GSDeviceOGL::ClearDepth(GSTexture* t)
 {
 	if (!t)
