@@ -21,11 +21,13 @@
 #include <map>
 #include <mutex>
 
-static std::map<u64, bool> s_use_c_draw_scanline;
-static std::mutex s_use_c_draw_scanline_mutex;
+MULTI_ISA_UNSHARED_IMPL;
 
 static bool shouldUseCDrawScanline(u64 key)
 {
+	static std::map<u64, bool> s_use_c_draw_scanline;
+	static std::mutex s_use_c_draw_scanline_mutex;
+
 	static const char* const fname = getenv("USE_C_DRAW_SCANLINE");
 	if (!fname)
 		return false;

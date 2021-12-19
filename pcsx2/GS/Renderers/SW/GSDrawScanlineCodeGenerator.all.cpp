@@ -18,6 +18,7 @@
 #include "GS/Renderers/Common/GSFunctionMap.h"
 #include "GSVertexSW.h"
 
+MULTI_ISA_UNSHARED_IMPL;
 using namespace Xbyak;
 
 // Ease the reading of the code

@@ -1607,6 +1607,9 @@
     <ClCompile Include="GS\Renderers\HW\GSRendererHW.cpp">
       <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
     </ClCompile>
+    <ClCompile Include="GS\Renderers\HW\GSRendererHWMultiISA.cpp">
+      <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClCompile>
     <ClCompile Include="GS\Renderers\HW\GSTextureCache.cpp">
       <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
     </ClCompile>

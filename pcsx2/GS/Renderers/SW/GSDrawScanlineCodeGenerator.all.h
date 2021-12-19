@@ -17,6 +17,7 @@
 
 #include "GSScanlineEnvironment.h"
 #include "GSNewCodeGenerator.h"
+#include "GS/MultiISA.h"
 
 #undef _t // Conflict with wx, hopefully no one needs this
 
@@ -29,6 +30,8 @@
 	#define DRAW_SCANLINE_USING_XMM 1
 	#define DRAW_SCANLINE_USING_YMM 0
 #endif
+
+MULTI_ISA_UNSHARED_START
 
 class GSDrawScanlineCodeGenerator2 : public GSNewCodeGenerator
 {
@@ -187,3 +190,5 @@ private:
 		int pixels,      int mip_offset);
 	void ReadTexelImpl(const Xmm& dst, const Xmm& addr, u8 i, bool texInA3, bool preserveDst);
 };
+
+MULTI_ISA_UNSHARED_END

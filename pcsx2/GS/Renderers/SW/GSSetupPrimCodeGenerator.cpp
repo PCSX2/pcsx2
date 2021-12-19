@@ -17,7 +17,7 @@
 #include "GSSetupPrimCodeGenerator.h"
 #include "GSSetupPrimCodeGenerator.all.h"
 
-using namespace Xbyak;
+MULTI_ISA_UNSHARED_IMPL;
 
 GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(void* param, u64 key, void* code, size_t maxsize)
 	: GSCodeGenerator(code, maxsize)
