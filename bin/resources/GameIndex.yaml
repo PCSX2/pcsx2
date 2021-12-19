@@ -8542,7 +8542,7 @@ SLES-50683:
   name: "Sled Storm"
   region: "PAL-M3"
   clampModes:
-    vuClampMode: 2  # Missing polygons at the bottom of the screen.
+    vuClampMode: 3  # Missing polygons at the bottom of the screen.
 SLES-50684:
   name: "Medal of Honor - Frontline"
   region: "PAL-M3"
@@ -34320,7 +34320,7 @@ SLUS-20363:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    vuClampMode: 2  # Missing polygons at the bottom of the screen.
+    vuClampMode: 3  # Missing polygons at the bottom of the screen.
 SLUS-20364:
   name: "Tiger Woods PGA Tour 2002"
   region: "NTSC-U"
