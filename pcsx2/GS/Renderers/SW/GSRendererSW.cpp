@@ -146,7 +146,7 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 
 	// TODO: round up bottom
 
-	if (g_gs_device->ResizeTexture(&m_texture[i], w, h))
+	if (g_gs_device->ResizeTexture(&m_texture[i], w, h, false))
 	{
 		static int pitch = 1024 * 4;
 

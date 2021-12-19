@@ -1297,7 +1297,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		int h = (int)(scale.y * th);
 
 		GSTexture* sTex = dst->m_texture;
-		GSTexture* dTex = g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Color);
+		GSTexture* dTex = g_gs_device->CreateTexture(w, h, GSTexture::Format::Color);
 
 		GSVector4i area(x, y, x + w, y + h);
 		g_gs_device->CopyRect(sTex, dTex, area);
@@ -1329,7 +1329,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// So it could be tricky to put in the middle of the DrawPrims
 
 		// Texture is created to keep code compatibility
-		GSTexture* dTex = g_gs_device->CreateRenderTarget(tw, th, GSTexture::Format::Color);
+		GSTexture* dTex = g_gs_device->CreateTexture(tw, th, GSTexture::Format::Color);
 
 		// Keep a trace of origin of the texture
 		src->m_texture = dTex;
@@ -1496,11 +1496,15 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		}
 
 		GSVector4 sRect(0, 0, w, h);
+		const bool texture_completely_overwritten = ((sRect == dRect).alltrue());
+		const bool use_texture = (texture_completely_overwritten && shader == ShaderConvert::COPY);
 
 		// Don't be fooled by the name. 'dst' is the old target (hence the input)
 		// 'src' is the new texture cache entry (hence the output)
 		GSTexture* sTex = dst->m_texture;
-		GSTexture* dTex = g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Color);
+		GSTexture* dTex = use_texture ?
+			g_gs_device->CreateTexture(w, h, GSTexture::Format::Color) :
+			g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Color, !texture_completely_overwritten);
 		src->m_texture = dTex;
 
 		// GH: by default (m_paltex == 0) GS converts texture to the 32 bit format
@@ -1536,7 +1540,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// copy. Likely a speed boost and memory usage reduction.
 		bool linear = (TEX0.PSM == PSM_PSMCT32 || TEX0.PSM == PSM_PSMCT24);
 
-		if ((sRect == dRect).alltrue() && shader == ShaderConvert::COPY)
+		if (use_texture)
 		{
 			if (half_right)
 			{
