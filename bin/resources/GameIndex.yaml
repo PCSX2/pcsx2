@@ -1957,6 +1957,8 @@ SCES-50000:
   name: "Ridge Racer V"
   region: "PAL-M5"
   compat: 5
+  clampModes:
+    vuClampMode: 2 # Fixes texture rendering in the intro.
 SCES-50001:
   name: "Tekken Tag Tournament"
   region: "PAL-M5"
@@ -2054,6 +2056,8 @@ SCES-50354:
   clampModes:
     eeClampMode: 3  # Objects appear in wrong places without it.
     vuClampMode: 2  # Fixes water reflection.
+  gameFixes:
+    - EETimingHack # Fixes flickering graphics. 
 SCES-50360:
   name: "Twisted Metal - Black"
   region: "PAL-M5"
@@ -7090,6 +7094,8 @@ SLED-50478:
 SLED-50488:
   name: "Spy Hunter [Demo]"
   region: "PAL-E"
+  gameFixes:
+    - VIF1StallHack # Fixes loading hang.
 SLED-50884:
   name: "TimeSplitters 2 [Demo]"
   region: "PAL-E"
@@ -7183,6 +7189,11 @@ SLED-53953:
   region: "PAL-E"
   gameFixes:
     - GIFFIFOHack # Fixes flag corruptions.
+SLED-53983:
+  name: "Fight Night Round 3 [Demo]"
+  region: "PAL"
+  gameFixes:
+    - GIFFIFOHack # Fixes flag corruption.
 SLED-54035:
   name: "Play the Best Demos from Atari [Demo]"
   region: "PAL-M5"
@@ -7859,15 +7870,14 @@ SLES-50267:
     2547FF67:
       content: |-
         author=Nachbrenner
-        // Skip PSX2_Mpeg_PlayFile__FPc.
-        patch=0,EE,00107a00,word,03e00008
-        patch=0,EE,00107a04,word,24020001
         // Skip SuperSync__Fi.
         patch=0,EE,00100eb0,word,03e00008
         patch=0,EE,00100eb4,word,24020001
 SLES-50268:
   name: "Spy Hunter"
   region: "PAL-M5"
+  gameFixes:
+    - VIF1StallHack # Fixes loading hang.
 SLES-50273:
   name: "Legion - The Legend of Excalibur"
   region: "PAL-M5"
@@ -13793,9 +13803,13 @@ SLES-53390:
   name: "Ultimate Spider-Man"
   region: "PAL-E"
   compat: 5
+  clampModes:
+    vuClampMode: 0 # Fixes Spider-Man's eye texture colour.
 SLES-53391:
   name: "Ultimate Spider-Man"
   region: "PAL-M5"
+  clampModes:
+    vuClampMode: 0 # Fixes Spider-Man's eye texture colour.
 SLES-53393:
   name: "Spartan Total Warrior"
   region: "PAL-M5"
@@ -14226,7 +14240,7 @@ SLES-53541:
   name: "Tiger Woods PGA Tour 06"
   region: "PAL-M4"
   clampModes:
-    vuClampMode: 2  # Fix black textures on characters.
+    vuClampMode: 3 # Fix black textures on characters.
   gameFixes:
     - SkipMPEGHack # Fixes hang after EA intro (IPU).
 SLES-53542:
@@ -14515,6 +14529,8 @@ SLES-53668:
 SLES-53672:
   name: "Ultimate Spider-Man [Limited]"
   region: "PAL-E"
+  clampModes:
+    vuClampMode: 0 # Fixes Fixes Spider-Man's eye texture colour.
 SLES-53676:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "PAL-E"
@@ -15179,6 +15195,8 @@ SLES-53979:
 SLES-53982:
   name: "Fight Night Round 3"
   region: "PAL-E-F"
+  gameFixes:
+    - GIFFIFOHack # Fixes flag corruption.
 SLES-53984:
   name: "Ice Age 2 - The Meltdown"
   region: "PAL-M6"
@@ -17168,6 +17186,8 @@ SLES-54898:
 SLES-54899:
   name: "EyeToy - Bob the Builder"
   region: "PAL-M5"
+  clampModes:
+    vuClampMode: 3 # Fixes black screen.
 SLES-54900:
   name: "EyeToy - Bob the Builder"
   region: "PAL-E-I"
@@ -19738,6 +19758,8 @@ SLPM-60107:
 SLPM-60109:
   name: "Ridge Racer V [Trial]"
   region: "NTSC-J"
+  clampModes:
+    vuClampMode: 2 # Fixes texture rendering in the intro.
 SLPM-60172:
   name: "Itadaki Street 3 - Okuman Chouja ni Shiteageru"
   region: "NTSC-J"
@@ -21147,6 +21169,12 @@ SLPM-62552:
   name: "Super Shanghai 2005"
   region: "NTSC-J"
   compat: 5
+  patches:
+    default:
+      content: |-
+        // Sets CD Read command to blocking to prevent CDVD Reset collision on boot
+        comment=patch by kr_ps2
+        patch=1,IOP,000760B0,word,24040001
 SLPM-62553:
   name: "Sega Ages 2500 Series Vol.17 - Phantasy Star Generation 2"
   region: "NTSC-J"
@@ -22126,6 +22154,8 @@ SLPM-65089:
 SLPM-65090:
   name: "Spy Hunter"
   region: "NTSC-J"
+  gameFixes:
+    - VIF1StallHack # Fixes loading hang.
 SLPM-65091:
   name: "Harukanaru Toki no Naka de 2 [Limited Edition]"
   region: "NTSC-J"
@@ -25422,7 +25452,7 @@ SLPM-66191:
   name: "Tiger Woods PGA Tour 06"
   region: "NTSC-J"
   clampModes:
-    vuClampMode: 2  # Fixes black textures on characters.
+    vuClampMode: 3 # Fixes black textures on characters.
   gameFixes:
     - SkipMPEGHack # Fixes hang after EA intro (IPU).
 SLPM-66192:
@@ -26108,6 +26138,11 @@ SLPM-66401:
 SLPM-66402:
   name: "Taito Memories Vol.1 [Taito The Best]"
   region: "NTSC-J"
+SLPM-66404:
+  name: "Ultimate Spider-Man"
+  region: "NTSC-J"
+  clampModes:
+    vuClampMode: 0 # Fixes Spider-Man's eye texture colour.
 SLPM-66405:
   name: "Rajirugi - Precious"
   region: "NTSC-J"
@@ -28388,6 +28423,8 @@ SLPS-20001:
   name: "Ridge Racer V"
   region: "NTSC-J"
   compat: 5
+  clampModes:
+    vuClampMode: 2 # Fixes texture rendering in the intro.
 SLPS-20002:
   name: "Doukyu Billiards"
   region: "NTSC-J"
@@ -29567,6 +29604,8 @@ SLPS-25033:
   clampModes:
     eeClampMode: 3  # Objects appear in wrong places without it.
     vuClampMode: 2  # Fixes water reflection.
+  gameFixes:
+    - EETimingHack # Fixes flickering graphics. 
 SLPS-25034:
   name: "Flower, Sun and Rain"
   region: "NTSC-J"
@@ -32873,6 +32912,8 @@ SLPS-73404:
   clampModes:
     eeClampMode: 3  # Objects appear in wrong places without it.
     vuClampMode: 2  # Fixes water reflection.
+  gameFixes:
+    - EETimingHack # Fixes flickering graphics. 
 SLPS-73405:
   name: "Zero [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -32971,6 +33012,8 @@ SLUS-20002:
   name: "Ridge Racer V"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vuClampMode: 2 # Fixes texture rendering in the intro.
 SLUS-20003:
   name: "Portal Runner"
   region: "NTSC-U"
@@ -33385,9 +33428,6 @@ SLUS-20141:
     116154AD:
       content: |-
         author=Nachbrenner
-        // Skip PSX2_Mpeg_PlayFile__FPc.
-        patch=0,EE,00107a00,word,03e00008
-        patch=0,EE,00107a04,word,24020001
         // Skip SuperSync__Fi.
         patch=0,EE,00100eb0,word,03e00008
         patch=0,EE,00100eb4,word,24020001
@@ -33431,6 +33471,8 @@ SLUS-20151:
   clampModes:
     eeClampMode: 3  # Objects appear in wrong places without it.
     vuClampMode: 2  # Fixes water reflection.
+  gameFixes:
+    - EETimingHack # Fixes flickering graphics. 
 SLUS-20152:
   name: "Ace Combat 4 - Shattered Skies"
   region: "NTSC-U"
@@ -36386,6 +36428,8 @@ SLUS-20870:
   name: "Ultimate Spider-Man"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vuClampMode: 0 # Fixes wrong texture colour.
 SLUS-20871:
   name: "Naval Ops - Commander"
   region: "NTSC-U"
@@ -38197,7 +38241,7 @@ SLUS-21264:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    vuClampMode: 2  # Fix black textures on characters.
+    vuClampMode: 3 # Fix black textures on characters.
   gameFixes:
     - SkipMPEGHack # Fixes hang after EA intro (IPU).
 SLUS-21265:
@@ -38295,6 +38339,8 @@ SLUS-21284:
 SLUS-21285:
   name: "Ultimate Spider-Man [Limited Edition]"
   region: "NTSC-U"
+  clampModes:
+    vuClampMode: 0 # Fixes Spider-Man's eyes texture.
 SLUS-21286:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "NTSC-U"
@@ -38770,6 +38816,8 @@ SLUS-21383:
   name: "Fight Night - Round 3"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - GIFFIFOHack # Fixes flag corruption.
 SLUS-21384:
   name: "Cabela's Alaskan Adventures"
   region: "NTSC-U"
@@ -41086,6 +41134,8 @@ SLUS-28004:
   clampModes:
     eeClampMode: 3  # Objects appear in wrong places without it.
     vuClampMode: 2  # Fixes water reflection.
+  gameFixes:
+    - EETimingHack # Fixes flickering graphics.
 SLUS-28006:
   name: "Burnout [Trade Demo]"
   region: "NTSC-U"
