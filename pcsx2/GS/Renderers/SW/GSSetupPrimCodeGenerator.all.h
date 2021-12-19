@@ -17,6 +17,7 @@
 
 #include "GSScanlineEnvironment.h"
 #include "GSNewCodeGenerator.h"
+#include "GS/MultiISA.h"
 
 #if _M_SSE >= 0x501
 	#define SETUP_PRIM_VECTOR_REGISTER Xbyak::Ymm
@@ -27,6 +28,8 @@
 	#define SETUP_PRIM_USING_XMM 1
 	#define SETUP_PRIM_USING_YMM 0
 #endif
+
+MULTI_ISA_UNSHARED_START
 
 class GSSetupPrimCodeGenerator2 : public GSNewCodeGenerator
 {
@@ -77,3 +80,5 @@ private:
 	void Texture();
 	void Color();
 };
+
+MULTI_ISA_UNSHARED_END

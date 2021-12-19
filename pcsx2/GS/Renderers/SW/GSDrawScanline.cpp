@@ -17,8 +17,12 @@
 #include "GSDrawScanline.h"
 #include "GSTextureCacheSW.h"
 
+#if MULTI_ISA_COMPILE_ONCE
 // Lack of a better home
 constexpr GSScanlineConstantData g_const;
+#endif
+
+MULTI_ISA_UNSHARED_IMPL;
 
 GSDrawScanline::GSDrawScanline()
 	: m_sp_map("GSSetupPrim", &m_local)

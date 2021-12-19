@@ -56,3 +56,11 @@ public:
 		_aligned_free(p);
 	}
 };
+
+/// GSAlignedClass with a virtual destructor
+template <int i>
+class GSVirtualAlignedClass : public GSAlignedClass<i>
+{
+public:
+	virtual ~GSVirtualAlignedClass() {}
+};

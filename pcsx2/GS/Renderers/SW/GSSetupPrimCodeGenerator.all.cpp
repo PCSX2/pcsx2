@@ -17,6 +17,7 @@
 #include "GSSetupPrimCodeGenerator.all.h"
 #include "GSVertexSW.h"
 
+MULTI_ISA_UNSHARED_IMPL;
 using namespace Xbyak;
 
 #define _rip_local(field) ((m_rip) ? ptr[rip + (char*)&m_local.field] : ptr[_m_local + OFFSETOF(GSScanlineLocalData, field)])

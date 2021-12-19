@@ -83,3 +83,6 @@ extern const ProcessorFeatures g_cpu;
 	#define MULTI_ISA_FRIEND(klass) friend class isa_native::klass;
 	#define MULTI_ISA_SELECT(fn) (isa_native::fn)
 #endif
+
+class GSRenderer;
+MULTI_ISA_DEF(GSRenderer* makeGSRendererSW(int threads);)

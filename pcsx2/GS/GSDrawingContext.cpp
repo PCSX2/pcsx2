@@ -79,7 +79,7 @@ static int extend(int uv, int size)
 	return size;
 }
 
-GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, bool mipmap)
+GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, bool mipmap) const
 {
 	if (mipmap)
 		return TEX0; // no mipmaping allowed

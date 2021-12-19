@@ -20,11 +20,15 @@
 #include "GS/Renderers/Common/GSRenderer.h"
 #include "GS/Renderers/SW/GSTextureCacheSW.h"
 #include "GS/GSState.h"
+#include "GS/MultiISA.h"
 
-class GSRasterizer;
+class GSRendererHW;
+MULTI_ISA_DEF(class GSRendererHWFunctions;)
+MULTI_ISA_DEF(void GSRendererHWPopulateFunctions(GSRendererHW& renderer);)
 
 class GSRendererHW : public GSRenderer
 {
+	MULTI_ISA_FRIEND(GSRendererHWFunctions);
 public:
 	static constexpr int MAX_FRAMEBUFFER_HEIGHT = 1280;
 
@@ -130,7 +134,7 @@ private:
 	bool PossibleCLUTDraw();
 	bool PossibleCLUTDrawAggressive();
 	bool CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_tex);
-	bool SwPrimRender();
+	bool (*SwPrimRender)(GSRendererHW&);
 
 	template <bool linear>
 	void RoundSpriteOffset();
@@ -166,7 +170,7 @@ private:
 	// software sprite renderer state
 	std::vector<GSVertexSW> m_sw_vertex_buffer;
 	std::unique_ptr<GSTextureCacheSW::Texture> m_sw_texture;
-	std::unique_ptr<GSRasterizer> m_sw_rasterizer;
+	std::unique_ptr<GSVirtualAlignedClass<32>> m_sw_rasterizer;
 
 public:
 	GSRendererHW();

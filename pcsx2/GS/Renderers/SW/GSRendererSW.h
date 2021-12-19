@@ -18,6 +18,9 @@
 #include "GSTextureCacheSW.h"
 #include "GSDrawScanline.h"
 #include "GS/GSRingHeap.h"
+#include "GS/MultiISA.h"
+
+MULTI_ISA_UNSHARED_START
 
 class GSRendererSW final : public GSRenderer
 {
@@ -95,3 +98,5 @@ public:
 
 	void Destroy() override;
 };
+
+MULTI_ISA_UNSHARED_END

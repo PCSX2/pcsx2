@@ -27,6 +27,8 @@
 
 #define ENABLE_DRAW_STATS 0
 
+MULTI_ISA_UNSHARED_IMPL;
+
 int GSRasterizerData::s_counter = 0;
 
 static int compute_best_thread_height(int threads)

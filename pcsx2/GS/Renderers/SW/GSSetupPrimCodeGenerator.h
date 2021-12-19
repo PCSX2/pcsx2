@@ -18,6 +18,9 @@
 #include "GSScanlineEnvironment.h"
 #include "GS/Renderers/Common/GSFunctionMap.h"
 #include "GS/GSUtil.h"
+#include "GS/MultiISA.h"
+
+MULTI_ISA_UNSHARED_START
 
 class GSSetupPrimCodeGenerator : public GSCodeGenerator
 {
@@ -35,3 +38,5 @@ class GSSetupPrimCodeGenerator : public GSCodeGenerator
 public:
 	GSSetupPrimCodeGenerator(void* param, u64 key, void* code, size_t maxsize);
 };
+
+MULTI_ISA_UNSHARED_END
