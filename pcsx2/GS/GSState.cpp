@@ -2556,6 +2556,15 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 
 	GSVector4i tr(0, 0, w, h);
 
+	// don't bother checking when preload is on, since we're going to test the whole thing anyway
+	if (GSConfig.PreloadTexture && GSConfig.UseHardwareRenderer() &&
+      (GSConfig.GPUPaletteConversion ||
+       (w <= MAXIMUM_PRELOAD_TEXTURE_SIZE && h <= MAXIMUM_PRELOAD_TEXTURE_SIZE)))
+	{
+		r = tr;
+		return;
+	}
+
 	const int wms = CLAMP.WMS;
 	const int wmt = CLAMP.WMT;
 

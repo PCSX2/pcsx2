@@ -1303,6 +1303,7 @@ void GSApp::Init()
 	m_default_configuration["paltex"]                                     = "0";
 	m_default_configuration["png_compression_level"]                      = std::to_string(Z_BEST_SPEED);
 	m_default_configuration["preload_frame_with_gs_data"]                 = "0";
+	m_default_configuration["preload_texture"]                            = "0";
 	m_default_configuration["Renderer"]                                   = std::to_string(static_cast<int>(GSRendererType::Auto));
 	m_default_configuration["resx"]                                       = "1024";
 	m_default_configuration["resy"]                                       = "1024";

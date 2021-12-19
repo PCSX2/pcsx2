@@ -106,6 +106,11 @@ public:
 			u32 count;
 		} m_write;
 
+		using HashType = u64;
+
+		HashType HashTexture(u8* buff, u32 row_size, u32 pitch, u32 height);
+		void PreloadUpdate(int tw, int th, int layer);
+
 		void Write(const GSVector4i& r, int layer);
 		void Flush(u32 count, int layer);
 
@@ -114,6 +119,7 @@ public:
 		GSTexture* m_palette;
 		u32 m_valid[MAX_PAGES]; // each u32 bits map to the 32 blocks of that page
 		GSVector4i m_valid_rect;
+		u8 m_valid_hashes = 0;
 		bool m_target;
 		bool m_complete;
 		bool m_repeating;
@@ -124,6 +130,7 @@ public:
 		GSTexture* m_from_target;
 		GIFRegTEX0 m_from_target_TEX0; // TEX0 of the target texture, if any, else equal to texture TEX0
 		GIFRegTEX0 m_layer_TEX0[7]; // Detect already loaded value
+		HashType m_layer_hash[7];
 		// Keep a GSTextureCache::SourceMap::m_map iterator to allow fast erase
 		std::array<u16, MAX_PAGES> m_erase_it;
 		GSOffset::PageLooper m_pages;
@@ -214,7 +221,7 @@ protected:
 	PaletteMap m_palette_map;
 	SourceMap m_src;
 	FastList<Target*> m_dst[2];
-	bool m_paltex;
+	static bool m_paltex;
 	bool m_preload_frame;
 	u8* m_temp;
 	bool m_can_convert_depth;

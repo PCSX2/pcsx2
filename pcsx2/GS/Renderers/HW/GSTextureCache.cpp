@@ -20,6 +20,11 @@
 #include "GS/GSIntrin.h"
 #include "GS/GSUtil.h"
 
+#define XXH_STATIC_LINKING_ONLY 1
+#define XXH_INLINE_ALL 1
+#include "xxhash.h"
+
+bool GSTextureCache::m_paltex = false;
 bool GSTextureCache::m_disable_partial_invalidation = false;
 bool GSTextureCache::m_wrap_gs_mem = false;
 
@@ -1210,7 +1215,7 @@ void GSTextureCache::InvalidateVideoMemSubTarget(GSTextureCache::Target* rt)
 
 void GSTextureCache::IncAge()
 {
-	int maxage = m_src.m_used ? 3 : 30;
+	int maxage = GSConfig.PreloadTexture ? (m_src.m_used ? 30 : 60) : (m_src.m_used ? 3 : 6);
 
 	// You can't use m_map[page] because Source* are duplicated on several pages.
 	for (auto i = m_src.m_surfaces.begin(); i != m_src.m_surfaces.end();)
@@ -1802,7 +1807,7 @@ GSTextureCache::Surface::~Surface()
 {
 	// Shared textures are pointers copy. Therefore no allocation
 	// to recycle.
-	if (!m_shared_texture)
+	if (!m_shared_texture && m_texture)
 		g_gs_device->Recycle(m_texture);
 }
 
@@ -1854,6 +1859,7 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 	else
 	{
 		memset(m_layer_TEX0, 0, sizeof(m_layer_TEX0));
+		memset(m_layer_hash, 0, sizeof(m_layer_hash));
 
 		memset(m_valid, 0, sizeof(m_valid));
 
@@ -1887,8 +1893,14 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 
 	const GSVector2i& bs = GSLocalMemory::m_psm[m_TEX0.PSM].bs;
 
-	int tw = std::max<int>(1 << m_TEX0.TW, bs.x);
-	int th = std::max<int>(1 << m_TEX0.TH, bs.y);
+	const int tw = 1 << m_TEX0.TW;
+	const int th = 1 << m_TEX0.TH;
+	const bool preload = (GSConfig.PreloadTexture && (GSConfig.GPUPaletteConversion || (tw <= MAXIMUM_PRELOAD_TEXTURE_SIZE && th <= MAXIMUM_PRELOAD_TEXTURE_SIZE)));
+	if (preload)
+	{
+		PreloadUpdate(tw, th, layer);
+		return;
+	}
 
 	GSVector4i r = rect.ralign<Align_Outside>(bs);
 
@@ -1961,7 +1973,6 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 	if (blocks > 0)
 	{
 		g_perfmon.Put(GSPerfMon::Unswizzle, bs.x * bs.y * blocks << (m_palette ? 2 : 0));
-
 		Flush(m_write.count, layer);
 	}
 }
@@ -2086,6 +2097,105 @@ void GSTextureCache::Source::Flush(u32 count, int layer)
 	}
 
 	m_write.count -= count;
+}
+
+GSTextureCache::Source::HashType GSTextureCache::Source::HashTexture(u8* buff, u32 row_size, u32 pitch, u32 height)
+{
+	if (row_size == pitch)
+	{
+		// fast path since it's all packed
+		return XXH3_64bits(buff, row_size * height);
+	}
+
+	// slow path where we have to process rows-at-a-time
+	XXH3_state_t st;
+	XXH3_64bits_reset(&st);
+	for (u32 row = 0; row < height; row++)
+	{
+		XXH3_64bits_update(&st, buff, row_size);
+		buff += pitch;
+	}
+	return XXH3_64bits_digest(&st);
+}
+
+void GSTextureCache::Source::PreloadUpdate(int tw, int th, int layer)
+{
+	const GSVector2i& bs = GSLocalMemory::m_psm[m_TEX0.PSM].bs;
+	const GSOffset& off = m_renderer->m_context->offset.tex;
+	const GSVector4i rect(0, 0, tw, th);
+	const GSVector4i block_rect(rect.ralign<Align_Outside>(bs));
+	GSOffset::BNHelper bn = off.bnMulti(0, 0);
+
+	// flag everything as valid
+	if (m_repeating)
+	{
+		for (int y = block_rect.top; y < block_rect.bottom; y += bs.y, bn.nextBlockY())
+		{
+			for (int x = block_rect.left; x < block_rect.right; bn.nextBlockX(), x += bs.x)
+			{
+				const u32 i = static_cast<u32>((bn.blkY() << 7) + bn.blkX());
+				u32 block = bn.valueNoWrap();
+
+				if (block < MAX_BLOCKS || m_wrap_gs_mem)
+				{
+					u32 addr = i % MAX_BLOCKS;
+
+					u32 row = addr >> 5u;
+					u32 col = 1 << (addr & 31u);
+					m_valid[row] |= col;
+				}
+			}
+		}
+	}
+	else
+	{
+		for (int y = block_rect.top; y < block_rect.bottom; y += bs.y, bn.nextBlockY())
+		{
+			for (int x = block_rect.left; x < block_rect.right; x += bs.x, bn.nextBlockX())
+			{
+				u32 block = bn.valueNoWrap();
+
+				if (block < MAX_BLOCKS || m_wrap_gs_mem)
+				{
+					block %= MAX_BLOCKS;
+
+					u32 row = block >> 5u;
+					u32 col = 1 << (block & 31u);
+					m_valid[row] |= col;
+				}
+			}
+		}
+	}
+
+	if (layer == 0)
+		m_complete = true;
+
+	// decode texture to temporary memory
+	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_TEX0.PSM];
+	const int read_width = std::max(tw, psm.bs.x);
+	u32 pitch = static_cast<u32>(read_width) * sizeof(u32);
+	u32 row_size = static_cast<u32>(tw) * sizeof(u32);
+	GSLocalMemory::readTexture rtx = psm.rtx;
+	if (m_palette)
+	{
+		pitch >>= 2;
+		row_size >>= 2;
+		rtx = psm.rtxP;
+	}
+
+	u8* buff = m_temp;
+	(m_renderer->m_mem.*rtx)(off, block_rect, buff, pitch, m_TEXA);
+
+	// hash the texture
+	const HashType hash = HashTexture(buff, row_size, pitch, static_cast<u32>(th));
+	const u8 layer_bit = static_cast<u8>(1) << layer;
+	if ((m_valid_hashes & layer_bit) && m_layer_hash[layer] == hash)
+		return;
+
+	// reupload
+	m_valid_hashes |= layer_bit;
+	m_layer_hash[layer] = hash;
+	m_texture->Update(rect, buff, pitch, layer);
 }
 
 bool GSTextureCache::Source::ClutMatch(PaletteKey palette_key)
