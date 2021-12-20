@@ -76,6 +76,7 @@ target_sources(common PRIVATE
 	General.h
 	GL/Context.h
 	GL/StreamBuffer.h
+	HashCombine.h
 	MemcpyFast.h
 	MemsetFast.inl
 	Path.h
