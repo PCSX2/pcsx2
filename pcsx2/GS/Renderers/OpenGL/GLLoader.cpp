@@ -145,7 +145,6 @@ namespace GLLoader
 	bool vendor_id_intel = false;
 	bool mesa_driver = false;
 	bool in_replayer = false;
-	bool buggy_sso_dual_src = false;
 
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_ARB_clear_texture = false;
@@ -213,8 +212,6 @@ namespace GLLoader
 		// On linux assumes the free driver if it isn't nvidia or amd pro driver
 		mesa_driver = !vendor_id_nvidia && !vendor_id_amd;
 #endif
-		// As of 2019 SSO is still broken on intel (Kaby Lake confirmed).
-		buggy_sso_dual_src = vendor_id_intel || vendor_id_amd;
 
 		if (theApp.GetConfigI("override_geometry_shader") != -1)
 		{

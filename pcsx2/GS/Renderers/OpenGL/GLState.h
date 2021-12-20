@@ -46,12 +46,6 @@ namespace GLState
 	extern GLuint tex_unit[8]; // shader input texture
 	extern GLuint64 tex_handle[8]; // shader input texture
 
-	extern GLuint ps;
-	extern GLuint gs;
-	extern GLuint vs;
-	extern GLuint program;
-	extern GLuint pipeline;
-
 	extern s64 available_vram;
 
 	extern void Clear();
