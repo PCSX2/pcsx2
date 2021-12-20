@@ -540,14 +540,15 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 	const bool blend_non_recursive = !!(blend_flag & BLEND_NO_REC);
 
 	// BLEND MIX selection, use a mix of hw/sw blending
-	if (!m_vt.m_alpha.valid && (ALPHA.C == 0))
-		GetAlphaMinMax();
 	const bool blend_mix1 = !!(blend_flag & BLEND_MIX1);
 	const bool blend_mix2 = !!(blend_flag & BLEND_MIX2);
 	const bool blend_mix3 = !!(blend_flag & BLEND_MIX3);
-	bool blend_mix = (blend_mix1 || blend_mix2 || blend_mix3)
-		// Do not enable if As > 128 or F > 128, hw blend clamps to 1
-		&& !((ALPHA.C == 0 && m_vt.m_alpha.max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
+	bool blend_mix = (blend_mix1 || blend_mix2 || blend_mix3);
+	// Checking alpha mix is costly, isolate it as an optimization.
+	if (!m_vt.m_alpha.valid && blend_mix && (ALPHA.C == 0))
+		GetAlphaMinMax();
+	// Do not enable if As > 128 or F > 128, hw blend clamps to 1
+	blend_mix &= !((ALPHA.C == 0 && m_vt.m_alpha.max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
 
 	// SW Blend is (nearly) free. Let's use it.
 	const bool impossible_or_free_blend = (blend_flag & BLEND_A_MAX) // Impossible blending
@@ -604,7 +605,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 		// Safe FBMASK, avoid hitting accumulation mode on 16bit,
 		// fixes shadows in Superman shadows of Apokolips.
 		const bool sw_fbmask_colclip = !m_conf.require_one_barrier && m_conf.ps.fbmask;
-		bool free_colclip;
+		bool free_colclip = false;
 		if (m_dev->Features().texture_barrier)
 			free_colclip = m_prim_overlap == PRIM_OVERLAP_NO || blend_non_recursive || sw_fbmask_colclip;
 		else
