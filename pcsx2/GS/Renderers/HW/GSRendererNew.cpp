@@ -953,7 +953,7 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	m_conf.ps.tcoffsethack = m_userhacks_tcoffset;
 	GSVector4 tc_oh_ts = GSVector4(1 / 16.0f, 1 / 16.0f, m_userhacks_tcoffset_x, m_userhacks_tcoffset_y) / WH.xyxy();
 	m_conf.cb_vs.texture_scale = GSVector2(tc_oh_ts.x, tc_oh_ts.y);
-	m_conf.cb_ps.tc_offset = GSVector2(tc_oh_ts.z, tc_oh_ts.y);
+	m_conf.cb_ps.tc_offset = GSVector2(tc_oh_ts.z, tc_oh_ts.w);
 
 	// Must be done after all coordinates math
 	if (m_context->HasFixedTEX0() && !PRIM->FST)
