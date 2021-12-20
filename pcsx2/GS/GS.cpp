@@ -252,14 +252,6 @@ int _GSopen(const WindowInfo& wi, const char* title, GSRendererType renderer, in
 		return -1;
 	}
 
-	if (renderer == GSRendererType::OGL_HW && theApp.GetConfigI("debug_glsl_shader") == 2)
-	{
-		printf("GS: test OpenGL shader. Please wait...\n\n");
-		static_cast<GSDeviceOGL*>(s_gs->m_dev)->SelfShaderTest();
-		printf("\nGS: test OpenGL shader done. It will now exit\n");
-		return -1;
-	}
-
 	return 0;
 }
 

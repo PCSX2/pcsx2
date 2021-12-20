@@ -36,7 +36,6 @@ namespace GLLoader
 	extern bool vendor_id_nvidia;
 	extern bool vendor_id_intel;
 	extern bool mesa_driver;
-	extern bool buggy_sso_dual_src;
 	extern bool in_replayer;
 
 	// GL

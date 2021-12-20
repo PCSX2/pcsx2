@@ -9,7 +9,7 @@ in SHADER
 
 #ifdef FRAGMENT_SHADER
 
-layout(std140, binding = 10) uniform cb10
+layout(std140, binding = 3) uniform cb10
 {
     vec4 BGColor;
 };

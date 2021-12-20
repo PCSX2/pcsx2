@@ -9,7 +9,7 @@ in SHADER
 
 #ifdef FRAGMENT_SHADER
 
-layout(std140, binding = 11) uniform cb11
+layout(std140, binding = 4) uniform cb11
 {
     vec2 ZrH;
     float hH;
