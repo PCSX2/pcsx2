@@ -112,6 +112,7 @@
     <ClInclude Include="GL\ContextWGL.h" />
     <ClInclude Include="GL\StreamBuffer.h" />
     <ClInclude Include="FileSystem.h" />
+    <ClInclude Include="HashCombine.h" />
     <ClInclude Include="ProgressCallback.h" />
     <ClInclude Include="ScopedGuard.h" />
     <ClInclude Include="StringUtil.h" />
