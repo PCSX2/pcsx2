@@ -560,10 +560,10 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 				sw_blending |= true;
 				[[fallthrough]];
 			case AccBlendLevel::Full:
-				sw_blending |= (ALPHA.A != ALPHA.B) && ((ALPHA.C == 0 && GetAlphaMinMax().max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
+				sw_blending |= ALPHA.A != ALPHA.B && ALPHA.C == 0 && GetAlphaMinMax().max > 128;
 				[[fallthrough]];
 			case AccBlendLevel::High:
-				sw_blending |= (ALPHA.C == 1);
+				sw_blending |= ALPHA.C == 1 || (ALPHA.A != ALPHA.B && ALPHA.C == 2 && ALPHA.FIX > 128u);
 				[[fallthrough]];
 			case AccBlendLevel::Medium:
 				// Initial idea was to enable accurate blending for sprite rendering to handle
