@@ -1907,29 +1907,6 @@ __fi static void WriteToStreamBuffer(GL::StreamBuffer* sb, u32 index, u32 align,
 	glBindBufferRange(GL_UNIFORM_BUFFER, index, sb->GetGLBufferId(), res.buffer_offset, size);
 }
 
-void GSDeviceOGL::SetupCB(const GSHWDrawConfig::VSConstantBuffer* vs_cb, const GSHWDrawConfig::PSConstantBuffer* ps_cb)
-{
-	GL_PUSH("UBO");
-
-	if (m_vs_cb_cache.Update(*vs_cb))
-	{
-		WriteToStreamBuffer(m_vertex_uniform_stream_buffer.get(), g_vs_cb_index,
-			m_uniform_buffer_alignment, vs_cb, sizeof(GSHWDrawConfig::VSConstantBuffer));
-	}
-
-	if (m_ps_cb_cache.Update(*ps_cb))
-	{
-		WriteToStreamBuffer(m_fragment_uniform_stream_buffer.get(), g_ps_cb_index,
-			m_uniform_buffer_alignment, ps_cb, sizeof(GSHWDrawConfig::PSConstantBuffer));
-	}
-}
-
-void GSDeviceOGL::SetupCBMisc(const GSVector4i& channel)
-{
-	m_misc_cb_cache.ChannelShuffle = channel;
-	m_convert.cb->cache_upload(&m_misc_cb_cache);
-}
-
 void GSDeviceOGL::SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, const PSSelector& psel)
 {
 	auto i = m_ps.find(psel.key);
@@ -2099,7 +2076,16 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	OMSetColorMaskState(config.colormask);
 	SetupOM(config.depth);
 
-	SetupCB(&config.cb_vs, &config.cb_ps);
+	if (m_vs_cb_cache.Update(config.cb_vs))
+	{
+		WriteToStreamBuffer(m_vertex_uniform_stream_buffer.get(), g_vs_cb_index,
+			m_uniform_buffer_alignment, &config.cb_vs, sizeof(config.cb_vs));
+	}
+	if (m_ps_cb_cache.Update(config.cb_ps))
+	{
+		WriteToStreamBuffer(m_fragment_uniform_stream_buffer.get(), g_ps_cb_index,
+			m_uniform_buffer_alignment, &config.cb_ps, sizeof(config.cb_ps));
+	}
 
 	GSSelector gssel;
 	if (config.gs.expand)
@@ -2153,7 +2139,14 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	if (config.alpha_second_pass.enable)
 	{
-		SetupCB(&config.cb_vs, &config.alpha_second_pass.cb_ps);
+		// cbuffer will definitely be dirty if aref changes, no need to check it
+		if (config.cb_ps.FogColor_AREF.a != config.alpha_second_pass.ps_aref)
+		{
+			config.cb_ps.FogColor_AREF.a = config.alpha_second_pass.ps_aref;
+			WriteToStreamBuffer(m_fragment_uniform_stream_buffer.get(), g_ps_cb_index,
+				m_uniform_buffer_alignment, &config.cb_ps, sizeof(config.cb_ps));
+		}
+
 		SetupPipeline(vssel, gssel, config.alpha_second_pass.ps);
 		OMSetColorMaskState(config.alpha_second_pass.colormask);
 		SetupOM(config.alpha_second_pass.depth);

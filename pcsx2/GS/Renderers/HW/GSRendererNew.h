@@ -43,7 +43,7 @@ private:
 	inline void EmulateBlending(bool& DATE_GL42, bool& DATE_GL45);
 	inline void EmulateTextureSampler(const GSTextureCache::Source* tex);
 	inline void EmulateZbuffer();
-	inline void EmulateATST(GSHWDrawConfig::PSConstantBuffer& cb, GSHWDrawConfig::PSSelector& ps, bool pass_2);
+	inline void EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, bool pass_2);
 
 public:
 	GSRendererNew();

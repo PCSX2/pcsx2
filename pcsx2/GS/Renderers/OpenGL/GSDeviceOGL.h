@@ -379,8 +379,6 @@ public:
 	void SelfShaderTest();
 
 	void SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, const PSSelector& psel);
-	void SetupCB(const GSHWDrawConfig::VSConstantBuffer* vs_cb, const GSHWDrawConfig::PSConstantBuffer* ps_cb);
-	void SetupCBMisc(const GSVector4i& channel);
 	void SetupSampler(PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel);
 	GLuint GetSamplerID(PSSamplerSelector ssel);

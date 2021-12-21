@@ -485,7 +485,7 @@ struct GSHWDrawConfig
 		ColorMaskSelector colormask;
 		DepthStencilSelector depth;
 		PSSelector ps;
-		PSConstantBuffer cb_ps;
+		float ps_aref;
 	} alpha_second_pass;
 };
 

@@ -1583,7 +1583,17 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	if (config.alpha_second_pass.enable)
 	{
 		preprocessSel(config.alpha_second_pass.ps);
-		SetupPS(config.alpha_second_pass.ps, &config.alpha_second_pass.cb_ps, config.sampler);
+		if (config.cb_ps.FogColor_AREF.a != config.alpha_second_pass.ps_aref)
+		{
+			config.cb_ps.FogColor_AREF.a = config.alpha_second_pass.ps_aref;
+			SetupPS(config.alpha_second_pass.ps, &config.cb_ps, config.sampler);
+		}
+		else
+		{
+			// ps cbuffer hasn't changed, so don't bother checking
+			SetupPS(config.alpha_second_pass.ps, nullptr, config.sampler);
+		}
+
 		SetupOM(config.alpha_second_pass.depth, convertSel(config.alpha_second_pass.colormask, config.blend), config.blend.factor);
 
 		DrawIndexedPrimitive();
