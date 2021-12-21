@@ -1113,27 +1113,27 @@ void GSRendererNew::EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, boo
 	switch (atst)
 	{
 		case ATST_LESS:
-			AREF = (float)m_context->TEST.AREF - 0.1f;
+			AREF = static_cast<float>(m_context->TEST.AREF) - 0.1f;
 			ps.atst = 1;
 			break;
 		case ATST_LEQUAL:
-			AREF = (float)m_context->TEST.AREF - 0.1f + 1.0f;
+			AREF = static_cast<float>(m_context->TEST.AREF) - 0.1f + 1.0f;
 			ps.atst = 1;
 			break;
 		case ATST_GEQUAL:
-			AREF = (float)m_context->TEST.AREF - 0.1f;
+			AREF = static_cast<float>(m_context->TEST.AREF) - 0.1f;
 			ps.atst = 2;
 			break;
 		case ATST_GREATER:
-			AREF = (float)m_context->TEST.AREF - 0.1f + 1.0f;
+			AREF = static_cast<float>(m_context->TEST.AREF) - 0.1f + 1.0f;
 			ps.atst = 2;
 			break;
 		case ATST_EQUAL:
-			AREF = (float)m_context->TEST.AREF;
+			AREF = static_cast<float>(m_context->TEST.AREF);
 			ps.atst = 3;
 			break;
 		case ATST_NOTEQUAL:
-			AREF = (float)m_context->TEST.AREF;
+			AREF = static_cast<float>(m_context->TEST.AREF);
 			ps.atst = 4;
 			break;
 		case ATST_NEVER: // Draw won't be done so no need to implement it in shader
@@ -1146,11 +1146,9 @@ void GSRendererNew::EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, boo
 
 void GSRendererNew::ResetStates()
 {
-	GSHWDrawConfig::VSConstantBuffer vs_tmp = m_conf.cb_vs;
-	GSHWDrawConfig::PSConstantBuffer ps_tmp = m_conf.cb_ps;
-	memset(&m_conf, 0, sizeof(m_conf));
-	m_conf.cb_vs = vs_tmp;
-	m_conf.cb_ps = ps_tmp;
+	// We don't want to zero out the constant buffers, since fields used by the current draw could result in redundant uploads.
+	// This memset should be pretty efficient - the struct is 16 byte aligned, as is the cb_vs offset.
+	memset(&m_conf, 0, reinterpret_cast<const char*>(&m_conf.cb_vs) - reinterpret_cast<const char*>(&m_conf));
 }
 
 void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
@@ -1592,10 +1590,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		m_conf.require_one_barrier = true;
 	}
 
-	if (m_conf.require_full_barrier && m_vt.m_primclass == GS_SPRITE_CLASS)
-	{
-		m_conf.drawlist = &m_drawlist;
-	}
+	m_conf.drawlist = (m_conf.require_full_barrier && m_vt.m_primclass == GS_SPRITE_CLASS) ? &m_drawlist : nullptr;
 
 	m_conf.rt = rt;
 	m_conf.ds = ds;
