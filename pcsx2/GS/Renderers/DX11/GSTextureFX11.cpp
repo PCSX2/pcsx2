@@ -196,7 +196,7 @@ void GSDevice11::SetupPS(PSSelector sel, const GSHWDrawConfig::PSConstantBuffer*
 		i = m_ps.try_emplace(sel.key, std::move(ps)).first;
 	}
 
-	if (m_ps_cb_cache.Update(*cb))
+	if (cb && m_ps_cb_cache.Update(*cb))
 	{
 		m_ctx->UpdateSubresource(m_ps_cb.get(), 0, NULL, cb, 0, 0);
 	}

@@ -1099,7 +1099,7 @@ GSRendererNew::PRIM_OVERLAP GSRendererNew::PrimitiveOverlap()
 	return overlap;
 }
 
-void GSRendererNew::EmulateATST(GSHWDrawConfig::PSConstantBuffer& cb, GSHWDrawConfig::PSSelector& ps, bool pass_2)
+void GSRendererNew::EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, bool pass_2)
 {
 	static const u32 inverted_atst[] = {ATST_ALWAYS, ATST_NEVER, ATST_GEQUAL, ATST_GREATER, ATST_NOTEQUAL, ATST_LESS, ATST_LEQUAL, ATST_EQUAL};
 
@@ -1113,27 +1113,27 @@ void GSRendererNew::EmulateATST(GSHWDrawConfig::PSConstantBuffer& cb, GSHWDrawCo
 	switch (atst)
 	{
 		case ATST_LESS:
-			cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
+			AREF = (float)m_context->TEST.AREF - 0.1f;
 			ps.atst = 1;
 			break;
 		case ATST_LEQUAL:
-			cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
+			AREF = (float)m_context->TEST.AREF - 0.1f + 1.0f;
 			ps.atst = 1;
 			break;
 		case ATST_GEQUAL:
-			cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
+			AREF = (float)m_context->TEST.AREF - 0.1f;
 			ps.atst = 2;
 			break;
 		case ATST_GREATER:
-			cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
+			AREF = (float)m_context->TEST.AREF - 0.1f + 1.0f;
 			ps.atst = 2;
 			break;
 		case ATST_EQUAL:
-			cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
+			AREF = (float)m_context->TEST.AREF;
 			ps.atst = 3;
 			break;
 		case ATST_NOTEQUAL:
-			cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
+			AREF = (float)m_context->TEST.AREF;
 			ps.atst = 4;
 			break;
 		case ATST_NEVER: // Draw won't be done so no need to implement it in shader
@@ -1441,7 +1441,12 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 	else
 	{
-		EmulateATST(m_conf.cb_ps, m_conf.ps, false);
+		float aref = m_conf.cb_ps.FogColor_AREF.a;
+		EmulateATST(aref, m_conf.ps, false);
+
+		// avoid redundant cbuffer updates
+		m_conf.cb_ps.FogColor_AREF.a = aref;
+		m_conf.alpha_second_pass.ps_aref = aref;
 	}
 
 	if (tex)
@@ -1507,7 +1512,6 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	if (ate_second_pass)
 	{
 		ASSERT(!m_env.PABE.PABE);
-		memcpy(&m_conf.alpha_second_pass.cb_ps,     &m_conf.cb_ps,     sizeof(m_conf.cb_ps));
 		memcpy(&m_conf.alpha_second_pass.ps,        &m_conf.ps,        sizeof(m_conf.ps));
 		memcpy(&m_conf.alpha_second_pass.colormask, &m_conf.colormask, sizeof(m_conf.colormask));
 		memcpy(&m_conf.alpha_second_pass.depth,     &m_conf.depth,     sizeof(m_conf.depth));
@@ -1516,13 +1520,13 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		{
 			// Enable ATE as first pass to update the depth
 			// of pixels that passed the alpha test
-			EmulateATST(m_conf.alpha_second_pass.cb_ps, m_conf.alpha_second_pass.ps, false);
+			EmulateATST(m_conf.alpha_second_pass.ps_aref, m_conf.alpha_second_pass.ps, false);
 		}
 		else
 		{
 			// second pass will process the pixels that failed
 			// the alpha test
-			EmulateATST(m_conf.alpha_second_pass.cb_ps, m_conf.alpha_second_pass.ps, true);
+			EmulateATST(m_conf.alpha_second_pass.ps_aref, m_conf.alpha_second_pass.ps, true);
 		}
 
 
@@ -1575,10 +1579,10 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			return;
 
 		// RenderHW always renders first pass, replace first pass with second
-		memcpy(&m_conf.cb_ps,     &m_conf.alpha_second_pass.cb_ps,     sizeof(m_conf.cb_ps));
 		memcpy(&m_conf.ps,        &m_conf.alpha_second_pass.ps,        sizeof(m_conf.ps));
 		memcpy(&m_conf.colormask, &m_conf.alpha_second_pass.colormask, sizeof(m_conf.colormask));
 		memcpy(&m_conf.depth,     &m_conf.alpha_second_pass.depth,     sizeof(m_conf.depth));
+		m_conf.cb_ps.FogColor_AREF.a = m_conf.alpha_second_pass.ps_aref;
 		m_conf.alpha_second_pass.enable = false;
 	}
 
