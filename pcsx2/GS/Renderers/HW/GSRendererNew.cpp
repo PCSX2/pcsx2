@@ -1494,16 +1494,16 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	const GSVector4& hacked_scissor = m_channel_shuffle ? GSVector4(0, 0, 1024, 1024) : m_context->scissor.in;
 	const GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * hacked_scissor).rintersect(GSVector4i(rtsize).zwxy());
 
-	const GSVector4i commitRect = ComputeBoundingBox(rtscale, rtsize);
-	m_conf.scissor = (DATE && !DATE_GL45) ? scissor.rintersect(commitRect) : scissor;
+	m_conf.drawarea = scissor.rintersect(ComputeBoundingBox(rtscale, rtsize));
+	m_conf.scissor = (DATE && !DATE_GL45) ? m_conf.drawarea : scissor;
 
 	SetupIA(sx, sy);
 
 	if (rt)
-		rt->CommitRegion(GSVector2i(commitRect.z, commitRect.w));
+		rt->CommitRegion(GSVector2i(m_conf.drawarea.z, m_conf.drawarea.w));
 
 	if (ds)
-		ds->CommitRegion(GSVector2i(commitRect.z, commitRect.w));
+		ds->CommitRegion(GSVector2i(m_conf.drawarea.z, m_conf.drawarea.w));
 
 	m_conf.alpha_second_pass.enable = ate_second_pass;
 
