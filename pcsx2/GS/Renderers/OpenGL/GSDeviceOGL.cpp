@@ -2005,8 +2005,11 @@ static GSDeviceOGL::VSSelector convertSel(const GSHWDrawConfig::VSSelector sel)
 
 void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 {
-	glScissor(config.scissor.x, config.scissor.y, config.scissor.width(), config.scissor.height());
-	GLState::scissor = config.scissor;
+	if (!GLState::scissor.eq(config.scissor))
+	{
+		glScissor(config.scissor.x, config.scissor.y, config.scissor.width(), config.scissor.height());
+		GLState::scissor = config.scissor;
+	}
 
 	// Destination Alpha Setup
 	switch (config.destination_alpha)
