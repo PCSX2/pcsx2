@@ -183,7 +183,6 @@ public:
 
 	struct alignas(32) MiscConstantBuffer
 	{
-		GSVector4i ScalingFactor;
 		GSVector4i EMOD_AC;
 
 		MiscConstantBuffer() { memset(this, 0, sizeof(*this)); }
@@ -195,6 +194,7 @@ public:
 private:
 	std::unique_ptr<GL::Context> m_gl_context;
 	int m_mipmap;
+	int m_upscale_multiplier;
 	TriFiltering m_filter;
 
 	static bool m_debug_gl_call;

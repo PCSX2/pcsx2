@@ -47,8 +47,6 @@ out gl_PerVertex {
 #ifdef FRAGMENT_SHADER
 layout(std140, binding = 15) uniform cb15
 {
-    ivec4 ScalingFactor;
-
     int EMODA;
     int EMODC;
     ivec2 pad_cb15;

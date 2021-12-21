@@ -67,6 +67,7 @@ GSDeviceOGL::GSDeviceOGL()
 	GLState::Clear();
 
 	m_mipmap = theApp.GetConfigI("mipmap");
+	m_upscale_multiplier = std::max(1, theApp.GetConfigI("upscale_multiplier"));
 	if (theApp.GetConfigB("UserHacks"))
 		m_filter = static_cast<TriFiltering>(theApp.GetConfigI("UserHacks_TriFilter"));
 	else
@@ -381,11 +382,6 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 		GL_PUSH("GSDeviceOGL::Convert");
 
 		m_convert.cb = new GSUniformBufferOGL("Misc UBO", g_convert_index, sizeof(MiscConstantBuffer));
-		// Upload once and forget about it.
-		// Use value of 1 when upscale multiplier is 0 for ScalingFactor,
-		// this is to avoid doing math with 0 in shader. It helps custom res be less broken.
-		m_misc_cb_cache.ScalingFactor = GSVector4i(std::max(1, theApp.GetConfigI("upscale_multiplier")));
-		m_convert.cb->cache_upload(&m_misc_cb_cache);
 
 		const auto shader = Host::ReadResourceFileToString("shaders/opengl/convert.glsl");
 		if (!shader.has_value())
@@ -397,7 +393,10 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 		for (size_t i = 0; i < std::size(m_convert.ps); i++)
 		{
 			const char* name = shaderName(static_cast<ShaderConvert>(i));
-			ps = m_shader->Compile("convert.glsl", name, GL_FRAGMENT_SHADER, m_shader_common_header, shader->c_str());
+			const std::string macro_sel = (static_cast<ShaderConvert>(i) == ShaderConvert::RGBA_TO_8I) ?
+                                              format("#define PS_SCALE_FACTOR %d\n", m_upscale_multiplier) :
+                                              std::string();
+			ps = m_shader->Compile("convert.glsl", name, GL_FRAGMENT_SHADER, m_shader_common_header, shader->c_str(), macro_sel);
 			std::string pretty_name = std::string("Convert pipe ") + name;
 			m_convert.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
@@ -1009,6 +1008,7 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		+ format("#define PS_DITHER %d\n", sel.dither)
 		+ format("#define PS_ZCLAMP %d\n", sel.zclamp)
 		+ format("#define PS_PABE %d\n", sel.pabe)
+		+ format("#define PS_SCALE_FACTOR %d\n", m_upscale_multiplier)
 	;
 
 	if (GLLoader::buggy_sso_dual_src)
