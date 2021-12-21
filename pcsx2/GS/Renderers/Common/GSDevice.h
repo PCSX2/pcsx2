@@ -135,7 +135,7 @@ struct HWBlend
 	u16 flags, op, src, dst;
 };
 
-struct GSHWDrawConfig
+struct alignas(16) GSHWDrawConfig
 {
 	enum class Topology: u8
 	{
@@ -476,9 +476,6 @@ struct GSHWDrawConfig
 	DestinationAlphaMode destination_alpha;
 	bool datm;
 
-	VSConstantBuffer cb_vs;
-	PSConstantBuffer cb_ps;
-
 	struct AlphaSecondPass
 	{
 		bool enable;
@@ -487,6 +484,9 @@ struct GSHWDrawConfig
 		PSSelector ps;
 		float ps_aref;
 	} alpha_second_pass;
+
+	VSConstantBuffer cb_vs;
+	PSConstantBuffer cb_ps;
 };
 
 class GSDevice : public GSAlignedClass<32>
