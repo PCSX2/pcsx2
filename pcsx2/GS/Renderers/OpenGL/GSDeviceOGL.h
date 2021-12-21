@@ -123,41 +123,6 @@ public:
 class GSDeviceOGL final : public GSDevice
 {
 public:
-	struct alignas(32) VSConstantBuffer
-	{
-		GSVector4 Vertex_Scale_Offset;
-
-		GSVector4 Texture_Scale_Offset;
-
-		GSVector2 PointSize;
-		GSVector2i MaxDepth;
-
-		VSConstantBuffer()
-		{
-			Vertex_Scale_Offset  = GSVector4::zero();
-			Texture_Scale_Offset = GSVector4::zero();
-			PointSize            = GSVector2(0);
-			MaxDepth             = GSVector2i(0);
-		}
-
-		__forceinline bool Update(const VSConstantBuffer* cb)
-		{
-			GSVector4i* a = (GSVector4i*)this;
-			GSVector4i* b = (GSVector4i*)cb;
-
-			if (!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2])).alltrue())
-			{
-				a[0] = b[0];
-				a[1] = b[1];
-				a[2] = b[2];
-
-				return true;
-			}
-
-			return false;
-		}
-	};
-
 	struct VSSelector
 	{
 		union
@@ -211,67 +176,6 @@ public:
 		}
 	};
 
-	struct alignas(32) PSConstantBuffer
-	{
-		GSVector4 FogColor_AREF;
-		GSVector4 WH;
-		GSVector4 TA_MaxDepth_Af;
-		GSVector4i MskFix;
-		GSVector4i FbMask;
-
-		GSVector4 HalfTexel;
-		GSVector4 MinMax;
-		GSVector4 TC_OH;
-
-		GSVector4 DitherMatrix[4];
-
-		PSConstantBuffer()
-		{
-			FogColor_AREF  = GSVector4::zero();
-			HalfTexel      = GSVector4::zero();
-			WH             = GSVector4::zero();
-			TA_MaxDepth_Af = GSVector4::zero();
-			MinMax         = GSVector4::zero();
-			MskFix         = GSVector4i::zero();
-			TC_OH          = GSVector4::zero();
-			FbMask         = GSVector4i::zero();
-
-			DitherMatrix[0] = GSVector4::zero();
-			DitherMatrix[1] = GSVector4::zero();
-			DitherMatrix[2] = GSVector4::zero();
-			DitherMatrix[3] = GSVector4::zero();
-		}
-
-		__forceinline bool Update(const PSConstantBuffer* cb)
-		{
-			GSVector4i* a = (GSVector4i*)this;
-			GSVector4i* b = (GSVector4i*)cb;
-
-			// if WH matches both HalfTexel and TC_OH_TS do too
-			if (!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4]) & (a[6] == b[6])
-				& (a[8] == b[8]) & (a[9] == b[9]) & (a[10] == b[10]) & (a[11] == b[11])).alltrue())
-			{
-				// Note previous check uses SSE already, a plain copy will be faster than any memcpy
-				a[0] = b[0];
-				a[1] = b[1];
-				a[2] = b[2];
-				a[3] = b[3];
-				a[4] = b[4];
-				a[5] = b[5];
-				a[6] = b[6];
-
-				a[8] = b[8];
-				a[9] = b[9];
-				a[10] = b[10];
-				a[11] = b[11];
-
-				return true;
-			}
-
-			return false;
-		}
-	};
-
 	using PSSelector = GSHWDrawConfig::PSSelector;
 	using PSSamplerSelector = GSHWDrawConfig::SamplerSelector;
 	using OMDepthStencilSelector = GSHWDrawConfig::DepthStencilSelector;
@@ -280,7 +184,6 @@ public:
 	struct alignas(32) MiscConstantBuffer
 	{
 		GSVector4i ScalingFactor;
-		GSVector4i ChannelShuffle;
 		GSVector4i EMOD_AC;
 
 		MiscConstantBuffer() { memset(this, 0, sizeof(*this)); }
@@ -379,8 +282,8 @@ private:
 
 	GLuint m_palette_ss;
 
-	VSConstantBuffer m_vs_cb_cache;
-	PSConstantBuffer m_ps_cb_cache;
+	GSHWDrawConfig::VSConstantBuffer m_vs_cb_cache;
+	GSHWDrawConfig::PSConstantBuffer m_ps_cb_cache;
 	MiscConstantBuffer m_misc_cb_cache;
 
 	std::unique_ptr<GSTexture> m_font;
@@ -476,7 +379,7 @@ public:
 	void SelfShaderTest();
 
 	void SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, const PSSelector& psel);
-	void SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb);
+	void SetupCB(const GSHWDrawConfig::VSConstantBuffer* vs_cb, const GSHWDrawConfig::PSConstantBuffer* ps_cb);
 	void SetupCBMisc(const GSVector4i& channel);
 	void SetupSampler(PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel);

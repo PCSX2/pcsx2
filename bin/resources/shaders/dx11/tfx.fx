@@ -99,35 +99,31 @@ SamplerState PaletteSampler : register(s1);
 
 cbuffer cb0
 {
-	float4 VertexScale;
-	float4 VertexOffset;
-	float4 Texture_Scale_Offset;
+	float2 VertexScale;
+	float2 VertexOffset;
+	float2 TextureScale;
+	float2 TextureOffset;
+	float2 PointSize;
 	uint MaxDepth;
-	uint3 pad_cb0;
+	uint pad_cb0;
 };
 
 cbuffer cb1
 {
 	float3 FogColor;
 	float AREF;
-	float4 HalfTexel;
 	float4 WH;
-	float4 MinMax;
-	float2 MinF;
 	float2 TA;
-	uint4 MskFix;
-	int4 ChannelShuffle;
-	uint4 FbMask;
-	float4 TC_OffsetHack;
-	float Af;
 	float MaxDepthPS;
+	float Af;
+	uint4 MskFix;
+	uint4 FbMask;
+	float4 HalfTexel;
+	float4 MinMax;
+	int4 ChannelShuffle;
+	float2 TC_OffsetHack;
 	float2 pad_cb1;
 	float4x4 DitherMatrix;
-};
-
-cbuffer cb2
-{
-	float2 PointSize;
 };
 
 float4 sample_c(float2 uv)
@@ -801,17 +797,18 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	// input granularity is 1/16 pixel, anything smaller than that won't step drawing up/left by one pixel
 	// example: 133.0625 (133 + 1/16) should start from line 134, ceil(133.0625 - 0.05) still above 133
 
-	float4 p = float4(input.p, input.z, 0) - float4(0.05f, 0.05f, 0, 0);
+	output.p = float4(input.p, input.z, 1.0f) - float4(0.05f, 0.05f, 0, 0);
 
-	output.p = p * VertexScale - VertexOffset;
+	output.p.xy = output.p.xy * float2(VertexScale.x, -VertexScale.y) - float2(VertexOffset.x, -VertexOffset.y);
+	output.p.z *= exp2(-32.0f);		// integer->float depth
 
 	if(VS_TME)
 	{
-		float2 uv = input.uv - Texture_Scale_Offset.zw;
-		float2 st = input.st - Texture_Scale_Offset.zw;
+		float2 uv = input.uv - TextureOffset;
+		float2 st = input.st - TextureOffset;
 
 		// Integer nomalized
-		output.ti.xy = uv * Texture_Scale_Offset.xy;
+		output.ti.xy = uv * TextureScale;
 
 		if (VS_FST)
 		{
@@ -821,7 +818,7 @@ VS_OUTPUT vs_main(VS_INPUT input)
 		else
 		{
 			// float for post-processing in some games
-			output.ti.zw = st / Texture_Scale_Offset.xy;
+			output.ti.zw = st / TextureScale;
 		}
 		// Float coords
 		output.t.xy = st;
