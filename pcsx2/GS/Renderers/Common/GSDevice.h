@@ -337,107 +337,80 @@ struct GSHWDrawConfig
 		GSVector2 texture_offset;
 		GSVector2 point_size;
 		GSVector2i max_depth;
-		VSConstantBuffer()
+		__fi VSConstantBuffer()
 		{
 			memset(this, 0, sizeof(*this));
 		}
-		VSConstantBuffer(const VSConstantBuffer& other)
+		__fi VSConstantBuffer(const VSConstantBuffer& other)
 		{
 			memcpy(this, &other, sizeof(*this));
 		}
-		VSConstantBuffer& operator=(const VSConstantBuffer& other)
+		__fi VSConstantBuffer& operator=(const VSConstantBuffer& other)
 		{
 			new (this) VSConstantBuffer(other);
 			return *this;
 		}
-		bool operator==(const VSConstantBuffer& other) const
+		__fi bool operator==(const VSConstantBuffer& other) const
 		{
 			return BitEqual(*this, other);
 		}
-		bool operator!=(const VSConstantBuffer& other) const
+		__fi bool operator!=(const VSConstantBuffer& other) const
 		{
 			return !(*this == other);
+		}
+		__fi bool Update(const VSConstantBuffer& other)
+		{
+			if (*this == other)
+				return false;
+
+			memcpy(this, &other, sizeof(*this));
+			return true;
 		}
 	};
 	struct alignas(16) PSConstantBuffer
 	{
-		union
-		{
-			struct
-			{
-				u8 fog_color[3];
-				u8 aref;
-			};
-			u32 fog_color_aref;
-		};
-		union
-		{
-			struct
-			{
-				u8 r, g, b, a;
-			} fbmask;
-			u32 fbmask_int;
-		};
-		u32 max_depth;
-		union
-		{
-			struct
-			{
-				u8 ta0;
-				u8 ta1;
-				u8 _pad;
-				u8 alpha_fix;
-			};
-			u32 ta_af;
-		};
-		union
-		{
-			struct
-			{
-				u8 blue_mask;
-				u8 blue_shift;
-				u8 green_mask;
-				u8 green_shift;
-			} channel_shuffle;
-			u32 channel_shuffle_int;
-		};
-		union
-		{
-			struct
-			{
-				u16 umsk;
-				u16 vmsk;
-				u16 ufix;
-				u16 vfix;
-			};
-			u64 uv_msk_fix;
-		};
-		GIFRegDIMX dither_matrix;
-		GSVector2 tc_offset;
-		GSVector4 texture_size; // xy → PS2 size, wz → emulator size
+		GSVector4 FogColor_AREF;
+		GSVector4 WH;
+		GSVector4 TA_MaxDepth_Af;
+		GSVector4i MskFix;
+		GSVector4i FbMask;
 
-		GSVector4 half_texel;
-		GSVector4 uv_min_max;
-		PSConstantBuffer()
+		GSVector4 HalfTexel;
+		GSVector4 MinMax;
+		GSVector4i ChannelShuffle;
+		GSVector2 TCOffsetHack;
+		float pad1[2];
+
+		GSVector4 DitherMatrix[4];
+
+		__fi PSConstantBuffer()
 		{
 			memset(this, 0, sizeof(*this));
 		}
-		PSConstantBuffer(const PSConstantBuffer& other)
+		__fi PSConstantBuffer(const PSConstantBuffer& other)
 		{
 			memcpy(this, &other, sizeof(*this));
 		}
-		PSConstantBuffer& operator=(const PSConstantBuffer& other)
+		__fi PSConstantBuffer& operator=(const PSConstantBuffer& other)
 		{
 			new (this) PSConstantBuffer(other);
 			return *this;
 		}
-		bool operator==(const PSConstantBuffer& other) const
+		__fi bool operator==(const PSConstantBuffer& other) const
 		{
 			return BitEqual(*this, other);
 		}
-		bool operator!=(const PSConstantBuffer& other) const
+		__fi bool operator!=(const PSConstantBuffer& other) const
 		{
 			return !(*this == other);
+		}
+		__fi bool Update(const PSConstantBuffer& other)
+		{
+			if (*this == other)
+				return false;
+
+			memcpy(this, &other, sizeof(*this));
+			return true;
 		}
 	};
 	struct BlendState

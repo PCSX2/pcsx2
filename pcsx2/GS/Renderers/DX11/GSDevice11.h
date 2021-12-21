@@ -31,129 +31,13 @@ struct GSVertexShader11
 class GSDevice11 final : public GSDevice
 {
 public:
-#pragma pack(push, 1)
-
-	struct alignas(32) VSConstantBuffer
-	{
-		GSVector4 VertexScale;
-		GSVector4 VertexOffset;
-		GSVector4 Texture_Scale_Offset;
-		GSVector2i MaxDepth;
-		GSVector2i pad_vscb;
-
-		VSConstantBuffer()
-		{
-			VertexScale          = GSVector4::zero();
-			VertexOffset         = GSVector4::zero();
-			Texture_Scale_Offset = GSVector4::zero();
-			MaxDepth             = GSVector2i(0);
-			pad_vscb             = GSVector2i(0);
-		}
-
-		__forceinline bool Update(const VSConstantBuffer* cb)
-		{
-			GSVector4i* a = (GSVector4i*)this;
-			GSVector4i* b = (GSVector4i*)cb;
-
-			if (!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3])).alltrue())
-			{
-				a[0] = b[0];
-				a[1] = b[1];
-				a[2] = b[2];
-				a[3] = b[3];
-
-				return true;
-			}
-
-			return false;
-		}
-	};
-
-	struct alignas(32) PSConstantBuffer
-	{
-		GSVector4 FogColor_AREF;
-		GSVector4 HalfTexel;
-		GSVector4 WH;
-		GSVector4 MinMax;
-		GSVector4 MinF_TA;
-		GSVector4i MskFix;
-		GSVector4i ChannelShuffle;
-		GSVector4i FbMask;
-
-		GSVector4 TC_OffsetHack;
-		GSVector4 Af_MaxDepth;
-		GSVector4 DitherMatrix[4];
-
-		PSConstantBuffer()
-		{
-			FogColor_AREF = GSVector4::zero();
-			HalfTexel = GSVector4::zero();
-			WH = GSVector4::zero();
-			MinMax = GSVector4::zero();
-			MinF_TA = GSVector4::zero();
-			MskFix = GSVector4i::zero();
-			ChannelShuffle = GSVector4i::zero();
-			FbMask = GSVector4i::zero();
-			Af_MaxDepth = GSVector4::zero();
-
-			DitherMatrix[0] = GSVector4::zero();
-			DitherMatrix[1] = GSVector4::zero();
-			DitherMatrix[2] = GSVector4::zero();
-			DitherMatrix[3] = GSVector4::zero();
-		}
-
-		__forceinline bool Update(const PSConstantBuffer* cb)
-		{
-			GSVector4i* a = (GSVector4i*)this;
-			GSVector4i* b = (GSVector4i*)cb;
-
-			if (!((a[0] == b[0]) /*& (a[1] == b1)*/ & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4]) & (a[5] == b[5]) &
-				(a[6] == b[6]) & (a[7] == b[7]) & (a[9] == b[9]) & // if WH matches HalfTexel does too
-				(a[10] == b[10]) & (a[11] == b[11]) & (a[12] == b[12]) & (a[13] == b[13])).alltrue())
-			{
-				a[0] = b[0];
-				a[1] = b[1];
-				a[2] = b[2];
-				a[3] = b[3];
-				a[4] = b[4];
-				a[5] = b[5];
-				a[6] = b[6];
-				a[7] = b[7];
-				a[9] = b[9];
-
-				a[10] = b[10];
-				a[11] = b[11];
-				a[12] = b[12];
-				a[13] = b[13];
-
-				return true;
-			}
-
-			return false;
-		}
-	};
-
-	struct alignas(32) GSConstantBuffer
-	{
-		GSVector2 PointSize;
-
-		GSConstantBuffer()
-		{
-			PointSize = GSVector2(0);
-		}
-
-		__forceinline bool Update(const GSConstantBuffer* cb)
-		{
-			return true;
-		}
-	};
-
 	using VSSelector = GSHWDrawConfig::VSSelector;
 	using GSSelector = GSHWDrawConfig::GSSelector;
 	using PSSelector = GSHWDrawConfig::PSSelector;
 	using PSSamplerSelector = GSHWDrawConfig::SamplerSelector;
 	using OMDepthStencilSelector = GSHWDrawConfig::DepthStencilSelector;
 
+#pragma pack(push, 1)
 	struct OMBlendSelector
 	{
 		union
@@ -332,7 +216,6 @@ private:
 	std::unordered_map<u32, GSVertexShader11> m_vs;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_vs_cb;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11GeometryShader>> m_gs;
-	wil::com_ptr_nothrow<ID3D11Buffer> m_gs_cb;
 	std::unordered_map<u64, wil::com_ptr_nothrow<ID3D11PixelShader>> m_ps;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_ps_cb;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11SamplerState>> m_ps_ss;
@@ -340,9 +223,8 @@ private:
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11DepthStencilState>> m_om_dss;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11BlendState>> m_om_bs;
 
-	VSConstantBuffer m_vs_cb_cache;
-	GSConstantBuffer m_gs_cb_cache;
-	PSConstantBuffer m_ps_cb_cache;
+	GSHWDrawConfig::VSConstantBuffer m_vs_cb_cache;
+	GSHWDrawConfig::PSConstantBuffer m_ps_cb_cache;
 
 	std::unique_ptr<GSTexture> m_font;
 	std::unique_ptr<GSTexture11> m_download_tex;
@@ -415,9 +297,9 @@ public:
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL);
 
 	bool CreateTextureFX();
-	void SetupVS(VSSelector sel, const VSConstantBuffer* cb);
-	void SetupGS(GSSelector sel, const GSConstantBuffer* cb);
-	void SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSelector ssel);
+	void SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer* cb);
+	void SetupGS(GSSelector sel);
+	void SetupPS(PSSelector sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 afix);
 
 	void RenderHW(GSHWDrawConfig& config) final;

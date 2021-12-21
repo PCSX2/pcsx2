@@ -48,7 +48,6 @@ out gl_PerVertex {
 layout(std140, binding = 15) uniform cb15
 {
     ivec4 ScalingFactor;
-    ivec4 ChannelShuffle;
 
     int EMODA;
     int EMODC;
@@ -91,8 +90,10 @@ layout(std140, binding = 21) uniform cb21
 
     vec4 MinMax;
 
-    vec2 pad_cb21;
+    ivec4 ChannelShuffle;
+
     vec2 TC_OffsetHack;
+    vec2 pad_cb21;
 
     mat4 DitherMatrix;
 };

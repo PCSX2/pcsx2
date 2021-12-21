@@ -1907,20 +1907,20 @@ __fi static void WriteToStreamBuffer(GL::StreamBuffer* sb, u32 index, u32 align,
 	glBindBufferRange(GL_UNIFORM_BUFFER, index, sb->GetGLBufferId(), res.buffer_offset, size);
 }
 
-void GSDeviceOGL::SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb)
+void GSDeviceOGL::SetupCB(const GSHWDrawConfig::VSConstantBuffer* vs_cb, const GSHWDrawConfig::PSConstantBuffer* ps_cb)
 {
 	GL_PUSH("UBO");
 
-	if (m_vs_cb_cache.Update(vs_cb))
+	if (m_vs_cb_cache.Update(*vs_cb))
 	{
 		WriteToStreamBuffer(m_vertex_uniform_stream_buffer.get(), g_vs_cb_index,
-			m_uniform_buffer_alignment, vs_cb, sizeof(VSConstantBuffer));
+			m_uniform_buffer_alignment, vs_cb, sizeof(GSHWDrawConfig::VSConstantBuffer));
 	}
 
-	if (m_ps_cb_cache.Update(ps_cb))
+	if (m_ps_cb_cache.Update(*ps_cb))
 	{
 		WriteToStreamBuffer(m_fragment_uniform_stream_buffer.get(), g_ps_cb_index,
-			m_uniform_buffer_alignment, ps_cb, sizeof(PSConstantBuffer));
+			m_uniform_buffer_alignment, ps_cb, sizeof(GSHWDrawConfig::PSConstantBuffer));
 	}
 }
 
@@ -2019,44 +2019,6 @@ void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel)
 	OMSetDepthStencilState(m_om_dss[dssel.key]);
 }
 
-static GSDeviceOGL::VSConstantBuffer convertCB(const GSHWDrawConfig::VSConstantBuffer& cb)
-{
-	GSDeviceOGL::VSConstantBuffer out;
-	out.Vertex_Scale_Offset = GSVector4::loadl(&cb.vertex_scale).upld(GSVector4::loadl(&cb.vertex_offset));
-	out.Texture_Scale_Offset = GSVector4::loadl(&cb.texture_scale).upld(GSVector4::loadl(&cb.texture_offset));
-	out.PointSize = cb.point_size;
-	out.MaxDepth = cb.max_depth;
-	return out;
-}
-
-static GSDeviceOGL::PSConstantBuffer convertCB(const GSHWDrawConfig::PSConstantBuffer& cb, int atst)
-{
-	GSDeviceOGL::PSConstantBuffer out;
-	out.FogColor_AREF = GSVector4(GSVector4i::load(cb.fog_color_aref).u8to32());
-	if (atst == 1 || atst == 2) // Greater / Less alpha
-		out.FogColor_AREF.w -= 0.1f;
-	out.WH = cb.texture_size;
-	out.TA_MaxDepth_Af = GSVector4(GSVector4i::load(cb.ta_af).u8to32()) / GSVector4(255.f, 255.f, 1.f, 128.f);
-	out.TA_MaxDepth_Af.z = cb.max_depth * ldexpf(1, -32);
-	out.MskFix = GSVector4i::loadl(&cb.uv_msk_fix).u16to32();
-	out.FbMask = GSVector4i::load(cb.fbmask_int).u8to32();
-	out.HalfTexel = cb.half_texel;
-	out.MinMax = cb.uv_min_max;
-	out.TC_OH = GSVector4::zero().upld(GSVector4(cb.tc_offset));
-
-	GSVector4i dither = GSVector4i::loadl(&cb.dither_matrix).u8to16();
-	const GSVector4i ditherLow = dither.sll16(13).sra16(13);
-	const GSVector4i ditherHi  = dither.sll16( 9).sra16( 5);
-	dither = ditherLow.blend8(ditherHi, GSVector4i(0xFF00FF00));
-
-	out.DitherMatrix[0] = GSVector4(dither.xxxx().i8to32());
-	out.DitherMatrix[1] = GSVector4(dither.yyyy().i8to32());
-	out.DitherMatrix[2] = GSVector4(dither.zzzz().i8to32());
-	out.DitherMatrix[3] = GSVector4(dither.wwww().i8to32());
-
-	return out;
-}
-
 static GSDeviceOGL::VSSelector convertSel(const GSHWDrawConfig::VSSelector sel)
 {
 	GSDeviceOGL::VSSelector out;
@@ -2137,14 +2099,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	OMSetColorMaskState(config.colormask);
 	SetupOM(config.depth);
 
-	VSConstantBuffer cb_vs = convertCB(config.cb_vs);
-	PSConstantBuffer cb_ps = convertCB(config.cb_ps, config.ps.atst);
-	SetupCB(&cb_vs, &cb_ps);
-
-	if (config.cb_ps.channel_shuffle_int)
-	{
-		SetupCBMisc(GSVector4i::load(config.cb_ps.channel_shuffle_int).u8to32());
-	}
+	SetupCB(&config.cb_vs, &config.cb_ps);
 
 	GSSelector gssel;
 	if (config.gs.expand)
@@ -2198,11 +2153,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	if (config.alpha_second_pass.enable)
 	{
-		if (config.cb_ps != config.alpha_second_pass.cb_ps)
-		{
-			cb_ps = convertCB(config.alpha_second_pass.cb_ps, config.alpha_second_pass.ps.atst);
-			SetupCB(&cb_vs, &cb_ps);
-		}
+		SetupCB(&config.cb_vs, &config.alpha_second_pass.cb_ps);
 		SetupPipeline(vssel, gssel, config.alpha_second_pass.ps);
 		OMSetColorMaskState(config.alpha_second_pass.colormask);
 		SetupOM(config.alpha_second_pass.depth);

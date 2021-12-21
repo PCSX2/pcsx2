@@ -26,7 +26,7 @@ bool GSDevice11::CreateTextureFX()
 
 	memset(&bd, 0, sizeof(bd));
 
-	bd.ByteWidth = sizeof(VSConstantBuffer);
+	bd.ByteWidth = sizeof(GSHWDrawConfig::VSConstantBuffer);
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
@@ -37,18 +37,7 @@ bool GSDevice11::CreateTextureFX()
 
 	memset(&bd, 0, sizeof(bd));
 
-	bd.ByteWidth = sizeof(GSConstantBuffer);
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-
-	hr = m_dev->CreateBuffer(&bd, nullptr, m_gs_cb.put());
-
-	if (FAILED(hr))
-		return false;
-
-	memset(&bd, 0, sizeof(bd));
-
-	bd.ByteWidth = sizeof(PSConstantBuffer);
+	bd.ByteWidth = sizeof(GSHWDrawConfig::PSConstantBuffer);
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
@@ -78,20 +67,18 @@ bool GSDevice11::CreateTextureFX()
 	// create layout
 
 	VSSelector sel;
-	VSConstantBuffer cb;
+	GSHWDrawConfig::VSConstantBuffer cb;
 
 	SetupVS(sel, &cb);
 
-	GSConstantBuffer gcb;
-
-	SetupGS(GSSelector(1), &gcb);
+	SetupGS(GSSelector(1));
 
 	//
 
 	return true;
 }
 
-void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
+void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer* cb)
 {
 	auto i = std::as_const(m_vs).find(sel.key);
 
@@ -119,7 +106,7 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 		i = m_vs.try_emplace(sel.key, std::move(vs)).first;
 	}
 
-	if (m_vs_cb_cache.Update(cb))
+	if (m_vs_cb_cache.Update(*cb))
 	{
 		m_ctx->UpdateSubresource(m_vs_cb.get(), 0, NULL, cb, 0, 0);
 	}
@@ -129,7 +116,7 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 	IASetInputLayout(i->second.il.get());
 }
 
-void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
+void GSDevice11::SetupGS(GSSelector sel)
 {
 	wil::com_ptr_nothrow<ID3D11GeometryShader> gs;
 
@@ -157,16 +144,10 @@ void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
 		}
 	}
 
-
-	if (m_gs_cb_cache.Update(cb))
-	{
-		m_ctx->UpdateSubresource(m_gs_cb.get(), 0, NULL, cb, 0, 0);
-	}
-
-	GSSetShader(gs.get(), m_gs_cb.get());
+	GSSetShader(gs.get(), m_vs_cb.get());
 }
 
-void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSelector ssel)
+void GSDevice11::SetupPS(PSSelector sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel)
 {
 	auto i = std::as_const(m_ps).find(sel.key);
 
@@ -215,7 +196,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		i = m_ps.try_emplace(sel.key, std::move(ps)).first;
 	}
 
-	if (m_ps_cb_cache.Update(cb))
+	if (m_ps_cb_cache.Update(*cb))
 	{
 		m_ctx->UpdateSubresource(m_ps_cb.get(), 0, NULL, cb, 0, 0);
 	}
