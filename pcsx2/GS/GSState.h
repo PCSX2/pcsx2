@@ -139,6 +139,9 @@ class GSState : public GSAlignedClass<32>
 
 	} m_tr;
 
+private:
+	void CalcAlphaMinMax();
+
 protected:
 	bool IsBadFrame();
 	void SetupCrcHack();
@@ -186,9 +189,13 @@ protected:
 	// following functions need m_vt to be initialized
 
 	GSVertexTrace m_vt;
-
+	GSVertexTrace::VertexAlpha& GetAlphaMinMax()
+	{
+		if (!m_vt.m_alpha.valid)
+			CalcAlphaMinMax();
+		return m_vt.m_alpha;
+	}
 	void GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFRegCLAMP& CLAMP, bool linear);
-	void GetAlphaMinMax();
 	bool TryAlphaTest(u32& fm, u32& zm);
 	bool IsOpaque();
 	bool IsMipMapDraw();

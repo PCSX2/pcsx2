@@ -2736,7 +2736,7 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 	r = vr;
 }
 
-void GSState::GetAlphaMinMax()
+void GSState::CalcAlphaMinMax()
 {
 	if (m_vt.m_alpha.valid)
 		return;
@@ -2841,12 +2841,10 @@ bool GSState::TryAlphaTest(u32& fm, u32& zm)
 	}
 	else
 	{
-		GetAlphaMinMax();
+		const int amin = GetAlphaMinMax().min;
+		const int amax = GetAlphaMinMax().max;
 
-		int amin = m_vt.m_alpha.min;
-		int amax = m_vt.m_alpha.max;
-
-		int aref = m_context->TEST.AREF;
+		const int aref = m_context->TEST.AREF;
 
 		switch (m_context->TEST.ATST)
 		{
@@ -2951,10 +2949,8 @@ bool GSState::IsOpaque()
 	{
 		if (context->ALPHA.C == 0)
 		{
-			GetAlphaMinMax();
-
-			amin = m_vt.m_alpha.min;
-			amax = m_vt.m_alpha.max;
+			amin = GetAlphaMinMax().min;
+			amax = GetAlphaMinMax().max;
 		}
 		else if (context->ALPHA.C == 1)
 		{

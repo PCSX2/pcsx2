@@ -544,11 +544,8 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 	const bool blend_mix2 = !!(blend_flag & BLEND_MIX2);
 	const bool blend_mix3 = !!(blend_flag & BLEND_MIX3);
 	bool blend_mix = (blend_mix1 || blend_mix2 || blend_mix3);
-	// Checking alpha mix is costly, isolate it as an optimization.
-	if (!m_vt.m_alpha.valid && blend_mix && (ALPHA.C == 0))
-		GetAlphaMinMax();
 	// Do not enable if As > 128 or F > 128, hw blend clamps to 1
-	blend_mix &= !((ALPHA.C == 0 && m_vt.m_alpha.max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
+	blend_mix &= !((ALPHA.C == 0 && GetAlphaMinMax().max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
 
 	// SW Blend is (nearly) free. Let's use it.
 	const bool impossible_or_free_blend = (blend_flag & BLEND_A_MAX) // Impossible blending
@@ -568,7 +565,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 				sw_blending |= true;
 				[[fallthrough]];
 			case AccBlendLevel::Full:
-				sw_blending |= (ALPHA.A != ALPHA.B) && ((ALPHA.C == 0 && m_vt.m_alpha.max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
+				sw_blending |= (ALPHA.A != ALPHA.B) && ((ALPHA.C == 0 && GetAlphaMinMax().max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
 				[[fallthrough]];
 			case AccBlendLevel::High:
 				sw_blending |= (ALPHA.C == 1);
@@ -1241,24 +1238,23 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			// Performance note: check alpha range with GetAlphaMinMax()
 			// Note: all my dump are already above 120fps, but it seems to reduce GPU load
 			// with big upscaling
-			GetAlphaMinMax();
-			if (m_context->TEST.DATM && m_vt.m_alpha.max < 128)
+			if (m_context->TEST.DATM && GetAlphaMinMax().max < 128)
 			{
 				// Only first pixel (write 0) will pass (alpha is 1)
-				GL_PERF("DATE: Fast with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+				GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
 				DATE_one = true;
 			}
-			else if (!m_context->TEST.DATM && m_vt.m_alpha.min >= 128)
+			else if (!m_context->TEST.DATM && GetAlphaMinMax().min >= 128)
 			{
 				// Only first pixel (write 1) will pass (alpha is 0)
-				GL_PERF("DATE: Fast with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+				GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
 				DATE_one = true;
 			}
 			else if ((m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 50) || (m_index.tail < 100))
 			{
 				// texture barrier will split the draw call into n draw call. It is very efficient for
 				// few primitive draws. Otherwise it sucks.
-				GL_PERF("DATE: Slow with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+				GL_PERF("DATE: Slow with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
 				if (m_dev->Features().texture_barrier)
 				{
 					m_conf.require_full_barrier = true;
@@ -1268,7 +1264,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			else if (m_accurate_date)
 			{
 				// Note: Fast level (DATE_one) was removed as it's less accurate.
-				GL_PERF("DATE: Full AD with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+				GL_PERF("DATE: Full AD with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
 				if (m_dev->Features().image_load_store)
 				{
 					DATE_GL42 = true;
