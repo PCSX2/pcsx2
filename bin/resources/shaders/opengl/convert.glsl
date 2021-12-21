@@ -226,9 +226,9 @@ void ps_convert_rgba_8i()
     int txN  = tb.x | (int(gl_FragCoord.x) & 7);
     int txH  = tb.x | ((int(gl_FragCoord.x) + 4) & 7);
 
-    txN *= ScalingFactor.x;
-    txH *= ScalingFactor.x;
-    ty  *= ScalingFactor.y;
+    txN *= PS_SCALE_FACTOR;
+    txH *= PS_SCALE_FACTOR;
+    ty  *= PS_SCALE_FACTOR;
 
     // TODO investigate texture gather
     vec4 cN = texelFetch(TextureSampler, ivec2(txN, ty), 0);
