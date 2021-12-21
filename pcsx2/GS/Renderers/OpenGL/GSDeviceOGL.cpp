@@ -2018,14 +2018,14 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		case GSHWDrawConfig::DestinationAlphaMode::Full:
 			break; // No setup
 		case GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking:
-			InitPrimDateTexture(config.rt, config.scissor);
+			InitPrimDateTexture(config.rt, config.drawarea);
 			break;
 		case GSHWDrawConfig::DestinationAlphaMode::StencilOne:
 			ClearStencil(config.ds, 1);
 			break;
 		case GSHWDrawConfig::DestinationAlphaMode::Stencil:
 		{
-			const GSVector4 src = GSVector4(config.scissor) / GSVector4(config.ds->GetSize()).xyxy();
+			const GSVector4 src = GSVector4(config.drawarea) / GSVector4(config.ds->GetSize()).xyxy();
 			const GSVector4 dst = src * 2.f - 1.f;
 			GSVertexPT1 vertices[] =
 			{
@@ -2043,12 +2043,12 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	{
 		GSVector2i size = config.rt->GetSize();
 		hdr_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::FloatColor);
-		hdr_rt->CommitRegion(GSVector2i(config.scissor.z, config.scissor.w));
+		hdr_rt->CommitRegion(GSVector2i(config.drawarea.z, config.drawarea.w));
 		OMSetRenderTargets(hdr_rt, config.ds, &config.scissor);
 
 		// save blend state, since BlitRect destroys it
 		const bool old_blend = GLState::blend;
-		BlitRect(config.rt, config.scissor, config.rt->GetSize(), false, false);
+		BlitRect(config.rt, config.drawarea, config.rt->GetSize(), false, false);
 		if (old_blend)
 		{
 			GLState::blend = old_blend;
@@ -2167,7 +2167,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	if (hdr_rt)
 	{
 		GSVector2i size = config.rt->GetSize();
-		GSVector4 dRect(config.scissor);
+		GSVector4 dRect(config.drawarea);
 		const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
 		StretchRect(hdr_rt, sRect, config.rt, dRect, ShaderConvert::MOD_256, false);
 

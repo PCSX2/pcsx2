@@ -1514,7 +1514,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	if (config.destination_alpha != GSHWDrawConfig::DestinationAlphaMode::Off)
 	{
-		const GSVector4 src = GSVector4(config.scissor) / GSVector4(config.ds->GetSize()).xyxy();
+		const GSVector4 src = GSVector4(config.drawarea) / GSVector4(config.ds->GetSize()).xyxy();
 		const GSVector4 dst = src * 2.0f - 1.0f;
 
 		GSVertexPT1 vertices[] =
@@ -1532,10 +1532,10 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	if (config.ps.hdr)
 	{
 		const GSVector2i size = config.rt->GetSize();
-		const GSVector4 dRect(config.scissor);
+		const GSVector4 dRect(config.drawarea);
 		const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
 		hdr_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::FloatColor);
-		hdr_rt->CommitRegion(GSVector2i(config.scissor.z, config.scissor.w));
+		hdr_rt->CommitRegion(GSVector2i(config.drawarea.z, config.drawarea.w));
 		// Warning: StretchRect must be called before BeginScene otherwise
 		// vertices will be overwritten. Trust me you don't want to do that.
 		StretchRect(config.rt, sRect, hdr_rt, dRect, ShaderConvert::COPY, false);
@@ -1604,7 +1604,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	if (hdr_rt)
 	{
 		const GSVector2i size = config.rt->GetSize();
-		const GSVector4 dRect(config.scissor);
+		const GSVector4 dRect(config.drawarea);
 		const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
 		StretchRect(hdr_rt, sRect, config.rt, dRect, ShaderConvert::MOD_256, false);
 		Recycle(hdr_rt);
