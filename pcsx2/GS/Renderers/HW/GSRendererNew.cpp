@@ -541,8 +541,6 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 	const bool blend_mix2 = !!(blend_flag & BLEND_MIX2);
 	const bool blend_mix3 = !!(blend_flag & BLEND_MIX3);
 	bool blend_mix = (blend_mix1 || blend_mix2 || blend_mix3);
-	// Do not enable if As > 128 or F > 128, hw blend clamps to 1
-	blend_mix &= !((ALPHA.C == 0 && GetAlphaMinMax().max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
 
 	// SW Blend is (nearly) free. Let's use it.
 	const bool impossible_or_free_blend = (blend_flag & BLEND_A_MAX) // Impossible blending
@@ -590,6 +588,8 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 	if (m_sw_blending != AccBlendLevel::None)
 	{
 		blend_mix &= !sw_blending;
+		// Do not enable if As > 128 or F > 128, hw blend clamps to 1
+		blend_mix &= !((ALPHA.C == 0 && GetAlphaMinMax().max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
 		sw_blending |= blend_mix;
 	}
 
