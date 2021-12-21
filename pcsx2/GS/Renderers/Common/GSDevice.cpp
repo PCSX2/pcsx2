@@ -299,11 +299,6 @@ void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dR
 	StretchRect(sTex, GSVector4(0, 0, 1, 1), dTex, dRect, shader, linear);
 }
 
-GSTexture* GSDevice::GetCurrent()
-{
-	return m_current;
-}
-
 void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
 {
 	// KH:COM crashes at startup when booting *through the bios* due to m_merge being NULL.
