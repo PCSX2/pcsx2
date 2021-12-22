@@ -39,6 +39,7 @@ public:
 	u64 start;
 	int pixels;
 	int counter;
+	u8 scanmsk_value;
 
 	GSRasterizerData()
 		: scissor(GSVector4i::zero())
@@ -52,6 +53,7 @@ public:
 		, frame(0)
 		, start(0)
 		, pixels(0)
+		, scanmsk_value(0)
 	{
 		counter = s_counter++;
 	}
@@ -132,6 +134,7 @@ protected:
 	int m_threads;
 	int m_thread_height;
 	u8* m_scanline;
+	u8 m_scanmsk_value;
 	GSVector4i m_scissor;
 	GSVector4 m_fscissor_x;
 	GSVector4 m_fscissor_y;

@@ -1174,6 +1174,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	ResetStates();
 	m_conf.cb_vs.texture_offset = GSVector2(0, 0);
+	m_conf.ps.scanmsk = m_env.SCANMSK.MSK;
 
 	ASSERT(m_dev != NULL);
 
@@ -1299,6 +1300,9 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	{
 		m_conf.blend = {}; // No blending please
 	}
+
+	if (m_conf.ps.scanmsk & 2)
+		DATE_GL42 = false; // to have discard in the shader work correctly
 
 	if (m_conf.ps.dfmt == 1)
 	{

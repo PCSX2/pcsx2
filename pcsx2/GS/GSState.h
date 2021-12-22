@@ -162,6 +162,8 @@ protected:
 	GSVector4i m_ofxy;
 	bool tex_flushed;
 
+	bool m_scanmask_used;
+
 	struct
 	{
 		GSVertex* buff;

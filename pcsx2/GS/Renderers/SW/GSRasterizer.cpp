@@ -40,6 +40,7 @@ GSRasterizer::GSRasterizer(IDrawScanline* ds, int id, int threads, GSPerfMon* pe
 	, m_ds(ds)
 	, m_id(id)
 	, m_threads(threads)
+	, m_scanmsk_value(0)
 {
 	memset(&m_pixels, 0, sizeof(m_pixels));
 	m_primcount = 0;
@@ -158,6 +159,7 @@ void GSRasterizer::Draw(GSRasterizerData* data)
 	m_scissor = data->scissor;
 	m_fscissor_x = GSVector4(data->scissor).xzxz();
 	m_fscissor_y = GSVector4(data->scissor).ywyw();
+	m_scanmsk_value = data->scanmsk_value;
 
 	switch (data->primclass)
 	{
@@ -834,7 +836,7 @@ void GSRasterizer::DrawSprite(const GSVertexSW* vertex, const u32* index)
 
 	GSVertexSW scan = v[0];
 
-	if (m_ds->IsSolidRect())
+	if ((m_scanmsk_value & 2) == 0 && m_ds->IsSolidRect())
 	{
 		if (m_threads == 1)
 		{
@@ -1158,6 +1160,7 @@ void GSRasterizer::Flush(const GSVertexSW* vertex, const u32* index, const GSVer
 
 void GSRasterizer::DrawScanline(int pixels, int left, int top, const GSVertexSW& scan)
 {
+	if ((m_scanmsk_value & 2) && (m_scanmsk_value & 1) == (top & 1)) return;
 	m_pixels.actual += pixels;
 	m_pixels.total += ((left + pixels + (PIXELS_PER_LOOP - 1)) & ~(PIXELS_PER_LOOP - 1)) - (left & ~(PIXELS_PER_LOOP - 1));
 	//m_pixels.total += ((left + pixels + (PIXELS_PER_LOOP - 1)) & ~(PIXELS_PER_LOOP - 1)) - left;
@@ -1169,6 +1172,7 @@ void GSRasterizer::DrawScanline(int pixels, int left, int top, const GSVertexSW&
 
 void GSRasterizer::DrawEdge(int pixels, int left, int top, const GSVertexSW& scan)
 {
+	if ((m_scanmsk_value & 2) && (m_scanmsk_value & 1) == (top & 1)) return;
 	m_pixels.actual += 1;
 	m_pixels.total += PIXELS_PER_LOOP - 1;
 

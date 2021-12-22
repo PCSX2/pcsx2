@@ -1008,6 +1008,7 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		+ format("#define PS_DITHER %d\n", sel.dither)
 		+ format("#define PS_ZCLAMP %d\n", sel.zclamp)
 		+ format("#define PS_PABE %d\n", sel.pabe)
+		+ format("#define PS_SCANMSK %d\n", sel.scanmsk)
 		+ format("#define PS_SCALE_FACTOR %d\n", m_upscale_multiplier)
 	;
 
