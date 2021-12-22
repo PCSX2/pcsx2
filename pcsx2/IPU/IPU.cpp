@@ -296,7 +296,6 @@ void ipuSoftReset()
 	ipu_cmd.clear();
 	ipuRegs.cmd.BUSY = 0;
 	ipuRegs.cmd.DATA = 0; // required for Enthusia - Professional Racing after fix, or will freeze at start of next video.
-	IPU1Status.DataRequested = true;
 	memzero(g_BP);
 	hwIntcIrq(INTC_IPU); // required for FightBox
 }
@@ -370,11 +369,9 @@ static void ipuBCLR(u32 val)
 		psHu32(DMAC_STAT) &= ~(1 << DMAC_TO_IPU);
 
 	ipu_fifo.in.clear();
-
 	memzero(g_BP);
 	g_BP.BP = val & 0x7F;
 
-	ipuRegs.ctrl.BUSY = 0;
 	ipuRegs.cmd.BUSY = 0;
 	IPU_LOG("Clear IPU input FIFO. Set Bit offset=0x%X", g_BP.BP);
 }
@@ -876,12 +873,6 @@ __fi void IPUCMD_WRITE(u32 val)
 			ipuBCLR(val);
 			hwIntcIrq(INTC_IPU); //DMAC_TO_IPU
 			ipuRegs.ctrl.BUSY = 0;
-
-			IPU1Status.DataRequested = true;
-			if (ipu1ch.chcr.STR && cpuRegs.eCycle[4] == 0x9999)
-			{
-				CPU_INT(DMAC_TO_IPU, 32);
-			}
 			return;
 
 		case SCE_IPU_SETTH:
@@ -889,8 +880,6 @@ __fi void IPUCMD_WRITE(u32 val)
 			hwIntcIrq(INTC_IPU);
 			ipuRegs.ctrl.BUSY = 0;
 			return;
-
-
 
 		case SCE_IPU_IDEC:
 			g_BP.Advance(val & 0x3F);
@@ -912,7 +901,6 @@ __fi void IPUCMD_WRITE(u32 val)
 		case SCE_IPU_FDEC:
 			IPU_LOG("FDEC command. Skip 0x%X bits, FIFO 0x%X qwords, BP 0x%X, CHCR 0x%x",
 			        val & 0x3f, g_BP.IFC, g_BP.BP, ipu1ch.chcr._u32);
-
 			g_BP.Advance(val & 0x3F);
 			ipuRegs.SetDataBusy();
 			break;
