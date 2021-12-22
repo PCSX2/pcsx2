@@ -16,7 +16,7 @@
 #pragma once
 
 #include "GS/Renderers/Common/GSTexture.h"
-#include "GS/GSGL.h"
+#include "GS/Renderers/OpenGL/GLLoader.h"
 #include "common/AlignedMalloc.h"
 
 namespace PboPool

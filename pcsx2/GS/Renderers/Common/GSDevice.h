@@ -570,6 +570,15 @@ public:
 		DontCare
 	};
 
+	enum class DebugMessageCategory
+	{
+		Cache,
+		Reg,
+		Debug,
+		Message,
+		Performance
+	};
+
 	virtual bool Create(HostDisplay* display);
 	virtual void Destroy();
 
@@ -587,6 +596,10 @@ public:
 	virtual void InvalidateRenderTarget(GSTexture* t) {}
 	virtual void ClearDepth(GSTexture* t) {}
 	virtual void ClearStencil(GSTexture* t, u8 c) {}
+
+	virtual void PushDebugGroup(const char* fmt, ...) {}
+	virtual void PopDebugGroup() {}
+	virtual void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) {}
 
 	GSTexture* CreateSparseRenderTarget(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateSparseDepthStencil(int w, int h, GSTexture::Format format, bool clear = true);

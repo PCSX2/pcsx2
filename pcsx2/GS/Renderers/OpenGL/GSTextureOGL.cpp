@@ -19,6 +19,7 @@
 #include "GLState.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSPng.h"
+#include "GS/GSGL.h"
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 extern u64 g_real_texture_upload_byte;
