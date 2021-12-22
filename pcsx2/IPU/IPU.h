@@ -121,7 +121,7 @@ struct alignas(16) tIPU_BP {
 
 	__fi bool FillBuffer(u32 bits)
 	{
-		while (FP < 2)
+		while (FP <= ((BP + bits) / 128))
 		{
 			if (ipu_fifo.in.read(&internal_qwc[FP]) == 0)
 			{
