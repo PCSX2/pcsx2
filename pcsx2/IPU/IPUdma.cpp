@@ -260,15 +260,8 @@ void IPU0dma()
 				break;
 		}
 	}
-	//Fixme ( voodoocycles ):
-	//This was IPU_INT_FROM(readsize*BIAS );
-	//This broke vids in Digital Devil Saga
-	//Note that interrupting based on totalsize is just guessing..
-	
-	IPU_INT_FROM( readsize * BIAS );
-	if (ipuRegs.ctrl.IFC > 0) { IPUProcessInterrupt(); }
 
-	//return readsize;
+	IPU_INT_FROM( readsize * BIAS );
 }
 
 __fi void dmaIPU0() // fromIPU
@@ -282,7 +275,9 @@ __fi void dmaIPU0() // fromIPU
 	// This is because the game sends bad DMA information, starts an IDEC, then sets it to the correct values
 	// but because our IPU is too quick, it messes up the sync between the DMA and IPU.
 	// So this will do until (if) we sort the timing out of IPU, shouldn't cause any problems for games for now.
-	IPU_INT_FROM( 160 );
+	//IPU_INT_FROM( 160 );
+	// Update 22/12/2021 - Doesn't seem to need this now after fixing some FIFO/DMA behaviour
+	IPU0dma();
 }
 
 __fi void dmaIPU1() // toIPU
@@ -314,7 +309,7 @@ __fi void dmaIPU1() // toIPU
 		}
 
 		IPU1Status.DMAMode = DMA_MODE_CHAIN;
-		if(ipuRegs.ctrl.BUSY || IPU1Status.DataRequested)
+		if(IPU1Status.DataRequested)
 			IPU1dma();
 		else
 			cpuRegs.eCycle[4] = 0x9999;
@@ -325,7 +320,7 @@ __fi void dmaIPU1() // toIPU
 			IPU1Status.InProgress = true;
 			IPU1Status.DMAFinished = true;
 			IPU1Status.DMAMode = DMA_MODE_NORMAL;
-			if (ipuRegs.ctrl.BUSY || IPU1Status.DataRequested)
+			if (IPU1Status.DataRequested)
 				IPU1dma();
 			else
 				cpuRegs.eCycle[4] = 0x9999;

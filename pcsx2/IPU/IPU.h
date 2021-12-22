@@ -121,15 +121,16 @@ struct alignas(16) tIPU_BP {
 
 	__fi bool FillBuffer(u32 bits)
 	{
-		while (FP <= ((BP + bits) / 128))
+		while ((FP * 128) < (BP + bits))
 		{
 			if (ipu_fifo.in.read(&internal_qwc[FP]) == 0)
 			{
 				// Here we *try* to fill the entire internal QWC buffer; however that may not necessarily
 				// be possible -- so if the fill fails we'll only return 0 if we don't have enough
 				// remaining bits in the FIFO to fill the request.
+				// Used to do ((FP!=0) && (BP + bits) <= 128) if we get here there's defo not enough data now though
 
-				return ((FP!=0) && (BP + bits) <= 128);
+				return false;
 			}
 
 			++FP;
