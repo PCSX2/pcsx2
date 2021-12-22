@@ -2226,14 +2226,6 @@ SCES-50878:
   name: "Tekken 4"
   region: "PAL-M5"
   compat: 5
-  patches:
-    default:
-      content: |-
-        // CRC 2251E14D, F48F994A
-        comment=patches by Shadow Lady
-        // IPU BUSY! fix...
-        patch=0,EE,00292424,word,24200001
-        patch=0,EE,00292624,word,00000000
 SCES-50885:
   name: "Ape Escape 2"
   region: "PAL-E"
@@ -4337,12 +4329,6 @@ SCPS-15050:
   name: "Flipnic"
   region: "NTSC-J"
   compat: 5
-  patches:
-    25433CBD:
-      content: |-
-        comment=Patch by Prafull
-        //Fixes hang in some stages due to ipu issues
-        patch=1,EE,0011c000,word,000000000
 SCPS-15051:
   name: "MLB 2003"
   region: "NTSC-J"
@@ -5246,13 +5232,6 @@ SCPS-56006:
   name: "Tekken 4"
   region: "NTSC-K"
   compat: 5
-  patches:
-    35B4028B:
-      content: |-
-        comment=Patches by Shadow Lady
-        // IPU BUSY! fix...
-        patch=0,EE,00290b24,word,24200001
-        patch=0,EE,00290d24,word,00000000
 SCPS-56008:
   name: "Fatal Frame"
   region: "NTSC-K"
@@ -9413,12 +9392,6 @@ SLES-51101:
   name: "Eggo Mania"
   region: "PAL-M3"
   compat: 5
-  patches:
-    30b27954:
-      content: |-
-        comment=Patches by Nachbrenner
-        // Skip IPU synchronisation.
-        patch=0,EE,00111100,word,00000000
 SLES-51107:
   name: "Hitman 2 - Silent Assassin"
   region: "PAL-I"
@@ -29798,14 +29771,6 @@ SLPS-25100:
   name: "Tekken 4"
   region: "NTSC-J"
   compat: 5
-  patches:
-    default:
-      content: |-
-        // CRC 26173F9A, 7c359c94
-        comment=Patches by Shadow Lady
-        // IPU BUSY! fix...
-        patch=0,EE,00291764,word,24200001
-        patch=0,EE,00291964,word,00000000
 SLPS-25102:
   name: "Project Arms"
   region: "NTSC-J"
@@ -34188,13 +34153,6 @@ SLUS-20328:
   name: "Tekken 4"
   region: "NTSC-U"
   compat: 5
-  patches:
-    833FE0A4:
-      content: |-
-        comment=Patches by Shadow Lady
-        // IPU BUSY! fix...
-        patch=0,EE,002917e4,word,24200001
-        patch=0,EE,002919e4,word,00000000
 SLUS-20329:
   name: "Pro Race Driver"
   region: "NTSC-U"
@@ -36142,14 +36100,6 @@ SLUS-20793:
   name: "Gladiator - Sword of Vengeance"
   region: "NTSC-U"
   compat: 5
-  patches:
-    C5DAD771:
-      content: |-
-        author=Prafull
-        // Fix hang before menu screen
-        // The patch causes few artifacts in FMV
-        // Skips part of IPU
-        patch=1,EE,00286674,word,00000000
 SLUS-20794:
   name: "ESPN - Major League Baseball"
   region: "NTSC-U"
@@ -37730,12 +37680,6 @@ SLUS-21157:
   name: "Flipnic - Ultimate Pinball"
   region: "NTSC-U"
   compat: 5
-  patches:
-    EADDB48E:
-      content: |-
-        comment=Patch by Prafull
-        // Fixes ufo shootdown mission hang 
-        patch=1,EE,0011c310,word,00000000
 SLUS-21158:
   name: "Rugby 2005"
   region: "NTSC-U"
