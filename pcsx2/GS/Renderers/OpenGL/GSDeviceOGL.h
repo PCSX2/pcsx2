@@ -24,6 +24,7 @@
 #include "GSTextureOGL.h"
 #include "GSUniformBufferOGL.h"
 #include "GLState.h"
+#include "GLLoader.h"
 #include "GS/GS.h"
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
@@ -346,6 +347,10 @@ public:
 	bool DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map) final;
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r) final;
+
+	void PushDebugGroup(const char* fmt, ...) final;
+	void PopDebugGroup() final;
+	void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) final;
 
 	// BlitRect *does* mess with GL state, be sure to re-bind.
 	void BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2i& dsize, bool at_origin, bool linear);

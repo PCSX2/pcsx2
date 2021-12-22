@@ -18,6 +18,7 @@
 #include "GS/GSState.h"
 #include "GSDeviceOGL.h"
 #include "GLState.h"
+#include "GS/GSGL.h"
 #include "GS/GSUtil.h"
 #include "Host.h"
 #include "HostDisplay.h"
@@ -82,8 +83,6 @@ GSDeviceOGL::~GSDeviceOGL()
 		m_debug_gl_file = NULL;
 	}
 #endif
-
-	GL_PUSH("GSDeviceOGL destructor");
 
 	// Clean vertex buffer state
 	if (m_vertex_array_object)
@@ -2161,4 +2160,75 @@ u16 GSDeviceOGL::ConvertBlendEnum(u16 generic)
 		case OP_REV_SUBTRACT : return GL_FUNC_REVERSE_SUBTRACT;
 		default              : ASSERT(0); return 0;
 	}
+}
+
+void GSDeviceOGL::PushDebugGroup(const char* fmt, ...)
+{
+#ifdef ENABLE_OGL_DEBUG
+	if (!glPushDebugGroup)
+		return;
+
+	std::va_list ap;
+	va_start(ap, fmt);
+	const std::string buf(StringUtil::StdStringFromFormatV(fmt, ap));
+	va_end(ap);
+	if (!buf.empty())
+		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, buf.c_str());
+#endif
+}
+
+void GSDeviceOGL::PopDebugGroup()
+{
+#ifdef ENABLE_OGL_DEBUG
+	if (!glPopDebugGroup)
+		return;
+	
+	glPopDebugGroup();
+#endif
+}
+
+void GSDeviceOGL::InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...)
+{
+#ifdef ENABLE_OGL_DEBUG
+	if (!glDebugMessageInsert)
+		return;
+
+	GLenum type, id, severity;
+	switch (category)
+	{
+	case GSDevice::DebugMessageCategory::Cache:
+			type = GL_DEBUG_TYPE_OTHER;
+			id = 0xFEAD;
+			severity = GL_DEBUG_SEVERITY_NOTIFICATION;
+		break;
+	case GSDevice::DebugMessageCategory::Reg:
+		type = GL_DEBUG_TYPE_OTHER;
+		id = 0xB0B0;
+		severity = GL_DEBUG_SEVERITY_NOTIFICATION;
+		break;
+	case GSDevice::DebugMessageCategory::Debug:
+		type = GL_DEBUG_TYPE_OTHER;
+		id = 0xD0D0;
+		severity = GL_DEBUG_SEVERITY_NOTIFICATION;
+		break;
+	case GSDevice::DebugMessageCategory::Message:
+		type = GL_DEBUG_TYPE_ERROR;
+		id = 0xDEAD;
+		severity = GL_DEBUG_SEVERITY_MEDIUM;
+		break;
+	case GSDevice::DebugMessageCategory::Performance:		
+	default:
+		type = GL_DEBUG_TYPE_PERFORMANCE;
+		id = 0xFEE1;
+		severity = GL_DEBUG_SEVERITY_NOTIFICATION;
+		break;
+	}
+
+	std::va_list ap;
+	va_start(ap, fmt);
+	const std::string buf(StringUtil::StdStringFromFormatV(fmt, ap));
+	va_end(ap);
+	if (!buf.empty())
+		glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, type, id, severity, buf.size(), buf.c_str());
+#endif
 }

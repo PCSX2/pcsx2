@@ -19,6 +19,7 @@
 #include "GS/Window/GSwxDialog.h"
 #endif
 #include "GS.h"
+#include "GSGL.h"
 #include "GSUtil.h"
 #include "GSExtra.h"
 #include "Renderers/SW/GSRendererSW.h"

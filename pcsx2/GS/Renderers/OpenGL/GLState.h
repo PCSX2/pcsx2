@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "GS/GSGL.h"
+#include "GS/Renderers/OpenGL/GLLoader.h"
 #include "GS/GSVector.h"
 
 namespace GLState
