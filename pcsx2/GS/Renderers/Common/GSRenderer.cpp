@@ -220,7 +220,9 @@ bool GSRenderer::Merge(int field)
 			off.x = tex[i]->GetScale().x * frame_diff.x;
 		}
 
-		if (display_diff.y >= 4) // Shouldn't this be >= 2?
+		if (m_scanmask_used && display_diff.y == 1) // Scanmask effect wouldn't look correct if we scale the offset
+			off.y = display_diff.y;
+		else if (display_diff.y >= 4) // Shouldn't this be >= 2?
 		{
 			off.y = tex[i]->GetScale().y * display_diff.y;
 

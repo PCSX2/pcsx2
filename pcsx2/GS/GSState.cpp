@@ -34,6 +34,7 @@ GSState::GSState()
 	, m_crc(0)
 	, m_options(0)
 	, m_frameskip(0)
+	, m_scanmask_used(false)
 {
 	// m_nativeres seems to be a hack. Unfortunately it impacts draw call number which make debug painful in the replayer.
 	// Let's keep it disabled to ease debug.
@@ -219,6 +220,8 @@ void GSState::Reset()
 	m_vertex.tail = 0;
 	m_vertex.next = 0;
 	m_index.tail = 0;
+
+	m_scanmask_used = false;
 }
 
 void GSState::ResetHandlers()
@@ -1098,6 +1101,8 @@ void GSState::GIFRegHandlerSCANMSK(const GIFReg* RESTRICT r)
 		Flush();
 
 	m_env.SCANMSK = (GSVector4i)r->SCANMSK;
+	if (m_env.SCANMSK.MSK & 2)
+		m_scanmask_used = true;
 }
 
 template <int i>

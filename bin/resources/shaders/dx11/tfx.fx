@@ -50,6 +50,7 @@
 #define PS_PABE 0
 #define PS_DITHER 0
 #define PS_ZCLAMP 0
+#define PS_SCANMSK 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
@@ -719,6 +720,13 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	float4 C = ps_color(input);
 
 	PS_OUTPUT output;
+
+	if (PS_SCANMSK & 2)
+	{
+		// fail depth test on prohibited lines
+		if ((int(input.p.y) & 1) == (PS_SCANMSK & 1))
+			discard;
+	}
 
 	if (PS_SHUFFLE)
 	{

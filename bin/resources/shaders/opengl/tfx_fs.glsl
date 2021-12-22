@@ -718,6 +718,11 @@ void ps_blend(inout vec4 Color, float As)
 
 void ps_main()
 {
+#if PS_SCANMSK & 2
+    // fail depth test on prohibited lines
+ 	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))
+ 	 	discard;
+#endif
 #if ((PS_DATE & 3) == 1 || (PS_DATE & 3) == 2)
 
 #if PS_WRITE_RG == 1
