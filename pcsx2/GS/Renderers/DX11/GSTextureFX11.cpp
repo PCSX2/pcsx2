@@ -88,6 +88,7 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 
 		sm.AddMacro("VS_TME", sel.tme);
 		sm.AddMacro("VS_FST", sel.fst);
+		sm.AddMacro("VS_IIP", sel.iip);
 
 		D3D11_INPUT_ELEMENT_DESC layout[] =
 		{
@@ -120,9 +121,8 @@ void GSDevice11::SetupGS(GSSelector sel)
 {
 	wil::com_ptr_nothrow<ID3D11GeometryShader> gs;
 
-	const bool flat_shading_needs_gs = sel.topology == GSHWDrawConfig::GSTopology::Line || sel.topology == GSHWDrawConfig::GSTopology::Triangle;
 	// Geometry shader is disabled if sprite conversion is done on the cpu (sel.cpu_sprite).
-	if (sel.expand || (sel.iip == 0 && flat_shading_needs_gs))
+	if (sel.expand)
 	{
 		const auto i = std::as_const(m_gs).find(sel.key);
 
@@ -165,6 +165,7 @@ void GSDevice11::SetupPS(PSSelector sel, const GSHWDrawConfig::PSConstantBuffer*
 		sm.AddMacro("PS_TCC", sel.tcc);
 		sm.AddMacro("PS_ATST", sel.atst);
 		sm.AddMacro("PS_FOG", sel.fog);
+		sm.AddMacro("PS_IIP", sel.iip);
 		sm.AddMacro("PS_CLR1", sel.clr1);
 		sm.AddMacro("PS_FBA", sel.fba);
 		sm.AddMacro("PS_FBMASK", sel.fbmask);

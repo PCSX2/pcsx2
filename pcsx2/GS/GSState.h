@@ -56,8 +56,8 @@ class GSState : public GSAlignedClass<32>
 	void GIFPackedRegHandlerSTQ(const GIFPackedReg* RESTRICT r);
 	void GIFPackedRegHandlerUV(const GIFPackedReg* RESTRICT r);
 	void GIFPackedRegHandlerUV_Hack(const GIFPackedReg* RESTRICT r);
-	template<u32 prim, u32 adc, bool auto_flush> void GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r);
-	template<u32 prim, u32 adc, bool auto_flush> void GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r);
+	template<u32 prim, u32 adc, bool auto_flush, bool index_swap> void GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r);
+	template<u32 prim, u32 adc, bool auto_flush, bool index_swap> void GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r);
 	void GIFPackedRegHandlerFOG(const GIFPackedReg* RESTRICT r);
 	void GIFPackedRegHandlerA_D(const GIFPackedReg* RESTRICT r);
 	void GIFPackedRegHandlerNOP(const GIFPackedReg* RESTRICT r);
@@ -73,8 +73,8 @@ class GSState : public GSAlignedClass<32>
 	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerSTQRGBAXYZF2[8];
 	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerSTQRGBAXYZ2[8];
 
-	template<u32 prim, bool auto_flush> void GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u32 size);
-	template<u32 prim, bool auto_flush> void GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32 size);
+	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u32 size);
+	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32 size);
 	void GIFPackedRegHandlerNOP(const GIFPackedReg* RESTRICT r, u32 size);
 
 	template<int i> void ApplyTEX0(GIFRegTEX0& TEX0);
@@ -86,8 +86,8 @@ class GSState : public GSAlignedClass<32>
 	void GIFRegHandlerST(const GIFReg* RESTRICT r);
 	void GIFRegHandlerUV(const GIFReg* RESTRICT r);
 	void GIFRegHandlerUV_Hack(const GIFReg* RESTRICT r);
-	template<u32 prim, u32 adc, bool auto_flush> void GIFRegHandlerXYZF2(const GIFReg* RESTRICT r);
-	template<u32 prim, u32 adc, bool auto_flush> void GIFRegHandlerXYZ2(const GIFReg* RESTRICT r);
+	template<u32 prim, u32 adc, bool auto_flush, bool index_swap> void GIFRegHandlerXYZF2(const GIFReg* RESTRICT r);
+	template<u32 prim, u32 adc, bool auto_flush, bool index_swap> void GIFRegHandlerXYZ2(const GIFReg* RESTRICT r);
 	template<int i> void GIFRegHandlerTEX0(const GIFReg* RESTRICT r);
 	template<int i> void GIFRegHandlerCLAMP(const GIFReg* RESTRICT r);
 	void GIFRegHandlerFOG(const GIFReg* RESTRICT r);
@@ -119,6 +119,9 @@ class GSState : public GSAlignedClass<32>
 	void GIFRegHandlerTRXREG(const GIFReg* RESTRICT r);
 	void GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r);
 	void GIFRegHandlerHWREG(const GIFReg* RESTRICT r);
+
+	template<bool auto_flush, bool index_swap>
+	void SetPrimHandlers();
 
 	int m_version;
 	int m_sssize;
@@ -185,7 +188,7 @@ protected:
 
 	void GrowVertexBuffer();
 
-	template <u32 prim, bool auto_flush>
+	template <u32 prim, bool auto_flush, bool index_swap>
 	void VertexKick(u32 skip);
 
 	// following functions need m_vt to be initialized
