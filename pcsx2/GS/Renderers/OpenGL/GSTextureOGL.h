@@ -83,5 +83,5 @@ public:
 
 	void CommitPages(const GSVector2i& region, bool commit) final;
 
-	u32 GetMemUsage();
+	u32 GetMemUsage() final;
 };
