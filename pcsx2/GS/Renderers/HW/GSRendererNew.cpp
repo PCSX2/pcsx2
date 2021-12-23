@@ -1367,8 +1367,9 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// END of FIXME
 
 	// GS_SPRITE_CLASS are already flat (either by CPU or the GS)
-	m_conf.ps.iip = (m_vt.m_primclass == GS_SPRITE_CLASS) ? 1 : PRIM->IIP;
+	m_conf.ps.iip = (m_vt.m_primclass == GS_SPRITE_CLASS) ? 0 : PRIM->IIP;
 	m_conf.gs.iip = m_conf.ps.iip;
+	m_conf.vs.iip = m_conf.ps.iip;
 
 	if (DATE_GL45)
 	{

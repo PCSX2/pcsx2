@@ -16,8 +16,11 @@ out SHADER
 {
     vec4 t_float;
     vec4 t_int;
-    vec4 c;
-    flat vec4 fc;
+    #if VS_IIP != 0
+      vec4 c;
+    #else
+      flat vec4 c;
+    #endif
 } VSout;
 
 const float exp_min32 = exp2(-32.0f);
@@ -63,7 +66,6 @@ void vs_main()
     texture_coord();
 
     VSout.c = i_c;
-    VSout.fc = i_c;
     VSout.t_float.z = i_f.x; // pack for with texture
 }
 
@@ -78,8 +80,11 @@ in SHADER
 {
     vec4 t_float;
     vec4 t_int;
-    vec4 c;
-    flat vec4 fc;
+    #if GS_IIP != 0
+      vec4 c;
+    #else
+      flat vec4 c;
+    #endif
 } GSin[];
 
 #if !defined(BROKEN_DRIVER) && defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts
@@ -89,8 +94,11 @@ out SHADER
 {
     vec4 t_float;
     vec4 t_int;
-    vec4 c;
-    flat vec4 fc;
+    #if GS_IIP != 0
+      vec4 c;
+    #else
+      flat vec4 c;
+    #endif
 } GSout;
 
 struct vertex
@@ -104,12 +112,11 @@ void out_vertex(in vec4 position, in vertex v)
 {
     GSout.t_float  = v.t_float;
     GSout.t_int    = v.t_int;
-    GSout.c        = v.c;
     // Flat output
 #if GS_POINT == 1
-    GSout.fc       = GSin[0].fc;
+    GSout.c        = GSin[0].c;
 #else
-    GSout.fc       = GSin[1].fc;
+    GSout.c        = GSin[1].c;
 #endif
     gl_Position = position;
     gl_PrimitiveID = gl_PrimitiveIDIn;

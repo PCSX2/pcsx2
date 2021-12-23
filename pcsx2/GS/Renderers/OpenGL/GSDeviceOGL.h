@@ -132,7 +132,8 @@ public:
 			struct
 			{
 				u32 int_fst : 1;
-				u32 _free : 31;
+				u32 iip : 1;
+				u32 _free : 30;
 			};
 
 			u32 key;
@@ -159,8 +160,9 @@ public:
 				u32 sprite : 1;
 				u32 point  : 1;
 				u32 line   : 1;
+				u32 iip    : 1;
 
-				u32 _free : 29;
+				u32 _free : 28;
 			};
 
 			u32 key;

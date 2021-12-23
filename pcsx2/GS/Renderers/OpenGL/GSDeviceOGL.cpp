@@ -254,6 +254,7 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 	m_features.geometry_shader = GLLoader::found_geometry_shader;
 	m_features.image_load_store = GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture;
 	m_features.texture_barrier = true;
+	m_features.provoking_vertex_last = true;
 
 	{
 		auto shader = Host::ReadResourceFileToString("shaders/opengl/common_header.glsl");
@@ -989,7 +990,8 @@ std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 	Console.WriteLn("Compiling new vertex shader with selector 0x%" PRIX64, sel.key);
 #endif
 
-	std::string macro = format("#define VS_INT_FST %d\n", sel.int_fst);
+	std::string macro = format("#define VS_INT_FST %d\n", sel.int_fst)
+		+ format("#define VS_IIP %d\n", sel.iip);
 
 	std::string src = GenGlslHeader("vs_main", GL_VERTEX_SHADER, macro);
 	src += m_shader_common_header;
@@ -1004,7 +1006,8 @@ std::string GSDeviceOGL::GetGSSource(GSSelector sel)
 #endif
 
 	std::string macro = format("#define GS_POINT %d\n", sel.point)
-		+ format("#define GS_LINE %d\n", sel.line);
+		+ format("#define GS_LINE %d\n", sel.line)
+		+ format("#define GS_IIP %d\n", sel.iip);
 
 	std::string src = GenGlslHeader("gs_main", GL_GEOMETRY_SHADER, macro);
 	src += m_shader_common_header;
@@ -1780,6 +1783,7 @@ static GSDeviceOGL::VSSelector convertSel(const GSHWDrawConfig::VSSelector sel)
 {
 	GSDeviceOGL::VSSelector out;
 	out.int_fst = !sel.fst;
+	out.iip = sel.iip;
 	return out;
 }
 
@@ -1876,6 +1880,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	psel.gs.key = 0;
 	if (config.gs.expand)
 	{
+		psel.gs.iip = config.gs.iip;
 		switch (config.gs.topology)
 		{
 			case GSHWDrawConfig::GSTopology::Point:    psel.gs.point  = 1; break;

@@ -30,8 +30,12 @@ in SHADER
 {
     vec4 t_float;
     vec4 t_int;
-    vec4 c;
-    flat vec4 fc;
+
+    #if PS_IIP != 0
+      vec4 c;
+    #else
+      flat vec4 c;
+    #endif
 } PSin;
 
 // Same buffer but 2 colors for dual source blending
@@ -587,11 +591,7 @@ vec4 ps_color()
     vec4 T = sample_color(st);
 #endif
 
-#if PS_IIP == 1
     vec4 C = tfx(T, PSin.c);
-#else
-    vec4 C = tfx(T, PSin.fc);
-#endif
 
     atst(C);
 

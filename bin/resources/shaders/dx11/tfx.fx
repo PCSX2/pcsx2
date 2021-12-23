@@ -5,6 +5,7 @@
 #define FMT_16 2
 
 #ifndef VS_TME
+#define VS_IIP 0
 #define VS_TME 1
 #define VS_FST 1
 #endif
@@ -12,10 +13,10 @@
 #ifndef GS_IIP
 #define GS_IIP 0
 #define GS_PRIM 3
-#define GS_EXPAND 0
 #endif
 
 #ifndef PS_FST
+#define PS_IIP 0
 #define PS_FST 0
 #define PS_WMS 0
 #define PS_WMT 0
@@ -25,6 +26,7 @@
 #define PS_TCC 1
 #define PS_ATST 1
 #define PS_FOG 0
+#define PS_IIP 0
 #define PS_CLR1 0
 #define PS_FBA 0
 #define PS_FBMASK 0
@@ -72,7 +74,12 @@ struct VS_OUTPUT
 	float4 p : SV_Position;
 	float4 t : TEXCOORD0;
 	float4 ti : TEXCOORD2;
+
+#if VS_IIP != 0 || GS_IIP != 0 || PS_IIP != 0
 	float4 c : COLOR0;
+#else
+	nointerpolation float4 c : COLOR0;
+#endif
 };
 
 struct PS_INPUT
@@ -80,7 +87,11 @@ struct PS_INPUT
 	float4 p : SV_Position;
 	float4 t : TEXCOORD0;
 	float4 ti : TEXCOORD2;
+#if VS_IIP != 0 || GS_IIP != 0 || PS_IIP != 0
 	float4 c : COLOR0;
+#else
+	nointerpolation float4 c : COLOR0;
+#endif
 };
 
 struct PS_OUTPUT
@@ -854,15 +865,7 @@ VS_OUTPUT vs_main(VS_INPUT input)
 // Geometry Shader
 //////////////////////////////////////////////////////////////////////
 
-#if GS_PRIM == 0 && GS_EXPAND == 0
-
-[maxvertexcount(1)]
-void gs_main(point VS_OUTPUT input[1], inout PointStream<VS_OUTPUT> stream)
-{
-	stream.Append(input[0]);
-}
-
-#elif GS_PRIM == 0 && GS_EXPAND == 1
+#if GS_PRIM == 0
 
 [maxvertexcount(6)]
 void gs_main(point VS_OUTPUT input[1], inout TriangleStream<VS_OUTPUT> stream)
@@ -899,20 +902,7 @@ void gs_main(point VS_OUTPUT input[1], inout TriangleStream<VS_OUTPUT> stream)
 	stream.Append(Point);
 }
 
-#elif GS_PRIM == 1 && GS_EXPAND == 0
-
-[maxvertexcount(2)]
-void gs_main(line VS_OUTPUT input[2], inout LineStream<VS_OUTPUT> stream)
-{
-#if GS_IIP == 0
-	input[0].c = input[1].c;
-#endif
-
-	stream.Append(input[0]);
-	stream.Append(input[1]);
-}
-
-#elif GS_PRIM == 1 && GS_EXPAND == 1
+#elif GS_PRIM == 1
 
 [maxvertexcount(6)]
 void gs_main(line VS_OUTPUT input[2], inout TriangleStream<VS_OUTPUT> stream)
@@ -958,21 +948,6 @@ void gs_main(line VS_OUTPUT input[2], inout TriangleStream<VS_OUTPUT> stream)
 	right.p.xy = rb_p;
 	stream.Append(right);
 	stream.RestartStrip();
-}
-
-#elif GS_PRIM == 2
-
-[maxvertexcount(3)]
-void gs_main(triangle VS_OUTPUT input[3], inout TriangleStream<VS_OUTPUT> stream)
-{
-	#if GS_IIP == 0
-	input[0].c = input[2].c;
-	input[1].c = input[2].c;
-	#endif
-
-	stream.Append(input[0]);
-	stream.Append(input[1]);
-	stream.Append(input[2]);
 }
 
 #elif GS_PRIM == 3
