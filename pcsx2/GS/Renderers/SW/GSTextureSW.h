@@ -27,10 +27,10 @@ class GSTextureSW final : public GSTexture
 
 public:
 	GSTextureSW(Type type, int width, int height);
-	virtual ~GSTextureSW();
+	~GSTextureSW() override;
 
-	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0);
-	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0);
-	void Unmap();
-	bool Save(const std::string& fn);
+	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) override;
+	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) override;
+	void Unmap() override;
+	bool Save(const std::string& fn) override;
 };

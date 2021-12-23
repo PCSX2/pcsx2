@@ -17,7 +17,7 @@
 
 #include "GS/Renderers/Common/GSRenderer.h"
 
-class GSRendererNull : public GSRenderer
+class GSRendererNull final : public GSRenderer
 {
 	class GSVertexTraceNull : public GSVertexTrace
 	{
@@ -29,11 +29,11 @@ class GSRendererNull : public GSRenderer
 	};
 
 protected:
-	void Draw()
+	void Draw() override
 	{
 	}
 
-	GSTexture* GetOutput(int i, int& y_offset)
+	GSTexture* GetOutput(int i, int& y_offset) override
 	{
 		return NULL;
 	}
