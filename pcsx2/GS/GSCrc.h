@@ -74,6 +74,7 @@ public:
 		Jak2,
 		Jak3,
 		JakX,
+		JurassicPark,
 		KazokuKeikakuKokoroNoKizuna,
 		KnightsOfTheTemple2,
 		Kunoichi,

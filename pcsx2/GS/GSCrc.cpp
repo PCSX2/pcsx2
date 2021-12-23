@@ -447,6 +447,8 @@ const CRC::Game CRC::m_games[] =
 	{0x51E417AA, HarryPotterATPOA, EU, 0},
 	{0x4C01B1B0, HarryPotterOOTP, US, 0}, // Order Of The Phoenix
 	{0x01A9BF0E, HarryPotterOOTP, EU, 0},
+	{0x960FFA6A, JurassicPark, EU, 0},
+	{0xA99B8FE7, JurassicPark, US, 0},
 	{0x230CB71D, SoulReaver2, US, 0},
 	{0x1771BFE4, SoulReaver2, US, 0},
 	{0x6F991F52, SoulReaver2, JP, 0},

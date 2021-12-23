@@ -218,6 +218,7 @@ void GSRendererHW::SetGameCRC(u32 crc, int options)
 			case CRC::ICO:
 			case CRC::Jak1:
 			case CRC::Jak3:
+			case CRC::JurassicPark:
 			case CRC::LegacyOfKainDefiance:
 			case CRC::NicktoonsUnite:
 			case CRC::Persona3:
