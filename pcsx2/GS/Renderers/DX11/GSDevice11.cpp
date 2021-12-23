@@ -39,6 +39,7 @@ GSDevice11::GSDevice11()
 	m_features.geometry_shader = true;
 	m_features.image_load_store = false;
 	m_features.texture_barrier = false;
+	m_features.provoking_vertex_last = false;
 }
 
 bool GSDevice11::SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode)
@@ -1471,7 +1472,6 @@ static void preprocessSel(GSDevice11::PSSelector& sel)
 	ASSERT(sel.date      == 0); // In-shader destination alpha not supported and shouldn't be sent
 	ASSERT(sel.write_rg  == 0); // Not supported, shouldn't be sent
 	ASSERT(sel.tex_is_fb == 0); // Not supported, shouldn't be sent
-	sel.iip           = 0; // Handled in GS, not PS in DX11
 	sel.automatic_lod = 0; // Not currently supported in DX11
 	sel.manual_lod    = 0; // Not currently supported in DX11
 }

@@ -67,6 +67,9 @@ bool GSRenderer::CreateDevice(GSDevice* dev, const WindowInfo& wi)
 	m_dev = dev;
 	m_dev->SetVSync(m_vsync);
 
+	// reset handlers to pick up index swap if needed
+	ResetHandlers();
+
 	return true;
 }
 
