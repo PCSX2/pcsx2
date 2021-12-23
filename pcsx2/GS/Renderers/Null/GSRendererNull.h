@@ -19,28 +19,10 @@
 
 class GSRendererNull final : public GSRenderer
 {
-	class GSVertexTraceNull : public GSVertexTrace
-	{
-	public:
-		GSVertexTraceNull(const GSState* state)
-			: GSVertexTrace(state)
-		{
-		}
-	};
+public:
+	GSRendererNull();
 
 protected:
-	void Draw() override
-	{
-	}
-
-	GSTexture* GetOutput(int i, int& y_offset) override
-	{
-		return NULL;
-	}
-
-public:
-	GSRendererNull()
-		: GSRenderer()
-	{
-	}
+	void Draw() override;
+	GSTexture* GetOutput(int i, int& y_offset) override;
 };

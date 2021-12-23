@@ -15,3 +15,14 @@
 
 #include "PrecompiledHeader.h"
 #include "GSRendererNull.h"
+
+GSRendererNull::GSRendererNull() = default;
+
+void GSRendererNull::Draw()
+{
+}
+
+GSTexture* GSRendererNull::GetOutput(int i, int& y_offset)
+{
+	return nullptr;
+}
