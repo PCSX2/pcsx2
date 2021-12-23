@@ -72,7 +72,7 @@ union tIPU_CTRL {
 	bool test(u32 flags) const { return !!(_u32 & flags); }
 	void set_flags(u32 flags) { _u32 |= flags; }
 	void clear_flags(u32 flags) { _u32 &= ~flags; }
-	void reset() { _u32 = 0; }
+	void reset() { _u32 &= 0x7F33F00; }
 };
 
 struct alignas(16) tIPU_BP {

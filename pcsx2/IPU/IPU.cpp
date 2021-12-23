@@ -60,13 +60,6 @@ __fi void IPUProcessInterrupt()
 {
 	if (ipuRegs.ctrl.BUSY) // && (g_BP.FP || g_BP.IFC || (ipu1ch.chcr.STR && ipu1ch.qwc > 0)))
 		IPUWorker();
-	if (ipuRegs.ctrl.BUSY && ipuRegs.cmd.BUSY && ipuRegs.cmd.DATA == 0x000001B7) {
-		// 0x000001B7 is the MPEG2 sequence end code, signalling the end of a video.
-		// At the end of a video BUSY values should be automatically set to 0. 
-		// This does not happen for Enthusia - Professional Racing, causing it to get stuck in an endless loop.
-		ipuRegs.cmd.BUSY = 0;
-		ipuRegs.ctrl.BUSY = 0;
-	}
 }
 
 /////////////////////////////////////////////////////////
@@ -287,7 +280,18 @@ __fi RETURNS_R64 ipuRead64(u32 mem)
 
 void ipuSoftReset()
 {
+	if (ipu1ch.chcr.STR && g_BP.IFC < 8 && IPU1Status.DataRequested)
+	{
+		DevCon.Warning("Refill input fifo on reset");
+		ipu1Interrupt();
+	}
+
+	if (!ipu1ch.chcr.STR)
+		psHu32(DMAC_STAT) &= ~(1 << DMAC_TO_IPU);
+
+
 	ipu_fifo.clear();
+	memzero(g_BP);
 
 	coded_block_pattern = 0;
 
@@ -296,7 +300,7 @@ void ipuSoftReset()
 	ipu_cmd.clear();
 	ipuRegs.cmd.BUSY = 0;
 	ipuRegs.cmd.DATA = 0; // required for Enthusia - Professional Racing after fix, or will freeze at start of next video.
-	memzero(g_BP);
+	
 	hwIntcIrq(INTC_IPU); // required for FightBox
 }
 
