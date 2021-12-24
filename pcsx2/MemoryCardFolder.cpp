@@ -24,41 +24,38 @@
 
 #include "ryml_std.hpp"
 #include "ryml.hpp"
+#include "common/Path.h"
 
 #include "svnrev.h"
 
 #include <sstream>
+#include <optional>
 
 bool RemoveDirectory(const wxString& dirname);
 
-// A helper function to parse the YAML file
-static ryml::Tree LoadYAMLFromFile(const wxString& fileName)
+const ryml::Tree treeFromString(const std::string& s)
 {
-	ryml::Tree index;
-	wxFFile indexFile;
-	bool result;
+	return ryml::parse(c4::to_csubstr(s));
+}
+
+// A helper function to parse the YAML file
+std::optional<ryml::Tree> loadYamlFile(const wxString& filePath)
+{
+	auto path = Path::FromWxString(filePath);
+	if (!fs::exists(path))
 	{
-		// Suppress "file does not exist" errors
-		wxLogNull noLog;
-		result = indexFile.Open(fileName, L"r");
+		return std::nullopt;
 	}
 
-	if (result)
-	{
-		const size_t len = indexFile.Length();
-		std::string fileContents(len, '\0');
-		if (indexFile.Read(fileContents.data(), len) && !indexFile.Error() && indexFile.Eof())
-		{
-			const ryml::substr view = c4::basic_substring<char>(fileContents.data(), len);
-			index = ryml::parse(view);
-		}
-	}
+	auto stream = fs::ifstream(path);
+	std::stringstream buffer;
+	buffer << stream.rdbuf();
 
-	return index;
+	return std::make_optional(treeFromString(buffer.str()));
 }
 
 /// A helper function to write a YAML file
-static void SaveYAMLToFile(const wxString& filename, const ryml::NodeRef& node)
+void SaveYAMLToFile(const wxString& filename, const ryml::NodeRef& node)
 {
 	wxFFile file;
 	if (file.Open(filename, L"w"))
@@ -1260,11 +1257,11 @@ void FolderMemoryCard::FlushFileEntries(const u32 dirCluster, const u32 remainin
 
 						// write the directory index
 						metaFileName.SetName(L"_pcsx2_index");
-						ryml::Tree indexTree = LoadYAMLFromFile(metaFileName.GetFullPath());
+						std::optional<ryml::Tree> yaml = loadYamlFile(metaFileName.GetFullPath());
 
-						if (!indexTree.empty())
+						if (yaml.has_value() && !yaml.value().empty())
 						{
-							ryml::NodeRef index = indexTree.rootref();
+							ryml::NodeRef index = yaml.value().rootref();
 							if (index.has_child("%ROOT"))
 							{
 								ryml::NodeRef entryNode = index["%ROOT"];
@@ -1704,14 +1701,18 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 				wxDateTime creationTime, modificationTime;
 				fileInfo.GetTimes(nullptr, &modificationTime, &creationTime);
 
-				const ryml::Tree indexTree = LoadYAMLFromFile(wxFileName(dirPath, "_pcsx2_index").GetFullPath());
+				std::optional<ryml::Tree> yaml = loadYamlFile(wxFileName(dirPath, "_pcsx2_index").GetFullPath());
 
 				EnumeratedFileEntry entry{fileName, creationTime.GetTicks(), modificationTime.GetTicks(), true};
 				const wxCharTypeBuffer fileNameUTF8(fileName.ToUTF8());
 				int64_t newOrder = orderForLegacyFiles--;
-				if (!indexTree.empty())
+				if (yaml.has_value() && !yaml.value().empty())
 				{
-					const ryml::NodeRef index = indexTree.rootref();
+					ryml::NodeRef index = yaml.value().rootref();
+					for (const ryml::NodeRef& n : index.children())
+					{
+						auto key = std::string(n.key().str, n.key().len);
+					}
 					if (index.has_child(c4::to_csubstr(fileNameUTF8)))
 					{
 						const ryml::NodeRef& node = index[c4::to_csubstr(fileNameUTF8)];
@@ -1742,12 +1743,12 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 				wxDateTime creationTime, modificationTime;
 				fileInfo.GetTimes(nullptr, &modificationTime, &creationTime);
 
-				const ryml::Tree indexTree = LoadYAMLFromFile(wxFileName(fileInfo.GetFullPath(), "_pcsx2_index").GetFullPath());
+				std::optional<ryml::Tree> yaml = loadYamlFile(wxFileName(fileInfo.GetFullPath(), "_pcsx2_index").GetFullPath());
 
 				EnumeratedFileEntry entry{fileName, creationTime.GetTicks(), modificationTime.GetTicks(), false};
-				if (!indexTree.empty())
+				if (yaml.has_value() && !yaml.value().empty())
 				{
-					const ryml::NodeRef indexForDirectory = indexTree.rootref();
+					const ryml::NodeRef indexForDirectory = yaml.value().rootref();
 					if (indexForDirectory.has_child("%ROOT"))
 					{
 						const ryml::NodeRef& node = indexForDirectory["%ROOT"];
@@ -1785,10 +1786,10 @@ void FolderMemoryCard::DeleteFromIndex(const wxString& filePath, const wxString&
 {
 	const wxString indexName = wxFileName(filePath, "_pcsx2_index").GetFullPath();
 
-	ryml::Tree indexTree = LoadYAMLFromFile(indexName);
-	if (!indexTree.empty())
+	std::optional<ryml::Tree> yaml = loadYamlFile(indexName);
+	if (yaml.has_value() && !yaml.value().empty())
 	{
-		ryml::NodeRef index = indexTree.rootref();
+		ryml::NodeRef index = yaml.value().rootref();
 		const wxCharTypeBuffer key(entry.ToUTF8());
 		index.remove_child(c4::to_csubstr(key));
 
@@ -1960,27 +1961,28 @@ void FileAccessHelper::WriteIndex(wxFileName folderName, MemoryCardFileEntry* co
 	folderName.SetName(L"_pcsx2_index");
 
 	const c4::csubstr key = c4::to_csubstr(fileName);
-	ryml::Tree indexTree = LoadYAMLFromFile(folderName.GetFullPath());
+	std::optional<ryml::Tree> yaml = loadYamlFile(folderName.GetFullPath());
 
-	if (!indexTree.empty())
+	if (yaml.has_value() && !yaml.value().empty())
 	{
-		ryml::NodeRef index = indexTree.rootref();
+		ryml::NodeRef index = yaml.value().rootref();
 
 		if (!index.has_child(key))
 		{
 			// Newly added file - figure out the sort order as the entry should be added to the end of the list
-			index[key] = "";
+			ryml::NodeRef newNode = index[key];
+			newNode |= ryml::MAP;
 			unsigned int maxOrder = 0;
 			for (const ryml::NodeRef& n : index.children())
 			{
-				unsigned int currOrder = 0;
-				if (n.has_child("order"))
+				unsigned int currOrder = 0; // NOTE - this limits the usefulness of making the order an int64
+				if (n.is_map() && n.has_child("order"))
 				{
 					n["order"] >> currOrder;
 				}
 				maxOrder = std::max(maxOrder, currOrder);
 			}
-			index[key]["order"] << maxOrder + 1;
+			newNode["order"] << maxOrder + 1;
 		}
 		ryml::NodeRef entryNode = index[key];
 
