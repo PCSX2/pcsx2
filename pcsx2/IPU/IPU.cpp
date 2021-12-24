@@ -998,6 +998,7 @@ __noinline void IPUWorker()
 			}
 
 	// success
+	IPU_LOG("IPU Command finished");
 	ipuRegs.ctrl.BUSY = 0;
 	//ipu_cmd.current = 0xffffffff;
 	hwIntcIrq(INTC_IPU);
