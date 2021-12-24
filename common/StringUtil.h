@@ -184,6 +184,10 @@ namespace StringUtil
 		return 0;
 	}
 
+	std::string toLower(const std::string_view& str);
+	bool compareNoCase(const std::string_view& str1, const std::string_view& str2);
+	std::vector<std::string> splitOnNewLine(const std::string& str);
+
 	/// Converts a wxString to a UTF-8 std::string.
 	static std::string wxStringToUTF8String(const wxString& str)
 	{
