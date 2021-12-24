@@ -22,17 +22,19 @@
 #include "System.h"
 #include "Config.h"
 
-#include "yaml-cpp/yaml.h"
+#include "ryml_std.hpp"
+#include "ryml.hpp"
 
 #include "svnrev.h"
+
+#include <sstream>
 
 bool RemoveDirectory(const wxString& dirname);
 
 // A helper function to parse the YAML file
-static YAML::Node LoadYAMLFromFile(const wxString& fileName)
+static ryml::Tree LoadYAMLFromFile(const wxString& fileName)
 {
-	YAML::Node index;
-
+	ryml::Tree index;
 	wxFFile indexFile;
 	bool result;
 	{
@@ -43,11 +45,12 @@ static YAML::Node LoadYAMLFromFile(const wxString& fileName)
 
 	if (result)
 	{
-		size_t len = indexFile.Length();
+		const size_t len = indexFile.Length();
 		std::string fileContents(len, '\0');
-		if (indexFile.Read(fileContents.data(), len) == len)
+		if (indexFile.Read(fileContents.data(), len) && !indexFile.Error() && indexFile.Eof())
 		{
-			index = YAML::Load(fileContents);
+			const ryml::substr view = c4::basic_substring<char>(fileContents.data(), len);
+			index = ryml::parse(view);
 		}
 	}
 
@@ -55,13 +58,15 @@ static YAML::Node LoadYAMLFromFile(const wxString& fileName)
 }
 
 /// A helper function to write a YAML file
-static void SaveYAMLToFile(const wxString& filename, const YAML::Node& node)
+static void SaveYAMLToFile(const wxString& filename, const ryml::NodeRef& node)
 {
 	wxFFile file;
 	if (file.Open(filename, L"w"))
 	{
 		// Make sure WX doesn't do anything funny with encoding
-		std::string yaml = YAML::Dump(node);
+		std::stringstream ss;
+		ss << node;
+		std::string yaml = ss.str();
 		file.Write(yaml.data(), yaml.length());
 	}
 }
@@ -1255,14 +1260,22 @@ void FolderMemoryCard::FlushFileEntries(const u32 dirCluster, const u32 remainin
 
 						// write the directory index
 						metaFileName.SetName(L"_pcsx2_index");
-						YAML::Node index = LoadYAMLFromFile(metaFileName.GetFullPath());
-						YAML::Node entryNode = index["%ROOT"];
+						ryml::Tree indexTree = LoadYAMLFromFile(metaFileName.GetFullPath());
 
-						entryNode["timeCreated"] = entry->entry.data.timeCreated.ToTime();
-						entryNode["timeModified"] = entry->entry.data.timeModified.ToTime();
+						if (!indexTree.empty())
+						{
+							ryml::NodeRef index = indexTree.rootref();
+							if (index.has_child("%ROOT"))
+							{
+								ryml::NodeRef entryNode = index["%ROOT"];
 
-						// Write out the changes
-						SaveYAMLToFile(metaFileName.GetFullPath(), index);
+								entryNode["timeCreated"] << entry->entry.data.timeCreated.ToTime();
+								entryNode["timeModified"] << entry->entry.data.timeModified.ToTime();
+
+								// Write out the changes
+								SaveYAMLToFile(metaFileName.GetFullPath(), index);
+							}
+						}
 					}
 
 					MemoryCardFileMetadataReference* dirRef = AddDirEntryToMetadataQuickAccess(entry, parent);
@@ -1664,9 +1677,6 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 	wxDir dir(dirPath);
 	if (dir.IsOpened())
 	{
-
-		const YAML::Node index = LoadYAMLFromFile(wxFileName(dirPath, "_pcsx2_index").GetFullPath());
-
 		// We must be able to support legacy folder memcards without the index file, so for those
 		// track an order variable and make it negative - this way new files get their order preserved
 		// and old files are listed first.
@@ -1677,15 +1687,6 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 		std::map<std::pair<bool, int64_t>, EnumeratedFileEntry> sortContainer;
 		int64_t orderForDirectories = 1;
 		int64_t orderForLegacyFiles = -1;
-
-		const auto getOptionalNodeAttribute = [](const YAML::Node& node, const char* attribName, auto def) {
-			auto result = std::move(def);
-			if (node.IsDefined())
-			{
-				result = node[attribName].as<decltype(def)>(def);
-			}
-			return result;
-		};
 
 		wxString fileName;
 		bool hasNext = dir.GetFirst(&fileName);
@@ -1703,13 +1704,34 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 				wxDateTime creationTime, modificationTime;
 				fileInfo.GetTimes(nullptr, &modificationTime, &creationTime);
 
+				const ryml::Tree indexTree = LoadYAMLFromFile(wxFileName(dirPath, "_pcsx2_index").GetFullPath());
+
+				EnumeratedFileEntry entry{fileName, creationTime.GetTicks(), modificationTime.GetTicks(), true};
 				const wxCharTypeBuffer fileNameUTF8(fileName.ToUTF8());
-				const YAML::Node& node = index[fileNameUTF8.data()];
+				int64_t newOrder = orderForLegacyFiles--;
+				if (!indexTree.empty())
+				{
+					const ryml::NodeRef index = indexTree.rootref();
+					if (index.has_child(c4::to_csubstr(fileNameUTF8)))
+					{
+						const ryml::NodeRef& node = index[c4::to_csubstr(fileNameUTF8)];
+						if (node.has_child("timeCreated"))
+						{
+							node["timeCreated"] >> entry.m_timeCreated;
+						}
+						if (node.has_child("timeModified"))
+						{
+							node["timeModified"] >> entry.m_timeModified;
+						}
+						if (node.has_child("order"))
+						{
+							node["order"] >> newOrder;
+						}
+					}
+				}
 
 				// orderForLegacyFiles will decrement even if it ends up being unused, but that's fine
-				auto key = std::make_pair(true, getOptionalNodeAttribute(node, "order", orderForLegacyFiles--));
-				EnumeratedFileEntry entry{fileName, getOptionalNodeAttribute(node, "timeCreated", creationTime.GetTicks()),
-					getOptionalNodeAttribute(node, "timeModified", modificationTime.GetTicks()), true};
+				auto key = std::make_pair(true, newOrder);
 				sortContainer.try_emplace(std::move(key), std::move(entry));
 			}
 			else
@@ -1720,13 +1742,28 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 				wxDateTime creationTime, modificationTime;
 				fileInfo.GetTimes(nullptr, &modificationTime, &creationTime);
 
-				const YAML::Node indexForDirectory = LoadYAMLFromFile(wxFileName(fileInfo.GetFullPath(), "_pcsx2_index").GetFullPath());
-				const YAML::Node& node = indexForDirectory["%ROOT"];
+				const ryml::Tree indexTree = LoadYAMLFromFile(wxFileName(fileInfo.GetFullPath(), "_pcsx2_index").GetFullPath());
+
+				EnumeratedFileEntry entry{fileName, creationTime.GetTicks(), modificationTime.GetTicks(), false};
+				if (!indexTree.empty())
+				{
+					const ryml::NodeRef indexForDirectory = indexTree.rootref();
+					if (indexForDirectory.has_child("%ROOT"))
+					{
+						const ryml::NodeRef& node = indexForDirectory["%ROOT"];
+						if (node.has_child("timeCreated"))
+						{
+							node["timeCreated"] >> entry.m_timeCreated;
+						}
+						if (node.has_child("timeModified"))
+						{
+							node["timeModified"] >> entry.m_timeModified;
+						}
+					}
+				}
 
 				// orderForDirectories will increment even if it ends up being unused, but that's fine
 				auto key = std::make_pair(false, orderForDirectories++);
-				EnumeratedFileEntry entry{fileName, getOptionalNodeAttribute(node, "timeCreated", creationTime.GetTicks()),
-					getOptionalNodeAttribute(node, "timeModified", modificationTime.GetTicks()), false};
 				sortContainer.try_emplace(std::move(key), std::move(entry));
 			}
 
@@ -1748,13 +1785,16 @@ void FolderMemoryCard::DeleteFromIndex(const wxString& filePath, const wxString&
 {
 	const wxString indexName = wxFileName(filePath, "_pcsx2_index").GetFullPath();
 
-	YAML::Node index = LoadYAMLFromFile(indexName);
+	ryml::Tree indexTree = LoadYAMLFromFile(indexName);
+	if (!indexTree.empty())
+	{
+		ryml::NodeRef index = indexTree.rootref();
+		const wxCharTypeBuffer key(entry.ToUTF8());
+		index.remove_child(c4::to_csubstr(key));
 
-	const wxCharTypeBuffer entryUTF8(entry.ToUTF8());
-	index.remove(entryUTF8.data());
-
-	// Write out the changes
-	SaveYAMLToFile(indexName, index);
+		// Write out the changes
+		SaveYAMLToFile(indexName, index);
+	}
 }
 
 // from http://www.oocities.org/siliconvalley/station/8269/sma02/sma02.html#ECC
@@ -1919,28 +1959,39 @@ void FileAccessHelper::WriteIndex(wxFileName folderName, MemoryCardFileEntry* co
 	const wxCharTypeBuffer fileName(folderName.GetName().ToUTF8());
 	folderName.SetName(L"_pcsx2_index");
 
-	YAML::Node index = LoadYAMLFromFile(folderName.GetFullPath());
-	YAML::Node entryNode = index[fileName.data()];
+	const c4::csubstr key = c4::to_csubstr(fileName);
+	ryml::Tree indexTree = LoadYAMLFromFile(folderName.GetFullPath());
 
-	if (!entryNode.IsDefined())
+	if (!indexTree.empty())
 	{
-		// Newly added file - figure out the sort order as the entry should be added to the end of the list
-		unsigned int order = 0;
-		for (const auto& node : index)
+		ryml::NodeRef index = indexTree.rootref();
+
+		if (!index.has_child(key))
 		{
-			order = std::max(order, node.second["order"].as<unsigned int>(0));
+			// Newly added file - figure out the sort order as the entry should be added to the end of the list
+			index[key] = "";
+			unsigned int maxOrder = 0;
+			for (const ryml::NodeRef& n : index.children())
+			{
+				unsigned int currOrder = 0;
+				if (n.has_child("order"))
+				{
+					n["order"] >> currOrder;
+				}
+				maxOrder = std::max(maxOrder, currOrder);
+			}
+			index[key]["order"] << maxOrder + 1;
 		}
+		ryml::NodeRef entryNode = index[key];
 
-		entryNode["order"] = order + 1;
+		// Update timestamps basing on internal data
+		const auto* e = &entry->entry.data;
+		entryNode["timeCreated"] << e->timeCreated.ToTime();
+		entryNode["timeModified"] << e->timeModified.ToTime();
+
+		// Write out the changes
+		SaveYAMLToFile(folderName.GetFullPath(), index);
 	}
-
-	// Update timestamps basing on internal data
-	const auto* e = &entry->entry.data;
-	entryNode["timeCreated"] = e->timeCreated.ToTime();
-	entryNode["timeModified"] = e->timeModified.ToTime();
-
-	// Write out the changes
-	SaveYAMLToFile(folderName.GetFullPath(), index);
 }
 
 wxFFile* FileAccessHelper::ReOpen(const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata)
