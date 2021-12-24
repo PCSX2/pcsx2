@@ -195,7 +195,6 @@ wxString Path::GetDirectory(const wxString& src)
 	return wxFileName(src).GetPath();
 }
 
-
 // returns the base/root directory of the given path.
 // Example /this/that/something.txt -> dest == "/"
 wxString Path::GetRootDirectory(const wxString& src)
@@ -205,4 +204,13 @@ wxString Path::GetRootDirectory(const wxString& src)
 		return wxString();
 	else
 		return wxString(src.begin(), src.begin() + pos);
+}
+
+fs::path Path::FromWxString(const wxString& path)
+{
+#ifdef _WIN32
+	return fs::path(path.ToStdWstring());
+#else
+	return fs::path(path.ToStdString());
+#endif
 }
