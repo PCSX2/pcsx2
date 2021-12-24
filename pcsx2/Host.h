@@ -41,4 +41,7 @@ namespace Host
 
 	/// Reads a resource file file from the resources directory as a string.
 	std::optional<std::string> ReadResourceFileToString(const char* filename);
+
+	/// Returns the full filepath to a resource file, if it exists.
+	std::optional<std::string> getResourceFilePath(const char* filename);
 } // namespace Host
