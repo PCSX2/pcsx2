@@ -698,6 +698,13 @@ __fi bool mpeg2sliceIDEC()
 {
 	u16 code;
 
+	// If FROM_IPU is running and there's stuff in the output fifo
+	// wait for FROM_IPU to grab it.
+	// Tekken 4 does this then kills the IDEC command after IPU0 finishes
+	// so it expects no extra data to have been processed, the processing is probably triggered by Output FIFO requests
+	if (ipu0ch.chcr.STR && ipuRegs.ctrl.OFC)
+		return false;
+
 	switch (ipu_cmd.pos[0])
 	{
 	case 0:
@@ -836,8 +843,12 @@ __fi bool mpeg2sliceIDEC()
 					ipu_cmd.pos[1] = 2;
 					return false;
 				}
-
-				mbaCount = 0;
+				else
+				{
+					mbaCount = 0;
+					ipu_cmd.pos[1] = 3;
+					return false;
+				}
 			}
 				[[fallthrough]];
 
@@ -944,6 +955,13 @@ finish_idec:
 __fi bool mpeg2_slice()
 {
 	int DCT_offset, DCT_stride;
+
+	// If FROM_IPU is running and there's stuff in the output fifo
+	// wait for FROM_IPU to grab it.
+	// Tekken 4 does this then kills the IDEC command after IPU0 finishes
+	// so it expects no extra data to have been processed, the processing is probably triggered by Output FIFO requests
+	if (ipu0ch.chcr.STR && ipuRegs.ctrl.OFC)
+		return false;
 
 	macroblock_8& mb8 = decoder.mb8;
 	macroblock_16& mb16 = decoder.mb16;
@@ -1172,8 +1190,12 @@ __fi bool mpeg2_slice()
 			ipu_cmd.pos[0] = 3;
 			return false;
 		}
-
-		mbaCount = 0;
+		else
+		{
+			mbaCount = 0;
+			ipu_cmd.pos[0] = 4;
+			return false;
+		}
 	}
 		[[fallthrough]];
 
