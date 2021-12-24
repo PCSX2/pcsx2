@@ -270,7 +270,7 @@ static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEnt
 
 	if (game.eeRoundMode != GameDatabaseSchema::RoundMode::Undefined)
 	{
-		SSE_RoundMode eeRM = (SSE_RoundMode)enum_cast(game.eeRoundMode);
+		const SSE_RoundMode eeRM = (SSE_RoundMode)enum_cast(game.eeRoundMode);
 		if (EnumIsValid(eeRM))
 		{
 			PatchesCon->WriteLn("(GameDB) Changing EE/FPU roundmode to %d [%s]", eeRM, EnumToString(eeRM));
@@ -281,7 +281,7 @@ static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEnt
 
 	if (game.vuRoundMode != GameDatabaseSchema::RoundMode::Undefined)
 	{
-		SSE_RoundMode vuRM = (SSE_RoundMode)enum_cast(game.vuRoundMode);
+		const SSE_RoundMode vuRM = (SSE_RoundMode)enum_cast(game.vuRoundMode);
 		if (EnumIsValid(vuRM))
 		{
 			PatchesCon->WriteLn("(GameDB) Changing VU0/VU1 roundmode to %d [%s]", vuRM, EnumToString(vuRM));
@@ -292,8 +292,8 @@ static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEnt
 
 	if (game.eeClampMode != GameDatabaseSchema::ClampMode::Undefined)
 	{
-		int clampMode = enum_cast(game.eeClampMode);
-		PatchesCon->WriteLn("(GameDB) Changing EE/FPU clamp mode [mode=%d]", clampMode);
+		const int clampMode = enum_cast(game.eeClampMode);
+		PatchesCon->WriteLn(L"(GameDB) Changing EE/FPU clamp mode [mode=%d]", clampMode);
 		dest.Cpu.Recompiler.fpuOverflow = (clampMode >= 1);
 		dest.Cpu.Recompiler.fpuExtraOverflow = (clampMode >= 2);
 		dest.Cpu.Recompiler.fpuFullMode = (clampMode >= 3);
@@ -302,7 +302,7 @@ static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEnt
 
 	if (game.vuClampMode != GameDatabaseSchema::ClampMode::Undefined)
 	{
-		int clampMode = enum_cast(game.vuClampMode);
+		const int clampMode = enum_cast(game.vuClampMode);
 		PatchesCon->WriteLn("(GameDB) Changing VU0/VU1 clamp mode [mode=%d]", clampMode);
 		dest.Cpu.Recompiler.vuOverflow = (clampMode >= 1);
 		dest.Cpu.Recompiler.vuExtraOverflow = (clampMode >= 2);
@@ -320,7 +320,6 @@ static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEnt
 		gf++;
 	}
 
-	// TODO - config - this could be simplified with maps instead of bitfields and enums
 	for (const GamefixId id : game.gameFixes)
 	{
 		// Gamefixes are already guaranteed to be valid, any invalid ones are dropped
@@ -437,12 +436,12 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 
 	if (!curGameKey.IsEmpty())
 	{
-		const GameDatabaseSchema::GameEntry* game = GameDatabase::FindGame(StringUtil::wxStringToUTF8String(curGameKey));
+		auto game = GameDatabase::findGame(std::string(curGameKey.ToUTF8()));
 		if (game)
 		{
 			GameInfo::gameName = StringUtil::UTF8StringToWxString(StringUtil::StdStringFromFormat("%s (%s)", game->name.c_str(), game->region.c_str()));
-			gameCompat.Printf(" [Status = %s]", GameDatabaseSchema::compatToString(game->compat));
-			gameMemCardFilter = StringUtil::UTF8StringToWxString(game->MemcardFiltersAsString());
+			gameCompat.Printf(" [Status = %s]", game->compatAsString());
+			gameMemCardFilter = StringUtil::UTF8StringToWxString(game->memcardFiltersAsString());
 
 			if (fixup.EnablePatches)
 			{

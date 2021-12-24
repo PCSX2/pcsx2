@@ -450,12 +450,11 @@ void InputRecording::GoToFirstFrame(wxWindow* parent)
 
 wxString InputRecording::resolveGameName()
 {
-	// Code loosely taken from AppCoreThread::_ApplySettings to resolve the Game Name
 	std::string gameName;
 	const std::string gameKey(StringUtil::wxStringToUTF8String(SysGetDiscID()));
 	if (!gameKey.empty())
 	{
-		const GameDatabaseSchema::GameEntry* game = GameDatabase::FindGame(gameKey);
+		auto game = GameDatabase::findGame(gameKey);
 		if (game)
 		{
 			gameName = game->name;

@@ -131,7 +131,7 @@ static void inifile_command(const wxString& cmd)
 // Returns number of patches loaded
 int LoadPatchesFromGamesDB(const std::string& crc, const GameDatabaseSchema::GameEntry& game)
 {
-	const GameDatabaseSchema::Patch* patch = game.FindPatch(crc);
+	const GameDatabaseSchema::Patch* patch = game.findPatch(crc);
 	if (patch)
 	{
 		for (const std::string& line : *patch)
