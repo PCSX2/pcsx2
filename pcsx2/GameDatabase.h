@@ -15,6 +15,9 @@
 
 #pragma once
 
+#include "ryml_std.hpp"
+#include "ryml.hpp"
+
 #include <unordered_map>
 #include <vector>
 #include <string>
@@ -22,9 +25,6 @@
 enum GamefixId;
 enum SpeedhackId;
 
-// Since this is kinda yaml specific, might be a good idea to
-// relocate this into the yaml class
-// or put the serialization methods inside the yaml
 class GameDatabaseSchema
 {
 public:
@@ -74,16 +74,14 @@ public:
 		std::unordered_map<std::string, Patch> patches;
 
 		// Returns the list of memory card serials as a `/` delimited string
-		std::string MemcardFiltersAsString() const;
-		const Patch* FindPatch(const std::string& crc) const;
+		std::string memcardFiltersAsString() const;
+		const Patch* findPatch(const std::string_view& crc) const;
+		const char* compatAsString() const;
 	};
-
-	static const char* compatToString(GameDatabaseSchema::Compatibility compat);
 };
 
 namespace GameDatabase
 {
-	void EnsureLoaded();
-
-	const GameDatabaseSchema::GameEntry* FindGame(const std::string& serial);
+	void ensureLoaded();
+	const GameDatabaseSchema::GameEntry* findGame(const std::string_view& serial);
 }; // namespace GameDatabase
