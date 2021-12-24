@@ -240,13 +240,12 @@ static std::ifstream getFileStream(std::string path)
 
 static void initDatabase()
 {
-	const ryml::Callbacks preserve_callbacks = ryml::get_callbacks();
-	const c4::error_callback_type preserve_c4_callback = c4::get_error_callback();
-	auto callbacks = ryml::get_callbacks();
-	callbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void*) {
+	ryml::Callbacks rymlCallbacks = ryml::get_callbacks();
+	rymlCallbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void*) {
 		throw std::runtime_error(fmt::format("[YAML] Parsing error at {}:{} (bufpos={}): {}",
 			loc.line, loc.col, loc.offset, msg));
 	};
+	ryml::set_callbacks(rymlCallbacks);
 	c4::set_error_callback([](const char* msg, size_t msg_size) {
 		throw std::runtime_error(fmt::format("[YAML] Internal Parsing error: {}",
 			msg));
@@ -296,10 +295,8 @@ static void initDatabase()
 	catch (const std::exception& e)
 	{
 		Console.Error(fmt::format("[GameDB] Error occured when initializing GameDB: {}", e.what()));
-		return;
 	}
-	ryml::set_callbacks(preserve_callbacks);
-	c4::set_error_callback(preserve_c4_callback);
+	ryml::reset_callbacks();
 }
 
 
