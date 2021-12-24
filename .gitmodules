@@ -7,9 +7,6 @@
 [submodule "3rdparty/fmt/fmt"]
 	path = 3rdparty/fmt/fmt
 	url = https://github.com/fmtlib/fmt.git
-[submodule "3rdparty/yaml-cpp/yaml-cpp"]
-	path = 3rdparty/yaml-cpp/yaml-cpp
-	url = https://github.com/jbeder/yaml-cpp.git
 [submodule "3rdparty/libchdr/libchdr"]
 	path = 3rdparty/libchdr/libchdr
 	url = https://github.com/rtissera/libchdr.git
@@ -20,3 +17,7 @@
 [submodule "3rdparty/cubeb/cubeb"]
 	path = 3rdparty/cubeb/cubeb
 	url = https://github.com/mozilla/cubeb.git
+[submodule "3rdparty/rapidyaml/rapidyaml"]
+	path = 3rdparty/rapidyaml/rapidyaml
+	url = https://github.com/biojppm/rapidyaml.git
+	branch = master
