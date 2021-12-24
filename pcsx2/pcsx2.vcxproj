@@ -1136,9 +1136,6 @@
     <ProjectReference Include="$(SolutionDir)3rdparty\xz\liblzma.vcxproj">
       <Project>{12728250-16ec-4dc6-94d7-e21dd88947f8}</Project>
     </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\yaml-cpp\yaml.vcxproj">
-      <Project>{48329442-e41b-4a1f-8364-36eee1b71343}</Project>
-    </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\libchdr\libchdr.vcxproj">
       <Project>{a0d2b3ad-1f72-4ee3-8b5c-f2c358da35f0}</Project>
     </ProjectReference>
@@ -1155,6 +1152,9 @@
     </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\cubeb\cubeb.vcxproj">
       <Project>{bf74c473-dc04-44b3-92e8-4145f4e77342}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\rapidyaml\ryml.vcxproj">
+      <Project>{de9653b6-17dd-356a-9ee0-28a731772587}</Project>
     </ProjectReference>
     <ProjectReference Include="..\common\common.vcxproj">
       <Project>{4639972e-424e-4e13-8b07-ca403c481346}</Project>
