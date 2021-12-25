@@ -157,5 +157,20 @@ namespace usb_printer
 		}
 	};
 
+#pragma pack(push, 1)
+	struct BMPHeader
+	{
+		uint16_t magic;
+		uint32_t filesize;
+		uint32_t reserved;
+		uint32_t data_offset;
+		uint32_t core_header_size;
+		uint16_t width;
+		uint16_t height;
+		uint16_t planes;
+		uint16_t bpp;
+	};
+#pragma pack(pop)
+
 } // namespace usb_printer
 #endif

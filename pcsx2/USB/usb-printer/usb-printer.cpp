@@ -38,7 +38,9 @@ namespace usb_printer
 		int print_file;
 		int width;
 		int height;
+		long stride;
 		int data_size;
+		long data_pos;
 	} PrinterState;
 
 	static void usb_printer_handle_reset(USBDevice* dev)
@@ -85,7 +87,7 @@ namespace usb_printer
 		char cur_time_str[32];
 		const time_t cur_time = time(nullptr);
 		strftime(cur_time_str, sizeof(cur_time_str), "%Y_%m_%d_%H_%M_%S", localtime(&cur_time));
-		snprintf(filepath, sizeof(filepath), "%s/print_%s.ppm",
+		snprintf(filepath, sizeof(filepath), "%s/print_%s.bmp",
 				g_Conf->Folders.Snapshots.ToString().ToStdString().c_str(), cur_time_str);
 		s->print_file = open(filepath, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 666);
 		if (s->print_file < 0)
@@ -94,16 +96,40 @@ namespace usb_printer
 			return;
 		}
 		Console.WriteLn("Printer: Sony: Saving to... %s", filepath);
-		char header[30];
-		int header_size = sprintf(header, "P6 %d %d 255\n", s->width, s->height);
-		write(s->print_file, header, header_size);
+
+		BMPHeader header = {0};
+		header.magic = 0x4D42;
+		header.filesize = sizeof(BMPHeader) + 3 * s->width * s->height;
+		header.data_offset = sizeof(BMPHeader);
+		header.core_header_size = 0x0C;
+		header.width = s->width;
+		header.height = s->height;
+		header.planes = 1;
+		header.bpp = 24;
+		write(s->print_file, &header, sizeof(header));
+
+		s->stride = 3 * s->width + 3 - ((3 * s->width + 3) & 3);
+		s->data_pos = 0;
+		lseek(s->print_file, sizeof(BMPHeader) + s->stride * s->height - 1, SEEK_SET);
+		char zero = 0;
+		write(s->print_file, &zero, 1);
 	}
 
 	void sony_write_data(PrinterState* s, int size, uint8_t* data)
 	{
-		if (s->print_file >= 0)
+		for (int i = 0; i < size; i++)
 		{
-			write(s->print_file, data, size);
+			long line = (s->data_pos / 3) / s->width;
+			long col = (s->data_pos / 3) % s->width;
+			long pos_out = s->stride * (s->height - 1 - line) + 3 * col;
+			if (pos_out < 0)
+			{
+				Console.WriteLn("Printer: Sony: error: pos_out=0x%x", pos_out);
+				break;
+			}
+			lseek(s->print_file, sizeof(BMPHeader) + pos_out + 2 - s->data_pos % 3, SEEK_SET);
+			write(s->print_file, data + i, 1);
+			s->data_pos ++;
 		}
 	}
 
