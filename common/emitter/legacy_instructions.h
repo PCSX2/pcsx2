@@ -22,6 +22,10 @@
 #define ATTR_DEP
 #endif
 
+#ifdef FSCALE
+# undef FSCALE // Defined in a macOS header
+#endif
+
 //------------------------------------------------------------------
 // legacy jump/align functions
 //------------------------------------------------------------------
