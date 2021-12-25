@@ -153,6 +153,9 @@ namespace StringUtil
 		return (str.length() >= suffix_length && str.compare(str.length() - suffix_length, suffix_length, suffix) == 0);
 	}
 
+	/// Strip whitespace from the start/end of the string.
+	std::string_view StripWhitespace(const std::string_view& str);
+
 	/// Strided memcpy/memcmp.
 	static inline void StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,
 		std::size_t copy_size, std::size_t count)

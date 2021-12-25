@@ -236,6 +236,21 @@ namespace StringUtil
 		return lines;
 	}
 
+	std::string_view StripWhitespace(const std::string_view& str)
+	{
+		std::string_view::size_type start = 0;
+		while (start < str.size() && std::isspace(str[start]))
+			start++;
+		if (start == str.size())
+			return {};
+
+		std::string_view::size_type end = str.size() - 1;
+		while (end > start && std::isspace(str[end]))
+			end--;
+
+		return str.substr(start, end - start + 1);
+	}
+
 	std::wstring UTF8StringToWideString(const std::string_view& str)
 	{
 		std::wstring ret;
