@@ -209,7 +209,7 @@ void parseAndInsert(const std::string_view& serial, const c4::yml::NodeRef& node
 	{
 		for (const ryml::NodeRef& n : node["patches"].children())
 		{
-			auto crc = std::string(n.key().str, n.key().len);
+			auto crc = StringUtil::toLower(std::string(n.key().str, n.key().len));
 			if (gameEntry.patches.count(crc) == 1)
 			{
 				Console.Error(fmt::format("[GameDB] Duplicate CRC '{}' found for serial: '{}'. Skipping, CRCs are case-insensitive!", crc, serial));
