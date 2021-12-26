@@ -15,9 +15,6 @@
 
 #pragma once
 
-#include "ryml_std.hpp"
-#include "ryml.hpp"
-
 #include <unordered_map>
 #include <vector>
 #include <string>
