@@ -254,24 +254,14 @@ static void initDatabase()
 	});
 	try
 	{
-		auto filePath = Host::getResourceFilePath(GAMEDB_YAML_FILE_NAME);
-		if (!filePath.has_value())
+		std::optional<std::vector<u8>> buf(Host::ReadResourceFile(GAMEDB_YAML_FILE_NAME));
+		if (!buf.has_value())
 		{
 			Console.Error("[GameDB] Unable to open GameDB file, file does not exist.");
 			return;
 		}
 
-		auto dbStream = getFileStream(filePath.value());
-
-		dbStream.seekg(0, std::ios::end);
-		const size_t size = dbStream.tellg();
-		dbStream.seekg(0, std::ios::beg);
-
-		std::vector<char> buf(size);
-		dbStream.read(buf.data(), size);
-		dbStream.close();
-
-		const ryml::substr view = c4::basic_substring<char>(buf.data(), size);
+		const ryml::substr view = c4::basic_substring<char>(reinterpret_cast<char*>(buf->data()), buf->size());
 		ryml::Tree tree = ryml::parse(view);
 		ryml::NodeRef root = tree.rootref();
 
