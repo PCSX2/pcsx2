@@ -95,7 +95,7 @@ struct cdvdStruct
 	u8 nCommand;
 	u8 Ready;
 	u8 Error;
-	u8 PwOff;
+	u8 IntrStat;
 	u8 Status;
 	u8 StatusSticky;
 	u8 Type;

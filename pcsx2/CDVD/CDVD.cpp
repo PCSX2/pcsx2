@@ -45,6 +45,9 @@ cdvdStruct cdvd;
 
 s64 PSXCLK = 36864000;
 
+u8 monthmap[13] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+u8 cdvdParamLength[16] = { 0, 0, 0, 0, 0, 4, 11, 11, 11, 1, 255, 255, 7, 2, 11, 1 };
 
 static __fi void SetResultSize(u8 size)
 {
@@ -92,7 +95,7 @@ static void CDVD_INT(int eCycle)
 // test (which will cause the exception to be handled).
 static void cdvdSetIrq(uint id = (1 << Irq_CommandComplete))
 {
-	cdvd.PwOff |= id;
+	cdvd.IntrStat |= id;
 	iopIntcIrq(2);
 	psxSetNextBranchDelta(20);
 }
@@ -624,7 +627,7 @@ s32 cdvdCtrlTrayOpen()
 
 	DiscSwapTimerSeconds = cdvd.RTC.second; // remember the PS2 time when this happened
 	cdvdUpdateStatus(CDVD_STATUS_TRAY_OPEN);
-	cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
+	cdvd.Ready = CDVD_DRIVE_DEV9CON;
 
 	if (cdvd.Type > 0 || CDVDsys_GetSourceType() == CDVD_SourceType::NoDisc)
 	{
@@ -646,6 +649,7 @@ s32 cdvdCtrlTrayClose()
 		cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON;
 		cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 		cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
+		cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON;
 		cdvd.Tray.cdvdActionSeconds = 0;
 	}
 	else
@@ -1334,8 +1338,6 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 	return seektime;
 }
 
-u8 monthmap[13] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
 void cdvdUpdateTrayState()
 {
 	if (cdvd.Tray.cdvdActionSeconds > 0)
@@ -1451,8 +1453,8 @@ u8 cdvdRead(u8 key)
 			return 0;
 
 		case 0x08: // INTR_STAT
-			CDVD_LOG("cdvdRead08(IntrReason) %x", cdvd.PwOff);
-			return cdvd.PwOff;
+			CDVD_LOG("cdvdRead08(IntrReason) %x", cdvd.IntrStat);
+			return cdvd.IntrStat;
 
 		case 0x0A: // STATUS
 			CDVD_LOG("cdvdRead0A(Status) %x", cdvd.Status);
@@ -1493,7 +1495,7 @@ u8 cdvdRead(u8 key)
 
 		case 0x15: // RSV
 			CDVD_LOG("cdvdRead15(RSV)");
-			return 0x01; // | 0x80 for ATAPI mode
+			return 0x0; //  PSX DESR related, but confirmed to be 0 on normal PS2
 
 		case 0x16: // SCOMMAND
 			CDVD_LOG("cdvdRead16(SCMD) %x", cdvd.sCommand);
@@ -1588,11 +1590,63 @@ static bool cdvdReadErrorHandler()
 	return true;
 }
 
+static bool cdvdCommandErrorHandler()
+{
+	if (cdvd.nCommand > N_CD_NOP) // Command needs a disc, so check the tray is closed
+	{
+		if ((cdvd.Status & CDVD_STATUS_TRAY_OPEN) || (cdvd.Type == CDVD_TYPE_NODISC))
+		{
+			cdvd.Error = (cdvd.Type == CDVD_TYPE_NODISC) ? 0x12 : 0x11; // No Disc Tray is open
+			cdvd.Ready |= CDVD_DRIVE_ERROR;
+			cdvdSetIrq();
+			return false;
+		}
+	}
+
+	if (cdvd.ParamC != cdvdParamLength[cdvd.nCommand] && cdvdParamLength[cdvd.nCommand] != 255)
+	{
+		DevCon.Warning("CDVD: Error in command parameter length, expecting %d got %d", cdvdParamLength[cdvd.nCommand], cdvd.ParamC);
+		cdvd.Error = 0x22; // Invalid parameter for command
+		cdvd.Ready |= CDVD_DRIVE_ERROR;
+		cdvdSetIrq();
+		return false;
+	}
+
+	if (cdvd.nCommand > N_CD_CHG_SPDL_CTRL)
+	{
+		DevCon.Warning("CDVD: Error invalid NCMD");
+		cdvd.Error = 0x10; // Unsupported Command
+		cdvd.Ready |= CDVD_DRIVE_ERROR;
+		cdvdSetIrq();
+		return false;
+	}
+
+	return true;
+}
+
 static void cdvdWrite04(u8 rt)
 { // NCOMMAND
 	CDVD_LOG("cdvdWrite04: NCMD %s (%x) (ParamP = %x)", nCmdName[rt], rt, cdvd.ParamP);
 
+	if (!(cdvd.Ready & CDVD_DRIVE_READY))
+	{
+		DevCon.Warning("CDVD: Error drive not ready on command issue");
+		cdvd.Error = 0x13; // Not Ready
+		cdvd.Ready |= CDVD_DRIVE_ERROR;
+		cdvdSetIrq();
+		cdvd.ParamP = 0;
+		cdvd.ParamC = 0;
+		return;
+	}
+
 	cdvd.nCommand = rt;
+
+	if (!cdvdCommandErrorHandler())
+	{
+		cdvd.ParamP = 0;
+		cdvd.ParamC = 0;
+		return;
+	}
 
 	switch (rt)
 	{
@@ -1893,7 +1947,7 @@ static void cdvdWrite04(u8 rt)
 			cdvdSetIrq();
 			break;
 
-		default:
+		default: // Should be unreachable, handled in the error handler earlier
 			Console.Warning("NCMD Unknown %x", rt);
 			cdvdSetIrq();
 			break;
@@ -1924,7 +1978,7 @@ static __fi void cdvdWrite07(u8 rt) // BREAK
 	CDVD_LOG("cdvdWrite07(Break) %x", rt);
 
 	// If we're already in a Ready state or already Breaking, then do nothing:
-	if ((cdvd.Ready & CDVD_DRIVE_READY) || (cdvd.Action == cdvdAction_Break))
+	if (!(cdvd.Ready & CDVD_DRIVE_BUSY) || (cdvd.Action == cdvdAction_Break))
 		return;
 
 	DbgCon.WriteLn("*PCSX2*: CDVD BREAK %x", rt);
@@ -1940,13 +1994,13 @@ static __fi void cdvdWrite07(u8 rt) // BREAK
 	// Clear the cdvd status:
 	cdvd.Readed = 0;
 	cdvd.Reading = 0;
-	cdvdUpdateStatus(CDVD_STATUS_STOP);
+	cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 }
 
 static __fi void cdvdWrite08(u8 rt)
 { // INTR_STAT
 	CDVD_LOG("cdvdWrite08(IntrReason) = ACK(%x)", rt);
-	cdvd.PwOff &= ~rt;
+	cdvd.IntrStat &= ~rt;
 }
 
 static __fi void cdvdWrite0A(u8 rt)
