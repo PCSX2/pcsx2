@@ -38,6 +38,8 @@ without proper emulation of the cdvd status flag it also tends to break things.
 
 */
 
+/* Old IRQ structure
+
 enum CdvdIrqId
 {
 	Irq_None = 0,
@@ -48,6 +50,16 @@ enum CdvdIrqId
 	Irq_Error,
 	Irq_NotReady
 
+};
+*/
+
+enum CdvdIrqId
+{
+	Irq_None = 0,
+	Irq_CommandComplete = 0,
+	Irq_POffReady = 2,
+	Irq_Eject,
+	Irq_BSPower, //PS1 IRQ not used
 };
 
 /* Cdvd.Status bits and their meaning

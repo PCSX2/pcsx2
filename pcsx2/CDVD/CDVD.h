@@ -148,12 +148,12 @@ struct cdvdStruct
 	u8 TrayTimeout;
 	u8 Action;        // the currently scheduled emulated action
 	u32 SeekToSector; // Holds the destination sector during seek operations.
+	u32 MaxSector;    // Current disc max sector.
 	u32 ReadTime;     // Avg. time to read one block of data (in Iop cycles)
 	bool Spinning;    // indicates if the Cdvd is spinning or needs a spinup delay
 	bool mediaChanged;
 	cdvdTrayTimer Tray;
 	u8 nextSectorsBuffered;
-	bool triggerDataReady;
 };
 
 extern cdvdStruct cdvd;
