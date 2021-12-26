@@ -31,7 +31,7 @@ enum class FreezeAction
 //  the lower 16 bit value.  IF the change is breaking of all compatibility with old
 //  states, increment the upper 16 bit value, and clear the lower 16 bits to 0.
 
-static const u32 g_SaveVersion = (0x9A2A << 16) | 0x0000;
+static const u32 g_SaveVersion = (0x9A2B << 16) | 0x0000;
 
 // the freezing data between submodules and core
 // an interesting thing to note is that this dates back from before plugin
