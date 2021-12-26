@@ -18,6 +18,7 @@
 #include "common/Console.h"
 #include "common/MD5Digest.h"
 #include "common/StringUtil.h"
+#include "common/Timer.h"
 
 namespace GL
 {
@@ -291,7 +292,18 @@ namespace GL
 		const std::string_view fragment_shader, const PreLinkCallback& callback)
 	{
 		if (!m_program_binary_supported || !m_blob_file)
-			return CompileProgram(vertex_shader, geometry_shader, fragment_shader, callback, false);
+		{
+#ifdef PCSX2_DEVBUILD
+			Common::Timer timer;
+#endif
+
+			std::optional<Program> res = CompileProgram(vertex_shader, geometry_shader, fragment_shader, callback, false);
+
+#ifdef PCSX2_DEVBUILD
+			Console.WriteLn("Time to compile shader without caching: %.2fms", timer.GetTimeMilliseconds());
+#endif
+			return res;
+		}
 
 		const auto key = GetCacheKey(vertex_shader, geometry_shader, fragment_shader);
 		auto iter = m_index.find(key);
@@ -306,9 +318,19 @@ namespace GL
 			return {};
 		}
 
+#ifdef PCSX2_DEVBUILD
+		Common::Timer timer;
+#endif
+
 		Program prog;
 		if (prog.CreateFromBinary(data.data(), static_cast<u32>(data.size()), iter->second.blob_format))
+		{
+#ifdef PCSX2_DEVBUILD
+			Console.WriteLn("Time to create program from binary: %.2fms", timer.GetTimeMilliseconds());
+#endif
+
 			return std::optional<Program>(std::move(prog));
+		}
 
 		Console.Warning(
 			"Failed to create program from binary, this may be due to a driver or GPU Change. Recreating cache.");
@@ -357,14 +379,28 @@ namespace GL
 		const std::string_view& fragment_shader,
 		const PreLinkCallback& callback)
 	{
+#ifdef PCSX2_DEVBUILD
+		Common::Timer timer;
+#endif
+
 		std::optional<Program> prog = CompileProgram(vertex_shader, geometry_shader, fragment_shader, callback, true);
 		if (!prog)
 			return std::nullopt;
+
+#ifdef PCSX2_DEVBUILD
+		const float compile_time = timer.GetTimeMilliseconds();
+		timer.Reset();
+#endif
 
 		std::vector<u8> prog_data;
 		u32 prog_format = 0;
 		if (!prog->GetBinary(&prog_data, &prog_format))
 			return std::nullopt;
+
+#ifdef PCSX2_DEVBUILD
+		const float binary_time = timer.GetTimeMilliseconds();
+		timer.Reset();
+#endif
 
 		if (!m_blob_file || std::fseek(m_blob_file, 0, SEEK_END) != 0)
 			return prog;
@@ -395,6 +431,11 @@ namespace GL
 			Console.Error("Failed to write shader blob to file");
 			return prog;
 		}
+
+#ifdef PCSX2_DEVBUILD
+		const float write_time = timer.GetTimeMilliseconds();
+		Console.WriteLn("Compiled and cached shader: Compile: %.2fms, Binary: %.2fms, Write: %.2fms", compile_time, binary_time, write_time);
+#endif
 
 		m_index.emplace(key, data);
 		return prog;
