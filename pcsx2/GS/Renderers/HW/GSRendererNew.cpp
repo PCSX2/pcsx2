@@ -643,9 +643,17 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 		if (sw_blending)
 		{
 			GL_INS("PABE mode ENABLED");
-			m_conf.ps.pabe = 1;
-			accumulation_blend = false;
-			blend_mix = false;
+			if (m_dev->Features().texture_barrier)
+			{
+				// Disable hw/sw blend and do pure sw blend with reading the framebuffer.
+				accumulation_blend = false;
+				blend_mix = false;
+				m_conf.ps.pabe = 1;
+			}
+			else
+			{
+				m_conf.ps.pabe = blend_non_recursive;
+			}
 		}
 		else if (ALPHA.A == 0 && ALPHA.B == 1 && ALPHA.C == 0 && ALPHA.D == 1)
 		{
