@@ -603,6 +603,12 @@ static void cdvdDetectDisk()
 	}
 }
 
+static void cdvdUpdateStatus(cdvdStatus NewStatus)
+{
+	cdvd.Status = NewStatus;
+	cdvd.StatusSticky |= NewStatus;
+}
+
 s32 cdvdCtrlTrayOpen()
 {
 	DevCon.WriteLn(Color_Green, L"Open virtual disk tray");
@@ -617,10 +623,8 @@ s32 cdvdCtrlTrayOpen()
 	cdvdDetectDisk();
 
 	DiscSwapTimerSeconds = cdvd.RTC.second; // remember the PS2 time when this happened
-	cdvd.Status = CDVD_STATUS_TRAY_OPEN;
+	cdvdUpdateStatus(CDVD_STATUS_TRAY_OPEN);
 	cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
-
-	cdvd.mediaChanged = true;
 
 	if (cdvd.Type > 0 || CDVDsys_GetSourceType() == CDVD_SourceType::NoDisc)
 	{
@@ -640,7 +644,7 @@ s32 cdvdCtrlTrayClose()
 	{
 		DevCon.WriteLn(Color_Green, L"Media already loaded (fast boot)");
 		cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON;
-		cdvd.Status = CDVD_STATUS_PAUSE;
+		cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 		cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
 		cdvd.Tray.cdvdActionSeconds = 0;
 	}
@@ -648,7 +652,7 @@ s32 cdvdCtrlTrayClose()
 	{
 		DevCon.WriteLn(Color_Green, L"Detecting media");
 		cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
-		cdvd.Status = CDVD_STATUS_SEEK;
+		cdvdUpdateStatus(CDVD_STATUS_SEEK);
 		cdvd.Tray.trayState = CDVD_DISC_DETECTING;
 		cdvd.Tray.cdvdActionSeconds = 3;
 	}
@@ -796,7 +800,7 @@ void cdvdReset()
 
 	cdvd.sDataIn = 0x40;
 	cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON;
-	cdvd.Status = CDVD_STATUS_PAUSE;
+	cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 	cdvd.Speed = 4;
 	cdvd.BlockSize = 2064;
 	cdvd.Action = cdvdAction_None;
@@ -888,10 +892,9 @@ void cdvdNewDiskCB()
 	if ((g_GameStarted || !g_SkipBiosHack) && cdvd.Tray.trayState != CDVD_DISC_EJECT)
 	{
 		DevCon.WriteLn(Color_Green, L"Ejecting media");
-		cdvd.Status = CDVD_STATUS_TRAY_OPEN;
+		cdvdUpdateStatus(CDVD_STATUS_TRAY_OPEN);
 		cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
 		cdvd.Tray.trayState = CDVD_DISC_EJECT;
-		cdvd.mediaChanged = true;
 
 		// If it really got ejected, the DVD Reader will report Type 0, so no need to simulate ejection
 		if (cdvd.Type > 0)
@@ -901,7 +904,7 @@ void cdvdNewDiskCB()
 	{
 		DevCon.WriteLn(Color_Green, L"Seeking new media");
 		cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
-		cdvd.Status = CDVD_STATUS_SEEK;
+		cdvdUpdateStatus(CDVD_STATUS_SEEK);
 		cdvd.Tray.trayState = CDVD_DISC_DETECTING;
 		cdvd.Tray.cdvdActionSeconds = 3;
 	}
@@ -1045,7 +1048,7 @@ __fi void cdvdActionInterrupt()
 			cdvd.Spinning = true;
 			cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON;
 			cdvd.Sector = cdvd.SeekToSector;
-			cdvd.Status = CDVD_STATUS_PAUSE;
+			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			cdvd.nextSectorsBuffered = 0;
 			CDVDSECTORREADY_INT(cdvd.ReadTime);
 			break;
@@ -1055,7 +1058,7 @@ __fi void cdvdActionInterrupt()
 			cdvd.Spinning = true; //check (rama)
 			cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON;
 			cdvd.Sector = cdvd.SeekToSector;
-			cdvd.Status = CDVD_STATUS_PAUSE;
+			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			cdvd.nextSectorsBuffered = 0;
 			CDVDSECTORREADY_INT(cdvd.ReadTime);
 			break;
@@ -1064,7 +1067,7 @@ __fi void cdvdActionInterrupt()
 			cdvd.Spinning = false;
 			cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON;
 			cdvd.Sector = 0;
-			cdvd.Status = CDVD_STATUS_STOP;
+			cdvdUpdateStatus(CDVD_STATUS_STOP);
 			break;
 
 		case cdvdAction_Break:
@@ -1076,7 +1079,7 @@ __fi void cdvdActionInterrupt()
 			cdvd.Reading = 0;
 			cdvd.Readed = 0;
 			cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON | CDVD_DRIVE_ERROR; // should be CDVD_READY1 or something else?
-			cdvd.Status = CDVD_STATUS_PAUSE; //Break stops the command in progress it doesn't stop the drive. Formula 2001
+			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			cdvd.RErr = 0;
 			break;
 	}
@@ -1103,7 +1106,7 @@ __fi void cdvdReadInterrupt()
 	//Console.WriteLn("cdvdReadInterrupt %x %x %x %x %x", cpuRegs.interrupt, cdvd.Readed, cdvd.Reading, cdvd.nSectors, (HW_DMA3_BCR_H16 * HW_DMA3_BCR_L16) *4);
 
 	cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
-	cdvd.Status = CDVD_STATUS_READ;
+	cdvdUpdateStatus(CDVD_STATUS_READ);
 	cdvd.WaitingDMA = false;
 	
 	if (!cdvd.Readed)
@@ -1173,7 +1176,7 @@ __fi void cdvdReadInterrupt()
 				psxHu32(0x1070) |= 0x4;
 				cdvd.Ready |= CDVD_DRIVE_DATARDY;
 			}*/
-			cdvd.Status = CDVD_STATUS_PAUSE;
+			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			cdvd.WaitingDMA = true;
 			return;
 		}
@@ -1191,7 +1194,7 @@ __fi void cdvdReadInterrupt()
 			cdvdSetIrq();
 			cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON;
 
-			cdvd.Status = CDVD_STATUS_PAUSE;
+			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			//DevCon.Warning("Scheduling interrupt in %d cycles", cdvd.ReadTime - ((cdvd.BlockSize / 4) * 12));
 			// Timing issues on command end
 			// Star Ocean (1.1 Japan) expects the DMA to end and interrupt at least 128 or more cycles before the CDVD command ends.
@@ -1210,7 +1213,7 @@ __fi void cdvdReadInterrupt()
 			iopIntcIrq(2);
 			cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON;
 
-			cdvd.Status = CDVD_STATUS_PAUSE;
+			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			return;
 		}
 		CDVDREAD_INT((cdvd.BlockSize / 4) * 12);
@@ -1244,7 +1247,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 	// Update - Apparently all that was rubbish and some games don't like it. WRC was the one in this scenario which hated SEEK |ZPAUSE, so just putting it back to pause for now.
 	// We should really run some tests for this behaviour.
 	
-	cdvd.Status = CDVD_STATUS_PAUSE;
+	cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 
 	if (!cdvd.Spinning)
 	{
@@ -1283,7 +1286,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 		if (delta == 0)
 		{
 			//cdvd.Status = CDVD_STATUS_PAUSE;
-			cdvd.Status = CDVD_STATUS_READ; // Time Crisis 2
+			cdvdUpdateStatus(CDVD_STATUS_READ);
 			cdvd.Readed = 1; // Note: 1, not 0, as implied by the next comment. Need to look into this. --arcum42
 			cdvd.Reading = 1; // We don't need to wait for it to read a sector as it's already queued up, or we adjust for it here.
 			cdvd.RetryCntP = 0;
@@ -1356,11 +1359,12 @@ void cdvdUpdateTrayState()
 					if (CDVDsys_GetSourceType() != CDVD_SourceType::NoDisc)
 					{
 						DevCon.WriteLn(Color_Green, L"Media ready to read");
-						cdvd.mediaChanged = true;
-						cdvd.Status = CDVD_STATUS_PAUSE;
+						cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 					}
 					else
-						cdvd.Status = CDVD_STATUS_STOP;
+					{
+						cdvdUpdateStatus(CDVD_STATUS_STOP);
+					}
 					break;
 			}
 		}
@@ -1454,13 +1458,10 @@ u8 cdvdRead(u8 key)
 			CDVD_LOG("cdvdRead0A(Status) %x", cdvd.Status);
 			return cdvd.Status;
 
-		case 0x0B: // MEDIA CHANGED (Set when disc is ejected or detected, aka cdvd.type changes)
+		case 0x0B: // STATUS STICKY
 		{
-			CDVD_LOG("cdvdRead0B(Media Change) (1 Changed, 0 Not Changed): %x", cdvd.mediaChanged);
-			bool ret = cdvd.mediaChanged;
-			cdvd.mediaChanged = false;
-
-			return ret;
+			CDVD_LOG("cdvdRead0B(Status Sticky): %x", cdvd.StatusSticky);
+			return cdvd.StatusSticky;
 		}
 		case 0x0C: // CRT MINUTE
 			CDVD_LOG("cdvdRead0C(Min) %x", itob((u8)(cdvd.Sector / (60 * 75))));
@@ -1611,7 +1612,7 @@ static void cdvdWrite04(u8 rt)
 			CDVD_INT(cdvdStartSeek(0, MODE_DVDROM));
 			// Might not seek, but makes sense since it does move to the inner most track
 			// It's only temporary until the interrupt anyway when it sets itself ready
-			cdvd.Status = CDVD_STATUS_SEEK;
+			cdvdUpdateStatus(CDVD_STATUS_SEEK);
 			break;
 
 		case N_CD_STOP: // CdStop
@@ -1619,7 +1620,7 @@ static void cdvdWrite04(u8 rt)
 			cdvd.Action = cdvdAction_Stop;
 			cdvd.nextSectorsBuffered = 0;
 			psxRegs.interrupt &= ~(1 << IopEvt_CdvdSectorReady);
-			cdvd.Status = CDVD_STATUS_SPIN;
+			cdvdUpdateStatus(CDVD_STATUS_SPIN);
 			CDVD_INT(PSXCLK / 6); // 166ms delay?
 			break;
 
@@ -1630,7 +1631,7 @@ static void cdvdWrite04(u8 rt)
 			cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON;
 			cdvdSetIrq();
 			//After Pausing needs to buffer the next sector
-			cdvd.Status = CDVD_STATUS_PAUSE;
+			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			cdvd.nextSectorsBuffered = 0;
 			CDVDSECTORREADY_INT(cdvd.ReadTime);
 			break;
@@ -1639,7 +1640,7 @@ static void cdvdWrite04(u8 rt)
 			cdvd.Action = cdvdAction_Seek;
 			cdvd.ReadTime = cdvdBlockReadTime((CDVD_MODE_TYPE)cdvdIsDVD());
 			CDVD_INT(cdvdStartSeek(*(uint*)(cdvd.Param + 0), (CDVD_MODE_TYPE)cdvdIsDVD()));
-			cdvd.Status = CDVD_STATUS_SEEK;
+			cdvdUpdateStatus(CDVD_STATUS_SEEK);
 			break;
 
 		case N_CD_READ: // CdRead
@@ -1866,7 +1867,7 @@ static void cdvdWrite04(u8 rt)
 			HW_DMA3_CHCR &= ~0x01000000;
 			psxDmaInterrupt(3);
 			//After reading the TOC it needs to go back to buffer the next sector
-			cdvd.Status = CDVD_STATUS_PAUSE;
+			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			cdvd.nextSectorsBuffered = 0;
 			CDVDSECTORREADY_INT(cdvd.ReadTime);
 			break;
@@ -1881,7 +1882,7 @@ static void cdvdWrite04(u8 rt)
 			cdvd.KeyXor = 0x00;
 			cdvdSetIrq();
 			//After reading the key it needs to go back to buffer the next sector
-			cdvd.Status = CDVD_STATUS_PAUSE;
+			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			cdvd.nextSectorsBuffered = 0;
 			CDVDSECTORREADY_INT(cdvd.ReadTime);
 		}
@@ -1939,7 +1940,7 @@ static __fi void cdvdWrite07(u8 rt) // BREAK
 	// Clear the cdvd status:
 	cdvd.Readed = 0;
 	cdvd.Reading = 0;
-	cdvd.Status = CDVD_STATUS_STOP;
+	cdvdUpdateStatus(CDVD_STATUS_STOP);
 }
 
 static __fi void cdvdWrite08(u8 rt)
@@ -2050,27 +2051,13 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				}
 				break;
 
-			case 0x05: // CdTrayReqState  (0:1) - resets the tray open detection
-
-				// Fixme: This function is believed to change some status flag
-				// when the Tray state (stored as "1" in cdvd.Status) is different between 2 successive calls.
-				// Cdvd.Status can be different than 1 here, yet we may still have to report an open status.
-				// Gonna have to investigate further. (rama)
-
+			case 0x05: // CdTrayReqState (0:1) - resets the tray open detection
 				//Console.Warning("CdTrayReqState. cdvd.Status = %d", cdvd.Status);
+				// This function sets the Sticky tray flag to the same value as Status for detecting change
+				cdvd.StatusSticky = cdvd.Status & CDVD_STATUS_TRAY_OPEN;
+
 				SetResultSize(1);
-
-				if (cdvd.Status == CDVD_STATUS_TRAY_OPEN)
-				{
-					//Console.Warning( "reporting Open status" );
-					cdvd.Result[0] = 1;
-				}
-				else
-				{
-					//Console.Warning( "reporting Close status" );
-					cdvd.Result[0] = 0; // old behaviour was always this
-				}
-
+				cdvd.Result[0] = 0; // Could be a bit to say it's busy, but actual function is unknown, it expects 0 to continue.
 				break;
 
 			case 0x06: // CdTrayCtrl  (1:1)
