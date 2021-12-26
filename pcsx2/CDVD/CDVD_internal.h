@@ -82,11 +82,25 @@ enum cdvdStatus
 	CDVD_STATUS_EMERGENCY = 0x20,
 };
 
+/* from PS2Tek https://psi-rockin.github.io/ps2tek/#cdvdioports
+1F402005h N command status (R)
+  0     Error (1=error occurred)
+  1     Unknown/unused
+  2     DEV9 device connected (1=HDD/network adapter connected)
+  3     Unknown/unused
+  4     Test mode
+  5     Power off ready
+  6     Drive status (1=ready)
+  7     Busy executing NCMD
+
+*/
 enum cdvdready
 {
-	CDVD_DRIVE_DATARDY = 0x2,
+	CDVD_DRIVE_ERROR = 0x01,
+	CDVD_DRIVE_DEV9CON = 0x04,
 	CDVD_DRIVE_PWOFF = 0x20,
 	CDVD_DRIVE_READY = 0x40,
+	CDVD_DRIVE_BUSY = 0x80,
 };
 
 // Cdvd actions tell the emulator how and when to respond to certain requests.
