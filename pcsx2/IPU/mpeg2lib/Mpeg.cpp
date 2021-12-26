@@ -843,12 +843,7 @@ __fi bool mpeg2sliceIDEC()
 					ipu_cmd.pos[1] = 2;
 					return false;
 				}
-				else
-				{
-					mbaCount = 0;
-					ipu_cmd.pos[1] = 3;
-					return false;
-				}
+				mbaCount = 0;
 			}
 				[[fallthrough]];
 
@@ -913,6 +908,7 @@ __fi bool mpeg2sliceIDEC()
 
 			ipu_cmd.pos[1] = 0;
 			ipu_cmd.pos[2] = 0;
+			return false;
 		}
 
 finish_idec:
@@ -1190,12 +1186,8 @@ __fi bool mpeg2_slice()
 			ipu_cmd.pos[0] = 3;
 			return false;
 		}
-		else
-		{
-			mbaCount = 0;
-			ipu_cmd.pos[0] = 4;
-			return false;
-		}
+
+		mbaCount = 0;
 	}
 		[[fallthrough]];
 
