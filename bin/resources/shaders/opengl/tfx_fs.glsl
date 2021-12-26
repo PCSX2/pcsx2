@@ -702,6 +702,11 @@ void ps_blend(inout vec4 Color, float As)
     vec3 D = vec3(0.0f);
 #endif
 
+    // As/Af clamp alpha for Blend mix
+#if PS_ALPHA_CLAMP
+    C = min(C, float(1.0f));
+#endif
+
 #if PS_BLEND_A == PS_BLEND_B
     Color.rgb = D;
 #else
