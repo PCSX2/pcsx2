@@ -102,31 +102,31 @@ void parseAndInsert(const std::string_view& serial, const c4::yml::NodeRef& node
 	}
 	if (node.has_child("roundModes"))
 	{
-		if (node.has_child("eeRoundMode"))
+		if (node["roundModes"].has_child("eeRoundMode"))
 		{
 			int eeVal = -1;
-			node["eeRoundMode"] >> eeVal;
+			node["roundModes"]["eeRoundMode"] >> eeVal;
 			gameEntry.eeRoundMode = static_cast<GameDatabaseSchema::RoundMode>(eeVal);
 		}
 		if (node.has_child("vuRoundMode"))
 		{
 			int vuVal = -1;
-			node["vuRoundMode"] >> vuVal;
+			node["roundModes"]["vuRoundMode"] >> vuVal;
 			gameEntry.vuRoundMode = static_cast<GameDatabaseSchema::RoundMode>(vuVal);
 		}
 	}
 	if (node.has_child("clampModes"))
 	{
-		if (node.has_child("eeClampMode"))
+		if (node["clampModes"].has_child("eeClampMode"))
 		{
 			int eeVal = -1;
-			node["eeClampMode"] >> eeVal;
+			node["clampModes"]["eeClampMode"] >> eeVal;
 			gameEntry.eeClampMode = static_cast<GameDatabaseSchema::ClampMode>(eeVal);
 		}
-		if (node.has_child("vuClampMode"))
+		if (node["clampModes"].has_child("vuClampMode"))
 		{
 			int vuVal = -1;
-			node["vuClampMode"] >> vuVal;
+			node["clampModes"]["vuClampMode"] >> vuVal;
 			gameEntry.vuClampMode = static_cast<GameDatabaseSchema::ClampMode>(vuVal);
 		}
 	}
