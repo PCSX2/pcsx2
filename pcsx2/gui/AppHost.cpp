@@ -67,13 +67,3 @@ std::optional<std::string> Host::ReadResourceFileToString(const char* filename)
 	return ret;
 }
 
-std::optional<std::string> Host::getResourceFilePath(const char* filename) 
-{
-	const std::string full_filename(Path::CombineStdString(EmuFolders::Resources, filename));
-	if (!FileSystem::FileExists(full_filename.c_str()))
-	{
-		Console.Error("Resource file does not exist '%s'", filename);
-		return std::nullopt;
-	}
-	return full_filename;
-}
