@@ -97,6 +97,7 @@ struct cdvdStruct
 	u8 Error;
 	u8 PwOff;
 	u8 Status;
+	u8 StatusSticky;
 	u8 Type;
 	u8 sCommand;
 	u8 sDataIn;
@@ -151,7 +152,6 @@ struct cdvdStruct
 	u32 MaxSector;    // Current disc max sector.
 	u32 ReadTime;     // Avg. time to read one block of data (in Iop cycles)
 	bool Spinning;    // indicates if the Cdvd is spinning or needs a spinup delay
-	bool mediaChanged;
 	cdvdTrayTimer Tray;
 	u8 nextSectorsBuffered;
 };
