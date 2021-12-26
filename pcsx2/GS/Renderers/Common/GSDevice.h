@@ -213,14 +213,15 @@ struct alignas(16) GSHWDrawConfig
 
 				// *** Word 2
 				// Blend and Colclip
-				u32 blend_a : 2;
-				u32 blend_b : 2;
-				u32 blend_c : 2;
-				u32 blend_d : 2;
-				u32 clr1    : 1; // useful?
-				u32 hdr     : 1;
-				u32 colclip : 1;
-				u32 pabe    : 1;
+				u32 blend_a     : 2;
+				u32 blend_b     : 2;
+				u32 blend_c     : 2;
+				u32 blend_d     : 2;
+				u32 clr1        : 1; // useful?
+				u32 hdr         : 1;
+				u32 colclip     : 1;
+				u32 alpha_clamp : 1;
+				u32 pabe        : 1;
 
 				// Others ways to fetch the texture
 				u32 channel : 3;
@@ -244,7 +245,7 @@ struct alignas(16) GSHWDrawConfig
 				// Scan mask
 				u32 scanmsk : 2;
 
-				u32 _free2 : 4;
+				u32 _free2 : 3;
 			};
 
 			u64 key;
