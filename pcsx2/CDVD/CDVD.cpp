@@ -594,6 +594,13 @@ s32 cdvdReadSubQ(s32 lsn, cdvdSubQ* subq)
 static void cdvdDetectDisk()
 {
 	cdvd.Type = DoCDVDdetectDiskType();
+
+	if (cdvd.Type != 0)
+	{
+		cdvdTD td;
+		CDVD->getTD(0, &td);
+		cdvd.MaxSector = td.lsn;
+	}
 }
 
 s32 cdvdCtrlTrayOpen()
@@ -1040,7 +1047,6 @@ __fi void cdvdActionInterrupt()
 			cdvd.Sector = cdvd.SeekToSector;
 			cdvd.Status = CDVD_STATUS_PAUSE;
 			cdvd.nextSectorsBuffered = 0;
-			cdvd.triggerDataReady = true;
 			CDVDSECTORREADY_INT(cdvd.ReadTime);
 			break;
 
@@ -1051,7 +1057,6 @@ __fi void cdvdActionInterrupt()
 			cdvd.Sector = cdvd.SeekToSector;
 			cdvd.Status = CDVD_STATUS_PAUSE;
 			cdvd.nextSectorsBuffered = 0;
-			cdvd.triggerDataReady = true;
 			CDVDSECTORREADY_INT(cdvd.ReadTime);
 			break;
 
@@ -1076,10 +1081,8 @@ __fi void cdvdActionInterrupt()
 			break;
 	}
 	cdvd.Action = cdvdAction_None;
-	cdvd.nCommand = 0;
 
-	cdvd.PwOff |= 1 << Irq_CommandComplete;
-	psxHu32(0x1070) |= 0x4;
+	cdvdSetIrq();
 }
 
 __fi void cdvdSectorReady()
@@ -1088,19 +1091,6 @@ __fi void cdvdSectorReady()
 	{
 		cdvd.nextSectorsBuffered++;
 		CDVD_LOG("Buffering sector");
-	
-		//DevCon.Warning("Bufferred Sector %d cur seek %d ready %x", cdvd.Sector, cdvd.SeekToSector, cdvd.Ready);
-		if (cdvd.nextSectorsBuffered == 16 && cdvd.triggerDataReady)
-		{
-			CDVD_LOG("Interrupting to say data ready");
-			if (!(cdvd.PwOff & (1 << Irq_DataReady)))
-			{
-				cdvd.PwOff |= (1 << Irq_DataReady);
-				iopIntcIrq(2);
-			}
-			cdvd.Ready |= CDVD_DRIVE_DATARDY;
-			cdvd.triggerDataReady = false;
-		}
 	}
 
 	if (cdvd.nextSectorsBuffered < 16)
@@ -1198,14 +1188,10 @@ __fi void cdvdReadInterrupt()
 		{
 			// Setting the data ready flag fixes a black screen loading issue in
 			// Street Fighter Ex3 (NTSC-J version).
-			cdvd.PwOff |= (1 << Irq_CommandComplete) | (1 << Irq_DataReady);
-			//psxHu32(0x1070) |= 0x4;
-			iopIntcIrq(2);
+			cdvdSetIrq();
 			cdvd.Ready |= CDVD_DRIVE_READY;
 
 			cdvd.Status = CDVD_STATUS_PAUSE;
-
-			cdvd.nCommand = 0;
 			//DevCon.Warning("Scheduling interrupt in %d cycles", cdvd.ReadTime - ((cdvd.BlockSize / 4) * 12));
 			// Timing issues on command end
 			// Star Ocean (1.1 Japan) expects the DMA to end and interrupt at least 128 or more cycles before the CDVD command ends.
@@ -1219,24 +1205,12 @@ __fi void cdvdReadInterrupt()
 	{
 		if (cdvd.nSectors <= 0)
 		{
-			cdvd.PwOff |= (1 << Irq_CommandComplete) | (1 << Irq_DataReady);
+			cdvdSetIrq();
 			//psxHu32(0x1070) |= 0x4;
 			iopIntcIrq(2);
 			cdvd.Ready |= CDVD_DRIVE_READY;
 
 			cdvd.Status = CDVD_STATUS_PAUSE;
-
-			cdvd.nCommand = 0;
-
-			if (!HW_DMA3_BCR_H16)
-			{
-				if (HW_DMA3_CHCR & 0x01000000)
-				{
-					HW_DMA3_CHCR &= ~0x01000000;
-					psxDmaInterrupt(3);
-				}
-			}
-
 			return;
 		}
 		CDVDREAD_INT((cdvd.BlockSize / 4) * 12);
@@ -1264,7 +1238,6 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 	cdvd.Ready &= ~(CDVD_DRIVE_READY | CDVD_DRIVE_DATARDY);
 	cdvd.Reading = 1;
 	cdvd.Readed = 0;
-	cdvd.triggerDataReady = false;
 	// Okay so let's explain this, since people keep messing with it in the past and just poking it.
 	// So when the drive is spinning, bit 0x2 is set on the Status, and bit 0x8 is set when the drive is not reading.
 	// So In the case where it's seeking to data it will be Spinning (0x2) not reading (0x8) and Seeking (0x10, but because seeking is also spinning 0x2 is also set))
@@ -1591,6 +1564,27 @@ u8 cdvdRead(u8 key)
 	}
 }
 
+static bool cdvdReadErrorHandler()
+{
+	if (cdvd.nSectors <= 0)
+	{
+		DevCon.Warning("Bad Sector Count Error");
+		cdvd.Error = 0x21; // Number of read sectors abnormal
+		cdvdSetIrq();
+		return false;
+	}
+
+	if (cdvd.SeekToSector > cdvd.MaxSector)
+	{
+		DevCon.Warning("Invalid Sector Error");
+		cdvd.Error = 0x20; // Sector position is abnormal
+		cdvdSetIrq();
+		return false;
+	}
+
+	return true;
+}
+
 static void cdvdWrite04(u8 rt)
 { // NCOMMAND
 	CDVD_LOG("cdvdWrite04: NCMD %s (%x) (ParamP = %x)", nCmdName[rt], rt, cdvd.ParamP);
@@ -1622,7 +1616,6 @@ static void cdvdWrite04(u8 rt)
 			DevCon.Warning("CdStop : %d", rt);
 			cdvd.Action = cdvdAction_Stop;
 			cdvd.nextSectorsBuffered = 0;
-			cdvd.triggerDataReady = true;
 			psxRegs.interrupt &= ~(1 << IopEvt_CdvdSectorReady);
 			cdvd.Status = CDVD_STATUS_SPIN;
 			CDVD_INT(PSXCLK / 6); // 166ms delay?
@@ -1634,11 +1627,9 @@ static void cdvdWrite04(u8 rt)
 			psxRegs.interrupt &= ~(1 << IopEvt_Cdvd);
 			cdvd.Ready |= CDVD_DRIVE_READY;
 			cdvdSetIrq();
-			cdvd.nCommand = 0;
 			//After Pausing needs to buffer the next sector
 			cdvd.Status = CDVD_STATUS_PAUSE;
 			cdvd.nextSectorsBuffered = 0;
-			cdvd.triggerDataReady = true;
 			CDVDSECTORREADY_INT(cdvd.ReadTime);
 			break;
 
@@ -1712,6 +1703,9 @@ static void cdvdWrite04(u8 rt)
 					cdvd.BlockSize = 2048;
 					break;
 			}
+
+			if (!cdvdReadErrorHandler())
+				break;
 
 			CDVD_LOG("CDRead > startSector=%d, seekTo=%d nSectors=%d, RetryCnt=%x, Speed=%dx(%s), ReadMode=%x(%x) SpindleCtrl=%x",
 				cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.ReadMode, cdvd.Param[10], cdvd.SpindlCtrl);
@@ -1834,6 +1828,9 @@ static void cdvdWrite04(u8 rt)
 			cdvd.ReadMode = CDVD_MODE_2048;
 			cdvd.BlockSize = 2064;
 
+			if (!cdvdReadErrorHandler())
+				break;
+
 			CDVD_LOG("DvdRead > startSector=%d, seekTo=%d nSectors=%d, RetryCnt=%x, Speed=%dx(%s), ReadMode=%x(%x) SpindleCtrl=%x",
 				cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.ReadMode, cdvd.Param[10], cdvd.SpindlCtrl);
 
@@ -1864,13 +1861,11 @@ static void cdvdWrite04(u8 rt)
 			//}
 			cdvdGetToc(iopPhysMem(HW_DMA3_MADR));
 			cdvdSetIrq();
-			cdvd.nCommand = 0;
 			HW_DMA3_CHCR &= ~0x01000000;
 			psxDmaInterrupt(3);
 			//After reading the TOC it needs to go back to buffer the next sector
 			cdvd.Status = CDVD_STATUS_PAUSE;
 			cdvd.nextSectorsBuffered = 0;
-			cdvd.triggerDataReady = true;
 			CDVDSECTORREADY_INT(cdvd.ReadTime);
 			break;
 
@@ -1883,11 +1878,9 @@ static void cdvdWrite04(u8 rt)
 			cdvdReadKey(arg0, arg1, arg2, cdvd.Key);
 			cdvd.KeyXor = 0x00;
 			cdvdSetIrq();
-			cdvd.nCommand = 0;
 			//After reading the key it needs to go back to buffer the next sector
 			cdvd.Status = CDVD_STATUS_PAUSE;
 			cdvd.nextSectorsBuffered = 0;
-			cdvd.triggerDataReady = true;
 			CDVDSECTORREADY_INT(cdvd.ReadTime);
 		}
 		break;
@@ -1895,13 +1888,11 @@ static void cdvdWrite04(u8 rt)
 		case N_CD_CHG_SPDL_CTRL: // CdChgSpdlCtrl
 			Console.WriteLn("sceCdChgSpdlCtrl(%d)", cdvd.Param[0]);
 			cdvdSetIrq();
-			cdvd.nCommand = 0;
 			break;
 
 		default:
 			Console.Warning("NCMD Unknown %x", rt);
 			cdvdSetIrq();
-			cdvd.nCommand = 0;
 			break;
 	}
 	cdvd.ParamP = 0;
@@ -1947,18 +1938,12 @@ static __fi void cdvdWrite07(u8 rt) // BREAK
 	cdvd.Readed = 0;
 	cdvd.Reading = 0;
 	cdvd.Status = CDVD_STATUS_STOP;
-	//cdvd.nCommand = 0;
 }
 
 static __fi void cdvdWrite08(u8 rt)
 { // INTR_STAT
 	CDVD_LOG("cdvdWrite08(IntrReason) = ACK(%x)", rt);
 	cdvd.PwOff &= ~rt;
-	if (rt & (1 << Irq_DataReady))
-	{
-		CDVD_LOG("Data ready acknowledged");
-		cdvd.Ready &= ~CDVD_DRIVE_DATARDY;
-	}
 }
 
 static __fi void cdvdWrite0A(u8 rt)
