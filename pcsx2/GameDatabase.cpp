@@ -108,7 +108,7 @@ void parseAndInsert(const std::string_view& serial, const c4::yml::NodeRef& node
 			node["roundModes"]["eeRoundMode"] >> eeVal;
 			gameEntry.eeRoundMode = static_cast<GameDatabaseSchema::RoundMode>(eeVal);
 		}
-		if (node.has_child("vuRoundMode"))
+		if (node["roundModes"].has_child("vuRoundMode"))
 		{
 			int vuVal = -1;
 			node["roundModes"]["vuRoundMode"] >> vuVal;
