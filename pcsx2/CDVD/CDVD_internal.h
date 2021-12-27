@@ -196,8 +196,8 @@ static const char* nCmdName[0x100] = {
 
 enum nCmds
 {
-	N_CD_SYNC = 0x00,          // CdSync
-	N_CD_NOP = 0x01,           // CdNop
+	N_CD_NOP = 0x00,           // CdNop
+	N_CD_RESET = 0x01,         // CdReset
 	N_CD_STANDBY = 0x02,       // CdStandby
 	N_CD_STOP = 0x03,          // CdStop
 	N_CD_PAUSE = 0x04,         // CdPause

@@ -1144,6 +1144,17 @@ __fi void cdvdReadInterrupt()
 		cdvd.Sector = cdvd.SeekToSector;
 		CDVD_LOG("Cdvd Seek Complete at iopcycle=%8.8x.", psxRegs.cycle);
 	}
+
+	if (cdvd.Sector > cdvd.MaxSector)
+	{
+		DevCon.Warning("Read past end of disc Sector %d Max Sector %d", cdvd.Sector, cdvd.MaxSector);
+		cdvd.Error = 0x32; // Outermost track reached during playback
+		cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON | CDVD_DRIVE_ERROR;
+		cdvdUpdateStatus(CDVD_STATUS_PAUSE);
+		cdvd.WaitingDMA = false;
+		cdvdSetIrq();
+		return;
+	}
 	
 	if (cdvd.Reading)
 	{
@@ -1267,7 +1278,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 	// Update - Apparently all that was rubbish and some games don't like it. WRC was the one in this scenario which hated SEEK |ZPAUSE, so just putting it back to pause for now.
 	// We should really run some tests for this behaviour.
 	
-	cdvdUpdateStatus(CDVD_STATUS_PAUSE);
+	cdvdUpdateStatus(CDVD_STATUS_SEEK);
 
 	if (!cdvd.Spinning)
 	{
@@ -1666,9 +1677,18 @@ static void cdvdWrite04(u8 rt)
 
 	switch (rt)
 	{
-		case N_CD_SYNC: // CdSync
 		case N_CD_NOP: // CdNop_
 			cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON;
+			cdvdSetIrq();
+			break;
+		case N_CD_RESET: // CdSync
+			Console.WriteLn("CDVD: Reset NCommand");
+			cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON;
+			cdvd.SCMDParamP = 0;
+			cdvd.SCMDParamC = 0;
+			cdvdUpdateStatus(CDVD_STATUS_STOP);
+			cdvd.Spinning = false;
+			memzero(cdvd.SCMDResult);
 			cdvdSetIrq();
 			break;
 
@@ -2067,7 +2087,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 		CDVD_LOG("cdvdWrite16: SCMD %s (%x) (ParamP = %x)", sCmdName[rt], rt, cdvd.SCMDParamP);
 
 		cdvd.sCommand = rt;
-		cdvd.SCMDResult[0] = 0; // assume success -- failures will overwrite this with an error code.
+		memzero(cdvd.SCMDResult);
 
 		switch (rt)
 		{
