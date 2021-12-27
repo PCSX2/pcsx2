@@ -1668,6 +1668,7 @@ static void cdvdWrite04(u8 rt)
 	{
 		case N_CD_SYNC: // CdSync
 		case N_CD_NOP: // CdNop_
+			cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON;
 			cdvdSetIrq();
 			break;
 
@@ -1675,7 +1676,7 @@ static void cdvdWrite04(u8 rt)
 
 			// Seek to sector zero.  The cdvdStartSeek function will simulate
 			// spinup times if needed.
-
+			cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
 			DevCon.Warning("CdStandby : %d", rt);
 			cdvd.Action = cdvdAction_Standby;
 			cdvd.ReadTime = cdvdBlockReadTime((CDVD_MODE_TYPE)cdvdIsDVD());
@@ -1688,6 +1689,7 @@ static void cdvdWrite04(u8 rt)
 		case N_CD_STOP: // CdStop
 			DevCon.Warning("CdStop : %d", rt);
 			cdvd.Action = cdvdAction_Stop;
+			cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
 			cdvd.nextSectorsBuffered = 0;
 			psxRegs.interrupt &= ~(1 << IopEvt_CdvdSectorReady);
 			cdvdUpdateStatus(CDVD_STATUS_SPIN);
@@ -1708,6 +1710,7 @@ static void cdvdWrite04(u8 rt)
 
 		case N_CD_SEEK: // CdSeek
 			cdvd.Action = cdvdAction_Seek;
+			cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
 			cdvd.ReadTime = cdvdBlockReadTime((CDVD_MODE_TYPE)cdvdIsDVD());
 			CDVD_INT(cdvdStartSeek(*(uint*)(cdvd.Param + 0), (CDVD_MODE_TYPE)cdvdIsDVD()));
 			cdvdUpdateStatus(CDVD_STATUS_SEEK);
@@ -1936,6 +1939,7 @@ static void cdvdWrite04(u8 rt)
 			cdvdSetIrq();
 			HW_DMA3_CHCR &= ~0x01000000;
 			psxDmaInterrupt(3);
+			cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON;
 			//After reading the TOC it needs to go back to buffer the next sector
 			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			cdvd.nextSectorsBuffered = 0;
@@ -1953,6 +1957,7 @@ static void cdvdWrite04(u8 rt)
 			cdvdSetIrq();
 			//After reading the key it needs to go back to buffer the next sector
 			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
+			cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON;
 			cdvd.nextSectorsBuffered = 0;
 			CDVDSECTORREADY_INT(cdvd.ReadTime);
 		}
