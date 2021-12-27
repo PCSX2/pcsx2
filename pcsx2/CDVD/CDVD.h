@@ -104,13 +104,16 @@ struct cdvdStruct
 	u8 sDataOut;
 	u8 HowTo;
 
-	u8 Param[32];
-	u8 Result[32];
+	u8 NCMDParam[16];
+	u8 SCMDParam[16];
+	u8 SCMDResult[16];
 
-	u8 ParamC;
-	u8 ParamP;
-	u8 ResultC;
-	u8 ResultP;
+	u8 NCMDParamC;
+	u8 NCMDParamP;
+	u8 SCMDParamC;
+	u8 SCMDParamP;
+	u8 SCMDResultC;
+	u8 SCMDResultP;
 
 	u8 CBlockIndex;
 	u8 COffset;
