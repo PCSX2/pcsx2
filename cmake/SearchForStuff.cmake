@@ -229,7 +229,7 @@ else()
 endif()
 
 if(USE_SYSTEM_YAML)
-	find_package(ryml REQUIRED)
+	find_package(ryml QUIET)
 	if(NOT ryml_FOUND)
 		message(STATUS "No system rapidyaml was found, using the submodule in the 3rdparty directory")
 		set(USE_SYSTEM_YAML OFF)
