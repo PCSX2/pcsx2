@@ -107,6 +107,16 @@ static int CheckDiskTypeFS(int baseType)
 		{
 		}
 
+		// PS2 Linux disc 2, doesn't have a System.CNF or a normal ELF
+		try
+		{
+			IsoFile file(rootdir, L"P2L_0100.02;1");
+			return CDVD_TYPE_PS2DVD;
+		}
+		catch (Exception::FileNotFound&)
+		{
+		}
+
 		try
 		{
 			IsoFile file(rootdir, L"PSX.EXE;1");
