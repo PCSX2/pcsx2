@@ -1534,7 +1534,7 @@ std::string FileSystem::GetProgramPath()
 	int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
 	char buffer[PATH_MAX];
 	size_t cb = sizeof(buffer) - 1;
-	int res = sysctl(mib, countof(mib), buffer, &cb, nullptr, 0);
+	int res = sysctl(mib, std::size(mib), buffer, &cb, nullptr, 0);
 	if (res != 0)
 		return {};
 
