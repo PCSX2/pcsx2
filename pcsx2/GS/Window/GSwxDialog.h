@@ -111,7 +111,6 @@ namespace GSSettingsDialog
 #endif
 		bool m_is_hardware = false;
 		bool m_is_native_res = false;
-		bool m_is_nearest_filter = false;
 
 		RendererTab(wxWindow* parent);
 		void Load() { m_ui.Load(); }
