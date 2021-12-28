@@ -735,17 +735,29 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	freezeData fd = {(int)ss, (u8*)state_data.get()};
 	m_root_window->m_dump_packets.clear();
 
-	while (m_dump_file->Tell() < m_dump_file->Length())
+	// Calling Length() internally does fseek() -> ftell() -> fseek(). Slow.
+	// Calling ftell() for Tell() doesn't seem to be very cheap either.
+	// So we track the position ourselves.
+	const wxFileOffset length = m_dump_file->Length();
+	wxFileOffset pos = m_dump_file->Tell();
+#define READ_FROM_DUMP_FILE(var, size) \
+	do \
+	{ \
+		m_dump_file->Read(var, size); \
+		pos += size; \
+	} while (0)
+
+	while (pos < length)
 	{
 		GSType id;
 		GSTransferPath id_transfer = Dummy;
-		m_dump_file->Read(&id, 1);
+		READ_FROM_DUMP_FILE(&id, 1);
 		s32 size = 0;
 		switch (id)
 		{
 			case Transfer:
-				m_dump_file->Read(&id_transfer, 1);
-				m_dump_file->Read(&size, 4);
+				READ_FROM_DUMP_FILE(&id_transfer, 1);
+				READ_FROM_DUMP_FILE(&size, 4);
 				break;
 			case VSync:
 				size = 1;
@@ -758,9 +770,10 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 				break;
 		}
 		std::unique_ptr<char[]> data(new char[size]);
-		m_dump_file->Read(data.get(), size);
+		READ_FROM_DUMP_FILE(data.get(), size);
 		m_root_window->m_dump_packets.push_back({id, std::move(data), size, id_transfer});
 	}
+#undef READ_FROM_DUMP_FILE
 
 	GSinit();
 	sApp.OpenGsPanel();
