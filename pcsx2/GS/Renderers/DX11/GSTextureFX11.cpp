@@ -220,19 +220,24 @@ void GSDevice11::SetupPS(PSSelector sel, const GSHWDrawConfig::PSConstantBuffer*
 		}
 		else
 		{
-			D3D11_SAMPLER_DESC sd, af;
+			D3D11_SAMPLER_DESC sd;
 
 			memset(&sd, 0, sizeof(sd));
 
-			af.Filter = m_aniso_filter ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-			sd.Filter = ssel.biln ? af.Filter : D3D11_FILTER_MIN_MAG_MIP_POINT;
+			const int anisotropy = theApp.GetConfigI("MaxAnisotropy");
+			if (anisotropy && ssel.aniso)
+				sd.Filter = D3D11_FILTER_ANISOTROPIC;
+			else if (ssel.biln)
+				sd.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+			else
+				sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 
 			sd.AddressU = ssel.tau ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
 			sd.AddressV = ssel.tav ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
 			sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 			sd.MinLOD = -FLT_MAX;
 			sd.MaxLOD = FLT_MAX;
-			sd.MaxAnisotropy = m_aniso_filter;
+			sd.MaxAnisotropy = anisotropy;
 			sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
 
 			m_dev->CreateSamplerState(&sd, &ss0);

@@ -109,7 +109,6 @@ public:
 private:
 	float m_hack_topleft_offset;
 	int m_upscale_multiplier;
-	int m_aniso_filter;
 	int m_mipmap;
 	int m_d3d_texsize;
 
