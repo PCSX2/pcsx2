@@ -29,12 +29,12 @@ GSState::GSState()
 	, m_skip(0)
 	, m_skip_offset(0)
 	, m_q(1.0f)
+	, m_scanmask_used(false)
 	, m_vt(this)
 	, m_regs(NULL)
 	, m_crc(0)
 	, m_options(0)
 	, m_frameskip(0)
-	, m_scanmask_used(false)
 {
 	// m_nativeres seems to be a hack. Unfortunately it impacts draw call number which make debug painful in the replayer.
 	// Let's keep it disabled to ease debug.
