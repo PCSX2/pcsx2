@@ -35,13 +35,6 @@ GSDevice11::GSDevice11()
 	m_mipmap = theApp.GetConfigI("mipmap");
 	m_upscale_multiplier = std::max(0, theApp.GetConfigI("upscale_multiplier"));
 
-	const BiFiltering nearest_filter = static_cast<BiFiltering>(theApp.GetConfigI("filter"));
-	const int aniso_level = theApp.GetConfigI("MaxAnisotropy");
-	if ((nearest_filter != BiFiltering::Nearest && !theApp.GetConfigB("paltex") && aniso_level))
-		m_aniso_filter = aniso_level;
-	else
-		m_aniso_filter = 0;
-
 	m_features.broken_point_sampler = true; // Not technically the case but the most common reason to use DX11 is because you're on AMD
 	m_features.geometry_shader = true;
 	m_features.image_load_store = false;
@@ -375,18 +368,18 @@ bool GSDevice11::Create(const WindowInfo& wi)
 
 	memset(&sd, 0, sizeof(sd));
 
-	sd.Filter = m_aniso_filter ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	sd.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sd.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sd.MinLOD = -FLT_MAX;
 	sd.MaxLOD = FLT_MAX;
-	sd.MaxAnisotropy = m_aniso_filter;
+	sd.MaxAnisotropy = D3D11_MIN_MAXANISOTROPY;
 	sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
 
 	m_dev->CreateSamplerState(&sd, m_convert.ln.put());
 
-	sd.Filter = m_aniso_filter ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_MIP_POINT;
+	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 
 	m_dev->CreateSamplerState(&sd, m_convert.pt.put());
 
@@ -1485,7 +1478,6 @@ static void preprocessSel(GSDevice11::PSSelector& sel)
 
 static void preprocessSel(GSDevice11::PSSamplerSelector& sel)
 {
-	sel.aniso = 0; // Not currently supported
 	sel.triln = 0; // Not currently supported
 }
 
