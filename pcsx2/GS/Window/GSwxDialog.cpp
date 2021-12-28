@@ -279,7 +279,7 @@ RendererTab::RendererTab(wxWindow* parent)
 	m_ui.addCheckBox(hw_checks_box, "Conservative Buffer Allocation",  "conservative_framebuffer", IDC_CONSERVATIVE_FB, upscale_prereq);
 
 	auto* paltex_prereq = m_ui.addCheckBox(hw_checks_box, "GPU Palette Conversion", "paltex", IDC_PALTEX, hw_prereq);
-	auto aniso_prereq = [this, paltex_prereq]{ return m_is_hardware && !m_is_nearest_filter && paltex_prereq->GetValue() == false; };
+	auto aniso_prereq = [this, paltex_prereq]{ return m_is_hardware && paltex_prereq->GetValue() == false; };
 
 	auto* hw_choice_grid = new wxFlexGridSizer(2, space, space);
 
@@ -782,13 +782,11 @@ void Dialog::Update()
 		// cross-tab dependencies yay
 		const bool is_hw = renderer == GSRendererType::OGL_HW || renderer == GSRendererType::DX1011_HW;
 		const bool is_upscale = m_renderer_panel->m_internal_resolution->GetSelection() != 0;
-		const bool is_nearest_filter = m_bifilter_select->GetSelection() == static_cast<int>(BiFiltering::Nearest);
 		m_hacks_panel->m_is_native_res = !is_hw || !is_upscale;
 		m_hacks_panel->m_is_hardware = is_hw;
 		m_hacks_panel->m_is_ogl_hw = renderer == GSRendererType::OGL_HW;
 		m_renderer_panel->m_is_hardware = is_hw;
 		m_renderer_panel->m_is_native_res = !is_hw || !is_upscale;
-		m_renderer_panel->m_is_nearest_filter = is_nearest_filter;
 		m_debug_panel->m_is_ogl_hw = renderer == GSRendererType::OGL_HW;
 
 		m_ui.Update();
