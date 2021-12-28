@@ -102,6 +102,7 @@ enum MenuIdentifiers
 	MenuId_RecentIsos_reservedStart,
 	MenuId_IsoBrowse = MenuId_RecentIsos_reservedStart + 100, // Open dialog, runs selected iso.
 	MenuId_IsoClear,
+	MenuId_IsoClearMissing,
 	MenuId_DriveSelector,
 	MenuId_DriveListRefresh,
 	MenuId_Ask_On_Booting,

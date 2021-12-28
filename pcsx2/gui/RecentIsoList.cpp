@@ -38,6 +38,7 @@ RecentIsoManager::RecentIsoManager( wxMenu* menu, int firstIdForMenuItems_or_wxI
 	m_Separator	= nullptr;
 	m_ClearSeparator = nullptr;
 	m_Clear = nullptr;
+	m_ClearMissing = nullptr;
 
 	IniLoader loader;
 	LoadListFrom(loader);
@@ -116,12 +117,52 @@ void RecentIsoManager::RemoveAllFromMenu()
 		m_Menu->Destroy( m_Clear );
 		m_Clear = nullptr;
 	}
+
+	if (m_ClearMissing != nullptr)
+	{
+		m_Menu->Destroy(m_ClearMissing);
+		m_ClearMissing = nullptr;
+	}
 }
 
 void RecentIsoManager::Clear()
 {
 	RemoveAllFromMenu();
 	m_Items.clear();
+	Repopulate();
+}
+
+RecentIsoManager::VectorType RecentIsoManager::GetMissingFiles() const
+{
+	VectorType missing_files;
+
+	std::copy_if(
+		m_Items.begin(),
+		m_Items.end(),
+		std::back_inserter(missing_files),
+		[](const RecentItem& item) {
+			return !wxFileExists(item.Filename);
+		});
+
+	return missing_files;
+}
+
+void RecentIsoManager::ClearMissing()
+{
+	RemoveAllFromMenu();
+
+	VectorType existing_files;
+
+	std::copy_if(
+		m_Items.begin(),
+		m_Items.end(),
+		std::back_inserter(existing_files),
+		[](const RecentItem& item) {
+			return wxFileExists(item.Filename);
+		});
+
+	m_Items = existing_files;
+
 	Repopulate();
 }
 
@@ -138,6 +179,7 @@ void RecentIsoManager::Repopulate()
 		InsertIntoMenu( i );
 
 	m_ClearSeparator = m_Menu->AppendSeparator();
+	m_ClearMissing = m_Menu->Append(MenuIdentifiers::MenuId_IsoClearMissing, _("Clear missing files"));
 	m_Clear = m_Menu->Append(MenuIdentifiers::MenuId_IsoClear, _("Clear ISO list"));
 }
 

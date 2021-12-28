@@ -162,6 +162,7 @@ protected:
 
 	void Menu_IsoBrowse_Click(wxCommandEvent& event);
 	void Menu_IsoClear_Click(wxCommandEvent& event);
+	void Menu_IsoClearMissing_Click(wxCommandEvent& event);
 	void Menu_EnableBackupStates_Click(wxCommandEvent& event);
 	void Menu_EnablePatches_Click(wxCommandEvent& event);
 	void Menu_EnableCheats_Click(wxCommandEvent& event);
