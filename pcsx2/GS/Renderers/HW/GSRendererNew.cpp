@@ -516,10 +516,12 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 {
 	// AA1: Don't enable blending on AA1, not yet implemented on hardware mode,
 	// it requires coverage sample so it's safer to turn it off instead.
-	const bool aa1 = PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS);
+	const bool AA1 = PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS);
+	// PABE: Check condition early as an optimization.
+	const bool PABE = PRIM->ABE && m_env.PABE.PABE && (GetAlphaMinMax().max < 128);
 
 	// No blending or coverage anti-aliasing so early exit
-	if (!(PRIM->ABE || m_env.PABE.PABE || aa1))
+	if (PABE || !(PRIM->ABE || AA1))
 	{
 		m_conf.blend = {};
 		return;
