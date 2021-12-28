@@ -16,7 +16,7 @@ jobs:
           cd .github/workflows/scripts/controller-db/
           wget -O game_controller_db.txt https://raw.githubusercontent.com/gabomdq/SDL_GameControllerDB/master/gamecontrollerdb.txt
           python ./update-db.py
-          mv ./game_controller_db.txt ${{github.workspace}}/pcsx2/PAD/Linux/res/game_controller_db.txt
+          mv ./game_controller_db.txt ${{github.workspace}}/bin/resources/game_controller_db.txt
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
