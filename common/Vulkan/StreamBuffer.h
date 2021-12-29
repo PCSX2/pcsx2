@@ -17,6 +17,7 @@
 
 #include "common/Pcsx2Defs.h"
 #include "common/Vulkan/Loader.h"
+#include "vk_mem_alloc.h"
 #include <deque>
 #include <memory>
 
@@ -35,10 +36,8 @@ namespace Vulkan
 
 		__fi bool IsValid() const { return (m_buffer != VK_NULL_HANDLE); }
 		__fi VkBuffer GetBuffer() const { return m_buffer; }
-		__fi const VkBuffer* GetBufferPointer() const { return &m_buffer; }
-		__fi VkDeviceMemory GetDeviceMemory() const { return m_memory; }
-		__fi void* GetHostPointer() const { return m_host_pointer; }
-		__fi void* GetCurrentHostPointer() const { return m_host_pointer + m_current_offset; }
+		__fi u8* GetHostPointer() const { return m_host_pointer; }
+		__fi u8* GetCurrentHostPointer() const { return m_host_pointer + m_current_offset; }
 		__fi u32 GetCurrentSize() const { return m_size; }
 		__fi u32 GetCurrentSpace() const { return m_current_space; }
 		__fi u32 GetCurrentOffset() const { return m_current_offset; }
@@ -57,19 +56,16 @@ namespace Vulkan
 		// Waits for as many fences as needed to allocate num_bytes bytes from the buffer.
 		bool WaitForClearSpace(u32 num_bytes);
 
-		VkBufferUsageFlags m_usage = 0;
 		u32 m_size = 0;
 		u32 m_current_offset = 0;
 		u32 m_current_space = 0;
 		u32 m_current_gpu_position = 0;
 
+		VmaAllocation m_allocation = VK_NULL_HANDLE;
 		VkBuffer m_buffer = VK_NULL_HANDLE;
-		VkDeviceMemory m_memory = VK_NULL_HANDLE;
 		u8* m_host_pointer = nullptr;
 
 		// List of fences and the corresponding positions in the buffer
 		std::deque<std::pair<u64, u32>> m_tracked_fences;
-
-		bool m_coherent_mapping = false;
 	};
 } // namespace Vulkan
