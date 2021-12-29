@@ -1121,6 +1121,12 @@ namespace Vulkan
 		resources.cleanup_resources.push_back([this, object]() { vkDestroyBuffer(m_device, object, nullptr); });
 	}
 
+	void Context::DeferBufferDestruction(VkBuffer object, VmaAllocation allocation)
+	{
+		FrameResources& resources = m_frame_resources[m_current_frame];
+		resources.cleanup_resources.push_back([this, object, allocation]() { vmaDestroyBuffer(m_allocator, object, allocation); });
+	}
+
 	void Context::DeferBufferViewDestruction(VkBufferView object)
 	{
 		FrameResources& resources = m_frame_resources[m_current_frame];

@@ -25,17 +25,22 @@ namespace Vulkan
 	StreamBuffer::StreamBuffer() = default;
 
 	StreamBuffer::StreamBuffer(StreamBuffer&& move)
-		: m_usage(move.m_usage)
-		, m_size(move.m_size)
+		: m_size(move.m_size)
 		, m_current_offset(move.m_current_offset)
 		, m_current_space(move.m_current_space)
 		, m_current_gpu_position(move.m_current_gpu_position)
+		, m_allocation(move.m_allocation)
 		, m_buffer(move.m_buffer)
-		, m_memory(move.m_memory)
 		, m_host_pointer(move.m_host_pointer)
 		, m_tracked_fences(std::move(move.m_tracked_fences))
-		, m_coherent_mapping(move.m_coherent_mapping)
 	{
+		move.m_size = 0;
+		move.m_current_offset = 0;
+		move.m_current_space = 0;
+		move.m_current_gpu_position = 0;
+		move.m_allocation = VK_NULL_HANDLE;
+		move.m_buffer = VK_NULL_HANDLE;
+		move.m_host_pointer = nullptr;
 	}
 
 	StreamBuffer::~StreamBuffer()
@@ -49,124 +54,67 @@ namespace Vulkan
 		if (IsValid())
 			Destroy(true);
 
-		std::swap(m_usage, move.m_usage);
 		std::swap(m_size, move.m_size);
 		std::swap(m_current_offset, move.m_current_offset);
 		std::swap(m_current_space, move.m_current_space);
 		std::swap(m_current_gpu_position, move.m_current_gpu_position);
 		std::swap(m_buffer, move.m_buffer);
-		std::swap(m_memory, move.m_memory);
 		std::swap(m_host_pointer, move.m_host_pointer);
 		std::swap(m_tracked_fences, move.m_tracked_fences);
-		std::swap(m_coherent_mapping, move.m_coherent_mapping);
 
 		return *this;
 	}
 
 	bool StreamBuffer::Create(VkBufferUsageFlags usage, u32 size)
 	{
-		// TODO: Move this over to vk_mem_alloc.
-
-		// Create the buffer descriptor
-		const VkBufferCreateInfo buffer_create_info = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0,
+		const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0,
 			static_cast<VkDeviceSize>(size), usage, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr};
 
-		VkBuffer buffer = VK_NULL_HANDLE;
-		VkResult res = vkCreateBuffer(g_vulkan_context->GetDevice(), &buffer_create_info, nullptr, &buffer);
+		VmaAllocationCreateInfo aci = {};
+		aci.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+		aci.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+		VmaAllocationInfo ai = {};
+		VkBuffer new_buffer = VK_NULL_HANDLE;
+		VmaAllocation new_allocation = VK_NULL_HANDLE;
+		VkResult res = vmaCreateBuffer(g_vulkan_context->GetAllocator(), &bci, &aci, &new_buffer, &new_allocation, &ai);
 		if (res != VK_SUCCESS)
 		{
 			LOG_VULKAN_ERROR(res, "vkCreateBuffer failed: ");
 			return false;
 		}
 
-		// Get memory requirements (types etc) for this buffer
-		VkMemoryRequirements memory_requirements;
-		vkGetBufferMemoryRequirements(g_vulkan_context->GetDevice(), buffer, &memory_requirements);
-
-		// Aim for a coherent mapping if possible.
-		u32 memory_type_index =
-			g_vulkan_context->GetUploadMemoryType(memory_requirements.memoryTypeBits, &m_coherent_mapping);
-
-		// Allocate memory for backing this buffer
-		VkMemoryAllocateInfo memory_allocate_info = {
-			VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO, // VkStructureType    sType
-			nullptr, // const void*        pNext
-			memory_requirements.size, // VkDeviceSize       allocationSize
-			memory_type_index // uint32_t           memoryTypeIndex
-		};
-		VkDeviceMemory memory = VK_NULL_HANDLE;
-		res = vkAllocateMemory(g_vulkan_context->GetDevice(), &memory_allocate_info, nullptr, &memory);
-		if (res != VK_SUCCESS)
-		{
-			LOG_VULKAN_ERROR(res, "vkAllocateMemory failed: ");
-			vkDestroyBuffer(g_vulkan_context->GetDevice(), buffer, nullptr);
-			return false;
-		}
-
-		// Bind memory to buffer
-		res = vkBindBufferMemory(g_vulkan_context->GetDevice(), buffer, memory, 0);
-		if (res != VK_SUCCESS)
-		{
-			LOG_VULKAN_ERROR(res, "vkBindBufferMemory failed: ");
-			vkDestroyBuffer(g_vulkan_context->GetDevice(), buffer, nullptr);
-			vkFreeMemory(g_vulkan_context->GetDevice(), memory, nullptr);
-			return false;
-		}
-
-		// Map this buffer into user-space
-		void* mapped_ptr = nullptr;
-		res = vkMapMemory(g_vulkan_context->GetDevice(), memory, 0, size, 0, &mapped_ptr);
-		if (res != VK_SUCCESS)
-		{
-			LOG_VULKAN_ERROR(res, "vkMapMemory failed: ");
-			vkDestroyBuffer(g_vulkan_context->GetDevice(), buffer, nullptr);
-			vkFreeMemory(g_vulkan_context->GetDevice(), memory, nullptr);
-			return false;
-		}
-
-		// Unmap current host pointer (if there was a previous buffer)
-		if (m_host_pointer)
-			vkUnmapMemory(g_vulkan_context->GetDevice(), m_memory);
-
 		if (IsValid())
 			Destroy(true);
 
 		// Replace with the new buffer
-		m_usage = usage;
 		m_size = size;
-		m_buffer = buffer;
-		m_memory = memory;
-		m_host_pointer = reinterpret_cast<u8*>(mapped_ptr);
 		m_current_offset = 0;
 		m_current_gpu_position = 0;
 		m_tracked_fences.clear();
+		m_allocation = new_allocation;
+		m_buffer = new_buffer;
+		m_host_pointer = static_cast<u8*>(ai.pMappedData);
 		return true;
 	}
 
 	void StreamBuffer::Destroy(bool defer)
 	{
-		if (m_host_pointer)
-		{
-			vkUnmapMemory(g_vulkan_context->GetDevice(), m_memory);
-			m_host_pointer = nullptr;
-		}
-
 		if (m_buffer != VK_NULL_HANDLE)
 		{
 			if (defer)
-				g_vulkan_context->DeferBufferDestruction(m_buffer);
+				g_vulkan_context->DeferBufferDestruction(m_buffer, m_allocation);
 			else
-				vkDestroyBuffer(g_vulkan_context->GetDevice(), m_buffer, nullptr);
-			m_buffer = VK_NULL_HANDLE;
+				vmaDestroyBuffer(g_vulkan_context->GetAllocator(), m_buffer, m_allocation);
 		}
-		if (m_memory != VK_NULL_HANDLE)
-		{
-			if (defer)
-				g_vulkan_context->DeferDeviceMemoryDestruction(m_memory);
-			else
-				vkFreeMemory(g_vulkan_context->GetDevice(), m_memory, nullptr);
-			m_memory = VK_NULL_HANDLE;
-		}
+
+		m_size = 0;
+		m_current_offset = 0;
+		m_current_gpu_position = 0;
+		m_tracked_fences.clear();
+		m_buffer = VK_NULL_HANDLE;
+		m_allocation = VK_NULL_HANDLE;
+		m_host_pointer = nullptr;
 	}
 
 	bool StreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
@@ -244,12 +192,7 @@ namespace Vulkan
 		pxAssert(final_num_bytes <= m_current_space);
 
 		// For non-coherent mappings, flush the memory range
-		if (!m_coherent_mapping)
-		{
-			VkMappedMemoryRange range = {
-				VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE, nullptr, m_memory, m_current_offset, final_num_bytes};
-			vkFlushMappedMemoryRanges(g_vulkan_context->GetDevice(), 1, &range);
-		}
+		vmaFlushAllocation(g_vulkan_context->GetAllocator(), m_allocation, m_current_offset, final_num_bytes);
 
 		m_current_offset += final_num_bytes;
 		m_current_space -= final_num_bytes;
