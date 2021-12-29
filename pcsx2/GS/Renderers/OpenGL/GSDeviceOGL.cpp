@@ -81,11 +81,6 @@ GSDeviceOGL::GSDeviceOGL()
 	m_debug_gl_call = theApp.GetConfigB("debug_opengl");
 
 	m_disable_hw_gl_draw = theApp.GetConfigB("disable_hw_gl_draw");
-
-	m_features.broken_point_sampler = GLLoader::vendor_id_amd;
-	m_features.geometry_shader = GLLoader::found_geometry_shader;
-	m_features.image_load_store = GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture;
-	m_features.texture_barrier = true;
 }
 
 GSDeviceOGL::~GSDeviceOGL()
@@ -243,6 +238,11 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 		m_gl_context->DoneCurrent();
 		return false;
 	}
+
+	m_features.broken_point_sampler = GLLoader::vendor_id_amd;
+	m_features.geometry_shader = GLLoader::found_geometry_shader;
+	m_features.image_load_store = GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture;
+	m_features.texture_barrier = true;
 
 	if (!theApp.GetConfigB("disable_shader_cache"))
 	{
