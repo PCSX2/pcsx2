@@ -56,7 +56,7 @@ bool GSDevice11::CreateTextureFX()
 	sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sd.MinLOD = -FLT_MAX;
 	sd.MaxLOD = FLT_MAX;
-	sd.MaxAnisotropy = D3D11_MIN_MAXANISOTROPY;
+	sd.MaxAnisotropy = 1;
 	sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
 
 	hr = m_dev->CreateSamplerState(&sd, m_palette_ss.put());
@@ -237,7 +237,7 @@ void GSDevice11::SetupPS(PSSelector sel, const GSHWDrawConfig::PSConstantBuffer*
 			sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 			sd.MinLOD = -FLT_MAX;
 			sd.MaxLOD = FLT_MAX;
-			sd.MaxAnisotropy = anisotropy;
+			sd.MaxAnisotropy = std::clamp(anisotropy, 1, 16);
 			sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
 
 			m_dev->CreateSamplerState(&sd, &ss0);

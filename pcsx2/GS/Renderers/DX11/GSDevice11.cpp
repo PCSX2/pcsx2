@@ -374,7 +374,7 @@ bool GSDevice11::Create(const WindowInfo& wi)
 	sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sd.MinLOD = -FLT_MAX;
 	sd.MaxLOD = FLT_MAX;
-	sd.MaxAnisotropy = D3D11_MIN_MAXANISOTROPY;
+	sd.MaxAnisotropy = 1;
 	sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
 
 	m_dev->CreateSamplerState(&sd, m_convert.ln.put());
