@@ -67,6 +67,10 @@ void vs_main()
 
     VSout.c = i_c;
     VSout.t_float.z = i_f.x; // pack for with texture
+
+    #if VS_POINT_SIZE
+        gl_PointSize = float(VS_POINT_SIZE_VALUE);
+    #endif
 }
 
 #endif
