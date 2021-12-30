@@ -22,6 +22,9 @@ namespace GLState
 	GSVector2i viewport;
 	GSVector4i scissor;
 
+	bool point_size = false;
+	float line_width = 1.0f;
+
 	bool blend;
 	u16 eq_RGB;
 	u16 f_sRGB;

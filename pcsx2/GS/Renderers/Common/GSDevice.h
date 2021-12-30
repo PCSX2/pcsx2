@@ -165,6 +165,7 @@ struct alignas(16) GSHWDrawConfig
 				u8 fst : 1;
 				u8 tme : 1;
 				u8 iip : 1;
+				u8 point_size : 1;		///< Set when points need to be expanded without geometry shader.
 				u8 _free : 1;
 			};
 			u8 key;
@@ -471,7 +472,8 @@ struct alignas(16) GSHWDrawConfig
 	bool require_full_barrier; ///< Require texture barrier between all prims
 
 	DestinationAlphaMode destination_alpha;
-	bool datm;
+	bool datm : 1;
+	bool line_expand : 1;
 
 	struct AlphaSecondPass
 	{
@@ -496,6 +498,8 @@ public:
 		bool image_load_store     : 1; ///< Supports atomic min and max on images (for use with prim tracking destination alpha algorithm)
 		bool texture_barrier      : 1; ///< Supports sampling rt and hopefully texture barrier
 		bool provoking_vertex_last: 1; ///< Supports using the last vertex in a primitive as the value for flat shading.
+		bool point_expand         : 1; ///< Supports point expansion in hardware without using geometry shaders.
+		bool line_expand          : 1; ///< Supports line expansion in hardware without using geometry shaders.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));

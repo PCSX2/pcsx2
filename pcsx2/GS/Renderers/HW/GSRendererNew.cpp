@@ -55,15 +55,23 @@ void GSRendererNew::SetupIA(const float& sx, const float& sy)
 		for (unsigned int i = 0; i < m_vertex.next; i++)
 			m_vertex.buff[i].UV &= 0x3FEF3FEF;
 	}
-	const bool unscale_pt_ln = m_userHacks_enabled_unscale_ptln && (GetUpscaleMultiplier() != 1) && m_dev->Features().geometry_shader;
+	const bool unscale_pt_ln = m_userHacks_enabled_unscale_ptln && (GetUpscaleMultiplier() != 1);
+	const GSDevice::FeatureSupport features = m_dev->Features();
 
 	switch (m_vt.m_primclass)
 	{
 		case GS_POINT_CLASS:
 			if (unscale_pt_ln)
 			{
-				m_conf.gs.expand = true;
-				m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
+				if (features.point_expand)
+				{
+					m_conf.vs.point_size = true;
+				}
+				else if (features.geometry_shader)
+				{
+					m_conf.gs.expand = true;
+					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
+				}
 			}
 
 			m_conf.gs.topology = GSHWDrawConfig::GSTopology::Point;
@@ -74,8 +82,15 @@ void GSRendererNew::SetupIA(const float& sx, const float& sy)
 		case GS_LINE_CLASS:
 			if (unscale_pt_ln)
 			{
-				m_conf.gs.expand = true;
-				m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
+				if (features.line_expand)
+				{
+					m_conf.line_expand = true;
+				}
+				else if (features.geometry_shader)
+				{
+					m_conf.gs.expand = true;
+					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
+				}
 			}
 
 			m_conf.gs.topology = GSHWDrawConfig::GSTopology::Line;
