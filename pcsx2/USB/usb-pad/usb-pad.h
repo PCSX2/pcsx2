@@ -1516,7 +1516,7 @@ namespace usb_pad
 	// 0x0982 - PlayStation 2
 	// 0x0984 - ???
 
-	static uint8_t gametrak_dev_descriptor[] = {
+	[[maybe_unused]] static uint8_t gametrak_dev_descriptor[] = {
 		0x12,       // bLength
 		0x01,       // bDescriptorType (Device)
 		0x10, 0x01, // bcdUSB 1.10

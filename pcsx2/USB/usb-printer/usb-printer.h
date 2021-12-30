@@ -98,15 +98,15 @@ namespace usb_printer
 
 	struct PrinterData
 	{
-		PrinterModel model;
-		char* commercial_name;
+		const PrinterModel model;
+		const char* commercial_name;
 		const uint8_t* device_descriptor;
 		const int device_descriptor_size;
 		const uint8_t* config_descriptor;
 		const int config_descriptor_size;
 		const USBDescStrings usb_strings;
-		char* device_id;
-		PrinterProtocol protocol;
+		const char* device_id;
+		const PrinterProtocol protocol;
 	};
 
 	static const PrinterData sPrinters[] = {
@@ -149,7 +149,7 @@ namespace usb_printer
 		static std::vector<std::string> SubTypes()
 		{
 			std::vector<std::string> ret;
-			for (int i = 0; i < sizeof(sPrinters) / sizeof(sPrinters[0]); i++)
+			for (uint32_t i = 0; i < sizeof(sPrinters) / sizeof(sPrinters[0]); i++)
 			{
 				ret.push_back(sPrinters[i].commercial_name);
 			}
