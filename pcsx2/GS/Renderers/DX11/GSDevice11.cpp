@@ -40,6 +40,8 @@ GSDevice11::GSDevice11()
 	m_features.image_load_store = false;
 	m_features.texture_barrier = false;
 	m_features.provoking_vertex_last = false;
+	m_features.point_expand = false;
+	m_features.line_expand = false;
 }
 
 bool GSDevice11::SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode)

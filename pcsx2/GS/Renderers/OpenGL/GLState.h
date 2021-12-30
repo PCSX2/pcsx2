@@ -24,6 +24,9 @@ namespace GLState
 	extern GSVector2i viewport;
 	extern GSVector4i scissor;
 
+	extern bool point_size;
+	extern float line_width;
+
 	extern bool blend;
 	extern u16 eq_RGB;
 	extern u16 f_sRGB;

@@ -133,7 +133,8 @@ public:
 			{
 				u32 int_fst : 1;
 				u32 iip : 1;
-				u32 _free : 30;
+				u32 point_size : 1;
+				u32 _free : 29;
 			};
 
 			u32 key;
