@@ -22,14 +22,25 @@ GSTexture::GSTexture()
 	, m_size(0, 0)
 	, m_committed_size(0, 0)
 	, m_gpu_page_size(0, 0)
+	, m_mipmap_levels(0)
 	, m_type(Type::Invalid)
 	, m_format(Format::Invalid)
 	, m_sparse(false)
+	, m_needs_mipmaps_generated(true)
 	, last_frame_used(0)
 	, LikelyOffset(false)
 	, OffsetHack_modx(0.0f)
 	, OffsetHack_mody(0.0f)
 {
+}
+
+void GSTexture::GenerateMipmapsIfNeeded()
+{
+	if (!m_needs_mipmaps_generated || m_mipmap_levels <= 1)
+		return;
+
+	m_needs_mipmaps_generated = false;
+	GenerateMipmap();
 }
 
 void GSTexture::CommitRegion(const GSVector2i& region)

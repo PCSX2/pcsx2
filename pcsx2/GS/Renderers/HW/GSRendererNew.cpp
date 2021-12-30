@@ -948,7 +948,7 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	}
 	else if (trilinear_auto)
 	{
-		tex->m_texture->GenerateMipmap();
+		tex->m_texture->GenerateMipmapsIfNeeded();
 	}
 
 	// TC Offset Hack
