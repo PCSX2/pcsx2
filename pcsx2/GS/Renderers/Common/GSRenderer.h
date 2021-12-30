@@ -46,9 +46,6 @@ protected:
 	virtual GSTexture* GetFeedbackOutput() { return nullptr; }
 
 public:
-	GSDevice* m_dev;
-
-public:
 	GSRenderer();
 	virtual ~GSRenderer();
 

@@ -205,6 +205,7 @@ protected:
 	GIFRegTEX0 GetTex0Layer(u32 lod);
 
 public:
+	GSDevice* m_dev;
 	GIFPath m_path[4];
 	GIFRegPRIM* PRIM;
 	GSPrivRegSet* m_regs;

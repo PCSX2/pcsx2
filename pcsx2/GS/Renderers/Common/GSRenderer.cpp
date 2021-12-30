@@ -31,7 +31,6 @@ GSRenderer::GSRenderer()
 	, m_control_key(false)
 	, m_texture_shuffle(false)
 	, m_real_size(0, 0)
-	, m_dev(NULL)
 {
 	m_GStitleInfoBuffer[0] = 0;
 
