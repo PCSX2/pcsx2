@@ -382,7 +382,7 @@
     <ClCompile Include="SPU2\Windows\CfgHelpers.cpp" />
     <ClCompile Include="SPU2\Windows\Config.cpp" />
     <ClCompile Include="SPU2\Windows\ConfigDebug.cpp" />
-    <ClCompile Include="SPU2\Windows\ConfigSoundtouch.cpp" />
+    <ClCompile Include="SPU2\Windows\ConfigSoundTouch.cpp" />
     <ClCompile Include="SPU2\Windows\RealtimeDebugger.cpp" />
     <ClCompile Include="SPU2\Windows\UIHelpers.cpp" />
     <ClCompile Include="SPU2\spu2.cpp" />
