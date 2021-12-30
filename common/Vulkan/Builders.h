@@ -128,6 +128,8 @@ namespace Vulkan
 		void SetPipelineLayout(VkPipelineLayout layout);
 		void SetRenderPass(VkRenderPass render_pass, u32 subpass);
 
+		void SetProvokingVertex(VkProvokingVertexModeEXT mode);
+
 	private:
 		VkGraphicsPipelineCreateInfo m_ci;
 		std::array<VkPipelineShaderStageCreateInfo, MAX_SHADER_STAGES> m_shader_stages;
@@ -152,6 +154,8 @@ namespace Vulkan
 		std::array<VkDynamicState, MAX_DYNAMIC_STATE> m_dynamic_state_values;
 
 		VkPipelineMultisampleStateCreateInfo m_multisample_state;
+
+		VkPipelineRasterizationProvokingVertexStateCreateInfoEXT m_provoking_vertex;
 	};
 
 	class SamplerBuilder

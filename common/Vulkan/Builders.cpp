@@ -149,6 +149,9 @@ namespace Vulkan
 		m_multisample_state = {};
 		m_multisample_state.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 
+		m_provoking_vertex = {};
+		m_provoking_vertex.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT;
+
 		// set defaults
 		SetNoCullRasterizationState();
 		SetNoDepthTestState();
@@ -418,6 +421,13 @@ namespace Vulkan
 	{
 		m_ci.renderPass = render_pass;
 		m_ci.subpass = subpass;
+	}
+
+	void GraphicsPipelineBuilder::SetProvokingVertex(VkProvokingVertexModeEXT mode)
+	{
+		Util::AddPointerToChain(&m_rasterization_state, &m_provoking_vertex);
+
+		m_provoking_vertex.provokingVertexMode = mode;
 	}
 
 	SamplerBuilder::SamplerBuilder() { Clear(); }

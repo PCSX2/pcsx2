@@ -49,6 +49,9 @@ namespace Vulkan
 			VkAccessFlags dst_access_mask, VkDeviceSize offset, VkDeviceSize size, VkPipelineStageFlags src_stage_mask,
 			VkPipelineStageFlags dst_stage_mask);
 
+		// Adds a structure to a chain.
+		void AddPointerToChain(void* head, const void* ptr);
+
 		const char* VkResultToString(VkResult res);
 		void LogVulkanResult(const char* func_name, VkResult res, const char* msg, ...) /*printflike(4, 5)*/;
 

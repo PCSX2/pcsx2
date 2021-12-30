@@ -257,6 +257,20 @@ namespace Vulkan
 				command_buffer, src_stage_mask, dst_stage_mask, 0, 0, nullptr, 1, &buffer_info, 0, nullptr);
 		}
 
+		void AddPointerToChain(void* head, const void* ptr)
+		{
+			VkBaseInStructure* last_st = static_cast<VkBaseInStructure*>(head);
+			while (last_st->pNext)
+			{
+				if (last_st->pNext == ptr)
+					return;
+
+				last_st = const_cast<VkBaseInStructure*>(last_st->pNext);
+			}
+
+			last_st->pNext = static_cast<const VkBaseInStructure*>(ptr);
+		}
+
 		const char* VkResultToString(VkResult res)
 		{
 			switch (res)
