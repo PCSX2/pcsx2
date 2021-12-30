@@ -458,6 +458,9 @@ namespace Vulkan
 		if (enable_surface && !SupportsExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME, true))
 			return false;
 
+		m_optional_extensions.vk_ext_provoking_vertex =
+			SupportsExtension(VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME, false);
+
 		return true;
 	}
 
@@ -605,6 +608,15 @@ namespace Vulkan
 			device_info.ppEnabledLayerNames = layer_names;
 		}
 
+		// provoking vertex
+		VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_feature = {
+			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
+		if (m_optional_extensions.vk_ext_provoking_vertex)
+		{
+			provoking_vertex_feature.provokingVertexLast = VK_TRUE;
+			Util::AddPointerToChain(&device_info, &provoking_vertex_feature);
+		}
+
 		VkResult res = vkCreateDevice(m_physical_device, &device_info, nullptr, &m_device);
 		if (res != VK_SUCCESS)
 		{
@@ -622,7 +634,37 @@ namespace Vulkan
 		{
 			vkGetDeviceQueue(m_device, m_present_queue_family_index, 0, &m_present_queue);
 		}
+
+		ProcessDeviceExtensions();
 		return true;
+	}
+
+	void Context::ProcessDeviceExtensions()
+	{
+		// advanced feature checks
+		if (vkGetPhysicalDeviceFeatures2)
+		{
+			VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+			VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_features = {
+				VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
+			void** pNext = &features2.pNext;
+
+			// add in optional feature structs
+			if (m_optional_extensions.vk_ext_provoking_vertex)
+			{
+				*pNext = &provoking_vertex_features;
+				pNext = &provoking_vertex_features.pNext;
+			}
+
+			// query
+			vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
+
+			// confirm we actually support it
+			m_optional_extensions.vk_ext_provoking_vertex &= (provoking_vertex_features.provokingVertexLast == VK_TRUE);
+		}
+
+		Console.WriteLn("VK_EXT_provoking_vertex is %s",
+			m_optional_extensions.vk_ext_provoking_vertex ? "supported" : "NOT supported");
 	}
 
 	bool Context::CreateAllocator()
@@ -1124,7 +1166,8 @@ namespace Vulkan
 	void Context::DeferBufferDestruction(VkBuffer object, VmaAllocation allocation)
 	{
 		FrameResources& resources = m_frame_resources[m_current_frame];
-		resources.cleanup_resources.push_back([this, object, allocation]() { vmaDestroyBuffer(m_allocator, object, allocation); });
+		resources.cleanup_resources.push_back(
+			[this, object, allocation]() { vmaDestroyBuffer(m_allocator, object, allocation); });
 	}
 
 	void Context::DeferBufferViewDestruction(VkBufferView object)

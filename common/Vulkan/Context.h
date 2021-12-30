@@ -46,6 +46,11 @@ namespace Vulkan
 			TEXTURE_BUFFER_SIZE = 64 * 1024 * 1024,
 		};
 
+		struct OptionalExtensions
+		{
+			bool vk_ext_provoking_vertex : 1;
+		};
+
 		~Context();
 
 		// Determines if the Vulkan validation layer is available on the system.
@@ -89,6 +94,7 @@ namespace Vulkan
 		__fi const VkPhysicalDeviceProperties& GetDeviceProperties() const { return m_device_properties; }
 		__fi const VkPhysicalDeviceFeatures& GetDeviceFeatures() const { return m_device_features; }
 		__fi const VkPhysicalDeviceLimits& GetDeviceLimits() const { return m_device_properties.limits; }
+		__fi const OptionalExtensions& GetOptionalExtensions() const { return m_optional_extensions; }
 
 		// Helpers for getting constants
 		__fi VkDeviceSize GetUniformBufferAlignment() const
@@ -239,6 +245,7 @@ namespace Vulkan
 		bool CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer, const char** required_device_extensions,
 			u32 num_required_device_extensions, const char** required_device_layers, u32 num_required_device_layers,
 			const VkPhysicalDeviceFeatures* required_features);
+		void ProcessDeviceExtensions();
 
 		bool CreateAllocator();
 		void DestroyAllocator();
@@ -323,6 +330,7 @@ namespace Vulkan
 		VkPhysicalDeviceFeatures m_device_features = {};
 		VkPhysicalDeviceProperties m_device_properties = {};
 		VkPhysicalDeviceMemoryProperties m_device_memory_properties = {};
+		OptionalExtensions m_optional_extensions = {};
 	};
 
 } // namespace Vulkan
