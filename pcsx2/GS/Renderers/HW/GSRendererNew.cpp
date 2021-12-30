@@ -661,20 +661,6 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 		}
 	}
 
-	// GL42 interact very badly with sw blending. GL42 uses the primitiveID to find the primitive
-	// that write the bad alpha value. Sw blending will force the draw to run primitive by primitive
-	// (therefore primitiveID will be constant to 1).
-	// Switch DATE_GL42 with DATE_GL45 in such cases to ensure accuracy.
-	// No mix of COLCLIP + sw blend + DATE_GL42, neither sw fbmask + DATE_GL42.
-	// Note: Do the swap after colclip to avoid adding extra conditions.
-	if (sw_blending && DATE_GL42)
-	{
-		GL_PERF("DATE: Swap DATE_GL42 with DATE_GL45");
-		m_conf.require_full_barrier = true;
-		DATE_GL42 = false;
-		DATE_GL45 = true;
-	}
-
 	// For stat to optimize accurate option
 #if 0
 	GL_INS("BLEND_INFO: %d/%d/%d/%d. Clamp:%d. Prim:%d number %d (drawlist %d) (sw %d)",
@@ -757,6 +743,20 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 		{
 			m_conf.blend = {blend_index, ALPHA.FIX, ALPHA.C == 2, false, false};
 		}
+	}
+
+	// GL42 interact very badly with sw blending. GL42 uses the primitiveID to find the primitive
+	// that write the bad alpha value. Sw blending will force the draw to run primitive by primitive
+	// (therefore primitiveID will be constant to 1).
+	// Switch DATE_GL42 with DATE_GL45 in such cases to ensure accuracy.
+	// No mix of COLCLIP + sw blend + DATE_GL42, neither sw fbmask + DATE_GL42.
+	// Note: Do the swap in the end, saves the expensive draw splitting/barriers when mixed software blending is used.
+	if (sw_blending && DATE_GL42 && m_conf.require_full_barrier)
+	{
+		GL_PERF("DATE: Swap DATE_GL42 with DATE_GL45");
+		m_conf.require_full_barrier = true;
+		DATE_GL42 = false;
+		DATE_GL45 = true;
 	}
 }
 
