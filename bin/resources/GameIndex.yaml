@@ -11968,16 +11968,11 @@ SLES-52509:
 SLES-52510:
   name: "Neo Contra"
   region: "PAL-M3"
-  compat: 4
-  patches:
-    EEE2F6A3:
-      content: |-
-        comment=Patches By Prafull
-        // New patch fixes most issues.
-        patch=0,EE,003a9b20,word,00000000
-        // Fix hang at Level 4.
-        patch=0,EE,0037b764,word,03e00008
-        patch=0,EE,0037b768,word,00000000
+  compat: 6
+  roundModes:
+    eeRoundMode: 0
+  clampModes:
+    eeClampMode: 2
 SLES-52511:
   name: "Headhunter - Redemption (EX)"
   region: "PAL-E"
@@ -19245,6 +19240,10 @@ SLKA-25225:
 SLKA-25227:
   name: "Neo Contra"
   region: "NTSC-K"
+  roundModes:
+    eeRoundMode: 0
+  clampModes:
+    eeClampMode: 2
 SLKA-25232:
   name: "Naruto Narutimett Hero International"
   region: "NTSC-K"
@@ -24094,13 +24093,10 @@ SLPM-65751:
 SLPM-65752:
   name: "Neo Contra"
   region: "NTSC-J"
-  patches:
-    A70549D6:
-      content: |-
-        comment=Patch by Prafull, Jelta
-        // Fix hang at Level 4.
-        patch=0,EE,0037B264,word,03e00008
-        patch=0,EE,0037B268,word,00000000
+  roundModes:
+    eeRoundMode: 0
+  clampModes:
+    eeClampMode: 2
 SLPM-65753:
   name: "Kessen [Koei Collection Series]"
   region: "NTSC-J"
@@ -24838,6 +24834,10 @@ SLPM-65989:
 SLPM-65990:
   name: "Neo Contra [Konami Palace Selection]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0
+  clampModes:
+    eeClampMode: 2
 SLPM-65991:
   name: "Anubis: Zone of the Enders Special Edition [Konami Dendou Collection]"
   region: "NTSC-J"
@@ -36831,14 +36831,11 @@ SLUS-20960:
 SLUS-20961:
   name: "Neo Contra"
   region: "NTSC-U"
-  compat: 4
-  patches:
-    08901101:
-      content: |-
-        comment=Patch by Prafull
-        // Fix hang at Level 4.
-        patch=0,EE,0037b1a4,word,03e00008
-        patch=0,EE,0037b1a8,word,00000000
+  compat: 6
+  roundModes:
+    eeRoundMode: 0
+  clampModes:
+    eeClampMode: 2
 SLUS-20962:
   name: "Castle of Shikigami 2"
   region: "NTSC-U"
