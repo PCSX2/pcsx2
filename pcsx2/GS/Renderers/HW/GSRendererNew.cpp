@@ -782,7 +782,7 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	{
 		case TriFiltering::Forced:
 			trilinear = static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Linear);
-			trilinear_auto = m_mipmap != 2;
+			trilinear_auto = !need_mipmap || m_mipmap != 2;
 			break;
 
 		case TriFiltering::PS2:
