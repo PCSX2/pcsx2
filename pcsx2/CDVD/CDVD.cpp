@@ -644,6 +644,7 @@ s32 cdvdCtrlTrayOpen()
 	DiscSwapTimerSeconds = cdvd.RTC.second; // remember the PS2 time when this happened
 	cdvdUpdateStatus(CDVD_STATUS_TRAY_OPEN);
 	cdvd.Ready = CDVD_DRIVE_DEV9CON;
+	cdvd.Spinning = false;
 
 	if (cdvd.Type > 0 || CDVDsys_GetSourceType() == CDVD_SourceType::NoDisc)
 	{
@@ -915,7 +916,7 @@ void cdvdNewDiskCB()
 		cdvdUpdateStatus(CDVD_STATUS_TRAY_OPEN);
 		cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
 		cdvd.Tray.trayState = CDVD_DISC_EJECT;
-
+		cdvd.Spinning = false;
 		// If it really got ejected, the DVD Reader will report Type 0, so no need to simulate ejection
 		if (cdvd.Type > 0)
 			cdvd.Tray.cdvdActionSeconds = 3;
@@ -925,6 +926,7 @@ void cdvdNewDiskCB()
 		DevCon.WriteLn(Color_Green, L"Seeking new media");
 		cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
 		cdvdUpdateStatus(CDVD_STATUS_SEEK);
+		cdvd.Spinning = true;
 		cdvd.Tray.trayState = CDVD_DISC_DETECTING;
 		cdvd.Tray.cdvdActionSeconds = 3;
 	}
@@ -1380,6 +1382,7 @@ void cdvdUpdateTrayState()
 					DevCon.WriteLn(Color_Green, L"Seeking new disc");
 					cdvd.Tray.trayState = CDVD_DISC_SEEKING;
 					cdvd.Tray.cdvdActionSeconds = 2;
+					cdvd.Spinning = true;
 					break;
 				case CDVD_DISC_SEEKING:
 				case CDVD_DISC_ENGAGED:
@@ -1392,6 +1395,7 @@ void cdvdUpdateTrayState()
 					}
 					else
 					{
+						cdvd.Spinning = false;
 						cdvdUpdateStatus(CDVD_STATUS_STOP);
 					}
 					break;
@@ -1516,9 +1520,25 @@ u8 cdvdRead(u8 key)
 				return (cdvd.Tray.trayState <= CDVD_DISC_SEEKING) ? cdvdTrayStateDetecting() : 0; // Detecting Disc / No Disc
 			}
 
-		case 0x13: // UNKNOWN
-			CDVD_LOG("cdvdRead13(Unknown) %x", 4);
-			return 4;
+		case 0x13: // SPEED
+		{
+			u8 speedCtrl = cdvd.SpindlCtrl & 0x3F;
+
+			if (speedCtrl == 0)
+				speedCtrl = cdvdIsDVD() ? 3 : 5;
+
+			if (cdvdIsDVD())
+				speedCtrl += 0xF;
+			else
+				speedCtrl--;
+
+			if (cdvd.Tray.trayState != CDVD_DISC_ENGAGED || cdvd.Spinning == false)
+				speedCtrl = 0;
+
+			CDVD_LOG("cdvdRead13(Speed) %x", speedCtrl);
+			return speedCtrl;
+		}
+
 
 		case 0x15: // RSV
 			CDVD_LOG("cdvdRead15(RSV)");
@@ -1737,16 +1757,25 @@ static void cdvdWrite04(u8 rt)
 			break;
 
 		case N_CD_READ: // CdRead
+		{
 			// Assign the seek to sector based on cdvd.Param[0]-[3], and the number of  sectors based on cdvd.Param[4]-[7].
 			cdvd.SeekToSector = *(u32*)(cdvd.NCMDParam + 0);
 			cdvd.nSectors = *(u32*)(cdvd.NCMDParam + 4);
 			cdvd.RetryCnt = (cdvd.NCMDParam[8] == 0) ? 0x100 : cdvd.NCMDParam[8];
-			cdvd.SpindlCtrl = cdvd.NCMDParam[9];
+			u32 oldSpindleCtrl = cdvd.SpindlCtrl;
+
+			if (cdvd.NCMDParam[9] & 0x3F)
+				cdvd.SpindlCtrl = cdvd.NCMDParam[9];
+			else
+				cdvd.SpindlCtrl = (cdvd.NCMDParam[9] & 0x80) | (cdvdIsDVD() ? 3 : 5); // Max speed for DVD/CD
+
+			if (cdvd.NCMDParam[9] & CDVD_SPINDLE_NOMINAL)
+				DevCon.Warning("CDVD: CD Read using Nominal switch from CAV to CLV, unhandled");
+
+			bool ParamError = false;
 
 			switch (cdvd.SpindlCtrl & CDVD_SPINDLE_SPEED)
 			{
-				case 0: // Will use current speed
-					break;
 				case 1: // x1
 					cdvd.Speed = 1;
 					break;
@@ -1760,7 +1789,7 @@ static void cdvdWrite04(u8 rt)
 					if (cdvdIsDVD())
 					{
 						DevCon.Warning("CDVD Read invalid DVD Speed %d", cdvd.SpindlCtrl & CDVD_SPINDLE_SPEED);
-						cdvd.Speed = 4;
+						ParamError = true;
 					}
 					else
 						cdvd.Speed = 12;
@@ -1769,35 +1798,51 @@ static void cdvdWrite04(u8 rt)
 					if (cdvdIsDVD())
 					{
 						DevCon.Warning("CDVD Read invalid DVD Speed %d", cdvd.SpindlCtrl & CDVD_SPINDLE_SPEED);
-						cdvd.Speed = 4;
+						ParamError = true;
 					}
 					else
 						cdvd.Speed = 24;
 					break;
 				default:
 					Console.Error("Unknown CDVD Read Speed SpindleCtrl=%x", cdvd.SpindlCtrl);
-
-					if (cdvdIsDVD())
-						cdvd.Speed = 4; // Just assume 4x for now (DVD)
-					else
-						cdvd.Speed = 24; // Just assume 24x for now (CD)
+					ParamError = true;
 					break;
 			}
 
-			switch (cdvd.NCMDParam[10])
+			if (cdvdIsDVD() && cdvd.NCMDParam[10] != 0)
 			{
-				case 2:
-					cdvd.ReadMode = CDVD_MODE_2340;
-					cdvd.BlockSize = 2340;
-					break;
-				case 1:
-					cdvd.ReadMode = CDVD_MODE_2328;
-					cdvd.BlockSize = 2328;
-					break;
-				default:
-					cdvd.ReadMode = CDVD_MODE_2048;
-					cdvd.BlockSize = 2048;
-					break;
+				ParamError = true;
+			}
+			else
+			{
+				switch (cdvd.NCMDParam[10])
+				{
+					case 2:
+						cdvd.ReadMode = CDVD_MODE_2340;
+						cdvd.BlockSize = 2340;
+						break;
+					case 1:
+						cdvd.ReadMode = CDVD_MODE_2328;
+						cdvd.BlockSize = 2328;
+						break;
+					case 0:
+						cdvd.ReadMode = CDVD_MODE_2048;
+						cdvd.BlockSize = 2048;
+						break;
+					default:
+						ParamError = true;
+						break;
+				}
+			}
+
+			if (ParamError)
+			{
+				DevCon.Warning("CDVD: CD Read Bad Parameter Error");
+				cdvd.SpindlCtrl = oldSpindleCtrl;
+				cdvd.Error = 0x22; // Invalid Parameter
+				cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON | CDVD_DRIVE_ERROR;
+				cdvdSetIrq();
+				return;
 			}
 
 			if (!cdvdReadErrorHandler())
@@ -1823,19 +1868,37 @@ static void cdvdWrite04(u8 rt)
 			// this'll skip the seek delay.
 			cdvd.Reading = 1;
 			break;
-
+		}
 		case N_CD_READ_CDDA: // CdReadCDDA
 		case N_CD_READ_XCDDA: // CdReadXCDDA
+		{
+			if (cdvdIsDVD())
+			{
+				DevCon.Warning("CDVD: DVD Read when CD Error");
+				cdvd.Error = 0x14; // Invalid for current disc type
+				cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON | CDVD_DRIVE_ERROR;
+				cdvdSetIrq();
+				return;
+			}
 			// Assign the seek to sector based on cdvd.Param[0]-[3], and the number of  sectors based on cdvd.Param[4]-[7].
 			cdvd.SeekToSector = *(u32*)(cdvd.NCMDParam + 0);
 			cdvd.nSectors = *(u32*)(cdvd.NCMDParam + 4);
 			cdvd.RetryCnt = (cdvd.NCMDParam[8] == 0) ? 0x100 : cdvd.NCMDParam[8];
-			cdvd.SpindlCtrl = cdvd.NCMDParam[9];
+
+			u32 oldSpindleCtrl = cdvd.SpindlCtrl;
+
+			if (cdvd.NCMDParam[9] & 0x3F)
+				cdvd.SpindlCtrl = cdvd.NCMDParam[9];
+			else
+				cdvd.SpindlCtrl = (cdvd.NCMDParam[9] & 0x80) | 5; // Max speed for CD
+
+			if (cdvd.NCMDParam[9] & CDVD_SPINDLE_NOMINAL)
+				DevCon.Warning("CDVD: CDDA Read using Nominal switch from CAV to CLV, unhandled");
+
+			bool ParamError = false;
 
 			switch (cdvd.SpindlCtrl & CDVD_SPINDLE_SPEED)
 			{
-				case 0: // Will use current speed
-					break;
 				case 1: // x1
 					cdvd.Speed = 1;
 					break;
@@ -1852,8 +1915,8 @@ static void cdvdWrite04(u8 rt)
 					cdvd.Speed = 24;
 					break;
 				default:
-					Console.Error("Unknown CDDA Read Speed SpindleCtrl=%x", cdvd.SpindlCtrl);
-					cdvd.Speed = 24; // Just assume 24x for now (CD)
+					Console.Error("Unknown CDVD Read Speed SpindleCtrl=%x", cdvd.SpindlCtrl);
+					ParamError = true;
 					break;
 			}
 
@@ -1863,10 +1926,23 @@ static void cdvdWrite04(u8 rt)
 					cdvd.ReadMode = CDVD_MODE_2368;
 					cdvd.BlockSize = 2368;
 					break;
-				default:
+				case 0:
 					cdvd.ReadMode = CDVD_MODE_2352;
 					cdvd.BlockSize = 2352;
 					break;
+				default:
+					ParamError = true;
+					break;
+			}
+
+			if (ParamError)
+			{
+				DevCon.Warning("CDVD: CDDA Read Bad Parameter Error");
+				cdvd.SpindlCtrl = oldSpindleCtrl;
+				cdvd.Error = 0x22; // Invalid Parameter
+				cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON | CDVD_DRIVE_ERROR;
+				cdvdSetIrq();
+				return;
 			}
 
 			CDVD_LOG("CDRead > startSector=%d, seekTo=%d, nSectors=%d, RetryCnt=%x, Speed=%dx(%s), ReadMode=%x(%x) SpindleCtrl=%x",
@@ -1889,23 +1965,40 @@ static void cdvdWrite04(u8 rt)
 			// this'll skip the seek delay.
 			cdvd.Reading = 1;
 			break;
-
+		}
 		case N_DVD_READ: // DvdRead
+		{
+			if (!cdvdIsDVD())
+			{
+				DevCon.Warning("CDVD: DVD Read when CD Error");
+				cdvd.Error = 0x14; // Invalid for current disc type
+				cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON | CDVD_DRIVE_ERROR;
+				cdvdSetIrq();
+				return;
+			}
 			// Assign the seek to sector based on cdvd.Param[0]-[3], and the number of  sectors based on cdvd.Param[4]-[7].
 			cdvd.SeekToSector = *(u32*)(cdvd.NCMDParam + 0);
 			cdvd.nSectors = *(u32*)(cdvd.NCMDParam + 4);
+
+			u32 oldSpindleCtrl = cdvd.SpindlCtrl;
 
 			if (cdvd.NCMDParam[8] == 0)
 				cdvd.RetryCnt = 0x100;
 			else
 				cdvd.RetryCnt = cdvd.NCMDParam[8];
 
-			cdvd.SpindlCtrl = cdvd.NCMDParam[9];
+			if (cdvd.NCMDParam[9] & 0x3F)
+				cdvd.SpindlCtrl = cdvd.NCMDParam[9];
+			else
+				cdvd.SpindlCtrl = (cdvd.NCMDParam[9] & 0x80) | 3; // Max speed for DVD
+
+			if (cdvd.NCMDParam[9] & CDVD_SPINDLE_NOMINAL)
+				DevCon.Warning("CDVD: DVD Read using Nominal switch from CAV to CLV, unhandled");
+
+			bool ParamError = false;
 
 			switch (cdvd.SpindlCtrl & CDVD_SPINDLE_SPEED)
 			{
-				case 0: // Will use current speed
-					break;
 				case 1: // x1
 					cdvd.Speed = 1;
 					break;
@@ -1916,9 +2009,22 @@ static void cdvdWrite04(u8 rt)
 					cdvd.Speed = 4;
 					break;
 				default:
-					Console.Error("Unknown DVD Speed SpindleCtrl=%x", cdvd.SpindlCtrl);
-					cdvd.Speed = 4; // Just assume 4x for now
+					Console.Error("Unknown CDVD Read Speed SpindleCtrl=%x", cdvd.SpindlCtrl);
+					ParamError = true;
 					break;
+			}
+
+			if (cdvd.NCMDParam[10] != 0)
+				ParamError = true;
+
+			if (ParamError)
+			{
+				DevCon.Warning("CDVD: DVD Read Bad Parameter Error");
+				cdvd.SpindlCtrl = oldSpindleCtrl;
+				cdvd.Error = 0x22; // Invalid Parameter
+				cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON | CDVD_DRIVE_ERROR;
+				cdvdSetIrq();
+				return;
 			}
 
 			cdvd.ReadMode = CDVD_MODE_2048;
@@ -1947,7 +2053,7 @@ static void cdvdWrite04(u8 rt)
 			// this'll skip the seek delay.
 			cdvd.Reading = 1;
 			break;
-
+		}
 		case N_CD_GET_TOC: // CdGetToc & cdvdman_call19
 			//Param[0] is 0 for CdGetToc and any value for cdvdman_call19
 			//the code below handles only CdGetToc!

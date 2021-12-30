@@ -45,7 +45,7 @@ typedef struct _cdvdTN
 
 // SpindleCtrl Masks
 #define CDVD_SPINDLE_SPEED 0x7  // Speed ranges from 0-3 (1, 2, 3, 4x for DVD) and 0-5 (1, 2, 4, 12, 24x for CD)
-#define CDVD_SPINDLE_DVD16 0x40 // Forces DVD to 1.6x speed (Mentioned in open SDK not really anywhere else
+#define CDVD_SPINDLE_NOMINAL 0x40 // Changes the speed to be constant (CLV) based on current speed
 #define CDVD_SPINDLE_CAV 0x80  // CAV/CLV selector
 
 // CDVDreadTrack mode values:
