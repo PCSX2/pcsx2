@@ -645,6 +645,7 @@ s32 cdvdCtrlTrayOpen()
 	cdvdUpdateStatus(CDVD_STATUS_TRAY_OPEN);
 	cdvd.Ready = CDVD_DRIVE_DEV9CON;
 	cdvd.Spinning = false;
+	cdvdSetIrq(1 << Irq_Eject);
 
 	if (cdvd.Type > 0 || CDVDsys_GetSourceType() == CDVD_SourceType::NoDisc)
 	{
@@ -917,6 +918,7 @@ void cdvdNewDiskCB()
 		cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
 		cdvd.Tray.trayState = CDVD_DISC_EJECT;
 		cdvd.Spinning = false;
+		cdvdSetIrq(1 << Irq_Eject);
 		// If it really got ejected, the DVD Reader will report Type 0, so no need to simulate ejection
 		if (cdvd.Type > 0)
 			cdvd.Tray.cdvdActionSeconds = 3;
