@@ -26,7 +26,7 @@ public:
 		int pitch;
 	};
 
-	enum class Type
+	enum class Type : u8
 	{
 		Invalid = 0,
 		RenderTarget = 1,
@@ -37,7 +37,7 @@ public:
 		SparseDepthStencil,
 	};
 
-	enum class Format
+	enum class Format : u8
 	{
 		Invalid = 0,  ///< Used for initialization
 		Color,        ///< Standard (RGBA8) color texture
@@ -54,9 +54,11 @@ protected:
 	GSVector2i m_size;
 	GSVector2i m_committed_size;
 	GSVector2i m_gpu_page_size;
+	int m_mipmap_levels;
 	Type m_type;
 	Format m_format;
 	bool m_sparse;
+	bool m_needs_mipmaps_generated;
 
 public:
 	GSTexture();
@@ -84,9 +86,13 @@ public:
 	int GetWidth() const { return m_size.x; }
 	int GetHeight() const { return m_size.y; }
 	GSVector2i GetSize() const { return m_size; }
+	int GetMipmapLevels() const { return m_mipmap_levels; }
 
 	Type GetType() const { return m_type; }
 	Format GetFormat() const { return m_format; }
+
+	void GenerateMipmapsIfNeeded();
+	void ClearMipmapGenerationFlag() { m_needs_mipmaps_generated = false; }
 
 	virtual void CommitPages(const GSVector2i& region, bool commit) {}
 	void CommitRegion(const GSVector2i& region);

@@ -1420,6 +1420,8 @@ void GSRendererHW::Draw()
 				m_src->UpdateLayer(MIP_TEX0, r, layer - m_lod.x);
 			}
 
+			// we don't need to generate mipmaps since they were provided
+			m_src->m_texture->ClearMipmapGenerationFlag();
 			m_vt.m_min.t = tmin;
 			m_vt.m_max.t = tmax;
 		}
