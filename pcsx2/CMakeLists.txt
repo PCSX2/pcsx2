@@ -713,7 +713,7 @@ if(WIN32)
 		SPU2/Windows/CfgHelpers.cpp
 		SPU2/Windows/Config.cpp
 		SPU2/Windows/ConfigDebug.cpp
-		SPU2/Windows/ConfigSoundTouch.cpp
+		SPU2/Windows/ConfigSoundtouch.cpp
 		SPU2/Windows/dsp.cpp
 		SPU2/Windows/RealtimeDebugger.cpp
 		SPU2/Windows/SndOut_XAudio2.cpp
