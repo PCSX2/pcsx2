@@ -7252,6 +7252,8 @@ SLES-50017:
   name: "F1 Championship Season 2000"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - XGKickHack # Fixes graphical issues.
 SLES-50018:
   name: "Kessen"
   region: "PAL-E"
@@ -9420,6 +9422,13 @@ SLES-51101:
   name: "Eggo Mania"
   region: "PAL-M3"
   compat: 5
+  patches:
+    30B27954:
+      content: |-
+        //SFX/Background Music Fix.
+        author=kr_ps2
+        patch=1,EE,0011836C,word,00000000
+        patch=1,EE,00118374,word,00000000
 SLES-51107:
   name: "Hitman 2 - Silent Assassin"
   region: "PAL-I"
@@ -10472,8 +10481,8 @@ SLES-51690:
 SLES-51693:
   name: "Suffering, The"
   region: "PAL-E-F-G"
-  speedHacks:
-    InstantVU1SpeedHack: 1  # Fixes SPS.
+  gameFixes:
+    - VUKickstartHack # Fixes SPS.
 SLES-51696:
   name: "Dragon's Lair 3D - Special Edition"
   region: "PAL-M5"
@@ -10926,6 +10935,8 @@ SLES-51914:
   name: "Onimusha 3 - Demon Siege"
   region: "PAL-M5"
   compat: 5
+  clampModes:
+    vuClampMode: 3 # Makes sure enemies appear correctly.
   memcardFilters:
     - "SLES-51913"
     - "SLES-51914"
@@ -11846,8 +11857,8 @@ SLES-52439:
   name: "Suffering, The"
   region: "PAL-E-I-S"
   compat: 5
-  speedHacks:
-    InstantVU1SpeedHack: 1  # Fixes SPS.
+  gameFixes:
+    - VUKickstartHack # Fixes SPS.
 SLES-52440:
   name: "Harry Potter and the Prisoner of Azkaban"
   region: "PAL-M7"
@@ -14133,8 +14144,8 @@ SLES-53525:
 SLES-53526:
   name: "Suffering, The - Ties that Bind"
   region: "PAL-E-F"
-  speedHacks:
-    InstantVU1SpeedHack: 1  # Fixes SPS.
+  gameFixes:
+    - VUKickstartHack # Fixes SPS.
   memcardFilters:
     - "SLES-53526"
     - "SLES-53527"
@@ -14146,8 +14157,8 @@ SLES-53526:
 SLES-53527:
   name: "Suffering, The - Ties that Bind"
   region: "PAL-E-I-S"
-  speedHacks:
-    InstantVU1SpeedHack: 1  # Fixes SPS.
+  gameFixes:
+    - VUKickstartHack # Fixes SPS.
   memcardFilters:
     - "SLES-53526"
     - "SLES-53527"
@@ -14159,8 +14170,8 @@ SLES-53527:
 SLES-53528:
   name: "Suffering, The - Ties that Bind"
   region: "PAL-G"
-  speedHacks:
-    InstantVU1SpeedHack: 1  # Fixes SPS.
+  gameFixes:
+    - VUKickstartHack # Fixes SPS.
   memcardFilters:
     - "SLES-53526"
     - "SLES-53527"
@@ -14440,8 +14451,8 @@ SLES-53624:
 SLES-53626:
   name: "Suffering, The - Ties that Bind"
   region: "PAL-E-G"
-  speedHacks:
-    InstantVU1SpeedHack: 1  # Fixes SPS.
+  gameFixes:
+    - VUKickstartHack # Fixes SPS.
   memcardFilters:
     - "SLES-53526"
     - "SLES-53527"
@@ -19058,6 +19069,8 @@ SLKA-25092:
 SLKA-25093:
   name: "Onimusha 3 Demon Siege"
   region: "NTSC-K"
+  clampModes:
+    vuClampMode: 3 # Makes sure enemies appear correctly.
   memcardFilters:
     - "SLKA-25092"
     - "SLKA-25093"
@@ -22463,6 +22476,42 @@ SLPM-65209:
   gameFixes:
     - VuAddSubHack
     - VUKickstartHack # Fixes Character SPS.
+  patches:
+    BEC32D49:
+      content: |-
+        author=kr_ps2
+        //Patch custom CDVDMAN to behave like normal one, properly synced.
+        //Increase stack so iReferEventFlagStatus does not corrupt $ra.
+        patch=1,IOP,0002511C,word,27BDFFA0
+        patch=1,IOP,0002524C,word,27BD0060
+        //Save a0
+        patch=1,IOP,00025150,word,AFA40040
+        patch=1,IOP,0002523C,word,8FA40040
+        //Patch out PowerOff checks.
+        patch=1,IOP,000251A0,word,00000000
+        patch=1,IOP,000251A4,word,00000000
+        patch=1,IOP,000251A8,word,00000000
+        patch=1,IOP,000251AC,word,00000000
+        patch=1,IOP,000251B0,word,00000000
+        //Execute removed iReferEventFlagStatus 
+        patch=1,IOP,000251B4,word,3C040003    //lui    a0,0x0003
+        patch=1,IOP,000251B8,word,8C84D368    //lw    a0,-0x2C98(a0)
+        patch=1,IOP,000251BC,word,0C00AFD3    //jal    pos_0002BF4C iReferEventFlagStatus
+        patch=1,IOP,000251C0,word,27A50018    //addiu   $a1, $sp, 0x18
+        patch=1,IOP,000251C4,word,8FA20024    //lw      $v0, 0x24($sp)
+        patch=1,IOP,000251C8,word,30420020    //andi    $v0, 0x20
+        patch=1,IOP,000251CC,word,1440001A    //bnez    v0,pos_00025238
+        patch=1,IOP,000251D0,word,00000000    //nop
+        //Check event flags.
+        //Clear flag if needed.
+        patch=1,IOP,000251D4,word,8FA40040 //lw $a0, 0x40($sp)
+        patch=1,IOP,000251D8,word,90820001 //lbu $v0, 1($a0)
+        patch=1,IOP,000251DC,word,14400016 //bnez $v0, 0x5c
+        patch=1,IOP,000251E0,word,24020001 //addiu $v0, $zero, 1
+        patch=1,IOP,000251E4,word,08009480 //j 0x25200
+        patch=1,IOP,000251E8,word,AC8200BC //nop
+        //Force jump to execute iReferEventFlagStatus
+        patch=1,IOP,00025198,word,0800946D  
 SLPM-65210:
   name: "Chou Battle Houshin - Bundle #1"
   region: "NTSC-J"
@@ -23083,6 +23132,8 @@ SLPM-65412:
 SLPM-65413:
   name: "Onimusha 3"
   region: "NTSC-J"
+  clampModes:
+    vuClampMode: 3 # Makes sure enemies appear correctly.
   memcardFilters:
     - "SLPM-65411"
     - "SLPM-65413"
@@ -23651,12 +23702,6 @@ SLPM-65604:
   name: "Animation Battle - Recca no Honou"
   region: "NTSC-J"
   compat: 5
-  patches:
-    9BDBA170:
-      content: |-
-        comment=Patch by Shadow Lady
-        // IPU menu hang fix...
-        patch=0,EE,00115c00,word,03e00008
 SLPM-65607:
   name: "3LDK - Shiawase ni Narouyo [Limited Edition]"
   region: "NTSC-J"
@@ -28572,6 +28617,8 @@ SLPS-20043:
 SLPS-20044:
   name: "F1 Championship Season 2000"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes graphical issues.
 SLPS-20047:
   name: "Toudai Shogi"
   region: "NTSC-J"
@@ -28852,6 +28899,13 @@ SLPS-20218:
 SLPS-20219:
   name: "Tsukande! Mawashite! Dossun Pazuru Egg Mania"
   region: "NTSC-J"
+  patches:
+    2A925A22:
+      content: |-
+        //SFX/Background Music Fix.
+        author=kr_ps2
+        patch=1,EE,0011836C,word,00000000
+        patch=1,EE,00118374,word,00000000
 SLPS-20221:
   name: "Taiko no Tatsujin [with Tatacon Reproduction Controller]"
   region: "NTSC-J"
@@ -33359,6 +33413,8 @@ SLUS-20103:
   name: "F1 2000 Championship Edition"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - XGKickHack # Fixes graphical issues.
 SLUS-20104:
   name: "Tiger Woods PGA Tour 2001"
   region: "NTSC-U"
@@ -34725,6 +34781,13 @@ SLUS-20452:
   name: "Egg Mania - Eggstreme Madness"
   region: "NTSC-U"
   compat: 5
+  patches:
+    Ba056DDD:
+      content: |-
+        author=kr_ps2
+        //SFX/Background Music Fix.
+        patch=1,EE,00118394,word,00000000
+        patch=1,EE,0011839C,word,00000000
 SLUS-20453:
   name: "NCAA College Football 2K3"
   region: "NTSC-U"
@@ -35512,8 +35575,8 @@ SLUS-20636:
   name: "Suffering, The"
   region: "NTSC-U"
   compat: 5
-  speedHacks:
-    InstantVU1SpeedHack: 1  # Fixes SPS.
+  gameFixes:
+    - VUKickstartHack # Fixes SPS.
 SLUS-20637:
   name: "Chessmaster (Online)"
   region: "NTSC-U"
@@ -35744,6 +35807,8 @@ SLUS-20694:
   name: "Onimusha 3 - Demon Siege"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vuClampMode: 3 # Makes sure enemies appear correctly.
   memcardFilters:
     - "SLUS-20694"
     - "SLUS-20710"
@@ -41366,6 +41431,13 @@ SLUS-29030:
 SLUS-29032:
   name: "Egg Mania - Eggstreme Madness [Demo]"
   region: "NTSC-U"
+  patches:
+    0A016AD4:
+      content: |-
+        //SFX/Background Music Fix.
+        author=kr_ps2
+        patch=1,EE,001183DC,word,00000000
+        patch=1,EE,001183E4,word,00000000
 SLUS-29033:
   name: "Dual Hearts [Regular Demo]"
   region: "NTSC-U"
