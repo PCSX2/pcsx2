@@ -111,7 +111,6 @@ enum cdvdActions
 	cdvdAction_Seek,
 	cdvdAction_Standby,
 	cdvdAction_Stop,
-	cdvdAction_Break,
 	cdvdAction_Read // note: not used yet.
 };
 

@@ -102,6 +102,7 @@ static void CDVD_INT(int eCycle)
 static void cdvdSetIrq(uint id = (1 << Irq_CommandComplete))
 {
 	cdvd.IntrStat |= id;
+	cdvd.AbortRequested = false;
 	iopIntcIrq(2);
 	psxSetNextBranchDelta(20);
 }
@@ -1093,19 +1094,6 @@ __fi void cdvdActionInterrupt()
 			cdvd.Sector = 0;
 			cdvdUpdateStatus(CDVD_STATUS_STOP);
 			break;
-
-		case cdvdAction_Break:
-			// Make sure the cdvd action state is pretty well cleared:
-			DevCon.WriteLn("CDVD Break Call");
-			if ((cdvd.Ready & 0x80))
-				cdvd.Error = 1; // Abort
-
-			cdvd.Reading = 0;
-			cdvd.Readed = 0;
-			cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON | CDVD_DRIVE_ERROR; // should be CDVD_READY1 or something else?
-			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
-			cdvd.RErr = 0;
-			break;
 	}
 	cdvd.Action = cdvdAction_None;
 
@@ -1147,6 +1135,19 @@ __fi void cdvdReadInterrupt()
 		cdvd.Readed = 1;
 		cdvd.Sector = cdvd.SeekToSector;
 		CDVD_LOG("Cdvd Seek Complete at iopcycle=%8.8x.", psxRegs.cycle);
+	}
+
+	if (cdvd.AbortRequested)
+	{
+		if (!cdvdIsDVD() || !(cdvd.Sector & 0xF))
+		{
+			Console.Warning("Read Abort");
+			cdvd.Error = 0x1; // Abort Error
+			cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON | CDVD_DRIVE_ERROR;
+			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
+			cdvd.WaitingDMA = false;
+			cdvdSetIrq();
+		}
 	}
 
 	if (cdvd.Sector > cdvd.MaxSector)
@@ -1689,6 +1690,7 @@ static void cdvdWrite04(u8 rt)
 	}
 
 	cdvd.nCommand = rt;
+	cdvd.AbortRequested = false;
 
 	if (!cdvdCommandErrorHandler())
 	{
@@ -2131,23 +2133,12 @@ static __fi void cdvdWrite07(u8 rt) // BREAK
 	CDVD_LOG("cdvdWrite07(Break) %x", rt);
 
 	// If we're already in a Ready state or already Breaking, then do nothing:
-	if (!(cdvd.Ready & CDVD_DRIVE_BUSY) || (cdvd.Action == cdvdAction_Break))
+	if (!(cdvd.Ready & CDVD_DRIVE_BUSY) || cdvd.AbortRequested)
 		return;
 
 	DbgCon.WriteLn("*PCSX2*: CDVD BREAK %x", rt);
 
-	// Aborts any one of several CD commands:
-	// Pause, Seek, Read, Status, Standby, and Stop
-
-	psxRegs.interrupt &= ~((1 << IopEvt_Cdvd) | (1 << IopEvt_CdvdRead));
-
-	cdvd.Action = cdvdAction_Break;
-	CDVD_INT(64);
-
-	// Clear the cdvd status:
-	cdvd.Readed = 0;
-	cdvd.Reading = 0;
-	cdvdUpdateStatus(CDVD_STATUS_PAUSE);
+	cdvd.AbortRequested = true;
 }
 
 static __fi void cdvdWrite08(u8 rt)
