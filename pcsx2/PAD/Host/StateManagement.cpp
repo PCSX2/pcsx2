@@ -17,6 +17,7 @@
 
 #include "PAD/Host/StateManagement.h"
 #include "PAD/Host/KeyStatus.h"
+#include "Frontend/InputManager.h"
 
 template <class T>
 static bool __fi test_bit(T& value, int bit)
@@ -113,17 +114,15 @@ void Pad::reset()
 
 void Pad::rumble(unsigned port)
 {
-	for (unsigned motor = 0; motor < 2; motor++)
-	{
-		// TODO:  Probably be better to send all of these at once.
-		if (nextVibrate[motor] | currentVibrate[motor])
-		{
-			currentVibrate[motor] = nextVibrate[motor];
+	if (nextVibrate[0] == currentVibrate[0] && nextVibrate[1] == currentVibrate[1])
+		return;
 
-			// TODO: Implement in InputManager
-			// Device::DoRumble(motor, port);
-		}
-	}
+	currentVibrate[0] = nextVibrate[0];
+	currentVibrate[1] = nextVibrate[1];
+	InputManager::SetPadVibrationIntensity(port,
+		std::min(static_cast<float>(currentVibrate[0]) * g_key_status.GetVibrationScale(port, 0) * (1.0f / 255.0f), 1.0f),
+		std::min(static_cast<float>(currentVibrate[1]) * g_key_status.GetVibrationScale(port, 1) * (1.0f / 255.0f), 1.0f)
+	);
 }
 
 void Pad::stop_vibrate_all()

@@ -32,6 +32,7 @@ private:
 	u8 m_button_pressure[GAMEPAD_NUMBER][MAX_KEYS];
 	PADAnalog m_analog[GAMEPAD_NUMBER];
 	float m_axis_scale[GAMEPAD_NUMBER];
+	float m_vibration_scale[GAMEPAD_NUMBER][2];
 
 public:
 	KeyStatus();
@@ -39,7 +40,9 @@ public:
 
 	void Set(u32 pad, u32 index, float value);
 
-	void SetAxisScale(u32 pad, float scale) { m_axis_scale[pad] = scale; }
+	__fi void SetAxisScale(u32 pad, float scale) { m_axis_scale[pad] = scale; }
+	__fi float GetVibrationScale(u32 pad, u32 motor) const { return m_vibration_scale[pad][motor]; }
+	__fi void SetVibrationScale(u32 pad, u32 motor, float scale) { m_vibration_scale[pad][motor] = scale; }
 
 	u16 GetButtons(u32 pad);
 	u8 GetPressure(u32 pad, u32 index);

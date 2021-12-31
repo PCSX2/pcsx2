@@ -35,14 +35,28 @@ u8 PADpoll(u8 value);
 
 namespace PAD
 {
+	enum class VibrationCapabilities
+	{
+		NoVibration,
+		LargeSmallMotors,
+		SingleMotor,
+		Count
+	};
+
 	/// Reloads configuration.
 	void LoadConfig(const SettingsInterface& si);
+
+	/// Updates vibration and other internal state. Called at the *end* of a frame.
+	void Update();
 
 	/// Returns a list of controller type names.
 	std::vector<std::string> GetControllerTypeNames();
 
 	/// Returns the list of binds for the specified controller type.
 	std::vector<std::string> GetControllerBinds(const std::string_view& type);
+
+	/// Returns the vibration configuration for the specified controller type.
+	VibrationCapabilities GetControllerVibrationCapabilities(const std::string_view& type);
 
 	/// Sets the specified bind on a controller to the specified pressure (normalized to 0..1).
 	void SetControllerState(u32 controller, u32 bind, float value);
