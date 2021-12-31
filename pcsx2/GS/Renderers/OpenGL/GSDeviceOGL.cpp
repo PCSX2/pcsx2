@@ -224,7 +224,7 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 	m_features.bptc_textures = GL_VERSION_4_2 || GL_ARB_texture_compression_bptc || GL_EXT_texture_compression_bptc;
 	m_features.prefer_new_textures = false;
 	m_features.framebuffer_fetch = GLLoader::found_framebuffer_fetch;
-	m_features.dual_source_blend = GLLoader::has_dual_source_blend;
+	m_features.dual_source_blend = GLLoader::has_dual_source_blend && !GSConfig.DisableDualSourceBlend;
 
 	GLint point_range[2] = {};
 	GLint line_range[2] = {};
@@ -556,8 +556,8 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 	fprintf(stdout, "Available VRAM/RAM:%lldMB for textures\n", GLState::available_vram >> 20u);
 
 	// Basic to ensure structures are correctly packed
-	static_assert(sizeof(VSSelector) == 4, "Wrong VSSelector size");
-	static_assert(sizeof(PSSelector) == 8, "Wrong PSSelector size");
+	static_assert(sizeof(VSSelector) == 1, "Wrong VSSelector size");
+	static_assert(sizeof(PSSelector) == 12, "Wrong PSSelector size");
 	static_assert(sizeof(PSSamplerSelector) == 1, "Wrong PSSamplerSelector size");
 	static_assert(sizeof(OMDepthStencilSelector) == 1, "Wrong OMDepthStencilSelector size");
 	static_assert(sizeof(OMColorMaskSelector) == 1, "Wrong OMColorMaskSelector size");
@@ -1073,10 +1073,10 @@ std::string GSDeviceOGL::GetGSSource(GSSelector sel)
 	return src;
 }
 
-std::string GSDeviceOGL::GetPSSource(PSSelector sel)
+std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 {
 #ifdef PCSX2_DEVBUILD
-	Console.WriteLn("Compiling new pixel shader with selector 0x%" PRIX64, sel.key);
+	Console.WriteLn("Compiling new pixel shader with selector 0x%" PRIX64 "%08X", sel.key_hi, sel.key_lo);
 #endif
 
 	std::string macro = format("#define PS_FST %d\n", sel.fst)
@@ -1121,6 +1121,9 @@ std::string GSDeviceOGL::GetPSSource(PSSelector sel)
 		+ format("#define PS_PABE %d\n", sel.pabe)
 		+ format("#define PS_SCANMSK %d\n", sel.scanmsk)
 		+ format("#define PS_SCALE_FACTOR %d\n", GSConfig.UpscaleMultiplier)
+		+ format("#define PS_NO_ABLEND %d\n", sel.no_ablend)
+		+ format("#define PS_NO_COLOR1 %d\n", sel.no_color1)
+		+ format("#define PS_ONLY_ALPHA %d\n", sel.only_alpha)
 	;
 
 	std::string src = GenGlslHeader("ps_main", GL_FRAGMENT_SHADER, macro);
@@ -1684,7 +1687,7 @@ void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
 	}
 }
 
-void GSDeviceOGL::OMSetBlendState(u8 blend_index, u8 blend_factor, bool is_blend_constant, bool accumulation_blend, bool blend_mix)
+void GSDeviceOGL::OMSetBlendState(u8 blend_index, u8 blend_factor, bool is_blend_constant, bool accumulation_blend, bool blend_mix, bool replace_dual_src)
 {
 	if (blend_index)
 	{
@@ -1701,7 +1704,7 @@ void GSDeviceOGL::OMSetBlendState(u8 blend_index, u8 blend_factor, bool is_blend
 			glBlendColor(bf, bf, bf, bf);
 		}
 
-		HWBlend b = GetBlend(blend_index);
+		HWBlend b = GetBlend(blend_index, replace_dual_src);
 		if (accumulation_blend)
 		{
 			b.src = GL_ONE;
@@ -1897,7 +1900,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	PSSetShaderResource(2, config.rt);
 
 	SetupSampler(config.sampler);
-	OMSetBlendState(config.blend.index, config.blend.factor, config.blend.is_constant, config.blend.is_accumulation, config.blend.is_mixed_hw_sw);
+	OMSetBlendState(config.blend.index, config.blend.factor, config.blend.is_constant, config.blend.is_accumulation, config.blend.is_mixed_hw_sw, config.blend.replace_dual_src);
 	OMSetColorMaskState(config.colormask);
 	SetupOM(config.depth);
 
@@ -1914,8 +1917,10 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	ProgramSelector psel;
 	psel.vs = convertSel(config.vs);
-	psel.ps = config.ps;
+	psel.ps.key_hi = config.ps.key_hi;
+	psel.ps.key_lo = config.ps.key_lo;
 	psel.gs.key = 0;
+	psel.pad = 0;
 	if (config.gs.expand)
 	{
 		psel.gs.iip = config.gs.iip;
@@ -1996,6 +2001,23 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		SetupPipeline(psel);
 		OMSetColorMaskState(config.alpha_second_pass.colormask);
 		SetupOM(config.alpha_second_pass.depth);
+
+		SendHWDraw(config);
+	}
+	if (config.alpha_third_pass.enable)
+	{
+		// cbuffer will definitely be dirty if aref changes, no need to check it
+		if (config.cb_ps.FogColor_AREF.a != config.alpha_third_pass.ps_aref)
+		{
+			config.cb_ps.FogColor_AREF.a = config.alpha_third_pass.ps_aref;
+			WriteToStreamBuffer(m_fragment_uniform_stream_buffer.get(), g_ps_cb_index,
+				m_uniform_buffer_alignment, &config.cb_ps, sizeof(config.cb_ps));
+		}
+
+		psel.ps = config.alpha_third_pass.ps;
+		SetupPipeline(psel);
+		OMSetColorMaskState(config.alpha_third_pass.colormask);
+		SetupOM(config.alpha_third_pass.depth);
 
 		SendHWDraw(config);
 	}

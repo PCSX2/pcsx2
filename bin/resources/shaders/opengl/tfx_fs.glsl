@@ -50,7 +50,7 @@ in SHADER
   #endif
 #endif
 
-#ifndef DISABLE_DUAL_SOURCE
+#if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
   // Same buffer but 2 colors for dual source blending
   layout(location = 0, index = 0) TARGET_0_QUALIFIER vec4 SV_Target0;
   layout(location = 0, index = 1) out vec4 SV_Target1;
@@ -943,8 +943,17 @@ void ps_main()
     ps_fbmask(C);
 
     SV_Target0 = C / 255.0f;
-#ifndef DISABLE_DUAL_SOURCE
+#if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
     SV_Target1 = vec4(alpha_blend);
+#endif
+
+#if PS_NO_ABLEND
+    // write alpha blend factor into col0
+    SV_Target0.a = alpha_blend;
+#endif
+#if PS_ONLY_ALPHA
+    // rgb isn't used
+    SV_Target0.rgb = vec3(0.0f);
 #endif
 
 #if PS_ZCLAMP

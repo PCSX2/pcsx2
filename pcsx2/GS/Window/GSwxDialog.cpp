@@ -541,11 +541,12 @@ DebugTab::DebugTab(wxWindow* parent)
 	{
 		PaddedBoxSizer<wxStaticBoxSizer> debug_box(wxVERTICAL, this, "Debug");
 		auto* debug_check_box = new wxWrapSizer(wxHORIZONTAL);
-		m_ui.addCheckBox(debug_check_box, "Use Blit Swap Chain",       "UseBlitSwapChain");
-		m_ui.addCheckBox(debug_check_box, "Disable Shader Cache",      "disable_shader_cache");
-		m_ui.addCheckBox(debug_check_box, "Disable Framebuffer Fetch", "DisableFramebufferFetch");
-		m_ui.addCheckBox(debug_check_box, "Use Debug Device",          "UseDebugDevice");
-		m_ui.addCheckBox(debug_check_box, "Dump GS data",              "dump");
+		m_ui.addCheckBox(debug_check_box, "Use Blit Swap Chain",          "UseBlitSwapChain");
+		m_ui.addCheckBox(debug_check_box, "Disable Shader Cache",         "disable_shader_cache");
+		m_ui.addCheckBox(debug_check_box, "Disable Framebuffer Fetch",    "DisableFramebufferFetch");
+		m_ui.addCheckBox(debug_check_box, "Disable Dual-Source Blending", "DisableDualSourceBlend");
+		m_ui.addCheckBox(debug_check_box, "Use Debug Device",             "UseDebugDevice");
+		m_ui.addCheckBox(debug_check_box, "Dump GS data",                 "dump");
 
 		auto* debug_save_check_box = new wxWrapSizer(wxHORIZONTAL);
 		m_ui.addCheckBox(debug_save_check_box, "Save RT",      "save");

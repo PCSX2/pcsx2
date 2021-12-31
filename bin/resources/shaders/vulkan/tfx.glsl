@@ -378,7 +378,7 @@ layout(location = 0) in VSOutput
 	#endif
 } vsIn;
 
-#ifndef DISABLE_DUAL_SOURCE
+#if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
 layout(location = 0, index = 0) out vec4 o_col0;
 layout(location = 0, index = 1) out vec4 o_col1;
 #else
@@ -1202,8 +1202,17 @@ void main()
   ps_fbmask(C);
 
 	o_col0 = C / 255.0f;
-#ifndef DISABLE_DUAL_SOURCE
+#if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
 	o_col1 = vec4(alpha_blend);
+#endif
+
+#if PS_NO_ABLEND
+	// write alpha blend factor into col0
+	o_col0.a = alpha_blend;
+#endif
+#if PS_ONLY_ALPHA
+	// rgb isn't used
+	o_col0.rgb = vec3(0.0f);
 #endif
 
 #if PS_ZCLAMP

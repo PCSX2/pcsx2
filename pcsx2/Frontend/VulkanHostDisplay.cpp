@@ -14,7 +14,7 @@
 #include "imgui_impl_vulkan.h"
 #include <array>
 
-static constexpr u32 SHADER_CACHE_VERSION = 3;
+static constexpr u32 SHADER_CACHE_VERSION = 4;
 
 class VulkanHostDisplayTexture : public HostDisplayTexture
 {

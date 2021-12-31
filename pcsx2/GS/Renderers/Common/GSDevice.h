@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "common/HashCombine.h"
 #include "common/WindowInfo.h"
 #include "GSFastList.h"
 #include "GSTexture.h"
@@ -150,6 +151,7 @@ struct alignas(16) GSHWDrawConfig
 		Triangle,
 		Sprite,
 	};
+#pragma pack(push, 1)
 	struct GSSelector
 	{
 		union
@@ -182,6 +184,8 @@ struct alignas(16) GSHWDrawConfig
 		VSSelector(): key(0) {}
 		VSSelector(u8 k): key(k) {}
 	};
+#pragma pack(pop)
+#pragma pack(push, 4)
 	struct PSSelector
 	{
 		// Performance note: there are too many shader combinations
@@ -233,6 +237,9 @@ struct alignas(16) GSHWDrawConfig
 				u32 colclip     : 1;
 				u32 blend_mix   : 1;
 				u32 pabe        : 1;
+				u32 no_ablend   : 1; // output alpha blend in col0 (for no-DSB)
+				u32 no_color1   : 1; // disables second color output (when unnecessary)
+				u32 only_alpha  : 1; // don't bother computing RGB
 
 				// Others ways to fetch the texture
 				u32 channel : 3;
@@ -255,19 +262,36 @@ struct alignas(16) GSHWDrawConfig
 
 				// Scan mask
 				u32 scanmsk : 2;
-
-				//u32 _free2 : 0;
 			};
 
-			u64 key;
+			struct
+			{
+				u64 key_lo;
+				u32 key_hi;
+			};
 		};
-		PSSelector(): key(0) {}
+		__fi PSSelector() : key_lo(0), key_hi(0) {}
+
+		__fi bool operator==(const PSSelector& rhs) const { return (key_lo == rhs.key_lo && key_hi == rhs.key_hi); }
+		__fi bool operator!=(const PSSelector& rhs) const { return (key_lo != rhs.key_lo || key_hi != rhs.key_hi); }
+		__fi bool operator<(const PSSelector& rhs) const { return (key_lo < rhs.key_lo || key_hi < rhs.key_hi); }
 
 		__fi bool IsFeedbackLoop() const
 		{
 			return tex_is_fb || fbmask || date > 0 || blend_a == 1 || blend_b == 1 || blend_c == 1 || blend_d == 1;
 		}
 	};
+#pragma pack(pop)
+	struct PSSelectorHash
+	{
+		std::size_t operator()(const PSSelector& p) const
+		{
+			std::size_t h = 0;
+			HashCombine(h, p.key_lo, p.key_hi);
+			return h;
+		}
+	};
+#pragma pack(push, 1)
 	struct SamplerSelector
 	{
 		union
@@ -284,7 +308,7 @@ struct alignas(16) GSHWDrawConfig
 			u8 key;
 		};
 		SamplerSelector(): key(0) {}
-		SamplerSelector(u32 k): key(k) {}
+		SamplerSelector(u8 k): key(k) {}
 		static SamplerSelector Point() { return SamplerSelector(); }
 		static SamplerSelector Linear()
 		{
@@ -338,7 +362,7 @@ struct alignas(16) GSHWDrawConfig
 			u8 key;
 		};
 		DepthStencilSelector(): key(0) {}
-		DepthStencilSelector(u32 k): key(k) {}
+		DepthStencilSelector(u8 k): key(k) {}
 		static DepthStencilSelector NoDepth()
 		{
 			DepthStencilSelector out;
@@ -366,8 +390,9 @@ struct alignas(16) GSHWDrawConfig
 			u8 key;
 		};
 		ColorMaskSelector(): key(0xF) {}
-		ColorMaskSelector(u32 c): key(0) { wrgba = c; }
+		ColorMaskSelector(u8 c): key(0) { wrgba = c; }
 	};
+#pragma pack(pop)
 	struct alignas(16) VSConstantBuffer
 	{
 		GSVector2 vertex_scale;
@@ -463,11 +488,12 @@ struct alignas(16) GSHWDrawConfig
 				bool is_constant     : 1;
 				bool is_accumulation : 1;
 				bool is_mixed_hw_sw  : 1;
+				bool replace_dual_src: 1;
 			};
 			u32 key;
 		};
 		BlendState(): key(0) {}
-		BlendState(u8 index, u8 factor, bool is_constant, bool is_accumulation, bool is_mixed_hw_sw)
+		BlendState(u8 index, u8 factor, bool is_constant, bool is_accumulation, bool is_mixed_hw_sw, bool replace_dual_src)
 			: key(0)
 		{
 			this->index = index;
@@ -475,6 +501,7 @@ struct alignas(16) GSHWDrawConfig
 			this->is_constant = is_constant;
 			this->is_accumulation = is_accumulation;
 			this->is_mixed_hw_sw = is_mixed_hw_sw;
+			this->replace_dual_src = replace_dual_src;
 		}
 	};
 	enum class DestinationAlphaMode : u8
@@ -500,9 +527,9 @@ struct alignas(16) GSHWDrawConfig
 	GSVector4i drawarea; ///< Area in the framebuffer which will be modified.
 	Topology topology;  ///< Draw topology
 
+	alignas(8) PSSelector ps;
 	GSSelector gs;
 	VSSelector vs;
-	PSSelector ps;
 
 	BlendState blend;
 	SamplerSelector sampler;
@@ -516,14 +543,18 @@ struct alignas(16) GSHWDrawConfig
 	bool datm : 1;
 	bool line_expand : 1;
 
-	struct AlphaSecondPass
+	struct AlphaPass
 	{
+		alignas(8) PSSelector ps;
 		bool enable;
 		ColorMaskSelector colormask;
 		DepthStencilSelector depth;
-		PSSelector ps;
 		float ps_aref;
-	} alpha_second_pass;
+	};
+	static_assert(sizeof(AlphaPass) == 24, "alpha pass is 24 bytes");
+
+	AlphaPass alpha_second_pass;
+	AlphaPass alpha_third_pass;
 
 	VSConstantBuffer cb_vs;
 	PSConstantBuffer cb_ps;
@@ -554,7 +585,8 @@ public:
 
 private:
 	FastList<GSTexture*> m_pool;
-	static std::array<HWBlend, 3*3*3*3 + 1> m_blendMap;
+	static const std::array<HWBlend, 3*3*3*3 + 1> m_blendMap;
+	static const std::array<u16, 16> m_replaceDualSrcBlendMap;
 
 protected:
 	enum : u16
@@ -707,7 +739,7 @@ public:
 
 	// Convert the GS blend equations to HW specific blend factors/ops
 	// Index is computed as ((((A * 3 + B) * 3) + C) * 3) + D. A, B, C, D taken from ALPHA register.
-	HWBlend GetBlend(size_t index);
+	HWBlend GetBlend(size_t index, bool replace_dual_src);
 	__fi HWBlend GetUnconvertedBlend(size_t index) { return m_blendMap[index]; }
 	__fi u16 GetBlendFlags(size_t index) const { return m_blendMap[index].flags; }
 };

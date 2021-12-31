@@ -244,9 +244,9 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.prefer_new_textures = true;
 	m_features.provoking_vertex_last = g_vulkan_context->GetOptionalExtensions().vk_ext_provoking_vertex;
 	m_features.framebuffer_fetch = false;
-	m_features.dual_source_blend = features.dualSrcBlend;
+	m_features.dual_source_blend = features.dualSrcBlend && !GSConfig.DisableDualSourceBlend;
 
-	if (!features.dualSrcBlend)
+	if (!m_features.dual_source_blend)
 		Console.Warning("Vulkan driver is missing dual-source blending. This will have an impact on performance.");
 
 	if (!m_features.texture_barrier)
@@ -1040,6 +1040,8 @@ static void AddShaderHeader(std::stringstream& ss)
 	const GSDevice::FeatureSupport features(g_gs_device->Features());
 	if (!features.texture_barrier)
 		ss << "#define DISABLE_TEXTURE_BARRIER 1\n";
+	if (!features.dual_source_blend)
+		ss << "#define DISABLE_DUAL_SOURCE 1\n";
 }
 
 static void AddShaderStageMacro(std::stringstream& ss, bool vs, bool gs, bool fs)
@@ -1767,9 +1769,9 @@ VkShaderModule GSDeviceVK::GetTFXGeometryShader(GSHWDrawConfig::GSSelector sel)
 	return mod;
 }
 
-VkShaderModule GSDeviceVK::GetTFXFragmentShader(GSHWDrawConfig::PSSelector sel)
+VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector& sel)
 {
-	const auto it = m_tfx_fragment_shaders.find(sel.key);
+	const auto it = m_tfx_fragment_shaders.find(sel);
 	if (it != m_tfx_fragment_shaders.end())
 		return it->second;
 
@@ -1819,13 +1821,16 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(GSHWDrawConfig::PSSelector sel)
 	AddMacro(ss, "PS_SCANMSK", sel.scanmsk);
 	AddMacro(ss, "PS_SCALE_FACTOR", GSConfig.UpscaleMultiplier);
 	AddMacro(ss, "PS_TEX_IS_FB", sel.tex_is_fb);
+	AddMacro(ss, "PS_NO_ABLEND", sel.no_ablend);
+	AddMacro(ss, "PS_NO_COLOR1", sel.no_color1);
+	AddMacro(ss, "PS_ONLY_ALPHA", sel.only_alpha);
 	ss << m_tfx_source;
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetFragmentShader(ss.str());
 	if (mod)
-		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), mod, "TFX Fragment %" PRIX64, sel.key);
+		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), mod, "TFX Fragment %" PRIX64 "%08X", sel.key_hi, sel.key_lo);
 
-	m_tfx_fragment_shaders.emplace(sel.key, mod);
+	m_tfx_fragment_shaders.emplace(sel, mod);
 	return mod;
 }
 
@@ -1837,9 +1842,20 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 		VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, // Triangle
 	}};
 
+	GSHWDrawConfig::BlendState pbs{p.bs};
+	GSHWDrawConfig::PSSelector pps{p.ps};
+	if ((p.cms.wrgba & 0x7) == 0)
+	{
+		// disable blending when colours are masked
+		pbs.index = 0;
+	}
+
+	// don't output alpha blend when blending is disabled
+	pps.no_color1 = (pbs.index == 0);
+
 	VkShaderModule vs = GetTFXVertexShader(p.vs);
 	VkShaderModule gs = p.gs.expand ? GetTFXGeometryShader(p.gs) : VK_NULL_HANDLE;
-	VkShaderModule fs = GetTFXFragmentShader(p.ps);
+	VkShaderModule fs = GetTFXFragmentShader(pps);
 	if (vs == VK_NULL_HANDLE || (p.gs.expand && gs == VK_NULL_HANDLE) || fs == VK_NULL_HANDLE)
 		return VK_NULL_HANDLE;
 
@@ -1901,12 +1917,19 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 		gpb.SetBlendAttachment(0, true, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_MIN, VK_BLEND_FACTOR_ONE,
 			VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, VK_COLOR_COMPONENT_R_BIT);
 	}
-	else if (p.bs.index > 0)
+	else if (pbs.index > 0)
 	{
-		const HWBlend blend = GetBlend(p.bs.index);
+		const HWBlend blend = GetBlend(pbs.index, pbs.replace_dual_src);
+#ifdef PCSX2_DEVBUILD
+		pxAssertRel(m_features.dual_source_blend || pbs.is_accumulation ||
+			(blend.src != VK_BLEND_FACTOR_SRC1_ALPHA && blend.src != VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA &&
+				blend.dst != VK_BLEND_FACTOR_SRC1_ALPHA && blend.dst != VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA),
+			"Not using dual source factors");
+#endif
+
 		gpb.SetBlendAttachment(0, true,
-			(p.bs.is_accumulation || p.bs.is_mixed_hw_sw) ? VK_BLEND_FACTOR_ONE : static_cast<VkBlendFactor>(blend.src),
-			p.bs.is_accumulation ? VK_BLEND_FACTOR_ONE : static_cast<VkBlendFactor>(blend.dst),
+			(pbs.is_accumulation || pbs.is_mixed_hw_sw) ? VK_BLEND_FACTOR_ONE : static_cast<VkBlendFactor>(blend.src),
+			pbs.is_accumulation ? VK_BLEND_FACTOR_ONE : static_cast<VkBlendFactor>(blend.dst),
 			static_cast<VkBlendOp>(blend.op), VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, p.cms.wrgba);
 	}
 	else
@@ -1922,7 +1945,7 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	if (pipeline)
 	{
 		Vulkan::Util::SetObjectName(
-			g_vulkan_context->GetDevice(), pipeline, "TFX Pipeline %08X/%08X/%" PRIX64, p.vs.key, p.gs.key, p.ps.key);
+			g_vulkan_context->GetDevice(), pipeline, "TFX Pipeline %08X/%08X/%" PRIX64 "%08X", p.vs.key, p.gs.key, p.ps.key_hi, p.ps.key_lo);
 	}
 
 	return pipeline;
@@ -2892,6 +2915,21 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		if (BindDrawPipeline(pipe))
 			SendHWDraw(config, draw_rt);
 	}
+	if (config.alpha_third_pass.enable)
+	{
+		// cbuffer will definitely be dirty if aref changes, no need to check it
+		if (config.cb_ps.FogColor_AREF.a != config.alpha_third_pass.ps_aref)
+		{
+			config.cb_ps.FogColor_AREF.a = config.alpha_third_pass.ps_aref;
+			SetPSConstantBuffer(config.cb_ps);
+		}
+
+		pipe.ps = config.alpha_third_pass.ps;
+		pipe.cms = config.alpha_third_pass.colormask;
+		pipe.dss = config.alpha_third_pass.depth;
+		if (BindDrawPipeline(pipe))
+			SendHWDraw(config, draw_rt);
+	}
 
 	if (copy_ds)
 		Recycle(copy_ds);
@@ -2953,7 +2991,8 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config)
 {
 	m_pipeline_selector.vs.key = config.vs.key;
 	m_pipeline_selector.gs.key = config.gs.key;
-	m_pipeline_selector.ps.key = config.ps.key;
+	m_pipeline_selector.ps.key_hi = config.ps.key_hi;
+	m_pipeline_selector.ps.key_lo = config.ps.key_lo;
 	m_pipeline_selector.dss.key = config.depth.key;
 	m_pipeline_selector.bs.key = config.blend.key;
 	m_pipeline_selector.bs.factor = 0; // don't dupe states with different alpha values

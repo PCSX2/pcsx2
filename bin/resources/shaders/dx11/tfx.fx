@@ -57,6 +57,9 @@
 #define PS_AUTOMATIC_LOD 0
 #define PS_MANUAL_LOD 0
 #define PS_TEX_IS_FB 0
+#define PS_NO_ABLEND 0
+#define PS_ONLY_ALPHA 0
+#define PS_NO_COLOR1 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
@@ -100,7 +103,9 @@ struct PS_INPUT
 struct PS_OUTPUT
 {
 	float4 c0 : SV_Target0;
+#if !PS_NO_COLOR1
 	float4 c1 : SV_Target1;
+#endif
 #if PS_ZCLAMP
 	float depth : SV_Depth;
 #endif
@@ -855,7 +860,18 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	ps_fbmask(C, input.p.xy);
 
 	output.c0 = C / 255.0f;
+#if !PS_NO_COLOR1
 	output.c1 = (float4)(alpha_blend);
+#endif
+
+#if PS_NO_ABLEND
+	// write alpha blend factor into col0
+	output.c0.a = alpha_blend;
+#endif
+#if PS_ONLY_ALPHA
+	// rgb isn't used
+	output.c0.rgb = float3(0.0f, 0.0f, 0.0f);
+#endif
 
 #if PS_ZCLAMP
 	output.depth = min(input.p.z, MaxDepthPS);

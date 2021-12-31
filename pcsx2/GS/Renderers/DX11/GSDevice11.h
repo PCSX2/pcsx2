@@ -213,7 +213,7 @@ private:
 	std::unordered_map<u32, GSVertexShader11> m_vs;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_vs_cb;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11GeometryShader>> m_gs;
-	std::unordered_map<u64, wil::com_ptr_nothrow<ID3D11PixelShader>> m_ps;
+	std::unordered_map<PSSelector, wil::com_ptr_nothrow<ID3D11PixelShader>, GSHWDrawConfig::PSSelectorHash> m_ps;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_ps_cb;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11SamplerState>> m_ps_ss;
 	wil::com_ptr_nothrow<ID3D11SamplerState> m_palette_ss;
@@ -291,7 +291,7 @@ public:
 	bool CreateTextureFX();
 	void SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer* cb);
 	void SetupGS(GSSelector sel);
-	void SetupPS(PSSelector sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel);
+	void SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 afix);
 
 	void RenderHW(GSHWDrawConfig& config) final;
