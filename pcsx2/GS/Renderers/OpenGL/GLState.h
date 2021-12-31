@@ -32,7 +32,7 @@ namespace GLState
 	extern u16 f_sRGB;
 	extern u16 f_dRGB;
 	extern u8 bf;
-	extern u32 wrgba;
+	extern u8 wrgba;
 
 	extern bool depth;
 	extern GLenum depth_func;

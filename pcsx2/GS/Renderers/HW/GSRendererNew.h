@@ -28,7 +28,7 @@ private:
 	inline void SetupIA(const float& sx, const float& sy);
 	inline void EmulateTextureShuffleAndFbmask();
 	inline void EmulateChannelShuffle(const GSTextureCache::Source* tex);
-	inline void EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER);
+	inline void EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& blending_alpha_pass);
 	inline void EmulateTextureSampler(const GSTextureCache::Source* tex);
 	inline void EmulateZbuffer();
 	inline void EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, bool pass_2);

@@ -30,7 +30,7 @@ namespace GLState
 	u16 f_sRGB;
 	u16 f_dRGB;
 	u8 bf;
-	u32 wrgba;
+	u8 wrgba;
 
 	bool depth;
 	GLenum depth_func;
