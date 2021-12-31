@@ -35,6 +35,7 @@
 #ifndef PCSX2_CORE
 #include "gui/App.h"
 #else
+#include "PAD/Host/PAD.h"
 #include "VMManager.h"
 #endif
 
@@ -550,6 +551,11 @@ static __fi void VSyncStart(u32 sCycle)
 		// Not doing so would sacrifice a frame of a savestate-based recording when loading any savestate
 		g_InputRecordingControls.HandlePausingAndLocking();
 	}
+#endif
+
+#ifdef PCSX2_CORE
+	// Update vibration at the end of a frame.
+	PAD::Update();
 #endif
 
 	frameLimit(); // limit FPS

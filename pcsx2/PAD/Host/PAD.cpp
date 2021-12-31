@@ -167,9 +167,18 @@ void PAD::LoadConfig(const SettingsInterface& si)
 	{
 		const std::string section(StringUtil::StdStringFromFormat("Pad%u", i + 1u));
 		const float axis_scale = si.GetFloatValue(section.c_str(), "AxisScale", 1.0f);
+		const float large_motor_scale = si.GetFloatValue(section.c_str(), "LargeMotorScale", 1.0f);
+		const float small_motor_scale = si.GetFloatValue(section.c_str(), "SmallMotorScale", 1.0f);
 
 		g_key_status.SetAxisScale(i, axis_scale);
+		g_key_status.SetVibrationScale(i, 0, large_motor_scale);
+		g_key_status.SetVibrationScale(i, 1, small_motor_scale);
 	}
+}
+
+void PAD::Update()
+{
+	Pad::rumble_all();
 }
 
 std::vector<std::string> PAD::GetControllerTypeNames()
@@ -209,6 +218,18 @@ std::vector<std::string> PAD::GetControllerBinds(const std::string_view& type)
 	}
 
 	return {};
+}
+
+PAD::VibrationCapabilities PAD::GetControllerVibrationCapabilities(const std::string_view& type)
+{
+	if (type == "DualShock2")
+	{
+		return VibrationCapabilities::LargeSmallMotors;
+	}
+	else
+	{
+		return VibrationCapabilities::NoVibration;
+	}
 }
 
 void PAD::SetControllerState(u32 controller, u32 bind, float value)
