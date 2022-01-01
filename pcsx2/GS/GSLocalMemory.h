@@ -345,8 +345,9 @@ public:
 						touched[idx] |= mask;
 					}
 
-					if (y < yCnt - 1)
+					if (y < yCnt - 2)
 					{
+						// Next iteration is not last (y + 1 < yCnt - 1).
 						startOff = midRowPgXStart;
 						endOff   = midRowPgXEnd;
 					}
@@ -371,8 +372,9 @@ public:
 						if (!fn(pos % MAX_PAGES))
 							return;
 
-					if (y < yCnt - 1)
+					if (y < yCnt - 2)
 					{
+						// Next iteration is not last (y + 1 < yCnt - 1).
 						startOff = midRowPgXStart;
 						endOff   = midRowPgXEnd;
 					}
