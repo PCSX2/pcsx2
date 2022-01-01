@@ -56,7 +56,8 @@ public:
 	virtual bool BeginCapture(std::string& filename);
 	virtual void EndCapture();
 
-	void PurgePool();
+	virtual void PurgePool() override;
+	virtual void PurgeTextureCache();
 
 	bool SaveSnapshotToMemory(u32 width, u32 height, std::vector<u32>* pixels);
 };

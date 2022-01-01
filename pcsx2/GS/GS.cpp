@@ -731,7 +731,6 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 
 	// Options which aren't using the global struct yet, so we need to recreate all GS objects.
 	if (
-		GSConfig.GPUPaletteConversion != old_config.GPUPaletteConversion ||
 		GSConfig.ConservativeFramebuffer != old_config.ConservativeFramebuffer ||
 		GSConfig.AutoFlushSW != old_config.AutoFlushSW ||
 		GSConfig.PreloadFrameWithGSData != old_config.PreloadFrameWithGSData ||
@@ -754,9 +753,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.SaveDepth != old_config.SaveDepth ||
 
 		GSConfig.UpscaleMultiplier != old_config.UpscaleMultiplier ||
-		GSConfig.HWMipmap != old_config.HWMipmap ||
 		GSConfig.CRCHack != old_config.CRCHack ||
-		GSConfig.MaxAnisotropy != old_config.MaxAnisotropy ||
 		GSConfig.SWExtraThreads != old_config.SWExtraThreads ||
 		GSConfig.SWExtraThreadsHeight != old_config.SWExtraThreadsHeight ||
 
@@ -781,6 +778,25 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 
 	// This is where we would do finer-grained checks in the future.
 	// For example, flushing the texture cache when mipmap settings change.
+
+	if (GSConfig.HWMipmap != old_config.HWMipmap || GSConfig.CRCHack != old_config.CRCHack)
+	{
+		// for automatic mipmaps, we need to reload the crc
+		s_gs->SetGameCRC(s_gs->GetGameCRC(), s_gs->GetGameCRCOptions());
+	}
+
+	// reload texture cache when trilinear filtering or mipmap options change
+	if (GSConfig.HWMipmap != old_config.HWMipmap ||
+		GSConfig.UserHacks_TriFilter != old_config.UserHacks_TriFilter ||
+		GSConfig.GPUPaletteConversion != old_config.GPUPaletteConversion)
+	{
+		s_gs->PurgeTextureCache();
+		s_gs->PurgePool();
+	}
+
+	// clear out the sampler cache when AF options change, since the anisotropy gets baked into them
+	if (GSConfig.MaxAnisotropy != old_config.MaxAnisotropy)
+		g_gs_device->ClearSamplerCache();
 }
 
 void GSSwitchRenderer(GSRendererType new_renderer)

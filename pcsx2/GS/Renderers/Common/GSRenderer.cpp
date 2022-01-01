@@ -566,6 +566,8 @@ void GSRenderer::KeyEvent(const HostKeyEvent& e)
 #define VK_HOME XK_Home
 #endif
 
+		// NOTE: These are all BROKEN! They mess with GS thread state from the UI thread.
+
 		switch (e.key)
 		{
 			case VK_F5:
@@ -591,6 +593,10 @@ void GSRenderer::KeyEvent(const HostKeyEvent& e)
 void GSRenderer::PurgePool()
 {
 	g_gs_device->PurgePool();
+}
+
+void GSRenderer::PurgeTextureCache()
+{
 }
 
 bool GSRenderer::SaveSnapshotToMemory(u32 width, u32 height, std::vector<u32>* pixels)
