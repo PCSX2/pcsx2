@@ -43,6 +43,7 @@ long __stdcall SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 	// exception.
 	// TODO: find a reliable way to debug the filter itself, I've come up with a few ways that
 	// work but I don't fully understand why some do and some don't.
+#ifdef _MSC_VER
 	__try
 	{
 		return DoSysPageFaultExceptionFilter(eps);
@@ -51,6 +52,16 @@ long __stdcall SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 	{
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
+#else
+  try
+  {
+    return DoSysPageFaultExceptionFilter(eps);
+  }
+  catch (...)
+  {
+    return EXCEPTION_CONTINUE_SEARCH;
+  }
+#endif
 }
 
 void _platform_InstallSignalHandler()

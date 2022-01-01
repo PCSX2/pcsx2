@@ -16,16 +16,16 @@
 #pragma once
 
 // Because nobody can't agree on a single name !
-#if defined(__GNUC__)
+#if defined(_WIN32)
+
+#include <intrin.h>
+
+#else
 
 // Yes there are several files for the same features!
 // x86intrin.h which is the general include provided by the compiler
 // x86_intrin.h, this file, which is compatibility layer for severals intrinsics
 #include "x86intrin.h"
-
-#else
-
-#include "Intrin.h"
 
 #endif
 
