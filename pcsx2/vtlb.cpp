@@ -782,7 +782,7 @@ void vtlb_Term()
 	//nothing to do for now
 }
 
-constexpr size_t VMAP_SIZE = sizeof(VTLBVirtual) * VTLB_VMAP_ITEMS;
+static constexpr size_t VMAP_SIZE = sizeof(VTLBVirtual) * VTLB_VMAP_ITEMS;
 
 // Reserves the vtlb core allocation used by various emulation components!
 // [TODO] basemem - request allocating memory at the specified virtual location, which can allow
@@ -807,16 +807,26 @@ void vtlb_Core_Alloc()
 	}
 }
 
+static constexpr size_t PPMAP_SIZE = sizeof(*vtlbdata.ppmap) * VTLB_VMAP_ITEMS;
+
 // The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
 // However automatic gamefix is done after the standard init so a new init function was done.
 void vtlb_Alloc_Ppmap()
 {
-	if (vtlbdata.ppmap) return;
+	if (vtlbdata.ppmap)
+		return;
 
-	vtlbdata.ppmap = (u32*)_aligned_malloc( VTLB_VMAP_ITEMS * sizeof(*vtlbdata.ppmap), 16 );
-	if (!vtlbdata.ppmap)
-		throw Exception::OutOfMemory( L"VTLB PS2 Virtual Address Translation LUT" )
-			.SetDiagMsg(pxsFmt("(%u megs)", VTLB_VMAP_ITEMS * sizeof(*vtlbdata.ppmap) / _1mb));
+	static u32* ppmap = nullptr;
+
+	if (!ppmap)
+		ppmap = (u32*)GetVmMemory().BumpAllocator().Alloc(PPMAP_SIZE);
+
+	bool okay = HostSys::MmapCommitPtr(ppmap, PPMAP_SIZE, PageProtectionMode().Read().Write());
+	if (okay)
+		vtlbdata.ppmap = ppmap;
+	else
+		throw Exception::OutOfMemory(L"VTLB PS2 Virtual Address Translation LUT")
+			.SetDiagMsg(pxsFmt("(%u megs)", PPMAP_SIZE / _1mb));
 
 	// By default a 1:1 virtual to physical mapping
 	for (u32 i = 0; i < VTLB_VMAP_ITEMS; i++)
@@ -825,11 +835,16 @@ void vtlb_Alloc_Ppmap()
 
 void vtlb_Core_Free()
 {
-	if (vtlbdata.vmap) {
+	if (vtlbdata.vmap)
+	{
 		HostSys::MmapResetPtr(vtlbdata.vmap, VMAP_SIZE);
 		vtlbdata.vmap = nullptr;
 	}
-	safe_aligned_free( vtlbdata.ppmap );
+	if (vtlbdata.ppmap)
+	{
+		HostSys::MmapResetPtr(vtlbdata.ppmap, PPMAP_SIZE);
+		vtlbdata.ppmap = nullptr;
+	}
 }
 
 static wxString GetHostVmErrorMsg()
