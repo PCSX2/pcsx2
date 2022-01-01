@@ -20,12 +20,12 @@
 
 static void* GetProcAddressCallback(const char* name)
 {
-	void* addr = wglGetProcAddress(name);
+	void* addr = reinterpret_cast<void*>(wglGetProcAddress(name));
 	if (addr)
 		return addr;
 
 	// try opengl32.dll
-	return ::GetProcAddress(GetModuleHandleA("opengl32.dll"), name);
+	return reinterpret_cast<void*>(::GetProcAddress(GetModuleHandleA("opengl32.dll"), name));
 }
 
 namespace GL
@@ -364,7 +364,7 @@ namespace GL
 			}
 
 			// re-init glad-wgl
-			if (!gladLoadWGLLoader([](const char* name) -> void* { return wglGetProcAddress(name); }, m_dc))
+			if (!gladLoadWGLLoader([](const char* name) -> void* { return reinterpret_cast<void*>(wglGetProcAddress(name)); }, m_dc))
 			{
 				Console.Error("Loading GLAD WGL functions failed");
 				return false;
@@ -442,7 +442,7 @@ namespace GL
 			}
 
 			// re-init glad-wgl
-			if (make_current && !gladLoadWGLLoader([](const char* name) -> void* { return wglGetProcAddress(name); }, m_dc))
+			if (make_current && !gladLoadWGLLoader([](const char* name) -> void* { return reinterpret_cast<void*>(wglGetProcAddress(name)); }, m_dc))
 			{
 				Console.Error("Loading GLAD WGL functions failed");
 				return false;
