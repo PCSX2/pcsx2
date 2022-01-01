@@ -34,8 +34,8 @@
 #endif
 
 #include <windows.h>
-#include <VersionHelpers.h>
-#include <ShTypes.h>
+#include <versionhelpers.h>
+#include <shtypes.h>
 #include <timeapi.h>
 #include <tchar.h>
 
