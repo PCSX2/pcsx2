@@ -241,6 +241,10 @@ void GSDevice::PurgePool()
 	m_pool.clear();
 }
 
+void GSDevice::ClearSamplerCache()
+{
+}
+
 GSTexture* GSDevice::CreateSparseRenderTarget(int w, int h, GSTexture::Format format, bool clear)
 {
 	return FetchSurface(HasColorSparse() ? GSTexture::Type::SparseRenderTarget : GSTexture::Type::RenderTarget, w, h, false, format, clear, true);
