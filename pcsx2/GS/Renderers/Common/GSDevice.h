@@ -553,8 +553,8 @@ protected:
 	bool m_rbswapped;
 	FeatureSupport m_features;
 
-	virtual GSTexture* CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format format) = 0;
-	virtual GSTexture* FetchSurface(GSTexture::Type type, int w, int h, GSTexture::Format format, bool clear, bool prefer_reuse);
+	virtual GSTexture* CreateSurface(GSTexture::Type type, int w, int h, bool mipmap, GSTexture::Format format) = 0;
+	GSTexture* FetchSurface(GSTexture::Type type, int w, int h, bool mipmap, GSTexture::Format format, bool clear, bool prefer_reuse);
 
 	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) = 0;
 	virtual void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset) = 0;
@@ -614,7 +614,7 @@ public:
 	GSTexture* CreateSparseDepthStencil(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateDepthStencil(int w, int h, GSTexture::Format format, bool clear = true);
-	GSTexture* CreateTexture(int w, int h, GSTexture::Format format, bool prefer_reuse = false);
+	GSTexture* CreateTexture(int w, int h, bool mipmap, GSTexture::Format format, bool prefer_reuse = false);
 	GSTexture* CreateOffscreen(int w, int h, GSTexture::Format format);
 	GSTexture::Format GetDefaultTextureFormat(GSTexture::Type type);
 

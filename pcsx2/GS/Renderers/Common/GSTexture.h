@@ -95,6 +95,7 @@ public:
 	int GetHeight() const { return m_size.y; }
 	GSVector2i GetSize() const { return m_size; }
 	int GetMipmapLevels() const { return m_mipmap_levels; }
+	bool IsMipmap() const { return m_mipmap_levels > 1; }
 
 	Type GetType() const { return m_type; }
 	Format GetFormat() const { return m_format; }

@@ -109,7 +109,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		{
 			// JackieChan and SVCChaos cause regressions when skipping the draw calls when depth is disabled/not supported.
 			// This way we make sure there are no regressions on D3D as well.
-			return LookupSource(TEX0, TEXA, r);
+			return LookupSource(TEX0, TEXA, r, false);
 		}
 		else
 		{
@@ -202,7 +202,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		if (m_renderer->m_game.title == CRC::JackieChanAdv || m_renderer->m_game.title == CRC::SVCChaos)
 		{
 			// JackieChan and SVCChaos cause regressions when skipping the draw calls so we reuse the old code for these two.
-			return LookupSource(TEX0, TEXA, r);
+			return LookupSource(TEX0, TEXA, r, false);
 		}
 		else
 		{
@@ -219,7 +219,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	return src;
 }
 
-GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r)
+GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool mipmap)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 	//const GSLocalMemory::psm_t& cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[TEX0.CPSM] : psm;
@@ -475,7 +475,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 			GL_CACHE("TC: src miss (0x%x, 0x%x, %s)", TEX0.TBP0, psm_s.pal > 0 ? TEX0.CBP : 0, psm_str(TEX0.PSM));
 		}
 #endif
-		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset);
+		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset, mipmap);
 		new_source = true;
 	}
 	else
@@ -1282,7 +1282,7 @@ void GSTextureCache::IncAge()
 }
 
 //Fixme: Several issues in here. Not handling depth stencil, pitch conversion doesnt work.
-GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* dst, bool half_right, int x_offset, int y_offset)
+GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* dst, bool half_right, int x_offset, int y_offset, bool mipmap)
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 	Source* src = new Source(m_renderer, TEX0, TEXA, m_temp);
@@ -1302,7 +1302,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		int h = (int)(scale.y * th);
 
 		GSTexture* sTex = dst->m_texture;
-		GSTexture* dTex = g_gs_device->CreateTexture(w, h, GSTexture::Format::Color, true);
+		GSTexture* dTex = g_gs_device->CreateTexture(w, h, false, GSTexture::Format::Color, true);
 
 		GSVector4i area(x, y, x + w, y + h);
 		g_gs_device->CopyRect(sTex, dTex, area);
@@ -1334,7 +1334,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// So it could be tricky to put in the middle of the DrawPrims
 
 		// Texture is created to keep code compatibility
-		GSTexture* dTex = g_gs_device->CreateTexture(tw, th, GSTexture::Format::Color, true);
+		GSTexture* dTex = g_gs_device->CreateTexture(tw, th, false, GSTexture::Format::Color, true);
 
 		// Keep a trace of origin of the texture
 		src->m_texture = dTex;
@@ -1508,7 +1508,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// 'src' is the new texture cache entry (hence the output)
 		GSTexture* sTex = dst->m_texture;
 		GSTexture* dTex = use_texture ?
-			g_gs_device->CreateTexture(w, h, GSTexture::Format::Color, true) :
+			g_gs_device->CreateTexture(w, h, false, GSTexture::Format::Color, true) :
 			g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Color, !texture_completely_overwritten);
 		src->m_texture = dTex;
 
@@ -1614,12 +1614,12 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	{
 		if (m_paltex && psm.pal > 0)
 		{
-			src->m_texture = g_gs_device->CreateTexture(tw, th, GSTexture::Format::UNorm8);
+			src->m_texture = g_gs_device->CreateTexture(tw, th, false, GSTexture::Format::UNorm8);
 			AttachPaletteToSource(src, psm.pal, true);
 		}
 		else
 		{
-			src->m_texture = g_gs_device->CreateTexture(tw, th, GSTexture::Format::Color);
+			src->m_texture = g_gs_device->CreateTexture(tw, th, mipmap, GSTexture::Format::Color);
 			if (psm.pal > 0)
 			{
 				AttachPaletteToSource(src, psm.pal, false);
@@ -2274,7 +2274,7 @@ void GSTextureCache::Target::Update()
 	TEXA.TA0 = 0;
 	TEXA.TA1 = 0x80;
 
-	GSTexture* t = g_gs_device->CreateTexture(w, h, GSTexture::Format::Color);
+	GSTexture* t = g_gs_device->CreateTexture(w, h, false, GSTexture::Format::Color);
 
 	GSOffset off = m_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
 
@@ -2434,7 +2434,7 @@ void GSTextureCache::Palette::InitializeTexture()
 		// sampling such texture are always normalized by 255.
 		// This is because indexes are stored as normalized values of an RGBA texture (e.g. index 15 will be read as (15/255),
 		// and therefore will read texel 15/255 * texture size).
-		m_tex_palette = g_gs_device->CreateTexture(256, 1, GSTexture::Format::Color);
+		m_tex_palette = g_gs_device->CreateTexture(256, 1, false, GSTexture::Format::Color);
 		m_tex_palette->Update(GSVector4i(0, 0, m_pal, 1), m_clut, m_pal * sizeof(m_clut[0]));
 	}
 }

@@ -338,17 +338,14 @@ void GSDeviceVK::ClearStencil(GSTexture* t, u8 c)
 	static_cast<GSTextureVK*>(t)->TransitionToLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 }
 
-GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format format)
+GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int w, int h, bool mipmap, GSTexture::Format format)
 {
 	pxAssert(type != GSTexture::Type::Offscreen && type != GSTexture::Type::SparseRenderTarget &&
 			 type != GSTexture::Type::SparseDepthStencil);
 
 	const u32 width = std::max<u32>(1, std::min<u32>(w, g_vulkan_context->GetMaxImageDimension2D()));
 	const u32 height = std::max<u32>(1, std::min<u32>(h, g_vulkan_context->GetMaxImageDimension2D()));
-
-	const bool mipmap =
-		type == GSTexture::Type::Texture && (m_mipmap > 1 || GSConfig.UserHacks_TriFilter == TriFiltering::Forced);
-	const u32 layers = mipmap && format == GSTexture::Format::Color ? static_cast<u32>(log2(std::max(w, h))) : 1u;
+	const u32 layers = mipmap ? static_cast<u32>(log2(std::max(w, h))) : 1u;
 
 	return GSTextureVK::Create(type, width, height, layers, format).release();
 }

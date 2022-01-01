@@ -34,7 +34,6 @@ GSDevice11::GSDevice11()
 	m_state.topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	m_state.bf = -1;
 
-	m_mipmap = theApp.GetConfigI("mipmap");
 	m_upscale_multiplier = std::max(0, theApp.GetConfigI("upscale_multiplier"));
 
 	m_features.geometry_shader = true;
@@ -482,7 +481,7 @@ void GSDevice11::ClearStencil(GSTexture* t, u8 c)
 	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_STENCIL, 0, c);
 }
 
-GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format format)
+GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int w, int h, bool mipmap, GSTexture::Format format)
 {
 	D3D11_TEXTURE2D_DESC desc;
 
@@ -507,15 +506,11 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int w, int h, GSTextu
 	desc.Width = std::max(1, std::min(w, m_d3d_texsize));
 	desc.Height = std::max(1, std::min(h, m_d3d_texsize));
 	desc.Format = dxformat;
-	desc.MipLevels = 1;
+	desc.MipLevels = mipmap ? (int)log2(std::max(w, h)) : 1;
 	desc.ArraySize = 1;
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
-
-	// mipmap = m_mipmap > 1 || m_filter != TriFiltering::None;
-	const bool mipmap = m_mipmap > 1;
-	const int layers = mipmap && format == GSTexture::Format::Color ? (int)log2(std::max(w, h)) : 1;
 
 	switch (type)
 	{
@@ -527,7 +522,6 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int w, int h, GSTextu
 			break;
 		case GSTexture::Type::Texture:
 			desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-			desc.MipLevels = layers;
 			break;
 		case GSTexture::Type::Offscreen:
 			desc.Usage = D3D11_USAGE_STAGING;

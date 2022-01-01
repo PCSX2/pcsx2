@@ -104,7 +104,7 @@ void GSDevice::RestoreAPIState()
 {
 }
 
-GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int w, int h, GSTexture::Format format, bool clear, bool prefer_reuse)
+GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int w, int h, bool mipmap, GSTexture::Format format, bool clear, bool prefer_reuse)
 {
 	const GSVector2i size(w, h);
 	const bool prefer_new_texture = (m_features.prefer_new_textures && type == GSTexture::Type::Texture && !prefer_reuse);
@@ -118,7 +118,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int w, int h, GSTexture:
 
 		assert(t);
 
-		if (t->GetType() == type && t->GetFormat() == format && t->GetSize() == size)
+		if (t->GetType() == type && t->GetFormat() == format && t->GetSize() == size && t->IsMipmap() == mipmap)
 		{
 			if (!prefer_new_texture)
 			{
@@ -143,7 +143,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int w, int h, GSTexture:
 		}
 		else
 		{
-			t = CreateSurface(type, w, h, format);
+			t = CreateSurface(type, w, h, mipmap, format);
 			if (!t)
 				throw std::bad_alloc();
 		}
@@ -243,32 +243,32 @@ void GSDevice::PurgePool()
 
 GSTexture* GSDevice::CreateSparseRenderTarget(int w, int h, GSTexture::Format format, bool clear)
 {
-	return FetchSurface(HasColorSparse() ? GSTexture::Type::SparseRenderTarget : GSTexture::Type::RenderTarget, w, h, format, clear, true);
+	return FetchSurface(HasColorSparse() ? GSTexture::Type::SparseRenderTarget : GSTexture::Type::RenderTarget, w, h, false, format, clear, true);
 }
 
 GSTexture* GSDevice::CreateSparseDepthStencil(int w, int h, GSTexture::Format format, bool clear)
 {
-	return FetchSurface(HasDepthSparse() ? GSTexture::Type::SparseDepthStencil : GSTexture::Type::DepthStencil, w, h, format, clear, true);
+	return FetchSurface(HasDepthSparse() ? GSTexture::Type::SparseDepthStencil : GSTexture::Type::DepthStencil, w, h, false, format, clear, true);
 }
 
 GSTexture* GSDevice::CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear)
 {
-	return FetchSurface(GSTexture::Type::RenderTarget, w, h, format, clear, true);
+	return FetchSurface(GSTexture::Type::RenderTarget, w, h, false, format, clear, true);
 }
 
 GSTexture* GSDevice::CreateDepthStencil(int w, int h, GSTexture::Format format, bool clear)
 {
-	return FetchSurface(GSTexture::Type::DepthStencil, w, h, format, clear, true);
+	return FetchSurface(GSTexture::Type::DepthStencil, w, h, false, format, clear, true);
 }
 
-GSTexture* GSDevice::CreateTexture(int w, int h, GSTexture::Format format, bool prefer_reuse)
+GSTexture* GSDevice::CreateTexture(int w, int h, bool mipmap, GSTexture::Format format, bool prefer_reuse /* = false */)
 {
-	return FetchSurface(GSTexture::Type::Texture, w, h, format, false, prefer_reuse);
+	return FetchSurface(GSTexture::Type::Texture, w, h, mipmap, format, false, prefer_reuse);
 }
 
 GSTexture* GSDevice::CreateOffscreen(int w, int h, GSTexture::Format format)
 {
-	return FetchSurface(GSTexture::Type::Offscreen, w, h, format, false, true);
+	return FetchSurface(GSTexture::Type::Offscreen, w, h, false, format, false, true);
 }
 
 GSTexture::Format GSDevice::GetDefaultTextureFormat(GSTexture::Type type)
@@ -428,10 +428,11 @@ bool GSDevice::ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h, 
 
 	if (t2 == NULL || t2->GetWidth() != w || t2->GetHeight() != h)
 	{
-		GSTexture::Format fmt = t2 ? t2->GetFormat() : GetDefaultTextureFormat(type);
+		const GSTexture::Format fmt = t2 ? t2->GetFormat() : GetDefaultTextureFormat(type);
+		const bool mipmap = t2 ? t2->IsMipmap() : false;
 		delete t2;
 
-		t2 = FetchSurface(type, w, h, fmt, clear, prefer_reuse);
+		t2 = FetchSurface(type, w, h, mipmap, fmt, clear, prefer_reuse);
 
 		*t = t2;
 	}

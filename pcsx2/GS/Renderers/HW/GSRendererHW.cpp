@@ -26,6 +26,7 @@ GSRendererHW::GSRendererHW()
 	, m_userhacks_ts_half_bottom(-1)
 	, m_tc(new GSTextureCache(this))
 	, m_src(nullptr)
+	, m_hw_mipmap(GSConfig.HWMipmap)
 	, m_userhacks_tcoffset(false)
 	, m_userhacks_tcoffset_x(0)
 	, m_userhacks_tcoffset_y(0)
@@ -33,7 +34,7 @@ GSRendererHW::GSRendererHW()
 	, m_reset(false)
 	, m_lod(GSVector2i(0, 0))
 {
-	m_mipmap = theApp.GetConfigI("mipmap_hw");
+	m_mipmap = (m_hw_mipmap >= HWMipmapLevel::Basic);
 	m_upscale_multiplier = std::max(0, theApp.GetConfigI("upscale_multiplier"));
 	m_conservative_framebuffer = theApp.GetConfigB("conservative_framebuffer");
 
@@ -198,7 +199,8 @@ void GSRendererHW::SetGameCRC(u32 crc, int options)
 	m_hacks.SetGameCRC(m_game);
 
 	// Code for Automatic Mipmapping. Relies on game CRCs.
-	if (theApp.GetConfigT<HWMipmapLevel>("mipmap_hw") == HWMipmapLevel::Automatic)
+	m_mipmap = (GSConfig.HWMipmap >= HWMipmapLevel::Basic);
+	if (GSConfig.HWMipmap == HWMipmapLevel::Automatic)
 	{
 		switch (CRC::Lookup(crc).title)
 		{
@@ -242,10 +244,12 @@ void GSRendererHW::SetGameCRC(u32 crc, int options)
 			case CRC::TombRaiderAnniversary:
 			case CRC::TribesAerialAssault:
 			case CRC::Whiplash:
-				m_mipmap = static_cast<int>(HWMipmapLevel::Basic);
+				m_hw_mipmap = HWMipmapLevel::Basic;
+				m_mipmap = true;
 				break;
 			default:
-				m_mipmap = static_cast<int>(HWMipmapLevel::Off);
+				m_hw_mipmap = HWMipmapLevel::Off;
+				m_mipmap = false;
 				break;
 		}
 	}
@@ -1398,10 +1402,12 @@ void GSRendererHW::Draw()
 
 		GetTextureMinMax(r, TEX0, MIP_CLAMP, m_vt.IsLinear());
 
-		m_src = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, r) : m_tc->LookupSource(TEX0, env.TEXA, r);
+		m_src = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, r) :
+			m_tc->LookupSource(TEX0, env.TEXA, r, m_hw_mipmap >= HWMipmapLevel::Basic ||
+				GSConfig.UserHacks_TriFilter == TriFiltering::Forced);
 
 		// Round 2
-		if (IsMipMapActive() && m_mipmap == 2 && !tex_psm.depth)
+		if (IsMipMapActive() && m_hw_mipmap == HWMipmapLevel::Full && !tex_psm.depth)
 		{
 			// Upload remaining texture layers
 			const GSVector4 tmin = m_vt.m_min.t;
@@ -2078,7 +2084,7 @@ bool GSRendererHW::OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source
 
 				g_gs_device->Recycle(t->m_texture);
 
-				t->m_texture = g_gs_device->CreateTexture(512, 512, GSTexture::Format::Color);
+				t->m_texture = g_gs_device->CreateTexture(512, 512, false, GSTexture::Format::Color);
 
 				t->m_texture->Update(GSVector4i(0, 0, 448, lines), video, 448 * 4);
 

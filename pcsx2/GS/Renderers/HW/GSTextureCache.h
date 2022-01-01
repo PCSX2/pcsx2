@@ -232,7 +232,7 @@ protected:
 	u8 m_texture_inside_rt_cache_size = 255;
 	std::vector<TexInsideRtCacheEntry> m_texture_inside_rt_cache;
 
-	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false, int x_offset = 0, int y_offset = 0);
+	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false, int x_offset = 0, int y_offset = 0, bool mipmap = false);
 	Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type);
 
 	// TODO: virtual void Write(Source* s, const GSVector4i& r) = 0;
@@ -246,7 +246,7 @@ public:
 	void RemoveAll();
 	void RemovePartial();
 
-	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r);
+	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool mipmap);
 	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette = false);
 
 	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int type, bool used, u32 fbmask = 0);
