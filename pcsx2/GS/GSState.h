@@ -219,7 +219,7 @@ public:
 	int m_frameskip;
 	bool m_NTSC_Saturation;
 	bool m_nativeres;
-	int m_mipmap;
+	bool m_mipmap;
 
 	static int s_n;
 	bool s_dump;

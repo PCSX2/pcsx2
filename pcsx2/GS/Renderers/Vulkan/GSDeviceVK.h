@@ -158,7 +158,7 @@ private:
 
 	std::string m_tfx_source;
 
-	GSTexture* CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format format) override;
+	GSTexture* CreateSurface(GSTexture::Type type, int w, int h, bool mipmap, GSTexture::Format format) override;
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE,
 		const GSRegEXTBUF& EXTBUF, const GSVector4& c) final;

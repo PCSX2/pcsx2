@@ -63,7 +63,6 @@ GSDeviceOGL::GSDeviceOGL()
 	memset(&m_om_dss, 0, sizeof(m_om_dss));
 	memset(&m_profiler, 0, sizeof(m_profiler));
 
-	m_mipmap = theApp.GetConfigI("mipmap");
 	m_upscale_multiplier = std::max(1, theApp.GetConfigI("upscale_multiplier"));
 
 	// Reset the debug file
@@ -199,12 +198,12 @@ void GSDeviceOGL::GenerateProfilerData()
 	}
 }
 
-GSTexture* GSDeviceOGL::CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format fmt)
+GSTexture* GSDeviceOGL::CreateSurface(GSTexture::Type type, int w, int h, bool mipmap, GSTexture::Format fmt)
 {
 	GL_PUSH("Create surface");
 
 	// A wrapper to call GSTextureOGL, with the different kind of parameters.
-	GSTextureOGL* t = new GSTextureOGL(type, w, h, fmt, m_fbo_read, m_mipmap > 1 || GSConfig.UserHacks_TriFilter != TriFiltering::Off);
+	GSTextureOGL* t = new GSTextureOGL(type, w, h, fmt, m_fbo_read, mipmap);
 
 	return t;
 }
@@ -950,7 +949,7 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area)
 
 	// Create a texture to avoid the useless clean@0
 	if (m_date.t == NULL)
-		m_date.t = CreateTexture(rtsize.x, rtsize.y, GSTexture::Format::Int32);
+		m_date.t = CreateTexture(rtsize.x, rtsize.y, false, GSTexture::Format::Int32);
 
 	// Clean with the max signed value
 	const int max_int = 0x7FFFFFFF;

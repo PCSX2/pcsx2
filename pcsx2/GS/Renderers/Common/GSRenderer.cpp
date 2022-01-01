@@ -25,8 +25,6 @@
 #include <X11/keysym.h>
 #endif
 
-const unsigned int s_mipmap_nb = 3;
-
 GSRenderer::GSRenderer()
 	: m_shift_key(false)
 	, m_control_key(false)
@@ -579,11 +577,6 @@ void GSRenderer::KeyEvent(const HostKeyEvent& e)
 				GSConfig.AA1 = !GSConfig.AA1;
 				theApp.SetConfig("aa1", GSConfig.AA1);
 				printf("GS: (Software) Edge anti-aliasing is now %s.\n", GSConfig.AA1 ? "enabled" : "disabled");
-				return;
-			case VK_INSERT:
-				m_mipmap = (m_mipmap + s_mipmap_nb + step) % s_mipmap_nb;
-				theApp.SetConfig("mipmap_hw", m_mipmap);
-				printf("GS: Mipmapping is now %s.\n", theApp.m_gs_hack.at(m_mipmap).name.c_str());
 				return;
 			case VK_NEXT: // As requested by Prafull, to be removed later
 				char dither_msg[3][16] = {"disabled", "auto", "auto unscaled"};

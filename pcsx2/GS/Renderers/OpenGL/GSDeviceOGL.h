@@ -214,7 +214,6 @@ private:
 	// Increment this constant whenever shaders change, to invalidate user's program binary cache.
 	static constexpr u32 SHADER_VERSION = 1;
 
-	int m_mipmap;
 	int m_upscale_multiplier;
 
 	static FILE* m_debug_gl_file;
@@ -301,7 +300,7 @@ private:
 
 	AlignedBuffer<u8, 32> m_download_buffer;
 
-	GSTexture* CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format format) final;
+	GSTexture* CreateSurface(GSTexture::Type type, int w, int h, bool mipmap, GSTexture::Format format) final;
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) final;
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0) final;
