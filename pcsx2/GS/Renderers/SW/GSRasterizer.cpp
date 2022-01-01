@@ -53,14 +53,9 @@ GSRasterizer::GSRasterizer(IDrawScanline* ds, int id, int threads, GSPerfMon* pe
 	int rows = (2048 >> m_thread_height) + 16;
 	m_scanline = (u8*)_aligned_malloc(rows, 64);
 
-	int row = 0;
-
-	while (row < rows)
+	for (int i = 0; i < rows; i++)
 	{
-		for (int i = 0; i < threads; i++, row++)
-		{
-			m_scanline[row] = i == id ? 1 : 0;
-		}
+		m_scanline[i] = (i % threads) == id ? 1 : 0;
 	}
 }
 
@@ -1191,14 +1186,9 @@ GSRasterizerList::GSRasterizerList(int threads, GSPerfMon* perfmon)
 	int rows = (2048 >> m_thread_height) + 16;
 	m_scanline = (u8*)_aligned_malloc(rows, 64);
 
-	int row = 0;
-
-	while (row < rows)
+	for (int i = 0; i < rows; i++)
 	{
-		for (int i = 0; i < threads; i++, row++)
-		{
-			m_scanline[row] = (u8)i;
-		}
+		m_scanline[i] = static_cast<u8>(i % threads);
 	}
 }
 
