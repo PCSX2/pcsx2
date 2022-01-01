@@ -990,6 +990,19 @@ VkSampler GSDeviceVK::GetSampler(GSHWDrawConfig::SamplerSelector ss)
 	return sampler;
 }
 
+void GSDeviceVK::ClearSamplerCache()
+{
+	for (const auto& it : m_samplers)
+		g_vulkan_context->DeferSamplerDestruction(it.second);
+	m_samplers.clear();
+	m_point_sampler = GetSampler(GSHWDrawConfig::SamplerSelector::Point());
+	m_linear_sampler = GetSampler(GSHWDrawConfig::SamplerSelector::Linear());
+	m_utility_sampler = m_point_sampler;
+
+	for (u32 i = 0; i < std::size(m_tfx_samplers); i++)
+		m_tfx_samplers[i] = GetSampler(m_tfx_sampler_sel[i]);
+}
+
 static void AddMacro(std::stringstream& ss, const char* name, const char* value)
 {
 	ss << "#define " << name << " " << value << "\n";

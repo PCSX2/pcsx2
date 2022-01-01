@@ -371,6 +371,7 @@ public:
 	void PSSetShaderResource(int i, GSTexture* sr);
 	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
 	void PSSetSamplerState(GLuint ss);
+	void ClearSamplerCache() final;
 
 	void OMSetDepthStencilState(GSDepthStencilOGL* dss);
 	void OMSetBlendState(u8 blend_index = 0, u8 blend_factor = 0, bool is_blend_constant = false, bool accumulation_blend = false, bool blend_mix = false);

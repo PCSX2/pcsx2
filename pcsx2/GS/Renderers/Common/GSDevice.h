@@ -656,6 +656,8 @@ public:
 	void AgePool();
 	void PurgePool();
 
+	virtual void ClearSamplerCache();
+
 	virtual void PrintMemoryUsage();
 
 	// Convert the GS blend equations to HW specific blend factors/ops

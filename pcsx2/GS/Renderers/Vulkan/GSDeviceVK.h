@@ -167,6 +167,7 @@ private:
 	u16 ConvertBlendEnum(u16 generic) final;
 
 	VkSampler GetSampler(GSHWDrawConfig::SamplerSelector ss);
+	void ClearSamplerCache() final;
 
 	VkShaderModule GetTFXVertexShader(GSHWDrawConfig::VSSelector sel);
 	VkShaderModule GetTFXGeometryShader(GSHWDrawConfig::GSSelector sel);

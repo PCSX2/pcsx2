@@ -1610,6 +1610,16 @@ void GSDeviceOGL::PSSetSamplerState(GLuint ss)
 	}
 }
 
+void GSDeviceOGL::ClearSamplerCache()
+{
+	glDeleteSamplers(std::size(m_ps_ss), m_ps_ss);
+
+	for (u32 key = 0; key < std::size(m_ps_ss); key++)
+	{
+		m_ps_ss[key] = CreateSampler(PSSamplerSelector(key));
+	}
+}
+
 void GSDeviceOGL::OMAttachRt(GSTextureOGL* rt)
 {
 	GLuint id = 0;

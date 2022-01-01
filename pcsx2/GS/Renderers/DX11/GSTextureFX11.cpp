@@ -257,6 +257,11 @@ void GSDevice11::SetupPS(PSSelector sel, const GSHWDrawConfig::PSConstantBuffer*
 	PSSetShader(i->second.get(), m_ps_cb.get());
 }
 
+void GSDevice11::ClearSamplerCache()
+{
+	m_ps_ss.clear();
+}
+
 void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 afix)
 {
 	auto i = std::as_const(m_om_dss).find(dssel.key);
