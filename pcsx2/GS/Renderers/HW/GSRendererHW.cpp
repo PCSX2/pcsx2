@@ -192,6 +192,12 @@ void GSRendererHW::Destroy()
 	GSRenderer::Destroy();
 }
 
+void GSRendererHW::PurgeTextureCache()
+{
+	GSRenderer::PurgeTextureCache();
+	m_tc->RemoveAll();
+}
+
 void GSRendererHW::SetGameCRC(u32 crc, int options)
 {
 	GSRenderer::SetGameCRC(crc, options);

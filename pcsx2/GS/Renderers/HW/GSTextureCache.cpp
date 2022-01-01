@@ -24,7 +24,6 @@
 #define XXH_INLINE_ALL 1
 #include "xxhash.h"
 
-bool GSTextureCache::m_paltex = false;
 bool GSTextureCache::m_disable_partial_invalidation = false;
 bool GSTextureCache::m_wrap_gs_mem = false;
 
@@ -52,8 +51,6 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 		m_texture_inside_rt            = false;
 		m_wrap_gs_mem                  = false;
 	}
-
-	m_paltex = theApp.GetConfigB("paltex");
 
 	// In theory 4MB is enough but 9MB is safer for overflow (8MB
 	// isn't enough in custom resolution)
@@ -1612,7 +1609,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	}
 	else
 	{
-		if (m_paltex && psm.pal > 0)
+		if (GSConfig.GPUPaletteConversion && psm.pal > 0)
 		{
 			src->m_texture = g_gs_device->CreateTexture(tw, th, false, GSTexture::Format::UNorm8);
 			AttachPaletteToSource(src, psm.pal, true);

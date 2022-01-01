@@ -191,6 +191,8 @@ public:
 	void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false) override;
 	void Draw() override;
 
+	void PurgeTextureCache() override;
+
 	// Called by the texture cache to know if current texture is useful
 	virtual bool IsDummyTexture() const { return false; }
 };

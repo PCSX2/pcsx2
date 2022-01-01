@@ -221,7 +221,6 @@ protected:
 	PaletteMap m_palette_map;
 	SourceMap m_src;
 	FastList<Target*> m_dst[2];
-	static bool m_paltex;
 	bool m_preload_frame;
 	u8* m_temp;
 	bool m_can_convert_depth;
