@@ -48,8 +48,7 @@ Thumbs.db
 Debug.txt
 install_log.txt
 padLog.txt
-GS_opengl_debug_hw.txt
-GS_opengl_debug_sw.txt
+GS_opengl_debug.txt
 
 Debug
 Release
