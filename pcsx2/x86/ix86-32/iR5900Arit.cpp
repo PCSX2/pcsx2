@@ -57,7 +57,7 @@ REC_FUNC_DEL(SLTU,  _Rd_);
 //// ADD
 void recADD_const()
 {
-	g_cpuConstRegs[_Rd_].SD[0] = g_cpuConstRegs[_Rs_].SL[0] + g_cpuConstRegs[_Rt_].SL[0];
+	g_cpuConstRegs[_Rd_].SD[0] = s64(s32(g_cpuConstRegs[_Rs_].UL[0] + g_cpuConstRegs[_Rt_].UL[0]));
 }
 
 void recADD_constv(int info, int creg, u32 vreg)
@@ -108,7 +108,7 @@ void recADDU(void)
 //// DADD
 void recDADD_const(void)
 {
-	g_cpuConstRegs[_Rd_].SD[0] = g_cpuConstRegs[_Rs_].SD[0] + g_cpuConstRegs[_Rt_].SD[0];
+	g_cpuConstRegs[_Rd_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] + g_cpuConstRegs[_Rt_].UD[0];
 }
 
 void recDADD_constv(int info, int creg, u32 vreg)
@@ -248,7 +248,7 @@ void recDADDU(void)
 
 void recSUB_const()
 {
-	g_cpuConstRegs[_Rd_].SD[0] = g_cpuConstRegs[_Rs_].SL[0] - g_cpuConstRegs[_Rt_].SL[0];
+	g_cpuConstRegs[_Rd_].SD[0] = s64(s32(g_cpuConstRegs[_Rs_].UL[0] - g_cpuConstRegs[_Rt_].UL[0]));
 }
 
 void recSUB_consts(int info)
@@ -305,7 +305,7 @@ void recSUBU(void)
 //// DSUB
 void recDSUB_const()
 {
-	g_cpuConstRegs[_Rd_].SD[0] = g_cpuConstRegs[_Rs_].SD[0] - g_cpuConstRegs[_Rt_].SD[0];
+	g_cpuConstRegs[_Rd_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] - g_cpuConstRegs[_Rt_].UD[0];
 }
 
 void recDSUB_consts(int info)
