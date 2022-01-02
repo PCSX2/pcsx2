@@ -22,9 +22,8 @@ public:
 	{
 		Main,
 		Sync,
-		WorkerDraw0, WorkerDraw1, WorkerDraw2, WorkerDraw3, WorkerDraw4, WorkerDraw5, WorkerDraw6, WorkerDraw7,
-		WorkerDraw8, WorkerDraw9, WorkerDraw10, WorkerDraw11, WorkerDraw12, WorkerDraw13, WorkerDraw14, WorkerDraw15,
-		TimerLast,
+		WorkerDraw0,
+		TimerLast = WorkerDraw0 + 32, // Enough space for 32 GS worker threads
 	};
 
 	enum counter_t
