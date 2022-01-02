@@ -51,7 +51,7 @@ REC_FUNC_DEL(SLTIU,  _Rt_);
 //// ADDI
 void recADDI_const(void)
 {
-	g_cpuConstRegs[_Rt_].SD[0] = (s64)(g_cpuConstRegs[_Rs_].SL[0] + (s32)_Imm_);
+	g_cpuConstRegs[_Rt_].SD[0] = s64(s32(g_cpuConstRegs[_Rs_].UL[0] + u32(s32(_Imm_))));
 }
 
 void recADDI_(int info)
@@ -86,7 +86,7 @@ void recADDIU()
 ////////////////////////////////////////////////////
 void recDADDI_const()
 {
-	g_cpuConstRegs[_Rt_].SD[0] = g_cpuConstRegs[_Rs_].SD[0] + (s64)_Imm_;
+	g_cpuConstRegs[_Rt_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] + u64(s64(_Imm_));
 }
 
 void recDADDI_(int info)
