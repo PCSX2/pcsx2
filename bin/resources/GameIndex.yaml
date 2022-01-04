@@ -54,6 +54,8 @@ PAPX-90506:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gameFixes:
+    - VUKickstartHack # Fixes shadow flickering with synchronized VU1
 PAPX-90512:
   name: "Gran Turismo 4 - Toyota Prius [Trial]"
   region: "NTSC-J"
@@ -2376,6 +2378,8 @@ SCES-51190:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gameFixes:
+    - VUKickstartHack # Fixes shadow flickering with synchronized VU1
 SCES-51224:
   name: "War of the Monsters"
   region: "PAL-E"
@@ -3706,6 +3710,8 @@ SCKA-20014:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gameFixes:
+    - VUKickstartHack # Fixes shadow flickering with synchronized VU1
 SCKA-20015:
   name: "Time Crisis 3"
   region: "NTSC-K"
@@ -4276,6 +4282,8 @@ SCPS-15033:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gameFixes:
+    - VUKickstartHack # Fixes shadow flickering with synchronized VU1
 SCPS-15034:
   name: "This is Football 2003"
   region: "NTSC-J"
@@ -4764,6 +4772,8 @@ SCPS-19215:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gameFixes:
+    - VUKickstartHack # Fixes shadow flickering with synchronized VU1
 SCPS-19251:
   name: "Wild ARMs - Alter Code F [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -4825,6 +4835,8 @@ SCPS-19306:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gameFixes:
+    - VUKickstartHack # Fixes shadow flickering with synchronized VU1
 SCPS-19307:
   name: "Popolocrois - The First Adventure [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -5181,6 +5193,8 @@ SCPS-55048:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gameFixes:
+    - VUKickstartHack # Fixes shadow flickering with synchronized VU1
 SCPS-55049:
   name: "King of Fighters 2000, The"
   region: "NTSC-J"
@@ -5673,6 +5687,8 @@ SCUS-97213:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gameFixes:
+    - VUKickstartHack # Fixes shadow flickering with synchronized VU1
 SCUS-97214:
   name: "NCAA GameBreaker 2003"
   region: "NTSC-U"
@@ -5726,6 +5742,8 @@ SCUS-97229:
   region: "NTSC-U"
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gameFixes:
+    - VUKickstartHack # Fixes shadow flickering with synchronized VU1
 SCUS-97230:
   name: "SOCOM - U.S. Navy SEALs (Online)"
   region: "NTSC-U"
