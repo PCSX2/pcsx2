@@ -26,20 +26,33 @@ The PCSX2 project has been running for more than ten years. Past versions could 
 * GPU: DirectX 11 support or better
 * RAM: 4GB or more
 
+## Best settings:
+- Emulation settings -> Speedhacks -> EE Cycle Rate: -3
+- Emulation settings -> Speedhacks -> Enable INTC Spin Detection: On
+- Emulation settings -> Speedhacks -> Enable Wait Loop Detection: On
+- Emulation settings -> Speedhacks -> mVU Flag Hack: On
+- Emulation settings -> Speedhacks -> MTVU: On
+- Video (GS) -> Renderer: **Direct3D 11 (Hardware)**
+- Video (GS) -> Interlacing: None
+- Video (GS) -> Large Framebuffer: Off
+- Video (GS) -> Mipmapping: Off
+- Video (GS) -> CRC Hack Level: Automatic
+- Video (GS) -> Blending Accuracy: Basic
+## Freely adjustable settings (preference / lag optimization):
+#### Visuals:
+- Emulation settings -> GS Window -> Aspect Ratio
+- Video (GS) -> Texture Filtering
+- Video (GS) -> Shader Configuration -> Texture Filtering of Display
+#### Performance:
+- Emulation settings -> Speedhacks -> EE Cycle Skipping: Higher than 0 (trades slow-mo with choppier gameplay)
+- Video (GS) -> Internal Resolution
+#### Other:
+- Emulation settings -> Speedhacks -> Enable fast CDVD
+- Emulation settings -> Game Fixes - Skip MPEG hack
+
 ## Notes
-- You need the [Visual C++ 2015 x86 Redistributables](https://www.microsoft.com/en-us/download/details.aspx?id=48145) for this version to work.   
-Note: Visual C++ 2017 is directly compatible with Visual C++ 2015. While the project is built with Visual C++ 2015, either version will work.
+- Each game is still missing all shadows on the **Direct3D 11** renderer, but are present when using **OpenGL**. Only downside being other graphical glitches and a big impact on performance.
 
-- PCSX2 1.4.0 is the last stable version to support Windows XP and Direct3D9. Windows XP is no longer getting updates (including security-related updates), and graphics drivers for Windows XP are older and no longer maintained.
-
-- Make sure to update your operating system, drivers, and DirectX (if applicable) to ensure you have the best experience possible. Having a newer GPU is also recommended so you have the latest supported drivers.
-
-- Because of copyright issues, and the complexity of trying to work around it, you need a BIOS dump extracted from a legitimately-owned PS2 console to use the emulator. For more information about the BIOS and how to get it from your console, visit [this page](https://pcsx2.net/config-guide/official-english-pcsx2-configuration-guide.html#Bios).
-
-- PCSX2 mainly takes advantage of 2 CPU cores. As of [this commit](https://github.com/PCSX2/pcsx2/commit/ac9bf45) PCSX2 can now take advantage of more than 2 cores using the MTVU speedhack. This can be a significant speedup on CPUs with 3+ cores, but it may be a slowdown on GS-limited games (or on CPUs with fewer than 2 cores).
-
-- Requirements benchmarks are based on a statistic from the Passmark CPU bench marking software. When we say "STR", we are referring to Passmark's "Single Thread Rating" statistic. You can look up your CPU on https://cpubenchmark.net to see how it compares to PCSX2's requirements.
-
-# Screenshots
+# Screenshots (4:3)
 
 
