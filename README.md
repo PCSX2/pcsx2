@@ -9,6 +9,7 @@ This is a fork of [#03027453c8](https://github.com/PCSX2/pcsx2/tree/03027453c8fe
 - [**Asasega**](https://forums.pcsx2.net/User-asasega) - created a method for patching "sceGsSetHalfOffset" routine which removes screen shakiness/"interlacing"
 - [**NiV**](https://github.com/NiV-L-A) - developed a custom code-type to allow conditional cheats for pointers
 - [**ztufs**](https://www.reddit.com/u/ztufs) - for drawing the background art
+
 If you have any questions regarding playing or modding the Sly games, feel free to [join the Discord!](https://discord.gg/gh5xwfj)
 
 # System Requirements
