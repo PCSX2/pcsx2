@@ -237,19 +237,18 @@ bool GSDeviceVK::CheckFeatures()
 	const bool isAMD = (vendorID == 0x1002 || vendorID == 0x1022);
 	// const bool isNVIDIA = (vendorID == 0x10DE);
 
+	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
 	m_features.broken_point_sampler = isAMD;
-	m_features.geometry_shader = features.geometryShader;
-	m_features.image_load_store = features.fragmentStoresAndAtomics;
-	m_features.texture_barrier = true;
+	m_features.geometry_shader = features.geometryShader && GSConfig.OverrideGeometryShaders != 0;
+	m_features.image_load_store = features.fragmentStoresAndAtomics && m_features.texture_barrier;
 	m_features.prefer_new_textures = true;
 	m_features.provoking_vertex_last = g_vulkan_context->GetOptionalExtensions().vk_ext_provoking_vertex;
 
 	if (!features.dualSrcBlend)
-	{
-		Console.Error("Vulkan driver is missing dual-source blending.");
-		Host::AddOSDMessage(
-			"Dual-source blending is not supported by your driver. This will significantly slow performance.", 30.0f);
-	}
+		Console.Warning("Vulkan driver is missing dual-source blending. This will have an impact on performance.");
+
+	if (!m_features.texture_barrier)
+		Console.Warning("Texture buffers are disabled. This may break some graphical effects.");
 
 	// whether we can do point/line expand depends on the range of the device
 	const float f_upscale = static_cast<float>(GSConfig.UpscaleMultiplier);
@@ -1036,8 +1035,9 @@ static void AddShaderHeader(std::stringstream& ss)
 	ss << "#version 460 core\n";
 	ss << "#extension GL_EXT_samplerless_texture_functions : require\n";
 
-	if (!g_vulkan_context->GetDeviceFeatures().dualSrcBlend)
-		ss << "#define DISABLE_DUAL_SOURCE 1\n";
+	const GSDevice::FeatureSupport features(g_gs_device->Features());
+	if (!features.texture_barrier)
+		ss << "#define DISABLE_TEXTURE_BARRIER 1\n";
 }
 
 static void AddShaderStageMacro(std::stringstream& ss, bool vs, bool gs, bool fs)
@@ -1170,7 +1170,7 @@ bool GSDeviceVK::CreatePipelineLayouts()
 	if ((m_tfx_sampler_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
 	Vulkan::Util::SetObjectName(dev, m_tfx_sampler_ds_layout, "TFX sampler descriptor layout");
-	dslb.AddBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(0, m_features.texture_barrier ? VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	if ((m_tfx_rt_texture_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
@@ -2412,7 +2412,10 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			return ApplyTFXState(true);
 		}
 
-		dsub.AddInputAttachmentDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_SAMPLERS]);
+		if (m_features.texture_barrier)
+			dsub.AddInputAttachmentDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_SAMPLERS]);
+		else
+			dsub.AddImageDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_SAMPLERS]);
 		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[NUM_TFX_SAMPLERS + 1]);
 		dsub.Update(dev);
 
@@ -2718,6 +2721,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 	GSTextureVK* draw_rt = static_cast<GSTextureVK*>(config.rt);
 	GSTextureVK* draw_ds = static_cast<GSTextureVK*>(config.ds);
+	GSTextureVK* draw_rt_clone = nullptr;
 	GSTextureVK* hdr_rt = nullptr;
 	GSTextureVK* copy_ds = nullptr;
 
@@ -2747,7 +2751,28 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			draw_rt->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 
+		// we're not drawing to the RT, so we can use it as a source
+		if (config.require_one_barrier && !m_features.texture_barrier)
+			PSSetShaderResource(2, draw_rt, true);
+
 		draw_rt = hdr_rt;
+	}
+	else if (config.require_one_barrier && !m_features.texture_barrier)
+	{
+		// requires a copy of the RT
+		draw_rt_clone = static_cast<GSTextureVK*>(CreateTexture(rtsize.x, rtsize.y, false, GSTexture::Format::Color, true));
+		if (draw_rt_clone)
+		{
+			EndRenderPass();
+
+			GL_PUSH("Copy RT to temp texture for fbmask {%d,%d %dx%d}",
+				config.drawarea.left, config.drawarea.top,
+				config.drawarea.width(), config.drawarea.height());
+
+			DoCopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea);
+			draw_rt_clone->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			PSSetShaderResource(2, draw_rt_clone, false);
+		}
 	}
 
 	if (config.tex && config.tex == config.ds)
@@ -2790,7 +2815,10 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 	OMSetRenderTargets(draw_rt, draw_ds, config.scissor, pipe.feedback_loop);
 	if (pipe.feedback_loop)
+	{
+		pxAssertMsg(m_features.texture_barrier, "Texture barriers enabled");
 		PSSetShaderResource(2, draw_rt, false);
+	}
 
 	// Begin render pass if new target or out of the area.
 	if (!render_area_okay || !InRenderPass())
@@ -2866,6 +2894,9 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	if (copy_ds)
 		Recycle(copy_ds);
 
+	if (draw_rt_clone)
+		Recycle(draw_rt_clone);
+
 	if (date_image)
 		Recycle(date_image);
 
@@ -2929,9 +2960,9 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config)
 	m_pipeline_selector.rt = config.rt != nullptr;
 	m_pipeline_selector.ds = config.ds != nullptr;
 	m_pipeline_selector.line_width = config.line_expand;
-	m_pipeline_selector.feedback_loop =
-		config.ps.IsFeedbackLoop() || config.require_one_barrier || config.require_full_barrier ||
-		config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking;
+	m_pipeline_selector.feedback_loop = m_features.texture_barrier &&
+										(config.ps.IsFeedbackLoop() || config.require_one_barrier || config.require_full_barrier ||
+											config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking);
 
 	// enable point size in the vertex shader if we're rendering points regardless of upscaling.
 	m_pipeline_selector.vs.point_size |= (config.topology == GSHWDrawConfig::Topology::Point);
@@ -2960,7 +2991,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt)
 			DrawIndexedPrimitive(p, config.indices_per_prim);
 		}
 	}
-	else if (config.require_one_barrier)
+	else if (config.require_one_barrier && m_features.texture_barrier)
 	{
 		ColorBufferBarrier(draw_rt);
 		DrawIndexedPrimitive();

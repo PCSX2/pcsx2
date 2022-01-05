@@ -389,7 +389,13 @@ layout(set = 1, binding = 0) uniform sampler2D Texture;
 layout(set = 1, binding = 1) uniform sampler2D Palette;
 
 #if PS_FEEDBACK_LOOP_IS_NEEDED
-layout(input_attachment_index = 0, set = 2, binding = 0) uniform subpassInput RtSampler;
+	#ifndef DISABLE_TEXTURE_BARRIER
+		layout(input_attachment_index = 0, set = 2, binding = 0) uniform subpassInput RtSampler;
+		vec4 sample_from_rt() { return subpassLoad(RtSampler); }
+	#else
+		layout(set = 2, binding = 0) uniform texture2D RtSampler;
+		vec4 sample_from_rt() { return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0); }
+	#endif
 #endif
 
 #if PS_DATE > 0
@@ -399,7 +405,7 @@ layout(set = 2, binding = 1) uniform texture2D PrimMinTexture;
 vec4 sample_c(vec2 uv)
 {
 #if PS_TEX_IS_FB
-	return subpassLoad(RtSampler);
+	return sample_from_rt();
 #else
 #if PS_POINT_SAMPLER
 		// Weird issue with ATI/AMD cards,
@@ -549,7 +555,7 @@ mat4 sample_4p(vec4 u)
 int fetch_raw_depth(ivec2 xy)
 {
 #if PS_TEX_IS_FB
-	vec4 col = subpassLoad(RtSampler);
+	vec4 col = sample_from_rt();
 #else
 	vec4 col = texelFetch(Texture, xy, 0);
 #endif
@@ -559,7 +565,7 @@ int fetch_raw_depth(ivec2 xy)
 vec4 fetch_raw_color(ivec2 xy)
 {
 #if PS_TEX_IS_FB
-	return subpassLoad(RtSampler);
+	return sample_from_rt();
 #else
 	return texelFetch(Texture, xy, 0);
 #endif
@@ -935,7 +941,7 @@ vec4 ps_color()
 void ps_fbmask(inout vec4 C)
 {
 	#if PS_FBMASK
-		vec4 RT = trunc(subpassLoad(RtSampler) * 255.0f + 0.1f);
+		vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
 		C = vec4((uvec4(C) & ~FbMask) | (uvec4(RT) & FbMask));
 	#endif
 }
@@ -995,7 +1001,7 @@ void ps_blend(inout vec4 Color, float As)
 		#endif
 
 		#if PS_FEEDBACK_LOOP_IS_NEEDED
-				vec4 RT = trunc(subpassLoad(RtSampler) * 255.0f + 0.1f);
+				vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
 		#else
 				// Not used, but we define it to make the selection below simpler.
 				vec4 RT = vec4(0.0f);
@@ -1095,9 +1101,9 @@ void main()
 
 #if PS_WRITE_RG == 1
   // Pseudo 16 bits access.
-  float rt_a = subpassLoad(RtSampler).g;
+  float rt_a = sample_from_rt().g;
 #else
-  float rt_a = subpassLoad(RtSampler).a;
+  float rt_a = sample_from_rt().a;
 #endif
 
 #if (PS_DATE & 3) == 1
