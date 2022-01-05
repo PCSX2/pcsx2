@@ -8,10 +8,8 @@ This is a fork of [#03027453c8](https://github.com/PCSX2/pcsx2/tree/03027453c8fe
 - [**Meos**](https://www.youtube.com/channel/UCBjGlnrNZmHVLnqePH6A8vQ) - made the legendary **No Motion Blur** cheat for all versions of Sly
 - [**Asasega**](https://forums.pcsx2.net/User-asasega) - created a method for patching "sceGsSetHalfOffset" routine which removes screen shakiness/"interlacing"
 - [**NiV**](https://github.com/NiV-L-A) - developed a custom code-type to allow conditional cheats for pointers
-
-# Project Details
-
-The PCSX2 project has been running for more than ten years. Past versions could only run a few public domain game demos, but newer versions can run many games at full speed, including popular titles such as s*y cooper
+- [**ztufs**](https://www.reddit.com/u/ztufs) - for drawing the background art
+If you have any questions regarding playing or modding the Sly games, feel free to [join the Discord!](https://discord.gg/gh5xwfj)
 
 # System Requirements
 ## Minimum
@@ -48,11 +46,14 @@ The PCSX2 project has been running for more than ten years. Past versions could 
 - Video (GS) -> Internal Resolution
 #### Other:
 - Emulation settings -> Speedhacks -> Enable fast CDVD
-- Emulation settings -> Game Fixes - Skip MPEG hack
+- Emulation settings -> Game Fixes -> Skip MPEG hack
 
 ## Notes
 - Each game is still missing all shadows on the **Direct3D 11** renderer, but are present when using **OpenGL**. Only downside being other graphical glitches and a big impact on performance.
 
 # Screenshots (4:3)
 
-
+<div align="left">
+    <img src="/readmemd/pcsx2-sly.png" width="450px"</img> 
+    <img src="/readmemd/pcsx2-sly2.png" width="450px"</img> 
+</div>
