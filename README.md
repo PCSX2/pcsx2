@@ -2,10 +2,12 @@
 PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a combination of MIPS CPU [Interpreters](https://en.wikipedia.org/wiki/Interpreter_\(computing\)), [Recompilers](https://en.wikipedia.org/wiki/Dynamic_recompilation) and a [Virtual Machine](https://en.wikipedia.org/wiki/Virtual_machine) which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.
 
 # Fork Details
-This is a fork of a build from 2019 where Sly CRC hacks were still a thing, a PNACH pointer related bugfix was released, performance & graphics were nicely balanced (even for older PCs like mine) and game enhancing cheats are included with the release. And it's all thanks to these people:
-- [**NiV**](https://github.com/NiV-L-A) - developed a custom code-type to allow conditional cheats for pointers
+This is a fork of [#03027453c8](https://github.com/PCSX2/pcsx2/tree/03027453c8fe8cd95164271211e529067bf5b91a) where Sly CRC hacks were still a thing, a PNACH pointer related bugfix was released and performance & graphics were nicely balanced (even for older PCs like mine). This fork is set to enhance the trilogy with cheats and edits to optimize graphics and performance.
+
+## Special thanks:
 - [**Meos**](https://www.youtube.com/channel/UCBjGlnrNZmHVLnqePH6A8vQ) - made the legendary **No Motion Blur** cheat for all versions of Sly
 - [**Asasega**](https://forums.pcsx2.net/User-asasega) - created a method for patching "sceGsSetHalfOffset" routine which removes screen shakiness/"interlacing"
+- [**NiV**](https://github.com/NiV-L-A) - developed a custom code-type to allow conditional cheats for pointers
 
 # Project Details
 
