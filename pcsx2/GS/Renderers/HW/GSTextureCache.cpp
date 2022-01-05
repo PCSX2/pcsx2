@@ -1549,8 +1549,17 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 				// You typically hit this code in snow engine game. Dstsize is the size of of Dx/GL RT
 				// which is arbitrary set to 1280 (biggest RT used by GS). h/w are based on the input texture
 				// so the only reliable way to find the real size of the target is to use the TBW value.
-				float real_width = dst->m_TEX0.TBW * 64u * dst->m_texture->GetScale().x;
-				g_gs_device->CopyRect(sTex, dTex, GSVector4i((int)(real_width / 2.0f), 0, (int)real_width, h));
+				const float real_width = dst->m_TEX0.TBW * 64u * dst->m_texture->GetScale().x;
+				const GSVector4i real_rc((int)(real_width / 2.0f), 0, (int)real_width, h);
+				if (real_rc.width() > w)
+				{
+					DevCon.Error("Dropping invalid half_write copy from {%d,%d} %dx%d to %dx%d",
+						real_rc.x, real_rc.y, real_rc.width(), real_rc.height(), w, h);
+				}
+				else
+				{
+					g_gs_device->CopyRect(sTex, dTex, real_rc);
+				}
 			}
 			else
 			{
