@@ -217,7 +217,7 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 	m_features.broken_point_sampler = GLLoader::vendor_id_amd;
 	m_features.geometry_shader = GLLoader::found_geometry_shader;
 	m_features.image_load_store = GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture;
-	m_features.texture_barrier = true;
+	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
 	m_features.provoking_vertex_last = true;
 	m_features.prefer_new_textures = false;
 	m_features.dxt_textures = GL_EXT_texture_compression_s3tc;

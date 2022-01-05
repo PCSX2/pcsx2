@@ -216,9 +216,10 @@ namespace GLLoader
 		mesa_driver = !vendor_id_nvidia && !vendor_id_amd;
 #endif
 
-		if (theApp.GetConfigI("override_geometry_shader") != -1)
+		if (GSConfig.OverrideGeometryShaders != -1)
 		{
-			found_geometry_shader = theApp.GetConfigB("override_geometry_shader");
+			found_geometry_shader = GSConfig.OverrideGeometryShaders != 0 &&
+									(GLAD_GL_VERSION_3_2 || GL_ARB_geometry_shader4 || GSConfig.OverrideGeometryShaders == 1);
 			GLExtension::Set("GL_ARB_geometry_shader4", found_geometry_shader);
 			fprintf(stderr, "Overriding geometry shaders detection\n");
 		}
