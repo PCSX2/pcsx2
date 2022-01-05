@@ -2,26 +2,28 @@
 PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a combination of MIPS CPU [Interpreters](https://en.wikipedia.org/wiki/Interpreter_\(computing\)), [Recompilers](https://en.wikipedia.org/wiki/Dynamic_recompilation) and a [Virtual Machine](https://en.wikipedia.org/wiki/Virtual_machine) which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.
 
 # Fork Details
-This is a fork of [#03027453c8](https://github.com/PCSX2/pcsx2/tree/03027453c8fe8cd95164271211e529067bf5b91a) where Sly CRC hacks were still a thing, a PNACH pointer related bugfix was released and performance & graphics were nicely balanced (even for older PCs like mine). This fork is set to enhance the trilogy with cheats and edits to optimize graphics and performance.
+This is a fork of [#03027453c8](https://github.com/PCSX2/pcsx2/tree/03027453c8fe8cd95164271211e529067bf5b91a) where Sly CRC hacks were still a thing, a PNACH pointer related bugfix was released and [performance & graphics](##Notes) were nicely balanced (even for older PCs like mine). This fork is set to enhance the trilogy with cheats and edits to optimize graphics and performance.
 
-## Special thanks:
+## Special thanks
 - [**Meos**](https://www.youtube.com/channel/UCBjGlnrNZmHVLnqePH6A8vQ) - made the legendary **No Motion Blur** cheat for all versions of Sly
 - [**Asasega**](https://forums.pcsx2.net/User-asasega) - created a method for patching "sceGsSetHalfOffset" routine which removes screen shakiness/"interlacing"
 - [**NiV**](https://github.com/NiV-L-A) - developed a custom code-type to allow conditional cheats for pointers
 - [**ztufs**](https://www.reddit.com/u/ztufs) - for drawing the background art
 
-If you have any questions regarding playing or modding the Sly games, feel free to [join the Discord!](https://discord.gg/gh5xwfj)
-
+## Resources
+- [**Sly Cooper Modding Discord**](https://discord.gg/gh5xwfj) - quick help on any Sly related issue
+- [**Weed Sheet**](https://docs.google.com/spreadsheets/d/12eUPni-GbMofoGcAvGEoB3BGuzlzkY7DaH_3v3yMG78/edit?usp=sharing) - the best place for downloading Sly mods
+- [**Sly Addresses**](https://docs.google.com/spreadsheets/u/0/d/1ISxw587iICRDdaLJfLaTvJUaYkjGBReH4NY-yKN-Ip0) - massive spreadsheet for memory addresses in all games, demos and prototypes
 # System Requirements
 ## Minimum
 * OS: Windows 7 or GNU/Linux
-* CPU: Any that supports SSE2 @ [1600 STR](#Notes)
+* CPU: Any that supports SSE2
 * GPU: DirectX 10 support
 * RAM: 2GB
 
 ## Recommended
 * OS: Windows 10 (64-bit) or GNU/Linux (64-bit)
-* CPU: Any that supports AVX2 (Core series Haswell or Ryzen and newer) @ [2000 STR](#Notes) or better
+* CPU: Any that supports AVX2 (Core series Haswell or Ryzen and newer)
 * GPU: DirectX 11 support or better
 * RAM: 4GB or more
 
@@ -53,7 +55,6 @@ If you have any questions regarding playing or modding the Sly games, feel free 
 - Each game is still missing all shadows on the **Direct3D 11** renderer, but are present when using **OpenGL**. Only downside being other graphical glitches and a big impact on performance.
 
 # Screenshots (4:3)
-
 <div align="left">
     <img src="/readmemd/pcsx2-sly.png" width="450px"</img> 
     <img src="/readmemd/pcsx2-sly2.png" width="450px"</img> 
