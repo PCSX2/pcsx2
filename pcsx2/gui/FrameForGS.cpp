@@ -340,6 +340,8 @@ std::optional<WindowInfo> GSPanel::GetWindowInfo()
 #endif // GTK_MAJOR_VERSION >= 3
 #elif defined(__WXOSX__)
 	ret.type = WindowInfo::Type::MacOS;
+	ret.surface_width  = static_cast<u32>(ret.surface_width  * ret.surface_scale);
+	ret.surface_height = static_cast<u32>(ret.surface_height * ret.surface_scale);
 	ret.window_handle = GetHandle();
 #endif
 
@@ -365,13 +367,18 @@ void GSPanel::OnResize(wxEvent& event)
 	int width = gs_vp_size.GetWidth();
 	int height = gs_vp_size.GetHeight();
 
+	if (false
 #ifdef __WXGTK__
-	if (g_gs_window_info.type == WindowInfo::Type::X11)
+		|| g_gs_window_info.type == WindowInfo::Type::X11
+#endif
+#ifdef __APPLE__
+		|| g_gs_window_info.type == WindowInfo::Type::MacOS
+#endif
+	)
 	{
 		width = static_cast<int>(width * scale);
 		height = static_cast<int>(height * scale);
 	}
-#endif
 
 	g_gs_window_info.surface_width = width;
 	g_gs_window_info.surface_height = height;
