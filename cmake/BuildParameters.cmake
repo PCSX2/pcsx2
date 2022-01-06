@@ -301,6 +301,7 @@ list(APPEND PCSX2_DEFS
 
 if (USE_ASAN)
 	add_compile_options(-fsanitize=address)
+	add_link_options(-fsanitize=address)
 	list(APPEND PCSX2_DEFS ASAN_WORKAROUND)
 endif()
 
