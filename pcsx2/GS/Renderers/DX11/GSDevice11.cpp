@@ -37,7 +37,6 @@ GSDevice11::GSDevice11()
 	m_mipmap = theApp.GetConfigI("mipmap");
 	m_upscale_multiplier = std::max(0, theApp.GetConfigI("upscale_multiplier"));
 
-	m_features.broken_point_sampler = true; // Not technically the case but the most common reason to use DX11 is because you're on AMD
 	m_features.geometry_shader = true;
 	m_features.image_load_store = false;
 	m_features.texture_barrier = false;
@@ -105,13 +104,17 @@ bool GSDevice11::Create(HostDisplay* display)
 	level = m_dev->GetFeatureLevel();
 
 	bool nvidia_vendor = false;
+	bool amd_vendor = false;
 	{
 		if (auto dxgi_device = m_dev.try_query<IDXGIDevice>())
 		{
 			wil::com_ptr_nothrow<IDXGIAdapter> dxgi_adapter;
 			DXGI_ADAPTER_DESC adapter_desc;
 			if (SUCCEEDED(dxgi_device->GetAdapter(dxgi_adapter.put())) && SUCCEEDED(dxgi_adapter->GetDesc(&adapter_desc)))
+			{
 				nvidia_vendor = (adapter_desc.VendorId == 0x10DE);
+				amd_vendor = ((adapter_desc.VendorId == 0x1002) || (adapter_desc.VendorId == 0x1022));
+			}
 		}
 	}
 
@@ -129,6 +132,10 @@ bool GSDevice11::Create(HostDisplay* display)
 		// Note: It can cause issues on several games such as SOTC, Fatal Frame, plus it adds border offset.
 		const bool disable_safe_features = theApp.GetConfigB("UserHacks") && theApp.GetConfigB("UserHacks_Disable_Safe_Features");
 		m_hack_topleft_offset = (m_upscale_multiplier != 1 && nvidia_vendor && !disable_safe_features) ? -0.01f : 0.0f;
+
+		// HACK: check AMD
+		// Broken point sampler should be enabled only on AMD.
+		m_features.broken_point_sampler = amd_vendor;
 	}
 
 	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/dx11/tfx.fx");
