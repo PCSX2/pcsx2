@@ -70,14 +70,14 @@ GSRendererSW::GSRendererSW(int threads)
 
 GSRendererSW::~GSRendererSW()
 {
+	// Need to destroy worker queue first to stop any pending thread work
+	delete m_rl;
 	delete m_tc;
 
 	for (GSTexture* tex : m_texture)
 	{
 		delete tex;
 	}
-
-	delete m_rl;
 
 	_aligned_free(m_output);
 }
