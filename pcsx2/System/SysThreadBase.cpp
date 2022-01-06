@@ -333,15 +333,11 @@ bool SysThreadBase::StateCheckInThread()
 			if (m_ExecMode != ExecMode_Closing)
 			{
 #ifndef PCSX2_CORE
-				if (g_CDVDReset)
-					// AppCoreThread deals with Reseting CDVD
-					// Reinit all but GS, USB, DEV9, CDVD (just like with isSuspend = false previously)
-					OnResumeInThread(static_cast<SystemsMask>(~(System_GS|System_USB|System_DEV9|System_CDVD)));
-				else
-					// Reinit previously torn down systems
-					OnResumeInThread(systemsToTearDown);
-					
+				// AppCoreThread deals with Reseting CDVD
+				OnResumeInThread(g_CDVDReset ? static_cast<SystemsMask>(systemsToTearDown & ~(System_CDVD)) : systemsToTearDown);
 				g_CDVDReset = false;
+#else
+				OnResumeInThread(systemsToTearDown);
 #endif
 				break;
 			}
