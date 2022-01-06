@@ -1147,6 +1147,7 @@ __fi void cdvdReadInterrupt()
 			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			cdvd.WaitingDMA = false;
 			cdvdSetIrq();
+			return;
 		}
 	}
 
