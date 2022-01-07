@@ -74,40 +74,8 @@ void SaveStateBase::vif1Freeze()
 __fi void vif0FBRST(u32 value)
 {
 	VIF_LOG("VIF0_FBRST write32 0x%8.8x", value);
-
-	if (value & 0x1) // Reset Vif.
-	{
-		//Console.WriteLn("Vif0 Reset %x", vif0Regs.stat._u32);
-		u128 SaveCol;
-		u128 SaveRow;
-
-		//	if(vif0ch.chcr.STR) DevCon.Warning("FBRST While Vif0 active");
-		//Must Preserve Row/Col registers! (Downhill Domination for testing)
-		SaveCol._u64[0] = vif0.MaskCol._u64[0];
-		SaveCol._u64[1] = vif0.MaskCol._u64[1];
-		SaveRow._u64[0] = vif0.MaskRow._u64[0];
-		SaveRow._u64[1] = vif0.MaskRow._u64[1];
-		memzero(vif0);
-		vif0.MaskCol._u64[0] = SaveCol._u64[0];
-		vif0.MaskCol._u64[1] = SaveCol._u64[1];
-		vif0.MaskRow._u64[0] = SaveRow._u64[0];
-		vif0.MaskRow._u64[1] = SaveRow._u64[1];
-		vif0ch.qwc = 0; //?
-		cpuRegs.interrupt &= ~1; //Stop all vif0 DMA's
-		psHu64(VIF0_FIFO) = 0;
-		psHu64(VIF0_FIFO + 8) = 0;
-		vif0.vifstalled.enabled = false;
-		vif0.irqoffset.enabled = false;
-		vif0.inprogress = 0;
-		vif0.cmd = 0;
-		vif0.done = true;
-		vif0ch.chcr.STR = false;
-		vif0Regs.err.reset();
-		vif0Regs.stat.clear_flags(VIF0_STAT_FQC | VIF0_STAT_INT | VIF0_STAT_VSS | VIF0_STAT_VIS | VIF0_STAT_VFS | VIF0_STAT_VPS); // FQC=0
-	}
-
 	/* Fixme: Forcebreaks are pretty unknown for operation, presumption is it just stops it what its doing
-	          usually accompanied by a reset, but if we find a broken game which falls here, we need to see it! (Refraction) */
+			  usually accompanied by a reset, but if we find a broken game which falls here, we need to see it! (Refraction) */
 	if (value & 0x2) // Forcebreak Vif,
 	{
 		/* I guess we should stop the VIF dma here, but not 100% sure (linuz) */
@@ -145,11 +113,105 @@ __fi void vif0FBRST(u32 value)
 				CPU_INT(DMAC_VIF0, 0); // Gets the timing right - Flatout
 		}
 	}
+
+	if (value & 0x1) // Reset Vif.
+	{
+		//Console.WriteLn("Vif0 Reset %x", vif0Regs.stat._u32);
+		u128 SaveCol;
+		u128 SaveRow;
+
+		//	if(vif0ch.chcr.STR) DevCon.Warning("FBRST While Vif0 active");
+		//Must Preserve Row/Col registers! (Downhill Domination for testing)
+		SaveCol._u64[0] = vif0.MaskCol._u64[0];
+		SaveCol._u64[1] = vif0.MaskCol._u64[1];
+		SaveRow._u64[0] = vif0.MaskRow._u64[0];
+		SaveRow._u64[1] = vif0.MaskRow._u64[1];
+		memzero(vif0);
+		vif0.MaskCol._u64[0] = SaveCol._u64[0];
+		vif0.MaskCol._u64[1] = SaveCol._u64[1];
+		vif0.MaskRow._u64[0] = SaveRow._u64[0];
+		vif0.MaskRow._u64[1] = SaveRow._u64[1];
+		vif0ch.qwc = 0; //?
+		cpuRegs.interrupt &= ~1; //Stop all vif0 DMA's
+		psHu64(VIF0_FIFO) = 0;
+		psHu64(VIF0_FIFO + 8) = 0;
+		vif0.vifstalled.enabled = false;
+		vif0.irqoffset.enabled = false;
+		vif0.inprogress = 0;
+		vif0.cmd = 0;
+		vif0.done = true;
+		vif0ch.chcr.STR = false;
+		vif0Regs.err.reset();
+		vif0Regs.stat.clear_flags(VIF0_STAT_FQC | VIF0_STAT_INT | VIF0_STAT_VSS | VIF0_STAT_VIS | VIF0_STAT_VFS | VIF0_STAT_VPS); // FQC=0
+	}
 }
 
 __fi void vif1FBRST(u32 value)
 {
 	VIF_LOG("VIF1_FBRST write32 0x%8.8x", value);
+
+	/* Fixme: Forcebreaks are pretty unknown for operation, presumption is it just stops it what its doing
+			  usually accompanied by a reset, but if we find a broken game which falls here, we need to see it! (Refraction) */
+
+	if (FBRST(value).FBK) // Forcebreak Vif.
+	{
+		/* I guess we should stop the VIF dma here, but not 100% sure (linuz) */
+		vif1Regs.stat.VFS = true;
+		vif1Regs.stat.VPS = VPS_IDLE;
+		cpuRegs.interrupt &= ~((1 << 1) | (1 << 10)); //Stop all vif1 DMA's
+		vif1.vifstalled.enabled = VifStallEnable(vif1ch);
+		vif1.vifstalled.value = VIF_IRQ_STALL;
+		Console.WriteLn("vif1 force break");
+	}
+
+	if (FBRST(value).STP) // Stop Vif.
+	{
+		// Not completely sure about this, can't remember what game used this, but 'draining' the VIF helped it, instead of
+		// just stoppin the VIF (linuz).
+		vif1Regs.stat.VSS = true;
+		vif1Regs.stat.VPS = VPS_IDLE;
+		vif1.vifstalled.enabled = VifStallEnable(vif1ch);
+		vif1.vifstalled.value = VIF_IRQ_STALL;
+	}
+
+	if (FBRST(value).STC) // Cancel Vif Stall.
+	{
+		bool cancel = false;
+		//DevCon.Warning("Cancel stall. Stat = %x", vif1Regs.stat._u32);
+		// Cancel stall, first check if there is a stall to cancel, and then clear VIF1_STAT VSS|VFS|VIS|INT|ER0|ER1 bits
+		if (vif1Regs.stat.test(VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS))
+		{
+			cancel = true;
+		}
+
+		vif1Regs.stat.clear_flags(VIF1_STAT_VSS | VIF1_STAT_VFS | VIF1_STAT_VIS |
+								  VIF1_STAT_INT | VIF1_STAT_ER0 | VIF1_STAT_ER1);
+
+		if (cancel)
+		{
+			g_vif1Cycles = 0;
+			// loop necessary for spiderman
+			switch (dmacRegs.ctrl.MFD)
+			{
+			case MFD_VIF1:
+				//Console.WriteLn("MFIFO Stall");
+				//MFIFO active and not empty
+				if (vif1ch.chcr.STR && !vif1Regs.stat.test(VIF1_STAT_FDR))
+					CPU_INT(DMAC_MFIFO_VIF, 0);
+				break;
+
+			case NO_MFD:
+			case MFD_RESERVED:
+			case MFD_GIF: // Wonder if this should be with VIF?
+				// Gets the timing right - Flatout
+				if (vif1ch.chcr.STR && !vif1Regs.stat.test(VIF1_STAT_FDR))
+					CPU_INT(DMAC_VIF1, 0);
+				break;
+			}
+
+			//vif1ch.chcr.STR = true;
+		}
+	}
 
 	if (FBRST(value).RST) // Reset Vif.
 	{
@@ -177,69 +239,6 @@ __fi void vif1FBRST(u32 value)
 		vif1.cmd = 0;
 		vif1.vifstalled.enabled = false;
 		vif1Regs.stat._u32 = 0;
-	}
-
-	/* Fixme: Forcebreaks are pretty unknown for operation, presumption is it just stops it what its doing
-	          usually accompanied by a reset, but if we find a broken game which falls here, we need to see it! (Refraction) */
-
-	if (FBRST(value).FBK) // Forcebreak Vif.
-	{
-		/* I guess we should stop the VIF dma here, but not 100% sure (linuz) */
-		vif1Regs.stat.VFS = true;
-		vif1Regs.stat.VPS = VPS_IDLE;
-		cpuRegs.interrupt &= ~((1 << 1) | (1 << 10)); //Stop all vif1 DMA's
-		vif1.vifstalled.enabled = VifStallEnable(vif1ch);
-		vif1.vifstalled.value = VIF_IRQ_STALL;
-		Console.WriteLn("vif1 force break");
-	}
-
-	if (FBRST(value).STP) // Stop Vif.
-	{
-		// Not completely sure about this, can't remember what game used this, but 'draining' the VIF helped it, instead of
-		//   just stoppin the VIF (linuz).
-		vif1Regs.stat.VSS = true;
-		vif1Regs.stat.VPS = VPS_IDLE;
-		vif1.vifstalled.enabled = VifStallEnable(vif1ch);
-		vif1.vifstalled.value = VIF_IRQ_STALL;
-	}
-
-	if (FBRST(value).STC) // Cancel Vif Stall.
-	{
-		bool cancel = false;
-		//DevCon.Warning("Cancel stall. Stat = %x", vif1Regs.stat._u32);
-		/* Cancel stall, first check if there is a stall to cancel, and then clear VIF1_STAT VSS|VFS|VIS|INT|ER0|ER1 bits */
-		if (vif1Regs.stat.test(VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS))
-		{
-			cancel = true;
-		}
-
-		vif1Regs.stat.clear_flags(VIF1_STAT_VSS | VIF1_STAT_VFS | VIF1_STAT_VIS |
-								  VIF1_STAT_INT | VIF1_STAT_ER0 | VIF1_STAT_ER1);
-
-		if (cancel)
-		{
-			g_vif1Cycles = 0;
-			// loop necessary for spiderman
-			switch (dmacRegs.ctrl.MFD)
-			{
-				case MFD_VIF1:
-					//Console.WriteLn("MFIFO Stall");
-					//MFIFO active and not empty
-					if (vif1ch.chcr.STR && !vif1Regs.stat.test(VIF1_STAT_FDR))
-						CPU_INT(DMAC_MFIFO_VIF, 0);
-					break;
-
-				case NO_MFD:
-				case MFD_RESERVED:
-				case MFD_GIF: // Wonder if this should be with VIF?
-					// Gets the timing right - Flatout
-					if (vif1ch.chcr.STR && !vif1Regs.stat.test(VIF1_STAT_FDR))
-						CPU_INT(DMAC_VIF1, 0);
-					break;
-			}
-
-			//vif1ch.chcr.STR = true;
-		}
 	}
 }
 
