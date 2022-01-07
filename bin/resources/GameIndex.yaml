@@ -4403,9 +4403,47 @@ SCPS-15063:
   name: "Popolocrois - The Law of the Moon"
   region: "NTSC-J"
 SCPS-15064:
-  name: "Ghost in the Shell - Stand Alone Complex"
+  name: "Koukaku Kidoutai - Stand Alone Complex"
   region: "NTSC-J"
   compat: 5
+  patches:
+    A5768F53:
+      content: |-
+        comment=Rearranging COP2 ops to avoid macflag bad stuff.
+        // Solves door problems, possibly other issues later on.
+        patch=0,EE,0010BC88,word,48468800
+        patch=0,EE,0010BC8C,word,4BEC682C
+        patch=0,EE,0010BC94,word,4B8D617D
+        patch=0,EE,0010BC98,word,4A0002FF
+        patch=0,EE,0012A2A8,word,48468800
+        patch=0,EE,0012A2AC,word,4BEC682C
+        patch=0,EE,0012A2B4,word,4B8D617D
+        patch=0,EE,0012A2B8,word,4A0002FF
+        patch=0,EE,0012A5D0,word,48468800
+        patch=0,EE,0012A5D4,word,4BEC682C
+        patch=0,EE,0012A5DC,word,4B8D617D
+        patch=0,EE,0012A5E0,word,4A0002FF
+        patch=0,EE,0012AA4C,word,48468800
+        patch=0,EE,0012AA50,word,4BEC682C
+        patch=0,EE,0012AA54,word,4B8D617D
+        patch=0,EE,0012AA58,word,4A6D617C
+        patch=0,EE,0012AA5C,word,4A0002FF
+        patch=0,EE,00163F38,word,48468800
+        patch=0,EE,00163F3C,word,4BEC682C
+        patch=0,EE,00163F44,word,4B8D617D
+        patch=0,EE,00163F48,word,4A0002FF
+        patch=0,EE,001AEB14,word,48468800
+        patch=0,EE,001AEB18,word,4BEC682C
+        patch=0,EE,001AEB1C,word,4BED617D
+        patch=0,EE,001AEB24,word,4A0002FF
+        patch=0,EE,001BD468,word,48588800
+        patch=0,EE,001BD474,word,4A5DEF40
+        patch=0,EE,001BD684,word,48588800
+        patch=0,EE,001BD690,word,4A5DEF40
+        patch=0,EE,001BDA24,word,48588800
+        patch=0,EE,001BDA30,word,4A5DEF40
+        patch=0,EE,001BDFE8,word,48588800
+        patch=0,EE,001BDFF4,word,4A5DEF40
 SCPS-15065:
   name: "SOCOM II - U.S. Navy SEALs"
   region: "NTSC-J"
