@@ -384,7 +384,7 @@ void GSPanel::OnResize(wxEvent& event)
 	g_gs_window_info.surface_height = height;
 	g_gs_window_info.surface_scale = scale;
 
-	Host::GSWindowResized(width, height);
+	Host::GSWindowResized(width, height, scale);
 }
 
 void GSPanel::OnMouseEvent( wxMouseEvent& evt )

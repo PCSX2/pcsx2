@@ -178,12 +178,14 @@ static std::atomic_bool s_gs_window_resized{false};
 static std::mutex s_gs_window_resized_lock;
 static int s_new_gs_window_width = 0;
 static int s_new_gs_window_height = 0;
+static float s_new_gs_window_scale = 1;
 
-void Host::GSWindowResized(int width, int height)
+void Host::GSWindowResized(int width, int height, float scale)
 {
 	std::unique_lock lock(s_gs_window_resized_lock);
 	s_new_gs_window_width = width;
 	s_new_gs_window_height = height;
+	s_new_gs_window_scale = scale;
 	s_gs_window_resized.store(true);
 }
 
@@ -193,17 +195,19 @@ void Host::CheckForGSWindowResize()
 		return;
 
 	int width, height;
+	float scale;
 	{
 		std::unique_lock lock(s_gs_window_resized_lock);
 		width = s_new_gs_window_width;
 		height = s_new_gs_window_height;
+		scale = s_new_gs_window_scale;
 		s_gs_window_resized.store(false);
 	}
 
 	if (!s_host_display)
 		return;
 
-	s_host_display->ResizeRenderWindow(width, height, s_host_display ? s_host_display->GetWindowScale() : 1.0f);
+	s_host_display->ResizeRenderWindow(width, height, scale);
 	ImGuiManager::WindowResized();
 }
 
