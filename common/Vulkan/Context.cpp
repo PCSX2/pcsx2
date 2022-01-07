@@ -460,6 +460,8 @@ namespace Vulkan
 
 		m_optional_extensions.vk_ext_provoking_vertex =
 			SupportsExtension(VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME, false);
+		m_optional_extensions.vk_ext_memory_budget =
+			SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
 
 		return true;
 	}
@@ -675,6 +677,9 @@ namespace Vulkan
 		ci.physicalDevice = m_physical_device;
 		ci.device = m_device;
 		ci.instance = m_instance;
+
+		if (m_optional_extensions.vk_ext_memory_budget)
+			ci.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
 
 		VkResult res = vmaCreateAllocator(&ci, &m_allocator);
 		if (res != VK_SUCCESS)
@@ -1137,6 +1142,9 @@ namespace Vulkan
 		m_current_command_buffer = resources.command_buffers[1];
 		resources.fence_counter = m_next_fence_counter++;
 		resources.init_buffer_used = false;
+
+		// using the lower 32 bits of the fence index should be sufficient here, I hope...
+		vmaSetCurrentFrameIndex(m_allocator, static_cast<u32>(m_next_fence_counter));
 	}
 
 	void Context::ExecuteCommandBuffer(bool wait_for_completion)

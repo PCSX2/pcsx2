@@ -88,6 +88,7 @@ namespace Vulkan
 
 		VmaAllocationCreateInfo aci = {};
 		aci.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+		aci.flags = VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT;
 
 		VkImage image = VK_NULL_HANDLE;
 		VmaAllocation allocation = VK_NULL_HANDLE;
