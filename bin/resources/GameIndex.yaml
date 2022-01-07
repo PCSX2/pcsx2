@@ -3145,6 +3145,9 @@ SCES-54145:
   name: "Lemmings"
   region: "PAL-M10"
   compat: 5
+SCES-54148:
+  name: "Eyetoy Kinetic Combat"
+  region: "PAL-M5"
 SCES-54191:
   name: "SingStar Legends [Promo]"
   region: "PAL-E"
@@ -4347,6 +4350,13 @@ SCPS-15051:
 SCPS-15052:
   name: "Saints Seinaru Mamono"
   region: "NTSC-J"
+  roundModes:
+    vuRoundMode: 1 # Fixes SPS.
+    eeRoundMode: 0 # Fixes textures on the doors.
+  clampModes:
+    vuClampMode: 0 # Fix other SPS.
+  gameFixes:
+    - VUKickstartHack # Fixes objects disappearing.
 SCPS-15053:
   name: "Siren"
   region: "NTSC-J"
@@ -4403,9 +4413,47 @@ SCPS-15063:
   name: "Popolocrois - The Law of the Moon"
   region: "NTSC-J"
 SCPS-15064:
-  name: "Ghost in the Shell - Stand Alone Complex"
+  name: "Koukaku Kidoutai - Stand Alone Complex"
   region: "NTSC-J"
   compat: 5
+  patches:
+    A5768F53:
+      content: |-
+        comment=Rearranging COP2 ops to avoid macflag bad stuff.
+        // Solves door problems, possibly other issues later on.
+        patch=0,EE,0010BC88,word,48468800
+        patch=0,EE,0010BC8C,word,4BEC682C
+        patch=0,EE,0010BC94,word,4B8D617D
+        patch=0,EE,0010BC98,word,4A0002FF
+        patch=0,EE,0012A2A8,word,48468800
+        patch=0,EE,0012A2AC,word,4BEC682C
+        patch=0,EE,0012A2B4,word,4B8D617D
+        patch=0,EE,0012A2B8,word,4A0002FF
+        patch=0,EE,0012A5D0,word,48468800
+        patch=0,EE,0012A5D4,word,4BEC682C
+        patch=0,EE,0012A5DC,word,4B8D617D
+        patch=0,EE,0012A5E0,word,4A0002FF
+        patch=0,EE,0012AA4C,word,48468800
+        patch=0,EE,0012AA50,word,4BEC682C
+        patch=0,EE,0012AA54,word,4B8D617D
+        patch=0,EE,0012AA58,word,4A6D617C
+        patch=0,EE,0012AA5C,word,4A0002FF
+        patch=0,EE,00163F38,word,48468800
+        patch=0,EE,00163F3C,word,4BEC682C
+        patch=0,EE,00163F44,word,4B8D617D
+        patch=0,EE,00163F48,word,4A0002FF
+        patch=0,EE,001AEB14,word,48468800
+        patch=0,EE,001AEB18,word,4BEC682C
+        patch=0,EE,001AEB1C,word,4BED617D
+        patch=0,EE,001AEB24,word,4A0002FF
+        patch=0,EE,001BD468,word,48588800
+        patch=0,EE,001BD474,word,4A5DEF40
+        patch=0,EE,001BD684,word,48588800
+        patch=0,EE,001BD690,word,4A5DEF40
+        patch=0,EE,001BDA24,word,48588800
+        patch=0,EE,001BDA30,word,4A5DEF40
+        patch=0,EE,001BDFE8,word,48588800
+        patch=0,EE,001BDFF4,word,4A5DEF40
 SCPS-15065:
   name: "SOCOM II - U.S. Navy SEALs"
   region: "NTSC-J"
@@ -7146,6 +7194,9 @@ SLED-52474:
 SLED-52476:
   name: "UEFA Euro 2004 - Portugal [Demo]"
   region: "PAL-M5"
+SLED-52485:
+  name: "Alias [Demo]"
+  region: "PAL-E"
 SLED-52488:
   name: "Suffering, The [Demo]"
   region: "PAL-E"
@@ -7315,6 +7366,8 @@ SLES-50036:
   name: "ESPN International Track & Field"
   region: "PAL-M3"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes call stack overflow and blue screen ingame.
 SLES-50037:
   name: "Silent Scope"
   region: "PAL-M5"
@@ -8031,18 +8084,28 @@ SLES-50366:
 SLES-50371:
   name: "Star Wars - Jedi Starfighter"
   region: "PAL-E"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS on main menu.
 SLES-50372:
   name: "Star Wars - Jedi Starfighter"
   region: "PAL-G"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS on main menu.
 SLES-50373:
   name: "Star Wars - Jedi Starfighter"
   region: "PAL-F"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS on main menu.
 SLES-50374:
   name: "Star Wars - Jedi Starfighter"
   region: "PAL-I"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS on main menu.
 SLES-50375:
   name: "Star Wars - Jedi Starfighter"
   region: "PAL-S"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS on main menu.
 SLES-50382:
   name: "Silent Hill 2"
   region: "PAL-M6"
@@ -22446,6 +22509,11 @@ SLPM-65199:
 SLPM-65200:
   name: "Shinobi"
   region: "NTSC-J"
+SLPM-65201:
+  name: "Star Wars - Jedi Starfighter"
+  region: "NTSC-J"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS on menu.
 SLPM-65202:
   name: "K-1 World Grand Prix 2002"
   region: "NTSC-J"
@@ -30021,6 +30089,11 @@ SLPS-25145:
 SLPS-25146:
   name: "Hooligan"
   region: "NTSC-J"
+SLPS-25147:
+  name: "Star Wars - Jedi Starfighter"
+  region: "NTSC-J"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS on menu.
 SLPS-25149:
   name: "Ever 17 - The Out of Infinity"
   region: "NTSC-J"
@@ -33198,6 +33271,8 @@ SLUS-20041:
   name: "ESPN International Track & Field"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes call stack overflow and blue screen ingame.
 SLUS-20042:
   name: "LEGO Racers 2"
   region: "NTSC-U"
@@ -34127,6 +34202,8 @@ SLUS-20293:
   name: "Star Wars - Jedi Starfighter"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vuClampMode: 3 # Fixes SPS on main menu.
 SLUS-20294:
   name: "Gitaroo Man"
   region: "NTSC-U"
