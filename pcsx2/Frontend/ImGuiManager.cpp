@@ -66,7 +66,7 @@ bool ImGuiManager::Initialize()
 
 	s_global_scale = std::max(1.0f, display->GetWindowScale() * static_cast<float>(EmuConfig.GS.OsdScale / 100.0));
 
-	ImGui::GetIO().DisplayFramebufferScale = ImVec2(display->GetWindowScale(), display->GetWindowScale());
+	ImGui::GetIO().DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
 	ImGui::GetIO().DisplaySize.x = static_cast<float>(display->GetWindowWidth());
 	ImGui::GetIO().DisplaySize.y = static_cast<float>(display->GetWindowHeight());
 	ImGui::GetStyle() = ImGuiStyle();
@@ -111,18 +111,18 @@ void ImGuiManager::WindowResized()
 
 	const u32 new_width = display ? display->GetWindowWidth() : 0;
 	const u32 new_height = display ? display->GetWindowHeight() : 0;
-	const float new_scale = (display ? display->GetWindowScale() : 1.0f);
 
 	ImGui::GetIO().DisplaySize = ImVec2(static_cast<float>(new_width), static_cast<float>(new_height));
-	ImGui::GetIO().DisplayFramebufferScale = ImVec2(new_scale, new_scale);
 
 	UpdateScale();
 }
 
 void ImGuiManager::UpdateScale()
 {
-	const float scale =
-		std::max(ImGui::GetIO().DisplayFramebufferScale.x * static_cast<float>(EmuConfig.GS.OsdScale / 100.0), 1.0f);
+	HostDisplay* display = Host::GetHostDisplay();
+	const float window_scale = display ? display->GetWindowScale() : 1.0f;
+	const float scale = std::max(window_scale * static_cast<float>(EmuConfig.GS.OsdScale / 100.0), 1.0f);
+
 	if (scale == s_global_scale)
 		return;
 
@@ -130,8 +130,6 @@ void ImGuiManager::UpdateScale()
 	ImGui::EndFrame();
 
 	s_global_scale = scale;
-
-	HostDisplay* display = Host::GetHostDisplay();
 
 	ImGui::GetStyle() = ImGuiStyle();
 	ImGui::GetStyle().WindowMinSize = ImVec2(1.0f, 1.0f);
