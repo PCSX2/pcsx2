@@ -17,6 +17,7 @@
 #include "common/Vulkan/Context.h"
 #include "common/Vulkan/Util.h"
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include <algorithm>
 
 static constexpr VkComponentMapping s_identity_swizzle{VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
@@ -89,12 +90,18 @@ namespace Vulkan
 		VmaAllocationCreateInfo aci = {};
 		aci.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 		aci.flags = VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT;
+		aci.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
 		VkImage image = VK_NULL_HANDLE;
 		VmaAllocation allocation = VK_NULL_HANDLE;
 		VkResult res =
 			vmaCreateImage(g_vulkan_context->GetAllocator(), &image_info, &aci, &image, &allocation, nullptr);
-		if (res != VK_SUCCESS)
+		if (res == VK_ERROR_OUT_OF_DEVICE_MEMORY)
+		{
+			DevCon.WriteLn("Failed to allocate device memory for %ux%u texture", width, height);
+			return false;
+		}
+		else if (res != VK_SUCCESS)
 		{
 			LOG_VULKAN_ERROR(res, "vmaCreateImage failed: ");
 			return false;
