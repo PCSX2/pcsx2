@@ -74,6 +74,9 @@
 'GS: OpenGL':
   - 'pcsx2/GS/Renderers/OpenGL/*'
   - 'pcsx2/GS/Renderers/OpenGL/**/*'
+'GS: Vulkan':
+  - 'pcsx2/GS/Renderers/Vulkan/*'
+  - 'pcsx2/GS/Renderers/Vulkan/**/*'
 'GS: Texture Cache':
   - 'pcsx2/GS/Renderers/*TextureCache*.*'
   - 'pcsx2/GS/Renderers/**/*TextureCache*.*'
