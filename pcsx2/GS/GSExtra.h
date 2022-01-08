@@ -111,7 +111,23 @@ static const GSVector2i default_rt_size(1280, 1024);
 #endif
 
 // Maximum texture size to skip preload/hash path.
-static constexpr int MAXIMUM_PRELOAD_TEXTURE_SIZE = 512;
+// This is the width/height from the registers, i.e. not the power of 2.
+__fi static bool CanPreloadTextureSize(u32 tw, u32 th)
+{
+	static constexpr u32 MAXIMUM_SIZE_IN_ONE_DIRECTION = 10; // 1024
+	static constexpr u32 MAXIMUM_SIZE_IN_OTHER_DIRECTION = 8; // 256
+	static constexpr u32 MAXIMUM_SIZE_IN_BOTH_DIRECTIONS = 9; // 512
+
+	// We use an area-based approach here. We want to hash long font maps,
+	// like 128x1024 (used in FFX), but skip 1024x512 textures (e.g. Xenosaga).
+	const u32 max_dimension = (tw > th) ? tw : th;
+	const u32 min_dimension = (tw > th) ? th : tw;
+	if (max_dimension <= MAXIMUM_SIZE_IN_BOTH_DIRECTIONS)
+		return true;
+
+	return (max_dimension <= MAXIMUM_SIZE_IN_ONE_DIRECTION &&
+			min_dimension <= MAXIMUM_SIZE_IN_OTHER_DIRECTION);
+}
 
 // Maximum number of mipmap levels for a texture.
 // PS2 has a max of 7 levels (1 base + 6 mips).

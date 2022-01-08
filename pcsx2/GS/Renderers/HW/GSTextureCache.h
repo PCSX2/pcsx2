@@ -100,16 +100,18 @@ public:
 
 	class Source : public Surface
 	{
+	public:
+		using HashType = u64;
+
+	private:
 		struct
 		{
 			GSVector4i* rect;
 			u32 count;
 		} m_write;
 
-		using HashType = u64;
-
-		HashType HashTexture(u8* buff, u32 row_size, u32 pitch, u32 height);
-		void PreloadUpdate(int tw, int th, int layer);
+		void PreloadLevel(int level);
+		void PreloadSmallLevel(int level);
 
 		void Write(const GSVector4i& r, int layer);
 		void Flush(u32 count, int layer);
@@ -120,8 +122,8 @@ public:
 		u32 m_valid[MAX_PAGES]; // each u32 bits map to the 32 blocks of that page
 		GSVector4i m_valid_rect;
 		u8 m_valid_hashes = 0;
+		u8 m_complete_layers = 0;
 		bool m_target;
-		bool m_complete;
 		bool m_repeating;
 		std::vector<GSVector2i>* m_p2t;
 		// Keep a trace of the target origin. There is no guarantee that pointer will
@@ -138,6 +140,8 @@ public:
 	public:
 		Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, u8* temp, bool dummy_container = false);
 		virtual ~Source();
+
+		__fi bool CanPreload() const { return (GSConfig.PreloadTexture && CanPreloadTextureSize(m_TEX0.TW, m_TEX0.TH)); }
 
 		void Update(const GSVector4i& rect, int layer = 0);
 		void UpdateLayer(const GIFRegTEX0& TEX0, const GSVector4i& rect, int layer = 0);
