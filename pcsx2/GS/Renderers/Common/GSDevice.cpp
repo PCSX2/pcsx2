@@ -154,6 +154,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int w, int h, bool mipma
 	switch (type)
 	{
 	case GSTexture::Type::RenderTarget:
+	case GSTexture::Type::SparseRenderTarget:
 		{
 			if (clear)
 				ClearRenderTarget(t, 0);
@@ -162,6 +163,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int w, int h, bool mipma
 		}
 		break;
 	case GSTexture::Type::DepthStencil:
+	case GSTexture::Type::SparseDepthStencil:
 		{
 			if (clear)
 				ClearDepth(t);
