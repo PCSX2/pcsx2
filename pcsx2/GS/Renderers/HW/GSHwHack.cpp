@@ -129,26 +129,6 @@ bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_WildArmsGames(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (fi.TME && fi.FBP == 0x03100 && fi.FPSM == PSM_PSMZ32 && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMZ32)
-		{
-			skip = 100;
-		}
-	}
-	else
-	{
-		if (fi.TME && fi.FBP == 0x00e00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x02a00 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 // Channel effect not properly supported yet
 bool GSC_Manhunt2(const GSFrameInfo& fi, int& skip)
 {
@@ -1028,8 +1008,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::TombRaiderLegend] = GSC_TombRaiderLegend;
 		lut[CRC::TombRaiderUnderworld] = GSC_TombRaiderUnderWorld;
 		lut[CRC::UrbanReign] = GSC_UrbanReign;
-		lut[CRC::WildArms4] = GSC_WildArmsGames;
-		lut[CRC::WildArms5] = GSC_WildArmsGames;
 		lut[CRC::ZettaiZetsumeiToshi2] = GSC_ZettaiZetsumeiToshi2;
 
 		// Channel Effect

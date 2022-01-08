@@ -139,8 +139,6 @@ public:
 		UrbanReign,
 		ValkyrieProfile2,
 		Whiplash,
-		WildArms4,
-		WildArms5,
 		XenosagaE3,
 		Yakuza,
 		Yakuza2,
