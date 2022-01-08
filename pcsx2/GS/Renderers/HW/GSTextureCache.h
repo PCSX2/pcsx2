@@ -89,7 +89,7 @@ public:
 	struct PaletteKeyHash
 	{
 		// Calculate hash
-		std::size_t operator()(const PaletteKey& key) const;
+		u64 operator()(const PaletteKey& key) const;
 	};
 
 	struct PaletteKeyEqual
@@ -142,7 +142,7 @@ public:
 		void Update(const GSVector4i& rect, int layer = 0);
 		void UpdateLayer(const GIFRegTEX0& TEX0, const GSVector4i& rect, int layer = 0);
 
-		bool ClutMatch(PaletteKey palette_key);
+		bool ClutMatch(const PaletteKey& palette_key);
 	};
 
 	class Target : public Surface
