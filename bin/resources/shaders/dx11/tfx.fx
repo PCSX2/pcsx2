@@ -707,6 +707,14 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 {
 	if (SW_BLEND)
 	{
+		// PABE
+		if (PS_PABE)
+		{
+			// No blending so early exit
+			if (As < 1.0f)
+				return;
+		}
+
 		float4 RT = trunc(RtSampler.Load(int3(pos_xy, 0)) * 255.0f + 0.1f);
 
 		float Ad = (PS_DFMT == FMT_24) ? 1.0f : RT.a / 128.0f;
@@ -724,10 +732,6 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 			C = min(C, (float)1.0f);
 
 		Color.rgb = (PS_BLEND_A == PS_BLEND_B) ? D : trunc(((A - B) * C) + D);
-
-		// PABE
-		if (PS_PABE)
-			Color.rgb = (As >= 1.0f) ? Color.rgb : Cs;
 	}
 }
 

@@ -989,11 +989,19 @@ void ps_color_clamp_wrap(inout vec3 C)
 void ps_blend(inout vec4 Color, float As)
 {
 	#if SW_BLEND
+
+		// PABE
+		#if PS_PABE
+				// No blending so early exit
+				if (As < 1.0f)
+					return;
+		#endif
+
 		#if PS_FEEDBACK_LOOP_IS_NEEDED
-			vec4 RT = trunc(subpassLoad(RtSampler) * 255.0f + 0.1f);
+				vec4 RT = trunc(subpassLoad(RtSampler) * 255.0f + 0.1f);
 		#else
-			// Not used, but we define it to make the selection below simpler.
-			vec4 RT = vec4(0.0f);
+				// Not used, but we define it to make the selection below simpler.
+				vec4 RT = vec4(0.0f);
 		#endif
 
 		#if PS_DFMT == FMT_24
@@ -1049,11 +1057,6 @@ void ps_blend(inout vec4 Color, float As)
 				Color.rgb = D;
 		#else
 				Color.rgb = trunc((A - B) * C + D);
-		#endif
-
-				// PABE
-		#if PS_PABE
-				Color.rgb = (As >= 1.0f) ? Color.rgb : Cs;
 		#endif
 
 	#endif

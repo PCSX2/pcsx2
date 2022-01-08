@@ -656,6 +656,14 @@ void ps_color_clamp_wrap(inout vec3 C)
 void ps_blend(inout vec4 Color, float As)
 {
 #if SW_BLEND
+
+    // PABE
+#if PS_PABE
+    // No blending so early exit
+    if (As < 1.0f)
+        return;
+#endif
+
     vec4 RT = trunc(texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0) * 255.0f + 0.1f);
 
 #if PS_DFMT == FMT_24
@@ -711,11 +719,6 @@ void ps_blend(inout vec4 Color, float As)
     Color.rgb = D;
 #else
     Color.rgb = trunc((A - B) * C + D);
-#endif
-
-    // PABE
-#if PS_PABE
-    Color.rgb = (As >= 1.0f) ? Color.rgb : Cs;
 #endif
 
 #endif
