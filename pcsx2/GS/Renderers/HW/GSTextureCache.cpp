@@ -888,21 +888,24 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					{
 						u32* RESTRICT valid = s->m_valid;
 
-						// Invalidate data of input texture
-						if (s->m_repeating)
+						if (!s->CanPreload())
 						{
-							// Note: very hot path on snowbling engine game
-							for (const GSVector2i& k : s->m_p2t[page])
+							// Invalidate data of input texture
+							if (s->m_repeating)
 							{
-								valid[k.x] &= k.y;
+								// Note: very hot path on snowbling engine game
+								for (const GSVector2i& k : s->m_p2t[page])
+								{
+									valid[k.x] &= k.y;
+								}
+							}
+							else
+							{
+								valid[page] = 0;
 							}
 						}
-						else
-						{
-							valid[page] = 0;
-						}
 
-						s->m_complete = false;
+						s->m_complete_layers = 0;
 
 						found |= b;
 					}
@@ -1212,7 +1215,8 @@ void GSTextureCache::InvalidateVideoMemSubTarget(GSTextureCache::Target* rt)
 
 void GSTextureCache::IncAge()
 {
-	int maxage = GSConfig.PreloadTexture ? (m_src.m_used ? 30 : 60) : (m_src.m_used ? 3 : 6);
+	const int max_age = m_src.m_used ? 3 : 6;
+	const int max_preload_age = m_src.m_used ? 30 : 60;
 
 	// You can't use m_map[page] because Source* are duplicated on several pages.
 	for (auto i = m_src.m_surfaces.begin(); i != m_src.m_surfaces.end();)
@@ -1229,7 +1233,7 @@ void GSTextureCache::IncAge()
 		else
 		{
 			++i;
-			if (++s->m_age > maxage)
+			if (++s->m_age > (s->CanPreload() ? max_preload_age : max_age))
 			{
 				m_src.RemoveAt(s);
 			}
@@ -1242,7 +1246,7 @@ void GSTextureCache::IncAge()
 	// Sigh, this seems to be used to invalidate surfaces. So set a huge maxage to avoid flicker,
 	// but still invalidate surfaces. (Disgaea 2 fmv when booting the game through the BIOS)
 	// Original maxage was 4 here, Xenosaga 2 needs at least 240, else it flickers on scene transitions.
-	maxage = 400; // ffx intro scene changes leave the old image untouched for a couple of frames and only then start using it
+	static constexpr int max_rt_age = 400; // ffx intro scene changes leave the old image untouched for a couple of frames and only then start using it
 
 	for (int type = 0; type < 2; type++)
 	{
@@ -1261,7 +1265,7 @@ void GSTextureCache::IncAge()
 				t->m_32_bits_fmt = false;
 			}
 
-			if (++t->m_age > maxage)
+			if (++t->m_age > max_rt_age)
 			{
 				i = list.erase(i);
 				GL_CACHE("TC: Remove Target(%s): %d (0x%x) due to age", to_string(type),
@@ -1845,7 +1849,6 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 	, m_palette(nullptr)
 	, m_valid_rect(0, 0)
 	, m_target(false)
-	, m_complete(false)
 	, m_p2t(NULL)
 	, m_from_target(NULL)
 	, m_from_target_TEX0(TEX0)
@@ -1874,7 +1877,7 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 
 		m_repeating = m_TEX0.IsRepeating();
 
-		if (m_repeating)
+		if (m_repeating && !CanPreload())
 		{
 			m_p2t = r->m_mem.GetPage2TileMap(m_TEX0);
 		}
@@ -1888,32 +1891,26 @@ GSTextureCache::Source::~Source()
 	_aligned_free(m_write.rect);
 }
 
-void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
+void GSTextureCache::Source::Update(const GSVector4i& rect, int level)
 {
 	Surface::UpdateAge();
 
-	if (layer == 0 && (m_complete || m_target))
+	if (m_target || (m_complete_layers & (1u << level)))
+		return;
+
+	if (CanPreload())
 	{
+		PreloadLevel(level);
 		return;
 	}
 
 	const GSVector2i& bs = GSLocalMemory::m_psm[m_TEX0.PSM].bs;
-
 	const int tw = 1 << m_TEX0.TW;
 	const int th = 1 << m_TEX0.TH;
-	const bool preload = (GSConfig.PreloadTexture && (GSConfig.GPUPaletteConversion || (tw <= MAXIMUM_PRELOAD_TEXTURE_SIZE && th <= MAXIMUM_PRELOAD_TEXTURE_SIZE)));
-	if (preload)
-	{
-		PreloadUpdate(tw, th, layer);
-		return;
-	}
-
 	GSVector4i r = rect.ralign<Align_Outside>(bs);
 
-	if (layer == 0 && r.eq(GSVector4i(0, 0, tw, th)))
-	{
-		m_complete = true; // lame, but better than nothing
-	}
+	if (r.eq(GSVector4i(0, 0, tw, th)))
+		m_complete_layers |= (1u << level);
 
 	const GSOffset& off = m_renderer->m_context->offset.tex;
 	GSOffset::BNHelper bn = off.bnMulti(r.left, r.top);
@@ -1940,7 +1937,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 					{
 						m_valid[row] |= col;
 
-						Write(GSVector4i(x, y, x + bs.x, y + bs.y), layer);
+						Write(GSVector4i(x, y, x + bs.x, y + bs.y), level);
 
 						blocks++;
 					}
@@ -1967,7 +1964,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 					{
 						m_valid[row] |= col;
 
-						Write(GSVector4i(x, y, x + bs.x, y + bs.y), layer);
+						Write(GSVector4i(x, y, x + bs.x, y + bs.y), level);
 
 						blocks++;
 					}
@@ -1979,7 +1976,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 	if (blocks > 0)
 	{
 		g_perfmon.Put(GSPerfMon::Unswizzle, bs.x * bs.y * blocks << (m_palette ? 2 : 0));
-		Flush(m_write.count, layer);
+		Flush(m_write.count, level);
 	}
 }
 
@@ -2105,79 +2102,83 @@ void GSTextureCache::Source::Flush(u32 count, int layer)
 	m_write.count -= count;
 }
 
-GSTextureCache::Source::HashType GSTextureCache::Source::HashTexture(u8* buff, u32 row_size, u32 pitch, u32 height)
-{
-	if (row_size == pitch)
-	{
-		// fast path since it's all packed
-		return XXH3_64bits(buff, row_size * height);
-	}
+using BlockHashState = XXH3_state_t;
 
-	// slow path where we have to process rows-at-a-time
-	XXH3_state_t st;
+__fi static void BlockHashReset(BlockHashState& st)
+{
 	XXH3_64bits_reset(&st);
-	for (u32 row = 0; row < height; row++)
-	{
-		XXH3_64bits_update(&st, buff, row_size);
-		buff += pitch;
-	}
+}
+
+__fi static void BlockHashAccumulate(BlockHashState& st, const u8* bp)
+{
+	XXH3_64bits_update(&st, bp, BLOCK_SIZE);
+}
+
+__fi static void BlockHashAccumulate(BlockHashState& st, const u8* bp, u32 size)
+{
+	XXH3_64bits_update(&st, bp, size);
+}
+
+__fi static GSTextureCache::Source::HashType FinishBlockHash(BlockHashState& st)
+{
 	return XXH3_64bits_digest(&st);
 }
 
-void GSTextureCache::Source::PreloadUpdate(int tw, int th, int layer)
+void GSTextureCache::Source::PreloadLevel(int level)
 {
-	const GSVector2i& bs = GSLocalMemory::m_psm[m_TEX0.PSM].bs;
-	const GSOffset& off = m_renderer->m_context->offset.tex;
+	// m_TEX0 is adjusted for mips (messy, should be changed).
+	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_TEX0.PSM];
+	const GSVector2i& bs = psm.bs;
+	const int tw = 1 << m_TEX0.TW;
+	const int th = 1 << m_TEX0.TH;
+
+	// For textures which are smaller than the block size, we expand and then hash.
+	// This is because otherwise we get the padding bytes, which can be random junk.
+	if (tw < bs.x || th < bs.y)
+	{
+		PreloadSmallLevel(level);
+		return;
+	}
+
+	// From GSLocalMemory foreachBlock(), used for reading textures.
+	// We want to hash the exact same blocks here.
 	const GSVector4i rect(0, 0, tw, th);
 	const GSVector4i block_rect(rect.ralign<Align_Outside>(bs));
-	GSOffset::BNHelper bn = off.bnMulti(0, 0);
-
-	// flag everything as valid
-	if (m_repeating)
+	const GSOffset& off = m_renderer->m_context->offset.tex;
+	GSLocalMemory& mem = m_renderer->m_mem;
+	HashType hash;
 	{
-		for (int y = block_rect.top; y < block_rect.bottom; y += bs.y, bn.nextBlockY())
+		BlockHashState hash_st;
+		BlockHashReset(hash_st);
+
+		GSOffset::BNHelper bn = off.bnMulti(block_rect.left, block_rect.top);
+		const int right = block_rect.right >> off.blockShiftX();
+		const int bottom = block_rect.bottom >> off.blockShiftY();
+		const int xAdd = (1 << off.blockShiftX()) * (psm.bpp / 8);
+
+		for (; bn.blkY() < bottom; bn.nextBlockY())
 		{
-			for (int x = block_rect.left; x < block_rect.right; bn.nextBlockX(), x += bs.x)
+			for (int x = 0; bn.blkX() < right; bn.nextBlockX(), x += xAdd)
 			{
-				const u32 i = static_cast<u32>((bn.blkY() << 7) + bn.blkX());
-				u32 block = bn.valueNoWrap();
-
-				if (block < MAX_BLOCKS || m_wrap_gs_mem)
-				{
-					u32 addr = i % MAX_BLOCKS;
-
-					u32 row = addr >> 5u;
-					u32 col = 1 << (addr & 31u);
-					m_valid[row] |= col;
-				}
+				BlockHashAccumulate(hash_st, mem.BlockPtr(bn.value()));
 			}
 		}
-	}
-	else
-	{
-		for (int y = block_rect.top; y < block_rect.bottom; y += bs.y, bn.nextBlockY())
-		{
-			for (int x = block_rect.left; x < block_rect.right; x += bs.x, bn.nextBlockX())
-			{
-				u32 block = bn.valueNoWrap();
 
-				if (block < MAX_BLOCKS || m_wrap_gs_mem)
-				{
-					block %= MAX_BLOCKS;
-
-					u32 row = block >> 5u;
-					u32 col = 1 << (block & 31u);
-					m_valid[row] |= col;
-				}
-			}
-		}
+		hash = FinishBlockHash(hash_st);
 	}
 
-	if (layer == 0)
-		m_complete = true;
+	// Layer is complete again, regardless of whether the hash matches or not (and we reupload).
+	const u8 layer_bit = static_cast<u8>(1) << level;
+	m_complete_layers |= layer_bit;
 
-	// decode texture to temporary memory
-	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_TEX0.PSM];
+	// Check whether the hash matches. Black textures will be 0, so check the valid bit.
+	if ((m_valid_hashes & layer_bit) && m_layer_hash[level] == hash)
+		return;
+
+	m_valid_hashes |= layer_bit;
+	m_layer_hash[level] = hash;
+
+	// Expand texture/apply palette.
 	const int read_width = std::max(tw, psm.bs.x);
 	u32 pitch = static_cast<u32>(read_width) * sizeof(u32);
 	u32 row_size = static_cast<u32>(tw) * sizeof(u32);
@@ -2189,19 +2190,79 @@ void GSTextureCache::Source::PreloadUpdate(int tw, int th, int layer)
 		rtx = psm.rtxP;
 	}
 
+	// If we can stream it directly to GPU memory, do so, otherwise go through a temp buffer.
+	GSTexture::GSMap map;
+	if (rect.eq(block_rect) && m_texture->Map(map, &rect, level))
+	{
+		(m_renderer->m_mem.*rtx)(off, block_rect, map.bits, map.pitch, m_TEXA);
+		m_texture->Unmap();
+	}
+	else
+	{
+		u8* buff = m_temp;
+		(m_renderer->m_mem.*rtx)(off, block_rect, buff, pitch, m_TEXA);
+		m_texture->Update(rect, buff, pitch, level);
+	}
+}
+
+void GSTextureCache::Source::PreloadSmallLevel(int level)
+{
+	// m_TEX0 is adjusted for mips (messy, should be changed).
+	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_TEX0.PSM];
+	const GSVector2i& bs = psm.bs;
+	const int tw = 1 << m_TEX0.TW;
+	const int th = 1 << m_TEX0.TH;
+	const GSVector4i rect(0, 0, tw, th);
+	const GSVector4i block_rect(rect.ralign<Align_Outside>(bs));
+	const GSOffset& off = m_renderer->m_context->offset.tex;
+	GSLocalMemory& mem = m_renderer->m_mem;
+
+	// Expand texture/apply palette.
+	u32 pitch = static_cast<u32>(block_rect.z) * sizeof(u32);
+	u32 row_size = static_cast<u32>(tw) * sizeof(u32);
+	GSLocalMemory::readTexture rtx = psm.rtx;
+	if (m_palette)
+	{
+		pitch >>= 2;
+		row_size >>= 2;
+		rtx = psm.rtxP;
+	}
+
+	// Use temp buffer for expanding, since we may not need to update.
 	u8* buff = m_temp;
 	(m_renderer->m_mem.*rtx)(off, block_rect, buff, pitch, m_TEXA);
 
-	// hash the texture
-	const HashType hash = HashTexture(buff, row_size, pitch, static_cast<u32>(th));
-	const u8 layer_bit = static_cast<u8>(1) << layer;
-	if ((m_valid_hashes & layer_bit) && m_layer_hash[layer] == hash)
+	// Hash the expanded texture.
+	HashType hash;
+	{
+		u8* ptr = buff;
+		BlockHashState state;
+		BlockHashReset(state);
+		if (pitch == row_size)
+		{
+			BlockHashAccumulate(state, ptr, pitch * static_cast<u32>(th));
+		}
+		else
+		{
+			for (int y = 0; y < th; y++, ptr += pitch)
+				BlockHashAccumulate(state, ptr, row_size);
+		}
+		hash = FinishBlockHash(state);
+	}
+
+	// Layer is complete again, regardless of whether the hash matches or not (and we reupload).
+	const u8 layer_bit = static_cast<u8>(1) << level;
+	m_complete_layers |= layer_bit;
+
+	// Check whether the hash matches. Black textures will be 0, so check the valid bit.
+	if ((m_valid_hashes & layer_bit) && m_layer_hash[level] == hash)
 		return;
 
-	// reupload
 	m_valid_hashes |= layer_bit;
-	m_layer_hash[layer] = hash;
-	m_texture->Update(rect, buff, pitch, layer);
+	m_layer_hash[level] = hash;
+
+	// Upload to GPU.
+	m_texture->Update(rect, buff, pitch, level);
 }
 
 bool GSTextureCache::Source::ClutMatch(PaletteKey palette_key)
