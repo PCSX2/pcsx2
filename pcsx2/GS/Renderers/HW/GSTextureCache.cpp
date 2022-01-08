@@ -495,12 +495,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	return src;
 }
 
-void GSTextureCache::ScaleTexture(GSTexture* texture)
-{
-	if (texture)
-		texture->SetScale(m_renderer->GetTextureScaleFactor());
-}
-
 bool GSTextureCache::ShallSearchTextureInsideRt()
 {
 	return m_texture_inside_rt || (m_renderer->m_game.flags & CRC::Flags::TextureInsideRt);
@@ -509,9 +503,25 @@ bool GSTextureCache::ShallSearchTextureInsideRt()
 GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int type, bool used, u32 fbmask)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
-	u32 bp = TEX0.TBP0;
+	const GSVector2& new_s = m_renderer->GetTextureScaleFactor();
+	const u32 bp = TEX0.TBP0;
+	float res_w = 0, res_h = 0;
+	int new_w = 0, new_h = 0;
+	bool clear = true;
+	const auto& calcRescale = [w, h, new_s, &res_w, &res_h, &new_w, &new_h, &clear](const GSTexture* tex)
+	{
+		const GSVector2& old_s = tex->GetScale();
+		const GSVector2 ratio{ new_s.x / old_s.x, new_s.y / old_s.y };
+		const int old_w = tex->GetWidth();
+		const int old_h = tex->GetHeight();
+		res_w = static_cast<float>(old_w) * ratio.x;
+		res_h = static_cast<float>(old_h) * ratio.y;
+		new_w = std::max(static_cast<int>(std::ceil(res_w)), w);
+		new_h = std::max(static_cast<int>(std::ceil(res_h)), h);
+		clear = new_w != res_w || new_h != res_h;
+	};
 
-	Target* dst = NULL;
+	Target* dst = nullptr;
 
 	auto& list = m_dst[type];
 	for (auto i = list.begin(); i != list.end(); ++i)
@@ -534,6 +544,19 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	if (dst)
 	{
 		GL_CACHE("TC: Lookup Target(%s) %dx%d, hit: %d (0x%x, %s)", to_string(type), w, h, dst->m_texture->GetID(), bp, psm_str(TEX0.PSM));
+
+		const GSVector2& old_s = dst->m_texture->GetScale();
+		if (new_s != old_s)
+		{
+			calcRescale(dst->m_texture);
+			const GSVector4 sRect(0, 0, 1, 1);
+			const GSVector4 dRect(0.0f, 0.0f, res_w, res_h);
+			GSTexture* tex = type == RenderTarget ? g_gs_device->CreateSparseRenderTarget(new_w, new_h, GSTexture::Format::Color, clear) :
+				g_gs_device->CreateSparseDepthStencil(new_w, new_h, GSTexture::Format::DepthStencil, clear);
+			g_gs_device->StretchRect(dst->m_texture, sRect, tex, dRect, ShaderConvert::COPY, false);
+			g_gs_device->Recycle(dst->m_texture);
+			dst->m_texture = tex;
+		}
 
 		dst->Update();
 
@@ -565,19 +588,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 		if (dst_match)
 		{
-			const GSVector2& new_s = m_renderer->GetTextureScaleFactor();
-			const GSVector2& old_s = dst_match->m_texture->GetScale();
-			const GSVector2 ratio{ new_s.x / old_s.x, new_s.y / old_s.y };
-			const int old_w = dst_match->m_texture->GetWidth();
-			const int old_h = dst_match->m_texture->GetHeight();
-			const float res_w = static_cast<float>(old_w) * ratio.x;
-			const float res_h = static_cast<float>(old_h) * ratio.y;
-			const int new_w = std::max(static_cast<int>(std::ceil(res_w)), w);
-			const int new_h = std::max(static_cast<int>(std::ceil(res_h)), h);
+			calcRescale(dst_match->m_texture);
 			const GSVector4 sRect(0, 0, 1, 1);
 			const GSVector4 dRect(0.0f, 0.0f, res_w, res_h);
 
-			dst = CreateTarget(TEX0, new_w, new_h, type);
+			dst = CreateTarget(TEX0, new_w, new_h, type, clear);
 			dst->m_32_bits_fmt = dst_match->m_32_bits_fmt;
 
 			ShaderConvert shader;
@@ -596,11 +611,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		}
 	}
 
-	if (dst == NULL)
+	if (!dst)
 	{
 		GL_CACHE("TC: Lookup Target(%s) %dx%d, miss (0x%x, %s)", to_string(type), w, h, bp, psm_str(TEX0.PSM));
 
-		dst = CreateTarget(TEX0, w, h, type);
+		dst = CreateTarget(TEX0, w, h, type, true);
 
 		// In theory new textures contain invalidated data. Still in theory a new target
 		// must contains the content of the GS memory.
@@ -628,7 +643,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 			dst->Update();
 		}
 	}
-	ScaleTexture(dst->m_texture);
 	if (used)
 	{
 		dst->m_used = true;
@@ -724,8 +738,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	{
 		GL_CACHE("TC: Lookup Frame %dx%d, miss (0x%x %s)", w, h, bp, psm_str(TEX0.PSM));
 
-		dst = CreateTarget(TEX0, w, h, RenderTarget);
-		ScaleTexture(dst->m_texture);
+		dst = CreateTarget(TEX0, w, h, RenderTarget, true);
 
 		if (m_preload_frame)
 		{
@@ -1632,26 +1645,26 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	return src;
 }
 
-GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type)
+GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type, const bool clear)
 {
 	ASSERT(type == RenderTarget || type == DepthStencil);
 
-	Target* t = new Target(m_renderer, TEX0, m_temp, m_can_convert_depth);
+	Target* t = new Target(m_renderer, TEX0, m_temp, m_can_convert_depth, type);
 
 	// FIXME: initial data should be unswizzled from local mem in Update() if dirty
 
-	t->m_type = type;
-
 	if (type == RenderTarget)
 	{
-		t->m_texture = g_gs_device->CreateSparseRenderTarget(w, h, GSTexture::Format::Color);
+		t->m_texture = g_gs_device->CreateSparseRenderTarget(w, h, GSTexture::Format::Color, clear);
 
 		t->m_used = true; // FIXME
 	}
 	else if (type == DepthStencil)
 	{
-		t->m_texture = g_gs_device->CreateSparseDepthStencil(w, h, GSTexture::Format::DepthStencil);
+		t->m_texture = g_gs_device->CreateSparseDepthStencil(w, h, GSTexture::Format::DepthStencil, clear);
 	}
+
+	t->m_texture->SetScale(m_renderer->GetTextureScaleFactor());
 
 	m_dst[type].push_front(t);
 
@@ -2260,9 +2273,9 @@ bool GSTextureCache::Source::ClutMatch(const PaletteKey& palette_key)
 
 // GSTextureCache::Target
 
-GSTextureCache::Target::Target(GSRenderer* r, const GIFRegTEX0& TEX0, u8* temp, bool depth_supported)
+GSTextureCache::Target::Target(GSRenderer* r, const GIFRegTEX0& TEX0, u8* temp, const bool depth_supported, const int type)
 	: Surface(r, temp)
-	, m_type(-1)
+	, m_type(type)
 	, m_used(false)
 	, m_depth_supported(depth_supported)
 {
