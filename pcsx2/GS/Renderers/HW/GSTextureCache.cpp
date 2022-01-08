@@ -627,16 +627,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 			dst->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, TEX0.TBW * 64, max_h), TEX0.PSM));
 			dst->Update();
 		}
-		else
-		{
-#ifdef ENABLE_OGL_DEBUG
-			switch (type) {
-				case RenderTarget: g_gs_device->ClearRenderTarget(dst->m_texture, 0); break;
-				case DepthStencil: g_gs_device->ClearDepth(dst->m_texture); break;
-				default: break;
-			}
-#endif
-		}
 	}
 	ScaleTexture(dst->m_texture);
 	if (used)
@@ -736,8 +726,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 		dst = CreateTarget(TEX0, w, h, RenderTarget);
 		ScaleTexture(dst->m_texture);
-
-		g_gs_device->ClearRenderTarget(dst->m_texture, 0); // new frame buffers after reset should be cleared, don't display memory garbage
 
 		if (m_preload_frame)
 		{
