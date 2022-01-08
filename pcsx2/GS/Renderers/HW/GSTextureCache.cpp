@@ -2204,7 +2204,7 @@ void GSTextureCache::Source::PreloadUpdate(int tw, int th, int layer)
 	m_texture->Update(rect, buff, pitch, layer);
 }
 
-bool GSTextureCache::Source::ClutMatch(PaletteKey palette_key)
+bool GSTextureCache::Source::ClutMatch(const PaletteKey& palette_key)
 {
 	return PaletteKeyEqual()(palette_key, m_palette_obj->GetPaletteKey());
 }
@@ -2447,44 +2447,9 @@ void GSTextureCache::Palette::InitializeTexture()
 
 // GSTextureCache::PaletteKeyHash
 
-// Hashes the content of the clut.
-// The hashing function is implemented by taking two things into account:
-// 1) The clut can be an array of 16 or 256 u32 (depending on the pal parameter) and in order to speed up the computation of the hash
-//    the array is hashed in blocks of 16 u32, so for clut of size 16 u32 the hashing is computed in one pass and for clut of 256 u32
-//    it is computed in 16 passes,
-// 2) The clut can contain many 0s, so as a way to increase the spread of hashing values for small changes in the input clut the hashing function
-//    is using addition in combination with logical XOR operator; The addition constants are large prime numbers, which may help in achieving what intended.
-std::size_t GSTextureCache::PaletteKeyHash::operator()(const PaletteKey& key) const
+u64 GSTextureCache::PaletteKeyHash::operator()(const PaletteKey& key) const
 {
-	u16 pal = key.pal;
-	const u32* clut = key.clut;
-
-	ASSERT((pal & 15) == 0);
-
-	size_t clut_hash = 3831179159;
-	for (u16 i = 0; i < pal; i += 16)
-	{
-		clut_hash = (clut_hash + 1488000301) ^ (clut[i     ] +   33644011);
-		clut_hash = (clut_hash + 3831179159) ^ (clut[i +  1] +   47627467);
-		clut_hash = (clut_hash + 3659574209) ^ (clut[i +  2] +  577038523);
-		clut_hash = (clut_hash +   33644011) ^ (clut[i +  3] + 3491555267);
-
-		clut_hash = (clut_hash +  777771959) ^ (clut[i +  4] + 3301075993);
-		clut_hash = (clut_hash + 4019618579) ^ (clut[i +  5] + 4186992613);
-		clut_hash = (clut_hash + 3465668953) ^ (clut[i +  6] + 3043435883);
-		clut_hash = (clut_hash + 3494478943) ^ (clut[i +  7] + 3441897883);
-
-		clut_hash = (clut_hash + 3432010979) ^ (clut[i +  8] + 2167922789);
-		clut_hash = (clut_hash + 1570862863) ^ (clut[i +  9] + 3401920591);
-		clut_hash = (clut_hash + 1002648679) ^ (clut[i + 10] + 1293530519);
-		clut_hash = (clut_hash +  551381741) ^ (clut[i + 11] + 2539834039);
-
-		clut_hash = (clut_hash + 3768974459) ^ (clut[i + 12] +  169943507);
-		clut_hash = (clut_hash +  862380703) ^ (clut[i + 13] + 2906932549);
-		clut_hash = (clut_hash + 3433082137) ^ (clut[i + 14] + 4234384109);
-		clut_hash = (clut_hash + 2679083843) ^ (clut[i + 15] + 2719605247);
-	}
-	return clut_hash;
+	return XXH3_64bits(key.clut, sizeof(key.clut[0]) * key.pal);
 };
 
 // GSTextureCache::PaletteKeyEqual
@@ -2522,9 +2487,9 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 	const u32* clut = (const u32*)m_renderer->m_mem.m_clut;
 
 	// Create PaletteKey for searching into map (clut is actually not copied, so do not store this key into the map)
-	PaletteKey palette_key = {clut, pal};
+	const PaletteKey palette_key = {clut, pal};
 
-	auto it1 = map.find(palette_key);
+	const auto& it1 = map.find(palette_key);
 
 	if (it1 != map.end())
 	{
@@ -2544,7 +2509,7 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 		// If the map is too big, try to clean it by disposing and removing unused palettes, before adding the new one
 		GL_INS("WARNING, %u-bit PaletteMap (Size %u): Max size %u exceeded, clearing unused palettes.", pal * sizeof(u32), map.size(), MAX_SIZE);
 
-		u32 current_size = map.size();
+		const u32 current_size = map.size();
 
 		for (auto it = map.begin(); it != map.end();)
 		{
@@ -2562,7 +2527,7 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 			}
 		}
 
-		u32 cleared_palette_count = current_size - (u32)map.size();
+		const u32 cleared_palette_count = current_size - (u32)map.size();
 
 		if (cleared_palette_count == 0)
 		{
