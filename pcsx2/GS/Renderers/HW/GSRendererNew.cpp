@@ -517,9 +517,11 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	const bool AA1 = PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS);
 	// PABE: Check condition early as an optimization.
 	const bool PABE = PRIM->ABE && m_env.PABE.PABE && (GetAlphaMinMax().max < 128);
+	// FBMASK: Only alpha is written, no need to do blending.
+	const bool FBMASK = m_context->FRAME.FBMSK == 0x00FFFFFF;
 
 	// No blending or coverage anti-aliasing so early exit
-	if (PABE || !(PRIM->ABE || AA1))
+	if (FBMASK || PABE || !(PRIM->ABE || AA1))
 	{
 		m_conf.blend = {};
 		return;
