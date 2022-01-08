@@ -283,6 +283,18 @@
     <Filter Include="System\Ps2\GS\Renderers\Vulkan">
       <UniqueIdentifier>{98829aa9-bb81-4564-bd6e-128719c4faa0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\GS\Shaders\OpenGL">
+      <UniqueIdentifier>{0ba8b3c9-0915-4228-a572-3526190efb00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Shaders\Common">
+      <UniqueIdentifier>{7699b8f4-a217-4d8a-bf08-e28e58b3ae07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Shaders\Vulkan">
+      <UniqueIdentifier>{8c7c08ed-6c87-4b10-82ca-c832e84828c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Shaders\Direct3D11">
+      <UniqueIdentifier>{eb697f5b-85f5-424a-a7e4-8d8b73d3426e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Utilities\folderdesc.txt">
@@ -339,44 +351,56 @@
     <None Include="PAD\Windows\Default.ini">
       <Filter>System\Ps2\PAD</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\opengl\common_header.glsl">
-      <Filter>System\Ps2\GS\Shaders</Filter>
-    </None>
     <None Include="..\bin\resources\shaders\opengl\convert.glsl">
-      <Filter>System\Ps2\GS\Shaders</Filter>
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
     </None>
     <None Include="..\bin\resources\shaders\opengl\interlace.glsl">
-      <Filter>System\Ps2\GS\Shaders</Filter>
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
     </None>
     <None Include="..\bin\resources\shaders\opengl\merge.glsl">
-      <Filter>System\Ps2\GS\Shaders</Filter>
-    </None>
-    <None Include="..\bin\resources\shaders\opengl\shadeboost.glsl">
-      <Filter>System\Ps2\GS\Shaders</Filter>
-    </None>
-    <None Include="..\bin\resources\shaders\opengl\tfx_fs.glsl">
-      <Filter>System\Ps2\GS\Shaders</Filter>
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
     </None>
     <None Include="..\bin\resources\shaders\opengl\tfx_vgs.glsl">
-      <Filter>System\Ps2\GS\Shaders</Filter>
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\dx11\convert.fx">
-      <Filter>System\Ps2\GS\Shaders</Filter>
+    <None Include="..\bin\resources\shaders\opengl\tfx_fs.glsl">
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\opengl\shadeboost.glsl">
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\opengl\common_header.glsl">
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
     </None>
     <None Include="..\bin\resources\shaders\common\fxaa.fx">
-      <Filter>System\Ps2\GS\Shaders</Filter>
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\dx11\interlace.fx">
-      <Filter>System\Ps2\GS\Shaders</Filter>
+    <None Include="..\bin\resources\shaders\vulkan\interlace.glsl">
+      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\dx11\merge.fx">
-      <Filter>System\Ps2\GS\Shaders</Filter>
+    <None Include="..\bin\resources\shaders\vulkan\convert.glsl">
+      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\dx11\shadeboost.fx">
-      <Filter>System\Ps2\GS\Shaders</Filter>
+    <None Include="..\bin\resources\shaders\vulkan\merge.glsl">
+      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\vulkan\tfx.glsl">
+      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
     </None>
     <None Include="..\bin\resources\shaders\dx11\tfx.fx">
-      <Filter>System\Ps2\GS\Shaders</Filter>
+      <Filter>System\Ps2\GS\Shaders\Direct3D11</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\shadeboost.fx">
+      <Filter>System\Ps2\GS\Shaders\Direct3D11</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\merge.fx">
+      <Filter>System\Ps2\GS\Shaders\Direct3D11</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\interlace.fx">
+      <Filter>System\Ps2\GS\Shaders\Direct3D11</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\convert.fx">
+      <Filter>System\Ps2\GS\Shaders\Direct3D11</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
