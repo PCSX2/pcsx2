@@ -1094,6 +1094,11 @@ __fi void cdvdActionInterrupt()
 			cdvd.Sector = 0;
 			cdvdUpdateStatus(CDVD_STATUS_STOP);
 			break;
+
+		case cdvdAction_Error:
+			cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON | CDVD_DRIVE_ERROR;
+			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
+			break;
 	}
 	cdvd.Action = cdvdAction_None;
 
@@ -1151,7 +1156,7 @@ __fi void cdvdReadInterrupt()
 		}
 	}
 
-	if (cdvd.Sector > cdvd.MaxSector)
+	if (cdvd.Sector >= cdvd.MaxSector)
 	{
 		DevCon.Warning("Read past end of disc Sector %d Max Sector %d", cdvd.Sector, cdvd.MaxSector);
 		cdvd.Error = 0x32; // Outermost track reached during playback
@@ -1624,17 +1629,16 @@ static bool cdvdReadErrorHandler()
 	{
 		DevCon.Warning("Bad Sector Count Error");
 		cdvd.Error = 0x21; // Number of read sectors abnormal
-		cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON | CDVD_DRIVE_ERROR;
-		cdvdSetIrq();
 		return false;
 	}
 
-	if (cdvd.SeekToSector > cdvd.MaxSector)
+	if (cdvd.SeekToSector >= cdvd.MaxSector)
 	{
-		DevCon.Warning("Invalid Sector Error");
-		cdvd.Error = 0x20; // Sector position is abnormal
-		cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON | CDVD_DRIVE_ERROR;
-		cdvdSetIrq();
+		DevCon.Warning("Error reading past end of disc");
+		// Probably should be 0x20 (bad LSN) but apparently Silent Hill 2 Black Ribbon has a fade at the end of the first trailer
+		// And the only way you can throw an error and it still does that is to use 0x30 (Read error), anything else it skips the fade.
+		// This'll do for now but needs investigation
+		cdvd.Error = 0x30; // Problem occurred during read
 		return false;
 	}
 
@@ -1845,13 +1849,21 @@ static void cdvdWrite04(u8 rt)
 				DevCon.Warning("CDVD: CD Read Bad Parameter Error");
 				cdvd.SpindlCtrl = oldSpindleCtrl;
 				cdvd.Error = 0x22; // Invalid Parameter
-				cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON | CDVD_DRIVE_ERROR;
-				cdvdSetIrq();
-				return;
+				cdvd.Action = cdvdAction_Error;
+				cdvdUpdateStatus(CDVD_STATUS_SEEK);
+				cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
+				CDVD_INT(cdvd.BlockSize * 12);
+				break;
 			}
 
 			if (!cdvdReadErrorHandler())
+			{
+				cdvd.Action = cdvdAction_Error;
+				cdvdUpdateStatus(CDVD_STATUS_SEEK);
+				cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
+				CDVD_INT(cdvdRotationalLatency((CDVD_MODE_TYPE)cdvdIsDVD()));
 				break;
+			}
 
 			CDVD_LOG("CDRead > startSector=%d, seekTo=%d nSectors=%d, RetryCnt=%x, Speed=%dx(%s), ReadMode=%x(%x) SpindleCtrl=%x",
 				cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.ReadMode, cdvd.NCMDParam[10], cdvd.SpindlCtrl);
@@ -1945,9 +1957,11 @@ static void cdvdWrite04(u8 rt)
 				DevCon.Warning("CDVD: CDDA Read Bad Parameter Error");
 				cdvd.SpindlCtrl = oldSpindleCtrl;
 				cdvd.Error = 0x22; // Invalid Parameter
-				cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON | CDVD_DRIVE_ERROR;
-				cdvdSetIrq();
-				return;
+				cdvd.Action = cdvdAction_Error;
+				cdvdUpdateStatus(CDVD_STATUS_SEEK);
+				cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
+				CDVD_INT(cdvd.BlockSize * 12);
+				break;
 			}
 
 			CDVD_LOG("CDRead > startSector=%d, seekTo=%d, nSectors=%d, RetryCnt=%x, Speed=%dx(%s), ReadMode=%x(%x) SpindleCtrl=%x",
@@ -2022,21 +2036,29 @@ static void cdvdWrite04(u8 rt)
 			if (cdvd.NCMDParam[10] != 0)
 				ParamError = true;
 
+			cdvd.ReadMode = CDVD_MODE_2048;
+			cdvd.BlockSize = 2064;
+
 			if (ParamError)
 			{
 				DevCon.Warning("CDVD: DVD Read Bad Parameter Error");
 				cdvd.SpindlCtrl = oldSpindleCtrl;
 				cdvd.Error = 0x22; // Invalid Parameter
-				cdvd.Ready = CDVD_DRIVE_READY | CDVD_DRIVE_DEV9CON | CDVD_DRIVE_ERROR;
-				cdvdSetIrq();
-				return;
+				cdvd.Action = cdvdAction_Error;
+				cdvdUpdateStatus(CDVD_STATUS_SEEK);
+				cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
+				CDVD_INT(cdvd.BlockSize * 12);
+				break;
 			}
 
-			cdvd.ReadMode = CDVD_MODE_2048;
-			cdvd.BlockSize = 2064;
-
 			if (!cdvdReadErrorHandler())
+			{
+				cdvd.Action = cdvdAction_Error;
+				cdvdUpdateStatus(CDVD_STATUS_SEEK);
+				cdvd.Ready = CDVD_DRIVE_BUSY | CDVD_DRIVE_DEV9CON;
+				CDVD_INT(cdvdRotationalLatency((CDVD_MODE_TYPE)cdvdIsDVD()));
 				break;
+			}
 
 			CDVD_LOG("DvdRead > startSector=%d, seekTo=%d nSectors=%d, RetryCnt=%x, Speed=%dx(%s), ReadMode=%x(%x) SpindleCtrl=%x",
 				cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.ReadMode, cdvd.NCMDParam[10], cdvd.SpindlCtrl);
