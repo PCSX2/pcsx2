@@ -510,7 +510,7 @@ void GSRendererNew::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 	}
 }
 
-void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
+void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 {
 	// AA1: Don't enable blending on AA1, not yet implemented on hardware mode,
 	// it requires coverage sample so it's safer to turn it off instead.
@@ -745,18 +745,18 @@ void GSRendererNew::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 		}
 	}
 
-	// GL42 interact very badly with sw blending. GL42 uses the primitiveID to find the primitive
+	// DATE_PRIMID interact very badly with sw blending. DATE_PRIMID uses the primitiveID to find the primitive
 	// that write the bad alpha value. Sw blending will force the draw to run primitive by primitive
 	// (therefore primitiveID will be constant to 1).
-	// Switch DATE_GL42 with DATE_GL45 in such cases to ensure accuracy.
-	// No mix of COLCLIP + sw blend + DATE_GL42, neither sw fbmask + DATE_GL42.
+	// Switch DATE_PRIMID with DATE_BARRIER in such cases to ensure accuracy.
+	// No mix of COLCLIP + sw blend + DATE_PRIMID, neither sw fbmask + DATE_PRIMID.
 	// Note: Do the swap in the end, saves the expensive draw splitting/barriers when mixed software blending is used.
-	if (sw_blending && DATE_GL42 && m_conf.require_full_barrier)
+	if (sw_blending && DATE_PRIMID && m_conf.require_full_barrier)
 	{
-		GL_PERF("DATE: Swap DATE_GL42 with DATE_GL45");
+		GL_PERF("DATE: Swap DATE_PRIMID with DATE_BARRIER");
 		m_conf.require_full_barrier = true;
-		DATE_GL42 = false;
-		DATE_GL45 = true;
+		DATE_PRIMID = false;
+		DATE_BARRIER = true;
 	}
 }
 
@@ -1172,8 +1172,8 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	const GSVector2& rtscale = ds ? ds->GetScale() : rt->GetScale();
 
 	const bool DATE = m_context->TEST.DATE && m_context->FRAME.PSM != PSM_PSMCT24;
-	bool DATE_GL42 = false;
-	bool DATE_GL45 = false;
+	bool DATE_PRIMID = false;
+	bool DATE_BARRIER = false;
 	bool DATE_one  = false;
 
 	const bool ate_first_pass = m_context->TEST.DoFirstPass();
@@ -1236,7 +1236,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			if (g_gs_device->Features().texture_barrier)
 			{
 				m_conf.require_full_barrier = true;
-				DATE_GL45 = true;
+				DATE_BARRIER = true;
 			}
 		}
 		else if (m_context->FBA.FBA)
@@ -1269,7 +1269,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				if (g_gs_device->Features().texture_barrier)
 				{
 					m_conf.require_full_barrier = true;
-					DATE_GL45 = true;
+					DATE_BARRIER = true;
 				}
 			}
 			else if (GSConfig.AccurateDATE)
@@ -1278,12 +1278,12 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
 				if (g_gs_device->Features().image_load_store)
 				{
-					DATE_GL42 = true;
+					DATE_PRIMID = true;
 				}
 				else if (g_gs_device->Features().texture_barrier)
 				{
 					m_conf.require_full_barrier = true;
-					DATE_GL45 = true;
+					DATE_BARRIER = true;
 				}
 				else
 				{
@@ -1294,21 +1294,21 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		else if (!m_conf.colormask.wa && !m_context->TEST.ATE)
 		{
 			// TODO: is it legal ? Likely but it need to be tested carefully
-			// DATE_GL45 = true;
+			// DATE_BARRIER = true;
 			// m_conf.require_one_barrier = true; << replace it with a cheap barrier
 		}
 
 		// Will save my life !
-		ASSERT(!(DATE_GL45 && DATE_one));
-		ASSERT(!(DATE_GL42 && DATE_one));
-		ASSERT(!(DATE_GL42 && DATE_GL45));
+		ASSERT(!(DATE_BARRIER && DATE_one));
+		ASSERT(!(DATE_PRIMID && DATE_one));
+		ASSERT(!(DATE_PRIMID && DATE_BARRIER));
 	}
 
 	// Blend
 
 	if (!IsOpaque() && rt)
 	{
-		EmulateBlending(DATE_GL42, DATE_GL45);
+		EmulateBlending(DATE_PRIMID, DATE_BARRIER);
 	}
 	else
 	{
@@ -1316,7 +1316,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	if (m_conf.ps.scanmsk & 2)
-		DATE_GL42 = false; // to have discard in the shader work correctly
+		DATE_PRIMID = false; // to have discard in the shader work correctly
 
 	if (m_conf.ps.dfmt == 1)
 	{
@@ -1324,15 +1324,15 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		m_conf.colormask.wa = 0;
 	}
 
-	// DATE setup, no DATE_GL45 please
+	// DATE setup, no DATE_BARRIER please
 
 	if (!DATE)
 		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Off;
 	else if (DATE_one)
 		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::StencilOne;
-	else if (DATE_GL42)
+	else if (DATE_PRIMID)
 		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking;
-	else if (DATE_GL45)
+	else if (DATE_BARRIER)
 		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Full;
 	else
 		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Stencil;
@@ -1376,7 +1376,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	m_conf.gs.iip = m_conf.ps.iip;
 	m_conf.vs.iip = m_conf.ps.iip;
 
-	if (DATE_GL45)
+	if (DATE_BARRIER)
 	{
 		m_conf.ps.date = 5 + m_context->TEST.DATM;
 	}
@@ -1392,7 +1392,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 	else if (DATE)
 	{
-		if (DATE_GL42)
+		if (DATE_PRIMID)
 			m_conf.ps.date = 1 + m_context->TEST.DATM;
 		else
 			m_conf.depth.date = 1;
@@ -1510,7 +1510,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	const GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * hacked_scissor).rintersect(GSVector4i(rtsize).zwxy());
 
 	m_conf.drawarea = scissor.rintersect(ComputeBoundingBox(rtscale, rtsize));
-	m_conf.scissor = (DATE && !DATE_GL45) ? m_conf.drawarea : scissor;
+	m_conf.scissor = (DATE && !DATE_BARRIER) ? m_conf.drawarea : scissor;
 
 	SetupIA(sx, sy);
 
