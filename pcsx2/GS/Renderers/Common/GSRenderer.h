@@ -38,6 +38,7 @@ private:
 #endif
 	std::string m_snapshot;
 	u32 m_dump_frames = 0;
+	u32 m_skipped_duplicate_frames;
 
 protected:
 	GSVector2i m_real_size{0, 0};
