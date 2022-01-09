@@ -509,7 +509,21 @@ static void DrawPerformanceOverlay()
 		const float speed = PerformanceMetrics::GetSpeed();
 		if (GSConfig.OsdShowFPS)
 		{
-			text.Write("%.2f", PerformanceMetrics::GetFPS());
+			switch (PerformanceMetrics::GetInternalFPSMethod())
+			{
+			case PerformanceMetrics::InternalFPSMethod::GSPrivilegedRegister:
+				text.Write("G: %.2f [P] | V: %.2f", PerformanceMetrics::GetInternalFPS(), PerformanceMetrics::GetFPS());
+				break;
+
+			case PerformanceMetrics::InternalFPSMethod::DISPFBBlit:
+				text.Write("G: %.2f [B] | V: %.2f", PerformanceMetrics::GetInternalFPS(), PerformanceMetrics::GetFPS());
+				break;
+
+			case PerformanceMetrics::InternalFPSMethod::None:
+			default:
+				text.Write("V: %.2f", PerformanceMetrics::GetFPS());
+				break;
+			}
 			first = false;
 		}
 		if (GSConfig.OsdShowSpeed)

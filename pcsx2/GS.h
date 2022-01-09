@@ -385,7 +385,7 @@ public:
 
 	u8* GetDataPacketPtr() const;
 	void SetEvent();
-	void PostVsyncStart();
+	void PostVsyncStart(bool registers_written);
 
 	bool IsGSOpened() const { return m_Opened; }
 

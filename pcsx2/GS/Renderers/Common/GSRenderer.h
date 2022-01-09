@@ -44,7 +44,7 @@ public:
 
 	virtual void Destroy();
 
-	virtual void VSync(u32 field);
+	virtual void VSync(u32 field, bool registers_written);
 	virtual bool MakeSnapshot(const std::string& path);
 	virtual void KeyEvent(const HostKeyEvent& e);
 	virtual bool CanUpscale() { return false; }

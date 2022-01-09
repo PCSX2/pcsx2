@@ -182,7 +182,7 @@ public:
 	GSVector2 GetTextureScaleFactor() override;
 
 	void Reset() override;
-	void VSync(u32 field) override;
+	void VSync(u32 field, bool registers_written) override;
 
 	GSTexture* GetOutput(int i, int& y_offset) override;
 	GSTexture* GetFeedbackOutput() override;

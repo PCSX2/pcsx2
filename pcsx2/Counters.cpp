@@ -552,8 +552,6 @@ static __fi void VSyncStart(u32 sCycle)
 	}
 #endif
 
-	PerformanceMetrics::Update();
-
 	frameLimit(); // limit FPS
 	gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!
 

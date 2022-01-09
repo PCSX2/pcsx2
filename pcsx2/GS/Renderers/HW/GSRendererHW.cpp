@@ -291,7 +291,7 @@ void GSRendererHW::Reset()
 	GSRenderer::Reset();
 }
 
-void GSRendererHW::VSync(u32 field)
+void GSRendererHW::VSync(u32 field, bool registers_written)
 {
 	//Check if the frame buffer width or display width has changed
 	SetScaling();
@@ -303,7 +303,7 @@ void GSRendererHW::VSync(u32 field)
 		m_reset = false;
 	}
 
-	GSRenderer::VSync(field);
+	GSRenderer::VSync(field, registers_written);
 
 	m_tc->IncAge();
 

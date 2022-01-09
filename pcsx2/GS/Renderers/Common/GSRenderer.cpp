@@ -388,7 +388,7 @@ static GSVector4 CalculateDrawRect(s32 window_width, s32 window_height, s32 text
 	return ret;
 }
 
-void GSRenderer::VSync(u32 field)
+void GSRenderer::VSync(u32 field, bool registers_written)
 {
 	GSPerfMonAutoTimer pmat(&g_perfmon);
 
@@ -398,6 +398,10 @@ void GSRenderer::VSync(u32 field)
 	{
 		m_regs->Dump(root_sw + format("%05d_f%lld_gs_reg.txt", s_n, g_perfmon.GetFrame()));
 	}
+
+	const int fb_sprite_blits = g_perfmon.GetDisplayFramebufferSpriteBlits();
+	const bool fb_sprite_frame = (fb_sprite_blits > 0);
+	PerformanceMetrics::Update(registers_written, fb_sprite_frame);
 
 	g_gs_device->AgePool();
 

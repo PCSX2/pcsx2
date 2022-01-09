@@ -52,6 +52,7 @@ protected:
 	u64 m_frame;
 	clock_t m_lastframe;
 	int m_count;
+	int m_disp_fb_sprite_blits;
 
 	friend class GSPerfMonAutoTimer;
 
@@ -69,6 +70,14 @@ public:
 
 	void Start(int timer = Main);
 	void Stop(int timer = Main);
+
+	__fi void AddDisplayFramebufferSpriteBlit() { m_disp_fb_sprite_blits++; }
+	__fi int GetDisplayFramebufferSpriteBlits()
+	{
+		const int blits = m_disp_fb_sprite_blits;
+		m_disp_fb_sprite_blits = 0;
+		return blits;
+	}
 };
 
 class GSPerfMonAutoTimer

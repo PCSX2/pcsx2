@@ -28,6 +28,7 @@ static const float UPDATE_INTERVAL = 0.5f;
 
 static float s_vertical_frequency = 0.0f;
 static float s_fps = 0.0f;
+static float s_internal_fps = 0.0f;
 static float s_worst_frame_time = 0.0f;
 static float s_average_frame_time = 0.0f;
 static float s_average_frame_time_accumulator = 0.0f;
@@ -35,6 +36,14 @@ static float s_worst_frame_time_accumulator = 0.0f;
 static u32 s_frames_since_last_update = 0;
 static Common::Timer s_last_update_time;
 static Common::Timer s_last_frame_time;
+
+// frame number, updated by the GS thread
+static u64 s_frame_number = 0;
+
+// internal fps heuristics
+static PerformanceMetrics::InternalFPSMethod s_internal_fps_method = PerformanceMetrics::InternalFPSMethod::None;
+static u32 s_gs_framebuffer_blits_since_last_update = 0;
+static u32 s_gs_privileged_register_writes_since_last_update = 0;
 
 static Common::ThreadCPUTimer s_cpu_thread_timer;
 static u64 s_last_gs_time = 0;
@@ -53,8 +62,10 @@ void PerformanceMetrics::Clear()
 	Reset();
 
 	s_fps = 0.0f;
+	s_internal_fps = 0.0f;
 	s_worst_frame_time = 0.0f;
 	s_average_frame_time = 0.0f;
+	s_internal_fps_method = PerformanceMetrics::InternalFPSMethod::None;
 
 	s_cpu_thread_usage = 0.0f;
 	s_cpu_thread_time = 0.0f;
@@ -62,10 +73,15 @@ void PerformanceMetrics::Clear()
 	s_gs_thread_time = 0.0f;
 	s_vu_thread_usage = 0.0f;
 	s_vu_thread_time = 0.0f;
+
+	s_frame_number = 0;
 }
 
 void PerformanceMetrics::Reset()
 {
+	s_frames_since_last_update = 0;
+	s_gs_framebuffer_blits_since_last_update = 0;
+	s_gs_privileged_register_writes_since_last_update = 0;
 	s_average_frame_time_accumulator = 0.0f;
 	s_worst_frame_time_accumulator = 0.0f;
 
@@ -78,12 +94,15 @@ void PerformanceMetrics::Reset()
 	s_last_ticks = GetCPUTicks();
 }
 
-void PerformanceMetrics::Update()
+void PerformanceMetrics::Update(bool gs_register_write, bool fb_blit)
 {
 	const float frame_time = s_last_frame_time.GetTimeMillisecondsAndReset();
 	s_average_frame_time_accumulator += frame_time;
 	s_worst_frame_time_accumulator = std::max(s_worst_frame_time_accumulator, frame_time);
 	s_frames_since_last_update++;
+	s_gs_privileged_register_writes_since_last_update += static_cast<u32>(gs_register_write);
+	s_gs_framebuffer_blits_since_last_update += static_cast<u32>(fb_blit);
+	s_frame_number++;
 
 	const Common::Timer::Value now_ticks = Common::Timer::GetCurrentValue();
 	const Common::Timer::Value ticks_diff = now_ticks - s_last_update_time.GetStartValue();
@@ -96,6 +115,26 @@ void PerformanceMetrics::Update()
 	s_average_frame_time = s_average_frame_time_accumulator / static_cast<float>(s_frames_since_last_update);
 	s_average_frame_time_accumulator = 0.0f;
 	s_fps = static_cast<float>(s_frames_since_last_update) / time;
+
+	// prefer privileged register write based framerate detection, it's less likely to have false positives
+	if (s_gs_privileged_register_writes_since_last_update > 0)
+	{
+		s_internal_fps = static_cast<float>(s_gs_privileged_register_writes_since_last_update) / time;
+		s_internal_fps_method = InternalFPSMethod::GSPrivilegedRegister;
+	}
+	else if (s_gs_framebuffer_blits_since_last_update > 0)
+	{
+		s_internal_fps = static_cast<float>(s_gs_framebuffer_blits_since_last_update) / time;
+		s_internal_fps_method = InternalFPSMethod::DISPFBBlit;
+	}
+	else
+	{
+		s_internal_fps = 0;
+		s_internal_fps_method = InternalFPSMethod::None;
+	}
+
+	s_gs_privileged_register_writes_since_last_update = 0;
+	s_gs_framebuffer_blits_since_last_update = 0;
 
 	s_cpu_thread_timer.GetUsageInMillisecondsAndReset(ticks_diff, &s_cpu_thread_time, &s_cpu_thread_usage);
 	s_cpu_thread_time /= static_cast<double>(s_frames_since_last_update);
@@ -137,9 +176,29 @@ void PerformanceMetrics::SetVerticalFrequency(float rate)
 	s_vertical_frequency = rate;
 }
 
+u64 PerformanceMetrics::GetFrameNumber()
+{
+	return s_frame_number;
+}
+
+PerformanceMetrics::InternalFPSMethod PerformanceMetrics::GetInternalFPSMethod()
+{
+	return s_internal_fps_method;
+}
+
+bool PerformanceMetrics::IsInternalFPSValid()
+{
+	return s_internal_fps_method != InternalFPSMethod::None;
+}
+
 float PerformanceMetrics::GetFPS()
 {
 	return s_fps;
+}
+
+float PerformanceMetrics::GetInternalFPS()
+{
+	return s_internal_fps;
 }
 
 float PerformanceMetrics::GetSpeed()
