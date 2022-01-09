@@ -101,9 +101,6 @@ public:
 	};
 
 private:
-	u32 m_upscale_multiplier = 1;
-	int m_mipmap = 0;
-
 	VkDescriptorSetLayout m_utility_ds_layout = VK_NULL_HANDLE;
 	VkPipelineLayout m_utility_pipeline_layout = VK_NULL_HANDLE;
 

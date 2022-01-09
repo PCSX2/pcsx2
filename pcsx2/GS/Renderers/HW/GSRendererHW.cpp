@@ -35,7 +35,6 @@ GSRendererHW::GSRendererHW()
 	, m_lod(GSVector2i(0, 0))
 {
 	m_mipmap = (m_hw_mipmap >= HWMipmapLevel::Basic);
-	m_upscale_multiplier = std::max(0, theApp.GetConfigI("upscale_multiplier"));
 	m_conservative_framebuffer = theApp.GetConfigB("conservative_framebuffer");
 
 	if (theApp.GetConfigB("UserHacks"))
@@ -60,13 +59,13 @@ GSRendererHW::GSRendererHW()
 		m_userhacks_round_sprite_offset  = 0;
 	}
 
-	if (!m_upscale_multiplier) // Custom Resolution
+	if (!GSConfig.UpscaleMultiplier) // Custom Resolution
 	{
 		m_custom_width = m_width = theApp.GetConfigI("resx");
 		m_custom_height = m_height = theApp.GetConfigI("resy");
 	}
 
-	if (m_upscale_multiplier == 1) // hacks are only needed for upscaling issues.
+	if (GSConfig.UpscaleMultiplier == 1) // hacks are only needed for upscaling issues.
 	{
 		m_userhacks_round_sprite_offset = 0;
 		m_userhacks_align_sprite_X = false;
@@ -78,7 +77,7 @@ GSRendererHW::GSRendererHW()
 
 void GSRendererHW::SetScaling()
 {
-	if (!m_upscale_multiplier)
+	if (!GSConfig.UpscaleMultiplier)
 	{
 		CustomResolutionScaling();
 		return;
@@ -130,13 +129,13 @@ void GSRendererHW::SetScaling()
 		fb_height = fb_width < 1024 ? std::max(512, crtc_size.y) : 1024;
 	}
 
-	const int upscaled_fb_w = fb_width * m_upscale_multiplier;
-	const int upscaled_fb_h = fb_height * m_upscale_multiplier;
+	const int upscaled_fb_w = fb_width * GSConfig.UpscaleMultiplier;
+	const int upscaled_fb_h = fb_height * GSConfig.UpscaleMultiplier;
 	const bool good_rt_size = m_width >= upscaled_fb_w && m_height >= upscaled_fb_h;
 
 	// No need to resize for native/custom resolutions as default size will be enough for native and we manually get RT Buffer size for custom.
 	// don't resize until the display rectangle and register states are stabilized.
-	if (m_upscale_multiplier <= 1 || good_rt_size)
+	if (GSConfig.UpscaleMultiplier <= 1 || good_rt_size)
 		return;
 
 	m_tc->RemovePartial();
@@ -269,12 +268,12 @@ bool GSRendererHW::CanUpscale()
 	}
 
 	 // upscale ratio depends on the display size, with no output it may not be set correctly (ps2 logo to game transition)
-	return m_upscale_multiplier != 1 && m_regs->PMODE.EN != 0;
+	return GSConfig.UpscaleMultiplier != 1 && m_regs->PMODE.EN != 0;
 }
 
 int GSRendererHW::GetUpscaleMultiplier()
 {
-	return m_upscale_multiplier;
+	return GSConfig.UpscaleMultiplier;
 }
 
 GSVector2i GSRendererHW::GetCustomResolution()

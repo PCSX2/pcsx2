@@ -35,8 +35,6 @@ GSDevice11::GSDevice11()
 	m_state.topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	m_state.bf = -1;
 
-	m_upscale_multiplier = std::max(0, theApp.GetConfigI("upscale_multiplier"));
-
 	m_features.geometry_shader = true;
 	m_features.image_load_store = false;
 	m_features.texture_barrier = false;
@@ -108,7 +106,7 @@ bool GSDevice11::Create(HostDisplay* display)
 		// HACK: check nVIDIA
 		// Note: It can cause issues on several games such as SOTC, Fatal Frame, plus it adds border offset.
 		const bool disable_safe_features = theApp.GetConfigB("UserHacks") && theApp.GetConfigB("UserHacks_Disable_Safe_Features");
-		m_hack_topleft_offset = (m_upscale_multiplier != 1 && nvidia_vendor && !disable_safe_features) ? -0.01f : 0.0f;
+		m_hack_topleft_offset = (GSConfig.UpscaleMultiplier != 1 && nvidia_vendor && !disable_safe_features) ? -0.01f : 0.0f;
 
 		// HACK: check AMD
 		// Broken point sampler should be enabled only on AMD.
@@ -141,7 +139,7 @@ bool GSDevice11::Create(HostDisplay* display)
 	}
 
 	ShaderMacro sm_convert(m_shader_cache.GetFeatureLevel());
-	sm_convert.AddMacro("PS_SCALE_FACTOR", std::max(1, m_upscale_multiplier));
+	sm_convert.AddMacro("PS_SCALE_FACTOR", std::max(1u, GSConfig.UpscaleMultiplier));
 
 	D3D_SHADER_MACRO* sm_convert_ptr = sm_convert.GetPtr();
 

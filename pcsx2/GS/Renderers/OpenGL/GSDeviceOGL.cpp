@@ -63,8 +63,6 @@ GSDeviceOGL::GSDeviceOGL()
 	memset(&m_om_dss, 0, sizeof(m_om_dss));
 	memset(&m_profiler, 0, sizeof(m_profiler));
 
-	m_upscale_multiplier = std::max(1, theApp.GetConfigI("upscale_multiplier"));
-
 	// Reset the debug file
 #ifdef ENABLE_OGL_DEBUG
 	m_debug_gl_file = fopen("GS_opengl_debug.txt", "w");
@@ -239,8 +237,8 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 	GLint line_range[2] = {};
 	glGetIntegerv(GL_ALIASED_POINT_SIZE_RANGE, point_range);
 	glGetIntegerv(GL_ALIASED_LINE_WIDTH_RANGE, line_range);
-	m_features.point_expand = (point_range[0] <= m_upscale_multiplier && point_range[1] >= m_upscale_multiplier);
-	m_features.line_expand = (line_range[0] <= m_upscale_multiplier && line_range[1] >= m_upscale_multiplier);
+	m_features.point_expand = (point_range[0] <= static_cast<GLint>(GSConfig.UpscaleMultiplier) && point_range[1] >= static_cast<GLint>(GSConfig.UpscaleMultiplier));
+	m_features.line_expand = (line_range[0] <= static_cast<GLint>(GSConfig.UpscaleMultiplier) && line_range[1] >= static_cast<GLint>(GSConfig.UpscaleMultiplier));
 	Console.WriteLn("Using %s for point expansion and %s for line expansion.",
 		m_features.point_expand ? "hardware" : "geometry shaders", m_features.line_expand ? "hardware" : "geometry shaders");
 
@@ -377,7 +375,7 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 		{
 			const char* name = shaderName(static_cast<ShaderConvert>(i));
 			const std::string macro_sel = (static_cast<ShaderConvert>(i) == ShaderConvert::RGBA_TO_8I) ?
-                                              format("#define PS_SCALE_FACTOR %d\n", m_upscale_multiplier) :
+                                              format("#define PS_SCALE_FACTOR %d\n", GSConfig.UpscaleMultiplier) :
                                               std::string();
 			const std::string ps(GetShaderSource(name, GL_FRAGMENT_SHADER, m_shader_common_header, *shader, macro_sel));
 			if (!m_shader_cache.GetProgram(&m_convert.ps[i], m_convert.vs, {}, ps))
@@ -1045,7 +1043,7 @@ std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 		+ format("#define VS_IIP %d\n", sel.iip)
 		+ format("#define VS_POINT_SIZE %d\n", sel.point_size);
 	if (sel.point_size)
-		macro += format("#define VS_POINT_SIZE_VALUE %d\n", m_upscale_multiplier);
+		macro += format("#define VS_POINT_SIZE_VALUE %d\n", GSConfig.UpscaleMultiplier);
 
 	std::string src = GenGlslHeader("vs_main", GL_VERTEX_SHADER, macro);
 	src += m_shader_common_header;
@@ -1116,7 +1114,7 @@ std::string GSDeviceOGL::GetPSSource(PSSelector sel)
 		+ format("#define PS_ALPHA_CLAMP %d\n", sel.alpha_clamp)
 		+ format("#define PS_PABE %d\n", sel.pabe)
 		+ format("#define PS_SCANMSK %d\n", sel.scanmsk)
-		+ format("#define PS_SCALE_FACTOR %d\n", m_upscale_multiplier)
+		+ format("#define PS_SCALE_FACTOR %d\n", GSConfig.UpscaleMultiplier)
 	;
 
 	std::string src = GenGlslHeader("ps_main", GL_FRAGMENT_SHADER, macro);
@@ -1930,7 +1928,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			glDisable(GL_PROGRAM_POINT_SIZE);
 		GLState::point_size = point_size_enabled;
 	}
-	const float line_width = config.line_expand ? static_cast<float>(m_upscale_multiplier) : 1.0f;
+	const float line_width = config.line_expand ? static_cast<float>(GSConfig.UpscaleMultiplier) : 1.0f;
 	if (GLState::line_width != line_width)
 	{
 		GLState::line_width = line_width;

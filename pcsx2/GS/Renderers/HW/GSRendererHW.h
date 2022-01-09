@@ -26,7 +26,6 @@ private:
 	int m_height;
 	int m_custom_width;
 	int m_custom_height;
-	int m_upscale_multiplier;
 	int m_userhacks_ts_half_bottom;
 
 	bool m_conservative_framebuffer;
