@@ -14957,6 +14957,8 @@ SLES-53804:
 SLES-53805:
   name: "Cocoto Funfair"
   region: "PAL-M5"
+  gameFixes:
+    - FpuNegDivHack # Fixes the cursor not being visible.
 SLES-53809:
   name: "K-1 Premium Dynamite!!"
   region: "PAL-E"
