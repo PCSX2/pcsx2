@@ -214,8 +214,6 @@ private:
 	// Increment this constant whenever shaders change, to invalidate user's program binary cache.
 	static constexpr u32 SHADER_VERSION = 1;
 
-	int m_upscale_multiplier;
-
 	static FILE* m_debug_gl_file;
 
 	bool m_disable_hw_gl_draw;

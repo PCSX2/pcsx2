@@ -38,7 +38,7 @@ GSState::GSState()
 {
 	// m_nativeres seems to be a hack. Unfortunately it impacts draw call number which make debug painful in the replayer.
 	// Let's keep it disabled to ease debug.
-	m_nativeres = theApp.GetConfigI("upscale_multiplier") == 1;
+	m_nativeres = GSConfig.UpscaleMultiplier == 1;
 	m_mipmap = theApp.GetConfigB("mipmap");
 	m_NTSC_Saturation = theApp.GetConfigB("NTSC_Saturation");
 	if (theApp.GetConfigB("UserHacks"))
@@ -69,7 +69,7 @@ GSState::GSState()
 	}
 #endif
 
-	m_crc_hack_level = theApp.GetConfigT<CRCHackLevel>("crc_hack_level");
+	m_crc_hack_level = GSConfig.CRCHack;
 	if (m_crc_hack_level == CRCHackLevel::Automatic)
 		m_crc_hack_level = GSUtil::GetRecommendedCRCHackLevel(GSConfig.Renderer);
 

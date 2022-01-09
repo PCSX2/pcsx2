@@ -77,9 +77,6 @@ GSDeviceVK::GSDeviceVK()
 	s_debug_scope_depth = 0;
 #endif
 
-	m_mipmap = theApp.GetConfigI("mipmap");
-	m_upscale_multiplier = static_cast<u32>(std::max(1, theApp.GetConfigI("upscale_multiplier")));
-
 	std::memset(&m_pipeline_selector, 0, sizeof(m_pipeline_selector));
 }
 
@@ -254,7 +251,7 @@ bool GSDeviceVK::CheckFeatures()
 	}
 
 	// whether we can do point/line expand depends on the range of the device
-	const float f_upscale = static_cast<float>(m_upscale_multiplier);
+	const float f_upscale = static_cast<float>(GSConfig.UpscaleMultiplier);
 	m_features.point_expand =
 		(features.largePoints && limits.pointSizeRange[0] <= f_upscale && limits.pointSizeRange[1] >= f_upscale);
 	m_features.line_expand =
@@ -1057,7 +1054,7 @@ VkShaderModule GSDeviceVK::GetUtilityVertexShader(const std::string& source, con
 	std::stringstream ss;
 	AddShaderHeader(ss);
 	AddShaderStageMacro(ss, true, false, false);
-	AddMacro(ss, "PS_SCALE_FACTOR", m_upscale_multiplier);
+	AddMacro(ss, "PS_SCALE_FACTOR", GSConfig.UpscaleMultiplier);
 	if (replace_main)
 		ss << "#define " << replace_main << " main\n";
 	ss << source;
@@ -1070,7 +1067,7 @@ VkShaderModule GSDeviceVK::GetUtilityFragmentShader(const std::string& source, c
 	std::stringstream ss;
 	AddShaderHeader(ss);
 	AddShaderStageMacro(ss, false, false, true);
-	AddMacro(ss, "PS_SCALE_FACTOR", m_upscale_multiplier);
+	AddMacro(ss, "PS_SCALE_FACTOR", GSConfig.UpscaleMultiplier);
 	if (replace_main)
 		ss << "#define " << replace_main << " main\n";
 	ss << source;
@@ -1725,7 +1722,7 @@ VkShaderModule GSDeviceVK::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 	AddMacro(ss, "VS_IIP", sel.iip);
 	AddMacro(ss, "VS_POINT_SIZE", sel.point_size);
 	if (sel.point_size)
-		AddMacro(ss, "VS_POINT_SIZE_VALUE", m_upscale_multiplier);
+		AddMacro(ss, "VS_POINT_SIZE_VALUE", GSConfig.UpscaleMultiplier);
 	ss << m_tfx_source;
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetVertexShader(ss.str());
@@ -1808,7 +1805,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(GSHWDrawConfig::PSSelector sel)
 	AddMacro(ss, "PS_ZCLAMP", sel.zclamp);
 	AddMacro(ss, "PS_PABE", sel.pabe);
 	AddMacro(ss, "PS_SCANMSK", sel.scanmsk);
-	AddMacro(ss, "PS_SCALE_FACTOR", m_upscale_multiplier);
+	AddMacro(ss, "PS_SCALE_FACTOR", GSConfig.UpscaleMultiplier);
 	AddMacro(ss, "PS_TEX_IS_FB", sel.tex_is_fb);
 	ss << m_tfx_source;
 
@@ -1854,7 +1851,7 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	gpb.SetPrimitiveTopology(topology_lookup[p.topology]);
 	gpb.SetRasterizationState(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
 	if (p.line_width)
-		gpb.SetLineWidth(static_cast<float>(m_upscale_multiplier));
+		gpb.SetLineWidth(static_cast<float>(GSConfig.UpscaleMultiplier));
 	gpb.SetDynamicViewportAndScissorState();
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
 
@@ -2702,7 +2699,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// Align the render area to 128x128, hopefully avoiding render pass restarts for small render area changes (e.g. Ratchet and Clank).
-	const int render_area_alignment = 128 * m_upscale_multiplier;
+	const int render_area_alignment = 128 * GSConfig.UpscaleMultiplier;
 	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
 	const GSVector4i render_area(
 		config.ps.hdr ? config.drawarea :
