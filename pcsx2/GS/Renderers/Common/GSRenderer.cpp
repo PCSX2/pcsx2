@@ -495,19 +495,46 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 	const bool fb_sprite_frame = (fb_sprite_blits > 0);
 	PerformanceMetrics::Update(registers_written, fb_sprite_frame);
 
-	g_gs_device->AgePool();
+	bool skip_frame = m_frameskip;
+	if (GSConfig.SkipDuplicateFrames)
+	{
+		bool is_unique_frame;
+		switch (PerformanceMetrics::GetInternalFPSMethod())
+		{
+		case PerformanceMetrics::InternalFPSMethod::GSPrivilegedRegister:
+			is_unique_frame = registers_written;
+			break;
+		case PerformanceMetrics::InternalFPSMethod::DISPFBBlit:
+			is_unique_frame = fb_sprite_frame;
+			break;
+		default:
+			is_unique_frame = true;
+			break;
+		}
+
+		if (!is_unique_frame && m_skipped_duplicate_frames < MAX_SKIPPED_DUPLICATE_FRAMES)
+		{
+			m_skipped_duplicate_frames++;
+			skip_frame = true;
+		}
+		else
+		{
+			m_skipped_duplicate_frames = 0;
+		}
+	}
 
 	const bool blank_frame = !Merge(field);
-	const bool skip_frame = m_frameskip;
 
-	if (blank_frame || skip_frame)
+	if (skip_frame)
 	{
 		g_gs_device->ResetAPIState();
-		if (Host::BeginPresentFrame(skip_frame))
+		if (Host::BeginPresentFrame(true))
 			Host::EndPresentFrame();
 		g_gs_device->RestoreAPIState();
 		return;
 	}
+
+	g_gs_device->AgePool();
 
 	g_perfmon.EndFrame();
 	if ((g_perfmon.GetFrame() & 0x1f) == 0)
@@ -517,7 +544,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 	if (Host::BeginPresentFrame(false))
 	{
 		GSTexture* current = g_gs_device->GetCurrent();
-		if (current)
+		if (current && !blank_frame)
 		{
 			HostDisplay* const display = g_gs_device->GetDisplay();
 			const GSVector4 draw_rect(CalculateDrawRect(display->GetWindowWidth(), display->GetWindowHeight(),

@@ -1186,6 +1186,20 @@
               </property>
              </widget>
             </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="skipPresentingDuplicateFrames">
+              <property name="text">
+               <string>Skip Presenting Duplicate Frames</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="disableHardwareReadbacks">
+              <property name="text">
+               <string>Disable Hardware Readbacks</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
           <item row="2" column="0">

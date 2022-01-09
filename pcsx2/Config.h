@@ -441,6 +441,7 @@ struct Pcsx2Config
 					DisableDualSourceBlend : 1,
 					DisableFramebufferFetch : 1,
 					ThreadedPresentation : 1,
+					SkipDuplicateFrames : 1,
 					OsdShowMessages : 1,
 					OsdShowSpeed : 1,
 					OsdShowFPS : 1,

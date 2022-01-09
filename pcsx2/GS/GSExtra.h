@@ -117,6 +117,9 @@ __fi static bool CanPreloadTextureSize(u32 tw, u32 th)
 // PS2 has a max of 7 levels (1 base + 6 mips).
 static constexpr int MAXIMUM_TEXTURE_MIPMAP_LEVELS = 7;
 
+// The maximum number of duplicate frames we can skip presenting for.
+static constexpr u32 MAX_SKIPPED_DUPLICATE_FRAMES = 3;
+
 // Helper path to dump texture
 extern const std::string root_sw;
 extern const std::string root_hw;
