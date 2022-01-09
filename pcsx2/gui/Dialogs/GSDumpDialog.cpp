@@ -662,8 +662,7 @@ void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSData& event, char* regs)
 		}
 		case VSync:
 		{
-			GSvsync((*((int*)(regs + 4096)) & 0x2000) > 0 ? (u8)1 : (u8)0);
-			PerformanceMetrics::Update();
+			GSvsync((*((int*)(regs + 4096)) & 0x2000) > 0 ? (u8)1 : (u8)0, false);
 			g_FrameCount++;
 			break;
 		}
@@ -813,7 +812,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 
 	if (GSfreeze(FreezeAction::Load, &fd))
 		GSDump::isRunning = false;
-	GSvsync(1);
+	GSvsync(1, false);
 	GSreset();
 	GSfreeze(FreezeAction::Load, &fd);
 

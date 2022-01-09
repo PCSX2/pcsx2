@@ -464,11 +464,11 @@ void GSgifTransfer3(u8* mem, u32 size)
 	}
 }
 
-void GSvsync(u32 field)
+void GSvsync(u32 field, bool registers_written)
 {
 	try
 	{
-		s_gs->VSync(field);
+		s_gs->VSync(field, registers_written);
 	}
 	catch (GSRecoverableError)
 	{

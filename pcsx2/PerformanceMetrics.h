@@ -18,9 +18,16 @@
 
 namespace PerformanceMetrics
 {
+	enum class InternalFPSMethod
+	{
+		None,
+		GSPrivilegedRegister,
+		DISPFBBlit
+	};
+
 	void Clear();
 	void Reset();
-	void Update();
+	void Update(bool gs_register_write, bool fb_blit);
 
 	/// Sets the EE thread for CPU usage calculations.
 	void SetCPUThreadTimer(Common::ThreadCPUTimer timer);
@@ -28,7 +35,13 @@ namespace PerformanceMetrics
 	/// Sets the vertical frequency, used in speed calculations.
 	void SetVerticalFrequency(float rate);
 
+	u64 GetFrameNumber();
+
+	InternalFPSMethod GetInternalFPSMethod();
+	bool IsInternalFPSValid();
+
 	float GetFPS();
+	float GetInternalFPS();
 	float GetSpeed();
 	float GetAverageFrameTime();
 	float GetWorstFrameTime();

@@ -1406,6 +1406,16 @@ void GSState::FlushPrim()
 	{
 		GL_REG("FlushPrim ctxt %d", PRIM->CTXT);
 
+		// internal frame rate detection based on sprite blits to the display framebuffer
+		{
+			const u32 FRAME_FBP = m_context->FRAME.FBP;
+			if ((m_regs->DISP[0].DISPFB.FBP == FRAME_FBP && m_regs->PMODE.EN1) ||
+				(m_regs->DISP[1].DISPFB.FBP == FRAME_FBP && m_regs->PMODE.EN2))
+			{
+				g_perfmon.AddDisplayFramebufferSpriteBlit();
+			}
+		}
+
 		GSVertex buff[2];
 		s_n++;
 

@@ -26,6 +26,7 @@ using namespace Threading;
 using namespace R5900;
 
 alignas(16) u8 g_RealGSMem[Ps2MemSize::GSregs];
+static bool s_GSRegistersWritten = false;
 
 void gsSetVideoMode(GS_VideoMode mode)
 {
@@ -222,6 +223,8 @@ void __fastcall gsWrite64_generic( u32 mem, const mem64_t* value )
 
 void __fastcall gsWrite64_page_00( u32 mem, const mem64_t* value )
 {
+	s_GSRegistersWritten |= (mem == GS_DISPFB1 || mem == GS_DISPFB2 || mem == GS_PMODE);
+
 	gsWrite64_generic( mem, value );
 }
 
@@ -433,7 +436,9 @@ void gsPostVsyncStart()
 {
 	//gifUnit.FlushToMTGS();  // Needed for some (broken?) homebrew game loaders
 	
-	GetMTGS().PostVsyncStart();
+	const bool registers_written = s_GSRegistersWritten;
+	s_GSRegistersWritten = false;
+	GetMTGS().PostVsyncStart(registers_written);
 }
 
 void _gs_ResetFrameskip()
