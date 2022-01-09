@@ -3014,12 +3014,12 @@ GIFRegTEX0 GSState::GetTex0Layer(u32 lod)
 
 	// Correct the texture size
 	if (TEX0.TH <= lod)
-		TEX0.TH = 1;
+		TEX0.TH = 0;
 	else
 		TEX0.TH -= lod;
 
 	if (TEX0.TW <= lod)
-		TEX0.TW = 1;
+		TEX0.TW = 0;
 	else
 		TEX0.TW -= lod;
 
