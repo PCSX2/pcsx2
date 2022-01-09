@@ -157,6 +157,8 @@ bool GSRenderer::Merge(int field)
 	GSVector4 src_hw[2];
 	GSVector4 dst[2];
 
+	const bool slbg = m_regs->PMODE.SLBG;
+
 	for (int i = 0; i < 2; i++)
 	{
 		if (!en[i] || !tex[i])
@@ -172,34 +174,38 @@ bool GSRenderer::Merge(int field)
 		GSVector2i display_diff(dr[i].left - display_baseline.x, dr[i].top - display_baseline.y);
 		GSVector2i frame_diff(fr[i].left - frame_baseline.x, fr[i].top - frame_baseline.y);
 
-		// Time Crisis 2/3 uses two side by side images when in split screen mode.
-		// Though ignore cases where baseline and display rectangle offsets only differ by 1 pixel, causes blurring and wrong resolution output on FFXII
-		if (display_diff.x > 2)
+		// Don't apply offset when blending with background color
+		// The Suffering - video monitors (feedback write)
+		if (!slbg) 
 		{
-			off.x = tex[i]->GetScale().x * display_diff.x;
-		}
-		// If the DX offset is too small then consider the status of frame memory offsets, prevents blurring on Tenchu: Fatal Shadows, Worms 3D
-		else if (display_diff.x != frame_diff.x)
-		{
-			off.x = tex[i]->GetScale().x * frame_diff.x;
-		}
-
-		if (m_scanmask_used && display_diff.y == 1) // Scanmask effect wouldn't look correct if we scale the offset
-			off.y = display_diff.y;
-		else if (display_diff.y >= 4) // Shouldn't this be >= 2?
-		{
-			off.y = tex[i]->GetScale().y * display_diff.y;
-
-			if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
+			// Time Crisis 2/3 uses two side by side images when in split screen mode.
+			// Though ignore cases where baseline and display rectangle offsets only differ by 1 pixel, causes blurring and wrong resolution output on FFXII
+			if (display_diff.x > 2)
 			{
-				off.y /= 2;
+				off.x = tex[i]->GetScale().x * display_diff.x;
+			}
+			// If the DX offset is too small then consider the status of frame memory offsets, prevents blurring on Tenchu: Fatal Shadows, Worms 3D
+			else if (display_diff.x != frame_diff.x)
+			{
+				off.x = tex[i]->GetScale().x * frame_diff.x;
+			}
+
+			if (m_scanmask_used && display_diff.y == 1) // Scanmask effect wouldn't look correct if we scale the offset
+				off.y = display_diff.y;
+			else if (display_diff.y >= 4) // Shouldn't this be >= 2?
+			{
+				off.y = tex[i]->GetScale().y * display_diff.y;
+
+				if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
+				{
+					off.y /= 2;
+				}
+			}
+			else if (display_diff.y != frame_diff.y)
+			{
+				off.y = tex[i]->GetScale().y * frame_diff.y;
 			}
 		}
-		else if (display_diff.y != frame_diff.y)
-		{
-			off.y = tex[i]->GetScale().y * frame_diff.y;
-		}
-
 		dst[i] = GSVector4(off).xyxy() + scale * GSVector4(r.rsize());
 
 		fs.x = std::max(fs.x, (int)(dst[i].z + 0.5f));
@@ -213,8 +219,6 @@ bool GSRenderer::Merge(int field)
 		ds.y *= 2;
 	}
 	m_real_size = ds;
-
-	bool slbg = m_regs->PMODE.SLBG;
 
 	if (tex[0] || tex[1])
 	{
