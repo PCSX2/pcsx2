@@ -192,6 +192,8 @@ void GSDevice11::SetupPS(PSSelector sel, const GSHWDrawConfig::PSConstantBuffer*
 		sm.AddMacro("PS_DITHER", sel.dither);
 		sm.AddMacro("PS_ZCLAMP", sel.zclamp);
 		sm.AddMacro("PS_SCANMSK", sel.scanmsk);
+		sm.AddMacro("PS_AUTOMATIC_LOD", sel.automatic_lod);
+		sm.AddMacro("PS_MANUAL_LOD", sel.manual_lod);
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps;
 		CreateShader(m_tfx_source, "tfx.fx", nullptr, "ps_main", sm.GetPtr(), ps.put());

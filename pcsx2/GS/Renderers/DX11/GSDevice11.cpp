@@ -1383,8 +1383,6 @@ static void preprocessSel(GSDevice11::PSSelector& sel)
 	ASSERT(sel.date      == 0); // In-shader destination alpha not supported and shouldn't be sent
 	ASSERT(sel.write_rg  == 0); // Not supported, shouldn't be sent
 	ASSERT(sel.tex_is_fb == 0); // Not supported, shouldn't be sent
-	sel.automatic_lod = 0; // Not currently supported in DX11
-	sel.manual_lod    = 0; // Not currently supported in DX11
 }
 
 void GSDevice11::RenderHW(GSHWDrawConfig& config)
