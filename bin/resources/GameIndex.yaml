@@ -3617,6 +3617,9 @@ SCES-55568:
 SCES-55570:
   name: "SingStar Chartbreaker"
   region: "PAL-G"
+SCES-55571:
+  name: "Ghostbusters"
+  region: "PAL-M6"
 SCES-55573:
   name: "MotorStorm - Arctic Edge"
   region: "PAL-M14"
@@ -3660,6 +3663,12 @@ SCES-55661:
   name: "RA.ONE: The Game"
   region: "PAL-E"
   compat: 5
+SCES-55652:
+  name: "Chandragupta: Warrior Prince"
+  region: "I"
+SCES-55653:
+  name: "Street Cricket Champions 2"
+  region: "I"
 SCES-82034:
   name: "Xenosaga II - Jenseits von Gut und Bose [Disc 1]"
   region: "PAL-M3"
@@ -3679,6 +3688,17 @@ SCKA-20004:
   name: "Sly Cooper and the Thievius Raccoonus"
   region: "NTSC-K"
   compat: 5
+SCKA-20005:
+  name: "Let's Bravo Music"
+  region: "NTSC-K"
+SCKA-20006:
+  name: "Argus-ui Jeonsa"
+  region: "NTSC-K"
+SCKA-20007:
+  name: "SOCOM - U.S. Navy SEALs"
+  region: "NTSC-K"
+  clampModes:
+    vuClampMode: 2 # Fixes bad shadows.
 SCKA-20008:
   name: "Tales of Destiny 2"
   region: "NTSC-K"
@@ -3768,6 +3788,9 @@ SCKA-20028:
     vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
 SCKA-20029:
   name: "Gran Turismo Concept 2002 Tokyo-Seoul [PlayStation 2 Big Hit Series]"
+  region: "NTSC-K"
+SCKA-20030:
+  name: "Sly Cooper: Jeonseolui Bibeobseoreul Chajaseo"
   region: "NTSC-K"
 SCKA-20032:
   name: "Syphon Filter - The Omega Virus"
