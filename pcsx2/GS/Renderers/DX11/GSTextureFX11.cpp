@@ -84,7 +84,7 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 
 	if (i == m_vs.end())
 	{
-		ShaderMacro sm(m_shader.model);
+		ShaderMacro sm(m_shader_cache.GetFeatureLevel());
 
 		sm.AddMacro("VS_TME", sel.tme);
 		sm.AddMacro("VS_FST", sel.fst);
@@ -102,8 +102,8 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 		};
 
 		GSVertexShader11 vs;
-		CreateShader(m_tfx_source, "tfx.fx", nullptr, "vs_main", sm.GetPtr(), &vs.vs, layout, std::size(layout), vs.il.put());
-
+		m_shader_cache.GetVertexShaderAndInputLayout(m_dev.get(),
+			vs.vs.put(), vs.il.put(), layout, std::size(layout), m_tfx_source, sm.GetPtr(), "vs_main");
 		i = m_vs.try_emplace(sel.key, std::move(vs)).first;
 	}
 
@@ -132,13 +132,13 @@ void GSDevice11::SetupGS(GSSelector sel)
 		}
 		else
 		{
-			ShaderMacro sm(m_shader.model);
+			ShaderMacro sm(m_shader_cache.GetFeatureLevel());
 
 			sm.AddMacro("GS_IIP", sel.iip);
 			sm.AddMacro("GS_PRIM", static_cast<int>(sel.topology));
 			sm.AddMacro("GS_EXPAND", sel.expand);
 
-			CreateShader(m_tfx_source, "tfx.fx", nullptr, "gs_main", sm.GetPtr(), gs.put());
+			gs = m_shader_cache.GetGeometryShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "gs_main");
 
 			m_gs[sel.key] = gs;
 		}
@@ -153,7 +153,7 @@ void GSDevice11::SetupPS(PSSelector sel, const GSHWDrawConfig::PSConstantBuffer*
 
 	if (i == m_ps.end())
 	{
-		ShaderMacro sm(m_shader.model);
+		ShaderMacro sm(m_shader_cache.GetFeatureLevel());
 
 		sm.AddMacro("PS_SCALE_FACTOR", std::max(1, m_upscale_multiplier));
 		sm.AddMacro("PS_FST", sel.fst);
@@ -195,9 +195,7 @@ void GSDevice11::SetupPS(PSSelector sel, const GSHWDrawConfig::PSConstantBuffer*
 		sm.AddMacro("PS_AUTOMATIC_LOD", sel.automatic_lod);
 		sm.AddMacro("PS_MANUAL_LOD", sel.manual_lod);
 
-		wil::com_ptr_nothrow<ID3D11PixelShader> ps;
-		CreateShader(m_tfx_source, "tfx.fx", nullptr, "ps_main", sm.GetPtr(), ps.put());
-
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
 		i = m_ps.try_emplace(sel.key, std::move(ps)).first;
 	}
 

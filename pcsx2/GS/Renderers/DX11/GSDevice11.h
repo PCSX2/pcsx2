@@ -18,6 +18,7 @@
 #include "GSTexture11.h"
 #include "GS/GSVector.h"
 #include "GS/Renderers/Common/GSDevice.h"
+#include "common/D3D11/ShaderCache.h"
 #include <unordered_map>
 #include <wil/com.h>
 #include <dxgi1_3.h>
@@ -101,12 +102,15 @@ public:
 		std::vector<mcstr> mout;
 
 	public:
-		ShaderMacro(std::string& smodel);
+		ShaderMacro(D3D_FEATURE_LEVEL fl);
 		void AddMacro(const char* n, int d);
 		D3D_SHADER_MACRO* GetPtr(void);
 	};
 
 private:
+	// Increment this constant whenever shaders change, to invalidate user's shader cache.
+	static constexpr u32 SHADER_VERSION = 1;
+
 	float m_hack_topleft_offset;
 	int m_upscale_multiplier;
 	int m_d3d_texsize;
@@ -222,14 +226,8 @@ private:
 
 	std::unique_ptr<GSTexture11> m_download_tex;
 
+	D3D11::ShaderCache m_shader_cache;
 	std::string m_tfx_source;
-
-protected:
-	struct
-	{
-		D3D_FEATURE_LEVEL level;
-		std::string model, vs, gs, ps, cs;
-	} m_shader;
 
 public:
 	GSDevice11();
@@ -238,9 +236,6 @@ public:
 	__fi static GSDevice11* GetInstance() { return static_cast<GSDevice11*>(g_gs_device.get()); }
 	__fi ID3D11Device* GetD3DDevice() const { return m_dev.get(); }
 	__fi ID3D11DeviceContext* GetD3DContext() const { return m_ctx.get(); }
-
-	bool SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode);
-	void GetFeatureLevel(D3D_FEATURE_LEVEL& level) const { level = m_shader.level; }
 
 	bool Create(HostDisplay* display);
 
@@ -306,10 +301,4 @@ public:
 	ID3D11Device* operator->() { return m_dev.get(); }
 	operator ID3D11Device*() { return m_dev.get(); }
 	operator ID3D11DeviceContext*() { return m_ctx.get(); }
-
-	void CreateShader(const std::string& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11VertexShader** vs, D3D11_INPUT_ELEMENT_DESC* layout, int count, ID3D11InputLayout** il);
-	void CreateShader(const std::string& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11GeometryShader** gs);
-	void CreateShader(const std::string& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11PixelShader** ps);
-
-	void CompileShader(const std::string& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3DBlob** shader, const std::string& shader_model);
 };
