@@ -288,6 +288,43 @@ struct alignas(16) GSHWDrawConfig
 			out.biln = 1;
 			return out;
 		}
+
+		/// Returns true if the effective minification filter is linear.
+		__fi bool IsMinFilterLinear() const
+		{
+			if (triln < static_cast<u8>(GS_MIN_FILTER::Nearest_Mipmap_Nearest))
+			{
+				// use the same filter as mag when mipmapping is off
+				return biln;
+			}
+			else
+			{
+				// Linear_Mipmap_Nearest or Linear_Mipmap_Linear
+				return (triln >= static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Nearest));
+			}
+		}
+
+		/// Returns true if the effective magnification filter is linear.
+		__fi bool IsMagFilterLinear() const
+		{
+			// magnification uses biln regardless of mip mode (they're only used for minification)
+			return biln;
+		}
+
+		/// Returns true if the effective mipmap filter is linear.
+		__fi bool IsMipFilterLinear() const
+		{
+			return (triln == static_cast<u8>(GS_MIN_FILTER::Nearest_Mipmap_Linear) ||
+					triln == static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Linear));
+		}
+
+		/// Returns the maximum LOD for this sampler (0 if mipmapping is disabled).
+		__fi float GetMaxLOD() const
+		{
+			// See https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkSamplerCreateInfo.html#_description
+			// for the reasoning behind 0.25f here.
+			return triln >= static_cast<u8>(GS_MIN_FILTER::Nearest_Mipmap_Nearest) ? 1000.0f : 0.25f;
+		}
 	};
 	struct DepthStencilSelector
 	{
