@@ -20,7 +20,7 @@
 #include <wil/com.h>
 #include <d3d11.h>
 
-class GSTexture11 : public GSTexture
+class GSTexture11 final : public GSTexture
 {
 	wil::com_ptr_nothrow<ID3D11Device> m_dev;
 	wil::com_ptr_nothrow<ID3D11DeviceContext> m_ctx;
@@ -31,17 +31,17 @@ class GSTexture11 : public GSTexture
 	wil::com_ptr_nothrow<ID3D11DepthStencilView> m_dsv;
 
 	int m_layer;
-	int m_max_layer;
 
 public:
-	explicit GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, GSTexture::Format format);
+	explicit GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, GSTexture::Type type, GSTexture::Format format);
 
 	void* GetNativeHandle() const override;
 
-	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0);
-	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0);
-	void Unmap();
-	bool Save(const std::string& fn);
+	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) override;
+	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) override;
+	void Unmap() override;
+	bool Save(const std::string& fn) override;
+	void GenerateMipmap() override;
 	bool Equal(GSTexture11* tex);
 
 	operator ID3D11Texture2D*();

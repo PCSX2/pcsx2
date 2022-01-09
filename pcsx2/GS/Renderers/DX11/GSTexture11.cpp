@@ -18,7 +18,7 @@
 #include "GS/GSPng.h"
 #include "GS/GSPerfMon.h"
 
-GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, GSTexture::Format format)
+GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, GSTexture::Type type, GSTexture::Format format)
 	: m_texture(std::move(texture)), m_layer(0)
 {
 	ASSERT(m_texture);
@@ -30,19 +30,10 @@ GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, GSTextur
 
 	m_size.x = (int)m_desc.Width;
 	m_size.y = (int)m_desc.Height;
-
-	if (m_desc.BindFlags & D3D11_BIND_RENDER_TARGET)
-		m_type = Type::RenderTarget;
-	else if (m_desc.BindFlags & D3D11_BIND_DEPTH_STENCIL)
-		m_type = Type::DepthStencil;
-	else if (m_desc.BindFlags & D3D11_BIND_SHADER_RESOURCE)
-		m_type = Type::Texture;
-	else if (m_desc.Usage == D3D11_USAGE_STAGING)
-		m_type = Type::Offscreen;
-
+	m_type = type;
 	m_format = format;
 
-	m_max_layer = m_desc.MipLevels;
+	m_mipmap_levels = static_cast<int>(m_desc.MipLevels);
 }
 
 void* GSTexture11::GetNativeHandle() const
@@ -52,8 +43,8 @@ void* GSTexture11::GetNativeHandle() const
 
 bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
-	if (layer >= m_max_layer)
-		return true;
+	if (layer >= m_mipmap_levels)
+		return false;
 
 	if (m_dev && m_texture)
 	{
@@ -63,7 +54,7 @@ bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int l
 		UINT subresource = layer; // MipSlice + (ArraySlice * MipLevels).
 
 		m_ctx->UpdateSubresource(m_texture.get(), subresource, &box, data, pitch, 0);
-
+		m_needs_mipmaps_generated |= (layer == 0);
 		return true;
 	}
 
@@ -78,7 +69,7 @@ bool GSTexture11::Map(GSMap& m, const GSVector4i* r, int layer)
 		return false;
 	}
 
-	if (layer >= m_max_layer)
+	if (layer >= m_mipmap_levels)
 		return false;
 
 	if (m_texture && m_desc.Usage == D3D11_USAGE_STAGING)
@@ -105,6 +96,7 @@ void GSTexture11::Unmap()
 	if (m_texture)
 	{
 		UINT subresource = m_layer;
+		m_needs_mipmaps_generated |= (m_layer == 0);
 		m_ctx->Unmap(m_texture.get(), subresource);
 	}
 }
@@ -206,6 +198,11 @@ bool GSTexture11::Save(const std::string& fn)
 	m_ctx->Unmap(res.get(), 0);
 
 	return success;
+}
+
+void GSTexture11::GenerateMipmap()
+{
+	m_ctx->GenerateMips(operator ID3D11ShaderResourceView*());
 }
 
 GSTexture11::operator ID3D11Texture2D*()
