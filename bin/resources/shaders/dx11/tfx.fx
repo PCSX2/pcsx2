@@ -54,6 +54,8 @@
 #define PS_DITHER 0
 #define PS_ZCLAMP 0
 #define PS_SCANMSK 0
+#define PS_AUTOMATIC_LOD 0
+#define PS_MANUAL_LOD 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
@@ -139,7 +141,7 @@ cbuffer cb1
 	float4x4 DitherMatrix;
 };
 
-float4 sample_c(float2 uv)
+float4 sample_c(float2 uv, float uv_w)
 {
 	if (PS_POINT_SAMPLER)
 	{
@@ -151,7 +153,25 @@ float4 sample_c(float2 uv)
 		// As of 2018 this issue is still present.
 		uv = (trunc(uv * WH.zw) + float2(0.5, 0.5)) / WH.zw;
 	}
+
+#if PS_AUTOMATIC_LOD == 1
 	return Texture.Sample(TextureSampler, uv);
+#elif PS_MANUAL_LOD == 1
+	// FIXME add LOD: K - ( LOG2(Q) * (1 << L))
+	float K = MinMax.x;
+	float L = MinMax.y;
+	float bias = MinMax.z;
+	float max_lod = MinMax.w;
+
+	float gs_lod = K - log2(abs(uv_w)) * L;
+	// FIXME max useful ?
+	//float lod = max(min(gs_lod, max_lod) - bias, 0.0f);
+	float lod = min(gs_lod, max_lod) - bias;
+
+	return Texture.SampleLevel(TextureSampler, uv, lod);
+#else
+	return Texture.SampleLevel(TextureSampler, uv, 0); // No lod
+#endif
 }
 
 float4 sample_p(float u)
@@ -213,26 +233,26 @@ float4 clamp_wrap_uv(float4 uv)
 	return uv;
 }
 
-float4x4 sample_4c(float4 uv)
+float4x4 sample_4c(float4 uv, float uv_w)
 {
 	float4x4 c;
 
-	c[0] = sample_c(uv.xy);
-	c[1] = sample_c(uv.zy);
-	c[2] = sample_c(uv.xw);
-	c[3] = sample_c(uv.zw);
+	c[0] = sample_c(uv.xy, uv_w);
+	c[1] = sample_c(uv.zy, uv_w);
+	c[2] = sample_c(uv.xw, uv_w);
+	c[3] = sample_c(uv.zw, uv_w);
 
 	return c;
 }
 
-float4 sample_4_index(float4 uv)
+float4 sample_4_index(float4 uv, float uv_w)
 {
 	float4 c;
 
-	c.x = sample_c(uv.xy).a;
-	c.y = sample_c(uv.zy).a;
-	c.z = sample_c(uv.xw).a;
-	c.w = sample_c(uv.zw).a;
+	c.x = sample_c(uv.xy, uv_w).a;
+	c.y = sample_c(uv.zy, uv_w).a;
+	c.z = sample_c(uv.xw, uv_w).a;
+	c.w = sample_c(uv.zw, uv_w).a;
 
 	// Denormalize value
 	uint4 i = uint4(c * 255.0f + 0.5f);
@@ -481,7 +501,7 @@ float4 fetch_gXbY(int2 xy)
 	}
 }
 
-float4 sample_color(float2 st)
+float4 sample_color(float2 st, float uv_w)
 {
 	#if PS_TCOFFSETHACK
 	st += TC_OffsetHack.xy;
@@ -493,7 +513,7 @@ float4 sample_color(float2 st)
 
 	if (PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_WMS < 2 && PS_WMT < 2)
 	{
-		c[0] = sample_c(st);
+		c[0] = sample_c(st, uv_w);
 	}
 	else
 	{
@@ -517,9 +537,9 @@ float4 sample_color(float2 st)
 		uv = clamp_wrap_uv(uv);
 
 #if PS_PAL_FMT != 0
-			c = sample_4p(sample_4_index(uv));
+			c = sample_4p(sample_4_index(uv, uv_w));
 #else
-			c = sample_4c(uv);
+			c = sample_4c(uv, uv_w);
 #endif
 	}
 
@@ -644,7 +664,7 @@ float4 ps_color(PS_INPUT input)
 #elif PS_DEPTH_FMT > 0
 	float4 T = sample_depth(st_int, input.p.xy);
 #else
-	float4 T = sample_color(st);
+	float4 T = sample_color(st, input.t.w);
 #endif
 
 	float4 C = tfx(T, input.c);
