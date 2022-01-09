@@ -724,21 +724,54 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
 {
-	const bool slbg = PMODE.SLBG;
-	const bool mmod = PMODE.MMOD;
+	const GSVector4 full_r(0.0f, 0.0f, 1.0f, 1.0f);
+	const bool feedback_write_2 = PMODE.EN2 && sTex[2] != nullptr && EXTBUF.FBIN == 1;
+	const bool feedback_write_1 = PMODE.EN1 && sTex[2] != nullptr && EXTBUF.FBIN == 0;
+	const bool feedback_write_2_but_blend_bg = feedback_write_2 && PMODE.SLBG == 1;
 
+	// Merge the 2 source textures (sTex[0],sTex[1]). Final results go to dTex. Feedback write will go to sTex[2].
+	// If either 2nd output is disabled or SLBG is 1, a background color will be used.
+	// Note: background color is also used when outside of the unit rectangle area
 	ClearRenderTarget(dTex, c);
 
-	if (sTex[1] && !slbg)
+	// Upload constant to select YUV algo, but skip constant buffer update if we don't need it
+	if (feedback_write_2 || feedback_write_1 || sTex[0])
 	{
-		StretchRect(sTex[1], sRect[1], dTex, dRect[1], m_merge.ps[0].get(), nullptr, true);
+		MergeConstantBuffer cb;
+		cb.BGColor = c;
+		cb.EMODA = EXTBUF.EMODA;
+		cb.EMODC = EXTBUF.EMODC;
+		m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
 	}
+
+	if (sTex[1] && (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg))
+	{
+		// 2nd output is enabled and selected. Copy it to destination so we can blend it with 1st output
+		// Note: value outside of dRect must contains the background color (c)
+		StretchRect(sTex[1], sRect[1], dTex, dRect[1], ShaderConvert::COPY);
+	}
+
+	// Save 2nd output
+	if (feedback_write_2)
+	{
+		StretchRect(dTex, full_r, sTex[2], dRect[1], m_convert.ps[static_cast<int>(ShaderConvert::YUV)].get(),
+			m_merge.cb.get(), nullptr, true);
+	}
+
+	// Restore background color to process the normal merge
+	if (feedback_write_2_but_blend_bg)
+		ClearRenderTarget(dTex, c);
 
 	if (sTex[0])
 	{
-		m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &c, 0, 0);
+		// 1st output is enabled. It must be blended
+		StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge.ps[PMODE.MMOD].get(), m_merge.cb.get(), m_merge.bs.get(), true);
+	}
 
-		StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge.ps[mmod ? 1 : 0].get(), m_merge.cb.get(), m_merge.bs.get(), true);
+	if (feedback_write_1)
+	{
+		StretchRect(dTex, full_r, sTex[2], dRect[0], m_convert.ps[static_cast<int>(ShaderConvert::YUV)].get(),
+			m_merge.cb.get(), nullptr, true);
 	}
 }
 

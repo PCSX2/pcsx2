@@ -6,6 +6,9 @@ SamplerState Sampler;
 cbuffer cb0
 {
 	float4 BGColor;
+	int EMODA;
+	int EMODC;
+	int cb0_pad[2];
 };
 
 struct PS_INPUT
