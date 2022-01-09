@@ -22,6 +22,7 @@
 #include "GS/GSUtil.h"
 #include "Host.h"
 #include "HostDisplay.h"
+#include "common/StringUtil.h"
 #include <fstream>
 #include <sstream>
 #include <VersionHelpers.h>
@@ -43,41 +44,6 @@ GSDevice11::GSDevice11()
 	m_features.point_expand = false;
 	m_features.line_expand = false;
 	m_features.prefer_new_textures = false;
-}
-
-bool GSDevice11::SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode)
-{
-	m_shader.level = level;
-
-	switch (level)
-	{
-		case D3D_FEATURE_LEVEL_10_0:
-			m_shader.model = "0x400";
-			m_shader.vs = "vs_4_0";
-			m_shader.gs = "gs_4_0";
-			m_shader.ps = "ps_4_0";
-			m_shader.cs = "cs_4_0";
-			break;
-		case D3D_FEATURE_LEVEL_10_1:
-			m_shader.model = "0x401";
-			m_shader.vs = "vs_4_1";
-			m_shader.gs = "gs_4_1";
-			m_shader.ps = "ps_4_1";
-			m_shader.cs = "cs_4_1";
-			break;
-		case D3D_FEATURE_LEVEL_11_0:
-			m_shader.model = "0x500";
-			m_shader.vs = "vs_5_0";
-			m_shader.gs = "gs_5_0";
-			m_shader.ps = "ps_5_0";
-			m_shader.cs = "cs_5_0";
-			break;
-		default:
-			ASSERT(0);
-			return false;
-	}
-
-	return true;
 }
 
 bool GSDevice11::Create(HostDisplay* display)
@@ -118,8 +84,19 @@ bool GSDevice11::Create(HostDisplay* display)
 		}
 	}
 
-	if (!SetFeatureLevel(m_dev->GetFeatureLevel(), true))
-		return false;
+	if (!GSConfig.DisableShaderCache)
+	{
+		if (!m_shader_cache.Open(StringUtil::wxStringToUTF8String(EmuFolders::Cache.ToString()),
+				m_dev->GetFeatureLevel(), SHADER_VERSION, GSConfig.UseDebugDevice))
+		{
+			Console.Warning("Shader cache failed to open.");
+		}
+	}
+	else
+	{
+		m_shader_cache.Open({}, m_dev->GetFeatureLevel(), SHADER_VERSION, GSConfig.UseDebugDevice);
+		Console.WriteLn("Not using shader cache.");
+	}
 
 	// Set maximum texture size limit based on supported feature level.
 	if (level >= D3D_FEATURE_LEVEL_11_0)
@@ -152,21 +129,27 @@ bool GSDevice11::Create(HostDisplay* display)
 		{"COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
-	ShaderMacro sm_model(m_shader.model);
+	ShaderMacro sm_model(m_shader_cache.GetFeatureLevel());
 
 	shader = Host::ReadResourceFileToString("shaders/dx11/convert.fx");
 	if (!shader.has_value())
 		return false;
-	CreateShader(*shader, "convert.fx", nullptr, "vs_main", sm_model.GetPtr(), &m_convert.vs, il_convert, std::size(il_convert), m_convert.il.put());
+	if (!m_shader_cache.GetVertexShaderAndInputLayout(m_dev.get(), m_convert.vs.put(), m_convert.il.put(),
+			il_convert, std::size(il_convert), *shader, sm_model.GetPtr(), "vs_main"))
+	{
+		return false;
+	}
 
-	ShaderMacro sm_convert(m_shader.model);
+	ShaderMacro sm_convert(m_shader_cache.GetFeatureLevel());
 	sm_convert.AddMacro("PS_SCALE_FACTOR", std::max(1, m_upscale_multiplier));
 
 	D3D_SHADER_MACRO* sm_convert_ptr = sm_convert.GetPtr();
 
 	for (size_t i = 0; i < std::size(m_convert.ps); i++)
 	{
-		CreateShader(*shader, "convert.fx", nullptr, shaderName(static_cast<ShaderConvert>(i)), sm_convert_ptr, m_convert.ps[i].put());
+		m_convert.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm_convert_ptr, shaderName(static_cast<ShaderConvert>(i)));
+		if (!m_convert.ps[i])
+			return false;
 	}
 
 	memset(&dsd, 0, sizeof(dsd));
@@ -201,7 +184,10 @@ bool GSDevice11::Create(HostDisplay* display)
 
 	for (size_t i = 0; i < std::size(m_merge.ps); i++)
 	{
-		CreateShader(*shader, "merge.fx", nullptr, format("ps_main%d", i).c_str(), sm_model.GetPtr(), m_merge.ps[i].put());
+		const std::string entry_point(StringUtil::StdStringFromFormat("ps_main%d", i));
+		m_merge.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm_model.GetPtr(), entry_point.c_str());
+		if (!m_merge.ps[i])
+			return false;
 	}
 
 	memset(&bsd, 0, sizeof(bsd));
@@ -232,12 +218,15 @@ bool GSDevice11::Create(HostDisplay* display)
 		return false;
 	for (size_t i = 0; i < std::size(m_interlace.ps); i++)
 	{
-		CreateShader(*shader, "interlace.fx", nullptr, format("ps_main%d", i).c_str(), sm_model.GetPtr(), m_interlace.ps[i].put());
+		const std::string entry_point(StringUtil::StdStringFromFormat("ps_main%d", i));
+		m_interlace.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm_model.GetPtr(), entry_point.c_str());
+		if (!m_interlace.ps[i])
+			return false;
 	}
 
 	// Shade Boost
 
-	ShaderMacro sm_sboost(m_shader.model);
+	ShaderMacro sm_sboost(m_shader_cache.GetFeatureLevel());
 
 	sm_sboost.AddMacro("SB_CONTRAST", std::clamp(theApp.GetConfigI("ShadeBoost_Contrast"), 0, 100));
 	sm_sboost.AddMacro("SB_BRIGHTNESS", std::clamp(theApp.GetConfigI("ShadeBoost_Brightness"), 0, 100));
@@ -254,7 +243,9 @@ bool GSDevice11::Create(HostDisplay* display)
 	shader = Host::ReadResourceFileToString("shaders/dx11/shadeboost.fx");
 	if (!shader.has_value())
 		return false;
-	CreateShader(*shader, "shadeboost.fx", nullptr, "ps_main", sm_sboost.GetPtr(), m_shadeboost.ps.put());
+	m_shadeboost.ps = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm_sboost.GetPtr(), "ps_main");
+	if (!m_shadeboost.ps)
+		return false;
 
 	// External fx shader
 
@@ -802,34 +793,31 @@ void GSDevice11::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 
 	ExternalFXConstantBuffer cb;
 
-	if (m_shaderfx.ps == nullptr)
+	if (!m_shaderfx.ps)
 	{
-		try
+		std::string config_name(theApp.GetConfigS("shaderfx_conf"));
+		std::ifstream fconfig(config_name);
+		std::stringstream shader;
+		if (fconfig.good())
+			shader << fconfig.rdbuf() << "\n";
+		else
+			fprintf(stderr, "GS: External shader config '%s' not loaded.\n", config_name.c_str());
+
+		std::string shader_name(theApp.GetConfigS("shaderfx_glsl"));
+		std::ifstream fshader(shader_name);
+		if (!fshader.good())
 		{
-			std::string config_name(theApp.GetConfigS("shaderfx_conf"));
-			std::ifstream fconfig(config_name);
-			std::stringstream shader;
-			if (fconfig.good())
-				shader << fconfig.rdbuf() << "\n";
-			else
-				fprintf(stderr, "GS: External shader config '%s' not loaded.\n", config_name.c_str());
-
-			std::string shader_name(theApp.GetConfigS("shaderfx_glsl"));
-			std::ifstream fshader(shader_name);
-			if (!fshader.good())
-			{
-				fprintf(stderr, "GS: External shader '%s' not loaded and will be disabled!\n", shader_name.c_str());
-				return;
-			}
-
-			shader << fshader.rdbuf();
-			const std::string& s = shader.str();
-			ShaderMacro sm(m_shader.model);
-			CreateShader(s, shader_name.c_str(), D3D_COMPILE_STANDARD_FILE_INCLUDE, "ps_main", sm.GetPtr(), m_shaderfx.ps.put());
+			fprintf(stderr, "GS: External shader '%s' not loaded and will be disabled!\n", shader_name.c_str());
+			return;
 		}
-		catch (GSRecoverableError)
+
+		shader << fshader.rdbuf();
+		ShaderMacro sm(m_shader_cache.GetFeatureLevel());
+		m_shaderfx.ps = m_shader_cache.GetPixelShader(m_dev.get(), shader.str(), sm.GetPtr(), "ps_main");
+		if (!m_shaderfx.ps)
 		{
 			printf("GS: Failed to compile external post-processing shader.\n");
+			return;
 		}
 	}
 
@@ -851,19 +839,17 @@ void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 
 	if (!m_fxaa_ps)
 	{
-		try
+		std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/common/fxaa.fx");
+		if (!shader.has_value())
 		{
-			std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/common/fxaa.fx");
-			if (shader.has_value())
-			{
-				ShaderMacro sm(m_shader.model);
-				CreateShader(*shader, "fxaa.fx", nullptr, "ps_main", sm.GetPtr(), m_fxaa_ps.put());
-			}
+			Console.Error("FXAA shader is missing");
+			return;
 		}
-		catch (GSRecoverableError)
-		{
-			printf("GS: Failed to compile fxaa shader.\n");
-		}
+		
+		ShaderMacro sm(m_shader_cache.GetFeatureLevel());
+		m_fxaa_ps = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm.GetPtr(), "ps_main");
+		if (!m_fxaa_ps)
+			return;
 	}
 
 	StretchRect(sTex, sRect, dTex, dRect, m_fxaa_ps.get(), nullptr, true);
@@ -1271,9 +1257,21 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	}
 }
 
-GSDevice11::ShaderMacro::ShaderMacro(std::string& smodel)
+GSDevice11::ShaderMacro::ShaderMacro(D3D_FEATURE_LEVEL fl)
 {
-	mlist.emplace_back("SHADER_MODEL", smodel);
+	switch (fl)
+	{
+	case D3D_FEATURE_LEVEL_10_0:
+		mlist.emplace_back("SHADER_MODEL", "0x400");
+		break;
+	case D3D_FEATURE_LEVEL_10_1:
+		mlist.emplace_back("SHADER_MODEL", "0x401");
+		break;
+	case D3D_FEATURE_LEVEL_11_0:
+	default:
+		mlist.emplace_back("SHADER_MODEL", "0x500");
+		break;
+	}
 }
 
 void GSDevice11::ShaderMacro::AddMacro(const char* n, int d)
@@ -1290,79 +1288,6 @@ D3D_SHADER_MACRO* GSDevice11::ShaderMacro::GetPtr(void)
 
 	mout.emplace_back(nullptr, nullptr);
 	return (D3D_SHADER_MACRO*)mout.data();
-}
-
-void GSDevice11::CreateShader(const std::string& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11VertexShader** vs, D3D11_INPUT_ELEMENT_DESC* layout, int count, ID3D11InputLayout** il)
-{
-	HRESULT hr;
-
-	wil::com_ptr_nothrow<ID3DBlob> shader;
-
-	CompileShader(source, fn, include, entry, macro, shader.put(), m_shader.vs);
-
-	hr = m_dev->CreateVertexShader(shader->GetBufferPointer(), shader->GetBufferSize(), nullptr, vs);
-
-	if (FAILED(hr))
-	{
-		throw GSRecoverableError();
-	}
-
-	hr = m_dev->CreateInputLayout(layout, count, shader->GetBufferPointer(), shader->GetBufferSize(), il);
-
-	if (FAILED(hr))
-	{
-		throw GSRecoverableError();
-	}
-}
-
-void GSDevice11::CreateShader(const std::string& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11GeometryShader** gs)
-{
-	wil::com_ptr_nothrow<ID3DBlob> shader;
-
-	CompileShader(source, fn, include, entry, macro, shader.put(), m_shader.gs);
-
-	HRESULT hr = m_dev->CreateGeometryShader(shader->GetBufferPointer(), shader->GetBufferSize(), nullptr, gs);
-
-	if (FAILED(hr))
-	{
-		throw GSRecoverableError();
-	}
-}
-
-void GSDevice11::CreateShader(const std::string& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11PixelShader** ps)
-{
-	wil::com_ptr_nothrow<ID3DBlob> shader;
-
-	CompileShader(source, fn, include, entry, macro, shader.put(), m_shader.ps);
-
-	HRESULT hr = m_dev->CreatePixelShader(shader->GetBufferPointer(), shader->GetBufferSize(), nullptr, ps);
-
-	if (FAILED(hr))
-	{
-		throw GSRecoverableError();
-	}
-}
-
-void GSDevice11::CompileShader(const std::string& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3DBlob** shader, const std::string& shader_model)
-{
-	wil::com_ptr_nothrow<ID3DBlob> error;
-
-	UINT flags = 0;
-
-#ifdef _DEBUG
-	flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION | D3DCOMPILE_AVOID_FLOW_CONTROL;
-#endif
-
-	const HRESULT hr = D3DCompile(
-		source.c_str(), source.size(), fn, macro,
-		include, entry, shader_model.c_str(),
-		flags, 0, shader, error.put());
-
-	if (error)
-		fprintf(stderr, "%s\n", (const char*)error->GetBufferPointer());
-
-	if (FAILED(hr))
-		throw GSRecoverableError();
 }
 
 static GSDevice11::OMBlendSelector convertSel(GSHWDrawConfig::ColorMaskSelector cm, GSHWDrawConfig::BlendState blend)
