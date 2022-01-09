@@ -58,7 +58,7 @@ private:
 	u32 m_mem_usage;
 
 public:
-	explicit GSTextureOGL(Type type, int w, int h, Format format, GLuint fbo_read, bool mipmap);
+	explicit GSTextureOGL(Type type, int width, int height, int levels, Format format, GLuint fbo_read);
 	virtual ~GSTextureOGL();
 
 	void* GetNativeHandle() const override;

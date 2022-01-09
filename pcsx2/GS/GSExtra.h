@@ -113,6 +113,10 @@ static const GSVector2i default_rt_size(1280, 1024);
 // Maximum texture size to skip preload/hash path.
 static constexpr int MAXIMUM_PRELOAD_TEXTURE_SIZE = 512;
 
+// Maximum number of mipmap levels for a texture.
+// PS2 has a max of 7 levels (1 base + 6 mips).
+static constexpr int MAXIMUM_TEXTURE_MIPMAP_LEVELS = 7;
+
 // Helper path to dump texture
 extern const std::string root_sw;
 extern const std::string root_hw;

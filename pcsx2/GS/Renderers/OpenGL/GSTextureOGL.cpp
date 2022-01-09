@@ -171,12 +171,12 @@ namespace PboPool
 	}
 } // namespace PboPool
 
-GSTextureOGL::GSTextureOGL(Type type, int w, int h, Format format, GLuint fbo_read, bool mipmap)
+GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format format, GLuint fbo_read)
 	: m_clean(false), m_r_x(0), m_r_y(0), m_r_w(0), m_r_h(0), m_layer(0)
 {
 	// OpenGL didn't like dimensions of size 0
-	m_size.x = std::max(1, w);
-	m_size.y = std::max(1, h);
+	m_size.x = std::max(1, width);
+	m_size.y = std::max(1, height);
 	m_format = format;
 	m_type   = type;
 	m_fbo_read = fbo_read;
@@ -251,7 +251,7 @@ GSTextureOGL::GSTextureOGL(Type type, int w, int h, Format format, GLuint fbo_re
 	{
 		case Type::Texture:
 			// Only 32 bits input texture will be supported for mipmap
-			m_mipmap_levels = mipmap && m_format == Format::Color ? (int)log2(std::max(w, h)) : 1;
+			m_mipmap_levels = levels;
 			break;
 		case Type::SparseRenderTarget:
 		case Type::SparseDepthStencil:
