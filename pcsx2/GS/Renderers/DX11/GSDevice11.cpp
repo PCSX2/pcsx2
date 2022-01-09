@@ -481,7 +481,7 @@ void GSDevice11::ClearStencil(GSTexture* t, u8 c)
 	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_STENCIL, 0, c);
 }
 
-GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int w, int h, bool mipmap, GSTexture::Format format)
+GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
 	D3D11_TEXTURE2D_DESC desc;
 
@@ -503,10 +503,10 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int w, int h, bool mi
 	}
 
 	// Texture limit for D3D10/11 min 1, max 8192 D3D10, max 16384 D3D11.
-	desc.Width = std::max(1, std::min(w, m_d3d_texsize));
-	desc.Height = std::max(1, std::min(h, m_d3d_texsize));
+	desc.Width = std::clamp(width, 1, m_d3d_texsize);
+	desc.Height = std::clamp(height, 1, m_d3d_texsize);
 	desc.Format = dxformat;
-	desc.MipLevels = mipmap ? (int)log2(std::max(desc.Width, desc.Height)) : 1;
+	desc.MipLevels = levels;
 	desc.ArraySize = 1;
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
@@ -521,8 +521,8 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int w, int h, bool mi
 			desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 			break;
 		case GSTexture::Type::Texture:
-			desc.BindFlags = mipmap ? (D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE) : D3D11_BIND_SHADER_RESOURCE;
-			desc.MiscFlags = mipmap ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
+			desc.BindFlags = (levels > 1) ? (D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE) : D3D11_BIND_SHADER_RESOURCE;
+			desc.MiscFlags = (levels > 1) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
 			break;
 		case GSTexture::Type::Offscreen:
 			desc.Usage = D3D11_USAGE_STAGING;

@@ -198,14 +198,10 @@ void GSDeviceOGL::GenerateProfilerData()
 	}
 }
 
-GSTexture* GSDeviceOGL::CreateSurface(GSTexture::Type type, int w, int h, bool mipmap, GSTexture::Format fmt)
+GSTexture* GSDeviceOGL::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
 	GL_PUSH("Create surface");
-
-	// A wrapper to call GSTextureOGL, with the different kind of parameters.
-	GSTextureOGL* t = new GSTextureOGL(type, w, h, fmt, m_fbo_read, mipmap);
-
-	return t;
+	return new GSTextureOGL(type, width, height, levels, format, m_fbo_read);
 }
 
 bool GSDeviceOGL::Create(HostDisplay* display)

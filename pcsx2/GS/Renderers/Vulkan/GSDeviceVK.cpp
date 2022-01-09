@@ -338,16 +338,15 @@ void GSDeviceVK::ClearStencil(GSTexture* t, u8 c)
 	static_cast<GSTextureVK*>(t)->TransitionToLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 }
 
-GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int w, int h, bool mipmap, GSTexture::Format format)
+GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
 	pxAssert(type != GSTexture::Type::Offscreen && type != GSTexture::Type::SparseRenderTarget &&
 			 type != GSTexture::Type::SparseDepthStencil);
 
-	const u32 width = std::max<u32>(1, std::min<u32>(w, g_vulkan_context->GetMaxImageDimension2D()));
-	const u32 height = std::max<u32>(1, std::min<u32>(h, g_vulkan_context->GetMaxImageDimension2D()));
-	const u32 layers = mipmap ? static_cast<u32>(log2(std::max(w, h))) : 1u;
+	const u32 clamped_width = static_cast<u32>(std::clamp<int>(1, width, g_vulkan_context->GetMaxImageDimension2D()));
+	const u32 clamped_height = static_cast<u32>(std::clamp<int>(1, height, g_vulkan_context->GetMaxImageDimension2D()));
 
-	return GSTextureVK::Create(type, width, height, layers, format).release();
+	return GSTextureVK::Create(type, clamped_width, clamped_height, levels, format).release();
 }
 
 bool GSDeviceVK::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map)
