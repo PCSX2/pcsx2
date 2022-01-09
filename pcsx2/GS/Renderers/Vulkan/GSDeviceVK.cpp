@@ -952,20 +952,11 @@ VkSampler GSDeviceVK::GetSampler(GSHWDrawConfig::SamplerSelector ss)
 
 	const bool aniso = (ss.aniso && GSConfig.MaxAnisotropy > 1);
 
-	static constexpr std::array<VkSamplerMipmapMode, 6> mipmap_modes = {{
-		VK_SAMPLER_MIPMAP_MODE_NEAREST, // Nearest
-		VK_SAMPLER_MIPMAP_MODE_NEAREST, // Linear
-		VK_SAMPLER_MIPMAP_MODE_NEAREST, // Nearest_Mipmap_Nearest
-		VK_SAMPLER_MIPMAP_MODE_LINEAR, // Nearest_Mipmap_Linear
-		VK_SAMPLER_MIPMAP_MODE_NEAREST, // Linear_Mipmap_Nearest
-		VK_SAMPLER_MIPMAP_MODE_LINEAR, // Linear_Mipmap_Linear
-	}};
-
 	const VkSamplerCreateInfo ci = {
 		VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO, nullptr, 0,
-		ss.biln ? VK_FILTER_LINEAR : VK_FILTER_NEAREST, // min
-		ss.biln ? VK_FILTER_LINEAR : VK_FILTER_NEAREST, // max
-		mipmap_modes[ss.triln], // mip
+		ss.IsMinFilterLinear() ? VK_FILTER_LINEAR : VK_FILTER_NEAREST, // min
+		ss.IsMagFilterLinear() ? VK_FILTER_LINEAR : VK_FILTER_NEAREST, // mag
+		ss.IsMipFilterLinear() ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST, // mip
 		static_cast<VkSamplerAddressMode>(
 			ss.tau ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE), // u
 		static_cast<VkSamplerAddressMode>(
@@ -976,8 +967,8 @@ VkSampler GSDeviceVK::GetSampler(GSHWDrawConfig::SamplerSelector ss)
 		aniso ? static_cast<float>(GSConfig.MaxAnisotropy) : 1.0f, // anisotropy
 		VK_FALSE, // compare enable
 		VK_COMPARE_OP_ALWAYS, // compare op
-		-1000.0f, // min lod
-		(ss.triln >= static_cast<u8>(GS_MIN_FILTER::Nearest_Mipmap_Nearest)) ? 1000.0f : 0.0f, // max lod
+		0.0f, // min lod
+		ss.GetMaxLOD(), // max lod
 		VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK, // border
 		VK_FALSE // unnormalized coordinates
 	};

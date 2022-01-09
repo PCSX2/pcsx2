@@ -221,23 +221,37 @@ void GSDevice11::SetupPS(PSSelector sel, const GSHWDrawConfig::PSConstantBuffer*
 		}
 		else
 		{
-			D3D11_SAMPLER_DESC sd;
-
-			memset(&sd, 0, sizeof(sd));
+			D3D11_SAMPLER_DESC sd = {};
 
 			const int anisotropy = GSConfig.MaxAnisotropy;
 			if (anisotropy && ssel.aniso)
+			{
 				sd.Filter = D3D11_FILTER_ANISOTROPIC;
-			else if (ssel.biln)
-				sd.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+			}
 			else
-				sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+			{
+				static constexpr std::array<D3D11_FILTER, 8> filters = {{
+					D3D11_FILTER_MIN_MAG_MIP_POINT, // 000 / min=point,mag=point,mip=point
+					D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT, // 001 / min=linear,mag=point,mip=point
+					D3D11_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT, // 010 / min=point,mag=linear,mip=point
+					D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT, // 011 / min=linear,mag=linear,mip=point
+					D3D11_FILTER_MIN_MAG_POINT_MIP_LINEAR, // 100 / min=point,mag=point,mip=linear
+					D3D11_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR, // 101 / min=linear,mag=point,mip=linear
+					D3D11_FILTER_MIN_POINT_MAG_MIP_LINEAR, // 110 / min=point,mag=linear,mip=linear
+					D3D11_FILTER_MIN_MAG_MIP_LINEAR, // 111 / min=linear,mag=linear,mip=linear
+				}};
+
+				const u8 index = (static_cast<u8>(ssel.IsMipFilterLinear()) << 2) |
+								 (static_cast<u8>(ssel.IsMagFilterLinear()) << 1) |
+								 static_cast<u8>(ssel.IsMinFilterLinear());
+				sd.Filter = filters[index];
+			}
 
 			sd.AddressU = ssel.tau ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
 			sd.AddressV = ssel.tav ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
 			sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-			sd.MinLOD = -FLT_MAX;
-			sd.MaxLOD = FLT_MAX;
+			sd.MinLOD = 0.0f;
+			sd.MaxLOD = ssel.GetMaxLOD();
 			sd.MaxAnisotropy = std::clamp(anisotropy, 1, 16);
 			sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
 
