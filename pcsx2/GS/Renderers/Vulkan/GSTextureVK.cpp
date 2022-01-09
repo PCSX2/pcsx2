@@ -164,7 +164,7 @@ VkCommandBuffer GSTextureVK::GetCommandBufferForUpdate()
 
 bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
-	if (m_type != Type::Texture || static_cast<u32>(layer) >= m_texture.GetLevels())
+	if (layer >= m_mipmap_levels)
 		return false;
 
 	g_perfmon.Put(GSPerfMon::TextureUploads, 1);
@@ -193,73 +193,86 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 	if (m_texture.GetLayout() == VK_IMAGE_LAYOUT_UNDEFINED)
 		m_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
+	// if we're an rt and have been cleared, and the full rect isn't being uploaded, do the clear
+	if (m_type == Type::RenderTarget)
+	{
+		if (!r.eq(GSVector4i(0, 0, m_size.x, m_size.y)))
+			CommitClear(cmdbuf);
+		else
+			m_state = State::Dirty;
+	}
+
 	m_texture.UpdateFromBuffer(
 		cmdbuf, layer, 0, r.x, r.y, width, height, row_length, buffer.GetBuffer(), buffer_offset);
 	m_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-	m_needs_mipmaps_generated |= (layer == 0);
+	if (m_type == Type::Texture)
+		m_needs_mipmaps_generated |= (layer == 0);
+
 	return true;
 }
 
 bool GSTextureVK::Map(GSMap& m, const GSVector4i* r, int layer)
 {
-	if (m_type == Type::Texture && static_cast<u32>(layer) < m_texture.GetLevels())
-	{
-		// map for writing
-		m_map_area = r ? *r : GSVector4i(0, 0, m_texture.GetWidth(), m_texture.GetHeight());
-		m_map_level = layer;
-
-		m.pitch = m_map_area.width() * Vulkan::Util::GetTexelSize(m_texture.GetFormat());
-
-		const u32 required_size = m.pitch * m_map_area.height();
-		Vulkan::StreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
-		if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferImageGranularity()))
-		{
-			GSDeviceVK::GetInstance()->ExecuteCommandBuffer(
-				false, "While waiting for %u bytes in texture upload buffer", required_size);
-			if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferImageGranularity()))
-				pxFailRel("Failed to reserve texture upload memory");
-		}
-
-		m.bits = static_cast<u8*>(buffer.GetCurrentHostPointer());
-		return true;
-	}
-	else
-	{
-		// not available
+	if (layer >= m_mipmap_levels)
 		return false;
+
+	// map for writing
+	m_map_area = r ? *r : GSVector4i(0, 0, m_texture.GetWidth(), m_texture.GetHeight());
+	m_map_level = layer;
+
+	m.pitch = m_map_area.width() * Vulkan::Util::GetTexelSize(m_texture.GetFormat());
+
+	const u32 required_size = m.pitch * m_map_area.height();
+	Vulkan::StreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
+	if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferImageGranularity()))
+	{
+		GSDeviceVK::GetInstance()->ExecuteCommandBuffer(
+			false, "While waiting for %u bytes in texture upload buffer", required_size);
+		if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferImageGranularity()))
+			pxFailRel("Failed to reserve texture upload memory");
 	}
+
+	m.bits = static_cast<u8*>(buffer.GetCurrentHostPointer());
+	return true;
 }
 
 void GSTextureVK::Unmap()
 {
-	if (m_type == Type::Texture)
+	pxAssert(m_map_level < m_texture.GetLevels());
+	g_perfmon.Put(GSPerfMon::TextureUploads, 1);
+
+	// TODO: non-tightly-packed formats
+	const u32 width = static_cast<u32>(m_map_area.width());
+	const u32 height = static_cast<u32>(m_map_area.height());
+	const u32 required_size = width * height * Vulkan::Util::GetTexelSize(m_texture.GetFormat());
+	Vulkan::StreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
+	const u32 buffer_offset = buffer.GetCurrentOffset();
+	buffer.CommitMemory(required_size);
+
+	const VkCommandBuffer cmdbuf = GetCommandBufferForUpdate();
+	GL_PUSH("GSTextureVK::Update({%d,%d} %dx%d Lvl:%u", m_map_area.x, m_map_area.y, m_map_area.width(),
+		m_map_area.height(), m_map_level);
+
+	// first time the texture is used? don't leave it undefined
+	if (m_texture.GetLayout() == VK_IMAGE_LAYOUT_UNDEFINED)
+		m_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+	// if we're an rt and have been cleared, and the full rect isn't being uploaded, do the clear
+	if (m_type == Type::RenderTarget)
 	{
-		pxAssert(m_map_level < m_texture.GetLevels());
-		g_perfmon.Put(GSPerfMon::TextureUploads, 1);
-
-		// TODO: non-tightly-packed formats
-		const u32 width = static_cast<u32>(m_map_area.width());
-		const u32 height = static_cast<u32>(m_map_area.height());
-		const u32 required_size = width * height * Vulkan::Util::GetTexelSize(m_texture.GetFormat());
-		Vulkan::StreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
-		const u32 buffer_offset = buffer.GetCurrentOffset();
-		buffer.CommitMemory(required_size);
-
-		const VkCommandBuffer cmdbuf = GetCommandBufferForUpdate();
-		GL_PUSH("GSTextureVK::Update({%d,%d} %dx%d Lvl:%u", m_map_area.x, m_map_area.y, m_map_area.width(),
-			m_map_area.height(), m_map_level);
-
-		// first time the texture is used? don't leave it undefined
-		if (m_texture.GetLayout() == VK_IMAGE_LAYOUT_UNDEFINED)
-			m_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-		m_texture.UpdateFromBuffer(cmdbuf, m_map_level, 0, m_map_area.x, m_map_area.y, width, height, width,
-			buffer.GetBuffer(), buffer_offset);
-		m_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-		m_needs_mipmaps_generated |= (m_map_level == 0);
+		if (!m_map_area.eq(GSVector4i(0, 0, m_size.x, m_size.y)))
+			CommitClear(cmdbuf);
+		else
+			m_state = State::Dirty;
 	}
+
+	m_texture.UpdateFromBuffer(cmdbuf, m_map_level, 0, m_map_area.x, m_map_area.y, width, height, width,
+		buffer.GetBuffer(), buffer_offset);
+	m_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+	if (m_type == Type::Texture)
+		m_needs_mipmaps_generated |= (m_map_level == 0);
 }
 
 void GSTextureVK::GenerateMipmap()
@@ -308,20 +321,25 @@ void GSTextureVK::CommitClear()
 
 	GSDeviceVK::GetInstance()->EndRenderPass();
 
-	TransitionToLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	CommitClear(g_vulkan_context->GetCurrentCommandBuffer());
+}
+
+void GSTextureVK::CommitClear(VkCommandBuffer cmdbuf)
+{
+	m_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 	if (IsDepthStencil())
 	{
 		const VkClearDepthStencilValue cv = { m_clear_value.depth };
 		const VkImageSubresourceRange srr = { VK_IMAGE_ASPECT_DEPTH_BIT, 0u, 1u, 0u, 1u };
-		vkCmdClearDepthStencilImage(g_vulkan_context->GetCurrentCommandBuffer(), m_texture.GetImage(), m_texture.GetLayout(), &cv, 1, &srr);
+		vkCmdClearDepthStencilImage(cmdbuf, m_texture.GetImage(), m_texture.GetLayout(), &cv, 1, &srr);
 	}
 	else
 	{
 		alignas(16) VkClearColorValue cv;
 		GSVector4::store<true>(cv.float32, GetClearColor());
 		const VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u};
-		vkCmdClearColorImage(g_vulkan_context->GetCurrentCommandBuffer(), m_texture.GetImage(), m_texture.GetLayout(), &cv, 1, &srr);
+		vkCmdClearColorImage(cmdbuf, m_texture.GetImage(), m_texture.GetLayout(), &cv, 1, &srr);
 	}
 
 	SetState(GSTexture::State::Dirty);	

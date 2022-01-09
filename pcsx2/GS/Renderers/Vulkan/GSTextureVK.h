@@ -52,6 +52,7 @@ public:
 
 	void TransitionToLayout(VkImageLayout layout);
 	void CommitClear();
+	void CommitClear(VkCommandBuffer cmdbuf);
 
 	/// Framebuffers are lazily allocated.
 	VkFramebuffer GetFramebuffer(bool feedback_loop);
