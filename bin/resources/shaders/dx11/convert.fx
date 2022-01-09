@@ -18,6 +18,20 @@ struct VS_OUTPUT
 	float4 c : COLOR;
 };
 
+cbuffer cb0
+{
+	float4 BGColor;
+	int EMODA;
+	int EMODC;
+};
+
+static const float3x3 rgb2yuv =
+{
+	{0.587, 0.114, 0.299},
+	{-0.311, 0.500, -0.169},
+	{-0.419, -0.081, 0.500}
+};
+
 Texture2D Texture;
 SamplerState TextureSampler;
 
@@ -357,12 +371,50 @@ PS_OUTPUT ps_convert_rgba_8i(PS_INPUT input)
 	return output;
 }
 
-// DUMMY
 PS_OUTPUT ps_yuv(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
-	output.c = input.p;
+	float4 i = sample_c(input.t);
+	float3 yuv = mul(rgb2yuv, i.gbr);
+
+	float Y = float(0xDB) / 255.0f * yuv.x + float(0x10) / 255.0f;
+	float Cr = float(0xE0) / 255.0f * yuv.y + float(0x80) / 255.0f;
+	float Cb = float(0xE0) / 255.0f * yuv.z + float(0x80) / 255.0f;
+
+	switch (EMODA)
+	{
+		case 0:
+			output.c.a = i.a;
+			break;
+		case 1:
+			output.c.a = Y;
+			break;
+		case 2:
+			output.c.a = Y / 2.0f;
+			break;
+		case 3:
+		default:
+			output.c.a = 0.0f;
+			break;
+	}
+
+	switch (EMODC)
+	{
+		case 0:
+			output.c.rgb = i.rgb;
+			break;
+		case 1:
+			output.c.rgb = float3(Y, Y, Y);
+			break;
+		case 2:
+			output.c.rgb = float3(Y, Cb, Cr);
+			break;
+		case 3:
+		default:
+			output.c.rgb = float3(i.a, i.a, i.a);
+			break;
+	}
 
 	return output;
 }
