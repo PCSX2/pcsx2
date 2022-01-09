@@ -45,6 +45,8 @@
   <ItemGroup>
     <ClCompile Include="AlignedMalloc.cpp" />
     <ClCompile Include="Console.cpp" />
+    <ClCompile Include="D3D11\ShaderCache.cpp" />
+    <ClCompile Include="D3D11\ShaderCompiler.cpp" />
     <ClCompile Include="Exceptions.cpp" />
     <ClCompile Include="FastFormatString.cpp" />
     <ClCompile Include="FastJmp.cpp">
@@ -120,6 +122,8 @@
     <ClInclude Include="Align.h" />
     <ClInclude Include="AlignedMalloc.h" />
     <ClInclude Include="BitCast.h" />
+    <ClInclude Include="D3D11\ShaderCache.h" />
+    <ClInclude Include="D3D11\ShaderCompiler.h" />
     <ClInclude Include="EmbeddedImage.h" />
     <ClInclude Include="boost_spsc_queue.hpp" />
     <ClInclude Include="FastJmp.h" />

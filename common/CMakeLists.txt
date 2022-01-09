@@ -168,9 +168,13 @@ endif()
 if(WIN32)
 	enable_language(ASM_MASM)
 	target_sources(common PRIVATE FastJmp.asm)
-	target_link_libraries(common PUBLIC pthreads4w Winmm.lib)
+	target_link_libraries(common PUBLIC WIL::WIL pthreads4w Winmm.lib)
 	target_sources(common PRIVATE
 		FastJmp.asm
+		D3D11/ShaderCache.cpp
+		D3D11/ShaderCache.h
+		D3D11/ShaderCompiler.cpp
+		D3D11/ShaderCompiler.h
 		GL/ContextWGL.cpp
 		GL/ContextWGL.h
 	)
