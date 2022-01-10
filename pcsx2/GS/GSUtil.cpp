@@ -185,7 +185,7 @@ bool GSUtil::CheckSSE()
 
 CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)
 {
-	return type == GSRendererType::OGL ? CRCHackLevel::Partial : CRCHackLevel::Full;
+	return type == GSRendererType::DX11 ? CRCHackLevel::Full : CRCHackLevel::Partial;
 }
 
 GSRendererType GSUtil::GetPreferredRenderer()
