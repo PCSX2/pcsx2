@@ -2704,7 +2704,7 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 			break;
 		case CLAMP_REGION_REPEAT:
 			vr.x = maxu;
-			vr.z = vr.x + (minu + 1);
+			vr.z = (maxu | minu) + 1;
 			break;
 		default:
 			__assume(0);
@@ -2724,7 +2724,7 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 			break;
 		case CLAMP_REGION_REPEAT:
 			vr.y = maxv;
-			vr.w = vr.y + (minv + 1);
+			vr.w = (maxv | minv) + 1;
 			break;
 		default:
 			__assume(0);
