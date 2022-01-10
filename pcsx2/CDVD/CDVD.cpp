@@ -1144,7 +1144,9 @@ __fi void cdvdReadInterrupt()
 
 	if (cdvd.AbortRequested)
 	{
-		if (!cdvdIsDVD() || !(cdvd.Sector & 0xF))
+		// Code in the CDVD controller suggest there is an alignment thing with DVD's but this seems to just break stuff (Auto Modellista).
+		// Needs more investigation
+		//if (!cdvdIsDVD() || !(cdvd.Sector & 0xF))
 		{
 			Console.Warning("Read Abort");
 			cdvd.Error = 0x1; // Abort Error
