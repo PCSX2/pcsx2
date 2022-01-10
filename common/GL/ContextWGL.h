@@ -34,8 +34,7 @@ namespace GL
 		ContextWGL(const WindowInfo& wi);
 		~ContextWGL() override;
 
-		static std::unique_ptr<Context> Create(const WindowInfo& wi, const Version* versions_to_try,
-			size_t num_versions_to_try);
+		static std::unique_ptr<Context> Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try);
 
 		void* GetProcAddress(const char* name) override;
 		bool ChangeSurface(const WindowInfo& new_wi) override;
@@ -51,7 +50,7 @@ namespace GL
 
 		HDC GetDCAndSetPixelFormat(HWND hwnd);
 
-		bool Initialize(const Version* versions_to_try, size_t num_versions_to_try);
+		bool Initialize(gsl::span<const Version> versions_to_try);
 		bool InitializeDC();
 		void ReleaseDC();
 		bool CreatePBuffer();

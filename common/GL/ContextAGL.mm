@@ -44,21 +44,19 @@ namespace GL
 			dlclose(m_opengl_module_handle);
 	}
 
-	std::unique_ptr<Context> ContextAGL::Create(const WindowInfo& wi, const Version* versions_to_try,
-		size_t num_versions_to_try)
+	std::unique_ptr<Context> ContextAGL::Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try)
 	{
 		std::unique_ptr<ContextAGL> context = std::make_unique<ContextAGL>(wi);
-		if (!context->Initialize(versions_to_try, num_versions_to_try))
+		if (!context->Initialize(versions_to_try))
 			return nullptr;
 
 		return context;
 	}
 
-	bool ContextAGL::Initialize(const Version* versions_to_try, size_t num_versions_to_try)
+	bool ContextAGL::Initialize(gsl::span<const Version> versions_to_try)
 	{
-		for (size_t i = 0; i < num_versions_to_try; i++)
+		for (const Version& cv : versions_to_try)
 		{
-			const Version& cv = versions_to_try[i];
 			if (cv.profile == Profile::NoProfile && CreateContext(nullptr, NSOpenGLProfileVersionLegacy, true))
 			{
 				// we already have the dummy context, so just use that

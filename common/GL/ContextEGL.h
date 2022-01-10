@@ -26,8 +26,7 @@ namespace GL
 		ContextEGL(const WindowInfo& wi);
 		~ContextEGL() override;
 
-		static std::unique_ptr<Context> Create(const WindowInfo& wi, const Version* versions_to_try,
-			size_t num_versions_to_try);
+		static std::unique_ptr<Context> Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try);
 
 		void* GetProcAddress(const char* name) override;
 		virtual bool ChangeSurface(const WindowInfo& new_wi) override;
@@ -42,7 +41,7 @@ namespace GL
 		virtual bool SetDisplay();
 		virtual EGLNativeWindowType GetNativeWindow(EGLConfig config);
 
-		bool Initialize(const Version* versions_to_try, size_t num_versions_to_try);
+		bool Initialize(gsl::span<const Version> versions_to_try);
 		bool CreateDisplay();
 		bool CreateContext(const Version& version, EGLContext share_context);
 		bool CreateContextAndSurface(const Version& version, EGLContext share_context, bool make_current);
