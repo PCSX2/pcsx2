@@ -35,17 +35,16 @@ namespace GL
 		DestroyContext();
 	}
 
-	std::unique_ptr<Context> ContextEGL::Create(const WindowInfo& wi, const Version* versions_to_try,
-		size_t num_versions_to_try)
+	std::unique_ptr<Context> ContextEGL::Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try)
 	{
 		std::unique_ptr<ContextEGL> context = std::make_unique<ContextEGL>(wi);
-		if (!context->Initialize(versions_to_try, num_versions_to_try))
+		if (!context->Initialize(versions_to_try))
 			return nullptr;
 
 		return context;
 	}
 
-	bool ContextEGL::Initialize(const Version* versions_to_try, size_t num_versions_to_try)
+	bool ContextEGL::Initialize(gsl::span<const Version> versions_to_try)
 	{
 		if (!gladLoadEGL())
 		{
@@ -73,9 +72,9 @@ namespace GL
 		if (!m_supports_surfaceless)
 			Console.Warning("EGL implementation does not support surfaceless contexts, emulating with pbuffers");
 
-		for (size_t i = 0; i < num_versions_to_try; i++)
+		for (const Version& version : versions_to_try)
 		{
-			if (CreateContextAndSurface(versions_to_try[i], nullptr, true))
+			if (CreateContextAndSurface(version, nullptr, true))
 				return true;
 		}
 

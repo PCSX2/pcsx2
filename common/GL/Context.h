@@ -18,6 +18,7 @@
 #include "common/Pcsx2Defs.h"
 #include "common/WindowInfo.h"
 
+#include <gsl/span>
 #include <array>
 #include <memory>
 #include <vector>
@@ -66,18 +67,11 @@ namespace GL {
 
 		virtual std::vector<FullscreenModeInfo> EnumerateFullscreenModes();
 
-		static std::unique_ptr<Context> Create(const WindowInfo& wi, const Version* versions_to_try,
-		                                       size_t num_versions_to_try);
-
-		template<size_t N>
-		static std::unique_ptr<Context> Create(const WindowInfo& wi, const std::array<Version, N>& versions_to_try)
-		{
-			return Create(wi, versions_to_try.data(), versions_to_try.size());
-		}
+		static std::unique_ptr<Context> Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try);
 
 		static std::unique_ptr<Context> Create(const WindowInfo& wi) { return Create(wi, GetAllVersionsList()); }
 
-		static const std::array<Version, 16>& GetAllVersionsList();
+		static gsl::span<const Version> GetAllVersionsList();
 
 	protected:
 		WindowInfo m_wi;

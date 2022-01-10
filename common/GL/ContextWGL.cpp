@@ -46,17 +46,16 @@ namespace GL
 		ReleaseDC();
 	}
 
-	std::unique_ptr<Context> ContextWGL::Create(const WindowInfo& wi, const Version* versions_to_try,
-		size_t num_versions_to_try)
+	std::unique_ptr<Context> ContextWGL::Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try)
 	{
 		std::unique_ptr<ContextWGL> context = std::make_unique<ContextWGL>(wi);
-		if (!context->Initialize(versions_to_try, num_versions_to_try))
+		if (!context->Initialize(versions_to_try))
 			return nullptr;
 
 		return context;
 	}
 
-	bool ContextWGL::Initialize(const Version* versions_to_try, size_t num_versions_to_try)
+	bool ContextWGL::Initialize(gsl::span<const Version> versions_to_try)
 	{
 		if (m_wi.type == WindowInfo::Type::Win32)
 		{
@@ -73,9 +72,8 @@ namespace GL
 		if (!CreateAnyContext(nullptr, true))
 			return false;
 
-		for (size_t i = 0; i < num_versions_to_try; i++)
+		for (const Version& cv : versions_to_try)
 		{
-			const Version& cv = versions_to_try[i];
 			if (cv.profile == Profile::NoProfile)
 			{
 				// we already have the dummy context, so just use that

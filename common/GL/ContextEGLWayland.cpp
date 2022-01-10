@@ -37,11 +37,10 @@ namespace GL
 			dlclose(m_wl_module);
 	}
 
-	std::unique_ptr<Context> ContextEGLWayland::Create(const WindowInfo& wi, const Version* versions_to_try,
-		size_t num_versions_to_try)
+	std::unique_ptr<Context> ContextEGLWayland::Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try)
 	{
 		std::unique_ptr<ContextEGLWayland> context = std::make_unique<ContextEGLWayland>(wi);
-		if (!context->LoadModule() || !context->Initialize(versions_to_try, num_versions_to_try))
+		if (!context->LoadModule() || !context->Initialize(versions_to_try))
 			return nullptr;
 
 		return context;

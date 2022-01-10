@@ -79,42 +79,41 @@ namespace GL
 		return {};
 	}
 
-	std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version* versions_to_try,
-		size_t num_versions_to_try)
+	std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try)
 	{
 		if (ShouldPreferESContext())
 		{
 			// move ES versions to the front
-			Version* new_versions_to_try = static_cast<Version*>(alloca(sizeof(Version) * num_versions_to_try));
+			Version* new_versions_to_try = static_cast<Version*>(alloca(sizeof(Version) * versions_to_try.size()));
 			size_t count = 0;
-			for (size_t i = 0; i < num_versions_to_try; i++)
+			for (size_t i = 0; i < versions_to_try.size(); i++)
 			{
 				if (versions_to_try[i].profile == Profile::ES)
 					new_versions_to_try[count++] = versions_to_try[i];
 			}
-			for (size_t i = 0; i < num_versions_to_try; i++)
+			for (size_t i = 0; i < versions_to_try.size(); i++)
 			{
 				if (versions_to_try[i].profile != Profile::ES)
 					new_versions_to_try[count++] = versions_to_try[i];
 			}
-			versions_to_try = new_versions_to_try;
+			versions_to_try = gsl::span<const Version>(new_versions_to_try, versions_to_try.size());
 		}
 
 		std::unique_ptr<Context> context;
 #if defined(_WIN32) && !defined(_M_ARM64)
-		context = ContextWGL::Create(wi, versions_to_try, num_versions_to_try);
+		context = ContextWGL::Create(wi, versions_to_try);
 #elif defined(__APPLE__)
-		context = ContextAGL::Create(wi, versions_to_try, num_versions_to_try);
+		context = ContextAGL::Create(wi, versions_to_try);
 #endif
 
 #if defined(X11_API)
 		if (wi.type == WindowInfo::Type::X11)
-			context = ContextEGLX11::Create(wi, versions_to_try, num_versions_to_try);
+			context = ContextEGLX11::Create(wi, versions_to_try);
 #endif
 
 #if defined(WAYLAND_API)
 		if (wi.type == WindowInfo::Type::Wayland)
-			context = ContextEGLWayland::Create(wi, versions_to_try, num_versions_to_try);
+			context = ContextEGLWayland::Create(wi, versions_to_try);
 #endif
 
 		if (!context)
@@ -160,9 +159,10 @@ namespace GL
 		return context;
 	}
 
-	const std::array<Context::Version, 16>& Context::GetAllVersionsList()
+	gsl::span<const Context::Version> Context::GetAllVersionsList()
 	{
-		static constexpr std::array<Version, 16> vlist = {{{Profile::Core, 4, 6},
+		static constexpr Version vlist[] = {
+			{Profile::Core, 4, 6},
 			{Profile::Core, 4, 5},
 			{Profile::Core, 4, 4},
 			{Profile::Core, 4, 3},
@@ -177,7 +177,8 @@ namespace GL
 			{Profile::ES, 3, 1},
 			{Profile::ES, 3, 0},
 			{Profile::ES, 2, 0},
-			{Profile::NoProfile, 0, 0}}};
+			{Profile::NoProfile, 0, 0}
+		};
 		return vlist;
 	}
 } // namespace GL
