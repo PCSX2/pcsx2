@@ -50,11 +50,11 @@ struct alignas(128) GSPixelColOffsetTable
 /// Unlike ColOffsets, this table stretches to the maximum size of a texture so no masking is needed
 struct alignas(128) GSPixelRowOffsetTable
 {
-	int value[2048] = {};
+	int value[4096] = {};
 
 	int operator[](size_t x) const
 	{
-		ASSERT(x < 2048);
+		ASSERT(x < 4096);
 		return value[x];
 	}
 };

@@ -320,9 +320,9 @@ constexpr GSSizedPixelRowOffsetTable<BlocksWide * ColWidth> makeRowOffsetTable(c
 {
 	int base = pxOffset(blockTable, colTable, 0, y);
 	GSSizedPixelRowOffsetTable<BlocksWide * ColWidth> table = {};
-	for (int x = 0; x < 2048; x++) 
+	for (size_t x = 0; x < std::size(table.value); x++)
 	{
-		table.value[x] = pxOffset(blockTable, colTable, x, y) - base;
+		table.value[x] = pxOffset(blockTable, colTable, x % 2048, y) - base;
 	}
 	return table;
 }
