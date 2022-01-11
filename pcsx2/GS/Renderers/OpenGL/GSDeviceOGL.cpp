@@ -879,8 +879,8 @@ GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 			break;
 	}
 
-	//glSamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, 0);
-	//glSamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, 6);
+	glSamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, -1000.0f);
+	glSamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, sel.lodclamp ? 0.0f : 1000.0f);
 
 	if (sel.tau)
 		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
