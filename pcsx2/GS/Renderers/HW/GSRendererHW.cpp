@@ -1384,9 +1384,7 @@ void GSRendererHW::Draw()
 
 		m_context->offset.tex = m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
-		GSVector4i r;
-
-		GetTextureMinMax(r, TEX0, MIP_CLAMP, m_vt.IsLinear());
+		GSVector4i r = GetTextureMinMax(TEX0, MIP_CLAMP, m_vt.IsLinear()).coverage;
 
 		m_src = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, r) :
 			m_tc->LookupSource(TEX0, env.TEXA, r, m_hw_mipmap >= HWMipmapLevel::Basic ||
@@ -1413,7 +1411,7 @@ void GSRendererHW::Draw()
 				m_vt.m_min.t *= 0.5f;
 				m_vt.m_max.t *= 0.5f;
 
-				GetTextureMinMax(r, MIP_TEX0, MIP_CLAMP, m_vt.IsLinear());
+				r = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, m_vt.IsLinear()).coverage;
 
 				m_src->UpdateLayer(MIP_TEX0, r, layer - m_lod.x);
 			}

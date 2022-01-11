@@ -198,7 +198,21 @@ protected:
 			CalcAlphaMinMax();
 		return m_vt.m_alpha;
 	}
-	void GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFRegCLAMP& CLAMP, bool linear);
+	struct TextureMinMaxResult
+	{
+		enum UsesBoundary
+		{
+			USES_BOUNDARY_LEFT   = 1 << 0,
+			USES_BOUNDARY_TOP    = 1 << 1,
+			USES_BOUNDARY_RIGHT  = 1 << 2,
+			USES_BOUNDARY_BOTTOM = 1 << 3,
+			USES_BOUNDARY_U = USES_BOUNDARY_LEFT | USES_BOUNDARY_RIGHT,
+			USES_BOUNDARY_V = USES_BOUNDARY_TOP | USES_BOUNDARY_BOTTOM,
+		};
+		GSVector4i coverage; ///< Part of the texture used
+		u8 uses_boundary;    ///< Whether or not the usage touches the left, top, right, or bottom edge (and therefore needs wrap modes preserved)
+	};
+	TextureMinMaxResult GetTextureMinMax(const GIFRegTEX0& TEX0, const GIFRegCLAMP& CLAMP, bool linear);
 	bool TryAlphaTest(u32& fm, u32& zm);
 	bool IsOpaque();
 	bool IsMipMapDraw();

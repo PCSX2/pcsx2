@@ -2660,7 +2660,44 @@ __forceinline void GSState::VertexKick(u32 skip)
 	}
 }
 
-void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFRegCLAMP& CLAMP, bool linear)
+/// Checks if region repeat is used (applying it does something to at least one of the values in min...max)
+/// Also calculates the real min and max values seen after applying the region repeat to all values in min...max
+static bool UsesRegionRepeat(int fix, int msk, int min, int max, int* min_out, int* max_out)
+{
+	const int cleared_bits = ~msk & ~fix; // Bits that are always cleared by applying msk and fix
+	const int set_bits = fix; // Bits that are always set by applying msk and fix
+	unsigned long msb;
+	int variable_bits = min ^ max;
+	if (_BitScanReverse(&msb, variable_bits))
+		variable_bits |= (1 << msb) - 1; // Fill in all lower bits
+
+	const int always_set = min & ~variable_bits;   // Bits that are set in every value in min...max
+	const int sometimes_set = min | variable_bits; // Bits that are set in at least one value in min...max
+
+	const bool sets_bits = (set_bits | always_set) != always_set; // At least one bit in min...max is set by applying msk and fix
+	const bool clears_bits = (cleared_bits & sometimes_set) != 0; // At least one bit in min...max is cleared by applying msk and fix
+
+	const int overwritten_variable_bits = (cleared_bits | set_bits) & variable_bits;
+	// A variable bit that's `0` in `min` will at some point switch to a `1` (because it's variable)
+	// When it does, all bits below it will switch to a `0` (that's how incrementing works)
+	// If the 0 to 1 switch is reflected in the final output (not masked and not replaced by a fixed value),
+	// the final value would be larger than the previous.  Otherwise, the final value will be less.
+	// The true minimum value is `min` with all bits below the most significant replaced variable `0` bit cleared
+	const int min_overwritten_variable_zeros = ~min & overwritten_variable_bits;
+	if (_BitScanReverse(&msb, min_overwritten_variable_zeros))
+		min &= (~0 << msb);
+	// Similar thing for max, but the first masked `1` bit
+	const int max_overwritten_variable_ones = max & overwritten_variable_bits;
+	if (_BitScanReverse(&msb, max_overwritten_variable_ones))
+		max |= (1 << msb) - 1;
+
+	*min_out = (msk & min) | fix;
+	*max_out = ((msk & max) | fix) + 1;
+
+	return sets_bits || clears_bits;
+}
+
+GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, const GIFRegCLAMP& CLAMP, bool linear)
 {
 	// TODO: some of the +1s can be removed if linear == false
 
@@ -2669,16 +2706,10 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 
 	const int w = 1 << tw;
 	const int h = 1 << th;
+	const int tw_mask = w - 1;
+	const int th_mask = h - 1;
 
 	GSVector4i tr(0, 0, w, h);
-
-	// don't bother checking when preload is on, since we're going to test the whole thing anyway
-	if (GSConfig.PreloadTexture && GSConfig.UseHardwareRenderer() &&
-		CanPreloadTextureSize(static_cast<u32>(tw), static_cast<u32>(th)))
-	{
-		r = tr;
-		return;
-	}
 
 	const int wms = CLAMP.WMS;
 	const int wmt = CLAMP.WMT;
@@ -2730,69 +2761,35 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 			__assume(0);
 	}
 
-	bool skipClamp = false;
+	u8 uses_border = 0;
 
-	// If any of the min/max values are +-FLT_MAX we can't rely on them
-	// so just assume full texture.
 	if (m_vt.m_max.t.x >= FLT_MAX || m_vt.m_min.t.x <= -FLT_MAX ||
 		m_vt.m_max.t.y >= FLT_MAX || m_vt.m_min.t.y <= -FLT_MAX)
-		skipClamp = true;
-
-	if (wms == CLAMP_REGION_REPEAT && wmt == CLAMP_REGION_REPEAT)
-		skipClamp = true;
-	
-	// Optimisation aims to reduce the amount of texture loaded to only the bit which will be read
-	if (!skipClamp)
 	{
+		// If any of the min/max values are +-FLT_MAX we can't rely on them
+		// so just assume full texture.
+		uses_border = 0xF;
+	}
+	else
+	{
+		// Optimisation aims to reduce the amount of texture loaded to only the bit which will be read
 		GSVector4 st = m_vt.m_min.t.xyxy(m_vt.m_max.t);
 
 		if (linear)
 			st += GSVector4(-0.5f, 0.5f).xxyy();
 
 		GSVector4i uv = GSVector4i(st.floor());
-		GSVector4i u, v, uu, vv;
-
-		// Checks for UV's going above the size of the texture (for wrapping)
-		if (wms == CLAMP_REPEAT)
-		{
-			// See commented code below for the meaning of mask
-			u = uv & GSVector4i::xffffffff().srl32(32 - tw);
-			uu = uv.sra32(tw);
-		}
-
-		if (wmt == CLAMP_REPEAT)
-		{
-			// See commented code below for the meaning of mask
-			v = uv & GSVector4i::xffffffff().srl32(32 - th);
-			vv = uv.sra32(th);
-		}
-
-		const int mask = (uu.upl32(vv) == uu.uph32(vv)).mask();
-		// if values don't match it means that the texture will wrap so it needs the whole thing
-		// vy uy vx ux
-		// ==
-		// vw uw vz uz
+		uses_border = GSVector4::cast((uv < vr).blend32<0xc>(uv >= vr)).mask();
 
 		// Roughly cut out the min/max of the read (Clamp)
-		// Intersect on vr because it will have already cut it on region clamp
-		uv = uv.rintersect(vr);
 
 		switch (wms)
 		{
 			case CLAMP_REPEAT:
-				// This commented code cannot be used directly because it needs uv before the intersection
-				//if (uv_.x >> tw == uv_.z >> tw)
-				//{
-				//	vr.x = std::max(vr.x, (uv_.x & ((1 << tw) - 1)));
-				//	vr.z = std::min(vr.z, (uv_.z & ((1 << tw) - 1)) + 1);
-				//}
-				//vx == vz
-				if (mask & 0x000f)
+				if ((uv.x & ~tw_mask) == (uv.z & ~tw_mask))
 				{
-					if (vr.x < u.x)
-						vr.x = u.x;
-					if (vr.z > u.z + 1)
-						vr.z = u.z + 1;
+					vr.x = std::max(vr.x, uv.x & tw_mask);
+					vr.z = std::min(vr.z, (uv.z & tw_mask) + 1);
 				}
 				break;
 			case CLAMP_CLAMP:
@@ -2802,22 +2799,19 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 				if (vr.z > (uv.z + 1))
 					vr.z = uv.z + 1;
 				break;
-			}
+			case CLAMP_REGION_REPEAT:
+				if (UsesRegionRepeat(maxu, minu, uv.x, uv.z, &vr.x, &vr.z) || maxu >= tw)
+					uses_border |= TextureMinMaxResult::USES_BOUNDARY_U;
+				break;
+		}
 
 		switch (wmt)
 		{
 			case CLAMP_REPEAT:
-				//if (uv_.y >> th == uv_.w >> th)
-				//{
-				//	vr.y = max(vr.y, (uv_.y & ((1 << th) - 1)));
-				//	vr.w = min(vr.w, (uv_.w & ((1 << th) - 1)) + 1);
-				//}
-				if (mask & 0xf000)
+				if ((uv.y & ~th_mask) == (uv.w & ~th_mask))
 				{
-					if (vr.y < v.y)
-						vr.y = v.y;
-					if (vr.w > v.w + 1)
-						vr.w = v.w + 1;
+					vr.y = std::max(vr.y, uv.y & th_mask);
+					vr.w = std::min(vr.w, (uv.w & th_mask) + 1);
 				}
 				break;
 			case CLAMP_CLAMP:
@@ -2826,6 +2820,10 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 					vr.y = uv.y;
 				if (vr.w > (uv.w + 1))
 					vr.w = uv.w + 1;
+				break;
+			case CLAMP_REGION_REPEAT:
+				if (UsesRegionRepeat(maxv, minv, uv.y, uv.w, &vr.y, &vr.w) || maxv >= th)
+					uses_border |= TextureMinMaxResult::USES_BOUNDARY_V;
 				break;
 		}
 	}
@@ -2846,7 +2844,7 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 		vr = (vr + GSVector4i(-1, +1).xxyy()).rintersect(tr);
 	}
 
-	r = vr;
+	return { vr, uses_border };
 }
 
 void GSState::CalcAlphaMinMax()
