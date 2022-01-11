@@ -1235,11 +1235,6 @@ void GSApp::Init()
 	m_gs_acc_blend_level.push_back(GSSetting(static_cast<u32>(AccBlendLevel::Full), "Full", "Very Slow"));
 	m_gs_acc_blend_level.push_back(GSSetting(static_cast<u32>(AccBlendLevel::Ultra), "Ultra", "Ultra Slow"));
 
-	m_gs_acc_blend_level_d3d11.push_back(GSSetting(static_cast<u32>(AccBlendLevel::Minimum), "Minimum", "Fastest"));
-	m_gs_acc_blend_level_d3d11.push_back(GSSetting(static_cast<u32>(AccBlendLevel::Basic), "Basic", "Recommended"));
-	m_gs_acc_blend_level_d3d11.push_back(GSSetting(static_cast<u32>(AccBlendLevel::Medium), "Medium", "Debug"));
-	m_gs_acc_blend_level_d3d11.push_back(GSSetting(static_cast<u32>(AccBlendLevel::High), "High", "Debug"));
-
 	m_gs_tv_shaders.push_back(GSSetting(0, "None", ""));
 	m_gs_tv_shaders.push_back(GSSetting(1, "Scanline filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(2, "Diagonal filter", ""));
@@ -1249,9 +1244,8 @@ void GSApp::Init()
 	// clang-format off
 	// Avoid to clutter the ini file with useless options
 #if defined(ENABLE_VULKAN) || defined(_WIN32)
-	m_default_configuration["Adapter"]																		= "";
+	m_default_configuration["Adapter"]                                    = "";
 #endif
-
 #ifdef _WIN32
 	// Per OS option.
 	m_default_configuration["CaptureFileName"]                            = "";
