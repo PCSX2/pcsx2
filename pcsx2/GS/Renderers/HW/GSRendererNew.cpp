@@ -996,6 +996,10 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		}
 	}
 
+	// clamp to base level if we're not providing or generating mipmaps
+	// manual trilinear causes the chain to be uploaded, auto causes it to be generated
+	m_conf.sampler.lodclamp = !(trilinear_manual || trilinear_auto);
+
 	m_conf.tex = tex->m_texture;
 	m_conf.pal = tex->m_palette;
 }

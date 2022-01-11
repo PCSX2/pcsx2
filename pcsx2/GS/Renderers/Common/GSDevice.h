@@ -269,13 +269,12 @@ struct alignas(16) GSHWDrawConfig
 		{
 			struct
 			{
-				u8 tau   : 1;
-				u8 tav   : 1;
-				u8 biln  : 1;
-				u8 triln : 3;
-				u8 aniso : 1;
-
-				u8 _free : 1;
+				u8 tau      : 1;
+				u8 tav      : 1;
+				u8 biln     : 1;
+				u8 triln    : 3;
+				u8 aniso    : 1;
+				u8 lodclamp : 1;
 			};
 			u8 key;
 		};
@@ -316,14 +315,6 @@ struct alignas(16) GSHWDrawConfig
 		{
 			return (triln == static_cast<u8>(GS_MIN_FILTER::Nearest_Mipmap_Linear) ||
 					triln == static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Linear));
-		}
-
-		/// Returns the maximum LOD for this sampler (0 if mipmapping is disabled).
-		__fi float GetMaxLOD() const
-		{
-			// See https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkSamplerCreateInfo.html#_description
-			// for the reasoning behind 0.25f here.
-			return triln >= static_cast<u8>(GS_MIN_FILTER::Nearest_Mipmap_Nearest) ? 1000.0f : 0.25f;
 		}
 	};
 	struct DepthStencilSelector

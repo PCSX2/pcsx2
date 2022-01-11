@@ -288,7 +288,7 @@ private:
 		GLuint timer() { return timer_query[last_query]; }
 	} m_profiler;
 
-	GLuint m_ps_ss[1 << 7];
+	GLuint m_ps_ss[1 << 8];
 	GSDepthStencilOGL* m_om_dss[1 << 5];
 	std::unordered_map<ProgramSelector, GL::Program, ProgramSelectorHash> m_programs;
 	GL::ShaderCache m_shader_cache;
