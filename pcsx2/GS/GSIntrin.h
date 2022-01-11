@@ -30,15 +30,26 @@
 
 static int _BitScanForward(unsigned long* const Index, const unsigned long Mask)
 {
-#if __has_builtin(__builtin_ctz)
 	if (Mask == 0)
 		return 0;
+#if __has_builtin(__builtin_ctz)
 	*Index = __builtin_ctz(Mask);
-	return 1;
 #else
 	__asm__("bsfl %k[Mask], %k[Index]" : [Index] "=r" (*Index) : [Mask] "mr" (Mask) : "cc");
-	return Mask ? 1 : 0;
 #endif
+	return 1;
+}
+
+static int _BitScanReverse(unsigned long* const Index, const unsigned long Mask)
+{
+	if (Mask == 0)
+		return 0;
+#if __has_builtin(__builtin_clz)
+	*Index = 31 - __builtin_clz(Mask);
+#else
+	__asm__("bsrl %k[Mask], %k[Index]" : [Index] "=r" (*Index) : [Mask] "mr" (Mask) : "cc");
+#endif
+	return 1;
 }
 
 #endif
