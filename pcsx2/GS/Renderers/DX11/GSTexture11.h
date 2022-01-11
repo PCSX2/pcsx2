@@ -22,18 +22,16 @@
 
 class GSTexture11 final : public GSTexture
 {
-	wil::com_ptr_nothrow<ID3D11Device> m_dev;
-	wil::com_ptr_nothrow<ID3D11DeviceContext> m_ctx;
 	wil::com_ptr_nothrow<ID3D11Texture2D> m_texture;
-	D3D11_TEXTURE2D_DESC m_desc;
 	wil::com_ptr_nothrow<ID3D11ShaderResourceView> m_srv;
 	wil::com_ptr_nothrow<ID3D11RenderTargetView> m_rtv;
 	wil::com_ptr_nothrow<ID3D11DepthStencilView> m_dsv;
-
-	int m_layer;
+	D3D11_TEXTURE2D_DESC m_desc;
+	int m_mapped_subresource;
 
 public:
-	explicit GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, GSTexture::Type type, GSTexture::Format format);
+	explicit GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, const D3D11_TEXTURE2D_DESC& desc,
+		GSTexture::Type type, GSTexture::Format format);
 
 	void* GetNativeHandle() const override;
 
