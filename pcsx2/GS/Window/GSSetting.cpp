@@ -44,7 +44,7 @@ const char* dialog_message(int ID, bool* updateText)
 		case IDC_TRI_FILTER:
 			return cvtString("Control the texture tri-filtering of the emulation.\n\n"
 				"None:\nNo extra trilinear filtering.\n\n"
-				"Trilinear:\nUse OpenGL trilinear interpolation when PS2 uses mipmaps.\n\n"
+				"Trilinear:\nUse OpenGL/Vulkan trilinear interpolation when PS2 uses mipmaps.\n\n"
 				"Trilinear Forced:\nAlways enable full trilinear interpolation. Warning Slow!\n\n");
 		case IDC_CRC_LEVEL:
 			return cvtString("Control the number of Auto-CRC fixes and hacks applied to games.\n\n"
@@ -102,10 +102,9 @@ const char* dialog_message(int ID, bool* updateText)
 				"Medium:\nExtend it to all sprites. Performance impact remains reasonable in 3D game.\n\n"
 				"High:\nExtend it to destination alpha blending and color wrapping (helps shadow and fog effects).\n"
 				"A good CPU is required.\n\n"
-				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is ultra slow!\n"
-				"It is intended for debug.\n\n"
-				"Ultra:\nThe blending unit will be completely emulated by the shader. It is ultra slow!\n"
-				"It is intended for debug.");
+				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is ultra slow!\n\n"
+				"Ultra:\nThe blending unit will be completely emulated by the shader. It is ultra slow!\n\n"
+				"Note: Direct3D11's blending is capped at High and is reduced in capability compared to OpenGL/Vulkan");
 		case IDC_TC_DEPTH:
 			return cvtString("Disable the support of Depth buffer in the texture cache.\n"
 				"It can help to increase speed but it will likely create various glitches.");
@@ -136,7 +135,7 @@ const char* dialog_message(int ID, bool* updateText)
 			return cvtString("Force a primitive flush when a framebuffer is also an input texture.\n"
 				"Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA.\n"
 				"Warning: It's very costly on the performance.\n\n"
-				"Note: OpenGL HW renderer is able to handle Jak shadows at full speed without this option.");
+				"Note: OpenGL/Vulkan HW renderer is able to handle Jak shadows at full speed without this option.");
 		case IDC_AUTO_FLUSH_SW:
 			return cvtString("Force a primitive flush when a framebuffer is also an input texture.\n"
 				"Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA.");
