@@ -11290,6 +11290,13 @@ SLES-52041:
 SLES-52043:
   name: "MX Unleashed Migrated"
   region: "PAL-E"
+  patches:
+    DBA1250E:
+      content: |-
+        author=refraction (ported by Prafull)
+        comment=fixes COP2 instruction order to resolve SPS
+        patch=1,EE,001Cb778,word,484E9000
+        patch=1,EE,001CB77C,word,4BDBD9FF
 SLES-52044:
   name: "Crescent Suzuki Racing - Superbikes and Super Sidecars"
   region: "PAL-E"
