@@ -193,6 +193,9 @@ const char* dialog_message(int ID, bool* updateText)
 				   "Off:\nDisables any dithering.\n\n"
 				   "Unscaled:\nNative Dithering / Lowest dithering effect does not increase size of squares when upscaling.\n\n"
 				   "Scaled:\nUpscaling-aware / Highest dithering effect.");
+		case IDC_PRELOAD_TEXTURES:
+			return cvtString("Uploads entire textures at once instead of small pieces, avoiding redundant uploads when possible.\n"
+				   "Improves performance in most games, but can make a small selection slower.");
 		default:
 			if (updateText)
 				*updateText = false;
