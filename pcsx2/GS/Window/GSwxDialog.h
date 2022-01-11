@@ -121,8 +121,6 @@ namespace GSSettingsDialog
 		wxSpinCtrl *skip_x_spin, *skip_y_spin;
 		bool m_is_hardware = false;
 		bool m_is_native_res = false;
-		bool m_is_ogl_hw = false;
-		bool m_is_vk_hw = false;
 
 		HacksTab(wxWindow* parent);
 		void Load() { m_ui.Load(); }

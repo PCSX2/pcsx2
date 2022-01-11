@@ -43,6 +43,7 @@ enum
 	// Renderer
 	IDC_FILTER,
 	// Hardware Renderer
+	IDC_PRELOAD_TEXTURES,
 	IDC_ACCURATE_DATE,
 	IDC_PALTEX,
 	IDC_CONSERVATIVE_FB,
