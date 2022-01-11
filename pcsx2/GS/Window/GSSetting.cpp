@@ -194,20 +194,6 @@ const char* dialog_message(int ID, bool* updateText)
 				   "Off:\nDisables any dithering.\n\n"
 				   "Unscaled:\nNative Dithering / Lowest dithering effect does not increase size of squares when upscaling.\n\n"
 				   "Scaled:\nUpscaling-aware / Highest dithering effect.");
-			// Windows only options.
-#ifdef _WIN32
-		case IDC_ACCURATE_BLEND_UNIT_D3D11:
-			return L"Control the accuracy level of the GS blending unit emulation.\n\n"
-				"Minimum:\nFast but introduces various rendering issues.\n"
-				"It is intended for slow computer.\n\n"
-				"Basic:\nEmulate correctly some of the effects with a limited speed penalty.\n"
-				"This is the recommended setting.\n\n"
-				"Medium:\nExtend it to color shuffling. Performance impact remains reasonable.\n"
-				"It is intended for debug.\n\n"
-				"High:\nExtend it to triangle based primitives. It is ultra slow!\n"
-				"It is intended for debug.\n\n"
-				"Note: Direct3D 11 and OpenGL blending options aren't the same, even High blending on Direct3D 11 is like 1/3 of Basic blending on OpenGL.";
-#endif
 		default:
 			if (updateText)
 				*updateText = false;
