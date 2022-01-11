@@ -537,7 +537,7 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 
 	if (SUCCEEDED(hr))
 	{
-		t = new GSTexture11(std::move(texture), type, format);
+		t = new GSTexture11(std::move(texture), desc, type, format);
 		assert(type == t->GetType());
 	}
 	else

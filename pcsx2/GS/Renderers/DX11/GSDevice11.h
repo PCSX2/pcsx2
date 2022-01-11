@@ -235,6 +235,10 @@ public:
 	GSDevice11();
 	virtual ~GSDevice11() {}
 
+	__fi static GSDevice11* GetInstance() { return static_cast<GSDevice11*>(g_gs_device.get()); }
+	__fi ID3D11Device* GetD3DDevice() const { return m_dev.get(); }
+	__fi ID3D11DeviceContext* GetD3DContext() const { return m_ctx.get(); }
+
 	bool SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode);
 	void GetFeatureLevel(D3D_FEATURE_LEVEL& level) const { level = m_shader.level; }
 
