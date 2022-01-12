@@ -542,12 +542,13 @@ struct Gif_Unit
 	}
 
 	// Resets Gif HW Regs
+	// Warning: Do not mess with the DMA here, the reset does *NOT* touch this.
 	void ResetRegs()
 	{
 		gifRegs.stat.reset();
 		gifRegs.ctrl.reset();
 		gifRegs.mode.reset();
-		gif_fifo.init();
+		CSRreg.FIFO = CSR_FIFO_EMPTY; // This is the GIF unit side FIFO, not DMA!
 	}
 
 	// Adds a finished GS Packet to the MTGS ring buffer
