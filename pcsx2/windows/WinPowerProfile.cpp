@@ -14,13 +14,13 @@
 */
 
 #include "PrecompiledHeader.h"
+#include "common/StringUtil.h"
 #include <powrprof.h>
 #include <wil/com.h>
 
 using unique_any_guidptr = wil::unique_any<GUID*, decltype(&::LocalFree), ::LocalFree>;
 
 // Checks the current active power plan
-// If the power plan isn't named 'high performance', put a little message in the console
 // This function fails silently
 void CheckIsUserOnHighPerfPowerPlan()
 {
@@ -32,6 +32,7 @@ void CheckIsUserOnHighPerfPowerPlan()
 	UCHAR aBuffer[2048];
 	DWORD aBufferSize = sizeof(aBuffer);
 	ret = PowerReadFriendlyName(NULL, pPwrGUID.get(), &NO_SUBGROUP_GUID, NULL, aBuffer, &aBufferSize);
+	std::string friendlyName(StringUtil::WideStringToUTF8String((wchar_t*)aBuffer));
 	if (ret != ERROR_SUCCESS)
 		return;
 
@@ -43,5 +44,5 @@ void CheckIsUserOnHighPerfPowerPlan()
 		PowerReadDCValueIndex(NULL, pPwrGUID.get(), &GUID_PROCESSOR_SETTINGS_SUBGROUP, &GUID_PROCESSOR_THROTTLE_MINIMUM, &dcMin))
 		return;
 
-	Console.WriteLn("The current power profile is '%S'.\nThe current min / max processor states\nAC: %d%% / %d%%\nBattery: %d%% / %d%%\n", aBuffer,acMin,acMax,dcMin,dcMax);
+	Console.WriteLn("The current power profile is '%s'.\nThe current min / max processor states\nAC: %d%% / %d%%\nBattery: %d%% / %d%%\n", friendlyName.c_str(), acMin, acMax, dcMin, dcMax);
 }
