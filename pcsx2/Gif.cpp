@@ -86,9 +86,9 @@ void GIF_Fifo::init()
 	memzero(data);
 	fifoSize = 0;
 	gifRegs.stat.FQC = 0;
-	CSRreg.FIFO = CSR_FIFO_EMPTY;
+
 	gif.gifstate = GIF_STATE_READY;
-	gif.gspath3done = false;
+	gif.gspath3done = true;
 
 	gif.gscycles = 0;
 	gif.prevcycles = 0;
