@@ -462,6 +462,8 @@ namespace Vulkan
 			SupportsExtension(VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME, false);
 		m_optional_extensions.vk_ext_memory_budget =
 			SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
+		m_optional_extensions.vk_khr_driver_properties =
+			SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
 
 		return true;
 	}
@@ -663,6 +665,22 @@ namespace Vulkan
 
 			// confirm we actually support it
 			m_optional_extensions.vk_ext_provoking_vertex &= (provoking_vertex_features.provokingVertexLast == VK_TRUE);
+		}
+
+		if (vkGetPhysicalDeviceProperties2)
+		{
+			VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+			void** pNext = &properties2.pNext;
+
+			if (m_optional_extensions.vk_khr_driver_properties)
+			{
+				m_device_driver_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES;
+				*pNext = &m_device_driver_properties;
+				pNext = &m_device_driver_properties.pNext;
+			}
+
+			// query
+			vkGetPhysicalDeviceProperties2(m_physical_device, &properties2);
 		}
 
 		Console.WriteLn("VK_EXT_provoking_vertex is %s",

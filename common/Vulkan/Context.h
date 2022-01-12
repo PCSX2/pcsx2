@@ -50,6 +50,7 @@ namespace Vulkan
 		{
 			bool vk_ext_provoking_vertex : 1;
 			bool vk_ext_memory_budget : 1;
+			bool vk_khr_driver_properties : 1;
 		};
 
 		~Context();
@@ -95,6 +96,7 @@ namespace Vulkan
 		__fi const VkPhysicalDeviceProperties& GetDeviceProperties() const { return m_device_properties; }
 		__fi const VkPhysicalDeviceFeatures& GetDeviceFeatures() const { return m_device_features; }
 		__fi const VkPhysicalDeviceLimits& GetDeviceLimits() const { return m_device_properties.limits; }
+		__fi const VkPhysicalDeviceDriverProperties& GetDeviceDriverProperties() const { return m_device_driver_properties; }
 		__fi const OptionalExtensions& GetOptionalExtensions() const { return m_optional_extensions; }
 
 		// Helpers for getting constants
@@ -331,6 +333,7 @@ namespace Vulkan
 		VkPhysicalDeviceFeatures m_device_features = {};
 		VkPhysicalDeviceProperties m_device_properties = {};
 		VkPhysicalDeviceMemoryProperties m_device_memory_properties = {};
+		VkPhysicalDeviceDriverPropertiesKHR m_device_driver_properties = {};
 		OptionalExtensions m_optional_extensions = {};
 	};
 
