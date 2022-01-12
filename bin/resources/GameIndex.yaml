@@ -140,6 +140,12 @@ PCPX-96649:
 PCPX-96660:
   name: "Tourist Trophy [Demo]"
   region: "NTSC-J"
+PCPX-98017:
+  name: "Ratchet & Clank - Giri Giri Ginga no Giga Battle [Demo]"
+  region: "NTSC-J"
+  gameFixes:
+    - VUKickstartHack # Fixes Character SPS.
+    - EETimingHack # Fixes SPR errors while going in-game.
 SCAJ-10001:
   name: "Makai Senki Disgaea"
   region: "NTSC-Unk"
@@ -1273,6 +1279,12 @@ SCED-50989:
 SCED-51016:
   name: "Official PlayStation 2 Magazine Demo 22/23"
   region: "PAL-M5"
+SCED-51075:
+  name: "Ratchet & Clank [Regular Demo]"
+  region: "PAL-M5"
+  gameFixes:
+    - VUKickstartHack # Fixes Character SPS.
+    - EETimingHack # Fixes SPR errors while going in-game.
 SCED-51147:
   name: "Official PlayStation 2 Magazine Demo 24"
   region: "PAL-M5"
@@ -7179,6 +7191,9 @@ SLED-50359:
     vuClampMode: 3  # Fixes out of place polys (COP2).
 SLED-50478:
   name: "WWF Smackdown! - Just Bring It [Demo]"
+  region: "PAL-E"
+SLED-50484:
+  name: "Rayman M [Demo]"
   region: "PAL-E"
 SLED-50488:
   name: "Spy Hunter [Demo]"
@@ -19137,6 +19152,10 @@ SLKA-25071:
 SLKA-25077:
   name: "Culdcept II - Expansion"
   region: "NTSC-K"
+SLKA-25078:
+  name: "Rayman 3 - Hoodlum Havoc"
+  region: "NTSC-K"
+  compat: 5
 SLKA-25081:
   name: "SD Gundam G Generation Neo"
   region: "NTSC-K"
@@ -20228,6 +20247,9 @@ SLPM-62112:
   region: "NTSC-J"
 SLPM-62113:
   name: "World Soccer Winning Eleven 5 - Final Evolution"
+  region: "NTSC-J"
+SLPM-62114:
+  name: "Crash Bandicoot 4 - Sakuretsu! Majin Power"
   region: "NTSC-J"
 SLPM-62117:
   name: "Momotaro Train X"
