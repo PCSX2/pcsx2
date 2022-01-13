@@ -404,6 +404,10 @@ const CRC::Game CRC::m_games[] =
 	{0xA04B52DB, AceCombatZero, JP, 0},
 	{0x2799A4E5, AceCombatZero, KO, 0},
 	{0x09B3AD4D, ApeEscape2, EU, 0},
+	{0xADCDCB88, ApeEscape2, EU, 0}, // Spanish version
+	{0xBBB21612, ApeEscape2, DE, 0},
+	{0xE2B8D3B2, ApeEscape2, IT, 0},
+	{0x8B6FE2EA, ApeEscape2, FR, 0},
 	{0xBDD9F5E1, ApeEscape2, US, 0},
 	{0xFE0A6AB6, ApeEscape2, JP, 0}, // Saru! Get You! 2
 	{0x64A9982B, ApeEscape2, CH, 0},
