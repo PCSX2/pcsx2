@@ -51,58 +51,12 @@ HostKeyEvent event;
 static HostKeyEvent s_event;
 std::string s_padstrLogPath("logs/");
 
-FILE* padLog = NULL;
-
 KeyStatus g_key_status;
 
 MtQueue<HostKeyEvent> g_ev_fifo;
 
-
-void __LogToConsole(const char* fmt, ...)
-{
-	va_list list;
-
-	va_start(list, fmt);
-
-	if (padLog != NULL)
-		vfprintf(padLog, fmt, list);
-
-	printf("PAD: ");
-	vprintf(fmt, list);
-	va_end(list);
-}
-
-void initLogging()
-{
-#ifdef PAD_LOG
-	if (padLog)
-		return;
-
-	const std::string LogFile(s_padstrLogPath + "padLog.txt");
-	padLog = fopen(LogFile.c_str(), "w");
-
-	if (padLog)
-		setvbuf(padLog, NULL, _IONBF, 0);
-
-	PAD_LOG("PADinit\n");
-#endif
-}
-
-void CloseLogging()
-{
-#ifdef PAD_LOG
-	if (padLog)
-	{
-		fclose(padLog);
-		padLog = NULL;
-	}
-#endif
-}
-
 s32 PADinit()
 {
-	initLogging();
-
 	PADLoadConfig();
 
 	Pad::reset_all();
@@ -117,7 +71,6 @@ s32 PADinit()
 
 void PADshutdown()
 {
-	CloseLogging();
 }
 
 s32 PADopen(const WindowInfo& wi)
@@ -270,7 +223,7 @@ HostKeyEvent* PADkeyEvent()
 #ifdef __unix__
 	if (g_ev_fifo.size() == 0)
 	{
-		// PAD_LOG("No events in queue, returning empty event\n");
+		//PAD_LOG("No events in queue, returning empty event");
 		s_event = event;
 		event.type = HostKeyEvent::Type::NoEvent;
 		event.key = 0;
@@ -279,7 +232,7 @@ HostKeyEvent* PADkeyEvent()
 	s_event = g_ev_fifo.dequeue();
 
 	AnalyzeKeyEvent(s_event);
-	// PAD_LOG("Returning Event. Event Type: %d, Key: %d\n", s_event.evt, s_event.key);
+	//PAD_LOG("Returning Event. Event Type: %d, Key: %d", s_event.type, s_event.key);
 	return &s_event;
 #else // MacOS
 	s_event = event;
@@ -293,7 +246,7 @@ HostKeyEvent* PADkeyEvent()
 void PADWriteEvent(HostKeyEvent& evt)
 {
 	// if (evt.evt != 6) { // Skip mouse move events for logging
-	//     PAD_LOG("Pushing Event. Event Type: %d, Key: %d\n", evt.evt, evt.key);
+	//     PAD_LOG("Pushing Event. Event Type: %d, Key: %d", evt.type, evt.key);
 	// }
 	g_ev_fifo.push(evt);
 }

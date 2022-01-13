@@ -65,12 +65,11 @@ void PADSaveConfig()
 	f = fopen(iniFile.c_str(), "w");
 	if (f == NULL)
 	{
-		printf("PAD: failed to save ini %s\n", iniFile.c_str());
+		Console.Warning("PAD: failed to save ini %s", iniFile.c_str());
 		return;
 	}
 
 	fprintf(f, "first_time_wizard = %d\n", g_conf.ftw);
-	fprintf(f, "log = %d\n", g_conf.log);
 	fprintf(f, "options = %d\n", g_conf.packed_options);
 	fprintf(f, "mouse_sensibility = %d\n", g_conf.get_sensibility());
 	fprintf(f, "ff_intensity = %g\n", g_conf.get_ff_intensity());
@@ -103,7 +102,7 @@ void PADLoadConfig()
 	f = fopen(iniFile.c_str(), "r");
 	if (f == nullptr)
 	{
-		printf("OnePAD: failed to load ini %s\n", iniFile.c_str());
+		Console.Warning("PAD: failed to load ini %s", iniFile.c_str());
 		PADSaveConfig(); //save and return
 		return;
 	}
@@ -113,9 +112,6 @@ void PADLoadConfig()
 
 	if (fscanf(f, "first_time_wizard = %u\n", &value) == 1)
 		g_conf.ftw = value;
-
-	if (fscanf(f, "log = %u\n", &value) == 1)
-		g_conf.log = value;
 
 	if (fscanf(f, "options = %u\n", &value) == 1)
 		g_conf.packed_options = value;

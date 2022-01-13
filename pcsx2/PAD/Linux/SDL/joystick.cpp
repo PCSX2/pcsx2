@@ -177,7 +177,7 @@ JoystickInfo::JoystickInfo(int id)
 
 	if (joy == nullptr)
 	{
-		fprintf(stderr, "PAD: failed to open joystick %d\n", id);
+		Console.Warning("PAD: failed to open joystick %d", id);
 		return;
 	}
 
@@ -188,7 +188,7 @@ JoystickInfo::JoystickInfo(int id)
 
 	if (m_controller == nullptr)
 	{
-		fprintf(stderr, "PAD: Joystick (%s,GUID:%s) isn't yet supported by the SDL2 game controller API\n"
+		Console.Warning("PAD: Joystick (%s,GUID:%s) isn't yet supported by the SDL2 game controller API\n"
 		                "You can use SDL2 Gamepad Tool (https://www.generalarcade.com/gamepadtool/) or Steam to configure your joystick\n"
 		                "The mapping can be stored in PAD.ini as 'SDL2 = <...mapping description...>'\n"
 		                "Please post the new generated mapping to (https://github.com/gabomdq/SDL_GameControllerDB) so it can be added to the database.",
@@ -204,7 +204,7 @@ JoystickInfo::JoystickInfo(int id)
 
 	bool rumble_support = SDL_GameControllerRumble(m_controller, 0, 0, 1) >= 0;
 
-	fprintf(stdout, "PAD: controller (%s) detected%s, GUID:%s\n",
+	Console.WriteLn("PAD: controller (%s) detected%s, GUID:%s",
 			m_device_name.c_str(), rumble_support ? " with rumble support" : "", guid);
 
 	m_no_error = true;

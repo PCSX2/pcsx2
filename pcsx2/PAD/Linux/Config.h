@@ -39,7 +39,6 @@ public:
 		u32 packed_options;            // Only first 8 bits of each 16 bits series are really used, rest is padding
 	};
 
-	u32 log;
 	u32 ftw;
 	std::map<u32, u32> keysym_map[GAMEPAD_NUMBER];
 	std::array<size_t, GAMEPAD_NUMBER> unique_id;
@@ -50,7 +49,6 @@ public:
 
 	void init()
 	{
-		log = 0;
 		ftw = 1;
 		packed_options = 0;
 		ff_intensity = 1.0; // set it at max value by default
