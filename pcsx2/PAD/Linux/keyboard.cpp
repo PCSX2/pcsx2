@@ -162,7 +162,7 @@ void AnalyzeKeyEvent(HostKeyEvent& evt)
 			if (index != -1)
 				PressButton(pad, index);
 
-			//PAD_LOG("Key pressed:%d\n", index);
+			//PAD_LOG("Key pressed:%d", index);
 
 			event.type = HostKeyEvent::Type::KeyPressed;
 			event.key = key;

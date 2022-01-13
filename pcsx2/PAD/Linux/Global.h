@@ -114,6 +114,5 @@ static bool IsAnalogKey(int index)
 
 #include "KeyStatus.h"
 
-void __LogToConsole(const char* fmt, ...);
 void PADLoadConfig();
 void PADSaveConfig();
