@@ -10285,6 +10285,8 @@ SLES-51473:
   name: "Kya - Dark Lineage"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes smoke effects.
 SLES-51474:
   name: "Blood Rayne"
   region: "PAL-M4"
@@ -34881,6 +34883,8 @@ SLUS-20440:
   name: "Kya - Dark Lineage"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes smoke effects.
 SLUS-20441:
   name: "NASCAR - Dirt to Daytona"
   region: "NTSC-U"
