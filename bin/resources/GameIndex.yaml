@@ -12970,13 +12970,13 @@ SLES-52917:
   region: "PAL-E-F"
   compat: 5
   roundModes:
-    eeRoundMode: 2  # Fixes missing text.
+    eeRoundMode: 2 # Fixes missing text.
 SLES-52918:
   name: "Scaler"
   region: "PAL-M4"
   compat: 5
   roundModes:
-    eeRoundMode: 2  # Fixes missing text.
+    eeRoundMode: 2 # Fixes missing text.
 SLES-52919:
   name: "NRL Rugby League 2"
   region: "PAL-E"
@@ -14854,8 +14854,9 @@ SLES-53746:
 SLES-53747:
   name: "Ed, Edd, 'n Eddy - The Misadventure"
   region: "PAL-E"
+  compat: 5
   roundModes:
-    eeRoundMode: 2  # Fixes missing text.
+    eeRoundMode: 2 # Fixes missing text.
 SLES-53748:
   name: "Quest for Sleeping Beauty"
   region: "PAL-M7"
@@ -16258,13 +16259,13 @@ SLES-54430:
   region: "PAL-E-F"
   compat: 5
   roundModes:
-    eeRoundMode: 2  # Fixes missing text.
+    eeRoundMode: 2 # Fixes missing text.
 SLES-54431:
   name: "Teen Titans"
   region: "PAL-E"
   compat: 5
   roundModes:
-    eeRoundMode: 2  # Fixes missing text.
+    eeRoundMode: 2 # Fixes missing text.
 SLES-54432:
   name: "Mercury Meltdown Remix"
   region: "PAL-M5"
@@ -37045,7 +37046,7 @@ SLUS-20957:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 2  # Fixes missing text.
+    eeRoundMode: 2 # Fixes missing text.
 SLUS-20958:
   name: "Tom Clancy's Splinter Cell - Pandora Tomorrow"
   region: "NTSC-U"
@@ -38082,7 +38083,7 @@ SLUS-21183:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 2  # Fixes missing text.
+    eeRoundMode: 2 # Fixes missing text.
 SLUS-21184:
   name: "Teenage Mutant Ninja Turtles 3 - Mutant Nightmare"
   region: "NTSC-U"
@@ -38452,7 +38453,7 @@ SLUS-21260:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 2  # Fixes missing text.
+    eeRoundMode: 2 # Fixes missing text.
 SLUS-21261:
   name: "Shadow the Hedgehog"
   region: "NTSC-U"
