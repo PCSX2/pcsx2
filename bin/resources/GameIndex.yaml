@@ -3733,9 +3733,6 @@ SCKA-20011:
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
     - EETimingHack # Fixes SPR errors while going in-game.
-  memcardFilters:
-    - "SCKA-20011"
-    - "SCKA-20120"
 SCKA-20012:
   name: "Arc the Lad - Jeong Ryeo Hui Hwang Ho"
   region: "NTSC-K"
@@ -3837,7 +3834,6 @@ SCKA-20037:
   memcardFilters:
     - "SCKA-20037"
     - "SCKA-20011"
-    - "SCKA-20120"
 SCKA-20038:
   name: "Time Crisis - Crisis Zone"
   region: "NTSC-K"
@@ -4031,11 +4027,10 @@ SCKA-20117:
   name: "Super Robot Taisen OG - Original Generations Gaiden"
   region: "NTSC-K"
 SCKA-20120:
-  name: "Ratchet & Clank"
+  name: "Ratchet & Clank - Size Matters"
   region: "NTSC-K"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - EETimingHack # Fixes SPR errors while going in-game.
 SCKA-20132:
   name: "Shin Megami Tensei: Persona 4"
   region: "NTSC-K"
@@ -12974,9 +12969,14 @@ SLES-52917:
   name: "Scaler"
   region: "PAL-E-F"
   compat: 5
+  roundModes:
+    eeRoundMode: 2 # Fixes missing text.
 SLES-52918:
   name: "Scaler"
   region: "PAL-M4"
+  compat: 5
+  roundModes:
+    eeRoundMode: 2 # Fixes missing text.
 SLES-52919:
   name: "NRL Rugby League 2"
   region: "PAL-E"
@@ -14854,8 +14854,9 @@ SLES-53746:
 SLES-53747:
   name: "Ed, Edd, 'n Eddy - The Misadventure"
   region: "PAL-E"
+  compat: 5
   roundModes:
-    eeRoundMode: 2  # Fixes missing text.
+    eeRoundMode: 2 # Fixes missing text.
 SLES-53748:
   name: "Quest for Sleeping Beauty"
   region: "PAL-M7"
@@ -16256,9 +16257,15 @@ SLES-54427:
 SLES-54430:
   name: "Teen Titans"
   region: "PAL-E-F"
+  compat: 5
+  roundModes:
+    eeRoundMode: 2 # Fixes missing text.
 SLES-54431:
   name: "Teen Titans"
   region: "PAL-E"
+  compat: 5
+  roundModes:
+    eeRoundMode: 2 # Fixes missing text.
 SLES-54432:
   name: "Mercury Meltdown Remix"
   region: "PAL-M5"
@@ -17117,7 +17124,7 @@ SLES-54814:
   name: "Dead Eye Jim"
   region: "PAL-E"
 SLES-54815:
-  name: "Spyro - The Eternal Night"
+  name: "Legend of Spyro, The - The Eternal Night"
   region: "PAL-M6"
   compat: 5
   patches:
@@ -17127,8 +17134,15 @@ SLES-54815:
         // Fixes HUD and menu display.
         patch=1,EE,00173c38,word,00000000
 SLES-54816:
-  name: "Spyro - The Eternal Night"
+  name: "Legend of Spyro, The - The Eternal Night"
   region: "PAL-R"
+  compat: 5
+  patches:
+    C95F0198:
+      content: |-
+        comment=Patch by kozarovv and refraction
+        // Fixes HUD and menu display.
+        patch=1,EE,00173bb8,word,00000000
 SLES-54817:
   name: "Garfield - Lasagna World Tour"
   region: "PAL-M5"
@@ -37031,6 +37045,8 @@ SLUS-20957:
   name: "Scaler"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 2 # Fixes missing text.
 SLUS-20958:
   name: "Tom Clancy's Splinter Cell - Pandora Tomorrow"
   region: "NTSC-U"
@@ -38066,6 +38082,8 @@ SLUS-21183:
   name: "Teen Titans"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 2 # Fixes missing text.
 SLUS-21184:
   name: "Teenage Mutant Ninja Turtles 3 - Mutant Nightmare"
   region: "NTSC-U"
@@ -38435,7 +38453,7 @@ SLUS-21260:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 2  # Fixes missing text.
+    eeRoundMode: 2 # Fixes missing text.
 SLUS-21261:
   name: "Shadow the Hedgehog"
   region: "NTSC-U"
@@ -41159,19 +41177,19 @@ SLUS-21910:
   gameFixes:
     - EETimingHack # Broken textures.
 SLUS-21913:
-  name: "Star Wars The Clone Wars: Republic Heroes"
+  name: "Star Wars: The Clone Wars - Republic Heroes"
   region: "NTSC-U"
   compat: 5
   patches:
     71BA3429:
       content: |-
         author=kozarovv
-        // Fixes graphics glitches.
-        // It's a problem which apply to all games made by Khrome studio.
-        // The EE seems to send invalid data to the GS and expect
+        // Fixes graphical glitches.
+        // It's a problem which applies to most games made by Krome Studios.
+        // The EE seems to send invalid data to the GS and expects
         // some kind of unknown behaviour to operate.
-        // This can be fixed on the GS side but the software render is impossible to fix.
-        // So this patch correct the issue on the EE side.
+        // This can be fixed on the GS side but the software renderer is impossible to fix.
+        // So this patch corrects the issue on the EE side.
         patch=1,EE,00173328,word,3464fffd
 SLUS-21914:
   name: "NHL 2K10"
