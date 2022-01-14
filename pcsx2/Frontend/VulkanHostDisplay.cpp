@@ -127,6 +127,31 @@ void VulkanHostDisplay::DestroyRenderSurface()
 	m_swap_chain.reset();
 }
 
+std::string VulkanHostDisplay::GetDriverInfo() const
+{
+	std::string ret;
+	const u32 version = g_vulkan_context->GetDeviceProperties().apiVersion;
+	if (g_vulkan_context->GetOptionalExtensions().vk_khr_driver_properties)
+	{
+		const VkPhysicalDeviceDriverProperties& props = g_vulkan_context->GetDeviceDriverProperties();
+		ret = StringUtil::StdStringFromFormat(
+			"Vulkan %u.%u.%u\nConformance Version %u.%u.%u.%u\n%s\n%s\n%s",
+			VK_API_VERSION_MAJOR(version), VK_API_VERSION_MINOR(version), VK_API_VERSION_PATCH(version),
+			props.conformanceVersion.major, props.conformanceVersion.minor, props.conformanceVersion.subminor, props.conformanceVersion.patch,
+			props.driverInfo, props.driverName,
+			g_vulkan_context->GetDeviceProperties().deviceName);
+	}
+	else
+	{
+		ret = StringUtil::StdStringFromFormat(
+			"Vulkan %u.%u.%u\n%s",
+			VK_API_VERSION_MAJOR(version), VK_API_VERSION_MINOR(version), VK_API_VERSION_PATCH(version),
+			g_vulkan_context->GetDeviceProperties().deviceName);
+	}
+
+	return ret;
+}
+
 static bool UploadBufferToTexture(Vulkan::Texture* texture, u32 width, u32 height, const void* data, u32 data_stride)
 {
 	const u32 tight_stride = Vulkan::Util::GetTexelSize(texture->GetFormat()) * width;

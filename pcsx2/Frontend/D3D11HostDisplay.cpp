@@ -524,6 +524,98 @@ void D3D11HostDisplay::DestroyRenderSurface()
 	m_swap_chain.Reset();
 }
 
+static std::string GetDriverVersionFromLUID(const LUID& luid)
+{
+	std::string ret;
+
+	HKEY hKey;
+	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\DirectX"), 0, KEY_READ, &hKey) == ERROR_SUCCESS)
+	{
+		DWORD max_key_len = 0, adapter_count = 0;
+		if (RegQueryInfoKey(hKey, nullptr, nullptr, nullptr, &adapter_count, &max_key_len,
+				nullptr, nullptr, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS)
+		{
+			std::vector<TCHAR> current_name(max_key_len + 1);
+			for (DWORD i = 0; i < adapter_count; ++i)
+			{
+				DWORD subKeyLength = static_cast<DWORD>(current_name.size());
+				if (RegEnumKeyEx(hKey, i, current_name.data(), &subKeyLength, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS)
+				{
+					LUID current_luid = {};
+					DWORD current_luid_size = sizeof(uint64_t);
+					if (RegGetValue(hKey, current_name.data(), _T("AdapterLuid"), RRF_RT_QWORD, nullptr, &current_luid, &current_luid_size) == ERROR_SUCCESS &&
+						current_luid.HighPart == luid.HighPart && current_luid.LowPart == luid.LowPart)
+					{
+						LARGE_INTEGER driver_version = {};
+						DWORD driver_version_size = sizeof(driver_version);
+						if (RegGetValue(hKey, current_name.data(), _T("DriverVersion"), RRF_RT_QWORD, nullptr, &driver_version, &driver_version_size) == ERROR_SUCCESS)
+						{
+							WORD nProduct = HIWORD(driver_version.HighPart);
+							WORD nVersion = LOWORD(driver_version.HighPart);
+							WORD nSubVersion = HIWORD(driver_version.LowPart);
+							WORD nBuild = LOWORD(driver_version.LowPart);
+							ret = StringUtil::StdStringFromFormat("%u.%u.%u.%u", nProduct, nVersion, nSubVersion, nBuild);
+						}
+					}
+				}
+			}
+		}
+
+		RegCloseKey(hKey);
+	}
+
+	return ret;
+}
+
+std::string D3D11HostDisplay::GetDriverInfo() const
+{
+	std::string ret = "Unknown Feature Level";
+
+	static constexpr std::array<std::tuple<D3D_FEATURE_LEVEL, const char*>, 4> feature_level_names = {{
+		{D3D_FEATURE_LEVEL_10_0, "D3D_FEATURE_LEVEL_10_0"},
+		{D3D_FEATURE_LEVEL_10_0, "D3D_FEATURE_LEVEL_10_1"},
+		{D3D_FEATURE_LEVEL_11_0, "D3D_FEATURE_LEVEL_11_0"},
+		{D3D_FEATURE_LEVEL_11_1, "D3D_FEATURE_LEVEL_11_1"},
+	}};
+
+	const D3D_FEATURE_LEVEL fl = m_device->GetFeatureLevel();
+	for (size_t i = 0; i < std::size(feature_level_names); i++)
+	{
+		if (fl == std::get<0>(feature_level_names[i]))
+		{
+			ret = std::get<1>(feature_level_names[i]);
+			break;
+		}
+	}
+
+	ret += "\n";
+
+	ComPtr<IDXGIDevice> dxgi_dev;
+	if (SUCCEEDED(m_device.As(&dxgi_dev)))
+	{
+		ComPtr<IDXGIAdapter> dxgi_adapter;
+		if (SUCCEEDED(dxgi_dev->GetAdapter(dxgi_adapter.ReleaseAndGetAddressOf())))
+		{
+			DXGI_ADAPTER_DESC desc;
+			if (SUCCEEDED(dxgi_adapter->GetDesc(&desc)))
+			{
+				ret += StringUtil::StdStringFromFormat("VID: 0x%04X PID: 0x%04X\n", desc.VendorId, desc.DeviceId);
+				ret += StringUtil::WideStringToUTF8String(desc.Description);
+				ret += "\n";
+
+				const std::string driver_version(GetDriverVersionFromLUID(desc.AdapterLuid));
+				if (!driver_version.empty())
+				{
+					ret += "Driver Version: ";
+					ret += driver_version;
+				}
+			}
+		}
+	}
+
+	return ret;
+}
+
 void D3D11HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
 {
 	if (!m_swap_chain)

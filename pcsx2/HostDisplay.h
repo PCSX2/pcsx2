@@ -108,6 +108,7 @@ public:
 	virtual bool IsFullscreen() = 0;
 	virtual bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) = 0;
 	virtual AdapterAndModeList GetAdapterAndModeList() = 0;
+	virtual std::string GetDriverInfo() const = 0;
 
 	/// Call when the window size changes externally to recreate any resources.
 	virtual void ResizeRenderWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) = 0;
