@@ -14,15 +14,15 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "common/FileSystem.h"
 #include "common/SafeArray.inl"
 #include "common/StringUtil.h"
 #include <wx/file.h>
 #include <wx/dir.h>
 #include <wx/stopwatch.h>
 
+#include <array>
 #include <chrono>
-
-struct Component_FileMcd;
 
 #include "MemoryCardFile.h"
 #include "MemoryCardFolder.h"
@@ -39,6 +39,8 @@ struct Component_FileMcd;
 static const int MCD_SIZE = 1024 * 8 * 16; // Legacy PSX card default size
 
 static const int MC2_MBSIZE = 1024 * 528 * 2; // Size of a single megabyte of card data
+
+static const char* s_folder_mem_card_id_file = "_pcsx2_superblock";
 
 bool FileMcd_Open = false;
 
@@ -818,4 +820,194 @@ bool isValidNewFilename(wxString filenameStringToTest, wxDirName atBasePath, wxS
 
 	out_errorMessage = L"[OK - New file name is valid]"; //shouldn't be displayed on success, hence not translatable.
 	return true;
+}
+
+static MemoryCardFileType GetMemoryCardFileTypeFromSize(s64 size)
+{
+	if (size == (8 * MC2_MBSIZE))
+		return MemoryCardFileType::PS2_8MB;
+	else if (size == (16 * MC2_MBSIZE))
+		return MemoryCardFileType::PS2_16MB;
+	else if (size == (32 * MC2_MBSIZE))
+		return MemoryCardFileType::PS2_32MB;
+	else if (size == (64 * MC2_MBSIZE))
+		return MemoryCardFileType::PS2_64MB;
+	else if (size == MCD_SIZE)
+		return MemoryCardFileType::PS1;
+	else
+		return MemoryCardFileType::Unknown;
+}
+
+static bool IsMemoryCardFolder(const std::string& path)
+{
+	const std::string superblock_path(Path::CombineStdString(path, s_folder_mem_card_id_file));
+	return FileSystem::FileExists(superblock_path.c_str());
+}
+
+std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_cards)
+{
+	std::vector<FILESYSTEM_FIND_DATA> files;
+	FileSystem::FindFiles(EmuFolders::MemoryCards.ToUTF8(), "*",
+		FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_HIDDEN_FILES, &files);
+
+	std::vector<AvailableMcdInfo> mcds;
+	mcds.reserve(files.size());
+
+	for (FILESYSTEM_FIND_DATA& fd : files)
+	{
+		std::string basename(FileSystem::GetFileNameFromPath(fd.FileName));
+		if (!include_in_use_cards)
+		{
+			bool in_use = false;
+			for (size_t i = 0; i < std::size(EmuConfig.Mcd); i++)
+			{
+				if (EmuConfig.Mcd[i].Filename == basename)
+				{
+					in_use = true;
+					break;
+				}
+			}
+			if (in_use)
+				continue;
+		}
+
+		if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
+		{
+			if (!IsMemoryCardFolder(fd.FileName))
+				continue;
+
+			mcds.push_back({std::move(basename), std::move(fd.FileName), MemoryCardType::Folder,
+				MemoryCardFileType::Unknown, 0u});
+		}
+		else
+		{
+			if (fd.Size < MCD_SIZE)
+				continue;
+
+			mcds.push_back({std::move(basename), std::move(fd.FileName), MemoryCardType::File,
+				GetMemoryCardFileTypeFromSize(fd.Size), static_cast<u32>(fd.Size)});
+		}
+	}
+
+	return mcds;
+}
+
+std::optional<AvailableMcdInfo> FileMcd_GetCardInfo(const std::string_view& name)
+{
+	std::optional<AvailableMcdInfo> ret;
+
+	std::string basename(name);
+	std::string path(Path::CombineStdString(EmuFolders::MemoryCards, basename));
+
+	FILESYSTEM_STAT_DATA sd;
+	if (!FileSystem::StatFile(path.c_str(), &sd))
+		return ret;
+
+	if (sd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
+	{
+		if (IsMemoryCardFolder(path))
+		{
+			ret = {std::move(basename), std::move(path), MemoryCardType::Folder,
+				MemoryCardFileType::Unknown, 0u};
+		}
+	}
+	else
+	{
+		if (sd.Size >= MCD_SIZE)
+		{
+			ret = {std::move(basename), std::move(path), MemoryCardType::File,
+				GetMemoryCardFileTypeFromSize(sd.Size), static_cast<u32>(sd.Size)};
+		}
+	}
+
+	return ret;
+}
+
+bool FileMcd_CreateNewCard(const std::string_view& name, MemoryCardType type, MemoryCardFileType file_type)
+{
+	const std::string full_path(Path::CombineStdString(EmuFolders::MemoryCards, name));
+
+	if (type == MemoryCardType::Folder)
+	{
+		Console.WriteLn("(FileMcd) Creating new PS2 folder memory card: '%*s'", static_cast<int>(name.size()), name.data());
+
+		if (!FileSystem::CreateDirectoryPath(full_path.c_str(), false))
+		{
+			Host::ReportFormattedErrorAsync("Memory Card Creation Failed", "Failed to create directory '%s'.", full_path.c_str());
+			return false;
+		}
+
+		// write the superblock
+		auto fp = FileSystem::OpenManagedCFile(Path::CombineStdString(full_path, s_folder_mem_card_id_file).c_str(), "wb");
+		if (!fp)
+		{
+			Host::ReportFormattedErrorAsync("Memory Card Creation Failed", "Failed to write memory card folder superblock '%s'.", full_path.c_str());
+			return false;
+		}
+
+		return true;
+	}
+
+	if (type == MemoryCardType::File)
+	{
+		if (file_type <= MemoryCardFileType::Unknown || file_type >= MemoryCardFileType::MaxCount)
+			return false;
+
+		static constexpr std::array<u32, static_cast<size_t>(MemoryCardFileType::MaxCount)> sizes = {{0, 8 * MC2_MBSIZE, 16 * MC2_MBSIZE, 32 * MC2_MBSIZE, 64 * MC2_MBSIZE, MCD_SIZE}};
+
+		const bool isPSX = (type == MemoryCardType::File && file_type == MemoryCardFileType::PS1);
+		const u32 size = sizes[static_cast<u32>(file_type)];
+		if (!isPSX && size == 0)
+			return false;
+
+		auto fp = FileSystem::OpenManagedCFile(full_path.c_str(), "wb");
+		if (!fp)
+		{
+			Host::ReportFormattedErrorAsync("Memory Card Creation Failed", "Failed to open file '%s'.", full_path.c_str());
+			return false;
+		}
+
+		if (!isPSX)
+		{
+			Console.WriteLn("(FileMcd) Creating new PS2 %uMB memory card: '%s'", size / MC2_MBSIZE, full_path.c_str());
+
+			// PS2 Memory Card
+			u8 m_effeffs[528 * 16];
+			memset8<0xff>(m_effeffs);
+
+			const u32 count = size / sizeof(m_effeffs);
+			for (uint i = 0; i < count; i++)
+			{
+				if (std::fwrite(m_effeffs, sizeof(m_effeffs), 1, fp.get()) != 1)
+				{
+					Host::ReportFormattedErrorAsync("Memory Card Creation Failed", "Failed to write file '%s'.", full_path.c_str());
+					return false;
+				}
+			}
+
+			return true;
+		}
+		else
+		{
+			Console.WriteLn("(FileMcd) Creating new PSX 128 KiB memory card: '%s'", full_path.c_str());
+
+			// PSX Memory Card; 8192 is the size in bytes of a single block of a PSX memory card (8 KiB).
+			u8 m_effeffs_psx[8192];
+			memset8<0xff>(m_effeffs_psx);
+
+			// PSX cards consist of 16 blocks, each 8 KiB in size.
+			for (uint i = 0; i < 16; i++)
+			{
+				if (std::fwrite(m_effeffs_psx, sizeof(m_effeffs_psx), 1, fp.get()) != 1)
+				{
+					Host::ReportFormattedErrorAsync("Memory Card Creation Failed", "Failed to write file '%s'.", full_path.c_str());
+					return false;
+				}
+			}
+
+			return true;
+		}
+	}
+
+	return false;
 }
