@@ -319,6 +319,15 @@ void OpenGLHostDisplay::DestroyRenderSurface()
 		Console.Error("Failed to switch to surfaceless");
 }
 
+std::string OpenGLHostDisplay::GetDriverInfo() const
+{
+	const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+	const char* gl_renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+	const char* gl_version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+	return StringUtil::StdStringFromFormat(
+		"%s Context:\n%s\n%s %s", m_gl_context->IsGLES() ? "OpenGL ES" : "OpenGL", gl_version, gl_vendor, gl_renderer);
+}
+
 bool OpenGLHostDisplay::CreateImGuiContext()
 {
 	return ImGui_ImplOpenGL3_Init(GetGLSLVersionString());

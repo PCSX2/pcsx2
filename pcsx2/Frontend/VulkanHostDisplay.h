@@ -41,6 +41,7 @@ public:
 	bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
 	AdapterAndModeList GetAdapterAndModeList() override;
 	void DestroyRenderSurface() override;
+	std::string GetDriverInfo() const override;
 
 	std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels,
 		const void* data, u32 data_stride, bool dynamic = false) override;
