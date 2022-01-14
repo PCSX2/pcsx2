@@ -125,7 +125,7 @@ bool PCAPGetIfAdapter(char* name, ifaddrs* adapter, ifaddrs** buffer)
 
 	do
 	{
-		if (pAdapter->ifa_addr->sa_family == AF_INET && strcmp(pAdapter->ifa_name, name) == 0)
+		if (pAdapter->ifa_addr != nullptr && pAdapter->ifa_addr->sa_family == AF_INET && strcmp(pAdapter->ifa_name, name) == 0)
 			break;
 
 		pAdapter = pAdapter->ifa_next;
