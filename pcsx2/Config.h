@@ -93,6 +93,17 @@ enum class MemoryCardType
 	MaxCount
 };
 
+enum class MemoryCardFileType
+{
+	Unknown,
+	PS2_8MB,
+	PS2_16MB,
+	PS2_32MB,
+	PS2_64MB,
+	PS1,
+	MaxCount
+};
+
 enum class LimiterModeType : u8
 {
 	Nominal,
