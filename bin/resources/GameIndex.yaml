@@ -2604,6 +2604,8 @@ SCES-52156:
   region: "PAL-M3"
   clampModes:
     vuClampMode: 3 # Fixes SPS.
+  gameFixes:
+    - VUKickstartHack # Fixes Missing Graphics.
 SCES-52268:
   name: "SingStar"
   region: "PAL-E"
