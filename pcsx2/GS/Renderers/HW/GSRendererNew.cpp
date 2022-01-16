@@ -991,13 +991,18 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	m_conf.ps.ltf = bilinear && shader_emulated_sampler;
 	m_conf.ps.point_sampler = g_gs_device->Features().broken_point_sampler && (!bilinear || shader_emulated_sampler);
 
+	const GSVector2 scale = tex->m_texture->GetScale();
 	const int w = tex->m_texture->GetWidth();
 	const int h = tex->m_texture->GetHeight();
 
 	const int tw = (int)(1 << m_context->TEX0.TW);
 	const int th = (int)(1 << m_context->TEX0.TH);
+	const int miptw = 1 << tex->m_TEX0.TW;
+	const int mipth = 1 << tex->m_TEX0.TH;
 
-	const GSVector4 WH(tw, th, w, h);
+	const GSVector4 WH(static_cast<float>(tw), static_cast<float>(th), miptw * scale.x, mipth * scale.y);
+	const GSVector4 st_scale = WH.zwzw() / GSVector4(w, h).xyxy();
+	m_conf.cb_ps.STScale = GSVector2(st_scale.x, st_scale.y);
 
 	m_conf.ps.fst = !!PRIM->FST;
 

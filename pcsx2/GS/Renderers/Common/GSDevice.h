@@ -417,7 +417,7 @@ struct alignas(16) GSHWDrawConfig
 		GSVector4 MinMax;
 		GSVector4i ChannelShuffle;
 		GSVector2 TCOffsetHack;
-		float pad1[2];
+		GSVector2 STScale;
 
 		GSVector4 DitherMatrix[4];
 

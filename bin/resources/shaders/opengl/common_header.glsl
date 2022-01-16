@@ -82,7 +82,7 @@ layout(std140, binding = 0) uniform cb21
     ivec4 ChannelShuffle;
 
     vec2 TC_OffsetHack;
-    vec2 pad_cb21;
+    vec2 STScale;
 
     mat4 DitherMatrix;
 };

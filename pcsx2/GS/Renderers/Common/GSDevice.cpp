@@ -154,6 +154,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 		}
 	}
 
+	t->SetScale(GSVector2(1, 1)); // Things seem to assume that all textures come out of here with scale 1...
 	t->Commit(); // Clear won't be done if the texture isn't committed.
 
 	switch (type)
