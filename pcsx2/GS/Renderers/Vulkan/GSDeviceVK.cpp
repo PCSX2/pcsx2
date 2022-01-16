@@ -263,6 +263,25 @@ bool GSDeviceVK::CheckFeatures()
 		m_features.point_expand ? "hardware" : "geometry shaders",
 		m_features.line_expand ? "hardware" : "geometry shaders");
 
+	// Check texture format support before we try to create them.
+	for (u32 fmt = static_cast<u32>(GSTexture::Format::Color); fmt < static_cast<u32>(GSTexture::Format::Int32); fmt++)
+	{
+		const VkFormat vkfmt = GSTextureVK::LookupNativeFormat(static_cast<GSTexture::Format>(fmt));
+		const VkFormatFeatureFlags bits = (static_cast<GSTexture::Format>(fmt) == GSTexture::Format::DepthStencil) ?
+                                           (VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) :
+                                           (VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT);
+
+		VkFormatProperties props = {};
+		vkGetPhysicalDeviceFormatProperties(g_vulkan_context->GetPhysicalDevice(), vkfmt, &props);
+		if ((props.optimalTilingFeatures & bits) != bits)
+		{
+			Host::ReportFormattedErrorAsync("Vulkan Renderer Unavailable",
+				"Required format %u is missing bits, you may need to update your driver. (vk:%u, has:0x%x, needs:0x%x)",
+				fmt, static_cast<unsigned>(vkfmt), props.optimalTilingFeatures, bits);
+			return false;
+		}
+	}
+
 	return true;
 }
 
