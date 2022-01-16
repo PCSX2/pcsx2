@@ -59,10 +59,8 @@ private:
 	bool OI_JakGames(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_BurnoutGames(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 
-	void OO_MajokkoALaMode2();
 	void OO_BurnoutGames();
 
-	bool CU_MajokkoALaMode2();
 	bool CU_TalesOfAbyss();
 
 	class Hacks
