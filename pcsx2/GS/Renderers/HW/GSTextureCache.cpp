@@ -876,11 +876,40 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 				}
 				else
 				{
-					list.erase(j);
-					GL_CACHE("TC: Remove Target(%s) %d (0x%x)", to_string(type),
-						t->m_texture ? t->m_texture->GetID() : 0,
-						t->m_TEX0.TBP0);
-					delete t;
+					// YOLO skipping t->m_TEX0.TBW = bw; It would change the surface offset results...
+					const SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
+					if (so.is_valid)
+					{
+						// Offset from Target to Write in Target coords.
+						t->m_dirty.push_back(GSDirtyRect(so.b2a_offset, psm, bw));
+						GL_CACHE("TC: Dirty in the middle [aggressive] of Target(%s) %d [PSM:%s BP:0x%x->0x%x BW:%u rect(%d,%d=>%d,%d)] write[PSM:%s BP:0x%x BW:%u rect(%d,%d=>%d,%d)]",
+							to_string(type),
+							t->m_texture ? t->m_texture->GetID() : 0,
+							psm_str(t->m_TEX0.PSM),
+							t->m_TEX0.TBP0,
+							t->m_end_block,
+							t->m_TEX0.TBW,
+							so.b2a_offset.x,
+							so.b2a_offset.y,
+							so.b2a_offset.z,
+							so.b2a_offset.w,
+							psm_str(psm),
+							bp,
+							bw,
+							r.x,
+							r.y,
+							r.z,
+							r.w
+						);
+					}
+					else
+					{
+						list.erase(j);
+						GL_CACHE("TC: Remove Target(%s) %d (0x%x)", to_string(type),
+							t->m_texture ? t->m_texture->GetID() : 0,
+							t->m_TEX0.TBP0);
+						delete t;
+					}
 					continue;
 				}
 			}
@@ -894,6 +923,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 			}
 
 			// GH: Try to detect texture write that will overlap with a target buffer
+			// TODO Use ComputeSurfaceOffset below.
 			if (GSUtil::HasSharedBits(psm, t->m_TEX0.PSM))
 			{
 				if (bp < t->m_TEX0.TBP0)
