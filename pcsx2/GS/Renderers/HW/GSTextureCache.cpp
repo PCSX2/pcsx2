@@ -2449,7 +2449,10 @@ void GSTextureCache::Palette::InitializeTexture()
 
 u64 GSTextureCache::PaletteKeyHash::operator()(const PaletteKey& key) const
 {
-	return XXH3_64bits(key.clut, sizeof(key.clut[0]) * key.pal);
+	ASSERT(key.pal == 16 || key.pal == 256);
+	return key.pal == 16 ?
+		XXH3_64bits(key.clut, sizeof(key.clut[0]) * 16) :
+		XXH3_64bits(key.clut, sizeof(key.clut[0]) * 256);
 };
 
 // GSTextureCache::PaletteKeyEqual
