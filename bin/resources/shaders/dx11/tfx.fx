@@ -137,7 +137,7 @@ cbuffer cb1
 	float4 MinMax;
 	int4 ChannelShuffle;
 	float2 TC_OffsetHack;
-	float2 pad_cb1;
+	float2 STScale;
 	float4x4 DitherMatrix;
 };
 
@@ -156,6 +156,7 @@ float4 sample_c(float2 uv, float uv_w)
 		// As of 2018 this issue is still present.
 		uv = (trunc(uv * WH.zw) + float2(0.5, 0.5)) / WH.zw;
 	}
+	uv *= STScale;
 
 #if PS_AUTOMATIC_LOD == 1
 	return Texture.Sample(TextureSampler, uv);

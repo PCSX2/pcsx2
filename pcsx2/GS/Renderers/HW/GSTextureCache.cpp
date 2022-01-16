@@ -1332,16 +1332,16 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		// do not round here!!! if edge becomes a black pixel and addressing mode is clamp => everything outside the clamped area turns into black (kh2 shadows)
 
-		int w = (int)(dst->m_texture->GetScale().x * tw);
-		int h = (int)(dst->m_texture->GetScale().y * th);
+		GSVector2i dstsize = dst->m_texture->GetSize();
+
+		int w = std::min(dstsize.x, static_cast<int>(dst->m_texture->GetScale().x * tw));
+		int h = std::min(dstsize.y, static_cast<int>(dst->m_texture->GetScale().y * th));
 		if (is_8bits)
 		{
 			// Unscale 8 bits textures, quality won't be nice but format is really awful
 			w = tw;
 			h = th;
 		}
-
-		GSVector2i dstsize = dst->m_texture->GetSize();
 
 		// pitch conversion
 
@@ -1405,59 +1405,34 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		GSVector2 scale = dst->m_texture->GetScale();
 
-		GSVector4 dRect(0, 0, w, h);
+		GSVector4i sRect(0, 0, w, h);
+		const bool use_texture = shader == ShaderConvert::COPY;
 
-		// Lengthy explanation of the rescaling code.
-		// Here an example in 2x:
-		// RT is 1280x1024 but only contains 512x448 valid data (so 256x224 pixels without upscaling)
-		//
-		// PS2 want to read it back as a 1024x1024 pixels (they don't care about the extra pixels)
-		// So in theory we need to shrink a 2048x2048 RT into a 1024x1024 texture. Obviously the RT is
-		// too small.
-		//
-		// So we will only limit the resize to the available data in RT.
-		// Therefore we will resize the RT from 1280x1024 to 1280x1024/2048x2048 % of the new texture
-		// size (which is 1280x1024) (i.e. 800x512)
-		// From the rendering point of view. UV coordinate will be normalized on the real GS texture size
-		// This way it can be used on an upscaled texture without extra scaling factor (only requirement is
-		// to have same proportion)
-		//
-		// FIXME: The scaling will create a bad offset. For example if texture coordinate start at 0.5 (pixel 0)
-		// At 2x it will become 0.5/128 * 256 = 1 (pixel 1)
-		// I think it is the purpose of the UserHacks_HalfPixelOffset below. However implementation is less
-		// than ideal.
-		// 1/ It suppose games have an half pixel offset on texture coordinate which could be wrong
-		// 2/ It doesn't support rescaling of the RT (tw = 1024)
-		// Maybe it will be more easy to just round the UV value in the Vertex Shader
-
-		if (!is_8bits)
+		if (half_right)
 		{
-			// 8 bits handling is special due to unscaling. It is better to not execute this code
-			if (w > dstsize.x)
+			// You typically hit this code in snow engine game. Dstsize is the size of of Dx/GL RT
+			// which is set to some arbitrary number. h/w are based on the input texture
+			// so the only reliable way to find the real size of the target is to use the TBW value.
+			int half_width = static_cast<int>(dst->m_TEX0.TBW * (64 / 2) * dst->m_texture->GetScale().x);
+			if (half_width < dstsize.x)
 			{
-				scale.x = (float)dstsize.x / tw;
-				dRect.z = (float)dstsize.x * scale.x / dst->m_texture->GetScale().x;
-				w = dstsize.x;
+				int copy_width = std::min(half_width, dstsize.x - half_width);
+				sRect.x = half_width;
+				sRect.z = half_width + copy_width;
+				w = copy_width;
 			}
-
-			if (h > dstsize.y)
+			else
 			{
-				scale.y = (float)dstsize.y / th;
-				dRect.w = (float)dstsize.y * scale.y / dst->m_texture->GetScale().y;
-				h = dstsize.y;
+				DevCon.Error("Invalid half-right copy with width %d from %dx%d texture", half_width * 2, w, h);
 			}
 		}
-
-		GSVector4 sRect(0, 0, w, h);
-		const bool texture_completely_overwritten = ((sRect == dRect).alltrue());
-		const bool use_texture = (texture_completely_overwritten && shader == ShaderConvert::COPY);
 
 		// Don't be fooled by the name. 'dst' is the old target (hence the input)
 		// 'src' is the new texture cache entry (hence the output)
 		GSTexture* sTex = dst->m_texture;
 		GSTexture* dTex = use_texture ?
 			g_gs_device->CreateTexture(w, h, false, GSTexture::Format::Color, true) :
-			g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Color, !texture_completely_overwritten);
+			g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Color, false);
 		src->m_texture = dTex;
 
 		// GH: by default (m_paltex == 0) GS converts texture to the 32 bit format
@@ -1467,68 +1442,18 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		{
 			AttachPaletteToSource(src, psm.pal, true);
 		}
-		// Disable linear filtering for various GS post-processing effect
-		// 1/ Palette is used to interpret the alpha channel of the RT as an index.
-		// Star Ocean 3 uses it to emulate a stencil buffer.
-		// 2/ Z formats are a bad idea to interpolate (discontinuties).
-		// 3/ 16 bits buffer is used to move data from a channel to another.
-		//
-		// I keep linear filtering for standard color even if I'm not sure that it is
-		// working correctly.
-		// Indeed, texture is reduced so you need to read all covered pixels (9 in 3x)
-		// to correctly interpolate the value. Linear interpolation is likely acceptable
-		// only in 2x scaling
-		//
-		// Src texture will still be bilinear interpolated so I'm really not sure
-		// that we need to do it here too.
-		//
-		// Future note: instead to do
-		// RT 2048x2048 -> T 1024x1024 -> RT 2048x2048
-		// We can maybe sample directly a bigger texture
-		// RT 2048x2048 -> T 2048x2048 -> RT 2048x2048
-		// Pro: better quality. Copy instead of StretchRect (must be faster)
-		// Cons: consume more memory
-		//
-		// In distant future: investigate to reuse the RT directly without any
-		// copy. Likely a speed boost and memory usage reduction.
-		bool linear = (TEX0.PSM == PSM_PSMCT32 || TEX0.PSM == PSM_PSMCT24);
 
 		if (use_texture)
 		{
-			if (half_right)
-			{
-				// You typically hit this code in snow engine game. Dstsize is the size of of Dx/GL RT
-				// which is arbitrary set to 1280 (biggest RT used by GS). h/w are based on the input texture
-				// so the only reliable way to find the real size of the target is to use the TBW value.
-				const float real_width = dst->m_TEX0.TBW * 64u * dst->m_texture->GetScale().x;
-				const GSVector4i real_rc((int)(real_width / 2.0f), 0, (int)real_width, h);
-				if (real_rc.width() > w)
-				{
-					DevCon.Error("Dropping invalid half_write copy from {%d,%d} %dx%d to %dx%d",
-						real_rc.x, real_rc.y, real_rc.width(), real_rc.height(), w, h);
-				}
-				else
-				{
-					g_gs_device->CopyRect(sTex, dTex, real_rc);
-				}
-			}
-			else
-			{
-				g_gs_device->CopyRect(sTex, dTex, GSVector4i(0, 0, w, h)); // <= likely wrong dstsize.x could be bigger than w
-			}
+			g_gs_device->CopyRect(sTex, dTex, sRect);
 		}
 		else
 		{
-			// Different size or not the same format
-			sRect.z /= sTex->GetWidth();
-			sRect.w /= sTex->GetHeight();
+			GSVector4 sRectF(sRect);
+			sRectF.z /= sTex->GetWidth();
+			sRectF.w /= sTex->GetHeight();
 
-			if (half_right)
-			{
-				sRect.x = sRect.z / 2.0f;
-			}
-
-			g_gs_device->StretchRect(sTex, sRect, dTex, dRect, shader, linear);
+			g_gs_device->StretchRect(sTex, sRectF, dTex, GSVector4(0, 0, w, h), shader, false);
 		}
 
 		if (src->m_texture)

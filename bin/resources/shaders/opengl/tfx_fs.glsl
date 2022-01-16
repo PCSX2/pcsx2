@@ -91,6 +91,7 @@ vec4 sample_c(vec2 uv)
     // As of 2018 this issue is still present.
     uv = (trunc(uv * WH.zw) + vec2(0.5, 0.5)) / WH.zw;
 #endif
+    uv *= STScale;
 
 #if PS_AUTOMATIC_LOD == 1
     return texture(TextureSampler, uv);

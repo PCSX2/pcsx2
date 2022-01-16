@@ -363,7 +363,7 @@ layout(std140, set = 0, binding = 1) uniform cb1
 	vec4 MinMax;
 	ivec4 ChannelShuffle;
 	vec2 TC_OffsetHack;
-	vec2 pad_cb1;
+	vec2 STScale;
 	mat4 DitherMatrix;
 };
 
@@ -410,6 +410,7 @@ vec4 sample_c(vec2 uv)
 		// As of 2018 this issue is still present.
 		uv = (trunc(uv * WH.zw) + vec2(0.5, 0.5)) / WH.zw;
 #endif
+	uv *= STScale;
 
 #if PS_AUTOMATIC_LOD == 1
     return texture(Texture, uv);
