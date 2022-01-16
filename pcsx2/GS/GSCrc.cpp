@@ -203,7 +203,7 @@ const CRC::Game CRC::m_games[] =
 	{0xA3643EB1, GiTS, KO, 0},
 	{0x28557423, GiTS, RU, 0},
 	{0xBF6F101F, GiTS, EU, 0}, // same CRC as another US disc
-	{0xF442260C, MajokkoALaMode2, JP, 0},
+	{0xF442260C, MajokkoALaMode2, JP, PointListPalette},
 	{0xA616A6C2, TalesOfAbyss, US, 0},
 	{0x14FE77F7, TalesOfAbyss, US, 0},
 	{0xAA5EC3A3, TalesOfAbyss, JP, 0},

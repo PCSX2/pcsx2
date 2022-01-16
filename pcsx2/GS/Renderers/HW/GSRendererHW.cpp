@@ -1755,17 +1755,14 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::Jak2, CRC::RegionCount, &GSRendererHW::OI_JakGames));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::Jak3, CRC::RegionCount, &GSRendererHW::OI_JakGames));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::JakX, CRC::RegionCount, &GSRendererHW::OI_JakGames));
-
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BurnoutTakedown, CRC::RegionCount, &GSRendererHW::OI_BurnoutGames));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BurnoutRevenge, CRC::RegionCount, &GSRendererHW::OI_BurnoutGames));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BurnoutDominator, CRC::RegionCount, &GSRendererHW::OI_BurnoutGames));
 
-	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::OO_MajokkoALaMode2));
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::BurnoutTakedown, CRC::RegionCount, &GSRendererHW::OO_BurnoutGames));
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::BurnoutRevenge, CRC::RegionCount, &GSRendererHW::OO_BurnoutGames));
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::BurnoutDominator, CRC::RegionCount, &GSRendererHW::OO_BurnoutGames));
 
-	m_cu_list.push_back(HackEntry<CU_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::CU_MajokkoALaMode2));
 	m_cu_list.push_back(HackEntry<CU_Ptr>(CRC::TalesOfAbyss, CRC::RegionCount, &GSRendererHW::CU_TalesOfAbyss));
 }
 
@@ -2253,10 +2250,14 @@ bool GSRendererHW::OI_PointListPalette(GSTexture* rt, GSTexture* ds, GSTextureCa
 	const size_t n_vertices = m_vertex.next;
 	const int w = m_r.width();
 	const int h = m_r.height();
+	const bool is_copy = !PRIM->ABE || (
+		m_context->ALPHA.A == m_context->ALPHA.B // (A - B) == 0 in blending equation, makes C value irrelevant.
+		&& m_context->ALPHA.D == 0 // Copy source RGB(A) color into frame buffer.
+	);
 	if (m_vt.m_primclass == GS_POINT_CLASS && w <= 64 // Small draws.
 		&& h <= 64 // Small draws.
 		&& n_vertices <= 256 // Small draws.
-		&& PRIM->ABE // Alpha blending.
+		&& is_copy // Copy (no blending).
 		&& !PRIM->TME // No texturing please.
 		&& m_context->FRAME.PSM == PSM_PSMCT32 // Only 32-bit pixel format (CLUT format).
 		&& !PRIM->FGE // No FOG.
@@ -2270,8 +2271,6 @@ bool GSRendererHW::OI_PointListPalette(GSTexture* rt, GSTexture* ds, GSTextureCa
 		&& !m_env.PABE.PABE // No PABE.
 		&& m_context->FBA.FBA == 0 // No Alpha Correction.
 		&& m_context->FRAME.FBMSK == 0 // No frame buffer masking.
-		&& m_context->ALPHA.A == m_context->ALPHA.B // (A - B) == 0 in blending equation, makes C value irrelevant.
-		&& m_context->ALPHA.D == 0 // Copy source RGB(A) color into frame buffer.
 	)
 	{
 		const u32 FBP = m_context->FRAME.Block();
@@ -2396,24 +2395,6 @@ bool GSRendererHW::OI_BurnoutGames(GSTexture* rt, GSTexture* ds, GSTextureCache:
 
 // OO (others output?) hacks: invalidate extra local memory after the draw call
 
-void GSRendererHW::OO_MajokkoALaMode2()
-{
-	// palette readback
-
-	const u32 FBP = m_context->FRAME.Block();
-
-	if (!PRIM->TME && FBP == 0x03f40)
-	{
-		GIFRegBITBLTBUF BITBLTBUF;
-
-		BITBLTBUF.SBP = FBP;
-		BITBLTBUF.SBW = 1;
-		BITBLTBUF.SPSM = PSM_PSMCT32;
-
-		InvalidateLocalMem(BITBLTBUF, GSVector4i(0, 0, 16, 16));
-	}
-}
-
 void GSRendererHW::OO_BurnoutGames()
 {
 	const GIFRegTEX0& TEX0 = m_context->TEX0;
@@ -2450,15 +2431,6 @@ void GSRendererHW::OO_BurnoutGames()
 }
 
 // Can Upscale hacks: disable upscaling for some draw calls
-
-bool GSRendererHW::CU_MajokkoALaMode2()
-{
-	// palette should stay 16 x 16
-
-	const u32 FBP = m_context->FRAME.Block();
-
-	return FBP != 0x03f40;
-}
 
 bool GSRendererHW::CU_TalesOfAbyss()
 {
