@@ -135,7 +135,7 @@ void GSRendererHW::SetScaling()
 
 	// No need to resize for native/custom resolutions as default size will be enough for native and we manually get RT Buffer size for custom.
 	// don't resize until the display rectangle and register states are stabilized.
-	if (GSConfig.UpscaleMultiplier <= 1 || good_rt_size)
+	if (good_rt_size)
 		return;
 
 	m_tc->RemovePartial();
@@ -293,9 +293,6 @@ void GSRendererHW::Reset()
 
 void GSRendererHW::VSync(u32 field, bool registers_written)
 {
-	//Check if the frame buffer width or display width has changed
-	SetScaling();
-
 	if (m_reset)
 	{
 		m_tc->RemoveAll();
@@ -307,6 +304,9 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 
 		m_reset = false;
 	}
+
+	//Check if the frame buffer width or display width has changed
+	SetScaling();
 
 	GSRenderer::VSync(field, registers_written);
 

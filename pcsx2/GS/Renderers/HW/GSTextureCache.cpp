@@ -2243,15 +2243,8 @@ void GSTextureCache::Target::Update()
 	// Alternate
 	// 1/ uses multiple vertex rectangle
 
-	GSVector2i t_size = default_rt_size;
-
-	// Ensure buffer width is at least of the minimum required value.
-	// Probably not necessary but doesn't hurt to be on the safe side.
-	// I've seen some games use buffer sizes over 1024, which might bypass our default limit
-	int buffer_width = m_TEX0.TBW << 6;
-	t_size.x = std::max(buffer_width, t_size.x);
-
-	GSVector4i r = m_dirty.GetDirtyRectAndClear(m_TEX0, t_size);
+	GSVector4i unscaled_size = GSVector4i(GSVector4(m_texture->GetSize()) / GSVector4(m_texture->GetScale()));
+	GSVector4i r = m_dirty.GetDirtyRectAndClear(m_TEX0, GSVector2i(unscaled_size.x, unscaled_size.y));
 
 	if (r.rempty())
 		return;

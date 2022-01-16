@@ -107,7 +107,7 @@ inline FILE* px_fopen(const std::string& filename, const std::string& mode)
 #ifdef ENABLE_ACCURATE_BUFFER_EMULATION
 static const GSVector2i default_rt_size(2048, 2048);
 #else
-static const GSVector2i default_rt_size(1280, 1024);
+static const GSVector2i default_rt_size(0, 0);
 #endif
 
 // Maximum texture size to skip preload/hash path.
