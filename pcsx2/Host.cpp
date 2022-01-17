@@ -23,7 +23,7 @@ void Host::ReportFormattedErrorAsync(const std::string_view& title, const char* 
 	std::va_list ap;
 	va_start(ap, format);
 	FastFormatAscii fmt;
-	fmt.WriteV(fmt, ap);
+	fmt.WriteV(format, ap);
 	va_end(ap);
 	ReportErrorAsync(title, fmt.c_str());
 }
