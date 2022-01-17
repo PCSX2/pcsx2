@@ -316,7 +316,13 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 		return false;
 	}
 
-	return DoGSOpen(renderer, basemem);
+	if (!DoGSOpen(renderer, basemem))
+	{
+		Host::ReleaseHostDisplay();
+		return false;
+	}
+
+	return true;
 }
 
 void GSreset()
