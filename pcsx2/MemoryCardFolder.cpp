@@ -22,6 +22,9 @@
 #include "System.h"
 #include "Config.h"
 
+#include "common/StringUtil.h"
+
+#include "fmt/core.h"
 #include "ryml_std.hpp"
 #include "ryml.hpp"
 #include "common/Path.h"
@@ -41,17 +44,37 @@ const ryml::Tree treeFromString(const std::string& s)
 // A helper function to parse the YAML file
 std::optional<ryml::Tree> loadYamlFile(const wxString& filePath)
 {
-	auto path = Path::FromWxString(filePath);
-	if (!fs::exists(path))
+	ryml::Callbacks rymlCallbacks = ryml::get_callbacks();
+	rymlCallbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void*) {
+		throw std::runtime_error(fmt::format("[YAML] Parsing error at {}:{} (bufpos={}): {}",
+			loc.line, loc.col, loc.offset, msg));
+	};
+	ryml::set_callbacks(rymlCallbacks);
+	c4::set_error_callback([](const char* msg, size_t msg_size) {
+		throw std::runtime_error(fmt::format("[YAML] Internal Parsing error: {}",
+			msg));
+	});
+	try
 	{
+		auto path = Path::FromWxString(filePath);
+		if (!fs::exists(path))
+		{
+			return std::nullopt;
+		}
+
+		auto stream = fs::ifstream(path);
+		std::stringstream buffer;
+		buffer << stream.rdbuf();
+
+		ryml::reset_callbacks();
+		return std::make_optional(treeFromString(buffer.str()));
+	}
+	catch (const std::exception& e)
+	{
+		Console.Error(fmt::format("[MemoryCard] Error occured when parsing folder memory card at path '{}': {}", StringUtil::wxStringToUTF8String(filePath), e.what()));
+		ryml::reset_callbacks();
 		return std::nullopt;
 	}
-
-	auto stream = fs::ifstream(path);
-	std::stringstream buffer;
-	buffer << stream.rdbuf();
-
-	return std::make_optional(treeFromString(buffer.str()));
 }
 
 /// A helper function to write a YAML file
