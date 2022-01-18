@@ -532,6 +532,9 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	u8 blend_index = u8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
 	const int blend_flag = g_gs_device->GetBlendFlags(blend_index);
 
+	// HW blend can handle Cd output.
+	bool color_dest_blend = !!(blend_flag & BLEND_CD);
+
 	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
 	bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
 
@@ -544,18 +547,18 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	const bool blend_mix3 = !!(blend_flag & BLEND_MIX3);
 	bool blend_mix = (blend_mix1 || blend_mix2 || blend_mix3);
 
-	// SW Blend is (nearly) free. Let's use it.
-	const bool impossible_or_free_blend = (blend_flag & BLEND_A_MAX) // Impossible blending
-		|| blend_non_recursive                 // Free sw blending, doesn't require barriers or reading fb
-		|| accumulation_blend                  // Mix of hw/sw blending
-		|| (m_prim_overlap == PRIM_OVERLAP_NO) // Blend can be done in a single draw
-		|| (m_conf.require_full_barrier);      // Another effect (for example fbmask) already requires a full barrier
-
 	// Warning no break on purpose
 	// Note: the [[fallthrough]] attribute tell compilers not to complain about not having breaks.
 	bool sw_blending = false;
 	if (g_gs_device->Features().texture_barrier)
 	{
+		// SW Blend is (nearly) free. Let's use it.
+		const bool impossible_or_free_blend = (blend_flag & BLEND_A_MAX) // Impossible blending
+			|| blend_non_recursive                 // Free sw blending, doesn't require barriers or reading fb
+			|| accumulation_blend                  // Mix of hw/sw blending
+			|| (m_prim_overlap == PRIM_OVERLAP_NO) // Blend can be done in a single draw
+			|| (m_conf.require_full_barrier);      // Another effect (for example fbmask) already requires a full barrier
+
 		switch (GSConfig.AccurateBlendingUnit)
 		{
 			case AccBlendLevel::Ultra:
@@ -606,21 +609,28 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 			free_colclip = blend_non_recursive;
 		GL_DBG("COLCLIP Info (Blending: %d/%d/%d/%d, SW FBMASK: %d, OVERLAP: %d)",
 			ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D, sw_fbmask_colclip, m_prim_overlap);
-		if (free_colclip)
+
+		if (color_dest_blend)
+		{
+			// No overflow, disable colclip.
+			GL_INS("COLCLIP mode DISABLED");
+		}
+		else if (free_colclip)
 		{
 			// The fastest algo that requires a single pass
 			GL_INS("COLCLIP Free mode ENABLED");
-			m_conf.ps.colclip = 1;
-			sw_blending = true;
-			accumulation_blend = false; // disable the HDR algo
-			blend_mix = false;
+			m_conf.ps.colclip  = 1;
+			sw_blending        = true;
+			// Disable the HDR algo
+			accumulation_blend = false;
+			blend_mix          = false;
 		}
 		else if (accumulation_blend || blend_mix)
 		{
 			// A fast algo that requires 2 passes
 			GL_INS("COLCLIP Fast HDR mode ENABLED");
 			m_conf.ps.hdr = 1;
-			sw_blending = true; // Enable sw blending for the HDR algo
+			sw_blending   = true; // Enable sw blending for the HDR algo
 		}
 		else if (sw_blending && g_gs_device->Features().texture_barrier)
 		{
@@ -646,9 +656,10 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 			if (g_gs_device->Features().texture_barrier)
 			{
 				// Disable hw/sw blend and do pure sw blend with reading the framebuffer.
+				color_dest_blend   = false;
 				accumulation_blend = false;
-				blend_mix = false;
-				m_conf.ps.pabe = 1;
+				blend_mix          = false;
+				m_conf.ps.pabe     = 1;
 			}
 			else
 			{
@@ -668,7 +679,13 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	GL_INS("BLEND_INFO: %d/%d/%d/%d. Clamp:%d. Prim:%d number %d (drawlist %d) (sw %d)",
 		ALPHA.A, ALPHA.B,  ALPHA.C, ALPHA.D, m_env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, m_drawlist.size(), sw_blending);
 #endif
-	if (sw_blending)
+	if (color_dest_blend)
+	{
+		// Blend output will be Cd, no need to set Af.
+		m_conf.blend = {blend_index, 0, ALPHA.C == 2, false, false};
+		sw_blending = false; // DATE_PRIMID
+	}
+	else if (sw_blending)
 	{
 		m_conf.ps.blend_a = ALPHA.A;
 		m_conf.ps.blend_b = ALPHA.B;
