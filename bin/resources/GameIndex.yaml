@@ -7860,6 +7860,8 @@ SLES-50233:
 SLES-50243:
   name: "David Beckham Soccer"
   region: "PAL-M5"
+  gameFixes:
+    - SkipMPEGHack # Fixes game hang.
 SLES-50247:
   name: "Onimusha - Warlords"
   region: "PAL-M3"
