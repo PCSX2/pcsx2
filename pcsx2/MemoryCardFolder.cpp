@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2015  PCSX2 Dev Team
+ *  Copyright (C) 2002-2022  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -22,6 +22,7 @@
 #include "System.h"
 #include "Config.h"
 
+#include <common/FileSystem.h>
 #include "common/StringUtil.h"
 
 #include "fmt/core.h"
@@ -56,18 +57,13 @@ std::optional<ryml::Tree> loadYamlFile(const wxString& filePath)
 	});
 	try
 	{
-		auto path = Path::FromWxString(filePath);
-		if (!fs::exists(path))
-		{
+		std::optional<std::string> buffer = FileSystem::ReadFileToString(StringUtil::wxStringToUTF8String(filePath).c_str());
+		if (!buffer.has_value())
 			return std::nullopt;
-		}
-
-		auto stream = fs::ifstream(path);
-		std::stringstream buffer;
-		buffer << stream.rdbuf();
+		const ryml::Tree tree = treeFromString(buffer.value());
 
 		ryml::reset_callbacks();
-		return std::make_optional(treeFromString(buffer.str()));
+		return std::make_optional(tree);
 	}
 	catch (const std::exception& e)
 	{
@@ -1282,13 +1278,31 @@ void FolderMemoryCard::FlushFileEntries(const u32 dirCluster, const u32 remainin
 						metaFileName.SetName(L"_pcsx2_index");
 						std::optional<ryml::Tree> yaml = loadYamlFile(metaFileName.GetFullPath());
 
-						if (yaml.has_value() && !yaml.value().empty())
+						// if _pcsx2_index hasn't been made yet, start a new file
+						if (!yaml.has_value())
+						{
+							char initialData[] = "{$ROOT: {timeCreated: 0, timeModified: 0}}";
+							ryml::Tree newYaml = ryml::parse(ryml::substr(initialData));
+							ryml::NodeRef newNode = newYaml.rootref()["$ROOT"];
+							newNode["timeCreated"] << entry->entry.data.timeCreated.ToTime();
+							newNode["timeModified"] << entry->entry.data.timeModified.ToTime();
+							SaveYAMLToFile(metaFileName.GetFullPath(), newYaml);
+						}
+						else if (!yaml.value().empty())
 						{
 							ryml::NodeRef index = yaml.value().rootref();
+							ryml::NodeRef entryNode;
 							if (index.has_child("%ROOT"))
 							{
-								ryml::NodeRef entryNode = index["%ROOT"];
-
+								// NOTE - working around a rapidyaml issue that needs to get resolved upstream
+								// '%' is a directive in YAML and it's not being quoted, this makes the memcards backwards compatible
+								// switched from '%' to '$'
+								entryNode = index["%ROOT"];
+								entryNode.set_key("$ROOT");
+							}
+							if (index.has_child("$ROOT"))
+							{
+								entryNode = index["$ROOT"];
 								entryNode["timeCreated"] << entry->entry.data.timeCreated.ToTime();
 								entryNode["timeModified"] << entry->entry.data.timeModified.ToTime();
 
@@ -1772,9 +1786,25 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 				if (yaml.has_value() && !yaml.value().empty())
 				{
 					const ryml::NodeRef indexForDirectory = yaml.value().rootref();
+					ryml::NodeRef entryNode;
 					if (indexForDirectory.has_child("%ROOT"))
 					{
+						// NOTE - working around a rapidyaml issue that needs to get resolved upstream
+						// '%' is a directive in YAML and it's not being quoted, this makes the memcards backwards compatible
+						// switched from '%' to '$'
 						const ryml::NodeRef& node = indexForDirectory["%ROOT"];
+						if (node.has_child("timeCreated"))
+						{
+							node["timeCreated"] >> entry.m_timeCreated;
+						}
+						if (node.has_child("timeModified"))
+						{
+							node["timeModified"] >> entry.m_timeModified;
+						}
+					}
+					else if (indexForDirectory.has_child("$ROOT"))
+					{
+						const ryml::NodeRef& node = indexForDirectory["$ROOT"];
 						if (node.has_child("timeCreated"))
 						{
 							node["timeCreated"] >> entry.m_timeCreated;
