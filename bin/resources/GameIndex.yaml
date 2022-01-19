@@ -28306,11 +28306,15 @@ SLPM-67531:
     46CFF455:
       content: |-
         comment=COP2 flag instance patch by refraction
-        // A mac flag check just after a vsub which gets in the way, rearranging.
-        patch=0,EE,00170F20,word,48438800
-        patch=0,EE,00170F24,word,4BE521AC
-        patch=0,EE,00170F28,word,30848000
-        patch=0,EE,00170F2C,word,4BE72B3C
+        // A mac flag check just after a vsub which gets in the way, also Q reading errors rearranging.
+        patch=1,EE,001966BC,word,4BC0109C
+        patch=1,EE,001966C0,word,4BC018DC
+        patch=1,EE,001966C4,word,4A6803BE
+        patch=1,EE,001964F4,word,4BC0109C
+        patch=1,EE,001964F8,word,4BC018DC
+        patch=1,EE,001964FC,word,4A6803BE
+        patch=1,EE,00166CD0,word,48438800
+        patch=1,EE,00166CDC,word,4BE521AC
 SLPM-67535:
   name: "Memories Of"
   region: "NTSC-J-K"
