@@ -2499,12 +2499,12 @@ static void ImageBarrier(GSTextureVK* tex, VkAccessFlags src_mask, VkAccessFlags
 		pixel_local ? VK_DEPENDENCY_BY_REGION_BIT : 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
-static void ColorBufferBarrier(GSTexture* rt)
+static void ColorBufferBarrier(GSTextureVK* rt)
 {
 	const VkImageMemoryBarrier barrier = {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr,
 		VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
 		VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED,
-		static_cast<GSTextureVK*>(rt)->GetTexture().GetImage(), {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u}};
+		rt->GetTexture().GetImage(), {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u}};
 
 	vkCmdPipelineBarrier(g_vulkan_context->GetCurrentCommandBuffer(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1, &barrier);
@@ -2788,7 +2788,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 	// now we can do the actual draw
 	if (BindDrawPipeline(pipe))
-		SendHWDraw(config);
+		SendHWDraw(config, draw_rt);
 
 	// and the alpha pass
 	if (config.alpha_second_pass.enable)
@@ -2804,7 +2804,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		pipe.cms = config.alpha_second_pass.colormask;
 		pipe.dss = config.alpha_second_pass.depth;
 		if (BindDrawPipeline(pipe))
-			SendHWDraw(config);
+			SendHWDraw(config, draw_rt);
 	}
 
 	if (date_image)
@@ -2822,7 +2822,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 		OMSetRenderTargets(config.rt, draw_ds, config.scissor, pipe.feedback_loop);
 		BeginRenderPass(
-			GetTFXRenderPass(pipe.rt, pipe.ds, false, DATE_rp, pipe.feedback_loop, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+			GetTFXRenderPass(pipe.rt, pipe.ds, false, DATE_RENDER_PASS_NONE, pipe.feedback_loop, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 				pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 			render_area);
 
@@ -2857,7 +2857,7 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config)
 	m_pipeline_selector.vs.point_size |= (config.topology == GSHWDrawConfig::Topology::Point);
 }
 
-void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config)
+void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt)
 {
 	if (config.drawlist)
 	{
@@ -2866,7 +2866,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config)
 		for (u32 count = 0, p = 0, n = 0; n < static_cast<u32>(config.drawlist->size()); p += count, ++n)
 		{
 			count = (*config.drawlist)[n] * config.indices_per_prim;
-			ColorBufferBarrier(config.rt);
+			ColorBufferBarrier(draw_rt);
 			DrawIndexedPrimitive(p, count);
 		}
 	}
@@ -2876,13 +2876,13 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config)
 
 		for (u32 p = 0; p < config.nindices; p += config.indices_per_prim)
 		{
-			ColorBufferBarrier(config.rt);
+			ColorBufferBarrier(draw_rt);
 			DrawIndexedPrimitive(p, config.indices_per_prim);
 		}
 	}
 	else if (config.require_one_barrier)
 	{
-		ColorBufferBarrier(config.rt);
+		ColorBufferBarrier(draw_rt);
 		DrawIndexedPrimitive();
 	}
 	else
