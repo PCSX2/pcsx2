@@ -199,20 +199,12 @@ void GSRendererNew::EmulateTextureShuffleAndFbmask()
 			case AccBlendLevel::Ultra:
 			case AccBlendLevel::Full:
 			case AccBlendLevel::High:
-				// Fully enable Fbmask emulation like on opengl, note misses sw blending to work as opengl on some games (Genji).
-				// Debug
-				enable_fbmask_emulation = true;
-				break;
 			case AccBlendLevel::Medium:
-				// Enable Fbmask emulation excluding triangle class because it is quite slow.
-				// Exclude 0x80000000 because Genji needs sw blending, otherwise it breaks some effects.
-				enable_fbmask_emulation = (m_vt.m_primclass != GS_TRIANGLE_CLASS);
+				enable_fbmask_emulation = true;
 				break;
 			case AccBlendLevel::Basic:
 				// Enable Fbmask emulation excluding triangle class because it is quite slow.
-				// Exclude 0x80000000 because Genji needs sw blending, otherwise it breaks some effects.
-				// Also exclude fbmask emulation on texture shuffle just in case, it is probably safe tho.
-				enable_fbmask_emulation = !m_texture_shuffle && (m_vt.m_primclass != GS_TRIANGLE_CLASS);
+				enable_fbmask_emulation = (m_vt.m_primclass != GS_TRIANGLE_CLASS);
 				break;
 			case AccBlendLevel::Minimum:
 				break;
