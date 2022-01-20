@@ -660,6 +660,13 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				accumulation_blend = false;
 				blend_mix          = false;
 				m_conf.ps.pabe     = 1;
+
+				// HDR mode should be disabled when doing sw blend, swap with sw colclip.
+				if (m_conf.ps.hdr)
+				{
+					m_conf.ps.hdr     = 0;
+					m_conf.ps.colclip = 1;
+				}
 			}
 			else
 			{
