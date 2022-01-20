@@ -572,6 +572,10 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				sw_blending |= m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 100;
 				[[fallthrough]];
 			case AccBlendLevel::Basic:
+				// SW FBMASK, needs sw blend, avoid hitting accumulation mode,
+				// fixes shadows in Superman shadows of Apokolips.
+				// DATE_BARRIER already does full barrier so also makes more sense to do full sw blend.
+				accumulation_blend &= !m_conf.require_full_barrier;
 				sw_blending |= impossible_or_free_blend;
 				// Do not run BLEND MIX if sw blending is already present, it's less accurate
 				blend_mix &= !sw_blending;
@@ -584,7 +588,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	else
 	{
 		// FBMASK already reads the fb so it is safe to enable sw blend when there is no overlap.
-		const bool fbmask_no_overlap = !accumulation_blend && m_conf.require_one_barrier && m_conf.ps.fbmask && m_prim_overlap == PRIM_OVERLAP_NO;
+		const bool fbmask_no_overlap = m_conf.require_one_barrier && m_conf.ps.fbmask && m_prim_overlap == PRIM_OVERLAP_NO;
 
 		switch (GSConfig.AccurateBlendingUnit)
 		{
@@ -614,12 +618,9 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	// Color clip
 	if (m_env.COLCLAMP.CLAMP == 0)
 	{
-		// Safe FBMASK, avoid hitting accumulation mode on 16bit,
-		// fixes shadows in Superman shadows of Apokolips.
-		const bool sw_fbmask_colclip = !m_conf.require_one_barrier && m_conf.ps.fbmask;
 		bool free_colclip = false;
 		if (g_gs_device->Features().texture_barrier)
-			free_colclip = m_prim_overlap == PRIM_OVERLAP_NO || blend_non_recursive || sw_fbmask_colclip;
+			free_colclip = m_prim_overlap == PRIM_OVERLAP_NO || blend_non_recursive;
 		else
 			free_colclip = blend_non_recursive;
 		GL_DBG("COLCLIP Info (Blending: %d/%d/%d/%d, SW FBMASK: %d, OVERLAP: %d)",
