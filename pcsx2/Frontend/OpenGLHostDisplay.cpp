@@ -29,12 +29,10 @@
 class OpenGLHostDisplayTexture : public HostDisplayTexture
 {
 public:
-	OpenGLHostDisplayTexture(GLuint texture, u32 width, u32 height, u32 layers, u32 levels)
+	OpenGLHostDisplayTexture(GLuint texture, u32 width, u32 height)
 		: m_texture(texture)
 		, m_width(width)
 		, m_height(height)
-		, m_layers(layers)
-		, m_levels(levels)
 	{
 	}
 	~OpenGLHostDisplayTexture() override = default;
@@ -42,8 +40,6 @@ public:
 	void* GetHandle() const override { return reinterpret_cast<void*>(static_cast<uintptr_t>(m_texture)); }
 	u32 GetWidth() const override { return m_width; }
 	u32 GetHeight() const override { return m_height; }
-	u32 GetLayers() const override { return m_layers; }
-	u32 GetLevels() const override { return m_levels; }
 
 	GLuint GetGLID() const { return m_texture; }
 
@@ -82,8 +78,7 @@ void* OpenGLHostDisplay::GetRenderSurface() const
 	return nullptr;
 }
 
-std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, u32 height, u32 layers, u32 levels,
-	const void* data, u32 data_stride, bool dynamic /* = false */)
+std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, u32 height, const void* data, u32 data_stride, bool dynamic /* = false */)
 {
 	// clear error
 	glGetError();
@@ -105,11 +100,10 @@ std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, 
 		return nullptr;
 	}
 
-	return std::make_unique<OpenGLHostDisplayTexture>(id, width, height, layers, levels);
+	return std::make_unique<OpenGLHostDisplayTexture>(id, width, height);
 }
 
-void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
-	const void* texture_data, u32 texture_data_stride)
+void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* texture_data, u32 texture_data_stride)
 {
 	OpenGLHostDisplayTexture* tex = static_cast<OpenGLHostDisplayTexture*>(texture);
 

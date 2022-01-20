@@ -28,8 +28,6 @@ public:
 	void* GetHandle() const override { return const_cast<Vulkan::Texture*>(&m_texture); }
 	u32 GetWidth() const override { return m_texture.GetWidth(); }
 	u32 GetHeight() const override { return m_texture.GetHeight(); }
-	u32 GetLayers() const override { return m_texture.GetLayers(); }
-	u32 GetLevels() const override { return m_texture.GetLevels(); }
 
 	const Vulkan::Texture& GetTexture() const { return m_texture; }
 	Vulkan::Texture& GetTexture() { return m_texture; }
@@ -178,19 +176,15 @@ static bool UploadBufferToTexture(Vulkan::Texture* texture, u32 width, u32 heigh
 	return true;
 }
 
-std::unique_ptr<HostDisplayTexture> VulkanHostDisplay::CreateTexture(
-	u32 width, u32 height, u32 layers, u32 levels, const void* data, u32 data_stride, bool dynamic /* = false */)
+std::unique_ptr<HostDisplayTexture> VulkanHostDisplay::CreateTexture(u32 width, u32 height, const void* data, u32 data_stride, bool dynamic /* = false */)
 {
 	static constexpr VkFormat vk_format = VK_FORMAT_R8G8B8A8_UNORM;
 	static constexpr VkImageUsageFlags usage =
 		VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
 	Vulkan::Texture texture;
-	if (!texture.Create(width, height, levels, layers, vk_format, VK_SAMPLE_COUNT_1_BIT,
-			(layers > 1) ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, usage))
-	{
+	if (!texture.Create(width, height, 1, 1, vk_format, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, usage))
 		return {};
-	}
 
 	texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 

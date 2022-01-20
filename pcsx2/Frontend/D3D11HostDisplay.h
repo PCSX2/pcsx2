@@ -58,10 +58,8 @@ public:
 	void DestroyRenderSurface() override;
 	std::string GetDriverInfo() const override;
 
-	std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels,
-		const void* data, u32 data_stride, bool dynamic = false) override;
-	void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* texture_data,
-		u32 texture_data_stride) override;
+	std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* data, u32 data_stride, bool dynamic = false) override;
+	void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* texture_data, u32 texture_data_stride) override;
 
 	bool GetHostRefreshRate(float* refresh_rate) override;
 
