@@ -1,0 +1,3 @@
+comment=No interlacing by asasega
+patch=1,EE,20195D40,word,00000000
+patch=1,EE,20183190,word,AC60DC98
