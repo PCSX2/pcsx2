@@ -581,6 +581,9 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				[[fallthrough]];
 			case AccBlendLevel::Basic:
 				sw_blending |= impossible_or_free_blend;
+				// Do not run BLEND MIX if sw blending is already present, it's less accurate
+				blend_mix &= !sw_blending;
+				sw_blending |= blend_mix;
 				[[fallthrough]];
 			case AccBlendLevel::Minimum:
 				break;
@@ -607,17 +610,13 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				// Disable accumulation blend when there is fbmask with no overlap, will be faster.
 				accumulation_blend &= !fbmask_no_overlap;
 				sw_blending |= accumulation_blend || blend_non_recursive || fbmask_no_overlap;
+				// Do not run BLEND MIX if sw blending is already present, it's less accurate
+				blend_mix &= !sw_blending;
+				sw_blending |= blend_mix;
 				[[fallthrough]];
 			case AccBlendLevel::Minimum:
 				break;
 		}
-	}
-
-	// Do not run BLEND MIX if sw blending is already present, it's less accurate
-	if (GSConfig.AccurateBlendingUnit != AccBlendLevel::Minimum)
-	{
-		blend_mix &= !sw_blending;
-		sw_blending |= blend_mix;
 	}
 
 	// Color clip
