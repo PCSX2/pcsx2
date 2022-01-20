@@ -35,14 +35,11 @@ class D3D11HostDisplayTexture : public HostDisplayTexture
 {
 public:
 	D3D11HostDisplayTexture(Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv, u32 width, u32 height, u32 layers,
-		u32 levels, bool dynamic)
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv, u32 width, u32 height, bool dynamic)
 		: m_texture(std::move(texture))
 		, m_srv(std::move(srv))
 		, m_width(width)
 		, m_height(height)
-		, m_layers(layers)
-		, m_levels(levels)
 		, m_dynamic(dynamic)
 	{
 	}
@@ -51,8 +48,6 @@ public:
 	void* GetHandle() const override { return m_srv.Get(); }
 	u32 GetWidth() const override { return m_width; }
 	u32 GetHeight() const override { return m_height; }
-	u32 GetLayers() const override { return m_layers; }
-	u32 GetLevels() const override { return m_levels; }
 
 	__fi ID3D11Texture2D* GetD3DTexture() const { return m_texture.Get(); }
 	__fi ID3D11ShaderResourceView* GetD3DSRV() const { return m_srv.Get(); }
@@ -64,8 +59,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_srv;
 	u32 m_width;
 	u32 m_height;
-	u32 m_layers;
-	u32 m_levels;
 	bool m_dynamic;
 };
 
@@ -135,10 +128,9 @@ bool D3D11HostDisplay::HasRenderSurface() const
 	return static_cast<bool>(m_swap_chain);
 }
 
-std::unique_ptr<HostDisplayTexture> D3D11HostDisplay::CreateTexture(u32 width, u32 height, u32 layers, u32 levels,
-	const void* data, u32 data_stride, bool dynamic /* = false */)
+std::unique_ptr<HostDisplayTexture> D3D11HostDisplay::CreateTexture(u32 width, u32 height, const void* data, u32 data_stride, bool dynamic /* = false */)
 {
-	const CD3D11_TEXTURE2D_DESC desc(DXGI_FORMAT_R8G8B8A8_UNORM, width, height, layers, levels,
+	const CD3D11_TEXTURE2D_DESC desc(DXGI_FORMAT_R8G8B8A8_UNORM, width, height, 1u, 1u,
 		D3D11_BIND_SHADER_RESOURCE, dynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT,
 		dynamic ? D3D11_CPU_ACCESS_WRITE : 0, 1, 0, 0);
 	const D3D11_SUBRESOURCE_DATA srd{data, data_stride, data_stride * height};
@@ -154,11 +146,10 @@ std::unique_ptr<HostDisplayTexture> D3D11HostDisplay::CreateTexture(u32 width, u
 	if (FAILED(hr))
 		return {};
 
-	return std::make_unique<D3D11HostDisplayTexture>(std::move(texture), std::move(srv), width, height, layers, levels, dynamic);
+	return std::make_unique<D3D11HostDisplayTexture>(std::move(texture), std::move(srv), width, height, dynamic);
 }
 
-void D3D11HostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
-	const void* texture_data, u32 texture_data_stride)
+void D3D11HostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* texture_data, u32 texture_data_stride)
 {
 	D3D11HostDisplayTexture* d3d11_texture = static_cast<D3D11HostDisplayTexture*>(texture);
 	if (!d3d11_texture->IsDynamic())
