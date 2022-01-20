@@ -589,8 +589,8 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	else
 	{
 		// FBMASK already reads the fb so it is safe to enable sw blend when there is no overlap.
-		const bool fbmask_no_overlap = !accumulation_blend && m_conf.require_one_barrier
-			&& m_conf.ps.fbmask && m_prim_overlap == PRIM_OVERLAP_NO;
+		const bool fbmask_no_overlap = !accumulation_blend && m_conf.require_one_barrier && m_conf.ps.fbmask && m_prim_overlap == PRIM_OVERLAP_NO;
+
 		switch (GSConfig.AccurateBlendingUnit)
 		{
 			case AccBlendLevel::Ultra:
@@ -604,6 +604,8 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				[[fallthrough]];
 			case AccBlendLevel::Medium:
 			case AccBlendLevel::Basic:
+				// Disable accumulation blend when there is fbmask with no overlap, will be faster.
+				accumulation_blend &= !fbmask_no_overlap;
 				sw_blending |= accumulation_blend || blend_non_recursive || fbmask_no_overlap;
 				[[fallthrough]];
 			case AccBlendLevel::Minimum:
