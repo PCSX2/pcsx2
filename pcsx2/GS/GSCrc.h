@@ -126,8 +126,6 @@ public:
 		TalesOfLegendia,
 		TalesofSymphonia,
 		Tekken5,
-		TenchuFS,
-		TenchuWoH,
 		TheIncredibleHulkUD,
 		TombRaiderAnniversary,
 		TombRaiderLegend,

@@ -230,23 +230,6 @@ const CRC::Game CRC::m_games[] =
 	{0xD3FFC263, SMTNocturne, KO, 0},
 	{0x84D1A8DA, SMTNocturne, KO, 0},
 	{0x0B8AB37B, RozenMaidenGebetGarden, JP, 0},
-	{0xA33AF77A, TenchuFS, US, 0},
-	{0x64C58FB4, TenchuFS, US, 0},
-	{0xE7CCCB1E, TenchuFS, EU, 0},
-	{0x89E63B40, TenchuFS, RU, 0}, // Beta
-	{0x1969B19A, TenchuFS, ES, 0}, // PAL Spanish
-	{0xBF0DC4CE, TenchuFS, DE, 0},
-	{0x696BBEC3, TenchuFS, KO, 0},
-	{0x525C1994, TenchuFS, ASIA, 0},
-	{0x0D73BBCD, TenchuFS, KO, 0},
-	{0x735A10C2, TenchuFS, JP, 0}, // Tenchu Kurenai
-	{0xAFBFB287, TenchuWoH, KO, 0},
-	{0xAFBEC8B7, TenchuWoH, KO, 0},
-	{0x767E383D, TenchuWoH, US, 0},
-	{0x83261085, TenchuWoH, DE, 0}, // PAL German
-	{0x7FA1510D, TenchuWoH, EU, 0}, // PAL ES, IT
-	{0xC8DADF58, TenchuWoH, EU, 0},
-	{0x13DD9957, TenchuWoH, JP, 0},
 	{0x506644B3, BigMuthaTruckers, EU, 0},
 	{0x90F0D852, BigMuthaTruckers, US, 0},
 	{0x92624842, BigMuthaTruckers, US, 0},
