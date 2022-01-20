@@ -1,0 +1,2 @@
+comment=No Interlacing by Asasega
+patch=1,EE,20240FCC,extended,00000000 // 64420008
