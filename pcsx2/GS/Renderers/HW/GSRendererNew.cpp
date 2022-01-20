@@ -623,9 +623,8 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 			free_colclip = m_prim_overlap == PRIM_OVERLAP_NO || blend_non_recursive;
 		else
 			free_colclip = blend_non_recursive;
-		GL_DBG("COLCLIP Info (Blending: %d/%d/%d/%d, SW FBMASK: %d, OVERLAP: %d)",
-			ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D, sw_fbmask_colclip, m_prim_overlap);
 
+		GL_DBG("COLCLIP Info (Blending: %u/%u/%u/%u, OVERLAP: %d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D, m_prim_overlap);
 		if (color_dest_blend)
 		{
 			// No overflow, disable colclip.
@@ -699,8 +698,8 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 
 	// For stat to optimize accurate option
 #if 0
-	GL_INS("BLEND_INFO: %d/%d/%d/%d. Clamp:%d. Prim:%d number %d (drawlist %d) (sw %d)",
-		ALPHA.A, ALPHA.B,  ALPHA.C, ALPHA.D, m_env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, m_drawlist.size(), sw_blending);
+	GL_INS("BLEND_INFO: %u/%u/%u/%u. Clamp:%u. Prim:%d number %u (drawlist %u) (sw %d)",
+		ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D, m_env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, m_drawlist.size(), sw_blending);
 #endif
 	if (color_dest_blend)
 	{
