@@ -609,6 +609,11 @@ void GSDeviceVK::DoStretchRect(GSTextureVK* sTex, const GSVector4& sRect, GSText
 		if (InRenderPass() && !CheckRenderPassArea(dst_rc))
 			EndRenderPass();
 	}
+	else
+	{
+		// this is for presenting, we don't want to screw with the viewport/scissor set by display
+		m_dirty_flags &= ~(DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR);
+	}
 
 	const bool drawing_to_current_rt = (is_present || InRenderPass());
 	if (!drawing_to_current_rt)
