@@ -547,6 +547,9 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	const bool blend_mix3 = !!(blend_flag & BLEND_MIX3);
 	bool blend_mix = (blend_mix1 || blend_mix2 || blend_mix3);
 
+	const bool alpha_c2_high_one = (ALPHA.C == 2 && ALPHA.FIX > 128u);
+	const bool alpha_c0_high_max_one = (ALPHA.C == 0 && GetAlphaMinMax().max > 128);
+
 	// Warning no break on purpose
 	// Note: the [[fallthrough]] attribute tell compilers not to complain about not having breaks.
 	bool sw_blending = false;
@@ -565,10 +568,10 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				sw_blending |= true;
 				[[fallthrough]];
 			case AccBlendLevel::Full:
-				sw_blending |= ALPHA.A != ALPHA.B && ALPHA.C == 0 && GetAlphaMinMax().max > 128;
+				sw_blending |= ALPHA.A != ALPHA.B && alpha_c0_high_max_one;
 				[[fallthrough]];
 			case AccBlendLevel::High:
-				sw_blending |= ALPHA.C == 1 || (ALPHA.A != ALPHA.B && ALPHA.C == 2 && ALPHA.FIX > 128u);
+				sw_blending |= ALPHA.C == 1 || (ALPHA.A != ALPHA.B && alpha_c2_high_one);
 				[[fallthrough]];
 			case AccBlendLevel::Medium:
 				// Initial idea was to enable accurate blending for sprite rendering to handle
@@ -580,13 +583,29 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				sw_blending |= impossible_or_free_blend;
 				[[fallthrough]];
 			case AccBlendLevel::Minimum:
-				/*sw_blending |= accumulation_blend*/;
+				break;
 		}
 	}
 	else
 	{
-		if (static_cast<u8>(GSConfig.AccurateBlendingUnit) >= static_cast<u8>(AccBlendLevel::Basic))
-			sw_blending |= accumulation_blend || blend_non_recursive;
+		switch (GSConfig.AccurateBlendingUnit)
+		{
+			case AccBlendLevel::Ultra:
+				sw_blending |= (m_prim_overlap == PRIM_OVERLAP_NO);
+				[[fallthrough]];
+			case AccBlendLevel::Full:
+				sw_blending |= (blend_mix && (alpha_c2_high_one || alpha_c0_high_max_one) && m_prim_overlap == PRIM_OVERLAP_NO);
+				[[fallthrough]];
+			case AccBlendLevel::High:
+				sw_blending |= (!blend_mix && m_prim_overlap == PRIM_OVERLAP_NO);
+				[[fallthrough]];
+			case AccBlendLevel::Medium:
+			case AccBlendLevel::Basic:
+				sw_blending |= accumulation_blend || blend_non_recursive;
+				[[fallthrough]];
+			case AccBlendLevel::Minimum:
+				break;
+		}
 	}
 
 	// Do not run BLEND MIX if sw blending is already present, it's less accurate
@@ -632,7 +651,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 			m_conf.ps.hdr = 1;
 			sw_blending   = true; // Enable sw blending for the HDR algo
 		}
-		else if (sw_blending && g_gs_device->Features().texture_barrier)
+		else if (sw_blending)
 		{
 			// A slow algo that could requires several passes (barely used)
 			GL_INS("COLCLIP SW mode ENABLED");
@@ -670,7 +689,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 			}
 			else
 			{
-				m_conf.ps.pabe = blend_non_recursive;
+				m_conf.ps.pabe = !(accumulation_blend || blend_mix);
 			}
 		}
 		else if (ALPHA.A == 0 && ALPHA.B == 1 && ALPHA.C == 0 && ALPHA.D == 1)
@@ -745,11 +764,10 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 			// Disable HW blending
 			m_conf.blend = {};
 
-			m_conf.require_full_barrier |= !blend_non_recursive;
-
-			// Only BLEND_NO_REC should hit this code path for now
-			if (!g_gs_device->Features().texture_barrier)
-				ASSERT(blend_non_recursive);
+			if (g_gs_device->Features().texture_barrier)
+				m_conf.require_full_barrier |= !blend_non_recursive;
+			else
+				m_conf.require_one_barrier |= !blend_non_recursive;
 		}
 
 		// Require the fix alpha vlaue
@@ -1225,11 +1243,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Upscaling hack to avoid various line/grid issues
 	MergeSprite(tex);
 
-	// Always check if primitive overlap as it is used in plenty of effects.
-	if (g_gs_device->Features().texture_barrier)
-		m_prim_overlap = PrimitiveOverlap();
-	else
-		m_prim_overlap = PRIM_OVERLAP_UNKNOW; // Prim overlap check is useless without texture barrier
+	m_prim_overlap = PrimitiveOverlap();
 
 	// Detect framebuffer read that will need special handling
 	if (g_gs_device->Features().texture_barrier && (m_context->FRAME.Block() == m_context->TEX0.TBP0) && PRIM->TME && GSConfig.AccurateBlendingUnit != AccBlendLevel::Minimum)
