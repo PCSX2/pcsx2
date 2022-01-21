@@ -1445,13 +1445,13 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			// Performance note: check alpha range with GetAlphaMinMax()
 			// Note: all my dump are already above 120fps, but it seems to reduce GPU load
 			// with big upscaling
-			if (m_context->TEST.DATM && GetAlphaMinMax().max < 128)
+			if (m_context->TEST.DATM && GetAlphaMinMax().max < 128 && features.stencil_buffer)
 			{
 				// Only first pixel (write 0) will pass (alpha is 1)
 				GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
 				DATE_one = true;
 			}
-			else if (!m_context->TEST.DATM && GetAlphaMinMax().min >= 128)
+			else if (!m_context->TEST.DATM && GetAlphaMinMax().min >= 128 && features.stencil_buffer)
 			{
 				// Only first pixel (write 1) will pass (alpha is 0)
 				GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
@@ -1462,7 +1462,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				// texture barrier will split the draw call into n draw call. It is very efficient for
 				// few primitive draws. Otherwise it sucks.
 				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				if (g_gs_device->Features().texture_barrier)
+				if (features.texture_barrier)
 				{
 					m_conf.require_full_barrier = true;
 					DATE_BARRIER = true;
@@ -1472,16 +1472,16 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			{
 				// Note: Fast level (DATE_one) was removed as it's less accurate.
 				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				if (g_gs_device->Features().image_load_store)
+				if (features.image_load_store)
 				{
 					DATE_PRIMID = true;
 				}
-				else if (g_gs_device->Features().texture_barrier)
+				else if (features.texture_barrier)
 				{
 					m_conf.require_full_barrier = true;
 					DATE_BARRIER = true;
 				}
-				else
+				else if (features.stencil_buffer)
 				{
 					DATE_one = true;
 				}
@@ -1545,7 +1545,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking;
 	else if (DATE_BARRIER)
 		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Full;
-	else
+	else if (features.stencil_buffer)
 		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Stencil;
 
 	m_conf.datm = m_context->TEST.DATM;
