@@ -14,19 +14,10 @@
  */
 
 #pragma once
-#include "svnrev.h"
 
-#define PCSX2_isReleaseVersion false
-
-#if PCSX2_isReleaseVersion == false && GIT_TAGGED_COMMIT
-#define PCSX2_VersionHi  GIT_TAG_HI
-#define PCSX2_VersionMid GIT_TAG_MID
-#define PCSX2_VersionLo  GIT_TAG_LO
-#else
-#define PCSX2_VersionHi  1
-#define PCSX2_VersionMid 7
-#define PCSX2_VersionLo  0
-#endif
+#define PCSX2_VersionHi     1
+#define PCSX2_VersionMid    7
+#define PCSX2_VersionLo     0
 
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
@@ -44,6 +35,8 @@
 #define VER_ORIGINAL_FILENAME_STR   VER_PRODUCTNAME_STR ".exe"
 #define VER_INTERNAL_NAME_STR       VER_ORIGINAL_FILENAME_STR
 #define VER_COPYRIGHT_STR           "Copyright (C) 2022"
+
+static const bool PCSX2_isReleaseVersion = 0;
 
 class SysCoreThread;
 
