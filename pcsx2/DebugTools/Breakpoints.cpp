@@ -31,15 +31,7 @@ std::vector<MemCheck *> CBreakPoints::cleanupMemChecks_;
 bool CBreakPoints::breakpointTriggered_ = false;
 
 // called from the dynarec
-u32 __fastcall standardizeBreakpointAddress(BreakPointCpu cpu, u32 addr)
-{
-	if (cpu == BREAKPOINT_IOP)
-		return standardizeBreakpointAddressIop(addr);
-	else
-		return standardizeBreakpointAddressEE(addr);
-}
-
-u32 __fastcall standardizeBreakpointAddressEE(u32 addr)
+u32 __fastcall standardizeBreakpointAddress(u32 addr)
 {
 	if (addr >= 0xFFFF8000)
 		return addr;
@@ -51,11 +43,6 @@ u32 __fastcall standardizeBreakpointAddressEE(u32 addr)
 
 	if ((addr >> 28) == 2 || (addr >> 28) == 3)
 		addr &= ~(0xF << 28);
-	return addr;
-}
-
-u32 __fastcall standardizeBreakpointAddressIop(u32 addr)
-{
 	return addr;
 }
 
@@ -137,11 +124,12 @@ void MemCheck::JitCleanup()
 
 size_t CBreakPoints::FindBreakpoint(BreakPointCpu cpu, u32 addr, bool matchTemp, bool temp)
 {
-	addr = standardizeBreakpointAddress(cpu, addr);
+	if (cpu == BREAKPOINT_EE)
+		addr = standardizeBreakpointAddress(addr);
 
 	for (size_t i = 0; i < breakPoints_.size(); ++i)
 	{
-		u32 cmp = standardizeBreakpointAddress(cpu, breakPoints_[i].addr);
+		u32 cmp = cpu == BREAKPOINT_EE ? standardizeBreakpointAddress(breakPoints_[i].addr) : breakPoints_[i].addr;
 		if (cpu == breakPoints_[i].cpu && cmp == addr && (!matchTemp || breakPoints_[i].temporary == temp))
 			return i;
 	}
@@ -151,13 +139,16 @@ size_t CBreakPoints::FindBreakpoint(BreakPointCpu cpu, u32 addr, bool matchTemp,
 
 size_t CBreakPoints::FindMemCheck(BreakPointCpu cpu, u32 start, u32 end)
 {
-	start = standardizeBreakpointAddress(cpu, start);
-	end = standardizeBreakpointAddress(cpu, end);
+	if (cpu == BREAKPOINT_EE)
+	{
+		start = standardizeBreakpointAddress(start);
+		end = standardizeBreakpointAddress(end);
+	}
 
 	for (size_t i = 0; i < memChecks_.size(); ++i)
 	{
-		u32 cmpStart = standardizeBreakpointAddress(cpu, memChecks_[i].start);
-		u32 cmpEnd = standardizeBreakpointAddress(cpu, memChecks_[i].end);
+		u32 cmpStart = cpu == BREAKPOINT_EE ? standardizeBreakpointAddress(memChecks_[i].start) : memChecks_[i].start;
+		u32 cmpEnd = cpu == BREAKPOINT_EE ? standardizeBreakpointAddress(memChecks_[i].end) : memChecks_[i].end;
 		if (memChecks_[i].cpu == cpu && cmpStart == start && cmpEnd == end)
 			return i;
 	}
@@ -361,19 +352,18 @@ void CBreakPoints::SetSkipFirst(BreakPointCpu cpu, u32 pc)
 {
 	if (cpu == BREAKPOINT_EE)
 	{
-		breakSkipFirstAtEE_ = standardizeBreakpointAddress(cpu, pc);
+		breakSkipFirstAtEE_ = standardizeBreakpointAddress(pc);
 		breakSkipFirstTicksEE_ = r5900Debug.getCycles();
 	}
 	else if (cpu == BREAKPOINT_IOP)
 	{
-		breakSkipFirstAtIop_ = standardizeBreakpointAddress(cpu, pc);
+		breakSkipFirstAtIop_ = pc;
 		breakSkipFirstTicksIop_ = r3000Debug.getCycles();
 	}
 }
 
 u32 CBreakPoints::CheckSkipFirst(BreakPointCpu cpu, u32 cmpPc)
 {
-	cmpPc = standardizeBreakpointAddress(cpu, cmpPc);
 	if (cpu == BREAKPOINT_EE && breakSkipFirstTicksEE_ == r5900Debug.getCycles())
 		return breakSkipFirstAtEE_;
 	else if (cpu == BREAKPOINT_IOP && breakSkipFirstTicksIop_ == r3000Debug.getCycles())
