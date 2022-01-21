@@ -73,6 +73,13 @@ private:
 	void postEvent(wxEventType type, int value);
 	void onPopupClick(wxCommandEvent& evt);
 	void focusEvent(wxFocusEvent& evt) { Refresh(); };
+	void sizeEvent(wxSizeEvent& evt)
+	{
+		// Why in the world do I have to do this.
+		// Without this the window isn't redrawn during a size event
+		Refresh(); // Reloads the window, fixes the imporper drawing but ruins the layout
+		Layout(); // Fix the layout of the window
+	};
 	void onSearchFinished(wxCommandEvent& evt);
 	void onSearchNext(wxCommandEvent& evt);
 	void onSearchPrev(wxCommandEvent& evt);

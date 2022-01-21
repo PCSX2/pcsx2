@@ -33,6 +33,7 @@ wxDEFINE_EVENT(pxEvt_SearchFinished, wxCommandEvent);
 wxBEGIN_EVENT_TABLE(CtrlMemSearch, wxWindow)
 	EVT_SET_FOCUS(CtrlMemSearch::focusEvent)
 	EVT_KILL_FOCUS(CtrlMemSearch::focusEvent)
+	EVT_SIZE(CtrlMemSearch::sizeEvent)
 wxEND_EVENT_TABLE()
 
 enum MemoryViewMenuIdentifiers {
