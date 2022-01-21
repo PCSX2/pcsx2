@@ -11,7 +11,7 @@
 ::
 ::    ProjectSrcDir - $(ProjectDir)\.. - Top-level Directory of project source code.
 
-SETLOCAL ENABLEEXTENSIONS
+SETLOCAL ENABLEDELAYEDEXPANSION ENABLEEXTENSIONS
 
 IF EXIST "%ProgramFiles(x86)%\Git\bin\git.exe" SET "GITPATH=%ProgramFiles(x86)%\Git\bin"
 IF EXIST "%ProgramFiles%\Git\bin\git.exe" SET "GITPATH=%ProgramFiles%\Git\bin"
@@ -55,6 +55,16 @@ if %ERRORLEVEL% NEQ 0 (
     echo #define SVN_REV 0ll >> "%CD%\svnrev.h"
     echo #define GIT_REV "" >> "%CD%\svnrev.h"
     echo #define GIT_TAG "%GIT_TAG%" >> "%CD%\svnrev.h"
+
+    echo %GIT_TAG%|FINDSTR /R "^v[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*$" > NUL
+    if !ERRORLEVEL! EQU 0 (
+        FOR /F "tokens=1,2,3 delims=v." %%a in ("%GIT_TAG%") DO (
+          echo #define GIT_TAG_HI %%a >> "%CD%\svnrev.h"
+          echo #define GIT_TAG_MID %%b >> "%CD%\svnrev.h"
+          echo #define GIT_TAG_LO %%c >> "%CD%\svnrev.h"
+        )
+    )
+
     echo #define GIT_TAGGED_COMMIT 1 >> "%CD%\svnrev.h"
   ) else (
     echo #define SVN_REV %REV%ll > "%CD%\svnrev.h"
