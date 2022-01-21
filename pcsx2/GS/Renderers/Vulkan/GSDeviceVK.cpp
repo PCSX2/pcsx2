@@ -252,6 +252,13 @@ bool GSDeviceVK::CheckFeatures()
 	if (!m_features.texture_barrier)
 		Console.Warning("Texture buffers are disabled. This may break some graphical effects.");
 
+	// Test for D32S8 support.
+	{
+		VkFormatProperties props = {};
+		vkGetPhysicalDeviceFormatProperties(g_vulkan_context->GetPhysicalDevice(), VK_FORMAT_D32_SFLOAT_S8_UINT, &props);
+		m_features.stencil_buffer = ((props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0);
+	}
+
 	// whether we can do point/line expand depends on the range of the device
 	const float f_upscale = static_cast<float>(GSConfig.UpscaleMultiplier);
 	m_features.point_expand =
@@ -265,7 +272,7 @@ bool GSDeviceVK::CheckFeatures()
 	// Check texture format support before we try to create them.
 	for (u32 fmt = static_cast<u32>(GSTexture::Format::Color); fmt < static_cast<u32>(GSTexture::Format::Int32); fmt++)
 	{
-		const VkFormat vkfmt = GSTextureVK::LookupNativeFormat(static_cast<GSTexture::Format>(fmt));
+		const VkFormat vkfmt = LookupNativeFormat(static_cast<GSTexture::Format>(fmt));
 		const VkFormatFeatureFlags bits = (static_cast<GSTexture::Format>(fmt) == GSTexture::Format::DepthStencil) ?
                                            (VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) :
                                            (VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT);
@@ -283,6 +290,13 @@ bool GSDeviceVK::CheckFeatures()
 
 	m_features.dxt_textures = g_vulkan_context->GetDeviceFeatures().textureCompressionBC;
 	m_features.bptc_textures = g_vulkan_context->GetDeviceFeatures().textureCompressionBC;
+
+	if (!m_features.texture_barrier && !m_features.stencil_buffer)
+	{
+		Host::AddKeyedOSDMessage("GSDeviceVK_NoTextureBarrierOrStencilBuffer",
+			"Stencil buffers and texture barriers are both unavailable, this will break some graphical effects.", 10.0f);
+	}
+
 	return true;
 }
 
@@ -358,6 +372,28 @@ void GSDeviceVK::ClearStencil(GSTexture* t, u8 c)
 	static_cast<GSTextureVK*>(t)->TransitionToLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 }
 
+VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format) const
+{
+	static constexpr std::array<VkFormat, static_cast<int>(GSTexture::Format::BC7) + 1> s_format_mapping = {{
+		VK_FORMAT_UNDEFINED, // Invalid
+		VK_FORMAT_R8G8B8A8_UNORM, // Color
+		VK_FORMAT_R32G32B32A32_SFLOAT, // FloatColor
+		VK_FORMAT_D32_SFLOAT_S8_UINT, // DepthStencil
+		VK_FORMAT_R8_UNORM, // UNorm8
+		VK_FORMAT_R16_UINT, // UInt16
+		VK_FORMAT_R32_UINT, // UInt32
+		VK_FORMAT_R32_SFLOAT, // Int32
+		VK_FORMAT_BC1_RGBA_UNORM_BLOCK, // BC1
+		VK_FORMAT_BC2_UNORM_BLOCK, // BC2
+		VK_FORMAT_BC3_UNORM_BLOCK, // BC3
+		VK_FORMAT_BC7_UNORM_BLOCK, // BC7
+	}};
+
+	return (format != GSTexture::Format::DepthStencil || m_features.stencil_buffer) ?
+               s_format_mapping[static_cast<int>(format)] :
+               VK_FORMAT_D32_SFLOAT;
+}
+
 GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
 	pxAssert(type != GSTexture::Type::Offscreen && type != GSTexture::Type::SparseRenderTarget &&
@@ -366,7 +402,7 @@ GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int width, int height
 	const u32 clamped_width = static_cast<u32>(std::clamp<int>(1, width, g_vulkan_context->GetMaxImageDimension2D()));
 	const u32 clamped_height = static_cast<u32>(std::clamp<int>(1, height, g_vulkan_context->GetMaxImageDimension2D()));
 
-	return GSTextureVK::Create(type, clamped_width, clamped_height, levels, format).release();
+	return GSTextureVK::Create(type, clamped_width, clamped_height, levels, format, LookupNativeFormat(format)).release();
 }
 
 bool GSDeviceVK::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map)
@@ -1161,9 +1197,9 @@ bool GSDeviceVK::CreateRenderPasses()
 			return false; \
 	} while (0)
 
-	const VkFormat rt_format = GSTextureVK::LookupNativeFormat(GSTexture::Format::Color);
-	const VkFormat hdr_rt_format = GSTextureVK::LookupNativeFormat(GSTexture::Format::FloatColor);
-	const VkFormat depth_format = GSTextureVK::LookupNativeFormat(GSTexture::Format::DepthStencil);
+	const VkFormat rt_format = LookupNativeFormat(GSTexture::Format::Color);
+	const VkFormat hdr_rt_format = LookupNativeFormat(GSTexture::Format::FloatColor);
+	const VkFormat depth_format = LookupNativeFormat(GSTexture::Format::DepthStencil);
 
 	for (u32 rt = 0; rt < 2; rt++)
 	{
@@ -1183,7 +1219,7 @@ bool GSDeviceVK::CreateRenderPasses()
 									(rt != 0) ? ((hdr != 0) ? hdr_rt_format : rt_format) : VK_FORMAT_UNDEFINED;
 								const VkFormat rp_depth_format = (ds != 0) ? depth_format : VK_FORMAT_UNDEFINED;
 								const VkAttachmentLoadOp opc =
-									((date == DATE_RENDER_PASS_NONE) ?
+									((date == DATE_RENDER_PASS_NONE || !m_features.stencil_buffer) ?
                                             VK_ATTACHMENT_LOAD_OP_DONT_CARE :
                                             (date == DATE_RENDER_PASS_STENCIL_ONE ? VK_ATTACHMENT_LOAD_OP_CLEAR :
                                                                                     VK_ATTACHMENT_LOAD_OP_LOAD));
@@ -1212,8 +1248,9 @@ bool GSDeviceVK::CreateRenderPasses()
 		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
 
 	m_date_setup_render_pass = g_vulkan_context->GetRenderPass(VK_FORMAT_UNDEFINED, depth_format,
-		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_LOAD,
-		VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE,
+		m_features.stencil_buffer ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+		m_features.stencil_buffer ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE);
 	if (m_date_setup_render_pass == VK_NULL_HANDLE)
 		return false;
 
@@ -1271,13 +1308,13 @@ bool GSDeviceVK::CompileConvertPipelines()
 			case ShaderConvert::RGBA8_TO_16_BITS:
 			case ShaderConvert::FLOAT32_TO_16_BITS:
 			{
-				rp = g_vulkan_context->GetRenderPass(GSTextureVK::LookupNativeFormat(GSTexture::Format::UInt16),
+				rp = g_vulkan_context->GetRenderPass(LookupNativeFormat(GSTexture::Format::UInt16),
 					VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
 			}
 			break;
 			case ShaderConvert::FLOAT32_TO_32_BITS:
 			{
-				rp = g_vulkan_context->GetRenderPass(GSTextureVK::LookupNativeFormat(GSTexture::Format::UInt32),
+				rp = g_vulkan_context->GetRenderPass(LookupNativeFormat(GSTexture::Format::UInt32),
 					VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
 			}
 			break;
@@ -1290,8 +1327,8 @@ bool GSDeviceVK::CompileConvertPipelines()
 			default:
 			{
 				rp = g_vulkan_context->GetRenderPass(
-					GSTextureVK::LookupNativeFormat(depth ? GSTexture::Format::Invalid : GSTexture::Format::Color),
-					GSTextureVK::LookupNativeFormat(
+					LookupNativeFormat(depth ? GSTexture::Format::Invalid : GSTexture::Format::Color),
+					LookupNativeFormat(
 						depth ? GSTexture::Format::DepthStencil : GSTexture::Format::Invalid),
 					VK_ATTACHMENT_LOAD_OP_DONT_CARE);
 			}
@@ -1411,8 +1448,8 @@ bool GSDeviceVK::CompileConvertPipelines()
 		for (u32 clear = 0; clear < 2; clear++)
 		{
 			m_date_image_setup_render_passes[ds][clear] =
-				g_vulkan_context->GetRenderPass(GSTextureVK::LookupNativeFormat(GSTexture::Format::Int32),
-					ds ? GSTextureVK::LookupNativeFormat(GSTexture::Format::DepthStencil) : VK_FORMAT_UNDEFINED,
+				g_vulkan_context->GetRenderPass(LookupNativeFormat(GSTexture::Format::Int32),
+					ds ? LookupNativeFormat(GSTexture::Format::DepthStencil) : VK_FORMAT_UNDEFINED,
 					VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
 					ds ? (clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD) :
                          VK_ATTACHMENT_LOAD_OP_DONT_CARE,
@@ -1462,7 +1499,7 @@ bool GSDeviceVK::CompileInterlacePipelines()
 	}
 
 	VkRenderPass rp = g_vulkan_context->GetRenderPass(
-		GSTextureVK::LookupNativeFormat(GSTexture::Format::Color), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
+		LookupNativeFormat(GSTexture::Format::Color), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
 	if (!rp)
 		return false;
 
@@ -1516,7 +1553,7 @@ bool GSDeviceVK::CompileMergePipelines()
 	}
 
 	VkRenderPass rp = g_vulkan_context->GetRenderPass(
-		GSTextureVK::LookupNativeFormat(GSTexture::Format::Color), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
+		LookupNativeFormat(GSTexture::Format::Color), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
 	if (!rp)
 		return false;
 

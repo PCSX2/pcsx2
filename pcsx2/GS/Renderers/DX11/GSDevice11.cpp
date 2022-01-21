@@ -55,6 +55,7 @@ GSDevice11::GSDevice11()
 	m_features.bptc_textures = false;
 	m_features.framebuffer_fetch = false;
 	m_features.dual_source_blend = true;
+	m_features.stencil_buffer = true;
 }
 
 bool GSDevice11::Create(HostDisplay* display)

@@ -33,8 +33,7 @@ public:
 	GSTextureVK(Type type, Format format, Vulkan::Texture texture);
 	~GSTextureVK() override;
 
-	static std::unique_ptr<GSTextureVK> Create(Type type, u32 width, u32 height, u32 levels, Format format);
-	static VkFormat LookupNativeFormat(Format format);
+	static std::unique_ptr<GSTextureVK> Create(Type type, u32 width, u32 height, u32 levels, Format format, VkFormat vk_format);
 
 	__fi Vulkan::Texture& GetTexture() { return m_texture; }
 	__fi VkFormat GetNativeFormat() const { return m_texture.GetFormat(); }

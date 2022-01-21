@@ -59,7 +59,7 @@ GSTextureVK::~GSTextureVK()
 	}
 }
 
-std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, u32 width, u32 height, u32 levels, Format format)
+std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, u32 width, u32 height, u32 levels, Format format, VkFormat vk_format)
 {
 	switch (type)
 	{
@@ -77,7 +77,7 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, u32 width, u32 heigh
 			}
 
 			Vulkan::Texture texture;
-			if (!texture.Create(width, height, levels, 1, LookupNativeFormat(format), VK_SAMPLE_COUNT_1_BIT,
+			if (!texture.Create(width, height, levels, 1, vk_format, VK_SAMPLE_COUNT_1_BIT,
 					VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, usage, swizzle))
 			{
 				return {};
@@ -93,7 +93,7 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, u32 width, u32 heigh
 			pxAssert(levels == 1);
 
 			Vulkan::Texture texture;
-			if (!texture.Create(width, height, levels, 1, LookupNativeFormat(format), VK_SAMPLE_COUNT_1_BIT,
+			if (!texture.Create(width, height, levels, 1, vk_format, VK_SAMPLE_COUNT_1_BIT,
 					VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
 					VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
 						VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
@@ -112,7 +112,7 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, u32 width, u32 heigh
 			pxAssert(levels == 1);
 
 			Vulkan::Texture texture;
-			if (!texture.Create(width, height, levels, 1, LookupNativeFormat(format), VK_SAMPLE_COUNT_1_BIT,
+			if (!texture.Create(width, height, levels, 1, vk_format, VK_SAMPLE_COUNT_1_BIT,
 					VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
 					VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
 						VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT))
@@ -128,27 +128,6 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, u32 width, u32 heigh
 		default:
 			return {};
 	}
-}
-
-VkFormat GSTextureVK::LookupNativeFormat(Format format)
-{
-	static constexpr std::array<VkFormat, static_cast<int>(GSTexture::Format::BC7) + 1> s_format_mapping = {{
-		VK_FORMAT_UNDEFINED, // Invalid
-		VK_FORMAT_R8G8B8A8_UNORM, // Color
-		VK_FORMAT_R32G32B32A32_SFLOAT, // FloatColor
-		VK_FORMAT_D32_SFLOAT_S8_UINT, // DepthStencil
-		VK_FORMAT_R8_UNORM, // UNorm8
-		VK_FORMAT_R16_UINT, // UInt16
-		VK_FORMAT_R32_UINT, // UInt32
-		VK_FORMAT_R32_SFLOAT, // Int32
-		VK_FORMAT_BC1_RGBA_UNORM_BLOCK, // BC1
-		VK_FORMAT_BC2_UNORM_BLOCK, // BC2
-		VK_FORMAT_BC3_UNORM_BLOCK, // BC3
-		VK_FORMAT_BC7_UNORM_BLOCK, // BC7
-	}};
-
-
-	return s_format_mapping[static_cast<int>(format)];
 }
 
 void* GSTextureVK::GetNativeHandle() const { return const_cast<Vulkan::Texture*>(&m_texture); }

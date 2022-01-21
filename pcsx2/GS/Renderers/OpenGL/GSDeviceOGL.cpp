@@ -225,6 +225,7 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 	m_features.prefer_new_textures = false;
 	m_features.framebuffer_fetch = GLLoader::found_framebuffer_fetch;
 	m_features.dual_source_blend = GLLoader::has_dual_source_blend && !GSConfig.DisableDualSourceBlend;
+	m_features.stencil_buffer = true;
 
 	GLint point_range[2] = {};
 	GLint line_range[2] = {};
