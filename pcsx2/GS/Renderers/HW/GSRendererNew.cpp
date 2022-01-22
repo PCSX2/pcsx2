@@ -572,9 +572,10 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				sw_blending |= m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 100;
 				[[fallthrough]];
 			case AccBlendLevel::Basic:
-				// SW FBMASK, needs sw blend, avoid hitting accumulation mode,
+				// SW FBMASK, needs sw blend, avoid hitting any hw blend pre enabled (accumulation, blend mix, blend cd),
 				// fixes shadows in Superman shadows of Apokolips.
 				// DATE_BARRIER already does full barrier so also makes more sense to do full sw blend.
+				color_dest_blend   &= !m_conf.require_full_barrier;
 				accumulation_blend &= !m_conf.require_full_barrier;
 				sw_blending |= impossible_or_free_blend;
 				// Do not run BLEND MIX if sw blending is already present, it's less accurate
