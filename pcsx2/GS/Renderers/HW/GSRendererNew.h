@@ -20,17 +20,7 @@
 
 class GSRendererNew final : public GSRendererHW
 {
-	enum PRIM_OVERLAP
-	{
-		PRIM_OVERLAP_UNKNOW,
-		PRIM_OVERLAP_YES,
-		PRIM_OVERLAP_NO
-	};
-
 private:
-	PRIM_OVERLAP m_prim_overlap;
-	std::vector<size_t> m_drawlist;
-
 	GSHWDrawConfig m_conf;
 
 private:
@@ -48,8 +38,6 @@ public:
 	~GSRendererNew() override {}
 
 	void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) override;
-
-	PRIM_OVERLAP PrimitiveOverlap();
 
 	bool IsDummyTexture() const override;
 };
