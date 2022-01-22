@@ -115,8 +115,11 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 
 	wxBoxSizer *memorySizer = new wxBoxSizer(wxHORIZONTAL);
 	memorySizer->Add(memory, 1, wxEXPAND);
-
+#ifdef _WIN32
 	memorySearch->SetMaxSize(wxSize(310 * MSW_GetDPIScale(), -1));
+#else
+	memorySearch->SetMaxSize(wxSize(330, -1));
+#endif
 	memorySizer->Add(memorySearch, 1, wxEXPAND);
 	memoryPanel->SetSizer(memorySizer);
 	memoryPanel->SetBackgroundColour(wxTransparentColor);
