@@ -1158,12 +1158,12 @@ void GSState::GIFRegHandlerALPHA(const GIFReg* RESTRICT r)
 
 	m_env.CTXT[i].ALPHA = (GSVector4i)r->ALPHA;
 
-	// value of 4 is not allowed by the spec
-	// acts has 3 on real hw, so just clamp it
-	m_env.CTXT[i].ALPHA.A = std::clamp<u32>(r->ALPHA.A, 0, 3);
-	m_env.CTXT[i].ALPHA.B = std::clamp<u32>(r->ALPHA.B, 0, 3);
-	m_env.CTXT[i].ALPHA.C = std::clamp<u32>(r->ALPHA.C, 0, 3);
-	m_env.CTXT[i].ALPHA.D = std::clamp<u32>(r->ALPHA.D, 0, 3);
+	// value of 3 is not allowed by the spec
+	// acts like 2 on real hw, so just clamp it
+	m_env.CTXT[i].ALPHA.A = std::clamp<u32>(r->ALPHA.A, 0, 2);
+	m_env.CTXT[i].ALPHA.B = std::clamp<u32>(r->ALPHA.B, 0, 2);
+	m_env.CTXT[i].ALPHA.C = std::clamp<u32>(r->ALPHA.C, 0, 2);
+	m_env.CTXT[i].ALPHA.D = std::clamp<u32>(r->ALPHA.D, 0, 2);
 }
 
 void GSState::GIFRegHandlerDIMX(const GIFReg* RESTRICT r)
