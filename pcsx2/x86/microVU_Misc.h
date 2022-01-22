@@ -242,6 +242,7 @@ typedef u32(__fastcall* mVUCall)(void*, void*);
 #define mVUrange     (mVUcurProg.ranges[0])[0]
 #define isEvilBlock  (mVUpBlock->pState.blockType == 2)
 #define isBadOrEvil  (mVUlow.badBranch || mVUlow.evilBranch)
+#define isConditional (mVUlow.branch > 2 && mVUlow.branch < 9)
 #define xPC          ((iPC / 2) * 8)
 #define curI         ((u32*)mVU.regs().Micro)[iPC] //mVUcurProg.data[iPC]
 #define setCode()    { mVU.code = curI; }
