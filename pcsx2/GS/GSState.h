@@ -231,6 +231,16 @@ public:
 	int s_savel;
 	std::string m_dump_root;
 
+	enum PRIM_OVERLAP
+	{
+		PRIM_OVERLAP_UNKNOW,
+		PRIM_OVERLAP_YES,
+		PRIM_OVERLAP_NO
+	};
+
+	PRIM_OVERLAP m_prim_overlap;
+	std::vector<size_t> m_drawlist;
+
 public:
 	GSState();
 	virtual ~GSState();
@@ -277,4 +287,6 @@ public:
 	void SetRegsMem(u8* basemem) { m_regs = reinterpret_cast<GSPrivRegSet*>(basemem); }
 
 	void SetFrameSkip(int skip);
+
+	PRIM_OVERLAP PrimitiveOverlap();
 };
