@@ -158,6 +158,7 @@ bool GSRenderer::Merge(int field)
 	GSVector4 dst[2];
 
 	const bool slbg = m_regs->PMODE.SLBG;
+	bool scanmsk_frame = true;
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -191,7 +192,10 @@ bool GSRenderer::Merge(int field)
 			}
 
 			if (m_scanmask_used && display_diff.y == 1) // Scanmask effect wouldn't look correct if we scale the offset
+			{
 				off.y = display_diff.y;
+				scanmsk_frame = false; // Scanmsk is used between the 2 merge circuits.
+			}
 			else if (display_diff.y >= 4) // Shouldn't this be >= 2?
 			{
 				off.y = tex[i]->GetScale().y * display_diff.y;
@@ -235,9 +239,9 @@ bool GSRenderer::Merge(int field)
 
 		if (m_regs->SMODE2.INT && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 		{
-			if (GSConfig.InterlaceMode == GSInterlaceMode::Automatic && m_regs->SMODE2.FFMD) // Auto interlace enabled / Odd frame interlace setting
+			if (GSConfig.InterlaceMode == GSInterlaceMode::Automatic && (m_regs->SMODE2.FFMD || (m_scanmask_used && scanmsk_frame))) // Auto interlace enabled / Odd frame interlace setting
 			{
-				int field2 = 0;
+				int field2 = m_scanmask_used;
 				int mode = 2;
 				g_gs_device->Interlace(ds, field ^ field2, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
 			}
