@@ -10644,6 +10644,8 @@ SLES-51716:
 SLES-51717:
   name: "Boxing Champions"
   region: "PAL-E"
+  gameFixes:
+    - XGKickHack # Fixes graphical issues.
 SLES-51718:
   name: "League Series Baseball 2"
   region: "PAL-E"
@@ -20427,6 +20429,8 @@ SLPM-62193:
 SLPM-62197:
   name: "Simple 2000 Series Vol.07 - The Real Fist Fighter"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes graphical issues.
 SLPM-62198:
   name: "Simple 2000 Series Vol.04 - The Mahjong"
   region: "NTSC-J"
@@ -40286,9 +40290,12 @@ SLUS-21689:
   region: "NTSC-U"
   compat: 4
   patches:
-    default:
+    D0BA28BD:
       content: |-
-        comment= Horsez 2 needs EE cycle rate +2 or +3.
+        comment= patch to fix hang at first loading screen
+        //prafull's patch to fix hang at first loading screen
+        //Game also works with ee timing rate +2 or +3
+        patch=1,EE,002f6d70,word,00000000
   gameFixes:
     - VUKickstartHack # Fixes SPS.
 SLUS-21690:
