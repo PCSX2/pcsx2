@@ -197,6 +197,19 @@ __fi void dmaIPU0() // fromIPU
 	//IPU_INT_FROM( 160 );
 	// Update 22/12/2021 - Doesn't seem to need this now after fixing some FIFO/DMA behaviour
 	IPU0dma();
+
+	// Explanation of this:
+	// The DMA logic on a NORMAL transfer is generally a "transfer first, ask questions later" so when it's sent
+	// QWC == 0 (which we change to 0x10000) it transfers, causing an underflow, then asks if it's reached 0
+	// since IPU_FROM is beholden to the OUT FIFO, if there's nothing to transfer, it will stay at 0 and won't underflow
+	// so the DMA will end.
+	if (ipu0ch.qwc == 0x10000)
+	{
+		ipu0ch.qwc = 0;
+		ipu0ch.chcr.STR = false;
+		hwDmacIrq(DMAC_FROM_IPU);
+		DMA_LOG("IPU0 DMA End");
+	}
 }
 
 __fi void dmaIPU1() // toIPU
