@@ -38776,6 +38776,15 @@ SLUS-21328:
   compat: 5
   clampModes:
     vuClampMode: 3  # Fixes bad geometry.
+  patches:
+    default:
+      content: |-
+        comment=Patch by Refraction
+        // Fix bad geometry
+        patch=1,EE,0016DDE4,word,4A80AADC
+        patch=1,EE,0016DDEC,word,4B7103BC
+        patch=1,EE,0016DDD0,word,4B00A29C
+        patch=1,EE,0016DDD8,word,4AF103BC
 SLUS-21329:
   name: "Karaoke Revolution Country - CMT Presents"
   region: "NTSC-U"
