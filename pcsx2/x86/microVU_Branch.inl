@@ -304,7 +304,11 @@ void normJumpCompile(mV, microFlagCycles& mFC, bool isEvilJump)
 	}
 
 	if (isEvilJump)
+	{
 		xMOV(arg1regd, ptr32[&mVU.evilBranch]);
+		xMOV(gprT1, ptr32[&mVU.evilevilBranch]);
+		xMOV(ptr32[&mVU.evilBranch], gprT1);
+	}
 	else
 		xMOV(arg1regd, ptr32[&mVU.branch]);
 	if (doJumpCaching)

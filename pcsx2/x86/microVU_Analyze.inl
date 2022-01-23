@@ -584,8 +584,29 @@ static void analyzeBranchVI(mV, int xReg, bool& infoVar)
 // Branch in Branch Delay-Slots
 __ri int mVUbranchCheck(mV)
 {
-	if (!mVUcount)
+	if (!mVUcount && !isEvilBlock)
 		return 0;
+
+	// This means we have jumped from an evil branch situation, so this is another branch in delay slot
+	if (isEvilBlock)
+	{
+		mVUlow.evilBranch = true;
+		mVUregs.blockType = 2;
+		mVUregs.needExactMatch |= 7; // This might not be necessary, but w/e...
+		mVUregs.flagInfo = 0;
+		
+		if (mVUlow.branch == 2 || mVUlow.branch == 10)
+		{
+			Console.Error("microVU%d: %s in branch, branch delay slot requires link [%04x] - If game broken report to PCSX2 Team", mVU.index,
+				branchSTR[mVUlow.branch & 0xf], xPC);
+		}
+		else
+		{
+			DevCon.Warning("microVU%d: %s in branch, branch delay slot! [%04x] - If game broken report to PCSX2 Team", mVU.index,
+				branchSTR[mVUlow.branch & 0xf], xPC);
+		}
+		return 1;
+	}
 
 	incPC(-2);
 

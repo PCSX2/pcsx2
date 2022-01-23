@@ -229,13 +229,6 @@ static void __fc mVUEBit()
 	vu1Thread.mtvuInterrupts.fetch_or(VU_Thread::InterruptFlagVUEBit, std::memory_order_release);
 }
 
-static inline u32 branchAddrN(const mV)
-{
-	pxAssumeDev(islowerOP, "MicroVU: Expected Lower OP code for valid branch addr.");
-	return ((((iPC + 4) + (_Imm11_ * 2)) & mVU.progMemMask) * 4);
-}
-
-
 static inline u32 branchAddr(const mV)
 {
 	pxAssumeDev(islowerOP, "MicroVU: Expected Lower OP code for valid branch addr.");
