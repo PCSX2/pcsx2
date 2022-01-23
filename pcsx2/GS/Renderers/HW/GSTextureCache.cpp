@@ -760,9 +760,9 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					}
 					else
 					{
-						u32* RESTRICT valid = s->m_valid;
+						u32* RESTRICT valid = s->m_valid.get();
 
-						if (!s->CanPreload())
+						if (valid && !s->CanPreload())
 						{
 							// Invalidate data of input texture
 							if (s->m_repeating)
@@ -1729,8 +1729,6 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 		memset(m_layer_TEX0, 0, sizeof(m_layer_TEX0));
 		memset(m_layer_hash, 0, sizeof(m_layer_hash));
 
-		memset(m_valid, 0, sizeof(m_valid));
-
 		m_write.rect = (GSVector4i*)_aligned_malloc(3 * sizeof(GSVector4i), 32);
 		m_write.count = 0;
 
@@ -1775,6 +1773,9 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int level)
 	GSOffset::BNHelper bn = off.bnMulti(r.left, r.top);
 
 	u32 blocks = 0;
+
+	if (!m_valid)
+		m_valid = std::make_unique<u32[]>(MAX_PAGES);
 
 	if (m_repeating)
 	{
