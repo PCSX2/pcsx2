@@ -532,6 +532,9 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 
 	// Blending doesn't require barrier, or sampling of the rt
 	const bool blend_non_recursive = !!(blend_flag & BLEND_NO_REC);
+	
+	// Alpha write is masked, do one barrier/read fb on d3d11
+	bool blend_ad_alpha_masked = (ALPHA.C == 1) && (m_context->FRAME.FBMSK & 0xFF000000) == 0xFF000000;
 
 	// BLEND MIX selection, use a mix of hw/sw blending
 	const bool blend_mix1 = !!(blend_flag & BLEND_MIX1);
@@ -551,8 +554,9 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 		const bool impossible_or_free_blend = (blend_flag & BLEND_A_MAX) // Impossible blending
 			|| blend_non_recursive                 // Free sw blending, doesn't require barriers or reading fb
 			|| accumulation_blend                  // Mix of hw/sw blending
-			|| (m_prim_overlap == PRIM_OVERLAP_NO) // Blend can be done in a single draw
-			|| (m_conf.require_full_barrier);      // Another effect (for example fbmask) already requires a full barrier
+			|| blend_ad_alpha_masked               // Blend can be done in a single draw 
+			|| m_conf.require_full_barrier         // Another effect (for example fbmask) already requires a full barrier
+			|| (m_prim_overlap == PRIM_OVERLAP_NO);
 
 		switch (GSConfig.AccurateBlendingUnit)
 		{
@@ -589,7 +593,11 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	else
 	{
 		// FBMASK already reads the fb so it is safe to enable sw blend when there is no overlap.
-		const bool fbmask_no_overlap = m_conf.require_one_barrier && m_conf.ps.fbmask && m_prim_overlap == PRIM_OVERLAP_NO;
+		const bool fbmask_no_overlap = m_conf.require_one_barrier && m_prim_overlap == PRIM_OVERLAP_NO;
+		const bool fbread_or_free_blend = blend_non_recursive // Free sw blending, doesn't require barriers or reading fb
+			|| accumulation_blend                             // Mix of hw/sw blending
+			|| fbmask_no_overlap                              // Read fb, fbmask when prims don't overlap
+			|| blend_ad_alpha_masked;                         // Read fb masked alpha
 
 		switch (GSConfig.AccurateBlendingUnit)
 		{
@@ -606,7 +614,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 			case AccBlendLevel::Basic:
 				// Disable accumulation blend when there is fbmask with no overlap, will be faster.
 				accumulation_blend &= !fbmask_no_overlap;
-				sw_blending |= accumulation_blend || blend_non_recursive || fbmask_no_overlap;
+				sw_blending |= fbread_or_free_blend;
 				// Do not run BLEND MIX if sw blending is already present, it's less accurate
 				blend_mix &= !sw_blending;
 				sw_blending |= blend_mix;
@@ -621,7 +629,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	{
 		bool free_colclip = false;
 		if (g_gs_device->Features().texture_barrier)
-			free_colclip = m_prim_overlap == PRIM_OVERLAP_NO || blend_non_recursive;
+			free_colclip = m_prim_overlap == PRIM_OVERLAP_NO || blend_non_recursive || blend_ad_alpha_masked;
 		else
 			free_colclip = blend_non_recursive;
 
@@ -761,10 +769,10 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 			// Disable HW blending
 			m_conf.blend = {};
 
-			if (g_gs_device->Features().texture_barrier)
-				m_conf.require_full_barrier |= !blend_non_recursive;
-			else
+			if (!g_gs_device->Features().texture_barrier || blend_ad_alpha_masked)
 				m_conf.require_one_barrier |= !blend_non_recursive;
+			else
+				m_conf.require_full_barrier |= !blend_non_recursive;
 		}
 
 		// Require the fix alpha vlaue
