@@ -773,7 +773,20 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	}
 	else
 	{
-		m_conf.ps.clr1 = !!(blend_flag & BLEND_C_CLR);
+		if (blend_flag & BLEND_C_CLR1)
+		{
+			m_conf.ps.clr1 = 1;
+		}
+		else if (blend_flag & BLEND_C_CLR2_AF)
+		{
+			m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(ALPHA.FIX) / 128.0f;
+			m_conf.ps.clr1 = 2;
+		}
+		else if (blend_flag & BLEND_C_CLR2_AS)
+		{
+			m_conf.ps.clr1 = 3;
+		}
+
 		if (m_conf.ps.dfmt == 1 && ALPHA.C == 1)
 		{
 			// 24 bits doesn't have an alpha channel so use 1.0f fix factor as equivalent
