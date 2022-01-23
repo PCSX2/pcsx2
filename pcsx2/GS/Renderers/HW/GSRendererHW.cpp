@@ -1384,11 +1384,28 @@ void GSRendererHW::Draw()
 
 		m_context->offset.tex = m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
-		GSVector4i r = GetTextureMinMax(TEX0, MIP_CLAMP, m_vt.IsLinear()).coverage;
+		TextureMinMaxResult tmm = GetTextureMinMax(TEX0, MIP_CLAMP, m_vt.IsLinear());
 
-		m_src = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, r) :
-			m_tc->LookupSource(TEX0, env.TEXA, r, m_hw_mipmap >= HWMipmapLevel::Basic ||
+		m_src = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, tmm.coverage) :
+			m_tc->LookupSource(TEX0, env.TEXA, tmm.coverage, m_hw_mipmap >= HWMipmapLevel::Basic ||
 				GSConfig.UserHacks_TriFilter == TriFiltering::Forced);
+
+		// If m_src is from a target that isn't the same size as the texture, texture sample edge modes won't work quite the same way
+		// If the game actually tries to access stuff outside of the rendered target, it was going to get garbage anyways so whatever
+		// But the game could issue reads that wrap to valid areas, so move wrapping to the shader if wrapping is used
+		GSVector4i unscaled_size = GSVector4i(GSVector4(m_src->m_texture->GetSize()) / GSVector4(m_src->m_texture->GetScale()));
+		if (m_context->CLAMP.WMS == CLAMP_REPEAT && (tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_U) && unscaled_size.x != 1 << TEX0.TW)
+		{
+			m_context->CLAMP.WMS = CLAMP_REGION_REPEAT;
+			m_context->CLAMP.MINU = (1 << m_context->TEX0.TW) - 1;
+			m_context->CLAMP.MAXU = 0;
+		}
+		if (m_context->CLAMP.WMT == CLAMP_REPEAT && (tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_V) && unscaled_size.y != 1 << TEX0.TH)
+		{
+			m_context->CLAMP.WMT = CLAMP_REGION_REPEAT;
+			m_context->CLAMP.MINV = (1 << m_context->TEX0.TH) - 1;
+			m_context->CLAMP.MAXV = 0;
+		}
 
 		// Round 2
 		if (IsMipMapActive() && m_hw_mipmap == HWMipmapLevel::Full && !tex_psm.depth)
@@ -1411,9 +1428,9 @@ void GSRendererHW::Draw()
 				m_vt.m_min.t *= 0.5f;
 				m_vt.m_max.t *= 0.5f;
 
-				r = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, m_vt.IsLinear()).coverage;
+				tmm = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, m_vt.IsLinear());
 
-				m_src->UpdateLayer(MIP_TEX0, r, layer - m_lod.x);
+				m_src->UpdateLayer(MIP_TEX0, tmm.coverage, layer - m_lod.x);
 			}
 
 			// we don't need to generate mipmaps since they were provided
