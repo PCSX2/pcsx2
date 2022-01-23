@@ -164,6 +164,8 @@ public:
 	GSRendererHW();
 	virtual ~GSRendererHW() override;
 
+	__fi GSTextureCache* GetTextureCache() const { return m_tc; }
+
 	void Destroy() override;
 
 	void SetGameCRC(u32 crc, int options) override;

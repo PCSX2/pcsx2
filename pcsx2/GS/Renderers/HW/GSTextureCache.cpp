@@ -100,6 +100,7 @@ void GSTextureCache::RemoveAll()
 	for (auto it : m_hash_cache)
 		g_gs_device->Recycle(it.second.texture);
 	m_hash_cache.clear();
+	m_hash_cache_memory_usage = 0;
 
 	m_palette_map.Clear();
 }
@@ -1132,6 +1133,7 @@ void GSTextureCache::IncAge()
 		HashCacheEntry& e = it->second;
 		if (e.refcount == 0 && ++e.age > max_hash_cache_age)
 		{
+			m_hash_cache_memory_usage -= e.texture->GetMemUsage();
 			g_gs_device->Recycle(e.texture);
 			m_hash_cache.erase(it++);
 		}
@@ -1465,6 +1467,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 				// insert it into the hash cache
 				HashCacheEntry entry{ src->m_texture, 1, 0 };
 				it = m_hash_cache.emplace(key, entry).first;
+				m_hash_cache_memory_usage += src->m_texture->GetMemUsage();
 			}
 			else
 			{
