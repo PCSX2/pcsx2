@@ -243,6 +243,7 @@ struct microVU
 	u32 branch;       // Holds branch compare result (IBxx) OR Holds address to Jump to (JALR/JR)
 	u32 badBranch;    // For Branches in Branch Delay Slots, holds Address the first Branch went to + 8
 	u32 evilBranch;   // For Branches in Branch Delay Slots, holds Address to Jump to
+	u32 evilevilBranch;// For Branches in Branch Delay Slots (chained), holds Address to Jump to
 	u32 p;            // Holds current P instance index
 	u32 q;            // Holds current Q instance index
 	u32 totalCycles;  // Total Cycles that mVU is expected to run for

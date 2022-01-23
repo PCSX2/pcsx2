@@ -903,13 +903,13 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 			mVU_XGKICK_DELAY(mVU);
 		}
 
-		if (isEvilBlock && !isConditional)
+		if (isEvilBlock)
 		{
 			mVUsetupRange(mVU, xPC + 8, false);
 			normJumpCompile(mVU, mFC, true);
 			goto perf_and_return;
 		}
-		else if (!mVUinfo.isBdelay && !isEvilBlock)
+		else if (!mVUinfo.isBdelay)
 		{
 			// Handle range wrapping
 			if ((xPC + 8) == mVU.microMemSize)
