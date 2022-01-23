@@ -9127,7 +9127,6 @@ SLES-50879:
   compat: 5
   gameFixes:
     - FpuNegDivHack # Fixes sky being shown over the 3d.
-    - EETimingHack # Flickery videos without it.
 SLES-50880:
   name: "BMX XXX"
   region: "PAL-M4"
