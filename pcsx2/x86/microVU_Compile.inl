@@ -295,7 +295,7 @@ __ri void eBitWarning(mV)
 	if (mVUpBlock->pState.blockType == 1)
 		Console.Error("microVU%d Warning: Branch, E-bit, Branch! [%04x]",  mVU.index, xPC);
 	if (mVUpBlock->pState.blockType == 2)
-		Console.Error("microVU%d Warning: Branch, Branch, Branch! [%04x]", mVU.index, xPC);
+		DevCon.Warning("microVU%d Warning: Branch, Branch, Branch! [%04x]", mVU.index, xPC);
 	incPC(2);
 	if (curI & _Ebit_)
 	{
@@ -546,107 +546,6 @@ __fi void mVUinitFirstPass(microVU& mVU, uptr pState, u8* thisPtr)
 //------------------------------------------------------------------
 // Recompiler
 //------------------------------------------------------------------
-
-//This bastardized function is used when a linked branch is in a conditional delay slot. It's messy, it's horrible, but it works.
-//Unfortunately linking the reg manually and using the normal evil block method seems to suck at this :/
-//If this is removed, test Evil Dead: Fistful of Boomstick (hangs going ingame), Mark of Kri (collision detection)
-//and Tony Hawks Project 8 (graphics are half missing, requires Negative rounding when working)
-void* mVUcompileSingleInstruction(microVU& mVU, u32 startPC, uptr pState, microFlagCycles& mFC)
-{
-
-	u8* thisPtr = x86Ptr;
-
-	// First Pass
-	iPC = startPC / 4;
-
-	mVUbranch = 0;
-	incPC(1);
-	startLoop(mVU);
-
-	mVUincCycles(mVU, 1);
-	mVUopU(mVU, 0);
-	mVUcheckBadOp(mVU);
-	if (curI & _Ebit_)
-	{
-		eBitPass1(mVU, g_branch);
-		DevCon.Warning("E Bit on single instruction");
-	}
-	if (curI & _Dbit_)
-	{
-		mVUup.dBit = true;
-	}
-	if (curI & _Tbit_)
-	{
-		mVUup.tBit = true;
-	}
-	if (curI & _Mbit_)
-	{
-		mVUup.mBit = true;
-		DevCon.Warning("M Bit on single instruction");
-	}
-	if (curI & _Ibit_)
-	{
-		mVUlow.isNOP = true;
-		mVUup.iBit = true;
-		DevCon.Warning("I Bit on single instruction");
-	}
-	else
-	{
-		incPC(-1);
-		mVUopL(mVU, 0);
-		incPC(1);
-	}
-
-	if (!mVUlow.isKick)
-	{
-		mVUlow.kickcycles = 1 + mVUstall;
-		mVUregs.xgkickcycles = 0;
-	}
-	else
-	{
-		mVUregs.xgkickcycles = 0;
-		mVUlow.kickcycles = 0;
-	}
-
-	mVUsetCycles(mVU);
-	mVUinfo.readQ = mVU.q;
-	mVUinfo.writeQ = !mVU.q;
-	mVUinfo.readP = mVU.p && isVU1;
-	mVUinfo.writeP = !mVU.p && isVU1;
-	mVUcount++;
-	mVUsetFlagInfo(mVU);
-	incPC(1);
-
-
-	mVUsetFlags(mVU, mFC);           // Sets Up Flag instances
-	mVUoptimizePipeState(mVU);       // Optimize the End Pipeline State for nicer Block Linking
-	mVUdebugPrintBlocks(mVU, false); // Prints Start/End PC of blocks executed, for debugging...
-
-	// Second Pass
-	iPC = startPC / 4;
-	setCode();
-
-	if (mVUup.mBit)
-	{
-		xOR(ptr32[&mVU.regs().flags], VUFLAG_MFLAGSET);
-	}
-	mVUexecuteInstruction(mVU);
-
-	if (isVU1 && mVUlow.kickcycles && CHECK_XGKICKHACK)
-	{
-		mVU_XGKICK_SYNC(mVU, false);
-	}
-
-	mVUincCycles(mVU, 1); //Just incase the is XGKick
-	if (mVUinfo.doXGKICK)
-	{
-		mVU_XGKICK_DELAY(mVU);
-	}
-
-	mVUregs.xgkickcycles = 0;
-
-	return thisPtr;
-}
 
 void mVUDoDBit(microVU& mVU, microFlagCycles* mFC)
 {

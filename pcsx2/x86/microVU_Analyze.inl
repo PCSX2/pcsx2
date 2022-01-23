@@ -619,19 +619,7 @@ __ri int mVUbranchCheck(mV)
 			incPC(2);
 			mVUlow.evilBranch = true;
 
-			if (mVUlow.branch == 2 || mVUlow.branch == 10) // Needs linking, we can only guess this if the next is not conditional
-			{
-				// First branch is not conditional so we know what the link will be
-				// So we can let the existing evil block do its thing! We know where to get the addr :)
-				if (branchType <= 2 || branchType >= 9)
-				{
-					mVUregs.blockType = 2;
-				} // Else it is conditional, so we need to do some nasty processing later in microVU_Branch.inl
-			}
-			else
-			{
-				mVUregs.blockType = 2; // Second branch doesn't need linking, so can let it run its evil block course (MGS2 for testing)
-			}
+			mVUregs.blockType = 2; // Second branch doesn't need linking, so can let it run its evil block course (MGS2 for testing)
 
 			mVUregs.needExactMatch |= 7; // This might not be necessary, but w/e...
 			mVUregs.flagInfo = 0;
@@ -678,7 +666,8 @@ __fi void mVUanalyzeNormBranch(mV, int It, bool isBAL)
 	if (isBAL)
 	{
 		analyzeVIreg2(mVU, It, mVUlow.VI_write, 1);
-		setConstReg(It, bSaveAddr);
+		if(!mVUlow.evilBranch)
+			setConstReg(It, bSaveAddr);
 	}
 }
 
@@ -695,6 +684,7 @@ __ri void mVUanalyzeJump(mV, int Is, int It, bool isJALR)
 	if (isJALR)
 	{
 		analyzeVIreg2(mVU, It, mVUlow.VI_write, 1);
-		setConstReg(It, bSaveAddr);
+		if (!mVUlow.evilBranch)
+			setConstReg(It, bSaveAddr);
 	}
 }
