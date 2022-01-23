@@ -1746,13 +1746,13 @@ void condEvilBranch(mV, int JMPcc)
 	if (mVUlow.badBranch)
 	{
 		xMOV(ptr32[&mVU.branch], gprT1);
-		xMOV(ptr32[&mVU.badBranch], branchAddrN(mVU));
+		xMOV(ptr32[&mVU.badBranch], branchAddr(mVU));
 
 		xCMP(gprT1b, 0);
 		xForwardJump8 cJMP((JccComparisonType)JMPcc);
-			incPC(6); // Branch Not Taken Addr + 8
+			incPC(4); // Branch Not Taken Addr
 			xMOV(ptr32[&mVU.badBranch], xPC);
-			incPC(-6);
+			incPC(-4);
 		cJMP.SetTarget();
 		return;
 	}
@@ -1772,7 +1772,7 @@ void condEvilBranch(mV, int JMPcc)
 		xCMP(gprT1b, 0);
 		xForwardJump8 cJMP((JccComparisonType)JMPcc);
 		xMOV(gprT1, ptr32[&mVU.badBranch]); // Branch Not Taken
-		//xADD(gprT1, 8); // We have already executed 1 instruction from the original branch
+		xADD(gprT1, 8); // We have already executed 1 instruction from the original branch
 		xMOV(ptr32[&mVU.evilBranch], gprT1);
 		cJMP.SetTarget();
 		incPC(-2);
@@ -1809,7 +1809,7 @@ mVUop(mVU_BAL)
 		else
 		{
 			incPC(-2);
-			DevCon.Warning("Linking BAL from %s branch taken/nottaken target! - If game broken report to PCSX2 Team", branchSTR[mVUlow.branch & 0xf]);
+			DevCon.Warning("Linking BAL from %s branch taken/not taken target! - If game broken report to PCSX2 Team", branchSTR[mVUlow.branch & 0xf]);
 			incPC(2);
 			if (isEvilBlock)
 				xMOV(gprT1, ptr32[&mVU.evilBranch]);
@@ -1982,7 +1982,6 @@ void normJumpPass2(mV)
 		//If delay slot is conditional, it uses badBranch to go to its target
 		if (mVUlow.badBranch)
 		{
-			xADD(gprT1, 8);
 			xMOV(ptr32[&mVU.badBranch], gprT1);
 		}
 	}
@@ -2024,24 +2023,13 @@ mVUop(mVU_JALR)
 			else
 			{
 				incPC(-2);
-				if (mVUlow.branch >= 9) // Previous branch is a jump of some type so we need to take the branch address from the register it uses.
-				{
-					DevCon.Warning("Linking JALR from JALR/JR branch target! - If game broken report to PCSX2 Team");
-					mVUallocVIa(mVU, gprT1, _Is_);
-					xADD(gprT1, 8);
-					xSHR(gprT1, 3);
-					incPC(2);
-					mVUallocVIb(mVU, gprT1, _It_);
-				}
-				else // Else we take the branch target of the previous branch
-				{
-					DevCon.Warning("Linking JALR from %d branch taken/nottaken target! - If game broken report to PCSX2 Team", branchSTR[mVUlow.branch & 0xf]);
-					xMOV(gprT1, ptr32[&mVU.badBranch]);
-					xADD(gprT1, 8);
-					xSHR(gprT1, 3);
-					incPC(2);
-					mVUallocVIb(mVU, gprT1, _It_);
-				}
+				DevCon.Warning("Linking JALR from %s branch taken/not taken target! - If game broken report to PCSX2 Team", branchSTR[mVUlow.branch & 0xf]);
+				incPC(2);
+
+				xMOV(gprT1, ptr32[&mVU.badBranch]);
+				xADD(gprT1, 8);
+				xSHR(gprT1, 3);
+				mVUallocVIb(mVU, gprT1, _It_);
 			}
 		}
 
