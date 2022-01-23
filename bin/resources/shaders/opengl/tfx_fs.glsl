@@ -711,7 +711,7 @@ void ps_blend(inout vec4 Color, float As)
 #endif
 
     // As/Af clamp alpha for Blend mix
-#if PS_ALPHA_CLAMP
+#if PS_BLEND_MIX
     C = min(C, float(1.0f));
 #endif
 

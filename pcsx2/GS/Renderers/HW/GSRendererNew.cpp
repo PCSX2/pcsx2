@@ -521,7 +521,13 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 
 	// Compute the blending equation to detect special case
 	const GIFRegALPHA& ALPHA = m_context->ALPHA;
-	u8 blend_index = u8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
+	// Alpha write is masked, do one barrier/read fb on d3d11
+	const bool blend_ad_alpha_masked = (ALPHA.C == 1) && (m_context->FRAME.FBMSK & 0xFF000000) == 0xFF000000;
+	u8 ALPHA_C_MOD = ALPHA.C;
+	if (blend_ad_alpha_masked)
+		ALPHA_C_MOD = 0;
+
+	u8 blend_index = u8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA_C_MOD) * 3 + ALPHA.D);
 	const int blend_flag = g_gs_device->GetBlendFlags(blend_index);
 
 	// HW blend can handle Cd output.
@@ -532,9 +538,6 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 
 	// Blending doesn't require barrier, or sampling of the rt
 	const bool blend_non_recursive = !!(blend_flag & BLEND_NO_REC);
-	
-	// Alpha write is masked, do one barrier/read fb on d3d11
-	bool blend_ad_alpha_masked = (ALPHA.C == 1) && (m_context->FRAME.FBMSK & 0xFF000000) == 0xFF000000;
 
 	// BLEND MIX selection, use a mix of hw/sw blending
 	const bool blend_mix1 = !!(blend_flag & BLEND_MIX1);
@@ -554,7 +557,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 		const bool impossible_or_free_blend = (blend_flag & BLEND_A_MAX) // Impossible blending
 			|| blend_non_recursive                 // Free sw blending, doesn't require barriers or reading fb
 			|| accumulation_blend                  // Mix of hw/sw blending
-			|| blend_ad_alpha_masked               // Blend can be done in a single draw 
+			|| blend_ad_alpha_masked               // Blend can be done in a single draw
 			|| m_conf.require_full_barrier         // Another effect (for example fbmask) already requires a full barrier
 			|| (m_prim_overlap == PRIM_OVERLAP_NO);
 
@@ -629,7 +632,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	{
 		bool free_colclip = false;
 		if (g_gs_device->Features().texture_barrier)
-			free_colclip = m_prim_overlap == PRIM_OVERLAP_NO || blend_non_recursive || blend_ad_alpha_masked;
+			free_colclip = m_prim_overlap == PRIM_OVERLAP_NO || blend_non_recursive;
 		else
 			free_colclip = blend_non_recursive;
 
@@ -743,7 +746,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 		else if (blend_mix)
 		{
 			m_conf.blend = {blend_index, ALPHA.FIX, ALPHA.C == 2, false, true};
-			m_conf.ps.alpha_clamp = 1;
+			m_conf.ps.blend_mix = 1;
 
 			if (blend_mix1)
 			{

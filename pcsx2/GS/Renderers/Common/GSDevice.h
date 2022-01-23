@@ -227,7 +227,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 clr1        : 1; // useful?
 				u32 hdr         : 1;
 				u32 colclip     : 1;
-				u32 alpha_clamp : 1;
+				u32 blend_mix   : 2;
 				u32 pabe        : 1;
 
 				// Others ways to fetch the texture
@@ -252,7 +252,7 @@ struct alignas(16) GSHWDrawConfig
 				// Scan mask
 				u32 scanmsk : 2;
 
-				u32 _free2 : 2;
+				u32 _free2 : 1;
 			};
 
 			u64 key;
