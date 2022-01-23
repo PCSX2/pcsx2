@@ -556,6 +556,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 			g_gs_device->StretchRect(dst->m_texture, sRect, tex, dRect, ShaderConvert::COPY, false);
 			g_gs_device->Recycle(dst->m_texture);
 			dst->m_texture = tex;
+			dst->m_texture->SetScale(new_s);
 		}
 
 		dst->Update();
