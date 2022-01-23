@@ -275,6 +275,7 @@ protected:
 	PaletteMap m_palette_map;
 	SourceMap m_src;
 	std::unordered_map<HashCacheKey, HashCacheEntry, HashCacheKeyHash> m_hash_cache;
+	u64 m_hash_cache_memory_usage = 0;
 	FastList<Target*> m_dst[2];
 	bool m_preload_frame;
 	static u8* m_temp;
@@ -298,6 +299,9 @@ protected:
 public:
 	GSTextureCache(GSRenderer* r);
 	~GSTextureCache();
+
+	__fi u64 GetHashCacheMemoryUsage() const { return m_hash_cache_memory_usage; }
+
 	void Read(Target* t, const GSVector4i& r);
 	void Read(Source* t, const GSVector4i& r);
 	void RemoveAll();
