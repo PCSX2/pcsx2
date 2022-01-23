@@ -153,8 +153,8 @@ public:
 
 	public:
 		std::shared_ptr<Palette> m_palette_obj;
+		std::unique_ptr<u32[]> m_valid;// each u32 bits map to the 32 blocks of that page
 		GSTexture* m_palette;
-		u32 m_valid[MAX_PAGES]; // each u32 bits map to the 32 blocks of that page
 		GSVector4i m_valid_rect;
 		u8 m_valid_hashes = 0;
 		u8 m_complete_layers = 0;
