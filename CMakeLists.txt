@@ -2,6 +2,10 @@
 # versions as well, avoiding setting policies.
 cmake_minimum_required(VERSION 3.11...3.22)
 
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+	message(FATAL_ERROR "PCSX2 does not support in-tree builds.  Please make a build directory that is not the PCSX2 source directory and generate your CMake project there using either `cmake -B build_directory` or by running cmake from the build directory.")
+endif()
+
 # Project Name
 project(Pcsx2)
 
