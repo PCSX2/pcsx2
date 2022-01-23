@@ -597,10 +597,6 @@ vec4 ps_color()
 
     fog(C, PSin.t_float.z);
 
-#if (PS_CLR1 != 0) // needed for Cd * (As/Ad/F + 1) blending modes
-    C.rgb = vec3(255.0f);
-#endif
-
     return C;
 }
 
@@ -719,6 +715,25 @@ void ps_blend(inout vec4 Color, float As)
     Color.rgb = D;
 #else
     Color.rgb = trunc((A - B) * C + D);
+#endif
+
+#else
+    // Needed for Cd * (As/Ad/F + 1) blending modes
+#if PS_CLR1 == 1
+    C.rgb = vec3(255.0f);
+#elif PS_CLR1 > 1
+    // PS_CLR1 2 Af, PS_CLR1 3 As
+    // Cd*As or Cd*F
+
+#if PS_CLR1 == 2
+    float Alpha = Af;
+#else
+    float Alpha = As;
+#endif
+
+    Color.rgb /= vec3(255.0f);
+    Color.rgb = max(vec3(0.0f), (Alpha - vec3(1.0f)));
+    Color.rgb *= vec3(255.0f);
 #endif
 
 #endif

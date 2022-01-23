@@ -673,11 +673,6 @@ float4 ps_color(PS_INPUT input)
 
 	C = fog(C, input.t.z);
 
-	if(PS_CLR1) // needed for Cd * (As/Ad/F + 1) blending modes
-	{
-		C.rgb = (float3)255.0f;
-	}
-
 	return C;
 }
 
@@ -744,7 +739,7 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 
 		float3 A = (PS_BLEND_A == 0) ? Cs : ((PS_BLEND_A == 1) ? Cd : (float3)0.0f);
 		float3 B = (PS_BLEND_B == 0) ? Cs : ((PS_BLEND_B == 1) ? Cd : (float3)0.0f);
-		float C = (PS_BLEND_C == 0) ? As : ((PS_BLEND_C == 1) ? Ad : Af);
+		float  C = (PS_BLEND_C == 0) ? As : ((PS_BLEND_C == 1) ? Ad : Af);
 		float3 D = (PS_BLEND_D == 0) ? Cs : ((PS_BLEND_D == 1) ? Cd : (float3)0.0f);
 
 		// As/Af clamp alpha for Blend mix
@@ -752,6 +747,25 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 			C = min(C, (float)1.0f);
 
 		Color.rgb = (PS_BLEND_A == PS_BLEND_B) ? D : trunc(((A - B) * C) + D);
+	}
+	else
+	{
+		// Needed for Cd * (As/Ad/F + 1) blending modes
+		if (PS_CLR1 == 1)
+		{
+			Color.rgb = (float3)255.0f;
+		}
+		else if (PS_CLR1 > 1)
+		{
+			// PS_CLR1 2 Af, PS_CLR1 3 As
+			// Cd*As or Cd*F
+
+			float Alpha = PS_CLR1 == 2 ? Af : As;
+
+			Color.rgb /= (float3)255.0f;
+			Color.rgb = max((float3)0.0f, (Alpha - (float3)1.0f));
+			Color.rgb *= (float3)255.0f;
+		}
 	}
 }
 
