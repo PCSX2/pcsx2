@@ -40,6 +40,35 @@ public:
 		return valid && overlap;
 	}
 
+	using HashType = u64;
+
+	struct HashCacheKey
+	{
+		HashType TEX0Hash, CLUTHash;
+		GIFRegTEX0 TEX0;
+		GIFRegTEXA TEXA;
+
+		HashCacheKey();
+
+		static HashCacheKey Create(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSRenderer* renderer, const u32* clut);
+
+		__fi bool operator==(const HashCacheKey& e) const { return std::memcmp(this, &e, sizeof(*this)) == 0; }
+		__fi bool operator!=(const HashCacheKey& e) const { return std::memcmp(this, &e, sizeof(*this)) != 0; }
+		__fi bool operator<(const HashCacheKey& e) const { return std::memcmp(this, &e, sizeof(*this)) < 0; }
+	};
+
+	struct HashCacheKeyHash
+	{
+		u64 operator()(const HashCacheKey& key) const;
+	};
+
+	struct HashCacheEntry
+	{
+		GSTexture* texture;
+		u32 refcount;
+		u32 age;
+	};
+
 	class Surface : public GSAlignedClass<32>
 	{
 	protected:
@@ -47,16 +76,16 @@ public:
 
 	public:
 		GSTexture* m_texture;
+		HashCacheEntry* m_from_hash_cache;
 		GIFRegTEX0 m_TEX0;
 		GIFRegTEXA m_TEXA;
 		int m_age;
-		u8* m_temp;
 		bool m_32_bits_fmt; // Allow to detect the casting of 32 bits as 16 bits texture
 		bool m_shared_texture;
 		u32 m_end_block; // Hint of the surface area.
 
 	public:
-		Surface(GSRenderer* r, u8* temp);
+		Surface(GSRenderer* r);
 		virtual ~Surface();
 
 		void UpdateAge();
@@ -111,10 +140,6 @@ public:
 
 	class Source : public Surface
 	{
-	public:
-		using HashType = u64;
-
-	private:
 		struct
 		{
 			GSVector4i* rect;
@@ -122,7 +147,6 @@ public:
 		} m_write;
 
 		void PreloadLevel(int level);
-		void PreloadSmallLevel(int level);
 
 		void Write(const GSVector4i& r, int layer);
 		void Flush(u32 count, int layer);
@@ -149,10 +173,10 @@ public:
 		GSOffset::PageLooper m_pages;
 
 	public:
-		Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, u8* temp, bool dummy_container = false);
+		Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool dummy_container = false);
 		virtual ~Source();
 
-		__fi bool CanPreload() const { return (GSConfig.PreloadTexture && CanPreloadTextureSize(m_TEX0.TW, m_TEX0.TH)); }
+		__fi bool CanPreload() const { return CanPreloadTextureSize(m_TEX0.TW, m_TEX0.TH); }
 
 		void Update(const GSVector4i& rect, int layer = 0);
 		void UpdateLayer(const GIFRegTEX0& TEX0, const GSVector4i& rect, int layer = 0);
@@ -171,7 +195,7 @@ public:
 		bool m_dirty_alpha;
 
 	public:
-		Target(GSRenderer* r, const GIFRegTEX0& TEX0, u8* temp, const bool depth_supported, const int type);
+		Target(GSRenderer* r, const GIFRegTEX0& TEX0, const bool depth_supported, const int type);
 
 		void UpdateValidity(const GSVector4i& rect);
 
@@ -250,9 +274,10 @@ protected:
 	GSRenderer* m_renderer;
 	PaletteMap m_palette_map;
 	SourceMap m_src;
+	std::unordered_map<HashCacheKey, HashCacheEntry, HashCacheKeyHash> m_hash_cache;
 	FastList<Target*> m_dst[2];
 	bool m_preload_frame;
-	u8* m_temp;
+	static u8* m_temp;
 	bool m_can_convert_depth;
 	bool m_cpu_fb_conversion;
 	static bool m_disable_partial_invalidation;
@@ -263,6 +288,9 @@ protected:
 
 	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false, int x_offset = 0, int y_offset = 0, bool mipmap = false);
 	Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type, const bool clear);
+
+	static void PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSLocalMemory& mem, bool paltex, GSTexture* tex, u32 level);
+	static HashType HashTexture(GSRenderer* renderer, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA);
 
 	// TODO: virtual void Write(Source* s, const GSVector4i& r) = 0;
 	// TODO: virtual void Write(Target* t, const GSVector4i& r) = 0;

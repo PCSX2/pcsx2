@@ -110,13 +110,24 @@ static const GSVector2i default_rt_size(2048, 2048);
 static const GSVector2i default_rt_size(0, 0);
 #endif
 
+extern Pcsx2Config::GSOptions GSConfig;
+
 // Maximum texture size to skip preload/hash path.
 // This is the width/height from the registers, i.e. not the power of 2.
+__fi static bool CanCacheTextureSize(u32 tw, u32 th)
+{
+	static constexpr u32 MAXIMUM_CACHE_SIZE = 10; // 1024
+	return (GSConfig.TexturePreloading == TexturePreloadingLevel::Full && tw <= MAXIMUM_CACHE_SIZE && th <= MAXIMUM_CACHE_SIZE);
+}
+
 __fi static bool CanPreloadTextureSize(u32 tw, u32 th)
 {
 	static constexpr u32 MAXIMUM_SIZE_IN_ONE_DIRECTION = 10; // 1024
 	static constexpr u32 MAXIMUM_SIZE_IN_OTHER_DIRECTION = 8; // 256
 	static constexpr u32 MAXIMUM_SIZE_IN_BOTH_DIRECTIONS = 9; // 512
+
+	if (GSConfig.TexturePreloading < TexturePreloadingLevel::Partial)
+		return false;
 
 	// We use an area-based approach here. We want to hash long font maps,
 	// like 128x1024 (used in FFX), but skip 1024x512 textures (e.g. Xenosaga).
