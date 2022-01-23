@@ -239,16 +239,17 @@ bool GSRenderer::Merge(int field)
 
 		if (m_regs->SMODE2.INT && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 		{
-			if (GSConfig.InterlaceMode == GSInterlaceMode::Automatic && (m_regs->SMODE2.FFMD || (m_scanmask_used && scanmsk_frame))) // Auto interlace enabled / Odd frame interlace setting
+			if (GSConfig.InterlaceMode == GSInterlaceMode::Automatic && (m_regs->SMODE2.FFMD)) // Auto interlace enabled / Odd frame interlace setting
 			{
-				int field2 = m_scanmask_used;
+				int field2 = 0;
 				int mode = 2;
 				g_gs_device->Interlace(ds, field ^ field2, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
 			}
 			else
 			{
+				bool scanmask = (m_scanmask_used && scanmsk_frame) && GSConfig.InterlaceMode == GSInterlaceMode::Automatic;
 				int field2 = 1 - ((static_cast<int>(GSConfig.InterlaceMode) - 1) & 1);
-				int mode = (static_cast<int>(GSConfig.InterlaceMode) - 1) >> 1;
+				int mode = scanmask ? 2 : (static_cast<int>(GSConfig.InterlaceMode) - 1) >> 1;
 				g_gs_device->Interlace(ds, field ^ field2, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
 			}
 		}
