@@ -560,12 +560,12 @@
          </item>
         </widget>
        </item>
-       <item row="8" column="0" colspan="2">
+       <item row="9" column="0" colspan="2">
         <layout class="QGridLayout" name="basicCheckboxGridLayout">
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="accurateDATE">
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="gpuPaletteConversion">
            <property name="text">
-            <string>Accurate Destination Alpha Test</string>
+            <string>GPU Palette Conversion</string>
            </property>
           </widget>
          </item>
@@ -576,21 +576,14 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="gpuPaletteConversion">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="accurateDATE">
            <property name="text">
-            <string>GPU Palette Conversion</string>
+            <string>Accurate Destination Alpha Test</string>
            </property>
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QCheckBox" name="preloadTexture">
-           <property name="text">
-            <string>Preload Textures</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
           <widget class="QCheckBox" name="enableHWFixes">
            <property name="text">
             <string>Enable Hardware Renderer Fixes</string>
@@ -598,6 +591,32 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="8" column="0">
+        <widget class="QLabel" name="label_20">
+         <property name="text">
+          <string>Texture Preloading:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QComboBox" name="texturePreloading">
+         <item>
+          <property name="text">
+           <string>None</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Partial</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Full (Hash Cache)</string>
+          </property>
+         </item>
+        </widget>
        </item>
       </layout>
      </widget>
