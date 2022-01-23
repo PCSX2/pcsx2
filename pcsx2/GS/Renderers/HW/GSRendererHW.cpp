@@ -1390,17 +1390,33 @@ void GSRendererHW::Draw()
 			m_tc->LookupSource(TEX0, env.TEXA, tmm.coverage, m_hw_mipmap >= HWMipmapLevel::Basic ||
 				GSConfig.UserHacks_TriFilter == TriFiltering::Forced);
 
+		int tw = 1 << TEX0.TW;
+		int th = 1 << TEX0.TH;
+		// Texture clamp optimizations (try to move everything to sampler hardware)
+		if (m_context->CLAMP.WMS == CLAMP_REGION_CLAMP && MIP_CLAMP.MINU == 0 && MIP_CLAMP.MAXU == tw - 1)
+			m_context->CLAMP.WMS = CLAMP_CLAMP;
+		else if (m_context->CLAMP.WMS == CLAMP_REGION_REPEAT && MIP_CLAMP.MINU == tw - 1 && MIP_CLAMP.MAXU == 0)
+			m_context->CLAMP.WMS = CLAMP_REPEAT;
+		else if ((m_context->CLAMP.WMS & 2) && !(tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_U))
+			m_context->CLAMP.WMS = CLAMP_CLAMP;
+		if (m_context->CLAMP.WMT == CLAMP_REGION_CLAMP && MIP_CLAMP.MINV == 0 && MIP_CLAMP.MAXV == th - 1)
+			m_context->CLAMP.WMT = CLAMP_CLAMP;
+		else if (m_context->CLAMP.WMT == CLAMP_REGION_REPEAT && MIP_CLAMP.MINV == th - 1 && MIP_CLAMP.MAXV == 0)
+			m_context->CLAMP.WMT = CLAMP_REPEAT;
+		else if ((m_context->CLAMP.WMT & 2) && !(tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_V))
+			m_context->CLAMP.WMT = CLAMP_CLAMP;
+
 		// If m_src is from a target that isn't the same size as the texture, texture sample edge modes won't work quite the same way
 		// If the game actually tries to access stuff outside of the rendered target, it was going to get garbage anyways so whatever
 		// But the game could issue reads that wrap to valid areas, so move wrapping to the shader if wrapping is used
 		GSVector4i unscaled_size = GSVector4i(GSVector4(m_src->m_texture->GetSize()) / GSVector4(m_src->m_texture->GetScale()));
-		if (m_context->CLAMP.WMS == CLAMP_REPEAT && (tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_U) && unscaled_size.x != 1 << TEX0.TW)
+		if (m_context->CLAMP.WMS == CLAMP_REPEAT && (tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_U) && unscaled_size.x != tw)
 		{
 			m_context->CLAMP.WMS = CLAMP_REGION_REPEAT;
 			m_context->CLAMP.MINU = (1 << m_context->TEX0.TW) - 1;
 			m_context->CLAMP.MAXU = 0;
 		}
-		if (m_context->CLAMP.WMT == CLAMP_REPEAT && (tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_V) && unscaled_size.y != 1 << TEX0.TH)
+		if (m_context->CLAMP.WMT == CLAMP_REPEAT && (tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_V) && unscaled_size.y != th)
 		{
 			m_context->CLAMP.WMT = CLAMP_REGION_REPEAT;
 			m_context->CLAMP.MINV = (1 << m_context->TEX0.TH) - 1;
