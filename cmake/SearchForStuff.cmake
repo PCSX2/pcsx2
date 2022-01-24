@@ -144,7 +144,7 @@ else()
 	check_lib(SOUNDTOUCH SoundTouch SoundTouch.h PATH_SUFFIXES soundtouch)
 	check_lib(SAMPLERATE samplerate samplerate.h)
 
-	check_lib(SDL2 SDL2 SDL.h PATH_SUFFIXES SDL2)
+	find_package(SDL2 2.0.12 REQUIRED)
 
 	if(UNIX AND NOT APPLE)
 		find_package(X11 REQUIRED)

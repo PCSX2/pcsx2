@@ -60,9 +60,9 @@ if(XDG_STD)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE XDG_STD)
 endif()
 
-if(TARGET PkgConfig::SDL2)
+if(TARGET SDL2::SDL2)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE SDL_BUILD)
-	target_link_libraries(PCSX2_FLAGS INTERFACE PkgConfig::SDL2)
+	target_link_libraries(PCSX2_FLAGS INTERFACE SDL2::SDL2)
 	if(PCSX2_CORE)
 		target_sources(PCSX2 PRIVATE
 			Frontend/SDLInputSource.cpp
