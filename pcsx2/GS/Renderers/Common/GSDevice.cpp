@@ -125,7 +125,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 
 		if (t->GetType() == type && t->GetFormat() == format && t->GetSize() == size && t->GetMipmapLevels() == levels)
 		{
-			if (!prefer_new_texture)
+			if (!prefer_new_texture || t->last_frame_used != m_frame)
 			{
 				m_pool.erase(i);
 				break;
