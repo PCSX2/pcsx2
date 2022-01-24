@@ -505,21 +505,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 	const GSVector2& new_s = m_renderer->GetTextureScaleFactor();
 	const u32 bp = TEX0.TBP0;
-	float res_w = 0, res_h = 0;
-	int new_w = 0, new_h = 0;
-	bool clear = true;
-	const auto& calcRescale = [w, h, new_s, &res_w, &res_h, &new_w, &new_h, &clear](const GSTexture* tex)
-	{
-		const GSVector2& old_s = tex->GetScale();
-		const GSVector2 ratio{ new_s.x / old_s.x, new_s.y / old_s.y };
-		const int old_w = tex->GetWidth();
-		const int old_h = tex->GetHeight();
-		res_w = static_cast<float>(old_w) * ratio.x;
-		res_h = static_cast<float>(old_h) * ratio.y;
-		new_w = std::max(static_cast<int>(std::ceil(res_w)), w);
-		new_h = std::max(static_cast<int>(std::ceil(res_h)), h);
-		clear = new_w != res_w || new_h != res_h;
-	};
 
 	Target* dst = nullptr;
 
@@ -545,19 +530,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	{
 		GL_CACHE("TC: Lookup Target(%s) %dx%d, hit: %d (0x%x, %s)", to_string(type), w, h, dst->m_texture->GetID(), bp, psm_str(TEX0.PSM));
 
-		const GSVector2& old_s = dst->m_texture->GetScale();
-		if (new_s != old_s)
-		{
-			calcRescale(dst->m_texture);
-			const GSVector4 sRect(0, 0, 1, 1);
-			const GSVector4 dRect(0.0f, 0.0f, res_w, res_h);
-			GSTexture* tex = type == RenderTarget ? g_gs_device->CreateSparseRenderTarget(new_w, new_h, GSTexture::Format::Color, clear) :
-				g_gs_device->CreateSparseDepthStencil(new_w, new_h, GSTexture::Format::DepthStencil, clear);
-			g_gs_device->StretchRect(dst->m_texture, sRect, tex, dRect, ShaderConvert::COPY, false);
-			g_gs_device->Recycle(dst->m_texture);
-			dst->m_texture = tex;
-			dst->m_texture->SetScale(new_s);
-		}
+		dst->m_texture->SetScale(new_s);
 
 		dst->Update();
 
@@ -589,23 +562,22 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 		if (dst_match)
 		{
-			calcRescale(dst_match->m_texture);
 			const GSVector4 sRect(0, 0, 1, 1);
-			const GSVector4 dRect(0.0f, 0.0f, res_w, res_h);
+			const GSVector4 dRect(0, 0, w, h);
 
-			dst = CreateTarget(TEX0, new_w, new_h, type, clear);
+			dst = CreateTarget(TEX0, w, h, type, false);
 			dst->m_32_bits_fmt = dst_match->m_32_bits_fmt;
 
 			ShaderConvert shader;
 			bool fmt_16_bits = (psm_s.bpp == 16 && GSLocalMemory::m_psm[dst_match->m_TEX0.PSM].bpp == 16);
 			if (type == DepthStencil)
 			{
-				GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, %s was %s)", new_w, new_h, bp, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
+				GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, %s was %s)", w, h, bp, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
 				shader = (fmt_16_bits) ? ShaderConvert::RGB5A1_TO_FLOAT16 : (ShaderConvert)((int)ShaderConvert::RGBA8_TO_FLOAT32 + psm_s.fmt);
 			}
 			else
 			{
-				GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, %s was %s)", new_w, new_h, bp, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
+				GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, %s was %s)", w, h, bp, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
 				shader = (fmt_16_bits) ? ShaderConvert::FLOAT16_TO_RGB5A1 : ShaderConvert::FLOAT32_TO_RGBA8;
 			}
 			g_gs_device->StretchRect(dst_match->m_texture, sRect, dst->m_texture, dRect, shader, false);
