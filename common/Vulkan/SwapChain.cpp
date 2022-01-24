@@ -29,6 +29,27 @@
 #if defined(__APPLE__)
 #include <objc/message.h>
 
+#ifdef __i386__
+typedef float CGFloat;
+#else
+typedef double CGFloat;
+#endif
+
+template <typename Ret, typename Self, typename... Args>
+Ret msgsend(Self self, const char* sel, Args... args)
+{
+	void (*fn)(void) = objc_msgSend;
+#ifdef __i386__
+	if (std::is_same<Ret, float>::value || std::is_same<Ret, double>::value || std::is_same<Ret, long double>::value)
+		fn = objc_msgSend_fpret;
+#endif
+#ifdef __x86_64__
+	if (std::is_same<Ret, long double>::value)
+		fn = objc_msgSend_fpret;
+#endif
+	return reinterpret_cast<Ret(*)(Self, SEL, Args...)>(fn)(self, sel_getUid(sel), args...);
+}
+
 static bool CreateMetalLayer(WindowInfo* wi)
 {
 	id view = reinterpret_cast<id>(wi->window_handle);
@@ -41,7 +62,7 @@ static bool CreateMetalLayer(WindowInfo* wi)
 	}
 
 	// [CAMetalLayer layer]
-	id layer = reinterpret_cast<id (*)(Class, SEL)>(objc_msgSend)(objc_getClass("CAMetalLayer"), sel_getUid("layer"));
+	id layer = msgsend<id, Class>(clsCAMetalLayer, "layer");
 	if (!layer)
 	{
 		Console.Error("Failed to create Metal layer.");
@@ -49,19 +70,19 @@ static bool CreateMetalLayer(WindowInfo* wi)
 	}
 
 	// [view setWantsLayer:YES]
-	reinterpret_cast<void (*)(id, SEL, BOOL)>(objc_msgSend)(view, sel_getUid("setWantsLayer:"), YES);
+	msgsend<void, id, BOOL>(view, "setWantsLayer:", YES);
 
 	// [view setLayer:layer]
-	reinterpret_cast<void (*)(id, SEL, id)>(objc_msgSend)(view, sel_getUid("setLayer:"), layer);
+	msgsend<void, id, id>(view, "setLayer:", layer);
 
 	// NSScreen* screen = [NSScreen mainScreen]
-	id screen = reinterpret_cast<id (*)(Class, SEL)>(objc_msgSend)(objc_getClass("NSScreen"), sel_getUid("mainScreen"));
+	id screen = msgsend<id, Class>(objc_getClass("NSScreen"), "mainScreen");
 
 	// CGFloat factor = [screen backingScaleFactor]
-	double factor = reinterpret_cast<double (*)(id, SEL)>(objc_msgSend)(screen, sel_getUid("backingScaleFactor"));
+	CGFloat factor = msgsend<CGFloat, id>(screen, "backingScaleFactor");
 
 	// layer.contentsScale = factor
-	reinterpret_cast<void (*)(id, SEL, double)>(objc_msgSend)(layer, sel_getUid("setContentsScale:"), factor);
+	msgsend<void, id, CGFloat>(layer, "setContentsScale:", factor);
 
 	// Store the layer pointer, that way MoltenVK doesn't call [NSView layer] outside the main thread.
 	wi->surface_handle = layer;
