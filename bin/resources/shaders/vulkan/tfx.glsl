@@ -1069,7 +1069,6 @@ void ps_blend(inout vec4 Color, float As)
 				float Alpha = As;
 			#endif
 
-			Color.rgb /= vec3(255.0f);
 			Color.rgb = max(vec3(0.0f), (Alpha - vec3(1.0f)));
 			Color.rgb *= vec3(255.0f);
 		#endif

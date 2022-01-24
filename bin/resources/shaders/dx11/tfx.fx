@@ -762,7 +762,6 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 
 			float Alpha = PS_CLR1 == 2 ? Af : As;
 
-			Color.rgb /= (float3)255.0f;
 			Color.rgb = max((float3)0.0f, (Alpha - (float3)1.0f));
 			Color.rgb *= (float3)255.0f;
 		}
