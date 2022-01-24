@@ -28,6 +28,7 @@
 
 #if defined(__APPLE__)
 #include <objc/message.h>
+#include <dispatch/dispatch.h>
 
 #ifdef __i386__
 typedef float CGFloat;
@@ -52,6 +53,14 @@ Ret msgsend(Self self, const char* sel, Args... args)
 
 static bool CreateMetalLayer(WindowInfo* wi)
 {
+	// if (![NSThread isMainThread])
+	if (!msgsend<BOOL, Class>(objc_getClass("NSThread"), "isMainThread"))
+	{
+		__block bool ret;
+		dispatch_sync(dispatch_get_main_queue(), ^{ ret = CreateMetalLayer(wi); });
+		return ret;
+	}
+
 	id view = reinterpret_cast<id>(wi->window_handle);
 
 	Class clsCAMetalLayer = objc_getClass("CAMetalLayer");
