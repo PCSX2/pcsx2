@@ -152,15 +152,15 @@ public:
 	class Target : public Surface
 	{
 	public:
-		const int m_type;
+		int m_type;
 		bool m_used;
 		GSDirtyRectList m_dirty;
 		GSVector4i m_valid;
-		const bool m_depth_supported;
+		bool m_depth_supported;
 		bool m_dirty_alpha;
 
 	public:
-		Target(GSRenderer* r, const GIFRegTEX0& TEX0, u8* temp, const bool depth_supported, const int type);
+		Target(GSRenderer* r, const GIFRegTEX0& TEX0, u8* temp, bool depth_supported);
 
 		void UpdateValidity(const GSVector4i& rect);
 
@@ -236,7 +236,7 @@ protected:
 	std::vector<TexInsideRtCacheEntry> m_texture_inside_rt_cache;
 
 	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false, int x_offset = 0, int y_offset = 0, bool mipmap = false);
-	Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type, const bool clear);
+	Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type);
 
 	// TODO: virtual void Write(Source* s, const GSVector4i& r) = 0;
 	// TODO: virtual void Write(Target* t, const GSVector4i& r) = 0;
@@ -262,6 +262,7 @@ public:
 
 	void IncAge();
 	bool UserHacks_HalfPixelOffset;
+	void ScaleTexture(GSTexture* texture);
 
 	bool ShallSearchTextureInsideRt();
 
