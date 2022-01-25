@@ -1617,6 +1617,7 @@ bool GSDeviceVK::CheckStagingBufferSize(u32 required_size)
 	VmaAllocationCreateInfo aci = {};
 	aci.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
 	aci.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+	aci.preferredFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
 
 	VmaAllocationInfo ai = {};
 	VkResult res = vmaCreateBuffer(
