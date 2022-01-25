@@ -588,19 +588,21 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	}
 	else
 	{
+		// Exclude triangles, breaks mgs3 on ultra blending.
+		const bool no_overlap_no_triangles = (m_prim_overlap == PRIM_OVERLAP_NO) && (m_vt.m_primclass != GS_TRIANGLE_CLASS);
 		// FBMASK already reads the fb so it is safe to enable sw blend when there is no overlap.
-		const bool fbmask_no_overlap = m_conf.require_one_barrier && m_conf.ps.fbmask && m_prim_overlap == PRIM_OVERLAP_NO;
+		const bool fbmask_no_overlap = m_conf.require_one_barrier && no_overlap_no_triangles;
 
 		switch (GSConfig.AccurateBlendingUnit)
 		{
 			case AccBlendLevel::Ultra:
-				sw_blending |= (m_prim_overlap == PRIM_OVERLAP_NO);
+				sw_blending |= no_overlap_no_triangles;
 				[[fallthrough]];
 			case AccBlendLevel::Full:
-				sw_blending |= (blend_mix && (alpha_c2_high_one || alpha_c0_high_max_one) && m_prim_overlap == PRIM_OVERLAP_NO);
+				sw_blending |= (blend_mix && (alpha_c2_high_one || alpha_c0_high_max_one) && no_overlap_no_triangles);
 				[[fallthrough]];
 			case AccBlendLevel::High:
-				sw_blending |= (!blend_mix && m_prim_overlap == PRIM_OVERLAP_NO);
+				sw_blending |= (!blend_mix && no_overlap_no_triangles);
 				[[fallthrough]];
 			case AccBlendLevel::Medium:
 			case AccBlendLevel::Basic:
