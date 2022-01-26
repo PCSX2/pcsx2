@@ -110,6 +110,10 @@ bool XInputSource::Initialize(SettingsInterface& si)
 	return true;
 }
 
+void XInputSource::UpdateSettings(SettingsInterface& si)
+{
+}
+
 void XInputSource::Shutdown()
 {
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)

@@ -887,26 +887,32 @@ void InputManager::PollSources()
 template <typename T>
 static void UpdateInputSourceState(SettingsInterface& si, InputSourceType type, bool default_state)
 {
-	const bool old_state = (s_input_sources[static_cast<u32>(type)] != nullptr);
-	const bool new_state = si.GetBoolValue("InputSources", InputManager::InputSourceToString(type), default_state);
-	if (old_state == new_state)
-		return;
-
-	if (new_state)
+	const bool enabled = si.GetBoolValue("InputSources", InputManager::InputSourceToString(type), default_state);
+	if (enabled)
 	{
-		std::unique_ptr<InputSource> source = std::make_unique<T>();
-		if (!source->Initialize(si))
+		if (s_input_sources[static_cast<u32>(type)])
 		{
-			Console.Error("(InputManager) Source '%s' failed to initialize.", InputManager::InputSourceToString(type));
-			return;
+			s_input_sources[static_cast<u32>(type)]->UpdateSettings(si);
 		}
+		else
+		{
+			std::unique_ptr<InputSource> source = std::make_unique<T>();
+			if (!source->Initialize(si))
+			{
+				Console.Error("(InputManager) Source '%s' failed to initialize.", InputManager::InputSourceToString(type));
+				return;
+			}
 
-		s_input_sources[static_cast<u32>(type)] = std::move(source);
+			s_input_sources[static_cast<u32>(type)] = std::move(source);
+		}
 	}
 	else
 	{
-		s_input_sources[static_cast<u32>(type)]->Shutdown();
-		s_input_sources[static_cast<u32>(type)].reset();
+		if (s_input_sources[static_cast<u32>(type)])
+		{
+			s_input_sources[static_cast<u32>(type)]->Shutdown();
+			s_input_sources[static_cast<u32>(type)].reset();
+		}
 	}
 }
 

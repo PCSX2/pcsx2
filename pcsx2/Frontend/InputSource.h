@@ -31,6 +31,7 @@ public:
 	virtual ~InputSource();
 
 	virtual bool Initialize(SettingsInterface& si) = 0;
+	virtual void UpdateSettings(SettingsInterface& si) = 0;
 	virtual void Shutdown() = 0;
 
 	virtual void PollEvents() = 0;
