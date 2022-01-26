@@ -461,9 +461,10 @@ PostTab::PostTab(wxWindow* parent)
 	auto* shader_boost_grid = new wxFlexGridSizer(2, space, space);
 	shader_boost_grid->AddGrowableCol(1);
 
-	m_ui.addSliderAndLabel(shader_boost_grid, "Brightness:", "ShadeBoost_Brightness", 0, 100, 50, -1, shade_boost_check);
-	m_ui.addSliderAndLabel(shader_boost_grid, "Contrast:",   "ShadeBoost_Contrast",   0, 100, 50, -1, shade_boost_check);
-	m_ui.addSliderAndLabel(shader_boost_grid, "Saturation:", "ShadeBoost_Saturation", 0, 100, 50, -1, shade_boost_check);
+	auto shader_boost_prereq = [shade_boost_check, this] { return !m_is_vk_hw && shade_boost_check.box->GetValue(); };
+	m_ui.addSliderAndLabel(shader_boost_grid, "Brightness:", "ShadeBoost_Brightness", 0, 100, 50, -1, shader_boost_prereq);
+	m_ui.addSliderAndLabel(shader_boost_grid, "Contrast:",   "ShadeBoost_Contrast",   0, 100, 50, -1, shader_boost_prereq);
+	m_ui.addSliderAndLabel(shader_boost_grid, "Saturation:", "ShadeBoost_Saturation", 0, 100, 50, -1, shader_boost_prereq);
 
 	shade_boost_box->Add(shader_boost_grid, wxSizerFlags().Expand());
 	shader_box->Add(shade_boost_box.outer, wxSizerFlags().Expand());
@@ -474,8 +475,9 @@ PostTab::PostTab(wxWindow* parent)
 	auto* ext_shader_grid = new wxFlexGridSizer(2, space, space);
 	ext_shader_grid->AddGrowableCol(1);
 
-	m_ui.addFilePickerAndLabel(ext_shader_grid, "GLSL fx File:", "shaderfx_glsl", -1, ext_shader_check);
-	m_ui.addFilePickerAndLabel(ext_shader_grid, "Config File:",  "shaderfx_conf", -1, ext_shader_check);
+	auto shaderext_prereq = [ext_shader_check, this] { return !m_is_vk_hw && ext_shader_check.box->GetValue(); };
+	m_ui.addFilePickerAndLabel(ext_shader_grid, "GLSL fx File:", "shaderfx_glsl", -1, shaderext_prereq);
+	m_ui.addFilePickerAndLabel(ext_shader_grid, "Config File:",  "shaderfx_conf", -1, shaderext_prereq);
 
 	ext_shader_box->Add(ext_shader_grid, wxSizerFlags().Expand());
 	shader_box->Add(ext_shader_box.outer, wxSizerFlags().Expand());
