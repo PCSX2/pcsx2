@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSRendererHW.h"
 #include "GS/GSGL.h"
+#include "Host.h"
 
 GSRendererHW::GSRendererHW()
 	: GSRenderer()
@@ -312,6 +313,15 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 	GSRenderer::VSync(field, registers_written);
 
 	m_tc->IncAge();
+
+	if (m_tc->GetHashCacheMemoryUsage() > 1024 * 1024 * 1024)
+	{
+		Host::AddKeyedFormattedOSDMessage("HashCacheOverflow", 15.0f, "Hash cache has used %.2f MB of VRAM, disabling.",
+			static_cast<float>(m_tc->GetHashCacheMemoryUsage()) / 1048576.0f);
+		m_tc->RemoveAll();
+		g_gs_device->PurgePool();
+		GSConfig.TexturePreloading = TexturePreloadingLevel::Partial;
+	}
 
 	m_tc->PrintMemoryUsage();
 	g_gs_device->PrintMemoryUsage();
