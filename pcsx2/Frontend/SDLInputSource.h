@@ -30,6 +30,7 @@ public:
   ~SDLInputSource();
 
   bool Initialize(SettingsInterface& si) override;
+  void UpdateSettings(SettingsInterface& si) override;
   void Shutdown() override;
 
   void PollEvents() override;
@@ -62,6 +63,11 @@ private:
 
   using ControllerDataVector = std::vector<ControllerData>;
 
+  bool InitializeSubsystem();
+  void ShutdownSubsystem();
+  void LoadSettings(SettingsInterface& si);
+  void SetHints();
+
   ControllerDataVector::iterator GetControllerDataForJoystickId(int id);
   ControllerDataVector::iterator GetControllerDataForPlayerId(int id);
   int GetFreePlayerId() const;
@@ -75,4 +81,5 @@ private:
   ControllerDataVector m_controllers;
 
   bool m_sdl_subsystem_initialized = false;
+  bool m_controller_enhanced_mode = false;
 };

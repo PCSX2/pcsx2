@@ -30,6 +30,7 @@ public:
   ~XInputSource();
 
   bool Initialize(SettingsInterface& si) override;
+  void UpdateSettings(SettingsInterface& si) override;
   void Shutdown() override;
 
   void PollEvents() override;
