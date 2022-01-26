@@ -27,7 +27,7 @@
 #define PS_ATST 1
 #define PS_FOG 0
 #define PS_IIP 0
-#define PS_CLR1 0
+#define PS_CLR_HW 0
 #define PS_FBA 0
 #define PS_FBMASK 0
 #define PS_LTF 1
@@ -750,20 +750,28 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 	}
 	else
 	{
-		// Needed for Cd * (As/Ad/F + 1) blending modes
-		if (PS_CLR1 == 1)
+		if (PS_CLR_HW == 1)
 		{
+			// Needed for Cd * (As/Ad/F + 1) blending modes
+
 			Color.rgb = (float3)255.0f;
 		}
-		else if (PS_CLR1 > 1)
+		else if (PS_CLR_HW == 2 || PS_CLR_HW == 3)
 		{
-			// PS_CLR1 2 Af, PS_CLR1 3 As
+			// PS_CLR_HW 2 Af, PS_CLR_HW 3 As
 			// Cd*As or Cd*F
 
-			float Alpha = PS_CLR1 == 2 ? Af : As;
+			float Alpha = PS_CLR_HW == 2 ? Af : As;
 
 			Color.rgb = max((float3)0.0f, (Alpha - (float3)1.0f));
 			Color.rgb *= (float3)255.0f;
+		}
+		else if (PS_CLR_HW == 4)
+		{
+			// Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
+			// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value
+
+			Color.rgb *= (255.0f / 128.0f);
 		}
 	}
 }

@@ -777,16 +777,20 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	{
 		if (blend_flag & BLEND_C_CLR1)
 		{
-			m_conf.ps.clr1 = 1;
+			m_conf.ps.clr_hw = 1;
 		}
 		else if (blend_flag & BLEND_C_CLR2_AF)
 		{
 			m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(ALPHA.FIX) / 128.0f;
-			m_conf.ps.clr1 = 2;
+			m_conf.ps.clr_hw = 2;
 		}
-		else if (blend_flag & BLEND_C_CLR2_AS)
+		else if (blend_flag & BLEND_C_CLR3_AS)
 		{
-			m_conf.ps.clr1 = 3;
+			m_conf.ps.clr_hw = 3;
+		}
+		else if (blend_flag & BLEND_C_CLR4)
+		{
+			m_conf.ps.clr_hw = 4;
 		}
 
 		if (m_conf.ps.dfmt == 1 && ALPHA.C == 1)

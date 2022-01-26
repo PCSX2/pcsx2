@@ -166,7 +166,7 @@ void GSDevice11::SetupPS(PSSelector sel, const GSHWDrawConfig::PSConstantBuffer*
 		sm.AddMacro("PS_ATST", sel.atst);
 		sm.AddMacro("PS_FOG", sel.fog);
 		sm.AddMacro("PS_IIP", sel.iip);
-		sm.AddMacro("PS_CLR1", sel.clr1);
+		sm.AddMacro("PS_CLR_HW", sel.clr_hw);
 		sm.AddMacro("PS_FBA", sel.fba);
 		sm.AddMacro("PS_FBMASK", sel.fbmask);
 		sm.AddMacro("PS_LTF", sel.ltf);

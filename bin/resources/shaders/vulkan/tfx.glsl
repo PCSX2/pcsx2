@@ -315,7 +315,7 @@ void main()
 #define PS_TCC 1
 #define PS_ATST 1
 #define PS_FOG 0
-#define PS_CLR1 0
+#define PS_CLR_HW 0
 #define PS_FBA 0
 #define PS_FBMASK 0
 #define PS_LTF 1
@@ -1056,14 +1056,14 @@ void ps_blend(inout vec4 Color, float As)
 		#endif
 
 	#else
-		// Needed for Cd * (As/Ad/F + 1) blending modes
-		#if PS_CLR1 == 1
+		#if PS_CLR_HW == 1
+			// Needed for Cd * (As/Ad/F + 1) blending modes
 			Color.rgb = vec3(255.0f);
-		#elif PS_CLR1 > 1
-			// PS_CLR1 2 Af, PS_CLR1 3 As
+		#elif PS_CLR_HW == 2 || PS_CLR_HW == 3
+			// PS_CLR_HW 2 Af, PS_CLR_HW 3 As
 			// Cd*As or Cd*F
 
-			#if PS_CLR1 == 2
+			#if PS_CLR_HW == 2
 				float Alpha = Af;
 			#else
 				float Alpha = As;
@@ -1071,6 +1071,11 @@ void ps_blend(inout vec4 Color, float As)
 
 			Color.rgb = max(vec3(0.0f), (Alpha - vec3(1.0f)));
 			Color.rgb *= vec3(255.0f);
+		#elif PS_CLR_HW == 4
+			// Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
+			// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value
+
+			Color.rgb *= (255.0f / 128.0f);
 		#endif
 	#endif
 }

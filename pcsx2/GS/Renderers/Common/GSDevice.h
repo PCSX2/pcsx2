@@ -115,14 +115,15 @@ public:
 enum HWBlendFlags
 {
 	// A couple of flag to determine the blending behavior
-	BLEND_CD        = 0x10,    // Output is Cd, hw blend can handle it
-	BLEND_MIX1      = 0x20,   // Mix of hw and sw, do Cs*F or Cs*As in shader
-	BLEND_MIX2      = 0x40,   // Mix of hw and sw, do Cs*(As + 1) or Cs*(F + 1) in shader
-	BLEND_MIX3      = 0x80,   // Mix of hw and sw, do Cs*(1 - As) or Cs*(1 - F) in shader
-	BLEND_A_MAX     = 0x100,  // Impossible blending uses coeff bigger than 1
-	BLEND_C_CLR1    = 0x200,  // Clear color blending (use directly the destination color as blending factor)
-	BLEND_C_CLR2_AS = 0x400,  // Clear color blending (use directly the destination color as blending factor)
-	BLEND_C_CLR2_AF = 0x800,  // Clear color blending (use directly the destination color as blending factor)
+	BLEND_CD        = 0x8,    // Output is Cd, hw blend can handle it
+	BLEND_MIX1      = 0x10,   // Mix of hw and sw, do Cs*F or Cs*As in shader
+	BLEND_MIX2      = 0x20,   // Mix of hw and sw, do Cs*(As + 1) or Cs*(F + 1) in shader
+	BLEND_MIX3      = 0x40,   // Mix of hw and sw, do Cs*(1 - As) or Cs*(1 - F) in shader
+	BLEND_A_MAX     = 0x80,   // Impossible blending uses coeff bigger than 1
+	BLEND_C_CLR1    = 0x100,  // Clear color blending (use directly the destination color as blending factor)
+	BLEND_C_CLR2_AF = 0x200,  // Clear color blending (use directly the destination color as blending factor)
+	BLEND_C_CLR3_AS = 0x400,  // Clear color blending (use directly the destination color as blending factor)
+	BLEND_C_CLR4    = 0x800,  // Multiply Cs by (255/128) to compensate for wrong Ad/255 value, should be Ad/128
 	BLEND_NO_REC    = 0x1000, // Doesn't require sampling of the RT as a texture
 	BLEND_ACCU      = 0x2000, // Allow to use a mix of SW and HW blending to keep the best of the 2 worlds
 };
@@ -226,7 +227,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 blend_b     : 2;
 				u32 blend_c     : 2;
 				u32 blend_d     : 2;
-				u32 clr1        : 2;
+				u32 clr_hw      : 3;
 				u32 hdr         : 1;
 				u32 colclip     : 1;
 				u32 alpha_clamp : 1;
@@ -254,7 +255,7 @@ struct alignas(16) GSHWDrawConfig
 				// Scan mask
 				u32 scanmsk : 2;
 
-				u32 _free2 : 1;
+				//u32 _free2 : 0;
 			};
 
 			u64 key;
