@@ -215,7 +215,9 @@ void VMManager::LoadSettings()
 	PAD::LoadConfig(*si);
 	InputManager::ReloadSources(*si);
 	InputManager::ReloadBindings(*si);
-	ApplyGameFixes();
+
+	if (HasValidVM())
+		ApplyGameFixes();
 }
 
 void VMManager::ApplyGameFixes()
@@ -1132,9 +1134,12 @@ void VMManager::ApplySettings()
 
 	const Pcsx2Config old_config(EmuConfig);
 	LoadSettings();
-	CheckForConfigChanges(old_config);
 
-	SetEmuThreadAffinities(false);
+	if (HasValidVM())
+	{
+		CheckForConfigChanges(old_config);
+		SetEmuThreadAffinities(false);
+	}
 }
 
 void VMManager::ReloadGameSettings()
