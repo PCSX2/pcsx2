@@ -1083,7 +1083,7 @@ bool GSState::IsBadFrame()
 		return false;
 	}
 
-	if (m_skip == 0 && (GSConfig.SkipDraw > 0))
+	if (m_skip == 0 && GSConfig.UserHacks && (GSConfig.SkipDraw > 0))
 	{
 		if (fi.TME)
 		{
