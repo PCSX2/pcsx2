@@ -93,6 +93,11 @@ void SDLInputSource::UpdateSettings(SettingsInterface& si)
 	}
 }
 
+void SDLInputSource::Shutdown()
+{
+	ShutdownSubsystem();
+}
+
 void SDLInputSource::LoadSettings(SettingsInterface& si)
 {
 	m_controller_enhanced_mode = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
@@ -143,6 +148,24 @@ void SDLInputSource::PollEvents()
 		else
 			break;
 	}
+}
+
+std::vector<std::pair<std::string, std::string>> SDLInputSource::EnumerateDevices()
+{
+	std::vector<std::pair<std::string, std::string>> ret;
+
+	for (const ControllerData& cd : m_controllers)
+	{
+		std::string id(StringUtil::StdStringFromFormat("SDL-%d", cd.player_id));
+
+		const char* name = SDL_GameControllerName(cd.game_controller);
+		if (name)
+			ret.emplace_back(std::move(id), name);
+		else
+			ret.emplace_back(std::move(id), "Unknown Device");
+	}
+
+	return ret;
 }
 
 std::optional<InputBindingKey> SDLInputSource::ParseKeyString(
@@ -391,6 +414,9 @@ bool SDLInputSource::OpenGameController(int index)
 		Console.Warning("(SDLInputSource) Rumble is not supported on '%s'", SDL_GameControllerName(gcontroller));
 
 	m_controllers.push_back(std::move(cd));
+
+	const char* name = SDL_GameControllerName(cd.game_controller);
+	Host::OnInputDeviceConnected(StringUtil::StdStringFromFormat("SDL-%d", player_id), name ? name : "Unknown Device");
 	return true;
 }
 
@@ -404,7 +430,11 @@ bool SDLInputSource::CloseGameController(int joystick_index)
 		SDL_HapticClose(static_cast<SDL_Haptic*>(it->haptic));
 
 	SDL_GameControllerClose(static_cast<SDL_GameController*>(it->game_controller));
+
+	const int player_id = it->player_id;
 	m_controllers.erase(it);
+
+	Host::OnInputDeviceDisconnected(StringUtil::StdStringFromFormat("SDL-%d", player_id));
 	return true;
 }
 
