@@ -332,14 +332,14 @@ void GSRendererNew::EmulateTextureShuffleAndFbmask()
 			if (!PRIM->ABE || !(~ff_fbmask & ~zero_fbmask & 0x7) || !g_gs_device->Features().texture_barrier)
 			{
 				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
-					(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
+					(m_conf.ps.dfmt == 2) ? 16 : 32);
 				m_conf.require_one_barrier = true;
 			}
 			else
 			{
 				// The safe and accurate path (but slow)
 				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
-					(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
+					(m_conf.ps.dfmt == 2) ? 16 : 32);
 				m_conf.require_full_barrier = true;
 			}
 		}
@@ -868,7 +868,9 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	// Depth + bilinear filtering isn't done yet (And I'm not sure we need it anyway but a game will prove me wrong)
 	// So of course, GTA set the linear mode, but sampling is done at texel center so it is equivalent to nearest sampling
-	ASSERT(!(psm.depth && m_vt.IsLinear()));
+	// Other games worth testing: Area 51, Burnout
+	if (psm.depth && m_vt.IsLinear())
+		GL_INS("WARNING: Depth + bilinear filtering not supported");
 
 	// Performance note:
 	// 1/ Don't set 0 as it is the default value
@@ -895,7 +897,7 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		// The purpose of texture shuffle is to move color channel. Extra interpolation is likely a bad idea.
 		bilinear &= m_vt.IsLinear();
 
-		GSVector4 half_pixel = RealignTargetTextureCoordinate(tex);
+		const GSVector4 half_pixel = RealignTargetTextureCoordinate(tex);
 		m_conf.cb_vs.texture_offset = GSVector2(half_pixel.x, half_pixel.y);
 	}
 	else if (tex->m_target)
@@ -951,7 +953,7 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 			bilinear &= m_vt.IsLinear();
 		}
 
-		GSVector4 half_pixel = RealignTargetTextureCoordinate(tex);
+		const GSVector4 half_pixel = RealignTargetTextureCoordinate(tex);
 		m_conf.cb_vs.texture_offset = GSVector2(half_pixel.x, half_pixel.y);
 	}
 	else if (tex->m_palette)
@@ -1017,7 +1019,7 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	// TC Offset Hack
 	m_conf.ps.tcoffsethack = m_userhacks_tcoffset;
-	GSVector4 tc_oh_ts = GSVector4(1 / 16.0f, 1 / 16.0f, m_userhacks_tcoffset_x, m_userhacks_tcoffset_y) / WH.xyxy();
+	const GSVector4 tc_oh_ts = GSVector4(1 / 16.0f, 1 / 16.0f, m_userhacks_tcoffset_x, m_userhacks_tcoffset_y) / WH.xyxy();
 	m_conf.cb_ps.TCOffsetHack = GSVector2(tc_oh_ts.z, tc_oh_ts.w);
 	m_conf.cb_vs.texture_scale = GSVector2(tc_oh_ts.x, tc_oh_ts.y);
 
