@@ -524,6 +524,12 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	u8 blend_index = u8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
 	const int blend_flag = g_gs_device->GetBlendFlags(blend_index);
 
+	// Negative value is clamped to 0 on COLCLAMP.CLAMP 1.
+	const bool clamp_zero_blend = (blend_flag & BLEND_CLAMP) && (m_env.COLCLAMP.CLAMP) &&
+		// 0 - Cs*Ad, 0 - Cd*Ad, 0 - Cd*F, 0 - Cd*As
+		// Cd*(1 - F), when As is equal or greater than 1.
+		((ALPHA.A == ALPHA.D) || (ALPHA.C == 2 && ALPHA.FIX >= 128u));
+
 	// HW blend can handle Cd output.
 	bool color_dest_blend = !!(blend_flag & BLEND_CD);
 
@@ -550,6 +556,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 		// SW Blend is (nearly) free. Let's use it.
 		const bool impossible_or_free_blend = (blend_flag & BLEND_A_MAX) // Impossible blending
 			|| blend_non_recursive                 // Free sw blending, doesn't require barriers or reading fb
+			|| clamp_zero_blend                    // Free sw blending, doesn't require barriers or reading fb
 			|| accumulation_blend                  // Mix of hw/sw blending
 			|| (m_prim_overlap == PRIM_OVERLAP_NO) // Blend can be done in a single draw
 			|| (m_conf.require_full_barrier);      // Another effect (for example fbmask) already requires a full barrier
@@ -612,7 +619,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 			case AccBlendLevel::Basic:
 				// Disable accumulation blend when there is fbmask with no overlap, will be faster.
 				accumulation_blend &= !fbmask_no_overlap;
-				sw_blending |= accumulation_blend || blend_non_recursive || fbmask_no_overlap;
+				sw_blending |= accumulation_blend || blend_non_recursive || clamp_zero_blend || fbmask_no_overlap;
 				// Do not run BLEND MIX if sw blending is already present, it's less accurate
 				blend_mix &= !sw_blending;
 				sw_blending |= blend_mix;
@@ -761,6 +768,18 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				m_conf.ps.blend_b = 0;
 				m_conf.ps.blend_d = 0;
 			}
+		}
+		else if (clamp_zero_blend)
+		{
+			// Disable HW blending
+			m_conf.blend = {};
+
+			// Blend output is clamped to 0, let's change ABD to 2.
+			// Set A to 0, not relevant anyway.
+			m_conf.ps.blend_a = 2;
+			m_conf.ps.blend_b = 2;
+			m_conf.ps.blend_c = 0;
+			m_conf.ps.blend_d = 2;
 		}
 		else
 		{
