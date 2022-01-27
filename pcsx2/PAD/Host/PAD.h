@@ -46,6 +46,9 @@ namespace PAD
 	/// Reloads configuration.
 	void LoadConfig(const SettingsInterface& si);
 
+	/// Restores default configuration.
+	void SetDefaultConfig(SettingsInterface& si);
+
 	/// Updates vibration and other internal state. Called at the *end* of a frame.
 	void Update();
 
