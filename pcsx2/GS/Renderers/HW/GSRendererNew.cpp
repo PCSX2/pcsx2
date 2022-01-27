@@ -771,6 +771,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 		}
 		else if (clamp_zero_blend)
 		{
+			fprintf(stderr, "clamp_zero_blend\n");
 			// Disable HW blending
 			m_conf.blend = {};
 
