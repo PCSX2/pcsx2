@@ -535,8 +535,7 @@ std::vector<const HotkeyInfo*> InputManager::GetHotkeyList()
 		for (const HotkeyInfo* hotkey = hotkey_list; hotkey->name != nullptr; hotkey++)
 			ret.push_back(hotkey);
 	}
-	std::sort(ret.begin(), ret.end(), [](const HotkeyInfo* left, const HotkeyInfo* right)
-	{
+	std::sort(ret.begin(), ret.end(), [](const HotkeyInfo* left, const HotkeyInfo* right) {
 		// category -> display name
 		if (const int res = StringUtil::Strcasecmp(left->category, right->category); res != 0)
 			return (res < 0);
@@ -577,9 +576,9 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 			if (!bindings.empty())
 			{
 				// we use axes for all pad bindings to simplify things, and because they are pressure sensitive
-				AddBindings(bindings, InputAxisEventHandler{ [pad_index, bind_index, bind_names](float value) {
+				AddBindings(bindings, InputAxisEventHandler{[pad_index, bind_index, bind_names](float value) {
 					PAD::SetControllerState(pad_index, bind_index, value);
-				} });
+				}});
 			}
 		}
 	}
@@ -593,7 +592,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 		bool has_any_bindings = false;
 		switch (vibcaps)
 		{
-		case PAD::VibrationCapabilities::LargeSmallMotors:
+			case PAD::VibrationCapabilities::LargeSmallMotors:
 			{
 				const std::string large_binding(si.GetStringValue(section.c_str(), "LargeMotor"));
 				const std::string small_binding(si.GetStringValue(section.c_str(), "SmallMotor"));
@@ -602,15 +601,15 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 			}
 			break;
 
-		case PAD::VibrationCapabilities::SingleMotor:
+			case PAD::VibrationCapabilities::SingleMotor:
 			{
 				const std::string binding(si.GetStringValue(section.c_str(), "Motor"));
 				has_any_bindings |= ParseBindingAndGetSource(binding, &vib.motors[0].binding, &vib.motors[0].source);
 			}
 			break;
 
-		default:
-			break;
+			default:
+				break;
 		}
 
 		if (has_any_bindings)
@@ -660,7 +659,8 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value)
 			binding->current_mask = new_mask;
 
 			// invert if we're negative, since the handler expects 0..1
-			const float value_to_pass = (negative ? ((value < 0.0f) ? -value : 0.0f) : (value > 0.0f) ? value : 0.0f);
+			const float value_to_pass = (negative ? ((value < 0.0f) ? -value : 0.0f) : (value > 0.0f) ? value :
+                                                                                                        0.0f);
 
 			// axes are fired regardless of a state change, unless they're zero
 			// for buttons, we can use the state of the last chord key, because it'll be 1 on press,
@@ -825,10 +825,7 @@ bool InputManager::DoEventHook(InputBindingKey key, float value)
 		return false;
 
 	const InputInterceptHook::CallbackResult action = m_event_intercept_callback(key, value);
-	if (action == InputInterceptHook::CallbackResult::StopMonitoring)
-		m_event_intercept_callback = {};
-
-	return true;
+	return (action == InputInterceptHook::CallbackResult::StopProcessingEvent);
 }
 
 // ------------------------------------------------------------------------
@@ -882,6 +879,48 @@ void InputManager::PollSources()
 
 	if (VMManager::GetState() == VMState::Running && !s_pad_vibration_array.empty())
 		UpdateContinuedVibration();
+}
+
+
+std::vector<std::pair<std::string, std::string>> InputManager::EnumerateDevices()
+{
+	std::vector<std::pair<std::string, std::string>> ret;
+
+	ret.emplace_back("Keyboard", "Keyboard");
+	ret.emplace_back("Mouse", "Mouse");
+
+	for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
+	{
+		if (s_input_sources[i])
+		{
+			std::vector<std::pair<std::string, std::string>> devs(s_input_sources[i]->EnumerateDevices());
+			if (ret.empty())
+				ret = std::move(devs);
+			else
+				std::move(devs.begin(), devs.end(), std::back_inserter(ret));
+		}
+	}
+
+	return ret;
+}
+
+std::vector<InputBindingKey> InputManager::EnumerateMotors()
+{
+	std::vector<InputBindingKey> ret;
+
+	for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
+	{
+		if (s_input_sources[i])
+		{
+			std::vector<InputBindingKey> devs(s_input_sources[i]->EnumerateMotors());
+			if (ret.empty())
+				ret = std::move(devs);
+			else
+				std::move(devs.begin(), devs.end(), std::back_inserter(ret));
+		}
+	}
+
+	return ret;
 }
 
 template <typename T>

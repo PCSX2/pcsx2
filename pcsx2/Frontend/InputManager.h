@@ -17,6 +17,7 @@
 
 #include <functional>
 #include <optional>
+#include <string_view>
 #include <variant>
 #include <utility>
 
@@ -100,8 +101,8 @@ struct InputInterceptHook
 {
 	enum class CallbackResult
 	{
-		StopMonitoring,
-		ContinueMonitoring
+		StopProcessingEvent,
+		ContinueProcessingEvent
 	};
 
 	using Callback = std::function<CallbackResult(InputBindingKey key, float value)>;
@@ -171,6 +172,12 @@ namespace InputManager
 	/// Returns a list of all hotkeys.
 	std::vector<const HotkeyInfo*> GetHotkeyList();
 
+	/// Enumerates available devices. Returns a pair of the prefix (e.g. SDL-0) and the device name.
+	std::vector<std::pair<std::string, std::string>> EnumerateDevices();
+
+	/// Enumerates available vibration motors at the time of call.
+	std::vector<InputBindingKey> EnumerateMotors();
+
 	/// Re-parses the config and registers all hotkey and pad bindings.
 	void ReloadBindings(SettingsInterface& si);
 
@@ -209,3 +216,12 @@ namespace InputManager
 	/// The pad vibration state will internally remain, so that when emulation is unpaused, the effect resumes.
 	void PauseVibration();
 } // namespace InputManager
+
+namespace Host
+{
+	/// Called when a new input device is connected.
+	void OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name);
+
+	/// Called when an input device is disconnected.
+	void OnInputDeviceDisconnected(const std::string_view& identifier);
+}

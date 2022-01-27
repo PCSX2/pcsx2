@@ -116,6 +116,12 @@ void XInputSource::UpdateSettings(SettingsInterface& si)
 
 void XInputSource::Shutdown()
 {
+	for (u32 i = 0; i < NUM_CONTROLLERS; i++)
+	{
+		if (m_controllers[i].connected)
+			HandleControllerDisconnection(i);
+	}
+
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	if (m_xinput_module)
 	{
@@ -152,6 +158,22 @@ void XInputSource::PollEvents()
 				HandleControllerDisconnection(i);
 		}
 	}
+}
+
+std::vector<std::pair<std::string, std::string>> XInputSource::EnumerateDevices()
+{
+	std::vector<std::pair<std::string, std::string>> ret;
+
+	for (u32 i = 0; i < NUM_CONTROLLERS; i++)
+	{
+		if (!m_controllers[i].connected)
+			continue;
+
+		ret.emplace_back(StringUtil::StdStringFromFormat("XInput-%u", i),
+			StringUtil::StdStringFromFormat("XInput Controller %u", i));
+	}
+
+	return ret;
 }
 
 std::optional<InputBindingKey> XInputSource::ParseKeyString(
@@ -276,12 +298,17 @@ void XInputSource::HandleControllerConnection(u32 index)
 	cd.connected = true;
 	cd.has_large_motor = caps.Vibration.wLeftMotorSpeed != 0;
 	cd.has_small_motor = caps.Vibration.wRightMotorSpeed != 0;
+
+	Host::OnInputDeviceConnected(StringUtil::StdStringFromFormat("XInput-%u", index),
+		StringUtil::StdStringFromFormat("XInput Controller %u", index));
 }
 
 void XInputSource::HandleControllerDisconnection(u32 index)
 {
 	Console.WriteLn("XInput controller %u disconnected.", index);
 	m_controllers[index] = {};
+
+	Host::OnInputDeviceDisconnected(StringUtil::StdStringFromFormat("XInput-%u", index));
 }
 
 void XInputSource::CheckForStateChanges(u32 index, const XINPUT_STATE& new_state)
