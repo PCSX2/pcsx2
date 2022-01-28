@@ -198,7 +198,7 @@ const char* dialog_message(int ID, bool* updateText)
 				   "Improves performance in most games, but can make a small selection slower.");
 		case IDC_TEX_IN_RT:
 			return cvtString("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer.\n"
-				"By default this is enabled only in Jak games.");
+				"In some selected games this is enabled by default regardless of this setting.");
 		default:
 			if (updateText)
 				*updateText = false;

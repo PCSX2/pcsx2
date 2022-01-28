@@ -243,10 +243,10 @@ const CRC::Game CRC::m_games[] =
 	{0xC5B75C7C, Oneechanbara2Special, JP, 0}, // cutie comment
 	{0xC725CC6C, Oneechanbara2Special, JP, 0},
 	{0x07608CA2, Oneechanbara2Special, EU, 0}, // Zombie Hunters 2
-	{0xE0347841, XenosagaE3, JP, 0}, // cutie comment
-	{0xA707236E, XenosagaE3, JP, 0}, // Demo
-	{0xA4E88698, XenosagaE3, CH, 0},
-	{0x2088950A, XenosagaE3, US, 0},
+	{0xE0347841, XenosagaE3, JP, TextureInsideRt}, // cutie comment
+	{0xA707236E, XenosagaE3, JP, TextureInsideRt}, // Demo
+	{0xA4E88698, XenosagaE3, CH, TextureInsideRt},
+	{0x2088950A, XenosagaE3, US, TextureInsideRt},
 	{0xB1995E29, ShadowofRome, EU, 0}, // cutie comment
 	{0x958DCA28, ShadowofRome, EU, 0},
 	{0x57818AF6, ShadowofRome, US, 0},
@@ -315,14 +315,14 @@ const CRC::Game CRC::m_games[] =
 	{0x812C5A96, ShinOnimusha, EU, 0},
 	{0xFE44479E, ShinOnimusha, US, 0},
 	{0xFFDE85E9, ShinOnimusha, US, 0},
-	{0xE21404E2, GetaWay, US, 0},
-	{0xE8249852, GetaWay, JP, 0},
-	{0x458485EF, GetaWay, EU, 0},
-	{0x5DFBE144, GetaWay, EU, 0},
-	{0xE78971DF, GetaWayBlackMonday, US, 0},
-	{0x342D97FA, GetaWayBlackMonday, US, 0}, // Demo
-	{0xE8C0AD1A, GetaWayBlackMonday, JP, 0},
-	{0x09C3DF79, GetaWayBlackMonday, EU, 0},
+	{0xE21404E2, GetaWay, US, TextureInsideRt},
+	{0xE8249852, GetaWay, JP, TextureInsideRt},
+	{0x458485EF, GetaWay, EU, TextureInsideRt},
+	{0x5DFBE144, GetaWay, EU, TextureInsideRt},
+	{0xE78971DF, GetaWayBlackMonday, US, TextureInsideRt},
+	{0x342D97FA, GetaWayBlackMonday, US, TextureInsideRt}, // Demo
+	{0xE8C0AD1A, GetaWayBlackMonday, JP, TextureInsideRt},
+	{0x09C3DF79, GetaWayBlackMonday, EU, TextureInsideRt},
 	{0x1130BF23, SakuraTaisen, CH, 0}, // cutie comment
 	{0x4FAE8B83, SakuraTaisen, KO, 0},
 	{0xEF06DBD6, SakuraWarsSoLongMyLove, JP, 0}, // cutie comment
@@ -500,6 +500,14 @@ const CRC::Game CRC::m_games[] =
 	{0x4D22DB95, Whiplash, US, 0},
 	{0xE8A97250, Whiplash, EU, 0},
 	{0xB1BE3E51, Whiplash, EU, 0},
+	{0x4C33FA2A, IndianaJonesAndTheEmperorsTomb, US, TextureInsideRt}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
+	{0xAE0E098F, IndianaJonesAndTheEmperorsTomb, DE, TextureInsideRt},
+	{0xBBC3EFFA, WildArms4, US, TextureInsideRt}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
+	{0x36802E57, BeyondGoodAndEvil, US, TextureInsideRt}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
+	{0x08FFF00D, SSX3, US, TextureInsideRt},
+	{0xCE942B2A, SSX3, EU, TextureInsideRt}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
+	{0x1FCC0CFB, DrivingEmotionTypeS, US, TextureInsideRt},
+	{0x034836F8, DrivingEmotionTypeS, JP, TextureInsideRt}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
 };
 
 std::map<u32, const CRC::Game*> CRC::m_map;
