@@ -333,7 +333,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 
 	GSTexture* t = NULL;
 
-	if (GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, m_width, m_height, GetFramebufferHeight()))
+	if (GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, GetTargetSize(), GetFramebufferHeight()))
 	{
 		t = rt->m_texture;
 
@@ -368,7 +368,7 @@ GSTexture* GSRendererHW::GetFeedbackOutput()
 	TEX0.TBW = m_regs->EXTBUF.EXBW;
 	TEX0.PSM = m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPFB.PSM;
 
-	GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, m_width, m_height, /*GetFrameRect(i).bottom*/ 0);
+	GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, GetTargetSize(), /*GetFrameRect(i).bottom*/ 0);
 
 	GSTexture* t = rt->m_texture;
 
@@ -789,10 +789,10 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 	}
 }
 
-GSVector2 GSRendererHW::GetTextureScaleFactor()
+GSVector2 GSRendererHW::GetTextureScaleFactor(const bool force_upscaling)
 {
 	GSVector2 scale_factor{ 1.0f, 1.0f };
-	if (CanUpscale())
+	if (force_upscaling || CanUpscale())
 	{
 		const int multiplier = GetUpscaleMultiplier();
 		if (multiplier == 0)
@@ -810,6 +810,24 @@ GSVector2 GSRendererHW::GetTextureScaleFactor()
 		}
 	}
 	return scale_factor;
+}
+
+GSVector2 GSRendererHW::GetTextureScaleFactor()
+{
+	return GetTextureScaleFactor(false);
+}
+
+GSVector2i GSRendererHW::GetTargetSize()
+{
+	const GSVector2i t_size = { m_width, m_height };
+	if (GetUpscaleMultiplier() == 1 || CanUpscale())
+		return t_size;
+	// Undo the upscaling for native resolution draws.
+	const GSVector2 up_s = GetTextureScaleFactor(true);
+	return {
+		static_cast<int>(std::ceil(static_cast<float>(t_size.x) / up_s.x)),
+		static_cast<int>(std::ceil(static_cast<float>(t_size.y) / up_s.y)),
+	};
 }
 
 void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
@@ -1518,6 +1536,8 @@ void GSRendererHW::Draw()
 		}
 	}
 
+	const GSVector2i t_size = GetTargetSize();
+
 	TEX0.TBP0 = context->FRAME.Block();
 	TEX0.TBW = context->FRAME.FBW;
 	TEX0.PSM = context->FRAME.PSM;
@@ -1526,7 +1546,7 @@ void GSRendererHW::Draw()
 	GSTexture* rt_tex = nullptr;
 	if (!no_rt)
 	{
-		rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true, fm);
+		rt = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::RenderTarget, true, fm);
 		rt_tex = rt->m_texture;
 	}
 
@@ -1538,7 +1558,7 @@ void GSRendererHW::Draw()
 	GSTexture* ds_tex = nullptr;
 	if (!no_ds)
 	{
-		ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, context->DepthWrite());
+		ds = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::DepthStencil, context->DepthWrite());
 		ds_tex = ds->m_texture;
 	}
 
@@ -2230,7 +2250,7 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 			TEX0.TBW = m_context->FRAME.FBW;
 			TEX0.PSM = m_context->FRAME.PSM;
 
-			if (GSTextureCache::Target* tmp_rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true))
+			if (GSTextureCache::Target* tmp_rt = m_tc->LookupTarget(TEX0, GetTargetSize(), GSTextureCache::RenderTarget, true))
 			{
 				GL_INS("OI_RozenMaidenGebetGarden FB clear");
 				tmp_rt->m_texture->Commit(); // Don't bother to save few MB for a single game
@@ -2249,7 +2269,7 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 			TEX0.TBW = m_context->FRAME.FBW;
 			TEX0.PSM = m_context->ZBUF.PSM;
 
-			if (GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
+			if (GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, GetTargetSize(), GSTextureCache::DepthStencil, true))
 			{
 				GL_INS("OI_RozenMaidenGebetGarden ZB clear");
 				tmp_ds->m_texture->Commit(); // Don't bother to save few MB for a single game
@@ -2287,7 +2307,7 @@ bool GSRendererHW::OI_SonicUnleashed(GSTexture* rt, GSTexture* ds, GSTextureCach
 
 	GL_INS("OI_SonicUnleashed replace draw by a copy");
 
-	GSTextureCache::Target* src = m_tc->LookupTarget(Texture, m_width, m_height, GSTextureCache::RenderTarget, true);
+	GSTextureCache::Target* src = m_tc->LookupTarget(Texture, GetTargetSize(), GSTextureCache::RenderTarget, true);
 
 	const GSVector2i size = rt->GetSize();
 

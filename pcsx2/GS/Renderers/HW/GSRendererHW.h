@@ -177,7 +177,9 @@ public:
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
 	GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
 	void MergeSprite(GSTextureCache::Source* tex);
+	GSVector2 GetTextureScaleFactor(const bool force_upscaling);
 	GSVector2 GetTextureScaleFactor() override;
+	GSVector2i GetTargetSize();
 
 	void Reset() override;
 	void VSync(u32 field, bool registers_written) override;

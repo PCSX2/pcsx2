@@ -163,15 +163,15 @@ public:
 	class Target : public Surface
 	{
 	public:
-		int m_type;
+		const int m_type;
 		bool m_used;
 		GSDirtyRectList m_dirty;
 		GSVector4i m_valid;
-		bool m_depth_supported;
+		const bool m_depth_supported;
 		bool m_dirty_alpha;
 
 	public:
-		Target(GSRenderer* r, const GIFRegTEX0& TEX0, u8* temp, bool depth_supported);
+		Target(GSRenderer* r, const GIFRegTEX0& TEX0, u8* temp, const bool depth_supported, const int type);
 
 		void UpdateValidity(const GSVector4i& rect);
 
@@ -263,7 +263,7 @@ protected:
 	std::unordered_map<SurfaceOffsetKey, SurfaceOffset, SurfaceOffsetKeyHash, SurfaceOffsetKeyEqual> m_surface_offset_cache;
 
 	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false, int x_offset = 0, int y_offset = 0, bool mipmap = false);
-	Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type);
+	Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type, const bool clear);
 
 	// TODO: virtual void Write(Source* s, const GSVector4i& r) = 0;
 	// TODO: virtual void Write(Target* t, const GSVector4i& r) = 0;
@@ -279,8 +279,8 @@ public:
 	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool mipmap);
 	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette = false);
 
-	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int type, bool used, u32 fbmask = 0);
-	Target* LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int real_h);
+	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask = 0, const bool is_frame = false, const int real_h = 0);
+	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, const int real_h);
 
 	void InvalidateVideoMemType(int type, u32 bp);
 	void InvalidateVideoMemSubTarget(GSTextureCache::Target* rt);
@@ -289,7 +289,6 @@ public:
 
 	void IncAge();
 	bool UserHacks_HalfPixelOffset;
-	void ScaleTexture(GSTexture* texture);
 
 	bool ShallSearchTextureInsideRt();
 
