@@ -194,6 +194,7 @@ void GSDevice11::SetupPS(PSSelector sel, const GSHWDrawConfig::PSConstantBuffer*
 		sm.AddMacro("PS_SCANMSK", sel.scanmsk);
 		sm.AddMacro("PS_AUTOMATIC_LOD", sel.automatic_lod);
 		sm.AddMacro("PS_MANUAL_LOD", sel.manual_lod);
+		sm.AddMacro("PS_TEX_IS_FB", sel.tex_is_fb);
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
 		i = m_ps.try_emplace(sel.key, std::move(ps)).first;

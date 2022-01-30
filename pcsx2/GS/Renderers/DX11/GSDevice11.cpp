@@ -1360,8 +1360,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	}
 	IASetPrimitiveTopology(topology);
 
+	OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
+
 	PSSetShaderResources(config.tex, config.pal);
-	PSSetShaderResource(4, config.raw_tex);
 
 	if (config.require_one_barrier) // Used as "bind rt" flag when texture barrier is unsupported
 	{
@@ -1369,15 +1370,13 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		// Do not always bind the rt when it's not needed,
 		// only bind it when effects use it such as fbmask emulation currently
 		// because we copy the frame buffer and it is quite slow.
-		PSSetShaderResource(3, config.rt);
+		PSSetShaderResource(2, config.rt);
 	}
 
 	SetupOM(config.depth, convertSel(config.colormask, config.blend), config.blend.factor);
 	SetupVS(config.vs, &config.cb_vs);
 	SetupGS(config.gs);
 	SetupPS(config.ps, &config.cb_ps, config.sampler);
-
-	OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
 
 	DrawIndexedPrimitive();
 

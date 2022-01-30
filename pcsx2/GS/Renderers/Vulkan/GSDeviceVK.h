@@ -82,7 +82,7 @@ public:
 		NUM_TFX_DESCRIPTOR_SETS = 3,
 		NUM_TFX_DYNAMIC_OFFSETS = 2,
 		NUM_TFX_SAMPLERS = 2,
-		NUM_TFX_RT_TEXTURES = 3,
+		NUM_TFX_RT_TEXTURES = 2,
 		NUM_TFX_TEXTURES = NUM_TFX_SAMPLERS + NUM_TFX_RT_TEXTURES,
 		NUM_CONVERT_TEXTURES = 1,
 		NUM_CONVERT_SAMPLERS = 1,
@@ -253,7 +253,7 @@ public:
 	void IAUnmapVertexBuffer();
 	void IASetIndexBuffer(const void* index, size_t count);
 
-	void PSSetShaderResource(int i, GSTexture* sr);
+	void PSSetShaderResource(int i, GSTexture* sr, bool check_state);
 	void PSSetSampler(u32 index, GSHWDrawConfig::SamplerSelector sel);
 
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor, bool feedback_loop);

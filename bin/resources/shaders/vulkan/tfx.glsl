@@ -387,14 +387,13 @@ layout(location = 0) out vec4 o_col0;
 
 layout(set = 1, binding = 0) uniform sampler2D Texture;
 layout(set = 1, binding = 1) uniform sampler2D Palette;
-layout(set = 2, binding = 0) uniform texture2D RawTexture;
 
 #if PS_FEEDBACK_LOOP_IS_NEEDED
-layout(input_attachment_index = 0, set = 2, binding = 1) uniform subpassInput RtSampler;
+layout(input_attachment_index = 0, set = 2, binding = 0) uniform subpassInput RtSampler;
 #endif
 
 #if PS_DATE > 0
-layout(set = 2, binding = 2) uniform texture2D PrimMinTexture;
+layout(set = 2, binding = 1) uniform texture2D PrimMinTexture;
 #endif
 
 vec4 sample_c(vec2 uv)
@@ -548,13 +547,21 @@ mat4 sample_4p(vec4 u)
 
 int fetch_raw_depth(ivec2 xy)
 {
-	vec4 col = texelFetch(RawTexture, xy, 0);
+#if PS_TEX_IS_FB
+	vec4 col = subpassLoad(RtSampler);
+#else
+	vec4 col = texelFetch(Texture, xy, 0);
+#endif
 	return int(col.r * exp2(32.0f));
 }
 
 vec4 fetch_raw_color(ivec2 xy)
 {
-	return texelFetch(RawTexture, xy, 0);
+#if PS_TEX_IS_FB
+	return subpassLoad(RtSampler);
+#else
+	return texelFetch(Texture, xy, 0);
+#endif
 }
 
 vec4 fetch_c(ivec2 uv)
@@ -633,7 +640,7 @@ vec4 sample_depth(vec2 st, ivec2 pos)
 		int depth = fetch_raw_depth(pos);
 
 		// Convert lsb based on the palette
-		t = Palette.Load(ivec3(depth & 0xFF, 0, 0)) * 255.0f;
+		t = texelFetch(Palette, ivec2(depth & 0xFF, 0), 0) * 255.0f;
 
 		// Msb is easier
 		float green = float(((depth >> 8) & 0xFF) * 36.0f);

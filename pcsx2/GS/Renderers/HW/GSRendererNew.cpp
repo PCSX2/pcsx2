@@ -346,7 +346,7 @@ void GSRendererNew::EmulateTextureShuffleAndFbmask()
 	}
 }
 
-void GSRendererNew::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex)
+void GSRendererNew::EmulateChannelShuffle(const GSTextureCache::Source* tex)
 {
 	// Uncomment to disable HLE emulation (allow to trace the draw call)
 	// m_channel_shuffle = false;
@@ -359,7 +359,7 @@ void GSRendererNew::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 			GL_INS("Gran Turismo RGB Channel");
 			m_conf.ps.channel = ChannelFetch_RGB;
 			m_context->TEX0.TFX = TFX_DECAL;
-			*rt = tex->m_from_target;
+			m_conf.rt = tex->m_from_target;
 		}
 		else if (m_game.title == CRC::Tekken5)
 		{
@@ -372,7 +372,7 @@ void GSRendererNew::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 				// 12 pages: 2 calls by channel, 3 channels, 1 blit
 				// Minus current draw call
 				m_skip = 12 * (3 + 3 + 1) - 1;
-				*rt = tex->m_from_target;
+				m_conf.rt = tex->m_from_target;
 			}
 			else
 			{
@@ -478,9 +478,19 @@ void GSRendererNew::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 	// Effect is really a channel shuffle effect so let's cheat a little
 	if (m_channel_shuffle)
 	{
-		m_conf.raw_tex = tex->m_from_target;
-		if (g_gs_device->Features().texture_barrier)
+		m_conf.tex = tex->m_from_target;
+		if (m_conf.tex == m_conf.rt)
+		{
+			// sample from fb instead
+			m_conf.tex = nullptr;
+			m_conf.ps.tex_is_fb = true;
 			m_conf.require_one_barrier = true;
+		}
+		else if (m_conf.tex == m_conf.ds)
+		{
+			// using the current depth buffer. make sure it's not bound (needed for not-GL).
+			m_conf.ds = nullptr;
+		}
 
 		// Replace current draw with a fullscreen sprite
 		//
@@ -495,10 +505,6 @@ void GSRendererNew::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 
 		m_vertex.head = m_vertex.tail = m_vertex.next = 2;
 		m_index.tail = 2;
-	}
-	else
-	{
-		m_conf.raw_tex = nullptr;
 	}
 }
 
@@ -1066,7 +1072,9 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	// manual trilinear causes the chain to be uploaded, auto causes it to be generated
 	m_conf.sampler.lodclamp = !(trilinear_manual || trilinear_auto);
 
-	m_conf.tex = tex->m_texture;
+	// don't overwrite the texture when using channel shuffle, but keep the palette
+	if (!m_channel_shuffle)
+		m_conf.tex = tex->m_texture;
 	m_conf.pal = tex->m_palette;
 }
 
@@ -1149,6 +1157,8 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	ResetStates();
 	m_conf.cb_vs.texture_offset = GSVector2(0, 0);
 	m_conf.ps.scanmsk = m_env.SCANMSK.MSK;
+	m_conf.rt = rt;
+	m_conf.ds = ds;
 
 	ASSERT(g_gs_device != NULL);
 
@@ -1157,7 +1167,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Warning it must be done at the begining because it will change the
 	// vertex list (it will interact with PrimitiveOverlap and accurate
 	// blending)
-	EmulateChannelShuffle(&rt, tex);
+	EmulateChannelShuffle(tex);
 
 	// Upscaling hack to avoid various line/grid issues
 	MergeSprite(tex);
@@ -1304,7 +1314,8 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// om
 
-	EmulateZbuffer(); // will update VS depth mask
+	if (!m_channel_shuffle)
+		EmulateZbuffer(); // will update VS depth mask
 
 	// vs
 
@@ -1456,7 +1467,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			// Extract the depth as palette index
 			m_conf.ps.depth_fmt = 1;
 			m_conf.ps.channel = ChannelFetch_BLUE;
-			m_conf.raw_tex = ds;
+			m_conf.tex = ds;
 
 			// We need the palette to convert the depth to the correct alpha value.
 			if (!tex->m_palette)
@@ -1469,10 +1480,10 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	// rs
-	const GSVector4& hacked_scissor = m_channel_shuffle ? GSVector4(0, 0, 1024, 1024) : m_context->scissor.in;
-	const GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * hacked_scissor).rintersect(GSVector4i(rtsize).zwxy());
+	const GSVector4 hacked_scissor(m_channel_shuffle ? GSVector4(0, 0, 1024, 1024) : m_context->scissor.in);
+	const GSVector4i scissor(GSVector4i(GSVector4(rtscale).xyxy() * hacked_scissor).rintersect(GSVector4i(rtsize).zwxy()));
 
-	m_conf.drawarea = scissor.rintersect(ComputeBoundingBox(rtscale, rtsize));
+	m_conf.drawarea = m_channel_shuffle ? scissor : scissor.rintersect(ComputeBoundingBox(rtscale, rtsize));
 	m_conf.scissor = (DATE && !DATE_BARRIER) ? m_conf.drawarea : scissor;
 
 	SetupIA(sx, sy);
@@ -1570,8 +1581,6 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	m_conf.drawlist = (m_conf.require_full_barrier && m_vt.m_primclass == GS_SPRITE_CLASS) ? &m_drawlist : nullptr;
 
-	m_conf.rt = rt;
-	m_conf.ds = ds;
 	g_gs_device->RenderHW(m_conf);
 }
 
