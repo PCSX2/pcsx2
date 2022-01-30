@@ -215,7 +215,7 @@
   <ItemGroup>
     <ClCompile Include="$(IntDir)Settings\moc_BIOSSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_ControllerBindingWidgets.cpp" />
-    <ClCompile Include="x64\Devel\Settings\moc_ControllerGlobalSettingsWidget.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_ControllerGlobalSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_ControllerSettingsDialog.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_EmulationSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_GameListSettingsWidget.cpp" />
