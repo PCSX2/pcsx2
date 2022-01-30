@@ -43,8 +43,7 @@ layout(location = 0, index = 0) out vec4 SV_Target0;
 layout(location = 0, index = 1) out vec4 SV_Target1;
 
 layout(binding = 1) uniform sampler2D PaletteSampler;
-layout(binding = 3) uniform sampler2D RtSampler; // note 2 already use by the image below
-layout(binding = 4) uniform sampler2D RawTextureSampler;
+layout(binding = 2) uniform sampler2D RtSampler; // note 2 already use by the image below
 
 #ifndef DISABLE_GL42_image
 #if PS_DATE > 0
@@ -52,7 +51,7 @@ layout(binding = 4) uniform sampler2D RawTextureSampler;
 // require extra shader validation.
 
 // FIXME how to declare memory access
-layout(r32i, binding = 2) uniform iimage2D img_prim_min;
+layout(r32i, binding = 3) uniform iimage2D img_prim_min;
 // WARNING:
 // You can't enable it if you discard the fragment. The depth is still
 // updated (shadow in Shin Megami Tensei Nocturne)
@@ -233,12 +232,20 @@ mat4 sample_4p(vec4 u)
 
 int fetch_raw_depth()
 {
-    return int(texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0).r * exp2(32.0f));
+#if PS_TEX_IS_FB == 1
+    return int(texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).r * exp2(32.0f));
+#else
+    return int(texelFetch(TextureSampler, ivec2(gl_FragCoord.xy), 0).r * exp2(32.0f));
+#endif
 }
 
 vec4 fetch_raw_color()
 {
-    return texelFetch(RawTextureSampler, ivec2(gl_FragCoord.xy), 0);
+#if PS_TEX_IS_FB == 1
+    return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+#else
+    return texelFetch(TextureSampler, ivec2(gl_FragCoord.xy), 0);
+#endif
 }
 
 vec4 fetch_c(ivec2 uv)

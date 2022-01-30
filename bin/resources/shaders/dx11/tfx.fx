@@ -56,6 +56,7 @@
 #define PS_SCANMSK 0
 #define PS_AUTOMATIC_LOD 0
 #define PS_MANUAL_LOD 0
+#define PS_TEX_IS_FB 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
@@ -107,8 +108,7 @@ struct PS_OUTPUT
 
 Texture2D<float4> Texture : register(t0);
 Texture2D<float4> Palette : register(t1);
-Texture2D<float4> RtSampler : register(t3);
-Texture2D<float4> RawTexture : register(t4);
+Texture2D<float4> RtTexture : register(t2);
 SamplerState TextureSampler : register(s0);
 SamplerState PaletteSampler : register(s1);
 
@@ -143,6 +143,9 @@ cbuffer cb1
 
 float4 sample_c(float2 uv, float uv_w)
 {
+#if PS_TEX_IS_FB == 1
+	return RtTexture.Load(int3(int2(uv * WH.zw), 0));
+#else
 	if (PS_POINT_SAMPLER)
 	{
 		// Weird issue with ATI/AMD cards,
@@ -171,6 +174,7 @@ float4 sample_c(float2 uv, float uv_w)
 	return Texture.SampleLevel(TextureSampler, uv, lod);
 #else
 	return Texture.SampleLevel(TextureSampler, uv, 0); // No lod
+#endif
 #endif
 }
 
@@ -287,13 +291,21 @@ float4x4 sample_4p(float4 u)
 
 int fetch_raw_depth(int2 xy)
 {
-	float4 col = RawTexture.Load(int3(xy, 0));
+#if PS_TEX_IS_FB == 1
+	float4 col = RtTexture.Load(int3(xy, 0));
+#else
+	float4 col = Texture.Load(int3(xy, 0));
+#endif
 	return (int)(col.r * exp2(32.0f));
 }
 
 float4 fetch_raw_color(int2 xy)
 {
-	return RawTexture.Load(int3(xy, 0));
+#if PS_TEX_IS_FB == 1
+	return RtTexture.Load(int3(xy, 0));
+#else
+	return Texture.Load(int3(xy, 0));
+#endif
 }
 
 float4 fetch_c(int2 uv)
@@ -680,7 +692,7 @@ void ps_fbmask(inout float4 C, float2 pos_xy)
 {
 	if (PS_FBMASK)
 	{
-		float4 RT = trunc(RtSampler.Load(int3(pos_xy, 0)) * 255.0f + 0.1f);
+		float4 RT = trunc(RtTexture.Load(int3(pos_xy, 0)) * 255.0f + 0.1f);
 		C = (float4)(((uint4)C & ~FbMask) | ((uint4)RT & FbMask));
 	}
 }
@@ -730,7 +742,7 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 				return;
 		}
 
-		float4 RT = trunc(RtSampler.Load(int3(pos_xy, 0)) * 255.0f + 0.1f);
+		float4 RT = trunc(RtTexture.Load(int3(pos_xy, 0)) * 255.0f + 0.1f);
 
 		float Ad = (PS_DFMT == FMT_24) ? 1.0f : RT.a / 128.0f;
 

@@ -1160,9 +1160,8 @@ bool GSDeviceVK::CreatePipelineLayouts()
 	if ((m_tfx_sampler_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
 	Vulkan::Util::SetObjectName(dev, m_tfx_sampler_ds_layout, "TFX sampler descriptor layout");
-	dslb.AddBinding(0, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-	dslb.AddBinding(2, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	if ((m_tfx_rt_texture_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
 	Vulkan::Util::SetObjectName(dev, m_tfx_rt_texture_ds_layout, "TFX RT texture descriptor layout");
@@ -2072,13 +2071,13 @@ void GSDeviceVK::SetBlendConstants(u8 color)
 	m_dirty_flags |= DIRTY_FLAG_BLEND_CONSTANTS;
 }
 
-void GSDeviceVK::PSSetShaderResource(int i, GSTexture* sr)
+void GSDeviceVK::PSSetShaderResource(int i, GSTexture* sr, bool check_state)
 {
 	VkImageView view;
 	if (sr)
 	{
 		GSTextureVK* vkTex = static_cast<GSTextureVK*>(sr);
-		if (i < 3)
+		if (check_state)
 		{
 			if (vkTex->GetTexture().GetLayout() != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && InRenderPass())
 			{
@@ -2402,9 +2401,8 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			return ApplyTFXState(true);
 		}
 
-		dsub.AddImageDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_SAMPLERS]);
-		dsub.AddInputAttachmentDescriptorWrite(ds, 1, m_tfx_textures[NUM_TFX_SAMPLERS + 1]);
-		dsub.AddImageDescriptorWrite(ds, 2, m_tfx_textures[NUM_TFX_SAMPLERS + 2]);
+		dsub.AddInputAttachmentDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_SAMPLERS]);
+		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[NUM_TFX_SAMPLERS + 1]);
 		dsub.Update(dev);
 
 		m_tfx_descriptor_sets[2] = ds;
@@ -2631,7 +2629,7 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 
 	// and bind the image to the primitive sampler
 	image->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	PSSetShaderResource(4, image);
+	PSSetShaderResource(3, image, false);
 	return image;
 }
 
@@ -2676,12 +2674,11 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	PipelineSelector& pipe = m_pipeline_selector;
 	if (config.tex)
 	{
-		PSSetShaderResource(0, config.tex);
-		PSSetShaderResource(1, config.pal);
+		PSSetShaderResource(0, config.tex, config.tex != config.rt);
 		PSSetSampler(0, config.sampler);
 	}
-	if (config.raw_tex)
-		PSSetShaderResource(2, config.raw_tex);
+	if (config.pal)
+		PSSetShaderResource(1, config.pal, true);
 	if (config.blend.is_constant)
 		SetBlendConstants(config.blend.factor);
 
@@ -2750,7 +2747,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	pipe.feedback_loop |= render_area_okay && same_framebuffer && CurrentFramebufferHasFeedbackLoop();
 	OMSetRenderTargets(draw_rt, draw_ds, config.scissor, pipe.feedback_loop);
 	if (pipe.feedback_loop)
-		PSSetShaderResource(3, draw_rt);
+		PSSetShaderResource(2, draw_rt, false);
 
 	// Begin render pass if new target or out of the area.
 	if (!render_area_okay || !InRenderPass())

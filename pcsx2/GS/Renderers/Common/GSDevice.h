@@ -489,7 +489,6 @@ struct alignas(16) GSHWDrawConfig
 	GSTexture* ds;        ///< Depth stencil
 	GSTexture* tex;       ///< Source texture
 	GSTexture* pal;       ///< Palette texture
-	GSTexture* raw_tex;   ///< Used by channel shuffles
 	GSVertex* verts;      ///< Vertices to draw
 	u32* indices;         ///< Indices to draw
 	u32 nverts;           ///< Number of vertices
