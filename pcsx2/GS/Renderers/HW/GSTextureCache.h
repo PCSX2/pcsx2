@@ -35,7 +35,7 @@ public:
 
 	constexpr static bool CheckOverlap(const u32 a_bp, const u32 a_bp_end, const u32 b_bp, const u32 b_bp_end) noexcept
 	{
-		const bool valid = a_bp < a_bp_end && b_bp < b_bp_end;
+		const bool valid = a_bp <= a_bp_end && b_bp <= b_bp_end;
 		const bool overlap = a_bp <= b_bp_end && a_bp_end >= b_bp;
 		return valid && overlap;
 	}
