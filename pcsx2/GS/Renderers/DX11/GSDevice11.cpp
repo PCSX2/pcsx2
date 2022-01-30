@@ -365,79 +365,26 @@ void GSDevice11::RestoreAPIState()
 		m_ctx->OMSetRenderTargets(0, nullptr, m_state.dsv);
 }
 
-void GSDevice11::BeforeDraw()
-{
-	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-
-	// DX can't read from the FB
-	// So let's copy it and send that to the shader instead
-
-	auto bits = m_state.ps_sr_bitfield;
-	m_state.ps_sr_bitfield = 0;
-
-	unsigned long i;
-	while (_BitScanForward(&i, bits))
-	{
-		GSTexture11* tex = m_state.ps_sr_texture[i];
-
-		if (tex->Equal(m_state.rt_texture) || tex->Equal(m_state.rt_ds))
-		{
-#ifdef _DEBUG
-			OutputDebugStringA(format("WARNING: Cleaning up copied texture on slot %i", i).c_str());
-#endif
-			GSTexture* cp = nullptr;
-
-			CloneTexture(tex, &cp);
-
-			PSSetShaderResource(i, cp);
-		}
-
-		bits ^= 1u << i;
-	}
-
-	PSUpdateShaderState();
-}
-
-void GSDevice11::AfterDraw()
-{
-	unsigned long i;
-	while (_BitScanForward(&i, m_state.ps_sr_bitfield))
-	{
-#ifdef _DEBUG
-		OutputDebugStringA(format("WARNING: FB read detected on slot %i, copying...", i).c_str());
-#endif
-		Recycle(m_state.ps_sr_texture[i]);
-		PSSetShaderResource(i, nullptr);
-	}
-}
-
 void GSDevice11::DrawPrimitive()
 {
-	BeforeDraw();
-
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+	PSUpdateShaderState();
 	m_ctx->Draw(m_vertex.count, m_vertex.start);
-
-	AfterDraw();
 }
 
 void GSDevice11::DrawIndexedPrimitive()
 {
-	BeforeDraw();
-
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+	PSUpdateShaderState();
 	m_ctx->DrawIndexed(m_index.count, m_index.start, m_vertex.start);
-
-	AfterDraw();
 }
 
 void GSDevice11::DrawIndexedPrimitive(int offset, int count)
 {
 	ASSERT(offset + count <= (int)m_index.count);
-
-	BeforeDraw();
-
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+	PSUpdateShaderState();
 	m_ctx->DrawIndexed(count, m_index.start + offset, m_vertex.start);
-
-	AfterDraw();
 }
 
 void GSDevice11::ClearRenderTarget(GSTexture* t, const GSVector4& c)
@@ -567,9 +514,14 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
 		return;
 	}
 
+	CopyRect(sTex, r, dTex, 0, 0);
+}
+
+void GSDevice11::CopyRect(GSTexture* sTex, const GSVector4i& sRect, GSTexture* dTex, u32 destX, u32 destY)
+{
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-	D3D11_BOX box = {(UINT)r.left, (UINT)r.top, 0U, (UINT)r.right, (UINT)r.bottom, 1U};
+	D3D11_BOX box = {(UINT)sRect.left, (UINT)sRect.top, 0U, (UINT)sRect.right, (UINT)sRect.bottom, 1U};
 
 	// DX api isn't happy if we pass a box for depth copy
 	// It complains that depth/multisample must be a full copy
@@ -577,26 +529,27 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
 	const bool depth = (sTex->GetType() == GSTexture::Type::DepthStencil);
 	auto pBox = depth ? nullptr : &box;
 
-	m_ctx->CopySubresourceRegion(*(GSTexture11*)dTex, 0, 0, 0, 0, *(GSTexture11*)sTex, 0, pBox);
+	m_ctx->CopySubresourceRegion(*(GSTexture11*)dTex, 0, destX, destY, 0, *(GSTexture11*)sTex, 0, pBox);
 }
 
-void GSDevice11::CloneTexture(GSTexture* src, GSTexture** dest)
+void GSDevice11::CloneTexture(GSTexture* src, GSTexture** dest, const GSVector4i& rect)
 {
-	if (!src || !(src->GetType() == GSTexture::Type::DepthStencil || src->GetType() == GSTexture::Type::RenderTarget))
-	{
-		ASSERT(0);
-		return;
-	}
+	pxAssertMsg(src->GetType() == GSTexture::Type::DepthStencil || src->GetType() == GSTexture::Type::RenderTarget, "Source is RT or DS.");
 
 	const int w = src->GetWidth();
 	const int h = src->GetHeight();
 
 	if (src->GetType() == GSTexture::Type::DepthStencil)
-		*dest = CreateDepthStencil(w, h, src->GetFormat());
+	{
+		// DX11 requires that you copy the entire depth buffer.
+		*dest = CreateDepthStencil(w, h, src->GetFormat(), false);
+		CopyRect(src, GSVector4i(0, 0, w, h), *dest, 0, 0);
+	}
 	else
-		*dest = CreateRenderTarget(w, h, src->GetFormat());
-
-	CopyRect(src, *dest, GSVector4i(0, 0, w, h));
+	{
+		*dest = CreateRenderTarget(w, h, src->GetFormat(), false);
+		CopyRect(src, rect, *dest, rect.left, rect.top);
+	}
 }
 
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
@@ -1146,7 +1099,6 @@ void GSDevice11::PSSetShaderResourceView(int i, ID3D11ShaderResourceView* srv, G
 	{
 		m_state.ps_sr_views[i] = srv;
 		m_state.ps_sr_texture[i] = (GSTexture11*)sr;
-		srv ? m_state.ps_sr_bitfield |= 1u << i : m_state.ps_sr_bitfield &= ~(1u << i);
 	}
 }
 
@@ -1305,7 +1257,6 @@ static void preprocessSel(GSDevice11::PSSelector& sel)
 {
 	ASSERT(sel.date      == 0); // In-shader destination alpha not supported and shouldn't be sent
 	ASSERT(sel.write_rg  == 0); // Not supported, shouldn't be sent
-	ASSERT(sel.tex_is_fb == 0); // Not supported, shouldn't be sent
 }
 
 void GSDevice11::RenderHW(GSHWDrawConfig& config)
@@ -1364,13 +1315,23 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	PSSetShaderResources(config.tex, config.pal);
 
-	if (config.require_one_barrier) // Used as "bind rt" flag when texture barrier is unsupported
+	GSTexture* rt_copy = nullptr;
+	if (config.require_one_barrier || (config.tex && config.tex == config.rt)) // Used as "bind rt" flag when texture barrier is unsupported
 	{
 		// Bind the RT.This way special effect can use it.
 		// Do not always bind the rt when it's not needed,
 		// only bind it when effects use it such as fbmask emulation currently
 		// because we copy the frame buffer and it is quite slow.
-		PSSetShaderResource(2, config.rt);
+		CloneTexture(config.rt, &rt_copy, config.drawarea);
+		if (rt_copy)
+			PSSetShaderResource(config.require_one_barrier ? 2 : 0, rt_copy);
+	}
+	else if (config.tex && config.tex == config.ds)
+	{
+		// mainly for ico (depth buffer used as texture)
+		CloneTexture(config.ds, &rt_copy, config.drawarea);
+		if (rt_copy)
+			PSSetShaderResource(0, rt_copy);
 	}
 
 	SetupOM(config.depth, convertSel(config.colormask, config.blend), config.blend.factor);
@@ -1400,6 +1361,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	}
 
 	EndScene();
+
+	if (rt_copy)
+		Recycle(rt_copy);
 
 	if (hdr_rt)
 	{
