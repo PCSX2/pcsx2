@@ -111,6 +111,9 @@ private:
 	// Increment this constant whenever shaders change, to invalidate user's shader cache.
 	static constexpr u32 SHADER_VERSION = 1;
 
+	static constexpr u32 MAX_TEXTURES = 3;
+	static constexpr u32 MAX_SAMPLERS = 2;
+
 	float m_hack_topleft_offset;
 	int m_d3d_texsize;
 
@@ -141,11 +144,10 @@ private:
 		ID3D11Buffer* vs_cb;
 		ID3D11GeometryShader* gs;
 		ID3D11Buffer* gs_cb;
-		std::array<ID3D11ShaderResourceView*, 16> ps_sr_views;
-		std::array<GSTexture11*, 16> ps_sr_texture;
+		std::array<ID3D11ShaderResourceView*, MAX_TEXTURES> ps_sr_views;
 		ID3D11PixelShader* ps;
 		ID3D11Buffer* ps_cb;
-		ID3D11SamplerState* ps_ss[3];
+		std::array<ID3D11SamplerState*, MAX_SAMPLERS> ps_ss;
 		GSVector2i viewport;
 		GSVector4i scissor;
 		ID3D11DepthStencilState* dss;
@@ -276,7 +278,6 @@ public:
 
 	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
 	void PSSetShaderResource(int i, GSTexture* sr);
-	void PSSetShaderResourceView(int i, ID3D11ShaderResourceView* srv, GSTexture* sr);
 	void PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb);
 	void PSUpdateShaderState();
 	void PSSetSamplerState(ID3D11SamplerState* ss0, ID3D11SamplerState* ss1);

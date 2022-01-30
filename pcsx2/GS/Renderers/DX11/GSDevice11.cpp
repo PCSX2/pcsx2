@@ -1074,41 +1074,18 @@ void GSDevice11::PSSetShaderResources(GSTexture* sr0, GSTexture* sr1)
 {
 	PSSetShaderResource(0, sr0);
 	PSSetShaderResource(1, sr1);
-
-	for (size_t i = 2; i < m_state.ps_sr_views.size(); i++)
-	{
-		PSSetShaderResource(i, nullptr);
-	}
+	PSSetShaderResource(2, nullptr);
 }
 
 void GSDevice11::PSSetShaderResource(int i, GSTexture* sr)
 {
-	ID3D11ShaderResourceView* srv = nullptr;
-
-	if (sr)
-		srv = *(GSTexture11*)sr;
-
-	PSSetShaderResourceView(i, srv, sr);
-}
-
-void GSDevice11::PSSetShaderResourceView(int i, ID3D11ShaderResourceView* srv, GSTexture* sr)
-{
-	ASSERT(i < (int)m_state.ps_sr_views.size());
-
-	if (m_state.ps_sr_views[i] != srv)
-	{
-		m_state.ps_sr_views[i] = srv;
-		m_state.ps_sr_texture[i] = (GSTexture11*)sr;
-	}
+	m_state.ps_sr_views[i] = sr ? static_cast<ID3D11ShaderResourceView*>(*static_cast<GSTexture11*>(sr)) : nullptr;
 }
 
 void GSDevice11::PSSetSamplerState(ID3D11SamplerState* ss0, ID3D11SamplerState* ss1)
 {
-	if (m_state.ps_ss[0] != ss0 || m_state.ps_ss[1] != ss1)
-	{
-		m_state.ps_ss[0] = ss0;
-		m_state.ps_ss[1] = ss1;
-	}
+	m_state.ps_ss[0] = ss0;
+	m_state.ps_ss[1] = ss1;
 }
 
 void GSDevice11::PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb)
@@ -1131,7 +1108,7 @@ void GSDevice11::PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb)
 void GSDevice11::PSUpdateShaderState()
 {
 	m_ctx->PSSetShaderResources(0, m_state.ps_sr_views.size(), m_state.ps_sr_views.data());
-	m_ctx->PSSetSamplers(0, std::size(m_state.ps_ss), m_state.ps_ss);
+	m_ctx->PSSetSamplers(0, m_state.ps_ss.size(), m_state.ps_ss.data());
 }
 
 void GSDevice11::OMSetDepthStencilState(ID3D11DepthStencilState* dss, u8 sref)
