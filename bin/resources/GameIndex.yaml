@@ -35212,6 +35212,8 @@ SLUS-20508:
   name: "Indiana Jones and the Emperor's Tomb"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes texture flicker.
 SLUS-20509:
   name: "Soccer Slam - Sega Sports"
   region: "NTSC-U"
