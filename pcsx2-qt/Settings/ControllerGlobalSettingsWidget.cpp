@@ -54,6 +54,7 @@ void ControllerGlobalSettingsWidget::removeDeviceFromList(const QString& identif
 			continue;
 
 		delete m_ui.deviceList->takeItem(i);
+		break;
 	}
 }
 
