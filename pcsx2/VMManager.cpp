@@ -784,13 +784,16 @@ bool VMManager::DoLoadState(const char* filename)
 {
 	try
 	{
+		Host::OnSaveStateLoading(filename);
 		SaveState_UnzipFromDisk(wxString::FromUTF8(filename));
 		UpdateRunningGame(false);
+		Host::OnSaveStateLoaded(filename, true);
 		return true;
 	}
 	catch (Exception::BaseException& e)
 	{
 		Host::ReportErrorAsync("Failed to load save state", static_cast<const char*>(e.UserMsg().c_str()));
+		Host::OnSaveStateLoaded(filename, false);
 		return false;
 	}
 }
@@ -803,6 +806,7 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message)
 		SaveState_DownloadState(elist.get());
 		SaveState_ZipToDisk(elist.release(), SaveState_SaveScreenshot(), wxString::FromUTF8(filename), slot_for_message);
 		Host::InvalidateSaveStateCache();
+		Host::OnSaveStateSaved(filename);
 		return true;
 	}
 	catch (Exception::BaseException& e)

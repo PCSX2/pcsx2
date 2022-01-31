@@ -42,6 +42,7 @@
 #include "EmuThread.h"
 #include "MainWindow.h"
 #include "QtHost.h"
+#include "QtUtils.h"
 
 EmuThread* g_emu_thread = nullptr;
 WindowInfo g_gs_window_info;
@@ -706,6 +707,21 @@ void Host::OnGameChanged(const std::string& disc_path, const std::string& game_s
 {
 	emit g_emu_thread->onGameChanged(QString::fromStdString(disc_path), QString::fromStdString(game_serial),
 		QString::fromStdString(game_name), game_crc);
+}
+
+void Host::OnSaveStateLoading(const std::string_view& filename)
+{
+	emit g_emu_thread->onSaveStateLoading(QtUtils::StringViewToQString(filename));
+}
+
+void Host::OnSaveStateLoaded(const std::string_view& filename, bool was_successful)
+{
+	emit g_emu_thread->onSaveStateLoaded(QtUtils::StringViewToQString(filename), was_successful);
+}
+
+void Host::OnSaveStateSaved(const std::string_view& filename)
+{
+	emit g_emu_thread->onSaveStateSaved(QtUtils::StringViewToQString(filename));
 }
 
 void Host::PumpMessagesOnCPUThread()

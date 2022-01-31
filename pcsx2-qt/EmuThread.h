@@ -80,16 +80,39 @@ Q_SIGNALS:
 	DisplayWidget* onUpdateDisplayRequested(bool fullscreen, bool render_to_main);
 	void onResizeDisplayRequested(qint32 width, qint32 height);
 	void onDestroyDisplayRequested();
+
+	/// Called when the VM is starting initialization, but has not been completed yet.
 	void onVMStarting();
+
+	/// Called when the VM is created.
 	void onVMStarted();
+
+	/// Called when the VM is paused.
 	void onVMPaused();
+
+	/// Called when the VM is resumed after being paused.
 	void onVMResumed();
+
+	/// Called when the VM is shut down or destroyed.
 	void onVMStopped();
+
+	/// Provided by the host; called when the running executable changes.
 	void onGameChanged(const QString& path, const QString& serial, const QString& name, quint32 crc);
+
 	void onInputDevicesEnumerated(const QList<QPair<QString, QString>>& devices);
 	void onInputDeviceConnected(const QString& identifier, const QString& device_name);
 	void onInputDeviceDisconnected(const QString& identifier);
 	void onVibrationMotorsEnumerated(const QList<InputBindingKey>& motors);
+
+	/// Called when a save state is loading, before the file is processed.
+	void onSaveStateLoading(const QString& path);
+
+	/// Called after a save state is successfully loaded. If the save state was invalid, was_successful will be false.
+	void onSaveStateLoaded(const QString& path, bool was_successful);
+
+	/// Called when a save state is being created/saved. The compression/write to disk is asynchronous, so this callback
+	/// just signifies that the save has started, not necessarily completed.
+	void onSaveStateSaved(const QString& path);
 
 protected:
 	void run();

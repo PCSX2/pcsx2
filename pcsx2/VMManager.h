@@ -173,6 +173,16 @@ namespace Host
 	/// Called when the VM is resumed after being paused.
 	void OnVMResumed();
 
+	/// Called when a save state is loading, before the file is processed.
+	void OnSaveStateLoading(const std::string_view& filename);
+
+	/// Called after a save state is successfully loaded. If the save state was invalid, was_successful will be false.
+	void OnSaveStateLoaded(const std::string_view& filename, bool was_successful);
+
+	/// Called when a save state is being created/saved. The compression/write to disk is asynchronous, so this callback
+	/// just signifies that the save has started, not necessarily completed.
+	void OnSaveStateSaved(const std::string_view& filename);
+
 	/// Provided by the host; called when the running executable changes.
 	void OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name, u32 game_crc);
 
