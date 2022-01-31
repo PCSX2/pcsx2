@@ -105,12 +105,8 @@ void SDLInputSource::LoadSettings(SettingsInterface& si)
 
 void SDLInputSource::SetHints()
 {
-#if SDL_VERSION_ATLEAST(2, 0, 9)
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
-#endif
-#if SDL_VERSION_ATLEAST(2, 0, 16)
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
-#endif
 }
 
 bool SDLInputSource::InitializeSubsystem()
@@ -340,12 +336,8 @@ bool SDLInputSource::OpenGameController(int index)
 		return false;
 	}
 
-	int joystick_id = SDL_JoystickInstanceID(joystick);
-#if SDL_VERSION_ATLEAST(2, 0, 9)
-	int player_id = SDL_GameControllerGetPlayerIndex(gcontroller);
-#else
-	int player_id = -1;
-#endif
+	const int joystick_id = SDL_JoystickInstanceID(joystick);
+	const int player_id = SDL_GameControllerGetPlayerIndex(gcontroller);
 	if (player_id < 0 || GetControllerDataForPlayerId(player_id) != m_controllers.end())
 	{
 		const int free_player_id = GetFreePlayerId();
@@ -364,12 +356,7 @@ bool SDLInputSource::OpenGameController(int index)
 	cd.haptic_left_right_effect = -1;
 	cd.game_controller = gcontroller;
 
-#if SDL_VERSION_ATLEAST(2, 0, 9)
 	cd.use_game_controller_rumble = (SDL_GameControllerRumble(gcontroller, 0, 0, 0) == 0);
-#else
-	cd.use_game_controller_rumble = false;
-#endif
-
 	if (cd.use_game_controller_rumble)
 	{
 		Console.WriteLn(
@@ -529,13 +516,11 @@ void SDLInputSource::SendRumbleUpdate(ControllerData* cd)
 	// we'll update before this duration is elapsed
 	static constexpr u32 DURATION = 65535; // SDL_MAX_RUMBLE_DURATION_MS
 
-#if SDL_VERSION_ATLEAST(2, 0, 9)
 	if (cd->use_game_controller_rumble)
 	{
 		SDL_GameControllerRumble(cd->game_controller, cd->rumble_intensity[0], cd->rumble_intensity[1], DURATION);
 		return;
 	}
-#endif
 
 	if (cd->haptic_left_right_effect >= 0)
 	{
