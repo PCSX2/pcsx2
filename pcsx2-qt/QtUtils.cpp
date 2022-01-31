@@ -690,6 +690,11 @@ namespace QtUtils
 		return OpenURL(parent, QUrl(url));
 	}
 
+	QString StringViewToQString(const std::string_view& str)
+	{
+		return str.empty() ? QString() : QString::fromUtf8(str.data(), str.size());
+	}
+
 	wxString QStringToWxString(const QString& str)
 	{
 		return wxString(str.toStdWString());
