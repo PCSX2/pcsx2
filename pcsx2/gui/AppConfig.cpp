@@ -952,7 +952,7 @@ bool AppConfig::isOkGetPresetTextAndColor(int n, wxString& label, wxColor& c)
 {
 	const wxString presetNamesAndColors[][2] =
 		{
-			{_t("Safest (No hacks)"), L"Blue"},
+			{_t("Testing only "), L"Blue"},
 			{_t("Safe (Default)"), L"Dark Green"},
 			{_t("Balanced"), L"Forest Green"}
 		} ;

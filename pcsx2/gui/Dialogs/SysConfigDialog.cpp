@@ -108,7 +108,7 @@ void Dialogs::SysConfigDialog::AddPresetsControl()
 		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL /*| wxSL_AUTOTICKS | wxSL_LABELS */);
 	m_slider_presets->SetMinSize(wxSize(100,25));
 
-	const wchar_t* presetTooltip = pxEt(L"Presets apply some speed hacks that may boost speed on underpowered systems, or speed up games that have unusual performance requirements. Uncheck this box to apply settings manually.\n\n1) Safest - No speed hacks. Most reliable, but possibly slow setting.\n2) Safe - Default. A few speed hacks known to provide boosts, with minimal to no side effects.\n3) Balanced - May help quad core CPUs.");
+	const wchar_t* presetTooltip = pxEt(L"Presets apply some speed hacks that may boost speed on underpowered systems, or speed up games that have unusual performance requirements. Uncheck this box to apply settings manually.\n\n1)Testing Only. Only to be used if requested, slower and generally less compatible.\n2) Safe - Default. A few speed hacks known to provide boosts, with minimal to no side effects.\n3) Balanced - May help quad core CPUs.");
 
 	m_slider_presets->SetToolTip(
 		presetTooltip
