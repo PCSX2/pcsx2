@@ -19,6 +19,7 @@
 #include <QtCore/QString>
 #include <functional>
 #include <initializer_list>
+#include <string_view>
 #include <optional>
 
 Q_DECLARE_METATYPE(std::optional<bool>);
@@ -78,6 +79,9 @@ namespace QtUtils
 
 	/// Opens a URL string with the default handler.
 	void OpenURL(QWidget* parent, const QString& url);
+
+	/// Converts a std::string_view to a QString safely.
+	QString StringViewToQString(const std::string_view& str);
 
 	// TODO: Get rid of wx interoperability later on.
 	wxString QStringToWxString(const QString& str);
