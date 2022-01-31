@@ -763,7 +763,9 @@ SCAJ-20151:
   region: "NTSC-Unk"
 SCAJ-20152:
   name: "Urban Reign"
-  region: "NTSC-Unk"
+  region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
 SCAJ-20153:
   name: "Code Age Commanders"
   region: "NTSC-J"
@@ -3012,6 +3014,8 @@ SCES-53688:
   name: "Urban Reign"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
 SCES-53795:
   name: "SingStar '80s"
   region: "PAL-Unk"
@@ -31328,6 +31332,8 @@ SLPS-25556:
 SLPS-25557:
   name: "Urban Reign"
   region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
 SLPS-25558:
   name: "NeoGeo Battle Coliseum"
   region: "NTSC-J"
@@ -38045,6 +38051,8 @@ SLUS-21209:
   name: "Urban Reign"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
 SLUS-21212:
   name: "Spartan - Total Warrior"
   region: "NTSC-U"
