@@ -337,7 +337,7 @@ bool SDLInputSource::OpenGameController(int index)
 	}
 
 	const int joystick_id = SDL_JoystickInstanceID(joystick);
-	const int player_id = SDL_GameControllerGetPlayerIndex(gcontroller);
+	int player_id = SDL_GameControllerGetPlayerIndex(gcontroller);
 	if (player_id < 0 || GetControllerDataForPlayerId(player_id) != m_controllers.end())
 	{
 		const int free_player_id = GetFreePlayerId();
