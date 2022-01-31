@@ -1412,15 +1412,33 @@ void GSRendererHW::Draw()
 		GSVector4i unscaled_size = GSVector4i(GSVector4(m_src->m_texture->GetSize()) / GSVector4(m_src->m_texture->GetScale()));
 		if (m_context->CLAMP.WMS == CLAMP_REPEAT && (tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_U) && unscaled_size.x != tw)
 		{
-			m_context->CLAMP.WMS = CLAMP_REGION_REPEAT;
-			m_context->CLAMP.MINU = (1 << m_context->TEX0.TW) - 1;
-			m_context->CLAMP.MAXU = 0;
+			// Our shader-emulated region repeat doesn't upscale :(
+			// Try to avoid it if possible
+			// TODO: Upscale-supporting shader-emulated region repeat
+			if (unscaled_size.x < tw && m_vt.m_min.t.x > -(tw - unscaled_size.x) && m_vt.m_max.t.x < tw)
+			{
+				// Game only extends into data we don't have (but doesn't wrap around back onto good data), clamp seems like the most reasonable solution
+				m_context->CLAMP.WMS = CLAMP_CLAMP;
+			}
+			else
+			{
+				m_context->CLAMP.WMS = CLAMP_REGION_REPEAT;
+				m_context->CLAMP.MINU = (1 << m_context->TEX0.TW) - 1;
+				m_context->CLAMP.MAXU = 0;
+			}
 		}
 		if (m_context->CLAMP.WMT == CLAMP_REPEAT && (tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_V) && unscaled_size.y != th)
 		{
-			m_context->CLAMP.WMT = CLAMP_REGION_REPEAT;
-			m_context->CLAMP.MINV = (1 << m_context->TEX0.TH) - 1;
-			m_context->CLAMP.MAXV = 0;
+			if (unscaled_size.y < th && m_vt.m_min.t.y > -(th - unscaled_size.y) && m_vt.m_max.t.y < th)
+			{
+				m_context->CLAMP.WMT = CLAMP_CLAMP;
+			}
+			else
+			{
+				m_context->CLAMP.WMT = CLAMP_REGION_REPEAT;
+				m_context->CLAMP.MINV = (1 << m_context->TEX0.TH) - 1;
+				m_context->CLAMP.MAXV = 0;
+			}
 		}
 
 		// Round 2
