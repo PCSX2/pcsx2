@@ -2,19 +2,19 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="UserMacros">
     <BinaryOutputDir>$(SolutionDir)bin\</BinaryOutputDir>
-    <QTDIRDefault Condition="'$(Platform)'=='x64'">$(SolutionDir)3rdparty\qt\6.2.2\msvc2019_64\</QTDIRDefault>
-    <QTDIRDefault Condition="'$(Platform)'=='ARM64'">$(SolutionDir)3rdparty\qt\6.2.2\msvc2019_arm64\</QTDIRDefault>
-    <QTDIR Condition="Exists('$(QTDIRDefault)') And ('$(QTDIR)'=='' Or !Exists('$(QTDIR)'))">$(QTDIRDefault)</QTDIR>
-    <QTDIR Condition="Exists('$(QTDIR)') And !HasTrailingSlash('$(QTDIR)')">$(QTDIR)\</QTDIR>
-    <QTDIRHost>$(SolutionDir)3rdparty\qt\6.2.2\msvc2019_64\</QTDIRHost>
+    <PCSX2QTDIRDefault Condition="'$(Platform)'=='x64'">$(SolutionDir)3rdparty\qt\6.2.2\msvc2019_64\</PCSX2QTDIRDefault>
+    <PCSX2QTDIRDefault Condition="'$(Platform)'=='ARM64'">$(SolutionDir)3rdparty\qt\6.2.2\msvc2019_arm64\</PCSX2QTDIRDefault>
+    <PCSX2QTDIR Condition="Exists('$(PCSX2QTDIRDefault)') And ('$(PCSX2QTDIR)'=='' Or !Exists('$(PCSX2QTDIR)'))">$(PCSX2QTDIRDefault)</PCSX2QTDIR>
+    <PCSX2QTDIR Condition="Exists('$(PCSX2QTDIR)') And !HasTrailingSlash('$(PCSX2QTDIR)')">$(PCSX2QTDIR)\</PCSX2QTDIR>
+    <PCSX2QTDIRHost>$(SolutionDir)3rdparty\qt\6.2.2\msvc2019_64\</PCSX2QTDIRHost>
     <QtDirValid>false</QtDirValid>
-    <QtDirValid Condition="Exists('$(QTDIR)')">true</QtDirValid>
-    <QtIncludeDir>$(QTDIR)include\</QtIncludeDir>
-    <QtLibDir>$(QTDIR)lib\</QtLibDir>
-    <QtBinDir>$(QTDIR)bin\</QtBinDir>
-    <QtHostBinDir>$(QTDIRHost)bin\</QtHostBinDir>
-    <QtPluginsDir>$(QTDIR)plugins\</QtPluginsDir>
-    <QtTranslationsDir>$(QTDIR)translations\</QtTranslationsDir>
+    <QtDirValid Condition="Exists('$(PCSX2QTDIR)')">true</QtDirValid>
+    <QtIncludeDir>$(PCSX2QTDIR)include\</QtIncludeDir>
+    <QtLibDir>$(PCSX2QTDIR)lib\</QtLibDir>
+    <QtBinDir>$(PCSX2QTDIR)bin\</QtBinDir>
+    <QtHostBinDir>$(PCSX2QTDIRHost)bin\</QtHostBinDir>
+    <QtPluginsDir>$(PCSX2QTDIR)plugins\</QtPluginsDir>
+    <QtTranslationsDir>$(PCSX2QTDIR)translations\</QtTranslationsDir>
     <QtToolOutDir>$(IntDir)</QtToolOutDir>
     <QtMocOutPrefix>$(QtToolOutDir)moc_</QtMocOutPrefix>
     <QtTsOutDir>$(BinaryOutputDir)translations\</QtTsOutDir>
@@ -45,7 +45,7 @@
     Condition="'@(QtResource)'!=''"
     Outputs="@(ResFiles->'$(QtToolOutDir)qrc_%(Filename).cpp')">
     <Message Text="rcc %(ResFiles.Filename)" Importance="High" />
-    <Error Condition="!$(QtDirValid)" Text="QTDIR not valid (download/extract the zip)" />
+    <Error Condition="!$(QtDirValid)" Text="Qt directory non-existent (download/extract the zip)" />
     <MakeDir Directories="$(QtToolOutDir)" />
     <Exec Command="&quot;$(QtHostBinDir)rcc.exe&quot; &quot;%(ResFiles.FullPath)&quot; -o &quot;$(QtToolOutDir)qrc_%(ResFiles.Filename).cpp&quot;" />
   </Target>
@@ -64,7 +64,7 @@
     Condition="'@(QtUi)'!=''"
     Outputs="@(UiFiles->'$(QtToolOutDir)ui_%(Filename).h')">
     <Message Text="uic %(UiFiles.Filename)" Importance="High" />
-    <Error Condition="!$(QtDirValid)" Text="QTDIR not valid (download/extract the zip)" />
+    <Error Condition="!$(QtDirValid)" Text="Qt directory non-existent (download/extract the zip)" />
     <MakeDir Directories="$(QtToolOutDir)" />
     <Exec Command="&quot;$(QtHostBinDir)uic.exe&quot; &quot;%(UiFiles.FullPath)&quot; -o &quot;$(QtToolOutDir)ui_%(UiFiles.Filename).h&quot;" />
   </Target>
@@ -86,7 +86,7 @@
     Inputs="%(QtMoc.Identity);%(QtMoc.AdditionalDependencies);$(MSBuildProjectFile)"
     Outputs="$(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp">
     <Message Text="moc %(QtMoc.Filename) $(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp" Importance="High" />
-    <Error Condition="!$(QtDirValid)" Text="QTDIR not set or non-existent (pull the submodule?)" />
+    <Error Condition="!$(QtDirValid)" Text="Qt directory non-existent (download/extract the zip)" />
     <MakeDir Directories="$(QtToolOutDir)" />
     <Exec Command="&quot;$(QtHostBinDir)moc.exe&quot; &quot;%(QtMoc.FullPath)&quot; -b &quot;PrecompiledHeader.h&quot; -o &quot;$(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp&quot; -f%(QtMoc.Filename)%(QtMoc.Extension) $(MocDefines) $(MocIncludes)" />
   </Target>
@@ -184,7 +184,7 @@
     Condition="'@(QtTs)'!=''"
     Outputs="@(TsFiles->'$(QtTsOutDir)%(Filename).qm')">
     <Message Text="lrelease %(TsFiles.Filename)" Importance="High" />
-    <Error Condition="!$(QtDirValid)" Text="QTDIR not valid (download/extract the zip)" />
+    <Error Condition="!$(QtDirValid)" Text="Qt directory non-existent (download/extract the zip)" />
     <MakeDir Directories="$(QtTsOutDir)" />
     <Exec Command="&quot;$(QtHostBinDir)lrelease.exe&quot; &quot;%(TsFiles.FullPath)&quot; -qm &quot;$(QtTsOutDir)%(TsFiles.Filename).qm&quot;" />
   </Target>
