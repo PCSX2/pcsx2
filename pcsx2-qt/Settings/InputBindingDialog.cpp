@@ -193,11 +193,13 @@ void InputBindingDialog::saveListToSettings()
 
 void InputBindingDialog::inputManagerHookCallback(InputBindingKey key, float value)
 {
+	const float abs_value = std::abs(value);
+
 	for (InputBindingKey other_key : m_new_bindings)
 	{
 		if (other_key.MaskDirection() == key.MaskDirection())
 		{
-			if (value < 0.25f)
+			if (abs_value < 0.5f)
 			{
 				// if this key is in our new binding list, it's a "release", and we're done
 				addNewBinding();
@@ -211,8 +213,12 @@ void InputBindingDialog::inputManagerHookCallback(InputBindingKey key, float val
 	}
 
 	// new binding, add it to the list, but wait for a decent distance first, and then wait for release
-	if (value >= 0.25f)
+	if (abs_value >= 0.5f)
+	{
+		InputBindingKey key_to_add = key;
+		key_to_add.negative = (value < 0.0f);
 		m_new_bindings.push_back(key);
+	}
 }
 
 void InputBindingDialog::hookInputManager()
