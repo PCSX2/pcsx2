@@ -45,13 +45,14 @@
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\cubeb\cubeb\include;$(SolutionDir)3rdparty\cubeb\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\imgui\imgui;$(SolutionDir)3rdparty\imgui\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\simpleini\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\sdl2\include;$(SolutionDir)3rdparty\sdl2\SDL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
       <AdditionalOptions>/Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;LZMA_API_STATIC;BUILD_DX=1;ENABLE_VULKAN;SPU2X_CUBEB;PCSX2_CORE;DISABLE_RECORDING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;LZMA_API_STATIC;BUILD_DX=1;ENABLE_VULKAN;SPU2X_CUBEB;SDL_BUILD;PCSX2_CORE;DISABLE_RECORDING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Debug))">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Devel))">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Release))">NDEBUG;_SECURE_SCL_=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -180,20 +181,7 @@
     <ClCompile Include="Frontend\InputSource.cpp" />
     <ClCompile Include="Frontend\LayeredSettingsInterface.cpp" />
     <ClCompile Include="Frontend\OpenGLHostDisplay.cpp" />
-    <ClCompile Include="Frontend\SDLInputSource.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug AVX2|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel AVX2|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release AVX2|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug AVX2|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel AVX2|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release AVX2|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="Frontend\SDLInputSource.cpp" />
     <ClCompile Include="Frontend\VulkanHostDisplay.cpp" />
     <ClCompile Include="Frontend\XInputSource.cpp" />
     <ClCompile Include="GameDatabase.cpp" />
@@ -493,20 +481,7 @@
     <ClInclude Include="Frontend\InputSource.h" />
     <ClInclude Include="Frontend\LayeredSettingsInterface.h" />
     <ClInclude Include="Frontend\OpenGLHostDisplay.h" />
-    <ClInclude Include="Frontend\SDLInputSource.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug AVX2|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel AVX2|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release AVX2|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug AVX2|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel AVX2|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release AVX2|x64'">true</ExcludedFromBuild>
-    </ClInclude>
+    <ClInclude Include="Frontend\SDLInputSource.h" />
     <ClInclude Include="Frontend\VulkanHostDisplay.h" />
     <ClInclude Include="Frontend\XInputSource.h" />
     <ClInclude Include="GameDatabase.h" />
@@ -787,6 +762,9 @@
     </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\imgui\imgui.vcxproj">
       <Project>{88fb34ec-845e-4f21-a552-f1573b9ed167}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\sdl2\SDL.vcxproj">
+      <Project>{812b4434-fd6b-4cb2-8865-5fd8eb34b046}</Project>
     </ProjectReference>
     <ProjectReference Include="..\common\common.vcxproj">
       <Project>{4639972e-424e-4e13-8b07-ca403c481346}</Project>
