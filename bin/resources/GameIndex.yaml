@@ -6174,6 +6174,8 @@ SCUS-97367:
   name: "Neopets - The Darkest Faerie"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 1 # Fixes player freezes.
 SCUS-97368:
   name: "SOCOM II - U.S. Navy SEALs [Regular Demo]"
   region: "NTSC-U"
