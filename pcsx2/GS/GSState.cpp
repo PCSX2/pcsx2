@@ -2664,6 +2664,15 @@ __forceinline void GSState::VertexKick(u32 skip)
 /// Also calculates the real min and max values seen after applying the region repeat to all values in min...max
 static bool UsesRegionRepeat(int fix, int msk, int min, int max, int* min_out, int* max_out)
 {
+	if ((min < 0) != (max < 0))
+	{
+		// Algorithm doesn't work properly if bits overflow when incrementing (happens on the -1 → 0 crossing)
+		// Conveniently, crossing zero guarantees you use the full range
+		*min_out = fix;
+		*max_out = (fix | msk) + 1;
+		return true;
+	}
+
 	const int cleared_bits = ~msk & ~fix; // Bits that are always cleared by applying msk and fix
 	const int set_bits = fix; // Bits that are always set by applying msk and fix
 	unsigned long msb;
