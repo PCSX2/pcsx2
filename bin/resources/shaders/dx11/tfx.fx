@@ -769,17 +769,16 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 
 			Color.rgb = (float3)255.0f;
 		}
-		else if (PS_CLR_HW == 2 || PS_CLR_HW == 3)
+		else if (PS_CLR_HW == 2)
 		{
-			// PS_CLR_HW 2 Af, PS_CLR_HW 3 As
 			// Cd*As or Cd*F
 
-			float Alpha = PS_CLR_HW == 2 ? Af : As;
+			float Alpha = PS_BLEND_C == 2 ? Af : As;
 
 			Color.rgb = max((float3)0.0f, (Alpha - (float3)1.0f));
 			Color.rgb *= (float3)255.0f;
 		}
-		else if (PS_CLR_HW == 4)
+		else if (PS_CLR_HW == 3)
 		{
 			// Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
 			// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value
