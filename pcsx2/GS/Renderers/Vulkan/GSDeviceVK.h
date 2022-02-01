@@ -231,6 +231,7 @@ public:
 	bool ReadbackTexture(GSTexture* src, const GSVector4i& rect, u32 level, GSTexture::GSMap* dst);
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r) override;
+	void DoCopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, const GSVector4i& dst_rc);
 
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 		ShaderConvert shader = ShaderConvert::COPY, bool linear = true) override;

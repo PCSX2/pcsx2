@@ -444,12 +444,17 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
 		return;
 	}
 
+	const GSVector4i dst_rc(r - r.xyxy());
+	DoCopyRect(sTex, dTex, r, dst_rc);
+}
+
+void GSDeviceVK::DoCopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, const GSVector4i& dst_rc)
+{
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 	GSTextureVK* const sTexVK = static_cast<GSTextureVK*>(sTex);
 	GSTextureVK* const dTexVK = static_cast<GSTextureVK*>(dTex);
 	const GSVector4i dtex_rc(0, 0, dTexVK->GetWidth(), dTexVK->GetHeight());
-	const GSVector4i dst_rc(r - r.xyxy());
 
 	if (sTexVK->GetState() == GSTexture::State::Cleared)
 	{
@@ -499,7 +504,7 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
 	// *now* we can do a normal image copy.
 	const VkImageAspectFlags src_aspect = (sTexVK->IsDepthStencil()) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 	const VkImageAspectFlags dst_aspect = (dTexVK->IsDepthStencil()) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-	const VkImageCopy ic = {{src_aspect, 0u, 0u, 1u}, {r.left, r.top, 0u}, {dst_aspect, 0u, 0u, 1u}, {0u, 0u, 0u},
+	const VkImageCopy ic = {{src_aspect, 0u, 0u, 1u}, {r.left, r.top, 0u}, {dst_aspect, 0u, 0u, 1u}, {dst_rc.left, dst_rc.top, 0u},
 		{static_cast<u32>(r.width()), static_cast<u32>(r.height()), 1u}};
 
 	EndRenderPass();
@@ -2708,6 +2713,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	GSTextureVK* draw_rt = static_cast<GSTextureVK*>(config.rt);
 	GSTextureVK* draw_ds = static_cast<GSTextureVK*>(config.ds);
 	GSTextureVK* hdr_rt = nullptr;
+	GSTextureVK* copy_ds = nullptr;
 
 	// Switch to hdr target for colclip rendering
 	if (pipe.ps.hdr)
@@ -2736,6 +2742,23 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		}
 
 		draw_rt = hdr_rt;
+	}
+
+	if (config.tex && config.tex == config.ds)
+	{
+		// requires a copy of the depth buffer. this is mainly for ico.
+		copy_ds = static_cast<GSTextureVK*>(CreateDepthStencil(rtsize.x, rtsize.y, GSTexture::Format::DepthStencil, false));
+		if (copy_ds)
+		{
+			EndRenderPass();
+
+			GL_PUSH("Copy depth to temp texture for shuffle {%d,%d %dx%d}",
+				config.drawarea.left, config.drawarea.top,
+				config.drawarea.width(), config.drawarea.height());
+
+			DoCopyRect(config.ds, copy_ds, config.drawarea, config.drawarea);
+			PSSetShaderResource(0, copy_ds, true);
+		}
 	}
 
 	const bool render_area_okay =
@@ -2819,6 +2842,9 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		if (BindDrawPipeline(pipe))
 			SendHWDraw(config, draw_rt);
 	}
+
+	if (copy_ds)
+		Recycle(copy_ds);
 
 	if (date_image)
 		Recycle(date_image);
