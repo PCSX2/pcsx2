@@ -2043,9 +2043,10 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config)
 			DrawIndexedPrimitive(p, config.indices_per_prim);
 		}
 	}
-	else if (config.require_one_barrier)
+	else if (config.require_one_barrier || (config.tex && config.tex == config.ds))
 	{
-		// One barrier needed
+		// The common renderer code doesn't put a barrier here because D3D/VK need to copy the DS, so we need to check it.
+		// One barrier needed for non-overlapping draw.
 		glTextureBarrier();
 		DrawIndexedPrimitive();
 	}
