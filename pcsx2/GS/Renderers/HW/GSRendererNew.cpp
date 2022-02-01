@@ -603,7 +603,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 		// Blend can be done on hw. As and F cases should be accurate.
 		// BLEND_C_CLR1 with Ad, BLEND_C_CLR4  Cs > 0.5f will require sw blend.
 		// BLEND_C_CLR1 with As/F, BLEND_C_CLR2_AF, BLEND_C_CLR3_AS can be done in hw.
-		const bool clr_blend = !!(blend_flag & (BLEND_C_CLR1 | BLEND_C_CLR2_AF | BLEND_C_CLR3_AS | BLEND_C_CLR4));
+		const bool clr_blend = !!(blend_flag & (BLEND_C_CLR1 | BLEND_C_CLR2_AF | BLEND_C_CLR2_AS | BLEND_C_CLR3));
 		// FBMASK already reads the fb so it is safe to enable sw blend when there is no overlap.
 		const bool fbmask_no_overlap = m_conf.require_one_barrier && (m_prim_overlap == PRIM_OVERLAP_NO);
 
@@ -793,18 +793,19 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 		{
 			m_conf.ps.clr_hw = 1;
 		}
-		else if (blend_flag & BLEND_C_CLR2_AF)
+		else if (blend_flag & (BLEND_C_CLR2_AF | BLEND_C_CLR2_AS))
 		{
-			m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(ALPHA.FIX) / 128.0f;
+			if (ALPHA.C == 2)
+			{
+				m_conf.ps.blend_c = 2;
+				m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(ALPHA.FIX) / 128.0f;
+			}
+
 			m_conf.ps.clr_hw = 2;
 		}
-		else if (blend_flag & BLEND_C_CLR3_AS)
+		else if (blend_flag & BLEND_C_CLR3)
 		{
 			m_conf.ps.clr_hw = 3;
-		}
-		else if (blend_flag & BLEND_C_CLR4)
-		{
-			m_conf.ps.clr_hw = 4;
 		}
 
 		if (m_conf.ps.dfmt == 1 && ALPHA.C == 1)
