@@ -479,17 +479,23 @@ void GSRendererNew::EmulateChannelShuffle(const GSTextureCache::Source* tex)
 	if (m_channel_shuffle)
 	{
 		m_conf.tex = tex->m_from_target;
-		if (m_conf.tex == m_conf.rt)
+		if (m_conf.tex)
 		{
-			// sample from fb instead
-			m_conf.tex = nullptr;
-			m_conf.ps.tex_is_fb = true;
-			m_conf.require_one_barrier = true;
-		}
-		else if (m_conf.tex == m_conf.ds)
-		{
-			// using the current depth buffer. make sure it's not bound (needed for not-GL).
-			m_conf.ds = nullptr;
+			if (m_conf.tex == m_conf.rt)
+			{
+				// sample from fb instead
+				m_conf.tex = nullptr;
+				m_conf.ps.tex_is_fb = true;
+				m_conf.require_one_barrier = true;
+			}
+			else if (m_conf.tex == m_conf.ds)
+			{
+				// if depth testing is disabled, we don't need to copy, and can just unbind the depth buffer
+				// no need for a barrier for GL either, since it's not bound to depth and texture concurrently
+				// otherwise, the backend should recognise the hazard, and copy the buffer (D3D/Vulkan).
+				if (m_conf.depth.ztst == ZTST_ALWAYS)
+					m_conf.ds = nullptr;
+			}
 		}
 
 		// Replace current draw with a fullscreen sprite
@@ -1165,6 +1171,9 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	ASSERT(g_gs_device != NULL);
 
+	// Z setup has to come before channel shuffle
+	EmulateZbuffer();
+
 	// HLE implementation of the channel selection effect
 	//
 	// Warning it must be done at the begining because it will change the
@@ -1314,11 +1323,6 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Stencil;
 
 	m_conf.datm = m_context->TEST.DATM;
-
-	// om
-
-	if (!m_channel_shuffle)
-		EmulateZbuffer(); // will update VS depth mask
 
 	// vs
 
