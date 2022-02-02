@@ -151,8 +151,7 @@ void* GSTextureVK::GetNativeHandle() const { return const_cast<Vulkan::Texture*>
 
 VkCommandBuffer GSTextureVK::GetCommandBufferForUpdate()
 {
-	const u32 frame = GSDeviceVK::GetInstance()->GetFrameNumber();
-	if (m_type != Type::Texture || frame == last_frame_used)
+	if (m_type != Type::Texture || m_use_fence_counter == g_vulkan_context->GetCurrentFenceCounter())
 	{
 		// Console.WriteLn("Texture update within frame, can't use do beforehand");
 		GSDeviceVK::GetInstance()->EndRenderPass();

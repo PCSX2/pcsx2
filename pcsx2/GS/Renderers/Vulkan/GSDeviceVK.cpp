@@ -509,8 +509,9 @@ void GSDeviceVK::DoCopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& 
 
 	EndRenderPass();
 
-	sTexVK->TransitionToLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 	dTexVK->TransitionToLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	sTexVK->TransitionToLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+	sTexVK->SetUsedThisCommandBuffer();
 
 	vkCmdCopyImage(g_vulkan_context->GetCurrentCommandBuffer(), sTexVK->GetImage(),
 		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dTexVK->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &ic);
@@ -797,10 +798,6 @@ void GSDeviceVK::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool 
 	GL_PUSH("DoInterlace %dx%d Shader:%d Linear:%d", size.x, size.y, shader, linear);
 
 	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-
-	const VkFramebuffer fb = static_cast<GSTextureVK*>(dTex)->GetFramebuffer(false);
-	if (fb == VK_NULL_HANDLE)
-		return;
 
 	const GSVector4i rc(0, 0, size.x, size.y);
 	EndRenderPass();
@@ -2099,7 +2096,7 @@ void GSDeviceVK::PSSetShaderResource(int i, GSTexture* sr, bool check_state)
 			vkTex->CommitClear();
 			vkTex->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
-		vkTex->last_frame_used = m_frame;
+		vkTex->SetUsedThisCommandBuffer();
 		view = vkTex->GetView();
 	}
 	else
@@ -2131,9 +2128,9 @@ void GSDeviceVK::SetUtilityTexture(GSTexture* tex, VkSampler sampler)
 	if (tex)
 	{
 		GSTextureVK* vkTex = static_cast<GSTextureVK*>(tex);
-		vkTex->last_frame_used = m_frame;
 		vkTex->CommitClear();
 		vkTex->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		vkTex->SetUsedThisCommandBuffer();
 		view = vkTex->GetView();
 	}
 	else
