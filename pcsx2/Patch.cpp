@@ -29,7 +29,7 @@
 #include <wx/txtstrm.h>
 #include <wx/zipstrm.h>
 #include <wx/wfstream.h>
-#include <PathDefs.h>
+#include "PathDefs.h"
 
 // This is a declaration for PatchMemory.cpp::_ApplyPatch where we're (patch.cpp)
 // the only consumer, so it's not made public via Patch.h
