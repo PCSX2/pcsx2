@@ -118,15 +118,6 @@ namespace Vulkan
 		}
 		__fi VkDeviceSize GetMaxImageDimension2D() const { return m_device_properties.limits.maxImageDimension2D; }
 
-		// Finds a memory type index for the specified memory properties and the bits returned by
-		// vkGetImageMemoryRequirements
-		bool GetMemoryType(u32 bits, VkMemoryPropertyFlags properties, u32* out_type_index);
-		u32 GetMemoryType(u32 bits, VkMemoryPropertyFlags properties);
-
-		// Finds a memory type for upload or readback buffers.
-		u32 GetUploadMemoryType(u32 bits, bool* is_coherent = nullptr);
-		u32 GetReadbackMemoryType(u32 bits, bool* is_coherent = nullptr, bool* is_cached = nullptr);
-
 		// Creates a simple render pass.
 		__ri VkRenderPass GetRenderPass(VkFormat color_format, VkFormat depth_format,
 			VkAttachmentLoadOp color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
