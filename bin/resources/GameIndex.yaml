@@ -19808,6 +19808,9 @@ SLPM-55110:
 SLPM-55114:
   name: "Mana Khemia 2: Ochita Gakuen to Renkinjutsushi Tachi"
   region: "NTSC-J"
+SLPM-55117:
+  name: "Beatmania IIDX 15 - DJ Troopers"
+  region: "NTSC-J"
 SLPM-55118:
   name: "Galaxy Angel II - Eigou Kaiki no Koku [Disc1of2]"
   region: "NTSC-J"
@@ -19878,6 +19881,12 @@ SLPM-55207:
   region: "NTSC-J"
 SLPM-55208:
   name: "Hakuouki - Zuisouroku"
+  region: "NTSC-J"
+SLPM-55221:
+  name: "Beatmania IIDX 16 - DJ Empress"
+  region: "NTSC-J"
+SLPM-55222:
+  name: "Beatmania IIDX 16 - DJ Empress Premium Best"
   region: "NTSC-J"
 SLPM-55226:
   name: "FIFA 10: World Class Soccer"
@@ -28213,6 +28222,9 @@ SLPM-66994:
     eeRoundMode: 0  # Fixes jump issue.
   gameFixes:
     - DMABusyHack
+SLPM-66995:
+  name: "Beatmania IIDX 14 - Gold"
+  region: "NTSC-J"
 SLPM-66996:
   name: "Shuumatsu Otome Gensou Alicematic Apocalypse [Limited Edition]"
   region: "NTSC-J"
