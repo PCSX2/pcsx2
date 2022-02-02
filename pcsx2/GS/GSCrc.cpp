@@ -33,6 +33,7 @@ const CRC::Game CRC::m_games[] =
 	{0xC8EE2562, PiaCarroteYoukosoGPGakuenPrincess, JP, PointListPalette},
 	{0x6CF94A43, KazokuKeikakuKokoroNoKizuna, JP, PointListPalette},
 	{0xEDAF602D, DuelSaviorDestiny, JP, PointListPalette},
+	{0xBB63D785, OneTwentyYenStories, JP, PointListPalette}, // no Haru: 120 Yen Stories
 	{0xA39517AB, FFX, EU, 0},
 	{0x78D83FD5, FFX, EU, 0}, // Demo
 	{0xA39517AE, FFX, FR, 0},

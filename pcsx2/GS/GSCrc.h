@@ -92,6 +92,7 @@ public:
 		NicktoonsUnite,
 		Okami,
 		Oneechanbara2Special,
+		OneTwentyYenStories,
 		Persona3,
 		PiaCarroteYoukosoGPGakuenPrincess,
 		ProjectSnowblind,
