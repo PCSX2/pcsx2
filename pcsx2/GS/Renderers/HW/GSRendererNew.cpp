@@ -565,6 +565,16 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	const bool alpha_c2_high_one = (ALPHA.C == 2 && ALPHA.FIX > 128u);
 	const bool alpha_c0_high_max_one = (ALPHA.C == 0 && GetAlphaMinMax().max > 128);
 
+	// Blend can be done on hw. As and F cases should be accurate.
+	// BLEND_C_CLR1 with Ad, BLEND_C_CLR3  Cs > 0.5f will require sw blend.
+	// BLEND_C_CLR1 with As/F, BLEND_C_CLR2_AF, BLEND_C_CLR2_AS can be done in hw.
+	const bool clr_blend = !!(blend_flag & (BLEND_C_CLR1 | BLEND_C_CLR2_AF | BLEND_C_CLR2_AS | BLEND_C_CLR3));
+	const bool clr_blend1_2 = (blend_flag & (BLEND_C_CLR1 | BLEND_C_CLR2_AF | BLEND_C_CLR2_AS))
+		&& (ALPHA.C != 1)                                                // Make sure it isn't an Ad case
+		&& (m_env.COLCLAMP.CLAMP)                                        // Let's add a colclamp check too, hw blend will clamp to 0-1.
+		&& !(m_conf.require_one_barrier || m_conf.require_full_barrier); // Also don't run if there are barriers present.
+	const bool clr_blend3 = !!(blend_flag & BLEND_C_CLR3);
+
 	// Warning no break on purpose
 	// Note: the [[fallthrough]] attribute tell compilers not to complain about not having breaks.
 	bool sw_blending = false;
@@ -602,6 +612,8 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				// If prims don't overlap prefer full sw blend on blend_ad_alpha_masked cases.
 				accumulation_blend &= !(m_conf.require_full_barrier || (blend_ad_alpha_masked && m_prim_overlap == PRIM_OVERLAP_NO));
 				sw_blending |= impossible_or_free_blend;
+				// Try to do hw blend for clr2 case.
+				sw_blending &= !clr_blend1_2;
 				// Do not run BLEND MIX if sw blending is already present, it's less accurate
 				blend_mix &= !sw_blending;
 				sw_blending |= blend_mix;
@@ -612,11 +624,6 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	}
 	else
 	{
-		// Blend can be done on hw. As and F cases should be accurate.
-		// BLEND_C_CLR1 with Ad, BLEND_C_CLR3  Cs > 0.5f will require sw blend.
-		// BLEND_C_CLR1 with As/F, BLEND_C_CLR2_AF, BLEND_C_CLR2_AS can be done in hw.
-		const bool clr_blend = !!(blend_flag & (BLEND_C_CLR1 | BLEND_C_CLR2_AF | BLEND_C_CLR2_AS | BLEND_C_CLR3));
-		const bool clr_blend3 = !!(blend_flag & BLEND_C_CLR3);
 		// FBMASK already reads the fb so it is safe to enable sw blend when there is no overlap.
 		const bool fbmask_no_overlap = m_conf.require_one_barrier && (m_prim_overlap == PRIM_OVERLAP_NO);
 
@@ -645,6 +652,8 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				color_dest_blend   &= !fbmask_no_overlap;
 				accumulation_blend &= !fbmask_no_overlap;
 				sw_blending |= accumulation_blend || blend_non_recursive || fbmask_no_overlap;
+				// Try to do hw blend for clr2 case.
+				sw_blending &= !clr_blend1_2;
 				// Do not run BLEND MIX if sw blending is already present, it's less accurate
 				blend_mix &= !sw_blending;
 				sw_blending |= blend_mix;
