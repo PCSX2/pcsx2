@@ -1633,6 +1633,10 @@ function(pcsx2_resource path basedir)
 		set_source_files_properties(${path} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/${subdir})
 	elseif(PACKAGE_MODE)
 		install(FILES ${path} DESTINATION ${CMAKE_INSTALL_DATADIR}/PCSX2/resources/${subdir})
+	else()
+		add_custom_command(TARGET PCSX2 POST_BUILD
+			COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:PCSX2>/resources/${subdir}"
+			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${path}" "$<TARGET_FILE_DIR:PCSX2>/resources/${subdir}")
 	endif()
 	source_group(Resources/${subdir} FILES ${path})
 endfunction()
