@@ -138,7 +138,7 @@ void ImGuiManager::UpdateScale()
 	SetImGuiStyle();
 	ImGui::GetStyle().ScaleAllSizes(scale);
 
-	if (!AddImGuiFonts() || !display->UpdateImGuiFontTexture())
+	if (!AddImGuiFonts())
 		pxFailRel("Failed to create ImGui font text");
 
 	if (!display->UpdateImGuiFontTexture())
