@@ -107,7 +107,7 @@ enum PadOptions
 	PADOPTION_MOUSE_R = 0x40,
 };
 
-static bool IsAnalogKey(int index)
+static inline bool IsAnalogKey(int index)
 {
 	return ((index >= PAD_L_UP) && (index <= PAD_R_LEFT));
 }

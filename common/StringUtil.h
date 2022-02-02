@@ -192,20 +192,20 @@ namespace StringUtil
 	std::vector<std::string> splitOnNewLine(const std::string& str);
 
 	/// Converts a wxString to a UTF-8 std::string.
-	static std::string wxStringToUTF8String(const wxString& str)
+	static inline std::string wxStringToUTF8String(const wxString& str)
 	{
 		const wxScopedCharBuffer buf(str.ToUTF8());
 		return std::string(buf.data(), buf.length());
 	}
 
 	/// Converts a UTF-8 std::string to a wxString.
-	static wxString UTF8StringToWxString(const std::string_view& str)
+	static inline wxString UTF8StringToWxString(const std::string_view& str)
 	{
 		return wxString::FromUTF8(str.data(), str.length());
 	}
 
 	/// Converts a UTF-8 std::string to a wxString.
-	static wxString UTF8StringToWxString(const std::string& str)
+	static inline wxString UTF8StringToWxString(const std::string& str)
 	{
 		return wxString::FromUTF8(str.data(), str.length());
 	}

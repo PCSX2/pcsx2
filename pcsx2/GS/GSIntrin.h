@@ -28,7 +28,7 @@
 #if !defined(_MSC_VER)
 // http://svn.reactos.org/svn/reactos/trunk/reactos/include/crt/mingw32/intrin_x86.h?view=markup
 
-static int _BitScanForward(unsigned long* const Index, const unsigned long Mask)
+static inline int _BitScanForward(unsigned long* const Index, const unsigned long Mask)
 {
 	if (Mask == 0)
 		return 0;
@@ -40,7 +40,7 @@ static int _BitScanForward(unsigned long* const Index, const unsigned long Mask)
 	return 1;
 }
 
-static int _BitScanReverse(unsigned long* const Index, const unsigned long Mask)
+static inline int _BitScanReverse(unsigned long* const Index, const unsigned long Mask)
 {
 	if (Mask == 0)
 		return 0;
