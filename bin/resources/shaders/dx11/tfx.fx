@@ -763,15 +763,15 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 	}
 	else
 	{
-		if (PS_CLR_HW == 1)
+		if (PS_CLR_HW == 1 || PS_CLR_HW == 5)
 		{
 			// Needed for Cd * (As/Ad/F + 1) blending modes
 
 			Color.rgb = (float3)255.0f;
 		}
-		else if (PS_CLR_HW == 2)
+		else if (PS_CLR_HW == 2 || PS_CLR_HW == 4)
 		{
-			// Cd*As or Cd*F
+			// Cd*As,Cd*Ad or Cd*F
 
 			float Alpha = PS_BLEND_C == 2 ? Af : As;
 
@@ -829,7 +829,16 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	}
 
 	// Must be done before alpha correction
-	float alpha_blend = C.a / 128.0f;
+	float alpha_blend;
+	if (PS_BLEND_C == 1 && PS_CLR_HW > 3)
+	{
+		float4 RT = trunc(RtTexture.Load(int3(input.p.xy, 0)) * 255.0f + 0.1f);
+		alpha_blend = (PS_DFMT == FMT_24) ? 1.0f : RT.a / 128.0f;
+	}
+	else
+	{
+		alpha_blend = C.a / 128.0f;
+	}
 
 	// Alpha correction
 	if (PS_DFMT == FMT_16)
