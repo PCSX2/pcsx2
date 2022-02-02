@@ -243,8 +243,8 @@ public:
  * Will associate `reclut[pagebase + pageidx]` with `mapbase[mappage << 14]`
  * Will associate `hwlut[pagebase + pageidx]` with `pageidx << 16`
  */
-static void recLUT_SetPage(uptr reclut[0x10000], u32 hwlut[0x10000],
-                           BASEBLOCK* mapbase, uint pagebase, uint pageidx, uint mappage)
+static inline void recLUT_SetPage(uptr reclut[0x10000], u32 hwlut[0x10000],
+                                  BASEBLOCK* mapbase, uint pagebase, uint pageidx, uint mappage)
 {
 	// this value is in 64k pages!
 	uint page = pagebase + pageidx;
