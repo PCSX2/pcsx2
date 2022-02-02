@@ -715,7 +715,11 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 
 	// Handle OSD scale changes by pushing a window resize through.
 	if (new_config.OsdScale != old_config.OsdScale)
+	{
+		g_gs_device->ResetAPIState();
 		Host::ResizeHostDisplay(display->GetWindowWidth(), display->GetWindowHeight(), display->GetWindowScale());
+		g_gs_device->RestoreAPIState();
+	}
 
 	// Options which need a full teardown/recreate.
 	if (!GSConfig.RestartOptionsAreEqual(old_config))
