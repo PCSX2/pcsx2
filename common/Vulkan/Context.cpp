@@ -101,13 +101,16 @@ namespace Vulkan
 		if (!SelectInstanceExtensions(&enabled_extensions, wi, enable_debug_utils))
 			return VK_NULL_HANDLE;
 
+		// Remember to manually update this every release. We don't pull in svnrev.h here, because
+		// it's only the major/minor version, and rebuilding the file every time something else changes
+		// is unnecessary.
 		VkApplicationInfo app_info = {};
 		app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 		app_info.pNext = nullptr;
-		app_info.pApplicationName = "DuckStation";
-		app_info.applicationVersion = VK_MAKE_VERSION(0, 1, 0);
-		app_info.pEngineName = "DuckStation";
-		app_info.engineVersion = VK_MAKE_VERSION(0, 1, 0);
+		app_info.pApplicationName = "PCSX2";
+		app_info.applicationVersion = VK_MAKE_VERSION(1, 7, 0);
+		app_info.pEngineName = "PCSX2";
+		app_info.engineVersion = VK_MAKE_VERSION(1, 7, 0);
 		app_info.apiVersion = VK_MAKE_VERSION(1, 1, 0);
 
 		VkInstanceCreateInfo instance_create_info = {};
