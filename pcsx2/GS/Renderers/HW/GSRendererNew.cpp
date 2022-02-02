@@ -533,7 +533,18 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 
 	// Compute the blending equation to detect special case
 	const GIFRegALPHA& ALPHA = m_context->ALPHA;
-	u8 blend_index = u8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
+	// Ad cases, alpha write is masked, one barrier is enough, for d3d11 read the fb
+	// Replace Ad with As, blend flags will be used from As since we are chaging the blend_index value.
+	bool blend_ad_alpha_masked = (ALPHA.C == 1) && (m_context->FRAME.FBMSK & 0xFF000000) == 0xFF000000;
+	u8 ALPHA_C = ALPHA.C;
+	if (!g_gs_device->Features().texture_barrier && (GSConfig.AccurateBlendingUnit >= AccBlendLevel::Medium) && blend_ad_alpha_masked)
+		ALPHA_C = 0;
+	else if (g_gs_device->Features().texture_barrier && blend_ad_alpha_masked)
+		ALPHA_C = 0;
+	else
+		blend_ad_alpha_masked = false;
+
+	u8 blend_index = u8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA_C) * 3 + ALPHA.D);
 	const int blend_flag = g_gs_device->GetBlendFlags(blend_index);
 
 	// HW blend can handle Cd output.
@@ -588,7 +599,8 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				// fixes shadows in Superman shadows of Apokolips.
 				// DATE_BARRIER already does full barrier so also makes more sense to do full sw blend.
 				color_dest_blend   &= !m_conf.require_full_barrier;
-				accumulation_blend &= !m_conf.require_full_barrier;
+				// If prims don't overlap prefer full sw blend on blend_ad_alpha_masked cases.
+				accumulation_blend &= !(m_conf.require_full_barrier || (blend_ad_alpha_masked && m_prim_overlap == PRIM_OVERLAP_NO));
 				sw_blending |= impossible_or_free_blend;
 				// Do not run BLEND MIX if sw blending is already present, it's less accurate
 				blend_mix &= !sw_blending;
@@ -619,8 +631,16 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				sw_blending |= (!(clr_blend || blend_mix) && (m_prim_overlap == PRIM_OVERLAP_NO));
 				[[fallthrough]];
 			case AccBlendLevel::Medium:
+				// If prims don't overlap prefer full sw blend on blend_ad_alpha_masked cases.
+				if (blend_ad_alpha_masked && m_prim_overlap == PRIM_OVERLAP_NO)
+				{
+					accumulation_blend = false;
+					sw_blending |= true;
+				}
+				[[fallthrough]];
 			case AccBlendLevel::Basic:
 				// Disable accumulation blend when there is fbmask with no overlap, will be faster.
+				color_dest_blend   &= !fbmask_no_overlap;
 				accumulation_blend &= !fbmask_no_overlap;
 				sw_blending |= accumulation_blend || blend_non_recursive || fbmask_no_overlap;
 				// Do not run BLEND MIX if sw blending is already present, it's less accurate
@@ -746,7 +766,8 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 			// Remove the addition/substraction from the SW blending
 			m_conf.ps.blend_d = 2;
 
-			// Note accumulation_blend doesn't require a barrier
+			// Only Ad case will require one barrier
+			m_conf.require_one_barrier |= blend_ad_alpha_masked;
 		}
 		else if (blend_mix)
 		{
@@ -771,13 +792,24 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				m_conf.ps.blend_b = 0;
 				m_conf.ps.blend_d = 0;
 			}
+
+			// Only Ad case will require one barrier
+			if (blend_ad_alpha_masked)
+			{
+				m_conf.require_one_barrier |= true;
+				// Swap Ad with As for hw blend
+				m_conf.ps.clr_hw = 6;
+			}
 		}
 		else
 		{
 			// Disable HW blending
 			m_conf.blend = {};
 
-			if (g_gs_device->Features().texture_barrier)
+			const bool blend_non_recursive_one_barrier = blend_non_recursive && blend_ad_alpha_masked;
+			if (blend_non_recursive_one_barrier)
+				m_conf.require_one_barrier |= true;
+			else if (g_gs_device->Features().texture_barrier)
 				m_conf.require_full_barrier |= !blend_non_recursive;
 			else
 				m_conf.require_one_barrier |= !blend_non_recursive;
@@ -789,23 +821,50 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	}
 	else
 	{
+		// Care for clr_hw value, 6 is for hw/sw, sw blending used.
+
 		if (blend_flag & BLEND_C_CLR1)
 		{
-			m_conf.ps.clr_hw = 1;
+			if (blend_ad_alpha_masked)
+			{
+				m_conf.ps.blend_c = 1;
+				m_conf.ps.clr_hw = 5;
+				m_conf.require_one_barrier |= true;
+			}
+			else
+			{
+				m_conf.ps.clr_hw = 1;
+			}
 		}
 		else if (blend_flag & (BLEND_C_CLR2_AF | BLEND_C_CLR2_AS))
 		{
-			if (ALPHA.C == 2)
+			if (blend_ad_alpha_masked)
+			{
+				m_conf.ps.blend_c = 1;
+				m_conf.ps.clr_hw = 4;
+				m_conf.require_one_barrier |= true;
+			}
+			else if (ALPHA.C == 2)
 			{
 				m_conf.ps.blend_c = 2;
 				m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(ALPHA.FIX) / 128.0f;
+				m_conf.ps.clr_hw = 2;
 			}
-
-			m_conf.ps.clr_hw = 2;
+			else // ALPHA.C == 0
+			{
+				m_conf.ps.blend_c = 0;
+				m_conf.ps.clr_hw = 2;
+			}
 		}
 		else if (blend_flag & BLEND_C_CLR3)
 		{
 			m_conf.ps.clr_hw = 3;
+		}
+		else if (blend_ad_alpha_masked)
+		{
+			m_conf.ps.blend_c = 1;
+			m_conf.ps.clr_hw = 6;
+			m_conf.require_one_barrier |= true;
 		}
 
 		if (m_conf.ps.dfmt == 1 && ALPHA.C == 1)
