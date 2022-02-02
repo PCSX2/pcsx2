@@ -573,7 +573,6 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 		&& (ALPHA.C != 1)                                                // Make sure it isn't an Ad case
 		&& (m_env.COLCLAMP.CLAMP)                                        // Let's add a colclamp check too, hw blend will clamp to 0-1.
 		&& !(m_conf.require_one_barrier || m_conf.require_full_barrier); // Also don't run if there are barriers present.
-	const bool clr_blend3 = !!(blend_flag & BLEND_C_CLR3);
 
 	// Warning no break on purpose
 	// Note: the [[fallthrough]] attribute tell compilers not to complain about not having breaks.
@@ -640,8 +639,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				[[fallthrough]];
 			case AccBlendLevel::Medium:
 				// If prims don't overlap prefer full sw blend on blend_ad_alpha_masked cases.
-				// Exclude clr_blend3 as it can do hw blending partially.
-				if (blend_ad_alpha_masked && !clr_blend3 && m_prim_overlap == PRIM_OVERLAP_NO)
+				if (blend_ad_alpha_masked && m_prim_overlap == PRIM_OVERLAP_NO)
 				{
 					accumulation_blend = false;
 					sw_blending |= true;
