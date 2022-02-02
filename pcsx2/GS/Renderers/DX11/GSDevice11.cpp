@@ -1301,11 +1301,18 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		// because we copy the frame buffer and it is quite slow.
 		CloneTexture(config.rt, &rt_copy, config.drawarea);
 		if (rt_copy)
-			PSSetShaderResource(config.require_one_barrier ? 2 : 0, rt_copy);
+		{
+			if (config.require_one_barrier)
+				PSSetShaderResource(2, rt_copy);
+			if (config.tex && config.tex == config.rt)
+				PSSetShaderResource(0, rt_copy);
+		}
 	}
-	else if (config.tex && config.tex == config.ds)
+
+	if (config.tex && config.tex == config.ds)
 	{
 		// mainly for ico (depth buffer used as texture)
+		// binding to 0 here is safe, because config.tex can't equal both tex and rt
 		CloneTexture(config.ds, &rt_copy, config.drawarea);
 		if (rt_copy)
 			PSSetShaderResource(0, rt_copy);
