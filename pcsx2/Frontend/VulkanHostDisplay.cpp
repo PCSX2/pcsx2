@@ -278,7 +278,7 @@ bool VulkanHostDisplay::UpdateImGuiFontTexture()
 {
 	// Just in case we were drawing something.
 	g_vulkan_context->ExecuteCommandBuffer(true);
-	ImGui_ImplVulkan_DestroyFontUploadObjects();
+	ImGui_ImplVulkan_DestroyFontObjects();
 	return ImGui_ImplVulkan_CreateFontsTexture(g_vulkan_context->GetCurrentCommandBuffer());
 }
 
