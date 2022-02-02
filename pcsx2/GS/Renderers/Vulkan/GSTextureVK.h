@@ -17,6 +17,7 @@
 
 #include "GS.h"
 #include "GS/Renderers/Common/GSTexture.h"
+#include "common/Vulkan/Context.h"
 #include "common/Vulkan/Texture.h"
 
 class GSTextureVK final : public GSTexture
@@ -70,10 +71,20 @@ public:
 		m_clear_value.depth = depth;
 	}
 
+	// Call when the texture is bound to the pipeline, or read from in a copy.
+	__fi void SetUsedThisCommandBuffer()
+	{
+		m_use_fence_counter = g_vulkan_context->GetCurrentFenceCounter();
+	}
+
 private:
 	VkCommandBuffer GetCommandBufferForUpdate();
 
 	Vulkan::Texture m_texture;
+
+	// Contains the fence counter when the texture was last used.
+	// When this matches the current fence counter, the texture was used this command buffer.
+	u64 m_use_fence_counter = 0;
 
 	ClearValue m_clear_value = {};
 
