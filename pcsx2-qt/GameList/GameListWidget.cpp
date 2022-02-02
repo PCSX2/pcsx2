@@ -320,7 +320,7 @@ void GameListWidget::resizeEvent(QResizeEvent* event)
 void GameListWidget::resizeTableViewColumnsToFit()
 {
 	QtUtils::ResizeColumnsForTableView(m_table_view, {
-														 32, // type
+														 45, // type
 														 80, // code
 														 -1, // title
 														 -1, // file title

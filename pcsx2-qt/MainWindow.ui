@@ -46,7 +46,7 @@
      </property>
      <property name="icon">
       <iconset theme="dvd-line"/>
-     </property>         
+     </property>
      <actiongroup name="actionGroupChangeDiscSubImages"/>
      <addaction name="actionChangeDiscFromFile"/>
      <addaction name="actionChangeDiscFromDevice"/>
@@ -60,7 +60,7 @@
      </property>
      <property name="icon">
       <iconset theme="flask-line"/>
-     </property>         
+     </property>
     </widget>
     <widget class="QMenu" name="menuLoadState">
      <property name="title">
@@ -68,7 +68,7 @@
      </property>
      <property name="icon">
       <iconset theme="folder-open-line"/>
-     </property>       
+     </property>
     </widget>
     <widget class="QMenu" name="menuSaveState">
      <property name="title">
@@ -76,7 +76,7 @@
      </property>
      <property name="icon">
       <iconset theme="save-3-line"/>
-     </property>             
+     </property>
     </widget>
     <addaction name="actionStartFile"/>
     <addaction name="actionStartDisc"/>
@@ -152,10 +152,10 @@
      </property>
      <property name="icon">
       <iconset theme="window-2-line"/>
-     </property>       
+     </property>
     </widget>
     <addaction name="actionViewToolbar"/>
-    <addaction name="actionViewLockToolbar"/>     
+    <addaction name="actionViewLockToolbar"/>
     <addaction name="actionViewStatusBar"/>
     <addaction name="separator"/>
     <addaction name="actionViewGameList"/>
@@ -224,7 +224,7 @@
    <addaction name="separator"/>
    <addaction name="actionSettings"/>
    <addaction name="actionControllerSettings"/>
-  </widget>   
+  </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionStartFile">
    <property name="text">
@@ -232,7 +232,7 @@
    </property>
    <property name="icon">
     <iconset theme="file-line"/>
-   </property>      
+   </property>
   </action>
   <action name="actionStartDisc">
    <property name="text">
@@ -240,7 +240,7 @@
    </property>
    <property name="icon">
     <iconset theme="disc-line"/>
-   </property>            
+   </property>
   </action>
   <action name="actionStartBios">
    <property name="text">
@@ -248,7 +248,7 @@
    </property>
    <property name="icon">
     <iconset theme="hard-drive-2-line"/>
-   </property>        
+   </property>
   </action>
   <action name="actionScanForNewGames">
    <property name="text">
@@ -256,7 +256,7 @@
    </property>
    <property name="icon">
     <iconset theme="file-search-line"/>
-   </property>    
+   </property>
   </action>
   <action name="actionRescanAllGames">
    <property name="text">
@@ -272,7 +272,7 @@
    </property>
    <property name="icon">
     <iconset theme="shut-down-line"/>
-   </property>     
+   </property>
   </action>
   <action name="actionReset">
    <property name="text">
@@ -280,7 +280,7 @@
    </property>
    <property name="icon">
     <iconset theme="restart-line"/>
-   </property>    
+   </property>
   </action>
   <action name="actionPause">
    <property name="checkable">
@@ -291,7 +291,7 @@
    </property>
    <property name="icon">
     <iconset theme="pause-line"/>
-   </property>  
+   </property>
   </action>
   <action name="actionLoadState">
    <property name="text">
@@ -299,7 +299,7 @@
    </property>
    <property name="icon">
     <iconset theme="folder-open-line"/>
-   </property>      
+   </property>
   </action>
   <action name="actionSaveState">
    <property name="text">
@@ -307,7 +307,7 @@
    </property>
    <property name="icon">
     <iconset theme="save-3-line"/>
-   </property>  
+   </property>
   </action>
   <action name="actionExit">
    <property name="text">
@@ -315,7 +315,7 @@
    </property>
    <property name="icon">
     <iconset theme="door-open-line"/>
-   </property>     
+   </property>
   </action>
   <action name="actionBIOSSettings">
    <property name="text">
@@ -347,7 +347,7 @@
    </property>
    <property name="icon">
     <iconset theme="gamepad-line"/>
-   </property>    
+   </property>
   </action>
   <action name="actionHotkeySettings">
    <property name="text">
@@ -376,7 +376,7 @@
    </property>
    <property name="icon">
     <iconset theme="fullscreen-line"/>
-   </property>    
+   </property>
   </action>
   <action name="actionResolution_Scale">
    <property name="text">
@@ -401,7 +401,7 @@
   <action name="actionCheckForUpdates">
    <property name="icon">
     <iconset theme="download-2-line"/>
-   </property>    
+   </property>
    <property name="text">
     <string>Check for &amp;Updates...</string>
    </property>
@@ -426,7 +426,7 @@
    </property>
    <property name="icon">
     <iconset theme="dvd-line"/>
-   </property>             
+   </property>
   </action>
   <action name="actionCheats">
    <property name="text">
@@ -434,7 +434,7 @@
    </property>
    <property name="icon">
     <iconset theme="flask-line"/>
-   </property>   
+   </property>
   </action>
   <action name="actionAudioSettings">
    <property name="text">
@@ -507,7 +507,7 @@
    </property>
    <property name="icon">
     <iconset theme="screenshot-2-line"/>
-   </property>    
+   </property>
   </action>
   <action name="actionMemoryCardSettings">
    <property name="text">
@@ -538,7 +538,7 @@
    <property name="text">
     <string>Lock Toolbar</string>
    </property>
-  </action>   
+  </action>
   <action name="actionViewStatusBar">
    <property name="checkable">
     <bool>true</bool>
@@ -567,7 +567,7 @@
    </property>
    <property name="icon">
     <iconset theme="tv-2-line"/>
-   </property>     
+   </property>
   </action>
   <action name="actionViewGameProperties">
    <property name="enabled">
@@ -578,7 +578,7 @@
    </property>
    <property name="icon">
     <iconset theme="file-settings-line"/>
-   </property>      
+   </property>
   </action>
   <action name="actionViewGameGrid">
    <property name="text">

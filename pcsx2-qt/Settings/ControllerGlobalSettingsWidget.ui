@@ -37,7 +37,7 @@
         <item>
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>The SDL input source supports most controllers, and provides advanced functionality for Dualshock 4/Dualsense pads in Bluetooth mode (Vibration/LED Control).</string>
+           <string>The SDL input source supports most controllers, and provides advanced functionality for DualShock 4 / DualSense pads in Bluetooth mode (Vibration / LED Control).</string>
           </property>
           <property name="wordWrap">
            <bool>true</bool>
@@ -54,7 +54,7 @@
         <item>
          <widget class="QCheckBox" name="enableSDLEnhancedMode">
           <property name="text">
-           <string>Dualshock 4/Dualsense Enhanced Mode</string>
+           <string>Dualshock 4 / Dualsense Enhanced Mode</string>
           </property>
          </widget>
         </item>
@@ -70,7 +70,7 @@
         <item>
          <widget class="QLabel" name="label_3">
           <property name="text">
-           <string>The XInput source provides support for XBox 360/XBox One/XBox Series controllers, and third party controllers which implement the XInput protocol.</string>
+           <string>The XInput source provides support for XBox 360 / XBox One / XBox Series controllers, and third party controllers which implement the XInput protocol.</string>
           </property>
           <property name="wordWrap">
            <bool>true</bool>
