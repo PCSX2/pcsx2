@@ -68,6 +68,13 @@ void ps_copy()
 }
 #endif
 
+#ifdef ps_depth_copy
+void ps_depth_copy()
+{
+  gl_FragDepth = sample_c(v_tex).r;
+}
+#endif
+
 #ifdef ps_filter_transparency
 void ps_filter_transparency()
 {

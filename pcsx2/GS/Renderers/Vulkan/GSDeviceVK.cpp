@@ -37,9 +37,10 @@ static u32 s_debug_scope_depth = 0;
 
 static bool IsDepthConvertShader(ShaderConvert i)
 {
-	return (i == ShaderConvert::RGBA8_TO_FLOAT32 || i == ShaderConvert::RGBA8_TO_FLOAT24 ||
-			i == ShaderConvert::RGBA8_TO_FLOAT16 || i == ShaderConvert::RGB5A1_TO_FLOAT16 ||
-			i == ShaderConvert::DATM_0 || i == ShaderConvert::DATM_1);
+	return (i == ShaderConvert::DEPTH_COPY || i == ShaderConvert::RGBA8_TO_FLOAT32 ||
+			i == ShaderConvert::RGBA8_TO_FLOAT24 || i == ShaderConvert::RGBA8_TO_FLOAT16 ||
+			i == ShaderConvert::RGB5A1_TO_FLOAT16 || i == ShaderConvert::DATM_0 ||
+			i == ShaderConvert::DATM_1);
 }
 
 static bool IsIntConvertShader(ShaderConvert i)

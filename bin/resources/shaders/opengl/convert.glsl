@@ -66,6 +66,13 @@ void ps_copy()
 }
 #endif
 
+#ifdef ps_depth_copy
+void ps_depth_copy()
+{
+  gl_FragDepth = sample_c().r;
+}
+#endif
+
 #ifdef ps_convert_rgba8_16bits
 void ps_convert_rgba8_16bits()
 {

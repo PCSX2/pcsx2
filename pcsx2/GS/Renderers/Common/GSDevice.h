@@ -48,6 +48,7 @@ enum class ShaderConvert
 	RGBA8_TO_FLOAT24,
 	RGBA8_TO_FLOAT16,
 	RGB5A1_TO_FLOAT16,
+	DEPTH_COPY,
 	RGBA_TO_8I,
 	YUV,
 	Count
