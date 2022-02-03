@@ -184,11 +184,13 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 		si.ClearSection(StringUtil::StdStringFromFormat("Pad%u", i + 1).c_str());
 
 	si.ClearSection("Hotkeys");
-
+	
+	// PCSX2 Controller Settings - Global Settings
 	si.SetBoolValue("InputSources", "SDL", true);
 	si.SetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
 	si.SetBoolValue("InputSources", "XInput", false);
-
+	
+	// PCSX2 Controller Settings - Controller 1 / Controller 2 / ...
 	si.SetStringValue("Pad1", "Type", "DualShock2");
 	si.SetStringValue("Pad1", "Up", "Keyboard/Up");
 	si.SetStringValue("Pad1", "Right", "Keyboard/Right");
@@ -214,16 +216,37 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 	si.SetStringValue("Pad1", "R3", "Keyboard/4");
 	si.SetStringValue("Pad1", "Start", "Keyboard/Return");
 	si.SetStringValue("Pad1", "Select", "Keyboard/Backspace");
-
-	si.SetStringValue("Hotkeys", "ToggleTurbo", "Keyboard/Tab");
-	si.SetStringValue("Hotkeys", "ToggleFrameLimit", "Keyboard/F4");
-	si.SetStringValue("Hotkeys", "ToggleSoftwareRendering", "Keyboard/F9");
-	si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Space");
-	si.SetStringValue("Hotkeys", "ToggleFullscreen", "Keyboard/Alt & Keyboard/Return");
+	
+	// PCSX2 Controller Settings - Hotkeys
+	
+	// PCSX2 Controller Settings - Hotkeys - General
 	si.SetStringValue("Hotkeys", "Screenshot", "Keyboard/F8");
+	si.SetStringValue("Hotkeys", "ToggleFullscreen", "Keyboard/Alt & Keyboard/Return");
+	
+	// PCSX2 Controller Settings - Hotkeys - Graphics
+	si.SetStringValue("Hotkeys", "CycleAspectRatio", "Keyboard/F6");
+	si.SetStringValue("Hotkeys", "CycleMipmapMode", "Keyboard/Insert");
+	si.SetStringValue("Hotkeys", "CycleInterlaceMode", "Keyboard/F5");
+//	si.SetStringValue("Hotkeys", "DecreaseUpscaleMultiplier", "Keyboard"); TBD 
+//	si.SetStringValue("Hotkeys", "IncreaseUpscaleMultiplier", "Keyboard"); TBD 
+	si.SetStringValue("Hotkeys", "ToggleSoftwareRendering", "Keyboard/F9");
+	si.SetStringValue("Hotkeys", "ZoomIn", "Keyboard/Control & Keyboard/Plus");
+	si.SetStringValue("Hotkeys", "ZoomOut", "Keyboard/Control & Keyboard/Minus");
+// Missing hotkey for resetting zoom back to 100 with Keyboard/Control & Keyboard/Asterisk
+
+	// PCSX2 Controller Settings - Hotkeys - Save States
+	si.SetStringValue("Hotkeys", "LoadStateFromSlot", "Keyboard/F3");
 	si.SetStringValue("Hotkeys", "SaveStateToSlot", "Keyboard/F1");
 	si.SetStringValue("Hotkeys", "NextSaveStateSlot", "Keyboard/F2");
-	si.SetStringValue("Hotkeys", "LoadStateFromSlot", "Keyboard/F3");
+	si.SetStringValue("Hotkeys", "PreviousSaveStateSlot", "Keyboard/Shift & Keyboard/F2");
+
+	// PCSX2 Controller Settings - Hotkeys - System
+//	si.SetStringValue("Hotkeys", "DecreaseSpeed", "Keyboard"); TBD 
+//	si.SetStringValue("Hotkeys", "IncreaseSpeed", "Keyboard"); TBD 
+	si.SetStringValue("Hotkeys", "ToggleFrameLimit", "Keyboard/F4");
+	si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Space");	
+	si.SetStringValue("Hotkeys", "ToggleSlowMotion", "Keyboard/Shift & Keyboard/Backtab");	
+	si.SetStringValue("Hotkeys", "ToggleTurbo", "Keyboard/Tab");
 }
 
 void PAD::Update()

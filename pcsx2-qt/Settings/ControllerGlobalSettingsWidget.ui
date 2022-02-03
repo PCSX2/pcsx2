@@ -54,7 +54,7 @@
         <item>
          <widget class="QCheckBox" name="enableSDLEnhancedMode">
           <property name="text">
-           <string>Dualshock 4 / Dualsense Enhanced Mode</string>
+           <string>DualShock 4 / DualSense Enhanced Mode</string>
           </property>
          </widget>
         </item>
