@@ -311,6 +311,9 @@ u32 DisassemblyManager::getNthPreviousAddress(u32 address, int n)
 
 u32 DisassemblyManager::getNthNextAddress(u32 address, int n)
 {
+	if (!cpu->isAlive())
+		return address + n * 4;
+
 	while (cpu->isValidAddress(address))
 	{
 		auto it = findDisassemblyEntry(entries,address,false);

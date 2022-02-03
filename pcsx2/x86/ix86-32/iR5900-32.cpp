@@ -1617,6 +1617,8 @@ void dynarecCheckBreakpoint()
 	CBreakPoints::SetBreakpointTriggered(true);
 #ifndef PCSX2_CORE
 	GetCoreThread().PauseSelfDebug();
+#else
+	VMManager::SetPaused(true);
 #endif
 	recExitExecution();
 }
@@ -1630,6 +1632,8 @@ void dynarecMemcheck()
 	CBreakPoints::SetBreakpointTriggered(true);
 #ifndef PCSX2_CORE
 	GetCoreThread().PauseSelfDebug();
+#else
+	VMManager::SetPaused(true);
 #endif
 	recExitExecution();
 }

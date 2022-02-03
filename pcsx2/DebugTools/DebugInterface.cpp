@@ -26,6 +26,7 @@
 #include "R3000A.h"
 #include "IopMem.h"
 #include "SymbolMap.h"
+#include "VMManager.h"
 
 #include "common/StringUtil.h"
 
@@ -176,7 +177,7 @@ bool DebugInterface::isAlive()
 #ifndef PCSX2_CORE
 	return GetCoreThread().IsOpen() && g_FrameCount > 0;
 #else
-  return false;
+	return VMManager::HasValidVM() && g_FrameCount > 0;
 #endif
 }
 
@@ -185,7 +186,7 @@ bool DebugInterface::isCpuPaused()
 #ifndef PCSX2_CORE
 	return GetCoreThread().IsPaused();
 #else
-  return false;
+	return VMManager::GetState() == VMState::Paused;
 #endif
 }
 
@@ -195,6 +196,8 @@ void DebugInterface::pauseCpu()
 	SysCoreThread& core = GetCoreThread();
 	if (!core.IsPaused())
 		core.Pause({}, true);
+#else
+	VMManager::SetPaused(true);
 #endif
 }
 
@@ -204,6 +207,8 @@ void DebugInterface::resumeCpu()
 	SysCoreThread& core = GetCoreThread();
 	if (core.IsPaused())
 		core.Resume();
+#else
+	VMManager::SetPaused(false);
 #endif
 }
 

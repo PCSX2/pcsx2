@@ -753,13 +753,9 @@ void VMManager::UpdateRunningGame(bool resetting, bool game_starting)
 
 	Host::OnGameChanged(s_disc_path, s_elf_override, s_game_serial, s_game_name, s_game_crc);
 
-#if 0
-	// TODO: Enable this when the debugger is added to Qt, and it's active. Otherwise, this is just a waste of time.
-	// In other words, it should be lazily initialized.
 	MIPSAnalyst::ScanForFunctions(R5900SymbolMap, ElfTextRange.first, ElfTextRange.first + ElfTextRange.second, true);
 	R5900SymbolMap.UpdateActiveSymbols();
 	R3000SymbolMap.UpdateActiveSymbols();
-#endif
 }
 
 void VMManager::ReloadPatches(bool verbose, bool show_messages_when_disabled)
