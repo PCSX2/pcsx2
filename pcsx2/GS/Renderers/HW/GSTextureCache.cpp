@@ -538,7 +538,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 			calcRescale(dst->m_texture);
 			GSTexture* tex = type == RenderTarget ? g_gs_device->CreateSparseRenderTarget(new_size.x, new_size.y, GSTexture::Format::Color, clear) :
 				g_gs_device->CreateSparseDepthStencil(new_size.x, new_size.y, GSTexture::Format::DepthStencil, clear);
-			g_gs_device->StretchRect(dst->m_texture, sRect, tex, dRect, ShaderConvert::COPY, false);
+			g_gs_device->StretchRect(dst->m_texture, sRect, tex, dRect, (type == RenderTarget) ? ShaderConvert::COPY : ShaderConvert::DEPTH_COPY, false);
 			g_gs_device->Recycle(dst->m_texture);
 			tex->SetScale(new_s);
 			dst->m_texture = tex;

@@ -72,6 +72,11 @@ PS_OUTPUT ps_copy(PS_INPUT input)
 	return output;
 }
 
+float ps_depth_copy(PS_INPUT input) : SV_Depth
+{
+	return sample_c(input.t).r;
+}
+
 PS_OUTPUT ps_filter_transparency(PS_INPUT input)
 {
 	PS_OUTPUT output;

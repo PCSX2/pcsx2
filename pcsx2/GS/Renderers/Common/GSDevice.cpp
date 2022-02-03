@@ -40,6 +40,7 @@ const char* shaderName(ShaderConvert value)
 		case ShaderConvert::RGBA8_TO_FLOAT24:    return "ps_convert_rgba8_float24";
 		case ShaderConvert::RGBA8_TO_FLOAT16:    return "ps_convert_rgba8_float16";
 		case ShaderConvert::RGB5A1_TO_FLOAT16:   return "ps_convert_rgb5a1_float16";
+		case ShaderConvert::DEPTH_COPY:          return "ps_depth_copy";
 		case ShaderConvert::RGBA_TO_8I:          return "ps_convert_rgba_8i";
 		case ShaderConvert::YUV:                 return "ps_yuv";
 		default:
