@@ -10394,7 +10394,7 @@ SLES-51509:
   gameFixes:
     - XGKickHack
 SLES-51510:
-  name: "Dancing Stage Fever MegaMix"
+  name: "Dancing Stage MegaMix"
   region: "PAL-M5"
   compat: 5
 SLES-51511:
@@ -19818,6 +19818,9 @@ SLPM-55081:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2  # Fixes wrong color on some characters and breakable objects.
+SLPM-55090:
+  name: "DanceDanceRevolution X"
+  region: "NTSC-J"
 SLPM-55092:
   name: "Grand Theft Auto - San Andreas [Best Price]"
   region: "NTSC-J"
@@ -19840,7 +19843,7 @@ SLPM-55114:
   name: "Mana Khemia 2: Ochita Gakuen to Renkinjutsushi Tachi"
   region: "NTSC-J"
 SLPM-55117:
-  name: "Beatmania IIDX 15 - DJ Troopers"
+  name: "beatmania IIDX 15 DJ TROOPERS"
   region: "NTSC-J"
 SLPM-55118:
   name: "Galaxy Angel II - Eigou Kaiki no Koku [Disc1of2]"
@@ -19914,10 +19917,10 @@ SLPM-55208:
   name: "Hakuouki - Zuisouroku"
   region: "NTSC-J"
 SLPM-55221:
-  name: "Beatmania IIDX 16 - DJ Empress"
+  name: "beatmania IIDX 16 EMPRESS + PREMIUM BEST (EMPRESS DISC)"
   region: "NTSC-J"
 SLPM-55222:
-  name: "Beatmania IIDX 16 - DJ Empress Premium Best"
+  name: "beatmania IIDX 16 EMPRESS + PREMIUM BEST (PREMIUM BEST DISC)"
   region: "NTSC-J"
 SLPM-55226:
   name: "FIFA 10: World Class Soccer"
@@ -20115,7 +20118,7 @@ SLPM-62011:
   name: "Jikkyou G1 Stable"
   region: "NTSC-J"
 SLPM-62012:
-  name: "Keyboard Mania"
+  name: "KEYBOARDMANIA"
   region: "NTSC-J"
 SLPM-62013:
   name: "Ring of Red"
@@ -20199,7 +20202,7 @@ SLPM-62051:
   name: "Yanya Caballista - featuring Gawoo"
   region: "NTSC-J"
 SLPM-62052:
-  name: "Beatmania Da! Da! Da!"
+  name: "beatmania Da Da Da!!"
   region: "NTSC-J"
 SLPM-62053:
   name: "World Soccer Winning Eleven 5"
@@ -20414,7 +20417,7 @@ SLPM-62153:
   name: "Racing Construction - Mareru Tsukeru Hahiiru Ore - Dead Heat"
   region: "NTSC-J"
 SLPM-62154:
-  name: "DDR Max - Dance Dance Revolution - 6th Mix"
+  name: "DDRMAX ~DanceDanceRevolution 6thMIX~"
   region: "NTSC-J"
   compat: 5
 SLPM-62155:
@@ -20450,7 +20453,7 @@ SLPM-62171:
   name: "Simple 2000 Series Vol.05 - The Blockbuster Hyper"
   region: "NTSC-J"
 SLPM-62175:
-  name: "Beatmania Utsu Utsu Utsu! [Konami The Best]"
+  name: "beatmania Da Da Da!! THE BEST Da"
   region: "NTSC-J"
 SLPM-62176:
   name: "Egbrowser BB"
@@ -20727,7 +20730,7 @@ SLPM-62287:
   name: "Fire Pro Wrestling Z [Limited Edition]"
   region: "NTSC-J"
 SLPM-62288:
-  name: "Pop'n Music - Best Hits"
+  name: "pop'n music Best Hits!"
   region: "NTSC-J"
 SLPM-62291:
   name: "Bomberman Land 2"
@@ -21032,7 +21035,7 @@ SLPM-62426:
   name: "Simple 2000 Series Vol.42 - The Ultimate Fight"
   region: "NTSC-J"
 SLPM-62427:
-  name: "Dance Dance Revolution - Party Collection"
+  name: "Dance Dance Revolution Party Collection"
   region: "NTSC-J"
   compat: 5
 SLPM-62428:
@@ -21133,7 +21136,7 @@ SLPM-62463:
   name: "Loop Sequencer - Music Generator"
   region: "NTSC-J"
 SLPM-62464:
-  name: "Pop'n Taisen Pazurudame Online"
+  name: "pop'n Taisen Pazurudama Online"
   region: "NTSC-J"
   compat: 5
 SLPM-62465:
@@ -22086,7 +22089,7 @@ SLPM-65005:
   name: "I am the Coach"
   region: "NTSC-J"
 SLPM-65006:
-  name: "Beatmania IIDX - 3rd Style"
+  name: "beatmania IIDX 3rd style"
   region: "NTSC-J"
 SLPM-65007:
   name: "Roadsters Trophy 2000"
@@ -22102,7 +22105,7 @@ SLPM-65010:
   region: "NTSC-J"
   compat: 5
 SLPM-65011:
-  name: "Guitar Freaks 3rd Mix and DrumMania 2nd Mix"
+  name: "GUITAR FREAKS 3rd MIX & drummania 2nd MIX"
   region: "NTSC-J"
   compat: 5
 SLPM-65012:
@@ -22148,7 +22151,7 @@ SLPM-65019:
   region: "NTSC-J"
   compat: 5
 SLPM-65020:
-  name: "Para Para Paradise"
+  name: "ParaParaParadise"
   region: "NTSC-J"
 SLPM-65021:
   name: "Super Galdelic Hour"
@@ -22167,7 +22170,7 @@ SLPM-65025:
   name: "BioHazard - 5th Anniversary Package - Nightmare Returns [Disc2of2]"
   region: "NTSC-J"
 SLPM-65026:
-  name: "Beatmania IIDX - 4th Style"
+  name: "beatmania IIDX 4th style -new songs collection-"
   region: "NTSC-J"
 SLPM-65032:
   name: "Tokyo Bus Guide - Annai"
@@ -22227,7 +22230,7 @@ SLPM-65047:
   region: "NTSC-J"
   compat: 5
 SLPM-65049:
-  name: "Beatmania IIDX - 5th Style - New Songs Collection"
+  name: "beatmania IIDX 5th style -new songs collection-"
   region: "NTSC-J"
 SLPM-65050:
   name: "Yu-Gi-Oh! Shin Duel Monsters 2"
@@ -22243,7 +22246,7 @@ SLPM-65051:
   speedHacks:
     InstantVU1SpeedHack: 0  # Fixes hang on FMV's when CDVD timing is accurate.
 SLPM-65052:
-  name: "Guitar Freaks 4th Mix & Drummania 3rd Mix"
+  name: "GUITAR FREAKS 4thMIX & drummania 3rdMIX"
   region: "NTSC-J"
   compat: 5
 SLPM-65053:
@@ -22391,7 +22394,7 @@ SLPM-65093:
   name: "Sangokushi Senki"
   region: "NTSC-J"
 SLPM-65094:
-  name: "KeyboardMania 2nd & 3rd Mix"
+  name: "KEYBOARDMANIA II 2ndMIX & 3rdMIX"
   region: "NTSC-J"
 SLPM-65095:
   name: "Space Channel 5"
@@ -22539,7 +22542,7 @@ SLPM-65155:
   name: "Rumbling Hearts"
   region: "NTSC-J"
 SLPM-65156:
-  name: "Beatmania IIDX - 6th Style"
+  name: "beatmania IIDX 6th style -new songs collection-"
   region: "NTSC-J"
 SLPM-65158:
   name: "Riding Spirits"
@@ -22667,7 +22670,7 @@ SLPM-65207:
   name: "Chou Battle Houshin"
   region: "NTSC-J"
 SLPM-65208:
-  name: "Pop'n Music 7"
+  name: "pop'n music 7"
   region: "NTSC-J"
 SLPM-65209:
   name: "Star Ocean 3 [Limited Edition]"
@@ -22927,7 +22930,7 @@ SLPM-65276:
   gameFixes:
     - VIFFIFOHack
 SLPM-65277:
-  name: "DDR Max 2 - Dance Dance Revolution - 7th Mix"
+  name: "DDRMAX2 Dance Dance Revolution 7th Mix"
   region: "NTSC-J"
   compat: 5
 SLPM-65278:
@@ -23052,7 +23055,7 @@ SLPM-65315:
   region: "NTSC-J"
   compat: 5
 SLPM-65316:
-  name: "Pop'n Music 8"
+  name: "pop'n music 8"
   region: "NTSC-J"
 SLPM-65317:
   name: "Jikkyou Powerful Pro Yakyuu 10"
@@ -23175,7 +23178,7 @@ SLPM-65357:
   name: "BioHazard - Code Veronica - Perfect Version"
   region: "NTSC-J"
 SLPM-65358:
-  name: "Dance Dance Revolution Extreme"
+  name: "Dance Dance Revolution EXTREME"
   region: "NTSC-J"
   compat: 5
 SLPM-65359:
@@ -23624,7 +23627,7 @@ SLPM-65506:
     - "SLPM-65506"
     - "SLPM-65742"
 SLPM-65508:
-  name: "Pop'n Music 9"
+  name: "pop'n music 9"
   region: "NTSC-J"
 SLPM-65509:
   name: "Prince of Tennis - Love of Prince - Sweet"
@@ -23863,7 +23866,7 @@ SLPM-65592:
   name: "Lost Aya Sophia"
   region: "NTSC-J"
 SLPM-65593:
-  name: "Beatmania IIDX - 7th Style"
+  name: "beatmania IIDX 7th style"
   region: "NTSC-J"
 SLPM-65594:
   name: "Iris no Atelier: Eternal Mana"
@@ -24412,13 +24415,13 @@ SLPM-65767:
   name: "NBA Starting Five 2005"
   region: "NTSC-J"
 SLPM-65768:
-  name: "Beatmania IIDX - 8th Style"
+  name: "beatmania IIDX 8th style"
   region: "NTSC-J"
 SLPM-65769:
-  name: "Pop'n Music 10 [with Pop'n Controller 2]"
+  name: "pop'n music 10 [Controller Set]"
   region: "NTSC-J"
 SLPM-65770:
-  name: "Pop'n Music 10"
+  name: "pop'n music 10"
   region: "NTSC-J"
 SLPM-65771:
   name: "Natural 2 Duo - Sakurairo no Kisetsu [Deluxe Pack]"
@@ -24430,7 +24433,7 @@ SLPM-65773:
   name: "Shining Tears"
   region: "NTSC-J"
 SLPM-65775:
-  name: "Dance Dance Revolution - Festival"
+  name: "DDR Festival Dance Dance Revolution"
   region: "NTSC-J"
   compat: 5
 SLPM-65776:
@@ -24956,7 +24959,7 @@ SLPM-65945:
   name: "Red Ninja - End of Honor"
   region: "NTSC-J"
 SLPM-65946:
-  name: "Beatmania IIDX - 9th Style"
+  name: "beatmania IIDX 9th style"
   region: "NTSC-J"
   compat: 5
 SLPM-65947:
@@ -25326,7 +25329,7 @@ SLPM-66064:
   name: "Tough - Dark Fight"
   region: "NTSC-J"
 SLPM-66065:
-  name: "Pop'n Music 11"
+  name: "pop'n music 11"
   region: "NTSC-J"
 SLPM-66068:
   name: "Richard Burns Rally"
@@ -25669,13 +25672,13 @@ SLPM-66177:
   name: "Matrix, The - Path of Neo"
   region: "NTSC-J"
 SLPM-66178:
-  name: "Pop'n Music 7 [Konami The Best]"
+  name: "pop'n music 7 [Konami The Best]"
   region: "NTSC-J"
 SLPM-66179:
-  name: "Pop'n Music 8 [Konami The Best]"
+  name: "pop'n music 8 [Konami The Best]"
   region: "NTSC-J"
 SLPM-66180:
-  name: "Beatmania IIDX - 10th Style"
+  name: "beatmania IIDX 10th style"
   region: "NTSC-J"
 SLPM-66181:
   name: "Beat Down - Fists of Vengeance"
@@ -25767,10 +25770,10 @@ SLPM-66208:
   name: "Sakura Taisen V - Episode 0 - Samurai Girl of Wild [Sega the Best]"
   region: "NTSC-J"
 SLPM-66209:
-  name: "Pop'n Music 9 [Konami The Best]"
+  name: "pop'n music 9 [Konami The Best]"
   region: "NTSC-J"
 SLPM-66210:
-  name: "Pop'n Music 10 [Konami The Best]"
+  name: "pop'n music 10 [Konami The Best]"
   region: "NTSC-J"
 SLPM-66211:
   name: "King Kong, Peter Jackson's - The Official Game of the Movie"
@@ -25880,7 +25883,7 @@ SLPM-66241:
   name: "Jissen Pachinko Hisshouhou! CR Hokuto no Ken"
   region: "NTSC-J"
 SLPM-66242:
-  name: "Dance Dance Revolution - Strike"
+  name: "Dance Dance Revolution Strike"
   region: "NTSC-J"
   compat: 5
 SLPM-66243:
@@ -26114,11 +26117,11 @@ SLPM-66308:
   name: "Harukanaru Toki no Naka Premium Boxset"
   region: "NTSC-J"
 SLPM-66313:
-  name: "Guitar Freaks V & DrumMania V"
+  name: "GuitarFreaksV & DrumManiaV"
   region: "NTSC-J"
   compat: 5
 SLPM-66314:
-  name: "Pop'n Music 12 - Iroha"
+  name: "pop'n music 12 Iroha"
   region: "NTSC-J"
   compat: 5
 SLPM-66315:
@@ -26464,7 +26467,7 @@ SLPM-66424:
   name: "La Corda D'oro [Koei the Best]"
   region: "NTSC-J"
 SLPM-66426:
-  name: "Beatmania IIDX 11 - Red"
+  name: "beatmania IIDX 11 IIDX RED"
   region: "NTSC-J"
 SLPM-66427:
   name: "Full Spectrum Warrior - Ten Hammers"
@@ -26692,7 +26695,7 @@ SLPM-66483:
   name: "Mushihimesama [Taito Best]"
   region: "NTSC-J"
 SLPM-66484:
-  name: "Guitar Freaks & Drummania - Masterpiece Silver"
+  name: "GuitarFreaks & DrumMania MASTERPIECE SILVER"
   region: "NTSC-J"
   compat: 5
 SLPM-66485:
@@ -26851,7 +26854,7 @@ SLPM-66532:
   name: "Mizu no Senritsu 2"
   region: "NTSC-J"
 SLPM-66533:
-  name: "Pop'n Music 13 - Carnival"
+  name: "pop'n music 13 Carnival"
   region: "NTSC-J"
 SLPM-66534:
   name: "Ryu Koku [Limited Edition]"
@@ -26980,7 +26983,7 @@ SLPM-66574:
   name: "Meitantei Evangelion"
   region: "NTSC-J"
 SLPM-66575:
-  name: "Guitar Freaks V-2 & Drummania V-2"
+  name: "GuitarFreaks V2 & DrumMania V2"
   region: "NTSC-J"
 SLPM-66576:
   name: "Seiken Densetsu 4"
@@ -27096,7 +27099,7 @@ SLPM-66608:
   name: "Prince of Tennis - DokiDoki Survival - Sanroku no Mystic"
   region: "NTSC-J"
 SLPM-66609:
-  name: "Dance Dance Revolution - SuperNOVA"
+  name: "Dance Dance Revolution SuperNOVA"
   region: "NTSC-J"
 SLPM-66610:
   name: "Prince of Tennis - DokiDoki Survival - Umibe no Secret"
@@ -27128,7 +27131,7 @@ SLPM-66620:
   name: "Higurashi no Naku Koro ni Matsuri"
   region: "NTSC-J"
 SLPM-66621:
-  name: "Beatmania IIDX 12 - Happy Sky"
+  name: "beatmania IIDX 12 HAPPY SKY"
   region: "NTSC-J"
 SLPM-66622:
   name: "Tom Clancy's Ghost Recon 2 [Ubisoft Best]"
@@ -27349,7 +27352,7 @@ SLPM-66685:
   region: "NTSC-J"
   compat: 2
 SLPM-66686:
-  name: "GuitarFreaks & DrumMania Masterpiece Gold"
+  name: "GuitarFreaks & DrumMania MASTERPIECE GOLD"
   region: "NTSC-J"
 SLPM-66687:
   name: "Hiiro no Kakera - Ano Sora no Shita de"
@@ -27542,7 +27545,7 @@ SLPM-66741:
   name: "Sentou Kokka Kai - Legend"
   region: "NTSC-J"
 SLPM-66742:
-  name: "Pop'n Music 14 Fever"
+  name: "pop'n music 14 FEVER!"
   region: "NTSC-J"
   compat: 5
 SLPM-66743:
@@ -27785,7 +27788,7 @@ SLPM-66821:
   name: "Sengoku Musou 2 Mushoden"
   region: "NTSC-J"
 SLPM-66822:
-  name: "GuitarFreaks V3 & DrumMania V3"
+  name: "GuitarFreaks & DrumMania V3"
   region: "NTSC-J"
 SLPM-66823:
   name: "Taka Reet Ura Mahjong Retsuden - Mukoubushi"
@@ -27803,7 +27806,7 @@ SLPM-66827:
   name: "Youki Hime Den"
   region: "NTSC-J"
 SLPM-66828:
-  name: "Beatmania IIDX 13 - DistorteD"
+  name: "beatmania IIDX 13 DistorteD"
   region: "NTSC-J"
 SLPM-66829:
   name: "Major League Baseball 2K7"
@@ -28090,6 +28093,9 @@ SLPM-66927:
 SLPM-66929:
   name: "Elminage - Yami no Fujo to Kamigami no Yubiwa"
   region: "NTSC-J"
+SLPM-66930:
+  name: "Dance Dance Revolution SuperNOVA 2"
+  region: "NTSC-J"
 SLPM-66931:
   name: "Juiced 2 - Hot Import Nights"
   region: "NTSC-J"
@@ -28254,7 +28260,7 @@ SLPM-66994:
   gameFixes:
     - DMABusyHack
 SLPM-66995:
-  name: "Beatmania IIDX 14 - Gold"
+  name: "beatmania IIDX 14 GOLD"
   region: "NTSC-J"
 SLPM-66996:
   name: "Shuumatsu Otome Gensou Alicematic Apocalypse [Limited Edition]"
@@ -34983,7 +34989,7 @@ SLUS-20436:
   region: "NTSC-U"
   compat: 5
 SLUS-20437:
-  name: "Dance Dance Revolution MAX"
+  name: "DDRMAX Dance Dance Revolution"
   region: "NTSC-U"
   compat: 5
 SLUS-20438:
@@ -36126,7 +36132,7 @@ SLUS-20710:
     - "SLUS-20694"
     - "SLUS-20710"
 SLUS-20711:
-  name: "Dance Dance Revolution MAX 2"
+  name: "DDRMAX2 Dance Dance Revolution"
   region: "NTSC-U"
   compat: 5
 SLUS-20712:
@@ -36954,7 +36960,7 @@ SLUS-20915:
   region: "NTSC-U"
   compat: 5
 SLUS-20916:
-  name: "Dance Dance Revolution Extreme"
+  name: "Dance Dance Revolution EXTREME"
   region: "NTSC-U"
   compat: 5
 SLUS-20917:
@@ -38129,7 +38135,7 @@ SLUS-21173:
   name: "Dora the Explorer - To the Purple Planet"
   region: "NTSC-U"
 SLUS-21174:
-  name: "Dance Dance Revolution Extreme 2"
+  name: "Dance Dance Revolution EXTREME 2"
   region: "NTSC-U"
   compat: 5
 SLUS-21175:
@@ -38452,7 +38458,7 @@ SLUS-21238:
   region: "NTSC-U"
   compat: 5
 SLUS-21239:
-  name: "Beatmania"
+  name: "beatmania"
   region: "NTSC-U"
   compat: 5
 SLUS-21240:
@@ -40043,11 +40049,11 @@ SLUS-21607:
         // Fixes HUD and menu display.
         patch=1,EE,00173cb8,word,00000000
 SLUS-21608:
-  name: "Dance Dance Revolution - SuperNOVA 2"
+  name: "Dance Dance Revolution SuperNOVA 2"
   region: "NTSC-U"
   compat: 5
 SLUS-21609:
-  name: "Dance Dance Revolution - Disney Channel"
+  name: "Dance Dance Revolution Disney Channel Edition"
   region: "NTSC-U"
   compat: 5
 SLUS-21611:
@@ -41721,7 +41727,7 @@ SLUS-29036:
   name: "Scorpion King, The - Rise of the Akkadian [Demo]"
   region: "NTSC-U"
 SLUS-29037:
-  name: "Dance Dance Revolution Max [Demo]"
+  name: "DDRMAX Dance Dance Revolution [Demo]"
   region: "NTSC-U"
 SLUS-29038:
   name: "Haven - Call of the King [Regular Demo]"
@@ -41806,7 +41812,7 @@ SLUS-29073:
   gameFixes:
     - EETimingHack # Broken textures.
 SLUS-29074:
-  name: "Dance Dance Revolution Max 2 [Demo]"
+  name: "DDRMAX2 Dance Dance Revolution [Demo]"
   region: "NTSC-U"
 SLUS-29077:
   name: "I-Ninja [Demo]"
