@@ -60,6 +60,8 @@ void intBreakpoint(bool memcheck)
 	CBreakPoints::SetBreakpointTriggered(true);
 #ifndef PCSX2_CORE
 	GetCoreThread().PauseSelfDebug();
+#else
+	VMManager::SetPaused(true);
 #endif
 	throw Exception::ExitCpuExecute();
 }

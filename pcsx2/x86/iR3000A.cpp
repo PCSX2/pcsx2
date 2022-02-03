@@ -35,6 +35,10 @@
 #include <sys/types.h>
 #endif
 
+#ifdef PCSX2_CORE
+#include "VMManager.h"
+#endif
+
 #include "iCore.h"
 
 #include "Config.h"
@@ -1418,6 +1422,8 @@ static bool psxDynarecCheckBreakpoint()
 	CBreakPoints::SetBreakpointTriggered(true);
 #ifndef PCSX2_CORE
 	GetCoreThread().PauseSelfDebug();
+#else
+	VMManager::SetPaused(true);
 #endif
 
 	// Exit the EE too.
@@ -1434,6 +1440,8 @@ static bool psxDynarecMemcheck()
 	CBreakPoints::SetBreakpointTriggered(true);
 #ifndef PCSX2_CORE
 	GetCoreThread().PauseSelfDebug();
+#else
+	VMManager::SetPaused(true);
 #endif
 
 	// Exit the EE too.
@@ -1572,8 +1580,9 @@ void psxRecompileNextInstruction(bool delayslot, bool swapped_delayslot)
 	// add breakpoint
 	if (!delayslot)
 	{
-		psxEncodeBreakpoint();
-		psxEncodeMemcheck();
+		// Broken on x64
+		//	psxEncodeBreakpoint();
+	//	psxEncodeMemcheck();
 	}
 	else
 	{
