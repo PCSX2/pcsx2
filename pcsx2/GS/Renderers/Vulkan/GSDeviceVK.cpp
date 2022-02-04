@@ -2863,11 +2863,32 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		EndRenderPass();
 		hdr_rt->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-		OMSetRenderTargets(config.rt, draw_ds, config.scissor, pipe.feedback_loop);
-		BeginRenderPass(
-			GetTFXRenderPass(pipe.rt, pipe.ds, false, DATE_RENDER_PASS_NONE, pipe.feedback_loop, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-				pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
-			render_area);
+		draw_rt = static_cast<GSTextureVK*>(config.rt);
+		OMSetRenderTargets(draw_rt, draw_ds, config.scissor, pipe.feedback_loop);
+
+		// if this target was cleared and never drawn to, perform the clear as part of the resolve here.
+		if (draw_rt->GetState() == GSTexture::State::Cleared)
+		{
+			alignas(16) VkClearValue cvs[2];
+			u32 cv_count = 0;
+			GSVector4::store<true>(&cvs[cv_count++].color, draw_rt->GetClearColor());
+			if (draw_ds)
+				cvs[cv_count++].depthStencil = {draw_ds->GetClearDepth(), 1};
+
+			BeginClearRenderPass(
+				GetTFXRenderPass(true, pipe.ds, false, DATE_RENDER_PASS_NONE, pipe.feedback_loop, VK_ATTACHMENT_LOAD_OP_CLEAR,
+					pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
+				GSVector4i(0, 0, draw_rt->GetWidth(), draw_rt->GetHeight()),
+				cvs, cv_count);
+			draw_rt->SetState(GSTexture::State::Dirty);
+		}
+		else
+		{
+			BeginRenderPass(
+				GetTFXRenderPass(true, pipe.ds, false, DATE_RENDER_PASS_NONE, pipe.feedback_loop, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+					pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
+				render_area);
+		}
 
 		const GSVector4 sRect(GSVector4(render_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
 		SetPipeline(m_hdr_finish_pipelines[pipe.ds][pipe.feedback_loop]);
