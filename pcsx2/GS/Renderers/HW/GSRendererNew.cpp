@@ -298,7 +298,13 @@ void GSRendererNew::EmulateTextureShuffleAndFbmask()
 	{
 		m_conf.ps.dfmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
-		const GSVector4i fbmask_v = GSVector4i::load((int)m_context->FRAME.FBMSK);
+		// Don't allow only unused bits on 16bit format to enable fbmask,
+		// let's set the mask to 0 in such cases.
+		int fbmask = static_cast<int>(m_context->FRAME.FBMSK);
+		if (!(fbmask & 0x80F8F8F8) && fbmask != 0x0 && m_conf.ps.dfmt == 2)
+			fbmask = 0x0;
+
+		const GSVector4i fbmask_v = GSVector4i::load(fbmask);
 		const int ff_fbmask = fbmask_v.eq8(GSVector4i::xffffffff()).mask();
 		const int zero_fbmask = fbmask_v.eq8(GSVector4i::zero()).mask();
 
