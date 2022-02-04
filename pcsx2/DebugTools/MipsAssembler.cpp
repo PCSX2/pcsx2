@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2014-2014  PCSX2 Dev Team
+ *  Copyright (C) 2014-2022  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -84,6 +84,16 @@ const tMipsRegister MipsFloatRegister[] = {
 	{ "f7", 7, 2},		{ "$f7", 7, 3 },
 	{ "f8", 8, 2},		{ "$f8", 8, 3 },
 	{ "f9", 9, 2},		{ "$f9", 9, 3 },
+	{ "f00", 0, 3},		{ "$f00", 0, 4 },
+	{ "f01", 1, 3},		{ "$f01", 1, 4 },
+	{ "f02", 2, 3},		{ "$f02", 2, 4 },
+	{ "f03", 3, 3},		{ "$f03", 3, 4 },
+	{ "f04", 4, 3},		{ "$f04", 4, 4 },
+	{ "f05", 5, 3},		{ "$f05", 5, 4 },
+	{ "f06", 6, 3},		{ "$f06", 6, 4 },
+	{ "f07", 7, 3},		{ "$f07", 7, 4 },
+	{ "f08", 8, 3},		{ "$f08", 8, 4 },
+	{ "f09", 9, 3},		{ "$f09", 9, 4 },
 	{ "f10", 10, 3},	{ "$f10", 10, 4 },
 	{ "f11", 11, 3},	{ "$f11", 11, 4 },
 	{ "f12", 12, 3},	{ "$f12", 12, 4 },
