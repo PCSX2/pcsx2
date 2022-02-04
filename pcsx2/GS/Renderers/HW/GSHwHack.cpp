@@ -339,26 +339,6 @@ bool GSC_SFEX3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_LordOfTheRingsThirdAge(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (!fi.TME && fi.FBP == 0x03000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4 && fi.FBMSK == 0xFF000000)
-		{
-			skip = 1000; //shadows
-		}
-	}
-	else
-	{
-		if (fi.TME && (fi.FBP == 0x0 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03000 && fi.TPSM == PSM_PSMCT24)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_Tekken5(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -1000,9 +980,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::GiTS] = GSC_GiTS;
 		lut[CRC::SkyGunner] = GSC_SkyGunner; // Maybe not a channel effect
 		lut[CRC::SteambotChronicles] = GSC_SteambotChronicles;
-
-		// Colclip not supported
-		lut[CRC::LordOfTheRingsThirdAge] = GSC_LordOfTheRingsThirdAge;
 
 		// Depth Issue
 		lut[CRC::BurnoutDominator] = GSC_BurnoutGames;

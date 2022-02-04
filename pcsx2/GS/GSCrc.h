@@ -84,7 +84,6 @@ public:
 		KyuuketsuKitanMoonties,
 		Lamune,
 		LegacyOfKainDefiance,
-		LordOfTheRingsThirdAge,
 		MajokkoALaMode2,
 		Manhunt2,
 		MetalSlug6,
