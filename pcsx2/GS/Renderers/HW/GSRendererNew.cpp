@@ -301,11 +301,11 @@ void GSRendererNew::EmulateTextureShuffleAndFbmask()
 		// Don't allow only unused bits on 16bit format to enable fbmask,
 		// let's set the mask to 0 in such cases.
 		int fbmask = static_cast<int>(m_context->FRAME.FBMSK);
-		if (!(fbmask & 0x80F8F8F8) && fbmask != 0x0 && m_conf.ps.dfmt == 2)
-			fbmask = 0x0;
-
+		const int fbmask_r = m_conf.ps.dfmt == 2 ? 0x80F8F8F8 : m_conf.ps.dfmt == 1 ? 0x00FFFFFF : 0xFFFFFFFF;
+		fbmask &= fbmask_r;
 		const GSVector4i fbmask_v = GSVector4i::load(fbmask);
-		const int ff_fbmask = fbmask_v.eq8(GSVector4i::xffffffff()).mask();
+		const GSVector4i fbmask_vr = GSVector4i::load(fbmask_r);
+		const int ff_fbmask = fbmask_v.eq8(fbmask_vr).mask();
 		const int zero_fbmask = fbmask_v.eq8(GSVector4i::zero()).mask();
 
 		m_conf.colormask.wrgba = ~ff_fbmask; // Enable channel if at least 1 bit is 0
@@ -527,8 +527,9 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	const bool AA1 = PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS);
 	// PABE: Check condition early as an optimization.
 	const bool PABE = PRIM->ABE && m_env.PABE.PABE && (GetAlphaMinMax().max < 128);
-	// FBMASK: Only alpha is written, no need to do blending.
-	const bool FBMASK = m_context->FRAME.FBMSK == 0x00FFFFFF;
+	// FBMASK: Color is not written, no need to do blending.
+	const int temp_fbmask = m_conf.ps.dfmt == 2 ? 0x00F8F8F8 : 0x00FFFFFF;
+	const bool FBMASK = (m_context->FRAME.FBMSK & temp_fbmask) == temp_fbmask;
 
 	// No blending or coverage anti-aliasing so early exit
 	if (FBMASK || PABE || !(PRIM->ABE || AA1))
