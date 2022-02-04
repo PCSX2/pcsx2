@@ -196,6 +196,7 @@ for ARG in "$@"; do
         --use-system-yaml   ) flags="$flags -DUSE_SYSTEM_YAML=TRUE" ;;
         --asan              ) flags="$flags -DUSE_ASAN=TRUE" ;;
         --gtk2              ) flags="$flags -DGTK2_API=TRUE" ;;
+        --qt                ) flags="$flags -DQT_BUILD=TRUE" ;;
         --lto               ) flags="$flags -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE" ;;
         --pgo-optimize      ) flags="$flags -DUSE_PGO_OPTIMIZE=TRUE" ;;
         --pgo-generate      ) flags="$flags -DUSE_PGO_GENERATE=TRUE" ;;
@@ -230,6 +231,7 @@ for ARG in "$@"; do
             echo
             echo "** Expert Developer option **"
             echo "--gtk2          : use GTK 2 instead of GTK 3"
+            echo "--qt            : use qt instead of wx (experimental)"
             echo "--no-trans      : Don't regenerate mo files when building."
             echo "--clang         : Build with Clang/llvm"
             echo "--intel         : Build with ICC (Intel compiler)"
