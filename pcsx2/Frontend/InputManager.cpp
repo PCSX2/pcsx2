@@ -594,17 +594,17 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 		{
 			case PAD::VibrationCapabilities::LargeSmallMotors:
 			{
-				const std::string large_binding(si.GetStringValue(section.c_str(), "LargeMotor"));
-				const std::string small_binding(si.GetStringValue(section.c_str(), "SmallMotor"));
-				has_any_bindings |= ParseBindingAndGetSource(large_binding, &vib.motors[0].binding, &vib.motors[0].source);
-				has_any_bindings |= ParseBindingAndGetSource(small_binding, &vib.motors[1].binding, &vib.motors[1].source);
+				if (const std::string large_binding(si.GetStringValue(section.c_str(), "LargeMotor")); !large_binding.empty())
+					has_any_bindings |= ParseBindingAndGetSource(large_binding, &vib.motors[0].binding, &vib.motors[0].source);
+				if (const std::string small_binding(si.GetStringValue(section.c_str(), "SmallMotor")); !small_binding.empty())
+					has_any_bindings |= ParseBindingAndGetSource(small_binding, &vib.motors[1].binding, &vib.motors[1].source);
 			}
 			break;
 
 			case PAD::VibrationCapabilities::SingleMotor:
 			{
-				const std::string binding(si.GetStringValue(section.c_str(), "Motor"));
-				has_any_bindings |= ParseBindingAndGetSource(binding, &vib.motors[0].binding, &vib.motors[0].source);
+				if (const std::string binding(si.GetStringValue(section.c_str(), "Motor")); !binding.empty())
+					has_any_bindings |= ParseBindingAndGetSource(binding, &vib.motors[0].binding, &vib.motors[0].source);
 			}
 			break;
 
