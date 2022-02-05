@@ -27,10 +27,12 @@ static constexpr u32 DEFAULT_FRAME_LATENCY = 2;
 
 static void FillComboBoxWithEmulationSpeeds(QComboBox* cb)
 {
+//	cb->addItem(qApp->translate("GeneralSettingsWidget", "Custom"),;// TODO: Make use of getInteger to get manual overrides from users 
+																	// for speed choice along with dropdown presets.
 	cb->addItem(qApp->translate("GeneralSettingsWidget", "Unlimited"), QVariant(0.0f));
 
-	static const int speeds[] = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 125, 150, 175,
-		200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000};
+	static const int speeds[] = {1, 10, 25, 50, 75, 90, 100, 110,
+		120, 150, 175, 200, 300, 400, 500, 1000};
 	for (const int speed : speeds)
 	{
 		cb->addItem(qApp->translate("EmulationSettingsWidget", "%1% [%2 FPS (NTSC) / %3 FPS (PAL)]")

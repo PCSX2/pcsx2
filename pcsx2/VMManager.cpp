@@ -431,11 +431,11 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 		if (cheat_count > 0 || ws_patch_count > 0)
 		{
 			message.Write(" are active.");
-			Host::AddKeyedOSDMessage("LoadPatches", message.GetString().ToStdString(), 10.0f);
+			Host::AddKeyedOSDMessage("LoadPatches", message.GetString().ToStdString(), 5.0f);
 		}
 		else if (show_messages_when_disabled)
 		{
-			Host::AddKeyedOSDMessage("LoadPatches", "No cheats or widescreen patches are found/enabled.", 10.0f);
+			Host::AddKeyedOSDMessage("LoadPatches", "No cheats or patches (widescreen, compatibility or others) are found / enabled.", 8.0f);
 		}
 	}
 }
@@ -831,11 +831,11 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 	const std::string filename(GetCurrentSaveStateFileName(slot));
 	if (filename.empty())
 	{
-		Host::AddKeyedFormattedOSDMessage("LoadStateFromSlot", 10.0f, "There is no save state in slot %d.", slot);
+		Host::AddKeyedFormattedOSDMessage("LoadStateFromSlot", 5.0f, "There is no save state in slot %d.", slot);
 		return false;
 	}
 
-	Host::AddKeyedFormattedOSDMessage("LoadStateFromSlot", 10.0f, "Loading state from slot %d...", slot);
+	Host::AddKeyedFormattedOSDMessage("LoadStateFromSlot", 5.0f, "Loading state from slot %d...", slot);
 	return DoLoadState(filename.c_str());
 }
 
@@ -883,7 +883,7 @@ bool VMManager::ChangeDisc(std::string path)
 	const bool result = DoCDVDopen();
 	if (result)
 	{
-		Host::AddFormattedOSDMessage(10.0f, "Disc changed to '%s'.", display_name.c_str());
+		Host::AddFormattedOSDMessage(5.0f, "Disc changed to '%s'.", display_name.c_str());
 	}
 	else
 	{
@@ -1158,7 +1158,7 @@ static void HotkeyAdjustTargetSpeed(double delta)
 	VMManager::SetLimiterMode(LimiterModeType::Nominal);
 	gsUpdateFrequency(EmuConfig);
 	GetMTGS().SetVSync(EmuConfig.GetEffectiveVsyncMode());
-	Host::AddKeyedFormattedOSDMessage("SpeedChanged", 10.0f, "Target speed set to %.0f%%.", std::round(EmuConfig.Framerate.NominalScalar * 100.0));
+	Host::AddKeyedFormattedOSDMessage("SpeedChanged", 5.0f, "Target speed set to %.0f%%.", std::round(EmuConfig.Framerate.NominalScalar * 100.0));
 }
 
 static constexpr s32 CYCLE_SAVE_STATE_SLOTS = 10;
@@ -1188,11 +1188,11 @@ static void HotkeyCycleSaveSlot(s32 delta)
 		if (len > 0 && date_buf[len - 1] == '\n')
 			date_buf[len - 1] = 0;
 
-		Host::AddKeyedFormattedOSDMessage("CycleSaveSlot", 10.0f, "Save slot %d selected (last save: %s).", s_current_save_slot, date_buf);
+		Host::AddKeyedFormattedOSDMessage("CycleSaveSlot", 5.0f, "Save slot %d selected (last save: %s).", s_current_save_slot, date_buf);
 	}
 	else
 	{
-		Host::AddKeyedFormattedOSDMessage("CycleSaveSlot", 10.0f, "Save slot %d selected (no save yet).", s_current_save_slot);
+		Host::AddKeyedFormattedOSDMessage("CycleSaveSlot", 5.0f, "Save slot %d selected (no save yet).", s_current_save_slot);
 	}
 }
 
