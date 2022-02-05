@@ -123,6 +123,25 @@ PBPX-95524:
   # Comments from old GameIndex.dbf for this Game
   # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
+PBPX-95601:
+  name: "Gran Turismo 4 [PlayStation 2 Racing Pack]"
+  region: "NTSC-J"
+  compat: 5
+  clampModes:
+    vuClampMode: 2  # Text in GT mode works.
+  memcardFilters:
+    - "SCAJ-20066"
+    - "SCAJ-30006"
+    - "SCAJ-30007"
+    - "SCAJ-30008"
+    - "SCPS-15055"
+    - "SCPS-17001"
+    - "SCPS-19252"
+    - "SCPS-19304"
+    - "SCPS-15009"
+    - "SCPS-55007"
+  # Comments from old GameIndex.dbf for this Game
+  # eeClampMode = 3  Text in races works.
 PCPX-96311:
   name: "Gran Turismo 3 Trial Disk Volume 1"
   region: "NTSC-J"
