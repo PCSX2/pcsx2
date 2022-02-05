@@ -123,6 +123,7 @@ const CRC::Game CRC::m_games[] =
 	{0xC02C653E, GT4, CH, 0},
 	{0x7ABDBB5E, GT4, CH, 0}, // cutie comment
 	{0xAEAD1CA3, GT4, JP, 0},
+	{0xA3AF15A0, GT4, JP, 0}, // GT4 PS2 Racing Pack
 	{0xE906EA37, GT4, JP, 0}, // GT4 First Preview
 	{0xCA6243B9, GT4, JP, 0}, // GT4 Prologue
 	{0xDD764BBE, GT4, JP, 0}, // GT4 Prologue
