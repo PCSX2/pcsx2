@@ -46,7 +46,7 @@ public:
 		UNorm8,       ///< A8UNorm texture for paletted textures and the OSD font
 		UInt16,       ///< UInt16 texture for reading back 16-bit depth
 		UInt32,       ///< UInt32 texture for reading back 24 and 32-bit depth
-		Int32,        ///< Int32 texture for date emulation
+		PrimID,       ///< Prim ID tracking texture for date emulation
 		BC1,          ///< BC1, aka DXT1 compressed texture for replacements
 		BC2,          ///< BC2, aka DXT2/3 compressed texture for replacements
 		BC3,          ///< BC3, aka DXT4/5 compressed texture for replacements

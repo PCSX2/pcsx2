@@ -931,7 +931,7 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area)
 
 	// Create a texture to avoid the useless clean@0
 	if (m_date.t == NULL)
-		m_date.t = CreateTexture(rtsize.x, rtsize.y, false, GSTexture::Format::Int32);
+		m_date.t = CreateTexture(rtsize.x, rtsize.y, false, GSTexture::Format::PrimID);
 
 	// Clean with the max signed value
 	const int max_int = 0x7FFFFFFF;

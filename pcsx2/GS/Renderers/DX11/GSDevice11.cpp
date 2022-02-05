@@ -451,7 +451,7 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 		case GSTexture::Format::UNorm8:       dxformat = DXGI_FORMAT_A8_UNORM;           break;
 		case GSTexture::Format::UInt16:       dxformat = DXGI_FORMAT_R16_UINT;           break;
 		case GSTexture::Format::UInt32:       dxformat = DXGI_FORMAT_R32_UINT;           break;
-		case GSTexture::Format::Int32:        dxformat = DXGI_FORMAT_R32_SINT;           break;
+		case GSTexture::Format::PrimID:       dxformat = DXGI_FORMAT_R32_SINT;           break;
 		case GSTexture::Format::BC1:          dxformat = DXGI_FORMAT_BC1_UNORM;          break;
 		case GSTexture::Format::BC2:          dxformat = DXGI_FORMAT_BC2_UNORM;          break;
 		case GSTexture::Format::BC3:          dxformat = DXGI_FORMAT_BC3_UNORM;          break;
