@@ -2675,7 +2675,7 @@ static bool UsesRegionRepeat(int fix, int msk, int min, int max, int* min_out, i
 
 	const int cleared_bits = ~msk & ~fix; // Bits that are always cleared by applying msk and fix
 	const int set_bits = fix; // Bits that are always set by applying msk and fix
-	unsigned long msb;
+	unsigned int msb;
 	int variable_bits = min ^ max;
 	if (_BitScanReverse(&msb, variable_bits))
 		variable_bits |= (1 << msb) - 1; // Fill in all lower bits
