@@ -251,6 +251,9 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 
 	const bool is_hardware = (type == GSRendererType::DX11 || type == GSRendererType::OGL || type == GSRendererType::VK);
 	const bool is_software = (type == GSRendererType::SW);
+	const int current_tab = m_hardware_renderer_visible ?
+                                m_ui.hardwareRendererGroup->currentIndex() :
+                                m_ui.softwareRendererGroup->currentIndex();
 
 	// move advanced tab to the correct parent
 	static constexpr std::array<const char*, 3> move_tab_names = {{"Display", "On-Screen Display", "Advanced"}};
@@ -269,21 +272,19 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 			m_ui.softwareRendererGroup->insertTab((i == 0) ? 0 : m_ui.softwareRendererGroup->count(), tab, tab_label);
 	}
 
-	if (is_hardware != is_software)
-	{
-		if (is_hardware)
-			m_ui.hardwareRendererGroup->setCurrentIndex(0);
-		else
-			m_ui.softwareRendererGroup->setCurrentIndex(0);
-	}
-
 	if (m_hardware_renderer_visible != is_hardware)
 	{
 		m_ui.hardwareRendererGroup->setVisible(is_hardware);
 		if (!is_hardware)
+		{
 			m_ui.verticalLayout->removeWidget(m_ui.hardwareRendererGroup);
+		}
 		else
+		{
+			// map first two tabs over, skip hacks
 			m_ui.verticalLayout->insertWidget(1, m_ui.hardwareRendererGroup);
+			m_ui.hardwareRendererGroup->setCurrentIndex((current_tab < 2) ? current_tab : (current_tab + 2));
+		}
 
 		m_hardware_renderer_visible = is_hardware;
 	}
@@ -291,10 +292,16 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	if (m_software_renderer_visible != is_software)
 	{
 		m_ui.softwareRendererGroup->setVisible(is_software);
-		if (!is_hardware)
+		if (is_hardware)
+		{
 			m_ui.verticalLayout->removeWidget(m_ui.softwareRendererGroup);
+		}
 		else
+		{
+			// software has no hacks tabs
 			m_ui.verticalLayout->insertWidget(1, m_ui.softwareRendererGroup);
+			m_ui.softwareRendererGroup->setCurrentIndex((current_tab >= 4) ? (current_tab - 2) : (current_tab >= 2 ? 1 : current_tab));
+		}
 
 		m_software_renderer_visible = is_software;
 	}
