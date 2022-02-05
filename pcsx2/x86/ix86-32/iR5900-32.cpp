@@ -1174,7 +1174,6 @@ static void iBranchTest(u32 newpc)
 	}
 }
 
-#ifdef PCSX2_DEVBUILD
 // opcode 'code' modifies:
 // 1: status
 // 2: MAC
@@ -1283,7 +1282,6 @@ bool COP2IsQOP(u32 code)
 
 	return false;
 }
-#endif
 
 
 void dynarecCheckBreakpoint()
@@ -1574,7 +1572,6 @@ void recompileNextInstruction(int delayslot)
 
 	g_maySignalException = false;
 
-#if PCSX2_DEVBUILD
 	// Stalls normally occur as necessary on the R5900, but when using COP2 (VU0 macro mode),
 	// there are some exceptions to this.  We probably don't even know all of them.
 	// We emulate the R5900 as if it was fully interlocked (which is mostly true), and
@@ -1612,12 +1609,12 @@ void recompileNextInstruction(int delayslot)
 				else if (COP2IsQOP(cpuRegs.code))
 				{
 					std::string disasm;
-					DevCon.Warning("Possible incorrect Q value used in COP2");
+					Console.Warning("Possible incorrect Q value used in COP2. If the game is broken, please report to http://github.com/pcsx2/pcsx2.");
 					for (u32 i = s_pCurBlockEx->startpc; i < s_nEndBlock; i += 4)
 					{
 						disasm = "";
 						disR5900Fasm(disasm, memRead32(i), i, false);
-						DevCon.Warning("%x %s%08X %s", i, i == pc - 4 ? "*" : i == p ? "=" : " ", memRead32(i), disasm.c_str());
+						Console.Warning("%x %s%08X %s", i, i == pc - 4 ? "*" : i == p ? "=" : " ", memRead32(i), disasm.c_str());
 					}
 					break;
 				}
@@ -1636,12 +1633,12 @@ void recompileNextInstruction(int delayslot)
 					if (_Rd_ == 16 && s & 1 || _Rd_ == 17 && s & 2 || _Rd_ == 18 && s & 4)
 					{
 						std::string disasm;
-						DevCon.Warning("Possible old value used in COP2 code");
+						Console.Warning("Possible old value used in COP2 code. If the game is broken, please report to http://github.com/pcsx2/pcsx2.");
 						for (u32 i = s_pCurBlockEx->startpc; i < s_nEndBlock; i += 4)
 						{
 							disasm = "";
 							disR5900Fasm(disasm, memRead32(i), i,false);
-							DevCon.Warning("%x %s%08X %s", i, i == pc - 4 ? "*" : i == p ? "=" : " ", memRead32(i), disasm.c_str());
+							Console.Warning("%x %s%08X %s", i, i == pc - 4 ? "*" : i == p ? "=" : " ", memRead32(i), disasm.c_str());
 						}
 						break;
 					}
@@ -1657,7 +1654,6 @@ void recompileNextInstruction(int delayslot)
 		}
 	}
 	cpuRegs.code = *s_pCode;
-#endif
 
 	if (!delayslot && (xGetPtr() - recPtr > 0x1000))
 		s_nEndBlock = pc;
