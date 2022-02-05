@@ -297,6 +297,9 @@ Pcsx2Config::GSOptions::GSOptions()
 	AutoFlushSW = true;
 	PreloadFrameWithGSData = false;
 	WrapGSMem = false;
+	Mipmap = true;
+	AA1 = true;
+
 	UserHacks = false;
 	UserHacks_AlignSpriteX = false;
 	UserHacks_AutoFlush = false;
