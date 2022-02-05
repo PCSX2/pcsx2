@@ -269,8 +269,7 @@ bool GSRendererHW::CanUpscale()
 		return false;
 	}
 
-	 // upscale ratio depends on the display size, with no output it may not be set correctly (ps2 logo to game transition)
-	return GSConfig.UpscaleMultiplier != 1 && m_regs->PMODE.EN != 0;
+	return GSConfig.UpscaleMultiplier != 1;
 }
 
 int GSRendererHW::GetUpscaleMultiplier()
