@@ -25,8 +25,6 @@
 #include <err.h>
 #endif
 
-#include "ghc/filesystem.h"
-
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
@@ -95,6 +93,23 @@ std::string s_strIniPath = "inis";
 std::string s_strLogPath = "logs";
 
 bool isRunning = false;
+
+fs::path GetHDDPath()
+{
+	//GHC uses UTF8 on all platforms
+	fs::path hddPath(config.Hdd);
+
+	if (hddPath.empty())
+		config.hddEnable = false;
+
+	if (hddPath.is_relative())
+	{
+		fs::path path(EmuFolders::Settings.ToString().wx_str());
+		hddPath = path / hddPath;
+	}
+
+	return hddPath;
+}
 
 s32 DEV9init()
 {
@@ -196,16 +211,7 @@ s32 DEV9open()
 	DevCon.WriteLn("DEV9: open r+: %s", config.Hdd);
 #endif
 
-	ghc::filesystem::path hddPath(config.Hdd);
-
-	if (hddPath.empty())
-		config.hddEnable = false;
-
-	if (hddPath.is_relative())
-	{
-		ghc::filesystem::path path(EmuFolders::Settings.ToString().wx_str());
-		hddPath = path / hddPath;
-	}
+	fs::path hddPath = GetHDDPath();
 
 	if (config.hddEnable)
 	{
@@ -1084,17 +1090,7 @@ void ApplyConfigIfRunning(ConfigDEV9 oldConfig)
 
 	//Hdd
 	//Hdd Validate Path
-	ghc::filesystem::path hddPath(config.Hdd);
-
-	if (hddPath.empty())
-		config.hddEnable = false;
-
-	if (hddPath.is_relative())
-	{
-		//GHC uses UTF8 on all platforms
-		ghc::filesystem::path path(EmuFolders::Settings.ToString().wx_str());
-		hddPath = path / hddPath;
-	}
+	fs::path hddPath = GetHDDPath();
 
 	//Hdd Compare with old config
 	if (config.hddEnable)

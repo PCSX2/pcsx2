@@ -18,7 +18,6 @@
 #include <stdio.h>
 
 #include <vector>
-#include <ghc/filesystem.h>
 
 #include <wx/wx.h>
 #include <wx/collpane.h>
@@ -383,16 +382,16 @@ void DEV9configure()
 		ConfigDEV9 oldConfig = config;
 		dialog.Save(config);
 
-		ghc::filesystem::path hddPath(config.Hdd);
+		fs::path hddPath(config.Hdd);
 
 		if (hddPath.is_relative())
 		{
 			//GHC uses UTF8 on all platforms
-			ghc::filesystem::path path(EmuFolders::Settings.ToString().wx_str());
+			fs::path path(EmuFolders::Settings.ToString().wx_str());
 			hddPath = path / hddPath;
 		}
 
-		if (config.hddEnable && !ghc::filesystem::exists(hddPath))
+		if (config.hddEnable && !fs::exists(hddPath))
 		{
 			HddCreate hddCreator;
 			hddCreator.filePath = hddPath;
