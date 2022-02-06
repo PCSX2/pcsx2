@@ -33,6 +33,7 @@ s32 SPU2open();
 void SPU2close();
 void SPU2shutdown();
 void SPU2SetOutputPaused(bool paused);
+void SPU2SetDeviceSampleRateMultiplier(double multiplier);
 void SPU2write(u32 mem, u16 value);
 u16 SPU2read(u32 mem);
 

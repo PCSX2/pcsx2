@@ -31,6 +31,8 @@
 
 #include "ps2/HwInternal.h"
 #include "Sio.h"
+#include "HostDisplay.h"
+#include "SPU2/spu2.h"
 
 #ifndef PCSX2_CORE
 #include "gui/App.h"
@@ -46,6 +48,7 @@ using namespace Threading;
 extern u8 psxhblankgate;
 static const uint EECNT_FUTURE_TARGET = 0x10000000;
 static int gates = 0;
+static bool s_use_vsync_for_timing = false;
 
 uint g_FrameCount = 0;
 
@@ -346,6 +349,39 @@ double GetVerticalFrequency()
 	}
 }
 
+static double AdjustToHostRefreshRate(double vertical_frequency, double frame_limit)
+{
+	if (!EmuConfig.GS.SyncToHostRefreshRate || EmuConfig.GS.LimitScalar != 1.0)
+	{
+		SPU2SetDeviceSampleRateMultiplier(1.0);
+		s_use_vsync_for_timing = false;
+		return frame_limit;
+	}
+
+	float host_refresh_rate;
+	if (!Host::GetHostDisplay()->GetHostRefreshRate(&host_refresh_rate))
+	{
+		Console.Warning("Cannot sync to host refresh since the query failed.");
+		SPU2SetDeviceSampleRateMultiplier(1.0);
+		s_use_vsync_for_timing = false;
+		return frame_limit;
+	}
+
+	const double ratio = host_refresh_rate / vertical_frequency;
+	const bool syncing_to_host = (ratio >= 0.95f && ratio <= 1.05f);
+	s_use_vsync_for_timing = (syncing_to_host && !EmuConfig.GS.SkipDuplicateFrames && EmuConfig.GS.VsyncEnable != VsyncMode::Off);
+	Console.WriteLn("Refresh rate: Host=%fhz Guest=%fhz Ratio=%f - %s %s", host_refresh_rate,
+		vertical_frequency, ratio, syncing_to_host ? "can sync" : "can't sync",
+		s_use_vsync_for_timing ? "and using vsync for pacing" : "and using sleep for pacing");
+
+	if (!syncing_to_host)
+		return frame_limit;
+
+	frame_limit *= ratio;
+	SPU2SetDeviceSampleRateMultiplier(ratio);
+	return frame_limit;
+}
+
 u32 UpdateVSyncRate()
 {
 	// Notice:  (and I probably repeat this elsewhere, but it's worth repeating)
@@ -357,7 +393,7 @@ u32 UpdateVSyncRate()
 	const double vertical_frequency = GetVerticalFrequency();
 
 	const double frames_per_second = vertical_frequency / 2.0;
-	const double frame_limit = frames_per_second * EmuConfig.GS.LimitScalar;
+	const double frame_limit = AdjustToHostRefreshRate(vertical_frequency, frames_per_second * EmuConfig.GS.LimitScalar);
 
 	const double tick_rate = GetTickFrequency() / 2.0;
 	const s64 ticks = static_cast<s64>(tick_rate / std::max(frame_limit, 1.0));
@@ -515,7 +551,7 @@ static __fi void frameLimitUpdateCore()
 static __fi void frameLimit()
 {
 	// Framelimiter off in settings? Framelimiter go brrr.
-	if (EmuConfig.GS.LimitScalar == 0.0)
+	if (EmuConfig.GS.LimitScalar == 0.0 || s_use_vsync_for_timing)
 	{
 		frameLimitUpdateCore();
 		return;

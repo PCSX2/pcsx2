@@ -435,6 +435,7 @@ struct Pcsx2Config
 					PCRTCOffsets : 1,
 					IntegerScaling : 1,
 					LinearPresent : 1,
+					SyncToHostRefreshRate : 1,
 					UseDebugDevice : 1,
 					UseBlitSwapChain : 1,
 					DisableShaderCache : 1,
