@@ -74,6 +74,7 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel(wxWindow* parent)
 	// Implement custom hotkeys (Alt + Enter) with translatable string intact + not blank in GUI.
 	m_check_Fullscreen = new pxCheckBox(this, _("Start in fullscreen mode by default") + wxString(" (") + wxGetApp().GlobalAccels->findKeycodeWithCommandId("FullscreenToggle").toTitleizedString() + wxString(")"));
 	m_check_DclickFullscreen = new pxCheckBox(this, _("Double-click toggles fullscreen mode"));
+	m_check_SyncToHostRefreshRate = new pxCheckBox(this, _("Sync To Host Refresh Rate"));
 
 	m_combo_FMVAspectRatioSwitch->SetToolTip(pxEt(L"Off: Disables temporary aspect ratio switch. (It will use the above setting from Aspect Ratio instead of FMV Aspect Ratio Override.)\n\n"
 												  L"Auto 4:3/3:2: Temporarily switch to a 4:3 aspect ratio while an FMV plays to correctly display a 4:3 FMV. Will use 3:2 is the resolution is 480P\n\n"
@@ -136,6 +137,7 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel(wxWindow* parent)
 
 	*this += m_check_Fullscreen;
 	*this += m_check_DclickFullscreen;
+	*this += m_check_SyncToHostRefreshRate;
 	*this += new wxStaticLine(this) | StdExpand();
 
 	*this += s_vsync | StdExpand();
@@ -169,6 +171,7 @@ void Panels::GSWindowSettingsPanel::ApplyConfigToGui(AppConfig& configToApply, i
 		m_text_Zoom->ChangeValue(wxString::FromDouble(gsconf.Zoom, 2));
 
 		m_check_DclickFullscreen->SetValue(conf.IsToggleFullscreenOnDoubleClick);
+		m_check_SyncToHostRefreshRate->SetValue(gsconf.SyncToHostRefreshRate);
 
 		m_text_WindowWidth->ChangeValue(wxsFormat(L"%d", conf.WindowSize.GetWidth()));
 		m_text_WindowHeight->ChangeValue(wxsFormat(L"%d", conf.WindowSize.GetHeight()));
@@ -199,6 +202,7 @@ void Panels::GSWindowSettingsPanel::Apply()
 	gsconf.VsyncEnable = static_cast<VsyncMode>(m_combo_vsync->GetSelection());
 
 	appconf.IsToggleFullscreenOnDoubleClick = m_check_DclickFullscreen->GetValue();
+	gsconf.SyncToHostRefreshRate = m_check_SyncToHostRefreshRate->GetValue();
 
 	long xr, yr = 1;
 

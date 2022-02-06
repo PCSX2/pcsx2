@@ -886,6 +886,7 @@ void AppConfig::GSWindowOptions::LoadSave(IniInterface& ini)
 			// WARNING: array must be NULL terminated to compute it size
 			NULL};
 
+	g_Conf->EmuOptions.GS.SyncToHostRefreshRate = ini.EntryBitBool(L"SyncToHostRefreshRate", g_Conf->EmuOptions.GS.SyncToHostRefreshRate, g_Conf->EmuOptions.GS.SyncToHostRefreshRate);
 	ini.EnumEntry(L"AspectRatio", g_Conf->EmuOptions.GS.AspectRatio, AspectRatioNames, g_Conf->EmuOptions.GS.AspectRatio);
 	if (ini.IsLoading())
 		EmuConfig.CurrentAspectRatio = g_Conf->EmuOptions.GS.AspectRatio;

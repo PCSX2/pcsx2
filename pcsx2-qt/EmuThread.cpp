@@ -27,6 +27,7 @@
 #include "common/StringUtil.h"
 
 #include "pcsx2/CDVD/CDVD.h"
+#include "pcsx2/Counters.h"
 #include "pcsx2/Frontend/InputManager.h"
 #include "pcsx2/Frontend/ImGuiManager.h"
 #include "pcsx2/GS.h"
@@ -361,6 +362,9 @@ void EmuThread::setFullscreen(bool fullscreen)
 	m_is_fullscreen = fullscreen;
 	GetMTGS().UpdateDisplayWindow();
 	GetMTGS().WaitGS();
+
+	// If we're using exclusive fullscreen, the refresh rate may have changed.
+	UpdateVSyncRate();
 }
 
 void EmuThread::setSurfaceless(bool surfaceless)

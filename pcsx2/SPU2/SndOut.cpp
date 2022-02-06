@@ -149,14 +149,6 @@ bool SndBuffer::CheckUnderrunStatus(int& nSamples, int& quietSampleCount)
 	return true;
 }
 
-void SndBuffer::_InitFail()
-{
-	// If a failure occurs, just initialize the NoSound driver.  This'll allow
-	// the game to emulate properly (hopefully), albeit without sound.
-	OutputModule = FindOutputModuleById(NullOut->GetIdent());
-	mods[OutputModule]->Init();
-}
-
 int SndBuffer::_GetApproximateDataInBuffer()
 {
 	// WARNING: not necessarily 100% up to date by the time it's used, but it will have to do.
@@ -357,13 +349,10 @@ void SndBuffer::_WriteSamples(StereoOut32* bData, int nSamples)
 	_WriteSamples_Safe(bData, nSamples);
 }
 
-void SndBuffer::Init()
+bool SndBuffer::Init()
 {
-	if (mods[OutputModule] == nullptr)
-	{
-		_InitFail();
-		return;
-	}
+	if (!mods[OutputModule])
+		return false;
 
 	// initialize sound buffer
 	// Buffer actually attempts to run ~50%, so allocate near double what
@@ -372,33 +361,25 @@ void SndBuffer::Init()
 	m_rpos = 0;
 	m_wpos = 0;
 
-	try
-	{
-		const float latencyMS = SndOutLatencyMS * 16;
-		m_size = GetAlignedBufferSize((int)(latencyMS * SampleRate / 1000.0f));
-		printf("%d SampleRate: \n", SampleRate);
-		m_buffer = new StereoOut32[m_size];
-		m_underrun_freeze = false;
+	const float latencyMS = SndOutLatencyMS * 16;
+	m_size = GetAlignedBufferSize((int)(latencyMS * SampleRate / 1000.0f));
+	m_buffer = new StereoOut32[m_size];
+	m_underrun_freeze = false;
 
-		sndTempBuffer = new StereoOut32[SndOutPacketSize];
-		sndTempBuffer16 = new StereoOut16[SndOutPacketSize * 2]; // in case of leftovers.
-	}
-	catch (std::bad_alloc&)
-	{
-		// out of memory exception (most likely)
-
-		SysMessage("Out of memory error occurred while initializing SPU2.");
-		_InitFail();
-		return;
-	}
-
+	sndTempBuffer = new StereoOut32[SndOutPacketSize];
+	sndTempBuffer16 = new StereoOut16[SndOutPacketSize * 2]; // in case of leftovers.
 	sndTempProgress = 0;
 
 	soundtouchInit(); // initializes the timestretching
 
 	// initialize module
 	if (!mods[OutputModule]->Init())
-		_InitFail();
+	{
+		Cleanup();
+		return false;
+	}
+
+	return true;
 }
 
 void SndBuffer::Cleanup()

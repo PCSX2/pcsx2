@@ -586,7 +586,6 @@ private:
 	static float eTempo;
 	static int ssFreeze;
 
-	static void _InitFail();
 	static bool CheckUnderrunStatus(int& nSamples, int& quietSampleCount);
 
 	static void soundtouchInit();
@@ -614,7 +613,7 @@ private:
 
 public:
 	static void UpdateTempoChangeAsyncMixing();
-	static void Init();
+	static bool Init();
 	static void Cleanup();
 	static void Write(const StereoOut32& Sample);
 	static void ClearContents();
