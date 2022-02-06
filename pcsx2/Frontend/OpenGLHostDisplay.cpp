@@ -190,7 +190,7 @@ bool OpenGLHostDisplay::HasRenderSurface() const
 	return m_window_info.type != WindowInfo::Type::Surfaceless;
 }
 
-bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool threaded_presentation, bool debug_device)
+bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, VsyncMode vsync, bool threaded_presentation, bool debug_device)
 {
 	m_gl_context = GL::Context::Create(wi);
 	if (!m_gl_context)
@@ -201,15 +201,21 @@ bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_vie
 	}
 
 	m_window_info = m_gl_context->GetWindowInfo();
+	m_vsync_mode = vsync;
 	return true;
 }
 
 bool OpenGLHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
 {
-	// Start with vsync off.
-	m_gl_context->SetSwapInterval(0);
+	SetSwapInterval();
 	GL::Program::ResetLastProgram();
 	return true;
+}
+
+void OpenGLHostDisplay::SetSwapInterval()
+{
+	const int interval = ((m_vsync_mode == VsyncMode::Adaptive) ? -1 : ((m_vsync_mode == VsyncMode::On) ? 1 : 0));
+	m_gl_context->SetSwapInterval(interval);
 }
 
 bool OpenGLHostDisplay::MakeRenderContextCurrent()
@@ -220,6 +226,7 @@ bool OpenGLHostDisplay::MakeRenderContextCurrent()
 		return false;
 	}
 
+	SetSwapInterval();
 	return true;
 }
 

@@ -36,7 +36,7 @@ public:
 	bool HasRenderDevice() const override;
 	bool HasRenderSurface() const override;
 
-	bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool threaded_presentation, bool debug_device) override;
+	bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, VsyncMode vsync, bool threaded_presentation, bool debug_device) override;
 	bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device) override;
 	void DestroyRenderDevice() override;
 
@@ -68,8 +68,8 @@ protected:
 	void DestroyImGuiContext() override;
 	bool UpdateImGuiFontTexture() override;
 
-	std::unique_ptr<GL::Context> m_gl_context;
+	void SetSwapInterval();
 
-	VsyncMode m_vsync_mode = VsyncMode::Off;
+	std::unique_ptr<GL::Context> m_gl_context;
 };
 
