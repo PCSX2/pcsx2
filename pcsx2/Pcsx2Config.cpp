@@ -322,7 +322,6 @@ bool Pcsx2Config::GSOptions::operator==(const GSOptions& right) const
 
 		OpEqu(FrameSkipEnable) &&
 		OpEqu(FrameLimitEnable) &&
-		OpEqu(VsyncEnable) &&
 
 		OpEqu(FramesToDraw) &&
 		OpEqu(FramesToSkip) &&
@@ -342,6 +341,8 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 {
 	return (
 		   OpEqu(bitset) &&
+
+		   OpEqu(VsyncEnable) &&
 
 		   OpEqu(InterlaceMode) &&
 
