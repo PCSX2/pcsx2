@@ -197,8 +197,6 @@ const CRC::Game CRC::m_games[] =
 	{0xDCD9A9F7, GodOfWar2, EU, 0},
 	{0xFA0DF523, GodOfWar2, CH, 0}, // cutie comment
 	{0x9FEE3466, GodOfWar2, CH, 0}, // cutie comment
-	{0x5D482F18, JackieChanAdv, EU, 0},
-	{0xAC4DFD5A, JackieChanAdv, EU, 0},
 	{0x95CC86EF, GiTS, US, 0}, // same CRC also reported as EU
 	{0x2C5BF134, GiTS, US, 0}, // Demo
 	{0xA5768F53, GiTS, JP, 0},
