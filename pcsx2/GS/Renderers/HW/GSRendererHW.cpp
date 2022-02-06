@@ -1829,13 +1829,9 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::Jak2, CRC::RegionCount, &GSRendererHW::OI_JakGames));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::Jak3, CRC::RegionCount, &GSRendererHW::OI_JakGames));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::JakX, CRC::RegionCount, &GSRendererHW::OI_JakGames));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BurnoutTakedown, CRC::RegionCount, &GSRendererHW::OI_BurnoutGames));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BurnoutRevenge, CRC::RegionCount, &GSRendererHW::OI_BurnoutGames));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BurnoutDominator, CRC::RegionCount, &GSRendererHW::OI_BurnoutGames));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BurnoutGames, CRC::RegionCount, &GSRendererHW::OI_BurnoutGames));
 
-	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::BurnoutTakedown, CRC::RegionCount, &GSRendererHW::OO_BurnoutGames));
-	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::BurnoutRevenge, CRC::RegionCount, &GSRendererHW::OO_BurnoutGames));
-	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::BurnoutDominator, CRC::RegionCount, &GSRendererHW::OO_BurnoutGames));
+	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::BurnoutGames, CRC::RegionCount, &GSRendererHW::OO_BurnoutGames));
 
 	m_cu_list.push_back(HackEntry<CU_Ptr>(CRC::TalesOfAbyss, CRC::RegionCount, &GSRendererHW::CU_TalesOfAbyss));
 }
