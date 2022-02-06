@@ -163,6 +163,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(QWidget* parent, SettingsDialog* 
 		false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.fastTextureInvalidation, "EmuCore/GS",
 		"UserHacks_DisablePartialInvalidation", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.textureInsideRt, "EmuCore/GS",
+		"UserHacks_TextureInsideRt", false);
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Upscaling Fixes
