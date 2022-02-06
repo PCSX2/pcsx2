@@ -69,13 +69,9 @@ enum struct NetApi : int
 struct AdapterEntry
 {
 	NetApi type;
-#ifdef _WIN32
-	std::wstring name;
-	std::wstring guid;
-#else
+	//UTF8
 	std::string name;
 	std::string guid;
-#endif
 };
 
 class NetAdapter
