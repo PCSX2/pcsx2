@@ -1345,7 +1345,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		}
 		// width/height conversion
 
-		GSVector2 scale = dst->m_texture->GetScale();
+		GSVector2 scale = is_8bits ? GSVector2(1, 1) : dst->m_texture->GetScale();
 
 		GSVector4i sRect(0, 0, w, h);
 		const bool use_texture = shader == ShaderConvert::COPY;
