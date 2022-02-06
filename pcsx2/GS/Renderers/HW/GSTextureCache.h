@@ -214,7 +214,6 @@ public:
 
 		void Add(Source* s, const GIFRegTEX0& TEX0, const GSOffset& off);
 		void RemoveAll();
-		void RemovePartial();
 		void RemoveAt(Source* s);
 	};
 

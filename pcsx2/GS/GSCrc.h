@@ -72,7 +72,6 @@ public:
 		ICO,
 		IkkiTousen,
 		IndianaJonesAndTheEmperorsTomb,
-		JackieChanAdv,
 		Jak1,
 		Jak2,
 		Jak3,
