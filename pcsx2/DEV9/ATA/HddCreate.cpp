@@ -78,18 +78,18 @@ void HddCreate::Start()
 	completedCV.notify_all();
 }
 
-void HddCreate::WriteImage(ghc::filesystem::path hddPath, int reqSizeMiB)
+void HddCreate::WriteImage(fs::path hddPath, int reqSizeMiB)
 {
 	constexpr int buffsize = 4 * 1024;
 	u8 buff[buffsize] = {0}; //4kb
 
-	if (ghc::filesystem::exists(hddPath))
+	if (fs::exists(hddPath))
 	{
 		SetError();
 		return;
 	}
 
-	std::fstream newImage = ghc::filesystem::fstream(hddPath, std::ios::out | std::ios::binary);
+	std::fstream newImage = fs::fstream(hddPath, std::ios::out | std::ios::binary);
 
 	if (newImage.fail())
 	{
@@ -105,7 +105,7 @@ void HddCreate::WriteImage(ghc::filesystem::path hddPath, int reqSizeMiB)
 	if (newImage.fail())
 	{
 		newImage.close();
-		ghc::filesystem::remove(filePath);
+		fs::remove(filePath);
 		SetError();
 		return;
 	}
@@ -122,7 +122,7 @@ void HddCreate::WriteImage(ghc::filesystem::path hddPath, int reqSizeMiB)
 			if (newImage.fail())
 			{
 				newImage.close();
-				ghc::filesystem::remove(filePath);
+				fs::remove(filePath);
 				SetError();
 				return;
 			}
@@ -137,7 +137,7 @@ void HddCreate::WriteImage(ghc::filesystem::path hddPath, int reqSizeMiB)
 		if (canceled.load())
 		{
 			newImage.close();
-			ghc::filesystem::remove(filePath);
+			fs::remove(filePath);
 			SetError();
 			return;
 		}

@@ -20,7 +20,6 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
-#include <ghc/filesystem.h>
 #include <fstream>
 
 #include "DEV9/SimpleQueue.h"
@@ -154,7 +153,7 @@ private:
 public:
 	ATA();
 
-	int Open(ghc::filesystem::path hddPath);
+	int Open(fs::path hddPath);
 	void Close();
 
 	void ATA_HardReset();
