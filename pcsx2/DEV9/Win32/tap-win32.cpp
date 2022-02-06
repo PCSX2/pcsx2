@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "common/RedtapeWindows.h"
+#include "common/StringUtil.h"
 
 #include <stdio.h>
 #include <windows.h>
@@ -186,9 +187,9 @@ std::vector<AdapterEntry> TAPAdapter::GetAdapters()
 				if (IsTAPDevice(enum_name))
 				{
 					AdapterEntry t;
-					t.type = NetApi::TAP;
-					t.name = std::wstring(name_data);
-					t.guid = std::wstring(enum_name);
+					t.type = Pcsx2Config::DEV9Options::NetApi::TAP;
+					t.name = StringUtil::WideStringToUTF8String(std::wstring(name_data));
+					t.guid = StringUtil::WideStringToUTF8String(std::wstring(enum_name));
 					tap_nic.push_back(t);
 				}
 			}

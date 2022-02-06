@@ -27,6 +27,8 @@
 #include <wx/spinctrl.h>
 #include <wx/gbsizer.h>
 
+#include "common/StringUtil.h"
+
 #include "Config.h"
 #include "DEV9.h"
 #include "pcap_io.h"
@@ -319,8 +321,9 @@ public:
 				current = config.Eth;
 			for (size_t i = 0; i < list.size(); i++)
 			{
-				options.Add(list[i].name);
-				if (list[i].name == current)
+				wxString wxAdapterName = StringUtil::UTF8StringToWxString(list[i].name);
+				options.Add(wxAdapterName);
+				if (wxAdapterName == current)
 					selection = i + 1;
 			}
 		}

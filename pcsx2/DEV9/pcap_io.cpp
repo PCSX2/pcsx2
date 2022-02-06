@@ -22,6 +22,7 @@
 #include <iphlpapi.h>
 //#include <ws2tcpip.h>
 //#include <comdef.h>
+#include "common/StringUtil.h"
 #elif defined(__linux__)
 #include <sys/ioctl.h>
 #include <net/if.h>
@@ -502,29 +503,27 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 		entry.type = NetApi::PCAP_Switched;
 #ifdef _WIN32
 		//guid
-		wchar_t wEth[sizeof(config.Eth)] = {0};
-		mbstowcs(wEth, d->name, sizeof(config.Eth) - 1);
-		entry.guid = std::wstring(wEth);
+		entry.guid = std::string(d->name);
 
 		IP_ADAPTER_ADDRESSES adapterInfo;
 		std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
 
-		if (PCAPGetWin32Adapter(d->name, &adapterInfo, &buffer))
-			entry.name = std::wstring(adapterInfo.FriendlyName);
+		if (PCAPGetWin32Adapter(entry.guid, &adapterInfo, &buffer))
+			entry.name = StringUtil::WideStringToUTF8String(std::wstring(adapterInfo.FriendlyName));
 		else
 		{
 			//have to use description
 			//NPCAP 1.10 is using an version of pcap that dosn't
 			//allow us to set it to use UTF8
 			//see https://github.com/nmap/npcap/issues/276
-			//But use MultiByteToWideChar so we can later switch to UTF8
-			int len_desc = strlen(d->description) + 1;
-			int len_buf = MultiByteToWideChar(CP_ACP, 0, d->description, len_desc, nullptr, 0);
+			//We have to convert from ANSI to wstring, to then convert to UTF8
+			const int len_desc = strlen(d->description) + 1;
+			const int len_buf = MultiByteToWideChar(CP_ACP, 0, d->description, len_desc, nullptr, 0);
 
-			wchar_t* buf = new wchar_t[len_buf];
-			MultiByteToWideChar(CP_ACP, 0, d->description, len_desc, buf, len_buf);
-			entry.name = std::wstring(buf);
-			delete[] buf;
+			std::unique_ptr<wchar_t[]> buf = std::make_unique<wchar_t[]>(len_buf);
+			MultiByteToWideChar(CP_ACP, 0, d->description, len_desc, buf.get(), len_buf);
+			
+			entry.name = StringUtil::WideStringToUTF8String(std::wstring(buf.get()));
 		}
 #else
 		entry.name = std::string(d->name);
