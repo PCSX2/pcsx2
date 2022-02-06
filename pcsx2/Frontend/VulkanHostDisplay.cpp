@@ -36,6 +36,16 @@ private:
 	Vulkan::Texture m_texture;
 };
 
+static VkPresentModeKHR GetPreferredPresentModeForVsyncMode(VsyncMode mode)
+{
+	if (mode == VsyncMode::On)
+		return VK_PRESENT_MODE_FIFO_KHR;
+	else if (mode == VsyncMode::Adaptive)
+		return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+	else
+		return VK_PRESENT_MODE_IMMEDIATE_KHR;
+}
+
 VulkanHostDisplay::VulkanHostDisplay() = default;
 
 VulkanHostDisplay::~VulkanHostDisplay()
@@ -85,7 +95,7 @@ bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
 		return false;
 	}
 
-	m_swap_chain = Vulkan::SwapChain::Create(wi_copy, surface, m_vsync_mode != VsyncMode::Off);
+	m_swap_chain = Vulkan::SwapChain::Create(wi_copy, surface, GetPreferredPresentModeForVsyncMode(m_vsync_mode));
 	if (!m_swap_chain)
 	{
 		Console.Error("Failed to create swap chain");
@@ -221,7 +231,7 @@ void VulkanHostDisplay::SetVSync(VsyncMode mode)
 
 	// This swap chain should not be used by the current buffer, thus safe to destroy.
 	g_vulkan_context->WaitForGPUIdle();
-	m_swap_chain->SetVSync(mode != VsyncMode::Off);
+	m_swap_chain->SetVSync(GetPreferredPresentModeForVsyncMode(mode));
 	m_vsync_mode = mode;
 }
 
@@ -232,7 +242,8 @@ bool VulkanHostDisplay::CreateRenderDevice(
 
 	WindowInfo local_wi(wi);
 	if (!Vulkan::Context::Create(
-			adapter_name, &local_wi, &m_swap_chain, vsync != VsyncMode::Off, threaded_presentation, debug_device, debug_device))
+			adapter_name, &local_wi, &m_swap_chain, GetPreferredPresentModeForVsyncMode(vsync),
+			threaded_presentation, debug_device, debug_device))
 	{
 		Console.Error("Failed to create Vulkan context");
 		m_window_info = {};
@@ -378,7 +389,7 @@ void VulkanHostDisplay::EndPresent()
 
 	g_vulkan_context->SubmitCommandBuffer(m_swap_chain->GetImageAvailableSemaphore(),
 		m_swap_chain->GetRenderingFinishedSemaphore(), m_swap_chain->GetSwapChain(),
-		m_swap_chain->GetCurrentImageIndex(), !m_swap_chain->IsVSyncEnabled());
+		m_swap_chain->GetCurrentImageIndex(), !m_swap_chain->IsPresentModeSynchronizing());
 	g_vulkan_context->MoveToNextCommandBuffer();
 }
 

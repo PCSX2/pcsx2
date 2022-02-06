@@ -27,7 +27,7 @@ namespace Vulkan
 	class SwapChain
 	{
 	public:
-		SwapChain(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync);
+		SwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR preferred_present_mode);
 		~SwapChain();
 
 		// Creates a vulkan-renderable surface for the specified window handle.
@@ -47,12 +47,13 @@ namespace Vulkan
 			VkInstance instance, VkPhysicalDevice physical_device, const WindowInfo& wi);
 
 		// Create a new swap chain from a pre-existing surface.
-		static std::unique_ptr<SwapChain> Create(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync);
+		static std::unique_ptr<SwapChain> Create(const WindowInfo& wi, VkSurfaceKHR surface,
+			VkPresentModeKHR preferred_present_mode);
 
 		__fi VkSurfaceKHR GetSurface() const { return m_surface; }
 		__fi VkSurfaceFormatKHR GetSurfaceFormat() const { return m_surface_format; }
 		__fi VkFormat GetTextureFormat() const { return m_surface_format.format; }
-		__fi bool IsVSyncEnabled() const { return m_vsync_enabled; }
+		__fi VkPresentModeKHR GetPreferredPresentMode() const { return m_preferred_present_mode; }
 		__fi VkSwapchainKHR GetSwapChain() const { return m_swap_chain; }
 		__fi const WindowInfo& GetWindowInfo() const { return m_window_info; }
 		__fi u32 GetWidth() const { return m_window_info.surface_width; }
@@ -74,7 +75,13 @@ namespace Vulkan
 		bool RecreateSwapChain();
 
 		// Change vsync enabled state. This may fail as it causes a swapchain recreation.
-		bool SetVSync(bool enabled);
+		bool SetVSync(VkPresentModeKHR preferred_mode);
+
+		// Returns true if the current present mode is synchronizing (adaptive or hard).
+		bool IsPresentModeSynchronizing() const
+		{
+			return (m_present_mode == VK_PRESENT_MODE_FIFO_KHR || m_present_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR);
+		}
 
 	private:
 		bool SelectSurfaceFormat();
@@ -102,6 +109,7 @@ namespace Vulkan
 
 		VkSurfaceKHR m_surface = VK_NULL_HANDLE;
 		VkSurfaceFormatKHR m_surface_format = {};
+		VkPresentModeKHR m_preferred_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 		VkPresentModeKHR m_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 
 		VkRenderPass m_load_render_pass = VK_NULL_HANDLE;
@@ -113,6 +121,5 @@ namespace Vulkan
 		VkSwapchainKHR m_swap_chain = VK_NULL_HANDLE;
 		std::vector<SwapChainImage> m_images;
 		u32 m_current_image = 0;
-		bool m_vsync_enabled = false;
 	};
 } // namespace Vulkan
