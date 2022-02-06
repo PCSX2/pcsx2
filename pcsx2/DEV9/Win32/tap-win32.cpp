@@ -29,7 +29,7 @@
 
 #include <tchar.h>
 #include "tap.h"
-#include "..\dev9.h"
+#include "DEV9/DEV9.h"
 #include <string>
 
 #include <wil/com.h>
