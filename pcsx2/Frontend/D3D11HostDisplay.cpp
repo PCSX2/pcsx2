@@ -205,10 +205,10 @@ bool D3D11HostDisplay::GetHostRefreshRate(float* refresh_rate)
 
 void D3D11HostDisplay::SetVSync(VsyncMode mode)
 {
-	m_vsync = mode;
+	m_vsync_mode = mode;
 }
 
-bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool threaded_presentation, bool debug_device)
+bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, VsyncMode vsync, bool threaded_presentation, bool debug_device)
 {
 	UINT create_flags = 0;
 	if (debug_device)
@@ -318,6 +318,7 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 	}
 
 	m_window_info = wi;
+	m_vsync_mode = vsync;
 	return true;
 }
 
@@ -741,7 +742,7 @@ void D3D11HostDisplay::EndPresent()
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
-	const UINT vsync_rate = static_cast<UINT>(m_vsync != VsyncMode::Off);
+	const UINT vsync_rate = static_cast<UINT>(m_vsync_mode != VsyncMode::Off);
 	if (vsync_rate == 0 && m_using_allow_tearing)
 		m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
 	else

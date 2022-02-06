@@ -42,7 +42,7 @@ public:
 	bool HasRenderDevice() const override;
 	bool HasRenderSurface() const override;
 
-	bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool threaded_presentation, bool debug_device) override;
+	bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, VsyncMode vsync, bool threaded_presentation, bool debug_device) override;
 	bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device) override;
 	void DestroyRenderDevice() override;
 
@@ -89,7 +89,6 @@ protected:
 	ComPtr<IDXGISwapChain> m_swap_chain;
 	ComPtr<ID3D11RenderTargetView> m_swap_chain_rtv;
 
-	VsyncMode m_vsync = VsyncMode::Off;
 	bool m_allow_tearing_supported = false;
 	bool m_using_flip_model_swap_chain = true;
 	bool m_using_allow_tearing = false;
