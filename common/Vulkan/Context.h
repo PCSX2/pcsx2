@@ -70,7 +70,8 @@ namespace Vulkan
 
 		// Creates a new context and sets it up as global.
 		static bool Create(std::string_view gpu_name, const WindowInfo* wi, std::unique_ptr<SwapChain>* out_swap_chain,
-			bool vsync, bool threaded_presentation, bool enable_debug_utils, bool enable_validation_layer);
+			VkPresentModeKHR preferred_present_mode, bool threaded_presentation, bool enable_debug_utils,
+			bool enable_validation_layer);
 
 		// Destroys context.
 		static void Destroy();

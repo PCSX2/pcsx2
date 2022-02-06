@@ -85,10 +85,10 @@ static void DestroyMetalLayer(WindowInfo* wi)
 
 namespace Vulkan
 {
-	SwapChain::SwapChain(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync)
+	SwapChain::SwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR preferred_present_mode)
 		: m_window_info(wi)
 		, m_surface(surface)
-		, m_vsync_enabled(vsync)
+		, m_preferred_present_mode(preferred_present_mode)
 	{
 	}
 
@@ -465,9 +465,10 @@ namespace Vulkan
 		return {};
 	}
 
-	std::unique_ptr<SwapChain> SwapChain::Create(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync)
+	std::unique_ptr<SwapChain> SwapChain::Create(const WindowInfo& wi, VkSurfaceKHR surface,
+		VkPresentModeKHR preferred_present_mode)
 	{
-		std::unique_ptr<SwapChain> swap_chain = std::make_unique<SwapChain>(wi, surface, vsync);
+		std::unique_ptr<SwapChain> swap_chain = std::make_unique<SwapChain>(wi, surface, preferred_present_mode);
 		if (!swap_chain->CreateSwapChain() || !swap_chain->SetupSwapChainImages() || !swap_chain->CreateSemaphores())
 			return nullptr;
 
@@ -537,27 +538,31 @@ namespace Vulkan
 			return it != present_modes.end();
 		};
 
-		// If vsync is enabled, use VK_PRESENT_MODE_FIFO_KHR.
-		// This check should not fail with conforming drivers, as the FIFO present mode is mandated by
-		// the specification (VK_KHR_swapchain). In case it isn't though, fall through to any other mode.
-		if (m_vsync_enabled && CheckForMode(VK_PRESENT_MODE_FIFO_KHR))
+		// Use preferred mode if available.
+		if (CheckForMode(m_preferred_present_mode))
 		{
-			m_present_mode = VK_PRESENT_MODE_FIFO_KHR;
+			m_present_mode = m_preferred_present_mode;
 			return true;
 		}
 
-		// Prefer screen-tearing, if possible, for lowest latency.
-		if (CheckForMode(VK_PRESENT_MODE_IMMEDIATE_KHR))
-		{
-			m_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-			return true;
-		}
-
-		// Use optimized-vsync above vsync.
-		if (CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
+		// Prefer mailbox over fifo for adaptive vsync/no-vsync.
+		if ((m_preferred_present_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR ||
+				m_preferred_present_mode == VK_PRESENT_MODE_IMMEDIATE_KHR) &&
+			CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
 		{
 			m_present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
 			return true;
+		}
+
+		// Fallback to FIFO if we're using any kind of vsync.
+		if (m_preferred_present_mode == VK_PRESENT_MODE_FIFO_KHR || m_preferred_present_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR)
+		{
+			// This should never fail, FIFO is mandated.
+			if (CheckForMode(VK_PRESENT_MODE_FIFO_KHR))
+			{
+				m_present_mode = VK_PRESENT_MODE_FIFO_KHR;
+				return true;
+			}
 		}
 
 		// Fall back to whatever is available.
@@ -580,6 +585,9 @@ namespace Vulkan
 		// Select swap chain format and present mode
 		if (!SelectSurfaceFormat() || !SelectPresentMode())
 			return false;
+
+		DevCon.WriteLn("(SwapChain) Preferred present mode: %s, selected: %s",
+			Util::PresentModeToString(m_preferred_present_mode), Util::PresentModeToString(m_present_mode));
 
 		// Select number of images in swap chain, we prefer one buffer in the background to work on
 		u32 image_count = std::max(surface_capabilities.minImageCount + 1u, 2u);
@@ -771,13 +779,13 @@ namespace Vulkan
 		return true;
 	}
 
-	bool SwapChain::SetVSync(bool enabled)
+	bool SwapChain::SetVSync(VkPresentModeKHR preferred_mode)
 	{
-		if (m_vsync_enabled == enabled)
+		if (m_preferred_present_mode == preferred_mode)
 			return true;
 
 		// Recreate the swap chain with the new present mode.
-		m_vsync_enabled = enabled;
+		m_preferred_present_mode = preferred_mode;
 		return RecreateSwapChain();
 	}
 
