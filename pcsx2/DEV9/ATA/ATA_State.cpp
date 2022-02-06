@@ -396,7 +396,7 @@ bool ATA::HDD_CanAccess(int* sectors)
 	s64 posEnd;
 	s64 maxLBA;
 
-	maxLBA = std::min<s64>((s64)config.HddSize * 1024 * 1024 / 512, hddImageSize);
+	maxLBA = std::min<s64>((s64)config.HddSize * 1024 * 1024 / 512, hddImageSize) - 1;
 	if ((regSelect & 0x40) == 0) //CHS mode
 		maxLBA = std::min<s64>(maxLBA, curCylinders * curHeads * curSectors);
 
