@@ -28414,6 +28414,12 @@ SLPM-68513:
 SLPM-68516:
   name: "Metal Gear Solid 3 - Snake Eater [Shareholder Edition]"
   region: "NTSC-J"
+SLPM-69001:
+  name: "PictureParadise Club"
+  region: "NTSC-J"
+SLPM-69006:
+  name: "PictureParadise Club Vol. 2"
+  region: "NTSC-J"
 SLPM-74001:
   name: "Gungriffon Blaze [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -28853,6 +28859,9 @@ SLPS-20055:
   name: "Technictix"
   region: "NTSC-J"
   compat: 5
+SLPS-20056:
+  name: "Colorio: Hagaki Print"
+  region: "NTSC-J"
 SLPS-20057:
   name: "Dog of Bay"
   region: "NTSC-J"
@@ -28866,6 +28875,9 @@ SLPS-20059:
   region: "NTSC-J"
 SLPS-20060:
   name: "Dream Audition 2"
+  region: "NTSC-J"
+SLPS-20061:
+  name: "Mamimune * Mogacho no Print Hour"
   region: "NTSC-J"
 SLPS-20062:
   name: "Truck Kyousoukyoku"
@@ -29089,6 +29101,9 @@ SLPS-20199:
   region: "NTSC-J"
 SLPS-20202:
   name: "Coloball 2002"
+  region: "NTSC-J"
+SLPS-20207:
+  name: "Usagi: Yasei no Topai"
   region: "NTSC-J"
 SLPS-20208:
   name: "I am Small!"
@@ -30101,6 +30116,9 @@ SLPS-25104:
 SLPS-25105:
   name: "Kingdom Hearts"
   region: "NTSC-J"
+SLPS-25106:
+  name: "America Oudan Ultra-Quiz"
+  region: "NTSC-J"
 SLPS-25107:
   name: "Kengo 2"
   region: "NTSC-J"
@@ -30233,6 +30251,9 @@ SLPS-25147:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Fixes SPS on menu.
+SLPS-25148:
+  name: "Panel Quiz Attack 25"
+  region: "NTSC-J"
 SLPS-25149:
   name: "Ever 17 - The Out of Infinity"
   region: "NTSC-J"
