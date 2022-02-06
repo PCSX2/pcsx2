@@ -451,7 +451,7 @@
     <ClInclude Include="DebugTools\SymbolMap.h" />
     <ClInclude Include="DEV9\ATA\ATA.h" />
     <ClInclude Include="DEV9\ATA\HddCreate.h" />
-    <ClInclude Include="DEV9\Config.h" />
+    <ClInclude Include="DEV9\DEV9Config.h" />
     <ClInclude Include="DEV9\DEV9.h" />
     <ClInclude Include="DEV9\InternalServers\DHCP_Server.h" />
     <ClInclude Include="DEV9\InternalServers\DNS_Logger.h" />

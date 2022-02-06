@@ -20,7 +20,7 @@
 #include <fstream>
 
 #include "DEV9/DEV9.h"
-#include "DEV9/Config.h"
+#include "DEV9/DEV9Config.h"
 #include "Config.h"
 
 #include "ws2tcpip.h"

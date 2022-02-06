@@ -33,7 +33,7 @@
 #define EXTERN
 #include "DEV9.h"
 #undef EXTERN
-#include "Config.h"
+#include "DEV9Config.h"
 #include "smap.h"
 
 

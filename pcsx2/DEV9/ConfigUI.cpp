@@ -28,7 +28,7 @@
 
 #include "common/StringUtil.h"
 
-#include "Config.h"
+#include "DEV9Config.h"
 #include "DEV9.h"
 #include "pcap_io.h"
 #include "net.h"
