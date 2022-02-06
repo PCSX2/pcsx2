@@ -360,7 +360,7 @@ void GSRendererNew::EmulateChannelShuffle(const GSTextureCache::Source* tex)
 	// First let's check we really have a channel shuffle effect
 	if (m_channel_shuffle)
 	{
-		if (m_game.title == CRC::GT4 || m_game.title == CRC::GT3 || m_game.title == CRC::GTConcept || m_game.title == CRC::TouristTrophy)
+		if (m_game.title == CRC::PolyphonyDigitalGames)
 		{
 			GL_INS("Gran Turismo RGB Channel");
 			m_conf.ps.channel = ChannelFetch_RGB;

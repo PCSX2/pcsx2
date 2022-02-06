@@ -107,39 +107,42 @@ const CRC::Game CRC::m_games[] =
 	{0x5C991F4E, ICO, EU, 0},
 	{0x788D8B4F, ICO, EU, 0},
 	{0x29C28734, ICO, CH, 0},
-	{0x60013EBD, GTConcept, EU, 0},
-	{0x6810C3BC, GTConcept, CH, 0}, // Gran Turismo Concept 2002 Tokyo-Geneva
-	{0x0EEF32A3, GTConcept, KO, 0}, // Gran Turismo Concept 2002 Tokyo-Seoul
-	{0x3E9D448A, GT3, CH, 0}, // cutie comment
-	{0xAD66643C, GT3, CH, 0}, // cutie comment
-	{0x85AE91B3, GT3, US, 0},
-	{0x8AA991B0, GT3, US, 0},
-	{0xC220951A, GT3, JP, 0},
-	{0x9DE5CF65, GT3, JP, 0},
-	{0x706DFF80, GT3, JP, 0}, // GT3 Store Disc Vol. 2
-	{0x55CE5111, GT3, JP, 0}, // Gran Turismo 2000 Body Omen
-	{0xE9A7E08D, GT3, JP, 0}, // Gran Turismo 2000 Body Omen
-	{0xB590CE04, GT3, EU, 0},
-	{0xC02C653E, GT4, CH, 0},
-	{0x7ABDBB5E, GT4, CH, 0}, // cutie comment
-	{0xAEAD1CA3, GT4, JP, 0},
-	{0xA3AF15A0, GT4, JP, 0}, // GT4 PS2 Racing Pack
-	{0xE906EA37, GT4, JP, 0}, // GT4 First Preview
-	{0xCA6243B9, GT4, JP, 0}, // GT4 Prologue
-	{0xDD764BBE, GT4, JP, 0}, // GT4 Prologue
-	{0xE1258846, GT4, JP, 0}, // GT4 Prologue
-	{0x27B8F05F, GT4, JP, 0}, // GT4 Prius Trial Version
-	{0x30E41D93, GT4, KO, 0},
-	{0x715CF2EC, GT4, EU, 0},
-	{0x44A61C8F, GT4, EU, 0},
-	{0x0086E35B, GT4, EU, 0},
-	{0x3FB69323, GT4, EU, 0}, // GT4 Prologue
-	{0x77E61C8A, GT4, US, 0},
-	{0x33C6E35E, GT4, US, 0},
-	{0x70538747, GT4, US, 0}, // Toyota Prius Trial
-	{0x32A1C752, GT4, US, 0}, // GT4 Online Beta
-	{0x2A84A1E2, GT4, US, 0}, // Mazda MX-5 Edition
-	{0x0087EEC4, GT4, NoRegion, 0}, // JP and US versions have the same CRC - GT4 Online Beta
+	{0x60013EBD, PolyphonyDigitalGames, EU, 0}, // Gran Turismo Concept
+	{0x6810C3BC, PolyphonyDigitalGames, CH, 0}, // Gran Turismo Concept 2002 Tokyo-Geneva
+	{0x0EEF32A3, PolyphonyDigitalGames, KO, 0}, // Gran Turismo Concept 2002 Tokyo-Seoul
+	{0x3E9D448A, PolyphonyDigitalGames, CH, 0}, // GT3
+	{0xAD66643C, PolyphonyDigitalGames, CH, 0}, // GT3
+	{0x85AE91B3, PolyphonyDigitalGames, US, 0}, // GT3
+	{0x8AA991B0, PolyphonyDigitalGames, US, 0}, // GT3
+	{0xC220951A, PolyphonyDigitalGames, JP, 0}, // GT3
+	{0x9DE5CF65, PolyphonyDigitalGames, JP, 0}, // GT3
+	{0x706DFF80, PolyphonyDigitalGames, JP, 0}, // GT3 Store Disc Vol. 2
+	{0x55CE5111, PolyphonyDigitalGames, JP, 0}, // Gran Turismo 2000 Body Omen
+	{0xE9A7E08D, PolyphonyDigitalGames, JP, 0}, // Gran Turismo 2000 Body Omen
+	{0xB590CE04, PolyphonyDigitalGames, EU, 0}, // GT3
+	{0xC02C653E, PolyphonyDigitalGames, CH, 0}, // GT4
+	{0x7ABDBB5E, PolyphonyDigitalGames, CH, 0}, // GT4
+	{0xAEAD1CA3, PolyphonyDigitalGames, JP, 0}, // GT4
+	{0xA3AF15A0, PolyphonyDigitalGames, JP, 0}, // GT4 PS2 Racing Pack
+	{0xE906EA37, PolyphonyDigitalGames, JP, 0}, // GT4 First Preview
+	{0xCA6243B9, PolyphonyDigitalGames, JP, 0}, // GT4 Prologue
+	{0xDD764BBE, PolyphonyDigitalGames, JP, 0}, // GT4 Prologue
+	{0xE1258846, PolyphonyDigitalGames, JP, 0}, // GT4 Prologue
+	{0x27B8F05F, PolyphonyDigitalGames, JP, 0}, // GT4 Prius Trial Version
+	{0x30E41D93, PolyphonyDigitalGames, KO, 0}, // GT4
+	{0x715CF2EC, PolyphonyDigitalGames, EU, 0}, // GT4
+	{0x44A61C8F, PolyphonyDigitalGames, EU, 0}, // GT4
+	{0x0086E35B, PolyphonyDigitalGames, EU, 0}, // GT4
+	{0x3FB69323, PolyphonyDigitalGames, EU, 0}, // GT4 Prologue
+	{0x77E61C8A, PolyphonyDigitalGames, US, 0}, // GT4
+	{0x33C6E35E, PolyphonyDigitalGames, US, 0}, // GT4
+	{0x70538747, PolyphonyDigitalGames, US, 0}, // GT4 Toyota Prius Trial
+	{0x32A1C752, PolyphonyDigitalGames, US, 0}, // GT4 Online Beta
+	{0x2A84A1E2, PolyphonyDigitalGames, US, 0}, // GT4 Mazda MX-5 Edition
+	{0x0087EEC4, PolyphonyDigitalGames, NoRegion, 0}, // GT4 Online Beta, JP and US versions have the same CRC
+	{0x5AC7E79C, PolyphonyDigitalGames, CH, 0}, // TouristTrophy
+	{0xFF9C0E93, PolyphonyDigitalGames, US, 0}, // TouristTrophy
+	{0xCA9AA903, PolyphonyDigitalGames, EU, 0}, // TouristTrophy
 	{0x8B029334, Manhunt2, EU, 0},
 	{0x3B0ADBEF, Manhunt2, US, 0},
 	{0x09F49E37, CrashBandicootWoC, NoRegion, 0},
@@ -182,10 +185,10 @@ const CRC::Game CRC::m_games[] =
 	{0x9567B7D6, GodOfWar, KO, 0},
 	{0x9B5C97BA, GodOfWar, KO, 0},
 	{0xE23D532B, GodOfWar, NoRegion, 0},
-	{0x1A85E924, GodOfWar, NoRegion, 0}, // cutie comment
-	{0x608ACBD3, GodOfWar, CH, 0}, // cutie comment
+	{0x1A85E924, GodOfWar, NoRegion, 0},
+	{0x608ACBD3, GodOfWar, CH, 0},
 	// {0x1A85E924, GodOfWar, NoRegion, 0}, // same CRC as {0x1A85E924, DevilMayCry3, CH, 0}
-	{0x2F123FD8, GodOfWar2, US, 0}, // same CRC as RU
+	{0x2F123FD8, GodOfWar2, US, 0},
 	{0x44A8A22A, GodOfWar2, EU, 0},
 	{0x60BC362B, GodOfWar2, EU, 0},
 	{0x4340C7C6, GodOfWar2, KO, 0},
@@ -195,8 +198,8 @@ const CRC::Game CRC::m_games[] =
 	{0x5990866F, GodOfWar2, NoRegion, 0},
 	{0xC4C4FD5F, GodOfWar2, CH, 0},
 	{0xDCD9A9F7, GodOfWar2, EU, 0},
-	{0xFA0DF523, GodOfWar2, CH, 0}, // cutie comment
-	{0x9FEE3466, GodOfWar2, CH, 0}, // cutie comment
+	{0xFA0DF523, GodOfWar2, CH, 0},
+	{0x9FEE3466, GodOfWar2, CH, 0},
 	{0x95CC86EF, GiTS, US, 0}, // same CRC also reported as EU
 	{0x2C5BF134, GiTS, US, 0}, // Demo
 	{0xA5768F53, GiTS, JP, 0},
@@ -209,18 +212,18 @@ const CRC::Game CRC::m_games[] =
 	{0xAA5EC3A3, TalesOfAbyss, JP, 0},
 	{0xFB236A46, SonicUnleashed, US, 0},
 	{0x8C913264, SonicUnleashed, EU, 0},
-	{0xE04EA200, StarOcean3, EU, 0},
-	{0x23A97857, StarOcean3, US, 0},
-	{0xBEC32D49, StarOcean3, JP, 0},
-	{0x8192A241, StarOcean3, JP, 0}, // NTSC JP special directors cut limited extra sugar on top edition (the special one :p)
-	{0xCC96CE93, ValkyrieProfile2, US, 0},
-	{0x774DE8E2, ValkyrieProfile2, JP, 0},
-	{0x04CCB600, ValkyrieProfile2, EU, 0},
-	{0xB65E141B, ValkyrieProfile2, DE, 0}, // PAL German
-	{0x8510854E, ValkyrieProfile2, FR, 0},
-	{0xC70FC973, ValkyrieProfile2, IT, 0},
-	{0x47B9B2FD, RadiataStories, US, 0},
-	{0xAC73005E, RadiataStories, JP, 0},
+	{0xE04EA200, TriAceGames, EU, 0}, // StarOcean3
+	{0x23A97857, TriAceGames, US, 0}, // StarOcean3
+	{0xBEC32D49, TriAceGames, JP, 0}, // StarOcean3
+	{0x8192A241, TriAceGames, JP, 0}, // StarOcean3 directors cut
+	{0xCC96CE93, TriAceGames, US, 0}, // ValkyrieProfile2
+	{0x774DE8E2, TriAceGames, JP, 0}, // ValkyrieProfile2
+	{0x04CCB600, TriAceGames, EU, 0}, // ValkyrieProfile2
+	{0xB65E141B, TriAceGames, DE, 0}, // ValkyrieProfile2
+	{0x8510854E, TriAceGames, FR, 0}, // ValkyrieProfile2
+	{0xC70FC973, TriAceGames, IT, 0}, // ValkyrieProfile2
+	{0x47B9B2FD, TriAceGames, US, 0}, // RadiataStories
+	{0xAC73005E, TriAceGames, JP, 0}, // RadiataStories
 	{0xE8FCF8EC, SMTNocturne, US, 0},
 	{0xF0A31EE3, SMTNocturne, EU, 0}, // SMTNocturne (Lucifers Call in EU)
 	{0xAE0DE7B7, SMTNocturne, EU, 0}, // SMTNocturne (Lucifers Call in EU)
@@ -236,43 +239,43 @@ const CRC::Game CRC::m_games[] =
 	{0xDD93DA88, BigMuthaTruckers, JP, 0}, // Bakusou Convoy Densetsu - Otoko Hanamichi America Roman
 	{0xE169BAF8, RedDeadRevolver, US, 0},
 	{0xE2E67E23, RedDeadRevolver, EU, 0},
-	{0xCBB87BF9, EvangelionJo, JP, 0}, // cutie comment
-	{0xC5B75C7C, Oneechanbara2Special, JP, 0}, // cutie comment
+	{0xCBB87BF9, EvangelionJo, JP, 0},
+	{0xC5B75C7C, Oneechanbara2Special, JP, 0},
 	{0xC725CC6C, Oneechanbara2Special, JP, 0},
 	{0x07608CA2, Oneechanbara2Special, EU, 0}, // Zombie Hunters 2
-	{0xE0347841, XenosagaE3, JP, TextureInsideRt}, // cutie comment
+	{0xE0347841, XenosagaE3, JP, TextureInsideRt},
 	{0xA707236E, XenosagaE3, JP, TextureInsideRt}, // Demo
 	{0xA4E88698, XenosagaE3, CH, TextureInsideRt},
 	{0x2088950A, XenosagaE3, US, TextureInsideRt},
-	{0xB1995E29, ShadowofRome, EU, 0}, // cutie comment
+	{0xB1995E29, ShadowofRome, EU, 0},
 	{0x958DCA28, ShadowofRome, EU, 0},
 	{0x57818AF6, ShadowofRome, US, 0},
 	{0x1E210E60, ShadowofRome, US, 0}, // Demo
 	{0x36393CD3, ShadowofRome, JP, 0},
-	{0x694A998E, TombRaiderUnderworld, JP, 0}, // cutie comment
+	{0x694A998E, TombRaiderUnderworld, JP, 0},
 	{0x8E214549, TombRaiderUnderworld, EU, 0},
 	{0x618769D6, TombRaiderUnderworld, US, 0},
 	{0xB639EB17, TombRaiderAnniversary, US, 0}, // Also needed for automatic mipmapping
-	{0xB05805B6, TombRaiderAnniversary, JP, 0}, // cutie comment
+	{0xB05805B6, TombRaiderAnniversary, JP, 0},
 	{0xA629A376, TombRaiderAnniversary, EU, 0},
-	{0xBC8B3F50, TombRaiderLegend, US, 0}, // cutie comment
+	{0xBC8B3F50, TombRaiderLegend, US, 0},
 	{0x365172A0, TombRaiderLegend, JP, 0},
 	{0x05177ECE, TombRaiderLegend, EU, 0},
-	{0xBEBF8793, BurnoutTakedown, US, 0},
-	{0xBB2E845F, BurnoutTakedown, JP, 0},
-	{0x5F060991, BurnoutTakedown, KO, 0},
-	{0x75BECC18, BurnoutTakedown, EU, 0},
-	{0xCE49B0DE, BurnoutTakedown, EU, 0},
-	{0x381EE9EF, BurnoutTakedown, EU, 0}, // E3 Demo
-	{0xD224D348, BurnoutRevenge, US, 0},
-	{0x878E7A1D, BurnoutRevenge, JP, 0},
-	{0xEEA60511, BurnoutRevenge, KO, 0},
-	{0x7E83CC5B, BurnoutRevenge, EU, 0},
-	{0x2CAC3DBC, BurnoutRevenge, EU, 0},
-	{0x8C9576A1, BurnoutDominator, US, 0},
-	{0xDDF76A98, BurnoutDominator, JP, 0},
-	{0x8C9576B4, BurnoutDominator, EU, 0},
-	{0x8C9C76B4, BurnoutDominator, EU, 0},
+	{0xBEBF8793, BurnoutGames, US, 0}, // BurnoutTakedown
+	{0xBB2E845F, BurnoutGames, JP, 0}, // BurnoutTakedown
+	{0x5F060991, BurnoutGames, KO, 0}, // BurnoutTakedown
+	{0x75BECC18, BurnoutGames, EU, 0}, // BurnoutTakedown
+	{0xCE49B0DE, BurnoutGames, EU, 0}, // BurnoutTakedown
+	{0x381EE9EF, BurnoutGames, EU, 0}, // BurnoutTakedown E3 Demo
+	{0xD224D348, BurnoutGames, US, 0}, // BurnoutRevenge
+	{0x878E7A1D, BurnoutGames, JP, 0}, // BurnoutRevenge
+	{0xEEA60511, BurnoutGames, KO, 0}, // BurnoutRevenge
+	{0x7E83CC5B, BurnoutGames, EU, 0}, // BurnoutRevenge
+	{0x2CAC3DBC, BurnoutGames, EU, 0}, // BurnoutRevenge
+	{0x8C9576A1, BurnoutGames, US, 0}, // BurnoutDominator
+	{0xDDF76A98, BurnoutGames, JP, 0}, // BurnoutDominator
+	{0x8C9576B4, BurnoutGames, EU, 0}, // BurnoutDominator
+	{0x8C9C76B4, BurnoutGames, EU, 0}, // BurnoutDominator
 	{0x4A0E5B3A, MidnightClub3, US, 0}, // dub
 	{0xEBE1972D, MidnightClub3, EU, 0}, // dub
 	{0x60A42FF5, MidnightClub3, US, 0}, // remix
@@ -284,16 +287,16 @@ const CRC::Game CRC::m_games[] =
 	{0x086D198E, Kunoichi, CH, 0},
 	{0x3B470BBD, Kunoichi, EU, 0},
 	{0x6BA65DD8, Kunoichi, KO, 0},
-	{0XD3F182A3, Yakuza, EU, 0},
-	{0x6F9F99F8, Yakuza, EU, 0},
-	{0x388F687B, Yakuza, US, 0},
-	{0xC1B91FC5, Yakuza, US, 0}, // Demo
-	{0xB7B3800A, Yakuza, JP, 0},
-	{0xA60C2E65, Yakuza2, EU, 0},
-	{0x800E3E5A, Yakuza2, EU, 0},
-	{0x97E9C87E, Yakuza2, US, 0},
-	{0xB1EBD841, Yakuza2, US, 0},
-	{0xC6B95C48, Yakuza2, JP, 0},
+	{0XD3F182A3, YakuzaGames, EU, 0}, // Yakuza
+	{0x6F9F99F8, YakuzaGames, EU, 0}, // Yakuza
+	{0x388F687B, YakuzaGames, US, 0}, // Yakuza
+	{0xC1B91FC5, YakuzaGames, US, 0}, // Yakuza Demo
+	{0xB7B3800A, YakuzaGames, JP, 0}, // Yakuza2
+	{0xA60C2E65, YakuzaGames, EU, 0}, // Yakuza2
+	{0x800E3E5A, YakuzaGames, EU, 0}, // Yakuza2
+	{0x97E9C87E, YakuzaGames, US, 0}, // Yakuza2
+	{0xB1EBD841, YakuzaGames, US, 0}, // Yakuza2
+	{0xC6B95C48, YakuzaGames, JP, 0}, // Yakuza2
 	{0x9000252A, SkyGunner, JP, 0},
 	{0x93092623, SkyGunner, JP, 0},
 	{0xA9461CB2, SkyGunner, US, 0},
@@ -312,36 +315,33 @@ const CRC::Game CRC::m_games[] =
 	{0x812C5A96, ShinOnimusha, EU, 0},
 	{0xFE44479E, ShinOnimusha, US, 0},
 	{0xFFDE85E9, ShinOnimusha, US, 0},
-	{0xE21404E2, GetaWay, US, TextureInsideRt},
-	{0xE8249852, GetaWay, JP, TextureInsideRt},
-	{0x458485EF, GetaWay, EU, TextureInsideRt},
-	{0x5DFBE144, GetaWay, EU, TextureInsideRt},
-	{0xE78971DF, GetaWayBlackMonday, US, TextureInsideRt},
-	{0x342D97FA, GetaWayBlackMonday, US, TextureInsideRt}, // Demo
-	{0xE8C0AD1A, GetaWayBlackMonday, JP, TextureInsideRt},
-	{0x09C3DF79, GetaWayBlackMonday, EU, TextureInsideRt},
-	{0x1130BF23, SakuraTaisen, CH, 0}, // cutie comment
+	{0xE21404E2, GetawayGames, US, TextureInsideRt}, // Getaway
+	{0xE8249852, GetawayGames, JP, TextureInsideRt}, // Getaway
+	{0x458485EF, GetawayGames, EU, TextureInsideRt}, // Getaway
+	{0x5DFBE144, GetawayGames, EU, TextureInsideRt}, // Getaway
+	{0xE78971DF, GetawayGames, US, TextureInsideRt}, // GetawayBlackMonday
+	{0x342D97FA, GetawayGames, US, TextureInsideRt}, // GetawayBlackMonday Demo
+	{0xE8C0AD1A, GetawayGames, JP, TextureInsideRt}, // GetawayBlackMonday
+	{0x09C3DF79, GetawayGames, EU, TextureInsideRt}, // GetawayBlackMonday
+	{0x1130BF23, SakuraTaisen, CH, 0},
 	{0x4FAE8B83, SakuraTaisen, KO, 0},
-	{0xEF06DBD6, SakuraWarsSoLongMyLove, JP, 0}, // cutie comment
-	{0xDD41054D, SakuraWarsSoLongMyLove, US, 0}, // cutie comment
+	{0xEF06DBD6, SakuraWarsSoLongMyLove, JP, 0},
+	{0xDD41054D, SakuraWarsSoLongMyLove, US, 0},
 	{0xC2E3A7A4, SakuraWarsSoLongMyLove, KO, 0},
-	{0x4A4B623A, FightingBeautyWulong, JP, 0}, // cutie comment
-	{0x5AC7E79C, TouristTrophy, CH, 0}, // cutie comment
-	{0xFF9C0E93, TouristTrophy, US, 0},
-	{0xCA9AA903, TouristTrophy, EU, 0},
+	{0x4A4B623A, FightingBeautyWulong, JP, 0},
 	{0xAEDAEE99, GodHand, JP, 0},
 	{0x6FB69282, GodHand, US, 0},
 	{0x924C4AA6, GodHand, KO, 0},
 	{0xDE9722A5, GodHand, EU, 0},
 	{0x9637D496, KnightsOfTheTemple2, NoRegion, 0}, // // EU and JP versions have the same CRC
-	{0x4E811100, UltramanFightingEvolution, JP, 0}, // cutie comment
-	{0xF7F181C3, DeathByDegreesTekkenNinaWilliams, CH, 0}, // cutie comment
+	{0x4E811100, UltramanFightingEvolution, JP, 0},
+	{0xF7F181C3, DeathByDegreesTekkenNinaWilliams, CH, 0},
 	{0xF088FA5B, DeathByDegreesTekkenNinaWilliams, KO, 0},
 	{0xE1D6F85E, DeathByDegreesTekkenNinaWilliams, US, 0},
 	{0x59683BB0, DeathByDegreesTekkenNinaWilliams, EU, 0},
 	{0x830B6FB1, TalesofSymphonia, JP, 0},
 	{0xFC0F8A5B, Simple2000Vol114, JP, 0},
-	{0xBDD9BAAD, UrbanReign, US, 0}, // cutie comment
+	{0xBDD9BAAD, UrbanReign, US, 0},
 	{0x0418486E, UrbanReign, RU, 0},
 	{0xAE4BEBD3, UrbanReign, EU, 0},
 	{0x48AC09BC, SteambotChronicles, EU, 0},
