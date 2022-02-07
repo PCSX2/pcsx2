@@ -29,7 +29,6 @@ declare -a PCSX2_PACKAGES=(
   "libudev-dev"
   "libwxgtk3.0-gtk3-dev"
   "libx11-xcb-dev"
-  "libxml2-dev"
   "pkg-config"
   "portaudio19-dev"
   "zlib1g-dev"
