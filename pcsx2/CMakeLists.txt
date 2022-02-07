@@ -784,9 +784,6 @@ if(PCSX2_CORE)
 		list(APPEND pcsx2SPU2Headers
 			SPU2/WavFile.cpp
 		)
-		list(APPEND pcsx2DEV9Sources
-			DEV9/Linux/Config.cpp
-		)
 	endif()
 elseif(WIN32)
 	list(APPEND pcsx2SPU2Sources
@@ -807,7 +804,6 @@ elseif(WIN32)
 	)
 
 	list(APPEND pcsx2DEV9Sources
-		DEV9/Win32/DEV9WinConfig.cpp
 		DEV9/Win32/pcap_io_win32.cpp
 		DEV9/Win32/tap-win32.cpp
 	)
@@ -876,10 +872,6 @@ else()
 		SPU2/Linux/Config.h
 		SPU2/Linux/Dialogs.h
 		SPU2/wx/wxConfig.h
-	)
-
-	list(APPEND pcsx2DEV9Sources
-		DEV9/Linux/Config.cpp
 	)
 
 	list(APPEND pcsx2USBSources

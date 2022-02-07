@@ -218,10 +218,8 @@ static int TAPSetStatus(HANDLE handle, int status)
 		&status, sizeof(status), &len, NULL);
 }
 //Open the TAP adapter and set the connection to enabled :)
-HANDLE TAPOpen(const char* device_guid)
+HANDLE TAPOpen(const std::string& device_guid)
 {
-	char device_path[256];
-
 	struct
 	{
 		unsigned long major;
@@ -230,13 +228,10 @@ HANDLE TAPOpen(const char* device_guid)
 	} version;
 	LONG version_len;
 
-	sprintf_s(device_path, "%s%s%s",
-		USERMODEDEVICEDIR,
-		device_guid,
-		TAPSUFFIX);
+	std::string device_path = USERMODEDEVICEDIR + device_guid + TAPSUFFIX;
 
 	wil::unique_hfile handle(CreateFileA(
-		device_path,
+		device_path.c_str(),
 		GENERIC_READ | GENERIC_WRITE,
 		0,
 		0,
@@ -282,7 +277,7 @@ PIP_ADAPTER_ADDRESSES FindAdapterViaIndex(PIP_ADAPTER_ADDRESSES adapterList, int
 //IP_ADAPTER_ADDRESSES is a structure that contains ptrs to data in other regions
 //of the buffer, se we need to return both so the caller can free the buffer
 //after it's finished reading the needed data from IP_ADAPTER_ADDRESSES
-bool TAPGetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer)
+bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer)
 {
 	int neededSize = 256;
 	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
@@ -322,7 +317,7 @@ bool TAPGetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::un
 
 	do
 	{
-		if (0 == strcmp(pAdapterInfo->AdapterName, name))
+		if (0 == strcmp(pAdapterInfo->AdapterName, name.c_str()))
 			break;
 
 		pAdapterInfo = pAdapterInfo->Next;
@@ -535,9 +530,9 @@ bool TAPGetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::un
 TAPAdapter::TAPAdapter()
 	: NetAdapter()
 {
-	if (config.ethEnable == 0)
+	if (!EmuConfig.DEV9.EthEnable)
 		return;
-	htap = TAPOpen(config.Eth);
+	htap = TAPOpen(EmuConfig.DEV9.EthDevice);
 
 	read.Offset = 0;
 	read.OffsetHigh = 0;
@@ -563,7 +558,7 @@ TAPAdapter::TAPAdapter()
 
 	IP_ADAPTER_ADDRESSES adapter;
 	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
-	if (TAPGetWin32Adapter(config.Eth, &adapter, &buffer))
+	if (TAPGetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
 		InitInternalServer(&adapter);
 	else
 	{
@@ -658,7 +653,7 @@ void TAPAdapter::reloadSettings()
 {
 	IP_ADAPTER_ADDRESSES adapter;
 	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
-	if (TAPGetWin32Adapter(config.Eth, &adapter, &buffer))
+	if (TAPGetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
 		ReloadInternalServer(&adapter);
 	else
 		ReloadInternalServer(nullptr);

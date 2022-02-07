@@ -923,9 +923,6 @@
     <ClCompile Include="DEV9\Win32\tap-win32.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
-    <ClCompile Include="DEV9\Win32\DEV9WinConfig.cpp">
-      <Filter>System\Ps2\DEV9</Filter>
-    </ClCompile>
     <ClCompile Include="GS\GS.cpp">
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>

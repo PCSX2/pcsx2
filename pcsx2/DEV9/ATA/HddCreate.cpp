@@ -32,8 +32,13 @@ void HddCreate::Start()
 		return;
 	}
 
+#endif
+
+	int reqMiB = (neededSize + ((1024 * 1024) - 1)) / (1024 * 1024);
+
+#ifndef PCSX2_CORE
 	//This creates a modeless dialog
-	progressDialog = new wxProgressDialog(_("Creating HDD file"), _("Creating HDD file"), neededSize, nullptr, wxPD_APP_MODAL | wxPD_AUTO_HIDE | wxPD_CAN_ABORT | wxPD_ELAPSED_TIME | wxPD_REMAINING_TIME);
+	progressDialog = new wxProgressDialog(_("Creating HDD file"), _("Creating HDD file"), reqMiB, nullptr, wxPD_APP_MODAL | wxPD_AUTO_HIDE | wxPD_CAN_ABORT | wxPD_ELAPSED_TIME | wxPD_REMAINING_TIME);
 #endif
 
 	fileThread = std::thread(&HddCreate::WriteImage, this, filePath, neededSize);
@@ -45,9 +50,9 @@ void HddCreate::Start()
 	//Instead, loop here to update UI
 	wxString msg;
 	int currentSize;
-	while ((currentSize = written.load()) != neededSize && !errored.load())
+	while ((currentSize = written.load()) != reqMiB && !errored.load())
 	{
-		msg.Printf(_("%i / %i MiB"), written.load(), neededSize);
+		msg.Printf(_("%i / %i MiB"), written.load(), reqMiB);
 
 #ifndef PCSX2_CORE
 		if (!progressDialog->Update(currentSize, msg))
@@ -78,7 +83,7 @@ void HddCreate::Start()
 	completedCV.notify_all();
 }
 
-void HddCreate::WriteImage(fs::path hddPath, int reqSizeMiB)
+void HddCreate::WriteImage(fs::path hddPath, u64 reqSizeBytes)
 {
 	constexpr int buffsize = 4 * 1024;
 	u8 buff[buffsize] = {0}; //4kb
@@ -98,7 +103,7 @@ void HddCreate::WriteImage(fs::path hddPath, int reqSizeMiB)
 	}
 
 	//Size file
-	newImage.seekp(((u64)reqSizeMiB) * 1024 * 1024 - 1, std::ios::beg);
+	newImage.seekp(reqSizeBytes - 1, std::ios::beg);
 	const char zero = 0;
 	newImage.write(&zero, 1);
 
@@ -114,9 +119,13 @@ void HddCreate::WriteImage(fs::path hddPath, int reqSizeMiB)
 
 	newImage.seekp(0, std::ios::beg);
 
-	for (int iMiB = 0; iMiB < reqSizeMiB; iMiB++)
+	//Round up
+	const s32 reqMiB = (reqSizeBytes + ((1024 * 1024) - 1)) / (1024 * 1024);
+	for (s32 iMiB = 0; iMiB < reqMiB; iMiB++)
 	{
-		for (int i4kb = 0; i4kb < 256; i4kb++)
+		//Round down
+		const s32 req4Kib = std::min<s32>(1024, (reqSizeBytes / 1024) - (u64)iMiB * 1024) / 4;
+		for (s32 i4kb = 0; i4kb < req4Kib; i4kb++)
 		{
 			newImage.write((char*)buff, buffsize);
 			if (newImage.fail())
@@ -128,8 +137,21 @@ void HddCreate::WriteImage(fs::path hddPath, int reqSizeMiB)
 			}
 		}
 
+		if (req4Kib != 256)
+		{
+			const s32 remainingBytes = reqSizeBytes - (((u64)iMiB) * (1024 * 1024) + req4Kib * 4096);
+			newImage.write((char*)buff, remainingBytes);
+			if (newImage.fail())
+			{
+				newImage.close();
+				fs::remove(filePath);
+				SetError();
+				return;
+			}
+		}
+
 		const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastUpdate).count() >= 100 || (iMiB + 1) == neededSize)
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastUpdate).count() >= 100 || (iMiB + 1) == reqMiB)
 		{
 			lastUpdate = now;
 			SetFileProgress(iMiB + 1);

@@ -58,17 +58,9 @@ extern mtfifo<NetPacket*> rx_fifo;
 extern mtfifo<NetPacket*> tx_fifo;
 */
 
-enum struct NetApi : int
-{
-	Unset = 0,
-	PCAP_Bridged = 1,
-	PCAP_Switched = 2,
-	TAP = 3,
-};
-
 struct AdapterEntry
 {
-	NetApi type;
+	Pcsx2Config::DEV9Options::NetApi type;
 	//UTF8
 	std::string name;
 	std::string guid;
@@ -133,7 +125,5 @@ private:
 
 void tx_put(NetPacket* ptr);
 void InitNet();
-void ReconfigureLiveNet(ConfigDEV9* oldConfig);
+void ReconfigureLiveNet(const Pcsx2Config& old_config);
 void TermNet();
-
-const wxChar* NetApiToWxString(NetApi api);

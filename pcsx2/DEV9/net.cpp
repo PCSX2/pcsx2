@@ -71,15 +71,15 @@ NetAdapter* GetNetAdapter()
 {
 	NetAdapter* na = nullptr;
 
-	switch (config.EthApi)
+	switch (EmuConfig.DEV9.EthApi)
 	{
 #ifdef _WIN32
-		case NetApi::TAP:
+		case Pcsx2Config::DEV9Options::NetApi::TAP:
 			na = static_cast<NetAdapter*>(new TAPAdapter());
 			break;
 #endif
-		case NetApi::PCAP_Bridged:
-		case NetApi::PCAP_Switched:
+		case Pcsx2Config::DEV9Options::NetApi::PCAP_Bridged:
+		case Pcsx2Config::DEV9Options::NetApi::PCAP_Switched:
 			na = static_cast<NetAdapter*>(new PCAPAdapter());
 			break;
 		default:
@@ -101,7 +101,7 @@ void InitNet()
 	if (!na)
 	{
 		Console.Error("DEV9: Failed to GetNetAdapter()");
-		config.ethEnable = false;
+		EmuConfig.DEV9.EthEnable = false;
 		return;
 	}
 
@@ -123,16 +123,16 @@ void InitNet()
 #endif
 }
 
-void ReconfigureLiveNet(ConfigDEV9* oldConfig)
+void ReconfigureLiveNet(const Pcsx2Config& old_config)
 {
 	//Eth
-	if (config.ethEnable)
+	if (EmuConfig.DEV9.EthEnable)
 	{
-		if (oldConfig->ethEnable)
+		if (old_config.DEV9.EthEnable)
 		{
 			//Reload Net if adapter changed
-			if (strcmp(oldConfig->Eth, config.Eth) != 0 ||
-				oldConfig->EthApi != config.EthApi)
+			if (EmuConfig.DEV9.EthDevice != old_config.DEV9.EthDevice ||
+				EmuConfig.DEV9.EthApi != old_config.DEV9.EthApi)
 			{
 				TermNet();
 				InitNet();
@@ -144,7 +144,7 @@ void ReconfigureLiveNet(ConfigDEV9* oldConfig)
 		else
 			InitNet();
 	}
-	else if (oldConfig->ethEnable)
+	else if (old_config.DEV9.EthEnable)
 		TermNet();
 }
 
@@ -160,21 +160,6 @@ void TermNet()
 
 		delete nif;
 		nif = nullptr;
-	}
-}
-
-const wxChar* NetApiToWxString(NetApi api)
-{
-	switch (api)
-	{
-		case NetApi::PCAP_Bridged:
-			return _("PCAP Bridged");
-		case NetApi::PCAP_Switched:
-			return _("PCAP Switched");
-		case NetApi::TAP:
-			return _("TAP");
-		default:
-			return _("UNK");
 	}
 }
 
@@ -224,7 +209,7 @@ NetAdapter::~NetAdapter()
 
 void NetAdapter::InspectSend(NetPacket* pkt)
 {
-	if (config.EthLogDNS)
+	if (EmuConfig.DEV9.EthLogDNS)
 	{
 		EthernetFrame frame(pkt);
 		if (frame.protocol == (u16)EtherType::IPv4)
@@ -249,7 +234,7 @@ void NetAdapter::InspectSend(NetPacket* pkt)
 }
 void NetAdapter::InspectRecv(NetPacket* pkt)
 {
-	if (config.EthLogDNS)
+	if (EmuConfig.DEV9.EthLogDNS)
 	{
 		EthernetFrame frame(pkt);
 		if (frame.protocol == (u16)EtherType::IPv4)
@@ -313,7 +298,7 @@ void NetAdapter::InitInternalServer(ifaddrs* adapter)
 	if (adapter == nullptr)
 		Console.Error("DEV9: InitInternalServer() got nullptr for adapter");
 
-	if (config.InterceptDHCP)
+	if (EmuConfig.DEV9.InterceptDHCP)
 		dhcpServer.Init(adapter);
 	
 	dnsServer.Init(adapter);
@@ -334,7 +319,7 @@ void NetAdapter::ReloadInternalServer(ifaddrs* adapter)
 	if (adapter == nullptr)
 		Console.Error("DEV9: ReloadInternalServer() got nullptr for adapter");
 
-	if (config.InterceptDHCP)
+	if (EmuConfig.DEV9.InterceptDHCP)
 		dhcpServer.Init(adapter);
 	
 	dnsServer.Init(adapter);
@@ -391,7 +376,7 @@ bool NetAdapter::InternalServerSend(NetPacket* pkt)
 			if (udppkt.destinationPort == 67)
 			{
 				//Send DHCP
-				if (config.InterceptDHCP)
+				if (EmuConfig.DEV9.InterceptDHCP)
 					return dhcpServer.Send(&udppkt);
 			}
 		}

@@ -52,30 +52,30 @@ namespace InternalServers
 	void DHCP_Server::Init(ifaddrs* adapter)
 #endif
 	{
-		ps2IP = config.PS2IP;
+		ps2IP = *(IP_Address*)&EmuConfig.DEV9.PS2IP;
 		netmask = {0};
 		gateway = {0};
 		dns1 = {0};
 		dns2 = {0};
 		broadcastIP = {0};
 
-		if (config.AutoMask)
+		if (EmuConfig.DEV9.AutoMask)
 			AutoNetmask(adapter);
 		else
-			netmask = config.Mask;
+			netmask = *(IP_Address*)EmuConfig.DEV9.Mask;
 
-		if (config.AutoGateway)
+		if (EmuConfig.DEV9.AutoGateway)
 			AutoGateway(adapter);
 		else
-			gateway = config.Gateway;
+			gateway = *(IP_Address*)EmuConfig.DEV9.Gateway;
 
-		if (!config.AutoDNS1)
-			dns1 = config.DNS1;
+		if (!EmuConfig.DEV9.AutoDNS1)
+			dns1 = *(IP_Address*)EmuConfig.DEV9.DNS1;
 
-		if (!config.AutoDNS2)
-			dns2 = config.DNS2;
+		if (!EmuConfig.DEV9.AutoDNS2)
+			dns2 = *(IP_Address*)EmuConfig.DEV9.DNS2;
 
-		AutoDNS(adapter, config.AutoDNS1, config.AutoDNS2);
+		AutoDNS(adapter, EmuConfig.DEV9.AutoDNS1, EmuConfig.DEV9.AutoDNS2);
 		AutoBroadcast(ps2IP, netmask);
 	}
 

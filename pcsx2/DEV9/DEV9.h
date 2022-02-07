@@ -65,29 +65,7 @@ struct ConfigHost
 
 struct ConfigDEV9
 {
-	char Eth[256];
-	NetApi EthApi;
-	bool InterceptDHCP;
-	PacketReader::IP::IP_Address PS2IP;
-	PacketReader::IP::IP_Address Mask;
-	PacketReader::IP::IP_Address Gateway;
-	PacketReader::IP::IP_Address DNS1;
-	PacketReader::IP::IP_Address DNS2;
-	int AutoMask;
-	int AutoGateway;
-	int AutoDNS1;
-	int AutoDNS2;
-	int EthLogDNS;
 	std::vector<ConfigHost> EthHosts;
-#ifdef _WIN32
-	wchar_t Hdd[256];
-#else
-	char Hdd[256];
-#endif
-	int HddSize;
-
-	int hddEnable;
-	int ethEnable;
 };
 
 
@@ -738,7 +716,7 @@ u32 DEV9read32(u32 addr);
 void DEV9write8(u32 addr, u8 value);
 void DEV9write16(u32 addr, u16 value);
 void DEV9write32(u32 addr, u32 value);
-void ApplyConfigIfRunning(ConfigDEV9 oldConfig);
+void DEV9CheckChanges(const Pcsx2Config& old_config);
 
 #ifdef _WIN32
 #pragma warning(error : 4013)

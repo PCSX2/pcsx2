@@ -633,6 +633,80 @@ struct Pcsx2Config
 		}
 	};
 
+	struct DEV9Options
+	{
+		enum struct NetApi : int
+		{
+			Unset = 0,
+			PCAP_Bridged = 1,
+			PCAP_Switched = 2,
+			TAP = 3,
+		};
+
+		static const char* NetApiNames[];
+
+		bool EthEnable{false};
+		NetApi EthApi{NetApi::Unset};
+		std::string EthDevice;
+		bool EthLogDNS{false};
+
+		bool InterceptDHCP{false};
+		u8 PS2IP[4]{};
+		u8 Mask[4]{};
+		u8 Gateway[4]{};
+		u8 DNS1[4]{};
+		u8 DNS2[4]{};
+		bool AutoMask{true};
+		bool AutoGateway{true};
+		bool AutoDNS1{true};
+		bool AutoDNS2{true};
+
+		bool HddEnable{false};
+		std::string HddFile;
+
+		/* The PS2's HDD max size is 2TB
+		 * which is 2^32 * 512 byte sectors
+		 * Note that we don't yet support
+		 * 48bit LBA, so our limit is lower */
+		uint HddSizeSectors{0};
+
+		DEV9Options();
+
+		void LoadSave(SettingsWrapper& wrap);
+
+		bool operator==(const DEV9Options& right) const
+		{
+			return OpEqu(EthEnable) &&
+				   OpEqu(EthApi) &&
+				   OpEqu(EthDevice) &&
+				   OpEqu(EthLogDNS) &&
+
+				   OpEqu(InterceptDHCP) &&
+				   (*(int*)PS2IP == *(int*)right.PS2IP) &&
+				   (*(int*)Gateway == *(int*)right.Gateway) &&
+				   (*(int*)DNS1 == *(int*)right.DNS1) &&
+				   (*(int*)DNS2 == *(int*)right.DNS2) &&
+
+				   OpEqu(AutoMask) &&
+				   OpEqu(AutoGateway) &&
+				   OpEqu(AutoDNS1) &&
+				   OpEqu(AutoDNS2) &&
+
+				   OpEqu(HddEnable) &&
+				   OpEqu(HddFile) &&
+				   OpEqu(HddSizeSectors);
+		}
+
+		bool operator!=(const DEV9Options& right) const
+		{
+			return !this->operator==(right);
+		}
+
+	protected:
+		static void LoadIPHelper(u8* field, const std::string& setting);
+		static std::string SaveIPHelper(u8* field);
+	};
+
 	// ------------------------------------------------------------------------
 	// NOTE: The GUI's GameFixes panel is dependent on the order of bits in this structure.
 	struct GamefixOptions
@@ -833,6 +907,7 @@ struct Pcsx2Config
 	DebugOptions Debugger;
 	FramerateOptions Framerate;
 	SPU2Options SPU2;
+	DEV9Options DEV9;
 
 	TraceLogFilters Trace;
 

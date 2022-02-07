@@ -171,7 +171,7 @@ public:
 
 private:
 	//Info
-	void CreateHDDinfo(int sizeMb);
+	void CreateHDDinfo(u64 sizeSectors);
 	void CreateHDDinfoCsum();
 
 	//State
