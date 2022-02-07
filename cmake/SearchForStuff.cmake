@@ -23,8 +23,6 @@ else()
 		make_imported_target_if_missing(ALSA::ALSA ALSA)
 	endif()
 	find_package(PCAP REQUIRED)
-	find_package(LibXml2 REQUIRED)
-	make_imported_target_if_missing(LibXml2::LibXml2 LibXml2)
 	find_package(Gettext) # translation tool
 	find_package(LibLZMA REQUIRED)
 	make_imported_target_if_missing(LibLZMA::LibLZMA LIBLZMA)

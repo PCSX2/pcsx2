@@ -1562,7 +1562,6 @@ if(WIN32)
 elseif(APPLE)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		PCAP::PCAP
-		LibXml2::LibXml2
 	)
 else()
 	if (NOT PCSX2_CORE)
@@ -1574,7 +1573,6 @@ else()
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		OpenGL::GL
 		PCAP::PCAP
-		LibXml2::LibXml2
 	)
 endif()
 
