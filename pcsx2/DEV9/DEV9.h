@@ -156,10 +156,6 @@ EXTERN dev9Struct dev9;
 
 EXTERN int ThreadRun;
 
-//Yes these are meant to be a lowercase extern
-extern std::string s_strIniPath;
-extern std::string s_strLogPath;
-
 #define DEV9_R_REV 0x1f80146e
 
 

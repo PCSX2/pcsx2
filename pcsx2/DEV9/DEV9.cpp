@@ -89,9 +89,6 @@ int hEeprom;
 int mapping;
 #endif
 
-std::string s_strIniPath = "inis";
-std::string s_strLogPath = "logs";
-
 bool isRunning = false;
 
 fs::path GetHDDPath()
@@ -1063,21 +1060,6 @@ void DEV9async(u32 cycles)
 {
 	smap_async(cycles);
 	dev9.ata->Async(cycles);
-}
-
-// extended funcs
-
-void DEV9setSettingsDir(const char* dir)
-{
-	// Grab the ini directory.
-	// TODO: Use
-	s_strIniPath = (dir == NULL) ? "inis" : dir;
-}
-
-void DEV9setLogDir(const char* dir)
-{
-	// Get the path to the log directory.
-	s_strLogPath = (dir == NULL) ? "logs" : dir;
 }
 
 void ApplyConfigIfRunning(ConfigDEV9 oldConfig)
