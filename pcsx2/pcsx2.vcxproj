@@ -304,7 +304,6 @@
     <ClCompile Include="DEV9\pcap_io.cpp" />
     <ClCompile Include="DEV9\Win32\pcap_io_win32.cpp" />
     <ClCompile Include="DEV9\smap.cpp" />
-    <ClCompile Include="DEV9\Win32\DEV9WinConfig.cpp" />
     <ClCompile Include="DEV9\net.cpp" />
     <ClCompile Include="DEV9\Win32\tap-win32.cpp" />
     <ClCompile Include="Frontend\D3D11HostDisplay.cpp" />

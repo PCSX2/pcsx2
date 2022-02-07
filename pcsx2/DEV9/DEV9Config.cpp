@@ -70,7 +70,7 @@ void LoadDnsHosts()
 {
 	wxFileName iniPath = EmuFolders::Settings.Combine(wxString("DEV9Hosts.ini"));
 	config.EthHosts.clear();
-	//If no file exists, create one to provice an example config
+	//If no file exists, create one to provide an example config
 	if (!iniPath.FileExists())
 	{
 		//Load Default settings
@@ -120,7 +120,7 @@ void LoadDnsHosts()
 		else
 			ini.Entry(L"Enabled", entry.Enabled, false);
 
-		if (config.EthLogDNS && entry.Enabled)
+		if (EmuConfig.DEV9.EthLogDNS && entry.Enabled)
 			Console.WriteLn("DEV9: Host entry %i: url %s mapped to %s", i, entry.Url.c_str(), tmp.ToStdString().c_str());
 
 		config.EthHosts.push_back(entry);

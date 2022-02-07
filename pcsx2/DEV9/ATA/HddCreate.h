@@ -29,7 +29,7 @@ class HddCreate
 {
 public:
 	fs::path filePath;
-	int neededSize;
+	u64 neededSize;
 
 	std::atomic_bool errored{false};
 
@@ -55,5 +55,5 @@ public:
 private:
 	void SetFileProgress(int currentSize);
 	void SetError();
-	void WriteImage(fs::path hddPath, int reqSizeMB);
+	void WriteImage(fs::path hddPath, u64 reqSizeBytes);
 };

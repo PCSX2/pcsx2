@@ -31,14 +31,14 @@ int ATA::Open(fs::path hddPath)
 	readBufferLen = 256 * 512;
 	readBuffer = new u8[readBufferLen];
 
-	CreateHDDinfo(config.HddSize);
+	CreateHDDinfo(EmuConfig.DEV9.HddSizeSectors);
 
 	//Open File
 	if (!fs::exists(hddPath))
 	{
 		HddCreate hddCreator;
 		hddCreator.filePath = hddPath;
-		hddCreator.neededSize = config.HddSize;
+		hddCreator.neededSize = ((u64)EmuConfig.DEV9.HddSizeSectors) * 512;
 		hddCreator.Start();
 
 		if (hddCreator.errored)
@@ -396,7 +396,7 @@ bool ATA::HDD_CanAccess(int* sectors)
 	s64 posEnd;
 	s64 maxLBA;
 
-	maxLBA = std::min<s64>((s64)config.HddSize * 1024 * 1024 / 512, hddImageSize) - 1;
+	maxLBA = std::min<s64>(EmuConfig.DEV9.HddSizeSectors, hddImageSize / 512) - 1;
 	if ((regSelect & 0x40) == 0) //CHS mode
 		maxLBA = std::min<s64>(maxLBA, curCylinders * curHeads * curSectors);
 

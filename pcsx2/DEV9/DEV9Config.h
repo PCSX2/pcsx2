@@ -13,8 +13,5 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-void SaveConf();
-void LoadConf();
-
 void SaveDnsHosts();
 void LoadDnsHosts();

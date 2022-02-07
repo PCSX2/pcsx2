@@ -44,6 +44,7 @@
 #include "PerformanceMetrics.h"
 #include "R5900.h"
 #include "SPU2/spu2.h"
+#include "DEV9/DEV9.h"
 #include "System/SysThreads.h"
 #include "USB/USB.h"
 #include "PAD/Host/PAD.h"
@@ -71,6 +72,7 @@ namespace VMManager
 	static void CheckForFramerateConfigChanges(const Pcsx2Config& old_config);
 	static void CheckForPatchConfigChanges(const Pcsx2Config& old_config);
 	static void CheckForSPU2ConfigChanges(const Pcsx2Config& old_config);
+	static void CheckForDEV9ConfigChanges(const Pcsx2Config& old_config);
 	static void CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config);
 	static void UpdateRunningGame(bool force);
 
@@ -1074,6 +1076,14 @@ void VMManager::CheckForSPU2ConfigChanges(const Pcsx2Config& old_config)
 	}
 }
 
+void VMManager::CheckForDEV9ConfigChanges(const Pcsx2Config& old_config)
+{
+	if (EmuConfig.DEV9 == old_config.DEV9)
+		return;
+
+	DEV9CheckChanges(old_config);
+}
+
 void VMManager::CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config)
 {
 	bool changed = false;
@@ -1118,6 +1128,7 @@ void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)
 	CheckForFramerateConfigChanges(old_config);
 	CheckForPatchConfigChanges(old_config);
 	CheckForSPU2ConfigChanges(old_config);
+	CheckForDEV9ConfigChanges(old_config);
 	CheckForMemoryCardConfigChanges(old_config);
 
 	if (EmuConfig.EnableCheats != old_config.EnableCheats || EmuConfig.EnableWideScreenPatches != old_config.EnableWideScreenPatches)

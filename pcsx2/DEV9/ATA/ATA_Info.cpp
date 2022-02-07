@@ -44,11 +44,11 @@ void ATA::WritePaddedString(u8* data, int* index, std::string value, u32 len)
 	*index += len;
 }
 
-void ATA::CreateHDDinfo(int sizeMb)
+void ATA::CreateHDDinfo(u64 sizeSectors)
 {
 	const u16 sectorSize = 512;
-	DevCon.WriteLn("DEV9: HddSize : %i", config.HddSize);
-	const u64 nbSectors = ((u64)(sizeMb / sectorSize) * 1024 * 1024);
+	DevCon.WriteLn("DEV9: HddSize : %i", sizeSectors * sectorSize / (1024 * 1024));
+	const u64 nbSectors = sizeSectors;
 	DevCon.WriteLn("DEV9: nbSectors : %i", nbSectors);
 
 	memset(&identifyData, 0, sizeof(identifyData));

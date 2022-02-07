@@ -187,7 +187,12 @@ void SysCoreThread::ApplySettings(const Pcsx2Config& src)
 
 	const bool gs_settings_changed = !src.GS.OptionsAreEqual(EmuConfig.GS);
 
+	Pcsx2Config old_config;
+	old_config.CopyConfig(EmuConfig);
 	EmuConfig.CopyConfig(src);
+
+	// handle DEV9 setting changes
+	DEV9CheckChanges(old_config);
 
 	// handle GS setting changes
 	if (GetMTGS().IsOpen() && gs_settings_changed)

@@ -28,7 +28,7 @@
 
 #include "common/StringUtil.h"
 
-#include "DEV9Config.h"
+#include "Config.h"
 #include "DEV9.h"
 #include "pcap_io.h"
 #include "net.h"
@@ -81,7 +81,7 @@ class DEV9Dialog : public wxDialog
 			IPControl_SetValue(m_ip, ip);
 			m_auto->SetValue(is_auto);
 		}
-		void save(IP_Address& ip, int& is_auto)
+		void save(IP_Address& ip, bool& is_auto)
 		{
 			ip = IPControl_GetValue(m_ip);
 			is_auto = m_auto->GetValue();
@@ -90,7 +90,7 @@ class DEV9Dialog : public wxDialog
 	wxCheckBox* m_eth_enable;
 	wxChoice* m_eth_adapter_api;
 	wxChoice* m_eth_adapter;
-	std::vector<NetApi> m_api_list;
+	std::vector<Pcsx2Config::DEV9Options::NetApi> m_api_list;
 	std::vector<std::vector<AdapterEntry>> m_adapter_list;
 	wxCheckBox* m_intercept_dhcp;
 	wxTextCtrl* m_ps2_address;
@@ -143,8 +143,8 @@ public:
 			std::sort(list.begin(), list.end(), [](const AdapterEntry& a, AdapterEntry& b){ return a.name < b.name; });
 		wxArrayString adapter_api_name_list;
 		adapter_api_name_list.Add("");
-		for (const NetApi& type : m_api_list)
-			adapter_api_name_list.Add(NetApiToWxString(type));
+		for (const Pcsx2Config::DEV9Options::NetApi& type : m_api_list)
+			adapter_api_name_list.Add(Pcsx2Config::DEV9Options::NetApiNames[(int)type]);
 
 		auto* eth_adapter_api_label = new wxStaticText(this, wxID_ANY, _("Ethernet Device Type:"));
 		auto* eth_adapter_label     = new wxStaticText(this, wxID_ANY, _("Ethernet Device:"));
@@ -218,9 +218,9 @@ public:
 		Bind(wxEVT_BUTTON,   &DEV9Dialog::OnOK,     this, wxID_OK);
 	}
 
-	void Load(const ConfigDEV9& config)
+	void Load(const Pcsx2Config::DEV9Options& config)
 	{
-		m_eth_enable->SetValue(config.ethEnable);
+		m_eth_enable->SetValue(config.EthEnable);
 		m_eth_adapter_api->SetSelection(0);
 		for (size_t i = 0; i < m_api_list.size(); i++)
 		{
@@ -234,7 +234,7 @@ public:
 			const auto& list = m_adapter_list[static_cast<u32>(config.EthApi)];
 			for (size_t i = 0; i < list.size(); i++)
 			{
-				if (list[i].guid == config.Eth)
+				if (list[i].guid == config.EthDevice)
 				{
 					m_eth_adapter->SetSelection(i + 1);
 					break;
@@ -242,47 +242,48 @@ public:
 			}
 		}
 		m_intercept_dhcp->SetValue(config.InterceptDHCP);
-		IPControl_SetValue(m_ps2_address, config.PS2IP);
-		m_subnet_mask    .load(config.Mask,    config.AutoMask);
-		m_gateway_address.load(config.Gateway, config.AutoGateway);
-		m_dns1_address   .load(config.DNS1,    config.AutoDNS1);
-		m_dns2_address   .load(config.DNS2,    config.AutoDNS2);
+		IPControl_SetValue(m_ps2_address, *(IP_Address*)config.PS2IP);
+		m_subnet_mask    .load(*(IP_Address*)config.Mask,    config.AutoMask);
+		m_gateway_address.load(*(IP_Address*)config.Gateway, config.AutoGateway);
+		m_dns1_address   .load(*(IP_Address*)config.DNS1,    config.AutoDNS1);
+		m_dns2_address   .load(*(IP_Address*)config.DNS2,    config.AutoDNS2);
 
-		m_hdd_enable->SetValue(config.hddEnable);
-		m_hdd_file->SetInitialDirectory(config.Hdd);
-		m_hdd_file->SetPath(config.Hdd);
-		m_hdd_size_spin->SetValue(config.HddSize / 1024);
-		m_hdd_size_slider->SetValue(config.HddSize / 1024);
+		m_hdd_enable->SetValue(config.HddEnable);
+		wxString wxHddFile = StringUtil::UTF8StringToWxString(config.HddFile);
+		m_hdd_file->SetInitialDirectory(wxHddFile);
+		m_hdd_file->SetPath(wxHddFile);
+		m_hdd_size_spin->SetValue((u64)config.HddSizeSectors * 512 / (1024 * 1024 * 1024));
+		m_hdd_size_slider->SetValue((u64)config.HddSizeSectors * 512 / (1024 * 1024 * 1024));
 
 		UpdateEnable();
 	}
 
-	void Save(ConfigDEV9& config)
+	void Save(Pcsx2Config::DEV9Options& config)
 	{
-		config.ethEnable = m_eth_enable->GetValue();
+		config.EthEnable = m_eth_enable->GetValue();
 		int api = m_eth_adapter_api->GetSelection();
 		int eth = m_eth_adapter->GetSelection();
 		if (api && eth)
 		{
 			const AdapterEntry& adapter = m_adapter_list[static_cast<u32>(m_api_list[api - 1])][eth - 1];
-			wxStrncpy(config.Eth, adapter.guid, std::size(config.Eth) - 1);
+			config.EthDevice = adapter.guid;
 			config.EthApi = adapter.type;
 		}
 		else
 		{
-			config.Eth[0] = 0;
-			config.EthApi = NetApi::Unset;
+			config.EthDevice = "";
+			config.EthApi = Pcsx2Config::DEV9Options::NetApi::Unset;
 		}
 		config.InterceptDHCP = m_intercept_dhcp->GetValue();
-		config.PS2IP = IPControl_GetValue(m_ps2_address);
-		m_subnet_mask    .save(config.Mask,    config.AutoMask);
-		m_gateway_address.save(config.Gateway, config.AutoGateway);
-		m_dns1_address   .save(config.DNS1,    config.AutoDNS1);
-		m_dns2_address   .save(config.DNS2,    config.AutoDNS2);
+		*(IP_Address*)&config.PS2IP = IPControl_GetValue(m_ps2_address);
+		m_subnet_mask    .save(*(IP_Address*)config.Mask,    config.AutoMask);
+		m_gateway_address.save(*(IP_Address*)config.Gateway, config.AutoGateway);
+		m_dns1_address   .save(*(IP_Address*)config.DNS1,    config.AutoDNS1);
+		m_dns2_address   .save(*(IP_Address*)config.DNS2,    config.AutoDNS2);
 
-		config.hddEnable = m_hdd_enable->GetValue();
-		wxStrncpy(config.Hdd, m_hdd_file->GetPath(), std::size(config.Hdd) - 1);
-		config.HddSize = m_hdd_size_spin->GetValue() * 1024;
+		config.HddEnable = m_hdd_enable->GetValue();
+		config.HddFile = StringUtil::wxStringToUTF8String(m_hdd_file->GetPath());
+		config.HddSizeSectors = (u64)m_hdd_size_spin->GetValue() * 1024 * 1024 * 1024 / 512;
 	}
 
 	void UpdateEnable()
@@ -317,7 +318,7 @@ public:
 			if (m_eth_adapter->GetCount())
 				current = m_eth_adapter->GetString(m_eth_adapter->GetSelection());
 			if (current.empty())
-				current = config.Eth;
+				current = StringUtil::UTF8StringToWxString(g_Conf->EmuOptions.DEV9.EthDevice);
 			for (size_t i = 0; i < list.size(); i++)
 			{
 				wxString wxAdapterName = StringUtil::UTF8StringToWxString(list[i].name);
@@ -375,14 +376,12 @@ void DEV9configure()
 	ScopedCoreThreadPause paused_core;
 
 	DEV9Dialog dialog;
-	LoadConf();
-	dialog.Load(config);
+	dialog.Load(g_Conf->EmuOptions.DEV9);
 	if (dialog.ShowModal() == wxID_OK)
 	{
-		ConfigDEV9 oldConfig = config;
-		dialog.Save(config);
+		dialog.Save(g_Conf->EmuOptions.DEV9);
 
-		fs::path hddPath(config.Hdd);
+		fs::path hddPath(g_Conf->EmuOptions.DEV9.HddFile);
 
 		if (hddPath.is_relative())
 		{
@@ -391,17 +390,15 @@ void DEV9configure()
 			hddPath = path / hddPath;
 		}
 
-		if (config.hddEnable && !fs::exists(hddPath))
+		if (g_Conf->EmuOptions.DEV9.HddEnable && !fs::exists(hddPath))
 		{
 			HddCreate hddCreator;
 			hddCreator.filePath = hddPath;
-			hddCreator.neededSize = config.HddSize;
+			hddCreator.neededSize = ((u64)g_Conf->EmuOptions.DEV9.HddSizeSectors) * 512;
 			hddCreator.Start();
 		}
 
-		SaveConf();
-
-		ApplyConfigIfRunning(oldConfig);
+		AppSaveSettings();
 	}
 
 	paused_core.AllowResume();
