@@ -225,7 +225,7 @@ void NetAdapter::InspectSend(NetPacket* pkt)
 				if (udppkt.destinationPort == 53)
 				{
 					Console.WriteLn("DEV9: DNS: Packet Sent To %i.%i.%i.%i",
-									ippkt.destinationIP.bytes[0], ippkt.destinationIP.bytes[1], ippkt.destinationIP.bytes[2], ippkt.destinationIP.bytes[3]);
+						ippkt.destinationIP.bytes[0], ippkt.destinationIP.bytes[1], ippkt.destinationIP.bytes[2], ippkt.destinationIP.bytes[3]);
 					dnsLogger.InspectSend(&udppkt);
 				}
 			}
@@ -250,7 +250,7 @@ void NetAdapter::InspectRecv(NetPacket* pkt)
 				if (udppkt.sourcePort == 53)
 				{
 					Console.WriteLn("DEV9: DNS: Packet Sent From %i.%i.%i.%i",
-									ippkt.sourceIP.bytes[0], ippkt.sourceIP.bytes[1], ippkt.sourceIP.bytes[2], ippkt.sourceIP.bytes[3]);
+						ippkt.sourceIP.bytes[0], ippkt.sourceIP.bytes[1], ippkt.sourceIP.bytes[2], ippkt.sourceIP.bytes[3]);
 					dnsLogger.InspectRecv(&udppkt);
 				}
 			}
@@ -300,7 +300,7 @@ void NetAdapter::InitInternalServer(ifaddrs* adapter)
 
 	if (EmuConfig.DEV9.InterceptDHCP)
 		dhcpServer.Init(adapter);
-	
+
 	dnsServer.Init(adapter);
 
 	if (blocks())
@@ -321,7 +321,7 @@ void NetAdapter::ReloadInternalServer(ifaddrs* adapter)
 
 	if (EmuConfig.DEV9.InterceptDHCP)
 		dhcpServer.Init(adapter);
-	
+
 	dnsServer.Init(adapter);
 }
 
@@ -356,7 +356,7 @@ bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 		InspectRecv(pkt);
 		return true;
 	}
-	
+
 	return false;
 }
 
