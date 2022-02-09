@@ -590,6 +590,10 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	bool sw_blending = false;
 	if (g_gs_device->Features().texture_barrier)
 	{
+		// Condition 1: Require full sw blend for full barrier.
+		// Condition 2: One barrier is already enabled, prims don't overlap so let's use sw blend instead.
+		const bool prefer_sw_blend = m_conf.require_full_barrier || (m_conf.require_one_barrier && m_prim_overlap == PRIM_OVERLAP_NO);
+
 		// SW Blend is (nearly) free. Let's use it.
 		const bool impossible_or_free_blend = (blend_flag & BLEND_A_MAX) // Impossible blending
 			|| blend_non_recursive                 // Free sw blending, doesn't require barriers or reading fb
@@ -618,9 +622,9 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				// SW FBMASK, needs sw blend, avoid hitting any hw blend pre enabled (accumulation, blend mix, blend cd),
 				// fixes shadows in Superman shadows of Apokolips.
 				// DATE_BARRIER already does full barrier so also makes more sense to do full sw blend.
-				color_dest_blend   &= !m_conf.require_full_barrier;
+				color_dest_blend &= !prefer_sw_blend;
 				// If prims don't overlap prefer full sw blend on blend_ad_alpha_masked cases.
-				accumulation_blend &= !(m_conf.require_full_barrier || (blend_ad_alpha_masked && m_prim_overlap == PRIM_OVERLAP_NO));
+				accumulation_blend &= !(prefer_sw_blend || (blend_ad_alpha_masked && m_prim_overlap == PRIM_OVERLAP_NO));
 				sw_blending |= impossible_or_free_blend;
 				// Try to do hw blend for clr2 case.
 				sw_blending &= !clr_blend1_2;
@@ -634,7 +638,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	}
 	else
 	{
-		// FBMASK already reads the fb so it is safe to enable sw blend when there is no overlap.
+		// FBMASK or channel shuffle already reads the fb so it is safe to enable sw blend when there is no overlap.
 		const bool fbmask_no_overlap = m_conf.require_one_barrier && (m_prim_overlap == PRIM_OVERLAP_NO);
 
 		switch (GSConfig.AccurateBlendingUnit)
