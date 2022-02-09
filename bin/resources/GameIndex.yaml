@@ -9470,6 +9470,8 @@ SLES-51058:
   region: "PAL-E"
   gameFixes:
     - VUKickstartHack  # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0
 SLES-51060:
   name: "Butt Ugly Martians"
   region: "PAL-M5"
@@ -20031,7 +20033,9 @@ SLPM-61007:
   name: "Maken Shao [Trial]"
   region: "NTSC-J"
   gameFixes:
-    - VUKickstartHack # Fixes SPS. 
+    - VUKickstartHack # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0
 SLPM-61009:
   name: "Silent Hill 2 (Red Ribbon) [Trial]"
   region: "NTSC-J"
@@ -22523,6 +22527,8 @@ SLPM-65144:
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0
 SLPM-65148:
   name: "Densha de Go! Ryojou-hen"
   region: "NTSC-J"
@@ -29947,12 +29953,16 @@ SLPS-25042:
   name: "Maken Shao [Limited Edition]"
   region: "NTSC-J"
   gameFixes:
-    - VUKickstartHack # Fixes SPS. 
+    - VUKickstartHack # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0
 SLPS-25043:
   name: "Maken Shao"
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0
 SLPS-25044:
   name: "Evergrace 2"
   region: "NTSC-J"
