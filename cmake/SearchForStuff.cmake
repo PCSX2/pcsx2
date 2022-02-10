@@ -163,6 +163,8 @@ else()
 			check_lib(GTK3 gtk+-3.0 gtk/gtk.h)
 			alias_library(GTK::gtk PkgConfig::GTK3)
 		endif()
+		## Use pcsx2 package to find module
+		find_package(HarfBuzz)
 		endif()
 	endif()
 	if(WAYLAND_API)
