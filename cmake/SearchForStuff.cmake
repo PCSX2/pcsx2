@@ -123,7 +123,7 @@ else()
 		if(X11_API)
 			check_lib(X11_XCB X11-xcb X11/Xlib-xcb.h)
 			check_lib(XCB xcb xcb/xcb.h)
-			check_lib(XRANDR xrandr)
+			check_lib(XRANDR Xrandr X11/extensions/Xrandr.h)
 		endif()
 
 		if(Linux)
