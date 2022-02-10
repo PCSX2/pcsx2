@@ -27,9 +27,11 @@
 'GUI/WX':
   - 'pcsx2/gui/*'
   - 'pcsx2/gui/**/*'
-'Qt':
+'GUI/Qt':
   - 'pcsx2-qt/*'
   - 'pcsx2-qt/**/*'
+  - '3rdparty/Qt/*'
+  - '3rdparty/Qt/**/*'
 'GameDB':
   - '**/GameIndex.*'
 'Installer | Package':
