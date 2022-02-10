@@ -124,9 +124,12 @@ void BIOSSettingsWidget::listRefreshed(const QVector<BIOSInfo>& items)
 				item->setIcon(0, QIcon(QStringLiteral(":/icons/flag-eu.png")));
 				break;
 
+			case 7: // China
+				item->setIcon(0, QIcon(QStringLiteral(":/icons/flag-cn.png")));
+				break;
+
 			case 5: // HK
 			case 6: // Free
-			case 7: // China
 			case 0: // T10K
 			case 1: // Test
 			default:
