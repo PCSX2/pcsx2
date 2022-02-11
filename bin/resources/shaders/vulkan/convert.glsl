@@ -87,15 +87,12 @@ void ps_filter_transparency()
 #endif
 
 #ifdef ps_convert_rgba8_16bits
+// Need to be careful with precision here, it can break games like Spider-Man 3 and Dogs Life
 void ps_convert_rgba8_16bits()
 {
-	vec4 c = sample_c(v_tex);
+	highp uvec4 i = uvec4(sample_c(v_tex) * vec4(255.5f, 255.5f, 255.5f, 255.5f));
 
-	c.a *= 256.0f / 127; // hm, 0.5 won't give us 1.0 if we just multiply with 2
-
-	uvec4 i = uvec4(c * vec4(0x001f, 0x03e0, 0x7c00, 0x8000));
-
-	o_col0 = (i.x & 0x001fu) | (i.y & 0x03e0u) | (i.z & 0x7c00u) | (i.w & 0x8000u);	
+	o_col0 = ((i.x & 0x00F8u) >> 3) | ((i.y & 0x00F8u) << 2) | ((i.z & 0x00f8u) << 7) | ((i.w & 0x80u) << 8);
 }
 #endif
 

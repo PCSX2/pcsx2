@@ -114,15 +114,12 @@ float4 ps_scanlines(PS_INPUT input, int i)
 	return sample_c(input.t) * saturate(mask[i] + 0.5f);
 }
 
+// Need to be careful with precision here, it can break games like Spider-Man 3 and Dogs Life
 uint ps_convert_rgba8_16bits(PS_INPUT input) : SV_Target0
 {
-	float4 c = sample_c(input.t);
+	uint4 i = sample_c(input.t) * float4(255.5f, 255.5f, 255.5f, 255.5f);
 
-	c.a *= 256.0f / 127; // hm, 0.5 won't give us 1.0 if we just multiply with 2
-
-	uint4 i = c * float4(0x001f, 0x03e0, 0x7c00, 0x8000);
-
-	return (i.x & 0x001f) | (i.y & 0x03e0) | (i.z & 0x7c00) | (i.w & 0x8000);	
+	return ((i.x & 0x00F8u) >> 3) | ((i.y & 0x00F8u) << 2) | ((i.z & 0x00f8u) << 7) | ((i.w & 0x80u) << 8);
 }
 
 PS_OUTPUT ps_datm1(PS_INPUT input)
