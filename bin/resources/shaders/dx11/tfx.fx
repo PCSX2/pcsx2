@@ -717,7 +717,7 @@ void ps_color_clamp_wrap(inout float3 C)
 {
 	// When dithering the bottom 3 bits become meaningless and cause lines in the picture
 	// so we need to limit the color depth on dithered items
-	if (SW_BLEND || PS_DITHER)
+	if (SW_BLEND || PS_DITHER || PS_FBMASK)
 	{
 		// Standard Clamp
 		if (PS_COLCLIP == 0 && PS_HDR == 0)

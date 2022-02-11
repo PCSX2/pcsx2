@@ -633,7 +633,7 @@ void ps_color_clamp_wrap(inout vec3 C)
 {
     // When dithering the bottom 3 bits become meaningless and cause lines in the picture
     // so we need to limit the color depth on dithered items
-#if SW_BLEND || PS_DITHER
+#if SW_BLEND || PS_DITHER || PS_FBMASK
 
     // Correct the Color value based on the output format
 #if PS_COLCLIP == 0 && PS_HDR == 0
