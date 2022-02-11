@@ -1572,6 +1572,7 @@ else()
 	if (NOT PCSX2_CORE)
 		target_link_libraries(PCSX2_FLAGS INTERFACE
 			GTK::gtk
+			HarfBuzz::HarfBuzz
 		)
 	endif()
 	target_link_libraries(PCSX2_FLAGS INTERFACE
