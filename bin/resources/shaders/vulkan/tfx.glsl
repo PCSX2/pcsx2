@@ -653,23 +653,16 @@ vec4 sample_depth(vec2 st, ivec2 pos)
 		// Based on ps_main11 of convert
 
 		// Convert a vec32 depth texture into a RGBA color texture
-		const vec4 bitSh = vec4(exp2(24.0f), exp2(16.0f), exp2(8.0f), exp2(0.0f));
-		const vec4 bitMsk = vec4(0.0, 1.0f / 256.0f, 1.0f / 256.0f, 1.0f / 256.0f);
-
-		vec4 res = fract(vec4(fetch_c(uv).r) * bitSh);
-
-		t = (res - res.xxyz * bitMsk) * 256.0f;
+		uint d = uint(fetch_c(uv).r * exp2(32.0f));
+		t = vec4(uvec4((d & 0xFFu), ((d >> 8) & 0xFFu), ((d >> 16) & 0xFFu), (d >> 24)));
 	}
 	#elif (PS_DEPTH_FMT == 2)
 	{
 		// Based on ps_main12 of convert
 
 		// Convert a vec32 (only 16 lsb) depth into a RGB5A1 color texture
-		const vec4 bitSh = vec4(exp2(32.0f), exp2(27.0f), exp2(22.0f), exp2(17.0f));
-		const uvec4 bitMsk = uvec4(0x1F, 0x1F, 0x1F, 0x1);
-		uvec4 color = uvec4(vec4(fetch_c(uv).r) * bitSh) & bitMsk;
-
-		t = vec4(color) * vec4(8.0f, 8.0f, 8.0f, 128.0f);
+		uint d = uint(fetch_c(uv).r * exp2(32.0f));
+		t = vec4(uvec4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u)) * vec4(8.0f, 8.0f, 8.0f, 128.0f);
 	}
 	#elif (PS_DEPTH_FMT == 3)
 	{
