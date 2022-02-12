@@ -95,12 +95,8 @@ void ps_convert_float32_32bits()
 void ps_convert_float32_rgba8()
 {
     // Convert a GL_FLOAT32 depth texture into a RGBA color texture
-    const vec4 bitSh = vec4(exp2(24.0f), exp2(16.0f), exp2(8.0f), exp2(0.0f));
-    const vec4 bitMsk = vec4(0.0, 1.0/256.0, 1.0/256.0, 1.0/256.0);
-
-    vec4 res = fract(vec4(sample_c().r) * bitSh);
-
-    SV_Target0 = (res - res.xxyz * bitMsk) * 256.0f/255.0f;
+    uint d = uint(sample_c().r * exp2(32.0f));
+    SV_Target0 = vec4(uvec4((d & 0xFFu), ((d >> 8) & 0xFFu), ((d >> 16) & 0xFFu), (d >> 24))) / vec4(255.0);
 }
 #endif
 
@@ -108,11 +104,8 @@ void ps_convert_float32_rgba8()
 void ps_convert_float16_rgb5a1()
 {
     // Convert a GL_FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
-    const vec4 bitSh = vec4(exp2(32.0f), exp2(27.0f), exp2(22.0f), exp2(17.0f));
-    const uvec4 bitMsk = uvec4(0x1F, 0x1F, 0x1F, 0x1);
-    uvec4 color = uvec4(vec4(sample_c().r) * bitSh) & bitMsk;
-
-    SV_Target0 = vec4(color) / vec4(32.0f, 32.0f, 32.0f, 1.0f);
+    uint d = uint(sample_c().r * exp2(32.0f));
+    SV_Target0 = vec4(uvec4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u)) / vec4(32.0f, 32.0f, 32.0f, 1.0f);
 }
 #endif
 
@@ -120,9 +113,8 @@ void ps_convert_float16_rgb5a1()
 void ps_convert_rgba8_float32()
 {
     // Convert a RRGBA texture into a float depth texture
-    // FIXME: I'm afraid of the accuracy
-    const vec4 bitSh = vec4(exp2(-32.0f), exp2(-24.0f), exp2(-16.0f), exp2(-8.0f)) * vec4(255.0);
-    gl_FragDepth = dot(sample_c(), bitSh);
+    uvec4 c = uvec4(sample_c() * vec4(255.0f) + vec4(0.5f));
+    gl_FragDepth = float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-32.0f);
 }
 #endif
 
@@ -132,9 +124,8 @@ void ps_convert_rgba8_float24()
     // Same as above but without the alpha channel (24 bits Z)
 
     // Convert a RRGBA texture into a float depth texture
-    // FIXME: I'm afraid of the accuracy
-    const vec3 bitSh = vec3(exp2(-32.0f), exp2(-24.0f), exp2(-16.0f)) * vec3(255.0);
-    gl_FragDepth = dot(sample_c().rgb, bitSh);
+    uvec3 c = uvec3(sample_c().rgb * vec3(255.0f) + vec3(0.5f));
+    gl_FragDepth = float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-32.0f);
 }
 #endif
 
@@ -144,9 +135,8 @@ void ps_convert_rgba8_float16()
     // Same as above but without the A/B channels (16 bits Z)
 
     // Convert a RRGBA texture into a float depth texture
-    // FIXME: I'm afraid of the accuracy
-    const vec2 bitSh = vec2(exp2(-32.0f), exp2(-24.0f)) * vec2(255.0);
-    gl_FragDepth = dot(sample_c().rg, bitSh);
+    uvec2 c = uvec2(sample_c().rg * vec2(255.0f) + vec2(0.5f));
+    gl_FragDepth = float(c.r | (c.g << 8)) * exp2(-32.0f);
 }
 #endif
 
@@ -154,11 +144,8 @@ void ps_convert_rgba8_float16()
 void ps_convert_rgb5a1_float16()
 {
     // Convert a RGB5A1 (saved as RGBA8) color to a 16 bit Z
-    // FIXME: I'm afraid of the accuracy
-    const vec4 bitSh = vec4(exp2(-32.0f), exp2(-27.0f), exp2(-22.0f), exp2(-17.0f));
-    // Trunc color to drop useless lsb
-    vec4 color = trunc(sample_c() * vec4(255.0f) / vec4(8.0f, 8.0f, 8.0f, 128.0f));
-    gl_FragDepth = dot(vec4(color), bitSh);
+    uvec4 c = uvec4(sample_c() * vec4(255.0f) + vec4(0.5f));
+    gl_FragDepth = float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
 }
 #endif
 
