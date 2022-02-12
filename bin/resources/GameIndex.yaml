@@ -17127,6 +17127,8 @@ SLES-54782:
   name: "Obscure 2"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - EETimingHack # For stripes on FMVs and crashes on scenes.
 SLES-54784:
   name: "Xyanide - Resurrection"
   region: "PAL-M5"
@@ -39178,6 +39180,17 @@ SLUS-21380:
   compat: 5
   clampModes:
     vuClampMode: 3
+  patches:
+    213DCAC9:
+      content: |-
+        author=refraction
+        // Rearrange DIV Q COP2 operations to fix SPS.
+        patch=1,EE,0017caf0,word,4BE0A39C
+        patch=1,EE,0017caf4,word,4B00A29C
+        patch=1,EE,0017caf8,word,4AF103BC
+        patch=1,EE,0017cb04,word,4BE0ABDC
+        patch=1,EE,0017cb08,word,4A80AADC
+        patch=1,EE,0017cb0c,word,4B7103BC
 SLUS-21381:
   name: "Bode Miller Alpine Skiing"
   region: "NTSC-U"
