@@ -138,13 +138,15 @@ void VulkanHostDisplay::DestroyRenderSurface()
 std::string VulkanHostDisplay::GetDriverInfo() const
 {
 	std::string ret;
-	const u32 version = g_vulkan_context->GetDeviceProperties().apiVersion;
+	const u32 api_version = g_vulkan_context->GetDeviceProperties().apiVersion;
+	const u32 driver_version = g_vulkan_context->GetDeviceProperties().driverVersion;
 	if (g_vulkan_context->GetOptionalExtensions().vk_khr_driver_properties)
 	{
 		const VkPhysicalDeviceDriverProperties& props = g_vulkan_context->GetDeviceDriverProperties();
 		ret = StringUtil::StdStringFromFormat(
-			"Vulkan %u.%u.%u\nConformance Version %u.%u.%u.%u\n%s\n%s\n%s",
-			VK_API_VERSION_MAJOR(version), VK_API_VERSION_MINOR(version), VK_API_VERSION_PATCH(version),
+			"Driver %u.%u.%u\nVulkan %u.%u.%u\nConformance Version %u.%u.%u.%u\n%s\n%s\n%s",
+			VK_VERSION_MAJOR(driver_version), VK_VERSION_MINOR(driver_version), VK_VERSION_PATCH(driver_version),
+			VK_API_VERSION_MAJOR(api_version), VK_API_VERSION_MINOR(api_version), VK_API_VERSION_PATCH(api_version),
 			props.conformanceVersion.major, props.conformanceVersion.minor, props.conformanceVersion.subminor, props.conformanceVersion.patch,
 			props.driverInfo, props.driverName,
 			g_vulkan_context->GetDeviceProperties().deviceName);
@@ -152,8 +154,9 @@ std::string VulkanHostDisplay::GetDriverInfo() const
 	else
 	{
 		ret = StringUtil::StdStringFromFormat(
-			"Vulkan %u.%u.%u\n%s",
-			VK_API_VERSION_MAJOR(version), VK_API_VERSION_MINOR(version), VK_API_VERSION_PATCH(version),
+			"Driver %u.%u.%u\nVulkan %u.%u.%u\n%s",
+			VK_VERSION_MAJOR(driver_version), VK_VERSION_MINOR(driver_version), VK_VERSION_PATCH(driver_version),
+			VK_API_VERSION_MAJOR(api_version), VK_API_VERSION_MINOR(api_version), VK_API_VERSION_PATCH(api_version),
 			g_vulkan_context->GetDeviceProperties().deviceName);
 	}
 
