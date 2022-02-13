@@ -116,7 +116,7 @@ void VMManager::SetState(VMState state)
 	SetTimerResolutionIncreased(state == VMState::Running);
 	s_state.store(state);
 
-	if (state == VMState::Paused || old_state == VMState::Paused)
+	if (state != VMState::Stopping && (state == VMState::Paused || old_state == VMState::Paused))
 	{
 		if (state == VMState::Paused)
 		{
