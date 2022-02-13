@@ -59,41 +59,6 @@ namespace Vulkan
 
 	Context::~Context() = default;
 
-	bool Context::CheckValidationLayerAvailablility()
-	{
-		u32 extension_count = 0;
-		VkResult res = vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
-		if (res != VK_SUCCESS)
-		{
-			LOG_VULKAN_ERROR(res, "vkEnumerateInstanceExtensionProperties failed: ");
-			return false;
-		}
-
-		std::vector<VkExtensionProperties> extension_list(extension_count);
-		res = vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, extension_list.data());
-		pxAssert(res == VK_SUCCESS);
-
-		u32 layer_count = 0;
-		res = vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
-		if (res != VK_SUCCESS)
-		{
-			LOG_VULKAN_ERROR(res, "vkEnumerateInstanceExtensionProperties failed: ");
-			return false;
-		}
-
-		std::vector<VkLayerProperties> layer_list(layer_count);
-		res = vkEnumerateInstanceLayerProperties(&layer_count, layer_list.data());
-		pxAssert(res == VK_SUCCESS);
-
-		// Check for both VK_EXT_debug_utils and VK_LAYER_LUNARG_standard_validation
-		return (std::find_if(extension_list.begin(), extension_list.end(),
-					[](const auto& it) { return strcmp(it.extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0; }) !=
-					extension_list.end() &&
-				std::find_if(layer_list.begin(), layer_list.end(), [](const auto& it) {
-					return strcmp(it.layerName, "VK_LAYER_KHRONOS_validation") == 0;
-				}) != layer_list.end());
-	}
-
 	VkInstance Context::CreateVulkanInstance(
 		const WindowInfo* wi, bool enable_debug_utils, bool enable_validation_layer)
 	{
@@ -306,8 +271,20 @@ namespace Vulkan
 		VkInstance instance = CreateVulkanInstance(wi, enable_debug_utils, enable_validation_layer);
 		if (instance == VK_NULL_HANDLE)
 		{
-			Vulkan::UnloadVulkanLibrary();
-			return false;
+			if (enable_debug_utils || enable_validation_layer)
+			{
+				// Try again without the validation layer.
+				enable_debug_utils = false;
+				enable_validation_layer = false;
+				instance = CreateVulkanInstance(wi, enable_debug_utils, enable_validation_layer);
+				if (instance == VK_NULL_HANDLE)
+				{
+					Vulkan::UnloadVulkanLibrary();
+					return false;
+				}
+
+				Console.Error("Vulkan validation/debug layers requested but are unavailable. Creating non-debug device.");
+			}
 		}
 
 		if (!Vulkan::LoadVulkanInstanceFunctions(instance))
