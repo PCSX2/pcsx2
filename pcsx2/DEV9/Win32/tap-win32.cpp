@@ -417,7 +417,9 @@ bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, 
 
 	//Step 2
 	//Init COM
-	const HRESULT cohr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	HRESULT cohr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	if (cohr == RPC_E_CHANGED_MODE)
+		cohr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 	if (!SUCCEEDED(cohr))
 		return false;
 
@@ -514,8 +516,7 @@ bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, 
 		}
 	}
 
-	if (cohr == S_OK)
-		CoUninitialize();
+	CoUninitialize();
 
 	if (bridgeAdapter != nullptr)
 	{
