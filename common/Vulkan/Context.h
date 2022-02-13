@@ -55,9 +55,6 @@ namespace Vulkan
 
 		~Context();
 
-		// Determines if the Vulkan validation layer is available on the system.
-		static bool CheckValidationLayerAvailablility();
-
 		// Helper method to create a Vulkan instance.
 		static VkInstance CreateVulkanInstance(
 			const WindowInfo* wi, bool enable_debug_utils, bool enable_validation_layer);
