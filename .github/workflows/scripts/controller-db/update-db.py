@@ -1,6 +1,7 @@
 import os
 
 relevant_categories = [
+  "# Windows",
   "# Mac OS X",
   "# Linux"
 ]
