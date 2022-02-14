@@ -129,6 +129,9 @@ void BIOSSettingsWidget::listRefreshed(const QVector<BIOSInfo>& items)
 				break;
 
 			case 5: // HK
+				item->setIcon(0, QIcon(QStringLiteral(":/icons/flag-hk.png")));
+				break;
+
 			case 6: // Free
 			case 0: // T10K
 			case 1: // Test
