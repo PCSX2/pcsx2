@@ -1490,6 +1490,11 @@ SCED-52057:
 SCED-52260:
   name: "Forbidden Siren [Demo]"
   region: "PAL-M5"
+SCED-52261:
+  name: "Jet Li - Rise to Honor [Demo]"
+  region: "PAL-M5"
+  gameFixes:
+    - VUKickstartHack # Fixes SPS.
 SCED-52068:
   name: "Official PlayStation 2 Magazine Demo 41" # German
   region: "PAL-E-G"
@@ -2587,8 +2592,10 @@ SCES-51920:
   region: "PAL-E"
   compat: 5
 SCES-51971:
-  name: "Rise to Honor"
+  name: "Jet Li - Rise to Honor"
   region: "PAL-E"
+  gameFixes:
+    - VUKickstartHack # Fixes SPS.
 SCES-51977:
   name: "Hardware Online Arena"
   region: "PAL-E"
@@ -6055,6 +6062,8 @@ SCUS-97279:
   name: "Jet Li - Rise to Honor"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - VUKickstartHack # Fixes SPS.
 SCUS-97280:
   name: "Jampack Demo Disc - Summer 2003 [T-Rated]"
   region: "NTSC-U"
@@ -6242,8 +6251,10 @@ SCUS-97369:
   region: "NTSC-U"
   compat: 5
 SCUS-97372:
-  name: "Rise to Honor [Demo]"
+  name: "Jet Li-Rise to Honor [Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - VUKickstartHack # Fixes SPS.
 SCUS-97373:
   name: "989 Sports 2004 Demo Disc"
   region: "NTSC-U"
