@@ -32,6 +32,9 @@ GUST-00009:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0  # Fixes jump issue.
+PAPX-90201:
+  name: "Fantavision [Taikenban]"
+  region: "NTSC-J"
 PAPX-90203:
   name: "Gran Turismo 2000 [Trial]"
   region: "NTSC-J"
@@ -113,6 +116,14 @@ PBPX-95514:
   region: "PAL-M5"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS in Ratchet and Clank.
+PBPX-95516:
+  name: "Ratchet & Clank - [Trial Edition]"
+  region: "NTSC-J"
+  gameFixes:
+    - VUKickstartHack # Fixes Character SPS.
+    - EETimingHack # Fixes SPR errors while going in-game.
+  roundModes:
+    eeRoundMode: 0 # Fixes Hydrodisplacer behaviour.
 PBPX-95517:
   name: "Network Adapter Start-Up Disc"
   region: "NTSC-U"
@@ -147,6 +158,15 @@ PBPX-95601:
   # eeClampMode = 3  Text in races works.
 PCPX-96311:
   name: "Gran Turismo 3 Trial Disk Volume 1"
+  region: "NTSC-J"
+PCPX-96322:
+  name: "ICO [Trial]"
+  region: "NTSC-J"
+  clampModes:
+    eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
+    vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
+PCPX-96554:
+  name: "Games of Our Style: Tokyo Game Show 2003 Disc"
   region: "NTSC-J"
 PCPX-96616:
   name: "PurePure 2 Volume 2"
@@ -576,8 +596,8 @@ SCAJ-20099:
   region: "NTSC-Unk"
   compat: 5
   clampModes:
-    eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
+    eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
+    vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
 SCAJ-20100:
   name: "Tenchu Kurenai"
   region: "NTSC-Ch-J"
@@ -1079,8 +1099,8 @@ SCCS-40005:
   region: "NTSC-C"
   compat: 5
   clampModes:
-    eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
+    eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
+    vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
 SCCS-40006:
   name: "Shin Sangoku Musou 2"
   region: "NTSC-C"
@@ -1134,6 +1154,9 @@ SCED-50066:
   region: "PAL-M5"
 SCED-50067:
   name: "Official PlayStation 2 Magazine Demo 3"
+  region: "PAL-M5"
+SCED-50133:
+  name: "PS2 Bonus Demo Jan 2001"
   region: "PAL-M5"
 SCED-50140:
   name: "Official PlayStation 2 Magazine Demo 5"
@@ -1192,6 +1215,9 @@ SCED-50254:
 SCED-50286:
   name: "Red Faction [Demo]"
   region: "PAL-Unk"
+SCED-50313:
+  name: "Formula One 2001 [Demo]"
+  region: "PAL-E"
 SCED-50381:
   name: "Official PlayStation 2 Magazine Demo 8"
   region: "PAL-M5"
@@ -1227,6 +1253,9 @@ SCED-50614:
 SCED-50622:
   name: "Official PlayStation 2 Magazine Demo 14" # German
   region: "PAL-E-G"
+SCED-50633:
+  name: "Gravity Sucks"
+  region: "PAL-M5"
 SCED-50642:
   name: "Final Fantasy X [Demo] [Final Fantasy VI PS1 - Bonus Disc]"
   region: "PAL-E"
@@ -1253,6 +1282,9 @@ SCED-50700:
 SCED-50701:
   name: "Official PlayStation 2 Magazine Demo 22" # German
   region: "PAL-E-G"
+SCED-50734:
+  name: "PS2 Bonus Demo Jan 2002"
+  region: "PAL-M5"
 SCED-50736:
   name: "Official PlayStation 2 Magazine Demo 16" # German
   region: "PAL-E-G"
@@ -1309,6 +1341,11 @@ SCED-51075:
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
     - EETimingHack # Fixes SPR errors while going in-game.
+  roundModes:
+    eeRoundMode: 0 # Fixes Hydrodisplacer behaviour.
+SCED-51140:
+  name: "PS2 Bonus Demo 03"
+  region: "PAL-M5"
 SCED-51147:
   name: "Official PlayStation 2 Magazine Demo 24"
   region: "PAL-M5"
@@ -1351,6 +1388,9 @@ SCED-51483:
 SCED-51485:
   name: "Official PlayStation 2 Magazine Demo 30" # Australian
   region: "PAL-E"
+SCED-51486:
+  name: "Bonus Demo 4"
+  region: "PAL-M5"
 SCED-51489:
   name: "Official PlayStation 2 Magazine Demo 30"
   region: "PAL-M5"
@@ -1463,6 +1503,12 @@ SCED-51922:
 SCED-51935:
   name: "Official PlayStation 2 Magazine Demo 38" # German
   region: "PAL-E-G"
+SCED-51940:
+  name: "Bonus Demo 5"
+  region: "PAL-M5"
+SCED-51941:
+  name: "Bonus Demo 5 (Alternate)"
+  region: "PAL-M5"
 SCED-52037:
   name: "Official PlayStation 2 Magazine Demo 39" # German
   region: "PAL-E-G"
@@ -1594,10 +1640,19 @@ SCED-52355:
 SCED-52377:
   name: "Official PlayStation 2 Magazine Demo 44"
   region: "PAL-M5"
+SCED-52390:
+  name: "Bonus Demo 6"
+  region: "PAL-M5"
+SCED-52391:
+  name: "Bonus Demo 6 (Alternate)"
+  region: "PAL-M5"
 SCED-52436:
-  name: "Playstation2 UK Demo 7-2004"
+  name: "Bonus Demo 7"
   region: "PAL-M5"
   compat: 5
+SCED-52437:
+  name: "Bonus Demo 7 (alternate)"
+  region: "PAL-M5"
 SCED-52442:
   name: "Official PlayStation 2 Magazine Demo 45"
   region: "PAL-M5"
@@ -1619,6 +1674,9 @@ SCED-52619:
 SCED-52681:
   name: "Gran Turismo 4 BMW 1 Series Virtual Drive [Demo]"
   region: "PAL-M11"
+SCED-52687:
+  name: "Formula One 04 [Demo]"
+  region: "PAL-M11"
 SCED-52728:
   name: "Official PlayStation 2 Magazine Demo 49"
   region: "PAL-M5"
@@ -1636,6 +1694,9 @@ SCED-52818:
   region: "PAL-M11"
 SCED-52932:
   name: "Bonus Demo 8 (old)"
+  region: "PAL-M5"
+SCED-52933:
+  name: "Bonus Demo 8 (you)"
   region: "PAL-M5"
 SCED-52935:
   name: "SingStar Party [Demo]"
@@ -1796,6 +1857,21 @@ SCED-53325:
 SCED-53348:
   name: "Official PlayStation 2 Magazine Demo 58" # French
   region: "PAL-F"
+SCED-53447:
+  name: "Formula One 05 [Press Kit Demo]"
+  region: "PAL-E"
+SCED-53448:
+  name: "Formula One 05 [Demo]"
+  region: "PAL-E"
+SCED-53513:
+  name: "Bonus Demo 10 (old)"
+  region: "PAL-M5"
+SCED-53514:
+  name: "Bonus Demo 10 (you)"
+  region: "PAL-M5"
+SCED-53515:
+  name: "Bonus Demo 10 (Retail)"
+  region: "PAL-M5"
 SCED-53679:
   name: "Fire It Up Lads Demo"
   region: "PAL-E"
@@ -1900,6 +1976,15 @@ SCED-54079:
 SCED-54099:
   name: "Official PlayStation 2 Magazine Demo 71" # Australian
   region: "PAL-M5"
+SCED-54101:
+  name: "Bonus Demo 11"
+  region: "PAL-M5"
+SCED-54102:
+  name: "Bonus Demo 11 (Mature)"
+  region: "PAL-M5"
+SCED-54105:
+  name: "Bonus Demo 11 (Retail)"
+  region: "PAL-M5"
 SCED-54144:
   name: "Official PlayStation 2 Magazine Demo 72" # French
   region: "PAL-M5"
@@ -1908,6 +1993,12 @@ SCED-54176:
   region: "PAL-M5"
 SCED-54202:
   name: "Official PlayStation 2 Magazine Demo 74"
+  region: "PAL-M5"
+SCED-54207:
+  name: "Formula One 06 [Demo]"
+  region: "PAL-E"
+SCED-54338:
+  name: "Bonus Demo 11 (Teen)"
   region: "PAL-M5"
 SCED-54403:
   name: "Official PlayStation 2 Magazine Demo 78"
@@ -2252,8 +2343,8 @@ SCES-50760:
   region: "PAL-M5"
   compat: 5
   clampModes:
-    eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
+    eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
+    vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
 SCES-50781:
   name: "Destruction Derby Arena [Beta, Promo, & Full Retail]"
   region: "PAL-M6"
@@ -3468,6 +3559,9 @@ SCES-54909:
 SCES-54910:
   name: "SingStar Rock Ballads"
   region: "PAL-S"
+SCES-55019:
+  name: "Ratchet & Clank - Size Matters"
+  region: "PAL-M5"
 SCES-55038:
   name: "EyeToy Play: Hero"
   region: "PAL-M15"
@@ -3855,8 +3949,8 @@ SCKA-20028:
   region: "NTSC-K"
   compat: 5
   clampModes:
-    eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
+    eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
+    vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
 SCKA-20029:
   name: "Gran Turismo Concept 2002 Tokyo-Seoul [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -4088,8 +4182,6 @@ SCKA-20117:
 SCKA-20120:
   name: "Ratchet & Clank - Size Matters"
   region: "NTSC-K"
-  gameFixes:
-    - VUKickstartHack # Fixes Character SPS.
 SCKA-20132:
   name: "Shin Megami Tensei: Persona 4"
   region: "NTSC-K"
@@ -4133,8 +4225,8 @@ SCPS-11003:
   region: "NTSC-J"
   compat: 5
   clampModes:
-    eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
+    eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
+    vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
 SCPS-11004:
   name: "Bikkuri Mouse"
   region: "NTSC-J"
@@ -4783,9 +4875,6 @@ SCPS-15119:
 SCPS-15120:
   name: "Ratchet & Clank 5 Gekitotsu! Dodeka Ginga no Mirimiri Gundan"
   region: "NTSC-J"
-  gameFixes:
-    - VUKickstartHack # Fixes Character SPS.
-    - EETimingHack # Fixes SPR errors while going in-game.
 SCPS-17001:
   name: "Gran Turismo 4"
   region: "NTSC-J"
@@ -4840,8 +4929,8 @@ SCPS-19103:
   region: "NTSC-J"
   compat: 5
   clampModes:
-    eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
+    eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
+    vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
 SCPS-19104:
   name: "Pipo Saru 2001 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -5646,8 +5735,8 @@ SCUS-97159:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
+    eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
+    vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
 SCUS-97160:
   name: "Extermination [Demo]"
   region: "NTSC-U"
@@ -5920,6 +6009,8 @@ SCUS-97240:
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
     - EETimingHack # Fixes SPR errors while going in-game.
+  roundModes:
+    eeRoundMode: 0 # Fixes Hydrodisplacer behaviour.
 SCUS-97241:
   name: "Official U.S. PlayStation Magazine Demo Disc 066"
   region: "NTSC-U"
@@ -6920,8 +7011,6 @@ SCUS-97612:
 SCUS-97615:
   name: "Ratchet & Clank - Size Matters"
   region: "NTSC-U"
-  gameFixes:
-    - VUKickstartHack # Fixes Character SPS.
 SCUS-97616:
   name: "SingStar 80's"
   region: "NTSC-U"
@@ -7040,8 +7129,6 @@ SLAJ-25012:
 SLAJ-25014:
   name: "Cyber Troopers - Virtual-On Marz"
   region: "NTSC-Unk"
-  clampModes:
-    eeClampMode: 2 # Fixes white shadows.
 SLAJ-25016:
   name: "Sangokushi Senki 2"
   region: "NTSC-Unk"
@@ -7266,6 +7353,9 @@ SLED-50488:
 SLED-50884:
   name: "TimeSplitters 2 [Demo]"
   region: "PAL-E"
+SLED-51062:
+  name: "Fireblade [Demo]"
+  region: "PAL-E"
 SLED-51211:
   name: "Burnout 2 - Point of Impact [Demo]"
   region: "PAL-Unk"
@@ -7277,6 +7367,11 @@ SLED-51225:
 SLED-51281:
   name: "Haven - Call of the King [Demo]"
   region: "PAL-E"
+SLED-51342:
+  name: "FIFA Soccer 2003 [Demo]"
+  region: "PAL-E"
+  clampModes:
+    vuClampMode: 2 # Missing geometry with microVU.
 SLED-51901:
   name: "Soul Calibur II [Demo]"
   region: "PAL-E"
@@ -7325,6 +7420,9 @@ SLED-53109:
   region: "PAL-M5"
 SLED-53673:
   name: "007 - From Russia with Love [Demo]"
+  region: "PAL-E"
+SLED-53681:
+  name: "007 - From Russia with Love & Need for Speed Most Wanted & SSX On Tour [Demo]"
   region: "PAL-E"
 SLED-53719:
   name: "Pro Evolution Soccer 5 [Demo]"
@@ -8957,6 +9055,9 @@ SLES-50801:
 SLES-50802:
   name: "Knockout Kings 2002"
   region: "PAL-G"
+SLES-50803:
+  name: "Knockout Kings 2002"
+  region: "PAL-F"
 SLES-50804:
   name: "Deus Ex"
   region: "PAL-E"
@@ -13611,7 +13712,7 @@ SLES-53138:
   name: "Outlaw Volleyball - Remixed"
   region: "PAL-M4"
 SLES-53139:
-  name: "Alien Humanoid"
+  name: "Alien Hominid"
   region: "PAL-M6"
   compat: 5
 SLES-53140:
@@ -17002,13 +17103,13 @@ SLES-54723:
   name: "Spider-Man 3"
   region: "PAL-E"
   compat: 4
-  clampModes:
-    vuClampMode: 0 # Fixes idle camera behaviour.
+  roundModes:
+    eeRoundMode: 0 # Fixes idle camera behaviour.
 SLES-54724:
   name: "Spider-Man 3"
   region: "PAL-M4"
-  clampModes:
-    vuClampMode: 0 # Fixes idle camera behaviour.
+  roundModes:
+    eeRoundMode: 0 # Fixes idle camera behaviour.
 SLES-54725:
   name: "Kirikou and the Wild Beasts"
   region: "PAL-M5"
@@ -19734,8 +19835,8 @@ SLKA-25384:
 SLKA-25385:
   name: "Spider-Man 3"
   region: "NTSC-K"
-  clampModes:
-    vuClampMode: 0 # Fixes idle camera behaviour.
+  roundModes:
+    eeRoundMode: 0 # Fixes idle camera behaviour.
 SLKA-25388:
   name: "One Piece - Grand Adventure"
   region: "NTSC-K"
@@ -20010,11 +20111,17 @@ SLPM-60109:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Fixes texture rendering in the intro.
+SLPM-60123:
+  name: "Gekikuukan Pro Baseball: The End of the Century 1999 [Trial]"
+  region: "NTSC-J"
 SLPM-60172:
   name: "Itadaki Street 3 - Okuman Chouja ni Shiteageru"
   region: "NTSC-J"
 SLPM-60207:
   name: "Rockman X7"
+  region: "NTSC-J"
+SLPM-60243:
+  name: "Full House Kiss [Trial]"
   region: "NTSC-J"
 SLPM-60251:
   name: "Devil May Cry 3 [Trial Version]"
@@ -20038,6 +20145,9 @@ SLPM-60262:
 SLPM-60265:
   name: "10th Anniversary PlayStation & PlayStation 2 All-Soft Catalogue Special SaveData Collection [PS2 Disc]"
   region: "NTSC-J"
+SLPM-60267:
+  name: "Garouden Breakblow [Taikenban]"
+  region: "NTSC-J"
 SLPM-60270:
   name: "D1 Professional Drift Grand Prix Series 2005 [Trial]"
   region: "NTSC-J"
@@ -20050,6 +20160,9 @@ SLPM-60271:
     eeClampMode: 3 # Fixes black screen.
 SLPM-60273:
   name: "Zettai Zetsumei Toshi 2: Itetsuita Kioku-tachi [Trial B]"
+  region: "NTSC-J"
+SLPM-60274:
+  name: "Full House Kiss 2 [Trial]"
   region: "NTSC-J"
 SLPM-60282:
   name: "Lucky * Star RAvish Romance [Trial]"
@@ -20080,10 +20193,11 @@ SLPM-61018:
 SLPM-61046:  
   name: "Dennou Senki - Virtual-On Marz [Trial]"
   region: "NTSC-J"
-  clampModes:
-    eeClampMode: 2 # Fixes white shadows.
 SLPM-61051:
   name: "Dengeki PS2 D61"
+  region: "NTSC-J"
+SLPM-61087:
+  name: "Fullmetal Alchemist 2: Curse of the Crimson Elixir [Trial]"
   region: "NTSC-J"
 SLPM-61117:
   name: "Musashiden II - Blademaster [Trial]"
@@ -20101,6 +20215,9 @@ SLPM-61120:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2  # Fixes wrong color on some characters and breakable objects.
+SLPM-61127:
+  name: "FlatOut [Trial]"
+  region: "NTSC-J"
 SLPM-61133:
   name: "Soul Calibur III [Trial Version]"
   region: "NTSC-J"
@@ -23038,8 +23155,6 @@ SLPM-65302:
 SLPM-65303:
   name: "Dennou Senki - Virtual-On Marz"
   region: "NTSC-J"
-  clampModes:
-    eeClampMode: 2 # Fixes white shadows.
 SLPM-65305:
   name: "Genso Suikoden 3"
   region: "NTSC-J"
@@ -28433,6 +28548,9 @@ SLPM-67546:
 SLPM-67552:
   name: "Tomak - Save the Earth Again [Complete Edition]"
   region: "NTSC-K"
+SLPM-68003:
+  name: "Formula Suzuki Hayabusa Time Attack"
+  region: "NTSC-J"
 SLPM-68005:
   name: "Harry Potter to Himitsu no Heya [Demo - Coca Cola Original Version]"
   region: "NTSC-J"
@@ -28730,8 +28848,6 @@ SLPM-74420:
 SLPM-74421:
   name: "Dennou Senki - Virtual-On Marz [PlayStation 2 The Best]"
   region: "NTSC-J"
-  clampModes:
-    eeClampMode: 2 # Fixes white shadows.
 SLPS-20001:
   name: "Ridge Racer V"
   region: "NTSC-J"
@@ -29032,6 +29148,9 @@ SLPS-20112:
 SLPS-20113:
   name: "Time Crisis II [with Guncon 2]"
   region: "NTSC-J"
+SLPS-20115:
+  name: "Gendai Yougo no Kiso Chishiki 2001"
+  region: "NTSC-J"
 SLPS-20120:
   name: "Formula One 2001"
   region: "NTSC-J"
@@ -29124,6 +29243,9 @@ SLPS-20190:
         author=Prafull
         comment=fixes hang before ingame
         patch=1,EE,001022c0,word,00000000
+SLPS-20191:
+  name: "Knockout Kings 2002"
+  region: "NTSC-J"
 SLPS-20194:
   name: "Underwater Unit"
   region: "NTSC-J"
@@ -32555,8 +32677,8 @@ SLPS-25822:
 SLPS-25823:
   name: "Spider-Man 3"
   region: "NTSC-J"
-  clampModes:
-    vuClampMode: 0 # Fixes idle camera behaviour.
+  roundModes:
+    eeRoundMode: 0 # Fixes idle camera behaviour.
 SLPS-25825:
   name: "Zero no Tsukaima [Best Collection]"
   region: "NTSC-J"
@@ -36029,8 +36151,6 @@ SLUS-20674:
   name: "Cyber Troopers - Virtual-On Marz"
   region: "NTSC-U"
   compat: 5
-  clampModes:
-    eeClampMode: 2 # Fixes white shadows.
 SLUS-20675:
   name: "Baldur's Gate: Dark Alliance II"
   region: "NTSC-U"
@@ -39849,8 +39969,8 @@ SLUS-21552:
   name: "Spider-Man 3"
   region: "NTSC-U"
   compat: 4
-  clampModes:
-    vuClampMode: 0 # Fixes idle camera behaviour.
+  roundModes:
+    eeRoundMode: 0 # Fixes idle camera behaviour.
 SLUS-21553:
   name: "Lumines Plus"
   region: "NTSC-U"
@@ -40139,8 +40259,8 @@ SLUS-21616:
 SLUS-21617:
   name: "Spiderman 3"
   region: "NTSC-U"
-  clampModes:
-    vuClampMode: 0 # Fixes idle camera behaviour.
+  roundModes:
+    eeRoundMode: 0 # Fixes idle camera behaviour.
 SLUS-21618:
   name: "Plan, The"
   region: "NTSC-U"
