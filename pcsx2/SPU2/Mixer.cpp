@@ -328,6 +328,7 @@ static void __forceinline UpdatePitch(uint coreidx, uint voiceidx)
 	else
 		pitch = GetClamped((vc.Pitch * (32768 + Cores[coreidx].Voices[voiceidx - 1].OutX)) >> 15, 0, 0x3fff);
 
+	pitch = std::min(pitch, 0x3FFF);
 	vc.SP += pitch;
 }
 
