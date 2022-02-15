@@ -941,60 +941,32 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 			// TODO Use ComputeSurfaceOffset below.
 			if (GSUtil::HasSharedBits(psm, t->m_TEX0.PSM))
 			{
-				if (bp < t->m_TEX0.TBP0)
+				const SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
+				if (so.is_valid)
 				{
-					u32 rowsize = bw * 8192;
-					u32 offset = (u32)((t->m_TEX0.TBP0 - bp) * 256);
-
-					// This grossness is needed to fix incorrect invalidations in True Crime: New York City.
-					// Because it's writing tiny texture blocks (which are later decompressed) over previous targets,
-					// we need to be ensure said targets are invalidated, otherwise the SW prim render path won't be
-					// triggered. This whole thing needs rewriting anyway, because it can't handle non-page-aligned
-					// writes, but for now we'll just use the unsafer logic when the TC hack is enabled.
-					const bool start_of_page = rowsize > 0 && (offset % rowsize == 0);
-					if (start_of_page || (rowsize > 0 && GSConfig.UserHacks_CPUSpriteRenderBW != 0))
-					{
-						int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
-
-						if (r.bottom > y && (start_of_page || r.top >= y))
-						{
-							GL_CACHE("TC: Dirty After Target(%s) %d (0x%x)", to_string(type),
-								t->m_texture ? t->m_texture->GetID() : 0,
-								t->m_TEX0.TBP0);
-							// TODO: do not add this rect above too
-							t->m_dirty.push_back({psm, bp, bw, r});
-							continue;
-						}
-					}
+					// Offset from Target to Write in Target coords.
+					t->m_dirty.push_back({psm, bp, bw, r});
+					GL_CACHE("TC: Dirty in the middle of Target(%s) %d <%s> valid(%d,%d) (0x%x->0x%x) [bw:%u]: <%s> pos(%d,%d => %d,%d) [bw:%u]",
+						to_string(type),
+						t->m_texture ? t->m_texture->GetID() : 0,
+						psm_str(t->m_TEX0.PSM),
+						t->m_valid.z,
+						t->m_valid.w,
+						t->m_TEX0.TBP0,
+						t->m_end_block,
+						t->m_TEX0.TBW,
+						psm_str(psm),
+						so.b2a_offset.x,
+						so.b2a_offset.y,
+						so.b2a_offset.z,
+						so.b2a_offset.w,
+						bw
+					);
+					continue;
 				}
-
-				// FIXME: this code "fixes" black FMV issue with rule of rose.
-#if 1
-				// Greg: I'm not sure the 'bw' equality is required but it won't hurt too much
-				//
-				// Ben 10 Alien Force : Vilgax Attacks uses a small temporary target for multiple textures (different bw)
-				// It is too complex to handle, and purpose of the code was to handle FMV (large bw). So let's skip small
-				// (128 pixels) target
-				if (bw > 2 && t->m_TEX0.TBW == bw && t->Inside(bp, bw, psm, rect) && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
-				{
-					const u32 rowsize = bw * 8192u;
-					const u32 offset = (u32)((bp - t->m_TEX0.TBP0) * 256);
-
-					if (offset % rowsize == 0)
-					{
-						const int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
-
-						GL_CACHE("TC: Dirty in the middle of Target(%s) %d (0x%x->0x%x) pos(%d,%d => %d,%d) bw:%u", to_string(type),
-							t->m_texture ? t->m_texture->GetID() : 0,
-							t->m_TEX0.TBP0, t->m_end_block,
-							r.left, r.top + y, r.right, r.bottom + y, bw);
-
-						t->m_dirty.push_back({psm, bp, bw, r});
-						continue;
-					}
-				}
-#endif
 			}
+
+			// TODO: The write can still overlap with the target, consider removing the previous branch and always checking the offset instead.
 		}
 	}
 }
