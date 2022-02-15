@@ -108,6 +108,12 @@
         <property name="rootIsDecorated">
          <bool>false</bool>
         </property>
+        <attribute name="headerMinimumSectionSize">
+         <number>250</number>
+        </attribute>
+        <attribute name="headerDefaultSectionSize">
+         <number>250</number>
+        </attribute>
         <column>
          <property name="text">
           <string>Filename</string>
