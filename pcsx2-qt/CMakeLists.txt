@@ -39,6 +39,9 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/AdvancedSystemSettingsWidget.cpp
 	Settings/AdvancedSystemSettingsWidget.h
 	Settings/AdvancedSystemSettingsWidget.ui
+	Settings/AudioSettingsWidget.cpp
+	Settings/AudioSettingsWidget.h
+	Settings/AudioSettingsWidget.ui
 	Settings/BIOSSettingsWidget.cpp
 	Settings/BIOSSettingsWidget.h
 	Settings/BIOSSettingsWidget.ui
@@ -61,6 +64,9 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/GameListSettingsWidget.cpp
 	Settings/GameListSettingsWidget.h
 	Settings/GameListSettingsWidget.ui
+	Settings/GameSummaryWidget.cpp
+	Settings/GameSummaryWidget.h
+	Settings/GameSummaryWidget.ui
 	Settings/GraphicsSettingsWidget.cpp
 	Settings/GraphicsSettingsWidget.h
 	Settings/GraphicsSettingsWidget.ui
@@ -74,6 +80,9 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/InterfaceSettingsWidget.cpp
 	Settings/InterfaceSettingsWidget.h
 	Settings/InterfaceSettingsWidget.ui
+	Settings/MemoryCardSettingsWidget.cpp
+	Settings/MemoryCardSettingsWidget.h
+	Settings/MemoryCardSettingsWidget.ui
 	Settings/SettingsDialog.cpp
 	Settings/SettingsDialog.h
 	Settings/SettingsDialog.ui
