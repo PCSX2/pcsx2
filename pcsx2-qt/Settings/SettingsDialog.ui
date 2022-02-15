@@ -49,86 +49,6 @@
        <height>32</height>
       </size>
      </property>
-     <item>
-      <property name="text">
-       <string>Interface</string>
-      </property>
-      <property name="icon">
-       <iconset theme="settings-3-line"/>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Game List</string>
-      </property>
-      <property name="icon">
-       <iconset theme="folder-settings-line"/>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>BIOS</string>
-      </property>
-      <property name="icon">
-       <iconset theme="hard-drive-2-line"/>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Emulation</string>
-      </property>
-      <property name="icon">
-       <iconset theme="dashboard-line"/>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>System</string>
-      </property>
-      <property name="icon">
-       <iconset theme="artboard-2-line"/>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Advanced System</string>
-      </property>
-      <property name="icon">
-       <iconset theme="artboard-2-line"/>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Game Fixes</string>
-      </property>
-      <property name="icon">
-       <iconset theme="close-line"/>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Graphics</string>
-      </property>
-      <property name="icon">
-       <iconset theme="brush-line"/>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Audio</string>
-      </property>
-      <property name="icon">
-       <iconset theme="volume-up-line"/>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Memory Cards</string>
-      </property>
-      <property name="icon">
-       <iconset theme="sd-card-line"/>
-      </property>
-     </item>
     </widget>
    </item>
    <item row="0" column="1">
@@ -139,11 +59,6 @@
        <height>0</height>
       </size>
      </property>
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="page"/>
-     <widget class="QWidget" name="page_2"/>
     </widget>
    </item>
    <item row="1" column="0" colspan="2">

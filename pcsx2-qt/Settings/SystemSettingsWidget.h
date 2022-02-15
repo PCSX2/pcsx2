@@ -26,15 +26,18 @@ class SystemSettingsWidget : public QWidget
 	Q_OBJECT
 
 public:
-	SystemSettingsWidget(QWidget* parent, SettingsDialog* dialog);
+	SystemSettingsWidget(SettingsDialog* dialog, QWidget* parent);
 	~SystemSettingsWidget();
 
 private Q_SLOTS:
 	void updateVU1InstantState();
 
 private:
-	static int getClampingModeIndex(bool vu);
-	static void setClampingMode(bool vu, int index);
+	int getGlobalClampingModeIndex(bool vu) const;
+	int getClampingModeIndex(bool vu) const;
+	void setClampingMode(bool vu, int index);
+
+	SettingsDialog* m_dialog;
 
 	Ui::SystemSettingsWidget m_ui;
 };

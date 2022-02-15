@@ -26,7 +26,7 @@ class AdvancedSystemSettingsWidget : public QWidget
 	Q_OBJECT
 
 public:
-	AdvancedSystemSettingsWidget(QWidget* parent, SettingsDialog* dialog);
+	AdvancedSystemSettingsWidget(SettingsDialog* dialog, QWidget* parent);
 	~AdvancedSystemSettingsWidget();
 
 private:

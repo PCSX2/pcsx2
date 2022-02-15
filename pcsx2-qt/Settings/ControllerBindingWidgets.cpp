@@ -38,7 +38,7 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
 	populateControllerTypes();
 	onTypeChanged();
 
-	SettingWidgetBinder::BindWidgetToStringSetting(m_ui.controllerType, m_config_section, "Type", "None");
+	SettingWidgetBinder::BindWidgetToStringSetting(nullptr, m_ui.controllerType, m_config_section, "Type", "None");
 	connect(m_ui.controllerType, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
 		&ControllerBindingWidget::onTypeChanged);
 }

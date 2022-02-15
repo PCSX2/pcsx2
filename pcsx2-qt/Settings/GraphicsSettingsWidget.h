@@ -19,6 +19,8 @@
 
 #include "ui_GraphicsSettingsWidget.h"
 
+enum class GSRendererType : s8;
+
 class SettingsDialog;
 
 class GraphicsSettingsWidget : public QWidget
@@ -26,7 +28,7 @@ class GraphicsSettingsWidget : public QWidget
 	Q_OBJECT
 
 public:
-	GraphicsSettingsWidget(QWidget* parent, SettingsDialog* dialog);
+	GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* parent);
 	~GraphicsSettingsWidget();
 
 	void updateRendererDependentOptions();
@@ -42,6 +44,10 @@ private Q_SLOTS:
 	void onFullscreenModeChanged(int index);
 
 private:
+	GSRendererType getEffectiveRenderer() const;
+
+	SettingsDialog* m_dialog;
+
 	Ui::GraphicsSettingsWidget m_ui;
 
 	bool m_hardware_renderer_visible = true;

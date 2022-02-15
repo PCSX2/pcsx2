@@ -42,7 +42,7 @@ class BIOSSettingsWidget : public QWidget
 	Q_OBJECT
 
 public:
-	BIOSSettingsWidget(QWidget* parent, SettingsDialog* dialog);
+	BIOSSettingsWidget(SettingsDialog* dialog, QWidget* parent);
 	~BIOSSettingsWidget();
 
 private Q_SLOTS:

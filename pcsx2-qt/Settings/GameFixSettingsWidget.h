@@ -26,7 +26,7 @@ class GameFixSettingsWidget : public QWidget
 	Q_OBJECT
 
 public:
-	GameFixSettingsWidget(QWidget* parent, SettingsDialog* dialog);
+	GameFixSettingsWidget(SettingsDialog* dialog, QWidget* parent);
 	~GameFixSettingsWidget();
 
 private:

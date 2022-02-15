@@ -19,6 +19,14 @@
 #include <QtCore/QString>
 #include <QtWidgets/QDialog>
 #include <array>
+#include <memory>
+
+class INISettingsInterface;
+
+namespace GameList
+{
+struct Entry;
+}
 
 class InterfaceSettingsWidget;
 class GameListSettingsWidget;
@@ -36,50 +44,68 @@ class SettingsDialog final : public QDialog
 	Q_OBJECT
 
 public:
-	enum class Category
-	{
-		InterfaceSettings,
-		GameListSettings,
-		BIOSSettings,
-		EmulationSettings,
-		SystemSettings,
-		AdvancedSystemSettings,
-		GameFixSettings,
-		GraphicsSettings,
-		AudioSettings,
-		MemoryCardSettings,
-		Count
-	};
-
-	explicit SettingsDialog(QWidget* parent = nullptr);
+	explicit SettingsDialog(QWidget* parent);
+	SettingsDialog(std::unique_ptr<SettingsInterface> sif, const GameList::Entry* game, u32 game_crc);
 	~SettingsDialog();
 
-	InterfaceSettingsWidget* getInterfaceSettingsWidget() const { return m_interface_settings; }
-	GameListSettingsWidget* getGameListSettingsWidget() const { return m_game_list_settings; }
-	BIOSSettingsWidget* getBIOSSettingsWidget() const { return m_bios_settings; }
-	EmulationSettingsWidget* getEmulationSettingsWidget() const { return m_emulation_settings; }
-	SystemSettingsWidget* getSystemSettingsWidget() const { return m_system_settings; }
-	AdvancedSystemSettingsWidget* getAdvancedSystemSettingsWidget() const { return m_advanced_system_settings; }
-	GameFixSettingsWidget* getGameFixSettingsWidget() const { return m_game_fix_settings_widget; }
-	GraphicsSettingsWidget* getGraphicsSettingsWidget() const { return m_graphics_settings; }
-	AudioSettingsWidget* getAudioSettingsWidget() const { return m_audio_settings; }
-	MemoryCardSettingsWidget* getMemoryCardSettingsWidget() const { return m_memory_card_settings; }
+	static void openGamePropertiesDialog(const GameList::Entry* game, u32 crc);
+
+	__fi bool isPerGameSettings() const { return static_cast<bool>(m_sif); }
+	__fi SettingsInterface* getSettingsInterface() const { return m_sif.get(); }
+
+	__fi InterfaceSettingsWidget* getInterfaceSettingsWidget() const { return m_interface_settings; }
+	__fi GameListSettingsWidget* getGameListSettingsWidget() const { return m_game_list_settings; }
+	__fi BIOSSettingsWidget* getBIOSSettingsWidget() const { return m_bios_settings; }
+	__fi EmulationSettingsWidget* getEmulationSettingsWidget() const { return m_emulation_settings; }
+	__fi SystemSettingsWidget* getSystemSettingsWidget() const { return m_system_settings; }
+	__fi AdvancedSystemSettingsWidget* getAdvancedSystemSettingsWidget() const { return m_advanced_system_settings; }
+	__fi GameFixSettingsWidget* getGameFixSettingsWidget() const { return m_game_fix_settings_widget; }
+	__fi GraphicsSettingsWidget* getGraphicsSettingsWidget() const { return m_graphics_settings; }
+	__fi AudioSettingsWidget* getAudioSettingsWidget() const { return m_audio_settings; }
+	__fi MemoryCardSettingsWidget* getMemoryCardSettingsWidget() const { return m_memory_card_settings; }
 
 	void registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text);
 	bool eventFilter(QObject* object, QEvent* event) override;
 
+	void setCategory(const char* category);
+
+	// Helper functions for reading effective setting values (from game -> global settings).
+	bool getEffectiveBoolValue(const char* section, const char* key, bool default_value) const;
+	int getEffectiveIntValue(const char* section, const char* key, int default_value) const;
+	float getEffectiveFloatValue(const char* section, const char* key, float default_value) const;
+	std::string getEffectiveStringValue(const char* section, const char* key, const char* default_value) const;
+
+	// Helper functions for reading setting values for this layer (game settings or global).
+	std::optional<bool> getBoolValue(const char* section, const char* key, std::optional<bool> default_value) const;
+	std::optional<int> getIntValue(const char* section, const char* key, std::optional<int> default_value) const;
+	std::optional<float> getFloatValue(const char* section, const char* key, std::optional<float> default_value) const;
+	std::optional<std::string> getStringValue(const char* section, const char* key, std::optional<const char*> default_value) const;
+	void setBoolSettingValue(const char* section, const char* key, std::optional<bool> value);
+	void setIntSettingValue(const char* section, const char* key, std::optional<int> value);
+	void setFloatSettingValue(const char* section, const char* key, std::optional<float> value);
+	void setStringSettingValue(const char* section, const char* key, std::optional<const char*> value);
+
 Q_SIGNALS:
 	void settingsResetToDefaults();
-
-public Q_SLOTS:
-	void setCategory(Category category);
 
 private Q_SLOTS:
 	void onCategoryCurrentRowChanged(int row);
 	void onRestoreDefaultsClicked();
 
+protected:
+	void closeEvent(QCloseEvent*);
+
 private:
-	void setCategoryHelpTexts();
+	enum : u32
+	{
+		MAX_SETTINGS_WIDGETS = 10
+	};
+
+	void setupUi(const GameList::Entry* game);
+
+	void addWidget(QWidget* widget, QString title, QString icon, QString help_text);
+
+	std::unique_ptr<SettingsInterface> m_sif;
 
 	Ui::SettingsDialog m_ui;
 
@@ -94,8 +120,10 @@ private:
 	AudioSettingsWidget* m_audio_settings = nullptr;
 	MemoryCardSettingsWidget* m_memory_card_settings = nullptr;
 
-	std::array<QString, static_cast<int>(Category::Count)> m_category_help_text;
+	std::array<QString, MAX_SETTINGS_WIDGETS> m_category_help_text;
 
 	QObject* m_current_help_widget = nullptr;
 	QMap<QObject*, QString> m_widget_help_text_map;
+
+	u32 m_game_crc;
 };

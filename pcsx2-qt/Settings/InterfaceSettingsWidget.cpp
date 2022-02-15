@@ -27,25 +27,27 @@ static const char* THEME_NAMES[] = {QT_TRANSLATE_NOOP("InterfaceSettingsWidget",
 
 static const char* THEME_VALUES[] = {"", "fusion", "darkfusion", "darkfusionblue", nullptr};
 
-InterfaceSettingsWidget::InterfaceSettingsWidget(QWidget* parent, SettingsDialog* dialog)
+InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	: QWidget(parent)
 {
+	SettingsInterface* sif = dialog->getSettingsInterface();
+
 	m_ui.setupUi(this);
 
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.inhibitScreensaver, "UI", "InhibitScreensaver", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.discordPresence, "UI", "DiscordPresence", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.confirmPowerOff, "UI", "ConfirmPowerOff", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.saveStateOnExit, "EmuCore", "AutoStateLoadSave", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.pauseOnStart, "UI", "StartPaused", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.pauseOnFocusLoss, "UI", "PauseOnFocusLoss", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.inhibitScreensaver, "UI", "InhibitScreensaver", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.discordPresence, "UI", "DiscordPresence", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.confirmPowerOff, "UI", "ConfirmPowerOff", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.saveStateOnExit, "EmuCore", "AutoStateLoadSave", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnStart, "UI", "StartPaused", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnFocusLoss, "UI", "PauseOnFocusLoss", false);
 
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.startFullscreen, "UI", "StartFullscreen", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.doubleClickTogglesFullscreen, "UI", "DoubleClickTogglesFullscreen",
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startFullscreen, "UI", "StartFullscreen", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.doubleClickTogglesFullscreen, "UI", "DoubleClickTogglesFullscreen",
 		true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.hideMouseCursor, "UI", "HideMouseCursor", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.renderToMainWindow, "UI", "RenderToMainWindow", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hideMouseCursor, "UI", "HideMouseCursor", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.renderToMainWindow, "UI", "RenderToMainWindow", true);
 
-	SettingWidgetBinder::BindWidgetToEnumSetting(m_ui.theme, "UI", "Theme", THEME_NAMES, THEME_VALUES,
+	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.theme, "UI", "Theme", THEME_NAMES, THEME_VALUES,
 		MainWindow::DEFAULT_THEME_NAME);
 	connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit themeChanged(); });
 
@@ -57,7 +59,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(QWidget* parent, SettingsDialog
 		tr("Shows the game you are currently playing as part of your profile in Discord."));
 	if (true)
 	{
-		SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
+		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
 		dialog->registerWidgetHelp(m_ui.autoUpdateEnabled, tr("Enable Automatic Update Check"), tr("Checked"),
 			tr("Automatically checks for updates to the program on startup. Updates can be deferred "
 			   "until later or skipped entirely."));
