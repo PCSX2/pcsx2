@@ -28,6 +28,7 @@
 #include "AdvancedSystemSettingsWidget.h"
 #include "BIOSSettingsWidget.h"
 #include "EmulationSettingsWidget.h"
+#include "GameSummaryWidget.h"
 #include "GameFixSettingsWidget.h"
 #include "GameListSettingsWidget.h"
 #include "GraphicsSettingsWidget.h"
@@ -80,7 +81,11 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	}
 	else
 	{
-		// TODO: Summary page.
+		if (game)
+		{
+			addWidget(new GameSummaryWidget(game, this, m_ui.settingsContainer), tr("Summary"), QStringLiteral("file-list-line"),
+				tr("<strong>Summary</strong><hr>Eventually this will be where we can see patches and compute hashes/verify dumps/etc."));
+		}
 
 		// remove the preset buttons. but we might want to enable these in the future.
 		m_ui.restoreDefaultsButton->setVisible(false);
