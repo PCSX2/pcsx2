@@ -331,7 +331,13 @@ static wxString GetMemoryErrorVM()
 
 namespace HostMemoryMap {
 	// For debuggers
-	uptr EEmem, IOPmem, VUmem, EErec, IOPrec, VIF0rec, VIF1rec, mVU0rec, mVU1rec, bumpAllocator;
+	extern "C" {
+#ifdef _WIN32
+	_declspec(dllexport) uptr EEmem, IOPmem, VUmem, EErec, IOPrec, VIF0rec, VIF1rec, mVU0rec, mVU1rec, bumpAllocator;
+#else
+	__attribute__((visibility("default"), used)) uptr EEmem, IOPmem, VUmem, EErec, IOPrec, VIF0rec, VIF1rec, mVU0rec, mVU1rec, bumpAllocator;
+#endif
+	}
 }
 
 /// Attempts to find a spot near static variables for the main memory
