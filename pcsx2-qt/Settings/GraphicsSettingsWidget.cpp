@@ -54,69 +54,65 @@ static constexpr RendererInfo s_renderer_info[] = {
 };
 
 static const char* s_anisotropic_filtering_entries[] = {QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Off (Default)"),
-	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2x"),
-	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "4x"),
-	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "8x"),
-	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "16x"),
-	nullptr};
+	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2x"), QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "4x"),
+	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "8x"), QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "16x"), nullptr};
 static const char* s_anisotropic_filtering_values[] = {"1", "2", "4", "8", "16", nullptr};
 
 static constexpr int DEFAULT_INTERLACE_MODE = 7;
 
-GraphicsSettingsWidget::GraphicsSettingsWidget(QWidget* parent, SettingsDialog* dialog)
+GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	: QWidget(parent)
+	, m_dialog(dialog)
 {
+	SettingsInterface* sif = dialog->getSettingsInterface();
+
 	m_ui.setupUi(this);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Global Settings
 	//////////////////////////////////////////////////////////////////////////
-	SettingWidgetBinder::BindWidgetToStringSetting(m_ui.adapter, "EmuCore/GS", "Adapter");
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.vsync, "EmuCore/GS", "VsyncEnable", 0);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.enableHWFixes, "EmuCore/GS", "UserHacks", false);
+	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.adapter, "EmuCore/GS", "Adapter");
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.vsync, "EmuCore/GS", "VsyncEnable", 0);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableHWFixes, "EmuCore/GS", "UserHacks", false);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Game Display Settings
 	//////////////////////////////////////////////////////////////////////////
-	SettingWidgetBinder::BindWidgetToEnumSetting(m_ui.aspectRatio, "EmuCore/GS", "AspectRatio",
-		Pcsx2Config::GSOptions::AspectRatioNames, AspectRatioType::R4_3);
-	SettingWidgetBinder::BindWidgetToEnumSetting(m_ui.fmvAspectRatio, "EmuCore/GS", "FMVAspectRatioSwitch",
-		Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames,
-		FMVAspectRatioSwitchType::Off);
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.interlacing, "EmuCore/GS", "interlace", DEFAULT_INTERLACE_MODE);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.bilinearFiltering, "EmuCore/GS", "LinearPresent", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.integerScaling, "EmuCore/GS", "IntegerScaling", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.internalResolutionScreenshots, "EmuCore/GS",
-		"InternalResolutionScreenshots", false);
-	SettingWidgetBinder::BindWidgetToFloatSetting(m_ui.zoom, "EmuCore/GS", "Zoom", 100.0f);
-	SettingWidgetBinder::BindWidgetToFloatSetting(m_ui.stretchY, "EmuCore/GS", "StretchY", 100.0f);
-	SettingWidgetBinder::BindWidgetToFloatSetting(m_ui.offsetX, "EmuCore/GS", "OffsetX", 0.0f);
-	SettingWidgetBinder::BindWidgetToFloatSetting(m_ui.offsetY, "EmuCore/GS", "OffsetY", 0.0f);
+	SettingWidgetBinder::BindWidgetToEnumSetting(
+		sif, m_ui.aspectRatio, "EmuCore/GS", "AspectRatio", Pcsx2Config::GSOptions::AspectRatioNames, AspectRatioType::R4_3);
+	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.fmvAspectRatio, "EmuCore/GS", "FMVAspectRatioSwitch",
+		Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames, FMVAspectRatioSwitchType::Off);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.interlacing, "EmuCore/GS", "interlace", DEFAULT_INTERLACE_MODE);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.bilinearFiltering, "EmuCore/GS", "LinearPresent", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.integerScaling, "EmuCore/GS", "IntegerScaling", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.internalResolutionScreenshots, "EmuCore/GS", "InternalResolutionScreenshots", false);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.zoom, "EmuCore/GS", "Zoom", 100.0f);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.stretchY, "EmuCore/GS", "StretchY", 100.0f);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.offsetX, "EmuCore/GS", "OffsetX", 0.0f);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.offsetY, "EmuCore/GS", "OffsetY", 0.0f);
 
 	connect(m_ui.integerScaling, &QCheckBox::stateChanged, this, &GraphicsSettingsWidget::onIntegerScalingChanged);
 	onIntegerScalingChanged();
 
-	connect(m_ui.fullscreenModes, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-		&GraphicsSettingsWidget::onFullscreenModeChanged);
+	connect(m_ui.fullscreenModes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GraphicsSettingsWidget::onFullscreenModeChanged);
 
 	//////////////////////////////////////////////////////////////////////////
 	// OSD Settings
 	//////////////////////////////////////////////////////////////////////////
-	SettingWidgetBinder::BindWidgetToFloatSetting(m_ui.osdScale, "EmuCore/GS", "OsdScale", 100.0f);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.osdShowMessages, "EmuCore/GS", "OsdShowMessages", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.osdShowSpeed, "EmuCore/GS", "OsdShowSpeed", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.osdShowFPS, "EmuCore/GS", "OsdShowFPS", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.osdShowCPU, "EmuCore/GS", "OsdShowCPU", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.osdShowResolution, "EmuCore/GS", "OsdShowResolution", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.osdShowGSStats, "EmuCore/GS", "OsdShowGSStats", false);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.osdScale, "EmuCore/GS", "OsdScale", 100.0f);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowMessages, "EmuCore/GS", "OsdShowMessages", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowSpeed, "EmuCore/GS", "OsdShowSpeed", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowFPS, "EmuCore/GS", "OsdShowFPS", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowCPU, "EmuCore/GS", "OsdShowCPU", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowResolution, "EmuCore/GS", "OsdShowResolution", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowGSStats, "EmuCore/GS", "OsdShowGSStats", false);
 
 	dialog->registerWidgetHelp(m_ui.osdShowMessages, tr("Show OSD Messages"), tr("Checked"),
 		tr("Shows on-screen-display messages when events occur such as save states being "
 		   "created/loaded, screenshots being taken, etc."));
 	dialog->registerWidgetHelp(m_ui.osdShowFPS, tr("Show Game Frame Rate"), tr("Unchecked"),
 		tr("Shows the internal frame rate of the game in the top-right corner of the display."));
-	dialog->registerWidgetHelp(
-		m_ui.osdShowSpeed, tr("Show Emulation Speed"), tr("Unchecked"),
+	dialog->registerWidgetHelp(m_ui.osdShowSpeed, tr("Show Emulation Speed"), tr("Unchecked"),
 		tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
 	dialog->registerWidgetHelp(m_ui.osdShowResolution, tr("Show Resolution"), tr("Unchecked"),
 		tr("Shows the resolution of the game in the top-right corner of the display."));
@@ -124,86 +120,91 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(QWidget* parent, SettingsDialog* 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Settings
 	//////////////////////////////////////////////////////////////////////////
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.upscaleMultiplier, "EmuCore/GS", "upscale_multiplier", 1);
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.textureFiltering, "EmuCore/GS", "filter",
-		static_cast<int>(BiFiltering::PS2));
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.trilinearFiltering, "EmuCore/GS", "UserHacks_TriFilter",
-		static_cast<int>(TriFiltering::Off));
-	SettingWidgetBinder::BindWidgetToEnumSetting(m_ui.anisotropicFiltering, "EmuCore/GS", "MaxAnisotropy",
-		s_anisotropic_filtering_entries, s_anisotropic_filtering_values, "1");
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.dithering, "EmuCore/GS", "dithering_ps2", 2);
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.mipmapping, "EmuCore/GS", "mipmap_hw",
-		static_cast<int>(HWMipmapLevel::Automatic), -1);
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.crcFixLevel, "EmuCore/GS", "crc_hack_level",
-		static_cast<int>(CRCHackLevel::Automatic), -1);
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.blending, "EmuCore/GS", "accurate_blending_unit",
-		static_cast<int>(AccBlendLevel::Basic));
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.accurateDATE, "EmuCore/GS", "accurate_date", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.conservativeBufferAllocation, "EmuCore/GS",
-		"conservative_framebuffer", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.gpuPaletteConversion, "EmuCore/GS", "paltex", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.preloadTexture, "EmuCore/GS", "preload_texture", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.upscaleMultiplier, "EmuCore/GS", "upscale_multiplier", 1);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.textureFiltering, "EmuCore/GS", "filter", static_cast<int>(BiFiltering::PS2));
+	SettingWidgetBinder::BindWidgetToIntSetting(
+		sif, m_ui.trilinearFiltering, "EmuCore/GS", "UserHacks_TriFilter", static_cast<int>(TriFiltering::Off));
+	SettingWidgetBinder::BindWidgetToEnumSetting(
+		sif, m_ui.anisotropicFiltering, "EmuCore/GS", "MaxAnisotropy", s_anisotropic_filtering_entries, s_anisotropic_filtering_values, "1");
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.dithering, "EmuCore/GS", "dithering_ps2", 2);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.mipmapping, "EmuCore/GS", "mipmap_hw", static_cast<int>(HWMipmapLevel::Automatic), -1);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.crcFixLevel, "EmuCore/GS", "crc_hack_level", static_cast<int>(CRCHackLevel::Automatic), -1);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.blending, "EmuCore/GS", "accurate_blending_unit", static_cast<int>(AccBlendLevel::Basic));
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.accurateDATE, "EmuCore/GS", "accurate_date", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.conservativeBufferAllocation, "EmuCore/GS", "conservative_framebuffer", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuPaletteConversion, "EmuCore/GS", "paltex", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preloadTexture, "EmuCore/GS", "preload_texture", false);
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Renderer Fixes
 	//////////////////////////////////////////////////////////////////////////
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.halfScreenFix, "EmuCore/GS", "UserHacks_Half_Bottom_Override", -1,
-		-1);
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.skipDrawRangeStart, "EmuCore/GS", "UserHacks_SkipDraw", 0);
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.skipDrawRangeCount, "EmuCore/GS", "UserHacks_SkipDraw_Offset", 0);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.hwAutoFlush, "EmuCore/GS", "UserHacks_AutoFlush", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.frameBufferConversion, "EmuCore/GS", "UserHacks_CPU_FB_Conversion",
-		false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.disableDepthEmulation, "EmuCore/GS",
-		"UserHacks_DisableDepthSupport", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.memoryWrapping, "EmuCore/GS", "wrap_gs_mem", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.disableSafeFeatures, "EmuCore/GS",
-		"UserHacks_Disable_Safe_Features", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.preloadFrameData, "EmuCore/GS", "preload_frame_with_gs_data",
-		false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.fastTextureInvalidation, "EmuCore/GS",
-		"UserHacks_DisablePartialInvalidation", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.textureInsideRt, "EmuCore/GS",
-		"UserHacks_TextureInsideRt", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.halfScreenFix, "EmuCore/GS", "UserHacks_Half_Bottom_Override", -1, -1);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.skipDrawRangeStart, "EmuCore/GS", "UserHacks_SkipDraw", 0);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.skipDrawRangeCount, "EmuCore/GS", "UserHacks_SkipDraw_Offset", 0);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hwAutoFlush, "EmuCore/GS", "UserHacks_AutoFlush", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.frameBufferConversion, "EmuCore/GS", "UserHacks_CPU_FB_Conversion", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableDepthEmulation, "EmuCore/GS", "UserHacks_DisableDepthSupport", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.memoryWrapping, "EmuCore/GS", "wrap_gs_mem", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableSafeFeatures, "EmuCore/GS", "UserHacks_Disable_Safe_Features", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preloadFrameData, "EmuCore/GS", "preload_frame_with_gs_data", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastTextureInvalidation, "EmuCore/GS", "UserHacks_DisablePartialInvalidation", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.textureInsideRt, "EmuCore/GS", "UserHacks_TextureInsideRt", false);
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Upscaling Fixes
 	//////////////////////////////////////////////////////////////////////////
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.halfPixelOffset, "EmuCore/GS", "UserHacks_HalfPixelOffset", 0);
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.roundSprite, "EmuCore/GS", "UserHacks_RoundSprite", 0);
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.textureOffsetX, "EmuCore/GS", "UserHacks_TCOffsetX", 0);
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.textureOffsetY, "EmuCore/GS", "UserHacks_TCOffsetY", 0);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.alignSprite, "EmuCore/GS", "UserHacks_align_sprite_X", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.mergeSprite, "EmuCore/GS", "UserHacks_merge_pp_sprite", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.wildHack, "EmuCore/GS", "UserHacks_WildHack", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.halfPixelOffset, "EmuCore/GS", "UserHacks_HalfPixelOffset", 0);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.roundSprite, "EmuCore/GS", "UserHacks_RoundSprite", 0);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.textureOffsetX, "EmuCore/GS", "UserHacks_TCOffsetX", 0);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.textureOffsetY, "EmuCore/GS", "UserHacks_TCOffsetY", 0);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.alignSprite, "EmuCore/GS", "UserHacks_align_sprite_X", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.mergeSprite, "EmuCore/GS", "UserHacks_merge_pp_sprite", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.wildHack, "EmuCore/GS", "UserHacks_WildHack", false);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Advanced Settings
 	//////////////////////////////////////////////////////////////////////////
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.useBlitSwapChain, "EmuCore/GS", "UseBlitSwapChain", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.useDebugDevice, "EmuCore/GS", "UseDebugDevice", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useBlitSwapChain, "EmuCore/GS", "UseBlitSwapChain", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useDebugDevice, "EmuCore/GS", "UseDebugDevice", false);
 
 	//////////////////////////////////////////////////////////////////////////
 	// SW Settings
 	//////////////////////////////////////////////////////////////////////////
-	SettingWidgetBinder::BindWidgetToIntSetting(m_ui.extraSWThreads, "EmuCore/GS", "extrathreads", 2);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.swAutoFlush, "EmuCore/GS", "autoflush_sw", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.swAA1, "EmuCore/GS", "aa1", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.swMipmap, "EmuCore/GS", "mipmap", true);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.extraSWThreads, "EmuCore/GS", "extrathreads", 2);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.swAutoFlush, "EmuCore/GS", "autoflush_sw", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.swAA1, "EmuCore/GS", "aa1", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.swMipmap, "EmuCore/GS", "mipmap", true);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Non-trivial settings
 	//////////////////////////////////////////////////////////////////////////
-	const GSRendererType current_renderer = static_cast<GSRendererType>(
-		QtHost::GetBaseIntSettingValue("EmuCore/GS", "Renderer", static_cast<int>(GSRendererType::Auto)));
+	const int renderer = m_dialog->getEffectiveIntValue("EmuCore/GS", "Renderer", static_cast<int>(GSRendererType::Auto));
 	for (const RendererInfo& ri : s_renderer_info)
 	{
 		m_ui.renderer->addItem(qApp->translate("GraphicsSettingsWidget", ri.name));
-		if (ri.type == current_renderer)
+		if (renderer == static_cast<int>(ri.type))
 			m_ui.renderer->setCurrentIndex(m_ui.renderer->count() - 1);
 	}
-	connect(m_ui.renderer, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-		&GraphicsSettingsWidget::onRendererChanged);
+
+	// per-game override for renderer is slightly annoying, since we need to populate the global setting field
+	if (sif)
+	{
+		QString global_renderer_name;
+		for (const RendererInfo& ri : s_renderer_info)
+		{
+			if (renderer == static_cast<int>(ri.type))
+				global_renderer_name = qApp->translate("GraphicsSettingsWidget", ri.name);
+		}
+		m_ui.renderer->insertItem(0, tr("Use Global Setting [%1]").arg(global_renderer_name));
+
+		int override_renderer;
+		if (sif->GetIntValue("EmuCore/GS", "Renderer", &override_renderer))
+			m_ui.renderer->setCurrentIndex(override_renderer + 1);
+		else
+			m_ui.renderer->setCurrentIndex(0);
+	}
+
+	connect(m_ui.renderer, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GraphicsSettingsWidget::onRendererChanged);
 	connect(m_ui.enableHWFixes, &QCheckBox::stateChanged, this, &GraphicsSettingsWidget::onEnableHardwareFixesChanged);
 	updateRendererDependentOptions();
 
@@ -217,33 +218,69 @@ GraphicsSettingsWidget::~GraphicsSettingsWidget() = default;
 
 void GraphicsSettingsWidget::onRendererChanged(int index)
 {
-	QtHost::SetBaseIntSettingValue("EmuCore/GS", "Renderer", static_cast<int>(s_renderer_info[index].type));
+	if (m_dialog->isPerGameSettings())
+	{
+		if (index > 0)
+			m_dialog->setIntSettingValue("EmuCore/GS", "Renderer", static_cast<int>(s_renderer_info[index - 1].type));
+		else
+			m_dialog->setIntSettingValue("EmuCore/GS", "Renderer", std::nullopt);
+	}
+	else
+	{
+		m_dialog->setIntSettingValue("EmuCore/GS", "Renderer", static_cast<int>(s_renderer_info[index].type));
+	}
+
 	g_emu_thread->applySettings();
 	updateRendererDependentOptions();
 }
 
 void GraphicsSettingsWidget::onAdapterChanged(int index)
 {
-	if (index == 0)
-		QtHost::RemoveBaseSettingValue("EmuCore/GS", "Adapter");
+	const int first_adapter = m_dialog->isPerGameSettings() ? 2 : 1;
+
+	if (index >= first_adapter)
+		m_dialog->setStringSettingValue("EmuCore/GS", "Adapter", m_ui.adapter->currentText().toUtf8().constData());
+	else if (index > 0 && m_dialog->isPerGameSettings())
+		m_dialog->setStringSettingValue("EmuCore/GS", "Adapter", "");
 	else
-		QtHost::SetBaseStringSettingValue("EmuCore/GS", "Adapter", m_ui.adapter->currentText().toUtf8().constData());
+		m_dialog->setStringSettingValue("EmuCore/GS", "Adapter", std::nullopt);
+
 	g_emu_thread->applySettings();
 }
 
+void GraphicsSettingsWidget::onFullscreenModeChanged(int index)
+{
+	const int first_mode = m_dialog->isPerGameSettings() ? 2 : 1;
+
+	if (index >= first_mode)
+		m_dialog->setStringSettingValue("EmuCore/GS", "FullscreenMode", m_ui.fullscreenModes->currentText().toUtf8().constData());
+	else if (index > 0 && m_dialog->isPerGameSettings())
+		m_dialog->setStringSettingValue("EmuCore/GS", "FullscreenMode", "");
+	else
+		m_dialog->setStringSettingValue("EmuCore/GS", "FullscreenMode", std::nullopt);
+
+	g_emu_thread->applySettings();
+}
+
+void GraphicsSettingsWidget::onIntegerScalingChanged() { m_ui.bilinearFiltering->setEnabled(!m_ui.integerScaling->isChecked()); }
+
 void GraphicsSettingsWidget::onEnableHardwareFixesChanged()
 {
-	const bool enabled = m_ui.enableHWFixes->isChecked();
+	const bool enabled = (m_ui.enableHWFixes->checkState() == Qt::Checked);
 	m_ui.hardwareRendererGroup->setTabEnabled(2, enabled);
 	m_ui.hardwareRendererGroup->setTabEnabled(3, enabled);
 }
 
+GSRendererType GraphicsSettingsWidget::getEffectiveRenderer() const
+{
+	const GSRendererType type =
+		static_cast<GSRendererType>(m_dialog->getEffectiveIntValue("EmuCore/GS", "Renderer", static_cast<int>(GSRendererType::Auto)));
+	return (type == GSRendererType::Auto) ? GSUtil::GetPreferredRenderer() : type;
+}
+
 void GraphicsSettingsWidget::updateRendererDependentOptions()
 {
-	const int index = m_ui.renderer->currentIndex();
-	GSRendererType type = s_renderer_info[index].type;
-	if (type == GSRendererType::Auto)
-		type = GSUtil::GetPreferredRenderer();
+	const GSRendererType type = getEffectiveRenderer();
 
 #ifdef _WIN32
 	const bool is_dx11 = (type == GSRendererType::DX11 || type == GSRendererType::SW);
@@ -253,9 +290,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 
 	const bool is_hardware = (type == GSRendererType::DX11 || type == GSRendererType::OGL || type == GSRendererType::VK);
 	const bool is_software = (type == GSRendererType::SW);
-	const int current_tab = m_hardware_renderer_visible ?
-                                m_ui.hardwareRendererGroup->currentIndex() :
-                                m_ui.softwareRendererGroup->currentIndex();
+	const int current_tab = m_hardware_renderer_visible ? m_ui.hardwareRendererGroup->currentIndex() : m_ui.softwareRendererGroup->currentIndex();
 
 	// move advanced tab to the correct parent
 	static constexpr std::array<const char*, 3> move_tab_names = {{"Display", "On-Screen Display", "Advanced"}};
@@ -334,11 +369,26 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 
 	// fill+select adapters
 	{
-		const std::string current_adapter = QtHost::GetBaseStringSettingValue("EmuCore/GS", "Adapter", "");
 		QSignalBlocker sb(m_ui.adapter);
+
+		std::string current_adapter = QtHost::GetBaseStringSettingValue("EmuCore/GS", "Adapter", "");
 		m_ui.adapter->clear();
 		m_ui.adapter->setEnabled(!modes.adapter_names.empty());
 		m_ui.adapter->addItem(tr("(Default)"));
+		m_ui.adapter->setCurrentIndex(0);
+
+		if (m_dialog->isPerGameSettings())
+		{
+			m_ui.adapter->insertItem(
+				0, tr("Use Global Setting [%1]").arg(current_adapter.empty() ? tr("(Default)") : QString::fromStdString(current_adapter)));
+			if (!m_dialog->getSettingsInterface()->GetStringValue("EmuCore/GS", "Adapter", &current_adapter))
+			{
+				// clear the adapter so we don't set it to the global value
+				current_adapter.clear();
+				m_ui.adapter->setCurrentIndex(0);
+			}
+		}
+
 		for (const std::string& adapter : modes.adapter_names)
 		{
 			m_ui.adapter->addItem(QString::fromStdString(adapter));
@@ -351,11 +401,21 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	{
 		QSignalBlocker sb(m_ui.fullscreenModes);
 
-		const std::string current_mode(QtHost::GetBaseStringSettingValue("EmuCore/GS", "FullscreenMode", ""));
+		std::string current_mode(QtHost::GetBaseStringSettingValue("EmuCore/GS", "FullscreenMode", ""));
 		m_ui.fullscreenModes->clear();
 		m_ui.fullscreenModes->addItem(tr("Borderless Fullscreen"));
-		if (current_mode.empty())
-			m_ui.fullscreenModes->setCurrentIndex(0);
+		m_ui.fullscreenModes->setCurrentIndex(0);
+
+		if (m_dialog->isPerGameSettings())
+		{
+			m_ui.fullscreenModes->insertItem(
+				0, tr("Use Global Setting [%1]").arg(current_mode.empty() ? tr("(Default)") : QString::fromStdString(current_mode)));
+			if (!m_dialog->getSettingsInterface()->GetStringValue("EmuCore/GS", "FullscreenMode", &current_mode))
+			{
+				current_mode.clear();
+				m_ui.fullscreenModes->setCurrentIndex(0);
+			}
+		}
 
 		for (const std::string& fs_mode : modes.fullscreen_modes)
 		{
@@ -367,24 +427,4 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 
 	m_ui.enableHWFixes->setEnabled(is_hardware);
 	onEnableHardwareFixesChanged();
-}
-
-void GraphicsSettingsWidget::onIntegerScalingChanged()
-{
-	m_ui.bilinearFiltering->setEnabled(!m_ui.integerScaling->isChecked());
-}
-
-void GraphicsSettingsWidget::onFullscreenModeChanged(int index)
-{
-	if (index == 0)
-	{
-		QtHost::RemoveBaseSettingValue("EmuCore/GS", "FullscreenMode");
-	}
-	else
-	{
-		QtHost::SetBaseStringSettingValue("EmuCore/GS", "FullscreenMode",
-			m_ui.fullscreenModes->currentText().toUtf8().constData());
-	}
-
-	g_emu_thread->applySettings();
 }

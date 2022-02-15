@@ -136,7 +136,7 @@ private:
 	void setDisplayFullscreen(const std::string& fullscreen_mode);
 
 	SettingsDialog* getSettingsDialog();
-	void doSettings(SettingsDialog::Category category = SettingsDialog::Category::Count);
+	void doSettings(const char* category = nullptr);
 
 	ControllerSettingsDialog* getControllerSettingsDialog();
 	void doControllerSettings(ControllerSettingsDialog::Category category = ControllerSettingsDialog::Category::Count);

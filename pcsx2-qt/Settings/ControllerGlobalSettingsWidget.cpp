@@ -26,9 +26,9 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 {
 	m_ui.setupUi(this);
 
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.enableSDLSource, "InputSources", "SDL", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.enableSDLEnhancedMode, "InputSources", "SDLControllerEnhancedMode", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(m_ui.enableXInputSource, "InputSources", "XInput", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.enableSDLSource, "InputSources", "SDL", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.enableSDLEnhancedMode, "InputSources", "SDLControllerEnhancedMode", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.enableXInputSource, "InputSources", "XInput", false);
 
 	connect(m_ui.enableSDLSource, &QCheckBox::stateChanged, this, &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
 	updateSDLOptionsEnabled();

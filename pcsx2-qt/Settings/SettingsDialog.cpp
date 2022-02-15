@@ -15,7 +15,14 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/FileSystem.h"
+#include "common/StringUtil.h"
+#include "pcsx2/Frontend/GameList.h"
+#include "pcsx2/Frontend/INISettingsInterface.h"
+
+#include "EmuThread.h"
 #include "QtHost.h"
+#include "QtUtils.h"
 #include "SettingsDialog.h"
 
 #include "AdvancedSystemSettingsWidget.h"
@@ -31,33 +38,82 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextEdit>
 
-static constexpr char DEFAULT_SETTING_HELP_TEXT[] = "";
+static QList<SettingsDialog*> s_open_game_properties_dialogs;
 
-SettingsDialog::SettingsDialog(QWidget* parent /* = nullptr */)
+SettingsDialog::SettingsDialog(QWidget* parent)
 	: QDialog(parent)
+	, m_game_crc(0)
 {
-	m_ui.setupUi(this);
-	setCategoryHelpTexts();
+	setupUi(nullptr);
+}
 
+SettingsDialog::SettingsDialog(std::unique_ptr<SettingsInterface> sif, const GameList::Entry* game, u32 game_crc)
+	: QDialog()
+	, m_sif(std::move(sif))
+	, m_game_crc(game_crc)
+{
+	setupUi(game);
+
+	s_open_game_properties_dialogs.push_back(this);
+}
+
+void SettingsDialog::setupUi(const GameList::Entry* game)
+{
+	const bool show_advanced_settings = true;
+
+	m_ui.setupUi(this);
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-	m_interface_settings = new InterfaceSettingsWidget(m_ui.settingsContainer, this);
-	m_game_list_settings = new GameListSettingsWidget(m_ui.settingsContainer, this);
-	m_bios_settings = new BIOSSettingsWidget(m_ui.settingsContainer, this);
-	m_emulation_settings = new EmulationSettingsWidget(m_ui.settingsContainer, this);
-	m_system_settings = new SystemSettingsWidget(m_ui.settingsContainer, this);
-	m_advanced_system_settings = new AdvancedSystemSettingsWidget(m_ui.settingsContainer, this);
-	m_game_fix_settings_widget = new GameFixSettingsWidget(m_ui.settingsContainer, this);
-	m_graphics_settings = new GraphicsSettingsWidget(m_ui.settingsContainer, this);
+	// We don't include interface/game list/bios settings from per-game settings.
+	if (!isPerGameSettings())
+	{
+		addWidget(m_interface_settings = new InterfaceSettingsWidget(this, m_ui.settingsContainer), tr("Interface"),
+			QStringLiteral("settings-3-line"),
+			tr("<strong>Interface Settings</strong><hr>These options control how the software looks and behaves.<br><br>Mouse over an option for "
+			   "additional information."));
+		addWidget(m_game_list_settings = new GameListSettingsWidget(this, m_ui.settingsContainer), tr("Game List"),
+			QStringLiteral("folder-settings-line"),
+			tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by PCSX2 to populate the game "
+			   "list. Search directories can be added, removed, and switched to recursive/non-recursive."));
+		addWidget(m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"), QStringLiteral("hard-drive-2-line"),
+			tr("<strong>BIOS Settings</strong><hr>"));
+	}
+	else
+	{
+		// TODO: Summary page.
 
-	m_ui.settingsContainer->insertWidget(static_cast<int>(Category::InterfaceSettings), m_interface_settings);
-	m_ui.settingsContainer->insertWidget(static_cast<int>(Category::GameListSettings), m_game_list_settings);
-	m_ui.settingsContainer->insertWidget(static_cast<int>(Category::BIOSSettings), m_bios_settings);
-	m_ui.settingsContainer->insertWidget(static_cast<int>(Category::EmulationSettings), m_emulation_settings);
-	m_ui.settingsContainer->insertWidget(static_cast<int>(Category::SystemSettings), m_system_settings);
-	m_ui.settingsContainer->insertWidget(static_cast<int>(Category::AdvancedSystemSettings), m_advanced_system_settings);
-	m_ui.settingsContainer->insertWidget(static_cast<int>(Category::GameFixSettings), m_game_fix_settings_widget);
-	m_ui.settingsContainer->insertWidget(static_cast<int>(Category::GraphicsSettings), m_graphics_settings);
+		// remove the preset buttons. but we might want to enable these in the future.
+		m_ui.restoreDefaultsButton->setVisible(false);
+		m_ui.settingsPreset->setVisible(false);
+	}
+
+	// Common to both per-game and global settings.
+	addWidget(m_emulation_settings = new EmulationSettingsWidget(this, m_ui.settingsContainer), tr("Emulation"), QStringLiteral("dashboard-line"),
+		tr("<strong>Emulation Settings</strong><hr>"));
+	addWidget(m_system_settings = new SystemSettingsWidget(this, m_ui.settingsContainer), tr("System"), QStringLiteral("artboard-2-line"),
+		tr("<strong>System Settings</strong><hr>These options determine the configuration of the simulated console.<br><br>Mouse over an option for "
+		   "additional information."));
+
+	if (show_advanced_settings)
+	{
+		addWidget(m_advanced_system_settings = new AdvancedSystemSettingsWidget(this, m_ui.settingsContainer), tr("Advanced System"),
+			QStringLiteral("artboard-2-line"), tr("<strong>Advanced System Settings</strong><hr>"));
+
+		// Only show the game fixes for per-game settings, there's really no reason to be setting them globally.
+		if (isPerGameSettings())
+		{
+			addWidget(m_game_fix_settings_widget = new GameFixSettingsWidget(this, m_ui.settingsContainer), tr("Game Fix"),
+				QStringLiteral("close-line"), tr("<strong>Game Fix Settings</strong><hr>"));
+		}
+	}
+
+	addWidget(m_graphics_settings = new GraphicsSettingsWidget(this, m_ui.settingsContainer), tr("Graphics"), QStringLiteral("brush-line"),
+		tr("<strong>Graphics Settings</strong><hr>"));
+	addWidget(new QWidget(m_ui.settingsContainer), tr("Audio"), QStringLiteral("volume-up-line"),
+		tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console. Mouse over an option for additional "
+		   "information."));
+	addWidget(
+		new QWidget(m_ui.settingsContainer), tr("Memory Cards"), QStringLiteral("sd-card-line"), tr("<strong>Memory Card Settings</strong><hr>"));
 
 	m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	m_ui.settingsCategory->setCurrentRow(0);
@@ -68,37 +124,37 @@ SettingsDialog::SettingsDialog(QWidget* parent /* = nullptr */)
 	connect(m_ui.restoreDefaultsButton, &QPushButton::clicked, this, &SettingsDialog::onRestoreDefaultsClicked);
 }
 
-SettingsDialog::~SettingsDialog() = default;
-
-void SettingsDialog::setCategoryHelpTexts()
+SettingsDialog::~SettingsDialog()
 {
-	m_category_help_text[static_cast<int>(Category::InterfaceSettings)] =
-		tr("<strong>Interface Settings</strong><hr>These options control how the software looks and behaves.<br><br>Mouse "
-		   "over "
-		   "an option for additional information.");
-	m_category_help_text[static_cast<int>(Category::SystemSettings)] =
-		tr("<strong>System Settings</strong><hr>These options determine the configuration of the simulated "
-		   "console.<br><br>Mouse over an option for additional information.");
-	m_category_help_text[static_cast<int>(Category::GameListSettings)] =
-		tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by "
-		   "PCSX2 to populate the game list. Search directories can be added, removed, and switched to "
-		   "recursive/non-recursive.");
-	m_category_help_text[static_cast<int>(Category::AudioSettings)] =
-		tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console. Mouse over an option "
-		   "for additional information.");
+	if (isPerGameSettings())
+		s_open_game_properties_dialogs.removeOne(this);
 }
 
-void SettingsDialog::setCategory(Category category)
+void SettingsDialog::closeEvent(QCloseEvent*)
 {
-	if (category >= Category::Count)
-		return;
+	// we need to clean up ourselves, since we're not modal
+	if (isPerGameSettings())
+		deleteLater();
+}
 
-	m_ui.settingsCategory->setCurrentRow(static_cast<int>(category));
+void SettingsDialog::setCategory(const char* category)
+{
+	// the titles in the category list will be translated.
+	const QString translated_category(qApp->translate("SettingsDialog", category));
+
+	for (int i = 0; i < m_ui.settingsCategory->count(); i++)
+	{
+		if (translated_category == m_ui.settingsCategory->item(i)->text())
+		{
+			// will also update the visible widget
+			m_ui.settingsCategory->setCurrentRow(i);
+			break;
+		}
+	}
 }
 
 void SettingsDialog::onCategoryCurrentRowChanged(int row)
 {
-	Q_ASSERT(row < static_cast<int>(Category::Count));
 	m_ui.settingsContainer->setCurrentIndex(row);
 	m_ui.helpText->setText(m_category_help_text[row]);
 }
@@ -106,13 +162,27 @@ void SettingsDialog::onCategoryCurrentRowChanged(int row)
 void SettingsDialog::onRestoreDefaultsClicked()
 {
 	if (QMessageBox::question(this, tr("Confirm Restore Defaults"),
-			tr("Are you sure you want to restore the default settings? Any preferences will be lost."),
-			QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+			tr("Are you sure you want to restore the default settings? Any preferences will be lost."), QMessageBox::Yes,
+			QMessageBox::No) != QMessageBox::Yes)
 	{
 		return;
 	}
 
 	// TODO
+}
+
+void SettingsDialog::addWidget(QWidget* widget, QString title, QString icon, QString help_text)
+{
+	const int index = m_ui.settingsCategory->count();
+
+	QListWidgetItem* item = new QListWidgetItem(m_ui.settingsCategory);
+	item->setText(title);
+	if (!icon.isEmpty())
+		item->setIcon(QIcon::fromTheme(icon));
+
+	m_ui.settingsContainer->addWidget(widget);
+
+	m_category_help_text[index] = std::move(help_text);
 }
 
 void SettingsDialog::registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text)
@@ -153,4 +223,202 @@ bool SettingsDialog::eventFilter(QObject* object, QEvent* event)
 	}
 
 	return QDialog::eventFilter(object, event);
+}
+
+bool SettingsDialog::getEffectiveBoolValue(const char* section, const char* key, bool default_value) const
+{
+	bool value;
+	if (m_sif && m_sif->GetBoolValue(section, key, &value))
+		return value;
+	else
+		return QtHost::GetBaseBoolSettingValue(section, key, default_value);
+}
+
+int SettingsDialog::getEffectiveIntValue(const char* section, const char* key, int default_value) const
+{
+	int value;
+	if (m_sif && m_sif->GetIntValue(section, key, &value))
+		return value;
+	else
+		return QtHost::GetBaseIntSettingValue(section, key, default_value);
+}
+
+float SettingsDialog::getEffectiveFloatValue(const char* section, const char* key, float default_value) const
+{
+	float value;
+	if (m_sif && m_sif->GetFloatValue(section, key, &value))
+		return value;
+	else
+		return QtHost::GetBaseFloatSettingValue(section, key, default_value);
+}
+
+std::string SettingsDialog::getEffectiveStringValue(const char* section, const char* key, const char* default_value) const
+{
+	std::string value;
+	if (!m_sif || !m_sif->GetStringValue(section, key, &value))
+		value = QtHost::GetBaseStringSettingValue(section, key, default_value);
+	return value;
+}
+
+std::optional<bool> SettingsDialog::getBoolValue(const char* section, const char* key, std::optional<bool> default_value) const
+{
+	std::optional<bool> value;
+	if (m_sif)
+	{
+		bool bvalue;
+		if (m_sif->GetBoolValue(section, key, &bvalue))
+			value = bvalue;
+		else
+			value = default_value;
+	}
+	else
+	{
+		value = QtHost::GetBaseBoolSettingValue(section, key, default_value.value_or(false));
+	}
+
+	return value;
+}
+
+std::optional<int> SettingsDialog::getIntValue(const char* section, const char* key, std::optional<int> default_value) const
+{
+	std::optional<int> value;
+	if (m_sif)
+	{
+		int ivalue;
+		if (m_sif->GetIntValue(section, key, &ivalue))
+			value = ivalue;
+		else
+			value = default_value;
+	}
+	else
+	{
+		value = QtHost::GetBaseIntSettingValue(section, key, default_value.value_or(0));
+	}
+
+	return value;
+}
+
+std::optional<float> SettingsDialog::getFloatValue(const char* section, const char* key, std::optional<float> default_value) const
+{
+	std::optional<float> value;
+	if (m_sif)
+	{
+		float fvalue;
+		if (m_sif->GetFloatValue(section, key, &fvalue))
+			value = fvalue;
+		else
+			value = default_value;
+	}
+	else
+	{
+		value = QtHost::GetBaseFloatSettingValue(section, key, default_value.value_or(0.0f));
+	}
+
+	return value;
+}
+
+std::optional<std::string> SettingsDialog::getStringValue(const char* section, const char* key, std::optional<const char*> default_value) const
+{
+	std::optional<std::string> value;
+	if (m_sif)
+	{
+		std::string svalue;
+		if (m_sif->GetStringValue(section, key, &svalue))
+			value = std::move(svalue);
+		else if (default_value.has_value())
+			value = default_value.value();
+	}
+	else
+	{
+		value = QtHost::GetBaseStringSettingValue(section, key, default_value.value_or(""));
+	}
+
+	return value;
+}
+
+void SettingsDialog::setBoolSettingValue(const char* section, const char* key, std::optional<bool> value)
+{
+	if (m_sif)
+	{
+		value.has_value() ? m_sif->SetBoolValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
+		m_sif->Save();
+	}
+	else
+	{
+		value.has_value() ? QtHost::SetBaseBoolSettingValue(section, key, value.value()) : QtHost::RemoveBaseSettingValue(section, key);
+	}
+
+	g_emu_thread->applySettings();
+}
+
+void SettingsDialog::setIntSettingValue(const char* section, const char* key, std::optional<int> value)
+{
+	if (m_sif)
+	{
+		value.has_value() ? m_sif->SetIntValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
+		m_sif->Save();
+	}
+	else
+	{
+		value.has_value() ? QtHost::SetBaseIntSettingValue(section, key, value.value()) : QtHost::RemoveBaseSettingValue(section, key);
+	}
+
+	g_emu_thread->applySettings();
+}
+
+void SettingsDialog::setFloatSettingValue(const char* section, const char* key, std::optional<float> value)
+{
+	if (m_sif)
+	{
+		value.has_value() ? m_sif->SetFloatValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
+		m_sif->Save();
+	}
+	else
+	{
+		value.has_value() ? QtHost::SetBaseFloatSettingValue(section, key, value.value()) : QtHost::RemoveBaseSettingValue(section, key);
+	}
+
+	g_emu_thread->applySettings();
+}
+
+void SettingsDialog::setStringSettingValue(const char* section, const char* key, std::optional<const char*> value)
+{
+	if (m_sif)
+	{
+		value.has_value() ? m_sif->SetBoolValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
+		m_sif->Save();
+	}
+	else
+	{
+		value.has_value() ? QtHost::SetBaseStringSettingValue(section, key, value.value()) : QtHost::RemoveBaseSettingValue(section, key);
+	}
+
+	g_emu_thread->applySettings();
+}
+
+void SettingsDialog::openGamePropertiesDialog(const GameList::Entry* game, u32 crc)
+{
+	// check for an existing dialog with this crc
+	for (SettingsDialog* dialog : s_open_game_properties_dialogs)
+	{
+		if (dialog->m_game_crc == crc)
+		{
+			dialog->show();
+			dialog->setFocus();
+			return;
+		}
+	}
+
+	std::unique_ptr<INISettingsInterface> sif =
+		std::make_unique<INISettingsInterface>(Path::CombineStdString(EmuFolders::GameSettings, StringUtil::StdStringFromFormat("%08X.ini", crc)));
+	if (FileSystem::FileExists(sif->GetFileName().c_str()))
+		sif->Load();
+
+	const QString window_title(tr("%1 [%2]")
+								   .arg(game ? QtUtils::StringViewToQString(game->title) : QStringLiteral("<UNKNOWN>"))
+								   .arg(QtUtils::StringViewToQString(FileSystem::GetFileNameFromPath(sif->GetFileName()))));
+
+	SettingsDialog* dialog = new SettingsDialog(std::move(sif), game, crc);
+	dialog->setWindowTitle(window_title);
+	dialog->show();
 }

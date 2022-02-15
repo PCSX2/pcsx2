@@ -26,17 +26,18 @@ class EmulationSettingsWidget : public QWidget
 	Q_OBJECT
 
 public:
-	EmulationSettingsWidget(QWidget* parent, SettingsDialog* dialog);
+	EmulationSettingsWidget(SettingsDialog* dialog, QWidget* parent);
 	~EmulationSettingsWidget();
 
 private Q_SLOTS:
-	void onNormalSpeedIndexChanged(int index);
-	void onFastForwardSpeedIndexChanged(int index);
-	void onSlowMotionSpeedIndexChanged(int index);
-	void onOptimalFramePacingChanged(bool checked);
+	void onOptimalFramePacingChanged();
 
 private:
+	void initializeSpeedCombo(QComboBox* cb, const char* section, const char* key, float default_value);
+	void handleSpeedComboChange(QComboBox* cb, const char* section, const char* key);
 	void updateOptimalFramePacing();
+
+	SettingsDialog* m_dialog;
 
 	Ui::EmulationSettingsWidget m_ui;
 };
