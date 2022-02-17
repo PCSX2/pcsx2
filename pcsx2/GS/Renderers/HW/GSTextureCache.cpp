@@ -187,7 +187,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	else if (m_renderer->m_game.title == CRC::SVCChaos)
 	{
 		// SVCChaos black screen on main menu, regardless of depth enabled or disabled.
-		return LookupSource(TEX0, TEXA, r, false);
+		return LookupSource(TEX0, TEXA, r, nullptr);
 	}
 	else
 	{
@@ -210,7 +210,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	return src;
 }
 
-GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool mipmap)
+GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, const GSVector2i* lod)
 {
 	GL_CACHE("TC: Lookup Source <%d,%d => %d,%d> (0x%x, %s, BW: %u)", r.x, r.y, r.z, r.w, TEX0.TBP0, psm_str(TEX0.PSM), TEX0.TBW);
 
@@ -413,7 +413,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 			GL_CACHE("TC: src miss (0x%x, 0x%x, %s)", TEX0.TBP0, psm_s.pal > 0 ? TEX0.CBP : 0, psm_str(TEX0.PSM));
 		}
 #endif
-		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset, mipmap);
+		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset, lod);
 		new_source = true;
 	}
 	else
@@ -1186,7 +1186,7 @@ void GSTextureCache::IncAge()
 }
 
 //Fixme: Several issues in here. Not handling depth stencil, pitch conversion doesnt work.
-GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* dst, bool half_right, int x_offset, int y_offset, bool mipmap)
+GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* dst, bool half_right, int x_offset, int y_offset, const GSVector2i* lod)
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 	Source* src = new Source(m_renderer, TEX0, TEXA, false);
@@ -1451,18 +1451,30 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	else
 	{
 		// try the hash cache
-		if (!mipmap && CanCacheTextureSize(TEX0.TW, TEX0.TH))
+		if (CanCacheTextureSize(TEX0.TW, TEX0.TH))
 		{
 			const bool paltex = (GSConfig.GPUPaletteConversion && psm.pal > 0);
 			const u32* clut = (!paltex && psm.pal > 0) ? static_cast<const u32*>(m_renderer->m_mem.m_clut) : nullptr;
-			const HashCacheKey key{ HashCacheKey::Create(TEX0, TEXA, m_renderer, clut) };
+			const HashCacheKey key{ HashCacheKey::Create(TEX0, TEXA, m_renderer, clut, lod) };
 
 			auto it = m_hash_cache.find(key);
 			if (it == m_hash_cache.end())
 			{
 				// hash and upload texture
-				src->m_texture = g_gs_device->CreateTexture(tw, th, paltex ? false : mipmap, paltex ? GSTexture::Format::UNorm8 : GSTexture::Format::Color);
+				src->m_texture = g_gs_device->CreateTexture(tw, th, paltex ? false : (lod != nullptr), paltex ? GSTexture::Format::UNorm8 : GSTexture::Format::Color);
 				PreloadTexture(TEX0, TEXA, m_renderer->m_mem, paltex, src->m_texture, 0);
+
+				// upload mips if present
+				if (lod)
+				{
+					const int basemip = lod->x;
+					const int nmips = lod->y - lod->x + 1;
+					for (int mip = 1; mip < nmips; mip++)
+					{
+						const GIFRegTEX0 MIP_TEX0{m_renderer->GetTex0Layer(basemip + mip)};
+						PreloadTexture(MIP_TEX0, TEXA, m_renderer->m_mem, paltex, src->m_texture, mip);
+					}
+				}
 
 				// insert it into the hash cache
 				HashCacheEntry entry{ src->m_texture, 1, 0 };
@@ -1488,7 +1500,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		}
 		else
 		{
-			src->m_texture = g_gs_device->CreateTexture(tw, th, mipmap, GSTexture::Format::Color);
+			src->m_texture = g_gs_device->CreateTexture(tw, th, (lod != nullptr), GSTexture::Format::Color);
 			if (psm.pal > 0)
 			{
 				AttachPaletteToSource(src, psm.pal, false);
@@ -1965,13 +1977,9 @@ void GSTextureCache::Source::Flush(u32 count, int layer)
 void GSTextureCache::Source::PreloadLevel(int level)
 {
 	// m_TEX0 is adjusted for mips (messy, should be changed).
-	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_TEX0.PSM];
-	const GSVector2i& bs = psm.bs;
-	const int tw = 1 << m_TEX0.TW;
-	const int th = 1 << m_TEX0.TH;
+	const HashType hash = HashTexture(m_renderer, m_TEX0, m_TEXA);
 
 	// Layer is complete again, regardless of whether the hash matches or not (and we reupload).
-	const HashType hash = HashTexture(m_renderer, m_TEX0, m_TEXA);
 	const u8 layer_bit = static_cast<u8>(1) << level;
 	m_complete_layers |= layer_bit;
 
@@ -2596,7 +2604,7 @@ __fi static GSTextureCache::HashType FinishBlockHash(BlockHashState& st)
 	return XXH3_64bits_digest(&st);
 }
 
-GSTextureCache::HashType GSTextureCache::HashTexture(GSRenderer* renderer, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
+static void HashTextureLevel(GSRenderer* renderer, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, BlockHashState& hash_st, u8* temp)
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 	const GSVector2i& bs = psm.bs;
@@ -2612,8 +2620,6 @@ GSTextureCache::HashType GSTextureCache::HashTexture(GSRenderer* renderer, const
 
 	// For textures which are smaller than the block size, we expand and then hash.
 	// This is because otherwise we get the padding bytes, which can be random junk.
-	GSTextureCache::HashType hash;
-	BlockHashState hash_st;
 	if (tw < bs.x || th < bs.y)
 	{
 		// Expand texture indices. Align to 32 bytes for AVX2.
@@ -2622,11 +2628,10 @@ GSTextureCache::HashType GSTextureCache::HashTexture(GSRenderer* renderer, const
 		const GSLocalMemory::readTexture rtx = psm.rtxP;
 
 		// Use temp buffer for expanding, since we may not need to update.
-		(renderer->m_mem.*rtx)(off, block_rect, m_temp, pitch, TEXA);
+		(renderer->m_mem.*rtx)(off, block_rect, temp, pitch, TEXA);
 
 		// Hash the expanded texture.
-		u8* ptr = m_temp;
-		BlockHashReset(hash_st);
+		u8* ptr = temp;
 		if (pitch == row_size)
 		{
 			BlockHashAccumulate(hash_st, ptr, pitch * static_cast<u32>(th));
@@ -2636,7 +2641,6 @@ GSTextureCache::HashType GSTextureCache::HashTexture(GSRenderer* renderer, const
 			for (int y = 0; y < th; y++, ptr += pitch)
 				BlockHashAccumulate(hash_st, ptr, row_size);
 		}
-		hash = FinishBlockHash(hash_st);
 	}
 	else
 	{
@@ -2654,11 +2658,15 @@ GSTextureCache::HashType GSTextureCache::HashTexture(GSRenderer* renderer, const
 				BlockHashAccumulate(hash_st, mem.BlockPtr(bn.value()));
 			}
 		}
-
-		hash = FinishBlockHash(hash_st);
 	}
+}
 
-	return hash;
+GSTextureCache::HashType GSTextureCache::HashTexture(GSRenderer* renderer, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
+{
+	BlockHashState hash_st;
+	BlockHashReset(hash_st);
+	HashTextureLevel(renderer, TEX0, TEXA, hash_st, m_temp);
+	return FinishBlockHash(hash_st);
 }
 
 void GSTextureCache::PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSLocalMemory& mem, bool paltex, GSTexture* tex, u32 level)
@@ -2710,7 +2718,7 @@ GSTextureCache::HashCacheKey::HashCacheKey()
 	TEXA.U64 = 0;
 }
 
-GSTextureCache::HashCacheKey GSTextureCache::HashCacheKey::Create(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSRenderer* renderer, const u32* clut)
+GSTextureCache::HashCacheKey GSTextureCache::HashCacheKey::Create(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSRenderer* renderer, const u32* clut, const GSVector2i* lod)
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 
@@ -2718,7 +2726,26 @@ GSTextureCache::HashCacheKey GSTextureCache::HashCacheKey::Create(const GIFRegTE
 	ret.TEX0.U64 = TEX0.U64 & 0x00000007FFF00000ULL;
 	ret.TEXA.U64 = (psm.pal == 0 && psm.fmt > 0) ? (TEXA.U64 & 0x000000FF000080FFULL) : 0;
 	ret.CLUTHash = clut ? GSTextureCache::PaletteKeyHash{}({clut, psm.pal}) : 0;
-	ret.TEX0Hash = HashTexture(renderer, TEX0, TEXA);
+
+	BlockHashState hash_st;
+	BlockHashReset(hash_st);
+
+	// base level is always hashed
+	HashTextureLevel(renderer, TEX0, TEXA, hash_st, m_temp);
+
+	if (lod)
+	{
+		// hash and combine full mipmaps when enabled
+		const int basemip = lod->x;
+		const int nmips = lod->y - lod->x + 1;
+		for (int i = 1; i < nmips; i++)
+		{
+			const GIFRegTEX0 MIP_TEX0{renderer->GetTex0Layer(basemip + i)};
+			HashTextureLevel(renderer, MIP_TEX0, TEXA, hash_st, m_temp);
+		}
+	}
+
+	ret.TEX0Hash = FinishBlockHash(hash_st);
 
 	return ret;
 }
