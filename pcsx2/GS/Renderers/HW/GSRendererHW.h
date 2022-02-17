@@ -17,6 +17,7 @@
 
 #include "GSTextureCache.h"
 #include "GS/Renderers/Common/GSFunctionMap.h"
+#include "GS/Renderers/Common/GSRenderer.h"
 #include "GS/GSState.h"
 
 class GSRendererHW : public GSRenderer
