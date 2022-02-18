@@ -37,14 +37,7 @@
 
 bool RemoveDirectory(const wxString& dirname);
 
-const ryml::Tree treeFromString(const std::string& s)
-{
-	return ryml::parse(c4::to_csubstr(s));
-}
-
-// A helper function to parse the YAML file
-std::optional<ryml::Tree> loadYamlFile(const wxString& filePath)
-{
+ryml::Tree parseYamlStr(const std::string& str) {
 	ryml::Callbacks rymlCallbacks = ryml::get_callbacks();
 	rymlCallbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void*) {
 		throw std::runtime_error(fmt::format("[YAML] Parsing error at {}:{} (bufpos={}): {}",
@@ -55,14 +48,29 @@ std::optional<ryml::Tree> loadYamlFile(const wxString& filePath)
 		throw std::runtime_error(fmt::format("[YAML] Internal Parsing error: {}",
 			msg));
 	});
+	ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(str));
+
+	ryml::reset_callbacks();
+	return tree;
+}
+
+// A helper function to parse the YAML file
+std::optional<ryml::Tree> loadYamlFile(const wxString& filePath)
+{
 	try
 	{
-		std::optional<std::string> buffer = FileSystem::ReadFileToString(StringUtil::wxStringToUTF8String(filePath).c_str());
-		if (!buffer.has_value())
+		auto file = FileSystem::OpenManagedCFile(StringUtil::wxStringToUTF8String(filePath).c_str(), "rb");
+		if (!file)
+		{
 			return std::nullopt;
-		const ryml::Tree tree = treeFromString(buffer.value());
-
-		ryml::reset_callbacks();
+		}
+		std::optional<std::string> buffer = FileSystem::ReadFileToString(file.get());
+		std::fclose(file.get());
+		if (!buffer.has_value())
+		{
+			return std::nullopt;
+		}
+		ryml::Tree tree = parseYamlStr(buffer.value());
 		return std::make_optional(tree);
 	}
 	catch (const std::exception& e)
@@ -76,15 +84,10 @@ std::optional<ryml::Tree> loadYamlFile(const wxString& filePath)
 /// A helper function to write a YAML file
 void SaveYAMLToFile(const wxString& filename, const ryml::NodeRef& node)
 {
-	wxFFile file;
-	if (file.Open(filename, L"w"))
-	{
-		// Make sure WX doesn't do anything funny with encoding
-		std::stringstream ss;
-		ss << node;
-		std::string yaml = ss.str();
-		file.Write(yaml.data(), yaml.length());
-	}
+	auto file = FileSystem::OpenCFile(StringUtil::wxStringToUTF8String(filename).c_str(), "w");
+	ryml::emit(node, file);
+	std::fflush(file);
+	std::fclose(file);
 }
 
 FolderMemoryCard::FolderMemoryCard()
@@ -1282,7 +1285,7 @@ void FolderMemoryCard::FlushFileEntries(const u32 dirCluster, const u32 remainin
 						if (!yaml.has_value())
 						{
 							char initialData[] = "{$ROOT: {timeCreated: 0, timeModified: 0}}";
-							ryml::Tree newYaml = ryml::parse(ryml::substr(initialData));
+							ryml::Tree newYaml = ryml::parse_in_arena(c4::to_csubstr(initialData));
 							ryml::NodeRef newNode = newYaml.rootref()["$ROOT"];
 							newNode["timeCreated"] << entry->entry.data.timeCreated.ToTime();
 							newNode["timeModified"] << entry->entry.data.timeModified.ToTime();
@@ -1297,6 +1300,7 @@ void FolderMemoryCard::FlushFileEntries(const u32 dirCluster, const u32 remainin
 								// NOTE - working around a rapidyaml issue that needs to get resolved upstream
 								// '%' is a directive in YAML and it's not being quoted, this makes the memcards backwards compatible
 								// switched from '%' to '$'
+								// NOTE - this issue has now been resolved, but should be preserved for backwards compatibility
 								entryNode = index["%ROOT"];
 								entryNode.set_key("$ROOT");
 							}
