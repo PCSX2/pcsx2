@@ -504,7 +504,7 @@ std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(const char* filename)
 std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(std::FILE* fp)
 {
 	std::fseek(fp, 0, SEEK_END);
-	long size = std::ftell(fp);
+	const long size = std::ftell(fp);
 	std::fseek(fp, 0, SEEK_SET);
 	if (size < 0)
 		return std::nullopt;
@@ -528,13 +528,14 @@ std::optional<std::string> FileSystem::ReadFileToString(const char* filename)
 std::optional<std::string> FileSystem::ReadFileToString(std::FILE* fp)
 {
 	std::fseek(fp, 0, SEEK_END);
-	long size = std::ftell(fp);
+	const long size = std::ftell(fp);
 	std::fseek(fp, 0, SEEK_SET);
 	if (size < 0)
 		return std::nullopt;
 
 	std::string res;
 	res.resize(static_cast<size_t>(size));
+	// NOTE - assumes mode 'rb', for example, this will fail over missing Windows carriage return bytes
 	if (size > 0 && std::fread(res.data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size))
 		return std::nullopt;
 
@@ -553,7 +554,7 @@ bool FileSystem::WriteBinaryFile(const char* filename, const void* data, size_t 
 	return true;
 }
 
-bool FileSystem::WriteFileToString(const char* filename, const std::string_view& sv)
+bool FileSystem::WriteStringToFile(const char* filename, const std::string_view& sv)
 {
 	ManagedCFilePtr fp = OpenManagedCFile(filename, "wb");
 	if (!fp)
