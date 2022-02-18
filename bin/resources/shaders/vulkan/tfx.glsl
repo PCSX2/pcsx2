@@ -650,7 +650,7 @@ vec4 sample_depth(vec2 st, ivec2 pos)
 	}
 	#elif (PS_DEPTH_FMT == 1)
 	{
-		// Based on ps_main11 of convert
+		// Based on ps_convert_float32_rgba8 of convert
 
 		// Convert a vec32 depth texture into a RGBA color texture
 		uint d = uint(fetch_c(uv).r * exp2(32.0f));
@@ -658,7 +658,7 @@ vec4 sample_depth(vec2 st, ivec2 pos)
 	}
 	#elif (PS_DEPTH_FMT == 2)
 	{
-		// Based on ps_main12 of convert
+		// Based on ps_convert_float16_rgb5a1 of convert
 
 		// Convert a vec32 (only 16 lsb) depth into a RGB5A1 color texture
 		uint d = uint(fetch_c(uv).r * exp2(32.0f));

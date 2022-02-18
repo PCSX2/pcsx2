@@ -390,7 +390,7 @@ float4 sample_depth(float2 st, float2 pos)
 	}
 	else if (PS_DEPTH_FMT == 1)
 	{
-		// Based on ps_main11 of convert
+		// Based on ps_convert_float32_rgba8 of convert
 
 		// Convert a FLOAT32 depth texture into a RGBA color texture
 		uint d = uint(fetch_c(uv).r * exp2(32.0f));
@@ -398,11 +398,11 @@ float4 sample_depth(float2 st, float2 pos)
 	}
 	else if (PS_DEPTH_FMT == 2)
 	{
-		// Based on ps_main12 of convert
+		// Based on ps_convert_float16_rgb5a1 of convert
 
 		// Convert a FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
 		uint d = uint(fetch_c(uv).r * exp2(32.0f));
-		t = float4(uint4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u));
+		t = float4(uint4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u)) * float4(8.0f, 8.0f, 8.0f, 128.0f);
 	}
 	else if (PS_DEPTH_FMT == 3)
 	{
