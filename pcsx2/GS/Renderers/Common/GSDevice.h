@@ -231,7 +231,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 clr_hw      : 3;
 				u32 hdr         : 1;
 				u32 colclip     : 1;
-				u32 alpha_clamp : 1;
+				u32 blend_mix   : 1;
 				u32 pabe        : 1;
 
 				// Others ways to fetch the texture
