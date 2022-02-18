@@ -973,7 +973,7 @@ void ps_color_clamp_wrap(inout vec3 C)
     // Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
     // GS: Color = 1, Alpha = 255 => output 1
     // GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-#if PS_DFMT == FMT_16
+#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0
     // In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
     C = vec3(ivec3(C) & ivec3(0xF8));
 #elif PS_COLCLIP == 1 && PS_HDR == 0
