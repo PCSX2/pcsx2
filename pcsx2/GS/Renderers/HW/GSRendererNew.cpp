@@ -706,7 +706,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 			accumulation_blend = false;
 			blend_mix          = false;
 		}
-		else if (accumulation_blend)
+		else if (accumulation_blend || blend_mix)
 		{
 			// A fast algo that requires 2 passes
 			GL_INS("COLCLIP Fast HDR mode ENABLED");

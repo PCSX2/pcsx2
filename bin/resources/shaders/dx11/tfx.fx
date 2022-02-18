@@ -717,7 +717,7 @@ void ps_color_clamp_wrap(inout float3 C)
 			C = clamp(C, (float3)0.0f, (float3)255.0f);
 
 		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
-		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0)
+		if (PS_DFMT == FMT_16 && (PS_HDR == 1 || PS_BLEND_MIX == 0))
 			C = (float3)((int3)C & (int3)0xF8);
 		else if (PS_COLCLIP == 1 && PS_HDR == 0)
 			C = (float3)((int3)C & (int3)0xFF);
