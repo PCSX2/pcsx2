@@ -1196,6 +1196,12 @@
     <ClCompile Include="windows\WinCompressNTFS.cpp">
       <Filter>Host</Filter>
     </ClCompile>
+    <ClCompile Include="GS\Renderers\HW\GSTextureReplacements.cpp">
+      <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\HW\GSTextureReplacementLoaders.cpp">
+      <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -1972,6 +1978,9 @@
     </ClInclude>
     <ClInclude Include="PAD\Host\Global.h">
       <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\HW\GSTextureReplacements.h">
+      <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

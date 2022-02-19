@@ -114,6 +114,12 @@ namespace PathDefs
 			static const wxDirName retval(L"cache");
 			return retval;
 		}
+
+		const wxDirName& Textures()
+		{
+			static const wxDirName retval(L"textures");
+			return retval;
+		}
 	};
 
 	// Specifies the root folder for the application install.
@@ -263,6 +269,11 @@ namespace PathDefs
 		return GetDocuments() + Base::Cache();
 	}
 
+	wxDirName GetTextures()
+	{
+		return GetDocuments() + Base::Textures();
+	}
+
 	wxDirName Get(FoldersEnum_t folderidx)
 	{
 		switch (folderidx)
@@ -287,6 +298,8 @@ namespace PathDefs
 				return GetCheatsWS();
 			case FolderId_Cache:
 				return GetCache();
+			case FolderId_Textures:
+				return GetTextures();
 
 			case FolderId_Documents:
 				return CustomDocumentsFolder;
@@ -402,6 +415,8 @@ wxDirName& AppConfig::FolderOptions::operator[](FoldersEnum_t folderidx)
 			return CheatsWS;
 		case FolderId_Cache:
 			return Cache;
+		case FolderId_Textures:
+			return Textures;
 
 		case FolderId_Documents:
 			return CustomDocumentsFolder;
@@ -440,6 +455,8 @@ bool AppConfig::FolderOptions::IsDefault(FoldersEnum_t folderidx) const
 			return UseDefaultCheatsWS;
 		case FolderId_Cache:
 			return UseDefaultCache;
+		case FolderId_Textures:
+			return UseDefaultTextures;
 
 		case FolderId_Documents:
 			return false;
@@ -516,6 +533,13 @@ void AppConfig::FolderOptions::Set(FoldersEnum_t folderidx, const wxString& src,
 			UseDefaultCache = useDefault;
 			EmuFolders::Cache = GetResolvedFolder(FolderId_Cache);
 			EmuFolders::Cache.Mkdir();
+			break;
+
+		case FolderId_Textures:
+			Cache = src;
+			UseDefaultCache = useDefault;
+			EmuFolders::Textures = GetResolvedFolder(FolderId_Textures);
+			EmuFolders::Textures.Mkdir();
 			break;
 
 			jNO_DEFAULT
@@ -794,6 +818,7 @@ void AppSetEmuFolders()
 	EmuFolders::CheatsWS = GetResolvedFolder(FolderId_CheatsWS);
 	EmuFolders::Resources = g_Conf->Folders.Resources;
 	EmuFolders::Cache = GetResolvedFolder(FolderId_Cache);
+	EmuFolders::Textures = GetResolvedFolder(FolderId_Textures);
 
 	// Ensure cache directory exists, since we're going to write to it (e.g. game database)
 	EmuFolders::Cache.Mkdir();
