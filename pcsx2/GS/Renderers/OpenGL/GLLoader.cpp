@@ -157,11 +157,6 @@ namespace GLLoader
 	bool found_compatible_GL_ARB_sparse_texture2 = false;
 	bool found_compatible_sparse_depth = false;
 
-	// Not yet used
-#ifdef GL_EXT_TEX_SUB_IMAGE
-	bool found_GL_ARB_get_texture_sub_image = false;
-#endif
-
 	static bool mandatory(const std::string& ext)
 	{
 		if (!GLExtension::Has(ext))
@@ -284,10 +279,6 @@ namespace GLLoader
 			// Mandatory for the advance HW renderer effect. Unfortunately Mesa LLVMPIPE/SWR renderers doesn't support this extension.
 			// Rendering might be corrupted but it could be good enough for test/virtual machine.
 			optional("GL_ARB_texture_barrier");
-			// Not yet used
-#ifdef GL_EXT_TEX_SUB_IMAGE
-			found_GL_ARB_get_texture_sub_image = optional("GL_ARB_get_texture_sub_image");
-#endif
 		}
 
 		if (vendor_id_amd)

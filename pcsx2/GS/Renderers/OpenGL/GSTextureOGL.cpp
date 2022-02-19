@@ -550,12 +550,7 @@ GSTexture::GSMap GSTextureOGL::Read(const GSVector4i& r, AlignedBuffer<u8, 32>& 
 
 	// The fastest way will be to use a PBO to read the data asynchronously. Unfortunately GSdx
 	// architecture is waiting the data right now.
-#if 0
-	// Maybe it is as good as the code below. I don't know
-	// With openGL 4.5 you can use glGetTextureSubImage
 
-	glGetTextureSubImage(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, 0, r.width(), r.height(), 1, m_int_format, m_int_type, m_size.x * m_size.y * 4, m.bits);
-#else
 	// Bind the texture to the read framebuffer to avoid any disturbance
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
@@ -566,7 +561,6 @@ GSTexture::GSMap GSTextureOGL::Read(const GSVector4i& r, AlignedBuffer<u8, 32>& 
 	glReadPixels(r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, m.bits);
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-#endif
 
 	return m;
 }

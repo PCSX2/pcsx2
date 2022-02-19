@@ -16,19 +16,9 @@
 #pragma once
 
 //#define ENABLE_VTUNE
-//#define ENABLE_PCRTC_DEBUG
 //#define ENABLE_ACCURATE_BUFFER_EMULATION
 #define ENABLE_JIT_RASTERIZER
 
 //#define DISABLE_HW_TEXTURE_CACHE // Slow but fixes a lot of bugs
-
-//#define DISABLE_BITMASKING
-
-//#define DISABLE_COLCLAMP
-
-//#define DISABLE_DATE
-
-// Not yet used/experimental OpenGL extensions
-//#define GL_EXT_TEX_SUB_IMAGE
 
 //#define DISABLE_PERF_MON // Burn cycle for nothing in release mode
