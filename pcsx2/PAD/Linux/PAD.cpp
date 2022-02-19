@@ -50,6 +50,11 @@ HostKeyEvent event;
 
 static HostKeyEvent s_event;
 std::string s_padstrLogPath("logs/");
+#ifndef PCSX2_CORE
+// PADclose is called from the core thread but PADupdate is called from the main thread
+// I kind of hate this solution but it only needs to be here until we switch to Qt so whatever
+static std::mutex s_pad_lock;
+#endif
 
 KeyStatus g_key_status;
 
@@ -96,6 +101,9 @@ s32 PADopen(const WindowInfo& wi)
 
 void PADclose()
 {
+#ifndef PCSX2_CORE
+	std::lock_guard<std::mutex> guard(s_pad_lock);
+#endif
 	device_manager.devices.clear();
 }
 
@@ -262,6 +270,9 @@ void PADupdate(int pad)
 	}
 #endif
 
+#ifndef PCSX2_CORE
+	std::lock_guard<std::mutex> guard(s_pad_lock);
+#endif
 	// Actually PADupdate is always call with pad == 0. So you need to update both
 	// pads -- Gregory
 	device_manager.Update();
