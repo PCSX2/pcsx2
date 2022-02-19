@@ -237,13 +237,13 @@ bool GSDeviceVK::CheckFeatures()
 	const bool isAMD = (vendorID == 0x1002 || vendorID == 0x1022);
 	// const bool isNVIDIA = (vendorID == 0x10DE);
 
+	m_features.framebuffer_fetch = g_vulkan_context->GetOptionalExtensions().vk_arm_rasterization_order_attachment_access && !GSConfig.DisableFramebufferFetch;
 	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
 	m_features.broken_point_sampler = isAMD;
 	m_features.geometry_shader = features.geometryShader && GSConfig.OverrideGeometryShaders != 0;
 	m_features.image_load_store = features.fragmentStoresAndAtomics && m_features.texture_barrier;
 	m_features.prefer_new_textures = true;
 	m_features.provoking_vertex_last = g_vulkan_context->GetOptionalExtensions().vk_ext_provoking_vertex;
-	m_features.framebuffer_fetch = false;
 	m_features.dual_source_blend = features.dualSrcBlend && !GSConfig.DisableDualSourceBlend;
 
 	if (!m_features.dual_source_blend)
@@ -258,6 +258,12 @@ bool GSDeviceVK::CheckFeatures()
 		vkGetPhysicalDeviceFormatProperties(g_vulkan_context->GetPhysicalDevice(), VK_FORMAT_D32_SFLOAT_S8_UINT, &props);
 		m_features.stencil_buffer = ((props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0);
 	}
+
+	// Fbfetch is useless if we don't have barriers enabled.
+	m_features.framebuffer_fetch &= m_features.texture_barrier;
+
+	// Use D32F depth instead of D32S8 when we have framebuffer fetch.
+	m_features.stencil_buffer &= !m_features.framebuffer_fetch;
 
 	// whether we can do point/line expand depends on the range of the device
 	const float f_upscale = static_cast<float>(GSConfig.UpscaleMultiplier);
@@ -1929,6 +1935,12 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 
 	if (m_features.provoking_vertex_last)
 		gpb.SetProvokingVertex(VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT);
+
+	// Tests have shown that it's faster to just enable rast order on the entire pass, rather than alternating
+	// between turning it on and off for different draws, and adding the required barrier between non-rast-order
+	// and rast-order draws.
+	if (m_features.framebuffer_fetch && p.feedback_loop)
+		gpb.AddBlendFlags(VK_PIPELINE_COLOR_BLEND_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_BIT_ARM);
 
 	VkPipeline pipeline = gpb.Create(g_vulkan_context->GetDevice(), g_vulkan_shader_cache->GetPipelineCache(true));
 	if (pipeline)
