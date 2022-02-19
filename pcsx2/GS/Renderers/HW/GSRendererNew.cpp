@@ -632,6 +632,8 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				// Do not run BLEND MIX if sw blending is already present, it's less accurate
 				blend_mix &= !sw_blending;
 				sw_blending |= blend_mix;
+				// Disable dithering on blend mix.
+				m_conf.ps.dither &= !blend_mix;
 				[[fallthrough]];
 			case AccBlendLevel::Minimum:
 				break;
@@ -675,6 +677,8 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				// Do not run BLEND MIX if sw blending is already present, it's less accurate
 				blend_mix &= !sw_blending;
 				sw_blending |= blend_mix;
+				// Disable dithering on blend mix.
+				m_conf.ps.dither &= !blend_mix;
 				[[fallthrough]];
 			case AccBlendLevel::Minimum:
 				break;
@@ -1378,6 +1382,9 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		ASSERT(!(DATE_PRIMID && DATE_BARRIER));
 	}
 
+	// Before emulateblending, dither will be used
+	m_conf.ps.dither = GSConfig.Dithering > 0 && m_conf.ps.dfmt == 2 && m_env.DTHE.DTHE;
+
 	// Blend
 
 	if (!IsOpaque() && rt)
@@ -1469,7 +1476,6 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	m_conf.ps.fba = m_context->FBA.FBA;
-	m_conf.ps.dither = GSConfig.Dithering > 0 && m_conf.ps.dfmt == 2 && m_env.DTHE.DTHE;
 
 	if (m_conf.ps.dither)
 	{
