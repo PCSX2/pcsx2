@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSRendererHW.h"
+#include "GSTextureReplacements.h"
 #include "GS/GSGL.h"
 #include "Host.h"
 
@@ -74,6 +75,7 @@ GSRendererHW::GSRendererHW()
 	}
 
 	m_dump_root = root_hw;
+	GSTextureReplacements::Initialize(m_tc);
 }
 
 void GSRendererHW::SetScaling()
@@ -189,6 +191,7 @@ GSRendererHW::~GSRendererHW()
 void GSRendererHW::Destroy()
 {
 	m_tc->RemoveAll();
+	GSTextureReplacements::Shutdown();
 	GSRenderer::Destroy();
 }
 
@@ -260,6 +263,8 @@ void GSRendererHW::SetGameCRC(u32 crc, int options)
 				break;
 		}
 	}
+
+	GSTextureReplacements::GameChanged();
 }
 
 bool GSRendererHW::CanUpscale()
@@ -306,6 +311,9 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 
 		m_reset = false;
 	}
+
+	if (GSConfig.LoadTextureReplacements)
+		GSTextureReplacements::ProcessAsyncLoadedTextures();
 
 	//Check if the frame buffer width or display width has changed
 	SetScaling();

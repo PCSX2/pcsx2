@@ -573,6 +573,18 @@ DebugTab::DebugTab(wxWindow* parent)
 
 	tab_box->Add(ogl_box.outer, wxSizerFlags().Expand());
 
+	PaddedBoxSizer<wxStaticBoxSizer> tex_box(wxVERTICAL, this, "Texture Replacements");
+	auto* tex_grid = new wxFlexGridSizer(2, space, space);
+	m_ui.addCheckBox(tex_grid, "Dump Textures", "DumpReplaceableTextures", -1);
+	m_ui.addCheckBox(tex_grid, "Dump Mipmaps", "DumpReplaceableMipmaps", -1);
+	m_ui.addCheckBox(tex_grid, "Dump FMV Textures", "DumpTexturesWithFMVActive", -1);
+	m_ui.addCheckBox(tex_grid, "Async Texture Loading", "LoadTextureReplacementsAsync", -1);
+	m_ui.addCheckBox(tex_grid, "Load Textures", "LoadTextureReplacements", -1);
+	m_ui.addCheckBox(tex_grid, "Precache Textures", "PrecacheTextureReplacements", -1);
+	tex_box->Add(tex_grid);
+
+	tab_box->Add(tex_box.outer, wxSizerFlags().Expand());
+
 	SetSizerAndFit(tab_box.outer);
 }
 

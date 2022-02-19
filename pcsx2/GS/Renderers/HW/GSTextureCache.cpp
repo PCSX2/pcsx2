@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSTextureCache.h"
+#include "GSTextureReplacements.h"
 #include "GSRendererHW.h"
 #include "GS/GSGL.h"
 #include "GS/GSIntrin.h"
@@ -65,6 +66,8 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 
 GSTextureCache::~GSTextureCache()
 {
+	GSTextureReplacements::Shutdown();
+
 	RemoveAll();
 
 	m_surface_offset_cache.clear();
@@ -1450,50 +1453,18 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	}
 	else
 	{
+		// maintain the clut even when paltex is on for the dump/replacement texture lookup
+		bool paltex = (GSConfig.GPUPaletteConversion && psm.pal > 0);
+		const u32* clut = (psm.pal > 0) ? static_cast<const u32*>(m_renderer->m_mem.m_clut) : nullptr;
+
 		// try the hash cache
-		if (CanCacheTextureSize(TEX0.TW, TEX0.TH))
+		if ((src->m_from_hash_cache = LookupHashCache(TEX0, TEXA, paltex, clut, lod)) != nullptr)
 		{
-			const bool paltex = (GSConfig.GPUPaletteConversion && psm.pal > 0);
-			const u32* clut = (!paltex && psm.pal > 0) ? static_cast<const u32*>(m_renderer->m_mem.m_clut) : nullptr;
-			const HashCacheKey key{ HashCacheKey::Create(TEX0, TEXA, m_renderer, clut, lod) };
-
-			auto it = m_hash_cache.find(key);
-			if (it == m_hash_cache.end())
-			{
-				// hash and upload texture
-				src->m_texture = g_gs_device->CreateTexture(tw, th, paltex ? false : (lod != nullptr), paltex ? GSTexture::Format::UNorm8 : GSTexture::Format::Color);
-				PreloadTexture(TEX0, TEXA, m_renderer->m_mem, paltex, src->m_texture, 0);
-
-				// upload mips if present
-				if (lod)
-				{
-					const int basemip = lod->x;
-					const int nmips = lod->y - lod->x + 1;
-					for (int mip = 1; mip < nmips; mip++)
-					{
-						const GIFRegTEX0 MIP_TEX0{m_renderer->GetTex0Layer(basemip + mip)};
-						PreloadTexture(MIP_TEX0, TEXA, m_renderer->m_mem, paltex, src->m_texture, mip);
-					}
-				}
-
-				// insert it into the hash cache
-				HashCacheEntry entry{ src->m_texture, 1, 0 };
-				it = m_hash_cache.emplace(key, entry).first;
-				m_hash_cache_memory_usage += src->m_texture->GetMemUsage();
-			}
-			else
-			{
-				// use existing texture
-				src->m_texture = it->second.texture;
-				it->second.refcount++;
-			}
-
-			src->m_from_hash_cache = &it->second;
-
+			src->m_texture = src->m_from_hash_cache->texture;
 			if (psm.pal > 0)
 				AttachPaletteToSource(src, psm.pal, paltex);
 		}
-		else if (GSConfig.GPUPaletteConversion && psm.pal > 0)
+		else if (paltex)
 		{
 			src->m_texture = g_gs_device->CreateTexture(tw, th, false, GSTexture::Format::UNorm8);
 			AttachPaletteToSource(src, psm.pal, true);
@@ -1513,6 +1484,120 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	m_src.Add(src, TEX0, m_renderer->m_context->offset.tex);
 
 	return src;
+}
+
+// This really needs a better home...
+extern bool FMVstarted;
+
+GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool& paltex, const u32* clut, const GSVector2i* lod)
+{
+	// don't bother hashing if we're not dumping or replacing.
+	const bool dump = GSConfig.DumpReplaceableTextures && (!FMVstarted || GSConfig.DumpTexturesWithFMVActive);
+	const bool replace = GSConfig.LoadTextureReplacements;
+	const bool can_cache = CanCacheTextureSize(TEX0.TW, TEX0.TH);
+	if (!dump && !replace && !can_cache)
+		return nullptr;
+
+	// need the hash either for replacing, dumping or caching.
+	// if dumping/replacing is on, we compute the clut hash regardless, since replacements aren't indexed
+	HashCacheKey key{HashCacheKey::Create(TEX0, TEXA, m_renderer, (dump || replace || !paltex) ? clut : nullptr, lod)};
+
+	// handle dumping first, this is mostly isolated.
+	if (dump)
+	{
+		// dump base level
+		GSTextureReplacements::DumpTexture(key, TEX0, TEXA, m_renderer->m_mem, 0);
+
+		// and the mips
+		if (lod && GSConfig.DumpReplaceableMipmaps)
+		{
+			const int basemip = lod->x;
+			const int nmips = lod->y - lod->x + 1;
+			for (int mip = 1; mip < nmips; mip++)
+			{
+				const GIFRegTEX0 MIP_TEX0{m_renderer->GetTex0Layer(basemip + mip)};
+				GSTextureReplacements::DumpTexture(key, MIP_TEX0, TEXA, m_renderer->m_mem, mip);
+			}
+		}
+	}
+
+	// check with the full key
+	auto it = m_hash_cache.find(key);
+
+	// if this fails, and paltex is on, try indexed texture
+	const bool needs_second_lookup = paltex && (dump || replace);
+	if (needs_second_lookup && it == m_hash_cache.end())
+		it = m_hash_cache.find(key.WithRemovedCLUTHash());
+
+	// did we find either a replacement, cached/indexed texture?
+	if (it != m_hash_cache.end())
+	{
+		// super easy, cache hit. remove paltex if it's a replacement texture.
+		HashCacheEntry* entry = &it->second;
+		paltex &= (entry->texture->GetFormat() == GSTexture::Format::UNorm8);
+		entry->refcount++;
+		return entry;
+	}
+
+	// cache miss.
+	// check for a replacement texture with the full clut key
+	if (replace)
+	{
+		bool replacement_texture_pending = false;
+		GSTexture* replacement_tex = GSTextureReplacements::LookupReplacementTexture(key, lod != nullptr, &replacement_texture_pending);
+		if (replacement_tex)
+		{
+			// found a replacement texture! insert it into the hash cache, and clear paltex (since it's not indexed)
+			const HashCacheEntry entry{replacement_tex, 1u, 0u};
+			m_hash_cache_memory_usage += replacement_tex->GetMemUsage();
+			paltex = false;
+			return &m_hash_cache.emplace(key, entry).first->second;
+		}
+		else if (replacement_texture_pending)
+		{
+			// we didn't have a texture immediately, but there is a replacement available (and being loaded).
+			// so clear paltex, since when it gets injected back, it's not going to be indexed
+			paltex = false;
+		}
+	}
+
+	// if this texture isn't cacheable, bail out now since we don't want to waste time preloading it
+	if (!can_cache)
+		return nullptr;
+
+	// expand/upload texture
+	const int tw = 1 << TEX0.TW;
+	const int th = 1 << TEX0.TH;
+	GSTexture* tex = g_gs_device->CreateTexture(tw, th, paltex ? false : (lod != nullptr), paltex ? GSTexture::Format::UNorm8 : GSTexture::Format::Color);
+	if (!tex)
+	{
+		// out of video memory if we hit here
+		return nullptr;
+	}
+
+	// upload base level
+	PreloadTexture(TEX0, TEXA, m_renderer->m_mem, paltex, tex, 0);
+
+	// upload mips if present
+	if (lod)
+	{
+		const int basemip = lod->x;
+		const int nmips = lod->y - lod->x + 1;
+		for (int mip = 1; mip < nmips; mip++)
+		{
+			const GIFRegTEX0 MIP_TEX0{m_renderer->GetTex0Layer(basemip + mip)};
+			PreloadTexture(MIP_TEX0, TEXA, m_renderer->m_mem, paltex, tex, mip);
+		}
+	}
+
+	// remove the palette hash when using paltex/indexed
+	if (paltex)
+		key.RemoveCLUTHash();
+
+	// insert into the cache cache, and we're done
+	const HashCacheEntry entry{tex, 1u, 0u};
+	m_hash_cache_memory_usage += tex->GetMemUsage();
+	return &m_hash_cache.emplace(key, entry).first->second;
 }
 
 GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type, const bool clear)
@@ -2386,6 +2471,29 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 	return so;
 }
 
+void GSTextureCache::InjectHashCacheTexture(const HashCacheKey& key, GSTexture* tex)
+{
+	auto it = m_hash_cache.find(key);
+	if (it == m_hash_cache.end())
+	{
+		// We must've got evicted before we finished loading. No matter, add it in there anyway;
+		// if it's not used again, it'll get tossed out later.
+		const HashCacheEntry entry{ tex, 1u, 0u };
+		m_hash_cache_memory_usage += tex->GetMemUsage();
+		m_hash_cache.emplace(key, entry).first->second;
+		return;
+	}
+
+	// Reset age so we don't get thrown out too early.
+	it->second.age = 0;
+
+	// Update memory usage, swap the textures, and recycle the old one for reuse.
+	m_hash_cache_memory_usage -= it->second.texture->GetMemUsage();
+	m_hash_cache_memory_usage += tex->GetMemUsage();
+	it->second.texture->Swap(tex);
+	g_gs_device->Recycle(tex);
+}
+
 // GSTextureCache::Palette
 
 GSTextureCache::Palette::Palette(const GSRenderer* renderer, u16 pal, bool need_gs_texture)
@@ -2748,6 +2856,18 @@ GSTextureCache::HashCacheKey GSTextureCache::HashCacheKey::Create(const GIFRegTE
 	ret.TEX0Hash = FinishBlockHash(hash_st);
 
 	return ret;
+}
+
+GSTextureCache::HashCacheKey GSTextureCache::HashCacheKey::WithRemovedCLUTHash() const
+{
+	HashCacheKey ret{*this};
+	ret.CLUTHash = 0;
+	return ret;
+}
+
+void GSTextureCache::HashCacheKey::RemoveCLUTHash()
+{
+	CLUTHash = 0;
 }
 
 u64 GSTextureCache::HashCacheKeyHash::operator()(const HashCacheKey& key) const

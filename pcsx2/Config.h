@@ -457,7 +457,13 @@ struct Pcsx2Config
 					SaveRT : 1,
 					SaveFrame : 1,
 					SaveTexture : 1,
-					SaveDepth : 1;
+					SaveDepth : 1,
+					DumpReplaceableTextures : 1,
+					DumpReplaceableMipmaps : 1,
+					DumpTexturesWithFMVActive : 1,
+					LoadTextureReplacements : 1,
+					LoadTextureReplacementsAsync : 1,
+					PrecacheTextureReplacements : 1;
 			};
 		};
 
@@ -885,6 +891,7 @@ namespace EmuFolders
 	extern wxDirName Cache;
 	extern wxDirName Covers;
 	extern wxDirName GameSettings;
+	extern wxDirName Textures;
 
 	// Assumes that AppRoot and DataRoot have been initialized.
 	void SetDefaults();

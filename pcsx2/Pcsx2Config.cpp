@@ -48,6 +48,7 @@ namespace EmuFolders
 	wxDirName Cache;
 	wxDirName Covers;
 	wxDirName GameSettings;
+	wxDirName Textures;
 } // namespace EmuFolders
 
 void TraceLogFilters::LoadSave(SettingsWrapper& wrap)
@@ -310,6 +311,13 @@ Pcsx2Config::GSOptions::GSOptions()
 	UserHacks_MergePPSprite = false;
 	UserHacks_WildHack = false;
 
+	DumpReplaceableTextures = false;
+	DumpReplaceableMipmaps = false;
+	DumpTexturesWithFMVActive = false;
+	LoadTextureReplacements = false;
+	LoadTextureReplacementsAsync = true;
+	PrecacheTextureReplacements = false;
+
 	ShaderFX_Conf = "shaders/GS_FX_Settings.ini";
 	ShaderFX_GLSL = "shaders/GS.fx";
 }
@@ -511,6 +519,12 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBoolEx(SaveFrame, "savef");
 	GSSettingBoolEx(SaveTexture, "savet");
 	GSSettingBoolEx(SaveDepth, "savez");
+	GSSettingBoolEx(DumpReplaceableTextures, "DumpReplaceableTextures");
+	GSSettingBoolEx(DumpReplaceableMipmaps, "DumpReplaceableMipmaps");
+	GSSettingBoolEx(DumpTexturesWithFMVActive, "DumpTexturesWithFMVActive");
+	GSSettingBoolEx(LoadTextureReplacements, "LoadTextureReplacements");
+	GSSettingBoolEx(LoadTextureReplacementsAsync, "LoadTextureReplacementsAsync");
+	GSSettingBoolEx(PrecacheTextureReplacements, "PrecacheTextureReplacements");
 
 	GSSettingIntEnumEx(InterlaceMode, "interlace");
 
@@ -1081,6 +1095,7 @@ void EmuFolders::SetDefaults()
 	GameSettings = DataRoot.Combine(wxDirName("gamesettings"));
 	Cache = DataRoot.Combine(wxDirName("cache"));
 	Resources = AppRoot.Combine(wxDirName("resources"));
+	Textures = AppRoot.Combine(wxDirName("textures"));
 }
 
 static wxDirName LoadPathFromSettings(SettingsInterface& si, const wxDirName& root, const char* name, const char* def)
@@ -1104,6 +1119,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
 	Covers = LoadPathFromSettings(si, DataRoot, "Covers", "covers");
 	GameSettings = LoadPathFromSettings(si, DataRoot, "GameSettings", "gamesettings");
 	Cache = LoadPathFromSettings(si, DataRoot, "Cache", "cache");
+	Textures = LoadPathFromSettings(si, DataRoot, "Textures", "textures");
 
 	Console.WriteLn("BIOS Directory: %s", Bios.ToString().c_str().AsChar());
 	Console.WriteLn("Snapshots Directory: %s", Snapshots.ToString().c_str().AsChar());
@@ -1115,6 +1131,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
 	Console.WriteLn("Covers Directory: %s", Covers.ToString().c_str().AsChar());
 	Console.WriteLn("Game Settings Directory: %s", GameSettings.ToString().c_str().AsChar());
 	Console.WriteLn("Cache Directory: %s", Cache.ToString().c_str().AsChar());
+	Console.WriteLn("Textures Directory: %s", Textures.ToString().c_str().AsChar());
 }
 
 void EmuFolders::Save(SettingsInterface& si)
@@ -1129,6 +1146,7 @@ void EmuFolders::Save(SettingsInterface& si)
 	si.SetStringValue("Folders", "Cheats", wxDirName::MakeAutoRelativeTo(Cheats, datarel).c_str());
 	si.SetStringValue("Folders", "CheatsWS", wxDirName::MakeAutoRelativeTo(CheatsWS, datarel).c_str());
 	si.SetStringValue("Folders", "Cache", wxDirName::MakeAutoRelativeTo(Cache, datarel).c_str());
+	si.SetStringValue("Folders", "Textures", wxDirName::MakeAutoRelativeTo(Textures, datarel).c_str());
 }
 
 bool EmuFolders::EnsureFoldersExist()
@@ -1144,5 +1162,6 @@ bool EmuFolders::EnsureFoldersExist()
 	result = Covers.Mkdir() && result;
 	result = GameSettings.Mkdir() && result;
 	result = Cache.Mkdir() && result;
+	result = Textures.Mkdir() && result;
 	return result;
 }

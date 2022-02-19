@@ -36,6 +36,7 @@ enum FoldersEnum_t
 	FolderId_Cheats,
 	FolderId_CheatsWS,
 	FolderId_Cache,
+	FolderId_Textures,
 
 	FolderId_COUNT
 };

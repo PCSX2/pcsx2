@@ -53,6 +53,9 @@ public:
 		static HashCacheKey Create(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSRenderer* renderer, const u32* clut,
 			const GSVector2i* lod);
 
+		HashCacheKey WithRemovedCLUTHash() const;
+		void RemoveCLUTHash();
+
 		__fi bool operator==(const HashCacheKey& e) const { return std::memcmp(this, &e, sizeof(*this)) == 0; }
 		__fi bool operator!=(const HashCacheKey& e) const { return std::memcmp(this, &e, sizeof(*this)) != 0; }
 		__fi bool operator<(const HashCacheKey& e) const { return std::memcmp(this, &e, sizeof(*this)) < 0; }
@@ -291,6 +294,8 @@ protected:
 	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false, int x_offset = 0, int y_offset = 0, const GSVector2i* lod = nullptr);
 	Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type, const bool clear);
 
+	HashCacheEntry* LookupHashCache(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool& paltex, const u32* clut, const GSVector2i* lod);
+
 	static void PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSLocalMemory& mem, bool paltex, GSTexture* tex, u32 level);
 	static HashType HashTexture(GSRenderer* renderer, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA);
 
@@ -335,4 +340,7 @@ public:
 	SurfaceOffset ComputeSurfaceOffset(const GSOffset& off, const GSVector4i& r, const Target* t);
 	SurfaceOffset ComputeSurfaceOffset(const uint32_t bp, const uint32_t bw, const uint32_t psm, const GSVector4i& r, const Target* t);
 	SurfaceOffset ComputeSurfaceOffset(const SurfaceOffsetKey& sok);
+
+	/// Injects a texture into the hash cache, by using GSTexture::Swap(), transitively applying to all sources. Ownership of tex is transferred.
+	void InjectHashCacheTexture(const HashCacheKey& key, GSTexture* tex);
 };

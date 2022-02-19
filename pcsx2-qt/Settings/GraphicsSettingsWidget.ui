@@ -927,24 +927,93 @@
       <attribute name="title">
        <string>Advanced</string>
       </attribute>
-      <layout class="QFormLayout" name="formLayout_6">
-       <item row="0" column="0" colspan="2">
-        <layout class="QGridLayout" name="gridLayout_4">
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="useBlitSwapChain">
-           <property name="text">
-            <string>Use Blit Swap Chain</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="useDebugDevice">
-           <property name="text">
-            <string>Use Debug Device</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>Debug Options</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_7">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="useBlitSwapChain">
+            <property name="text">
+             <string>Use Blit Swap Chain</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QCheckBox" name="useDebugDevice">
+            <property name="text">
+             <string>Use Debug Device</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Texture Replacement</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_8">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="dumpReplaceableTextures">
+            <property name="text">
+             <string>Dump Textures</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QCheckBox" name="dumpReplaceableMipmaps">
+            <property name="text">
+             <string>Dump Mipmaps</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QCheckBox" name="loadTextureReplacementsAsync">
+            <property name="text">
+             <string>Async Texture Loading</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="precacheTextureReplacements">
+            <property name="text">
+             <string>Precache Textures</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="loadTextureReplacements">
+            <property name="text">
+             <string>Load Textures</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="dumpTexturesWithFMVActive">
+            <property name="text">
+             <string>Dump FMV Textures</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>

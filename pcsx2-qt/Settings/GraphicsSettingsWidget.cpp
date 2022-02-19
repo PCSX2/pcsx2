@@ -163,6 +163,16 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.wildHack, "EmuCore/GS", "UserHacks_WildHack", false);
 
 	//////////////////////////////////////////////////////////////////////////
+	// Texture Replacements
+	//////////////////////////////////////////////////////////////////////////
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.dumpReplaceableTextures, "EmuCore/GS", "DumpReplaceableTextures", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.dumpReplaceableMipmaps, "EmuCore/GS", "DumpReplaceableMipmaps", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.dumpTexturesWithFMVActive, "EmuCore/GS", "DumpTexturesWithFMVActive", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.loadTextureReplacements, "EmuCore/GS", "LoadTextureReplacements", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.loadTextureReplacementsAsync, "EmuCore/GS", "LoadTextureReplacementsAsync", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.precacheTextureReplacements, "EmuCore/GS", "PrecacheTextureReplacements", false);
+
+	//////////////////////////////////////////////////////////////////////////
 	// Advanced Settings
 	//////////////////////////////////////////////////////////////////////////
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useBlitSwapChain, "EmuCore/GS", "UseBlitSwapChain", false);
@@ -338,7 +348,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 		{
 			// software has no hacks tabs
 			m_ui.verticalLayout->insertWidget(1, m_ui.softwareRendererGroup);
-			m_ui.softwareRendererGroup->setCurrentIndex((current_tab >= 4) ? (current_tab - 2) : (current_tab >= 2 ? 1 : current_tab));
+			m_ui.softwareRendererGroup->setCurrentIndex((current_tab >= 5) ? (current_tab - 3) : (current_tab >= 2 ? 1 : current_tab));
 		}
 
 		m_software_renderer_visible = is_software;

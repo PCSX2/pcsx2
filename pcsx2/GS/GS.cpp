@@ -27,6 +27,7 @@
 #include "Renderers/Null/GSDeviceNull.h"
 #include "Renderers/OpenGL/GSDeviceOGL.h"
 #include "Renderers/HW/GSRendererNew.h"
+#include "Renderers/HW/GSTextureReplacements.h"
 #include "GSLzma.h"
 
 #include "common/pxStreams.h"
@@ -824,6 +825,17 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	// clear out the sampler cache when AF options change, since the anisotropy gets baked into them
 	if (GSConfig.MaxAnisotropy != old_config.MaxAnisotropy)
 		g_gs_device->ClearSamplerCache();
+
+	// texture dumping/replacement options
+	GSTextureReplacements::UpdateConfig(old_config);
+
+	// clear the hash texture cache since we might have replacements now
+	// also clear it when dumping changes, since we want to dump everything being used
+	if (GSConfig.LoadTextureReplacements != old_config.LoadTextureReplacements ||
+		GSConfig.DumpReplaceableTextures != old_config.DumpReplaceableTextures)
+	{
+		s_gs->PurgeTextureCache();
+	}
 }
 
 void GSSwitchRenderer(GSRendererType new_renderer)
@@ -1304,6 +1316,9 @@ void GSApp::Init()
 	m_default_configuration["disable_shader_cache"]                       = "0";
 	m_default_configuration["dithering_ps2"]                              = "2";
 	m_default_configuration["dump"]                                       = "0";
+	m_default_configuration["DumpReplaceableTextures"]                    = "0";
+	m_default_configuration["DumpReplaceableMipmaps"]                     = "0";
+	m_default_configuration["DumpTexturesWithFMVActive"]                  = "0";
 	m_default_configuration["extrathreads"]                               = "2";
 	m_default_configuration["extrathreads_height"]                        = "4";
 	m_default_configuration["filter"]                                     = std::to_string(static_cast<s8>(BiFiltering::PS2));
@@ -1314,6 +1329,8 @@ void GSApp::Init()
 	m_default_configuration["interlace"]                                  = "7";
 	m_default_configuration["conservative_framebuffer"]                   = "1";
 	m_default_configuration["linear_present"]                             = "1";
+	m_default_configuration["LoadTextureReplacements"]                    = "0";
+	m_default_configuration["LoadTextureReplacementsAsync"]               = "1";
 	m_default_configuration["MaxAnisotropy"]                              = "0";
 	m_default_configuration["mipmap"]                                     = "1";
 	m_default_configuration["mipmap_hw"]                                  = std::to_string(static_cast<int>(HWMipmapLevel::Automatic));
@@ -1340,6 +1357,7 @@ void GSApp::Init()
 	m_default_configuration["override_GL_ARB_texture_barrier"]            = "-1";
 	m_default_configuration["paltex"]                                     = "0";
 	m_default_configuration["png_compression_level"]                      = std::to_string(Z_BEST_SPEED);
+	m_default_configuration["PrecacheTextureReplacements"]                = "0";
 	m_default_configuration["preload_frame_with_gs_data"]                 = "0";
 	m_default_configuration["Renderer"]                                   = std::to_string(static_cast<int>(GSRendererType::Auto));
 	m_default_configuration["resx"]                                       = "1024";
