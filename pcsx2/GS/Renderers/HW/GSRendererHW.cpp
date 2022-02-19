@@ -204,8 +204,9 @@ void GSRendererHW::SetGameCRC(u32 crc, int options)
 	m_hacks.SetGameCRC(m_game);
 
 	// Code for Automatic Mipmapping. Relies on game CRCs.
-	m_mipmap = (GSConfig.HWMipmap >= HWMipmapLevel::Basic);
-	if (GSConfig.HWMipmap == HWMipmapLevel::Automatic)
+	m_hw_mipmap = GSConfig.HWMipmap;
+	m_mipmap = (m_hw_mipmap >= HWMipmapLevel::Basic);
+	if (m_hw_mipmap == HWMipmapLevel::Automatic)
 	{
 		switch (CRC::Lookup(crc).title)
 		{
