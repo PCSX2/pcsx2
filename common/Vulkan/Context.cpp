@@ -445,6 +445,8 @@ namespace Vulkan
 			SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
 		m_optional_extensions.vk_khr_driver_properties =
 			SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
+		m_optional_extensions.vk_arm_rasterization_order_attachment_access =
+			SupportsExtension(VK_ARM_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
 
 		return true;
 	}
@@ -597,10 +599,18 @@ namespace Vulkan
 		// provoking vertex
 		VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_feature = {
 			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
+		VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM rasterization_order_access_feature = {
+			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_ARM};
+
 		if (m_optional_extensions.vk_ext_provoking_vertex)
 		{
 			provoking_vertex_feature.provokingVertexLast = VK_TRUE;
 			Util::AddPointerToChain(&device_info, &provoking_vertex_feature);
+		}
+		if (m_optional_extensions.vk_arm_rasterization_order_attachment_access)
+		{
+			rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess = VK_TRUE;
+			Util::AddPointerToChain(&device_info, &rasterization_order_access_feature);
 		}
 
 		VkResult res = vkCreateDevice(m_physical_device, &device_info, nullptr, &m_device);
@@ -636,20 +646,21 @@ namespace Vulkan
 			VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
 			VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_features = {
 				VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
-			void** pNext = &features2.pNext;
+			VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM rasterization_order_access_feature = {
+				VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_ARM};
 
 			// add in optional feature structs
 			if (m_optional_extensions.vk_ext_provoking_vertex)
-			{
-				*pNext = &provoking_vertex_features;
-				pNext = &provoking_vertex_features.pNext;
-			}
+				Util::AddPointerToChain(&features2, &provoking_vertex_features);
+			if (m_optional_extensions.vk_arm_rasterization_order_attachment_access)
+				Util::AddPointerToChain(&features2, &rasterization_order_access_feature);
 
 			// query
 			vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
 
 			// confirm we actually support it
 			m_optional_extensions.vk_ext_provoking_vertex &= (provoking_vertex_features.provokingVertexLast == VK_TRUE);
+			m_optional_extensions.vk_arm_rasterization_order_attachment_access &= (rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
 		}
 
 		if (vkGetPhysicalDeviceProperties2)
@@ -670,6 +681,8 @@ namespace Vulkan
 
 		Console.WriteLn("VK_EXT_provoking_vertex is %s",
 			m_optional_extensions.vk_ext_provoking_vertex ? "supported" : "NOT supported");
+		Console.WriteLn("VK_ARM_rasterization_order_attachment_access is %s",
+			m_optional_extensions.vk_arm_rasterization_order_attachment_access ? "supported" : "NOT supported");
 	}
 
 	bool Context::CreateAllocator()
@@ -1388,15 +1401,19 @@ namespace Vulkan
 				input_reference.layout = VK_IMAGE_LAYOUT_GENERAL;
 				input_reference_ptr = &input_reference;
 
-				subpass_dependency.srcSubpass = 0;
-				subpass_dependency.dstSubpass = 0;
-				subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-				subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-				subpass_dependency.srcAccessMask =
-					VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				subpass_dependency.dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-				subpass_dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-				subpass_dependency_ptr = &subpass_dependency;
+				if (!g_vulkan_context->GetOptionalExtensions().vk_arm_rasterization_order_attachment_access)
+				{
+					// don't need the framebuffer-local dependency when we have rasterization order attachment access
+					subpass_dependency.srcSubpass = 0;
+					subpass_dependency.dstSubpass = 0;
+					subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+					subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+					subpass_dependency.srcAccessMask =
+						VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+					subpass_dependency.dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+					subpass_dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+					subpass_dependency_ptr = &subpass_dependency;
+				}
 			}
 
 			num_attachments++;
@@ -1415,7 +1432,10 @@ namespace Vulkan
 			num_attachments++;
 		}
 
-		const VkSubpassDescription subpass = {0, VK_PIPELINE_BIND_POINT_GRAPHICS, input_reference_ptr ? 1u : 0u,
+		const VkSubpassDescriptionFlags subpass_flags =
+			(key.color_feedback_loop && g_vulkan_context->GetOptionalExtensions().vk_arm_rasterization_order_attachment_access)
+			? VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_COLOR_ACCESS_BIT_ARM : 0;
+		const VkSubpassDescription subpass = {subpass_flags, VK_PIPELINE_BIND_POINT_GRAPHICS, input_reference_ptr ? 1u : 0u,
 			input_reference_ptr ? input_reference_ptr : nullptr, color_reference_ptr ? 1u : 0u,
 			color_reference_ptr ? color_reference_ptr : nullptr, nullptr, depth_reference_ptr, 0, nullptr};
 		const VkRenderPassCreateInfo pass_info = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, nullptr, 0u,

@@ -352,6 +352,11 @@ namespace Vulkan
 		}
 	}
 
+	void GraphicsPipelineBuilder::AddBlendFlags(u32 flags)
+	{
+		m_blend_state.flags |= flags;
+	}
+
 	void GraphicsPipelineBuilder::ClearBlendAttachments()
 	{
 		m_blend_attachments = {};
