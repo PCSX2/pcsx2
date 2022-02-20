@@ -161,6 +161,37 @@ VkCommandBuffer GSTextureVK::GetCommandBufferForUpdate()
 	return g_vulkan_context->GetCurrentInitCommandBuffer();
 }
 
+static VkBuffer AllocateUploadStagingBuffer(const void* data, u32 size)
+{
+	const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0,
+		static_cast<VkDeviceSize>(size), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr};
+
+	// Don't worry about setting the coherent bit for this upload, the main reason we had
+	// that set in StreamBuffer was for MoltenVK, which would upload the whole buffer on
+	// smaller uploads, but we're writing to the whole thing anyway.
+	VmaAllocationCreateInfo aci = {};
+	aci.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+	aci.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+	VmaAllocationInfo ai;
+	VkBuffer buffer;
+	VmaAllocation allocation;
+	VkResult res = vmaCreateBuffer(g_vulkan_context->GetAllocator(), &bci, &aci, &buffer, &allocation, &ai);
+	if (res != VK_SUCCESS)
+	{
+		LOG_VULKAN_ERROR(res, "(AllocateUploadStagingBuffer) vmaCreateBuffer() failed: ");
+		return VK_NULL_HANDLE;
+	}
+
+	// Immediately queue it for freeing after the command buffer finishes, since it's only needed for the copy.
+	g_vulkan_context->DeferBufferDestruction(buffer, allocation);
+
+	// And write the data.
+	std::memcpy(ai.pMappedData, data, size);
+	vmaFlushAllocation(g_vulkan_context->GetAllocator(), allocation, 0, size);
+	return buffer;
+}
+
 bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
 	if (layer >= m_mipmap_levels)
@@ -172,18 +203,37 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 	const u32 height = r.height();
 	const u32 row_length = static_cast<u32>(pitch) / Vulkan::Util::GetTexelSize(m_texture.GetFormat());
 	const u32 required_size = static_cast<u32>(pitch) * height;
-	Vulkan::StreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
-	if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferImageGranularity()))
-	{
-		GSDeviceVK::GetInstance()->ExecuteCommandBuffer(
-			false, "While waiting for %u bytes in texture upload buffer", required_size);
-		if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferImageGranularity()))
-			pxFailRel("Failed to reserve texture upload memory");
-	}
 
-	const u32 buffer_offset = buffer.GetCurrentOffset();
-	std::memcpy(buffer.GetCurrentHostPointer(), data, required_size);
-	buffer.CommitMemory(required_size);
+	// If the texture is larger than half our streaming buffer size, use a separate buffer.
+	// Otherwise allocation will either fail, or require lots of cmdbuffer submissions.
+	VkBuffer buffer;
+	u32 buffer_offset;
+	if (required_size > (g_vulkan_context->GetTextureUploadBuffer().GetCurrentSize() / 2))
+	{
+		buffer_offset = 0;
+		buffer = AllocateUploadStagingBuffer(data, required_size);
+		if (buffer == VK_NULL_HANDLE)
+			return false;
+	}
+	else
+	{
+		Vulkan::StreamBuffer& sbuffer = g_vulkan_context->GetTextureUploadBuffer();
+		if (!sbuffer.ReserveMemory(required_size, g_vulkan_context->GetBufferImageGranularity()))
+		{
+			GSDeviceVK::GetInstance()->ExecuteCommandBuffer(
+				false, "While waiting for %u bytes in texture upload buffer", required_size);
+			if (!sbuffer.ReserveMemory(required_size, g_vulkan_context->GetBufferImageGranularity()))
+			{
+				Console.Error("Failed to reserve texture upload memory (%u bytes).", required_size);
+				return false;
+			}
+		}
+
+		buffer = sbuffer.GetBuffer();
+		buffer_offset = sbuffer.GetCurrentOffset();
+		std::memcpy(sbuffer.GetCurrentHostPointer(), data, required_size);
+		sbuffer.CommitMemory(required_size);
+	}
 
 	const VkCommandBuffer cmdbuf = GetCommandBufferForUpdate();
 	GL_PUSH("GSTextureVK::Update({%d,%d} %dx%d Lvl:%u", r.x, r.y, r.width(), r.height(), layer);
@@ -201,8 +251,7 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 			m_state = State::Dirty;
 	}
 
-	m_texture.UpdateFromBuffer(
-		cmdbuf, layer, 0, r.x, r.y, width, height, row_length, buffer.GetBuffer(), buffer_offset);
+	m_texture.UpdateFromBuffer(cmdbuf, layer, 0, r.x, r.y, width, height, row_length, buffer, buffer_offset);
 	m_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	if (m_type == Type::Texture)
@@ -222,8 +271,12 @@ bool GSTextureVK::Map(GSMap& m, const GSVector4i* r, int layer)
 
 	m.pitch = m_map_area.width() * Vulkan::Util::GetTexelSize(m_texture.GetFormat());
 
+	// see note in Update() for the reason why.
 	const u32 required_size = m.pitch * m_map_area.height();
 	Vulkan::StreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
+	if (required_size >= (buffer.GetCurrentSize() / 2))
+		return false;
+
 	if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferImageGranularity()))
 	{
 		GSDeviceVK::GetInstance()->ExecuteCommandBuffer(
