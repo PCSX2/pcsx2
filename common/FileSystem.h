@@ -150,6 +150,10 @@ namespace FileSystem
 	/// if they do not exist.
 	bool CreateDirectoryPath(const char* path, bool recursive);
 
+	/// Creates a directory if it doesn't already exist.
+	/// Returns false if it does not exist and creation failed.
+	bool EnsureDirectoryExists(const char* path, bool recursive);
+
 	/// Returns the path to the current executable.
 	std::string GetProgramPath();
 

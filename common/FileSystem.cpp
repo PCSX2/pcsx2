@@ -565,6 +565,15 @@ bool FileSystem::WriteFileToString(const char* filename, const std::string_view&
 	return true;
 }
 
+bool FileSystem::EnsureDirectoryExists(const char* path, bool recursive)
+{
+	if (FileSystem::DirectoryExists(path))
+		return true;
+
+	// if it fails to create, we're not going to be able to use it anyway
+	return FileSystem::CreateDirectoryPath(path, recursive);
+}
+
 #ifdef _WIN32
 
 static u32 TranslateWin32Attributes(u32 Win32Attributes)
