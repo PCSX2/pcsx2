@@ -132,7 +132,7 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, u32 width, u32 heigh
 
 VkFormat GSTextureVK::LookupNativeFormat(Format format)
 {
-	static constexpr std::array<VkFormat, static_cast<int>(GSTexture::Format::Int32) + 1> s_format_mapping = {{
+	static constexpr std::array<VkFormat, static_cast<int>(GSTexture::Format::BC7) + 1> s_format_mapping = {{
 		VK_FORMAT_UNDEFINED, // Invalid
 		VK_FORMAT_R8G8B8A8_UNORM, // Color
 		VK_FORMAT_R32G32B32A32_SFLOAT, // FloatColor
@@ -141,6 +141,10 @@ VkFormat GSTextureVK::LookupNativeFormat(Format format)
 		VK_FORMAT_R16_UINT, // UInt16
 		VK_FORMAT_R32_UINT, // UInt32
 		VK_FORMAT_R32_SFLOAT, // Int32
+		VK_FORMAT_BC1_RGBA_UNORM_BLOCK, // BC1
+		VK_FORMAT_BC2_UNORM_BLOCK, // BC2
+		VK_FORMAT_BC3_UNORM_BLOCK, // BC3
+		VK_FORMAT_BC7_UNORM_BLOCK, // BC7
 	}};
 
 
@@ -201,8 +205,8 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 
 	const u32 width = r.width();
 	const u32 height = r.height();
-	const u32 row_length = static_cast<u32>(pitch) / Vulkan::Util::GetTexelSize(m_texture.GetFormat());
-	const u32 required_size = static_cast<u32>(pitch) * height;
+	const u32 row_length = CalcUploadRowLengthFromPitch(pitch);
+	const u32 required_size = CalcUploadSize(height, pitch);
 
 	// If the texture is larger than half our streaming buffer size, use a separate buffer.
 	// Otherwise allocation will either fail, or require lots of cmdbuffer submissions.
@@ -262,7 +266,7 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 
 bool GSTextureVK::Map(GSMap& m, const GSVector4i* r, int layer)
 {
-	if (layer >= m_mipmap_levels)
+	if (layer >= m_mipmap_levels || IsCompressedFormat())
 		return false;
 
 	// map for writing

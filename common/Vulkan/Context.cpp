@@ -486,6 +486,7 @@ namespace Vulkan
 		m_device_features.largePoints = available_features.largePoints;
 		m_device_features.wideLines = available_features.wideLines;
 		m_device_features.fragmentStoresAndAtomics = available_features.fragmentStoresAndAtomics;
+		m_device_features.textureCompressionBC = available_features.textureCompressionBC;
 
 		return true;
 	}
