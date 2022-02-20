@@ -397,39 +397,38 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int 
 	GL_PUSH("Upload Texture %d", m_texture_id);
 	g_perfmon.Put(GSPerfMon::TextureUploads, 1);
 
-	// The easy solution without PBO
-#if 0
-	// Likely a bad texture
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch >> m_int_shift);
-
-	glTextureSubImage2D(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, data);
-
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0); // Restore default behavior
-#endif
-
-	// The complex solution with PBO
-#if 1
-	char* src = (char*)data;
-	char* map = PboPool::Map(map_size);
-
-	// PERF: slow path of the texture upload. Dunno if we could do better maybe check if TC can keep row_byte == pitch
-	// Note: row_byte != pitch
-	for (int h = 0; h < r.height(); h++)
+	// Don't use PBOs for huge texture uploads, let the driver sort it out.
+	// Otherwise we'll just be syncing, or worse, crashing because the PBO routine above isn't great.
+	if (map_size >= PboPool::m_seg_size)
 	{
-		memcpy(map, src, row_byte);
-		map += row_byte;
-		src += pitch;
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch >> m_int_shift);
+		glTextureSubImage2D(m_texture_id, layer, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, data);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0); // Restore default behavior
 	}
+	else
+	{
+		// The complex solution with PBO
+		char* src = (char*)data;
+		char* map = PboPool::Map(map_size);
 
-	PboPool::Unmap();
+		// PERF: slow path of the texture upload. Dunno if we could do better maybe check if TC can keep row_byte == pitch
+		// Note: row_byte != pitch
+		for (int h = 0; h < r.height(); h++)
+		{
+			memcpy(map, src, row_byte);
+			map += row_byte;
+			src += pitch;
+		}
 
-	glTextureSubImage2D(m_texture_id, layer, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, (const void*)PboPool::Offset());
+		PboPool::Unmap();
 
-	// FIXME OGL4: investigate, only 1 unpack buffer always bound
-	PboPool::UnbindPbo();
+		glTextureSubImage2D(m_texture_id, layer, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, (const void*)PboPool::Offset());
 
-	PboPool::EndTransfer();
-#endif
+		// FIXME OGL4: investigate, only 1 unpack buffer always bound
+		PboPool::UnbindPbo();
+
+		PboPool::EndTransfer();
+	}
 
 	m_needs_mipmaps_generated = true;
 
@@ -451,12 +450,14 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 
 	if (m_type == Type::Texture || m_type == Type::RenderTarget)
 	{
+		const u32 map_size = r.height() * row_byte;
+		if (map_size > PboPool::m_seg_size)
+			return false;
+
 		GL_PUSH_("Upload Texture %d", m_texture_id); // POP is in Unmap
 		g_perfmon.Put(GSPerfMon::TextureUploads, 1);
 
 		m_clean = false;
-
-		u32 map_size = r.height() * row_byte;
 
 		m.bits = (u8*)PboPool::Map(map_size);
 
