@@ -249,10 +249,10 @@ private:
 	{
 		std::string vs;
 		GL::Program ps[static_cast<int>(ShaderConvert::Count)]; // program object
-		GLuint ln; // sampler object
-		GLuint pt; // sampler object
-		GSDepthStencilOGL* dss;
-		GSDepthStencilOGL* dss_write;
+		GLuint ln = 0; // sampler object
+		GLuint pt = 0; // sampler object
+		GSDepthStencilOGL* dss = nullptr;
+		GSDepthStencilOGL* dss_write = nullptr;
 	} m_convert;
 
 	struct
@@ -269,8 +269,8 @@ private:
 
 	struct
 	{
-		GSDepthStencilOGL* dss;
-		GSTexture* t;
+		GSDepthStencilOGL* dss = nullptr;
+		GSTexture* t = nullptr;
 	} m_date;
 
 	struct
@@ -280,14 +280,14 @@ private:
 
 	struct
 	{
-		u16 last_query;
-		GLuint timer_query[1 << 16];
+		u16 last_query = 0;
+		GLuint timer_query[1 << 16] = {};
 
 		GLuint timer() { return timer_query[last_query]; }
 	} m_profiler;
 
 	GLuint m_ps_ss[1 << 8];
-	GSDepthStencilOGL* m_om_dss[1 << 5];
+	GSDepthStencilOGL* m_om_dss[1 << 5] = {};
 	std::unordered_map<ProgramSelector, GL::Program, ProgramSelectorHash> m_programs;
 	GL::ShaderCache m_shader_cache;
 
