@@ -59,7 +59,7 @@ bool GSTexture::Save(const std::string& fn)
 	GSMap map;
 	if (!g_gs_device->DownloadTexture(this, GSVector4i(0, 0, m_size.x, m_size.y), map))
 	{
-		Console.Error("(GSTextureVK) DownloadTexture() failed.");
+		Console.Error("(GSTexture) DownloadTexture() failed.");
 		return false;
 	}
 
@@ -86,6 +86,47 @@ void GSTexture::Swap(GSTexture* tex)
 	std::swap(LikelyOffset, tex->LikelyOffset);
 	std::swap(OffsetHack_modx, tex->OffsetHack_modx);
 	std::swap(OffsetHack_mody, tex->OffsetHack_mody);
+}
+
+u32 GSTexture::GetCompressedBytesPerBlock() const
+{
+	static constexpr u32 bytes_per_block[] = {
+		1, // Invalid
+		4, // Color/RGBA8
+		16, // FloatColor/RGBA32F
+		32, // DepthStencil
+		1, // UNorm8/R8
+		2, // UInt16/R16UI
+		4, // UInt32/R32UI
+		4, // Int32/R32I
+		8, // BC1 - 16 pixels in 64 bits
+		16, // BC2 - 16 pixels in 128 bits
+		16, // BC3 - 16 pixels in 128 bits
+		16, // BC4 - 16 pixels in 128 bits
+	};
+
+	return bytes_per_block[static_cast<u32>(m_format)];
+}
+
+u32 GSTexture::GetCompressedBlockSize() const
+{
+	if (m_format >= Format::BC1 && m_format <= Format::BC7)
+		return 4;
+	else
+		return 1;
+}
+
+u32 GSTexture::CalcUploadRowLengthFromPitch(u32 pitch) const
+{
+	const u32 block_size = GetCompressedBlockSize();
+	const u32 bytes_per_block = GetCompressedBytesPerBlock();
+	return ((pitch + (bytes_per_block - 1)) / bytes_per_block) * block_size;
+}
+
+u32 GSTexture::CalcUploadSize(u32 height, u32 pitch) const
+{
+	const u32 block_size = GetCompressedBlockSize();
+	return pitch * ((static_cast<u32>(height) + (block_size - 1)) / block_size);
 }
 
 void GSTexture::GenerateMipmapsIfNeeded()

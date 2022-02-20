@@ -280,6 +280,8 @@ bool GSDeviceVK::CheckFeatures()
 		}
 	}
 
+	m_features.dxt_textures = g_vulkan_context->GetDeviceFeatures().textureCompressionBC;
+	m_features.bptc_textures = g_vulkan_context->GetDeviceFeatures().textureCompressionBC;
 	return true;
 }
 

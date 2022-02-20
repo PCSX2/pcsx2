@@ -240,6 +240,34 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 			m_int_shift     = 3; // 4 bytes for depth + 4 bytes for stencil by texels
 			break;
 
+		case Format::BC1:
+			gl_fmt          = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+			m_int_format    = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+			m_int_type      = GL_UNSIGNED_BYTE;
+			m_int_shift     = 1;
+			break;
+
+		case Format::BC2:
+			gl_fmt          = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+			m_int_format    = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+			m_int_type      = GL_UNSIGNED_BYTE;
+			m_int_shift     = 1;
+			break;
+
+		case Format::BC3:
+			gl_fmt          = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+			m_int_format    = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+			m_int_type      = GL_UNSIGNED_BYTE;
+			m_int_shift     = 1;
+			break;
+
+		case Format::BC7:
+			gl_fmt          = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+			m_int_format    = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+			m_int_type      = GL_UNSIGNED_BYTE;
+			m_int_shift     = 1;
+			break;
+
 		case Format::Invalid:
 			m_int_format    = 0;
 			m_int_type      = 0;
@@ -283,6 +311,14 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 
 		case Format::DepthStencil:
 			m_sparse &= GLLoader::found_compatible_sparse_depth;
+			SetGpuPageSize(GSVector2i(127, 127));
+			break;
+
+		case GSTexture::Format::BC1:
+		case GSTexture::Format::BC2:
+		case GSTexture::Format::BC3:
+		case GSTexture::Format::BC7:
+			m_sparse = false;
 			SetGpuPageSize(GSVector2i(127, 127));
 			break;
 
@@ -399,7 +435,15 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int 
 
 	// Don't use PBOs for huge texture uploads, let the driver sort it out.
 	// Otherwise we'll just be syncing, or worse, crashing because the PBO routine above isn't great.
-	if (map_size >= PboPool::m_seg_size)
+	if (IsCompressedFormat())
+	{
+		const u32 row_length = CalcUploadRowLengthFromPitch(pitch);
+		const u32 upload_size = CalcUploadSize(r.height(), pitch);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, row_length);
+		glCompressedTextureSubImage2D(m_texture_id, layer, r.x, r.y, r.width(), r.height(), m_int_format, upload_size, data);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+	}
+	else if (map_size >= PboPool::m_seg_size)
 	{
 		glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch >> m_int_shift);
 		glTextureSubImage2D(m_texture_id, layer, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, data);
@@ -437,7 +481,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int 
 
 bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 {
-	if (layer >= m_mipmap_levels)
+	if (layer >= m_mipmap_levels || IsCompressedFormat())
 		return false;
 
 	GSVector4i r = _r ? *_r : GSVector4i(0, 0, m_size.x, m_size.y);

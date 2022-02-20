@@ -28,6 +28,15 @@
 #include <VersionHelpers.h>
 #include <d3dcompiler.h>
 
+static bool SupportsTextureFormat(ID3D11Device* dev, DXGI_FORMAT format)
+{
+	UINT support;
+	if (FAILED(dev->CheckFormatSupport(DXGI_FORMAT_BC1_UNORM, &support)))
+		return false;
+
+	return (support & D3D11_FORMAT_SUPPORT_TEXTURE2D) != 0;
+}
+
 GSDevice11::GSDevice11()
 {
 	memset(&m_state, 0, sizeof(m_state));
@@ -42,6 +51,8 @@ GSDevice11::GSDevice11()
 	m_features.point_expand = false;
 	m_features.line_expand = false;
 	m_features.prefer_new_textures = false;
+	m_features.dxt_textures = false;
+	m_features.bptc_textures = false;
 }
 
 bool GSDevice11::Create(HostDisplay* display)
@@ -112,6 +123,8 @@ bool GSDevice11::Create(HostDisplay* display)
 		// Broken point sampler should be enabled only on AMD.
 		m_features.broken_point_sampler = amd_vendor;
 	}
+
+	SetFeatures();
 
 	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/dx11/tfx.fx");
 	if (!shader.has_value())
@@ -324,6 +337,16 @@ bool GSDevice11::Create(HostDisplay* display)
 	return true;
 }
 
+void GSDevice11::SetFeatures()
+{
+	// Check all three formats, since the feature means any can be used.
+	m_features.dxt_textures = SupportsTextureFormat(m_dev.get(), DXGI_FORMAT_BC1_UNORM) &&
+							  SupportsTextureFormat(m_dev.get(), DXGI_FORMAT_BC2_UNORM) &&
+							  SupportsTextureFormat(m_dev.get(), DXGI_FORMAT_BC3_UNORM);
+
+	m_features.bptc_textures = SupportsTextureFormat(m_dev.get(), DXGI_FORMAT_BC7_UNORM);
+}
+
 void GSDevice11::ResetAPIState()
 {
 	// Clear out the GS, since the imgui draw doesn't get rid of it.
@@ -433,6 +456,10 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 		case GSTexture::Format::UInt16:       dxformat = DXGI_FORMAT_R16_UINT;           break;
 		case GSTexture::Format::UInt32:       dxformat = DXGI_FORMAT_R32_UINT;           break;
 		case GSTexture::Format::Int32:        dxformat = DXGI_FORMAT_R32_SINT;           break;
+		case GSTexture::Format::BC1:          dxformat = DXGI_FORMAT_BC1_UNORM;          break;
+		case GSTexture::Format::BC2:          dxformat = DXGI_FORMAT_BC2_UNORM;          break;
+		case GSTexture::Format::BC3:          dxformat = DXGI_FORMAT_BC3_UNORM;          break;
+		case GSTexture::Format::BC7:          dxformat = DXGI_FORMAT_BC7_UNORM;          break;
 		case GSTexture::Format::Invalid:
 			ASSERT(0);
 			dxformat = DXGI_FORMAT_UNKNOWN;

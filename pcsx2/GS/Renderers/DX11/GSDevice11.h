@@ -117,6 +117,8 @@ private:
 	float m_hack_topleft_offset;
 	int m_d3d_texsize;
 
+	void SetFeatures();
+
 	GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) final;
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) final;

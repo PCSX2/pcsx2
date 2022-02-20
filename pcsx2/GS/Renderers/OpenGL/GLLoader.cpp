@@ -83,6 +83,12 @@ namespace Emulate_DSA
 		glTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, type, pixels);
 	}
 
+	void APIENTRY CompressedTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void* data)
+	{
+		BindTextureUnit(7, texture);
+		glCompressedTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, imageSize, data);
+	}
+
 	void APIENTRY GetTexureImage(GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void* pixels)
 	{
 		BindTextureUnit(7, texture);
@@ -121,6 +127,7 @@ namespace Emulate_DSA
 		glCreateTextures = CreateTexture;
 		glTextureStorage2D = TextureStorage;
 		glTextureSubImage2D = TextureSubImage;
+		glCompressedTextureSubImage2D = CompressedTextureSubImage;
 		glGetTextureImage = GetTexureImage;
 		glTextureParameteri = TextureParameteri;
 

@@ -47,6 +47,10 @@ public:
 		UInt16,       ///< UInt16 texture for reading back 16-bit depth
 		UInt32,       ///< UInt32 texture for reading back 24 and 32-bit depth
 		Int32,        ///< Int32 texture for date emulation
+		BC1,          ///< BC1, aka DXT1 compressed texture for replacements
+		BC2,          ///< BC2, aka DXT2/3 compressed texture for replacements
+		BC3,          ///< BC3, aka DXT4/5 compressed texture for replacements
+		BC7,          ///< BC7, aka BPTC compressed texture for replacements
 	};
 
 	enum class State : u8
@@ -100,6 +104,12 @@ public:
 
 	Type GetType() const { return m_type; }
 	Format GetFormat() const { return m_format; }
+	bool IsCompressedFormat() const { return (m_format >= Format::BC1 && m_format <= Format::BC7); }
+
+	u32 GetCompressedBytesPerBlock() const;
+	u32 GetCompressedBlockSize() const;
+	u32 CalcUploadRowLengthFromPitch(u32 pitch) const;
+	u32 CalcUploadSize(u32 height, u32 pitch) const;
 
 	bool IsRenderTargetOrDepthStencil() const
 	{

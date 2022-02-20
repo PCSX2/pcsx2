@@ -232,6 +232,8 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 	m_features.texture_barrier = true;
 	m_features.provoking_vertex_last = true;
 	m_features.prefer_new_textures = false;
+	m_features.dxt_textures = GL_EXT_texture_compression_s3tc;
+	m_features.bptc_textures = GL_VERSION_4_2 || GL_ARB_texture_compression_bptc || GL_EXT_texture_compression_bptc;
 
 	GLint point_range[2] = {};
 	GLint line_range[2] = {};
