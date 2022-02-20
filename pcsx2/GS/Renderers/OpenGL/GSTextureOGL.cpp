@@ -625,6 +625,24 @@ bool GSTextureOGL::Save(const std::string& fn)
 	return GSPng::Save(fmt, fn, image.get(), m_committed_size.x, m_committed_size.y, pitch, compression);
 }
 
+void GSTextureOGL::Swap(GSTexture* tex)
+{
+	GSTexture::Swap(tex);
+
+	std::swap(m_texture_id, static_cast<GSTextureOGL*>(tex)->m_texture_id);
+	std::swap(m_fbo_read, static_cast<GSTextureOGL*>(tex)->m_fbo_read);
+	std::swap(m_clean, static_cast<GSTextureOGL*>(tex)->m_clean);
+	std::swap(m_r_x, static_cast<GSTextureOGL*>(tex)->m_r_x);
+	std::swap(m_r_x, static_cast<GSTextureOGL*>(tex)->m_r_y);
+	std::swap(m_r_w, static_cast<GSTextureOGL*>(tex)->m_r_w);
+	std::swap(m_r_h, static_cast<GSTextureOGL*>(tex)->m_r_h);
+	std::swap(m_layer, static_cast<GSTextureOGL*>(tex)->m_layer);
+	std::swap(m_int_format, static_cast<GSTextureOGL*>(tex)->m_int_format);
+	std::swap(m_int_type, static_cast<GSTextureOGL*>(tex)->m_int_type);
+	std::swap(m_int_shift, static_cast<GSTextureOGL*>(tex)->m_int_shift);
+	std::swap(m_mem_usage, static_cast<GSTextureOGL*>(tex)->m_mem_usage);
+}
+
 u32 GSTextureOGL::GetMemUsage()
 {
 	return m_mem_usage;

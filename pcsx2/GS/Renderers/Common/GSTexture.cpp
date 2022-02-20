@@ -71,6 +71,23 @@ bool GSTexture::Save(const std::string& fn)
 	return success;
 }
 
+void GSTexture::Swap(GSTexture* tex)
+{
+	std::swap(m_scale, tex->m_scale);
+	std::swap(m_size, tex->m_size);
+	std::swap(m_committed_size, tex->m_committed_size);
+	std::swap(m_mipmap_levels, tex->m_mipmap_levels);
+	std::swap(m_type, tex->m_type);
+	std::swap(m_format, tex->m_format);
+	std::swap(m_state, tex->m_state);
+	std::swap(m_sparse, tex->m_sparse);
+	std::swap(m_needs_mipmaps_generated, tex->m_needs_mipmaps_generated);
+	std::swap(last_frame_used, tex->last_frame_used);
+	std::swap(LikelyOffset, tex->LikelyOffset);
+	std::swap(OffsetHack_modx, tex->OffsetHack_modx);
+	std::swap(OffsetHack_mody, tex->OffsetHack_mody);
+}
+
 void GSTexture::GenerateMipmapsIfNeeded()
 {
 	if (!m_needs_mipmaps_generated || m_mipmap_levels <= 1)
