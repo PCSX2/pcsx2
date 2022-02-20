@@ -68,6 +68,7 @@ public:
 	void Unmap() final;
 	void GenerateMipmap() final;
 	bool Save(const std::string& fn) final;
+	void Swap(GSTexture* tex) final;
 
 	GSMap Read(const GSVector4i& r, AlignedBuffer<u8, 32>& buffer);
 	bool IsDss() { return (m_type == Type::DepthStencil || m_type == Type::SparseDepthStencil); }

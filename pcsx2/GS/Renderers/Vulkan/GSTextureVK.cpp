@@ -361,6 +361,17 @@ void GSTextureVK::GenerateMipmap()
 	}
 }
 
+void GSTextureVK::Swap(GSTexture* tex)
+{
+	GSTexture::Swap(tex);
+	std::swap(m_texture, static_cast<GSTextureVK*>(tex)->m_texture);
+	std::swap(m_use_fence_counter, static_cast<GSTextureVK*>(tex)->m_use_fence_counter);
+	std::swap(m_clear_value, static_cast<GSTextureVK*>(tex)->m_clear_value);
+	std::swap(m_map_area, static_cast<GSTextureVK*>(tex)->m_map_area);
+	std::swap(m_map_level, static_cast<GSTextureVK*>(tex)->m_map_level);
+	std::swap(m_framebuffers, static_cast<GSTextureVK*>(tex)->m_framebuffers);
+}
+
 void GSTextureVK::TransitionToLayout(VkImageLayout layout)
 {
 	m_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), layout);

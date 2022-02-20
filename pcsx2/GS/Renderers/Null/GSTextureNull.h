@@ -37,5 +37,6 @@ public:
 	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) override { return false; }
 	void Unmap() override {}
 	bool Save(const std::string& fn) override { return false; }
+	void Swap(GSTexture* tex) override;
 	void* GetNativeHandle() const override;
 };
