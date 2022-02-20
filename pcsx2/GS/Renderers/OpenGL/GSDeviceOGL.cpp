@@ -51,18 +51,6 @@ GSDeviceOGL::GSDeviceOGL()
 	, m_fbo_read(0)
 	, m_palette_ss(0)
 {
-	memset(&m_merge_obj, 0, sizeof(m_merge_obj));
-	memset(&m_interlace, 0, sizeof(m_interlace));
-	memset(&m_convert, 0, sizeof(m_convert));
-	memset(&m_fxaa, 0, sizeof(m_fxaa));
-#ifndef PCSX2_CORE
-	memset(&m_shaderfx, 0, sizeof(m_shaderfx));
-#endif
-	memset(&m_date, 0, sizeof(m_date));
-	memset(&m_shadeboost, 0, sizeof(m_shadeboost));
-	memset(&m_om_dss, 0, sizeof(m_om_dss));
-	memset(&m_profiler, 0, sizeof(m_profiler));
-
 	// Reset the debug file
 #ifdef ENABLE_OGL_DEBUG
 	m_debug_gl_file = fopen("GS_opengl_debug.txt", "w");
