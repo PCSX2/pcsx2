@@ -90,7 +90,7 @@ void ps_filter_transparency()
 // Need to be careful with precision here, it can break games like Spider-Man 3 and Dogs Life
 void ps_convert_rgba8_16bits()
 {
-	highp uvec4 i = uvec4(sample_c(v_tex) * vec4(255.5f, 255.5f, 255.5f, 255.5f));
+	uvec4 i = uvec4(sample_c(v_tex) * vec4(255.5f, 255.5f, 255.5f, 255.5f));
 
 	o_col0 = ((i.x & 0x00F8u) >> 3) | ((i.y & 0x00F8u) << 2) | ((i.z & 0x00f8u) << 7) | ((i.w & 0x80u) << 8);
 }

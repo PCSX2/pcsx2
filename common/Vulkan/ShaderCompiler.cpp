@@ -107,13 +107,11 @@ namespace Vulkan::ShaderCompiler
 		glslang::GlslangToSpv(*intermediate, out_code, &logger);
 
 		// Write out messages
-		// Temporary: skip if it contains "Warning, version 450 is not yet complete; most version-specific
-		// features are present, but some are missing."
-		if (std::strlen(shader->getInfoLog()) > 108)
+		if (std::strlen(shader->getInfoLog()) > 0)
 			Console.Warning("Shader info log: %s", shader->getInfoLog());
 		if (std::strlen(shader->getInfoDebugLog()) > 0)
 			Console.Warning("Shader debug info log: %s", shader->getInfoDebugLog());
-		if (std::strlen(program->getInfoLog()) > 25)
+		if (std::strlen(program->getInfoLog()) > 0)
 			Console.Warning("Program info log: %s", program->getInfoLog());
 		if (std::strlen(program->getInfoDebugLog()) > 0)
 			Console.Warning("Program debug info log: %s", program->getInfoDebugLog());
