@@ -1306,8 +1306,9 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	{
 		// It is way too complex to emulate texture shuffle with DATE. So just use
 		// the slow but accurate algo
+		// No overlap should be triggered on gl/vk only as they support DATE_BARRIER.
 		const bool fbmask = (m_context->FRAME.FBMSK & 0x80000000);
-		const bool no_overlap = (m_prim_overlap == PRIM_OVERLAP_NO);
+		const bool no_overlap = (g_gs_device->Features().texture_barrier) && (m_prim_overlap == PRIM_OVERLAP_NO);
 		if (fbmask || no_overlap || m_texture_shuffle)
 		{
 			GL_PERF("DATE: Accurate with %s", m_texture_shuffle ? "texture shuffle" : no_overlap ? "no overlap" : "FBMASK");
