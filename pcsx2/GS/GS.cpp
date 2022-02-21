@@ -679,14 +679,29 @@ void GSgetStats(std::string& info)
 	}
 	else
 	{
-		info = format("%s HW | %d P | %d D | %d DC | %d RB | %d TC | %d TU",
-			api_name,
-			(int)pm.Get(GSPerfMon::Prim),
-			(int)pm.Get(GSPerfMon::Draw),
-			(int)std::ceil(pm.Get(GSPerfMon::DrawCalls)),
-			(int)std::ceil(pm.Get(GSPerfMon::Readbacks)),
-			(int)std::ceil(pm.Get(GSPerfMon::TextureCopies)),
-			(int)std::ceil(pm.Get(GSPerfMon::TextureUploads)));
+		if (GSConfig.TexturePreloading == TexturePreloadingLevel::Full)
+		{
+			info = format("%s HW | HC: %d MB | %d P | %d D | %d DC | %d RB | %d TC | %d TU",
+				api_name,
+				(int)std::ceil(static_cast<GSRendererHW*>(s_gs.get())->GetTextureCache()->GetHashCacheMemoryUsage() / 1048576.0f),
+				(int)pm.Get(GSPerfMon::Prim),
+				(int)pm.Get(GSPerfMon::Draw),
+				(int)std::ceil(pm.Get(GSPerfMon::DrawCalls)),
+				(int)std::ceil(pm.Get(GSPerfMon::Readbacks)),
+				(int)std::ceil(pm.Get(GSPerfMon::TextureCopies)),
+				(int)std::ceil(pm.Get(GSPerfMon::TextureUploads)));
+		}
+		else
+		{
+			info = format("%s HW | %d P | %d D | %d DC | %d RB | %d TC | %d TU",
+				api_name,
+				(int)pm.Get(GSPerfMon::Prim),
+				(int)pm.Get(GSPerfMon::Draw),
+				(int)std::ceil(pm.Get(GSPerfMon::DrawCalls)),
+				(int)std::ceil(pm.Get(GSPerfMon::Readbacks)),
+				(int)std::ceil(pm.Get(GSPerfMon::TextureCopies)),
+				(int)std::ceil(pm.Get(GSPerfMon::TextureUploads)));
+		}
 	}
 }
 
@@ -798,6 +813,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 
 	// reload texture cache when trilinear filtering or mipmap options change
 	if (GSConfig.HWMipmap != old_config.HWMipmap ||
+		GSConfig.TexturePreloading != old_config.TexturePreloading ||
 		GSConfig.UserHacks_TriFilter != old_config.UserHacks_TriFilter ||
 		GSConfig.GPUPaletteConversion != old_config.GPUPaletteConversion)
 	{
@@ -1208,6 +1224,10 @@ void GSApp::Init()
 	m_gs_trifilter.push_back(GSSetting(static_cast<u32>(TriFiltering::PS2), "Trilinear", ""));
 	m_gs_trifilter.push_back(GSSetting(static_cast<u32>(TriFiltering::Forced), "Trilinear", "Ultra/Slow"));
 
+	m_gs_texture_preloading.push_back(GSSetting(static_cast<u32>(TexturePreloadingLevel::Off), "None", "Default"));
+	m_gs_texture_preloading.push_back(GSSetting(static_cast<u32>(TexturePreloadingLevel::Partial), "Partial", ""));
+	m_gs_texture_preloading.push_back(GSSetting(static_cast<u32>(TexturePreloadingLevel::Full), "Full", "Hash Cache"));
+
 	m_gs_generic_list.push_back(GSSetting(-1, "Automatic", "Default"));
 	m_gs_generic_list.push_back(GSSetting(0, "Force-Disabled", ""));
 	m_gs_generic_list.push_back(GSSetting(1, "Force-Enabled", ""));
@@ -1321,7 +1341,6 @@ void GSApp::Init()
 	m_default_configuration["paltex"]                                     = "0";
 	m_default_configuration["png_compression_level"]                      = std::to_string(Z_BEST_SPEED);
 	m_default_configuration["preload_frame_with_gs_data"]                 = "0";
-	m_default_configuration["preload_texture"]                            = "0";
 	m_default_configuration["Renderer"]                                   = std::to_string(static_cast<int>(GSRendererType::Auto));
 	m_default_configuration["resx"]                                       = "1024";
 	m_default_configuration["resy"]                                       = "1024";
@@ -1339,6 +1358,7 @@ void GSApp::Init()
 	m_default_configuration["shaderfx_conf"]                              = "shaders/GS_FX_Settings.ini";
 	m_default_configuration["shaderfx_glsl"]                              = "shaders/GS.fx";
 	m_default_configuration["skip_duplicate_frames"]                      = "0";
+	m_default_configuration["texture_preloading"]                         = "0";
 	m_default_configuration["ThreadedPresentation"]                       = "0";
 	m_default_configuration["throttle_present_rate"]                      = "0";
 	m_default_configuration["TVShader"]                                   = "0";

@@ -133,7 +133,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.accurateDATE, "EmuCore/GS", "accurate_date", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.conservativeBufferAllocation, "EmuCore/GS", "conservative_framebuffer", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuPaletteConversion, "EmuCore/GS", "paltex", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preloadTexture, "EmuCore/GS", "preload_texture", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.texturePreloading, "EmuCore/GS", "texture_preloading",
+		static_cast<int>(TexturePreloadingLevel::Off));
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Renderer Fixes

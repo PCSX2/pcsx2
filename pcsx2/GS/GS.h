@@ -133,6 +133,7 @@ public:
 	std::vector<GSSetting> m_gs_dithering;
 	std::vector<GSSetting> m_gs_bifilter;
 	std::vector<GSSetting> m_gs_trifilter;
+	std::vector<GSSetting> m_gs_texture_preloading;
 	std::vector<GSSetting> m_gs_hack;
 	std::vector<GSSetting> m_gs_generic_list;
 	std::vector<GSSetting> m_gs_offset_hack;

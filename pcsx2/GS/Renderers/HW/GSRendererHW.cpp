@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSRendererHW.h"
 #include "GS/GSGL.h"
+#include "Host.h"
 
 GSRendererHW::GSRendererHW()
 	: GSRenderer()
@@ -204,8 +205,9 @@ void GSRendererHW::SetGameCRC(u32 crc, int options)
 	m_hacks.SetGameCRC(m_game);
 
 	// Code for Automatic Mipmapping. Relies on game CRCs.
-	m_mipmap = (GSConfig.HWMipmap >= HWMipmapLevel::Basic);
-	if (GSConfig.HWMipmap == HWMipmapLevel::Automatic)
+	m_hw_mipmap = GSConfig.HWMipmap;
+	m_mipmap = (m_hw_mipmap >= HWMipmapLevel::Basic);
+	if (m_hw_mipmap == HWMipmapLevel::Automatic)
 	{
 		switch (CRC::Lookup(crc).title)
 		{
@@ -311,6 +313,15 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 	GSRenderer::VSync(field, registers_written);
 
 	m_tc->IncAge();
+
+	if (m_tc->GetHashCacheMemoryUsage() > 1024 * 1024 * 1024)
+	{
+		Host::AddKeyedFormattedOSDMessage("HashCacheOverflow", 15.0f, "Hash cache has used %.2f MB of VRAM, disabling.",
+			static_cast<float>(m_tc->GetHashCacheMemoryUsage()) / 1048576.0f);
+		m_tc->RemoveAll();
+		g_gs_device->PurgePool();
+		GSConfig.TexturePreloading = TexturePreloadingLevel::Partial;
+	}
 
 	m_tc->PrintMemoryUsage();
 	g_gs_device->PrintMemoryUsage();
@@ -1320,6 +1331,7 @@ void GSRendererHW::Draw()
 	if (PRIM->TME)
 	{
 		GIFRegCLAMP MIP_CLAMP = context->CLAMP;
+		GSVector2i hash_lod_range(0, 0);
 		m_lod = GSVector2i(0, 0);
 
 		// Code from the SW renderer
@@ -1382,6 +1394,10 @@ void GSRendererHW::Draw()
 
 			TEX0 = GetTex0Layer(m_lod.x);
 
+			// upload the full chain (with offset) for the hash cache, in case some other texture uses more levels
+			// for basic mipmapping, we can get away with just doing the base image, since all the mips get generated anyway.
+			hash_lod_range = GSVector2i(m_lod.x, (m_hw_mipmap == HWMipmapLevel::Full) ? mxl : m_lod.x);
+
 			MIP_CLAMP.MINU >>= m_lod.x;
 			MIP_CLAMP.MINV >>= m_lod.x;
 			MIP_CLAMP.MAXU >>= m_lod.x;
@@ -1405,8 +1421,8 @@ void GSRendererHW::Draw()
 		TextureMinMaxResult tmm = GetTextureMinMax(TEX0, MIP_CLAMP, m_vt.IsLinear());
 
 		m_src = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, tmm.coverage) :
-			m_tc->LookupSource(TEX0, env.TEXA, tmm.coverage, m_hw_mipmap >= HWMipmapLevel::Basic ||
-				GSConfig.UserHacks_TriFilter == TriFiltering::Forced);
+			m_tc->LookupSource(TEX0, env.TEXA, tmm.coverage, (m_hw_mipmap >= HWMipmapLevel::Basic ||
+				GSConfig.UserHacks_TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr);
 
 		int tw = 1 << TEX0.TW;
 		int th = 1 << TEX0.TH;
@@ -1460,7 +1476,7 @@ void GSRendererHW::Draw()
 		}
 
 		// Round 2
-		if (IsMipMapActive() && m_hw_mipmap == HWMipmapLevel::Full && !tex_psm.depth)
+		if (IsMipMapActive() && m_hw_mipmap == HWMipmapLevel::Full && !tex_psm.depth && !m_src->m_from_hash_cache)
 		{
 			// Upload remaining texture layers
 			const GSVector4 tmin = m_vt.m_min.t;

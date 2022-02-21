@@ -17,6 +17,7 @@
 
 #include "GSTextureCache.h"
 #include "GS/Renderers/Common/GSFunctionMap.h"
+#include "GS/Renderers/Common/GSRenderer.h"
 #include "GS/GSState.h"
 
 class GSRendererHW : public GSRenderer
@@ -163,6 +164,8 @@ protected:
 public:
 	GSRendererHW();
 	virtual ~GSRendererHW() override;
+
+	__fi GSTextureCache* GetTextureCache() const { return m_tc; }
 
 	void Destroy() override;
 

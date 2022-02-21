@@ -217,7 +217,6 @@ protected:
 	bool IsOpaque();
 	bool IsMipMapDraw();
 	bool IsMipMapActive();
-	GIFRegTEX0 GetTex0Layer(u32 lod);
 
 public:
 	GIFPath m_path[4];
@@ -303,4 +302,5 @@ public:
 	void SetFrameSkip(int skip);
 
 	PRIM_OVERLAP PrimitiveOverlap();
+	GIFRegTEX0 GetTex0Layer(u32 lod);
 };

@@ -137,5 +137,5 @@ public:
 	float OffsetHack_mody;
 
 	// Typical size of a RGBA texture
-	virtual u32 GetMemUsage() { return m_size.x * m_size.y * 4; }
+	virtual u32 GetMemUsage() { return m_size.x * m_size.y * (m_format == Format::UNorm8 ? 1 : 4); }
 };
