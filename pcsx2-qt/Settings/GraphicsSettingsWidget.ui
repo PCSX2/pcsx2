@@ -777,7 +777,7 @@
         <widget class="QComboBox" name="roundSprite">
          <item>
           <property name="text">
-           <string>Off (Default</string>
+           <string>Off (Default)</string>
           </property>
          </item>
          <item>
