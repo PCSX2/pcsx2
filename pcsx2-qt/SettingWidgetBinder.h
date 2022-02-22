@@ -33,7 +33,7 @@
 
 #include "EmuThread.h"
 #include "QtHost.h"
-#include "SettingsDialog.h"
+#include "Settings/SettingsDialog.h"
 
 namespace SettingWidgetBinder
 {
@@ -621,7 +621,7 @@ namespace SettingWidgetBinder
 				Accessor::setNullableIntValue(widget, std::nullopt);
 			}
 
-			Accessor::connectValueChanged(widget, [sif, widget, section, key]() {
+			Accessor::connectValueChanged(widget, [&]() {
 				if (std::optional<int> new_value = Accessor::getNullableIntValue(widget); new_value.has_value())
 				{
 					const char* string_value = to_string_function(static_cast<DataType>(static_cast<UnderlyingType>(new_value.value())));
