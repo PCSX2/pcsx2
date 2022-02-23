@@ -428,7 +428,8 @@ struct Pcsx2Config
 					OsdShowFPS : 1,
 					OsdShowCPU : 1,
 					OsdShowResolution : 1,
-					OsdShowGSStats : 1;
+					OsdShowGSStats : 1,
+					OsdShowIndicators : 1;
 
 				bool
 					HWDisableReadbacks : 1,

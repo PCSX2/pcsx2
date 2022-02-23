@@ -919,6 +919,13 @@
            </property>
           </widget>
          </item>
+         <item row="3" column="0">
+          <widget class="QCheckBox" name="osdShowIndicators">
+           <property name="text">
+            <string>Show Indicators</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       </layout>

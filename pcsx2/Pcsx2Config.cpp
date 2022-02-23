@@ -289,6 +289,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	OsdShowCPU = false;
 	OsdShowResolution = false;
 	OsdShowGSStats = false;
+	OsdShowIndicators = true;
 
 	HWDisableReadbacks = false;
 	AccurateDATE = true;
@@ -483,6 +484,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBool(OsdShowCPU);
 	GSSettingBool(OsdShowResolution);
 	GSSettingBool(OsdShowGSStats);
+	GSSettingBool(OsdShowIndicators);
 
 	GSSettingBool(HWDisableReadbacks);
 	GSSettingBoolEx(AccurateDATE, "accurate_date");
