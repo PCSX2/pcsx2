@@ -519,6 +519,7 @@ OSDTab::OSDTab(wxWindow* parent)
 	m_ui.addCheckBox(log_grid, "Show CPU Usage", "OsdShowCPU", -1);
 	m_ui.addCheckBox(log_grid, "Show Resolution", "OsdShowResolution", -1);
 	m_ui.addCheckBox(log_grid, "Show Statistics", "OsdShowGSStats", -1);
+	m_ui.addCheckBox(log_grid, "Show Indicators", "OsdShowIndicators", -1);
 
 	log_box->Add(log_grid, wxSizerFlags().Expand());
 	tab_box->Add(log_box.outer, wxSizerFlags().Expand());
