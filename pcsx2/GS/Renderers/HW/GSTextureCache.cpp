@@ -754,6 +754,10 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 
 				if (!s->m_target)
 				{
+					found |= b;
+
+					// No point keeping invalidated sources around when the hash cache is active,
+					// we can just re-hash and create a new source from the cached texture.
 					if (s->m_from_hash_cache || (m_disable_partial_invalidation && s->m_repeating))
 					{
 						m_src.RemoveAt(s);
@@ -780,8 +784,6 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 						}
 
 						s->m_complete_layers = 0;
-
-						found |= b;
 					}
 				}
 				else
