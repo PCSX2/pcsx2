@@ -264,13 +264,20 @@ const char* Pcsx2Config::GSOptions::GetRendererName(GSRendererType type)
 {
 	switch (type)
 	{
-	case GSRendererType::Auto: return "Auto";
-	case GSRendererType::DX11: return "Direct3D 11";
-	case GSRendererType::OGL: return "OpenGL";
-	case GSRendererType::VK: return "Vulkan";
-	case GSRendererType::SW: return "Software";
-	case GSRendererType::Null: return "Null";
-	default: return "";
+		case GSRendererType::Auto:
+			return "Auto";
+		case GSRendererType::DX11:
+			return "Direct3D 11";
+		case GSRendererType::OGL:
+			return "OpenGL";
+		case GSRendererType::VK:
+			return "Vulkan";
+		case GSRendererType::SW:
+			return "Software";
+		case GSRendererType::Null:
+			return "Null";
+		default:
+			return "";
 	}
 }
 
@@ -342,56 +349,55 @@ bool Pcsx2Config::GSOptions::operator==(const GSOptions& right) const
 		OpEqu(AspectRatio) &&
 		OpEqu(FMVAspectRatioSwitch) &&
 
-		OptionsAreEqual(right)
-		);
+		OptionsAreEqual(right));
 }
 
 bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 {
 	return (
-		   OpEqu(bitset) &&
+		OpEqu(bitset) &&
 
-		   OpEqu(VsyncEnable) &&
+		OpEqu(VsyncEnable) &&
 
-		   OpEqu(InterlaceMode) &&
+		OpEqu(InterlaceMode) &&
 
-		   OpEqu(Zoom) &&
-		   OpEqu(StretchY) &&
-		   OpEqu(OffsetX) &&
-		   OpEqu(OffsetY) &&
-		   OpEqu(OsdScale) &&
+		OpEqu(Zoom) &&
+		OpEqu(StretchY) &&
+		OpEqu(OffsetX) &&
+		OpEqu(OffsetY) &&
+		OpEqu(OsdScale) &&
 
-		   OpEqu(Renderer) &&
-		   OpEqu(UpscaleMultiplier) &&
+		OpEqu(Renderer) &&
+		OpEqu(UpscaleMultiplier) &&
 
-		   OpEqu(HWMipmap) &&
-		   OpEqu(AccurateBlendingUnit) &&
-		   OpEqu(CRCHack) &&
-		   OpEqu(TextureFiltering) &&
-		   OpEqu(TexturePreloading) &&
-		   OpEqu(Dithering) &&
-		   OpEqu(MaxAnisotropy) &&
-		   OpEqu(SWExtraThreads) &&
-		   OpEqu(SWExtraThreadsHeight) &&
-		   OpEqu(TVShader) &&
-		   OpEqu(SkipDraw) &&
-		   OpEqu(SkipDrawOffset) &&
+		OpEqu(HWMipmap) &&
+		OpEqu(AccurateBlendingUnit) &&
+		OpEqu(CRCHack) &&
+		OpEqu(TextureFiltering) &&
+		OpEqu(TexturePreloading) &&
+		OpEqu(Dithering) &&
+		OpEqu(MaxAnisotropy) &&
+		OpEqu(SWExtraThreads) &&
+		OpEqu(SWExtraThreadsHeight) &&
+		OpEqu(TVShader) &&
+		OpEqu(SkipDraw) &&
+		OpEqu(SkipDrawOffset) &&
 
-		   OpEqu(UserHacks_HalfBottomOverride) &&
-		   OpEqu(UserHacks_HalfPixelOffset) &&
-		   OpEqu(UserHacks_RoundSprite) &&
-		   OpEqu(UserHacks_TCOffsetX) &&
-		   OpEqu(UserHacks_TCOffsetY) &&
-		   OpEqu(UserHacks_TriFilter) &&
+		OpEqu(UserHacks_HalfBottomOverride) &&
+		OpEqu(UserHacks_HalfPixelOffset) &&
+		OpEqu(UserHacks_RoundSprite) &&
+		OpEqu(UserHacks_TCOffsetX) &&
+		OpEqu(UserHacks_TCOffsetY) &&
+		OpEqu(UserHacks_TriFilter) &&
 
-		   OpEqu(ShadeBoost_Brightness) &&
-		   OpEqu(ShadeBoost_Contrast) &&
-		   OpEqu(ShadeBoost_Saturation) &&
-		   OpEqu(SaveN) &&
-		   OpEqu(SaveL) &&
-		   OpEqu(Adapter) &&
-		   OpEqu(ShaderFX_Conf) &&
-		   OpEqu(ShaderFX_GLSL));
+		OpEqu(ShadeBoost_Brightness) &&
+		OpEqu(ShadeBoost_Contrast) &&
+		OpEqu(ShadeBoost_Saturation) &&
+		OpEqu(SaveN) &&
+		OpEqu(SaveL) &&
+		OpEqu(Adapter) &&
+		OpEqu(ShaderFX_Conf) &&
+		OpEqu(ShaderFX_GLSL));
 }
 
 bool Pcsx2Config::GSOptions::operator!=(const GSOptions& right) const
@@ -401,13 +407,12 @@ bool Pcsx2Config::GSOptions::operator!=(const GSOptions& right) const
 
 bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) const
 {
-	return 
-		OpEqu(Renderer) &&
-		OpEqu(Adapter) &&
-		OpEqu(UseDebugDevice) &&
-		OpEqu(UseBlitSwapChain) &&
-		OpEqu(DisableShaderCache) &&
-		OpEqu(ThreadedPresentation);
+	return OpEqu(Renderer) &&
+		   OpEqu(Adapter) &&
+		   OpEqu(UseDebugDevice) &&
+		   OpEqu(UseBlitSwapChain) &&
+		   OpEqu(DisableShaderCache) &&
+		   OpEqu(ThreadedPresentation);
 }
 
 void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
