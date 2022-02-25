@@ -1266,6 +1266,15 @@ void GSRendererHW::Draw()
 		return;
 	}
 
+	// When the format is 24bit (Z or C), DATE ceases to function.
+	// It was believed that in 24bit mode all pixels pass because alpha doesn't exist
+	// however after testing this on a PS2 it turns out nothing passes, it ignores the draw.
+	if ((m_context->FRAME.PSM & 0xF) == PSM_PSMCT24 && m_context->TEST.DATE)
+	{
+		GL_CACHE("DATE on a 24bit format, Frame PSM %x", m_context->FRAME.PSM);
+		return;
+	}
+
 	// Fix TEX0 size
 	if (PRIM->TME && !IsMipMapActive())
 		m_context->ComputeFixedTEX0(m_vt.m_min.t.xyxy(m_vt.m_max.t));
@@ -1953,6 +1962,24 @@ void GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds)
 			}
 		}
 	}
+	// Striped double clear done by Powerdrome and Snoopy Vs Red Baron, it will clear in 32 pixel stripes half done by the Z and half done by the FRAME
+	else if (rt && !ds && m_context->FRAME.FBP == m_context->ZBUF.ZBP && (m_context->FRAME.PSM & 0x30) != (m_context->ZBUF.PSM & 0x30)
+			&& (m_context->FRAME.PSM & 0xF) == (m_context->ZBUF.PSM & 0xF) && (u32)(GSVector4i(m_vt.m_max.p).z) == 0)
+	{
+		const GSVertex* v = &m_vertex.buff[0];
+		const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
+		
+		// Z and color must be constant and the same
+		if (m_vt.m_eq.rgba != 0xFFFF || !m_vt.m_eq.z || v[1].XYZ.Z != v[1].RGBAQ.U32[0])
+			return;
+
+		// If both buffers are side by side we can expect a fast clear in on-going
+		const u32 color = v[1].RGBAQ.U32[0];
+		const GSVector4i commitRect = ComputeBoundingBox(rt->GetScale(), rt->GetSize());
+		rt->CommitRegion(GSVector2i(commitRect.z, commitRect.w));
+
+		g_gs_device->ClearRenderTarget(rt, color);
+	}
 }
 
 // Note: hack is safe, but it could impact the perf a little (normally games do only a couple of clear by frame)
@@ -1960,8 +1987,12 @@ void GSRendererHW::OI_GsMemClear()
 {
 	// Note gs mem clear must be tested before calling this function
 
+	// Striped double clear done by Powerdrome and Snoopy Vs Red Baron, it will clear in 32 pixel stripes half done by the Z and half done by the FRAME
+	const bool ZisFrame = m_context->FRAME.FBP == m_context->ZBUF.ZBP && (m_context->FRAME.PSM & 0x30) != (m_context->ZBUF.PSM & 0x30)
+							&& (m_context->FRAME.PSM & 0xF) == (m_context->ZBUF.PSM & 0xF) && (u32)(GSVector4i(m_vt.m_max.p).z) == 0;
+
 	// Limit it further to a full screen 0 write
-	if ((m_vertex.next == 2) && m_vt.m_min.c.eq(GSVector4i(0)))
+	if (((m_vertex.next == 2) || ZisFrame) && m_vt.m_min.c.eq(GSVector4i(0)))
 	{
 		const GSOffset& off = m_context->offset.fb;
 		const GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
@@ -2007,11 +2038,11 @@ void GSRendererHW::OI_GsMemClear()
 			; // Hack is used for FMV which are likely 24/32 bits. Let's keep the for reference
 #if 0
 			// Based on WritePixel16
-			for(int y = r.top; y < r.bottom; y++)
+			for (int y = r.top; y < r.bottom; y++)
 			{
 				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle16).paMulti(m_mem.m_vm16, 0, y);
 
-				for(int x = r.left; x < r.right; x++)
+				for (int x = r.left; x < r.right; x++)
 				{
 					*pa.value(x) = 0; // Here the constant color
 				}
