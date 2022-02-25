@@ -964,6 +964,15 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	u32 fm = context->FRAME.FBMSK;
 	u32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
 
+	// When the format is 24bit (Z or C), DATE ceases to function.
+	// It was believed that in 24bit mode all pixels pass because alpha doesn't exist
+	// however after testing this on a PS2 it turns out nothing passes, it ignores the draw.
+	if ((m_context->FRAME.PSM & 0xF) == PSM_PSMCT24 && m_context->TEST.DATE)
+	{
+		//DevCon.Warning("DATE on a 24bit format, Frame PSM %x", m_context->FRAME.PSM);
+		return false;
+	}
+
 	if (context->TEST.ZTE && context->TEST.ZTST == ZTST_NEVER)
 	{
 		fm = 0xffffffff;

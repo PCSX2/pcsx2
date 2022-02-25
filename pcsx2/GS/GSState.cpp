@@ -1230,18 +1230,28 @@ void GSState::GIFRegHandlerFRAME(const GIFReg* RESTRICT r)
 {
 	GL_REG("FRAME_%d = 0x%x_%x", i, r->U32[1], r->U32[0]);
 
-	if (PRIM->CTXT == i && r->FRAME != m_env.CTXT[i].FRAME)
+	GIFRegFRAME NewFrame = r->FRAME;
+	// FBW is clamped between 1 and 32, however this is wrong, FBW of 0 *should* work and does on Dobiestation
+	// However there is some issues so even software mode is incorrect on PCSX2, but this works better..
+	NewFrame.FBW = std::clamp(NewFrame.FBW, 1U, 32U);
+
+	if (PRIM->CTXT == i && NewFrame != m_env.CTXT[i].FRAME)
 		Flush();
 
-	if ((m_env.CTXT[i].FRAME.U32[0] ^ r->FRAME.U32[0]) & 0x3f3f01ff) // FBP FBW PSM
+	if ((NewFrame.PSM & 0x30) == 0x30)
+		m_env.CTXT[i].ZBUF.PSM &= ~0x30;
+	else
+		m_env.CTXT[i].ZBUF.PSM |= 0x30;
+
+	if ((m_env.CTXT[i].FRAME.U32[0] ^ NewFrame.U32[0]) & 0x3f3f01ff) // FBP FBW PSM
 	{
-		m_env.CTXT[i].offset.fb = m_mem.GetOffset(r->FRAME.Block(), r->FRAME.FBW, r->FRAME.PSM);
-		m_env.CTXT[i].offset.zb = m_mem.GetOffset(m_env.CTXT[i].ZBUF.Block(), r->FRAME.FBW, m_env.CTXT[i].ZBUF.PSM);
-		m_env.CTXT[i].offset.fzb = m_mem.GetPixelOffset(r->FRAME, m_env.CTXT[i].ZBUF);
-		m_env.CTXT[i].offset.fzb4 = m_mem.GetPixelOffset4(r->FRAME, m_env.CTXT[i].ZBUF);
+		m_env.CTXT[i].offset.fb = m_mem.GetOffset(NewFrame.Block(), NewFrame.FBW, NewFrame.PSM);
+		m_env.CTXT[i].offset.zb = m_mem.GetOffset(m_env.CTXT[i].ZBUF.Block(), NewFrame.FBW, m_env.CTXT[i].ZBUF.PSM);
+		m_env.CTXT[i].offset.fzb = m_mem.GetPixelOffset(NewFrame, m_env.CTXT[i].ZBUF);
+		m_env.CTXT[i].offset.fzb4 = m_mem.GetPixelOffset4(NewFrame, m_env.CTXT[i].ZBUF);
 	}
 
-	m_env.CTXT[i].FRAME = (GSVector4i)r->FRAME;
+	m_env.CTXT[i].FRAME = (GSVector4i)NewFrame;
 
 	switch (m_env.CTXT[i].FRAME.PSM)
 	{
@@ -1273,11 +1283,16 @@ void GSState::GIFRegHandlerZBUF(const GIFReg* RESTRICT r)
 
 	GIFRegZBUF ZBUF = r->ZBUF;
 
-	// TODO: I tested this and I believe it is possible to set zbuf to a color format
-	// Powerdrome relies on this behavior to clear the z buffer
-	// the undocumented formats do have behavior (they mess with the swizzling)
-	// we don't emulate this yet (and maybe we wont need to)
-	ZBUF.PSM |= 0x30;
+	// We tested this on the PS2 and it seems to be that when the FRAME is a Z format,
+	// the Z buffer is forced to use color swizzling.
+	// Powerdrome relies on this behavior to clear the z buffer by drawing 32 pixel wide strips, skipping 32,
+	// causing the FRAME to do one strip and the Z to do the other 32 due to the block arrangement.
+	// Other games listed here also hit this Color/Z swap behaviour without masking Z so could be problematic:
+	// Black, Driver Parallel Lines, Driv3r, Dropship, DT Racer, Scarface, The Simpsons, THP8
+	if ((m_env.CTXT[i].FRAME.PSM & 0x30) == 0x30)
+		ZBUF.PSM &= ~0x30;
+	else
+		ZBUF.PSM |= 0x30;
 
 	if (PRIM->CTXT == i && ZBUF != m_env.CTXT[i].ZBUF)
 		Flush();
