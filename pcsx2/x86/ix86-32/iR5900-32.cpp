@@ -21,6 +21,7 @@
 #include "R5900Exceptions.h"
 #include "R5900OpcodeTables.h"
 #include "iR5900.h"
+#include "iR5900Analysis.h"
 #include "BaseblockEx.h"
 #include "System/RecTypes.h"
 
@@ -2171,6 +2172,7 @@ StartRecomp:
 	}
 
 	// rec info //
+	bool has_cop2_instructions = false;
 	{
 		EEINST* pcur;
 
@@ -2191,7 +2193,16 @@ StartRecomp:
 			cpuRegs.code = *(int*)PSM(i - 4);
 			pcur[-1] = pcur[0];
 			pcur--;
+
+			has_cop2_instructions |= (_Opcode_ == 022);
 		}
+	}
+
+	// eventually we'll want to have a vector of passes or something.
+	if (has_cop2_instructions && EmuConfig.Speedhacks.vuFlagHack)
+	{
+		COP2FlagHackPass fhpass;
+		fhpass.Run(startpc, s_nEndBlock, s_pInstCache + 1);
 	}
 
 	// analyze instructions //

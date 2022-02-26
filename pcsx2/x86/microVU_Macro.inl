@@ -55,24 +55,38 @@ void setupMacroOp(int mode, const char* opName)
 	{
 		xMOVSSZX(xmmPQ, ptr32[&vu0Regs.VI[REG_Q].UL]);
 	}
-	if (mode & 0x08) // Clip Instruction
+	if (mode & 0x08 && (!CHECK_VU_FLAGHACK || g_pCurInstInfo->info & EEINST_COP2_CLIP_FLAG)) // Clip Instruction
 	{
 		microVU0.prog.IRinfo.info[0].cFlag.write     = 0xff;
 		microVU0.prog.IRinfo.info[0].cFlag.lastWrite = 0xff;
 	}
-	if (mode & 0x10) // Update Status/Mac Flags
+	if (mode & 0x10 && (!CHECK_VU_FLAGHACK || g_pCurInstInfo->info & EEINST_COP2_STATUS_FLAG)) // Update Status Flag
 	{
 		microVU0.prog.IRinfo.info[0].sFlag.doFlag      = true;
 		microVU0.prog.IRinfo.info[0].sFlag.doNonSticky = true;
 		microVU0.prog.IRinfo.info[0].sFlag.write       = 0;
 		microVU0.prog.IRinfo.info[0].sFlag.lastWrite   = 0;
+	}
+	if (mode & 0x10 && (!CHECK_VU_FLAGHACK || g_pCurInstInfo->info & EEINST_COP2_MAC_FLAG)) // Update Mac Flags
+	{
 		microVU0.prog.IRinfo.info[0].mFlag.doFlag      = true;
 		microVU0.prog.IRinfo.info[0].mFlag.write       = 0xff;
-		_freeX86reg(ebx);
-		//Denormalize
-		mVUallocSFLAGd(&vu0Regs.VI[REG_STATUS_FLAG].UL);
-		
-		xMOV(gprF0, eax);
+	}
+	if (mode & 0x10)
+	{
+		_freeX86reg(gprF0);
+
+		if (!CHECK_VU_FLAGHACK || (g_pCurInstInfo->info & EEINST_COP2_DENORMALIZE_STATUS_FLAG))
+		{
+			// flags are normalized, so denormalize before running the first instruction
+			mVUallocSFLAGd(&vu0Regs.VI[REG_STATUS_FLAG].UL, gprF0, eax, ecx);
+		}
+		else
+		{
+			// load denormalized status flag
+			// ideally we'd keep this in a register, but 32-bit...
+			xMOV(gprF0, ptr32[&vuRegs->VI[REG_STATUS_FLAG].UL]);
+		}
 	}
 }
 
@@ -82,29 +96,45 @@ void endMacroOp(int mode)
 	{
 		xMOVSS(ptr32[&vu0Regs.VI[REG_Q].UL], xmmPQ);
 	}
-	if (mode & 0x10) // Status/Mac Flags were Updated
-	{
-		// Normalize
-		mVUallocSFLAGc(eax, gprF0, 0);
-		xMOV(ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL], eax);
-	}
 
 	microVU0.regAlloc->flushAll();
 	_clearNeededCOP2Regs();
 
-	if (mode & 0x10) // Update VU0 Status/Mac instances after flush to avoid corrupting anything
+	if (mode & 0x10)
 	{
-		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
-		mVUallocSFLAGd(&vu0Regs.VI[REG_STATUS_FLAG].UL);
-		xMOVDZX(xRegisterSSE(t0reg), eax);
-		xSHUF.PS(xRegisterSSE(t0reg), xRegisterSSE(t0reg), 0);
-		xMOVAPS(ptr128[&microVU0.regs().micro_statusflags], xRegisterSSE(t0reg));
+		if (!CHECK_VU_FLAGHACK || (g_pCurInstInfo->info & EEINST_COP2_STATUS_FLAG)) // Status/Mac Flags were Updated
+		{
+			// update micro_statusflags
+			const int t0reg = _allocTempXMMreg(XMMT_INT, -1);
+			xMOVDZX(xRegisterSSE(t0reg), gprF0);
+			xSHUF.PS(xRegisterSSE(t0reg), xRegisterSSE(t0reg), 0);
+			xMOVAPS(ptr128[&microVU0.regs().micro_statusflags], xRegisterSSE(t0reg));
+			_freeXMMreg(t0reg);
+		}
 
-		xMOVDZX(xRegisterSSE(t0reg), ptr32[&vu0Regs.VI[REG_MAC_FLAG].UL]);
-		xSHUF.PS(xRegisterSSE(t0reg), xRegisterSSE(t0reg), 0);
-		xMOVAPS(ptr128[&microVU0.regs().micro_macflags], xRegisterSSE(t0reg));
-		_freeXMMreg(t0reg);
+		if (!CHECK_VU_FLAGHACK || g_pCurInstInfo->info & EEINST_COP2_NORMALIZE_STATUS_FLAG)
+		{
+			// Normalize
+			mVUallocSFLAGc(eax, gprF0, 0);
+			xMOV(ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL], eax);
+		}
+		else
+		{
+			// backup denormalized flags for the next instruction
+			// this is fine, because we'll normalize them again before this reg is accessed
+			xMOV(ptr32[&vuRegs->VI[REG_STATUS_FLAG].UL], gprF0);
+		}
+
+		if (!CHECK_VU_FLAGHACK || (g_pCurInstInfo->info & EEINST_COP2_MAC_FLAG))
+		{
+			const int t0reg = _allocTempXMMreg(XMMT_INT, -1);
+			xMOVDZX(xRegisterSSE(t0reg), ptr32[&vu0Regs.VI[REG_MAC_FLAG].UL]);
+			xSHUF.PS(xRegisterSSE(t0reg), xRegisterSSE(t0reg), 0);
+			xMOVAPS(ptr128[&microVU0.regs().micro_macflags], xRegisterSSE(t0reg));
+			_freeXMMreg(t0reg);
+		}
 	}
+
 	microVU0.cop2 = 0;
 	microVU0.regAlloc->reset(false);
 }

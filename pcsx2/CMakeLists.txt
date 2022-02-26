@@ -1340,6 +1340,7 @@ set(pcsx2x86Sources
 	x86/iMMI.cpp
 	x86/iR3000A.cpp
 	x86/iR3000Atables.cpp
+	x86/iR5900Analysis.cpp
 	x86/iR5900Misc.cpp
 	x86/ir5900tables.cpp
 	x86/ix86-32/iCore-32.cpp
@@ -1371,6 +1372,7 @@ set(pcsx2x86Headers
 	x86/iR5900AritImm.h
 	x86/iR5900Branch.h
 	x86/iR5900.h
+	x86/iR5900Analysis.h
 	x86/iR5900Jump.h
 	x86/iR5900LoadStore.h
 	x86/iR5900Move.h
