@@ -1304,14 +1304,12 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// DATE: selection of the algorithm. Must be done before blending because GL42 is not compatible with blending
 	if (DATE)
 	{
-		// It is way too complex to emulate texture shuffle with DATE. So just use
-		// the slow but accurate algo
+		// It is way too complex to emulate texture shuffle with DATE, so use accurate path.
 		// No overlap should be triggered on gl/vk only as they support DATE_BARRIER.
-		const bool fbmask = (m_context->FRAME.FBMSK & 0x80000000);
 		const bool no_overlap = (g_gs_device->Features().texture_barrier) && (m_prim_overlap == PRIM_OVERLAP_NO);
-		if (fbmask || no_overlap || m_texture_shuffle)
+		if (no_overlap || m_texture_shuffle)
 		{
-			GL_PERF("DATE: Accurate with %s", m_texture_shuffle ? "texture shuffle" : no_overlap ? "no overlap" : "FBMASK");
+			GL_PERF("DATE: Accurate with %s", no_overlap ? "no overlap" : "texture shuffle");
 			if (g_gs_device->Features().texture_barrier)
 			{
 				m_conf.require_full_barrier = true;
@@ -1320,8 +1318,8 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		}
 		else if (m_context->FBA.FBA)
 		{
-			DATE_one = !m_context->TEST.DATM;
 			GL_PERF("DATE: Fast with FBA, all pixels will be >= 128");
+			DATE_one = !m_context->TEST.DATM;
 		}
 		else if (m_conf.colormask.wa && !m_context->TEST.ATE)
 		{
@@ -1372,9 +1370,12 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		}
 		else if (!m_conf.colormask.wa && !m_context->TEST.ATE)
 		{
-			// TODO: is it legal ? Likely but it need to be tested carefully
-			// DATE_BARRIER = true;
-			// m_conf.require_one_barrier = true; << replace it with a cheap barrier
+			GL_PERF("DATE: Accurate with no alpha write");
+			if (g_gs_device->Features().texture_barrier)
+			{
+				m_conf.require_one_barrier = true;
+				DATE_BARRIER = true;
+			}
 		}
 
 		// Will save my life !
