@@ -1706,6 +1706,9 @@
     <ClCompile Include="GS\Renderers\HW\GSTextureReplacementLoaders.cpp">
       <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
     </ClCompile>
+    <ClCompile Include="x86\iR5900Analysis.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2833,6 +2836,9 @@
     <ClInclude Include="GS.h" />
     <ClInclude Include="GS\Renderers\HW\GSTextureReplacements.h">
       <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\iR5900Analysis.h">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
