@@ -102,16 +102,6 @@ void endMacroOp(int mode)
 
 	if (mode & 0x10)
 	{
-		if (!CHECK_VU_FLAGHACK || (g_pCurInstInfo->info & EEINST_COP2_STATUS_FLAG)) // Status/Mac Flags were Updated
-		{
-			// update micro_statusflags
-			const int t0reg = _allocTempXMMreg(XMMT_INT, -1);
-			xMOVDZX(xRegisterSSE(t0reg), gprF0);
-			xSHUF.PS(xRegisterSSE(t0reg), xRegisterSSE(t0reg), 0);
-			xMOVAPS(ptr128[&microVU0.regs().micro_statusflags], xRegisterSSE(t0reg));
-			_freeXMMreg(t0reg);
-		}
-
 		if (!CHECK_VU_FLAGHACK || g_pCurInstInfo->info & EEINST_COP2_NORMALIZE_STATUS_FLAG)
 		{
 			// Normalize
@@ -123,15 +113,6 @@ void endMacroOp(int mode)
 			// backup denormalized flags for the next instruction
 			// this is fine, because we'll normalize them again before this reg is accessed
 			xMOV(ptr32[&vuRegs->VI[REG_STATUS_FLAG].UL], gprF0);
-		}
-
-		if (!CHECK_VU_FLAGHACK || (g_pCurInstInfo->info & EEINST_COP2_MAC_FLAG))
-		{
-			const int t0reg = _allocTempXMMreg(XMMT_INT, -1);
-			xMOVDZX(xRegisterSSE(t0reg), ptr32[&vu0Regs.VI[REG_MAC_FLAG].UL]);
-			xSHUF.PS(xRegisterSSE(t0reg), xRegisterSSE(t0reg), 0);
-			xMOVAPS(ptr128[&microVU0.regs().micro_macflags], xRegisterSSE(t0reg));
-			_freeXMMreg(t0reg);
 		}
 	}
 
