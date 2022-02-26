@@ -110,16 +110,6 @@ __fi void mVUallocCFLAGb(mV, const x32& reg, int fInstance)
 {
 	if (fInstance < 4) xMOV(ptr32[&mVU.clipFlag[fInstance]], reg);         // microVU
 	else               xMOV(ptr32[&mVU.regs().VI[REG_CLIP_FLAG].UL], reg); // macroVU
-
-	// On COP2 modifying the CLIP flag we need to update the microVU version for when it's restored on new program
-	if (fInstance == 0xff)
-	{
-		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
-		xMOVDZX(xRegisterSSE(t0reg), reg);
-		xPSHUF.D(xRegisterSSE(t0reg), xRegisterSSE(t0reg), 0);
-		xMOVDQA(ptr128[&mVU.regs().micro_clipflags], xRegisterSSE(t0reg));
-		_freeXMMreg(t0reg);
-	}
 }
 
 //------------------------------------------------------------------
