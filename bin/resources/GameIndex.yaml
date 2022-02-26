@@ -37410,6 +37410,15 @@ SLUS-20978:
   name: "Power Drome"
   region: "NTSC-U"
   compat: 4
+  patches:
+    42E15DEF:
+      content: |-
+        // Game takes advantage of the VU's extended float range.
+        // This limits it so x86 can handle it.
+        author=refraction and PSI
+        comment=VU float patch
+        patch=1,EE,00373040,word,7e7fffff
+        patch=1,EE,00373048,word,fe7fffff
 SLUS-20979:
   name: "Suikoden IV"
   region: "NTSC-U"
