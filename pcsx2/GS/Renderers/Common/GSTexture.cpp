@@ -131,7 +131,7 @@ u32 GSTexture::CalcUploadSize(u32 height, u32 pitch) const
 
 void GSTexture::GenerateMipmapsIfNeeded()
 {
-	if (!m_needs_mipmaps_generated || m_mipmap_levels <= 1)
+	if (!m_needs_mipmaps_generated || m_mipmap_levels <= 1 || IsCompressedFormat())
 		return;
 
 	m_needs_mipmaps_generated = false;

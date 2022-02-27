@@ -104,7 +104,7 @@ public:
 
 	Type GetType() const { return m_type; }
 	Format GetFormat() const { return m_format; }
-	bool IsCompressedFormat() const { return (m_format >= Format::BC1 && m_format <= Format::BC7); }
+	bool IsCompressedFormat() const { return IsCompressedFormat(m_format); }
 
 	u32 GetCompressedBytesPerBlock() const;
 	u32 GetCompressedBlockSize() const;
@@ -149,4 +149,7 @@ public:
 
 	// Typical size of a RGBA texture
 	virtual u32 GetMemUsage() { return m_size.x * m_size.y * (m_format == Format::UNorm8 ? 1 : 4); }
+
+	// Helper routines for formats/types
+	static bool IsCompressedFormat(Format format) { return (format >= Format::BC1 && format <= Format::BC7); }
 };
