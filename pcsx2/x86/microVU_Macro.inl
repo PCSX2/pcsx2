@@ -327,6 +327,7 @@ void COP2_Interlock(bool mBitSync)
 
 	if (cpuRegs.code & 1)
 	{
+		s_nBlockInterlocked = true;
 		_freeX86reg(eax);
 		xMOV(eax, ptr32[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
@@ -342,7 +343,8 @@ void COP2_Interlock(bool mBitSync)
 			xCMP(eax, 0);
 			xForwardJL32 skip;
 			xLoadFarAddr(arg1reg, CpuVU0);
-			xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+			xMOV(arg2reg, s_nBlockInterlocked);
+			xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg, arg2reg);
 			skip.SetTarget();
 
 			xFastCall((void*)_vu0WaitMicro);
@@ -387,7 +389,8 @@ static void recCFC2()
 		xForwardJL32 skip;
 		_cop2BackupRegs();
 		xLoadFarAddr(arg1reg, CpuVU0);
-		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+		xMOV(arg2reg, s_nBlockInterlocked);
+		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg, arg2reg);
 		_cop2RestoreRegs();
 		skip.SetTarget();
 		skipvuidle.SetTarget();
@@ -449,7 +452,8 @@ static void recCTC2()
 		xForwardJL32 skip;
 		_cop2BackupRegs();
 		xLoadFarAddr(arg1reg, CpuVU0);
-		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+		xMOV(arg2reg, s_nBlockInterlocked);
+		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg, arg2reg);
 		_cop2RestoreRegs();
 		skip.SetTarget();
 		skipvuidle.SetTarget();
@@ -551,7 +555,8 @@ static void recQMFC2()
 		xForwardJL32 skip;
 		_cop2BackupRegs();
 		xLoadFarAddr(arg1reg, CpuVU0);
-		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+		xMOV(arg2reg, s_nBlockInterlocked);
+		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg, arg2reg);
 		_cop2RestoreRegs();
 		skip.SetTarget();
 		skipvuidle.SetTarget();
@@ -591,7 +596,8 @@ static void recQMTC2()
 		xForwardJL32 skip;
 		_cop2BackupRegs();
 		xLoadFarAddr(arg1reg, CpuVU0);
-		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+		xMOV(arg2reg, s_nBlockInterlocked);
+		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg, arg2reg);
 		_cop2RestoreRegs();
 		skip.SetTarget();
 		skipvuidle.SetTarget();

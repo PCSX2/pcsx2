@@ -147,7 +147,7 @@ public:
 	// Executes a Block based on EE delta time (see VUmicro.cpp)
 	virtual void ExecuteBlock(bool startUp=0);
 
-	static void __fastcall ExecuteBlockJIT(BaseVUmicroCPU* cpu);
+	static void __fastcall ExecuteBlockJIT(BaseVUmicroCPU* cpu, bool interlocked);
 
 	// VU1 sometimes needs to break execution on XGkick Path1 transfers if
 	// there is another gif path 2/3 transfer already taking place.

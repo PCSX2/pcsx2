@@ -20,6 +20,19 @@
 #include "GS.h"
 #include "Gif_Unit.h"
 
+__inline u32 CalculateMinRunCycles(u32 cycles, bool requiresAccurateCycles)
+{
+	// If we're running an interlocked COP2 operation
+	// run for an exact amount of cycles
+	if(requiresAccurateCycles)
+		return cycles;
+
+	// Allow a minimum of 16 cycles to avoid running small blocks
+	// Running a block of like 3 cycles is highly inefficient
+	// so while sync isn't tight, it's okay to run ahead a little bit.
+	return std::max(16U, cycles);
+}
+
 // Executes a Block based on EE delta time
 void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 {
@@ -57,12 +70,12 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 		if (EmuConfig.Gamefixes.VUKickstartHack)
 		{
 			if (delta > 0)  // When kickstarting we just need 1 cycle for run ahead
-			Execute(delta);
+				Execute(CalculateMinRunCycles(delta, false));
 		}
 		else
 		{
 			if (delta >= nextblockcycles && delta > 0) // When running behind, make sure we have enough cycles passed for the block to run
-				Execute(delta);
+				Execute(CalculateMinRunCycles(delta, false));
 		}
 	}
 }
@@ -71,7 +84,7 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 // EE data to VU0's registers. We want to run VU0 Micro right after this
 // to ensure that the register is used at the correct time.
 // This fixes spinning/hanging in some games like Ratchet and Clank's Intro.
-void BaseVUmicroCPU::ExecuteBlockJIT(BaseVUmicroCPU* cpu)
+void BaseVUmicroCPU::ExecuteBlockJIT(BaseVUmicroCPU* cpu, bool interlocked)
 {
 	const u32& stat = VU0.VI[REG_VPU_STAT].UL;
 	const int test = 1;
@@ -83,7 +96,7 @@ void BaseVUmicroCPU::ExecuteBlockJIT(BaseVUmicroCPU* cpu)
 
 		if (delta > 0)
 		{
-			cpu->Execute(delta); // Execute the time since the last call
+			cpu->Execute(CalculateMinRunCycles(delta, interlocked)); // Execute the time since the last call
 		}
 	}
 }
