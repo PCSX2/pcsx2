@@ -453,6 +453,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 				dst = t;
 
 				dst->m_32_bits_fmt |= (psm_s.bpp != 16);
+				// TODO Implement target pitch conversion.
 				dst->m_TEX0 = TEX0;
 
 				break;
@@ -514,6 +515,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 			}
 		}
 
+		// TODO Implement target pitch conversion.
 		if (dst)
 			dst->m_TEX0.TBW = TEX0.TBW; // Fix Jurassic Park - Operation Genesis loading disk logo.
 	}
@@ -522,7 +524,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 	{
 		GL_CACHE("TC: Lookup %s(%s) %dx%d, hit: %d (0x%x, %s)", is_frame ? "Frame" : "Target", to_string(type), size.x, size.y, dst->m_texture->GetID(), bp, psm_str(TEX0.PSM));
 
-		dst->Update();
+		UpdateTarget(dst);
 
 		const GSVector2& old_s = dst->m_texture->GetScale();
 		if (new_s != old_s)
@@ -565,7 +567,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 
 		if (dst_match)
 		{
-			dst_match->Update();
+			UpdateTarget(dst_match);
 			calcRescale(dst_match->m_texture);
 			dst = CreateTarget(TEX0, new_size.x, new_size.y, type, clear);
 			dst->m_32_bits_fmt = dst_match->m_32_bits_fmt;
@@ -615,8 +617,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 			// h is likely smaller than w (true most of the time). Reduce the upload size (speed)
 			max_h = std::min<int>(max_h, TEX0.TBW * 64);
 
-			dst->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, TEX0.TBW * 64, is_frame ? real_h : max_h), TEX0.PSM, TEX0.TBW));
-			dst->Update();
+			dst->m_dirty.push_back({TEX0.PSM, TEX0.TBP0, TEX0.TBW, GSVector4i(0, 0, TEX0.TBW * 64, is_frame ? real_h : max_h)});
+			UpdateTarget(dst);
 		}
 	}
 	if (used)
@@ -686,7 +688,7 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 	t->m_texture = new_texture;
 
 	// We unconditionally preload the frame here, because otherwise we'll end up with blackness for one frame (when the expand happens).
-	t->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, t->m_TEX0.TBW * 64, needed_height), t->m_TEX0.PSM, t->m_TEX0.TBW));
+	t->m_dirty.push_back({dispfb.PSM, dispfb.TBP0, dispfb.TBW, GSVector4i(0, 0, t->m_TEX0.TBW * 64, needed_height)});
 
 	// Inject the new height back into the cache.
 	GetTargetHeight(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, static_cast<u32>(needed_height));
@@ -885,8 +887,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					GL_CACHE("TC: Dirty Target(%s) %d (0x%x) r(%d,%d,%d,%d)", to_string(type),
 						t->m_texture ? t->m_texture->GetID() : 0,
 						t->m_TEX0.TBP0, r.x, r.y, r.z, r.w);
-					t->m_TEX0.TBW = bw;
-					t->m_dirty.push_back(GSDirtyRect(r, psm, bw));
+					t->m_dirty.push_back({psm, bp, bw, r});
 				}
 				else
 				{
@@ -895,7 +896,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					if (so.is_valid)
 					{
 						// Offset from Target to Write in Target coords.
-						t->m_dirty.push_back(GSDirtyRect(so.b2a_offset, psm, bw));
+						t->m_dirty.push_back({psm, bp, bw, so.b2a_offset});
 						GL_CACHE("TC: Dirty in the middle [aggressive] of Target(%s) %d [PSM:%s BP:0x%x->0x%x BW:%u rect(%d,%d=>%d,%d)] write[PSM:%s BP:0x%x BW:%u rect(%d,%d=>%d,%d)]",
 							to_string(type),
 							t->m_texture ? t->m_texture->GetID() : 0,
@@ -961,8 +962,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 								t->m_texture ? t->m_texture->GetID() : 0,
 								t->m_TEX0.TBP0);
 							// TODO: do not add this rect above too
-							t->m_TEX0.TBW = bw;
-							t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top - y, r.right, r.bottom - y), psm, bw));
+							t->m_dirty.push_back({psm, bp, bw, r});
 							continue;
 						}
 					}
@@ -989,8 +989,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 							t->m_TEX0.TBP0, t->m_end_block,
 							r.left, r.top + y, r.right, r.bottom + y, bw);
 
-						t->m_TEX0.TBW = bw;
-						t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top + y, r.right, r.bottom + y), psm, bw));
+						t->m_dirty.push_back({psm, bp, bw, r});
 						continue;
 					}
 				}
@@ -1191,8 +1190,8 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 
 	// We don't want to copy "old" data that the game has overwritten with writes,
 	// so flush any overlapping dirty area.
-	src->UpdateIfDirtyIntersects(GSVector4i(sx, sy, sx + w, sy + h));;
-	dst->UpdateIfDirtyIntersects(GSVector4i(dx, dy, dx + w, dy + h));
+	UpdateTargetIfDirtyIntersects(src, {SPSM, SBP, SBW, GSVector4i(sx, sy, sx + w, sy + h)});
+	UpdateTargetIfDirtyIntersects(dst, {DPSM, DBP, DBW, GSVector4i(dx, dy, dx + w, dy + h)});
 
 	// Scale coordinates.
 	const GSVector2 scale(src->m_texture->GetScale());
@@ -1529,7 +1528,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_valid_rect = dst->m_valid;
 		src->m_end_block = dst->m_end_block;
 
-		dst->Update();
+		UpdateTarget(dst);
 
 		// do not round here!!! if edge becomes a black pixel and addressing mode is clamp => everything outside the clamped area turns into black (kh2 shadows)
 
@@ -1909,7 +1908,7 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int
 
 	Target* t = new Target(TEX0, !GSConfig.UserHacks_DisableDepthSupport, type);
 
-	// FIXME: initial data should be unswizzled from local mem in Update() if dirty
+	// FIXME: initial data should be unswizzled from local mem in GSTextureCache::UpdateTarget if dirty
 
 	if (type == RenderTarget)
 	{
@@ -2056,6 +2055,131 @@ void GSTextureCache::PrintMemoryUsage()
 
 	GL_PERF("MEM: RO Tex %dMB. RW Tex %dMB. Target %dMB. Depth %dMB", tex >> 20u, tex_rt >> 20u, rt >> 20u, dss >> 20u);
 #endif
+}
+
+void GSTextureCache::UpdateTarget(GSTextureCache::Target* target)
+{
+	target->UpdateAge();
+
+	// FIXME: the union of the rects may also update wrong parts of the render target (but a lot faster :)
+	// GH: it must be doable
+	// 1/ rescale the new t to the good size
+	// 2/ copy each rectangle (rescale the rectangle) (use CopyRect or multiple vertex)
+	// Alternate
+	// 1/ uses multiple vertex rectangle
+
+	if (target->m_dirty.empty())
+		return;
+
+	GSTexture* tex = target->m_texture;
+
+	// No handling please
+	if (target->m_type == DepthStencil && !target->m_depth_supported)
+	{
+		// do the most likely thing a direct write would do, clear it
+		GL_INS("ERROR: Update DepthStencil dummy");
+		target->m_dirty.clear();
+		return;
+	}
+	
+	if (target->m_type == DepthStencil && g_gs_renderer->m_game.title == CRC::FFX2)
+	{
+		GL_INS("ERROR: bad invalidation detected, depth buffer will be cleared");
+		// FFX2 menu. Invalidation of the depth is wrongly done and only the first
+		// page is invalidated. Technically a CRC hack will be better but I don't expect
+		// any games to only upload a single page of data for the depth.
+		//
+		// FFX2 menu got another bug. I'm not sure the top-left is properly written or not. It
+		// could be a gs transfer bug too due to unaligned-page transfer.
+		//
+		// So the quick and dirty solution is just to clean the depth buffer.
+		g_gs_device->ClearDepth(tex);
+		target->m_dirty.clear();
+		return;
+	}
+
+	for (const SurfaceOffsetKeyElem& soke : target->m_dirty)
+	{
+		const SurfaceOffset so = GSTextureCache::ComputeSurfaceOffset(soke.bp, soke.bw, soke.psm, soke.rect, target);
+
+		if (so.is_valid)
+		{
+			const GSVector4i& r = so.b2a_offset;
+			const int w = r.width();
+			const int h = r.height();
+
+			GIFRegTEXA TEXA;
+
+			TEXA.AEM = 1;
+			TEXA.TA0 = 0;
+			TEXA.TA1 = 0x80;
+
+			GSTexture* t = g_gs_device->CreateTexture(w, h, false, GSTexture::Format::Color);
+
+			GSOffset off = g_gs_renderer->m_mem.GetOffset(soke.bp, soke.bw, soke.psm);
+
+			GSTexture::GSMap m;
+
+			if (t->Map(m))
+			{
+				g_gs_renderer->m_mem.ReadTexture(off, r, m.bits, m.pitch, TEXA);
+
+				t->Unmap();
+			}
+			else
+			{
+				const int pitch = ((w + 3) & ~3) * 4;
+
+				g_gs_renderer->m_mem.ReadTexture(off, r, m_temp, pitch, TEXA);
+
+				t->Update(r.rsize(), m_temp, pitch);
+			}
+
+			// m_renderer->m_perfmon.Put(GSPerfMon::Unswizzle, w * h * 4);
+
+			// Copy the new GS memory content into the destination texture.
+			if (target->m_type == RenderTarget)
+			{
+				GL_INS("ERROR: Update RenderTarget 0x%x bw:%d (%d,%d => %d,%d)", target->m_TEX0.TBP0, target->m_TEX0.TBW, r.x, r.y, r.z, r.w);
+
+				g_gs_device->StretchRect(t, tex, GSVector4(r) * GSVector4(tex->GetScale()).xyxy());
+			}
+			else if (target->m_type == DepthStencil)
+			{
+				GL_INS("ERROR: Update DepthStencil 0x%x", target->m_TEX0.TBP0);
+
+				// FIXME linear or not?
+				g_gs_device->StretchRect(t, tex, GSVector4(r) * GSVector4(tex->GetScale()).xyxy(), ShaderConvert::RGBA8_TO_FLOAT32_BILN);
+			}
+
+			g_gs_device->Recycle(t);
+
+			target->UpdateValidity(r);
+		}
+	}
+
+	target->m_dirty.clear();
+}
+
+void GSTextureCache::UpdateTargetIfDirtyIntersects(GSTextureCache::Target* target, const GSTextureCache::SurfaceOffsetKeyElem& soke)
+{
+	for (const SurfaceOffsetKeyElem& dirty : target->m_dirty)
+	{
+		const SurfaceOffset so = GSTextureCache::ComputeSurfaceOffset(soke.bp, soke.bw, soke.psm, soke.rect, target);
+
+		if (so.is_valid)
+		{
+			// strictly speaking, we only need to update the area outside of the move.
+			// but, to keep things simple, just update the whole thing
+			GL_CACHE("TC: Update dirty rectangle (BP %x, BW %u, PSM %s)[%d,%d,%d,%d] due to intersection with (BP %x, BW %u, PSM %s)[%d,%d,%d,%d]",
+				target->m_TEX0.TBP0, target->m_TEX0.TBW, psm_str(target->m_TEX0.PSM),
+				so.b2a_offset.x, so.b2a_offset.y, so.b2a_offset.z, so.b2a_offset.w,
+				soke.bp, soke.bw, psm_str(soke.psm),
+				soke.rect.x, soke.rect.y, soke.rect.z, soke.rect.w);
+			UpdateTarget(target);
+			return;
+		}
+	}
 }
 
 // GSTextureCache::Surface
@@ -2439,115 +2563,6 @@ GSTextureCache::Target::Target(const GIFRegTEX0& TEX0, const bool depth_supporte
 	m_dirty_alpha = GSLocalMemory::m_psm[TEX0.PSM].trbpp != 24;
 }
 
-void GSTextureCache::Target::Update()
-{
-	Surface::UpdateAge();
-
-	// FIXME: the union of the rects may also update wrong parts of the render target (but a lot faster :)
-	// GH: it must be doable
-	// 1/ rescale the new t to the good size
-	// 2/ copy each rectangle (rescale the rectangle) (use CopyRect or multiple vertex)
-	// Alternate
-	// 1/ uses multiple vertex rectangle
-
-	GSVector4i unscaled_size = GSVector4i(GSVector4(m_texture->GetSize()) / GSVector4(m_texture->GetScale()));
-	GSVector4i r = m_dirty.GetDirtyRectAndClear(m_TEX0, GSVector2i(unscaled_size.x, unscaled_size.y));
-
-	if (r.rempty())
-		return;
-
-	// No handling please
-	if ((m_type == DepthStencil) && !m_depth_supported)
-	{
-		// do the most likely thing a direct write would do, clear it
-		GL_INS("ERROR: Update DepthStencil dummy");
-
-		return;
-	}
-	else if (m_type == DepthStencil && g_gs_renderer->m_game.title == CRC::FFX2)
-	{
-		GL_INS("ERROR: bad invalidation detected, depth buffer will be cleared");
-		// FFX2 menu. Invalidation of the depth is wrongly done and only the first
-		// page is invalidated. Technically a CRC hack will be better but I don't expect
-		// any games to only upload a single page of data for the depth.
-		//
-		// FFX2 menu got another bug. I'm not sure the top-left is properly written or not. It
-		// could be a gs transfer bug too due to unaligned-page transfer.
-		//
-		// So the quick and dirty solution is just to clean the depth buffer.
-		g_gs_device->ClearDepth(m_texture);
-		return;
-	}
-
-	int w = r.width();
-	int h = r.height();
-
-	GIFRegTEXA TEXA;
-
-	TEXA.AEM = 1;
-	TEXA.TA0 = 0;
-	TEXA.TA1 = 0x80;
-
-	GSTexture* t = g_gs_device->CreateTexture(w, h, false, GSTexture::Format::Color);
-
-	GSOffset off = g_gs_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
-
-	GSTexture::GSMap m;
-
-	if (t->Map(m))
-	{
-		g_gs_renderer->m_mem.ReadTexture(off, r, m.bits, m.pitch, TEXA);
-
-		t->Unmap();
-	}
-	else
-	{
-		int pitch = ((w + 3) & ~3) * 4;
-
-		g_gs_renderer->m_mem.ReadTexture(off, r, m_temp, pitch, TEXA);
-
-		t->Update(r.rsize(), m_temp, pitch);
-	}
-
-	// m_renderer->m_perfmon.Put(GSPerfMon::Unswizzle, w * h * 4);
-
-	// Copy the new GS memory content into the destination texture.
-	if (m_type == RenderTarget)
-	{
-		GL_INS("ERROR: Update RenderTarget 0x%x bw:%d (%d,%d => %d,%d)", m_TEX0.TBP0, m_TEX0.TBW, r.x, r.y, r.z, r.w);
-
-		g_gs_device->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy());
-	}
-	else if (m_type == DepthStencil)
-	{
-		GL_INS("ERROR: Update DepthStencil 0x%x", m_TEX0.TBP0);
-
-		// FIXME linear or not?
-		g_gs_device->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy(), ShaderConvert::RGBA8_TO_FLOAT32_BILN);
-	}
-
-	g_gs_device->Recycle(t);
-
-	UpdateValidity(r);
-}
-
-void GSTextureCache::Target::UpdateIfDirtyIntersects(const GSVector4i& rc)
-{
-	for (const auto& dirty : m_dirty)
-	{
-		const GSVector4i dirty_rc(dirty.GetDirtyRect(m_TEX0));
-		if (dirty_rc.rintersect(rc).rempty())
-			continue;
-
-		// strictly speaking, we only need to update the area outside of the move.
-		// but, to keep things simple, just update the whole thing
-		GL_CACHE("TC: Update dirty rectangle [%d,%d,%d,%d] due to intersection with [%d,%d,%d,%d]",
-			dirty_rc.x, dirty_rc.y, dirty_rc.z, dirty_rc.w, rc.x, rc.y, rc.z, rc.w);
-		Update();
-		break;
-	}
-}
-
 void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 {
 	if (m_valid.eq(GSVector4i::zero()))
@@ -2679,11 +2694,11 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const uint32_
 		const GSLocalMemory::psm_t& t_psm_s = GSLocalMemory::m_psm[t_sok.psm];
 		const u32 so_bp = t_psm_s.info.bn(so.b2a_offset.x, so.b2a_offset.y, t_sok.bp, t_sok.bw);
 		const u32 so_bp_end = t_psm_s.info.bn(so.b2a_offset.z - 1, so.b2a_offset.w - 1, t_sok.bp, t_sok.bw);
-		for (const auto& dr : t->m_dirty)
+		for (const SurfaceOffsetKeyElem& soke : t->m_dirty)
 		{
-			const GSLocalMemory::psm_t& dr_psm_s = GSLocalMemory::m_psm[dr.psm];
-			const u32 dr_bp = dr_psm_s.info.bn(dr.r.x, dr.r.y, t_sok.bp, dr.bw);
-			const u32 dr_bp_end = dr_psm_s.info.bn(dr.r.z - 1, dr.r.w - 1, t_sok.bp, dr.bw);
+			const GSLocalMemory::psm_t& dr_psm_s = GSLocalMemory::m_psm[soke.psm];
+			const u32 dr_bp = dr_psm_s.info.bn(soke.rect.x, soke.rect.y, t_sok.bp, soke.bw);
+			const u32 dr_bp_end = dr_psm_s.info.bn(soke.rect.z - 1, soke.rect.w - 1, t_sok.bp, soke.bw);
 			const bool overlap = GSTextureCache::CheckOverlap(dr_bp, dr_bp_end, so_bp, so_bp_end);
 			if (overlap)
 			{

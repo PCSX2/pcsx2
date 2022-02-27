@@ -187,12 +187,20 @@ public:
 		bool ClutMatch(const PaletteKey& palette_key);
 	};
 
+	struct SurfaceOffsetKeyElem
+	{
+		u32 psm;
+		u32 bp;
+		u32 bw;
+		GSVector4i rect;
+	};
+
 	class Target : public Surface
 	{
 	public:
 		const int m_type;
 		bool m_used;
-		GSDirtyRectList m_dirty;
+		std::vector<SurfaceOffsetKeyElem> m_dirty;
 		GSVector4i m_valid;
 		const bool m_depth_supported;
 		bool m_dirty_alpha;
@@ -201,11 +209,6 @@ public:
 		Target(const GIFRegTEX0& TEX0, const bool depth_supported, const int type);
 
 		void UpdateValidity(const GSVector4i& rect);
-
-		void Update();
-
-		/// Updates the target, if the dirty area intersects with the specified rectangle.
-		void UpdateIfDirtyIntersects(const GSVector4i& rc);
 	};
 
 	class PaletteMap
@@ -263,14 +266,6 @@ public:
 
 		u32 height;
 		u32 age;
-	};
-
-	struct SurfaceOffsetKeyElem
-	{
-		u32 psm;
-		u32 bp;
-		u32 bw;
-		GSVector4i rect;
 	};
 
 	struct SurfaceOffsetKey
@@ -369,4 +364,7 @@ public:
 
 	/// Injects a texture into the hash cache, by using GSTexture::Swap(), transitively applying to all sources. Ownership of tex is transferred.
 	void InjectHashCacheTexture(const HashCacheKey& key, GSTexture* tex);
+
+	void UpdateTarget(GSTextureCache::Target* target);
+	void UpdateTargetIfDirtyIntersects(GSTextureCache::Target* target, const GSTextureCache::SurfaceOffsetKeyElem& soke);
 };
