@@ -490,6 +490,20 @@ void GSTextureReplacements::ClearReplacementTextures()
 
 GSTexture* GSTextureReplacements::CreateReplacementTexture(const ReplacementTexture& rtex, const GSVector2& scale, bool mipmap)
 {
+	// can't use generated mipmaps with compressed formats, because they can't be rendered to
+	// in the future I guess we could decompress the dds and generate them... but there's no reason that modders can't generate mips in dds
+	if (mipmap && GSTexture::IsCompressedFormat(rtex.format) && rtex.mips.empty())
+	{
+		static bool log_once = false;
+		if (!log_once)
+		{
+			Console.Warning("Disabling mipmaps on one or more compressed replacement textures.");
+			log_once = true;
+		}
+
+		mipmap = false;
+	}
+
 	GSTexture* tex = g_gs_device->CreateTexture(rtex.width, rtex.height, mipmap, rtex.format);
 	if (!tex)
 		return nullptr;
