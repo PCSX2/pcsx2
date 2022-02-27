@@ -313,15 +313,18 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					// Fixes Xenosaga 3 last dungeon graphic bug.
 					// Fixes Pause menu in The Getaway.
 
-					SurfaceOffset so = ComputeSurfaceOffset(bp, bw, psm, r, t);
+					bool t_needs_update = false;
+					SurfaceOffset so = ComputeSurfaceOffset(bp, bw, psm, r, t, t_needs_update);
 					if (!so.is_valid && t_wraps)
 					{
 						// Improves Beyond Good & Evil shadow.
 						const u32 bp_unwrap = bp + GSTextureCache::MAX_BP + 0x1;
-						so = ComputeSurfaceOffset(bp_unwrap, bw, psm, r, t);
+						so = ComputeSurfaceOffset(bp_unwrap, bw, psm, r, t, t_needs_update);
 					}
 					if (so.is_valid)
 					{
+						if (t_needs_update)
+							UpdateTarget(t);
 						dst = t;
 						// Offset from Target to Source in Target coords.
 						x_offset = so.b2a_offset.x;
@@ -892,7 +895,8 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 				else
 				{
 					// YOLO skipping t->m_TEX0.TBW = bw; It would change the surface offset results...
-					const SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
+					bool _;
+					const SurfaceOffset so = ComputeSurfaceOffset(off, r, t, _);
 					if (so.is_valid)
 					{
 						// Offset from Target to Write in Target coords.
@@ -941,7 +945,8 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 			// TODO Use ComputeSurfaceOffset below.
 			if (GSUtil::HasSharedBits(psm, t->m_TEX0.PSM))
 			{
-				const SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
+				bool _;
+				const SurfaceOffset so = ComputeSurfaceOffset(off, r, t, _);
 				if (so.is_valid)
 				{
 					// Offset from Target to Write in Target coords.
@@ -2072,7 +2077,8 @@ void GSTextureCache::UpdateTarget(GSTextureCache::Target* target)
 
 	for (const SurfaceOffsetKeyElem& soke : target->m_dirty)
 	{
-		const SurfaceOffset so = GSTextureCache::ComputeSurfaceOffset(soke.bp, soke.bw, soke.psm, soke.rect, target);
+		bool _;
+		const SurfaceOffset so = GSTextureCache::ComputeSurfaceOffset(soke.bp, soke.bw, soke.psm, soke.rect, target, _);
 
 		if (so.is_valid)
 		{
@@ -2137,7 +2143,8 @@ void GSTextureCache::UpdateTargetIfDirtyIntersects(GSTextureCache::Target* targe
 {
 	for (const SurfaceOffsetKeyElem& dirty : target->m_dirty)
 	{
-		const SurfaceOffset so = GSTextureCache::ComputeSurfaceOffset(soke.bp, soke.bw, soke.psm, soke.rect, target);
+		bool _;
+		const SurfaceOffset so = GSTextureCache::ComputeSurfaceOffset(soke.bp, soke.bw, soke.psm, soke.rect, target, _);
 
 		if (so.is_valid)
 		{
@@ -2635,16 +2642,16 @@ void GSTextureCache::AttachPaletteToSource(Source* s, u16 pal, bool need_gs_text
 	s->m_palette = need_gs_texture ? s->m_palette_obj->GetPaletteGSTexture() : nullptr;
 }
 
-GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const GSOffset& off, const GSVector4i& r, const Target* t)
+GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const GSOffset& off, const GSVector4i& r, const Target* t, bool& out_t_needs_update)
 {
 	// Computes offset from Target to offset+rectangle in Target coords.
 	if (!t)
 		return { false };
-	const SurfaceOffset so = ComputeSurfaceOffset(off.bp(), off.bw(), off.psm(), r, t);
+	const SurfaceOffset so = ComputeSurfaceOffset(off.bp(), off.bw(), off.psm(), r, t, out_t_needs_update);
 	return so;
 }
 
-GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const uint32_t bp, const uint32_t bw, const uint32_t psm, const GSVector4i& r, const Target* t)
+GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const uint32_t bp, const uint32_t bw, const uint32_t psm, const GSVector4i& r, const Target* t, bool& out_t_needs_update)
 {
 	// Computes offset from Target to bp+bw+psm+r in Target coords.
 	if (!t)
@@ -2660,6 +2667,7 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const uint32_
 	sok.elems[1].rect = t->m_valid;
 	const SurfaceOffset so = ComputeSurfaceOffset(sok);
 	// Check if any dirty rect in the target overlaps with the offset.
+	out_t_needs_update = false;
 	if (so.is_valid && !t->m_dirty.empty())
 	{
 		const SurfaceOffsetKeyElem& t_sok = sok.elems[1];
@@ -2675,7 +2683,8 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const uint32_
 			if (overlap)
 			{
 				// Dirty rectangle in target overlaps with the found offset.
-				return { false };
+				out_t_needs_update = true;
+				break;
 			}
 		}
 	}

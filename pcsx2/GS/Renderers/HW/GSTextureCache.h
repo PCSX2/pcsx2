@@ -355,8 +355,8 @@ public:
 	void PrintMemoryUsage();
 
 	void AttachPaletteToSource(Source* s, u16 pal, bool need_gs_texture);
-	SurfaceOffset ComputeSurfaceOffset(const GSOffset& off, const GSVector4i& r, const Target* t);
-	SurfaceOffset ComputeSurfaceOffset(const uint32_t bp, const uint32_t bw, const uint32_t psm, const GSVector4i& r, const Target* t);
+	SurfaceOffset ComputeSurfaceOffset(const GSOffset& off, const GSVector4i& r, const Target* t, bool& out_t_needs_udpate);
+	SurfaceOffset ComputeSurfaceOffset(const uint32_t bp, const uint32_t bw, const uint32_t psm, const GSVector4i& r, const Target* t, bool& out_t_needs_udpate);
 	SurfaceOffset ComputeSurfaceOffset(const SurfaceOffsetKey& sok);
 
 	/// Invalidates a temporary source, a partial copy only created from the current RT/DS for the current draw.
