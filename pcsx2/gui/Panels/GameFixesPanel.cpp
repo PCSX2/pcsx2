@@ -93,7 +93,7 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			wxEmptyString
 		},
 		{
-			_("VU Kickstart (Run ahead) to avoid sync problems when reading or writing VU registers"),
+			_("VU Sync (Run behind) to avoid sync problems when reading or writing VU registers"),
 			wxEmptyString
 		},
 		{

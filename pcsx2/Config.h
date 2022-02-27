@@ -42,7 +42,7 @@ enum GamefixId
 	Fix_VIF1Stall,
 	Fix_VuAddSub,
 	Fix_Ibit,
-	Fix_VUKickstart,
+	Fix_VUSync,
 	Fix_VUOverflow,
 	Fix_XGKick,
 
@@ -726,7 +726,7 @@ struct Pcsx2Config
 			VIF1StallHack : 1, // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
 			VuAddSubHack : 1, // Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
 			IbitHack : 1, // I bit hack. Needed to stop constant VU recompilation in some games
-			VUKickstartHack : 1, // Gives new VU programs a slight head start and runs VU's ahead of EE to avoid VU register reading/writing issues
+			VUSyncHack : 1, // Makes microVU run behind the EE to avoid VU register reading/writing sync issues. Useful for M-Bit games
 			VUOverflowHack : 1, // Tries to simulate overflow flag checks (not really possible on x86 without soft floats)
 			XgKickHack : 1; // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
 		BITFIELD_END
