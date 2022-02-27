@@ -302,7 +302,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					break;
 				}
 				else if (GSConfig.UserHacks_TextureInsideRt && psm == PSM_PSMCT32 && t->m_TEX0.PSM == psm &&
-					((t->m_TEX0.TBP0 < bp && t->m_end_block >= bp) || t_wraps))
+					((t->m_TEX0.TBP0 <= bp && t->m_end_block >= bp) || t_wraps))
 				{
 					// Only PSMCT32 to limit false hits.
 					// PSM equality needed because CreateSource does not handle PSM conversion.
