@@ -70,7 +70,8 @@ public:
 	{
 		GSTexture* texture;
 		u32 refcount;
-		u32 age;
+		u16 age;
+		bool is_replacement;
 	};
 
 	class Surface : public GSAlignedClass<32>
