@@ -340,7 +340,7 @@ void COP2_Interlock(bool mBitSync)
 		{
 			xSUB(eax, ptr32[&VU0.cycle]);
 			xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-			xCMP(eax, 0);
+			xCMP(eax, 4);
 			xForwardJL32 skip;
 			xLoadFarAddr(arg1reg, CpuVU0);
 			xMOV(arg2reg, s_nBlockInterlocked);
@@ -385,7 +385,7 @@ static void recCFC2()
 		xForwardJZ32 skipvuidle;
 		xSUB(eax, ptr32[&VU0.cycle]);
 		xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-		xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 8 : 0);
+		xCMP(eax, 4);
 		xForwardJL32 skip;
 		_cop2BackupRegs();
 		xLoadFarAddr(arg1reg, CpuVU0);
@@ -448,7 +448,7 @@ static void recCTC2()
 		xForwardJZ32 skipvuidle;
 		xSUB(eax, ptr32[&VU0.cycle]);
 		xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-		xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 8 : 0);
+		xCMP(eax, 4);
 		xForwardJL32 skip;
 		_cop2BackupRegs();
 		xLoadFarAddr(arg1reg, CpuVU0);
@@ -551,7 +551,7 @@ static void recQMFC2()
 		xForwardJZ32 skipvuidle;
 		xSUB(eax, ptr32[&VU0.cycle]);
 		xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-		xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 8 : 0);
+		xCMP(eax, 4);
 		xForwardJL32 skip;
 		_cop2BackupRegs();
 		xLoadFarAddr(arg1reg, CpuVU0);
@@ -592,7 +592,7 @@ static void recQMTC2()
 		xForwardJZ32 skipvuidle;
 		xSUB(eax, ptr32[&VU0.cycle]);
 		xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-		xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 8 : 0);
+		xCMP(eax, 4);
 		xForwardJL32 skip;
 		_cop2BackupRegs();
 		xLoadFarAddr(arg1reg, CpuVU0);

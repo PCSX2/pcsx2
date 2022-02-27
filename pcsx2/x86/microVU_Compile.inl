@@ -469,7 +469,7 @@ void mVUtestCycles(microVU& mVU, microFlagCycles& mFC)
 	iPC = mVUstartPC;
 
 	xMOV(eax, ptr32[&mVU.cycles]);
-	if (!EmuConfig.Gamefixes.VUKickstartHack)
+	if (EmuConfig.Gamefixes.VUSyncHack)
 		xSUB(eax, mVUcycles); // Running behind, make sure we have time to run the block
 	else
 		xSUB(eax, 1); // Running ahead, make sure cycles left are above 0

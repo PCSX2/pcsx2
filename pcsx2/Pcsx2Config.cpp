@@ -743,7 +743,7 @@ static const char* const tbl_GamefixNames[] =
 		"VIF1Stall",
 		"VuAddSub",
 		"Ibit",
-		"VUKickstart",
+		"VUSync",
 		"VUOverflow",
 		"XGKick"};
 
@@ -835,8 +835,8 @@ void Pcsx2Config::GamefixOptions::Set(GamefixId id, bool enabled)
 		case Fix_Ibit:
 			IbitHack = enabled;
 			break;
-		case Fix_VUKickstart:
-			VUKickstartHack = enabled;
+		case Fix_VUSync:
+			VUSyncHack = enabled;
 			break;
 		case Fix_VUOverflow:
 			VUOverflowHack = enabled;
@@ -878,8 +878,8 @@ bool Pcsx2Config::GamefixOptions::Get(GamefixId id) const
 			return GoemonTlbHack;
 		case Fix_Ibit:
 			return IbitHack;
-		case Fix_VUKickstart:
-			return VUKickstartHack;
+		case Fix_VUSync:
+			return VUSyncHack;
 		case Fix_VUOverflow:
 			return VUOverflowHack;
 			jNO_DEFAULT;
@@ -905,7 +905,7 @@ void Pcsx2Config::GamefixOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(GIFFIFOHack);
 	SettingsWrapBitBool(GoemonTlbHack);
 	SettingsWrapBitBool(IbitHack);
-	SettingsWrapBitBool(VUKickstartHack);
+	SettingsWrapBitBool(VUSyncHack);
 	SettingsWrapBitBool(VUOverflowHack);
 }
 

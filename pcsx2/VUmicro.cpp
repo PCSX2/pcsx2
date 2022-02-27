@@ -38,7 +38,6 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 {
 	const u32& stat = VU0.VI[REG_VPU_STAT].UL;
 	const int test = m_Idx ? 0x100 : 1;
-	const int s = EmuConfig.Gamefixes.VUKickstartHack ? 16 : 0; // Kick Start Cycles (Jak needs at least 4 due to writing values after they're read
 
 	if (m_Idx && THREAD_VU1)
 	{
@@ -46,7 +45,6 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 		return;
 	}
 
-	
 	if (!(stat & test))
 	{
 		// VU currently flushes XGKICK on VU1 end so no need for this, yet
@@ -57,26 +55,17 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 		return;
 	}
 
-	if (startUp) // Start Executing a microprogram (When kickstarted)
+	if (startUp)
 	{
-		Execute(s); // Kick start VU
+		Execute(CalculateMinRunCycles(0, false));
 	}
 	else // Continue Executing
 	{
 		u32 cycle = m_Idx ? VU1.cycle : VU0.cycle;
 		s32 delta = (s32)(u32)(cpuRegs.cycle - cycle);
-		s32 nextblockcycles = m_Idx ? VU1.nextBlockCycles : VU0.nextBlockCycles;
 
-		if (EmuConfig.Gamefixes.VUKickstartHack)
-		{
-			if (delta > 0)  // When kickstarting we just need 1 cycle for run ahead
-				Execute(CalculateMinRunCycles(delta, false));
-		}
-		else
-		{
-			if (delta >= nextblockcycles && delta > 0) // When running behind, make sure we have enough cycles passed for the block to run
-				Execute(CalculateMinRunCycles(delta, false));
-		}
+		if (delta > 0)
+			Execute(CalculateMinRunCycles(delta, false));
 	}
 }
 
@@ -87,9 +76,8 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 void BaseVUmicroCPU::ExecuteBlockJIT(BaseVUmicroCPU* cpu, bool interlocked)
 {
 	const u32& stat = VU0.VI[REG_VPU_STAT].UL;
-	const int test = 1;
+	constexpr int test = 1;
 
-	//DevCon.Warning("Was set %d cycles ago", cpuRegs.cycle - setcycle);
 	if (stat & test)
 	{ // VU is running
 		s32 delta = (s32)(u32)(cpuRegs.cycle - VU0.cycle);

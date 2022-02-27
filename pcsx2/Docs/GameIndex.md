@@ -38,7 +38,7 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
     - GIFFIFOHack
     - GoemonTlbHack
     - IbitHack
-    - VUKickstartHack
+    - VSyncHack
     - VUOverflowHack
   # The value of the speedhacks is assumed to be an integer,
   # but at the time of writing speedhacks are effectively booleans (0/1)
@@ -169,8 +169,8 @@ These values are case-sensitive so take care.  If you incorrectly specify a Game
 *   `IbitHack`
     *   VU I bit Hack avoid constant recompilation in some games (Scarface The World Is Yours, Crash Tag Team Racing).
 
-*   `VUKickstartHack`
-    *   Let the VU's both run ahead of the EE to fix some timing issues.
+*   `VUSyncHack`
+    *   Make the VU's run behind/in sync with the EE to fix some timing issues.
 
 *   `VUOverflowHack`
     *   VU Overflow hack to check for possible float overflows (Superman Returns).
