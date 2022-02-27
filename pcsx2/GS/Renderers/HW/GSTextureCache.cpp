@@ -1550,9 +1550,8 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 		if (replacement_tex)
 		{
 			// found a replacement texture! insert it into the hash cache, and clear paltex (since it's not indexed)
-			const HashCacheEntry entry{replacement_tex, 1u, 0u};
-			m_hash_cache_memory_usage += replacement_tex->GetMemUsage();
 			paltex = false;
+			const HashCacheEntry entry{replacement_tex, 1u, 0u, true};
 			return &m_hash_cache.emplace(key, entry).first->second;
 		}
 		else if (replacement_texture_pending)
@@ -1597,7 +1596,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 		key.RemoveCLUTHash();
 
 	// insert into the cache cache, and we're done
-	const HashCacheEntry entry{tex, 1u, 0u};
+	const HashCacheEntry entry{tex, 1u, 0u, false};
 	m_hash_cache_memory_usage += tex->GetMemUsage();
 	return &m_hash_cache.emplace(key, entry).first->second;
 }
@@ -2480,8 +2479,7 @@ void GSTextureCache::InjectHashCacheTexture(const HashCacheKey& key, GSTexture* 
 	{
 		// We must've got evicted before we finished loading. No matter, add it in there anyway;
 		// if it's not used again, it'll get tossed out later.
-		const HashCacheEntry entry{ tex, 1u, 0u };
-		m_hash_cache_memory_usage += tex->GetMemUsage();
+		const HashCacheEntry entry{tex, 1u, 0u, true};
 		m_hash_cache.emplace(key, entry).first->second;
 		return;
 	}
@@ -2490,8 +2488,11 @@ void GSTextureCache::InjectHashCacheTexture(const HashCacheKey& key, GSTexture* 
 	it->second.age = 0;
 
 	// Update memory usage, swap the textures, and recycle the old one for reuse.
-	m_hash_cache_memory_usage -= it->second.texture->GetMemUsage();
-	m_hash_cache_memory_usage += tex->GetMemUsage();
+	if (!it->second.is_replacement)
+	{
+		m_hash_cache_memory_usage -= it->second.texture->GetMemUsage();
+		it->second.is_replacement = true;
+	}
 	it->second.texture->Swap(tex);
 	g_gs_device->Recycle(tex);
 }
