@@ -61,7 +61,7 @@ alignas(16) static u32 hwLUT[_64kb];
 static __fi u32 HWADDR(u32 mem) { return hwLUT[mem >> 16] + mem; }
 
 u32 s_nBlockCycles = 0; // cycles of current block recompiling
-
+bool s_nBlockInterlocked = false; // Block is VU0 interlocked
 u32 pc;       // recompiler pc
 int g_branch; // set for branch
 
@@ -1927,6 +1927,7 @@ static void __fastcall recRecompile(const u32 startpc)
 
 	// reset recomp state variables
 	s_nBlockCycles = 0;
+	s_nBlockInterlocked = false;
 	pc = startpc;
 	g_cpuHasConstReg = g_cpuFlushedConstReg = 1;
 	pxAssert(g_cpuConstRegs[0].UD[0] == 0);

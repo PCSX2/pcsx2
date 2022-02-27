@@ -963,7 +963,8 @@ void recLQC2()
 	xForwardJL32 skip;
 	_cop2BackupRegs();
 	xLoadFarAddr(arg1reg, CpuVU0);
-	xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+	xMOV(arg2reg, s_nBlockInterlocked);
+	xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg, arg2reg);
 	_cop2RestoreRegs();
 	skip.SetTarget();
 	skipvuidle.SetTarget();
@@ -1012,7 +1013,8 @@ void recSQC2()
 	xForwardJL32 skip;
 	_cop2BackupRegs();
 	xLoadFarAddr(arg1reg, CpuVU0);
-	xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+	xMOV(arg2reg, s_nBlockInterlocked);
+	xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg, arg2reg);
 	_cop2RestoreRegs();
 	skip.SetTarget();
 	skipvuidle.SetTarget();
