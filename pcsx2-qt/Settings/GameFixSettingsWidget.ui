@@ -128,9 +128,9 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="VUKickstartHack">
+       <widget class="QCheckBox" name="VUSyncHack">
         <property name="text">
-         <string>VU Kickstart Hack (Run Ahead)</string>
+         <string>VU Sync (Run Behind, M-Bit games)</string>
         </property>
        </widget>
       </item>
