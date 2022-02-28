@@ -917,6 +917,7 @@ void VMManager::SetBootParametersForPath(const std::string& path, VMBootParamete
 	if (IsElfFileName(path))
 	{
 		params->elf_override = path;
+		params->source_type = CDVD_SourceType::NoDisc;
 	}
 	else if (!path.empty())
 	{
