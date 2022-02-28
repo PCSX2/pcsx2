@@ -10,6 +10,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rdparty", "3rdparty", "{78
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{2D6F0A62-A247-4CCF-947F-FCD54BE16103}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pcsx2-qt", "pcsx2-qt\pcsx2-qt.vcxproj", "{2A016F21-87AE-4154-8271-1F57E91408E9}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoundTouch", "3rdparty\soundtouch\SoundTouch.vcxproj", "{E9B51944-7E6D-4BCD-83F2-7BBD5A46182D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "3rdparty\zlib\zlib.vcxproj", "{2F6C0388-20CB-4242-9F6C-A6EBB6A83F47}"
@@ -45,8 +47,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glad", "3rdparty\glad\glad.vcxproj", "{C0293B32-5ACF-40F0-AA6C-E6DA6F3BF33A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imgui", "3rdparty\imgui\imgui.vcxproj", "{88FB34EC-845E-4F21-A552-F1573B9ED167}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pcsx2-qt", "pcsx2-qt\pcsx2-qt.vcxproj", "{2A016F21-87AE-4154-8271-1F57E91408E9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simpleini", "3rdparty\simpleini\simpleini.vcxproj", "{1EC8B3C0-8FB3-46DE-A2E0-A9121203F266}"
 EndProject
