@@ -90,7 +90,7 @@ void Pcsx2Config::SpeedhackOptions::Set(SpeedhackId id, bool enabled)
 		case Speedhack_MTVU:
 			vuThread = enabled;
 			break;
-			jNO_DEFAULT;
+        jNO_DEFAULT;
 	}
 }
 
@@ -269,20 +269,13 @@ const char* Pcsx2Config::GSOptions::GetRendererName(GSRendererType type)
 {
 	switch (type)
 	{
-		case GSRendererType::Auto:
-			return "Auto";
-		case GSRendererType::DX11:
-			return "Direct3D 11";
-		case GSRendererType::OGL:
-			return "OpenGL";
-		case GSRendererType::VK:
-			return "Vulkan";
-		case GSRendererType::SW:
-			return "Software";
-		case GSRendererType::Null:
-			return "Null";
-		default:
-			return "";
+		case GSRendererType::Auto:  return "Auto";
+		case GSRendererType::DX11:  return "Direct3D 11";
+		case GSRendererType::OGL:   return "OpenGL";
+		case GSRendererType::VK:    return "Vulkan";
+		case GSRendererType::SW:    return "Software";
+		case GSRendererType::Null:  return "Null";
+		default:                    return "";
 	}
 }
 
@@ -817,23 +810,24 @@ std::string Pcsx2Config::DEV9Options::SaveIPHelper(u8* field)
 }
 
 static const char* const tbl_GamefixNames[] =
-	{
-		"FpuMul",
-		"FpuNegDiv",
-		"GoemonTlb",
-		"SoftwareRendererFMV",
-		"SkipMPEG",
-		"OPHFlag",
-		"EETiming",
-		"DMABusy",
-		"GIFFIFO",
-		"VIFFIFO",
-		"VIF1Stall",
-		"VuAddSub",
-		"Ibit",
-		"VUSync",
-		"VUOverflow",
-		"XGKick"};
+{
+	"FpuMul",
+	"FpuNegDiv",
+	"GoemonTlb",
+	"SoftwareRendererFMV",
+	"SkipMPEG",
+	"OPHFlag",
+	"EETiming",
+	"DMABusy",
+	"GIFFIFO",
+	"VIFFIFO",
+	"VIF1Stall",
+	"VuAddSub",
+	"Ibit",
+	"VUSync",
+	"VUOverflow",
+	"XGKick"
+};
 
 const char* EnumToString(GamefixId id)
 {
@@ -881,55 +875,23 @@ void Pcsx2Config::GamefixOptions::Set(GamefixId id, bool enabled)
 	EnumAssert(id);
 	switch (id)
 	{
-		case Fix_VuAddSub:
-			VuAddSubHack = enabled;
-			break;
-		case Fix_FpuMultiply:
-			FpuMulHack = enabled;
-			break;
-		case Fix_FpuNegDiv:
-			FpuNegDivHack = enabled;
-			break;
-		case Fix_XGKick:
-			XgKickHack = enabled;
-			break;
-		case Fix_EETiming:
-			EETimingHack = enabled;
-			break;
-		case Fix_SoftwareRendererFMV:
-			SoftwareRendererFMVHack = enabled;
-			break;
-		case Fix_SkipMpeg:
-			SkipMPEGHack = enabled;
-			break;
-		case Fix_OPHFlag:
-			OPHFlagHack = enabled;
-			break;
-		case Fix_DMABusy:
-			DMABusyHack = enabled;
-			break;
-		case Fix_VIFFIFO:
-			VIFFIFOHack = enabled;
-			break;
-		case Fix_VIF1Stall:
-			VIF1StallHack = enabled;
-			break;
-		case Fix_GIFFIFO:
-			GIFFIFOHack = enabled;
-			break;
-		case Fix_GoemonTlbMiss:
-			GoemonTlbHack = enabled;
-			break;
-		case Fix_Ibit:
-			IbitHack = enabled;
-			break;
-		case Fix_VUSync:
-			VUSyncHack = enabled;
-			break;
-		case Fix_VUOverflow:
-			VUOverflowHack = enabled;
-			break;
-			jNO_DEFAULT;
+		case Fix_VuAddSub:            VuAddSubHack            = enabled; break;
+		case Fix_FpuMultiply:         FpuMulHack              = enabled; break;
+		case Fix_FpuNegDiv:           FpuNegDivHack           = enabled; break;
+		case Fix_XGKick:              XgKickHack              = enabled; break;
+		case Fix_EETiming:            EETimingHack            = enabled; break;
+		case Fix_SoftwareRendererFMV: SoftwareRendererFMVHack = enabled; break;
+		case Fix_SkipMpeg:            SkipMPEGHack            = enabled; break;
+		case Fix_OPHFlag:             OPHFlagHack             = enabled; break;
+		case Fix_DMABusy:             DMABusyHack             = enabled; break;
+		case Fix_VIFFIFO:             VIFFIFOHack             = enabled; break;
+		case Fix_VIF1Stall:           VIF1StallHack           = enabled; break;
+		case Fix_GIFFIFO:             GIFFIFOHack             = enabled; break;
+		case Fix_GoemonTlbMiss:       GoemonTlbHack           = enabled; break;
+		case Fix_Ibit:                IbitHack                = enabled; break;
+		case Fix_VUSync:              VUSyncHack              = enabled; break;
+		case Fix_VUOverflow:          VUOverflowHack          = enabled; break;
+		jNO_DEFAULT;
 	}
 }
 
@@ -938,39 +900,23 @@ bool Pcsx2Config::GamefixOptions::Get(GamefixId id) const
 	EnumAssert(id);
 	switch (id)
 	{
-		case Fix_VuAddSub:
-			return VuAddSubHack;
-		case Fix_FpuMultiply:
-			return FpuMulHack;
-		case Fix_FpuNegDiv:
-			return FpuNegDivHack;
-		case Fix_XGKick:
-			return XgKickHack;
-		case Fix_EETiming:
-			return EETimingHack;
-		case Fix_SoftwareRendererFMV:
-			return SoftwareRendererFMVHack;
-		case Fix_SkipMpeg:
-			return SkipMPEGHack;
-		case Fix_OPHFlag:
-			return OPHFlagHack;
-		case Fix_DMABusy:
-			return DMABusyHack;
-		case Fix_VIFFIFO:
-			return VIFFIFOHack;
-		case Fix_VIF1Stall:
-			return VIF1StallHack;
-		case Fix_GIFFIFO:
-			return GIFFIFOHack;
-		case Fix_GoemonTlbMiss:
-			return GoemonTlbHack;
-		case Fix_Ibit:
-			return IbitHack;
-		case Fix_VUSync:
-			return VUSyncHack;
-		case Fix_VUOverflow:
-			return VUOverflowHack;
-			jNO_DEFAULT;
+		case Fix_VuAddSub:            return VuAddSubHack;
+		case Fix_FpuMultiply:         return FpuMulHack;
+		case Fix_FpuNegDiv:           return FpuNegDivHack;
+		case Fix_XGKick:              return XgKickHack;
+		case Fix_EETiming:            return EETimingHack;
+		case Fix_SoftwareRendererFMV: return SoftwareRendererFMVHack;
+		case Fix_SkipMpeg:            return SkipMPEGHack;
+		case Fix_OPHFlag:             return OPHFlagHack;
+		case Fix_DMABusy:             return DMABusyHack;
+		case Fix_VIFFIFO:             return VIFFIFOHack;
+		case Fix_VIF1Stall:           return VIF1StallHack;
+		case Fix_GIFFIFO:             return GIFFIFOHack;
+		case Fix_GoemonTlbMiss:       return GoemonTlbHack;
+		case Fix_Ibit:                return IbitHack;
+		case Fix_VUSync:              return VUSyncHack;
+		case Fix_VUOverflow:          return VUOverflowHack;
+		jNO_DEFAULT;
 	}
 	return false; // unreachable, but we still need to suppress warnings >_<
 }
