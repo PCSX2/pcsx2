@@ -38,7 +38,7 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
     - GIFFIFOHack
     - GoemonTlbHack
     - IbitHack
-    - VSyncHack
+    - VUSyncHack
     - VUOverflowHack
   # The value of the speedhacks is assumed to be an integer,
   # but at the time of writing speedhacks are effectively booleans (0/1)

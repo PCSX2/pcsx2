@@ -8712,9 +8712,13 @@ SLES-50727:
 SLES-50728:
   name: "Tiger Woods PGA Tour 2002"
   region: "PAL-M3"
+  gameFixes:
+    - VUSyncHack # Fixes the inverted legs.
 SLES-50729:
   name: "Tiger Woods USA Tour 2002"
   region: "PAL-A"
+  gameFixes:
+    - VUSyncHack # Fixes the inverted legs.
 SLES-50730:
   name: "VIP"
   region: "PAL-M5"
@@ -30092,6 +30096,8 @@ SLPS-25141:
 SLPS-25142:
   name: "Tiger Woods PGA Tour 2002"
   region: "NTSC-J"
+  gameFixes:
+    - VUSyncHack # Fixes the inverted legs.
 SLPS-25143:
   name: ".hack//Mutation Part 2"
   region: "NTSC-J"
@@ -34511,6 +34517,8 @@ SLUS-20363:
 SLUS-20364:
   name: "Tiger Woods PGA Tour 2002"
   region: "NTSC-U"
+  gameFixes:
+    - VUSyncHack # Fixes the inverted legs.
 SLUS-20365:
   name: "Pirates - Legend of Black Kat"
   region: "NTSC-U"
