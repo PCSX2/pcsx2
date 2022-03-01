@@ -1138,7 +1138,9 @@ void GSTextureCache::IncAge()
 		HashCacheEntry& e = it->second;
 		if (e.refcount == 0 && ++e.age > max_hash_cache_age)
 		{
-			m_hash_cache_memory_usage -= e.texture->GetMemUsage();
+			if (!e.is_replacement)
+				m_hash_cache_memory_usage -= e.texture->GetMemUsage();
+
 			g_gs_device->Recycle(e.texture);
 			m_hash_cache.erase(it++);
 		}
