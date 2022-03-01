@@ -209,7 +209,6 @@ void GSState::Reset()
 	m_vertex.tail = 0;
 	m_vertex.next = 0;
 	m_index.tail = 0;
-
 	m_scanmask_used = false;
 }
 
@@ -895,10 +894,7 @@ void GSState::GIFRegHandlerTEX0(const GIFReg* RESTRICT r)
 	GL_REG("TEX0_%d = 0x%x_%x", i, r->U32[1], r->U32[0]);
 
 	GIFRegTEX0 TEX0 = r->TEX0;
-
-	bool MTBA_reload = false;
-	if ((m_env.CTXT[i].TEX0.TBP0 != TEX0.TBP0 || tex_flushed) && m_env.CTXT[i].TEX1.MTBA)
-		MTBA_reload = true;
+	const bool MTBAreload = ((tex_flushed  && (i == m_env.PRIM.CTXT)) || (r->TEX0.TBP0 != m_env.CTXT[i].TEX0.TBP0)) ? true : false;
 
 	// Spec max is 10
 	//
@@ -916,20 +912,22 @@ void GSState::GIFRegHandlerTEX0(const GIFReg* RESTRICT r)
 
 	ApplyTEX0<i>(TEX0);
 
+	// When the texture cache reloads any MIPS need to update too, so let's do that here.
+	// This is essentially triggered by the texture page change, so if TEXFLUSH is called and a draw doesn't proceed it, or TBP changes.
 	// Textures must be of equal width/height and a minimum of 32x32
-	if (MTBA_reload && TEX0.TW == TEX0.TH && TEX0.TW >= 5)
+	if (MTBAreload && m_env.CTXT[i].TEX1.MTBA && m_env.CTXT[i].TEX0.TW == m_env.CTXT[i].TEX0.TH && m_env.CTXT[i].TEX0.TW >= 5)
 	{
 		// NOTE 1: TEX1.MXL must not be automatically set to 3 here.
 		// NOTE 2: Mipmap levels are tightly packed, if (tbw << 6) > (1 << tw) then the left-over space to the right is used. (common for PSM_PSMT4)
 		// NOTE 3: Non-rectangular textures are treated as rectangular when calculating the occupied space (height is extended, not sure about width)
 
-		u32 bp = TEX0.TBP0;
-		u32 bw = TEX0.TBW;
-		u32 w = 1u << TEX0.TW;
-		u32 h = 1u << TEX0.TH;
-		u32 minwidth = m_context->TEX1.MMIN >= 4 ? 8 : 1;
+		u32 bp = m_env.CTXT[i].TEX0.TBP0;
+		u32 bw = m_env.CTXT[i]. TEX0.TBW;
+		u32 w = 1u << m_env.CTXT[i].TEX0.TW;
+		u32 h = 1u << m_env.CTXT[i].TEX0.TH;
+		u32 minwidth = m_env.CTXT[i].TEX1.MMIN >= 4 ? 8 : 1;
 
-		const u32 bpp = GSLocalMemory::m_psm[TEX0.PSM].bpp;
+		const u32 bpp = GSLocalMemory::m_psm[m_env.CTXT[i].TEX0.PSM].bpp;
 
 		bp += (int)((w * h * ((float)bpp / 8))) >> 8;
 
@@ -944,7 +942,7 @@ void GSState::GIFRegHandlerTEX0(const GIFReg* RESTRICT r)
 		m_env.CTXT[i].MIPTBP1.TBW1 = bw;
 
 		bp += (int)((w * h * ((float)bpp / 8))) >> 8;
-		
+
 		if (w > minwidth)
 		{
 			bw = std::max<u32>(bw >> 1, 1);
@@ -961,7 +959,7 @@ void GSState::GIFRegHandlerTEX0(const GIFReg* RESTRICT r)
 		{
 			bw = std::max<u32>(bw >> 1, 1);
 		}
-		
+
 		m_env.CTXT[i].MIPTBP1.TBP3 = bp;
 		m_env.CTXT[i].MIPTBP1.TBW3 = bw;
 	}
@@ -1132,8 +1130,14 @@ void GSState::GIFRegHandlerFOGCOL(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerTEXFLUSH(const GIFReg* RESTRICT r)
 {
-	GL_REG("TEXFLUSH = 0x%x_%x", r->U32[1], r->U32[0]);
+	GL_REG("TEXFLUSH = 0x%x_%x PRIM TME %x", r->U32[1], r->U32[0], PRIM->TME);
+
 	tex_flushed = true;
+	// Some games do a single sprite draw to itself, then flush the texture cache, then use that texture again.
+	// This won't get picked up by the new autoflush logic (which checks for page crossings for the PS2 Texture Cache flush)
+	// so we need to do it here.
+	if(m_userhacks_auto_flush)
+		Flush();
 }
 
 template <int i>
@@ -1506,7 +1510,6 @@ void GSState::FlushPrim()
 		g_perfmon.Put(GSPerfMon::Prim, m_index.tail / GSUtil::GetVertexCount(PRIM->PRIM));
 
 		m_index.tail = 0;
-
 		m_vertex.head = 0;
 
 		if (unused > 0)
@@ -2428,33 +2431,104 @@ GSState::PRIM_OVERLAP GSState::PrimitiveOverlap()
 	return overlap;
 }
 
+__forceinline void GSState::HandleAutoFlush()
+{
+	// To briefly explain what's going on here, what we are checking for is draws over a texture when the source and destination are themselves.
+	// Because one page of the texture gets buffered in the Texture Cache (the PS2's one) if any of those pixels are overwritten, you still read the old data.
+	// So we need to calculate if a page boundary is being crossed for the format it is in and if the same part of the texture being written and read inside the draw.
+	if ((m_context->FRAME.Block() == m_context->TEX0.TBP0) && (m_context->TEX0.PSM == m_context->FRAME.PSM) && PRIM->TME && (m_context->FRAME.FBMSK != 0xFFFFFFFF))
+	{
+		const int page_mask_x = ~(GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.x - 1);
+		const int page_mask_y = ~(GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.y - 1);
+		const GSVector4i page_mask = { page_mask_x, page_mask_y, page_mask_x, page_mask_y };
+
+		size_t n = 1;
+
+		switch (GSUtil::GetPrimClass(PRIM->PRIM))
+		{
+			case GS_POINT_CLASS:
+				n = 1;
+				break;
+			case GS_LINE_CLASS:
+			case GS_SPRITE_CLASS:
+				n = 2;
+				break;
+			case GS_TRIANGLE_CLASS:
+				n = 3;
+				break;
+		}
+
+		GSVector4i tex_coord;
+		// Prepare the currently processed vertex.
+		if (PRIM->FST)
+		{
+			tex_coord.x = m_v.U >> 4;
+			tex_coord.y = m_v.V >> 4;
+		}
+		else
+		{
+			tex_coord.x = (int)((1 << m_context->TEX0.TW) * (m_v.ST.S / m_v.RGBAQ.Q));
+			tex_coord.y = (int)((1 << m_context->TEX0.TH) * (m_v.ST.T / m_v.RGBAQ.Q));
+		}
+
+		GSVector4i tex_rect = tex_coord.xyxy();
+		GSVector4i next_rect = tex_rect;
+		const int current_tex_end = (int)(m_index.tail - (m_index.tail % n)) - 1;
+		bool page_crossed = false;
+
+		// Check previous texture co-ordindates to see if we have changed page
+		for (int i = m_index.tail - 1; i >= current_tex_end; i--)
+		{
+			const GSVertex* v = &m_vertex.buff[m_index.buff[i]];
+
+			if (PRIM->FST)
+			{
+				tex_coord.x = v->U >> 4;
+				tex_coord.y = v->V >> 4;
+			}
+			else
+			{
+				tex_coord.x = (int)((1 << m_context->TEX0.TW) * (v->ST.S / v->RGBAQ.Q));
+				tex_coord.y = (int)((1 << m_context->TEX0.TH) * (v->ST.T / v->RGBAQ.Q));
+			}
+
+			next_rect.x = std::min(next_rect.x, tex_coord.x);
+			next_rect.z = std::max(next_rect.z, tex_coord.x);
+			next_rect.y = std::min(next_rect.y, tex_coord.y);
+			next_rect.w = std::max(next_rect.w, tex_coord.y);
+
+			const GSVector4i pages = next_rect & page_mask;
+
+			// We have changed page, so ignore the old textures co-ordinates.
+			if (!pages.xyxy().eq(pages.zwzw()))
+			{
+				page_crossed = true;
+				break;
+			}
+
+			tex_rect = next_rect;
+		}
+
+		tex_rect += GSVector4i(0, 0, 1, 1); // Intersect goes on space inside the rect
+
+		if(page_crossed)
+		{
+			// Update the vertex trace, scissor it (important for Jak 3!) and intersect with the current texture.
+			if((m_index.tail - 1) == current_tex_end)
+				m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail - m_vertex.head, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
+
+			GSVector4i area_out = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+			if (!area_out.rintersect(tex_rect).rempty())
+			{
+				Flush();
+			}
+		}
+	}
+}
+
 template <u32 prim, bool auto_flush, bool index_swap>
 __forceinline void GSState::VertexKick(u32 skip)
 {
-	ASSERT(m_vertex.tail < m_vertex.maxcount + 3);
-
-	size_t head = m_vertex.head;
-	size_t tail = m_vertex.tail;
-	size_t next = m_vertex.next;
-	size_t xy_tail = m_vertex.xy_tail;
-
-	// callers should write XYZUVF to m_v.m[1] in one piece to have this load store-forwarded, either by the cpu or the compiler when this function is inlined
-
-	GSVector4i v0(m_v.m[0]);
-	GSVector4i v1(m_v.m[1]);
-
-	GSVector4i* RESTRICT tailptr = (GSVector4i*)&m_vertex.buff[tail];
-
-	tailptr[0] = v0;
-	tailptr[1] = v1;
-
-	const GSVector4i xy = v1.xxxx().u16to32().sub32(m_ofxy);
-
-	GSVector4i::storel(&m_vertex.xy[xy_tail & 3], xy.blend16<0xf0>(xy.sra32(4)).ps32());
-
-	m_vertex.tail = ++tail;
-	m_vertex.xy_tail = ++xy_tail;
-
 	size_t n = 0;
 
 	switch (prim)
@@ -2484,6 +2558,37 @@ __forceinline void GSState::VertexKick(u32 skip)
 			n = 1;
 			break;
 	}
+
+	if (m_context->FRAME.FBMSK != 0xFFFFFFFF)
+		m_mem.m_clut.Invalidate(m_context->FRAME.Block());
+
+	if (auto_flush && m_index.tail >= n)
+		HandleAutoFlush();
+
+	ASSERT(m_vertex.tail < m_vertex.maxcount + 3);
+
+	size_t head = m_vertex.head;
+	size_t tail = m_vertex.tail;
+	size_t next = m_vertex.next;
+	size_t xy_tail = m_vertex.xy_tail;
+
+	// callers should write XYZUVF to m_v.m[1] in one piece to have this load store-forwarded, either by the cpu or the compiler when this function is inlined
+
+	GSVector4i v0(m_v.m[0]);
+	GSVector4i v1(m_v.m[1]);
+
+	GSVector4i* RESTRICT tailptr = (GSVector4i*)&m_vertex.buff[tail];
+
+	tailptr[0] = v0;
+	tailptr[1] = v1;
+
+	const GSVector4i xy = v1.xxxx().u16to32().sub32(m_ofxy);
+
+	GSVector4i::storel(&m_vertex.xy[xy_tail & 3], xy.blend16<0xf0>(xy.sra32(4)).ps32());
+
+	m_vertex.tail = ++tail;
+	m_vertex.xy_tail = ++xy_tail;
+
 
 	size_t m = tail - head;
 
@@ -2664,15 +2769,8 @@ __forceinline void GSState::VertexKick(u32 skip)
 			__assume(0);
 	}
 
-	if (m_context->FRAME.FBMSK != 0xFFFFFFFF)
-	{
-		m_mem.m_clut.Invalidate(m_context->FRAME.Block());
-
-		if (auto_flush && PRIM->TME && (m_context->FRAME.Block() == m_context->TEX0.TBP0) && (m_context->TEX0.PSM == m_context->FRAME.PSM))
-		{
-			FlushPrim();
-		}
-	}
+	if (PRIM->TME)
+		tex_flushed = false;
 }
 
 /// Checks if region repeat is used (applying it does something to at least one of the values in min...max)

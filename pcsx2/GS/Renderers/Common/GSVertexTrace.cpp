@@ -49,6 +49,9 @@ GSVertexTrace::GSVertexTrace(const GSState* state)
 
 void GSVertexTrace::Update(const void* vertex, const u32* index, int v_count, int i_count, GS_PRIM_CLASS primclass)
 {
+	if (i_count == 0)
+		return;
+
 	m_primclass = primclass;
 
 	u32 iip = m_state->PRIM->IIP;

@@ -156,12 +156,12 @@ protected:
 	int m_skip;
 	int m_skip_offset;
 	bool m_userhacks_auto_flush;
+	bool tex_flushed;
 
 	GSVertex m_v;
 	float m_q;
 	GSVector4i m_scissor;
 	GSVector4i m_ofxy;
-	bool tex_flushed;
 
 	bool m_scanmask_used;
 
@@ -185,7 +185,8 @@ protected:
 	void UpdateVertexKick();
 
 	void GrowVertexBuffer();
-
+	void HandleAutoFlush();
+	
 	template <u32 prim, bool auto_flush, bool index_swap>
 	void VertexKick(u32 skip);
 
