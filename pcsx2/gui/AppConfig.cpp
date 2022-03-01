@@ -536,8 +536,8 @@ void AppConfig::FolderOptions::Set(FoldersEnum_t folderidx, const wxString& src,
 			break;
 
 		case FolderId_Textures:
-			Cache = src;
-			UseDefaultCache = useDefault;
+			Textures = src;
+			UseDefaultTextures = useDefault;
 			EmuFolders::Textures = GetResolvedFolder(FolderId_Textures);
 			EmuFolders::Textures.Mkdir();
 			break;
@@ -775,6 +775,7 @@ void AppConfig::FolderOptions::LoadSave(IniInterface& ini)
 	IniBitBool(UseDefaultLangs);
 	IniBitBool(UseDefaultCheats);
 	IniBitBool(UseDefaultCheatsWS);
+	IniBitBool(UseDefaultTextures);
 
 	//when saving in portable mode, we save relative paths if possible
 	//  --> on load, these relative paths will be expanded relative to the exe folder.
@@ -789,6 +790,7 @@ void AppConfig::FolderOptions::LoadSave(IniInterface& ini)
 	IniEntryDirFile(Cheats, rel);
 	IniEntryDirFile(CheatsWS, rel);
 	IniEntryDirFile(Cache, rel);
+	IniEntryDirFile(Textures, rel);
 
 	IniEntryDirFile(RunIso, rel);
 	IniEntryDirFile(RunELF, rel);

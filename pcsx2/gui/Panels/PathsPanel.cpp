@@ -60,6 +60,14 @@ Panels::StandardPathsPanel::StandardPathsPanel( wxWindow* parent )
 		)
 	) | SubGroup();
 
+	*this += BetweenFolderSpace;
+	*this += (new DirPickerPanel( this, FolderId_Textures,
+		_("Textures:"),
+		_("Select a folder for textures") ))->
+		SetToolTip( pxEt( L"This folder is where PCSX2 saves texture dumps and replacements."
+		)
+	) | SubGroup();
+
 	/*
 	*this += BetweenFolderSpace;
 	*this += (new DirPickerPanel( this, FolderId_MemoryCards,
