@@ -248,6 +248,7 @@ if(QT_BUILD)
 endif()
 
 add_subdirectory(3rdparty/libchdr/libchdr EXCLUDE_FROM_ALL)
+target_compile_options(chdr-static PRIVATE "-w")
 
 if(USE_NATIVE_TOOLS)
 	add_subdirectory(tools/bin2cpp EXCLUDE_FROM_ALL)
@@ -269,5 +270,7 @@ endif()
 
 if(CUBEB_API)
 	add_subdirectory(3rdparty/cubeb EXCLUDE_FROM_ALL)
+	target_compile_options(cubeb PRIVATE "-w")
+	target_compile_options(speex PRIVATE "-w")
 endif()
 
