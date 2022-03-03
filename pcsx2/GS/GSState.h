@@ -258,6 +258,7 @@ public:
 	virtual ~GSState();
 
 	void ResetHandlers();
+	void UpdateMipmapEnabled();
 
 	int GetFramebufferHeight();
 	void SaturateOutputSize(GSVector4i& r);

@@ -132,6 +132,7 @@ GSState::GSState()
 	Reset();
 
 	ResetHandlers();
+	UpdateMipmapEnabled();
 }
 
 GSState::~GSState()
@@ -312,6 +313,11 @@ void GSState::ResetHandlers()
 	m_fpGIFRegHandlers[GIF_A_D_REG_SIGNAL] = &GSState::GIFRegHandlerNull;
 	m_fpGIFRegHandlers[GIF_A_D_REG_FINISH] = &GSState::GIFRegHandlerNull;
 	m_fpGIFRegHandlers[GIF_A_D_REG_LABEL] = &GSState::GIFRegHandlerNull;
+}
+
+void GSState::UpdateMipmapEnabled()
+{
+	m_mipmap = GSConfig.UseHardwareRenderer() ? (GSConfig.HWMipmap >= HWMipmapLevel::Basic) : GSConfig.Mipmap;
 }
 
 bool GSState::isinterlaced()

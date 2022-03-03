@@ -956,7 +956,7 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	const bool need_mipmap = IsMipMapDraw();
 	const bool shader_emulated_sampler = tex->m_palette || cpsm.fmt != 0 || complex_wms_wmt || psm.depth;
-	const bool trilinear_manual = need_mipmap && m_hw_mipmap == HWMipmapLevel::Full;
+	const bool trilinear_manual = need_mipmap && GSConfig.HWMipmap == HWMipmapLevel::Full;
 
 	bool bilinear = m_vt.IsLinear();
 	int trilinear = 0;
@@ -965,11 +965,11 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	{
 		case TriFiltering::Forced:
 			trilinear = static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Linear);
-			trilinear_auto = !need_mipmap || m_hw_mipmap != HWMipmapLevel::Full;
+			trilinear_auto = !need_mipmap || GSConfig.HWMipmap != HWMipmapLevel::Full;
 			break;
 
 		case TriFiltering::PS2:
-			if (need_mipmap && m_hw_mipmap != HWMipmapLevel::Full)
+			if (need_mipmap && GSConfig.HWMipmap != HWMipmapLevel::Full)
 			{
 				trilinear = m_context->TEX1.MMIN;
 				trilinear_auto = true;
