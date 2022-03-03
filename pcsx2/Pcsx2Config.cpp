@@ -680,23 +680,27 @@ void Pcsx2Config::DEV9Options::LoadSave(SettingsWrapper& wrap)
 		SettingsWrapEntry(InterceptDHCP);
 
 		std::string ps2IPStr = "0.0.0.0";
+		std::string maskStr = "0.0.0.0";
 		std::string gatewayStr = "0.0.0.0";
 		std::string dns1Str = "0.0.0.0";
 		std::string dns2Str = "0.0.0.0";
 		if (wrap.IsSaving())
 		{
 			ps2IPStr = SaveIPHelper(PS2IP);
+			maskStr = SaveIPHelper(Mask);
 			gatewayStr = SaveIPHelper(Gateway);
 			dns1Str = SaveIPHelper(DNS1);
 			dns2Str = SaveIPHelper(DNS2);
 		}
 		SettingsWrapEntryEx(ps2IPStr, "PS2IP");
+		SettingsWrapEntryEx(maskStr, "Mask");
 		SettingsWrapEntryEx(gatewayStr, "Gateway");
 		SettingsWrapEntryEx(dns1Str, "DNS1");
 		SettingsWrapEntryEx(dns2Str, "DNS2");
 		if (wrap.IsLoading())
 		{
 			LoadIPHelper(PS2IP, ps2IPStr);
+			LoadIPHelper(Mask, maskStr);
 			LoadIPHelper(Gateway, gatewayStr);
 			LoadIPHelper(DNS1, dns1Str);
 			LoadIPHelper(DNS1, dns1Str);
