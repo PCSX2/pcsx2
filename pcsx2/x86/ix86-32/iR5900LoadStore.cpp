@@ -535,6 +535,12 @@ void recLDL()
 #ifdef LOADSTORE_RECOMPILE
 	int t2reg;
 
+	if (GPR_IS_CONST1(_Rt_))
+	{
+		_flushConstReg(_Rt_);
+		_eeOnWriteReg(_Rt_, 0);
+	}
+
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
@@ -610,6 +616,12 @@ void recLDR()
 
 #ifdef LOADSTORE_RECOMPILE
 	int t2reg;
+	
+	if (GPR_IS_CONST1(_Rt_))
+	{
+		_flushConstReg(_Rt_);
+		_eeOnWriteReg(_Rt_, 0);
+	}
 
 	if (GPR_IS_CONST1(_Rs_))
 	{
