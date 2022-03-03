@@ -914,9 +914,9 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 // Called each time you want to read from the GS memory
 void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r)
 {
-	u32 bp = off.bp();
-	u32 psm = off.psm();
-	u32 bw = off.bw();
+	const u32 bp = off.bp();
+	const u32 psm = off.psm();
+	[[maybe_unused]] const u32 bw = off.bw();
 
 	GL_CACHE("TC: InvalidateLocalMem off(0x%x, %u, %s) r(%d, %d => %d, %d)",
 		bp,
@@ -2448,7 +2448,7 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 
 	const GSVector4i& r1 = so.b2a_offset;
 	const GSVector4i& r2 = b_rect;
-	const GSVector4i ri = r1.rintersect(r2);
+	[[maybe_unused]] const GSVector4i ri = r1.rintersect(r2);
 	assert(!so.is_valid || (r1.eq(ri) && r1.x >= 0 && r1.y >= 0 && r1.z > 0 && r1.w > 0));
 	
 	// Clear cache if size too big.
