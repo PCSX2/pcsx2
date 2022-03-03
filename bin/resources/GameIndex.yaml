@@ -20196,6 +20196,11 @@ SLPM-55096:
   name: "ThunderForce VI"
   region: "NTSC-J"
   compat: 5
+SLPM-55102:
+  name: "Pia Carrot e Youkoso!! G.P. Gakuen Princess"
+  region: "NTSC-J"
+  gsHWFixes:
+    pointListPalette: 1
 SLPM-55108:
   name: "Fate - Unlimited Codes"
   region: "NTSC-J"
@@ -25054,6 +25059,8 @@ SLPM-65842:
 SLPM-65843:
   name: "120 Yen no Haru - 120 Yen Stories"
   region: "NTSC-J"
+  gsHWFixes:
+    pointListPalette: 1
 SLPM-65844:
   name: "Air [Best]"
   region: "NTSC-J"
@@ -25186,6 +25193,8 @@ SLPM-65888:
 SLPM-65889:
   name: "Kazoku Keikaku - Kokoro no Kizuna"
   region: "NTSC-J"
+  gsHWFixes:
+    pointListPalette: 1
 SLPM-65890:
   name: "Shin Sangoku Musou 4"
   region: "NTSC-J"
@@ -25784,9 +25793,13 @@ SLPM-66082:
 SLPM-66083:
   name: "Ramune - Garasu-Bin ni Utsuru Umi [Limited Edition]"
   region: "NTSC-J"
+  gsHWFixes:
+    pointListPalette: 1
 SLPM-66084:
   name: "Ramune - Garasu-Bin ni Utsuru Umi"
   region: "NTSC-J"
+  gsHWFixes:
+    pointListPalette: 1
 SLPM-66085:
   name: "Rumble Roses [Konami The Best]"
   region: "NTSC-J"
@@ -25935,6 +25948,8 @@ SLPM-66138:
 SLPM-66139:
   name: "Duel Savior Destiny"
   region: "NTSC-J"
+  gsHWFixes:
+    pointListPalette: 1
 SLPM-66140:
   name: "Atelier Marie + Elie: Salburg no Renkinjutsushi 1&2"
   region: "NTSC-J"
@@ -26487,6 +26502,8 @@ SLPM-66301:
 SLPM-66302:
   name: "Clannad"
   region: "NTSC-J"
+  gsHWFixes:
+    pointListPalette: 1
 SLPM-66307:
   name: "Sengoku Musou 2"
   region: "NTSC-J"
@@ -27497,6 +27514,8 @@ SLPM-66610:
 SLPM-66611:
   name: "Tomoyo After - It's Wonderful Life [CS Edition]"
   region: "NTSC-J"
+  gsHWFixes:
+    pointListPalette: 1
 SLPM-66612:
   name: "School Love [Limited Edition]"
   region: "NTSC-J"
@@ -28466,6 +28485,8 @@ SLPM-66918:
 SLPM-66919:
   name: "Kyuuketsu Kitan Moonties"
   region: "NTSC-J"
+  gsHWFixes:
+    pointListPalette: 1
 SLPM-66920:
   name: "Hoshi Furu"
   region: "NTSC-J"
@@ -28638,6 +28659,8 @@ SLPM-66989:
 SLPM-66990:
   name: "Majo-musume A La Mode II [Best Version]"
   region: "NTSC-J"
+  gsHWFixes:
+    pointListPalette: 1
 SLPM-66991:
   name: "Fuuuraiki [Best Version]"
   region: "NTSC-J"

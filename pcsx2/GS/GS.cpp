@@ -804,7 +804,8 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	// This is where we would do finer-grained checks in the future.
 	// For example, flushing the texture cache when mipmap settings change.
 
-	if (GSConfig.CRCHack != old_config.CRCHack)
+	if (GSConfig.CRCHack != old_config.CRCHack ||
+		GSConfig.PointListPalette != old_config.PointListPalette)
 	{
 		// for automatic mipmaps, we need to reload the crc
 		s_gs->SetGameCRC(s_gs->GetGameCRC(), s_gs->GetGameCRCOptions());
@@ -1356,6 +1357,7 @@ void GSApp::Init()
 	m_default_configuration["override_GL_ARB_texture_barrier"]            = "-1";
 	m_default_configuration["paltex"]                                     = "0";
 	m_default_configuration["png_compression_level"]                      = std::to_string(Z_BEST_SPEED);
+	m_default_configuration["PointListPalette"]                           = "0";
 	m_default_configuration["PrecacheTextureReplacements"]                = "0";
 	m_default_configuration["preload_frame_with_gs_data"]                 = "0";
 	m_default_configuration["Renderer"]                                   = std::to_string(static_cast<int>(GSRendererType::Auto));
