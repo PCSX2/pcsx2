@@ -156,11 +156,6 @@ public:
 		RegionCount,
 	};
 
-	enum Flags
-	{
-		PointListPalette = 1,
-	};
-
 	struct Game
 	{
 		u32 crc;

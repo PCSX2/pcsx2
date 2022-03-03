@@ -313,6 +313,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	WrapGSMem = false;
 	Mipmap = true;
 	AA1 = true;
+	PointListPalette = false;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;

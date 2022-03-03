@@ -26,14 +26,14 @@ const CRC::Game CRC::m_games[] =
 	{0x68CE6801, ArTonelico2, JP, 0},
 	{0xCE2C1DBF, ArTonelico2, EU, 0},
 	{0x2113EA2E, MetalSlug6, JP, 0},
-	{0x42E05BAF, TomoyoAfter, JP, PointListPalette},
-	{0x7800DC84, Clannad, JP, PointListPalette},
-	{0xA6167B59, Lamune, JP, PointListPalette},
-	{0xDDB59F46, KyuuketsuKitanMoonties, JP, PointListPalette},
-	{0xC8EE2562, PiaCarroteYoukosoGPGakuenPrincess, JP, PointListPalette},
-	{0x6CF94A43, KazokuKeikakuKokoroNoKizuna, JP, PointListPalette},
-	{0xEDAF602D, DuelSaviorDestiny, JP, PointListPalette},
-	{0xBB63D785, OneTwentyYenStories, JP, PointListPalette}, // no Haru: 120 Yen Stories
+	{0x42E05BAF, TomoyoAfter, JP, 0},
+	{0x7800DC84, Clannad, JP, 0},
+	{0xA6167B59, Lamune, JP, 0},
+	{0xDDB59F46, KyuuketsuKitanMoonties, JP, 0},
+	{0xC8EE2562, PiaCarroteYoukosoGPGakuenPrincess, JP, 0},
+	{0x6CF94A43, KazokuKeikakuKokoroNoKizuna, JP, 0},
+	{0xEDAF602D, DuelSaviorDestiny, JP, 0},
+	{0xBB63D785, OneTwentyYenStories, JP, 0}, // no Haru: 120 Yen Stories
 	{0xA39517AB, FFX, EU, 0},
 	{0x78D83FD5, FFX, EU, 0}, // Demo
 	{0xA39517AE, FFX, FR, 0},
@@ -206,7 +206,7 @@ const CRC::Game CRC::m_games[] =
 	{0xA3643EB1, GiTS, KO, 0},
 	{0x28557423, GiTS, RU, 0},
 	{0xBF6F101F, GiTS, EU, 0}, // same CRC as another US disc
-	{0xF442260C, MajokkoALaMode2, JP, PointListPalette},
+	{0xF442260C, MajokkoALaMode2, JP, 0},
 	{0xA616A6C2, TalesOfAbyss, US, 0},
 	{0x14FE77F7, TalesOfAbyss, US, 0},
 	{0xAA5EC3A3, TalesOfAbyss, JP, 0},

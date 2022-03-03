@@ -1827,9 +1827,10 @@ void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 	m_oo = m_oo_map[hash];
 	m_cu = m_cu_map[hash];
 
-	if (game.flags & CRC::PointListPalette)
+	if (GSConfig.PointListPalette)
 	{
-		ASSERT(m_oi == NULL);
+		if (m_oi)
+			Console.Warning("Overriding m_oi with PointListPalette");
 
 		m_oi = &GSRendererHW::OI_PointListPalette;
 	}
