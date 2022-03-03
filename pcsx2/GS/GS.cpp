@@ -756,21 +756,6 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 
 	// Options which aren't using the global struct yet, so we need to recreate all GS objects.
 	if (
-		GSConfig.ConservativeFramebuffer != old_config.ConservativeFramebuffer ||
-		GSConfig.AutoFlushSW != old_config.AutoFlushSW ||
-		GSConfig.PreloadFrameWithGSData != old_config.PreloadFrameWithGSData ||
-		GSConfig.WrapGSMem != old_config.WrapGSMem ||
-		GSConfig.Mipmap != old_config.Mipmap ||
-		GSConfig.AA1 != old_config.AA1 ||
-		GSConfig.UserHacks_AlignSpriteX != old_config.UserHacks_AlignSpriteX ||
-		GSConfig.UserHacks_AutoFlush != old_config.UserHacks_AutoFlush ||
-		GSConfig.UserHacks_CPUFBConversion != old_config.UserHacks_CPUFBConversion ||
-		GSConfig.UserHacks_DisableDepthSupport != old_config.UserHacks_DisableDepthSupport ||
-		GSConfig.UserHacks_DisablePartialInvalidation != old_config.UserHacks_DisablePartialInvalidation ||
-		GSConfig.UserHacks_DisableSafeFeatures != old_config.UserHacks_DisableSafeFeatures ||
-		GSConfig.UserHacks_MergePPSprite != old_config.UserHacks_MergePPSprite ||
-		GSConfig.UserHacks_WildHack != old_config.UserHacks_WildHack ||
-		GSConfig.UserHacks_TextureInsideRt != old_config.UserHacks_TextureInsideRt ||
 		GSConfig.DumpGSData != old_config.DumpGSData ||
 		GSConfig.SaveRT != old_config.SaveRT ||
 		GSConfig.SaveFrame != old_config.SaveFrame ||
@@ -782,9 +767,6 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.SWExtraThreads != old_config.SWExtraThreads ||
 		GSConfig.SWExtraThreadsHeight != old_config.SWExtraThreadsHeight ||
 
-		GSConfig.UserHacks_HalfBottomOverride != old_config.UserHacks_HalfBottomOverride ||
-		GSConfig.UserHacks_HalfPixelOffset != old_config.UserHacks_HalfPixelOffset ||
-		GSConfig.UserHacks_RoundSprite != old_config.UserHacks_RoundSprite ||
 		GSConfig.UserHacks_TCOffsetX != old_config.UserHacks_TCOffsetX ||
 		GSConfig.UserHacks_TCOffsetY != old_config.UserHacks_TCOffsetY ||
 
@@ -811,11 +793,30 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		s_gs->SetGameCRC(s_gs->GetGameCRC(), s_gs->GetGameCRCOptions());
 	}
 
-	// reload texture cache when trilinear filtering or mipmap options change
-	if ((GSConfig.UseHardwareRenderer() && GSConfig.HWMipmap != old_config.HWMipmap) ||
+	if (
+		GSConfig.AutoFlushSW != old_config.AutoFlushSW ||
+		GSConfig.UserHacks_AutoFlush != old_config.UserHacks_AutoFlush ||
+		GSConfig.UserHacks_WildHack != old_config.UserHacks_WildHack)
+	{
+		s_gs->ResetHandlers();
+	}
+
+	if (GSConfig.Mipmap != old_config.Mipmap || GSConfig.HWMipmap != old_config.HWMipmap)
+		s_gs->UpdateMipmapEnabled();
+
+	// reload texture cache when trilinear filtering or TC options change
+	if (
+		(GSConfig.UseHardwareRenderer() && GSConfig.HWMipmap != old_config.HWMipmap) ||
+		GSConfig.ConservativeFramebuffer != old_config.ConservativeFramebuffer ||
 		GSConfig.TexturePreloading != old_config.TexturePreloading ||
 		GSConfig.UserHacks_TriFilter != old_config.UserHacks_TriFilter ||
-		GSConfig.GPUPaletteConversion != old_config.GPUPaletteConversion)
+		GSConfig.GPUPaletteConversion != old_config.GPUPaletteConversion ||
+		GSConfig.PreloadFrameWithGSData != old_config.PreloadFrameWithGSData ||
+		GSConfig.WrapGSMem != old_config.WrapGSMem ||
+		GSConfig.UserHacks_CPUFBConversion != old_config.UserHacks_CPUFBConversion ||
+		GSConfig.UserHacks_DisableDepthSupport != old_config.UserHacks_DisableDepthSupport ||
+		GSConfig.UserHacks_DisablePartialInvalidation != old_config.UserHacks_DisablePartialInvalidation ||
+		GSConfig.UserHacks_TextureInsideRt != old_config.UserHacks_TextureInsideRt)
 	{
 		s_gs->PurgeTextureCache();
 		s_gs->PurgePool();
