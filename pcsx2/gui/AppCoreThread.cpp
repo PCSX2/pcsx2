@@ -333,6 +333,8 @@ static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEnt
 			vtlb_Alloc_Ppmap();
 	}
 
+	gf += game.applyGSHardwareFixes(dest.GS);
+
 	return gf;
 }
 
@@ -403,6 +405,10 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 		fixup.GS.FrameLimitEnable = false;
 		fixup.GS.VsyncEnable = VsyncMode::Off;
 	}
+
+	// Remove any user-specified hacks in the config (we don't want stale/conflicting values when it's globally disabled).
+	fixup.GS.MaskUserHacks();
+	fixup.GS.MaskUpscalingHacks();
 
 	wxString gamePatch;
 	wxString gameFixes;

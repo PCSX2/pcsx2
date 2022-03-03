@@ -218,6 +218,10 @@ void VMManager::LoadSettings()
 	InputManager::ReloadSources(*si);
 	InputManager::ReloadBindings(*si);
 
+	// Remove any user-specified hacks in the config (we don't want stale/conflicting values when it's globally disabled).
+	EmuConfig.GS.MaskUserHacks();
+	EmuConfig.GS.MaskUpscalingHacks();
+
 	if (HasValidVM())
 		ApplyGameFixes();
 }
@@ -295,6 +299,8 @@ void VMManager::ApplyGameFixes()
 		if (id == Fix_GoemonTlbMiss && true)
 			vtlb_Alloc_Ppmap();
 	}
+
+	s_active_game_fixes += game->applyGSHardwareFixes(EmuConfig.GS);
 }
 
 std::string VMManager::GetGameSettingsPath(u32 game_crc)

@@ -442,7 +442,7 @@ struct Pcsx2Config
 					WrapGSMem : 1,
 					Mipmap : 1,
 					AA1 : 1,
-					UserHacks : 1,
+					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
 					UserHacks_AutoFlush : 1,
 					UserHacks_CPUFBConversion : 1,
@@ -510,8 +510,8 @@ struct Pcsx2Config
 		int SWExtraThreads{2};
 		int SWExtraThreadsHeight{4};
 		int TVShader{0};
-		int SkipDraw{0};
-		int SkipDrawOffset{0};
+		int SkipDrawStart{0};
+		int SkipDrawEnd{0};
 
 		int UserHacks_HalfBottomOverride{-1};
 		int UserHacks_HalfPixelOffset{0};

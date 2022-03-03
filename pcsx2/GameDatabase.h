@@ -15,16 +15,18 @@
 
 #pragma once
 
+#include "Config.h"
+#include <optional>
+#include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
-#include <string>
 
 enum GamefixId;
 enum SpeedhackId;
 
-class GameDatabaseSchema
+namespace GameDatabaseSchema
 {
-public:
 	enum class Compatibility
 	{
 		Unknown = 0,
@@ -54,6 +56,34 @@ public:
 		Full
 	};
 
+	enum class GSHWFixId : u32
+	{
+		// boolean settings
+		AutoFlush,
+		ConservativeFramebuffer,
+		CPUFramebufferConversion,
+		DisableDepthSupport,
+		WrapGSMem,
+		PreloadFrameData,
+		FastTextureInvalidation,
+		TextureInsideRT,
+		AlignSprite,
+		MergeSprite,
+		WildArmsHack,
+
+		// integer settings
+		Mipmap,
+		TrilinearFiltering,
+		SkipDrawStart,
+		SkipDrawEnd,
+		HalfBottomOverride,
+		HalfPixelOffset,
+		RoundSprite,
+		TexturePreloading,
+
+		Count
+	};
+
 	using Patch = std::vector<std::string>;
 
 	struct GameEntry
@@ -67,6 +97,7 @@ public:
 		ClampMode vuClampMode = ClampMode::Undefined;
 		std::vector<GamefixId> gameFixes;
 		std::vector<std::pair<SpeedhackId, int>> speedHacks;
+		std::vector<std::pair<GSHWFixId, s32>> gsHWFixes;
 		std::vector<std::string> memcardFilters;
 		std::unordered_map<std::string, Patch> patches;
 
@@ -74,6 +105,9 @@ public:
 		std::string memcardFiltersAsString() const;
 		const Patch* findPatch(const std::string_view& crc) const;
 		const char* compatAsString() const;
+
+		/// Applies GS hardware fixes to an existing config. Returns the number of applied fixes.
+		u32 applyGSHardwareFixes(Pcsx2Config::GSOptions& config) const;
 	};
 };
 
