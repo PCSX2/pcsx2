@@ -183,62 +183,8 @@ void GSRendererHW::SetGameCRC(u32 crc, int options)
 
 	m_hacks.SetGameCRC(m_game);
 
-	// Code for Automatic Mipmapping. Relies on game CRCs.
 	m_hw_mipmap = GSConfig.HWMipmap;
 	m_mipmap = (m_hw_mipmap >= HWMipmapLevel::Basic);
-	if (m_hw_mipmap == HWMipmapLevel::Automatic)
-	{
-		switch (CRC::Lookup(crc).title)
-		{
-			case CRC::AceCombatZero:
-			case CRC::AceCombat4:
-			case CRC::AceCombat5:
-			case CRC::ApeEscape2:
-			case CRC::Barnyard:
-			case CRC::BrianLaraInternationalCricket:
-			case CRC::DarkCloud:
-			case CRC::DestroyAllHumans:
-			case CRC::DestroyAllHumans2:
-			case CRC::FIFA03:
-			case CRC::FIFA04:
-			case CRC::FIFA05:
-			case CRC::HarryPotterATCOS:
-			case CRC::HarryPotterATGOF:
-			case CRC::HarryPotterATHBP:
-			case CRC::HarryPotterATPOA:
-			case CRC::HarryPotterOOTP:
-			case CRC::ICO:
-			case CRC::Jak1:
-			case CRC::Jak3:
-			case CRC::JurassicPark:
-			case CRC::LegacyOfKainDefiance:
-			case CRC::NicktoonsUnite:
-			case CRC::Persona3:
-			case CRC::ProjectSnowblind:
-			case CRC::Quake3Revolution:
-			case CRC::RatchetAndClank:
-			case CRC::RatchetAndClank2:
-			case CRC::RatchetAndClank3:
-			case CRC::RatchetAndClank4:
-			case CRC::RatchetAndClank5:
-			case CRC::RickyPontingInternationalCricket:
-			case CRC::Shox:
-			case CRC::SlamTennis:
-			case CRC::SoTC:
-			case CRC::SoulReaver2:
-			case CRC::TheIncredibleHulkUD:
-			case CRC::TombRaiderAnniversary:
-			case CRC::TribesAerialAssault:
-			case CRC::Whiplash:
-				m_hw_mipmap = HWMipmapLevel::Basic;
-				m_mipmap = true;
-				break;
-			default:
-				m_hw_mipmap = HWMipmapLevel::Off;
-				m_mipmap = false;
-				break;
-		}
-	}
 
 	GSTextureReplacements::GameChanged();
 }
