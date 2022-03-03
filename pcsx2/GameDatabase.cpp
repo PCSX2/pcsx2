@@ -16,8 +16,8 @@
 #include "PrecompiledHeader.h"
 
 #include "GameDatabase.h"
-#include "Config.h"
 #include "Host.h"
+#include "Patch.h"
 
 #include "common/FileSystem.h"
 #include "common/Path.h"
@@ -31,6 +31,20 @@
 #include "fmt/ranges.h"
 #include <fstream>
 #include <mutex>
+#include <optional>
+
+namespace GameDatabaseSchema
+{
+	static const char* getHWFixName(GSHWFixId id);
+	static std::optional<GSHWFixId> parseHWFixName(const std::string_view& name);
+	static bool isUserHackHWFix(GSHWFixId id);
+} // namespace GameDatabaseSchema
+
+namespace GameDatabase
+{
+	static void parseAndInsert(const std::string_view& serial, const c4::yml::NodeRef& node);
+	static void initDatabase();
+} // namespace GameDatabase
 
 static constexpr char GAMEDB_YAML_FILE_NAME[] = "GameIndex.yaml";
 
@@ -85,7 +99,7 @@ const char* GameDatabaseSchema::GameEntry::compatAsString() const
 	}
 }
 
-void parseAndInsert(const std::string_view& serial, const c4::yml::NodeRef& node)
+void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml::NodeRef& node)
 {
 	GameDatabaseSchema::GameEntry gameEntry;
 	if (node.has_child("name"))
@@ -195,6 +209,25 @@ void parseAndInsert(const std::string_view& serial, const c4::yml::NodeRef& node
 		}
 	}
 
+	if (node.has_child("gsHWFixes"))
+	{
+		for (const ryml::NodeRef& n : node["gsHWFixes"].children())
+		{
+			const std::string_view id_name(n.key().data(), n.key().size());
+			std::optional<GameDatabaseSchema::GSHWFixId> id = GameDatabaseSchema::parseHWFixName(id_name);
+			std::optional<s32> value = n.has_val() ? StringUtil::FromChars<s32>(std::string_view(n.val().data(), n.val().size())) : 1;
+			if (!id.has_value() || !value.has_value())
+			{
+				Console.Error("[GameDB] Invalid GS HW Fix: '%*s' specified for serial '%*s'. Dropping!",
+					static_cast<int>(id_name.size()), id_name.data(),
+					static_cast<int>(serial.size()), serial.data());
+				continue;
+			}
+
+			gameEntry.gsHWFixes.emplace_back(id.value(), value.value());
+		}
+	}
+
 	// Memory Card Filters - Store as a vector to allow flexibility in the future
 	// - currently they are used as a '\n' delimited string in the app
 	if (node.has_child("memcardFilters") && node["memcardFilters"].has_children())
@@ -231,16 +264,188 @@ void parseAndInsert(const std::string_view& serial, const c4::yml::NodeRef& node
 	s_game_db.emplace(std::move(serial), std::move(gameEntry));
 }
 
-static std::ifstream getFileStream(std::string path)
+static const char* s_gs_hw_fix_names[] = {
+	"autoFlush",
+	"conservativeFramebuffer",
+	"cpuFramebufferConversion",
+	"disableDepthSupport",
+	"wrapGSMem",
+	"preloadFrameData",
+	"fastTextureInvalidation",
+	"textureInsideRT",
+	"alignSprite",
+	"mergeSprite",
+	"wildArmsHack",
+	"mipmap",
+	"trilinearFiltering",
+	"skipDrawStart",
+	"skipDrawEnd",
+	"halfBottomOverride",
+	"halfPixelOffset",
+	"roundSprite",
+	"texturePreloading",
+};
+static_assert(std::size(s_gs_hw_fix_names) == static_cast<u32>(GameDatabaseSchema::GSHWFixId::Count), "HW fix name lookup is correct size");
+
+const char* GameDatabaseSchema::getHWFixName(GSHWFixId id)
 {
-#ifdef _WIN32
-	return std::ifstream(StringUtil::UTF8StringToWideString(path));
-#else
-	return std::ifstream(path.c_str());
-#endif
+	return s_gs_hw_fix_names[static_cast<u32>(id)];
 }
 
-static void initDatabase()
+static std::optional<GameDatabaseSchema::GSHWFixId> GameDatabaseSchema::parseHWFixName(const std::string_view& name)
+{
+	for (u32 i = 0; i < std::size(s_gs_hw_fix_names); i++)
+	{
+		if (name.compare(s_gs_hw_fix_names[i]) == 0)
+			return static_cast<GameDatabaseSchema::GSHWFixId>(i);
+	}
+
+	return std::nullopt;
+}
+
+bool GameDatabaseSchema::isUserHackHWFix(GSHWFixId id)
+{
+	switch (id)
+	{
+		case GSHWFixId::Mipmap:
+		case GSHWFixId::TexturePreloading:
+		case GSHWFixId::ConservativeFramebuffer:
+			return false;
+
+#ifdef PCSX2_CORE
+			// Trifiltering isn't a hack in Qt.
+		case GSHWFixId::TrilinearFiltering:
+			return false;
+#endif
+
+		default:
+			return true;
+	}
+}
+
+u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& config) const
+{
+	// Only apply GS HW fixes if the user hasn't manually enabled HW fixes.
+	const bool apply_auto_fixes = !config.ManualUserHacks;
+	if (!apply_auto_fixes)
+		Console.Warning("[GameDB] Hardware fixes are enabled, not using automatic fixes.");
+
+	u32 num_applied_fixes = 0;
+	for (const auto& [id, value] : gsHWFixes)
+	{
+		if (isUserHackHWFix(id) && !apply_auto_fixes)
+		{
+			PatchesCon->Warning("[GameDB] Skipping GS Hardware Fix: %s to [mode=%d]", getHWFixName(id), value);
+			continue;
+		}
+
+		switch (id)
+		{
+			case GSHWFixId::AutoFlush:
+				config.UserHacks_AutoFlush = (value > 0);
+				break;
+
+			case GSHWFixId::ConservativeFramebuffer:
+				config.ConservativeFramebuffer = (value > 0);
+				break;
+
+			case GSHWFixId::CPUFramebufferConversion:
+				config.UserHacks_CPUFBConversion = (value > 0);
+				break;
+
+			case GSHWFixId::DisableDepthSupport:
+				config.UserHacks_DisableDepthSupport = (value > 0);
+				break;
+
+			case GSHWFixId::WrapGSMem:
+				config.WrapGSMem = (value > 0);
+				break;
+
+			case GSHWFixId::PreloadFrameData:
+				config.PreloadFrameWithGSData = (value > 0);
+				break;
+
+			case GSHWFixId::FastTextureInvalidation:
+				config.UserHacks_DisablePartialInvalidation = (value > 0);
+				break;
+
+			case GSHWFixId::TextureInsideRT:
+				config.UserHacks_TextureInsideRt = (value > 0);
+				break;
+
+			case GSHWFixId::AlignSprite:
+				config.UserHacks_AlignSpriteX = (value > 0);
+				break;
+
+			case GSHWFixId::MergeSprite:
+				config.UserHacks_MergePPSprite = (value > 0);
+				break;
+
+			case GSHWFixId::WildArmsHack:
+				config.UserHacks_WildHack = (value > 0);
+				break;
+
+			case GSHWFixId::Mipmap:
+			{
+				if (value >= 0 && value <= static_cast<int>(HWMipmapLevel::Full))
+				{
+					if (config.HWMipmap == HWMipmapLevel::Automatic)
+						config.HWMipmap = static_cast<HWMipmapLevel>(value);
+					else if (config.HWMipmap == HWMipmapLevel::Off)
+						Console.Warning("[GameDB] Game requires mipmapping but it has been force disabled.");
+				}
+			}
+			break;
+
+			case GSHWFixId::TrilinearFiltering:
+			{
+				if (value >= 0 && value <= static_cast<int>(TriFiltering::Forced))
+					config.UserHacks_TriFilter = static_cast<TriFiltering>(value);
+			}
+			break;
+
+			case GSHWFixId::SkipDrawStart:
+				config.SkipDrawStart = value;
+				break;
+
+			case GSHWFixId::SkipDrawEnd:
+				config.SkipDrawEnd = value;
+				break;
+
+			case GSHWFixId::HalfBottomOverride:
+				config.UserHacks_HalfBottomOverride = value;
+				break;
+
+			case GSHWFixId::HalfPixelOffset:
+				config.UserHacks_HalfPixelOffset = value;
+				break;
+
+			case GSHWFixId::RoundSprite:
+				config.UserHacks_RoundSprite = value;
+				break;
+
+			case GSHWFixId::TexturePreloading:
+			{
+				if (value >= 0 && value <= static_cast<int>(TexturePreloadingLevel::Full))
+					config.TexturePreloading = std::min(config.TexturePreloading, static_cast<TexturePreloadingLevel>(value));
+			}
+			break;
+
+			default:
+				break;
+		}
+
+		PatchesCon->WriteLn("[GameDB] Enabled GS Hardware Fix: %s to [mode=%d]", getHWFixName(id), value);
+		num_applied_fixes++;
+	}
+
+	// fixup skipdraw range just in case the db has a bad range (but the linter should catch this)
+	config.SkipDrawEnd = std::max(config.SkipDrawStart, config.SkipDrawEnd);
+
+	return num_applied_fixes;
+}
+
+void GameDatabase::initDatabase()
 {
 	ryml::Callbacks rymlCallbacks = ryml::get_callbacks();
 	rymlCallbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void*) {
@@ -290,8 +495,6 @@ static void initDatabase()
 	}
 	ryml::reset_callbacks();
 }
-
-
 
 void GameDatabase::ensureLoaded()
 {

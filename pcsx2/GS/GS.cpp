@@ -310,8 +310,6 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 
 	GSConfig = config;
 	GSConfig.Renderer = renderer;
-	GSConfig.MaskUserHacks();
-	GSConfig.MaskUpscalingHacks();
 
 	if (!Host::AcquireHostDisplay(GetAPIForRenderer(renderer)))
 	{
@@ -724,8 +722,6 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	Pcsx2Config::GSOptions old_config(std::move(GSConfig));
 	GSConfig = new_config;
 	GSConfig.Renderer = (GSConfig.Renderer == GSRendererType::Auto) ? GSUtil::GetPreferredRenderer() : GSConfig.Renderer;
-	GSConfig.MaskUserHacks();
-	GSConfig.MaskUpscalingHacks();
 	if (!s_gs)
 		return;
 

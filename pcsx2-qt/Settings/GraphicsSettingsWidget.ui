@@ -586,7 +586,7 @@
          <item row="1" column="1">
           <widget class="QCheckBox" name="enableHWFixes">
            <property name="text">
-            <string>Enable Hardware Renderer Fixes</string>
+            <string>Manual Hardware Renderer Fixes</string>
            </property>
           </widget>
          </item>
@@ -661,10 +661,10 @@
        <item row="1" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
-          <widget class="QSpinBox" name="skipDrawRangeStart"/>
+          <widget class="QSpinBox" name="skipDrawStart"/>
          </item>
          <item>
-          <widget class="QSpinBox" name="skipDrawRangeCount"/>
+          <widget class="QSpinBox" name="skipDrawEnd"/>
          </item>
         </layout>
        </item>
