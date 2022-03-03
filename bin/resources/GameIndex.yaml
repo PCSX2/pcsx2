@@ -37894,6 +37894,13 @@ SLUS-21151:
   name: "Disney-Pixar's Cars"
   region: "NTSC-U"
   compat: 5
+  patches:
+    F2A25D7B:
+      content: |-
+        author=refraction
+        // COP2 Rearrangement. Fixes broken collisions.
+        patch=1,EE,00203dd8,word,484e9000
+        patch=1,EE,00203ddc,word,4bdbd9ff
 SLUS-21152:
   name: "Shin Megami Tensei: Digital Devil Saga 2"
   region: "NTSC-U"
