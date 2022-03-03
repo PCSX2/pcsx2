@@ -12,6 +12,7 @@ allowed_game_options = [
     "roundModes",
     "clampModes",
     "gameFixes",
+    "gsHWFixes",
     "speedHacks",
     "memcardFilters",
     "patches",
@@ -36,6 +37,36 @@ allowed_game_fixes = [
     "IbitHack",
     "VUOverflowHack",
 ]
+allowed_gs_hw_fixes = [
+    "autoFlush",
+    "conservativeFramebuffer",
+    "cpuFramebufferConversion",
+    "disableDepthSupport",
+    "wrapGSMem",
+    "preloadFrameData",
+    "fastTextureInvalidation",
+    "textureInsideRT",
+    "alignSprite",
+    "mergeSprite",
+    "wildArmsHack",
+    "pointListPalette",
+    "mipmap",
+    "trilinearFiltering",
+    "skipDrawStart",
+    "skipDrawEnd",
+    "halfBottomOverride",
+    "halfPixelOffset",
+    "roundSprite",
+    "texturePreloading",
+]
+gs_hw_fix_ranges = {
+    "mipmap": (0, 2),
+    "trilinearFiltering": (0, 2),
+    "skipDrawStart": (0, 100000),
+    "skipDrawEnd": (0, 100000),
+    "halfPixelOffset": (0, 3),
+    "roundSprite": (0, 2),
+}
 allowed_speed_hacks = ["mvuFlagSpeedHack", "InstantVU1SpeedHack", "MTVUSpeedHack"]
 # Patches are allowed to have a 'default' key or a crc-32 key, followed by
 allowed_patch_options = ["author", "content"]
@@ -94,6 +125,29 @@ def validate_game_fixes(serial, key, value):
         validate_valid_options(serial, key, gamefix, allowed_game_fixes)
 
 
+def validate_gs_hw_fix_value(serial, key, value):
+    low, high = 0, 1
+    if key in gs_hw_fix_ranges:
+        low, high = gs_hw_fix_ranges[key]
+    validate_int_option(serial, key, value, low, high)
+
+
+def validate_gs_hw_fixes(serial, key, value):
+    if not isinstance(value, dict):
+        issue_list.append("[{}]: 'gsHWFixes' must be a valid object".format(serial))
+        return
+    for fix, fix_value in value.items():
+        validate_valid_options(serial, key, fix, allowed_gs_hw_fixes)
+        validate_gs_hw_fix_value(serial, fix, fix_value)
+
+    # skipdraw range must have end >= start
+    skip_draw_start = value["skipDrawStart"] if "skipDrawStart" in value else 0
+    skip_draw_end = value["skipDrawEnd"] if "skipDrawEnd" in value else 0
+    if isinstance(skip_draw_start, int) and isinstance(skip_draw_end, int) and skip_draw_end < skip_draw_start:
+        issue_list.append("[{}]: skipDrawStart({}) must be greater or equal to skipDrawEnd({})".format(
+            serial, skip_draw_start, skip_draw_end))
+
+
 def validate_speed_hacks(serial, key, value):
     if not isinstance(value, dict):
         issue_list.append("[{}]: 'speedHacks' must be a valid object".format(serial))
@@ -145,6 +199,7 @@ option_validation_handlers = {
         )
     ),
     "gameFixes": (lambda serial, key, value: validate_game_fixes(serial, key, value)),
+    "gsHWFixes": (lambda serial, key, value: validate_gs_hw_fixes(serial, key, value)),
     "speedHacks": (lambda serial, key, value: validate_speed_hacks(serial, key, value)),
     "memcardFilters": (
         lambda serial, key, value: validate_list_of_strings(serial, key, value)
