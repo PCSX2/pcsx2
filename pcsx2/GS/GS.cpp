@@ -804,14 +804,14 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	// This is where we would do finer-grained checks in the future.
 	// For example, flushing the texture cache when mipmap settings change.
 
-	if (GSConfig.HWMipmap != old_config.HWMipmap || GSConfig.CRCHack != old_config.CRCHack)
+	if (GSConfig.CRCHack != old_config.CRCHack)
 	{
 		// for automatic mipmaps, we need to reload the crc
 		s_gs->SetGameCRC(s_gs->GetGameCRC(), s_gs->GetGameCRCOptions());
 	}
 
 	// reload texture cache when trilinear filtering or mipmap options change
-	if (GSConfig.HWMipmap != old_config.HWMipmap ||
+	if ((GSConfig.UseHardwareRenderer() && GSConfig.HWMipmap != old_config.HWMipmap) ||
 		GSConfig.TexturePreloading != old_config.TexturePreloading ||
 		GSConfig.UserHacks_TriFilter != old_config.UserHacks_TriFilter ||
 		GSConfig.GPUPaletteConversion != old_config.GPUPaletteConversion)
