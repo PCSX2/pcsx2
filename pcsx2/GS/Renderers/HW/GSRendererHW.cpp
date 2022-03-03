@@ -25,7 +25,6 @@ GSRendererHW::GSRendererHW()
 	, m_height(default_rt_size.y)
 	, m_custom_width(1024)
 	, m_custom_height(1024)
-	, m_userhacks_ts_half_bottom(-1)
 	, m_tc(new GSTextureCache(this))
 	, m_src(nullptr)
 	, m_hw_mipmap(GSConfig.HWMipmap)
@@ -37,41 +36,18 @@ GSRendererHW::GSRendererHW()
 	, m_lod(GSVector2i(0, 0))
 {
 	m_mipmap = (m_hw_mipmap >= HWMipmapLevel::Basic);
-	m_conservative_framebuffer = theApp.GetConfigB("conservative_framebuffer");
 
-	if (theApp.GetConfigB("UserHacks"))
+	if (GSConfig.UserHacks)
 	{
-		m_userhacks_enabled_gs_mem_clear = !theApp.GetConfigB("UserHacks_Disable_Safe_Features");
-		m_userHacks_enabled_unscale_ptln = !theApp.GetConfigB("UserHacks_Disable_Safe_Features");
-		m_userhacks_align_sprite_X       = theApp.GetConfigB("UserHacks_align_sprite_X");
-		m_userHacks_merge_sprite         = theApp.GetConfigB("UserHacks_merge_pp_sprite");
-		m_userhacks_ts_half_bottom       = theApp.GetConfigI("UserHacks_Half_Bottom_Override");
-		m_userhacks_round_sprite_offset  = theApp.GetConfigI("UserHacks_round_sprite_offset");
-		m_userhacks_tcoffset_x           = theApp.GetConfigI("UserHacks_TCOffsetX") / -1000.0f;
-		m_userhacks_tcoffset_y           = theApp.GetConfigI("UserHacks_TCOffsetY") / -1000.0f;
+		m_userhacks_tcoffset_x           = GSConfig.UserHacks_TCOffsetX / -1000.0f;
+		m_userhacks_tcoffset_y           = GSConfig.UserHacks_TCOffsetY / -1000.0f;
 		m_userhacks_tcoffset             = m_userhacks_tcoffset_x < 0.0f || m_userhacks_tcoffset_y < 0.0f;
-	}
-	else
-	{
-		m_userhacks_enabled_gs_mem_clear = true;
-		m_userHacks_enabled_unscale_ptln = true;
-		m_userhacks_align_sprite_X       = false;
-		m_userHacks_merge_sprite         = false;
-		m_userhacks_ts_half_bottom       = -1;
-		m_userhacks_round_sprite_offset  = 0;
 	}
 
 	if (!GSConfig.UpscaleMultiplier) // Custom Resolution
 	{
 		m_custom_width = m_width = theApp.GetConfigI("resx");
 		m_custom_height = m_height = theApp.GetConfigI("resy");
-	}
-
-	if (GSConfig.UpscaleMultiplier == 1) // hacks are only needed for upscaling issues.
-	{
-		m_userhacks_round_sprite_offset = 0;
-		m_userhacks_align_sprite_X = false;
-		m_userHacks_merge_sprite = false;
 	}
 
 	m_dump_root = root_hw;
@@ -127,7 +103,7 @@ void GSRendererHW::SetScaling()
 	//
 	// m_large_framebuffer has been inverted to m_conservative_framebuffer, it isn't an option that benefits being enabled all the time for everyone.
 	int fb_height = 1280;
-	if (m_conservative_framebuffer)
+	if (GSConfig.ConservativeFramebuffer)
 	{
 		fb_height = fb_width < 1024 ? std::max(512, crtc_size.y) : 1024;
 	}
@@ -544,7 +520,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 	read_ba = (tex_pos > 112 && tex_pos < 144);
 
 	bool half_bottom = false;
-	switch (m_userhacks_ts_half_bottom)
+	switch (GSConfig.UserHacks_HalfBottomOverride)
 	{
 		case 0:
 			// Force Disabled.
@@ -774,7 +750,7 @@ GSVector4i GSRendererHW::ComputeBoundingBox(const GSVector2& rtscale, const GSVe
 void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 {
 	// Upscaling hack to avoid various line/grid issues
-	if (m_userHacks_merge_sprite && tex && tex->m_target && (m_vt.m_primclass == GS_SPRITE_CLASS))
+	if (GSConfig.UserHacks_MergePPSprite && tex && tex->m_target && (m_vt.m_primclass == GS_SPRITE_CLASS))
 	{
 		if (PRIM->FST && GSLocalMemory::m_psm[tex->m_TEX0.PSM].fmt < 2 && ((m_vt.m_eq.value & 0xCFFFF) == 0xCFFFF))
 		{
@@ -1732,7 +1708,7 @@ void GSRendererHW::Draw()
 		return;
 	}
 
-	if (m_userhacks_enabled_gs_mem_clear)
+	if (!GSConfig.UserHacks_DisableSafeFeatures)
 	{
 		// Constant Direct Write without texture/test/blending (aka a GS mem clear)
 		if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME // Direct write
@@ -1758,7 +1734,7 @@ void GSRendererHW::Draw()
 		GSVertex* v = &m_vertex.buff[0];
 
 		// Hack to avoid vertical black line in various games (ace combat/tekken)
-		if (m_userhacks_align_sprite_X)
+		if (GSConfig.UserHacks_AlignSpriteX)
 		{
 			// Note for performance reason I do the check only once on the first
 			// primitive
@@ -1784,7 +1760,7 @@ void GSRendererHW::Draw()
 		// Noting to do if no texture is sampled
 		if (PRIM->FST && draw_sprite_tex)
 		{
-			if ((m_userhacks_round_sprite_offset > 1) || (m_userhacks_round_sprite_offset == 1 && !m_vt.IsLinear()))
+			if ((GSConfig.UserHacks_RoundSprite > 1) || (GSConfig.UserHacks_RoundSprite == 1 && !m_vt.IsLinear()))
 			{
 				if (m_vt.IsLinear())
 					RoundSpriteOffset<true>();

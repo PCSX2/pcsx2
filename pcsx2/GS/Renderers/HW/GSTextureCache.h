@@ -282,13 +282,7 @@ protected:
 	std::unordered_map<HashCacheKey, HashCacheEntry, HashCacheKeyHash> m_hash_cache;
 	u64 m_hash_cache_memory_usage = 0;
 	FastList<Target*> m_dst[2];
-	bool m_preload_frame;
 	static u8* m_temp;
-	bool m_can_convert_depth;
-	bool m_cpu_fb_conversion;
-	static bool m_disable_partial_invalidation;
-	bool m_texture_inside_rt;
-	static bool m_wrap_gs_mem;
 	constexpr static size_t S_SURFACE_OFFSET_CACHE_MAX_SIZE = std::numeric_limits<u16>::max();
 	std::unordered_map<SurfaceOffsetKey, SurfaceOffset, SurfaceOffsetKeyHash, SurfaceOffsetKeyEqual> m_surface_offset_cache;
 
@@ -326,7 +320,6 @@ public:
 	void InvalidateLocalMem(const GSOffset& off, const GSVector4i& r);
 
 	void IncAge();
-	bool UserHacks_HalfPixelOffset;
 
 	bool ShallSearchTextureInsideRt();
 

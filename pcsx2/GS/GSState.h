@@ -149,14 +149,11 @@ protected:
 	bool IsBadFrame();
 	void SetupCrcHack();
 
-	bool m_userhacks_wildhack;
 	bool m_isPackedUV_HackFlag;
 	CRCHackLevel m_crc_hack_level;
 	GetSkipCount m_gsc;
 	int m_skip;
 	int m_skip_offset;
-	bool m_userhacks_auto_flush;
-	bool tex_flushed;
 
 	GSVertex m_v;
 	float m_q;
@@ -164,6 +161,7 @@ protected:
 	GSVector4i m_ofxy;
 
 	bool m_scanmask_used;
+	bool tex_flushed;
 
 	struct
 	{

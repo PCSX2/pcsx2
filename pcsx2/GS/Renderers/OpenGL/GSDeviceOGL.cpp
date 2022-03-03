@@ -881,7 +881,7 @@ GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 
 	glSamplerParameteri(sampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	const int anisotropy = theApp.GetConfigI("MaxAnisotropy");
+	const int anisotropy = GSConfig.MaxAnisotropy;
 	if (anisotropy && sel.aniso)
 	{
 		if (GLExtension::Has("GL_ARB_texture_filter_anisotropic"))

@@ -27,35 +27,12 @@
 #define XXH_INLINE_ALL 1
 #include "xxhash.h"
 
-bool GSTextureCache::m_disable_partial_invalidation = false;
-bool GSTextureCache::m_wrap_gs_mem = false;
 u8* GSTextureCache::m_temp;
 
 GSTextureCache::GSTextureCache(GSRenderer* r)
 	: m_renderer(r)
 	, m_palette_map(r)
 {
-	if (theApp.GetConfigB("UserHacks"))
-	{
-		UserHacks_HalfPixelOffset      = theApp.GetConfigI("UserHacks_HalfPixelOffset") == 1;
-		m_preload_frame                = theApp.GetConfigB("preload_frame_with_gs_data");
-		m_disable_partial_invalidation = theApp.GetConfigB("UserHacks_DisablePartialInvalidation");
-		m_can_convert_depth            = !theApp.GetConfigB("UserHacks_DisableDepthSupport");
-		m_cpu_fb_conversion            = theApp.GetConfigB("UserHacks_CPU_FB_Conversion");
-		m_texture_inside_rt            = theApp.GetConfigB("UserHacks_TextureInsideRt");
-		m_wrap_gs_mem                  = theApp.GetConfigB("wrap_gs_mem");
-	}
-	else
-	{
-		UserHacks_HalfPixelOffset      = false;
-		m_preload_frame                = false;
-		m_disable_partial_invalidation = false;
-		m_can_convert_depth            = true;
-		m_cpu_fb_conversion            = false;
-		m_texture_inside_rt            = false;
-		m_wrap_gs_mem                  = false;
-	}
-
 	// In theory 4MB is enough but 9MB is safer for overflow (8MB
 	// isn't enough in custom resolution)
 	// Test: onimusha 3 PAL 60Hz
@@ -110,7 +87,7 @@ void GSTextureCache::RemoveAll()
 
 GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette)
 {
-	if (!m_can_convert_depth)
+	if (GSConfig.UserHacks_DisableDepthSupport)
 	{
 		GL_CACHE("LookupDepthSource not supported (0x%x, F:0x%x)", TEX0.TBP0, TEX0.PSM);
 		throw GSRecoverableError();
@@ -305,7 +282,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					// 1/ it just works :)
 					// 2/ even with upscaling
 					// 3/ for both Direct3D and OpenGL
-					if (m_cpu_fb_conversion && (psm == PSM_PSMT4 || psm == PSM_PSMT8))
+					if (GSConfig.UserHacks_CPUFBConversion && (psm == PSM_PSMT4 || psm == PSM_PSMT8))
 						// Forces 4-bit and 8-bit frame buffer conversion to be done on the CPU instead of the GPU, but performance will be slower.
 						// There is no dedicated shader to handle 4-bit conversion (Stuntman has been confirmed to use 4-bit).
 						// Direct3D10/11 and OpenGL support 8-bit fb conversion but don't render some corner cases properly (Harry Potter games).
@@ -366,7 +343,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		//
 		// Sigh... They don't help us.
 
-		if (!found_t && m_can_convert_depth)
+		if (!found_t && !GSConfig.UserHacks_DisableDepthSupport)
 		{
 			// Let's try a trick to avoid to use wrongly a depth buffer
 			// Unfortunately, I don't have any Arc the Lad testcase
@@ -441,7 +418,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 bool GSTextureCache::ShallSearchTextureInsideRt()
 {
-	return m_texture_inside_rt || (m_renderer->m_game.flags & CRC::Flags::TextureInsideRt);
+	return GSConfig.UserHacks_TextureInsideRt || (m_renderer->m_game.flags & CRC::Flags::TextureInsideRt);
 }
 
 GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask, const bool is_frame, const int real_h)
@@ -545,7 +522,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 		if (!is_frame)
 			dst->m_dirty_alpha |= (psm_s.trbpp == 32 && (fbmask & 0xFF000000) != 0xFF000000) || (psm_s.trbpp == 16);
 	}
-	else if (!is_frame && m_can_convert_depth)
+	else if (!is_frame && !GSConfig.UserHacks_DisableDepthSupport)
 	{
 
 		int rev_type = (type == DepthStencil) ? RenderTarget : DepthStencil;
@@ -608,8 +585,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 		//
 		// From a performance point of view, it might cost a little on big upscaling
 		// but normally few RT are miss so it must remain reasonable.
-		bool supported_fmt = m_can_convert_depth || psm_s.depth == 0;
-		if (m_preload_frame && TEX0.TBW > 0 && supported_fmt)
+		bool supported_fmt = !GSConfig.UserHacks_DisableDepthSupport || psm_s.depth == 0;
+		if (GSConfig.PreloadFrameWithGSData && TEX0.TBW > 0 && supported_fmt)
 		{
 			GL_INS("Preloading the RT DATA");
 			// RT doesn't have height but if we use a too big value, we will read outside of the GS memory.
@@ -644,7 +621,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 // must invalidate the Target/Depth respectively
 void GSTextureCache::InvalidateVideoMemType(int type, u32 bp)
 {
-	if (!m_can_convert_depth)
+	if (GSConfig.UserHacks_DisableDepthSupport)
 		return;
 
 	auto& list = m_dst[type];
@@ -761,7 +738,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 
 					// No point keeping invalidated sources around when the hash cache is active,
 					// we can just re-hash and create a new source from the cached texture.
-					if (s->m_from_hash_cache || (m_disable_partial_invalidation && s->m_repeating))
+					if (s->m_from_hash_cache || (GSConfig.UserHacks_DisablePartialInvalidation && s->m_repeating))
 					{
 						m_src.RemoveAt(s);
 					}
@@ -937,7 +914,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 	if (psm == PSM_PSMZ32 || psm == PSM_PSMZ24 || psm == PSM_PSMZ16 || psm == PSM_PSMZ16S)
 	{
 		GL_INS("ERROR: InvalidateLocalMem depth format isn't supported (%d,%d to %d,%d)", r.x, r.y, r.z, r.w);
-		if (m_can_convert_depth)
+		if (!GSConfig.UserHacks_DisableDepthSupport)
 		{
 			auto& dss = m_dst[DepthStencil];
 			for (auto it = dss.rbegin(); it != dss.rend(); ++it)  // Iterate targets from LRU to MRU.
@@ -986,7 +963,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				if (t->m_32_bits_fmt && t->m_TEX0.PSM > PSM_PSMCT24)
 					t->m_TEX0.PSM = PSM_PSMCT32;
 
-				if (GSTextureCache::m_disable_partial_invalidation)
+				if (GSConfig.UserHacks_DisablePartialInvalidation)
 				{
 					Read(t, r.rintersect(t->m_valid));
 				}
@@ -1430,7 +1407,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		float modx = 0.0f;
 		float mody = 0.0f;
 
-		if (UserHacks_HalfPixelOffset && hack)
+		if (GSConfig.UserHacks_HalfPixelOffset == 1 && hack)
 		{
 			switch(m_renderer->GetUpscaleMultiplier())
 			{
@@ -1607,7 +1584,7 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int
 {
 	ASSERT(type == RenderTarget || type == DepthStencil);
 
-	Target* t = new Target(m_renderer, TEX0, m_can_convert_depth, type);
+	Target* t = new Target(m_renderer, TEX0, !GSConfig.UserHacks_DisableDepthSupport, type);
 
 	// FIXME: initial data should be unswizzled from local mem in Update() if dirty
 
@@ -1886,7 +1863,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int level)
 				int i = (bn.blkY() << 7) + bn.blkX();
 				u32 block = bn.valueNoWrap();
 
-				if (block < MAX_BLOCKS || m_wrap_gs_mem)
+				if (block < MAX_BLOCKS || GSConfig.WrapGSMem)
 				{
 					u32 addr = i % MAX_BLOCKS;
 
@@ -1913,7 +1890,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int level)
 			{
 				u32 block = bn.valueNoWrap();
 
-				if (block < MAX_BLOCKS || m_wrap_gs_mem)
+				if (block < MAX_BLOCKS || GSConfig.WrapGSMem)
 				{
 					block %= MAX_BLOCKS;
 
