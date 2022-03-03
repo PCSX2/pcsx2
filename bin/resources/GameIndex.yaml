@@ -965,6 +965,8 @@ SCAJ-20188:
 SCAJ-20190:
   name: "God of War II"
   region: "NTSC-Unk"
+  gsHWFixes:
+    halfPixelOffset: 2
 SCAJ-20191:
   name: "Super Robot Taisen OG - Original Generations Gaiden [Limited Edition]"
   region: "NTSC-Unk"
@@ -1099,9 +1101,15 @@ SCAJ-30008:
 SCAJ-30010:
   name: "God of War"
   region: "NTSC-E"
+  gsHWFixes:
+    halfPixelOffset: 2
+    roundSprite: 1
+    alignSprite: 1
 SCAJ-30011:
   name: "God of War II"
   region: "NTSC-E"
+  gsHWFixes:
+    halfPixelOffset: 2
 SCCS-40001:
   name: "Ape Escape 2"
   region: "NTSC-C"
@@ -2589,6 +2597,10 @@ SCES-51513:
 SCES-51533:
   name: "God of War"
   region: "PAL-Unk"
+  gsHWFixes:
+    halfPixelOffset: 2
+    roundSprite: 1
+    alignSprite: 1
 SCES-51578:
   name: "Network Access Disc [Original, v4.02 & v4.03]"
   region: "PAL-M7"
@@ -3009,6 +3021,10 @@ SCES-53133:
   name: "God of War"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2
+    roundSprite: 1
+    alignSprite: 1
 SCES-53178:
   name: "SingStar Pop"
   region: "PAL-E"
@@ -3349,6 +3365,8 @@ SCES-54206:
   name: "God of War II"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2
 SCES-54219:
   name: "Buzz! Junior - Jungle Party"
   region: "PAL-M7"
@@ -4263,10 +4281,16 @@ SCKA-30002:
   name: "God of War"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2
+    roundSprite: 1
+    alignSprite: 1
 SCKA-30006:
   name: "God of War 2"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2
 SCPM-85101:
   name: "McDonald's Original Happy Disc"
   region: "NTSC-J"
@@ -6504,6 +6528,10 @@ SCUS-97399:
   name: "God of War"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2
+    roundSprite: 1
+    alignSprite: 1
 SCUS-97400:
   name: "EyeToy - Groove"
   region: "NTSC-U"
@@ -6739,6 +6767,10 @@ SCUS-97466:
 SCUS-97467:
   name: "God of War [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2
+    roundSprite: 1
+    alignSprite: 1
 SCUS-97468:
   name: "EyeToy - Play 2"
   region: "NTSC-U"
@@ -6800,9 +6832,13 @@ SCUS-97481:
   name: "God of War II"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2
 SCUS-97482:
   name: "God of War II - The Colossus Battle [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2
 SCUS-97483:
   name: "Gran Turismo 4 MX-5 Edition [Demo]"
   region: "NTSC-U"
@@ -10708,6 +10744,8 @@ SLES-51526:
 SLES-51541:
   name: "Grand Theft Auto - San Andreas"
   region: "PAL-Unk"
+  gsHWFixes:
+    autoFlush: 1
 SLES-51547:
   name: "Next Generation Tennis 2003"
   region: "PAL-M5"
@@ -12557,6 +12595,8 @@ SLES-52541:
   compat: 5
   clampModes:
     vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
+  gsHWFixes:
+    autoFlush: 1
 SLES-52542:
   name: "All Music Dance!"
   region: "PAL-I"
@@ -13381,6 +13421,8 @@ SLES-52927:
   region: "PAL-G"
   clampModes:
     vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
+  gsHWFixes:
+    autoFlush: 1
 SLES-52931:
   name: "Legend of Kay"
   region: "PAL-M5"
@@ -20192,6 +20234,8 @@ SLPM-55092:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
+  gsHWFixes:
+    autoFlush: 1
 SLPM-55096:
   name: "ThunderForce VI"
   region: "NTSC-J"
@@ -20334,6 +20378,8 @@ SLPM-55292:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
+  gsHWFixes:
+    autoFlush: 1
 SLPM-60101:
   name: "0 Story"
   region: "NTSC-J"
@@ -25483,6 +25529,8 @@ SLPM-65984:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
+  gsHWFixes:
+    autoFlush: 1
 SLPM-65985:
   name: "Iris no Atelier: Eternal Mana 2"
   region: "NTSC-J"
@@ -26047,6 +26095,10 @@ SLPM-66166:
 SLPM-66167:
   name: "God of War"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2
+    roundSprite: 1
+    alignSprite: 1
 SLPM-66168:
   name: "Ryu Ga Gotoku"
   region: "NTSC-J"
@@ -28110,6 +28162,8 @@ SLPM-66788:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
+  gsHWFixes:
+    autoFlush: 1
 SLPM-66789:
   name: "Grand Theft Auto III [Best Price]"
   region: "NTSC-J"
@@ -28727,15 +28781,29 @@ SLPM-67009:
 SLPM-67010:
   name: "God of War"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2
+    roundSprite: 1
+    alignSprite: 1
 SLPM-67011:
   name: "God of War [CapKore]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2
+    roundSprite: 1
+    alignSprite: 1
 SLPM-67012:
   name: "God of War [Best Price]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2
+    roundSprite: 1
+    alignSprite: 1
 SLPM-67013:
   name: "God of War II - The End Begins"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2
 SLPM-67015:
   name: "School Days LxH"
   region: "NTSC-J"
@@ -37606,6 +37674,8 @@ SLUS-20946:
   compat: 5
   clampModes:
     vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
+  gsHWFixes:
+    autoFlush: 1
 SLUS-20947:
   name: "WinBack 2: Project Poseidon"
   region: "NTSC-U"
