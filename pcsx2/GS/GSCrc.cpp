@@ -26,14 +26,7 @@ const CRC::Game CRC::m_games[] =
 	{0x68CE6801, ArTonelico2, JP, 0},
 	{0xCE2C1DBF, ArTonelico2, EU, 0},
 	{0x2113EA2E, MetalSlug6, JP, 0},
-	{0x42E05BAF, TomoyoAfter, JP, 0},
-	{0x7800DC84, Clannad, JP, 0},
 	{0xA6167B59, Lamune, JP, 0},
-	{0xDDB59F46, KyuuketsuKitanMoonties, JP, 0},
-	{0xC8EE2562, PiaCarroteYoukosoGPGakuenPrincess, JP, 0},
-	{0x6CF94A43, KazokuKeikakuKokoroNoKizuna, JP, 0},
-	{0xEDAF602D, DuelSaviorDestiny, JP, 0},
-	{0xBB63D785, OneTwentyYenStories, JP, 0}, // no Haru: 120 Yen Stories
 	{0xA39517AB, FFX, EU, 0},
 	{0x78D83FD5, FFX, EU, 0}, // Demo
 	{0xA39517AE, FFX, FR, 0},
@@ -94,12 +87,6 @@ const CRC::Game CRC::m_games[] =
 	{0x71521863, SFEX3, US, 0},
 	{0x63642E9F, SFEX3, JP, 0},
 	{0xCA1F6E53, SFEX3, JP, 0}, // Taikenban Disc (Demo/Trial)
-	{0xC19A374E, SoTC, US, 0},
-	{0x7D8F539A, SoTC, EU, 0},
-	{0x0F0C4A9C, SoTC, EU, 0},
-	{0x877F3436, SoTC, JP, 0},
-	{0xA17D6AAA, SoTC, KO, 0},
-	{0x877B3D35, SoTC, CH, 0},
 	{0x6F8545DB, ICO, US, 0},
 	{0x48CDF317, ICO, US, 0}, // Demo
 	{0xB01A4C95, ICO, JP, 0},
@@ -163,9 +150,6 @@ const CRC::Game CRC::m_games[] =
 	{0xA32F7CD0, AceCombat4, US, 0}, // Also needed for automatic mipmapping
 	{0x5ED8FB53, AceCombat4, JP, 0},
 	{0x1B9B7563, AceCombat4, EU, 0},
-	{0x39B574F0, AceCombat5, US, 0}, // The Unsung War
-	{0x86089F31, AceCombat5, JP, 0},
-	{0x1D54FEA9, AceCombat5, EU, 0}, // Squadron Leader
 	{0xFC46EA61, Tekken5, JP, 0},
 	{0x1F88EE37, Tekken5, EU, 0},
 	{0x1F88BECD, Tekken5, EU, 0}, // language selector...
@@ -206,7 +190,6 @@ const CRC::Game CRC::m_games[] =
 	{0xA3643EB1, GiTS, KO, 0},
 	{0x28557423, GiTS, RU, 0},
 	{0xBF6F101F, GiTS, EU, 0}, // same CRC as another US disc
-	{0xF442260C, MajokkoALaMode2, JP, 0},
 	{0xA616A6C2, TalesOfAbyss, US, 0},
 	{0x14FE77F7, TalesOfAbyss, US, 0},
 	{0xAA5EC3A3, TalesOfAbyss, JP, 0},
@@ -350,12 +333,6 @@ const CRC::Game CRC::m_games[] =
 	{0XE1BF5DCA, SuperManReturns, US, 0},
 	{0XE8F7BAB6, SuperManReturns, EU, 0},
 	{0x06A7506A, SacredBlaze, JP, 0},
-	{0x9C712FF0, Jak1, EU, 0}, // Jak and Daxter: The Precursor Legacy
-	{0x1B3976AB, Jak1, US, 0},
-	{0x472E7699, Jak1, US, 0}, // Greatest Hits
-	{0x96A608C5, Jak1, US, 0}, // Cingular Wireless Demo, PS Underground Demo
-	{0xEDE4FE64, Jak1, JP, 0}, // Jak x Daxter: Kyuusekai no Isan
-	{0x2A7FD3B4, Jak1, JP, 0}, // Demo
 	{0x2479F4A9, Jak2, EU, 0},
 	{0xF41C1B29, Jak2, EU, 0}, // Demo
 	{0x9184AAF1, Jak2, US, 0},
@@ -376,135 +353,6 @@ const CRC::Game CRC::m_games[] =
 	{0xDA366A53, JakX, US, 0}, // Public Beta v.1
 	{0x7B564230, JakX, US, 0}, // Jak and Daxter Complete Trilogy Demo
 	{0xDBA28C59, JakX, US, 0}, // Greatest Hits
-	{0x4653CA3E, HarleyDavidson, US, 0},
-	// Games list for Automatic Mipmapping
-	// Basic mipmapping
-	{0x194C9F38, AceCombatZero, EU, 0}, // Ace Combat: The Belkan War
-	{0x65729657, AceCombatZero, US, 0},
-	{0xA04B52DB, AceCombatZero, JP, 0},
-	{0x2799A4E5, AceCombatZero, KO, 0},
-	{0x09B3AD4D, ApeEscape2, EU, 0},
-	{0xADCDCB88, ApeEscape2, EU, 0}, // Spanish version
-	{0xBBB21612, ApeEscape2, DE, 0},
-	{0xE2B8D3B2, ApeEscape2, IT, 0},
-	{0x8B6FE2EA, ApeEscape2, FR, 0},
-	{0xBDD9F5E1, ApeEscape2, US, 0},
-	{0xFE0A6AB6, ApeEscape2, JP, 0}, // Saru! Get You! 2
-	{0x64A9982B, ApeEscape2, CH, 0},
-	{0xEC8EF2DE, Barnyard, US, 0}, // Nickelodeon: Barnyard
-	{0x0B2F3DEE, Barnyard, KO, 0},
-	{0x5267A845, Barnyard, EU, 0},
-	{0x0940508D, BrianLaraInternationalCricket, EU, 0},
-	{0x0BAA8DD8, DarkCloud, EU, 0},
-	{0x1DF41F33, DarkCloud, US, 0},
-	{0xA5C05C78, DarkCloud, US, 0},
-	{0x60AA5049, DarkCloud, KO, 0},
-	{0xECD8E386, DarkCloud, JP, 0},
-	{0x67A29886, DestroyAllHumans, US, 0},
-	{0xE3E8E893, DestroyAllHumans, EU, 0},
-	{0x42DF8C8C, DestroyAllHumans2, US, 0},
-	{0x743E10C2, DestroyAllHumans2, EU, 0},
-	{0x67C38BAA, FIFA03, US, 0},
-	{0x722BBD62, FIFA03, EU, 0},
-	{0x2BCCF704, FIFA03, EU, 0},
-	{0xCC6AA742, FIFA04, KO, 0},
-	{0x2C6A4E2E, FIFA04, US, 0},
-	{0x684ADFC6, FIFA04, EU, 0},
-	{0x972611BB, FIFA05, US, 0},
-	{0x972719A3, FIFA05, EU, 0},
-	{0xC5473413, HarryPotterATCOS, NoRegion, 0}, // EU and US versions have the same CRC - Chamber Of Secrets
-	{0xE1963055, HarryPotterATCOS, JP, 0}, // Harry Potter to Himitsu no Heya
-	{0xE90BE9F8, HarryPotterATCOS, JP, 0}, // Coca Cola original Version
-	{0xB38CC628, HarryPotterATGOF, US, 0},
-	{0xCDE017A7, HarryPotterATGOF, KO, 0},
-	{0xB18DC525, HarryPotterATGOF, EU, 0},
-	{0x9C3A84F4, HarryPotterATHBP, US, 0}, // Half-Blood Prince
-	{0xCB598BC2, HarryPotterATHBP, EU, 0},
-	{0x51E019BC, HarryPotterATPOA, NoRegion, 0}, // EU and US versions have the same CRC - Prisoner of Azkaban
-	{0x99A8B4FF, HarryPotterATPOA, KO, 0},
-	{0xA8901AD6, HarryPotterATPOA, JP, 0}, // Harry Potter to Azkaban no Shuujin
-	{0x51E417AA, HarryPotterATPOA, EU, 0},
-	{0x4C01B1B0, HarryPotterOOTP, US, 0}, // Order Of The Phoenix
-	{0x01A9BF0E, HarryPotterOOTP, EU, 0},
-	{0x960FFA6A, JurassicPark, EU, 0},
-	{0xA99B8FE7, JurassicPark, US, 0},
-	{0x230CB71D, SoulReaver2, US, 0},
-	{0x1771BFE4, SoulReaver2, US, 0},
-	{0x6F991F52, SoulReaver2, JP, 0},
-	{0x1B7FF35A, SoulReaver2, KO, 0},
-	{0x6D8B4CD1, SoulReaver2, EU, 0},
-	{0x728AB07C, LegacyOfKainDefiance, US, 0},
-	{0xBCAD1E8A, LegacyOfKainDefiance, EU, 0},
-	{0x28D09BF9, NicktoonsUnite, US, 0},
-	{0xF25266C4, NicktoonsUnite, EU, 0}, // Nickelodeon SpongeBob SquarePants And Friends Unite
-	{0x7AE1C04B, Persona3, US, 0}, // Regular Version
-	{0x05C3D28F, Persona3, JP, 0},
-	{0xBCD68B1E, Persona3, KO, 0},
-	{0x8A557EE5, Persona3, EU, 0},
-	{0x94A82AAA, Persona3, US, 0}, // FES
-	{0x232C7D72, Persona3, JP, 0},
-	{0x8897C208, Persona3, KO, 0},
-	{0xF64A6AE5, Persona3, EU, 0},
-	{0x2BDA8ADB, ProjectSnowblind, US, 0},
-	{0xF00CA82B, ProjectSnowblind, EU, 0},
-	{0xF1583665, ProjectSnowblind, EU, 0},
-	{0xA56A0525, Quake3Revolution, US, 0},
-	{0x2064ACE6, Quake3Revolution, EU, 0},
-	{0xCE4933D0, RatchetAndClank, US, 0},
-	{0x6F191506, RatchetAndClank, US, 0}, // E3 Demo
-	{0x81CBFEA2, RatchetAndClank, US, 0}, // EB Games Demo
-	{0x56A35F77, RatchetAndClank, JP, 0},
-	{0x76F724A3, RatchetAndClank, EU, 0},
-	{0x6A8F18B9, RatchetAndClank, EU, 0},
-	{0x5C19F3B7, RatchetAndClank, EU, 0}, // Regular Demo
-	{0xB3A71D10, RatchetAndClank2, US, 0}, // Going Commando
-	{0x38996035, RatchetAndClank2, US, 0},
-	{0xF700EE7E, RatchetAndClank2, US, 0}, // Regular Demo
-	{0xF67ADF58, RatchetAndClank2, US, 0}, // Retail Employees Demo
-	{0xDF6F94A1, RatchetAndClank2, US, 0}, // Demo - Going Commando & Jak II
-	{0x89A26EC9, RatchetAndClank2, KO, 0},
-	{0x8CAA5F16, RatchetAndClank2, JP, 0}, // Gagaga! Ginga no Commando-ssu
-	{0x2F486E6F, RatchetAndClank2, EU, 0},
-	{0x45FE0CC4, RatchetAndClank3, US, 0}, // Up Your Arsenal
-	{0x2A12175A, RatchetAndClank3, US, 0}, // Regular Demo
-	{0xCC53C3B4, RatchetAndClank3, US, 0}, // Public Beta v1.0
-	{0x9FCC4BA4, RatchetAndClank3, KO, 0},
-	{0x64DC6000, RatchetAndClank3, JP, 0}, // Totsugeki! Galactic Rangers
-	{0x17125698, RatchetAndClank3, EU, 0},
-	{0x4A85FC67, RatchetAndClank3, EU, 0}, // Beta Trial Disc
-	{0x9BFBCD42, RatchetAndClank4, US, 0}, // Deadlocked
-	{0xD301186D, RatchetAndClank4, US, 0}, // Regular Demo
-	{0xBDF8A887, RatchetAndClank4, US, 0}, // Public Beta v.1
-	{0x529BC7CC, RatchetAndClank4, KO, 0},
-	{0x2EC9DA96, RatchetAndClank4, JP, 0}, // GiriGiri Ginga no Giga Battle
-	{0x76975025, RatchetAndClank4, JP, 0}, // Regular Demo
-	{0xD697D204, RatchetAndClank4, EU, 0}, // Ratchet Gladiator
-	{0x8661F7BA, RatchetAndClank5, US, 0}, // Size Matters
-	{0x7029DCE6, RatchetAndClank5, KO, 0},
-	{0x9ADCF7AF, RatchetAndClank5, JP, 0}, // Gekitotsu! Dodeka Ginga no Miri Miri Gundan
-	{0xFCB981D5, RatchetAndClank5, EU, 0},
-	{0x8634861F, RickyPontingInternationalCricket, EU, 0},
-	{0xDDAC3815, Shox, US, 0},
-	{0xF84FE9DE, Shox, KO, 0},
-	{0x09F4038B, Shox, EU, 0},
-	{0x78FFA39F, Shox, EU, 0},
-	{0x3DF10389, Shox, EU, 0},
-	{0x43CC009B, SlamTennis, EU, 0},
-	{0xF17AF8BD, TheIncredibleHulkUD, US, 0},
-	{0xEA8D4BDF, TheIncredibleHulkUD, US, 0},
-	{0x6B3D50A5, TheIncredibleHulkUD, EU, 0},
-	{0x2B58234D, TribesAerialAssault, US, 0},
-	{0x4D22DB95, Whiplash, US, 0},
-	{0xE8A97250, Whiplash, EU, 0},
-	{0xB1BE3E51, Whiplash, EU, 0},
-	{0x4C33FA2A, IndianaJonesAndTheEmperorsTomb, US, 0}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
-	{0xAE0E098F, IndianaJonesAndTheEmperorsTomb, DE, 0},
-	{0xBBC3EFFA, WildArms4, US, 0}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
-	{0x36802E57, BeyondGoodAndEvil, US, 0}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
-	{0x08FFF00D, SSX3, US, 0},
-	{0xCE942B2A, SSX3, EU, 0}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
-	{0x1FCC0CFB, DrivingEmotionTypeS, US, 0},
-	{0x034836F8, DrivingEmotionTypeS, JP, 0}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
 };
 
 std::map<u32, const CRC::Game*> CRC::m_map;
