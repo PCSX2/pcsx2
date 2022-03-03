@@ -23,6 +23,11 @@
 
 int GSState::s_n = 0;
 
+static __fi bool IsAutoFlushEnabled()
+{
+	return (GSConfig.Renderer == GSRendererType::SW) ? GSConfig.AutoFlushSW : GSConfig.UserHacks_AutoFlush;
+}
+
 GSState::GSState()
 	: m_version(7)
 	, m_gsc(NULL)
@@ -30,6 +35,7 @@ GSState::GSState()
 	, m_skip_offset(0)
 	, m_q(1.0f)
 	, m_scanmask_used(false)
+	, tex_flushed(true)
 	, m_vt(this)
 	, m_regs(NULL)
 	, m_crc(0)
@@ -39,18 +45,8 @@ GSState::GSState()
 	// m_nativeres seems to be a hack. Unfortunately it impacts draw call number which make debug painful in the replayer.
 	// Let's keep it disabled to ease debug.
 	m_nativeres = GSConfig.UpscaleMultiplier == 1;
-	m_mipmap = theApp.GetConfigB("mipmap");
+	m_mipmap = GSConfig.Mipmap;
 	m_NTSC_Saturation = theApp.GetConfigB("NTSC_Saturation");
-	if (theApp.GetConfigB("UserHacks"))
-	{
-		m_userhacks_auto_flush = theApp.GetConfigB("UserHacks_AutoFlush");
-		m_userhacks_wildhack = theApp.GetConfigB("UserHacks_WildHack");
-	}
-	else
-	{
-		m_userhacks_auto_flush = false;
-		m_userhacks_wildhack = false;
-	}
 
 	s_n = 0;
 	s_dump = theApp.GetConfigB("dump");
@@ -132,7 +128,6 @@ GSState::GSState()
 	PRIM = &m_env.PRIM;
 	//CSR->rREV = 0x20;
 	m_env.PRMODECONT.AC = 1;
-	tex_flushed = true;
 
 	Reset();
 
@@ -246,7 +241,7 @@ void GSState::ResetHandlers()
 	m_fpGIFPackedRegHandlers[GIF_REG_PRIM] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerPRIM;
 	m_fpGIFPackedRegHandlers[GIF_REG_RGBA] = &GSState::GIFPackedRegHandlerRGBA;
 	m_fpGIFPackedRegHandlers[GIF_REG_STQ] = &GSState::GIFPackedRegHandlerSTQ;
-	m_fpGIFPackedRegHandlers[GIF_REG_UV] = m_userhacks_wildhack ? &GSState::GIFPackedRegHandlerUV_Hack : &GSState::GIFPackedRegHandlerUV;
+	m_fpGIFPackedRegHandlers[GIF_REG_UV] = GSConfig.UserHacks_WildHack ? &GSState::GIFPackedRegHandlerUV_Hack : &GSState::GIFPackedRegHandlerUV;
 	m_fpGIFPackedRegHandlers[GIF_REG_TEX0_1] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerTEX0<0>;
 	m_fpGIFPackedRegHandlers[GIF_REG_TEX0_2] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerTEX0<1>;
 	m_fpGIFPackedRegHandlers[GIF_REG_CLAMP_1] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerCLAMP<0>;
@@ -257,7 +252,7 @@ void GSState::ResetHandlers()
 
 	// swap first/last indices when the provoking vertex is the first (D3D/Vulkan)
 	const bool index_swap = GSConfig.UseHardwareRenderer() && !g_gs_device->Features().provoking_vertex_last;
-	if (m_userhacks_auto_flush)
+	if (IsAutoFlushEnabled())
 		index_swap ? SetPrimHandlers<true, true>() : SetPrimHandlers<true, false>();
 	else
 		index_swap ? SetPrimHandlers<false, true>() : SetPrimHandlers<false, false>();
@@ -268,7 +263,7 @@ void GSState::ResetHandlers()
 	m_fpGIFRegHandlers[GIF_A_D_REG_RGBAQ] = &GSState::GIFRegHandlerRGBAQ;
 	m_fpGIFRegHandlers[GIF_A_D_REG_RGBAQ + 0x10] = &GSState::GIFRegHandlerRGBAQ;
 	m_fpGIFRegHandlers[GIF_A_D_REG_ST] = &GSState::GIFRegHandlerST;
-	m_fpGIFRegHandlers[GIF_A_D_REG_UV] = m_userhacks_wildhack ? &GSState::GIFRegHandlerUV_Hack : &GSState::GIFRegHandlerUV;
+	m_fpGIFRegHandlers[GIF_A_D_REG_UV] = GSConfig.UserHacks_WildHack ? &GSState::GIFRegHandlerUV_Hack : &GSState::GIFRegHandlerUV;
 	m_fpGIFRegHandlers[GIF_A_D_REG_TEX0_1] = &GSState::GIFRegHandlerTEX0<0>;
 	m_fpGIFRegHandlers[GIF_A_D_REG_TEX0_2] = &GSState::GIFRegHandlerTEX0<1>;
 	m_fpGIFRegHandlers[GIF_A_D_REG_CLAMP_1] = &GSState::GIFRegHandlerCLAMP<0>;
@@ -1136,7 +1131,7 @@ void GSState::GIFRegHandlerTEXFLUSH(const GIFReg* RESTRICT r)
 	// Some games do a single sprite draw to itself, then flush the texture cache, then use that texture again.
 	// This won't get picked up by the new autoflush logic (which checks for page crossings for the PS2 Texture Cache flush)
 	// so we need to do it here.
-	if(m_userhacks_auto_flush)
+	if (IsAutoFlushEnabled())
 		Flush();
 }
 

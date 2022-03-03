@@ -58,14 +58,6 @@ GSRendererSW::GSRendererSW(int threads)
 	InitCVB(GS_SPRITE_CLASS);
 
 	m_dump_root = root_sw;
-
-	// Reset handler with the auto flush hack enabled on the SW renderer.
-	// Some games run better without the hack so rely on ini/gui option.
-	if (theApp.GetConfigB("autoflush_sw"))
-	{
-		m_userhacks_auto_flush = true;
-		ResetHandlers();
-	}
 }
 
 GSRendererSW::~GSRendererSW()

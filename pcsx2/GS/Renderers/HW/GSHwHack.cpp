@@ -18,7 +18,6 @@
 
 bool s_nativeres;
 static CRCHackLevel s_crc_hack_level = CRCHackLevel::Full;
-bool s_autoflush;
 // hacks
 #define CRC_Partial (s_crc_hack_level >= CRCHackLevel::Partial)
 #define CRC_Full (s_crc_hack_level >= CRCHackLevel::Full)
@@ -419,7 +418,7 @@ bool GSC_BurnoutGames(const GSFrameInfo& fi, int& skip)
 			// 0x01dc0 01c00(MP) ntsc, 0x01f00 0x01d40(MP) ntsc progressive, 0x02200(MP) pal.
 			// Yellow stripes.
 			// Multiplayer tested only on Takedown.
-			skip = s_autoflush ? 2 : 4;
+			skip = GSConfig.UserHacks_AutoFlush ? 2 : 4;
 		}
 	}
 
@@ -950,7 +949,6 @@ void GSState::SetupCrcHack()
 
 	s_nativeres = m_nativeres;
 	s_crc_hack_level = m_crc_hack_level;
-	s_autoflush = m_userhacks_auto_flush;
 
 	memset(lut, 0, sizeof(lut));
 
@@ -1055,7 +1053,7 @@ bool GSState::IsBadFrame()
 		return false;
 	}
 
-	if (m_skip == 0 && GSConfig.UserHacks && (GSConfig.SkipDraw > 0))
+	if (m_skip == 0 && GSConfig.SkipDraw > 0)
 	{
 		if (fi.TME)
 		{

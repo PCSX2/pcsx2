@@ -598,17 +598,31 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 	UserHacks_HalfPixelOffset = 0;
 	UserHacks_RoundSprite = 0;
 	PreloadFrameWithGSData = false;
+	WrapGSMem = false;
 	UserHacks_DisablePartialInvalidation = false;
 	UserHacks_DisableDepthSupport = false;
 	UserHacks_CPUFBConversion = false;
 	UserHacks_TextureInsideRt = false;
 	UserHacks_TCOffsetX = 0;
 	UserHacks_TCOffsetY = 0;
+	SkipDraw = 0;
+	SkipDrawOffset = 0;
 
 	// in wx, we put trilinear filtering behind user hacks, but not in qt.
 #ifndef PCSX2_CORE
 	UserHacks_TriFilter = TriFiltering::Off;
 #endif
+}
+
+void Pcsx2Config::GSOptions::MaskUpscalingHacks()
+{
+	if (UpscaleMultiplier == 1 || UserHacks)
+		return;
+
+	UserHacks_AlignSpriteX = false;
+	UserHacks_MergePPSprite = false;
+	UserHacks_HalfPixelOffset = 0;
+	UserHacks_RoundSprite = 0;
 }
 
 bool Pcsx2Config::GSOptions::UseHardwareRenderer() const

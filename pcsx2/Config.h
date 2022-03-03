@@ -544,6 +544,9 @@ struct Pcsx2Config
 		/// Sets user hack values to defaults when user hacks are not enabled.
 		void MaskUserHacks();
 
+		/// Sets user hack values to defaults when upscaling is not enabled.
+		void MaskUpscalingHacks();
+
 		/// Returns true if any of the hardware renderers are selected.
 		bool UseHardwareRenderer() const;
 
