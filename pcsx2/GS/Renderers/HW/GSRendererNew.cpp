@@ -528,7 +528,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	// PABE: Check condition early as an optimization.
 	const bool PABE = PRIM->ABE && m_env.PABE.PABE && (GetAlphaMinMax().max < 128);
 	// FBMASK: Color is not written, no need to do blending.
-	const int temp_fbmask = m_conf.ps.dfmt == 2 ? 0x00F8F8F8 : 0x00FFFFFF;
+	const u32 temp_fbmask = m_conf.ps.dfmt == 2 ? 0x00F8F8F8 : 0x00FFFFFF;
 	const bool FBMASK = (m_context->FRAME.FBMSK & temp_fbmask) == temp_fbmask;
 
 	// No blending or coverage anti-aliasing so early exit
