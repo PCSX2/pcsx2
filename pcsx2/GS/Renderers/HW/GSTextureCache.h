@@ -321,8 +321,6 @@ public:
 
 	void IncAge();
 
-	bool ShallSearchTextureInsideRt();
-
 	const char* to_string(int type)
 	{
 		return (type == DepthStencil) ? "Depth" : "Color";

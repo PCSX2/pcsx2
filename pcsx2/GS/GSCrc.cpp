@@ -243,10 +243,10 @@ const CRC::Game CRC::m_games[] =
 	{0xC5B75C7C, Oneechanbara2Special, JP, 0},
 	{0xC725CC6C, Oneechanbara2Special, JP, 0},
 	{0x07608CA2, Oneechanbara2Special, EU, 0}, // Zombie Hunters 2
-	{0xE0347841, XenosagaE3, JP, TextureInsideRt},
-	{0xA707236E, XenosagaE3, JP, TextureInsideRt}, // Demo
-	{0xA4E88698, XenosagaE3, CH, TextureInsideRt},
-	{0x2088950A, XenosagaE3, US, TextureInsideRt},
+	{0xE0347841, XenosagaE3, JP, 0},
+	{0xA707236E, XenosagaE3, JP, 0}, // Demo
+	{0xA4E88698, XenosagaE3, CH, 0},
+	{0x2088950A, XenosagaE3, US, 0},
 	{0xB1995E29, ShadowofRome, EU, 0},
 	{0x958DCA28, ShadowofRome, EU, 0},
 	{0x57818AF6, ShadowofRome, US, 0},
@@ -315,14 +315,14 @@ const CRC::Game CRC::m_games[] =
 	{0x812C5A96, ShinOnimusha, EU, 0},
 	{0xFE44479E, ShinOnimusha, US, 0},
 	{0xFFDE85E9, ShinOnimusha, US, 0},
-	{0xE21404E2, GetawayGames, US, TextureInsideRt}, // Getaway
-	{0xE8249852, GetawayGames, JP, TextureInsideRt}, // Getaway
-	{0x458485EF, GetawayGames, EU, TextureInsideRt}, // Getaway
-	{0x5DFBE144, GetawayGames, EU, TextureInsideRt}, // Getaway
-	{0xE78971DF, GetawayGames, US, TextureInsideRt}, // GetawayBlackMonday
-	{0x342D97FA, GetawayGames, US, TextureInsideRt}, // GetawayBlackMonday Demo
-	{0xE8C0AD1A, GetawayGames, JP, TextureInsideRt}, // GetawayBlackMonday
-	{0x09C3DF79, GetawayGames, EU, TextureInsideRt}, // GetawayBlackMonday
+	{0xE21404E2, GetawayGames, US, 0}, // Getaway
+	{0xE8249852, GetawayGames, JP, 0}, // Getaway
+	{0x458485EF, GetawayGames, EU, 0}, // Getaway
+	{0x5DFBE144, GetawayGames, EU, 0}, // Getaway
+	{0xE78971DF, GetawayGames, US, 0}, // GetawayBlackMonday
+	{0x342D97FA, GetawayGames, US, 0}, // GetawayBlackMonday Demo
+	{0xE8C0AD1A, GetawayGames, JP, 0}, // GetawayBlackMonday
+	{0x09C3DF79, GetawayGames, EU, 0}, // GetawayBlackMonday
 	{0x1130BF23, SakuraTaisen, CH, 0},
 	{0x4FAE8B83, SakuraTaisen, KO, 0},
 	{0xEF06DBD6, SakuraWarsSoLongMyLove, JP, 0},
@@ -350,32 +350,32 @@ const CRC::Game CRC::m_games[] =
 	{0XE1BF5DCA, SuperManReturns, US, 0},
 	{0XE8F7BAB6, SuperManReturns, EU, 0},
 	{0x06A7506A, SacredBlaze, JP, 0},
-	{0x9C712FF0, Jak1, EU, TextureInsideRt}, // Jak and Daxter: The Precursor Legacy
-	{0x1B3976AB, Jak1, US, TextureInsideRt},
-	{0x472E7699, Jak1, US, TextureInsideRt}, // Greatest Hits
-	{0x96A608C5, Jak1, US, TextureInsideRt}, // Cingular Wireless Demo, PS Underground Demo
-	{0xEDE4FE64, Jak1, JP, TextureInsideRt}, // Jak x Daxter: Kyuusekai no Isan
-	{0x2A7FD3B4, Jak1, JP, TextureInsideRt}, // Demo
-	{0x2479F4A9, Jak2, EU, TextureInsideRt},
-	{0xF41C1B29, Jak2, EU, TextureInsideRt}, // Demo
-	{0x9184AAF1, Jak2, US, TextureInsideRt},
-	{0xA2034C69, Jak2, US, TextureInsideRt}, // Demo
-	{0x25FE4D23, Jak2, KO, TextureInsideRt},
-	{0xB4976DAF, Jak2, JP, TextureInsideRt}, // Jak II: Jak x Daxter 2
-	{0x43D4FF3E, Jak2, JP, TextureInsideRt}, // Demo
-	{0x12804727, Jak3, EU, TextureInsideRt},
-	{0xE59E10BF, Jak3, EU, TextureInsideRt},
-	{0xCA68E4D5, Jak3, EU, TextureInsideRt}, // Demo
-	{0x644CFD03, Jak3, US, TextureInsideRt},
-	{0xD401BC20, Jak3, US, TextureInsideRt}, // Demo
-	{0xD1368EAE, Jak3, KO, TextureInsideRt},
-	{0xDF659E77, JakX, EU, TextureInsideRt}, // Jak X: Combat Racing
-	{0xC20596DB, JakX, EU, TextureInsideRt}, // Beta Trial Disc, v0.01
-	{0x3091E6FB, JakX, US, TextureInsideRt},
-	{0xC417D919, JakX, US, TextureInsideRt}, // Demo
-	{0xDA366A53, JakX, US, TextureInsideRt}, // Public Beta v.1
-	{0x7B564230, JakX, US, TextureInsideRt}, // Jak and Daxter Complete Trilogy Demo
-	{0xDBA28C59, JakX, US, TextureInsideRt}, // Greatest Hits
+	{0x9C712FF0, Jak1, EU, 0}, // Jak and Daxter: The Precursor Legacy
+	{0x1B3976AB, Jak1, US, 0},
+	{0x472E7699, Jak1, US, 0}, // Greatest Hits
+	{0x96A608C5, Jak1, US, 0}, // Cingular Wireless Demo, PS Underground Demo
+	{0xEDE4FE64, Jak1, JP, 0}, // Jak x Daxter: Kyuusekai no Isan
+	{0x2A7FD3B4, Jak1, JP, 0}, // Demo
+	{0x2479F4A9, Jak2, EU, 0},
+	{0xF41C1B29, Jak2, EU, 0}, // Demo
+	{0x9184AAF1, Jak2, US, 0},
+	{0xA2034C69, Jak2, US, 0}, // Demo
+	{0x25FE4D23, Jak2, KO, 0},
+	{0xB4976DAF, Jak2, JP, 0}, // Jak II: Jak x Daxter 2
+	{0x43D4FF3E, Jak2, JP, 0}, // Demo
+	{0x12804727, Jak3, EU, 0},
+	{0xE59E10BF, Jak3, EU, 0},
+	{0xCA68E4D5, Jak3, EU, 0}, // Demo
+	{0x644CFD03, Jak3, US, 0},
+	{0xD401BC20, Jak3, US, 0}, // Demo
+	{0xD1368EAE, Jak3, KO, 0},
+	{0xDF659E77, JakX, EU, 0}, // Jak X: Combat Racing
+	{0xC20596DB, JakX, EU, 0}, // Beta Trial Disc, v0.01
+	{0x3091E6FB, JakX, US, 0},
+	{0xC417D919, JakX, US, 0}, // Demo
+	{0xDA366A53, JakX, US, 0}, // Public Beta v.1
+	{0x7B564230, JakX, US, 0}, // Jak and Daxter Complete Trilogy Demo
+	{0xDBA28C59, JakX, US, 0}, // Greatest Hits
 	{0x4653CA3E, HarleyDavidson, US, 0},
 	// Games list for Automatic Mipmapping
 	// Basic mipmapping
@@ -497,14 +497,14 @@ const CRC::Game CRC::m_games[] =
 	{0x4D22DB95, Whiplash, US, 0},
 	{0xE8A97250, Whiplash, EU, 0},
 	{0xB1BE3E51, Whiplash, EU, 0},
-	{0x4C33FA2A, IndianaJonesAndTheEmperorsTomb, US, TextureInsideRt}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
-	{0xAE0E098F, IndianaJonesAndTheEmperorsTomb, DE, TextureInsideRt},
-	{0xBBC3EFFA, WildArms4, US, TextureInsideRt}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
-	{0x36802E57, BeyondGoodAndEvil, US, TextureInsideRt}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
-	{0x08FFF00D, SSX3, US, TextureInsideRt},
-	{0xCE942B2A, SSX3, EU, TextureInsideRt}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
-	{0x1FCC0CFB, DrivingEmotionTypeS, US, TextureInsideRt},
-	{0x034836F8, DrivingEmotionTypeS, JP, TextureInsideRt}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
+	{0x4C33FA2A, IndianaJonesAndTheEmperorsTomb, US, 0}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
+	{0xAE0E098F, IndianaJonesAndTheEmperorsTomb, DE, 0},
+	{0xBBC3EFFA, WildArms4, US, 0}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
+	{0x36802E57, BeyondGoodAndEvil, US, 0}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
+	{0x08FFF00D, SSX3, US, 0},
+	{0xCE942B2A, SSX3, EU, 0}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
+	{0x1FCC0CFB, DrivingEmotionTypeS, US, 0},
+	{0x034836F8, DrivingEmotionTypeS, JP, 0}, // TODO Add more CRCs (https://pcsx2.net/compatibility-list.html).
 };
 
 std::map<u32, const CRC::Game*> CRC::m_map;
