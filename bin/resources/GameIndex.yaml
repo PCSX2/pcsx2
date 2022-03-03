@@ -43,11 +43,13 @@ PAPX-90222:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 PAPX-90223:
   name: "Jak x Daxter: Kyuu Sekai no Isan [Demo, Taikenban]"
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 PAPX-90231:
   name: "Kaitou Sly Cooper [Demo, Taikenban]"
   region: "NTSC-J"
@@ -72,6 +74,7 @@ PAPX-90516:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 PBPX-95201:
   name: "Dead or Alive 2"
   region: "NTSC-J"
@@ -483,6 +486,7 @@ SCAJ-20073:
   region: "NTSC-Unk"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCAJ-20074:
   name: "King of Fighters 2002, The"
   region: "NTSC-Unk"
@@ -931,9 +935,13 @@ SCAJ-20178:
 SCAJ-20179:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc1of2]"
   region: "NTSC-Unk"
+  gsHWFixes:
+    textureInsideRT: 1
 SCAJ-20180:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc2of2]"
   region: "NTSC-Unk"
+  gsHWFixes:
+    textureInsideRT: 1
 SCAJ-20181:
   name: "Minna no Tennis"
   region: "NTSC-Unk"
@@ -1266,6 +1274,7 @@ SCED-50614:
   region: "PAL-Unk"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCED-50622:
   name: "Official PlayStation 2 Magazine Demo 14" # German
   region: "PAL-E-G"
@@ -1512,6 +1521,7 @@ SCED-51700:
   region: "PAL-M5"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCED-51922:
   name: "Ghosthunter [Demo]"
   region: "PAL-G"
@@ -1724,6 +1734,7 @@ SCED-52952:
   region: "PAL-M5"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCED-52970:
   name: "SCEE Hits Demo"
   region: "PAL-M5"
@@ -2222,6 +2233,7 @@ SCES-50361:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCES-50408:
   name: "PaRappa the Rapper 2"
   region: "PAL-M5"
@@ -2349,6 +2361,7 @@ SCES-50614:
   region: "PAL-Unk"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCES-50759:
   name: "Virtua Fighter 4"
   region: "PAL-M5"
@@ -2516,6 +2529,8 @@ SCES-51159:
   name: "The Getaway"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1
 SCES-51164:
   name: "Mark of Kri, The"
   region: "PAL-M5"
@@ -2553,6 +2568,8 @@ SCES-51248:
 SCES-51426:
   name: "The Getaway"
   region: "PAL-M5"
+  gsHWFixes:
+    textureInsideRT: 1
 SCES-51428:
   name: "Shinobi"
   region: "PAL-M5"
@@ -2609,6 +2626,7 @@ SCES-51608:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
   patches:
     default:
       content: |-
@@ -2874,6 +2892,7 @@ SCES-52460:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
   patches:
     default:
       content: |-
@@ -2927,6 +2946,8 @@ SCES-52756:
 SCES-52758:
   name: "The Getaway - Black Monday"
   region: "PAL-M6"
+  gsHWFixes:
+    textureInsideRT: 1
 SCES-52762:
   name: "DJ Decks & FX"
   region: "PAL-F"
@@ -2968,6 +2989,8 @@ SCES-52930:
 SCES-52948:
   name: "The Getaway - Black Monday"
   region: "PAL-M4"
+  gsHWFixes:
+    textureInsideRT: 1
 SCES-53033:
   name: "Formula One 2005"
   region: "PAL-M7"
@@ -3033,6 +3056,8 @@ SCES-53285:
 SCES-53286:
   name: "Jak X - Combat Racing"
   region: "PAL-M7"
+  gsHWFixes:
+    textureInsideRT: 1
   memcardFilters: # Reads Ratchet Gladiator data.
     - "SCES-53286"
     - "SCES-53285"
@@ -3893,6 +3918,7 @@ SCKA-20010:
   region: "NTSC-K"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCKA-20011:
   name: "Ratchet & Clank 2"
   region: "NTSC-K"
@@ -3922,6 +3948,8 @@ SCKA-20016:
 SCKA-20018:
   name: "The Getaway"
   region: "NTSC-K"
+  gsHWFixes:
+    textureInsideRT: 1
 SCKA-20019:
   name: "Siren"
   region: "NTSC-K"
@@ -4015,6 +4043,7 @@ SCKA-20040:
   region: "NTSC-K"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCKA-20043:
   name: "Magna Carta"
   region: "NTSC-K"
@@ -4464,6 +4493,7 @@ SCPS-15021:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCPS-15022:
   name: "Dual Hearts"
   region: "NTSC-J"
@@ -4613,6 +4643,7 @@ SCPS-15057:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCPS-15058:
   name: "Arc the Lad - Generation"
   region: "NTSC-J"
@@ -5035,6 +5066,7 @@ SCPS-19210:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCPS-19211:
   name: "Ratchet & Clank [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -5320,6 +5352,7 @@ SCPS-55004:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCPS-55005:
   name: "Gran Turismo - Concept 2001 Tokyo"
   region: "NTSC-J"
@@ -5534,6 +5567,7 @@ SCPS-56003:
   region: "NTSC-K"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCPS-56005:
   name: "Gran Turismo Concept 2002 Tokyo-Seoul"
   region: "NTSC-K"
@@ -5673,6 +5707,7 @@ SCUS-97124:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCUS-97125:
   name: "Frequency"
   region: "NTSC-U"
@@ -5706,6 +5741,8 @@ SCUS-97132:
 SCUS-97133:
   name: "Getaway, The"
   region: "NTSC-U"
+  gsHWFixes:
+    textureInsideRT: 1
 SCUS-97134:
   name: "SOCOM - U.S. Navy SEALs"
   region: "NTSC-U"
@@ -5836,11 +5873,13 @@ SCUS-97170:
   region: "NTSC-U"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCUS-97171:
   name: "Jak and Daxter: The Precursor Legacy [PS Underground Demo]"
   region: "NTSC-U"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCUS-97172:
   name: "World Tour Soccer 2002"
   region: "NTSC-U"
@@ -6043,6 +6082,8 @@ SCUS-97231:
 SCUS-97232:
   name: "Getaway [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    textureInsideRT: 1
 SCUS-97233:
   name: "World Tour Soccer 2003"
   region: "NTSC-U"
@@ -6155,6 +6196,7 @@ SCUS-97265:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCUS-97266:
   name: "Final Fantasy XI [Disc1of2]"
   region: "NTSC-U"
@@ -6188,6 +6230,7 @@ SCUS-97273:
   region: "NTSC-U"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCUS-97274:
   name: "Jak II [Video Demo]"
   region: "NTSC-U"
@@ -6299,6 +6342,7 @@ SCUS-97330:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCUS-97331:
   name: "Official U.S. PlayStation Magazine Demo Disc 078"
   region: "NTSC-U"
@@ -6490,6 +6534,8 @@ SCUS-97408:
   name: "The Getaway - Black Monday"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1
 SCUS-97409:
   name: "Gretzky NHL 2005"
   region: "NTSC-U"
@@ -6510,6 +6556,7 @@ SCUS-97412:
   region: "NTSC-U"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCUS-97413:
   name: "Ratchet & Clank - Up Your Arsenal [Public Beta v1.0]"
   region: "NTSC-U"
@@ -6565,6 +6612,8 @@ SCUS-97429:
   name: "Jak X - Combat Racing"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1
   memcardFilters:
     - "SCUS-97429"
     - "SCUS-97465"
@@ -6603,9 +6652,12 @@ SCUS-97440:
   region: "NTSC-U"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCUS-97441:
   name: "The Getaway - Black Monday [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    textureInsideRT: 1
 SCUS-97442:
   name: "Official U.S. PlayStation Magazine Demo Disc 090"
   region: "NTSC-U"
@@ -6775,6 +6827,8 @@ SCUS-97485:
 SCUS-97486:
   name: "Jak X - Combat Racing [Regular Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    textureInsideRT: 1
 SCUS-97487:
   name: "Ratchet - Deadlocked [Public Beta v.1]"
   region: "NTSC-U"
@@ -6786,6 +6840,8 @@ SCUS-97488:
   name: "Jak X - Combat Racing [Public Beta v.1]"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1
 SCUS-97489:
   name: "SOCOM 3 - U.S. Navy SEALs [Public Beta v.1]"
   region: "NTSC-U"
@@ -6855,6 +6911,7 @@ SCUS-97509:
   region: "NTSC-U"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCUS-97510:
   name: "ATV Off-Road Fury 2 [Greatest Hits]"
   region: "NTSC-U"
@@ -6889,6 +6946,7 @@ SCUS-97516:
   region: "NTSC-U"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCUS-97517:
   name: "Killzone [Greatest Hits]"
   region: "NTSC-U"
@@ -6978,6 +7036,7 @@ SCUS-97555:
   region: "NTSC-U"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
 SCUS-97556:
   name: "MLB '07 - The Show"
   region: "NTSC-U"
@@ -7741,6 +7800,8 @@ SLES-50072:
 SLES-50073:
   name: "Driving Emotion Type-S"
   region: "PAL-M5"
+  gsHWFixes:
+    textureInsideRT: 1
 SLES-50074:
   name: "Unreal Tournament"
   region: "PAL-M5"
@@ -9255,27 +9316,37 @@ SLES-50836:
   region: "PAL-E"
   gameFixes:
     - EETimingHack # For texture flicker.
+  gsHWFixes:
+    textureInsideRT: 1
 SLES-50837:
   name: "Indiana Jones and The Emperor's Tomb"
   region: "PAL-F"
   gameFixes:
     - EETimingHack # For texture flicker.
+  gsHWFixes:
+    textureInsideRT: 1
 SLES-50838:
   name: "Indiana Jones and The Emperor's Tomb"
   region: "PAL-G"
   compat: 5
   gameFixes:
     - EETimingHack # For texture flicker.
+  gsHWFixes:
+    textureInsideRT: 1
 SLES-50839:
   name: "Indiana Jones and The Emperor's Tomb"
   region: "PAL-I"
   gameFixes:
     - EETimingHack # For texture flicker.
+  gsHWFixes:
+    textureInsideRT: 1
 SLES-50840:
   name: "Indiana Jones and The Emperor's Tomb"
   region: "PAL-S"
   gameFixes:
     - EETimingHack # For texture flicker.
+  gsHWFixes:
+    textureInsideRT: 1
 SLES-50841:
   name: "Largo Winch - Empire Under Threat"
   region: "PAL-M5"
@@ -10874,6 +10945,8 @@ SLES-51697:
   name: "SSX 3"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1
 SLES-51698:
   name: "Mobile Light Force 2"
   region: "PAL-M5"
@@ -11334,6 +11407,8 @@ SLES-51917:
   region: "PAL-M6"
   roundModes:
     eeRoundMode: 0  # Fixes SPS with water in some places.
+  gsHWFixes:
+    textureInsideRT: 1
 SLES-51918:
   name: "Prince of Persia - The Sands of Time"
   region: "PAL-M5"
@@ -16212,6 +16287,8 @@ SLES-54237:
 SLES-54239:
   name: "Wild ARMs 4"
   region: "PAL-E"
+  gsHWFixes:
+    textureInsideRT: 1
 SLES-54240:
   name: "FIFA '07"
   region: "PAL-E"
@@ -19657,6 +19734,8 @@ SLKA-25199:
 SLKA-25200:
   name: "SSX 3 [PlayStation 2 - Big Hit Series]"
   region: "NTSC-K"
+  gsHWFixes:
+    textureInsideRT: 1
 SLKA-25201:
   name: "Armored Core Nexus Evolution DISC1"
   region: "NTSC-K"
@@ -20390,6 +20469,8 @@ SLPM-61135:
 SLPM-61147:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Demo]"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1
 SLPM-62001:
   name: "Drum Mania"
   region: "NTSC-J"
@@ -23632,6 +23713,8 @@ SLPM-65409:
 SLPM-65410:
   name: "Getaway, The"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1
 SLPM-65411:
   name: "Onimusha Buraiden"
   region: "NTSC-J"
@@ -23761,6 +23844,8 @@ SLPM-65448:
 SLPM-65449:
   name: "SSX 3"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1
 SLPM-65450:
   name: "Tantei Gakuen Q: Kiokan no Satsui [First Limited Edition]"
   region: "NTSC-J"
@@ -24786,6 +24871,8 @@ SLPM-65791:
 SLPM-65793:
   name: "SSX 3 [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1
 SLPM-65794:
   name: "Capcom Fighting Jam"
   region: "NTSC-J"
@@ -25994,6 +26081,8 @@ SLPM-66182:
 SLPM-66183:
   name: "Getaway, The - Black Monday"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1
 SLPM-66184:
   name: "Ikusa Gami"
   region: "NTSC-J"
@@ -29037,6 +29126,8 @@ SLPS-20007:
   compat: 5
   gameFixes:
     - EETimingHack # Garbage in FMVs.
+  gsHWFixes:
+    textureInsideRT: 1
 SLPS-20009:
   name: "Golf Paradise"
   region: "NTSC-J"
@@ -32176,6 +32267,8 @@ SLPS-25640:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc1of2]"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1
   memcardFilters: # Allows import of Xenosaga II save data.
     - "SLPS-25640"
     - "SLPS-25368"
@@ -32183,6 +32276,8 @@ SLPS-25641:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc2of2]"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1
   memcardFilters:
     - "SLPS-25640"
     - "SLPS-25368"
@@ -34036,6 +34131,8 @@ SLUS-20113:
   name: "Driving Emotion Type S"
   region: "NTSC-U"
   compat: 4
+  gsHWFixes:
+    textureInsideRT: 1
 SLUS-20114:
   name: "Simpsons, The - Skateboarding"
   region: "NTSC-U"
@@ -35652,6 +35749,8 @@ SLUS-20508:
   compat: 5
   gameFixes:
     - EETimingHack # Fixes texture flicker.
+  gsHWFixes:
+    textureInsideRT: 1
 SLUS-20509:
   name: "Soccer Slam - Sega Sports"
   region: "NTSC-U"
@@ -36733,6 +36832,8 @@ SLUS-20763:
   compat: 5
   roundModes:
     eeRoundMode: 0  # Fixes SPS with water in some places.
+  gsHWFixes:
+    textureInsideRT: 1
 SLUS-20764:
   name: "Bombastic"
   region: "NTSC-U"
@@ -36770,6 +36871,8 @@ SLUS-20772:
   name: "SSX 3"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1
 SLUS-20773:
   name: "Legacy of Kain - Defiance"
   region: "NTSC-U"
@@ -39099,6 +39202,8 @@ SLUS-21292:
   name: "Wild ARMs 4"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1
   memcardFilters: # Allows import of Alter Code F clear data.
     - "SLUS-21292"
     - "SLUS-20937"
@@ -39596,6 +39701,8 @@ SLUS-21389:
   name: "Xenosaga - Episode III - Also Sprach Zarathustra [Disc1of2]"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1
   memcardFilters: # Allows import of Xenosaga II save data.
     - "SLUS-21389"
     - "SLUS-20892"
@@ -39712,6 +39819,8 @@ SLUS-21417:
   name: "Xenosaga - Episode III - Also Sprach Zarathustra [Disc2of2]"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1
   memcardFilters:
     - "SLUS-21389"
     - "SLUS-20892"
@@ -42248,6 +42357,8 @@ SLUS-29082:
   region: "NTSC-U"
   roundModes:
     eeRoundMode: 0  # Fixes SPS with water in some places.
+  gsHWFixes:
+    textureInsideRT: 1
 SLUS-29083:
   name: "Maximo vs. The Army of Zin [Demo]"
   region: "NTSC-U"
@@ -42579,6 +42690,8 @@ TCES-53286:
   name: "Jak X Beta Trial Code"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1
 TCPS-10058:
   name: "Densha de Go! Shinkansen [with Controller]"
   region: "NTSC-J"

@@ -257,8 +257,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		// (Simply not doing this code at all makes a lot of previsouly missing stuff show (but breaks pretty much everything
 		// else.)
 
-		const bool texture_inside_rt = ShallSearchTextureInsideRt();
-
 		bool found_t = false;
 		for (auto t : m_dst[RenderTarget])
 		{
@@ -303,7 +301,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					found_t = true;
 					break;
 				}
-				else if (texture_inside_rt && psm == PSM_PSMCT32 && t->m_TEX0.PSM == psm &&
+				else if (GSConfig.UserHacks_TextureInsideRt && psm == PSM_PSMCT32 && t->m_TEX0.PSM == psm &&
 					((t->m_TEX0.TBP0 < bp && t->m_end_block >= bp) || t_wraps))
 				{
 					// Only PSMCT32 to limit false hits.
@@ -414,11 +412,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	m_src.m_used = true;
 
 	return src;
-}
-
-bool GSTextureCache::ShallSearchTextureInsideRt()
-{
-	return GSConfig.UserHacks_TextureInsideRt || (m_renderer->m_game.flags & CRC::Flags::TextureInsideRt);
 }
 
 GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask, const bool is_frame, const int real_h)
