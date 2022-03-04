@@ -20,11 +20,7 @@
 #include <QtGui/QDesktopServices>
 #include <QtGui/QKeyEvent>
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QtGui/QAction>
-#else
-#include <QtWidgets/QAction>
-#endif
 
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>

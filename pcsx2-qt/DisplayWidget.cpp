@@ -49,12 +49,7 @@ DisplayWidget::~DisplayWidget() = default;
 
 qreal DisplayWidget::devicePixelRatioFromScreen() const
 {
-	QScreen* screen_for_ratio;
-#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
-	screen_for_ratio = windowHandle()->screen();
-#else
-	screen_for_ratio = screen();
-#endif
+	const QScreen* screen_for_ratio = screen();
 	if (!screen_for_ratio)
 		screen_for_ratio = QGuiApplication::primaryScreen();
 
