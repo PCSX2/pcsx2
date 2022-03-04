@@ -92,6 +92,7 @@ private Q_SLOTS:
 	void onToolsOpenDataDirectoryTriggered();
 	void onThemeChanged();
 	void onThemeChangedFromSettings();
+	void onLoggingOptionChanged();
 
 	void onVMStarting();
 	void onVMStarted();

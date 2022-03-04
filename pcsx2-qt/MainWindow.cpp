@@ -39,6 +39,7 @@
 #include "Settings/ControllerSettingsDialog.h"
 #include "Settings/GameListSettingsWidget.h"
 #include "Settings/InterfaceSettingsWidget.h"
+#include "SettingWidgetBinder.h"
 #include "svnrev.h"
 
 static constexpr char DISC_IMAGE_FILTER[] =
@@ -169,6 +170,21 @@ void MainWindow::connectSignals()
 			m_game_list_widget->gridZoomOut();
 	});
 	connect(m_ui.actionGridViewRefreshCovers, &QAction::triggered, m_game_list_widget, &GameListWidget::refreshGridCovers);
+
+	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableSystemConsole, "Logging", "EnableSystemConsole", false);
+	connect(m_ui.actionEnableSystemConsole, &QAction::triggered, this, &MainWindow::onLoggingOptionChanged);
+#ifndef PCSX2_DEVBUILD
+	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableVerboseLogging, "Logging", "EnableVerbose", false);
+	connect(m_ui.actionEnableVerboseLogging, &QAction::triggered, this, &MainWindow::onLoggingOptionChanged);
+#else
+	// Dev builds always have verbose logging.
+	m_ui.actionEnableVerboseLogging->setChecked(true);
+	m_ui.actionEnableVerboseLogging->setEnabled(false);
+#endif
+	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableEEConsoleLogging, "Logging", "EnableEEConsole", false);
+	connect(m_ui.actionEnableEEConsoleLogging, &QAction::triggered, this, &MainWindow::onLoggingOptionChanged);
+	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableIOPConsoleLogging, "Logging", "EnableIOPConsole", false);
+	connect(m_ui.actionEnableIOPConsoleLogging, &QAction::triggered, this, &MainWindow::onLoggingOptionChanged);
 
 	// These need to be queued connections to stop crashing due to menus opening/closing and switching focus.
 	connect(m_game_list_widget, &GameListWidget::refreshProgress, this, &MainWindow::onGameListRefreshProgress);
@@ -881,6 +897,11 @@ void MainWindow::onThemeChangedFromSettings()
 	// reopen the settings dialog after recreating
 	onThemeChanged();
 	g_main_window->doSettings();
+}
+
+void MainWindow::onLoggingOptionChanged()
+{
+	QtHost::UpdateLogging();
 }
 
 void MainWindow::onVMStarting()
