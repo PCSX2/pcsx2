@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QMessageBox>
 
 #include "common/Assertions.h"
 #include "common/Console.h"
@@ -137,12 +138,16 @@ void EmuThread::setVMPaused(bool paused)
 	VMManager::SetPaused(paused);
 }
 
-void EmuThread::shutdownVM(bool allow_save_to_state /* = true */, bool blocking /* = false */)
+bool EmuThread::shutdownVM(bool allow_confirm /* = true */, bool allow_save_to_state /* = true */, bool blocking /* = false */)
 {
 	if (!isOnEmuThread())
 	{
-		QMetaObject::invokeMethod(this, "shutdownVM", Qt::QueuedConnection, Q_ARG(bool, allow_save_to_state),
-			Q_ARG(bool, blocking));
+		// only confirm on UI thread because we need to display a msgbox
+		if (allow_confirm && g_main_window && !g_main_window->confirmShutdown())
+			return false;
+
+		QMetaObject::invokeMethod(this, "shutdownVM", Qt::QueuedConnection, Q_ARG(bool, false),
+			Q_ARG(bool, allow_save_to_state), Q_ARG(bool, blocking));
 
 		if (blocking)
 		{
@@ -151,16 +156,17 @@ void EmuThread::shutdownVM(bool allow_save_to_state /* = true */, bool blocking 
 				QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 		}
 
-		return;
+		return true;
 	}
 
 	const VMState state = VMManager::GetState();
 	if (state == VMState::Paused)
 		m_event_loop->quit();
 	else if (state != VMState::Running)
-		return;
+		return true;
 
 	VMManager::SetState(VMState::Stopping);
+	return true;
 }
 
 void EmuThread::loadState(const QString& filename)
@@ -741,7 +747,7 @@ ScopedVMPause::ScopedVMPause(bool was_paused)
 
 ScopedVMPause::~ScopedVMPause()
 {
-	if (m_was_paused)
+	if (!m_was_paused)
 		g_emu_thread->setVMPaused(false);
 }
 

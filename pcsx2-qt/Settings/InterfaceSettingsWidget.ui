@@ -61,9 +61,9 @@
        </widget>
       </item>
       <item row="3" column="0">
-       <widget class="QCheckBox" name="confirmPowerOff">
+       <widget class="QCheckBox" name="confirmShutdown">
         <property name="text">
-         <string>Confirm Power Off</string>
+         <string>Confirm Shutdown</string>
         </property>
        </widget>
       </item>

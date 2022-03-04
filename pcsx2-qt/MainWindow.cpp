@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include <QtCore/QDateTime>
+#include <QtGui/QCloseEvent>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressBar>
@@ -229,7 +230,7 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 void MainWindow::recreate()
 {
 	if (m_vm_valid)
-		g_emu_thread->shutdownVM(true, true);
+		g_emu_thread->shutdownVM(false, true, true);
 
 	close();
 	g_main_window = nullptr;
@@ -258,7 +259,7 @@ void MainWindow::setStyleFromSettings()
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
 		const QColor black(25, 25, 25);
-		const QColor teal(0, 128, 128);	
+		const QColor teal(0, 128, 128);
 		const QColor tameTeal(160, 190, 185);
 		const QColor grayBlue(160, 180, 190);
 
@@ -640,6 +641,25 @@ void MainWindow::invalidateSaveStateCache() { m_save_states_invalidated = true; 
 
 void MainWindow::reportError(const QString& title, const QString& message) { QMessageBox::critical(this, title, message); }
 
+bool MainWindow::confirmShutdown()
+{
+	if (!m_vm_valid || !QtHost::GetBaseBoolSettingValue("UI", "ConfirmShutdown", true))
+		return true;
+
+	ScopedVMPause pauser(m_vm_paused);
+
+	return (QMessageBox::question(g_main_window, tr("Confirm Shutdown"),
+				tr("Are you sure you want to shut down the virtual machine?\n\nAll unsaved progress will be lost.")) == QMessageBox::Yes);
+}
+
+void MainWindow::requestExit()
+{
+	if (!g_emu_thread->shutdownVM(true, true, false))
+		return;
+
+	close();
+}
+
 void Host::InvalidateSaveStateCache() { QMetaObject::invokeMethod(g_main_window, &MainWindow::invalidateSaveStateCache, Qt::QueuedConnection); }
 
 void MainWindow::onGameListRefreshProgress(const QString& status, int current, int total)
@@ -966,7 +986,12 @@ void MainWindow::onGameChanged(const QString& path, const QString& serial, const
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-	g_emu_thread->shutdownVM(true, true);
+	if (!g_emu_thread->shutdownVM(true, true, true))
+	{
+		event->ignore();
+		return;
+	}
+
 	saveStateToConfig();
 	QMainWindow::closeEvent(event);
 }

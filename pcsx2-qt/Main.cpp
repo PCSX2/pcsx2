@@ -17,6 +17,7 @@
 
 #include <QtWidgets/QApplication>
 #include <cstdlib>
+#include <csignal>
 
 #include "MainWindow.h"
 #include "EmuThread.h"
@@ -212,7 +213,6 @@ int main(int argc, char* argv[])
 
 	const int result = app.exec();
 
-	EmuThread::stop();
 	QtHost::Shutdown();
 	return result;
 }
