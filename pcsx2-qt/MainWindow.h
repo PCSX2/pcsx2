@@ -104,7 +104,7 @@ private Q_SLOTS:
 	void recreate();
 
 protected:
-	void closeEvent(QCloseEvent* event);
+	void closeEvent(QCloseEvent* event) override;
 
 private:
 	enum : s32
