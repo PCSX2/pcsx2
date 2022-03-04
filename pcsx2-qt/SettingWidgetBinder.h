@@ -14,16 +14,12 @@
  */
 
 #pragma once
-#include <QtCore/QtCore>
+
 #include <optional>
 #include <type_traits>
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QtCore/QtCore>
 #include <QtGui/QAction>
-#else
-#include <QtWidgets/QAction>
-#endif
-
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDoubleSpinBox>
@@ -152,13 +148,8 @@ namespace SettingWidgetBinder
 		static QString getStringValue(const QComboBox* widget)
 		{
 			const QVariant currentData(widget->currentData());
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-			if (currentData.type() == QVariant::String)
-				return currentData.toString();
-#else
 			if (currentData.metaType().id() == QMetaType::QString)
 				return currentData.toString();
-#endif
 
 			return widget->currentText();
 		}
