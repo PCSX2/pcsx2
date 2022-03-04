@@ -399,7 +399,7 @@ namespace SettingWidgetBinder
 			else
 				Accessor::setNullableBoolValue(widget, std::nullopt);
 
-			Accessor::connectValueChanged(widget, [sif, widget, section, key]() {
+			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key)]() {
 				if (std::optional<bool> new_value = Accessor::getNullableBoolValue(widget); new_value.has_value())
 					sif->SetBoolValue(section.c_str(), key.c_str(), new_value.value());
 				else
@@ -413,7 +413,7 @@ namespace SettingWidgetBinder
 		{
 			Accessor::setBoolValue(widget, value);
 
-			Accessor::connectValueChanged(widget, [widget, section, key]() {
+			Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
 				const bool new_value = Accessor::getBoolValue(widget);
 				QtHost::SetBaseBoolSettingValue(section.c_str(), key.c_str(), new_value);
 				g_emu_thread->applySettings();
@@ -439,7 +439,7 @@ namespace SettingWidgetBinder
 			else
 				Accessor::setNullableIntValue(widget, std::nullopt);
 
-			Accessor::connectValueChanged(widget, [sif, widget, section, key]() {
+			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key)]() {
 				if (std::optional<int> new_value = Accessor::getNullableIntValue(widget); new_value.has_value())
 					sif->SetIntValue(section.c_str(), key.c_str(), new_value.value());
 				else
@@ -453,7 +453,7 @@ namespace SettingWidgetBinder
 		{
 			Accessor::setIntValue(widget, static_cast<int>(value));
 
-			Accessor::connectValueChanged(widget, [widget, section, key, option_offset]() {
+			Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key), option_offset]() {
 				const int new_value = Accessor::getIntValue(widget);
 				QtHost::SetBaseIntSettingValue(section.c_str(), key.c_str(), new_value + option_offset);
 				g_emu_thread->applySettings();
@@ -478,7 +478,7 @@ namespace SettingWidgetBinder
 			else
 				Accessor::setNullableFloatValue(widget, std::nullopt);
 
-			Accessor::connectValueChanged(widget, [sif, widget, section, key]() {
+			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key)]() {
 				if (std::optional<float> new_value = Accessor::getNullableFloatValue(widget); new_value.has_value())
 					sif->SetFloatValue(section.c_str(), key.c_str(), new_value.value());
 				else
@@ -492,7 +492,7 @@ namespace SettingWidgetBinder
 		{
 			Accessor::setFloatValue(widget, value);
 
-			Accessor::connectValueChanged(widget, [widget, section, key]() {
+			Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
 				const float new_value = Accessor::getFloatValue(widget);
 				QtHost::SetBaseFloatSettingValue(section.c_str(), key.c_str(), new_value);
 				g_emu_thread->applySettings();
@@ -518,7 +518,7 @@ namespace SettingWidgetBinder
 			else
 				Accessor::setNullableIntValue(widget, std::nullopt);
 
-			Accessor::connectValueChanged(widget, [sif, widget, section, key, range]() {
+			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key), range]() {
 				if (std::optional<int> new_value = Accessor::getNullableIntValue(widget); new_value.has_value())
 					sif->SetFloatValue(section.c_str(), key.c_str(), static_cast<float>(new_value.value()) / range);
 				else
@@ -532,7 +532,7 @@ namespace SettingWidgetBinder
 		{
 			Accessor::setIntValue(widget, static_cast<int>(value * range));
 
-			Accessor::connectValueChanged(widget, [widget, section, key, range]() {
+			Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key), range]() {
 				const float new_value = (static_cast<float>(Accessor::getIntValue(widget)) / range);
 				QtHost::SetBaseFloatSettingValue(section.c_str(), key.c_str(), new_value);
 				g_emu_thread->applySettings();
@@ -558,7 +558,7 @@ namespace SettingWidgetBinder
 			else
 				Accessor::setNullableStringValue(widget, std::nullopt);
 
-			Accessor::connectValueChanged(widget, [sif, widget, section, key]() {
+			Accessor::connectValueChanged(widget, [widget, sif, section = std::move(section), key = std::move(key)]() {
 				if (std::optional<QString> new_value = Accessor::getNullableStringValue(widget); new_value.has_value())
 					sif->SetStringValue(section.c_str(), key.c_str(), new_value->toUtf8().constData());
 				else
@@ -572,7 +572,7 @@ namespace SettingWidgetBinder
 		{
 			Accessor::setStringValue(widget, value);
 
-			Accessor::connectValueChanged(widget, [widget, section, key]() {
+			Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
 				const QString new_value = Accessor::getStringValue(widget);
 				if (!new_value.isEmpty())
 					QtHost::SetBaseStringSettingValue(section.c_str(), key.c_str(), new_value.toUtf8().constData());
@@ -612,7 +612,7 @@ namespace SettingWidgetBinder
 				Accessor::setNullableIntValue(widget, std::nullopt);
 			}
 
-			Accessor::connectValueChanged(widget, [&]() {
+			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key), to_string_function]() {
 				if (std::optional<int> new_value = Accessor::getNullableIntValue(widget); new_value.has_value())
 				{
 					const char* string_value = to_string_function(static_cast<DataType>(static_cast<UnderlyingType>(new_value.value())));
@@ -634,7 +634,7 @@ namespace SettingWidgetBinder
 			else
 				Accessor::setIntValue(widget, static_cast<int>(static_cast<UnderlyingType>(default_value)));
 
-			Accessor::connectValueChanged(widget, [widget, section, key, to_string_function]() {
+			Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key), to_string_function]() {
 				const DataType value = static_cast<DataType>(static_cast<UnderlyingType>(Accessor::getIntValue(widget)));
 				const char* string_value = to_string_function(value);
 				QtHost::SetBaseStringSettingValue(section.c_str(), key.c_str(), string_value);
@@ -682,7 +682,7 @@ namespace SettingWidgetBinder
 			}
 			Accessor::setNullableIntValue(widget, sif_int_value);
 
-			Accessor::connectValueChanged(widget, [sif, widget, section, key, enum_names]() {
+			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key), enum_names]() {
 				if (std::optional<int> new_value = Accessor::getNullableIntValue(widget); new_value.has_value())
 					sif->SetStringValue(section.c_str(), key.c_str(), enum_names[new_value.value()]);
 				else
@@ -696,7 +696,7 @@ namespace SettingWidgetBinder
 		{
 			Accessor::setIntValue(widget, static_cast<int>(enum_index));
 
-			Accessor::connectValueChanged(widget, [widget, section, key, enum_names]() {
+			Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key), enum_names]() {
 				const UnderlyingType value = static_cast<UnderlyingType>(Accessor::getIntValue(widget));
 				QtHost::SetBaseStringSettingValue(section.c_str(), key.c_str(), enum_names[value]);
 				g_emu_thread->applySettings();
@@ -744,7 +744,7 @@ namespace SettingWidgetBinder
 			}
 			Accessor::setNullableIntValue(widget, sif_int_value);
 
-			Accessor::connectValueChanged(widget, [sif, widget, section, key, enum_names]() {
+			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key), enum_names]() {
 				if (std::optional<int> new_value = Accessor::getNullableIntValue(widget); new_value.has_value())
 					sif->SetStringValue(section.c_str(), key.c_str(), enum_names[new_value.value()]);
 				else
@@ -759,7 +759,7 @@ namespace SettingWidgetBinder
 			if (enum_index >= 0)
 				Accessor::setIntValue(widget, enum_index);
 
-			Accessor::connectValueChanged(widget, [widget, section, key, enum_values]() {
+			Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key), enum_values]() {
 				const int value = Accessor::getIntValue(widget);
 				QtHost::SetBaseStringSettingValue(section.c_str(), key.c_str(), enum_values[value]);
 				g_emu_thread->applySettings();
