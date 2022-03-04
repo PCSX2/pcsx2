@@ -438,17 +438,14 @@ static const IConsoleWriter ConsoleWriter_WinQt =
 void QtHost::UpdateLogging()
 {
 	// TODO: Make this an actual option.
-	bool console_logging_enabled = false;
+	const bool system_console_enabled = QtHost::GetBaseBoolSettingValue("Logging", "EnableSystemConsole", false);
 
-#if defined(_DEBUG) || defined(PCSX2_DEVBUILD)
-	console_logging_enabled = true;
-#endif
+	const bool any_logging_sinks = system_console_enabled;
+	DevConWriterEnabled = any_logging_sinks && QtHost::GetBaseBoolSettingValue("Logging", "EnableVerbose", false);
+	SysConsole.eeConsole.Enabled = any_logging_sinks && QtHost::GetBaseBoolSettingValue("Logging", "EnableEEConsole", true);
+	SysConsole.iopConsole.Enabled = any_logging_sinks && QtHost::GetBaseBoolSettingValue("Logging", "EnableIOPConsole", true);
 
-	DevConWriterEnabled = console_logging_enabled;
-	SysConsole.eeConsole.Enabled = console_logging_enabled;
-	SysConsole.iopConsole.Enabled = console_logging_enabled;
-
-	if (console_logging_enabled)
+	if (system_console_enabled)
 	{
 #ifdef _WIN32
 		s_debugger_attached = IsDebuggerPresent();
