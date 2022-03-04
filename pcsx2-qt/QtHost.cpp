@@ -15,6 +15,15 @@
 
 #include "PrecompiledHeader.h"
 
+#include <csignal>
+
+#include <QtCore/QTimer>
+#include <QtWidgets/QMessageBox>
+
+#ifdef _WIN32
+#include "common/RedtapeWindows.h"
+#endif
+
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/FileSystem.h"
@@ -25,9 +34,6 @@
 #include "pcsx2/Frontend/INISettingsInterface.h"
 #include "pcsx2/HostSettings.h"
 #include "pcsx2/PAD/Host/PAD.h"
-
-#include <QtCore/QTimer>
-#include <QtWidgets/QMessageBox>
 
 #include "EmuThread.h"
 #include "GameList/GameListWidget.h"
@@ -42,11 +48,15 @@ static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 //////////////////////////////////////////////////////////////////////////
 // Local function declarations
 //////////////////////////////////////////////////////////////////////////
+namespace QtHost {
 static void InitializeWxRubbish();
 static bool InitializeConfig();
+static void HookSignals();
+static bool SetCriticalFolders();
 static void SetDefaultConfig();
 static void QueueSettingsSave();
 static void SaveSettings();
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Local variable declarations
@@ -72,12 +82,21 @@ bool QtHost::Initialize()
 		return false;
 	}
 
+	HookSignals();
 	return true;
 }
 
-void QtHost::Shutdown() {}
+void QtHost::Shutdown()
+{
+	EmuThread::stop();
+	if (g_main_window)
+	{
+		g_main_window->close();
+		delete g_main_window;
+	}
+}
 
-static bool SetCriticalFolders()
+bool QtHost::SetCriticalFolders()
 {
 	std::string program_path(FileSystem::GetProgramPath());
 	EmuFolders::AppRoot = wxDirName(wxFileName(StringUtil::UTF8StringToWxString(program_path)));
@@ -110,7 +129,7 @@ void QtHost::UpdateFolders()
 	EmuFolders::EnsureFoldersExist();
 }
 
-bool InitializeConfig()
+bool QtHost::InitializeConfig()
 {
 	if (!SetCriticalFolders())
 		return false;
@@ -138,7 +157,7 @@ bool InitializeConfig()
 	return true;
 }
 
-void SetDefaultConfig()
+void QtHost::SetDefaultConfig()
 {
 	EmuConfig = Pcsx2Config();
 	EmuFolders::SetDefaults();
@@ -247,7 +266,7 @@ void QtHost::RemoveBaseSettingValue(const char* section, const char* key)
 	QueueSettingsSave();
 }
 
-void SaveSettings()
+void QtHost::SaveSettings()
 {
 	pxAssertRel(!g_emu_thread->isOnEmuThread(), "Saving should happen on the UI thread.");
 
@@ -261,7 +280,7 @@ void SaveSettings()
 	s_settings_save_timer.release();
 }
 
-void QueueSettingsSave()
+void QtHost::QueueSettingsSave()
 {
 	if (s_settings_save_timer)
 		return;
@@ -338,9 +357,38 @@ void PatchesVerboseReset()
 	// FIXME
 }
 
+static void SignalHandler(int signal)
+{
+	// First try the normal (graceful) shutdown/exit.
+	static bool graceful_shutdown_attempted = false;
+	if (!graceful_shutdown_attempted && g_main_window)
+	{
+		std::fprintf(stderr, "Received CTRL+C, attempting graceful shutdown. Press CTRL+C again to force.\n");
+		graceful_shutdown_attempted = true;
+
+		// This could be a bit risky invoking from a signal handler... hopefully it's okay.
+		QMetaObject::invokeMethod(g_main_window, &MainWindow::requestExit, Qt::QueuedConnection);
+		return;
+	}
+
+	std::signal(signal, SIG_DFL);
+
+	// MacOS is missing std::quick_exit() despite it being C++11...
+#ifndef __APPLE__
+	std::quick_exit(1);
+#else
+	_Exit(1);
+#endif
+}
+
+void QtHost::HookSignals()
+{
+	std::signal(SIGINT, SignalHandler);
+	std::signal(SIGTERM, SignalHandler);
+}
+
 // Replacement for Console so we actually get output to our console window on Windows.
 #ifdef _WIN32
-#include "common/RedtapeWindows.h"
 
 static bool s_debugger_attached = false;
 static bool s_console_handle_set = false;
@@ -433,6 +481,17 @@ static const IConsoleWriter ConsoleWriter_WinQt =
 		ConsoleWinQt_Newline,
 		ConsoleWinQt_SetTitle,
 };
+
+static BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType)
+{
+	Console.WriteLn("Handler %u", dwCtrlType);
+	if (dwCtrlType != CTRL_C_EVENT)
+		return FALSE;
+
+	SignalHandler(SIGTERM);
+	return TRUE;
+}
+
 #endif
 
 void QtHost::UpdateLogging()
@@ -445,9 +504,9 @@ void QtHost::UpdateLogging()
 	SysConsole.eeConsole.Enabled = any_logging_sinks && QtHost::GetBaseBoolSettingValue("Logging", "EnableEEConsole", true);
 	SysConsole.iopConsole.Enabled = any_logging_sinks && QtHost::GetBaseBoolSettingValue("Logging", "EnableIOPConsole", true);
 
+#ifdef _WIN32
 	if (system_console_enabled)
 	{
-#ifdef _WIN32
 		s_debugger_attached = IsDebuggerPresent();
 		if (!s_console_handle_set)
 		{
@@ -468,17 +527,31 @@ void QtHost::UpdateLogging()
 		}
 
 		if (!s_console_handle && !s_debugger_attached)
+		{
 			Console_SetActiveHandler(ConsoleWriter_Null);
+			SetConsoleCtrlHandler(ConsoleCtrlHandler, FALSE);
+		}
 		else
+		{
 			Console_SetActiveHandler(ConsoleWriter_WinQt);
+			SetConsoleCtrlHandler(ConsoleCtrlHandler, TRUE);
+		}
+	}
+	else
+	{
+		Console_SetActiveHandler(ConsoleWriter_Null);
+		SetConsoleCtrlHandler(ConsoleCtrlHandler, FALSE);
+	}
 #else
+	if (system_console_enabled)
+	{
 		Console_SetActiveHandler(ConsoleWriter_Stdout);
-#endif
 	}
 	else
 	{
 		Console_SetActiveHandler(ConsoleWriter_Null);
 	}
+#endif
 }
 
 #include <wx/module.h>
@@ -488,7 +561,7 @@ extern "C" HINSTANCE wxGetInstance();
 extern void wxSetInstance(HINSTANCE hInst);
 #endif
 
-void InitializeWxRubbish()
+void QtHost::InitializeWxRubbish()
 {
 	wxLog::DoCreateOnDemand();
 	wxLog::GetActiveTarget();

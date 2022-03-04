@@ -54,6 +54,8 @@ public Q_SLOTS:
 	void refreshGameList(bool invalidate_cache);
 	void invalidateSaveStateCache();
 	void reportError(const QString& title, const QString& message);
+	bool confirmShutdown();
+	void requestExit();
 
 private Q_SLOTS:
 	DisplayWidget* createDisplay(bool fullscreen, bool render_to_main);

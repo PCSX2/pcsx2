@@ -41,7 +41,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.inhibitScreensaver, "UI", "InhibitScreensaver", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.discordPresence, "UI", "DiscordPresence", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.confirmPowerOff, "UI", "ConfirmPowerOff", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.confirmShutdown, "UI", "ConfirmShutdown", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.saveStateOnExit, "EmuCore", "AutoStateLoadSave", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnStart, "UI", "StartPaused", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnFocusLoss, "UI", "PauseOnFocusLoss", false);
@@ -84,8 +84,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 	}
 
 	dialog->registerWidgetHelp(
-		m_ui.confirmPowerOff, tr("Confirm Power Off"), tr("Checked"),
-		tr("Determines whether a prompt will be displayed to confirm shutting down the emulator/game "
+		m_ui.confirmShutdown, tr("Confirm Shutdown"), tr("Checked"),
+		tr("Determines whether a prompt will be displayed to confirm shutting down the virtual machine "
 		   "when the hotkey is pressed."));
 	dialog->registerWidgetHelp(m_ui.saveStateOnExit, tr("Save State On Exit"), tr("Checked"),
 		tr("Automatically saves the emulator state when powering down or exiting. You can then "
