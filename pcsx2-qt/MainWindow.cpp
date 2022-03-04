@@ -241,9 +241,6 @@ void MainWindow::setStyleFromSettings()
 		// Alternative white theme.
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
-		const QColor lighterGray(75, 75, 75);
-		const QColor darkGray(53, 53, 53);
-		const QColor gray(128, 128, 128);
 		const QColor black(25, 25, 25);
 		const QColor teal(0, 128, 128);	
 		const QColor tameTeal(160, 190, 185);
@@ -279,18 +276,12 @@ void MainWindow::setStyleFromSettings()
 		// Alternative light theme.
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
-		const QColor lighterGray(75, 75, 75);
 		const QColor gray(150, 150, 150);
 		const QColor black(25, 25, 25);
-		const QColor darkPink(180, 80, 200);
 		const QColor pink(255, 174, 201);
 		const QColor brightPink(255, 230, 255);
 		const QColor congoPink(255, 127, 121);
-		const QColor yellow(255, 235, 180);
-		const QColor darkGreen(161, 240, 183);
-		const QColor green(221, 239, 226);
 		const QColor blue(221, 225, 239);
-		const QColor darkBlue(100, 95, 250);
 
 		QPalette standardPalette;
 		standardPalette.setColor(QPalette::Window, pink);
@@ -322,13 +313,10 @@ void MainWindow::setStyleFromSettings()
 		// Alternative light theme.
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
-		const QColor lighterGray(75, 75, 75);
-		const QColor gray(128, 128, 128);
 		const QColor black(25, 25, 25);
 		const QColor darkBlue(73, 97, 177);
 		const QColor blue(106, 156, 255);
 		const QColor lightBlue(130, 155, 241);
-		const QColor brightBlue(164, 184, 255);
 
 		QPalette standardPalette;
 		standardPalette.setColor(QPalette::Window, lightBlue);
@@ -394,7 +382,6 @@ void MainWindow::setStyleFromSettings()
 		// adapted from https://gist.github.com/QuantumCD/6245215
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
-		const QColor lighterGray(75, 75, 75);
 		const QColor darkGray(53, 53, 53);
 		const QColor gray(128, 128, 128);
 		const QColor black(25, 25, 25);
@@ -431,9 +418,6 @@ void MainWindow::setStyleFromSettings()
 		// Alternative dark theme.
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
-		const QColor lighterGray(75, 75, 75);
-		const QColor gray(128, 128, 128);
-		const QColor black(25, 25, 25);
 		const QColor darkRed(80, 45, 69);
 		const QColor purplishRed(120, 45, 69);
 		const QColor brightRed(200, 45, 69);
@@ -692,7 +676,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		QAction* action = menu.addAction(tr("Properties..."));
 		action->setEnabled(!entry->serial.empty());
 		if (action->isEnabled())
-			connect(action, &QAction::triggered, [this, entry]() { SettingsDialog::openGamePropertiesDialog(entry, entry->crc); });
+			connect(action, &QAction::triggered, [entry]() { SettingsDialog::openGamePropertiesDialog(entry, entry->crc); });
 
 		action = menu.addAction(tr("Open Containing Directory..."));
 		connect(action, &QAction::triggered, [this, entry]() {
@@ -1461,7 +1445,7 @@ void MainWindow::populateSaveStateMenu(QMenu* menu, const QString& serial, quint
 			timestamp = tr("Empty");
 
 		QString title(tr("Save Slot %1 (%2)").arg(i).arg(timestamp));
-		connect(menu->addAction(title), &QAction::triggered, [this, i]() { g_emu_thread->saveStateToSlot(i); });
+		connect(menu->addAction(title), &QAction::triggered, [i]() { g_emu_thread->saveStateToSlot(i); });
 	}
 }
 

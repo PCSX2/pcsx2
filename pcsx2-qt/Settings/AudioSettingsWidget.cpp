@@ -27,7 +27,7 @@
 AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	: QWidget(parent)
 {
-	SettingsInterface* sif = dialog->getSettingsInterface();
+	// SettingsInterface* sif = dialog->getSettingsInterface();
 
 	m_ui.setupUi(this);
 }

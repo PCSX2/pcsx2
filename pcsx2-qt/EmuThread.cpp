@@ -285,6 +285,9 @@ void EmuThread::executeVM()
 				destroyVM();
 				m_event_loop->processEvents(QEventLoop::AllEvents);
 				return;
+
+			default:
+				continue;
 		}
 	}
 }

@@ -93,7 +93,7 @@ private Q_SLOTS:
 	void onRestoreDefaultsClicked();
 
 protected:
-	void closeEvent(QCloseEvent*);
+	void closeEvent(QCloseEvent*) override;
 
 private:
 	enum : u32
