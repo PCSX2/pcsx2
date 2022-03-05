@@ -455,7 +455,7 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 		skip = left & 7;
 		steps = pixels + skip - 8;
 		left -= skip;
-		test = GSVector8i::i8to32c(g_const->m_test_256b[skip]) | GSVector8i::i8to32c(g_const->m_test_256b[15 + (steps & (steps >> 31))]);
+		test = GSVector8i::i8to32(g_const->m_test_256b[skip]) | GSVector8i::i8to32(g_const->m_test_256b[15 + (steps & (steps >> 31))]);
 	}
 	else
 	{
@@ -1561,7 +1561,7 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 
 		if (!sel.notest)
 		{
-			test = GSVector8i::i8to32c(g_const->m_test_256b[15 + (steps & (steps >> 31))]);
+			test = GSVector8i::i8to32(g_const->m_test_256b[15 + (steps & (steps >> 31))]);
 		}
 	}
 
