@@ -1705,14 +1705,59 @@ void GSState::Move()
 		int _sy = sy, _dy = dy; // Faster with local copied variables, compiler optimizations are dumb
 		if (xinc > 0)
 		{
-			for (int y = 0; y < h; y++, _sy += yinc, _dy += yinc)
+			const int page_width = GSLocalMemory::m_psm[m_env.BITBLTBUF.DPSM].pgs.x;
+			const int page_height = GSLocalMemory::m_psm[m_env.BITBLTBUF.DPSM].pgs.y;
+			const int xpage = sx & ~(page_width - 1);
+			const int ypage = _sy & ~(page_height - 1);
+			// Copying from itself to itself (rotating textures) used in Gitaroo Man stage 8
+			// What probably happens is because the copy is buffered, the source stays just ahead of the destination.
+			if (sbp == dbp && (((_sy < _dy) && ((ypage + page_height) > _dy)) || ((sx < dx) && ((xpage + page_width) > dx))))
 			{
-				auto s = getPAHelper(spo, sx, _sy);
-				auto d = getPAHelper(dpo, dx, _dy);
+				int starty = 0;
+				int endy = h;
+				int y_inc = yinc;
 
-				for (int x = 0; x < w; x++)
+				if (((_sy < _dy) && ((ypage + page_height) > _dy)))
 				{
-					pxCopyFn(d, s, x);
+					_sy += h;
+					_dy += h;
+					starty = h-1;
+					endy = -1;
+					y_inc = -y_inc;
+				}
+			
+				for (int y = starty; y != endy; y+= y_inc, _sy += y_inc, _dy += y_inc)
+				{
+					auto s = getPAHelper(spo, sx, _sy);
+					auto d = getPAHelper(dpo, dx, _dy);
+
+					if (((sx < dx) && ((xpage + page_width) > dx)))
+					{
+						for (int x = w - 1; x >= 0; x--)
+						{
+							pxCopyFn(d, s, x);
+						}
+					}
+					else
+					{
+						for (int x = 0; x < w; x++)
+						{
+							pxCopyFn(d, s, x);
+						}
+					}
+				}
+			}
+			else
+			{
+				for (int y = 0; y < h; y++, _sy += yinc, _dy += yinc)
+				{
+					auto s = getPAHelper(spo, sx, _sy);
+					auto d = getPAHelper(dpo, dx, _dy);
+
+					for (int x = 0; x < w; x++)
+					{
+						pxCopyFn(d, s, x);
+					}
 				}
 			}
 		}
