@@ -20,6 +20,7 @@
 #include "HostDisplay.h"
 #include "PerformanceMetrics.h"
 #include "pcsx2/Config.h"
+#include "common/FileSystem.h"
 #include "common/StringUtil.h"
 
 #ifndef PCSX2_CORE
@@ -27,8 +28,26 @@
 #if defined(__unix__)
 #include <X11/keysym.h>
 #endif
+
+static std::string GetDumpName()
+{
+	return StringUtil::wxStringToUTF8String(GameInfo::gameName);
+}
+static std::string GetDumpSerial()
+{
+	return StringUtil::wxStringToUTF8String(GameInfo::gameSerial);
+}
 #else
 #include "VMManager.h"
+
+static std::string GetDumpName()
+{
+	return VMManager::GetGameName();
+}
+static std::string GetDumpSerial()
+{
+	return VMManager::GetGameSerial();
+}
 #endif
 
 GSRenderer::GSRenderer()
@@ -460,12 +479,6 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			fd.data = new u8[fd.size];
 			Freeze(&fd, false);
 
-#ifndef PCSX2_CORE
-			const std::string serial(StringUtil::wxStringToUTF8String(GameInfo::gameSerial));
-#else
-			const std::string serial(VMManager::GetGameSerial());
-#endif
-
 			// keep the screenshot relatively small so we don't bloat the dump
 			static constexpr u32 DUMP_SCREENSHOT_WIDTH = 640;
 			static constexpr u32 DUMP_SCREENSHOT_HEIGHT = 480;
@@ -474,14 +487,14 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 
 			if (m_control_key)
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, serial, m_crc,
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, GetDumpSerial(), m_crc,
 					DUMP_SCREENSHOT_WIDTH, DUMP_SCREENSHOT_HEIGHT,
 					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
 					fd, m_regs));
 			}
 			else
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpXz(m_snapshot, serial, m_crc,
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpXz(m_snapshot, GetDumpSerial(), m_crc,
 					DUMP_SCREENSHOT_WIDTH, DUMP_SCREENSHOT_HEIGHT,
 					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
 					fd, m_regs));
@@ -556,6 +569,18 @@ bool GSRenderer::MakeSnapshot(const std::string& path)
 				}
 				prev_snap = cur_time;
 			}
+
+			// append the game serial and title
+			if (std::string name(GetDumpName()); !name.empty())
+			{
+				FileSystem::SanitizeFileName(name);
+				m_snapshot += format("_%s", name.c_str());
+			}
+			if (std::string serial(GetDumpSerial()); !serial.empty())
+			{
+				FileSystem::SanitizeFileName(serial);
+				m_snapshot += format("_%s", serial.c_str());
+			}
 		}
 	}
 
@@ -574,7 +599,7 @@ void GSRenderer::EndCapture()
 
 void GSRenderer::KeyEvent(const HostKeyEvent& e)
 {
-#ifndef __APPLE__ // TODO: Add hotkey support on macOS
+#if !defined(PCSX2_CORE) && !defined(__APPLE__) // TODO: Add hotkey support on macOS
 #ifdef _WIN32
 	m_shift_key = !!(::GetAsyncKeyState(VK_SHIFT) & 0x8000);
 	m_control_key = !!(::GetAsyncKeyState(VK_CONTROL) & 0x8000);
