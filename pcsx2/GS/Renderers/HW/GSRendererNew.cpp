@@ -784,16 +784,30 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 		m_conf.ps.blend_c = ALPHA.C;
 		m_conf.ps.blend_d = ALPHA.D;
 
+		if (m_conf.ps.blend_a == m_conf.ps.blend_b)
+		{
+			// A == B
+			// (A - B) * C will be 0 so set A B to Cs, C to As
+			m_conf.ps.blend_a = 0;
+			m_conf.ps.blend_b = 0;
+			m_conf.ps.blend_c = 0;
+		}
+		else if (m_conf.ps.blend_c == 2)
+		{
+			// Require the fix alpha vlaue
+			m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(ALPHA.FIX) / 128.0f;
+		}
+
 		if (accumulation_blend)
 		{
 			// Keep HW blending to do the addition/subtraction
 			m_conf.blend = {blend_index, 0, false, true, false};
-			if (ALPHA.A == 2)
+			if (m_conf.ps.blend_a == 2)
 			{
 				// The blend unit does a reverse subtraction so it means
 				// the shader must output a positive value.
 				// Replace 0 - Cs by Cs - 0
-				m_conf.ps.blend_a = ALPHA.B;
+				m_conf.ps.blend_a = m_conf.ps.blend_b;
 				m_conf.ps.blend_b = 2;
 			}
 			// Remove the addition/substraction from the SW blending
@@ -804,7 +818,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 		}
 		else if (blend_mix)
 		{
-			m_conf.blend = {blend_index, ALPHA.FIX, ALPHA.C == 2, false, true};
+			m_conf.blend = {blend_index, ALPHA.FIX, m_conf.ps.blend_c == 2, false, true};
 			m_conf.ps.blend_mix = 1;
 
 			if (blend_mix1)
@@ -847,10 +861,6 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 			else
 				m_conf.require_one_barrier |= !blend_non_recursive;
 		}
-
-		// Require the fix alpha vlaue
-		if (ALPHA.C == 2)
-			m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(ALPHA.FIX) / 128.0f;
 	}
 	else
 	{
