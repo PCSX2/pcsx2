@@ -33,7 +33,9 @@ GSDumpBase::~GSDumpBase()
 		fclose(m_gs);
 }
 
-void GSDumpBase::AddHeader(const std::string& serial, u32 crc, const freezeData& fd, const GSPrivRegSet* regs)
+void GSDumpBase::AddHeader(const std::string& serial, u32 crc,
+	u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+	const freezeData& fd, const GSPrivRegSet* regs)
 {
 	// New header: CRC of FFFFFFFF, secondary header, full header follows.
 	const u32 fake_crc = 0xFFFFFFFFu;
@@ -41,7 +43,8 @@ void GSDumpBase::AddHeader(const std::string& serial, u32 crc, const freezeData&
 
 	// Compute full header size (with serial).
 	// This acts as the state size for loading older dumps.
-	const u32 header_size = sizeof(GSDumpHeader) + static_cast<u32>(serial.size());
+	const u32 screenshot_size = screenshot_width * screenshot_height * sizeof(screenshot_pixels[0]);
+	const u32 header_size = sizeof(GSDumpHeader) + static_cast<u32>(serial.size()) + screenshot_size;
 	AppendRawData(&header_size, 4);
 
 	// Write hader.
@@ -51,9 +54,15 @@ void GSDumpBase::AddHeader(const std::string& serial, u32 crc, const freezeData&
 	header.crc = crc;
 	header.serial_offset = sizeof(header);
 	header.serial_size = static_cast<u32>(serial.size());
+	header.screenshot_width = screenshot_width;
+	header.screenshot_height = screenshot_height;
+	header.screenshot_offset = header.serial_offset + header.serial_size;
+	header.screenshot_size = screenshot_size;
 	AppendRawData(&header, sizeof(header));
 	if (!serial.empty())
 		AppendRawData(serial.data(), serial.size());
+	if (screenshot_pixels)
+		AppendRawData(screenshot_pixels, screenshot_size);
 
 	// Then the real state data.
 	AppendRawData(fd.data, fd.size);
@@ -112,10 +121,12 @@ void GSDumpBase::Write(const void* data, size_t size)
 // GSDump implementation
 //////////////////////////////////////////////////////////////////////
 
-GSDumpUncompressed::GSDumpUncompressed(const std::string& fn, const std::string& serial, u32 crc, const freezeData& fd, const GSPrivRegSet* regs)
+GSDumpUncompressed::GSDumpUncompressed(const std::string& fn, const std::string& serial, u32 crc,
+	u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+	const freezeData& fd, const GSPrivRegSet* regs)
 	: GSDumpBase(fn + ".gs")
 {
-	AddHeader(serial, crc, fd, regs);
+	AddHeader(serial, crc, screenshot_width, screenshot_height, screenshot_pixels, fd, regs);
 }
 
 void GSDumpUncompressed::AppendRawData(const void* data, size_t size)
@@ -132,7 +143,9 @@ void GSDumpUncompressed::AppendRawData(u8 c)
 // GSDumpXz implementation
 //////////////////////////////////////////////////////////////////////
 
-GSDumpXz::GSDumpXz(const std::string& fn, const std::string& serial, u32 crc, const freezeData& fd, const GSPrivRegSet* regs)
+GSDumpXz::GSDumpXz(const std::string& fn, const std::string& serial, u32 crc,
+	u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+	const freezeData& fd, const GSPrivRegSet* regs)
 	: GSDumpBase(fn + ".gs.xz")
 {
 	m_strm = LZMA_STREAM_INIT;
@@ -143,7 +156,7 @@ GSDumpXz::GSDumpXz(const std::string& fn, const std::string& serial, u32 crc, co
 		return;
 	}
 
-	AddHeader(serial, crc, fd, regs);
+	AddHeader(serial, crc, screenshot_width, screenshot_height, screenshot_pixels, fd, regs);
 }
 
 GSDumpXz::~GSDumpXz()

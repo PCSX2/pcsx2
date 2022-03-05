@@ -47,6 +47,10 @@ struct GSDumpHeader
 	u32 serial_offset;
 	u32 serial_size;
 	u32 crc;
+	u32 screenshot_width;
+	u32 screenshot_height;
+	u32 screenshot_offset;
+	u32 screenshot_size;
 };
 #pragma pack(pop)
 
@@ -57,7 +61,9 @@ class GSDumpBase
 	FILE* m_gs;
 
 protected:
-	void AddHeader(const std::string& serial, u32 crc, const freezeData& fd, const GSPrivRegSet* regs);
+	void AddHeader(const std::string& serial, u32 crc,
+		u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+		const freezeData& fd, const GSPrivRegSet* regs);
 	void Write(const void* data, size_t size);
 
 	virtual void AppendRawData(const void* data, size_t size) = 0;
@@ -78,7 +84,9 @@ class GSDumpUncompressed final : public GSDumpBase
 	void AppendRawData(u8 c) final;
 
 public:
-	GSDumpUncompressed(const std::string& fn, const std::string& serial, u32 crc, const freezeData& fd, const GSPrivRegSet* regs);
+	GSDumpUncompressed(const std::string& fn, const std::string& serial, u32 crc,
+		u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+		const freezeData& fd, const GSPrivRegSet* regs);
 	virtual ~GSDumpUncompressed() = default;
 };
 
@@ -94,6 +102,8 @@ class GSDumpXz final : public GSDumpBase
 	void AppendRawData(u8 c);
 
 public:
-	GSDumpXz(const std::string& fn, const std::string& serial, u32 crc, const freezeData& fd, const GSPrivRegSet* regs);
+	GSDumpXz(const std::string& fn, const std::string& serial, u32 crc,
+		u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+		const freezeData& fd, const GSPrivRegSet* regs);
 	virtual ~GSDumpXz();
 };

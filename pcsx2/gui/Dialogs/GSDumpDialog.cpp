@@ -22,6 +22,8 @@
 
 
 #include "common/EmbeddedImage.h"
+#include "common/FileSystem.h"
+#include "common/StringUtil.h"
 #include "gui/Resources/NoIcon.h"
 #include "GS.h"
 #include "GS/GSDump.h"
@@ -47,6 +49,7 @@
 #include <wx/wfstream.h>
 #include <array>
 #include <functional>
+#include <optional>
 
 template <typename Output, typename Input, typename std::enable_if<sizeof(Input) == sizeof(Output), bool>::type = true>
 static constexpr Output BitCast(Input input)
@@ -166,6 +169,94 @@ static constexpr const char* GetNameTEXCPSM(u8 psm)
 		case 012: return "PSMCT16S";
 		default: return "UNKNOWN";
 	}
+}
+
+static std::unique_ptr<GSDumpFile> GetDumpFile(const std::string& filename)
+{
+	std::FILE* fp = FileSystem::OpenCFile(filename.c_str(), "rb");
+	if (!fp)
+		return nullptr;
+
+	if (StringUtil::EndsWith(filename, ".xz"))
+		return std::make_unique<GSDumpLzma>(fp, nullptr);
+	else
+		return std::make_unique<GSDumpRaw>(fp, nullptr);
+}
+
+static bool GetPreviewImageFromDump(const std::string& filename, u32* width, u32* height, std::vector<u32>* pixels)
+{
+	try
+	{
+		std::unique_ptr<GSDumpFile> dump = GetDumpFile(filename);
+		if (!dump)
+			return false;
+
+		u32 crc;
+		dump->Read(&crc, sizeof(crc));
+		if (crc != 0xFFFFFFFFu)
+		{
+			// not new header dump, so no preview
+			return false;
+		}
+
+		u32 header_size;
+		dump->Read(&header_size, sizeof(header_size));
+		if (header_size < sizeof(GSDumpHeader))
+		{
+			// doesn't have the screenshot fields
+			return false;
+		}
+
+		std::unique_ptr<u8[]> header_bits = std::make_unique<u8[]>(header_size);
+		dump->Read(header_bits.get(), header_size);
+
+		GSDumpHeader header;
+		std::memcpy(&header, header_bits.get(), sizeof(header));
+		if (header.screenshot_size == 0 ||
+			header.screenshot_size < (header.screenshot_width * header.screenshot_height * sizeof(u32)) ||
+			(static_cast<u64>(header.screenshot_offset) + header.screenshot_size) > header_size)
+		{
+			// doesn't have a screenshot
+			return false;
+		}
+
+		*width = header.screenshot_width;
+		*height = header.screenshot_height;
+		pixels->resize(header.screenshot_width * header.screenshot_height);
+		std::memcpy(pixels->data(), header_bits.get() + header.screenshot_offset, header.screenshot_size);
+		return true;
+	}
+	catch (...)
+	{
+		return false;
+	}
+}
+
+static std::optional<wxImage> GetPreviewImageFromDump(const std::string& filename)
+{
+	std::vector<u32> pixels;
+	u32 width, height;
+	if (!GetPreviewImageFromDump(filename, &width, &height, &pixels))
+		return std::nullopt;
+
+	// strip alpha bytes because wx is dumb and stores on a separate plane
+	// apparently this isn't aligned? stupidity...
+	const u32 pitch = width * 3;
+	u8* wxpixels = static_cast<u8*>(std::malloc(pitch * height));
+	for (u32 y = 0; y < height; y++)
+	{
+		const u8* in = reinterpret_cast<const u8*>(pixels.data() + y * width);
+		u8* out = wxpixels + y * pitch;
+		for (u32 x = 0; x < width; x++)
+		{
+			*(out++) = in[0];
+			*(out++) = in[1];
+			*(out++) = in[2];
+			in += sizeof(u32);
+		}
+	}
+
+	return wxImage(wxSize(width, height), wxpixels);
 }
 
 namespace GSDump
@@ -335,8 +426,17 @@ void Dialogs::GSDumpDialog::SelectedDump(wxListEvent& evt)
 		img.Rescale(400,250, wxIMAGE_QUALITY_HIGH);
 		m_preview_image->SetBitmap(wxBitmap(img));
 	}
+	else if (std::optional<wxImage> img = GetPreviewImageFromDump(StringUtil::wxStringToUTF8String(filename)); img.has_value())
+	{
+		// try embedded dump
+		img->Rescale(400, 250, wxIMAGE_QUALITY_HIGH);
+		m_preview_image->SetBitmap(img.value());
+	}
 	else
+	{
 		m_preview_image->SetBitmap(EmbeddedImage<res_NoIcon>().Get());
+	}
+
 	m_selected_dump = wxString(filename);
 }
 
@@ -370,18 +470,16 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 {
 	if (!m_run->IsEnabled())
 		return;
-	FILE* dumpfile = wxFopen(m_selected_dump, L"rb");
-	if (!dumpfile)
+
+	m_thread->m_dump_file = GetDumpFile(StringUtil::wxStringToUTF8String(m_selected_dump));
+	if (!m_thread->m_dump_file)
 	{
 		wxString s;
 		s.Printf(_("Failed to load the dump %s !"), m_selected_dump);
 		wxMessageBox(s, _("GS Debugger"), wxICON_ERROR);
 		return;
 	}
-	if (m_selected_dump.EndsWith(".xz"))
-		m_thread->m_dump_file = std::make_unique<GSDumpLzma>(dumpfile, nullptr);
-	else
-		m_thread->m_dump_file = std::make_unique<GSDumpRaw >(dumpfile, nullptr);
+
 	m_run->Disable();
 	m_settings->Disable();
 	m_debug_mode->Enable();

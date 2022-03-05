@@ -466,10 +466,26 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			const std::string serial(VMManager::GetGameSerial());
 #endif
 
+			// keep the screenshot relatively small so we don't bloat the dump
+			static constexpr u32 DUMP_SCREENSHOT_WIDTH = 640;
+			static constexpr u32 DUMP_SCREENSHOT_HEIGHT = 480;
+			std::vector<u32> screenshot_pixels;
+			SaveSnapshotToMemory(DUMP_SCREENSHOT_WIDTH, DUMP_SCREENSHOT_HEIGHT, &screenshot_pixels);
+
 			if (m_control_key)
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, serial, m_crc, fd, m_regs));
+			{
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, serial, m_crc,
+					DUMP_SCREENSHOT_WIDTH, DUMP_SCREENSHOT_HEIGHT,
+					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
+					fd, m_regs));
+			}
 			else
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpXz(m_snapshot, serial, m_crc, fd, m_regs));
+			{
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpXz(m_snapshot, serial, m_crc,
+					DUMP_SCREENSHOT_WIDTH, DUMP_SCREENSHOT_HEIGHT,
+					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
+					fd, m_regs));
+			}
 
 			delete[] fd.data;
 		}
