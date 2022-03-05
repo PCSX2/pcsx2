@@ -123,7 +123,7 @@ class GSState : public GSAlignedClass<32>
 	template<bool auto_flush, bool index_swap>
 	void SetPrimHandlers();
 
-	int m_version;
+	u32 m_version;
 	int m_sssize;
 
 	struct GSTransferBuffer
@@ -242,6 +242,8 @@ public:
 	int s_saven;
 	int s_savel;
 	std::string m_dump_root;
+
+	static constexpr u32 STATE_VERSION = 8;
 
 	enum PRIM_OVERLAP
 	{

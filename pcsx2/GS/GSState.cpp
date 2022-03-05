@@ -29,7 +29,7 @@ static __fi bool IsAutoFlushEnabled()
 }
 
 GSState::GSState()
-	: m_version(7)
+	: m_version(STATE_VERSION)
 	, m_gsc(NULL)
 	, m_skip(0)
 	, m_skip_offset(0)
@@ -2173,7 +2173,7 @@ int GSState::Defrost(const freezeData* fd)
 
 	u8* data = fd->data;
 
-	int version;
+	u32 version;
 
 	ReadState(&version, data);
 

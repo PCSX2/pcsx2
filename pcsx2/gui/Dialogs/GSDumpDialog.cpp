@@ -24,6 +24,7 @@
 #include "common/EmbeddedImage.h"
 #include "gui/Resources/NoIcon.h"
 #include "GS.h"
+#include "GS/GSDump.h"
 #include "HostDisplay.h"
 
 #include "PathDefs.h"
@@ -31,6 +32,7 @@
 #include "gui/GSFrame.h"
 #include "Counters.h"
 #include "PerformanceMetrics.h"
+#include "GameDatabase.h"
 
 #include <wx/mstream.h>
 #include <wx/listctrl.h>
@@ -514,7 +516,7 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 	{
 		case GSType::Transfer:
 		{
-			char* data = dump.data.get();
+			u8* data = dump.data.get();
 			u32 remaining = dump.length;
 			int idx = 0;
 			while (remaining >= 16)
@@ -532,7 +534,7 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 		case GSType::VSync:
 		{
 			wxString s;
-			s.Printf("Field = %u", *(u8*)(dump.data.get()));
+			s.Printf("Field = %u", dump.data[0]);
 			m_gif_packet->AppendItem(rootId, s);
 			break;
 		}
@@ -549,7 +551,7 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 	}
 }
 
-void Dialogs::GSDumpDialog::ParseTransfer(wxTreeItemId& trootId, char* data)
+void Dialogs::GSDumpDialog::ParseTransfer(wxTreeItemId& trootId, u8* data)
 {
 	u64 tag  = *(u64*)data;
 	u64 regs = *(u64*)(data + 8);
@@ -815,7 +817,7 @@ void Dialogs::GSDumpDialog::ParseTreePrim(wxTreeItemId& id, u32 prim)
 	m_gif_packet->Expand(id);
 }
 
-void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSData& event, char* regs)
+void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSData& event, u8* regs)
 {
 	switch (event.id)
 	{
@@ -921,14 +923,46 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		default:
 			break;
 	}
-	char regs[8192];
+	u8 regs[8192];
 
 	m_dump_file->Read(&crc, 4);
 	m_dump_file->Read(&ss, 4);
 
-
-	std::unique_ptr<char[]> state_data(new char[ss]);
+	std::unique_ptr<u8[]> state_data = std::make_unique<u8[]>(ss);
 	m_dump_file->Read(state_data.get(), ss);
+
+	// Pull serial out of new header, if present.
+	std::string serial;
+	if (crc == 0xFFFFFFFFu)
+	{
+		GSDumpHeader header;
+		if (ss < sizeof(header))
+		{
+			Console.Error("GSDump header is corrupted.");
+			GSDump::isRunning = false;
+			return;
+		}
+
+		std::memcpy(&header, state_data.get(), sizeof(header));
+		if (header.serial_size > 0)
+		{
+			if (header.serial_offset > ss || (static_cast<u64>(header.serial_offset) + header.serial_size) > ss)
+			{
+				Console.Error("GSDump header is corrupted.");
+				GSDump::isRunning = false;
+				return;
+			}
+
+			if (header.serial_size > 0)
+				serial.assign(reinterpret_cast<const char*>(state_data.get()) + header.serial_offset, header.serial_size);
+		}
+
+		// Read the real state data
+		ss = header.state_size;
+		state_data = std::make_unique<u8[]>(ss);
+		m_dump_file->Read(state_data.get(), ss);
+	}
+
 	m_dump_file->Read(&regs, 8192);
 
 	freezeData fd = {(int)ss, (u8*)state_data.get()};
@@ -956,7 +990,9 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 				size = 8192;
 				break;
 		}
-		std::unique_ptr<char[]> data(new char[size]);
+		// make_unique would zero the data out, which is pointless since we're reading it anyway,
+		// and this loop is executed a *ton* of times.
+		std::unique_ptr<u8[]> data(new u8[size]);
 		m_dump_file->Read(data.get(), size);
 		m_root_window->m_dump_packets.push_back({id, std::move(data), size, id_transfer});
 	}
@@ -974,7 +1010,17 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		g_FrameCount = 0;
 	}
 
-	if (!GSopen(g_Conf->EmuOptions.GS, renderer, (u8*)regs))
+	Pcsx2Config::GSOptions config(g_Conf->EmuOptions.GS);
+	if (!serial.empty())
+	{
+		if (const GameDatabaseSchema::GameEntry* entry = GameDatabase::findGame(serial); entry)
+		{
+			// apply hardware fixes to config before opening (e.g. tex in rt)
+			entry->applyGSHardwareFixes(config);
+		}
+	}
+
+	if (!GSopen(config, renderer, regs))
 	{
 		OnStop();
 		return;
