@@ -239,7 +239,7 @@ namespace Dialogs
 		struct GSData
 		{
 			GSType id;
-			std::unique_ptr<char[]> data;
+			std::unique_ptr<u8[]> data;
 			int length;
 			GSTransferPath path;
 		};
@@ -260,11 +260,11 @@ namespace Dialogs
 		std::vector<wxTreeItemId> m_gif_items;
 
 		float m_stored_q = 1.0;
-		void ProcessDumpEvent(const GSData& event, char* regs);
+		void ProcessDumpEvent(const GSData& event, u8* regs);
 		u32 ReadPacketSize(const void* packet);
 		void GenPacketList();
 		void GenPacketInfo(GSData& dump);
-		void ParseTransfer(wxTreeItemId& id, char* data);
+		void ParseTransfer(wxTreeItemId& id, u8* data);
 		void ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data, bool packed);
 		void ParseTreePrim(wxTreeItemId& id, u32 prim);
 		void CloseDump(wxCommandEvent& event);

@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSDump.h"
 #include "GSExtra.h"
+#include "GSState.h"
 
 GSDumpBase::GSDumpBase(const std::string& fn)
 	: m_frames(0)
@@ -32,10 +33,29 @@ GSDumpBase::~GSDumpBase()
 		fclose(m_gs);
 }
 
-void GSDumpBase::AddHeader(u32 crc, const freezeData& fd, const GSPrivRegSet* regs)
+void GSDumpBase::AddHeader(const std::string& serial, u32 crc, const freezeData& fd, const GSPrivRegSet* regs)
 {
-	AppendRawData(&crc, 4);
-	AppendRawData(&fd.size, 4);
+	// New header: CRC of FFFFFFFF, secondary header, full header follows.
+	const u32 fake_crc = 0xFFFFFFFFu;
+	AppendRawData(&fake_crc, 4);
+
+	// Compute full header size (with serial).
+	// This acts as the state size for loading older dumps.
+	const u32 header_size = sizeof(GSDumpHeader) + static_cast<u32>(serial.size());
+	AppendRawData(&header_size, 4);
+
+	// Write hader.
+	GSDumpHeader header = {};
+	header.state_version = GSState::STATE_VERSION;
+	header.state_size = fd.size;
+	header.crc = crc;
+	header.serial_offset = sizeof(header);
+	header.serial_size = static_cast<u32>(serial.size());
+	AppendRawData(&header, sizeof(header));
+	if (!serial.empty())
+		AppendRawData(serial.data(), serial.size());
+
+	// Then the real state data.
 	AppendRawData(fd.data, fd.size);
 	AppendRawData(regs, sizeof(*regs));
 }
@@ -92,18 +112,18 @@ void GSDumpBase::Write(const void* data, size_t size)
 // GSDump implementation
 //////////////////////////////////////////////////////////////////////
 
-GSDump::GSDump(const std::string& fn, u32 crc, const freezeData& fd, const GSPrivRegSet* regs)
+GSDumpUncompressed::GSDumpUncompressed(const std::string& fn, const std::string& serial, u32 crc, const freezeData& fd, const GSPrivRegSet* regs)
 	: GSDumpBase(fn + ".gs")
 {
-	AddHeader(crc, fd, regs);
+	AddHeader(serial, crc, fd, regs);
 }
 
-void GSDump::AppendRawData(const void* data, size_t size)
+void GSDumpUncompressed::AppendRawData(const void* data, size_t size)
 {
 	Write(data, size);
 }
 
-void GSDump::AppendRawData(u8 c)
+void GSDumpUncompressed::AppendRawData(u8 c)
 {
 	Write(&c, 1);
 }
@@ -112,7 +132,7 @@ void GSDump::AppendRawData(u8 c)
 // GSDumpXz implementation
 //////////////////////////////////////////////////////////////////////
 
-GSDumpXz::GSDumpXz(const std::string& fn, u32 crc, const freezeData& fd, const GSPrivRegSet* regs)
+GSDumpXz::GSDumpXz(const std::string& fn, const std::string& serial, u32 crc, const freezeData& fd, const GSPrivRegSet* regs)
 	: GSDumpBase(fn + ".gs.xz")
 {
 	m_strm = LZMA_STREAM_INIT;
@@ -123,7 +143,7 @@ GSDumpXz::GSDumpXz(const std::string& fn, u32 crc, const freezeData& fd, const G
 		return;
 	}
 
-	AddHeader(crc, fd, regs);
+	AddHeader(serial, crc, fd, regs);
 }
 
 GSDumpXz::~GSDumpXz()

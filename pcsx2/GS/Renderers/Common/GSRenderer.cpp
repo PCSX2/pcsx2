@@ -21,8 +21,14 @@
 #include "PerformanceMetrics.h"
 #include "pcsx2/Config.h"
 #include "common/StringUtil.h"
+
+#ifndef PCSX2_CORE
+#include "gui/AppCoreThread.h"
 #if defined(__unix__)
 #include <X11/keysym.h>
+#endif
+#else
+#include "VMManager.h"
 #endif
 
 GSRenderer::GSRenderer()
@@ -454,10 +460,16 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			fd.data = new u8[fd.size];
 			Freeze(&fd, false);
 
+#ifndef PCSX2_CORE
+			const std::string serial(StringUtil::wxStringToUTF8String(GameInfo::gameSerial));
+#else
+			const std::string serial(VMManager::GetGameSerial());
+#endif
+
 			if (m_control_key)
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDump(m_snapshot, m_crc, fd, m_regs));
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, serial, m_crc, fd, m_regs));
 			else
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpXz(m_snapshot, m_crc, fd, m_regs));
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpXz(m_snapshot, serial, m_crc, fd, m_regs));
 
 			delete[] fd.data;
 		}
