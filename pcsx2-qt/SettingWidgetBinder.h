@@ -120,7 +120,7 @@ namespace SettingWidgetBinder
 		}
 		static std::optional<int> getNullableIntValue(const QComboBox* widget)
 		{
-			return isNullValue(widget) ? std::nullopt : std::optional<int>(widget->currentIndex() + 1);
+			return isNullValue(widget) ? std::nullopt : std::optional<int>(widget->currentIndex() - 1);
 		}
 		static void setNullableIntValue(QComboBox* widget, std::optional<int> value)
 		{
@@ -439,9 +439,9 @@ namespace SettingWidgetBinder
 			else
 				Accessor::setNullableIntValue(widget, std::nullopt);
 
-			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key)]() {
+			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key), option_offset]() {
 				if (std::optional<int> new_value = Accessor::getNullableIntValue(widget); new_value.has_value())
-					sif->SetIntValue(section.c_str(), key.c_str(), new_value.value());
+					sif->SetIntValue(section.c_str(), key.c_str(), new_value.value() + option_offset);
 				else
 					sif->DeleteValue(section.c_str(), key.c_str());
 
