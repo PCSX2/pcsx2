@@ -130,6 +130,9 @@ HostDisplay* Host::AcquireHostDisplay(HostDisplay::RenderAPI api)
 		return nullptr;
 	}
 
+	Console.WriteLn(Color_StrongGreen, "%s Graphics Driver Info:", HostDisplay::RenderAPIToString(s_host_display->GetRenderAPI()));
+	Console.Indent().WriteLn(s_host_display->GetDriverInfo());
+
 	return s_host_display.get();
 }
 
