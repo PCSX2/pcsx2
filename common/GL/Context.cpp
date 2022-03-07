@@ -149,10 +149,10 @@ namespace GL
 		const char* gl_renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 		const char* gl_version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
 		const char* gl_shading_language_version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
-		Console.WriteLn(Color_Magenta, "GL_VENDOR: %s", gl_vendor);
-		Console.WriteLn(Color_Magenta, "GL_RENDERER: %s", gl_renderer);
-		Console.WriteLn(Color_Magenta, "GL_VERSION: %s", gl_version);
-		Console.WriteLn(Color_Magenta, "GL_SHADING_LANGUAGE_VERSION: %s", gl_shading_language_version);
+		DevCon.WriteLn(Color_Magenta, "GL_VENDOR: %s", gl_vendor);
+		DevCon.WriteLn(Color_Magenta, "GL_RENDERER: %s", gl_renderer);
+		DevCon.WriteLn(Color_Magenta, "GL_VERSION: %s", gl_version);
+		DevCon.WriteLn(Color_Magenta, "GL_SHADING_LANGUAGE_VERSION: %s", gl_shading_language_version);
 
 		DisableBrokenExtensions(gl_vendor, gl_renderer);
 
