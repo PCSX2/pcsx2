@@ -374,6 +374,22 @@ void EmuThread::applySettings()
 	VMManager::ApplySettings();
 }
 
+void EmuThread::reloadGameSettings()
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, &EmuThread::reloadGameSettings, Qt::QueuedConnection);
+		return;
+	}
+
+	// this will skip applying settings when they're not active
+	if (VMManager::ReloadGameSettings())
+	{
+		// none of these settings below are per-game.. for now. but in case they are in the future.
+		checkForSettingChanges();
+	}
+}
+
 void EmuThread::checkForSettingChanges()
 {
 	if (VMManager::HasValidVM())

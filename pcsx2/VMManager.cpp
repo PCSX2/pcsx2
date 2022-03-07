@@ -1158,10 +1158,13 @@ void VMManager::ApplySettings()
 	}
 }
 
-void VMManager::ReloadGameSettings()
+bool VMManager::ReloadGameSettings()
 {
-	if (UpdateGameSettingsLayer())
-		ApplySettings();
+	if (!UpdateGameSettingsLayer())
+		return false;
+
+	ApplySettings();
+	return true;
 }
 
 static void HotkeyAdjustTargetSpeed(double delta)

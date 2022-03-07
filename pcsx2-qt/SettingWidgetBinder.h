@@ -406,7 +406,7 @@ namespace SettingWidgetBinder
 					sif->DeleteValue(section.c_str(), key.c_str());
 
 				sif->Save();
-				g_emu_thread->applySettings();
+				g_emu_thread->reloadGameSettings();
 			});
 		}
 		else
@@ -446,7 +446,7 @@ namespace SettingWidgetBinder
 					sif->DeleteValue(section.c_str(), key.c_str());
 
 				sif->Save();
-				g_emu_thread->applySettings();
+				g_emu_thread->reloadGameSettings();
 			});
 		}
 		else
@@ -485,7 +485,7 @@ namespace SettingWidgetBinder
 					sif->DeleteValue(section.c_str(), key.c_str());
 
 				sif->Save();
-				g_emu_thread->applySettings();
+				g_emu_thread->reloadGameSettings();
 			});
 		}
 		else
@@ -525,7 +525,7 @@ namespace SettingWidgetBinder
 					sif->DeleteValue(section.c_str(), key.c_str());
 
 				sif->Save();
-				g_emu_thread->applySettings();
+				g_emu_thread->reloadGameSettings();
 			});
 		}
 		else
@@ -565,7 +565,7 @@ namespace SettingWidgetBinder
 					sif->DeleteValue(section.c_str(), key.c_str());
 
 				sif->Save();
-				g_emu_thread->applySettings();
+				g_emu_thread->reloadGameSettings();
 			});
 		}
 		else
@@ -624,7 +624,7 @@ namespace SettingWidgetBinder
 				}
 
 				sif->Save();
-				g_emu_thread->applySettings();
+				g_emu_thread->reloadGameSettings();
 			});
 		}
 		else
@@ -689,7 +689,7 @@ namespace SettingWidgetBinder
 					sif->DeleteValue(section.c_str(), key.c_str());
 
 				sif->Save();
-				g_emu_thread->applySettings();
+				g_emu_thread->reloadGameSettings();
 			});
 		}
 		else
@@ -751,7 +751,7 @@ namespace SettingWidgetBinder
 					sif->DeleteValue(section.c_str(), key.c_str());
 
 				sif->Save();
-				g_emu_thread->applySettings();
+				g_emu_thread->reloadGameSettings();
 			});
 		}
 		else
