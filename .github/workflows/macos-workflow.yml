@@ -86,7 +86,7 @@ jobs:
       #     echo ${{ github.event.pull_request.title }}
 
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Checkout Submodules
         run: git submodule update --init --recursive -j $(getconf _NPROCESSORS_ONLN)
