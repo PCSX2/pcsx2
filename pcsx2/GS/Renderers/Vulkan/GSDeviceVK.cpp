@@ -2769,11 +2769,25 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 	const bool render_area_okay =
 		(!hdr_rt && DATE_rp != DATE_RENDER_PASS_STENCIL_ONE && CheckRenderPassArea(render_area));
-	const bool same_framebuffer =
-		(InRenderPass() && m_current_render_target == draw_rt && m_current_depth_target == draw_ds);
 
-	// Prefer keeping feedback loop enabled, that way we're not constantly restarting render passes
-	pipe.feedback_loop |= render_area_okay && same_framebuffer && CurrentFramebufferHasFeedbackLoop();
+	// render pass restart optimizations
+	if (render_area_okay)
+	{
+		// avoid restarting the render pass just to switch from rt+depth to rt and vice versa
+		if (!draw_ds && m_current_depth_target && m_current_render_target == draw_rt &&
+			config.tex != m_current_depth_target && !(pipe.feedback_loop && !CurrentFramebufferHasFeedbackLoop()))
+		{
+			draw_ds = m_current_depth_target;
+			m_pipeline_selector.ds = true;
+			m_pipeline_selector.dss.ztst = ZTST_ALWAYS;
+			m_pipeline_selector.dss.zwe = false;
+		}
+
+		// Prefer keeping feedback loop enabled, that way we're not constantly restarting render passes
+		pipe.feedback_loop |= m_current_render_target == draw_rt && m_current_depth_target == draw_ds &&
+							  CurrentFramebufferHasFeedbackLoop();
+	}
+
 	OMSetRenderTargets(draw_rt, draw_ds, config.scissor, pipe.feedback_loop);
 	if (pipe.feedback_loop)
 		PSSetShaderResource(2, draw_rt, false);
