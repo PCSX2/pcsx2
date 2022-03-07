@@ -55,6 +55,7 @@ bool rx_fifo_can_rx();
 #define HDD_MIN_GB 40
 #define HDD_MAX_GB 120
 
+#ifndef PCSX2_CORE
 struct ConfigHost
 {
 	std::string Url;
@@ -68,8 +69,8 @@ struct ConfigDEV9
 	std::vector<ConfigHost> EthHosts;
 };
 
-
 EXTERN ConfigDEV9 config;
+#endif
 
 typedef struct
 {

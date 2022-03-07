@@ -662,6 +662,29 @@ struct Pcsx2Config
 		};
 		static const char* DnsModeNames[];
 
+#ifdef PCSX2_CORE
+		struct HostEntry
+		{
+			std::string Url;
+			std::string Desc;
+			u8 Address[4]{};
+			bool Enabled;
+
+			bool operator==(const HostEntry& right) const
+			{
+				return OpEqu(Url) &&
+					   OpEqu(Desc) &&
+					   (*(int*)Address == *(int*)right.Address) &&
+					   OpEqu(Enabled);
+			}
+
+			bool operator!=(const HostEntry& right) const
+			{
+				return !this->operator==(right);
+			}
+		};
+#endif
+
 		bool EthEnable{false};
 		NetApi EthApi{NetApi::Unset};
 		std::string EthDevice;
@@ -677,6 +700,10 @@ struct Pcsx2Config
 		bool AutoGateway{true};
 		DnsMode ModeDNS1{DnsMode::Auto};
 		DnsMode ModeDNS2{DnsMode::Auto};
+
+#ifdef PCSX2_CORE
+		std::vector<HostEntry> EthHosts;
+#endif
 
 		bool HddEnable{false};
 		std::string HddFile;
@@ -708,6 +735,10 @@ struct Pcsx2Config
 				   OpEqu(AutoGateway) &&
 				   OpEqu(ModeDNS1) &&
 				   OpEqu(ModeDNS2) &&
+
+#ifdef PCSX2_CORE
+				   OpEqu(EthHosts) &&
+#endif
 
 				   OpEqu(HddEnable) &&
 				   OpEqu(HddFile) &&

@@ -199,7 +199,9 @@ void DEV9shutdown()
 s32 DEV9open()
 {
 	DevCon.WriteLn("DEV9: DEV9open");
+#ifndef PCSX2_CORE
 	LoadDnsHosts();
+#endif
 	DevCon.WriteLn("DEV9: open r+: %s", EmuConfig.DEV9.HddFile.c_str());
 
 	fs::path hddPath = GetHDDPath();
