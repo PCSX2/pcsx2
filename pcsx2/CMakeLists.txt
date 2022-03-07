@@ -365,7 +365,6 @@ set(pcsx2DEV9Sources
 	DEV9/PacketReader/NetLib.cpp
 	DEV9/smap.cpp
 	DEV9/DEV9.cpp
-	DEV9/DEV9Config.cpp
 	DEV9/flash.cpp
 	DEV9/pcap_io.cpp
 	DEV9/net.cpp
@@ -376,7 +375,6 @@ set(pcsx2DEV9Headers
 	DEV9/ATA/ATA.h
 	DEV9/ATA/HddCreate.h
 	DEV9/DEV9.h
-	DEV9/DEV9Config.h
 	DEV9/InternalServers/DHCP_Server.cpp
 	DEV9/InternalServers/DNS_Logger.h
 	DEV9/InternalServers/DNS_Server.h
@@ -402,6 +400,10 @@ set(pcsx2DEV9Headers
 if(NOT PCSX2_CORE)
 	list(APPEND pcsx2DEV9Sources
 		DEV9/ConfigUI.cpp
+		DEV9/DEV9Config.cpp
+	)
+	list(APPEND pcsx2DEV9Sources
+		DEV9/DEV9Config.h
 	)
 endif()
 

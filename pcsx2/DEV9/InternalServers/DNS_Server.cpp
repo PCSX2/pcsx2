@@ -143,12 +143,19 @@ namespace InternalServers
 	void DNS_Server::LoadHostList()
 	{
 		hosts.clear();
-		for (size_t i = 0; i < config.EthHosts.size(); i++)
+#ifndef PCSX2_CORE
+		for (const ConfigHost& entry : config.EthHosts)
 		{
-			ConfigHost entry = config.EthHosts[i];
 			if (entry.Enabled)
 				hosts.insert_or_assign(entry.Url, *(IP_Address*)entry.Address);
 		}
+#else
+		for (const Pcsx2Config::DEV9Options::HostEntry& entry : EmuConfig.DEV9.EthHosts)
+		{
+			if (entry.Enabled)
+				hosts.insert_or_assign(entry.Url, *(IP_Address*)entry.Address);
+		}
+#endif
 	}
 
 	UDP_Packet* DNS_Server::Recv()

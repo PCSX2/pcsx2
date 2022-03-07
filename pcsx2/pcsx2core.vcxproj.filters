@@ -863,9 +863,6 @@
     <ClCompile Include="DEV9\ATA\HddCreate.cpp">
       <Filter>System\Ps2\DEV9\ATA</Filter>
     </ClCompile>
-    <ClCompile Include="DEV9\DEV9Config.cpp">
-      <Filter>System\Ps2\DEV9</Filter>
-    </ClCompile>
     <ClCompile Include="DEV9\DEV9.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
@@ -1606,9 +1603,6 @@
     </ClInclude>
     <ClInclude Include="DEV9\ATA\HddCreate.h">
       <Filter>System\Ps2\DEV9\ATA</Filter>
-    </ClInclude>
-    <ClInclude Include="DEV9\DEV9Config.h">
-      <Filter>System\Ps2\DEV9</Filter>
     </ClInclude>
     <ClInclude Include="DEV9\DEV9.h">
       <Filter>System\Ps2\DEV9</Filter>

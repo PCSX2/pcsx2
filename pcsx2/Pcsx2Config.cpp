@@ -754,6 +754,47 @@ void Pcsx2Config::DEV9Options::LoadSave(SettingsWrapper& wrap)
 		SettingsWrapEnumEx(ModeDNS2, "ModeDNS2", DnsModeNames);
 	}
 
+#ifdef PCSX2_CORE
+	if (wrap.IsLoading())
+		EthHosts.clear();
+
+	int hostCount = static_cast<int>(EthHosts.size());
+	{
+		SettingsWrapSection("DEV9/Eth/Hosts");
+		SettingsWrapEntryEx(hostCount, "Count");
+	}
+
+	for (size_t i = 0; i < hostCount; i++)
+	{
+		std::string section = "DEV9/Eth/Hosts/Host" + std::to_string(i);
+		SettingsWrapSection(section.c_str());
+
+		HostEntry entry;
+		if (wrap.IsSaving())
+			entry = EthHosts[i];
+
+		SettingsWrapEntryEx(entry.Url, "Url");
+		SettingsWrapEntryEx(entry.Desc, "Desc");
+
+		std::string addrStr = "0.0.0.0";
+		if (wrap.IsSaving())
+			addrStr = SaveIPHelper(entry.Address);
+		SettingsWrapEntryEx(addrStr, "Address");
+		if (wrap.IsLoading())
+			LoadIPHelper(entry.Address, addrStr);
+
+		SettingsWrapEntryEx(entry.Enabled, "Enabled");
+
+		if (wrap.IsLoading())
+		{
+			EthHosts.push_back(entry);
+
+			if (EthLogDNS && entry.Enabled)
+				Console.WriteLn("DEV9: Host entry %i: url %s mapped to %s", i, entry.Url.c_str(), addrStr.c_str());
+		}
+	}
+#endif
+
 	{
 		SettingsWrapSection("DEV9/Hdd");
 		SettingsWrapEntry(HddEnable);
