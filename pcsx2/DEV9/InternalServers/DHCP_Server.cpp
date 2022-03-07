@@ -69,13 +69,31 @@ namespace InternalServers
 		else
 			gateway = *(IP_Address*)EmuConfig.DEV9.Gateway;
 
-		if (!EmuConfig.DEV9.AutoDNS1)
-			dns1 = *(IP_Address*)EmuConfig.DEV9.DNS1;
+		switch (EmuConfig.DEV9.ModeDNS1)
+		{
+			case Pcsx2Config::DEV9Options::DnsMode::Manual:
+				dns1 = *(IP_Address*)EmuConfig.DEV9.DNS1;
+				break;
+			case Pcsx2Config::DEV9Options::DnsMode::Internal:
+				dns1 = {192, 0, 2, 1};
+				break;
+			default:
+				break;
+		}
 
-		if (!EmuConfig.DEV9.AutoDNS2)
-			dns2 = *(IP_Address*)EmuConfig.DEV9.DNS2;
+		switch (EmuConfig.DEV9.ModeDNS2)
+		{
+			case Pcsx2Config::DEV9Options::DnsMode::Manual:
+				dns2 = *(IP_Address*)EmuConfig.DEV9.DNS2;
+				break;
+			case Pcsx2Config::DEV9Options::DnsMode::Internal:
+				dns2 = {192, 0, 2, 1};
+				break;
+			default:
+				break;
+		}
 
-		AutoDNS(adapter, EmuConfig.DEV9.AutoDNS1, EmuConfig.DEV9.AutoDNS2);
+		AutoDNS(adapter, EmuConfig.DEV9.ModeDNS1 != Pcsx2Config::DEV9Options::DnsMode::Manual, EmuConfig.DEV9.ModeDNS2 != Pcsx2Config::DEV9Options::DnsMode::Manual);
 		AutoBroadcast(ps2IP, netmask);
 	}
 

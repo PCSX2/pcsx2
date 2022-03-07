@@ -245,8 +245,8 @@ public:
 		IPControl_SetValue(m_ps2_address, *(IP_Address*)config.PS2IP);
 		m_subnet_mask    .load(*(IP_Address*)config.Mask,    config.AutoMask);
 		m_gateway_address.load(*(IP_Address*)config.Gateway, config.AutoGateway);
-		m_dns1_address   .load(*(IP_Address*)config.DNS1,    config.AutoDNS1);
-		m_dns2_address   .load(*(IP_Address*)config.DNS2,    config.AutoDNS2);
+		m_dns1_address   .load(*(IP_Address*)config.DNS1,    config.ModeDNS1 == Pcsx2Config::DEV9Options::DnsMode::Auto);
+		m_dns2_address   .load(*(IP_Address*)config.DNS2,    config.ModeDNS2 == Pcsx2Config::DEV9Options::DnsMode::Auto);
 
 		m_hdd_enable->SetValue(config.HddEnable);
 		wxString wxHddFile = StringUtil::UTF8StringToWxString(config.HddFile);
@@ -278,8 +278,13 @@ public:
 		*(IP_Address*)&config.PS2IP = IPControl_GetValue(m_ps2_address);
 		m_subnet_mask    .save(*(IP_Address*)config.Mask,    config.AutoMask);
 		m_gateway_address.save(*(IP_Address*)config.Gateway, config.AutoGateway);
-		m_dns1_address   .save(*(IP_Address*)config.DNS1,    config.AutoDNS1);
-		m_dns2_address   .save(*(IP_Address*)config.DNS2,    config.AutoDNS2);
+
+		bool autoDNS1;
+		bool autoDNS2;
+		m_dns1_address.save(*(IP_Address*)config.DNS1, autoDNS1);
+		m_dns2_address.save(*(IP_Address*)config.DNS2, autoDNS2);
+		config.ModeDNS1 = autoDNS1 ? Pcsx2Config::DEV9Options::DnsMode::Auto : Pcsx2Config::DEV9Options::DnsMode::Manual;
+		config.ModeDNS2 = autoDNS2 ? Pcsx2Config::DEV9Options::DnsMode::Auto : Pcsx2Config::DEV9Options::DnsMode::Manual;
 
 		config.HddEnable = m_hdd_enable->GetValue();
 		config.HddFile = StringUtil::wxStringToUTF8String(m_hdd_file->GetPath());
