@@ -2307,8 +2307,9 @@ __ri void GSDeviceVK::ApplyBaseState(u32 flags, VkCommandBuffer cmdbuf)
 
 	if (flags & DIRTY_FLAG_BLEND_CONSTANTS)
 	{
-		const GSVector4 col(static_cast<float>(m_blend_constant_color) / 128.0f);
-		vkCmdSetBlendConstants(cmdbuf, col.v);
+		const float BlendFactor = static_cast<float>(m_blend_constant_color) / 128.0f;
+		const float BlendConstants[4] = {BlendFactor, BlendFactor, BlendFactor, 0};
+		vkCmdSetBlendConstants(cmdbuf, BlendConstants);
 	}
 }
 

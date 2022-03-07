@@ -1674,8 +1674,8 @@ void GSDeviceOGL::OMSetBlendState(u8 blend_index, u8 blend_factor, bool is_blend
 		if (is_blend_constant && GLState::bf != blend_factor)
 		{
 			GLState::bf = blend_factor;
-			const float bf = (float)blend_factor / 128.0f;
-			glBlendColor(bf, bf, bf, bf);
+			const float bf = static_cast<float>(blend_factor) / 128.0f;
+			glBlendColor(bf, bf, bf, 0);
 		}
 
 		HWBlend b = GetBlend(blend_index);
