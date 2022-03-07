@@ -507,8 +507,6 @@ HWBlend GSDevice::GetBlend(size_t index)
 	return blend;
 }
 
-u16 GSDevice::GetBlendFlags(size_t index) { return m_blendMap[index].flags; }
-
 // clang-format off
 
 std::array<HWBlend, 3*3*3*3 + 1> GSDevice::m_blendMap =

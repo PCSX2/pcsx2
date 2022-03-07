@@ -53,6 +53,8 @@ GSDevice11::GSDevice11()
 	m_features.prefer_new_textures = false;
 	m_features.dxt_textures = false;
 	m_features.bptc_textures = false;
+	m_features.framebuffer_fetch = false;
+	m_features.dual_source_blend = true;
 }
 
 bool GSDevice11::Create(HostDisplay* display)
