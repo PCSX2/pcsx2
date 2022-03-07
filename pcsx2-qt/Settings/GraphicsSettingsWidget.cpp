@@ -181,6 +181,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useDebugDevice, "EmuCore/GS", "UseDebugDevice", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.overrideTextureBarriers, "EmuCore/GS", "OverrideTextureBarriers", -1, -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.overrideGeometryShader, "EmuCore/GS", "OverrideGeometryShaders", -1, -1);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableFramebufferFetch, "EmuCore/GS", "DisableFramebufferFetch", false);
 
 	//////////////////////////////////////////////////////////////////////////
 	// SW Settings

@@ -243,6 +243,8 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.image_load_store = features.fragmentStoresAndAtomics && m_features.texture_barrier;
 	m_features.prefer_new_textures = true;
 	m_features.provoking_vertex_last = g_vulkan_context->GetOptionalExtensions().vk_ext_provoking_vertex;
+	m_features.framebuffer_fetch = false;
+	m_features.dual_source_blend = features.dualSrcBlend;
 
 	if (!features.dualSrcBlend)
 		Console.Warning("Vulkan driver is missing dual-source blending. This will have an impact on performance.");

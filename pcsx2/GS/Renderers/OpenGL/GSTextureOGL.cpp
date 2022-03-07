@@ -234,11 +234,23 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 
 		// Depth buffer
 		case Format::DepthStencil:
-			gl_fmt          = GL_DEPTH32F_STENCIL8;
-			m_int_format    = GL_DEPTH_STENCIL;
-			m_int_type      = GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
-			m_int_shift     = 3; // 4 bytes for depth + 4 bytes for stencil by texels
-			break;
+		{
+			if (!GLLoader::found_framebuffer_fetch)
+			{
+				gl_fmt = GL_DEPTH32F_STENCIL8;
+				m_int_format = GL_DEPTH_STENCIL;
+				m_int_type = GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
+				m_int_shift = 3; // 4 bytes for depth + 4 bytes for stencil by texels
+			}
+			else
+			{
+				gl_fmt = GL_DEPTH_COMPONENT32F;
+				m_int_format = GL_DEPTH_COMPONENT;
+				m_int_type = GL_FLOAT;
+				m_int_shift = 2;
+			}
+		}
+		break;
 
 		case Format::BC1:
 			gl_fmt          = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
@@ -622,7 +634,7 @@ bool GSTextureOGL::Save(const std::string& fn)
 	GSPng::Format fmt = GSPng::RGB_PNG;
 #endif
 
-	if (IsDss())
+	if (IsDepth())
 	{
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 

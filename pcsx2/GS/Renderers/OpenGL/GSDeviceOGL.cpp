@@ -22,6 +22,7 @@
 #include "GS/GSUtil.h"
 #include "Host.h"
 #include "HostDisplay.h"
+#include <cinttypes>
 #include <fstream>
 #include <sstream>
 
@@ -217,11 +218,13 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 	m_features.broken_point_sampler = GLLoader::vendor_id_amd;
 	m_features.geometry_shader = GLLoader::found_geometry_shader;
 	m_features.image_load_store = GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture;
-	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
+	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0 || GLLoader::found_framebuffer_fetch;
 	m_features.provoking_vertex_last = true;
-	m_features.prefer_new_textures = false;
 	m_features.dxt_textures = GL_EXT_texture_compression_s3tc;
 	m_features.bptc_textures = GL_VERSION_4_2 || GL_ARB_texture_compression_bptc || GL_EXT_texture_compression_bptc;
+	m_features.prefer_new_textures = false;
+	m_features.framebuffer_fetch = GLLoader::found_framebuffer_fetch;
+	m_features.dual_source_blend = GLLoader::has_dual_source_blend;
 
 	GLint point_range[2] = {};
 	GLint line_range[2] = {};
@@ -978,6 +981,14 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view& entry, GLenum typ
 	header += "#extension GL_ARB_shading_language_420pack: require\n";
 	// Need GL version 410
 	header += "#extension GL_ARB_separate_shader_objects: require\n";
+	if (m_features.framebuffer_fetch)
+	{
+		if (GLAD_GL_EXT_shader_framebuffer_fetch)
+			header += "#extension GL_EXT_shader_framebuffer_fetch : require\n";
+		else if (GLAD_GL_ARM_shader_framebuffer_fetch)
+			header += "#extension GL_ARM_shader_framebuffer_fetch : require\n";
+	}
+
 	if (GLLoader::found_GL_ARB_shader_image_load_store)
 	{
 		// Need GL version 420
@@ -987,6 +998,11 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view& entry, GLenum typ
 	{
 		header += "#define DISABLE_GL42_image\n";
 	}
+
+	if (m_features.framebuffer_fetch)
+		header += "#define HAS_FRAMEBUFFER_FETCH 1\n";
+	else
+		header += "#define HAS_FRAMEBUFFER_FETCH 0\n";
 
 	if (GLLoader::vendor_id_amd || GLLoader::vendor_id_intel)
 		header += "#define BROKEN_DRIVER as_usual\n";
@@ -1632,7 +1648,14 @@ void GSDeviceOGL::OMAttachDs(GSTextureOGL* ds)
 	if (GLState::ds != id)
 	{
 		GLState::ds = id;
-		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, id, 0);
+		if (ds && ds->IsDss())
+		{
+			glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, id, 0);
+		}
+		else
+		{
+			glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, id, 0);
+		}
 	}
 }
 

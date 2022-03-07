@@ -154,6 +154,8 @@ namespace GLLoader
 	bool mesa_driver = false;
 	bool in_replayer = false;
 
+	bool has_dual_source_blend = false;
+	bool found_framebuffer_fetch = false;
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_ARB_clear_texture = false;
 	// DX11 GPU
@@ -208,6 +210,7 @@ namespace GLLoader
 			vendor_id_amd = true;
 		else if (strstr(vendor, "NVIDIA Corporation"))
 			vendor_id_nvidia = true;
+
 #ifdef _WIN32
 		else if (strstr(vendor, "Intel"))
 			vendor_id_intel = true;
@@ -287,6 +290,13 @@ namespace GLLoader
 			// Mandatory for the advance HW renderer effect. Unfortunately Mesa LLVMPIPE/SWR renderers doesn't support this extension.
 			// Rendering might be corrupted but it could be good enough for test/virtual machine.
 			optional("GL_ARB_texture_barrier");
+
+			found_framebuffer_fetch = GLAD_GL_EXT_shader_framebuffer_fetch || GLAD_GL_ARM_shader_framebuffer_fetch;
+			if (found_framebuffer_fetch && GSConfig.DisableFramebufferFetch)
+			{
+				Console.Warning("Framebuffer fetch was found but is disabled. This will reduce performance.");
+				found_framebuffer_fetch = false;
+			}
 		}
 
 		if (vendor_id_amd)

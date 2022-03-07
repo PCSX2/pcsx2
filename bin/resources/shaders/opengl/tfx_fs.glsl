@@ -20,6 +20,7 @@
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
+#define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 
 #ifdef FRAGMENT_SHADER
 
@@ -38,12 +39,30 @@ in SHADER
     #endif
 } PSin;
 
-// Same buffer but 2 colors for dual source blending
-layout(location = 0, index = 0) out vec4 SV_Target0;
-layout(location = 0, index = 1) out vec4 SV_Target1;
+#define TARGET_0_QUALIFIER out
+
+// Only enable framebuffer fetch when we actually need it.
+#if HAS_FRAMEBUFFER_FETCH && (PS_TEX_IS_FB == 1 || PS_FBMASK || SW_BLEND_NEEDS_RT || PS_DATE != 0)
+  #if defined(GL_EXT_shader_framebuffer_fetch)
+    #undef TARGET_0_QUALIFIER
+    #define TARGET_0_QUALIFIER inout
+    #define LAST_FRAG_COLOR SV_Target0
+  #endif
+#endif
+
+#ifndef DISABLE_DUAL_SOURCE
+  // Same buffer but 2 colors for dual source blending
+  layout(location = 0, index = 0) TARGET_0_QUALIFIER vec4 SV_Target0;
+  layout(location = 0, index = 1) out vec4 SV_Target1;
+#else
+  layout(location = 0) TARGET_0_QUALIFIER vec4 SV_Target0;
+#endif
 
 layout(binding = 1) uniform sampler2D PaletteSampler;
+
+#if !HAS_FRAMEBUFFER_FETCH
 layout(binding = 2) uniform sampler2D RtSampler; // note 2 already use by the image below
+#endif
 
 #ifndef DISABLE_GL42_image
 #if PS_DATE > 0
@@ -79,7 +98,11 @@ layout(early_fragment_tests) in;
 vec4 sample_c(vec2 uv)
 {
 #if PS_TEX_IS_FB == 1
+#if HAS_FRAMEBUFFER_FETCH
+    return LAST_FRAG_COLOR;
+#else
     return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+#endif
 #else
 
 #if PS_POINT_SAMPLER
@@ -234,7 +257,11 @@ mat4 sample_4p(vec4 u)
 int fetch_raw_depth()
 {
 #if PS_TEX_IS_FB == 1
+#if HAS_FRAMEBUFFER_FETCH
+    return int(LAST_FRAG_COLOR.r * exp2(32.0f));
+#else
     return int(texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).r * exp2(32.0f));
+#endif
 #else
     return int(texelFetch(TextureSampler, ivec2(gl_FragCoord.xy), 0).r * exp2(32.0f));
 #endif
@@ -243,7 +270,11 @@ int fetch_raw_depth()
 vec4 fetch_raw_color()
 {
 #if PS_TEX_IS_FB == 1
+#if HAS_FRAMEBUFFER_FETCH
+    return LAST_FRAG_COLOR;
+#else
     return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+#endif
 #else
     return texelFetch(TextureSampler, ivec2(gl_FragCoord.xy), 0);
 #endif
@@ -603,7 +634,11 @@ void ps_fbmask(inout vec4 C)
 {
     // FIXME do I need special case for 16 bits
 #if PS_FBMASK
+#if HAS_FRAMEBUFFER_FETCH
+    vec4 RT = trunc(LAST_FRAG_COLOR * 255.0f + 0.1f);
+#else
     vec4 RT = trunc(texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0) * 255.0f + 0.1f);
+#endif
     C = vec4((uvec4(C) & ~FbMask) | (uvec4(RT) & FbMask));
 #endif
 }
@@ -659,7 +694,14 @@ void ps_blend(inout vec4 Color, float As)
         return;
 #endif
 
+    vec3 Cs = Color.rgb;
+
+#if SW_BLEND_NEEDS_RT
+#if HAS_FRAMEBUFFER_FETCH
+    vec4 RT = trunc(LAST_FRAG_COLOR * 255.0f + 0.1f);
+#else
     vec4 RT = trunc(texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0) * 255.0f + 0.1f);
+#endif
 
 #if PS_DFMT == FMT_24
     float Ad = 1.0f;
@@ -671,7 +713,7 @@ void ps_blend(inout vec4 Color, float As)
 
     // Let the compiler do its jobs !
     vec3 Cd = RT.rgb;
-    vec3 Cs = Color.rgb;
+#endif
 
 #if PS_BLEND_A == 0
     vec3 A = Cs;
@@ -748,13 +790,23 @@ void ps_main()
  	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))
  	 	discard;
 #endif
+
+#if PS_DATE != 0
 #if ((PS_DATE & 3) == 1 || (PS_DATE & 3) == 2)
 
 #if PS_WRITE_RG == 1
     // Pseudo 16 bits access.
+#if HAS_FRAMEBUFFER_FETCH
+    float rt_a = LAST_FRAG_COLOR.g;
+#else
     float rt_a = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).g;
+#endif
+#else
+#if HAS_FRAMEBUFFER_FETCH
+    float rt_a = LAST_FRAG_COLOR.a;
 #else
     float rt_a = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).a;
+#endif
 #endif
 
 #if (PS_DATE & 3) == 1
@@ -784,6 +836,7 @@ void ps_main()
     if (gl_PrimitiveID > stencil_ceil) {
         discard;
     }
+#endif
 #endif
 
     vec4 C = ps_color();
@@ -845,7 +898,11 @@ void ps_main()
 
     // Must be done before alpha correction
 #if (PS_BLEND_C == 1 && PS_CLR_HW > 3)
+#if HAS_FRAMEBUFFER_FETCH
+    vec4 RT = trunc(LAST_FRAG_COLOR * 255.0f + 0.1f);
+#else
     vec4 RT = trunc(texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0) * 255.0f + 0.1f);
+#endif
     float alpha_blend = (PS_DFMT == FMT_24) ? 1.0f : RT.a / 128.0f;
 #else
     float alpha_blend = C.a / 128.0f;
@@ -886,7 +943,9 @@ void ps_main()
     ps_fbmask(C);
 
     SV_Target0 = C / 255.0f;
+#ifndef DISABLE_DUAL_SOURCE
     SV_Target1 = vec4(alpha_blend);
+#endif
 
 #if PS_ZCLAMP
 	gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);

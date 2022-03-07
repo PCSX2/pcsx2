@@ -39,6 +39,8 @@ namespace GLLoader
 	extern bool in_replayer;
 
 	// GL
+	extern bool has_dual_source_blend;
+	extern bool found_framebuffer_fetch;
 	extern bool found_geometry_shader;
 	extern bool found_GL_ARB_gpu_shader5;
 	extern bool found_GL_ARB_shader_image_load_store;

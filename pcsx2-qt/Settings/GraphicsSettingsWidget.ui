@@ -1032,6 +1032,13 @@
               </property>
              </widget>
             </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="disableFramebufferFetch">
+              <property name="text">
+               <string>Disable Framebuffer Fetch</string>
+              </property>
+              </widget>
+            </item>
            </layout>
           </item>
          </layout>

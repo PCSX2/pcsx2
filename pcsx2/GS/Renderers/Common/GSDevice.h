@@ -544,6 +544,8 @@ public:
 		bool prefer_new_textures  : 1; ///< Allocate textures up to the pool size before reusing them, to avoid render pass restarts.
 		bool dxt_textures         : 1; ///< Supports DXTn texture compression, i.e. S3TC and BC1-3.
 		bool bptc_textures        : 1; ///< Supports BC6/7 texture compression.
+		bool framebuffer_fetch    : 1; ///< Can sample from the framebuffer without texture barriers.
+		bool dual_source_blend    : 1; ///< Can use alpha output as a blend factor.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));
@@ -606,6 +608,12 @@ public:
 
 	__fi HostDisplay* GetDisplay() const { return m_display; }
 	__fi unsigned int GetFrameNumber() const { return m_frame; }
+
+	__fi static constexpr bool IsDualSourceBlendFactor(u16 factor)
+	{
+		return (factor == GSDevice::SRC1_ALPHA || factor == GSDevice::INV_SRC1_ALPHA
+			/*|| factor == GSDevice::SRC1_COLOR || factor == GSDevice::INV_SRC1_COLOR*/); // not used
+	}
 
 	void Recycle(GSTexture* t);
 
@@ -700,7 +708,8 @@ public:
 	// Convert the GS blend equations to HW specific blend factors/ops
 	// Index is computed as ((((A * 3 + B) * 3) + C) * 3) + D. A, B, C, D taken from ALPHA register.
 	HWBlend GetBlend(size_t index);
-	u16 GetBlendFlags(size_t index);
+	__fi HWBlend GetUnconvertedBlend(size_t index) { return m_blendMap[index]; }
+	__fi u16 GetBlendFlags(size_t index) const { return m_blendMap[index].flags; }
 };
 
 struct GSAdapter
