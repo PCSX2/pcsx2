@@ -699,6 +699,12 @@ const char* Pcsx2Config::DEV9Options::NetApiNames[] = {
 	"TAP",
 	nullptr};
 
+const char* Pcsx2Config::DEV9Options::DnsModeNames[] = {
+	"Manual",
+	"Auto",
+	"Internal",
+	nullptr};
+
 Pcsx2Config::DEV9Options::DEV9Options()
 {
 	HddFile = "DEV9hdd.raw";
@@ -744,8 +750,8 @@ void Pcsx2Config::DEV9Options::LoadSave(SettingsWrapper& wrap)
 
 		SettingsWrapEntry(AutoMask);
 		SettingsWrapEntry(AutoGateway);
-		SettingsWrapEntry(AutoDNS1);
-		SettingsWrapEntry(AutoDNS2);
+		SettingsWrapEnumEx(ModeDNS1, "ModeDNS1", DnsModeNames);
+		SettingsWrapEnumEx(ModeDNS2, "ModeDNS2", DnsModeNames);
 	}
 
 	{

@@ -652,8 +652,15 @@ struct Pcsx2Config
 			PCAP_Switched = 2,
 			TAP = 3,
 		};
-
 		static const char* NetApiNames[];
+
+		enum struct DnsMode : int
+		{
+			Manual = 0,
+			Auto = 1,
+			Internal = 2,
+		};
+		static const char* DnsModeNames[];
 
 		bool EthEnable{false};
 		NetApi EthApi{NetApi::Unset};
@@ -668,8 +675,8 @@ struct Pcsx2Config
 		u8 DNS2[4]{};
 		bool AutoMask{true};
 		bool AutoGateway{true};
-		bool AutoDNS1{true};
-		bool AutoDNS2{true};
+		DnsMode ModeDNS1{DnsMode::Auto};
+		DnsMode ModeDNS2{DnsMode::Auto};
 
 		bool HddEnable{false};
 		std::string HddFile;
@@ -699,8 +706,8 @@ struct Pcsx2Config
 
 				   OpEqu(AutoMask) &&
 				   OpEqu(AutoGateway) &&
-				   OpEqu(AutoDNS1) &&
-				   OpEqu(AutoDNS2) &&
+				   OpEqu(ModeDNS1) &&
+				   OpEqu(ModeDNS2) &&
 
 				   OpEqu(HddEnable) &&
 				   OpEqu(HddFile) &&
