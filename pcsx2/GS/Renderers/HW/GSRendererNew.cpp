@@ -544,7 +544,8 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	// Replace Ad with As, blend flags will be used from As since we are chaging the blend_index value.
 	bool blend_ad_alpha_masked = (ALPHA.C == 1) && (m_context->FRAME.FBMSK & 0xFF000000) == 0xFF000000;
 	u8 ALPHA_C = ALPHA.C;
-	if (g_gs_device->Features().texture_barrier && blend_ad_alpha_masked)
+	if (((GSConfig.AccurateBlendingUnit >= AccBlendLevel::Basic) || (m_env.COLCLAMP.CLAMP == 0))
+		&& g_gs_device->Features().texture_barrier && blend_ad_alpha_masked)
 		ALPHA_C = 0;
 	else if (((GSConfig.AccurateBlendingUnit >= AccBlendLevel::Medium)
 		// Detect barrier aka fbmask on d3d11.
