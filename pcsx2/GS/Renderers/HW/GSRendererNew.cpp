@@ -773,9 +773,14 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 #endif
 	if (color_dest_blend)
 	{
-		// Blend output will be Cd, no need to set Af.
-		m_conf.blend = {blend_index, 0, ALPHA.C == 2, false, false};
+		// Blend output will be Cd, disable hw/sw blending.
+		m_conf.blend = {};
 		sw_blending = false; // DATE_PRIMID
+
+		// Output is Cd, set rgb write to 0.
+		m_conf.colormask.wr = 0;
+		m_conf.colormask.wg = 0;
+		m_conf.colormask.wb = 0;
 	}
 	else if (sw_blending)
 	{
