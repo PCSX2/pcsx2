@@ -65,6 +65,7 @@ public Q_SLOTS:
 	void toggleFullscreen();
 	void setFullscreen(bool fullscreen);
 	void applySettings();
+	void reloadGameSettings();
 	void toggleSoftwareRendering();
 	void switchRenderer(GSRendererType renderer);
 	void changeDisc(const QString& path);

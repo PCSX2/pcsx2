@@ -96,7 +96,7 @@ namespace VMManager
 	void ApplySettings();
 
 	/// Reloads game specific settings, and applys any changes present.
-	void ReloadGameSettings();
+	bool ReloadGameSettings();
 
 	/// Reloads cheats/patches. If verbose is set, the number of patches loaded will be shown in the OSD.
 	void ReloadPatches(bool verbose);
