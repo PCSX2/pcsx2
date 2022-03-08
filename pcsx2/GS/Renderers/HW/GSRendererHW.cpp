@@ -35,13 +35,7 @@ GSRendererHW::GSRendererHW()
 	, m_lod(GSVector2i(0, 0))
 {
 	m_mipmap = (GSConfig.HWMipmap >= HWMipmapLevel::Basic);
-
-	if (GSConfig.UserHacks)
-	{
-		m_userhacks_tcoffset_x           = GSConfig.UserHacks_TCOffsetX / -1000.0f;
-		m_userhacks_tcoffset_y           = GSConfig.UserHacks_TCOffsetY / -1000.0f;
-		m_userhacks_tcoffset             = m_userhacks_tcoffset_x < 0.0f || m_userhacks_tcoffset_y < 0.0f;
-	}
+	SetTCOffset();
 
 	if (!GSConfig.UpscaleMultiplier) // Custom Resolution
 	{
@@ -158,6 +152,13 @@ void GSRendererHW::CustomResolutionScaling()
 	printf("Frame buffer size set to  %dx%d (%dx%d)\n", scissored_buffer_size.x, scissored_buffer_size.y, m_width, m_height);
 }
 
+void GSRendererHW::SetTCOffset()
+{
+	m_userhacks_tcoffset_x = std::max<s32>(GSConfig.UserHacks_TCOffsetX, 0) / -1000.0f;
+	m_userhacks_tcoffset_y = std::max<s32>(GSConfig.UserHacks_TCOffsetY, 0) / -1000.0f;
+	m_userhacks_tcoffset = m_userhacks_tcoffset_x < 0.0f || m_userhacks_tcoffset_y < 0.0f;
+}
+
 GSRendererHW::~GSRendererHW()
 {
 	delete m_tc;
@@ -213,6 +214,13 @@ void GSRendererHW::Reset()
 	m_reset = true;
 
 	GSRenderer::Reset();
+}
+
+void GSRendererHW::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
+{
+	GSRenderer::UpdateSettings(old_config);
+	m_mipmap = (GSConfig.HWMipmap >= HWMipmapLevel::Basic);
+	SetTCOffset();
 }
 
 void GSRendererHW::VSync(u32 field, bool registers_written)

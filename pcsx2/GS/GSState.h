@@ -260,7 +260,6 @@ public:
 	virtual ~GSState();
 
 	void ResetHandlers();
-	void UpdateMipmapEnabled();
 
 	int GetFramebufferHeight();
 	void SaturateOutputSize(GSVector4i& r);
@@ -274,6 +273,8 @@ public:
 	float GetTvRefreshRate();
 
 	virtual void Reset();
+	virtual void UpdateSettings(const Pcsx2Config::GSOptions& old_config);
+
 	void Flush();
 	void FlushPrim();
 	void FlushWrite();

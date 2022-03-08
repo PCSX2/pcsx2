@@ -809,7 +809,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="textureOffsetX"/>
+          <widget class="QSpinBox" name="textureOffsetX">
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QLabel" name="label_18">
@@ -819,7 +823,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="textureOffsetY"/>
+          <widget class="QSpinBox" name="textureOffsetY">
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
