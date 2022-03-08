@@ -141,6 +141,8 @@ protected:
 
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) = 0;
 
+	void SetTCOffset();
+
 	bool m_userhacks_tcoffset;
 	float m_userhacks_tcoffset_x;
 	float m_userhacks_tcoffset_y;
@@ -175,6 +177,7 @@ public:
 	GSVector2i GetTargetSize();
 
 	void Reset() override;
+	void UpdateSettings(const Pcsx2Config::GSOptions& old_config) override;
 	void VSync(u32 field, bool registers_written) override;
 
 	GSTexture* GetOutput(int i, int& y_offset) override;

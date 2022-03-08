@@ -767,9 +767,6 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.SWExtraThreads != old_config.SWExtraThreads ||
 		GSConfig.SWExtraThreadsHeight != old_config.SWExtraThreadsHeight ||
 
-		GSConfig.UserHacks_TCOffsetX != old_config.UserHacks_TCOffsetX ||
-		GSConfig.UserHacks_TCOffsetY != old_config.UserHacks_TCOffsetY ||
-
 		GSConfig.ShadeBoost_Brightness != old_config.ShadeBoost_Brightness ||
 		GSConfig.ShadeBoost_Contrast != old_config.ShadeBoost_Contrast ||
 		GSConfig.ShadeBoost_Saturation != old_config.ShadeBoost_Saturation ||
@@ -793,16 +790,8 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		s_gs->SetGameCRC(s_gs->GetGameCRC(), s_gs->GetGameCRCOptions());
 	}
 
-	if (
-		GSConfig.AutoFlushSW != old_config.AutoFlushSW ||
-		GSConfig.UserHacks_AutoFlush != old_config.UserHacks_AutoFlush ||
-		GSConfig.UserHacks_WildHack != old_config.UserHacks_WildHack)
-	{
-		s_gs->ResetHandlers();
-	}
-
-	if (GSConfig.Mipmap != old_config.Mipmap || GSConfig.HWMipmap != old_config.HWMipmap)
-		s_gs->UpdateMipmapEnabled();
+	// renderer-specific options (e.g. auto flush, TC offset)
+	s_gs->UpdateSettings(old_config);
 
 	// reload texture cache when trilinear filtering or TC options change
 	if (
