@@ -505,6 +505,8 @@ SCAJ-20079:
     vuRoundMode: 0 # Fixes SPS.
   clampModes:
     vuClampMode: 3 # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
 SCAJ-20080:
   name: "Kaena"
   region: "NTSC-Unk"
@@ -720,6 +722,8 @@ SCAJ-20135:
     vuRoundMode: 0 # Fixes SPS.
   clampModes:
     vuClampMode: 3 # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
   memcardFilters:
     - "SCAJ-20135"
     - "SLPS-25467"
@@ -3861,6 +3865,8 @@ SCKA-20025:
     vuRoundMode: 0 # Fixes SPS.
   clampModes:
     vuClampMode: 3 # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
 SCKA-20026:
   name: "Gungrave O.D."
   region: "NTSC-K"
@@ -3954,6 +3960,8 @@ SCKA-20051:
     vuRoundMode: 0 # Fixes SPS.
   clampModes:
     vuClampMode: 3 # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
   memcardFilters:
     - "SCKA-20051"
     - "SCKA-20025"
@@ -14996,6 +15004,8 @@ SLES-53828:
     vuRoundMode: 0 # Fixes SPS.
   clampModes:
     vuClampMode: 3 # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
 SLES-53829:
   name: "Raiden III"
   region: "PAL-E"
@@ -30751,6 +30761,8 @@ SLPS-25360:
     vuRoundMode: 0 # Fixes SPS.
   clampModes:
     vuClampMode: 3 # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
 SLPS-25361:
   name: "Smash Court Professional Tournament 2"
   region: "NTSC-J"
@@ -31149,6 +31161,8 @@ SLPS-25467:
     vuRoundMode: 0 # Fixes SPS.
   clampModes:
     vuClampMode: 3 # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
   memcardFilters:
     - "SCAJ-20135"
     - "SLPS-25467"
@@ -32829,6 +32843,8 @@ SLPS-73210:
     vuRoundMode: 0 # Fixes SPS.
   clampModes:
     vuClampMode: 3 # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
 SLPS-73211:
   name: "Summon Night 3 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -32987,6 +33003,8 @@ SLPS-73240:
     vuRoundMode: 0 # Fixes SPS.
   clampModes:
     vuClampMode: 3 # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
 SLPS-73241:
   name: "Minna Daisuki Katamari Damacy [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -32994,6 +33012,8 @@ SLPS-73241:
     vuRoundMode: 0 # Fixes SPS.
   clampModes:
     vuClampMode: 3 # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
   memcardFilters:
     - "SCAJ-20135"
     - "SLPS-25467"
@@ -37314,6 +37334,8 @@ SLUS-21008:
     vuRoundMode: 0 # Fixes SPS.
   clampModes:
     vuClampMode: 3 # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
 SLUS-21009:
   name: "Sega Classics Collection"
   region: "NTSC-U"
@@ -38262,6 +38284,8 @@ SLUS-21230:
     vuRoundMode: 0 # Fixes SPS.
   clampModes:
     vuClampMode: 3 # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
   memcardFilters: # Allows import of constellations from Katamari Damacy.
     - "SLUS-21230"
     - "SLUS-21008"
