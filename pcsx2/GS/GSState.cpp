@@ -2435,7 +2435,7 @@ __forceinline void GSState::HandleAutoFlush()
 {
 	const bool frame_hit = (m_context->FRAME.Block() == m_context->TEX0.TBP0) && !(m_context->TEST.ATE && m_context->TEST.ATST == 0 && m_context->TEST.AFAIL == 2);
 	// There's a strange behaviour we need to test on a PS2 here, if the FRAME is a Z format, like Powerdrome something swaps over, and it seems Alpha Fail of "FB Only" writes to the Z.. it's odd.
-	const bool zbuf_hit = (m_context->ZBUF.Block() == m_context->TEX0.TBP0) && !(m_context->TEST.ATE && m_context->TEST.ATST == 0 && m_context->TEST.AFAIL != 2 && (m_context->ZBUF.PSM & 0x30) == 0x30) && !m_context->ZBUF.ZMSK;
+	const bool zbuf_hit = (m_context->ZBUF.Block() == m_context->TEX0.TBP0) && !(m_context->TEST.ATE && m_context->TEST.ATST == 0 && m_context->TEST.AFAIL != 2) && !m_context->ZBUF.ZMSK;
 
 	// To briefly explain what's going on here, what we are checking for is draws over a texture when the source and destination are themselves.
 	// Because one page of the texture gets buffered in the Texture Cache (the PS2's one) if any of those pixels are overwritten, you still read the old data.
@@ -2518,7 +2518,8 @@ __forceinline void GSState::HandleAutoFlush()
 		if(page_crossed)
 		{
 			// Make sure the format matches, otherwise the coordinates aren't gonna match, so the draws won't intersect.
-			if ((frame_hit && (m_context->TEX0.PSM == m_context->FRAME.PSM)) || (zbuf_hit && (m_context->TEX0.PSM == m_context->ZBUF.PSM)))
+			if (((frame_hit && (m_context->TEX0.PSM == m_context->FRAME.PSM)) || (zbuf_hit && (m_context->TEX0.PSM == m_context->ZBUF.PSM)))
+				&& (m_context->FRAME.FBW == m_context->TEX0.TBW))
 			{
 				// Update the vertex trace, scissor it (important for Jak 3!) and intersect with the current texture.
 				if ((m_index.tail - 1) == current_tex_end)
@@ -2530,9 +2531,31 @@ __forceinline void GSState::HandleAutoFlush()
 					Flush();
 				}
 			}
-			else // Format of the TEX and FRAME/Z is different, so uhh, just fall back to flushing each page. It's slower, sorry.
+			else // Storage of the TEX and FRAME/Z is different, so uhh, just fall back to flushing each page. It's slower, sorry.
 			{
-				Flush();
+				if (m_context->FRAME.FBW == m_context->TEX0.TBW)
+				{
+					//We know we've changed page, so let's set the dimension to cover the page they're in (for different pixel orders)
+					tex_rect = tex_rect & page_mask;
+					tex_rect += GSVector4i(0, 0, 1, 1); // Intersect goes on space inside the rect
+					tex_rect.z += GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.x;
+					tex_rect.w += GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.y;
+
+					if ((m_index.tail - 1) == current_tex_end)
+						m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail - m_vertex.head, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
+
+					GSVector4i area_out = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+					area_out = area_out & page_mask;
+					area_out += GSVector4i(0, 0, 1, 1); // Intersect goes on space inside the rect
+					area_out.z += GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.x;
+					area_out.w += GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.y;
+					if (!area_out.rintersect(tex_rect).rempty())
+					{
+						Flush();
+					}
+				}
+				else // Page width is different, so it's much more difficult to calculate where it's modifying.
+					Flush();
 			}
 		}
 	}
