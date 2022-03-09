@@ -1269,7 +1269,7 @@ bool FileSystem::FindFiles(const char* Path, const char* Pattern, u32 Flags, Fin
 
 bool FileSystem::StatFile(const char* path, struct stat* st)
 {
-	return stat(path, st);
+	return stat(path, st) == 0;
 }
 
 bool FileSystem::StatFile(std::FILE* fp, struct stat* st)
@@ -1278,7 +1278,7 @@ bool FileSystem::StatFile(std::FILE* fp, struct stat* st)
 	if (fd < 0)
 		return false;
 
-	return fstat(fd, st);
+	return fstat(fd, st) == 0;
 }
 
 bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
