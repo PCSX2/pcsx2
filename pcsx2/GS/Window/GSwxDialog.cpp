@@ -736,8 +736,14 @@ void Dialog::Save()
 	m_ui.Save();
 	// only save the adapter when it makes sense to
 	// prevents changing the adapter, switching to another renderer and saving
-	if (m_adapter_select->GetCount() > 1) // First option is system default
-		theApp.SetConfig("Adapter", m_adapter_select->GetStringSelection().c_str());
+	if (m_adapter_select->GetCount() > 1)
+	{
+		// First option is system default
+		if (m_adapter_select->GetSelection() == 0)
+			theApp.SetConfig("Adapter", "");
+		else
+			theApp.SetConfig("Adapter", m_adapter_select->GetStringSelection().c_str());
+	}
 
 	m_hacks_panel->Save();
 	m_renderer_panel->Save();
