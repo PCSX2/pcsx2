@@ -572,9 +572,30 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 			//
 			// 32bits emulation means we can do the effect once but double the size.
 			// Test cases: Crash Twinsantiy and DBZ BT3
-			const int height_delta = m_src->m_valid_rect.height() - m_r.height();
 			// Test Case: NFS: HP2 splits the effect h:256 and h:192 so 64
-			half_bottom = abs(height_delta) <= 64;
+			// Other games: Midnight Club 3 headlights, black bar in Xenosaga 3 dialogue,
+			// Firefighter FD18 fire occlusion, PSI Ops half screen green overlay, Lord of the Rings - Two Towers,
+			// Demon Stone , Sonic Unleashed, Lord of the Rings Two Towers,
+			// Superman Shadow of Apokolips, Matrix Path of Neo, Big Mutha Truckers
+
+			int maxvert = 0;
+			int minvert = 4096;
+			for (size_t i = 0; i < count; i ++)
+			{
+				int YCord = 0;
+
+				if (!PRIM->FST)
+					YCord = (int)((1 << m_context->TEX0.TH) * (v[i].ST.T / v[i].RGBAQ.Q));
+				else
+					YCord = (v[i].V >> 4);
+
+				if (maxvert < YCord)
+					maxvert = YCord;
+				if (minvert > YCord)
+					minvert = YCord;
+			}
+			// Check if it's a full screen blit (or at least half screen), ignore small writes.
+			half_bottom = minvert == 0 && m_r.height() <= maxvert && (m_r.height()+1) >= 224;
 			break;
 	}
 
