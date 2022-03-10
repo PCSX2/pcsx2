@@ -1245,20 +1245,17 @@ void psxEncodeMemcheck()
 
 void psxRecompileNextInstruction(int delayslot)
 {
-	// pblock isn't used elsewhere in this function.
-	//BASEBLOCK* pblock = PSX_GETBLOCK(psxpc);
+	if (IsDebugBuild)
+	{
+		xNOP();
+		xMOV(eax, psxpc);
+	}
 
 	// add breakpoint
 	if (!delayslot)
 	{
 		psxEncodeBreakpoint();
 		psxEncodeMemcheck();
-	}
-
-	if (IsDebugBuild)
-	{
-		xNOP();
-		xMOV(eax, psxpc);
 	}
 
 	psxRegs.code = iopMemRead32(psxpc);
