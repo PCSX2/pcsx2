@@ -113,6 +113,7 @@ TEST(CodegenTests, MathTest)
 	CODEGEN_TEST_64(xADD(r8, r9), "4d 01 c8");
 	CODEGEN_TEST_64(xADD(r8, 0x12), "49 83 c0 12");
 	CODEGEN_TEST_64(xADD(rax, 0x1234), "48 05 34 12 00 00");
+	CODEGEN_TEST_64(xADD(ptr8[base], 1), "80 05 f9 ff ff ff 01");
 	CODEGEN_TEST_64(xADD(ptr32[base], -0x60), "83 05 f9 ff ff ff a0");
 	CODEGEN_TEST_64(xADD(ptr32[base], 0x1234), "81 05 f6 ff ff ff 34 12 00 00");
 	CODEGEN_TEST_BOTH(xADD(eax, ebx), "01 d8");

@@ -45,7 +45,7 @@ namespace x86Emitter
 	{
 		if (sibdest.Is8BitOp())
 		{
-			xOpWrite(sibdest.GetPrefix16(), 0x80, InstType, sibdest);
+			xOpWrite(sibdest.GetPrefix16(), 0x80, InstType, sibdest, 1);
 
 			xWrite<s8>(imm);
 		}
