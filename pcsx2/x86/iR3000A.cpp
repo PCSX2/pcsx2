@@ -1206,7 +1206,8 @@ void psxRecMemcheck(u32 op, u32 bits, bool store)
 		next2.SetTarget();
 	}
 	// get out of here
-	xCMP(ptr8[&iopBreakpoint], 0);
+	xMOVZX(eax, ptr8[&iopBreakpoint]);
+	xCMP(eax, 0);
 	xJNE(iopExitRecompiledCode);
 }
 
@@ -1217,7 +1218,8 @@ void psxEncodeBreakpoint()
 		_psxFlushCall(FLUSH_EVERYTHING | FLUSH_PC);
 		xFastCall((void*)psxDynarecCheckBreakpoint);
 		// get out of here
-		xCMP(ptr8[&iopBreakpoint], 0);
+		xMOVZX(eax, ptr8[&iopBreakpoint]);
+		xCMP(eax, 0);
 		xJNE(iopExitRecompiledCode);
 	}
 }
