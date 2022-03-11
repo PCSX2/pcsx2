@@ -396,6 +396,16 @@ void VulkanHostDisplay::EndPresent()
 	g_vulkan_context->MoveToNextCommandBuffer();
 }
 
+void VulkanHostDisplay::SetGPUTimingEnabled(bool enabled)
+{
+	g_vulkan_context->SetEnableGPUTiming(enabled);
+}
+
+float VulkanHostDisplay::GetAndResetAccumulatedGPUTime()
+{
+	return g_vulkan_context->GetAndResetAccumulatedGPUTime();
+}
+
 HostDisplay::AdapterAndModeList VulkanHostDisplay::StaticGetAdapterAndModeList(const WindowInfo* wi)
 {
 	AdapterAndModeList ret;

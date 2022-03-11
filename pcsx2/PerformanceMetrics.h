@@ -28,6 +28,7 @@ namespace PerformanceMetrics
 	void Clear();
 	void Reset();
 	void Update(bool gs_register_write, bool fb_blit);
+	void OnGPUPresent(float gpu_time);
 
 	/// Sets the EE thread for CPU usage calculations.
 	void SetCPUThreadTimer(Common::ThreadCPUTimer timer);
@@ -60,4 +61,7 @@ namespace PerformanceMetrics
 	u32 GetGSSWThreadCount();
 	double GetGSSWThreadUsage(u32 index);
 	double GetGSSWThreadAverageTime(u32 index);
+
+	float GetGPUUsage();
+	float GetGPUAverageTime();
 } // namespace PerformanceMetrics

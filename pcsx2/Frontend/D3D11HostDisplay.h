@@ -17,6 +17,7 @@
 #include "HostDisplay.h"
 #include "common/RedtapeWindows.h"
 #include "common/WindowInfo.h"
+#include <array>
 #include <d3d11.h>
 #include <dxgi.h>
 #include <memory>
@@ -68,10 +69,14 @@ public:
 	bool BeginPresent(bool frame_skip) override;
 	void EndPresent() override;
 
+	void SetGPUTimingEnabled(bool enabled) override;
+	float GetAndResetAccumulatedGPUTime() override;
+
 	static AdapterAndModeList StaticGetAdapterAndModeList();
 
 protected:
 	static constexpr u32 DISPLAY_CONSTANT_BUFFER_SIZE = 16;
+	static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
 
 	static AdapterAndModeList GetAdapterAndModeList(IDXGIFactory* dxgi_factory);
 
@@ -81,6 +86,11 @@ protected:
 
 	bool CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode);
 	bool CreateSwapChainRTV();
+
+	void CreateTimestampQueries();
+	void DestroyTimestampQueries();
+	void PopTimestampQuery();
+	void KickTimestampQuery();
 
 	ComPtr<ID3D11Device> m_device;
 	ComPtr<ID3D11DeviceContext> m_context;
@@ -92,5 +102,13 @@ protected:
 	bool m_allow_tearing_supported = false;
 	bool m_using_flip_model_swap_chain = true;
 	bool m_using_allow_tearing = false;
+
+	std::array<std::array<ComPtr<ID3D11Query>, 3>, NUM_TIMESTAMP_QUERIES> m_timestamp_queries = {};
+	u8 m_read_timestamp_query = 0;
+	u8 m_write_timestamp_query = 0;
+	u8 m_waiting_timestamp_queries = 0;
+	bool m_timestamp_query_started = false;
+	float m_accumulated_gpu_time = 0.0f;
+	bool m_gpu_timing_enabled = false;
 };
 

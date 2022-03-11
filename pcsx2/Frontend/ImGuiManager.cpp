@@ -610,6 +610,14 @@ static void DrawPerformanceOverlay()
 			}
 		}
 
+		if (GSConfig.OsdShowGPU)
+		{
+			text.Clear();
+			text.Write("GPU: %.1f%% (%.2fms)", PerformanceMetrics::GetGPUUsage(),
+				PerformanceMetrics::GetGPUAverageTime());
+			DRAW_LINE(s_fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
+		}
+
 		if (GSConfig.OsdShowIndicators)
 		{
 			const bool is_normal_speed = (EmuConfig.GS.LimitScalar == EmuConfig.Framerate.NominalScalar);

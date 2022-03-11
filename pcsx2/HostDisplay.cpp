@@ -53,6 +53,15 @@ bool HostDisplay::GetHostRefreshRate(float* refresh_rate)
 	return WindowInfo::QueryRefreshRateForWindow(m_window_info, refresh_rate);
 }
 
+void HostDisplay::SetGPUTimingEnabled(bool enabled)
+{
+}
+
+float HostDisplay::GetAndResetAccumulatedGPUTime()
+{
+	return 0.0f;
+}
+
 bool HostDisplay::ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height, float* refresh_rate)
 {
 	if (!mode.empty())

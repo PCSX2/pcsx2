@@ -147,6 +147,9 @@ void GSclose()
 		g_gs_device.reset();
 	}
 
+	if (HostDisplay* display = Host::GetHostDisplay(); display)
+		display->SetGPUTimingEnabled(false);
+
 	Host::ReleaseHostDisplay();
 }
 
@@ -238,6 +241,7 @@ static bool DoGSOpen(GSRendererType renderer, u8* basemem)
 	s_gs->SetRegsMem(basemem);
 
 	display->SetVSync(EmuConfig.GetEffectiveVsyncMode());
+	display->SetGPUTimingEnabled(GSConfig.OsdShowGPU);
 	return true;
 }
 
@@ -820,6 +824,12 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	{
 		s_gs->PurgeTextureCache();
 	}
+
+	if (GSConfig.OsdShowGPU != old_config.OsdShowGPU)
+	{
+		if (HostDisplay* display = Host::GetHostDisplay(); display)
+			display->SetGPUTimingEnabled(GSConfig.OsdShowGPU);
+	}
 }
 
 void GSSwitchRenderer(GSRendererType new_renderer)
@@ -1325,6 +1335,7 @@ void GSApp::Init()
 	m_default_configuration["OsdShowSpeed"]                               = "0";
 	m_default_configuration["OsdShowFPS"]                                 = "0";
 	m_default_configuration["OsdShowCPU"]                                 = "0";
+	m_default_configuration["OsdShowGPU"]                                 = "0";
 	m_default_configuration["OsdShowResolution"]                          = "0";
 	m_default_configuration["OsdShowGSStats"]                             = "0";
 	m_default_configuration["OsdShowIndicators"]                          = "1";

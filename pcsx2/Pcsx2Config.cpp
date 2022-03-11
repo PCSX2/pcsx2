@@ -300,6 +300,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	OsdShowSpeed = false;
 	OsdShowFPS = false;
 	OsdShowCPU = false;
+	OsdShowGPU = false;
 	OsdShowResolution = false;
 	OsdShowGSStats = false;
 	OsdShowIndicators = true;
@@ -501,6 +502,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBool(OsdShowSpeed);
 	GSSettingBool(OsdShowFPS);
 	GSSettingBool(OsdShowCPU);
+	GSSettingBool(OsdShowGPU);
 	GSSettingBool(OsdShowResolution);
 	GSSettingBool(OsdShowGSStats);
 	GSSettingBool(OsdShowIndicators);

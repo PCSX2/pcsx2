@@ -208,6 +208,9 @@ namespace Vulkan
 
 		void WaitForGPUIdle();
 
+		float GetAndResetAccumulatedGPUTime();
+		void SetEnableGPUTiming(bool enabled);
+
 	private:
 		Context(VkInstance instance, VkPhysicalDevice physical_device);
 
@@ -284,14 +287,19 @@ namespace Vulkan
 		VkDescriptorPool m_global_descriptor_pool = VK_NULL_HANDLE;
 
 		VkQueue m_graphics_queue = VK_NULL_HANDLE;
-		u32 m_graphics_queue_family_index = 0;
 		VkQueue m_present_queue = VK_NULL_HANDLE;
+		u32 m_graphics_queue_family_index = 0;
 		u32 m_present_queue_family_index = 0;
+
+		VkQueryPool m_timestamp_query_pool = VK_NULL_HANDLE;
+		float m_accumulated_gpu_time = 0.0f;
+		bool m_gpu_timing_enabled = false;
+		bool m_gpu_timing_supported = false;
 
 		std::array<FrameResources, NUM_COMMAND_BUFFERS> m_frame_resources;
 		u64 m_next_fence_counter = 1;
 		u64 m_completed_fence_counter = 0;
-		u32 m_current_frame;
+		u32 m_current_frame = 0;
 
 		StreamBuffer m_texture_upload_buffer;
 
