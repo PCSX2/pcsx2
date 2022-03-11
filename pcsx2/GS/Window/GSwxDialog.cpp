@@ -517,6 +517,7 @@ OSDTab::OSDTab(wxWindow* parent)
 	m_ui.addCheckBox(log_grid, "Show Speed", "OsdShowSpeed", -1);
 	m_ui.addCheckBox(log_grid, "Show FPS", "OsdShowFPS", -1);
 	m_ui.addCheckBox(log_grid, "Show CPU Usage", "OsdShowCPU", -1);
+	m_ui.addCheckBox(log_grid, "Show GPU Usage", "OsdShowGPU", -1);
 	m_ui.addCheckBox(log_grid, "Show Resolution", "OsdShowResolution", -1);
 	m_ui.addCheckBox(log_grid, "Show Statistics", "OsdShowGSStats", -1);
 	m_ui.addCheckBox(log_grid, "Show Indicators", "OsdShowIndicators", -1);

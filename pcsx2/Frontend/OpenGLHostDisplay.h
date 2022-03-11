@@ -20,6 +20,8 @@
 #include "HostDisplay.h"
 #include "common/GL/Context.h"
 #include "common/WindowInfo.h"
+#include <array>
+#include <bitset>
 #include <memory>
 
 class OpenGLHostDisplay final : public HostDisplay
@@ -60,7 +62,12 @@ public:
 	bool BeginPresent(bool frame_skip) override;
 	void EndPresent() override;
 
+	void SetGPUTimingEnabled(bool enabled) override;
+	float GetAndResetAccumulatedGPUTime() override;
+
 protected:
+	static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
+
 	const char* GetGLSLVersionString() const;
 	std::string GetGLSLVersionHeader() const;
 
@@ -70,6 +77,19 @@ protected:
 
 	void SetSwapInterval();
 
+	void CreateTimestampQueries();
+	void DestroyTimestampQueries();
+	void PopTimestampQuery();
+	void KickTimestampQuery();
+
 	std::unique_ptr<GL::Context> m_gl_context;
+
+	std::array<GLuint, NUM_TIMESTAMP_QUERIES> m_timestamp_queries = {};
+	u8 m_read_timestamp_query = 0;
+	u8 m_write_timestamp_query = 0;
+	u8 m_waiting_timestamp_queries = 0;
+	bool m_timestamp_query_started = false;
+	float m_accumulated_gpu_time = 0.0f;
+	bool m_gpu_timing_enabled = false;
 };
 

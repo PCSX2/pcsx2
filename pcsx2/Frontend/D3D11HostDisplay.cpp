@@ -742,11 +742,122 @@ void D3D11HostDisplay::EndPresent()
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
+	if (m_gpu_timing_enabled)
+		PopTimestampQuery();
+
 	const UINT vsync_rate = static_cast<UINT>(m_vsync_mode != VsyncMode::Off);
 	if (vsync_rate == 0 && m_using_allow_tearing)
 		m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
 	else
 		m_swap_chain->Present(vsync_rate, 0);
+
+	if (m_gpu_timing_enabled)
+		KickTimestampQuery();
+}
+
+void D3D11HostDisplay::CreateTimestampQueries()
+{
+	for (u32 i = 0; i < NUM_TIMESTAMP_QUERIES; i++)
+	{
+		for (u32 j = 0; j < 3; j++)
+		{
+			const CD3D11_QUERY_DESC qdesc((j == 0) ? D3D11_QUERY_TIMESTAMP_DISJOINT : D3D11_QUERY_TIMESTAMP);
+			const HRESULT hr = m_device->CreateQuery(&qdesc, m_timestamp_queries[i][j].ReleaseAndGetAddressOf());
+			if (FAILED(hr))
+			{
+				m_timestamp_queries = {};
+				return;
+			}
+		}
+	}
+
+	KickTimestampQuery();
+}
+
+void D3D11HostDisplay::DestroyTimestampQueries()
+{
+	if (!m_timestamp_queries[0][0])
+		return;
+
+	if (m_timestamp_query_started)
+		m_context->End(m_timestamp_queries[m_write_timestamp_query][1].Get());
+
+	m_timestamp_queries = {};
+	m_read_timestamp_query = 0;
+	m_write_timestamp_query = 0;
+	m_waiting_timestamp_queries = 0;
+	m_timestamp_query_started = 0;
+}
+
+void D3D11HostDisplay::PopTimestampQuery()
+{
+	while (m_waiting_timestamp_queries > 0)
+	{
+		D3D11_QUERY_DATA_TIMESTAMP_DISJOINT disjoint;
+		const HRESULT disjoint_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][0].Get(), &disjoint, sizeof(disjoint), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+		if (disjoint_hr != S_OK)
+			break;
+
+		if (disjoint.Disjoint)
+		{
+			DevCon.WriteLn("GPU timing disjoint, resetting.");
+			m_read_timestamp_query = 0;
+			m_write_timestamp_query = 0;
+			m_waiting_timestamp_queries = 0;
+			m_timestamp_query_started = 0;
+		}
+		else
+		{
+			u64 start = 0, end = 0;
+			const HRESULT start_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][1].Get(), &start, sizeof(start), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+			const HRESULT end_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][2].Get(), &end, sizeof(end), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+			if (start_hr == S_OK && end_hr == S_OK)
+			{
+				m_accumulated_gpu_time += static_cast<float>(static_cast<double>(end - start) / (static_cast<double>(disjoint.Frequency) / 1000.0));
+				m_read_timestamp_query = (m_read_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
+				m_waiting_timestamp_queries--;
+			}
+		}
+	}
+
+	// delay ending the current query until we've read back some
+	if (m_timestamp_query_started && m_waiting_timestamp_queries < (NUM_TIMESTAMP_QUERIES - 1))
+	{
+		m_context->End(m_timestamp_queries[m_write_timestamp_query][2].Get());
+		m_context->End(m_timestamp_queries[m_write_timestamp_query][0].Get());
+		m_write_timestamp_query = (m_write_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
+		m_timestamp_query_started = false;
+		m_waiting_timestamp_queries++;
+	}
+}
+
+void D3D11HostDisplay::KickTimestampQuery()
+{
+	if (m_timestamp_query_started)
+		return;
+
+	m_context->Begin(m_timestamp_queries[m_write_timestamp_query][0].Get());
+	m_context->End(m_timestamp_queries[m_write_timestamp_query][1].Get());
+	m_timestamp_query_started = true;
+}
+
+void D3D11HostDisplay::SetGPUTimingEnabled(bool enabled)
+{
+	if (m_gpu_timing_enabled == enabled)
+		return;
+
+	m_gpu_timing_enabled = enabled;
+	if (m_gpu_timing_enabled)
+		CreateTimestampQueries();
+	else
+		DestroyTimestampQueries();
+}
+
+float D3D11HostDisplay::GetAndResetAccumulatedGPUTime()
+{
+	const float value = m_accumulated_gpu_time;
+	m_accumulated_gpu_time = 0.0f;
+	return value;
 }
 
 HostDisplay::AdapterAndModeList D3D11HostDisplay::StaticGetAdapterAndModeList()

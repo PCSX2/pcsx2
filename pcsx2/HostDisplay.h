@@ -133,6 +133,12 @@ public:
 	/// Returns the effective refresh rate of this display.
 	virtual bool GetHostRefreshRate(float* refresh_rate);
 
+	/// Enables/disables GPU frame timing.
+	virtual void SetGPUTimingEnabled(bool enabled);
+
+	/// Returns the amount of GPU time utilized since the last time this method was called.
+	virtual float GetAndResetAccumulatedGPUTime();
+
 	/// Returns true if it's an OpenGL-based renderer.
 	bool UsesLowerLeftOrigin() const;
 
