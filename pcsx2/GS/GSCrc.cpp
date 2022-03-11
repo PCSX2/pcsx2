@@ -261,21 +261,21 @@ const CRC::Game CRC::m_games[] =
 	{0xBC8B3F50, TombRaiderLegend, US, 0},
 	{0x365172A0, TombRaiderLegend, JP, 0},
 	{0x05177ECE, TombRaiderLegend, EU, 0},
-	{0xBEBF8793, BurnoutGames, US, 0}, // BurnoutTakedown
-	{0xBB2E845F, BurnoutGames, JP, 0}, // BurnoutTakedown
-	{0x5F060991, BurnoutGames, KO, 0}, // BurnoutTakedown
-	{0x75BECC18, BurnoutGames, EU, 0}, // BurnoutTakedown
-	{0xCE49B0DE, BurnoutGames, EU, 0}, // BurnoutTakedown
-	{0x381EE9EF, BurnoutGames, EU, 0}, // BurnoutTakedown E3 Demo
-	{0xD224D348, BurnoutGames, US, 0}, // BurnoutRevenge
-	{0x878E7A1D, BurnoutGames, JP, 0}, // BurnoutRevenge
-	{0xEEA60511, BurnoutGames, KO, 0}, // BurnoutRevenge
-	{0x7E83CC5B, BurnoutGames, EU, 0}, // BurnoutRevenge
-	{0x2CAC3DBC, BurnoutGames, EU, 0}, // BurnoutRevenge
-	{0x8C9576A1, BurnoutGames, US, 0}, // BurnoutDominator
-	{0xDDF76A98, BurnoutGames, JP, 0}, // BurnoutDominator
-	{0x8C9576B4, BurnoutGames, EU, 0}, // BurnoutDominator
-	{0x8C9C76B4, BurnoutGames, EU, 0}, // BurnoutDominator
+	{0xBEBF8793, BurnoutGames, US, TextureInsideRt }, // BurnoutTakedown
+	{0xBB2E845F, BurnoutGames, JP, TextureInsideRt }, // BurnoutTakedown
+	{0x5F060991, BurnoutGames, KO, TextureInsideRt }, // BurnoutTakedown
+	{0x75BECC18, BurnoutGames, EU, TextureInsideRt }, // BurnoutTakedown
+	{0xCE49B0DE, BurnoutGames, EU, TextureInsideRt }, // BurnoutTakedown
+	{0x381EE9EF, BurnoutGames, EU, TextureInsideRt }, // BurnoutTakedown E3 Demo
+	{0xD224D348, BurnoutGames, US, TextureInsideRt }, // BurnoutRevenge
+	{0x878E7A1D, BurnoutGames, JP, TextureInsideRt }, // BurnoutRevenge
+	{0xEEA60511, BurnoutGames, KO, TextureInsideRt }, // BurnoutRevenge
+	{0x7E83CC5B, BurnoutGames, EU, TextureInsideRt }, // BurnoutRevenge
+	{0x2CAC3DBC, BurnoutGames, EU, TextureInsideRt }, // BurnoutRevenge
+	{0x8C9576A1, BurnoutGames, US, TextureInsideRt }, // BurnoutDominator
+	{0xDDF76A98, BurnoutGames, JP, TextureInsideRt }, // BurnoutDominator
+	{0x8C9576B4, BurnoutGames, EU, TextureInsideRt }, // BurnoutDominator
+	{0x8C9C76B4, BurnoutGames, EU, TextureInsideRt }, // BurnoutDominator
 	{0x4A0E5B3A, MidnightClub3, US, 0}, // dub
 	{0xEBE1972D, MidnightClub3, EU, 0}, // dub
 	{0x60A42FF5, MidnightClub3, US, 0}, // remix

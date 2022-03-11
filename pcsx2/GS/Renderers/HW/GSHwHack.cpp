@@ -410,22 +410,6 @@ bool GSC_TombRaiderUnderWorld(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_BurnoutGames(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (fi.TME && (fi.FBP == 0x01dc0 || fi.FBP == 0x01c00 || fi.FBP == 0x01f00 || fi.FBP == 0x01d40 || fi.FBP == 0x02200 || fi.FBP == 0x02000) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x01dc0 || fi.TBP0 == 0x01c00 || fi.TBP0 == 0x01f00 || fi.TBP0 == 0x01d40 || fi.TBP0 == 0x02200 || fi.TBP0 == 0x02000) && fi.TPSM == PSM_PSMCT32)
-		{
-			// 0x01dc0 01c00(MP) ntsc, 0x01f00 0x01d40(MP) ntsc progressive, 0x02200(MP) pal.
-			// Yellow stripes.
-			// Multiplayer tested only on Takedown.
-			skip = s_autoflush ? 2 : 4;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_MidnightClub3(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -981,9 +965,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::SkyGunner] = GSC_SkyGunner; // Maybe not a channel effect
 		lut[CRC::Spartan] = GSC_Spartan;
 		lut[CRC::SteambotChronicles] = GSC_SteambotChronicles;
-
-		// Depth Issue
-		lut[CRC::BurnoutGames] = GSC_BurnoutGames;
 
 		// Half Screen bottom issue
 		lut[CRC::Tekken5] = GSC_Tekken5;

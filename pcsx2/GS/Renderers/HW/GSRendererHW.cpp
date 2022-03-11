@@ -1713,6 +1713,42 @@ void GSRendererHW::Draw()
 
 	if (m_userhacks_enabled_gs_mem_clear)
 	{
+		// HLE for Burnout lighting/bloom effect double half clear to colour
+		// The game does the trick of writing to the same location in strips of 32 pixels using both the Frame and Z to clear to a colour
+		// then does its magic on it, this basically HLE's the whole clear (because the HW renderer gets confused).
+		// Maybe later it can be made more generic, if other games need it.
+		if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME // Direct write
+			&& (PRIM->ABE && m_context->ALPHA.IsOpaque()) // No transparency
+			&& (m_context->FRAME.FBMSK == 0xff000000) // mask only on the alpha
+			&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
+			&& (m_vt.m_eq.rgba == 0xFFFF) // constant color write
+			&& m_context->FRAME.FBP == m_context->ZBUF.ZBP //Z and Frame point to the same location
+			&& !m_context->ZBUF.ZMSK) { // Writing to both Z and frame at the same time
+			TEX0.TBP0 = context->FRAME.Block();
+			TEX0.TBW = context->FRAME.FBW;
+			TEX0.PSM = context->FRAME.PSM;//0x1; // 24bit, essentially ignore alpha
+			
+			const GSOffset& off = m_context->offset.fb;
+			const GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+
+			const u32 color = m_vt.m_max.p.z;
+			for (int y = r.top; y < r.bottom; y++)
+			{
+				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.m_vm32, 0, y);
+
+				for (int x = r.left; x < r.right; x++)
+				{
+					*pa.value(x) &= 0xff000000; // Clear the color
+					*pa.value(x) |= color;
+				}
+			}
+			// Need to kill off the depth texture
+			ds = nullptr;
+			ds_tex = nullptr;
+			const GSVector4i commitRect = ComputeBoundingBox(rt_tex->GetScale(), rt_tex->GetSize());
+			rt_tex->CommitRegion(GSVector2i(commitRect.z, 2 * commitRect.w));
+			g_gs_device->ClearRenderTarget(rt_tex, color);
+		}
 		// Constant Direct Write without texture/test/blending (aka a GS mem clear)
 		if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME // Direct write
 				&& (!PRIM->ABE || m_context->ALPHA.IsOpaque()) // No transparency
