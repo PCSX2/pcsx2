@@ -582,9 +582,7 @@ void GSRendererSW::Sync(int reason)
 {
 	//printf("sync %d\n", reason);
 
-	GSPerfMonAutoTimer pmat(&g_perfmon, GSPerfMon::Sync);
-
-	u64 t = __rdtsc();
+	u64 t = LOG ? __rdtsc() : 0;
 
 	m_rl->Sync();
 
@@ -607,7 +605,7 @@ void GSRendererSW::Sync(int reason)
 		}
 	}
 
-	t = __rdtsc() - t;
+	t = LOG ? (__rdtsc() - t) : 0;
 
 	int pixels = m_rl->GetPixels();
 

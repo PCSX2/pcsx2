@@ -27,7 +27,9 @@ class GSJobQueue final
 {
 private:
 	std::thread m_thread;
+	std::function<void()> m_startup;
 	std::function<void(T&)> m_func;
+	std::function<void()> m_shutdown;
 	bool m_exit;
 	ringbuffer_base<T, CAPACITY> m_queue;
 
@@ -38,6 +40,9 @@ private:
 
 	void ThreadProc()
 	{
+		if (m_startup)
+			m_startup();
+
 		std::unique_lock<std::mutex> l(m_lock);
 
 		while (true)
@@ -74,11 +79,16 @@ private:
 
 			l.lock();
 		}
+
+		if (m_shutdown)
+			m_shutdown();
 	}
 
 public:
-	GSJobQueue(std::function<void(T&)> func)
-		: m_func(func)
+	GSJobQueue(std::function<void()> startup, std::function<void(T&)> func, std::function<void()> shutdown)
+		: m_startup(std::move(startup))
+		, m_func(std::move(func))
+		, m_shutdown(std::move(shutdown))
 		, m_exit(false)
 	{
 		m_thread = std::thread(&GSJobQueue::ThreadProc, this);

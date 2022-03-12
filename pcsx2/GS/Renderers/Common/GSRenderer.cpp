@@ -416,8 +416,6 @@ static GSVector4 CalculateDrawRect(s32 window_width, s32 window_height, s32 text
 
 void GSRenderer::VSync(u32 field, bool registers_written)
 {
-	GSPerfMonAutoTimer pmat(&g_perfmon);
-
 	Flush();
 
 	if (s_dump && s_n >= s_saven)

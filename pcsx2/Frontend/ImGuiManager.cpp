@@ -592,6 +592,15 @@ static void DrawPerformanceOverlay()
 				PerformanceMetrics::GetGSThreadAverageTime());
 			DRAW_LINE(s_fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 
+			const u32 gs_sw_threads = PerformanceMetrics::GetGSSWThreadCount();
+			for (u32 i = 0; i < gs_sw_threads; i++)
+			{
+				text.Clear();
+				text.Write("SW-%u: %.1f%% (%.2fms)", i, PerformanceMetrics::GetGSSWThreadUsage(i),
+					PerformanceMetrics::GetGSSWThreadAverageTime(i));
+				DRAW_LINE(s_fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
+			}
+
 			if (THREAD_VU1)
 			{
 				text.Clear();

@@ -18,14 +18,6 @@
 class GSPerfMon
 {
 public:
-	enum timer_t
-	{
-		Main,
-		Sync,
-		WorkerDraw0,
-		TimerLast = WorkerDraw0 + 32, // Enough space for 32 GS worker threads
-	};
-
 	enum counter_t
 	{
 		Prim,
@@ -47,14 +39,10 @@ public:
 protected:
 	double m_counters[CounterLast];
 	double m_stats[CounterLast];
-	float m_timer_stats[TimerLast];
-	u64 m_begin[TimerLast], m_total[TimerLast], m_start[TimerLast];
 	u64 m_frame;
 	clock_t m_lastframe;
 	int m_count;
 	int m_disp_fb_sprite_blits;
-
-	friend class GSPerfMonAutoTimer;
 
 public:
 	GSPerfMon();
@@ -65,11 +53,7 @@ public:
 
 	void Put(counter_t c, double val = 0) { m_counters[c] += val; }
 	double Get(counter_t c) { return m_stats[c]; }
-	float GetTimer(timer_t t) { return m_timer_stats[t]; }
 	void Update();
-
-	void Start(int timer = Main);
-	void Stop(int timer = Main);
 
 	__fi void AddDisplayFramebufferSpriteBlit() { m_disp_fb_sprite_blits++; }
 	__fi int GetDisplayFramebufferSpriteBlits()
@@ -78,20 +62,6 @@ public:
 		m_disp_fb_sprite_blits = 0;
 		return blits;
 	}
-};
-
-class GSPerfMonAutoTimer
-{
-	GSPerfMon* m_pm;
-	int m_timer;
-
-public:
-	GSPerfMonAutoTimer(GSPerfMon* pm, int timer = GSPerfMon::Main)
-	{
-		m_timer = timer;
-		(m_pm = pm)->Start(m_timer);
-	}
-	~GSPerfMonAutoTimer() { m_pm->Stop(m_timer); }
 };
 
 extern GSPerfMon g_perfmon;

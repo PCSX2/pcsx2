@@ -1965,8 +1965,6 @@ void GSState::SoftReset(u32 mask)
 
 void GSState::ReadFIFO(u8* mem, int size)
 {
-	GSPerfMonAutoTimer pmat(&g_perfmon);
-
 	Flush();
 
 	size *= 16;
@@ -1985,8 +1983,6 @@ template void GSState::Transfer<3>(const u8* mem, u32 size);
 template <int index>
 void GSState::Transfer(const u8* mem, u32 size)
 {
-	GSPerfMonAutoTimer pmat(&g_perfmon);
-
 	const u8* start = mem;
 
 	GIFPath& path = m_path[index];
