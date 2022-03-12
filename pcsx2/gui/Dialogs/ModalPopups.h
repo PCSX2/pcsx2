@@ -25,28 +25,6 @@
 #include <wx/treectrl.h>
 #include <wx/fswatcher.h>
 
-#define GEN_REG_ENUM_CLASS_CONTENT(ClassName, EntryName, Value) \
-	EntryName = Value,
-
-#define GEN_REG_GETNAME_CONTENT(ClassName, EntryName, Value) \
-	case ClassName::EntryName: \
-		return #EntryName;
-
-#define GEN_REG_ENUM_CLASS_AND_GETNAME(Macro, ClassName, Type, DefaultString) \
-	enum class ClassName : Type \
-	{ \
-		Macro(GEN_REG_ENUM_CLASS_CONTENT) \
-	}; \
-	static constexpr const char* GetName(ClassName reg) \
-	{ \
-		switch (reg) \
-		{ \
-			Macro(GEN_REG_GETNAME_CONTENT) \
-			default: \
-				return DefaultString; \
-		} \
-	}
-
 class FirstTimeWizard : public wxWizard
 {
 	typedef wxWizard _parent;
@@ -147,102 +125,6 @@ namespace Dialogs
 			ID_FRAMERATE,
 		};
 
-		// clang-format off
-
-#define DEF_GSType(X) \
-	X(GSType, Transfer,  0) \
-	X(GSType, VSync,     1) \
-	X(GSType, ReadFIFO2, 2) \
-	X(GSType, Registers, 3)
-		GEN_REG_ENUM_CLASS_AND_GETNAME(DEF_GSType, GSType, u8, "UnknownType")
-#undef DEF_GSType
-
-#define DEF_GSTransferPath(X) \
-	X(GSTransferPath, Path1Old, 0) \
-	X(GSTransferPath, Path2,    1) \
-	X(GSTransferPath, Path3,    2) \
-	X(GSTransferPath, Path1New, 3) \
-	X(GSTransferPath, Dummy,    4)
-		GEN_REG_ENUM_CLASS_AND_GETNAME(DEF_GSTransferPath, GSTransferPath, u8, "UnknownPath")
-#undef DEF_GSTransferPath
-
-#define DEF_GIFFlag(X) \
-	X(GIFFlag, PACKED,  0) \
-	X(GIFFlag, REGLIST, 1) \
-	X(GIFFlag, IMAGE,   2) \
-	X(GIFFlag, IMAGE2,  3)
-		GEN_REG_ENUM_CLASS_AND_GETNAME(DEF_GIFFlag, GIFFlag, u8, "UnknownFlag")
-#undef DEF_GifFlag
-
-#define DEF_GIFReg(X) \
-	X(GIFReg, PRIM,       0x00) \
-	X(GIFReg, RGBAQ,      0x01) \
-	X(GIFReg, ST,         0x02) \
-	X(GIFReg, UV,         0x03) \
-	X(GIFReg, XYZF2,      0x04) \
-	X(GIFReg, XYZ2,       0x05) \
-	X(GIFReg, TEX0_1,     0x06) \
-	X(GIFReg, TEX0_2,     0x07) \
-	X(GIFReg, CLAMP_1,    0x08) \
-	X(GIFReg, CLAMP_2,    0x09) \
-	X(GIFReg, FOG,        0x0a) \
-	X(GIFReg, XYZF3,      0x0c) \
-	X(GIFReg, XYZ3,       0x0d) \
-	X(GIFReg, AD,         0x0e) \
-	X(GIFReg, NOP,        0x0f) \
-	X(GIFReg, TEX1_1,     0x14) \
-	X(GIFReg, TEX1_2,     0x15) \
-	X(GIFReg, TEX2_1,     0x16) \
-	X(GIFReg, TEX2_2,     0x17) \
-	X(GIFReg, XYOFFSET_1, 0x18) \
-	X(GIFReg, XYOFFSET_2, 0x19) \
-	X(GIFReg, PRMODECONT, 0x1a) \
-	X(GIFReg, PRMODE,     0x1b) \
-	X(GIFReg, TEXCLUT,    0x1c) \
-	X(GIFReg, SCANMSK,    0x22) \
-	X(GIFReg, MIPTBP1_1,  0x34) \
-	X(GIFReg, MIPTBP1_2,  0x35) \
-	X(GIFReg, MIPTBP2_1,  0x36) \
-	X(GIFReg, MIPTBP2_2,  0x37) \
-	X(GIFReg, TEXA,       0x3b) \
-	X(GIFReg, FOGCOL,     0x3d) \
-	X(GIFReg, TEXFLUSH,   0x3f) \
-	X(GIFReg, SCISSOR_1,  0x40) \
-	X(GIFReg, SCISSOR_2,  0x41) \
-	X(GIFReg, ALPHA_1,    0x42) \
-	X(GIFReg, ALPHA_2,    0x43) \
-	X(GIFReg, DIMX,       0x44) \
-	X(GIFReg, DTHE,       0x45) \
-	X(GIFReg, COLCLAMP,   0x46) \
-	X(GIFReg, TEST_1,     0x47) \
-	X(GIFReg, TEST_2,     0x48) \
-	X(GIFReg, PABE,       0x49) \
-	X(GIFReg, FBA_1,      0x4a) \
-	X(GIFReg, FBA_2,      0x4b) \
-	X(GIFReg, FRAME_1,    0x4c) \
-	X(GIFReg, FRAME_2,    0x4d) \
-	X(GIFReg, ZBUF_1,     0x4e) \
-	X(GIFReg, ZBUF_2,     0x4f) \
-	X(GIFReg, BITBLTBUF,  0x50) \
-	X(GIFReg, TRXPOS,     0x51) \
-	X(GIFReg, TRXREG,     0x52) \
-	X(GIFReg, TRXDIR,     0x53) \
-	X(GIFReg, HWREG,      0x54) \
-	X(GIFReg, SIGNAL,     0x60) \
-	X(GIFReg, FINISH,     0x61) \
-	X(GIFReg, LABEL,      0x62)
-		GEN_REG_ENUM_CLASS_AND_GETNAME(DEF_GIFReg, GIFReg, u8, "UnknownReg")
-#undef DEF_GIFReg
-
-		// clang-format on
-
-		struct GSData
-		{
-			GSType id;
-			std::unique_ptr<u8[]> data;
-			int length;
-			GSTransferPath path;
-		};
 		enum ButtonState
 		{
 			Step,
@@ -256,16 +138,15 @@ namespace Dialogs
 			int index;
 		};
 		std::vector<GSEvent> m_button_events;
-		std::vector<GSData> m_dump_packets;
 		std::vector<wxTreeItemId> m_gif_items;
 
 		float m_stored_q = 1.0;
-		void ProcessDumpEvent(const GSData& event, u8* regs);
+		void ProcessDumpEvent(const GSDumpFile::GSData& event, u8* regs);
 		u32 ReadPacketSize(const void* packet);
 		void GenPacketList();
-		void GenPacketInfo(GSData& dump);
+		void GenPacketInfo(const GSDumpFile::GSData& dump);
 		void ParseTransfer(wxTreeItemId& id, u8* data);
-		void ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data, bool packed);
+		void ParseTreeReg(wxTreeItemId& id, GSDumpTypes::GIFReg reg, u128 data, bool packed);
 		void ParseTreePrim(wxTreeItemId& id, u32 prim);
 		void CloseDump(wxCommandEvent& event);
 		class GSThread : public pxThread

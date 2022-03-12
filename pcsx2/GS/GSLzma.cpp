@@ -14,28 +14,18 @@
  */
 
 #include "PrecompiledHeader.h"
+
+#include "common/FileSystem.h"
+#include "common/StringUtil.h"
+
+#include "GSDump.h"
 #include "GSLzma.h"
 
-GSDumpFile::GSDumpFile(char* filename, const char* repack_filename)
-{
-	m_fp = fopen(filename, "rb");
-	if (m_fp == nullptr)
-	{
-		fprintf(stderr, "failed to open %s\n", filename);
-		throw "BAD"; // Just exit the program
-	}
-
-	m_repack_fp = nullptr;
-	if (repack_filename)
-	{
-		m_repack_fp = fopen(repack_filename, "wb");
-		if (m_repack_fp == nullptr)
-			fprintf(stderr, "failed to open %s for repack\n", repack_filename);
-	}
-}
+using namespace GSDumpTypes;
 
 GSDumpFile::GSDumpFile(FILE* file, FILE* repack_file)
-	: m_repack_fp(repack_file), m_fp(file)
+	: m_repack_fp(repack_file)
+	, m_fp(file)
 {
 }
 
@@ -57,13 +47,161 @@ GSDumpFile::~GSDumpFile()
 		fclose(m_repack_fp);
 }
 
-/******************************************************************/
-GSDumpLzma::GSDumpLzma(char* filename, const char* repack_filename)
-	: GSDumpFile(filename, repack_filename)
+std::unique_ptr<GSDumpFile> GSDumpFile::OpenGSDump(const char* filename, const char* repack_filename /*= nullptr*/)
 {
-	Initialize();
+	std::FILE* fp = FileSystem::OpenCFile(filename, "rb");
+	if (!fp)
+		return nullptr;
+
+	std::FILE* repack_fp = nullptr;
+	if (repack_filename && std::strlen(repack_filename) > 0)
+	{
+		repack_fp = FileSystem::OpenCFile(repack_filename, "wb");
+		if (!repack_fp)
+		{
+			std::fclose(fp);
+			return nullptr;
+		}
+	}
+
+	if (StringUtil::EndsWithNoCase(filename, ".xz"))
+		return std::make_unique<GSDumpLzma>(fp, nullptr);
+	else
+		return std::make_unique<GSDumpRaw>(fp, nullptr);
 }
 
+bool GSDumpFile::GetPreviewImageFromDump(const char* filename, u32* width, u32* height, std::vector<u32>* pixels)
+{
+	std::unique_ptr<GSDumpFile> dump = OpenGSDump(filename);
+	if (!dump)
+		return false;
+
+	u32 crc;
+	if (!dump->Read(&crc, sizeof(crc)) || crc != 0xFFFFFFFFu)
+	{
+		// not new header dump, so no preview
+		return false;
+	}
+
+	u32 header_size;
+	if (!dump->Read(&header_size, sizeof(header_size)) || header_size < sizeof(GSDumpHeader))
+	{
+		// doesn't have the screenshot fields
+		return false;
+	}
+
+	std::unique_ptr<u8[]> header_bits = std::make_unique<u8[]>(header_size);
+	if (!dump->Read(header_bits.get(), header_size))
+		return false;
+
+	GSDumpHeader header;
+	std::memcpy(&header, header_bits.get(), sizeof(header));
+	if (header.screenshot_size == 0 ||
+		header.screenshot_size < (header.screenshot_width * header.screenshot_height * sizeof(u32)) ||
+		(static_cast<u64>(header.screenshot_offset) + header.screenshot_size) > header_size)
+	{
+		// doesn't have a screenshot
+		return false;
+	}
+
+	*width = header.screenshot_width;
+	*height = header.screenshot_height;
+	pixels->resize(header.screenshot_width * header.screenshot_height);
+	std::memcpy(pixels->data(), header_bits.get() + header.screenshot_offset, header.screenshot_size);
+	return true;
+}
+
+bool GSDumpFile::ReadFile()
+{
+	u32 ss;
+	if (!Read(&m_crc, 4) || !Read(&ss, 4))
+		return false;
+
+	m_state_data.resize(ss);
+	if (!Read(m_state_data.data(), ss))
+		return false;
+
+	// Pull serial out of new header, if present.
+	if (m_crc == 0xFFFFFFFFu)
+	{
+		GSDumpHeader header;
+		if (m_state_data.size() < sizeof(header))
+		{
+			Console.Error("GSDump header is corrupted.");
+			return false;
+		}
+
+		std::memcpy(&header, m_state_data.data(), sizeof(header));
+
+		m_crc = header.crc;
+
+		if (header.serial_size > 0)
+		{
+			if (header.serial_offset > ss || (static_cast<u64>(header.serial_offset) + header.serial_size) > ss)
+			{
+				Console.Error("GSDump header is corrupted.");
+				return false;
+			}
+
+			if (header.serial_size > 0)
+				m_serial.assign(reinterpret_cast<const char*>(m_state_data.data()) + header.serial_offset, header.serial_size);
+		}
+
+		// Read the real state data
+		m_state_data.resize(header.state_size);
+		if (!Read(m_state_data.data(), header.state_size))
+			return false;
+	}
+
+	m_regs_data.resize(8192);
+	if (!Read(m_regs_data.data(), m_regs_data.size()))
+		return false;
+
+	for (;;)
+	{
+		GSData packet;
+		packet.path = GSTransferPath::Dummy;
+		if (!Read(&packet.id, 1))
+		{
+			if (IsEof())
+				break;
+
+			return false;
+		}
+
+		switch (packet.id)
+		{
+			case GSType::Transfer:
+			{
+				if (!Read(&packet.path, 1) || !Read(&packet.length, 4))
+					return false;
+			}
+			break;
+			case GSType::VSync:
+				packet.length = 1;
+				break;
+			case GSType::ReadFIFO2:
+				packet.length = 4;
+				break;
+			case GSType::Registers:
+				packet.length = 8192;
+				break;
+		}
+
+		if (packet.length > 0)
+		{
+			packet.data = std::unique_ptr<u8[]>(new u8[packet.length]);
+			if (!Read(packet.data.get(), packet.length))
+				return false;
+		}
+
+		m_dump_packets.push_back(std::move(packet));
+	}
+
+	return true;
+}
+
+/******************************************************************/
 GSDumpLzma::GSDumpLzma(FILE* file, FILE* repack_file)
 	: GSDumpFile(file, repack_file)
 {
@@ -178,11 +316,6 @@ GSDumpLzma::~GSDumpLzma()
 
 /******************************************************************/
 
-GSDumpRaw::GSDumpRaw(char* filename, const char* repack_filename)
-	: GSDumpFile(filename, repack_filename)
-{
-}
-
 GSDumpRaw::GSDumpRaw(FILE* file, FILE* repack_file)
 	: GSDumpFile(file, repack_file)
 {
@@ -199,7 +332,7 @@ bool GSDumpRaw::Read(void* ptr, size_t size)
 	if (ret != size && ferror(m_fp))
 	{
 		fprintf(stderr, "GSDumpRaw:: Read error (%zu/%zu)\n", ret, size);
-		throw "BAD"; // Just exit the program
+		return false;
 	}
 
 	if (ret == size)
