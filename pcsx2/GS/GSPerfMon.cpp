@@ -26,9 +26,6 @@ GSPerfMon::GSPerfMon()
 {
 	memset(m_counters, 0, sizeof(m_counters));
 	memset(m_stats, 0, sizeof(m_stats));
-	memset(m_timer_stats, 0, sizeof(m_timer_stats));
-	memset(m_total, 0, sizeof(m_total));
-	memset(m_begin, 0, sizeof(m_begin));
 }
 
 void GSPerfMon::EndFrame()
@@ -39,7 +36,6 @@ void GSPerfMon::EndFrame()
 
 void GSPerfMon::Update()
 {
-#ifndef DISABLE_PERF_MON
 	if (m_count > 0)
 	{
 		for (size_t i = 0; i < std::size(m_counters); i++)
@@ -48,55 +44,7 @@ void GSPerfMon::Update()
 		}
 
 		m_count = 0;
-
-		// Update CPU usage for SW renderer.
-		if (GSConfig.Renderer == GSRendererType::SW)
-		{
-			const u64 current = __rdtsc();
-
-			for (size_t i = WorkerDraw0; i < TimerLast; i++)
-			{
-				if (m_begin[i] == 0)
-				{
-					m_timer_stats[i] = 0.0f;
-					continue;
-				}
-
-				m_timer_stats[i] =
-					static_cast<float>(static_cast<double>(m_total[i]) / static_cast<double>(current - m_begin[i])
-						* 100.0);
-
-				m_begin[i] = 0;
-				m_start[i] = 0;
-				m_total[i] = 0;
-			}
-		}
-
 	}
 
 	memset(m_counters, 0, sizeof(m_counters));
-#endif
-}
-
-void GSPerfMon::Start(int timer)
-{
-#ifndef DISABLE_PERF_MON
-	m_start[timer] = __rdtsc();
-
-	if (m_begin[timer] == 0)
-	{
-		m_begin[timer] = m_start[timer];
-	}
-#endif
-}
-
-void GSPerfMon::Stop(int timer)
-{
-#ifndef DISABLE_PERF_MON
-	if (m_start[timer] > 0)
-	{
-		m_total[timer] += __rdtsc() - m_start[timer];
-		m_start[timer] = 0;
-	}
-#endif
 }

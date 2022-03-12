@@ -657,21 +657,16 @@ void GSgetStats(std::string& info)
 
 	if (GSConfig.Renderer == GSRendererType::SW)
 	{
-		float sum = 0.0f;
-		for (int i = GSPerfMon::WorkerDraw0; i < GSPerfMon::TimerLast; i++)
-			sum += pm.GetTimer(static_cast<GSPerfMon::timer_t>(i));
-
 		const double fps = GetVerticalFrequency();
 		const double fillrate = pm.Get(GSPerfMon::Fillrate);
-		info = format("%s SW | %d S | %d P | %d D | %.2f U | %.2f D | %.2f mpps | %d%% WCPU",
+		info = format("%s SW | %d S | %d P | %d D | %.2f U | %.2f D | %.2f mpps",
 			api_name,
 			(int)pm.Get(GSPerfMon::SyncPoint),
 			(int)pm.Get(GSPerfMon::Prim),
 			(int)pm.Get(GSPerfMon::Draw),
 			pm.Get(GSPerfMon::Swizzle) / 1024,
 			pm.Get(GSPerfMon::Unswizzle) / 1024,
-			fps * fillrate / (1024 * 1024),
-			static_cast<int>(std::lround(sum)));
+			fps * fillrate / (1024 * 1024));
 	}
 	else if (GSConfig.Renderer == GSRendererType::Null)
 	{

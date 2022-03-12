@@ -538,7 +538,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 
 	for (int i = 0; i < m_threads; i++)
 	{
-		m_workers.push_back(std::unique_ptr<GSPng::Worker>(new GSPng::Worker(&GSPng::Process)));
+		m_workers.push_back(std::unique_ptr<GSPng::Worker>(new GSPng::Worker({}, &GSPng::Process, {})));
 	}
 
 	m_capturing = true;

@@ -197,6 +197,9 @@ protected:
 
 	GSRasterizerList(int threads, GSPerfMon* perfmon);
 
+	void OnWorkerStartup(int i);
+	void OnWorkerShutdown(int i);
+
 public:
 	virtual ~GSRasterizerList();
 
@@ -217,7 +220,9 @@ public:
 			rl->m_r.push_back(std::unique_ptr<GSRasterizer>(new GSRasterizer(new DS(), i, threads, perfmon)));
 			auto& r = *rl->m_r[i];
 			rl->m_workers.push_back(std::unique_ptr<GSWorker>(new GSWorker(
-				[&r](GSRingHeap::SharedPtr<GSRasterizerData>& item) { r.Draw(item.get()); })));
+				[rl, i]() { rl->OnWorkerStartup(i); },
+				[&r](GSRingHeap::SharedPtr<GSRasterizerData>& item) { r.Draw(item.get()); },
+				[rl, i]() { rl->OnWorkerShutdown(i); })));
 		}
 
 		return rl;

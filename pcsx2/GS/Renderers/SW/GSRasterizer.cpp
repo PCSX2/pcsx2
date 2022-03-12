@@ -18,6 +18,11 @@
 #include "PrecompiledHeader.h"
 #include "GSRasterizer.h"
 #include "GS/GSExtra.h"
+#include "PerformanceMetrics.h"
+#include "common/StringUtil.h"
+#include "common/PersistentThread.h"
+
+#define ENABLE_DRAW_STATS 0
 
 int GSRasterizerData::s_counter = 0;
 
@@ -128,8 +133,6 @@ int GSRasterizer::GetPixels(bool reset)
 
 void GSRasterizer::Draw(GSRasterizerData* data)
 {
-	GSPerfMonAutoTimer pmat(m_perfmon, GSPerfMon::WorkerDraw0 + m_id);
-
 	if (data->vertex != NULL && data->vertex_count == 0 || data->index != NULL && data->index_count == 0)
 		return;
 
@@ -137,7 +140,8 @@ void GSRasterizer::Draw(GSRasterizerData* data)
 	m_pixels.total = 0;
 	m_primcount = 0;
 
-	data->start = __rdtsc();
+	if constexpr (ENABLE_DRAW_STATS)
+		data->start = __rdtsc();
 
 	m_ds->BeginDraw(data);
 
@@ -244,11 +248,10 @@ void GSRasterizer::Draw(GSRasterizerData* data)
 
 	data->pixels = m_pixels.actual;
 
-	u64 ticks = __rdtsc() - data->start;
-
 	m_pixels.sum += m_pixels.actual;
 
-	m_ds->EndDraw(data->frame, ticks, m_pixels.actual, m_pixels.total, m_primcount);
+	if constexpr (ENABLE_DRAW_STATS)
+		m_ds->EndDraw(data->frame, __rdtsc() - data->start, m_pixels.actual, m_pixels.total, m_primcount);
 }
 
 template <bool scissor_test>
@@ -1190,11 +1193,25 @@ GSRasterizerList::GSRasterizerList(int threads, GSPerfMon* perfmon)
 	{
 		m_scanline[i] = static_cast<u8>(i % threads);
 	}
+
+	PerformanceMetrics::SetGSSWThreadCount(threads);
 }
 
 GSRasterizerList::~GSRasterizerList()
 {
+	PerformanceMetrics::SetGSSWThreadCount(0);
 	_aligned_free(m_scanline);
+}
+
+void GSRasterizerList::OnWorkerStartup(int i)
+{
+	Threading::SetNameOfCurrentThread(StringUtil::StdStringFromFormat("GS-SW-%d", i).c_str());
+	PerformanceMetrics::SetGSSWThreadTimer(i, Common::ThreadCPUTimer::GetForCallingThread());
+}
+
+void GSRasterizerList::OnWorkerShutdown(int i)
+{
+	PerformanceMetrics::SetGSSWThreadTimer(i, Common::ThreadCPUTimer());
 }
 
 void GSRasterizerList::Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data)

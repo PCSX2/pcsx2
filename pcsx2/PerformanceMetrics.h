@@ -32,6 +32,10 @@ namespace PerformanceMetrics
 	/// Sets the EE thread for CPU usage calculations.
 	void SetCPUThreadTimer(Common::ThreadCPUTimer timer);
 
+	/// Sets timers for GS software threads.
+	void SetGSSWThreadCount(u32 count);
+	void SetGSSWThreadTimer(u32 index, Common::ThreadCPUTimer timer);
+
 	/// Sets the vertical frequency, used in speed calculations.
 	void SetVerticalFrequency(float rate);
 
@@ -52,4 +56,8 @@ namespace PerformanceMetrics
 	float GetGSThreadAverageTime();
 	float GetVUThreadUsage();
 	float GetVUThreadAverageTime();
+
+	u32 GetGSSWThreadCount();
+	double GetGSSWThreadUsage(u32 index);
+	double GetGSSWThreadAverageTime(u32 index);
 } // namespace PerformanceMetrics
