@@ -75,6 +75,9 @@ namespace VMManager
 	static void CheckForSPU2ConfigChanges(const Pcsx2Config& old_config);
 	static void CheckForDEV9ConfigChanges(const Pcsx2Config& old_config);
 	static void CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config);
+
+	static bool AutoDetectSource(const std::string& filename);
+	static bool ApplyBootParameters(const VMBootParameters& params);
 	static void UpdateRunningGame(bool force);
 
 	static std::string GetCurrentSaveStateFileName(s32 slot);
@@ -519,30 +522,86 @@ static LimiterModeType GetInitialLimiterMode()
 	return EmuConfig.GS.FrameLimitEnable ? LimiterModeType::Nominal : LimiterModeType::Unlimited;
 }
 
-static void ApplyBootParameters(const VMBootParameters& params)
+bool VMManager::AutoDetectSource(const std::string& filename)
+{
+	if (!filename.empty())
+	{
+		if (!FileSystem::FileExists(filename.c_str()))
+		{
+			Host::ReportFormattedErrorAsync("Error", "Requested filename '%s' does not exist.", filename.c_str());
+			return false;
+		}
+
+		const std::string display_name(FileSystem::GetDisplayNameFromPath(filename));
+		if (IsGSDumpFileName(display_name))
+		{
+			CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
+			return GSDumpReplayer::Initialize(filename.c_str());
+		}
+		else if (IsElfFileName(display_name))
+		{
+			// alternative way of booting an elf, change the elf override, and use no disc.
+			CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
+			s_elf_override = filename;
+			return true;
+		}
+		else
+		{
+			// TODO: Maybe we should check if it's a valid iso here...
+			CDVDsys_SetFile(CDVD_SourceType::Iso, filename);
+			CDVDsys_ChangeSource(CDVD_SourceType::Iso);
+			s_disc_path = filename;
+			return true;
+		}
+	}
+	else
+	{
+		// make sure we're not fast booting when we have no filename
+		CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
+		EmuConfig.UseBOOT2Injection = false;
+		return true;
+	}
+}
+
+bool VMManager::ApplyBootParameters(const VMBootParameters& params)
 {
 	const bool default_fast_boot = Host::GetBoolSettingValue("EmuCore", "EnableFastBoot", true);
-	EmuConfig.UseBOOT2Injection =
-		(params.source_type != CDVD_SourceType::NoDisc && params.fast_boot.value_or(default_fast_boot));
+	EmuConfig.UseBOOT2Injection = params.fast_boot.value_or(default_fast_boot);
+	s_elf_override = params.elf_override;
+	s_disc_path.clear();
 
-	CDVDsys_SetFile(CDVD_SourceType::Iso, params.source);
-	CDVDsys_ChangeSource(params.source_type);
-
-	if (!params.elf_override.empty())
+	if (params.source_type.has_value())
 	{
-		Hle_SetElfPath(params.elf_override.c_str());
-		s_elf_override = std::move(params.elf_override);
+		if (params.source_type.value() == CDVD_SourceType::Iso && !FileSystem::FileExists(params.filename.c_str()))
+		{
+			Host::ReportFormattedErrorAsync("Error", "Requested filename '%s' does not exist.", params.filename.c_str());
+			return false;
+		}
+
+		// Use specified source type.
+		CDVDsys_SetFile(params.source_type.value(), params.filename);
+		CDVDsys_ChangeSource(params.source_type.value());
+	}
+	else
+	{
+		// Automatic type detection of boot parameter based on filename.
+		if (!AutoDetectSource(params.filename))
+			return false;
+	}
+
+	if (!s_elf_override.empty())
+	{
+		if (!FileSystem::FileExists(s_elf_override.c_str()))
+		{
+			Host::ReportFormattedErrorAsync("Error", "Requested boot ELF '%s' does not exist.", s_elf_override.c_str());
+			return false;
+		}
+
+		Hle_SetElfPath(s_elf_override.c_str());
 		EmuConfig.UseBOOT2Injection = true;
 	}
-	else
-	{
-		std::string().swap(s_elf_override);
-	}
 
-	if (params.source_type == CDVD_SourceType::Iso)
-		s_disc_path = params.source;
-	else
-		s_disc_path.clear();
+	return true;
 }
 
 bool VMManager::Initialize(const VMBootParameters& boot_params)
@@ -559,16 +618,8 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 
 	LoadSettings();
 
-	if (IsGSDumpFileName(boot_params.source))
-	{
-		CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
-		if (!GSDumpReplayer::Initialize(boot_params.source.c_str()))
-			return false;
-	}
-	else
-	{
-		ApplyBootParameters(boot_params);
-	}
+	if (!ApplyBootParameters(boot_params))
+		return false;
 
 	EmuConfig.LimiterMode = GetInitialLimiterMode();
 
@@ -949,39 +1000,12 @@ bool VMManager::ChangeDisc(std::string path)
 
 bool VMManager::IsElfFileName(const std::string& path)
 {
-	const std::string::size_type pos = path.rfind('.');
-	if (pos == std::string::npos)
-		return false;
-
-	return (StringUtil::Strcasecmp(&path[pos], ".elf") == 0);
+	return StringUtil::EndsWithNoCase(path, ".elf");
 }
 
 bool VMManager::IsGSDumpFileName(const std::string& path)
 {
 	return (StringUtil::EndsWithNoCase(path, ".gs") || StringUtil::EndsWithNoCase(path, ".gs.xz"));
-}
-
-void VMManager::SetBootParametersForPath(const std::string& path, VMBootParameters* params)
-{
-	if (IsElfFileName(path))
-	{
-		params->elf_override = path;
-		params->source_type = CDVD_SourceType::NoDisc;
-	}
-	else if (IsGSDumpFileName(path))
-	{
-		params->source_type = CDVD_SourceType::NoDisc;
-		params->source = path;
-	}
-	else if (!path.empty())
-	{
-		params->source_type = CDVD_SourceType::Iso;
-		params->source = path;
-	}
-	else
-	{
-		params->source_type = CDVD_SourceType::NoDisc;
-	}
 }
 
 void VMManager::Execute()

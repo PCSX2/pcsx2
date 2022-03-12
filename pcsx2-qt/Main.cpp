@@ -41,7 +41,9 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "\n");
 	std::fprintf(stderr, "  -help: Displays this information and exits.\n");
 	std::fprintf(stderr, "  -version: Displays version information and exits.\n");
-	std::fprintf(stderr, "  -batch: Enables batch mode (exits after powering off).\n");
+	std::fprintf(stderr, "  -batch: Enables batch mode (exits after shutting down).\n");
+	std::fprintf(stderr, "  -elf <file>: Overrides the boot ELF with the specified filename.\n");
+	std::fprintf(stderr, "  -disc <path>: Uses the specified host DVD drive as a source.\n");
 	std::fprintf(stderr, "  -fastboot: Force fast boot for provided filename.\n");
 	std::fprintf(stderr, "  -slowboot: Force slow boot for provided filename.\n");
 	std::fprintf(stderr, "  -resume: Load resume save state. If a boot filename is provided,\n"
@@ -64,10 +66,8 @@ static void PrintCommandLineHelp(const char* progname)
 static std::shared_ptr<VMBootParameters>& AutoBoot(std::shared_ptr<VMBootParameters>& autoboot)
 {
 	if (!autoboot)
-	{
 		autoboot = std::make_shared<VMBootParameters>();
-		autoboot->source_type = CDVD_SourceType::NoDisc;
-	}
+
 	return autoboot;
 }
 
@@ -134,6 +134,12 @@ static bool ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMBo
 				AutoBoot(autoboot)->elf_override = argv[++i];
 				continue;
 			}
+			else if (CHECK_ARG_PARAM("-disc"))
+			{
+				AutoBoot(autoboot)->source_type = CDVD_SourceType::Disc;
+				AutoBoot(autoboot)->filename = argv[++i];
+				continue;
+			}
 			else if (CHECK_ARG("-fullscreen"))
 			{
 				Console.WriteLn("Going fullscreen after booting.");
@@ -172,12 +178,10 @@ static bool ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMBo
 #undef CHECK_ARG_PARAM
 		}
 
-		if (!AutoBoot(autoboot)->source.empty())
-			AutoBoot(autoboot)->source += ' ';
-		else
-			AutoBoot(autoboot)->source_type = CDVD_SourceType::Iso;
+		if (!AutoBoot(autoboot)->filename.empty())
+			AutoBoot(autoboot)->filename += ' ';
 
-		AutoBoot(autoboot)->source += argv[i];
+		AutoBoot(autoboot)->filename += argv[i];
 	}
 
 	return true;
