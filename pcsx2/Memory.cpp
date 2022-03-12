@@ -49,6 +49,10 @@ BIOS
 
 #include "common/PageFaultSource.h"
 
+#ifdef PCSX2_CORE
+#include "GSDumpReplayer.h"
+#endif
+
 #ifdef ENABLECACHE
 #include "Cache.h"
 #endif
@@ -850,7 +854,13 @@ void eeMemoryReserve::Reset()
 	vtlb_VMap(0x00000000,0x00000000,0x20000000);
 	vtlb_VMapUnmap(0x20000000,0x60000000);
 
-	if (!LoadBIOS())
+#ifdef PCSX2_CORE
+	const bool needs_bios = !GSDumpReplayer::IsReplayingDump();
+#else
+	constexpr bool needs_bios = true;
+#endif
+
+	if (needs_bios && !LoadBIOS())
 		pxFailRel("Failed to load BIOS");
 }
 

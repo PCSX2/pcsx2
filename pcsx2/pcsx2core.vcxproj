@@ -186,6 +186,7 @@
     <ClCompile Include="GameDatabase.cpp" />
     <ClCompile Include="Gif_Logger.cpp" />
     <ClCompile Include="Gif_Unit.cpp" />
+    <ClCompile Include="GSDumpReplayer.cpp" />
     <ClCompile Include="GS\Renderers\DX11\D3D.cpp" />
     <ClCompile Include="GS\Renderers\HW\GSTextureReplacementLoaders.cpp" />
     <ClCompile Include="GS\Renderers\HW\GSTextureReplacements.cpp" />
@@ -488,6 +489,7 @@
     <ClInclude Include="Frontend\XInputSource.h" />
     <ClInclude Include="GameDatabase.h" />
     <ClInclude Include="Gif_Unit.h" />
+    <ClInclude Include="GSDumpReplayer.h" />
     <ClInclude Include="GS\Renderers\DX11\D3D.h" />
     <ClInclude Include="GS\Renderers\HW\GSTextureReplacements.h" />
     <ClInclude Include="GS\Window\GSwxDialog.h" />

@@ -28,6 +28,7 @@
 #include "pcsx2/Frontend/InputManager.h"
 #include "pcsx2/Frontend/ImGuiManager.h"
 #include "pcsx2/GS.h"
+#include "pcsx2/GSDumpReplayer.h"
 #include "pcsx2/HostDisplay.h"
 #include "pcsx2/PAD/Host/PAD.h"
 #include "pcsx2/PerformanceMetrics.h"
@@ -677,6 +678,9 @@ bool Host::BeginPresentFrame(bool frame_skip)
 
 void Host::EndPresentFrame()
 {
+	if (GSDumpReplayer::IsReplayingDump())
+		GSDumpReplayer::RenderUI();
+
 	ImGuiManager::RenderOSD();
 	s_host_display->EndPresent();
 	ImGuiManager::NewFrame();

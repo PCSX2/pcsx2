@@ -630,3 +630,17 @@ void ImGuiManager::RenderOSD()
 	DrawOSDMessages();
 }
 
+float ImGuiManager::GetGlobalScale()
+{
+	return s_global_scale;
+}
+
+ImFont* ImGuiManager::GetStandardFont()
+{
+	return s_standard_font;
+}
+
+ImFont* ImGuiManager::GetFixedFont()
+{
+	return s_fixed_font;
+}
