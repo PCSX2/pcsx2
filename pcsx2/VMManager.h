@@ -39,10 +39,11 @@ enum class VMState
 
 struct VMBootParameters
 {
-	std::string source;
-	std::string save_state;
-	CDVD_SourceType source_type;
+	std::string filename;
 	std::string elf_override;
+	std::string save_state;
+	std::optional<CDVD_SourceType> source_type;
+
 	std::optional<bool> fast_boot;
 	std::optional<bool> fullscreen;
 	std::optional<bool> batch_mode;
@@ -137,9 +138,6 @@ namespace VMManager
 
 	/// Returns true if the specified path is a GS Dump.
 	bool IsGSDumpFileName(const std::string& path);
-
-	/// Updates boot parameters for a given start filename. If it's an elf, it'll set elf_override, otherwise source.
-	void SetBootParametersForPath(const std::string& path, VMBootParameters* params);
 
 	/// Returns the path for the game settings ini file for the specified CRC.
 	std::string GetGameSettingsPath(u32 game_crc);

@@ -608,7 +608,10 @@ void MainWindow::clearProgressBar()
 	m_ui.statusBar->removeWidget(m_status_progress_widget);
 }
 
-bool MainWindow::isShowingGameList() const { return m_ui.mainContainer->currentIndex() == 0; }
+bool MainWindow::isShowingGameList() const
+{
+	return m_ui.mainContainer->currentIndex() == 0;
+}
 
 void MainWindow::switchToGameListView()
 {
@@ -641,11 +644,20 @@ void MainWindow::switchToEmulationView()
 	m_display_widget->setFocus();
 }
 
-void MainWindow::refreshGameList(bool invalidate_cache) { m_game_list_widget->refresh(invalidate_cache); }
+void MainWindow::refreshGameList(bool invalidate_cache)
+{
+	m_game_list_widget->refresh(invalidate_cache);
+}
 
-void MainWindow::invalidateSaveStateCache() { m_save_states_invalidated = true; }
+void MainWindow::invalidateSaveStateCache()
+{
+	m_save_states_invalidated = true;
+}
 
-void MainWindow::reportError(const QString& title, const QString& message) { QMessageBox::critical(this, title, message); }
+void MainWindow::reportError(const QString& title, const QString& message)
+{
+	QMessageBox::critical(this, title, message);
+}
 
 bool MainWindow::confirmShutdown()
 {
@@ -666,7 +678,10 @@ void MainWindow::requestExit()
 	close();
 }
 
-void Host::InvalidateSaveStateCache() { QMetaObject::invokeMethod(g_main_window, &MainWindow::invalidateSaveStateCache, Qt::QueuedConnection); }
+void Host::InvalidateSaveStateCache()
+{
+	QMetaObject::invokeMethod(g_main_window, &MainWindow::invalidateSaveStateCache, Qt::QueuedConnection);
+}
 
 void MainWindow::onGameListRefreshProgress(const QString& status, int current, int total)
 {
@@ -674,7 +689,10 @@ void MainWindow::onGameListRefreshProgress(const QString& status, int current, i
 	setProgressBar(current, total);
 }
 
-void MainWindow::onGameListRefreshComplete() { clearProgressBar(); }
+void MainWindow::onGameListRefreshComplete()
+{
+	clearProgressBar();
+}
 
 void MainWindow::onGameListSelectionChanged()
 {
@@ -785,14 +803,13 @@ void MainWindow::onStartFileActionTriggered()
 		return;
 
 	std::shared_ptr<VMBootParameters> params = std::make_shared<VMBootParameters>();
-	VMManager::SetBootParametersForPath(filename.toStdString(), params.get());
+	params->filename = filename.toStdString();
 	g_emu_thread->startVM(std::move(params));
 }
 
 void MainWindow::onStartBIOSActionTriggered()
 {
 	std::shared_ptr<VMBootParameters> params = std::make_shared<VMBootParameters>();
-	params->source_type = CDVD_SourceType::NoDisc;
 	g_emu_thread->startVM(std::move(params));
 }
 
@@ -807,7 +824,10 @@ void MainWindow::onChangeDiscFromFileActionTriggered()
 	g_emu_thread->changeDisc(filename);
 }
 
-void MainWindow::onChangeDiscFromGameListActionTriggered() { switchToGameListView(); }
+void MainWindow::onChangeDiscFromGameListActionTriggered()
+{
+	switchToGameListView();
+}
 
 void MainWindow::onChangeDiscFromDeviceActionTriggered()
 {
@@ -891,11 +911,20 @@ void MainWindow::onViewGamePropertiesActionTriggered()
 		SettingsDialog::openGamePropertiesDialog(nullptr, m_current_game_crc);
 }
 
-void MainWindow::onGitHubRepositoryActionTriggered() { QtUtils::OpenURL(this, AboutDialog::getGitHubRepositoryUrl()); }
+void MainWindow::onGitHubRepositoryActionTriggered()
+{
+	QtUtils::OpenURL(this, AboutDialog::getGitHubRepositoryUrl());
+}
 
-void MainWindow::onSupportForumsActionTriggered() { QtUtils::OpenURL(this, AboutDialog::getSupportForumsUrl()); }
+void MainWindow::onSupportForumsActionTriggered()
+{
+	QtUtils::OpenURL(this, AboutDialog::getSupportForumsUrl());
+}
 
-void MainWindow::onDiscordServerActionTriggered() { QtUtils::OpenURL(this, AboutDialog::getDiscordServerUrl()); }
+void MainWindow::onDiscordServerActionTriggered()
+{
+	QtUtils::OpenURL(this, AboutDialog::getDiscordServerUrl());
+}
 
 void MainWindow::onAboutActionTriggered()
 {
@@ -1197,7 +1226,10 @@ void MainWindow::displayResizeRequested(qint32 width, qint32 height)
 	resize(QSize(std::max<qint32>(width, 1), std::max<qint32>(height + extra_height, 1)));
 }
 
-void MainWindow::destroyDisplay() { destroyDisplayWidget(); }
+void MainWindow::destroyDisplay()
+{
+	destroyDisplayWidget();
+}
 
 void MainWindow::focusDisplayWidget()
 {
@@ -1404,7 +1436,7 @@ void MainWindow::loadSaveStateFile(const QString& filename, const QString& state
 	else
 	{
 		std::shared_ptr<VMBootParameters> params = std::make_shared<VMBootParameters>();
-		VMManager::SetBootParametersForPath(filename.toStdString(), params.get());
+		params->filename = filename.toStdString();
 		params->save_state = state_filename.toStdString();
 		g_emu_thread->startVM(std::move(params));
 	}
