@@ -568,6 +568,17 @@ const GameList::Entry* GameList::GetEntryForPath(const char* path)
 	return nullptr;
 }
 
+const GameList::Entry* GameList::GetEntryByCRC(u32 crc)
+{
+	for (const Entry& entry : m_entries)
+	{
+		if (entry.crc == crc)
+			return &entry;
+	}
+
+	return nullptr;
+}
+
 const GameList::Entry* GameList::GetEntryBySerialAndCRC(const std::string_view& serial, u32 crc)
 {
 	for (const Entry& entry : m_entries)
