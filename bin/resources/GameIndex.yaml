@@ -7627,12 +7627,24 @@ SLED-52375:
 SLED-52441:
   name: "Transformers [Demo]"
   region: "PAL-E"
+  gameFixes:
+    - VIFFIFOHack
+  speedHacks:
+    MTVUSpeedHack: 0
 SLED-52473:
   name: "Transformers - Optimus Prime [Demo]"
   region: "PAL-E"
+  gameFixes:
+    - VIFFIFOHack
+  speedHacks:
+    MTVUSpeedHack: 0
 SLED-52474:
   name: "Transformers - Red Alert [Demo]"
   region: "PAL-E"
+  gameFixes:
+    - VIFFIFOHack
+  speedHacks:
+    MTVUSpeedHack: 0
 SLED-52476:
   name: "UEFA Euro 2004 - Portugal [Demo]"
   region: "PAL-M5"
@@ -12418,6 +12430,8 @@ SLES-52388:
   compat: 5
   gameFixes:
     - VIFFIFOHack
+  speedHacks:
+    MTVUSpeedHack: 0
 SLES-52392:
   name: "Combat Elite - WWII Paratroopers [Preview]"
   region: "PAL-E"
@@ -14325,6 +14339,8 @@ SLES-53309:
   region: "PAL-M5"
   gameFixes:
     - VIFFIFOHack
+  speedHacks:
+    MTVUSpeedHack: 0
 SLES-53311:
   name: "Graffiti Kingdom"
   region: "PAL-M5"
@@ -36743,6 +36759,8 @@ SLUS-20668:
   compat: 5
   gameFixes:
     - VIFFIFOHack
+  speedHacks:
+    MTVUSpeedHack: 0
 SLUS-20669:
   name: "Resident Evil - Dead Aim"
   region: "NTSC-U"
@@ -42439,6 +42457,10 @@ SLUS-28039:
 SLUS-28040:
   name: "Transformers [Trade Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - VIFFIFOHack
+  speedHacks:
+    MTVUSpeedHack: 0
 SLUS-28043:
   name: "Test Drive - Eve of Destruction [Trade Demo]"
   region: "NTSC-U"
@@ -42772,6 +42794,10 @@ SLUS-29104:
 SLUS-29107:
   name: "Transformers [Regular Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - VIFFIFOHack
+  speedHacks:
+    MTVUSpeedHack: 0
 SLUS-29108:
   name: "Def Jam - Fight For NY [Demo]"
   region: "NTSC-U"
