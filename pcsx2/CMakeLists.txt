@@ -983,6 +983,7 @@ if(PCSX2_CORE)
 		Frontend/InputManager.cpp
 		Frontend/InputSource.cpp
 		Frontend/LayeredSettingsInterface.cpp
+		GSDumpReplayer.cpp
 		HostSettings.cpp
 		VMManager.cpp
 	)
@@ -992,6 +993,7 @@ if(PCSX2_CORE)
 		Frontend/InputManager.h
 		Frontend/InputSource.h
 		Frontend/LayeredSettingsInterface.h
+		GSDumpReplayer.h
 		HostSettings.h
 		VMManager.h)
 endif()

@@ -15,6 +15,8 @@
 
 #pragma once
 
+struct ImFont;
+
 namespace ImGuiManager
 {
 	/// Initializes ImGui, creates fonts, etc.
@@ -34,5 +36,14 @@ namespace ImGuiManager
 
 	/// Renders any on-screen display elements.
 	void RenderOSD();
+
+	/// Returns the scale of all on-screen elements.
+	float GetGlobalScale();
+
+	/// Returns the standard font for external drawing.
+	ImFont* GetStandardFont();
+
+	/// Returns the fixed-width font for external drawing.
+	ImFont* GetFixedFont();
 } // namespace ImGuiManager
 

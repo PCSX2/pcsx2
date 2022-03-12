@@ -1202,6 +1202,7 @@
     <ClCompile Include="x86\iR5900Analysis.cpp">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
     </ClCompile>
+    <ClCompile Include="GSDumpReplayer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -1985,6 +1986,7 @@
     <ClInclude Include="x86\iR5900Analysis.h">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
     </ClInclude>
+    <ClInclude Include="GSDumpReplayer.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GS\GS.rc">

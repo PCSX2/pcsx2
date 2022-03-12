@@ -135,6 +135,9 @@ namespace VMManager
 	/// Returns true if the specified path is an ELF.
 	bool IsElfFileName(const std::string& path);
 
+	/// Returns true if the specified path is a GS Dump.
+	bool IsGSDumpFileName(const std::string& path);
+
 	/// Updates boot parameters for a given start filename. If it's an elf, it'll set elf_override, otherwise source.
 	void SetBootParametersForPath(const std::string& path, VMBootParameters* params);
 

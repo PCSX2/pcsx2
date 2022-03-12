@@ -27,6 +27,11 @@
 #include "common/MemsetFast.inl"
 #include "common/Perf.h"
 
+#ifdef PCSX2_CORE
+#include "GSDumpReplayer.h"
+
+extern R5900cpu GSDumpReplayerCpu;
+#endif
 
 // --------------------------------------------------------------------------------------
 //  RecompiledCodeReserve  (implementations)
@@ -576,6 +581,11 @@ void SysCpuProviderPack::ApplyConfig() const
 
 	if( EmuConfig.Cpu.Recompiler.EnableVU1 )
 		CpuVU1 = (BaseVUmicroCPU*)CpuProviders->microVU1;
+
+#ifdef PCSX2_CORE
+	if (GSDumpReplayer::IsReplayingDump())
+		Cpu = &GSDumpReplayerCpu;
+#endif
 }
 
 // Resets all PS2 cpu execution caches, which does not affect that actual PS2 state/condition.
