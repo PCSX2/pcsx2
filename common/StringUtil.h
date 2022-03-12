@@ -153,6 +153,17 @@ namespace StringUtil
 		return (str.length() >= suffix_length && str.compare(str.length() - suffix_length, suffix_length, suffix) == 0);
 	}
 
+	/// StartsWith/EndsWith variants which aren't case sensitive.
+	static inline bool StartsWithNoCase(const std::string_view& str, const char* prefix)
+	{
+		return (Strncasecmp(str.data(), prefix, std::strlen(prefix)) == 0);
+	}
+	static inline bool EndsWithNoCase(const std::string_view& str, const char* suffix)
+	{
+		const std::size_t suffix_length = std::strlen(suffix);
+		return (str.length() >= suffix_length && Strncasecmp(str.data() + (str.length() - suffix_length), suffix, suffix_length) == 0);
+	}
+
 	/// Strip whitespace from the start/end of the string.
 	std::string_view StripWhitespace(const std::string_view& str);
 
