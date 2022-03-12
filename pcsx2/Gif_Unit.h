@@ -60,16 +60,16 @@ struct Gif_Tag
 	bool hasAD;   // Has an A+D Write
 	bool isValid; // Tag is valid
 
-	Gif_Tag() { Reset(); }
-	Gif_Tag(u8* pMem, bool analyze = false)
+	__ri Gif_Tag() { Reset(); }
+	__ri Gif_Tag(u8* pMem, bool analyze = false)
 	{
 		setTag(pMem, analyze);
 	}
 
-	void Reset() { memzero(*this); }
-	u8 curReg() { return regs[nRegIdx & 0xf]; }
+	__ri void Reset() { memzero(*this); }
+	__ri u8 curReg() { return regs[nRegIdx & 0xf]; }
 
-	void packedStep()
+	__ri void packedStep()
 	{
 		if (nLoop > 0)
 		{
@@ -82,7 +82,7 @@ struct Gif_Tag
 		}
 	}
 
-	void setTag(u8* pMem, bool analyze = false)
+	__ri void setTag(u8* pMem, bool analyze = false)
 	{
 		tag = *(HW_Gif_Tag*)pMem;
 		nLoop = tag.NLOOP;
@@ -115,8 +115,23 @@ struct Gif_Tag
 		}
 	}
 
-	void analyzeTag()
+	__ri void analyzeTag()
 	{
+#ifdef _M_X86
+		// zero out bits for registers which shouldn't be tested
+		__m128i vregs = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(tag.REGS));
+		vregs = _mm_and_si128(vregs, _mm_srli_epi64(_mm_set1_epi32(0xFFFFFFFFu), (64 - nRegs * 4)));
+
+		// get upper nibbles, interleave with lower nibbles, clear upper bits from low nibbles
+		vregs = _mm_and_si128(_mm_unpacklo_epi8(vregs, _mm_srli_epi32(vregs, 4)), _mm_set1_epi8(0x0F));
+
+		// compare with GIF_REG_A_D, set hasAD if any lanes passed
+		hasAD = (_mm_movemask_epi8(_mm_cmpeq_epi8(vregs, _mm_set1_epi8(GIF_REG_A_D))) != 0);
+
+		// write out unpacked registers
+		_mm_storeu_si128(reinterpret_cast<__m128i*>(regs), vregs);
+#else
+		// Reference C implementation.
 		hasAD = false;
 		u32 t = tag.REGS[0];
 		u32 i = 0;
@@ -135,6 +150,7 @@ struct Gif_Tag
 			hasAD |= (regs[i] == GIF_REG_A_D);
 			t >>= 4;
 		}
+#endif
 	}
 };
 
