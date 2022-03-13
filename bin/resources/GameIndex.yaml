@@ -11251,6 +11251,8 @@ SLES-51758:
   name: "Metal Arms - Glitch in the System"
   region: "PAL-M5"
   compat: 5
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes SPS.
 SLES-51759:
   name: "Maximo vs. Army of Zin"
   region: "PAL-M5"
