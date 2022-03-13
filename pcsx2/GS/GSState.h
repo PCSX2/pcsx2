@@ -303,6 +303,7 @@ public:
 	void SetRegsMem(u8* basemem) { m_regs = reinterpret_cast<GSPrivRegSet*>(basemem); }
 
 	void SetFrameSkip(int skip);
+	void DumpVertices(std::string& filename);
 
 	PRIM_OVERLAP PrimitiveOverlap();
 	GIFRegTEX0 GetTex0Layer(u32 lod);

@@ -317,6 +317,24 @@ void GSRendererSW::Draw()
 {
 	const GSDrawingContext* context = m_context;
 
+	if (s_dump)
+	{
+		std::string s;
+
+		if (s_n >= s_saven)
+		{
+			// Dump Register state
+			s = format("%05d_context.txt", s_n);
+
+			m_env.Dump(m_dump_root + s);
+			m_context->Dump(m_dump_root + s);
+
+			// Dump vertices
+			s = format("%05d_vertex.txt", s_n);
+			DumpVertices(m_dump_root + s);
+		}
+	}
+
 	auto data = m_vertex_heap.make_shared<SharedData>(this).cast<GSRasterizerData>();
 	SharedData* sd = static_cast<SharedData*>(data.get());
 
@@ -426,21 +444,12 @@ void GSRendererSW::Draw()
 	{
 		Sync(2);
 
+		std::string s;
+
 		u64 frame = g_perfmon.GetFrame();
 		// Dump the texture in 32 bits format. It helps to debug texture shuffle effect
 		// It will breaks the few games that really uses 16 bits RT
 		bool texture_shuffle = ((context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS));
-
-		std::string s;
-
-		if (s_n >= s_saven)
-		{
-			// Dump Register state
-			s = format("%05d_context.txt", s_n);
-
-			m_env.Dump(m_dump_root + s);
-			m_context->Dump(m_dump_root + s);
-		}
 
 		if (s_savet && s_n >= s_saven && PRIM->TME)
 		{
