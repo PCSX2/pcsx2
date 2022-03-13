@@ -330,7 +330,7 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 	// Only apply GS HW fixes if the user hasn't manually enabled HW fixes.
 	const bool apply_auto_fixes = !config.ManualUserHacks;
 	if (!apply_auto_fixes)
-		Console.Warning("[GameDB] Hardware fixes are enabled, not using automatic fixes.");
+		Console.Warning("[GameDB] Manual GS hardware renderer fixes are enabled, not using automatic hardware renderer fixes from GameDB.");
 
 	u32 num_applied_fixes = 0;
 	for (const auto& [id, value] : gsHWFixes)
