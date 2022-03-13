@@ -124,6 +124,29 @@ The clamp modes are also numerically based.
 *   `2` = Clamp **Extra** (clamp results as well as operands)
 *   `3` = Clamp **Extra+Preserve Sign**
 
+## GS hardware fixes
+
+*   autoFlush
+*   conservativeFramebuffer
+*   cpuFramebufferConversion
+*   disableDepthSupport
+*   wrapGSMem
+*   preloadFrameData
+*   fastTextureInvalidation
+*   textureInsideRT
+*   alignSprite
+*   mergeSprite
+*   wildArmsHack
+*   pointListPalette
+*   mipmap
+*   trilinearFiltering
+*   skipDrawStart
+*   skipDrawEnd
+*   halfBottomOverride
+*   halfPixelOffset
+*   roundSprite
+*   texturePreloading
+
 ## Game Fixes
 
 These values are case-sensitive so take care.  If you incorrectly specify a GameFix, you will get a validation error on startup.  Any invalid game-fixes will be dropped from the game's list of fixes.
@@ -184,12 +207,12 @@ These values are in a key-value format, where the value is assumed to be an inte
 *   `mvuFlagSpeedHack`
 *   Accepted Values - `0` / `1`
 *   Katamari Damacy have weird speed bug when this speed hack is enabled (and it is by default)
-
-<!-- [list-item-spacing] Missing new line after list item->
-
--   `InstantVU1SpeedHack`
--   Accepted Values - `0` / `1`
--   Games such as Parappa the Rapper 2 need VU1 to sync, so you can force disable the speedhack here
+*   `MTVUSpeedHack`
+*   Accepted Values - `0` / `1`
+*   T-bit games dislike MTVU and some games are incompatible with MTVU.
+*   `InstantVU1SpeedHack`
+*   Accepted Values - `0` / `1`
+*   Games such as Parappa the Rapper 2 need VU1 to sync, so you can force sync with this parameter.
 
 ## Memory Card Filter Override
 
