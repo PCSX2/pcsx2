@@ -716,6 +716,8 @@ SCAJ-20125:
   region: "NTSC-Unk"
   clampModes:
     eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
+  gsHWFixes:
+    alignSprite: 1
 SCAJ-20126:
   name: "Tekken 5"
   region: "NTSC-Unk"
@@ -3095,6 +3097,8 @@ SCES-53202:
   compat: 5
   clampModes:
     eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove.
+  gsHWFixes:
+    alignSprite: 1
 SCES-53247:
   name: "WRC Rally Evolved"
   region: "PAL-M8"
@@ -4110,6 +4114,8 @@ SCKA-20038:
 SCKA-20039:
   name: "Tekken Nina Williams In Death By Degree"
   region: "NTSC-K"
+  gsHWFixes:
+    alignSprite: 1
 SCKA-20040:
   name: "Jak 3"
   region: "NTSC-K"
@@ -4141,6 +4147,8 @@ SCKA-20049:
   region: "NTSC-K"
   clampModes:
     eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove.
+  gsHWFixes:
+    alignSprite: 1
 SCKA-20050:
   name: "Tales of Legendia"
   region: "NTSC-K"
@@ -4261,6 +4269,8 @@ SCKA-20081:
   region: "NTSC-K"
   clampModes:
     eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove.
+  gsHWFixes:
+    alignSprite: 1
 SCKA-20086:
   name: "Shin Onimusha - Dawn of Dreams [Disc1of2]"
   region: "NTSC-K"
@@ -32198,6 +32208,8 @@ SLPS-25510:
   compat: 5
   clampModes:
     eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove.
+  gsHWFixes:
+    alignSprite: 1
 SLPS-25511:
   name: "Rasetsu Alternative"
   region: "NTSC-J"
@@ -33806,6 +33818,8 @@ SLPS-73223:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove.
+  gsHWFixes:
+    alignSprite: 1
 SLPS-73224:
   name: "Xenosaga Episode II - Jenseits von Gut und Bose [PlayStation 2 The Best] [Disc1of2]"
   region: "NTSC-J"
@@ -38566,6 +38580,8 @@ SLUS-21059:
   compat: 5
   clampModes:
     eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove.
+  gsHWFixes:
+    alignSprite: 1
 SLUS-21060:
   name: "WWE SmackDown! vs. RAW"
   region: "NTSC-U"
@@ -38986,6 +39002,8 @@ SLUS-21160:
   region: "NTSC-U"
   clampModes:
     eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove.
+  gsHWFixes:
+    alignSprite: 1
 SLUS-21161:
   name: "Fight Night - Round 2"
   region: "NTSC-U"
