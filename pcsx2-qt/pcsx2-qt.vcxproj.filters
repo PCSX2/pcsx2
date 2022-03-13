@@ -185,6 +185,9 @@
     <ClCompile Include="$(IntDir)Settings\moc_AudioSettingsWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="$(IntDir)Settings\moc_DEV9SettingsWidget.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
     <ClCompile Include="Settings\GameSummaryWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
@@ -200,6 +203,12 @@
     <ClCompile Include="Settings\CreateMemoryCardDialog.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
+    <ClCompile Include="Settings\DEV9SettingsWidget.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings\HddCreateQt.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -211,6 +220,9 @@
     <ClInclude Include="QtHost.h" />
     <ClInclude Include="QtUtils.h" />
     <ClInclude Include="SettingWidgetBinder.h" />
+    <ClInclude Include="Settings\HddCreateQt.h">
+      <Filter>Settings</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="MainWindow.h" />
@@ -283,6 +295,9 @@
     <QtMoc Include="Settings\CreateMemoryCardDialog.h">
       <Filter>Settings</Filter>
     </QtMoc>
+    <QtMoc Include="Settings\DEV9SettingsWidget.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">
@@ -343,6 +358,9 @@
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\CreateMemoryCardDialog.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\DEV9SettingsWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
   </ItemGroup>
