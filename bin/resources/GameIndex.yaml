@@ -2956,6 +2956,9 @@ SCES-52566:
 SCES-52582:
   name: "Everybody's Golf"
   region: "PAL-M5"
+  gsHWFixes:
+    mipmap: 1
+    trilinearFiltering: 1
 SCES-52586:
   name: "Death by Degrees"
   region: "PAL-E-S"
@@ -4078,6 +4081,9 @@ SCKA-20034:
 SCKA-20035:
   name: "Hot Shots Golf 3 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
+  gsHWFixes:
+    mipmap: 1
+    trilinearFiltering: 1
 SCKA-20037:
   name: "Ratchet & Clank 3"
   region: "NTSC-K"
@@ -5808,6 +5814,9 @@ SCUS-97130:
   name: "Hot Shots Golf 3"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 1
+    trilinearFiltering: 1
 SCUS-97131:
   name: "NFL GameDay 2002"
   region: "NTSC-U"
@@ -6071,6 +6080,9 @@ SCUS-97208:
   speedHacks:
     InstantVU1SpeedHack: 0  # Fixes noodles on Parappa 2.
     MTVUSpeedHack: 0
+  gsHWFixes:
+    mipmap: 1
+    trilinearFiltering: 1
 SCUS-97209:
   name: "Ratchet & Clank [E3 Demo]"
   region: "NTSC-U"
@@ -6608,6 +6620,9 @@ SCUS-97401:
   name: "Hot Shots Golf FORE!"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 1
+    trilinearFiltering: 1
 SCUS-97402:
   name: "Killzone"
   region: "NTSC-U"
@@ -6703,6 +6718,9 @@ SCUS-97425:
 SCUS-97427:
   name: "Hot Shots Golf FORE! [Online Public Beta]"
   region: "NTSC-U"
+  gsHWFixes:
+    mipmap: 1
+    trilinearFiltering: 1
 SCUS-97428:
   name: "Kiosk Demo Disc Q3-Q4 2004"
   region: "NTSC-U"
@@ -6718,6 +6736,9 @@ SCUS-97429:
 SCUS-97430:
   name: "Hot Shots Golf FORE! [Regular Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    mipmap: 1
+    trilinearFiltering: 1
 SCUS-97431:
   name: "Killzone Public Beta V1.0"
   region: "NTSC-U"
@@ -7055,6 +7076,9 @@ SCUS-97514:
 SCUS-97515:
   name: "Hot Shots Golf FORE! [Greatest Hits]"
   region: "NTSC-U"
+  gsHWFixes:
+    mipmap: 1
+    trilinearFiltering: 1
 SCUS-97516:
   name: "Jak 3 [Greatest Hits]"
   region: "NTSC-U"
