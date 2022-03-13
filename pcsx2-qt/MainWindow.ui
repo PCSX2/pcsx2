@@ -111,6 +111,7 @@
     <addaction name="actionGraphicsSettings"/>
     <addaction name="actionAudioSettings"/>
     <addaction name="actionMemoryCardSettings"/>
+    <addaction name="actionDEV9Settings"/>
     <addaction name="actionControllerSettings"/>
     <addaction name="actionHotkeySettings"/>
     <addaction name="separator"/>
@@ -553,6 +554,14 @@
    </property>
    <property name="text">
     <string>&amp;Memory Cards</string>
+   </property>
+  </action>
+  <action name="actionDEV9Settings">
+   <property name="text">
+    <string>&amp;Network &amp;&amp; HDD</string>
+   </property>
+   <property name="icon">
+    <iconset theme="dashboard-line"/>
    </property>
   </action>
   <action name="actionViewToolbar">

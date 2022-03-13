@@ -33,6 +33,7 @@
 #include "GameFixSettingsWidget.h"
 #include "GameListSettingsWidget.h"
 #include "GraphicsSettingsWidget.h"
+#include "DEV9SettingsWidget.h"
 #include "HotkeySettingsWidget.h"
 #include "InterfaceSettingsWidget.h"
 #include "MemoryCardSettingsWidget.h"
@@ -126,6 +127,10 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 		addWidget(m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
 			QStringLiteral("sd-card-line"), tr("<strong>Memory Card Settings</strong><hr>"));
 	}
+	
+	addWidget(m_dev9_settings = new DEV9SettingsWidget(this, m_ui.settingsContainer), tr("Network & HDD"), QStringLiteral("dashboard-line"),
+		tr("<strong>Network & HDD Settings</strong><hr>These options control the network connectivity and internal HDD storage of the console.<br><br>"
+		   "Mouse over an option for additional information."));
 
 	m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	m_ui.settingsCategory->setCurrentRow(0);
