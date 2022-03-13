@@ -721,6 +721,8 @@ SCAJ-20126:
   region: "NTSC-Unk"
   clampModes:
     eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
+  gsHWFixes:
+    alignSprite: 1
 SCAJ-20127:
   name: "EyeToy - Play 2 [with Camera]"
   region: "NTSC-Unk"
@@ -1024,6 +1026,8 @@ SCAJ-20199:
   region: "NTSC-Unk"
   clampModes:
     eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
+  gsHWFixes:
+    alignSprite: 1
 SCAJ-25002:
   name: "Shinobi"
   region: "NTSC-Unk"
@@ -1193,6 +1197,8 @@ SCCS-60002:
 SCED-50041:
   name: "Tekken Tag Tournament [Demo]"
   region: "PAL-E"
+  gsHWFixes:
+    alignSprite: 1
 SCED-50065:
   name: "Official PlayStation 2 Magazine Demo 1"
   region: "PAL-M5"
@@ -2159,6 +2165,8 @@ SCES-50001:
   name: "Tekken Tag Tournament"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1
 SCES-50002:
   name: "FantaVision"
   region: "PAL-M5"
@@ -2430,6 +2438,8 @@ SCES-50878:
   name: "Tekken 4"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1
 SCES-50885:
   name: "Ape Escape 2"
   region: "PAL-E"
@@ -5476,6 +5486,8 @@ SCPS-55017:
   name: "Tekken 4"
   region: "NTSC-J"
   compat: 3
+  gsHWFixes:
+    alignSprite: 1
 SCPS-55018:
   name: "Kingdom of Scribbling"
   region: "NTSC-J"
@@ -5646,6 +5658,8 @@ SCPS-56002:
   name: "Tekken Tag Tournament"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1
 SCPS-56003:
   name: "Jak and Daxter: The Precursor Legacy"
   region: "NTSC-K"
@@ -5659,6 +5673,8 @@ SCPS-56006:
   name: "Tekken 4"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1
 SCPS-56008:
   name: "Fatal Frame"
   region: "NTSC-K"
@@ -29479,6 +29495,8 @@ SLPS-20015:
   name: "Tekken Tag Tournament"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1
 SLPS-20016:
   name: "Dream Audition"
   region: "NTSC-J"
@@ -30856,6 +30874,8 @@ SLPS-25100:
   name: "Tekken 4"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1
 SLPS-25102:
   name: "Project Arms"
   region: "NTSC-J"
@@ -33669,6 +33689,8 @@ SLPS-73103:
 SLPS-73104:
   name: "Tekken Tag Tournament [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1
 SLPS-73105:
   name: "Kinnikuman Generations [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -33734,6 +33756,8 @@ SLPS-73208:
 SLPS-73209:
   name: "Tekken 4 [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1
 SLPS-73210:
   name: "Katamari Damacy [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -34122,6 +34146,8 @@ SLUS-20001:
   name: "Tekken Tag Tournament"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1
 SLUS-20002:
   name: "Ridge Racer V"
   region: "NTSC-U"
@@ -35332,6 +35358,8 @@ SLUS-20328:
   name: "Tekken 4"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1
 SLUS-20329:
   name: "Pro Race Driver"
   region: "NTSC-U"
@@ -42429,6 +42457,8 @@ SLUS-28010:
 SLUS-28012:
   name: "Tekken 4 [Trade Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    alignSprite: 1
 SLUS-28013:
   name: "Dual Hearts [Trade Demo]"
   region: "NTSC-U"
@@ -42647,6 +42677,8 @@ SLUS-29033:
 SLUS-29034:
   name: "Tekken 4 [Regular Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    alignSprite: 1
 SLUS-29035:
   name: "Eidos Demo Disc"
   region: "NTSC-U"
