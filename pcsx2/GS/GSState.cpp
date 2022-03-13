@@ -552,7 +552,7 @@ float GSState::GetTvRefreshRate()
 	__assume(0); // unreachable
 }
 
-void GSState::DumpVertices(std::string& filename)
+void GSState::DumpVertices(const std::string& filename)
 {
 	std::ofstream file(filename);
 
