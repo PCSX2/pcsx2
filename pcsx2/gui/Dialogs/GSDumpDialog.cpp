@@ -433,7 +433,7 @@ void Dialogs::GSDumpDialog::GenPacketInfo(const GSDumpFile::GSData& dump)
 	{
 		case GSType::Transfer:
 		{
-			u8* data = dump.data.get();
+			const u8* data = dump.data;
 			u32 remaining = dump.length;
 			int idx = 0;
 			while (remaining >= 16)
@@ -468,7 +468,7 @@ void Dialogs::GSDumpDialog::GenPacketInfo(const GSDumpFile::GSData& dump)
 	}
 }
 
-void Dialogs::GSDumpDialog::ParseTransfer(wxTreeItemId& trootId, u8* data)
+void Dialogs::GSDumpDialog::ParseTransfer(wxTreeItemId& trootId, const u8* data)
 {
 	u64 tag  = *(u64*)data;
 	u64 regs = *(u64*)(data + 8);
@@ -746,18 +746,18 @@ void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSDumpFile::GSData& event, u8
 				{
 					std::unique_ptr<char[]> data(new char[16384]);
 					int addr = 16384 - event.length;
-					memcpy(data.get(), event.data.get() + addr, event.length);
+					memcpy(data.get(), event.data + addr, event.length);
 					GSgifTransfer1((u8*)data.get(), addr);
 					break;
 				}
 				case GSTransferPath::Path1New:
-					GSgifTransfer((u8*)event.data.get(), event.length / 16);
+					GSgifTransfer((u8*)event.data, event.length / 16);
 					break;
 				case GSTransferPath::Path2:
-					GSgifTransfer2((u8*)event.data.get(), event.length / 16);
+					GSgifTransfer2((u8*)event.data, event.length / 16);
 					break;
 				case GSTransferPath::Path3:
-					GSgifTransfer3((u8*)event.data.get(), event.length / 16);
+					GSgifTransfer3((u8*)event.data, event.length / 16);
 					break;
 				default:
 					break;
@@ -772,12 +772,12 @@ void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSDumpFile::GSData& event, u8
 		}
 		case GSType::ReadFIFO2:
 		{
-			std::unique_ptr<char[]> arr(new char[*((int*)event.data.get())]);
-			GSreadFIFO2((u8*)arr.get(), *((int*)event.data.get()));
+			std::unique_ptr<char[]> arr(new char[*((int*)event.data)]);
+			GSreadFIFO2((u8*)arr.get(), *((int*)event.data));
 			break;
 		}
 		case GSType::Registers:
-			memcpy(regs, event.data.get(), 8192);
+			memcpy(regs, event.data, 8192);
 			break;
 	}
 }
