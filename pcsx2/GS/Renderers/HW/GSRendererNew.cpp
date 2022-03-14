@@ -540,23 +540,67 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 
 	// Compute the blending equation to detect special case
 	const GIFRegALPHA& ALPHA = m_context->ALPHA;
+
+	// Set blending to shader bits
+	m_conf.ps.blend_a = ALPHA.A;
+	m_conf.ps.blend_b = ALPHA.B;
+	m_conf.ps.blend_c = ALPHA.C;
+	m_conf.ps.blend_d = ALPHA.D;
+
+	// Get alpha value
+	const bool alpha_c0_zero = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().max == 0);
+	const bool alpha_c0_one = (m_conf.ps.blend_c == 0 && (GetAlphaMinMax().min == 128) && (GetAlphaMinMax().max == 128));
+	const bool alpha_c0_high_max_one = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().max > 128);
+	const bool alpha_c2_zero = (m_conf.ps.blend_c == 2 && ALPHA.FIX == 0u);
+	const bool alpha_c2_one = (m_conf.ps.blend_c == 2 && ALPHA.FIX == 128u);
+	const bool alpha_c2_high_one = (m_conf.ps.blend_c == 2 && ALPHA.FIX > 128u);
+
+	// Optimize blending equations, must be done before index calculation
+	if ((m_conf.ps.blend_a == m_conf.ps.blend_b) || ((m_conf.ps.blend_b == m_conf.ps.blend_d) && (alpha_c0_one || alpha_c2_one)))
+	{
+		// Condition 1:
+		// A == B
+		// (A - B) * C, result will be 0.0f so set A B to Cs, C to As
+		// Condition 2:
+		// B == D
+		// Swap D with A
+		// A == B
+		// (A - B) * C, result will be 0.0f so set A B to Cs, C to As
+		if (m_conf.ps.blend_a != m_conf.ps.blend_b)
+			m_conf.ps.blend_d = m_conf.ps.blend_a;
+		m_conf.ps.blend_a = 0;
+		m_conf.ps.blend_b = 0;
+		m_conf.ps.blend_c = 0;
+	}
+	else if (alpha_c0_zero || alpha_c2_zero)
+	{
+		// C == 0.0f
+		// (A - B) * C, result will be 0.0f so set A B to Cs
+		m_conf.ps.blend_a = 0;
+		m_conf.ps.blend_b = 0;
+	}
+
 	// Ad cases, alpha write is masked, one barrier is enough, for d3d11 read the fb
 	// Replace Ad with As, blend flags will be used from As since we are chaging the blend_index value.
-	bool blend_ad_alpha_masked = (ALPHA.C == 1) && (m_context->FRAME.FBMSK & 0xFF000000) == 0xFF000000;
-	u8 ALPHA_C = ALPHA.C;
+	// Must be done before index calculation, after blending equation optimizations
+	bool blend_ad_alpha_masked = (m_conf.ps.blend_c == 1) && (m_context->FRAME.FBMSK & 0xFF000000) == 0xFF000000;
 	if (((GSConfig.AccurateBlendingUnit >= AccBlendLevel::Basic) || (m_env.COLCLAMP.CLAMP == 0))
 		&& g_gs_device->Features().texture_barrier && blend_ad_alpha_masked)
-		ALPHA_C = 0;
+		m_conf.ps.blend_c = 0;
 	else if (((GSConfig.AccurateBlendingUnit >= AccBlendLevel::Medium)
 		// Detect barrier aka fbmask on d3d11.
 		|| m_conf.require_one_barrier)
 		&& blend_ad_alpha_masked)
-		ALPHA_C = 0;
+		m_conf.ps.blend_c = 0;
 	else
 		blend_ad_alpha_masked = false;
 
-	u8 blend_index = u8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA_C) * 3 + ALPHA.D);
+	u8 blend_index = u8(((m_conf.ps.blend_a * 3 + m_conf.ps.blend_b) * 3 + m_conf.ps.blend_c) * 3 + m_conf.ps.blend_d);
 	const int blend_flag = g_gs_device->GetBlendFlags(blend_index);
+
+	// Re set alpha, it was modified, must be done after index calculation
+	if (blend_ad_alpha_masked)
+		m_conf.ps.blend_c = ALPHA.C;
 
 	// HW blend can handle Cd output.
 	bool color_dest_blend = !!(blend_flag & BLEND_CD);
@@ -573,15 +617,12 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	const bool blend_mix3 = !!(blend_flag & BLEND_MIX3);
 	bool blend_mix = (blend_mix1 || blend_mix2 || blend_mix3);
 
-	const bool alpha_c2_high_one = (ALPHA.C == 2 && ALPHA.FIX > 128u);
-	const bool alpha_c0_high_max_one = (ALPHA.C == 0 && GetAlphaMinMax().max > 128);
-
 	// Blend can be done on hw. As and F cases should be accurate.
 	// BLEND_C_CLR1 with Ad, BLEND_C_CLR3  Cs > 0.5f will require sw blend.
 	// BLEND_C_CLR1 with As/F, BLEND_C_CLR2_AF, BLEND_C_CLR2_AS can be done in hw.
 	const bool clr_blend = !!(blend_flag & (BLEND_C_CLR1 | BLEND_C_CLR2_AF | BLEND_C_CLR2_AS | BLEND_C_CLR3));
 	bool clr_blend1_2 = (blend_flag & (BLEND_C_CLR1 | BLEND_C_CLR2_AF | BLEND_C_CLR2_AS))
-		&& (ALPHA.C != 1)                                                // Make sure it isn't an Ad case
+		&& (m_conf.ps.blend_c != 1)                                      // Make sure it isn't an Ad case
 		&& !m_env.PABE.PABE                                              // No PABE as it will require sw blending.
 		&& (m_env.COLCLAMP.CLAMP)                                        // Let's add a colclamp check too, hw blend will clamp to 0-1.
 		&& !(m_conf.require_one_barrier || m_conf.require_full_barrier); // Also don't run if there are barriers present.
@@ -609,10 +650,10 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				sw_blending |= true;
 				[[fallthrough]];
 			case AccBlendLevel::Full:
-				sw_blending |= ALPHA.A != ALPHA.B && alpha_c0_high_max_one;
+				sw_blending |= m_conf.ps.blend_a != m_conf.ps.blend_b && alpha_c0_high_max_one;
 				[[fallthrough]];
 			case AccBlendLevel::High:
-				sw_blending |= ALPHA.C == 1 || (ALPHA.A != ALPHA.B && alpha_c2_high_one);
+				sw_blending |= m_conf.ps.blend_c == 1 || (m_conf.ps.blend_a != m_conf.ps.blend_b && alpha_c2_high_one);
 				[[fallthrough]];
 			case AccBlendLevel::Medium:
 				// Initial idea was to enable accurate blending for sprite rendering to handle
@@ -655,7 +696,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				}
 				[[fallthrough]];
 			case AccBlendLevel::Full:
-				sw_blending |= ((ALPHA.C == 1 || (blend_mix && (alpha_c2_high_one || alpha_c0_high_max_one))) && (m_prim_overlap == PRIM_OVERLAP_NO));
+				sw_blending |= ((m_conf.ps.blend_c == 1 || (blend_mix && (alpha_c2_high_one || alpha_c0_high_max_one))) && (m_prim_overlap == PRIM_OVERLAP_NO));
 				[[fallthrough]];
 			case AccBlendLevel::High:
 				sw_blending |= (!(clr_blend || blend_mix) && (m_prim_overlap == PRIM_OVERLAP_NO));
@@ -695,7 +736,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 		else
 			free_colclip = blend_non_recursive;
 
-		GL_DBG("COLCLIP Info (Blending: %u/%u/%u/%u, OVERLAP: %d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D, m_prim_overlap);
+		GL_DBG("COLCLIP Info (Blending: %u/%u/%u/%u, OVERLAP: %d)", m_conf.ps.blend_a, m_conf.ps.blend_b, m_conf.ps.blend_c, m_conf.ps.blend_d, m_prim_overlap);
 		if (color_dest_blend)
 		{
 			// No overflow, disable colclip.
@@ -759,7 +800,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				m_conf.ps.pabe = !(accumulation_blend || blend_mix);
 			}
 		}
-		else if (ALPHA.A == 0 && ALPHA.B == 1 && ALPHA.C == 0 && ALPHA.D == 1)
+		else if (m_conf.ps.blend_a == 0 && m_conf.ps.blend_b == 1 && m_conf.ps.blend_c == 0 && m_conf.ps.blend_d == 1)
 		{
 			// this works because with PABE alpha blending is on when alpha >= 0x80, but since the pixel shader
 			// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
@@ -770,7 +811,8 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	// For stat to optimize accurate option
 #if 0
 	GL_INS("BLEND_INFO: %u/%u/%u/%u. Clamp:%u. Prim:%d number %u (drawlist %u) (sw %d)",
-		ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D, m_env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, m_drawlist.size(), sw_blending);
+		m_conf.ps.blend_a, m_conf.ps.blend_b, m_conf.ps.blend_c, m_conf.ps.blend_d,
+		m_env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, m_drawlist.size(), sw_blending);
 #endif
 	if (color_dest_blend)
 	{
@@ -785,24 +827,9 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	}
 	else if (sw_blending)
 	{
-		m_conf.ps.blend_a = ALPHA.A;
-		m_conf.ps.blend_b = ALPHA.B;
-		m_conf.ps.blend_c = ALPHA.C;
-		m_conf.ps.blend_d = ALPHA.D;
-
-		if (m_conf.ps.blend_a == m_conf.ps.blend_b)
-		{
-			// A == B
-			// (A - B) * C will be 0 so set A B to Cs, C to As
-			m_conf.ps.blend_a = 0;
-			m_conf.ps.blend_b = 0;
-			m_conf.ps.blend_c = 0;
-		}
-		else if (m_conf.ps.blend_c == 2)
-		{
-			// Require the fix alpha vlaue
+		// Require the fix alpha vlaue
+		if (m_conf.ps.blend_c == 2)
 			m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(ALPHA.FIX) / 128.0f;
-		}
 
 		if (accumulation_blend)
 		{
@@ -870,8 +897,12 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 	}
 	else
 	{
-		// Care for clr_hw value, 6 is for hw/sw, sw blending used.
+		// No sw blending
+		m_conf.ps.blend_a = 0;
+		m_conf.ps.blend_b = 0;
+		m_conf.ps.blend_d = 0;
 
+		// Care for clr_hw value, 6 is for hw/sw, sw blending used.
 		if (blend_flag & BLEND_C_CLR1)
 		{
 			if (blend_ad_alpha_masked)
@@ -893,13 +924,13 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 				m_conf.ps.clr_hw = 4;
 				m_conf.require_one_barrier |= true;
 			}
-			else if (ALPHA.C == 2)
+			else if (m_conf.ps.blend_c == 2)
 			{
 				m_conf.ps.blend_c = 2;
 				m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(ALPHA.FIX) / 128.0f;
 				m_conf.ps.clr_hw = 2;
 			}
-			else // ALPHA.C == 0
+			else // m_conf.ps.blend_c == 0
 			{
 				m_conf.ps.blend_c = 0;
 				m_conf.ps.clr_hw = 2;
@@ -916,7 +947,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 			m_conf.require_one_barrier |= true;
 		}
 
-		if (m_conf.ps.dfmt == 1 && ALPHA.C == 1)
+		if (m_conf.ps.dfmt == 1 && m_conf.ps.blend_c == 1)
 		{
 			// 24 bits doesn't have an alpha channel so use 1.0f fix factor as equivalent
 			const u8 hacked_blend_index = blend_index + 3; // +3 <=> +1 on C
@@ -924,7 +955,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER)
 		}
 		else
 		{
-			m_conf.blend = {blend_index, ALPHA.FIX, ALPHA.C == 2, false, false};
+			m_conf.blend = {blend_index, ALPHA.FIX, m_conf.ps.blend_c == 2, false, false};
 		}
 	}
 
