@@ -468,6 +468,7 @@ public:
 		u16 bpp, trbpp, pal, fmt;
 		GSVector2i bs, pgs;
 		u8 msk, depth;
+		u32 fmsk;
 	};
 
 	static psm_t m_psm[64];
