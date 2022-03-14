@@ -20,22 +20,22 @@ allowed_game_options = [
 allowed_round_modes = ["eeRoundMode", "vuRoundMode"]
 allowed_clamp_modes = ["eeClampMode", "vuClampMode"]
 allowed_game_fixes = [
-    "VuAddSubHack",
-    "FpuCompareHack",
     "FpuMulHack",
     "FpuNegDivHack",
-    "XGKickHack",
-    "EETimingHack",
+    "GoemonTlbHack",
+    "SoftwareRendererFMVHack",
     "SkipMPEGHack",
     "OPHFlagHack",
+    "EETimingHack",
     "DMABusyHack",
+    "GIFFIFOHack",
     "VIFFIFOHack",
     "VIF1StallHack",
-    "GIFFIFOHack",
-    "GoemonTlbHack",
-    "VUSyncHack",
+    "VuAddSubHack",
     "IbitHack",
+    "VUSyncHack",
     "VUOverflowHack",
+    "XGKickHack",
 ]
 allowed_gs_hw_fixes = [
     "autoFlush",
