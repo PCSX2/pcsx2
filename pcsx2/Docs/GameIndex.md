@@ -48,7 +48,7 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
   memcardFilters:
     - "SERIAL-123"
     - "SERIAL-456"
-  # You can define multple patches, but they are identified by the CRC.
+  # You can define multiple patches, but they are identified by the CRC.
   patches:
     default: # Default CRC!
       author: "Some Person"
@@ -124,28 +124,43 @@ The clamp modes are also numerically based.
 *   `2` = Clamp **Extra** (clamp results as well as operands)
 *   `3` = Clamp **Extra+Preserve Sign**
 
-## GS hardware fixes
+## GS Hardware Fixes
 
-*   autoFlush
-*   conservativeFramebuffer
-*   cpuFramebufferConversion
-*   disableDepthSupport
-*   wrapGSMem
-*   preloadFrameData
-*   fastTextureInvalidation
-*   textureInsideRT
-*   alignSprite
-*   mergeSprite
-*   wildArmsHack
-*   pointListPalette
-*   mipmap
-*   trilinearFiltering
-*   skipDrawStart
-*   skipDrawEnd
-*   halfBottomOverride
-*   halfPixelOffset
-*   roundSprite
-*   texturePreloading
+[ ] = GameDB values
+{ } = GUI options
+( ) = Default values
+
+### GS Hardware Mipmap Fixes
+
+*   mipmap                     [`0` or `1` or `2`]    {Off, Basic, Full}                    Default: Automatic (No value, looks up GameDB)
+*   trilinearFiltering         [`0` or `1` or `2`]    {None, Trilinear, Trilinear Ultra}    Default: None (`0`)
+
+### GS Hardware General Fixes
+
+*   conservativeFramebuffer   [`0` or `1`]            {Off or On}                           Default: On (`1`)
+*   texturePreloading         [`0` or `1` or `2`]     {None, Partial or Full Hash Cache}    Default: None (`0`)
+
+### GS Hardware Renderer Fixes
+
+*   autoFlush                [`0` or `1`]   {Off or On}                          Default: Off (`0`)
+*   disableDepthSupport      [`0` or `1`]   {Off or On}                          Default: Off (`0`)
+*   fastTextureInvalidation  [`0` or `1`]   {Off or On}                          Default: Off (`0`)
+*   cpuFramebufferConversion [`0` or `1`]   {Off or On}                          Default: Off (`0`)
+*   wrapGSMem                [`0` or `1`]   {Off or On}                          Default: Off (`0`)
+*   preloadFrameData         [`0` or `1`]   {Off or On}                          Default: Off (`0`)
+*   textureInsideRT          [`0` or `1`]   {Off or On}                          Default: Off (`0`)
+*   halfBottomOverride       [`0` or `1`]   {Force-Disabled or Force-Enabled}    Default: Automatic (No value, looks up GameDB)
+*   pointListPalette         [`0` or `1`]   {Off or On}                          Default: Off (`0`)
+
+### GS Hardware Upscaling Fixes
+
+*   alignSprite              [`0` or `1`]                      {Off or On}       Default: Off (`0`)
+*   mergeSprite              [`0` or `1`]                      {Off or On}       Default: Off (`0`)
+*   wildArmsHack             [`0` or `1`]                      {Off or On}       Default: Off (`0`)
+*   skipDrawStart            [Value between `0` to `100000`]   {0-100000}        Default: Off (`0`)
+*   skipDrawEnd              [Value between `0` to `100000`]   {0-100000}        Default: Off (`0`)
+*   halfPixelOffset          [`0` or `1` or `2` or `3`]   {Off, Normal Vertex, Special Texture or Special Texture Aggressive}    Default: Off (`0`)
+*   roundSprite              [`0` or `1` or `2`]          {Off, Half or Full}    Default: Off (`0`)
 
 ## Game Fixes
 
