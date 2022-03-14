@@ -21,13 +21,15 @@
 
 CONSTINIT const GSVector4 GSVertexTrace::s_minmax = GSVector4::cxpr(FLT_MAX, -FLT_MAX, 0.f, 0.f);
 
-GSVertexTrace::GSVertexTrace(const GSState* state)
+GSVertexTrace::GSVertexTrace(const GSState* state, bool provoking_vertex_first)
 	: m_accurate_stq(false), m_state(state), m_primclass(GS_INVALID_CLASS)
 {
 	memset(&m_alpha, 0, sizeof(m_alpha));
 
 	#define InitUpdate3(P, IIP, TME, FST, COLOR) \
-		m_fmm[COLOR][FST][TME][IIP][P] = &GSVertexTrace::FindMinMax<P, IIP, TME, FST, COLOR>;
+	m_fmm[COLOR][FST][TME][IIP][P] = \
+		provoking_vertex_first ? &GSVertexTrace::FindMinMax<P, IIP, TME, FST, COLOR, true> : \
+                                 &GSVertexTrace::FindMinMax<P, IIP, TME, FST, COLOR, false>;
 
 	#define InitUpdate2(P, IIP, TME) \
 		InitUpdate3(P, IIP, TME, 0, 0) \
@@ -151,7 +153,7 @@ void GSVertexTrace::Update(const void* vertex, const u32* index, int v_count, in
 	}
 }
 
-template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color>
+template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color, bool flat_swapped>
 void GSVertexTrace::FindMinMax(const void* vertex, const u32* index, int count)
 {
 	const GSDrawingContext* context = m_state->m_context;
@@ -283,16 +285,16 @@ void GSVertexTrace::FindMinMax(const void* vertex, const u32* index, int count)
 		int i = 0;
 		for (; i < (count - 3); i += 6)
 		{
-			processVertices(v[index[i + 0]], v[index[i + 3]], false);
+			processVertices(v[index[i + 0]], v[index[i + 3]], flat_swapped);
 			processVertices(v[index[i + 1]], v[index[i + 4]], false);
-			processVertices(v[index[i + 2]], v[index[i + 5]], true);
+			processVertices(v[index[i + 2]], v[index[i + 5]], !flat_swapped);
 		}
 		if (count & 1)
 		{
-			processVertices(v[index[i + 0]], v[index[i + 1]], false);
+			processVertices(v[index[i + 0]], v[index[i + 1]], flat_swapped);
 			// Compiler optimizations go!
 			// (And if they don't, it's only one vertex out of many)
-			processVertices(v[index[i + 2]], v[index[i + 2]], true);
+			processVertices(v[index[i + 2]], v[index[i + 2]], !flat_swapped);
 		}
 	}
 	else
