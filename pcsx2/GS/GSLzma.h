@@ -291,7 +291,7 @@ public:
 	struct GSData
 	{
 		GSDumpTypes::GSType id;
-		std::unique_ptr<u8[]> data;
+		const u8* data;
 		s32 length;
 		GSDumpTypes::GSTransferPath path;
 	};
@@ -317,7 +317,7 @@ protected:
 	GSDumpFile(FILE* file, FILE* repack_file);
 
 	virtual bool IsEof() = 0;
-	virtual bool Read(void* ptr, size_t size) = 0;
+	virtual size_t Read(void* ptr, size_t size) = 0;
 
 	void Repack(void* ptr, size_t size);
 
@@ -331,9 +331,8 @@ private:
 
 	std::vector<u8> m_regs_data;
 	std::vector<u8> m_state_data;
+	std::vector<u8> m_packet_data;
 
-	// TODO: Allocate a single, large buffer, and store pointers to
-	// each packet instead of a buffer per packet.
 	GSDataArray m_dump_packets;
 };
 
@@ -356,7 +355,7 @@ public:
 	virtual ~GSDumpLzma();
 
 	bool IsEof() final;
-	bool Read(void* ptr, size_t size) final;
+	size_t Read(void* ptr, size_t size) final;
 };
 
 class GSDumpRaw : public GSDumpFile
@@ -366,5 +365,5 @@ public:
 	virtual ~GSDumpRaw() = default;
 
 	bool IsEof() final;
-	bool Read(void* ptr, size_t size) final;
+	size_t Read(void* ptr, size_t size) final;
 };

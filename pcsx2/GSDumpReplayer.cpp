@@ -225,7 +225,7 @@ void GSDumpReplayerCpuStep()
 				{
 					std::unique_ptr<u8[]> data(new u8[16384]);
 					const s32 addr = 16384 - packet.length;
-					std::memcpy(data.get(), packet.data.get() + addr, packet.length);
+					std::memcpy(data.get(), packet.data + addr, packet.length);
 					GSDumpReplayerSendPacketToMTGS(GIF_PATH_1, data.get(), packet.length);
 				}
 				break;
@@ -235,7 +235,7 @@ void GSDumpReplayerCpuStep()
 				case GSDumpTypes::GSTransferPath::Path3:
 				{
 					GSDumpReplayerSendPacketToMTGS(static_cast<GIF_PATH>(static_cast<u8>(packet.path) - 1),
-						reinterpret_cast<const u8*>(packet.data.get()), packet.length);
+						packet.data, packet.length);
 				}
 				break;
 
@@ -258,14 +258,14 @@ void GSDumpReplayerCpuStep()
 
 		case GSDumpTypes::GSType::ReadFIFO2:
 		{
-			std::unique_ptr<char[]> arr(new char[*((int*)packet.data.get())]);
-			GSreadFIFO2((u8*)arr.get(), *((int*)packet.data.get()));
+			std::unique_ptr<char[]> arr(new char[*((int*)packet.data)]);
+			GSreadFIFO2((u8*)arr.get(), *((int*)packet.data));
 		}
 		break;
 
 		case GSDumpTypes::GSType::Registers:
 		{
-			std::memcpy(PS2MEM_GS, packet.data.get(), std::min<s32>(packet.length, Ps2MemSize::GSregs));
+			std::memcpy(PS2MEM_GS, packet.data, std::min<s32>(packet.length, Ps2MemSize::GSregs));
 		}
 		break;
 	}

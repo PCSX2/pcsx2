@@ -145,7 +145,7 @@ namespace Dialogs
 		u32 ReadPacketSize(const void* packet);
 		void GenPacketList();
 		void GenPacketInfo(const GSDumpFile::GSData& dump);
-		void ParseTransfer(wxTreeItemId& id, u8* data);
+		void ParseTransfer(wxTreeItemId& id, const u8* data);
 		void ParseTreeReg(wxTreeItemId& id, GSDumpTypes::GIFReg reg, u128 data, bool packed);
 		void ParseTreePrim(wxTreeItemId& id, u32 prim);
 		void CloseDump(wxCommandEvent& event);

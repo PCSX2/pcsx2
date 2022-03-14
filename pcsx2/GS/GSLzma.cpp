@@ -114,11 +114,11 @@ bool GSDumpFile::GetPreviewImageFromDump(const char* filename, u32* width, u32* 
 bool GSDumpFile::ReadFile()
 {
 	u32 ss;
-	if (!Read(&m_crc, 4) || !Read(&ss, 4))
+	if (Read(&m_crc, sizeof(m_crc)) != sizeof(m_crc) || Read(&ss, sizeof(ss)) != sizeof(ss))
 		return false;
 
 	m_state_data.resize(ss);
-	if (!Read(m_state_data.data(), ss))
+	if (Read(m_state_data.data(), ss) != ss)
 		return false;
 
 	// Pull serial out of new header, if present.
@@ -149,34 +149,68 @@ bool GSDumpFile::ReadFile()
 
 		// Read the real state data
 		m_state_data.resize(header.state_size);
-		if (!Read(m_state_data.data(), header.state_size))
+		if (Read(m_state_data.data(), header.state_size) != header.state_size)
 			return false;
 	}
 
 	m_regs_data.resize(8192);
-	if (!Read(m_regs_data.data(), m_regs_data.size()))
+	if (Read(m_regs_data.data(), m_regs_data.size()) != m_regs_data.size())
 		return false;
 
+	// read all the packet data in
+	// TODO: make this suck less by getting the full/extracted size and preallocating
 	for (;;)
 	{
-		GSData packet;
-		packet.path = GSTransferPath::Dummy;
-		if (!Read(&packet.id, 1))
-		{
-			if (IsEof())
-				break;
+		const size_t packet_data_size = m_packet_data.size();
+		m_packet_data.resize(std::max<size_t>(packet_data_size * 2, 8 * _1mb));
 
-			return false;
+		const size_t read_size = m_packet_data.size() - packet_data_size;
+		const size_t read = Read(m_packet_data.data() + packet_data_size, read_size);
+		if (read != read_size)
+		{
+			if (!IsEof())
+				return false;
+
+			m_packet_data.resize(packet_data_size + read);
+			m_packet_data.shrink_to_fit();
+			break;
 		}
+	}
+
+	u8* data = m_packet_data.data();
+	size_t remaining = m_packet_data.size();
+
+#define GET_BYTE(dst) \
+	do \
+	{ \
+		if (remaining < sizeof(u8)) \
+			return false; \
+		std::memcpy(dst, data, sizeof(u8)); \
+		data++; \
+		remaining--; \
+	} while (0)
+#define GET_WORD(dst) \
+	do \
+	{ \
+		if (remaining < sizeof(u32)) \
+			return false; \
+		std::memcpy(dst, data, sizeof(u32)); \
+		data += sizeof(u32); \
+		remaining -= sizeof(u32); \
+	} while (0)
+
+	while (remaining > 0)
+	{
+		GSData packet = {};
+		packet.path = GSTransferPath::Dummy;
+		GET_BYTE(&packet.id);
 
 		switch (packet.id)
 		{
 			case GSType::Transfer:
-			{
-				if (!Read(&packet.path, 1) || !Read(&packet.length, 4))
-					return false;
-			}
-			break;
+				GET_BYTE(&packet.path);
+				GET_WORD(&packet.length);
+				break;
 			case GSType::VSync:
 				packet.length = 1;
 				break;
@@ -186,17 +220,25 @@ bool GSDumpFile::ReadFile()
 			case GSType::Registers:
 				packet.length = 8192;
 				break;
+			default:
+				return false;
 		}
 
 		if (packet.length > 0)
 		{
-			packet.data = std::unique_ptr<u8[]>(new u8[packet.length]);
-			if (!Read(packet.data.get(), packet.length))
+			if (remaining < packet.length)
 				return false;
+
+			packet.data = data;
+			data += packet.length;
+			remaining -= packet.length;
 		}
 
 		m_dump_packets.push_back(std::move(packet));
 	}
+
+#undef GET_WORD
+#undef GET_BYTE
 
 	return true;
 }
@@ -275,7 +317,7 @@ bool GSDumpLzma::IsEof()
 	return feof(m_fp) && m_avail == 0 && m_strm.avail_in == 0;
 }
 
-bool GSDumpLzma::Read(void* ptr, size_t size)
+size_t GSDumpLzma::Read(void* ptr, size_t size)
 {
 	size_t off = 0;
 	uint8_t* dst = (uint8_t*)ptr;
@@ -295,13 +337,10 @@ bool GSDumpLzma::Read(void* ptr, size_t size)
 		off     += l;
 	}
 
-	if (size == 0)
-	{
-		Repack(ptr, full_size);
-		return true;
-	}
+	if (off > 0)
+		Repack(ptr, off);
 
-	return false;
+	return off;
 }
 
 GSDumpLzma::~GSDumpLzma()
@@ -326,20 +365,17 @@ bool GSDumpRaw::IsEof()
 	return !!feof(m_fp);
 }
 
-bool GSDumpRaw::Read(void* ptr, size_t size)
+size_t GSDumpRaw::Read(void* ptr, size_t size)
 {
 	size_t ret = fread(ptr, 1, size, m_fp);
 	if (ret != size && ferror(m_fp))
 	{
 		fprintf(stderr, "GSDumpRaw:: Read error (%zu/%zu)\n", ret, size);
-		return false;
+		return ret;
 	}
 
-	if (ret == size)
-	{
-		Repack(ptr, size);
-		return true;
-	}
+	if (ret > 0)
+		Repack(ptr, ret);
 
-	return false;
+	return ret;
 }
