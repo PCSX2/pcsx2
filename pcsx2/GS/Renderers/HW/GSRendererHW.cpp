@@ -520,8 +520,8 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 				if (minvert > YCord)
 					minvert = YCord;
 			}
-			// Check if it's a full screen blit (or at least half screen), ignore small writes.
-			half_bottom = minvert == 0 && m_r.height() <= maxvert && (m_r.height()+1) >= 224;
+
+			half_bottom = minvert == 0 && m_r.height() <= maxvert;
 			break;
 	}
 
