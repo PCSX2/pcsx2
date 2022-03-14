@@ -48,7 +48,7 @@ protected:
 
 	FindMinMaxPtr m_fmm[2][2][2][2][4];
 
-	template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color>
+	template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color, bool provoking_vertex_first>
 	void FindMinMax(const void* vertex, const u32* index, int count);
 
 public:
@@ -73,7 +73,7 @@ public:
 	GSVector2 m_lod; // x = min, y = max
 
 public:
-	GSVertexTrace(const GSState* state);
+	GSVertexTrace(const GSState* state, bool provoking_vertex_first);
 	virtual ~GSVertexTrace() {}
 
 	void Update(const void* vertex, const u32* index, int v_count, int i_count, GS_PRIM_CLASS primclass);

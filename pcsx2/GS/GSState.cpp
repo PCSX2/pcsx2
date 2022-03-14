@@ -29,6 +29,11 @@ static __fi bool IsAutoFlushEnabled()
 	return (GSConfig.Renderer == GSRendererType::SW) ? GSConfig.AutoFlushSW : GSConfig.UserHacks_AutoFlush;
 }
 
+static __fi bool IsFirstProvokingVertex()
+{
+	return (GSConfig.Renderer != GSRendererType::SW && !g_gs_device->Features().provoking_vertex_last);
+}
+
 GSState::GSState()
 	: m_version(STATE_VERSION)
 	, m_gsc(NULL)
@@ -37,7 +42,7 @@ GSState::GSState()
 	, m_q(1.0f)
 	, m_scanmask_used(false)
 	, tex_flushed(true)
-	, m_vt(this)
+	, m_vt(this, IsFirstProvokingVertex())
 	, m_regs(NULL)
 	, m_crc(0)
 	, m_options(0)
@@ -252,11 +257,10 @@ void GSState::ResetHandlers()
 	m_fpGIFPackedRegHandlers[GIF_REG_NOP] = &GSState::GIFPackedRegHandlerNOP;
 
 	// swap first/last indices when the provoking vertex is the first (D3D/Vulkan)
-	const bool index_swap = GSConfig.UseHardwareRenderer() && !g_gs_device->Features().provoking_vertex_last;
 	if (IsAutoFlushEnabled())
-		index_swap ? SetPrimHandlers<true, true>() : SetPrimHandlers<true, false>();
+		IsFirstProvokingVertex() ? SetPrimHandlers<true, true>() : SetPrimHandlers<true, false>();
 	else
-		index_swap ? SetPrimHandlers<false, true>() : SetPrimHandlers<false, false>();
+		IsFirstProvokingVertex() ? SetPrimHandlers<false, true>() : SetPrimHandlers<false, false>();
 
 	std::fill(std::begin(m_fpGIFRegHandlers), std::end(m_fpGIFRegHandlers), &GSState::GIFRegHandlerNull);
 
@@ -3238,8 +3242,9 @@ bool GSState::TryAlphaTest(u32& fm, u32& zm)
 	}
 	else
 	{
-		const int amin = GetAlphaMinMax().min;
-		const int amax = GetAlphaMinMax().max;
+		const GSVertexTrace::VertexAlpha& aminmax = GetAlphaMinMax();
+		const int amin = aminmax.min;
+		const int amax = aminmax.max;
 
 		const int aref = m_context->TEST.AREF;
 
