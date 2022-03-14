@@ -595,10 +595,12 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 
 	UserHacks_AlignSpriteX = false;
 	UserHacks_MergePPSprite = false;
+	UserHacks_WildHack = false;
 	UserHacks_DisableSafeFeatures = false;
 	UserHacks_HalfBottomOverride = -1;
 	UserHacks_HalfPixelOffset = 0;
 	UserHacks_RoundSprite = 0;
+	UserHacks_AutoFlush = false;
 	PreloadFrameWithGSData = false;
 	WrapGSMem = false;
 	UserHacks_DisablePartialInvalidation = false;
