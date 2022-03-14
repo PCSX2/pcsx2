@@ -106,6 +106,7 @@ GSLocalMemory::GSLocalMemory()
 		psm.pgs = GSVector2i(64, 32);
 		psm.msk = 0xff;
 		psm.depth = 0;
+		psm.fmsk = 0xffffffff;
 	}
 
 	m_psm[PSM_PSGPU24].info = GSLocalMemory::swizzle16;
@@ -346,6 +347,17 @@ GSLocalMemory::GSLocalMemory()
 	m_psm[PSM_PSMZ24].depth  = 1;
 	m_psm[PSM_PSMZ16].depth  = 1;
 	m_psm[PSM_PSMZ16S].depth = 1;
+
+	m_psm[PSM_PSMCT24].fmsk = 0x00FFFFFF;
+	m_psm[PSM_PSGPU24].fmsk = 0x00FFFFFF;
+	m_psm[PSM_PSMCT16].fmsk = 0x80F8F8F8;
+	m_psm[PSM_PSMCT16S].fmsk = 0x80F8F8F8;
+	m_psm[PSM_PSMT8H].fmsk = 0xFF000000;
+	m_psm[PSM_PSMT4HL].fmsk = 0x0F000000;
+	m_psm[PSM_PSMT4HH].fmsk = 0xF0000000;
+	m_psm[PSM_PSMZ24].fmsk = 0x00FFFFFF;
+	m_psm[PSM_PSMZ16].fmsk = 0x80F8F8F8;
+	m_psm[PSM_PSMZ16S].fmsk = 0x80F8F8F8;
 }
 
 GSLocalMemory::~GSLocalMemory()
