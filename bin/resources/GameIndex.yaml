@@ -889,7 +889,9 @@ SCAJ-20162:
   name: "Rogue Galaxy"
   region: "NTSC-Unk"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fix glow effects from lamps.
+    roundSprite: 1 # Fix minimap and field menu.
+    preloadFrameData: 1 # Fixes corrupt textures especially on water.
 SCAJ-20163:
   name: "Tales of the Abyss"
   region: "NTSC-Unk"
@@ -3553,7 +3555,9 @@ SCES-54552:
   name: "Rogue Galaxy"
   region: "PAL-M5"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fix glow effects from lamps.
+    roundSprite: 1 # Fix minimap and field menu.
+    preloadFrameData: 1 # Fixes corrupt textures especially on water.
   patches:
     CBB4B383:
       content: |-
@@ -5013,7 +5017,9 @@ SCPS-15102:
   name: "Rogue Galaxy"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fix glow effects from lamps.
+    roundSprite: 1 # Fix minimap and field menu.
+    preloadFrameData: 1 # Fixes corrupt textures especially on water.
 SCPS-15103:
   name: "Gunparade Orchestra - Shiro no Shou - Aomori Penguin Densetsu [Limited Edition]"
   region: "NTSC-J"
@@ -5123,7 +5129,9 @@ SCPS-17013:
   name: "Rogue Galaxy [Director's Cut]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fix glow effects from lamps.
+    roundSprite: 1 # Fix minimap and field menu.
+    preloadFrameData: 1 # Fixes corrupt textures especially on water.
   patches:
     CDEE4B19:
       content: |-
@@ -7063,7 +7071,9 @@ SCUS-97490:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fix glow effects from lamps.
+    roundSprite: 1 # Fix minimap and field menu.
+    preloadFrameData: 1 # Fixes corrupt textures especially on water.
   patches:
     0643F90C:
       content: |-
@@ -7290,7 +7300,9 @@ SCUS-97572:
   name: "Rogue Galaxy [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fix glow effects from lamps.
+    roundSprite: 1 # Fix minimap and field menu.
+    preloadFrameData: 1 # Fixes corrupt textures especially on water.
 SCUS-97579:
   name: "ATV Off-Road Fury 4 [Demo]"
   region: "NTSC-U"
