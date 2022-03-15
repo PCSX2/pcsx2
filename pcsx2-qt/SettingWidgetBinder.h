@@ -435,7 +435,7 @@ namespace SettingWidgetBinder
 
 			int sif_value;
 			if (sif->GetIntValue(section.c_str(), key.c_str(), &sif_value))
-				Accessor::setNullableIntValue(widget, sif_value);
+				Accessor::setNullableIntValue(widget, sif_value - option_offset);
 			else
 				Accessor::setNullableIntValue(widget, std::nullopt);
 
@@ -735,7 +735,7 @@ namespace SettingWidgetBinder
 			{
 				for (int i = 0; enum_values[i] != nullptr; i++)
 				{
-					if (value == enum_values[i])
+					if (sif_value == enum_values[i])
 					{
 						sif_int_value = i;
 						break;
@@ -744,9 +744,9 @@ namespace SettingWidgetBinder
 			}
 			Accessor::setNullableIntValue(widget, sif_int_value);
 
-			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key), enum_names]() {
+			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key), enum_values]() {
 				if (std::optional<int> new_value = Accessor::getNullableIntValue(widget); new_value.has_value())
-					sif->SetStringValue(section.c_str(), key.c_str(), enum_names[new_value.value()]);
+					sif->SetStringValue(section.c_str(), key.c_str(), enum_values[new_value.value()]);
 				else
 					sif->DeleteValue(section.c_str(), key.c_str());
 
