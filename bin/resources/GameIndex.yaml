@@ -475,6 +475,8 @@ SCAJ-20068:
   region: "NTSC-Unk"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SCAJ-20069:
   name: "Gallop Racer - Lucky 7"
   region: "NTSC-Unk"
@@ -483,6 +485,8 @@ SCAJ-20070:
   region: "NTSC-Unk"
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
 SCAJ-20072:
   name: "Ghost in the Shell - Stand Alone Complex"
   region: "NTSC-Unk"
@@ -651,6 +655,9 @@ SCAJ-20109:
 SCAJ-20110:
   name: "Dragon Quest VIII - Sora to Daichi to Norowareshi Himegimi"
   region: "NTSC-Unk"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes shadows of characters.
+    roundSprite: 1 # Fixes font artifacts.
 SCAJ-20111:
   name: "Crash Bandicoot 5"
   region: "NTSC-Unk"
@@ -679,6 +686,8 @@ SCAJ-20118:
   region: "NTSC-J"
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes vertical bars, misalignment bloom effects.
 SCAJ-20119:
   name: "Gladiator - Road to Freedom"
   region: "NTSC-Unk"
@@ -703,6 +712,9 @@ SCAJ-20122:
 SCAJ-20123:
   name: "Wild ARMs - The 4th Detonator"
   region: "NTSC-Unk"
+  gsHWFixes:
+    textureInsideRT: 1
+    roundSprite: 1 # Fixes font artifacts.
   memcardFilters:
     - "SCAJ-20123"
     - "SCPS-15091"
@@ -953,6 +965,8 @@ SCAJ-20177:
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces bloom misalignment.
 SCAJ-20178:
   name: "Ape Escape - Million Monkeys"
   region: "NTSC-Unk"
@@ -980,6 +994,8 @@ SCAJ-20182:
 SCAJ-20183:
   name: "Wild ARMs - The Vth Vanguard"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes font sizes.
 SCAJ-20184:
   name: "Seiken Densetsu 4"
   region: "NTSC-Unk"
@@ -1030,6 +1046,8 @@ SCAJ-20197:
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces bloom misalignment.
 SCAJ-20198:
   name: "Everybody's Tennis [PlayStation 2 The Best]"
   region: "NTSC-Unk"
@@ -1056,6 +1074,8 @@ SCAJ-25012:
   region: "NTSC-Unk"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SCAJ-25026:
   name: "Kunoichi Shinobi"
   region: "NTSC-Unk"
@@ -1331,6 +1351,8 @@ SCED-50642:
   region: "PAL-E"
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SCED-50675:
   name: "Official PlayStation 2 Magazine Demo 16"
   region: "PAL-M5"
@@ -1396,6 +1418,8 @@ SCED-50907:
   region: "PAL-Unk"
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SCED-50945:
   name: "Official PlayStation 2 Magazine Demo 20"
   region: "PAL-M5"
@@ -2321,27 +2345,37 @@ SCES-50490:
   compat: 5
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SCES-50491:
   name: "Final Fantasy X"
   region: "PAL-F"
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SCES-50492:
   name: "Final Fantasy X"
   region: "PAL-G"
   compat: 5
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SCES-50493:
   name: "Final Fantasy X"
   region: "PAL-I"
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SCES-50494:
   name: "Final Fantasy X"
   region: "PAL-S"
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SCES-50499:
   name: "Ecco the Dolphin - Defender of the Future"
   region: "PAL-M5"
@@ -4294,6 +4328,8 @@ SCKA-20079:
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces bloom misalignment.
 SCKA-20081:
   name: "Tekken 5 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -4304,9 +4340,13 @@ SCKA-20081:
 SCKA-20086:
   name: "Shin Onimusha - Dawn of Dreams [Disc1of2]"
   region: "NTSC-K"
+  gameFixes:
+    - SoftwareRendererFMVHack # Wrong white textures in FMV.
 SCKA-20087:
   name: "Shin Onimusha - Dawn of Dreams [Disc2of2]"
   region: "NTSC-K"
+  gameFixes:
+    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   memcardFilters:
     - "SCKA-20086"
 SCKA-20090:
@@ -4934,6 +4974,9 @@ SCPS-15090:
 SCPS-15091:
   name: "Wild ARMs - The 4th Detonator"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1
+    roundSprite: 1 # Fixes font artifacts.
   memcardFilters:
     - "SCAJ-20123"
     - "SCPS-15091"
@@ -4948,6 +4991,9 @@ SCPS-15091:
 SCPS-15092:
   name: "Wild ARMs - The 4th Detonator"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1
+    roundSprite: 1 # Fixes font artifacts.
   memcardFilters:
     - "SCAJ-20123"
     - "SCPS-15091"
@@ -5074,6 +5120,8 @@ SCPS-15117:
 SCPS-15118:
   name: "Wild ARMs - The Vth Vanguard"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes font sizes.
 SCPS-15119:
   name: "Bleach - Blade Battlers 2nd"
   region: "NTSC-J"
@@ -5321,6 +5369,8 @@ SCPS-19312:
 SCPS-19313:
   name: "Wild ARMs - The 4th Detonator [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
   memcardFilters:
     - "SCAJ-20123"
     - "SCPS-15091"
@@ -5380,6 +5430,8 @@ SCPS-19321:
 SCPS-19322:
   name: "Wild ARMs - The 4th Detonator [PlayStation 2 The Best - Reprint]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
   memcardFilters:
     - "SCAJ-20123"
     - "SCPS-15091"
@@ -5394,6 +5446,8 @@ SCPS-19322:
 SCPS-19323:
   name: "Wild ARMs - The 4th Detonator [PlayStation 2 The Best - Reprint]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
   memcardFilters:
     - "SCAJ-20123"
     - "SCPS-15091"
@@ -5553,6 +5607,8 @@ SCPS-55019:
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
 SCPS-55020:
   name: "Kengo 2"
   region: "NTSC-J"
@@ -7478,6 +7534,8 @@ SLAJ-25012:
   region: "NTSC-Unk"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLAJ-25014:
   name: "Cyber Troopers - Virtual-On Marz"
   region: "NTSC-Unk"
@@ -7716,6 +7774,8 @@ SLED-50488:
 SLED-50884:
   name: "TimeSplitters 2 [Demo]"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes texture slight misalignment.
 SLED-51062:
   name: "Fireblade [Demo]"
   region: "PAL-E"
@@ -9158,6 +9218,8 @@ SLES-50649:
   name: "Taz Wanted"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-50650:
   name: "Resident Evil Gun Survivor 2 - Code Veronica"
   region: "PAL-E"
@@ -9174,6 +9236,8 @@ SLES-50654:
 SLES-50661:
   name: "Atlantis III"
   region: "PAL-M3"
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLES-50662:
   name: "Shadow of Zorro, The"
   region: "PAL-M5"
@@ -9343,6 +9407,8 @@ SLES-50755:
 SLES-50757:
   name: "Atlantis III"
   region: "PAL-I-S"
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLES-50758:
   name: "Eve of Extinction"
   region: "PAL-M5"
@@ -9699,6 +9765,8 @@ SLES-50877:
   name: "TimeSplitters 2"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes texture slight misalignment.
 SLES-50879:
   name: "Paris-Dakar 2"
   region: "PAL-M5"
@@ -10856,6 +10924,8 @@ SLES-51443:
 SLES-51445:
   name: "Rygar - The Legendary Adventure"
   region: "PAL-M5"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLES-51448:
   name: "Resident Evil - Dead Aim"
   region: "PAL-M5"
@@ -11233,7 +11303,8 @@ SLES-51697:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    textureInsideRT: 1
+    textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
+    halfPixelOffset: 2 # Fixes depth lines.
 SLES-51698:
   name: "Mobile Light Force 2"
   region: "PAL-M5"
@@ -11434,28 +11505,38 @@ SLES-51815:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLES-51816:
   name: "Final Fantasy X-2"
   region: "PAL-F"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLES-51817:
   name: "Final Fantasy X-2"
   region: "PAL-G"
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLES-51818:
   name: "Final Fantasy X-2"
   region: "PAL-I"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLES-51819:
   name: "Final Fantasy X-2"
   region: "PAL-S"
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLES-51820:
   name: "Sniper Elite"
   region: "PAL-M5"
@@ -12006,9 +12087,13 @@ SLES-52047:
   name: "Sims, The - Bustin' Out"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes vertical lines, font and others.
 SLES-52048:
   name: "Sims, The - Bustin' Out"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes vertical lines, font and others.
 SLES-52055:
   name: "Harry Potter and the Philosopher's Stone"
   region: "PAL-M11"
@@ -13026,12 +13111,21 @@ SLES-52587:
 SLES-52588:
   name: "Mercenaries"
   region: "PAL-E"
+  gsHWFixes:
+    halfBottomOverride: 1 # Bottom screen has wrong colors.
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLES-52589:
   name: "Mercenaries"
   region: "PAL-F"
+  gsHWFixes:
+    halfBottomOverride: 1 # Bottom screen has wrong colors.
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLES-52590:
   name: "Mercenaries"
   region: "PAL-G"
+  gsHWFixes:
+    halfBottomOverride: 1 # Bottom screen has wrong colors.
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLES-52591:
   name: "Dynasty Warriors 4 - Empires"
   region: "PAL-E"
@@ -13694,6 +13788,8 @@ SLES-52913:
   name: "Suikoden IV"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes black squares in water.
 SLES-52915:
   name: "Shark Tale"
   region: "PAL-SW"
@@ -13885,6 +13981,8 @@ SLES-52986:
 SLES-52988:
   name: "MegaMan X8"
   region: "PAL-M5"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   memcardFilters: # Reads Command Mission save for bonus boss.
     - "SLES-52988"
     - "SLES-52832"
@@ -13894,6 +13992,8 @@ SLES-52989:
 SLES-52993:
   name: "TimeSplitters - Future Perfect"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 3 # Removes ghosting of distant objects.
 SLES-52998:
   name: "Sonic Mega Collection Plus"
   region: "PAL-M5"
@@ -13938,6 +14038,9 @@ SLES-53007:
 SLES-53008:
   name: "Mercenaries"
   region: "PAL-I-S"
+  gsHWFixes:
+    halfBottomOverride: 1 # Bottom screen has wrong colors.
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLES-53009:
   name: "Dance Factory"
   region: "PAL-M5"
@@ -14328,12 +14431,18 @@ SLES-53155:
   name: "Star Wars - Episode III - Revenge of the Sith"
   region: "PAL-M3"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLES-53156:
   name: "Star Wars - Episode III - La Revanche des Sith"
   region: "PAL-F"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLES-53157:
   name: "Star Wars - Episode III - Die Rache der Sith"
   region: "PAL-G"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLES-53158:
   name: "Cold Fear"
   region: "PAL-M5"
@@ -14932,12 +15041,18 @@ SLES-53501:
   name: "Star Wars - Battlefront II"
   region: "PAL-M3"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLES-53502:
   name: "Star Wars - Battlefront II"
   region: "PAL-F"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLES-53503:
   name: "Star Wars - Battlefront II"
   region: "PAL-G"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLES-53504:
   name: "Agent Hugo"
   region: "PAL-M11"
@@ -16094,6 +16209,9 @@ SLES-53974:
   name: "Dragon Quest VIII - Journey of the Cursed King"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes shadows of characters.
+    roundSprite: 1 # Fixes font artifacts.
 SLES-53976:
   name: "Evolution GT"
   region: "PAL-M5"
@@ -16688,6 +16806,7 @@ SLES-54239:
   region: "PAL-E"
   gsHWFixes:
     textureInsideRT: 1
+    roundSprite: 1 # Fixes font artifacts.
 SLES-54240:
   name: "FIFA '07"
   region: "PAL-E"
@@ -17209,6 +17328,8 @@ SLES-54464:
   name: "Global Defence Force"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    wildArmsHack: 1 # Lessens the bloom misalignment but still an issue.
 SLES-54465:
   name: "CSI: 3 Dimensions of Murder"
   region: "PAL-M5"
@@ -17447,6 +17568,8 @@ SLES-54584:
 SLES-54586:
   name: "Ar tonelico: Melody of Elemia"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 1 # Fixes vertical lines in FMVs, character portraits and other sprites.
 SLES-54587:
   name: "Raw Danger"
   region: "PAL-E"
@@ -17563,28 +17686,38 @@ SLES-54644:
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces bloom misalignment.
 SLES-54645:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-F"
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces bloom misalignment.
 SLES-54646:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-G"
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces bloom misalignment.
 SLES-54647:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-I"
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces bloom misalignment.
 SLES-54648:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-S"
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces bloom misalignment.
 SLES-54653:
   name: "Freak Out - Extreme Freeride"
   region: "PAL-M5"
@@ -17716,6 +17849,8 @@ SLES-54711:
   name: "Shadow Hearts - From the New World"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts and reduces text box artifacts.
 SLES-54714:
   name: "Tony Hawk's Downhill Jam"
   region: "PAL-E"
@@ -18330,9 +18465,13 @@ SLES-54964:
 SLES-54971:
   name: "Hot Wheels: Beat That!"
   region: "PAL-M4"
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLES-54972:
   name: "Wild Arms 5"
   region: "PAL-M3"
+  gsHWFixes:
+    roundSprite: 1 # Fixes font sizes.
 SLES-54973:
   name: "Le Avventure di Lupin III: Lupin la Morte, Zenigata l'Amore"
   region: "PAL-I"
@@ -18576,9 +18715,11 @@ SLES-55069:
   name: "7 Wonders of the Ancient World"
   region: "PAL-M5"
 SLES-55075:
-  name: "Speed racer"
+  name: "Speed Racer"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lighting misalignment, still missing vibrant colors compared to Software.
 SLES-55076:
   name: "Saint & Sinner"
   region: "PAL-E"
@@ -18845,9 +18986,13 @@ SLES-55214:
 SLES-55215:
   name: "Growlanser - Heritage of War"
   region: "PAL-E"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
 SLES-55216:
   name: "Baroque"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting of characters.
 SLES-55218:
   name: "Tiger Woods PGA Tour 09"
   region: "PAL-E"
@@ -19288,6 +19433,8 @@ SLES-55444:
   compat: 5
   roundModes:
     eeRoundMode: 0  # Fixes "Fall through floor" bug when approaching chests.
+  gsHWFixes:
+    roundSprite: 1 # Fixes textboxes and character portraits.
 SLES-55448:
   name: "Indiana Jones and the Staff of Kings"
   region: "PAL-M5"
@@ -19729,20 +19876,28 @@ SLES-82028:
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
 SLES-82029:
   name: "Star Ocean 3 - Till the End of Time [Disc2of2]"
   region: "PAL-E"
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
   memcardFilters:
     - "SLES-82028"
 SLES-82030:
   name: "Shadow Hearts - Covenant [Disc1of2]"
   region: "PAL-M3"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
 SLES-82031:
   name: "Shadow Hearts - Covenant [Disc2of2]"
   region: "PAL-M3"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
   memcardFilters:
     - "SLES-82030"
 SLES-82032:
@@ -19780,6 +19935,8 @@ SLES-82038:
   name: "Onimusha - Dawn of Dreams [Disc1of2]"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   patches:
     812C5A96:
       content: |-
@@ -19803,6 +19960,8 @@ SLES-82039:
   name: "Onimusha - Dawn of Dreams [Disc2of2]"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   memcardFilters:
     - "SLES-82038"
   patches:
@@ -20108,6 +20267,8 @@ SLKA-25144:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLKA-25149:
   name: "Silent Hill 4 The Room"
   region: "NTSC-K"
@@ -20184,7 +20345,8 @@ SLKA-25200:
   name: "SSX 3 [PlayStation 2 - Big Hit Series]"
   region: "NTSC-K"
   gsHWFixes:
-    textureInsideRT: 1
+    textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
+    halfPixelOffset: 2 # Fixes depth lines.
 SLKA-25201:
   name: "Armored Core Nexus Evolution DISC1"
   region: "NTSC-K"
@@ -20234,6 +20396,8 @@ SLKA-25214:
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SLKA-25215:
   name: "Shining Wild"
   region: "NTSC-K"
@@ -22080,6 +22244,9 @@ SLPM-62489:
 SLPM-62490:
   name: "Dragon Quest VIII [Premium Disc]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes shadows of characters.
+    roundSprite: 1 # Fixes font artifacts.
 SLPM-62491:
   name: "RockMan Power Battle Fighters"
   region: "NTSC-J"
@@ -22574,6 +22741,8 @@ SLPM-62652:
   name: "Simple 2000 Series Vol.81 - The Chikyuu Boueigun 2"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    wildArmsHack: 1 # Lessens the bloom misalignment but still an issue.
 SLPM-62653:
   name: "Psikyo Shooting Collection Vol.1 - Strikers 1945 1&2 [Taito The Best]"
   region: "NTSC-J"
@@ -23313,6 +23482,8 @@ SLPM-65115:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SLPM-65116:
   name: "Lilie no Atelier Plus: Salburg no Renkinjutsushi 3"
   region: "NTSC-J"
@@ -23545,6 +23716,8 @@ SLPM-65209:
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
   patches:
     BEC32D49:
       content: |-
@@ -24282,12 +24455,16 @@ SLPM-65438:
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
 SLPM-65439:
   name: "Star Ocean 3 [Director's Cut] [Disc2of2]"
   region: "NTSC-J"
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
   memcardFilters:
     - "SLPM-65438"
 SLPM-65441:
@@ -24322,7 +24499,8 @@ SLPM-65449:
   name: "SSX 3"
   region: "NTSC-J"
   gsHWFixes:
-    textureInsideRT: 1
+    textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
+    halfPixelOffset: 2 # Fixes depth lines.
 SLPM-65450:
   name: "Tantei Gakuen Q: Kiokan no Satsui [First Limited Edition]"
   region: "NTSC-J"
@@ -24403,9 +24581,13 @@ SLPM-65478:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLPM-65479:
   name: "Sims, The - Bustin' Out"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes vertical lines, font and others.
 SLPM-65480:
   name: "Michigan"
   region: "NTSC-J"
@@ -25358,7 +25540,8 @@ SLPM-65793:
   name: "SSX 3 [EA Best Hits]"
   region: "NTSC-J"
   gsHWFixes:
-    textureInsideRT: 1
+    textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
+    halfPixelOffset: 2 # Fixes depth lines.
 SLPM-65794:
   name: "Capcom Fighting Jam"
   region: "NTSC-J"
@@ -25404,6 +25587,8 @@ SLPM-65800:
   region: "NTSC-J"
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes vertical bars, misalignment bloom effects.
 SLPM-65801:
   name: "Crash Bandicoot 5"
   region: "NTSC-J"
@@ -25673,6 +25858,9 @@ SLPM-65888:
   name: "Dragon Quest VIII"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes shadows of characters.
+    roundSprite: 1 # Fixes font artifacts.
 SLPM-65889:
   name: "Kazoku Keikaku - Kokoro no Kizuna"
   region: "NTSC-J"
@@ -25835,6 +26023,9 @@ SLPM-65941:
 SLPM-65942:
   name: "Mercenaries"
   region: "NTSC-J"
+  gsHWFixes:
+    halfBottomOverride: 1 # Bottom screen has wrong colors.
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLPM-65943:
   name: "Angel's Feather"
   region: "NTSC-J"
@@ -26171,6 +26362,8 @@ SLPM-66045:
 SLPM-66046:
   name: "Star Wars - Episode III - Revenge of the Sith"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLPM-66047:
   name: "FIFA Street"
   region: "NTSC-J"
@@ -26237,10 +26430,14 @@ SLPM-66069:
 SLPM-66070:
   name: "Shadow Hearts - From the New World [Limited Edition]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts and reduces text box artifacts.
 SLPM-66071:
   name: "Shadow Hearts - From the New World"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts and reduces text box artifacts.
 SLPM-66072:
   name: "Fight Night Round 2"
   region: "NTSC-J"
@@ -26416,11 +26613,15 @@ SLPM-66124:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SLPM-66125:
   name: "Final Fantasy X-2 [Ultimate Hits]"
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLPM-66129:
   name: "Guilty Gear XX #Reload"
   region: "NTSC-J"
@@ -26632,6 +26833,8 @@ SLPM-66189:
 SLPM-66190:
   name: "Star Wars Battlefront II"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLPM-66191:
   name: "Tiger Woods PGA Tour 06"
   region: "NTSC-J"
@@ -26907,6 +27110,8 @@ SLPM-66275:
   name: "Shin Onimusha - Dawn of Dreams [Disc1of2]"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   patches:
     BD17248E:
       content: |-
@@ -26916,6 +27121,8 @@ SLPM-66276:
   name: "Shin Onimusha - Dawn of Dreams [Disc2of2]"
   region: "NTSC-J"
   compat: 2
+  gameFixes:
+    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   memcardFilters:
     - "SLPM-66275"
   patches:
@@ -27377,6 +27584,8 @@ SLPM-66419:
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces bloom misalignment.
 SLPM-66420:
   name: "Front Mission 4 [Ultimate Hits]"
   region: "NTSC-J"
@@ -27554,6 +27763,9 @@ SLPM-66464:
 SLPM-66465:
   name: "Mercenaries [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfBottomOverride: 1 # Bottom screen has wrong colors.
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLPM-66467:
   name: "Midway Arcade Treasures - The Game Center of USA"
   region: "NTSC-J"
@@ -27599,12 +27811,16 @@ SLPM-66478:
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
 SLPM-66479:
   name: "Star Ocean 3 - Till the End of Time [Ultimate Hits] [Disc2of2]"
   region: "NTSC-J"
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
   memcardFilters:
     - "SLPM-66478"
 SLPM-66480:
@@ -27614,6 +27830,9 @@ SLPM-66480:
 SLPM-66481:
   name: "Dragon Quest VIII [Ultimate Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes shadows of characters.
+    roundSprite: 1 # Fixes font artifacts.
 SLPM-66482:
   name: "Tokimeki Memorial - Girl's Side 2nd Kiss"
   region: "NTSC-J"
@@ -28264,11 +28483,15 @@ SLPM-66677:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SLPM-66678:
   name: "Final Fantasy X-2 - International + Last Mission [Ultimate Hits]"
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLPM-66679:
   name: "Devil Summoner: Kuzunoha Raidou tai Abaddon Ou [Plus]"
   region: "NTSC-J"
@@ -28516,6 +28739,8 @@ SLPM-66746:
 SLPM-66747:
   name: "Baroque"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting of characters.
 SLPM-66748:
   name: "Mana-Khemia - Gakuen no Renkinjutsu Shitachi"
   region: "NTSC-J"
@@ -28635,6 +28860,8 @@ SLPM-66782:
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces bloom misalignment.
 SLPM-66783:
   name: "Idol Janshi Suchie-Pai 4 [Limited Edition]"
   region: "NTSC-J"
@@ -29328,6 +29555,8 @@ SLPM-67513:
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SLPM-67514:
   name: "Kessen"
   region: "NTSC-K"
@@ -29529,6 +29758,8 @@ SLPM-74231:
 SLPM-74232:
   name: "Shin Onimusha - Dawn of Dreams [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Wrong white textures in FMV.
 SLPM-74234:
   name: "Ryu Ga Gotoku [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -29608,9 +29839,13 @@ SLPM-74250:
 SLPM-74251:
   name: "Shin Onimusha - Dawn of Dreams [PlayStation 2 the Best - Reprint Disc 1]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Wrong white textures in FMV.
 SLPM-74252:
   name: "Shin Onimusha - Dawn of Dreams [Playstation 2 the Best - Reprint Disc 2]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Wrong white textures in FMV.
 SLPM-74253:
   name: "Ryu ga Gotoku [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
@@ -30988,6 +31223,8 @@ SLPS-25050:
   compat: 5
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SLPS-25051:
   name: "Missing Blue"
   region: "NTSC-J"
@@ -31106,6 +31343,8 @@ SLPS-25088:
   compat: 5
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SLPS-25094:
   name: "Reveal Fantasia"
   region: "NTSC-J"
@@ -31588,6 +31827,8 @@ SLPS-25250:
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLPS-25251:
   name: "MVP Baseball 2003"
   region: "NTSC-J"
@@ -32770,6 +33011,8 @@ SLPS-25603:
 SLPS-25604:
   name: "Ar tonelico: Sekai no Owari de Utai Tsuzukeru Shoujo"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes vertical lines in FMVs, character portraits and other sprites.
 SLPS-25605:
   name: "NeoGeo Online Collection Vol.3 - The King of Fighters - Orochi Collection"
   region: "NTSC-J"
@@ -33571,6 +33814,8 @@ SLPS-25819:
   compat: 5
   roundModes:
     eeRoundMode: 0  # Fixes "Fall through floor" bug when approaching chests.
+  gsHWFixes:
+    roundSprite: 1 # Fixes textboxes and character portraits.
 SLPS-25820:
   name: "Kateikyoushi Hitman Reborn!! Let's Ansatsu! Nerawareta 10 Daime!"
   region: "NTSC-J"
@@ -33934,6 +34179,8 @@ SLPS-72501:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SLPS-72502:
   name: "Tales of Destiny 2 [Mega Hits]"
   region: "NTSC-J"
@@ -34247,6 +34494,8 @@ SLPS-73248:
 SLPS-73249:
   name: "Ar tonelico: Sekai no Owari de Utai Tsuzukeru Shoujo [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes vertical lines in FMVs, character portraits and other sprites.
 SLPS-73250:
   name: "Ace Combat Zero - The Belkan War [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -34296,6 +34545,8 @@ SLPS-73263:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0  # Fixes "Fall through floor" bug when approaching chests.
+  gsHWFixes:
+    roundSprite: 1 # Fixes textboxes and character portraits.
 SLPS-73269:
   name: "Kidou Senshi Gundam SEED: Rengou vs. Z.A.F.T."
   region: "NTSC-K"
@@ -34883,6 +35134,7 @@ SLUS-20149:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    roundSprite: 1 # Fixes font artifacts.
 SLUS-20150:
   name: "Knockout Kings 2001"
   region: "NTSC-U"
@@ -35267,6 +35519,8 @@ SLUS-20236:
   name: "Taz Wanted"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLUS-20237:
   name: "ESPN - X Games Skateboarding"
   region: "NTSC-U"
@@ -35560,6 +35814,8 @@ SLUS-20312:
   compat: 5
   roundModes:
     eeRoundMode: 1  # Fix reverse control and boss in some places.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SLUS-20313:
   name: "Wave Rally"
   region: "NTSC-U"
@@ -35568,6 +35824,8 @@ SLUS-20314:
   name: "TimeSplitters 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes texture slight misalignment.
 SLUS-20315:
   name: "Spyro the Dragon - Enter the Dragonfly"
   region: "NTSC-U"
@@ -36149,6 +36407,8 @@ SLUS-20445:
   name: "Robot Alchemic Drive - RAD"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLUS-20446:
   name: "Agassi Tennis Generation"
   region: "NTSC-U"
@@ -36271,6 +36531,8 @@ SLUS-20471:
   name: "Rygar - The Legendary Adventure"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLUS-20472:
   name: "Micro Machines"
   region: "NTSC-U"
@@ -36339,6 +36601,8 @@ SLUS-20488:
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
 SLUS-20489:
   name: "Whirl Tour"
   region: "NTSC-U"
@@ -37127,6 +37391,8 @@ SLUS-20672:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLUS-20673:
   name: "Alias"
   region: "NTSC-U"
@@ -37245,6 +37511,8 @@ SLUS-20702:
   name: "Monster Rancher 4"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLUS-20703:
   name: "Airforce: Delta Strike"
   region: "NTSC-U"
@@ -37559,7 +37827,8 @@ SLUS-20772:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    textureInsideRT: 1
+    textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
+    halfPixelOffset: 2 # Fixes depth lines.
 SLUS-20773:
   name: "Legacy of Kain - Defiance"
   region: "NTSC-U"
@@ -37807,6 +38076,8 @@ SLUS-20842:
   name: "Sims, The - Bustin' Out"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes vertical lines, font and others.
 SLUS-20843:
   name: "Dead to Rights II"
   region: "NTSC-U"
@@ -38021,6 +38292,8 @@ SLUS-20891:
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
   memcardFilters:
     - "SLUS-20488"
 SLUS-20892:
@@ -38225,6 +38498,9 @@ SLUS-20932:
   name: "Mercenaries - Playground of Destruction"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfBottomOverride: 1 # Bottom screen has wrong colors.
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLUS-20933:
   name: "Smash Court Pro Tournament Tennis 2"
   region: "NTSC-U"
@@ -38345,6 +38621,8 @@ SLUS-20960:
   name: "MegaMan X8"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   memcardFilters:
     - "SLUS-20960"
     - "SLUS-20903"
@@ -38449,6 +38727,8 @@ SLUS-20979:
   name: "Suikoden IV"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes black squares in water.
 SLUS-20980:
   name: "Ys - The Ark of Napishtim"
   region: "NTSC-U"
@@ -38798,6 +39078,8 @@ SLUS-21041:
   name: "Shadow Hearts - Covenant [Disc1of2]"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
 SLUS-21042:
   name: "Darkwatch"
   region: "NTSC-U"
@@ -38810,6 +39092,8 @@ SLUS-21044:
   name: "Shadow Hearts - Covenant [Disc2of2]"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
   memcardFilters:
     - "SLUS-21041"
 SLUS-21045:
@@ -39224,6 +39508,8 @@ SLUS-21143:
   name: "Star Wars - Episode III - Revenge of the Sith"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLUS-21144:
   name: "Tom Clancy's Rainbow Six - Lockdown"
   region: "NTSC-U"
@@ -39245,6 +39531,8 @@ SLUS-21148:
   name: "TimeSplitters - Future Perfect"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 3 # Removes ghosting of distant objects.
 SLUS-21149:
   name: "Yourself! Fitness"
   region: "NTSC-U"
@@ -39389,6 +39677,8 @@ SLUS-21180:
   name: "Onimusha: Dawn of Dreams [Disc1of2]"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   patches:
     FE44479E:
       content: |-
@@ -39527,6 +39817,9 @@ SLUS-21207:
   name: "Dragon Quest VIII - Journey of the Cursed King"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes shadows of characters.
+    roundSprite: 1 # Fixes font artifacts.
 SLUS-21208:
   name: "Tony Hawk's American Wasteland"
   region: "NTSC-U"
@@ -39698,6 +39991,8 @@ SLUS-21240:
   name: "Star Wars Battlefront II"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLUS-21241:
   name: "NHL '06"
   region: "NTSC-U"
@@ -39810,6 +40105,8 @@ SLUS-21262:
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes vertical bars, misalignment bloom effects.
 SLUS-21263:
   name: "Romancing SaGa"
   region: "NTSC-U"
@@ -39947,6 +40244,7 @@ SLUS-21292:
   compat: 5
   gsHWFixes:
     textureInsideRT: 1
+    roundSprite: 1 # Fixes font artifacts.
   memcardFilters: # Allows import of Alter Code F clear data.
     - "SLUS-21292"
     - "SLUS-20937"
@@ -40107,6 +40405,8 @@ SLUS-21326:
   name: "Shadow Hearts - From the New World"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts and reduces text box artifacts.
 SLUS-21327:
   name: "Atelier Iris 2: The Azoth of Destiny"
   region: "NTSC-U"
@@ -40299,6 +40599,8 @@ SLUS-21362:
   name: "Onimusha - Dawn of Dreams [Disc2of2]"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   memcardFilters:
     - "SLUS-21180"
   patches:
@@ -40725,6 +41027,8 @@ SLUS-21445:
   name: "Ar tonelico: Melody of Elemia"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes vertical lines in FMVs, character portraits and other sprites.
 SLUS-21446:
   name: "Family Feud"
   region: "NTSC-U"
@@ -40756,6 +41060,8 @@ SLUS-21452:
   compat: 5
   gameFixes:
     - VuAddSubHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces bloom misalignment.
 SLUS-21453:
   name: "Disney's Meet the Robinsons"
   region: "NTSC-U"
@@ -41153,6 +41459,8 @@ SLUS-21571:
   name: "Growlanser - Heritage of War"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
 SLUS-21572:
   name: "Surf's Up"
   region: "NTSC-U"
@@ -41364,6 +41672,8 @@ SLUS-21615:
   name: "Wild ARMs 5"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes font sizes.
 SLUS-21616:
   name: "Tony Hawk's Proving Ground"
   region: "NTSC-U"
@@ -41428,6 +41738,8 @@ SLUS-21628:
   name: "Hot Wheels: Beat That!"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLUS-21629:
   name: "Samurai Shodown Anthology"
   region: "NTSC-U"
@@ -41793,6 +42105,8 @@ SLUS-21714:
   name: "Baroque"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting of characters.
 SLUS-21715:
   name: "Cabela's Monster Bass"
   region: "NTSC-U"
@@ -42120,6 +42434,8 @@ SLUS-21788:
   compat: 5
   roundModes:
     eeRoundMode: 0  # Fixes "Fall through floor" bug when approaching chests.
+  gsHWFixes:
+    roundSprite: 1 # Fixes textboxes and character portraits.
 SLUS-21789:
   name: "Cabela's Legendary Adventures"
   region: "NTSC-U"
@@ -42209,6 +42525,8 @@ SLUS-21812:
   name: "Speed Racer"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lighting misalignment, still missing vibrant colors compared to Software.
 SLUS-21813:
   name: "James Bond 007 - Quantum of Solace"
   region: "NTSC-U"
@@ -42994,6 +43312,8 @@ SLUS-29022:
 SLUS-29025:
   name: "R.A.D. - Robot Alchemic Drive [Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLUS-29026:
   name: "MX SuperFly [Demo]"
   region: "NTSC-U"
@@ -43321,6 +43641,9 @@ SLUS-29156:
 SLUS-29157:
   name: "Dragon Quest VIII - Journey of the Cursed King [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes shadows of characters.
+    roundSprite: 1 # Fixes font artifacts.
 SLUS-29159:
   name: "One Piece - Grand Battle [Demo]"
   region: "NTSC-U"
@@ -43339,6 +43662,8 @@ SLUS-29163:
 SLUS-29164:
   name: "Star Wars Battlefront II [Online Public Beta]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLUS-29167:
   name: "James Bond 007 - From Russia with Love, Need for Speed - Most Wanted, SSX World Tour [Demo]"
   region: "NTSC-U"
