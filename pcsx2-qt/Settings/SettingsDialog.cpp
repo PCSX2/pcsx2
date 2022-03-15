@@ -390,7 +390,7 @@ void SettingsDialog::setStringSettingValue(const char* section, const char* key,
 {
 	if (m_sif)
 	{
-		value.has_value() ? m_sif->SetBoolValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
+		value.has_value() ? m_sif->SetStringValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
 		m_sif->Save();
 	}
 	else
