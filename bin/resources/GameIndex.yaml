@@ -5524,14 +5524,18 @@ SCPS-55008:
   name: "Thunderstrike"
   region: "NTSC-J"
 SCPS-55010:
-  name: "Grandia Extreme"
+  name: "Grandia Xtreme"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SCPS-55011:
   name: "Dual Hearts"
   region: "NTSC-J"
 SCPS-55012:
-  name: "Grandia 2"
+  name: "Grandia II"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Vertical Lines in FMV.
 SCPS-55013:
   name: "Soul Reaver 2 - Legacy of Kain"
   region: "NTSC-J"
@@ -8932,6 +8936,8 @@ SLES-50498:
   name: "Grandia II"
   region: "PAL-E"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Vertical Lines in FMV.
 SLES-50503:
   name: "Weakest Link"
   region: "PAL-E"
@@ -23230,8 +23236,10 @@ SLPM-65080:
   region: "NTSC-J"
   compat: 5
 SLPM-65082:
-  name: "Grandia Extreme [Limited Edition]"
+  name: "Grandia Xtreme [Limited Edition]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLPM-65083:
   name: "Houshin Engi 2"
   region: "NTSC-J"
@@ -23257,8 +23265,10 @@ SLPM-65087:
     - "SLPM-65086"
     - "SLPM-65087"
 SLPM-65089:
-  name: "Grandia Extreme"
+  name: "Grandia Xtreme"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLPM-65090:
   name: "Spy Hunter"
   region: "NTSC-J"
@@ -35074,6 +35084,8 @@ SLUS-20194:
   name: "Grandia II"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Vertical Lines in FMV.
 SLUS-20195:
   name: "Dragon Rage"
   region: "NTSC-U"
@@ -36042,6 +36054,8 @@ SLUS-20417:
   name: "Grandia Xtreme"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLUS-20418:
   name: "Wakeboarding Unleashed featuring Shaun Murray"
   region: "NTSC-U"
