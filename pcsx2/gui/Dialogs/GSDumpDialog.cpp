@@ -859,6 +859,8 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	}
 
 	Pcsx2Config::GSOptions config(g_Conf->EmuOptions.GS);
+	config.MaskUserHacks();
+	config.MaskUpscalingHacks();
 	if (!m_dump_file->GetSerial().empty())
 	{
 		if (const GameDatabaseSchema::GameEntry* entry = GameDatabase::findGame(m_dump_file->GetSerial()); entry)
