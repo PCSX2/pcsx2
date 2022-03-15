@@ -23901,6 +23901,9 @@ SLPM-65307:
 SLPM-65308:
   name: "Shutokou Battle 01"
   region: "NTSC-J"
+  compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPM-65309:
   name: "Splashdown [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -29459,6 +29462,9 @@ SLPM-74202:
 SLPM-74204:
   name: "Shutokou Battle 01 [PlayStation 2 The Best]"
   region: "NTSC-J"
+  compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPM-74205:
   name: "Shin Megami Tensei III: Nocturne [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -29479,6 +29485,7 @@ SLPM-74210:
 SLPM-74211:
   name: "Shutokou Battle 0 [PlayStation 2 The Best]"
   region: "NTSC-J"
+  compat: 5
 SLPM-74212:
   name: "Sengoku Musou [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -30900,6 +30907,7 @@ SLPS-25026:
 SLPS-25028:
   name: "Shutokou Battle 0"
   region: "NTSC-J"
+  compat: 5
 SLPS-25029:
   name: "Rayman 2 Revolution"
   region: "NTSC-J"
@@ -34307,8 +34315,9 @@ SLPS-73401:
   name: "Victorious Boxers - Championship Edition [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPS-73402:
-  name: "Shutokou Battle Zero [PlayStation 2 The Best]"
+  name: "Shutokou Battle 0 [PlayStation 2 The Best]"
   region: "NTSC-J"
+  compat: 5
 SLPS-73403:
   name: "Armored Core 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
