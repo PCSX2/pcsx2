@@ -16529,9 +16529,13 @@ SLES-54135:
   name: "Grand Theft Auto - Liberty City Stories"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Removes blur due to misaligned fullscreen effect.
 SLES-54136:
   name: "Grand Theft Auto - Liberty City Stories"
   region: "PAL-E-G"
+  gsHWFixes:
+    halfPixelOffset: 1 # Removes blur due to misaligned fullscreen effect.
 SLES-54137:
   name: "Just Cause"
   region: "PAL-M3"
@@ -17659,9 +17663,13 @@ SLES-54622:
   name: "Grand Theft Auto - Vice City Stories"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned effect when in-game Trails option is turned on.
 SLES-54623:
   name: "Grand Theft Auto - Vice City Stories"
   region: "PAL-G"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned effect when in-game Trails option is turned on.
 SLES-54624:
   name: "Samurai Warriors 2 - Empires"
   region: "PAL-E"
@@ -29087,6 +29095,8 @@ SLPM-66850:
 SLPM-66851:
   name: "Grand Theft Auto - Liberty City Stories"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Removes blur due to misaligned fullscreen effect.
 SLPM-66852:
   name: "Capcom Classics Collection [Best Price]"
   region: "NTSC-J"
@@ -29290,6 +29300,8 @@ SLPM-66916:
 SLPM-66917:
   name: "Grand Theft Auto - Vice City Stories"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned effect when in-game Trails option is turned on.
 SLPM-66918:
   name: "Princess Maker 5"
   region: "NTSC-J"
@@ -40980,6 +40992,8 @@ SLUS-21423:
   name: "Grand Theft Auto - Liberty City Stories"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Removes blur due to misaligned fullscreen effect.
 SLUS-21424:
   name: "NBA 2K7"
   region: "NTSC-U"
@@ -41595,6 +41609,8 @@ SLUS-21590:
   name: "Grand Theft Auto - Vice City Stories"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned effect when in-game Trails option is turned on.
 SLUS-21591:
   name: "Ski-Doo Snow X Racing"
   region: "NTSC-U"
