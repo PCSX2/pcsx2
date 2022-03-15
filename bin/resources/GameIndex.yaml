@@ -11727,6 +11727,9 @@ SLES-51914:
   memcardFilters:
     - "SLES-51913"
     - "SLES-51914"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
+    roundSprite: 2 # Fixes various lines / reduces bars on right edge.
 SLES-51915:
   name: "Pro Evolution Soccer 3"
   region: "PAL-I"
@@ -20083,6 +20086,9 @@ SLKA-25093:
   memcardFilters:
     - "SLKA-25092"
     - "SLKA-25093"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
+    roundSprite: 2 # Fixes various lines / reduces bars on right edge.
 SLKA-25100:
   name: "Dragon Quest V Dragon Quarter"
   region: "NTSC-K"
@@ -24237,6 +24243,9 @@ SLPM-65413:
   memcardFilters:
     - "SLPM-65411"
     - "SLPM-65413"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
+    roundSprite: 2 # Fixes various lines / reduces bars on right edge.
 SLPM-65414:
   name: "Simple 2000 Series Vol.45 - The Love and Tears and Memory"
   region: "NTSC-J"
@@ -37256,6 +37265,9 @@ SLUS-20694:
   memcardFilters:
     - "SLUS-20694"
     - "SLUS-20710"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
+    roundSprite: 2 # Fixes various lines / reduces bars on right edge.
 SLUS-20695:
   name: "Chaos Legion"
   region: "NTSC-U"
