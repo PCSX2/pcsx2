@@ -2839,6 +2839,9 @@ SCES-52065:
 SCES-52099:
   name: "I-Ninja"
   region: "PAL-M5"
+  gsHWFixes:
+    skipDrawStart: 1 # Fix for depth lines.
+    skipDrawEnd: 1 # Fix for depth lines.
 SCES-52124:
   name: "Kill.switch"
   region: "PAL-M5"
@@ -5778,6 +5781,10 @@ SCUS-21295:
   compat: 5
   roundModes:
     vuRoundMode: 0  # Crashes without.
+  gsHWFixes:
+    mergeSprite: 1 # Fix for upscaling.
+    wildArmsHack: 1 # Fix for upscaling.
+    halfPixelOffset: 2 # Fix for upscaling.
 SCUS-21494:
   name: "Need for Speed - Carbon Collector's Edition"
   region: "NTSC-U"
@@ -7730,6 +7737,10 @@ SLED-50488:
 SLED-50884:
   name: "TimeSplitters 2 [Demo]"
   region: "PAL-E"
+  gsHWFixes:
+    skipDrawStart: 1 # Fix for upscaling.
+    skipDrawEnd: 1 # Fix for upscaling.
+    wildArmsHack: 1 # Fix for upscaling.
 SLED-51062:
   name: "Fireblade [Demo]"
   region: "PAL-E"
@@ -7816,6 +7827,8 @@ SLED-53109:
 SLED-53673:
   name: "007 - From Russia with Love [Demo]"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for depth lines.
 SLED-53681:
   name: "007 - From Russia with Love & Need for Speed Most Wanted & SSX On Tour [Demo]"
   region: "PAL-E"
@@ -9713,6 +9726,10 @@ SLES-50877:
   name: "TimeSplitters 2"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    skipDrawStart: 1 # Fix for upscaling.
+    skipDrawEnd: 1 # Fix for upscaling.
+    wildArmsHack: 1 # Fix for upscaling.
 SLES-50879:
   name: "Paris-Dakar 2"
   region: "PAL-M5"
@@ -11929,6 +11946,8 @@ SLES-52005:
   name: "James Bond 007 - Everything or Nothing"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for depth lines.
 SLES-52008:
   name: "NBA Live 2004"
   region: "PAL-M5"
@@ -12016,6 +12035,8 @@ SLES-52046:
   name: "James Bond 007 - Everything or Nothing (Alles oder Nichts)"
   region: "PAL-G"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for depth lines.
 SLES-52047:
   name: "Sims, The - Bustin' Out"
   region: "PAL-M6"
@@ -12563,18 +12584,33 @@ SLES-52379:
   name: "Shrek 2"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    skipDrawStart: 2 # Fix for depth lines.
+    skipDrawEnd: 2 # Fix for depth lines.
 SLES-52380:
   name: "Shrek 2"
   region: "PAL-F"
+  gsHWFixes:
+    skipDrawStart: 2 # Fix for depth lines.
+    skipDrawEnd: 2 # Fix for depth lines.
 SLES-52381:
   name: "Shrek 2"
   region: "PAL-G"
+  gsHWFixes:
+    skipDrawStart: 2 # Fix for depth lines.
+    skipDrawEnd: 2 # Fix for depth lines.
 SLES-52382:
   name: "Shrek 2"
   region: "PAL-S"
+  gsHWFixes:
+    skipDrawStart: 2 # Fix for depth lines.
+    skipDrawEnd: 2 # Fix for depth lines.
 SLES-52383:
   name: "Shrek 2"
   region: "PAL-I"
+  gsHWFixes:
+    skipDrawStart: 2 # Fix for depth lines.
+    skipDrawEnd: 2 # Fix for depth lines.
 SLES-52384:
   name: "Project Zero 2 - Crimson Butterfly"
   region: "PAL-M5"
@@ -12705,6 +12741,9 @@ SLES-52451:
 SLES-52457:
   name: "Shrek 2"
   region: "PAL-SW"
+  gsHWFixes:
+    skipDrawStart: 2 # Fix for depth lines.
+    skipDrawEnd: 2 # Fix for depth lines.
 SLES-52458:
   name: "Disgaea: Hour of Darkness"
   region: "PAL-E"
@@ -13099,11 +13138,19 @@ SLES-52621:
   region: "PAL-E"
   roundModes:
     vuRoundMode: 0  # Crashes without.
+    gsHWFixes:
+      mergeSprite: 1 # Fix for upscaling.
+      wildArmsHack: 1 # Fix for upscaling.
+      halfPixelOffset: 2 # Fix for upscaling.
 SLES-52622:
   name: "Tony Hawk's Underground 2"
   region: "PAL-M4"
   roundModes:
     vuRoundMode: 0  # Crashes without.
+  gsHWFixes:
+    mergeSprite: 1 # Fix for upscaling.
+    wildArmsHack: 1 # Fix for upscaling.
+    halfPixelOffset: 2 # Fix for upscaling.
 SLES-52624:
   name: "X-Men Legends"
   region: "PAL-E"
@@ -13667,12 +13714,18 @@ SLES-52895:
   name: "Spongebob SquarePants - The Movie"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for upscaling.
 SLES-52896:
   name: "Spongebob SquarePants - The Movie"
   region: "PAL-F-G"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for upscaling.
 SLES-52897:
   name: "Spongebob SquarePants - The Movie"
   region: "PAL-I"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for upscaling.
 SLES-52898:
   name: "King of Fighters - Maximum Impact"
   region: "PAL-E-JP"
@@ -13893,9 +13946,13 @@ SLES-52984:
 SLES-52985:
   name: "Spongebob SquarePants - The Movie"
   region: "PAL-G"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for upscaling.
 SLES-52986:
   name: "Spongebob SquarePants - The Movie"
   region: "PAL-S"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for upscaling.
 SLES-52988:
   name: "MegaMan X8"
   region: "PAL-M5"
@@ -15073,11 +15130,19 @@ SLES-53534:
   compat: 5
   roundModes:
     vuRoundMode: 0  # Crashes without.
+  gsHWFixes:
+    mergeSprite: 1 # Fix for upscaling.
+    wildArmsHack: 1 # Fix for upscaling.
+    halfPixelOffset: 2 # Fix for upscaling.
 SLES-53535:
   name: "Tony Hawk's American Wasteland"
   region: "PAL-M4"
   roundModes:
     vuRoundMode: 0  # Crashes without.
+  gsHWFixes:
+    mergeSprite: 1 # Fix for upscaling.
+    wildArmsHack: 1 # Fix for upscaling.
+    halfPixelOffset: 2 # Fix for upscaling.
 SLES-53536:
   name: "London Racer - Police Madness"
   region: "PAL-M3"
@@ -15167,6 +15232,8 @@ SLES-53552:
 SLES-53553:
   name: "James Bond 007 - From Russia with Love"
   region: "PAL-M7"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for depth lines.
 SLES-53556:
   name: "Driver - Parallel Lines"
   region: "PAL-M3"
@@ -16408,6 +16475,9 @@ SLES-54136:
 SLES-54137:
   name: "Just Cause"
   region: "PAL-M3"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for upscaling.
+    wildArmsHack: 1  # Fix for upscaling.
 SLES-54138:
   name: "Steambot Chronicles"
   region: "PAL-E"
@@ -16596,6 +16666,9 @@ SLES-54199:
 SLES-54200:
   name: "Just Cause"
   region: "PAL-F-G"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for upscaling.
+    wildArmsHack: 1  # Fix for upscaling.
 SLES-54203:
   name: "Pro Evolution Soccer 6"
   region: "PAL-E"
@@ -24328,6 +24401,8 @@ SLPM-65445:
 SLPM-65446:
   name: "James Bond 007 - Everything or Nothing"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for depth lines.
 SLPM-65447:
   name: "Kunoichi"
   region: "NTSC-J"
@@ -25087,6 +25162,9 @@ SLPM-65696:
 SLPM-65697:
   name: "Shrek 2"
   region: "NTSC-J"
+  gsHWFixes:
+    skipDrawStart: 2 # Fix for depth lines.
+    skipDrawEnd: 2 # Fix for depth lines.
 SLPM-65698:
   name: "Love Songs - ADV Futaba Riho 14-sai Natsu"
   region: "NTSC-J"
@@ -25162,6 +25240,8 @@ SLPM-65724:
 SLPM-65725:
   name: "James Bond 007 - Everything or Nothing [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for depth lines.
 SLPM-65726:
   name: "Star Wars - Jango Fett [EA Best Hits]"
   region: "NTSC-J"
@@ -27094,6 +27174,8 @@ SLPM-66321:
 SLPM-66322:
   name: "James Bond 007 - From Russia With Love"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for depth lines.
 SLPM-66323:
   name: "Princess Software Collection, The"
   region: "NTSC-J"
@@ -28067,6 +28149,8 @@ SLPM-66613:
 SLPM-66615:
   name: "James Bond 007 - Everything or Nothing & Nightfire [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for depth lines.
 SLPM-66617:
   name: "Need for Speed - Carbon"
   region: "NTSC-J"
@@ -35597,6 +35681,10 @@ SLUS-20314:
   name: "TimeSplitters 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    skipDrawStart: 1 # Fix for upscaling.
+    skipDrawEnd: 1 # Fix for upscaling.
+    wildArmsHack: 1 # Fix for upscaling.
 SLUS-20315:
   name: "Spyro the Dragon - Enter the Dragonfly"
   region: "NTSC-U"
@@ -37286,6 +37374,9 @@ SLUS-20705:
   name: "I-Ninja"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    skipDrawStart: 1 # Fix for depth lines.
+    skipDrawEnd: 1 # Fix for depth lines.
 SLUS-20706:
   name: "Kill Switch"
   region: "NTSC-U"
@@ -37453,6 +37544,9 @@ SLUS-20745:
   name: "Shrek 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    skipDrawStart: 2 # Fix for depth lines.
+    skipDrawEnd: 2 # Fix for depth lines.
 SLUS-20746:
   name: "Rogue Ops"
   region: "NTSC-U"
@@ -37474,6 +37568,8 @@ SLUS-20751:
   name: "James Bond 007 - Everything or Nothing"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for depth lines.
 SLUS-20752:
   name: "Madden NFL 2004"
   region: "NTSC-U"
@@ -38407,6 +38503,10 @@ SLUS-20965:
   compat: 5
   roundModes:
     vuRoundMode: 0  # Crashes without.
+  gsHWFixes:
+    mergeSprite: 1 # Fix for upscaling.
+    wildArmsHack: 1 # Fix for upscaling.
+    halfPixelOffset: 2 # Fix for upscaling.
 SLUS-20966:
   name: "State of Emergency 2"
   region: "NTSC-U"
@@ -39562,6 +39662,10 @@ SLUS-21208:
   compat: 5
   roundModes:
     vuRoundMode: 0  # Crashes without.
+  gsHWFixes:
+    mergeSprite: 1 # Fix for upscaling.
+    wildArmsHack: 1 # Fix for upscaling.
+    halfPixelOffset: 2 # Fix for upscaling.
 SLUS-21209:
   name: "Urban Reign"
   region: "NTSC-U"
@@ -39933,6 +40037,8 @@ SLUS-21282:
   name: "James Bond 007 - From Russia with Love"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for depth lines.
 SLUS-21283:
   name: "Total Overdose - A Gunslinger's Tale in Mexico"
   region: "NTSC-U"
@@ -39996,6 +40102,10 @@ SLUS-21295:
     vuRoundMode: 0  # Crashes without.
   memcardFilters: # Game saves use the normal edition serial.
     - "SLUS-21208"
+  gsHWFixes:
+    mergeSprite: 1 # Fix for upscaling.
+    wildArmsHack: 1 # Fix for upscaling.
+    halfPixelOffset: 2 # Fix for upscaling.
 SLUS-21296:
   name: "Dance Factory"
   region: "NTSC-U"
@@ -40714,6 +40824,9 @@ SLUS-21436:
   name: "Just Cause"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for upscaling.
+    wildArmsHack: 1  # Fix for upscaling.
 SLUS-21437:
   name: "Disney's Kim Possible - What's the Switch"
   region: "NTSC-U"
@@ -43154,6 +43267,9 @@ SLUS-29074:
 SLUS-29077:
   name: "I-Ninja [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    skipDrawStart: 1 # Fix for depth lines.
+    skipDrawEnd: 1 # Fix for depth lines.
 SLUS-29079:
   name: "NCAA March Madness 2004 [Demo]"
   region: "NTSC-U"
@@ -43210,6 +43326,8 @@ SLUS-29093:
 SLUS-29095:
   name: "James Bond 007 - Everything or Nothing [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for depth lines.
 SLUS-29096:
   name: "Final Night 2004 [Demo]"
   region: "NTSC-U"
@@ -43376,6 +43494,8 @@ SLUS-29167:
 SLUS-29168:
   name: "James Bond 007 - From Russia with Love [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix for depth lines.
 SLUS-29169:
   name: "Resident Evil 4 [Demo]"
   region: "NTSC-U"
