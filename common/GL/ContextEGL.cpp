@@ -285,23 +285,18 @@ namespace GL
 		Console.WriteLn(
 			"Trying version %u.%u (%s)", version.major_version, version.minor_version,
 			version.profile == Context::Profile::ES ? "ES" : (version.profile == Context::Profile::Core ? "Core" : "None"));
-		int surface_attribs[16];
-		int nsurface_attribs = 0;
-		surface_attribs[nsurface_attribs++] = EGL_RENDERABLE_TYPE;
-		surface_attribs[nsurface_attribs++] = (version.profile == Profile::ES) ?
-                                                  ((version.major_version >= 3) ? EGL_OPENGL_ES3_BIT :
-                                                                                  ((version.major_version == 2) ? EGL_OPENGL_ES2_BIT : EGL_OPENGL_ES_BIT)) :
-                                                  EGL_OPENGL_BIT;
-		surface_attribs[nsurface_attribs++] = EGL_SURFACE_TYPE;
-		surface_attribs[nsurface_attribs++] = (m_wi.type != WindowInfo::Type::Surfaceless) ? EGL_WINDOW_BIT : 0;
-		surface_attribs[nsurface_attribs++] = EGL_RED_SIZE;
-		surface_attribs[nsurface_attribs++] = 8;
-		surface_attribs[nsurface_attribs++] = EGL_GREEN_SIZE;
-		surface_attribs[nsurface_attribs++] = 8;
-		surface_attribs[nsurface_attribs++] = EGL_BLUE_SIZE;
-		surface_attribs[nsurface_attribs++] = 8;
-		surface_attribs[nsurface_attribs++] = EGL_NONE;
-		surface_attribs[nsurface_attribs++] = 0;
+
+		const int renderable_type = version.profile == Profile::ES
+			? ((version.major_version >= 3) ? EGL_OPENGL_ES3_BIT : ((version.major_version == 2) ? EGL_OPENGL_ES2_BIT : EGL_OPENGL_ES_BIT))
+			: EGL_OPENGL_BIT;
+		const int surface_attribs[] = {
+			EGL_RENDERABLE_TYPE, renderable_type,
+			EGL_SURFACE_TYPE, (m_wi.type != WindowInfo::Type::Surfaceless) ? EGL_WINDOW_BIT : 0,
+			EGL_RED_SIZE, 8,
+			EGL_GREEN_SIZE, 8,
+			EGL_BLUE_SIZE, 8,
+			EGL_NONE
+		};
 
 		EGLint num_configs;
 		if (!eglChooseConfig(m_display, surface_attribs, nullptr, 0, &num_configs) || num_configs == 0)
