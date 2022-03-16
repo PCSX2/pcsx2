@@ -632,7 +632,7 @@ SCAJ-20102:
   name: "Tales of Symphonia"
   region: "NTSC-Unk"
     gsHWFixes:
-      alignSprite: 1 #fixes vertical bars
+      alignSprite: 1 # Fixes vertical lines.
 SCAJ-20104:
   name: "Ace Combat 5 - The Unsung War"
   region: "NTSC-Unk"
