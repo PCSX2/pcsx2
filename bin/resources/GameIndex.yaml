@@ -631,6 +631,8 @@ SCAJ-20101:
 SCAJ-20102:
   name: "Tales of Symphonia"
   region: "NTSC-Unk"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SCAJ-20104:
   name: "Ace Combat 5 - The Unsung War"
   region: "NTSC-Unk"
@@ -32375,6 +32377,8 @@ SLPS-25400:
   name: "Tales of Symphonia"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-25401:
   name: "Magna Carta"
   region: "NTSC-J"
@@ -34356,6 +34360,8 @@ SLPS-73216:
 SLPS-73217:
   name: "Tales of Symphonia [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-73218:
   name: "Ace Combat 5 - The Unsung War [PlayStation 2 The Best]"
   region: "NTSC-J"
