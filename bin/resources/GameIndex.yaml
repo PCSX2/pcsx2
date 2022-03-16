@@ -34361,7 +34361,7 @@ SLPS-73217:
   name: "Tales of Symphonia [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical bars.
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-73218:
   name: "Ace Combat 5 - The Unsung War [PlayStation 2 The Best]"
   region: "NTSC-J"
