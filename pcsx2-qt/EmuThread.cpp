@@ -236,7 +236,7 @@ void EmuThread::run()
 	m_event_loop = new QEventLoop();
 	m_started_semaphore.release();
 
-	if (!VMManager::InitializeMemory())
+	if (!VMManager::Internal::InitializeMemory())
 		pxFailRel("Failed to allocate memory map");
 
 	// we need input sources ready for binding
@@ -258,7 +258,7 @@ void EmuThread::run()
 	stopBackgroundControllerPollTimer();
 	destroyBackgroundControllerPollTimer();
 	InputManager::CloseSources();
-	VMManager::ReleaseMemory();
+	VMManager::Internal::ReleaseMemory();
 	PerformanceMetrics::SetCPUThreadTimer(Common::ThreadCPUTimer());
 	moveToThread(m_ui_thread);
 	deleteLater();
