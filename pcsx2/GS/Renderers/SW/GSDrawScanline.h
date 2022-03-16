@@ -66,17 +66,17 @@ public:
 
 	void DrawRect(const GSVector4i& r, const GSVertexSW& v);
 
+	static void CSetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local, const GSScanlineGlobalData& global);
+	static void CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local, const GSScanlineGlobalData& global);
+
+	template<class T> static bool TestAlpha(T& test, T& fm, T& zm, const T& ga, const GSScanlineGlobalData& global);
+	template<class T> static void WritePixel(const T& src, int addr, int i, u32 psm, const GSScanlineGlobalData& global);
+
 #ifndef ENABLE_JIT_RASTERIZER
 
 	void SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan);
 	void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan);
 	void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan);
-
-	bool IsEdge() const { return m_global.sel.aa1; }
-	bool IsRect() const { return m_global.sel.IsSolidRect(); }
-
-	template<class T> bool TestAlpha(T& test, T& fm, T& zm, const T& ga);
-	template<class T> void WritePixel(const T& src, int addr, int i, u32 psm);
 
 #endif
 
