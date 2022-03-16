@@ -334,17 +334,15 @@ namespace GL
 			config = configs.front();
 		}
 
-		int attribs[8];
-		int nattribs = 0;
-		if (version.profile != Profile::NoProfile)
-		{
-			attribs[nattribs++] = EGL_CONTEXT_MAJOR_VERSION;
-			attribs[nattribs++] = version.major_version;
-			attribs[nattribs++] = EGL_CONTEXT_MINOR_VERSION;
-			attribs[nattribs++] = version.minor_version;
-		}
-		attribs[nattribs++] = EGL_NONE;
-		attribs[nattribs++] = 0;
+		const auto attribs = [version]() -> std::array<int, 8> {
+			if (version.profile != Profile::NoProfile)
+				return {
+					EGL_CONTEXT_MAJOR_VERSION, version.major_version,
+					EGL_CONTEXT_MINOR_VERSION, version.minor_version,
+					EGL_NONE
+				};
+			return {EGL_NONE};
+		}();
 
 		if (!eglBindAPI((version.profile == Profile::ES) ? EGL_OPENGL_ES_API : EGL_OPENGL_API))
 		{
@@ -352,7 +350,7 @@ namespace GL
 			return false;
 		}
 
-		m_context = eglCreateContext(m_display, config.value(), share_context, attribs);
+		m_context = eglCreateContext(m_display, config.value(), share_context, attribs.data());
 		if (!m_context)
 		{
 			Console.Error("eglCreateContext() failed: %d", eglGetError());
