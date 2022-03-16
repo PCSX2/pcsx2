@@ -173,16 +173,20 @@ std::string VMManager::GetGameName()
 	return s_game_name;
 }
 
-bool VMManager::InitializeMemory()
+bool VMManager::Internal::InitializeGlobals()
 {
-	pxAssert(!s_vm_memory && !s_cpu_provider_pack);
-
-#ifdef _M_X86
 	x86caps.Identify();
 	x86caps.CountCores();
 	x86caps.SIMD_EstablishMXCSRmask();
 	x86caps.CalculateMHz();
-#endif
+	SysLogMachineCaps();
+
+	return true;
+}
+
+bool VMManager::Internal::InitializeMemory()
+{
+	pxAssert(!s_vm_memory && !s_cpu_provider_pack);
 
 	s_vm_memory = std::make_unique<SysMainMemory>();
 	s_cpu_provider_pack = std::make_unique<SysCpuProviderPack>();
@@ -191,7 +195,7 @@ bool VMManager::InitializeMemory()
 	return true;
 }
 
-void VMManager::ReleaseMemory()
+void VMManager::Internal::ReleaseMemory()
 {
 	std::vector<u8>().swap(s_widescreen_cheats_data);
 	s_widescreen_cheats_loaded = false;

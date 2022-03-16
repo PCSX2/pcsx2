@@ -82,6 +82,9 @@ bool QtHost::Initialize()
 		return false;
 	}
 
+	if (!VMManager::Internal::InitializeGlobals())
+		return false;
+
 	HookSignals();
 	return true;
 }

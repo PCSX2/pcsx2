@@ -72,12 +72,6 @@ namespace VMManager
 	/// Returns the name of the disc/executable currently running.
 	std::string GetGameName();
 
-	/// Reserves memory for the virtual machines.
-	bool InitializeMemory();
-
-	/// Completely releases all memory for the virtual machine.
-	void ReleaseMemory();
-
 	/// Initializes all system components.
 	bool Initialize(const VMBootParameters& boot_params);
 
@@ -149,6 +143,15 @@ namespace VMManager
 	/// Internal callbacks, implemented in the emu core.
 	namespace Internal
 	{
+		/// Performs early global initialization.
+		bool InitializeGlobals();
+
+		/// Reserves memory for the virtual machines.
+		bool InitializeMemory();
+
+		/// Completely releases all memory for the virtual machine.
+		void ReleaseMemory();
+
 		const std::string& GetElfOverride();
 		bool IsExecutionInterrupted();
 		void GameStartingOnCPUThread();
