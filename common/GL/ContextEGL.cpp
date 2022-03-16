@@ -313,21 +313,18 @@ namespace GL
 		}
 		configs.resize(static_cast<u32>(num_configs));
 
-		std::optional<EGLConfig> config;
-		for (EGLConfig check_config : configs)
-		{
-			if (CheckConfigSurfaceFormat(check_config))
+		const auto m_config = [this, &configs]() {
+			const auto found_config = std::find_if(std::begin(configs), std::end(configs), [&](auto&& check_config) { return CheckConfigSurfaceFormat(check_config); });
+			if (found_config == std::end(configs))
 			{
-				config = check_config;
-				break;
+				Console.Warning("No EGL configs matched exactly, using first.");
+				return configs.front();
 			}
-		}
-
-		if (!config.has_value())
-		{
-			Console.Warning("No EGL configs matched exactly, using first.");
-			config = configs.front();
-		}
+			else
+			{
+				return *found_config;
+			}
+		}();
 
 		const auto attribs = [version]() -> std::array<int, 8> {
 			if (version.profile != Profile::NoProfile)
@@ -345,7 +342,7 @@ namespace GL
 			return false;
 		}
 
-		m_context = eglCreateContext(m_display, config.value(), share_context, attribs.data());
+		m_context = eglCreateContext(m_display, m_config, share_context, attribs.data());
 		if (!m_context)
 		{
 			Console.Error("eglCreateContext() failed: %d", eglGetError());
@@ -356,7 +353,6 @@ namespace GL
 			"Got version %u.%u (%s)", version.major_version, version.minor_version,
 			version.profile == Context::Profile::ES ? "ES" : (version.profile == Context::Profile::Core ? "Core" : "None"));
 
-		m_config = config.value();
 		m_version = version;
 		return true;
 	}
