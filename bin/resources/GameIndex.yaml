@@ -18825,6 +18825,10 @@ SLES-55125:
 SLES-55126:
   name: "Artlist Collection - The Dog Island"
   region: "PAL-M6"
+  gsHWFixes:
+    autoFlush: 1 # Fixes certains font colors.
+    halfPixelOffset: 1 # Fixes lighting misalignment.
+    alignSprite: 1 # Fixes almost all vertical lines.
 SLES-55129:
   name: "Jumper: Griffin's Story"
   region: "PAL-M5"
@@ -19324,9 +19328,15 @@ SLES-55366:
 SLES-55367:
   name: "Call of Duty - World at War - Final Fronts"
   region: "PAL-M4"
+  gsHWFixes:
+    autoFlush: 1 # Fixes bloom misalignment.
+    halfPixelOffset: 2 # Fixes lighting misalignment and depth lines.
 SLES-55369:
   name: "Call of Duty - World at War - Final Fronts"
   region: "PAL-G"
+  gsHWFixes:
+    autoFlush: 1 # Fixes bloom misalignment.
+    halfPixelOffset: 2 # Fixes lighting misalignment and depth lines.
 SLES-55371:
   name: "Barbie Horse Adventures - Riding Camp"
   region: "PAL-M6"
@@ -28462,6 +28472,10 @@ SLPM-66661:
 SLPM-66662:
   name: "Dog Island, The - Hitotsu no Hana no Monogatari"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes certains font colors.
+    halfPixelOffset: 1 # Fixes lighting misalignment.
+    alignSprite: 1 # Fixes almost all vertical lines.
 SLPM-66663:
   name: "Phantasy Star Universe - Ambition of the Illuminus"
   region: "NTSC-J"
@@ -41447,6 +41461,10 @@ SLUS-21551:
   name: "Dog Island, The"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes certains font colors.
+    halfPixelOffset: 1 # Fixes lighting misalignment.
+    alignSprite: 1 # Fixes almost all vertical lines.
 SLUS-21552:
   name: "Spider-Man 3"
   region: "NTSC-U"
@@ -42333,6 +42351,9 @@ SLUS-21746:
   name: "Call of Duty: World at War - Final Fronts"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes bloom misalignment.
+    halfPixelOffset: 2 # Fixes lighting misalignment and depth lines.
 SLUS-21748:
   name: "MLB Power Pros 2008"
   region: "NTSC-U"
