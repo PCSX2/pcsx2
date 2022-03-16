@@ -1196,24 +1196,19 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
-	if (s_dump)
+	if (s_dump && (s_n >= s_saven))
 	{
-		const u64 frame = g_perfmon.GetFrame();
-
 		std::string s;
 
-		if (s_n >= s_saven)
-		{
-			// Dump Register state
-			s = format("%05d_context.txt", s_n);
+		// Dump Register state
+		s = format("%05d_context.txt", s_n);
 
-			m_env.Dump(m_dump_root + s);
-			m_context->Dump(m_dump_root + s);
+		m_env.Dump(m_dump_root + s);
+		m_context->Dump(m_dump_root + s);
 
-			// Dump vertices
-			s = format("%05d_vertex.txt", s_n);
-			DumpVertices(m_dump_root + s);
-		}
+		// Dump vertices
+		s = format("%05d_vertex.txt", s_n);
+		DumpVertices(m_dump_root + s);
 	}
 	if (IsBadFrame())
 	{
