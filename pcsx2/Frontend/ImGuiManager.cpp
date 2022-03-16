@@ -469,6 +469,17 @@ static void DrawOSDMessages()
 	}
 }
 
+static void FormatProcessorStat(FastFormatAscii& text, double usage, double time)
+{
+	// Some values, such as GPU (and even CPU to some extent) can be out of phase with the wall clock,
+	// which the processor time is divided by to get a utilization percentage. Let's clamp it at 100%,
+	// so that people don't get confused, and remove the decimal places when it's there while we're at it.
+	if (usage >= 99.95)
+		text.Write("100%% (%.2fms)", time);
+	else
+		text.Write("%.1f%% (%.2fms)", usage, time);
+}
+
 static void DrawPerformanceOverlay()
 {
 	const float scale = s_global_scale;
@@ -575,37 +586,31 @@ static void DrawPerformanceOverlay()
 
 			text.Clear();
 			if (EmuConfig.Speedhacks.EECycleRate != 0 || EmuConfig.Speedhacks.EECycleSkip != 0)
-			{
-				text.Write("EE[%d/%d]: %.1f%% (%.2fms)", EmuConfig.Speedhacks.EECycleRate, EmuConfig.Speedhacks.EECycleSkip,
-					PerformanceMetrics::GetCPUThreadUsage(),
-					PerformanceMetrics::GetCPUThreadAverageTime());
-			}
+				text.Write("EE[%d/%d]: ", EmuConfig.Speedhacks.EECycleRate, EmuConfig.Speedhacks.EECycleSkip);
 			else
-			{
-				text.Write("EE: %.1f%% (%.2fms)", PerformanceMetrics::GetCPUThreadUsage(),
-					PerformanceMetrics::GetCPUThreadAverageTime());
-			}
+				text.Write("EE: ");
+			FormatProcessorStat(text, PerformanceMetrics::GetCPUThreadUsage(), PerformanceMetrics::GetCPUThreadAverageTime());
 			DRAW_LINE(s_fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 
 			text.Clear();
-			text.Write("GS: %.1f%% (%.2fms)", PerformanceMetrics::GetGSThreadUsage(),
-				PerformanceMetrics::GetGSThreadAverageTime());
+			text.Write("GS: ");
+			FormatProcessorStat(text, PerformanceMetrics::GetGSThreadUsage(), PerformanceMetrics::GetGSThreadAverageTime());
 			DRAW_LINE(s_fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 
 			const u32 gs_sw_threads = PerformanceMetrics::GetGSSWThreadCount();
 			for (u32 i = 0; i < gs_sw_threads; i++)
 			{
 				text.Clear();
-				text.Write("SW-%u: %.1f%% (%.2fms)", i, PerformanceMetrics::GetGSSWThreadUsage(i),
-					PerformanceMetrics::GetGSSWThreadAverageTime(i));
+				text.Write("SW-%u: ", i);
+				FormatProcessorStat(text, PerformanceMetrics::GetGSSWThreadUsage(i), PerformanceMetrics::GetGSSWThreadAverageTime(i));
 				DRAW_LINE(s_fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 			}
 
 			if (THREAD_VU1)
 			{
 				text.Clear();
-				text.Write("VU: %.1f%% (%.2fms)", PerformanceMetrics::GetVUThreadUsage(),
-					PerformanceMetrics::GetVUThreadAverageTime());
+				text.Write("VU: ");
+				FormatProcessorStat(text, PerformanceMetrics::GetVUThreadUsage(), PerformanceMetrics::GetVUThreadAverageTime());
 				DRAW_LINE(s_fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 			}
 		}
@@ -613,8 +618,8 @@ static void DrawPerformanceOverlay()
 		if (GSConfig.OsdShowGPU)
 		{
 			text.Clear();
-			text.Write("GPU: %.1f%% (%.2fms)", PerformanceMetrics::GetGPUUsage(),
-				PerformanceMetrics::GetGPUAverageTime());
+			text.Write("GPU: ");
+			FormatProcessorStat(text, PerformanceMetrics::GetGPUUsage(), PerformanceMetrics::GetGPUAverageTime());
 			DRAW_LINE(s_fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 		}
 
