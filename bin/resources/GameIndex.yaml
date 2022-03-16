@@ -333,6 +333,8 @@ SCAJ-20023:
   region: "NTSC-Unk"
   clampModes:
     vuClampMode: 2  # Respawn issues, SPS.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SCAJ-20024:
   name: ".hack//Quarantine Part 4"
   region: "NTSC-Unk"
@@ -636,6 +638,8 @@ SCAJ-20104:
   region: "NTSC-Unk"
   gsHWFixes:
     mipmap: 1
+    roundSprite: 2 # Fixes font and HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
 SCAJ-20105:
   name: "Armored Core - Nine breaker"
   region: "NTSC-Unk"
@@ -791,6 +795,8 @@ SCAJ-20136:
   region: "NTSC-Unk"
   gsHWFixes:
     mipmap: 1
+    roundSprite: 2 # Fixes font and HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
 SCAJ-20137:
   name: "Musashiden II - Blademaster"
   region: "NTSC-Unk"
@@ -889,6 +895,8 @@ SCAJ-20159:
   region: "NTSC-Ch-E-J"
   gameFixes:
     - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SCAJ-20160:
   name: "Yoshitsuneki"
   region: "NTSC-Unk"
@@ -946,6 +954,8 @@ SCAJ-20173:
   region: "NTSC-Unk"
   gsHWFixes:
     mipmap: 1
+    roundSprite: 2 # Fixes HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
   memcardFilters:
     - "SCAJ-20173"
     - "SLPS-25629"
@@ -2332,6 +2342,10 @@ SCES-50410:
   name: "Ace Combat - Distant Thunder"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    mipmap: 1
+    roundSprite: 2 # Fixes font and HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
 SCES-50411:
   name: "Vampire Night"
   region: "PAL-M5"
@@ -2954,6 +2968,10 @@ SCES-52424:
   name: "Ace Combat - Squadron Leader"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    mipmap: 1
+    roundSprite: 2 # Fixes font and HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
   patches:
     1D54FEA9:
       content: |-
@@ -3217,6 +3235,8 @@ SCES-53312:
   compat: 5
   roundModes:
     vuRoundMode: 3
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SCES-53315:
   name: "EyeToy - Play 3"
   region: "PAL-M12"
@@ -3418,6 +3438,10 @@ SCES-54025:
 SCES-54041:
   name: "Ace Combat - The Belkan War"
   region: "PAL-M5"
+  gsHWFixes:
+    mipmap: 1
+    roundSprite: 2 # Fixes HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
   memcardFilters: # Reads AC4 and 5 saves for bonus unlockables.
     - "SCES-54041"
     - "SCES-50410"
@@ -4088,6 +4112,8 @@ SCKA-20016:
   compat: 5
   clampModes:
     vuClampMode: 2  # Respawn issues, Fixes SPS.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SCKA-20018:
   name: "The Getaway"
   region: "NTSC-K"
@@ -4264,6 +4290,8 @@ SCKA-20059:
   compat: 5
   gameFixes:
     - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SCKA-20060:
   name: "Ratchet - Deadlocked"
   region: "NTSC-K"
@@ -4306,6 +4334,8 @@ SCKA-20070:
   region: "NTSC-K"
   gsHWFixes:
     mipmap: 1
+    roundSprite: 2 # Fixes HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
   patches:
     2799A4E5:
       content: |-
@@ -7816,6 +7846,8 @@ SLED-51342:
 SLED-51901:
   name: "Soul Calibur II [Demo]"
   region: "PAL-E"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLED-52375:
   name: "Fight Night 2004 [Demo]"
   region: "PAL-E"
@@ -11504,6 +11536,8 @@ SLES-51799:
   compat: 5
   clampModes:
     vuClampMode: 2  # Respawn issues, Fixes SPS.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLES-51800:
   name: "Smash Cars Racing"
   region: "PAL-M5"
@@ -19859,6 +19893,8 @@ SLES-82009:
   compat: 5
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SLES-82010:
   name: "Metal Gear Solid 2, Document of"
   region: "PAL-E"
@@ -20017,53 +20053,77 @@ SLES-82039:
 SLES-82042:
   name: "Metal Gear Solid 3 - Subsistence [Disc1of3]"
   region: "PAL-E-F"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-82043:
   name: "Metal Gear Solid 3 - Subsistence [Disc2of3]"
   region: "PAL-E-F"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82042"
 SLES-82044:
   name: "Metal Gear Solid 3 - Subsistence [Disc1of3]"
   region: "PAL-I"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-82045:
   name: "Metal Gear Solid 3 - Subsistence [Disc2of3]"
   region: "PAL-I"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82044"
 SLES-82046:
   name: "Metal Gear Solid 3 - Subsistence [Disc1of3]"
   region: "PAL-G"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-82047:
   name: "Metal Gear Solid 3 - Subsistence [Disc2of3]"
   region: "PAL-G"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82046"
 SLES-82048:
   name: "Metal Gear Solid 3 - Subsistence [Disc1of3]"
   region: "PAL-S"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-82049:
   name: "Metal Gear Solid 3 - Subsistence [Disc2of3]"
   region: "PAL-S"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82048"
 SLES-82050:
   name: "Metal Gear Solid 3 - Subsistence [Disc3of3]"
   region: "PAL-E-F"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82042"
 SLES-82051:
   name: "Metal Gear Solid 3 - Subsistence [Disc3of3]"
   region: "PAL-I"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82044"
 SLES-82052:
   name: "Metal Gear Solid 3 - Subsistence [Disc3of3]"
   region: "PAL-G"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82046"
 SLES-82053:
   name: "Metal Gear Solid 3 - Subsistence [Disc3of3]"
   region: "PAL-S"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82048"
 SLKA-15003:
@@ -20689,10 +20749,14 @@ SLKA-25353:
   name: "Metal Gear Solid 3 - Subsistence [Limited Edition] [Disc1of2]"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLKA-25354:
   name: "Metal Gear Solid 3 - Subsistence [Limited Edition] [Disc2of2]"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLKA-25353"
 SLKA-25359:
@@ -20783,6 +20847,8 @@ SLKA-35001:
   compat: 5
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SLKA-35003:
   name: "Sakura Taisen - Atsuki Chishioni"
   region: "NTSC-K"
@@ -21130,6 +21196,8 @@ SLPM-61133:
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPM-61135:
   name: "Naruto - Narutimett Hero 3 [Trial Version]"
   region: "NTSC-J"
@@ -26642,6 +26710,8 @@ SLPM-66116:
 SLPM-66117:
   name: "Metal Gear Solid 3 - Subsistence [with Headset]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLPM-66122:
   name: "Kingdom Hearts [Ultimate Hits]"
   region: "NTSC-J"
@@ -26969,26 +27039,36 @@ SLPM-66219:
 SLPM-66220:
   name: "Metal Gear Solid 3 - Subsistence [First Print Limited Edition] [Disc1of3]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLPM-66117"
 SLPM-66221:
   name: "Metal Gear Solid 3 - Subsistence [First Print Limited Edition] [Disc2of3]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLPM-66117"
 SLPM-66222:
   name: "Metal Gear Solid 3 - Subsistence [First Print Limited Edition] [Disc3of3]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLPM-66117"
 SLPM-66223:
   name: "Metal Gear Solid 3 - Subsistence [Disc1of2]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLPM-66117"
 SLPM-66224:
   name: "Metal Gear Solid 3 - Subsistence [Disc2of2]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLPM-66117"
 SLPM-66225:
@@ -29527,6 +29607,8 @@ SLPM-67002:
   region: "NTSC-J"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SLPM-67003:
   name: "Sakura Taisen - Atsuki Chishioni"
   region: "NTSC-J"
@@ -29548,6 +29630,8 @@ SLPM-67007:
 SLPM-67008:
   name: "Metal Gear Solid 2 - Substance [Konami Dendou Collection]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SLPM-67009:
   name: "Sakura Taisen V - Saraba Itoshiki Hito Yo"
   region: "NTSC-J"
@@ -31289,6 +31373,8 @@ SLPS-25052:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    roundSprite: 2 # Fixes font and HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-25053:
   name: "Eikan wa Kimi ni - Koushien no Hasha"
   region: "NTSC-J"
@@ -31820,6 +31906,8 @@ SLPS-25230:
   compat: 5
   clampModes:
     vuClampMode: 2  # Respawn issues, Fixes SPS.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-25231:
   name: "Myst III - Exile"
   region: "NTSC-J"
@@ -32440,6 +32528,8 @@ SLPS-25418:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    roundSprite: 2 # Fixes font and HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
   patches:
     86089F31:
       content: |-
@@ -32983,6 +33073,8 @@ SLPS-25577:
   compat: 5
   gameFixes:
     - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-25578:
   name: "K-1 World Grand Prix 2005"
   region: "NTSC-J"
@@ -33147,6 +33239,8 @@ SLPS-25629:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+    roundSprite: 2 # Fixes HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
   memcardFilters:
     - "SCAJ-20173"
     - "SLPS-25629"
@@ -34318,6 +34412,8 @@ SLPS-73205:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+    roundSprite: 2 # Fixes font and HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-73206:
   name: "Super Robot Taisen Alpha 2nd [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -34361,6 +34457,8 @@ SLPS-73218:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+    roundSprite: 2 # Fixes font and HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-73219:
   name: "Tales of Destiny 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -34558,6 +34656,8 @@ SLPS-73250:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+    roundSprite: 2 # Fixes HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
   memcardFilters:
     - "SCAJ-20173"
     - "SLPS-25629"
@@ -34648,6 +34748,8 @@ SLPS-73410:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+    roundSprite: 2 # Fixes font and HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-73411:
   name: "Armored Core 2 - Another Age [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -35214,6 +35316,8 @@ SLUS-20152:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    roundSprite: 2 # Fixes font and HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
   patches:
     A32F7CD0:
       content: |-
@@ -36935,6 +37039,8 @@ SLUS-20554:
   compat: 5
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
 SLUS-20555:
   name: "Reel Fishing 3"
   region: "NTSC-U"
@@ -37330,10 +37436,14 @@ SLUS-20643:
   compat: 5
   clampModes:
     vuClampMode: 2  # Respawn issues, Fixes SPS.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-20643BD:
   name: "Namco Transmission Demo Disc v1.03 [Soul Calibur II Pack-In]"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-20644:
   name: "Armored Core - Silent Line"
   region: "NTSC-U"
@@ -38183,6 +38293,8 @@ SLUS-20851:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    roundSprite: 2 # Fixes font and HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
   patches:
     39B574F0:
       content: |-
@@ -39926,6 +40038,8 @@ SLUS-21216:
   compat: 5
   gameFixes:
     - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-21217:
   name: "Incredibles, The - Rise of the Underminers"
   region: "NTSC-U"
@@ -40080,6 +40194,8 @@ SLUS-21243:
   name: "Metal Gear Solid 3 - Subsistence [Disc2of3]"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLUS-21359"
 SLUS-21244:
@@ -40571,6 +40687,8 @@ SLUS-21346:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    roundSprite: 2 # Fixes HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
   memcardFilters:
     - "SLUS-21346"
     - "SLUS-20152"
@@ -40649,9 +40767,13 @@ SLUS-21359:
   name: "Metal Gear Solid 3 - Subsistence [Disc1of3]"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLUS-21360:
   name: "Metal Gear Solid 3 - Subsistence [Disc3of3]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLUS-21359"
 SLUS-21361:
@@ -43473,6 +43595,8 @@ SLUS-29057:
 SLUS-29058:
   name: "Soul Calibur II [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-29059:
   name: "Hunter the Reckoning - Wayward [Demo]"
   region: "NTSC-U"
@@ -44017,3 +44141,5 @@ TLES-54240:
 TLES-82043:
   name: "Metal Gear Solid Subsistence Beta Trial Code"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
