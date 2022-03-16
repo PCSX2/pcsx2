@@ -321,7 +321,6 @@ size_t GSDumpLzma::Read(void* ptr, size_t size)
 {
 	size_t off = 0;
 	uint8_t* dst = (uint8_t*)ptr;
-	size_t full_size = size;
 	while (size && !IsEof())
 	{
 		if (m_avail == 0)
