@@ -13843,6 +13843,7 @@ SLES-52882:
   gsHWFixes:
     fastTextureInvalidation: 1 # Improves performance.
     halfPixelOffset: 2 # Fixes misaligned bloom effects.
+    texturePreloading: 1 # Performs much better with partial preload.
 SLES-52884:
   name: "Duel Masters"
   region: "PAL-M5"
@@ -39692,6 +39693,7 @@ SLUS-21099:
   gsHWFixes:
     fastTextureInvalidation: 1 # Improves performance.
     halfPixelOffset: 2 # Fixes misaligned bloom effects.
+    texturePreloading: 1 # Performs much better with partial preload.
 SLUS-21100:
   name: "NCAA March Madness 2005"
   region: "NTSC-U"
