@@ -661,10 +661,18 @@
        <item row="1" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
-          <widget class="QSpinBox" name="skipDrawStart"/>
+          <widget class="QSpinBox" name="skipDrawStart">
+           <property name="maximum">
+            <number>10000</number>
+           </property>
+          </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="skipDrawEnd"/>
+          <widget class="QSpinBox" name="skipDrawEnd">
+           <property name="maximum">
+            <number>10000</number>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
