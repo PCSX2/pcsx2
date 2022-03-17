@@ -723,7 +723,7 @@
          <item row="3" column="0">
           <widget class="QCheckBox" name="fastTextureInvalidation">
            <property name="text">
-            <string>Fast Texture Invalidation</string>
+            <string>Disable Partial Invalidation</string>
            </property>
           </widget>
          </item>
