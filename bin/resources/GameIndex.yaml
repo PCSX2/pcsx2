@@ -20636,8 +20636,10 @@ SLKA-25214:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLKA-25215:
-  name: "Shining Wild"
+  name: "Shining Wind"
   region: "NTSC-K"
+  gameFixes:
+    - DMABusyHack
 SLKA-25216:
   name: "Gitaroo-Man [PlayStation 2 - Big Hit Series]"
   region: "NTSC-K"
@@ -28725,6 +28727,8 @@ SLPM-66670:
 SLPM-66671:
   name: "Shining Wind"
   region: "NTSC-J"
+  gameFixes:
+    - DMABusyHack
 SLPM-66672:
   name: "Tom Clancy's Splinter Cell - Double Agent"
   region: "NTSC-J"
@@ -30146,6 +30150,11 @@ SLPM-74254:
 SLPM-74259:
   name: "Odin Sphere [PlayStation 2 The Best]"
   region: "NTSC-J"
+SLPM-74261:
+  name: "Shining Wind [PlayStation 2 The Best]"
+  region: "NTSC-J"
+  gameFixes:
+    - DMABusyHack
 SLPM-74265:
   name: "Nobunaga no Yabou: Kakushin [PlayStation 2 The Best]"
   region: "NTSC-J"
