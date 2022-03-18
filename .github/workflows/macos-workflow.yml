@@ -70,7 +70,6 @@ jobs:
         platform: [x64]
         experimental: [false]
 
-    name: ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
