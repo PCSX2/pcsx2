@@ -20699,6 +20699,8 @@ SLKA-25221:
 SLKA-25222:
   name: "Rockman X8"
   region: "NTSC-K"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLKA-25224:
   name: "Detective Saburo Jinguji 9 - Kind of Blue"
   region: "NTSC-K"
@@ -25645,6 +25647,8 @@ SLPM-65729:
 SLPM-65730:
   name: "RockMan X8"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   memcardFilters:
     - "SLPM-65730"
     - "SLPM-65643"
