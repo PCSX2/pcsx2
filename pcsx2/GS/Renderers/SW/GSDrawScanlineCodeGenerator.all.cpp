@@ -1756,6 +1756,11 @@ void GSDrawScanlineCodeGenerator2::SampleTextureLOD()
 		cvttps2dq(xym2, xym2);
 		cvttps2dq(xym3, xym3);
 	}
+	else
+	{
+		ONLY64(movdqa(xym2, _s));
+		ONLY64(movdqa(xym3, _t));
+	}
 
 	// xym2 = u
 	// xym3 = v
