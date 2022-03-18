@@ -11860,8 +11860,10 @@ SLES-51883:
   name: "Scooby-Doo! Mystery Mayhem"
   region: "PAL-M3"
 SLES-51885:
-  name: "MegaMan X7"
+  name: "Mega Man X7"
   region: "PAL-M5"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   compat: 5
   clampModes:
     eeClampMode: 3  # For camera issues in some scenes.
@@ -20509,6 +20511,11 @@ SLKA-25112:
 SLKA-25115:
   name: "Rockman X7"
   region: "NTSC-K"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
+  compat: 5
+  clampModes:
+    eeClampMode: 3  # For camera issues in some scenes.
 SLKA-25125:
   name: "SNK vs. Capcom - Chaos"
   region: "NTSC-K"
@@ -21275,6 +21282,11 @@ SLPM-60172:
 SLPM-60207:
   name: "Rockman X7"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
+  compat: 5
+  clampModes:
+    eeClampMode: 3  # For camera issues in some scenes.
 SLPM-60243:
   name: "Full House Kiss [Trial]"
   region: "NTSC-J"
@@ -24435,8 +24447,11 @@ SLPM-65330:
   name: "Akudaikan 2"
   region: "NTSC-J"
 SLPM-65331:
-  name: "RockMan X7"
+  name: "Rockman X7"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
+  compat: 5
   clampModes:
     eeClampMode: 3  # For camera issues in some scenes.
 SLPM-65332:
@@ -36995,8 +37010,10 @@ SLUS-20486:
   region: "NTSC-U"
   compat: 5
 SLUS-20487:
-  name: "MegaMan X7"
+  name: "Mega Man X7"
   region: "NTSC-U"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   compat: 5
   clampModes:
     eeClampMode: 3  # For camera issues in some scenes.
