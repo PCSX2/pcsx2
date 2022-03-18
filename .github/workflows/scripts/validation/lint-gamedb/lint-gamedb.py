@@ -44,7 +44,7 @@ allowed_gs_hw_fixes = [
     "disableDepthSupport",
     "wrapGSMem",
     "preloadFrameData",
-    "fastTextureInvalidation",
+    "disablePartialInvalidation",
     "textureInsideRT",
     "alignSprite",
     "mergeSprite",
