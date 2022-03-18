@@ -721,7 +721,7 @@
           </widget>
          </item>
          <item row="3" column="0">
-          <widget class="QCheckBox" name="fastTextureInvalidation">
+          <widget class="QCheckBox" name="disablePartialInvalidation">
            <property name="text">
             <string>Disable Partial Invalidation</string>
            </property>
