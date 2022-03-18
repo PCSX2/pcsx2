@@ -11862,9 +11862,9 @@ SLES-51883:
 SLES-51885:
   name: "Mega Man X7"
   region: "PAL-M5"
+  compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
-  compat: 5
   clampModes:
     eeClampMode: 3  # For camera issues in some scenes.
 SLES-51886:
@@ -20511,9 +20511,9 @@ SLKA-25112:
 SLKA-25115:
   name: "Rockman X7"
   region: "NTSC-K"
+  compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
-  compat: 5
   clampModes:
     eeClampMode: 3  # For camera issues in some scenes.
 SLKA-25125:
@@ -21282,9 +21282,9 @@ SLPM-60172:
 SLPM-60207:
   name: "Rockman X7"
   region: "NTSC-J"
+  compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
-  compat: 5
   clampModes:
     eeClampMode: 3  # For camera issues in some scenes.
 SLPM-60243:
@@ -24449,9 +24449,9 @@ SLPM-65330:
 SLPM-65331:
   name: "Rockman X7"
   region: "NTSC-J"
+  compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
-  compat: 5
   clampModes:
     eeClampMode: 3  # For camera issues in some scenes.
 SLPM-65332:
@@ -37012,9 +37012,9 @@ SLUS-20486:
 SLUS-20487:
   name: "Mega Man X7"
   region: "NTSC-U"
+  compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
-  compat: 5
   clampModes:
     eeClampMode: 3  # For camera issues in some scenes.
 SLUS-20488:
