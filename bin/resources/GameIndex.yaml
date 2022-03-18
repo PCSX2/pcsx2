@@ -923,6 +923,8 @@ SCAJ-20162:
     autoFlush: 1 # Fix glow effects from lamps.
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
+    fastTextureInvalidation: 1 # Prevents UI and subtitles from disappearing. 
 SCAJ-20163:
   name: "Tales of the Abyss"
   region: "NTSC-Unk"
@@ -2324,6 +2326,7 @@ SCES-50295:
     mipmap: 1
   gsHWFixes:
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCES-50300:
   name: "Time Crisis 2"
   region: "PAL-M5"
@@ -3642,6 +3645,8 @@ SCES-54552:
     autoFlush: 1 # Fix glow effects from lamps.
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
+    fastTextureInvalidation: 1 # Prevents UI and subtitles from disappearing. 
   patches:
     CBB4B383:
       content: |-
@@ -4126,6 +4131,9 @@ SCKA-20014:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCKA-20015:
   name: "Time Crisis 3"
   region: "NTSC-K"
@@ -4659,6 +4667,7 @@ SCPS-15004:
     mipmap: 1
   gsHWFixes:
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCPS-15005:
   name: "Phase Paradox"
   region: "NTSC-J"
@@ -5126,6 +5135,8 @@ SCPS-15102:
     autoFlush: 1 # Fix glow effects from lamps.
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
+    fastTextureInvalidation: 1 # Prevents UI and subtitles from disappearing. 
 SCPS-15103:
   name: "Gunparade Orchestra - Shiro no Shou - Aomori Penguin Densetsu [Limited Edition]"
   region: "NTSC-J"
@@ -5240,6 +5251,8 @@ SCPS-17013:
     autoFlush: 1 # Fix glow effects from lamps.
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
+    fastTextureInvalidation: 1 # Prevents UI and subtitles from disappearing. 
   patches:
     CDEE4B19:
       content: |-
@@ -5298,6 +5311,7 @@ SCPS-19203:
     mipmap: 1
   gsHWFixes:
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
+    trilinearFiltering: 2 # Remove blurriness in font and models..
 SCPS-19204:
   name: "Legaia - Duel Saga [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -5955,6 +5969,7 @@ SCUS-97111:
     mipmap: 1
   gsHWFixes:
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCUS-97112:
   name: "Extermination"
   region: "NTSC-U"
@@ -6113,6 +6128,7 @@ SCUS-97152:
     mipmap: 1
   gsHWFixes:
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCUS-97153:
   name: "Vans Warped Tour '01 [Demo]"
   region: "NTSC-U"
@@ -6319,6 +6335,9 @@ SCUS-97213:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gsHWFixes:
+    roundSprite: 1 # Fix font artifacts.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCUS-97214:
   name: "NCAA GameBreaker 2003"
   region: "NTSC-U"
@@ -6370,6 +6389,9 @@ SCUS-97229:
   region: "NTSC-U"
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gsHWFixes:
+    roundSprite: 1 # Fix font artifacts.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCUS-97230:
   name: "SOCOM - U.S. Navy SEALs (Online)"
   region: "NTSC-U"
@@ -7208,6 +7230,8 @@ SCUS-97490:
     autoFlush: 1 # Fix glow effects from lamps.
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
+    fastTextureInvalidation: 1 # Prevents UI and subtitles from disappearing. 
   patches:
     0643F90C:
       content: |-
@@ -7441,6 +7465,8 @@ SCUS-97572:
     autoFlush: 1 # Fix glow effects from lamps.
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
+    fastTextureInvalidation: 1 # Prevents UI and subtitles from disappearing. 
 SCUS-97579:
   name: "ATV Off-Road Fury 4 [Demo]"
   region: "NTSC-U"
@@ -13836,6 +13862,8 @@ SLES-52877:
   name: "Haunting Ground"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurriness.
 SLES-52882:
   name: "Stolen"
   region: "PAL-M5"
@@ -15839,6 +15867,8 @@ SLES-53730:
 SLES-53734:
   name: "50cent - Bulletproof"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 1 # Removes chromatic effect when upscaling also works with halfpixeloffset Special Texture.
 SLES-53736:
   name: "Billy the Wizard - Rocket Broomstick Racing"
   region: "PAL-E"
@@ -16224,10 +16254,14 @@ SLES-53904:
 SLES-53906:
   name: "50cent - Bulletproof"
   region: "PAL-F"
+  gsHWFixes:
+    roundSprite: 1 # Removes chromatic effect when upscaling also works with halfpixeloffset Special Texture.
 SLES-53908:
   name: "Tomb Raider - Legend"
   region: "PAL-M8"
   compat: 5
+  gsHWFixes:
+    mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
   patches:
     default:
       content: |-
@@ -16410,6 +16444,8 @@ SLES-53991:
 SLES-53994:
   name: "50cent - Bulletproof"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 1 # Removes chromatic effect when upscaling also works with halfpixeloffset Special Texture.
 SLES-53995:
   name: "World Championship Poker 2 featuring Howard Lederer"
   region: "PAL-M5"
@@ -26196,6 +26232,8 @@ SLPM-65913:
   name: "Demento"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurriness.
 SLPM-65914:
   name: "Nana"
   region: "NTSC-J"
@@ -28343,6 +28381,8 @@ SLPM-66557:
 SLPM-66558:
   name: "Tomb Raider - Legend"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
 SLPM-66559:
   name: "Winning Post 6 [KOEI Selection]"
   region: "NTSC-J"
@@ -28613,6 +28653,8 @@ SLPM-66637:
 SLPM-66638:
   name: "Demento [CapKore]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurriness.
 SLPM-66639:
   name: "Street Fighter III - 3rd Strike [Capcom the Best]"
   region: "NTSC-J"
@@ -35639,7 +35681,7 @@ SLUS-20190:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    vuClampMode: 3 # Fixes SPS in game 
+    vuClampMode: 3 # Fixes SPS in game.
 SLUS-20191:
   name: "Defender"
   region: "NTSC-U"
@@ -39597,6 +39639,8 @@ SLUS-21075:
   name: "Haunting Ground"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurriness.
 SLUS-21076:
   name: "Atari Anthology"
   region: "NTSC-U"
@@ -40747,6 +40791,8 @@ SLUS-21314:
 SLUS-21315:
   name: "50cent - Bulletproof"
   region: "NTSC-U"
+  gsHWFixes:
+    roundSprite: 1 # Removes chromatic effect when upscaling also works with halfpixeloffset Special Texture.
 SLUS-21316:
   name: "Capcom Classics Collection Vol.1"
   region: "NTSC-U"
