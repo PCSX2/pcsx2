@@ -25645,7 +25645,7 @@ SLPM-65729:
   name: "True Crime - Streets of L.A."
   region: "NTSC-J"
 SLPM-65730:
-  name: "RockMan X8"
+  name: "Rockman X8"
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
