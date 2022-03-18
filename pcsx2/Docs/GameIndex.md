@@ -144,7 +144,7 @@ The clamp modes are also numerically based.
 
 *   autoFlush                [`0` or `1`]   {Off or On}                          Default: Off (`0`)
 *   disableDepthSupport      [`0` or `1`]   {Off or On}                          Default: Off (`0`)
-*   fastTextureInvalidation  [`0` or `1`]   {Off or On}                          Default: Off (`0`)
+*   disablePartialInvalidation  [`0` or `1`]   {Off or On}                          Default: Off (`0`)
 *   cpuFramebufferConversion [`0` or `1`]   {Off or On}                          Default: Off (`0`)
 *   wrapGSMem                [`0` or `1`]   {Off or On}                          Default: Off (`0`)
 *   preloadFrameData         [`0` or `1`]   {Off or On}                          Default: Off (`0`)
