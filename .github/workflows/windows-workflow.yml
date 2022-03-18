@@ -45,7 +45,7 @@ jobs:
         configuration: [Release, Release AVX2, CMake, Qt]
         experimental: [false]
 
-    name: ${{ matrix.platform }} | ${{ matrix.configuration }}
+    name: ${{ matrix.configuration }}
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
