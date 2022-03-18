@@ -11866,7 +11866,7 @@ SLES-51885:
   gameFixes:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   clampModes:
-    eeClampMode: 3  # For camera issues in some scenes.
+    eeClampMode: 3 # For camera issues in some scenes.
 SLES-51886:
   name: "Lethal Skies II"
   region: "PAL-E"
@@ -20515,7 +20515,7 @@ SLKA-25115:
   gameFixes:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   clampModes:
-    eeClampMode: 3  # For camera issues in some scenes.
+    eeClampMode: 3 # For camera issues in some scenes.
 SLKA-25125:
   name: "SNK vs. Capcom - Chaos"
   region: "NTSC-K"
@@ -21286,7 +21286,7 @@ SLPM-60207:
   gameFixes:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   clampModes:
-    eeClampMode: 3  # For camera issues in some scenes.
+    eeClampMode: 3 # For camera issues in some scenes.
 SLPM-60243:
   name: "Full House Kiss [Trial]"
   region: "NTSC-J"
@@ -24453,7 +24453,7 @@ SLPM-65331:
   gameFixes:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   clampModes:
-    eeClampMode: 3  # For camera issues in some scenes.
+    eeClampMode: 3 # For camera issues in some scenes.
 SLPM-65332:
   name: "Mahoromatic Automatic Maiden [Limited Edition]"
   region: "NTSC-J"
@@ -37016,7 +37016,7 @@ SLUS-20487:
   gameFixes:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   clampModes:
-    eeClampMode: 3  # For camera issues in some scenes.
+    eeClampMode: 3 # For camera issues in some scenes.
 SLUS-20488:
   name: "Star Ocean 3 - Till the End of Time [Disc1of2]"
   region: "NTSC-U"
