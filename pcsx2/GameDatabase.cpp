@@ -271,7 +271,7 @@ static const char* s_gs_hw_fix_names[] = {
 	"disableDepthSupport",
 	"wrapGSMem",
 	"preloadFrameData",
-	"fastTextureInvalidation",
+	"disablePartialInvalidation",
 	"textureInsideRT",
 	"alignSprite",
 	"mergeSprite",
@@ -367,7 +367,7 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 				config.PreloadFrameWithGSData = (value > 0);
 				break;
 
-			case GSHWFixId::FastTextureInvalidation:
+			case GSHWFixId::DisablePartialInvalidation:
 				config.UserHacks_DisablePartialInvalidation = (value > 0);
 				break;
 

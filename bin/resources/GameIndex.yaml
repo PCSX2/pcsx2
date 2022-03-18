@@ -924,7 +924,7 @@ SCAJ-20162:
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     trilinearFiltering: 2 # Remove blurriness in font and models.
-    fastTextureInvalidation: 1 # Prevents UI and subtitles from disappearing. 
+    disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing. 
 SCAJ-20163:
   name: "Tales of the Abyss"
   region: "NTSC-Unk"
@@ -3646,7 +3646,7 @@ SCES-54552:
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     trilinearFiltering: 2 # Remove blurriness in font and models.
-    fastTextureInvalidation: 1 # Prevents UI and subtitles from disappearing. 
+    disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing. 
   patches:
     CBB4B383:
       content: |-
@@ -5136,7 +5136,7 @@ SCPS-15102:
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     trilinearFiltering: 2 # Remove blurriness in font and models.
-    fastTextureInvalidation: 1 # Prevents UI and subtitles from disappearing. 
+    disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing. 
 SCPS-15103:
   name: "Gunparade Orchestra - Shiro no Shou - Aomori Penguin Densetsu [Limited Edition]"
   region: "NTSC-J"
@@ -5252,7 +5252,7 @@ SCPS-17013:
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     trilinearFiltering: 2 # Remove blurriness in font and models.
-    fastTextureInvalidation: 1 # Prevents UI and subtitles from disappearing. 
+    disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing. 
   patches:
     CDEE4B19:
       content: |-
@@ -7231,7 +7231,7 @@ SCUS-97490:
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     trilinearFiltering: 2 # Remove blurriness in font and models.
-    fastTextureInvalidation: 1 # Prevents UI and subtitles from disappearing. 
+    disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing. 
   patches:
     0643F90C:
       content: |-
@@ -7466,7 +7466,7 @@ SCUS-97572:
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     trilinearFiltering: 2 # Remove blurriness in font and models.
-    fastTextureInvalidation: 1 # Prevents UI and subtitles from disappearing. 
+    disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing. 
 SCUS-97579:
   name: "ATV Off-Road Fury 4 [Demo]"
   region: "NTSC-U"
@@ -13869,7 +13869,7 @@ SLES-52882:
   region: "PAL-M5"
   compat: 4
   gsHWFixes:
-    fastTextureInvalidation: 1 # Improves performance.
+    disablePartialInvalidation: 1 # Improves performance.
     halfPixelOffset: 2 # Fixes misaligned bloom effects.
     texturePreloading: 1 # Performs much better with partial preload.
 SLES-52884:
@@ -19854,7 +19854,7 @@ SLES-55569:
   name: "Silent Hill - Shattered Memories"
   region: "PAL-M5"
   gsHWFixes:
-    fastTextureInvalidation: 1 # Fixes missing graphics.
+    disablePartialInvalidation: 1 # Fixes missing graphics.
 SLES-55571:
   name: "Ghostbusters"
   region: "PAL-M6"
@@ -39739,7 +39739,7 @@ SLUS-21099:
   region: "NTSC-U"
   compat: 4
   gsHWFixes:
-    fastTextureInvalidation: 1 # Improves performance.
+    disablePartialInvalidation: 1 # Improves performance.
     halfPixelOffset: 2 # Fixes misaligned bloom effects.
     texturePreloading: 1 # Performs much better with partial preload.
 SLUS-21100:
@@ -43342,7 +43342,7 @@ SLUS-21899:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    fastTextureInvalidation: 1 # Fixes missing graphics.
+    disablePartialInvalidation: 1 # Fixes missing graphics.
 SLUS-21900:
   name: "Scooby-Doo! First Frights"
   region: "NTSC-U"
