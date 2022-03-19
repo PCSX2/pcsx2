@@ -558,8 +558,8 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingIntEx(SWExtraThreads, "extrathreads");
 	GSSettingIntEx(SWExtraThreadsHeight, "extrathreads_height");
 	GSSettingIntEx(TVShader, "TVShader");
-	GSSettingIntEx(SkipDrawStart, "UserHacks_SkipDraw_Offset");
-	GSSettingIntEx(SkipDrawEnd, "UserHacks_SkipDraw");
+	GSSettingIntEx(SkipDrawStart, "UserHacks_SkipDraw_Start");
+	GSSettingIntEx(SkipDrawEnd, "UserHacks_SkipDraw_End");
 	SkipDrawEnd = std::max(SkipDrawStart, SkipDrawEnd);
 
 	GSSettingIntEx(UserHacks_HalfBottomOverride, "UserHacks_Half_Bottom_Override");

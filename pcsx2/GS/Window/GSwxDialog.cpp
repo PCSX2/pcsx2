@@ -290,12 +290,12 @@ RendererTab::RendererTab(wxWindow* parent)
 
 	m_internal_resolution = m_ui.addComboBoxAndLabel(hw_choice_grid, "Internal Resolution:", "upscale_multiplier", &theApp.m_gs_upscale_multiplier, -1, hw_prereq).first;
 
-	m_ui.addComboBoxAndLabel(hw_choice_grid, "Anisotropic Filtering:", "MaxAnisotropy",          &theApp.m_gs_max_anisotropy,  IDC_AFCOMBO,             aniso_prereq);
-	m_ui.addComboBoxAndLabel(hw_choice_grid, "Dithering (PgDn):",      "dithering_ps2",          &theApp.m_gs_dithering,       IDC_DITHERING,           hw_prereq);
-	m_ui.addComboBoxAndLabel(hw_choice_grid, "Mipmapping:",            "mipmap_hw",              &theApp.m_gs_hw_mipmapping,   IDC_MIPMAP_HW,           hw_prereq);
-	m_ui.addComboBoxAndLabel(hw_choice_grid, "CRC Hack Level:",        "crc_hack_level",         &theApp.m_gs_crc_level,       IDC_CRC_LEVEL,           hw_prereq);
-	m_ui.addComboBoxAndLabel(hw_choice_grid, "Blending Accuracy:",     "accurate_blending_unit", &theApp.m_gs_acc_blend_level, IDC_ACCURATE_BLEND_UNIT, hw_prereq);
-	m_ui.addComboBoxAndLabel(hw_choice_grid, "Texture Preloading:",    "texture_preloading",     &theApp.m_gs_texture_preloading, IDC_PRELOAD_TEXTURES, hw_prereq);
+	m_ui.addComboBoxAndLabel(hw_choice_grid, "Anisotropic Filtering:", "MaxAnisotropy",          &theApp.m_gs_max_anisotropy,     IDC_AFCOMBO,             aniso_prereq);
+	m_ui.addComboBoxAndLabel(hw_choice_grid, "Dithering (PgDn):",      "dithering_ps2",          &theApp.m_gs_dithering,          IDC_DITHERING,           hw_prereq);
+	m_ui.addComboBoxAndLabel(hw_choice_grid, "Mipmapping:",            "mipmap_hw",              &theApp.m_gs_hw_mipmapping,      IDC_MIPMAP_HW,           hw_prereq);
+	m_ui.addComboBoxAndLabel(hw_choice_grid, "CRC Hack Level:",        "crc_hack_level",         &theApp.m_gs_crc_level,          IDC_CRC_LEVEL,           hw_prereq);
+	m_ui.addComboBoxAndLabel(hw_choice_grid, "Blending Accuracy:",     "accurate_blending_unit", &theApp.m_gs_acc_blend_level,    IDC_ACCURATE_BLEND_UNIT, hw_prereq);
+	m_ui.addComboBoxAndLabel(hw_choice_grid, "Texture Preloading:",    "texture_preloading",     &theApp.m_gs_texture_preloading, IDC_PRELOAD_TEXTURES,    hw_prereq);
 
 	hardware_box->Add(hw_checks_box, wxSizerFlags().Centre());
 	hardware_box->AddSpacer(space);
@@ -339,14 +339,14 @@ HacksTab::HacksTab(wxWindow* parent)
 	auto* upscale_hacks_grid = new wxFlexGridSizer(3, space, space);
 
 	// Renderer Hacks
-	m_ui.addCheckBox(rend_hacks_grid, "Auto Flush",                "UserHacks_AutoFlush",                  IDC_AUTO_FLUSH_HW,     hacks_prereq);
-	m_ui.addCheckBox(rend_hacks_grid, "Frame Buffer Conversion",   "UserHacks_CPU_FB_Conversion",          IDC_CPU_FB_CONVERSION, hacks_prereq);
-	m_ui.addCheckBox(rend_hacks_grid, "Disable Depth Emulation",   "UserHacks_DisableDepthSupport",        IDC_TC_DEPTH,          hacks_prereq);
-	m_ui.addCheckBox(rend_hacks_grid, "Memory Wrapping",           "wrap_gs_mem",                          IDC_MEMORY_WRAPPING,   hacks_prereq);
-	m_ui.addCheckBox(rend_hacks_grid, "Disable Safe Features",     "UserHacks_Disable_Safe_Features",      IDC_SAFE_FEATURES,     hacks_prereq);
-	m_ui.addCheckBox(rend_hacks_grid, "Preload Frame Data",        "preload_frame_with_gs_data",           IDC_PRELOAD_GS,        hacks_prereq);
-	m_ui.addCheckBox(rend_hacks_grid, "Disable Partial Invalidation", "UserHacks_DisablePartialInvalidation", IDC_FAST_TC_INV,       hacks_prereq);
-	m_ui.addCheckBox(rend_hacks_grid, "Texture Inside RT",         "UserHacks_TextureInsideRt",            IDC_TEX_IN_RT,         hacks_prereq);
+	m_ui.addCheckBox(rend_hacks_grid, "Auto Flush",                   "UserHacks_AutoFlush",                     IDC_AUTO_FLUSH_HW,            hacks_prereq);
+	m_ui.addCheckBox(rend_hacks_grid, "Frame Buffer Conversion",      "UserHacks_CPU_FB_Conversion",             IDC_CPU_FB_CONVERSION,        hacks_prereq);
+	m_ui.addCheckBox(rend_hacks_grid, "Disable Depth Emulation",      "UserHacks_DisableDepthSupport",           IDC_TC_DEPTH,                 hacks_prereq);
+	m_ui.addCheckBox(rend_hacks_grid, "Memory Wrapping",              "wrap_gs_mem",                             IDC_MEMORY_WRAPPING,          hacks_prereq);
+	m_ui.addCheckBox(rend_hacks_grid, "Disable Safe Features",        "UserHacks_Disable_Safe_Features",         IDC_SAFE_FEATURES,            hacks_prereq);
+	m_ui.addCheckBox(rend_hacks_grid, "Preload Frame Data",           "preload_frame_with_gs_data",              IDC_PRELOAD_GS,               hacks_prereq);
+	m_ui.addCheckBox(rend_hacks_grid, "Disable Partial Invalidation", "UserHacks_DisablePartialInvalidation",    IDC_DISABLE_PARTIAL_TC_INV,   hacks_prereq);
+	m_ui.addCheckBox(rend_hacks_grid, "Texture Inside RT",            "UserHacks_TextureInsideRt",               IDC_TEX_IN_RT,                hacks_prereq);
 
 	// Upscale
 	m_ui.addCheckBox(upscale_hacks_grid, "Align Sprite",   "UserHacks_align_sprite_X",  IDC_ALIGN_SPRITE,    upscale_hacks_prereq);
@@ -363,10 +363,10 @@ HacksTab::HacksTab(wxWindow* parent)
 	m_ui.addComboBoxAndLabel(rend_hack_choice_grid, "Trilinear Filtering:", "UserHacks_TriFilter",            &theApp.m_gs_trifilter,    IDC_TRI_FILTER,     hacks_prereq);
 
 	// Skipdraw Range
-	add_label(this, rend_hack_choice_grid, "Skipdraw Range:", IDC_SKIPDRAWHACK);
+	add_label(this, rend_hack_choice_grid, "Skipdraw Range:", IDC_SKIPDRAWEND);
 	auto* skip_box = new wxBoxSizer(wxHORIZONTAL);
-	skip_x_spin = m_ui.addSpin(skip_box, "UserHacks_SkipDraw_Offset", 0, 10000, 0, IDC_SKIPDRAWOFFSET, hacks_prereq);
-	skip_y_spin = m_ui.addSpin(skip_box, "UserHacks_SkipDraw",        0, 10000, 0, IDC_SKIPDRAWHACK,   hacks_prereq);
+	skip_x_spin = m_ui.addSpin(skip_box, "UserHacks_SkipDraw_Start",      0, 10000, 0, IDC_SKIPDRAWSTART, hacks_prereq);
+	skip_y_spin = m_ui.addSpin(skip_box, "UserHacks_SkipDraw_End",        0, 10000, 0, IDC_SKIPDRAWEND,   hacks_prereq);
 
 	rend_hack_choice_grid->Add(skip_box, wxSizerFlags().Expand());
 
@@ -513,13 +513,13 @@ OSDTab::OSDTab(wxWindow* parent)
 	auto* log_grid = new wxFlexGridSizer(2, space, space);
 	log_grid->AddGrowableCol(1);
 
-	m_ui.addCheckBox(log_grid, "Show Messages", "OsdShowMessages", -1);
-	m_ui.addCheckBox(log_grid, "Show Speed", "OsdShowSpeed", -1);
-	m_ui.addCheckBox(log_grid, "Show FPS", "OsdShowFPS", -1);
-	m_ui.addCheckBox(log_grid, "Show CPU Usage", "OsdShowCPU", -1);
-	m_ui.addCheckBox(log_grid, "Show GPU Usage", "OsdShowGPU", -1);
+	m_ui.addCheckBox(log_grid, "Show Messages",   "OsdShowMessages",   -1);
+	m_ui.addCheckBox(log_grid, "Show Speed",      "OsdShowSpeed",      -1);
+	m_ui.addCheckBox(log_grid, "Show FPS",        "OsdShowFPS",        -1);
+	m_ui.addCheckBox(log_grid, "Show CPU Usage",  "OsdShowCPU",        -1);
+	m_ui.addCheckBox(log_grid, "Show GPU Usage",  "OsdShowGPU",        -1);
 	m_ui.addCheckBox(log_grid, "Show Resolution", "OsdShowResolution", -1);
-	m_ui.addCheckBox(log_grid, "Show Statistics", "OsdShowGSStats", -1);
+	m_ui.addCheckBox(log_grid, "Show Statistics", "OsdShowGSStats",    -1);
 	m_ui.addCheckBox(log_grid, "Show Indicators", "OsdShowIndicators", -1);
 
 	log_box->Add(log_grid, wxSizerFlags().Expand());
@@ -541,10 +541,10 @@ DebugTab::DebugTab(wxWindow* parent)
 	{
 		PaddedBoxSizer<wxStaticBoxSizer> debug_box(wxVERTICAL, this, "Debug");
 		auto* debug_check_box = new wxWrapSizer(wxHORIZONTAL);
-		m_ui.addCheckBox(debug_check_box, "Use Blit Swap Chain", "UseBlitSwapChain");
+		m_ui.addCheckBox(debug_check_box, "Use Blit Swap Chain",  "UseBlitSwapChain");
 		m_ui.addCheckBox(debug_check_box, "Disable Shader Cache", "disable_shader_cache");
-		m_ui.addCheckBox(debug_check_box, "Use Debug Device", "UseDebugDevice");
-		m_ui.addCheckBox(debug_check_box, "Dump GS data", "dump");
+		m_ui.addCheckBox(debug_check_box, "Use Debug Device",     "UseDebugDevice");
+		m_ui.addCheckBox(debug_check_box, "Dump GS data",         "dump");
 
 		auto* debug_save_check_box = new wxWrapSizer(wxHORIZONTAL);
 		m_ui.addCheckBox(debug_save_check_box, "Save RT",      "save");
@@ -577,12 +577,12 @@ DebugTab::DebugTab(wxWindow* parent)
 
 	PaddedBoxSizer<wxStaticBoxSizer> tex_box(wxVERTICAL, this, "Texture Replacements");
 	auto* tex_grid = new wxFlexGridSizer(2, space, space);
-	m_ui.addCheckBox(tex_grid, "Dump Textures", "DumpReplaceableTextures", -1);
-	m_ui.addCheckBox(tex_grid, "Dump Mipmaps", "DumpReplaceableMipmaps", -1);
-	m_ui.addCheckBox(tex_grid, "Dump FMV Textures", "DumpTexturesWithFMVActive", -1);
+	m_ui.addCheckBox(tex_grid, "Dump Textures",         "DumpReplaceableTextures",      -1);
+	m_ui.addCheckBox(tex_grid, "Dump Mipmaps",          "DumpReplaceableMipmaps",       -1);
+	m_ui.addCheckBox(tex_grid, "Dump FMV Textures",     "DumpTexturesWithFMVActive",    -1);
 	m_ui.addCheckBox(tex_grid, "Async Texture Loading", "LoadTextureReplacementsAsync", -1);
-	m_ui.addCheckBox(tex_grid, "Load Textures", "LoadTextureReplacements", -1);
-	m_ui.addCheckBox(tex_grid, "Precache Textures", "PrecacheTextureReplacements", -1);
+	m_ui.addCheckBox(tex_grid, "Load Textures",         "LoadTextureReplacements",      -1);
+	m_ui.addCheckBox(tex_grid, "Precache Textures",     "PrecacheTextureReplacements",  -1);
 	tex_box->Add(tex_grid);
 
 	tab_box->Add(tex_box.outer, wxSizerFlags().Expand());
@@ -627,11 +627,11 @@ Dialog::Dialog()
 	m_debug_panel = new DebugTab(book);
 
 	book->AddPage(m_renderer_panel, "Renderer", true);
-	book->AddPage(m_hacks_panel, "Hacks");
-	book->AddPage(m_post_panel, "Shader");
-	book->AddPage(m_osd_panel, "OSD");
-	book->AddPage(m_rec_panel, "Recording");
-	book->AddPage(m_debug_panel, "Advanced");
+	book->AddPage(m_hacks_panel,    "Hacks");
+	book->AddPage(m_post_panel,     "Shader");
+	book->AddPage(m_osd_panel,      "OSD");
+	book->AddPage(m_rec_panel,      "Recording");
+	book->AddPage(m_debug_panel,    "Advanced");
 
 	m_top_box->Add(top_grid, wxSizerFlags().Centre());
 	m_top_box->AddSpacer(space);
