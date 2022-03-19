@@ -2324,7 +2324,6 @@ SCES-50295:
   compat: 5
   gsHWFixes:
     mipmap: 1
-  gsHWFixes:
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
     trilinearFiltering: 2 # Remove blurriness in font and models.
 SCES-50300:
@@ -4665,7 +4664,6 @@ SCPS-15004:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
-  gsHWFixes:
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
     trilinearFiltering: 2 # Remove blurriness in font and models.
 SCPS-15005:
@@ -5252,7 +5250,7 @@ SCPS-17013:
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     trilinearFiltering: 2 # Remove blurriness in font and models.
-    disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing. 
+    disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
   patches:
     CDEE4B19:
       content: |-
@@ -5309,7 +5307,6 @@ SCPS-19203:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
-  gsHWFixes:
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
     trilinearFiltering: 2 # Remove blurriness in font and models..
 SCPS-19204:
@@ -5967,7 +5964,6 @@ SCUS-97111:
   compat: 5
   gsHWFixes:
     mipmap: 1
-  gsHWFixes:
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
     trilinearFiltering: 2 # Remove blurriness in font and models.
 SCUS-97112:
@@ -6126,7 +6122,6 @@ SCUS-97152:
   region: "NTSC-U"
   gsHWFixes:
     mipmap: 1
-  gsHWFixes:
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
     trilinearFiltering: 2 # Remove blurriness in font and models.
 SCUS-97153:
