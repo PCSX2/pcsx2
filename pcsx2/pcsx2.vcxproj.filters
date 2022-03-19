@@ -1766,6 +1766,9 @@
     <ClCompile Include="gui\IniInterface.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
+    <ClCompile Include="Frontend\D3D12HostDisplay.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2935,6 +2938,9 @@
     </ClInclude>
     <ClInclude Include="gui\IniInterface.h">
       <Filter>AppHost</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\D3D12HostDisplay.h">
+      <Filter>Host</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

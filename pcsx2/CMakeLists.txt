@@ -1022,9 +1022,11 @@ endif()
 if(WIN32)
 	list(APPEND pcsx2FrontendSources
 		Frontend/D3D11HostDisplay.cpp
+		Frontend/D3D12HostDisplay.cpp
 	)
 	list(APPEND pcsx2FrontendHeaders
 		Frontend/D3D11HostDisplay.h
+		Frontend/D3D12HostDisplay.h
 	)
 elseif(APPLE)
 	list(APPEND pcsx2GSSources
@@ -1621,6 +1623,7 @@ if(WIN32)
 		baseclasses
 		pthreads4w
 		WIL::WIL
+		D3D12MemAlloc
 		setupapi.lib
 		ws2_32.lib
 		shlwapi.lib
