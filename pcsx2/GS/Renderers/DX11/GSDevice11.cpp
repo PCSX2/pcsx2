@@ -31,7 +31,7 @@
 static bool SupportsTextureFormat(ID3D11Device* dev, DXGI_FORMAT format)
 {
 	UINT support;
-	if (FAILED(dev->CheckFormatSupport(DXGI_FORMAT_BC1_UNORM, &support)))
+	if (FAILED(dev->CheckFormatSupport(format, &support)))
 		return false;
 
 	return (support & D3D11_FORMAT_SUPPORT_TEXTURE2D) != 0;
