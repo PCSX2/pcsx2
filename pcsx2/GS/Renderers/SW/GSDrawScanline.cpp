@@ -109,6 +109,16 @@ void GSDrawScanline::EndDraw(u64 frame, u64 ticks, int actual, int total, int pr
 	m_ds_map.UpdateStats(frame, ticks, actual, total, prims);
 }
 
+#if _M_SSE >= 0x501
+typedef GSVector8i VectorI;
+typedef GSVector8  VectorF;
+#define LOCAL_STEP local.d8
+#else
+typedef GSVector4i VectorI;
+typedef GSVector4  VectorF;
+#define LOCAL_STEP local.d4
+#endif
+
 void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local, const GSScanlineGlobalData& global)
 {
 	GSScanlineSelector sel = global.sel;
@@ -118,25 +128,38 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 	bool has_t = sel.fb && sel.tfx != TFX_NONE;
 	bool has_c = sel.fb && !(sel.tfx == TFX_DECAL && sel.tcc);
 
-#if _M_SSE >= 0x501
+	constexpr int vlen = sizeof(VectorF) / sizeof(float);
 
+#if _M_SSE >= 0x501
 	const GSVector8* shift = (GSVector8*)g_const->m_shift_256b;
+	const GSVector4 step_shift = GSVector4::broadcast32(&shift[0]);
+#else
+	const GSVector4* shift = (GSVector4*)g_const->m_shift_128b;
+	const GSVector4 step_shift = shift[0];
+#endif
 
 	if (has_z || has_f)
 	{
 		if (sel.prim != GS_SPRITE_CLASS)
 		{
-			GSVector4 dp8 = dscan.p * GSVector4::broadcast32(&shift[0]);
-
+#if _M_SSE >= 0x501
+			GSVector4 dp8 = dscan.p * step_shift;
+#endif
 			if (has_f)
 			{
+#if _M_SSE >= 0x501
 				local.d8.p.f = GSVector4i(dp8).extract32<3>();
 
 				GSVector8 df = GSVector8::broadcast32(&dscan.p.w);
+#else
+				GSVector4 df = dscan.p.wwww();
 
-				for (int i = 0; i < 8; i++)
+				local.d4.f = GSVector4i(df * shift[0]).xxzzlh();
+#endif
+
+				for (int i = 0; i < vlen; i++)
 				{
-					local.d[i].f = GSVector8i(df * shift[1 + i]).xxzzlh();
+					local.d[i].f = VectorI(df * shift[1 + i]).xxzzlh();
 				}
 			}
 
@@ -148,11 +171,16 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 				}
 
 				{
+#if _M_SSE >= 0x501
 					local.d8.p.z = dp8.extract32<2>();
 
 					const GSVector8 dz = GSVector8::broadcast32(&dscan.p.z);
+#else
+					const GSVector4 dz = dscan.p.zzzz();
 
-					for (int i = 0; i < 8; i++)
+					local.d4.z = dz * shift[0];
+#endif
+					for (int i = 0; i < vlen; i++)
 					{
 						local.d[i].z = dz * shift[1 + i];
 					}
@@ -163,7 +191,11 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 		{
 			if (has_f)
 			{
+#if _M_SSE >= 0x501
 				local.p.f = GSVector4i(vertex[index[1]].p).extract32<3>();
+#else
+				local.p.f = GSVector4i(vertex[index[1]].p).zzzzh().zzzz();
+#endif
 			}
 
 			if (has_z)
@@ -175,22 +207,22 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 
 	if (has_t)
 	{
-		GSVector4 dt8 = dscan.t * GSVector4::broadcast32(&shift[0]);
+		GSVector4 tstep = dscan.t * step_shift;
 
 		if (sel.fst)
 		{
-			local.d8.stq = GSVector4::cast(GSVector4i(dt8));
+			LOCAL_STEP.stq = GSVector4::cast(GSVector4i(tstep));
 		}
 		else
 		{
-			local.d8.stq = dt8;
+			LOCAL_STEP.stq = tstep;
 		}
 
-		GSVector8 dt(dscan.t);
+		VectorF dt(dscan.t);
 
 		for (int j = 0, k = sel.fst ? 2 : 3; j < k; j++)
 		{
-			GSVector8 dstq;
+			VectorF dstq;
 
 			switch (j)
 			{
@@ -199,16 +231,16 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 				case 2: dstq = dt.zzzz(); break;
 			}
 
-			for (int i = 0; i < 8; i++)
+			for (int i = 0; i < vlen; i++)
 			{
-				GSVector8 v = dstq * shift[1 + i];
+				VectorF v = dstq * shift[1 + i];
 
 				if (sel.fst)
 				{
 					switch (j)
 					{
-						case 0: local.d[i].s = GSVector8::cast(GSVector8i(v)); break;
-						case 1: local.d[i].t = GSVector8::cast(GSVector8i(v)); break;
+						case 0: local.d[i].s = VectorF::cast(VectorI(v)); break;
+						case 1: local.d[i].t = VectorF::cast(VectorI(v)); break;
 					}
 				}
 				else
@@ -228,177 +260,31 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 	{
 		if (sel.iip)
 		{
-			GSVector4 dc8 = dscan.c * GSVector4::broadcast32(&shift[0]);
-
-			GSVector4i::storel(&local.d8.c, GSVector4i(dc8).xzyw().ps32());
-
-			GSVector8 dc(dscan.c);
-
-			GSVector8 dr = dc.xxxx();
-			GSVector8 db = dc.zzzz();
-
-			for (int i = 0; i < 8; i++)
-			{
-				GSVector8i r = GSVector8i(dr * shift[1 + i]).ps32();
-				GSVector8i b = GSVector8i(db * shift[1 + i]).ps32();
-
-				local.d[i].rb = r.upl16(b);
-			}
-
-			GSVector8 dg = dc.yyyy();
-			GSVector8 da = dc.wwww();
-
-			for (int i = 0; i < 8; i++)
-			{
-				GSVector8i g = GSVector8i(dg * shift[1 + i]).ps32();
-				GSVector8i a = GSVector8i(da * shift[1 + i]).ps32();
-
-				local.d[i].ga = g.upl16(a);
-			}
-		}
-		else
-		{
-			int last = 0;
-
-			switch (sel.prim)
-			{
-				case GS_POINT_CLASS:    last = 0; break;
-				case GS_LINE_CLASS:     last = 1; break;
-				case GS_TRIANGLE_CLASS: last = 2; break;
-				case GS_SPRITE_CLASS:   last = 1; break;
-			}
-
-			GSVector8i c = GSVector8i(GSVector8(vertex[index[last]].c));
-
-			c = c.upl16(c.zwxy());
-
-			if (sel.tfx == TFX_NONE)
-				c = c.srl16(7);
-
-			local.c.rb = c.xxxx();
-			local.c.ga = c.zzzz();
-		}
-	}
-
+#if _M_SSE >= 0x501
+			GSVector4i::storel(&local.d8.c, GSVector4i(dscan.c * step_shift).xzyw().ps32());
 #else
+			local.d4.c = GSVector4i(dscan.c * step_shift).xzyw().ps32();
+#endif
+			VectorF dc(dscan.c);
 
-	const GSVector4* shift = (GSVector4*)g_const->m_shift_128b;
+			VectorF dr = dc.xxxx();
+			VectorF db = dc.zzzz();
 
-	if (has_z || has_f)
-	{
-		if (sel.prim != GS_SPRITE_CLASS)
-		{
-			if (has_f)
+			for (int i = 0; i < vlen; i++)
 			{
-				GSVector4 df = dscan.p.wwww();
-
-				local.d4.f = GSVector4i(df * shift[0]).xxzzlh();
-
-				for (int i = 0; i < 4; i++)
-				{
-					local.d[i].f = GSVector4i(df * shift[1 + i]).xxzzlh();
-				}
-			}
-
-			if (has_z)
-			{
-				GSVector4 dz = dscan.p.zzzz();
-
-				local.d4.z = dz * shift[0];
-
-				for (int i = 0; i < 4; i++)
-				{
-					local.d[i].z = dz * shift[1 + i];
-				}
-			}
-		}
-		else
-		{
-			if (has_f)
-			{
-				local.p.f = GSVector4i(vertex[index[1]].p).zzzzh().zzzz();
-			}
-
-			if (has_z)
-			{
-				local.p.z = vertex[index[1]].t.U32[3]; // u32 z is bypassed in t.w
-			}
-		}
-	}
-
-	if (has_t)
-	{
-		GSVector4 t = dscan.t;
-
-		if (sel.fst)
-		{
-			local.d4.stq = GSVector4::cast(GSVector4i(t * shift[0]));
-		}
-		else
-		{
-			local.d4.stq = t * shift[0];
-		}
-
-		for (int j = 0, k = sel.fst ? 2 : 3; j < k; j++)
-		{
-			GSVector4 dstq;
-
-			switch (j)
-			{
-				case 0: dstq = t.xxxx(); break;
-				case 1: dstq = t.yyyy(); break;
-				case 2: dstq = t.zzzz(); break;
-			}
-
-			for (int i = 0; i < 4; i++)
-			{
-				GSVector4 v = dstq * shift[1 + i];
-
-				if (sel.fst)
-				{
-					switch (j)
-					{
-						case 0: local.d[i].s = GSVector4::cast(GSVector4i(v)); break;
-						case 1: local.d[i].t = GSVector4::cast(GSVector4i(v)); break;
-					}
-				}
-				else
-				{
-					switch (j)
-					{
-						case 0: local.d[i].s = v; break;
-						case 1: local.d[i].t = v; break;
-						case 2: local.d[i].q = v; break;
-					}
-				}
-			}
-		}
-	}
-
-	if (has_c)
-	{
-		if (sel.iip)
-		{
-			local.d4.c = GSVector4i(dscan.c * shift[0]).xzyw().ps32();
-
-			GSVector4 dr = dscan.c.xxxx();
-			GSVector4 db = dscan.c.zzzz();
-
-			for (int i = 0; i < 4; i++)
-			{
-				GSVector4i r = GSVector4i(dr * shift[1 + i]).ps32();
-				GSVector4i b = GSVector4i(db * shift[1 + i]).ps32();
+				VectorI r = VectorI(dr * shift[1 + i]).ps32();
+				VectorI b = VectorI(db * shift[1 + i]).ps32();
 
 				local.d[i].rb = r.upl16(b);
 			}
 
-			GSVector4 dg = dscan.c.yyyy();
-			GSVector4 da = dscan.c.wwww();
+			VectorF dg = dc.yyyy();
+			VectorF da = dc.wwww();
 
-			for (int i = 0; i < 4; i++)
+			for (int i = 0; i < vlen; i++)
 			{
-				GSVector4i g = GSVector4i(dg * shift[1 + i]).ps32();
-				GSVector4i a = GSVector4i(da * shift[1 + i]).ps32();
+				VectorI g = VectorI(dg * shift[1 + i]).ps32();
+				VectorI a = VectorI(da * shift[1 + i]).ps32();
 
 				local.d[i].ga = g.upl16(a);
 			}
@@ -415,7 +301,7 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 				case GS_SPRITE_CLASS:   last = 1; break;
 			}
 
-			GSVector4i c = GSVector4i(vertex[index[last]].c);
+			VectorI c = VectorI(VectorF(vertex[index[last]].c));
 
 			c = c.upl16(c.zwxy());
 
@@ -426,8 +312,6 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 			local.c.ga = c.zzzz();
 		}
 	}
-
-#endif
 }
 
 void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local, const GSScanlineGlobalData& global)
