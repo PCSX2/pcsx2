@@ -12027,6 +12027,9 @@ SLES-52008:
 SLES-52011:
   name: "Tak and The Power of Juju"
   region: "PAL-E"
+  compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-52015:
   name: "Les Chevaliers de Baphomet"
   region: "PAL-F"
@@ -12171,9 +12174,15 @@ SLES-52102:
 SLES-52103:
   name: "Tak & Le Pouvoir de Juju"
   region: "PAL-F"
+  compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-52104:
   name: "Tak and the Power of JuJu"
   region: "PAL-G"
+  compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-52106:
   name: "Cabela's Dangerous Hunts"
   region: "PAL-E"
@@ -12491,11 +12500,17 @@ SLES-52284:
   name: "Deadly Skies II"
   region: "PAL-M5"
 SLES-52286:
-  name: "Tak and The Poer of JuJu"
+  name: "Tak and The Power of JuJu"
   region: "PAL-S"
+  compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-52287:
-  name: "Tak and The Poer of JuJu"
+  name: "Tak and The Power of JuJu"
   region: "PAL-I"
+  compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-52288:
   name: "Tom Clancy's Rainbow Six 3"
   region: "PAL-M5"
@@ -14182,8 +14197,11 @@ SLES-53035:
   region: "PAL-E"
   compat: 5
 SLES-53036:
-  name: "Tak 2 - The Stuff of Dreams"
+  name: "Tak 2 - The Staff of Dreams"
   region: "PAL-M3"
+  compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-53037:
   name: "Super Monkey Ball Deluxe"
   region: "PAL-M5"
@@ -14389,6 +14407,9 @@ SLES-53127:
 SLES-53129:
   name: "Tak 2 - The Staff of Dreams"
   region: "PAL-F-G"
+  compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-53130:
   name: "World Championship Poker"
   region: "PAL-M5"
@@ -14907,6 +14928,7 @@ SLES-53417:
 SLES-53418:
   name: "Tak - The Great JuJu Challenge"
   region: "PAL-A"
+  compat: 5
 SLES-53419:
   name: "LA Rush"
   region: "PAL-M5"
@@ -15603,6 +15625,7 @@ SLES-53690:
 SLES-53695:
   name: "Tak - The Great Juju Challenge"
   region: "PAL-E-G"
+  compat: 5
 SLES-53696:
   name: "Zathura"
   region: "PAL-M6"
@@ -19347,6 +19370,9 @@ SLES-55375:
 SLES-55376:
   name: "Nickelodeon Tak and the Guardians of Gross"
   region: "PAL-E-G"
+  compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
 SLES-55378:
   name: "RTL Biathlon 2009"
   region: "PAL-E-G"
@@ -23057,7 +23083,7 @@ SLPM-62761:
   name: "Choro Q - HG 2 [Atlus Best Collection]"
   region: "NTSC-J"
 SLPM-62762:
-  name: "Sangokushi VIII [with Poer-Up Kit] [Koei Selection Series]"
+  name: "Sangokushi VIII [with Power-Up Kit] [Koei Selection Series]"
   region: "NTSC-J"
 SLPM-62763:
   name: "Bomberman Land 3 [Hudson Best Version]"
@@ -36791,6 +36817,8 @@ SLUS-20519:
   name: "Tak and The Power of Juju"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLUS-20520:
   name: "Lord of the Rings, The - The Fellowship of the Ring"
   region: "NTSC-U"
@@ -38654,6 +38682,8 @@ SLUS-20952:
   name: "Tak 2 - The Staff of Dreams"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLUS-20953:
   name: "Shaman King - Power of Spirit"
   region: "NTSC-U"
@@ -42537,6 +42567,8 @@ SLUS-21797:
   name: "Tak - Guardians Of Gross"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
 SLUS-21798:
   name: "Shepherd's Crossing"
   region: "NTSC-U"
@@ -43491,6 +43523,9 @@ SLUS-29065:
 SLUS-29067:
   name: "Tak and the Power of Juju [Demo]"
   region: "NTSC-U"
+  compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLUS-29068:
   name: "Crash Nitro Kart [Demo]"
   region: "NTSC-U"
