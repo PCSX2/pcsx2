@@ -610,9 +610,6 @@ void rec_C2UNK()
 	Console.Error("Cop2 bad opcode: %x", cpuRegs.code);
 }
 
-// This is called by EE Recs to setup sVU info, this isn't needed for mVU Macro (cottonvibes)
-void _vuRegsCOP22(VURegs* VU, _VURegsNum* VUregsn) {}
-
 // Recompilation
 void (*recCOP2t[32])() = {
 	rec_C2UNK,     recQMFC2,      recCFC2,       rec_C2UNK,     rec_C2UNK,     recQMTC2,      recCTC2,       rec_C2UNK,

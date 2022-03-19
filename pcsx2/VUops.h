@@ -25,8 +25,6 @@
 #define int12_to_float(x)	(float)((float)x * 0.000244140625f)
 #define int15_to_float(x)	(float)((float)x * 0.000030517578125)
 
-#define	MAC_Reset( VU ) VU->VI[REG_MAC_FLAG].UL = VU->VI[REG_MAC_FLAG].UL & (~0xFFFF)
-
 struct _VURegsNum {
 	u8 pipe; // if 0xff, COP2
 	u8 VFwrite;
