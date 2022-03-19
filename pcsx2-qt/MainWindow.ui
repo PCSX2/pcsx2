@@ -699,11 +699,17 @@
    </property>
   </action>
   <action name="actionEnableEEConsoleLogging">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Enable EE Console Logging</string>
    </property>
   </action>
   <action name="actionEnableIOPConsoleLogging">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Enable IOP Console Logging</string>
    </property>
