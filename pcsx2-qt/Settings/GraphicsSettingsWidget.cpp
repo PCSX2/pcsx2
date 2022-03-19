@@ -30,6 +30,7 @@
 
 #ifdef _WIN32
 #include "Frontend/D3D11HostDisplay.h"
+#include "Frontend/D3D12HostDisplay.h"
 #endif
 
 struct RendererInfo
@@ -44,6 +45,8 @@ static constexpr RendererInfo s_renderer_info[] = {
 #ifdef _WIN32
 	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 11"),
 	GSRendererType::DX11,
+	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 12"),
+	GSRendererType::DX12,
 #endif
 #ifdef ENABLE_OPENGL
 	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "OpenGL"),
@@ -355,7 +358,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	const bool is_dx11 = false;
 #endif
 
-	const bool is_hardware = (type == GSRendererType::DX11 || type == GSRendererType::OGL || type == GSRendererType::VK);
+	const bool is_hardware = (type == GSRendererType::DX11 || type == GSRendererType::DX12 || type == GSRendererType::OGL || type == GSRendererType::VK);
 	const bool is_software = (type == GSRendererType::SW);
 	const int current_tab = m_hardware_renderer_visible ? m_ui.hardwareRendererGroup->currentIndex() : m_ui.softwareRendererGroup->currentIndex();
 
@@ -419,6 +422,9 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 #ifdef _WIN32
 		case GSRendererType::DX11:
 			modes = D3D11HostDisplay::StaticGetAdapterAndModeList();
+			break;
+		case GSRendererType::DX12:
+			modes = D3D12HostDisplay::StaticGetAdapterAndModeList();
 			break;
 #endif
 

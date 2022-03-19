@@ -331,6 +331,8 @@
     <ClCompile Include="Gif_Logger.cpp" />
     <ClCompile Include="Gif_Unit.cpp" />
     <ClCompile Include="GS\Renderers\DX11\D3D.cpp" />
+    <ClCompile Include="GS\Renderers\DX12\GSDevice12.cpp" />
+    <ClCompile Include="GS\Renderers\DX12\GSTexture12.cpp" />
     <ClCompile Include="GS\Renderers\HW\GSTextureReplacementLoaders.cpp" />
     <ClCompile Include="GS\Renderers\HW\GSTextureReplacements.cpp" />
     <ClCompile Include="GS\Window\GSwxDialog.cpp" />
@@ -792,6 +794,8 @@
     <ClInclude Include="GameDatabase.h" />
     <ClInclude Include="Gif_Unit.h" />
     <ClInclude Include="GS\Renderers\DX11\D3D.h" />
+    <ClInclude Include="GS\Renderers\DX12\GSDevice12.h" />
+    <ClInclude Include="GS\Renderers\DX12\GSTexture12.h" />
     <ClInclude Include="GS\Renderers\HW\GSTextureReplacements.h" />
     <ClInclude Include="GS\Window\GSwxDialog.h" />
     <ClInclude Include="GS\Renderers\Vulkan\GSDeviceVK.h" />

@@ -61,6 +61,7 @@
 #define PS_NO_COLOR1 0
 #define PS_NO_ABLEND 0
 #define PS_ONLY_ALPHA 0
+#define PS_DATE 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
@@ -99,14 +100,21 @@ struct PS_INPUT
 #else
 	nointerpolation float4 c : COLOR0;
 #endif
+#if PS_DATE > 10 || PS_DATE == 3
+	uint primid : SV_PrimitiveID;
+#endif
 };
 
 struct PS_OUTPUT
 {
 #if !PS_NO_COLOR
+#if PS_DATE > 10
+	float c : SV_Target;
+#else
 	float4 c0 : SV_Target0;
 #if !PS_NO_COLOR1
 	float4 c1 : SV_Target1;
+#endif
 #endif
 #endif
 #if PS_ZCLAMP
@@ -117,10 +125,15 @@ struct PS_OUTPUT
 Texture2D<float4> Texture : register(t0);
 Texture2D<float4> Palette : register(t1);
 Texture2D<float4> RtTexture : register(t2);
+Texture2D<float> PrimMinTexture : register(t3);
 SamplerState TextureSampler : register(s0);
 SamplerState PaletteSampler : register(s1);
 
+#ifdef DX12
+cbuffer cb0 : register(b0)
+#else
 cbuffer cb0
+#endif
 {
 	float2 VertexScale;
 	float2 VertexOffset;
@@ -131,7 +144,11 @@ cbuffer cb0
 	uint pad_cb0;
 };
 
+#ifdef DX12
+cbuffer cb1 : register(b1)
+#else
 cbuffer cb1
+#endif
 {
 	float3 FogColor;
 	float AREF;
@@ -853,6 +870,29 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		if (C.a < A_one) C.a += A_one;
 	}
 
+#if PS_DATE == 3
+	// Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
+	// the bad alpha value so we must keep it.
+	int stencil_ceil = int(PrimMinTexture.Load(int3(input.p.xy, 0)));
+	if (int(input.primid) > stencil_ceil)
+		discard;
+#endif
+
+	// Get first primitive that will write a failling alpha value
+#if PS_DATE == 11
+	// DATM == 0
+	// Pixel with alpha equal to 1 will failed (128-255)
+	output.c = (C.a > 127.5f) ? float(input.primid) : float(0x7FFFFFFF);
+
+#elif PS_DATE == 12
+
+	// DATM == 1
+	// Pixel with alpha equal to 0 will failed (0-127)
+	output.c = (C.a < 127.5f) ? float(input.primid) : float(0x7FFFFFFF);
+
+#else
+	// Not primid DATE setup
+
 	ps_blend(C, alpha_blend, input.p.xy);
 
 	ps_dither(C.rgb, input.p.xy);
@@ -876,6 +916,8 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	// rgb isn't used
 	output.c0.rgb = float3(0.0f, 0.0f, 0.0f);
 #endif
+#endif
+
 #endif
 
 #if PS_ZCLAMP

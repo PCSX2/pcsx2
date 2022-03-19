@@ -705,7 +705,6 @@ void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	if (feedback_write_2 || feedback_write_1 || sTex[0])
 	{
 		MergeConstantBuffer cb;
-		cb.BGColor = c;
 		cb.EMODA = EXTBUF.EMODA;
 		cb.EMODC = EXTBUF.EMODC;
 		m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);

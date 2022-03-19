@@ -18,9 +18,8 @@ struct VS_OUTPUT
 	float4 c : COLOR;
 };
 
-cbuffer cb0
+cbuffer cb0 : register(b0)
 {
-	float4 BGColor;
 	int EMODA;
 	int EMODC;
 };
@@ -403,6 +402,26 @@ PS_OUTPUT ps_yuv(PS_INPUT input)
 	}
 
 	return output;
+}
+
+float ps_stencil_image_init_0(PS_INPUT input) : SV_Target
+{
+	float c;
+	if ((127.5f / 255.0f) < sample_c(input.t).a) // < 0x80 pass (== 0x80 should not pass)
+		c = float(-1);
+	else
+		c = float(0x7FFFFFFF);
+	return c;
+}
+
+float ps_stencil_image_init_1(PS_INPUT input) : SV_Target
+{
+	float c;
+	if (sample_c(input.t).a < (127.5f / 255.0f)) // >= 0x80 pass
+		c = float(-1);
+	else
+		c = float(0x7FFFFFFF);
+	return c;
 }
 
 #endif

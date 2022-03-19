@@ -240,7 +240,7 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 
 	static constexpr GSRendererType renderers[] = {
 #ifdef _WIN32
-		GSRendererType::DX11,
+		GSRendererType::DX11, GSRendererType::DX12,
 #endif
 		GSRendererType::OGL, GSRendererType::VK, GSRendererType::SW, GSRendererType::Null};
 	for (GSRendererType renderer : renderers)
