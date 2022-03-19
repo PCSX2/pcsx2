@@ -1134,6 +1134,8 @@ SCAJ-30001:
 SCAJ-30002:
   name: "Wild ARMs - Alter Code F"
   region: "NTSC-J"
+  gsHWFixes:
+    wildArmsHack: 1 #Fixes bugged lines in text in resolutions above native
 SCAJ-30003:
   name: "Siren"
   region: "NTSC-Unk"
@@ -5230,6 +5232,8 @@ SCPS-17001:
 SCPS-17002:
   name: "Wild ARMs - Alter Code F"
   region: "NTSC-J"
+  gsHWFixes:
+    wildArmsHack: 1 #Fixes bugged lines in text in resolutions above native
 SCPS-17008:
   name: "Nike - Gran Turismo [Limited Edition - 8 inch]"
   region: "NTSC-J"
@@ -5360,6 +5364,8 @@ SCPS-19215:
 SCPS-19251:
   name: "Wild ARMs - Alter Code F [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    wildArmsHack: 1 #Fixes bugged lines in text in resolutions above native
 SCPS-19252:
   name: "Gran Turismo 4 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -5381,6 +5387,8 @@ SCPS-19252:
 SCPS-19253:
   name: "Wild ARMs - Alter Code F [PlayStation 2 The Best - Reprint]"
   region: "NTSC-J"
+  gsHWFixes:
+    wildArmsHack: 1 #Fixes bugged lines in text in resolutions above native
 SCPS-19301:
   name: "Minna no Golf 4 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -38965,6 +38973,8 @@ SLUS-20937:
   name: "Wild ARMs - Alter Code F"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    wildArmsHack: 1 #Fixes bugged lines in text in resolutions above native
 SLUS-20938:
   name: "Dynasty Warriors 4 - Empires"
   region: "NTSC-U"
