@@ -55,9 +55,9 @@ const char* dialog_message(int ID, bool* updateText)
 				"Aggressive:\nUse more aggressive CRC hacks.\n"
 				"Removes effects in some games which make the image appear sharper/clearer.\n"
 				"Affected games: AC4, BleachBB, Bully, DBZBT 2 & 3, DeathByDegrees, Evangelion, FF games, FightingBeautyWulong, GOW 1 & 2, Kunoichi, IkkiTousen, Okami, Oneechanbara2, OnimushaDoD, RDRevolver, Simple2000Vol114, SoTC, SteambotChronicles, Tekken5, Ultraman, XenosagaE3, Yakuza 1 & 2.\n");
-		case IDC_SKIPDRAWHACK:
+		case IDC_SKIPDRAWEND:
 		case IDC_SKIPDRAWHACKEDIT:
-		case IDC_SKIPDRAWOFFSET:
+		case IDC_SKIPDRAWSTART:
 		case IDC_SKIPDRAWOFFSETEDIT:
 			return cvtString("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right.\n\n"
 				"Use it, for example, to try and get rid of bad post processing effects.\n"
@@ -177,7 +177,7 @@ const char* dialog_message(int ID, bool* updateText)
 				"Off:\nMipmapping emulation is disabled.\n\n"
 				"Basic (Fast):\nPartially emulates mipmapping, performance impact is negligible in most cases.\n\n"
 				"Full (Slow):\nCompletely emulates the mipmapping function of the GS, might significantly impact performance.");
-		case IDC_FAST_TC_INV:
+		case IDC_DISABLE_PARTIAL_TC_INV:
 			return cvtString("By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise."
 				   "\n\nThis hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load.\n\nIt helps snowblind engine games.");
 		case IDC_CONSERVATIVE_FB:

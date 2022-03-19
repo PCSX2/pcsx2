@@ -1391,8 +1391,8 @@ void GSApp::Init()
 	m_default_configuration["UserHacks_HalfPixelOffset"]                  = "0";
 	m_default_configuration["UserHacks_merge_pp_sprite"]                  = "0";
 	m_default_configuration["UserHacks_round_sprite_offset"]              = "0";
-	m_default_configuration["UserHacks_SkipDraw"]                         = "0";
-	m_default_configuration["UserHacks_SkipDraw_Offset"]                  = "0";
+	m_default_configuration["UserHacks_SkipDraw_Start"]                   = "0";
+	m_default_configuration["UserHacks_SkipDraw_End"]                     = "0";
 	m_default_configuration["UserHacks_TCOffsetX"]                        = "0";
 	m_default_configuration["UserHacks_TCOffsetY"]                        = "0";
 	m_default_configuration["UserHacks_TextureInsideRt"]                  = "0";
