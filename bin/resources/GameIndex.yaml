@@ -18000,12 +18000,6 @@ SLES-54674:
   compat: 5
   gsHWFixes:
     mipmap: 1
-  patches:
-    default:
-      content: |-
-        comment=- This gamedisc supports multiple languages.
-        comment=- Language selection is done through the BIOS configuration.
-        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SLES-54675:
   name: "Street Warrior"
   region: "PAL-E"
@@ -19656,12 +19650,6 @@ SLES-55442:
   name: "Tomb Raider Underworld"
   region: "PAL-M8"
   compat: 5
-  patches:
-    default:
-      content: |-
-        comment=- This gamedisc supports multiple languages.
-        comment=- Language selection is done through the BIOS configuration.
-        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SLES-55443:
   name: "Mana Khemia - Alchemists of Al-Revis"
   region: "PAL-E"
