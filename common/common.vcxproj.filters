@@ -178,6 +178,27 @@
     <ClCompile Include="D3D11\ShaderCompiler.cpp">
       <Filter>Source Files\D3D11</Filter>
     </ClCompile>
+    <ClCompile Include="D3D12\Context.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12\DescriptorHeapManager.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12\ShaderCache.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12\StreamBuffer.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12\Texture.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12\Util.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12\Builders.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlignedMalloc.h">
@@ -414,6 +435,27 @@
     <ClInclude Include="ZipHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="D3D12\Context.h">
+      <Filter>Header Files\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12\DescriptorHeapManager.h">
+      <Filter>Header Files\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12\ShaderCache.h">
+      <Filter>Header Files\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12\StreamBuffer.h">
+      <Filter>Header Files\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12\Texture.h">
+      <Filter>Header Files\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12\Util.h">
+      <Filter>Header Files\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12\Builders.h">
+      <Filter>Header Files\D3D12</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -439,6 +481,12 @@
     </Filter>
     <Filter Include="Header Files\D3D11">
       <UniqueIdentifier>{764ddf71-77a6-41b8-bc65-1eef94b6997b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\D3D12">
+      <UniqueIdentifier>{96f78eb9-089b-4166-a23e-78c4e7d90b64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\D3D12">
+      <UniqueIdentifier>{cf37623d-bb05-4c54-8c72-1c20b5331c69}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
