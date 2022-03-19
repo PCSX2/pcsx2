@@ -21,6 +21,7 @@
 
 #ifdef _WIN32
 #include "Frontend/D3D11HostDisplay.h"
+#include "Frontend/D3D12HostDisplay.h"
 #endif
 #include "GS/Renderers/Metal/GSMetalCPPAccessible.h"
 
@@ -699,6 +700,9 @@ void Dialog::RendererChange()
 	case GSRendererType::DX11:
 		list = D3D11HostDisplay::StaticGetAdapterAndModeList();
 		break;
+	case GSRendererType::DX12:
+		list = D3D12HostDisplay::StaticGetAdapterAndModeList();
+		break;
 #endif
 #ifdef ENABLE_VULKAN
 	case GSRendererType::VK:
@@ -789,7 +793,7 @@ void Dialog::Update()
 	else
 	{
 		// cross-tab dependencies yay
-		const bool is_hw = renderer == GSRendererType::OGL || renderer == GSRendererType::DX11 || renderer == GSRendererType::VK || renderer == GSRendererType::Metal;
+		const bool is_hw = renderer == GSRendererType::OGL || renderer == GSRendererType::DX11 || renderer == GSRendererType::VK || renderer == GSRendererType::Metal || renderer == GSRendererType::DX12;
 		const bool is_upscale = m_renderer_panel->m_internal_resolution->GetSelection() != 0;
 		m_hacks_panel->m_is_native_res = !is_hw || !is_upscale;
 		m_hacks_panel->m_is_hardware = is_hw;

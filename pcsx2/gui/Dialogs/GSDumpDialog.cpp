@@ -129,6 +129,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 #endif
 #if defined(_WIN32)
 	rdoverrides.Add(Pcsx2Config::GSOptions::GetRendererName(GSRendererType::DX11));
+	rdoverrides.Add(Pcsx2Config::GSOptions::GetRendererName(GSRendererType::DX12));
 #elif defined(__APPLE__)
 	rdoverrides.Add(Pcsx2Config::GSOptions::GetRendererName(GSRendererType::Metal));
 #endif
@@ -846,6 +847,11 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 			renderer = GSRendererType::Metal;
 #endif
 			break;
+#ifdef _WIN32
+		case 5:
+			renderer = GSRendererType::DX12;
+			break;
+#endif
 		default:
 			break;
 	}

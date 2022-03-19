@@ -56,6 +56,7 @@
 #ifdef _WIN32
 
 #include "Renderers/DX11/GSDevice11.h"
+#include "Renderers/DX12/GSDevice12.h"
 #include "GS/Renderers/DX11/D3D.h"
 
 
@@ -190,6 +191,9 @@ static HostDisplay::RenderAPI GetAPIForRenderer(GSRendererType renderer)
 #ifdef _WIN32
 		case GSRendererType::DX11:
 			return HostDisplay::RenderAPI::D3D11;
+
+		case GSRendererType::DX12:
+			return HostDisplay::RenderAPI::D3D12;
 #endif
 
 #ifdef __APPLE__
@@ -214,6 +218,9 @@ static bool DoGSOpen(GSRendererType renderer, u8* basemem)
 #ifdef _WIN32
 		case HostDisplay::RenderAPI::D3D11:
 			g_gs_device = std::make_unique<GSDevice11>();
+			break;
+		case HostDisplay::RenderAPI::D3D12:
+			g_gs_device = std::make_unique<GSDevice12>();
 			break;
 #endif
 #ifdef __APPLE__
@@ -1226,6 +1233,7 @@ void GSApp::Init()
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::Auto), "Automatic", ""));
 #ifdef _WIN32
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::DX11), "Direct3D 11", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::DX12), "Direct3D 12", ""));
 #endif
 #ifdef __APPLE__
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::Metal), "Metal", ""));

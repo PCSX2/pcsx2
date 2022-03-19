@@ -124,6 +124,7 @@ enum class GSRendererType : s8
 	SW = 13,
 	VK = 14,
 	Metal = 17,
+	DX12 = 15,
 };
 
 enum class GSInterlaceMode : u8
