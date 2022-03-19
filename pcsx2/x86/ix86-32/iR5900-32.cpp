@@ -2227,7 +2227,6 @@ StartRecomp:
 				}
 
 				VU0.code = cpuRegs.code;
-				_vuRegsCOP22(&VU0, &g_pCurInstInfo->vuregs);
 				continue;
 			}
 		}
