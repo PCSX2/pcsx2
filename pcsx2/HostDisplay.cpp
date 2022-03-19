@@ -37,6 +37,7 @@ const char* HostDisplay::RenderAPIToString(RenderAPI api)
 #define CASE(x) case RenderAPI::x: return #x
 		CASE(None);
 		CASE(D3D11);
+		CASE(D3D12);
 		CASE(Metal);
 		CASE(Vulkan);
 		CASE(OpenGL);
@@ -134,6 +135,7 @@ std::string HostDisplay::GetFullscreenModeString(u32 width, u32 height, float re
 
 #ifdef _WIN32
 #include "Frontend/D3D11HostDisplay.h"
+#include "Frontend/D3D12HostDisplay.h"
 #endif
 #include "GS/Renderers/Metal/GSMetalCPPAccessible.h"
 
@@ -144,6 +146,8 @@ std::unique_ptr<HostDisplay> HostDisplay::CreateDisplayForAPI(RenderAPI api)
 #ifdef _WIN32
 		case RenderAPI::D3D11:
 			return std::make_unique<D3D11HostDisplay>();
+		case RenderAPI::D3D12:
+			return std::make_unique<D3D12HostDisplay>();
 #endif
 #ifdef __APPLE__
 		case HostDisplay::RenderAPI::Metal:

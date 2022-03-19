@@ -68,7 +68,7 @@ namespace D3D12
 
 		void TransitionToState(ID3D12GraphicsCommandList* cmdlist, D3D12_RESOURCE_STATES state);
 		void TransitionSubresourceToState(ID3D12GraphicsCommandList* cmdlist, u32 level,
-			D3D12_RESOURCE_STATES before_state, D3D12_RESOURCE_STATES after_state);
+			D3D12_RESOURCE_STATES before_state, D3D12_RESOURCE_STATES after_state) const;
 
 		Texture& operator=(const Texture&) = delete;
 		Texture& operator=(Texture&& texture);

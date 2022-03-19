@@ -276,7 +276,7 @@ void Texture::TransitionToState(ID3D12GraphicsCommandList* cmdlist, D3D12_RESOUR
 }
 
 void Texture::TransitionSubresourceToState(ID3D12GraphicsCommandList* cmdlist, u32 level,
-	D3D12_RESOURCE_STATES before_state, D3D12_RESOURCE_STATES after_state)
+	D3D12_RESOURCE_STATES before_state, D3D12_RESOURCE_STATES after_state) const
 {
 	const D3D12_RESOURCE_BARRIER barrier = {D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
 		D3D12_RESOURCE_BARRIER_FLAG_NONE,
