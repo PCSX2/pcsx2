@@ -25,6 +25,8 @@ endif()
 if(WIN32)
 	target_sources(imgui PRIVATE
 		include/imgui_impl_dx11.h
+		include/imgui_impl_dx12.h
 		src/imgui_impl_dx11.cpp
+		src/imgui_impl_dx12.cpp
 	)
 endif()
