@@ -574,11 +574,7 @@ static void psxRecompileIrxImport()
 
 	if (SysTraceActive(IOP.Bios))
 	{
-		#ifdef __M_X86_64
-			xMOV64(arg3reg, (uptr)funcname);
-		#else
-			xPUSH((uptr)funcname);
-		#endif
+		xMOV64(arg3reg, (uptr)funcname);
 
 		xFastCall((void*)irxImportLog_rec, import_table, index);
 	}

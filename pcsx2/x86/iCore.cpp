@@ -48,11 +48,7 @@ _x86regs x86regs[iREGCNT_GPR], s_saveX86regs[iREGCNT_GPR];
 
 alignas(16) u32 xmmBackup[iREGCNT_XMM][4];
 
-#ifdef __M_X86_64
 alignas(16) u64 gprBackup[iREGCNT_GPR];
-#else
-alignas(16) u32 gprBackup[iREGCNT_GPR];
-#endif
 
 static int s_xmmchecknext = 0;
 
@@ -84,11 +80,7 @@ void _backupNeededx86()
 	{
 		if (x86regs[i].inuse)
 		{
-#ifdef __M_X86_64
 			xMOV(ptr64[&gprBackup[i]], xRegister64(i));
-#else
-			xMOV(ptr32[&gprBackup[i]], xRegister32(i));
-#endif
 		}
 	}
 }
@@ -99,11 +91,7 @@ void _restoreNeededx86()
 	{
 		if (x86regs[i].inuse)
 		{
-#ifdef __M_X86_64
 			xMOV(xRegister64(i), ptr64[&gprBackup[i]]);
-#else
-			xMOV(xRegister32(i), ptr32[&gprBackup[i]]);
-#endif
 		}
 	}
 }

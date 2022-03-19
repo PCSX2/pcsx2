@@ -225,11 +225,7 @@ struct microMapXMM
 class microRegAlloc
 {
 protected:
-#ifdef __M_X86_64
 	static const int xmmTotal = 15; // PQ register is reserved
-#else
-	static const int xmmTotal = 7; // PQ register is reserved
-#endif
 	microMapXMM xmmMap[xmmTotal];
 	int         counter; // Current allocation count
 	int         index;   // VU0 or VU1

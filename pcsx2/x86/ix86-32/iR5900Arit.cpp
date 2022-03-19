@@ -117,7 +117,6 @@ void recDADD_constv(int info, int creg, u32 vreg)
 
 	GPR_reg64 cval = g_cpuConstRegs[creg];
 
-#ifdef __M_X86_64
 	if (_Rd_ == vreg)
 	{
 		if (!cval.SD[0])
@@ -137,27 +136,6 @@ void recDADD_constv(int info, int creg, u32 vreg)
 		}
 		xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].SD[0]], rax);
 	}
-#else
-	if (_Rd_ == vreg)
-	{
-		if (!cval.SD[0])
-			return; // no-op
-		xADD(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], cval.SL[0]);
-		xADC(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], cval.SL[1]);
-	}
-	else
-	{
-		xMOV(eax, ptr32[&cpuRegs.GPR.r[vreg].SL[0]]);
-		xMOV(edx, ptr32[&cpuRegs.GPR.r[vreg].SL[1]]);
-		if (cval.SD[0])
-		{
-			xADD(eax, cval.SL[0]);
-			xADC(edx, cval.SL[1]);
-		}
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eax);
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edx);
-	}
-#endif
 }
 
 void recDADD_consts(int info)
@@ -178,7 +156,6 @@ void recDADD_(int info)
 	if (_Rd_ == _Rt_)
 		rs = _Rt_, rt = _Rs_;
 
-#ifdef __M_X86_64
 	if (_Rd_ == _Rs_ && _Rs_ == _Rt_)
 	{
 		xSHL(ptr64[&cpuRegs.GPR.r[_Rd_].SD[0]], 1);
@@ -202,38 +179,6 @@ void recDADD_(int info)
 	}
 
 	xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].SD[0]], rax);
-#else
-	xMOV(eax, ptr32[&cpuRegs.GPR.r[rt].SL[0]]);
-
-	if (_Rd_ == _Rs_ && _Rs_ == _Rt_)
-	{
-		xSHLD(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], eax, 1);
-		xSHL(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], 1);
-		return;
-	}
-
-	xMOV(edx, ptr32[&cpuRegs.GPR.r[rt].SL[1]]);
-
-	if (_Rd_ == rs)
-	{
-		xADD(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eax);
-		xADC(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edx);
-		return;
-	}
-	else if (rs == rt)
-	{
-		xADD(eax, eax);
-		xADC(edx, edx);
-	}
-	else
-	{
-		xADD(eax, ptr32[&cpuRegs.GPR.r[rs].SL[0]]);
-		xADC(edx, ptr32[&cpuRegs.GPR.r[rs].SL[1]]);
-	}
-
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eax);
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edx);
-#endif
 }
 
 EERECOMPILE_CODE0(DADD, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
@@ -280,12 +225,7 @@ void recSUB_(int info)
 
 	if (_Rs_ == _Rt_)
 	{
-#ifdef __M_X86_64
 		xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].SD[0]], 0);
-#else
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], 0);
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], 0);
-#endif
 		return;
 	}
 
@@ -314,7 +254,6 @@ void recDSUB_consts(int info)
 
 	GPR_reg64 sval = g_cpuConstRegs[_Rs_];
 
-#ifdef __M_X86_64
 	if (!sval.SD[0] && _Rd_ == _Rt_)
 	{
 		xNEG(ptr64[&cpuRegs.GPR.r[_Rd_].SD[0]]);
@@ -327,31 +266,6 @@ void recDSUB_consts(int info)
 
 	xSUB(rax, ptr32[&cpuRegs.GPR.r[_Rt_].SD[0]]);
 	xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].SL[0]], rax);
-#else
-	if (!sval.SD[0] && _Rd_ == _Rt_)
-	{
-		/* To understand this 64-bit negate, consider that a negate in 2's complement
-		 * is a NOT then an ADD 1.  The upper word should only have the NOT stage unless
-		 * the ADD overflows.  The ADD only overflows if the lower word is 0.
-		 * Incrementing before a NEG is the same as a NOT and the carry flag is set for
-		 * a non-zero lower word.
-		 */
-		xNEG(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]]);
-		xADC(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], 0);
-		xNEG(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]]);
-		return;
-	}
-	else
-	{
-		xMOV(eax, sval.SL[0]);
-		xMOV(edx, sval.SL[1]);
-	}
-
-	xSUB(eax, ptr32[&cpuRegs.GPR.r[_Rt_].SL[0]]);
-	xSBB(edx, ptr32[&cpuRegs.GPR.r[_Rt_].SL[1]]);
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eax);
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edx);
-#endif
 }
 
 void recDSUB_constt(int info)
@@ -360,7 +274,6 @@ void recDSUB_constt(int info)
 
 	GPR_reg64 tval = g_cpuConstRegs[_Rt_];
 
-#ifdef __M_X86_64
 	if (_Rd_ == _Rs_)
 	{
 		xImm64Op(xSUB, ptr64[&cpuRegs.GPR.r[_Rd_].SD[0]], rax, tval.SD[0]);
@@ -374,32 +287,12 @@ void recDSUB_constt(int info)
 		}
 		xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].SL[0]], rax);
 	}
-#else
-	if (_Rd_ == _Rs_)
-	{
-		xSUB(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], tval.SL[0]);
-		xSBB(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], tval.SL[1]);
-	}
-	else
-	{
-		xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rs_].SL[0]]);
-		xMOV(edx, ptr32[&cpuRegs.GPR.r[_Rs_].SL[1]]);
-		if (tval.SD[0])
-		{
-			xSUB(eax, tval.SL[0]);
-			xSBB(edx, tval.SL[1]);
-		}
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eax);
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edx);
-	}
-#endif
 }
 
 void recDSUB_(int info)
 {
 	pxAssert(!(info & PROCESS_EE_XMM));
 
-#ifdef __M_X86_64
 	if (_Rs_ == _Rt_)
 	{
 		xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].SD[0]], 0);
@@ -415,29 +308,6 @@ void recDSUB_(int info)
 		xSUB(rax, ptr64[&cpuRegs.GPR.r[_Rt_].SD[0]]);
 		xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].SL[0]], rax);
 	}
-#else
-	if (_Rs_ == _Rt_)
-	{
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], 0);
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], 0);
-	}
-	else if (_Rd_ == _Rs_)
-	{
-		xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].SL[0]]);
-		xMOV(edx, ptr32[&cpuRegs.GPR.r[_Rt_].SL[1]]);
-		xSUB(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eax);
-		xSBB(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edx);
-	}
-	else
-	{
-		xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rs_].SL[0]]);
-		xMOV(edx, ptr32[&cpuRegs.GPR.r[_Rs_].SL[1]]);
-		xSUB(eax, ptr32[&cpuRegs.GPR.r[_Rt_].SL[0]]);
-		xSBB(edx, ptr32[&cpuRegs.GPR.r[_Rt_].SL[1]]);
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eax);
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edx);
-	}
-#endif
 }
 
 EERECOMPILE_CODE0(DSUB, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
@@ -496,7 +366,7 @@ static void recLogicalOp_constv(LogicalOp op, int info, int creg, u32 vreg)
 	}
 
 	GPR_reg64 cval = g_cpuConstRegs[creg];
-#ifdef __M_X86_64
+
 	if (hasFixed && cval.SD[0] == fixedInput)
 	{
 		xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], fixedOutput);
@@ -523,31 +393,6 @@ static void recLogicalOp_constv(LogicalOp op, int info, int creg, u32 vreg)
 			xNOT(rax);
 		xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
 	}
-#else
-	for (int i = 0; i < 2; i++)
-	{
-		if (hasFixed && cval.SL[i] == (s32)fixedInput)
-		{
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], (s32)fixedOutput);
-		}
-		else if (_Rd_ == vreg)
-		{
-			if (cval.SL[i] != identityInput)
-				xOP(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], cval.UL[i]);
-			if (op == LogicalOp::NOR)
-				xNOT(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]]);
-		}
-		else
-		{
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[vreg].UL[i]]);
-			if (cval.SL[i] != identityInput)
-				xOP(eax, cval.UL[i]);
-			if (op == LogicalOp::NOR)
-				xNOT(eax);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
-		}
-	}
-#endif
 }
 
 static void recLogicalOp(LogicalOp op, int info)
@@ -565,7 +410,6 @@ static void recLogicalOp(LogicalOp op, int info)
 	if (_Rd_ == _Rt_)
 		rs = _Rt_, rt = _Rs_;
 
-#ifdef __M_X86_64
 	if (op == LogicalOp::XOR && rs == rt)
 	{
 		xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], 0);
@@ -589,34 +433,6 @@ static void recLogicalOp(LogicalOp op, int info)
 			xNOT(rax);
 		xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
 	}
-#else
-	for (int i = 0; i < 2; i++)
-	{
-		if (op == LogicalOp::XOR && rs == rt)
-		{
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], 0);
-		}
-		else if (_Rd_ == rs)
-		{
-			if (rs != rt)
-			{
-				xMOV(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-				xOP(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
-			}
-			if (op == LogicalOp::NOR)
-				xNOT(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]]);
-		}
-		else
-		{
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[rs].UL[i]]);
-			if (rs != rt)
-				xOP(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-			if (op == LogicalOp::NOR)
-				xNOT(eax);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
-		}
-	}
-#endif
 }
 
 //// AND
@@ -723,38 +539,18 @@ void recSLTs_const(int info, int sign, int st)
 
 	GPR_reg64 cval = g_cpuConstRegs[st ? _Rt_ : _Rs_];
 
-#ifdef __M_X86_64
 	const xImpl_Set& SET = st ? (sign ? xSETL : xSETB) : (sign ? xSETG : xSETA);
 
 	xXOR(eax, eax);
 	xImm64Op(xCMP, ptr64[&cpuRegs.GPR.r[st ? _Rs_ : _Rt_].UD[0]], rdx, cval.UD[0]);
 	SET(al);
 	xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
-#else
-	xMOV(eax, 1);
-
-	xCMP(ptr32[&cpuRegs.GPR.r[st ? _Rs_ : _Rt_].UL[1]], cval.UL[1]);
-	xForwardJump8 pass1(st ? (sign ? Jcc_Less : Jcc_Below) : (sign ? Jcc_Greater : Jcc_Above));
-	xForwardJump8 fail(st ? (sign ? Jcc_Greater : Jcc_Above) : (sign ? Jcc_Less : Jcc_Below));
-	{
-		xCMP(ptr32[&cpuRegs.GPR.r[st ? _Rs_ : _Rt_].UL[0]], cval.UL[0]);
-		xForwardJump8 pass2(st ? Jcc_Below : Jcc_Above);
-
-		fail.SetTarget();
-		xMOV(eax, 0);
-		pass2.SetTarget();
-	}
-	pass1.SetTarget();
-
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[1]], 0);
-#endif
 }
 
 void recSLTs_(int info, int sign)
 {
 	pxAssert(!(info & PROCESS_EE_XMM));
-#ifdef __M_X86_64
+
 	const xImpl_Set& SET = sign ? xSETL : xSETB;
 
 	xXOR(eax, eax);
@@ -762,27 +558,6 @@ void recSLTs_(int info, int sign)
 	xCMP(rdx, ptr64[&cpuRegs.GPR.r[_Rt_].UD[0]]);
 	SET(al);
 	xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
-#else
-	xMOV(eax, 1);
-
-	xMOV(edx, ptr32[&cpuRegs.GPR.r[_Rs_].UL[1]]);
-	xCMP(edx, ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]]);
-	xForwardJump8 pass1(sign ? Jcc_Less : Jcc_Below);
-	xForwardJump8 fail(sign ? Jcc_Greater : Jcc_Above);
-	{
-		xMOV(edx, ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-		xCMP(edx, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-		xForwardJump8 pass2(Jcc_Below);
-
-		fail.SetTarget();
-		xMOV(eax, 0);
-		pass2.SetTarget();
-	}
-	pass1.SetTarget();
-
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[1]], 0);
-#endif
 }
 
 void recSLT_consts(int info)

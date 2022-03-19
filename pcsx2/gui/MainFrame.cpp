@@ -93,11 +93,7 @@ void MainEmuFrame::UpdateStatusBar()
 
 	m_statusbar.SetStatusText(CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], 2);
 
-#ifdef __M_X86_64
 	m_statusbar.SetStatusText("x64", 3);
-#else
-	m_statusbar.SetStatusText("x32", 3);
-#endif
 }
 
 void MainEmuFrame::UpdateCdvdSrcSelection()

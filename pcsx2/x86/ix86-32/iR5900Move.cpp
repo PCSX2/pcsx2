@@ -52,25 +52,13 @@ REC_FUNC_DEL(MOVN, _Rd_);
 
 static void xCopy64(u64* dst, u64* src)
 {
-#ifdef __M_X86_64
 	xMOV(rax, ptr64[src]);
 	xMOV(ptr64[dst], rax);
-#else
-	xMOV(eax, ptr32[(u32*)src]);
-	xMOV(edx, ptr32[(u32*)src + 1]);
-	xMOV(ptr32[(u32*)dst], eax);
-	xMOV(ptr32[(u32*)dst + 1], edx);
-#endif
 }
 
 static void xCMPToZero64(u64* mem)
 {
-#ifdef __M_X86_64
 	xCMP(ptr64[mem], 0);
-#else
-	xMOV(eax, ptr32[(u32*)mem]);
-	xOR(eax, ptr32[(u32*)mem + 1]);
-#endif
 }
 
 /*********************************************************
