@@ -178,6 +178,12 @@ namespace StringUtil
 	static inline void StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,
 		std::size_t copy_size, std::size_t count)
 	{
+		if (src_stride == dst_stride && src_stride == copy_size)
+		{
+			std::memcpy(dst, src, src_stride * count);
+			return;
+		}
+
 		const u8* src_ptr = static_cast<const u8*>(src);
 		u8* dst_ptr = static_cast<u8*>(dst);
 		for (std::size_t i = 0; i < count; i++)
@@ -191,6 +197,9 @@ namespace StringUtil
 	static inline int StrideMemCmp(const void* p1, std::size_t p1_stride, const void* p2, std::size_t p2_stride,
 		std::size_t copy_size, std::size_t count)
 	{
+		if (p1_stride == p2_stride && p1_stride == copy_size)
+			return std::memcmp(p1, p2, p1_stride * count);
+
 		const u8* p1_ptr = static_cast<const u8*>(p1);
 		const u8* p2_ptr = static_cast<const u8*>(p2);
 		for (std::size_t i = 0; i < count; i++)
