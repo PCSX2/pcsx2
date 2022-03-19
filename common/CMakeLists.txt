@@ -173,13 +173,27 @@ endif()
 if(WIN32)
 	enable_language(ASM_MASM)
 	target_sources(common PRIVATE FastJmp.asm)
-	target_link_libraries(common PUBLIC WIL::WIL pthreads4w Winmm.lib)
+	target_link_libraries(common PUBLIC WIL::WIL D3D12MemAlloc pthreads4w Winmm.lib)
 	target_sources(common PRIVATE
 		FastJmp.asm
 		D3D11/ShaderCache.cpp
 		D3D11/ShaderCache.h
 		D3D11/ShaderCompiler.cpp
 		D3D11/ShaderCompiler.h
+		D3D12/Builders.cpp
+		D3D12/Builders.h
+		D3D12/Context.cpp
+		D3D12/Context.h
+		D3D12/DescriptorHeapManager.cpp
+		D3D12/DescriptorHeapManager.h
+		D3D12/ShaderCache.cpp
+		D3D12/ShaderCache.h
+		D3D12/StreamBuffer.cpp
+		D3D12/StreamBuffer.h
+		D3D12/Texture.cpp
+		D3D12/Texture.h
+		D3D12/Util.cpp
+		D3D12/Util.h
 	)
 endif()
 
