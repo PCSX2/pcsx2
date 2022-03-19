@@ -140,44 +140,13 @@ endif()
 # Architecture bitness detection
 include(TargetArch)
 target_architecture(PCSX2_TARGET_ARCHITECTURES)
-if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64" OR ${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
+if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
 	message(STATUS "Compiling a ${PCSX2_TARGET_ARCHITECTURES} build on a ${CMAKE_HOST_SYSTEM_PROCESSOR} host.")
 else()
 	message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
 endif()
 
-if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
-	# * -fPIC option was removed for multiple reasons.
-	#     - Code only supports the x86 architecture.
-	#     - code uses the ebx register so it's not compliant with PIC.
-	#     - Impacts the performance too much.
-	#     - Only plugins. No package will link to them.
-	set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
-
-	if(NOT DEFINED ARCH_FLAG)
-		if (MSVC)
-			set(ARCH_FLAG /arch:SSE2)
-		else()
-			if (DISABLE_ADVANCE_SIMD)
-				if (USE_ICC)
-					set(ARCH_FLAG "-msse2 -msse4.1")
-				else()
-					set(ARCH_FLAG "-msse -msse2 -msse4.1 -mfxsr -march=i686")
-				endif()
-			else()
-				# AVX requires some fix of the ABI (mangling) (default 2)
-				# Note: V6 requires GCC 4.7
-				#set(ARCH_FLAG "-march=native -fabi-version=6")
-				set(ARCH_FLAG "-mfxsr -march=native")
-			endif()
-		endif()
-	endif()
-
-	list(APPEND PCSX2_DEFS _ARCH_32=1 _M_X86=1 _M_X86_32=1)
-	set(_ARCH_32 1)
-	set(_M_X86 1)
-	set(_M_X86_32 1)
-elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
+if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
 	# x86_64 requires -fPIC
 	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
