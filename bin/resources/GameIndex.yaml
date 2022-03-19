@@ -2840,8 +2840,8 @@ SCES-52099:
   name: "I-Ninja"
   region: "PAL-M5"
   gsHWFixes:
-    skipDraw: 1 # Fix for depth lines.
-    skipDrawOffset: 1 # Fix for depth lines.
+    skipDrawStart: 1 # Fix for depth lines.
+    skipDrawEnd: 1 # Fix for depth lines.
 SCES-52124:
   name: "Kill.switch"
   region: "PAL-M5"
@@ -7738,8 +7738,8 @@ SLED-50884:
   name: "TimeSplitters 2 [Demo]"
   region: "PAL-E"
   gsHWFixes:
-    skipDraw: 1 # Fix for upscaling.
-    skipDrawOffset: 1 # Fix for upscaling.
+    skipDrawStart: 1 # Fix for upscaling.
+    skipDrawEnd: 1 # Fix for upscaling.
     wildArmsHack: 1 # Fix for upscaling.
 SLED-51062:
   name: "Fireblade [Demo]"
@@ -9727,8 +9727,8 @@ SLES-50877:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    skipDraw: 1 # Fix for upscaling.
-    skipDrawOffset: 1 # Fix for upscaling.
+    skipDrawStart: 1 # Fix for upscaling.
+    skipDrawEnd: 1 # Fix for upscaling.
     wildArmsHack: 1 # Fix for upscaling.
 SLES-50879:
   name: "Paris-Dakar 2"
@@ -12585,32 +12585,32 @@ SLES-52379:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
-    skipDraw: 2 # Fix for depth lines.
-    skipDrawOffset: 2 # Fix for depth lines.
+    skipDrawStart: 2 # Fix for depth lines.
+    skipDrawEnd: 2 # Fix for depth lines.
 SLES-52380:
   name: "Shrek 2"
   region: "PAL-F"
   gsHWFixes:
-    skipDraw: 2 # Fix for depth lines.
-    skipDrawOffset: 2 # Fix for depth lines.
+    skipDrawStart: 2 # Fix for depth lines.
+    skipDrawEnd: 2 # Fix for depth lines.
 SLES-52381:
   name: "Shrek 2"
   region: "PAL-G"
   gsHWFixes:
-    skipDraw: 2 # Fix for depth lines.
-    skipDrawOffset: 2 # Fix for depth lines.
+    skipDrawStart: 2 # Fix for depth lines.
+    skipDrawEnd: 2 # Fix for depth lines.
 SLES-52382:
   name: "Shrek 2"
   region: "PAL-S"
   gsHWFixes:
-    skipDraw: 2 # Fix for depth lines.
-    skipDrawOffset: 2 # Fix for depth lines.
+    skipDrawStart: 2 # Fix for depth lines.
+    skipDrawEnd: 2 # Fix for depth lines.
 SLES-52383:
   name: "Shrek 2"
   region: "PAL-I"
   gsHWFixes:
-    skipDraw: 2 # Fix for depth lines.
-    skipDrawOffset: 2 # Fix for depth lines.
+    skipDrawStart: 2 # Fix for depth lines.
+    skipDrawEnd: 2 # Fix for depth lines.
 SLES-52384:
   name: "Project Zero 2 - Crimson Butterfly"
   region: "PAL-M5"
@@ -12742,8 +12742,8 @@ SLES-52457:
   name: "Shrek 2"
   region: "PAL-SW"
   gsHWFixes:
-    skipDraw: 2 # Fix for depth lines.
-    skipDrawOffset: 2 # Fix for depth lines.
+    skipDrawStart: 2 # Fix for depth lines.
+    skipDrawEnd: 2 # Fix for depth lines.
 SLES-52458:
   name: "Disgaea: Hour of Darkness"
   region: "PAL-E"
@@ -13138,10 +13138,10 @@ SLES-52621:
   region: "PAL-E"
   roundModes:
     vuRoundMode: 0  # Crashes without.
-  gsHWFixes:
-    skipDraw: 1 # Fix for upscaling.
-    skipDrawOffset: 1 # Fix for upscaling.
-    wildArmsHack: 1 # Fix for upscaling.
+    gsHWFixes:
+      mergeSprite: 1 # Fix for upscaling.
+      wildArmsHack: 1 # Fix for upscaling.
+      halfPixelOffset: 2 # Fix for upscaling.
 SLES-52622:
   name: "Tony Hawk's Underground 2"
   region: "PAL-M4"
@@ -25163,8 +25163,8 @@ SLPM-65697:
   name: "Shrek 2"
   region: "NTSC-J"
   gsHWFixes:
-    skipDraw: 2 # Fix for depth lines.
-    skipDrawOffset: 2 # Fix for depth lines.
+    skipDrawStart: 2 # Fix for depth lines.
+    skipDrawEnd: 2 # Fix for depth lines.
 SLPM-65698:
   name: "Love Songs - ADV Futaba Riho 14-sai Natsu"
   region: "NTSC-J"
@@ -35682,8 +35682,8 @@ SLUS-20314:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    skipDraw: 1 # Fix for upscaling.
-    skipDrawOffset: 1 # Fix for upscaling.
+    skipDrawStart: 1 # Fix for upscaling.
+    skipDrawEnd: 1 # Fix for upscaling.
     wildArmsHack: 1 # Fix for upscaling.
 SLUS-20315:
   name: "Spyro the Dragon - Enter the Dragonfly"
@@ -37375,8 +37375,8 @@ SLUS-20705:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    skipDraw: 1 # Fix for depth lines.
-    skipDrawOffset: 1 # Fix for depth lines.
+    skipDrawStart: 1 # Fix for depth lines.
+    skipDrawEnd: 1 # Fix for depth lines.
 SLUS-20706:
   name: "Kill Switch"
   region: "NTSC-U"
@@ -37545,8 +37545,8 @@ SLUS-20745:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    skipDraw: 2 # Fix for depth lines.
-    skipDrawOffset: 2 # Fix for depth lines.
+    skipDrawStart: 2 # Fix for depth lines.
+    skipDrawEnd: 2 # Fix for depth lines.
 SLUS-20746:
   name: "Rogue Ops"
   region: "NTSC-U"
@@ -39663,9 +39663,9 @@ SLUS-21208:
   roundModes:
     vuRoundMode: 0  # Crashes without.
   gsHWFixes:
-    skipDraw: 1 # Fix for upscaling.
-    skipDrawOffset: 1 # Fix for upscaling.
+    mergeSprite: 1 # Fix for upscaling.
     wildArmsHack: 1 # Fix for upscaling.
+    halfPixelOffset: 2 # Fix for upscaling.
 SLUS-21209:
   name: "Urban Reign"
   region: "NTSC-U"
@@ -43268,8 +43268,8 @@ SLUS-29077:
   name: "I-Ninja [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    skipDraw: 1 # Fix for depth lines.
-    skipDrawOffset: 1 # Fix for depth lines.
+    skipDrawStart: 1 # Fix for depth lines.
+    skipDrawEnd: 1 # Fix for depth lines.
 SLUS-29079:
   name: "NCAA March Madness 2004 [Demo]"
   region: "NTSC-U"
