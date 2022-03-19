@@ -19,7 +19,7 @@
 
 using namespace Xbyak;
 
-#define _rip_local(field) ((is32 || m_rip) ? ptr[rip + (char*)&m_local.field] : ptr[_m_local + OFFSETOF(GSScanlineLocalData, field)])
+#define _rip_local(field) ((m_rip) ? ptr[rip + (char*)&m_local.field] : ptr[_m_local + OFFSETOF(GSScanlineLocalData, field)])
 
 #define _64_m_local _64_t0
 
@@ -53,15 +53,15 @@ GSSetupPrimCodeGenerator2::GSSetupPrimCodeGenerator2(Xbyak::CodeGenerator* base,
 	, m_rip(false), many_regs(false)
 	// On x86 arg registers are very temporary but on x64 they aren't, so on x86 some registers overlap
 #ifdef _WIN32
-	, _64_vertex(is64 ? rcx : r8)
-	, _index(is64 ? rdx : rcx)
-	, _dscan(is64 ? r8 : rdx)
-	, _64_t0(r9), t1(is64 ? r10 : rcx)
+	, _64_vertex(rcx)
+	, _index(rdx)
+	, _dscan(r8)
+	, _64_t0(r9), t1(r10)
 #else
-	, _64_vertex(is64 ? rdi : r8)
-	, _index(is64 ? rsi : rcx)
+	, _64_vertex(rdi)
+	, _index(rsi)
 	, _dscan(rdx)
-	, _64_t0(is64 ? rcx : r8), t1(is64 ? r8 : rcx)
+	, _64_t0(rcx), t1(r8)
 #endif
 	, _m_local(chooseLocal(&m_local, _64_m_local))
 {
@@ -88,7 +88,7 @@ void GSSetupPrimCodeGenerator2::Generate()
 	m_rip = (size_t)&m_local < 0x80000000 && (size_t)getCurr() < 0x80000000;
 
 	bool needs_shift = (m_en.z || m_en.f) && m_sel.prim != GS_SPRITE_CLASS || m_en.t || m_en.c && m_sel.iip;
-	many_regs = is64 && isYmm && !m_sel.notest && needs_shift;
+	many_regs = isYmm && !m_sel.notest && needs_shift;
 
 #ifdef _WIN64
 	int needs_saving = many_regs ? 6 : m_sel.notest ? 0 : 2;
@@ -102,13 +102,11 @@ void GSSetupPrimCodeGenerator2::Generate()
 	}
 #endif
 
-	if (is64 && !m_rip)
+	if (!m_rip)
 		mov(_64_m_local, (size_t)&m_local);
 
 	if (needs_shift)
 	{
-		if (is32)
-			mov(_dscan, ptr[rsp + _32_dscan]);
 
 		if (isXmm)
 			mov(rax, (size_t)g_const->m_shift_128b);
@@ -193,14 +191,9 @@ void GSSetupPrimCodeGenerator2::Depth_XMM()
 				if (m_sel.prim != GS_POINT_CLASS)
 					offset = sizeof(u32) * 1;
 
-				if (is32)
-					mov(_index, ptr[rsp + _32_index]);
 				mov(eax, ptr[_index + offset]);
 				shl(eax, 6); // * sizeof(GSVertexSW)
-				if (is64)
-					add(rax, _64_vertex);
-				else
-					add(rax, ptr[rsp + _32_vertex]);
+				add(rax, _64_vertex);
 
 				movdqa(xmm0, ptr[rax + offsetof(GSVertexSW, t)]);
 				pshufd(xmm0, xmm0, _MM_SHUFFLE(3, 3, 3, 3));
@@ -231,14 +224,9 @@ void GSSetupPrimCodeGenerator2::Depth_XMM()
 	{
 		// GSVector4 p = vertex[index[1]].p;
 
-		if (is32)
-			mov(_index, ptr[rsp + _32_index]);
 		mov(eax, ptr[_index + sizeof(u32) * 1]);
 		shl(eax, 6); // * sizeof(GSVertexSW)
-		if (is64)
-			add(rax, _64_vertex);
-		else
-			add(rax, ptr[rsp + _32_vertex]);
+		add(rax, _64_vertex);
 
 		if (m_en.f)
 		{
@@ -285,14 +273,9 @@ void GSSetupPrimCodeGenerator2::Depth_YMM()
 				if (m_sel.prim != GS_POINT_CLASS)
 					offset = sizeof(u32) * 1;
 
-				if (is32)
-					mov(_index, ptr[rsp + _32_index]);
 				mov(eax, ptr[_index + offset]);
 				shl(eax, 6); // * sizeof(GSVertexSW)
-				if (is64)
-					add(rax, _64_vertex);
-				else
-					add(rax, ptr[rsp + _32_vertex]);
+				add(rax, _64_vertex);
 
 				mov(t1.cvt32(), ptr[rax + offsetof(GSVertexSW, t.w)]);
 				mov(_rip_local(p.z), t1.cvt32());
@@ -354,14 +337,9 @@ void GSSetupPrimCodeGenerator2::Depth_YMM()
 	{
 		// GSVector4 p = vertex[index[1]].p;
 
-		if (is32)
-			mov(_index, ptr[rsp + _32_index]);
 		mov(eax, ptr[_index + sizeof(u32) * 1]);
 		shl(eax, 6); // * sizeof(GSVertexSW)
-		if (is64)
-			add(rax, _64_vertex);
-		else
-			add(rax, ptr[rsp + _32_vertex]);
+		add(rax, _64_vertex);
 
 		if (m_en.f)
 		{
@@ -564,14 +542,9 @@ void GSSetupPrimCodeGenerator2::Color()
 
 		if (!(m_sel.prim == GS_SPRITE_CLASS && (m_en.z || m_en.f))) // if this is a sprite, the last vertex was already loaded in Depth()
 		{
-			if (is32)
-				mov(_index, ptr[rsp + _32_index]);
 			mov(eax, ptr[_index + sizeof(u32) * last]);
 			shl(eax, 6); // * sizeof(GSVertexSW)
-			if (is64)
-				add(rax, _64_vertex);
-			else
-				add(rax, ptr[rsp + _32_vertex]);
+			add(rax, _64_vertex);
 		}
 
 		if (isXmm)

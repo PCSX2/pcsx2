@@ -46,12 +46,6 @@ class GSSetupPrimCodeGenerator2 : public GSNewCodeGenerator
 
 	constexpr static int dsize = isXmm ? 4 : 8;
 
-	constexpr static int _32_args = 0;
-	constexpr static int _invalid = 0xaaaaaaaa;
-	constexpr static int _32_vertex = is64 ? _invalid : _32_args + 4;
-	constexpr static int _32_index  = is64 ? _invalid : _32_args + 8;
-	constexpr static int _32_dscan  = is64 ? _invalid : _32_args + 12;
-
 	GSScanlineSelector m_sel;
 	GSScanlineLocalData& m_local;
 	bool m_rip;

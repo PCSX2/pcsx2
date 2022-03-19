@@ -100,30 +100,6 @@ public:
 	};
 
 private:
-	/// Make sure the register is okay to use
-	void validateRegister(const Operand& op)
-	{
-		if (is64)
-			return;
-		if (op.isREG() && (op.isExtIdx() || op.isExt8bit()))
-			throw Error(Error::ERR_64_BIT_REG_IN_32);
-		if (op.isMEM())
-		{
-			auto e = static_cast<const Address&>(op).getRegExp();
-			validateRegister(e.getIndex());
-			validateRegister(e.getBase());
-		}
-	}
-	/// For easier macro-ing
-	void validateRegister(int imm)
-	{
-	}
-
-	void require64()
-	{
-		if (!is64)
-			throw Error(Error::ERR_64_INSTR_IN_32);
-	}
 	void requireAVX()
 	{
 		if (!hasAVX)
@@ -133,9 +109,6 @@ private:
 public:
 	Xbyak::CodeGenerator& actual;
 
-#if defined(_M_X86_64)
-	constexpr static bool is32 = false;
-	constexpr static bool is64 = true;
 	using AddressReg = Xbyak::Reg64;
 	using RipType = Xbyak::RegRip;
 
@@ -144,18 +117,6 @@ public:
 
 	template <typename T32, typename T64>
 	static T64 choose3264(T32 t32, T64 t64) { return t64; }
-#else
-	constexpr static bool is32 = true;
-	constexpr static bool is64 = false;
-	using AddressReg = Xbyak::Reg32;
-	using RipType = int;
-
-	template <typename T32, typename T64>
-	struct Choose3264 { using type = T32; };
-
-	template <typename T32, typename T64>
-	static T32 choose3264(T32 t32, T64 t64) { return t32; }
-#endif
 
 	const bool hasAVX, hasAVX2, hasFMA;
 
@@ -238,34 +199,24 @@ public:
 #define FORWARD1(category, name, type) \
 	void name(type a) \
 	{ \
-		validateRegister(a); \
 		ACTUAL_FORWARD_##category(name, a) \
 	}
 
 #define FORWARD2(category, name, type1, type2) \
 	void name(type1 a, type2 b) \
 	{ \
-		validateRegister(a); \
-		validateRegister(b); \
 		ACTUAL_FORWARD_##category(name, a, b) \
 	}
 
 #define FORWARD3(category, name, type1, type2, type3) \
 	void name(type1 a, type2 b, type3 c) \
 	{ \
-		validateRegister(a); \
-		validateRegister(b); \
-		validateRegister(c); \
 		ACTUAL_FORWARD_##category(name, a, b, c) \
 	}
 
 #define FORWARD4(category, name, type1, type2, type3, type4) \
 	void name(type1 a, type2 b, type3 c, type4 d) \
 	{ \
-		validateRegister(a); \
-		validateRegister(b); \
-		validateRegister(c); \
-		validateRegister(d); \
 		ACTUAL_FORWARD_##category(name, a, b, c, d) \
 	}
 
@@ -282,8 +233,6 @@ public:
 #define FORWARD_SSE_XMM0(name) \
 	void name(const Xmm& a, const Operand& b) \
 	{ \
-		validateRegister(a); \
-		validateRegister(b); \
 		if (hasAVX) \
 			actual.v##name(a, b, Xmm(0)); \
 		else \
@@ -326,19 +275,12 @@ public:
 #define ARGS_XOI const Xmm&, const Operand&, u8
 #define ARGS_XXO const Xmm&, const Xmm&, const Operand&
 
-// For instructions that are ifdef'd out without XBYAK64
-#ifdef XBYAK64
-	#define REQUIRE64(action) require64(); action
-#else
-	#define REQUIRE64(action) require64()
-#endif
-
 	const u8 *getCurr() { return actual.getCurr(); }
 	void align(int x = 16) { return actual.align(x); }
 	void db(int code) { actual.db(code); }
 	void L(const std::string& label) { actual.L(label); }
 
-	void cdqe() { REQUIRE64(actual.cdqe()); }
+	void cdqe() { actual.cdqe(); }
 	void ret(int imm = 0) { actual.ret(imm); }
 	void vzeroupper() { requireAVX(); actual.vzeroupper(); }
 	void vzeroall() { requireAVX(); actual.vzeroall(); }
@@ -458,7 +400,6 @@ public:
 	FORWARD(3, AVX2, vpsravd,        ARGS_XXO)
 	FORWARD(3, AVX2, vpsrlvd,        ARGS_XXO)
 
-#undef REQUIRE64
 #undef ARGS_OI
 #undef ARGS_OO
 #undef ARGS_XI
