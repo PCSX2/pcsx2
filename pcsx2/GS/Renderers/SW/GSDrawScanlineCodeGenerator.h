@@ -19,6 +19,7 @@
 #include "GS/Renderers/Common/GSFunctionMap.h"
 #include "GS/GSUtil.h"
 #include "GS/MultiISA.h"
+#include <xbyak/xbyak.h>
 
 #if defined(_M_AMD64) || defined(_WIN64)
 #define RegLong Xbyak::Reg64
@@ -28,7 +29,7 @@
 
 MULTI_ISA_UNSHARED_START
 
-class GSDrawScanlineCodeGenerator : public GSCodeGenerator
+class GSDrawScanlineCodeGenerator : public Xbyak::CodeGenerator
 {
 	void operator=(const GSDrawScanlineCodeGenerator&);
 

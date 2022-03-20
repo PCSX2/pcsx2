@@ -17,36 +17,7 @@
 
 #include "xbyak/xbyak.h"
 #include "xbyak/xbyak_util.h"
-
-namespace SSEVersion
-{
-	enum SSEVersion
-	{
-		AVX2  = 0x501,
-		AVX   = 0x500,
-		SSE41 = 0x401,
-	};
-}
-
-/// Similar to Xbyak::util::cpu but more open to us putting in extra flags (e.g. "vpgatherdd is fast"), as well as making it easier to test other configurations by artifically limiting features
-struct CPUInfo
-{
-	bool hasFMA = false;
-	SSEVersion::SSEVersion sseVersion = SSEVersion::SSE41;
-
-	CPUInfo() = default;
-	CPUInfo(const Xbyak::util::Cpu& cpu)
-	{
-		auto version = SSEVersion::SSE41;
-		if (cpu.has(cpu.tAVX))
-			version = SSEVersion::AVX;
-		if (cpu.has(cpu.tAVX2))
-			version = SSEVersion::AVX2;
-
-		hasFMA = cpu.has(cpu.tFMA);
-		sseVersion = version;
-	}
-};
+#include "GS/MultiISA.h"
 
 /// Code generator that automatically selects between SSE and AVX, x86 and x64 so you don't have to
 /// Should make combined SSE and AVX codegen much easier
@@ -130,10 +101,10 @@ public:
 	const RipType rip{};
 	const Xbyak::AddressFrame ptr{0}, byte{8}, word{16}, dword{32}, qword{64}, xword{128}, yword{256}, zword{512};
 
-	GSNewCodeGenerator(Xbyak::CodeGenerator* actual, CPUInfo cpu)
+	GSNewCodeGenerator(Xbyak::CodeGenerator* actual, const ProcessorFeatures& cpu)
 		: actual(*actual)
-		, hasAVX(cpu.sseVersion >= SSEVersion::AVX)
-		, hasAVX2(cpu.sseVersion >= SSEVersion::AVX2)
+		, hasAVX(cpu.vectorISA >= ProcessorFeatures::VectorISA::AVX)
+		, hasAVX2(cpu.vectorISA >= ProcessorFeatures::VectorISA::AVX2)
 		, hasFMA(cpu.hasFMA)
 	{
 	}

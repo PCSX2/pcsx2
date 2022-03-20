@@ -94,7 +94,7 @@ class GSDrawScanlineCodeGenerator2 : public GSNewCodeGenerator
 	}
 
 public:
-	GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator* base, CPUInfo cpu, void* param, u64 key);
+	GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator* base, const ProcessorFeatures& cpu, void* param, u64 key);
 	void Generate();
 
 private:

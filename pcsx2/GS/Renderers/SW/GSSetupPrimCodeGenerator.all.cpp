@@ -48,7 +48,7 @@ using namespace Xbyak;
 	#define _rip_local_d_p(x) _rip_local_d(x)
 #endif
 
-GSSetupPrimCodeGenerator2::GSSetupPrimCodeGenerator2(Xbyak::CodeGenerator* base, CPUInfo cpu, void* param, u64 key)
+GSSetupPrimCodeGenerator2::GSSetupPrimCodeGenerator2(Xbyak::CodeGenerator* base, const ProcessorFeatures& cpu, void* param, u64 key)
 	: _parent(base, cpu)
 	, m_local(*(GSScanlineLocalData*)param)
 	, m_rip(false), many_regs(false)
