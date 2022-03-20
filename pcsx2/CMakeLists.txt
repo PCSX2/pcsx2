@@ -657,6 +657,7 @@ endif()
 set(pcsx2GSSourcesUnshared
 	GS/GSBlock.cpp
 	GS/GSLocalMemoryMultiISA.cpp
+	GS/GSXXH.cpp
 	GS/Renderers/Common/GSVertexTraceFMM.cpp
 	GS/Renderers/HW/GSRendererHWMultiISA.cpp
 	GS/Renderers/SW/GSDrawScanline.cpp
@@ -739,6 +740,7 @@ set(pcsx2GSHeaders
 	GS/GSVector4i.h
 	GS/GSVector8.h
 	GS/GSVector8i.h
+	GS/GSXXH.h
 	GS/MultiISA.h
 	GS/Renderers/Common/GSDevice.h
 	GS/Renderers/Common/GSDirtyRect.h
