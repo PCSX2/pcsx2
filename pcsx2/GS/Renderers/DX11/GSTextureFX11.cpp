@@ -280,6 +280,18 @@ void GSDevice11::ClearSamplerCache()
 	m_ps_ss.clear();
 }
 
+// clang-format off
+static constexpr std::array<D3D11_BLEND, 16> s_d3d11_blend_factors = { {
+	D3D11_BLEND_SRC_COLOR, D3D11_BLEND_INV_SRC_COLOR, D3D11_BLEND_DEST_COLOR, D3D11_BLEND_INV_DEST_COLOR,
+	D3D11_BLEND_SRC1_COLOR, D3D11_BLEND_INV_SRC1_COLOR, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA,
+	D3D11_BLEND_DEST_ALPHA, D3D11_BLEND_INV_DEST_ALPHA, D3D11_BLEND_SRC1_ALPHA, D3D11_BLEND_INV_SRC1_ALPHA,
+	D3D11_BLEND_BLEND_FACTOR, D3D11_BLEND_INV_BLEND_FACTOR, D3D11_BLEND_ONE, D3D11_BLEND_ZERO
+} };
+static constexpr std::array<D3D11_BLEND_OP, 3> s_d3d11_blend_ops = { {
+	D3D11_BLEND_OP_ADD, D3D11_BLEND_OP_SUBTRACT, D3D11_BLEND_OP_REV_SUBTRACT
+} };
+// clang-format on
+
 void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 afix)
 {
 	auto i = std::as_const(m_om_dss).find(dssel.key);
@@ -336,24 +348,15 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 
 
 		memset(&bd, 0, sizeof(bd));
 
-		if (bsel.abe)
+		if (bsel.blend_enable)
 		{
-			const HWBlend blend = GetBlend(bsel.blend_index, false);
 			bd.RenderTarget[0].BlendEnable = TRUE;
-			bd.RenderTarget[0].BlendOp = (D3D11_BLEND_OP)blend.op;
-			bd.RenderTarget[0].SrcBlend = (D3D11_BLEND)blend.src;
-			bd.RenderTarget[0].DestBlend = (D3D11_BLEND)blend.dst;
+			bd.RenderTarget[0].BlendOp = s_d3d11_blend_ops[bsel.blend_op];
+			bd.RenderTarget[0].SrcBlend = s_d3d11_blend_factors[bsel.blend_src_factor];
+			bd.RenderTarget[0].DestBlend = s_d3d11_blend_factors[bsel.blend_dst_factor];
 			bd.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 			bd.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 			bd.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-
-			if (bsel.accu_blend)
-			{
-				bd.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-				bd.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-			}
-			else if (bsel.blend_mix)
-				bd.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
 		}
 
 		if (bsel.wr) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_RED;

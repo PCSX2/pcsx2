@@ -128,12 +128,14 @@ enum HWBlendFlags
 	BLEND_C_CLR3    = 0x800,  // Multiply Cs by (255/128) to compensate for wrong Ad/255 value, should be Ad/128
 	BLEND_NO_REC    = 0x1000, // Doesn't require sampling of the RT as a texture
 	BLEND_ACCU      = 0x2000, // Allow to use a mix of SW and HW blending to keep the best of the 2 worlds
+	BLEND_DSB       = 0x4000, // Blend equation uses dual-source outputs (SRC_ALPHA1/INV_SRC_ALPHA1).
 };
 
 // Determines the HW blend function for DX11/OGL
 struct HWBlend
 {
-	u16 flags, op, src, dst;
+	u16 flags;
+	u8 op, src, dst;
 };
 
 struct alignas(16) GSHWDrawConfig
@@ -483,25 +485,25 @@ struct alignas(16) GSHWDrawConfig
 		{
 			struct
 			{
-				u8 index;
-				u8 factor;
-				bool is_constant     : 1;
-				bool is_accumulation : 1;
-				bool is_mixed_hw_sw  : 1;
-				bool replace_dual_src: 1;
+				u8 enable : 1;
+				u8 constant_enable : 1;
+				u8 op : 6;
+				u8 src_factor;
+				u8 dst_factor;
+				u8 constant;
 			};
 			u32 key;
 		};
 		BlendState(): key(0) {}
-		BlendState(u8 index, u8 factor, bool is_constant, bool is_accumulation, bool is_mixed_hw_sw, bool replace_dual_src)
+		BlendState(bool enable_, u8 src_factor_, u8 dst_factor_, u8 op_, bool constant_enable_, u8 constant_)
 			: key(0)
 		{
-			this->index = index;
-			this->factor = factor;
-			this->is_constant = is_constant;
-			this->is_accumulation = is_accumulation;
-			this->is_mixed_hw_sw = is_mixed_hw_sw;
-			this->replace_dual_src = replace_dual_src;
+			enable = enable_;
+			constant_enable = constant_enable_;
+			src_factor = src_factor_;
+			dst_factor = dst_factor_;
+			op = op_;
+			constant = constant_;
 		}
 	};
 	enum class DestinationAlphaMode : u8
@@ -563,6 +565,7 @@ struct alignas(16) GSHWDrawConfig
 class GSDevice : public GSAlignedClass<32>
 {
 public:
+	// clang-format off
 	struct FeatureSupport
 	{
 		bool broken_point_sampler : 1; ///< Issue with AMD cards, see tfx shader for details
@@ -582,28 +585,30 @@ public:
 			memset(this, 0, sizeof(*this));
 		}
 	};
+	// clang-format on
 
-private:
-	FastList<GSTexture*> m_pool;
-	static const std::array<HWBlend, 3*3*3*3 + 1> m_blendMap;
-	static const std::array<u16, 16> m_replaceDualSrcBlendMap;
-
-protected:
-	enum : u16
+	// clang-format off
+	enum : u8
 	{
 		// HW blend factors
-		SRC_COLOR,   INV_SRC_COLOR,    DST_COLOR,  INV_DST_COLOR,
-		SRC1_COLOR,  INV_SRC1_COLOR,   SRC_ALPHA,  INV_SRC_ALPHA,
-		DST_ALPHA,   INV_DST_ALPHA,    SRC1_ALPHA, INV_SRC1_ALPHA,
-		CONST_COLOR, INV_CONST_COLOR,  CONST_ONE,  CONST_ZERO,
-
+		SRC_COLOR, INV_SRC_COLOR, DST_COLOR, INV_DST_COLOR,
+		SRC1_COLOR, INV_SRC1_COLOR, SRC_ALPHA, INV_SRC_ALPHA,
+		DST_ALPHA, INV_DST_ALPHA, SRC1_ALPHA, INV_SRC1_ALPHA,
+		CONST_COLOR, INV_CONST_COLOR, CONST_ONE, CONST_ZERO,
+	};
+	enum : u8
+	{
 		// HW blend operations
 		OP_ADD, OP_SUBTRACT, OP_REV_SUBTRACT
 	};
+	// clang-format on
 
-	static const int m_NO_BLEND = 0;
-	static const int m_MERGE_BLEND = m_blendMap.size() - 1;
+private:
+	FastList<GSTexture*> m_pool;
+	static const std::array<HWBlend, 3*3*3*3> m_blendMap;
+	static const std::array<u8, 16> m_replaceDualSrcBlendMap;
 
+protected:
 	static constexpr u32 MAX_POOLED_TEXTURES = 300;
 
 	HostDisplay* m_display;
@@ -632,7 +637,6 @@ protected:
 	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) {}
 	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex) {}
 	virtual void DoExternalFX(GSTexture* sTex, GSTexture* dTex) {}
-	virtual u16 ConvertBlendEnum(u16 generic) = 0; // Convert blend factors/ops from the generic enum to DX11/OGl specific.
 
 public:
 	GSDevice();
@@ -640,12 +644,6 @@ public:
 
 	__fi HostDisplay* GetDisplay() const { return m_display; }
 	__fi unsigned int GetFrameNumber() const { return m_frame; }
-
-	__fi static constexpr bool IsDualSourceBlendFactor(u16 factor)
-	{
-		return (factor == GSDevice::SRC1_ALPHA || factor == GSDevice::INV_SRC1_ALPHA
-			/*|| factor == GSDevice::SRC1_COLOR || factor == GSDevice::INV_SRC1_COLOR*/); // not used
-	}
 
 	void Recycle(GSTexture* t);
 
@@ -737,11 +735,34 @@ public:
 
 	virtual void PrintMemoryUsage();
 
-	// Convert the GS blend equations to HW specific blend factors/ops
+	__fi static constexpr bool IsDualSourceBlendFactor(u8 factor)
+	{
+		return (factor == SRC1_ALPHA || factor == INV_SRC1_ALPHA
+			/*|| factor == SRC1_COLOR || factor == INV_SRC1_COLOR*/); // not used
+	}
+	__fi static constexpr bool IsConstantBlendFactor(u16 factor)
+	{
+		return (factor == CONST_COLOR || factor == INV_CONST_COLOR);
+	}
+
+	// Convert the GS blend equations to HW blend factors/ops
 	// Index is computed as ((((A * 3 + B) * 3) + C) * 3) + D. A, B, C, D taken from ALPHA register.
-	HWBlend GetBlend(size_t index, bool replace_dual_src);
-	__fi HWBlend GetUnconvertedBlend(size_t index) { return m_blendMap[index]; }
-	__fi u16 GetBlendFlags(size_t index) const { return m_blendMap[index].flags; }
+	__ri static HWBlend GetBlend(u32 index, bool replace_dual_src)
+	{
+		HWBlend ret = m_blendMap[index];
+		if (replace_dual_src)
+		{
+			ret.src = m_replaceDualSrcBlendMap[ret.src];
+			ret.dst = m_replaceDualSrcBlendMap[ret.dst];
+		}
+		return ret;
+	}
+	__ri static u16 GetBlendFlags(u32 index) { return m_blendMap[index].flags; }
+	__fi static bool IsDualSourceBlend(u32 index)
+	{
+		return (IsDualSourceBlendFactor(m_blendMap[index].src) ||
+				IsDualSourceBlendFactor(m_blendMap[index].dst));
+	}
 };
 
 struct GSAdapter

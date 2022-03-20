@@ -1251,10 +1251,14 @@ static GSDevice11::OMBlendSelector convertSel(GSHWDrawConfig::ColorMaskSelector 
 {
 	GSDevice11::OMBlendSelector out;
 	out.wrgba = cm.wrgba;
-	out.abe = blend.index != 0;
-	out.blend_index = blend.index;
-	out.accu_blend = blend.is_accumulation;
-	out.blend_mix = blend.is_mixed_hw_sw;
+	if (blend.enable)
+	{
+		out.blend_enable = true;
+		out.blend_src_factor = blend.src_factor;
+		out.blend_dst_factor = blend.dst_factor;
+		out.blend_op = blend.op;
+	}
+
 	return out;
 }
 
@@ -1348,7 +1352,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			PSSetShaderResource(0, rt_copy);
 	}
 
-	SetupOM(config.depth, convertSel(config.colormask, config.blend), config.blend.factor);
+	SetupOM(config.depth, convertSel(config.colormask, config.blend), config.blend.constant);
 	SetupVS(config.vs, &config.cb_vs);
 	SetupGS(config.gs);
 	SetupPS(config.ps, &config.cb_ps, config.sampler);
@@ -1369,7 +1373,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			SetupPS(config.alpha_second_pass.ps, nullptr, config.sampler);
 		}
 
-		SetupOM(config.alpha_second_pass.depth, convertSel(config.alpha_second_pass.colormask, config.blend), config.blend.factor);
+		SetupOM(config.alpha_second_pass.depth, convertSel(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
 
 		DrawIndexedPrimitive();
 	}
@@ -1386,32 +1390,5 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
 		StretchRect(hdr_rt, sRect, config.rt, dRect, ShaderConvert::MOD_256, false);
 		Recycle(hdr_rt);
-	}
-}
-
-u16 GSDevice11::ConvertBlendEnum(u16 generic)
-{
-	switch (generic)
-	{
-		case SRC_COLOR:       return D3D11_BLEND_SRC_COLOR;
-		case INV_SRC_COLOR:   return D3D11_BLEND_INV_SRC_COLOR;
-		case DST_COLOR:       return D3D11_BLEND_DEST_COLOR;
-		case INV_DST_COLOR:   return D3D11_BLEND_INV_DEST_COLOR;
-		case SRC1_COLOR:      return D3D11_BLEND_SRC1_COLOR;
-		case INV_SRC1_COLOR:  return D3D11_BLEND_INV_SRC1_COLOR;
-		case SRC_ALPHA:       return D3D11_BLEND_SRC_ALPHA;
-		case INV_SRC_ALPHA:   return D3D11_BLEND_INV_SRC_ALPHA;
-		case DST_ALPHA:       return D3D11_BLEND_DEST_ALPHA;
-		case INV_DST_ALPHA:   return D3D11_BLEND_INV_DEST_ALPHA;
-		case SRC1_ALPHA:      return D3D11_BLEND_SRC1_ALPHA;
-		case INV_SRC1_ALPHA:  return D3D11_BLEND_INV_SRC1_ALPHA;
-		case CONST_COLOR:     return D3D11_BLEND_BLEND_FACTOR;
-		case INV_CONST_COLOR: return D3D11_BLEND_INV_BLEND_FACTOR;
-		case CONST_ONE:       return D3D11_BLEND_ONE;
-		case CONST_ZERO:      return D3D11_BLEND_ZERO;
-		case OP_ADD:          return D3D11_BLEND_OP_ADD;
-		case OP_SUBTRACT:     return D3D11_BLEND_OP_SUBTRACT;
-		case OP_REV_SUBTRACT: return D3D11_BLEND_OP_REV_SUBTRACT;
-		default:              ASSERT(0); return 0;
 	}
 }

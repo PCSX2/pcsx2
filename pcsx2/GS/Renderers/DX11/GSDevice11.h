@@ -51,10 +51,10 @@ public:
 				u32 wb : 1;
 				u32 wa : 1;
 				// Alpha blending
-				u32 blend_index : 7;
-				u32 abe : 1;
-				u32 accu_blend : 1;
-				u32 blend_mix : 1;
+				u32 blend_enable : 1;
+				u32 blend_op : 2;
+				u32 blend_src_factor : 4;
+				u32 blend_dst_factor : 4;
 			};
 
 			struct
@@ -66,7 +66,7 @@ public:
 			u32 key;
 		};
 
-		operator u32() { return key & 0x3fff; }
+		operator u32() { return key & 0x7fff; }
 
 		OMBlendSelector()
 			: key(0)
@@ -126,8 +126,6 @@ private:
 	void DoFXAA(GSTexture* sTex, GSTexture* dTex) final;
 	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex) final;
 	void DoExternalFX(GSTexture* sTex, GSTexture* dTex) final;
-
-	u16 ConvertBlendEnum(u16 generic) final;
 
 	wil::com_ptr_nothrow<ID3D11Device> m_dev;
 	wil::com_ptr_nothrow<ID3D11DeviceContext> m_ctx;

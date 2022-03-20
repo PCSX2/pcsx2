@@ -1202,7 +1202,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GL::Program& ps, bool linear)
 {
-	StretchRect(sTex, sRect, dTex, dRect, ps, m_NO_BLEND, OMColorMaskSelector(), linear);
+	StretchRect(sTex, sRect, dTex, dRect, ps, false, OMColorMaskSelector(), linear);
 }
 
 void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha)
@@ -1214,10 +1214,10 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	cms.wb = blue;
 	cms.wa = alpha;
 
-	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[(int)ShaderConvert::COPY], m_NO_BLEND, cms, false);
+	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[(int)ShaderConvert::COPY], false, cms, false);
 }
 
-void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GL::Program& ps, int bs, OMColorMaskSelector cms, bool linear)
+void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GL::Program& ps, bool alpha_blend, OMColorMaskSelector cms, bool linear)
 {
 	ASSERT(sTex);
 
@@ -1263,7 +1263,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	else
 		OMSetDepthStencilState(m_convert.dss);
 
-	OMSetBlendState((u8)bs);
+	OMSetBlendState(alpha_blend, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_FUNC_ADD);
 	OMSetColorMaskState(cms);
 
 	// ************************************
@@ -1379,12 +1379,12 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 			// Blend with a constant alpha
 			m_merge_obj.ps[1].Bind();
 			m_merge_obj.ps[1].Uniform4fv(0, c.v);
-			StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[1], m_MERGE_BLEND, OMColorMaskSelector());
+			StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[1], true, OMColorMaskSelector());
 		}
 		else
 		{
 			// Blend with 2 * input alpha
-			StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[0], m_MERGE_BLEND, OMColorMaskSelector());
+			StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[0], true, OMColorMaskSelector());
 		}
 	}
 
@@ -1687,9 +1687,9 @@ void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
 	}
 }
 
-void GSDeviceOGL::OMSetBlendState(u8 blend_index, u8 blend_factor, bool is_blend_constant, bool accumulation_blend, bool blend_mix, bool replace_dual_src)
+void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_factor, GLenum op, bool is_constant, u8 constant)
 {
-	if (blend_index)
+	if (enable)
 	{
 		if (!GLState::blend)
 		{
@@ -1697,35 +1697,24 @@ void GSDeviceOGL::OMSetBlendState(u8 blend_index, u8 blend_factor, bool is_blend
 			glEnable(GL_BLEND);
 		}
 
-		if (is_blend_constant && GLState::bf != blend_factor)
+		if (is_constant && GLState::bf != constant)
 		{
-			GLState::bf = blend_factor;
-			const float bf = (float)blend_factor / 128.0f;
+			GLState::bf = constant;
+			const float bf = (float)constant / 128.0f;
 			glBlendColor(bf, bf, bf, bf);
 		}
 
-		HWBlend b = GetBlend(blend_index, replace_dual_src);
-		if (accumulation_blend)
+		if (GLState::eq_RGB != op)
 		{
-			b.src = GL_ONE;
-			b.dst = GL_ONE;
-		}
-		else if (blend_mix)
-		{
-			b.src = GL_ONE;
+			GLState::eq_RGB = op;
+			glBlendEquationSeparate(op, GL_FUNC_ADD);
 		}
 
-		if (GLState::eq_RGB != b.op)
+		if (GLState::f_sRGB != src_factor || GLState::f_dRGB != dst_factor)
 		{
-			GLState::eq_RGB = b.op;
-			glBlendEquationSeparate(b.op, GL_FUNC_ADD);
-		}
-
-		if (GLState::f_sRGB != b.src || GLState::f_dRGB != b.dst)
-		{
-			GLState::f_sRGB = b.src;
-			GLState::f_dRGB = b.dst;
-			glBlendFuncSeparate(b.src, b.dst, GL_ONE, GL_ZERO);
+			GLState::f_sRGB = src_factor;
+			GLState::f_dRGB = dst_factor;
+			glBlendFuncSeparate(src_factor, dst_factor, GL_ONE, GL_ZERO);
 		}
 	}
 	else
@@ -1829,6 +1818,18 @@ static GSDeviceOGL::VSSelector convertSel(const GSHWDrawConfig::VSSelector sel)
 	return out;
 }
 
+// clang-format off
+static constexpr std::array<GLenum, 16> s_gl_blend_factors = { {
+	GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_DST_COLOR, GL_ONE_MINUS_DST_COLOR,
+	GL_SRC1_COLOR, GL_ONE_MINUS_SRC1_COLOR, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+	GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA, GL_SRC1_ALPHA, GL_ONE_MINUS_SRC1_ALPHA,
+	GL_CONSTANT_COLOR, GL_ONE_MINUS_CONSTANT_COLOR, GL_ONE, GL_ZERO
+} };
+static constexpr std::array<GLenum, 3> s_gl_blend_ops = { {
+		GL_FUNC_ADD, GL_FUNC_SUBTRACT, GL_FUNC_REVERSE_SUBTRACT
+} };
+// clang-format on
+
 void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 {
 	if (!GLState::scissor.eq(config.scissor))
@@ -1900,7 +1901,9 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	PSSetShaderResource(2, config.rt);
 
 	SetupSampler(config.sampler);
-	OMSetBlendState(config.blend.index, config.blend.factor, config.blend.is_constant, config.blend.is_accumulation, config.blend.is_mixed_hw_sw, config.blend.replace_dual_src);
+	OMSetBlendState(config.blend.enable, s_gl_blend_factors[config.blend.src_factor],
+		s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
+		config.blend.constant_enable, config.blend.constant);
 	OMSetColorMaskState(config.colormask);
 	SetupOM(config.depth);
 
@@ -2172,33 +2175,6 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 		ASSERT(0);
 	}
 #endif
-}
-
-u16 GSDeviceOGL::ConvertBlendEnum(u16 generic)
-{
-	switch (generic)
-	{
-		case SRC_COLOR       : return GL_SRC_COLOR;
-		case INV_SRC_COLOR   : return GL_ONE_MINUS_SRC_COLOR;
-		case DST_COLOR       : return GL_DST_COLOR;
-		case INV_DST_COLOR   : return GL_ONE_MINUS_DST_COLOR;
-		case SRC1_COLOR      : return GL_SRC1_COLOR;
-		case INV_SRC1_COLOR  : return GL_ONE_MINUS_SRC1_COLOR;
-		case SRC_ALPHA       : return GL_SRC_ALPHA;
-		case INV_SRC_ALPHA   : return GL_ONE_MINUS_SRC_ALPHA;
-		case DST_ALPHA       : return GL_DST_ALPHA;
-		case INV_DST_ALPHA   : return GL_ONE_MINUS_DST_ALPHA;
-		case SRC1_ALPHA      : return GL_SRC1_ALPHA;
-		case INV_SRC1_ALPHA  : return GL_ONE_MINUS_SRC1_ALPHA;
-		case CONST_COLOR     : return GL_CONSTANT_COLOR;
-		case INV_CONST_COLOR : return GL_ONE_MINUS_CONSTANT_COLOR;
-		case CONST_ONE       : return GL_ONE;
-		case CONST_ZERO      : return GL_ZERO;
-		case OP_ADD          : return GL_FUNC_ADD;
-		case OP_SUBTRACT     : return GL_FUNC_SUBTRACT;
-		case OP_REV_SUBTRACT : return GL_FUNC_REVERSE_SUBTRACT;
-		default              : ASSERT(0); return 0;
-	}
 }
 
 void GSDeviceOGL::PushDebugGroup(const char* fmt, ...)

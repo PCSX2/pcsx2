@@ -922,54 +922,6 @@ void GSDeviceVK::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	SetScissor(scissor);
 }
 
-u16 GSDeviceVK::ConvertBlendEnum(u16 generic)
-{
-	switch (generic)
-	{
-		case SRC_COLOR:
-			return VK_BLEND_FACTOR_SRC_COLOR;
-		case INV_SRC_COLOR:
-			return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
-		case DST_COLOR:
-			return VK_BLEND_FACTOR_DST_COLOR;
-		case INV_DST_COLOR:
-			return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
-		case SRC1_COLOR:
-			return VK_BLEND_FACTOR_SRC1_COLOR;
-		case INV_SRC1_COLOR:
-			return VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR;
-		case SRC_ALPHA:
-			return VK_BLEND_FACTOR_SRC_ALPHA;
-		case INV_SRC_ALPHA:
-			return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-		case DST_ALPHA:
-			return VK_BLEND_FACTOR_DST_ALPHA;
-		case INV_DST_ALPHA:
-			return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
-		case SRC1_ALPHA:
-			return VK_BLEND_FACTOR_SRC1_ALPHA;
-		case INV_SRC1_ALPHA:
-			return VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA;
-		case CONST_COLOR:
-			return VK_BLEND_FACTOR_CONSTANT_COLOR;
-		case INV_CONST_COLOR:
-			return VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR;
-		case CONST_ONE:
-			return VK_BLEND_FACTOR_ONE;
-		case CONST_ZERO:
-			return VK_BLEND_FACTOR_ZERO;
-		case OP_ADD:
-			return VK_BLEND_OP_ADD;
-		case OP_SUBTRACT:
-			return VK_BLEND_OP_SUBTRACT;
-		case OP_REV_SUBTRACT:
-			return VK_BLEND_OP_REVERSE_SUBTRACT;
-		default:
-			ASSERT(0);
-			return 0;
-	}
-}
-
 VkSampler GSDeviceVK::GetSampler(GSHWDrawConfig::SamplerSelector ss)
 {
 	const auto it = m_samplers.find(ss.key);
@@ -1847,11 +1799,9 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	if ((p.cms.wrgba & 0x7) == 0)
 	{
 		// disable blending when colours are masked
-		pbs.index = 0;
+		pbs = {};
+		pps.no_color1 = true;
 	}
-
-	// don't output alpha blend when blending is disabled
-	pps.no_color1 = (pbs.index == 0);
 
 	VkShaderModule vs = GetTFXVertexShader(p.vs);
 	VkShaderModule gs = p.gs.expand ? GetTFXGeometryShader(p.gs) : VK_NULL_HANDLE;
@@ -1917,20 +1867,22 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 		gpb.SetBlendAttachment(0, true, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_MIN, VK_BLEND_FACTOR_ONE,
 			VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, VK_COLOR_COMPONENT_R_BIT);
 	}
-	else if (pbs.index > 0)
+	else if (pbs.enable)
 	{
-		const HWBlend blend = GetBlend(pbs.index, pbs.replace_dual_src);
-#ifdef PCSX2_DEVBUILD
-		pxAssertRel(m_features.dual_source_blend || pbs.is_accumulation ||
-			(blend.src != VK_BLEND_FACTOR_SRC1_ALPHA && blend.src != VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA &&
-				blend.dst != VK_BLEND_FACTOR_SRC1_ALPHA && blend.dst != VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA),
-			"Not using dual source factors");
-#endif
+		// clang-format off
+		static constexpr std::array<VkBlendFactor, 16> vk_blend_factors = { {
+			VK_BLEND_FACTOR_SRC_COLOR, VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR, VK_BLEND_FACTOR_DST_COLOR, VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR,
+			VK_BLEND_FACTOR_SRC1_COLOR, VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+			VK_BLEND_FACTOR_DST_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA, VK_BLEND_FACTOR_SRC1_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA,
+			VK_BLEND_FACTOR_CONSTANT_COLOR, VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO
+		}};
+		static constexpr std::array<VkBlendOp, 3> vk_blend_ops = {{
+				VK_BLEND_OP_ADD, VK_BLEND_OP_SUBTRACT, VK_BLEND_OP_REVERSE_SUBTRACT
+		}};
+		// clang-format on
 
-		gpb.SetBlendAttachment(0, true,
-			(pbs.is_accumulation || pbs.is_mixed_hw_sw) ? VK_BLEND_FACTOR_ONE : static_cast<VkBlendFactor>(blend.src),
-			pbs.is_accumulation ? VK_BLEND_FACTOR_ONE : static_cast<VkBlendFactor>(blend.dst),
-			static_cast<VkBlendOp>(blend.op), VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, p.cms.wrgba);
+		gpb.SetBlendAttachment(0, true, vk_blend_factors[pbs.src_factor], vk_blend_factors[pbs.dst_factor],
+			vk_blend_ops[pbs.op], VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, p.cms.wrgba);
 	}
 	else
 	{
@@ -2718,8 +2670,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	}
 	if (config.pal)
 		PSSetShaderResource(1, config.pal, true);
-	if (config.blend.is_constant)
-		SetBlendConstants(config.blend.factor);
+	if (config.blend.constant_enable)
+		SetBlendConstants(config.blend.constant);
 
 	// Primitive ID tracking DATE setup.
 	GSTextureVK* date_image = nullptr;
@@ -2995,7 +2947,7 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config)
 	m_pipeline_selector.ps.key_lo = config.ps.key_lo;
 	m_pipeline_selector.dss.key = config.depth.key;
 	m_pipeline_selector.bs.key = config.blend.key;
-	m_pipeline_selector.bs.factor = 0; // don't dupe states with different alpha values
+	m_pipeline_selector.bs.constant = 0; // don't dupe states with different alpha values
 	m_pipeline_selector.cms.key = config.colormask.key;
 	m_pipeline_selector.topology = static_cast<u32>(config.topology);
 	m_pipeline_selector.rt = config.rt != nullptr;
