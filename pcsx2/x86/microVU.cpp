@@ -282,7 +282,7 @@ __fi bool mVUcmpProg(microVU& mVU, microProgram& prog, const bool cmpWholeProg)
 {
 	if (cmpWholeProg)
 	{
-		if (memcmp_mmx((u8*)prog.data, mVU.regs().Micro, mVU.microMemSize))
+		if (memcmp((u8*)prog.data, mVU.regs().Micro, mVU.microMemSize))
 			return false;
 	}
 	else
@@ -292,7 +292,7 @@ __fi bool mVUcmpProg(microVU& mVU, microProgram& prog, const bool cmpWholeProg)
 			auto cmpOffset = [&](void* x) { return (u8*)x + range.start; };
 			if ((range.start < 0) || (range.end < 0))
 				DevCon.Error("microVU%d: Negative Range![%d][%d]", mVU.index, range.start, range.end);
-			if (memcmp_mmx(cmpOffset(prog.data), cmpOffset(mVU.regs().Micro), (range.end - range.start)))
+			if (memcmp(cmpOffset(prog.data), cmpOffset(mVU.regs().Micro), (range.end - range.start)))
 				return false;
 		}
 	}

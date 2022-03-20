@@ -53,7 +53,6 @@ target_sources(common PRIVATE
 	emitter/LnxCpuDetect.cpp
 	emitter/WinCpuDetect.cpp
 	emitter/x86emitter.cpp
-	x86/MemcpyFast.cpp
 	Darwin/DarwinThreads.cpp
 	Darwin/DarwinMisc.cpp
 	Darwin/DarwinSemaphore.cpp
