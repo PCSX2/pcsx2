@@ -20,14 +20,9 @@
 #include "GS/GSGL.h"
 #include "GS/GSIntrin.h"
 #include "GS/GSUtil.h"
+#include "GS/GSXXH.h"
 #include "common/Align.h"
 #include "common/HashCombine.h"
-
-//#define DISABLE_HW_TEXTURE_CACHE 1
-
-#define XXH_STATIC_LINKING_ONLY 1
-#define XXH_INLINE_ALL 1
-#include "xxhash.h"
 
 u8* GSTextureCache::m_temp;
 
@@ -3239,8 +3234,8 @@ u64 GSTextureCache::PaletteKeyHash::operator()(const PaletteKey& key) const
 {
 	ASSERT(key.pal == 16 || key.pal == 256);
 	return key.pal == 16 ?
-		XXH3_64bits(key.clut, sizeof(key.clut[0]) * 16) :
-		XXH3_64bits(key.clut, sizeof(key.clut[0]) * 256);
+		GSXXH3_64bits(key.clut, sizeof(key.clut[0]) * 16) :
+		GSXXH3_64bits(key.clut, sizeof(key.clut[0]) * 256);
 };
 
 // GSTextureCache::PaletteKeyEqual
@@ -3391,17 +3386,17 @@ __fi static void BlockHashReset(BlockHashState& st)
 
 __fi static void BlockHashAccumulate(BlockHashState& st, const u8* bp)
 {
-	XXH3_64bits_update(&st, bp, BLOCK_SIZE);
+	GSXXH3_64bits_update(&st, bp, BLOCK_SIZE);
 }
 
 __fi static void BlockHashAccumulate(BlockHashState& st, const u8* bp, u32 size)
 {
-	XXH3_64bits_update(&st, bp, size);
+	GSXXH3_64bits_update(&st, bp, size);
 }
 
 __fi static GSTextureCache::HashType FinishBlockHash(BlockHashState& st)
 {
-	return XXH3_64bits_digest(&st);
+	return GSXXH3_64bits_digest(&st);
 }
 
 static void HashTextureLevel(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, BlockHashState& hash_st, u8* temp)
