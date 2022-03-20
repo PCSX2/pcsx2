@@ -218,7 +218,7 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 			std::optional<s32> value = n.has_val() ? StringUtil::FromChars<s32>(std::string_view(n.val().data(), n.val().size())) : 1;
 			if (!id.has_value() || !value.has_value())
 			{
-				Console.Error("[GameDB] Invalid GS HW Fix: '%*s' specified for serial '%*s'. Dropping!",
+				Console.Error("[GameDB] Invalid GS HW Fix: '%.*s' specified for serial '%.*s'. Dropping!",
 					static_cast<int>(id_name.size()), id_name.data(),
 					static_cast<int>(serial.size()), serial.data());
 				continue;

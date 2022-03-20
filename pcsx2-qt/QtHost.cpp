@@ -313,13 +313,13 @@ void Host::ReportErrorAsync(const std::string_view& title, const std::string_vie
 {
 	if (!title.empty() && !message.empty())
 	{
-		Console.Error("ReportErrorAsync: %*s: %*s",
+		Console.Error("ReportErrorAsync: %.*s: %.*s",
 			static_cast<int>(title.size()), title.data(),
 			static_cast<int>(message.size()), message.data());
 	}
 	else if (!message.empty())
 	{
-		Console.Error("ReportErrorAsync: %*s",
+		Console.Error("ReportErrorAsync: %.*s",
 			static_cast<int>(message.size()), message.data());
 	}
 

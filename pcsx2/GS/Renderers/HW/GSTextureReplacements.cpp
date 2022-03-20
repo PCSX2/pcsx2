@@ -319,7 +319,7 @@ void GSTextureReplacements::ReloadReplacementMap()
 		if (!name.has_value())
 			continue;
 
-		DevCon.WriteLn("Found %ux%u replacement '%*s'", name->Width(), name->Height(), static_cast<int>(filename.size()), filename.data());
+		DevCon.WriteLn("Found %ux%u replacement '%.*s'", name->Width(), name->Height(), static_cast<int>(filename.size()), filename.data());
 		s_replacement_texture_filenames.emplace(std::move(name.value()), std::move(fd.FileName));
 	}
 
@@ -564,7 +564,7 @@ void GSTextureReplacements::DumpTexture(const GSTextureCache::HashCacheKey& hash
 		return;
 
 	const std::string_view title(FileSystem::GetFileTitleFromPath(filename));
-	DevCon.WriteLn("Dumping %ux%u texture '%*s'.", name.Width(), name.Height(), static_cast<int>(title.size()), title.data());
+	DevCon.WriteLn("Dumping %ux%u texture '%.*s'.", name.Width(), name.Height(), static_cast<int>(title.size()), title.data());
 
 	// compute width/height
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
