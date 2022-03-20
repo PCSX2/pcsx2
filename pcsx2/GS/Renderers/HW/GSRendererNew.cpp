@@ -599,7 +599,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool&
 		blend_ad_alpha_masked = false;
 
 	u8 blend_index = u8(((m_conf.ps.blend_a * 3 + m_conf.ps.blend_b) * 3 + m_conf.ps.blend_c) * 3 + m_conf.ps.blend_d);
-	const int blend_flag = g_gs_device->GetBlendFlags(blend_index);
+	const int blend_flag = GSDevice::GetBlendFlags(blend_index);
 
 	// Re set alpha, it was modified, must be done after index calculation
 	if (blend_ad_alpha_masked)
@@ -732,34 +732,29 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool&
 	}
 
 	bool replace_dual_src = false;
-	if (!features.dual_source_blend)
+	if (!features.dual_source_blend && GSDevice::IsDualSourceBlend(blend_index))
 	{
-		const HWBlend unconverted_blend = g_gs_device->GetUnconvertedBlend(blend_index);
-		if (GSDevice::IsDualSourceBlendFactor(unconverted_blend.dst) ||
-			GSDevice::IsDualSourceBlendFactor(unconverted_blend.src))
+		// if we don't have an alpha channel, we don't need a second pass, just output the alpha blend
+		// in the single colour's alpha chnanel, and blend with it
+		if (!m_conf.colormask.wa)
 		{
-			// if we don't have an alpha channel, we don't need a second pass, just output the alpha blend
-			// in the single colour's alpha chnanel, and blend with it
-			if (!m_conf.colormask.wa)
-			{
-				GL_INS("Outputting alpha blend in col0 because of no alpha write");
-				m_conf.ps.no_ablend = true;
-				replace_dual_src = true;
-			}
-			else if (features.framebuffer_fetch || m_conf.require_one_barrier || m_conf.require_full_barrier)
-			{
-				// prefer single pass sw blend (if barrier) or framebuffer fetch over dual pass alpha when supported
-				sw_blending = true;
-				color_dest_blend = false;
-				accumulation_blend &= !features.framebuffer_fetch;
-				blend_mix = false;
-			}
-			else
-			{
-				// split the draw into two
-				blending_alpha_pass = true;
-				replace_dual_src = true;
-			}
+			GL_INS("Outputting alpha blend in col0 because of no alpha write");
+			m_conf.ps.no_ablend = true;
+			replace_dual_src = true;
+		}
+		else if (features.framebuffer_fetch || m_conf.require_one_barrier || m_conf.require_full_barrier)
+		{
+			// prefer single pass sw blend (if barrier) or framebuffer fetch over dual pass alpha when supported
+			sw_blending = true;
+			color_dest_blend = false;
+			accumulation_blend &= !features.framebuffer_fetch;
+			blend_mix = false;
+		}
+		else
+		{
+			// split the draw into two
+			blending_alpha_pass = true;
+			replace_dual_src = true;
 		}
 	}
 	else if (features.framebuffer_fetch)
@@ -868,6 +863,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool&
 	{
 		// Blend output will be Cd, disable hw/sw blending.
 		m_conf.blend = {};
+		m_conf.ps.no_color1 = true;
 		sw_blending = false; // DATE_PRIMID
 
 		// Output is Cd, set rgb write to 0.
@@ -881,10 +877,11 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool&
 		if (m_conf.ps.blend_c == 2)
 			m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(ALPHA.FIX) / 128.0f;
 
+		const HWBlend blend = GSDevice::GetBlend(blend_index, replace_dual_src);
 		if (accumulation_blend)
 		{
 			// Keep HW blending to do the addition/subtraction
-			m_conf.blend = {blend_index, 0, false, true, false, replace_dual_src};
+			m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::CONST_ONE, blend.op, false, 0};
 			if (m_conf.ps.blend_a == 2)
 			{
 				// The blend unit does a reverse subtraction so it means
@@ -904,8 +901,12 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool&
 		}
 		else if (blend_mix)
 		{
-			m_conf.blend = {blend_index, ALPHA.FIX, m_conf.ps.blend_c == 2, false, true, replace_dual_src};
+			// For mixed blend, the source blend is done in the shader (so we use CONST_ONE as a factor).
+			m_conf.blend = {true, GSDevice::CONST_ONE, blend.dst, blend.op, m_conf.ps.blend_c == 2, ALPHA.FIX};
 			m_conf.ps.blend_mix = 1;
+
+			// Elide DSB colour output if not used by dest.
+			m_conf.ps.no_color1 |= !GSDevice::IsDualSourceBlendFactor(blend.dst);
 
 			if (blend_mix1)
 			{
@@ -938,6 +939,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool&
 		{
 			// Disable HW blending
 			m_conf.blend = {};
+			m_conf.ps.no_color1 = true;
 			replace_dual_src = false;
 			blending_alpha_pass = false;
 
@@ -1005,13 +1007,18 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool&
 		if (m_conf.ps.dfmt == 1 && m_conf.ps.blend_c == 1)
 		{
 			// 24 bits doesn't have an alpha channel so use 1.0f fix factor as equivalent
-			const u8 hacked_blend_index = blend_index + 3; // +3 <=> +1 on C
-			m_conf.blend = {hacked_blend_index, 128, true, false, false, replace_dual_src};
+			const HWBlend blend(GSDevice::GetBlend(blend_index + 3, replace_dual_src)); // +3 <=> +1 on C
+			m_conf.blend = {true, blend.src, blend.dst, blend.op, true, 128};
 		}
 		else
 		{
-			m_conf.blend = {blend_index, ALPHA.FIX, m_conf.ps.blend_c == 2, false, false, replace_dual_src};
+			const HWBlend blend(GSDevice::GetBlend(blend_index, replace_dual_src));
+			m_conf.blend = {true, blend.src, blend.dst, blend.op, m_conf.ps.blend_c == 2, ALPHA.FIX};
 		}
+
+		// Remove second color output when unused. Works around bugs in some drivers (e.g. Intel).
+		m_conf.ps.no_color1 |= !GSDevice::IsDualSourceBlendFactor(m_conf.blend.src_factor) &&
+							   GSDevice::IsDualSourceBlendFactor(m_conf.blend.dst_factor);
 	}
 
 	// DATE_PRIMID interact very badly with sw blending. DATE_PRIMID uses the primitiveID to find the primitive
@@ -1498,10 +1505,16 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Before emulateblending, dither will be used
 	m_conf.ps.dither = GSConfig.Dithering > 0 && m_conf.ps.dfmt == 2 && m_env.DTHE.DTHE;
 
+	if (m_conf.ps.dfmt == 1)
+	{
+		// Disable writing of the alpha channel
+		m_conf.colormask.wa = 0;
+	}
+
 	// Blend
 
 	bool blending_alpha_pass = false;
-	if (!IsOpaque() && rt)
+	if (!IsOpaque() && rt && m_conf.colormask.wrgba != 0)
 	{
 		EmulateBlending(DATE_PRIMID, DATE_BARRIER, blending_alpha_pass);
 	}
@@ -1518,18 +1531,8 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		m_conf.require_full_barrier = false;
 	}
 
-	// Don't emit the second color output from the pixel shader when it's
-	// not going to be used (no or sw blending).
-	m_conf.ps.no_color1 |= (m_conf.blend.index == 0);
-
 	if (m_conf.ps.scanmsk & 2)
 		DATE_PRIMID = false; // to have discard in the shader work correctly
-
-	if (m_conf.ps.dfmt == 1)
-	{
-		// Disable writing of the alpha channel
-		m_conf.colormask.wa = 0;
-	}
 
 	// DATE setup, no DATE_BARRIER please
 
