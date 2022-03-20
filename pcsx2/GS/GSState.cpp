@@ -2730,7 +2730,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 			break;
 	}
 
-	if (m_context->FRAME.FBMSK != 0xFFFFFFFF)
+	if ((m_context->FRAME.FBMSK & GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk) != GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk)
 		m_mem.m_clut.Invalidate(m_context->FRAME.Block());
 
 	if (auto_flush && m_index.tail >= n)
@@ -3206,12 +3206,14 @@ void GSState::CalcAlphaMinMax()
 	m_vt.m_alpha.valid = true;
 }
 
-bool GSState::TryAlphaTest(u32& fm, u32& zm)
+bool GSState::TryAlphaTest(u32& fm, const u32 fm_mask, u32& zm)
 {
 	// Shortcut for the easy case
 	if (m_context->TEST.ATST == ATST_ALWAYS)
 		return true;
 
+	const u32 framemask = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
+	const u32 framemaskalpha = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk & 0xFF000000;
 	// Alpha test can only control the write of some channels. If channels are already masked
 	// the alpha test is therefore a nop.
 	switch (m_context->TEST.AFAIL)
@@ -3223,11 +3225,11 @@ bool GSState::TryAlphaTest(u32& fm, u32& zm)
 				return true;
 			break;
 		case AFAIL_ZB_ONLY:
-			if (fm == 0xFFFFFFFF)
+			if ((fm & framemask) == framemask)
 				return true;
 			break;
 		case AFAIL_RGB_ONLY:
-			if (zm == 0xFFFFFFFF && ((fm & 0xFF000000) == 0xFF000000 || GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 1))
+			if (zm == 0xFFFFFFFF && ((fm & framemaskalpha) == framemaskalpha || GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 1))
 				return true;
 			break;
 		default:

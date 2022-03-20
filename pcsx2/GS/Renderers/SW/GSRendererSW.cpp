@@ -962,6 +962,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 	u32 fm = context->FRAME.FBMSK;
 	u32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
+	const u32 fm_mask = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
 
 	// When the format is 24bit (Z or C), DATE ceases to function.
 	// It was believed that in 24bit mode all pixels pass because alpha doesn't exist
@@ -988,7 +989,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 	if (context->TEST.ATE)
 	{
-		if (!TryAlphaTest(fm, zm))
+		if (!TryAlphaTest(fm, fm_mask, zm))
 		{
 			gd.sel.atst = context->TEST.ATST;
 			gd.sel.afail = context->TEST.AFAIL;
@@ -1009,7 +1010,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 		}
 	}
 
-	bool fwrite = fm != 0xffffffff;
+	bool fwrite = (fm & fm_mask) != fm_mask;
 	bool ftest = gd.sel.atst != ATST_ALWAYS || context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
 
 	bool zwrite = zm != 0xffffffff;
@@ -1302,12 +1303,13 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 			gd.afix = GSVector4i((int)context->ALPHA.FIX << 7).xxzzlh();
 		}
 
+		const u32 masked_fm = fm & fm_mask;
 		if (gd.sel.date
 		 || gd.sel.aba == 1 || gd.sel.abb == 1 || gd.sel.abc == 1 || gd.sel.abd == 1
 		 || gd.sel.atst != ATST_ALWAYS && gd.sel.afail == AFAIL_RGB_ONLY
-		 || gd.sel.fpsm == 0 && fm != 0 && fm != 0xffffffff
-		 || gd.sel.fpsm == 1 && (fm & 0x00ffffff) != 0 && (fm & 0x00ffffff) != 0x00ffffff
-		 || gd.sel.fpsm == 2 && (fm & 0x80f8f8f8) != 0 && (fm & 0x80f8f8f8) != 0x80f8f8f8)
+		 || gd.sel.fpsm == 0 && masked_fm != 0 && masked_fm != fm_mask
+		 || gd.sel.fpsm == 1 && masked_fm != 0 && masked_fm != fm_mask
+		 || gd.sel.fpsm == 2 && masked_fm != 0 && masked_fm != fm_mask)
 		{
 			gd.sel.rfb = 1;
 		}

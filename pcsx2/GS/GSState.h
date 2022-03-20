@@ -212,7 +212,7 @@ protected:
 		u8 uses_boundary;    ///< Whether or not the usage touches the left, top, right, or bottom edge (and therefore needs wrap modes preserved)
 	};
 	TextureMinMaxResult GetTextureMinMax(const GIFRegTEX0& TEX0, const GIFRegCLAMP& CLAMP, bool linear);
-	bool TryAlphaTest(u32& fm, u32& zm);
+	bool TryAlphaTest(u32& fm, const u32 fm_mask, u32& zm);
 	bool IsOpaque();
 	bool IsMipMapDraw();
 	bool IsMipMapActive();
