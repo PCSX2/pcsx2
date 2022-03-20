@@ -230,7 +230,7 @@ void GSRendererNew::EmulateTextureShuffleAndFbmask()
 
 		// Please bang my head against the wall!
 		// 1/ Reduce the frame mask to a 16 bit format
-		const u32& m = m_context->FRAME.FBMSK;
+		const u32 m = m_context->FRAME.FBMSK & GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
 		const u32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
 		// FIXME GSVector will be nice here
 		const u8 rg_mask = fbmask & 0xFF;
@@ -301,7 +301,7 @@ void GSRendererNew::EmulateTextureShuffleAndFbmask()
 		// Don't allow only unused bits on 16bit format to enable fbmask,
 		// let's set the mask to 0 in such cases.
 		int fbmask = static_cast<int>(m_context->FRAME.FBMSK);
-		const int fbmask_r = m_conf.ps.dfmt == 2 ? 0x80F8F8F8 : m_conf.ps.dfmt == 1 ? 0x00FFFFFF : 0xFFFFFFFF;
+		const int fbmask_r = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
 		fbmask &= fbmask_r;
 		const GSVector4i fbmask_v = GSVector4i::load(fbmask);
 		const GSVector4i fbmask_vr = GSVector4i::load(fbmask_r);
@@ -1329,7 +1329,8 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Detect framebuffer read that will need special handling
 	if (g_gs_device->Features().texture_barrier && (m_context->FRAME.Block() == m_context->TEX0.TBP0) && PRIM->TME && GSConfig.AccurateBlendingUnit != AccBlendLevel::Minimum)
 	{
-		if ((m_context->FRAME.FBMSK == 0x00FFFFFF) && (m_vt.m_primclass == GS_TRIANGLE_CLASS))
+		const u32 fb_mask = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
+		if (((m_context->FRAME.FBMSK & fb_mask) == (fb_mask & 0x00FFFFFF)) && (m_vt.m_primclass == GS_TRIANGLE_CLASS))
 		{
 			// This pattern is used by several games to emulate a stencil (shadow)
 			// Ratchet & Clank, Jak do alpha integer multiplication (tfx) which is mostly equivalent to +1/-1

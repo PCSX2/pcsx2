@@ -1249,13 +1249,14 @@ void GSRendererHW::Draw()
 
 	u32 fm = context->FRAME.FBMSK;
 	u32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
+	const u32 fm_mask = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
 
 	// Note required to compute TryAlphaTest below. So do it now.
 	if (PRIM->TME && tex_psm.pal > 0)
 		m_mem.m_clut.Read32(context->TEX0, env.TEXA);
 
 	//  Test if we can optimize Alpha Test as a NOP
-	context->TEST.ATE = context->TEST.ATE && !GSRenderer::TryAlphaTest(fm, zm);
+	context->TEST.ATE = context->TEST.ATE && !GSRenderer::TryAlphaTest(fm, fm_mask, zm);
 
 	context->FRAME.FBMSK = fm;
 	context->ZBUF.ZMSK = zm != 0;
@@ -1271,7 +1272,7 @@ void GSRendererHW::Draw()
 			// Depth is always pass/fail (no read) and write are discarded (tekken 5).  (Note: DATE is currently implemented with a stencil buffer => a depth/stencil buffer)
 			(zm != 0 && m_context->TEST.ZTST <= ZTST_ALWAYS && !m_context->TEST.DATE) ||
 			// Depth will be written through the RT
-			(context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && zm == 0 && fm == 0 && context->TEST.ZTE)
+			(context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && context->TEST.ZTE)
 			);
 
 	if (no_rt && no_ds)
@@ -1504,7 +1505,7 @@ void GSRendererHW::Draw()
 			&& draw_sprite_tex && m_src->m_32_bits_fmt;
 
 		// Okami mustn't call this code
-		if (m_texture_shuffle && m_vertex.next < 3 && PRIM->FST && (m_context->FRAME.FBMSK == 0))
+		if (m_texture_shuffle && m_vertex.next < 3 && PRIM->FST && ((m_context->FRAME.FBMSK & fm_mask) == 0))
 		{
 			// Avious dubious call to m_texture_shuffle on 16 bits games
 			// The pattern is severals column of 8 pixels. A single sprite
@@ -1741,7 +1742,7 @@ void GSRendererHW::Draw()
 
 	//
 
-	if (fm != 0xffffffff && rt)
+	if ((fm & fm_mask) != fm_mask && rt)
 	{
 		//rt->m_valid = rt->m_valid.runion(r);
 		rt->UpdateValidity(m_r);
