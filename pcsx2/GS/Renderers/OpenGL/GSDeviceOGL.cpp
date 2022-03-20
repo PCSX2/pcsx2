@@ -1122,8 +1122,9 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ format("#define PS_PABE %d\n", sel.pabe)
 		+ format("#define PS_SCANMSK %d\n", sel.scanmsk)
 		+ format("#define PS_SCALE_FACTOR %d\n", GSConfig.UpscaleMultiplier)
-		+ format("#define PS_NO_ABLEND %d\n", sel.no_ablend)
+		+ format("#define PS_NO_COLOR %d\n", sel.no_color)
 		+ format("#define PS_NO_COLOR1 %d\n", sel.no_color1)
+		+ format("#define PS_NO_ABLEND %d\n", sel.no_ablend)
 		+ format("#define PS_ONLY_ALPHA %d\n", sel.only_alpha)
 	;
 

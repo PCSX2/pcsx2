@@ -1201,6 +1201,7 @@ void main()
 
   ps_fbmask(C);
 
+#if !PS_NO_COLOR
 	o_col0 = C / 255.0f;
 #if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
 	o_col1 = vec4(alpha_blend);
@@ -1213,6 +1214,7 @@ void main()
 #if PS_ONLY_ALPHA
 	// rgb isn't used
 	o_col0.rgb = vec3(0.0f);
+#endif
 #endif
 
 #if PS_ZCLAMP
