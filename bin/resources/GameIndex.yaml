@@ -35,6 +35,9 @@ GUST-00009:
 PAPX-90201:
   name: "Fantavision [Taikenban]"
   region: "NTSC-J"
+PAPX-90202:
+  name: "IQ Remix - Intelligent Qube [Trial]"
+  region: "NTSC-J"
 PAPX-90203:
   name: "Gran Turismo 2000 [Trial]"
   region: "NTSC-J"
@@ -76,6 +79,11 @@ PAPX-90516:
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
+PAPX-90517:
+  name: "Prince of Persia - Jikan no Suna [Trial]"
+  region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1
 PBPX-95201:
   name: "HDD untility Disc [Version 1.00]"
   region: "NTSC-J"
@@ -91,6 +99,9 @@ PBPX-95204:
 PBPX-95205:
   name: "Playstation 2 - Demo Disc 2000"
   region: "PAL-M5"
+PBPX-95211:
+  name: "HDD Utility Disc"
+  region: "NTSC-U"
 PBPX-95216:
   name: "HDD Utility Disc [Beta]"
   region: "NTSC-U"
@@ -159,6 +170,9 @@ PBPX-95601:
   # eeClampMode = 3  Text in races works.
 PCPX-96311:
   name: "Gran Turismo 3 Trial Disk Volume 1"
+  region: "NTSC-J"
+PCPX-96321:
+  name: "SkyGunner [Trial]"
   region: "NTSC-J"
 PCPX-96322:
   name: "ICO [Trial]"
@@ -21332,6 +21346,9 @@ SLPM-60102:
 SLPM-60104:
   name: "Konami PlayStation 2 Taikeban"
   region: "NTSC-J"
+SLPM-60105:
+  name: "Street Fighter EX3 [Taikeban]"
+  region: "NTSC-J"
 SLPM-60106:
   name: "Koei PlayStation 2 Line-Up"
   region: "NTSC-J"
@@ -21349,6 +21366,14 @@ SLPM-60109:
 SLPM-60123:
   name: "Gekikuukan Pro Baseball: The End of the Century 1999 [Trial]"
   region: "NTSC-J"
+SLPM-60138:
+  name: "Klonoa 2 - Lunatea's Veil [Trial]"
+  region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3  # Objects appear in wrong places without it.
+    vuClampMode: 2  # Fixes water reflection.
+  gameFixes:
+    - EETimingHack # Fixes flickering graphics.
 SLPM-60172:
   name: "Itadaki Street 3 - Okuman Chouja ni Shiteageru"
   region: "NTSC-J"
@@ -21360,9 +21385,25 @@ SLPM-60207:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   clampModes:
     eeClampMode: 3 # For camera issues in some scenes.
+SLPM-60239:
+  name: "Katamari Damacy [Trial]"
+  region: "NTSC-J"
+  roundModes:
+    vuRoundMode: 0 # Fixes SPS.
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay problems.
 SLPM-60243:
   name: "Full House Kiss [Trial]"
   region: "NTSC-J"
+SLPM-60246:
+  name: "Burnout 3 - Takedown [Trial]"
+  region: "NTSC-J"
+  clampModes:
+    vuClampMode: 0 # Fixes buggy lighting on certain objects.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth lines.
 SLPM-60251:
   name: "Devil May Cry 3 [Trial Version]"
   region: "NTSC-J"
