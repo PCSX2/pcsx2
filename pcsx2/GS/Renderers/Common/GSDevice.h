@@ -239,8 +239,9 @@ struct alignas(16) GSHWDrawConfig
 				u32 colclip     : 1;
 				u32 blend_mix   : 1;
 				u32 pabe        : 1;
-				u32 no_ablend   : 1; // output alpha blend in col0 (for no-DSB)
+				u32 no_color    : 1; // disables color output entirely (depth only)
 				u32 no_color1   : 1; // disables second color output (when unnecessary)
+				u32 no_ablend   : 1; // output alpha blend in col0 (for no-DSB)
 				u32 only_alpha  : 1; // don't bother computing RGB
 
 				// Others ways to fetch the texture

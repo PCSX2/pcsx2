@@ -1816,8 +1816,9 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_SCANMSK", sel.scanmsk);
 	AddMacro(ss, "PS_SCALE_FACTOR", GSConfig.UpscaleMultiplier);
 	AddMacro(ss, "PS_TEX_IS_FB", sel.tex_is_fb);
-	AddMacro(ss, "PS_NO_ABLEND", sel.no_ablend);
+	AddMacro(ss, "PS_NO_COLOR", sel.no_color);
 	AddMacro(ss, "PS_NO_COLOR1", sel.no_color1);
+	AddMacro(ss, "PS_NO_ABLEND", sel.no_ablend);
 	AddMacro(ss, "PS_ONLY_ALPHA", sel.only_alpha);
 	ss << m_tfx_source;
 
@@ -2653,10 +2654,12 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 	init_pipe.dss.zwe = false;
 	init_pipe.cms.wrgba = 0;
 	init_pipe.bs = {};
-	init_pipe.ps.blend_a = init_pipe.ps.blend_b = init_pipe.ps.blend_c = init_pipe.ps.blend_d = false;
 	init_pipe.feedback_loop = false;
 	init_pipe.rt = true;
+	init_pipe.ps.blend_a = init_pipe.ps.blend_b = init_pipe.ps.blend_c = init_pipe.ps.blend_d = false;
 	init_pipe.ps.date += 10;
+	init_pipe.ps.no_color = false;
+	init_pipe.ps.no_color1 = true;
 	if (BindDrawPipeline(init_pipe))
 		DrawIndexedPrimitive();
 

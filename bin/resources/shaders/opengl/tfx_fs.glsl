@@ -50,12 +50,14 @@ in SHADER
   #endif
 #endif
 
+#if !PS_NO_COLOR
 #if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
   // Same buffer but 2 colors for dual source blending
   layout(location = 0, index = 0) TARGET_0_QUALIFIER vec4 SV_Target0;
   layout(location = 0, index = 1) out vec4 SV_Target1;
 #else
   layout(location = 0) TARGET_0_QUALIFIER vec4 SV_Target0;
+#endif
 #endif
 
 layout(binding = 1) uniform sampler2D PaletteSampler;
@@ -942,6 +944,7 @@ void ps_main()
 
     ps_fbmask(C);
 
+#if !PS_NO_COLOR
     SV_Target0 = C / 255.0f;
 #if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
     SV_Target1 = vec4(alpha_blend);
@@ -954,6 +957,7 @@ void ps_main()
 #if PS_ONLY_ALPHA
     // rgb isn't used
     SV_Target0.rgb = vec3(0.0f);
+#endif
 #endif
 
 #if PS_ZCLAMP
