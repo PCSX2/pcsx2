@@ -81,7 +81,7 @@ using namespace Xbyak;
 	#define _rip_local_d_p(x) _rip_local_d(x)
 #endif
 
-GSDrawScanlineCodeGenerator2::GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator* base, CPUInfo cpu, void* param, u64 key)
+GSDrawScanlineCodeGenerator2::GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator* base, const ProcessorFeatures& cpu, void* param, u64 key)
 	: _parent(base, cpu)
 	, m_local(*(GSScanlineLocalData*)param)
 	, m_rip(false)
@@ -243,7 +243,7 @@ void GSDrawScanlineCodeGenerator2::alltrue(const XYm& test)
 	u32 mask = test.isYMM() ? 0xffffffff : 0xffff;
 	pmovmskb(eax, test);
 	cmp(eax, mask);
-	je("step", GSCodeGenerator::T_NEAR);
+	je("step", Xbyak::CodeGenerator::T_NEAR);
 }
 
 void GSDrawScanlineCodeGenerator2::blend(const XYm& a, const XYm& b, const XYm& mask)

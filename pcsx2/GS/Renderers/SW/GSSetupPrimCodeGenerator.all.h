@@ -66,7 +66,7 @@ class GSSetupPrimCodeGenerator2 : public GSNewCodeGenerator
 	}
 
 public:
-	GSSetupPrimCodeGenerator2(Xbyak::CodeGenerator* base, CPUInfo cpu, void* param, u64 key);
+	GSSetupPrimCodeGenerator2(Xbyak::CodeGenerator* base, const ProcessorFeatures& cpu, void* param, u64 key);
 	void Generate();
 
 private:

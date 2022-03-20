@@ -16,13 +16,13 @@
 #pragma once
 
 #include "GSScanlineEnvironment.h"
-#include "GS/Renderers/Common/GSFunctionMap.h"
 #include "GS/GSUtil.h"
 #include "GS/MultiISA.h"
+#include <xbyak/xbyak.h>
 
 MULTI_ISA_UNSHARED_START
 
-class GSSetupPrimCodeGenerator : public GSCodeGenerator
+class GSSetupPrimCodeGenerator : public Xbyak::CodeGenerator
 {
 	void operator=(const GSSetupPrimCodeGenerator&);
 

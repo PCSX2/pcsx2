@@ -20,8 +20,6 @@
 #include "GS/Renderers/SW/GSScanlineEnvironment.h"
 #include "common/emitter/tools.h"
 
-#include <xbyak/xbyak_util.h>
-
 template <class KEY, class VALUE>
 class GSFunctionMap
 {
@@ -141,18 +139,6 @@ public:
 					(double)((p->total - p->actual) * 100) / p->total);
 			}
 		}
-	}
-};
-
-class GSCodeGenerator : public Xbyak::CodeGenerator
-{
-protected:
-	Xbyak::util::Cpu m_cpu;
-
-public:
-	GSCodeGenerator(void* code, size_t maxsize)
-		: Xbyak::CodeGenerator(maxsize, code)
-	{
 	}
 };
 
