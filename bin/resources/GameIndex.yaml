@@ -428,6 +428,11 @@ SCAJ-20056:
 SCAJ-20057:
   name: "Front Mission 4"
   region: "NTSC-Unk"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes mech shadows.
+    roundSprite: 2 # Fixes font artifacts.
 SCAJ-20058:
   name: "Terminator 3 - Rise of the Machines"
   region: "NTSC-Unk"
@@ -820,6 +825,8 @@ SCAJ-20137:
 SCAJ-20138:
   name: "Ape Escape 3"
   region: "NTSC-Unk"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black background in the pause menu.
 SCAJ-20139:
   name: "Zero - Shisei no Koe" # Fatal Frame - Rei - Irezumi no Sei
   region: "NTSC-Unk"
@@ -834,9 +841,14 @@ SCAJ-20141:
 SCAJ-20143:
   name: "Armored Core - Last Raven"
   region: "NTSC-Unk"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black screen while in a mech.
+    roundSprite: 2 # Fixes HUD artifacts.
 SCAJ-20144:
   name: "Saru Gechu 3 (Ape Escape 3)"
   region: "NTSC-Ch-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black background in the pause menu.
 SCAJ-20145:
   name: "Tales of Legendia"
   region: "NTSC-J"
@@ -941,6 +953,10 @@ SCAJ-20165:
 SCAJ-20166:
   name: "Front Mission 5 - Scars of the War"
   region: "NTSC-Unk"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurriness but no fix for font or other artifacts possible with round sprite.
 SCAJ-20167:
   name: "Siren 2"
   region: "NTSC-Ch-J"
@@ -1059,6 +1075,8 @@ SCAJ-20194:
 SCAJ-20195:
   name: "Ape Escape 3 [PlayStation 2 The Best]"
   region: "NTSC-Ch"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black background in the pause menu.
 SCAJ-20196:
   name: "Shadow of the Colossus [PlayStation 2 The Best]"
   region: "NTSC-Ch"
@@ -1629,6 +1647,7 @@ SCED-51700:
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
 SCED-51922:
   name: "Ghosthunter [Demo]"
   region: "PAL-G"
@@ -1845,6 +1864,7 @@ SCED-52952:
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
 SCED-52970:
   name: "SCEE Hits Demo"
   region: "PAL-M5"
@@ -2782,6 +2802,7 @@ SCES-51608:
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
   patches:
     default:
       content: |-
@@ -3055,6 +3076,7 @@ SCES-52460:
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
   patches:
     default:
       content: |-
@@ -3230,6 +3252,7 @@ SCES-53286:
   region: "PAL-M7"
   gsHWFixes:
     textureInsideRT: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
   memcardFilters: # Reads Ratchet Gladiator data.
     - "SCES-53286"
     - "SCES-53285"
@@ -3346,6 +3369,8 @@ SCES-53642:
   name: "Ape Escape 3"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black background in the pause menu.
 SCES-53663:
   name: "Buzz! The Music Quiz"
   region: "PAL-M3"
@@ -4116,6 +4141,7 @@ SCKA-20010:
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
 SCKA-20011:
   name: "Ratchet & Clank 2"
   region: "NTSC-K"
@@ -4255,6 +4281,7 @@ SCKA-20040:
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
 SCKA-20043:
   name: "Magna Carta"
   region: "NTSC-K"
@@ -4351,6 +4378,8 @@ SCKA-20061:
 SCKA-20062:
   name: "Ape Escape 3"
   region: "NTSC-K"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black background in the pause menu.
 SCKA-20063:
   name: "Sly Cooper 3 Honor Among Thieves"
   region: "NTSC-K"
@@ -5560,6 +5589,8 @@ SCPS-19326:
 SCPS-19327:
   name: "Ape Escape 3 [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black background in the pause menu.
 SCPS-19328:
   name: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
@@ -5999,6 +6030,8 @@ SCUS-97116:
 SCUS-97117:
   name: "PlayStation 2 Demo Disc Version 2.1 [Need for Speed - Underground]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned post-processing.
 SCUS-97118:
   name: "NFL GameDay 2001 [Demo]"
   region: "NTSC-U"
@@ -6523,6 +6556,7 @@ SCUS-97265:
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97266:
   name: "Final Fantasy XI [Disc1of2]"
   region: "NTSC-U"
@@ -6559,6 +6593,7 @@ SCUS-97273:
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97274:
   name: "Jak II [Video Demo]"
   region: "NTSC-U"
@@ -6680,6 +6715,7 @@ SCUS-97330:
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97331:
   name: "Official U.S. PlayStation Magazine Demo Disc 078"
   region: "NTSC-U"
@@ -6796,7 +6832,9 @@ SCUS-97374:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1
     autoFlush: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97377:
   name: "Syphon Filter - The Omega Strain [Regular Demo]"
   region: "NTSC-U"
@@ -6907,6 +6945,7 @@ SCUS-97412:
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97413:
   name: "Ratchet & Clank - Up Your Arsenal [Public Beta v1.0]"
   region: "NTSC-U"
@@ -6969,6 +7008,7 @@ SCUS-97429:
   compat: 5
   gsHWFixes:
     textureInsideRT: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
   memcardFilters:
     - "SCUS-97429"
     - "SCUS-97465"
@@ -7206,6 +7246,7 @@ SCUS-97486:
   region: "NTSC-U"
   gsHWFixes:
     textureInsideRT: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97487:
   name: "Ratchet - Deadlocked [Public Beta v.1]"
   region: "NTSC-U"
@@ -7220,6 +7261,7 @@ SCUS-97488:
   compat: 5
   gsHWFixes:
     textureInsideRT: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97489:
   name: "SOCOM 3 - U.S. Navy SEALs [Public Beta v.1]"
   region: "NTSC-U"
@@ -7269,6 +7311,8 @@ SCUS-97501:
   name: "Ape Escape 3"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black background in the pause menu.
 SCUS-97502:
   name: "Tourist Trophy"
   region: "NTSC-U"
@@ -7297,6 +7341,7 @@ SCUS-97509:
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97510:
   name: "ATV Off-Road Fury 2 [Greatest Hits]"
   region: "NTSC-U"
@@ -7337,6 +7382,7 @@ SCUS-97516:
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97517:
   name: "Killzone [Greatest Hits]"
   region: "NTSC-U"
@@ -7422,6 +7468,8 @@ SCUS-97545:
 SCUS-97548:
   name: "Ape Escape 3 [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black background in the pause menu.
 SCUS-97554:
   name: "NBA '07 featuring The Life Vol.2 [Demo]"
   region: "NTSC-U"
@@ -10475,31 +10523,31 @@ SLES-51192:
   compat: 3
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51193:
   name: "Harry Potter et la Chambre des Secrets"
   region: "PAL-F"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51194:
   name: "Harry Potter und die Kammer des Schreckens"
   region: "PAL-G"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51195:
   name: "Harry Potter y La Camara Secreta"
   region: "PAL-S"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51196:
   name: "Harry Potter e La Camera dei Secreti"
   region: "PAL-I"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51197:
   name: "FIFA 2003"
   region: "PAL-M7"
@@ -10547,37 +10595,37 @@ SLES-51214:
   region: "PAL-D"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51215:
   name: "Harry Potter og Mysteriekammeret"
   region: "PAL-N"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51216:
   name: "Harry Potter ja Salaisuuksien Kammio"
   region: "PAL-FI"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51217:
   name: "Harry Potter och Hemligheternas Kammare"
   region: "PAL-SW"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51218:
   name: "Harry Potter en de Geheime Kamer"
   region: "PAL-DU"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51219:
   name: "Harry Potter ea Camara dos Segredos"
   region: "PAL-P"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51220:
   name: "Ty - The Tazmanian Tiger"
   region: "PAL-M5"
@@ -12071,6 +12119,8 @@ SLES-51967:
   compat: 5
   gameFixes:
     - EETimingHack # Fixes broken textures.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned post-processing.
 SLES-51968:
   name: "Spongebob SquarePants - Battle for Bikini Bottom"
   region: "PAL-E"
@@ -12909,7 +12959,7 @@ SLES-52440:
   compat: 3
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-52444:
   name: "Hyper Street Fighter II - The Anniversary Edition"
   region: "PAL-E"
@@ -13093,7 +13143,7 @@ SLES-52527:
   region: "PAL-M4"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-52531:
   name: "Suffering, The"
   region: "PAL-G"
@@ -13314,7 +13364,7 @@ SLES-52600:
   region: "PAL-PL"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-52601:
   name: "Ex Zeus"
   region: "PAL-E"
@@ -13600,6 +13650,8 @@ SLES-52725:
   name: "Need for Speed - Underground 2"
   region: "PAL-M8"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned post-processing.
 SLES-52726:
   name: "NBA Live 2005"
   region: "PAL-F"
@@ -15043,6 +15095,7 @@ SLES-53411:
     eeRoundMode: 0  # Fixes Sugoroku mini-game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
+    preloadFrameData: 1 # Fixes red cracklines on walls.
 SLES-53413:
   name: "Rebel Raiders - Operation Nighthawk"
   region: "PAL-M5"
@@ -15948,6 +16001,9 @@ SLES-53753:
   compat: 5
   gameFixes:
     - VIFFIFOHack # Needed to load the main game properly.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
+    preloadFrameData: 1 # Fixes car reflections and brightness.
 SLES-53754:
   name: "ATV Off-Road Fury 3"
   region: "PAL-M6"
@@ -16097,6 +16153,9 @@ SLES-53819:
 SLES-53820:
   name: "Armored Core - Last Raven"
   region: "PAL-E"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black screen while in a mech.
+    roundSprite: 2 # Fixes HUD artifacts.
 SLES-53821:
   name: "Radio Helicopter II"
   region: "PAL-E"
@@ -16372,6 +16431,8 @@ SLES-53956:
 SLES-53957:
   name: "Namco Museum 50th Anniversary"
   region: "PAL-M5"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black screen when prompted to load from memory card.
 SLES-53958:
   name: "Noble Racing"
   region: "PAL-E"
@@ -17569,6 +17630,9 @@ SLES-54466:
   compat: 5
   gameFixes:
     - VIFFIFOHack # Needed to load the main game properly.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
+    preloadFrameData: 1 # Fixes car reflections and brightness.
 SLES-54467:
   name: "Final Armada"
   region: "PAL-M5"
@@ -20615,7 +20679,7 @@ SLKA-25172:
   region: "NTSC-K"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLKA-25175:
   name: "Transformers"
   region: "NTSC-K"
@@ -20689,6 +20753,8 @@ SLKA-25213:
   name: "Berserk"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Partially fixes HUD elements.
 SLKA-25214:
   name: "Final Fantasy X - International [PlayStation 2 - Big Hit Series]"
   region: "NTSC-K"
@@ -21951,7 +22017,7 @@ SLPM-62241:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLPM-62244:
   name: "Choro Q - High Grade 3"
   region: "NTSC-J"
@@ -22634,7 +22700,7 @@ SLPM-62513:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLPM-62514:
   name: "Sim People [EA Best Hits]"
   region: "NTSC-J"
@@ -23416,7 +23482,7 @@ SLPM-64528:
   region: "NTSC-K"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLPM-64549:
   name: "Shikigami no Shiro"
   region: "NTSC-K"
@@ -24807,6 +24873,11 @@ SLPM-65442:
 SLPM-65443:
   name: "Front Mission 4"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes mech shadows.
+    roundSprite: 2 # Fixes font artifacts.
 SLPM-65444:
   name: "Castlevania - Lament of Innocence"
   region: "NTSC-J"
@@ -25306,7 +25377,7 @@ SLPM-65612:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLPM-65613:
   name: "Yu-Gi-Oh! Capsule Monster Coliseum"
   region: "NTSC-J"
@@ -25529,6 +25600,8 @@ SLPM-65685:
 SLPM-65686:
   name: "Berserk [Branded Box]"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Partially fixes HUD elements.
 SLPM-65687:
   name: "Star Wars - Battlefront"
   region: "NTSC-J"
@@ -25536,6 +25609,8 @@ SLPM-65688:
   name: "Berserk"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Partially fixes HUD elements.
 SLPM-65689:
   name: "Never 7 - The End of Infinity [SuperLite 2000 Series]"
   region: "NTSC-J"
@@ -27218,6 +27293,10 @@ SLPM-66205:
   name: "Front Mission 5 - Scars of the War"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurriness but no fix for font or other artifacts possible with round sprite.
 SLPM-66206:
   name: "Battlefield 2 - Modern Combat"
   region: "NTSC-J"
@@ -27938,9 +28017,18 @@ SLPM-66419:
 SLPM-66420:
   name: "Front Mission 4 [Ultimate Hits]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes mech shadows.
+    roundSprite: 2 # Fixes font artifacts.
 SLPM-66421:
   name: "Front Mission 5 - Scars of the War [Ultimate Hits]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurriness but no fix for font or other artifacts possible with round sprite.
 SLPM-66422:
   name: "Romancing Saga - Minstrel Song [Ultimate Hits]"
   region: "NTSC-J"
@@ -29731,6 +29819,8 @@ SLPM-66959:
 SLPM-66960:
   name: "Need for Speed - Underground 2 [EA-SY! 1980]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned post-processing.
 SLPM-66961:
   name: "Black [EA-SY! 1980]"
   region: "NTSC-J"
@@ -29991,7 +30081,7 @@ SLPM-68005:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLPM-68018:
   name: "Virtua Fighter - 10th Anniversary Edition"
   region: "NTSC-J"
@@ -30774,7 +30864,7 @@ SLPS-20234:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLPS-20243:
   name: "New Price Go Go Golf"
   region: "NTSC-J"
@@ -32427,6 +32517,7 @@ SLPS-25329:
     eeRoundMode: 0  # Fixes Sugoroku mini-game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
+    preloadFrameData: 1 # Fixes red cracklines on walls.
 SLPS-25330:
   name: "Dragon Ball Z - Budokai 2"
   region: "NTSC-J"
@@ -32945,6 +33036,9 @@ SLPS-25461:
 SLPS-25462:
   name: "Armored Core - Last Raven"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black screen while in a mech.
+    roundSprite: 2 # Fixes HUD artifacts.
 SLPS-25463:
   name: "My Home o Tsukurou 2! Takumi"
   region: "NTSC-J"
@@ -33375,6 +33469,8 @@ SLPS-25589:
 SLPS-25590:
   name: "Namco Museum Arcade Hits"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black screen when prompted to load from memory card.
 SLPS-25591:
   name: "Last Escort - Shinya no Kokuchou Monogatari"
   region: "NTSC-J"
@@ -34906,6 +35002,9 @@ SLPS-73246:
 SLPS-73247:
   name: "Armored Core - Last Raven [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black screen while in a mech.
+    roundSprite: 2 # Fixes HUD artifacts.
 SLPS-73248:
   name: "Kagero 2 - Dark Illusion [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -36083,6 +36182,8 @@ SLUS-20273:
   name: "Namco Museum"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black screen when prompted to load from memory card.
 SLUS-20274:
   name: "City Crisis"
   region: "NTSC-U"
@@ -36274,6 +36375,8 @@ SLUS-20318:
   name: "King's Field IV: The Ancient City"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
   patches:
     36E02E91:
       content: |-
@@ -36376,6 +36479,9 @@ SLUS-20343:
   name: "Forever Kingdom"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes textures and flickering such as the wall and sky.
+    cpuFramebufferConversion: 1 # Fixes character shadows.
 SLUS-20344:
   name: "Rez"
   region: "NTSC-U"
@@ -36412,6 +36518,8 @@ SLUS-20352:
 SLUS-20353:
   name: "King's Field IV - The Ancient City"
   region: "NTSC-U"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
 SLUS-20354:
   name: "Red Card Soccer 2003"
   region: "NTSC-U"
@@ -37427,7 +37535,7 @@ SLUS-20576:
   compat: 2
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLUS-20577:
   name: "Drome Racers"
   region: "NTSC-U"
@@ -38422,6 +38530,8 @@ SLUS-20811:
   compat: 5
   gameFixes:
     - EETimingHack # Broken textures.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned post-processing.
 SLUS-20812:
   name: "Dynasty Warriors 4 - Extreme Edition"
   region: "NTSC-U"
@@ -38731,6 +38841,11 @@ SLUS-20888:
   name: "Front Mission 4"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes mech shadows.
+    roundSprite: 2 # Fixes font artifacts.
 SLUS-20889:
   name: "MLB Slugfest - Loaded"
   region: "NTSC-U"
@@ -38926,7 +39041,7 @@ SLUS-20926:
   region: "NTSC-U"
   gsHWFixes:
     mipmap: 1
-    cpuFramebufferConversion: 1
+    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLUS-20927:
   name: "Time Crisis - Crisis Zone"
   region: "NTSC-U"
@@ -39379,6 +39494,7 @@ SLUS-21007:
     eeRoundMode: 0  # Fixes Sugoroku mini-game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
+    preloadFrameData: 1 # Fixes red cracklines on walls.
 SLUS-21008:
   name: "Katamari Damacy"
   region: "NTSC-U"
@@ -39644,6 +39760,8 @@ SLUS-21065:
   name: "Need for Speed - Underground 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned post-processing.
 SLUS-21066:
   name: "Urbz, The - Sims in the City"
   region: "NTSC-U"
@@ -40953,6 +41071,9 @@ SLUS-21338:
   name: "Armored Core - Last Raven"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black screen while in a mech.
+    roundSprite: 2 # Fixes HUD artifacts.
 SLUS-21339:
   name: "Puzzle Collection - Crosswords & More!"
   region: "NTSC-U"
@@ -41759,6 +41880,9 @@ SLUS-21490:
   compat: 5
   gameFixes:
     - VIFFIFOHack # Needed to load the main game properly.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
+    preloadFrameData: 1 # Fixes car reflections and brightness.
 SLUS-21491:
   name: "World Series of Poker - Tournament of Champions"
   region: "NTSC-U"
@@ -43967,6 +44091,8 @@ SLUS-29073:
   region: "NTSC-U"
   gameFixes:
     - EETimingHack # Broken textures.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned post-processing.
 SLUS-29074:
   name: "DDRMAX2 Dance Dance Revolution [Demo]"
   region: "NTSC-U"
@@ -44036,6 +44162,11 @@ SLUS-29096:
 SLUS-29098:
   name: "Square Enix Sampler Disc Vol.2: Front Mission 4 Playable Demo"
   region: "NTSC-U"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes mech shadows.
+    roundSprite: 2 # Fixes font artifacts.
 SLUS-29100:
   name: "Ribbit King [Demo]"
   region: "NTSC-U"
@@ -44081,6 +44212,8 @@ SLUS-29117:
 SLUS-29118:
   name: "Need for Speed - Underground 2 [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned post-processing.
 SLUS-29123:
   name: "Ghost in the Shell - Stand Alone Complex [Demo]"
   region: "NTSC-U"
@@ -44264,6 +44397,9 @@ SLUS-29192:
   region: "NTSC-U"
   gameFixes:
     - VIFFIFOHack # Needed to load the main game properly.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
+    preloadFrameData: 1 # Fixes car reflections and brightness.
 SLUS-29193:
   name: "Need for Speed - Carbon [Demo]"
   region: "NTSC-U"
