@@ -264,7 +264,7 @@ bool InputManager::SplitBinding(
 	const std::string_view::size_type slash_pos = binding.find('/');
 	if (slash_pos == std::string_view::npos)
 	{
-		Console.Warning("Malformed binding: '%*s'", static_cast<int>(binding.size()), binding.data());
+		Console.Warning("Malformed binding: '%.*s'", static_cast<int>(binding.size()), binding.data());
 		return false;
 	}
 

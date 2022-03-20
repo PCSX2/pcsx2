@@ -102,7 +102,7 @@ void ControllerBindingWidget_Base::initBindingWidgets()
 		InputBindingWidget* widget = findChild<InputBindingWidget*>(QString::fromStdString(binding));
 		if (!widget)
 		{
-			Console.Error("(ControllerBindingWidget_Base) No widget found for '%s' (%*s)",
+			Console.Error("(ControllerBindingWidget_Base) No widget found for '%s' (%.*s)",
 				binding.c_str(), static_cast<int>(type.size()), type.data());
 			continue;
 		}

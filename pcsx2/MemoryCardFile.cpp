@@ -929,7 +929,7 @@ bool FileMcd_CreateNewCard(const std::string_view& name, MemoryCardType type, Me
 
 	if (type == MemoryCardType::Folder)
 	{
-		Console.WriteLn("(FileMcd) Creating new PS2 folder memory card: '%*s'", static_cast<int>(name.size()), name.data());
+		Console.WriteLn("(FileMcd) Creating new PS2 folder memory card: '%.*s'", static_cast<int>(name.size()), name.data());
 
 		if (!FileSystem::CreateDirectoryPath(full_path.c_str(), false))
 		{
