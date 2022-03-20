@@ -35,7 +35,7 @@ __fi void mVUcheckIsSame(mV)
 {
 	if (mVU.prog.isSame == -1)
 	{
-		mVU.prog.isSame = !memcmp_mmx((u8*)mVUcurProg.data, mVU.regs().Micro, mVU.microMemSize);
+		mVU.prog.isSame = !memcmp((u8*)mVUcurProg.data, mVU.regs().Micro, mVU.microMemSize);
 	}
 	if (mVU.prog.isSame == 0)
 	{

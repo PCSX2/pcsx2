@@ -78,7 +78,6 @@
     <ClCompile Include="Vulkan\Texture.cpp" />
     <ClCompile Include="Vulkan\Util.cpp" />
     <ClCompile Include="WindowInfo.cpp" />
-    <ClCompile Include="x86\MemcpyFast.cpp" />
     <ClCompile Include="PathUtils.cpp" />
     <ClCompile Include="Perf.cpp" />
     <ClCompile Include="PrecompiledHeader.cpp">
