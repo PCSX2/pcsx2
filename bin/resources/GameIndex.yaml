@@ -184,8 +184,11 @@ PCPX-96322:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
+  gameFixes:
+    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes effect misalignment.
 PCPX-96554:
   name: "Games of Our Style: Tokyo Game Show 2003 Disc"
   region: "NTSC-J"
@@ -652,8 +655,11 @@ SCAJ-20099:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
+  gameFixes:
+    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes effect misalignment.
 SCAJ-20100:
   name: "Tenchu Kurenai"
   region: "NTSC-Ch-J"
@@ -881,6 +887,7 @@ SCAJ-20146:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes misalignments and borders on side.
   memcardFilters:
     - "SCAJ-20146"
     - "SCAJ-20196"
@@ -1106,6 +1113,7 @@ SCAJ-20196:
   region: "NTSC-Ch"
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes misalignments and borders on side.
   memcardFilters:
     - "SCAJ-20146"
     - "SCAJ-20196"
@@ -1265,8 +1273,11 @@ SCCS-40005:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
+  gameFixes:
+    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes effect misalignment.
 SCCS-40006:
   name: "Shin Sangoku Musou 2"
   region: "NTSC-C"
@@ -2548,8 +2559,11 @@ SCES-50760:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
+  gameFixes:
+    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes effect misalignment.
 SCES-50781:
   name: "Destruction Derby Arena [Beta, Promo, & Full Retail]"
   region: "PAL-M6"
@@ -3328,6 +3342,7 @@ SCES-53326:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes misalignments and borders on side.
   memcardFilters:
     - "SCES-53326"
     - "SCES-50760"
@@ -4255,8 +4270,11 @@ SCKA-20028:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
+  gameFixes:
+    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes effect misalignment.
 SCKA-20029:
   name: "Gran Turismo Concept 2002 Tokyo-Seoul [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -4402,6 +4420,7 @@ SCKA-20061:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes misalignments and borders on side.
   memcardFilters:
     - "SCKA-20061"
     - "SCPS-15097"
@@ -4587,8 +4606,11 @@ SCPS-11003:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
+  gameFixes:
+    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes effect misalignment.
 SCPS-11004:
   name: "Bikkuri Mouse"
   region: "NTSC-J"
@@ -5166,6 +5188,7 @@ SCPS-15097:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes misalignments and borders on side.
   memcardFilters:
     - "SCAJ-20146"
     - "SCAJ-20196"
@@ -5342,8 +5365,11 @@ SCPS-19103:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
+  gameFixes:
+    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes effect misalignment.
 SCPS-19104:
   name: "Pipo Saru 2001 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -5357,8 +5383,11 @@ SCPS-19151:
   clampModes:
     eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
+  gameFixes:
+    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes effect misalignment.
 SCPS-19152:
   name: "Saru Get You! 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -5572,6 +5601,7 @@ SCPS-19320:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes misalignments and borders on side.
   memcardFilters:
     - "SCAJ-20146"
     - "SCAJ-20196"
@@ -5704,8 +5734,11 @@ SCPS-55001:
   clampModes:
     eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
+  gameFixes:
+    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes effect misalignment.
 SCPS-55002:
   name: "Zero"
   region: "NTSC-J"
@@ -5938,8 +5971,11 @@ SCPS-56001:
   clampModes:
     eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
+  gameFixes:
+    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes effect misalignment.
 SCPS-56002:
   name: "Tekken Tag Tournament"
   region: "NTSC-K"
@@ -6066,8 +6102,11 @@ SCUS-97113:
   clampModes:
     eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
+  gameFixes:
+    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes effect misalignment.
 SCUS-97114:
   name: "NBA ShootOut 2001"
   region: "NTSC-U"
@@ -6237,8 +6276,11 @@ SCUS-97159:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
+  gameFixes:
+    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes effect misalignment.
 SCUS-97160:
   name: "Extermination [Demo]"
   region: "NTSC-U"
@@ -7222,6 +7264,7 @@ SCUS-97472:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes misalignments and borders on side.
   memcardFilters:
     - "SCUS-97472"
     - "SCUS-97113"
@@ -7386,6 +7429,7 @@ SCUS-97505:
   region: "NTSC-U"
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes misalignments and borders on side.
 SCUS-97506:
   name: "Gretzky NHL '06 [Demo]"
   region: "NTSC-U"
