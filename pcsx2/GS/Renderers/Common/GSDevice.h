@@ -128,7 +128,6 @@ enum HWBlendFlags
 	BLEND_C_CLR3    = 0x800,  // Multiply Cs by (255/128) to compensate for wrong Ad/255 value, should be Ad/128
 	BLEND_NO_REC    = 0x1000, // Doesn't require sampling of the RT as a texture
 	BLEND_ACCU      = 0x2000, // Allow to use a mix of SW and HW blending to keep the best of the 2 worlds
-	BLEND_DSB       = 0x4000, // Blend equation uses dual-source outputs (SRC_ALPHA1/INV_SRC_ALPHA1).
 };
 
 // Determines the HW blend function for DX11/OGL
