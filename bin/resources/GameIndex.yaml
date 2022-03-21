@@ -65,6 +65,9 @@ PAPX-90506:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
 PAPX-90512:
   name: "Gran Turismo 4 - Toyota Prius [Trial]"
   region: "NTSC-J"
@@ -83,7 +86,8 @@ PAPX-90517:
   name: "Prince of Persia - Jikan no Suna [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Reduces post-processing misalignment.
+    roundSprite: 2 # Reduces post-processing misalignment.
 PBPX-95201:
   name: "HDD untility Disc [Version 1.00]"
   region: "NTSC-J"
@@ -723,6 +727,11 @@ SCAJ-20118:
 SCAJ-20119:
   name: "Gladiator - Road to Freedom"
   region: "NTSC-Unk"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
+  gsHWFixes:
+    halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
+    roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
 SCAJ-20120:
   name: "Digital Devil Saga: Avatar Tuner 2"
   region: "NTSC-Unk"
@@ -909,7 +918,8 @@ SCAJ-20154:
   name: "Prince of Persia - Warrior Within"
   region: "NTSC-Unk"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Reduces post-processing misalignment.
+    roundSprite: 2 # Reduces post-processing misalignment.
 SCAJ-20155:
   name: "Yoshitsune Eiyuuden Syura"
   region: "NTSC-Unk"
@@ -1225,9 +1235,9 @@ SCAJ-30010:
   name: "God of War"
   region: "NTSC-E"
   gsHWFixes:
-    halfPixelOffset: 2
-    roundSprite: 1
-    alignSprite: 1
+    halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
+    roundSprite: 1 # Fixes vertical lines and minor ghosting.
+    wrapGSMem: 1 # Fixes FMV when in progressive mode.
 SCAJ-30011:
   name: "God of War II"
   region: "NTSC-E"
@@ -2738,6 +2748,9 @@ SCES-51190:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCES-51224:
   name: "War of the Monsters"
   region: "PAL-E"
@@ -2773,9 +2786,9 @@ SCES-51533:
   name: "God of War"
   region: "PAL-Unk"
   gsHWFixes:
-    halfPixelOffset: 2
-    roundSprite: 1
-    alignSprite: 1
+    halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
+    roundSprite: 1 # Fixes vertical lines and minor ghosting.
+    wrapGSMem: 1 # Fixes FMV when in progressive mode.
 SCES-51578:
   name: "Network Access Disc [Original, v4.02 & v4.03]"
   region: "PAL-M7"
@@ -2925,6 +2938,8 @@ SCES-52004:
   compat: 5
   clampModes:
     vuClampMode: 0  # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SCES-52033:
   name: "Syphon Filter - The Omega Strain"
   region: "PAL-M5"
@@ -3183,6 +3198,8 @@ SCES-52893:
   region: "PAL-E-GR-R"
   clampModes:
     vuClampMode: 0  # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SCES-52930:
   name: "EyeToy - Monkey Mania"
   region: "PAL-M5"
@@ -3211,9 +3228,9 @@ SCES-53133:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2
-    roundSprite: 1
-    alignSprite: 1
+    halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
+    roundSprite: 1 # Fixes vertical lines and minor ghosting.
+    wrapGSMem: 1 # Fixes FMV when in progressive mode.
 SCES-53178:
   name: "SingStar Pop"
   region: "PAL-E"
@@ -4315,6 +4332,8 @@ SCKA-20048:
   region: "NTSC-K"
   clampModes:
     vuClampMode: 0  # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SCKA-20049:
   name: "Tekken 5"
   region: "NTSC-K"
@@ -4437,6 +4456,8 @@ SCKA-20078:
   region: "NTSC-K"
   clampModes:
     vuClampMode: 0  # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SCKA-20079:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "NTSC-K"
@@ -4535,9 +4556,9 @@ SCKA-30002:
   region: "NTSC-K"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2
-    roundSprite: 1
-    alignSprite: 1
+    halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
+    roundSprite: 1 # Fixes vertical lines and minor ghosting.
+    wrapGSMem: 1 # Fixes FMV when in progressive mode.
 SCKA-30006:
   name: "God of War 2"
   region: "NTSC-K"
@@ -4818,6 +4839,9 @@ SCPS-15033:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCPS-15034:
   name: "This is Football 2003"
   region: "NTSC-J"
@@ -5002,7 +5026,8 @@ SCPS-15066:
   name: "Prince of Persia - The Sands of Time"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Reduces post-processing misalignment.
+    roundSprite: 2 # Reduces post-processing misalignment.
 SCPS-15067:
   name: "Dokodemo Issyo - Toro to Nagare Boshi"
   region: "NTSC-J"
@@ -5355,7 +5380,7 @@ SCPS-19203:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
-    trilinearFiltering: 2 # Remove blurriness in font and models..
+    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCPS-19204:
   name: "Legaia - Duel Saga [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -5404,6 +5429,9 @@ SCPS-19215:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCPS-19251:
   name: "Wild ARMs - Alter Code F [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -5470,6 +5498,9 @@ SCPS-19306:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCPS-19307:
   name: "Popolocrois - The First Adventure [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -5861,6 +5892,9 @@ SCPS-55048:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes textbox.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
+    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCPS-55049:
   name: "King of Fighters 2000, The"
   region: "NTSC-J"
@@ -5968,6 +6002,8 @@ SCUS-21494:
   compat: 5
   clampModes:
     eeClampMode: 3  # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SCUS-90174:
   name: "Toy Story 3 (PlayStation 2 Bundle)"
   region: "NTSC-U"
@@ -6899,9 +6935,9 @@ SCUS-97399:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2
-    roundSprite: 1
-    alignSprite: 1
+    halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
+    roundSprite: 1 # Fixes vertical lines and minor ghosting.
+    wrapGSMem: 1 # Fixes FMV when in progressive mode.
 SCUS-97400:
   name: "EyeToy - Groove"
   region: "NTSC-U"
@@ -6918,6 +6954,8 @@ SCUS-97402:
   compat: 5
   clampModes:
     vuClampMode: 0  # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SCUS-97403:
   name: "Athens 2004 [Demo]"
   region: "NTSC-U"
@@ -7037,9 +7075,15 @@ SCUS-97431:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 0  # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SCUS-97432:
   name: "Killzone [Regular Demo]"
   region: "NTSC-U"
+  clampModes:
+    vuClampMode: 0  # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SCUS-97436:
   name: "Gran Turismo 4 [Online Public Beta]"
   region: "NTSC-U"
@@ -7158,9 +7202,9 @@ SCUS-97467:
   name: "God of War [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 2
-    roundSprite: 1
-    alignSprite: 1
+    halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
+    roundSprite: 1 # Fixes vertical lines and minor ghosting.
+    wrapGSMem: 1 # Fixes FMV when in progressive mode.
 SCUS-97468:
   name: "EyeToy - Play 2"
   region: "NTSC-U"
@@ -7402,6 +7446,8 @@ SCUS-97517:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 0  # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness..
 SCUS-97518:
   name: "Ratchet & Clank - Up Your Arsenal [Greatest Hits]"
   region: "NTSC-U"
@@ -7842,9 +7888,13 @@ SLAJ-25072:
 SLAJ-25073:
   name: "Resident Evil 4"
   region: "NTSC-Unk"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLAJ-25075:
   name: "Need for Speed - Most Wanted [Black Edition]"
   region: "NTSC-Unk"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLAJ-25075"
     - "SLPM-66232"
@@ -7903,6 +7953,8 @@ SLAJ-25091:
   region: "NTSC-Unk"
   clampModes:
     eeClampMode: 3  # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLAJ-25092:
   name: "Shin Sangoku Musou 4 [PlayStation 2 The Best]"
   region: "NTSC-Unk"
@@ -8041,7 +8093,8 @@ SLED-52929:
   name: "Prince of Persia - Warrior Within [Demo]"
   region: "PAL-M5"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Reduces post-processing misalignment.
+    roundSprite: 2 # Reduces post-processing misalignment.
 SLED-53083:
   name: "Monster Hunter [Demo]"
   region: "PAL-M5"
@@ -8054,6 +8107,8 @@ SLED-53673:
 SLED-53681:
   name: "007 - From Russia with Love & Need for Speed Most Wanted & SSX On Tour [Demo]"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLED-53719:
   name: "Pro Evolution Soccer 5 [Demo]"
   region: "PAL-E"
@@ -8101,6 +8156,8 @@ SLED-54312:
   region: "PAL-E"
   clampModes:
     eeClampMode: 3  # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-50003:
   name: "Swap Magic DVD Disc v2.0"
   region: "PAL-Unk"
@@ -9518,6 +9575,8 @@ SLES-50717:
   name: "Mortal Kombat - Deadly Alliance"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes blue font artifacts.
 SLES-50720:
   name: "FMX - Freestyle Metal X"
   region: "PAL-M5"
@@ -11109,6 +11168,8 @@ SLES-51436:
 SLES-51439:
   name: "Mortal Kombat - Deadly Alliance"
   region: "PAL-M5"
+  gsHWFixes:
+    roundSprite: 1 # Fixes blue font artifacts.
 SLES-51441:
   name: "Dynasty Warriors 3 - Extreme Legends"
   region: "PAL-E"
@@ -12018,7 +12079,8 @@ SLES-51918:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Reduces post-processing misalignment.
+    roundSprite: 2 # Reduces post-processing misalignment.
 SLES-51924:
   name: "World War Zero - Ironstorm"
   region: "PAL-M5"
@@ -12108,7 +12170,8 @@ SLES-51961:
   name: "Prince of Persia - The Sands of Time" # Pre-order Demo
   region: "PAL-E"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Reduces post-processing misalignment.
+    roundSprite: 2 # Reduces post-processing misalignment.
 SLES-51963:
   name: "FIFA 2004"
   region: "PAL-F-G"
@@ -13846,7 +13909,8 @@ SLES-52822:
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Reduces post-processing misalignment.
+    roundSprite: 2 # Reduces post-processing misalignment.
 SLES-52824:
   name: "Furry Tales"
   region: "PAL-E-F"
@@ -14073,6 +14137,8 @@ SLES-52941:
 SLES-52942:
   name: "Midnight Club 3 - DUB Edition"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes lighting misalignment.
   patches:
     EBE1972D:
       content: |-
@@ -14953,6 +15019,11 @@ SLES-53355:
 SLES-53356:
   name: "Colosseum - Road to Freedom"
   region: "PAL-E"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
+  gsHWFixes:
+    halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
+    roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
 SLES-53357:
   name: "21 Card Games"
   region: "PAL-E"
@@ -15355,6 +15426,9 @@ SLES-53523:
   region: "PAL-M4"
   roundModes:
     vuRoundMode: 0  # Fixes textures and crashes.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes bloom misalignment.
+    wildArmsHack: 1 # Fixes bloom misalignment.
 SLES-53524:
   name: "Mortal Kombat - Shaolin Monks"
   region: "PAL-M5"
@@ -15516,6 +15590,8 @@ SLES-53557:
   name: "Need for Speed - Most Wanted"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters: # Reads Underground 2 save for extra money.
     - "SLES-53557"
     - "SLES-53558"
@@ -15525,6 +15601,8 @@ SLES-53557:
 SLES-53558:
   name: "Need for Speed - Most Wanted"
   region: "PAL-M8"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-53557"
     - "SLES-53558"
@@ -15534,6 +15612,8 @@ SLES-53558:
 SLES-53559:
   name: "Need for Speed - Most Wanted"
   region: "PAL-M3"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-53557"
     - "SLES-53558"
@@ -15549,6 +15629,9 @@ SLES-53561:
   region: "PAL-M5"
   clampModes:
     eeClampMode: 3  # Fixes the inability to take the bottle in the trophy case in Chapter 2: Hattrick vs Galloway.
+  gsHWFixes:
+    wildArmsHack: 1 # Reduces depth ghosting.
+    roundSprite: 2 # Reduces depth ghosting.
 SLES-53563:
   name: "Spongebob SquarePants and Friends - Untie!"
   region: "PAL-M6"
@@ -15723,6 +15806,9 @@ SLES-53647:
   region: "PAL-G"
   roundModes:
     vuRoundMode: 0  # Fixes textures and crashes.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes bloom misalignment.
+    wildArmsHack: 1 # Fixes bloom misalignment.
 SLES-53651:
   name: "WWII - Soldier"
   region: "PAL-E"
@@ -15846,6 +15932,8 @@ SLES-53702:
   name: "Resident Evil 4"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-53703:
   name: "King Kong, Peter Jackson's - The Official Game of the Movie"
   region: "PAL-M10"
@@ -15903,6 +15991,8 @@ SLES-53716:
 SLES-53717:
   name: "Midnight Club 3 - DUB Edition Remix"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes lighting misalignment.
   patches:
     208183AF:
       content: |-
@@ -16026,6 +16116,8 @@ SLES-53755:
 SLES-53756:
   name: "Resident Evil 4"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-53758:
   name: "Sniper Elite [Pre-Production]"
   region: "PAL-E"
@@ -16079,6 +16171,9 @@ SLES-53777:
   name: "Prince of Persia - The Two Thrones"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Reduces post-processing misalignment.
+    halfPixelOffset: 1 # Reduces post-processing misalignment.
 SLES-53778:
   name: "Jacked"
   region: "PAL-M5"
@@ -16242,6 +16337,8 @@ SLES-53855:
 SLES-53857:
   name: "Need for Speed - Most Wanted [Black Edition]"
   region: "PAL-M3"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-53557"
     - "SLES-53558"
@@ -17206,21 +17303,29 @@ SLES-54321:
   compat: 5
   clampModes:
     eeClampMode: 3  # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-54322:
   name: "Need for Speed - Carbon"
   region: "PAL-M8"
   clampModes:
     eeClampMode: 3  # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-54323:
   name: "Need for Speed - Carbon"
   region: "PAL-I-S"
   clampModes:
     eeClampMode: 3  # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-54324:
   name: "Need for Speed - Carbon"
   region: "PAL-R"
   clampModes:
     eeClampMode: 3  # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-54326:
   name: "Raceway - Drag Stock Racing"
   region: "PAL-E"
@@ -17453,6 +17558,8 @@ SLES-54402:
   region: "PAL-F"
   clampModes:
     eeClampMode: 3  # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-54418:
   name: "Power Drome"
   region: "PAL-Unk"
@@ -17576,6 +17683,8 @@ SLES-54455:
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
+    mergeSprite: 1 # Fixes blurriness but removes bloom.
+    wrapGSMem: 1 # Fixes FMVs missing video pieces.
 SLES-54456:
   name: "Beverly Hills Cop"
   region: "PAL-M11"
@@ -17700,11 +17809,15 @@ SLES-54492:
   region: "PAL-E"
   clampModes:
     eeClampMode: 3  # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-54493:
   name: "Need for Speed - Carbon [Collector's Edition]"
   region: "PAL-F-G"
   clampModes:
     eeClampMode: 3  # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-54494:
   name: "Little Britain - The Video Game"
   region: "PAL-E"
@@ -17728,11 +17841,15 @@ SLES-54516:
   region: "PAL-F-G"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
+    mergeSprite: 1 # Fixes blurriness but removes bloom.
+    wrapGSMem: 1 # Fixes FMVs missing video pieces.
 SLES-54517:
   name: "Thrillville"
   region: "PAL-M3"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
+    mergeSprite: 1 # Fixes blurriness but removes bloom.
+    wrapGSMem: 1 # Fixes FMVs missing video pieces.
 SLES-54518:
   name: "Clumsy Shumsy"
   region: "PAL-E"
@@ -18199,7 +18316,7 @@ SLES-54727:
   gameFixes:
     - OPHFlagHack
   gsHWFixes:
-    mergeSprite: 1 # Fixes blurry bloom.
+    mergeSprite: 1 # Reduces bloom but fixes blurriness around models.
 SLES-54728:
   name: "Mountain Bike Adrenaline featuring Salomon"
   region: "PAL-M5"
@@ -18367,12 +18484,14 @@ SLES-54806:
   name: "Thrillville - Off the Rails"
   region: "PAL-E"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes misaligned bloom effects.
+    halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
+    wrapGSMem: 1 # Fixes FMVs missing video pieces.
 SLES-54807:
   name: "Thrillville - Off the Rails"
   region: "PAL-F"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes misaligned bloom effects.
+    halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
+    wrapGSMem: 1 # Fixes FMVs missing video pieces.
 SLES-54809:
   name: "Charlotte's Web"
   region: "PAL-A"
@@ -18578,6 +18697,7 @@ SLES-54887:
   region: "PAL-G"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects.
+    wrapGSMem: 1 # Fixes FMVs missing video pieces.
 SLES-54888:
   name: "Pro Biker 2"
   region: "PAL-E"
@@ -18899,11 +19019,13 @@ SLES-55010:
   region: "PAL-I"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects.
+    wrapGSMem: 1 # Fixes FMVs missing video pieces.
 SLES-55011:
   name: "Thrillville - Fuera de Control"
   region: "PAL-S"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects.
+    wrapGSMem: 1 # Fixes FMVs missing video pieces.
 SLES-55012:
   name: "Golden Compass, The"
   region: "PAL-M5"
@@ -19570,19 +19692,39 @@ SLES-55348:
 SLES-55349:
   name: "Need For Speed - Undercover"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
+    skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLES-55350:
   name: "Need for Speed - Undercover"
   region: "PAL-F-G"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
+    skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLES-55351:
   name: "Need for Speed - Undercover"
   region: "PAL-I-S"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
+    skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLES-55352:
   name: "Need For Speed - Undercover"
   region: "PAL-M4"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
+    skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLES-55353:
   name: "Need for Speed - Undercover"
   region: "PAL-M6"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
+    skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLES-55354:
   name: "Shin Megami Tensei: Persona 3 FES"
   region: "PAL-E"
@@ -20965,7 +21107,7 @@ SLKA-25313:
   gameFixes:
     - OPHFlagHack
   gsHWFixes:
-    mergeSprite: 1 # Fixes blurry bloom.
+    mergeSprite: 1 # Reduces bloom but fixes blurriness around models.
 SLKA-25314:
   name: "Kidou Senshi Gundam SEED: Rengou vs. Z.A.F.T."
   region: "NTSC-K"
@@ -21247,6 +21389,10 @@ SLPM-55122:
 SLPM-55127:
   name: "Need for Speed - Undercover"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
+    skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLPM-55131:
   name: "World Soccer Winning Eleven 2009"
   region: "NTSC-J"
@@ -21300,6 +21446,10 @@ SLPM-55226:
 SLPM-55244:
   name: "Need for Speed - Undercover [EA:SY! 1980]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
+    skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLPM-55251:
   name: "WWE SmackDown vs. Raw 2009"
   region: "NTSC-J"
@@ -26666,7 +26816,8 @@ SLPM-66002:
   name: "Prince of Persia - Warrior Within"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Reduces post-processing misalignment.
+    roundSprite: 2 # Reduces post-processing misalignment.
 SLPM-66006:
   name: "Angelique Trois - Aizouhen [Koei Selection]"
   region: "NTSC-J"
@@ -27077,6 +27228,11 @@ SLPM-66131:
 SLPM-66132:
   name: "Gladiator - Road to Freedom - Remix"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
+  gsHWFixes:
+    halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
+    roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
 SLPM-66134:
   name: "Shuffle! On the Stage"
   region: "NTSC-J"
@@ -27144,6 +27300,8 @@ SLPM-66151:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 0  # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLPM-66152:
   name: "Konneko - Keep a Memory Green [Limited Edition]"
   region: "NTSC-J"
@@ -27197,9 +27355,9 @@ SLPM-66167:
   name: "God of War"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2
-    roundSprite: 1
-    alignSprite: 1
+    halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
+    roundSprite: 1 # Fixes vertical lines and minor ghosting.
+    wrapGSMem: 1 # Fixes FMV when in progressive mode.
 SLPM-66168:
   name: "Ryu Ga Gotoku"
   region: "NTSC-J"
@@ -27356,6 +27514,8 @@ SLPM-66213:
   name: "BioHazard 4"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLPM-66214:
   name: "White Clarity - And, the Tears Became You [First Print Limited Edition]"
   region: "NTSC-J"
@@ -27427,6 +27587,8 @@ SLPM-66231:
 SLPM-66232:
   name: "Need for Speed - Most Wanted"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLAJ-25075"
     - "SLPM-66232"
@@ -27951,6 +28113,9 @@ SLPM-66390:
 SLPM-66391:
   name: "Prince of Persia - The Two Thrones"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Reduces post-processing misalignment.
+    halfPixelOffset: 1 # Reduces post-processing misalignment.
 SLPM-66393:
   name: "Final Fantasy XI - Aht Urhgan no Hihou [All-in-One Pack]"
   region: "NTSC-J"
@@ -28550,6 +28715,8 @@ SLPM-66561:
 SLPM-66562:
   name: "Need for Speed - Most Wanted [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLAJ-25075"
     - "SLPM-66232"
@@ -28613,6 +28780,11 @@ SLPM-66576:
 SLPM-66577:
   name: "Gladiator - Road to Freedom [Special Remix] [Ertain the Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
+  gsHWFixes:
+    halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
+    roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
 SLPM-66582:
   name: "Kohitsuji Hokaku Keikaku! Sweet Boys Life [Limited Edition]"
   region: "NTSC-J"
@@ -28744,6 +28916,8 @@ SLPM-66617:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3  # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLPM-66618:
   name: "Yumemishi [First Print Limited Edition]"
   region: "NTSC-J"
@@ -28934,7 +29108,8 @@ SLPM-66673:
   name: "Prince of Persia - Warrior Within [Ubisoft the Best]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Reduces post-processing misalignment.
+    roundSprite: 2 # Reduces post-processing misalignment.
 SLPM-66674:
   name: "Tiger Woods PGA Tour 07"
   region: "NTSC-J"
@@ -29584,6 +29759,8 @@ SLPM-66869:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3  # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLPM-66870:
   name: "Kuri no Okurimono [First Print Special Edition]"
   region: "NTSC-J"
@@ -29995,23 +30172,23 @@ SLPM-67010:
   name: "God of War"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2
-    roundSprite: 1
-    alignSprite: 1
+    halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
+    roundSprite: 1 # Fixes vertical lines and minor ghosting.
+    wrapGSMem: 1 # Fixes FMV when in progressive mode.
 SLPM-67011:
   name: "God of War [CapKore]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2
-    roundSprite: 1
-    alignSprite: 1
+    halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
+    roundSprite: 1 # Fixes vertical lines and minor ghosting.
+    wrapGSMem: 1 # Fixes FMV when in progressive mode.
 SLPM-67012:
   name: "God of War [Best Price]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2
-    roundSprite: 1
-    alignSprite: 1
+    halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
+    roundSprite: 1 # Fixes vertical lines and minor ghosting.
+    wrapGSMem: 1 # Fixes FMV when in progressive mode.
 SLPM-67013:
   name: "God of War II - The End Begins"
   region: "NTSC-J"
@@ -30244,6 +30421,8 @@ SLPM-74228:
 SLPM-74229:
   name: "BioHazard 4 [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLPM-74230:
   name: "Devil May Cry [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -33047,6 +33226,11 @@ SLPS-25455:
 SLPS-25456:
   name: "Gladiator - Road to Freedom"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
+  gsHWFixes:
+    halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
+    roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
 SLPS-25457:
   name: "Ponkotsu Roeman Daikatsugeki Bumpy Trot"
   region: "NTSC-J"
@@ -34517,6 +34701,9 @@ SLPS-25879:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3  # Fixes the inability to take the bottle in the trophy case in Chapter 2: Hattrick vs Galloway.
+  gsHWFixes:
+    wildArmsHack: 1 # Reduces depth ghosting.
+    roundSprite: 2 # Reduces depth ghosting.
 SLPS-25881:
   name: "Kinnikuman Muscle Grand Prix 2"
   region: "NTSC-J"
@@ -34615,6 +34802,9 @@ SLPS-25950:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3  # Fixes the inability to take the bottle in the trophy case in Chapter 2: Hattrick vs Galloway.
+  gsHWFixes:
+    wildArmsHack: 1 # Reduces depth ghosting.
+    roundSprite: 2 # Reduces depth ghosting.
 SLPS-25956:
   name: "Moe Moe 2-ji Taisen Ryoku 2"
   region: "NTSC-J"
@@ -36877,6 +37067,8 @@ SLUS-20423:
   name: "Mortal Kombat - Deadly Alliance"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes blue font artifacts.
 SLUS-20424:
   name: "Scorpion King, The - Rise of the Akkadian"
   region: "NTSC-U"
@@ -38270,7 +38462,8 @@ SLUS-20743:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Reduces post-processing misalignment.
+    roundSprite: 2 # Reduces post-processing misalignment.
 SLUS-20744:
   name: "EverQuest - Online Adventures - Frontiers"
   region: "NTSC-U"
@@ -39592,7 +39785,8 @@ SLUS-21022:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Reduces post-processing misalignment.
+    roundSprite: 2 # Reduces post-processing misalignment.
 SLUS-21025:
   name: "Madden NFL 2005 [Special Collectors Edition]"
   region: "NTSC-U"
@@ -39616,6 +39810,8 @@ SLUS-21029:
   name: "Midnight Club 3 - DUB Edition"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes lighting misalignment.
   patches:
     4A0E5B3A:
       content: |-
@@ -40091,6 +40287,8 @@ SLUS-21134:
   name: "Resident Evil 4"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLUS-21135:
   name: "MVP Baseball 2005"
   region: "NTSC-U"
@@ -40112,6 +40310,9 @@ SLUS-21139:
   compat: 5
   roundModes:
     vuRoundMode: 0  # Fixes textures and crashes.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes bloom misalignment.
+    wildArmsHack: 1 # Fixes bloom misalignment.
 SLUS-21140:
   name: "Mobile Suit Gundam Seed - Never Ending Tomorrow"
   region: "NTSC-U"
@@ -40291,6 +40492,11 @@ SLUS-21179:
   name: "Colosseum - Road to Freedom"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
+  gsHWFixes:
+    halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
+    roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
 SLUS-21180:
   name: "Onimusha: Dawn of Dreams [Disc1of2]"
   region: "NTSC-U"
@@ -40755,6 +40961,8 @@ SLUS-21267:
   name: "Need for Speed - Most Wanted"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLUS-21267"
     - "SLUS-21351"
@@ -40771,6 +40979,9 @@ SLUS-21269:
   compat: 5
   clampModes:
     eeClampMode: 3  # Fixes the inability to take the bottle in the trophy case in Chapter 2: Hattrick vs Galloway.
+  gsHWFixes:
+    wildArmsHack: 1 # Reduces depth ghosting.
+    roundSprite: 2 # Reduces depth ghosting.
 SLUS-21270:
   name: "MS Saga - A New Dawn"
   region: "NTSC-U"
@@ -40849,6 +41060,9 @@ SLUS-21287:
   name: "Prince of Persia - The Two Thrones"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Reduces post-processing misalignment.
+    halfPixelOffset: 1 # Reduces post-processing misalignment.
 SLUS-21288:
   name: "American Chopper 2"
   region: "NTSC-U"
@@ -41172,6 +41386,8 @@ SLUS-21351:
   name: "Need for Speed - Most Wanted [Black Edition]"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLUS-21267"
     - "SLUS-21351"
@@ -41191,6 +41407,8 @@ SLUS-21355:
   name: "Midnight Club 3 - DUB Edition Remix"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes lighting misalignment.
   patches:
     60A42FF5:
       content: |-
@@ -41501,6 +41719,8 @@ SLUS-21413:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
+    mergeSprite: 1 # Fixes blurriness but removes bloom.
+    wrapGSMem: 1 # Fixes FMVs missing video pieces.
 SLUS-21414:
   name: "Delta Force: Black Hawk Down - Team Sabre"
   region: "NTSC-U"
@@ -41929,11 +42149,15 @@ SLUS-21493:
   compat: 5
   clampModes:
     eeClampMode: 3  # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLUS-21494:
   name: "Need for Speed - Carbon [Collector's Edition]"
   region: "NTSC-U"
   clampModes:
     eeClampMode: 3  # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLUS-21495:
   name: "Sudoku, Carol Vorderman's"
   region: "NTSC-U"
@@ -41952,7 +42176,7 @@ SLUS-21498:
   gameFixes:
     - OPHFlagHack
   gsHWFixes:
-    mergeSprite: 1 # Fixes blurry bloom.
+    mergeSprite: 1 # Reduces bloom but fixes blurriness around models.
 SLUS-21499:
   name: "Corvette Evolution GT"
   region: "NTSC-U"
@@ -42308,7 +42532,8 @@ SLUS-21611:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes misaligned bloom effects.
+    halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
+    wrapGSMem: 1 # Fixes FMVs missing video pieces.
 SLUS-21612:
   name: "Legend of the Dragon"
   region: "NTSC-U"
@@ -43148,6 +43373,10 @@ SLUS-21801:
   name: "Need For Speed - Undercover"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
+    skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLUS-21802:
   name: "Naked Brothers Band - The Video Game"
   region: "NTSC-U"
@@ -44106,7 +44335,8 @@ SLUS-29069:
   name: "Prince of Persia - The Sands of Time [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Reduces post-processing misalignment.
+    roundSprite: 2 # Reduces post-processing misalignment.
 SLUS-29070:
   name: "XIII [Demo]"
   region: "NTSC-U"
@@ -44329,6 +44559,8 @@ SLUS-29154:
 SLUS-29155:
   name: "Need for Speed - Most Wanted [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLUS-29156:
   name: "Marvel Nemesis - Rise of the Imperfects [Demo]"
   region: "NTSC-U"
@@ -44361,12 +44593,16 @@ SLUS-29164:
 SLUS-29167:
   name: "James Bond 007 - From Russia with Love, Need for Speed - Most Wanted, SSX World Tour [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLUS-29168:
   name: "James Bond 007 - From Russia with Love [Demo]"
   region: "NTSC-U"
 SLUS-29169:
   name: "Resident Evil 4 [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLUS-29170:
   name: "Total Overdose - A Gunslinger's Tale in Mexico [Demo]"
   region: "NTSC-U"
@@ -44432,6 +44668,8 @@ SLUS-29193:
   region: "NTSC-U"
   clampModes:
     eeClampMode: 3  # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLUS-29194:
   name: "FIFA '07 [Demo]"
   region: "NTSC-U"
@@ -44486,6 +44724,8 @@ TCES-52004:
   region: "PAL-E"
   clampModes:
     vuClampMode: 0  # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 TCES-52033:
   name: "Syphon Filter: The Omega Strain Beta Trial Code"
   region: "PAL-E"
