@@ -154,9 +154,6 @@ private:
 		const GSRegEXTBUF& EXTBUF, const GSVector4& c) final;
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0) final;
 
-	static VkBlendFactor ConvertBlendFactor(u8 generic);
-	static VkBlendOp ConvertBlendOp(u8 generic);
-
 	VkSampler GetSampler(GSHWDrawConfig::SamplerSelector ss);
 	void ClearSamplerCache() final;
 
