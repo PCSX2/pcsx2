@@ -23,8 +23,6 @@
 #define PREFIX ""
 #endif
 
-#if defined(_M_X86_64)
-
 asm(
 	"\t.global " PREFIX "fastjmp_set\n"
 	"\t.global " PREFIX "fastjmp_jmp\n"
@@ -56,37 +54,5 @@ asm(
 	movq 56(%rdi), %r15
 	jmp *%rdx
 )");
-
-#elif defined(_M_X86_32)
-
-asm(
-	"\t.global " PREFIX "fastjmp_set\n"
-	"\t.global " PREFIX "fastjmp_jmp\n"
-	"\t.text\n"
-	"\t" PREFIX "fastjmp_set:" R"(
-	movl 0(%esp), %eax
-	movl %esp, %edx			# fixup stack pointer, so it doesn't include the call to fastjmp_set
-	addl $4, %edx
-	movl %eax, 0(%ecx)	# actually eip
-	movl %ebx, 4(%ecx)
-	movl %edx, 8(%ecx)	# actually esp
-	movl %ebp, 12(%ecx)
-	movl %esi, 16(%ecx)
-	movl %edi, 20(%ecx)
-	xorl %eax, %eax
-	ret
-)"
-	"\t" PREFIX "fastjmp_jmp:" R"(
-	movl %edx, %eax
-	movl 0(%ecx), %edx	# actually eip
-	movl 4(%ecx), %ebx
-	movl 8(%ecx), %esp	# actually esp
-	movl 12(%ecx), %ebp
-	movl 16(%ecx), %esi
-	movl 20(%ecx), %edi
-	jmp *%edx
-)");
-
-#endif
 
 #endif // __WIN32
