@@ -222,7 +222,6 @@ const CRC::Game CRC::m_games[] =
 	{0xDD93DA88, BigMuthaTruckers, JP, 0}, // Bakusou Convoy Densetsu - Otoko Hanamichi America Roman
 	{0xE169BAF8, RedDeadRevolver, US, 0},
 	{0xE2E67E23, RedDeadRevolver, EU, 0},
-	{0xCBB87BF9, EvangelionJo, JP, 0},
 	{0xC5B75C7C, Oneechanbara2Special, JP, 0},
 	{0xC725CC6C, Oneechanbara2Special, JP, 0},
 	{0x07608CA2, Oneechanbara2Special, EU, 0}, // Zombie Hunters 2

@@ -31,7 +31,6 @@ public:
 		DBZBT2,
 		DBZBT3,
 		DeathByDegreesTekkenNinaWilliams,
-		EvangelionJo,
 		FFX,
 		FFX2,
 		FFXII,
