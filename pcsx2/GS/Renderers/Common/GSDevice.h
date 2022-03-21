@@ -282,6 +282,22 @@ struct alignas(16) GSHWDrawConfig
 		{
 			return tex_is_fb || fbmask || date > 0 || blend_a == 1 || blend_b == 1 || blend_c == 1 || blend_d == 1;
 		}
+
+		/// Disables color output from the pixel shader, this is done when all channels are masked.
+		__fi void DisableColorOutput()
+		{
+			// remove software blending, since this will cause the color to be declared inout with fbfetch.
+			blend_a = blend_b = blend_c = blend_d = 0;
+
+			// TEX_IS_FB relies on us having a color output to begin with.
+			tex_is_fb = 0;
+
+			// no point having fbmask, since we're not writing. DATE has to stay.
+			fbmask = 0;
+
+			// disable both outputs.
+			no_color = no_color1 = 1;
+		}
 	};
 #pragma pack(pop)
 	struct PSSelectorHash

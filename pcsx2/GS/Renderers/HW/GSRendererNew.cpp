@@ -868,7 +868,6 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool&
 
 		// Output is Cd, set rgb write to 0.
 		m_conf.colormask.wrgba &= 0x8;
-		m_conf.ps.no_color = (m_conf.colormask.wrgba == 0);
 	}
 	else if (sw_blending)
 	{
@@ -1521,16 +1520,17 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	else
 	{
 		m_conf.blend = {}; // No blending please
-		m_conf.ps.no_color = !rt || (m_conf.colormask.wrgba == 0);
 		m_conf.ps.no_color1 = true;
 	}
 
-	if (features.framebuffer_fetch)
-	{
-		// barriers aren't needed with fbfetch
-		m_conf.require_one_barrier = false;
-		m_conf.require_full_barrier = false;
-	}
+	// No point outputting colours if we're just writing depth.
+	// We might still need the framebuffer for DATE, though.
+	if (!rt || m_conf.colormask.wrgba == 0)
+		m_conf.ps.DisableColorOutput();
+
+	// Barriers aren't needed with fbfetch.
+	m_conf.require_one_barrier &= !features.framebuffer_fetch;
+	m_conf.require_full_barrier &= !features.framebuffer_fetch;
 
 	if (m_conf.ps.scanmsk & 2)
 		DATE_PRIMID = false; // to have discard in the shader work correctly
@@ -1785,7 +1785,8 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			m_conf.alpha_second_pass.colormask.wg = g;
 			m_conf.alpha_second_pass.colormask.wb = b;
 			m_conf.alpha_second_pass.colormask.wa = a;
-			m_conf.alpha_second_pass.ps.no_color |= !(r || g || b || a);
+			if (m_conf.alpha_second_pass.colormask.wrgba == 0)
+				m_conf.alpha_second_pass.ps.DisableColorOutput();
 		}
 		else
 		{
