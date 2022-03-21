@@ -110,11 +110,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="EventSource.inl" />
-    <MASM Include="FastJmp.asm">
-      <FileType>Document</FileType>
-      <PreprocessorDefinitions Condition="'$(Platform)'=='Win32'">_M_X86_32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">_M_X86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </MASM>
+    <MASM Include="FastJmp.asm" />
     <None Include="Vulkan\EntryPoints.inl" />
   </ItemGroup>
   <ItemGroup>
