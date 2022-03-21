@@ -865,7 +865,7 @@ void GSDeviceVK::IASetVertexBuffer(const void* vertex, size_t stride, size_t cou
 	const u32 size = static_cast<u32>(stride) * static_cast<u32>(count);
 	if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
 	{
-		ExecuteCommandBuffer(false, "Uploading %u bytes to vertex buffer", size);
+		ExecuteCommandBufferAndRestartRenderPass("Uploading bytes to vertex buffer");
 		if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
 			pxFailRel("Failed to reserve space for vertices");
 	}
@@ -885,7 +885,7 @@ bool GSDeviceVK::IAMapVertexBuffer(void** vertex, size_t stride, size_t count)
 	const u32 size = static_cast<u32>(stride) * static_cast<u32>(count);
 	if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
 	{
-		ExecuteCommandBuffer(false, "Mapping %u bytes to vertex buffer", size);
+		ExecuteCommandBufferAndRestartRenderPass("Mapping bytes to vertex buffer");
 		if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
 			pxFailRel("Failed to reserve space for vertices");
 	}
@@ -911,7 +911,7 @@ void GSDeviceVK::IASetIndexBuffer(const void* index, size_t count)
 	const u32 size = sizeof(u32) * static_cast<u32>(count);
 	if (!m_index_stream_buffer.ReserveMemory(size, sizeof(u32)))
 	{
-		ExecuteCommandBuffer(false, "Uploading %u bytes to index buffer", size);
+		ExecuteCommandBufferAndRestartRenderPass("Uploading bytes to index buffer");
 		if (!m_index_stream_buffer.ReserveMemory(size, sizeof(u32)))
 			pxFailRel("Failed to reserve space for vertices");
 	}
@@ -2799,15 +2799,14 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 				config.drawarea.width(), config.drawarea.height());
 
 			DoCopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea);
-			draw_rt_clone->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-			PSSetShaderResource(2, draw_rt_clone, false);
+			PSSetShaderResource(2, draw_rt_clone, true);
 		}
 	}
 
 	if (config.tex && config.tex == config.ds)
 	{
 		// requires a copy of the depth buffer. this is mainly for ico.
-		copy_ds = static_cast<GSTextureVK*>(CreateDepthStencil(rtsize.x, rtsize.y, GSTexture::Format::DepthStencil, false));
+		copy_ds = static_cast<GSTextureVK*>(CreateDepthStencil(rtsize.x, rtsize.y, GSTexture::Format::DepthStencil, true));
 		if (copy_ds)
 		{
 			EndRenderPass();
