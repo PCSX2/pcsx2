@@ -18,14 +18,6 @@
 void runCodegenTest(void (*exec)(void *base), const char* description, const char* expected);
 
 // Use null to skip, empty string to expect no output
-#ifdef __M_X86_64
-# define CODEGEN_TEST(command, expected32, expected64) runCodegenTest([](void *base){ command; }, #command, expected64)
-# define CODEGEN_TEST_64(command, expected) CODEGEN_TEST(command, nullptr, expected)
-# define CODEGEN_TEST_32(command, expected)
-#else
-# define CODEGEN_TEST(command, expected32, expected64) runCodegenTest([](void *base){ command; }, #command, expected32)
-# define CODEGEN_TEST_64(command, expected)
-# define CODEGEN_TEST_32(command, expected) CODEGEN_TEST(command, expected, nullptr)
-#endif
-
+#define CODEGEN_TEST(command, expected32, expected64) runCodegenTest([](void *base){ command; }, #command, expected64)
+#define CODEGEN_TEST_64(command, expected) CODEGEN_TEST(command, nullptr, expected)
 #define CODEGEN_TEST_BOTH(command, expected) CODEGEN_TEST(command, expected, expected)
