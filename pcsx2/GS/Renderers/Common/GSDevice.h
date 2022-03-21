@@ -593,18 +593,16 @@ public:
 			memset(this, 0, sizeof(*this));
 		}
 	};
-	// clang-format on
 
-	// clang-format off
-	enum : u8
+	enum BlendFactor : u8
 	{
 		// HW blend factors
-		SRC_COLOR, INV_SRC_COLOR, DST_COLOR, INV_DST_COLOR,
-		SRC1_COLOR, INV_SRC1_COLOR, SRC_ALPHA, INV_SRC_ALPHA,
-		DST_ALPHA, INV_DST_ALPHA, SRC1_ALPHA, INV_SRC1_ALPHA,
-		CONST_COLOR, INV_CONST_COLOR, CONST_ONE, CONST_ZERO,
+		SRC_COLOR,   INV_SRC_COLOR,   DST_COLOR,  INV_DST_COLOR,
+		SRC1_COLOR,  INV_SRC1_COLOR,  SRC_ALPHA,  INV_SRC_ALPHA,
+		DST_ALPHA,   INV_DST_ALPHA,   SRC1_ALPHA, INV_SRC1_ALPHA,
+		CONST_COLOR, INV_CONST_COLOR, CONST_ONE,  CONST_ZERO,
 	};
-	enum : u8
+	enum BlendOp : u8
 	{
 		// HW blend operations
 		OP_ADD, OP_SUBTRACT, OP_REV_SUBTRACT
