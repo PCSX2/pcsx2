@@ -70,7 +70,6 @@ namespace x86Emitter
 #endif
 	};
 
-#ifdef __M_X86_64
 	// --------------------------------------------------------------------------------------
 	//  xImpl_MovImm64
 	// --------------------------------------------------------------------------------------
@@ -82,7 +81,6 @@ namespace x86Emitter
 
 		void operator()(const xRegister64& to, s64 imm, bool preserve_flags = false) const;
 	};
-#endif
 
 	// --------------------------------------------------------------------------------------
 	//  xImpl_CMov
@@ -131,10 +129,8 @@ namespace x86Emitter
 		void operator()(const xRegister16or32or64& to, const xIndirect8& sibsrc) const;
 		void operator()(const xRegister32or64& to, const xRegister16& from) const;
 		void operator()(const xRegister32or64& to, const xIndirect16& sibsrc) const;
-#ifdef __M_X86_64
 		void operator()(const xRegister64& to, const xRegister32& from) const;
 		void operator()(const xRegister64& to, const xIndirect32& sibsrc) const;
-#endif
 
 		//void operator()( const xRegister32& to, const xDirectOrIndirect16& src ) const;
 		//void operator()( const xRegister16or32& to, const xDirectOrIndirect8& src ) const;

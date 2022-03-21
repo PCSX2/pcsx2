@@ -151,17 +151,12 @@ const xRegister8
     ah(4), ch(5),
     dh(6), bh(7);
 
-#if defined(_WIN32) || !defined(__M_X86_64)
+#if defined(_WIN32)
 const xAddressReg
     arg1reg = rcx,
     arg2reg = rdx,
-#ifdef __M_X86_64
     arg3reg = r8,
     arg4reg = r9,
-#else
-    arg3reg = xRegisterEmpty(),
-    arg4reg = xRegisterEmpty(),
-#endif
     calleeSavedReg1 = rdi,
     calleeSavedReg2 = rsi;
 
@@ -214,7 +209,6 @@ const xRegister32
 		"e12", "e13", "e14", "e15"
 	};
 
-#ifdef __M_X86_64
 	const char* const x86_regnames_gpr64[] =
 	{
 		"rax", "rcx", "rdx", "rbx",
@@ -222,7 +216,6 @@ const xRegister32
 		"r8", "r9", "r10", "r11",
 		"r12", "r13", "r14", "r15"
 	};
-#endif
 
 	const char* const x86_regnames_sse[] =
 	{
@@ -252,10 +245,8 @@ const xRegister32
 				return x86_regnames_gpr16[Id];
 			case 4:
 				return x86_regnames_gpr32[Id];
-#ifdef __M_X86_64
 			case 8:
 				return x86_regnames_gpr64[Id];
-#endif
 			case 16:
 				return x86_regnames_sse[Id];
 		}
@@ -300,9 +291,6 @@ const xRegister32
 	void EmitSibMagic(uint regfield, const void* address, int extraRIPOffset)
 	{
 		sptr displacement = (sptr)address;
-#ifndef __M_X86_64
-		ModRM(0, regfield, ModRm_UseDisp32);
-#else
 		sptr ripRelative = (sptr)address - ((sptr)x86Ptr + sizeof(s8) + sizeof(s32) + extraRIPOffset);
 		// Can we use a rip-relative address?  (Prefer this over eiz because it's a byte shorter)
 		if (ripRelative == (s32)ripRelative)
@@ -316,7 +304,6 @@ const xRegister32
 			ModRM(0, regfield, ModRm_UseSib);
 			SibSB(0, Sib_EIZ, Sib_UseDisp32);
 		}
-#endif
 
 		xWrite<s32>((s32)displacement);
 	}
@@ -440,11 +427,9 @@ const xRegister32
 	//////////////////////////////////////////////////////////////////////////////////////////
 	__emitinline static void EmitRex(bool w, bool r, bool x, bool b)
 	{
-#ifdef __M_X86_64
 		const u8 rex = 0x40 | (w << 3) | (r << 2) | (x << 1) | (u8)b;
 		if (rex != 0x40)
 			xWrite8(rex);
-#endif
 	}
 
 	void EmitRex(uint regfield, const void* address)
@@ -989,12 +974,8 @@ const xRegister32
 
 	__emitinline u32* xLEA_Writeback(xAddressReg to)
 	{
-#ifdef __M_X86_64
 		xOpWrite(0, 0x8d, to, ptr[(void*)(0xdcdcdcd + (uptr)xGetPtr() + 7)]);
-#else
-		xOpAccWrite(0, 0xb8 | to.Id, 0, to);
-		xWrite32(0xcdcdcdcd);
-#endif
+
 		return (u32*)xGetPtr() - 1;
 	}
 
@@ -1045,12 +1026,7 @@ const xRegister32
 		}
 		else
 		{
-#ifdef __M_X86_64
 			xOpWrite(to.GetPrefix16(), 0xff, isDec ? 1 : 0, to);
-#else
-			to.prefix16();
-			xWrite8((isDec ? 0x48 : 0x40) | to.Id);
-#endif
 		}
 	}
 
@@ -1200,24 +1176,9 @@ const xRegister32
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Helper object to handle ABI frame
-#ifdef __M_X86_64
-
 // All x86-64 calling conventions ensure/require stack to be 16 bytes aligned
 // I couldn't find documentation on when, but compilers would indicate it's before the call: https://gcc.godbolt.org/z/KzTfsz
 #define ALIGN_STACK(v) xADD(rsp, v)
-
-#elif defined(__GNUC__)
-
-// GCC ensures/requires stack to be 16 bytes aligned before the call
-// Call will store 4 bytes. EDI/ESI/EBX will take another 12 bytes.
-// EBP will take 4 bytes if m_base_frame is enabled
-#define ALIGN_STACK(v) xADD(esp, v)
-
-#else
-
-#define ALIGN_STACK(v)
-
-#endif
 
 	static void stackAlign(int offset, bool moveDown)
 	{
@@ -1250,8 +1211,6 @@ const xRegister32
 			m_offset += sizeof(void*);
 		}
 
-#ifdef __M_X86_64
-
 		xPUSH(rbx);
 		xPUSH(r12);
 		xPUSH(r13);
@@ -1265,24 +1224,12 @@ const xRegister32
 		m_offset += 48;
 #endif
 
-#else
-
-		// Save the register context
-		xPUSH(edi);
-		xPUSH(esi);
-		xPUSH(ebx);
-		m_offset += 12;
-
-#endif
-
 		stackAlign(m_offset, true);
 	}
 
 	xScopedStackFrame::~xScopedStackFrame()
 	{
 		stackAlign(m_offset, false);
-
-#ifdef __M_X86_64
 
 		// Restore the register context
 #ifdef _WIN32
@@ -1295,15 +1242,6 @@ const xRegister32
 		xPOP(r13);
 		xPOP(r12);
 		xPOP(rbx);
-
-#else
-
-		// Restore the register context
-		xPOP(ebx);
-		xPOP(esi);
-		xPOP(edi);
-
-#endif
 
 		// Destroy the frame
 		if (m_base_frame)
@@ -1352,7 +1290,6 @@ const xRegister32
 
 	void xLoadFarAddr(const xAddressReg& dst, void* addr)
 	{
-#ifdef __M_X86_64
 		sptr iaddr = (sptr)addr;
 		sptr rip = (sptr)xGetPtr() + 7; // LEA will be 7 bytes
 		sptr disp = iaddr - rip;
@@ -1364,19 +1301,11 @@ const xRegister32
 		{
 			xMOV64(dst, iaddr);
 		}
-#else
-		xMOV(dst, (sptr)addr);
-#endif
 	}
 
 	void xWriteImm64ToMem(u64* addr, const xAddressReg& tmp, u64 imm)
 	{
-#ifdef __M_X86_64
 		xImm64Op(xMOV, ptr64[addr], tmp, imm);
-#else
-		xMOV(ptr32[(u32*)addr], (u32)(imm & 0xFFFFFFFF));
-		xMOV(ptr32[(u32*)addr + 1], (u32)(imm >> 32));
-#endif
 	}
 
 } // End namespace x86Emitter
