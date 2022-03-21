@@ -110,11 +110,7 @@ static const int __pagesize = PCSX2_PAGESIZE;
 	// happens *by design* like all the friggen time >_<)
 
 	#ifndef __fastcall
-		#ifndef _M_X86_32
-			#define __fastcall // Attribute not available, and x86_32 is pretty much the only cc that passes literally everything in registers
-		#else
-			#define __fastcall __attribute__((fastcall))
-		#endif
+		#define __fastcall
 	#endif
 	#define __vectorcall __fastcall
 	#define _inline __inline__ __attribute__((unused))
