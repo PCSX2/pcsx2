@@ -14182,7 +14182,7 @@ SLES-52942:
   name: "Midnight Club 3 - DUB Edition"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes lighting misalignment.
+    wildArmsHack: 1 # Fixes post-processing misalignment.
   patches:
     EBE1972D:
       content: |-
@@ -16036,7 +16036,7 @@ SLES-53717:
   name: "Midnight Club 3 - DUB Edition Remix"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes lighting misalignment.
+    wildArmsHack: 1 # Fixes post-processing misalignment.
   patches:
     208183AF:
       content: |-
@@ -34825,6 +34825,11 @@ SLPS-25927:
 SLPS-25930:
   name: "Major League Baseball 2K9"
   region: "NTSC-J"
+SLPS-25932:
+  name: "Evangelion - Jo"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
 SLPS-25934:
   name: "Samurai Spirits: Rokuban Shoubu [NeoGeo Online Collection the Best]"
   region: "NTSC-J"
@@ -39855,7 +39860,7 @@ SLUS-21029:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes lighting misalignment.
+    wildArmsHack: 1 # Fixes post-processing misalignment.
   patches:
     4A0E5B3A:
       content: |-
@@ -41452,7 +41457,7 @@ SLUS-21355:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes lighting misalignment.
+    wildArmsHack: 1 # Fixes post-processing misalignment.
   patches:
     60A42FF5:
       content: |-
