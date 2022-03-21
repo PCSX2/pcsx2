@@ -93,7 +93,6 @@ namespace x86Emitter
 		}
 	}
 
-#ifdef __M_X86_64
 	void xImpl_FastCall::operator()(void* f, const xRegisterLong& a1, const xRegisterLong& a2) const
 	{
 		prepareRegsForFastcall(a1, a2);
@@ -118,7 +117,6 @@ namespace x86Emitter
 		xMOV(arg1reg, a1);
 		(*this)(f, arg1reg, arg2reg);
 	}
-#endif
 
 	void xImpl_FastCall::operator()(void* f, void* a1) const
 	{
@@ -214,10 +212,8 @@ namespace x86Emitter
 			s32* bah = xJcc32(comparison);
 			sptr distance = (sptr)target - (sptr)xGetPtr();
 
-#ifdef __M_X86_64
 			// This assert won't physically happen on x86 targets
 			pxAssertDev(distance >= -0x80000000LL && distance < 0x80000000LL, "Jump target is too far away, needs an indirect register");
-#endif
 
 			*bah = (s32)distance;
 		}

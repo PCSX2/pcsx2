@@ -17,14 +17,8 @@
 
 #include "common/Threading.h"
 
-#ifdef __M_X86_64
 static const uint iREGCNT_XMM = 16;
 static const uint iREGCNT_GPR = 16;
-#else
-// Register counts for x86/32 mode:
-static const uint iREGCNT_XMM = 8;
-static const uint iREGCNT_GPR = 8;
-#endif
 
 enum XMMSSEType
 {
@@ -313,17 +307,10 @@ namespace x86Emitter
 		bool IsSIMD() const { return GetOperandSize() == 16; }
 
 // IsWide: return true if the register is 64 bits (requires a wide op on the rex prefix)
-#ifdef __M_X86_64
 		bool IsWide() const
 		{
 			return GetOperandSize() == 8;
 		}
-#else
-		bool IsWide() const
-		{
-			return false;
-		} // no 64 bits GPR
-#endif
 		// return true if the register is a valid YMM register
 		bool IsWideSIMD() const { return GetOperandSize() == 32; }
 
@@ -498,11 +485,7 @@ namespace x86Emitter
 	// more sense and allows the programmer a little more type protection if needed.
 	//
 
-#ifdef __M_X86_64
 #define xRegisterLong xRegister64
-#else
-#define xRegisterLong xRegister32
-#endif
 	static const int wordsize = sizeof(sptr);
 
 	class xAddressReg : public xRegisterLong
@@ -854,11 +837,7 @@ extern const xRegister32
 	typedef xIndirect<u32> xIndirect32;
 	typedef xIndirect<u16> xIndirect16;
 	typedef xIndirect<u8> xIndirect8;
-#ifdef __M_X86_64
 	typedef xIndirect<u64> xIndirectNative;
-#else
-	typedef xIndirect<u32> xIndirectNative;
-#endif
 
 	// --------------------------------------------------------------------------------------
 	//  xIndirect64orLess  -  base class 64, 32, 16, and 8 bit operand types

@@ -57,11 +57,8 @@ namespace x86Emitter
 	// flags.
 
 	extern const xImpl_Mov xMOV;
-#ifdef __M_X86_64
 	extern const xImpl_MovImm64 xMOV64;
-#endif
 	extern const xImpl_Test xTEST;
-
 	extern const xImpl_Group2 xROL, xROR,
 		xRCL, xRCR,
 		xSHL, xSHR,
@@ -222,7 +219,6 @@ namespace x86Emitter
 	/// May use `tmp` on x86-64
 	void xWriteImm64ToMem(u64* addr, const xAddressReg& tmp, u64 imm);
 
-#ifdef __M_X86_64
 	//////////////////////////////////////////////////////////////////////////////////////////
 	/// Helper function to run operations with large immediates
 	/// If the immediate fits in 32 bits, runs op(target, imm)
@@ -240,7 +236,6 @@ namespace x86Emitter
 			op(dst, tmpRegister);
 		}
 	}
-#endif
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// JMP / Jcc Instructions!
