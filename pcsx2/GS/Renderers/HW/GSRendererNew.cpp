@@ -1017,7 +1017,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool&
 
 		// Remove second color output when unused. Works around bugs in some drivers (e.g. Intel).
 		m_conf.ps.no_color1 |= !GSDevice::IsDualSourceBlendFactor(m_conf.blend.src_factor) &&
-							   GSDevice::IsDualSourceBlendFactor(m_conf.blend.dst_factor);
+		                       !GSDevice::IsDualSourceBlendFactor(m_conf.blend.dst_factor);
 	}
 
 	// DATE_PRIMID interact very badly with sw blending. DATE_PRIMID uses the primitiveID to find the primitive
