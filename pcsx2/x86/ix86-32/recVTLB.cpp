@@ -140,9 +140,6 @@ static void iMOV64_Smart(const xIndirectVoid& destRm, const xIndirectVoid& srcRm
 	_fullread:
 	movzx eax,al;
 	sub   ecx,eax;
- #ifndef __M_X86_64 // The x86-64 marker will be cleared by using 32-bit ops
-	sub   ecx,0x80000000;
- #endif
 	call [eax+stuff];
 	cont:
 	........
