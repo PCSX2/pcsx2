@@ -66,7 +66,7 @@ The CPU load as reported in software such as Windows' Task Manager is usually a 
 No. PCSX2 does not use or require SLI or Crossfire.
 
 ### Question 9: How do I check if a game is playable?
-The PCSX2 website has a [compatibility list](https://pcsx2.net/compatibility-list.html) with every game that has been tested. 
+The PCSX2 website has a [compatibility list](https://pcsx2.net/compat/) with every game that has been tested. 
 
 ### Question 10: Do PS1 (PSX) games work on PCSX2?
 
