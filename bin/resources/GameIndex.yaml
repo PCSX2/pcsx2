@@ -13932,6 +13932,8 @@ SLES-52831:
 SLES-52832:
   name: "MegaMan X - Command Mission"
   region: "PAL-M3"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-52834:
   name: "Sega Superstars Eyetoy Bundle"
   region: "PAL-M4"
@@ -15764,7 +15766,8 @@ SLES-53634:
   name: "Nicktoons Unite!"
   region: "PAL-A"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    textureInsideRT: 1 # Fixes rainbow lighting for lamps, computer and other areas.
 SLES-53635:
   name: "NASCAR '06 - Total Team Control"
   region: "PAL-E"
@@ -25643,6 +25646,8 @@ SLPM-65642:
 SLPM-65643:
   name: "RockMan X - Command Mission"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLPM-65644:
   name: "Guilty Gear Isuka"
   region: "NTSC-J"
@@ -39113,6 +39118,8 @@ SLUS-20903:
   name: "MegaMan X - Command Mission"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
 SLUS-20904:
   name: "SpongeBob SquarePants - The Movie"
   region: "NTSC-U"
@@ -41023,7 +41030,8 @@ SLUS-21284:
   name: "Nicktoons Unite!"
   region: "NTSC-U"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    textureInsideRT: 1 # Fixes rainbow lighting for lamps, computer and other areas.
 SLUS-21285:
   name: "Ultimate Spider-Man [Limited Edition]"
   region: "NTSC-U"
