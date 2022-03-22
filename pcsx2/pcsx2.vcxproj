@@ -285,6 +285,7 @@
     <ClCompile Include="DEV9\ATA\ATA_State.cpp" />
     <ClCompile Include="DEV9\ATA\ATA_Transfer.cpp" />
     <ClCompile Include="DEV9\ATA\HddCreate.cpp" />
+    <ClCompile Include="DEV9\ATA\HddCreateWx.cpp" />
     <ClCompile Include="DEV9\ConfigUI.cpp" />
     <ClCompile Include="DEV9\DEV9Config.cpp" />
     <ClCompile Include="DEV9\DEV9.cpp" />
@@ -731,6 +732,7 @@
     <ClInclude Include="DebugTools\SymbolMap.h" />
     <ClInclude Include="DEV9\ATA\ATA.h" />
     <ClInclude Include="DEV9\ATA\HddCreate.h" />
+    <ClInclude Include="DEV9\ATA\HddCreateWx.h" />
     <ClInclude Include="DEV9\DEV9Config.h" />
     <ClInclude Include="DEV9\DEV9.h" />
     <ClInclude Include="DEV9\InternalServers\DHCP_Server.h" />

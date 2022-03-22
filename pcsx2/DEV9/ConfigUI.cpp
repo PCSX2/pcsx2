@@ -38,7 +38,7 @@
 	#include "Win32/tap.h"
 #endif
 
-#include "ATA/HddCreate.h"
+#include "ATA/HddCreateWx.h"
 
 using PacketReader::IP::IP_Address;
 
@@ -397,7 +397,7 @@ void DEV9configure()
 
 		if (g_Conf->EmuOptions.DEV9.HddEnable && !fs::exists(hddPath))
 		{
-			HddCreate hddCreator;
+			HddCreateWx hddCreator;
 			hddCreator.filePath = hddPath;
 			hddCreator.neededSize = ((u64)g_Conf->EmuOptions.DEV9.HddSizeSectors) * 512;
 			hddCreator.Start();
