@@ -258,8 +258,13 @@ void GSDumpReplayerCpuStep()
 
 		case GSDumpTypes::GSType::ReadFIFO2:
 		{
-			std::unique_ptr<char[]> arr(new char[*((int*)packet.data)]);
-			GSreadFIFO2((u8*)arr.get(), *((int*)packet.data));
+			u32 size;
+			std::memcpy(&size, packet.data, sizeof(size));
+
+			std::unique_ptr<u8[]> arr(new u8[size]);
+			GetMTGS().WaitGS();
+			GetMTGS().SendPointerPacket(GS_RINGTYPE_INIT_READ_FIFO2, size, arr.get());
+			GetMTGS().WaitGS(false); // wait without reg sync
 		}
 		break;
 
