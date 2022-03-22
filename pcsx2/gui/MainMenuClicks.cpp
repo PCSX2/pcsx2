@@ -937,7 +937,7 @@ void MainEmuFrame::Menu_GetStarted(wxCommandEvent& event)
 
 void MainEmuFrame::Menu_Compatibility(wxCommandEvent& event)
 {
-	wxLaunchDefaultBrowser("https://pcsx2.net/compatibility-list.html");
+	wxLaunchDefaultBrowser("https://pcsx2.net/compat/");
 }
 
 void MainEmuFrame::Menu_Forums(wxCommandEvent& event)
