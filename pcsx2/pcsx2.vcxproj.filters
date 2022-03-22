@@ -1199,6 +1199,9 @@
     <ClCompile Include="DEV9\ATA\HddCreate.cpp">
       <Filter>System\Ps2\DEV9\ATA</Filter>
     </ClCompile>
+    <ClCompile Include="DEV9\ATA\HddCreateWx.cpp">
+      <Filter>System\Ps2\DEV9\ATA</Filter>
+    </ClCompile>
     <ClCompile Include="DEV9\ConfigUI.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
@@ -2264,6 +2267,9 @@
       <Filter>System\Ps2\DEV9\ATA</Filter>
     </ClInclude>
     <ClInclude Include="DEV9\ATA\HddCreate.h">
+      <Filter>System\Ps2\DEV9\ATA</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\ATA\HddCreateWx.h">
       <Filter>System\Ps2\DEV9\ATA</Filter>
     </ClInclude>
     <ClInclude Include="DEV9\DEV9Config.h">

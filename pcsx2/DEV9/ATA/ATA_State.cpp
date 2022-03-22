@@ -17,7 +17,9 @@
 
 #include "ATA.h"
 #include "DEV9/DEV9.h"
-#include "HddCreate.h"
+#ifndef PCSX2_CORE
+#include "HddCreateWx.h"
+#endif
 
 ATA::ATA()
 {
@@ -36,13 +38,17 @@ int ATA::Open(fs::path hddPath)
 	//Open File
 	if (!fs::exists(hddPath))
 	{
-		HddCreate hddCreator;
+#ifndef PCSX2_CORE
+		HddCreateWx hddCreator;
 		hddCreator.filePath = hddPath;
 		hddCreator.neededSize = ((u64)EmuConfig.DEV9.HddSizeSectors) * 512;
 		hddCreator.Start();
 
 		if (hddCreator.errored)
 			return -1;
+#else
+		return -1;
+#endif
 	}
 	hddImage = fs::fstream(hddPath, std::ios::in | std::ios::out | std::ios::binary);
 

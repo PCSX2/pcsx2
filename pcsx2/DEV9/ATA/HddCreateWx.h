@@ -15,36 +15,31 @@
 
 #pragma once
 
-#include <atomic>
-#include <chrono>
+#include <wx/progdlg.h>
 
-class HddCreate
+#include <mutex>
+#include <condition_variable>
+
+#include "DEV9/ATA/HddCreate.h"
+
+class HddCreateWx : public HddCreate
 {
 public:
-	fs::path filePath;
-	u64 neededSize;
-
-	std::atomic_bool errored{false};
+	HddCreateWx(){};
+	virtual ~HddCreateWx(){};
 
 private:
-	std::atomic_bool canceled{false};
+	wxProgressDialog* progressDialog;
 
-	std::chrono::steady_clock::time_point lastUpdate;
+	std::mutex dialogMutex;
+	std::condition_variable dialogCV;
+	bool dialogReady = false;
 
-public:
-	HddCreate(){};
-
-	void Start();
-
-	virtual ~HddCreate(){};
+	int reqMiB;
 
 protected:
-	virtual void Init(){};
-	virtual void Cleanup(){};
+	virtual void Init();
+	virtual void Cleanup();
 	virtual void SetFileProgress(u64 currentSize);
 	virtual void SetError();
-	void SetCanceled();
-
-private:
-	void WriteImage(fs::path hddPath, u64 reqSizeBytes);
 };

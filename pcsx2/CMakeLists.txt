@@ -401,9 +401,11 @@ if(NOT PCSX2_CORE)
 	list(APPEND pcsx2DEV9Sources
 		DEV9/ConfigUI.cpp
 		DEV9/DEV9Config.cpp
+		DEV9/ATA/HddCreateWx.cpp
 	)
 	list(APPEND pcsx2DEV9Sources
 		DEV9/DEV9Config.h
+		DEV9/ATA/HddCreateWx.h
 	)
 endif()
 
