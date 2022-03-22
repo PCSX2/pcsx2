@@ -31,6 +31,25 @@ const u32 build = 0; // increase that with each version
 
 KeyStatus g_key_status;
 
+namespace PAD
+{
+	struct MacroButton
+	{
+		std::vector<u32> buttons; ///< Buttons to activate.
+		u32 toggle_frequency; ///< Interval at which the buttons will be toggled, if not 0.
+		u32 toggle_counter; ///< When this counter reaches zero, buttons will be toggled.
+		bool toggle_state; ///< Current state for turbo.
+		bool trigger_state; ///< Whether the macro button is active.
+	};
+
+	static const char* GetDefaultPadType(u32 pad);
+	static void LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std::string_view& type, const std::string& section);
+	static void ApplyMacroButton(u32 pad, const MacroButton& mb);
+	static void UpdateMacroButtons();
+
+	static std::array<std::array<MacroButton, NUM_MACRO_BUTTONS_PER_CONTROLLER>, GAMEPAD_NUMBER> s_macro_buttons;
+} // namespace PAD
+
 s32 PADinit()
 {
 	Pad::reset_all();
@@ -161,11 +180,13 @@ u8 PADpoll(u8 value)
 
 void PAD::LoadConfig(const SettingsInterface& si)
 {
-	// This is where we would load controller types, if onepad supported them.
+	PAD::s_macro_buttons = {};
 
+	// This is where we would load controller types, if onepad supported them.
 	for (u32 i = 0; i < GAMEPAD_NUMBER; i++)
 	{
 		const std::string section(StringUtil::StdStringFromFormat("Pad%u", i + 1u));
+		const std::string type(si.GetStringValue(section.c_str(), "Type", GetDefaultPadType(i)));
 		const float axis_scale = si.GetFloatValue(section.c_str(), "AxisScale", 1.0f);
 		const float large_motor_scale = si.GetFloatValue(section.c_str(), "LargeMotorScale", 1.0f);
 		const float small_motor_scale = si.GetFloatValue(section.c_str(), "SmallMotorScale", 1.0f);
@@ -173,7 +194,14 @@ void PAD::LoadConfig(const SettingsInterface& si)
 		g_key_status.SetAxisScale(i, axis_scale);
 		g_key_status.SetVibrationScale(i, 0, large_motor_scale);
 		g_key_status.SetVibrationScale(i, 1, small_motor_scale);
+
+		LoadMacroButtonConfig(si, i, type, section);
 	}
+}
+
+const char* PAD::GetDefaultPadType(u32 pad)
+{
+	return (pad == 0) ? "DualShock2" : "None";
 }
 
 void PAD::SetDefaultConfig(SettingsInterface& si)
@@ -184,14 +212,14 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 		si.ClearSection(StringUtil::StdStringFromFormat("Pad%u", i + 1).c_str());
 
 	si.ClearSection("Hotkeys");
-	
+
 	// PCSX2 Controller Settings - Global Settings
 	si.SetBoolValue("InputSources", "SDL", true);
 	si.SetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
 	si.SetBoolValue("InputSources", "XInput", false);
-	
+
 	// PCSX2 Controller Settings - Controller 1 / Controller 2 / ...
-	si.SetStringValue("Pad1", "Type", "DualShock2");
+	si.SetStringValue("Pad1", "Type", GetDefaultPadType(0));
 	si.SetStringValue("Pad1", "Up", "Keyboard/Up");
 	si.SetStringValue("Pad1", "Right", "Keyboard/Right");
 	si.SetStringValue("Pad1", "Down", "Keyboard/Down");
@@ -216,23 +244,23 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 	si.SetStringValue("Pad1", "R3", "Keyboard/4");
 	si.SetStringValue("Pad1", "Start", "Keyboard/Return");
 	si.SetStringValue("Pad1", "Select", "Keyboard/Backspace");
-	
+
 	// PCSX2 Controller Settings - Hotkeys
-	
+
 	// PCSX2 Controller Settings - Hotkeys - General
 	si.SetStringValue("Hotkeys", "Screenshot", "Keyboard/F8");
 	si.SetStringValue("Hotkeys", "ToggleFullscreen", "Keyboard/Alt & Keyboard/Return");
-	
+
 	// PCSX2 Controller Settings - Hotkeys - Graphics
 	si.SetStringValue("Hotkeys", "CycleAspectRatio", "Keyboard/F6");
 	si.SetStringValue("Hotkeys", "CycleMipmapMode", "Keyboard/Insert");
 	si.SetStringValue("Hotkeys", "CycleInterlaceMode", "Keyboard/F5");
-//	si.SetStringValue("Hotkeys", "DecreaseUpscaleMultiplier", "Keyboard"); TBD 
-//	si.SetStringValue("Hotkeys", "IncreaseUpscaleMultiplier", "Keyboard"); TBD 
+	//	si.SetStringValue("Hotkeys", "DecreaseUpscaleMultiplier", "Keyboard"); TBD
+	//	si.SetStringValue("Hotkeys", "IncreaseUpscaleMultiplier", "Keyboard"); TBD
 	si.SetStringValue("Hotkeys", "ToggleSoftwareRendering", "Keyboard/F9");
 	si.SetStringValue("Hotkeys", "ZoomIn", "Keyboard/Control & Keyboard/Plus");
 	si.SetStringValue("Hotkeys", "ZoomOut", "Keyboard/Control & Keyboard/Minus");
-// Missing hotkey for resetting zoom back to 100 with Keyboard/Control & Keyboard/Asterisk
+	// Missing hotkey for resetting zoom back to 100 with Keyboard/Control & Keyboard/Asterisk
 
 	// PCSX2 Controller Settings - Hotkeys - Save States
 	si.SetStringValue("Hotkeys", "LoadStateFromSlot", "Keyboard/F3");
@@ -241,11 +269,11 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 	si.SetStringValue("Hotkeys", "PreviousSaveStateSlot", "Keyboard/Shift & Keyboard/F2");
 
 	// PCSX2 Controller Settings - Hotkeys - System
-//	si.SetStringValue("Hotkeys", "DecreaseSpeed", "Keyboard"); TBD 
-//	si.SetStringValue("Hotkeys", "IncreaseSpeed", "Keyboard"); TBD 
+	//	si.SetStringValue("Hotkeys", "DecreaseSpeed", "Keyboard"); TBD
+	//	si.SetStringValue("Hotkeys", "IncreaseSpeed", "Keyboard"); TBD
 	si.SetStringValue("Hotkeys", "ToggleFrameLimit", "Keyboard/F4");
-	si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Space");	
-	si.SetStringValue("Hotkeys", "ToggleSlowMotion", "Keyboard/Shift & Keyboard/Backtab");	
+	si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Space");
+	si.SetStringValue("Hotkeys", "ToggleSlowMotion", "Keyboard/Shift & Keyboard/Backtab");
 	si.SetStringValue("Hotkeys", "ToggleTurbo", "Keyboard/Tab");
 	si.SetStringValue("Hotkeys", "ShutdownVM", "Keyboard/Escape");
 }
@@ -253,6 +281,7 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 void PAD::Update()
 {
 	Pad::rumble_all();
+	UpdateMacroButtons();
 }
 
 std::vector<std::string> PAD::GetControllerTypeNames()
@@ -312,4 +341,89 @@ void PAD::SetControllerState(u32 controller, u32 bind, float value)
 		return;
 
 	g_key_status.Set(controller, bind, value);
+}
+
+void PAD::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std::string_view& type, const std::string& section)
+{
+	// lazily initialized
+	std::vector<std::string> binds;
+
+	for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
+	{
+		std::string binds_string;
+		if (!si.GetStringValue(section.c_str(), StringUtil::StdStringFromFormat("Macro%uBinds", i + 1).c_str(), &binds_string))
+			continue;
+
+		const u32 frequency = si.GetUIntValue(section.c_str(), StringUtil::StdStringFromFormat("Macro%uFrequency", i + 1).c_str(), 0u);
+		if (binds.empty())
+			binds = GetControllerBinds(type);
+
+		// convert binds
+		std::vector<u32> bind_indices;
+		std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
+		if (buttons_split.empty())
+			continue;
+		for (const std::string_view& button : buttons_split)
+		{
+			auto it = std::find(binds.begin(), binds.end(), button);
+			if (it == binds.end())
+			{
+				Console.Error("Invalid bind '%.*s' in macro button %u for pad %u", static_cast<int>(button.size()), button.data(), pad, i);
+				continue;
+			}
+
+			bind_indices.push_back(static_cast<u32>(std::distance(binds.begin(), it)));
+		}
+		if (bind_indices.empty())
+			continue;
+
+		s_macro_buttons[pad][i].buttons = std::move(bind_indices);
+		s_macro_buttons[pad][i].toggle_frequency = frequency;
+	}
+}
+
+void PAD::SetMacroButtonState(u32 pad, u32 index, bool state)
+{
+	if (pad >= GAMEPAD_NUMBER || index >= NUM_MACRO_BUTTONS_PER_CONTROLLER)
+		return;
+
+	MacroButton& mb = s_macro_buttons[pad][index];
+	if (mb.buttons.empty() || mb.trigger_state == state)
+		return;
+
+	mb.toggle_counter = mb.toggle_frequency;
+	mb.trigger_state = state;
+	if (mb.toggle_state != state)
+	{
+		mb.toggle_state = state;
+		ApplyMacroButton(pad, mb);
+	}
+}
+
+void PAD::ApplyMacroButton(u32 pad, const MacroButton& mb)
+{
+	const float value = mb.toggle_state ? 1.0f : 0.0f;
+	for (const u32 btn : mb.buttons)
+		g_key_status.Set(pad, btn, value);
+}
+
+void PAD::UpdateMacroButtons()
+{
+	for (u32 pad = 0; pad < GAMEPAD_NUMBER; pad++)
+	{
+		for (u32 index = 0; index < NUM_MACRO_BUTTONS_PER_CONTROLLER; index++)
+		{
+			MacroButton& mb = s_macro_buttons[pad][index];
+			if (!mb.trigger_state || mb.toggle_frequency == 0)
+				continue;
+
+			mb.toggle_counter--;
+			if (mb.toggle_counter > 0)
+				continue;
+
+			mb.toggle_counter = mb.toggle_frequency;
+			mb.toggle_state = !mb.toggle_state;
+			ApplyMacroButton(pad, mb);
+		}
+	}
 }
