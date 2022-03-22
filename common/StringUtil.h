@@ -167,6 +167,9 @@ namespace StringUtil
 	/// Strip whitespace from the start/end of the string.
 	std::string_view StripWhitespace(const std::string_view& str);
 
+	/// Splits a string based on a single character delimiter.
+	std::vector<std::string_view> SplitString(const std::string_view& str, char delimiter, bool skip_empty = true);
+
 	/// Strided memcpy/memcmp.
 	static inline void StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,
 		std::size_t copy_size, std::size_t count)
