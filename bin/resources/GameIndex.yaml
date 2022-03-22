@@ -32,6 +32,8 @@ GUST-00009:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0  # Fixes jump issue.
+  gameFixes:
+    - SoftwareRendererFMVHack # Vertical lines in FMV.
 PAPX-90201:
   name: "Fantavision [Taikenban]"
   region: "NTSC-J"
@@ -60,14 +62,13 @@ PAPX-90504:
   name: "Gran Turismo Concept - Airtrek Turbo Special Edition [Demo]"
   region: "NTSC-J"
 PAPX-90506:
-  name: "Dark Chronicle[Demo, Taikenban]"
+  name: "Dark Chronicle [Demo, Taikenban]"
   region: "NTSC-J"
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
-    roundSprite: 1 # Fixes font artifacts.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
+    roundSprite: 2 # Fixes font artifacts.
 PAPX-90512:
   name: "Gran Turismo 4 - Toyota Prius [Trial]"
   region: "NTSC-J"
@@ -966,7 +967,6 @@ SCAJ-20162:
     autoFlush: 1 # Fix glow effects from lamps.
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing. 
 SCAJ-20163:
   name: "Tales of the Abyss"
@@ -1041,6 +1041,7 @@ SCAJ-20177:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
+    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SCAJ-20178:
   name: "Ape Escape - Million Monkeys"
   region: "NTSC-Unk"
@@ -1130,6 +1131,7 @@ SCAJ-20197:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
+    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SCAJ-20198:
   name: "Everybody's Tennis [PlayStation 2 The Best]"
   region: "NTSC-Unk"
@@ -2376,7 +2378,6 @@ SCES-50295:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCES-50300:
   name: "Time Crisis 2"
   region: "PAL-M5"
@@ -2757,8 +2758,7 @@ SCES-51190:
   clampModes:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
-    roundSprite: 1 # Fixes font artifacts.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
+    roundSprite: 2 # Fixes font artifacts.
 SCES-51224:
   name: "War of the Monsters"
   region: "PAL-E"
@@ -3695,7 +3695,6 @@ SCES-54552:
     autoFlush: 1 # Fix glow effects from lamps.
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing. 
   patches:
     CBB4B383:
@@ -4183,8 +4182,7 @@ SCKA-20014:
   clampModes:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
-    roundSprite: 1 # Fixes font artifacts.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
+    roundSprite: 2 # Fixes font artifacts.
 SCKA-20015:
   name: "Time Crisis 3"
   region: "NTSC-K"
@@ -4463,6 +4461,7 @@ SCKA-20079:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
+    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SCKA-20081:
   name: "Tekken 5 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -4731,7 +4730,6 @@ SCPS-15004:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCPS-15005:
   name: "Phase Paradox"
   region: "NTSC-J"
@@ -4840,8 +4838,7 @@ SCPS-15033:
   clampModes:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
-    roundSprite: 1 # Fixes font artifacts.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
+    roundSprite: 2 # Fixes font artifacts.
 SCPS-15034:
   name: "This is Football 2003"
   region: "NTSC-J"
@@ -5204,7 +5201,6 @@ SCPS-15102:
     autoFlush: 1 # Fix glow effects from lamps.
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing. 
 SCPS-15103:
   name: "Gunparade Orchestra - Shiro no Shou - Aomori Penguin Densetsu [Limited Edition]"
@@ -5322,7 +5318,6 @@ SCPS-17013:
     autoFlush: 1 # Fix glow effects from lamps.
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
   patches:
     CDEE4B19:
@@ -5387,7 +5382,6 @@ SCPS-19203:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCPS-19204:
   name: "Legaia - Duel Saga [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -5437,8 +5431,7 @@ SCPS-19215:
   clampModes:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
-    roundSprite: 1 # Fixes font artifacts.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
+    roundSprite: 2 # Fixes font artifacts.
 SCPS-19251:
   name: "Wild ARMs - Alter Code F [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -5506,8 +5499,7 @@ SCPS-19306:
   clampModes:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
-    roundSprite: 1 # Fixes font artifacts.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
+    roundSprite: 2 # Fixes font artifacts.
 SCPS-19307:
   name: "Popolocrois - The First Adventure [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -5904,8 +5896,7 @@ SCPS-55048:
   clampModes:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
-    roundSprite: 1 # Fixes font artifacts.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
+    roundSprite: 2 # Fixes font artifacts.
 SCPS-55049:
   name: "King of Fighters 2000, The"
   region: "NTSC-J"
@@ -6068,7 +6059,6 @@ SCUS-97111:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCUS-97112:
   name: "Extermination"
   region: "NTSC-U"
@@ -6231,7 +6221,6 @@ SCUS-97152:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
 SCUS-97153:
   name: "Vans Warped Tour '01 [Demo]"
   region: "NTSC-U"
@@ -6442,8 +6431,7 @@ SCUS-97213:
   clampModes:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
-    roundSprite: 1 # Fix font artifacts.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
+    roundSprite: 2 # Fixes font artifacts.
 SCUS-97214:
   name: "NCAA GameBreaker 2003"
   region: "NTSC-U"
@@ -6496,8 +6484,7 @@ SCUS-97229:
   clampModes:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
-    roundSprite: 1 # Fix font artifacts.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
+    roundSprite: 2 # Fixes font artifacts.
 SCUS-97230:
   name: "SOCOM - U.S. Navy SEALs (Online)"
   region: "NTSC-U"
@@ -7354,7 +7341,6 @@ SCUS-97490:
     autoFlush: 1 # Fix glow effects from lamps.
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing. 
   patches:
     0643F90C:
@@ -7598,7 +7584,6 @@ SCUS-97572:
     autoFlush: 1 # Fix glow effects from lamps.
     roundSprite: 1 # Fix minimap and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
-    trilinearFiltering: 2 # Remove blurriness in font and models.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing. 
 SCUS-97579:
   name: "ATV Off-Road Fury 4 [Demo]"
@@ -9517,6 +9502,8 @@ SLES-50672:
   name: "Baldur's Gate: Dark Alliance"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV and weird colored squares.
 SLES-50677:
   name: "Shadow Hearts"
   region: "PAL-E"
@@ -12563,10 +12550,18 @@ SLES-52187:
   name: "Baldur's Gate: Dark Alliance II"
   region: "PAL-M3"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV and weird colored squares.
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in sprites but still some lines left.
 SLES-52188:
   name: "Baldur's Gate: Dark Alliance II"
   region: "PAL-M3"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV and weird colored squares.
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in sprites but still some lines left.
 SLES-52190:
   name: "RPM Tuning"
   region: "PAL-M6"
@@ -13498,6 +13493,7 @@ SLES-52636:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Fixes incorrect colors.
+    alignSprite: 1 # Fixes vertical lines such as in FMVs.
 SLES-52637:
   name: "TOCA Racer Driver 2"
   region: "PAL-M5"
@@ -15178,12 +15174,24 @@ SLES-53415:
   name: "Call of Duty 2 - Big Red One"
   region: "PAL-E"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in sprites.
 SLES-53416:
   name: "Call of Duty 2 - Big Red One"
   region: "PAL-M3"
+  gameFixes:
+    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in sprites.
 SLES-53417:
   name: "Call of Duty 2 - Big Red One"
   region: "PAL-G"
+  gameFixes:
+    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in sprites.
 SLES-53418:
   name: "Tak - The Great JuJu Challenge"
   region: "PAL-A"
@@ -16001,6 +16009,10 @@ SLES-53718:
 SLES-53722:
   name: "Call of Duty 2 - Big Red One [Collector's Edition]"
   region: "PAL-E"
+  gameFixes:
+    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in sprites.
 SLES-53724:
   name: "World Series of Poker"
   region: "PAL-E"
@@ -18087,6 +18099,7 @@ SLES-54644:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
+    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SLES-54645:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-F"
@@ -18094,6 +18107,7 @@ SLES-54645:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
+    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SLES-54646:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-G"
@@ -18102,6 +18116,7 @@ SLES-54646:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
+    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SLES-54647:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-I"
@@ -18110,6 +18125,7 @@ SLES-54647:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
+    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SLES-54648:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-S"
@@ -18117,6 +18133,7 @@ SLES-54648:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
+    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SLES-54653:
   name: "Freak Out - Extreme Freeride"
   region: "PAL-M5"
@@ -18528,6 +18545,8 @@ SLES-54820:
 SLES-54822:
   name: "Atelier Iris 3: Grand Phantasm"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 1 # Fixes vertical lines in FMVs, character portraits and other sprites.
 SLES-54825:
   name: "EyeToy - Bob the Builder"
   region: "PAL-M3"
@@ -18716,6 +18735,8 @@ SLES-54901:
 SLES-54903:
   name: "Sims 2, The - Castaway"
   region: "PAL-M13"
+  gsHWFixes:
+    halfPixelOffset: 1 # Removes horizontal and vertical lines on the ground, trees and the sky.
 SLES-54904:
   name: "Simpsons Game, The"
   region: "PAL-M4"
@@ -19872,6 +19893,8 @@ SLES-55443:
   compat: 5
   roundModes:
     eeRoundMode: 0  # Fixes jump issue.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
 SLES-55444:
   name: "Ar tonelico II: Melody of Metafalica"
   region: "PAL-E"
@@ -21266,6 +21289,8 @@ SLPM-20436:
 SLPM-55005:
   name: "Mana Khemia 2: Ochita Gakuen to Renkinjutsushi Tachi"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in sprites but still some lines left.
 SLPM-55008:
   name: "Sengoku Basara X"
   region: "NTSC-J"
@@ -21331,6 +21356,8 @@ SLPM-55110:
 SLPM-55114:
   name: "Mana Khemia 2: Ochita Gakuen to Renkinjutsushi Tachi"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in sprites but still some lines left.
 SLPM-55117:
   name: "beatmania IIDX 15 DJ TROOPERS"
   region: "NTSC-J"
@@ -26300,6 +26327,10 @@ SLPM-65845:
   name: "Baldur's Gate: Dark Alliance II"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV and weird colored squares.
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in sprites but still some lines left.
 SLPM-65846:
   name: "Lord of the Rings, The - Uchitsu Kuni Daisanki"
   region: "NTSC-J"
@@ -27903,6 +27934,10 @@ SLPM-66327:
 SLPM-66328:
   name: "Call of Duty 2 - Big Red One"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in sprites.
 SLPM-66329:
   name: "Mahou Sensei Negima! Kagai Jugyou"
   region: "NTSC-J"
@@ -28187,6 +28222,7 @@ SLPM-66419:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
+    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SLPM-66420:
   name: "Front Mission 4 [Ultimate Hits]"
   region: "NTSC-J"
@@ -29378,6 +29414,7 @@ SLPM-66748:
     eeRoundMode: 0  # Fixes jump issue.
   gameFixes:
     - DMABusyHack
+    - SoftwareRendererFMVHack # Vertical lines in FMV.
 SLPM-66749:
   name: "Wizardry X 2 - Mugen no Gakuto [Wonder Price]"
   region: "NTSC-J"
@@ -29492,6 +29529,7 @@ SLPM-66782:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
+    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SLPM-66783:
   name: "Idol Janshi Suchie-Pai 4 [Limited Edition]"
   region: "NTSC-J"
@@ -30094,6 +30132,7 @@ SLPM-66994:
     eeRoundMode: 0  # Fixes jump issue.
   gameFixes:
     - DMABusyHack
+    - SoftwareRendererFMVHack # Vertical lines in FMV.
 SLPM-66995:
   name: "beatmania IIDX 14 GOLD"
   region: "NTSC-J"
@@ -32141,6 +32180,8 @@ SLPS-25139:
   name: "Baldur's Gate: Dark Alliance"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV and weird colored squares.
 SLPS-25141:
   name: "Pac-Man World 2"
   region: "NTSC-J"
@@ -32593,6 +32634,8 @@ SLPS-25291:
   name: "Baldur's Gate: Dark Alliance [PCCW The Best]"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV and weird colored squares.
 SLPS-25292:
   name: "D-A - Black"
   region: "NTSC-J"
@@ -35498,6 +35541,8 @@ SLUS-20035:
   name: "Baldur's Gate: Dark Alliance"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV and weird colored squares.
 SLUS-20037:
   name: "Run Like Hell - Hunt or Be Hunted"
   region: "NTSC-U"
@@ -38163,6 +38208,10 @@ SLUS-20675:
   name: "Baldur's Gate: Dark Alliance II"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV and weird colored squares.
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in sprites but still some lines left.
 SLUS-20676:
   name: "Lowrider"
   region: "NTSC-U"
@@ -40719,6 +40768,10 @@ SLUS-21228:
   name: "Call of Duty 2 - Big Red One"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in sprites.
 SLUS-21229:
   name: "Motocross Mania 3"
   region: "NTSC-U"
@@ -41193,6 +41246,11 @@ SLUS-21318:
   name: "Call of Duty 2 - Big Red One [Collector's Edition]"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in sprites.
+    cpuFramebufferConversion: 1 # Fixes some textures but most are still massively broken.
 SLUS-21319:
   name: "Flow - Urban Dance Uprising"
   region: "NTSC-U"
@@ -41916,6 +41974,7 @@ SLUS-21452:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
+    roundSprite: 1 # Fixes area transition vertical lines.
 SLUS-21453:
   name: "Disney's Meet the Robinsons"
   region: "NTSC-U"
@@ -42297,6 +42356,8 @@ SLUS-21564:
   name: "Atelier Iris 3: Grand Phantasm"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes vertical lines in FMVs, character portraits and other sprites.
 SLUS-21565:
   name: "Pirates of the Caribbean - At World's End"
   region: "NTSC-U"
@@ -42757,6 +42818,8 @@ SLUS-21664:
   name: "Sims 2, The - Castaway"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Removes horizontal and vertical lines on the ground, trees and the sky.
 SLUS-21665:
   name: "Simpsons Game, The"
   region: "NTSC-U"
@@ -43079,6 +43142,8 @@ SLUS-21735:
   compat: 5
   roundModes:
     eeRoundMode: 0  # Fixes jump issue.
+  gameFixes:
+    - SoftwareRendererFMVHack # Vertical lines in FMV.
 SLUS-21736:
   name: "Wall-E"
   region: "NTSC-U"
@@ -43714,6 +43779,8 @@ SLUS-21890:
   name: "Mana Khemia 2: Fall Of Alchemy"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in sprites but still some lines left.
 SLUS-21891:
   name: "G-Force"
   region: "NTSC-U"
