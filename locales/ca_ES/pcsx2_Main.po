@@ -34,7 +34,7 @@ msgstr "Error d'anàlisi"
 #: common/include/Utilities/Exceptions.h:279
 msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
 msgstr ""
-"El hardware del teu ordinador no es capaç de fer servir PCSX2. Ho sentim "
+"El hardware del teu ordinador no es capaç de fer servir PCSX2. Ho sentim. "
 "company."
 
 #: common/src/Utilities/Exceptions.cpp:204
@@ -85,7 +85,7 @@ msgstr ""
 
 #: common/src/Utilities/ThreadTools.cpp:41
 msgid "Threading activity: start, detach, sync, deletion, etc."
-msgstr ""
+msgstr "Començant Threading: inici, desenganxar, syncronitzar, esborrar, etc."
 
 #: common/src/Utilities/ThreadingDialogs.cpp:30
 msgid "Waiting for tasks..."
@@ -115,32 +115,34 @@ msgstr ""
 msgid ""
 "If loading from an ISO image, this error may be caused by an unsupported ISO "
 "image type or a bug in PCSX2 ISO image support."
-msgstr ""
-
+msgstr "Si estàs carregant des d'una ISO aquest error pot sorgir si l'ISO no és compatible."
+"O hi ha un error en el suport d'ISOs de PCSX2"
 #: pcsx2/MTGS.cpp:877
 msgid ""
 "The MTGS thread has become unresponsive while waiting for the GS plugin to "
 "open."
-msgstr ""
+msgstr "El MYGS no responia mentre s'esperava a que s'obris el GS"
 
 #: pcsx2/PluginManager.cpp:709
 msgid ""
 "The savestate cannot be loaded, as it appears to be corrupt or incomplete."
-msgstr ""
+msgstr "No es pot carregar l'estat de guardat, pot estar corrupte o incomplert."
 
 #: pcsx2/PluginManager.cpp:720
 #, c-format
 msgid ""
 "%s plugin failed to open.  Your computer may have insufficient resources, or "
 "incompatible hardware/drivers."
-msgstr ""
+msgstr "El plugin %s no s'ha pogut obrir. El teu ordinador no té recursos suficients o
+té hardware o divers incompatibles."
 
 #: pcsx2/PluginManager.cpp:727
 #, c-format
 msgid ""
 "%s plugin failed to initialize.  Your system may have insufficient memory or "
 "resources needed."
-msgstr ""
+msgstr "El plugin %s no s'ha pogut obrir. El teu ordinador no té memòria suficient o
+els recursos necessaris."
 
 #: pcsx2/PluginManager.cpp:955
 #, c-format
@@ -157,29 +159,33 @@ msgstr "La extensió de %s no es una llibrería dinámica vàlida."
 msgid ""
 "The configured %s plugin is not a PCSX2 plugin, or is for an older "
 "unsupported version of PCSX2."
-msgstr ""
+msgstr "El plugin %s configurat no és un pluguin de PCSX2, o és per
+a una versió més vella de PCSX2."
 
 #: pcsx2/PluginManager.cpp:1010
 msgid ""
 "The plugin reports that your hardware or software/drivers are not supported."
-msgstr ""
+msgstr "El plugin ha identificat que el teu hardware o software/drivers no són
+compatibles."
 
 #: pcsx2/PluginManager.cpp:1031
 msgid ""
 "Configured plugin is not a PCSX2 plugin, or is for an older unsupported "
 "version of PCSX2."
-msgstr ""
+msgstr "El plugin %s configurat no és un pluguin de PCSX2, o és per
+a una versió més vella de PCSX2."
 
 #: pcsx2/PluginManager.cpp:1056
 #, c-format
 msgid ""
 "Configured %s plugin is not a valid PCSX2 plugin, or is for an older "
 "unsupported version of PCSX2."
-msgstr ""
+msgstr "El plugin %s configurat no és un pluguin de PCSX2, o és per
+a una versió més vella de PCSX2."
 
 #: pcsx2/PluginManager.cpp:1490
 msgid "Internal Memorycard Plugin failed to initialize."
-msgstr ""
+msgstr "El plugin de memòria interna ha fallat."
 
 #: pcsx2/PluginManager.cpp:1883
 msgid "Unloaded Plugin"
@@ -188,23 +194,23 @@ msgstr ""
 #: pcsx2/Recording/NewRecordingFrame.cpp:24
 #: pcsx2/gui/Debugger/DisassemblyDialog.cpp:227
 msgid "panel"
-msgstr ""
+msgstr "panell"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:29
 msgid "File Path"
-msgstr ""
+msgstr "Directori"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:30
 msgid "Author"
-msgstr ""
+msgstr "Autor"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:31
 msgid "Record From"
-msgstr ""
+msgstr "Grabar desde"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:41
 msgid "Ok"
-msgstr ""
+msgstr "Ok"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:42 pcsx2/gui/AppInit.cpp:742
 msgid "Cancel"
@@ -212,29 +218,29 @@ msgstr "Cancel·lar"
 
 #: pcsx2/SaveState.cpp:340
 msgid "Cannot load savestate.  It is of an unknown or unsupported version."
-msgstr ""
+msgstr "No es pot carregar l'estat de guardat. Pot ser desconegut o d'una versió sense suport."
 
 #: pcsx2/SourceLog.cpp:96
 msgid "Dumps detailed information for PS2 executables (ELFs)."
-msgstr ""
+msgstr "Desa informació relacionada amb executables de PS2 (ELFs)."
 
 #: pcsx2/SourceLog.cpp:101
 msgid ""
 "Logs manual protection, split blocks, and other things that might impact "
 "performance."
-msgstr ""
-
+msgstr "Guarda la protecció manual, els blocs dividits, i altres coses que poden impactar"
+"el rendiment."
 #: pcsx2/SourceLog.cpp:106
 msgid "Shows the game developer's logging text (EE processor)"
-msgstr ""
+msgstr "Mostra el text guardat del desenvolupador (processador EE)"
 
 #: pcsx2/SourceLog.cpp:111
 msgid "Shows the game developer's logging text (IOP processor)"
-msgstr ""
+msgstr "Mostra el text guardat del desenvolupador (processador IOP)"
 
 #: pcsx2/SourceLog.cpp:116
 msgid "Shows DECI2 debugging logs (EE processor)"
-msgstr ""
+msgstr "Mostra els resums de DECI2 (Processador EE)"
 
 #: pcsx2/SourceLog.cpp:121
 msgid "Shows strings printed to the system output stream."
@@ -406,7 +412,7 @@ msgstr "Sobretot perjudicial"
 
 #: pcsx2/gui/AppConfig.cpp:1144 pcsx2/gui/AppConfig.cpp:1150
 msgid "Failed to overwrite existing settings file; permission was denied."
-msgstr ""
+msgstr "S'ha fallat en sobreescriure la configuració; permis denegat."
 
 #: pcsx2/gui/AppCorePlugins.cpp:398
 msgid "Loading PS2 system plugins..."
@@ -480,7 +486,7 @@ msgstr ""
 
 #: pcsx2/gui/AppInit.cpp:260
 msgid "disables fast booting"
-msgstr ""
+msgstr "Desactiva l'arrencada ràpida"
 
 #: pcsx2/gui/AppInit.cpp:261
 msgid ""
@@ -502,7 +508,7 @@ msgstr ""
 
 #: pcsx2/gui/AppInit.cpp:266
 msgid "enables portable mode operation (requires admin/root access)"
-msgstr ""
+msgstr "activa el mode portable (necessita admin/root)"
 
 #: pcsx2/gui/AppInit.cpp:268
 msgid "update options to ease profiling (debug)"
@@ -538,12 +544,12 @@ msgstr ""
 #: pcsx2/gui/AppInit.cpp:557 pcsx2/gui/AppInit.cpp:569
 #, c-format
 msgid "Press OK to close %s."
-msgstr ""
+msgstr "Prem Ok per tancar %s."
 
 #: pcsx2/gui/AppInit.cpp:570
 #, c-format
 msgid "%s Critical Error"
-msgstr ""
+msgstr "%s Error Critic"
 
 #: pcsx2/gui/AppInit.cpp:740
 msgid "OK"
@@ -607,14 +613,14 @@ msgstr "&Inici"
 
 #: pcsx2/gui/AppInit.cpp:757
 msgid "Show about dialog"
-msgstr ""
+msgstr "Mostrar sobre dialeg"
 
 #: pcsx2/gui/AppMain.cpp:79
 msgid ""
 "\n"
 "\n"
 "Press Ok to go to the Plugin Configuration Panel."
-msgstr ""
+msgstr "Pitxa Ok per anar al panell de configuració de pluguins"
 
 #: pcsx2/gui/AppMain.cpp:136 pcsx2/gui/AppMain.cpp:150
 msgid ""
@@ -623,15 +629,15 @@ msgstr ""
 
 #: pcsx2/gui/AppMain.cpp:184 pcsx2/gui/AppMain.cpp:189
 msgid "PS2 BIOS Error"
-msgstr ""
+msgstr "Error de BIOS de PS2"
 
 #: pcsx2/gui/AppMain.cpp:184
 msgid "Press Ok to go to the BIOS Configuration Panel."
-msgstr ""
+msgstr "Pitxa Ok per anar a el panell de configuració de la BIOS."
 
 #: pcsx2/gui/AppMain.cpp:207
 msgid "Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."
-msgstr ""
+msgstr "Alerta! No s'ha seleccionat una BIOS valida. PCSX2 pot ser inoperable."
 
 #: pcsx2/gui/AppMain.cpp:380
 #, c-format
@@ -640,51 +646,52 @@ msgstr ""
 
 #: pcsx2/gui/AppMain.cpp:715
 msgid "PCSX2 Unresponsive Thread"
-msgstr ""
+msgstr "Part de PCSX2 no respon"
 
 #: pcsx2/gui/AppMain.cpp:722
 msgid "Terminate"
-msgstr ""
+msgstr "Acabar"
 
 #: pcsx2/gui/AppMain.cpp:1097
 msgid "Executing PS2 Virtual Machine..."
-msgstr ""
+msgstr "Executant la màquina virual de PS2..."
 
 #: pcsx2/gui/AppRes.cpp:46
 msgid "Always ask when booting"
-msgstr ""
+msgstr "Pregunat sempre quan s'obri"
 
 #: pcsx2/gui/AppRes.cpp:46
 msgid ""
 "Manually select an ISO upon boot ignoring the selection from recent ISO list."
-msgstr ""
+msgstr "Tria una ISO manualment al iniciar, ignorant la selecció de la llista d'ISOs."
 
 #: pcsx2/gui/AppRes.cpp:48
 msgid "Browse for an ISO that is not in your recent history."
-msgstr ""
+msgstr "Busca una ISO que no sigui recent,"
 
 #: pcsx2/gui/AppRes.cpp:48
 msgid "Browse..."
-msgstr ""
+msgstr "Busca..."
 
 #: pcsx2/gui/AppUserMode.cpp:92
 msgid "The following folders exist, but are not writable:"
-msgstr ""
+msgstr "Les següents carpetes existeixen però no és poden escriure:"
 
 #: pcsx2/gui/AppUserMode.cpp:97
 msgid "The following folders are missing and cannot be created:"
-msgstr ""
+msgstr "Les següents carpetes no estàn i no es poden crear:"
 
 #: pcsx2/gui/AppUserMode.cpp:137
 #, c-format
 msgid "Portable mode error - %s"
-msgstr ""
+msgstr "Error del mode portable - %s"
 
 #: pcsx2/gui/AppUserMode.cpp:150
 msgid ""
 "PCSX2 has been installed as a portable application but cannot run due to the "
 "following errors:"
-msgstr ""
+msgstr "PCSX2 s'ha instal·lat en format prtable però no és pot iniciar per els"
+"Seguents errors:"
 
 #: pcsx2/gui/AppUserMode.cpp:158
 msgid "Switch to User Documents Mode"
@@ -719,11 +726,11 @@ msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:419
 msgid "&Normal font"
-msgstr ""
+msgstr "&Lletra Normal"
 
 #: pcsx2/gui/ConsoleLogger.cpp:419
 msgid "It's what I use (the programmer guy)."
-msgstr ""
+msgstr "És el que utilitzo (el tiu de programació)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:421
 msgid "&Large"
@@ -829,53 +836,53 @@ msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:465
 msgid "&Restore Default"
-msgstr ""
+msgstr "&Restaura a per defecte"
 
 #: pcsx2/gui/ConsoleLogger.cpp:465
 msgid "Restore default source filters."
-msgstr ""
+msgstr "restaura els filtres"
 
 #: pcsx2/gui/ConsoleLogger.cpp:467
 msgid "&Log"
-msgstr ""
+msgstr "&Registre"
 
 #: pcsx2/gui/ConsoleLogger.cpp:468
 msgid "&Sources"
-msgstr ""
+msgstr "&Fonts"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:36
 #, c-format
 msgid "About %s"
-msgstr ""
+msgstr "Sobre %s"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Website"
-msgstr ""
+msgstr "Pàgina web"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:56
 msgid "Support Forums"
-msgstr ""
+msgstr "Forumd de assistencia"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:58
 msgid "GitHub Repository"
-msgstr ""
+msgstr "Repositori de GitHub"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:60
 msgid "License"
-msgstr ""
+msgstr "Llicensia"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:62
 msgid "PlayStation 2 Emulator:"
-msgstr ""
+msgstr "Emulador de PlayStation 2"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:64
 msgid ""
 "Big thanks to everyone who contributed to the project throughout the years."
-msgstr ""
+msgstr "Moltes gràcies a tothom que ha col·laborat en aquest projecte tots aquests anys."
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
 msgid "Close"
-msgstr ""
+msgstr "Tencar"
 
 #: pcsx2/gui/Dialogs/AssertionDialog.cpp:24
 msgid "Assertion Failure - "
@@ -891,7 +898,7 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:195
 msgid "Do not show this dialog again."
-msgstr ""
+msgstr "No ensenys aquest dialeg un altre cop."
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:201
 msgid ""
@@ -908,21 +915,21 @@ msgstr ""
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:249
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:294
 msgid "Ignore"
-msgstr ""
+msgstr "Ignorar"
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:267
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:276
 msgid "Retry"
-msgstr ""
+msgstr "Reintentar"
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:270
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:273
 msgid "Abort"
-msgstr ""
+msgstr "Abortar"
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:280
 msgid "Reset"
-msgstr ""
+msgstr "Reinicar"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:36
 msgid "Convert a memory card to a different format"
@@ -930,15 +937,15 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:47
 msgid "Convert"
-msgstr ""
+msgstr "Convertir"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:53
 msgid "Convert: "
-msgstr ""
+msgstr "Convertir"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:56
 msgid "To: "
-msgstr ""
+msgstr "A:"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "8MB File"
@@ -958,18 +965,18 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
 msgid "Convert this memory card to a folder of individual saves."
-msgstr ""
+msgstr "Converteix la targeta de memória a una carpeta de dades individuals."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
 msgid "Folder"
-msgstr ""
+msgstr "Carpeta"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:122
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:179
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:811
 #, c-format
 msgid "Error (%s)"
-msgstr ""
+msgstr "Error (%s)"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:123
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:153
@@ -979,7 +986,7 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:153
 msgid "This target type is not supported!"
-msgstr ""
+msgstr "El format de la targeta no té suport!"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:159
 msgid "Memory Card conversion failed for unknown reasons."
@@ -987,21 +994,21 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:41
 msgid "Create a new memory card"
-msgstr ""
+msgstr "crea una nova targeta de memória"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:58
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:73
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:271
 msgid "Create"
-msgstr ""
+msgstr "Crear"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:72
 msgid "New memory card:"
-msgstr ""
+msgstr "Nova targeta de memória."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:73
 msgid "At folder:    "
-msgstr ""
+msgstr "A la carpeta:    "
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:76
 msgid "Select file name: "
@@ -1011,15 +1018,15 @@ msgstr ""
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:192
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:207
 msgid "Create memory card"
-msgstr ""
+msgstr "Crear targeta de memória"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:191
 msgid "Error: The directory for the memory card could not be created."
-msgstr ""
+msgstr "Eror: El directorí per la targeta de memória no s'ha pogut crear."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:206
 msgid "Error: The memory card could not be created."
-msgstr ""
+msgstr "Error: la targeta de memòria no s'ha pogut crear."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:221
 msgid "Use NTFS compression when creating this card."
@@ -1039,7 +1046,8 @@ msgstr ""
 msgid ""
 "Always use this option if you want the safest and surest memory card "
 "behavior."
-msgstr ""
+msgstr "Semnpre fes servir aquesta opció per al comportament més segur "
+"de targetes de memória."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:243
 msgid "16 MB"
@@ -1054,7 +1062,7 @@ msgstr ""
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:244
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:248
 msgid "16 and 32 MB cards have roughly the same compatibility factor."
-msgstr ""
+msgstr "Targetes de 16 i 32 MB tenen el mateix factor de compatibilitat."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:247
 msgid "32 MB"
@@ -1068,13 +1076,15 @@ msgstr ""
 msgid ""
 "Low compatibility warning: Yes it's very big, but may not work with many "
 "games."
-msgstr ""
+msgstr "Advertencia de baixa compatibilitat: Si, és molt alta però no sempre "
+"funcióna amb tots els jocs."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:252
 msgid ""
 "Use at your own risk.  Erratic memory card behavior is possible (though "
 "unlikely)."
-msgstr ""
+msgstr "Utilitzar amb el teu propy risc. És possible que hi hagui comportament erratic"
+"a la targeta de memòria (tot i que és improbable)."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:255
 msgid "Folder [experimental]"
@@ -1100,7 +1110,8 @@ msgstr ""
 msgid ""
 "This is the standard Sony-provisioned size PSX memory card, only compatible "
 "with PSX games."
-msgstr ""
+msgstr "Aquest és el tamany estandard de Sony per a targetes de memòria de PSX,"
+"només són compatibles amb jocs de PSX."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:260
 msgid ""
@@ -1181,14 +1192,17 @@ msgstr "Deixa anar targetes \"a\" o \"desde\" els Ports de la PS2"
 msgid ""
 "\n"
 "Note: Duplicate/Rename/Create/Delete will NOT be reverted with 'Cancel'."
-msgstr ""
+msgstr 
+"\n"
+"Nota: Duplicar/Renombrar/Crear/Esborrar NO és pot revertir amb 'Cancelar'."
+
 "\n"
 "Nota: \"Duplicar/Canviar el nom/Crear/Eliminar\" NO serà revertit amb "
 "\"Cancel·lar\"."
 
 #: pcsx2/gui/Dialogs/PickUserModeDialog.cpp:24
 msgid "PCSX2 First Time configuration"
-msgstr ""
+msgstr "Configuració de PCSX2 per primer cop"
 
 #: pcsx2/gui/Dialogs/PickUserModeDialog.cpp:29
 #, c-format
@@ -1260,11 +1274,11 @@ msgstr "Selector d'idioma"
 
 #: pcsx2/gui/ExecutorThread.cpp:41
 msgid "Logs events as they are passed to the PS2 virtual machine."
-msgstr ""
+msgstr "Registra esdeveniments a temps real a la màquina virtual de PS2."
 
 #: pcsx2/gui/GlobalCommands.cpp:316
 msgid "Exit PCSX2?"
-msgstr ""
+msgstr "Sortir de PCSX2?"
 
 #: pcsx2/gui/GlobalCommands.cpp:622
 #, fuzzy
@@ -1273,7 +1287,7 @@ msgstr "Guarda l'estat"
 
 #: pcsx2/gui/GlobalCommands.cpp:623
 msgid "Saves the virtual machine state to the current slot."
-msgstr ""
+msgstr "Guarda la màquina virtual a l'eslot selecciónat."
 
 #: pcsx2/gui/GlobalCommands.cpp:629
 #, fuzzy
@@ -1282,11 +1296,11 @@ msgstr "Carregarun estat"
 
 #: pcsx2/gui/GlobalCommands.cpp:630
 msgid "Loads a virtual machine state from the current slot."
-msgstr ""
+msgstr "Carrega la màquina virtual desde l'estat de l'eslot selecciónat."
 
 #: pcsx2/gui/GlobalCommands.cpp:636
 msgid "Load State Backup"
-msgstr ""
+msgstr "Carrega backup d'estat"
 
 #: pcsx2/gui/GlobalCommands.cpp:637
 msgid "Loads virtual machine state backup for current slot."
@@ -1321,7 +1335,7 @@ msgstr ""
 
 #: pcsx2/gui/IsoDropTarget.cpp:87 pcsx2/gui/MainMenuClicks.cpp:351
 msgid "Confirm PS2 Reset"
-msgstr ""
+msgstr "Confirma el reinici de PS2"
 
 #: pcsx2/gui/IsoDropTarget.cpp:89
 #, c-format
@@ -1657,7 +1671,7 @@ msgstr "Arrenca utilitzant el CDVD o ISO amb la màquina virtual"
 
 #: pcsx2/gui/MainFrame.cpp:721
 msgid "Boo&t BIOS"
-msgstr ""
+msgstr "Inicia la BIOS"
 
 #: pcsx2/gui/MainFrame.cpp:722
 #, fuzzy
@@ -1666,7 +1680,7 @@ msgstr "Arrenca utilitzant el CDVD o ISO amb la màquina virtual"
 
 #: pcsx2/gui/MainFrame.cpp:803 pcsx2/gui/MainFrame.cpp:838
 msgid "No plugin loaded"
-msgstr ""
+msgstr "Cap plugion carregat"
 
 #: pcsx2/gui/MainFrame.cpp:808
 msgid "&Core GS Settings..."
@@ -1676,15 +1690,15 @@ msgstr ""
 msgid ""
 "Modify hardware emulation settings regulated by the PCSX2 core virtual "
 "machine."
-msgstr ""
+msgstr "Canvia les opcions del hardware emulat regulat pel nucli virtual de PCSX2."
 
 #: pcsx2/gui/MainFrame.cpp:811
 msgid "&Window Settings..."
-msgstr ""
+msgstr "Opcions de la finestra"
 
 #: pcsx2/gui/MainFrame.cpp:812
 msgid "Modify window and appearance options, including aspect ratio."
-msgstr ""
+msgstr "Canvia l'aparença de la finestra, incloent-hi la relació d'aspecte."
 
 #: pcsx2/gui/MainFrame.cpp:819
 msgid "&Plugin Settings..."
@@ -1697,42 +1711,42 @@ msgstr ""
 
 #: pcsx2/gui/MainMenuClicks.cpp:116
 msgid "Reset all settings?"
-msgstr ""
+msgstr "Reiniciar totes les configuracións?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:144
 msgid "Confirm ISO image change"
-msgstr ""
+msgstr "Confirma el cambi d'ISO"
 
 #: pcsx2/gui/MainMenuClicks.cpp:150
 msgid "Do you want to swap discs or boot the new image (via system reset)?"
-msgstr ""
+msgstr "Vols cambiar de discos o carregar la nova imatge (a partir de reiniciar)?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:152 pcsx2/gui/MainMenuClicks.cpp:198
 msgid "Swap Disc"
-msgstr ""
+msgstr "Cambia el disc"
 
 #: pcsx2/gui/MainMenuClicks.cpp:188
 msgid "Confirm CDVD source change"
-msgstr ""
+msgstr "Confirma el cambi de font de CDVD"
 
 #: pcsx2/gui/MainMenuClicks.cpp:191
 #, c-format
 msgid "You've selected to switch the CDVD source from %s to %s."
-msgstr ""
+msgstr "Has triat cambiar la font de CDVD de %s a %s"
 
 #: pcsx2/gui/MainMenuClicks.cpp:195
 msgid "Do you want to swap discs or boot the new image (system reset)?"
-msgstr ""
+msgstr "Vols cambiar de discos o carregar la nova imatge (a partir de reiniciar)?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:267
 #, c-format
 msgid "All Supported (%s)"
-msgstr ""
+msgstr "Tot els %s suportats"
 
 #: pcsx2/gui/MainMenuClicks.cpp:270
 #, c-format
 msgid "Disc Images (%s)"
-msgstr ""
+msgstr "Imatges de discs (%s)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:273
 #, c-format
@@ -1742,49 +1756,51 @@ msgstr ""
 #: pcsx2/gui/MainMenuClicks.cpp:276
 #, c-format
 msgid "Compressed (%s)"
-msgstr ""
+msgstr "Comprimit (%s)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:279 pcsx2/gui/MainMenuClicks.cpp:300
 msgid "All Files (*.*)"
-msgstr ""
+msgstr "Tots els arxius (*.*)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:282
 msgid "Select disc image, compressed disc image, or block-dump..."
-msgstr ""
+msgstr "Selecciona una imatge de disc, una imatge de disc comprimida, o un block dump.."
 
 #: pcsx2/gui/MainMenuClicks.cpp:299
 msgid "Select ELF file..."
-msgstr ""
+msgstr "Sewlecciona un arxiu ELF"
 
 #: pcsx2/gui/MainMenuClicks.cpp:325
 msgid "ISO file not found!"
-msgstr ""
+msgstr "No s'ha trobat l'ISO!"
 
 #: pcsx2/gui/MainMenuClicks.cpp:327
 msgid "An error occurred while trying to open the file:"
-msgstr ""
+msgstr "Hi ha agut un error intentant obrir l'arxiu:"
 
 #: pcsx2/gui/MainMenuClicks.cpp:328
 msgid ""
 "Error: The configured ISO file does not exist.  Click OK to select a new ISO "
 "source for CDVD."
-msgstr ""
-
+msgstr "Error: L'arxiu ISO no existeix. Fes click a Ok per triar una nova ISO"
+"fonts per a CDVD."
 #: pcsx2/gui/MainMenuClicks.cpp:399
 msgid ""
 "You have selected the following ISO image into PCSX2:\n"
 "\n"
-msgstr ""
+msgstr "Has triat la següent imatge ISO per a PCSX2:\n"
+"\n"
 
 #: pcsx2/gui/MainMenuClicks.cpp:419
 msgid "Confirm clearing ISO list"
-msgstr ""
+msgstr "Confirma natejar la llista d'ISOs"
 
 #: pcsx2/gui/MainMenuClicks.cpp:420
 msgid ""
 "This will clear the ISO list. If an ISO is running it will remain in the "
 "list. Continue?"
-msgstr ""
+msgstr "Això esborrara el llistat d'ISOs. Si una ISO és activa és quedara a"
+"la llista. Continuar?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:504
 msgid ""
@@ -1795,12 +1811,18 @@ msgid ""
 "\n"
 "These tools are provided as-is and should be enabled under your own "
 "discretion."
-msgstr ""
+msgstr "Tingues en compte que les funcións de grabació d' entrada estàn en"
+"process de creació.\n"
+"Com a resultat hi poden haver-ho molts errors, problemes de rendiment i"
+"inestabilitat en certs jocs.\n"
+"\n"
+"Aquestes eines és proporcionen "tal qual" i s'han d'usar sota la seva"
+"discreció.\n"
 
 #: pcsx2/gui/MainMenuClicks.cpp:589
 #, fuzzy
 msgid "Load State"
-msgstr "Carregarun estat"
+msgstr "Carregar un estat"
 
 #: pcsx2/gui/MainMenuClicks.cpp:603
 #, fuzzy
@@ -1809,7 +1831,7 @@ msgstr "Guarda l'estat"
 
 #: pcsx2/gui/MainMenuClicks.cpp:844
 msgid "Select P2M2 record file."
-msgstr ""
+msgstr "Tria una gravació P2M2"
 
 #: pcsx2/gui/MemoryCardFile.cpp:196
 #, c-format
@@ -1818,7 +1840,10 @@ msgid ""
 "\n"
 "%s\n"
 "\n"
-msgstr ""
+msgstr "No és pot crear una targeta de memòria a: \n "
+"\n"
+"%s\n"
+"\n"
 
 #: pcsx2/gui/MemoryCardFile.cpp:214
 #, c-format
@@ -1827,27 +1852,30 @@ msgid ""
 "\n"
 "%s\n"
 "\n"
-msgstr ""
+msgstr "Acces denegat a la targeta de memòria a: \n"
+"\n"
+"%s\n"
+"\n"
 
 #: pcsx2/gui/MemoryCardFile.cpp:697
 msgid "File name empty or too short"
-msgstr ""
+msgstr "El Nom de l'arxiu és massa curt o massa llarg"
 
 #: pcsx2/gui/MemoryCardFile.cpp:702
 msgid "File name outside of required directory"
-msgstr ""
+msgstr "El nom de l'arxiu està fora del directori requerit"
 
 #: pcsx2/gui/MemoryCardFile.cpp:708 pcsx2/gui/MemoryCardFile.cpp:713
 msgid "File name already exists"
-msgstr ""
+msgstr "El nom de l'arxiu ja estisteix"
 
 #: pcsx2/gui/MemoryCardFile.cpp:720
 msgid "The Operating-System prevents this file from being created"
-msgstr ""
+msgstr "El Sistema Operatiu impedeix la creació de l'arxiu"
 
 #: pcsx2/gui/Panels/BaseApplicableConfigPanel.cpp:103
 msgid "Cannot apply settings..."
-msgstr ""
+msgstr "No és poden applicar les configuracións"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:100
 msgid "BIOS Search Path:"
@@ -1933,7 +1961,7 @@ msgstr "Interpretador"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:118
 msgid "Quite possibly the slowest thing in the universe."
-msgstr ""
+msgstr "Possiblement la cosa més lenta de l'univers."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:120 pcsx2/gui/Panels/CpuPanel.cpp:129
 msgid "Recompiler"
@@ -1943,17 +1971,19 @@ msgstr "Recompilador"
 msgid ""
 "Performs just-in-time binary translation of 64-bit MIPS-IV machine code to "
 "x86."
-msgstr ""
+msgstr "Fa una traducció just a temps de 64-bits MIPS-IV a"
+"x86."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:127
 msgid "Pretty slow; provided for diagnostic purposes only."
-msgstr ""
+msgstr "Molt lent; només s'utilitza per a fer diagnostics."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:130
 msgid ""
 "Performs just-in-time binary translation of 32-bit MIPS-I machine code to "
 "x86."
-msgstr ""
+msgstr ""Fa una traducció just a temps de 32-bits MIPS-I a"
+"x86."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:154
 msgid "Enable EE Cache (Slower)"
@@ -1961,18 +1991,19 @@ msgstr "Activa la cache de EE (Més lent)"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:154
 msgid "Interpreter only; provided for diagnostic"
-msgstr ""
+msgstr "Només l'Interpretador; s'utilitza per a diagnostic"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:226
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:134 pcsx2/gui/Panels/VideoPanel.cpp:294
 msgid "Restore Defaults"
-msgstr ""
+msgstr "Restaura a per defecte"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:186
 msgid ""
 "Vector Unit Interpreter. Slow and not very compatible. Only use for "
 "diagnostics."
-msgstr ""
+msgstr "Interpretador d' Unitat de Vector. Molt lent i no gaire compatible. Només s'utilitza"
+"per a diagnosticar."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:188
 msgid "microVU Recompiler"
@@ -1994,7 +2025,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:64
 msgid "Path does not exist"
-msgstr ""
+msgstr "El camí no existeix"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:155
 msgid "Use default setting"
@@ -2006,20 +2037,20 @@ msgstr "Obriu en el explorador"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:175
 msgid "Open an explorer window to this folder."
-msgstr ""
+msgstr "Obre una finestra nova a aquesta carpeta."
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:266
 msgid "Create folder?"
-msgstr ""
+msgstr "Craer carpeta?"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:267
 #, c-format
 msgid "A configured folder does not exist.  Should %s try to create it?"
-msgstr ""
+msgstr "Una carpeta configurada no existeix. La hauriem d'intentar crear %s?"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:30
 msgid "Fit to Window/Screen"
-msgstr ""
+msgstr "Emplena la Finestra/Pantalla"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:31 pcsx2/gui/Panels/GSWindowPanel.cpp:38
 msgid "Standard (4:3)"
@@ -2031,7 +2062,7 @@ msgstr "Pantalla Panoràmica (16:9)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:37
 msgid "Off (Default)"
-msgstr ""
+msgstr "Off (per defecte)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:45
 #, fuzzy
@@ -2046,7 +2077,7 @@ msgstr "Estándar (4:3)"
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:47
 #, fuzzy
 msgid "Adaptive"
-msgstr "Negatiu"
+msgstr "Adaptatiu"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:67
 msgid "Disable window resize border"
@@ -2094,11 +2125,11 @@ msgstr "Espera a VSync per refrescar"
 msgid ""
 "Invalid window dimensions specified: Size cannot contain non-numeric digits! "
 ">_<"
-msgstr ""
-
+msgstr "Dimensións de finestra especificada invalids: El tamany no pot contenir caràcters no"
+"numérics! >_<"  
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:25
 msgid "Gamefixes"
-msgstr ""
+msgstr "Reparacións per jocs"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:40
 msgid "VU Add Hack - Fixes Tri-Ace games boot crash."
@@ -2204,23 +2235,25 @@ msgstr "Activa les correccions de joc manuals [No recomanat]"
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:250
 msgid "Enable Trace Logging"
-msgstr ""
+msgstr "Activa el registre"
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:251
 msgid ""
 "Trace logs are all written to emulog.txt.  Toggle trace logging at any time "
 "using F10."
-msgstr ""
+msgstr "Tots els registres s'escriuen a emulog.txt. Pots activar el registre quan vulguis"
+"fent servir l'F10."
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:252
 msgid ""
 "Warning: Trace logging is typically very slow, and is a leading cause of "
 "'What happened to my FPS?' problems. :)"
-msgstr ""
+msgstr "Alerta: els registres són bastant lents i és la causa més comu de"
+" problemes de 'On són els meus FPS?' :).
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:187
 msgid "Select folder with PS2 memory cards"
-msgstr ""
+msgstr "Seleccióna una carpeta mab targetes de memória de PS2"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:388
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:480
@@ -2256,7 +2289,7 @@ msgstr "Crea una nova targeta de memòria"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:476
 msgid "Rename this memory card ..."
-msgstr ""
+msgstr "Cambia el nom a aquesta targeta de memòria ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:480
 msgid "Insert ..."
@@ -2264,15 +2297,15 @@ msgstr "Inserta ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:481
 msgid "Eject the card from this port"
-msgstr ""
+msgstr "Extreu la targeta d'aquest port"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:481
 msgid "Insert this card to a port ..."
-msgstr ""
+msgstr "Inserta una targeta a aquest port"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:485
 msgid "Create a duplicate of this memory card ..."
-msgstr ""
+msgstr "Crea un duplicat d'aquesta targeta de memória ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:489
 msgid ""
@@ -2289,67 +2322,69 @@ msgstr "Elimina"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:496
 msgid "Permanently delete this memory card from disk (all contents are lost)"
-msgstr ""
+msgstr "Esborrar permanentment aquesta targeta de memòria del disc? (tot el contingut es perdrà)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:498
 msgid "Create a new memory card and assign it to this Port."
-msgstr ""
+msgstr "Crea una nova targeta de memória i l'assigna a aquest Port."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:683
 msgid "Delete memory file?"
-msgstr ""
+msgstr "Esborrar l'arxiu de memória?"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:721
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:742
 msgid "Duplicate memory card"
-msgstr ""
+msgstr "Duplica la targeta de memória"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
 msgid "Failed: Can only duplicate an existing card."
-msgstr ""
+msgstr "Fallida: Només es pot duplicar una targeta ja existent."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
 msgid ""
 "Select a name for the duplicate\n"
 "( '.ps2' will be added automatically)"
-msgstr ""
+msgstr "Selecciona un nom per el duplicat\n"
+"( '.ps2' s'afagira automàticament)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:741
 #, c-format
 msgid "Failed: %s"
-msgstr ""
+msgstr "Fallida: %s"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:766
 msgid "Copy failed!"
-msgstr ""
+msgstr "La copia ha fallat!"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:773
 #, c-format
 msgid "Memory card '%s' duplicated to '%s'."
-msgstr ""
+msgstr "Targeta de memória '%s' duplicada a '%s'."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:777
 msgid "Success"
-msgstr ""
+msgstr "Èxit"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:797
 #, c-format
 msgid ""
 "Select a new name for the memory card '%s'\n"
 "( '.ps2' will be added automatically)"
-msgstr ""
+msgstr "Tria un nom nou per la targeta de memória '%s'\n"
+"( '.ps2' s'afagira automàticament)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:800
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:812
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:826
 msgid "Rename memory card"
-msgstr ""
+msgstr "Cambia el nom a una targeta de memória"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:826
 msgid "Error: Rename could not be completed.\n"
-msgstr ""
+msgstr "Error: No s'ha pogut renombrar.\n"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:926
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:134
@@ -2502,15 +2537,15 @@ msgstr "Aplicar"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:126
 msgid "Make this language my default right now!"
-msgstr ""
+msgstr "Fes aquest l'idioma per defecte d'immediat!"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:38
 msgid "Cheats:"
-msgstr ""
+msgstr "Trampes"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:39
 msgid "Select folder for Cheats"
-msgstr ""
+msgstr "Tria una carpeta per a Trampes"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:46
 msgid "Savestates:"
@@ -2518,7 +2553,7 @@ msgstr "Estats de guardat:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:47
 msgid "Select folder for Savestates"
-msgstr ""
+msgstr "Tria una carpeta per estats de guardat"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:54
 msgid "Snapshots:"
@@ -2526,7 +2561,7 @@ msgstr "Instantànies:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:55
 msgid "Select a folder for Snapshots"
-msgstr ""
+msgstr "Tria una carpeta per estats de guardat"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:62
 msgid "Logs/Dumps:"
@@ -2534,19 +2569,19 @@ msgstr "Registres/Volcats:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:63
 msgid "Select a folder for logs/dumps"
-msgstr ""
+msgstr "Tria una carpeta per a registres"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:228
 msgid "Applying settings..."
-msgstr ""
+msgstr "Aplicant configuracións..."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:238
 msgid "Shutdown PS2 virtual machine?"
-msgstr ""
+msgstr "Apagar la màquina virtual de PS2?"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:315
 msgid "I'm givin' her all she's got, Captain!"
-msgstr ""
+msgstr "L'hi estic donant tot el que puc, Capità!"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:317
 msgid "Enumerating available plugins..."
@@ -2755,7 +2790,7 @@ msgstr "Limitador de Frames"
 
 #: pcsx2/gui/RecentIsoList.cpp:139
 msgid "Clear ISO list"
-msgstr ""
+msgstr "Natejar la llista d' ISOs"
 
 #: pcsx2/gui/Saveslots.h:96
 #, fuzzy, c-format
@@ -2790,21 +2825,24 @@ msgid ""
 "This savestate cannot be loaded because it is not a valid gzip archive.  It "
 "may have been created by an older unsupported version of PCSX2, or it may be "
 "corrupted."
-msgstr ""
+msgstr "L'estat de guardat no pot carregar perque no és un arxiu gzip valid. Pot"
+"haver-se creat en una versió antiga de PCSX2 o pot ser que estigui corrupte."
 
 #: pcsx2/gui/SysState.cpp:588
 msgid "This file is not a valid PCSX2 savestate.  See the logfile for details."
-msgstr ""
+msgstr "Aquest arxiu no és un estat de guardat de PCSX2 valid."
+"Llegeix l'arxiu d'enregistrament per a més detalls."
 
 #: pcsx2/gui/SysState.cpp:607
 msgid ""
 "This savestate cannot be loaded due to missing critical components.  See the "
 "log file for details."
-msgstr ""
+msgstr "L'estat de guardat no es pot carregar per culpa de components critics que falten. Llegeix"
+"l'arxiu d'enregistrament per a més detalls."
 
 #: pcsx2/gui/i18n.cpp:63
 msgid " (default)"
-msgstr ""
+msgstr " (per defecte)"
 
 #: pcsx2/ps2/BiosTools.cpp:90 pcsx2/ps2/BiosTools.cpp:158
 msgid "The selected BIOS file is not a valid PS2 BIOS.  Please re-configure."
@@ -2814,30 +2852,32 @@ msgstr ""
 msgid ""
 "The PS2 BIOS could not be loaded.  The BIOS has not been configured, or the "
 "configuration has been corrupted.  Please re-configure."
-msgstr ""
+msgstr "La BIOS de PS2 no s'ha pogut carregar. La BIOS s'ha reconfigurat, o la"
+"cconfiguració s'ha corromput.  Si us plau, reconfigura'l."
 
 #: pcsx2/ps2/BiosTools.cpp:278
 msgid "The configured BIOS file does not exist.  Please re-configure."
-msgstr ""
+msgstr "L'arxiu de configuració de la BIOS no existeix. Si us plau, reconfigura'l."
 
 #: pcsx2/x86/ix86-32/iR5900-32.cpp:472
 #, c-format
 msgid ""
 "%s Extensions not found.  The R5900-32 recompiler requires a host CPU with "
 "SSE2 extensions."
-msgstr ""
+msgstr "Les extensions %s no s'han trobat, El recompilador R5900-32 necessita una CPU amb "
+"extensions SSE2."
 
 #: pcsx2/x86/microVU.cpp:32
 #, c-format
 msgid ""
 "%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
-msgstr ""
+msgstr "Les extensions %s no s'han trobat, es necessita una CPU amb extensions SSE2."
 
 #~ msgid "Safest"
-#~ msgstr "El mes segur"
+#~ msgstr "El més segur"
 
 #~ msgid "Aggressive plus"
-#~ msgstr "Més agresiu"
+#~ msgstr "El més agresiu"
 
 #~ msgid "&Game Database Editor"
 #~ msgstr "Editor de Base de dades de jocs"
@@ -2858,9 +2898,9 @@ msgstr ""
 #~ msgstr "Reinicia CDVD (Sencer)"
 
 #~ msgid "Reboot CDVD (&fast)"
-#~ msgstr "Reinicia CDVD (Rapid)"
+#~ msgstr "Reinicia CDVD (Ràpid)"
 
 #~ msgid "Ignore Bus Direction on Path3 Transfer - Used for Hotwheels"
 #~ msgstr ""
-#~ "Ignorar Direcció de bus a la transferencia de Path3 - S'utilitza per "
+#~ "Ignorar Direcció de bus a la transferencia del Path3 - S'utilitza per "
 #~ "Hotwheels"
