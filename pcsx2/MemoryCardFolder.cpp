@@ -37,7 +37,8 @@
 
 bool RemoveDirectory(const wxString& dirname);
 
-ryml::Tree parseYamlStr(const std::string& str) {
+ryml::Tree parseYamlStr(const std::string& str)
+{
 	ryml::Callbacks rymlCallbacks = ryml::get_callbacks();
 	rymlCallbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void*) {
 		throw std::runtime_error(fmt::format("[YAML] Parsing error at {}:{} (bufpos={}): {}",
@@ -1293,6 +1294,15 @@ void FolderMemoryCard::FlushFileEntries(const u32 dirCluster, const u32 remainin
 						else if (!yaml.value().empty())
 						{
 							ryml::NodeRef index = yaml.value().rootref();
+
+							// Detect broken index files, every index file should have atleast ONE child ('[$%]ROOT')
+							if (!index.has_children())
+							{
+								AttemptToRecreateIndexFile(Path::FromWxString(m_folderName.GetFullPath() + subDirPath));
+								yaml = loadYamlFile(metaFileName.GetFullPath());
+								index = yaml.value().rootref();
+							}
+
 							ryml::NodeRef entryNode;
 							if (index.has_child("%ROOT"))
 							{
@@ -1707,6 +1717,48 @@ void FolderMemoryCard::SetTimeLastWrittenToNow()
 	m_framesUntilFlush = FramesAfterWriteUntilFlush;
 }
 
+void FolderMemoryCard::AttemptToRecreateIndexFile(fs::path directory) const
+{
+	// Attempt to fix broken index files (potentially broken in v1.7.2115, fixed in 1.7.2307
+	Console.Error(fmt::format("[Memcard] Folder memory card index file is malformed, backing up and attempting to re-create.  This may not work for all games (ie. GTA), so backing up the current index file!. '{}'",
+		directory.string()));
+
+	// This isn't full-proof, so we backup the broken index file
+	fs::copy_file(directory / "_pcsx2_index", directory / "_pcsx2_index.invalid.bak", fs::copy_options::overwrite_existing);
+
+	// Create everything relative to a point in time, with an artifical delay to minimize edge-cases
+	auto currTime = std::time(nullptr) - 1000;
+	auto currOrder = 1;
+	ryml::Tree tree;
+	ryml::NodeRef root = tree.rootref();
+	root |= ryml::MAP;
+	root.append_child() << ryml::key("$ROOT") |= ryml::MAP;
+	root["$ROOT"]["timeCreated"] << currTime++;
+
+	for (const auto& entry : fs::directory_iterator(directory))
+	{
+		auto fileName = entry.path().filename().string();
+		if (entry.is_directory() || fileName.rfind("_pcsx2_", 0) == 0)
+		{
+			continue;
+		}
+
+		root.append_child() << ryml::key(fileName) |= ryml::MAP;
+		ryml::NodeRef newNode = root[c4::to_csubstr(fileName)];
+		newNode["order"] << currOrder++;
+		newNode["timeCreated"] << currTime++;
+		newNode["timeModified"] << currTime++;
+	}
+
+	root["$ROOT"]["timeModified"] << currTime;
+
+	auto file = FileSystem::OpenCFile((directory / "_pcsx2_index").string().c_str(), "w");
+
+	ryml::emit(tree, file);
+	std::fflush(file);
+	std::fclose(file);
+}
+
 std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedFiles(const wxString& dirPath) const
 {
 	std::vector<EnumeratedFileEntry> result;
@@ -1783,13 +1835,23 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 				wxDateTime creationTime, modificationTime;
 				fileInfo.GetTimes(nullptr, &modificationTime, &creationTime);
 
-				std::optional<ryml::Tree> yaml = loadYamlFile(wxFileName(fileInfo.GetFullPath(), "_pcsx2_index").GetFullPath());
+				auto fullPath = wxFileName(fileInfo.GetFullPath(), "_pcsx2_index").GetFullPath();
+				std::optional<ryml::Tree> yaml = loadYamlFile(fullPath);
 
 				EnumeratedFileEntry entry{fileName, creationTime.GetTicks(), modificationTime.GetTicks(), false};
 				if (yaml.has_value() && !yaml.value().empty())
 				{
-					const ryml::NodeRef indexForDirectory = yaml.value().rootref();
-					ryml::NodeRef entryNode;
+					ryml::NodeRef indexForDirectory = yaml.value().rootref();
+
+					// Detect broken index files, every index file should have atleast ONE child ('[$%]ROOT')
+					if (!indexForDirectory.has_children())
+					{
+						AttemptToRecreateIndexFile(Path::FromWxString(fileInfo.GetFullPath()));
+						yaml = loadYamlFile(fullPath);
+						indexForDirectory = yaml.value().rootref();
+					}
+
+					const ryml::NodeRef entryNode;
 					if (indexForDirectory.has_child("%ROOT"))
 					{
 						// NOTE - working around a rapidyaml issue that needs to get resolved upstream

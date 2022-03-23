@@ -575,6 +575,7 @@ protected:
 	void SetTimeLastReadToNow();
 	void SetTimeLastWrittenToNow();
 
+	void AttemptToRecreateIndexFile(fs::path directory) const;
 
 	wxString GetDisabledMessage(uint slot) const
 	{
