@@ -1256,6 +1256,9 @@
     </ClCompile>
     <ClCompile Include="Frontend\imgui_impl_vulkan.cpp">
       <Filter>Host</Filter>
+      </ClCompile>
+    <ClCompile Include="CDVD\CueParser.cpp">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
     </ClCompile>
     <ClCompile Include="Recording\InputRecording.cpp">
       <Filter>Tools\Input Recording</Filter>
@@ -2100,6 +2103,9 @@
     </ClInclude>
     <ClInclude Include="Frontend\imgui_impl_vulkan.h">
       <Filter>Host</Filter>
+      </ClInclude>
+    <ClInclude Include="CDVD\CueParser.h">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
     </ClInclude>
     <ClInclude Include="Recording\InputRecording.h">
       <Filter>Tools\Input Recording</Filter>

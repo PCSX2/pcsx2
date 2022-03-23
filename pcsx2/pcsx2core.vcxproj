@@ -122,6 +122,7 @@
     <ClCompile Include="CDVD\ChunksCache.cpp" />
     <ClCompile Include="CDVD\CompressedFileReader.cpp" />
     <ClCompile Include="CDVD\CsoFileReader.cpp" />
+    <ClCompile Include="CDVD\CueParser.cpp" />
     <ClCompile Include="CDVD\GzippedFileReader.cpp" />
     <ClCompile Include="CDVD\OutputIsoFile.cpp" />
     <ClCompile Include="CDVD\ThreadedFileReader.cpp" />
@@ -455,6 +456,7 @@
     <ClInclude Include="CDVD\CompressedFileReaderUtils.h" />
     <ClInclude Include="CDVD\CsoFileReader.h" />
     <ClInclude Include="CDVD\ChdFileReader.h" />
+    <ClInclude Include="CDVD\CueParser.h" />
     <ClInclude Include="CDVD\GzippedFileReader.h" />
     <ClInclude Include="CDVD\ThreadedFileReader.h" />
     <ClInclude Include="CDVD\zlib_indexed.h" />

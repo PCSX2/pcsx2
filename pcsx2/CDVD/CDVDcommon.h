@@ -49,11 +49,13 @@ typedef struct _cdvdTN
 #define CDVD_SPINDLE_CAV 0x80  // CAV/CLV selector
 
 // CDVDreadTrack mode values:
-#define CDVD_MODE_2352 0 // full 2352 bytes
+#define CDVD_MODE_2352 0 // full 2352 bytes CD_AUDIO, MODE2Raw, MODE1Raw
 #define CDVD_MODE_2340 1 // skip sync (12) bytes
 #define CDVD_MODE_2328 2 // skip sync+head+sub (24) bytes
-#define CDVD_MODE_2048 3 // skip sync+head+sub (24) bytes
+#define CDVD_MODE_2048 3 // skip sync+head+sub (24) bytes MODE1, MODE2Form1
 #define CDVD_MODE_2368 4 // full 2352 bytes + 16 subq
+#define CDVD_MODE2_FORM2 5
+#define CDVD_MODE_2332 6
 
 // CDVDgetDiskType returns:
 #define CDVD_TYPE_ILLEGAL 0xff   // Illegal Disc
