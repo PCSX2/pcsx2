@@ -17545,11 +17545,6 @@ SLES-54402:
     eeClampMode: 3  # Fixes game hang after opening intro.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-SLES-54418:
-  name: "Power Drome"
-  region: "PAL-Unk"
-  gsHWFixes:
-    autoFlush: 1
 SLES-54420:
   name: "Arthur & The Minimoys"
   region: "PAL-M7"
@@ -17661,6 +17656,8 @@ SLES-54453:
 SLES-54454:
   name: "Disgaea 2: Cursed Memories"
   region: "PAL-E"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flickering FMV's.
   # Comments from old GameIndex.dbf for this Game
   #  Voices can be switched between Japanese and English via Options menu.
 SLES-54455:
@@ -18619,6 +18616,10 @@ SLES-54866:
 SLES-54867:
   name: "Tiger Woods PGA Tour 08"
   region: "PAL-E-F"
+  clampModes:
+    vuClampMode: 2 # Fix black textures on characters.
+  gameFixes:
+    - SkipMPEGHack # Fixes hang after EA intro.
 SLES-54870:
   name: "FIFA '08"
   region: "PAL-E"
@@ -33752,10 +33753,14 @@ SLPS-25606:
 SLPS-25607:
   name: "Makai Senki Disgaea 2 [Limited Edition]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flickering FMV's.
 SLPS-25608:
   name: "Makai Senki Disgaea 2"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flickering FMV's.
 SLPS-25609:
   name: "King of Fighters, The - Maximum Impact 2"
   region: "NTSC-J"
@@ -35291,6 +35296,8 @@ SLPS-73253:
 SLPS-73254:
   name: "Makai Senki Disgaea [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flickering FMV's.
 SLPS-73255:
   name: "Fatal Frame [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
@@ -41697,6 +41704,8 @@ SLUS-21397:
   name: "Disgaea 2: Cursed Memories"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flickering FMV's.
 SLUS-21398:
   name: "Dynasty Warriors 5 - Empires"
   region: "NTSC-U"
@@ -42756,6 +42765,8 @@ SLUS-21646:
   compat: 5
   clampModes:
     vuClampMode: 2  # Fix black textures on characters.
+  gameFixes:
+    - SkipMPEGHack # Fixes hang after EA intro.
 SLUS-21647:
   name: "NHL '08"
   region: "NTSC-U"
