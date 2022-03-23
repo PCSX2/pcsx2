@@ -426,7 +426,7 @@ msgstr ""
 
 #: pcsx2/gui/AppInit.cpp:155
 msgid "PCSX2 Recompiler Error(s)"
-msgstr ""
+msgstr "PCSX2 Error(s) al Recompilador"
 
 #: pcsx2/gui/AppInit.cpp:234
 msgid "All options are for the current session only and will not be saved.\n"
