@@ -34,7 +34,7 @@ msgstr "Error d'anàlisi"
 #: common/include/Utilities/Exceptions.h:279
 msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
 msgstr ""
-"El hardware del teu ordinador no es capaç de fer servir PCSX2. Ho sentim. "
+"El hardware del teu ordinador no es capaç de fer servir PCSX2. Ho sentim"
 "company."
 
 #: common/src/Utilities/Exceptions.cpp:204
@@ -620,7 +620,7 @@ msgid ""
 "\n"
 "\n"
 "Press Ok to go to the Plugin Configuration Panel."
-msgstr "Pitxa Ok per anar al panell de configuració de pluguins"
+msgstr "Pitxa Ok per anar al panell de configuració de plugins"
 
 #: pcsx2/gui/AppMain.cpp:136 pcsx2/gui/AppMain.cpp:150
 msgid ""
