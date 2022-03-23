@@ -1618,7 +1618,7 @@ msgstr "Pausa"
 
 #: pcsx2/gui/MainFrame.cpp:650
 msgid "Safely pauses emulation and preserves the PS2 state."
-msgstr ""
+msgstr "Pausa l'emulació de manera segura i preserva l'estat de PS2."
 
 #: pcsx2/gui/MainFrame.cpp:658
 msgid "R&esume"
