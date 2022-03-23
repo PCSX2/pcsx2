@@ -840,7 +840,7 @@ msgstr "&Restaura a per defecte"
 
 #: pcsx2/gui/ConsoleLogger.cpp:465
 msgid "Restore default source filters."
-msgstr "restaura els filtres"
+msgstr "Restaura els filtres."
 
 #: pcsx2/gui/ConsoleLogger.cpp:467
 msgid "&Log"
@@ -1594,23 +1594,23 @@ msgstr "Instantànies:"
 
 #: pcsx2/gui/MainFrame.cpp:569
 msgid "New"
-msgstr ""
+msgstr "Nou"
 
 #: pcsx2/gui/MainFrame.cpp:570
 msgid "Stop"
-msgstr ""
+msgstr "Stop"
 
 #: pcsx2/gui/MainFrame.cpp:571
 msgid "Play"
-msgstr ""
+msgstr "Inicia"
 
 #: pcsx2/gui/MainFrame.cpp:573
 msgid "Virtual Pad (Port 1)"
-msgstr ""
+msgstr "Comandament virtual (Port 1)"
 
 #: pcsx2/gui/MainFrame.cpp:574
 msgid "Virtual Pad (Port 2)"
-msgstr ""
+msgstr "Comandament virtual (Port 2)"
 
 #: pcsx2/gui/MainFrame.cpp:649
 msgid "Paus&e"
@@ -1626,7 +1626,7 @@ msgstr "Continua"
 
 #: pcsx2/gui/MainFrame.cpp:659
 msgid "Resumes the suspended emulation state."
-msgstr ""
+msgstr "Resumeix la emulació en estat suspes"
 
 #: pcsx2/gui/MainFrame.cpp:663
 msgid "Pause/Resume"
@@ -1638,7 +1638,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:682
 msgid "Use fast boot to skip PS2 startup and splash screens"
-msgstr ""
+msgstr "Fes servir l'inic ràpid per saltar-te l'inici i logo de PS2"
 
 #: pcsx2/gui/MainFrame.cpp:687
 #, fuzzy
@@ -1719,7 +1719,7 @@ msgstr "Confirma el cambi d'ISO"
 
 #: pcsx2/gui/MainMenuClicks.cpp:150
 msgid "Do you want to swap discs or boot the new image (via system reset)?"
-msgstr "Vols cambiar de discos o carregar la nova imatge (a partir de reiniciar)?"
+msgstr "Vols cambiar de disc o carregar la nova imatge (a partir de reiniciar)?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:152 pcsx2/gui/MainMenuClicks.cpp:198
 msgid "Swap Disc"
@@ -1816,7 +1816,7 @@ msgstr "Tingues en compte que les funcións de grabació d' entrada estàn en"
 "Com a resultat hi poden haver-ho molts errors, problemes de rendiment i"
 "inestabilitat en certs jocs.\n"
 "\n"
-"Aquestes eines és proporcionen "tal qual" i s'han d'usar sota la seva"
+"Aquestes eines és proporcionen 'tal qual' i s'han d'usar sota la seva"
 "discreció.\n"
 
 #: pcsx2/gui/MainMenuClicks.cpp:589
@@ -1928,7 +1928,7 @@ msgstr "Picat / Zero"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:37
 msgid "None"
-msgstr "No"
+msgstr "Cap"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:38
 msgid "Normal"
@@ -2639,7 +2639,7 @@ msgstr "Radi de cicles en EE [No Recomanat]"
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
 #, fuzzy
 msgid "EE Cycle Skipping [Not Recommended]"
-msgstr "Robament de cicles en VU [No Recomanat]"
+msgstr "Saltar-se cicles de EE [No Recomanat]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
 msgid "microVU Hacks"
