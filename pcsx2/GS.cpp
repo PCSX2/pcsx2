@@ -32,6 +32,7 @@ void gsSetVideoMode(GS_VideoMode mode)
 {
 	gsVideoMode = mode;
 	UpdateVSyncRate();
+	CSRreg.FIELD = 1;
 }
 
 // Make sure framelimiter options are in sync with GS capabilities.
@@ -84,9 +85,10 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		//gifUnit.Reset(true); // Don't think gif should be reset...
 		gifUnit.gsSIGNAL.queued = false;
 		GetMTGS().SendSimplePacket(GS_RINGTYPE_RESET, 0, 0, 0);
-
+		const u32 field = CSRreg.FIELD;
 		CSRreg.Reset();
 		GSIMR.reset();
+		CSRreg.FIELD = field;
 	}
 
 	if(csr.FLUSH)
@@ -326,19 +328,20 @@ __fi u16 gsRead16(u32 mem)
 		case GS_SIGLBLID:
 			return *(u16*)PS2GS_BASE(mem);
 		default: // Only SIGLBLID and CSR are readable, everything else mirrors CSR
-			return *(u16*)PS2GS_BASE(GS_CSR + (mem & 0xF));
+			return *(u16*)PS2GS_BASE(GS_CSR + (mem & 0x7));
 	}
 }
 
 __fi u32 gsRead32(u32 mem)
 {
 	GIF_LOG("GS read 32 from %8.8lx  value: %8.8lx", mem, *(u32*)PS2GS_BASE(mem));
+
 	switch (mem & ~0xF)
 	{
 		case GS_SIGLBLID:
 			return *(u32*)PS2GS_BASE(mem);
 		default: // Only SIGLBLID and CSR are readable, everything else mirrors CSR
-			return *(u32*)PS2GS_BASE(GS_CSR + (mem & 0xF));
+			return *(u32*)PS2GS_BASE(GS_CSR + (mem & 0xC));
 	}
 }
 
@@ -346,12 +349,13 @@ __fi u64 gsRead64(u32 mem)
 {
 	// fixme - PS2GS_BASE(mem+4) = (g_RealGSMem+(mem + 4 & 0x13ff))
 	GIF_LOG("GS read 64 from %8.8lx  value: %8.8lx_%8.8lx", mem, *(u32*)PS2GS_BASE(mem+4), *(u32*)PS2GS_BASE(mem) );
+
 	switch (mem & ~0xF)
 	{
 		case GS_SIGLBLID:
 			return *(u64*)PS2GS_BASE(mem);
 		default: // Only SIGLBLID and CSR are readable, everything else mirrors CSR
-			return *(u64*)PS2GS_BASE(GS_CSR + (mem & 0xF));
+			return *(u64*)PS2GS_BASE(GS_CSR + (mem & 0x8));
 	}
 }
 

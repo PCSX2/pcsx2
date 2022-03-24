@@ -264,18 +264,29 @@ bool GSRenderer::Merge(int field)
 
 		if (m_regs->SMODE2.INT && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 		{
+			const bool scanmask = (m_scanmask_used && scanmsk_frame) && GSConfig.InterlaceMode == GSInterlaceMode::Automatic;
+
 			if (GSConfig.InterlaceMode == GSInterlaceMode::Automatic && (m_regs->SMODE2.FFMD)) // Auto interlace enabled / Odd frame interlace setting
 			{
-				int field2 = 0;
-				int mode = 2;
+				constexpr int field2 = 1;
+				constexpr int mode = 2;
 				g_gs_device->Interlace(ds, field ^ field2, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
 			}
 			else
 			{
-				bool scanmask = (m_scanmask_used && scanmsk_frame) && GSConfig.InterlaceMode == GSInterlaceMode::Automatic;
-				int field2 = 1 - ((static_cast<int>(GSConfig.InterlaceMode) - 1) & 1);
-				int mode = scanmask ? 2 : (static_cast<int>(GSConfig.InterlaceMode) - 1) >> 1;
-				g_gs_device->Interlace(ds, field ^ field2, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
+				const int field2 = scanmask ? 0 : 1 - ((static_cast<int>(GSConfig.InterlaceMode) - 1) & 1);
+				const int offset = tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y;
+				// -1 = None
+				// 0 = Weave
+				// 1 = Bob
+				// 2 = Blend
+				int mode = scanmask ? 2 : std::clamp((static_cast<int>(GSConfig.InterlaceMode) - 1) >> 1, -1, 2);
+
+				// If we're on auto, prefer no interlacing (bob, kinda), unless there is an offset or scanmsk, then retain blend
+				if (GSConfig.InterlaceMode == GSInterlaceMode::Automatic && !(m_regs->SMODE2.FFMD) && !scanmask && !offset)
+					mode = -1;
+
+				g_gs_device->Interlace(ds, field ^ field2, mode, offset);
 			}
 		}
 
@@ -429,7 +440,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 
 	g_gs_device->AgePool();
 
-	const bool blank_frame = !Merge(field ? 1 : 0);
+	const bool blank_frame = !Merge(field);
 	const bool skip_frame = m_frameskip;
 
 	if (blank_frame || skip_frame)

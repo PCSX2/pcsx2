@@ -441,7 +441,7 @@ void SysMtgsThread::ExecuteTaskInThread()
 							((GSRegSIGBLID&)RingBuffer.Regs[0x1080]) = (GSRegSIGBLID&)remainder[2];
 
 							// CSR & 0x2000; is the pageflip id.
-							GSvsync(((u32&)RingBuffer.Regs[0x1000]) & 0x2000, remainder[4] != 0);
+							GSvsync((((u32&)RingBuffer.Regs[0x1000]) & 0x2000) ? 0 : 1, remainder[4] != 0);
 							gsFrameSkip();
 
 							m_QueuedFrameCount.fetch_sub(1);
