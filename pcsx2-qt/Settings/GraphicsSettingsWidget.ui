@@ -309,11 +309,6 @@
         <widget class="QComboBox" name="upscaleMultiplier">
          <item>
           <property name="text">
-           <string>Custom</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
            <string>Native (PS2)</string>
           </property>
          </item>
@@ -349,7 +344,7 @@
          </item>
          <item>
           <property name="text">
-           <string>8x Native (~2280p)</string>
+           <string>8x Native (~2880p)</string>
           </property>
          </item>
         </widget>
