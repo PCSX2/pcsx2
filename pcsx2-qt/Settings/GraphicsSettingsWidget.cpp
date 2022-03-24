@@ -56,7 +56,7 @@ static constexpr RendererInfo s_renderer_info[] = {
 static const char* s_anisotropic_filtering_entries[] = {QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Off (Default)"),
 	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2x"), QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "4x"),
 	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "8x"), QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "16x"), nullptr};
-static const char* s_anisotropic_filtering_values[] = {"1", "2", "4", "8", "16", nullptr};
+static const char* s_anisotropic_filtering_values[] = {"0", "2", "4", "8", "16", nullptr};
 
 static constexpr int DEFAULT_INTERLACE_MODE = 7;
 
@@ -122,7 +122,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Settings
 	//////////////////////////////////////////////////////////////////////////
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.upscaleMultiplier, "EmuCore/GS", "upscale_multiplier", 1);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.upscaleMultiplier, "EmuCore/GS", "upscale_multiplier", 1, 1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.textureFiltering, "EmuCore/GS", "filter", static_cast<int>(BiFiltering::PS2));
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.trilinearFiltering, "EmuCore/GS", "UserHacks_TriFilter", static_cast<int>(TriFiltering::Off));
@@ -137,6 +137,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuPaletteConversion, "EmuCore/GS", "paltex", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.texturePreloading, "EmuCore/GS", "texture_preloading",
 		static_cast<int>(TexturePreloadingLevel::Off));
+
+	connect(m_ui.gpuPaletteConversion, QOverload<int>::of(&QCheckBox::stateChanged), this, &GraphicsSettingsWidget::onGpuPaletteConversionChanged);
+	onGpuPaletteConversionChanged(m_ui.gpuPaletteConversion->checkState());
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Renderer Fixes
@@ -206,18 +209,18 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	// per-game override for renderer is slightly annoying, since we need to populate the global setting field
 	if (sif)
 	{
+		const int global_renderer = QtHost::GetBaseIntSettingValue("EmuCore/GS", "Renderer", static_cast<int>(GSRendererType::Auto));
 		QString global_renderer_name;
 		for (const RendererInfo& ri : s_renderer_info)
 		{
-			if (renderer == static_cast<int>(ri.type))
+			if (global_renderer == static_cast<int>(ri.type))
 				global_renderer_name = qApp->translate("GraphicsSettingsWidget", ri.name);
 		}
 		m_ui.renderer->insertItem(0, tr("Use Global Setting [%1]").arg(global_renderer_name));
 
+		// Effective Index already selected, set to global if setting is not per-game
 		int override_renderer;
-		if (sif->GetIntValue("EmuCore/GS", "Renderer", &override_renderer))
-			m_ui.renderer->setCurrentIndex(override_renderer + 1);
-		else
+		if (!sif->GetIntValue("EmuCore/GS", "Renderer", &override_renderer))
 			m_ui.renderer->setCurrentIndex(0);
 	}
 
@@ -280,6 +283,13 @@ void GraphicsSettingsWidget::onFullscreenModeChanged(int index)
 }
 
 void GraphicsSettingsWidget::onIntegerScalingChanged() { m_ui.bilinearFiltering->setEnabled(!m_ui.integerScaling->isChecked()); }
+
+void GraphicsSettingsWidget::onGpuPaletteConversionChanged(int state)
+{
+	const bool enabled = state == Qt::CheckState::PartiallyChecked ? QtHost::GetBaseBoolSettingValue("EmuCore/GS", "paltex", false) : state;
+
+	m_ui.anisotropicFiltering->setEnabled(!enabled);
+}
 
 void GraphicsSettingsWidget::onEnableHardwareFixesChanged()
 {
