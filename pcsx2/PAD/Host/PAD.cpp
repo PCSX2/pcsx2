@@ -18,6 +18,7 @@
 #include "common/StringUtil.h"
 #include "common/SettingsInterface.h"
 
+#include "Frontend/InputManager.h"
 #include "HostSettings.h"
 
 #include "PAD/Host/Global.h"
@@ -219,31 +220,9 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 	si.SetBoolValue("InputSources", "XInput", false);
 
 	// PCSX2 Controller Settings - Controller 1 / Controller 2 / ...
+	// Use the automapper to set this up.
 	si.SetStringValue("Pad1", "Type", GetDefaultPadType(0));
-	si.SetStringValue("Pad1", "Up", "Keyboard/Up");
-	si.SetStringValue("Pad1", "Right", "Keyboard/Right");
-	si.SetStringValue("Pad1", "Down", "Keyboard/Down");
-	si.SetStringValue("Pad1", "Left", "Keyboard/Left");
-	si.SetStringValue("Pad1", "LUp", "Keyboard/W");
-	si.SetStringValue("Pad1", "LRight", "Keyboard/D");
-	si.SetStringValue("Pad1", "LDown", "Keyboard/S");
-	si.SetStringValue("Pad1", "LLeft", "Keyboard/A");
-	si.SetStringValue("Pad1", "RUp", "Keyboard/T");
-	si.SetStringValue("Pad1", "RRight", "Keyboard/H");
-	si.SetStringValue("Pad1", "RDown", "Keyboard/G");
-	si.SetStringValue("Pad1", "RLeft", "Keyboard/F");
-	si.SetStringValue("Pad1", "Triangle", "Keyboard/I");
-	si.SetStringValue("Pad1", "Circle", "Keyboard/L");
-	si.SetStringValue("Pad1", "Cross", "Keyboard/K");
-	si.SetStringValue("Pad1", "Square", "Keyboard/J");
-	si.SetStringValue("Pad1", "L1", "Keyboard/Q");
-	si.SetStringValue("Pad1", "L2", "Keyboard/1");
-	si.SetStringValue("Pad1", "L3", "Keyboard/2");
-	si.SetStringValue("Pad1", "R1", "Keyboard/E");
-	si.SetStringValue("Pad1", "R2", "Keyboard/3");
-	si.SetStringValue("Pad1", "R3", "Keyboard/4");
-	si.SetStringValue("Pad1", "Start", "Keyboard/Return");
-	si.SetStringValue("Pad1", "Select", "Keyboard/Backspace");
+	MapController(si, 0, InputManager::GetGenericBindingMapping("Keyboard"));
 
 	// PCSX2 Controller Settings - Hotkeys
 
@@ -283,55 +262,152 @@ void PAD::Update()
 	UpdateMacroButtons();
 }
 
+struct ControllerBindingInfo
+{
+	const char* name;
+	GenericInputBinding generic_mapping;
+};
+struct ControllerInfo
+{
+	const char* name;
+	const ControllerBindingInfo* bindings;
+	u32 num_bindings;
+	PAD::VibrationCapabilities vibration_caps;
+};
+
+static const ControllerBindingInfo s_dualshock2_binds[] = {
+	{"Up", GenericInputBinding::DPadUp },
+	{"Right",GenericInputBinding::DPadRight },
+	{"Down", GenericInputBinding::DPadDown },
+	{"Left", GenericInputBinding::DPadLeft },
+	{"Triangle", GenericInputBinding::Triangle },
+	{"Circle", GenericInputBinding::Circle },
+	{"Cross", GenericInputBinding::Cross },
+	{"Square", GenericInputBinding::Square },
+	{"Select", GenericInputBinding::Select },
+	{"Start", GenericInputBinding::Start },
+	{"L1", GenericInputBinding::L1 },
+	{"L2", GenericInputBinding::L2 },
+	{"R1", GenericInputBinding::R1 },
+	{"R2", GenericInputBinding::R2 },
+	{"L3", GenericInputBinding::L3 },
+	{"R3", GenericInputBinding::R3 },
+	{"LUp", GenericInputBinding::LeftStickUp },
+	{"LRight", GenericInputBinding::LeftStickRight },
+	{"LDown", GenericInputBinding::LeftStickDown },
+	{"LLeft", GenericInputBinding::LeftStickLeft },
+	{"RUp", GenericInputBinding::RightStickUp },
+	{"RRight", GenericInputBinding::RightStickRight },
+	{"RDown", GenericInputBinding::RightStickDown },
+	{"RLeft", GenericInputBinding::RightStickLeft },
+};
+
+static const ControllerInfo s_controller_info[] = {
+	{ "DualShock2", s_dualshock2_binds, std::size(s_dualshock2_binds), PAD::VibrationCapabilities::LargeSmallMotors },
+};
+
+static const ControllerInfo* GetControllerInfo(const std::string_view& name)
+{
+	for (const ControllerInfo& info : s_controller_info)
+	{
+		if (name == info.name)
+			return &info;
+	}
+
+	return nullptr;
+}
+
 std::vector<std::string> PAD::GetControllerTypeNames()
 {
-	return {"DualShock2"};
+	std::vector<std::string> ret;
+
+	for (const ControllerInfo& info : s_controller_info)
+		ret.emplace_back(info.name);
+
+	return ret;
 }
 
 std::vector<std::string> PAD::GetControllerBinds(const std::string_view& type)
 {
-	if (type == "DualShock2")
+	std::vector<std::string> ret;
+
+	const ControllerInfo* info = GetControllerInfo(type);
+	if (info)
 	{
-		return {
-			"Up",
-			"Right",
-			"Down",
-			"Left",
-			"Triangle",
-			"Circle",
-			"Cross",
-			"Square",
-			"Select",
-			"Start",
-			"L1",
-			"L2",
-			"R1",
-			"R2",
-			"L3",
-			"R3",
-			"LUp",
-			"LRight",
-			"LDown",
-			"LLeft",
-			"RUp",
-			"RRight",
-			"RDown",
-			"RLeft"};
+		for (u32 i = 0; i < info->num_bindings; i++)
+			ret.emplace_back(info->bindings[i].name);
 	}
 
-	return {};
+	return ret;
 }
 
 PAD::VibrationCapabilities PAD::GetControllerVibrationCapabilities(const std::string_view& type)
 {
-	if (type == "DualShock2")
+	const ControllerInfo* info = GetControllerInfo(type);
+	return info ? info->vibration_caps : VibrationCapabilities::NoVibration;
+}
+
+static u32 TryMapGenericMapping(SettingsInterface& si, const std::string& section,
+	const GenericInputBindingMapping& mapping, GenericInputBinding generic_name,
+	const char* bind_name)
+{
+	// find the mapping it corresponds to
+	const std::string* found_mapping = nullptr;
+	for (const std::pair<GenericInputBinding, std::string>& it : mapping)
 	{
-		return VibrationCapabilities::LargeSmallMotors;
+		if (it.first == generic_name)
+		{
+			found_mapping = &it.second;
+			break;
+		}
+	}
+
+	if (found_mapping)
+	{
+		Console.WriteLn("(MapController) Map %s/%s to '%s'", section.c_str(), bind_name, found_mapping->c_str());
+		si.SetStringValue(section.c_str(), bind_name, found_mapping->c_str());
+		return 1;
 	}
 	else
 	{
-		return VibrationCapabilities::NoVibration;
+		si.DeleteValue(section.c_str(), bind_name);
+		return 0;
 	}
+}
+
+
+bool PAD::MapController(SettingsInterface& si, u32 controller,
+	const std::vector<std::pair<GenericInputBinding, std::string>>& mapping)
+{
+	const std::string section(StringUtil::StdStringFromFormat("Pad%u", controller + 1));
+	const std::string type(si.GetStringValue(section.c_str(), "Type", GetDefaultPadType(controller)));
+	const ControllerInfo* info = GetControllerInfo(type);
+	if (!info)
+		return false;
+
+	u32 num_mappings = 0;
+	for (u32 i = 0; i < info->num_bindings; i++)
+	{
+		const ControllerBindingInfo& bi = info->bindings[i];
+		if (bi.generic_mapping == GenericInputBinding::Unknown)
+			continue;
+
+		num_mappings += TryMapGenericMapping(si, section, mapping, bi.generic_mapping, bi.name);
+	}
+	if (info->vibration_caps == VibrationCapabilities::LargeSmallMotors)
+	{
+		num_mappings += TryMapGenericMapping(si, section, mapping, GenericInputBinding::SmallMotor, "SmallMotor");
+		num_mappings += TryMapGenericMapping(si, section, mapping, GenericInputBinding::LargeMotor, "LargeMotor");
+	}
+	else if (info->vibration_caps == VibrationCapabilities::SingleMotor)
+	{
+		if (TryMapGenericMapping(si, section, mapping, GenericInputBinding::LargeMotor, "Motor") == 0)
+			num_mappings += TryMapGenericMapping(si, section, mapping, GenericInputBinding::SmallMotor, "Motor");
+		else
+			num_mappings++;
+	}
+
+	return (num_mappings > 0);
 }
 
 void PAD::SetControllerState(u32 controller, u32 bind, float value)
