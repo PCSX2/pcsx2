@@ -554,15 +554,16 @@ void __fastcall eeGameStarting()
 		//Console.WriteLn( Color_Green, "(R5900) ELF Entry point! [addr=0x%08X]", ElfEntry );
 		g_GameStarted = true;
 		g_GameLoading = false;
+
+		// we are using a retail BIOS, which will not map the upper memory, so we must do it manually
+		if (CHECK_128MBRAM)
+			vtlb_VMap(0x02000000, 0x02000000, 0x06000000);
+
 #ifndef PCSX2_CORE
 		GetCoreThread().GameStartingInThread();
 #else
 		VMManager::Internal::GameStartingOnCPUThread();
 #endif
-
-		// we are using a retail BIOS, which will not map the upper memory, so we must do it manually
-		if (CHECK_128MBRAM)
-			vtlb_VMap(0x02000000, 0x02000000, 0x06000000);
 
 		// GameStartingInThread may issue a reset of the cpu and/or recompilers.  Check for and
 		// handle such things here:
