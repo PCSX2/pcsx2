@@ -575,6 +575,29 @@ bool FileSystem::EnsureDirectoryExists(const char* path, bool recursive)
 	return FileSystem::CreateDirectoryPath(path, recursive);
 }
 
+bool FileSystem::RecursiveDeleteDirectory(const char* path)
+{
+	FindResultsArray results;
+	if (FindFiles(path, "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_HIDDEN_FILES, &results))
+	{
+		for (const FILESYSTEM_FIND_DATA& fd : results)
+		{
+			if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
+			{
+				if (!RecursiveDeleteDirectory(fd.FileName.c_str()))
+					return false;
+			}
+			else
+			{
+				if (!DeleteFilePath(fd.FileName.c_str()))
+					return false;
+			}
+		}
+	}
+
+	return DeleteDirectory(path);
+}
+
 #ifdef _WIN32
 
 static u32 TranslateWin32Attributes(u32 Win32Attributes)
@@ -1040,15 +1063,15 @@ bool FileSystem::DeleteFilePath(const char* path)
 #endif
 }
 
-bool FileSystem::RenamePath(const char* old_path, const char* new_patah)
+bool FileSystem::RenamePath(const char* old_path, const char* new_path)
 {
 	const std::wstring old_wpath(StringUtil::UTF8StringToWideString(old_path));
-	const std::wstring new_wpath(StringUtil::UTF8StringToWideString(new_patah));
+	const std::wstring new_wpath(StringUtil::UTF8StringToWideString(new_path));
 
 #ifndef _UWP
 	if (!MoveFileExW(old_wpath.c_str(), new_wpath.c_str(), MOVEFILE_REPLACE_EXISTING))
 	{
-		Console.Error("MoveFileEx('%s', '%s') failed: %08X", old_path, new_patah, GetLastError());
+		Console.Error("MoveFileEx('%s', '%s') failed: %08X", old_path, new_path, GetLastError());
 		return false;
 	}
 #else
@@ -1064,12 +1087,18 @@ bool FileSystem::RenamePath(const char* old_path, const char* new_patah)
 
 	if (!MoveFileFromAppW(old_wpath.c_str(), new_wpath.c_str()))
 	{
-		Log_ErrorPrintf("MoveFileFromAppW('%s', '%s') failed: %08X", old_path, new_patah, GetLastError());
+		Log_ErrorPrintf("MoveFileFromAppW('%s', '%s') failed: %08X", old_path, new_path, GetLastError());
 		return false;
 	}
 #endif
 
 	return true;
+}
+
+bool FileSystem::DeleteDirectory(const char* path)
+{
+	const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+	return RemoveDirectoryW(wpath.c_str());
 }
 
 std::string FileSystem::GetProgramPath()
@@ -1483,6 +1512,18 @@ bool FileSystem::RenamePath(const char* old_path, const char* new_path)
 	}
 
 	return true;
+}
+
+bool FileSystem::DeleteDirectory(const char* path)
+{
+	if (path[0] == '\0')
+		return false;
+
+	struct stat sysStatData;
+	if (stat(path, &sysStatData) != 0 || !S_ISDIR(sysStatData.st_mode))
+		return false;
+
+	return (unlink(path) == 0);
 }
 
 std::string FileSystem::GetProgramPath()
