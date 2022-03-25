@@ -89,18 +89,29 @@ void ControllerSettingsDialog::onCategoryCurrentRowChanged(int row)
 
 void ControllerSettingsDialog::onInputDevicesEnumerated(const QList<QPair<QString, QString>>& devices)
 {
+	m_device_list = devices;
 	for (const QPair<QString, QString>& device : devices)
 		m_global_settings->addDeviceToList(device.first, device.second);
 }
 
 void ControllerSettingsDialog::onInputDeviceConnected(const QString& identifier, const QString& device_name)
 {
+	m_device_list.emplace_back(identifier, device_name);
 	m_global_settings->addDeviceToList(identifier, device_name);
 	g_emu_thread->enumerateVibrationMotors();
 }
 
 void ControllerSettingsDialog::onInputDeviceDisconnected(const QString& identifier)
 {
+	for (auto iter = m_device_list.begin(); iter != m_device_list.end(); ++iter)
+	{
+		if (iter->first == identifier)
+		{
+			m_device_list.erase(iter);
+			break;
+		}
+	}
+
 	m_global_settings->removeDeviceFromList(identifier);
 	g_emu_thread->enumerateVibrationMotors();
 }

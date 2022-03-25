@@ -50,6 +50,7 @@ public:
 
 	HotkeySettingsWidget* getHotkeySettingsWidget() const { return m_hotkey_settings; }
 
+	__fi const QList<QPair<QString, QString>>& getDeviceList() const { return m_device_list; }
 	__fi const QStringList& getVibrationMotors() const { return m_vibration_motors; }
 
 public Q_SLOTS:
@@ -70,5 +71,6 @@ private:
 	std::array<ControllerBindingWidget*, MAX_PORTS> m_port_bindings{};
 	HotkeySettingsWidget* m_hotkey_settings = nullptr;
 
+	QList<QPair<QString, QString>> m_device_list;
 	QStringList m_vibration_motors;
 };

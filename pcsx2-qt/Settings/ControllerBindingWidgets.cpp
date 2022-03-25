@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 #include <algorithm>
 
@@ -39,13 +40,11 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
 	onTypeChanged();
 
 	SettingWidgetBinder::BindWidgetToStringSetting(nullptr, m_ui.controllerType, m_config_section, "Type", "None");
-	connect(m_ui.controllerType, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-		&ControllerBindingWidget::onTypeChanged);
+	connect(m_ui.controllerType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ControllerBindingWidget::onTypeChanged);
+	connect(m_ui.automaticBinding, &QPushButton::clicked, this, &ControllerBindingWidget::doAutomaticBinding);
 }
 
-ControllerBindingWidget::~ControllerBindingWidget()
-{
-}
+ControllerBindingWidget::~ControllerBindingWidget() = default;
 
 void ControllerBindingWidget::populateControllerTypes()
 {
@@ -78,6 +77,56 @@ void ControllerBindingWidget::onTypeChanged()
 		m_current_widget = new ControllerBindingWidget_Base(this);
 
 	m_ui.verticalLayout->addWidget(m_current_widget, 1);
+}
+
+void ControllerBindingWidget::doAutomaticBinding()
+{
+	QMenu menu(this);
+	bool added = false;
+
+	for (const QPair<QString, QString>& dev : m_dialog->getDeviceList())
+	{
+		// we set it as data, because the device list could get invalidated while the menu is up
+		QAction* action = menu.addAction(QStringLiteral("%1 (%2)").arg(dev.first).arg(dev.second));
+		action->setData(dev.first);
+		connect(action, &QAction::triggered, this, [this, action]() {
+			doDeviceAutomaticBinding(action->data().toString());
+		});
+		added = true;
+	}
+
+	if (!added)
+	{
+		QAction* action = menu.addAction(tr("No devices available"));
+		action->setEnabled(false);
+	}
+
+	menu.exec(QCursor::pos());
+}
+
+void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
+{
+	std::vector<std::pair<GenericInputBinding, std::string>> mapping = InputManager::GetGenericBindingMapping(device.toStdString());
+	if (mapping.empty())
+	{
+		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Automatic Binding"),
+			tr("No generic bindings were generated for device '%1'").arg(device));
+		return;
+	}
+
+	bool result;
+	{
+		auto lock = Host::GetSettingsLock();
+		result = PAD::MapController(*QtHost::GetBaseSettingsInterface(), m_port_number, mapping);
+	}
+
+	if (result)
+	{
+		// force a refresh after mapping
+		onTypeChanged();
+		QtHost::QueueSettingsSave();
+		g_emu_thread->applySettings();
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
