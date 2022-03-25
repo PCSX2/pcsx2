@@ -145,7 +145,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionSystemSettings, &QAction::triggered, [this]() { doSettings("System"); });
 	connect(m_ui.actionGraphicsSettings, &QAction::triggered, [this]() { doSettings("Graphics"); });
 	connect(m_ui.actionAudioSettings, &QAction::triggered, [this]() { doSettings("Audio"); });
-	connect(m_ui.actionMemoryCardSettings, &QAction::triggered, [this]() { doSettings("Memory Card"); });
+	connect(m_ui.actionMemoryCardSettings, &QAction::triggered, [this]() { doSettings("Memory Cards"); });
 	connect(
 		m_ui.actionControllerSettings, &QAction::triggered, [this]() { doControllerSettings(ControllerSettingsDialog::Category::GlobalSettings); });
 	connect(m_ui.actionHotkeySettings, &QAction::triggered, [this]() { doControllerSettings(ControllerSettingsDialog::Category::HotkeySettings); });

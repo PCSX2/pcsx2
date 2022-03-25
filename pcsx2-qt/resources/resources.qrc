@@ -17,6 +17,7 @@
 		<file>icons/black/16/door-open-line.png</file>
 		<file>icons/black/16/download-2-line.png</file>
 		<file>icons/black/16/dvd-line.png</file>
+		<file>icons/black/16/eject-line.png</file>
 		<file>icons/black/16/file-add-line.png</file>
 		<file>icons/black/16/file-line.png</file>
 		<file>icons/black/16/file-list-line.png</file>
@@ -56,6 +57,7 @@
 		<file>icons/black/24/door-open-line.png</file>
 		<file>icons/black/24/download-2-line.png</file>
 		<file>icons/black/24/dvd-line.png</file>
+		<file>icons/black/24/eject-line.png</file>
 		<file>icons/black/24/file-add-line.png</file>
 		<file>icons/black/24/file-line.png</file>
 		<file>icons/black/24/file-list-line.png</file>
@@ -94,6 +96,7 @@
 		<file>icons/black/32/door-open-line.png</file>
 		<file>icons/black/32/download-2-line.png</file>
 		<file>icons/black/32/dvd-line.png</file>
+		<file>icons/black/32/eject-line.png</file>
 		<file>icons/black/32/file-add-line.png</file>
 		<file>icons/black/32/file-line.png</file>
 		<file>icons/black/32/file-list-line.png</file>
@@ -133,6 +136,7 @@
 		<file>icons/black/48/door-open-line.png</file>
 		<file>icons/black/48/download-2-line.png</file>
 		<file>icons/black/48/dvd-line.png</file>
+		<file>icons/black/48/eject-line.png</file>
 		<file>icons/black/48/file-add-line.png</file>
 		<file>icons/black/48/file-line.png</file>
 		<file>icons/black/48/file-list-line.png</file>
@@ -171,6 +175,7 @@
 		<file>icons/black/64/door-open-line.png</file>
 		<file>icons/black/64/download-2-line.png</file>
 		<file>icons/black/64/dvd-line.png</file>
+		<file>icons/black/64/eject-line.png</file>
 		<file>icons/black/64/file-add-line.png</file>
 		<file>icons/black/64/file-line.png</file>
 		<file>icons/black/64/file-list-line.png</file>
@@ -239,6 +244,7 @@
 		<file>icons/white/16/door-open-line.png</file>
 		<file>icons/white/16/download-2-line.png</file>
 		<file>icons/white/16/dvd-line.png</file>
+		<file>icons/white/16/eject-line.png</file>
 		<file>icons/white/16/file-add-line.png</file>
 		<file>icons/white/16/file-line.png</file>
 		<file>icons/white/16/file-list-line.png</file>
@@ -278,6 +284,7 @@
 		<file>icons/white/24/door-open-line.png</file>
 		<file>icons/white/24/download-2-line.png</file>
 		<file>icons/white/24/dvd-line.png</file>
+		<file>icons/white/24/eject-line.png</file>
 		<file>icons/white/24/file-add-line.png</file>
 		<file>icons/white/24/file-line.png</file>
 		<file>icons/white/24/file-list-line.png</file>
@@ -317,6 +324,7 @@
 		<file>icons/white/32/door-open-line.png</file>
 		<file>icons/white/32/download-2-line.png</file>
 		<file>icons/white/32/dvd-line.png</file>
+		<file>icons/white/32/eject-line.png</file>
 		<file>icons/white/32/file-add-line.png</file>
 		<file>icons/white/32/file-line.png</file>
 		<file>icons/white/32/file-list-line.png</file>
@@ -356,6 +364,7 @@
 		<file>icons/white/48/door-open-line.png</file>
 		<file>icons/white/48/download-2-line.png</file>
 		<file>icons/white/48/dvd-line.png</file>
+		<file>icons/white/48/eject-line.png</file>
 		<file>icons/white/48/file-add-line.png</file>
 		<file>icons/white/48/file-line.png</file>
 		<file>icons/white/48/file-list-line.png</file>
@@ -395,6 +404,7 @@
 		<file>icons/white/64/door-open-line.png</file>
 		<file>icons/white/64/download-2-line.png</file>
 		<file>icons/white/64/dvd-line.png</file>
+		<file>icons/white/64/eject-line.png</file>
 		<file>icons/white/64/file-add-line.png</file>
 		<file>icons/white/64/file-line.png</file>
 		<file>icons/white/64/file-list-line.png</file>

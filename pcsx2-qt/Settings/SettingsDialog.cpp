@@ -35,6 +35,7 @@
 #include "GraphicsSettingsWidget.h"
 #include "HotkeySettingsWidget.h"
 #include "InterfaceSettingsWidget.h"
+#include "MemoryCardSettingsWidget.h"
 #include "SystemSettingsWidget.h"
 
 #include <QtWidgets/QMessageBox>
@@ -118,8 +119,13 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	addWidget(m_audio_settings = new AudioSettingsWidget(this, m_ui.settingsContainer), tr("Audio"), QStringLiteral("volume-up-line"),
 		tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console. Mouse over an option for additional "
 		   "information."));
-	addWidget(
-		new QWidget(m_ui.settingsContainer), tr("Memory Cards"), QStringLiteral("sd-card-line"), tr("<strong>Memory Card Settings</strong><hr>"));
+
+	// for now, memory cards aren't settable per-game
+	if (!isPerGameSettings())
+	{
+		addWidget(m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
+			QStringLiteral("sd-card-line"), tr("<strong>Memory Card Settings</strong><hr>"));
+	}
 
 	m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	m_ui.settingsCategory->setCurrentRow(0);

@@ -194,6 +194,12 @@
     <ClCompile Include="Settings\AudioSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
+    <ClCompile Include="$(IntDir)Settings\moc_CreateMemoryCardDialog.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings\CreateMemoryCardDialog.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -274,6 +280,9 @@
     <QtMoc Include="Settings\AudioSettingsWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>
+    <QtMoc Include="Settings\CreateMemoryCardDialog.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">
@@ -331,6 +340,9 @@
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\AudioSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\CreateMemoryCardDialog.ui">
       <Filter>Settings</Filter>
     </QtUi>
   </ItemGroup>

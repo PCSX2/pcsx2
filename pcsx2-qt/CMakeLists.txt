@@ -55,6 +55,9 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/ControllerSettingsDialog.cpp
 	Settings/ControllerSettingsDialog.h
 	Settings/ControllerSettingsDialog.ui
+	Settings/CreateMemoryCardDialog.cpp
+	Settings/CreateMemoryCardDialog.h
+	Settings/CreateMemoryCardDialog.ui
 	Settings/EmulationSettingsWidget.cpp
 	Settings/EmulationSettingsWidget.h
 	Settings/EmulationSettingsWidget.ui

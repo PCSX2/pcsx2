@@ -15,20 +15,106 @@
 
 #pragma once
 
-#include <QtWidgets/QWidget>
+#include <array>
+#include <optional>
+#include <string>
 
-#include "ui_MemoryCardSettingsWidget.h"
+#include <QtGui/QResizeEvent>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QTreeWidget>
+#include <QtWidgets/QToolButton>
+#include <QtWidgets/QListWidget>
 
 class SettingsDialog;
+
+struct AvailableMcdInfo;
+
+class MemoryCardListWidget final : public QTreeWidget
+{
+	Q_OBJECT
+public:
+	explicit MemoryCardListWidget(QWidget* parent);
+	~MemoryCardListWidget() override;
+
+	void refresh(SettingsDialog* dialog);
+
+protected:
+	void mousePressEvent(QMouseEvent* event);
+	void mouseMoveEvent(QMouseEvent* event);
+
+private:
+	QPoint m_dragStartPos = {};
+};
+
+class MemoryCardSlotWidget final : public QListWidget
+{
+	Q_OBJECT
+public:
+	explicit MemoryCardSlotWidget(QWidget* parent);
+	~MemoryCardSlotWidget() override;
+
+Q_SIGNALS:
+	void cardDropped(const QString& newCard);
+
+public:
+	void setCard(const std::optional<std::string>& name);
+
+protected:
+	void dragEnterEvent(QDragEnterEvent* event);
+	void dragMoveEvent(QDragMoveEvent* event);
+	void dropEvent(QDropEvent* event);
+};
+
+// Must be included *after* the custom widgets.
+#include "ui_MemoryCardSettingsWidget.h"
 
 class MemoryCardSettingsWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
+	enum : u32
+	{
+		MAX_SLOTS = 2
+	};
+
 	MemoryCardSettingsWidget(SettingsDialog* dialog, QWidget* parent);
 	~MemoryCardSettingsWidget();
 
+protected:
+	void resizeEvent(QResizeEvent* event);
+	bool eventFilter(QObject* watched, QEvent* event);
+
+private Q_SLOTS:
+	void listContextMenuRequested(const QPoint& pos);
+	void refresh();
+
 private:
+	struct SlotGroup
+	{
+		QWidget* root;
+		QCheckBox* enable;
+		QToolButton* eject;
+		MemoryCardSlotWidget* slot;
+	};
+
+	void createSlotWidgets(SlotGroup* port, u32 slot);
+	void autoSizeUI();
+
+	void tryInsertCard(u32 slot, const QString& newCard);
+	void ejectSlot(u32 slot);
+
+	void createCard();
+
+	QString getSelectedCard() const;
+	void updateCardActions();
+	void duplicateCard();
+	void deleteCard();
+	void renameCard();
+	void convertCard();
+
+	SettingsDialog* m_dialog;
 	Ui::MemoryCardSettingsWidget m_ui;
+
+	std::array<SlotGroup, MAX_SLOTS> m_slots;
 };
