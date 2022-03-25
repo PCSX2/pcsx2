@@ -176,6 +176,7 @@ namespace Panels
 		pxRadioPanel* m_panel_RecEE;
 		pxRadioPanel* m_panel_RecIOP;
 		pxCheckBox* m_check_EECacheEnable;
+		pxCheckBox* m_check_EE128mbEnable;
 		AdvancedOptionsFPU* m_advancedOptsFpu;
 		wxButton* m_button_RestoreDefaults;
 

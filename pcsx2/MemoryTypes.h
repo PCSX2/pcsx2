@@ -19,7 +19,7 @@
 
 namespace Ps2MemSize
 {
-	static const uint MainRam	= _32mb;			// 32 MB main memory!
+	static const uint MainRam	= _128mb;			// 32 MB main memory (extended to 128)!
 	static const uint Rom		= _1mb * 4;			// 4 MB main rom
 	static const uint Rom1		= 0x00040000;		// DVD player
 	static const uint Rom2		= 0x00080000;		// Chinese rom extension (?)

@@ -152,6 +152,7 @@ Panels::CpuPanelEE::CpuPanelEE( wxWindow* parent )
 
 	s_ee	+= m_panel_RecEE	| StdExpand();
 	s_ee    += m_check_EECacheEnable = &(new pxCheckBox( this, _("Enable EE Cache (Slower)") ))->SetToolTip(_("Interpreter only; provided for diagnostic"));
+	s_ee    += m_check_EE128mbEnable = &(new pxCheckBox( this, _("Enable 128 MB of RAM") ))->SetToolTip(_("Increases the amount of EE Memory"));
 	s_iop	+= m_panel_RecIOP	| StdExpand();
 
 	s_recs	+= s_ee				| SubGroup();
@@ -227,9 +228,10 @@ Panels::CpuPanelVU::CpuPanelVU( wxWindow* parent )
 void Panels::CpuPanelEE::Apply()
 {
 	Pcsx2Config::RecompilerOptions& recOps( g_Conf->EmuOptions.Cpu.Recompiler );
-	recOps.EnableEE		  = !!m_panel_RecEE->GetSelection();
-	recOps.EnableIOP	  = !!m_panel_RecIOP->GetSelection();
-	recOps.EnableEECache  = m_check_EECacheEnable->GetValue();
+	recOps.EnableEE		    = !!m_panel_RecEE->GetSelection();
+	recOps.EnableIOP	    = !!m_panel_RecIOP->GetSelection();
+	recOps.EnableEECache    = m_check_EECacheEnable->GetValue();
+	recOps.EnableEE128mbRam = m_check_EE128mbEnable->GetValue();
 }
 
 void Panels::CpuPanelEE::AppStatusEvent_OnSettingsApplied()
@@ -249,6 +251,10 @@ void Panels::CpuPanelEE::ApplyConfigToGui( AppConfig& configToApply, int flags )
 	//EECache option is exclusive to the EE Interpreter.
 	m_check_EECacheEnable->SetValue(recOps.EnableEECache);
 	m_check_EECacheEnable->Enable(!configToApply.EnablePresets && m_panel_RecEE->GetSelection() == 0);
+
+	m_check_EE128mbEnable->SetValue(recOps.EnableEE128mbRam);
+	m_check_EE128mbEnable->Enable(!configToApply.EnablePresets);
+
 	m_button_RestoreDefaults->Enable(!configToApply.EnablePresets);
 
 	if( flags & AppConfig::APPLY_FLAG_MANUALLY_PROPAGATE )

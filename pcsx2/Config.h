@@ -361,7 +361,8 @@ struct Pcsx2Config
 			PreBlockCheckEE : 1,
 			PreBlockCheckIOP : 1;
 		bool
-			EnableEECache : 1;
+			EnableEECache : 1,
+			EnableEE128mbRam : 1;
 		BITFIELD_END
 
 		RecompilerOptions();
@@ -996,6 +997,7 @@ namespace EmuFolders
 #define INSTANT_VU1 (EmuConfig.Speedhacks.vu1Instant)
 #define CHECK_EEREC (EmuConfig.Cpu.Recompiler.EnableEE)
 #define CHECK_CACHE (EmuConfig.Cpu.Recompiler.EnableEECache)
+#define CHECK_128MBRAM (EmuConfig.Cpu.Recompiler.EnableEE128mbRam)
 #define CHECK_IOPREC (EmuConfig.Cpu.Recompiler.EnableIOP)
 
 //------------ SPECIAL GAME FIXES!!! ---------------
