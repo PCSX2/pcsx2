@@ -29,6 +29,14 @@ public:
 	AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent);
 	~AudioSettingsWidget();
 
+private Q_SLOTS:
+	void updateVolumeLabel();
+	void updateLatencyLabel();
+	void updateTimestretchSequenceLengthLabel();
+	void updateTimestretchSeekwindowLengthLabel();
+	void updateTimestretchOverlapLabel();
+	void resetTimestretchDefaults();
+
 private:
 	Ui::AudioSettingsWidget m_ui;
 };

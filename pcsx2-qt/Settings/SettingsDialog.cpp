@@ -26,6 +26,7 @@
 #include "SettingsDialog.h"
 
 #include "AdvancedSystemSettingsWidget.h"
+#include "AudioSettingsWidget.h"
 #include "BIOSSettingsWidget.h"
 #include "EmulationSettingsWidget.h"
 #include "GameSummaryWidget.h"
@@ -114,7 +115,7 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 
 	addWidget(m_graphics_settings = new GraphicsSettingsWidget(this, m_ui.settingsContainer), tr("Graphics"), QStringLiteral("brush-line"),
 		tr("<strong>Graphics Settings</strong><hr>"));
-	addWidget(new QWidget(m_ui.settingsContainer), tr("Audio"), QStringLiteral("volume-up-line"),
+	addWidget(m_audio_settings = new AudioSettingsWidget(this, m_ui.settingsContainer), tr("Audio"), QStringLiteral("volume-up-line"),
 		tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console. Mouse over an option for additional "
 		   "information."));
 	addWidget(
