@@ -51,6 +51,8 @@ class GSState : public GSAlignedClass<32>
 	GIFPackedRegHandler m_fpGIFPackedRegHandlers[16];
 	GIFPackedRegHandler m_fpGIFPackedRegHandlerXYZ[8][4];
 
+	void CheckFlushes();
+
 	void GIFPackedRegHandlerNull(const GIFPackedReg* RESTRICT r);
 	void GIFPackedRegHandlerRGBA(const GIFPackedReg* RESTRICT r);
 	void GIFPackedRegHandlerSTQ(const GIFPackedReg* RESTRICT r);
@@ -232,6 +234,8 @@ public:
 	bool m_NTSC_Saturation;
 	bool m_nativeres;
 	bool m_mipmap;
+	bool m_primflush;
+	GIFRegPRIM m_last_prim;
 
 	static int s_n;
 	bool s_dump;
