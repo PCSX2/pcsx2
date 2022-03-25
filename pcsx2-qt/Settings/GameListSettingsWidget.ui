@@ -60,7 +60,8 @@
         <string>Add</string>
        </property>
        <property name="icon">
-        <iconset theme="folder-add-line" />
+        <iconset theme="folder-add-line">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -76,7 +77,8 @@
         <string>Remove</string>
        </property>
        <property name="icon">
-        <iconset theme="folder-reduce-line" />
+        <iconset theme="folder-reduce-line">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -130,7 +132,8 @@
         <string>Add</string>
        </property>
        <property name="icon">
-        <iconset theme="file-add-line" />
+        <iconset theme="file-add-line">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -146,7 +149,8 @@
         <string>Remove</string>
        </property>
        <property name="icon">
-        <iconset theme="file-reduce-line" />
+        <iconset theme="file-reduce-line">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -182,7 +186,8 @@
         <string>Scan For New Games</string>
        </property>
        <property name="icon">
-        <iconset theme="file-search-line" />
+        <iconset theme="file-search-line">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -198,7 +203,8 @@
         <string>Rescan All Games</string>
        </property>
        <property name="icon">
-        <iconset theme="refresh-line" />
+        <iconset theme="refresh-line">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -207,7 +213,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="resources/resources.qrc"/>
+  <include location="../resources/resources.qrc"/>
  </resources>
  <connections/>
 </ui>
