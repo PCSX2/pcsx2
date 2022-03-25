@@ -400,7 +400,6 @@ void SysMtgsThread::ExecuteTaskInThread()
 				case GS_RINGTYPE_MTVU_GSPACKET:
 				{
 					MTVU_LOG("MTGS - Waiting on semaXGkick!");
-					vu1Thread.KickStart(true);
 					if (!vu1Thread.semaXGkick.TryWait())
 					{
 						busy.PartialRelease();
