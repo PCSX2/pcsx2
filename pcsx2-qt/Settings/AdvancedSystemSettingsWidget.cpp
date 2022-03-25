@@ -33,6 +33,7 @@ AdvancedSystemSettingsWidget::AdvancedSystemSettingsWidget(SettingsDialog* dialo
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeRecompiler, "EmuCore/CPU/Recompiler", "EnableEE", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeCache, "EmuCore/CPU/Recompiler", "EnableEECache", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ee128mbram, "EmuCore/CPU/Recompiler", "EnableEE128mbRam", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeINTCSpinDetection, "EmuCore/Speedhacks", "IntcStat", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeWaitLoopDetection, "EmuCore/Speedhacks", "WaitLoop", true);
 

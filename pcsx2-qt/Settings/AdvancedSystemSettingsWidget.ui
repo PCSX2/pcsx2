@@ -53,6 +53,13 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="2">
+       <widget class="QCheckBox" name="ee128mbram">
+        <property name="text">
+         <string>Enable 128 MB of RAM</string>
+        </property>
+       </widget>
+      </item>
       <item row="2" column="1">
        <widget class="QCheckBox" name="eeINTCSpinDetection">
         <property name="text">
