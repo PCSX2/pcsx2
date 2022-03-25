@@ -38,6 +38,7 @@ namespace QtHost
 	void UpdateLogging();
 
 	/// Thread-safe settings access.
+	SettingsInterface* GetBaseSettingsInterface();
 	std::string GetBaseStringSettingValue(const char* section, const char* key, const char* default_value = "");
 	bool GetBaseBoolSettingValue(const char* section, const char* key, bool default_value = false);
 	int GetBaseIntSettingValue(const char* section, const char* key, int default_value = 0);
@@ -51,4 +52,5 @@ namespace QtHost
 	bool AddBaseValueToStringList(const char* section, const char* key, const char* value);
 	bool RemoveBaseValueFromStringList(const char* section, const char* key, const char* value);
 	void RemoveBaseSettingValue(const char* section, const char* key);
+	void QueueSettingsSave();
 } // namespace QtHost
