@@ -29,6 +29,14 @@ const char* XInputSource::s_axis_names[XInputSource::NUM_AXES] = {
 	"LeftTrigger", // AXIS_TRIGGERLEFT
 	"RightTrigger", // AXIS_TRIGGERRIGHT
 };
+static const GenericInputBinding s_sdl_generic_binding_axis_mapping[][2] = {
+	{GenericInputBinding::LeftStickLeft, GenericInputBinding::LeftStickRight}, // AXIS_LEFTX
+	{GenericInputBinding::LeftStickUp, GenericInputBinding::LeftStickDown}, // AXIS_LEFTY
+	{GenericInputBinding::RightStickLeft, GenericInputBinding::RightStickRight}, // AXIS_RIGHTX
+	{GenericInputBinding::RightStickUp, GenericInputBinding::RightStickDown}, // AXIS_RIGHTY
+	{GenericInputBinding::Unknown, GenericInputBinding::L2}, // AXIS_TRIGGERLEFT
+	{GenericInputBinding::Unknown, GenericInputBinding::R2}, // AXIS_TRIGGERRIGHT
+};
 
 const char* XInputSource::s_button_names[XInputSource::NUM_BUTTONS] = {
 	"DPadUp", // XINPUT_GAMEPAD_DPAD_UP
@@ -63,6 +71,23 @@ const u16 XInputSource::s_button_masks[XInputSource::NUM_BUTTONS] = {
 	XINPUT_GAMEPAD_X,
 	XINPUT_GAMEPAD_Y,
 	0x400, // XINPUT_GAMEPAD_GUIDE
+};
+static const GenericInputBinding s_sdl_generic_binding_button_mapping[] = {
+	GenericInputBinding::DPadUp, // XINPUT_GAMEPAD_DPAD_UP
+	GenericInputBinding::DPadDown, // XINPUT_GAMEPAD_DPAD_DOWN
+	GenericInputBinding::DPadLeft, // XINPUT_GAMEPAD_DPAD_LEFT
+	GenericInputBinding::DPadRight, // XINPUT_GAMEPAD_DPAD_RIGHT
+	GenericInputBinding::Start, // XINPUT_GAMEPAD_START
+	GenericInputBinding::Select, // XINPUT_GAMEPAD_BACK
+	GenericInputBinding::L3, // XINPUT_GAMEPAD_LEFT_THUMB
+	GenericInputBinding::R3, // XINPUT_GAMEPAD_RIGHT_THUMB
+	GenericInputBinding::L1, // XINPUT_GAMEPAD_LEFT_SHOULDER
+	GenericInputBinding::R1, // XINPUT_GAMEPAD_RIGHT_SHOULDER
+	GenericInputBinding::Cross, // XINPUT_GAMEPAD_A
+	GenericInputBinding::Circle, // XINPUT_GAMEPAD_B
+	GenericInputBinding::Square, // XINPUT_GAMEPAD_X
+	GenericInputBinding::Triangle, // XINPUT_GAMEPAD_Y
+	GenericInputBinding::System, // XINPUT_GAMEPAD_GUIDE
 };
 
 XInputSource::XInputSource() = default;
@@ -284,6 +309,45 @@ std::vector<InputBindingKey> XInputSource::EnumerateMotors()
 	}
 
 	return ret;
+}
+
+bool XInputSource::GetGenericBindingMapping(const std::string_view& device, GenericInputBindingMapping* mapping)
+{
+	if (!StringUtil::StartsWith(device, "XInput-"))
+		return false;
+
+	const std::optional<s32> player_id = StringUtil::FromChars<s32>(device.substr(7));
+	if (!player_id.has_value() || player_id.value() < 0)
+		return false;
+
+	if (player_id.value() < 0 || player_id.value() >= static_cast<s32>(XUSER_MAX_COUNT))
+		return false;
+
+	// assume all buttons are present.
+	const s32 pid = player_id.value();
+	for (u32 i = 0; i < std::size(s_sdl_generic_binding_axis_mapping); i++)
+	{
+		const GenericInputBinding negative = s_sdl_generic_binding_axis_mapping[i][0];
+		const GenericInputBinding positive = s_sdl_generic_binding_axis_mapping[i][1];
+		if (negative != GenericInputBinding::Unknown)
+			mapping->emplace_back(negative, StringUtil::StdStringFromFormat("XInput-%d/-%s", pid, s_axis_names[i]));
+
+		if (positive != GenericInputBinding::Unknown)
+			mapping->emplace_back(positive, StringUtil::StdStringFromFormat("XInput-%d/+%s", pid, s_axis_names[i]));
+	}
+	for (u32 i = 0; i < std::size(s_sdl_generic_binding_button_mapping); i++)
+	{
+		const GenericInputBinding binding = s_sdl_generic_binding_button_mapping[i];
+		if (binding != GenericInputBinding::Unknown)
+			mapping->emplace_back(binding, StringUtil::StdStringFromFormat("XInput-%d/%s", pid, s_button_names[i]));
+	}
+
+	if (m_controllers[pid].has_small_motor)
+		mapping->emplace_back(GenericInputBinding::SmallMotor, StringUtil::StdStringFromFormat("XInput-%d/SmallMotor", pid));
+	if (m_controllers[pid].has_large_motor)
+		mapping->emplace_back(GenericInputBinding::LargeMotor, StringUtil::StdStringFromFormat("XInput-%d/LargeMotor", pid));
+
+	return true;
 }
 
 void XInputSource::HandleControllerConnection(u32 index)
