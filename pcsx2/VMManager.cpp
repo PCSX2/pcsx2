@@ -50,6 +50,7 @@
 #include "USB/USB.h"
 #include "PAD/Host/PAD.h"
 #include "Sio.h"
+#include "ps2/BiosTools.h"
 
 #include "DebugTools/MIPSAnalyst.h"
 #include "DebugTools/SymbolMap.h"
@@ -78,6 +79,7 @@ namespace VMManager
 
 	static bool AutoDetectSource(const std::string& filename);
 	static bool ApplyBootParameters(const VMBootParameters& params);
+	static bool CheckBIOSAvailability();
 	static void UpdateRunningGame(bool force);
 
 	static std::string GetCurrentSaveStateFileName(s32 slot);
@@ -608,6 +610,22 @@ bool VMManager::ApplyBootParameters(const VMBootParameters& params)
 	return true;
 }
 
+bool VMManager::CheckBIOSAvailability()
+{
+	if (IsBIOSAvailable(EmuConfig.FullpathToBios()))
+		return true;
+
+	// TODO: When we translate core strings, translate this.
+
+	const char* message = "PCSX2 requires a PS2 BIOS in order to run.\n\n"
+		"For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't count).\n\n"
+		"Once dumped, this BIOS image should be placed in the bios folder within the data directory (Tools Menu -> Open Data Directory).\n\n"
+		"Please consult the FAQs and Guides for further instructions.";
+
+	Host::ReportErrorAsync("Startup Error", message);
+	return false;
+}
+
 bool VMManager::Initialize(const VMBootParameters& boot_params)
 {
 	const Common::Timer init_timer;
@@ -616,6 +634,9 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	Host::OnVMStarting();
 
 	ScopedGuard close_state = [] {
+		if (GSDumpReplayer::IsReplayingDump())
+			GSDumpReplayer::Shutdown();
+
 		s_state.store(VMState::Shutdown);
 		Host::OnVMDestroyed();
 	};
@@ -626,6 +647,10 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 		return false;
 
 	EmuConfig.LimiterMode = GetInitialLimiterMode();
+
+	// early out if we don't have a bios
+	if (!GSDumpReplayer::IsReplayingDump() && !CheckBIOSAvailability())
+		return false;
 
 	Console.WriteLn("Allocating memory map...");
 	s_vm_memory->CommitAll();
