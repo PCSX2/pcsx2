@@ -29,6 +29,7 @@
 #include "common/Pcsx2Defs.h"
 #include "common/TraceLog.h"
 #include "common/General.h"
+#include <atomic>
 
 #undef Yield // release the burden of windows.h global namespace spam.
 
@@ -233,6 +234,86 @@ namespace Threading
 		{
 			val.clear();
 		}
+	};
+
+	/// A semaphore that may not have a fast userspace path
+	/// (Used in other semaphore-based algorithms where the semaphore is just used for its thread sleep/wake ability)
+	class KernelSemaphore
+	{
+#if defined(_WIN32)
+		void* m_sema;
+#elif defined(__APPLE__)
+		semaphore_t m_sema;
+#else
+		sem_t m_sema;
+#endif
+	public:
+		KernelSemaphore();
+		~KernelSemaphore();
+		void Post();
+		void Wait();
+		void WaitWithYield();
+	};
+
+	/// A semaphore for notifying a work-processing thread of new work in a (separate) queue
+	///
+	/// Usage:
+	/// - Processing thread loops on `WaitForWork()` followed by processing all work in the queue
+	/// - Threads adding work first add their work to the queue, then call `NotifyOfWork()`
+	class WorkSema
+	{
+		/// Semaphore for sleeping the worker thread
+		KernelSemaphore m_sema;
+		/// Semaphore for sleeping thread waiting on worker queue empty
+		KernelSemaphore m_empty_sema;
+		/// Current state (see enum below)
+		std::atomic<s32> m_state{0};
+
+		// Expected call frequency is NotifyOfWork > WaitForWork > WaitForEmpty
+		// So optimize states for fast NotifyOfWork
+		enum
+		{
+			STATE_SPINNING = -2, ///< Worker thread is spinning waiting for work
+			STATE_SLEEPING = -1, ///< Worker thread is sleeping on m_sema
+			STATE_RUNNING_0 = 0, ///< Worker thread is processing work, but no work has been added since it last checked for new work
+			/* Any >0 state: STATE_RUNNING_N: Worker thread is processing work, and work has been added since it last checked for new work */
+			STATE_FLAG_WAITING_EMPTY = 1 << 30, ///< Flag to indicate that a thread is sleeping on m_empty_sema (can be applied to any STATE_RUNNING)
+		};
+
+		bool IsReadyForSleep(s32 state)
+		{
+			s32 waiting_empty_cleared = state & (STATE_FLAG_WAITING_EMPTY - 1);
+			return waiting_empty_cleared == STATE_RUNNING_0;
+		}
+
+		s32 NextStateWaitForWork(s32 current)
+		{
+			s32 new_state = IsReadyForSleep(current) ? STATE_SLEEPING : STATE_RUNNING_0;
+			return new_state | (current & STATE_FLAG_WAITING_EMPTY); // Preserve waiting empty flag for RUNNING_N → RUNNING_0
+		}
+
+	public:
+		/// Notify the worker thread that you've added new work to its queue
+		void NotifyOfWork()
+		{
+			// State change:
+			// SPINNING: Change state to RUNNING.  Thread will notice and process the new data
+			// SLEEPING: Change state to RUNNING and wake worker.  Thread will wake up and process the new data.
+			// RUNNING_0: Change state to RUNNING_N.
+			// RUNNING_N: Stay in RUNNING_N
+			s32 old = m_state.fetch_add(2, std::memory_order_release);
+			if (old == STATE_SLEEPING)
+				m_sema.Post();
+		}
+
+		/// Wait for work to be added to the queue
+		void WaitForWork();
+		/// Wait for work to be added to the queue, spinning for a bit before sleeping the thread
+		void WaitForWorkWithSpin();
+		/// Wait for the worker thread to finish processing all entries in the queue
+		void WaitForEmpty();
+		/// Wait for the worker thread to finish processing all entries in the queue, spinning a bit before sleeping the thread
+		void WaitForEmptyWithSpin();
 	};
 
 	class Semaphore
