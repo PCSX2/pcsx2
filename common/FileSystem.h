@@ -154,6 +154,12 @@ namespace FileSystem
 	/// Returns false if it does not exist and creation failed.
 	bool EnsureDirectoryExists(const char* path, bool recursive);
 
+	/// Removes a directory.
+	bool DeleteDirectory(const char* path);
+
+	/// Recursively removes a directory and all subdirectories/files.
+	bool RecursiveDeleteDirectory(const char* path);
+
 	/// Returns the path to the current executable.
 	std::string GetProgramPath();
 
