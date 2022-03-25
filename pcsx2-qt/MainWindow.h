@@ -54,7 +54,7 @@ public Q_SLOTS:
 	void refreshGameList(bool invalidate_cache);
 	void invalidateSaveStateCache();
 	void reportError(const QString& title, const QString& message);
-	bool confirmShutdown();
+	bool requestShutdown(bool allow_confirm = true, bool allow_save_to_state = true, bool block_until_done = false);
 	void requestExit();
 
 private Q_SLOTS:

@@ -139,27 +139,8 @@ void EmuThread::setVMPaused(bool paused)
 	VMManager::SetPaused(paused);
 }
 
-bool EmuThread::shutdownVM(bool allow_confirm /* = true */, bool allow_save_to_state /* = true */, bool blocking /* = false */)
+bool EmuThread::shutdownVM(bool allow_save_to_state /* = true */)
 {
-	if (!isOnEmuThread())
-	{
-		// only confirm on UI thread because we need to display a msgbox
-		if (allow_confirm && g_main_window && !g_main_window->confirmShutdown())
-			return false;
-
-		QMetaObject::invokeMethod(this, "shutdownVM", Qt::QueuedConnection, Q_ARG(bool, false),
-			Q_ARG(bool, allow_save_to_state), Q_ARG(bool, blocking));
-
-		if (blocking)
-		{
-			// we need to yield here, since the display gets destroyed
-			while (VMManager::HasValidVM())
-				QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
-		}
-
-		return true;
-	}
-
 	const VMState state = VMManager::GetState();
 	if (state == VMState::Paused)
 		m_event_loop->quit();
@@ -550,7 +531,7 @@ void EmuThread::connectDisplaySignals(DisplayWidget* widget)
 	connect(widget, &DisplayWidget::windowFocusEvent, this, &EmuThread::onDisplayWindowFocused);
 	connect(widget, &DisplayWidget::windowResizedEvent, this, &EmuThread::onDisplayWindowResized);
 	// connect(widget, &DisplayWidget::windowRestoredEvent, this, &EmuThread::redrawDisplayWindow);
-	connect(widget, &DisplayWidget::windowClosedEvent, []() { g_emu_thread->shutdownVM(true, true); });
+	connect(widget, &DisplayWidget::windowClosedEvent, []() { g_main_window->requestShutdown(); });
 	connect(widget, &DisplayWidget::windowKeyEvent, this, &EmuThread::onDisplayWindowKeyEvent);
 	connect(widget, &DisplayWidget::windowMouseMoveEvent, this, &EmuThread::onDisplayWindowMouseMoveEvent);
 	connect(widget, &DisplayWidget::windowMouseButtonEvent, this, &EmuThread::onDisplayWindowMouseButtonEvent);
@@ -790,6 +771,14 @@ DEFINE_HOTKEY("Screenshot", "General", "Save Screenshot", [](bool pressed) {
 	if (!pressed)
 	{
 		// TODO
+	}
+})
+DEFINE_HOTKEY("ShutdownVM", "System", "Shut Down Virtual Machine", [](bool pressed) {
+	if (!pressed)
+	{
+		// run it on the host thread, that way we get the confirm prompt (if enabled)
+		QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection,
+			Q_ARG(bool, true), Q_ARG(bool, true), Q_ARG(bool, true));
 	}
 })
 DEFINE_HOTKEY("TogglePause", "System", "Toggle Pause", [](bool pressed) {
