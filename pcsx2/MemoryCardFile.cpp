@@ -844,6 +844,24 @@ static bool IsMemoryCardFolder(const std::string& path)
 	return FileSystem::FileExists(superblock_path.c_str());
 }
 
+static bool IsMemoryCardFormatted(const std::string& path)
+{
+	auto fp = FileSystem::OpenManagedCFile(path.c_str(), "rb");
+	if (!fp)
+		return false;
+
+	static const char formatted_psx[] = "MC";
+	static const char formatted_string[] = "Sony PS2 Memory Card Format";
+	static constexpr size_t read_length = sizeof(formatted_string) - 1;
+
+	u8 data[read_length];
+	if (std::fread(data, read_length, 1, fp.get()) != 1)
+		return false;
+
+	return (std::memcmp(data, formatted_string, sizeof(formatted_string) - 1) == 0 ||
+			std::memcmp(data, formatted_psx, sizeof(formatted_psx) - 1) == 0);
+}
+
 std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_cards)
 {
 	std::vector<FILESYSTEM_FIND_DATA> files;
@@ -876,16 +894,18 @@ std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_card
 			if (!IsMemoryCardFolder(fd.FileName))
 				continue;
 
-			mcds.push_back({std::move(basename), std::move(fd.FileName), MemoryCardType::Folder,
-				MemoryCardFileType::Unknown, 0u});
+			mcds.push_back({std::move(basename), std::move(fd.FileName), fd.ModificationTime,
+				MemoryCardType::Folder, MemoryCardFileType::Unknown, 0u, true});
 		}
 		else
 		{
 			if (fd.Size < MCD_SIZE)
 				continue;
 
-			mcds.push_back({std::move(basename), std::move(fd.FileName), MemoryCardType::File,
-				GetMemoryCardFileTypeFromSize(fd.Size), static_cast<u32>(fd.Size)});
+			const bool formatted = IsMemoryCardFormatted(fd.FileName);
+			mcds.push_back({std::move(basename), std::move(fd.FileName), fd.ModificationTime,
+				MemoryCardType::File, GetMemoryCardFileTypeFromSize(fd.Size),
+				static_cast<u32>(fd.Size), formatted});
 		}
 	}
 
@@ -907,16 +927,18 @@ std::optional<AvailableMcdInfo> FileMcd_GetCardInfo(const std::string_view& name
 	{
 		if (IsMemoryCardFolder(path))
 		{
-			ret = {std::move(basename), std::move(path), MemoryCardType::Folder,
-				MemoryCardFileType::Unknown, 0u};
+			ret = {std::move(basename), std::move(path), sd.ModificationTime,
+				MemoryCardType::Folder, MemoryCardFileType::Unknown, 0u, true};
 		}
 	}
 	else
 	{
 		if (sd.Size >= MCD_SIZE)
 		{
-			ret = {std::move(basename), std::move(path), MemoryCardType::File,
-				GetMemoryCardFileTypeFromSize(sd.Size), static_cast<u32>(sd.Size)};
+			const bool formatted = IsMemoryCardFormatted(path);
+			ret = {std::move(basename), std::move(path), sd.ModificationTime,
+				MemoryCardType::File, GetMemoryCardFileTypeFromSize(sd.Size),
+				static_cast<u32>(sd.Size), formatted};
 		}
 	}
 
@@ -1010,4 +1032,63 @@ bool FileMcd_CreateNewCard(const std::string_view& name, MemoryCardType type, Me
 	}
 
 	return false;
+}
+
+bool FileMcd_RenameCard(const std::string_view& name, const std::string_view& new_name)
+{
+	const std::string name_path(Path::CombineStdString(EmuFolders::MemoryCards, name));
+	const std::string new_name_path(Path::CombineStdString(EmuFolders::MemoryCards, new_name));
+
+	FILESYSTEM_STAT_DATA sd, new_sd;
+	if (!FileSystem::StatFile(name_path.c_str(), &sd) || FileSystem::StatFile(new_name_path.c_str(), &new_sd))
+	{
+		Console.Error("(FileMcd) New name already exists, or old name does not");
+		return false;
+	}
+
+	Console.WriteLn("(FileMcd) Renaming memory card '%.*s' to '%.*s'",
+		static_cast<int>(name.size()), name.data(),
+		static_cast<int>(new_name.size()), new_name.data());
+
+	if (!FileSystem::RenamePath(name_path.c_str(), new_name_path.c_str()))
+	{
+		Console.Error("(FileMcd) Failed to rename '%s' to '%s'", name_path.c_str(), new_name_path.c_str());
+		return false;
+	}
+
+	return true;
+}
+
+bool FileMcd_DeleteCard(const std::string_view& name)
+{
+	const std::string name_path(Path::CombineStdString(EmuFolders::MemoryCards, name));
+
+	FILESYSTEM_STAT_DATA sd;
+	if (!FileSystem::StatFile(name_path.c_str(), &sd))
+	{
+		Console.Error("(FileMcd) Can't stat '%s' for deletion", name_path.c_str());
+		return false;
+	}
+
+	Console.WriteLn("(FileMcd) Deleting memory card '%.*s'", static_cast<int>(name.size()), name.data());
+
+	if (sd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
+	{
+		// must be a folder memcard, so do a recursive delete (scary)
+		if (!FileSystem::RecursiveDeleteDirectory(name_path.c_str()))
+		{
+			Console.Error("(FileMcd) Failed to recursively delete '%s'", name_path.c_str());
+			return false;
+		}
+	}
+	else
+	{
+		if (!FileSystem::DeleteFilePath(name_path.c_str()))
+		{
+			Console.Error("(FileMcd) Failed to delete file '%s'", name_path.c_str());
+			return false;
+		}
+	}
+
+	return true;
 }
