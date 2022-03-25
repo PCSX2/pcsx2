@@ -422,7 +422,12 @@
         <widget class="QComboBox" name="trilinearFiltering">
          <item>
           <property name="text">
-           <string>None (Default)</string>
+           <string>Automatic (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Off (None)</string>
           </property>
          </item>
          <item>

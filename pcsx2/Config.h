@@ -146,8 +146,9 @@ enum class BiFiltering : u8
 	Forced_But_Sprite,
 };
 
-enum class TriFiltering : u8
+enum class TriFiltering : s8
 {
+	Automatic = -1,
 	Off,
 	PS2,
 	Forced,
@@ -525,7 +526,7 @@ struct Pcsx2Config
 		int UserHacks_RoundSprite{0};
 		int UserHacks_TCOffsetX{0};
 		int UserHacks_TCOffsetY{0};
-		TriFiltering UserHacks_TriFilter{TriFiltering::Off};
+		TriFiltering UserHacks_TriFilter{TriFiltering::Automatic};
 		int OverrideTextureBarriers{-1};
 		int OverrideGeometryShaders{-1};
 
