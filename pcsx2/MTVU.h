@@ -31,13 +31,11 @@ class VU_Thread : public pxThread {
 
 	u32 buffer[buffer_size];
 	// Note: keep atomic on separate cache line to avoid CPU conflict
-	alignas(64) std::atomic<bool> isBusy;   // Is thread processing data?
 	alignas(64) std::atomic<int> m_ato_read_pos; // Only modified by VU thread
 	alignas(64) std::atomic<int> m_ato_write_pos;    // Only modified by EE thread
 	alignas(64) int  m_read_pos; // temporary read pos (local to the VU thread)
 	int  m_write_pos; // temporary write pos (local to the EE thread)
-	Mutex     mtxBusy;
-	Semaphore semaEvent;
+	WorkSema semaEvent;
 	BaseVUmicroCPU*& vuCPU;
 	VURegs&          vuRegs;
 
@@ -67,7 +65,7 @@ public:
 	void Reset();
 
 	// Get MTVU to start processing its packets if it isn't already
-	void KickStart(bool forceKick = false);
+	void KickStart();
 
 	// Used for assertions...
 	bool IsDone();
