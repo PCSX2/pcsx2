@@ -56,6 +56,61 @@ static void MACH_CHECK(kern_return_t mach_retval)
 	}
 }
 
+Threading::KernelSemaphore::KernelSemaphore()
+{
+	MACH_CHECK(semaphore_create(mach_task_self(), &m_sema, SYNC_POLICY_FIFO, 0));
+}
+
+Threading::KernelSemaphore::~KernelSemaphore()
+{
+	MACH_CHECK(semaphore_destroy(mach_task_self(), m_sema));
+}
+
+void Threading::KernelSemaphore::Post()
+{
+	MACH_CHECK(semaphore_signal(m_sema));
+}
+
+void Threading::KernelSemaphore::Wait()
+{
+	pxAssertMsg(!wxThread::IsMain(), "Unyielding semaphore wait issued from the main/gui thread.  Use WaitWithYield.");
+	MACH_CHECK(semaphore_wait(m_sema));
+}
+
+/// Wait up to the given time
+/// Returns true if successful, false if timed out
+static bool WaitUpTo(semaphore_t sema, wxTimeSpan wxtime)
+{
+	mach_timespec_t time;
+	u64 ms = wxtime.GetMilliseconds().GetValue();
+	time.tv_sec = ms / 1000;
+	time.tv_nsec = (ms % 1000) * 1000000;
+	kern_return_t res = semaphore_timedwait(sema, time);
+	if (res == KERN_OPERATION_TIMED_OUT)
+		return false;
+	MACH_CHECK(res);
+	return true;
+}
+
+void Threading::KernelSemaphore::WaitWithYield()
+{
+#if wxUSE_GUI
+	if (!wxThread::IsMain() || (wxTheApp == NULL))
+	{
+		Wait();
+	}
+	else
+	{
+		while (!WaitUpTo(m_sema, def_yieldgui_interval))
+		{
+			YieldToMain();
+		}
+	}
+#else
+	WaitWithoutYield();
+#endif
+}
+
 Threading::Semaphore::Semaphore()
 {
 	// other platforms explicitly make a thread-private (unshared) semaphore
@@ -176,7 +231,9 @@ void Threading::Semaphore::Wait()
 	}
 	else
 	{
-		while (!WaitWithoutYield(def_yieldgui_interval))
+		if (__atomic_sub_fetch(&m_counter, 1, __ATOMIC_ACQUIRE) >= 0)
+			return;
+		while (!WaitUpTo(m_sema, def_yieldgui_interval))
 		{
 			YieldToMain();
 		}
