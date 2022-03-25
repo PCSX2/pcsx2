@@ -408,7 +408,12 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 			case GSHWFixId::TrilinearFiltering:
 			{
 				if (value >= 0 && value <= static_cast<int>(TriFiltering::Forced))
-					config.UserHacks_TriFilter = static_cast<TriFiltering>(value);
+				{
+					if (config.UserHacks_TriFilter == TriFiltering::Automatic)
+						config.UserHacks_TriFilter = static_cast<TriFiltering>(value);
+					else if (config.UserHacks_TriFilter == TriFiltering::Off)
+						Console.Warning("[GameDB] Game requires trilinear filtering but it has been force disabled.");
+				}
 			}
 			break;
 

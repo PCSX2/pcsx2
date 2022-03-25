@@ -630,7 +630,7 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 
 	// in wx, we put trilinear filtering behind user hacks, but not in qt.
 #ifndef PCSX2_CORE
-	UserHacks_TriFilter = TriFiltering::Off;
+	UserHacks_TriFilter = TriFiltering::Automatic;
 #endif
 }
 

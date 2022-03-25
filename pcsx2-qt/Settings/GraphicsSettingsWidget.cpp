@@ -133,7 +133,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.upscaleMultiplier, "EmuCore/GS", "upscale_multiplier", 1, 1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.textureFiltering, "EmuCore/GS", "filter", static_cast<int>(BiFiltering::PS2));
 	SettingWidgetBinder::BindWidgetToIntSetting(
-		sif, m_ui.trilinearFiltering, "EmuCore/GS", "UserHacks_TriFilter", static_cast<int>(TriFiltering::Off));
+		sif, m_ui.trilinearFiltering, "EmuCore/GS", "UserHacks_TriFilter", static_cast<int>(TriFiltering::Automatic), -1);
 	SettingWidgetBinder::BindWidgetToEnumSetting(
 		sif, m_ui.anisotropicFiltering, "EmuCore/GS", "MaxAnisotropy", s_anisotropic_filtering_entries, s_anisotropic_filtering_values, "1");
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.dithering, "EmuCore/GS", "dithering_ps2", 2);

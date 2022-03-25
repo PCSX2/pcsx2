@@ -1067,6 +1067,7 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 			}
 			break;
 
+		case TriFiltering::Automatic:
 		case TriFiltering::Off:
 		default:
 			break;
