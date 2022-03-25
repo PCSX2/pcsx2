@@ -1349,6 +1349,10 @@ DEFINE_HOTKEY("DecreaseSpeed", "System", "Decrease Target Speed", [](bool presse
 	if (!pressed)
 		HotkeyAdjustTargetSpeed(-0.1);
 })
+DEFINE_HOTKEY("ResetVM", "System", "Reset Virtual Machine", [](bool pressed) {
+	if (!pressed && VMManager::HasValidVM())
+		VMManager::Reset();
+})
 
 DEFINE_HOTKEY("PreviousSaveStateSlot", "Save States", "Select Previous Save Slot", [](bool pressed) {
 	if (!pressed)
