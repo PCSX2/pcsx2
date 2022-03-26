@@ -354,6 +354,12 @@ struct alignas(16) GSHWDrawConfig
 			return (triln == static_cast<u8>(GS_MIN_FILTER::Nearest_Mipmap_Linear) ||
 					triln == static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Linear));
 		}
+
+		/// Returns true if mipmaps should be used when filtering (i.e. LOD not clamped to zero).
+		__fi bool UseMipmapFiltering() const
+		{
+			return (triln >= static_cast<u8>(GS_MIN_FILTER::Nearest_Mipmap_Nearest));
+		}
 	};
 	struct DepthStencilSelector
 	{

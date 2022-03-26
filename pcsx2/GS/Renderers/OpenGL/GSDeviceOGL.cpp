@@ -829,40 +829,17 @@ GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 	GLuint sampler;
 	glCreateSamplers(1, &sampler);
 
-	// Bilinear filtering
-	if (sel.biln)
+	glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, sel.IsMagFilterLinear() ? GL_LINEAR : GL_NEAREST);
+	if (!sel.UseMipmapFiltering())
 	{
-		glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, sel.IsMinFilterLinear() ? GL_LINEAR : GL_NEAREST);
 	}
 	else
 	{
-		glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	}
-
-	switch (static_cast<GS_MIN_FILTER>(sel.triln))
-	{
-		case GS_MIN_FILTER::Nearest:
-			// Nop based on biln
-			break;
-		case GS_MIN_FILTER::Linear:
-			// Nop based on biln
-			break;
-		case GS_MIN_FILTER::Nearest_Mipmap_Nearest:
-			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-			break;
-		case GS_MIN_FILTER::Nearest_Mipmap_Linear:
-			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-			break;
-		case GS_MIN_FILTER::Linear_Mipmap_Nearest:
-			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-			break;
-		case GS_MIN_FILTER::Linear_Mipmap_Linear:
-			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			break;
-		default:
-			break;
+		if (sel.IsMipFilterLinear())
+			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, sel.IsMinFilterLinear() ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR);
+		else
+			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, sel.IsMinFilterLinear() ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST);
 	}
 
 	glSamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, -1000.0f);
