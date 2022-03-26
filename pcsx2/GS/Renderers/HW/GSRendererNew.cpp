@@ -282,12 +282,12 @@ void GSRendererNew::EmulateTextureShuffleAndFbmask()
 			if (!PRIM->ABE || !features.texture_barrier)
 			{
 				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on tex shuffle", fbmask);
-				m_conf.require_one_barrier = features.texture_barrier;
+				m_conf.require_one_barrier = true;
 			}
 			else
 			{
 				GL_INS("FBMASK SW emulated fb_mask:%x on tex shuffle", fbmask);
-				m_conf.require_full_barrier = features.texture_barrier;
+				m_conf.require_full_barrier = true;
 			}
 		}
 		else
@@ -340,14 +340,14 @@ void GSRendererNew::EmulateTextureShuffleAndFbmask()
 			{
 				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
 					(m_conf.ps.dfmt == 2) ? 16 : 32);
-				m_conf.require_one_barrier = features.texture_barrier;
+				m_conf.require_one_barrier = true;
 			}
 			else
 			{
 				// The safe and accurate path (but slow)
 				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
 					(m_conf.ps.dfmt == 2) ? 16 : 32);
-				m_conf.require_full_barrier = features.texture_barrier;
+				m_conf.require_full_barrier = true;
 			}
 		}
 	}
@@ -493,7 +493,7 @@ void GSRendererNew::EmulateChannelShuffle(const GSTextureCache::Source* tex)
 				// sample from fb instead
 				m_conf.tex = nullptr;
 				m_conf.ps.tex_is_fb = true;
-				m_conf.require_one_barrier = !g_gs_device->Features().framebuffer_fetch;
+				m_conf.require_one_barrier = true;
 			}
 			else if (m_conf.tex == m_conf.ds)
 			{
@@ -1528,10 +1528,6 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	if (!rt || m_conf.colormask.wrgba == 0)
 		m_conf.ps.DisableColorOutput();
 
-	// Barriers aren't needed with fbfetch.
-	m_conf.require_one_barrier &= !features.framebuffer_fetch;
-	m_conf.require_full_barrier &= !features.framebuffer_fetch;
-
 	if (m_conf.ps.scanmsk & 2)
 		DATE_PRIMID = false; // to have discard in the shader work correctly
 
@@ -1695,7 +1691,7 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			//
 			// Use an HLE shader to sample depth directly as the alpha channel
 			GL_INS("ICO sample depth as alpha");
-			m_conf.require_full_barrier = !features.framebuffer_fetch;
+			m_conf.require_full_barrier = true;
 			// Extract the depth as palette index
 			m_conf.ps.depth_fmt = 1;
 			m_conf.ps.channel = ChannelFetch_BLUE;
@@ -1709,6 +1705,17 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				m_conf.pal = tex->m_palette;
 			}
 		}
+	}
+
+	// Barriers aren't needed with fbfetch.
+	m_conf.require_one_barrier &= !features.framebuffer_fetch;
+	m_conf.require_full_barrier &= !features.framebuffer_fetch;
+
+	// Swap full barrier for one barrier when there's no overlap.
+	if (m_conf.require_full_barrier && m_prim_overlap == PRIM_OVERLAP_NO)
+	{
+		m_conf.require_full_barrier = false;
+		m_conf.require_one_barrier = true;
 	}
 
 	// rs
@@ -1845,12 +1852,6 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			m_conf.alpha_second_pass.depth.zwe = false;
 			m_conf.alpha_second_pass.depth.ztst = ZTST_GEQUAL;
 		}
-	}
-
-	if (m_conf.require_full_barrier && m_prim_overlap == PRIM_OVERLAP_NO)
-	{
-		m_conf.require_full_barrier = false;
-		m_conf.require_one_barrier = true;
 	}
 
 	m_conf.drawlist = (m_conf.require_full_barrier && m_vt.m_primclass == GS_SPRITE_CLASS) ? &m_drawlist : nullptr;
