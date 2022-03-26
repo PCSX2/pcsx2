@@ -1055,8 +1055,12 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	switch (GSConfig.UserHacks_TriFilter)
 	{
 		case TriFiltering::Forced:
-			trilinear = static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Linear);
-			trilinear_auto = !need_mipmap || GSConfig.HWMipmap != HWMipmapLevel::Full;
+			{
+				// force bilinear otherwise we can end up with min/mag nearest and mip linear.
+				bilinear = true;
+				trilinear = static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Linear);
+				trilinear_auto = !need_mipmap || GSConfig.HWMipmap != HWMipmapLevel::Full;
+			}
 			break;
 
 		case TriFiltering::PS2:
