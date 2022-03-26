@@ -102,19 +102,19 @@ struct FxaaTex { SamplerState smpl; Texture2D tex; };
 
 #define FxaaEdgeThreshold 0.063
 #define FxaaEdgeThresholdMin 0.00
-#define FXAA_QUALITY__P0 1.0
-#define FXAA_QUALITY__P1 1.5
-#define FXAA_QUALITY__P2 2.0
-#define FXAA_QUALITY__P3 2.0
-#define FXAA_QUALITY__P4 2.0
-#define FXAA_QUALITY__P5 2.0
-#define FXAA_QUALITY__P6 2.0
-#define FXAA_QUALITY__P7 2.0
-#define FXAA_QUALITY__P8 2.0
-#define FXAA_QUALITY__P9 2.0
-#define FXAA_QUALITY__P10 4.0
-#define FXAA_QUALITY__P11 8.0
-#define FXAA_QUALITY__P12 8.0
+#define FXAA_QUALITY_P0 1.0
+#define FXAA_QUALITY_P1 1.5
+#define FXAA_QUALITY_P2 2.0
+#define FXAA_QUALITY_P3 2.0
+#define FXAA_QUALITY_P4 2.0
+#define FXAA_QUALITY_P5 2.0
+#define FXAA_QUALITY_P6 2.0
+#define FXAA_QUALITY_P7 2.0
+#define FXAA_QUALITY_P8 2.0
+#define FXAA_QUALITY_P9 2.0
+#define FXAA_QUALITY_P10 4.0
+#define FXAA_QUALITY_P11 8.0
+#define FXAA_QUALITY_P12 8.0
 
 /*------------------------------------------------------------------------------
                         [GAMMA PREPASS CODE SECTION]
@@ -285,11 +285,11 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	if( horzSpan) posB.y += lengthSign * 0.5;
 
 	float2 posN;
-	posN.x = posB.x - offNP.x * FXAA_QUALITY__P0;
-	posN.y = posB.y - offNP.y * FXAA_QUALITY__P0;
+	posN.x = posB.x - offNP.x * FXAA_QUALITY_P0;
+	posN.y = posB.y - offNP.y * FXAA_QUALITY_P0;
 	float2 posP;
-	posP.x = posB.x + offNP.x * FXAA_QUALITY__P0;
-	posP.y = posB.y + offNP.y * FXAA_QUALITY__P0;
+	posP.x = posB.x + offNP.x * FXAA_QUALITY_P0;
+	posP.y = posB.y + offNP.y * FXAA_QUALITY_P0;
 	float subpixD = ((-2.0)*subpixC) + 3.0;
 	float lumaEndN = FxaaLuma(FxaaTexTop(tex, posN));
 	float subpixE = subpixC * subpixC;
@@ -304,11 +304,11 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	lumaEndP -= lumaNN * 0.5;
 	bool doneN = abs(lumaEndN) >= gradientScaled;
 	bool doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P1;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P1;
+	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_P1;
+	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_P1;
 	bool doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P1;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P1;
+	if(!doneP) posP.x += offNP.x * FXAA_QUALITY_P1;
+	if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P1;
 
 	if(doneNP) {
 	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
@@ -317,11 +317,11 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 	doneN = abs(lumaEndN) >= gradientScaled;
 	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P2;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P2;
+	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_P2;
+	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_P2;
 	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P2;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P2;
+	if(!doneP) posP.x += offNP.x * FXAA_QUALITY_P2;
+	if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P2;
 
 	if(doneNP) {
 	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
@@ -330,11 +330,11 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 	doneN = abs(lumaEndN) >= gradientScaled;
 	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P3;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P3;
+	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_P3;
+	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_P3;
 	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P3;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P3;
+	if(!doneP) posP.x += offNP.x * FXAA_QUALITY_P3;
+	if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P3;
 
 	if(doneNP) {
 	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
@@ -343,11 +343,11 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 	doneN = abs(lumaEndN) >= gradientScaled;
 	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P4;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P4;
+	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_P4;
+	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_P4;
 	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P4;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P4;
+	if(!doneP) posP.x += offNP.x * FXAA_QUALITY_P4;
+	if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P4;
 
 	if(doneNP) {
 	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
@@ -356,11 +356,11 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 	doneN = abs(lumaEndN) >= gradientScaled;
 	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P5;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P5;
+	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_P5;
+	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_P5;
 	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P5;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P5;
+	if(!doneP) posP.x += offNP.x * FXAA_QUALITY_P5;
+	if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P5;
 
 	if(doneNP) {
 	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
@@ -369,11 +369,11 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 	doneN = abs(lumaEndN) >= gradientScaled;
 	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P6;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P6;
+	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_P6;
+	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_P6;
 	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P6;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P6;
+	if(!doneP) posP.x += offNP.x * FXAA_QUALITY_P6;
+	if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P6;
 
 	if(doneNP) {
 	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
@@ -382,11 +382,11 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 	doneN = abs(lumaEndN) >= gradientScaled;
 	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P7;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P7;
+	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_P7;
+	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_P7;
 	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P7;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P7;
+	if(!doneP) posP.x += offNP.x * FXAA_QUALITY_P7;
+	if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P7;
 
 	if(doneNP) {
 	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
@@ -395,11 +395,11 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 	doneN = abs(lumaEndN) >= gradientScaled;
 	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P8;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P8;
+	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_P8;
+	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_P8;
 	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P8;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P8;
+	if(!doneP) posP.x += offNP.x * FXAA_QUALITY_P8;
+	if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P8;
 
 	if(doneNP) {
 	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
@@ -408,11 +408,11 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 	doneN = abs(lumaEndN) >= gradientScaled;
 	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P9;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P9;
+	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_P9;
+	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_P9;
 	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P9;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P9;
+	if(!doneP) posP.x += offNP.x * FXAA_QUALITY_P9;
+	if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P9;
 
 	if(doneNP) {
 	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
@@ -421,11 +421,11 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 	doneN = abs(lumaEndN) >= gradientScaled;
 	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P10;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P10;
+	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_P10;
+	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_P10;
 	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P10;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P10;
+	if(!doneP) posP.x += offNP.x * FXAA_QUALITY_P10;
+	if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P10;
 
 	if(doneNP) {
 	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
@@ -434,11 +434,11 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 	doneN = abs(lumaEndN) >= gradientScaled;
 	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P11;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P11;
+	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_P11;
+	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_P11;
 	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P11;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P11;
+	if(!doneP) posP.x += offNP.x * FXAA_QUALITY_P11;
+	if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P11;
 
 	if(doneNP) {
 	if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
@@ -447,11 +447,11 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 	doneN = abs(lumaEndN) >= gradientScaled;
 	doneP = abs(lumaEndP) >= gradientScaled;
-	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P12;
-	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P12;
+	if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_P12;
+	if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_P12;
 	doneNP = (!doneN) || (!doneP);
-	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P12;
-	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P12;
+	if(!doneP) posP.x += offNP.x * FXAA_QUALITY_P12;
+	if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P12;
 	}}}}}}}}}}}
 
 	float dstN = posM.x - posN.x;
