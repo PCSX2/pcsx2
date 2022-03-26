@@ -103,15 +103,6 @@ public:
 	ExternalFXConstantBuffer() { memset(this, 0, sizeof(*this)); }
 };
 
-class ShadeBoostConstantBuffer
-{
-public:
-	GSVector4 rcpFrame;
-	GSVector4 rcpFrameOpt;
-
-	ShadeBoostConstantBuffer() { memset(this, 0, sizeof(*this)); }
-};
-
 #pragma pack(pop)
 
 enum HWBlendFlags
@@ -652,7 +643,7 @@ protected:
 	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) = 0;
 	virtual void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset) = 0;
 	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) {}
-	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex) {}
+	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) {}
 	virtual void DoExternalFX(GSTexture* sTex, GSTexture* dTex) {}
 
 public:

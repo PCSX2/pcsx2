@@ -240,15 +240,8 @@ bool GSDevice11::Create(HostDisplay* display)
 
 	// Shade Boost
 
-	ShaderMacro sm_sboost(m_shader_cache.GetFeatureLevel());
-
-	sm_sboost.AddMacro("SB_CONTRAST", std::clamp(theApp.GetConfigI("ShadeBoost_Contrast"), 0, 100));
-	sm_sboost.AddMacro("SB_BRIGHTNESS", std::clamp(theApp.GetConfigI("ShadeBoost_Brightness"), 0, 100));
-	sm_sboost.AddMacro("SB_SATURATION", std::clamp(theApp.GetConfigI("ShadeBoost_Saturation"), 0, 100));
-
 	memset(&bd, 0, sizeof(bd));
-
-	bd.ByteWidth = sizeof(ShadeBoostConstantBuffer);
+	bd.ByteWidth = sizeof(float) * 4;
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
@@ -257,7 +250,7 @@ bool GSDevice11::Create(HostDisplay* display)
 	shader = Host::ReadResourceFileToString("shaders/dx11/shadeboost.fx");
 	if (!shader.has_value())
 		return false;
-	m_shadeboost.ps = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm_sboost.GetPtr(), "ps_main");
+	m_shadeboost.ps = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm_model.GetPtr(), "ps_main");
 	if (!m_shadeboost.ps)
 		return false;
 
@@ -840,19 +833,14 @@ void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	//dTex->Save("c:\\temp1\\2.bmp");
 }
 
-void GSDevice11::DoShadeBoost(GSTexture* sTex, GSTexture* dTex)
+void GSDevice11::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4])
 {
 	const GSVector2i s = dTex->GetSize();
 
 	const GSVector4 sRect(0, 0, 1, 1);
 	const GSVector4 dRect(0, 0, s.x, s.y);
 
-	ShadeBoostConstantBuffer cb;
-
-	cb.rcpFrame = GSVector4(1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
-	cb.rcpFrameOpt = GSVector4::zero();
-
-	m_ctx->UpdateSubresource(m_shadeboost.cb.get(), 0, nullptr, &cb, 0, 0);
+	m_ctx->UpdateSubresource(m_shadeboost.cb.get(), 0, nullptr, params, 0, 0);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_shadeboost.ps.get(), m_shadeboost.cb.get(), true);
 }

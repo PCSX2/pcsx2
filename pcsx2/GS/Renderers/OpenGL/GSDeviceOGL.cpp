@@ -446,13 +446,6 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 	{
 		GL_PUSH("GSDeviceOGL::Shadeboost");
 
-		const int ShadeBoost_Contrast = std::clamp(theApp.GetConfigI("ShadeBoost_Contrast"), 0, 100);
-		const int ShadeBoost_Brightness = std::clamp(theApp.GetConfigI("ShadeBoost_Brightness"), 0, 100);
-		const int ShadeBoost_Saturation = std::clamp(theApp.GetConfigI("ShadeBoost_Saturation"), 0, 100);
-		std::string shade_macro = format("#define SB_SATURATION %d.0\n", ShadeBoost_Saturation)
-			+ format("#define SB_BRIGHTNESS %d.0\n", ShadeBoost_Brightness)
-			+ format("#define SB_CONTRAST %d.0\n", ShadeBoost_Contrast);
-
 		const auto shader = Host::ReadResourceFileToString("shaders/opengl/shadeboost.glsl");
 		if (!shader.has_value())
 		{
@@ -460,9 +453,10 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 			return false;
 		}
 
-		const std::string ps(GetShaderSource("ps_main", GL_FRAGMENT_SHADER, m_shader_common_header, *shader, shade_macro));
+		const std::string ps(GetShaderSource("ps_main", GL_FRAGMENT_SHADER, m_shader_common_header, *shader, {}));
 		if (!m_shader_cache.GetProgram(&m_shadeboost.ps, m_convert.vs, {}, ps))
 			return false;
+		m_shadeboost.ps.RegisterUniform("params");
 		m_shadeboost.ps.SetName("Shadeboost pipe");
 	}
 
@@ -1504,9 +1498,12 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 #endif
 }
 
-void GSDeviceOGL::DoShadeBoost(GSTexture* sTex, GSTexture* dTex)
+void GSDeviceOGL::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4])
 {
 	GL_PUSH("DoShadeBoost");
+
+	m_shadeboost.ps.Bind();
+	m_shadeboost.ps.Uniform4fv(0, params);
 
 	OMSetColorMaskState();
 

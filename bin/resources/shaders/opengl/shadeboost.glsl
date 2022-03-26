@@ -11,6 +11,8 @@
 
 #ifdef FRAGMENT_SHADER
 
+uniform vec4 params;
+
 in vec4 PSin_p;
 in vec2 PSin_t;
 in vec4 PSin_c;
@@ -20,9 +22,9 @@ layout(location = 0) out vec4 SV_Target0;
 // For all settings: 1.0 = 100% 0.5=50% 1.5 = 150%
 vec4 ContrastSaturationBrightness(vec4 color)
 {
-    const float sat = SB_SATURATION / 50.0;
-    const float brt = SB_BRIGHTNESS / 50.0;
-    const float con = SB_CONTRAST / 50.0;
+    float brt = params.x;
+    float con = params.y;
+    float sat = params.z;
 
     // Increase or decrease these values to adjust r, g and b color channels separately
     const float AvgLumR = 0.5;
