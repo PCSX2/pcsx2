@@ -43,6 +43,7 @@ private Q_SLOTS:
 	void onIntegerScalingChanged();
 	void onGpuPaletteConversionChanged(int state);
 	void onFullscreenModeChanged(int index);
+	void onShadeBoostChanged();
 
 private:
 	GSRendererType getEffectiveRenderer() const;

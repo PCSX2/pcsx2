@@ -108,6 +108,14 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowResolution, "EmuCore/GS", "OsdShowResolution", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowGSStats, "EmuCore/GS", "OsdShowGSStats", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowIndicators, "EmuCore/GS", "OsdShowIndicators", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fxaa, "EmuCore/GS", "fxaa", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.shadeBoost, "EmuCore/GS", "ShadeBoost", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostBrightness, "EmuCore/GS", "ShadeBoost_Brightness", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostContrast, "EmuCore/GS", "ShadeBoost_Contrast", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostSaturation, "EmuCore/GS", "ShadeBoost_Saturation", false);
+
+	connect(m_ui.shadeBoost, QOverload<int>::of(&QCheckBox::stateChanged), this, &GraphicsSettingsWidget::onShadeBoostChanged);
+	onShadeBoostChanged();
 
 	dialog->registerWidgetHelp(m_ui.osdShowMessages, tr("Show OSD Messages"), tr("Checked"),
 		tr("Shows on-screen-display messages when events occur such as save states being "
@@ -283,6 +291,14 @@ void GraphicsSettingsWidget::onFullscreenModeChanged(int index)
 }
 
 void GraphicsSettingsWidget::onIntegerScalingChanged() { m_ui.bilinearFiltering->setEnabled(!m_ui.integerScaling->isChecked()); }
+
+void GraphicsSettingsWidget::onShadeBoostChanged()
+{
+	const bool enabled = m_dialog->getEffectiveBoolValue("EmuCore/GS", "ShadeBoost", false);
+	m_ui.shadeBoostBrightness->setEnabled(enabled);
+	m_ui.shadeBoostContrast->setEnabled(enabled);
+	m_ui.shadeBoostSaturation->setEnabled(enabled);
+}
 
 void GraphicsSettingsWidget::onGpuPaletteConversionChanged(int state)
 {
