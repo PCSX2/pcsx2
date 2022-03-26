@@ -130,7 +130,17 @@ bool D3D11::ShaderCache::ReadExisting(const std::string& index_filename, const s
 {
 	m_index_file = FileSystem::OpenCFile(index_filename.c_str(), "r+b");
 	if (!m_index_file)
+	{
+		// special case here: when there's a sharing violation (i.e. two instances running),
+		// we don't want to blow away the cache. so just continue without a cache.
+		if (errno == EACCES)
+		{
+			Console.WriteLn("Failed to open shader cache index with EACCES, are you running two instances?");
+			return true;
+		}
+
 		return false;
+	}
 
 	u32 file_version = 0;
 	u32 data_version = 0;
