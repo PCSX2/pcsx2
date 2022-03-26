@@ -176,7 +176,7 @@
   <customwidget>
    <class>MemoryCardListWidget</class>
    <extends>QTreeWidget</extends>
-   <header>MemoryCardSettingsWidget.h</header>
+   <header>Settings/MemoryCardSettingsWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

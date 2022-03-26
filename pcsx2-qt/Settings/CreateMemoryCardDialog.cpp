@@ -47,6 +47,10 @@ CreateMemoryCardDialog::CreateMemoryCardDialog(QWidget* parent /* = nullptr */)
 	connect(m_ui.buttonBox->button(QDialogButtonBox::Cancel), &QPushButton::clicked, this, &CreateMemoryCardDialog::close);
 	connect(m_ui.buttonBox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, &CreateMemoryCardDialog::restoreDefaults);
 
+#ifdef _WIN32
+	m_ui.ntfsCompression->setEnabled(false);
+#endif
+
 	updateState();
 }
 
@@ -96,7 +100,9 @@ void CreateMemoryCardDialog::updateState()
 	const bool okay = (m_ui.name->text().length() > 4);
 
 	m_ui.buttonBox->button(QDialogButtonBox::Ok)->setEnabled(okay);
+#ifdef _WIN32
 	m_ui.ntfsCompression->setEnabled(m_type == MemoryCardType::File);
+#endif
 }
 
 void CreateMemoryCardDialog::createCard()
@@ -117,11 +123,13 @@ void CreateMemoryCardDialog::createCard()
 		return;
 	}
 
+#ifdef  _WIN32
 	if (m_ui.ntfsCompression->isChecked() && m_type == MemoryCardType::File)
 	{
 		const std::string fullPath(Path::CombineStdString(EmuFolders::MemoryCards, nameStr));
 		NTFS_CompressFile(StringUtil::UTF8StringToWxString(fullPath), true);
 	}
+#endif
 
 	QMessageBox::information(this, tr("Create Memory Card"), tr("Memory card '%1' created.").arg(name));
 	accept();

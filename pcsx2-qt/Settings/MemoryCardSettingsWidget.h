@@ -39,8 +39,8 @@ public:
 	void refresh(SettingsDialog* dialog);
 
 protected:
-	void mousePressEvent(QMouseEvent* event);
-	void mouseMoveEvent(QMouseEvent* event);
+	void mousePressEvent(QMouseEvent* event) override;
+	void mouseMoveEvent(QMouseEvent* event) override;
 
 private:
 	QPoint m_dragStartPos = {};
@@ -60,9 +60,9 @@ public:
 	void setCard(const std::optional<std::string>& name);
 
 protected:
-	void dragEnterEvent(QDragEnterEvent* event);
-	void dragMoveEvent(QDragMoveEvent* event);
-	void dropEvent(QDropEvent* event);
+	void dragEnterEvent(QDragEnterEvent* event) override;
+	void dragMoveEvent(QDragMoveEvent* event) override;
+	void dropEvent(QDropEvent* event) override;
 };
 
 // Must be included *after* the custom widgets.
