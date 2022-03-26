@@ -120,7 +120,8 @@ bool GSDeviceVK::Create(HostDisplay* display)
 	if (!CreateBuffers())
 		return false;
 
-	if (!CompileConvertPipelines() || !CompileInterlacePipelines() || !CompileMergePipelines())
+	if (!CompileConvertPipelines() || !CompileInterlacePipelines() ||
+		!CompileMergePipelines() || !CompileShadeBoostPipeline())
 	{
 		Host::ReportErrorAsync("GS", "Failed to compile utility pipelines");
 		return false;
@@ -147,9 +148,15 @@ void GSDeviceVK::Destroy()
 	GSDevice::Destroy();
 }
 
-void GSDeviceVK::ResetAPIState() { EndRenderPass(); }
+void GSDeviceVK::ResetAPIState()
+{
+	EndRenderPass();
+}
 
-void GSDeviceVK::RestoreAPIState() { InvalidateCachedState(); }
+void GSDeviceVK::RestoreAPIState()
+{
+	InvalidateCachedState();
+}
 
 #ifdef ENABLE_OGL_DEBUG
 static std::array<float, 3> Palette(float phase, const std::array<float, 3>& a, const std::array<float, 3>& b,
@@ -857,6 +864,22 @@ void GSDeviceVK::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool 
 
 	// this texture is going to get used as an input, so make sure we don't read undefined data
 	static_cast<GSTextureVK*>(dTex)->CommitClear();
+	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+}
+
+void GSDeviceVK::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4])
+{
+	const GSVector4 sRect(0.0f, 0.0f, 1.0f, 1.0f);
+	const GSVector4i dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
+	EndRenderPass();
+	OMSetRenderTargets(dTex, nullptr, dRect, false);
+	SetUtilityTexture(sTex, m_point_sampler);
+	BeginRenderPass(m_utility_color_render_pass_discard, dRect);
+	SetPipeline(m_shadeboost_pipeline);
+	SetUtilityPushConstants(params, sizeof(float) * 4);
+	DrawStretchRect(sRect, GSVector4(dRect), dTex->GetSize());
+	EndRenderPass();
+
 	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
@@ -1603,6 +1626,53 @@ bool GSDeviceVK::CompileMergePipelines()
 	return true;
 }
 
+bool GSDeviceVK::CompileShadeBoostPipeline()
+{
+	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/vulkan/shadeboost.glsl");
+	if (!shader)
+	{
+		Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan/shadeboost.glsl.");
+		return false;
+	}
+
+	VkRenderPass rp = g_vulkan_context->GetRenderPass(
+		LookupNativeFormat(GSTexture::Format::Color), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
+	if (!rp)
+		return false;
+
+	VkShaderModule vs = GetUtilityVertexShader(*shader);
+	VkShaderModule ps = GetUtilityFragmentShader(*shader);
+	ScopedGuard shader_guard([&vs, &ps]() {
+		Vulkan::Util::SafeDestroyShaderModule(vs);
+		Vulkan::Util::SafeDestroyShaderModule(ps);
+	});
+	if (vs == VK_NULL_HANDLE || ps == VK_NULL_HANDLE)
+		return false;	
+
+	Vulkan::GraphicsPipelineBuilder gpb;
+	AddUtilityVertexAttributes(gpb);
+	gpb.SetPipelineLayout(m_utility_pipeline_layout);
+	gpb.SetDynamicViewportAndScissorState();
+	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
+	gpb.SetNoCullRasterizationState();
+	gpb.SetNoDepthTestState();
+	gpb.SetNoBlendingState();
+	gpb.SetRenderPass(rp, 0);
+	gpb.SetVertexShader(vs);
+	gpb.SetFragmentShader(ps);
+
+	// we enable provoking vertex here anyway, in case it doesn't support multiple modes in the same pass
+	if (m_features.provoking_vertex_last)
+		gpb.SetProvokingVertex(VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT);
+
+	m_shadeboost_pipeline = gpb.Create(g_vulkan_context->GetDevice(), g_vulkan_shader_cache->GetPipelineCache(true), false);
+	if (!m_shadeboost_pipeline)
+		return false;
+
+	Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_shadeboost_pipeline, "Shadeboost pipeline");
+	return true;
+}
+
 bool GSDeviceVK::CheckStagingBufferSize(u32 required_size)
 {
 	if (m_readback_staging_buffer_size >= required_size)
@@ -1685,6 +1755,8 @@ void GSDeviceVK::DestroyResources()
 			Vulkan::Util::SafeDestroyPipeline(m_date_image_setup_pipelines[ds][datm]);
 		}
 	}
+	Vulkan::Util::SafeDestroyPipeline(m_shadeboost_pipeline);
+
 	for (auto& it : m_samplers)
 		Vulkan::Util::SafeDestroySampler(it.second);
 

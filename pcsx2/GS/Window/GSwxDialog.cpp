@@ -456,7 +456,7 @@ PostTab::PostTab(wxWindow* parent)
 	m_ui.addCheckBox(shader_box.inner, "Texture Filtering of Display", "linear_present", IDC_LINEAR_PRESENT);
 	m_ui.addCheckBox(shader_box.inner, "FXAA Shader (PgUp)",           "fxaa",           IDC_FXAA, not_vk_prereq);
 
-	CheckboxPrereq shade_boost_check(m_ui.addCheckBox(shader_box.inner, "Enable Shade Boost", "ShadeBoost", IDC_SHADEBOOST, not_vk_prereq));
+	CheckboxPrereq shade_boost_check(m_ui.addCheckBox(shader_box.inner, "Enable Shade Boost", "ShadeBoost", IDC_SHADEBOOST));
 
 	PaddedBoxSizer<wxStaticBoxSizer> shade_boost_box(wxVERTICAL, this, "Shade Boost");
 	auto* shader_boost_grid = new wxFlexGridSizer(2, space, space);
