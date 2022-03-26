@@ -124,6 +124,7 @@ private:
 	VkPipeline m_hdr_finish_pipelines[2][2] = {}; // [depth][feedback_loop]
 	VkRenderPass m_date_image_setup_render_passes[2][2] = {}; // [depth][clear]
 	VkPipeline m_date_image_setup_pipelines[2][2] = {}; // [depth][datm]
+	VkPipeline m_shadeboost_pipeline = {};
 
 	std::unordered_map<u32, VkShaderModule> m_tfx_vertex_shaders;
 	std::unordered_map<u32, VkShaderModule> m_tfx_geometry_shaders;
@@ -153,6 +154,7 @@ private:
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE,
 		const GSRegEXTBUF& EXTBUF, const GSVector4& c) final;
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0) final;
+	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) final;
 
 	VkSampler GetSampler(GSHWDrawConfig::SamplerSelector ss);
 	void ClearSamplerCache() final;
@@ -175,6 +177,7 @@ private:
 	bool CompileConvertPipelines();
 	bool CompileInterlacePipelines();
 	bool CompileMergePipelines();
+	bool CompileShadeBoostPipeline();
 
 	bool CheckStagingBufferSize(u32 required_size);
 	void DestroyStagingBuffer();
@@ -217,9 +220,6 @@ public:
 
 	bool DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map) override;
 	void DownloadTextureComplete() override;
-
-	GSTexture* DrawForReadback(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0);
-	bool ReadbackTexture(GSTexture* src, const GSVector4i& rect, u32 level, GSTexture::GSMap* dst);
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r) override;
 	void DoCopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, const GSVector4i& dst_rc);
