@@ -40,7 +40,7 @@ static const char* s_output_module_entries[] = {
 #ifdef _WIN32
 	QT_TRANSLATE_NOOP("AudioSettingsWidget", "XAudio2"),
 #endif
-  nullptr
+	nullptr
 };
 static const char* s_output_module_values[] = {
 	"nullout",
@@ -48,7 +48,7 @@ static const char* s_output_module_values[] = {
 #ifdef _WIN32
 	"xaudio2",
 #endif
-  nullptr
+	nullptr
 };
 
 AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent)
