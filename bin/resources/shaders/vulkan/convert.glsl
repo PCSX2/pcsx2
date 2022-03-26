@@ -6,16 +6,13 @@
 
 layout(location = 0) in vec4 a_pos;
 layout(location = 1) in vec2 a_tex;
-layout(location = 2) in vec4 a_color;
 
 layout(location = 0) out vec2 v_tex;
-layout(location = 1) out vec4 v_color;
 
 void main()
 {
 	gl_Position = vec4(a_pos.x, -a_pos.y, a_pos.z, a_pos.w);
 	v_tex = a_tex;
-	v_color = a_color;
 }
 
 #endif
@@ -23,7 +20,6 @@ void main()
 #ifdef FRAGMENT_SHADER
 
 layout(location = 0) in vec2 v_tex;
-layout(location = 1) in vec4 v_color;
 
 #if defined(ps_convert_rgba8_16bits) || defined(ps_convert_float32_32bits)
 layout(location = 0) out uint o_col0;
