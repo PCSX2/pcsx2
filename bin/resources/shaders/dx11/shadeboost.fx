@@ -1,5 +1,13 @@
 #ifdef SHADER_MODEL // make safe to include in resource file to enforce dependency
 
+Texture2D Texture;
+SamplerState Sampler;
+
+cbuffer cb0
+{
+	float4 params;
+};
+
 /*
 ** Contrast, saturation, brightness
 ** Code of this function is from TGM's shader pack
@@ -9,9 +17,9 @@
 // For all settings: 1.0 = 100% 0.5=50% 1.5 = 150% 
 float4 ContrastSaturationBrightness(float4 color) // Ported to HLSL
 {
-	const float sat = SB_SATURATION / 50.0;
-	const float brt = SB_BRIGHTNESS / 50.0;
-	const float con = SB_CONTRAST / 50.0;
+	float brt = params.x;
+	float con = params.y;
+	float sat = params.z;
 	
 	// Increase or decrease these values to adjust r, g and b color channels separately
 	const float AvgLumR = 0.5;
@@ -29,14 +37,6 @@ float4 ContrastSaturationBrightness(float4 color) // Ported to HLSL
 	color.rgb = conColor;	
 	return color;
 }
-
-Texture2D Texture;
-SamplerState Sampler;
-
-cbuffer cb0
-{
-	float4 BGColor;
-};
 
 struct PS_INPUT
 {

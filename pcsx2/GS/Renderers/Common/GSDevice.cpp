@@ -425,8 +425,15 @@ void GSDevice::ShadeBoost()
 		const GSVector4 sRect(0, 0, 1, 1);
 		const GSVector4 dRect(0, 0, s.x, s.y);
 
+		// predivide to avoid the divide (multiply) in the shader
+		const float params[4] = {
+			static_cast<float>(GSConfig.ShadeBoost_Brightness) * (1.0f / 50.0f),
+			static_cast<float>(GSConfig.ShadeBoost_Contrast) * (1.0f / 50.0f),
+			static_cast<float>(GSConfig.ShadeBoost_Saturation) * (1.0f / 50.0f),
+		};
+
 		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert::COPY, false);
-		DoShadeBoost(m_target_tmp, m_current);
+		DoShadeBoost(m_target_tmp, m_current, params);
 	}
 }
 

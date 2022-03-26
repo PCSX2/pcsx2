@@ -766,9 +766,6 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.SWExtraThreads != old_config.SWExtraThreads ||
 		GSConfig.SWExtraThreadsHeight != old_config.SWExtraThreadsHeight ||
 
-		GSConfig.ShadeBoost_Brightness != old_config.ShadeBoost_Brightness ||
-		GSConfig.ShadeBoost_Contrast != old_config.ShadeBoost_Contrast ||
-		GSConfig.ShadeBoost_Saturation != old_config.ShadeBoost_Saturation ||
 		GSConfig.SaveN != old_config.SaveN ||
 		GSConfig.SaveL != old_config.SaveL ||
 
