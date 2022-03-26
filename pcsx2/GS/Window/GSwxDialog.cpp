@@ -454,7 +454,7 @@ PostTab::PostTab(wxWindow* parent)
 	auto not_vk_prereq = [this] { return !m_is_vk_hw; };
 
 	m_ui.addCheckBox(shader_box.inner, "Texture Filtering of Display", "linear_present", IDC_LINEAR_PRESENT);
-	m_ui.addCheckBox(shader_box.inner, "FXAA Shader (PgUp)",           "fxaa",           IDC_FXAA, not_vk_prereq);
+	m_ui.addCheckBox(shader_box.inner, "FXAA Shader (PgUp)",           "fxaa",           IDC_FXAA);
 
 	CheckboxPrereq shade_boost_check(m_ui.addCheckBox(shader_box.inner, "Enable Shade Boost", "ShadeBoost", IDC_SHADEBOOST));
 
@@ -462,7 +462,7 @@ PostTab::PostTab(wxWindow* parent)
 	auto* shader_boost_grid = new wxFlexGridSizer(2, space, space);
 	shader_boost_grid->AddGrowableCol(1);
 
-	auto shader_boost_prereq = [shade_boost_check, this] { return !m_is_vk_hw && shade_boost_check.box->GetValue(); };
+	auto shader_boost_prereq = [shade_boost_check, this] { return shade_boost_check.box->GetValue(); };
 	m_ui.addSliderAndLabel(shader_boost_grid, "Brightness:", "ShadeBoost_Brightness", 0, 100, 50, -1, shader_boost_prereq);
 	m_ui.addSliderAndLabel(shader_boost_grid, "Contrast:",   "ShadeBoost_Contrast",   0, 100, 50, -1, shader_boost_prereq);
 	m_ui.addSliderAndLabel(shader_boost_grid, "Saturation:", "ShadeBoost_Saturation", 0, 100, 50, -1, shader_boost_prereq);

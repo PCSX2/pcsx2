@@ -1,7 +1,10 @@
-#if defined(SHADER_MODEL) || defined(FXAA_GLSL_130)
+#if defined(SHADER_MODEL) || defined(FXAA_GLSL_130) || defined(FXAA_GLSL_VK)
 
 #ifndef FXAA_GLSL_130
     #define FXAA_GLSL_130 0
+#endif
+#ifndef FXAA_GLSL_VK
+    #define FXAA_GLSL_VK 0
 #endif
 
 #define UHQ_FXAA 1          //High Quality Fast Approximate Anti Aliasing. Adapted for GS from Timothy Lottes FXAA 3.11.
@@ -16,6 +19,12 @@
 in vec2 PSin_t;
 
 layout(location = 0) out vec4 SV_Target0;
+
+#elif (FXAA_GLSL_VK == 1)
+
+layout(location = 0) in vec2 PSin_t;
+layout(location = 0) out vec4 SV_Target0;
+layout(set = 0, binding = 0) uniform sampler2D TextureSampler;
 
 #elif (SHADER_MODEL >= 0x400)
 Texture2D Texture : register(t0);
@@ -52,7 +61,7 @@ struct PS_OUTPUT
 #define FXAA_HLSL_4 1
 #define FXAA_GATHER4_ALPHA 0
 
-#elif (FXAA_GLSL_130 == 1)
+#elif (FXAA_GLSL_130 == 1 || FXAA_GLSL_VK == 1)
 #define FXAA_GATHER4_ALPHA 1
 #endif
 
@@ -72,7 +81,7 @@ struct FxaaTex { SamplerState smpl; Texture2D tex; };
 #define FxaaDiscard clip(-1)
 #define FxaaSat(x) saturate(x)
 
-#elif (FXAA_GLSL_130 == 1)
+#elif (FXAA_GLSL_130 == 1 || FXAA_GLSL_VK == 1)
 #define int2 ivec2
 #define float2 vec2
 #define float3 vec3
@@ -470,7 +479,7 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	return float4(FxaaTexTop(tex, posM).xyz, lumaM);
 }
 
-#if (FXAA_GLSL_130 == 1)
+#if (FXAA_GLSL_130 == 1 || FXAA_GLSL_VK == 1)
 float4 FxaaPass(float4 FxaaColor, float2 uv0)
 #elif (SHADER_MODEL >= 0x400)
 float4 FxaaPass(float4 FxaaColor : COLOR0, float2 uv0 : TEXCOORD0)
@@ -486,7 +495,7 @@ float4 FxaaPass(float4 FxaaColor : COLOR0, float2 uv0 : TEXCOORD0)
 	Texture.GetDimensions(PixelSize.x, PixelSize.y);
 	FxaaColor = FxaaPixelShader(uv0, tex, 1.0/PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
 
-	#elif (FXAA_GLSL_130 == 1)
+	#elif (FXAA_GLSL_130 == 1 || FXAA_GLSL_VK == 1)
 	vec2 PixelSize = textureSize(TextureSampler, 0);
 	FxaaColor = FxaaPixelShader(uv0, TextureSampler, 1.0/PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
 	#endif
@@ -497,9 +506,9 @@ float4 FxaaPass(float4 FxaaColor : COLOR0, float2 uv0 : TEXCOORD0)
 /*------------------------------------------------------------------------------
                       [MAIN() & COMBINE PASS CODE SECTION]
 ------------------------------------------------------------------------------*/
-#if (FXAA_GLSL_130 == 1)
+#if (FXAA_GLSL_130 == 1 || FXAA_GLSL_VK == 1)
 
-void ps_main()
+void main()
 {
 	vec4 color = texture(TextureSampler, PSin_t);
 	color      = PreGammaPass(color, PSin_t);

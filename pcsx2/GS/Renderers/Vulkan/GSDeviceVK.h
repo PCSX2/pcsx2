@@ -124,6 +124,7 @@ private:
 	VkPipeline m_hdr_finish_pipelines[2][2] = {}; // [depth][feedback_loop]
 	VkRenderPass m_date_image_setup_render_passes[2][2] = {}; // [depth][clear]
 	VkPipeline m_date_image_setup_pipelines[2][2] = {}; // [depth][datm]
+	VkPipeline m_fxaa_pipeline = {};
 	VkPipeline m_shadeboost_pipeline = {};
 
 	std::unordered_map<u32, VkShaderModule> m_tfx_vertex_shaders;
@@ -155,6 +156,7 @@ private:
 		const GSRegEXTBUF& EXTBUF, const GSVector4& c) final;
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0) final;
 	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) final;
+	void DoFXAA(GSTexture* sTex, GSTexture* dTex) final;
 
 	VkSampler GetSampler(GSHWDrawConfig::SamplerSelector ss);
 	void ClearSamplerCache() final;
@@ -177,7 +179,7 @@ private:
 	bool CompileConvertPipelines();
 	bool CompileInterlacePipelines();
 	bool CompileMergePipelines();
-	bool CompileShadeBoostPipeline();
+	bool CompilePostProcessingPipelines();
 
 	bool CheckStagingBufferSize(u32 required_size);
 	void DestroyStagingBuffer();
