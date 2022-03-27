@@ -1653,14 +1653,9 @@ void GSDeviceOGL::OMAttachDs(GSTextureOGL* ds)
 	if (GLState::ds != id)
 	{
 		GLState::ds = id;
-		if (ds && ds->IsDss())
-		{
-			glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, id, 0);
-		}
-		else
-		{
-			glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, id, 0);
-		}
+
+		const GLenum target = GLLoader::found_framebuffer_fetch ? GL_DEPTH_ATTACHMENT : GL_DEPTH_STENCIL_ATTACHMENT;
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, target, GL_TEXTURE_2D, id, 0);
 	}
 }
 

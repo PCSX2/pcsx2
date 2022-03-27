@@ -71,7 +71,6 @@ public:
 	void Swap(GSTexture* tex) final;
 
 	GSMap Read(const GSVector4i& r, AlignedBuffer<u8, 32>& buffer);
-	bool IsDss() { return (m_type == Type::DepthStencil || m_type == Type::SparseDepthStencil) && !GLLoader::found_framebuffer_fetch; }
 	bool IsDepth() { return (m_type == Type::DepthStencil || m_type == Type::SparseDepthStencil); }
 	bool IsIntegerFormat() const
 	{
