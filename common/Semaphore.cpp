@@ -29,6 +29,7 @@ void Threading::WorkSema::WaitForWork()
 	// RUNNING_0: Change state to SLEEPING, wake up thread if WAITING_EMPTY
 	// RUNNING_N: Change state to RUNNING_0 (and preserve WAITING_EMPTY flag)
 	s32 value = m_state.load(std::memory_order_relaxed);
+	pxAssert(!IsDead(value));
 	while (!m_state.compare_exchange_weak(value, NextStateWaitForWork(value), std::memory_order_acq_rel, std::memory_order_relaxed))
 		;
 	if (IsReadyForSleep(value))
@@ -44,6 +45,7 @@ void Threading::WorkSema::WaitForWork()
 void Threading::WorkSema::WaitForWorkWithSpin()
 {
 	s32 value = m_state.load(std::memory_order_relaxed);
+	pxAssert(!IsDead(value));
 	while (IsReadyForSleep(value))
 	{
 		if (m_state.compare_exchange_weak(value, STATE_SPINNING, std::memory_order_release, std::memory_order_relaxed))
@@ -71,28 +73,29 @@ void Threading::WorkSema::WaitForWorkWithSpin()
 	m_state.fetch_and(STATE_FLAG_WAITING_EMPTY, std::memory_order_acquire);
 }
 
-void Threading::WorkSema::WaitForEmpty()
+bool Threading::WorkSema::WaitForEmpty()
 {
 	s32 value = m_state.load(std::memory_order_acquire);
 	while (true)
 	{
 		if (value < 0)
-			return; // STATE_SLEEPING or STATE_SPINNING, queue is empty!
+			return !IsDead(value); // STATE_SLEEPING or STATE_SPINNING, queue is empty!
 		if (m_state.compare_exchange_weak(value, value | STATE_FLAG_WAITING_EMPTY, std::memory_order_relaxed, std::memory_order_acquire))
 			break;
 	}
 	pxAssertDev(!(value & STATE_FLAG_WAITING_EMPTY), "Multiple threads attempted to wait for empty (not currently supported)");
 	m_empty_sema.WaitWithYield();
+	return !IsDead(m_state.load(std::memory_order_relaxed));
 }
 
-void Threading::WorkSema::WaitForEmptyWithSpin()
+bool Threading::WorkSema::WaitForEmptyWithSpin()
 {
 	s32 value = m_state.load(std::memory_order_acquire);
 	u32 waited = 0;
 	while (true)
 	{
 		if (value < 0)
-			return; // STATE_SLEEPING or STATE_SPINNING, queue is empty!
+			return !IsDead(value); // STATE_SLEEPING or STATE_SPINNING, queue is empty!
 		if (waited > SPIN_TIME_NS && m_state.compare_exchange_weak(value, value | STATE_FLAG_WAITING_EMPTY, std::memory_order_relaxed, std::memory_order_acquire))
 			break;
 		waited += ShortSpin();
@@ -100,6 +103,19 @@ void Threading::WorkSema::WaitForEmptyWithSpin()
 	}
 	pxAssertDev(!(value & STATE_FLAG_WAITING_EMPTY), "Multiple threads attempted to wait for empty (not currently supported)");
 	m_empty_sema.WaitWithYield();
+	return !IsDead(m_state.load(std::memory_order_relaxed));
+}
+
+void Threading::WorkSema::Kill()
+{
+	s32 value = m_state.exchange(std::numeric_limits<s32>::min(), std::memory_order_release);
+	if (value & STATE_FLAG_WAITING_EMPTY)
+		m_empty_sema.Post();
+}
+
+void Threading::WorkSema::Reset()
+{
+	m_state = STATE_RUNNING_0;
 }
 
 #if !defined(__APPLE__) // macOS implementations are in DarwinSemaphore

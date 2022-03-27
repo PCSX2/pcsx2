@@ -273,12 +273,18 @@ namespace Threading
 		// So optimize states for fast NotifyOfWork
 		enum
 		{
+			/* Any <-2 state: STATE_DEAD: Thread has crashed and is awaiting revival */
 			STATE_SPINNING = -2, ///< Worker thread is spinning waiting for work
 			STATE_SLEEPING = -1, ///< Worker thread is sleeping on m_sema
 			STATE_RUNNING_0 = 0, ///< Worker thread is processing work, but no work has been added since it last checked for new work
 			/* Any >0 state: STATE_RUNNING_N: Worker thread is processing work, and work has been added since it last checked for new work */
 			STATE_FLAG_WAITING_EMPTY = 1 << 30, ///< Flag to indicate that a thread is sleeping on m_empty_sema (can be applied to any STATE_RUNNING)
 		};
+
+		bool IsDead(s32 state)
+		{
+			return state < STATE_SPINNING;
+		}
 
 		bool IsReadyForSleep(s32 state)
 		{
@@ -297,6 +303,7 @@ namespace Threading
 		void NotifyOfWork()
 		{
 			// State change:
+			// DEAD: Stay in DEAD (starting DEAD state is INT_MIN so we can assume we won't flip over to anything else)
 			// SPINNING: Change state to RUNNING.  Thread will notice and process the new data
 			// SLEEPING: Change state to RUNNING and wake worker.  Thread will wake up and process the new data.
 			// RUNNING_0: Change state to RUNNING_N.
@@ -310,10 +317,18 @@ namespace Threading
 		void WaitForWork();
 		/// Wait for work to be added to the queue, spinning for a bit before sleeping the thread
 		void WaitForWorkWithSpin();
-		/// Wait for the worker thread to finish processing all entries in the queue
-		void WaitForEmpty();
-		/// Wait for the worker thread to finish processing all entries in the queue, spinning a bit before sleeping the thread
-		void WaitForEmptyWithSpin();
+		/// Wait for the worker thread to finish processing all entries in the queue or die
+		/// Returns false if the thread is dead
+		bool WaitForEmpty();
+		/// Wait for the worker thread to finish processing all entries in the queue or die, spinning a bit before sleeping the thread
+		/// Returns false if the thread is dead
+		bool WaitForEmptyWithSpin();
+		/// Called by the worker thread to notify others of its death
+		/// Dead threads don't process work, and WaitForEmpty will return instantly even though there may be work in the queue
+		void Kill();
+		/// Reset the semaphore to the initial state
+		/// Should be called by the worker thread if it restarts after dying
+		void Reset();
 	};
 
 	class Semaphore
