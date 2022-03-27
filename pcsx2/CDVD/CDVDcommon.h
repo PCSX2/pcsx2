@@ -15,6 +15,7 @@
 
 #pragma once
 #include <string>
+#include <optional>
 
 typedef struct _cdvdSubQ
 {
@@ -29,6 +30,10 @@ typedef struct _cdvdSubQ
 	u8 discM;      // current minute offset from first track (BCD encoded)
 	u8 discS;      // current sector offset from first track (BCD encoded)
 	u8 discF;      // current frame offset from first track (BCD encoded)
+	u8 startT;     // Starting index for track
+	u32 flags;     // Flags from cueFile
+	std::string filePath; // Path of current track
+	std::optional<u32> length;
 } cdvdSubQ;
 
 typedef struct _cdvdTD
@@ -168,3 +173,17 @@ extern s32 DoCDVDreadTrack(u32 lsn, int mode);
 extern s32 DoCDVDgetBuffer(u8* buffer);
 extern s32 DoCDVDdetectDiskType();
 extern void DoCDVDresetDiskTypeCache();
+
+static std::vector<cdvdSubQ> m_tracks;
+static std::vector<std::pair<u32, cdvdSubQ>> indices;
+static std::optional<cdvdSubQ> zero_pregap;
+
+static const _cdvdSubQ* GetIndex(u32 n)
+{
+	for (const auto& it : indices)
+	{
+		if (it.first == n)
+			return &it.second;
+	}
+	return nullptr;
+}

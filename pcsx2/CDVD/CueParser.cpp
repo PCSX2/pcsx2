@@ -20,6 +20,7 @@
 
 #include "PrecompiledHeader.h"
 #include "CueParser.h"
+#include "CDVDaccess.h"
 #include "common/StringUtil.h"
 #include "CDVD.h"
 #include <cstdarg>
@@ -40,22 +41,22 @@ File::File() = default;
 
 File::~File() = default;
 
-const Track* File::GetTrack(u32 n) const
+const cdvdSubQ* File::GetTrack(u32 n) const
 {
   for (const auto& it : m_tracks)
   {
-    if (it.number == n)
+    if (it.trackNum == n)
       return &it;
   }
 
   return nullptr;
 }
 
-Track* File::GetMutableTrack(u32 n)
+cdvdSubQ* File::GetMutableTrack(u32 n)
 {
   for (auto& it : m_tracks)
   {
-    if (it.number == n)
+    if (it.trackNum == n)
       return &it;
   }
 
@@ -138,7 +139,7 @@ std::string_view File::GetToken(const char*& line)
   return ret;
 }
 
-std::optional<MSF> File::GetMSF(const std::string_view& token)
+std::optional<cdvdSubQ> File::GetMSF(const std::string_view& token)
 {
   static const s32 max_values[] = {std::numeric_limits<s32>::max(), 60, 75};
 
@@ -176,7 +177,7 @@ std::optional<MSF> File::GetMSF(const std::string_view& token)
     start = end + 1;
   }
 
-  MSF ret;
+  cdvdSubQ ret;
   ret.trackM = static_cast<u8>(parts[0]);
   ret.trackS = static_cast<u8>(parts[1]);
   ret.trackF = static_cast<u8>(parts[2]);
@@ -298,10 +299,10 @@ bool File::HandleTrackCommand(const char* line, u32 line_number, Common::Error* 
     return false;
   }
 
-  m_current_track = Track();
-  m_current_track->number = static_cast<u32>(track_number.value());
-  m_current_track->file = m_current_file.value();
-  m_current_track->mode = mode;
+  m_current_track = cdvdSubQ();
+  m_current_track->trackNum = static_cast<u32>(track_number.value());
+  m_current_track->filePath = m_current_file.value();
+  m_current_track->mode = mode.type;
   return true;
 }
 
@@ -327,7 +328,7 @@ bool File::HandleIndexCommand(const char* line, u32 line_number, Common::Error* 
     return false;
   }
 
-  if (m_current_track->GetIndex(static_cast<u32>(index_number.value())) != nullptr)
+  if (GetIndex(static_cast<u32>(index_number.value())) != nullptr)
   {
     SetError(line_number, error, "Duplicate index %d", index_number.value());
     return false;
@@ -340,14 +341,14 @@ bool File::HandleIndexCommand(const char* line, u32 line_number, Common::Error* 
     return false;
   }
 
-  const std::optional<MSF> msf(GetMSF(msf_str));
+  const std::optional<cdvdSubQ> msf(GetMSF(msf_str));
   if (!msf.has_value())
   {
     SetError(line_number, error, "Invalid index location '%*s'", static_cast<int>(msf_str.size()), msf_str.data());
     return false;
   }
 
-  m_current_track->indices.emplace_back(static_cast<u32>(index_number.value()), msf.value());
+  indices.emplace_back(static_cast<u32>(index_number.value()), msf.value());
   return true;
 }
 
@@ -359,9 +360,9 @@ bool File::HandlePregapCommand(const char* line, u32 line_number, Common::Error*
     return false;
   }
 
-  if (m_current_track->zero_pregap.has_value())
+  if (zero_pregap.has_value())
   {
-    SetError(line_number, error, "Pregap already specified for track %u", m_current_track->number);
+    SetError(line_number, error, "Pregap already specified for track %u", m_current_track->trackNum);
     return false;
   }
 
@@ -372,14 +373,14 @@ bool File::HandlePregapCommand(const char* line, u32 line_number, Common::Error*
     return false;
   }
 
-  const std::optional<MSF> msf(GetMSF(msf_str));
+  const std::optional<cdvdSubQ> msf(GetMSF(msf_str));
   if (!msf.has_value())
   {
     SetError(line_number, error, "Invalid pregap location '%*s'", static_cast<int>(msf_str.size()), msf_str.data());
     return false;
   }
 
-  m_current_track->zero_pregap = std::move(msf);
+  zero_pregap = std::move(msf);
   return true;
 }
 
@@ -398,13 +399,15 @@ bool File::HandleFlagCommand(const char* line, u32 line_number, Common::Error* e
       break;
 
     if (TokenMatch(token, "PRE"))
-      m_current_track->SetFlag(TrackFlag::PreEmphasis);
+      m_current_track->flags |= (u32)TrackFlag::PreEmphasis;
     else if (TokenMatch(token, "DCP"))
-      m_current_track->SetFlag(TrackFlag::CopyPermitted);
+      m_current_track->flags |= (u32)TrackFlag::CopyPermitted;
     else if (TokenMatch(token, "4CH"))
-      m_current_track->SetFlag(TrackFlag::FourChannelAudio);
+      m_current_track->flags |= (u32)TrackFlag::FourChannelAudio;
     else if (TokenMatch(token, "SCMS"))
-      m_current_track->SetFlag(TrackFlag::SerialCopyManagement);
+      m_current_track->flags |= (u32)TrackFlag::SerialCopyManagement;
+    else
+      Console.Error("Unknown track flag '%*s'", static_cast<int>(token.size()), token.data());
   }
     //else
       //Log_WarningPrintf("Unknown track flag '%*s'", static_cast<int>(token.size()), token.data());
@@ -417,36 +420,36 @@ bool File::CompleteLastTrack(u32 line_number, Common::Error* error)
   if (!m_current_track.has_value())
     return true;
 
-  const MSF* index1 = m_current_track->GetIndex(1);
+  const cdvdSubQ* index1 = GetIndex(1);
   if (!index1)
   {
-    SetError(line_number, error, "Track %u is missing index 1", m_current_track->number);
+    SetError(line_number, error, "Track %u is missing index 1", m_current_track->trackNum);
     return false;
   }
 
   // check indices
-  for (const auto& [index_number, index_msf] : m_current_track->indices)
+  for (const auto& [index_number, index_msf] : indices)
   {
     if (index_number == 0)
       continue;
 
-    const MSF* prev_index = m_current_track->GetIndex(index_number - 1);
-    /*if (prev_index && *prev_index > index_msf)
+  const cdvdSubQ* prev_index = GetIndex(index_number - 1);
+  if (prev_index && prev_index->trackNum > index_msf.trackNum)
     {
       SetError(line_number, error, "Index %u is after index %u in track %u", index_number - 1, index_number,
-               m_current_track->number);
+               m_current_track->trackNum);
       return false;
-    }*/
+    }
   }
 
-  const MSF* index0 = m_current_track->GetIndex(0);
-  if (index0 && m_current_track->zero_pregap.has_value())
+  const cdvdSubQ* index0 = &indices[0].second;
+  if (index0 && zero_pregap.has_value())
   {
     //Log_WarningPrintf("Zero pregap and index 0 specified in track %u, ignoring zero pregap", m_current_track->number);
-    m_current_track->zero_pregap.reset();
+    zero_pregap.reset();
   }
 
-  m_current_track->start = *index1;
+  m_current_track->startT = index1->startT;
 
   m_tracks.push_back(std::move(m_current_track.value()));
   m_current_track.reset();
@@ -455,46 +458,32 @@ bool File::CompleteLastTrack(u32 line_number, Common::Error* error)
 
 bool File::SetTrackLengths(u32 line_number, Common::Error* error)
 {
-  for (const Track& track : m_tracks)
+  for (const cdvdSubQ& track : m_tracks)
   {
-    if (track.number > 1)
+    if (track.trackNum > 1)
     {
       // set the length of the previous track based on this track's start, if they're the same file
-      Track* previous_track = GetMutableTrack(track.number - 1);
-      if (previous_track && previous_track->file == track.file)
+      cdvdSubQ* previous_track = GetMutableTrack(track.trackNum - 1);
+      if (previous_track && previous_track->filePath == track.filePath)
       {
-        /*if (previous_track->start > track.start)
+        if (previous_track->startT > track.startT)
         {
-          SetError(line_number, error, "Track %u start greater than track %u start", previous_track->number,
-                   track.number);
+          SetError(line_number, error, "Track %u start greater than track %u start", previous_track->trackNum,
+                   track.trackNum);
           return false;
-        }*/
+        }
 
         // Use index 0, otherwise index 1.
-        const MSF* start_index = track.GetIndex(0);
+        const cdvdSubQ* start_index = GetIndex(0);
+        u8 m, s, f;
         if (!start_index)
-          start_index = track.GetIndex(1);
-
-          //previous_track->length.emplace((u32)CDVDapi_Disc.readSubQ);
-
-        //previous_track->length = MSF::FromLBA(start_index->ToLBA() - previous_track->start.ToLBA());
-
+          start_index = GetIndex(1);
+          lba_to_msf(trackDescriptor.lsn, &m, &s, &f);
       }
     }
   }
 
   return true;
-}
-
-const CueParser::MSF* Track::GetIndex(u32 n) const
-{
-  for (const auto& it : indices)
-  {
-    if (it.first == n)
-      return &it.second;
-  }
-
-  return nullptr;
 }
 
 } // namespace CueParser

@@ -29,6 +29,8 @@
 #include <cstring>
 #include <array>
 
+#include "CueParser.h"
+
 static InputIsoFile iso;
 
 static int pmode, cdtype;
@@ -45,6 +47,12 @@ s32 CALLBACK ISOopen(const char* pTitle)
 {
 	ISOclose(); // just in case
 
+	std::shared_ptr<Common::Error> err;
+
+	CueParser::File cueFile;
+
+	fs::path ext(pTitle);
+
 	if ((pTitle == NULL) || (pTitle[0] == 0))
 	{
 		Console.Error("CDVDiso Error: No filename specified.");
@@ -53,7 +61,24 @@ s32 CALLBACK ISOopen(const char* pTitle)
 
 	try
 	{
-		iso.Open(pTitle);
+		if (ext.extension() == ".bin")
+		{
+			ext.replace_extension(".cue");
+		}
+		if (fs::exists(ext) && ext.extension() == ".cue")
+		{
+			FILE* file = fopen(pTitle, "r+");
+			if (file != nullptr)
+			{
+				cueFile.Parse(file, err.get());
+				ext = ext.parent_path() / cueFile.GetTrack(1)->filePath;
+				iso.Open(ext.string());
+			}
+		}
+		else
+		{
+			iso.Open(pTitle);
+		}
 	}
 	catch (BaseException& ex)
 	{
