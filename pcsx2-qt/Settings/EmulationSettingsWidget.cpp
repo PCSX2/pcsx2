@@ -87,7 +87,7 @@ void EmulationSettingsWidget::initializeSpeedCombo(QComboBox* cb, const char* se
 		}
 	}
 
-	static const int speeds[] = {1, 10, 25, 50, 75, 90, 100, 110, 120, 150, 175, 200, 300, 400, 500, 1000};
+	static const int speeds[] = {2, 10, 25, 50, 75, 90, 100, 110, 120, 150, 175, 200, 300, 400, 500, 1000};
 	for (const int speed : speeds)
 	{
 		cb->addItem(tr("%1% [%2 FPS (NTSC) / %3 FPS (PAL)]")
