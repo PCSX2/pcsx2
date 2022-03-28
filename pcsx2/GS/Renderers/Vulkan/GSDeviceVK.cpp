@@ -3152,25 +3152,33 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt)
 			ColorBufferBarrier(draw_rt);
 			DrawIndexedPrimitive(p, count);
 		}
-	}
-	else if (config.require_full_barrier)
-	{
-		GL_PUSH("Split single draw in %d draw", config.nindices / config.indices_per_prim);
 
-		for (u32 p = 0; p < config.nindices; p += config.indices_per_prim)
+		return;
+	}
+
+	if (m_features.texture_barrier && m_pipeline_selector.ps.IsFeedbackLoop())
+	{
+		if (config.require_full_barrier)
+		{
+			GL_PUSH("Split single draw in %d draw", config.nindices / config.indices_per_prim);
+
+			for (u32 p = 0; p < config.nindices; p += config.indices_per_prim)
+			{
+				ColorBufferBarrier(draw_rt);
+				DrawIndexedPrimitive(p, config.indices_per_prim);
+			}
+
+			return;
+		}
+
+		if (config.require_one_barrier)
 		{
 			ColorBufferBarrier(draw_rt);
-			DrawIndexedPrimitive(p, config.indices_per_prim);
+			DrawIndexedPrimitive();
+			return;
 		}
 	}
-	else if (config.require_one_barrier && m_features.texture_barrier)
-	{
-		ColorBufferBarrier(draw_rt);
-		DrawIndexedPrimitive();
-	}
-	else
-	{
-		// Don't need any barrier
-		DrawIndexedPrimitive();
-	}
+
+	// Don't need any barrier
+	DrawIndexedPrimitive();
 }
