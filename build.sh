@@ -31,21 +31,15 @@ set_ncpu_toolfile()
 switch_wxconfig()
 {
     # Helper to easily switch wx-config on my system
-    if [ "$useCross" -eq 0 ] && [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0" ]; then
+    if [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0" ]; then
         sudo update-alternatives --set wx-config /usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0
-    fi
-    if [ "$useCross" -eq 2 ] && [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0" ]; then
-        sudo update-alternatives --set wx-config /usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0
     fi
 }
 
 find_freetype()
 {
-    if [ "$useCross" -eq 0 ] && [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/include/x86_64-linux-gnu/freetype2/ft2build.h" ]; then
+    if [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/include/x86_64-linux-gnu/freetype2/ft2build.h" ]; then
         export GTKMM_BASEPATH=/usr/include/x86_64-linux-gnu/freetype2
-    fi
-    if [ "$useCross" -eq 2 ] && [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/include/i386-linux-gnu/freetype2/ft2build.h" ]; then
-        export GTKMM_BASEPATH=/usr/include/i386-linux-gnu/freetype2
     fi
 }
 
@@ -62,18 +56,10 @@ set_make()
 set_compiler()
 {
     if [ "$useClang" -eq 1 ]; then
-        if [ "$useCross" -eq 0 ]; then
-            CC=clang CXX=clang++ cmake $flags "$root" 2>&1 | tee -a "$log"
-        else
-            CC="clang -m32" CXX="clang++ -m32" cmake $flags "$root" 2>&1 | tee -a "$log"
-        fi
+        CC=clang CXX=clang++ cmake $flags "$root" 2>&1 | tee -a "$log"
     else
         if [ "$useIcc" -eq 1 ]; then
-            if [ "$useCross" -eq 0 ]; then
-                CC="icc" CXX="icpc" cmake $flags "$root" 2>&1 | tee -a "$log"
-            else
-                CC="icc -m32" CXX="icpc -m32" cmake $flags "$root" 2>&1 | tee -a "$log"
-            fi
+            CC="icc" CXX="icpc" cmake $flags "$root" 2>&1 | tee -a "$log"
         else
         # Default compiler AKA GCC
         cmake $flags "$root" 2>&1 | tee -a "$log"
@@ -164,9 +150,6 @@ cleanBuild=0
 useClang=0
 useIcc=0
 
-# 0 => no, 1 => yes
-useCross=0
-
 CoverityBuild=0
 cppcheck=0
 clangTidy=0
@@ -202,8 +185,6 @@ for ARG in "$@"; do
         --no-portaudio      ) flags="$flags -DPORTAUDIO_API=FALSE" ;;
         --no-simd           ) flags="$flags -DDISABLE_ADVANCE_SIMD=TRUE" ;;
         --no-trans          ) flags="$flags -DNO_TRANSLATION=TRUE" ;;
-        --cross-multilib    ) flags="$flags $i386_flag"; useCross=1; ;;
-        --no-cross-multilib ) useCross=0; ;;
         --coverity          ) CoverityBuild=1; cleanBuild=1; ;;
         --vtune             ) flags="$flags -DUSE_VTUNE=TRUE" ;;
         -D*                 ) flags="$flags $ARG" ;;
@@ -219,10 +200,6 @@ for ARG in "$@"; do
             echo
             echo "--clean         : Do a clean build."
             echo "--no-simd       : Only allow sse2"
-            echo
-            echo "** Developer option **"
-            echo "--cross-multilib: Build a 32bit PCSX2 on a 64bit machine using multilib."
-            echo "--no-cross-multilib: Build a native version of PCSX2 (default)"
             echo
             echo "** Distribution Compatibilities **"
             echo "--no-portaudio  : Skip portaudio for SPU2."
@@ -253,14 +230,6 @@ if [ "$cleanBuild" -eq 1 ]; then
     echo "Doing a clean build."
     # allow to keep build as a symlink (for example to a ramdisk)
     rm -fr "$build"/*
-fi
-
-if [ "$useCross" -eq 1 ]; then
-    echo "Cross compiling."
-    flags="$flags $i386_flag"
-elif [ "$useCross" -ne 1 ]; then
-    useCross=0
-    echo "Compiling natively."
 fi
 
 switch_wxconfig
