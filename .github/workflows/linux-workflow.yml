@@ -114,7 +114,7 @@ jobs:
           message("::set-output name=timestamp::${current_date}")
 
       - name: ccache cache files
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v3
         with:
           path: .ccache
           key: ${{ matrix.os }} ${{ matrix.platform }} ${{ matrix.compiler }}${{ matrix.detail }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
@@ -154,7 +154,7 @@ jobs:
         run: .github/workflows/scripts/linux/install-packages.sh
 
       - name: Cache Dependencies
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v3
         with:
           path: |
             3rdparty/${{ env.SDL }}
