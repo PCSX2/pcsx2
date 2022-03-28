@@ -3145,6 +3145,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt)
 	if (config.drawlist)
 	{
 		GL_PUSH("Split the draw (SPRITE)");
+		g_perfmon.Put(GSPerfMon::Barriers, static_cast<u32>(config.drawlist->size()));
 
 		for (u32 count = 0, p = 0, n = 0; n < static_cast<u32>(config.drawlist->size()); p += count, ++n)
 		{
@@ -3161,6 +3162,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt)
 		if (config.require_full_barrier)
 		{
 			GL_PUSH("Split single draw in %d draw", config.nindices / config.indices_per_prim);
+			g_perfmon.Put(GSPerfMon::Barriers, config.nindices / config.indices_per_prim);
 
 			for (u32 p = 0; p < config.nindices; p += config.indices_per_prim)
 			{
@@ -3173,6 +3175,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt)
 
 		if (config.require_one_barrier)
 		{
+			g_perfmon.Put(GSPerfMon::Barriers, 1);
 			ColorBufferBarrier(draw_rt);
 			DrawIndexedPrimitive();
 			return;

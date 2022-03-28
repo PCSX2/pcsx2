@@ -29,6 +29,7 @@ public:
 		Fillrate,
 		Quad,
 		SyncPoint,
+		Barriers,
 		CounterLast,
 
 		// Reused counters for HW.
