@@ -100,7 +100,7 @@ namespace Threading
 		uptr m_native_id; // typically an id, but implementing platforms can do whatever.
 		uptr m_native_handle; // typically a pointer/handle, but implementing platforms can do whatever.
 
-		Semaphore m_sem_event; // general wait event that's needed by most threads
+		WorkSema m_sem_event; // general wait event that's needed by most threads
 		Semaphore m_sem_startup; // startup sync tool
 		Mutex m_mtx_InThread; // used for canceling and closing threads in a deadlock-safe manner
 		MutexRecursive m_mtx_start; // used to lock the Start() code from starting simultaneous threads accidentally.

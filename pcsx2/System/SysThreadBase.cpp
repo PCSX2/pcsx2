@@ -39,7 +39,7 @@ void SysThreadBase::Start()
 	pxAssertDev((m_ExecMode == ExecMode_Closing) || (m_ExecMode == ExecMode_Closed),
 				"Unexpected thread status during SysThread startup.");
 
-	m_sem_event.Post();
+	m_sem_event.NotifyOfWork();
 }
 
 
@@ -118,7 +118,7 @@ void SysThreadBase::Suspend(bool isBlocking)
 		}
 
 		pxAssertDev(m_ExecMode == ExecMode_Closing, "ExecMode should be nothing other than Closing...");
-		m_sem_event.Post();
+		m_sem_event.NotifyOfWork();
 	}
 
 	if (isBlocking)
@@ -156,7 +156,7 @@ void SysThreadBase::Pause(SystemsMask systemsToTearDown, bool debug)
 			OnPauseDebug();
 		else
 			OnPause();
-		m_sem_event.Post();
+		m_sem_event.NotifyOfWork();
 	}
 
 	m_RunningLock.Wait();
@@ -174,7 +174,7 @@ void SysThreadBase::PauseSelf()
 			m_ExecMode = ExecMode_Pausing;
 
 		OnPause();
-		m_sem_event.Post();
+		m_sem_event.NotifyOfWork();
 	}
 }
 
@@ -190,7 +190,7 @@ void SysThreadBase::PauseSelfDebug()
 			m_ExecMode = ExecMode_Pausing;
 
 		OnPauseDebug();
-		m_sem_event.Post();
+		m_sem_event.NotifyOfWork();
 	}
 }
 

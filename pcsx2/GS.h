@@ -329,15 +329,13 @@ public:
 	std::atomic<unsigned int> m_ReadPos;  // cur pos gs is reading from
 	std::atomic<unsigned int> m_WritePos; // cur pos ee thread is writing to
 
-	std::atomic<bool>	m_RingBufferIsBusy;
 	std::atomic<bool>	m_SignalRingEnable;
 	std::atomic<int>	m_SignalRingPosition;
 
 	std::atomic<int>	m_QueuedFrameCount;
 	std::atomic<bool>	m_VsyncSignalListener;
 
-	Mutex			m_mtx_RingBufferBusy;  // Is obtained while processing ring-buffer data
-	Mutex			m_mtx_RingBufferBusy2; // This one gets released on semaXGkick waiting...
+	Mutex			m_mtx_RingBufferBusy2; // Gets released on semaXGkick waiting...
 	Mutex			m_mtx_WaitGS;
 	Semaphore		m_sem_OnRingReset;
 	Semaphore		m_sem_Vsync;
