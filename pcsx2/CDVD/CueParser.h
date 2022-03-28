@@ -33,13 +33,6 @@ namespace Common
 
 namespace CueParser
 {
-
-	// Defines in CDVDAccess for audio track types
-	// using TrackMode = CDImage::TrackMode;
-
-	// "MSF" would be SetSector in the cdr struct
-	//using MSF = cdvdSubQ;
-
 	enum : s32
 	{
 		MIN_TRACK_NUMBER = 1,

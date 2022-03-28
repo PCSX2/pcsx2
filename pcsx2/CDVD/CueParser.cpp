@@ -23,7 +23,6 @@
 #include "common/StringUtil.h"
 #include "CDVD.h"
 #include <cstdarg>
-//Log_SetChannel(CueParser);
 
 namespace CueParser
 {
@@ -86,16 +85,9 @@ namespace CueParser
 
 	void File::SetError(u32 line_number, Common::Error* error, const char* format, ...)
 	{
-		std::va_list ap;
-		//SmallString str;
-		va_start(ap, format);
-		//str.FormatVA(format, ap);
-		va_end(ap);
-
-		//Log_ErrorPrintf("Cue parse error at line %u: %s", line_number, str.GetCharArray());
-
-		//if (error)
-		//error->SetFormattedMessage("Cue parse error at line %u: %s", line_number, str.GetCharArray());
+		// ToDo add string formatting in here?
+		std::string str;
+		Console.Error("Cue parse error at line %u: %s", line_number, str.c_str());
 	}
 
 	std::string_view File::GetToken(const char*& line)
@@ -209,7 +201,7 @@ namespace CueParser
 
 		if (TokenMatch(command, "POSTGAP"))
 		{
-			//Log_WarningPrintf("Ignoring '%*s' command", static_cast<int>(command.size()), command.data());
+			Console.Warning("Ignoring '%*s' command", static_cast<int>(command.size()), command.data());
 			return true;
 		}
 
@@ -246,7 +238,7 @@ namespace CueParser
 		}
 
 		m_current_file = filename;
-		//Log_DebugPrintf("File '%s'", m_current_file->c_str());
+		DevCon.WriteLn("File '%s'", m_current_file->c_str());
 		return true;
 	}
 
@@ -407,11 +399,8 @@ namespace CueParser
 			else if (TokenMatch(token, "SCMS"))
 				m_current_track->flags |= (u32)TrackFlag::SerialCopyManagement;
 			else
-				Console.Error("Unknown track flag '%*s'", static_cast<int>(token.size()), token.data());
+				Console.Warning("Unknown track flag '%*s'", static_cast<int>(token.size()), token.data());
 		}
-		//else
-		//Log_WarningPrintf("Unknown track flag '%*s'", static_cast<int>(token.size()), token.data());
-
 		return true;
 	}
 
@@ -445,7 +434,7 @@ namespace CueParser
 		const cdvdSubQ* index0 = &indices[0].second;
 		if (index0 && zero_pregap.has_value())
 		{
-			//Log_WarningPrintf("Zero pregap and index 0 specified in track %u, ignoring zero pregap", m_current_track->number);
+			Console.Warning("Zero pregap and index 0 specified in track %u, ignoring zero pregap", m_current_track->trackNum);
 			zero_pregap.reset();
 		}
 
