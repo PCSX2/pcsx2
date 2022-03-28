@@ -270,7 +270,7 @@ struct alignas(16) GSHWDrawConfig
 
 		__fi bool IsFeedbackLoop() const
 		{
-			return tex_is_fb || fbmask || date > 0 || blend_a == 1 || blend_b == 1 || blend_c == 1 || blend_d == 1;
+			return tex_is_fb || fbmask || (date > 0 && date != 3) || blend_a == 1 || blend_b == 1 || blend_c == 1 || blend_d == 1;
 		}
 
 		/// Disables color output from the pixel shader, this is done when all channels are masked.

@@ -248,7 +248,7 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
 	m_features.broken_point_sampler = isAMD;
 	m_features.geometry_shader = features.geometryShader && GSConfig.OverrideGeometryShaders != 0;
-	m_features.image_load_store = features.fragmentStoresAndAtomics && m_features.texture_barrier;
+	m_features.image_load_store = features.fragmentStoresAndAtomics;
 	m_features.prefer_new_textures = true;
 	m_features.provoking_vertex_last = g_vulkan_context->GetOptionalExtensions().vk_ext_provoking_vertex;
 	m_features.dual_source_blend = features.dualSrcBlend && !GSConfig.DisableDualSourceBlend;
@@ -2718,7 +2718,7 @@ void GSDeviceVK::SetupDATE(GSTexture* rt, GSTexture* ds, bool datm, const GSVect
 	EndRenderPass();
 }
 
-GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, PipelineSelector& pipe)
+GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 {
 	// How this is done:
 	// - can't put a barrier for the image in the middle of the normal render pass, so that's out
@@ -2742,6 +2742,7 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 
 	// if the depth target has been cleared, we need to preserve that clear
 	const VkAttachmentLoadOp ds_load_op = GetLoadOpForTexture(static_cast<GSTextureVK*>(config.ds));
+	const u32 ds = (config.ds ? 1 : 0);
 
 	VkClearValue cv[2] = {};
 	cv[0].color.float32[0] = static_cast<float>(std::numeric_limits<int>::max());
@@ -2749,11 +2750,11 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 	{
 		cv[1].depthStencil.depth = static_cast<GSTextureVK*>(config.ds)->GetClearDepth();
 		cv[1].depthStencil.stencil = 1;
-		BeginClearRenderPass(m_date_image_setup_render_passes[pipe.ds][1], GSVector4i(0, 0, rtsize.x, rtsize.y), cv, 2);
+		BeginClearRenderPass(m_date_image_setup_render_passes[ds][1], GSVector4i(0, 0, rtsize.x, rtsize.y), cv, 2);
 	}
 	else
 	{
-		BeginClearRenderPass(m_date_image_setup_render_passes[pipe.ds][0], config.drawarea, cv, 1);
+		BeginClearRenderPass(m_date_image_setup_render_passes[ds][0], config.drawarea, cv, 1);
 	}
 
 	// draw the quad to prefill the image
@@ -2765,7 +2766,7 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 		{GSVector4(dst.x, -dst.w, 0.5f, 1.0f), GSVector2(src.x, src.w)},
 		{GSVector4(dst.z, -dst.w, 0.5f, 1.0f), GSVector2(src.z, src.w)},
 	};
-	const VkPipeline pipeline = m_date_image_setup_pipelines[pipe.ds][config.datm];
+	const VkPipeline pipeline = m_date_image_setup_pipelines[ds][config.datm];
 	SetPipeline(pipeline);
 	IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
 	if (ApplyUtilityState())
@@ -2776,24 +2777,25 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 	IASetIndexBuffer(config.indices, config.nindices);
 
 	// cut down the configuration for the prepass, we don't need blending or any feedback loop
-	PipelineSelector init_pipe(m_pipeline_selector);
-	init_pipe.dss.zwe = false;
-	init_pipe.cms.wrgba = 0;
-	init_pipe.bs = {};
-	init_pipe.feedback_loop = false;
-	init_pipe.rt = true;
-	init_pipe.ps.blend_a = init_pipe.ps.blend_b = init_pipe.ps.blend_c = init_pipe.ps.blend_d = false;
-	init_pipe.ps.date += 10;
-	init_pipe.ps.no_color = false;
-	init_pipe.ps.no_color1 = true;
-	if (BindDrawPipeline(init_pipe))
+	PipelineSelector& pipe = m_pipeline_selector;
+	UpdateHWPipelineSelector(config, pipe);
+	pipe.dss.zwe = false;
+	pipe.cms.wrgba = 0;
+	pipe.bs = {};
+	pipe.feedback_loop = false;
+	pipe.rt = true;
+	pipe.ps.blend_a = pipe.ps.blend_b = pipe.ps.blend_c = pipe.ps.blend_d = false;
+	pipe.ps.date += 10;
+	pipe.ps.no_color = false;
+	pipe.ps.no_color1 = true;
+	if (BindDrawPipeline(pipe))
 		DrawIndexedPrimitive();
 
 	// image is initialized/prepass is done, so finish up and get ready to do the "real" draw
 	EndRenderPass();
 
 	// .. by setting it to DATE=3
-	pipe.ps.date = 3;
+	config.ps.date = 3;
 	config.alpha_second_pass.ps.date = 3;
 
 	// and bind the image to the primitive sampler
@@ -2836,11 +2838,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	SetVSConstantBuffer(config.cb_vs);
 	SetPSConstantBuffer(config.cb_ps);
 
-	// figure out the pipeline
-	UpdateHWPipelineSelector(config);
-
 	// bind textures before checking the render pass, in case we need to transition them
-	PipelineSelector& pipe = m_pipeline_selector;
 	if (config.tex)
 	{
 		PSSetShaderResource(0, config.tex, config.tex != config.rt);
@@ -2855,14 +2853,17 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	GSTextureVK* date_image = nullptr;
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
 	{
-		pxAssert(pipe.feedback_loop);
-		date_image = SetupPrimitiveTrackingDATE(config, pipe);
+		date_image = SetupPrimitiveTrackingDATE(config);
 		if (!date_image)
 		{
 			Console.WriteLn("Failed to allocate DATE image, aborting draw.");
 			return;
 		}
 	}
+
+	// figure out the pipeline
+	PipelineSelector& pipe = m_pipeline_selector;
+	UpdateHWPipelineSelector(config, pipe);
 
 	// Align the render area to 128x128, hopefully avoiding render pass restarts for small render area changes (e.g. Ratchet and Clank).
 	const int render_area_alignment = 128 * GSConfig.UpscaleMultiplier;
@@ -3118,26 +3119,25 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	}
 }
 
-void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config)
+void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe)
 {
-	m_pipeline_selector.vs.key = config.vs.key;
-	m_pipeline_selector.gs.key = config.gs.key;
-	m_pipeline_selector.ps.key_hi = config.ps.key_hi;
-	m_pipeline_selector.ps.key_lo = config.ps.key_lo;
-	m_pipeline_selector.dss.key = config.depth.key;
-	m_pipeline_selector.bs.key = config.blend.key;
-	m_pipeline_selector.bs.constant = 0; // don't dupe states with different alpha values
-	m_pipeline_selector.cms.key = config.colormask.key;
-	m_pipeline_selector.topology = static_cast<u32>(config.topology);
-	m_pipeline_selector.rt = config.rt != nullptr;
-	m_pipeline_selector.ds = config.ds != nullptr;
-	m_pipeline_selector.line_width = config.line_expand;
-	m_pipeline_selector.feedback_loop = m_features.texture_barrier &&
-										(config.ps.IsFeedbackLoop() || config.require_one_barrier || config.require_full_barrier ||
-											config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking);
+	pipe.vs.key = config.vs.key;
+	pipe.gs.key = config.gs.key;
+	pipe.ps.key_hi = config.ps.key_hi;
+	pipe.ps.key_lo = config.ps.key_lo;
+	pipe.dss.key = config.depth.key;
+	pipe.bs.key = config.blend.key;
+	pipe.bs.constant = 0; // don't dupe states with different alpha values
+	pipe.cms.key = config.colormask.key;
+	pipe.topology = static_cast<u32>(config.topology);
+	pipe.rt = config.rt != nullptr;
+	pipe.ds = config.ds != nullptr;
+	pipe.line_width = config.line_expand;
+	pipe.feedback_loop = m_features.texture_barrier &&
+										(config.ps.IsFeedbackLoop() || config.require_one_barrier || config.require_full_barrier);
 
 	// enable point size in the vertex shader if we're rendering points regardless of upscaling.
-	m_pipeline_selector.vs.point_size |= (config.topology == GSHWDrawConfig::Topology::Point);
+	pipe.vs.point_size |= (config.topology == GSHWDrawConfig::Topology::Point);
 }
 
 void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt)
