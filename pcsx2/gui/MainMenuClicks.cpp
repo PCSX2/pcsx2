@@ -378,7 +378,7 @@ bool MainEmuFrame::_DoSelectIsoBrowser(wxString& result)
 {
 	static const wxChar* isoSupportedTypes[] =
 		{
-			L"iso", L"mdf", L"nrg", L"bin", L"img", NULL};
+			L"iso", L"mdf", L"nrg", L"bin", L"img", L"cue", NULL};
 
 	const wxString isoSupportedLabel(JoinString(isoSupportedTypes, L" "));
 	const wxString isoSupportedList(JoinFiletypes(isoSupportedTypes));

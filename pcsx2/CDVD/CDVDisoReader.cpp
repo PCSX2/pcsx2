@@ -67,7 +67,7 @@ s32 CALLBACK ISOopen(const char* pTitle)
 		}
 		if (fs::exists(ext) && ext.extension() == ".cue")
 		{
-			FILE* file = fopen(pTitle, "r+");
+			FILE* file = fopen(ext.string().c_str(), "r+");
 			if (file != nullptr)
 			{
 				cueFile.Parse(file, err.get());
