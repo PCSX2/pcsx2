@@ -108,26 +108,6 @@ bool GSC_GiTS(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (CRC_Aggressive && fi.TME && fi.TPSM == PSM_PSMCT24 && fi.FBP == 0x1300 && (fi.TBP0 == 0x0F00 || fi.TBP0 == 0x1300 || fi.TBP0 == 0x2b00)) // || fi.FBP == 0x0100
-		{
-			// Ghosting when upscaling, HPO helps but isn't perfect.
-			skip = 1; // global haze/halo
-		}
-		else if ((CRC_Aggressive || !s_nativeres) && fi.TME && fi.TPSM == PSM_PSMCT24 && (fi.FBP == 0x0100 || fi.FBP == 0x2100) && (fi.TBP0 == 0x2b00 || fi.TBP0 == 0x2e80 || fi.TBP0 == 0x3100)) // 480P 2e80, interlaced 3100
-		{
-			// Upscaling issue.
-			// Don't enable hack on native res if crc is below aggressive.
-			skip = 1; // water effect and water vertical lines
-		}
-	}
-
-	return true;
-}
-
 // Channel effect not properly supported yet
 bool GSC_Manhunt2(const GSFrameInfo& fi, int& skip)
 {
@@ -788,33 +768,6 @@ bool GSC_AceCombat4(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
-		{
-			// Can be used as a speed hack.
-			// Removes shadows.
-			skip = 1000;
-		}
-		else if (fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0xff000000)
-		{
-			// Upscaling hack maybe ? Needs to be verified, move it to Aggressive state just in case.
-			skip = 1; // blur
-		}
-	}
-	else
-	{
-		if (fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16)
-		{
-			skip = 3;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_FFXGames(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -978,7 +931,6 @@ void GSState::SetupCrcHack()
 		// Upscaling hacks
 		lut[CRC::DBZBT3] = GSC_DBZBT3;
 		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
-		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
 		lut[CRC::IkkiTousen] = GSC_IkkiTousen;
 		lut[CRC::Oneechanbara2Special] = GSC_Oneechanbara2Special;
 		lut[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
@@ -1008,7 +960,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
 
 		// Upscaling issues
-		lut[CRC::GodOfWar] = GSC_GodOfWar;
 		lut[CRC::Okami] = GSC_Okami;
 	}
 

@@ -38,8 +38,6 @@ public:
 		GetawayGames,
 		GiTS,
 		GodHand,
-		GodOfWar,
-		GodOfWar2,
 		HauntingGround,
 		ICO,
 		IkkiTousen,
