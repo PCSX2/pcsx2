@@ -356,7 +356,7 @@ public:
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GL::Program& ps, bool alpha_blend, OMColorMaskSelector cms, bool linear = true);
 
 	void RenderHW(GSHWDrawConfig& config) final;
-	void SendHWDraw(const GSHWDrawConfig& config);
+	void SendHWDraw(const GSHWDrawConfig& config, bool needs_barrier);
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm);
 

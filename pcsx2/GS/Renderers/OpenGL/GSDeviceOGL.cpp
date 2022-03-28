@@ -1959,7 +1959,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
 
-	SendHWDraw(config);
+	SendHWDraw(config, psel.ps.IsFeedbackLoop());
 
 	if (config.separate_alpha_pass)
 	{
@@ -1969,7 +1969,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		OMSetColorMaskState(config.alpha_second_pass.colormask);
 		SetupOM(config.alpha_second_pass.depth);
 		OMSetBlendState();
-		SendHWDraw(config);
+		SendHWDraw(config, psel.ps.IsFeedbackLoop());
 
 		// restore blend state if we're doing a second pass
 		if (config.alpha_second_pass.enable)
@@ -1994,7 +1994,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		SetupPipeline(psel);
 		OMSetColorMaskState(config.alpha_second_pass.colormask);
 		SetupOM(config.alpha_second_pass.depth);
-		SendHWDraw(config);
+		SendHWDraw(config, psel.ps.IsFeedbackLoop());
 
 		if (config.second_separate_alpha_pass)
 		{
@@ -2004,7 +2004,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			OMSetColorMaskState(config.alpha_second_pass.colormask);
 			SetupOM(config.alpha_second_pass.depth);
 			OMSetBlendState();
-			SendHWDraw(config);
+			SendHWDraw(config, psel.ps.IsFeedbackLoop());
 		}
 	}
 
@@ -2026,7 +2026,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 }
 
-void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config)
+void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool needs_barrier)
 {
 	if (config.drawlist)
 	{
@@ -2051,31 +2051,40 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config)
 			glTextureBarrier();
 			DrawIndexedPrimitive(p, count);
 		}
+
+		return;
 	}
-	else if (config.require_full_barrier)
+
+	const bool tex_is_ds = config.tex && config.tex == config.ds;
+	if (needs_barrier || tex_is_ds)
 	{
-		GL_PUSH("Split the draw");
-
-		GL_PERF("Split single draw in %d draw", config.nindices / config.indices_per_prim);
-
-		for (size_t p = 0; p < config.nindices; p += config.indices_per_prim)
+		if (config.require_full_barrier)
 		{
+			GL_PUSH("Split the draw");
+
+			GL_PERF("Split single draw in %d draw", config.nindices / config.indices_per_prim);
+
+			for (size_t p = 0; p < config.nindices; p += config.indices_per_prim)
+			{
+				glTextureBarrier();
+				DrawIndexedPrimitive(p, config.indices_per_prim);
+			}
+
+			return;
+		}
+
+		if (config.require_one_barrier || tex_is_ds)
+		{
+			// The common renderer code doesn't put a barrier here because D3D/VK need to copy the DS, so we need to check it.
+			// One barrier needed for non-overlapping draw.
 			glTextureBarrier();
-			DrawIndexedPrimitive(p, config.indices_per_prim);
+			DrawIndexedPrimitive();
+			return;
 		}
 	}
-	else if (config.require_one_barrier || (config.tex && config.tex == config.ds))
-	{
-		// The common renderer code doesn't put a barrier here because D3D/VK need to copy the DS, so we need to check it.
-		// One barrier needed for non-overlapping draw.
-		glTextureBarrier();
-		DrawIndexedPrimitive();
-	}
-	else
-	{
-		// No barriers needed
-		DrawIndexedPrimitive();
-	}
+
+	// No barriers needed
+	DrawIndexedPrimitive();
 }
 
 // Note: used as a callback of DebugMessageCallback. Don't change the signature
