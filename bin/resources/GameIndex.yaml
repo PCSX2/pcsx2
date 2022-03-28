@@ -1088,6 +1088,7 @@ SCAJ-20190:
   name: "God of War II"
   region: "NTSC-Unk"
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
 SCAJ-20191:
@@ -1252,6 +1253,7 @@ SCAJ-30011:
   name: "God of War II"
   region: "NTSC-E"
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
 SCCS-40001:
@@ -3579,6 +3581,7 @@ SCES-54206:
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
 SCES-54219:
@@ -4560,6 +4563,7 @@ SCKA-30006:
   region: "NTSC-K"
   compat: 5
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
 SCPM-85101:
@@ -7275,12 +7279,14 @@ SCUS-97481:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
 SCUS-97482:
   name: "God of War II - The Colossus Battle [Demo]"
   region: "NTSC-U"
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
 SCUS-97483:
@@ -30210,6 +30216,7 @@ SLPM-67013:
   name: "God of War II - The End Begins"
   region: "NTSC-J"
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
 SLPM-67015:
