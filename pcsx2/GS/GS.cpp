@@ -727,23 +727,25 @@ void GSgetStats(std::string& info)
 	{
 		if (GSConfig.TexturePreloading == TexturePreloadingLevel::Full)
 		{
-			info = format("%s HW | HC: %d MB | %d P | %d D | %d DC | %d RB | %d TC | %d TU",
+			info = format("%s HW | HC: %d MB | %d P | %d D | %d DC | %d B | %d RB | %d TC | %d TU",
 				api_name,
 				(int)std::ceil(static_cast<GSRendererHW*>(s_gs.get())->GetTextureCache()->GetHashCacheMemoryUsage() / 1048576.0f),
 				(int)pm.Get(GSPerfMon::Prim),
 				(int)pm.Get(GSPerfMon::Draw),
 				(int)std::ceil(pm.Get(GSPerfMon::DrawCalls)),
+				(int)std::ceil(pm.Get(GSPerfMon::Barriers)),
 				(int)std::ceil(pm.Get(GSPerfMon::Readbacks)),
 				(int)std::ceil(pm.Get(GSPerfMon::TextureCopies)),
 				(int)std::ceil(pm.Get(GSPerfMon::TextureUploads)));
 		}
 		else
 		{
-			info = format("%s HW | %d P | %d D | %d DC | %d RB | %d TC | %d TU",
+			info = format("%s HW | %d P | %d D | %d DC | %d B | %d RB | %d TC | %d TU",
 				api_name,
 				(int)pm.Get(GSPerfMon::Prim),
 				(int)pm.Get(GSPerfMon::Draw),
 				(int)std::ceil(pm.Get(GSPerfMon::DrawCalls)),
+				(int)std::ceil(pm.Get(GSPerfMon::Barriers)),
 				(int)std::ceil(pm.Get(GSPerfMon::Readbacks)),
 				(int)std::ceil(pm.Get(GSPerfMon::TextureCopies)),
 				(int)std::ceil(pm.Get(GSPerfMon::TextureUploads)));

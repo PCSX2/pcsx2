@@ -2045,6 +2045,8 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool needs_barrier)
 		        config.nindices / config.indices_per_prim, config.drawlist->size(), message.c_str());
 #endif
 
+		g_perfmon.Put(GSPerfMon::Barriers, static_cast<u32>(config.drawlist->size()));
+
 		for (size_t count = 0, p = 0, n = 0; n < config.drawlist->size(); p += count, ++n)
 		{
 			count = (*config.drawlist)[n] * config.indices_per_prim;
@@ -2063,6 +2065,7 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool needs_barrier)
 			GL_PUSH("Split the draw");
 
 			GL_PERF("Split single draw in %d draw", config.nindices / config.indices_per_prim);
+			g_perfmon.Put(GSPerfMon::Barriers, config.nindices / config.indices_per_prim);
 
 			for (size_t p = 0; p < config.nindices; p += config.indices_per_prim)
 			{
@@ -2077,6 +2080,7 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool needs_barrier)
 		{
 			// The common renderer code doesn't put a barrier here because D3D/VK need to copy the DS, so we need to check it.
 			// One barrier needed for non-overlapping draw.
+			g_perfmon.Put(GSPerfMon::Barriers, 1);
 			glTextureBarrier();
 			DrawIndexedPrimitive();
 			return;
