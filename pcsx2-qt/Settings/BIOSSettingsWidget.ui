@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>618</width>
-    <height>408</height>
+    <height>439</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -134,13 +134,40 @@
      <property name="title">
       <string>Options and Patches</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="patchRegion">
+        <property name="text">
+         <string>Patch Region</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
        <widget class="QCheckBox" name="fastBoot">
         <property name="text">
          <string>Fast Boot</string>
         </property>
        </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="regionComboBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </widget>

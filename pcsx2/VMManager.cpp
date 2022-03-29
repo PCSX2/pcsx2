@@ -511,6 +511,7 @@ bool VMManager::ApplyBootParameters(const VMBootParameters& params)
 {
 	const bool default_fast_boot = Host::GetBoolSettingValue("EmuCore", "EnableFastBoot", true);
 	EmuConfig.UseBOOT2Injection = params.fast_boot.value_or(default_fast_boot);
+
 	s_elf_override = params.elf_override;
 	s_disc_path.clear();
 

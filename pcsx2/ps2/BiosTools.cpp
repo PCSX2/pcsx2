@@ -56,6 +56,7 @@ std::string BiosDescription;
 std::string BiosZone;
 std::string BiosPath;
 BiosDebugInformation CurrentBiosInformation;
+s64 BiosRegionOffset = 0;
 
 static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& description, u32& region, std::string& zone)
 {
@@ -90,19 +91,25 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 			switch (romver[4])
 			{
 				// clang-format off
-				case 'T': zone = "T10K";   region = 0; break;
-				case 'X': zone = "Test";	 region = 1; break;
-				case 'J': zone = "Japan";	 region = 2; break;
-				case 'A': zone = "USA";		 region = 3; break;
-				case 'E': zone = "Europe"; region = 4; break;
-				case 'H': zone = "HK";     region = 5; break;
-				case 'P': zone = "Free";   region = 6; break;
-				case 'C': zone = "China";  region = 7; break;
-					// clang-format on
-				default:
-					zone.clear();
-					zone += romver[4];
-					break;
+				case 'T': region = 0; break;
+				case 'X': region = 1; break;
+				case 'J': region = 2; break;
+				case 'A': region = 3; break;
+				case 'E': region = 4; break;
+				case 'H': region = 5; break;
+				case 'P': region = 6; break;
+				case 'C': region = 7; break;
+				// clang-format on
+			}
+
+			if (region >= 0 && region <= 7)
+			{
+				zone = BiosZoneStrings[region];
+			}
+			else
+			{
+				zone.clear();
+				zone += romver[4];
 			}
 
 			char vermaj[3] = {romver[0], romver[1], 0};
@@ -119,6 +126,7 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 			version = strtol(vermaj, (char**)NULL, 0) << 8;
 			version |= strtol(vermin, (char**)NULL, 0);
 			foundRomVer = true;
+			BiosRegionOffset = fileOffset;
 
 			Console.WriteLn("Bios Found: %s", description.c_str());
 		}
@@ -286,6 +294,13 @@ bool LoadBIOS()
 	BiosChecksum = 0;
 	ChecksumIt(BiosChecksum, eeMem->ROM);
 	BiosPath = std::move(path);
+
+	// Patch the region
+	if (EmuConfig.PatchBios)
+	{
+		eeMem->ROM[BiosRegionOffset + 4] = EmuConfig.PatchRegion[0];
+		Console.WriteLn("Patching ROM with region code %c", EmuConfig.PatchRegion[0]);
+	}
 
 #ifndef PCSX2_CORE
 	Console.SetTitle(StringUtil::UTF8StringToWxString(StringUtil::StdStringFromFormat("Running BIOS (%s v%u.%u)",
