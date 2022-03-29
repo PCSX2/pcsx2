@@ -27271,6 +27271,8 @@ SLPM-66139:
 SLPM-66140:
   name: "Atelier Marie + Elie: Salburg no Renkinjutsushi 1&2"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes splitted textbox.
 SLPM-66141:
   name: "Matantei Loki Ragnarok Mayoukaku"
   region: "NTSC-J"
