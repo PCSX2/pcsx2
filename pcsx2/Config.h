@@ -931,6 +931,7 @@ struct Pcsx2Config
 #endif
 		// when enabled uses BOOT2 injection, skipping sony bios splashes
 		UseBOOT2Injection : 1,
+		PatchBios : 1,
 		BackupSavestate : 1,
 		// enables simulated ejection of memory cards when loading savestates
 		McdEnableEjection : 1,
@@ -961,6 +962,8 @@ struct Pcsx2Config
 	TraceLogFilters Trace;
 
 	FilenameOptions BaseFilenames;
+
+	std::string PatchRegion;
 
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
 	// slots (3 each)

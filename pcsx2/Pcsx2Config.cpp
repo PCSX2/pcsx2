@@ -1096,6 +1096,8 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 #endif
 	SettingsWrapBitBool(ConsoleToStdio);
 	SettingsWrapBitBool(HostFs);
+	SettingsWrapBitBool(PatchBios);
+	SettingsWrapEntry(PatchRegion);
 
 	SettingsWrapBitBool(BackupSavestate);
 	SettingsWrapBitBool(McdEnableEjection);
@@ -1217,6 +1219,7 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	Trace = cfg.Trace;
 	BaseFilenames = cfg.BaseFilenames;
 	Framerate = cfg.Framerate;
+
 	for (u32 i = 0; i < sizeof(Mcd) / sizeof(Mcd[0]); i++)
 	{
 		// Type will be File here, even if it's a folder, so we preserve the old value.
@@ -1238,6 +1241,8 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	EnableRecordingTools = cfg.EnableRecordingTools;
 #endif
 	UseBOOT2Injection = cfg.UseBOOT2Injection;
+	PatchBios = cfg.PatchBios;
+	PatchRegion = cfg.PatchRegion;
 	BackupSavestate = cfg.BackupSavestate;
 	McdEnableEjection = cfg.McdEnableEjection;
 	McdFolderAutoManage = cfg.McdFolderAutoManage;

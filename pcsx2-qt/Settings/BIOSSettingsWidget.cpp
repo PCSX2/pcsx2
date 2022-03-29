@@ -34,7 +34,11 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	m_ui.setupUi(this);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastBoot, "EmuCore", "EnableFastBoot", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.patchRegion, "EmuCore", "PatchBios", false);
+	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.regionComboBox, "EmuCore", "PatchRegion", BiosZoneStrings, BiosZoneBytes, BiosZoneBytes[0]);
 
+	dialog->registerWidgetHelp(m_ui.patchRegion, tr("Patch Region"),tr("Unchecked"),
+		tr("Patches the BIOS region byte in ROM. Not recommended unless you really know what you're doing."));
 	dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Unchecked"),
 		tr("Patches the BIOS to skip the console's boot animation."));
 
@@ -56,6 +60,9 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	connect(m_ui.openSearchDirectory, &QPushButton::clicked, this, &BIOSSettingsWidget::openSearchDirectory);
 	connect(m_ui.refresh, &QPushButton::clicked, this, &BIOSSettingsWidget::refreshList);
 	connect(m_ui.fileList, &QTreeWidget::currentItemChanged, this, &BIOSSettingsWidget::listItemChanged);
+
+	connect(m_ui.patchRegion, &QCheckBox::clicked, this, [&] { m_ui.regionComboBox->setEnabled(m_ui.patchRegion->isChecked()); });
+	m_ui.regionComboBox->setEnabled(m_ui.patchRegion->isChecked());
 }
 
 BIOSSettingsWidget::~BIOSSettingsWidget()
