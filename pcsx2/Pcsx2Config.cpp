@@ -1061,6 +1061,9 @@ Pcsx2Config::Pcsx2Config()
 	McdEnableEjection = true;
 	McdFolderAutoManage = true;
 	EnablePatches = true;
+#ifdef PCSX2_CORE
+	EnableGameFixes = true;
+#endif
 	BackupSavestate = true;
 
 #ifdef __WXMSW__
@@ -1093,6 +1096,9 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EnableWideScreenPatches);
 #ifndef DISABLE_RECORDING
 	SettingsWrapBitBool(EnableRecordingTools);
+#endif
+#ifdef PCSX2_CORE
+	SettingsWrapBitBool(EnableGameFixes);
 #endif
 	SettingsWrapBitBool(ConsoleToStdio);
 	SettingsWrapBitBool(HostFs);
