@@ -735,7 +735,8 @@ SCAJ-20118:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes vertical bars, misalignment bloom effects.
+    alignSprite: 1 # Fixes vertical bars.
+    halfPixelOffset: 2 # Fixes misalignment bloom effects.
 SCAJ-20119:
   name: "Gladiator - Road to Freedom"
   region: "NTSC-Unk"
@@ -26279,7 +26280,8 @@ SLPM-65800:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes vertical bars, misalignment bloom effects.
+    alignSprite: 1 # Fixes vertical bars.
+    halfPixelOffset: 2 # Fixes misalignment bloom effects.
 SLPM-65801:
   name: "Crash Bandicoot 5"
   region: "NTSC-J"
@@ -41136,7 +41138,8 @@ SLUS-21262:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes vertical bars, misalignment bloom effects.
+    alignSprite: 1 # Fixes vertical bars.
+    halfPixelOffset: 2 # Fixes misalignment bloom effects.
 SLUS-21263:
   name: "Romancing SaGa"
   region: "NTSC-U"
