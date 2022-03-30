@@ -268,71 +268,7 @@ static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEnt
 {
 	int gf = 0;
 
-	if (game.eeRoundMode != GameDatabaseSchema::RoundMode::Undefined)
-	{
-		const SSE_RoundMode eeRM = (SSE_RoundMode)enum_cast(game.eeRoundMode);
-		if (EnumIsValid(eeRM))
-		{
-			PatchesCon->WriteLn("(GameDB) Changing EE/FPU roundmode to %d [%s]", eeRM, EnumToString(eeRM));
-			dest.Cpu.sseMXCSR.SetRoundMode(eeRM);
-			gf++;
-		}
-	}
-
-	if (game.vuRoundMode != GameDatabaseSchema::RoundMode::Undefined)
-	{
-		const SSE_RoundMode vuRM = (SSE_RoundMode)enum_cast(game.vuRoundMode);
-		if (EnumIsValid(vuRM))
-		{
-			PatchesCon->WriteLn("(GameDB) Changing VU0/VU1 roundmode to %d [%s]", vuRM, EnumToString(vuRM));
-			dest.Cpu.sseVUMXCSR.SetRoundMode(vuRM);
-			gf++;
-		}
-	}
-
-	if (game.eeClampMode != GameDatabaseSchema::ClampMode::Undefined)
-	{
-		const int clampMode = enum_cast(game.eeClampMode);
-		PatchesCon->WriteLn(L"(GameDB) Changing EE/FPU clamp mode [mode=%d]", clampMode);
-		dest.Cpu.Recompiler.fpuOverflow = (clampMode >= 1);
-		dest.Cpu.Recompiler.fpuExtraOverflow = (clampMode >= 2);
-		dest.Cpu.Recompiler.fpuFullMode = (clampMode >= 3);
-		gf++;
-	}
-
-	if (game.vuClampMode != GameDatabaseSchema::ClampMode::Undefined)
-	{
-		const int clampMode = enum_cast(game.vuClampMode);
-		PatchesCon->WriteLn("(GameDB) Changing VU0/VU1 clamp mode [mode=%d]", clampMode);
-		dest.Cpu.Recompiler.vuOverflow = (clampMode >= 1);
-		dest.Cpu.Recompiler.vuExtraOverflow = (clampMode >= 2);
-		dest.Cpu.Recompiler.vuSignOverflow = (clampMode >= 3);
-		gf++;
-	}
-
-	for (const auto& [id, mode] : game.speedHacks)
-	{
-		// Gamefixes are already guaranteed to be valid, any invalid ones are dropped
-		// Legacy note - speedhacks are setup in the GameDB as integer values, but
-		// are effectively booleans like the gamefixes
-		dest.Speedhacks.Set(id, mode != 0);
-		PatchesCon->WriteLn("(GameDB) Setting Speedhack '%s' to [mode=%d]", EnumToString(id), static_cast<int>(mode != 0));
-		gf++;
-	}
-
-	for (const GamefixId id : game.gameFixes)
-	{
-		// Gamefixes are already guaranteed to be valid, any invalid ones are dropped
-		// if the fix is present, it is said to be enabled
-		dest.Gamefixes.Set(id, true);
-		PatchesCon->WriteLn("(GameDB) Enabled Gamefix: %s", EnumToString(id));
-		gf++;
-
-		// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
-		if (id == Fix_GoemonTlbMiss && true)
-			vtlb_Alloc_Ppmap();
-	}
-
+	gf += game.applyGameFixes(dest, dest.EnablePatches);
 	gf += game.applyGSHardwareFixes(dest.GS);
 
 	return gf;
@@ -456,9 +392,9 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 					gamePatch.Printf(L" [%d Patches]", patches);
 					PatchesCon->WriteLn(Color_Green, "(GameDB) Patches Loaded: %d", patches);
 				}
-				if (int fixes = loadGameSettings(fixup, *game))
-					gameFixes.Printf(L" [%d Fixes]", fixes);
 			}
+			if (int fixes = loadGameSettings(fixup, *game))
+				gameFixes.Printf(L" [%d Fixes]", fixes);
 		}
 		else
 		{
