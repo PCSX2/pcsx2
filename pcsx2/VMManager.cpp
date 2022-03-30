@@ -249,72 +249,7 @@ void VMManager::ApplyGameFixes()
 	if (!game)
 		return;
 
-	if (game->eeRoundMode != GameDatabaseSchema::RoundMode::Undefined)
-	{
-		SSE_RoundMode eeRM = (SSE_RoundMode)enum_cast(game->eeRoundMode);
-		if (EnumIsValid(eeRM))
-		{
-			PatchesCon->WriteLn("(GameDB) Changing EE/FPU roundmode to %d [%s]", eeRM, EnumToString(eeRM));
-			EmuConfig.Cpu.sseMXCSR.SetRoundMode(eeRM);
-			s_active_game_fixes++;
-		}
-	}
-
-	if (game->vuRoundMode != GameDatabaseSchema::RoundMode::Undefined)
-	{
-		SSE_RoundMode vuRM = (SSE_RoundMode)enum_cast(game->vuRoundMode);
-		if (EnumIsValid(vuRM))
-		{
-			PatchesCon->WriteLn("(GameDB) Changing VU0/VU1 roundmode to %d [%s]", vuRM, EnumToString(vuRM));
-			EmuConfig.Cpu.sseVUMXCSR.SetRoundMode(vuRM);
-			s_active_game_fixes++;
-		}
-	}
-
-	if (game->eeClampMode != GameDatabaseSchema::ClampMode::Undefined)
-	{
-		int clampMode = enum_cast(game->eeClampMode);
-		PatchesCon->WriteLn("(GameDB) Changing EE/FPU clamp mode [mode=%d]", clampMode);
-		EmuConfig.Cpu.Recompiler.fpuOverflow = (clampMode >= 1);
-		EmuConfig.Cpu.Recompiler.fpuExtraOverflow = (clampMode >= 2);
-		EmuConfig.Cpu.Recompiler.fpuFullMode = (clampMode >= 3);
-		s_active_game_fixes++;
-	}
-
-	if (game->vuClampMode != GameDatabaseSchema::ClampMode::Undefined)
-	{
-		int clampMode = enum_cast(game->vuClampMode);
-		PatchesCon->WriteLn("(GameDB) Changing VU0/VU1 clamp mode [mode=%d]", clampMode);
-		EmuConfig.Cpu.Recompiler.vuOverflow = (clampMode >= 1);
-		EmuConfig.Cpu.Recompiler.vuExtraOverflow = (clampMode >= 2);
-		EmuConfig.Cpu.Recompiler.vuSignOverflow = (clampMode >= 3);
-		s_active_game_fixes++;
-	}
-
-	// TODO - config - this could be simplified with maps instead of bitfields and enums
-	for (const auto& it : game->speedHacks)
-	{
-		// Legacy note - speedhacks are setup in the GameDB as integer values, but
-		// are effectively booleans like the gamefixes
-		const bool mode = it.second != 0;
-		EmuConfig.Speedhacks.Set(it.first, mode);
-		PatchesCon->WriteLn("(GameDB) Setting Speedhack '%s' to [mode=%d]", EnumToString(it.first), mode);
-		s_active_game_fixes++;
-	}
-
-	// TODO - config - this could be simplified with maps instead of bitfields and enums
-	for (const GamefixId id : game->gameFixes)
-	{
-		// if the fix is present, it is said to be enabled
-		EmuConfig.Gamefixes.Set(id, true);
-		PatchesCon->WriteLn("(GameDB) Enabled Gamefix: %s", EnumToString(id));
-		s_active_game_fixes++;
-
-		// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
-		if (id == Fix_GoemonTlbMiss && true)
-			vtlb_Alloc_Ppmap();
-	}
-
+	s_active_game_fixes += game->applyGameFixes(EmuConfig, EmuConfig.EnableGameFixes);
 	s_active_game_fixes += game->applyGSHardwareFixes(EmuConfig.GS);
 }
 
