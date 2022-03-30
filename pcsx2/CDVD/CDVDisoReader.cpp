@@ -29,8 +29,6 @@
 #include <cstring>
 #include <array>
 
-#include "CueParser.h"
-
 static InputIsoFile iso;
 
 static int pmode, cdtype;
@@ -49,9 +47,11 @@ s32 CALLBACK ISOopen(const char* pTitle)
 
 	std::shared_ptr<Common::Error> err;
 
-	CueParser::File cueFile;
+	fs::path ext;
+	// In case this is a reset with a new disc
+	ext.clear();
 
-	fs::path ext(pTitle);
+	ext = pTitle;
 
 	if ((pTitle == NULL) || (pTitle[0] == 0))
 	{
@@ -67,11 +67,15 @@ s32 CALLBACK ISOopen(const char* pTitle)
 		}
 		if (fs::exists(ext) && ext.extension() == ".cue")
 		{
+			if (!cueFile)
+				cueFile = new CueParser::File();
+
 			FILE* file = fopen(ext.string().c_str(), "r+");
 			if (file != nullptr)
 			{
-				cueFile.Parse(file, err.get());
-				ext = ext.parent_path() / cueFile.GetTrack(1)->filePath;
+				cueFile->Parse(file, err.get());
+				ext = ext.parent_path() / cueFile->GetTrack(1)->filePath;
+				Console.DoWriteLn(L"CUE FILE NAME: " + ext.wstring() + '\n');
 				iso.Open(ext.string());
 			}
 		}
