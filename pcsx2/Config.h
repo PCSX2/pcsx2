@@ -933,6 +933,9 @@ struct Pcsx2Config
 #ifndef DISABLE_RECORDING
 		EnableRecordingTools : 1,
 #endif
+#ifdef PCSX2_CORE
+		EnableGameFixes : 1, // enables automatic game fixes
+#endif
 		// when enabled uses BOOT2 injection, skipping sony bios splashes
 		UseBOOT2Injection : 1,
 		BackupSavestate : 1,
