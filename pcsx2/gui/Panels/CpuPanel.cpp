@@ -15,7 +15,6 @@
 
 #include "PrecompiledHeader.h"
 #include "ConfigurationPanels.h"
-#include <pcsx2/R5900.h>
 
 using namespace pxSizerFlags;
 
@@ -254,7 +253,7 @@ void Panels::CpuPanelEE::ApplyConfigToGui( AppConfig& configToApply, int flags )
 	m_check_EECacheEnable->Enable(!configToApply.EnablePresets && m_panel_RecEE->GetSelection() == 0);
 
 	m_check_EE128mbEnable->SetValue(recOps.EnableEE128mbRam);
-	m_check_EE128mbEnable->Enable(!configToApply.EnablePresets && !g_GameStarted && !g_GameLoading);
+	m_check_EE128mbEnable->Enable(!configToApply.EnablePresets);
 
 	m_button_RestoreDefaults->Enable(!configToApply.EnablePresets);
 
