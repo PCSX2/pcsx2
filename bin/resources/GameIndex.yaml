@@ -424,6 +424,8 @@ SCAJ-20043:
 SCAJ-20044:
   name: "Tomb Raider - The Angel of Darkness"
   region: "NTSC-Unk"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes garbage pixels.
 SCAJ-20045:
   name: "Shadow Tower Abyss"
   region: "NTSC-Unk"
@@ -10763,6 +10765,8 @@ SLES-51227:
         // Fix ingame SPS by interchanging vclipw.xyz vf5, vf5w with cfc2.
         patch=1,EE,001db3a0,word,48489000
         patch=1,EE,001db3a4,word,4bc529ff
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes garbage pixels.
 SLES-51229:
   name: "Virtua Cop - Elite Edition"
   region: "PAL-M5"
@@ -16508,6 +16512,8 @@ SLES-53908:
   name: "Tomb Raider - Legend"
   region: "PAL-M8"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes garbage pixels.
   gsHWFixes:
     mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
 SLES-53909:
@@ -18265,6 +18271,8 @@ SLES-54674:
   name: "Lara Croft Tomb Raider - Anniversary"
   region: "PAL-M10"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes garbage pixels.
   gsHWFixes:
     mipmap: 1
 SLES-54675:
@@ -19956,7 +19964,7 @@ SLES-55440:
   region: "PAL-M5"
   compat: 5
 SLES-55442:
-  name: "Tomb Raider Underworld"
+  name: "Tomb Raider - Underworld"
   region: "PAL-M8"
   compat: 5
 SLES-55443:
@@ -28826,6 +28834,8 @@ SLPM-66557:
 SLPM-66558:
   name: "Tomb Raider - Legend"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes garbage pixels.
   gsHWFixes:
     mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
 SLPM-66559:
@@ -32648,6 +32658,8 @@ SLPS-25245:
 SLPS-25246:
   name: "Tomb Raider - The Angel of Darkness"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes garbage pixels.
 SLPS-25247:
   name: "R-Type Final"
   region: "NTSC-J"
@@ -34818,6 +34830,8 @@ SLPS-25855:
 SLPS-25856:
   name: "Tomb Raider - Anniversary"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes garbage pixels.
   gsHWFixes:
     mipmap: 1
 SLPS-25858:
@@ -34936,7 +34950,7 @@ SLPS-25917:
   name: "Sacred Blaze"
   region: "NTSC-J"
 SLPS-25927:
-  name: "Tomb Raider Underworld"
+  name: "Tomb Raider - Underworld"
   region: "NTSC-J"
 SLPS-25930:
   name: "Major League Baseball 2K9"
@@ -37439,6 +37453,8 @@ SLUS-20467:
         // Fix ingame SPS by interchanging vclipw.xyz vf5, vf5w with cfc2.
         patch=1,EE,001d90e0,word,48489000
         patch=1,EE,001d90e4,word,4bc529ff
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes garbage pixels.
 SLUS-20468:
   name: "Dynasty Tactics"
   region: "NTSC-U"
@@ -40823,6 +40839,10 @@ SLUS-21203:
   name: "Tomb Raider - Legend"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes garbage pixels.
+  gsHWFixes:
+    mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
 SLUS-21204:
   name: "Victorious Boxers 2 - Fighting Spirit"
   region: "NTSC-U"
@@ -42497,6 +42517,8 @@ SLUS-21555:
   name: "Tomb Raider - Anniversary"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes garbage pixels.
   gsHWFixes:
     mipmap: 1
 SLUS-21556:
@@ -43840,9 +43862,9 @@ SLUS-21857:
   name: "Short Track Racing - Trading Paint"
   region: "NTSC-U"
 SLUS-21858:
-  name: "Tomb Raider Underworld"
+  name: "Tomb Raider - Underworld"
   region: "NTSC-U"
-  compat: 4
+  compat: 5
 SLUS-21860:
   name: "Bigs 2, The"
   region: "NTSC-U"
