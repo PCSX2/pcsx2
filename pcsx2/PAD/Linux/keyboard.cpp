@@ -64,29 +64,7 @@ static void PressButton(u32 pad, u32 button)
 
 void UpdateKeyboardInput()
 {
-	for (u32 pad = 0; pad < GAMEPAD_NUMBER; pad++)
-	{
-		const auto& map = g_conf.keysym_map[pad];
-		// If we loop over all keys press/release based on current state,
-		// joystick axes (which have two bound keys) will always go to the later-polled key
-		// Instead, release all keys first and then set the ones that are pressed
-		for (const auto& key : map)
-			g_key_status.release(pad, key.second);
-		for (const auto& key : map)
-		{
-			bool state;
-			if (key.first >> 16 == 0)
-			{
-				state = CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, key.first);
-			}
-			else
-			{
-				state = CGEventSourceButtonState(kCGEventSourceStateHIDSystemState, (CGMouseButton)(key.first & 0xFFFF));
-			}
-			if (state)
-				PressButton(pad, key.second);
-		}
-	}
+	g_ev_fifo.consume_all(AnalyzeKeyEvent);
 }
 
 bool PollForNewKeyboardKeys(u32& pkey)
@@ -101,31 +79,103 @@ bool PollForNewKeyboardKeys(u32& pkey)
 			return true;
 		}
 	}
-	for (auto btn : {kCGMouseButtonLeft, kCGMouseButtonCenter, kCGMouseButtonRight})
-	{
-		if (CGEventSourceButtonState(kCGEventSourceStateHIDSystemState, btn))
-		{
-			pkey = btn | (1 << 16);
-			return true;
-		}
+#define CHECK(button, value) \
+	if (CGEventSourceButtonState(kCGEventSourceStateHIDSystemState, (button))) \
+	{ \
+		pkey = (value); \
+		return true; \
 	}
+	CHECK(kCGMouseButtonLeft,   0x10001)
+	CHECK(kCGMouseButtonCenter, 0x10002)
+	CHECK(kCGMouseButtonRight,  0x10003)
+#undef CHECK
 	return false;
 }
 #elif defined(__unix__)
 static bool s_grab_input = false;
 static bool s_Shift = false;
+
+void UpdateKeyboardInput()
+{
+	HostKeyEvent evt = {};
+	XEvent E = {0};
+
+	// Keyboard input send by PCSX2
+	g_ev_fifo.consume_all(AnalyzeKeyEvent);
+
+	// keyboard input
+	if (!GSdsp)
+		return;
+
+	while (XPending(GSdsp) > 0)
+	{
+		XNextEvent(GSdsp, &E);
+
+		// Change the format of the structure to be compatible with GSOpen2
+		// mode (event come from pcsx2 not X)
+		evt.type = static_cast<HostKeyEvent::Type>(E.type);
+		switch (E.type)
+		{
+			case MotionNotify:
+				evt.key = (E.xbutton.x & 0xFFFF) | (E.xbutton.y << 16);
+				evt.type = HostKeyEvent::Type::MouseMove;
+				break;
+			case ButtonRelease:
+				evt.key = E.xbutton.button | 0x10000;
+				evt.type = HostKeyEvent::Type::MouseReleased;
+				break;
+			case ButtonPress:
+				evt.key = E.xbutton.button | 0x10000;
+				evt.type = HostKeyEvent::Type::MousePressed;
+				break;
+			case KeyPress:
+				evt.key = (int)XLookupKeysym(&E.xkey, 0);
+				evt.type = HostKeyEvent::Type::KeyPressed;
+				break;
+			case KeyRelease:
+				evt.key = (int)XLookupKeysym(&E.xkey, 0);
+				evt.type = HostKeyEvent::Type::KeyReleased;
+			default:
+				continue;
+		}
+
+		AnalyzeKeyEvent(evt);
+	}
+}
+
+bool PollForNewKeyboardKeys(u32& pkey)
+{
+	GdkEvent* ev = gdk_event_get();
+
+	if (ev != NULL)
+	{
+		if (ev->type == GDK_KEY_PRESS)
+		{
+			pkey = ev->key.keyval != GDK_KEY_Escape ? ev->key.keyval : UINT32_MAX;
+			return true;
+		}
+		else if (ev->type == GDK_BUTTON_PRESS)
+		{
+			pkey = ev->button.button | 0x10000;
+			return true;
+		}
+	}
+
+	return false;
+}
+#endif
+
 static unsigned int s_previous_mouse_x = 0;
 static unsigned int s_previous_mouse_y = 0;
 
 void AnalyzeKeyEvent(HostKeyEvent& evt)
 {
-	KeySym key = (KeySym)evt.key;
 	int pad = 0;
 	int index = -1;
 
 	for (u32 cpad = 0; cpad < GAMEPAD_NUMBER; cpad++)
 	{
-		int tmp_index = get_keyboard_key(cpad, key);
+		int tmp_index = get_keyboard_key(cpad, evt.key);
 		if (tmp_index != -1)
 		{
 			pad = cpad;
@@ -133,17 +183,18 @@ void AnalyzeKeyEvent(HostKeyEvent& evt)
 		}
 	}
 
-	switch (static_cast<int>(evt.type))
+	switch (evt.type)
 	{
-		case KeyPress:
+		case HostKeyEvent::Type::KeyPressed:
 			// Shift F12 is not yet use by pcsx2. So keep it to grab/ungrab input
 			// I found it very handy vs the automatic fullscreen detection
 			// 1/ Does not need to detect full-screen
 			// 2/ Can use a debugger in full-screen
 			// 3/ Can grab input in window without the need of a pixelated full-screen
-			if (key == XK_Shift_R || key == XK_Shift_L)
+#ifdef __unix__
+			if (evt.key == XK_Shift_R || evt.key == XK_Shift_L)
 				s_Shift = true;
-			if (key == XK_F12 && s_Shift)
+			if (evt.key == XK_F12 && s_Shift)
 			{
 				if (!s_grab_input)
 				{
@@ -158,6 +209,7 @@ void AnalyzeKeyEvent(HostKeyEvent& evt)
 					XUngrabKeyboard(GSdsp, CurrentTime);
 				}
 			}
+#endif
 
 			if (index != -1)
 				PressButton(pad, index);
@@ -165,38 +217,42 @@ void AnalyzeKeyEvent(HostKeyEvent& evt)
 			//PAD_LOG("Key pressed:%d", index);
 
 			event.type = HostKeyEvent::Type::KeyPressed;
-			event.key = key;
+			event.key = evt.key;
 			break;
 
-		case KeyRelease:
-			if (key == XK_Shift_R || key == XK_Shift_L)
+		case HostKeyEvent::Type::KeyReleased:
+#ifdef __unix__
+			if (evt.key == XK_Shift_R || evt.key == XK_Shift_L)
 				s_Shift = false;
+#endif
 
 			if (index != -1)
 				g_key_status.release(pad, index);
 
 			event.type = HostKeyEvent::Type::KeyReleased;
-			event.key = key;
+			event.key = evt.key;
 			break;
 
-		case FocusIn:
+		case HostKeyEvent::Type::FocusGained:
 			break;
 
-		case FocusOut:
+		case HostKeyEvent::Type::FocustLost:
+#ifdef __unix__
 			s_Shift = false;
+#endif
 			break;
 
-		case ButtonPress:
+		case HostKeyEvent::Type::MousePressed:
 			if (index != -1)
 				g_key_status.press(pad, index);
 			break;
 
-		case ButtonRelease:
+		case HostKeyEvent::Type::MouseReleased:
 			if (index != -1)
 				g_key_status.release(pad, index);
 			break;
 
-		case MotionNotify:
+		case HostKeyEvent::Type::MouseMove:
 			// FIXME: How to handle when the mouse does not move, no event generated!!!
 			// 1/ small move == no move. Cons : can not do small movement
 			// 2/ use a watchdog timer thread
@@ -253,63 +309,10 @@ void AnalyzeKeyEvent(HostKeyEvent& evt)
 			}
 
 			break;
+
+		case HostKeyEvent::Type::NoEvent:
+		case HostKeyEvent::Type::MouseWheelDown:
+		case HostKeyEvent::Type::MouseWheelUp:
+			break;
 	}
 }
-
-void UpdateKeyboardInput()
-{
-	HostKeyEvent evt = {};
-	XEvent E = {0};
-
-	// Keyboard input send by PCSX2
-	g_ev_fifo.consume_all(AnalyzeKeyEvent);
-
-	// keyboard input
-	if (!GSdsp)
-		return;
-
-	while (XPending(GSdsp) > 0)
-	{
-		XNextEvent(GSdsp, &E);
-
-		// Change the format of the structure to be compatible with GSOpen2
-		// mode (event come from pcsx2 not X)
-		evt.type = static_cast<HostKeyEvent::Type>(E.type);
-		switch (E.type)
-		{
-			case MotionNotify:
-				evt.key = (E.xbutton.x & 0xFFFF) | (E.xbutton.y << 16);
-				break;
-			case ButtonRelease:
-			case ButtonPress:
-				evt.key = E.xbutton.button;
-				break;
-			default:
-				evt.key = (int)XLookupKeysym(&E.xkey, 0);
-		}
-
-		AnalyzeKeyEvent(evt);
-	}
-}
-
-bool PollForNewKeyboardKeys(u32& pkey)
-{
-	GdkEvent* ev = gdk_event_get();
-
-	if (ev != NULL)
-	{
-		if (ev->type == GDK_KEY_PRESS)
-		{
-			pkey = ev->key.keyval != GDK_KEY_Escape ? ev->key.keyval : UINT32_MAX;
-			return true;
-		}
-		else if (ev->type == GDK_BUTTON_PRESS)
-		{
-			pkey = ev->button.button;
-			return true;
-		}
-	}
-
-	return false;
-}
-#endif

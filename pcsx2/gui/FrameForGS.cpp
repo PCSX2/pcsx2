@@ -397,24 +397,24 @@ void GSPanel::OnMouseEvent( wxMouseEvent& evt )
 		DoShowMouse();
 	}
 
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
 	HostKeyEvent event;
 	// FIXME how to handle double click ???
 	if (evt.ButtonDown())
 	{
-		event.type = static_cast<HostKeyEvent::Type>(4); // X equivalent of ButtonPress
-		event.key = evt.GetButton();
+		event.type = HostKeyEvent::Type::MousePressed;
+		event.key = evt.GetButton() | 0x10000;
 	}
 	else if (evt.ButtonUp())
 	{
-		event.type = static_cast<HostKeyEvent::Type>(5); // X equivalent of ButtonRelease
-		event.key = evt.GetButton();
+		event.type = HostKeyEvent::Type::MouseReleased;
+		event.key = evt.GetButton() | 0x10000;
 	}
 	else if (evt.Moving() || evt.Dragging())
 	{
-		event.type = static_cast<HostKeyEvent::Type>(6); // X equivalent of MotionNotify
+		event.type = HostKeyEvent::Type::MouseMove;
 		long x, y;
 		evt.GetPosition(&x, &y);
 
@@ -464,15 +464,15 @@ void GSPanel::OnKeyDownOrUp( wxKeyEvent& evt )
 	// to the APP level message handler, which in turn routes them right back here -- yes it's
 	// silly, but oh well).
 
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
 	HostKeyEvent event;
 	event.key = evt.GetRawKeyCode();
 	if (evt.GetEventType() == wxEVT_KEY_UP)
-		event.type = static_cast<HostKeyEvent::Type>(3); // X equivalent of KEYRELEASE;
+		event.type = HostKeyEvent::Type::KeyReleased;
 	else if (evt.GetEventType() == wxEVT_KEY_DOWN)
-		event.type = static_cast<HostKeyEvent::Type>(2); // X equivalent of KEYPRESS;
+		event.type = HostKeyEvent::Type::KeyPressed;
 	else
 		event.type = HostKeyEvent::Type::NoEvent;
 
@@ -547,10 +547,10 @@ void GSPanel::OnFocus( wxFocusEvent& evt )
 	else
 		DoShowMouse();
 
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
-	HostKeyEvent event = {static_cast<HostKeyEvent::Type>(9), 0}; // X equivalent of FocusIn;
+	HostKeyEvent event = {HostKeyEvent::Type::FocusGained, 0};
 	PADWriteEvent(event);
 #endif
 	//Console.Warning("GS frame > focus set");
@@ -563,10 +563,10 @@ void GSPanel::OnFocusLost( wxFocusEvent& evt )
 	evt.Skip();
 	m_HasFocus = false;
 	DoShowMouse();
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
-	HostKeyEvent event = {static_cast<HostKeyEvent::Type>(9), 0}; // X equivalent of FocusOut
+	HostKeyEvent event = {HostKeyEvent::Type::FocustLost, 0};
 	PADWriteEvent(event);
 #endif
 	//Console.Warning("GS frame > focus lost");
