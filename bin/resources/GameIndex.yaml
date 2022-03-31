@@ -19340,15 +19340,23 @@ SLES-55138:
 SLES-55143:
   name: "The Chronicles of Narnia - Prince Caspian"
   region: "PAL-G-I"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces ghosting but on normal vertex is less ghosting but causes corruption at the sides.
 SLES-55144:
   name: "The Chronicles of Narnia - Prince Caspian"
   region: "PAL-M6"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces ghosting but on normal vertex is less ghosting but causes corruption at the sides.
 SLES-55145:
   name: "The Chronicles of Narnia - Prince Caspian"
   region: "PAL-F-DU"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces ghosting but on normal vertex is less ghosting but causes corruption at the sides.
 SLES-55146:
   name: "The Chronicles of Narnia - Prince Caspian"
   region: "PAL-UK"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces ghosting but on normal vertex is less ghosting but causes corruption at the sides.
 SLES-55147:
   name: "Silent Hill - Origins"
   region: "PAL-M5"
@@ -43443,6 +43451,8 @@ SLUS-21756:
   name: "Chronicles of Narnia, The - Prince Caspian"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces ghosting but on normal vertex is less ghosting but causes corruption at the sides.
 SLUS-21757:
   name: "Kung Fu Panda"
   region: "NTSC-U"
