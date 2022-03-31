@@ -19342,12 +19342,11 @@ SLES-55146:
   name: "The Chronicles of Narnia - Prince Caspian"
   region: "PAL-UK"
 SLES-55147:
-  name: "Silent Hill Origins"
+  name: "Silent Hill - Origins"
   region: "PAL-M5"
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes black textures and flashlight circle not working.
-    halfPixelOffset: 1 # Fixes ghosting.
-    wildArmsHack: 1 # Fixes ghosting.
+    halfPixelOffset: 2 # Fixes ghosting.
 SLES-55148:
   name: "SBK 08 - Superbike World Championship"
   region: "PAL-M5"
@@ -21334,7 +21333,6 @@ SLKA-25422:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes black textures and flashlight circle not working.
     halfPixelOffset: 2 # Fixes ghosting.
-    wildArmsHack: 1 # Fixes ghosting.
 SLKA-25424:
   name: "SNK Arcade Classics Vol.1"
   region: "NTSC-K"
@@ -43307,7 +43305,6 @@ SLUS-21731:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes black textures and flashlight circle not working.
     halfPixelOffset: 2 # Fixes ghosting.
-    wildArmsHack: 1 # Fixes ghosting.
 SLUS-21732:
   name: "El Tigre - The Adventures of Manny Rivera"
   region: "NTSC-U"
