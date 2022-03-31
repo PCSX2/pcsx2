@@ -220,7 +220,7 @@ HostKeyEvent* PADkeyEvent()
 		}
 	}
 #endif
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
 	if (g_ev_fifo.size() == 0)
 	{
 		//PAD_LOG("No events in queue, returning empty event");
@@ -234,15 +234,10 @@ HostKeyEvent* PADkeyEvent()
 	AnalyzeKeyEvent(s_event);
 	//PAD_LOG("Returning Event. Event Type: %d, Key: %d", s_event.type, s_event.key);
 	return &s_event;
-#else // MacOS
-	s_event = event;
-	event.type = HostKeyEvent::Type::NoEvent;
-	event.key = 0;
-	return &s_event;
 #endif
 }
 
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 void PADWriteEvent(HostKeyEvent& evt)
 {
 	// if (evt.evt != 6) { // Skip mouse move events for logging

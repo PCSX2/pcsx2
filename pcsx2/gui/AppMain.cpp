@@ -153,9 +153,11 @@ protected:
 wxIMPLEMENT_DYNAMIC_CLASS( Pcsx2AppMethodEvent, pxActionEvent );
 
 #ifdef __WXMSW__
-extern int TranslateVKToWXK( u32 keysym );
-#elif defined( __WXGTK__ )
-extern int TranslateGDKtoWXK( u32 keysym );
+extern int TranslateVKToWXK(u32 keysym);
+#elif defined(__WXGTK__)
+extern int TranslateGDKtoWXK(u32 keysym);
+#elif defined(__APPLE__)
+extern int TranslateOSXtoWXK(u32 keysym);
 #endif
 
 void Pcsx2App::PadKeyDispatch(const HostKeyEvent& ev)
@@ -166,9 +168,9 @@ void Pcsx2App::PadKeyDispatch(const HostKeyEvent& ev)
 #ifdef __WXMSW__
 	const int vkey = TranslateVKToWXK(ev.key);
 #elif defined( __WXMAC__ )
-	const int vkey = wxCharCodeWXToOSX( (wxKeyCode) ev.key );
+	const int vkey = TranslateOSXtoWXK(ev.key);
 #elif defined( __WXGTK__ )
-	const int vkey = TranslateGDKtoWXK( ev.key );
+	const int vkey = TranslateGDKtoWXK(ev.key);
 #else
 #	error Unsupported Target Platform.
 #endif

@@ -26,14 +26,16 @@ struct HostKeyEvent
 {
 	enum class Type
 	{
-		NoEvent = 0,
-		KeyPressed = 1,
-		KeyReleased = 2,
-		MousePressed = 3,
-		MouseReleased = 4,
-		MouseWheelDown = 5,
-		MouseWheelUp = 6,
-		MouseMove = 7,
+		NoEvent,
+		KeyPressed,
+		KeyReleased,
+		MousePressed,
+		MouseReleased,
+		MouseWheelDown,
+		MouseWheelUp,
+		MouseMove,
+		FocusGained,
+		FocustLost,
 	};
 
 	Type type;

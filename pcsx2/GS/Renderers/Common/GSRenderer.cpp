@@ -27,6 +27,8 @@
 #include "gui/AppCoreThread.h"
 #if defined(__unix__)
 #include <X11/keysym.h>
+#elif defined(__APPLE__)
+#include <Carbon/Carbon.h>
 #endif
 
 static std::string GetDumpName()
@@ -603,10 +605,17 @@ void GSRenderer::EndCapture()
 
 void GSRenderer::KeyEvent(const HostKeyEvent& e)
 {
-#if !defined(PCSX2_CORE) && !defined(__APPLE__) // TODO: Add hotkey support on macOS
+#if !defined(PCSX2_CORE)
 #ifdef _WIN32
 	m_shift_key = !!(::GetAsyncKeyState(VK_SHIFT) & 0x8000);
 	m_control_key = !!(::GetAsyncKeyState(VK_CONTROL) & 0x8000);
+#elif defined(__APPLE__)
+	m_shift_key = CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, kVK_Shift)
+	           || CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, kVK_RightShift);
+	m_control_key = CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, kVK_Control)
+	             || CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, kVK_RightControl)
+	             || CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, kVK_Command)
+	             || CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, kVK_RightCommand);
 #else
 	switch (e.key)
 	{
@@ -628,12 +637,12 @@ void GSRenderer::KeyEvent(const HostKeyEvent& e)
 
 #if defined(__unix__)
 #define VK_F5 XK_F5
-#define VK_F6 XK_F6
 #define VK_DELETE XK_Delete
-#define VK_INSERT XK_Insert
-#define VK_PRIOR XK_Prior
 #define VK_NEXT XK_Next
-#define VK_HOME XK_Home
+#elif defined(__APPLE__)
+#define VK_F5 kVK_F5
+#define VK_DELETE kVK_ForwardDelete
+#define VK_NEXT kVK_PageDown
 #endif
 
 		// NOTE: These are all BROKEN! They mess with GS thread state from the UI thread.
@@ -657,7 +666,7 @@ void GSRenderer::KeyEvent(const HostKeyEvent& e)
 				return;
 		}
 	}
-#endif // __APPLE__
+#endif // PCSX2_CORE
 }
 
 void GSRenderer::PurgePool()

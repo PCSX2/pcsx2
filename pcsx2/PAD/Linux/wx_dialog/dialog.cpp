@@ -25,14 +25,16 @@ static std::string KeyName(int pad, int key, int keysym)
 	{
 		switch (keysym & 0xFFFF)
 		{
-			case kCGMouseButtonLeft:
+			case 0:
+				return "Mouse ???";
+			case 1:
 				return "Mouse Left";
-			case kCGMouseButtonRight:
-				return "Mouse Right";
-			case kCGMouseButtonCenter:
+			case 2:
 				return "Mouse Middle";
+			case 3:
+				return "Mouse Right";
 			default: // Use only number for extra button
-				return "Mouse " + std::to_string(keysym & 0xFFFF);
+				return "Mouse " + std::to_string((keysym & 0xFFFF) + 1);
 		}
 	}
 
@@ -167,12 +169,12 @@ static std::string KeyName(int pad, int key, int keysym)
 static std::string KeyName(int pad, int key, int keysym)
 {
 	// Mouse
-	if (keysym < 10)
+	if (keysym >> 16)
 	{
-		switch (keysym)
+		switch (keysym & 0xFFFF)
 		{
 			case 0:
-				return "";
+				return "Mouse ???";
 			case 1:
 				return "Mouse Left";
 			case 2:
@@ -180,7 +182,7 @@ static std::string KeyName(int pad, int key, int keysym)
 			case 3:
 				return "Mouse Right";
 			default: // Use only number for extra button
-				return "Mouse " + std::to_string(keysym);
+				return "Mouse " + std::to_string((keysym & 0xFFFF) + 1);
 		}
 	}
 
