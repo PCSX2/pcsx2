@@ -28,14 +28,6 @@ set_ncpu_toolfile()
     fi
 }
 
-switch_wxconfig()
-{
-    # Helper to easily switch wx-config on my system
-    if [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0" ]; then
-        sudo update-alternatives --set wx-config /usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0
-    fi
-}
-
 find_freetype()
 {
     if [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/include/x86_64-linux-gnu/freetype2/ft2build.h" ]; then
@@ -234,8 +226,6 @@ if [ "$cleanBuild" -eq 1 ]; then
     rm -fr "$build"/*
 fi
 
-switch_wxconfig
-
 # Workaround for Debian. Cmake failed to find freetype include path
 find_freetype
 
@@ -253,30 +243,18 @@ cd "$build"
 
 set_compiler
 
-############################################################
-# CPP check build
-############################################################
 if [ "$cppcheck" -eq 1 ] && command -v cppcheck >/dev/null ; then
     run_cppcheck
 fi
 
-############################################################
-# Clang tidy build
-############################################################
 if [ "$clangTidy" -eq 1 ] && command -v clang-tidy >/dev/null ; then
     run_clangtidy
 fi
 
-############################################################
-# Coverity build
-############################################################
 if [ "$CoverityBuild" -eq 1 ] && command -v cov-build >/dev/null ; then
     run_coverity
 fi
 
-############################################################
-# Real build
-############################################################
 $make 2>&1 | tee -a "$log"
 $make install 2>&1 | tee -a "$log"
 
