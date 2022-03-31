@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include <cstdio>
+#include <cstring>
 
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
@@ -58,15 +59,13 @@ BiosDebugInformation CurrentBiosInformation;
 
 static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& description, u32& region, std::string& zone)
 {
-	uint i;
 	romdir rd;
-
-	for (i = 0; i < 512 * 1024; i++)
+	for (u32 i = 0; i < 512 * 1024; i++)
 	{
 		if (std::fread(&rd, sizeof(rd), 1, fp) != 1)
 			return false;
 
-		if (std::strncmp(rd.fileName, "RESET", 5) == 0)
+		if (std::strncmp(rd.fileName, "RESET", sizeof(rd.fileName)) == 0)
 			break; /* found romdir */
 	}
 
@@ -74,9 +73,10 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 	s64 fileSize = FileSystem::FSize64(fp);
 	bool foundRomVer = false;
 
-	while (strlen(rd.fileName) > 0)
+	// ensure it's a null-terminated and not zero-length string
+	while (rd.fileName[0] != '\0' && strnlen(rd.fileName, sizeof(rd.fileName)) != sizeof(rd.fileName))
 	{
-		if (strcmp(rd.fileName, "ROMVER") == 0)
+		if (std::strncmp(rd.fileName, "ROMVER", sizeof(rd.fileName)) == 0)
 		{
 			char romver[14 + 1] = {}; // ascii version loaded from disk.
 
