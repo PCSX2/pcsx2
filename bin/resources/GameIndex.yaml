@@ -25817,6 +25817,8 @@ SLPM-65661:
 SLPM-65663:
   name: "Zwei!!"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes vertical lines.
 SLPM-65664:
   name: "Memories Off... Duet [SuperLite 2000 Series]"
   region: "NTSC-J"
@@ -27244,6 +27246,8 @@ SLPM-66101:
 SLPM-66102:
   name: "Zwei!! [Taito the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes vertical lines.
 SLPM-66103:
   name: "WRC 3 [Spike the Best]"
   region: "NTSC-J"
