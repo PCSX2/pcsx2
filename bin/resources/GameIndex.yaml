@@ -6513,6 +6513,10 @@ SCUS-97231:
   name: "Arc the Lad - Twilight of the Spirits"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    disableDepthSupport: 1 # Fixes white fog artifacts.
+    roundSprite: 2 # Fixes various lines.
+    halfPixelOffset: 2 # Prevents screen shaking in main menu.
 SCUS-97232:
   name: "Getaway [Demo]"
   region: "NTSC-U"
@@ -40653,6 +40657,9 @@ SLUS-21165:
   name: "Arc the Lad - End of Darkness"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    disableDepthSupport: 1 # Fixes white fog artifacts.
+    roundSprite: 2 # Fixes various lines.
 SLUS-21166:
   name: "Full Metal Alchemist 2 - Curse of the Crimson Elixir"
   region: "NTSC-U"
