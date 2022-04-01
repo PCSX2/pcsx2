@@ -72,12 +72,12 @@ tDMA_TAG DMACh::dma_tag()
 
 wxString DMACh::cmq_to_str() const
 {
-	return wxsFormat(L"chcr = %lx, madr = %lx, qwc  = %lx", chcr._u32, madr, qwc);
+	return wxsFormat(L"chcr = %x, madr = %x, qwc  = %x", chcr._u32, madr, qwc);
 }
 
 wxString DMACh::cmqt_to_str() const
 {
-	return wxsFormat(L"chcr = %lx, madr = %lx, qwc  = %lx, tadr = %1x", chcr._u32, madr, qwc, tadr);
+	return wxsFormat(L"chcr = %x, madr = %x, qwc  = %x, tadr = %x", chcr._u32, madr, qwc, tadr);
 }
 
 __fi void throwBusError(const char *s)

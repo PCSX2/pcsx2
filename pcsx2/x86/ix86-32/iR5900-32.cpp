@@ -44,6 +44,8 @@
 #include "common/MemsetFast.inl"
 #include "common/Perf.h"
 
+// Only for MOVQ workaround.
+#include "common/emitter/internal.h"
 
 using namespace x86Emitter;
 using namespace R5900;
@@ -175,6 +177,27 @@ void _eeMoveGPRtoR(const xRegister32& to, int fromgpr)
 		else
 		{
 			xMOV(to, ptr[&cpuRegs.GPR.r[fromgpr].UL[0]]);
+		}
+	}
+}
+
+void _eeMoveGPRtoR(const xRegister64& to, int fromgpr)
+{
+	if (fromgpr == 0)
+		xXOR(to, to);
+	else if (GPR_IS_CONST1(fromgpr))
+		xMOV64(to, g_cpuConstRegs[fromgpr].UD[0]);
+	else
+	{
+		int mmreg;
+
+		if ((mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 && (xmmregs[mmreg].mode & MODE_WRITE))
+		{
+			xMOVD(to, xRegisterSSE(mmreg));
+		}
+		else
+		{
+			xMOV(to, ptr[&cpuRegs.GPR.r[fromgpr].UD[0]]);
 		}
 	}
 }
@@ -440,10 +463,13 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 
 	{ // Properly scope the frame prologue/epilogue
 #ifdef ENABLE_VTUNE
-		xScopedStackFrame frame(true);
+		xScopedStackFrame frame(true, CHECK_FASTMEM);
 #else
-		xScopedStackFrame frame(IsDevBuild);
+		xScopedStackFrame frame(IsDevBuild && !CHECK_FASTMEM, CHECK_FASTMEM);
 #endif
+
+		if (CHECK_FASTMEM)
+			xMOV(RFASTMEMBASE, ptrNative[&vtlb_private::vtlbdata.fastmem_base]);
 
 		xJMP((void*)DispatcherReg);
 
@@ -526,7 +552,7 @@ static void recReserveCache()
 
 	while (!recMem->IsOk())
 	{
-		if (recMem->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::EErecOffset, m_ConfiguredCacheReserve * _1mb) != NULL)
+		if (recMem->Reserve(GetVmMemory().CodeMemory(), HostMemoryMap::EErecOffset, m_ConfiguredCacheReserve * _1mb) != NULL)
 			break;
 
 		// If it failed, then try again (if possible):
@@ -949,6 +975,35 @@ void SetBranchImm(u32 imm)
 	iFlushCall(FLUSH_EVERYTHING);
 	xMOV(ptr32[&cpuRegs.pc], imm);
 	iBranchTest(imm);
+}
+
+u8* recBeginThunk()
+{
+	// if recPtr reached the mem limit reset whole mem
+	if (recPtr >= (recMem->GetPtrEnd() - _64kb))
+	{
+		eeRecNeedsReset = true;
+	}
+	else if ((recConstBufPtr - recConstBuf) >= RECCONSTBUF_SIZE - 64)
+	{
+		Console.WriteLn("EE recompiler stack reset");
+		eeRecNeedsReset = true;
+	}
+
+	xSetPtr(recPtr);
+	recPtr = xGetAlignedCallTarget();
+
+	x86Ptr = recPtr;
+	return recPtr;
+}
+
+u8* recEndThunk()
+{
+	u8* block_end = x86Ptr;
+
+	pxAssert(block_end < recMem->GetPtrEnd());
+	recPtr = block_end;
+	return block_end;
 }
 
 void SaveBranchState()

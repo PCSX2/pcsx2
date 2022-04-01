@@ -317,7 +317,7 @@ __fi void VU_Thread::Write(u32 val)
 	m_write_pos += 1;
 }
 
-__fi void VU_Thread::Write(void* src, u32 size)
+__fi void VU_Thread::Write(const void* src, u32 size)
 {
 	memcpy(GetWritePtr(), src, size);
 	m_write_pos += size_u32(size);
@@ -464,7 +464,7 @@ void VU_Thread::ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop, u32 fbrst)
 	Get_MTVUChanges();
 }
 
-void VU_Thread::VifUnpack(vifStruct& _vif, VIFregisters& _vifRegs, u8* data, u32 size)
+void VU_Thread::VifUnpack(vifStruct& _vif, VIFregisters& _vifRegs, const u8* data, u32 size)
 {
 	MTVU_LOG("MTVU - VifUnpack!");
 	u32 vif_copy_size = (uptr)&_vif.StructEnd - (uptr)&_vif.tag;
@@ -478,7 +478,7 @@ void VU_Thread::VifUnpack(vifStruct& _vif, VIFregisters& _vifRegs, u8* data, u32
 	KickStart();
 }
 
-void VU_Thread::WriteMicroMem(u32 vu_micro_addr, void* data, u32 size)
+void VU_Thread::WriteMicroMem(u32 vu_micro_addr, const void* data, u32 size)
 {
 	MTVU_LOG("MTVU - WriteMicroMem!");
 	ReserveSpace(3 + size_u32(size));
@@ -490,7 +490,7 @@ void VU_Thread::WriteMicroMem(u32 vu_micro_addr, void* data, u32 size)
 	KickStart();
 }
 
-void VU_Thread::WriteDataMem(u32 vu_data_addr, void* data, u32 size)
+void VU_Thread::WriteDataMem(u32 vu_data_addr, const void* data, u32 size)
 {
 	MTVU_LOG("MTVU - WriteDataMem!");
 	ReserveSpace(3 + size_u32(size));

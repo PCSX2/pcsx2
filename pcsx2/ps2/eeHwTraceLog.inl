@@ -273,14 +273,25 @@ static __ri void eeHwTraceLog( u32 addr, T val, bool mode )
 	FastFormatAscii labelStr;
 	labelStr.Write("Hw%s%u", mode ? "Read" : "Write", sizeof (T) * 8);
 
-	switch( sizeof(T) )
+	if constexpr (sizeof(T) == 1)
 	{
-		case 1: valStr.Write("0x%02x", val); break;
-		case 2: valStr.Write("0x%04x", val); break;
-		case 4: valStr.Write("0x%08x", val); break;
-
-		case 8: valStr.Write("0x%08x.%08x", ((u32*)&val)[1], ((u32*)&val)[0]); break;
-		case 16: ((u128&)val).WriteTo(valStr);
+		valStr.Write("0x%02x", val);
+	}
+	else if constexpr (sizeof(T) == 2)
+	{
+		valStr.Write("0x%04x", val);
+	}
+	else if constexpr (sizeof(T) == 4)
+	{
+		valStr.Write("0x%08x", val);
+	}
+	else if constexpr (sizeof(T) == 8)
+	{
+		valStr.Write("0x%08x.%08x", r64_to_u32_hi(val), r64_to_u32(val));
+	}
+	else if constexpr (sizeof(T) == 16)
+	{
+		r128_to_u128(val).WriteTo(valStr);
 	}
 			
 	static const char* temp = "%-12s @ 0x%08X/%-16s %s %s";

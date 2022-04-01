@@ -16,6 +16,7 @@
 #pragma once
 
 #include "Hw.h"
+#include "SingleRegisterTypes.h"
 
 // --------------------------------------------------------------------------------------
 //  IsPageFor() / iswitch() / icase()   [macros!]
@@ -58,8 +59,8 @@ template<uint page> extern void __fastcall hwWrite8  (u32 mem, u8  value);
 template<uint page> extern void __fastcall hwWrite16 (u32 mem, u16 value);
 
 template<uint page> extern void __fastcall hwWrite32 (u32 mem, mem32_t value);
-template<uint page> extern void __fastcall hwWrite64 (u32 mem, const mem64_t* srcval);
-template<uint page> extern void __fastcall hwWrite128(u32 mem, const mem128_t* srcval);
+template<uint page> extern void TAKES_R64 hwWrite64 (u32 mem, r64 srcval);
+template<uint page> extern void TAKES_R128 hwWrite128(u32 mem, r128 srcval);
 
 // --------------------------------------------------------------------------------------
 //  Hardware FIFOs (128 bit access only!)

@@ -75,8 +75,9 @@ static size_t pageAlign(size_t size)
 //  VirtualMemoryManager  (implementations)
 // --------------------------------------------------------------------------------------
 
-VirtualMemoryManager::VirtualMemoryManager(const wxString& name, uptr base, size_t size, uptr upper_bounds, bool strict)
+VirtualMemoryManager::VirtualMemoryManager(const char* name, const char* file_mapping_name, uptr base, size_t size, uptr upper_bounds /* = 0 */, bool strict /* = false */)
 	: m_name(name)
+	, m_file_handle(nullptr)
 	, m_baseptr(0)
 	, m_pageuse(nullptr)
 	, m_pages_reserved(0)
@@ -87,20 +88,46 @@ VirtualMemoryManager::VirtualMemoryManager(const wxString& name, uptr base, size
 	uptr reserved_bytes = pageAlign(size);
 	m_pages_reserved = reserved_bytes / __pagesize;
 
-	m_baseptr = (uptr)HostSys::MmapReserve(base, reserved_bytes);
-
-	if (!m_baseptr || (upper_bounds != 0 && (((uptr)m_baseptr + reserved_bytes) > upper_bounds)))
+	if (file_mapping_name && file_mapping_name[0])
 	{
-		DevCon.Warning(L"%s: host memory @ %ls -> %ls is unavailable; attempting to map elsewhere...",
-			WX_STR(m_name), pxsPtr(base), pxsPtr(base + size));
+		wxString real_file_mapping_name(HostSys::GetFileMappingName(file_mapping_name));
+		m_file_handle = HostSys::CreateSharedMemory(real_file_mapping_name, reserved_bytes);
+		if (!m_file_handle)
+			return;
 
-		SafeSysMunmap(m_baseptr, reserved_bytes);
-
-		if (base)
+		m_baseptr = (uptr)HostSys::MapSharedMemory(m_file_handle, 0, (void*)base, reserved_bytes, PageProtectionMode());
+		if (!m_baseptr || (upper_bounds != 0 && (((uptr)m_baseptr + reserved_bytes) > upper_bounds)))
 		{
-			// Let's try again at an OS-picked memory area, and then hope it meets needed
-			// boundschecking criteria below.
-			m_baseptr = (uptr)HostSys::MmapReserve(0, reserved_bytes);
+			DevCon.Warning(L"%s: host memory @ %ls -> %ls is unavailable; attempting to map elsewhere...",
+				WX_STR(m_name), pxsPtr(base), pxsPtr(base + size));
+
+			SafeSysMunmap(m_baseptr, reserved_bytes);
+
+			if (base)
+			{
+				// Let's try again at an OS-picked memory area, and then hope it meets needed
+				// boundschecking criteria below.
+				m_baseptr = (uptr)HostSys::MapSharedMemory(m_file_handle, 0, nullptr, reserved_bytes, PageProtectionMode());
+			}
+		}
+	}
+	else
+	{
+		m_baseptr = (uptr)HostSys::MmapReserve(base, reserved_bytes);
+
+		if (!m_baseptr || (upper_bounds != 0 && (((uptr)m_baseptr + reserved_bytes) > upper_bounds)))
+		{
+			DevCon.Warning(L"%s: host memory @ %ls -> %ls is unavailable; attempting to map elsewhere...",
+				WX_STR(m_name), pxsPtr(base), pxsPtr(base + size));
+
+			SafeSysMunmap(m_baseptr, reserved_bytes);
+
+			if (base)
+			{
+				// Let's try again at an OS-picked memory area, and then hope it meets needed
+				// boundschecking criteria below.
+				m_baseptr = (uptr)HostSys::MmapReserve(0, reserved_bytes);
+			}
 		}
 	}
 
@@ -111,7 +138,19 @@ VirtualMemoryManager::VirtualMemoryManager(const wxString& name, uptr base, size
 		fulfillsRequirements = false;
 	if (!fulfillsRequirements)
 	{
-		SafeSysMunmap(m_baseptr, reserved_bytes);
+		if (m_file_handle)
+		{
+			if (m_baseptr)
+				HostSys::UnmapSharedMemory((void*)m_baseptr, reserved_bytes);
+			m_baseptr = 0;
+
+			HostSys::DestroySharedMemory(m_file_handle);
+			m_file_handle = nullptr;
+		}
+		else
+		{
+			SafeSysMunmap(m_baseptr, reserved_bytes);
+		}
 	}
 
 	if (!m_baseptr)
@@ -135,7 +174,14 @@ VirtualMemoryManager::~VirtualMemoryManager()
 	if (m_pageuse)
 		delete[] m_pageuse;
 	if (m_baseptr)
-		HostSys::Munmap(m_baseptr, m_pages_reserved * __pagesize);
+	{
+		if (m_file_handle)
+			HostSys::UnmapSharedMemory((void*)m_baseptr, m_pages_reserved * __pagesize);
+		else
+			HostSys::Munmap(m_baseptr, m_pages_reserved * __pagesize);
+	}
+	if (m_file_handle)
+		HostSys::DestroySharedMemory(m_file_handle);
 }
 
 static bool VMMMarkPagesAsInUse(std::atomic<bool>* begin, std::atomic<bool>* end)
@@ -312,7 +358,10 @@ void VirtualMemoryReserve::Reset()
 		return;
 
 	ReprotectCommittedBlocks(PageAccess_None());
-	HostSys::MmapResetPtr(m_baseptr, m_pages_commited * __pagesize);
+
+	if (!m_allocator->IsSharedMemory())
+		HostSys::MmapResetPtr(m_baseptr, m_pages_commited * __pagesize);
+
 	m_pages_commited = 0;
 }
 
@@ -333,6 +382,14 @@ bool VirtualMemoryReserve::Commit()
 		return true;
 
 	m_pages_commited = m_pages_reserved;
+
+	if (m_allocator->IsSharedMemory())
+	{
+		// shared memory is always commited, but may still be lazily allocated
+		HostSys::MemProtect(m_baseptr, m_pages_commited * __pagesize, m_prot_mode);
+		return true;
+	}
+
 	return HostSys::MmapCommitPtr(m_baseptr, m_pages_reserved * __pagesize, m_prot_mode);
 }
 

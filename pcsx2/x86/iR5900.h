@@ -22,6 +22,9 @@
 #include "iCore.h"
 #include "R5900_Profiler.h"
 
+// Register containing a pointer to our fastmem (4GB) area
+#define RFASTMEMBASE x86Emitter::rbp
+
 extern u32 maxrecmem;
 extern u32 pc;             // recompiler pc
 extern int g_branch;       // set for branch
@@ -61,6 +64,10 @@ extern bool s_nBlockInterlocked; // Current block has VU0 interlocking
 	}
 
 extern bool g_recompilingDelaySlot;
+
+// Used for generating backpatch thunks for fastmem.
+u8* recBeginThunk();
+u8* recEndThunk();
 
 // used when processing branches
 void SaveBranchState();
@@ -112,6 +119,7 @@ u32* _eeGetConstReg(int reg);
 
 // finds where the GPR is stored and moves lower 32 bits to EAX
 void _eeMoveGPRtoR(const x86Emitter::xRegister32& to, int fromgpr);
+void _eeMoveGPRtoR(const x86Emitter::xRegister64& to, int fromgpr);
 void _eeMoveGPRtoM(uptr to, int fromgpr);
 void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr);
 void _signExtendToMem(void* mem);

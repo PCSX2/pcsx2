@@ -244,11 +244,11 @@ static void __fastcall nullWrite32(u32 mem, mem32_t value)
 {
 	MEM_LOG("Write uninstalled memory at address %08x", mem);
 }
-static void __fastcall nullWrite64(u32 mem, const mem64_t *value)
+static void TAKES_R64 nullWrite64(u32 mem, r64 value)
 {
 	MEM_LOG("Write uninstalled memory at address %08x", mem);
 }
-static void __fastcall nullWrite128(u32 mem, const mem128_t *value)
+static void TAKES_R128 nullWrite128(u32 mem, r128 value)
 {
 	MEM_LOG("Write uninstalled memory at address %08x", mem);
 }
@@ -416,7 +416,7 @@ static void __fastcall _ext_memWrite32(u32 mem, mem32_t value)
 }
 
 template<int p>
-static void __fastcall _ext_memWrite64(u32 mem, const mem64_t* value)
+static void TAKES_R64 _ext_memWrite64(u32 mem, r64 value)
 {
 
 	/*switch (p) {
@@ -427,12 +427,13 @@ static void __fastcall _ext_memWrite64(u32 mem, const mem64_t* value)
 		//	gsWrite64(mem & ~0xa0000000, *value); return;
 	}*/
 
-	MEM_LOG("Unknown Memory write64  to  address %x with data %8.8x_%8.8x", mem, (u32)(*value>>32), (u32)*value);
+	const u64 uvalue = r64_to_u64(value);
+	MEM_LOG("Unknown Memory write64  to  address %x with data %8.8x_%8.8x", mem, (u32)(uvalue>>32), (u32)uvalue);
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
 template<int p>
-static void __fastcall _ext_memWrite128(u32 mem, const mem128_t *value)
+static void TAKES_R128 _ext_memWrite128(u32 mem, r128 value)
 {
 	/*switch (p) {
 		//case 1: // hwm
@@ -444,7 +445,8 @@ static void __fastcall _ext_memWrite128(u32 mem, const mem128_t *value)
 		//	gsWrite64(mem+8, value[1]); return;
 	}*/
 
-	MEM_LOG("Unknown Memory write128 to  address %x with data %8.8x_%8.8x_%8.8x_%8.8x", mem, ((u32*)value)[3], ((u32*)value)[2], ((u32*)value)[1], ((u32*)value)[0]);
+	alignas(16) const u128 uvalue = r128_to_u128(value);
+	MEM_LOG("Unknown Memory write128 to  address %x with data %8.8x_%8.8x_%8.8x_%8.8x", mem, uvalue._u32[3], uvalue._u32[2], uvalue._u32[1], uvalue._u32[0]);
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
@@ -536,31 +538,34 @@ template<int vunum> static void __fc vuMicroWrite32(u32 addr, mem32_t data) {
 		*(u32*)&vu->Micro[addr] =data;
 	}
 }
-template<int vunum> static void __fc vuMicroWrite64(u32 addr, const mem64_t* data) {
+template<int vunum> static void TAKES_R64 vuMicroWrite64(u32 addr, r64 data) {
 	VURegs* vu = vunum ?  &VU1 :  &VU0;
 	addr      &= vunum ? 0x3fff: 0xfff;
 
 	if (vunum && THREAD_VU1) {
-		vu1Thread.WriteMicroMem(addr, (void*)data, sizeof(u64));
+		const u64 udata = r64_to_u64(data);
+		vu1Thread.WriteMicroMem(addr, &udata, sizeof(u64));
 		return;
 	}
 	
-	if (*(u64*)&vu->Micro[addr]!=data[0]) {
+	if (*(u64*)&vu->Micro[addr]!=r64_to_u64(data)) {
 		ClearVuFunc<vunum>(addr, 8);
-		*(u64*)&vu->Micro[addr] =data[0];
+		*(u64*)&vu->Micro[addr] =r64_to_u64(data);
 	}
 }
-template<int vunum> static void __fc vuMicroWrite128(u32 addr, const mem128_t* data) {
+template<int vunum> static void TAKES_R128 vuMicroWrite128(u32 addr, r128 data) {
 	VURegs* vu = vunum ?  &VU1 :  &VU0;
 	addr      &= vunum ? 0x3fff: 0xfff;
 
+	const u128 udata = r128_to_u128(data);
+
 	if (vunum && THREAD_VU1) {
-		vu1Thread.WriteMicroMem(addr, (void*)data, sizeof(u128));
+		vu1Thread.WriteMicroMem(addr, &udata, sizeof(u128));
 		return;
 	}
-	if ((u128&)vu->Micro[addr]!=*data) {
+	if ((u128&)vu->Micro[addr]!=udata) {
 		ClearVuFunc<vunum>(addr, 16);
-		CopyQWC(&vu->Micro[addr],data);
+		r128_store_unaligned(&vu->Micro[addr],data);
 	}
 }
 
@@ -624,23 +629,25 @@ template<int vunum> static void __fc vuDataWrite32(u32 addr, mem32_t data) {
 	}
 	*(u32*)&vu->Mem[addr] = data;
 }
-template<int vunum> static void __fc vuDataWrite64(u32 addr, const mem64_t* data) {
+template<int vunum> static void TAKES_R64 vuDataWrite64(u32 addr, r64 data) {
 	VURegs* vu = vunum ?  &VU1 :  &VU0;
 	addr      &= vunum ? 0x3fff: 0xfff;
 	if (vunum && THREAD_VU1) {
-		vu1Thread.WriteDataMem(addr, (void*)data, sizeof(u64));
+		const u64 udata = r64_to_u64(data);
+		vu1Thread.WriteDataMem(addr, &udata, sizeof(u64));
 		return;
 	}
-	*(u64*)&vu->Mem[addr] = data[0];
+	r64_store(&vu->Mem[addr], data);
 }
-template<int vunum> static void __fc vuDataWrite128(u32 addr, const mem128_t* data) {
+template<int vunum> static void TAKES_R128 vuDataWrite128(u32 addr, r128 data) {
 	VURegs* vu = vunum ?  &VU1 :  &VU0;
 	addr      &= vunum ? 0x3fff: 0xfff;
 	if (vunum && THREAD_VU1) {
-		vu1Thread.WriteDataMem(addr, (void*)data, sizeof(u128));
+		alignas(16) const u128 udata = r128_to_u128(data);
+		vu1Thread.WriteDataMem(addr, &udata, sizeof(u128));
 		return;
 	}
-	CopyQWC(&vu->Mem[addr], data);
+	r128_store_unaligned(&vu->Mem[addr], data);
 }
 
 
@@ -931,7 +938,7 @@ vtlb_ProtectionMode mmap_GetRamPageInfo( u32 paddr )
 	uptr ptr = (uptr)PSM( paddr );
 	uptr rampage = ptr - (uptr)eeMem->Main;
 
-	if (rampage >= Ps2MemSize::MainRam)
+	if (!ptr || rampage >= Ps2MemSize::MainRam)
 		return ProtMode_NotRequired; //not in ram, no tracking done ...
 
 	rampage >>= 12;
@@ -964,6 +971,7 @@ void mmap_MarkCountedRamPage( u32 paddr )
 
 	m_PageProtectInfo[rampage].Mode = ProtMode_Write;
 	HostSys::MemProtect( &eeMem->Main[rampage<<12], __pagesize, PageAccess_ReadOnly() );
+	vtlb_UpdateFastmemProtection(rampage << 12, __pagesize, PageAccess_ReadOnly());
 }
 
 // offset - offset of address relative to psM.
@@ -981,6 +989,7 @@ static __fi void mmap_ClearCpuBlock( uint offset )
 		"Attempted to clear a block that is already under manual protection." );
 
 	HostSys::MemProtect( &eeMem->Main[rampage<<12], __pagesize, PageAccess_ReadWrite() );
+	vtlb_UpdateFastmemProtection(rampage << 12, __pagesize, PageAccess_ReadWrite());
 	m_PageProtectInfo[rampage].Mode = ProtMode_Manual;
 	Cpu->Clear( m_PageProtectInfo[rampage].ReverseRamMap, 0x400 );
 }
@@ -989,12 +998,37 @@ void mmap_PageFaultHandler::OnPageFaultEvent( const PageFaultInfo& info, bool& h
 {
 	pxAssert( eeMem );
 
-	// get bad virtual address
-	uptr offset = info.addr - (uptr)eeMem->Main;
-	if( offset >= Ps2MemSize::MainRam ) return;
+	u32 vaddr;
+	if (CHECK_FASTMEM && vtlb_GetGuestAddress(info.addr, &vaddr))
+	{
+		// this was inside the fastmem area. check if it's a code page
+		// fprintf(stderr, "Fault on fastmem %p vaddr %08X\n", info.addr, vaddr);
 
-	mmap_ClearCpuBlock( offset );
-	handled = true;
+		uptr ptr = (uptr)PSM(vaddr);
+		uptr offset = (ptr - (uptr)eeMem->Main);
+		if (ptr && m_PageProtectInfo[offset >> 12].Mode == ProtMode_Write)
+		{
+			// fprintf(stderr, "Not backpatching code write at %08X\n", vaddr);
+			mmap_ClearCpuBlock(offset);
+			handled = true;
+		}
+		else
+		{
+			// fprintf(stderr, "Trying backpatching vaddr %08X\n", vaddr);
+			if (vtlb_BackpatchLoadStore(info.pc, info.addr))
+				handled = true;
+		}
+	}
+	else
+	{
+		// get bad virtual address
+		uptr offset = info.addr - (uptr)eeMem->Main;
+		if (offset >= Ps2MemSize::MainRam)
+			return;
+
+		mmap_ClearCpuBlock(offset);
+		handled = true;
+	}
 }
 
 // Clears all block tracking statuses, manual protection flags, and write protection.

@@ -30,10 +30,12 @@
 
 struct PageFaultInfo
 {
+	uptr pc;
 	uptr addr;
 
-	PageFaultInfo(uptr address)
+	PageFaultInfo(uptr pc_, uptr address)
 	{
+		pc = pc_;
 		addr = address;
 	}
 };
@@ -134,6 +136,7 @@ class VirtualMemoryManager
 
 	wxString m_name;
 
+	void* m_file_handle;
 	uptr m_baseptr;
 
 	// An array to track page usage (to trigger asserts if things try to overlap)
@@ -146,10 +149,13 @@ public:
 	// If upper_bounds is nonzero and the OS fails to allocate memory that is below it,
 	// calls to IsOk() will return false and Alloc() will always return null pointers
 	// strict indicates that the allocation should quietly fail if the memory can't be mapped at `base`
-	VirtualMemoryManager(const wxString& name, uptr base, size_t size, uptr upper_bounds = 0, bool strict = false);
+	VirtualMemoryManager(const char* name, const char* file_mapping_name, uptr base, size_t size, uptr upper_bounds = 0, bool strict = false);
 	~VirtualMemoryManager();
 
+	bool IsSharedMemory() const { return (m_file_handle != nullptr); }
+	void* GetFileHandle() const { return m_file_handle; }
 	void* GetBase() const { return (void*)m_baseptr; }
+	void* GetEnd() const { return (void*)(m_baseptr + m_pages_reserved * __pagesize); }
 
 	// Request the use of the memory at offsetLocation bytes from the start of the reserved memory area
 	// offsetLocation must be page-aligned

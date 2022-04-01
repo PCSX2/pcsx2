@@ -42,10 +42,10 @@ class RecompiledCodeReserve;
 
 namespace HostMemoryMap
 {
-	static const u32 Size = 0x28000000;
-
-	// The actual addresses may not be equivalent to Base + Offset in the event that allocation at Base failed
-	// Each of these offsets has a debugger-accessible equivalent variable without the Offset suffix that will hold the actual address (not here because we don't want code using it)
+	//////////////////////////////////////////////////////////////////////////
+	// Main
+	//////////////////////////////////////////////////////////////////////////
+	static const u32 MainSize = 0x14000000;
 
 	// PS2 main memory, SPR, and ROMs
 	static const u32 EEmemOffset   = 0x00000000;
@@ -56,27 +56,36 @@ namespace HostMemoryMap
 	// VU0 and VU1 memory.
 	static const u32 VUmemOffset   = 0x08000000;
 
+	// Bump allocator for any other small allocations
+	// size: Difference between it and HostMemoryMap::Size, so nothing should allocate higher than it!
+	static const u32 bumpAllocatorOffset = 0x10000000;
+
+	//////////////////////////////////////////////////////////////////////////
+	// Code
+	//////////////////////////////////////////////////////////////////////////
+	static const u32 CodeSize = 0x14800000;
+
 	// EE recompiler code cache area (64mb)
-	static const u32 EErecOffset   = 0x10000000;
+	static const u32 EErecOffset   = 0x00000000;
 
 	// IOP recompiler code cache area (16 or 32mb)
-	static const u32 IOPrecOffset  = 0x14000000;
+	static const u32 IOPrecOffset  = 0x04000000;
 
 	// newVif0 recompiler code cache area (16mb)
-	static const u32 VIF0recOffset = 0x16000000;
+	static const u32 VIF0recOffset = 0x06000000;
 
 	// newVif1 recompiler code cache area (32mb)
-	static const u32 VIF1recOffset = 0x18000000;
+	static const u32 VIF1recOffset = 0x08000000;
 
 	// microVU1 recompiler code cache area (32 or 64mb)
-	static const u32 mVU0recOffset = 0x1C000000;
+	static const u32 mVU0recOffset = 0x0C000000;
 
 	// microVU0 recompiler code cache area (64mb)
-	static const u32 mVU1recOffset = 0x20000000;
+	static const u32 mVU1recOffset = 0x10000000;
 
 	// Bump allocator for any other small allocations
 	// size: Difference between it and HostMemoryMap::Size, so nothing should allocate higher than it!
-	static const u32 bumpAllocatorOffset = 0x24000000;
+	static const u32 codeBumpAllocatorOffset = 0x14000000;
 }
 
 // --------------------------------------------------------------------------------------
@@ -87,17 +96,24 @@ class SysMainMemory
 {
 protected:
 	const VirtualMemoryManagerPtr m_mainMemory;
-	VirtualMemoryBumpAllocator    m_bumpAllocator;
-	eeMemoryReserve               m_ee;
-	iopMemoryReserve              m_iop;
-	vuMemoryReserve               m_vu;
+	const VirtualMemoryManagerPtr m_codeMemory;
+
+	VirtualMemoryBumpAllocator m_bumpAllocator;
+	VirtualMemoryBumpAllocator m_codeBumpAllocator;
+
+	eeMemoryReserve m_ee;
+	iopMemoryReserve m_iop;
+	vuMemoryReserve m_vu;
 
 public:
 	SysMainMemory();
 	virtual ~SysMainMemory();
 
-	const VirtualMemoryManagerPtr& MainMemory()    { return m_mainMemory; }
-	VirtualMemoryBumpAllocator&    BumpAllocator() { return m_bumpAllocator; }
+	const VirtualMemoryManagerPtr& MainMemory() { return m_mainMemory; }
+	const VirtualMemoryManagerPtr& CodeMemory() { return m_codeMemory; }
+
+	VirtualMemoryBumpAllocator& BumpAllocator() { return m_bumpAllocator; }
+	VirtualMemoryBumpAllocator& CodeBumpAllocator() { return m_codeBumpAllocator; }
 
 	virtual void ReserveAll();
 	virtual void CommitAll();

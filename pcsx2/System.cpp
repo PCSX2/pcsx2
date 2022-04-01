@@ -343,23 +343,24 @@ namespace HostMemoryMap {
 }
 
 /// Attempts to find a spot near static variables for the main memory
-static VirtualMemoryManagerPtr makeMainMemoryManager() {
+static VirtualMemoryManagerPtr makeMemoryManager(const char* name, const char* file_mapping_name, size_t size, size_t offset_from_base)
+{
 	// Everything looks nicer when the start of all the sections is a nice round looking number.
 	// Also reduces the variation in the address due to small changes in code.
 	// Breaks ASLR but so does anything else that tries to make addresses constant for our debugging pleasure
-	uptr codeBase = (uptr)(void*)makeMainMemoryManager / (1 << 28) * (1 << 28);
+	uptr codeBase = (uptr)(void*)makeMemoryManager / (1 << 28) * (1 << 28);
 
 	// The allocation is ~640mb in size, slighly under 3*2^28.
 	// We'll hope that the code generated for the PCSX2 executable stays under 512mb (which is likely)
 	// On x86-64, code can reach 8*2^28 from its address [-6*2^28, 4*2^28] is the region that allows for code in the 640mb allocation to reach 512mb of code that either starts at codeBase or 256mb before it.
 	// We start high and count down because on macOS code starts at the beginning of useable address space, so starting as far ahead as possible reduces address variations due to code size.  Not sure about other platforms.  Obviously this only actually affects what shows up in a debugger and won't affect performance or correctness of anything.
 	for (int offset = 4; offset >= -6; offset--) {
-		uptr base = codeBase + (offset << 28);
-		if ((sptr)base < 0 || (sptr)(base + HostMemoryMap::Size - 1) < 0) {
+		uptr base = codeBase + (offset << 28) + offset_from_base;
+		if ((sptr)base < 0 || (sptr)(base + size - 1) < 0) {
 			// VTLB will throw a fit if we try to put EE main memory here
 			continue;
 		}
-		auto mgr = std::make_shared<VirtualMemoryManager>("Main Memory Manager", base, HostMemoryMap::Size, /*upper_bounds=*/0, /*strict=*/true);
+		auto mgr = std::make_shared<VirtualMemoryManager>(name, file_mapping_name, base, size, /*upper_bounds=*/0, /*strict=*/true);
 		if (mgr->IsOk()) {
 			return mgr;
 		}
@@ -368,29 +369,32 @@ static VirtualMemoryManagerPtr makeMainMemoryManager() {
 	// If the above failed and it's x86-64, recompiled code is going to break!
 	// If it's i386 anything can reach anything so it doesn't matter
 	if (sizeof(void*) == 8) {
-		pxAssertRel(0, "Failed to find a good place for the main memory allocation, recompilers may fail");
+		pxAssertRel(0, "Failed to find a good place for the memory allocation, recompilers may fail");
 	}
-	return std::make_shared<VirtualMemoryManager>("Main Memory Manager", 0, HostMemoryMap::Size);
+	return std::make_shared<VirtualMemoryManager>(name, file_mapping_name, 0, size);
 }
 
 // --------------------------------------------------------------------------------------
 //  SysReserveVM  (implementations)
 // --------------------------------------------------------------------------------------
 SysMainMemory::SysMainMemory()
-	: m_mainMemory(makeMainMemoryManager())
-	, m_bumpAllocator(m_mainMemory, HostMemoryMap::bumpAllocatorOffset, HostMemoryMap::Size - HostMemoryMap::bumpAllocatorOffset)
+	: m_mainMemory(makeMemoryManager("Main Memory Manager", "pcsx2", HostMemoryMap::MainSize, 0))
+	, m_codeMemory(makeMemoryManager("Code Memory Manager", nullptr, HostMemoryMap::CodeSize, HostMemoryMap::MainSize))
+	, m_bumpAllocator(m_mainMemory, HostMemoryMap::bumpAllocatorOffset, HostMemoryMap::MainSize - HostMemoryMap::bumpAllocatorOffset)
+	, m_codeBumpAllocator(m_codeMemory, HostMemoryMap::codeBumpAllocatorOffset, HostMemoryMap::CodeSize - HostMemoryMap::codeBumpAllocatorOffset)
 {
-	uptr base = (uptr)MainMemory()->GetBase();
-	HostMemoryMap::EEmem   = base + HostMemoryMap::EEmemOffset;
-	HostMemoryMap::IOPmem  = base + HostMemoryMap::IOPmemOffset;
-	HostMemoryMap::VUmem   = base + HostMemoryMap::VUmemOffset;
-	HostMemoryMap::EErec   = base + HostMemoryMap::EErecOffset;
-	HostMemoryMap::IOPrec  = base + HostMemoryMap::IOPrecOffset;
-	HostMemoryMap::VIF0rec = base + HostMemoryMap::VIF0recOffset;
-	HostMemoryMap::VIF1rec = base + HostMemoryMap::VIF1recOffset;
-	HostMemoryMap::mVU0rec = base + HostMemoryMap::mVU0recOffset;
-	HostMemoryMap::mVU1rec = base + HostMemoryMap::mVU1recOffset;
-	HostMemoryMap::bumpAllocator = base + HostMemoryMap::bumpAllocatorOffset;
+	uptr main_base = (uptr)MainMemory()->GetBase();
+	uptr code_base = (uptr)MainMemory()->GetBase();
+	HostMemoryMap::EEmem   = main_base + HostMemoryMap::EEmemOffset;
+	HostMemoryMap::IOPmem  = main_base + HostMemoryMap::IOPmemOffset;
+	HostMemoryMap::VUmem   = main_base + HostMemoryMap::VUmemOffset;
+	HostMemoryMap::EErec   = code_base + HostMemoryMap::EErecOffset;
+	HostMemoryMap::IOPrec  = code_base + HostMemoryMap::IOPrecOffset;
+	HostMemoryMap::VIF0rec = code_base + HostMemoryMap::VIF0recOffset;
+	HostMemoryMap::VIF1rec = code_base + HostMemoryMap::VIF1recOffset;
+	HostMemoryMap::mVU0rec = code_base + HostMemoryMap::mVU0recOffset;
+	HostMemoryMap::mVU1rec = code_base + HostMemoryMap::mVU1recOffset;
+	HostMemoryMap::bumpAllocator = main_base + HostMemoryMap::bumpAllocatorOffset;
 }
 
 SysMainMemory::~SysMainMemory()

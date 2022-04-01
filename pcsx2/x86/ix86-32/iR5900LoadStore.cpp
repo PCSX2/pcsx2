@@ -23,8 +23,8 @@
 
 using namespace x86Emitter;
 
-#define REC_STORES
-#define REC_LOADS
+//#define REC_STORES
+//#define REC_LOADS
 
 namespace R5900 {
 namespace Dynarec {
@@ -100,14 +100,14 @@ alignas(16) u32 dummyValue[4];
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-void recLoad64(u32 bits, bool sign)
+static void recLoadQuad(u32 bits, bool sign)
 {
-	pxAssume(bits == 64 || bits == 128);
+	pxAssume(bits == 128);
 
 	// Load arg2 with the destination.
 	// 64/128 bit modes load the result directly into the cpuRegs.GPR struct.
 
-	int gprreg = ((bits == 128) && _Rt_) ? _Rt_ : -1;
+	int gprreg = _Rt_ ? _Rt_ : -1;
 	int reg;
 
 	if (GPR_IS_CONST1(_Rs_))
@@ -119,12 +119,12 @@ void recLoad64(u32 bits, bool sign)
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);
 
-		reg = vtlb_DynGenRead64_Const(bits, srcadr, gprreg);
+		reg = vtlb_DynGenReadQuad_Const(bits, srcadr, gprreg);
 	}
 	else
 	{
 		// Load ECX with the source memory address that we're reading from.
-		_eeMoveGPRtoR(arg1regd, _Rs_);
+		_eeMoveGPRtoR(arg1reg, _Rs_);
 		if (_Imm_ != 0)
 			xADD(arg1regd, _Imm_);
 		if (bits == 128) // force 16 byte alignment on 128 bit reads
@@ -134,7 +134,7 @@ void recLoad64(u32 bits, bool sign)
 		_deleteEEreg(_Rt_, 0);
 
 		iFlushCall(FLUSH_FULLVTLB);
-		reg = vtlb_DynGenRead64(bits, gprreg);
+		reg = vtlb_DynGenReadQuad(bits, gprreg);
 	}
 
 	if (gprreg == -1)
@@ -148,9 +148,9 @@ void recLoad64(u32 bits, bool sign)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-void recLoad32(u32 bits, bool sign)
+static void recLoadNonQuad(u32 bits, bool sign)
 {
-	pxAssume(bits <= 32);
+	pxAssume(bits <= 64);
 
 	// 8/16/32 bit modes return the loaded value in EAX.
 
@@ -161,7 +161,7 @@ void recLoad32(u32 bits, bool sign)
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);
 
-		vtlb_DynGenRead32_Const(bits, sign, srcadr);
+		vtlb_DynGenReadNonQuad_Const(bits, sign, srcadr);
 	}
 	else
 	{
@@ -174,23 +174,17 @@ void recLoad32(u32 bits, bool sign)
 		_deleteEEreg(_Rt_, 0);
 
 		iFlushCall(FLUSH_FULLVTLB);
-		vtlb_DynGenRead32(bits, sign);
+		vtlb_DynGenReadNonQuad(bits, sign);
 	}
 
 	if (_Rt_)
-	{
-		// EAX holds the loaded value, so sign extend as needed:
-		if (sign)
-			xCDQE();
-
 		xMOV(ptr64[&cpuRegs.GPR.r[_Rt_].UD[0]], rax);
-	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
 
-void recStore(u32 bits)
+static void recStore(u32 bits)
 {
 	// Performance note: Const prop for the store address is good, always.
 	// Constprop for the value being stored is not really worthwhile (better to use register
@@ -199,14 +193,16 @@ void recStore(u32 bits)
 	// Load EDX first with the value being written, or the address of the value
 	// being written (64/128 bit modes).
 
-	if (bits < 64)
+	if (bits < 128)
 	{
-		_eeMoveGPRtoR(arg2regd, _Rt_);
+		_eeMoveGPRtoR(arg2reg, _Rt_);
 	}
-	else if (bits == 128 || bits == 64)
+	else
 	{
 		_flushEEreg(_Rt_); // flush register to mem
-		xLEA(arg2reg, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+		int rpreg = _allocTempXMMreg(XMMT_INT, 1);
+		xMOVAPS(xRegisterSSE(rpreg), ptr128[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+		_freeXMMreg(rpreg);
 	}
 
 	// Load ECX with the destination address, or issue a direct optimized write
@@ -237,14 +233,14 @@ void recStore(u32 bits)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-void recLB()  { recLoad32(  8, true);  EE::Profiler.EmitOp(eeOpcode::LB); }
-void recLBU() { recLoad32(  8, false); EE::Profiler.EmitOp(eeOpcode::LBU); }
-void recLH()  { recLoad32( 16, true);  EE::Profiler.EmitOp(eeOpcode::LH); }
-void recLHU() { recLoad32( 16, false); EE::Profiler.EmitOp(eeOpcode::LHU); }
-void recLW()  { recLoad32( 32, true);  EE::Profiler.EmitOp(eeOpcode::LW); }
-void recLWU() { recLoad32( 32, false); EE::Profiler.EmitOp(eeOpcode::LWU); }
-void recLD()  { recLoad64( 64, false); EE::Profiler.EmitOp(eeOpcode::LD); }
-void recLQ()  { recLoad64(128, false); EE::Profiler.EmitOp(eeOpcode::LQ); }
+void recLB()  { recLoadNonQuad(  8, true);  EE::Profiler.EmitOp(eeOpcode::LB); }
+void recLBU() { recLoadNonQuad(  8, false); EE::Profiler.EmitOp(eeOpcode::LBU); }
+void recLH()  { recLoadNonQuad( 16, true);  EE::Profiler.EmitOp(eeOpcode::LH); }
+void recLHU() { recLoadNonQuad( 16, false); EE::Profiler.EmitOp(eeOpcode::LHU); }
+void recLW()  { recLoadNonQuad( 32, true);  EE::Profiler.EmitOp(eeOpcode::LW); }
+void recLWU() { recLoadNonQuad( 32, false); EE::Profiler.EmitOp(eeOpcode::LWU); }
+void recLD()  { recLoadNonQuad( 64, false); EE::Profiler.EmitOp(eeOpcode::LD); }
+void recLQ()  { recLoadQuad(128, false); EE::Profiler.EmitOp(eeOpcode::LQ); }
 
 void recSB()  { recStore(  8); EE::Profiler.EmitOp(eeOpcode::SB); }
 void recSH()  { recStore( 16); EE::Profiler.EmitOp(eeOpcode::SH); }
@@ -270,7 +266,7 @@ void recLWL()
 	xSHL(calleeSavedReg1d, 3);
 
 	xAND(arg1regd, ~3);
-	vtlb_DynGenRead32(32, false);
+	vtlb_DynGenReadNonQuad(32, false);
 
 	if (!_Rt_)
 		return;
@@ -314,7 +310,7 @@ void recLWR()
 	xMOV(calleeSavedReg1d, arg1regd);
 
 	xAND(arg1regd, ~3);
-	vtlb_DynGenRead32(32, false);
+	vtlb_DynGenReadNonQuad(32, false);
 
 	if (!_Rt_)
 		return;
@@ -367,7 +363,7 @@ void recSWL()
 	xForwardJE8 skip;
 		xSHL(calleeSavedReg1d, 3);
 
-		vtlb_DynGenRead32(32, false);
+		vtlb_DynGenReadNonQuad(32, false);
 
 		// mask read -> arg2
 		xMOV(ecx, calleeSavedReg1d);
@@ -423,7 +419,7 @@ void recSWR()
 	xForwardJE8 skip;
 		xSHL(calleeSavedReg1d, 3);
 
-		vtlb_DynGenRead32(32, false);
+		vtlb_DynGenReadNonQuad(32, false);
 
 		// mask read -> edx
 		xMOV(ecx, 24);
@@ -506,7 +502,7 @@ void recLDL()
 	if (!_Rt_)
 		return;
 
-#ifdef LOADSTORE_RECOMPILE
+#ifdef REC_LOADS
 	int t2reg;
 
 	if (GPR_IS_CONST1(_Rt_))
@@ -539,7 +535,7 @@ void recLDL()
 
 		iFlushCall(FLUSH_FULLVTLB);
 
-		t2reg = vtlb_DynGenRead64(64, -1);
+		t2reg = vtlb_DynGenReadQuad(64, -1);
 	}
 	
 	int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ | MODE_WRITE);
@@ -588,7 +584,7 @@ void recLDR()
 	if (!_Rt_)
 		return;
 
-#ifdef LOADSTORE_RECOMPILE
+#ifdef REC_LOADS
 	int t2reg;
 	
 	if (GPR_IS_CONST1(_Rt_))
@@ -621,7 +617,7 @@ void recLDR()
 
 		iFlushCall(FLUSH_FULLVTLB);
 
-		t2reg = vtlb_DynGenRead64(64, -1);
+		t2reg = vtlb_DynGenReadQuad(64, -1);
 	}
 
 	int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ | MODE_WRITE);
@@ -678,9 +674,6 @@ static void sdlrhelper_const(int maskamt, const xImplSimd_Shift& maskshift, int 
 	shift.Q(rt, amt);
 	xPOR(rt, t0);
 
-	xLEA(arg2reg, ptr[&dummyValue[0]]);
-	xMOVQ(ptr64[arg2reg], rt);
-
 	_freeXMMreg(t0reg);
 }
 
@@ -703,17 +696,15 @@ static void sdlrhelper(const xRegister32& maskamt, const xImplSimd_Shift& masksh
 	shift.Q(rt, t1);
 	xPOR(rt, t0);
 
-	xLEA(arg2reg, ptr[&dummyValue[0]]);
-	xMOVQ(ptr64[arg2reg], rt);
-
 	_freeXMMreg(t1reg);
 	_freeXMMreg(t0reg);
 }
 
 void recSDL()
 {
-#ifdef LOADSTORE_RECOMPILE
+#ifdef REC_STORES
 	_flushEEreg(_Rt_); // flush register to mem
+	_freeXMMreg(1);
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		u32 adr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
@@ -726,7 +717,7 @@ void recSDL()
 		else
 		{
 			int t2reg = vtlb_DynGenRead64_Const(64, aligned, -1);
-			int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
+			int rtreg = _allocGPRtoXMMreg(1, _Rt_, MODE_READ);
 			sdlrhelper_const(shift, xPSLL, 64 - shift, xPSRL, xRegisterSSE(t2reg), xRegisterSSE(rtreg));
 			_deleteGPRtoXMMreg(_Rt_, 3);
 			_freeXMMreg(t2reg);
@@ -740,34 +731,36 @@ void recSDL()
 		if (_Imm_ != 0)
 			xADD(arg1regd, _Imm_);
 
+		// iFlushCall frees this gpr
+		int rtreg = _allocGPRtoXMMreg(1, _Rt_, MODE_READ);
 		iFlushCall(FLUSH_FULLVTLB);
+
 		xMOV(calleeSavedReg1d, arg1regd);
 		xAND(arg1regd, ~0x07);
 		xAND(calleeSavedReg1d, 0x7);
 		xCMP(calleeSavedReg1d, 7);
 		xForwardJE8 skip;
 			xADD(calleeSavedReg1d, 1);
-			int t2reg = vtlb_DynGenRead64(64, -1);
-			int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
+			int t2reg = vtlb_DynGenReadQuad(64, -1);
 
 			//Calculate the shift from top bit to lowest
 			xMOV(edx, 64);
 			xSHL(calleeSavedReg1d, 3);
 			xSUB(edx, calleeSavedReg1d);
 
+			// ensure temps don't get allocated to rtreg
+			rtreg = _allocGPRtoXMMreg(rtreg, _Rt_, MODE_READ);
+
 			sdlrhelper(calleeSavedReg1d, xPSLL, edx, xPSRL, xRegisterSSE(t2reg), xRegisterSSE(rtreg));
 
-			_deleteGPRtoXMMreg(_Rt_, 3);
+			_freeXMMreg(rtreg);
 			_freeXMMreg(t2reg);
 
 			_eeMoveGPRtoR(arg1regd, _Rs_);
 			if (_Imm_ != 0)
 				xADD(arg1regd, _Imm_);
 			xAND(arg1regd, ~0x7);
-			xForwardJump8 end;
 		skip.SetTarget();
-			xLEA(arg2reg, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-		end.SetTarget();
 
 		iFlushCall(FLUSH_FULLVTLB);
 
@@ -785,8 +778,9 @@ void recSDL()
 ////////////////////////////////////////////////////
 void recSDR()
 {
-#ifdef LOADSTORE_RECOMPILE
+#ifdef REC_STORES
 	_flushEEreg(_Rt_); // flush register to mem
+	_freeXMMreg(1);
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		u32 adr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
@@ -799,7 +793,7 @@ void recSDR()
 		else
 		{
 			int t2reg = vtlb_DynGenRead64_Const(64, aligned, -1);
-			int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
+			int rtreg = _allocGPRtoXMMreg(1, _Rt_, MODE_READ);
 			sdlrhelper_const(64 - shift, xPSRL, shift, xPSLL, xRegisterSSE(t2reg), xRegisterSSE(rtreg));
 			_deleteGPRtoXMMreg(_Rt_, 3);
 			_freeXMMreg(t2reg);
@@ -814,31 +808,32 @@ void recSDR()
 		if (_Imm_ != 0)
 			xADD(arg1regd, _Imm_);
 
+		// iFlushCall frees this gpr
+		int rtreg = _allocGPRtoXMMreg(1, _Rt_, MODE_READ);
 		iFlushCall(FLUSH_FULLVTLB);
 		xMOV(calleeSavedReg1d, arg1regd);
 		xAND(arg1regd, ~0x07);
 		xAND(calleeSavedReg1d, 0x7);
 		xForwardJE8 skip;
-			int t2reg = vtlb_DynGenRead64(64, -1);
-			int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
+			int t2reg = vtlb_DynGenReadQuad(64, -1);
 
 			xMOV(edx, 64);
 			xSHL(calleeSavedReg1d, 3);
 			xSUB(edx, calleeSavedReg1d);
 
+			// ensure temps don't get allocated to rtreg
+			rtreg = _allocGPRtoXMMreg(rtreg, _Rt_, MODE_READ);
+
 			sdlrhelper(edx, xPSRL, calleeSavedReg1d, xPSLL, xRegisterSSE(t2reg), xRegisterSSE(rtreg));
 
-			_deleteGPRtoXMMreg(_Rt_, 3);
+			_freeXMMreg(rtreg);
 			_freeXMMreg(t2reg);
 
 			_eeMoveGPRtoR(arg1regd, _Rs_);
 			if (_Imm_ != 0)
 				xADD(arg1regd, _Imm_);
 			xAND(arg1regd, ~0x7);
-			xForwardJump8 end;
 		skip.SetTarget();
-			xLEA(arg2reg, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-		end.SetTarget();
 
 		iFlushCall(FLUSH_FULLVTLB);
 
@@ -871,7 +866,7 @@ void recLWC1()
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		int addr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-		vtlb_DynGenRead32_Const(32, false, addr);
+		vtlb_DynGenReadNonQuad_Const(32, false, addr);
 	}
 	else
 	{
@@ -881,7 +876,7 @@ void recLWC1()
 
 		iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenRead32(32, false);
+		vtlb_DynGenReadNonQuad(32, false);
 	}
 
 	xMOV(ptr32[&fpuRegs.fpr[_Rt_].UL], eax);
@@ -961,7 +956,7 @@ void recLQC2()
 	{
 		int addr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
 
-		gpr = vtlb_DynGenRead64_Const(128, addr, -1);
+		gpr = vtlb_DynGenReadQuad_Const(128, addr, -1);
 	}
 	else
 	{
@@ -971,7 +966,7 @@ void recLQC2()
 
 		iFlushCall(FLUSH_FULLVTLB);
 
-		gpr = vtlb_DynGenRead64(128, -1);
+		gpr = vtlb_DynGenReadQuad(128, -1);
 	}
 
 	if (_Rt_)
@@ -1005,7 +1000,9 @@ void recSQC2()
 	skip.SetTarget();
 	skipvuidle.SetTarget();
 
-	xLEA(arg2reg, ptr[&VU0.VF[_Ft_].UD[0]]);
+	int rpreg = _allocTempXMMreg(XMMT_INT, 1);
+	xMOVAPS(xRegisterSSE(rpreg), ptr128[&VU0.VF[_Ft_].UD[0]]);
+	_freeXMMreg(rpreg);
 
 	if (GPR_IS_CONST1(_Rs_))
 	{

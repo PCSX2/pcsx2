@@ -315,7 +315,7 @@ template< uint page >
 RETURNS_R64 hwRead64(u32 mem)
 {
 	r64 res = _hwRead64<page>(mem);
-	eeHwTraceLog(mem, *(u64*)&res, true);
+	eeHwTraceLog(mem, res, true);
 	return res;
 }
 
@@ -388,7 +388,7 @@ template< uint page >
 RETURNS_R128 hwRead128(u32 mem)
 {
 	r128 res = _hwRead128<page>(mem);
-	eeHwTraceLog(mem, *(mem128_t*)&res, true);
+	eeHwTraceLog(mem, res, true);
 	return res;
 }
 
