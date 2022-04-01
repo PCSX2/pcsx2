@@ -155,7 +155,7 @@ bool GSDevice11::Create(HostDisplay* display)
 	}
 
 	ShaderMacro sm_convert(m_shader_cache.GetFeatureLevel());
-	sm_convert.AddMacro("PS_SCALE_FACTOR", std::max(1u, GSConfig.UpscaleMultiplier));
+	sm_convert.AddMacro("PS_SCALE_FACTOR", GSConfig.UpscaleMultiplier);
 
 	D3D_SHADER_MACRO* sm_convert_ptr = sm_convert.GetPtr();
 

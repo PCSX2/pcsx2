@@ -1369,8 +1369,6 @@ void GSApp::Init()
 	m_default_configuration["PrecacheTextureReplacements"]                = "0";
 	m_default_configuration["preload_frame_with_gs_data"]                 = "0";
 	m_default_configuration["Renderer"]                                   = std::to_string(static_cast<int>(GSRendererType::Auto));
-	m_default_configuration["resx"]                                       = "1024";
-	m_default_configuration["resy"]                                       = "1024";
 	m_default_configuration["save"]                                       = "0";
 	m_default_configuration["savef"]                                      = "0";
 	m_default_configuration["savel"]                                      = "5000";
