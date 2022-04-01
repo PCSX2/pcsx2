@@ -550,6 +550,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 
 	GSSettingIntEnumEx(Renderer, "Renderer");
 	GSSettingIntEx(UpscaleMultiplier, "upscale_multiplier");
+	UpscaleMultiplier = std::clamp(UpscaleMultiplier, 1u, 8u);
 
 	GSSettingIntEnumEx(HWMipmap, "mipmap_hw");
 	GSSettingIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");

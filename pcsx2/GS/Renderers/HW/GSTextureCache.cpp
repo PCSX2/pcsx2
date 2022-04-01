@@ -1406,14 +1406,6 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		{
 			switch(m_renderer->GetUpscaleMultiplier())
 			{
-				case 0: //Custom Resolution
-				{
-					const float offset = 0.2f;
-					modx = dst->m_texture->GetScale().x + offset;
-					mody = dst->m_texture->GetScale().y + offset;
-					dst->m_texture->LikelyOffset = true;
-					break;
-				}
 				case 2:  modx = 2.2f; mody = 2.2f; dst->m_texture->LikelyOffset = true;  break;
 				case 3:  modx = 3.1f; mody = 3.1f; dst->m_texture->LikelyOffset = true;  break;
 				case 4:  modx = 4.2f; mody = 4.2f; dst->m_texture->LikelyOffset = true;  break;

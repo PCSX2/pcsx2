@@ -49,7 +49,6 @@ public:
 	virtual void KeyEvent(const HostKeyEvent& e);
 	virtual bool CanUpscale() { return false; }
 	virtual int GetUpscaleMultiplier() { return 1; }
-	virtual GSVector2i GetCustomResolution() { return GSVector2i(0, 0); }
 	virtual GSVector2 GetTextureScaleFactor() { return { 1.0f, 1.0f }; }
 	GSVector2i GetInternalResolution();
 

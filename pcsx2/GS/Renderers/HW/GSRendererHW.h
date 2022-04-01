@@ -25,8 +25,6 @@ class GSRendererHW : public GSRenderer
 private:
 	int m_width;
 	int m_height;
-	int m_custom_width;
-	int m_custom_height;
 
 	static constexpr float SSR_UV_TOLERANCE = 1.0f;
 
@@ -151,7 +149,6 @@ protected:
 	bool m_reset;
 
 	GSVector2i m_lod; // Min & Max level of detail
-	void CustomResolutionScaling();
 
 public:
 	GSRendererHW();
@@ -164,7 +161,6 @@ public:
 	void SetGameCRC(u32 crc, int options) override;
 	bool CanUpscale() override;
 	int GetUpscaleMultiplier() override;
-	GSVector2i GetCustomResolution() override;
 	void SetScaling();
 	void Lines2Sprites();
 	void EmulateAtst(GSVector4& FogColor_AREF, u8& atst, const bool pass_2);
