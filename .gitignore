@@ -92,6 +92,7 @@ oprofile_data/
 /bin/sstates
 /bin/textures
 /bin/translations
+/bin/inputprofiles
 /deps
 /ipch
 

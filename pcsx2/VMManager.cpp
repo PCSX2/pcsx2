@@ -104,6 +104,7 @@ namespace VMManager
 static std::unique_ptr<SysMainMemory> s_vm_memory;
 static std::unique_ptr<SysCpuProviderPack> s_cpu_provider_pack;
 static std::unique_ptr<INISettingsInterface> s_game_settings_interface;
+static std::unique_ptr<INISettingsInterface> s_input_settings_interface;
 
 static std::atomic<VMState> s_state{VMState::Shutdown};
 static bool s_cpu_implementation_changed = false;
@@ -119,6 +120,7 @@ static u32 s_patches_crc;
 static std::string s_game_serial;
 static std::string s_game_name;
 static std::string s_elf_override;
+static std::string s_input_profile_name;
 static u32 s_active_game_fixes = 0;
 static std::vector<u8> s_widescreen_cheats_data;
 static bool s_widescreen_cheats_loaded = false;
@@ -339,6 +341,11 @@ std::string VMManager::GetGameSettingsPath(const std::string_view& game_serial, 
                Path::Combine(EmuFolders::GameSettings, fmt::format("{}_{:08X}.ini", sanitized_serial, game_crc));
 }
 
+std::string VMManager::GetInputProfilePath(const std::string_view& name)
+{
+	return Path::Combine(EmuFolders::InputProfiles, fmt::format("{}.ini", name));
+}
+
 void VMManager::RequestDisplaySize(float scale /*= 0.0f*/)
 {
 	int iwidth, iheight;
@@ -413,11 +420,43 @@ bool VMManager::UpdateGameSettingsLayer()
 		}
 	}
 
-	if (!s_game_settings_interface && !new_interface)
+	std::string input_profile_name;
+	if (new_interface)
+		new_interface->GetStringValue("Pad", "InputProfileName", &input_profile_name);
+
+	if (!s_game_settings_interface && !new_interface && s_input_profile_name == input_profile_name)
 		return false;
 
 	Host::Internal::SetGameSettingsLayer(new_interface.get());
 	s_game_settings_interface = std::move(new_interface);
+
+	std::unique_ptr<INISettingsInterface> input_interface;
+	if (!input_profile_name.empty())
+	{
+		const std::string filename(GetInputProfilePath(input_profile_name));
+		if (FileSystem::FileExists(filename.c_str()))
+		{
+			Console.WriteLn("Loading input profile from '%s'...", filename.c_str());
+			input_interface = std::make_unique<INISettingsInterface>(std::move(filename));
+			if (!input_interface->Load())
+			{
+				Console.Error("Failed to parse input profile ini '%s'", input_interface->GetFileName().c_str());
+				input_interface.reset();
+				input_profile_name = {};
+			}
+		}
+		else
+		{
+			DevCon.WriteLn("No game settings found (tried '%s')", filename.c_str());
+			input_profile_name = {};
+		}
+	}
+
+	Host::Internal::SetInputSettingsLayer(input_interface.get());
+	s_input_settings_interface = std::move(input_interface);
+	s_input_profile_name = std::move(input_profile_name);
+
+
 	return true;
 }
 

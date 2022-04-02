@@ -66,5 +66,8 @@ namespace Host
 
 		/// Sets the game settings layer. Called by VMManager when the game changes.
 		void SetGameSettingsLayer(SettingsInterface* sif);
+
+		/// Sets the input profile settings layer. Called by VMManager when the game changes.
+		void SetInputSettingsLayer(SettingsInterface* sif);
 	} // namespace Internal
 } // namespace Host

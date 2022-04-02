@@ -180,3 +180,9 @@ void Host::Internal::SetGameSettingsLayer(SettingsInterface* sif)
 	std::unique_lock lock(s_settings_mutex);
 	s_layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_GAME, sif);
 }
+
+void Host::Internal::SetInputSettingsLayer(SettingsInterface* sif)
+{
+	std::unique_lock lock(s_settings_mutex);
+	s_layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_INPUT, sif);
+}
