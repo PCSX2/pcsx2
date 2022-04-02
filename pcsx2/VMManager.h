@@ -152,6 +152,9 @@ namespace VMManager
 	/// Returns the path for the game settings ini file for the specified CRC.
 	std::string GetGameSettingsPath(const std::string_view& game_serial, u32 game_crc);
 
+	/// Returns the path for the input profile ini file with the specified name (may not exist).
+	std::string GetInputProfilePath(const std::string_view& name);
+
 	/// Resizes the render window to the display size, with an optional scale.
 	/// If the scale is set to 0, the internal resolution will be used, otherwise it is treated as a multiplier to 1x.
 	void RequestDisplaySize(float scale = 0.0f);
