@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
+#include <cmath>
+
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
 
@@ -28,6 +30,7 @@
 #include "pcsx2/Frontend/InputManager.h"
 #include "pcsx2/Frontend/ImGuiManager.h"
 #include "pcsx2/GS.h"
+#include "pcsx2/GS/GS.h"
 #include "pcsx2/GSDumpReplayer.h"
 #include "pcsx2/HostDisplay.h"
 #include "pcsx2/PAD/Host/PAD.h"
@@ -104,6 +107,7 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 	}
 
 	pxAssertRel(!VMManager::HasValidVM(), "VM is shut down");
+	loadOurSettings();
 
 	emit onVMStarting();
 
@@ -247,6 +251,11 @@ void EmuThread::run()
 
 void EmuThread::destroyVM()
 {
+	m_last_speed = 0.0f;
+	m_last_game_fps = 0.0f;
+	m_last_video_fps = 0.0f;
+	m_last_internal_width = 0;
+	m_last_internal_height = 0;
 	VMManager::Shutdown();
 }
 
@@ -372,6 +381,11 @@ void EmuThread::reloadGameSettings()
 	}
 }
 
+void EmuThread::loadOurSettings()
+{
+	m_verbose_status = QtHost::GetBaseBoolSettingValue("UI", "VerboseStatusBar", false);
+}
+
 void EmuThread::checkForSettingChanges()
 {
 	if (VMManager::HasValidVM())
@@ -384,6 +398,13 @@ void EmuThread::checkForSettingChanges()
 			GetMTGS().WaitGS();
 		}
 	}
+
+	const bool last_verbose_status = m_verbose_status;
+
+	loadOurSettings();
+
+	if (m_verbose_status != last_verbose_status)
+		updatePerformanceMetrics(true);
 }
 
 void EmuThread::toggleSoftwareRendering()
@@ -720,6 +741,85 @@ void Host::OnGameChanged(const std::string& disc_path, const std::string& game_s
 {
 	emit g_emu_thread->onGameChanged(QString::fromStdString(disc_path), QString::fromStdString(game_serial),
 		QString::fromStdString(game_name), game_crc);
+}
+
+void EmuThread::updatePerformanceMetrics(bool force)
+{
+	QString fps_stat, gs_stat;
+	bool changed = force;
+
+	if (m_verbose_status && VMManager::HasValidVM())
+	{
+		std::string gs_stat_str;
+		GSgetTitleStats(gs_stat_str);
+		changed = true;
+
+		if (THREAD_VU1)
+		{
+			gs_stat =
+				QStringLiteral("%1 | EE: %2% | VU: %3% | GS: %4%")
+					.arg(gs_stat_str.c_str())
+					.arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
+					.arg(PerformanceMetrics::GetVUThreadUsage(), 0, 'f', 0)
+					.arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
+		}
+		else
+		{
+			gs_stat = QStringLiteral("%1 | EE: %2% | GS: %3%")
+						  .arg(gs_stat_str.c_str())
+						  .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
+						  .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
+		}
+	}
+
+	const float speed = std::round(PerformanceMetrics::GetSpeed());
+	const float gfps = std::round(PerformanceMetrics::GetInternalFPS());
+	const float vfps = std::round(PerformanceMetrics::GetFPS());
+	int iwidth, iheight;
+	GSgetInternalResolution(&iwidth, &iheight);
+
+	if (iwidth != m_last_internal_width || iheight != m_last_internal_height ||
+		speed != m_last_speed || gfps != m_last_game_fps || vfps != m_last_video_fps ||
+		changed)
+	{
+		m_last_internal_width = iwidth;
+		m_last_internal_height = iheight;
+		m_last_speed = speed;
+		m_last_game_fps = gfps;
+		m_last_video_fps = vfps;
+		changed = true;
+
+		if (iwidth == 0 && iheight == 0)
+		{
+			// if we don't have width/height yet, we're not going to have fps either.
+			// and we'll probably be <100% due to compiling. so just leave it blank for now.
+		}
+		else if (PerformanceMetrics::IsInternalFPSValid())
+		{
+			fps_stat = QStringLiteral("%1x%2 | G: %3 | V: %4 | %5%")
+						   .arg(iwidth)
+						   .arg(iheight)
+						   .arg(gfps, 0, 'f', 0)
+						   .arg(vfps, 0, 'f', 0)
+						   .arg(speed, 0, 'f', 0);
+		}
+		else
+		{
+			fps_stat = QStringLiteral("%1x%2 | V: %3 | %4%")
+						   .arg(iwidth)
+						   .arg(iheight)
+						   .arg(vfps, 0, 'f', 0)
+						   .arg(speed, 0, 'f', 0);
+		}
+	}
+
+	if (changed)
+		emit onPerformanceMetricsUpdated(fps_stat, gs_stat);
+}
+
+void Host::OnPerformanceMetricsUpdated()
+{
+	g_emu_thread->updatePerformanceMetrics(false);
 }
 
 void Host::OnSaveStateLoading(const std::string_view& filename)
