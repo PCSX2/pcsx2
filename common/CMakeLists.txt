@@ -18,10 +18,6 @@ target_sources(common PRIVATE
 	Exceptions.cpp
 	FastFormatString.cpp
 	FastJmp.cpp
-	GL/Context.cpp
-	GL/Program.cpp
-	GL/ShaderCache.cpp
-	GL/StreamBuffer.cpp
 	FileSystem.cpp
 	IniInterface.cpp
 	Mutex.cpp
@@ -78,10 +74,6 @@ target_sources(common PRIVATE
 	FastJmp.h
 	FileSystem.h
 	General.h
-	GL/Context.h
-	GL/Program.h
-	GL/ShaderCache.h
-	GL/StreamBuffer.h
 	HashCombine.h
 	MemcpyFast.h
 	MemsetFast.inl
@@ -134,6 +126,22 @@ target_sources(common PRIVATE
 	emitter/x86types.h
 )
 
+if(USE_OPENGL)
+	target_sources(common PRIVATE
+		GL/Context.cpp
+		GL/Program.cpp
+		GL/ShaderCache.cpp
+		GL/StreamBuffer.cpp
+	)
+	target_sources(common PRIVATE
+		GL/Context.h
+		GL/Program.h
+		GL/ShaderCache.h
+		GL/StreamBuffer.h
+	)
+	target_link_libraries(common PUBLIC glad)
+endif()
+
 if(USE_VULKAN)
 	target_link_libraries(common PUBLIC
 		Vulkan-Headers glslang
@@ -176,46 +184,66 @@ if(WIN32)
 		D3D11/ShaderCache.h
 		D3D11/ShaderCompiler.cpp
 		D3D11/ShaderCompiler.h
-		GL/ContextWGL.cpp
-		GL/ContextWGL.h
 	)
-	target_link_libraries(common PUBLIC pthreads4w Winmm.lib opengl32.lib)
-elseif(APPLE)
-	target_sources(common PRIVATE
-		GL/ContextAGL.mm
-		GL/ContextAGL.h
-	)
-	set_source_files_properties(GL/ContextAGL.mm PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
-	target_compile_options(common PRIVATE -fobjc-arc)
-	target_link_options(common PRIVATE -fobjc-link-runtime)
-else()
-	if(X11_API OR WAYLAND_API)
-		target_sources(common PRIVATE
-			GL/ContextEGL.cpp
-			GL/ContextEGL.h
-		)
-		target_link_libraries(common PRIVATE PkgConfig::EGL)
-	endif()
+endif()
 
-	if(X11_API)
+if(USE_OPENGL)
+	if(WIN32)
 		target_sources(common PRIVATE
-			GL/ContextEGLX11.cpp
-			GL/ContextEGLX11.h
+			GL/ContextWGL.cpp
+			GL/ContextWGL.h
 		)
-		target_compile_definitions(common PUBLIC "VULKAN_USE_X11=1")
-		if(TARGET PkgConfig::XRANDR)
-			target_link_libraries(common PRIVATE PkgConfig::XRANDR)
-			target_compile_definitions(common PRIVATE "HAS_XRANDR=1")
+		target_link_libraries(common PUBLIC opengl32.lib)
+	elseif(APPLE)
+		target_sources(common PRIVATE
+			GL/ContextAGL.mm
+			GL/ContextAGL.h
+		)
+		set_source_files_properties(GL/ContextAGL.mm PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+		target_compile_options(common PRIVATE -fobjc-arc)
+		target_link_options(common PRIVATE -fobjc-link-runtime)
+	else()
+		if(X11_API OR WAYLAND_API)
+			target_sources(common PRIVATE
+				GL/ContextEGL.cpp
+				GL/ContextEGL.h
+			)
+			target_link_libraries(common PRIVATE PkgConfig::EGL)
+		endif()
+
+		if(X11_API)
+			target_sources(common PRIVATE
+				GL/ContextEGLX11.cpp
+				GL/ContextEGLX11.h
+			)
+			if(TARGET PkgConfig::XRANDR)
+				target_link_libraries(common PRIVATE PkgConfig::XRANDR)
+				target_compile_definitions(common PRIVATE "HAS_XRANDR=1")
+			endif()
+		endif()
+
+		if(WAYLAND_API)
+			target_sources(common PRIVATE
+				GL/ContextEGLWayland.cpp
+				GL/ContextEGLWayland.h
+			)
+			target_link_libraries(common PRIVATE ${WAYLAND_EGL_LIBRARIES})
 		endif()
 	endif()
+endif()
 
-	if(WAYLAND_API)
-		target_sources(common PRIVATE
-			GL/ContextEGLWayland.cpp
-			GL/ContextEGLWayland.h
-		)
-		target_link_libraries(common PRIVATE ${WAYLAND_EGL_LIBRARIES})
-		target_compile_definitions(common PUBLIC "VULKAN_USE_WAYLAND=1")
+if(USE_VULKAN)
+	if(APPLE)
+		# Needed for Metal surface creation.
+		target_compile_options(common PRIVATE -fobjc-arc)
+		target_link_options(common PRIVATE -fobjc-link-runtime)
+	elseif(NOT WIN32)
+		if(X11_API)
+			target_compile_definitions(common PUBLIC "VULKAN_USE_X11=1")
+		endif()
+		if(WAYLAND_API)
+			target_compile_definitions(common PUBLIC "VULKAN_USE_WAYLAND=1")
+		endif()
 	endif()
 endif()
 
@@ -224,7 +252,7 @@ if (USE_GCC AND CMAKE_INTERPROCEDURAL_OPTIMIZATION)
 	set_source_files_properties(FastJmp.cpp PROPERTIES COMPILE_FLAGS -fno-lto)
 endif()
 
-target_link_libraries(common PRIVATE ${LIBC_LIBRARIES} PUBLIC wxWidgets::all glad)
+target_link_libraries(common PRIVATE ${LIBC_LIBRARIES} PUBLIC wxWidgets::all)
 target_compile_features(common PUBLIC cxx_std_17)
 target_include_directories(common PUBLIC ../3rdparty/include ../)
 target_compile_definitions(common PUBLIC "${PCSX2_DEFS}")

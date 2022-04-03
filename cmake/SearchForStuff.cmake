@@ -29,8 +29,10 @@ else()
 
 	# Using find_package OpenGL without either setting your opengl preference to GLVND or LEGACY
 	# is deprecated as of cmake 3.11.
-	set(OpenGL_GL_PREFERENCE GLVND)
-	find_package(OpenGL REQUIRED)
+	if(USE_OPENGL)
+		set(OpenGL_GL_PREFERENCE GLVND)
+		find_package(OpenGL REQUIRED)
+	endif()
 	find_package(PNG REQUIRED)
 	find_package(Vtune)
 
@@ -115,7 +117,9 @@ else()
 	include(CheckLib)
 
 	if(UNIX AND NOT APPLE)
-		check_lib(EGL EGL EGL/egl.h)
+		if(USE_OPENGL)
+			check_lib(EGL EGL EGL/egl.h)
+		endif()
 		if(X11_API)
 			check_lib(X11_XCB X11-xcb X11/Xlib-xcb.h)
 			check_lib(XCB xcb xcb/xcb.h)
@@ -259,9 +263,12 @@ else()
 	set(BIN2CPPDEP ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl)
 endif()
 
-add_subdirectory(3rdparty/glad EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/simpleini EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/imgui EXCLUDE_FROM_ALL)
+
+if(USE_OPENGL)
+	add_subdirectory(3rdparty/glad EXCLUDE_FROM_ALL)
+endif()
 
 if(USE_VULKAN)
 	add_subdirectory(3rdparty/glslang EXCLUDE_FROM_ALL)

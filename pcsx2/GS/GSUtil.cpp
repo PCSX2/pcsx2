@@ -190,14 +190,30 @@ CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)
 
 GSRendererType GSUtil::GetPreferredRenderer()
 {
-#ifdef __APPLE__
+#if defined(__APPLE__)
+	// Mac: Prefer Metal hardware.
 	return GSRendererType::Metal;
-#endif
-#ifdef _WIN32
+#elif defined(_WIN32)
+#if defined(ENABLE_OPENGL)
+	// Windows: Prefer GL if available.
 	if (D3D::ShouldPreferD3D())
 		return GSRendererType::DX11;
+	else
+		return GSRendererType::OGL;
+#else
+	// DX11 is always available, otherwise.
+	return GSRendererType::DX11;
 #endif
+#else
+	// Linux: Prefer GL/Vulkan, whatever is available.
+#if defined(ENABLE_OPENGL)
 	return GSRendererType::OGL;
+#elif defined(ENABLE_VULKAN)
+	return GSRendererType::Vulkan;
+#else
+	return GSRendererType::SW;
+#endif
+#endif
 }
 
 #ifdef _WIN32

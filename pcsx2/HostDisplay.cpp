@@ -124,7 +124,9 @@ std::string HostDisplay::GetFullscreenModeString(u32 width, u32 height, float re
 	return StringUtil::StdStringFromFormat("%u x %u @ %f hz", width, height, refresh_rate);
 }
 
+#ifdef ENABLE_OPENGL
 #include "Frontend/OpenGLHostDisplay.h"
+#endif
 
 #ifdef ENABLE_VULKAN
 #include "Frontend/VulkanHostDisplay.h"
@@ -148,9 +150,11 @@ std::unique_ptr<HostDisplay> HostDisplay::CreateDisplayForAPI(RenderAPI api)
 			return std::unique_ptr<HostDisplay>(MakeMetalHostDisplay());
 #endif
 
+#ifdef ENABLE_OPENGL
 		case RenderAPI::OpenGL:
 		case RenderAPI::OpenGLES:
 			return std::make_unique<OpenGLHostDisplay>();
+#endif
 
 #ifdef ENABLE_VULKAN
 		case RenderAPI::Vulkan:

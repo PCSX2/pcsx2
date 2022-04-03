@@ -10,9 +10,17 @@ add_library(imgui
 	imgui/imstb_rectpack.h
 	imgui/imstb_textedit.h
 	imgui/imstb_truetype.h
-	include/imgui_impl_opengl3.h
-	src/imgui_impl_opengl3.cpp
 )
+
+target_include_directories(imgui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui" "${CMAKE_CURRENT_SOURCE_DIR}/include")
+
+if(USE_OPENGL)
+	target_sources(imgui PRIVATE
+		include/imgui_impl_opengl3.h
+		src/imgui_impl_opengl3.cpp
+	)
+	target_link_libraries(imgui glad)
+endif()
 
 if(WIN32)
 	target_sources(imgui PRIVATE
@@ -20,7 +28,3 @@ if(WIN32)
 		src/imgui_impl_dx11.cpp
 	)
 endif()
-
-target_include_directories(imgui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui" "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_link_libraries(imgui glad)
-

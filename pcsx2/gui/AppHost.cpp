@@ -27,10 +27,6 @@
 
 #include "common/Assertions.h"
 #include "Frontend/ImGuiManager.h"
-#include "Frontend/OpenGLHostDisplay.h"
-#ifdef _WIN32
-#include "Frontend/D3D11HostDisplay.h"
-#endif
 
 #include "gui/App.h"
 #include "gui/AppHost.h"
