@@ -643,7 +643,7 @@ void GSRenderer::KeyEvent(const HostKeyEvent& e)
 			case VK_F5:
 				GSConfig.InterlaceMode = static_cast<GSInterlaceMode>((static_cast<int>(GSConfig.InterlaceMode) + static_cast<int>(GSInterlaceMode::Count) + step) % static_cast<int>(GSInterlaceMode::Count));
 				theApp.SetConfig("interlace", static_cast<int>(GSConfig.InterlaceMode));
-				printf("GS: Set deinterlace mode to %d (%s).\n", static_cast<int>(GSConfig.InterlaceMode), theApp.m_gs_interlace.at(static_cast<int>(GSConfig.InterlaceMode)).name.c_str());
+				printf("GS: Set deinterlace mode to %d (%s).\n", static_cast<int>(GSConfig.InterlaceMode), theApp.m_gs_deinterlace.at(static_cast<int>(GSConfig.InterlaceMode)).name.c_str());
 				return;
 			case VK_DELETE:
 				GSConfig.AA1 = !GSConfig.AA1;

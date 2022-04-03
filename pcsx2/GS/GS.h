@@ -127,7 +127,7 @@ public:
 	void SetConfigDir();
 
 	std::vector<GSSetting> m_gs_renderers;
-	std::vector<GSSetting> m_gs_interlace;
+	std::vector<GSSetting> m_gs_deinterlace;
 	std::vector<GSSetting> m_gs_upscale_multiplier;
 	std::vector<GSSetting> m_gs_max_anisotropy;
 	std::vector<GSSetting> m_gs_dithering;
