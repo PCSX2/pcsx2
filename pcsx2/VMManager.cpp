@@ -96,6 +96,7 @@ static std::unique_ptr<INISettingsInterface> s_game_settings_interface;
 static u64 s_emu_thread_affinity;
 
 static std::atomic<VMState> s_state{VMState::Shutdown};
+static std::atomic_bool s_cpu_implementation_changed{false};
 
 static std::mutex s_info_mutex;
 static std::string s_disc_path;
@@ -757,6 +758,8 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	s_mxcsr_saved = static_cast<u32>(a64_getfpcr());
 #endif
 
+	s_cpu_implementation_changed.store(false);
+	s_cpu_provider_pack->ApplyConfig();
 	SetCPUState(EmuConfig.Cpu.sseMXCSR, EmuConfig.Cpu.sseVUMXCSR);
 	SysClearExecutionCache();
 	memBindConditionalHandlers();
@@ -1039,6 +1042,15 @@ bool VMManager::IsGSDumpFileName(const std::string& path)
 
 void VMManager::Execute()
 {
+	// Check for interpreter<->recompiler switches.
+	if (s_cpu_implementation_changed.exchange(false))
+	{
+		// We need to switch the cpus out, and reset the new ones if so.
+		s_cpu_provider_pack->ApplyConfig();
+		SysClearExecutionCache();
+	}
+
+	// Execute until we're asked to stop.
 	Cpu->Execute();
 }
 
@@ -1058,7 +1070,7 @@ const std::string& VMManager::Internal::GetElfOverride()
 
 bool VMManager::Internal::IsExecutionInterrupted()
 {
-	return s_state.load() != VMState::Running;
+	return s_state.load() != VMState::Running || s_cpu_implementation_changed.load();
 }
 
 void VMManager::Internal::GameStartingOnCPUThread()
@@ -1098,6 +1110,15 @@ void VMManager::CheckForCPUConfigChanges(const Pcsx2Config& old_config)
 	SetCPUState(EmuConfig.Cpu.sseMXCSR, EmuConfig.Cpu.sseVUMXCSR);
 	SysClearExecutionCache();
 	memBindConditionalHandlers();
+
+	// did we toggle recompilers?
+	if (EmuConfig.Cpu.CpusChanged(old_config.Cpu))
+	{
+		// This has to be done asynchronously, since we're still executing the
+		// cpu when this function is called. Break the execution as soon as
+		// possible and reset next time we're called.
+		s_cpu_implementation_changed.store(true);
+	}
 }
 
 void VMManager::CheckForGSConfigChanges(const Pcsx2Config& old_config)

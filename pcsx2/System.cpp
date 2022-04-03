@@ -592,7 +592,10 @@ void SysCpuProviderPack::ApplyConfig() const
 // Use this method to reset the recs when important global pointers like the MTGS are re-assigned.
 void SysClearExecutionCache()
 {
+	// Done by VMManager in Qt.
+#ifndef PCSX2_CORE
 	GetCpuProviders().ApplyConfig();
+#endif
 
 	Cpu->Reset();
 	psxCpu->Reset();
