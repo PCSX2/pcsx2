@@ -23,10 +23,8 @@
 #include "AppAccelerators.h"
 #include "AppSaveStates.h"
 
-#ifndef DISABLE_RECORDING
 #include "Recording/InputRecordingControls.h"
 #include "Recording/InputRecording.h"
-#endif
 
 // Various includes needed for dumping...
 #include "GS.h"
@@ -345,12 +343,10 @@ namespace Implementations
 		if (g_Conf->GSWindow.CloseOnEsc)
 		{
 			sMainFrame.SetFocus();
-#ifndef DISABLE_RECORDING
 			// Disable recording controls that only make sense if the game is running
 			sMainFrame.enableRecordingMenuItem(MenuId_Recording_FrameAdvance, false);
 			sMainFrame.enableRecordingMenuItem(MenuId_Recording_TogglePause, false);
 			sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, false);
-#endif
 		}
 	}
 
@@ -462,7 +458,6 @@ namespace Implementations
 		if (GSFrame* gsframe = wxGetApp().GetGsFramePtr())
 			gsframe->ShowFullScreen(!gsframe->IsFullScreen());
 	}
-#ifndef DISABLE_RECORDING
 	void FrameAdvance()
 	{
 		if (g_Conf->EmuOptions.EnableRecordingTools)
@@ -607,7 +602,6 @@ namespace Implementations
 	{
 		States_LoadSlot(9);
 	}
-#endif
 } // namespace Implementations
 
 // --------------------------------------------------------------------------------------
@@ -782,7 +776,6 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 			false,
 		},
 
-#ifndef DISABLE_RECORDING
 		{"FrameAdvance", Implementations::FrameAdvance, NULL, NULL, false},
 		{"TogglePause", Implementations::TogglePause, NULL, NULL, false},
 		{"InputRecordingModeToggle", Implementations::InputRecordingModeToggle, NULL, NULL, false},
@@ -809,7 +802,6 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 		{"States_LoadSlot7", Implementations::States_LoadSlot7, NULL, NULL, false},
 		{"States_LoadSlot8", Implementations::States_LoadSlot8, NULL, NULL, false},
 		{"States_LoadSlot9", Implementations::States_LoadSlot9, NULL, NULL, false},
-#endif
 		// Command Declarations terminator:
 		// (must always be last in list!!)
 		{NULL}};

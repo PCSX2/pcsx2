@@ -940,9 +940,8 @@ struct Pcsx2Config
 		EnableCheats : 1, // enables cheat detection and application
 		EnablePINE : 1, // enables inter-process communication
 		EnableWideScreenPatches : 1,
-#ifndef DISABLE_RECORDING
+		// TODO - Vaser - where are these settings exposed in the Qt UI?
 		EnableRecordingTools : 1,
-#endif
 #ifdef PCSX2_CORE
 		EnableGameFixes : 1, // enables automatic game fixes
 		SaveStateOnShutdown : 1, // default value for saving state on shutdown

@@ -30,9 +30,7 @@
 #include "RecentIsoList.h"
 #include "DriveList.h"
 
-#ifndef DISABLE_RECORDING
 #include "Recording/NewRecordingFrame.h"
-#endif
 
 class DisassemblyDialog;
 struct HostKeyEvent;
@@ -72,9 +70,7 @@ enum TopLevelMenuIndices
 	TopLevelMenu_Config,
 	TopLevelMenu_Window,
 	TopLevelMenu_Capture,
-#ifndef DISABLE_RECORDING
 	TopLevelMenu_InputRecording,
-#endif
 	TopLevelMenu_Help
 };
 
@@ -186,7 +182,6 @@ enum MenuIdentifiers
 	MenuId_Capture_Screenshot_Screenshot,
 	MenuId_Capture_Screenshot_Screenshot_As,
 
-#ifndef DISABLE_RECORDING
 	// Input Recording Subsection
 	MenuId_Recording_New,
 	MenuId_Recording_Play,
@@ -198,7 +193,6 @@ enum MenuIdentifiers
 	MenuId_Recording_ToggleRecordingMode,
 	MenuId_Recording_VirtualPad_Port0,
 	MenuId_Recording_VirtualPad_Port1,
-#endif
 
 	//  Subsection
 	MenuId_PINE,
@@ -481,10 +475,7 @@ protected:
 	wxWindowID m_id_GsFrame;
 	wxWindowID m_id_ProgramLogBox;
 	wxWindowID m_id_Disassembler;
-
-#ifndef DISABLE_RECORDING
 	wxWindowID m_id_NewRecordingFrame;
-#endif
 
 	wxKeyEvent m_kevt;
 
@@ -510,7 +501,7 @@ public:
 	MainEmuFrame* GetMainFramePtr() const { return (MainEmuFrame*)wxWindow::FindWindowById(m_id_MainFrame); }
 	DisassemblyDialog* GetDisassemblyPtr() const { return (DisassemblyDialog*)wxWindow::FindWindowById(m_id_Disassembler); }
 
-#ifndef DISABLE_RECORDING
+#ifndef PCSX2_CORE
 	NewRecordingFrame* GetNewRecordingFramePtr() const
 	{
 		return (NewRecordingFrame*)wxWindow::FindWindowById(m_id_NewRecordingFrame);

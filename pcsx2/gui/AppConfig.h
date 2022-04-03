@@ -188,7 +188,6 @@ public:
 		void SanityCheck();
 	};
 
-#ifndef DISABLE_RECORDING
 	struct InputRecordingOptions
 	{
 		wxPoint VirtualPadPosition;
@@ -197,7 +196,6 @@ public:
 		InputRecordingOptions();
 		void loadSave(IniInterface& conf);
 	};
-#endif
 
 	struct UiTemplateOptions {
 		UiTemplateOptions();
@@ -213,9 +211,7 @@ public:
 		wxString OutputInterlaced;
 		wxString Paused;
 		wxString TitleTemplate;
-#ifndef DISABLE_RECORDING
 		wxString RecordingTemplate;
-#endif
 	};
 
 	struct CaptureOptions
@@ -287,9 +283,7 @@ public:
 	ConsoleLogOptions		ProgLogBox;
 	FolderOptions			Folders;
 	GSWindowOptions			GSWindow;
-#ifndef DISABLE_RECORDING
 	InputRecordingOptions   inputRecording;
-#endif
 	UiTemplateOptions		Templates;
 	CaptureOptions			AudioCapture;
 	

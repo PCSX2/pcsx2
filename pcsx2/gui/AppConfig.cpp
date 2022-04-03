@@ -682,9 +682,7 @@ void AppConfig::LoadSave(IniInterface& ini, SettingsWrapper& wrap)
 	Folders.LoadSave(ini);
 
 	GSWindow.LoadSave(ini);
-#ifndef DISABLE_RECORDING
 	inputRecording.loadSave(ini);
-#endif
 	AudioCapture.LoadSave(ini);
 	Templates.LoadSave(ini);
 
@@ -908,7 +906,6 @@ void AppConfig::GSWindowOptions::LoadSave(IniInterface& ini)
 		SanityCheck();
 }
 
-#ifndef DISABLE_RECORDING
 AppConfig::InputRecordingOptions::InputRecordingOptions()
 	: VirtualPadPosition(wxDefaultPosition)
 	, m_frame_advance_amount(1)
@@ -922,7 +919,6 @@ void AppConfig::InputRecordingOptions::loadSave(IniInterface& ini)
 	IniEntry(VirtualPadPosition);
 	IniEntry(m_frame_advance_amount);
 }
-#endif
 
 AppConfig::CaptureOptions::CaptureOptions()
 {
@@ -948,9 +944,7 @@ AppConfig::UiTemplateOptions::UiTemplateOptions()
 	OutputInterlaced = L"Interlaced";
 	Paused = L"<PAUSED> ";
 	TitleTemplate = L"Slot: ${slot} | Speed: ${speed} (${vfps}) | ${videomode} | Limiter: ${limiter} | ${gsdx} | ${omodei} | ${cpuusage}";
-#ifndef DISABLE_RECORDING
 	RecordingTemplate = L"Slot: ${slot} | Frame: ${frame}/${maxFrame} | Rec. Mode: ${mode} | Speed: ${speed} (${vfps}) | Limiter: ${limiter}";
-#endif
 }
 
 void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)
@@ -967,9 +961,7 @@ void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)
 	IniEntry(OutputInterlaced);
 	IniEntry(Paused);
 	IniEntry(TitleTemplate);
-#ifndef DISABLE_RECORDING
 	IniEntry(RecordingTemplate);
-#endif
 }
 
 int AppConfig::GetMaxPresetIndex()

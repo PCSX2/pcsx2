@@ -9,7 +9,6 @@ else()
 	add_library(PCSX2)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE
 		"PCSX2_CORE"
-		"DISABLE_RECORDING"
 	)
 endif()
 target_link_libraries(PCSX2 PRIVATE PCSX2_FLAGS)

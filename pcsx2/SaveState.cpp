@@ -285,9 +285,7 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	// to merit an HLE Bios sub-section... yet.
 	deci2Freeze();
 
-#ifndef DISABLE_RECORDING
 	InputRecordingFreeze();
-#endif
 
 	return *this;
 }

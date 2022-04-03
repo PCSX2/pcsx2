@@ -29,9 +29,7 @@
 
 #include "Debugger/DisassemblyDialog.h"
 
-#ifndef DISABLE_RECORDING
 #include "Recording/InputRecording.h"
-#endif
 
 #include <wx/cmdline.h>
 #include <wx/intl.h>
@@ -95,12 +93,10 @@ void Pcsx2App::OpenMainFrame()
 	DisassemblyDialog* disassembly = new DisassemblyDialog(mainFrame);
 	m_id_Disassembler = disassembly->GetId();
 
-#ifndef DISABLE_RECORDING
 	NewRecordingFrame* newRecordingFrame = new NewRecordingFrame(mainFrame);
 	m_id_NewRecordingFrame = newRecordingFrame->GetId();
 	if (g_Conf->EmuOptions.EnableRecordingTools)
 		g_InputRecording.InitVirtualPadWindows(mainFrame);
-#endif
 
 	if (g_Conf->EmuOptions.Debugger.ShowDebuggerOnStart)
 		disassembly->Show();
