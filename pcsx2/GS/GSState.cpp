@@ -52,7 +52,6 @@ GSState::GSState()
 	// Let's keep it disabled to ease debug.
 	m_nativeres = GSConfig.UpscaleMultiplier == 1;
 	m_mipmap = GSConfig.Mipmap;
-	m_NTSC_Saturation = theApp.GetConfigB("NTSC_Saturation");
 
 	s_n = 0;
 	s_dump = theApp.GetConfigB("dump");
