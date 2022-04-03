@@ -552,7 +552,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBoolEx(LoadTextureReplacementsAsync, "LoadTextureReplacementsAsync");
 	GSSettingBoolEx(PrecacheTextureReplacements, "PrecacheTextureReplacements");
 
-	GSSettingIntEnumEx(InterlaceMode, "interlace");
+	GSSettingIntEnumEx(InterlaceMode, "deinterlace");
 
 	GSSettingFloat(OsdScale);
 

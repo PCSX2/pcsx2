@@ -81,7 +81,7 @@ namespace GameDatabaseSchema
 		HalfPixelOffset,
 		RoundSprite,
 		TexturePreloading,
-		Interlace,
+		Deinterlace,
 
 		Count
 	};

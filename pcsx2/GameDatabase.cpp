@@ -286,7 +286,7 @@ static const char* s_gs_hw_fix_names[] = {
 	"halfPixelOffset",
 	"roundSprite",
 	"texturePreloading",
-	"interlace",
+	"deinterlace",
 };
 static_assert(std::size(s_gs_hw_fix_names) == static_cast<u32>(GameDatabaseSchema::GSHWFixId::Count), "HW fix name lookup is correct size");
 
@@ -310,7 +310,7 @@ bool GameDatabaseSchema::isUserHackHWFix(GSHWFixId id)
 {
 	switch (id)
 	{
-		case GSHWFixId::Interlace:
+		case GSHWFixId::Deinterlace:
 		case GSHWFixId::Mipmap:
 		case GSHWFixId::TexturePreloading:
 		case GSHWFixId::ConservativeFramebuffer:
@@ -552,13 +552,13 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 			}
 			break;
 
-			case GSHWFixId::Interlace:
+			case GSHWFixId::Deinterlace:
 				if (value >= 0 && value <= static_cast<int>(GSInterlaceMode::Automatic))
 				{
 					if (config.InterlaceMode == GSInterlaceMode::Automatic)
 						config.InterlaceMode = static_cast<GSInterlaceMode>(value);
 					else
-						Console.Warning("[GameDB] Game requires different interlace mode but it has been overridden by user setting.");
+						Console.Warning("[GameDB] Game requires different deinterlace mode but it has been overridden by user setting.");
 				}
 			break;
 
