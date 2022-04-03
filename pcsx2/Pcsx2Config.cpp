@@ -224,6 +224,14 @@ void Pcsx2Config::RecompilerOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(PreBlockCheckIOP);
 }
 
+bool Pcsx2Config::CpuOptions::CpusChanged(const CpuOptions& right) const
+{
+	return (Recompiler.EnableEE != right.Recompiler.EnableEE ||
+			Recompiler.EnableIOP != right.Recompiler.EnableIOP ||
+			Recompiler.EnableVU0 != right.Recompiler.EnableVU0 ||
+			Recompiler.EnableVU1 != right.Recompiler.EnableVU1);
+}
+
 Pcsx2Config::CpuOptions::CpuOptions()
 {
 	sseMXCSR.bitmask = DEFAULT_sseMXCSR;

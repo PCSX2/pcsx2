@@ -393,6 +393,8 @@ struct Pcsx2Config
 		void LoadSave(SettingsWrapper& wrap);
 		void ApplySanityCheck();
 
+		bool CpusChanged(const CpuOptions& right) const;
+
 		bool operator==(const CpuOptions& right) const
 		{
 			return OpEqu(sseMXCSR) && OpEqu(sseVUMXCSR) && OpEqu(Recompiler);
