@@ -285,6 +285,7 @@ static const char* s_gs_hw_fix_names[] = {
 	"halfPixelOffset",
 	"roundSprite",
 	"texturePreloading",
+	"interlace",
 };
 static_assert(std::size(s_gs_hw_fix_names) == static_cast<u32>(GameDatabaseSchema::GSHWFixId::Count), "HW fix name lookup is correct size");
 
@@ -308,6 +309,7 @@ bool GameDatabaseSchema::isUserHackHWFix(GSHWFixId id)
 {
 	switch (id)
 	{
+		case GSHWFixId::Interlace:
 		case GSHWFixId::Mipmap:
 		case GSHWFixId::TexturePreloading:
 		case GSHWFixId::ConservativeFramebuffer:
@@ -435,6 +437,16 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 				if (value >= 0 && value <= static_cast<int>(TexturePreloadingLevel::Full))
 					config.TexturePreloading = std::min(config.TexturePreloading, static_cast<TexturePreloadingLevel>(value));
 			}
+			break;
+
+			case GSHWFixId::Interlace:
+				if (value >= 0 && value <= static_cast<int>(GSInterlaceMode::Automatic))
+				{
+					if (config.InterlaceMode == GSInterlaceMode::Automatic)
+						config.InterlaceMode = static_cast<GSInterlaceMode>(value);
+					else
+						Console.Warning("[GameDB] Game requires different interlace mode but it has been overridden by user setting.");
+				}
 			break;
 
 			default:

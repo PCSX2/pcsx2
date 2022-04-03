@@ -2744,6 +2744,8 @@ SCES-51159:
 SCES-51164:
   name: "Mark of Kri, The"
   region: "PAL-M5"
+  gsHWFixes:
+    interlace: 3 # Game requires bob delinterlacing when auto
 SCES-51176:
   name: "Disney's Treasure Planet"
   region: "PAL-M4"
@@ -6179,6 +6181,8 @@ SCUS-97140:
   name: "Mark of Kri, The"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    interlace: 3 # Game requires bob delinterlacing when auto
   patches:
     DBD09DD4:
       content: |-
@@ -6399,6 +6403,8 @@ SCUS-97200:
 SCUS-97201:
   name: "Mark of Kri, The"
   region: "NTSC-U"
+  gsHWFixes:
+    interlace: 3 # Game requires bob delinterlacing when auto
 SCUS-97203:
   name: "Wild ARMs 3"
   region: "NTSC-U"
@@ -6477,6 +6483,8 @@ SCUS-97220:
 SCUS-97222:
   name: "Mark of Kri [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    interlace: 3 # Game requires bob delinterlacing when auto
 SCUS-97223:
   name: "NFL GameDay 2003 [Demo]"
   region: "NTSC-U"
@@ -15808,6 +15816,8 @@ SLES-53621:
   name: "Wallace & Grommit - The Curse of the Were Rabbit"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    interlace: 3 # Game requires bob delinterlacing when auto
 SLES-53623:
   name: "Spongebob SquarePants - Battle for Bikini Bottom"
   region: "PAL-F"
@@ -24763,6 +24773,8 @@ SLPM-65309:
 SLPM-65310:
   name: "Mark of Kri, The"
   region: "NTSC-J"
+  gsHWFixes:
+    interlace: 3 # Game requires bob delinterlacing when auto
 SLPM-65311:
   name: "Violet no Atelier - Gramnad no Renkinjutsushi"
   region: "NTSC-J"
@@ -28059,6 +28071,8 @@ SLPM-66325:
 SLPM-66327:
   name: "Wallace and Gromit - The Curse of the Were-Rabbit"
   region: "NTSC-J"
+  gsHWFixes:
+    interlace: 3 # Game requires bob delinterlacing when auto
 SLPM-66328:
   name: "Call of Duty 2 - Big Red One"
   region: "NTSC-J"
@@ -41417,6 +41431,8 @@ SLUS-21312:
   name: "Wallace & Gromit - The Curse of the Were-Rabbit"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    interlace: 3 # Game requires bob delinterlacing when auto
 SLUS-21313:
   name: "Friends - The One with all the Trivia"
   region: "NTSC-U"
