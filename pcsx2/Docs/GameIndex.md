@@ -40,6 +40,10 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
     - IbitHack
     - VUSyncHack
     - VUOverflowHack
+  # The value of the GS Fixes is assumed to be an integer
+  gsHWFixes:
+    mipmap: 1
+    preloadFrameData: 1
   # The value of the speedhacks is assumed to be an integer,
   # but at the time of writing speedhacks are effectively booleans (0/1)
   speedHacks:
@@ -139,6 +143,7 @@ The clamp modes are also numerically based.
 
 *   conservativeFramebuffer   [`0` or `1`]            {Off or On}                           Default: On (`1`)
 *   texturePreloading         [`0` or `1` or `2`]     {None, Partial or Full Hash Cache}    Default: None (`0`)
+*   interlace                 [Value between `0` to `7`]   {Off, WeaveTFF, WeaveBFF, BobTFF, BobBFF, BlendTFF, BlendBFF, Automatic}    Default: Automatic (No value, looks up GameDB)
 
 ### GS Hardware Renderer Fixes
 
