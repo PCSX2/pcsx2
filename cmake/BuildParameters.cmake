@@ -38,6 +38,7 @@ option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
 # Graphical option
 #-------------------------------------------------------------------------------
 option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option)")
+option(USE_OPENGL "Enable OpenGL GS renderer" ON)
 option(USE_VULKAN "Enable Vulkan GS renderer" ON)
 
 #-------------------------------------------------------------------------------
@@ -204,6 +205,10 @@ endif()
 
 if(USE_VTUNE)
 	list(APPEND PCSX2_DEFS ENABLE_VTUNE)
+endif()
+
+if(USE_OPENGL)
+	list(APPEND PCSX2_DEFS ENABLE_OPENGL)
 endif()
 
 if(USE_VULKAN)

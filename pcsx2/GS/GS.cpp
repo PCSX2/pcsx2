@@ -25,8 +25,6 @@
 #include "Renderers/SW/GSRendererSW.h"
 #include "Renderers/Null/GSRendererNull.h"
 #include "Renderers/Null/GSDeviceNull.h"
-#include "Renderers/OpenGL/GSDeviceOGL.h"
-#include "Renderers/Metal/GSMetalCPPAccessible.h"
 #include "Renderers/HW/GSRendererNew.h"
 #include "Renderers/HW/GSTextureReplacements.h"
 #include "GSLzma.h"
@@ -43,6 +41,14 @@
 #ifdef PCSX2_CORE
 #include "pcsx2/HostSettings.h"
 #include "pcsx2/Frontend/InputManager.h"
+#endif
+
+#ifdef ENABLE_OPENGL
+#include "Renderers/OpenGL/GSDeviceOGL.h"
+#endif
+
+#ifdef __APPLE__
+#include "Renderers/Metal/GSMetalCPPAccessible.h"
 #endif
 
 #ifdef ENABLE_VULKAN
@@ -157,27 +163,44 @@ void GSclose()
 
 static HostDisplay::RenderAPI GetAPIForRenderer(GSRendererType renderer)
 {
+#if defined(_WIN32)
+	// On Windows, we use DX11 for software, since it's always available.
+	constexpr HostDisplay::RenderAPI default_api = HostDisplay::RenderAPI::D3D11;
+#elif defined(__APPLE__)
+	// For Macs, default to Metal.
+	constexpr HostDisplay::RenderAPI default_api = HostDisplay::RenderAPI::Metal;
+#else
+	// For Linux, default to OpenGL (because of hardware compatibility), if we
+	// have it, otherwise Vulkan (if we have it).
+#if defined(ENABLE_OPENGL)
+	constexpr HostDisplay::RenderAPI default_api = HostDisplay::RenderAPI::OpenGL;
+#elif defined(ENABLE_VULKAN)
+	constexpr HostDisplay::RenderAPI default_api = HostDisplay::RenderAPI::Vulkan;
+#else
+	constexpr HostDisplay::RenderAPI default_api = HostDisplay::RenderAPI::None;
+#endif
+#endif
+
 	switch (renderer)
 	{
 		case GSRendererType::OGL:
-#ifndef _WIN32
-		default:
-#endif
 			return HostDisplay::RenderAPI::OpenGL;
 
 		case GSRendererType::VK:
 			return HostDisplay::RenderAPI::Vulkan;
 
+#ifdef _WIN32
+		case GSRendererType::DX11:
+			return HostDisplay::RenderAPI::D3D11;
+#endif
+
 #ifdef __APPLE__
 		case GSRendererType::Metal:
 			return HostDisplay::RenderAPI::Metal;
 #endif
-#ifdef _WIN32
-		case GSRendererType::DX11:
-		case GSRendererType::SW:
+
 		default:
-			return HostDisplay::RenderAPI::D3D11;
-#endif
+			return default_api;
 	}
 }
 
@@ -200,10 +223,12 @@ static bool DoGSOpen(GSRendererType renderer, u8* basemem)
 			g_gs_device = std::unique_ptr<GSDevice>(MakeGSDeviceMTL());
 			break;
 #endif
+#ifdef ENABLE_OPENGL
 		case HostDisplay::RenderAPI::OpenGL:
 		case HostDisplay::RenderAPI::OpenGLES:
 			g_gs_device = std::make_unique<GSDeviceOGL>();
 			break;
+#endif
 
 #ifdef ENABLE_VULKAN
 		case HostDisplay::RenderAPI::Vulkan:
@@ -1200,7 +1225,9 @@ void GSApp::Init()
 #ifdef __APPLE__
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::Metal), "Metal", ""));
 #endif
+#ifdef ENABLE_OPENGL
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::OGL), "OpenGL", ""));
+#endif
 #ifdef ENABLE_VULKAN
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::VK), "Vulkan", ""));
 #endif

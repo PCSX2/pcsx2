@@ -43,10 +43,18 @@ static constexpr RendererInfo s_renderer_info[] = {
 	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 11"),
 	GSRendererType::DX11,
 #endif
+#ifdef ENABLE_OPENGL
 	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "OpenGL"),
 	GSRendererType::OGL,
+#endif
+#ifdef ENABLE_VULKAN
 	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Vulkan"),
 	GSRendererType::VK,
+#endif
+#ifdef __APPLE__
+	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Metal"),
+	GSRendererType::Metal,
+#endif
 	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Software"),
 	GSRendererType::SW,
 	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Null"),
