@@ -24,7 +24,9 @@
 #include "pcsx2/GS/GS.h"
 #include "pcsx2/GS/GSUtil.h"
 
+#ifdef ENABLE_VULKAN
 #include "Frontend/VulkanHostDisplay.h"
+#endif
 
 #ifdef _WIN32
 #include "Frontend/D3D11HostDisplay.h"
@@ -419,9 +421,11 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 			break;
 #endif
 
+#ifdef ENABLE_VULKAN
 		case GSRendererType::VK:
 			modes = VulkanHostDisplay::StaticGetAdapterAndModeList(nullptr);
 			break;
+#endif
 
 		case GSRendererType::OGL:
 		case GSRendererType::SW:
