@@ -380,31 +380,15 @@ void GSState::SaturateOutputSize(GSVector4i& r)
 	const bool is_ntsc = videomode == GSVideoMode::NTSC;
 	const bool is_pal = videomode == GSVideoMode::PAL;
 
-	//Some games (such as Pool Paradise) use alternate line reading and provide a massive height which is really half.
-	if (r.height() > 640 && (is_ntsc || is_pal))
-	{
-		r.bottom = r.top + (r.height() / 2);
-		return;
-	}
-
 	const auto& SMODE2 = m_regs->SMODE2;
 	const auto& PMODE = m_regs->PMODE;
-
-	//  Limit games to standard NTSC resolutions. games with 512X512 (PAL resolution) on NTSC video mode produces black border on the bottom.
-	//  512 X 448 is the resolution generally used by NTSC, saturating the height value seems to get rid of the black borders.
-	//  Though it's quite a bad hack as it affects binaries which are patched to run on a non-native video mode.
-	const bool interlaced_field = SMODE2.INT && !SMODE2.FFMD;
-	const bool single_frame_output = SMODE2.INT && SMODE2.FFMD && (PMODE.EN1 ^ PMODE.EN2);
-	const bool unsupported_output_size = r.height() > 448 && r.width() < 640;
-
-	const bool saturate =
-		m_NTSC_Saturation &&
-		is_ntsc &&
-		(interlaced_field || single_frame_output) &&
-		unsupported_output_size;
-
-	if (saturate)
-		r.bottom = r.top + 448;
+	const int res_multi = (SMODE2.INT + 1);
+	// Pixels only get drawn so quick so oversizing of the DISPLAY is ignored when rasterized.
+	// Non-Interlaced pictures can only do half the number of lines (double strike)
+	if (is_ntsc)
+		r.bottom = r.top + std::min(r.height(), 224 * res_multi);
+	else if (is_pal)
+		r.bottom = r.top + std::min(r.height(), 256 * res_multi);
 }
 
 GSVector4i GSState::GetDisplayRect(int i)
