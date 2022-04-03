@@ -327,10 +327,8 @@ static ConsoleLogSource* const ConLogSources[] =
 	(ConsoleLogSource*)&pxConLog_Thread,
 	(ConsoleLogSource*)&SysConsole.sysoutConsole,
 	(ConsoleLogSource*)&SysConsole.pgifLog,
-#ifndef DISABLE_RECORDING
 	(ConsoleLogSource*)&SysConsole.recordingConsole,
 	(ConsoleLogSource*)&SysConsole.controlInfo,
-#endif
 };
 
 // WARNING ConsoleLogSources & ConLogDefaults must have the same size
@@ -345,10 +343,8 @@ static const bool ConLogDefaults[] =
 	false,
 	false,
 	false,
-#ifndef DISABLE_RECORDING
 	false,
 	false,
-#endif
 	false
 };
 
@@ -613,10 +609,8 @@ void ConsoleLogFrame::OnLoggingChanged()
 		{
 			GetMenuBar()->Check( MenuId_LogSource_Start+i, log->IsActive() );
 		}
-#ifndef DISABLE_RECORDING
 		GetMenuBar()->Enable( MenuId_LogSource_Start + MenuId_LogSources_Offset_recordingConsole, g_Conf->EmuOptions.EnableRecordingTools);
 		GetMenuBar()->Enable( MenuId_LogSource_Start + MenuId_LogSources_Offset_controlInfo, g_Conf->EmuOptions.EnableRecordingTools);
-#endif
 	}
 }
 

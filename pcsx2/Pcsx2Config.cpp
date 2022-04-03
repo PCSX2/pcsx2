@@ -1039,9 +1039,7 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EnableCheats);
 	SettingsWrapBitBool(EnablePINE);
 	SettingsWrapBitBool(EnableWideScreenPatches);
-#ifndef DISABLE_RECORDING
 	SettingsWrapBitBool(EnableRecordingTools);
-#endif
 #ifdef PCSX2_CORE
 	SettingsWrapBitBool(EnableGameFixes);
 	SettingsWrapBitBool(SaveStateOnShutdown);
@@ -1190,9 +1188,7 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	EnableCheats = cfg.EnableCheats;
 	EnablePINE = cfg.EnablePINE;
 	EnableWideScreenPatches = cfg.EnableWideScreenPatches;
-#ifndef DISABLE_RECORDING
 	EnableRecordingTools = cfg.EnableRecordingTools;
-#endif
 	UseBOOT2Injection = cfg.UseBOOT2Injection;
 	PatchBios = cfg.PatchBios;
 	PatchRegion = cfg.PatchRegion;

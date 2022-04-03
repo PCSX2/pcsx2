@@ -24,10 +24,8 @@
 #include "PAD/Gamepad.h"
 
 #include "common/Timer.h"
+#include "Recording/InputRecording.h"
 
-#ifndef DISABLE_RECORDING
-#	include "Recording/InputRecording.h"
-#endif
 
 _sio sio;
 _mcd mcds[2][4];
@@ -207,16 +205,11 @@ SIO_WRITE sioWriteController(u8 data)
 
 	default:
 		sio.buf[sio.bufCount] = PADpoll(data);
-#ifndef DISABLE_RECORDING
-		if (g_Conf->EmuOptions.EnableRecordingTools)
+		// Only examine controllers 1 / 2
+		if (sio.slot[sio.port] == 0 || sio.slot[sio.port] == 1)
 		{
-			// Only examine controllers 1 / 2
-			if (sio.slot[sio.port] == 0)
-			{
-				g_InputRecording.ControllerInterrupt(data, sio.port, sio.bufCount, sio.buf);
-			}
+			g_InputRecording.ControllerInterrupt(data, sio.port, sio.bufCount, sio.buf);
 		}
-#endif
 		break;
 	}
 	//Console.WriteLn( "SIO: sent = %02X  From pad data =  %02X  bufCnt %08X ", data, sio.buf[sio.bufCount], sio.bufCount);

@@ -72,10 +72,8 @@ protected:
 	wxMenu& m_submenuPINE;
 	wxMenu& m_submenuScreenshot;
 
-#ifndef DISABLE_RECORDING
 	wxMenu& m_menuRecording;
 	wxMenu& m_submenu_recording_settings;
-#endif
 	wxMenu& m_menuHelp;
 
 	wxMenu& m_LoadStatesSubmenu;
@@ -112,9 +110,7 @@ public:
 	void CreateConfigMenu();
 	void CreateWindowsMenu();
 	void CreateCaptureMenu();
-#ifndef DISABLE_RECORDING
 	void CreateInputRecordingMenu();
-#endif
 	void CreateHelpMenu();
 
 	bool Destroy();
@@ -126,12 +122,10 @@ public:
 	void VideoCaptureToggle();
 	bool IsCapturing() const noexcept { return m_capturingVideo; }
 
-#ifndef DISABLE_RECORDING
 	void initializeRecordingMenuItem(MenuIdentifiers menuId, wxString keyCodeStr, bool enable = true);
 	void enableRecordingMenuItem(MenuIdentifiers menuId, bool enable);
 	void StartInputRecording();
 	void StopInputRecording();
-#endif
 
 protected:
 	void DoGiveHelp(const wxString& text, bool show);
@@ -169,9 +163,7 @@ protected:
 	void Menu_PINE_Enable_Click(wxCommandEvent& event);
 	void Menu_PINE_Settings_Click(wxCommandEvent& event);
 	void Menu_EnableWideScreenPatches_Click(wxCommandEvent& event);
-#ifndef DISABLE_RECORDING
 	void Menu_EnableRecordingTools_Click(wxCommandEvent& event);
-#endif
 	void Menu_EnableHostFs_Click(wxCommandEvent& event);
 
 	void Menu_BootCdvd_Click(wxCommandEvent& event);
@@ -213,7 +205,6 @@ protected:
 	void Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent& event);
 	void Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& event);
 
-#ifndef DISABLE_RECORDING
 	void Menu_Recording_New_Click(wxCommandEvent& event);
 	void Menu_Recording_Play_Click(wxCommandEvent& event);
 	void Menu_Recording_Stop_Click(wxCommandEvent& event);
@@ -223,7 +214,6 @@ protected:
 	void Menu_Recording_FrameAdvance_Click(wxCommandEvent& event);
 	void Menu_Recording_ToggleRecordingMode_Click(wxCommandEvent& event);
 	void Menu_Recording_VirtualPad_Open_Click(wxCommandEvent& event);
-#endif
 
 	void _DoBootCdvd();
 	bool _DoSelectIsoBrowser(wxString& dest);
