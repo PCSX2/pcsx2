@@ -168,6 +168,7 @@
     <addaction name="actionViewToolbar"/>
     <addaction name="actionViewLockToolbar"/>
     <addaction name="actionViewStatusBar"/>
+    <addaction name="actionViewStatusBarVerbose"/>
     <addaction name="separator"/>
     <addaction name="actionViewGameList"/>
     <addaction name="actionViewGameGrid"/>
@@ -595,6 +596,17 @@
    </property>
    <property name="text">
     <string>&amp;Status Bar</string>
+   </property>
+  </action>
+  <action name="actionViewStatusBarVerbose">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Verbose Status</string>
    </property>
   </action>
   <action name="actionViewGameList">

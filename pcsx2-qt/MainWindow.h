@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <optional>
 
@@ -103,6 +104,7 @@ private Q_SLOTS:
 	void onVMStopped();
 
 	void onGameChanged(const QString& path, const QString& serial, const QString& name, quint32 crc);
+	void onPerformanceMetricsUpdated(const QString& fps_stat, const QString& gs_stat);
 
 	void recreate();
 
@@ -124,6 +126,7 @@ private:
 	void restoreStateFromConfig();
 
 	void updateEmulationActions(bool starting, bool running);
+	void updateStatusBarWidgetVisibility();
 	void updateWindowTitle();
 	void setProgressBar(int current, int total);
 	void clearProgressBar();
@@ -166,6 +169,8 @@ private:
 	ControllerSettingsDialog* m_controller_settings_dialog = nullptr;
 
 	QProgressBar* m_status_progress_widget = nullptr;
+	QLabel* m_status_gs_widget = nullptr;
+	QLabel* m_status_fps_widget = nullptr;
 
 	QString m_current_disc_path;
 	QString m_current_game_serial;
@@ -175,6 +180,8 @@ private:
 	bool m_vm_paused = false;
 	bool m_save_states_invalidated = false;
 	bool m_was_focused_on_container_switch = false;
+
+	QString m_last_fps_status;
 };
 
 extern MainWindow* g_main_window;

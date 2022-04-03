@@ -177,6 +177,9 @@ namespace Host
 	/// Called when the VM is resumed after being paused.
 	void OnVMResumed();
 
+	/// Called when performance metrics are updated, approximately once a second.
+	void OnPerformanceMetricsUpdated();
+
 	/// Called when a save state is loading, before the file is processed.
 	void OnSaveStateLoading(const std::string_view& filename);
 

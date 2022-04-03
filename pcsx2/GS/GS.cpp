@@ -36,6 +36,7 @@
 #include "common/Console.h"
 #include "common/StringUtil.h"
 #include "pcsx2/Config.h"
+#include "pcsx2/Counters.h"
 #include "pcsx2/Host.h"
 #include "pcsx2/HostDisplay.h"
 #include "pcsx2/GS.h"
@@ -715,14 +716,20 @@ void GSgetStats(std::string& info)
 
 void GSgetTitleStats(std::string& info)
 {
+	const char* api_name = HostDisplay::RenderAPIToString(s_render_api);
+	const char* hw_sw_name = (GSConfig.Renderer == GSRendererType::Null) ? " Null" : (GSConfig.UseHardwareRenderer() ? " HW" : " SW");
+	const char* deinterlace_mode = theApp.m_gs_interlace[static_cast<int>(GSConfig.InterlaceMode)].name.c_str();
+
+#ifndef PCSX2_CORE
 	int iwidth, iheight;
 	GSgetInternalResolution(&iwidth, &iheight);
 
-	const char* api_name = HostDisplay::RenderAPIToString(s_render_api);
-	const char* hw_sw_name = (GSConfig.Renderer == GSRendererType::Null) ? " Null" : (GSConfig.UseHardwareRenderer() ? " HW" : " SW");
-	const char* interlace_mode = theApp.m_gs_interlace[static_cast<int>(GSConfig.InterlaceMode)].name.c_str();
-
-	info = format("%s%s | %s | %dx%d", api_name, hw_sw_name, interlace_mode,  iwidth, iheight);
+	info = StringUtil::StdStringFromFormat("%s%s | %s | %dx%d", api_name, hw_sw_name, deinterlace_mode,  iwidth, iheight);
+#else
+	const char* interlace_mode = ReportInterlaceMode();
+	const char* video_mode = ReportVideoMode();
+	info = StringUtil::StdStringFromFormat("%s%s | %s | %s | %s", api_name, hw_sw_name, video_mode, interlace_mode, deinterlace_mode);
+#endif
 }
 
 void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
