@@ -36521,12 +36521,6 @@ SLUS-20217:
   name: "Arctic Thunder"
   region: "NTSC-U"
   compat: 5
-  patches:
-    2B2E1535:
-      content: |-
-        author=kozarovv
-        // Set proper height for in game videos. Prevent videos being displayed doubled vertically.
-        patch=1,EE,0013345C,word,240701c0
 SLUS-20218:
   name: "Stunt GP"
   region: "NTSC-U"
@@ -36592,12 +36586,6 @@ SLUS-20229:
   name: "Jonny Moseley - Mad Trix"
   region: "NTSC-U"
   compat: 5
-  patches:
-    AE94FAF8:
-      content: |-
-        author=refraction
-        comment=Fixes interlacing for videos
-        patch=1,EE,0024a6f0,word,24030003
 SLUS-20230:
   name: "Max Payne"
   region: "NTSC-U"
