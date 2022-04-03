@@ -638,9 +638,9 @@ static void recResetRaw()
 
 	recAlloc();
 
+	eeRecNeedsReset = false;
 	if (eeRecIsReset.exchange(true))
 		return;
-	eeRecNeedsReset = false;
 
 	Console.WriteLn(Color_StrongBlack, "EE/iR5900-32 Recompiler Reset");
 
@@ -727,9 +727,9 @@ static void recExitExecution()
 static void recCheckExecutionState()
 {
 #ifndef PCSX2_CORE
-	if (SETJMP_CODE(m_cpuException || m_Exception ||) eeRecIsReset || GetCoreThread().HasPendingStateChangeRequest())
+	if (SETJMP_CODE(m_cpuException || m_Exception ||) eeRecNeedsReset || GetCoreThread().HasPendingStateChangeRequest())
 #else
-	if (SETJMP_CODE(m_cpuException || m_Exception ||) eeRecIsReset || VMManager::Internal::IsExecutionInterrupted())
+	if (SETJMP_CODE(m_cpuException || m_Exception ||) eeRecNeedsReset || VMManager::Internal::IsExecutionInterrupted())
 #endif
 	{
 		recExitExecution();
@@ -755,16 +755,22 @@ static void recExecute()
 
 #else
 
+	// Reset before we try to execute any code, if there's one pending.
+	// We need to do this here, because if we reset while we're executing, it sets the "needs reset"
+	// flag, which triggers a JIT exit (the fastjmp_set below), and eventually loops back here.
+	eeRecIsReset.store(false);
+	if (eeRecNeedsReset.load())
+		recResetRaw();
+
 	int oldstate;
-	m_cpuException = NULL;
-	m_Exception    = NULL;
+	m_cpuException = nullptr;
+	m_Exception    = nullptr;
 
 	// setjmp will save the register context and will return 0
 	// A call to longjmp will restore the context (included the eip/rip)
 	// but will return the longjmp 2nd parameter (here 1)
 	if (!fastjmp_set(&m_SetJmp_StateCheck))
 	{
-		eeRecIsReset = false;
 		eeCpuExecuting = true;
 
 		// Important! Most of the console logging and such has cancel points in it.  This is great
