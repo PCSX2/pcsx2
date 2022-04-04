@@ -941,13 +941,4 @@ DEFINE_HOTKEY("InputRecToggleMode", "Input Recording", "Toggle Recording Mode", 
 		g_InputRecordingControls.RecordModeToggle();
 	}
 })
-// TODO - Vaser - the way the pause/resuming used to work is broken on Qt, needs a rewrite. 
-//	- Currently if you frame advance you can't get out of frame advancing!
-DEFINE_HOTKEY("InputRecFrameAdvance", "Input Recording", "Frame Advance", [](bool pressed) {
-	if (!pressed) // ?? - not pressed so it is on key up?
-	{
-		g_InputRecordingControls.FrameAdvance();
-		g_InputRecordingControls.ResumeCoreThreadIfStarted();
-	}
-})
 END_HOTKEY_LIST()

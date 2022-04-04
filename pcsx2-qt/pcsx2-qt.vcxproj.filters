@@ -198,10 +198,10 @@
     <ClCompile Include="$(IntDir)moc_AutoUpdaterDialog.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)input-rec\moc_NewInputRecordingDlg.cpp">
+    <ClCompile Include="$(IntDir)Tools\InputRecording\moc_NewInputRecordingDlg.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="input-rec\NewInputRecordingDlg.cpp">
+    <ClCompile Include="Tools\InputRecording\NewInputRecordingDlg.cpp">
       <Filter>Tools\Input Recording</Filter>
     </ClCompile>
   </ItemGroup>
@@ -294,7 +294,7 @@
       <Filter>Settings</Filter>
     </QtMoc>
     <QtMoc Include="AutoUpdaterDialog.h" />
-    <QtMoc Include="input-rec\NewInputRecordingDlg.h">
+    <QtMoc Include="Tools\InputRecording\NewInputRecordingDlg.h">
       <Filter>Tools\Input Recording</Filter>
     </QtMoc>
   </ItemGroup>
@@ -366,8 +366,8 @@
       <Filter>GameList</Filter>
     </QtUi>
     <QtUi Include="AutoUpdaterDialog.ui" />
-    <QtUi Include="input-rec\NewInputRecordingDlg.ui">
-        <Filter>Tools\Input Recording</Filter>
+    <QtUi Include="Tools\InputRecording\NewInputRecordingDlg.ui">
+      <Filter>Tools\Input Recording</Filter>
     </QtUi>
   </ItemGroup>
 </Project>

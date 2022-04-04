@@ -106,7 +106,7 @@ static const TraceLogDescriptor
 
 	TLD_sysoutConsole = {"SYSout", "System Out", "Shows strings printed to the system output stream."},
 
-	TLD_Pgif = {"PGIFout", "&PGIF Console", "Shows output from pgif the emulated ps1 gpu"}
+	TLD_Pgif = {"PGIFout", "&PGIF Console", "Shows output from pgif the emulated ps1 gpu"},
 
 	TLD_recordingConsole = {"Input Recording", "Input Recording Console", "Shows recording related logs and information."},
 

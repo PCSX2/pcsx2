@@ -45,7 +45,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\lzma\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)pcsx2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <!-- Needed for moc pch -->
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir)\Settings;$(ProjectDir)\GameList;$(ProjectDir)\input-rec</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir)\Settings;$(ProjectDir)\GameList;$(ProjectDir)\Tools\InputRecording</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
@@ -134,7 +134,7 @@
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="input-rec\NewInputRecordingDlg.cpp" />
+    <ClCompile Include="Tools\InputRecording\NewInputRecordingDlg.cpp" />
     <ClCompile Include="Settings\BIOSSettingsWidget.cpp" />
     <ClCompile Include="Settings\ControllerBindingWidgets.cpp" />
     <ClCompile Include="Settings\ControllerGlobalSettingsWidget.cpp" />
@@ -195,7 +195,7 @@
     <QtMoc Include="GameList\GameListModel.h" />
     <QtMoc Include="GameList\GameListWidget.h" />
     <QtMoc Include="GameList\GameListRefreshThread.h" />
-    <QtMoc Include="input-rec\NewInputRecordingDlg.h" />
+    <QtMoc Include="Tools\InputRecording\NewInputRecordingDlg.h" />
     <ClInclude Include="QtUtils.h" />
     <QtMoc Include="Settings\ControllerBindingWidgets.h" />
     <QtMoc Include="Settings\ControllerGlobalSettingsWidget.h" />
@@ -242,7 +242,7 @@
     <ClCompile Include="$(IntDir)moc_DisplayWidget.cpp" />
     <ClCompile Include="$(IntDir)moc_EmuThread.cpp" />
     <ClCompile Include="$(IntDir)moc_MainWindow.cpp" />
-    <ClCompile Include="$(IntDir)input-rec\moc_NewInputRecordingDlg.cpp" />
+    <ClCompile Include="$(IntDir)Tools\InputRecording\moc_NewInputRecordingDlg.cpp" />
     <ClCompile Include="$(IntDir)qrc_resources.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -314,7 +314,7 @@
     <QtUi Include="AutoUpdaterDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="input-rec\NewInputRecordingDlg.ui">
+    <QtUi Include="Tools\InputRecording\NewInputRecordingDlg.ui">
       <FileType>Document</FileType>
     </QtUi>
   </ItemGroup>
