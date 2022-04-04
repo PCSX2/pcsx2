@@ -166,4 +166,10 @@ TEST(CodegenTests, SSETest)
 	CODEGEN_TEST_BOTH(xBLEND.PS(xmm0, xmm1, 0x55), "66 0f 3a 0c c1 55");
 	CODEGEN_TEST_64(xBLEND.PD(xmm8, xmm9, 0xaa), "66 45 0f 3a 0d c1 aa");
 	CODEGEN_TEST_64(xEXTRACTPS(ptr32[base], xmm1, 2), "66 0f 3a 17 0d f6 ff ff ff 02");
+	CODEGEN_TEST_64(xMOVD(eax, xmm1), "66 0f 7e c8");
+	CODEGEN_TEST_64(xMOVD(eax, xmm10), "66 44 0f 7e d0");
+	CODEGEN_TEST_64(xMOVD(rax, xmm1), "66 48 0f 7e c8");
+	CODEGEN_TEST_64(xMOVD(r10, xmm1), "66 49 0f 7e ca");
+	CODEGEN_TEST_64(xMOVD(rax, xmm10), "66 4c 0f 7e d0");
+	CODEGEN_TEST_64(xMOVD(r10, xmm10), "66 4d 0f 7e d2");
 }
