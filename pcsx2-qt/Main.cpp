@@ -214,6 +214,8 @@ int main(int argc, char* argv[])
 
 	if (autoboot)
 		g_emu_thread->startVM(std::move(autoboot));
+	else
+		main_window->startupUpdateCheck();
 
 	const int result = app.exec();
 

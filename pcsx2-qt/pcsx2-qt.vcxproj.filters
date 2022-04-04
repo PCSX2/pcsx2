@@ -209,6 +209,10 @@
     <ClCompile Include="Settings\HddCreateQt.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
+    <ClCompile Include="AutoUpdaterDialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_AutoUpdaterDialog.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -298,6 +302,7 @@
     <QtMoc Include="Settings\DEV9SettingsWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>
+    <QtMoc Include="AutoUpdaterDialog.h" />
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">
@@ -366,5 +371,6 @@
     <QtUi Include="GameList\EmptyGameListWidget.ui">
       <Filter>GameList</Filter>
     </QtUi>
+    <QtUi Include="AutoUpdaterDialog.ui" />
   </ItemGroup>
 </Project>
