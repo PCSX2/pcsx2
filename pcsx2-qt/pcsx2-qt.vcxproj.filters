@@ -366,10 +366,8 @@
       <Filter>GameList</Filter>
     </QtUi>
     <QtUi Include="AutoUpdaterDialog.ui" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="input-rec\NewInputRecordingDlg.ui">
-      <Filter>Tools\Input Recording</Filter>
-    </None>
+    <QtUi Include="input-rec\NewInputRecordingDlg.ui">
+        <Filter>Tools\Input Recording</Filter>
+    </QtUi>
   </ItemGroup>
 </Project>

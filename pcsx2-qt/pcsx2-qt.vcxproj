@@ -314,9 +314,9 @@
     <QtUi Include="AutoUpdaterDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="input-rec\NewInputRecordingDlg.ui" />
+    <QtUi Include="input-rec\NewInputRecordingDlg.ui">
+      <FileType>Document</FileType>
+    </QtUi>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(SolutionDir)common\vsprops\QtCompile.targets" />
