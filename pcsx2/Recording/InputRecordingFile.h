@@ -164,10 +164,10 @@ public:
 	// Increment the number of undo actions and commit it to the recording file
 	void IncrementUndoCount();
 	// Open an existing recording file
-	bool OpenExisting(const fs::path& path);
+	bool OpenExisting(const std::string_view& path);
 	// Create and open a brand new input recording, either starting from a save-state or from
 	// booting the game
-	bool OpenNew(const fs::path& path, bool fromSaveState);
+	bool OpenNew(const std::string_view& path, bool fromSaveState);
 	// Reads the current frame's input data from the file in order to intercept and overwrite
 	// the current frame's value from the emulator
 	bool ReadKeyBuffer(u8& result, const uint& frame, const uint port, const uint bufIndex);
@@ -202,7 +202,7 @@ private:
 
 	// Calculates the position of the current frame in the input recording
 	long getRecordingBlockSeekPoint(const long& frame);
-	bool open(const fs::path& path, bool newRecording);
+	bool open(const std::string_view& path, bool newRecording);
 	bool verifyRecordingFileHeader();
 };
 

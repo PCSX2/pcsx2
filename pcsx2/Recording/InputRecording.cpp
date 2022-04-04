@@ -465,6 +465,7 @@ wxString InputRecording::resolveGameName()
 
 #else
 
+#include "common/FileSystem.h"
 #include "common/StringUtil.h"
 #include "SaveState.h"
 #include "Counters.h"
@@ -742,9 +743,9 @@ bool InputRecording::Create(const std::string_view& fileName, const bool fromSav
 	if (fromSaveState)
 	{
 		savestate = fmt::format("{}_SaveState.p2s", fileName);
-		if (fs::exists(savestate))
+		if (FileSystem::FileExists(savestate.c_str()))
 		{
-			fs::copy_file(savestate, fmt::format("{}.bak", savestate));
+			FileSystem::CopyFilePath(savestate.c_str(), fmt::format("{}.bak", savestate).c_str(), true);
 		}
 		VMManager::SaveState(savestate.c_str());
 	}
@@ -768,7 +769,7 @@ bool InputRecording::Create(const std::string_view& fileName, const bool fromSav
 	return true;
 }
 
-bool InputRecording::Play(const fs::path& filename)
+bool InputRecording::Play(const std::string_view& filename)
 {
 	if (!inputRecordingData.OpenExisting(filename))
 		return false;
@@ -785,7 +786,7 @@ bool InputRecording::Play(const fs::path& filename)
 		}
 
 		savestate = fmt::format("{}_SaveState.p2s", inputRecordingData.GetFilename());
-		if (!fs::exists(savestate))
+		if (!FileSystem::FileExists(savestate.c_str()))
 		{
 			inputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}", savestate));
 			inputRec::log("Savestate load failed");
@@ -809,8 +810,7 @@ bool InputRecording::Play(const fs::path& filename)
 std::string InputRecording::resolveGameName()
 {
 	std::string gameName;
-	// TODO - Vaser - there is probably a way to get rid of the wx usage here i imagine
-	const std::string gameKey(StringUtil::wxStringToUTF8String(SysGetDiscID()));
+	const std::string gameKey = SysGetDiscID();
 	if (!gameKey.empty())
 	{
 		auto game = GameDatabase::findGame(gameKey);
@@ -820,7 +820,6 @@ std::string InputRecording::resolveGameName()
 			gameName += " (" + game->region + ")";
 		}
 	}
-	// TODO - Vaser - there is probably a way to get rid of the wx usage here i imagine
 	return !gameName.empty() ? gameName : VMManager::GetGameName();
 }
 

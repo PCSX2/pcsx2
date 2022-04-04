@@ -101,9 +101,9 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/SystemSettingsWidget.cpp
 	Settings/SystemSettingsWidget.h
 	Settings/SystemSettingsWidget.ui
-	input-rec/NewInputRecordingDlg.cpp
-	input-rec/NewInputRecordingDlg.h
-	input-rec/NewInputRecordingDlg.ui
+	Tools/InputRecording/NewInputRecordingDlg.cpp
+	Tools/InputRecording/NewInputRecordingDlg.h
+	Tools/InputRecording/NewInputRecordingDlg.ui
 	resources/resources.qrc
 )
 

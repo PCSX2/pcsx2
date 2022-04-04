@@ -39,7 +39,6 @@
 #include "EmuThread.h"
 #include "GameList/GameListRefreshThread.h"
 #include "GameList/GameListWidget.h"
-#include "input-rec/NewInputRecordingDlg.h"
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"
@@ -48,6 +47,7 @@
 #include "Settings/InterfaceSettingsWidget.h"
 #include "SettingWidgetBinder.h"
 #include "svnrev.h"
+#include "Tools/InputRecording/NewInputRecordingDlg.h"
 
 
 static constexpr char DISC_IMAGE_FILTER[] =
@@ -1194,8 +1194,8 @@ void MainWindow::onLoggingOptionChanged()
 
 void MainWindow::onInputRecNewActionTriggered()
 {
-	const bool wasPaused = VMManager::GetState() == VMState::Paused;
-	const bool wasRunning = VMManager::GetState() == VMState::Running;
+	const bool wasPaused = m_vm_paused;
+	const bool wasRunning = m_vm_valid;
 	if (wasRunning && !wasPaused)
 	{
 		VMManager::SetPaused(true);
@@ -1225,7 +1225,7 @@ void MainWindow::onInputRecNewActionTriggered()
 
 void MainWindow::onInputRecPlayActionTriggered()
 {
-	const bool wasPaused = VMManager::GetState() == VMState::Paused;
+	const bool wasPaused = m_vm_paused;
 
 	if (!wasPaused)
 		g_InputRecordingControls.PauseImmediately();
@@ -1246,7 +1246,7 @@ void MainWindow::onInputRecPlayActionTriggered()
 		{
 			g_InputRecording.Stop();
 		}
-		if (g_InputRecording.Play(fs::path(fileNames.first().toStdString())))
+		if (g_InputRecording.Play(fileNames.first().toStdString()))
 		{
 			return;
 		}

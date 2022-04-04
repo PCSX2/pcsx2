@@ -216,7 +216,7 @@ public:
 	bool Create(const std::string_view& filename, const bool fromSaveState, const std::string_view& authorName);
 	// Play an existing input recording from a file
 	// TODO - Vaser - Calls a file dialog if it fails to locate the default base savestate
-	bool Play(const fs::path& path);
+	bool Play(const std::string_view& path);
 	// Stop the active input recording
 	void Stop();
 	// Logs the padData and redraws the virtualPad windows of active pads

@@ -318,24 +318,24 @@ void InputRecordingFile::IncrementUndoCount()
 	fwrite(&undoCount, 4, 1, recordingFile);
 }
 
-bool InputRecordingFile::open(const fs::path& path, bool newRecording)
+bool InputRecordingFile::open(const std::string_view& path, bool newRecording)
 {
 	if (newRecording)
 	{
-		if ((recordingFile = FileSystem::OpenCFile(path.string().c_str(), "wb+")) != nullptr)
+		if ((recordingFile = FileSystem::OpenCFile(path.data(), "wb+")) != nullptr)
 		{
-			filename = path.string();
+			filename = path;
 			totalFrames = 0;
 			undoCount = 0;
 			header.Init();
 			return true;
 		}
 	}
-	else if ((recordingFile = FileSystem::OpenCFile(path.string().c_str(), "rb+")) != nullptr)
+	else if ((recordingFile = FileSystem::OpenCFile(path.data(), "rb+")) != nullptr)
 	{
 		if (verifyRecordingFileHeader())
 		{
-			filename = path.string();
+			filename = path;
 			return true;
 		}
 		Close();
@@ -346,7 +346,7 @@ bool InputRecordingFile::open(const fs::path& path, bool newRecording)
 	return false;
 }
 
-bool InputRecordingFile::OpenNew(const fs::path& path, bool fromSavestate)
+bool InputRecordingFile::OpenNew(const std::string_view& path, bool fromSavestate)
 {
 	if (!open(path, true))
 		return false;
@@ -354,7 +354,7 @@ bool InputRecordingFile::OpenNew(const fs::path& path, bool fromSavestate)
 	return true;
 }
 
-bool InputRecordingFile::OpenExisting(const fs::path& path)
+bool InputRecordingFile::OpenExisting(const std::string_view& path)
 {
 	return open(path, false);
 }
