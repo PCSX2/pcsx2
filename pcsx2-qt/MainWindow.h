@@ -26,6 +26,7 @@
 
 class QProgressBar;
 
+class AutoUpdaterDialog;
 class DisplayWidget;
 class DisplayContainer;
 class GameListWidget;
@@ -78,11 +79,13 @@ public:
 
 	void initialize();
 	void connectVMThreadSignals(EmuThread* thread);
+	void startupUpdateCheck();
 
 	/// Locks the VM by pausing it, while a popup dialog is displayed.
 	VMLock pauseAndLockVM();
 
 public Q_SLOTS:
+	void checkForUpdates(bool display_message);
 	void refreshGameList(bool invalidate_cache);
 	void invalidateSaveStateCache();
 	void reportError(const QString& title, const QString& message);
@@ -91,6 +94,8 @@ public Q_SLOTS:
 	void requestExit();
 
 private Q_SLOTS:
+	void onUpdateCheckComplete();
+
 	DisplayWidget* createDisplay(bool fullscreen, bool render_to_main);
 	DisplayWidget* updateDisplay(bool fullscreen, bool render_to_main, bool surfaceless);
 	void displayResizeRequested(qint32 width, qint32 height);
@@ -203,6 +208,7 @@ private:
 
 	SettingsDialog* m_settings_dialog = nullptr;
 	ControllerSettingsDialog* m_controller_settings_dialog = nullptr;
+	AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
 
 	QProgressBar* m_status_progress_widget = nullptr;
 	QLabel* m_status_gs_widget = nullptr;

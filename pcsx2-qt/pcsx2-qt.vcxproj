@@ -42,6 +42,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\libpng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\glad\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\simpleini\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\lzma\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)pcsx2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <!-- Needed for moc pch -->
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir)\Settings;$(ProjectDir)\GameList</AdditionalIncludeDirectories>
@@ -141,6 +142,9 @@
     <ProjectReference Include="$(SolutionDir)3rdparty\glad\glad.vcxproj">
       <Project>{c0293b32-5acf-40f0-aa6c-e6da6f3bf33a}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\3rdparty\lzma\lzma.vcxproj">
+      <Project>{a4323327-3f2b-4271-83d9-7f9a3c66b6b2}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest" />
@@ -171,6 +175,7 @@
     <ClCompile Include="GameList\GameListRefreshThread.cpp" />
     <ClCompile Include="GameList\GameListWidget.cpp" />
     <ClCompile Include="AboutDialog.cpp" />
+    <ClCompile Include="AutoUpdaterDialog.cpp" />
     <ClCompile Include="DisplayWidget.cpp" />
     <ClCompile Include="QtHost.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -212,6 +217,7 @@
     <ClInclude Include="QtHost.h" />
     <ClInclude Include="PrecompiledHeader.h" />
     <QtMoc Include="AboutDialog.h" />
+    <QtMoc Include="AutoUpdaterDialog.h" />
     <QtMoc Include="EmuThread.h" />
     <QtMoc Include="MainWindow.h" />
     <QtMoc Include="DisplayWidget.h" />
@@ -246,6 +252,7 @@
     <ClCompile Include="$(IntDir)GameList\moc_GameListRefreshThread.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListWidget.cpp" />
     <ClCompile Include="$(IntDir)moc_AboutDialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_AutoUpdaterDialog.cpp" />
     <ClCompile Include="$(IntDir)moc_DisplayWidget.cpp" />
     <ClCompile Include="$(IntDir)moc_EmuThread.cpp" />
     <ClCompile Include="$(IntDir)moc_MainWindow.cpp" />
@@ -315,6 +322,9 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\GameSummaryWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="AutoUpdaterDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
   </ItemGroup>

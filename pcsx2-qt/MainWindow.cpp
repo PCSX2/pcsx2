@@ -32,6 +32,7 @@
 #include "pcsx2/PerformanceMetrics.h"
 
 #include "AboutDialog.h"
+#include "AutoUpdaterDialog.h"
 #include "DisplayWidget.h"
 #include "EmuThread.h"
 #include "GameList/GameListRefreshThread.h"
@@ -1065,7 +1066,66 @@ void MainWindow::onAboutActionTriggered()
 	about.exec();
 }
 
-void MainWindow::onCheckForUpdatesActionTriggered() {}
+void MainWindow::onCheckForUpdatesActionTriggered()
+{
+	// Wipe out the last version, that way it displays the update if we've previously skipped it.
+	QtHost::RemoveBaseSettingValue("AutoUpdater", "LastVersion");
+	checkForUpdates(true);
+}
+
+void MainWindow::checkForUpdates(bool display_message)
+{
+	if (!AutoUpdaterDialog::isSupported())
+	{
+		if (display_message)
+		{
+			QMessageBox mbox(this);
+			mbox.setWindowTitle(tr("Updater Error"));
+			mbox.setTextFormat(Qt::RichText);
+
+			QString message;
+#ifdef _WIN32
+			message =
+				tr("<p>Sorry, you are trying to update a PCSX2 version which is not an official GitHub release. To "
+				   "prevent incompatibilities, the auto-updater is only enabled on official builds.</p>"
+				   "<p>To obtain an official build, please download from the link below:</p>"
+				   "<p><a href=\"https://pcsx2.net/downloads/\">https://pcsx2.net/downloads/</a></p>");
+#else
+			message = tr("Automatic updating is not supported on the current platform.");
+#endif
+
+			mbox.setText(message);
+			mbox.setIcon(QMessageBox::Critical);
+			mbox.exec();
+		}
+
+		return;
+	}
+
+	if (m_auto_updater_dialog)
+		return;
+
+	m_auto_updater_dialog = new AutoUpdaterDialog(this);
+	connect(m_auto_updater_dialog, &AutoUpdaterDialog::updateCheckCompleted, this, &MainWindow::onUpdateCheckComplete);
+	m_auto_updater_dialog->queueUpdateCheck(display_message);
+}
+
+void MainWindow::onUpdateCheckComplete()
+{
+	if (!m_auto_updater_dialog)
+		return;
+
+	m_auto_updater_dialog->deleteLater();
+	m_auto_updater_dialog = nullptr;
+}
+
+void MainWindow::startupUpdateCheck()
+{
+	if (!QtHost::GetBaseBoolSettingValue("AutoUpdater", "CheckAtStartup", true))
+		return;
+
+	checkForUpdates(false);
+}
 
 void MainWindow::onToolsOpenDataDirectoryTriggered()
 {
