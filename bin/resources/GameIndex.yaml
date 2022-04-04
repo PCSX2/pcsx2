@@ -20418,6 +20418,8 @@ SLES-82013:
   name: "Metal Gear Solid 3 - Snake Eater"
   region: "PAL-E-F"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurry characters.
 SLES-82018:
   name: "Cy Girls [Disc 1]"
   region: "PAL-E-F-S"
@@ -20437,9 +20439,13 @@ SLES-82021:
 SLES-82024:
   name: "Metal Gear Solid 3 - Snake Eater"
   region: "PAL-I"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurry characters.
 SLES-82026:
   name: "Metal Gear Solid 3 - Snake Eater"
   region: "PAL-S"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurry characters.
 SLES-82028:
   name: "Star Ocean 3 - Till the End of Time [Disc1of2]"
   region: "PAL-E"
@@ -20473,6 +20479,8 @@ SLES-82031:
 SLES-82032:
   name: "Metal Gear Solid 3 - Snake Eater"
   region: "PAL-G"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurry characters.
 SLES-82034:
   name: "Xenosaga Episode II [Disc1of2]"
   region: "PAL-M3"
