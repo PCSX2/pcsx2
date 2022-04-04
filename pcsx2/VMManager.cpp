@@ -108,6 +108,7 @@ static u32 s_active_game_fixes = 0;
 static std::vector<u8> s_widescreen_cheats_data;
 static bool s_widescreen_cheats_loaded = false;
 static s32 s_current_save_slot = 1;
+static u32 s_frame_advance_count = 0;
 static u32 s_mxcsr_saved;
 
 VMState VMManager::GetState()
@@ -932,6 +933,15 @@ void VMManager::SetLimiterMode(LimiterModeType type)
 	GetMTGS().SetVSync(EmuConfig.GetEffectiveVsyncMode());
 }
 
+void VMManager::FrameAdvance(u32 num_frames /*= 1*/)
+{
+	if (!HasValidVM())
+		return;
+
+	s_frame_advance_count = num_frames;
+	SetState(VMState::Running);
+}
+
 bool VMManager::ChangeDisc(std::string path)
 {
 	std::string old_path(CDVDsys_GetFile(CDVD_SourceType::Iso));
@@ -1026,6 +1036,18 @@ void VMManager::Internal::VSyncOnCPUThread()
 	// TODO: Move frame limiting here to reduce CPU usage after sleeping...
 	ApplyLoadedPatches(PPT_CONTINUOUSLY);
 	ApplyLoadedPatches(PPT_COMBINED_0_1);
+
+	// Frame advance must be done *before* pumping messages, because otherwise
+	// we'll immediately reduce the counter we just set.
+	if (s_frame_advance_count > 0)
+	{
+		s_frame_advance_count--;
+		if (s_frame_advance_count == 0)
+		{
+			// auto pause at the end of frame advance
+			SetState(VMState::Paused);
+		}
+	}
 
 	Host::PumpMessagesOnCPUThread();
 	InputManager::PollSources();
@@ -1308,6 +1330,10 @@ DEFINE_HOTKEY("DecreaseSpeed", "System", "Decrease Target Speed", [](bool presse
 DEFINE_HOTKEY("ResetVM", "System", "Reset Virtual Machine", [](bool pressed) {
 	if (!pressed && VMManager::HasValidVM())
 		VMManager::Reset();
+})
+DEFINE_HOTKEY("FrameAdvance", "System", "Frame Advance", [](bool pressed) {
+	if (!pressed)
+		VMManager::FrameAdvance(1);
 })
 
 DEFINE_HOTKEY("PreviousSaveStateSlot", "Save States", "Select Previous Save Slot", [](bool pressed) {
