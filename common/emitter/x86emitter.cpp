@@ -478,7 +478,7 @@ const xRegister32
 
 	void EmitRex(const xRegisterBase& reg1, const xRegisterBase& reg2)
 	{
-		bool w = reg1.IsWide();
+		bool w = reg1.IsWide() || reg2.IsWide();
 		bool r = reg1.IsExtended();
 		bool x = false;
 		bool b = reg2.IsExtended();
