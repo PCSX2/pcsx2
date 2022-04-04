@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2022  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -20,8 +20,6 @@
 #include "DebugTools/Debug.h"
 #include "common/Console.h"
 #include "GS.h"				// GSosdlog
-#include "gui/App.h"	// GetRGBA
-#include "gui/ConsoleLogger.h"
 #include "Host.h"
 
 #include <fmt/core.h>
