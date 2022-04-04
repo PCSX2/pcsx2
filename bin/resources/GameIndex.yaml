@@ -21937,6 +21937,9 @@ SLPM-62062:
 SLPM-62063:
   name: "Gradius III & IV [Konami The Best]"
   region: "NTSC-J"
+SLPM-62065:
+  name: "Simple 2000 Series Vol. 1 - The Table Game"
+  region: "NTSC-J"
 SLPM-62067:
   name: "Hunter X Hunter - Ryumyaku no Saidan"
   region: "NTSC-J"
@@ -21992,6 +21995,9 @@ SLPM-62091:
   region: "NTSC-J"
 SLPM-62092:
   name: "XG3 Extreme G Racing"
+  region: "NTSC-J"
+SLPM-62093:
+  name: "Simple 2000 Series Ultimate Vol. 1 - Love - Smash!"
   region: "NTSC-J"
 SLPM-62094:
   name: "Simple 2000 Series Vol. 2 - The Party Game"
@@ -22119,6 +22125,9 @@ SLPM-62144:
 SLPM-62147:
   name: "Bass Strike"
   region: "NTSC-J"
+SLPM-62150:
+  name: "Simple 2000 Series Vol. 3 - The Bass Fishing"
+  region: "NTSC-J"
 SLPM-62151:
   name: "Live GI Stable 2"
   region: "NTSC-J"
@@ -22141,6 +22150,9 @@ SLPM-62158:
 SLPM-62159:
   name: "World Soccer Winning Eleven 6"
   region: "NTSC-J"
+SLPM-62160:
+  name: "Simple 2000 Series Vol. 4 - The Double Mahjong Puzzle"
+  region: "NTSC-J"
 SLPM-62161:
   name: "Generation of Chaos - Next [Limited Edition]"
   region: "NTSC-J"
@@ -22159,7 +22171,10 @@ SLPM-62169:
   name: "Live World Soccer 2002"
   region: "NTSC-J"
 SLPM-62171:
-  name: "Simple 2000 Series Vol.05 - The Blockbuster Hyper"
+  name: "Simple 2000 Series Vol. 5 - The Block Kuzushi Hyper"
+  region: "NTSC-J"
+SLPM-62174:
+  name: "Simple 2000 Honkaku Shikou Series Vol. 3 - The Chess"
   region: "NTSC-J"
 SLPM-62175:
   name: "beatmania Da Da Da!! THE BEST Da"
@@ -22170,8 +22185,11 @@ SLPM-62176:
 SLPM-62177:
   name: "Kuusen [Kadokawa The Best]"
   region: "NTSC-J"
+SLPM-62179:
+  name: "Simple 2000 Honkaku Shikou Series Vol. 2 - The Igo"
+  region: "NTSC-J"
 SLPM-62180:
-  name: "Simple 2000 Series Vol.01 - The Shogi"
+  name: "Simple 2000 Honkaku Shikou Series Vol. 1 - The Shogi"
   region: "NTSC-J"
   compat: 5
 SLPM-62182:
@@ -22192,13 +22210,16 @@ SLPM-62192:
 SLPM-62193:
   name: "J League Perfect Striker 5"
   region: "NTSC-J"
+SLPM-62196:
+  name: "Simple 2000 Series Vol. 6 - The Snowboard"
+  region: "NTSC-J"
 SLPM-62197:
-  name: "Simple 2000 Series Vol.07 - The Real Fist Fighter"
+  name: "Simple 2000 Series Vol. 7 - The Boxing - Real Fist Fighter"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes graphical issues.
 SLPM-62198:
-  name: "Simple 2000 Series Vol.04 - The Mahjong"
+  name: "Simple 2000 Honkaku Shikou Series Vol. 4 - The Mahjong"
   region: "NTSC-J"
 SLPM-62199:
   name: "Dragon Quest Characters - Toruneko no Daibouken 3"
@@ -22231,7 +22252,7 @@ SLPM-62206:
   region: "NTSC-J"
   compat: 4
 SLPM-62207:
-  name: "Simple 2000 Series Vol.09 - Bittersweet Fools"
+  name: "Simple 2000 Series Vol. 9 - The Renai Adventure - Bittersweet Fools"
   region: "NTSC-J"
 SLPM-62209:
   name: "Gigantic Drive"
@@ -22258,10 +22279,10 @@ SLPM-62217:
   name: "J League Winning Eleven 6"
   region: "NTSC-J"
 SLPM-62218:
-  name: "Simple 2000 Series Vol.10 - The Table Game Sekai-Hen"
+  name: "Simple 2000 Series Vol. 10 - The Table Game Sekai-Hen"
   region: "NTSC-J"
 SLPM-62219:
-  name: "Simple 2000 Series Vol.08 - The Tennis"
+  name: "Simple 2000 Series Vol. 8 - The Tennis"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes SPS and console spam.
@@ -22269,10 +22290,10 @@ SLPM-62221:
   name: "Winning Post 5 - Max 2002"
   region: "NTSC-J"
 SLPM-62223:
-  name: "Simple 2000 Series Vol.11 - The Off-Road Buggy"
+  name: "Simple 2000 Series Vol. 11 - The Off-Road Buggy"
   region: "NTSC-J"
 SLPM-62224:
-  name: "Simple 2000 Series Ultimate Vol.3 - Saisoku! Zokusha King - Buchigiri Densetsu"
+  name: "Simple 2000 Series Ultimate Vol. 3 - Saisoku! Zokusha King - Buchigiri Densetsu"
   region: "NTSC-J"
 SLPM-62225:
   name: "Nobunaga no Yabou Arashi Seiki [with Power-Up Kit]"
@@ -22291,11 +22312,14 @@ SLPM-62229:
 SLPM-62230:
   name: "Silent Scope 3"
   region: "NTSC-J"
+SLPM-62231:
+  name: "Simple 2000 Series Vol. 12 - The Quiz 20000"
+  region: "NTSC-J"
 SLPM-62232:
-  name: "Simple 2000 Series Vol.15 - The Rugby"
+  name: "Simple 2000 Series Vol. 15 - The Rugby"
   region: "NTSC-J"
 SLPM-62233:
-  name: "Simple 2000 Series Ultimate Vol.4 - Urawaza Ikasa Majangai-Niisan Tsukanjimattayodane"
+  name: "Simple 2000 Series Ultimate Vol. 4 - Urawaza Ikasa Mahjong Machi"
   region: "NTSC-J"
 SLPM-62234:
   name: "Simple2000 Vol.13 The Renai Adv Garasu No Mori"
@@ -22334,7 +22358,7 @@ SLPM-62247:
   name: "Shin Contra"
   region: "NTSC-J"
 SLPM-62248:
-  name: "Simple 2000 Series Vol.05 - The Love Mahjong"
+  name: "Simple 2000 Series Ultimate Vol. 5 - Love - Mahjong!"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes SPS.
@@ -22345,13 +22369,13 @@ SLPM-62250:
   name: "Hello Kitty Star Light - Minna de Sugoroku"
   region: "NTSC-J"
 SLPM-62251:
-  name: "Simple 2000 Series Vol.14 - The Billiard"
+  name: "Simple 2000 Series Vol. 14 - The Billiard"
   region: "NTSC-J"
 SLPM-62252:
-  name: "Simple 2000 Series Vol.17 - The Suiri-Aratanaru 20 no Jikenbo"
+  name: "Simple 2000 Series Vol. 17 - The Suiri-Aratanaru 20 no Jikenbo"
   region: "NTSC-J"
 SLPM-62253:
-  name: "Simple 2000 Series Vol.16 - The Sniper"
+  name: "Simple 2000 Series Vol. 16 - The Sniper"
   region: "NTSC-J"
 SLPM-62254:
   name: "Kaerazu no Mori"
@@ -22397,15 +22421,15 @@ SLPM-62269:
   name: "Akagi - Yami ni Oritatta Tensai"
   region: "NTSC-J"
 SLPM-62270:
-  name: "Simple 2000 Series Vol.19 - The Love Simulation - The Coffee Shop"
+  name: "Simple 2000 Series Vol. 19 - The Love Simulation - The Coffee Shop"
   region: "NTSC-J"
 SLPM-62271:
-  name: "Simple 2000 Series Vol.20 - The Dungeon RPG"
+  name: "Simple 2000 Series Vol. 20 - The Dungeon RPG"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes missing blue lines on the characters in dark areas.
 SLPM-62272:
-  name: "Simple 2000 Series Vol.18 - The Party Sugoroku"
+  name: "Simple 2000 Series Vol. 18 - The Party Sugoroku"
   region: "NTSC-J"
 SLPM-62273:
   name: "Mai-Shin 3"
@@ -22451,13 +22475,13 @@ SLPM-62292:
   name: "Warrior Blade - Rastan vs. Barbarian"
   region: "NTSC-J"
 SLPM-62294:
-  name: "Simple 2000 Series Vol.21 - The Moonlight Tale RPG"
+  name: "Simple 2000 Series Vol. 21 - The Moonlight Tale RPG"
   region: "NTSC-J"
 SLPM-62295:
-  name: "Simple 2000 Series Vol.22 - The Densha de Go! Commuter Train Version"
+  name: "Simple 2000 Series Vol. 22 - The Tsuukin Densha Untenshi - Densha de Go! 3 Tsuukin Hen"
   region: "NTSC-J"
 SLPM-62296:
-  name: "Simple 2000 Series Vol.05 - Love Upper Boxing"
+  name: "Simple 2000 Series Ultimate Vol. 6 - Love - Upper!"
   region: "NTSC-J"
   compat: 5
 SLPM-62297:
@@ -22481,18 +22505,24 @@ SLPM-62305:
   name: "Othello [SuperLite 2000]"
   region: "NTSC-J"
 SLPM-62307:
-  name: "Simple 2000 Series Vol.26 - The Pinball X 3"
+  name: "Simple 2000 Series Vol. 26 - The Pinball X 3"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes SPS and console spam.
 SLPM-62308:
-  name: "Simple 2000 Series Vol.24 - The Bowling"
+  name: "Simple 2000 Series Vol. 24 - The Bowling"
+  region: "NTSC-J"
+SLPM-62309:
+  name: "Simple 2000 Series Vol. 25 - The Menkyo Shutoku Simulation"
   region: "NTSC-J"
 SLPM-62310:
   name: "Souten Ryuu - The Arcade"
   region: "NTSC-J"
+SLPM-62313:
+  name: "Simple 2000 Series Vol. 23 - The Puzzle Collection 2000-mon"
+  region: "NTSC-J"
 SLPM-62314:
-  name: "Simple 2000 Series Vol.07 - Saikyou! Shiro Biking Security Police"
+  name: "Simple 2000 Series Vol. 7 - Saikyou! Shiro Biking Security Police"
   region: "NTSC-J"
 SLPM-62315:
   name: "Puchi Copter [with Controller]"
@@ -22513,7 +22543,7 @@ SLPM-62322:
   name: "Conveni 3, The"
   region: "NTSC-J"
 SLPM-62324:
-  name: "Simple 2000 Series Vol.08 - Gekitou! Meiro King"
+  name: "Simple 2000 Series Vol. 8 - Gekitou! Meiro King"
   region: "NTSC-J"
 SLPM-62325:
   name: "High Heat Major League Baseball 2003 [Konami The Best]"
@@ -22525,20 +22555,20 @@ SLPM-62327:
   name: "G-Taste Mahjong"
   region: "NTSC-J"
 SLPM-62328:
-  name: "Simple 2000 Series Vol.27 - The Pro Yakyuu 2003 Pennant Race"
+  name: "Simple 2000 Series Vol. 27 - The Pro Yakyuu 2003 Pennant Race"
   region: "NTSC-J"
 SLPM-62334:
-  name: "Simple 2000 Series Vol.29 - The Renai Board Game"
+  name: "Simple 2000 Series Vol. 29 - The Renai Board Game"
   region: "NTSC-J"
 SLPM-62335:
-  name: "Simple 2000 Series Vol.28 - The Bushido - Tsujigiri Ichi-dai"
+  name: "Simple 2000 Series Vol. 28 - The Bushido - Tsujigiri Ichi-dai"
   region: "NTSC-J"
 SLPM-62336:
-  name: "Simple 2000 Series Vol.44 - The First Step RPG"
+  name: "Simple 2000 Series Vol. 44 - The Hajimete no RPG - Densetsu no Keishousha"
   region: "NTSC-J"
   compat: 5
 SLPM-62337:
-  name: "Simple 2000 Series Vol.30 - The Basketball - 3-on-3"
+  name: "Simple 2000 Series Vol. 30 - The Basketball - 3-on-3"
   region: "NTSC-J"
 SLPM-62338:
   name: "Ishikura Noboru no Igo Kouza"
@@ -22557,13 +22587,13 @@ SLPM-62342:
   region: "NTSC-J"
   compat: 5
 SLPM-62343:
-  name: "Simple 2000 Series Vol.34 - Love Horror Adventure"
+  name: "Simple 2000 Series Vol. 34 - The Renai Horror Adventure - Hyouryuu Shoujo"
   region: "NTSC-J"
 SLPM-62344:
-  name: "Simple 2000 Series Vol.31 - The Chikyuu Boueigun"
+  name: "Simple 2000 Series Vol. 31 - The Chikyuu Boueigun"
   region: "NTSC-J"
 SLPM-62345:
-  name: "Simple 2000 Series Vol.32 - The Tank"
+  name: "Simple 2000 Series Vol. 32 - The Sensha"
   region: "NTSC-J"
 SLPM-62348:
   name: "The Mechsmith - Rum"
@@ -22574,8 +22604,11 @@ SLPM-62349:
 SLPM-62350:
   name: "Hudson Selection Vol.2 - Star Soldier"
   region: "NTSC-J"
+SLPM-62352:
+  name: "Simple 2000 Series Vol. 40 - The Touyou Sandai Senjutsu"
+  region: "NTSC-J"
 SLPM-62353:
-  name: "Simple 2000 Series Vol.33 - The Jet Coaster - Yuuenchi Otsukkurou!"
+  name: "Simple 2000 Series Vol. 33 - The Jet Coaster - Yuuenchi Otsukkurou!"
   region: "NTSC-J"
 SLPM-62354:
   name: "Space Invaders 25th Anniversary"
@@ -22617,13 +22650,13 @@ SLPM-62371:
   region: "NTSC-J"
   compat: 5
 SLPM-62373:
-  name: "Simple 2000 Series Vol.35 - The Helicopter"
+  name: "Simple 2000 Series Vol. 35 - The Helicopter"
   region: "NTSC-J"
 SLPM-62374:
-  name: "Simple 2000 Series Ultimate Vol.12 - Street Golfer"
+  name: "Simple 2000 Series Ultimate Vol. 12 - Street Golfer"
   region: "NTSC-J"
 SLPM-62375:
-  name: "Simple 2000 Series Vol.36 - The Musume Ikusei Simulation"
+  name: "Simple 2000 Series Vol. 36 - The Musume Ikusei Simulation"
   region: "NTSC-J"
 SLPM-62376:
   name: "Get Backers - All Members Gather [Konami The Best]"
@@ -22673,11 +22706,20 @@ SLPM-62394:
   name: "Power Smash 2 [Sega The Best - 2800 Series]"
   region: "NTSC-J"
 SLPM-62395:
-  name: "Simple 2000 Series Vol.37 - The Shooting - Double Shienryu"
+  name: "Simple 2000 Series Vol. 37 - The Shooting - Double Shienryu"
   region: "NTSC-J"
   compat: 5
+SLPM-62396:
+  name: "Simple 2000 Honkaku Shikou Series Vol. 6 - The Card"
+  region: "NTSC-J"
 SLPM-62397:
-  name: "Simple 2000 Honkaku Shikou Vol.5 - Kiryoku Kentei"
+  name: "Simple 2000 Honkaku Shikou Series Vol. 5 - Kiryoku Kentei"
+  region: "NTSC-J"
+SLPM-62398:
+  name: "Simple 2000 Series Vol. 39 - The Boku no Machizukuri - Machi-ing Maker++"
+  region: "NTSC-J"
+SLPM-62399:
+  name: "Simple 2000 Series Ultimate Vol. 13 - Kyousou! Tansha King"
   region: "NTSC-J"
 SLPM-62400:
   name: "Sega Ages 2500 Series Vol.12 - Puyo Puyo Tsu Perfect Set"
@@ -22708,7 +22750,7 @@ SLPM-62410:
   name: "Silent Scope 3 [Konami The Best]"
   region: "NTSC-J"
 SLPM-62412:
-  name: "Simple 2000 Series Vol.41 - The Volleyball"
+  name: "Simple 2000 Series Vol. 41 - The Volleyball"
   region: "NTSC-J"
 SLPM-62413:
   name: "Kuusen 2"
@@ -22744,7 +22786,7 @@ SLPM-62425:
   region: "NTSC-J"
   compat: 5
 SLPM-62426:
-  name: "Simple 2000 Series Vol.42 - The Ultimate Fight"
+  name: "Simple 2000 Series Vol. 42 - The Ishu Kakutou Waza"
   region: "NTSC-J"
 SLPM-62427:
   name: "Dance Dance Revolution Party Collection"
@@ -22754,10 +22796,13 @@ SLPM-62428:
   name: "Kiwame Mahjong DXII - The 4th Mondo 21 Cup Competition"
   region: "NTSC-J"
 SLPM-62429:
-  name: "Simple 2000 Series Vol.15 - The Love Ping Pong"
+  name: "Simple 2000 Series Ultimate Vol. 15 - Love - Ping Pong!"
   region: "NTSC-J"
 SLPM-62430:
-  name: "Simple 2000 Series Vol.43 - The Saiban"
+  name: "Simple 2000 Series Vol. 43 - The Saiban"
+  region: "NTSC-J"
+SLPM-62431:
+  name: "Simple 2000 Series Ultimate Vol. 14 - Topai! Dramatic Mahjong"
   region: "NTSC-J"
 SLPM-62432:
   name: "Sega Ages 2500 Series Vol.11 - Hokuto no Ken"
@@ -22830,7 +22875,7 @@ SLPM-62458:
   name: "Daisan Teikoku Koubouki - Aufstieg und Fall des dritten Reiches"
   region: "NTSC-J"
 SLPM-62459:
-  name: "Simple 2000 Series Vol.16 - Sengoku vs. Gendai"
+  name: "Simple 2000 Series Vol. 16 - Sengoku vs. Gendai"
   region: "NTSC-J"
   compat: 5
 SLPM-62460:
@@ -22859,11 +22904,11 @@ SLPM-62466:
   region: "NTSC-J"
   compat: 5
 SLPM-62467:
-  name: "Simple 2000 Series Vol.18 - Love Aerobics"
+  name: "Simple 2000 Series Ultimate Vol. 18 - Love - Aerobics"
   region: "NTSC-J"
   compat: 5
 SLPM-62468:
-  name: "Simple 2000 Series Vol.17 - Taisen! Bakudan Poy Poy"
+  name: "Simple 2000 Series Ultimate Vol. 17 - Taisen! Bakudan Poi Poi"
   region: "NTSC-J"
 SLPM-62469:
   name: "Gunbird 1&2"
@@ -22879,7 +22924,7 @@ SLPM-62473:
   name: "Nobunaga no Yabou - Ranseiki [Koei The Best]"
   region: "NTSC-J"
 SLPM-62474:
-  name: "Simple 2000 Series Vol.46 - The Kanji Quiz - Challenge! Kanji Kentei"
+  name: "Simple 2000 Series Vol. 46 - The Kanji Quiz - Challenge! Kanji Kentei"
   region: "NTSC-J"
 SLPM-62475:
   name: "Momotaro Densetsu XI [Hudson The Best]"
@@ -22888,7 +22933,7 @@ SLPM-62476:
   name: "Get Backers Dakkanoku - Ura Shinjuku Saikyou Battle"
   region: "NTSC-J"
 SLPM-62477:
-  name: "Simple 2000 Series Vol.47 - The Gassen Sekigahara"
+  name: "Simple 2000 Series Vol. 47 - The Gassen Sekigahara"
   region: "NTSC-J"
 SLPM-62478:
   name: "Bomberman Kart DX"
@@ -22907,16 +22952,16 @@ SLPM-62482:
   name: "Pachinko Slot Tokodensho - Inoki Festival"
   region: "NTSC-J"
 SLPM-62483:
-  name: "Simple 2000 Series Vol.48 - The Taxi"
+  name: "Simple 2000 Series Vol. 48 - The Taxi - Untenshu ha Kimi da"
   region: "NTSC-J"
   roundModes:
      eeRoundMode: 2
      vuRoundMode: 2
 SLPM-62484:
-  name: "Simple 2000 Series Vol.50 - The Daibijin"
+  name: "Simple 2000 Series Vol. 50 - The Daibijin"
   region: "NTSC-J"
 SLPM-62485:
-  name: "Simple 2000 Series Vol.49 - The World Champ Dodge Baller"
+  name: "Simple 2000 Series Vol. 49 - The World Champ Dodge Baller"
   region: "NTSC-J"
 SLPM-62486:
   name: "Chou Saisoku! Zokusha King B.U. [Simple Series DX]"
@@ -22943,20 +22988,20 @@ SLPM-62492:
   name: "Karaoke Revolution - Kids Song Selection"
   region: "NTSC-J"
 SLPM-62493:
-  name: "Simple 2000 Series Vol.54 - The Daikiju"
+  name: "Simple 2000 Series Vol. 54 - The Daikiju"
   region: "NTSC-J"
 SLPM-62494:
-  name: "Simple 2000 Series Vol.55 - The Cat Fight"
+  name: "Simple 2000 Series Vol. 55 - The Cat Fight"
   region: "NTSC-J"
   compat: 5
 SLPM-62495:
-  name: "Simple 2000 Series Vol.53 - The Camera Kozo"
+  name: "Simple 2000 Series Vol. 53 - The Camera Kozo"
   region: "NTSC-J"
 SLPM-62496:
-  name: "Simple 2000 Series Vol.52 - The Space Raiders"
+  name: "Simple 2000 Series Vol. 52 - The Space Raiders"
   region: "NTSC-J"
 SLPM-62497:
-  name: "Simple 2000 Series Vol.51 - The Battleship"
+  name: "Simple 2000 Series Vol. 51 - The Senkan"
   region: "NTSC-J"
 SLPM-62499:
   name: "Gambler Densetsu Tetsuya Digest"
@@ -22974,7 +23019,7 @@ SLPM-62503:
   name: "Bomberman Battles"
   region: "NTSC-J"
 SLPM-62504:
-  name: "Simple 2000 Series Vol.56 - The Survival Game"
+  name: "Simple 2000 Series Vol. 56 - The Survival Game"
   region: "NTSC-J"
 SLPM-62505:
   name: "Fukuhara Love Ping Pong"
@@ -22984,13 +23029,13 @@ SLPM-62506:
   region: "NTSC-J"
   compat: 5
 SLPM-62508:
-  name: "Simple 2000 Series Vol.57 - The Baseball 2004"
+  name: "Simple 2000 Series Vol. 57 - The Pro Yakyuu 2004"
   region: "NTSC-J"
 SLPM-62509:
-  name: "Simple 2000 Series Vol.58 - The Surgeon"
+  name: "Simple 2000 Series Vol. 58 - The Gekai"
   region: "NTSC-J"
 SLPM-62510:
-  name: "Simple 2000 Series Vol.60 - The Tokusatsu Henshin Hero"
+  name: "Simple 2000 Series Vol. 60 - The Tokusatsu Henshin Hero"
   region: "NTSC-J"
   compat: 5
 SLPM-62511:
@@ -23033,11 +23078,11 @@ SLPM-62523:
   name: "Shikigami no Shiro [Taito The Best]"
   region: "NTSC-J"
 SLPM-62524:
-  name: "Simple 2000 Series Vol.59 - The Uchyujin to Hanashi Sou!"
+  name: "Simple 2000 Series Vol. 59 - The Uchyujin to Hanashi Sou!"
   region: "NTSC-J"
   compat: 5
 SLPM-62525:
-  name: "Simple 2000 Series Vol.61 - The OneeChanBara"
+  name: "Simple 2000 Series Vol. 61 - The OneeChanBara"
   region: "NTSC-J"
   compat: 5
 SLPM-62526:
@@ -23060,7 +23105,7 @@ SLPM-62532:
   region: "NTSC-J"
   compat: 5
 SLPM-62534:
-  name: "Simple 2000 Series Vol.63 - Women's Swim Meet"
+  name: "Simple 2000 Series Vol. 63 - The Suieitaikai"
   region: "NTSC-J"
   compat: 5
 SLPM-62536:
@@ -23082,16 +23127,16 @@ SLPM-62541:
   name: "Super Bowling [Superlite 2000 Series Sports]"
   region: "NTSC-J"
 SLPM-62542:
-  name: "Simple 2000 Series Vol.20 - The Love Mahjong 2"
+  name: "Simple 2000 Series Vol. 20 - The Love Mahjong 2"
   region: "NTSC-J"
 SLPM-62543:
-  name: "Simple 2000 Series Vol.65 - The Kyonshi Panic"
+  name: "Simple 2000 Series Vol. 65 - The Kyonshi Panic"
   region: "NTSC-J"
 SLPM-62544:
-  name: "Simple 2000 Series Vol.19 - Akagi Yama ni Oritattatensai"
+  name: "Simple 2000 Series Vol. 19 - Akagi Yama ni Oritattatensai"
   region: "NTSC-J"
 SLPM-62545:
-  name: "Simple 2000 Series Vol.64 - Splatter Action"
+  name: "Simple 2000 Series Vol. 64 - Splatter Action"
   region: "NTSC-J"
   compat: 5
 SLPM-62546:
@@ -23134,13 +23179,13 @@ SLPM-62555:
   name: "Momotaro Densetsu"
   region: "NTSC-J"
 SLPM-62556:
-  name: "Simple 2000 Series Vol.66 - Brain Power Puzzles"
+  name: "Simple 2000 Series Vol. 66 - The Party Unou Quiz"
   region: "NTSC-J"
 SLPM-62557:
-  name: "Simple 2000 Series Vol.67 - The Suiri"
+  name: "Simple 2000 Series Vol. 67 - The Suiri"
   region: "NTSC-J"
 SLPM-62558:
-  name: "Simple 2000 Series Vol.21 - Kenka Joutou! Yankee Banchou"
+  name: "Simple 2000 Series Vol. 21 - Kenka Joutou! Yankee Banchou"
   region: "NTSC-J"
 SLPM-62559:
   name: "Sega Superstars"
@@ -23157,7 +23202,7 @@ SLPM-62563:
   region: "NTSC-J"
   compat: 5
 SLPM-62564:
-  name: "Simple 2000 Series Vol.68 - The Runaway - Toumei Highway"
+  name: "Simple 2000 Series Vol. 68 - The Tousou Highway - Nagoya - Tokyo"
   region: "NTSC-J"
 SLPM-62565:
   name: "Boboboubo Boubobo - Shuumare! Taikan Boubobo [with Camera]"
@@ -23180,7 +23225,7 @@ SLPM-62570:
   name: "Takahashi Meijin no Adventure Island [Hudson The Best]"
   region: "NTSC-J"
 SLPM-62571:
-  name: "Simple 2000 Series Ultimate Vol.22 - Stylish Mahjong"
+  name: "Simple 2000 Series Ultimate Vol. 22 - Stylish Mahjong"
   region: "NTSC-J"
   compat: 5
 SLPM-62572:
@@ -23199,10 +23244,10 @@ SLPM-62578:
   name: "Buzz Rod Fishing Fantasy"
   region: "NTSC-J"
 SLPM-62579:
-  name: "Simple 2000 Series Vol.74 - The Girl for Prince Romance"
+  name: "Simple 2000 Series Vol. 74 - Onna no Ko Senyou - The Oujisama to Romance - Ripuru no Tamago"
   region: "NTSC-J"
 SLPM-62580:
-  name: "Simple 2000 Series Vol.69 - The Board Game Collection"
+  name: "Simple 2000 Series Vol. 69 - The Board Game Collection"
   region: "NTSC-J"
   compat: 5
 SLPM-62581:
@@ -23229,13 +23274,13 @@ SLPM-62585:
   name: "Sakigake! Cromartie High School [Hudson The Best]"
   region: "NTSC-J"
 SLPM-62586:
-  name: "Simple 2000 Series Vol.70 - Kanshikikan"
+  name: "Simple 2000 Series Vol. 70 - Kanshikikan"
   region: "NTSC-J"
 SLPM-62588:
-  name: "Simple 2000 Series Vol.73 - The Saiyuki Saruden"
+  name: "Simple 2000 Series Vol. 73 - The Saiyuki Saruden"
   region: "NTSC-J"
 SLPM-62589:
-  name: "Simple 2000 Series Vol.72 - Ninhaza"
+  name: "Simple 2000 Series Vol. 72 - Ninhaza"
   region: "NTSC-J"
 SLPM-62591:
   name: "GI Jockey 3 2005"
@@ -23260,7 +23305,7 @@ SLPM-62599:
   name: "Bomberman Kart DX"
   region: "NTSC-J"
 SLPM-62600:
-  name: "Simple 2000 Series Vol.75 - The Tokudane"
+  name: "Simple 2000 Series Vol. 75 - The Tokudane"
   region: "NTSC-J"
 SLPM-62601:
   name: "Conveti 3, The [Hamster The Best]"
@@ -23272,10 +23317,10 @@ SLPM-62603:
   name: "Wizardry Summoner"
   region: "NTSC-J"
 SLPM-62604:
-  name: "Simple 2000 Series Vol.76 - The Journey to the World of English Language"
+  name: "Simple 2000 Series Vol. 76 - The Hanasou Eigo no Tabi"
   region: "NTSC-J"
 SLPM-62605:
-  name: "Simple 2000 Series Vol.77 - The Hanashi Sou Kankokugo no Tabi"
+  name: "Simple 2000 Series Vol. 77 - The Hanasou Kankokugo no Tabi"
   region: "NTSC-J"
 SLPM-62606:
   name: "Sega Ages 2500 Series Vol.19 - Fighting Vipers"
@@ -23311,13 +23356,13 @@ SLPM-62615:
   name: "Slotter Up Mania 6"
   region: "NTSC-J"
 SLPM-62616:
-  name: "Simple 2000 Series Ultimate Vol.25 - Chou-Saisoku! Zokusha King BU no BU 2"
+  name: "Simple 2000 Series Ultimate Vol. 25 - Chou-Saisoku! Zokusha King BU no BU"
   region: "NTSC-J"
 SLPM-62617:
-  name: "Simple 2000 Series Vol.79 - Akko ni Omakase! The Party Quiz"
+  name: "Simple 2000 Series Vol. 79 - Akko ni Omakase! The Party Quiz"
   region: "NTSC-J"
 SLPM-62618:
-  name: "Simple 2000 Series Vol.78 - The Uchuu Daisensou"
+  name: "Simple 2000 Series Vol. 78 - The Uchuu Daisensou"
   region: "NTSC-J"
 SLPM-62620:
   name: "Pachi-Slot Winning Post"
@@ -23363,32 +23408,32 @@ SLPM-62630:
   name: "Sukusuku Inufuku [Hamster The Best]"
   region: "NTSC-J"
 SLPM-62631:
-  name: "Simple 2000 Series 2-in-1 Vol.3 - The Puzzle Collection 2000 Toi & The Touyou Sandai Senjitsu Fusui, Seimeidanhan, Ekisen [Disc1of2]"
+  name: "Simple 2000 Series 2-in-1 Vol. 3 - The Puzzle Collection 2000 Toi & The Touyou Sandai Senjitsu Fusui, Seimeidanhan, Ekisen [Disc1of2]"
   region: "NTSC-J"
 SLPM-62632:
-  name: "Simple 2000 Series 2-in-1 Vol.3 - The Puzzle Collection 2000 Toi & The Touyou Sandai Senjitsu Fusui, Seimeidanhan, Ekisen [Disc2of2]"
+  name: "Simple 2000 Series 2-in-1 Vol. 3 - The Puzzle Collection 2000 Toi & The Touyou Sandai Senjitsu Fusui, Seimeidanhan, Ekisen [Disc2of2]"
   region: "NTSC-J"
 SLPM-62633:
-  name: "Simple 2000 Series 2-in-1 Vol.2 - The Bass Fishing & The Bowling Hyper [Disc1of2]"
+  name: "Simple 2000 Series 2-in-1 Vol. 2 - The Bass Fishing & The Bowling Hyper [Disc1of2]"
   region: "NTSC-J"
 SLPM-62634:
-  name: "Simple 2000 Series 2-in-1 Vol.2 - The Bass Fishing & The Bowling Hyper [Disc2of2]"
+  name: "Simple 2000 Series 2-in-1 Vol. 2 - The Bass Fishing & The Bowling Hyper [Disc2of2]"
   region: "NTSC-J"
 SLPM-62635:
-  name: "Simple 2000 Series Vol.26 - The Love Smash! 5.1"
+  name: "Simple 2000 Series Ultimate Vol. 26 - Love - Smash! 5.1 - Tennis Robo no Gyakushuu"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes bad Geometry.
 SLPM-62636:
-  name: "Simple 2000 Series 2-in-1 Vol.1 - The Tennis & The Snowboard [Disc1of2]"
+  name: "Simple 2000 Series 2-in-1 Vol. 1 - The Tennis & The Snowboard [Disc1of2]"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes SPS and console spam (The Tennis).
 SLPM-62637:
-  name: "Simple 2000 Series 2-in-1 Vol.1 - The Tennis & The Snowboard [Disc2of2]"
+  name: "Simple 2000 Series 2-in-1 Vol. 1 - The Tennis & The Snowboard [Disc2of2]"
   region: "NTSC-J"
 SLPM-62638:
-  name: "Simple 2000 Series Vol.80 - The OneeChanPuruu"
+  name: "Simple 2000 Series Vol. 80 - The OneeChanPuruu"
   region: "NTSC-J"
 SLPM-62639:
   name: "Mahjong Taikai III - Millennium League [Koei Selection Series]"
@@ -23418,16 +23463,16 @@ SLPM-62648:
   name: "K-1 World Max 2005"
   region: "NTSC-J"
 SLPM-62649:
-  name: "Simple 2000 Series Vol.88 - The Sekai Meisaku Gekijou Quiz"
+  name: "Simple 2000 Series Vol. 88 - The Sekai Meisaku Gekijou Quiz"
   region: "NTSC-J"
 SLPM-62650:
-  name: "Simple 2000 Series Vol.82 - The Kung-fu"
+  name: "Simple 2000 Series Vol. 82 - The Kung-fu"
   region: "NTSC-J"
 SLPM-62651:
-  name: "Simple 2000 Series Vol.83 - The Konchu"
+  name: "Simple 2000 Series Vol. 83 - The Konchuu Saishuu"
   region: "NTSC-J"
 SLPM-62652:
-  name: "Simple 2000 Series Vol.81 - The Chikyuu Boueigun 2"
+  name: "Simple 2000 Series Vol. 81 - The Chikyuu Boueigun 2"
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
@@ -23452,16 +23497,16 @@ SLPM-62661:
   name: "Oretachi Geasen Zoku Sono - Terra Cresta"
   region: "NTSC-J"
 SLPM-62662:
-  name: "Simple 2000 Series 2-in-1 Vol.5 - The Shooting & The Helicopter [Disc1of2]"
+  name: "Simple 2000 Series 2-in-1 Vol. 5 - The Shooting & The Helicopter [Disc1of2]"
   region: "NTSC-J"
 SLPM-62663:
-  name: "Simple 2000 Series 2-in-1 Vol.5 - The Shooting & The Helicopter [Disc2of2]"
+  name: "Simple 2000 Series 2-in-1 Vol. 5 - The Shooting & The Helicopter [Disc2of2]"
   region: "NTSC-J"
 SLPM-62664:
-  name: "Simple 2000 Series 2-in-1 Vol.4 - The Bushidou & The Sniper 2 [Disc1of2]"
+  name: "Simple 2000 Series 2-in-1 Vol. 4 - The Bushidou & The Sniper 2 [Disc1of2]"
   region: "NTSC-J"
 SLPM-62665:
-  name: "Simple 2000 Series 2-in-1 Vol.4 - The Bushidou & The Sniper 2 [Disc2of2]"
+  name: "Simple 2000 Series 2-in-1 Vol. 4 - The Bushidou & The Sniper 2 [Disc2of2]"
   region: "NTSC-J"
 SLPM-62666:
   name: "Sega Ages 2500 Series Vol.01 - Phantasy Star Generation 1"
@@ -24154,7 +24199,7 @@ SLPM-65105:
   name: "Shin Combat Choro Q"
   region: "NTSC-J"
 SLPM-65107:
-  name: "Simple 2000 Series Ultimate Vol.02 - Edit Racing"
+  name: "Simple 2000 Series Ultimate Vol. 2 - Edit Racing"
   region: "NTSC-J"
 SLPM-65108:
   name: "Jet de Go! 2"
@@ -24894,7 +24939,7 @@ SLPM-65344:
   name: "Project Minerva - Professional"
   region: "NTSC-J"
 SLPM-65345:
-  name: "Simple 2000 Series Ultimate Vol.09 - Runabout 3"
+  name: "Simple 2000 Series Ultimate Vol. 9 - Bakusou! Manhattan - Runabout 3"
   region: "NTSC-J"
 SLPM-65346:
   name: "Winning Post 6"
@@ -24909,10 +24954,10 @@ SLPM-65349:
   name: "Tokyo Bus Guide [Superlite 2000 Series]"
   region: "NTSC-J"
 SLPM-65350:
-  name: "Simple 2000 Series Ultimate Vol.11 - Wonder Bass"
+  name: "Simple 2000 Series Ultimate Vol. 11 - Wandaba Style - Totsugeki! Mix Ki Juice"
   region: "NTSC-J"
 SLPM-65352:
-  name: "Simple 2000 Series Ultimate Vol.10 - Love Songs"
+  name: "Simple 2000 Series Ultimate Vol. 10 - Love - Songs"
   region: "NTSC-J"
 SLPM-65353:
   name: "SuperLite 2000 Series Vol. 6 - Konohana 2 - Todokanai Requiem"
@@ -25019,7 +25064,7 @@ SLPM-65392:
   name: "Kanojo no Densetsu - Boku no Sekiban"
   region: "NTSC-J"
 SLPM-65393:
-  name: "Simple 2000 Series Vol.38 - The Friendship Adventure"
+  name: "Simple 2000 Series Vol. 38 - The Yuujou Adventure - Hotaru Soul"
   region: "NTSC-J"
 SLPM-65394:
   name: "Love Smash! 5"
@@ -25093,7 +25138,7 @@ SLPM-65413:
     halfPixelOffset: 2 # Fixes ghosting.
     roundSprite: 2 # Fixes various lines / reduces bars on right edge.
 SLPM-65414:
-  name: "Simple 2000 Series Vol.45 - The Love and Tears and Memory"
+  name: "Simple 2000 Series Vol. 45 - The Koi to Namida to, Tsuioku to..."
   region: "NTSC-J"
 SLPM-65416:
   name: "Pride Grand Prix 2003"
@@ -25973,7 +26018,7 @@ SLPM-65695:
   name: "Hard Luck - Return of the Heroes"
   region: "NTSC-J"
 SLPM-65696:
-  name: "Simple 2000 Series Vol.62 - The Super Puzzle Bubble DX"
+  name: "Simple 2000 Series Vol. 62 - The Super Puzzle Bubble DX"
   region: "NTSC-J"
 SLPM-65697:
   name: "Shrek 2"
@@ -26538,13 +26583,13 @@ SLPM-65871:
   region: "NTSC-J"
   compat: 5
 SLPM-65872:
-  name: "Simple 2000 Series Ultimate Vol.24 - Makai Tensei"
+  name: "Simple 2000 Series Ultimate Vol. 24 - Makai Tenshou"
   region: "NTSC-J"
 SLPM-65873:
-  name: "Simple 2000 Series Ultimate Vol.23 - Project Minerva Professional"
+  name: "Simple 2000 Series Ultimate Vol. 23 - Project Minerva Professional"
   region: "NTSC-J"
 SLPM-65874:
-  name: "Simple 2000 Series Vol.71 - The Fantasy Renai Adventure - Kanojo no Densetsu"
+  name: "Simple 2000 Series Vol. 71 - The Fantasy Renai Adventure - Kanojo no Densetsu"
   region: "NTSC-J"
 SLPM-65875:
   name: "Growlanser IV - Wayfarer of the Time [Atlus The Best]"
@@ -31661,25 +31706,25 @@ SLPS-20429:
   name: "Hissatsu Pachislot Ninja Hattori Kun V"
   region: "NTSC-J"
 SLPS-20430:
-  name: "Simple 2000 Series Vol.91 - The All-Star Kakutou"
+  name: "Simple 2000 Series Vol. 91 - The All-Star Kakutou"
   region: "NTSC-J"
   compat: 5
   gameFixes:
     - XGKickHack # Fixes cell shade like effect.
 SLPS-20431:
-  name: "Simple 2000 Series Vol.86 - The Menkyo Shutoku Simulation"
+  name: "Simple 2000 Series Vol. 86 - The Menkyo Shutoku Simulation"
   region: "NTSC-J"
 SLPS-20436:
   name: "Sakigake!! Otokojuku"
   region: "NTSC-J"
 SLPS-20439:
-  name: "Simple 2000 Series Vol.79 - The Party Quiz - Akko ni Omakase"
+  name: "Simple 2000 Series Vol. 79 - The Party Quiz - Akko ni Omakase"
   region: "NTSC-J"
 SLPS-20440:
-  name: "Simple 2000 Series Vol.88 - The Mini Bijo Keikan"
+  name: "Simple 2000 Series Vol. 88 - The Mini Bijo Keikan"
   region: "NTSC-J"
 SLPS-20441:
-  name: "Simple 2000 Series Vol.87 - The Senko"
+  name: "Simple 2000 Series Vol. 87 - The Nadesiko"
   region: "NTSC-J"
 SLPS-20442:
   name: "Daito Giken Koushiki Pachi-Slot Simulator Banchou"
@@ -31688,14 +31733,14 @@ SLPS-20443:
   name: "Blocks Club with Bumpy Trot"
   region: "NTSC-J"
 SLPS-20444:
-  name: "Simple 2000 Series Vol.90 - The OneeChanBara 2"
+  name: "Simple 2000 Series Vol. 90 - The OneeChanBara 2"
   region: "NTSC-J"
   compat: 5
 SLPS-20445:
-  name: "Simple 2000 Series Ultimate Vol.28 - The Gaidou! Genocide Grand Prix - Drive to Survive"
+  name: "Simple 2000 Series Ultimate Vol. 28 - Tousou! Kenka Grand Prix - Drive to Survive"
   region: "NTSC-J"
 SLPS-20446:
-  name: "Simple 2000 Series Vol.89 - The Party Game 2"
+  name: "Simple 2000 Series Vol. 89 - The Party Game 2"
   region: "NTSC-J"
 SLPS-20447:
   name: "Kamen Rider Hibiki"
@@ -31711,10 +31756,10 @@ SLPS-20451:
   name: "Taiko no Tatsujin - Wai Wai Happy Muyome"
   region: "NTSC-J"
 SLPS-20452:
-  name: "Simple 2000 Series Ultimate Vol.30 - Kourin! Zokusha Goddo!"
+  name: "Simple 2000 Series Ultimate Vol. 30 - Kourin! Zokusha Goddo!"
   region: "NTSC-J"
 SLPS-20453:
-  name: "Simple 2000 Series Ultimate Vol.29 - K-1 Premium 2005 Dynamite!!"
+  name: "Simple 2000 Series Ultimate Vol. 29 - K-1 Premium 2005 Dynamite!!"
   region: "NTSC-J"
   compat: 5
   gameFixes:
@@ -31726,19 +31771,19 @@ SLPS-20453:
         patch=1,EE,00336a20,word,0000948c
         patch=1,EE,00336a48,word,0000948c
 SLPS-20454:
-  name: "Simple 2000 Series Vol.93 - The Right Brain Drill"
+  name: "Simple 2000 Series Vol. 93 - The Unou Drill"
   region: "NTSC-J"
 SLPS-20455:
-  name: "Simple 2000 Series Vol.94 - The Aka-Champion - Come on Baby"
+  name: "Simple 2000 Series Vol. 94 - The Aka-Champion - Come on Baby"
   region: "NTSC-J"
 SLPS-20456:
-  name: "Simple 2000 Series Vol.95 - The Zombie vs. Kyuukyuusha"
+  name: "Simple 2000 Series Vol. 95 - The Zombie vs. Kyuukyuusha"
   region: "NTSC-J"
 SLPS-20457:
   name: "Hissatsu Pachislo Evolution 2 - Osomatsu-Kun"
   region: "NTSC-J"
 SLPS-20458:
-  name: "Simple 2000 Series Vol.96 - The Pirate"
+  name: "Simple 2000 Series Vol. 96 - The Kaizoku - Gaikotsu Ippaire~tsu!"
   region: "NTSC-J"
 SLPS-20459:
   name: "Yamasa Digi World SP - Isao Lady"
@@ -31747,7 +31792,7 @@ SLPS-20460:
   name: "Rakushou! Pachi-Slot Sengen 4"
   region: "NTSC-J"
 SLPS-20461:
-  name: "Simple 2000 Series Vol.99 - The Genshijin"
+  name: "Simple 2000 Series Vol. 99 - The Genshijin"
   region: "NTSC-J"
   compat: 5
 SLPS-20462:
@@ -31757,19 +31802,19 @@ SLPS-20463:
   name: "Ougon Kishi Garo"
   region: "NTSC-J"
 SLPS-20464:
-  name: "Simple 2000 Series Vol.105 - The Maid Fuku to Kikanjuu"
+  name: "Simple 2000 Series Vol. 105 - The Maid Fuku to Kikanjuu"
   region: "NTSC-J"
 SLPS-20465:
-  name: "Simple 2000 Series Vol.100 - The Otoko Tachi no Kijuu Houza"
+  name: "Simple 2000 Series Vol. 100 - The Otoko Tachi no Kijuu Houza"
   region: "NTSC-J"
 SLPS-20466:
-  name: "Simple 2000 Series Vol.101 - The OneeChanpon - OneeChan 2 Special Edition"
+  name: "Simple 2000 Series Vol. 101 - The OneeChanpon - OneeChan 2 Special Edition"
   region: "NTSC-J"
 SLPS-20467:
-  name: "Simple 2000 Series Vol.102 - The Fuhyou - Senjou no Inu Tachi"
+  name: "Simple 2000 Series Vol. 102 - The Hohei - Senjou no Inutachi"
   region: "NTSC-J"
 SLPS-20468:
-  name: "Simple 2000 Series Vol.106 - The Block Kuzushi Quest - Dragon Kingdom"
+  name: "Simple 2000 Series Vol. 106 - The Block Kuzushi Quest - Dragon Kingdom"
   region: "NTSC-J"
   compat: 5
 SLPS-20469:
@@ -31777,7 +31822,7 @@ SLPS-20469:
   region: "NTSC-J"
   compat: 5
 SLPS-20470:
-  name: "Simple 2000 Series Vol.103 - The Chikyuu Boueigun Tactics"
+  name: "Simple 2000 Series Vol. 103 - The Chikyuu Boueigun Tactics"
   region: "NTSC-J"
 SLPS-20471:
   name: "Chulip [Super Best Collection]"
@@ -31786,32 +31831,32 @@ SLPS-20472:
   name: "Daito Giken Koushiki Pachi-Slot Simulator - Hihouden"
   region: "NTSC-J"
 SLPS-20473:
-  name: "Simple 2000 Series Vol.104 - The Robot Tsuku Rouze! - Gekitou! Robot Fight"
+  name: "Simple 2000 Series Vol. 104 - The Robot Tsuku Rouze! - Gekitou! Robot Fight"
   region: "NTSC-J"
 SLPS-20474:
-  name: "Simple 2000 Series Vol.107 - The Honoo no Kakutou Banchou"
+  name: "Simple 2000 Series Vol. 107 - The Honoo no Kakutou Banchou"
   region: "NTSC-J"
 SLPS-20475:
   name: "Yamasa Digi World SP - Giant Pulsar"
   region: "NTSC-J"
   compat: 5
 SLPS-20476:
-  name: "Simple 2000 Series Vol.108 - The Nippon Tokushubutai"
+  name: "Simple 2000 Series Vol. 108 - The Nippon Tokushubutai"
   region: "NTSC-J"
 SLPS-20477:
   name: "Fish Eyes 3 [Super Best Collection]"
   region: "NTSC-J"
 SLPS-20478:
-  name: "Simple 2000 Series Vol.109 - The Taxi 2"
+  name: "Simple 2000 Series Vol. 109 - The Taxi 2 - Utenshi ha Yappari Kimi da!"
   region: "NTSC-J"
 SLPS-20479:
   name: "Sokudoku Master"
   region: "NTSC-J"
 SLPS-20480:
-  name: "Simple 2000 Series Vol.110 - The Toubou Prisoner"
+  name: "Simple 2000 Series Vol. 110 - The Toubou Prisoner"
   region: "NTSC-J"
 SLPS-20481:
-  name: "Simple 2000 Series Vol.112 - The Tousou Highway 2 - Road Warrior 2050"
+  name: "Simple 2000 Series Vol. 112 - The Tousou Highway 2 - Road Warrior 2050"
   region: "NTSC-J"
 SLPS-20482:
   name: "3-D Mahjong + Suzume Paitori"
@@ -31820,7 +31865,7 @@ SLPS-20483:
   name: "Kamen Rider Kabuto"
   region: "NTSC-J"
 SLPS-20484:
-  name: "Simple 2000 Series Ultimate Vol.34 - Sakigake!! Otokojuku"
+  name: "Simple 2000 Series Ultimate Vol. 34 - Sakigake!! Otokojuku"
   region: "NTSC-J"
 SLPS-20485:
   name: "Taiko no Tatsujin Doka! [with Tatacon Controller]"
@@ -31832,44 +31877,44 @@ SLPS-20487:
   name: "Pachi-Slot King! Kagaku Ninja-Tai Gatchaman"
   region: "NTSC-J"
 SLPS-20488:
-  name: "Simple 2000 Series Vol.113 - The Tairyou Jigoku"
+  name: "Simple 2000 Series Vol. 113 - The Tairyou Jigoku"
   region: "NTSC-J"
 SLPS-20489:
-  name: "Simple 2000 Series Vol.114 - The Onna Okappichi Torimonochou - Oharu-chan GoGoGo!"
+  name: "Simple 2000 Series Vol. 114 - The Onna Okappichi Torimonochou - Oharu-chan GoGoGo!"
   region: "NTSC-J"
 SLPS-20490:
   name: "Pachi-Slot Club Collection - IM Juggler EX - Juggler Selection"
   region: "NTSC-J"
 SLPS-20491:
-  name: "Simple 2000 Series Vol.118 - The Raku Musha Dokaku Takeshi Samurai Toujou"
+  name: "Simple 2000 Series Vol. 118 - The Ochimusha - Doemu Samurai Toujou"
   region: "NTSC-J"
 SLPS-20492:
-  name: "Simple 2000 Series Vol.115 - The Roomshare to Iu Seikatsu"
+  name: "Simple 2000 Series Vol. 115 - The Roomshare to Iu Seikatsu"
   region: "NTSC-J"
 SLPS-20493:
-  name: "Simple 2000 Series Vol.116 - The Neko Mura no Hitobito Pagu Daikan no Akugyou Zanmai"
+  name: "Simple 2000 Series Vol. 116 - The Neko-Mura no Ninnin - Pagu Daikan no Akugyou Sanmai"
   region: "NTSC-J"
   compat: 5
 SLPS-20494:
-  name: "Simple 2000 Series Vol.117 - The Zerosen"
+  name: "Simple 2000 Series Vol. 117 - The Zerosen"
   region: "NTSC-J"
 SLPS-20496:
   name: "Daito Giken Koushiki Pachi-Slot Simulator - Shake II"
   region: "NTSC-J"
 SLPS-20497:
-  name: "Simple 2000 Series Vol.119 - The Survival Game 2"
+  name: "Simple 2000 Series Vol. 119 - The Survival Game 2"
   region: "NTSC-J"
 SLPS-20499:
   name: "Inaka Kurashi - Nan no Shima no Monogatari [Super Best Collection]"
   region: "NTSC-J"
 SLPS-20500:
-  name: "Simple 2000 Series Vol.120 - The Saigo no Nippon Tsuwamono"
+  name: "Simple 2000 Series Vol. 120 - The Saigo no Nippon Tsuwamono"
   region: "NTSC-J"
 SLPS-20501:
   name: "Hayarigami 2"
   region: "NTSC-J"
 SLPS-20503:
-  name: "Simple 2000 Series Vol.121 - The Boku no Machi-zukuri 2 - Machi-ing Maker 2.1"
+  name: "Simple 2000 Series Vol. 121 - The Boku no Machi-zukuri 2 - Machi-ing Maker 2.1"
   region: "NTSC-J"
 SLPS-20504:
   name: "Daito Giken Koushiki Pachi-Slot Simulator - Shin Yoshimune"
@@ -33786,7 +33831,7 @@ SLPS-25565:
   name: "Hisshou Pachinko Kouryoku Series Vol.1 - CR Shinseiki Evangelion"
   region: "NTSC-J"
 SLPS-25566:
-  name: "Simple 2000 Series Ultimate Vol.27 - After Class Love Beat"
+  name: "Simple 2000 Series Ultimate Vol. 27 - Houkago no Love Beat"
   region: "NTSC-J"
 SLPS-25567:
   name: "Pachitte Chonmage Tatsujin 9"
@@ -33851,7 +33896,7 @@ SLPS-25580:
   name: "Chicken Little"
   region: "NTSC-J"
 SLPS-25581:
-  name: "Simple 2000 Series Vol.92 - The Game of a Curse"
+  name: "Simple 2000 Series Vol. 92 - The Game of a Curse"
   region: "NTSC-J"
 SLPS-25582:
   name: "Asutoro Kyudan Kessen"
@@ -34030,10 +34075,10 @@ SLPS-25630:
   name: "Pro Yakyuu Netsu Star 2006"
   region: "NTSC-J"
 SLPS-25631:
-  name: "Simple 2000 Series Vol.98 - Roman Sabou"
+  name: "Simple 2000 Series Vol. 98 - Roman Sabou"
   region: "NTSC-J"
 SLPS-25632:
-  name: "Simple 2000 Series Vol.97 - The Koi no Engine"
+  name: "Simple 2000 Series Vol. 97 - The Koi no Engine"
   region: "NTSC-J"
 SLPS-25633:
   name: "Futakoi Alternative - Koi to Shoujo to Machinegun [Best Collection]"
@@ -34085,7 +34130,7 @@ SLPS-25643:
   name: "Kimikisu"
   region: "NTSC-J"
 SLPS-25644:
-  name: "Simple 2000 Ultimate Series Vol.31 - K-1 World Max 2005"
+  name: "Simple 2000 Series Ultimate Vol. 31 - K-1 World Max 2005"
   region: "NTSC-J"
 SLPS-25645:
   name: "Hisshou Pachinko-Pachislot Kouryaku Series Vol.4 - CR Ashita Gaarusa Yoshimoto World"
@@ -34096,7 +34141,7 @@ SLPS-25646:
   name: "Eureka Seven - New Vision"
   region: "NTSC-J"
 SLPS-25647:
-  name: "Simple 2000 Series Ultimate Vol.32 - Azumi"
+  name: "Simple 2000 Series Ultimate Vol. 32 - Azumi"
   region: "NTSC-J"
 SLPS-25648:
   name: "Hisshou Pachinko-Pachislot Kouryaku Series Vol.5 - CR Shinseiki Evangelion Second Impact & Pachisuro Shinseiki Evangelion"
@@ -34314,7 +34359,7 @@ SLPS-25695:
   name: "New Century GPX Cyber Formula - Road to the Infinity 3"
   region: "NTSC-J"
 SLPS-25696:
-  name: "Mermaid Prism"
+  name: "Simple 2000 Series Vol. 122 - The Ningyo Hime Monogatari - Mermaid Prism"
   region: "NTSC-J"
 SLPS-25697:
   name: "Hisshou Pachinko-PachiSlot Kouryaku Series Vol.7 - CR Fever Powerful Zero"
@@ -34338,7 +34383,7 @@ SLPS-25702:
   name: "Amagoushi no Yakata"
   region: "NTSC-J"
 SLPS-25703:
-  name: "Simple 2000 Series Vol.111 - The Itadaki Raider"
+  name: "Simple 2000 Series Vol. 111 - The Itadaki Raider"
   region: "NTSC-J"
 SLPS-25704:
   name: "Summon Night 4"
@@ -34388,7 +34433,7 @@ SLPS-25716:
   name: "Digimon Savers - Another Mission"
   region: "NTSC-J"
 SLPS-25717:
-  name: "Simple 2000 Series Ultimate Vol.33 - Ururun Quest"
+  name: "Simple 2000 Series Ultimate Vol. 33 - Ururun Quest Koiyuuki"
   region: "NTSC-J"
 SLPS-25718:
   name: "Mobile Suit Gundam Seed Destiny - Rengou vs. Z.A.F.T. II Plus"
@@ -34411,7 +34456,7 @@ SLPS-25722:
   name: "Routes PE [Limited Edition]"
   region: "NTSC-J"
 SLPS-25723:
-  name: "Reijou Tantei - Office Love Jiken"
+  name: "Simple 2000 Series Vol. 123 - The Office Love Jikenbou - Reijou Tantei"
   region: "NTSC-J"
 SLPS-25724:
   name: "Pachinko Kaou - Misora Hibari"
@@ -34776,7 +34821,7 @@ SLPS-25832:
   name: "SD Gundam G Generation Spirits"
   region: "NTSC-J"
 SLPS-25833:
-  name: "Simple 2000 Series Vol.122 - The Ningyo Hime Monogatari - Mermaid Prism"
+  name: "Simple 2000 Series Vol. 122 - The Ningyo Hime Monogatari - Mermaid Prism"
   region: "NTSC-J"
 SLPS-25834:
   name: "Transformers - The Game"
