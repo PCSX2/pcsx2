@@ -48,6 +48,13 @@
 using namespace x86Emitter;
 using namespace R5900;
 
+static std::atomic<bool> eeRecIsReset(false);
+static std::atomic<bool> eeRecNeedsReset(false);
+static bool eeCpuExecuting = false;
+static bool eeRecExitRequested = false;
+static bool g_resetEeScalingStats = false;
+static int g_patchesNeedRedo = 0;
+
 #define PC_GETBLOCK(x) PC_GETBLOCK_(x, recLUT)
 
 u32 maxrecmem = 0;
@@ -368,9 +375,9 @@ static void recEventTest()
 {
 	_cpuEventTest_Shared();
 
-	if (iopBreakpoint)
+	if (eeRecExitRequested)
 	{
-		iopBreakpoint = false;
+		eeRecExitRequested = false;
 		recExitExecution();
 	}
 }
@@ -619,12 +626,6 @@ static void recAlloc()
 alignas(16) static u16 manual_page[Ps2MemSize::MainRam >> 12];
 alignas(16) static u8 manual_counter[Ps2MemSize::MainRam >> 12];
 
-static std::atomic<bool> eeRecIsReset(false);
-static std::atomic<bool> eeRecNeedsReset(false);
-static bool eeCpuExecuting = false;
-static bool g_resetEeScalingStats = false;
-static int g_patchesNeedRedo = 0;
-
 ////////////////////////////////////////////////////
 static void recResetRaw()
 {
@@ -713,12 +714,17 @@ static void recExitExecution()
 static void recCheckExecutionState()
 {
 #ifndef PCSX2_CORE
-	if (m_cpuException || m_Exception || eeRecNeedsReset || GetCoreThread().HasPendingStateChangeRequest())
+	if (m_cpuException || m_Exception || eeRecNeedsReset || iopBreakpoint || GetCoreThread().HasPendingStateChangeRequest())
 #else
-	if (m_cpuException || m_Exception || eeRecNeedsReset || VMManager::Internal::IsExecutionInterrupted())
+	if (m_cpuException || m_Exception || eeRecNeedsReset || iopBreakpoint || VMManager::Internal::IsExecutionInterrupted())
 #endif
 	{
-		recExitExecution();
+		// If we're currently processing events, we can't safely jump out of the recompiler here, because we'll
+		// leave things in an inconsistent state. So instead, we flag it for exiting once cpuEventTest() returns.
+		if (eeEventTestIsActive)
+			eeRecExitRequested = true;
+		else
+			recExitExecution();
 	}
 }
 
