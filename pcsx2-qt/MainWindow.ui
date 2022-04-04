@@ -182,7 +182,21 @@
     <property name="title">
      <string>&amp;Tools</string>
     </property>
+    <widget class="QMenu" name="menuInput_Recording">
+     <property name="title">
+      <string>Input Recording</string>
+     </property>
+     <addaction name="actionInputRecNew"/>
+     <addaction name="actionInputRecPlay"/>
+     <addaction name="actionInputRecStop"/>
+     <addaction name="separator"/>
+     <addaction name="actionInputRecOpenSettings"/>
+     <addaction name="separator"/>
+     <addaction name="actionInputRecConsoleLogs"/>
+     <addaction name="actionInputRecControllerLogs"/>
+    </widget>
     <addaction name="actionOpenDataDirectory"/>
+    <addaction name="menuInput_Recording"/>
    </widget>
    <addaction name="menuSystem"/>
    <addaction name="menuSettings"/>
@@ -743,6 +757,47 @@
   <action name="actionSaveGSDump">
    <property name="text">
     <string>Save Single Frame GS Dump</string>
+   </property>
+  </action>
+  <action name="actionInputRecNew">
+   <property name="text">
+    <string>New</string>
+   </property>
+  </action>
+  <action name="actionInputRecPlay">
+   <property name="text">
+    <string>Play</string>
+   </property>
+  </action>
+  <action name="actionInputRecStop">
+   <property name="text">
+    <string>Stop</string>
+   </property>
+  </action>
+  <action name="actionInputRecOpenSettings">
+   <property name="text">
+    <string>Settings</string>
+   </property>
+  </action>
+  <action name="actionRecording_Console_Logs">
+   <property name="text">
+    <string>Input Recording Logs</string>
+   </property>
+  </action>
+  <action name="actionInputRecControllerLogs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Controller Logs</string>
+   </property>
+  </action>
+  <action name="actionInputRecConsoleLogs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Input Recording Logs</string>
    </property>
   </action>
  </widget>

@@ -35,6 +35,7 @@
 #include "pcsx2/HostDisplay.h"
 #include "pcsx2/PAD/Host/PAD.h"
 #include "pcsx2/PerformanceMetrics.h"
+#include "pcsx2/Recording/InputRecordingControls.h"
 #include "pcsx2/VMManager.h"
 
 #include "DisplayWidget.h"
@@ -932,5 +933,21 @@ DEFINE_HOTKEY("TogglePause", "System", "Toggle Pause", [](bool pressed) {
 DEFINE_HOTKEY("ToggleFullscreen", "General", "Toggle Fullscreen", [](bool pressed) {
 	if (!pressed)
 		g_emu_thread->toggleFullscreen();
+})
+// Input Recording Hot Keys
+DEFINE_HOTKEY("InputRecToggleMode", "Input Recording", "Toggle Recording Mode", [](bool pressed) {
+	if (!pressed) // ?? - not pressed so it is on key up?
+	{
+		g_InputRecordingControls.RecordModeToggle();
+	}
+})
+// TODO - Vaser - the way the pause/resuming used to work is broken on Qt, needs a rewrite. 
+//	- Currently if you frame advance you can't get out of frame advancing!
+DEFINE_HOTKEY("InputRecFrameAdvance", "Input Recording", "Frame Advance", [](bool pressed) {
+	if (!pressed) // ?? - not pressed so it is on key up?
+	{
+		g_InputRecordingControls.FrameAdvance();
+		g_InputRecordingControls.ResumeCoreThreadIfStarted();
+	}
 })
 END_HOTKEY_LIST()

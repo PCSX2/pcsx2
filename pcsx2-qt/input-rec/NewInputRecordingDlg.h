@@ -15,31 +15,38 @@
 
 #pragma once
 
+#include "ui_NewInputRecordingDlg.h"
+
+#include "pcsx2/Recording/InputRecording.h"
+
 #include <QtWidgets/QDialog>
 
-#include "ui_CreateMemoryCardDialog.h"
-
-#include "pcsx2/Config.h"
-
-class CreateMemoryCardDialog final : public QDialog
+class NewInputRecordingDlg final : public QDialog
 {
 	Q_OBJECT
 
 public:
-	explicit CreateMemoryCardDialog(QWidget* parent = nullptr);
-	~CreateMemoryCardDialog();
+	explicit NewInputRecordingDlg(QWidget* parent = nullptr);
+	~NewInputRecordingDlg();
+
+	InputRecording::Type getInputRecType();
+	std::string getFilePath();
+	std::string getAuthorName();
 
 private Q_SLOTS:
-	void nameTextChanged();
-	void createCard();
+	void onRecordingTypePowerOnChecked(bool checked);
+	void onRecordingTypeSaveStateChecked(bool checked);
+
+	void onBrowseForPathClicked();
+	void onAuthorNameChanged(const QString& text);
 
 private:
-	void setType(MemoryCardType type, MemoryCardFileType fileType);
-	void restoreDefaults();
-	void updateState();
+	Ui::NewInputRecordingDlg m_ui;
 
-	Ui::CreateMemoryCardDialog m_ui;
+	InputRecording::Type m_recType = InputRecording::Type::POWER_ON;
+	QString m_filePath = "";
+	QString m_authorName = "";
 
-	MemoryCardType m_type = MemoryCardType::File;
-	MemoryCardFileType m_fileType = MemoryCardFileType::PS2_8MB;
+	bool isFormValid();
+	void updateFormStatus();
 };
