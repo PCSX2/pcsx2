@@ -137,6 +137,12 @@ private Q_SLOTS:
 	void onScreenshotActionTriggered();
 	void onSaveGSDumpActionTriggered();
 
+	// Input Recording
+	void onInputRecNewActionTriggered();
+	void onInputRecPlayActionTriggered();
+	void onInputRecStopActionTriggered();
+	void onInputRecOpenSettingsTriggered();
+
 	void onVMStarting();
 	void onVMStarted();
 	void onVMPaused();

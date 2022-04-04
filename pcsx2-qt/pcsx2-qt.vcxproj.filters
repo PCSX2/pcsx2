@@ -13,6 +13,12 @@
     <Filter Include="GameList">
       <UniqueIdentifier>{aff229ec-39ea-40d4-b1c9-b5c4a932a2e0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Tools">
+      <UniqueIdentifier>{9ec02647-68e6-4894-9c97-d3347997cae6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tools\Input Recording">
+      <UniqueIdentifier>{d5c14016-9690-4e49-bcb9-a634a937951a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\pcsx2\PCSX2.rc">
@@ -192,6 +198,12 @@
     <ClCompile Include="$(IntDir)moc_AutoUpdaterDialog.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="$(IntDir)input-rec\moc_NewInputRecordingDlg.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="input-rec\NewInputRecordingDlg.cpp">
+      <Filter>Tools\Input Recording</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -282,6 +294,9 @@
       <Filter>Settings</Filter>
     </QtMoc>
     <QtMoc Include="AutoUpdaterDialog.h" />
+    <QtMoc Include="input-rec\NewInputRecordingDlg.h">
+      <Filter>Tools\Input Recording</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">
@@ -351,5 +366,10 @@
       <Filter>GameList</Filter>
     </QtUi>
     <QtUi Include="AutoUpdaterDialog.ui" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="input-rec\NewInputRecordingDlg.ui">
+      <Filter>Tools\Input Recording</Filter>
+    </None>
   </ItemGroup>
 </Project>

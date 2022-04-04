@@ -1005,6 +1005,7 @@ Pcsx2Config::Pcsx2Config()
 	McdEnableEjection = true;
 	McdFolderAutoManage = true;
 	EnablePatches = true;
+	EnableRecordingTools = true;
 #ifdef PCSX2_CORE
 	EnableGameFixes = true;
 #endif
