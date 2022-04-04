@@ -1869,11 +1869,11 @@ void GSState::Move()
 			// What probably happens is because the copy is buffered, the source stays just ahead of the destination.
 			if (sbp == dbp && (((_sy < _dy) && ((ypage + page_height) > _dy)) || ((sx < dx) && ((xpage + page_width) > dx))))
 			{
-				int starty = 0;
-				int endy = h;
+				int starty = (yinc > 0) ? 0 : h-1;
+				int endy = (yinc > 0) ? h : -1;
 				int y_inc = yinc;
 
-				if (((_sy < _dy) && ((ypage + page_height) > _dy)))
+				if (((_sy < _dy) && ((ypage + page_height) > _dy)) && yinc > 0)
 				{
 					_sy += h;
 					_dy += h;
