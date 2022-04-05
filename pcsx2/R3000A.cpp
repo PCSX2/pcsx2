@@ -43,8 +43,6 @@ s32 iopBreak = 0;
 // control is returned to the EE.
 s32 iopCycleEE = -1;
 
-bool iopBreakpoint = 0;
-
 // Used to signal to the EE when important actions that need IOP-attention have
 // happened (hsyncs, vsyncs, IOP exceptions, etc).  IOP runs code whenever this
 // is true, even if it's already running ahead a bit.

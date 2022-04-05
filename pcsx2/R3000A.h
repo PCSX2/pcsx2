@@ -120,7 +120,6 @@ alignas(16) extern psxRegisters psxRegs;
 extern u32 g_iopNextEventCycle;
 extern s32 iopBreak;		// used when the IOP execution is broken and control returned to the EE
 extern s32 iopCycleEE;		// tracks IOP's current sych status with the EE
-extern bool iopBreakpoint;
 
 #ifndef _PC_
 
@@ -186,7 +185,6 @@ extern bool iopIsDelaySlot;
 struct R3000Acpu {
 	void (*Reserve)();
 	void (*Reset)();
-	void (*Execute)();
 	s32 (*ExecuteBlock)( s32 eeCycles );		// executes the given number of EE cycles.
 	void (*Clear)(u32 Addr, u32 Size);
 	void (*Shutdown)();

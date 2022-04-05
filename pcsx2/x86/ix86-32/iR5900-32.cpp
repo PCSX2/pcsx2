@@ -686,7 +686,9 @@ static void recResetEE()
 {
 	if (eeCpuExecuting)
 	{
+		// get outta here as soon as we can
 		eeRecNeedsReset = true;
+		eeRecExitRequested = true;
 		return;
 	}
 
@@ -711,21 +713,14 @@ static void recExitExecution()
 	fastjmp_jmp(&m_SetJmp_StateCheck, 1);
 }
 
-static void recCheckExecutionState()
+static void recSafeExitExecution()
 {
-#ifndef PCSX2_CORE
-	if (m_cpuException || m_Exception || eeRecNeedsReset || iopBreakpoint || GetCoreThread().HasPendingStateChangeRequest())
-#else
-	if (m_cpuException || m_Exception || eeRecNeedsReset || iopBreakpoint || VMManager::Internal::IsExecutionInterrupted())
-#endif
-	{
-		// If we're currently processing events, we can't safely jump out of the recompiler here, because we'll
-		// leave things in an inconsistent state. So instead, we flag it for exiting once cpuEventTest() returns.
-		if (eeEventTestIsActive)
-			eeRecExitRequested = true;
-		else
-			recExitExecution();
-	}
+	// If we're currently processing events, we can't safely jump out of the recompiler here, because we'll
+	// leave things in an inconsistent state. So instead, we flag it for exiting once cpuEventTest() returns.
+	if (eeEventTestIsActive)
+		eeRecExitRequested = true;
+	else
+		recExitExecution();
 }
 
 static void recExecute()
@@ -2399,7 +2394,7 @@ R5900cpu recCpu =
 	recStep,
 	recExecute,
 
-	recCheckExecutionState,
+	recSafeExitExecution,
 	recThrowException,
 	recThrowException,
 	recClear,

@@ -554,16 +554,18 @@ void __fastcall eeGameStarting()
 		//Console.WriteLn( Color_Green, "(R5900) ELF Entry point! [addr=0x%08X]", ElfEntry );
 		g_GameStarted = true;
 		g_GameLoading = false;
-#ifndef PCSX2_CORE
-		GetCoreThread().GameStartingInThread();
-#else
-		VMManager::Internal::GameStartingOnCPUThread();
-#endif
-
 
 		// GameStartingInThread may issue a reset of the cpu and/or recompilers.  Check for and
 		// handle such things here:
-		Cpu->CheckExecutionState();
+#ifndef PCSX2_CORE
+		GetCoreThread().GameStartingInThread();
+		if (GetCoreThread().HasPendingStateChangeRequest())
+			Cpu->ExitExecution();
+#else
+		VMManager::Internal::GameStartingOnCPUThread();
+		if (VMManager::Internal::IsExecutionInterrupted())
+			Cpu->ExitExecution();
+#endif
 	}
 	else
 	{
