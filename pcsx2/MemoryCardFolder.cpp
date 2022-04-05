@@ -65,7 +65,6 @@ std::optional<ryml::Tree> loadYamlFile(const wxString& filePath)
 			return std::nullopt;
 		}
 		std::optional<std::string> buffer = FileSystem::ReadFileToString(file.get());
-		std::fclose(file.get());
 		if (!buffer.has_value())
 		{
 			return std::nullopt;
