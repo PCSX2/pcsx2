@@ -31919,6 +31919,9 @@ SLPS-20503:
 SLPS-20504:
   name: "Daito Giken Koushiki Pachi-Slot Simulator - Shin Yoshimune"
   region: "NTSC-J"
+SLPS-20509:
+  name: "Hachi-One Diver"
+  region: "NTSC-J"
 SLPS-25001:
   name: "Eternal Ring"
   region: "NTSC-J"
