@@ -347,22 +347,10 @@ struct R5900cpu
 	//
 	void (*Execute)();
 
-	// Checks for execution suspension or cancellation.  In pthreads terms this provides
-	// a "cancellation point."  Execution state checks are typically performed at Vsyncs
-	// by the generic VM event handlers in R5900.cpp/Counters.cpp (applies to both recs
-	// and ints).
-	//
-	// Implementation note: Because of the nuances of recompiled code execution, setjmp
-	// may be used in place of thread cancellation or C++ exceptions (non-SEH exceptions
-	// cannot unwind through the recompiled code stackframes, thus longjmp must be used).
-	//
-	// Thread Affinity:
-	//   Must be called on the same thread as Execute.
-	//
-	// Exception Throws:
-	//   May throw Execution/Pthreads cancellations if the compiler supports SEH.
-	//
-	void (*CheckExecutionState)();
+	// Immediately exits execution of recompiled code if we are in a state to do so, or
+	// queues an exit as soon as it is safe. Safe in this case refers to whether we are
+	// currently executing events or not.
+	void (*ExitExecution)();
 
 	// Safely throws host exceptions from executing code (either recompiled or interpreted).
 	// If this function is called outside the context of the CPU's code execution, then the

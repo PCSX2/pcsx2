@@ -488,10 +488,13 @@ static __fi void frameLimitUpdateCore()
 
 #ifndef PCSX2_CORE
 	GetCoreThread().VsyncInThread();
+	if (GetCoreThread().HasPendingStateChangeRequest())
+		Cpu->ExitExecution();
 #else
 	VMManager::Internal::VSyncOnCPUThread();
+	if (VMManager::Internal::IsExecutionInterrupted())
+		Cpu->ExitExecution();
 #endif
-	Cpu->CheckExecutionState();
 }
 
 // Framelimiter - Measures the delta time between calls and stalls until a

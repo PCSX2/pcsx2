@@ -581,23 +581,14 @@ static void intExecute()
 	} while (instruction_was_cancelled);
 }
 
-static void intCheckExecutionState()
+static void intSafeExitExecution()
 {
-#ifndef PCSX2_CORE
-	const bool interrupted = GetCoreThread().HasPendingStateChangeRequest();
-#else
-	const bool interrupted = VMManager::Internal::IsExecutionInterrupted();
-#endif
-
-	if (interrupted)
-	{
-		// If we're currently processing events, we can't safely jump out of the interpreter here, because we'll
-		// leave things in an inconsistent state. So instead, we flag it for exiting once cpuEventTest() returns.
-		if (eeEventTestIsActive)
-			intExitExecution = true;
-		else
-			throw Exception::ExitCpuExecute();
-	}
+	// If we're currently processing events, we can't safely jump out of the interpreter here, because we'll
+	// leave things in an inconsistent state. So instead, we flag it for exiting once cpuEventTest() returns.
+	if (eeEventTestIsActive)
+		intExitExecution = true;
+	else
+		throw Exception::ExitCpuExecute();
 }
 
 static void intStep()
@@ -642,7 +633,7 @@ R5900cpu intCpu =
 	intStep,
 	intExecute,
 
-	intCheckExecutionState,
+	intSafeExitExecution,
 	intThrowException,
 	intThrowException,
 	intClear,

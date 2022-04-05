@@ -270,24 +270,29 @@ static void intReset() {
 	intAlloc();
 }
 
-static void intExecute() {
-	for (;;) execI();
-}
-
 static s32 intExecuteBlock( s32 eeCycles )
 {
 	iopBreak = 0;
 	iopCycleEE = eeCycles;
 
-	while (iopCycleEE > 0){
-		if ((psxHu32(HW_ICFG) & 8) && ((psxRegs.pc & 0x1fffffffU) == 0xa0 || (psxRegs.pc & 0x1fffffffU) == 0xb0 || (psxRegs.pc & 0x1fffffffU) == 0xc0))
-			psxBiosCall();
+	try
+	{
+		while (iopCycleEE > 0) {
+			if ((psxHu32(HW_ICFG) & 8) && ((psxRegs.pc & 0x1fffffffU) == 0xa0 || (psxRegs.pc & 0x1fffffffU) == 0xb0 || (psxRegs.pc & 0x1fffffffU) == 0xc0))
+				psxBiosCall();
 
-		branch2 = 0;
-		while (!branch2) {
-			execI();
-        }
+			branch2 = 0;
+			while (!branch2) {
+				execI();
+			}
+		}
 	}
+	catch (Exception::ExitCpuExecute&)
+	{
+		// Get out of the EE too, regardless of whether it's int or rec.
+		Cpu->ExitExecution();
+	}
+
 	return iopBreak + iopCycleEE;
 }
 
@@ -309,7 +314,6 @@ static uint intGetCacheReserve()
 R3000Acpu psxInt = {
 	intReserve,
 	intReset,
-	intExecute,
 	intExecuteBlock,
 	intClear,
 	intShutdown,
