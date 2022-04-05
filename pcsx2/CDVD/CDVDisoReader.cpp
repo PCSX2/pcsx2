@@ -136,7 +136,10 @@ s32 CALLBACK ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 s32 CALLBACK ISOgetTN(cdvdTN* Buffer)
 {
 	Buffer->strack = 1;
-	Buffer->etrack = 1;
+	if (m_tracks.size() > 0)
+		Buffer->etrack = m_tracks.size();
+	else
+		Buffer->etrack = 1;
 
 	return 0;
 }

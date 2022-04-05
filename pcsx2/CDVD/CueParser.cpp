@@ -276,11 +276,11 @@ namespace CueParser
 		else if (TokenMatch(mode_str, "MODE1/2352"))
 			mode.type = CDVD_MODE_2352;
 		else if (TokenMatch(mode_str, "MODE2/2336"))
-			mode.type = CDVD_MODE2_TRACK;
+			mode.type = CDVD_MODE_2336;
 		else if (TokenMatch(mode_str, "MODE2/2048"))
 			mode.type = CDVD_MODE_2048;
 		else if (TokenMatch(mode_str, "MODE2/2342"))
-			mode.type = CDVD_MODE2_FORM2;
+			mode.type = CDVD_MODE_2342;
 		else if (TokenMatch(mode_str, "MODE2/2332"))
 			mode.type = CDVD_MODE_2332;
 		else if (TokenMatch(mode_str, "MODE2/2352"))

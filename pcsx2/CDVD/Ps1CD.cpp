@@ -173,7 +173,7 @@ static __fi void SetResultSize(u8 size)
 	cdr.ResultReady = 1;
 }
 
-static void ReadTrack()
+static void ReadTrack(u8* track = 0)
 {
 	cdr.Prev[0] = itob(cdr.SetSector[0]);
 	cdr.Prev[1] = itob(cdr.SetSector[1]);
@@ -183,7 +183,7 @@ static void ReadTrack()
 	if (EmuConfig.CdvdVerboseReads)
 		DevCon.WriteLn("CD Read Sector %x", msf_to_lsn(cdr.SetSector));
 	CDVD->getTN(&cdr.ResultTN);
-	cdr.RErr = DoCDVDreadTrack(msf_to_lsn(cdr.SetSector), cueFile->GetTrack(cdr.ResultTN.strack)->mode);
+	cdr.RErr = DoCDVDreadTrack(msf_to_lsn(track), CDVD_MODE_2340);
 }
 
 static void AddIrqQueue(u8 irq, u32 ecycle)
@@ -366,14 +366,15 @@ void cdrInterrupt()
 
 		case CdlGetlocP:
 			SetResultSize(8);
-			cdr.Result[0] = 1;
-			cdr.Result[1] = 1;
-			cdr.Result[2] = cdr.Prev[0];
-			cdr.Result[3] = itob((btoi(cdr.Prev[1])) - 2);
-			cdr.Result[4] = cdr.Prev[2];
-			cdr.Result[5] = cdr.Prev[0];
-			cdr.Result[6] = cdr.Prev[1];
-			cdr.Result[7] = cdr.Prev[2];
+			CDVD->readSubQ(*cdr.SetSector, cdr.subQ);
+			cdr.Result[0] = cdr.subQ->trackNum;
+			cdr.Result[1] = cdr.subQ->trackIndex;
+			cdr.Result[2] = cdr.subQ->trackM;
+			cdr.Result[3] = cdr.subQ->trackS;
+			cdr.Result[4] = cdr.subQ->trackF;
+			cdr.Result[5] = cdr.subQ->discS;
+			cdr.Result[6] = cdr.subQ->discM;
+			cdr.Result[7] = cdr.subQ->discF;
 			cdr.Stat = Acknowledge;
 			break;
 
@@ -781,8 +782,8 @@ void cdrWrite1(u8 rt)
 			cdr.Play = 1;
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
-			// Play is almost identical to CdlReadS, believe it or not. The main difference is that this does not trigger a completed read IRQ
-			StartReading(2);
+			cdr.StatP |= STATUS_PLAY;
+			ReadTrack(cdr.SetSectorSeek);
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 
