@@ -90,6 +90,7 @@ oprofile_data/
 /bin/plugins
 /bin/snaps
 /bin/sstates
+/bin/textures
 /bin/translations
 /deps
 /ipch
