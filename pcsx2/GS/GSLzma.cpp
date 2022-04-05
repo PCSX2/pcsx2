@@ -227,7 +227,14 @@ bool GSDumpFile::ReadFile()
 		if (packet.length > 0)
 		{
 			if (remaining < packet.length)
-				return false;
+			{
+				// There's apparently some "bad" dumps out there that are missing bytes on the end..
+				// The "safest" option here is to discard the last packet, since that has less risk
+				// of leaving the GS in the middle of a command.
+				Console.Error("(GSDump) Dropping last packet of %u bytes (we only have %u bytes)",
+					static_cast<u32>(packet.length), static_cast<u32>(remaining));
+				break;
+			}
 
 			packet.data = data;
 			data += packet.length;
