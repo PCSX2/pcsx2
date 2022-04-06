@@ -11388,6 +11388,8 @@ SLES-51547:
   region: "PAL-M5"
   clampModes:
     vuClampMode: 3 # Fixes SPS menus.
+  gameFixes:
+    - VUSyncHack # Fixes SPS in game.
 SLES-51548:
   name: "This is Football"
   region: "PAL-M3"
