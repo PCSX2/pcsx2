@@ -112,7 +112,11 @@ void VulkanHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_
 	g_vulkan_context->WaitForGPUIdle();
 
 	if (!m_swap_chain->ResizeSwapChain(new_window_width, new_window_height))
-		pxFailRel("Failed to resize swap chain");
+	{
+		// AcquireNextImage() will fail, and we'll recreate the surface.
+		Console.Error("Failed to resize swap chain. Next present will fail.");
+		return;
+	}
 
 	m_window_info = m_swap_chain->GetWindowInfo();
 }
@@ -341,7 +345,6 @@ bool VulkanHostDisplay::BeginPresent(bool frame_skip)
 			{
 				Console.Error("Failed to recreate surface after loss");
 				g_vulkan_context->ExecuteCommandBuffer(false);
-				m_swap_chain.reset();
 				return false;
 			}
 
