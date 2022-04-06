@@ -696,6 +696,11 @@ void MainWindow::reportError(const QString& title, const QString& message)
 	QMessageBox::critical(this, title, message);
 }
 
+void MainWindow::runOnUIThread(const std::function<void()>& func)
+{
+	func();
+}
+
 bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_save_to_state /* = true */, bool block_until_done /* = false */)
 {
 	if (!VMManager::HasValidVM())

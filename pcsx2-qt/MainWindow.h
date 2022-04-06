@@ -17,6 +17,7 @@
 
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
+#include <functional>
 #include <optional>
 
 #include "Settings/ControllerSettingsDialog.h"
@@ -55,6 +56,7 @@ public Q_SLOTS:
 	void refreshGameList(bool invalidate_cache);
 	void invalidateSaveStateCache();
 	void reportError(const QString& title, const QString& message);
+	void runOnUIThread(const std::function<void()>& func);
 	bool requestShutdown(bool allow_confirm = true, bool allow_save_to_state = true, bool block_until_done = false);
 	void requestExit();
 

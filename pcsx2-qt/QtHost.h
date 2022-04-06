@@ -42,6 +42,9 @@ namespace QtHost
 	void UpdateFolders();
 	void UpdateLogging();
 
+	/// Executes a function on the UI thread.
+	void RunOnUIThread(const std::function<void()>& func, bool block = false);
+
 	/// Thread-safe settings access.
 	SettingsInterface* GetBaseSettingsInterface();
 	std::string GetBaseStringSettingValue(const char* section, const char* key, const char* default_value = "");
