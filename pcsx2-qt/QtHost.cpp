@@ -300,6 +300,14 @@ void QtHost::QueueSettingsSave()
 	s_settings_save_timer->start(SETTINGS_SAVE_DELAY);
 }
 
+void QtHost::RunOnUIThread(const std::function<void()>& func, bool block /*= false*/)
+{
+	// main window always exists, so it's fine to attach it to that.
+	QMetaObject::invokeMethod(g_main_window, "runOnUIThread",
+		block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
+		Q_ARG(const std::function<void()>&, func));
+}
+
 std::optional<std::vector<u8>> Host::ReadResourceFile(const char* filename)
 {
 	const std::string path(Path::CombineStdString(EmuFolders::Resources, filename));
