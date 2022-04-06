@@ -8908,7 +8908,7 @@ SLES-50273:
   name: "Legion - The Legend of Excalibur"
   region: "PAL-M5"
   gsHWFixes:
-    preloadFrameData: 1
+    preloadFrameData: 1 # Reduces black ground textures.
 SLES-50274:
   name: "Arctic Thunder"
   region: "PAL-M3"
@@ -35851,7 +35851,7 @@ SLUS-20048:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    preloadFrameData: 1
+    preloadFrameData: 1 # Reduces black ground textures.
 SLUS-20049:
   name: "MLB Slugfest 2003"
   region: "NTSC-U"
@@ -43681,7 +43681,7 @@ SLUS-21787:
   gameFixes:
     - EETimingHack
 SLUS-21788:
-  name: "Ar tonelico Ii - Melody Of Metafalica"
+  name: "Ar tonelico II - Melody Of Metafalica"
   region: "NTSC-U"
   compat: 5
   roundModes:
