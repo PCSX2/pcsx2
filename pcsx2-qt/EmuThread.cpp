@@ -583,6 +583,11 @@ void EmuThread::onDisplayWindowResized(int width, int height, float scale)
 
 void EmuThread::onDisplayWindowFocused() {}
 
+void EmuThread::runOnCPUThread(const std::function<void()>& func)
+{
+	func();
+}
+
 void EmuThread::updateDisplay()
 {
 	pxAssertRel(!isOnEmuThread(), "Not on emu thread");
@@ -840,6 +845,20 @@ void Host::OnSaveStateSaved(const std::string_view& filename)
 void Host::PumpMessagesOnCPUThread()
 {
 	g_emu_thread->getEventLoop()->processEvents(QEventLoop::AllEvents);
+}
+
+void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false */)
+{
+	if (g_emu_thread->isOnEmuThread())
+	{
+		// probably shouldn't ever happen, but just in case..
+		function();
+		return;
+	}
+
+	QMetaObject::invokeMethod(g_emu_thread, "runOnCPUThread",
+		block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
+		Q_ARG(const std::function<void()>&, std::move(function)));
 }
 
 ScopedVMPause::ScopedVMPause(bool was_paused)

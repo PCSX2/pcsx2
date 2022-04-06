@@ -20,13 +20,18 @@
 #include "pcsx2/Frontend/InputManager.h"
 #include "pcsx2/VMManager.h"
 #include <QtCore/QMetaType>
+#include <functional>
+#include <memory>
+#include <optional>
 
 class SettingsInterface;
 
 class EmuThread;
 
-Q_DECLARE_METATYPE(GSRendererType);
 Q_DECLARE_METATYPE(std::shared_ptr<VMBootParameters>);
+Q_DECLARE_METATYPE(std::optional<bool>);
+Q_DECLARE_METATYPE(std::function<void()>);
+Q_DECLARE_METATYPE(GSRendererType);
 Q_DECLARE_METATYPE(InputBindingKey);
 
 namespace QtHost
