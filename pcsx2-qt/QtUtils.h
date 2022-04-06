@@ -22,9 +22,6 @@
 #include <string_view>
 #include <optional>
 
-Q_DECLARE_METATYPE(std::optional<bool>);
-Q_DECLARE_METATYPE(std::function<void()>);
-
 class ByteStream;
 
 class QAction;

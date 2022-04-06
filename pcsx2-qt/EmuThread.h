@@ -76,6 +76,7 @@ public Q_SLOTS:
 	void requestDisplaySize(float scale);
 	void enumerateInputDevices();
 	void enumerateVibrationMotors();
+	void runOnCPUThread(const std::function<void()>& func);
 
 Q_SIGNALS:
 	DisplayWidget* onCreateDisplayRequested(bool fullscreen, bool render_to_main);

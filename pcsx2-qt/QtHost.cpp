@@ -69,10 +69,12 @@ static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
 
 bool QtHost::Initialize()
 {
+	qRegisterMetaType<std::optional<bool>>();
+	qRegisterMetaType<std::function<void()>>();
 	qRegisterMetaType<std::shared_ptr<VMBootParameters>>();
 	qRegisterMetaType<GSRendererType>();
-	qRegisterMetaType<const GameList::Entry*>();
 	qRegisterMetaType<InputBindingKey>();
+	qRegisterMetaType<const GameList::Entry*>();
 
 	InitializeWxRubbish();
 	if (!InitializeConfig())
