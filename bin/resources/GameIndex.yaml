@@ -1098,6 +1098,7 @@ SCAJ-20190:
   name: "God of War II"
   region: "NTSC-Unk"
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
 SCAJ-20191:
@@ -1255,6 +1256,7 @@ SCAJ-30010:
   name: "God of War"
   region: "NTSC-E"
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
@@ -1262,6 +1264,7 @@ SCAJ-30011:
   name: "God of War II"
   region: "NTSC-E"
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
 SCCS-40001:
@@ -2806,6 +2809,7 @@ SCES-51533:
   name: "God of War"
   region: "PAL-Unk"
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
@@ -3233,6 +3237,7 @@ SCES-53133:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
@@ -3594,6 +3599,7 @@ SCES-54206:
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
 SCES-54219:
@@ -4571,6 +4577,7 @@ SCKA-30002:
   region: "NTSC-K"
   compat: 5
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
@@ -4579,6 +4586,7 @@ SCKA-30006:
   region: "NTSC-K"
   compat: 5
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
 SCPM-85101:
@@ -6970,6 +6978,7 @@ SCUS-97399:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
@@ -7239,6 +7248,7 @@ SCUS-97467:
   name: "God of War [Demo]"
   region: "NTSC-U"
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
@@ -7305,12 +7315,14 @@ SCUS-97481:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
 SCUS-97482:
   name: "God of War II - The Colossus Battle [Demo]"
   region: "NTSC-U"
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
 SCUS-97483:
@@ -27559,6 +27571,7 @@ SLPM-66167:
   name: "God of War"
   region: "NTSC-J"
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
@@ -30404,6 +30417,7 @@ SLPM-67010:
   name: "God of War"
   region: "NTSC-J"
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
@@ -30411,6 +30425,7 @@ SLPM-67011:
   name: "God of War [CapKore]"
   region: "NTSC-J"
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
@@ -30418,6 +30433,7 @@ SLPM-67012:
   name: "God of War [Best Price]"
   region: "NTSC-J"
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
@@ -30425,6 +30441,7 @@ SLPM-67013:
   name: "God of War II - The End Begins"
   region: "NTSC-J"
   gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
 SLPM-67015:
