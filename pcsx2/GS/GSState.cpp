@@ -1722,7 +1722,7 @@ void GSState::Write(const u8* mem, int len)
 			 m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
 			 m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h);
 
-	if (PRIM->TME && (blit.DBP == m_context->TEX0.TBP0 || blit.DBP == m_context->TEX0.CBP)) // TODO: hmmmm
+	if ((PRIM->TME || (m_primflush && m_last_prim.TME)) && (blit.DBP == m_context->TEX0.TBP0 || blit.DBP == m_context->TEX0.CBP)) // TODO: hmmmm
 		FlushPrim();
 
 	if (m_tr.end == 0 && len >= m_tr.total)
