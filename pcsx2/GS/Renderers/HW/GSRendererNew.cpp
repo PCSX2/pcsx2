@@ -1821,41 +1821,30 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if (blending_alpha_pass)
 	{
-		// ensure alpha blend output is disabled on both passes
+		// write alpha blend as the single alpha output
 		m_conf.ps.no_ablend = true;
 
-		// if we're doing RGBA then Z alpha testing, we can't combine Z and A, and we need a third pass :(
-		if (ate_RGBA_then_Z)
+		// there's a case we can skip this: RGB_then_ZA alternate handling.
+		// but otherwise, we need to write alpha separately.
+		if (m_conf.colormask.wa)
 		{
-			// move second pass to third pass, since we want to write A first
-			std::memcpy(&m_conf.alpha_third_pass, &m_conf.alpha_second_pass, sizeof(m_conf.alpha_third_pass));
-			m_conf.alpha_third_pass.ps.no_ablend = true;
-			m_conf.alpha_second_pass.enable = false;
-		}
-
-		if (!m_conf.alpha_second_pass.enable)
-		{
-			m_conf.alpha_second_pass.enable = true;
-			memcpy(&m_conf.alpha_second_pass.ps, &m_conf.ps, sizeof(m_conf.ps));
-			memcpy(&m_conf.alpha_second_pass.colormask, &m_conf.colormask, sizeof(m_conf.colormask));
-			memcpy(&m_conf.alpha_second_pass.depth, &m_conf.depth, sizeof(m_conf.depth));
-
-			// disable alpha writes on first pass
 			m_conf.colormask.wa = false;
+			m_conf.separate_alpha_pass = true;
 		}
 
-		// only need to compute the alpha component (allow the shader to optimize better)
-		m_conf.alpha_second_pass.ps.no_ablend = false;
-		m_conf.alpha_second_pass.ps.only_alpha = true;
-		m_conf.alpha_second_pass.colormask.wr = m_conf.alpha_second_pass.colormask.wg = m_conf.alpha_second_pass.colormask.wb = false;
-		m_conf.alpha_second_pass.colormask.wa = true;
-
-		// if depth writes are on, we can optimize to an EQUAL test, otherwise we leave the tests alone
-		// since the alpha channel isn't blended, the last fragment wins and this'll be okay
-		if (m_conf.alpha_second_pass.depth.zwe)
+		// do we need to do this for the failed alpha fragments?
+		if (m_conf.alpha_second_pass.enable)
 		{
-			m_conf.alpha_second_pass.depth.zwe = false;
-			m_conf.alpha_second_pass.depth.ztst = ZTST_GEQUAL;
+			// there's also a case we can skip here: when we're not writing RGB, there's
+			// no blending, so we can just write the normal alpha!
+			const u8 second_pass_wrgba = m_conf.alpha_second_pass.colormask.wrgba;
+			if ((second_pass_wrgba & (1 << 3)) != 0 && second_pass_wrgba != (1 << 3))
+			{
+				// this sucks. potentially up to 4 passes. but no way around it when we don't have dual-source blend.
+				m_conf.alpha_second_pass.ps.no_ablend = true;
+				m_conf.alpha_second_pass.colormask.wa = false;
+				m_conf.second_separate_alpha_pass = true;
+			}
 		}
 	}
 

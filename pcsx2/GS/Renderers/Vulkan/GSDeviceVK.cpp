@@ -3026,7 +3026,15 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 	// now we can do the actual draw
 	if (BindDrawPipeline(pipe))
+	{
 		SendHWDraw(config, draw_rt);
+		if (config.separate_alpha_pass)
+		{
+			SetHWDrawConfigForAlphaPass(&pipe.ps, &pipe.cms, &pipe.bs, &pipe.dss);
+			if (BindDrawPipeline(pipe))
+				SendHWDraw(config, draw_rt);
+		}
+	}
 
 	// and the alpha pass
 	if (config.alpha_second_pass.enable)
@@ -3041,23 +3049,17 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		pipe.ps = config.alpha_second_pass.ps;
 		pipe.cms = config.alpha_second_pass.colormask;
 		pipe.dss = config.alpha_second_pass.depth;
+		pipe.bs = config.blend;
 		if (BindDrawPipeline(pipe))
-			SendHWDraw(config, draw_rt);
-	}
-	if (config.alpha_third_pass.enable)
-	{
-		// cbuffer will definitely be dirty if aref changes, no need to check it
-		if (config.cb_ps.FogColor_AREF.a != config.alpha_third_pass.ps_aref)
 		{
-			config.cb_ps.FogColor_AREF.a = config.alpha_third_pass.ps_aref;
-			SetPSConstantBuffer(config.cb_ps);
-		}
-
-		pipe.ps = config.alpha_third_pass.ps;
-		pipe.cms = config.alpha_third_pass.colormask;
-		pipe.dss = config.alpha_third_pass.depth;
-		if (BindDrawPipeline(pipe))
 			SendHWDraw(config, draw_rt);
+			if (config.second_separate_alpha_pass)
+			{
+				SetHWDrawConfigForAlphaPass(&pipe.ps, &pipe.cms, &pipe.bs, &pipe.dss);
+				if (BindDrawPipeline(pipe))
+					SendHWDraw(config, draw_rt);
+			}
+		}
 	}
 
 	if (copy_ds)

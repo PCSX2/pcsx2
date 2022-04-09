@@ -1348,6 +1348,16 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	DrawIndexedPrimitive();
 
+	if (config.separate_alpha_pass)
+	{
+		GSHWDrawConfig::BlendState sap_blend = {};
+		SetHWDrawConfigForAlphaPass(&config.ps, &config.colormask, &sap_blend, &config.depth);
+		SetupOM(config.depth, convertSel(config.colormask, sap_blend), config.blend.constant);
+		SetupPS(config.ps, &config.cb_ps, config.sampler);
+
+		DrawIndexedPrimitive();
+	}
+
 	if (config.alpha_second_pass.enable)
 	{
 		preprocessSel(config.alpha_second_pass.ps);
@@ -1365,6 +1375,16 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		SetupOM(config.alpha_second_pass.depth, convertSel(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
 
 		DrawIndexedPrimitive();
+
+		if (config.second_separate_alpha_pass)
+		{
+			GSHWDrawConfig::BlendState sap_blend = {};
+			SetHWDrawConfigForAlphaPass(&config.alpha_second_pass.ps, &config.alpha_second_pass.colormask, &sap_blend, &config.alpha_second_pass.depth);
+			SetupOM(config.alpha_second_pass.depth, convertSel(config.alpha_second_pass.colormask, sap_blend), config.blend.constant);
+			SetupPS(config.alpha_second_pass.ps, &config.cb_ps, config.sampler);
+
+			DrawIndexedPrimitive();
+		}
 	}
 
 	EndScene();

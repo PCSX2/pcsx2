@@ -477,6 +477,33 @@ bool GSDevice::ResizeTarget(GSTexture** t)
 	return ResizeTexture(t, GSTexture::Type::RenderTarget, s.x, s.y);
 }
 
+void GSDevice::SetHWDrawConfigForAlphaPass(GSHWDrawConfig::PSSelector* ps,
+	GSHWDrawConfig::ColorMaskSelector* cms,
+	GSHWDrawConfig::BlendState* bs,
+	GSHWDrawConfig::DepthStencilSelector* dss)
+{
+	// only need to compute the alpha component (allow the shader to optimize better)
+	ps->no_ablend = false;
+	ps->only_alpha = true;
+
+	// definitely don't need to compute software blend (this may get rid of some barriers)
+	ps->blend_a = ps->blend_b = ps->blend_c = ps->blend_d = 0;
+
+	// only write alpha (RGB=0,A=1)
+	cms->wrgba = (1 << 3);
+
+	// no need for hardware blending, since we're not writing RGB
+	bs->enable = false;
+
+	// if depth writes are on, we can optimize to an EQUAL test, otherwise we leave the tests alone
+	// since the alpha channel isn't blended, the last fragment wins and this'll be okay
+	if (dss->zwe)
+	{
+		dss->zwe = false;
+		dss->ztst = ZTST_GEQUAL;
+	}
+}
+
 GSAdapter::operator std::string() const
 {
 	char buf[sizeof "12345678:12345678:12345678:12345678"];
