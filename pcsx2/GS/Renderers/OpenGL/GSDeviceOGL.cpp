@@ -1961,6 +1961,25 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	SendHWDraw(config);
 
+	if (config.separate_alpha_pass)
+	{
+		GSHWDrawConfig::BlendState dummy_bs;
+		SetHWDrawConfigForAlphaPass(&psel.ps, &config.colormask, &dummy_bs, &config.depth);
+		SetupPipeline(psel);
+		OMSetColorMaskState(config.alpha_second_pass.colormask);
+		SetupOM(config.alpha_second_pass.depth);
+		OMSetBlendState();
+		SendHWDraw(config);
+
+		// restore blend state if we're doing a second pass
+		if (config.alpha_second_pass.enable)
+		{
+			OMSetBlendState(config.blend.enable, s_gl_blend_factors[config.blend.src_factor],
+				s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
+				config.blend.constant_enable, config.blend.constant);
+		}
+	}
+
 	if (config.alpha_second_pass.enable)
 	{
 		// cbuffer will definitely be dirty if aref changes, no need to check it
@@ -1975,25 +1994,18 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		SetupPipeline(psel);
 		OMSetColorMaskState(config.alpha_second_pass.colormask);
 		SetupOM(config.alpha_second_pass.depth);
-
 		SendHWDraw(config);
-	}
-	if (config.alpha_third_pass.enable)
-	{
-		// cbuffer will definitely be dirty if aref changes, no need to check it
-		if (config.cb_ps.FogColor_AREF.a != config.alpha_third_pass.ps_aref)
+
+		if (config.second_separate_alpha_pass)
 		{
-			config.cb_ps.FogColor_AREF.a = config.alpha_third_pass.ps_aref;
-			WriteToStreamBuffer(m_fragment_uniform_stream_buffer.get(), g_ps_cb_index,
-				m_uniform_buffer_alignment, &config.cb_ps, sizeof(config.cb_ps));
+			GSHWDrawConfig::BlendState dummy_bs;
+			SetHWDrawConfigForAlphaPass(&psel.ps, &config.colormask, &dummy_bs, &config.depth);
+			SetupPipeline(psel);
+			OMSetColorMaskState(config.alpha_second_pass.colormask);
+			SetupOM(config.alpha_second_pass.depth);
+			OMSetBlendState();
+			SendHWDraw(config);
 		}
-
-		psel.ps = config.alpha_third_pass.ps;
-		SetupPipeline(psel);
-		OMSetColorMaskState(config.alpha_third_pass.colormask);
-		SetupOM(config.alpha_third_pass.depth);
-
-		SendHWDraw(config);
 	}
 
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)

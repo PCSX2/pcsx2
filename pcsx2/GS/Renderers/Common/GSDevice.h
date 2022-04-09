@@ -557,6 +557,8 @@ struct alignas(16) GSHWDrawConfig
 	DestinationAlphaMode destination_alpha;
 	bool datm : 1;
 	bool line_expand : 1;
+	bool separate_alpha_pass : 1;
+	bool second_separate_alpha_pass : 1;
 
 	struct AlphaPass
 	{
@@ -569,7 +571,6 @@ struct alignas(16) GSHWDrawConfig
 	static_assert(sizeof(AlphaPass) == 24, "alpha pass is 24 bytes");
 
 	AlphaPass alpha_second_pass;
-	AlphaPass alpha_third_pass;
 
 	VSConstantBuffer cb_vs;
 	PSConstantBuffer cb_ps;
@@ -775,6 +776,12 @@ public:
 		return (IsDualSourceBlendFactor(m_blendMap[index].src) ||
 				IsDualSourceBlendFactor(m_blendMap[index].dst));
 	}
+
+	/// Alters the pipeline configuration for drawing the separate alpha pass.
+	static void SetHWDrawConfigForAlphaPass(GSHWDrawConfig::PSSelector* ps,
+		GSHWDrawConfig::ColorMaskSelector* cms,
+		GSHWDrawConfig::BlendState* bs,
+		GSHWDrawConfig::DepthStencilSelector* dss);
 };
 
 struct GSAdapter
