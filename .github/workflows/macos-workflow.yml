@@ -73,7 +73,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
       # NOTE - useful for debugging
@@ -90,23 +90,27 @@ jobs:
       - name: Checkout Submodules
         run: git submodule update --init --recursive -j $(getconf _NPROCESSORS_ONLN)
 
-      - name: Install Packages
+      - name: Remove Conflicting Packages
         env:
           PLATFORM: ${{ matrix.platform }}
           HOMEBREW_NO_INSTALL_CLEANUP: 1
           HOMEBREW_NO_ANALYTICS: 1
         run: |
-          # To save time, only brew update if running the install without it fails
-          function do-install() {
-            brew install sound-touch portaudio wxwidgets sdl2 libsamplerate
-          }
-          if ! do-install; then
-            brew update
-            do-install
-          fi
+          brew unlink libjpeg libpng
+
+      - name: Cache Dependencies
+        id: cache-deps
+        uses: actions/cache@v3
+        with:
+          path: ~/deps
+          key: ${{ matrix.os }} ${{ matrix.platform }} deps ${{ hashFiles('.github/workflows/scripts/macos/build-dependencies.sh') }}
+
+      - name: Build Dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: .github/workflows/scripts/macos/build-dependencies.sh
 
       - name: Generate CMake Files
-        run: cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_PO=FALSE -DLTO_PCSX2_CORE=ON -B build .
+        run: cmake -DCMAKE_PREFIX_PATH="$HOME/deps" -DCMAKE_BUILD_TYPE=Release -DDISABLE_ADVANCE_SIMD=ON -DLTO_PCSX2_CORE=ON -B build .
 
       - name: Build PCSX2
         working-directory: build
