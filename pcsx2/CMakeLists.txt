@@ -213,7 +213,6 @@ set(pcsx2Headers
 	HostDisplay.h
 	Hw.h
 	IopBios.h
-	IopCommon.h
 	IopCounters.h
 	IopDma.h
 	IopGte.h

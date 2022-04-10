@@ -18,7 +18,6 @@
 #define _PC_ // disables MIPS opcode macros.
 
 #include "common/StringUtil.h"
-#include "IopCommon.h"
 #include "Patch.h"
 #include "Config.h"
 

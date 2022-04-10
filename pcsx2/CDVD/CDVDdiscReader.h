@@ -16,7 +16,6 @@
 #ifndef __CDVD_DISC_READER_H__
 #define __CDVD_DISC_READER_H__
 
-#include "IopCommon.h"
 
 #if defined(_WIN32)
 #define NOMINMAX

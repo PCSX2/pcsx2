@@ -37,7 +37,7 @@ BIOS
 #include "PrecompiledHeader.h"
 #include <wx/file.h>
 
-#include "IopCommon.h"
+#include "IopHw.h"
 #include "GS.h"
 #include "VUmicro.h"
 #include "MTVU.h"

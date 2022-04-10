@@ -15,8 +15,11 @@
 
 
 #include "PrecompiledHeader.h"
-#include "IopCommon.h"
+#include "R3000A.h"
+#include "Common.h"
 #include "R5900.h" // for g_GameStarted
+#include "IopBios.h"
+#include "IopMem.h"
 
 #include <ctype.h>
 #include <string.h>

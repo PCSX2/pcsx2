@@ -17,7 +17,7 @@
 #include "PrecompiledHeader.h"
 #include "Common.h"
 #include "Hardware.h"
-#include "IopCommon.h"
+#include "IopHw.h"
 #include "ps2/HwInternal.h"
 #include "ps2/eeHwTraceLog.inl"
 

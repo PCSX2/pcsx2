@@ -17,8 +17,9 @@
 
 #define _PC_	// disables MIPS opcode macros.
 
-#include "IopCommon.h"
+#include "Common.h"
 #include "Patch.h"
+#include "IopMem.h"
 
 u32 SkipCount = 0, IterationCount = 0;
 u32 IterationIncrement = 0, ValueIncrement = 0;

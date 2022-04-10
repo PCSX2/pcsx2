@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Common.h"
-#include "IopCommon.h"
+#include "R3000A.h"
 #include "VUmicro.h"
 #include "newVif.h"
 #include "MTVU.h"
@@ -26,6 +26,7 @@
 
 #include "common/MemsetFast.inl"
 #include "common/Perf.h"
+#include "CDVD/CDVD.h"
 
 #ifdef PCSX2_CORE
 #include "GSDumpReplayer.h"

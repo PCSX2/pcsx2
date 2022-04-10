@@ -18,13 +18,17 @@
 #include "Common.h"
 #include "Hardware.h"
 #include "Gif_Unit.h"
-#include "IopCommon.h"
+#include "IopMem.h"
+
 #include "ps2/HwInternal.h"
 #include "ps2/eeHwTraceLog.inl"
 
 #include "ps2/pgif.h"
 #include "SPU2/spu2.h"
 #include "R3000A.h"
+
+#include "CDVD/CdRom.h"
+#include "CDVD/CDVD.h"
 
 using namespace R5900;
 

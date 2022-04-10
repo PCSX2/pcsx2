@@ -17,6 +17,7 @@
 
 #include "common/Threading.h"
 #include "SaveState.h"
+#include "IopCounters.h"
 
 extern Threading::MutexRecursive mtx_SPU2Status;
 

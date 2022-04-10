@@ -15,7 +15,8 @@
 
 #pragma once
 
-#include "IopCommon.h"
+#include "Common.h"
+#include "IopHw.h"
 
 namespace IopMemory {
 namespace Internal {

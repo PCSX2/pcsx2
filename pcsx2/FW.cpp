@@ -14,7 +14,8 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "IopCommon.h"
+#include "IopDma.h"
+#include "R3000A.h"
 #include <stdlib.h>
 #include <string>
 using namespace std;

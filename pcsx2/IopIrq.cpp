@@ -14,9 +14,12 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "IopCommon.h"
 #include "DEV9/DEV9.h"
 #include "USB/USB.h"
+#include "IopHw.h"
+#include "IopDma.h"
+#include "Common.h"
+#include "R3000A.h"
 
 using namespace R3000A;
 

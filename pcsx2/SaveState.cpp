@@ -15,7 +15,7 @@
 
 
 #include "PrecompiledHeader.h"
-#include "IopCommon.h"
+#include "R3000A.h"
 #include "SaveState.h"
 
 #include "ps2/BiosTools.h"
@@ -24,6 +24,7 @@
 #include "MTVU.h"
 #include "Cache.h"
 #include "Config.h"
+#include "CDVD/CDVD.h"
 
 #include "Elfheader.h"
 #include "Counters.h"

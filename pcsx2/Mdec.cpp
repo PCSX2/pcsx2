@@ -22,9 +22,10 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "Common.h"
 
-#include "IopCommon.h"
 #include "Mdec.h"
+#include "IopHw.h"
 
 struct {
 	u32 command;

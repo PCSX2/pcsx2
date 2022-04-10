@@ -15,12 +15,20 @@
 
 
 #include "PrecompiledHeader.h"
-#include "IopCommon.h"
+#include "R3000A.h"
+#include "Common.h"
 
 #include "Sio.h"
 #include "Sif.h"
 #include "DebugTools/Breakpoints.h"
 #include "R5900OpcodeTables.h"
+#include "IopSio2.h"
+#include "IopCounters.h"
+#include "IopBios.h"
+#include "IopHw.h"
+#include "IopDma.h"
+#include "CDVD/CdRom.h"
+#include "CDVD/CDVD.h"
 
 using namespace R3000A;
 

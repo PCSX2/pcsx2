@@ -14,7 +14,10 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "IopCommon.h"
+#include "R3000A.h"
+#include "Common.h"
+#include "IopHw.h"
+#include "IopDma.h"
 
 #include <memory>
 #include <ctype.h>
@@ -432,7 +435,6 @@ static __fi void _reloadElfInfo(wxString elfpath)
 	// eeGameStarting is invoked, which is when the VM starts executing the actual game ELF
 	// binary).
 }
-
 
 static __fi void _reloadPSXElfInfo(wxString elfpath)
 {
