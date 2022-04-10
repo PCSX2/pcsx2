@@ -16,7 +16,8 @@
 #include "PrecompiledHeader.h"
 #include "Global.h"
 #include "Dma.h"
-#include "IopCommon.h"
+#include "R3000A.h"
+#include "IopHw.h"
 
 #include "spu2.h" // temporary until I resolve cyclePtr/TimeUpdate dependencies.
 

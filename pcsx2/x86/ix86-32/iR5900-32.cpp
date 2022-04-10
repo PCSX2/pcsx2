@@ -17,6 +17,7 @@
 
 #include "Common.h"
 #include "Memory.h"
+#include "R3000A.h"
 
 #include "R5900Exceptions.h"
 #include "R5900OpcodeTables.h"

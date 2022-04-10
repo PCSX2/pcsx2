@@ -22,6 +22,10 @@
 #include "SPU2/spu2.h"
 #include "DEV9/DEV9.h"
 #include "USB/USB.h"
+#include "IopCounters.h"
+#include "IopSio2.h"
+#include "IopDma.h"
+#include "R3000A.h"
 
 #include "ps2/pgif.h"
 #include "Mdec.h"

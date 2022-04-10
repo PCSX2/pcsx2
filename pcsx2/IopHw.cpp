@@ -15,11 +15,19 @@
 
 
 #include "PrecompiledHeader.h"
-#include "IopCommon.h"
+#include "R3000A.h"
+#include "Common.h"
 
 #include "iR5900.h"
 #include "Sio.h"
 #include "Mdec.h"
+#include "IopSio2.h"
+#include "IopCounters.h"
+#include "IopHw.h"
+#include "IopDma.h"
+#include "CDVD/CdRom.h"
+#include "CDVD/CDVD.h"
+
 
 // NOTE: Any modifications to read/write fns should also go into their const counterparts
 // found in iPsxHw.cpp.

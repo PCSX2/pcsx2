@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "CDVD/CDVDdiscReader.h"
+#include "CDVD/CDVD.h"
 
 #ifdef __linux__
 #include <linux/cdrom.h>

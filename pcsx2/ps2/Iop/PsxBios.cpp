@@ -14,7 +14,9 @@
 */
 
 #include "PrecompiledHeader.h"
-#include "IopCommon.h"
+#include "Common.h"
+#include "R3000A.h"
+#include "IopMem.h"
 
 static std::string psxout_buf;
 

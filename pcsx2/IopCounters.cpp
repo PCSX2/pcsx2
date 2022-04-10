@@ -19,10 +19,14 @@
 // The EventText function will pick it up.
 
 #include "PrecompiledHeader.h"
-#include "IopCommon.h"
+#include "R3000A.h"
+#include "Common.h"
 #include "SPU2/spu2.h"
 #include "DEV9/DEV9.h"
 #include "USB/USB.h"
+#include "IopHw.h"
+#include "IopDma.h"
+#include "CDVD/CDVD.h"
 
 #include <math.h>
 

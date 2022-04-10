@@ -15,7 +15,9 @@
 
 
 #include "PrecompiledHeader.h"
-#include "IopCommon.h"
+#include "R3000A.h"
+#include "IopGte.h"
+#include "IopMem.h"
 
 // Note: Branch instructions of the Interpreter are defined externally because
 // the recompiler shouldn't be using them (it isn't entirely safe, due to the

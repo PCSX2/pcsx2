@@ -24,6 +24,7 @@
 
 #include "CDVDisoReader.h"
 #include "AsyncFileReader.h"
+#include "CDVD/CDVD.h"
 
 #include <cstring>
 #include <array>

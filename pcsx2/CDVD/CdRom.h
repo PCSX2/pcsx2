@@ -16,7 +16,6 @@
 #ifndef __CDROM_H__
 #define __CDROM_H__
 
-#include "IopCommon.h"
 #include "CDVDaccess.h"
 
 // Not used.

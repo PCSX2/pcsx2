@@ -24,7 +24,9 @@
 #include "Global.h"
 #include "Dma.h"
 #include "IopDma.h"
-#include "IopCommon.h"
+#include "IopCounters.h"
+#include "R3000A.h"
+#include "IopHw.h"
 
 #include "spu2.h" // needed until I figure out a nice solution for irqcallback dependencies.
 
