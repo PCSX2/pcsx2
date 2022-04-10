@@ -1505,8 +1505,7 @@ void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
 		case 2: // local -> local
 			Move();
 			break;
-		default: // 3 prohibited, behavior unknown
-			Console.Warning("Invalid guest transfer direction. Please report: https://github.com/PCSX2/pcsx2/issues");
+		default: // 3 deactivated as stated by manual. Tested on hardware and no transfers happen.
 			break;
 	}
 }
