@@ -95,6 +95,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.interlacing, "EmuCore/GS", "deinterlace", DEFAULT_INTERLACE_MODE);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.bilinearFiltering, "EmuCore/GS", "linear_present", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.integerScaling, "EmuCore/GS", "IntegerScaling", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.PCRTCOffsets, "EmuCore/GS", "pcrtc_offsets", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.internalResolutionScreenshots, "EmuCore/GS", "InternalResolutionScreenshots", false);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.zoom, "EmuCore/GS", "Zoom", 100.0f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.stretchY, "EmuCore/GS", "StretchY", 100.0f);

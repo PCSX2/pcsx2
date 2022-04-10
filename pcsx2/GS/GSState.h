@@ -258,6 +258,29 @@ public:
 	PRIM_OVERLAP m_prim_overlap;
 	std::vector<size_t> m_drawlist;
 
+	// The horizontal offset values (under z) for PAL and NTSC have been tweaked
+	// they should be apparently 632 and 652 respectively, but that causes a thick black line on the left
+	// these values leave a small black line on the right in a bunch of games, but it's not so bad.
+	// The only conclusion I can come to is there is horizontal overscan expected so there would normally
+	// be black borders either side anyway, or both sides slightly covered.
+	const GSVector4i VideoModeOffsets[6] = {
+		GSVector4i(640, 224, 642, 25),
+		GSVector4i(640, 256, 676, 36),
+		GSVector4i(640, 480, 276, 34),
+		GSVector4i(720, 480, 232, 35),
+		GSVector4i(1280, 720, 302, 24),
+		GSVector4i(1920, 540, 238, 40)
+	};
+
+	const GSVector4i VideoModeDividers[6] = {
+		GSVector4i(3, 0, 2559, 239),
+		GSVector4i(3, 0, 2559, 287),
+		GSVector4i(1, 0, 1279, 479),
+		GSVector4i(1, 0, 1439, 479),
+		GSVector4i(0, 0, 1279, 719),
+		GSVector4i(0, 0, 1919, 1079)
+	};
+
 public:
 	GSState();
 	virtual ~GSState();
@@ -265,13 +288,16 @@ public:
 	void ResetHandlers();
 
 	int GetFramebufferHeight();
-	void SaturateOutputSize(GSVector4i& r);
 	GSVector4i GetDisplayRect(int i = -1);
+	GSVector4i GetDisplayRectSize(int i = -1);
+	GSVector2i GetResolutionOffset(int i = -1);
+	GSVector2i GetResolution();
 	GSVector4i GetFrameRect(int i = -1);
 	GSVideoMode GetVideoMode();
 
 	bool IsEnabled(int i);
 	bool isinterlaced();
+	bool IsAnalogue();
 
 	float GetTvRefreshRate();
 

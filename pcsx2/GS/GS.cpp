@@ -1359,6 +1359,7 @@ void GSApp::Init()
 	m_default_configuration["FMVSoftwareRendererSwitch"]                  = "0";
 	m_default_configuration["fxaa"]                                       = "0";
 	m_default_configuration["HWDisableReadbacks"]                         = "0";
+	m_default_configuration["pcrtc_offsets"]                              = "0";
 	m_default_configuration["IntegerScaling"]                             = "0";
 	m_default_configuration["deinterlace"]                                = "7";
 	m_default_configuration["conservative_framebuffer"]                   = "1";

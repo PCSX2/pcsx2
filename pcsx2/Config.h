@@ -422,6 +422,7 @@ struct Pcsx2Config
 			struct
 			{
 				bool
+					PCRTCOffsets : 1,
 					IntegerScaling : 1,
 					LinearPresent : 1,
 					UseDebugDevice : 1,

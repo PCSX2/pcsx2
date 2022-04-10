@@ -1325,7 +1325,7 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 	{
 		// 2nd output is enabled and selected. Copy it to destination so we can blend it with 1st output
 		// Note: value outside of dRect must contains the background color (c)
-		StretchRect(sTex[1], sRect[1], dTex, dRect[1], ShaderConvert::COPY);
+		StretchRect(sTex[1], sRect[1], dTex, PMODE.SLBG ? dRect[2] : dRect[1], ShaderConvert::COPY);
 	}
 
 	// Upload constant to select YUV algo
@@ -1337,8 +1337,8 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 	}
 
 	// Save 2nd output
-	if (feedback_write_2) // FIXME I'm not sure dRect[1] is always correct
-		StretchRect(dTex, full_r, sTex[2], dRect[1], ShaderConvert::YUV);
+	if (feedback_write_2)
+		StretchRect(dTex, full_r, sTex[2], dRect[2], ShaderConvert::YUV);
 
 	// Restore background color to process the normal merge
 	if (feedback_write_2_but_blend_bg)
@@ -1364,8 +1364,8 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 		}
 	}
 
-	if (feedback_write_1) // FIXME I'm not sure dRect[0] is always correct
-		StretchRect(dTex, full_r, sTex[2], dRect[0], ShaderConvert::YUV);
+	if (feedback_write_1)
+		StretchRect(dTex, full_r, sTex[2], dRect[2], ShaderConvert::YUV);
 }
 
 void GSDeviceOGL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset)

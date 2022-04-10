@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>747</width>
+    <width>566</width>
     <height>890</height>
    </rect>
   </property>
@@ -261,31 +261,38 @@
        </item>
        <item row="7" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout_5">
-         <item row="0" column="2">
-          <widget class="QCheckBox" name="integerScaling">
-           <property name="text">
-            <string>Integer Upscaling</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
+         <item row="0" column="0">
           <widget class="QCheckBox" name="bilinearFiltering">
            <property name="text">
             <string>Bilinear Filtering</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="1" column="0">
           <widget class="QCheckBox" name="vsync">
            <property name="text">
             <string>Sync To Host Refresh (VSync)</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="2">
+         <item row="1" column="1">
           <widget class="QCheckBox" name="internalResolutionScreenshots">
            <property name="text">
             <string>Internal Resolution Screenshots</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="integerScaling">
+           <property name="text">
+            <string>Integer Upscaling</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="PCRTCOffsets">
+           <property name="text">
+            <string>Screen Offsets</string>
            </property>
           </widget>
          </item>

@@ -276,6 +276,7 @@ RendererTab::RendererTab(wxWindow* parent)
 	auto upscale_prereq = [this]{ return !m_is_native_res; };
 
 	PaddedBoxSizer<wxBoxSizer> tab_box(wxVERTICAL);
+	PaddedBoxSizer<wxStaticBoxSizer> general_box(wxVERTICAL, this, "General GS Settings");
 	PaddedBoxSizer<wxStaticBoxSizer> hardware_box(wxVERTICAL, this, "Hardware Mode");
 	PaddedBoxSizer<wxStaticBoxSizer> software_box(wxVERTICAL, this, "Software Mode");
 
@@ -315,8 +316,16 @@ RendererTab::RendererTab(wxWindow* parent)
 	m_ui.addSpinAndLabel(thread_box, "Extra Rendering threads:", "extrathreads", 0, 32, 2, IDC_SWTHREADS, sw_prereq);
 	software_box->Add(thread_box, wxSizerFlags().Centre());
 
+	// General GS Settings box
+	auto* pcrtc_checks_box = new wxWrapSizer(wxHORIZONTAL);
+
+	m_ui.addCheckBox(pcrtc_checks_box, "Screen Offsets", "pcrtc_offsets", IDC_PCRTC_OFFSETS);
+
+	general_box->Add(pcrtc_checks_box, wxSizerFlags().Center());
+
 	tab_box->Add(hardware_box.outer, wxSizerFlags().Expand());
 	tab_box->Add(software_box.outer, wxSizerFlags().Expand());
+	tab_box->Add(general_box.outer, wxSizerFlags().Expand());
 
 	SetSizerAndFit(tab_box.outer);
 }
