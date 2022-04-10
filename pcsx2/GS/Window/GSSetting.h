@@ -42,6 +42,7 @@ enum
 {
 	// Renderer
 	IDC_FILTER,
+	IDC_PCRTC_OFFSETS,
 	// Hardware Renderer
 	IDC_PRELOAD_TEXTURES,
 	IDC_ACCURATE_DATE,

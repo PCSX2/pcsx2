@@ -763,7 +763,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 			SetUtilityTexture(sTex[1], m_linear_sampler);
 			BeginClearRenderPass(m_utility_color_render_pass_clear, darea, c);
 			SetPipeline(m_convert[static_cast<int>(ShaderConvert::COPY)]);
-			DrawStretchRect(sRect[1], dRect[1], dsize);
+			DrawStretchRect(sRect[1], PMODE.SLBG ? dRect[2] : dRect[1], dsize);
 			dTex->SetState(GSTexture::State::Dirty);
 			dcleared = true;
 		}
@@ -772,20 +772,19 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	// Upload constant to select YUV algo
 	const GSVector2i fbsize(sTex[2] ? sTex[2]->GetSize() : GSVector2i(0, 0));
 	const GSVector4i fbarea(0, 0, fbsize.x, fbsize.y);
-	if (feedback_write_2)// FIXME I'm not sure dRect[1] is always correct
+	if (feedback_write_2)
 	{
 		EndRenderPass();
 		OMSetRenderTargets(sTex[2], nullptr, fbarea, false);
 		if (dcleared)
 			SetUtilityTexture(dTex, m_linear_sampler);
-
 		// sTex[2] can be sTex[0], in which case it might be cleared (e.g. Xenosaga).
-		BeginRenderPassForStretchRect(static_cast<GSTextureVK*>(sTex[2]), fbarea, GSVector4i(dRect[1]));
+		BeginRenderPassForStretchRect(static_cast<GSTextureVK*>(sTex[2]), fbarea, GSVector4i(dRect[2]));
 		if (dcleared)
 		{
 			SetPipeline(m_convert[static_cast<int>(ShaderConvert::YUV)]);
 			SetUtilityPushConstants(yuv_constants, sizeof(yuv_constants));
-			DrawStretchRect(full_r, dRect[1], fbsize);
+			DrawStretchRect(full_r, dRect[2], fbsize);
 		}
 		EndRenderPass();
 
@@ -818,7 +817,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		DrawStretchRect(sRect[0], dRect[0], dTex->GetSize());
 	}
 
-	if (feedback_write_1) // FIXME I'm not sure dRect[0] is always correct
+	if (feedback_write_1)
 	{
 		EndRenderPass();
 		SetPipeline(m_convert[static_cast<int>(ShaderConvert::YUV)]);
@@ -826,7 +825,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		SetUtilityPushConstants(yuv_constants, sizeof(yuv_constants));
 		OMSetRenderTargets(sTex[2], nullptr, fbarea, false);
 		BeginRenderPass(m_utility_color_render_pass_load, fbarea);
-		DrawStretchRect(full_r, dRect[0], dsize);
+		DrawStretchRect(full_r, dRect[2], dsize);
 	}
 
 	EndRenderPass();

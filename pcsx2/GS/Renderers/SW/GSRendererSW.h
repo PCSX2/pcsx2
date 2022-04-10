@@ -71,7 +71,7 @@ protected:
 	IRasterizer* m_rl;
 	GSRingHeap m_vertex_heap;
 	GSTextureCacheSW* m_tc;
-	GSTexture* m_texture[2];
+	GSTexture* m_texture[3];
 	u8* m_output;
 	GSPixelOffset4* m_fzb;
 	GSVector4i m_fzb_bbox;

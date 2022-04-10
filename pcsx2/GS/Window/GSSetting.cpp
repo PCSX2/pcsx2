@@ -89,6 +89,10 @@ const char* dialog_message(int ID, bool* updateText)
 			return cvtString("Enabled: GPU converts colormap-textures.\n"
 				"Disabled: CPU converts colormap-textures.\n\n"
 				"It is a trade-off between GPU and CPU.");
+		case IDC_PCRTC_OFFSETS:
+			return cvtString("Enable: Takes in to account offsets in the analogue circuits.\n"
+				"This will use the intended aspect ratios and screen offsets, may cause odd black borders.\n"
+				"Used for screen positioning and screen shake in Wipeout Fusion.");
 		case IDC_ACCURATE_DATE:
 			return cvtString("Implement a more accurate algorithm to compute GS destination alpha testing.\n"
 				"It improves shadow and transparency rendering.\n\n"

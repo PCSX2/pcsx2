@@ -368,62 +368,50 @@ GSVideoMode GSState::GetVideoMode()
 	__assume(0); // unreachable
 }
 
-// There are some cases where the PS2 seems to saturate the output circuit size when the developer requests for a higher
-// unsupported value with respect to the current video mode via the DISP registers, the following function handles such cases.
-// NOTE: This function is totally hacky as there are no documents related to saturation of output dimensions, function is
-// generally just based on technical and intellectual guesses.
-void GSState::SaturateOutputSize(GSVector4i& r)
+bool GSState::IsAnalogue()
 {
+	return GetVideoMode() == GSVideoMode::NTSC || GetVideoMode() == GSVideoMode::PAL || GetVideoMode() == GSVideoMode::HDTV_1080I;
+}
+
+GSVector4i GSState::GetDisplayRectSize(int i)
+{
+	GSVector4i rectangle = { 0, 0, 0, 0 };
+
+	if (!IsEnabled(0) && !IsEnabled(1))
+		return rectangle;
+
 	const GSVideoMode videomode = GetVideoMode();
+	const auto& DISP = m_regs->DISP[i].DISPLAY;
 
-	const bool is_ntsc = videomode == GSVideoMode::NTSC;
-	const bool is_pal = videomode == GSVideoMode::PAL;
+	const u32 DW = DISP.DW + 1;
+	const u32 DH = DISP.DH + 1;
+;
+	// The number of sub pixels to draw are given in DH and DW, the MAGH/V relates to the size of the original square in the FB
+	// but the size it's drawn to uses the default size of the display mode (for PAL/NTSC this is a MAGH of 3)
+	// so for example a game will have a DW of 2559 and a MAGH of 4 to make it 512 (from the FB), but because it's drawing 2560 subpixels
+	// it will cover the entire 640 wide of the screen (2560 / (3+1)).
+	const int width = (DW / (VideoModeDividers[(int)videomode - 1].x + 1));
+	const int height = (DH / (VideoModeDividers[(int)videomode - 1].y + 1));
 
-	const auto& SMODE2 = m_regs->SMODE2;
-	const auto& PMODE = m_regs->PMODE;
-	const int res_multi = (SMODE2.INT + 1);
-	// Pixels only get drawn so quick so oversizing of the DISPLAY is ignored when rasterized.
-	// Non-Interlaced pictures can only do half the number of lines (double strike)
-	if (is_ntsc)
-		r.bottom = r.top + std::min(r.height(), 224 * res_multi);
-	else if (is_pal)
-		r.bottom = r.top + std::min(r.height(), 256 * res_multi);
+	// Set up the display rectangle based on the values obtained from DISPLAY registers
+
+	rectangle.right = width;
+	rectangle.bottom = height;
+	//DevCon.Warning("Display Rect Size Returning w %d h %d", width, height);
+	return rectangle;
 }
 
 GSVector4i GSState::GetDisplayRect(int i)
 {
-	if (!IsEnabled(0) && !IsEnabled(1))
-		return {};
+	GSVector4i rectangle = { 0, 0, 0, 0 };
 
-	// If no specific context is requested then pass the merged rectangle as return value
 	if (i == -1)
 	{
-		if (IsEnabled(0) && IsEnabled(1))
-		{
-			const GSVector4i disp1_rect = GetDisplayRect(0);
-			const GSVector4i disp2_rect = GetDisplayRect(1);
-
-			const GSVector4i intersect = disp1_rect.rintersect(disp2_rect);
-			const GSVector4i combined = disp1_rect.runion_ordered(disp2_rect);
-
-			// If the conditions for passing the merged rectangle is unsatisfied, then
-			// pass the rectangle with the bigger size.
-			const bool can_be_merged =
-				intersect.width() == 0 ||
-				intersect.height() == 0 ||
-				intersect.xyxy().eq(combined.xyxy());
-
-			if (can_be_merged)
-				return combined;
-
-			if (disp1_rect.rarea() > disp2_rect.rarea())
-				return disp1_rect;
-
-			return disp2_rect;
-		}
-
-		i = m_regs->PMODE.EN2;
+		return GetDisplayRect(0).runion(GetDisplayRect(1));
 	}
+
+	if (!IsEnabled(i))
+		return rectangle;
 
 	const auto& DISP = m_regs->DISP[i].DISPLAY;
 
@@ -441,16 +429,44 @@ GSVector4i GSState::GetDisplayRect(int i)
 	const int height = DH / magnification.y;
 
 	// Set up the display rectangle based on the values obtained from DISPLAY registers
-	GSVector4i rectangle;
-
-	rectangle.left = DX / magnification.x;
-	rectangle.top = DY / magnification.y;
+	rectangle.left = DX;
+	rectangle.top = DY;
 	rectangle.right = rectangle.left + width;
 	rectangle.bottom = rectangle.top + height;
 
-	SaturateOutputSize(rectangle);
-
+	//DevCon.Warning("left %d offset %d total %d top %d offset %d total %d", rectangle.left, VideoModeOffsets[(int)videomode - 1].z, (rectangle.left - VideoModeOffsets[(int)videomode - 1].z) / magnification.x, rectangle.top, (VideoModeOffsets[(int)videomode - 1].w / magnification.y) * (IsAnalogue() ? res_multi : 1), v_offset);
+	//DevCon.Warning("Get Display Rect Left %d Right %d Top %d Bottom %d", rectangle.left, rectangle.right, rectangle.top, rectangle.bottom);
 	return rectangle;
+}
+
+GSVector2i GSState::GetResolutionOffset(int i)
+{
+	const GSVideoMode videomode = GetVideoMode();
+	const auto& DISP = m_regs->DISP[i].DISPLAY;
+
+	const auto& SMODE2 = m_regs->SMODE2;
+	const int res_multi = (SMODE2.INT + 1);
+	GSVector2i offset;
+
+	offset.x = (((int)DISP.DX - VideoModeOffsets[(int)videomode - 1].z) / (VideoModeDividers[(int)videomode - 1].x + 1));
+	offset.y = (((int)DISP.DY - (VideoModeOffsets[(int)videomode - 1].w * (IsAnalogue() ? res_multi : 1))) / (VideoModeDividers[(int)videomode - 1].y + 1));
+	//DevCon.Warning("Res Offset X %d Video mode %d Y %d Video mode %d", DISP.DX, VideoModeOffsets[(int)videomode - 1].z, DISP.DY, (VideoModeOffsets[(int)videomode - 1].w * (IsAnalogue() ? res_multi : 1)));
+
+	return offset;
+}
+
+GSVector2i GSState::GetResolution()
+{
+	const GSVideoMode videomode = GetVideoMode();
+	const auto& SMODE2 = m_regs->SMODE2;
+	const int res_multi = (SMODE2.INT + 1);
+
+	GSVector2i resolution;
+
+	resolution.x = VideoModeOffsets[(int)videomode - 1].x;
+	resolution.y = VideoModeOffsets[(int)videomode - 1].y * ((IsAnalogue() && res_multi) ? res_multi : 1);
+	//DevCon.Warning("Getting Resolution X %d Y %d", resolution.x, resolution.y);
+	return resolution;
 }
 
 GSVector4i GSState::GetFrameRect(int i)
@@ -461,19 +477,31 @@ GSVector4i GSState::GetFrameRect(int i)
 
 	GSVector4i rectangle = GetDisplayRect(i);
 
-	int w = rectangle.width();
-	int h = rectangle.height();
+	const auto& DISP = m_regs->DISP[i].DISPLAY;
 
-	if (isinterlaced() && m_regs->SMODE2.FFMD && h > 1)
-		h >>= 1;
+	const u32 DW = DISP.DW + 1;
+	const u32 DH = DISP.DH + 1;
+	const GSVector2i magnification(DISP.MAGH+1, DISP.MAGV + 1);
 
 	const u32 DBX = m_regs->DISP[i].DISPFB.DBX;
 	const u32 DBY = m_regs->DISP[i].DISPFB.DBY;
 
+	int w = DW / magnification.x;
+	int h = DH / magnification.y;
+
 	rectangle.left = DBX;
 	rectangle.top = DBY;
-	rectangle.right = rectangle.left + w;
-	rectangle.bottom = rectangle.top + h;
+
+	if (isinterlaced() && m_regs->SMODE2.FFMD && h > 1)
+	{
+		h >>= 1;
+	}
+
+	// Round down as this is the reading rect, so we want 0-639 and 0-479 for an example
+	rectangle.right = rectangle.left + w - 1;
+	rectangle.bottom = rectangle.top + h - 1;
+
+	//DevCon.Warning("Frame Rect left %d right %d top %d bottom %d DBX %d DBY %d", rectangle.left, rectangle.right, rectangle.top, rectangle.bottom, DBX, DBY);
 
 	return rectangle;
 }
