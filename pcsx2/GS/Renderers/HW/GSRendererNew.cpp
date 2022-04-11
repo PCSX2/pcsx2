@@ -1222,7 +1222,8 @@ void GSRendererNew::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	if (complex_wms_wmt)
 	{
 		m_conf.cb_ps.MskFix = GSVector4i(m_context->CLAMP.MINU, m_context->CLAMP.MINV, m_context->CLAMP.MAXU, m_context->CLAMP.MAXV);;
-		m_conf.cb_ps.MinMax = GSVector4(m_conf.cb_ps.MskFix) / WH.xyxy();
+		GSVector4 upscale_offset(0.f, 0.f, (15.f / 16.f), (15.f / 16.f)); // Adjust end position to the end of the upscaled pixel
+		m_conf.cb_ps.MinMax = (GSVector4(m_conf.cb_ps.MskFix) + upscale_offset) / WH.xyxy();
 	}
 	else if (trilinear_manual)
 	{

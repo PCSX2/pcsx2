@@ -369,7 +369,7 @@ struct PSMain
 		uint2 mask = msk_fix << 4;
 
 		if (mode == 2)
-			return clamp(uv, mask.x, mask.y);
+			return clamp(uv, mask.x, mask.y | 0xF);
 		if (mode == 3)
 		{
 			if (msk_fix.x & 1)
