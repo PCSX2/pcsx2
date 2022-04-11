@@ -671,6 +671,13 @@ void GSsetFrameSkip(int frameskip)
 	s_gs->SetFrameSkip(frameskip);
 }
 
+GSVideoMode GSgetDisplayMode()
+{
+	GSRenderer* gs = s_gs.get();
+
+	return gs->GetVideoMode();
+}
+
 void GSgetInternalResolution(int* width, int* height)
 {
 	GSRenderer* gs = s_gs.get();

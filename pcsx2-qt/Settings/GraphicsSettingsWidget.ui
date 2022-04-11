@@ -94,7 +94,12 @@
          </item>
          <item>
           <property name="text">
-           <string>Standard (4:3/3:2 Progressive)</string>
+           <string>Auto Standard (4:3/3:2 Progressive)</string>
+          </property>
+         </item>
+		 <item>
+          <property name="text">
+           <string>Standard (4:3)</string>
           </property>
          </item>
          <item>
@@ -116,6 +121,11 @@
          <item>
           <property name="text">
            <string>Off (Default)</string>
+          </property>
+         </item>
+		 <item>
+          <property name="text">
+           <string>Auto Standard (4:3/3:2 Progressive)</string>
           </property>
          </item>
          <item>

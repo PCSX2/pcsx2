@@ -464,6 +464,9 @@ static __fi void DoFMVSwitch()
 	{
 		case FMVAspectRatioSwitchType::Off:
 			break;
+		case FMVAspectRatioSwitchType::RAuto4_3_3_2:
+			EmuConfig.CurrentAspectRatio = new_fmv_state ? AspectRatioType::RAuto4_3_3_2 : EmuConfig.GS.AspectRatio;
+			break;
 		case FMVAspectRatioSwitchType::R4_3:
 			EmuConfig.CurrentAspectRatio = new_fmv_state ? AspectRatioType::R4_3 : EmuConfig.GS.AspectRatio;
 			break;

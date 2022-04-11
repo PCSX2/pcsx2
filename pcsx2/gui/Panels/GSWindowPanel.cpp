@@ -32,13 +32,15 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel(wxWindow* parent)
 	const wxString aspect_ratio_labels[] =
 		{
 			_("Fit to Window/Screen"),
-			_("Standard (4:3/3:2 Progressive)"),
+			_("Auto Standard (4:3/3:2 Progressive)"),
+			_("Standard (4:3)"),
 			_("Widescreen (16:9)")};
 
 	const wxString fmv_aspect_ratio_switch_labels[] =
 		{
 			_("Off (Default)"),
-			_("Standard (4:3/3:2 Progressive)"),
+			_("Auto Standard (4:3/3:2 Progressive)"),
+			_("Standard (4:3)"),
 			_("Widescreen (16:9)")};
 
 	// Warning must match the order of the VsyncMode Enum
@@ -74,7 +76,8 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel(wxWindow* parent)
 	m_check_DclickFullscreen = new pxCheckBox(this, _("Double-click toggles fullscreen mode"));
 
 	m_combo_FMVAspectRatioSwitch->SetToolTip(pxEt(L"Off: Disables temporary aspect ratio switch. (It will use the above setting from Aspect Ratio instead of FMV Aspect Ratio Override.)\n\n"
-												  L"4:3: Temporarily switch to a 4:3 aspect ratio while an FMV plays to correctly display an 4:3 FMV. Will use 3:2 is the resolution is 480P\n\n"
+												  L"Auto 4:3/3:2: Temporarily switch to a 4:3 aspect ratio while an FMV plays to correctly display a 4:3 FMV. Will use 3:2 is the resolution is 480P\n\n"
+												  L"4:3: Temporarily switch to a 4:3 aspect ratio while an FMV plays to correctly display a 4:3 FMV. \n\n"
 												  L"16:9: Temporarily switch to a 16:9 aspect ratio while an FMV plays to correctly display a widescreen 16:9 FMV."));
 
 	m_text_Zoom->SetToolTip(pxEt(L"Zoom = 100: Fit the entire image to the window without any cropping.\n"
