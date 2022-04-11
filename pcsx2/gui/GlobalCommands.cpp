@@ -172,6 +172,10 @@ namespace Implementations
 		switch (art)
 		{
 			case AspectRatioType::Stretch:
+				art = AspectRatioType::RAuto4_3_3_2;
+				arts = "Auto 4:3/3:2";
+				break;
+			case AspectRatioType::RAuto4_3_3_2:
 				art = AspectRatioType::R4_3;
 				arts = "4:3";
 				break;

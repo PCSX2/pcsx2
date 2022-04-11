@@ -367,7 +367,7 @@ bool GSRenderer::Merge(int field)
 	}
 	if (tex[0] || tex[1])
 	{
-		if (tex[0] == tex[1] && !slbg && (src[0] == src[1] & dst[0] == dst[1]).alltrue() && !feedback_merge)
+		if ((tex[0] == tex[1]) && (src[0] == src[1]).alltrue() && (dst[0] == dst[1]).alltrue() && !feedback_merge && !slbg)
 		{
 			// the two outputs are identical, skip drawing one of them (the one that is alpha blended)
 
@@ -424,8 +424,8 @@ GSVector2i GSRenderer::GetInternalResolution()
 
 static float GetCurrentAspectRatioFloat(bool is_progressive)
 {
-	static constexpr std::array<float, static_cast<size_t>(AspectRatioType::MaxCount) + 1> ars = { {4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f, 3.0f / 2.0f} };
-	return ars[static_cast<u32>(GSConfig.AspectRatio) + (3u * is_progressive)];
+	static constexpr std::array<float, static_cast<size_t>(AspectRatioType::MaxCount) + 1> ars = { {4.0f / 3.0f, 4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f, 3.0f / 2.0f} };
+	return ars[static_cast<u32>(GSConfig.AspectRatio) + (3u * (is_progressive && GSConfig.AspectRatio == AspectRatioType::RAuto4_3_3_2))];
 }
 
 static GSVector4 CalculateDrawRect(s32 window_width, s32 window_height, s32 texture_width, s32 texture_height, HostDisplay::Alignment alignment, bool flip_y, bool is_progressive)
@@ -435,12 +435,16 @@ static GSVector4 CalculateDrawRect(s32 window_width, s32 window_height, s32 text
 	const float clientAr = f_width / f_height;
 
 	float targetAr = clientAr;
-	if (EmuConfig.CurrentAspectRatio == AspectRatioType::R4_3)
+	if (EmuConfig.CurrentAspectRatio == AspectRatioType::RAuto4_3_3_2)
 	{
 		if (is_progressive)
 			targetAr = 3.0f / 2.0f;
 		else
 			targetAr = 4.0f / 3.0f;
+	}
+	else if (EmuConfig.CurrentAspectRatio == AspectRatioType::R4_3)
+	{
+		targetAr = 4.0f / 3.0f;
 	}
 	else if (EmuConfig.CurrentAspectRatio == AspectRatioType::R16_9)
 		targetAr = 16.0f / 9.0f;

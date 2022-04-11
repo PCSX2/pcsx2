@@ -81,6 +81,7 @@ void GSendRecording();
 void GSsetGameCRC(u32 crc, int options);
 void GSsetFrameSkip(int frameskip);
 
+GSVideoMode GSgetDisplayMode();
 void GSgetInternalResolution(int* width, int* height);
 void GSgetStats(std::string& info);
 void GSgetTitleStats(std::string& info);
