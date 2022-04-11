@@ -422,13 +422,13 @@ GSVector2i GSRenderer::GetInternalResolution()
 	return m_real_size;
 }
 
-static float GetCurrentAspectRatioFloat()
+static float GetCurrentAspectRatioFloat(bool is_progressive)
 {
-	static constexpr std::array<float, static_cast<size_t>(AspectRatioType::MaxCount)> ars = { {4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f} };
-	return ars[static_cast<u32>(GSConfig.AspectRatio)];
+	static constexpr std::array<float, static_cast<size_t>(AspectRatioType::MaxCount) + 1> ars = { {4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f, 3.0f / 2.0f} };
+	return ars[static_cast<u32>(GSConfig.AspectRatio) + (3u * is_progressive)];
 }
 
-static GSVector4 CalculateDrawRect(s32 window_width, s32 window_height, s32 texture_width, s32 texture_height, HostDisplay::Alignment alignment, bool flip_y)
+static GSVector4 CalculateDrawRect(s32 window_width, s32 window_height, s32 texture_width, s32 texture_height, HostDisplay::Alignment alignment, bool flip_y, bool is_progressive)
 {
 	const float f_width = static_cast<float>(window_width);
 	const float f_height = static_cast<float>(window_height);
@@ -436,7 +436,12 @@ static GSVector4 CalculateDrawRect(s32 window_width, s32 window_height, s32 text
 
 	float targetAr = clientAr;
 	if (EmuConfig.CurrentAspectRatio == AspectRatioType::R4_3)
-		targetAr = 4.0f / 3.0f;
+	{
+		if (is_progressive)
+			targetAr = 3.0f / 2.0f;
+		else
+			targetAr = 4.0f / 3.0f;
+	}
 	else if (EmuConfig.CurrentAspectRatio == AspectRatioType::R16_9)
 		targetAr = 16.0f / 9.0f;
 
@@ -572,7 +577,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 		{
 			HostDisplay* const display = g_gs_device->GetDisplay();
 			const GSVector4 draw_rect(CalculateDrawRect(display->GetWindowWidth(), display->GetWindowHeight(),
-				current->GetWidth(), current->GetHeight(), display->GetDisplayAlignment(), display->UsesLowerLeftOrigin()));
+				current->GetWidth(), current->GetHeight(), display->GetDisplayAlignment(), display->UsesLowerLeftOrigin(), GetVideoMode() == GSVideoMode::SDTV_480P));
 
 			static constexpr ShaderConvert s_shader[5] = {ShaderConvert::COPY, ShaderConvert::SCANLINE,
 				ShaderConvert::DIAGONAL_FILTER, ShaderConvert::TRIANGULAR_FILTER,
@@ -709,7 +714,7 @@ bool GSRenderer::MakeSnapshot(const std::string& path)
 
 bool GSRenderer::BeginCapture(std::string& filename)
 {
-	return m_capture.BeginCapture(GetTvRefreshRate(), GetInternalResolution(), GetCurrentAspectRatioFloat(), filename);
+	return m_capture.BeginCapture(GetTvRefreshRate(), GetInternalResolution(), GetCurrentAspectRatioFloat(GetVideoMode() == GSVideoMode::SDTV_480P), filename);
 }
 
 void GSRenderer::EndCapture()
@@ -799,7 +804,7 @@ bool GSRenderer::SaveSnapshotToMemory(u32 width, u32 height, std::vector<u32>* p
 		return false;
 
 	GSVector4 draw_rect(CalculateDrawRect(width, height, current->GetWidth(), current->GetHeight(),
-		HostDisplay::Alignment::LeftOrTop, false));
+		HostDisplay::Alignment::LeftOrTop, false, GetVideoMode() == GSVideoMode::SDTV_480P));
 	u32 draw_width = static_cast<u32>(draw_rect.z - draw_rect.x);
 	u32 draw_height = static_cast<u32>(draw_rect.w - draw_rect.y);
 	if (draw_width > width)
