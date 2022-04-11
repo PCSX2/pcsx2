@@ -454,49 +454,33 @@ vec4 clamp_wrap_uv(vec4 uv)
 		tex_size = WH.xyxy;
 	#endif
 
-	#if PS_WMS == PS_WMT
+
+	#if PS_WMS == 2
 	{
-		#if PS_WMS == 2
-		{
-			uv = clamp(uv, MinMax.xyxy, MinMax.zwzw);
-		}
-		#elif PS_WMS == 3
-		{
-			#if PS_FST == 0
-			// wrap negative uv coords to avoid an off by one error that shifted
-			// textures. Fixes Xenosaga's hair issue.
-			uv = fract(uv);
-			#endif
-			uv = vec4((uvec4(uv * tex_size) & MskFix.xyxy) | MskFix.zwzw) / tex_size;
-		}
-		#endif
+		uv.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
 	}
-	#else
+	#elif PS_WMS == 3
 	{
-		#if PS_WMS == 2
-		{
-			uv.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
-		}
-		#elif PS_WMS == 3
-		{
-			#if PS_FST == 0
-			uv.xz = fract(uv.xz);
-			#endif
-			uv.xz = vec2((uvec2(uv.xz * tex_size.xx) & MskFix.xx) | MskFix.zz) / tex_size.xx;
-		}
+		#if PS_FST == 0
+		// wrap negative uv coords to avoid an off by one error that shifted
+		// textures. Fixes Xenosaga's hair issue.
+		uv.xz = fract(uv.xz);
 		#endif
-		#if PS_WMT == 2
-		{
-			uv.yw = clamp(uv.yw, MinMax.yy, MinMax.ww);
-		}
-		#elif PS_WMT == 3
-		{
-			#if PS_FST == 0
-			uv.yw = fract(uv.yw);
-			#endif
-			uv.yw = vec2((uvec2(uv.yw * tex_size.yy) & MskFix.yy) | MskFix.ww) / tex_size.yy;
-		}
+		uv.xz = vec2((uvec2(uv.xz * tex_size.xx) & MskFix.xx) | MskFix.zz) / tex_size.xx;
+	}
+	#endif
+	#if PS_WMT == 2
+	{
+		uv.yw = clamp(uv.yw, MinMax.yy, MinMax.ww);
+	}
+	#elif PS_WMT == 3
+	{
+		#if PS_FST == 0
+		// wrap negative uv coords to avoid an off by one error that shifted
+		// textures. Fixes Xenosaga's hair issue.
+		uv.yw = fract(uv.yw);
 		#endif
+		uv.yw = vec2((uvec2(uv.yw * tex_size.yy) & MskFix.yy) | MskFix.ww) / tex_size.yy;
 	}
 	#endif
 
@@ -583,40 +567,27 @@ vec4 fetch_c(ivec2 uv)
 ivec2 clamp_wrap_uv_depth(ivec2 uv)
 {
 	ivec4 mask = ivec4(MskFix << 4);
-	#if (PS_WMS == PS_WMT)
+
+	#if (PS_WMS == 2)
 	{
-		#if (PS_WMS == 2)
-		{
-			uv = clamp(uv, mask.xy, mask.zw);
-		}
-		#elif (PS_WMS == 3)
-		{
-			uv = (uv & mask.xy) | mask.zw;
-		}
-		#endif
+		uv.x = clamp(uv.x, mask.x, mask.z);
 	}
-	#else
+	#elif (PS_WMS == 3)
 	{
-		#if (PS_WMS == 2)
-		{
-			uv.x = clamp(uv.x, mask.x, mask.z);
-		}
-		#elif (PS_WMS == 3)
-		{
-			uv.x = (uv.x & mask.x) | mask.z;
-		}
-		#endif
-		#if (PS_WMT == 2)
-		{
-			uv.y = clamp(uv.y, mask.y, mask.w);
-		}
-		#elif (PS_WMT == 3)
-		{
-			uv.y = (uv.y & mask.y) | mask.w;
-		}
-		#endif
+		uv.x = (uv.x & mask.x) | mask.z;
 	}
 	#endif
+
+	#if (PS_WMT == 2)
+	{
+		uv.y = clamp(uv.y, mask.y, mask.w);
+	}
+	#elif (PS_WMT == 3)
+	{
+		uv.y = (uv.y & mask.y) | mask.w;
+	}
+	#endif
+
 	return uv;
 }
 

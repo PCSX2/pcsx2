@@ -201,46 +201,31 @@ float4 clamp_wrap_uv(float4 uv)
 	else
 		tex_size = WH.xyxy;
 
-	if(PS_WMS == PS_WMT)
+	if(PS_WMS == 2)
 	{
-		if(PS_WMS == 2)
-		{
-			uv = clamp(uv, MinMax.xyxy, MinMax.zwzw);
-		}
-		else if(PS_WMS == 3)
-		{
-			#if PS_FST == 0
-			// wrap negative uv coords to avoid an off by one error that shifted
-			// textures. Fixes Xenosaga's hair issue.
-			uv = frac(uv);
-			#endif
-			uv = (float4)(((uint4)(uv * tex_size) & MskFix.xyxy) | MskFix.zwzw) / tex_size;
-		}
+		uv.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
 	}
-	else
+	else if(PS_WMS == 3)
 	{
-		if(PS_WMS == 2)
-		{
-			uv.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
-		}
-		else if(PS_WMS == 3)
-		{
-			#if PS_FST == 0
-			uv.xz = frac(uv.xz);
-			#endif
-			uv.xz = (float2)(((uint2)(uv.xz * tex_size.xx) & MskFix.xx) | MskFix.zz) / tex_size.xx;
-		}
-		if(PS_WMT == 2)
-		{
-			uv.yw = clamp(uv.yw, MinMax.yy, MinMax.ww);
-		}
-		else if(PS_WMT == 3)
-		{
-			#if PS_FST == 0
-			uv.yw = frac(uv.yw);
-			#endif
-			uv.yw = (float2)(((uint2)(uv.yw * tex_size.yy) & MskFix.yy) | MskFix.ww) / tex_size.yy;
-		}
+		// wrap negative uv coords to avoid an off by one error that shifted
+		// textures. Fixes Xenosaga's hair issue.
+		#if PS_FST == 0
+		uv.xz = frac(uv.xz);
+		#endif
+		uv.xz = (float2)(((uint2)(uv.xz * tex_size.xx) & MskFix.xx) | MskFix.zz) / tex_size.xx;
+	}
+	if(PS_WMT == 2)
+	{
+		uv.yw = clamp(uv.yw, MinMax.yy, MinMax.ww);
+	}
+	else if(PS_WMT == 3)
+	{
+		// wrap negative uv coords to avoid an off by one error that shifted
+		// textures. Fixes Xenosaga's hair issue.
+		#if PS_FST == 0
+		uv.yw = frac(uv.yw);
+		#endif
+		uv.yw = (float2)(((uint2)(uv.yw * tex_size.yy) & MskFix.yy) | MskFix.ww) / tex_size.yy;
 	}
 
 	return uv;
@@ -329,36 +314,25 @@ float4 fetch_c(int2 uv)
 int2 clamp_wrap_uv_depth(int2 uv)
 {
 	int4 mask = (int4)MskFix << 4;
-	if (PS_WMS == PS_WMT)
+
+	if (PS_WMS == 2)
 	{
-		if (PS_WMS == 2)
-		{
-			uv = clamp(uv, mask.xy, mask.zw);
-		}
-		else if (PS_WMS == 3)
-		{
-			uv = (uv & mask.xy) | mask.zw;
-		}
+		uv.x = clamp(uv.x, mask.x, mask.z);
 	}
-	else
+	else if (PS_WMS == 3)
 	{
-		if (PS_WMS == 2)
-		{
-			uv.x = clamp(uv.x, mask.x, mask.z);
-		}
-		else if (PS_WMS == 3)
-		{
-			uv.x = (uv.x & mask.x) | mask.z;
-		}
-		if (PS_WMT == 2)
-		{
-			uv.y = clamp(uv.y, mask.y, mask.w);
-		}
-		else if (PS_WMT == 3)
-		{
-			uv.y = (uv.y & mask.y) | mask.w;
-		}
+		uv.x = (uv.x & mask.x) | mask.z;
 	}
+
+	if (PS_WMT == 2)
+	{
+		uv.y = clamp(uv.y, mask.y, mask.w);
+	}
+	else if (PS_WMT == 3)
+	{
+		uv.y = (uv.y & mask.y) | mask.w;
+	}
+
 	return uv;
 }
 

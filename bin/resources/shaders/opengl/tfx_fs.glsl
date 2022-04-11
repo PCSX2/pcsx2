@@ -158,42 +158,26 @@ vec4 clamp_wrap_uv(vec4 uv)
     vec4 tex_size = WH.xyxy;
 #endif
 
-#if PS_WMS == PS_WMT
-
 #if PS_WMS == 2
-    uv_out = clamp(uv, MinMax.xyxy, MinMax.zwzw);
+    uv_out.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
 #elif PS_WMS == 3
     #if PS_FST == 0
     // wrap negative uv coords to avoid an off by one error that shifted
     // textures. Fixes Xenosaga's hair issue.
-    uv = fract(uv);
-    #endif
-    uv_out = vec4((uvec4(uv * tex_size) & MskFix.xyxy) | MskFix.zwzw) / tex_size;
-#endif
-
-#else // PS_WMS != PS_WMT
-
-#if PS_WMS == 2
-    uv_out.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
-
-#elif PS_WMS == 3
-    #if PS_FST == 0
     uv.xz = fract(uv.xz);
     #endif
     uv_out.xz = vec2((uvec2(uv.xz * tex_size.xx) & MskFix.xx) | MskFix.zz) / tex_size.xx;
-
 #endif
 
 #if PS_WMT == 2
     uv_out.yw = clamp(uv.yw, MinMax.yy, MinMax.ww);
-
 #elif PS_WMT == 3
     #if PS_FST == 0
+    // wrap negative uv coords to avoid an off by one error that shifted
+    // textures. Fixes Xenosaga's hair issue.
     uv.yw = fract(uv.yw);
     #endif
     uv_out.yw = vec2((uvec2(uv.yw * tex_size.yy) & MskFix.yy) | MskFix.ww) / tex_size.yy;
-#endif
-
 #endif
 
     return uv_out;
@@ -302,16 +286,6 @@ ivec2 clamp_wrap_uv_depth(ivec2 uv)
     // It allow to multiply the ScalingFactor before the 1/16 coeff
     ivec4 mask = ivec4(MskFix) << 4;
 
-#if PS_WMS == PS_WMT
-
-#if PS_WMS == 2
-    uv_out = clamp(uv, mask.xy, mask.zw);
-#elif PS_WMS == 3
-    uv_out = (uv & mask.xy) | mask.zw;
-#endif
-
-#else // PS_WMS != PS_WMT
-
 #if PS_WMS == 2
     uv_out.x = clamp(uv.x, mask.x, mask.z);
 #elif PS_WMS == 3
@@ -322,8 +296,6 @@ ivec2 clamp_wrap_uv_depth(ivec2 uv)
     uv_out.y = clamp(uv.y, mask.y, mask.w);
 #elif PS_WMT == 3
     uv_out.y = (uv.y & mask.y) | mask.w;
-#endif
-
 #endif
 
     return uv_out;

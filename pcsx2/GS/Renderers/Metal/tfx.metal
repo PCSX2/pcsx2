@@ -268,47 +268,32 @@ struct PSMain
 		float4 uv_out = uv;
 		float4 tex_size = PS_INVALID_TEX0 ? cb.wh.zwzw : cb.wh.xyxy;
 
-		if (PS_WMS == PS_WMT)
+		if (PS_WMS == 2)
 		{
-			if (PS_WMS == 2)
-			{
-				uv_out = clamp(uv, cb.uv_min_max.xyxy, cb.uv_min_max.zwzw);
-			}
-			else if (PS_WMS == 3)
-			{
-				// wrap negative uv coords to avoid an off by one error that shifted
-				// textures. Fixes Xenosaga's hair issue.
-				if (!FST)
-					uv = fract(uv);
-
-				uv_out = float4((ushort4(uv * tex_size) & ushort4(cb.uv_msk_fix.xyxy)) | ushort4(cb.uv_msk_fix.zwzw)) / tex_size;
-			}
+			uv_out.xz = clamp(uv.xz, cb.uv_min_max.xx, cb.uv_min_max.zz);
 		}
-		else
+		else if (PS_WMS == 3)
 		{
-			if (PS_WMS == 2)
-			{
-				uv_out.xz = clamp(uv.xz, cb.uv_min_max.xx, cb.uv_min_max.zz);
-			}
-			else if (PS_WMS == 3)
-			{
-				if (!FST)
-					uv.xz = fract(uv.xz);
+			// wrap negative uv coords to avoid an off by one error that shifted
+			// textures. Fixes Xenosaga's hair issue.
+			if (!FST)
+				uv.xz = fract(uv.xz);
 
-				uv_out.xz = float2((ushort2(uv.xz * tex_size.xx) & ushort2(cb.uv_msk_fix.xx)) | ushort2(cb.uv_msk_fix.zz)) / tex_size.xx;
-			}
+			uv_out.xz = float2((ushort2(uv.xz * tex_size.xx) & ushort2(cb.uv_msk_fix.xx)) | ushort2(cb.uv_msk_fix.zz)) / tex_size.xx;
+		}
 
-			if (PS_WMT == 2)
-			{
-				uv_out.yw = clamp(uv.yw, cb.uv_min_max.yy, cb.uv_min_max.ww);
-			}
-			else if (PS_WMT == 3)
-			{
-				if (!FST)
-					uv.yw = fract(uv.yw);
+		if (PS_WMT == 2)
+		{
+			uv_out.yw = clamp(uv.yw, cb.uv_min_max.yy, cb.uv_min_max.ww);
+		}
+		else if (PS_WMT == 3)
+		{
+			// wrap negative uv coords to avoid an off by one error that shifted
+			// textures. Fixes Xenosaga's hair issue.
+			if (!FST)
+				uv.yw = fract(uv.yw);
 
-				uv_out.yw = float2((ushort2(uv.yw * tex_size.yy) & ushort2(cb.uv_msk_fix.yy)) | ushort2(cb.uv_msk_fix.ww)) / tex_size.yy;
-			}
+			uv_out.yw = float2((ushort2(uv.yw * tex_size.yy) & ushort2(cb.uv_msk_fix.yy)) | ushort2(cb.uv_msk_fix.ww)) / tex_size.yy;
 		}
 
 		return uv_out;
@@ -386,25 +371,15 @@ struct PSMain
 		// It allow to multiply the ScalingFactor before the 1/16 coeff
 		ushort4 mask = ushort4(cb.uv_msk_fix) << 4;
 
-		if (PS_WMS == PS_WMT)
-		{
-			if (PS_WMS == 2)
-				uv_out = clamp(uv, mask.xy, mask.zw);
-			else if (PS_WMS == 3)
-				uv_out = (uv & mask.xy) | mask.zw;
-		}
-		else
-		{
-			if (PS_WMS == 2)
-				uv_out.x = clamp(uv.x, mask.x, mask.z);
-			else if (PS_WMS == 3)
-				uv_out.x = (uv.x & mask.x) | mask.z;
+		if (PS_WMS == 2)
+			uv_out.x = clamp(uv.x, mask.x, mask.z);
+		else if (PS_WMS == 3)
+			uv_out.x = (uv.x & mask.x) | mask.z;
 
-			if (PS_WMT == 2)
-				uv_out.y = clamp(uv.y, mask.y, mask.w);
-			else if (PS_WMT == 3)
-				uv_out.y = (uv.y & mask.y) | mask.w;
-		}
+		if (PS_WMT == 2)
+			uv_out.y = clamp(uv.y, mask.y, mask.w);
+		else if (PS_WMT == 3)
+			uv_out.y = (uv.y & mask.y) | mask.w;
 
 		return uv_out;
 	}
