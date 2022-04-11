@@ -162,7 +162,7 @@ jobs:
           echo "##[set-output name=simd;]${SIMD}"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         continue-on-error: true
         with:
           name: ${{ steps.artifact-metadata.outputs.name }}
@@ -178,7 +178,7 @@ jobs:
 
       - name: Upload artifact - with symbols
         if: matrix.configuration != 'CMake'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         continue-on-error: true
         with:
           name: ${{ steps.artifact-metadata.outputs.name }}-symbols
