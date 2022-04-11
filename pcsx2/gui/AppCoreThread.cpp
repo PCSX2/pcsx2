@@ -26,6 +26,7 @@
 #include "common/StringUtil.h"
 #include "common/Threading.h"
 
+#include "Host.h"
 #include "ps2/BiosTools.h"
 #include "GS.h"
 
@@ -42,6 +43,9 @@
 
 alignas(16) SysMtgsThread mtgsThread;
 alignas(16) AppCoreThread CoreThread;
+
+static std::vector<u8> s_widescreen_cheats_data;
+static bool s_widescreen_cheats_loaded = false;
 
 typedef void (AppCoreThread::*FnPtr_CoreThreadMethod)();
 
@@ -426,12 +430,12 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 
 	// regular cheat patches
 	if (fixup.EnableCheats)
-		gameCheats.Printf(L" [%d Cheats]", LoadPatchesFromDir(GameInfo::gameCRC, EmuFolders::Cheats, L"Cheats"));
+		gameCheats.Printf(L" [%d Cheats]", LoadPatchesFromDir(StringUtil::wxStringToUTF8String(GameInfo::gameCRC), EmuFolders::Cheats, "Cheats", true));
 
 	// wide screen patches
 	if (fixup.EnableWideScreenPatches)
 	{
-		if (int numberLoadedWideScreenPatches = LoadPatchesFromDir(GameInfo::gameCRC, EmuFolders::CheatsWS, L"Widescreen hacks"))
+		if (int numberLoadedWideScreenPatches = LoadPatchesFromDir(StringUtil::wxStringToUTF8String(GameInfo::gameCRC), EmuFolders::CheatsWS, "Widescreen hacks", false))
 		{
 			gameWsHacks.Printf(L" [%d widescreen hacks]", numberLoadedWideScreenPatches);
 			Console.WriteLn(Color_Gray, "Found widescreen patches in the cheats_ws folder --> skipping cheats_ws.zip");
@@ -439,11 +443,16 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 		else
 		{
 			// No ws cheat files found at the cheats_ws folder, try the ws cheats zip file.
-			const wxString cheats_ws_archive(Path::Combine(EmuFolders::Resources, wxFileName(L"cheats_ws.zip")));
-			if (wxFile::Exists(cheats_ws_archive))
+			if (!s_widescreen_cheats_loaded)
 			{
-				wxFFileInputStream* strm = new wxFFileInputStream(cheats_ws_archive);
-				int numberDbfCheatsLoaded = LoadPatchesFromZip(GameInfo::gameCRC, cheats_ws_archive, strm);
+				std::optional<std::vector<u8>> data = Host::ReadResourceFile("cheats_ws.zip");
+				if (data.has_value())
+					s_widescreen_cheats_data = std::move(data.value());
+			}
+
+			if (!s_widescreen_cheats_data.empty())
+			{
+				int numberDbfCheatsLoaded = LoadPatchesFromZip(StringUtil::wxStringToUTF8String(GameInfo::gameCRC), s_widescreen_cheats_data.data(), s_widescreen_cheats_data.size());
 				PatchesCon->WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", numberDbfCheatsLoaded);
 				gameWsHacks.Printf(L" [%d widescreen hacks]", numberDbfCheatsLoaded);
 			}
