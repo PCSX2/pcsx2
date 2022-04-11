@@ -276,7 +276,13 @@ struct PSMain
 			if (!FST)
 				uv = fract(uv);
 
-			return float2((uint2(uv * tex_size) & msk_fix.xx) | msk_fix.yy) / tex_size;
+			uv *= tex_size;
+			float2 masked = float2((uint2(uv) & msk_fix.xx) | msk_fix.yy);
+
+			if (msk_fix.x & 1) // For upscaling, let the bottom bit mask everything below
+				masked += fract(uv);
+
+			return masked / tex_size;
 		}
 		return uv;
 	}
@@ -365,7 +371,11 @@ struct PSMain
 		if (mode == 2)
 			return clamp(uv, mask.x, mask.y);
 		if (mode == 3)
+		{
+			if (msk_fix.x & 1)
+				mask.x |= 0xF;
 			return (uv & mask.x) | mask.y;
+		}
 		return uv;
 	}
 

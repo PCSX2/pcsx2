@@ -1370,9 +1370,6 @@ void GSRendererHW::Draw()
 		GSVector4i unscaled_size = GSVector4i(GSVector4(m_src->m_texture->GetSize()) / GSVector4(m_src->m_texture->GetScale()));
 		if (m_context->CLAMP.WMS == CLAMP_REPEAT && (tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_U) && unscaled_size.x != tw)
 		{
-			// Our shader-emulated region repeat doesn't upscale :(
-			// Try to avoid it if possible
-			// TODO: Upscale-supporting shader-emulated region repeat
 			if (unscaled_size.x < tw && m_vt.m_min.t.x > -(tw - unscaled_size.x) && m_vt.m_max.t.x < tw)
 			{
 				// Game only extends into data we don't have (but doesn't wrap around back onto good data), clamp seems like the most reasonable solution

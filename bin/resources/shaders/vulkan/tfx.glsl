@@ -457,7 +457,14 @@ vec2 clamp_wrap_uv_2(uint mode, vec2 uv, float tex_size, vec2 min_max, uvec2 msk
 			// textures. Fixes Xenosaga's hair issue.
 			uv = fract(uv);
 		#endif
-		return vec2((uvec2(uv * tex_size) & msk_fix.xx) | msk_fix.yy) / tex_size;
+
+		uv *= tex_size;
+		vec2 masked = vec2((uvec2(uv) & msk_fix.xx) | msk_fix.yy);
+
+		if ((msk_fix.x & 1) != 0) // For upscaling, let the bottom bit mask everything below
+			masked += fract(uv);
+
+		return masked / tex_size;
 	}
 	return uv;
 }
@@ -562,7 +569,11 @@ int clamp_wrap_uv_depth_1(uint mode, int uv, ivec2 msk_fix)
 	if (mode == 2)
 		return clamp(uv, mask.x, mask.y);
 	if (mode == 3)
+	{
+		if ((msk_fix.x & 1) != 0)
+			mask.x |= 0xF;
 		return (uv & mask.x) | mask.y;
+	}
 	return uv;
 }
 
