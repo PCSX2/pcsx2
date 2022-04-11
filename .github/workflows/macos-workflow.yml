@@ -67,13 +67,18 @@ jobs:
       - name: Checkout Submodules
         run: git submodule update --init --recursive -j $(getconf _NPROCESSORS_ONLN)
 
-      - name: Remove Conflicting Packages
+      - name: Install Packages
         env:
           PLATFORM: ${{ matrix.platform }}
           HOMEBREW_NO_INSTALL_CLEANUP: 1
           HOMEBREW_NO_ANALYTICS: 1
         run: |
-          brew unlink libjpeg libpng
+          brew unlink libjpeg libpng # Conflicts with our self-built dependencies
+          # Unlike other packages, brew's MoltenVK build uses MoltenVK's minimum macOS version of 10.13 so we can use it
+          if ! brew install molten-vk; then
+            brew update
+            brew install molten-vk
+          fi
 
       - name: Cache Dependencies
         id: cache-deps
@@ -122,6 +127,7 @@ jobs:
 
       - name: Prepare Build Artifacts
         run: |
+          cp /usr/local/lib/libMoltenVK.dylib build/pcsx2/PCSX2.app/Contents/Frameworks/
           mv build/pcsx2/PCSX2.app "${{ steps.artifact-metadata.outputs.name }}.app"
           tar cvzf "${{ steps.artifact-metadata.outputs.name }}.tar.gz" "${{ steps.artifact-metadata.outputs.name }}.app"
           mkdir ci-artifacts
