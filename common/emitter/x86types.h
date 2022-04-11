@@ -75,7 +75,7 @@ namespace x86Emitter
 	template <typename T>
 	static __fi bool is_s8(T imm)
 	{
-		return (s8)imm == (s32)imm;
+		return (s8)imm == (typename std::make_signed<T>::type)imm;
 	}
 
 	template <typename T>
