@@ -18,7 +18,6 @@
 #endif
 
 #include "common/PersistentThread.h"
-#include "common/wxBaseTools.h"
 #include "common/ThreadingInternal.h"
 #include "common/EventSource.inl"
 #include "common/General.h"

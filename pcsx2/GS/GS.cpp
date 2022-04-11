@@ -29,8 +29,6 @@
 #include "Renderers/HW/GSTextureReplacements.h"
 #include "GSLzma.h"
 
-#include "common/pxStreams.h"
-#include "common/pxStreams.h"
 #include "common/Console.h"
 #include "common/StringUtil.h"
 #include "pcsx2/Config.h"

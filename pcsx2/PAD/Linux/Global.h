@@ -28,7 +28,6 @@
 #include "common/Pcsx2Defs.h"
 #include "bitwise.h"
 
-#include "common/pxStreams.h"
 #include "common/Console.h"
 #include "common/mt_queue.h"
 #include "DebugTools/Debug.h"

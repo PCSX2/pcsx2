@@ -20,7 +20,6 @@
 #include <cassert>
 
 #include "PrecompiledHeader.h"
-#include "common/pxStreams.h"
 #include "common/WindowInfo.h"
 #include "USB.h"
 #include "qemu-usb/USBinternal.h"

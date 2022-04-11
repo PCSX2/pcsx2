@@ -777,6 +777,35 @@ public:
 };
 
 // --------------------------------------------------------------------------------------
+//  wxDoNotLogInThisScope
+// --------------------------------------------------------------------------------------
+// This class is used to disable wx's sometimes inappropriate amount of forced error logging
+// during specific activities.  For example, when using wxDynamicLibrary to detect the
+// validity of DLLs, wx will log errors for missing symbols. (sigh)
+//
+// Usage: Basic auto-cleanup destructor class.  Create an instance inside a scope, and
+// logging will be re-enabled when scope is terminated. :)
+//
+class wxDoNotLogInThisScope
+{
+	DeclareNoncopyableObject(wxDoNotLogInThisScope);
+
+protected:
+	bool m_prev;
+
+public:
+	wxDoNotLogInThisScope()
+	{
+		m_prev = wxLog::EnableLogging(false);
+	}
+
+	virtual ~wxDoNotLogInThisScope()
+	{
+		wxLog::EnableLogging(m_prev);
+	}
+};
+
+// --------------------------------------------------------------------------------------
 //  pxFitToDigits
 // --------------------------------------------------------------------------------------
 // Fits a given text or spinner control to the number of digits requested, since by default
