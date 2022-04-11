@@ -16,7 +16,6 @@
 #if !defined(__APPLE__)
 
 #include "common/Threading.h"
-#include "common/wxBaseTools.h"
 #include "common/ThreadingInternal.h"
 
 // --------------------------------------------------------------------------------------

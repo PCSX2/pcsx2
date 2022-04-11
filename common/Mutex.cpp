@@ -14,7 +14,6 @@
  */
 
 #include "common/Threading.h"
-#include "common/wxBaseTools.h"
 #include "common/ThreadingInternal.h"
 
 namespace Threading

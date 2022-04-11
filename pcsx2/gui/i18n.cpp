@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "i18n.h"
 #include "AppConfig.h"
+#include "wxGuiTools.h"
 #include "common/SafeArray.h"
 #include <memory>
 

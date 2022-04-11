@@ -67,9 +67,6 @@
     <ClCompile Include="PrecompiledHeader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pxStreams.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="pxTranslate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -307,9 +304,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="emitter\tools.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wxBaseTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="emitter\x86emitter.h">

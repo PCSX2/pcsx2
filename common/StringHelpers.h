@@ -28,46 +28,6 @@
 #define WX_STR(str) (static_cast<const char*>(str.c_str()))
 #endif
 
-// --------------------------------------------------------------------------------------
-//  pxToUTF8
-// --------------------------------------------------------------------------------------
-// Converts a string to UTF8 and provides an interface for getting its length.
-class pxToUTF8
-{
-	DeclareNoncopyableObject(pxToUTF8);
-
-protected:
-	wxCharBuffer m_result;
-	int m_length;
-
-public:
-	explicit pxToUTF8(const wxString& src)
-		: m_result(src.ToUTF8())
-	{
-		m_length = -1;
-	}
-
-	size_t Length()
-	{
-		if (-1 == m_length)
-			m_length = strlen(m_result);
-		return m_length;
-	}
-
-	void Convert(const wxString& src)
-	{
-		m_result = src.ToUTF8();
-		m_length = -1;
-	}
-
-	const char* data() const { return m_result; }
-
-	operator const char*() const
-	{
-		return m_result.data();
-	}
-};
-
 extern void px_fputs(FILE* fp, const char* src);
 
 // wxWidgets lacks one of its own...
@@ -88,28 +48,6 @@ extern bool TryParse(wxPoint& dest, const wxString& src, const wxPoint& defval =
 extern bool TryParse(wxSize& dest, const wxString& src, const wxSize& defval = wxDefaultSize, const wxString& separators = L",");
 extern bool TryParse(wxRect& dest, const wxString& src, const wxRect& defval = wxDefaultRect, const wxString& separators = L",");
 
-// --------------------------------------------------------------------------------------
-//  ParsedAssignmentString
-// --------------------------------------------------------------------------------------
-// This class is a simple helper for parsing INI-style assignments, in the typical form of:
-//    variable = value
-//    filename = SomeString.txt
-//    integer  = 15
-//
-// This parser supports both '//' and ';' at the head of a line as indicators of a commented
-// line, and such a line will return empty strings for l- and r-value.
-//
-// No type handling is performed -- the user must manually parse strings into integers, etc.
-// For advanced "fully functional" ini file parsing, consider using wxFileConfig instead.
-//
-struct ParsedAssignmentString
-{
-	wxString lvalue;
-	wxString rvalue;
-	bool IsComment;
-
-	ParsedAssignmentString(const wxString& src);
-};
 
 // ======================================================================================
 //  FastFormatAscii / FastFormatUnicode  (overview!)
@@ -220,8 +158,6 @@ public:
 
 	FastFormatUnicode& operator+=(const char* psz);
 };
-
-extern bool pxParseAssignmentString(const wxString& src, wxString& ldest, wxString& rdest);
 
 #define pxsFmt FastFormatUnicode().Write
 #define pxsFmtV FastFormatUnicode().WriteV

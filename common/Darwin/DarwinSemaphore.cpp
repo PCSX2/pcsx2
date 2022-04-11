@@ -27,7 +27,6 @@
 
 #include "common/Threading.h"
 #include "common/ThreadingInternal.h"
-#include "common/wxBaseTools.h"
 
 // --------------------------------------------------------------------------------------
 //  Semaphore Implementation for Darwin/OSX

@@ -231,23 +231,6 @@ bool TryParse(wxRect& dest, const wxString& src, const wxRect& defval, const wxS
 	return true;
 }
 
-// returns TRUE if the parse is valid, or FALSE if it's a comment.
-bool pxParseAssignmentString(const wxString& src, wxString& ldest, wxString& rdest)
-{
-	if (src.StartsWith(L"--") || src.StartsWith(L"//") || src.StartsWith(L";"))
-		return false;
-
-	ldest = src.BeforeFirst(L'=').Trim(true).Trim(false);
-	rdest = src.AfterFirst(L'=').Trim(true).Trim(false);
-
-	return true;
-}
-
-ParsedAssignmentString::ParsedAssignmentString(const wxString& src)
-{
-	IsComment = pxParseAssignmentString(src, lvalue, rvalue);
-}
-
 // Performs a cross-platform puts operation, which adds CRs to naked LFs on Win32 platforms,
 // so that Notepad won't throw a fit and Rama can read the logs again! On Unix and Mac platforms,
 // the input string is written unmodified.

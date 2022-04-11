@@ -70,7 +70,6 @@
 #include "PCSX2Base.h"
 #include "gui/i18n.h"
 
-#include "common/wxBaseTools.h"
 #include "common/Path.h"
 #include "common/Console.h"
 #include "common/MemcpyFast.h"
