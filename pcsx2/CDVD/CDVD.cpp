@@ -24,6 +24,7 @@
 #include <wx/datetime.h>
 
 #include "common/FileSystem.h"
+#include "common/StringUtil.h"
 
 #include "CdRom.h"
 #include "CDVD.h"
@@ -465,6 +466,50 @@ static __fi void _reloadPSXElfInfo(wxString elfpath)
 	// binary).
 }
 
+static std::string ExecutablePathToSerial(const std::string& path)
+{
+	// cdrom:\SCES_123.45;1
+	std::string::size_type pos = path.rfind('\\');
+	std::string serial;
+	if (pos != std::string::npos)
+	{
+		serial = path.substr(pos + 1);
+	}
+	else
+	{
+		// cdrom:SCES_123.45;1
+		pos = serial.rfind(':');
+		if (pos != std::string::npos)
+			serial = path.substr(pos + 1);
+		else
+			serial = path;
+	}
+
+	// strip off ; or version number
+	pos = serial.rfind(';');
+	if (pos != std::string::npos)
+		serial.erase(pos);
+
+	// SCES_123.45 -> SCES-12345
+	for (std::string::size_type pos = 0; pos < serial.size();)
+	{
+		if (serial[pos] == '.')
+		{
+			serial.erase(pos, 1);
+			continue;
+		}
+
+		if (serial[pos] == '_')
+			serial[pos] = '-';
+		else
+			serial[pos] = static_cast<char>(std::toupper(serial[pos]));
+
+		pos++;
+	}
+
+	return serial;
+}
+
 void cdvdReloadElfInfo(wxString elfoverride)
 {
 	// called from context of executing VM code (recompilers), so we need to trap exceptions
@@ -479,7 +524,7 @@ void cdvdReloadElfInfo(wxString elfoverride)
 			return;
 		}
 
-		wxString elfpath;
+		std::string elfpath;
 		u32 discType = GetPS2ElfName(elfpath);
 
 		if (discType == 1)
@@ -487,11 +532,9 @@ void cdvdReloadElfInfo(wxString elfoverride)
 			// PCSX2 currently only recognizes *.elf executables in proper PS2 format.
 			// To support different PSX titles in the console title and for savestates, this code bypasses all the detection,
 			// simply using the exe name, stripped of problematic characters.
-			wxString fname = elfpath.AfterLast('\\').BeforeFirst('_');
-			wxString fname2 = elfpath.AfterLast('_').BeforeFirst('.');
-			wxString fname3 = elfpath.AfterLast('.').BeforeFirst(';');
-			DiscSerial = fname + "-" + fname2 + fname3;
-			_reloadPSXElfInfo(elfpath);
+			const std::string serial(ExecutablePathToSerial(elfpath));
+			DiscSerial = StringUtil::UTF8StringToWxString(serial);
+			_reloadPSXElfInfo(StringUtil::UTF8StringToWxString(elfpath));
 			return;
 		}
 
@@ -500,7 +543,7 @@ void cdvdReloadElfInfo(wxString elfoverride)
 			return;
 
 		// Recognized and PS2 (BOOT2).  Good job, user.
-		_reloadElfInfo(elfpath);
+		_reloadElfInfo(StringUtil::UTF8StringToWxString(elfpath));
 	}
 	catch (Exception::FileNotFound& e)
 	{
