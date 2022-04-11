@@ -190,6 +190,7 @@
     <ClInclude Include="emitter\implement\simd_helpers.h" />
     <ClInclude Include="emitter\implement\simd_moremovs.h" />
     <ClInclude Include="emitter\implement\simd_shufflepack.h" />
+    <ClInclude Include="ZipHelpers.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\3rdparty\glad\glad.vcxproj">

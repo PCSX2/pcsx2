@@ -420,6 +420,9 @@
     <ClInclude Include="D3D11\ShaderCompiler.h">
       <Filter>Header Files\D3D11</Filter>
     </ClInclude>
+    <ClInclude Include="ZipHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">

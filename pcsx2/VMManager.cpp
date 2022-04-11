@@ -845,7 +845,7 @@ bool VMManager::DoLoadState(const char* filename)
 	try
 	{
 		Host::OnSaveStateLoading(filename);
-		SaveState_UnzipFromDisk(wxString::FromUTF8(filename));
+		SaveState_UnzipFromDisk(filename);
 		UpdateRunningGame(false);
 		Host::OnSaveStateLoaded(filename, true);
 		return true;
@@ -865,9 +865,8 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message)
 
 	try
 	{
-		std::unique_ptr<ArchiveEntryList> elist = std::make_unique<ArchiveEntryList>(new VmStateBuffer(L"Zippable Savestate"));
-		SaveState_DownloadState(elist.get());
-		SaveState_ZipToDisk(elist.release(), SaveState_SaveScreenshot(), wxString::FromUTF8(filename), slot_for_message);
+		std::unique_ptr<ArchiveEntryList> elist = SaveState_DownloadState();
+		SaveState_ZipToDisk(std::move(elist), SaveState_SaveScreenshot(), filename, slot_for_message);
 		Host::InvalidateSaveStateCache();
 		Host::OnSaveStateSaved(filename);
 		return true;
