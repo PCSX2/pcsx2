@@ -154,7 +154,7 @@ class ElfObject
 
 //-------------------
 extern void loadElfFile(const wxString& filename);
-extern int  GetPS2ElfName( wxString& dest );
+extern int  GetPS2ElfName( std::string& dest );
 
 
 extern u32 ElfCRC;

@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "Common.h"
 #include "common/FileSystem.h"
+#include "common/StringUtil.h"
 
 #include "GS.h"			// for sending game crc to mtgs
 #include "Elfheader.h"
@@ -313,7 +314,7 @@ void ElfObject::loadHeaders()
 //   0 - Invalid or unknown disc.
 //   1 - PS1 CD
 //   2 - PS2 CD
-int GetPS2ElfName( wxString& name )
+int GetPS2ElfName( std::string& name )
 {
 	int retype = 0;
 
@@ -326,38 +327,43 @@ int GetPS2ElfName( wxString& name )
 
 		while( !file.eof() )
 		{
-			const wxString original( fromUTF8(file.readLine().c_str()) );
-			const ParsedAssignmentString parts( original );
+			const std::string line(file.readLine());
+			std::string_view key, value;
+			if (!StringUtil::ParseAssignmentString(line, &key, &value))
+				continue;
 
-			if( parts.lvalue.IsEmpty() && parts.rvalue.IsEmpty() ) continue;
-			if( parts.rvalue.IsEmpty() && file.getLength() != file.getSeekPos() )
+			if( value.empty() && file.getLength() != file.getSeekPos() )
 			{ // Some games have a character on the last line of the file, don't print the error in those cases.
 				Console.Warning( "(SYSTEM.CNF) Unusual or malformed entry in SYSTEM.CNF ignored:" );
-				Console.Indent().WriteLn( original );
+				Console.Indent().WriteLn(line);
 				continue;
 			}
 
-			if( parts.lvalue == L"BOOT2" )
+			if( key == "BOOT2" )
 			{
-				name = parts.rvalue;
-				Console.WriteLn( Color_StrongBlue, L"(SYSTEM.CNF) Detected PS2 Disc = " + name );
+				Console.WriteLn( Color_StrongBlue, "(SYSTEM.CNF) Detected PS2 Disc = %.*s",
+					static_cast<int>(value.size()), value.data());
+				name = value;
 				retype = 2;
 			}
-			else if( parts.lvalue == L"BOOT" )
+			else if( key == "BOOT" )
 			{
-				name = parts.rvalue;
-				Console.WriteLn( Color_StrongBlue, L"(SYSTEM.CNF) Detected PSX/PSone Disc = " + name );
+				Console.WriteLn( Color_StrongBlue, "(SYSTEM.CNF) Detected PSX/PSone Disc = %.*s",
+					static_cast<int>(value.size()), value.data());
+				name = value;
 				retype = 1;
 			}
-			else if( parts.lvalue == L"VMODE" )
+			else if( key == "VMODE" )
 			{
-				Console.WriteLn( Color_Blue, L"(SYSTEM.CNF) Disc region type = " + parts.rvalue );
+				Console.WriteLn( Color_Blue, "(SYSTEM.CNF) Disc region type = %.*s",
+					static_cast<int>(value.size()), value.data());
 			}
-			else if( parts.lvalue == L"VER" )
+			else if( key == "VER" )
 			{
-				Console.WriteLn( Color_Blue, L"(SYSTEM.CNF) Software version = " + parts.rvalue );
+				Console.WriteLn( Color_Blue, "(SYSTEM.CNF) Software version = %.*s",
+					static_cast<int>(value.size()), value.data());
 #ifndef PCSX2_CORE
-				GameInfo::gameVersion = parts.rvalue;
+				GameInfo::gameVersion = StringUtil::UTF8StringToWxString(value);
 #endif
 			}
 		}

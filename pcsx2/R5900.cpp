@@ -630,7 +630,7 @@ void __fastcall eeloadHook()
 	else
 		cdvdReloadElfInfo();
 
-	wxString discelf;
+	std::string discelf;
 	int disctype = GetPS2ElfName(discelf);
 
 	std::string elfname;
@@ -710,7 +710,7 @@ void __fastcall eeloadHook()
 		else
 		{
 			if (disctype == 2)
-				elftoload = discelf.ToUTF8();
+				elftoload = discelf;
 			else
 				g_SkipBiosHack = false; // We're not fast booting, so disable it (Fixes some weirdness with the BIOS)
 		}
@@ -733,7 +733,7 @@ void __fastcall eeloadHook()
 		}
 	}
 
-	if (!g_GameStarted && ((disctype == 2 && elfname == discelf.ToStdString()) || disctype == 1))
+	if (!g_GameStarted && ((disctype == 2 && elfname == discelf) || disctype == 1))
 		g_GameLoading = true;
 }
 
