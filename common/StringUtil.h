@@ -166,9 +166,13 @@ namespace StringUtil
 
 	/// Strip whitespace from the start/end of the string.
 	std::string_view StripWhitespace(const std::string_view& str);
+	void StripWhitespace(std::string* str);
 
 	/// Splits a string based on a single character delimiter.
 	std::vector<std::string_view> SplitString(const std::string_view& str, char delimiter, bool skip_empty = true);
+
+	/// Parses an assignment string (Key = Value) into its two components.
+	bool ParseAssignmentString(const std::string_view& str, std::string_view* key, std::string_view* value);
 
 	/// Strided memcpy/memcmp.
 	static inline void StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,

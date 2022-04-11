@@ -251,6 +251,27 @@ namespace StringUtil
 		return str.substr(start, end - start + 1);
 	}
 
+	void StripWhitespace(std::string* str)
+	{
+		{
+			const char* cstr = str->c_str();
+			std::string_view::size_type start = 0;
+			while (start < str->size() && std::isspace(cstr[start]))
+				start++;
+			if (start != 0)
+				str->erase(0, start);
+		}
+
+		{
+			const char* cstr = str->c_str();
+			std::string_view::size_type start = str->size();
+			while (start > 0 && std::isspace(cstr[start - 1]))
+				start--;
+			if (start != str->size())
+				str->erase(start);
+		}
+	}
+
 	std::vector<std::string_view> SplitString(const std::string_view& str, char delimiter, bool skip_empty /*= true*/)
 	{
 		std::vector<std::string_view> res;
@@ -273,6 +294,25 @@ namespace StringUtil
 		}
 
 		return res;
+	}
+
+	bool ParseAssignmentString(const std::string_view& str, std::string_view* key, std::string_view* value)
+	{
+		const std::string_view::size_type pos = str.find('=');
+		if (pos == std::string_view::npos)
+		{
+			*key = std::string_view();
+			*value = std::string_view();
+			return false;
+		}
+
+		*key = StripWhitespace(str.substr(0, pos));
+		if (pos != (str.size() - 1))
+			*value = StripWhitespace(str.substr(pos + 1));
+		else
+			*value = std::string_view();
+
+		return true;
 	}
 
 	std::wstring UTF8StringToWideString(const std::string_view& str)
