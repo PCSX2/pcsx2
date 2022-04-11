@@ -35,11 +35,11 @@ static wxString i18n_GetBetterLanguageName( const wxLanguageInfo* info )
 {
 	switch (info->Language)
 	{
-		case wxLANGUAGE_CHINESE:				return L"Chinese (Traditional)";
-		case wxLANGUAGE_CHINESE_TRADITIONAL:	return L"Chinese (Traditional)";
-		case wxLANGUAGE_CHINESE_TAIWAN:			return L"Chinese (Traditional)";
-		case wxLANGUAGE_CHINESE_HONGKONG:		return L"Chinese (Traditional, Hong Kong)";
-		case wxLANGUAGE_CHINESE_MACAU:			return L"Chinese (Traditional, Macau)";
+		case wxLANGUAGE_CHINESE:             return L"Chinese (Traditional)";
+		case wxLANGUAGE_CHINESE_TRADITIONAL: return L"Chinese (Traditional)";
+		case wxLANGUAGE_CHINESE_TAIWAN:      return L"Chinese (Traditional)";
+		case wxLANGUAGE_CHINESE_HONGKONG:    return L"Chinese (Traditional, Hong Kong)";
+		case wxLANGUAGE_CHINESE_MACAU:       return L"Chinese (Traditional, Macau)";
 	}
 
 	return info->Description;
@@ -346,7 +346,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 			foundone = true;
 	}
 
-	if (!foundone)	
+	if (!foundone)
 	{
 		Console.Warning("SetLanguage: Requested translation is not implemented yet.");
 		return false;
