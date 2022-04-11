@@ -208,7 +208,7 @@ jobs:
 
       - name: Upload artifact
         if: matrix.appimage == true
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.artifact-metadata.outputs.name }}
           path: ci-artifacts
