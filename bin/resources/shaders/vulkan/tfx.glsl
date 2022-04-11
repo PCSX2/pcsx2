@@ -444,45 +444,36 @@ vec4 sample_p(float u)
 	return texture(Palette, vec2(u, 0.0f));
 }
 
+vec2 clamp_wrap_uv_2(uint mode, vec2 uv, float tex_size, vec2 min_max, uvec2 msk_fix)
+{
+	if (mode == 2)
+	{
+		return clamp(uv, min_max.xx, min_max.yy);
+	}
+	if (mode == 3)
+	{
+		#if PS_FST == 0
+			// wrap negative uv coords to avoid an off by one error that shifted
+			// textures. Fixes Xenosaga's hair issue.
+			uv = fract(uv);
+		#endif
+		return vec2((uvec2(uv * tex_size) & msk_fix.xx) | msk_fix.yy) / tex_size;
+	}
+	return uv;
+}
+
 vec4 clamp_wrap_uv(vec4 uv)
 {
-	vec4 tex_size;
+	vec2 tex_size;
 
 	#if PS_INVALID_TEX0
-		tex_size = WH.zwzw;
+		tex_size = WH.zw;
 	#else
-		tex_size = WH.xyxy;
+		tex_size = WH.xy;
 	#endif
 
-
-	#if PS_WMS == 2
-	{
-		uv.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
-	}
-	#elif PS_WMS == 3
-	{
-		#if PS_FST == 0
-		// wrap negative uv coords to avoid an off by one error that shifted
-		// textures. Fixes Xenosaga's hair issue.
-		uv.xz = fract(uv.xz);
-		#endif
-		uv.xz = vec2((uvec2(uv.xz * tex_size.xx) & MskFix.xx) | MskFix.zz) / tex_size.xx;
-	}
-	#endif
-	#if PS_WMT == 2
-	{
-		uv.yw = clamp(uv.yw, MinMax.yy, MinMax.ww);
-	}
-	#elif PS_WMT == 3
-	{
-		#if PS_FST == 0
-		// wrap negative uv coords to avoid an off by one error that shifted
-		// textures. Fixes Xenosaga's hair issue.
-		uv.yw = fract(uv.yw);
-		#endif
-		uv.yw = vec2((uvec2(uv.yw * tex_size.yy) & MskFix.yy) | MskFix.ww) / tex_size.yy;
-	}
-	#endif
+	uv.xz = clamp_wrap_uv_2(PS_WMS, uv.xz, tex_size.x, MinMax.xz, MskFix.xz);
+	uv.yw = clamp_wrap_uv_2(PS_WMT, uv.yw, tex_size.y, MinMax.yw, MskFix.yw);
 
 	return uv;
 }
@@ -564,30 +555,21 @@ vec4 fetch_c(ivec2 uv)
 // Depth sampling
 //////////////////////////////////////////////////////////////////////
 
+int clamp_wrap_uv_depth_1(uint mode, int uv, ivec2 msk_fix)
+{
+	ivec2 mask = msk_fix << 4;
+
+	if (mode == 2)
+		return clamp(uv, mask.x, mask.y);
+	if (mode == 3)
+		return (uv & mask.x) | mask.y;
+	return uv;
+}
+
 ivec2 clamp_wrap_uv_depth(ivec2 uv)
 {
-	ivec4 mask = ivec4(MskFix << 4);
-
-	#if (PS_WMS == 2)
-	{
-		uv.x = clamp(uv.x, mask.x, mask.z);
-	}
-	#elif (PS_WMS == 3)
-	{
-		uv.x = (uv.x & mask.x) | mask.z;
-	}
-	#endif
-
-	#if (PS_WMT == 2)
-	{
-		uv.y = clamp(uv.y, mask.y, mask.w);
-	}
-	#elif (PS_WMT == 3)
-	{
-		uv.y = (uv.y & mask.y) | mask.w;
-	}
-	#endif
-
+	uv.x = clamp_wrap_uv_depth_1(PS_WMS, uv.x, ivec2(MskFix.xz));
+	uv.y = clamp_wrap_uv_depth_1(PS_WMT, uv.y, ivec2(MskFix.yw));
 	return uv;
 }
 
