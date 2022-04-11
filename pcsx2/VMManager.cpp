@@ -348,7 +348,7 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 	int cheat_count = 0;
 	if (EmuConfig.EnableCheats)
 	{
-		cheat_count = LoadPatchesFromDir(StringUtil::UTF8StringToWxString(crc_string), EmuFolders::Cheats, L"Cheats");
+		cheat_count = LoadPatchesFromDir(crc_string, EmuFolders::Cheats, "Cheats", true);
 		if (cheat_count > 0)
 		{
 			PatchesCon->WriteLn(Color_Green, "Cheats Loaded: %d", cheat_count);
@@ -360,7 +360,7 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 	int ws_patch_count = 0;
 	if (EmuConfig.EnableWideScreenPatches && s_game_crc != 0)
 	{
-		if (ws_patch_count = LoadPatchesFromDir(StringUtil::UTF8StringToWxString(crc_string), EmuFolders::CheatsWS, L"Widescreen hacks"))
+		if (ws_patch_count = LoadPatchesFromDir(crc_string, EmuFolders::CheatsWS, "Widescreen hacks", false))
 		{
 			Console.WriteLn(Color_Gray, "Found widescreen patches in the cheats_ws folder --> skipping cheats_ws.zip");
 		}
@@ -376,7 +376,7 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 
 			if (!s_widescreen_cheats_data.empty())
 			{
-				ws_patch_count = LoadPatchesFromZip(StringUtil::UTF8StringToWxString(crc_string), wxT("cheats_ws.zip"), new wxMemoryInputStream(s_widescreen_cheats_data.data(), s_widescreen_cheats_data.size()));
+				ws_patch_count = LoadPatchesFromZip(crc_string, s_widescreen_cheats_data.data(), s_widescreen_cheats_data.size());
 				PatchesCon->WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", ws_patch_count);
 			}
 		}
