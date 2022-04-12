@@ -214,6 +214,39 @@ std::string_view FileSystem::GetFileTitleFromPath(const std::string_view& path)
 	return filename.substr(0, pos);
 }
 
+std::vector<std::string_view> FileSystem::SplitWindowsPath(const std::string_view& path)
+{
+	std::vector<std::string_view> parts;
+
+	std::string::size_type start = 0;
+	std::string::size_type pos = 0;
+	while (pos < path.size())
+	{
+		if (path[pos] != '/' && path[pos] != '\\')
+		{
+			pos++;
+			continue;
+		}
+
+		// skip consecutive separators
+		if (pos != start)
+			parts.push_back(path.substr(start, pos - start));
+
+		pos++;
+		start = pos;
+	}
+
+	if (start != pos)
+		parts.push_back(path.substr(start));
+
+	return parts;
+}
+
+std::vector<std::string_view> FileSystem::SplitNativePath(const std::string_view& path)
+{
+	return StringUtil::SplitString(path, FS_OSPATH_SEPARATOR_CHARACTER, true);
+}
+
 std::vector<std::string> FileSystem::GetRootDirectoryList()
 {
 	std::vector<std::string> results;
