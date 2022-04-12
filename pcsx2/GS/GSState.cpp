@@ -373,7 +373,7 @@ bool GSState::IsAnalogue()
 	return GetVideoMode() == GSVideoMode::NTSC || GetVideoMode() == GSVideoMode::PAL || GetVideoMode() == GSVideoMode::HDTV_1080I;
 }
 
-GSVector4i GSState::GetDisplayRectSize(int i)
+GSVector4i GSState::GetDisplayMagnifiedRect(int i)
 {
 	GSVector4i rectangle = { 0, 0, 0, 0 };
 
@@ -394,9 +394,12 @@ GSVector4i GSState::GetDisplayRectSize(int i)
 	const int height = (DH / (VideoModeDividers[(int)videomode - 1].y + 1));
 
 	// Set up the display rectangle based on the values obtained from DISPLAY registers
-
+	const auto& SMODE2 = m_regs->SMODE2;
+	int res_multi = 1;
+	if (isinterlaced() && m_regs->SMODE2.FFMD && height > 1)
+		res_multi = 2;
 	rectangle.right = width;
-	rectangle.bottom = height;
+	rectangle.bottom = height / res_multi;
 	//DevCon.Warning("Display Rect Size Returning w %d h %d", width, height);
 	return rectangle;
 }
@@ -428,9 +431,11 @@ GSVector4i GSState::GetDisplayRect(int i)
 	const int width = DW / magnification.x;
 	const int height = DH / magnification.y;
 
+	const GSVector2i offsets = GetResolutionOffset(i);
 	// Set up the display rectangle based on the values obtained from DISPLAY registers
-	rectangle.left = DX;
-	rectangle.top = DY;
+	rectangle.left = offsets.x;
+	rectangle.top = offsets.y;
+
 	rectangle.right = rectangle.left + width;
 	rectangle.bottom = rectangle.top + height;
 
@@ -449,13 +454,13 @@ GSVector2i GSState::GetResolutionOffset(int i)
 	GSVector2i offset;
 
 	offset.x = (((int)DISP.DX - VideoModeOffsets[(int)videomode - 1].z) / (VideoModeDividers[(int)videomode - 1].x + 1));
-	offset.y = (((int)DISP.DY - (VideoModeOffsets[(int)videomode - 1].w * (IsAnalogue() ? res_multi : 1))) / (VideoModeDividers[(int)videomode - 1].y + 1));
-	//DevCon.Warning("Res Offset X %d Video mode %d Y %d Video mode %d", DISP.DX, VideoModeOffsets[(int)videomode - 1].z, DISP.DY, (VideoModeOffsets[(int)videomode - 1].w * (IsAnalogue() ? res_multi : 1)));
+	offset.y = ((int)DISP.DY - (VideoModeOffsets[(int)videomode - 1].w * ((IsAnalogue() && res_multi) ? res_multi : 1))) / (VideoModeDividers[(int)videomode - 1].y + 1);
+	//DevCon.Warning("Res Offset X %d Video mode %d Y %d Video mode %d returning x %d y %d", DISP.DX, VideoModeOffsets[(int)videomode - 1].z, DISP.DY, (VideoModeOffsets[(int)videomode - 1].w * (IsAnalogue() ? res_multi : 1)), offset.x, offset.y);
 
 	return offset;
 }
 
-GSVector2i GSState::GetResolution()
+GSVector2i GSState::GetResolution(bool include_interlace)
 {
 	const GSVideoMode videomode = GetVideoMode();
 	const auto& SMODE2 = m_regs->SMODE2;
@@ -464,7 +469,10 @@ GSVector2i GSState::GetResolution()
 	GSVector2i resolution;
 
 	resolution.x = VideoModeOffsets[(int)videomode - 1].x;
-	resolution.y = VideoModeOffsets[(int)videomode - 1].y * ((IsAnalogue() && res_multi) ? res_multi : 1);
+	resolution.y = VideoModeOffsets[(int)videomode - 1].y;
+
+	if(include_interlace && !m_regs->SMODE2.FFMD)
+		resolution.y *= ((IsAnalogue() && res_multi) ? res_multi : 1);
 	//DevCon.Warning("Getting Resolution X %d Y %d", resolution.x, resolution.y);
 	return resolution;
 }
@@ -475,7 +483,7 @@ GSVector4i GSState::GetFrameRect(int i)
 	if (i == -1)
 		return GetFrameRect(0).runion(GetFrameRect(1));
 
-	GSVector4i rectangle = GetDisplayRect(i);
+	GSVector4i rectangle;
 
 	const auto& DISP = m_regs->DISP[i].DISPLAY;
 
@@ -492,16 +500,15 @@ GSVector4i GSState::GetFrameRect(int i)
 	rectangle.left = DBX;
 	rectangle.top = DBY;
 
+	rectangle.right = rectangle.left + w;
+	rectangle.bottom = rectangle.top + h;
+
 	if (isinterlaced() && m_regs->SMODE2.FFMD && h > 1)
 	{
-		h >>= 1;
+		rectangle.bottom >>= 1;
 	}
 
-	// Round down as this is the reading rect, so we want 0-639 and 0-479 for an example
-	rectangle.right = rectangle.left + w - 1;
-	rectangle.bottom = rectangle.top + h - 1;
-
-	//DevCon.Warning("Frame Rect left %d right %d top %d bottom %d DBX %d DBY %d", rectangle.left, rectangle.right, rectangle.top, rectangle.bottom, DBX, DBY);
+	//DevCon.Warning("Frame %d Rect left %d right %d top %d bottom %d DBX %d DBY %d", i, rectangle.left, rectangle.right, rectangle.top, rectangle.bottom, DBX, DBY);
 
 	return rectangle;
 }
