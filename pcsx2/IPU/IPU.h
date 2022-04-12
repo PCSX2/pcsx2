@@ -140,9 +140,9 @@ struct alignas(16) tIPU_BP {
 		return true;
 	}
 
-	wxString desc() const
+	std::string desc() const
 	{
-		return wxsFormat(L"Ipu BP: bp = 0x%x, IFC = 0x%x, FP = 0x%x.", BP, IFC, FP);
+		return StringUtil::StdStringFromFormat("Ipu BP: bp = 0x%x, IFC = 0x%x, FP = 0x%x.", BP, IFC, FP);
 	}
 };
 
@@ -277,9 +277,9 @@ union tIPU_cmd
 	u128 _u128[2];
 
 	void clear();
-	wxString desc() const
+	std::string desc() const
 	{
-		return pxsFmt(L"Ipu cmd: index = 0x%x, current = 0x%x, pos[0] = 0x%x, pos[1] = 0x%x",
+		return StringUtil::StdStringFromFormat("Ipu cmd: index = 0x%x, current = 0x%x, pos[0] = 0x%x, pos[1] = 0x%x",
 			index, current, pos[0], pos[1]);
 	}
 };

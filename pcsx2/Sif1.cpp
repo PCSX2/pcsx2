@@ -102,7 +102,7 @@ static __fi bool ProcessEETag()
 		sif1.fifo.write((u32*)ptag + 2, 2);
 	}
 
-	SIF_LOG(wxString(ptag->tag_to_str()).To8BitData());
+	SIF_LOG("%s", ptag->tag_to_str().c_str());
 	sif1ch.madr = ptag[1]._u32;
 
 	sif1.ee.end = hwDmacSrcChain(sif1ch, ptag->ID);
@@ -331,7 +331,7 @@ __fi void  EEsif1Interrupt()
 // Main difference is this checks for iop, where psxDma10 checks for ee.
 __fi void dmaSIF1()
 {
-	SIF_LOG(wxString(L"dmaSIF1" + sif1ch.cmqt_to_str()).To8BitData());
+	SIF_LOG("dmaSIF1 %s", sif1ch.cmqt_to_str().c_str());
 
 	if (sif1.fifo.readPos != sif1.fifo.writePos)
 	{

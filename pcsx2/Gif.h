@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "common/StringUtil.h"
+
 #define COPY_GS_PACKET_TO_MTGS 0
 #define PRINT_GIF_PACKET 0
 
@@ -107,7 +109,7 @@ union tGIF_CTRL
 	void set_flags(u32 flags) { _u32 |= flags; }
 	void clear_flags(u32 flags) { _u32 &= ~flags; }
 	void reset() { _u32 = 0; }
-	wxString desc() { return wxsFormat(L"Ctrl: 0x%x", _u32); }
+	std::string desc() { return StringUtil::StdStringFromFormat("Ctrl: 0x%x", _u32); }
 };
 
 union tGIF_MODE
@@ -127,7 +129,7 @@ union tGIF_MODE
 	void set_flags(u32 flags) { _u32 |= flags; }
 	void clear_flags(u32 flags) { _u32 &= ~flags; }
 	void reset() { _u32 = 0; }
-	wxString desc() { return wxsFormat(L"Mode: 0x%x", _u32); }
+	std::string desc() { return StringUtil::StdStringFromFormat("Mode: 0x%x", _u32); }
 };
 
 union tGIF_STAT
@@ -158,7 +160,7 @@ union tGIF_STAT
 	void set_flags(u32 flags) { _u32 |= flags; }
 	void clear_flags(u32 flags) { _u32 &= ~flags; }
 	void reset() { _u32 = 0; }
-	wxString desc() { return wxsFormat(L"Stat: 0x%x", _u32); }
+	std::string desc() { return StringUtil::StdStringFromFormat("Stat: 0x%x", _u32); }
 };
 
 union tGIF_TAG0
@@ -176,7 +178,7 @@ union tGIF_TAG0
 	void set_flags(u32 flags) { _u32 |= flags; }
 	void clear_flags(u32 flags) { _u32 &= ~flags; }
 	void reset() { _u32 = 0; }
-	wxString desc() { return wxsFormat(L"Tag0: 0x%x", _u32); }
+	std::string desc() { return StringUtil::StdStringFromFormat("Tag0: 0x%x", _u32); }
 };
 
 union tGIF_TAG1
@@ -196,7 +198,7 @@ union tGIF_TAG1
 	void set_flags(u32 flags) { _u32 |= flags; }
 	void clear_flags(u32 flags) { _u32 &= ~flags; }
 	void reset() { _u32 = 0; }
-	wxString desc() { return wxsFormat(L"Tag1: 0x%x", _u32); }
+	std::string desc() { return StringUtil::StdStringFromFormat("Tag1: 0x%x", _u32); }
 };
 
 union tGIF_CNT
@@ -217,7 +219,7 @@ union tGIF_CNT
 	void set_flags(u32 flags) { _u32 |= flags; }
 	void clear_flags(u32 flags) { _u32 &= ~flags; }
 	void reset() { _u32 = 0; }
-	wxString desc() { return wxsFormat(L"CNT: 0x%x", _u32); }
+	std::string desc() { return StringUtil::StdStringFromFormat("CNT: 0x%x", _u32); }
 };
 
 union tGIF_P3CNT
@@ -231,7 +233,7 @@ union tGIF_P3CNT
 	tGIF_P3CNT(u32 val) { _u32 = val; }
 
 	void reset() { _u32 = 0; }
-	wxString desc() { return wxsFormat(L"P3CNT: 0x%x", _u32); }
+	std::string desc() { return StringUtil::StdStringFromFormat("P3CNT: 0x%x", _u32); }
 };
 
 union tGIF_P3TAG
@@ -249,7 +251,7 @@ union tGIF_P3TAG
 	void set_flags(u32 flags) { _u32 |= flags; }
 	void clear_flags(u32 flags) { _u32 &= ~flags; }
 	void reset() { _u32 = 0; }
-	wxString desc() { return wxsFormat(L"P3Tag: 0x%x", _u32); }
+	std::string desc() { return StringUtil::StdStringFromFormat("P3Tag: 0x%x", _u32); }
 };
 
 struct GIFregisters

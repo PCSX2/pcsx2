@@ -18,6 +18,8 @@
 #include "MemoryTypes.h"
 #include "R5900.h"
 
+#include "common/StringUtil.h"
+
 enum vif0_stat_flags
 {
 	VIF0_STAT_VPS_W 	= (1),
@@ -118,7 +120,7 @@ union tVIF_STAT {
 	void set_flags	(u32 flags)	{ _u32 |=  flags; }
 	void clear_flags(u32 flags) { _u32 &= ~flags; }
 	void reset()				{ _u32 = 0; }
-	wxString desc() const		{ return wxsFormat(L"Stat: 0x%x", _u32); }
+	std::string desc() const		{ return StringUtil::StdStringFromFormat("Stat: 0x%x", _u32); }
 };
 
 #define VIF_STAT(value) ((tVIF_STAT)(value))
@@ -138,7 +140,7 @@ union tVIF_FBRST {
 	void set_flags	(u32 flags)			{ _u32 |=  flags; }
 	void clear_flags(u32 flags)			{ _u32 &= ~flags; }
 	void reset()						{ _u32 = 0; }
-	wxString desc() const				{ return wxsFormat(L"Fbrst: 0x%x", _u32); }
+	std::string desc() const				{ return StringUtil::StdStringFromFormat("Fbrst: 0x%x", _u32); }
 };
 
 #define FBRST(value) ((tVIF_FBRST)(value))
@@ -159,7 +161,7 @@ union tVIF_ERR {
 	void set_flags	(u32 flags)			{ _u32 |=  flags; }
 	void clear_flags(u32 flags)			{ _u32 &= ~flags; }
 	void reset()						{ _u32 = 0; }
-	wxString desc() const				{ return wxsFormat(L"Err: 0x%x", _u32); }
+	std::string desc() const				{ return StringUtil::StdStringFromFormat("Err: 0x%x", _u32); }
 };
 
 struct vifCycle

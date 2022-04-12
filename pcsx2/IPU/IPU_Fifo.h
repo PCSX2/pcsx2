@@ -13,8 +13,10 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef IPU_FIFO_H_INCLUDED
-#define IPU_FIFO_H_INCLUDED
+#pragma once
+
+#include "common/Pcsx2Defs.h"
+#include <string>
 
 // Important!  All FIFO containers in this header should be 'struct' type, not class type.
 // They are saved into the savestate as-is, and keeping them as struct ensures that the
@@ -28,7 +30,7 @@ struct IPU_Fifo_Input
 	int write(u32* pMem, int size);
 	int read(void *value);
 	void clear();
-	wxString desc() const;
+	std::string desc() const;
 };
 
 struct IPU_Fifo_Output
@@ -40,7 +42,7 @@ struct IPU_Fifo_Output
 	int write(const u32 * value, uint size);
 	void read(void *value, uint size);
 	void clear();
-	wxString desc() const;
+	std::string desc() const;
 };
 
 struct IPU_Fifo
@@ -53,5 +55,3 @@ struct IPU_Fifo
 };
 
 alignas(16) extern IPU_Fifo ipu_fifo;
-
-#endif // IPU_FIFO_H_INCLUDED
