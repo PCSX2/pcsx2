@@ -61,14 +61,14 @@ void IPU_Fifo::clear()
 	out.clear();
 }
 
-wxString IPU_Fifo_Input::desc() const
+std::string IPU_Fifo_Input::desc() const
 {
-	return wxsFormat(L"IPU Fifo Input: readpos = 0x%x, writepos = 0x%x, data = 0x%x", readpos, writepos, data);
+	return StringUtil::StdStringFromFormat("IPU Fifo Input: readpos = 0x%x, writepos = 0x%x, data = 0x%x", readpos, writepos, data);
 }
 
-wxString IPU_Fifo_Output::desc() const
+std::string IPU_Fifo_Output::desc() const
 {
-	return wxsFormat(L"IPU Fifo Output: readpos = 0x%x, writepos = 0x%x, data = 0x%x", readpos, writepos, data);
+	return StringUtil::StdStringFromFormat("IPU Fifo Output: readpos = 0x%x, writepos = 0x%x, data = 0x%x", readpos, writepos, data);
 }
 
 int IPU_Fifo_Input::write(u32* pMem, int size)

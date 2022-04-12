@@ -187,6 +187,9 @@ extern SysMainMemory& GetVmMemory();
 // responded to the prompt.
 //
 
+#ifndef PCSX2_CORE
+#include <wx/string.h>
+
 namespace Msgbox
 {
 	extern bool	Alert( const wxString& text, const wxString& caption=_("PCSX2 Message"), int icon=wxICON_EXCLAMATION );
@@ -195,6 +198,7 @@ namespace Msgbox
 
 	extern int	Assertion( const wxString& text, const wxString& stacktrace );
 }
+#endif
 
 #ifdef _WIN32
 extern void CheckIsUserOnHighPerfPowerPlan();

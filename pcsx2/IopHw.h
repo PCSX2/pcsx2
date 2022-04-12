@@ -17,6 +17,8 @@
 
 #include "IopMem.h"
 
+#include "common/StringUtil.h"
+
 static const u32
 	HW_PS1_GPU_START = 0x1F8010A0,
 	HW_PS1_GPU_END   = 0x1F8010B0,
@@ -208,7 +210,7 @@ struct dma_mbc
 	{
 		return (bcr >> 16);
 	}
-	wxString desc() const { return wxsFormat(L"madr: 0x%x bcr: 0x%x chcr: 0x%x", madr, bcr, chcr); }
+	std::string desc() const { return StringUtil::StdStringFromFormat("madr: 0x%x bcr: 0x%x chcr: 0x%x", madr, bcr, chcr); }
 };
 
 struct dma_mbct
@@ -226,7 +228,7 @@ struct dma_mbct
 	{
 		return (bcr >> 16);
 	}
-	wxString desc() const { return wxsFormat(L"madr: 0x%x bcr: 0x%x chcr: 0x%x tadr: 0x%x", madr, bcr, chcr, tadr); }
+	std::string desc() const { return StringUtil::StdStringFromFormat("madr: 0x%x bcr: 0x%x chcr: 0x%x tadr: 0x%x", madr, bcr, chcr, tadr); }
 };
 
 static dma_mbc&		hw_dma0		= (dma_mbc&) iopHw[0x1080];
