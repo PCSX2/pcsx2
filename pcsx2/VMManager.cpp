@@ -337,7 +337,8 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 	if (EmuConfig.EnablePatches)
 	{
 		const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(s_game_serial);
-		if (game && (patch_count = LoadPatchesFromGamesDB(crc_string, *game)) > 0)
+		const std::string* patches = game ? game->findPatch(s_game_crc) : nullptr;
+		if (patches && (patch_count = LoadPatchesFromString(*patches)) > 0)
 		{
 			PatchesCon->WriteLn(Color_Green, "(GameDB) Patches Loaded: %d", patch_count);
 			message.Write("%u game patches", patch_count);

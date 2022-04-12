@@ -86,8 +86,6 @@ namespace GameDatabaseSchema
 		Count
 	};
 
-	using Patch = std::vector<std::string>;
-
 	struct GameEntry
 	{
 		std::string name;
@@ -101,11 +99,11 @@ namespace GameDatabaseSchema
 		std::vector<std::pair<SpeedhackId, int>> speedHacks;
 		std::vector<std::pair<GSHWFixId, s32>> gsHWFixes;
 		std::vector<std::string> memcardFilters;
-		std::unordered_map<std::string, Patch> patches;
+		std::unordered_map<u32, std::string> patches;
 
 		// Returns the list of memory card serials as a `/` delimited string
 		std::string memcardFiltersAsString() const;
-		const Patch* findPatch(const std::string_view& crc) const;
+		const std::string* findPatch(u32 crc) const;
 		const char* compatAsString() const;
 
 		/// Applies Core game fixes to an existing config. Returns the number of applied fixes.

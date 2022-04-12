@@ -391,10 +391,12 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 
 			if (fixup.EnablePatches)
 			{
-				if (int patches = LoadPatchesFromGamesDB(GameInfo::gameCRC.ToStdString(), *game))
+				const std::string* patches = ingame ? game->findPatch(ElfCRC) : 0;
+				int numPatches;
+				if (patches && (numPatches = LoadPatchesFromString(*patches)) > 0)
 				{
-					gamePatch.Printf(L" [%d Patches]", patches);
-					PatchesCon->WriteLn(Color_Green, "(GameDB) Patches Loaded: %d", patches);
+					gamePatch.Printf(L" [%d Patches]", numPatches);
+					PatchesCon->WriteLn(Color_Green, "(GameDB) Patches Loaded: %d", numPatches);
 				}
 			}
 			if (int fixes = loadGameSettings(fixup, *game))

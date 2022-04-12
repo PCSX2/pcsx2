@@ -120,23 +120,11 @@ static void inifile_command(const std::string& cmd)
 	/*int code = */ PatchTableExecute(key, value, commands_patch);
 }
 
-// This routine loads patches from the game database (but not the config/game fixes/hacks)
-// Returns number of patches loaded
-int LoadPatchesFromGamesDB(const std::string& crc, const GameDatabaseSchema::GameEntry& game)
+int LoadPatchesFromString(const std::string& patches)
 {
-	const GameDatabaseSchema::Patch* patch = game.findPatch(crc);
-	if (patch)
-	{
-		for (const std::string& line : *patch)
-			inifile_command(line);
-	}
+	const size_t before = Patch.size();
 
-	return Patch.size();
-}
-
-static void inifile_processString(const std::string& inStr)
-{
-	std::istringstream ss(inStr);
+	std::istringstream ss(patches);
 	std::string line;
 	while (std::getline(ss, line))
 	{
@@ -144,6 +132,8 @@ static void inifile_processString(const std::string& inStr)
 		if (!line.empty())
 			inifile_command(line);
 	}
+
+	return static_cast<int>(Patch.size() - before);
 }
 
 void ForgetLoadedPatches()
@@ -162,18 +152,13 @@ int LoadPatchesFromZip(const std::string& crc, const u8* zip_data, size_t zip_da
 	if (!zf)
 		return 0;
 
-	const int before = Patch.size();
-
 	const std::string pnach_filename(crc + ".pnach");
 	std::optional<std::string> pnach_data(ReadFileInZipToString(zf.get(), pnach_filename.c_str()));
 	if (!pnach_data.has_value())
 		return 0;
 
 	PatchesCon->WriteLn(Color_Green, "Loading patch '%s' from archive.", pnach_filename.c_str());
-
-	inifile_processString(pnach_data.value());
-
-	return Patch.size() - before;
+	return LoadPatchesFromString(pnach_data.value());
 }
 
 
@@ -198,7 +183,7 @@ int LoadPatchesFromDir(const std::string& crc, const wxDirName& folder, const ch
 			friendly_name, folder.ToUTF8().data(), crc.c_str());
 	}
 
-	const size_t before_all = Patch.size();
+	int total_loaded = 0;
 
 	for (const FILESYSTEM_FIND_DATA& fd : files)
 	{
@@ -209,17 +194,13 @@ int LoadPatchesFromDir(const std::string& crc, const wxDirName& folder, const ch
 		if (!pnach_data.has_value())
 			continue;
 
-		const size_t before = Patch.size();
-		inifile_processString(pnach_data.value());
-		const size_t loaded = Patch.size() - before;
-
-		PatchesCon->WriteLn((loaded ? Color_Green : Color_Gray), "Loaded %zu %s from '%.*s'.",
+		const int loaded = LoadPatchesFromString(pnach_data.value());
+		PatchesCon->WriteLn((loaded ? Color_Green : Color_Gray), "Loaded %d %s from '%.*s'.",
 			loaded, friendly_name, static_cast<int>(name.size()), name.data());
 	}
 
-	const size_t loaded = Patch.size() - before_all;
-	PatchesCon->WriteLn((loaded ? Color_Green : Color_Gray), "Overall %zu %s loaded", loaded, friendly_name);
-	return loaded;
+	PatchesCon->WriteLn((total_loaded ? Color_Green : Color_Gray), "Overall %d %s loaded", total_loaded, friendly_name);
+	return total_loaded;
 }
 
 // PatchFunc Functions.
