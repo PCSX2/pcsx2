@@ -57,23 +57,22 @@ std::string GameDatabaseSchema::GameEntry::memcardFiltersAsString() const
 	return fmt::to_string(fmt::join(memcardFilters, "/"));
 }
 
-const GameDatabaseSchema::Patch* GameDatabaseSchema::GameEntry::findPatch(const std::string_view& crc) const
+const std::string* GameDatabaseSchema::GameEntry::findPatch(u32 crc) const
 {
-	std::string crcLower = StringUtil::toLower(crc);
-	Console.WriteLn(fmt::format("[GameDB] Searching for patch with CRC '{}'", crc));
+	Console.WriteLn(fmt::format("[GameDB] Searching for patch with CRC '{:08X}'", crc));
 
-	auto it = patches.find(crcLower);
+	auto it = patches.find(crc);
 	if (it != patches.end())
 	{
-		Console.WriteLn(fmt::format("[GameDB] Found patch with CRC '{}'", crc));
-		return &patches.at(crcLower);
+		Console.WriteLn(fmt::format("[GameDB] Found patch with CRC '{:08X}'", crc));
+		return &it->second;
 	}
 
-	it = patches.find("default");
+	it = patches.find(0);
 	if (it != patches.end())
 	{
 		Console.WriteLn("[GameDB] Found and falling back to default patch");
-		return &patches.at("default");
+		return &it->second;
 	}
 	Console.WriteLn("[GameDB] No CRC-specific patch or default patch found");
 	return nullptr;
@@ -245,20 +244,24 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 	{
 		for (const ryml::NodeRef& n : node["patches"].children())
 		{
-			auto crc = StringUtil::toLower(std::string(n.key().str, n.key().len));
-			if (gameEntry.patches.count(crc) == 1)
+			// use a crc of 0 for default patches
+			const std::string_view crc_str(n.key().str, n.key().len);
+			const std::optional<u32> crc = (StringUtil::compareNoCase(crc_str, "default")) ? std::optional<u32>(0) : StringUtil::FromChars<u32>(crc_str, 16);
+			if (!crc.has_value())
 			{
-				Console.Error(fmt::format("[GameDB] Duplicate CRC '{}' found for serial: '{}'. Skipping, CRCs are case-insensitive!", crc, serial));
+				Console.Error(fmt::format("[GameDB] Invalid CRC '{}' found for serial: '{}'. Skipping!", crc_str, serial));
 				continue;
 			}
-			GameDatabaseSchema::Patch patch;
-			if (n.has_child("content"))
+			if (gameEntry.patches.find(crc.value()) != gameEntry.patches.end())
 			{
-				std::string patchLines;
-				n["content"] >> patchLines;
-				patch = StringUtil::splitOnNewLine(patchLines);
+				Console.Error(fmt::format("[GameDB] Duplicate CRC '{}' found for serial: '{}'. Skipping, CRCs are case-insensitive!", crc_str, serial));
+				continue;
 			}
-			gameEntry.patches[crc] = patch;
+
+			std::string patch;
+			if (n.has_child("content"))
+				n["content"] >> patch;
+			gameEntry.patches.emplace(crc.value(), std::move(patch));
 		}
 	}
 
