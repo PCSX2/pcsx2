@@ -289,9 +289,9 @@ public:
 
 	int GetFramebufferHeight();
 	GSVector4i GetDisplayRect(int i = -1);
-	GSVector4i GetDisplayRectSize(int i = -1);
+	GSVector4i GetDisplayMagnifiedRect(int i = -1);
 	GSVector2i GetResolutionOffset(int i = -1);
-	GSVector2i GetResolution();
+	GSVector2i GetResolution(bool include_interlace = false);
 	GSVector4i GetFrameRect(int i = -1);
 	GSVideoMode GetVideoMode();
 

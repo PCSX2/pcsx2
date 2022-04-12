@@ -89,8 +89,8 @@ bool GSRenderer::Merge(int field)
 			fr[i] = GetFrameRect(i);
 			dr[i] = GetDisplayRect(i);
 
-			display_combined.x = std::max(GetDisplayRectSize(i).right + abs(GetResolutionOffset(i).x), display_combined.x);
-			display_combined.y = std::max(GetDisplayRectSize(i).bottom + abs(GetResolutionOffset(i).y), display_combined.y);
+			display_combined.x = std::max(GetDisplayMagnifiedRect(i).right + abs(GetResolutionOffset(i).x), display_combined.x);
+			display_combined.y = std::max(GetDisplayMagnifiedRect(i).bottom + abs(GetResolutionOffset(i).y), display_combined.y);
 			display_baseline.x = std::min(dr[i].left, display_baseline.x);
 			display_baseline.y = std::min(dr[i].top, display_baseline.y);
 			frame_baseline.x = std::min(fr[i].left, frame_baseline.x);
@@ -196,8 +196,8 @@ bool GSRenderer::Merge(int field)
 		if (!en[i] || !tex[i])
 			continue;
 
-		const GSVector2i resolution(GetResolution());
-		GSVector4i r = GetDisplayRectSize(i);
+		const GSVector2i resolution(GetResolution(true));
+		GSVector4i r = GetDisplayMagnifiedRect(i);
 		GSVector4 scale = GSVector4(tex[i]->GetScale()).xyxy();
 
 		bool ignore_offset = !GSConfig.PCRTCOffsets;
@@ -217,15 +217,13 @@ bool GSRenderer::Merge(int field)
 			if (!ignore_offset)
 				off.y &= ~1;
 		}
-
-		display_diff.x /= (VideoModeDividers[(int)videomode - 1].x + 1);
-		display_diff.y /= (VideoModeDividers[(int)videomode - 1].y + 1);
-
-		if (!ignore_offset && display_combined.y < resolution.y && display_combined.x < resolution.x)
+		
+		if (!ignore_offset && display_combined.y < (resolution.y-1) && display_combined.x < (resolution.x-1))
 		{
 			float difference[2];
 			difference[0] = resolution.x / (float)display_combined.x;
 			difference[1] = resolution.y / (float)display_combined.y;
+
 			//DevCon.Warning("Difference x %f y %f old size x %d y %d res x %d y %d off x %d y %d", difference[0], difference[1], r.right, r.bottom, resolution.x, resolution.y, off.x, off.y);
 			if (difference[0] > 1.0f)
 			{
@@ -330,17 +328,23 @@ bool GSRenderer::Merge(int field)
 			if (frame_diff.y == 1)
 				off.y += 1;
 		}
+		
+		if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
+		{
+			off.y /= 2;
+		}
 
 		// Src is the size for output
-		src[i] = GSVector4(r) * scale / GSVector4(tex[i]->GetSize()).xyxy();
+		src[i] = GSVector4(r) * scale / GSVector4(tex[i]->GetSize()).xyxy();;
+
 		// Src_hw is the size which we're really reading
 		src_hw[i] = (GSVector4(fr[i]) + GSVector4(0, y_offset[i], 0, y_offset[i])) * scale / GSVector4(tex[i]->GetSize()).xyxy();
-		
-		dst[i] = scale * (GSVector4(off).xyxy() + GSVector4(r.rsize()));
+
+		dst[i] = GSVector4(off).xyxy() + (scale * GSVector4(r.rsize()));
 
 		if (m_scanmask_used && interlace_offset)
-			dst[i] += GSVector4(0.0f, 1.0f, 0.0f, 1.0f);
-		//DevCon.Warning("Offset final x %d y %d Display x %d y %d Frame x %d y %d rect x %d y %d z %d w %d", off.x, off.y, display_diff.x, display_diff.x, frame_diff.y, frame_diff.y, r.x, r.y, r.z, r.w);
+			dst[i] -= GSVector4(0.0f, 1.0f, 0.0f, 1.0f);
+		//DevCon.Warning("Offset final x %d y %d Display Diff x %d y %d Frame Diff x %d y %d Frame Rect x %d y %d z %d w %d Display rect x %d y %d z %d w %d", off.x, off.y, display_diff.x, display_diff.x, frame_diff.y, frame_diff.y, fr[i].x, fr[i].y, fr[i].z, fr[i].w, r.x, r.y, r.z, r.w);
 	}
 
 	if (feedback_merge && tex[2])
@@ -356,15 +360,17 @@ bool GSRenderer::Merge(int field)
 		dst[2] = GSVector4(scale * GSVector4(feedback_rect.rsize()));
 	}
 
-	fs = GetResolution() * GSVector2i(GetUpscaleMultiplier());
+	fs = GetResolution(true) * GSVector2i(GetUpscaleMultiplier());
 	//DevCon.Warning("Res x %d y %d", fs.x, fs.y);
 	ds = fs;
 
-	m_real_size = ds;
 	if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
 	{
 		ds.y *= 2;
 	}
+
+	m_real_size = ds;
+	
 	if (tex[0] || tex[1])
 	{
 		if ((tex[0] == tex[1]) && (src[0] == src[1]).alltrue() && (dst[0] == dst[1]).alltrue() && !feedback_merge && !slbg)
