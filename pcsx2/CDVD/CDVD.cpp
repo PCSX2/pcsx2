@@ -435,29 +435,6 @@ static __fi void _reloadElfInfo(std::string elfpath)
 	// binary).
 }
 
-static __fi void _reloadPSXElfInfo(std::string elfpath)
-{
-	// Now's a good time to reload the ELF info...
-	ScopedLock locker(Mutex_NewDiskCB);
-
-	if (elfpath == LastELF)
-		return;
-
-	std::unique_ptr<ElfObject> elfptr(loadElf(elfpath, true));
-
-	ElfCRC = elfptr->getCRC();
-	ElfTextRange = elfptr->getTextRange();
-	LastELF = std::move(elfpath);
-
-	Console.WriteLn(Color_StrongBlue, "PSX ELF (%s) Game CRC = 0x%08X", LastELF.c_str(), ElfCRC);
-
-	// Note: Do not load game database info here.  This code is generic and called from
-	// BIOS key encryption as well as eeloadReplaceOSDSYS.  The first is actually still executing
-	// BIOS code, and patches and cheats should not be applied yet.  (they are applied when
-	// eeGameStarting is invoked, which is when the VM starts executing the actual game ELF
-	// binary).
-}
-
 static std::string ExecutablePathToSerial(const std::string& path)
 {
 	// cdrom:\SCES_123.45;1
@@ -530,7 +507,6 @@ void cdvdReloadElfInfo(std::string elfoverride)
 			// PCSX2 currently only recognizes *.elf executables in proper PS2 format.
 			// To support different PSX titles in the console title and for savestates, this code bypasses all the detection,
 			// simply using the exe name, stripped of problematic characters.
-			_reloadPSXElfInfo(std::move(elfpath));
 			return;
 		}
 
