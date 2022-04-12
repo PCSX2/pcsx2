@@ -1766,6 +1766,9 @@
     <ClCompile Include="x86\iR5900Analysis.cpp">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
     </ClCompile>
+    <ClCompile Include="gui\IniInterface.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2932,6 +2935,9 @@
     </ClInclude>
     <ClInclude Include="x86\iR5900Analysis.h">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\IniInterface.h">
+      <Filter>AppHost</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

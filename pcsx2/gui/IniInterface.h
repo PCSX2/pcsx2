@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "Path.h"
+#include "common/Path.h"
 #include <wx/config.h>
 #include <wx/gdicmn.h>
 #include <string>

@@ -20,7 +20,7 @@
 #include <wx/spinctrl.h>
 #include "common/General.h"
 #include "common/Threading.h"
-#include "common/IniInterface.h"
+#include "gui/IniInterface.h"
 #include "gui/wxGuiTools.h"
 #include "gui/pxStaticText.h"
 

@@ -19,7 +19,6 @@ target_sources(common PRIVATE
 	FastFormatString.cpp
 	FastJmp.cpp
 	FileSystem.cpp
-	IniInterface.cpp
 	Mutex.cpp
 	Misc.cpp
 	MD5Digest.cpp

@@ -58,7 +58,6 @@
     <ClCompile Include="GL\ShaderCache.cpp" />
     <ClCompile Include="GL\StreamBuffer.cpp" />
     <ClCompile Include="FileSystem.cpp" />
-    <ClCompile Include="IniInterface.cpp" />
     <ClCompile Include="MD5Digest.cpp" />
     <ClCompile Include="ProgressCallback.cpp" />
     <ClCompile Include="pxTranslate.cpp" />

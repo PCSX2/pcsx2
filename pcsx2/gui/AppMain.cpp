@@ -21,6 +21,7 @@
 #include "Host.h"
 #include "AppSaveStates.h"
 #include "AppAccelerators.h"
+#include "IniInterface.h"
 #include "PAD/Gamepad.h"
 
 #include "ps2/BiosTools.h"
@@ -36,7 +37,6 @@
 #	include "Recording/InputRecording.h"
 #endif
 
-#include "common/IniInterface.h"
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
 #include "common/AppTrait.h"

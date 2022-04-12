@@ -15,7 +15,7 @@
 
 #include <wx/gdicmn.h>
 
-#include "common/IniInterface.h"
+#include "gui/IniInterface.h"
 #include "common/Console.h"
 
 const wxRect wxDefaultRect(wxDefaultCoord, wxDefaultCoord, wxDefaultCoord, wxDefaultCoord);

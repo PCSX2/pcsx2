@@ -16,8 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "App.h"
 #include "MainFrame.h"
-
-#include "common/IniInterface.h"
+#include "IniInterface.h"
 #include "common/SettingsWrapper.h"
 #include "wxSettingsInterface.h"
 
