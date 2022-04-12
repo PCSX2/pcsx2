@@ -373,7 +373,7 @@ bool GSState::IsAnalogue()
 	return GetVideoMode() == GSVideoMode::NTSC || GetVideoMode() == GSVideoMode::PAL || GetVideoMode() == GSVideoMode::HDTV_1080I;
 }
 
-GSVector4i GSState::GetDisplayMagnifiedRect(int i)
+GSVector4i GSState::GetFrameMagnifiedRect(int i)
 {
 	GSVector4i rectangle = { 0, 0, 0, 0 };
 
@@ -393,14 +393,16 @@ GSVector4i GSState::GetDisplayMagnifiedRect(int i)
 	const int width = (DW / (VideoModeDividers[(int)videomode - 1].x + 1));
 	const int height = (DH / (VideoModeDividers[(int)videomode - 1].y + 1));
 
-	// Set up the display rectangle based on the values obtained from DISPLAY registers
 	const auto& SMODE2 = m_regs->SMODE2;
 	int res_multi = 1;
+
 	if (isinterlaced() && m_regs->SMODE2.FFMD && height > 1)
 		res_multi = 2;
+
+	// Set up the display rectangle based on the values obtained from DISPLAY registers
 	rectangle.right = width;
 	rectangle.bottom = height / res_multi;
-	//DevCon.Warning("Display Rect Size Returning w %d h %d", width, height);
+
 	return rectangle;
 }
 
@@ -420,9 +422,6 @@ GSVector4i GSState::GetDisplayRect(int i)
 
 	const u32 DW = DISP.DW + 1;
 	const u32 DH = DISP.DH + 1;
-	const u32 DX = DISP.DX;
-	const u32 DY = DISP.DY;
-
 	const u32 MAGH = DISP.MAGH + 1;
 	const u32 MAGV = DISP.MAGV + 1;
 
@@ -432,6 +431,7 @@ GSVector4i GSState::GetDisplayRect(int i)
 	const int height = DH / magnification.y;
 
 	const GSVector2i offsets = GetResolutionOffset(i);
+
 	// Set up the display rectangle based on the values obtained from DISPLAY registers
 	rectangle.left = offsets.x;
 	rectangle.top = offsets.y;
@@ -439,8 +439,6 @@ GSVector4i GSState::GetDisplayRect(int i)
 	rectangle.right = rectangle.left + width;
 	rectangle.bottom = rectangle.top + height;
 
-	//DevCon.Warning("left %d offset %d total %d top %d offset %d total %d", rectangle.left, VideoModeOffsets[(int)videomode - 1].z, (rectangle.left - VideoModeOffsets[(int)videomode - 1].z) / magnification.x, rectangle.top, (VideoModeOffsets[(int)videomode - 1].w / magnification.y) * (IsAnalogue() ? res_multi : 1), v_offset);
-	//DevCon.Warning("Get Display Rect Left %d Right %d Top %d Bottom %d", rectangle.left, rectangle.right, rectangle.top, rectangle.bottom);
 	return rectangle;
 }
 
@@ -455,12 +453,11 @@ GSVector2i GSState::GetResolutionOffset(int i)
 
 	offset.x = (((int)DISP.DX - VideoModeOffsets[(int)videomode - 1].z) / (VideoModeDividers[(int)videomode - 1].x + 1));
 	offset.y = ((int)DISP.DY - (VideoModeOffsets[(int)videomode - 1].w * ((IsAnalogue() && res_multi) ? res_multi : 1))) / (VideoModeDividers[(int)videomode - 1].y + 1);
-	//DevCon.Warning("Res Offset X %d Video mode %d Y %d Video mode %d returning x %d y %d", DISP.DX, VideoModeOffsets[(int)videomode - 1].z, DISP.DY, (VideoModeOffsets[(int)videomode - 1].w * (IsAnalogue() ? res_multi : 1)), offset.x, offset.y);
 
 	return offset;
 }
 
-GSVector2i GSState::GetResolution(bool include_interlace)
+GSVector2i GSState::GetResolution()
 {
 	const GSVideoMode videomode = GetVideoMode();
 	const auto& SMODE2 = m_regs->SMODE2;
@@ -471,9 +468,9 @@ GSVector2i GSState::GetResolution(bool include_interlace)
 	resolution.x = VideoModeOffsets[(int)videomode - 1].x;
 	resolution.y = VideoModeOffsets[(int)videomode - 1].y;
 
-	if(include_interlace && !m_regs->SMODE2.FFMD)
+	if(!m_regs->SMODE2.FFMD)
 		resolution.y *= ((IsAnalogue() && res_multi) ? res_multi : 1);
-	//DevCon.Warning("Getting Resolution X %d Y %d", resolution.x, resolution.y);
+
 	return resolution;
 }
 
@@ -504,11 +501,7 @@ GSVector4i GSState::GetFrameRect(int i)
 	rectangle.bottom = rectangle.top + h;
 
 	if (isinterlaced() && m_regs->SMODE2.FFMD && h > 1)
-	{
 		rectangle.bottom >>= 1;
-	}
-
-	//DevCon.Warning("Frame %d Rect left %d right %d top %d bottom %d DBX %d DBY %d", i, rectangle.left, rectangle.right, rectangle.top, rectangle.bottom, DBX, DBY);
 
 	return rectangle;
 }
