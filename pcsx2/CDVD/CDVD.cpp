@@ -49,7 +49,7 @@
 //  (examples:  SLUS-2113, etc).
 // If the disc is homebrew then it probably won't have a valid serial; in which case
 // this string will be empty.
-wxString DiscSerial;
+std::string DiscSerial;
 
 cdvdStruct cdvd;
 
@@ -375,10 +375,14 @@ s32 cdvdWriteConfig(const u8* config)
 static MutexRecursive Mutex_NewDiskCB;
 
 // Sets ElfCRC to the CRC of the game bound to the CDVD source.
-static __fi ElfObject* loadElf(const wxString filename, bool isPSXElf)
+static __fi ElfObject* loadElf(std::string filename, bool isPSXElf)
 {
-	if (filename.StartsWith(L"host"))
-		return new ElfObject(filename.After(':'), FileSystem::GetPathFileSize(filename.After(':').ToUTF8()), isPSXElf);
+	if (StringUtil::StartsWith(filename, "host:"))
+	{
+		std::string host_filename(filename.substr(5));
+		s64 host_size = FileSystem::GetPathFileSize(host_filename.c_str());
+		return new ElfObject(std::move(host_filename), static_cast<u32>(std::max<s64>(host_size, 0)), isPSXElf);
+	}
 
 	// Mimic PS2 behavior!
 	// Much trial-and-error with changing the ISOFS and BOOT2 contents of an image have shown that
@@ -394,41 +398,35 @@ static __fi ElfObject* loadElf(const wxString filename, bool isPSXElf)
 	// FIXME: Properly mimicing this behavior is troublesome since we need to add support for "ignoring"
 	// version information when doing file searches.  I'll add this later.  For now, assuming a ;1 should
 	// be sufficient (no known games have their ELF binary as anything but version ;1)
-
-	const wxString fixedname(wxStringTokenizer(filename, L';').GetNextToken() + L";1");
-
-	if (fixedname != filename)
-		Console.WriteLn(Color_Blue, "(LoadELF) Non-conforming version suffix detected and replaced.");
+	const std::string::size_type semi_pos = filename.rfind(';');
+	if (semi_pos != std::string::npos && std::string_view(filename).substr(semi_pos) != ";1")
+	{
+		Console.WriteLn(Color_Blue, "(LoadELF) Non-conforming version suffix (%s) detected and replaced.", filename.c_str());
+		filename.erase(semi_pos);
+		filename += ";1";
+	}
 
 	IsoFSCDVD isofs;
-	IsoFile file(isofs, fixedname);
-	return new ElfObject(fixedname, file, isPSXElf);
+	IsoFile file(isofs, filename);
+	return new ElfObject(std::move(filename), file, isPSXElf);
 }
 
-static __fi void _reloadElfInfo(wxString elfpath)
+static __fi void _reloadElfInfo(std::string elfpath)
 {
 	// Now's a good time to reload the ELF info...
 	ScopedLock locker(Mutex_NewDiskCB);
 
 	if (elfpath == LastELF)
 		return;
-	LastELF = elfpath;
 
-	wxString fname = elfpath.AfterLast('\\');
-	if (!fname)
-		fname = elfpath.AfterLast('/');
-	if (!fname)
-		fname = elfpath.AfterLast(':');
-	if (fname.Matches(L"????_???.??*"))
-		DiscSerial = fname(0, 4) + L"-" + fname(5, 3) + fname(9, 2);
 	std::unique_ptr<ElfObject> elfptr(loadElf(elfpath, false));
-
-
 	elfptr->loadHeaders();
 	ElfCRC = elfptr->getCRC();
 	ElfEntry = elfptr->header.e_entry;
 	ElfTextRange = elfptr->getTextRange();
-	Console.WriteLn(Color_StrongBlue, L"ELF (%s) Game CRC = 0x%08X, EntryPoint = 0x%08X", WX_STR(elfpath), ElfCRC, ElfEntry);
+	LastELF = std::move(elfpath);
+
+	Console.WriteLn(Color_StrongBlue, "ELF (%s) Game CRC = 0x%08X, EntryPoint = 0x%08X", LastELF.c_str(), ElfCRC, ElfEntry);
 
 	// Note: Do not load game database info here.  This code is generic and called from
 	// BIOS key encryption as well as eeloadReplaceOSDSYS.  The first is actually still executing
@@ -437,27 +435,21 @@ static __fi void _reloadElfInfo(wxString elfpath)
 	// binary).
 }
 
-static __fi void _reloadPSXElfInfo(wxString elfpath)
+static __fi void _reloadPSXElfInfo(std::string elfpath)
 {
 	// Now's a good time to reload the ELF info...
 	ScopedLock locker(Mutex_NewDiskCB);
 
 	if (elfpath == LastELF)
 		return;
-	LastELF = elfpath;
-	wxString fname = elfpath.AfterLast('\\');
-	if (!fname)
-		fname = elfpath.AfterLast('/');
-	if (!fname)
-		fname = elfpath.AfterLast(':');
-	if (fname.Matches(L"????_???.??*"))
-		DiscSerial = fname(0, 4) + L"-" + fname(5, 3) + fname(9, 2);
 
 	std::unique_ptr<ElfObject> elfptr(loadElf(elfpath, true));
 
 	ElfCRC = elfptr->getCRC();
 	ElfTextRange = elfptr->getTextRange();
-	Console.WriteLn(Color_StrongBlue, L"PSX ELF (%s) Game CRC = 0x%08X", WX_STR(elfpath), ElfCRC);
+	LastELF = std::move(elfpath);
+
+	Console.WriteLn(Color_StrongBlue, "PSX ELF (%s) Game CRC = 0x%08X", LastELF.c_str(), ElfCRC);
 
 	// Note: Do not load game database info here.  This code is generic and called from
 	// BIOS key encryption as well as eeloadReplaceOSDSYS.  The first is actually still executing
@@ -490,6 +482,11 @@ static std::string ExecutablePathToSerial(const std::string& path)
 	if (pos != std::string::npos)
 		serial.erase(pos);
 
+	// check that it matches our expected format.
+	// this maintains the old behavior of PCSX2.
+	if (!StringUtil::WildcardMatch(serial.c_str(), "????_???.??*"))
+		serial.clear();
+
 	// SCES_123.45 -> SCES-12345
 	for (std::string::size_type pos = 0; pos < serial.size();)
 	{
@@ -510,31 +507,30 @@ static std::string ExecutablePathToSerial(const std::string& path)
 	return serial;
 }
 
-void cdvdReloadElfInfo(wxString elfoverride)
+void cdvdReloadElfInfo(std::string elfoverride)
 {
 	// called from context of executing VM code (recompilers), so we need to trap exceptions
 	// and route them through the VM's exception handler.  (needed for non-SEH platforms, such
 	// as Linux/GCC)
-	DevCon.WriteLn(Color_Green, L"Reload ELF");
+	DevCon.WriteLn(Color_Green, "Reload ELF");
 	try
 	{
-		if (!elfoverride.IsEmpty())
+		if (!elfoverride.empty())
 		{
-			_reloadElfInfo(elfoverride);
+			_reloadElfInfo(std::move(elfoverride));
 			return;
 		}
 
 		std::string elfpath;
 		u32 discType = GetPS2ElfName(elfpath);
+		DiscSerial = ExecutablePathToSerial(elfpath);
 
 		if (discType == 1)
 		{
 			// PCSX2 currently only recognizes *.elf executables in proper PS2 format.
 			// To support different PSX titles in the console title and for savestates, this code bypasses all the detection,
 			// simply using the exe name, stripped of problematic characters.
-			const std::string serial(ExecutablePathToSerial(elfpath));
-			DiscSerial = StringUtil::UTF8StringToWxString(serial);
-			_reloadPSXElfInfo(StringUtil::UTF8StringToWxString(elfpath));
+			_reloadPSXElfInfo(std::move(elfpath));
 			return;
 		}
 
@@ -543,7 +539,7 @@ void cdvdReloadElfInfo(wxString elfoverride)
 			return;
 
 		// Recognized and PS2 (BOOT2).  Good job, user.
-		_reloadElfInfo(StringUtil::UTF8StringToWxString(elfpath));
+		_reloadElfInfo(std::move(elfpath));
 	}
 	catch (Exception::FileNotFound& e)
 	{
@@ -562,18 +558,6 @@ void cdvdReloadElfInfo(wxString elfoverride)
 	}
 }
 
-static __fi s32 StrToS32(const wxString& str, int base = 10)
-{
-	long l;
-	if (!str.ToLong(&l, base))
-	{
-		Console.Error(L"StrToS32: fail to translate '%s' as long", WX_STR(str));
-		return 0;
-	}
-
-	return l;
-}
-
 void cdvdReadKey(u8, u16, u32 arg2, u8* key)
 {
 	s32 numbers = 0, letters = 0;
@@ -585,17 +569,17 @@ void cdvdReadKey(u8, u16, u32 arg2, u8* key)
 	// clear key values
 	memset(key, 0, 16);
 
-	if (!DiscSerial.IsEmpty())
+	if (!DiscSerial.empty())
 	{
 		// convert the number characters to a real 32 bit number
-		numbers = StrToS32(DiscSerial(5, 5));
+		numbers = StringUtil::FromChars<s32>(std::string_view(DiscSerial).substr(5, 5)).value_or(0);
 
 		// combine the lower 7 bits of each char
 		// to make the 4 letters fit into a single u32
-		letters = (s32)((DiscSerial[3].GetValue() & 0x7F) << 0) |
-				  (s32)((DiscSerial[2].GetValue() & 0x7F) << 7) |
-				  (s32)((DiscSerial[1].GetValue() & 0x7F) << 14) |
-				  (s32)((DiscSerial[0].GetValue() & 0x7F) << 21);
+		letters = (s32)((DiscSerial[3] & 0x7F) << 0) |
+				  (s32)((DiscSerial[2] & 0x7F) << 7) |
+				  (s32)((DiscSerial[1] & 0x7F) << 14) |
+				  (s32)((DiscSerial[0] & 0x7F) << 21);
 	}
 
 	// calculate magic numbers

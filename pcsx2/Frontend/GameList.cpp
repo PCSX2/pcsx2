@@ -149,7 +149,7 @@ bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 
 	try
 	{
-		ElfObject eo(StringUtil::UTF8StringToWxString(path), static_cast<uint>(file_size), false);
+		ElfObject eo(path, static_cast<uint>(file_size), false);
 		entry->crc = eo.getCRC();
 	}
 	catch (...)
@@ -203,10 +203,10 @@ bool GameList::GetGameListEntry(const std::string& path, GameList::Entry* entry)
 			return false;
 	}
 
-	cdvdReloadElfInfo(wxEmptyString);
+	cdvdReloadElfInfo();
 
 	entry->path = path;
-	entry->serial = StringUtil::wxStringToUTF8String(DiscSerial);
+	entry->serial = DiscSerial;
 	entry->crc = ElfCRC;
 	entry->total_size = sd.Size;
 	entry->compatibility_rating = CompatibilityRating::Unknown;

@@ -454,7 +454,7 @@ void InputRecording::GoToFirstFrame(wxWindow* parent)
 wxString InputRecording::resolveGameName()
 {
 	std::string gameName;
-	const std::string gameKey(StringUtil::wxStringToUTF8String(SysGetDiscID()));
+	const std::string gameKey(SysGetDiscID());
 	if (!gameKey.empty())
 	{
 		auto game = GameDatabase::findGame(gameKey);

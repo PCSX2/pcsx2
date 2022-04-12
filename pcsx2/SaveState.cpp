@@ -83,29 +83,22 @@ static void PostLoadPrep()
 //  SaveStateBase  (implementations)
 // --------------------------------------------------------------------------------------
 #ifndef PCSX2_CORE
-wxString SaveStateBase::GetSavestateFolder( int slot, bool isSavingOrLoading )
+std::string SaveStateBase::GetSavestateFolder(int slot, bool isSavingOrLoading)
 {
-	wxString CRCvalue = wxString::Format(wxT("%08X"), ElfCRC);
-	wxString serialName(DiscSerial);
+	std::string CRCvalue(StringUtil::StdStringFromFormat("%08X", ElfCRC));
+	std::string serialName;
 
 	if (g_GameStarted || g_GameLoading)
 	{
-		if (DiscSerial.IsEmpty())
+		if (DiscSerial.empty())
 		{
-			std::string ElfString = LastELF.ToStdString();
-			std::string ElfString_delimiter = "/";
-
-#ifndef _UNIX_
-			std::replace(ElfString.begin(), ElfString.end(), '\\', '/');
-#endif
-			size_t pos = 0;
-			while ((pos = ElfString.find(ElfString_delimiter)) != std::string::npos)
-			{
-				// Running homebrew/standalone ELF, return only the ELF name.
-				ElfString.erase(0, pos + ElfString_delimiter.length());
-			}
-			wxString ElfString_toWxString(ElfString.c_str(), wxConvUTF8);
-			serialName = ElfString_toWxString;
+			// Running homebrew/standalone ELF, return only the ELF name.
+			// can't use FileSystem here because it's DOS paths
+			const std::string::size_type pos = std::min(DiscSerial.rfind('/'), DiscSerial.rfind('\\'));
+			if (pos != std::string::npos)
+				serialName = DiscSerial.substr(pos + 1);
+			else
+				serialName = DiscSerial;
 		}
 		else
 		{
@@ -117,22 +110,24 @@ wxString SaveStateBase::GetSavestateFolder( int slot, bool isSavingOrLoading )
 	else
 	{
 		// Still inside the BIOS/not running a game (why would anyone want to do this?)
-		const std::string biosString(StringUtil::StdStringFromFormat("BIOS (%s v%u.%u)", BiosZone.c_str(), (BiosVersion >> 8), BiosVersion & 0xff));
-		serialName = StringUtil::UTF8StringToWxString(biosString);
-		CRCvalue = L"None";
+		serialName = StringUtil::StdStringFromFormat("BIOS (%s v%u.%u)", BiosZone.c_str(), (BiosVersion >> 8), BiosVersion & 0xff);
+		CRCvalue = "None";
 	}
 
-	wxFileName dirname = wxFileName::DirName(g_Conf->FullpathToSaveState(serialName, CRCvalue));
+	const std::string dir(StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s - (%s)",
+		g_Conf->Folders.Savestates.ToUTF8().data(), serialName.c_str(), CRCvalue.c_str()));
 
 	if (isSavingOrLoading)
 	{
-		if (!wxDirExists(g_Conf->FullpathToSaveState(serialName, CRCvalue)))
+		if (!FileSystem::DirectoryExists(dir.c_str()))
 		{
-			wxMkdir(g_Conf->FullpathToSaveState(serialName, CRCvalue));
+			// sstates should exist, no need to create it
+			FileSystem::CreateDirectoryPath(dir.c_str(), false);
 		}
 	}
-	return (dirname.GetPath() + "/" +
-			pxsFmt( L"%s (%s).%02d.p2s", WX_STR(serialName), WX_STR(CRCvalue), slot ));
+
+	return Path::CombineStdString(dir, StringUtil::StdStringFromFormat("%s (%s).%02d.p2s",
+		serialName.c_str(), CRCvalue.c_str(), slot));
 }
 #endif
 
@@ -234,10 +229,10 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	Freeze(ElfCRC);
 
 	char localDiscSerial[256];
-	StringUtil::Strlcpy(localDiscSerial, DiscSerial.ToUTF8(), sizeof(localDiscSerial));
+	StringUtil::Strlcpy(localDiscSerial, DiscSerial.c_str(), sizeof(localDiscSerial));
 	Freeze(localDiscSerial);
 	if (IsLoading())
-		DiscSerial = wxString::FromUTF8(localDiscSerial);
+		DiscSerial = localDiscSerial;
 
 	// Third Block - Cycle Timers and Events
 	// -------------------------------------

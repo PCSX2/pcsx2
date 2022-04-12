@@ -19,14 +19,14 @@
 #include "IsoFS.h"
 #include "IsoFile.h"
 
-IsoFile::IsoFile(SectorSource& reader, const wxString& filename)
+IsoFile::IsoFile(SectorSource& reader, const std::string_view& filename)
 	: internalReader(reader)
 	, fileEntry(IsoDirectory(reader).FindFile(filename))
 {
 	Init();
 }
 
-IsoFile::IsoFile(const IsoDirectory& dir, const wxString& filename)
+IsoFile::IsoFile(const IsoDirectory& dir, const std::string_view& filename)
 	: internalReader(dir.GetReader())
 	, fileEntry(dir.FindFile(filename))
 {

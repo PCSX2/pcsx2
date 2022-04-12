@@ -83,7 +83,7 @@ public:
 	virtual ~SaveStateBase() { }
 
 #ifndef PCSX2_CORE
-	static wxString GetSavestateFolder( int slot, bool isSavingOrLoading = false );
+	static std::string GetSavestateFolder(int slot, bool isSavingOrLoading = false);
 #endif
 
 	// Gets the version of savestate that this object is acting on.

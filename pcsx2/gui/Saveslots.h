@@ -19,6 +19,7 @@
 #include "System.h"
 #include "Elfheader.h"
 #include "App.h"
+#include "common/StringUtil.h"
 #include <array>
 
 // Uncomment to turn on the new saveslot UI.
@@ -37,7 +38,7 @@
 //#define SAVESLOT_LOGS
 #endif
 
-extern wxString DiscSerial;
+extern std::string DiscSerial;
 static const int StateSlotsCount = 10;
 
 class Saveslot
@@ -68,14 +69,14 @@ public:
 
 	bool isUsed()
 	{
-		return wxFileExists(SaveStateBase::GetSavestateFolder(slot_num, false));
+		return wxFileExists(StringUtil::UTF8StringToWxString(SaveStateBase::GetSavestateFolder(slot_num, false)));
 	}
 
 	wxDateTime GetTimestamp()
 	{
 		if (!isUsed()) return wxInvalidDateTime;
 
-		return wxDateTime(wxFileModificationTime(SaveStateBase::GetSavestateFolder(slot_num, false)));
+		return wxDateTime(wxFileModificationTime(StringUtil::UTF8StringToWxString(SaveStateBase::GetSavestateFolder(slot_num, false))));
 	}
 
 	void UpdateCache()
@@ -83,7 +84,7 @@ public:
 		empty = !isUsed();
 		updated = GetTimestamp();
 		crc = ElfCRC;
-		serialName = DiscSerial;
+		serialName = StringUtil::UTF8StringToWxString(DiscSerial);
 		invalid_cache = false;
 	}
 

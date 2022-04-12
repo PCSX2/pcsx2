@@ -368,10 +368,10 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	else
 		GameInfo::gameCRC = L""; // Needs to be reset when rebooting otherwise previously loaded patches may load
 
-	if (ingame && !DiscSerial.IsEmpty())
-		GameInfo::gameSerial = DiscSerial;
+	if (ingame && !DiscSerial.empty())
+		GameInfo::gameSerial = StringUtil::UTF8StringToWxString(DiscSerial);
 
-	const wxString newGameKey(ingame ? SysGetDiscID() : SysGetBiosDiscID());
+	const wxString newGameKey(StringUtil::UTF8StringToWxString(ingame ? SysGetDiscID() : SysGetBiosDiscID()));
 	const bool verbose(newGameKey != curGameKey && ingame);
 	//Console.WriteLn(L"------> patches verbose: %d   prev: '%s'   new: '%s'", (int)verbose, WX_STR(curGameKey), WX_STR(newGameKey));
 	SetupPatchesCon(verbose);
@@ -405,7 +405,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 		else
 		{
 			// Set correct title for loading standalone/homebrew ELFs
-			GameInfo::gameName = LastELF.AfterLast('\\');
+			GameInfo::gameName = StringUtil::UTF8StringToWxString(LastELF).AfterLast('\\');
 		}
 	}
 

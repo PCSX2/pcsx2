@@ -15,6 +15,9 @@
 
 #pragma once
 
+#include "common/Pcsx2Defs.h"
+#include <string>
+
 struct IsoFileDescriptor
 {
 	struct FileDate // not 1:1 with iso9660 date struct
@@ -32,7 +35,7 @@ struct IsoFileDescriptor
 	u32 lba;
 	u32 size;
 	int flags;
-	wxString name;
+	std::string name;
 
 	IsoFileDescriptor();
 	IsoFileDescriptor(const u8* data, int length);
