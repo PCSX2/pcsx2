@@ -349,6 +349,7 @@
     <ClCompile Include="gui\Dialogs\GSDumpDialog.cpp" />
     <ClCompile Include="gui\Dialogs\McdConfigDialog.cpp" />
     <ClCompile Include="gui\DriveList.cpp" />
+    <ClCompile Include="gui\IniInterface.cpp" />
     <ClCompile Include="gui\Panels\MemoryCardListView.cpp" />
     <ClCompile Include="gui\pxCheckBox.cpp" />
     <ClCompile Include="gui\pxRadioPanel.cpp" />
@@ -797,6 +798,7 @@
     <ClInclude Include="gui\CheckedStaticBox.h" />
     <ClInclude Include="gui\i18n.h" />
     <ClInclude Include="gui\DriveList.h" />
+    <ClInclude Include="gui\IniInterface.h" />
     <ClInclude Include="gui\pxCheckBox.h" />
     <ClInclude Include="gui\pxEvents.h" />
     <ClInclude Include="gui\pxRadioPanel.h" />

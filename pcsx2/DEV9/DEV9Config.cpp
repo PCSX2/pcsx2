@@ -19,10 +19,10 @@
 #include <wx/fileconf.h>
 
 #include "DEV9.h"
-#include "common/IniInterface.h"
 
 #ifndef PCSX2_CORE
 #include "gui/AppConfig.h"
+#include "gui/IniInterface.h"
 #endif
 
 #ifdef _WIN32

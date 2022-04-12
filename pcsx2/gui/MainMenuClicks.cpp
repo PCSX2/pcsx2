@@ -19,6 +19,7 @@
 #include "CDVD/CDVD.h"
 #include "GS.h"
 #include "GSFrame.h"
+#include "IniInterface.h"
 #include "SPU2/spu2.h"
 #include "System/SysThreads.h"
 #include "DEV9/DEV9.h"
@@ -33,7 +34,6 @@
 #include "Dialogs/ConfigurationDialog.h"
 #include "Debugger/DisassemblyDialog.h"
 
-#include "common/IniInterface.h"
 
 #include "fmt/core.h"
 #include "wx/numdlg.h"

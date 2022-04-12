@@ -22,7 +22,7 @@
 #include "MemoryCardPanels.h"
 
 #include "gui/Dialogs/ConfigurationDialog.h"
-#include "common/IniInterface.h"
+#include "gui/IniInterface.h"
 #include "common/StringUtil.h"
 #include "Sio.h"
 

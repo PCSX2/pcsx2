@@ -18,7 +18,7 @@
 #include "AppCoreThread.h"
 #include "RecentIsoList.h"
 #include "IsoDropTarget.h"
-#include "common/IniInterface.h"
+#include "IniInterface.h"
 
 extern wxString GetMsg_IsoImageChanged();
 
