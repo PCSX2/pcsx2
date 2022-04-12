@@ -175,4 +175,9 @@ namespace FileSystem
 	/// Sets the current working directory. Returns true if successful.
 	bool SetWorkingDirectory(const char* path);
 
+	/// Enables/disables NTFS compression on a file or directory.
+	/// Does not apply the compression flag recursively if called for a directory.
+	/// Does nothing and returns false on non-Windows platforms.
+	bool SetPathCompression(const char* path, bool enable);
+
 }; // namespace FileSystem

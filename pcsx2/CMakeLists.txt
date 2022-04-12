@@ -1394,7 +1394,6 @@ set(pcsx2WindowsSources
 	windows/FlatFileReaderWindows.cpp
 	windows/Optimus.cpp
 	windows/VCprojects/IopSif.cpp
-	windows/WinCompressNTFS.cpp
 	windows/WinConsolePipe.cpp
 	windows/WinKeyCodes.cpp
 	windows/WinPowerProfile.cpp

@@ -328,8 +328,8 @@ void FileMemoryCard::Open()
 		// [TODO] : Add memcard size detection and report it to the console log.
 		//   (8MB, 256Mb, formatted, unformatted, etc ...)
 
-#ifdef __WXMSW__
-		NTFS_CompressFile(str, EmuConfig.McdCompressNTFS);
+#ifdef _WIN32
+		FileSystem::SetPathCompression(StringUtil::wxStringToUTF8String(str).c_str(), EmuConfig.McdCompressNTFS);
 #endif
 
 		if (str.EndsWith(".bin"))

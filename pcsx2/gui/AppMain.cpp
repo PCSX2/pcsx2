@@ -613,8 +613,8 @@ void AppApplySettings( const AppConfig* oldconf )
 	// Update the compression attribute on the Memcards folder.
 	// Memcards generally compress very well via NTFS compression.
 
-	#ifdef __WXMSW__
-	NTFS_CompressFile( g_Conf->Folders.MemoryCards.ToString(), g_Conf->EmuOptions.McdCompressNTFS );
+	#ifdef _WIN32
+	FileSystem::SetPathCompression( g_Conf->Folders.MemoryCards.ToUTF8(), g_Conf->EmuOptions.McdCompressNTFS );
 	#endif
 	sApp.DispatchEvent( AppStatus_SettingsApplied );
 

@@ -1183,6 +1183,38 @@ bool FileSystem::SetWorkingDirectory(const char* path)
 	return (SetCurrentDirectoryW(wpath.c_str()) == TRUE);
 }
 
+bool FileSystem::SetPathCompression(const char* path, bool enable)
+{
+	const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+	const DWORD attrs = GetFileAttributesW(wpath.c_str());
+	if (attrs == INVALID_FILE_ATTRIBUTES)
+		return false;
+
+	const bool isFile = !(attrs & FILE_ATTRIBUTE_DIRECTORY);
+	const DWORD flags = isFile ? FILE_ATTRIBUTE_NORMAL : (FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_DIRECTORY);
+
+	const HANDLE handle = CreateFileW(wpath.c_str(),
+		FILE_GENERIC_WRITE | FILE_GENERIC_READ,
+		FILE_SHARE_READ | FILE_SHARE_DELETE,
+		nullptr,
+		OPEN_EXISTING,
+		flags,
+		nullptr);
+	if (handle == INVALID_HANDLE_VALUE)
+		return false;
+
+	DWORD bytesReturned = 0;
+	DWORD compressMode = enable ? COMPRESSION_FORMAT_DEFAULT : COMPRESSION_FORMAT_NONE;
+
+	bool result = DeviceIoControl(
+		handle, FSCTL_SET_COMPRESSION,
+		&compressMode, 2, nullptr, 0,
+		&bytesReturned, nullptr);
+
+	CloseHandle(handle);
+	return result;
+}
+
 #else
 
 static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, const char* Path, const char* Pattern,
@@ -1648,6 +1680,11 @@ std::string FileSystem::GetWorkingDirectory()
 bool FileSystem::SetWorkingDirectory(const char* path)
 {
 	return (chdir(path) == 0);
+}
+
+bool FileSystem::SetPathCompression(const char* path, bool enable)
+{
+	return false;
 }
 
 #endif

@@ -896,9 +896,6 @@
     <ClCompile Include="gui\Panels\VideoPanel.cpp">
       <Filter>AppHost\Panels</Filter>
     </ClCompile>
-    <ClCompile Include="windows\WinCompressNTFS.cpp">
-      <Filter>AppHost\Win32</Filter>
-    </ClCompile>
     <ClCompile Include="windows\WinConsolePipe.cpp">
       <Filter>AppHost\Win32</Filter>
     </ClCompile>
