@@ -120,6 +120,7 @@
     <ClCompile Include="libzip\lib\zip_string.c" />
     <ClCompile Include="libzip\lib\zip_unchange.c" />
     <ClCompile Include="private\zip_err_str.c" />
+    <ClCompile Include="libzip\lib\zip_algorithm_zstd.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libzip\lib\zipint.h" />

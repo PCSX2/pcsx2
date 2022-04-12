@@ -238,6 +238,9 @@ if(NOT USE_SYSTEM_YAML)
 	endif()
 endif()
 
+# We could use a system version of zstd, but is it going to be recent enough?
+add_subdirectory(3rdparty/zstd EXCLUDE_FROM_ALL)
+
 if(QT_BUILD)
 	# Default to bundled Qt6 for Windows.
 	if(WIN32 AND NOT DEFINED Qt6_DIR)

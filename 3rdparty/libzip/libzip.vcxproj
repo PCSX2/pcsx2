@@ -33,6 +33,7 @@
     <ClCompile Include="libzip\lib\zip_add_dir.c" />
     <ClCompile Include="libzip\lib\zip_add_entry.c" />
     <ClCompile Include="libzip\lib\zip_algorithm_deflate.c" />
+    <ClCompile Include="libzip\lib\zip_algorithm_zstd.c" />
     <ClCompile Include="libzip\lib\zip_buffer.c" />
     <ClCompile Include="libzip\lib\zip_close.c" />
     <ClCompile Include="libzip\lib\zip_crypto_win.c" />
@@ -161,11 +162,16 @@
     <ClInclude Include="private\config.h" />
     <ClInclude Include="zipconf.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\zstd\zstd.vcxproj">
+      <Project>{52244028-937a-44e9-a76b-2bea18fd239a}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>ZIP_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\zlib;$(ProjectDir)private;$(ProjectDir)libzip\lib;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\zstd\zstd\lib;$(SolutionDir)3rdparty\zlib;$(ProjectDir)private;$(ProjectDir)libzip\lib;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
