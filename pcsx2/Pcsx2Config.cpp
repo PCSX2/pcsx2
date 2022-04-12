@@ -1021,6 +1021,7 @@ Pcsx2Config::Pcsx2Config()
 	EnableGameFixes = true;
 #endif
 	BackupSavestate = true;
+	SavestateZstdCompression = true;
 
 #ifdef __WXMSW__
 	McdCompressNTFS = true;
@@ -1060,6 +1061,7 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(HostFs);
 
 	SettingsWrapBitBool(BackupSavestate);
+	SettingsWrapBitBool(SavestateZstdCompression);
 	SettingsWrapBitBool(McdEnableEjection);
 	SettingsWrapBitBool(McdFolderAutoManage);
 	SettingsWrapBitBool(MultitapPort0_Enabled);

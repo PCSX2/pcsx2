@@ -806,10 +806,9 @@ static void ZipStateToDiskOnThread(std::unique_ptr<ArchiveEntryList> srclist, st
 	// discard zip file if we fail saving something
 	ScopedGuard zip_discarder([&zf]() { zip_discard(zf.release()); });
 
-	// use deflate compression by default
-	// TODO: switch to zstd
-	constexpr u32 compression = ZIP_CM_DEFLATE;
-	constexpr u32 compression_level = 0;
+	// use zstd compression, it can be 10x+ faster for saving.
+	const u32 compression = EmuConfig.SavestateZstdCompression ? ZIP_CM_ZSTD : ZIP_CM_DEFLATE;
+	const u32 compression_level = 0;
 
 	// version indicator
 	{
