@@ -299,7 +299,7 @@ public:
 
 public:
 	AppConfig();
-	wxString FullpathToSaveState(wxString serialName, wxString CRCvalue) const;
+	std::string FullpathToSaveState(const std::string& serialName, const std::string& CRCvalue) const;
 	void LoadSave(IniInterface& ini, SettingsWrapper& wrap);
 	void LoadSaveRootItems(IniInterface& ini);
 

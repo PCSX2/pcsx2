@@ -26,6 +26,7 @@
 
 #include "common/MemsetFast.inl"
 #include "common/Perf.h"
+#include "common/StringUtil.h"
 #include "CDVD/CDVD.h"
 
 #ifdef PCSX2_CORE
@@ -646,21 +647,21 @@ u8* SysMmapEx(uptr base, u32 size, uptr bounds, const char *caller)
 	return Mem;
 }
 
-wxString SysGetBiosDiscID()
+std::string SysGetBiosDiscID()
 {
 	// FIXME: we should return a serial based on
 	// the BIOS being run (either a checksum of the BIOS roms, and/or a string based on BIOS
 	// region and revision).
 
-	return wxEmptyString;
+	return {};
 }
 
 // This function always returns a valid DiscID -- using the Sony serial when possible, and
 // falling back on the CRC checksum of the ELF binary if the PS2 software being run is
 // homebrew or some other serial-less item.
-wxString SysGetDiscID()
+std::string SysGetDiscID()
 {
-	if( !DiscSerial.IsEmpty() ) return DiscSerial;
+	if( !DiscSerial.empty() ) return DiscSerial;
 
 	if( !ElfCRC )
 	{
@@ -668,5 +669,5 @@ wxString SysGetDiscID()
 		return SysGetBiosDiscID();
 	}
 
-	return pxsFmt( L"%08x", ElfCRC );
+	return StringUtil::StdStringFromFormat("%08x", ElfCRC);
 }

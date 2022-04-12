@@ -29,28 +29,24 @@
 u32 ElfCRC;
 u32 ElfEntry;
 std::pair<u32,u32> ElfTextRange;
-wxString LastELF;
+std::string LastELF;
 bool isPSXElf;
 
 // All of ElfObjects functions.
-ElfObject::ElfObject(const wxString& srcfile, IsoFile& isofile, bool isPSXElf)
-	: data( wxULongLong(isofile.getLength()).GetLo(), L"ELF headers" )
-	, proghead( NULL )
-	, secthead( NULL )
-	, filename( srcfile )
-	, header( *(ELF_HEADER*)data.GetPtr() )
+ElfObject::ElfObject(std::string srcfile, IsoFile& isofile, bool isPSXElf)
+	: data(isofile.getLength(), L"ELF headers")
+	, filename(std::move(srcfile))
+	, header(*(ELF_HEADER*)data.GetPtr())
 {
 	checkElfSize(data.GetSizeInBytes());
 	readIso(isofile);
 	initElfHeaders(isPSXElf);
 }
 
-ElfObject::ElfObject( const wxString& srcfile, uint hdrsize, bool isPSXElf )
-	: data( wxULongLong(hdrsize).GetLo(), L"ELF headers" )
-	, proghead( NULL )
-	, secthead( NULL )
-	, filename( srcfile )
-	, header( *(ELF_HEADER*)data.GetPtr() )
+ElfObject::ElfObject(std::string srcfile, u32 hdrsize, bool isPSXElf)
+	: data(hdrsize, L"ELF headers")
+	, filename(std::move(srcfile))
+	, header(*(ELF_HEADER*)data.GetPtr())
 {
 	checkElfSize(data.GetSizeInBytes());
 	readFile();
@@ -151,20 +147,20 @@ std::pair<u32,u32> ElfObject::getTextRange()
 void ElfObject::readIso(IsoFile& file)
 {
 	int rsize = file.read(data.GetPtr(), data.GetSizeInBytes());
-	if (rsize < data.GetSizeInBytes()) throw Exception::EndOfStream(filename);
+	if (rsize < data.GetSizeInBytes()) throw Exception::EndOfStream(StringUtil::UTF8StringToWxString(filename));
 }
 
 void ElfObject::readFile()
 {
 	int rsize = 0;
-	FILE *f = FileSystem::OpenCFile( filename.ToUTF8(), "rb" );
-	if (f == NULL) throw Exception::FileNotFound( filename );
+	FILE *f = FileSystem::OpenCFile( filename.c_str(), "rb");
+	if (f == NULL) throw Exception::FileNotFound(StringUtil::UTF8StringToWxString(filename));
 
 	fseek(f, 0, SEEK_SET);
 	rsize = fread(data.GetPtr(), 1, data.GetSizeInBytes(), f);
 	fclose( f );
 
-	if (rsize < data.GetSizeInBytes()) throw Exception::EndOfStream(filename);
+	if (rsize < data.GetSizeInBytes()) throw Exception::EndOfStream(StringUtil::UTF8StringToWxString(filename));
 }
 
 static wxString GetMsg_InvalidELF()
@@ -184,7 +180,7 @@ void ElfObject::checkElfSize(s64 elfsize)
 	else if	(elfsize == 0)			diagMsg = L"Unexpected end of ELF file.";
 
 	if (diagMsg)
-		throw Exception::BadStream(filename)
+		throw Exception::BadStream(StringUtil::UTF8StringToWxString(filename))
 			.SetDiagMsg(diagMsg)
 			.SetUserMsg(GetMsg_InvalidELF());
 }
@@ -320,7 +316,7 @@ int GetPS2ElfName( std::string& name )
 
 	try {
 		IsoFSCDVD isofs;
-		IsoFile file( isofs, L"SYSTEM.CNF;1");
+		IsoFile file( isofs, "SYSTEM.CNF;1");
 
 		int size = file.getLength();
 		if( size == 0 ) return 0;

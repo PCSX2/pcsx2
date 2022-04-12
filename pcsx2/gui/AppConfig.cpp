@@ -545,12 +545,6 @@ void AppConfig::FolderOptions::Set(FoldersEnum_t folderidx, const wxString& src,
 	}
 }
 
-wxString AppConfig::FullpathToSaveState(wxString serialName, wxString CRCvalue) const
-{
-	wxString Sstate_append = serialName + " - " + "(" + CRCvalue + ")";
-	return Path::Combine(Folders.Savestates, Sstate_append);
-}
-
 bool IsPortable()
 {
 	return InstallationMode == InstallMode_Portable;

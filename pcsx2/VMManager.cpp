@@ -412,7 +412,7 @@ void VMManager::UpdateRunningGame(bool force)
 	{
 		const bool ingame = (ElfCRC && (g_GameLoading || g_GameStarted));
 		new_crc = ingame ? ElfCRC : 0;
-		new_serial = ingame ? SysGetDiscID().ToStdString() : SysGetBiosDiscID().ToStdString();
+		new_serial = ingame ? SysGetDiscID() : SysGetBiosDiscID();
 	}
 	else
 	{

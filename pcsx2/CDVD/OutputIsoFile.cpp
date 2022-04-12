@@ -21,16 +21,6 @@
 
 #include <errno.h>
 
-void pxStream_OpenCheck(std::FILE* stream, const std::string& fname, const wxString& mode)
-{
-	if (stream)
-		return;
-
-	ScopedExcept ex(Exception::FromErrno(StringUtil::UTF8StringToWxString(fname), errno));
-	ex->SetDiagMsg(pxsFmt(L"Unable to open the file for %s: %s", WX_STR(mode), WX_STR(ex->DiagMsg())));
-	ex->Rethrow();
-}
-
 OutputIsoFile::OutputIsoFile()
 {
 	_init();
@@ -62,7 +52,12 @@ void OutputIsoFile::Create(std::string filename, int version)
 	m_blocksize = 2048;
 
 	m_outstream = FileSystem::OpenCFile(m_filename.c_str(), "wb");
-	pxStream_OpenCheck(m_outstream, m_filename, L"writing");
+	if (!m_outstream)
+	{
+		Console.Error("(OutputIsoFile::Create) Unable to open the file '%s' for writing: %d", m_filename.c_str(), errno);
+		ScopedExcept ex(Exception::FromErrno(StringUtil::UTF8StringToWxString(filename), errno));
+		ex->Rethrow();
+	}
 
 	Console.WriteLn("isoFile create ok: %s ", m_filename.c_str());
 }

@@ -13,11 +13,12 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #pragma once
 
-
 #include "CDVDaccess.h"
+
+#include <string>
+#include <string_view>
 
 #define btoi(b) ((b) / 16 * 10 + (b) % 16) /* BCD to u_char */
 #define itob(i) ((i) / 10 * 16 + (i) % 10) /* u_char to BCD */
@@ -175,8 +176,8 @@ extern void cdvdNewDiskCB();
 extern u8 cdvdRead(u8 key);
 extern void cdvdWrite(u8 key, u8 rt);
 
-extern void cdvdReloadElfInfo(wxString elfoverride = wxEmptyString);
+extern void cdvdReloadElfInfo(std::string elfoverride = std::string());
 extern s32 cdvdCtrlTrayOpen();
 extern s32 cdvdCtrlTrayClose();
 
-extern wxString DiscSerial;
+extern std::string DiscSerial;

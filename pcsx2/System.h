@@ -165,8 +165,8 @@ extern u8 *SysMmapEx(uptr base, u32 size, uptr bounds, const char *caller="Unnam
 extern void vSyncDebugStuff( uint frame );
 extern void NTFS_CompressFile( const wxString& file, bool compressStatus=true );
 
-extern wxString SysGetBiosDiscID();
-extern wxString SysGetDiscID();
+extern std::string SysGetBiosDiscID();
+extern std::string SysGetDiscID();
 
 extern SysMainMemory& GetVmMemory();
 

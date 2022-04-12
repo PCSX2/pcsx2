@@ -84,7 +84,7 @@ static int CheckDiskTypeFS(int baseType)
 
 		try
 		{
-			IsoFile file(rootdir, L"SYSTEM.CNF;1");
+			IsoFile file(rootdir, "SYSTEM.CNF;1");
 
 			const int size = file.getLength();
 			const std::unique_ptr<char[]> buffer = std::make_unique<char[]>(size + 1);
@@ -109,7 +109,7 @@ static int CheckDiskTypeFS(int baseType)
 		// PS2 Linux disc 2, doesn't have a System.CNF or a normal ELF
 		try
 		{
-			IsoFile file(rootdir, L"P2L_0100.02;1");
+			IsoFile file(rootdir, "P2L_0100.02;1");
 			return CDVD_TYPE_PS2DVD;
 		}
 		catch (Exception::FileNotFound&)
@@ -118,7 +118,7 @@ static int CheckDiskTypeFS(int baseType)
 
 		try
 		{
-			IsoFile file(rootdir, L"PSX.EXE;1");
+			IsoFile file(rootdir, "PSX.EXE;1");
 			return CDVD_TYPE_PSCD;
 		}
 		catch (Exception::FileNotFound&)
@@ -127,7 +127,7 @@ static int CheckDiskTypeFS(int baseType)
 
 		try
 		{
-			IsoFile file(rootdir, L"VIDEO_TS/VIDEO_TS.IFO;1");
+			IsoFile file(rootdir, "VIDEO_TS/VIDEO_TS.IFO;1");
 			return CDVD_TYPE_DVDV;
 		}
 		catch (Exception::FileNotFound&)
@@ -390,8 +390,8 @@ bool DoCDVDopen()
 	//FWIW Disc serial availability doesn't seem reliable enough, sometimes it's there and sometime it's just null
 	//Shouldn't the serial be available all time? Potentially need to look into Elfreloadinfo() reliability
 	//TODO: Add extra fallback case for CRC.
-	if (somepick.empty() && !DiscSerial.IsEmpty())
-		somepick = StringUtil::StdStringFromFormat("Untitled-%s", DiscSerial.ToUTF8().data());
+	if (somepick.empty() && !DiscSerial.empty())
+		somepick = StringUtil::StdStringFromFormat("Untitled-%s", DiscSerial.c_str());
 	else if (somepick.empty())
 		somepick = "Untitled";
 

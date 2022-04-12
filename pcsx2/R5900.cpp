@@ -114,7 +114,7 @@ void cpuReset()
 	AllowParams2 = !g_SkipBiosHack;
 
 	ElfCRC = 0;
-	DiscSerial = L"";
+	DiscSerial.clear();
 	ElfEntry = -1;
 
 	// Probably not the right place, but it has to be done when the ram is actually initialized
@@ -125,7 +125,7 @@ void cpuReset()
 	// the same (identical ELF names) but is actually different (devs actually could
 	// run into this while testing minor binary hacked changes to ISO images, which
 	// is why I found out about this) --air
-	LastELF = L"";
+	LastELF.clear();
 
 	g_eeloadMain = 0, g_eeloadExec = 0, g_osdsys_str = 0;
 }
@@ -620,13 +620,13 @@ int ParseArgumentString(u32 arg_block)
 void __fastcall eeloadHook()
 {
 #ifndef PCSX2_CORE
-	const wxString &elf_override = GetCoreThread().GetElfOverride();
+	const std::string elf_override(StringUtil::wxStringToUTF8String(GetCoreThread().GetElfOverride()));
 #else
-	const wxString elf_override(StringUtil::UTF8StringToWxString(VMManager::Internal::GetElfOverride()));
+	const std::string& elf_override(VMManager::Internal::GetElfOverride());
 #endif
 
-	if (!elf_override.IsEmpty())
-		cdvdReloadElfInfo(L"host:" + elf_override);
+	if (!elf_override.empty())
+		cdvdReloadElfInfo(StringUtil::StdStringFromFormat("host:%s", elf_override.c_str()));
 	else
 		cdvdReloadElfInfo();
 
@@ -702,10 +702,9 @@ void __fastcall eeloadHook()
 	if (g_SkipBiosHack && elfname.empty())
 	{
 		std::string elftoload;
-		if (!elf_override.IsEmpty())
+		if (!elf_override.empty())
 		{
-			elftoload = "host:";
-			elftoload += elf_override.ToUTF8();
+			elftoload = StringUtil::StdStringFromFormat("host:%s", elf_override.c_str());
 		}
 		else
 		{

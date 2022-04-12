@@ -51,6 +51,7 @@ static void _SaveLoadStuff(bool enabled)
 	sMainFrame.EnableMenuItem(MenuId_Sys_SaveStates, enabled);
 
 #ifdef USE_NEW_SAVESLOTS_UI
+	const wxString wxDiscSerial(StringUtil::UTF8StringToWxString(DiscSerial));
 	bool crcChanged = false;
 	// Run though all the slots. Update if they need updating or the crc changed.
 	for (Saveslot &slot : saveslot_cache)
@@ -62,7 +63,7 @@ static void _SaveLoadStuff(bool enabled)
 
 		// We need to reload the file information if the crc or serial # changed.
 		// Invalidate slot cache when using full boot (g_GameLoading) otherwise it won't see the new folder path
-		if ((g_GameLoading || slot.crc != ElfCRC) || (slot.serialName != DiscSerial))
+		if ((g_GameLoading || slot.crc != ElfCRC) || (slot.serialName != wxDiscSerial))
 		{
 			slot.invalid_cache = true;
 			crcChanged = true;

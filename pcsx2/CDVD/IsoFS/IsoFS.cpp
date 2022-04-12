@@ -18,6 +18,10 @@
 
 #include "IsoFS.h"
 #include "IsoFile.h"
+
+#include "common/FileSystem.h"
+#include "common/StringUtil.h"
+
 #include <memory>
 
 //////////////////////////////////////////////////////////////////////////
@@ -28,19 +32,17 @@
 //u8		volID[5];		// "CD001"
 
 
-wxString IsoDirectory::FStype_ToString() const
+std::string IsoDirectory::FStype_ToString() const
 {
 	switch (m_fstype)
 	{
 		case FStype_ISO9660:
-			return L"ISO9660";
-			break;
+			return "ISO9660";
 		case FStype_Joliet:
-			return L"Joliet";
-			break;
+			return "Joliet";
 	}
 
-	return wxsFormat(L"Unrecognized Code (0x%x)", m_fstype);
+	return StringUtil::StdStringFromFormat("Unrecognized Code (0x%x)", m_fstype);
 }
 
 // Used to load the Root directory from an image
@@ -99,10 +101,10 @@ IsoDirectory::IsoDirectory(SectorSource& r)
 	}
 
 	if (!isValid)
-		throw Exception::FileNotFound(L"IsoFileSystem") // FIXME: Should report the name of the ISO here...
-			.SetDiagMsg(L"IsoFS could not find the root directory on the ISO image.");
+		throw Exception::FileNotFound("IsoFileSystem") // FIXME: Should report the name of the ISO here...
+			.SetDiagMsg("IsoFS could not find the root directory on the ISO image.");
 
-	DevCon.WriteLn(L"(IsoFS) Filesystem is " + FStype_ToString());
+	DevCon.WriteLn("(IsoFS) Filesystem is %s", FStype_ToString().c_str());
 	Init(rootDirEntry);
 }
 
@@ -149,7 +151,7 @@ const IsoFileDescriptor& IsoDirectory::GetEntry(int index) const
 	return files[index];
 }
 
-int IsoDirectory::GetIndexOf(const wxString& fileName) const
+int IsoDirectory::GetIndexOf(const std::string_view& fileName) const
 {
 	for (unsigned int i = 0; i < files.size(); i++)
 	{
@@ -157,21 +159,22 @@ int IsoDirectory::GetIndexOf(const wxString& fileName) const
 			return i;
 	}
 
-	throw Exception::FileNotFound(fileName);
+	throw Exception::FileNotFound(StringUtil::UTF8StringToWideString(fileName));
 }
 
-const IsoFileDescriptor& IsoDirectory::GetEntry(const wxString& fileName) const
+const IsoFileDescriptor& IsoDirectory::GetEntry(const std::string_view& fileName) const
 {
 	return GetEntry(GetIndexOf(fileName));
 }
 
-IsoFileDescriptor IsoDirectory::FindFile(const wxString& filePath) const
+IsoFileDescriptor IsoDirectory::FindFile(const std::string_view& filePath) const
 {
-	pxAssert(!filePath.IsEmpty());
+	if (filePath.empty())
+		throw Exception::FileNotFound();
 
 	// wxWidgets DOS-style parser should work fine for ISO 9660 path names.  Only practical difference
 	// is case sensitivity, and that won't matter for path splitting.
-	wxFileName parts(filePath, wxPATH_DOS);
+	std::vector<std::string_view> parts(FileSystem::SplitWindowsPath(filePath));
 	IsoFileDescriptor info;
 	const IsoDirectory* dir = this;
 	std::unique_ptr<IsoDirectory> deleteme;
@@ -179,37 +182,38 @@ IsoFileDescriptor IsoDirectory::FindFile(const wxString& filePath) const
 	// walk through path ("." and ".." entries are in the directories themselves, so even if the
 	// path included . and/or .., it still works)
 
-	for (uint i = 0; i < parts.GetDirCount(); ++i)
+	// ignore the device (cdrom0:\)
+	const bool has_device = (parts.front().back() == ':');
+
+	for (size_t index = has_device ? 1 : 0; index < (parts.size() - 1); index++)
 	{
-		info = dir->GetEntry(parts.GetDirs()[i]);
+		info = dir->GetEntry(parts[index]);
 		if (info.IsFile())
-			throw Exception::FileNotFound(filePath);
+			throw Exception::FileNotFound(StringUtil::UTF8StringToWxString(filePath));
 
 		deleteme.reset(new IsoDirectory(internalReader, info));
 		dir = deleteme.get();
 	}
 
-	if (!parts.GetFullName().IsEmpty())
-		info = dir->GetEntry(parts.GetFullName());
-
+	info = dir->GetEntry(parts.back());
 	return info;
 }
 
-bool IsoDirectory::IsFile(const wxString& filePath) const
+bool IsoDirectory::IsFile(const std::string_view& filePath) const
 {
-	if (filePath.IsEmpty())
+	if (filePath.empty())
 		return false;
 	return (FindFile(filePath).flags & 2) != 2;
 }
 
-bool IsoDirectory::IsDir(const wxString& filePath) const
+bool IsoDirectory::IsDir(const std::string_view& filePath) const
 {
-	if (filePath.IsEmpty())
+	if (filePath.empty())
 		return false;
 	return (FindFile(filePath).flags & 2) == 2;
 }
 
-u32 IsoDirectory::GetFileSize(const wxString& filePath) const
+u32 IsoDirectory::GetFileSize(const std::string_view& filePath) const
 {
 	return FindFile(filePath).size;
 }
@@ -251,13 +255,14 @@ void IsoFileDescriptor::Load(const u8* data, int length)
 		switch (c)
 		{
 			case 0:
-				name = L".";
+				name = ".";
 				break;
 			case 1:
-				name = L"..";
+				name = "..";
 				break;
 			default:
-				name = (wxChar)c;
+				name = static_cast<char>(c);
+				break;
 		}
 	}
 	else
@@ -265,12 +270,6 @@ void IsoFileDescriptor::Load(const u8* data, int length)
 		// copy string and up-convert from ascii to wxChar
 
 		const u8* fnsrc = data + 33;
-		const u8* fnend = fnsrc + fileNameLength;
-
-		while (fnsrc != fnend)
-		{
-			name += (wxChar)*fnsrc;
-			++fnsrc;
-		}
+		name.assign(reinterpret_cast<const char*>(fnsrc), fileNameLength);
 	}
 }
