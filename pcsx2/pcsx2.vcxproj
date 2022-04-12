@@ -713,7 +713,6 @@
     <ClCompile Include="gui\Panels\PathsPanel.cpp" />
     <ClCompile Include="gui\Panels\SpeedhacksPanel.cpp" />
     <ClCompile Include="gui\Panels\VideoPanel.cpp" />
-    <ClCompile Include="windows\WinCompressNTFS.cpp" />
     <ClCompile Include="windows\WinConsolePipe.cpp" />
     <ClCompile Include="windows\WinPowerProfile.cpp" />
     <ClCompile Include="Linux\LnxKeyCodes.cpp">

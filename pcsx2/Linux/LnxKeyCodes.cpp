@@ -18,8 +18,6 @@
 
 #include <gdk/gdkkeysyms.h>
 
-void NTFS_CompressFile( const wxString& file, bool compressStatus ) {}
-
 // Returns a WXK_* keycode, given some kinda GDK input mess!
 int TranslateGDKtoWXK( u32 keysym )
 {

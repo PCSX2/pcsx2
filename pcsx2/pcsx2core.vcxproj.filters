@@ -1241,9 +1241,6 @@
     <ClCompile Include="windows\Optimus.cpp">
       <Filter>Host</Filter>
     </ClCompile>
-    <ClCompile Include="windows\WinCompressNTFS.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
     <ClCompile Include="GS\Renderers\HW\GSTextureReplacements.cpp">
       <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
     </ClCompile>
