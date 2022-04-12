@@ -74,6 +74,7 @@ bool GSRenderer::Merge(int field)
 
 	GSVector4i fr[2];
 	GSVector4i dr[2];
+	GSVector2i display_offsets[2];
 
 	GSVector2i display_baseline = {INT_MAX, INT_MAX};
 	GSVector2i frame_baseline = {INT_MAX, INT_MAX};
@@ -88,9 +89,10 @@ bool GSRenderer::Merge(int field)
 		{
 			fr[i] = GetFrameRect(i);
 			dr[i] = GetDisplayRect(i);
+			display_offsets[i] = GetResolutionOffset(i);
 
-			display_combined.x = std::max(GetDisplayMagnifiedRect(i).right + abs(GetResolutionOffset(i).x), display_combined.x);
-			display_combined.y = std::max(GetDisplayMagnifiedRect(i).bottom + abs(GetResolutionOffset(i).y), display_combined.y);
+			display_combined.x = std::max(GetFrameMagnifiedRect(i).right + abs(display_offsets[i].x), display_combined.x);
+			display_combined.y = std::max(GetFrameMagnifiedRect(i).bottom + abs(display_offsets[i].y), display_combined.y);
 			display_baseline.x = std::min(dr[i].left, display_baseline.x);
 			display_baseline.y = std::min(dr[i].top, display_baseline.y);
 			frame_baseline.x = std::min(fr[i].left, frame_baseline.x);
@@ -185,46 +187,50 @@ bool GSRenderer::Merge(int field)
 			tex[2] = GetFeedbackOutput();
 	}
 
-	GSVector4 src[2];
-	GSVector4 src_hw[2];
+	GSVector4 src_out_rect[2];
+	GSVector4 src_gs_read[2];
 	GSVector4 dst[3];
 
 	const bool slbg = m_regs->PMODE.SLBG;
+
+	const GSVector2i resolution(GetResolution());
+	const GSVideoMode videomode = GetVideoMode();
+
+	bool scanmask_frame = true;
 
 	for (int i = 0; i < 2; i++)
 	{
 		if (!en[i] || !tex[i])
 			continue;
 
-		const GSVector2i resolution(GetResolution(true));
-		GSVector4i r = GetDisplayMagnifiedRect(i);
+		GSVector4i r = GetFrameMagnifiedRect(i);
 		GSVector4 scale = GSVector4(tex[i]->GetScale()).xyxy();
 
-		bool ignore_offset = !GSConfig.PCRTCOffsets;
+		const bool ignore_offset = !GSConfig.PCRTCOffsets;
 
-		GSVector2i off(ignore_offset ? 0 : GetResolutionOffset(i));
+		GSVector2i off(ignore_offset ? 0 : display_offsets[i]);
 		GSVector2i display_diff(dr[i].left - display_baseline.x, dr[i].top - display_baseline.y);
 		GSVector2i frame_diff(fr[i].left - frame_baseline.x, fr[i].top - frame_baseline.y);
 
-		const GSVideoMode videomode = GetVideoMode();
-
+		// If using scanmsk we have to keep the single line offset, regardless of upscale
+		// so we handle this separately after the rect calculations.
 		const int interlace_offset = display_diff.y & 1;
 
 		if (m_scanmask_used && interlace_offset)
 		{
 			display_diff.y &= ~1;
-
+			scanmask_frame = false;
 			if (!ignore_offset)
 				off.y &= ~1;
 		}
-		
+
+		// All the following code is literally just to try and fill the window as much as possible and reduce blur put in by gamedevs by offsetting the DISPLAY's.
 		if (!ignore_offset && display_combined.y < (resolution.y-1) && display_combined.x < (resolution.x-1))
 		{
 			float difference[2];
 			difference[0] = resolution.x / (float)display_combined.x;
 			difference[1] = resolution.y / (float)display_combined.y;
 
-			//DevCon.Warning("Difference x %f y %f old size x %d y %d res x %d y %d off x %d y %d", difference[0], difference[1], r.right, r.bottom, resolution.x, resolution.y, off.x, off.y);
 			if (difference[0] > 1.0f)
 			{
 				float difference_to_use = (difference[0] < difference[1]) ? difference[0] : difference[1];
@@ -251,15 +257,14 @@ bool GSRenderer::Merge(int field)
 				off.y -= display_diff.y;
 			}
 		}
-		else if(ignore_offset)// Stretch to fit the window
+		else if(ignore_offset) // Stretch to fit the window.
 		{
 			float difference[2];
 
 			//If the picture is offset we want to make sure we don't make it bigger, so this is the only place we need to now about the offset!
-			difference[0] = resolution.x / (float)((display_combined.x - GetResolutionOffset(i).x) + display_diff.x);
-			difference[1] = resolution.y / (float)((display_combined.y - GetResolutionOffset(i).y) + display_diff.y);
+			difference[0] = resolution.x / (float)((display_combined.x - display_offsets[i].x) + display_diff.x);
+			difference[1] = resolution.y / (float)((display_combined.y - display_offsets[i].y) + display_diff.y);
 
-			//DevCon.Warning("Difference x %f y %f old size x %d y %d res x %d y %d off x %d y %d disp diff x %d y %d comb x %d y %d res off x %d y %d", difference[0], difference[1], r.right, r.bottom, resolution.x, resolution.y, off.x, off.y, display_diff.x, display_diff.y, display_combined.x, display_combined.y, GetResolutionOffset(i).x, GetResolutionOffset(i).y);
 			if (difference[0] > 1.0f)
 			{
 				const float difference_to_use = difference[0];
@@ -275,7 +280,7 @@ bool GSRenderer::Merge(int field)
 			{
 				r.bottom += height_change;
 			}
-			// Anti blur hax
+			// Anti blur hax.
 			if (!slbg || !feedback_merge)
 			{
 				if (display_diff.x > 4)
@@ -315,7 +320,7 @@ bool GSRenderer::Merge(int field)
 				}
 			}
 		}
-		// Anti blur hax
+		// Anti blur hax.
 		else if (samesrc)
 		{
 			if (display_diff.x < 4)
@@ -328,23 +333,24 @@ bool GSRenderer::Merge(int field)
 			if (frame_diff.y == 1)
 				off.y += 1;
 		}
-		
+		// End of Resize/Anti-Blur code.
+
+		// Offsets are in full rect form, needs resizing for the actual draw if interlaced half frame.
 		if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
-		{
 			off.y /= 2;
-		}
 
-		// Src is the size for output
-		src[i] = GSVector4(r) * scale / GSVector4(tex[i]->GetSize()).xyxy();;
+		// src_gs_read is the size which we're really reading from GS memory.
+		src_gs_read[i] = (GSVector4(fr[i]) + GSVector4(0, y_offset[i], 0, y_offset[i])) * scale / GSVector4(tex[i]->GetSize()).xyxy();
 
-		// Src_hw is the size which we're really reading
-		src_hw[i] = (GSVector4(fr[i]) + GSVector4(0, y_offset[i], 0, y_offset[i])) * scale / GSVector4(tex[i]->GetSize()).xyxy();
+		// src_out_rect is the resized rect for output.
+		src_out_rect[i] = GSVector4(r) * scale / GSVector4(tex[i]->GetSize()).xyxy();
 
-		dst[i] = GSVector4(off).xyxy() + (scale * GSVector4(r.rsize()));
+		// dst is the final destination rect with offset on the screen.
+		dst[i] = scale * (GSVector4(off).xyxy() + GSVector4(r.rsize()));
 
+		// Restore the single line offset for scanmsk.
 		if (m_scanmask_used && interlace_offset)
 			dst[i] -= GSVector4(0.0f, 1.0f, 0.0f, 1.0f);
-		//DevCon.Warning("Offset final x %d y %d Display Diff x %d y %d Frame Diff x %d y %d Frame Rect x %d y %d z %d w %d Display rect x %d y %d z %d w %d", off.x, off.y, display_diff.x, display_diff.x, frame_diff.y, frame_diff.y, fr[i].x, fr[i].y, fr[i].z, fr[i].w, r.x, r.y, r.z, r.w);
 	}
 
 	if (feedback_merge && tex[2])
@@ -360,10 +366,10 @@ bool GSRenderer::Merge(int field)
 		dst[2] = GSVector4(scale * GSVector4(feedback_rect.rsize()));
 	}
 
-	fs = GetResolution(true) * GSVector2i(GetUpscaleMultiplier());
-	//DevCon.Warning("Res x %d y %d", fs.x, fs.y);
+	fs = resolution * GSVector2i(GetUpscaleMultiplier());
 	ds = fs;
 
+	// When interlace(FRAME) mode, the rect is half height, so it needs to be stretched.
 	if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
 	{
 		ds.y *= 2;
@@ -373,7 +379,7 @@ bool GSRenderer::Merge(int field)
 	
 	if (tex[0] || tex[1])
 	{
-		if ((tex[0] == tex[1]) && (src[0] == src[1]).alltrue() && (dst[0] == dst[1]).alltrue() && !feedback_merge && !slbg)
+		if ((tex[0] == tex[1]) && (src_out_rect[0] == src_out_rect[1]).alltrue() && (dst[0] == dst[1]).alltrue() && !feedback_merge && !slbg)
 		{
 			// the two outputs are identical, skip drawing one of them (the one that is alpha blended)
 
@@ -382,11 +388,11 @@ bool GSRenderer::Merge(int field)
 
 		GSVector4 c = GSVector4((int)m_regs->BGCOLOR.R, (int)m_regs->BGCOLOR.G, (int)m_regs->BGCOLOR.B, (int)m_regs->PMODE.ALP) / 255;
 
-		g_gs_device->Merge(tex, src_hw, dst, fs, m_regs->PMODE, m_regs->EXTBUF, c);
+		g_gs_device->Merge(tex, src_gs_read, dst, fs, m_regs->PMODE, m_regs->EXTBUF, c);
 
 		if (m_regs->SMODE2.INT && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 		{
-			const bool scanmask = m_scanmask_used && GSConfig.InterlaceMode == GSInterlaceMode::Automatic;
+			const bool scanmask = m_scanmask_used && scanmask_frame && GSConfig.InterlaceMode == GSInterlaceMode::Automatic;
 
 			if (GSConfig.InterlaceMode == GSInterlaceMode::Automatic && (m_regs->SMODE2.FFMD)) // Auto interlace enabled / Odd frame interlace setting
 			{
@@ -398,7 +404,7 @@ bool GSRenderer::Merge(int field)
 			{
 				const int field2 = scanmask ? 0 : 0 - ((static_cast<int>(GSConfig.InterlaceMode) - 1) & 1);
 				const int offset = tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y;
-				int mode = scanmask ? 2 : ((static_cast<int>(GSConfig.InterlaceMode) - 1) >> 1);
+				const int mode = scanmask ? 2 : ((static_cast<int>(GSConfig.InterlaceMode) - 1) >> 1);
 
 				g_gs_device->Interlace(ds, field ^ field2, mode, offset);
 			}
