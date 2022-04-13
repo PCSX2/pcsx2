@@ -338,7 +338,7 @@ struct PSMain
 		c.z = sample_c(uv.xw).a;
 		c.w = sample_c(uv.zw).a;
 
-		uchar4 i = uchar4(c * 255.5f); // Denormalize value
+		uint4 i = uint4(c * 255.5f); // Denormalize value
 
 		if (PS_PAL_FMT == 1)
 			return float4(i & 0xF) / 255.f;
@@ -504,9 +504,9 @@ struct PSMain
 		}
 		else
 		{
-			uchar4 rt = uchar4(fetch_raw_color() * 255.5f);
-			uchar green = (rt.g >> cb.channel_shuffle.green_shift) & cb.channel_shuffle.green_mask;
-			uchar blue  = (rt.b >> cb.channel_shuffle.blue_shift)  & cb.channel_shuffle.blue_mask;
+			uint4 rt = uint4(fetch_raw_color() * 255.5f);
+			uint green = (rt.g >> cb.channel_shuffle.green_shift) & cb.channel_shuffle.green_mask;
+			uint blue  = (rt.b >> cb.channel_shuffle.blue_shift)  & cb.channel_shuffle.blue_mask;
 			return float4(green | blue);
 		}
 	}
@@ -800,8 +800,8 @@ struct PSMain
 
 		if (PS_SHUFFLE)
 		{
-			uchar4 denorm_c = uchar4(C);
-			uchar2 denorm_TA = uchar2(cb.ta * 255.5f);
+			uint4 denorm_c = uint4(C);
+			uint2 denorm_TA = uint2(cb.ta * 255.5f);
 
 			C.rb = PS_READ_BA ? C.bb : C.rr;
 			if (PS_READ_BA)
