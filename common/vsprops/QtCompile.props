@@ -21,6 +21,7 @@
     <QtDebugSuffix>d</QtDebugSuffix>
     <QtLibSuffix Condition="$(Configuration.Contains(Debug))">$(QtDebugSuffix)</QtLibSuffix>
     <QtPluginFolder>QtPlugins</QtPluginFolder>
+    <QtEntryPointLib>$(QtLibDir)Qt6EntryPoint$(QtLibSuffix).lib</QtEntryPointLib>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
