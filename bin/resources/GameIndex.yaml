@@ -28382,6 +28382,8 @@ SLPM-66401:
   name: "Wrestle Kingdom"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1
 SLPM-66402:
   name: "Taito Memories Vol.1 [Taito The Best]"
   region: "NTSC-J"
@@ -29511,6 +29513,9 @@ SLPM-66713:
 SLPM-66714:
   name: "Wrestle Kingdom 2 - Pro Wrestling Sekai Taisen"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1
+    halfPixelOffset: 1 # Fixes misaligned bloom.
 SLPM-66715:
   name: "Shinki Gensou Spectral Souls II [IF Collection]"
   region: "NTSC-J"
