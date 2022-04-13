@@ -183,7 +183,7 @@ static void ReadTrack(u8* track = 0)
 	if (EmuConfig.CdvdVerboseReads)
 		DevCon.WriteLn("CD Read Sector %x", msf_to_lsn(cdr.SetSector));
 	CDVD->getTN(&cdr.ResultTN);
-	cdr.RErr = DoCDVDreadTrack(msf_to_lsn(track), CDVD_MODE_2340);
+	cdr.RErr = DoCDVDreadTrack(msf_to_lsn(cdr.SetSector), CDVD_MODE_2340);
 }
 
 static void AddIrqQueue(u8 irq, u32 ecycle)

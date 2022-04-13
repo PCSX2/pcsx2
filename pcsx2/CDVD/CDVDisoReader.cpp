@@ -59,36 +59,7 @@ s32 CALLBACK ISOopen(const char* pTitle)
 		return -1;
 	}
 
-	try
-	{
-		if (ext.extension() == ".bin")
-		{
-			ext.replace_extension(".cue");
-		}
-		if (fs::exists(ext) && ext.extension() == ".cue")
-		{
-			if (!cueFile)
-				cueFile = new CueParser::File();
-
-			FILE* file = fopen(ext.string().c_str(), "r+");
-			if (file != nullptr)
-			{
-				cueFile->Parse(file, err.get());
-				ext = ext.parent_path() / cueFile->GetTrack(1)->filePath;
-				Console.DoWriteLn(L"CUE FILE NAME: " + ext.wstring() + '\n');
-				iso.Open(ext.string());
-			}
-		}
-		else
-		{
-			iso.Open(pTitle);
-		}
-	}
-	catch (BaseException& ex)
-	{
-		Console.Error(ex.FormatDiagnosticMessage());
-		return -1;
-	}
+	iso.Open(pTitle);
 
 	switch (iso.GetType())
 	{

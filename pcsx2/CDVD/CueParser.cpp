@@ -270,7 +270,7 @@ namespace CueParser
 		const std::string_view mode_str = GetToken(line);
 		cdvdTD mode;
 		if (TokenMatch(mode_str, "AUDIO"))
-			mode.type = CDVD_MODE_2352;
+			mode.type = CDVD_AUDIO_TRACK;
 		else if (TokenMatch(mode_str, "MODE1/2048"))
 			mode.type = CDVD_MODE_2048;
 		else if (TokenMatch(mode_str, "MODE1/2352"))
