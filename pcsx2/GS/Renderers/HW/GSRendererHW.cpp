@@ -41,7 +41,7 @@ GSRendererHW::GSRendererHW()
 
 void GSRendererHW::SetScaling()
 {
-	const GSVector2i crtc_size(GetDisplayRect().width(), GetDisplayRect().height());
+	const GSVector2i crtc_size(GetResolution());
 
 	// Details of (potential) perf impact of a big framebuffer
 	// 1/ extra memory
