@@ -21,6 +21,39 @@
 #include <mutex>
 #include <vector>
 
+// SCP XInput extension
+typedef struct
+{
+	float SCP_UP;
+	float SCP_RIGHT;
+	float SCP_DOWN;
+	float SCP_LEFT;
+
+	float SCP_LX;
+	float SCP_LY;
+
+	float SCP_L1;
+	float SCP_L2;
+	float SCP_L3;
+
+	float SCP_RX;
+	float SCP_RY;
+
+	float SCP_R1;
+	float SCP_R2;
+	float SCP_R3;
+
+	float SCP_T;
+	float SCP_C;
+	float SCP_X;
+	float SCP_S;
+
+	float SCP_SELECT;
+	float SCP_START;
+
+	float SCP_PS;
+} SCP_EXTN;
+
 class SettingsInterface;
 
 class XInputSource final : public InputSource
@@ -63,9 +96,13 @@ private:
 
   struct ControllerData
   {
-	  XINPUT_STATE last_state = {};
+	union
+	{
+		XINPUT_STATE last_state;
+		SCP_EXTN last_state_scp;
+	};
     XINPUT_VIBRATION last_vibration = {};
-	  bool connected = false;
+	bool connected = false;
     bool has_large_motor = false;
     bool has_small_motor = false;
   };
@@ -73,6 +110,7 @@ private:
   using ControllerDataArray = std::array<ControllerData, NUM_CONTROLLERS>;
 
   void CheckForStateChanges(u32 index, const XINPUT_STATE& new_state);
+  void CheckForStateChangesSCP(u32 index, const SCP_EXTN& new_state);
   void HandleControllerConnection(u32 index);
   void HandleControllerDisconnection(u32 index);
 
@@ -82,6 +120,7 @@ private:
   DWORD(WINAPI* m_xinput_get_state)(DWORD, XINPUT_STATE*);
   DWORD(WINAPI* m_xinput_set_state)(DWORD, XINPUT_VIBRATION*);
   DWORD(WINAPI* m_xinput_get_capabilities)(DWORD, DWORD, XINPUT_CAPABILITIES*);
+  DWORD(WINAPI* m_xinput_get_extended)(DWORD, SCP_EXTN*);
 
   static const char* s_axis_names[NUM_AXES];
   static const char* s_button_names[NUM_BUTTONS];
