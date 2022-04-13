@@ -85,9 +85,9 @@ jobs:
         shell: cmd
         run: |
           cd 3rdparty\qt
-          aria2c https://github.com/PCSX2/pcsx2-windows-dependencies/releases/download/2022-01-20/qt-6.2.2-x64.7z
-          7z x qt-6.2.2-x64.7z
-          del qt-6.2.2-x64.7z
+          aria2c https://github.com/PCSX2/pcsx2-windows-dependencies/releases/download/2022-04-13/qt-6.3.0-x64.7z
+          7z x qt-6.3.0-x64.7z
+          del qt-6.3.0-x64.7z
 
       - name: Generate CMake
         if: matrix.configuration == 'CMake'
