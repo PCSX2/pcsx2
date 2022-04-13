@@ -1304,13 +1304,9 @@ void GSApp::Init()
 	// Per OS option.
 	m_default_configuration["CaptureFileName"]                            = "";
 	m_default_configuration["CaptureVideoCodecDisplayName"]               = "";
-	m_default_configuration["dx_break_on_severity"]                       = "0";
-	// D3D Blending option
-	m_default_configuration["accurate_blending_unit_d3d11"]               = "1";
 #else
 	m_default_configuration["linux_replay"]                               = "1";
 #endif
-	m_default_configuration["adapter_index"]                              = "-1";
 	m_default_configuration["aa1"]                                        = "1";
 	m_default_configuration["accurate_date"]                              = "1";
 	m_default_configuration["accurate_blending_unit"]                     = "1";
@@ -1347,8 +1343,6 @@ void GSApp::Init()
 	m_default_configuration["MaxAnisotropy"]                              = "0";
 	m_default_configuration["mipmap"]                                     = "1";
 	m_default_configuration["mipmap_hw"]                                  = std::to_string(static_cast<int>(HWMipmapLevel::Automatic));
-	m_default_configuration["ModeHeight"]                                 = "480";
-	m_default_configuration["ModeWidth"]                                  = "640";
 	m_default_configuration["NTSC_Saturation"]                            = "1";
 	m_default_configuration["OsdShowMessages"]                            = "1";
 	m_default_configuration["OsdShowSpeed"]                               = "0";
@@ -1393,7 +1387,6 @@ void GSApp::Init()
 	m_default_configuration["skip_duplicate_frames"]                      = "0";
 	m_default_configuration["texture_preloading"]                         = "0";
 	m_default_configuration["ThreadedPresentation"]                       = "0";
-	m_default_configuration["throttle_present_rate"]                      = "0";
 	m_default_configuration["TVShader"]                                   = "0";
 	m_default_configuration["upscale_multiplier"]                         = "1";
 	m_default_configuration["UseBlitSwapChain"]                           = "0";
