@@ -340,17 +340,17 @@ bool GSRenderer::Merge(int field)
 			off.y /= 2;
 
 		// src_gs_read is the size which we're really reading from GS memory.
-		src_gs_read[i] = (GSVector4(fr[i]) + GSVector4(0, y_offset[i], 0, y_offset[i])) * scale / GSVector4(tex[i]->GetSize()).xyxy();
+		src_gs_read[i] = ((GSVector4(fr[i]) + GSVector4(0, y_offset[i], 0, y_offset[i])) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
 
 		// src_out_rect is the resized rect for output.
-		src_out_rect[i] = GSVector4(r) * scale / GSVector4(tex[i]->GetSize()).xyxy();
+		src_out_rect[i] = (GSVector4(r) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
 
 		// dst is the final destination rect with offset on the screen.
 		dst[i] = scale * (GSVector4(off).xyxy() + GSVector4(r.rsize()));
 
 		// Restore the single line offset for scanmsk.
 		if (m_scanmask_used && interlace_offset)
-			dst[i] -= GSVector4(0.0f, 1.0f, 0.0f, 1.0f);
+			dst[i] += GSVector4(0.0f, 1.0f, 0.0f, 1.0f);
 	}
 
 	if (feedback_merge && tex[2])
