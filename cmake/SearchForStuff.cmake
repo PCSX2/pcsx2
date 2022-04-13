@@ -244,7 +244,7 @@ add_subdirectory(3rdparty/zstd EXCLUDE_FROM_ALL)
 if(QT_BUILD)
 	# Default to bundled Qt6 for Windows.
 	if(WIN32 AND NOT DEFINED Qt6_DIR)
-		set(Qt6_DIR ${CMAKE_SOURCE_DIR}/3rdparty/qt/6.2.2/msvc2019_64/lib/cmake/Qt6)
+		set(Qt6_DIR ${CMAKE_SOURCE_DIR}/3rdparty/qt/6.3.0/msvc2019_64/lib/cmake/Qt6)
 	endif()
 
 	# Find the Qt components that we need.
