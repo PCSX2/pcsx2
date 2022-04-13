@@ -640,12 +640,14 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool&
 		const bool prefer_sw_blend = m_conf.require_full_barrier || (m_conf.require_one_barrier && m_prim_overlap == PRIM_OVERLAP_NO);
 
 		// SW Blend is (nearly) free. Let's use it.
+		const bool one_barrier = m_conf.require_one_barrier || blend_ad_alpha_masked;
 		const bool no_prim_overlap = features.framebuffer_fetch ? (m_vt.m_primclass == GS_SPRITE_CLASS) : (m_prim_overlap == PRIM_OVERLAP_NO);
 		const bool impossible_or_free_blend = (blend_flag & BLEND_A_MAX) // Impossible blending
 			|| blend_non_recursive                 // Free sw blending, doesn't require barriers or reading fb
 			|| accumulation_blend                  // Mix of hw/sw blending
 			|| no_prim_overlap                     // Blend can be done in a single draw
-			|| (m_conf.require_full_barrier);      // Another effect (for example fbmask) already requires a full barrier
+			|| (m_conf.require_full_barrier)       // Another effect (for example fbmask) already requires a full barrier
+			|| (one_barrier && features.framebuffer_fetch); // On fbfetch, one barrier is like full barrier
 
 		switch (GSConfig.AccurateBlendingUnit)
 		{
@@ -1713,9 +1715,17 @@ void GSRendererNew::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		}
 	}
 
-	// Barriers aren't needed with fbfetch.
-	m_conf.require_one_barrier &= !features.framebuffer_fetch;
-	m_conf.require_full_barrier &= !features.framebuffer_fetch;
+	if (features.framebuffer_fetch)
+	{
+		// Intel GPUs on Metal lock up if you try to use DSB and framebuffer fetch at once
+		// We should never need to do that (since using framebuffer fetch means you should be able to do all blending in shader), but sometimes it slips through
+		if (m_conf.require_one_barrier || m_conf.require_full_barrier)
+			ASSERT(!m_conf.blend.enable);
+
+		// Barriers aren't needed with fbfetch.
+		m_conf.require_one_barrier = false;
+		m_conf.require_full_barrier = false;
+	}
 
 	// Swap full barrier for one barrier when there's no overlap.
 	if (m_conf.require_full_barrier && m_prim_overlap == PRIM_OVERLAP_NO)
