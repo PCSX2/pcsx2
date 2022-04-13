@@ -466,7 +466,8 @@ WX_STRCMP_FUNC(wxStricmp, wxCRT_StricmpA, wxCRT_StricmpW, wxStricmp_String)
 // forward-declare the template and implement it below WX_STRCMP_FUNC. OTOH,
 // this fails to compile with VC6, so don't do it for VC. It also causes
 // problems with GCC visibility in newer GCC versions.
-#if !(defined(__VISUALC__) || (wxCHECK_GCC_VERSION(3,5) && !wxCHECK_GCC_VERSION(4,7))) || defined(__clang__)
+// PCSX2: MSVC in conformance mode also requires declaration before use.
+#if (wxCHECK_GCC_VERSION(3,5) && !wxCHECK_GCC_VERSION(4,7)) || defined(__clang__) || defined(__VISUALC__)
     #define wxNEEDS_DECL_BEFORE_TEMPLATE
 #endif
 
