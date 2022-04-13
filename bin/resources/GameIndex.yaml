@@ -21430,11 +21430,20 @@ SLPM-55008:
   name: "Sengoku Basara X"
   region: "NTSC-J"
   compat: 5
+SLPM-55015:
+  name: "Yotsunoha - A Journey of Sincerity [Limited Edition]"
+  region: "NTSC-J"
+SLPM-55016:
+  name: "Yotsunoha - A Journey of Sincerity"
+  region: "NTSC-J"
 SLPM-55024:
   name: "Jikkyou Powerful Pro Yakyuu 15"
   region: "NTSC-J"
 SLPM-55033:
   name: "J. League Winning Eleven 2008 - Club Championship"
+  region: "NTSC-J"
+SLPM-55051:
+  name: "Will o' Wisp - Easter no Kiseki"
   region: "NTSC-J"
 SLPM-55062:
   name: "Jikkyou Powerful Major League 3"
@@ -21455,6 +21464,12 @@ SLPM-55065:
         // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
         // This patch skips over the stack code, allowing the game to boot.
         patch=1,EE,00131A64,word,10000003
+SLPM-55070:
+  name: "Yumemi Hakusho - Second Dream [Limited Edition]"
+  region: "NTSC-J"
+SLPM-55071:
+  name: "Yumemi Hakusho - Second Dream"
+  region: "NTSC-J"
 SLPM-55081:
   name: "Drag-on Dragoon 2 - Fuuin no Kurenai (Ultimate Hits)"
   region: "NTSC-J"
@@ -21542,11 +21557,26 @@ SLPM-55146:
 SLPM-55148:
   name: "007 - Nagusame no Houshuu"
   region: "NTSC-J"
+SLPM-55153:
+  name: "Tsuyokiss 2 Gakki - Swift Love [Limited Edition]"
+  region: "NTSC-J"
+SLPM-55154:
+  name: "Tsuyokiss 2 Gakki - Swift Love"
+  region: "NTSC-J"
 SLPM-55155:
   name: "Jikkyou Powerful Major League 2009"
   region: "NTSC-J"
 SLPM-55170:
   name: "Skip Beat!"
+  region: "NTSC-J"
+SLPM-55175:
+  name: "Under the Moon - Crescent"
+  region: "NTSC-J"
+SLPM-55176:
+  name: "Wand of Fortune [Limited Edition]"
+  region: "NTSC-J"
+SLPM-55177:
+  name: "Wand of Fortune"
   region: "NTSC-J"
 SLPM-55182:
   name: "J. League Winning Eleven 2009 - Club Championship"
@@ -21587,6 +21617,9 @@ SLPM-55244:
     halfPixelOffset: 2 # Fixes blurriness.
     skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
     skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
+SLPM-55246:
+  name: "Wand of Fortune - Mirai e no Prologue"
+  region: "NTSC-J"
 SLPM-55251:
   name: "WWE SmackDown vs. Raw 2009"
   region: "NTSC-J"
@@ -21604,6 +21637,9 @@ SLPM-55271:
   region: "NTSC-J"
 SLPM-55273:
   name: "Hakuouki - Reimeiroku"
+  region: "NTSC-J"
+SLPM-55274:
+  name: "Uragiri wa Boku no Namae o Shitteiru - Tasogare ni Ochita Inori"
   region: "NTSC-J"
 SLPM-55276:
   name: "World Soccer Winning Eleven 2011"
@@ -24716,6 +24752,9 @@ SLPM-65270:
 SLPM-65271:
   name: "Over the Monochrome Rainbow featuring Shogo Hamada"
   region: "NTSC-J"
+SLPM-65272:
+  name: "Vampire Yui - Senya-shou"
+  region: "NTSC-J"
 SLPM-65273:
   name: "Triangle Again 2"
   region: "NTSC-J"
@@ -26672,6 +26711,9 @@ SLPM-65892:
   region: "NTSC-J"
 SLPM-65894:
   name: "Winning Post 6 - 2005 Version"
+  region: "NTSC-J"
+SLPM-65895:
+  name: "Tsuki wa Kirisaku [Limited Edition]"
   region: "NTSC-J"
 SLPM-65896:
   name: "Tsuki wa Kirisaku"
@@ -29079,6 +29121,9 @@ SLPM-66595:
 SLPM-66596:
   name: "Prince of Tennis - Gakuensai no Oji-sama [Konami the Best]"
   region: "NTSC-J"
+SLPM-66597:
+  name: "Ya to Hime Zankiko - Tsurugi no Maki [Limited Edition]"
+  region: "NTSC-J"
 SLPM-66598:
   name: "Yatohime Zankikou"
   region: "NTSC-J"
@@ -30184,6 +30229,9 @@ SLPM-66926:
   compat: 5
 SLPM-66927:
   name: "Wrestle Angels - Survivor [Good Price]"
+  region: "NTSC-J"
+SLPM-66928:
+  name: "Your Memories Off Girls Style"
   region: "NTSC-J"
 SLPM-66929:
   name: "Elminage - Yami no Fujo to Kamigami no Yubiwa"
@@ -32857,6 +32905,9 @@ SLPS-25278:
 SLPS-25279:
   name: "Adventure Boy Club Magazine"
   region: "NTSC-J"
+SLPS-25281:
+  name: "True Love Story 3 [Enterbrain collection]"
+  region: "NTSC-J"
 SLPS-25282:
   name: "School Heaven - Boy's Love Scramble!"
   region: "NTSC-J"
@@ -34980,6 +35031,9 @@ SLPS-25879:
   gsHWFixes:
     wildArmsHack: 1 # Reduces depth ghosting.
     roundSprite: 2 # Reduces depth ghosting.
+SLPS-25880:
+  name: "True Fortune"
+  region: "NTSC-J"
 SLPS-25881:
   name: "Kinnikuman Muscle Grand Prix 2"
   region: "NTSC-J"
@@ -35010,6 +35064,9 @@ SLPS-25890:
     vuRoundMode: 0 # Crashes without.
 SLPS-25892:
   name: "Nogizaka Haruka no Himitsu - Cosplay Hajimemashita"
+  region: "NTSC-J"
+SLPS-25893:
+  name: "Zero no Tsukaima - Muma ga Tsumugu Yokaze no Fantasy [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPS-25894:
   name: "Aa Megami-sama [PlayStation 2 The Best]"
@@ -35050,6 +35107,12 @@ SLPS-25915:
         patch=1,EE,004e7668,word,4bea497d
 SLPS-25917:
   name: "Sacred Blaze"
+  region: "NTSC-J"
+SLPS-25922:
+  name: "Vitamin Z [Limited Edition]"
+  region: "NTSC-J"
+SLPS-25923:
+  name: "Vitamin Z"
   region: "NTSC-J"
 SLPS-25927:
   name: "Tomb Raider - Underworld"
