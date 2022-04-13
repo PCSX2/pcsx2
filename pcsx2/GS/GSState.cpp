@@ -382,6 +382,7 @@ GSVector4i GSState::GetFrameMagnifiedRect(int i)
 
 	const GSVideoMode videomode = GetVideoMode();
 	const auto& DISP = m_regs->DISP[i].DISPLAY;
+	const bool ignore_offset = !GSConfig.PCRTCOffsets;
 
 	const u32 DW = DISP.DW + 1;
 	const u32 DH = DISP.DH + 1;
@@ -390,8 +391,18 @@ GSVector4i GSState::GetFrameMagnifiedRect(int i)
 	// but the size it's drawn to uses the default size of the display mode (for PAL/NTSC this is a MAGH of 3)
 	// so for example a game will have a DW of 2559 and a MAGH of 4 to make it 512 (from the FB), but because it's drawing 2560 subpixels
 	// it will cover the entire 640 wide of the screen (2560 / (3+1)).
-	const int width = (DW / (VideoModeDividers[(int)videomode - 1].x + 1));
-	const int height = (DH / (VideoModeDividers[(int)videomode - 1].y + 1));
+	int width;
+	int height;
+	if (ignore_offset)
+	{
+		width = (DW / (DISP.MAGH + 1));
+		height = (DH / (DISP.MAGV + 1));
+	}
+	else
+	{
+		width = (DW / (VideoModeDividers[(int)videomode - 1].x + 1));
+		height = (DH / (VideoModeDividers[(int)videomode - 1].y + 1));
+	}
 
 	const auto& SMODE2 = m_regs->SMODE2;
 	int res_multi = 1;
@@ -462,14 +473,23 @@ GSVector2i GSState::GetResolution()
 	const GSVideoMode videomode = GetVideoMode();
 	const auto& SMODE2 = m_regs->SMODE2;
 	const int res_multi = (SMODE2.INT + 1);
+	const bool ignore_offset = !GSConfig.PCRTCOffsets;
 
-	GSVector2i resolution;
+	GSVector2i resolution(VideoModeOffsets[(int)videomode - 1].x, VideoModeOffsets[(int)videomode - 1].y);
 
-	resolution.x = VideoModeOffsets[(int)videomode - 1].x;
-	resolution.y = VideoModeOffsets[(int)videomode - 1].y;
+	if (isinterlaced() && !m_regs->SMODE2.FFMD)
+		resolution.y *= 2;
 
-	if(!m_regs->SMODE2.FFMD)
-		resolution.y *= ((IsAnalogue() && res_multi) ? res_multi : 1);
+	if (ignore_offset)
+	{
+		GSVector4i total_rect = GetDisplayRect(0).runion(GetDisplayRect(1));
+		total_rect.z = total_rect.z - total_rect.x;
+		total_rect.w = total_rect.w - total_rect.y;
+		total_rect.z = std::min(total_rect.z, resolution.x);
+		total_rect.w = std::min(total_rect.w, resolution.y);
+		resolution.x = total_rect.z;
+		resolution.y = total_rect.w;
+	}
 
 	return resolution;
 }
