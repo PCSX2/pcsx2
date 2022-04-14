@@ -76,7 +76,7 @@ namespace Vulkan
 		app_info.applicationVersion = VK_MAKE_VERSION(1, 7, 0);
 		app_info.pEngineName = "PCSX2";
 		app_info.engineVersion = VK_MAKE_VERSION(1, 7, 0);
-		app_info.apiVersion = VK_MAKE_VERSION(1, 1, 0);
+		app_info.apiVersion = VK_API_VERSION_1_1;
 
 		VkInstanceCreateInfo instance_create_info = {};
 		instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -641,43 +641,37 @@ namespace Vulkan
 	void Context::ProcessDeviceExtensions()
 	{
 		// advanced feature checks
-		if (vkGetPhysicalDeviceFeatures2)
+		VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+		VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_features = {
+			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
+		VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM rasterization_order_access_feature = {
+			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_ARM};
+
+		// add in optional feature structs
+		if (m_optional_extensions.vk_ext_provoking_vertex)
+			Util::AddPointerToChain(&features2, &provoking_vertex_features);
+		if (m_optional_extensions.vk_arm_rasterization_order_attachment_access)
+			Util::AddPointerToChain(&features2, &rasterization_order_access_feature);
+
+		// query
+		vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
+
+		// confirm we actually support it
+		m_optional_extensions.vk_ext_provoking_vertex &= (provoking_vertex_features.provokingVertexLast == VK_TRUE);
+		m_optional_extensions.vk_arm_rasterization_order_attachment_access &= (rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
+
+		VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+		void** pNext = &properties2.pNext;
+
+		if (m_optional_extensions.vk_khr_driver_properties)
 		{
-			VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
-			VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_features = {
-				VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
-			VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM rasterization_order_access_feature = {
-				VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_ARM};
-
-			// add in optional feature structs
-			if (m_optional_extensions.vk_ext_provoking_vertex)
-				Util::AddPointerToChain(&features2, &provoking_vertex_features);
-			if (m_optional_extensions.vk_arm_rasterization_order_attachment_access)
-				Util::AddPointerToChain(&features2, &rasterization_order_access_feature);
-
-			// query
-			vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
-
-			// confirm we actually support it
-			m_optional_extensions.vk_ext_provoking_vertex &= (provoking_vertex_features.provokingVertexLast == VK_TRUE);
-			m_optional_extensions.vk_arm_rasterization_order_attachment_access &= (rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
+			m_device_driver_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES;
+			*pNext = &m_device_driver_properties;
+			pNext = &m_device_driver_properties.pNext;
 		}
 
-		if (vkGetPhysicalDeviceProperties2)
-		{
-			VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
-			void** pNext = &properties2.pNext;
-
-			if (m_optional_extensions.vk_khr_driver_properties)
-			{
-				m_device_driver_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES;
-				*pNext = &m_device_driver_properties;
-				pNext = &m_device_driver_properties.pNext;
-			}
-
-			// query
-			vkGetPhysicalDeviceProperties2(m_physical_device, &properties2);
-		}
+		// query
+		vkGetPhysicalDeviceProperties2(m_physical_device, &properties2);
 
 		Console.WriteLn("VK_EXT_provoking_vertex is %s",
 			m_optional_extensions.vk_ext_provoking_vertex ? "supported" : "NOT supported");
