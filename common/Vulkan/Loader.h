@@ -101,6 +101,9 @@
 #pragma clang diagnostic ignored "-Wnullability-completeness"
 #endif
 
+#define VMA_STATIC_VULKAN_FUNCTIONS 1
+#define VMA_DYNAMIC_VULKAN_FUNCTIONS 0
+#define VMA_STATS_STRING_ENABLED 0
 #include "vk_mem_alloc.h"
 
 #ifdef __clang__
