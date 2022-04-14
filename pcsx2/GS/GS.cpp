@@ -1355,7 +1355,7 @@ void GSApp::Init()
 	m_default_configuration["AspectRatio"]                                = "1";
 	m_default_configuration["autoflush_sw"]                               = "1";
 	m_default_configuration["capture_enabled"]                            = "0";
-	m_default_configuration["capture_out_dir"]                            = "/tmp/GS_Capture";
+	m_default_configuration["capture_out_dir"]                            = "snaps/GS_Capture";
 	m_default_configuration["capture_threads"]                            = "4";
 	m_default_configuration["CaptureHeight"]                              = "480";
 	m_default_configuration["CaptureWidth"]                               = "640";
