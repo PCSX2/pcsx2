@@ -37,8 +37,8 @@ V_CoreDebug DebugCores[2];
 V_Core Cores[2];
 V_SPDIF Spdif;
 
-s16 OutPos;
-s16 InputPos;
+u16 OutPos;
+u16 InputPos;
 u32 Cycles;
 
 int PlayMode;

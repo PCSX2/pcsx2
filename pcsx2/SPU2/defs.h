@@ -554,9 +554,9 @@ extern V_Core Cores[2];
 extern V_SPDIF Spdif;
 
 // Output Buffer Writing Position (the same for all data);
-extern s16 OutPos;
+extern u16 OutPos;
 // Input Buffer Reading Position (the same for all data);
-extern s16 InputPos;
+extern u16 InputPos;
 // SPU Mixing Cycles ("Ticks mixed" counter)
 extern u32 Cycles;
 

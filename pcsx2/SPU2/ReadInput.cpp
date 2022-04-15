@@ -35,7 +35,7 @@ StereoOut32 V_Core::ReadInput_HiFi()
 	if (psxmode)
 		ConLog("ReadInput_HiFi!!!!!\n");
 
-	s16 ReadIndex = (OutPos * 2) & 0x1FF;
+	u16 ReadIndex = (OutPos * 2) & 0x1FF;
 
 	StereoOut32 retval(
 		(s32&)(*GetMemPtr(0x2000 + (Index << 10) + ReadIndex)),
@@ -104,7 +104,7 @@ StereoOut32 V_Core::ReadInput_HiFi()
 StereoOut32 V_Core::ReadInput()
 {
 	StereoOut32 retval;
-	s16 ReadIndex = OutPos;
+	u16 ReadIndex = OutPos;
 
 	for (int i = 0; i < 2; i++)
 		if (Cores[i].IRQEnable && (0x2000 + (Index << 10) + ReadIndex) == (Cores[i].IRQA & 0xfffffdff))
