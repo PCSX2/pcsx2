@@ -288,6 +288,7 @@ public:
 	void ResetHandlers();
 
 	int GetFramebufferHeight();
+	int GetDisplayHMagnification();
 	GSVector4i GetDisplayRect(int i = -1);
 	GSVector4i GetFrameMagnifiedRect(int i = -1);
 	GSVector2i GetResolutionOffset(int i = -1);
