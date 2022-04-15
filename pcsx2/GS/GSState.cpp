@@ -404,7 +404,6 @@ GSVector4i GSState::GetFrameMagnifiedRect(int i)
 		height = (DH / (VideoModeDividers[(int)videomode - 1].y + 1));
 	}
 
-	const auto& SMODE2 = m_regs->SMODE2;
 	int res_multi = 1;
 
 	if (isinterlaced() && m_regs->SMODE2.FFMD && height > 1)
@@ -471,8 +470,6 @@ GSVector2i GSState::GetResolutionOffset(int i)
 GSVector2i GSState::GetResolution()
 {
 	const GSVideoMode videomode = GetVideoMode();
-	const auto& SMODE2 = m_regs->SMODE2;
-	const int res_multi = (SMODE2.INT + 1);
 	const bool ignore_offset = !GSConfig.PCRTCOffsets;
 
 	GSVector2i resolution(VideoModeOffsets[(int)videomode - 1].x, VideoModeOffsets[(int)videomode - 1].y);
@@ -1629,6 +1626,7 @@ void GSState::FlushPrim()
 				case GS_SPRITE:
 					unused = 1;
 					buff[0] = m_vertex.buff[tail - 1];
+					break;
 				case GS_TRIANGLELIST:
 				case GS_TRIANGLESTRIP:
 					unused = std::min<size_t>(tail - head, 2);
@@ -2677,6 +2675,7 @@ __forceinline void GSState::HandleAutoFlush()
 		switch (GSUtil::GetPrimClass(PRIM->PRIM))
 		{
 			case GS_POINT_CLASS:
+			case GS_INVALID_CLASS:
 				n = 1;
 				break;
 			case GS_LINE_CLASS:
@@ -3071,7 +3070,7 @@ static bool UsesRegionRepeat(int fix, int msk, int min, int max, int* min_out, i
 	// The true minimum value is `min` with all bits below the most significant replaced variable `0` bit cleared
 	const int min_overwritten_variable_zeros = ~min & overwritten_variable_bits;
 	if (_BitScanReverse(&msb, min_overwritten_variable_zeros))
-		min &= (~0 << msb);
+		min &= (~0u << msb);
 	// Similar thing for max, but the first masked `1` bit
 	const int max_overwritten_variable_ones = max & overwritten_variable_bits;
 	if (_BitScanReverse(&msb, max_overwritten_variable_ones))

@@ -2088,7 +2088,6 @@ void GSDrawScanlineCodeGenerator2::AlphaTFX()
 	const XYm& f_ga  = _f_ga;
 	const XYm& tmpga = xym1;
 	const XYm& tmp   = xym0;
-	Address _32_gaptr = m_sel.iip ? _rip_local(temp.ga) : _rip_local(c.ga);
 
 	switch (m_sel.tfx)
 	{

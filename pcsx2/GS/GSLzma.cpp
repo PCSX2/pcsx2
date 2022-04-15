@@ -24,8 +24,8 @@
 using namespace GSDumpTypes;
 
 GSDumpFile::GSDumpFile(FILE* file, FILE* repack_file)
-	: m_repack_fp(repack_file)
-	, m_fp(file)
+	: m_fp(file)
+	, m_repack_fp(repack_file)
 {
 }
 
