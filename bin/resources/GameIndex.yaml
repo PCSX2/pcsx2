@@ -27,6 +27,54 @@
 # -- Game List
 # ---------------------------------------------
 
+ALCH-00001:
+  name: "Katakamuna - Ushinawareta Ingaritsu [Deluxe Pack]"
+  region: "NTSC-J"
+ALCH-00003:
+  name: "Chocolat Maid Cafe Curio [Limited Edition]"
+  region: "NTSC-J"
+ALCH-00005:
+  name: "Haru no Ashioto - Step of Spring [Paku Paku Pack]"
+  region: "NTSC-J"
+ALCH-00007:
+  name: "Parfait - Chocolat Second Style [Limited Edition]"
+  region: "NTSC-J"
+ALCH-00008:
+  name: "Aria - The Natural ~Tooi Yume no Mirage~ [Limited Edition]"
+  region: "NTSC-J"
+ALCH-00009:
+  name: "Higurashi no Naku Koro ni Matsuri [First Print Limited Edition]"
+  region: "NTSC-J"
+ALCH-00010:
+  name: "Kono Aozora ni Yakusoku wo - Melody of the Sun and Sea [Limited Edition]"
+  region: "NTSC-J"
+ALCH-00011:
+  name: "Pure x Cure RE:Covery [Koi no Kyuukyuu Set]"
+  region: "NTSC-J"
+ALCH-00014:
+  name: "Aria - The Origination ~Aoi Hoshi no El Cielo~ [Limited Edition]"
+  region: "NTSC-J"
+ALCH-00015:
+  name: "Sugar+Spice! - Anoko no Suteki na Nanimokamo [First Press Limited Edition]"
+  region: "NTSC-J"
+ALCH-00016:
+  name: "Koisuru Otome to Shugo no Tate - The Shield of Aigis [Limited Edition]"
+  region: "NTSC-J"
+ALCH-00017:
+  name: "Triggerheart Exelica Enhanced [Nendroid Super Set]"
+  region: "NTSC-J"
+ALCH-00021:
+  name: "Sekirei - Mirai Kara no Okurimono [Special Pack]"
+  region: "NTSC-J"
+ALCH-00027:
+  name: "Suzunone Seven - Rebirth Knot [Limited Edition]"
+  region: "NTSC-J"
+ALCH-00028:
+  name: "Hana to Otome ni Shukufuku wo - Harukaze no Okurimono [Saint Box]"
+  region: "NTSC-J"
+ALCH-0004:
+  name: "Duel Savior Destiny [Messiah Box]"
+  region: "NTSC-J"
 GUST-00009:
   name: "Mana Khemia - Alchemists of Al-Revis [Premium Box]"
   region: "NTSC-J"
@@ -89,6 +137,13 @@ PAPX-90517:
   gsHWFixes:
     autoFlush: 1 # Reduces post-processing misalignment.
     roundSprite: 2 # Reduces post-processing misalignment.
+PBGP-0065:
+  name: "D.C. Da Capo The Origin [First Limited Edition]"
+  region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and bad textures in FMV.
+  gsHWFixes:
+    roundSprite: 2 # Reduces sprite artifacts like in the menu.
 PBPX-95201:
   name: "HDD untility Disc [Version 1.00]"
   region: "NTSC-J"
@@ -214,6 +269,11 @@ PCPX-98017:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+PKP2-00702:
+  name: "Pandora - Kimi no Namae o Boku wa Shiru [Limited Edition]"
+  region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Vertical and horizontal lines in FMV.
 SCAJ-10001:
   name: "Makai Senki Disgaea"
   region: "NTSC-Unk"
@@ -5297,7 +5357,9 @@ SCPS-15119:
   region: "NTSC-J"
   compat: 5
   gameFixes:
-    - OPHFlagHack # Special moves "Bankai" hang otherwise
+    - OPHFlagHack # Special moves "Bankai" hang otherwise.
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes removed bloom.
 SCPS-15120:
   name: "Ratchet & Clank 5 Gekitotsu! Dodeka Ginga no Mirimiri Gundan"
   region: "NTSC-J"
@@ -5676,6 +5738,10 @@ SCPS-19328:
 SCPS-19329:
   name: "Bleach - Blade Battlers [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - OPHFlagHack # Special moves "Bankai" hang otherwise.
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes removed bloom.
 SCPS-19330:
   name: "Bleach - Hanatareshi Yabou [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -21566,6 +21632,45 @@ SLPM-55154:
 SLPM-55155:
   name: "Jikkyou Powerful Major League 2009"
   region: "NTSC-J"
+SLPM-55156:
+  name: "D.C.I.F. - Da Capo Innocent Finale"
+  region: "NTSC-J"
+SLPM-55157:
+  name: "Sangokushi X"
+  region: "NTSC-J"
+SLPM-55158:
+  name: "Pro Yakyuu Spirits 6"
+  region: "NTSC-J"
+SLPM-55159:
+  name: "Hyakko - Yorozuya Jikenbo!"
+  region: "NTSC-J"
+SLPM-55160:
+  name: "Kanuchi - Kuroki Tsubasa no Shou"
+  region: "NTSC-J"
+SLPM-55162:
+  name: "Myself; Yourself - Sorezore no Finale [First Limited Edition]"
+  region: "NTSC-J"
+SLPM-55163:
+  name: "Myself; Yourself - Sorezore no Finale"
+  region: "NTSC-J"
+SLPM-55164:
+  name: "Myself; Yourself [Yeti Best]"
+  region: "NTSC-J"
+SLPM-55165:
+  name: "Aoishiro [SuperLite 2000 Adventure]"
+  region: "NTSC-J"
+SLPM-55166:
+  name: "Kazeiro Surf [Limited Edition]"
+  region: "NTSC-J"
+SLPM-55167:
+  name: "Kazeiro Surf"
+  region: "NTSC-J"
+SLPM-55168:
+  name: "Arcobaleno! [Limited Edition]"
+  region: "NTSC-J"
+SLPM-55169:
+  name: "Arcobaleno!"
+  region: "NTSC-J"
 SLPM-55170:
   name: "Skip Beat!"
   region: "NTSC-J"
@@ -21632,6 +21737,26 @@ SLPM-55258:
 SLPM-55262:
   name: "J.League Winning Eleven 2010 - Club Championship"
   region: "NTSC-J"
+SLPM-55263:
+  name: "Hana to Otome ni Shukufuku o - Harukaze no Okurimono [St. Lupinus Box]"
+  region: "NTSC-J"
+SLPM-55264:
+  name: "Moujuutsukai to Oujisama [Limited Edition / Twin Pack]"
+  region: "NTSC-J"
+SLPM-55266:
+  name: "Scared Rider Xechs"
+  region: "NTSC-J"
+SLPM-55267:
+  name: "Natsuzora no Monologue [Limited Edition]"
+  region: "NTSC-J"
+SLPM-55268:
+  name: "Nobunaga no Yabou: Kakushin with Power-Up Kit [Koei Tecmo the Best]"
+  region: "NTSC-J"
+SLPM-55269:
+  name: "Pandora - Kimi no Namae o Boku wa Shiru"
+  region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Vertical and horizontal lines in FMV.
 SLPM-55271:
   name: "FIFA 10 - World Class Soccer (Ea -SY! 1980)"
   region: "NTSC-J"
@@ -21661,8 +21786,10 @@ SLPM-55292:
   gsHWFixes:
     autoFlush: 1
 SLPM-60101:
-  name: "0 Story"
+  name: "0 Story [Demo]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes removed bloom in FMV.
 SLPM-60102:
   name: "From Software First Previews"
   region: "NTSC-J"
@@ -23898,10 +24025,14 @@ SLPM-65002:
   name: "Love/0 Story [Disc1of2]"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes removed bloom in FMV.
 SLPM-65003:
   name: "Love/0 Story [Disc2of2]"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes removed bloom in FMV.
   memcardFilters:
     - "SLPM-65002"
 SLPM-65004:
@@ -24547,7 +24678,10 @@ SLPM-65209:
         //Force jump to execute iReferEventFlagStatus
         patch=1,IOP,00025198,word,0800946D  
 SLPM-65210:
-  name: "Chou Battle Houshin - Bundle #1"
+  name: "Chou Battle Houshin [Premium Pack]"
+  region: "NTSC-J"
+SLPM-65211:
+  name: "Houshin Engi 2 [Premium Pack]"
   region: "NTSC-J"
 SLPM-65212:
   name: "Lord of the Rings, The - The Two Towers"
@@ -24658,6 +24792,9 @@ SLPM-65238:
 SLPM-65239:
   name: "Angelic Concert"
   region: "NTSC-J"
+SLPM-65240:
+  name: "Pro Yakyuu Team o Tsukurou! 2"
+  region: "NTSC-J"
 SLPM-65241:
   name: "Shin Megami Tensei III - Nocturne [Limited Edition]"
   region: "NTSC-J"
@@ -24697,12 +24834,17 @@ SLPM-65249:
     textureInsideRT: 1 # Fixes rainbow shadow of legions.
     alignSprite: 1 # Fixes green vertical lines.
     roundSprite: 2 # Fixes vertical lines and some font artifacts but not completely fixed.
+SLPM-65250:
+  name: "Kattobi! Golf"
+  region: "NTSC-J"
 SLPM-65254:
   name: "Galaxy Angel"
   region: "NTSC-J"
 SLPM-65255:
   name: "Chobits"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Reduces font artifacts.
 SLPM-65256:
   name: "First Kiss Story 1&2 [Limited Edition]"
   region: "NTSC-J"
@@ -24724,6 +24866,9 @@ SLPM-65257:
     - "SLPM-65631"
 SLPM-65260:
   name: "Air Land Force"
+  region: "NTSC-J"
+SLPM-65261:
+  name: "TBS All-Star Kansha-sai Vol .1 - Chou Gouka! Quiz Ketteiban"
   region: "NTSC-J"
 SLPM-65262:
   name: "Boboboubo Boubobo Hajike Matsuri"
@@ -24753,8 +24898,10 @@ SLPM-65271:
   name: "Over the Monochrome Rainbow featuring Shogo Hamada"
   region: "NTSC-J"
 SLPM-65272:
-  name: "Vampire Yui - Senya-shou"
+  name: "Kyuuketsu-hime Yui - Sen'yashou"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flickering and bad textures in FMV.
 SLPM-65273:
   name: "Triangle Again 2"
   region: "NTSC-J"
@@ -24816,6 +24963,9 @@ SLPM-65290:
 SLPM-65291:
   name: "Merge Marginal"
   region: "NTSC-J"
+SLPM-65292:
+  name: "Love Hina Gorgeous - Chiratto Happening!!"
+  region: "NTSC-J"
 SLPM-65294:
   name: "Cafe Little Wish - Mahou no Recipe [Limited Edition]"
   region: "NTSC-J"
@@ -24823,10 +24973,10 @@ SLPM-65295:
   name: "Cafe Little Wish - Mahou no Recipe"
   region: "NTSC-J"
 SLPM-65296:
-  name: "F Fanatic [Limited Edition]"
+  name: "F - Fanatic [Limited Edition]"
   region: "NTSC-J"
 SLPM-65297:
-  name: "F Fanatic"
+  name: "F - Fanatic"
   region: "NTSC-J"
 SLPM-65298:
   name: "Winning Post 5 - Maximum 2003"
@@ -27275,6 +27425,8 @@ SLPM-66069:
   name: "Shikigami no Shiro - Nanayozuki Gensoukyoku"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and bad textures in FMV.
 SLPM-66070:
   name: "Shadow Hearts - From the New World [Limited Edition]"
   region: "NTSC-J"
@@ -29028,6 +29180,8 @@ SLPM-66568:
 SLPM-66569:
   name: "Secret of Evangelion"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Reduces artifacts like vertical lines in main menu but there are many other artifacts still.
 SLPM-66570:
   name: "I's Pure"
   region: "NTSC-J"
@@ -30168,6 +30322,10 @@ SLPM-66903:
 SLPM-66905:
   name: "D.C. Da Capo The Origin"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and bad textures in FMV.
+  gsHWFixes:
+    roundSprite: 2 # Reduces sprite artifacts like in the menu.
 SLPM-66906:
   name: "Tenshou Gakuen Gekkouroku [Tokudane Price]"
   region: "NTSC-J"
@@ -32822,6 +32980,8 @@ SLPS-25247:
 SLPS-25248:
   name: "Kino no Tabi - The Beautiful World"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and bad textures in FMV.
 SLPS-25250:
   name: "Final Fantasy X-2"
   region: "NTSC-J"
@@ -33538,6 +33698,8 @@ SLPS-25451:
 SLPS-25452:
   name: "Kino no Tabi - The Beautiful World [MediaWorks Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and bad textures in FMV.
 SLPS-25453:
   name: "Digimon World X"
   region: "NTSC-J"
@@ -34866,6 +35028,8 @@ SLPS-25819:
 SLPS-25820:
   name: "Kateikyoushi Hitman Reborn!! Let's Ansatsu! Nerawareta 10 Daime!"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Reduces font artifacts but characters still have major artifacts.
 SLPS-25821:
   name: "Suzumiya Haruhi no Tomadoi [Limited Edition]"
   region: "NTSC-J"
@@ -35043,6 +35207,23 @@ SLPS-25881:
   name: "Kinnikuman Muscle Grand Prix 2"
   region: "NTSC-J"
   compat: 5
+SLPS-25882:
+  name: "Ikki Tousen - Shining Dragon [Best Collection]"
+  region: "NTSC-J"
+SLPS-25883:
+  name: "Katekyoo Hitman Reborn! Nerae!? Ring x Vongola Trainers"
+  region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Reduces font artifacts but characters still have major artifacts.
+SLPS-25884:
+  name: "Grimgrimoire [The Best Price]"
+  region: "NTSC-J"
+SLPS-25885:
+  name: " Guitar Hero - Aerosmith on Tour [with Guitar]"
+  region: "NTSC-J"
+SLPS-25886:
+  name: " Guitar Hero - Aerosmith on Tour"
+  region: "NTSC-J"
 SLPS-25887:
   name: "Super Robot Taisen Z"
   region: "NTSC-J"
@@ -35082,6 +35263,11 @@ SLPS-25897:
 SLPS-25898:
   name: "Zero no Tsukaima - Maigo no Period to Ikusen no Symphony"
   region: "NTSC-J"
+SLPS-25899:
+  name: "Kateikyoushi Hitman Reborn!! Let's Ansatsu! Nerawareta 10 Daime! [Best Collection]"
+  region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Reduces font artifacts but characters still have major artifacts.
 SLPS-25905:
   name: "Dragon Ball Z - Infinite World"
   region: "NTSC-J"
@@ -35119,12 +35305,22 @@ SLPS-25922:
 SLPS-25923:
   name: "Vitamin Z"
   region: "NTSC-J"
+SLPS-25918:
+  name: "Amagami"
+  region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes character sprites.
 SLPS-25927:
   name: "Tomb Raider - Underworld"
   region: "NTSC-J"
 SLPS-25930:
   name: "Major League Baseball 2K9"
   region: "NTSC-J"
+SLPS-25931:
+  name: "Katekyoo Hitman Reborn! Nerae!? Ring x Vongola Trainers [Best Collection]"
+  region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Reduces font artifacts but characters still have major artifacts.
 SLPS-25932:
   name: "Evangelion - Jo"
   region: "NTSC-J"
@@ -35185,6 +35381,19 @@ SLPS-25983:
         patch=1,EE,000ffc08,word,081079b3
         patch=1,EE,0041e6c4,word,0803ff00
         patch=1,EE,0041e6c8,word,4bea497d
+SLPS-25987:
+  name: "Amagami [EBKore+]"
+  region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes character sprites.
+SLPS-25988:
+  name: "Kaeru Batake de Tsukamaete - Natsu Chigira Sansen!"
+  region: "NTSC-J"
+SLPS-25989:
+  name: "Amagami [EBKore+ Limited Edition]"
+  region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes character sprites.
 SLPS-29001:
   name: "Xenosaga Episode 1 - Der Wille zur Macht [Premium Box]"
   region: "NTSC-J"
