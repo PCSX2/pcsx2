@@ -864,6 +864,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool&
 		// Blend output will be Cd, disable hw/sw blending.
 		m_conf.blend = {};
 		m_conf.ps.no_color1 = true;
+		m_conf.ps.blend_a = m_conf.ps.blend_b = m_conf.ps.blend_c = m_conf.ps.blend_d = 0;
 		sw_blending = false; // DATE_PRIMID
 
 		// Output is Cd, set rgb write to 0.
