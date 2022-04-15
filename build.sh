@@ -28,14 +28,6 @@ set_ncpu_toolfile()
     fi
 }
 
-switch_wxconfig()
-{
-    # Helper to easily switch wx-config on my system
-    if [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0" ]; then
-        sudo update-alternatives --set wx-config /usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0
-    fi
-}
-
 find_freetype()
 {
     if [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/include/x86_64-linux-gnu/freetype2/ft2build.h" ]; then
@@ -193,34 +185,36 @@ for ARG in "$@"; do
             echo $ARG
             # Unknown option
             echo "** User options **"
-            echo "--dev / --devel : Build PCSX2 as a Development build."
-            echo "--debug         : Build PCSX2 as a Debug build."
-            echo "--prof          : Build PCSX2 as a Profiler build (release + debug symbol)."
-            echo "--release       : Build PCSX2 as a Release build."
+            echo "--dev / --devel   : Build PCSX2 as a Development build."
+            echo "--dbg / --debug   : Build PCSX2 as a Debug build."
+            echo "--prof            : Build PCSX2 as a Profiler build (release + debug symbol)."
+            echo "--rel / --release : Build PCSX2 as a Release build."
             echo
-            echo "--clean         : Do a clean build."
-            echo "--no-simd       : Only allow sse2"
+            echo "--clean           : Do a clean build. (Remove anything in the build directory)"
+            echo "--no-simd         : Only allow sse2."
             echo
             echo "** Distribution Compatibilities **"
-            echo "--no-portaudio  : Skip portaudio for SPU2."
-            echo "--use-system-yaml  : Use system rapidyaml library"
+            echo "--no-portaudio    : Skip portaudio for SPU2."
+            echo "--use-system-yaml : Use system rapidyaml library."
             echo
             echo "** Expert Developer option **"
-            echo "--gtk2          : use GTK 2 instead of GTK 3"
-            echo "--no-trans      : Don't regenerate mo files when building."
-            echo "--clang         : Build with Clang/llvm"
-            echo "--intel         : Build with ICC (Intel compiler)"
-            echo "--lto           : Use Link Time Optimization"
-            echo "--pgo-generate  : Executable will generate profiling information when run"
-            echo "--pgo-optimize  : Use previously generated profiling information"
+            echo "--gtk2            : use GTK 2 instead of GTK 3."
+            echo "--no-trans        : Don't regenerate mo files when building."
+            echo "--strip           : Strip binaries to save a small amount of space."
+            echo "--clang           : Build with Clang/llvm."
+            echo "--intel           : Build with ICC (Intel compiler)."
+            echo "--lto             : Use Link Time Optimization."
+            echo "--pgo-generate    : Executable will generate profiling information when run."
+            echo "--pgo-optimize    : Use previously generated profiling information."
+            echo "-D<argument>      : Add <argument> to the flags passed."
             echo
             echo "** Quality & Assurance (Please install the external tool) **"
-            echo "--asan          : Enable Address sanitizer"
-            echo "--clang-tidy    : Do a clang-tidy analysis. Results can be found in build directory"
-            echo "--cppcheck      : Do a cppcheck analysis. Results can be found in build directory"
-            echo "--coverity      : Do a build for coverity"
-            echo "--vtune         : Plug GS with VTUNE"
-            echo "--ftime-trace   : Analyse build time. Clang only."
+            echo "--asan            : Enable Address sanitizer."
+            echo "--clang-tidy      : Do a clang-tidy analysis. Results can be found in build directory."
+            echo "--cppcheck        : Do a cppcheck analysis. Results can be found in build directory."
+            echo "--coverity        : Do a build for coverity."
+            echo "--vtune           : Plug GS with VTUNE."
+            echo "--ftime-trace     : Analyse build time. Clang only."
 
             exit 1
     esac
@@ -231,8 +225,6 @@ if [ "$cleanBuild" -eq 1 ]; then
     # allow to keep build as a symlink (for example to a ramdisk)
     rm -fr "$build"/*
 fi
-
-switch_wxconfig
 
 # Workaround for Debian. Cmake failed to find freetype include path
 find_freetype
@@ -251,30 +243,18 @@ cd "$build"
 
 set_compiler
 
-############################################################
-# CPP check build
-############################################################
 if [ "$cppcheck" -eq 1 ] && command -v cppcheck >/dev/null ; then
     run_cppcheck
 fi
 
-############################################################
-# Clang tidy build
-############################################################
 if [ "$clangTidy" -eq 1 ] && command -v clang-tidy >/dev/null ; then
     run_clangtidy
 fi
 
-############################################################
-# Coverity build
-############################################################
 if [ "$CoverityBuild" -eq 1 ] && command -v cov-build >/dev/null ; then
     run_coverity
 fi
 
-############################################################
-# Real build
-############################################################
 $make 2>&1 | tee -a "$log"
 $make install 2>&1 | tee -a "$log"
 
