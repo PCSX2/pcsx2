@@ -1140,8 +1140,6 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 			container->showFullScreen();
 		else
 			container->showNormal();
-
-		// updateMouseMode(System::IsPaused());
 	}
 	else if (!render_to_main)
 	{
@@ -1150,7 +1148,7 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 	}
 	else
 	{
-		m_ui.mainContainer->insertWidget(1, m_display_widget);
+		m_ui.mainContainer->insertWidget(1, container);
 		switchToEmulationView();
 	}
 
@@ -1164,6 +1162,8 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 		destroyDisplayWidget();
 		return nullptr;
 	}
+
+	g_emu_thread->connectDisplaySignals(m_display_widget);
 
 	if (!host_display->CreateRenderDevice(wi.value(), Host::GetStringSettingValue("EmuCore/GS", "Adapter", ""), EmuConfig.GetEffectiveVsyncMode(),
 			Host::GetBoolSettingValue("EmuCore/GS", "ThreadedPresentation", false), Host::GetBoolSettingValue("EmuCore/GS", "UseDebugDevice", false)))
@@ -1183,34 +1183,35 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main)
 {
 	HostDisplay* host_display = Host::GetHostDisplay();
-	const bool is_fullscreen = m_display_widget->isFullScreen();
-	const bool is_rendering_to_main = (!is_fullscreen && m_display_widget->parent());
+	QWidget* container = m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
+	const bool is_fullscreen = container->isFullScreen();
+	const bool is_rendering_to_main = (!is_fullscreen && container->parent());
 	const std::string fullscreen_mode(QtHost::GetBaseStringSettingValue("EmuCore/GS", "FullscreenMode", ""));
 	const bool is_exclusive_fullscreen = (fullscreen && !fullscreen_mode.empty() && host_display->SupportsFullscreen());
 	if (fullscreen == is_fullscreen && is_rendering_to_main == render_to_main)
 		return m_display_widget;
 
 	// Skip recreating the surface if we're just transitioning between fullscreen and windowed with render-to-main off.
+	// .. except on Wayland, where everything tends to break if you don't recreate.
 	const bool has_container = (m_display_container != nullptr);
 	const bool needs_container = DisplayContainer::IsNeeded(fullscreen, render_to_main);
-	if (!is_rendering_to_main && !render_to_main && !is_exclusive_fullscreen && has_container == needs_container)
+	if (!is_rendering_to_main && !render_to_main && !is_exclusive_fullscreen && has_container == needs_container && !needs_container)
 	{
-		qDebug() << "Toggling to" << (fullscreen ? "fullscreen" : "windowed") << "without recreating surface";
+		Console.WriteLn("Toggling to %s without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
 		if (host_display->IsFullscreen())
 			host_display->SetFullscreen(false, 0, 0, 0.0f);
 
 		if (fullscreen)
 		{
-			m_display_widget->showFullScreen();
+			container->showFullScreen();
 		}
 		else
 		{
 			restoreDisplayWindowGeometryFromConfig();
-			m_display_widget->showNormal();
+			container->showNormal();
 		}
 
 		QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-		// updateMouseMode(System::IsPaused());
 		return m_display_widget;
 	}
 
@@ -1218,7 +1219,6 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main)
 
 	destroyDisplayWidget();
 
-	QWidget* container;
 	if (DisplayContainer::IsNeeded(fullscreen, render_to_main))
 	{
 		m_display_container = new DisplayContainer();
@@ -1241,8 +1241,6 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main)
 			container->showFullScreen();
 		else
 			container->showNormal();
-
-		// updateMouseMode(System::IsPaused());
 	}
 	else if (!render_to_main)
 	{
@@ -1251,7 +1249,7 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main)
 	}
 	else
 	{
-		m_ui.mainContainer->insertWidget(1, m_display_widget);
+		m_ui.mainContainer->insertWidget(1, container);
 		switchToEmulationView();
 	}
 
@@ -1265,6 +1263,8 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main)
 		destroyDisplayWidget();
 		return nullptr;
 	}
+
+	g_emu_thread->connectDisplaySignals(m_display_widget);
 
 	if (!host_display->ChangeRenderWindow(wi.value()))
 		pxFailRel("Failed to recreate surface on new widget.");
@@ -1344,7 +1344,8 @@ void MainWindow::destroyDisplayWidget()
 	if (!m_display_widget)
 		return;
 
-	if (m_display_container || (!m_display_widget->parent() && !m_display_widget->isFullScreen()))
+	const QWidget* container = m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
+	if (!container->parent() && !container->isFullScreen())
 		saveDisplayWindowGeometryToConfig();
 
 	if (m_display_container)

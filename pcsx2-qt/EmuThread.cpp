@@ -603,9 +603,6 @@ void EmuThread::updateDisplay()
 		pxFailRel("Failed to recreate context after updating");
 		return;
 	}
-
-	// this is always a new widget, so reconnect it
-	connectDisplaySignals(widget);
 }
 
 HostDisplay* EmuThread::acquireHostDisplay(HostDisplay::RenderAPI api)
