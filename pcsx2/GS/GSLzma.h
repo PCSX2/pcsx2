@@ -292,7 +292,7 @@ public:
 	{
 		GSDumpTypes::GSType id;
 		const u8* data;
-		s32 length;
+		size_t length;
 		GSDumpTypes::GSTransferPath path;
 	};
 
