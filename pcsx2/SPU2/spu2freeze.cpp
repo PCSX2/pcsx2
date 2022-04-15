@@ -41,8 +41,8 @@ struct SPU2Savestate::DataBlock
 	u32 version; // SPU2 version identifier
 	V_Core Cores[2];
 	V_SPDIF Spdif;
-	s16 OutPos;
-	s16 InputPos;
+	u16 OutPos;
+	u16 InputPos;
 	u32 Cycles;
 	u32 lClocks;
 	int PlayMode;

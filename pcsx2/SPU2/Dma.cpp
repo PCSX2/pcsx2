@@ -98,7 +98,7 @@ void V_Core::LogAutoDMA(FILE* fp)
 
 void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not split stereo
 {
-	int spos = InputPosWrite & 0x100; // Starting position passed by TSA
+	u32 spos = InputPosWrite & 0x100; // Starting position passed by TSA
 	bool leftbuffer = !(InputPosWrite & 0x80);
 
 	if (InputPosWrite == 0xFFFF) // Data request not made yet
