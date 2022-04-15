@@ -174,7 +174,7 @@ int LoadPatchesFromDir(const std::string& crc, const wxDirName& folder, const ch
 	}
 
 	FileSystem::FindResultsArray files;
-	FileSystem::FindFiles(folder.ToUTF8(), StringUtil::StdStringFromFormat("%s*.pnach", crc.c_str()).c_str(),
+	FileSystem::FindFiles(folder.ToUTF8(), StringUtil::StdStringFromFormat("*.pnach", crc.c_str()).c_str(),
 		FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &files);
 
 	if (show_error_when_missing && files.empty())
@@ -188,6 +188,9 @@ int LoadPatchesFromDir(const std::string& crc, const wxDirName& folder, const ch
 	for (const FILESYSTEM_FIND_DATA& fd : files)
 	{
 		const std::string_view name(FileSystem::GetFileNameFromPath(fd.FileName));
+		if (name.length() < crc.length() || StringUtil::Strncasecmp(name.data(), crc.c_str(), crc.size()) != 0)
+			continue;
+
 		PatchesCon->WriteLn(Color_Green, "Found %s file: '%.*s'", friendly_name, static_cast<int>(name.size()), name.data());
 
 		const std::optional<std::string> pnach_data(FileSystem::ReadFileToString(fd.FileName.c_str()));
@@ -195,6 +198,8 @@ int LoadPatchesFromDir(const std::string& crc, const wxDirName& folder, const ch
 			continue;
 
 		const int loaded = LoadPatchesFromString(pnach_data.value());
+		total_loaded += loaded;
+
 		PatchesCon->WriteLn((loaded ? Color_Green : Color_Gray), "Loaded %d %s from '%.*s'.",
 			loaded, friendly_name, static_cast<int>(name.size()), name.data());
 	}

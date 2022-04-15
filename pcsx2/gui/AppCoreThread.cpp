@@ -364,7 +364,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	// settings as if the game is already running (title, loadeding patches, etc).
 	bool ingame = (ElfCRC && (g_GameLoading || g_GameStarted));
 	if (ingame)
-		GameInfo::gameCRC.Printf(L"%8.8x", ElfCRC);
+		GameInfo::gameCRC.Printf(L"%8.8X", ElfCRC);
 	else
 		GameInfo::gameCRC = L""; // Needs to be reset when rebooting otherwise previously loaded patches may load
 
@@ -465,7 +465,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	// to most users - with region, version, etc, so don't overwrite it with patch info. That's OK. Those
 	// users which want to know the status of the patches at the bios can check the console content.
 	wxString consoleTitle = GameInfo::gameName + L" [" + GameInfo::gameSerial + L"]";
-	consoleTitle += L" [" + GameInfo::gameCRC.MakeUpper() + L"]" + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
+	consoleTitle += L" [" + GameInfo::gameCRC + L"]" + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
 	if (ingame)
 		Console.SetTitle(consoleTitle);
 
