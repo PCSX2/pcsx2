@@ -313,8 +313,10 @@ namespace GL
 		}
 		configs.resize(static_cast<u32>(num_configs));
 
-		const auto m_config = [this, &configs]() {
-			const auto found_config = std::find_if(std::begin(configs), std::end(configs), [&](auto&& check_config) { return CheckConfigSurfaceFormat(check_config); });
+		m_config = [this, &configs]() {
+			const auto found_config = std::find_if(std::begin(configs), std::end(configs), [&](const auto& check_config) {
+				 return CheckConfigSurfaceFormat(check_config);
+			});
 			if (found_config == std::end(configs))
 			{
 				Console.Warning("No EGL configs matched exactly, using first.");
