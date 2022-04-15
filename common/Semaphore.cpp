@@ -167,7 +167,7 @@ void Threading::KernelSemaphore::WaitWithYield()
 	{
 #ifdef _WIN32
 		u64 millis = def_yieldgui_interval.GetMilliseconds().GetValue();
-		while (pthreadCancelableTimedWait(m_sema, millis) == WAIT_TIMEOUT)
+		while (pthreadCancelableTimedWait(m_sema, millis) == ETIMEDOUT)
 			YieldToMain();
 #else
 		while (true)
