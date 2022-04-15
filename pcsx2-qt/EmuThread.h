@@ -47,6 +47,7 @@ public:
 
 	/// Called back from the GS thread when the display state changes (e.g. fullscreen, render to main).
 	HostDisplay* acquireHostDisplay(HostDisplay::RenderAPI api);
+	void connectDisplaySignals(DisplayWidget* widget);
 	void releaseHostDisplay();
 	void updateDisplay();
 
@@ -127,7 +128,6 @@ private:
 	static constexpr u32 BACKGROUND_CONTROLLER_POLLING_INTERVAL =
 		100; /// Interval at which the controllers are polled when the system is not active.
 
-	void connectDisplaySignals(DisplayWidget* widget);
 	void destroyVM();
 	void executeVM();
 	void checkForSettingChanges();

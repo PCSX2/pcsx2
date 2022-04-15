@@ -24,6 +24,7 @@
 #include <QtCore/QDebug>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QKeyEvent>
+#include <QtGui/QResizeEvent>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
 #include <QtGui/QWindowStateChangeEvent>
@@ -208,7 +209,12 @@ bool DisplayWidget::event(QEvent* event)
 		{
 			QWidget::event(event);
 
-			emit windowResizedEvent(scaledWindowWidth(), scaledWindowHeight(), devicePixelRatioFromScreen());
+			const qreal dpr = devicePixelRatioFromScreen();
+			const QSize size = static_cast<QResizeEvent*>(event)->size();
+			const int width = static_cast<int>(std::ceil(static_cast<qreal>(size.width()) * devicePixelRatioFromScreen()));
+			const int height = static_cast<int>(std::ceil(static_cast<qreal>(size.height()) * devicePixelRatioFromScreen()));
+
+			emit windowResizedEvent(width, height, dpr);
 			return true;
 		}
 
@@ -262,7 +268,7 @@ bool DisplayContainer::IsNeeded(bool fullscreen, bool render_to_main)
 #if defined(_WIN32) || defined(__APPLE__)
 	return false;
 #else
-	if (fullscreen || render_to_main)
+	if (!fullscreen && render_to_main)
 		return false;
 
 	// We only need this on Wayland because of client-side decorations...
