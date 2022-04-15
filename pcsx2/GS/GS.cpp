@@ -1676,7 +1676,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){
 		 }};
 
 		 const GSInterlaceMode new_mode = static_cast<GSInterlaceMode>((static_cast<s32>(EmuConfig.GS.InterlaceMode) + 1) % static_cast<s32>(GSInterlaceMode::Count));
-		 Host::AddKeyedFormattedOSDMessage("CycleInterlaceModeMode", 10.0f, "Deinterlace mode set to '%s'.", option_names[static_cast<s32>(new_mode)]);
+		 Host::AddKeyedFormattedOSDMessage("CycleInterlaceMode", 10.0f, "Deinterlace mode set to '%s'.", option_names[static_cast<s32>(new_mode)]);
 		 EmuConfig.GS.InterlaceMode = new_mode;
 
 		 GetMTGS().RunOnGSThread([new_mode]() { GSConfig.InterlaceMode = new_mode; });
