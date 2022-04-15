@@ -8046,7 +8046,7 @@ SLAJ-25078:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     autoFlush: 1 # Properly diffuses light instead of strips of light.
-    roundSprite: 2 # Fixes lighting misalignment such as the street poles and the sun.
+    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
 SLAJ-25079:
   name: "Shin Sangoku Musou 4 - Empires"
   region: "NTSC-Unk"
@@ -8254,7 +8254,7 @@ SLED-53937:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     autoFlush: 1 # Properly diffuses light instead of strips of light.
-    roundSprite: 2 # Fixes lighting misalignment such as the street poles and the sun.
+    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
 SLED-53951:
   name: "Honda Demo [Demo]"
   region: "PAL-E"
@@ -16554,7 +16554,7 @@ SLES-53886:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     autoFlush: 1 # Properly diffuses light instead of strips of light.
-    roundSprite: 2 # Fixes lighting misalignment such as the street poles and the sun.
+    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
   patches:
     ADDFF505:
       content: |-
@@ -16878,7 +16878,7 @@ SLES-54030:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     autoFlush: 1 # Properly diffuses light instead of strips of light.
-    roundSprite: 2 # Fixes lighting misalignment such as the street poles and the sun.
+    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
   patches:
     CAA04879:
       content: |-
@@ -28420,7 +28420,7 @@ SLPM-66354:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     autoFlush: 1 # Properly diffuses light instead of strips of light.
-    roundSprite: 2 # Fixes lighting misalignment such as the street poles and the sun.
+    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
   patches:
     B3A9F9ED:
       content: |-
@@ -29770,7 +29770,7 @@ SLPM-66731:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     autoFlush: 1 # Properly diffuses light instead of strips of light.
-    roundSprite: 2 # Fixes lighting misalignment such as the street poles and the sun.
+    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
 SLPM-66732:
   name: "Iinazuke [Limited Edition]"
   region: "NTSC-J"
@@ -30492,7 +30492,7 @@ SLPM-66961:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     autoFlush: 1 # Properly diffuses light instead of strips of light.
-    roundSprite: 2 # Fixes lighting misalignment such as the street poles and the sun.
+    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
 SLPM-66962:
   name: "Burnout 3 - Takedown [EA-SY! 1980]"
   region: "NTSC-J"
@@ -42145,7 +42145,7 @@ SLUS-21376:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     autoFlush: 1 # Properly diffuses light instead of strips of light.
-    roundSprite: 2 # Fixes lighting misalignment such as the street poles and the sun.
+    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
   patches:
     5C891FF1:
       content: |-
@@ -45273,7 +45273,7 @@ SLUS-29180:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     autoFlush: 1 # Properly diffuses light instead of strips of light.
-    roundSprite: 2 # Fixes lighting misalignment such as the street poles and the sun.
+    roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
 SLUS-29183:
   name: "Fight Night - Round 3 [Demo]"
   region: "NTSC-U"
