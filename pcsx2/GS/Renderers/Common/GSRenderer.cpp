@@ -402,7 +402,7 @@ bool GSRenderer::Merge(int field)
 			}
 			else
 			{
-				const int field2 = scanmask ? 0 : 0 - ((static_cast<int>(GSConfig.InterlaceMode) - 1) & 1);
+				const int field2 = scanmask ? 0 : 1 - ((static_cast<int>(GSConfig.InterlaceMode) - 1) & 1);
 				const int offset = tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y;
 				const int mode = scanmask ? 2 : ((static_cast<int>(GSConfig.InterlaceMode) - 1) >> 1);
 
