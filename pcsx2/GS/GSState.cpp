@@ -416,6 +416,20 @@ GSVector4i GSState::GetFrameMagnifiedRect(int i)
 	return rectangle;
 }
 
+int GSState::GetDisplayHMagnification()
+{
+	// Pick one of the DISPLAY's and hope that they are both the same. Favour DISPLAY[1]
+	for (int i = 1; i >= 0; i--)
+	{
+		if (IsEnabled(i))
+			return m_regs->DISP[i].DISPLAY.MAGH + 1;
+	}
+
+	// If neither DISPLAY is enabled, fallback to resolution offset (should never happen)
+	const GSVideoMode videomode = GetVideoMode();
+	return VideoModeDividers[(int)videomode - 1].x + 1;
+}
+
 GSVector4i GSState::GetDisplayRect(int i)
 {
 	GSVector4i rectangle = { 0, 0, 0, 0 };
@@ -479,10 +493,16 @@ GSVector2i GSState::GetResolution()
 
 	if (ignore_offset)
 	{
+		// Ideally we'd just cut the width at the resolution, but of course we have to hack the hack...
+		// Some games (Mortal Kombat Armageddon) render the image at 834 pixels then shrink it to 624 pixels
+		// which does fit, but when we ignore offsets we go on framebuffer size and some other games
+		// such as Johnny Mosleys Mad Trix and Transformers render too much but design it to go off the screen.
+		int magnified_width = VideoModeDividers[(int)videomode - 1].z / GetDisplayHMagnification();
+
 		GSVector4i total_rect = GetDisplayRect(0).runion(GetDisplayRect(1));
 		total_rect.z = total_rect.z - total_rect.x;
 		total_rect.w = total_rect.w - total_rect.y;
-		total_rect.z = std::min(total_rect.z, resolution.x);
+		total_rect.z = std::min(total_rect.z, magnified_width);
 		total_rect.w = std::min(total_rect.w, resolution.y);
 		resolution.x = total_rect.z;
 		resolution.y = total_rect.w;
