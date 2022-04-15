@@ -28,7 +28,8 @@ struct BiosDebugInformation
 	u32 threadListAddr;
 };
 
-static const char* BiosZoneStrings[] {
+// The following two arrays are used for Qt
+[[maybe_unused]] static const char* BiosZoneStrings[] {
 	"T10K",
 	"Test",
 	"Japan",
@@ -40,7 +41,7 @@ static const char* BiosZoneStrings[] {
 	nullptr
 };
 
-static const char* BiosZoneBytes[]
+[[maybe_unused]] static const char* BiosZoneBytes[]
 {
 	"T", "X", "J", "A", "E", "H", "P", "C", nullptr
 };
