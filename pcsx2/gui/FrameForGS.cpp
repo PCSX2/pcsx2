@@ -363,7 +363,11 @@ void GSPanel::OnResize(wxEvent& event)
 		return;
 
 	const wxSize gs_vp_size(GetClientSize());
+#ifdef _WIN32
+	const float scale = GetDpiScaleForWxWindow(this);
+#else
 	const float scale = GetContentScaleFactor();
+#endif
 	int width = gs_vp_size.GetWidth();
 	int height = gs_vp_size.GetHeight();
 
