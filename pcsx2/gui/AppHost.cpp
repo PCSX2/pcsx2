@@ -207,7 +207,9 @@ void Host::CheckForGSWindowResize()
 	if (!s_host_display)
 		return;
 
+	GSResetAPIState();
 	s_host_display->ResizeRenderWindow(width, height, scale);
+	GSRestoreAPIState();
 	ImGuiManager::WindowResized();
 }
 
