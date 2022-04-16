@@ -49,7 +49,7 @@ const char* shaderName(ShaderConvert value)
 	}
 }
 
-static const int MipmapLevelsForSize(int width, int height)
+static int MipmapLevelsForSize(int width, int height)
 {
 	return std::min(static_cast<int>(std::log2(std::max(width, height))) + 1, MAXIMUM_TEXTURE_MIPMAP_LEVELS);
 }
