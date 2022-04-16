@@ -17337,7 +17337,7 @@ SLES-54305:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - VIF1StallHack # Fixes black screen on boot. 
+    - VIF1StallHack # Fixes black screen on boot.
 SLES-54306:
   name: "Cartoon Network Racing"
   region: "PAL-E"
