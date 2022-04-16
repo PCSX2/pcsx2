@@ -377,7 +377,7 @@ struct V_Core
 {
 	static const uint NumVoices = 24;
 
-	int Index; // Core index identifier.
+	u32 Index; // Core index identifier.
 
 	// Voice Gates -- These are SSE-related values, and must always be
 	// first to ensure 16 byte alignment
