@@ -106,13 +106,20 @@ namespace usb_printer
 		header.height = s->height;
 		header.planes = 1;
 		header.bpp = 24;
-		write(s->print_file, &header, sizeof(header));
+		if (write(s->print_file, &header, sizeof(header)) == -1)
+		{
+			Console.Error("Error writing header to print file");
+		}
 
 		s->stride = 3 * s->width + 3 - ((3 * s->width + 3) & 3);
 		s->data_pos = 0;
 		lseek(s->print_file, sizeof(BMPHeader) + s->stride * s->height - 1, SEEK_SET);
 		char zero = 0;
-		write(s->print_file, &zero, 1);
+
+		if (write(s->print_file, &zero, 1) == -1)
+		{
+			Console.Error("Error writing zero padding to header to print file");
+		}
 	}
 
 	void sony_write_data(PrinterState* s, int size, uint8_t* data)
@@ -128,7 +135,11 @@ namespace usb_printer
 				break;
 			}
 			lseek(s->print_file, sizeof(BMPHeader) + pos_out + 2 - s->data_pos % 3, SEEK_SET);
-			write(s->print_file, data + i, 1);
+
+			if (write(s->print_file, data + i, 1) == -1)
+			{
+				Console.Error("Error writing data to print file");
+			}
 			s->data_pos ++;
 		}
 	}
