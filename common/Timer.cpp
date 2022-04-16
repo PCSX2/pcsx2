@@ -187,13 +187,20 @@ namespace Common
 	ThreadCPUTimer::~ThreadCPUTimer()
 	{
 #ifdef _WIN32
-		CloseHandle(reinterpret_cast<HANDLE>(m_thread_handle));
+		if (m_thread_handle)
+			CloseHandle(reinterpret_cast<HANDLE>(m_thread_handle));
 #endif
 	}
 
 	ThreadCPUTimer& ThreadCPUTimer::operator=(ThreadCPUTimer&& move)
 	{
-		std::swap(m_thread_handle, move.m_thread_handle);
+#ifdef _WIN32
+		if (m_thread_handle)
+			CloseHandle(reinterpret_cast<HANDLE>(m_thread_handle));
+#endif
+
+		m_thread_handle = move.m_thread_handle;
+		move.m_thread_handle = nullptr;
 		return *this;
 	}
 
