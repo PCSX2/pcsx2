@@ -17402,6 +17402,8 @@ SLES-54305:
   name: "Demon Chaos"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - VIF1StallHack # Fixes black screen on boot.
 SLES-54306:
   name: "Cartoon Network Racing"
   region: "PAL-E"
@@ -26807,7 +26809,7 @@ SLPM-65878:
   name: "Galaxy Angel - Eternal Lovers"
   region: "NTSC-J"
 SLPM-65879:
-  name: "C1 Grand Prix Racing Battle"
+  name: "Love Hina Gorgeous [Konami Dendou Selection]"
   region: "NTSC-J"
 SLPM-65880:
   name: "Devil May Cry 3"
@@ -26871,6 +26873,8 @@ SLPM-65896:
 SLPM-65897:
   name: "C1 Grand Prix Racing Battle"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes black lines when upscaling.
 SLPM-65898:
   name: "Castle Fantasia [Deluxe Pack]"
   region: "NTSC-J"
@@ -32115,6 +32119,8 @@ SLPS-20488:
 SLPS-20489:
   name: "Simple 2000 Series Vol. 114 - The Onna Okappichi Torimonochou - Oharu-chan GoGoGo!"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black screen in-game.
 SLPS-20490:
   name: "Pachi-Slot Club Collection - IM Juggler EX - Juggler Selection"
   region: "NTSC-J"
@@ -33493,6 +33499,8 @@ SLPS-25398:
 SLPS-25399:
   name: "Keroro Gunsou - Mero Mero Battle Royale"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes invisible text.
 SLPS-25400:
   name: "Tales of Symphonia"
   region: "NTSC-J"
@@ -34392,6 +34400,8 @@ SLPS-25648:
 SLPS-25649:
   name: "Space Sheriff Spirits"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes black stages.
 SLPS-25650:
   name: "Metal Slug 3D"
   region: "NTSC-J"
