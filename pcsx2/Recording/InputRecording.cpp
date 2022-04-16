@@ -184,12 +184,15 @@ void InputRecording::IncrementFrameCounter()
 		frameCounter++;
 		switch (state)
 		{
-		case InputRecordingMode::Recording:
-			inputRecordingData.SetTotalFrames(frameCounter);
-			[[fallthrough]];
-		case InputRecordingMode::Replaying:
-			if (frameCounter == inputRecordingData.GetTotalFrames())
-				incrementUndo = false;
+			case InputRecordingMode::Recording:
+				inputRecordingData.SetTotalFrames(frameCounter);
+				[[fallthrough]];
+			case InputRecordingMode::Replaying:
+				if (frameCounter == inputRecordingData.GetTotalFrames())
+					incrementUndo = false;
+				break;
+			case InputRecordingMode::NotActive: // Does nothing but keep GCC happy.
+				break;
 		}
 	}
 }
