@@ -47,8 +47,6 @@ private:
 	GLuint m_texture;
 	u32 m_width;
 	u32 m_height;
-	u32 m_layers;
-	u32 m_levels;
 };
 
 OpenGLHostDisplay::OpenGLHostDisplay() = default;
