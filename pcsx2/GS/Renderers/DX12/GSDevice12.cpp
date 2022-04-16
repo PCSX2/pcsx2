@@ -1508,6 +1508,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_AEM", sel.aem);
 	sm.AddMacro("PS_TFX", sel.tfx);
 	sm.AddMacro("PS_TCC", sel.tcc);
+	sm.AddMacro("PS_DATE", sel.date);
 	sm.AddMacro("PS_ATST", sel.atst);
 	sm.AddMacro("PS_FOG", sel.fog);
 	sm.AddMacro("PS_IIP", sel.iip);
