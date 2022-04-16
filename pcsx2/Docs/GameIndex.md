@@ -40,6 +40,7 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
     - IbitHack
     - VUSyncHack
     - VUOverflowHack
+    - SoftwareRendererFMVHack
   # The value of the GS Fixes is assumed to be an integer
   gsHWFixes:
     mipmap: 1
@@ -217,6 +218,9 @@ These values are case-sensitive so take care.  If you incorrectly specify a Game
 
 *   `VUOverflowHack`
     *   VU Overflow hack to check for possible float overflows (Superman Returns).
+
+*   `SoftwareRendererFMVHack`
+    *   Forces rendering into software mode during FMVs.
 
 ## SpeedHacks
 
