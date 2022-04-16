@@ -25326,6 +25326,8 @@ SLPM-65407:
   name: "Transformers Tatakai"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flickering FMVs.
 SLPM-65408:
   name: "Growlanser IV - Wayfarer of the Time"
   region: "NTSC-J"
@@ -39519,6 +39521,8 @@ SLUS-20852:
   name: "Terminator 3, The - The Redemption"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes environment lights visible through player model.
 SLUS-20853:
   name: "Looney Tunes - Back in Action"
   region: "NTSC-U"
@@ -41280,6 +41284,8 @@ SLUS-21209:
   compat: 5
   gameFixes:
     - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
+  gsHWFixes:
+    alignSprite: 1 # Fixes black lines when upscaling.
 SLUS-21212:
   name: "Spartan - Total Warrior"
   region: "NTSC-U"
