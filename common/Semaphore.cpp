@@ -79,7 +79,8 @@ bool Threading::WorkSema::WaitForEmpty()
 	{
 		if (value < 0)
 			return !IsDead(value); // STATE_SLEEPING or STATE_SPINNING, queue is empty!
-		if (m_state.compare_exchange_weak(value, value | STATE_FLAG_WAITING_EMPTY, std::memory_order_relaxed, std::memory_order_acquire))
+		// Note: We technically only need memory_order_acquire on *failure* (because that's when we could leave without sleeping), but libstdc++ still asserts on failure < success
+		if (m_state.compare_exchange_weak(value, value | STATE_FLAG_WAITING_EMPTY, std::memory_order_acquire))
 			break;
 	}
 	pxAssertDev(!(value & STATE_FLAG_WAITING_EMPTY), "Multiple threads attempted to wait for empty (not currently supported)");
@@ -95,7 +96,7 @@ bool Threading::WorkSema::WaitForEmptyWithSpin()
 	{
 		if (value < 0)
 			return !IsDead(value); // STATE_SLEEPING or STATE_SPINNING, queue is empty!
-		if (waited > SPIN_TIME_NS && m_state.compare_exchange_weak(value, value | STATE_FLAG_WAITING_EMPTY, std::memory_order_relaxed, std::memory_order_acquire))
+		if (waited > SPIN_TIME_NS && m_state.compare_exchange_weak(value, value | STATE_FLAG_WAITING_EMPTY, std::memory_order_acquire))
 			break;
 		waited += ShortSpin();
 		value = m_state.load(std::memory_order_acquire);
