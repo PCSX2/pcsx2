@@ -1022,6 +1022,7 @@ SCAJ-20159:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 1 # Fixes blurriness.
 SCAJ-20160:
   name: "Yoshitsuneki"
   region: "NTSC-Unk"
@@ -3388,6 +3389,7 @@ SCES-53312:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 1 # Fixes blurriness.
 SCES-53315:
   name: "EyeToy - Play 3"
   region: "PAL-M12"
@@ -4466,6 +4468,7 @@ SCKA-20059:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 1 # Fixes blurriness.
 SCKA-20060:
   name: "Ratchet - Deadlocked"
   region: "NTSC-K"
@@ -14915,6 +14918,9 @@ SLES-53191:
 SLES-53192:
   name: "Nightmare Before Christmas, The - Tim Burton's"
   region: "PAL-M5"
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes blurriness.
+    mergeSprite: 1 # Fixes misaligned lights.
 SLES-53193:
   name: "Puzzle Party"
   region: "PAL-E"
@@ -21937,6 +21943,12 @@ SLPM-61051:
 SLPM-61087:
   name: "Fullmetal Alchemist 2 - Curse of the Crimson Elixir [Trial]"
   region: "NTSC-J"
+SLPM-61090:
+  name: "Tim Burton's The Nightmare Before Christmas [Trial]"
+  region: "NTSC-J"
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes blurriness.
+    mergeSprite: 1 # Fixes misaligned lights.
 SLPM-61117:
   name: "Musashiden II - Blademaster [Trial]"
   region: "NTSC-J"
@@ -21965,6 +21977,7 @@ SLPM-61133:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 1 # Fixes blurriness.
 SLPM-61135:
   name: "Naruto - Narutimett Hero 3 [Trial Version]"
   region: "NTSC-J"
@@ -26358,6 +26371,9 @@ SLPM-65739:
   name: "Nightmare Before Christmas"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes blurriness.
+    mergeSprite: 1 # Fixes misaligned lights.
 SLPM-65740:
   name: "J-League Winning Eleven 8 - Asia Championship"
   region: "NTSC-J"
@@ -27639,6 +27655,9 @@ SLPM-66130:
 SLPM-66131:
   name: "Tim Burton's The Nightmare Before Christmas [Premium Pack]"
   region: "NTSC-J"
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes blurriness.
+    mergeSprite: 1 # Fixes misaligned lights.
 SLPM-66132:
   name: "Gladiator - Road to Freedom - Remix"
   region: "NTSC-J"
@@ -29671,6 +29690,9 @@ SLPM-66696:
 SLPM-66697:
   name: "Nightmare Before Christmas, The [CapKore]"
   region: "NTSC-J"
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes blurriness.
+    mergeSprite: 1 # Fixes misaligned lights.
 SLPM-66698:
   name: "Shijou Saikyou no Teishi - Kenichi"
   region: "NTSC-J"
@@ -34129,6 +34151,7 @@ SLPS-25577:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 1 # Fixes blurriness.
 SLPS-25578:
   name: "K-1 World Grand Prix 2005"
   region: "NTSC-J"
@@ -35285,6 +35308,9 @@ SLPS-25906:
   name: "ADK Tamashii"
   region: "NTSC-J"
   compat: 5
+SLPS-25912:
+  name: "Soul Eater - Battle Resonance"
+  region: "NTSC-J"
 SLPS-25914:
   name: "Kidou Senshi Gundam - Giren no Yabou - Axis no Kyoui V"
   region: "NTSC-J"
@@ -39527,6 +39553,9 @@ SLUS-20860:
   name: "Nightmare Before Christmas, Tim Burton's The - Oogie's Revenge"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes blurriness.
+    mergeSprite: 1 # Fixes misaligned lights.
 SLUS-20861:
   name: "MTV Music Generator 3 - This is the Remix"
   region: "NTSC-U"
@@ -41282,6 +41311,7 @@ SLUS-21216:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 1 # Fixes blurriness.
 SLUS-21217:
   name: "Incredibles, The - Rise of the Underminers"
   region: "NTSC-U"
