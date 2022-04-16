@@ -194,8 +194,6 @@ bool GSRenderer::Merge(int field)
 	const bool slbg = m_regs->PMODE.SLBG;
 
 	const GSVector2i resolution(GetResolution());
-	const GSVideoMode videomode = GetVideoMode();
-
 	bool scanmask_frame = true;
 
 	for (int i = 0; i < 2; i++)
