@@ -33340,7 +33340,7 @@ SLPS-25399:
   name: "Keroro Gunsou - Mero Mero Battle Royale"
   region: "NTSC-J"
   gsHWFixes:
-    preloadFrameData: 1 # Fixes invisible text.
+    preloadFrameData: 1 # Fixes invisible text. 
 SLPS-25400:
   name: "Tales of Symphonia"
   region: "NTSC-J"
