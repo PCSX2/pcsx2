@@ -467,7 +467,7 @@ bool Pcsx2App::OnInit()
 			{
 				g_Conf->Folders.RunELF = elfFile.GetPath();
 				sApp.SysExecute(Startup.CdvdSource, Startup.ElfFile);
-				if (Startup.ElfFile.Find(' ') == NULL)
+				if (Startup.ElfFile.Find(' ') == -1)
 					EmuConfig.CurrentGameArgs = StringUtil::wxStringToUTF8String(Startup.GameLaunchArgs);
 			}
 		}
@@ -479,7 +479,7 @@ bool Pcsx2App::OnInit()
 
 			// FIXME: ElfFile is an irx it will crash
 			sApp.SysExecute(Startup.CdvdSource, Startup.ElfFile);
-			if (Startup.ElfFile.Find(' ') == NULL)
+			if (Startup.ElfFile.Find(' ') == -1)
 				EmuConfig.CurrentGameArgs = StringUtil::wxStringToUTF8String(Startup.GameLaunchArgs);
 		}
 	}

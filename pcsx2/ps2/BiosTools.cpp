@@ -102,7 +102,7 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 				// clang-format on
 			}
 
-			if (region >= 0 && region <= 7)
+			if (region <= 7)
 			{
 				zone = BiosZoneStrings[region];
 			}
