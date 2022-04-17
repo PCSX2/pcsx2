@@ -69,7 +69,6 @@ struct cdrStruct
 	u8 SetSectorSeek[4];
 	u8 Track;
 	int Play;
-	int Speed;
 	int CurTrack;
 	int Mode, File, Channel, Muted;
 	int Reset;

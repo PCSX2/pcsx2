@@ -131,6 +131,11 @@ uint sectorSeekReadDelay = 0x800;           // for calculated seek delays
 
 static void AddIrqQueue(u8 irq, u32 ecycle);
 
+static __fi int GetCDSpeed()
+{
+	return 1 + ((cdr.Mode >> 7) & 0x1);
+}
+
 static __fi void StartReading(u32 type)
 {
 	cdr.Reading = type;
@@ -862,7 +867,6 @@ void cdrWrite1(u8 rt)
 			cdr.Mode = cdr.Param[0];
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
-			cdr.Speed = 1 + ((cdr.Mode >> 7) & 0x1);
 			if (cdr.Mode & MODE_CDDA)
 			{
 				StopCdda();
