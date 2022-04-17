@@ -252,8 +252,8 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ps2\Iop\PsxBios.cpp" />
-    <ClCompile Include="ps2\LegacyDmac.cpp" />
     <ClCompile Include="ps2\pgif.cpp" />
+    <ClCompile Include="Dmac.cpp" />
     <ClCompile Include="ShiftJisToUnicode.cpp" />
     <ClCompile Include="sif2.cpp" />
     <ClCompile Include="GS\Renderers\OpenGL\GLLoader.cpp" />
