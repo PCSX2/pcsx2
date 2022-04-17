@@ -41,7 +41,42 @@ GSRendererHW::GSRendererHW()
 
 void GSRendererHW::SetScaling()
 {
-	const GSVector2i crtc_size(GetResolution());
+	GSVector2i crtc_size(GetResolution());
+
+	// Correct framebuffer size to get output size when offsets not considered (uses framebuffer height)
+	if (!GSConfig.PCRTCOffsets)
+	{
+		const int videomode = static_cast<int>(GetVideoMode()) - 1;
+		int display_width = (VideoModeDividers[videomode].z + 1) / GetDisplayHMagnification();
+		int display_height = VideoModeOffsets[videomode].y;
+
+		if (isinterlaced() && !m_regs->SMODE2.FFMD)
+			display_height *= 2;
+
+		if (crtc_size.x < display_width || crtc_size.y < display_height)
+		{
+			GSVector2i display_baseline = { 4096, 4096 };
+
+			for (int i = 0; i < 2; i++)
+			{
+				if (IsEnabled(i))
+				{
+					GSVector4i dr = GetDisplayRect(i);
+
+					GSVector2i display_diff(dr.left - display_baseline.x, dr.top - display_baseline.y);
+
+					if (display_diff.x != 0 && abs(display_diff.x) < 4 && crtc_size.x < display_width)
+						crtc_size.x -= display_diff.x;
+
+					if (display_diff.y != 0 && abs(display_diff.y) < 4 && crtc_size.y < display_height)
+						crtc_size.y -= display_diff.y;
+
+					display_baseline.x = std::min(dr.left, display_baseline.x);
+					display_baseline.y = std::min(dr.top, display_baseline.y);
+				}
+			}
+		}
+	}
 
 	// Details of (potential) perf impact of a big framebuffer
 	// 1/ extra memory
