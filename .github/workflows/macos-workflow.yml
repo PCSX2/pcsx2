@@ -92,7 +92,7 @@ jobs:
         run: .github/workflows/scripts/macos/build-dependencies.sh
 
       - name: Generate CMake Files
-        run: cmake -DCMAKE_PREFIX_PATH="$HOME/deps" -DCMAKE_BUILD_TYPE=Release -DDISABLE_ADVANCE_SIMD=ON -DLTO_PCSX2_CORE=ON -B build .
+        run: cmake -DCMAKE_PREFIX_PATH="$HOME/deps" -DCMAKE_BUILD_TYPE=Release -DUSE_OPENGL=OFF -DDISABLE_ADVANCE_SIMD=ON -DLTO_PCSX2_CORE=ON -B build .
 
       - name: Build PCSX2
         working-directory: build
