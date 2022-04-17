@@ -91,6 +91,22 @@ using namespace pxSizerFlags;
 //  GSDumpDialog  Implementation
 // --------------------------------------------------------------------------------------
 
+static GSRendererType s_renderer_overrides[] = {
+	GSRendererType::SW,
+#ifdef ENABLE_OPENGL
+	GSRendererType::OGL,
+#endif
+#ifdef ENABLE_VULKAN
+	GSRendererType::VK,
+#endif
+#if defined(_WIN32)
+	GSRendererType::DX11,
+	GSRendererType::DX12,
+#elif defined(__APPLE__)
+	GSRendererType::Metal,
+#endif
+};
+
 Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	: wxDialogWithHelpers(parent, _("GS Debugger"), pxDialogFlags().SetMinimize().SetResize())
 	, m_dump_list(new wxListView(this, ID_DUMP_LIST, wxDefaultPosition, wxSize(400, 300), wxLC_NO_HEADER | wxLC_REPORT | wxLC_SINGLE_SEL))
@@ -122,17 +138,8 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	m_run->SetDefault();
 	wxArrayString rdoverrides;
 	rdoverrides.Add("None");
-	rdoverrides.Add(Pcsx2Config::GSOptions::GetRendererName(GSRendererType::SW));
-	rdoverrides.Add(Pcsx2Config::GSOptions::GetRendererName(GSRendererType::OGL));
-#ifdef ENABLE_VULKAN
-	rdoverrides.Add(Pcsx2Config::GSOptions::GetRendererName(GSRendererType::VK));
-#endif
-#if defined(_WIN32)
-	rdoverrides.Add(Pcsx2Config::GSOptions::GetRendererName(GSRendererType::DX11));
-	rdoverrides.Add(Pcsx2Config::GSOptions::GetRendererName(GSRendererType::DX12));
-#elif defined(__APPLE__)
-	rdoverrides.Add(Pcsx2Config::GSOptions::GetRendererName(GSRendererType::Metal));
-#endif
+	for (GSRendererType over : s_renderer_overrides)
+		rdoverrides.Add(Pcsx2Config::GSOptions::GetRendererName(over));
 	m_renderer_overrides->Create(this, wxID_ANY, "Renderer overrides", wxDefaultPosition, wxDefaultSize, rdoverrides, 1);
 
 	dbg_tree->Add(new wxStaticText(this, wxID_ANY, _("GIF Packets")));
@@ -822,39 +829,8 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	}
 
 	GSRendererType renderer = g_Conf->EmuOptions.GS.Renderer;
-	switch (m_renderer)
-	{
-		// Software
-		case 1:
-			renderer = GSRendererType::SW;
-			break;
-		// OpenGL
-		case 2:
-			renderer = GSRendererType::OGL;
-			break;
-		case 3:
-#ifdef ENABLE_VULKAN
-			// Vulkan
-			renderer = GSRendererType::VK;
-			break;
-		case 4:
-#endif
-#ifdef _WIN32
-			// D3D11
-			renderer = GSRendererType::DX11;
-#elif defined(__APPLE__)
-			// Metal
-			renderer = GSRendererType::Metal;
-#endif
-			break;
-#ifdef _WIN32
-		case 5:
-			renderer = GSRendererType::DX12;
-			break;
-#endif
-		default:
-			break;
-	}
+	if (m_renderer > 0 && static_cast<size_t>(m_renderer) <= std::size(s_renderer_overrides))
+		renderer = s_renderer_overrides[m_renderer - 1];
 
 	GSinit();
 	sApp.OpenGsPanel();
