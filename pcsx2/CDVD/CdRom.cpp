@@ -140,7 +140,7 @@ static __fi void StartReading(u32 type)
 {
 	cdr.Reading = type;
 	// Read's retry. If there's a status error clear and try, try again
-	cdr.StatP &~ STATUS_ERROR;
+	cdr.StatP &= ~STATUS_ERROR;
 	cdr.FirstSector = 1;
 	cdr.Readed = 0xff;
 	//DevCon.Warning("ReadN/ReadS delay: %d", sectorSeekReadDelay);
