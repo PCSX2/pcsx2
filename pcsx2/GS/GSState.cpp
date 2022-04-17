@@ -497,7 +497,7 @@ GSVector2i GSState::GetResolution()
 		// Some games (Mortal Kombat Armageddon) render the image at 834 pixels then shrink it to 624 pixels
 		// which does fit, but when we ignore offsets we go on framebuffer size and some other games
 		// such as Johnny Mosleys Mad Trix and Transformers render too much but design it to go off the screen.
-		int magnified_width = VideoModeDividers[(int)videomode - 1].z / GetDisplayHMagnification();
+		int magnified_width = (VideoModeDividers[static_cast<int>(videomode) - 1].z + 1) / GetDisplayHMagnification();
 
 		GSVector4i total_rect = GetDisplayRect(0).runion(GetDisplayRect(1));
 		total_rect.z = total_rect.z - total_rect.x;
