@@ -380,7 +380,7 @@ GSVector4i GSState::GetFrameMagnifiedRect(int i)
 	if (!IsEnabled(0) && !IsEnabled(1))
 		return rectangle;
 
-	const GSVideoMode videomode = GetVideoMode();
+	const int videomode = static_cast<int>(GetVideoMode()) - 1;
 	const auto& DISP = m_regs->DISP[i].DISPLAY;
 	const bool ignore_offset = !GSConfig.PCRTCOffsets;
 
@@ -400,8 +400,8 @@ GSVector4i GSState::GetFrameMagnifiedRect(int i)
 	}
 	else
 	{
-		width = (DW / (VideoModeDividers[(int)videomode - 1].x + 1));
-		height = (DH / (VideoModeDividers[(int)videomode - 1].y + 1));
+		width = (DW / (VideoModeDividers[videomode].x + 1));
+		height = (DH / (VideoModeDividers[videomode].y + 1));
 	}
 
 	int res_multi = 1;
@@ -426,8 +426,8 @@ int GSState::GetDisplayHMagnification()
 	}
 
 	// If neither DISPLAY is enabled, fallback to resolution offset (should never happen)
-	const GSVideoMode videomode = GetVideoMode();
-	return VideoModeDividers[(int)videomode - 1].x + 1;
+	const int videomode = static_cast<int>(GetVideoMode()) - 1;
+	return VideoModeDividers[videomode].x + 1;
 }
 
 GSVector4i GSState::GetDisplayRect(int i)
@@ -454,7 +454,7 @@ GSVector4i GSState::GetDisplayRect(int i)
 	const int width = DW / magnification.x;
 	const int height = DH / magnification.y;
 
-	const GSVector2i offsets = GetResolutionOffset(i);
+	GSVector2i offsets = GetResolutionOffset(i);
 
 	// Set up the display rectangle based on the values obtained from DISPLAY registers
 	rectangle.left = offsets.x;
@@ -468,25 +468,25 @@ GSVector4i GSState::GetDisplayRect(int i)
 
 GSVector2i GSState::GetResolutionOffset(int i)
 {
-	const GSVideoMode videomode = GetVideoMode();
+	const int videomode = static_cast<int>(GetVideoMode()) - 1;
 	const auto& DISP = m_regs->DISP[i].DISPLAY;
 
 	const auto& SMODE2 = m_regs->SMODE2;
 	const int res_multi = (SMODE2.INT + 1);
 	GSVector2i offset;
 
-	offset.x = (((int)DISP.DX - VideoModeOffsets[(int)videomode - 1].z) / (VideoModeDividers[(int)videomode - 1].x + 1));
-	offset.y = ((int)DISP.DY - (VideoModeOffsets[(int)videomode - 1].w * ((IsAnalogue() && res_multi) ? res_multi : 1))) / (VideoModeDividers[(int)videomode - 1].y + 1);
+	offset.x = (static_cast<int>(DISP.DX) - VideoModeOffsets[videomode].z) / (VideoModeDividers[videomode].x + 1);
+	offset.y = (static_cast<int>(DISP.DY) - (VideoModeOffsets[videomode].w * ((IsAnalogue() && res_multi) ? res_multi : 1))) / (VideoModeDividers[videomode].y + 1);
 
 	return offset;
 }
 
 GSVector2i GSState::GetResolution()
 {
-	const GSVideoMode videomode = GetVideoMode();
+	const int videomode = static_cast<int>(GetVideoMode()) - 1;
 	const bool ignore_offset = !GSConfig.PCRTCOffsets;
 
-	GSVector2i resolution(VideoModeOffsets[(int)videomode - 1].x, VideoModeOffsets[(int)videomode - 1].y);
+	GSVector2i resolution(VideoModeOffsets[videomode].x, VideoModeOffsets[videomode].y);
 
 	if (isinterlaced() && !m_regs->SMODE2.FFMD)
 		resolution.y *= 2;
@@ -497,7 +497,7 @@ GSVector2i GSState::GetResolution()
 		// Some games (Mortal Kombat Armageddon) render the image at 834 pixels then shrink it to 624 pixels
 		// which does fit, but when we ignore offsets we go on framebuffer size and some other games
 		// such as Johnny Mosleys Mad Trix and Transformers render too much but design it to go off the screen.
-		int magnified_width = (VideoModeDividers[static_cast<int>(videomode) - 1].z + 1) / GetDisplayHMagnification();
+		int magnified_width = (VideoModeDividers[videomode].z + 1) / GetDisplayHMagnification();
 
 		GSVector4i total_rect = GetDisplayRect(0).runion(GetDisplayRect(1));
 		total_rect.z = total_rect.z - total_rect.x;
