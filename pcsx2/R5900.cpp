@@ -286,7 +286,7 @@ static __fi void TESTINT( u8 n, void (*callback)() )
 		cpuSetNextEvent( cpuRegs.sCycle[n], cpuRegs.eCycle[n] );
 }
 
-// [TODO] move this function to LegacyDmac.cpp, and remove most of the DMAC-related headers from
+// [TODO] move this function to Dmac.cpp, and remove most of the DMAC-related headers from
 // being included into R5900.cpp.
 static __fi void _cpuTestInterrupts()
 {

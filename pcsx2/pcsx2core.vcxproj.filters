@@ -692,7 +692,7 @@
     <ClCompile Include="IPU\IPUdma.cpp">
       <Filter>System\Ps2\IPU</Filter>
     </ClCompile>
-    <ClCompile Include="ps2\LegacyDmac.cpp">
+    <ClCompile Include="Dmac.cpp">
       <Filter>System\Ps2</Filter>
     </ClCompile>
     <ClCompile Include="Gif_Unit.cpp">
