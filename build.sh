@@ -21,11 +21,6 @@ set -u
 set_ncpu_toolfile()
 {
     ncpu=$(getconf NPROCESSORS_ONLN 2>/dev/null || getconf _NPROCESSORS_ONLN)
-    if [ "$(uname -s)" = 'Darwin' ]; then
-        i386_flag="-DCMAKE_OSX_ARCHITECTURES=i386"
-    elif [ "$(uname -s)" != 'FreeBSD' ]; then
-        i386_flag="-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake"
-    fi
 }
 
 find_freetype()
