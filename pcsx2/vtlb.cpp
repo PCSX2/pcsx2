@@ -315,6 +315,43 @@ template void vtlb_memWrite<mem8_t>(u32 mem, mem8_t data);
 template void vtlb_memWrite<mem16_t>(u32 mem, mem16_t data);
 template void vtlb_memWrite<mem32_t>(u32 mem, mem32_t data);
 
+template <typename DataType>
+bool vtlb_ramRead(u32 addr, DataType* value)
+{
+	const auto vmv = vtlbdata.vmap[addr >> VTLB_PAGE_BITS];
+	if (vmv.isHandler(addr))
+	{
+		std::memset(value, 0, sizeof(DataType));
+		return false;
+	}
+
+	std::memcpy(value, reinterpret_cast<DataType*>(vmv.assumePtr(addr)), sizeof(DataType));
+	return true;
+}
+
+template <typename DataType>
+bool vtlb_ramWrite(u32 addr, const DataType& data)
+{
+	const auto vmv = vtlbdata.vmap[addr >> VTLB_PAGE_BITS];
+	if (vmv.isHandler(addr))
+		return false;
+
+	std::memcpy(reinterpret_cast<DataType*>(vmv.assumePtr(addr)), &data, sizeof(DataType));
+	return true;
+}
+
+
+template bool vtlb_ramRead<mem8_t>(u32 mem, mem8_t* value);
+template bool vtlb_ramRead<mem16_t>(u32 mem, mem16_t* value);
+template bool vtlb_ramRead<mem32_t>(u32 mem, mem32_t* value);
+template bool vtlb_ramRead<mem64_t>(u32 mem, mem64_t* value);
+template bool vtlb_ramRead<mem128_t>(u32 mem, mem128_t* value);
+template bool vtlb_ramWrite<mem8_t>(u32 mem, const mem8_t& data);
+template bool vtlb_ramWrite<mem16_t>(u32 mem, const mem16_t& data);
+template bool vtlb_ramWrite<mem32_t>(u32 mem, const mem32_t& data);
+template bool vtlb_ramWrite<mem64_t>(u32 mem, const mem64_t& data);
+template bool vtlb_ramWrite<mem128_t>(u32 mem, const mem128_t& data);
+
 // --------------------------------------------------------------------------------------
 //  TLB Miss / BusError Handlers
 // --------------------------------------------------------------------------------------
