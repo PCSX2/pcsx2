@@ -242,6 +242,7 @@ if(QT_BUILD)
 
 	# rcheevos backend for RetroAchievements.
 	if(USE_ACHIEVEMENTS)
+		find_package(CURL REQUIRED)
 		add_subdirectory(3rdparty/rcheevos EXCLUDE_FROM_ALL)
 	endif()
 endif()
