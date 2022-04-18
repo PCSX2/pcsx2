@@ -27,6 +27,8 @@
 #include "Frontend/GameList.h"
 #include "svnrev.h"
 
+#include "common/CrashHandler.h"
+
 static void PrintCommandLineVersion()
 {
 	std::fprintf(stderr, "PCSX2 Version %s\n", GIT_REV);
@@ -189,6 +191,8 @@ static bool ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMBo
 
 int main(int argc, char* argv[])
 {
+	CrashHandler::Install();
+
 	QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 	QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
