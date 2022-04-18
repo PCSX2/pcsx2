@@ -43,6 +43,11 @@
 #include "MemoryCardSettingsWidget.h"
 #include "SystemSettingsWidget.h"
 
+#ifdef ENABLE_ACHIEVEMENTS
+#include "AchievementSettingsWidget.h"
+#include "pcsx2/Frontend/Achievements.h"
+#endif
+
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextEdit>
 
@@ -127,7 +132,7 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 		addWidget(m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
 			QStringLiteral("sd-card-line"), tr("<strong>Memory Card Settings</strong><hr>Create and configure Memory Cards here.<br><br>Mouse over an option for additional information."));
 	}
-	
+
 	addWidget(m_dev9_settings = new DEV9SettingsWidget(this, m_ui.settingsContainer), tr("Network & HDD"), QStringLiteral("dashboard-line"),
 		tr("<strong>Network & HDD Settings</strong><hr>These options control the network connectivity and internal HDD storage of the console.<br><br>"
 		   "Mouse over an option for additional information."));
@@ -136,6 +141,34 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	{
 		addWidget(m_folder_settings = new FolderSettingsWidget(this, m_ui.settingsContainer), tr("Folders"), QStringLiteral("folder-open-line"),
 			tr("<strong>Folder Settings</strong><hr>These options control where PCSX2 will save runtime data files."));
+	}
+
+	{
+		QString title = tr("Achievements");
+		QString icon_text(QStringLiteral("trophy-line"));
+		QString help_text = tr(
+			"<strong>Achievements Settings</strong><hr>"
+			"These options control the RetroAchievements implementation in PCSX2, allowing you to earn achievements in your games.");
+#ifdef ENABLE_ACHIEVEMENTS
+		if (Achievements::IsUsingRAIntegration())
+		{
+			QLabel* placeholder_label =
+				new QLabel(tr("RAIntegration is being used, built-in RetroAchievements support is disabled."),
+					m_ui.settingsContainer);
+			placeholder_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+			addWidget(placeholder_label, std::move(title), std::move(icon_text), std::move(help_text));
+		}
+		else
+		{
+			addWidget((m_achievement_settings = new AchievementSettingsWidget(this, m_ui.settingsContainer)),
+				std::move(title), std::move(icon_text), std::move(help_text));
+		}
+#else
+		QLabel* placeholder_label =
+			new QLabel(tr("This PCSX2 build was not compiled with RetroAchievements support."), m_ui.settingsContainer);
+		placeholder_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+		addWidget(placeholder_label, std::move(title), std::move(icon_text), std::move(help_text));
+#endif
 	}
 
 	m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);

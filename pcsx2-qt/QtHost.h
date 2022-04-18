@@ -151,6 +151,9 @@ Q_SIGNALS:
 	/// just signifies that the save has started, not necessarily completed.
 	void onSaveStateSaved(const QString& path);
 
+	/// Called when achievements are reloaded/refreshed (e.g. game change, login, option change).
+	void onAchievementsRefreshed(quint32 id, const QString& game_info_string, quint32 total, quint32 points);
+
 protected:
 	void run();
 

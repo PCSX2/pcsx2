@@ -26,6 +26,10 @@
 #include "Recording/InputRecordingControls.h"
 #include "VMManager.h"
 
+#ifdef ENABLE_ACHIEVEMENTS
+#include "Frontend/Achievements.h"
+#endif
+
 static s32 s_current_save_slot = 1;
 static std::optional<LimiterModeType> s_limiter_mode_prior_to_hold_interaction;
 
@@ -121,6 +125,16 @@ DEFINE_HOTKEY("OpenPauseMenu", "System", "Open Pause Menu", [](s32 pressed) {
 	if (!pressed && VMManager::HasValidVM())
 		FullscreenUI::OpenPauseMenu();
 })
+#ifdef ENABLE_ACHIEVEMENTS
+DEFINE_HOTKEY("OpenAchievementsList", "System", "Open Achievements List", [](s32 pressed) {
+	if (!pressed)
+		FullscreenUI::OpenAchievementsWindow();
+})
+DEFINE_HOTKEY("OpenLeaderboardsList", "System", "Open Leaderboards List", [](s32 pressed) {
+	if (!pressed)
+		FullscreenUI::OpenLeaderboardsWindow();
+})
+#endif
 DEFINE_HOTKEY("TogglePause", "System", "Toggle Pause", [](s32 pressed) {
 	if (!pressed && VMManager::HasValidVM())
 		VMManager::SetPaused(VMManager::GetState() != VMState::Paused);

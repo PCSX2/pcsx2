@@ -121,6 +121,17 @@ target_sources(pcsx2-qt PRIVATE
 	resources/resources.qrc
 )
 
+if(USE_ACHIEVEMENTS)
+	target_sources(pcsx2-qt PRIVATE
+		Settings/AchievementLoginDialog.cpp
+		Settings/AchievementLoginDialog.h
+		Settings/AchievementLoginDialog.ui
+		Settings/AchievementSettingsWidget.cpp
+		Settings/AchievementSettingsWidget.h
+		Settings/AchievementSettingsWidget.ui
+	)
+endif()
+
 target_precompile_headers(pcsx2-qt PRIVATE PrecompiledHeader.h)
 
 target_include_directories(pcsx2-qt PRIVATE

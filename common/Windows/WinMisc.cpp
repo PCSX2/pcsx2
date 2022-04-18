@@ -19,8 +19,11 @@
 #include "common/RedtapeWindows.h"
 #include "common/Exceptions.h"
 #include "common/StringUtil.h"
+#include "common/General.h"
 
 #include "fmt/core.h"
+
+#include <mmsystem.h>
 
 #pragma comment(lib, "User32.lib")
 
@@ -116,4 +119,11 @@ void ScreensaverAllow(bool allow)
 		flags |= ES_DISPLAY_REQUIRED;
 	SetThreadExecutionState(flags);
 }
+
+bool Common::PlaySoundAsync(const char* path)
+{
+	const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+	return PlaySoundW(wpath.c_str(), NULL, SND_ASYNC | SND_NODEFAULT);
+}
+
 #endif

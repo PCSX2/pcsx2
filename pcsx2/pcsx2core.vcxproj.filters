@@ -1287,6 +1287,9 @@
     <ClCompile Include="Frontend\CommonHotkeys.cpp">
       <Filter>Host</Filter>
     </ClCompile>
+    <ClCompile Include="Frontend\Achievements.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2140,6 +2143,10 @@
     <ClInclude Include="Frontend\CommonHost.h">
       <Filter>Host</Filter>
     </ClInclude>
+    <ClInclude Include="Frontend\Achievements.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Achievements.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="rdebug\deci2.h">

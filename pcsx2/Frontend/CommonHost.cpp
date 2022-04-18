@@ -36,6 +36,10 @@
 #include "Sio.h"
 #include "VMManager.h"
 
+#ifdef ENABLE_ACHIEVEMENTS
+#include "Frontend/Achievements.h"
+#endif
+
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
 #include <KnownFolders.h>
@@ -183,6 +187,12 @@ void CommonHost::LoadStartupSettings()
 	EmuFolders::LoadConfig(*bsi);
 	EmuFolders::EnsureFoldersExist();
 	UpdateLogging(*bsi);
+
+#ifdef ENABLE_RAINTEGRATION
+	// RAIntegration switch must happen before the UI is created.
+	if (Host::GetBaseBoolSettingValue("Achievements", "UseRAIntegration", false))
+		Achievements::SwitchToRAIntegration();
+#endif
 }
 
 void CommonHost::SetDefaultSettings(SettingsInterface& si, bool folders, bool core, bool controllers, bool hotkeys, bool ui)
@@ -222,10 +232,19 @@ void CommonHost::CPUThreadInitialize()
 	// We want settings loaded so we choose the correct renderer for big picture mode.
 	// This also sorts out input sources.
 	VMManager::LoadSettings();
+
+#ifdef ENABLE_ACHIEVEMENTS
+	if (EmuConfig.Achievements.Enabled)
+		Achievements::Initialize();
+#endif
 }
 
 void CommonHost::CPUThreadShutdown()
 {
+#ifdef ENABLE_ACHIEVEMENTS
+	Achievements::Shutdown();
+#endif
+
 	InputManager::CloseSources();
 	VMManager::WaitForSaveStateFlush();
 	VMManager::Internal::ReleaseMemory();
@@ -238,12 +257,18 @@ void CommonHost::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex
 	SettingsInterface* binding_si = Host::GetSettingsInterfaceForBindings();
 	InputManager::ReloadSources(si, lock);
 	InputManager::ReloadBindings(si, *binding_si);
+
 	UpdateLogging(si);
 }
 
 void CommonHost::CheckForSettingsChanges(const Pcsx2Config& old_config)
 {
-	// Nothing yet.
+#ifdef ENABLE_ACHIEVEMENTS
+	if (EmuConfig.Achievements != old_config.Achievements)
+		Achievements::UpdateSettings(old_config.Achievements);
+#endif
+
+	FullscreenUI::CheckForConfigChanges(old_config);
 }
 
 void CommonHost::OnVMStarting()
@@ -265,11 +290,19 @@ void CommonHost::OnVMPaused()
 {
 	InputManager::PauseVibration();
 	FullscreenUI::OnVMPaused();
+
+#ifdef ENABLE_ACHIEVEMENTS
+	Achievements::OnPaused(true);
+#endif
 }
 
 void CommonHost::OnVMResumed()
 {
 	FullscreenUI::OnVMResumed();
+
+#ifdef ENABLE_ACHIEVEMENTS
+	Achievements::OnPaused(false);
+#endif
 }
 
 void CommonHost::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name, u32 game_crc)
@@ -280,10 +313,19 @@ void CommonHost::OnGameChanged(const std::string& disc_path, const std::string& 
 			FullscreenUI::OnRunningGameChanged(std::move(disc_path), std::move(game_serial), std::move(game_name), game_crc);
 		});
 	}
+
+#ifdef ENABLE_ACHIEVEMENTS
+	Achievements::GameChanged(game_crc);
+#endif
 }
 
 void CommonHost::CPUThreadVSync()
 {
+#ifdef ENABLE_ACHIEVEMENTS
+	if (Achievements::IsActive())
+		Achievements::VSyncUpdate();
+#endif
+
 	InputManager::PollSources();
 }
 

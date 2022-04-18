@@ -199,6 +199,7 @@ set(pcsx2Sources
 
 # Main pcsx2 header
 set(pcsx2Headers
+	Achievements.h
 	AsyncFileReader.h
 	Cache.h
 	Common.h
@@ -1090,6 +1091,21 @@ if(PCSX2_CORE)
 		HostSettings.h
 		INISettingsInterface.h
 		VMManager.h)
+
+	if(USE_ACHIEVEMENTS)
+		list(APPEND pcsx2FrontendSources
+			Frontend/Achievements.cpp
+		)
+		list(APPEND pcsx2FrontendHeaders
+			Frontend/Achievements.h
+		)
+		target_compile_definitions(PCSX2_FLAGS INTERFACE
+			ENABLE_ACHIEVEMENTS
+		)
+		target_link_libraries(PCSX2_FLAGS INTERFACE
+			rcheevos
+		)
+	endif()
 endif()
 
 # gui sources

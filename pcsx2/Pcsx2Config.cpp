@@ -1016,6 +1016,34 @@ void Pcsx2Config::FramerateOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(SlomoScalar);
 }
 
+#ifdef ENABLE_ACHIEVEMENTS
+
+Pcsx2Config::AchievementsOptions::AchievementsOptions()
+{
+	Enabled = false;
+	TestMode = false;
+	UnofficialTestMode = false;
+	RichPresence = true;
+	ChallengeMode = false;
+	Leaderboards = true;
+	SoundEffects = true;
+}
+
+void Pcsx2Config::AchievementsOptions::LoadSave(SettingsWrapper& wrap)
+{
+	SettingsWrapSection("Achievements");
+
+	SettingsWrapBitBool(Enabled);
+	SettingsWrapBitBool(TestMode);
+	SettingsWrapBitBool(UnofficialTestMode);
+	SettingsWrapBitBool(RichPresence);
+	SettingsWrapBitBool(ChallengeMode);
+	SettingsWrapBitBool(Leaderboards);
+	SettingsWrapBitBool(SoundEffects);
+}
+
+#endif
+
 Pcsx2Config::Pcsx2Config()
 {
 	bitset = 0;
@@ -1101,6 +1129,10 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 
 	Debugger.LoadSave(wrap);
 	Trace.LoadSave(wrap);
+
+#ifdef ENABLE_ACHIEVEMENTS
+	Achievements.LoadSave(wrap);
+#endif
 
 	SettingsWrapEntry(GzipIsoIndexTemplate);
 

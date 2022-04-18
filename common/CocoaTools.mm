@@ -19,6 +19,7 @@
 
 #include "CocoaTools.h"
 #include "Console.h"
+#include "General.h"
 #include "WindowInfo.h"
 #include <vector>
 #include <Cocoa/Cocoa.h>
@@ -124,4 +125,13 @@ void CocoaTools::RemoveThemeChangeHandler(void* ctx)
 {
 	assert([NSThread isMainThread]);
 	[s_themeChangeHandler removeCallback:ctx];
+}
+
+// MARK: - Sound playback
+
+bool Common::PlaySoundAsync(const char* path)
+{
+	NSString* nspath = [[NSString alloc] initWithUTF8String:path];
+	NSSound* sound = [[NSSound alloc] initWithContentsOfFile:nspath byReference:YES];
+	return [sound play];
 }
