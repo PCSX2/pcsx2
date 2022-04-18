@@ -96,6 +96,14 @@ extern void vtlb_memWrite(u32 mem, DataType value);
 extern void vtlb_memWrite64(u32 mem, const mem64_t* value);
 extern void vtlb_memWrite128(u32 mem, const mem128_t* value);
 
+// "Safe" variants of vtlb, designed for external tools.
+// These routines only access the various RAM, and will not call handlers
+// which has the potential to change hardware state.
+template <typename DataType>
+extern DataType vtlb_ramRead(u32 mem);
+template <typename DataType>
+extern bool vtlb_ramWrite(u32 mem, const DataType& value);
+
 extern void vtlb_DynGenWrite(u32 sz);
 extern void vtlb_DynGenRead32(u32 bits, bool sign);
 extern int  vtlb_DynGenRead64(u32 sz, int gpr);
