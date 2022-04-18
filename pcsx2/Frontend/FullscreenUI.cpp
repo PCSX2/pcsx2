@@ -55,6 +55,10 @@
 #include <bitset>
 #include <thread>
 
+#ifdef ENABLE_ACHIEVEMENTS
+#include "Frontend/Achievements.h"
+#endif
+
 static constexpr float LAYOUT_MAIN_MENU_BAR_SIZE = 20.0f; // Should be DPI scaled, not layout scaled!
 static constexpr s32 MAX_SAVE_STATE_SLOTS = 10;
 
@@ -138,13 +142,20 @@ namespace FullscreenUI
 		Landing,
 		GameList,
 		Settings,
-		PauseMenu
+		PauseMenu,
+#ifdef ENABLE_ACHIEVEMENTS
+		Achievements,
+		Leaderboards,
+#endif
 	};
 
 	enum class PauseSubMenu
 	{
 		None,
 		Exit,
+#ifdef ENABLE_ACHIEVEMENTS
+		Achievements,
+#endif
 	};
 
 	enum class SettingsPage
@@ -354,6 +365,17 @@ namespace FullscreenUI
 	// Lazily populated cover images.
 	static std::unordered_map<std::string, std::string> s_cover_image_map;
 	static std::vector<const GameList::Entry*> s_game_list_sorted_entries;
+
+#ifdef ENABLE_ACHIEVEMENTS
+	//////////////////////////////////////////////////////////////////////////
+	// Achievements
+	//////////////////////////////////////////////////////////////////////////
+	static void SwitchToAchievements();
+	static void SwitchToLeaderboards();
+	static void DrawAchievementsWindow();
+	static void DrawAchievement(const Achievements::Achievement& cheevo);
+	static void DrawLeaderboardsWindow();
+#endif
 } // namespace FullscreenUI
 
 //////////////////////////////////////////////////////////////////////////
@@ -615,6 +637,14 @@ void FullscreenUI::Render()
 		case MainWindowType::PauseMenu:
 			DrawPauseMenu(s_current_main_window);
 			break;
+#ifdef ENABLE_ACHIEVEMENTS
+		case MainWindowType::Achievements:
+			DrawAchievementsWindow();
+			break;
+		case MainWindowType::Leaderboards:
+			DrawLeaderboardsWindow();
+			break;
+#endif
 		default:
 			break;
 	}
@@ -2772,15 +2802,17 @@ void FullscreenUI::DrawHotkeySettingsPage()
 	EndMenuButtons();
 }
 
+#ifndef ENABLE_ACHIEVEMENTS
+
 void FullscreenUI::DrawAchievementsSettingsPage()
 {
-	// TODO: Implement once achievements are merged.
-
 	BeginMenuButtons();
 	ActiveButton(ICON_FA_BAN "  This build was not compiled with RetroAchivements support.", false, false,
 		ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 	EndMenuButtons();
 }
+
+#endif
 
 void FullscreenUI::DrawAdvancedSettingsPage()
 {
@@ -2855,8 +2887,11 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			window_pos, window_size, "pause_menu", ImVec4(0.0f, 0.0f, 0.0f, 0.0f), 0.0f, 10.0f, ImGuiWindowFlags_NoBackground))
 	{
 		static constexpr u32 submenu_item_count[] = {
-			10, // None
+			11, // None
 			4, // Exit
+#ifdef ENABLE_ACHIEVEMENTS
+			3, // Achievements
+#endif
 		};
 
 		const bool just_focused = ResetFocusHere();
@@ -2895,6 +2930,22 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 				{
 					SwitchToGameSettings();
 				}
+
+#ifdef ENABLE_ACHIEVEMENTS
+				if (ActiveButton(ICON_FA_TROPHY "  Achievements", false,
+						Achievements::HasActiveGame() && Achievements::SafeHasAchievementsOrLeaderboards()))
+				{
+					const auto lock = Achievements::GetLock();
+
+					// skip second menu and go straight to cheevos if there's no lbs
+					if (Achievements::GetLeaderboardCount() == 0)
+						SwitchToAchievements();
+					else
+						OpenPauseSubMenu(PauseSubMenu::Achievements);
+				}
+#else
+				ActiveButton(ICON_FA_TROPHY "  Achievements", false, false);
+#endif
 
 				if (ActiveButton(ICON_FA_CAMERA "  Save Screenshot", false))
 				{
@@ -2953,6 +3004,21 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 					DoShutdown(false);
 			}
 			break;
+
+#ifdef ENABLE_ACHIEVEMENTS
+			case PauseSubMenu::Achievements:
+			{
+				if (ActiveButton(ICON_FA_BACKWARD "  Back To Pause Menu", false))
+					OpenPauseSubMenu(PauseSubMenu::None);
+
+				if (ActiveButton(ICON_FA_TROPHY "  Achievements", false))
+					SwitchToAchievements();
+
+				if (ActiveButton(ICON_FA_STOPWATCH "  Leaderboards", false))
+					SwitchToLeaderboards();
+			}
+			break;
+#endif
 		}
 
 		EndMenuButtons();
@@ -3769,3 +3835,375 @@ void FullscreenUI::ProgressCallback::SetCancelled()
 	if (m_cancellable)
 		m_cancelled = true;
 }
+
+#ifdef ENABLE_ACHIEVEMENTS
+
+void FullscreenUI::SwitchToAchievements()
+{
+	s_current_main_window = MainWindowType::Achievements;
+}
+
+void FullscreenUI::DrawAchievement(const Achievements::Achievement& cheevo)
+{
+	static constexpr float alpha = 0.8f;
+	static constexpr float progress_height_unscaled = 20.0f;
+	static constexpr float progress_spacing_unscaled = 5.0f;
+
+	std::string id_str(fmt::format("chv_{}", cheevo.id));
+
+	const auto progress = Achievements::GetAchievementProgress(cheevo);
+	const bool is_measured = progress.second != 0;
+
+	ImRect bb;
+	bool visible, hovered;
+	bool pressed = MenuButtonFrame(id_str.c_str(), true,
+		!is_measured ? LAYOUT_MENU_BUTTON_HEIGHT : LAYOUT_MENU_BUTTON_HEIGHT + progress_height_unscaled + progress_spacing_unscaled,
+		&visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
+	if (!visible)
+		return;
+
+	const ImVec2 image_size(LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT, LAYOUT_MENU_BUTTON_HEIGHT));
+	const std::string& badge_path = Achievements::GetAchievementBadgePath(cheevo);
+	if (!badge_path.empty())
+	{
+		HostDisplayTexture* badge = GetCachedTextureAsync(badge_path.c_str());
+		if (badge)
+		{
+			ImGui::GetWindowDrawList()->AddImage(
+				badge->GetHandle(), bb.Min, bb.Min + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+		}
+	}
+
+	const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
+	const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
+	const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
+	const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
+
+	ImGui::PushFont(g_large_font);
+	ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, cheevo.title.c_str(), cheevo.title.c_str() + cheevo.title.size(), nullptr,
+		ImVec2(0.0f, 0.0f), &title_bb);
+	ImGui::PopFont();
+
+	if (!cheevo.description.empty())
+	{
+		ImGui::PushFont(g_medium_font);
+		ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, cheevo.description.c_str(),
+			cheevo.description.c_str() + cheevo.description.size(), nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+		ImGui::PopFont();
+	}
+
+	if (is_measured)
+	{
+		ImDrawList* dl = ImGui::GetWindowDrawList();
+		const float progress_height = LayoutScale(progress_height_unscaled);
+		const float progress_spacing = LayoutScale(progress_spacing_unscaled);
+		const float top = midpoint + g_medium_font->FontSize + progress_spacing;
+		const ImRect progress_bb(ImVec2(text_start_x, top), ImVec2(bb.Max.x, top + progress_height));
+		const float fraction = static_cast<float>(progress.first) / static_cast<float>(progress.second);
+		dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryDarkColor));
+		dl->AddRectFilled(progress_bb.Min, ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
+			ImGui::GetColorU32(ImGuiFullscreen::UISecondaryColor));
+
+		const std::string text(Achievements::GetAchievementProgressText(cheevo));
+		const ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
+		const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
+			progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
+		dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryTextColor), text.c_str(),
+			text.c_str() + text.size());
+	}
+
+#if 0
+	// The API doesn't seem to send us this :(
+	if (!cheevo.locked)
+	{
+		ImGui::PushFont(g_medium_font);
+
+		const ImRect time_bb(ImVec2(text_start_x, bb.Min.y),
+			ImVec2(bb.Max.x, bb.Min.y + g_medium_font->FontSize + LayoutScale(4.0f)));
+		text.Format("Unlocked 21 Feb, 2019 @ 3:14am");
+		ImGui::RenderTextClipped(time_bb.Min, time_bb.Max, text.GetCharArray(), text.GetCharArray() + text.GetLength(),
+			nullptr, ImVec2(1.0f, 0.0f), &time_bb);
+		ImGui::PopFont();
+	}
+#endif
+
+	if (pressed)
+	{
+		// TODO: What should we do here?
+		// Display information or something..
+	}
+}
+
+void FullscreenUI::DrawAchievementsWindow()
+{
+	// ensure image downloads still happen while we're paused
+	Achievements::ProcessPendingHTTPRequestsFromGSThread();
+
+	static constexpr float alpha = 0.8f;
+	static constexpr float heading_height_unscaled = 110.0f;
+
+	ImGui::SetNextWindowBgAlpha(alpha);
+
+	const ImVec4 background(0.13f, 0.13f, 0.13f, alpha);
+	const ImVec2 display_size(ImGui::GetIO().DisplaySize);
+	const float heading_height = LayoutScale(heading_height_unscaled);
+
+	if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), ImVec2(display_size.x, heading_height), "achievements_heading", background, 0.0f, 0.0f,
+			ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse))
+	{
+		auto lock = Achievements::GetLock();
+
+		ImRect bb;
+		bool visible, hovered;
+		/*bool pressed = */ MenuButtonFrame(
+			"achievements_heading", false, heading_height_unscaled, &visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
+
+		if (visible)
+		{
+			const float padding = LayoutScale(10.0f);
+			const float spacing = LayoutScale(10.0f);
+			const float image_height = LayoutScale(85.0f);
+
+			const ImVec2 icon_min(bb.Min + ImVec2(padding, padding));
+			const ImVec2 icon_max(icon_min + ImVec2(image_height, image_height));
+
+			const std::string& icon_path = Achievements::GetGameIcon();
+			if (!icon_path.empty())
+			{
+				HostDisplayTexture* badge = GetCachedTexture(icon_path.c_str());
+				if (badge)
+				{
+					ImGui::GetWindowDrawList()->AddImage(
+						badge->GetHandle(), icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+				}
+			}
+
+			float left = bb.Min.x + padding + image_height + spacing;
+			float right = bb.Max.x - padding;
+			float top = bb.Min.y + padding;
+			ImDrawList* dl = ImGui::GetWindowDrawList();
+			std::string text;
+			ImVec2 text_size;
+
+			const u32 unlocked_count = Achievements::GetUnlockedAchiementCount();
+			const u32 achievement_count = Achievements::GetAchievementCount();
+			const u32 current_points = Achievements::GetCurrentPointsForGame();
+			const u32 total_points = Achievements::GetMaximumPointsForGame();
+
+			if (FloatingButton(ICON_FA_WINDOW_CLOSE, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) || WantsToCloseMenu())
+			{
+				ReturnToMainWindow();
+			}
+
+			const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + g_large_font->FontSize));
+			text = Achievements::GetGameTitle();
+
+			if (Achievements::IsChallengeModeActive())
+				text += " (Hardcore Mode)";
+
+			top += g_large_font->FontSize + spacing;
+
+			ImGui::PushFont(g_large_font);
+			ImGui::RenderTextClipped(
+				title_bb.Min, title_bb.Max, text.c_str(), text.c_str() + text.length(), nullptr, ImVec2(0.0f, 0.0f), &title_bb);
+			ImGui::PopFont();
+
+			const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + g_medium_font->FontSize));
+			if (unlocked_count == achievement_count)
+			{
+				text = fmt::format("You have unlocked all achievements and earned {} points!", total_points);
+			}
+			else
+			{
+				text = fmt::format("You have unlocked {} of {} achievements, earning {} of {} possible points.", unlocked_count,
+					achievement_count, current_points, total_points);
+			}
+
+			top += g_medium_font->FontSize + spacing;
+
+			ImGui::PushFont(g_medium_font);
+			ImGui::RenderTextClipped(
+				summary_bb.Min, summary_bb.Max, text.c_str(), text.c_str() + text.length(), nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+			ImGui::PopFont();
+
+			const float progress_height = LayoutScale(20.0f);
+			const ImRect progress_bb(ImVec2(left, top), ImVec2(right, top + progress_height));
+			const float fraction = static_cast<float>(unlocked_count) / static_cast<float>(achievement_count);
+			dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryDarkColor));
+			dl->AddRectFilled(progress_bb.Min, ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
+				ImGui::GetColorU32(ImGuiFullscreen::UISecondaryColor));
+
+			text = fmt::format("{}%", static_cast<int>(std::round(fraction * 100.0f)));
+			text_size = ImGui::CalcTextSize(text.c_str());
+			const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
+				progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
+			dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryTextColor),
+				text.c_str(), text.c_str() + text.length());
+			top += progress_height + spacing;
+		}
+	}
+	EndFullscreenWindow();
+
+	ImGui::SetNextWindowBgAlpha(alpha);
+
+	if (BeginFullscreenWindow(ImVec2(0.0f, heading_height), ImVec2(display_size.x, display_size.y - heading_height), "achievements",
+			background, 0.0f, 0.0f, 0))
+	{
+		BeginMenuButtons();
+
+		static bool unlocked_achievements_collapsed = false;
+
+		unlocked_achievements_collapsed ^=
+			MenuHeadingButton("Unlocked Achievements", unlocked_achievements_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
+		if (!unlocked_achievements_collapsed)
+		{
+			Achievements::EnumerateAchievements([](const Achievements::Achievement& cheevo) -> bool {
+				if (!cheevo.locked)
+					DrawAchievement(cheevo);
+
+				return true;
+			});
+		}
+
+		if (Achievements::GetUnlockedAchiementCount() != Achievements::GetAchievementCount())
+		{
+			static bool locked_achievements_collapsed = false;
+			locked_achievements_collapsed ^=
+				MenuHeadingButton("Locked Achievements", locked_achievements_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
+			if (!locked_achievements_collapsed)
+			{
+				Achievements::EnumerateAchievements([](const Achievements::Achievement& cheevo) -> bool {
+					if (cheevo.locked)
+						DrawAchievement(cheevo);
+
+					return true;
+				});
+			}
+		}
+
+		EndMenuButtons();
+	}
+	EndFullscreenWindow();
+}
+
+void FullscreenUI::SwitchToLeaderboards()
+{
+}
+
+void FullscreenUI::DrawLeaderboardsWindow()
+{
+}
+
+void FullscreenUI::DrawAchievementsSettingsPage()
+{
+#ifdef ENABLE_RAINTEGRATION
+	if (Achievements::IsUsingRAIntegration())
+	{
+		BeginMenuButtons();
+		ActiveButton(ICON_FA_BAN "  RAIntegration is being used instead of the built-in achievements implementation.", false, false,
+			LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+		EndMenuButtons();
+		return;
+	}
+#endif
+
+	Achievements::ProcessPendingHTTPRequestsFromGSThread();
+
+	const auto lock = Achievements::GetLock();
+
+	BeginMenuButtons();
+
+	MenuHeading("Settings");
+	if (DrawToggleSetting(ICON_FA_TROPHY "  Enable RetroAchievements",
+			"When enabled and logged in, PCSX2 will scan for achievements on startup.", "Achievements", "Enabled", false))
+	{
+		// TODO: Confirmation for challenge mode
+	}
+
+	SettingsInterface* bsi = GetEditingSettingsInterface();
+	const bool enabled = bsi->GetBoolValue("Achievements", "Enabled", false);
+
+	DrawToggleSetting(ICON_FA_USER_FRIENDS "  Rich Presence",
+		"When enabled, rich presence information will be collected and sent to the server where supported.", "Achievements", "RichPresence",
+		true, enabled);
+	DrawToggleSetting(ICON_FA_STETHOSCOPE "  Test Mode",
+		"When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server.", "Achievements",
+		"TestMode", false, enabled);
+	DrawToggleSetting(ICON_FA_MEDAL "  Test Unofficial Achievements",
+		"When enabled, PCSX2 will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.",
+		"Achievements", "UnofficialTestMode", false, enabled);
+	if (DrawToggleSetting(ICON_FA_HARD_HAT "  Hardcore Mode",
+			"\"Challenge\" mode for achievements. Disables save state, cheats, and slowdown functions, but you receive double the "
+			"achievement points.",
+			"Achievements", "ChallengeMode", false, enabled))
+	{
+		// TODO: Confirmation for challenge mode.
+	}
+
+	MenuHeading("Account");
+	if (Achievements::IsLoggedIn())
+	{
+		ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
+		ActiveButton(fmt::format(ICON_FA_USER "  Username: {}", Achievements::GetUsername()).c_str(), false, false,
+			LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+
+		const u64 ts = StringUtil::FromChars<u64>(bsi->GetStringValue("Achievements", "LoginTimestamp", "0")).value_or(0);
+		ActiveButton(fmt::format(ICON_FA_CLOCK "  Login token generated on {}", TimeToPrintableString(static_cast<time_t>(ts))).c_str(),
+			false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+		ImGui::PopStyleColor();
+
+		if (MenuButton(ICON_FA_KEY "  Logout", "Logs out of RetroAchievements."))
+		{
+			Host::RunOnCPUThread([]() { Achievements::Logout(); });
+		}
+	}
+	else if (Achievements::IsActive())
+	{
+		ActiveButton(ICON_FA_USER "  Not Logged In", false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+
+		if (MenuButton(ICON_FA_KEY "  Login", "Logs in to RetroAchievements."))
+			ImGui::OpenPopup("Achievements Login");
+
+		//DrawAchievementsLoginWindow();
+	}
+	else
+	{
+		ActiveButton(ICON_FA_USER "  Achievements are disabled.", false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+	}
+
+	MenuHeading("Current Game");
+	if (Achievements::HasActiveGame())
+	{
+		ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
+		ActiveButton(fmt::format(ICON_FA_BOOKMARK "  Game ID: {}", Achievements::GetGameID()).c_str(), false, false,
+			LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+		ActiveButton(fmt::format(ICON_FA_BOOK "  Game Title: {}", Achievements::GetGameTitle()).c_str(), false, false,
+			LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+		ActiveButton(fmt::format(ICON_FA_TROPHY "  Achievements: {} ({} points)", Achievements::GetAchievementCount(),
+						 Achievements::GetMaximumPointsForGame())
+						 .c_str(),
+			false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+
+		const std::string& rich_presence_string = Achievements::GetRichPresenceString();
+		if (!rich_presence_string.empty())
+		{
+			ActiveButton(fmt::format(ICON_FA_MAP "  {}", rich_presence_string).c_str(), false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+		}
+		else
+		{
+			ActiveButton(ICON_FA_MAP "  Rich presence inactive or unsupported.", false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+		}
+
+		ImGui::PopStyleColor();
+	}
+	else
+	{
+		ActiveButton(
+			ICON_FA_BAN "  Game not loaded or no RetroAchievements available.", false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+	}
+
+	EndMenuButtons();
+}
+
+
+#endif

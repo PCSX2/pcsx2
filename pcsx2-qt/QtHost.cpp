@@ -36,6 +36,7 @@
 #include "common/Timer.h"
 
 #include "pcsx2/DebugTools/Debug.h"
+#include "pcsx2/Frontend/Achievements.h"
 #include "pcsx2/Frontend/GameList.h"
 #include "pcsx2/Frontend/INISettingsInterface.h"
 #include "pcsx2/Frontend/LogSink.h"
@@ -93,6 +94,12 @@ bool QtHost::Initialize()
 		QMessageBox::critical(nullptr, QStringLiteral("Error"), QStringLiteral("Failed to initialize config."));
 		return false;
 	}
+
+#ifdef ENABLE_RAINTEGRATION
+	// RAIntegration switch must happen before the UI is created.
+	if (Host::GetBaseBoolSettingValue("Achievements", "UseRAIntegration", false))
+		Achievements::SwitchToRAIntegration();
+#endif
 
 	HookSignals();
 	EmuThread::start();

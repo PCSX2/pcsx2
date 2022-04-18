@@ -41,6 +41,10 @@
 #include "pcsx2/Recording/InputRecordingControls.h"
 #include "pcsx2/VMManager.h"
 
+#ifdef ENABLE_ACHIEVEMENTS
+#include "pcsx2/Frontend/Achievements.h"
+#endif
+
 #include "DisplayWidget.h"
 #include "EmuThread.h"
 #include "MainWindow.h"
@@ -956,6 +960,45 @@ void Host::OnSaveStateSaved(const std::string_view& filename)
 {
 	emit g_emu_thread->onSaveStateSaved(QtUtils::StringViewToQString(filename));
 }
+
+#ifdef ENABLE_ACHIEVEMENTS
+void Host::OnAchievementsRefreshed()
+{
+	u32 game_id = 0;
+	u32 achievement_count = 0;
+	u32 max_points = 0;
+
+	QString game_info;
+
+	if (Achievements::HasActiveGame())
+	{
+		game_id = Achievements::GetGameID();
+		achievement_count = Achievements::GetAchievementCount();
+		max_points = Achievements::GetMaximumPointsForGame();
+
+		game_info = qApp->translate("EmuThread",
+							"Game ID: %1\n"
+							"Game Title: %2\n"
+							"Achievements: %5 (%6)\n\n")
+						.arg(game_id)
+						.arg(QString::fromStdString(Achievements::GetGameTitle()))
+						.arg(achievement_count)
+						.arg(qApp->translate("EmuThread", "%n points", "", max_points));
+
+		const std::string rich_presence_string(Achievements::GetRichPresenceString());
+		if (!rich_presence_string.empty())
+			game_info.append(QString::fromStdString(rich_presence_string));
+		else
+			game_info.append(qApp->translate("EmuThread", "Rich presence inactive or unsupported."));
+	}
+	else
+	{
+		game_info = qApp->translate("EmuThread", "Game not loaded or no RetroAchievements available.");
+	}
+
+	emit g_emu_thread->onRetroAchievementsRefreshed(game_id, game_info, achievement_count, max_points);
+}
+#endif
 
 void Host::PumpMessagesOnCPUThread()
 {

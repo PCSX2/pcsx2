@@ -60,6 +60,10 @@
 #include "Frontend/InputManager.h"
 #include "Frontend/GameList.h"
 
+#ifdef ENABLE_ACHIEVEMENTS
+#include "Frontend/Achievements.h"
+#endif
+
 #include "common/emitter/tools.h"
 #ifdef _M_X86
 #include "common/emitter/x86_intrin.h"
@@ -184,7 +188,8 @@ void VMManager::SetState(VMState state)
 
 	if (state != VMState::Stopping && (state == VMState::Paused || old_state == VMState::Paused))
 	{
-		if (state == VMState::Paused)
+		const bool paused = (state == VMState::Paused);
+		if (paused)
 		{
 			if (THREAD_VU1)
 				vu1Thread.WaitVU();
@@ -197,8 +202,14 @@ void VMManager::SetState(VMState state)
 			frameLimitReset();
 		}
 
-		SPU2SetOutputPaused(state == VMState::Paused);
-		if (state == VMState::Paused)
+		SPU2SetOutputPaused(paused);
+
+#ifdef ENABLE_ACHIEVEMENTS
+		Achievements::OnPaused(paused);
+#endif
+
+		// Host notification comes last after everything else.
+		if (paused)
 		{
 			Host::OnVMPaused();
 			FullscreenUI::OnVMPaused();
@@ -689,6 +700,11 @@ void VMManager::UpdateRunningGame(bool resetting, bool game_starting)
 		});
 	}
 
+#ifdef ENABLE_ACHIEVEMENTS
+	if (Achievements::IsActive())
+		Achievements::GameChanged();
+#endif
+
 #if 0
 	// TODO: Enable this when the debugger is added to Qt, and it's active. Otherwise, this is just a waste of time.
 	// In other words, it should be lazily initialized.
@@ -970,6 +986,11 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	frameLimitReset();
 	cpuReset();
 
+#ifdef ENABLE_ACHIEVEMENTS
+	if (EmuConfig.Achievements.Enabled)
+		Achievements::Initialize();
+#endif
+
 	Console.WriteLn("VM subsystems initialized in %.2f ms", init_timer.GetTimeMilliseconds());
 	s_state.store(VMState::Paused, std::memory_order_release);
 	Host::OnVMStarted();
@@ -996,6 +1017,11 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 
 void VMManager::Shutdown(bool save_resume_state)
 {
+#ifdef ENABLE_ACHIEVEMENTS
+	if (!Achievements::Shutdown())
+		return;
+#endif
+
 	// we'll probably already be stopping (this is how Qt calls shutdown),
 	// but just in case, so any of the stuff we call here knows we don't have a valid VM.
 	s_state.store(VMState::Stopping, std::memory_order_release);
@@ -1068,6 +1094,11 @@ void VMManager::Shutdown(bool save_resume_state)
 
 void VMManager::Reset()
 {
+#ifdef ENABLE_ACHIEVEMENTS
+	if (!Achievements::Reset())
+		return;
+#endif
+
 	const bool game_was_started = g_GameStarted;
 
 	s_active_game_fixes = 0;
@@ -1428,6 +1459,12 @@ void VMManager::Internal::GameStartingOnCPUThread()
 void VMManager::Internal::VSyncOnCPUThread()
 {
 	// TODO: Move frame limiting here to reduce CPU usage after sleeping...
+
+#ifdef ENABLE_ACHIEVEMENTS
+	if (Achievements::IsActive())
+		Achievements::VSyncUpdate();
+#endif
+
 	ApplyLoadedPatches(PPT_CONTINUOUSLY);
 	ApplyLoadedPatches(PPT_COMBINED_0_1);
 
@@ -1635,6 +1672,11 @@ void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)
 	{
 		VMManager::ReloadPatches(true, true);
 	}
+
+#ifdef ENABLE_ACHIEVEMENTS
+	if (EmuConfig.Achievements != old_config.Achievements)
+		Achievements::UpdateSettings(old_config.Achievements);
+#endif
 }
 
 void VMManager::ApplySettings()

@@ -53,6 +53,10 @@
 #include "Tools/InputRecording/NewInputRecordingDlg.h"
 
 
+#ifdef ENABLE_RAINTEGRATION
+#include "pcsx2/Frontend/Achievements.h"
+#endif
+
 static constexpr char DISC_IMAGE_FILTER[] =
 	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.chd *.cso *.gz *.elf *.irx *.m3u *.gs *.gs.xz *.gs.zst *.dump);;"
 									"Single-Track Raw Images (*.bin *.iso);;"
@@ -181,6 +185,32 @@ void MainWindow::setupAdditionalUi()
 	}
 
 	updateEmulationActions(false, false);
+
+#ifdef ENABLE_RAINTEGRATION
+	if (Achievements::IsUsingRAIntegration())
+	{
+		QMenu* raMenu = new QMenu(QStringLiteral("RAIntegration"), m_ui.menuDebug);
+		connect(raMenu, &QMenu::aboutToShow, this, [this, raMenu]() {
+			raMenu->clear();
+
+			const auto items = Achievements::RAIntegration::GetMenuItems();
+			for (const auto& [id, title] : items)
+			{
+				if (id == 0)
+				{
+					raMenu->addSeparator();
+					continue;
+				}
+
+				QAction* raAction = raMenu->addAction(QString::fromUtf8(title));
+				connect(raAction, &QAction::triggered, this, [id]() {
+					Host::RunOnCPUThread([id]() { Achievements::RAIntegration::ActivateMenuItem(id); }, false);
+				});
+			}
+		});
+		m_ui.menuDebug->insertMenu(m_ui.actionToggleSoftwareRendering, raMenu);
+	}
+#endif
 }
 
 void MainWindow::connectSignals()
@@ -212,6 +242,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionMemoryCardSettings, &QAction::triggered, [this]() { doSettings("Memory Cards"); });
 	connect(m_ui.actionDEV9Settings, &QAction::triggered, [this]() { doSettings("Network & HDD"); });
 	connect(m_ui.actionFolderSettings, &QAction::triggered, [this]() { doSettings("Folders"); });
+	connect(m_ui.actionAchievementSettings, &QAction::triggered, [this]() { doSettings("Achievements"); });
 	connect(
 		m_ui.actionControllerSettings, &QAction::triggered, [this]() { doControllerSettings(ControllerSettingsDialog::Category::GlobalSettings); });
 	connect(m_ui.actionHotkeySettings, &QAction::triggered, [this]() { doControllerSettings(ControllerSettingsDialog::Category::HotkeySettings); });
@@ -1445,6 +1476,11 @@ void MainWindow::showEvent(QShowEvent* event)
 	// the rest of the window... so, instead, let's just force it to be resized on show.
 	if (isShowingGameList())
 		m_game_list_widget->resizeTableViewColumnsToFit();
+
+#ifdef ENABLE_RAINTEGRATION
+	if (Achievements::IsUsingRAIntegration())
+		Achievements::RAIntegration::MainWindowChanged((void*)winId());
+#endif
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)

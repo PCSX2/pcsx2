@@ -77,6 +77,9 @@ public:
 	explicit MainWindow(const QString& unthemed_style_name);
 	~MainWindow();
 
+	__fi bool isVMValid() const { return m_vm_valid; }
+	__fi bool isVMPaused() const { return m_vm_paused; }
+
 	void initialize();
 	void connectVMThreadSignals(EmuThread* thread);
 	void startupUpdateCheck();

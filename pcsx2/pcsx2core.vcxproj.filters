@@ -1281,6 +1281,9 @@
     <ClCompile Include="Frontend\FullscreenUI.cpp">
       <Filter>Host</Filter>
     </ClCompile>
+    <ClCompile Include="Frontend\Achievements.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2129,6 +2132,9 @@
       <Filter>Host</Filter>
     </ClInclude>
     <ClInclude Include="Frontend\FullscreenUI.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\Achievements.h">
       <Filter>Host</Filter>
     </ClInclude>
   </ItemGroup>

@@ -223,6 +223,18 @@
     <ClCompile Include="$(IntDir)Settings\moc_FolderSettingsWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="Settings\AchievementSettingsWidget.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings\AchievementLoginDialog.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Settings\moc_AchievementSettingsWidget.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Settings\moc_AchievementLoginDialog.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -325,7 +337,15 @@
     <QtMoc Include="Tools\InputRecording\NewInputRecordingDlg.h">
       <Filter>Tools\Input Recording</Filter>
     </QtMoc>
-    <QtMoc Include="Settings\FolderSettingsWidget.h" />
+    <QtMoc Include="Settings\FolderSettingsWidget.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
+    <QtMoc Include="Settings\AchievementLoginDialog.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
+    <QtMoc Include="Settings\AchievementSettingsWidget.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">
@@ -400,6 +420,12 @@
     <QtUi Include="AutoUpdaterDialog.ui" />
     <QtUi Include="Tools\InputRecording\NewInputRecordingDlg.ui">
       <Filter>Tools\Input Recording</Filter>
+    </QtUi>
+    <QtUi Include="Settings\AchievementSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\AchievementLoginDialog.ui">
+      <Filter>Settings</Filter>
     </QtUi>
   </ItemGroup>
   <ItemGroup>
