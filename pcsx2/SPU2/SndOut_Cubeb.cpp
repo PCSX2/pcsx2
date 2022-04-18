@@ -108,7 +108,9 @@ private:
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// Configuration Vars
+#ifdef _WIN32
 	bool m_COMInitializedByUs = false;
+#endif
 	bool m_SuggestedLatencyMinimal = false;
 	int m_SuggestedLatencyMS = 20;
 	std::string m_Backend;
