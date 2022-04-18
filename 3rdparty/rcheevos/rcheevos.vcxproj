@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(SolutionDir)common\vsprops\BaseProjectConfig.props" />
+  <Import Project="$(SolutionDir)common\vsprops\WinSDK.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6D5B5AD9-1525-459B-939F-A5E1082AF6B3}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
+    <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="..\DefaultProjectRootDir.props" />
+    <Import Project="..\3rdparty.props" />
+    <Import Condition="$(Configuration.Contains(Debug))" Project="..\..\common\vsprops\CodeGen_Debug.props" />
+    <Import Condition="$(Configuration.Contains(Devel))" Project="..\..\common\vsprops\CodeGen_Devel.props" />
+    <Import Condition="$(Configuration.Contains(Release))" Project="..\..\common\vsprops\CodeGen_Release.props" />
+    <Import Condition="!$(Configuration.Contains(Release))" Project="..\..\common\vsprops\IncrementalLinking.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="rcheevos\src\rapi\rc_api_common.c" />
+    <ClCompile Include="rcheevos\src\rapi\rc_api_editor.c" />
+    <ClCompile Include="rcheevos\src\rapi\rc_api_info.c" />
+    <ClCompile Include="rcheevos\src\rapi\rc_api_runtime.c" />
+    <ClCompile Include="rcheevos\src\rapi\rc_api_user.c" />
+    <ClCompile Include="rcheevos\src\rcheevos\alloc.c" />
+    <ClCompile Include="rcheevos\src\rcheevos\compat.c" />
+    <ClCompile Include="rcheevos\src\rcheevos\condition.c" />
+    <ClCompile Include="rcheevos\src\rcheevos\condset.c" />
+    <ClCompile Include="rcheevos\src\rcheevos\consoleinfo.c" />
+    <ClCompile Include="rcheevos\src\rcheevos\format.c" />
+    <ClCompile Include="rcheevos\src\rcheevos\lboard.c" />
+    <ClCompile Include="rcheevos\src\rcheevos\memref.c" />
+    <ClCompile Include="rcheevos\src\rcheevos\operand.c" />
+    <ClCompile Include="rcheevos\src\rcheevos\rc_validate.c" />
+    <ClCompile Include="rcheevos\src\rcheevos\richpresence.c" />
+    <ClCompile Include="rcheevos\src\rcheevos\runtime.c" />
+    <ClCompile Include="rcheevos\src\rcheevos\runtime_progress.c" />
+    <ClCompile Include="rcheevos\src\rcheevos\trigger.c" />
+    <ClCompile Include="rcheevos\src\rcheevos\value.c" />
+    <ClCompile Include="rcheevos\src\rhash\hash.c" />
+    <ClCompile Include="rcheevos\src\rhash\md5.c" />
+    <ClCompile Include="rcheevos\src\rurl\url.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="rcheevos\include\rcheevos.h" />
+    <ClInclude Include="rcheevos\include\rc_api_editor.h" />
+    <ClInclude Include="rcheevos\include\rc_api_info.h" />
+    <ClInclude Include="rcheevos\include\rc_api_request.h" />
+    <ClInclude Include="rcheevos\include\rc_api_runtime.h" />
+    <ClInclude Include="rcheevos\include\rc_api_user.h" />
+    <ClInclude Include="rcheevos\include\rc_consoles.h" />
+    <ClInclude Include="rcheevos\include\rc_error.h" />
+    <ClInclude Include="rcheevos\include\rc_hash.h" />
+    <ClInclude Include="rcheevos\include\rc_runtime.h" />
+    <ClInclude Include="rcheevos\include\rc_runtime_types.h" />
+    <ClInclude Include="rcheevos\include\rc_url.h" />
+    <ClInclude Include="rcheevos\src\rapi\rc_api_common.h" />
+    <ClInclude Include="rcheevos\src\rcheevos\rc_compat.h" />
+    <ClInclude Include="rcheevos\src\rcheevos\rc_internal.h" />
+    <ClInclude Include="rcheevos\src\rcheevos\rc_validate.h" />
+    <ClInclude Include="rcheevos\src\rhash\md5.h" />
+  </ItemGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_WARNINGS;RC_DISABLE_LUA;RCHEEVOS_URL_SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)rcheevos\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>
