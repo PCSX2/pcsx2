@@ -498,17 +498,16 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 4, buf_size))
 					goto error;
 				EmuStatus status;
-				switch (m_vm->HasActiveMachine())
+				if (m_vm->HasActiveMachine())
 				{
-					case true:
-						if (GetCoreThread().IsClosing())
-							status = Paused;
-						else
-							status = Running;
-						break;
-					case false:
-						status = Shutdown;
-						break;
+					if (GetCoreThread().IsClosing())
+						status = Paused;
+					else
+						status = Running;
+				}
+				else
+				{
+					status = Shutdown;
 				}
 				ToArray(ret_buffer, status, ret_cnt);
 				ret_cnt += 4;
