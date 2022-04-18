@@ -20,6 +20,7 @@ target_sources(common PRIVATE
 	FastJmp.cpp
 	FileSystem.cpp
 	Image.cpp
+	HTTPDownloader.cpp
 	Misc.cpp
 	MD5Digest.cpp
 	PrecompiledHeader.cpp
@@ -29,6 +30,7 @@ target_sources(common PRIVATE
 	SettingsWrapper.cpp
 	StringUtil.cpp
 	Timer.cpp
+	ThreadPool.cpp
 	WindowInfo.cpp
 	emitter/bmi.cpp
 	emitter/cpudetect.cpp
@@ -71,6 +73,7 @@ target_sources(common PRIVATE
 	HashCombine.h
 	Image.h
 	LRUCache.h
+	HTTPDownloader.h
 	MemcpyFast.h
 	MemsetFast.inl
 	MD5Digest.h
@@ -87,6 +90,7 @@ target_sources(common PRIVATE
 	StringUtil.h
 	Timer.h
 	Threading.h
+	ThreadPool.h
 	TraceLog.h
 	WindowInfo.h
 	emitter/cpudetect_internal.h
@@ -172,6 +176,8 @@ if(WIN32)
 		CrashHandler.cpp
 		CrashHandler.h
 		FastJmp.asm
+		HTTPDownloaderWinHTTP.cpp
+		HTTPDownloaderWinHTTP.h
 		StackWalker.cpp
 		StackWalker.h
 		D3D11/ShaderCache.cpp
@@ -263,6 +269,15 @@ endif()
 if (USE_GCC AND CMAKE_INTERPROCEDURAL_OPTIMIZATION)
 	# GCC LTO doesn't work with asm statements
 	set_source_files_properties(FastJmp.cpp PROPERTIES COMPILE_FLAGS -fno-lto)
+endif()
+
+if(NOT WIN32 AND (QT_BUILD OR NOGUI_BUILD))
+	# libcurl-based HTTPDownloader
+	target_sources(common PRIVATE
+		HTTPDownloaderCurl.cpp
+		HTTPDownloaderCurl.h
+	)
+	target_link_libraries(common PRIVATE CURL::libcurl)
 endif()
 
 target_link_libraries(common PRIVATE
