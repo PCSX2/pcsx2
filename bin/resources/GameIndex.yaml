@@ -10723,30 +10723,40 @@ SLES-51192:
   name: "Harry Potter and the Chamber of Secrets"
   region: "PAL-E"
   compat: 3
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51193:
   name: "Harry Potter et la Chambre des Secrets"
   region: "PAL-F"
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51194:
   name: "Harry Potter und die Kammer des Schreckens"
   region: "PAL-G"
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51195:
   name: "Harry Potter y La Camara Secreta"
   region: "PAL-S"
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51196:
   name: "Harry Potter e La Camera dei Secreti"
   region: "PAL-I"
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
@@ -10795,36 +10805,48 @@ SLES-51209:
 SLES-51214:
   name: "Harry Potter og Hemmelighedernes Kammer"
   region: "PAL-D"
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51215:
   name: "Harry Potter og Mysteriekammeret"
   region: "PAL-N"
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51216:
   name: "Harry Potter ja Salaisuuksien Kammio"
   region: "PAL-FI"
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51217:
   name: "Harry Potter och Hemligheternas Kammare"
   region: "PAL-SW"
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51218:
   name: "Harry Potter en de Geheime Kamer"
   region: "PAL-DU"
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51219:
   name: "Harry Potter ea Camara dos Segredos"
   region: "PAL-P"
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
@@ -22540,6 +22562,8 @@ SLPM-62239:
 SLPM-62241:
   name: "Harry Potter to Himitsu no Heya"
   region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
@@ -23244,6 +23268,8 @@ SLPM-62512:
 SLPM-62513:
   name: "Harry Potter and the Chamber of Secrets [EA Best Hits]"
   region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
@@ -24026,6 +24052,8 @@ SLPM-64525:
 SLPM-64528:
   name: "Harry Potter and the Chamber of Secrets"
   region: "NTSC-K"
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
@@ -30777,6 +30805,8 @@ SLPM-68003:
 SLPM-68005:
   name: "Harry Potter to Himitsu no Heya [Demo - Coca Cola Original Version]"
   region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
@@ -31565,6 +31595,8 @@ SLPS-20230:
 SLPS-20234:
   name: "Harry Potter to Himitsu no Heya"
   region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
@@ -38350,6 +38382,8 @@ SLUS-20576:
   name: "Harry Potter and The Chamber of Secrets"
   region: "NTSC-U"
   compat: 2
+  gameFixes:
+    - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
