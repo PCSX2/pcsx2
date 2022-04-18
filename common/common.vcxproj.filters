@@ -199,6 +199,12 @@
     <ClCompile Include="D3D12\Builders.cpp">
       <Filter>Source Files\D3D12</Filter>
     </ClCompile>
+    <ClCompile Include="StackWalker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CrashHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlignedMalloc.h">
@@ -455,6 +461,12 @@
     </ClInclude>
     <ClInclude Include="D3D12\Builders.h">
       <Filter>Header Files\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="CrashHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StackWalker.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

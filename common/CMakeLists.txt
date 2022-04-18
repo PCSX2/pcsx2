@@ -175,7 +175,11 @@ if(WIN32)
 	target_sources(common PRIVATE FastJmp.asm)
 	target_link_libraries(common PUBLIC WIL::WIL D3D12MemAlloc pthreads4w Winmm.lib)
 	target_sources(common PRIVATE
+		CrashHandler.cpp
+		CrashHandler.h
 		FastJmp.asm
+		StackWalker.cpp
+		StackWalker.h
 		D3D11/ShaderCache.cpp
 		D3D11/ShaderCache.h
 		D3D11/ShaderCompiler.cpp
