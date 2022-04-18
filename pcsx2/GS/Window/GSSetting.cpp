@@ -148,9 +148,7 @@ const char* dialog_message(int ID, bool* updateText)
 				"Disables accurate Unscale Point and Line rendering.\n"
 				"It can help Xenosaga games.\n\n"
 				"Disables accurate GS Memory Clearing to be done on the CPU, and let only the GPU handle it.\n"
-				"It can help Kingdom Hearts games.\n\n"
-				"Disables special Nvidia hack.\n"
-				"It can help SOTC, Fatal Frame games and possibly others too.");
+				"It can help Kingdom Hearts games.");
 		case IDC_MEMORY_WRAPPING:
 			return cvtString("Emulates GS memory wrapping accurately. This fixes issues where part of the image is cut-off by block shaped sections such as the FMVs in Wallace & Gromit: The Curse of the Were-Rabbit and Thrillville.\n\n"
 				"Note: This hack can have a small impact on performance.");

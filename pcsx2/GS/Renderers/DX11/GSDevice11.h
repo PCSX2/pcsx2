@@ -114,7 +114,6 @@ private:
 	static constexpr u32 MAX_TEXTURES = 3;
 	static constexpr u32 MAX_SAMPLERS = 2;
 
-	float m_hack_topleft_offset;
 	int m_d3d_texsize;
 
 	void SetFeatures();

@@ -81,7 +81,6 @@ bool GSDevice11::Create(HostDisplay* display)
 	m_ctx = static_cast<ID3D11DeviceContext*>(display->GetRenderContext());
 	level = m_dev->GetFeatureLevel();
 
-	bool nvidia_vendor = false;
 	bool amd_vendor = false;
 	{
 		if (auto dxgi_device = m_dev.try_query<IDXGIDevice>())
@@ -89,10 +88,7 @@ bool GSDevice11::Create(HostDisplay* display)
 			wil::com_ptr_nothrow<IDXGIAdapter> dxgi_adapter;
 			DXGI_ADAPTER_DESC adapter_desc;
 			if (SUCCEEDED(dxgi_device->GetAdapter(dxgi_adapter.put())) && SUCCEEDED(dxgi_adapter->GetDesc(&adapter_desc)))
-			{
-				nvidia_vendor = (adapter_desc.VendorId == 0x10DE);
 				amd_vendor = ((adapter_desc.VendorId == 0x1002) || (adapter_desc.VendorId == 0x1022));
-			}
 		}
 	}
 
@@ -117,11 +113,6 @@ bool GSDevice11::Create(HostDisplay* display)
 		m_d3d_texsize = D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
 
 	{
-		// HACK: check nVIDIA
-		// Note: It can cause issues on several games such as SOTC, Fatal Frame, plus it adds border offset.
-		const bool disable_safe_features = theApp.GetConfigB("UserHacks") && theApp.GetConfigB("UserHacks_Disable_Safe_Features");
-		m_hack_topleft_offset = (GSConfig.UpscaleMultiplier != 1 && nvidia_vendor && !disable_safe_features) ? -0.01f : 0.0f;
-
 		// HACK: check AMD
 		// Broken point sampler should be enabled only on AMD.
 		m_features.broken_point_sampler = amd_vendor;
@@ -364,7 +355,7 @@ void GSDevice11::RestoreAPIState()
 	m_ctx->PSSetShader(m_state.ps, nullptr, 0);
 	m_ctx->PSSetConstantBuffers(0, 1, &m_state.ps_cb);
 
-	const CD3D11_VIEWPORT vp(m_hack_topleft_offset, m_hack_topleft_offset,
+	const CD3D11_VIEWPORT vp(0.0f, 0.0f,
 		static_cast<float>(m_state.viewport.x), static_cast<float>(m_state.viewport.y),
 		0.0f, 1.0f);
 	m_ctx->RSSetViewports(1, &vp);
@@ -1180,8 +1171,8 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		D3D11_VIEWPORT vp;
 		memset(&vp, 0, sizeof(vp));
 
-		vp.TopLeftX = m_hack_topleft_offset;
-		vp.TopLeftY = m_hack_topleft_offset;
+		vp.TopLeftX = 0.0f;
+		vp.TopLeftY = 0.0f;
 		vp.Width = (float)size.x;
 		vp.Height = (float)size.y;
 		vp.MinDepth = 0.0f;
