@@ -38,6 +38,7 @@ if(DISABLE_BUILD_DATE OR openSUSE)
 endif()
 
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
+option(USE_ACHIEVEMENTS "Build with RetroAchievements support" ON)
 
 #-------------------------------------------------------------------------------
 # Graphical option
