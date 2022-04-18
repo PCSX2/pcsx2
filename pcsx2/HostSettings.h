@@ -32,6 +32,17 @@ namespace Host
 	double GetBaseDoubleSettingValue(const char* section, const char* key, double default_value = 0.0);
 	std::vector<std::string> GetBaseStringListSetting(const char* section, const char* key);
 
+	// Allows the emucore to write settings back to the frontend. Use with care.
+	// You should call CommitBaseSettingChanges() after finishing writing, or it may not be written to disk.
+	void SetBaseBoolSettingValue(const char* section, const char* key, bool value);
+	void SetBaseIntSettingValue(const char* section, const char* key, int value);
+	void SetBaseUIntSettingValue(const char* section, const char* key, uint value);
+	void SetBaseFloatSettingValue(const char* section, const char* key, float value);
+	void SetBaseStringSettingValue(const char* section, const char* key, const char* value);
+	void SetBaseStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
+	void DeleteBaseSettingValue(const char* section, const char* key);
+	void CommitBaseSettingChanges();
+
 	// Settings access, thread-safe.
 	std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "");
 	bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false);
