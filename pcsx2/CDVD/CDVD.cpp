@@ -26,7 +26,7 @@
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
 
-#include "CdRom.h"
+#include "Ps1CD.h"
 #include "CDVD.h"
 #include "CDVD_internal.h"
 #include "CDVDisoReader.h"
