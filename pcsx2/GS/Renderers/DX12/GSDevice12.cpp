@@ -609,7 +609,6 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	GL_PUSH("DoMerge");
 
 	const GSVector4 full_r(0.0f, 0.0f, 1.0f, 1.0f);
-	const u32 yuv_constants[4] = {EXTBUF.EMODA, EXTBUF.EMODC};
 	const bool feedback_write_2 = PMODE.EN2 && sTex[2] != nullptr && EXTBUF.FBIN == 1;
 	const bool feedback_write_1 = PMODE.EN1 && sTex[2] != nullptr && EXTBUF.FBIN == 0;
 	const bool feedback_write_2_but_blend_bg = feedback_write_2 && PMODE.SLBG == 1;
@@ -623,6 +622,14 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	static_cast<GSTexture12*>(dTex)->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
 	if (sTex[0])
 		static_cast<GSTexture12*>(sTex[0])->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+	// Upload constant to select YUV algo, but skip constant buffer update if we don't need it
+	if (feedback_write_2 || feedback_write_1 || sTex[0])
+	{
+		SetUtilityRootSignature();
+		const MergeConstantBuffer uniforms = {c, EXTBUF.EMODA, EXTBUF.EMODC};
+		SetUtilityPushConstants(&uniforms, sizeof(uniforms));
+	}
 
 	const GSVector2i dsize(dTex->GetSize());
 	const GSVector4i darea(0, 0, dsize.x, dsize.y);
@@ -663,7 +670,6 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		{
 			SetUtilityRootSignature();
 			SetPipeline(m_convert[static_cast<int>(ShaderConvert::YUV)].get());
-			SetUtilityPushConstants(yuv_constants, sizeof(yuv_constants));
 			DrawStretchRect(full_r, dRect[2], fbsize);
 		}
 		EndRenderPass();
@@ -696,7 +702,6 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		SetUtilityRootSignature();
 		SetUtilityTexture(sTex[0], m_linear_sampler_cpu);
 		SetPipeline(m_merge[PMODE.MMOD].get());
-		SetUtilityPushConstants(&c, sizeof(c));
 		DrawStretchRect(sRect[0], dRect[0], dTex->GetSize());
 	}
 
@@ -706,7 +711,6 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		SetUtilityRootSignature();
 		SetPipeline(m_convert[static_cast<int>(ShaderConvert::YUV)].get());
 		SetUtilityTexture(dTex, m_linear_sampler_cpu);
-		SetUtilityPushConstants(yuv_constants, sizeof(yuv_constants));
 		OMSetRenderTargets(sTex[2], nullptr, fbarea);
 		BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE);
 		DrawStretchRect(full_r, dRect[2], dsize);

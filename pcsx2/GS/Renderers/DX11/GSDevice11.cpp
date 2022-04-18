@@ -704,9 +704,7 @@ void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	// Upload constant to select YUV algo, but skip constant buffer update if we don't need it
 	if (feedback_write_2 || feedback_write_1 || sTex[0])
 	{
-		MergeConstantBuffer cb;
-		cb.EMODA = EXTBUF.EMODA;
-		cb.EMODC = EXTBUF.EMODC;
+		const MergeConstantBuffer cb = {c, EXTBUF.EMODA, EXTBUF.EMODC};
 		m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
 	}
 
