@@ -530,6 +530,7 @@ bool VMManager::ApplyBootParameters(const VMBootParameters& params)
 		}
 
 		// Use specified source type.
+		s_disc_path = params.filename;
 		CDVDsys_SetFile(params.source_type.value(), params.filename);
 		CDVDsys_ChangeSource(params.source_type.value());
 	}
