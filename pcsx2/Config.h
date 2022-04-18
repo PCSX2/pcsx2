@@ -941,6 +941,39 @@ struct Pcsx2Config
 		MemoryCardType Type; // the memory card implementation that should be used
 	};
 
+	// ------------------------------------------------------------------------
+
+#ifdef ENABLE_ACHIEVEMENTS
+	struct AchievementsOptions
+	{
+		BITFIELD32()
+		bool
+			Enabled : 1,
+			TestMode : 1,
+			UnofficialTestMode : 1,
+			RichPresence : 1,
+			ChallengeMode : 1,
+			Leaderboards : 1,
+			SoundEffects : 1;
+		BITFIELD_END
+
+		AchievementsOptions();
+		void LoadSave(SettingsWrapper& wrap);
+
+		bool operator==(const AchievementsOptions& right) const
+		{
+			return OpEqu(bitset);
+		}
+
+		bool operator!=(const AchievementsOptions& right) const
+		{
+			return !this->operator==(right);
+		}
+	};
+#endif
+
+	// ------------------------------------------------------------------------
+
 	BITFIELD32()
 	bool
 		CdvdVerboseReads : 1, // enables cdvd read activity verbosely dumped to the console
@@ -992,6 +1025,10 @@ struct Pcsx2Config
 	TraceLogFilters Trace;
 
 	FilenameOptions BaseFilenames;
+
+#ifdef ENABLE_ACHIEVEMENTS
+	AchievementsOptions Achievements;
+#endif
 
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
 	// slots (3 each)

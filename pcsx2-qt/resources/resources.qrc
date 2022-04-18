@@ -37,6 +37,7 @@
 		<file>icons/black/svg/keyboard-line.svg</file>
 		<file>icons/black/svg/layout-grid-line.svg</file>
 		<file>icons/black/svg/list-check.svg</file>
+		<file>icons/black/svg/login-box-line.svg</file>
 		<file>icons/black/svg/pause-line.svg</file>
 		<file>icons/black/svg/play-line.svg</file>
 		<file>icons/black/svg/price-tag-3-line.svg</file>
@@ -47,6 +48,7 @@
 		<file>icons/black/svg/sd-card-line.svg</file>
 		<file>icons/black/svg/settings-3-line.svg</file>
 		<file>icons/black/svg/shut-down-line.svg</file>
+		<file>icons/black/svg/trophy-line.svg</file>
 		<file>icons/black/svg/tv-2-line.svg</file>
 		<file>icons/black/svg/volume-up-line.svg</file>
 		<file>icons/black/svg/window-2-line.svg</file>
@@ -92,6 +94,7 @@
 		<file>icons/white/svg/keyboard-line.svg</file>
 		<file>icons/white/svg/layout-grid-line.svg</file>
 		<file>icons/white/svg/list-check.svg</file>
+		<file>icons/white/svg/login-box-line.svg</file>
 		<file>icons/white/svg/pause-line.svg</file>
 		<file>icons/white/svg/play-line.svg</file>
 		<file>icons/white/svg/price-tag-3-line.svg</file>
@@ -102,6 +105,7 @@
 		<file>icons/white/svg/sd-card-line.svg</file>
 		<file>icons/white/svg/settings-3-line.svg</file>
 		<file>icons/white/svg/shut-down-line.svg</file>
+		<file>icons/white/svg/trophy-line.svg</file>
 		<file>icons/white/svg/tv-2-line.svg</file>
 		<file>icons/white/svg/volume-up-line.svg</file>
 		<file>icons/white/svg/window-2-line.svg</file>

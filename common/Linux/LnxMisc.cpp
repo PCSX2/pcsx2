@@ -17,7 +17,9 @@
 #include <ctype.h>
 #include <time.h>
 #include <unistd.h>
+#include <spawn.h>
 #include <sys/time.h>
+#include <sys/wait.h>
 
 #include "common/Pcsx2Types.h"
 #include "common/General.h"
@@ -64,4 +66,21 @@ void ScreensaverAllow(bool allow)
 {
 	// no-op
 }
+
+bool Common::PlaySoundAsync(const char* path)
+{
+#ifdef __linux__
+	// This is... pretty awful. But I can't think of a better way without linking to e.g. gstreamer.
+	const char* cmdname = "aplay";
+	const char* argv[] = {cmdname, path, nullptr};
+	pid_t pid;
+
+	// Since we set SA_NOCLDWAIT in Qt, we don't need to wait here.
+	int res = posix_spawnp(&pid, cmdname, nullptr, nullptr, const_cast<char**>(argv), environ);
+	return (res == 0);
+#else
+	return false;
+#endif
+}
+
 #endif

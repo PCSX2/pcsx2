@@ -166,3 +166,10 @@ extern const u32 SPIN_TIME_NS;
 extern std::string GetOSVersionString();
 
 void ScreensaverAllow(bool allow);
+
+namespace Common
+{
+	/// Abstracts platform-specific code for asynchronously playing a sound.
+	/// On Windows, this will use PlaySound(). On Linux, it will shell out to aplay. On MacOS, it uses NSSound.
+	bool PlaySoundAsync(const char* path);
+} // namespace Common
