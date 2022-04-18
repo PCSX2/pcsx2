@@ -26,6 +26,7 @@
 
 #include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/CrashHandler.h"
 #include "common/FileSystem.h"
 #include "common/SettingsWrapper.h"
 #include "common/StringUtil.h"
@@ -113,6 +114,9 @@ bool QtHost::SetCriticalFolders()
 
 	EmuFolders::Settings = EmuFolders::DataRoot.Combine(wxDirName(L"inis"));
 	EmuFolders::Resources = EmuFolders::AppRoot.Combine(wxDirName(L"resources"));
+
+	// Write crash dumps to the data directory, since that'll be accessible for certain.
+	CrashHandler::SetWriteDirectory(EmuFolders::DataRoot.ToUTF8().data());
 
 	// the resources directory should exist, bail out if not
 	if (!EmuFolders::Resources.Exists())
