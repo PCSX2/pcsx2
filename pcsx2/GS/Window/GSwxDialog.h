@@ -133,6 +133,7 @@ namespace GSSettingsDialog
 	public:
 		GSUIElementHolder m_ui;
 		bool m_is_ogl_hw = false;
+		bool m_is_vk_hw = false;
 
 		DebugTab(wxWindow* parent);
 		void Load() { m_ui.Load(); }
