@@ -404,7 +404,7 @@
     <ClCompile Include="IopHw.cpp" />
     <ClCompile Include="ps2\Iop\IopHwRead.cpp" />
     <ClCompile Include="ps2\Iop\IopHwWrite.cpp" />
-    <ClCompile Include="CDVD\CdRom.cpp" />
+    <ClCompile Include="CDVD\Ps1CD.cpp" />
     <ClCompile Include="CDVD\CDVD.cpp" />
     <ClCompile Include="CDVD\CDVDaccess.cpp" />
     <ClCompile Include="CDVD\CDVDisoReader.cpp" />
@@ -695,7 +695,7 @@
     <ClInclude Include="x86\iR3000A.h" />
     <ClInclude Include="IopHw.h" />
     <ClInclude Include="ps2\Iop\IopHw_Internal.h" />
-    <ClInclude Include="CDVD\CdRom.h" />
+    <ClInclude Include="CDVD\Ps1CD.h" />
     <ClInclude Include="CDVD\CDVD.h" />
     <ClInclude Include="CDVD\CDVD_internal.h" />
     <ClInclude Include="CDVD\CDVDaccess.h" />

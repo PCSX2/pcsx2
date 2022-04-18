@@ -27,7 +27,7 @@
 #include "SPU2/spu2.h"
 #include "R3000A.h"
 
-#include "CDVD/CdRom.h"
+#include "CDVD/Ps1CD.h"
 #include "CDVD/CDVD.h"
 
 using namespace R5900;

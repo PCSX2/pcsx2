@@ -27,7 +27,7 @@
 #include "IopBios.h"
 #include "IopHw.h"
 #include "IopDma.h"
-#include "CDVD/CdRom.h"
+#include "CDVD/Ps1CD.h"
 #include "CDVD/CDVD.h"
 
 using namespace R3000A;

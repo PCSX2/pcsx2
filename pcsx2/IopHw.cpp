@@ -25,7 +25,7 @@
 #include "IopCounters.h"
 #include "IopHw.h"
 #include "IopDma.h"
-#include "CDVD/CdRom.h"
+#include "CDVD/Ps1CD.h"
 #include "CDVD/CDVD.h"
 
 

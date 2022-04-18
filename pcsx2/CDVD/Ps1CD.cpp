@@ -17,7 +17,7 @@
 #include "R3000A.h"
 #include "Common.h"
 
-#include "CdRom.h"
+#include "Ps1CD.h"
 #include "CDVD.h"
 #include "IopHw.h"
 #include "IopDma.h"
