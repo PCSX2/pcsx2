@@ -271,9 +271,6 @@
     <Filter Include="System\Ps2\GS\Renderers">
       <UniqueIdentifier>{f65f5552-af5b-47b0-9029-48d4dc33c2f9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="System\Ps2\GS\Renderers\Direct3D">
-      <UniqueIdentifier>{6e0dc702-cb44-4a22-a595-4cbd335f31a4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="System\Ps2\GS\Renderers\Hardware">
       <UniqueIdentifier>{85d4539e-fc10-4369-98f0-0ee9a6a9cc00}</UniqueIdentifier>
     </Filter>
@@ -310,11 +307,14 @@
     <Filter Include="System\Ps2\GS\Shaders\Vulkan">
       <UniqueIdentifier>{8c7c08ed-6c87-4b10-82ca-c832e84828c4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="System\Ps2\GS\Shaders\Direct3D11">
-      <UniqueIdentifier>{eb697f5b-85f5-424a-a7e4-8d8b73d3426e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="System\Ps2\GS\Renderers\Direct3D12">
       <UniqueIdentifier>{9cb1aa40-043d-47f7-86fd-837e10012e75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Renderers\Direct3D11">
+      <UniqueIdentifier>{6e0dc702-cb44-4a22-a595-4cbd335f31a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Shaders\Direct3D">
+      <UniqueIdentifier>{eb697f5b-85f5-424a-a7e4-8d8b73d3426e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -409,19 +409,19 @@
       <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
     </None>
     <None Include="..\bin\resources\shaders\dx11\tfx.fx">
-      <Filter>System\Ps2\GS\Shaders\Direct3D11</Filter>
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
     </None>
     <None Include="..\bin\resources\shaders\dx11\shadeboost.fx">
-      <Filter>System\Ps2\GS\Shaders\Direct3D11</Filter>
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
     </None>
     <None Include="..\bin\resources\shaders\dx11\merge.fx">
-      <Filter>System\Ps2\GS\Shaders\Direct3D11</Filter>
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
     </None>
     <None Include="..\bin\resources\shaders\dx11\interlace.fx">
-      <Filter>System\Ps2\GS\Shaders\Direct3D11</Filter>
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
     </None>
     <None Include="..\bin\resources\shaders\dx11\convert.fx">
-      <Filter>System\Ps2\GS\Shaders\Direct3D11</Filter>
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -1566,13 +1566,13 @@
       <Filter>Recording\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\DX11\GSDevice11.cpp">
-      <Filter>System\Ps2\GS\Renderers\Direct3D</Filter>
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\DX11\GSTexture11.cpp">
-      <Filter>System\Ps2\GS\Renderers\Direct3D</Filter>
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\DX11\GSTextureFX11.cpp">
-      <Filter>System\Ps2\GS\Renderers\Direct3D</Filter>
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\OpenGL\GLLoader.cpp">
       <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
@@ -1680,7 +1680,7 @@
       <Filter>System\Ps2\GS\Window</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\DX11\D3D.cpp">
-      <Filter>System\Ps2\GS\Renderers\Direct3D</Filter>
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClCompile>
     <ClCompile Include="gui\wxAppWithHelpers.cpp">
       <Filter>AppHost</Filter>
@@ -2744,10 +2744,10 @@
       <Filter>System\Ps2\GS\GIF</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\DX11\GSDevice11.h">
-      <Filter>System\Ps2\GS\Renderers\Direct3D</Filter>
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\DX11\GSTexture11.h">
-      <Filter>System\Ps2\GS\Renderers\Direct3D</Filter>
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\OpenGL\GLLoader.h">
       <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
@@ -2870,7 +2870,7 @@
       <Filter>System\Ps2\GS\Window</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\DX11\D3D.h">
-      <Filter>System\Ps2\GS\Renderers\Direct3D</Filter>
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClInclude>
     <ClInclude Include="gui\wxAppWithHelpers.h">
       <Filter>AppHost</Filter>
