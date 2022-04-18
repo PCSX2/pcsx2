@@ -354,8 +354,10 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 
 #ifdef _WIN32
 	const bool is_dx11 = (type == GSRendererType::DX11 || type == GSRendererType::SW);
+	const bool is_sw_dx = (type == GSRendererType::DX11 || type == GSRendererType::DX12 || type == GSRendererType::SW);
 #else
 	const bool is_dx11 = false;
+	const bool is_sw_dx = false;
 #endif
 
 	const bool is_hardware = (type == GSRendererType::DX11 || type == GSRendererType::DX12 || type == GSRendererType::OGL || type == GSRendererType::VK);
@@ -412,6 +414,9 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 
 		m_software_renderer_visible = is_software;
 	}
+
+	m_ui.overrideTextureBarriers->setDisabled(is_sw_dx);
+	m_ui.overrideGeometryShader->setDisabled(is_sw_dx);
 
 	m_ui.useBlitSwapChain->setEnabled(is_dx11);
 
