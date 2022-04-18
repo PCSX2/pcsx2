@@ -3,7 +3,7 @@
 Texture2D Texture;
 SamplerState Sampler;
 
-cbuffer cb0
+cbuffer cb0 : register(b0)
 {
 	float4 BGColor;
 	int EMODA;

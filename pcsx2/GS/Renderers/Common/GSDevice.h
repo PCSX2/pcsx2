@@ -75,11 +75,10 @@ enum ChannelFetch
 class MergeConstantBuffer
 {
 public:
+	GSVector4 BGColor;
 	u32 EMODA;
 	u32 EMODC;
 	u32 pad[2];
-
-	MergeConstantBuffer() { memset(this, 0, sizeof(*this)); }
 };
 
 class InterlaceConstantBuffer

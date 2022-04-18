@@ -20,8 +20,10 @@ struct VS_OUTPUT
 
 cbuffer cb0 : register(b0)
 {
+	float4 BGColor;
 	int EMODA;
 	int EMODC;
+	int cb0_pad[2];
 };
 
 static const float3x3 rgb2yuv =
