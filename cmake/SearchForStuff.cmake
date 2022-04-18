@@ -234,6 +234,11 @@ if(QT_BUILD)
 
 	# We use the bundled (latest) SDL version for Qt.
 	find_optional_system_library(SDL2 3rdparty/sdl2 2.0.22)
+
+	# rcheevos backend for RetroAchievements.
+	if(USE_ACHIEVEMENTS)
+		add_subdirectory(3rdparty/rcheevos EXCLUDE_FROM_ALL)
+	endif()
 endif()
 
 if(NOT WIN32 AND QT_BUILD)
