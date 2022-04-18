@@ -45,6 +45,7 @@
   <ItemGroup>
     <ClCompile Include="AlignedMalloc.cpp" />
     <ClCompile Include="Console.cpp" />
+    <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="D3D11\ShaderCache.cpp" />
     <ClCompile Include="D3D11\ShaderCompiler.cpp" />
     <ClCompile Include="D3D12\Builders.cpp" />
@@ -68,6 +69,7 @@
     <ClCompile Include="MD5Digest.cpp" />
     <ClCompile Include="ProgressCallback.cpp" />
     <ClCompile Include="pxTranslate.cpp" />
+    <ClCompile Include="StackWalker.cpp" />
     <ClCompile Include="StringUtil.cpp" />
     <ClCompile Include="SettingsWrapper.cpp" />
     <ClCompile Include="Timer.cpp" />
@@ -122,6 +124,7 @@
     <ClInclude Include="Align.h" />
     <ClInclude Include="AlignedMalloc.h" />
     <ClInclude Include="BitCast.h" />
+    <ClInclude Include="CrashHandler.h" />
     <ClInclude Include="D3D11\ShaderCache.h" />
     <ClInclude Include="D3D11\ShaderCompiler.h" />
     <ClInclude Include="D3D12\Builders.h" />
@@ -144,6 +147,7 @@
     <ClInclude Include="MD5Digest.h" />
     <ClInclude Include="ProgressCallback.h" />
     <ClInclude Include="ScopedGuard.h" />
+    <ClInclude Include="StackWalker.h" />
     <ClInclude Include="StringUtil.h" />
     <ClInclude Include="SettingsInterface.h" />
     <ClInclude Include="SettingsWrapper.h" />
