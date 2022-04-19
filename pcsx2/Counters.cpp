@@ -485,16 +485,23 @@ static __fi void DoFMVSwitch()
 }
 
 // Convenience function to update UI thread and set patches. 
-static __fi void frameLimitUpdateCore()
+static __fi void VSyncUpdateCore()
 {
 	DoFMVSwitch();
 
 #ifndef PCSX2_CORE
 	GetCoreThread().VsyncInThread();
+#else
+	VMManager::Internal::VSyncOnCPUThread();
+#endif
+}
+
+static __fi void VSyncCheckExit()
+{
+#ifndef PCSX2_CORE
 	if (GetCoreThread().HasPendingStateChangeRequest())
 		Cpu->ExitExecution();
 #else
-	VMManager::Internal::VSyncOnCPUThread();
 	if (VMManager::Internal::IsExecutionInterrupted())
 		Cpu->ExitExecution();
 #endif
@@ -507,10 +514,7 @@ static __fi void frameLimit()
 {
 	// Framelimiter off in settings? Framelimiter go brrr.
 	if (EmuConfig.GS.LimitScalar == 0.0)
-	{
-		frameLimitUpdateCore();
 		return;
-	}
 
 	const u64 uExpectedEnd = m_iStart + m_iTicks;  // Compute when we would expect this frame to end, assuming everything goes perfectly perfect.
 	const u64 iEnd = GetCPUTicks();                // The current tick we actually stopped on.
@@ -521,7 +525,6 @@ static __fi void frameLimit()
 	{
 		// ... Fudge the next frame start over a bit. Prevents fast forward zoomies.
 		m_iStart += (sDeltaTime / m_iTicks) * m_iTicks;
-		frameLimitUpdateCore();
 		return;
 	}
 
@@ -545,7 +548,6 @@ static __fi void frameLimit()
 
 	// Finally, set our next frame start to when this one ends
 	m_iStart = uExpectedEnd;
-	frameLimitUpdateCore();
 }
 
 static __fi void VSyncStart(u32 sCycle)
@@ -563,9 +565,7 @@ static __fi void VSyncStart(u32 sCycle)
 	// Update vibration at the end of a frame.
 	PAD::Update();
 #endif
-
-	frameLimit(); // limit FPS
-	gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!
+	VSyncUpdateCore();
 
 	if(EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
 		SysTrace.EE.Counters.Write( "    ================  EE COUNTER VSYNC START (frame: %d)  ================", g_FrameCount );
@@ -643,6 +643,9 @@ static __fi void VSyncEnd(u32 sCycle)
 	if (!(g_FrameCount % 60))
 		sioNextFrame();
 
+	frameLimit(); // limit FPS
+	gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!
+	VSyncCheckExit();
 	// This doesn't seem to be needed here.  Games only seem to break with regard to the
 	// vsyncstart irq.
 	//cpuRegs.eCycle[30] = 2;
