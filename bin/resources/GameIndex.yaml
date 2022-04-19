@@ -75,6 +75,14 @@ ALCH-00028:
 ALCH-0004:
   name: "Duel Savior Destiny [Messiah Box]"
   region: "NTSC-J"
+CPCS-01005:
+  name: "Gun Survivor 4 - Biohazard - Heroes Never Die [with GunCon2]"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes character offset with flashlight and blurriness.
+    alignSprite: 1 # Fixes vertical lines.
+    roundSprite: 2 # Fixes font artifacts.
+    mergeSprite: 1 # Fixes flame-like bleeding.
 GUST-00009:
   name: "Mana Khemia - Alchemists of Al-Revis [Premium Box]"
   region: "NTSC-J"
@@ -91,6 +99,11 @@ PAPX-90202:
 PAPX-90203:
   name: "Gran Turismo 2000 [Trial]"
   region: "NTSC-J"
+PAPX-90215:
+  name: "Ka (Mosquito) [Trial]"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 PAPX-90222:
   name: "Jak x Daxter - Kyuu Sekai no Isan [Demo, Taikenban]"
   region: "NTSC-J"
@@ -231,6 +244,11 @@ PBPX-95601:
 PCPX-96311:
   name: "Gran Turismo 3 Trial Disk Volume 1"
   region: "NTSC-J"
+PCPX-96317:
+  name: "Ka (Mosquito) [Trial]"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 PCPX-96321:
   name: "SkyGunner [Trial]"
   region: "NTSC-J"
@@ -4706,6 +4724,8 @@ SCPS-11009:
   name: "Ka (Mosquito)"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SCPS-11010:
   name: "Yoake no Mariko [with Microphone]"
   region: "NTSC-J"
@@ -5421,6 +5441,8 @@ SCPS-17013:
 SCPS-19101:
   name: "Mosquito [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SCPS-19102:
   name: "Boku to Maou [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -9809,6 +9831,8 @@ SLES-50768:
 SLES-50769:
   name: "Mr. Moskeeto"
   region: "PAL-M4"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-50770:
   name: "Mad Maestro!"
   region: "PAL-M4"
@@ -11339,6 +11363,11 @@ SLES-51448:
   name: "Resident Evil - Dead Aim"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes character offset with flashlight and blurriness.
+    alignSprite: 1 # Fixes vertical lines.
+    roundSprite: 2 # Fixes font artifacts.
+    mergeSprite: 1 # Fixes flame-like bleeding.
 SLES-51449:
   name: "Return to Castle Wolfenstein - Operation Resurrection"
   region: "PAL-E"
@@ -16779,6 +16808,10 @@ SLES-53982:
 SLES-53984:
   name: "Ice Age 2 - The Meltdown"
   region: "PAL-M6"
+  clampModes:
+    eeClampMode: 2 # Fixes occasional SPS on moving around, jumping and falling.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   patches:
     2EC49E65:
       content: |-
@@ -17094,6 +17127,17 @@ SLES-54146:
 SLES-54147:
   name: "Ice Age 2 - The Meltdown"
   region: "PAL-R"
+  clampModes:
+    eeClampMode: 2 # Fixes occasional SPS on moving around, jumping and falling.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+  patches:
+    D9920B66:
+      content: |-
+        comment=Patch by kozarovv
+        // Intro screen freeze fix.
+        patch=1,EE,002FFAD8,word,27BDFEE0
+        patch=1,EE,002FFB14,word,27BD0120
 SLES-54150:
   name: "Bionicle Heroes"
   region: "PAL-M6"
@@ -20187,6 +20231,8 @@ SLES-55486:
 SLES-55487:
   name: "Ice Age 3 - Dawn of the Dinosaurs"
   region: "PAL-M6"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-55492:
   name: "SBK 09 - Superbike World Championship"
   region: "PAL-M5"
@@ -20228,6 +20274,8 @@ SLES-55512:
 SLES-55516:
   name: "L'Era Glaciale 3 - L'Alba dei Dinosauri"
   region: "PAL-I"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLES-55517:
   name: "Trivial Pursuit"
   region: "PAL-M4"
@@ -20835,6 +20883,11 @@ SLKA-25035:
 SLKA-25038:
   name: "Gun Survivor 4 - Biohazard - Heroes Never Die"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes character offset with flashlight and blurriness.
+    alignSprite: 1 # Fixes vertical lines.
+    roundSprite: 2 # Fixes font artifacts.
+    mergeSprite: 1 # Fixes flame-like bleeding.
 SLKA-25041:
   name: "Armored Core 3 Silent Line"
   region: "NTSC-K"
@@ -21956,6 +22009,14 @@ SLPM-61011:
 SLPM-61018:
   name: "Abarenbou Princess [Trial]"
   region: "NTSC-J"
+SLPM-61039:
+  name: "Gun Survivor 4: Biohazard: Heroes Never Die [Demo]"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes character offset with flashlight and blurriness.
+    alignSprite: 1 # Fixes vertical lines.
+    roundSprite: 2 # Fixes font artifacts.
+    mergeSprite: 1 # Fixes flame-like bleeding.
 SLPM-61046:  
   name: "Dennou Senki - Virtual-On Marz [Trial]"
   region: "NTSC-J"
@@ -24858,6 +24919,11 @@ SLPM-65245:
   name: "BioHazard Gun Survivor 4 - Heroes Never Die"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes character offset with flashlight and blurriness.
+    alignSprite: 1 # Fixes vertical lines.
+    roundSprite: 2 # Fixes font artifacts.
+    mergeSprite: 1 # Fixes flame-like bleeding.
 SLPM-65246:
   name: "Kaidou Battle"
   region: "NTSC-J"
@@ -37452,6 +37518,8 @@ SLUS-20375:
   name: "Mister Mosquito"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLUS-20376:
   name: "Mad Maestro!"
   region: "NTSC-U"
@@ -38777,6 +38845,11 @@ SLUS-20669:
   name: "Resident Evil - Dead Aim"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes character offset with flashlight and blurriness.
+    alignSprite: 1 # Fixes vertical lines.
+    roundSprite: 2 # Fixes font artifacts.
+    mergeSprite: 1 # Fixes flame-like bleeding.
 SLUS-20670:
   name: "Great Escape, The"
   region: "NTSC-U"
@@ -41830,6 +41903,10 @@ SLUS-21307:
   name: "Ice Age 2 - The Meltdown"
   region: "NTSC-U"
   compat: 2
+  clampModes:
+    eeClampMode: 2 # Fixes occasional SPS on moving around, jumping and falling.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
   patches:
     EEC195CA:
       content: |-
@@ -44391,6 +44468,8 @@ SLUS-21878:
   name: "Ice Age 3 - Dawn of the Dinosaurs"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLUS-21879:
   name: "Marvel - Ultimate Alliance 2"
   region: "NTSC-U"
