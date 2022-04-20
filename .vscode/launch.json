@@ -1,0 +1,196 @@
+{
+        // Use IntelliSense to learn about possible attributes.
+        // Hover to view descriptions of existing attributes.
+        // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "PCSX2 - GDB - Build Debug",
+                "type": "cppdbg",
+                "request": "launch",
+                // Resolved by CMake Tools:
+                "program": "${command:cmake.launchTargetPath}",
+                "args": [],
+                "stopAtEntry": false,
+                "cwd": "${workspaceFolder}",
+                "environment": [
+                    {
+                        // add the directory where our target was built to the PATHs
+                        // it gets resolved by CMake Tools:
+                        "name": "PATH",
+                        "value": "${env:PATH}:${command:cmake.getLaunchTargetDirectory}"
+                    }
+                ],
+                "externalConsole": false,
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    },
+                    {
+                        "description": "Disable halting on SIGSEGV",
+                        "text": "handle SIGSEGV nostop",
+                        "ignoreFailures": true
+                    }
+                ],
+                "preLaunchTask": "Build PCSX2 - Debug GDB"
+            },
+            {
+                "name": "PCSX2 - GDB - Build Devel",
+                "type": "cppdbg",
+                "request": "launch",
+                // Resolved by CMake Tools:
+                "program": "${command:cmake.launchTargetPath}",
+                "args": [],
+                "stopAtEntry": false,
+                "cwd": "${workspaceFolder}",
+                "environment": [
+                    {
+                        // add the directory where our target was built to the PATHs
+                        // it gets resolved by CMake Tools:
+                        "name": "PATH",
+                        "value": "${env:PATH}:${command:cmake.getLaunchTargetDirectory}"
+                    }
+                ],
+                "externalConsole": false,
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    },
+                    {
+                        "description": "Disable halting on SIGSEGV",
+                        "text": "handle SIGSEGV nostop",
+                        "ignoreFailures": true
+                    }
+                ],
+                "preLaunchTask": "Build PCSX2 - Devel GDB"
+            },
+            {
+                "name": "PCSX2 - GDB - Build Release",
+                "type": "cppdbg",
+                "request": "launch",
+                // Resolved by CMake Tools:
+                "program": "${command:cmake.launchTargetPath}",
+                "args": [],
+                "stopAtEntry": false,
+                "cwd": "${workspaceFolder}",
+                "environment": [
+                    {
+                        // add the directory where our target was built to the PATHs
+                        // it gets resolved by CMake Tools:
+                        "name": "PATH",
+                        "value": "${env:PATH}:${command:cmake.getLaunchTargetDirectory}"
+                    }
+                ],
+                "externalConsole": false,
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    },
+                    {
+                        "description": "Disable halting on SIGSEGV",
+                        "text": "handle SIGSEGV nostop",
+                        "ignoreFailures": true
+                    }
+                ],
+                "preLaunchTask": "Build PCSX2 - Release GDB"
+            },
+            {
+                "name": "PCSX2 - GDB - No Build",
+                "type": "cppdbg",
+                "request": "launch",
+                // Resolved by CMake Tools:
+                "program": "${command:cmake.launchTargetPath}",
+                "args": [],
+                "stopAtEntry": false,
+                "cwd": "${workspaceFolder}",
+                "environment": [
+                    {
+                        // add the directory where our target was built to the PATHs
+                        // it gets resolved by CMake Tools:
+                        "name": "PATH",
+                        "value": "${env:PATH}:${command:cmake.getLaunchTargetDirectory}"
+                    }
+                ],
+                "externalConsole": false,
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    },
+                    {
+                        "description": "Disable halting on SIGSEGV",
+                        "text": "handle SIGSEGV nostop",
+                        "ignoreFailures": true
+                    }
+                ]
+            },        
+        {
+            "name": "Build PCSX2 - MSVC Launch Debug",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program":  "${command:cmake.launchTargetPath}",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                    // add the directory where our target was built to the PATHs
+                    // it gets resolved by CMake Tools:
+                    "name": "PATH",
+                    "value": "${env:PATH}:${command:cmake.getLaunchTargetDirectory}"
+                }
+            ],
+        "console": "externalTerminal",
+            "preLaunchTask": "Build PCSX2 - Debug MSVC"
+        },
+        {
+            "name": "Build PCSX2 - MSVC Launch Devel",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program":  "${command:cmake.launchTargetPath}",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                    // add the directory where our target was built to the PATHs
+                    // it gets resolved by CMake Tools:
+                    "name": "PATH",
+                    "value": "${env:PATH}:${command:cmake.getLaunchTargetDirectory}"
+                }
+            ],
+        "console": "externalTerminal",
+            "preLaunchTask": "Build PCSX2 - Devel MSVC"
+        },
+        {
+            "name": "Build PCSX2 - MSVC Launch Release",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program":  "${command:cmake.launchTargetPath}",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                    // add the directory where our target was built to the PATHs
+                    // it gets resolved by CMake Tools:
+                    "name": "PATH",
+                    "value": "${env:PATH}:${command:cmake.getLaunchTargetDirectory}"
+                }
+            ],
+        "console": "externalTerminal",
+            "preLaunchTask": "Build PCSX2 - Release MSVC"
+        }
+    ]
+}

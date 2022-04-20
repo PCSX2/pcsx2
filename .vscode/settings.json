@@ -1,0 +1,5 @@
+{
+    "buildDir": "${workspaceRoot}\\build",
+    "cmake.configureOnOpen": true,
+    "cmake.generator": "Ninja",
+}

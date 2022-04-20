@@ -1,0 +1,67 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build PCSX2 - Debug GDB",
+            "type": "shell",
+            "command": "cd build && cmake -DEGL_API=TRUE -DCMAKE_BUILD_TYPE=Debug -GNinja -DBUILD_REPLAY_LOADERS=TRUE -DCMAKE_BUILD_PO=FALSE .. && ninja -j 10 && ninja install && cd ..",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+          "label": "Build PCSX2 - Devel GDB",
+          "type": "shell",
+          "command": "cd build && cmake -DEGL_API=TRUE -DCMAKE_BUILD_TYPE=Devel -GNinja -DBUILD_REPLAY_LOADERS=TRUE -DCMAKE_BUILD_PO=FALSE .. && ninja -j 10 && ninja install && cd ..",
+          "problemMatcher": [],
+          "group": {
+              "kind": "build",
+              "isDefault": true
+          }
+      },
+      {
+        "label": "Build PCSX2 - Debug GDB",
+        "type": "shell",
+        "command": "cd build && cmake -DEGL_API=TRUE -DCMAKE_BUILD_TYPE=Release -GNinja -DBUILD_REPLAY_LOADERS=TRUE -DCMAKE_BUILD_PO=FALSE .. && ninja -j 10 && ninja install && cd ..",
+        "problemMatcher": [],
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        }
+    },
+        {
+          "type": "shell",
+          "label": "Build PCSX2 - Debug MSVC",
+          "command": "cd build && cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja -DCMAKE_CXX_COMPILER=cl.exe -DCMAKE_CXX_FLAGS=\"/Zi /EHsc\" ..",
+          "problemMatcher": ["$msCompile"],
+          "group": {
+            "kind": "build",
+            "isDefault": true
+          }
+        },
+        {
+          "type": "shell",
+          "label": "Build PCSX2 - Devel MSVC",
+          "command": "cd build && cmake -DCMAKE_BUILD_TYPE=Devel -G Ninja -DCMAKE_CXX_COMPILER=cl.exe -DCMAKE_CXX_FLAGS=\"/Zi /EHsc\" ..",
+          "problemMatcher": ["$msCompile"],
+          "group": {
+            "kind": "build",
+            "isDefault": true
+          }
+        },
+        {
+          "type": "shell",
+          "label": "Build PCSX2 - Release MSVC",
+          "command": "cd build && cmake -DCMAKE_BUILD_TYPE=Release -G Ninja -DCMAKE_CXX_COMPILER=cl.exe -DCMAKE_CXX_FLAGS=\"/Zi /EHsc\" ..",
+          "problemMatcher": ["$msCompile"],
+          "group": {
+            "kind": "build",
+            "isDefault": true
+          }
+        }
+    ]
+}
