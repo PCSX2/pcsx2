@@ -39,7 +39,7 @@ _Note: Recommended GPU is based on 3x Internal, ~1080p resolution requirements. 
 
 -   You need the [Visual C++ 2019 x86 Redistributables](https://support.microsoft.com/en-us/help/2977003/) to run PCSX2.
 -   Windows XP and Direct3D9 support was dropped after stable release 1.4.0.
--   Windows 7 and Windows 8 support was dropped after stable release 1.6.0.
+-   Windows 7 and Windows 8.0 support was dropped after stable release 1.6.0.
 -   32 bit support was dropped after stable release 1.6.0.
 -   Make sure to update your operating system and drivers to ensure you have the best experience possible. Having a newer GPU is also recommended so you have the latest supported drivers.
 -   Because of copyright issues, and the complexity of trying to work around it, you need a BIOS dump extracted from a legitimately-owned PS2 console to use the emulator. For more information about the BIOS and how to get it from your console, visit [this page](pcsx2/Docs/PCSX2_FAQ.md#question-13-where-do-i-get-a-ps2-bios).
