@@ -162,6 +162,13 @@ void GSRendererHW::PurgeTextureCache()
 	m_tc->RemoveAll();
 }
 
+bool GSRendererHW::IsPossibleTextureShuffle(GSTextureCache::Source* src) const
+{
+	return (PRIM->TME && m_vt.m_primclass == GS_SPRITE_CLASS &&
+		src->m_32_bits_fmt && GSLocalMemory::m_psm[src->m_TEX0.PSM].bpp == 16 &&
+		GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp == 16);
+}
+
 void GSRendererHW::SetGameCRC(u32 crc, int options)
 {
 	GSRenderer::SetGameCRC(crc, options);
@@ -1708,6 +1715,11 @@ void GSRendererHW::Draw()
 	context->TEST = TEST;
 	context->FRAME = FRAME;
 	context->ZBUF = ZBUF;
+
+	//
+
+	// Temporary source *must* be invalidated before normal, because otherwise it'll be double freed.
+	m_tc->InvalidateTemporarySource();
 
 	//
 
