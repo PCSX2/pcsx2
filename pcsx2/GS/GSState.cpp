@@ -3180,6 +3180,37 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 		// Optimisation aims to reduce the amount of texture loaded to only the bit which will be read
 		GSVector4 st = m_vt.m_min.t.xyxy(m_vt.m_max.t);
 
+		// Adjust texture range when sprites get scissor clipped. Since we linearly interpolate, this
+		// optimization doesn't work when perspective correction is enabled.
+		if (m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1)
+		{
+			const GSVector4i int_rc(m_vt.m_min.p.xyxy(m_vt.m_max.p));
+			const GSVector4i scissored_rc(int_rc.rintersect(GSVector4i(m_context->scissor.in)));
+			if (!int_rc.eq(scissored_rc))
+			{
+				// draw will get scissored, adjust UVs to suit
+				const GSVector2 pos_range(m_vt.m_max.p.x - m_vt.m_min.p.x, m_vt.m_max.p.y - m_vt.m_min.p.y);
+				const GSVector2 uv_range(st.z - st.x, st.w - st.y);
+				const GSVector2 grad(uv_range / pos_range);
+
+				// we need to check that it's not going to repeat over the non-clipped part
+				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(st.x) & ~tw_mask) != (static_cast<int>(st.z) & ~tw_mask)))
+				{
+					if (int_rc.left < scissored_rc.left)
+						st.x += static_cast<float>(scissored_rc.left - int_rc.left) * grad.x;
+					if (int_rc.right > scissored_rc.right)
+						st.z -= static_cast<float>(int_rc.right - scissored_rc.right) * grad.x;
+				}
+				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(st.y) & ~th_mask) != (static_cast<int>(st.w) & ~th_mask)))
+				{
+					if (int_rc.top < scissored_rc.top)
+						st.y += static_cast<float>(scissored_rc.top - int_rc.top) * grad.y;
+					if (int_rc.bottom > scissored_rc.bottom)
+						st.w -= static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y;
+				}
+			}
+		}
+
 		if (linear)
 			st += GSVector4(-0.5f, 0.5f).xxyy();
 
