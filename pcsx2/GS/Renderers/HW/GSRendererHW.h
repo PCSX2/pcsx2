@@ -186,4 +186,7 @@ public:
 
 	// Called by the texture cache to know if current texture is useful
 	virtual bool IsDummyTexture() const { return false; }
+
+	// Called by the texture cache when optimizing the copy range for sources
+	bool IsPossibleTextureShuffle(GSTextureCache::Source* src) const;
 };

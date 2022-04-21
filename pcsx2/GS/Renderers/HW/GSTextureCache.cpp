@@ -391,7 +391,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 			GL_CACHE("TC: src miss (0x%x, 0x%x, %s)", TEX0.TBP0, psm_s.pal > 0 ? TEX0.CBP : 0, psm_str(TEX0.PSM));
 		}
 #endif
-		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset, lod);
+		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset, lod, &r);
 		new_source = true;
 	}
 	else
@@ -1165,7 +1165,7 @@ void GSTextureCache::IncAge()
 }
 
 //Fixme: Several issues in here. Not handling depth stencil, pitch conversion doesnt work.
-GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* dst, bool half_right, int x_offset, int y_offset, const GSVector2i* lod)
+GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* dst, bool half_right, int x_offset, int y_offset, const GSVector2i* lod, const GSVector4i* src_range)
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 	Source* src = new Source(m_renderer, TEX0, TEXA, false);
@@ -1340,8 +1340,10 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		GSVector2 scale = is_8bits ? GSVector2(1, 1) : dst->m_texture->GetScale();
 
-		GSVector4i sRect(0, 0, w, h);
 		const bool use_texture = shader == ShaderConvert::COPY;
+		GSVector4i sRect(0, 0, w, h);
+		int destX = 0;
+		int destY = 0;
 
 		if (half_right)
 		{
@@ -1359,6 +1361,27 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			else
 			{
 				DevCon.Error("Invalid half-right copy with width %d from %dx%d texture", half_width * 2, w, h);
+			}
+		}
+		else if (src_range && dst->m_TEX0.TBW == TEX0.TBW && !is_8bits)
+		{
+			// optimization for TBP == FRAME
+			const GSDrawingContext* const context = m_renderer->m_context;
+			if (context->FRAME.Block() == TEX0.TBP0 || context->ZBUF.Block() == TEX0.TBP0)
+			{
+				// if it looks like a texture shuffle, we might read up to +/- 8 pixels on either side.
+				GSVector4 adjusted_src_range(*src_range);
+				if (static_cast<GSRendererHW*>(m_renderer)->IsPossibleTextureShuffle(src))
+					adjusted_src_range += GSVector4(-8.0f, 0.0f, 8.0f, 0.0f);
+
+				// don't forget to scale the copy range
+				adjusted_src_range = adjusted_src_range * GSVector4(scale).xyxy();
+				sRect = sRect.rintersect(GSVector4i(adjusted_src_range));
+				destX = sRect.x;
+				destY = sRect.y;
+
+				// clean up immediately afterwards
+				m_temporary_source = src;
 			}
 		}
 
@@ -1380,7 +1403,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		if (use_texture)
 		{
-			g_gs_device->CopyRect(sTex, dTex, sRect, 0, 0);
+			g_gs_device->CopyRect(sTex, dTex, sRect, destX, destY);
 		}
 		else
 		{
@@ -1388,7 +1411,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			sRectF.z /= sTex->GetWidth();
 			sRectF.w /= sTex->GetHeight();
 
-			g_gs_device->StretchRect(sTex, sRectF, dTex, GSVector4(0, 0, w, h), shader, false);
+			g_gs_device->StretchRect(sTex, sRectF, dTex, GSVector4(destX, destY, w, h), shader, false);
 		}
 
 		if (src->m_texture)
@@ -2437,6 +2460,15 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 			a_el.bp, a_bp_end);
 	}
 	return so;
+}
+
+void GSTextureCache::InvalidateTemporarySource()
+{
+	if (!m_temporary_source)
+		return;
+
+	m_src.RemoveAt(m_temporary_source);
+	m_temporary_source = nullptr;
 }
 
 void GSTextureCache::InjectHashCacheTexture(const HashCacheKey& key, GSTexture* tex)
