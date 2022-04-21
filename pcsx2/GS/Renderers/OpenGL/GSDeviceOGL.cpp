@@ -1145,7 +1145,7 @@ void GSDeviceOGL::BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2
 }
 
 // Copy a sub part of a texture into another
-void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
+void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 {
 	ASSERT(sTex && dTex);
 	if (!(sTex && dTex))
@@ -1167,7 +1167,7 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 	glCopyImageSubData(sid, GL_TEXTURE_2D,
 		0, r.x, r.y, 0,
 		did, GL_TEXTURE_2D,
-		0, 0, 0, 0,
+		0, destX, destY, 0,
 		r.width(), r.height(), 1);
 }
 

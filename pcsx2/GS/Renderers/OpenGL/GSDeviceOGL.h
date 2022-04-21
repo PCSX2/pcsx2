@@ -341,7 +341,7 @@ public:
 
 	bool DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map) final;
 
-	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r) final;
+	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) final;
 
 	void PushDebugGroup(const char* fmt, ...) final;
 	void PopDebugGroup() final;

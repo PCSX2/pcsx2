@@ -515,7 +515,7 @@ bool GSDevice11::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTextu
 	m_download_tex.reset(static_cast<GSTexture11*>(CreateOffscreen(rect.width(), rect.height(), src->GetFormat())));
 	if (!m_download_tex)
 		return false;
-	CopyRect(src, m_download_tex.get(), rect);
+	CopyRect(src, m_download_tex.get(), rect, 0, 0);
 	return m_download_tex->Map(out_map);
 }
 
@@ -528,22 +528,11 @@ void GSDevice11::DownloadTextureComplete()
 	}
 }
 
-void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
-{
-	if (!sTex || !dTex)
-	{
-		ASSERT(0);
-		return;
-	}
-
-	CopyRect(sTex, r, dTex, 0, 0);
-}
-
-void GSDevice11::CopyRect(GSTexture* sTex, const GSVector4i& sRect, GSTexture* dTex, u32 destX, u32 destY)
+void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 {
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-	D3D11_BOX box = {(UINT)sRect.left, (UINT)sRect.top, 0U, (UINT)sRect.right, (UINT)sRect.bottom, 1U};
+	D3D11_BOX box = {(UINT)r.left, (UINT)r.top, 0U, (UINT)r.right, (UINT)r.bottom, 1U};
 
 	// DX api isn't happy if we pass a box for depth copy
 	// It complains that depth/multisample must be a full copy
@@ -565,12 +554,12 @@ void GSDevice11::CloneTexture(GSTexture* src, GSTexture** dest, const GSVector4i
 	{
 		// DX11 requires that you copy the entire depth buffer.
 		*dest = CreateDepthStencil(w, h, src->GetFormat(), false);
-		CopyRect(src, GSVector4i(0, 0, w, h), *dest, 0, 0);
+		CopyRect(src, *dest, GSVector4i(0, 0, w, h), 0, 0);
 	}
 	else
 	{
 		*dest = CreateRenderTarget(w, h, src->GetFormat(), false);
-		CopyRect(src, rect, *dest, rect.left, rect.top);
+		CopyRect(src, *dest, rect, rect.left, rect.top);
 	}
 }
 

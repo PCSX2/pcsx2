@@ -489,19 +489,7 @@ bool GSDeviceVK::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTextu
 
 void GSDeviceVK::DownloadTextureComplete() {}
 
-void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
-{
-	if (!sTex || !dTex)
-	{
-		ASSERT(0);
-		return;
-	}
-
-	const GSVector4i dst_rc(r - r.xyxy());
-	DoCopyRect(sTex, dTex, r, dst_rc);
-}
-
-void GSDeviceVK::DoCopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, const GSVector4i& dst_rc)
+void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 {
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
@@ -514,7 +502,7 @@ void GSDeviceVK::DoCopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& 
 		// source is cleared. if destination is a render target, we can carry the clear forward
 		if (dTexVK->IsRenderTargetOrDepthStencil())
 		{
-			if (dtex_rc.eq(dst_rc))
+			if (dtex_rc.eq(r))
 			{
 				// pass it forward if we're clearing the whole thing
 				if (sTexVK->IsDepthStencil())
@@ -529,7 +517,7 @@ void GSDeviceVK::DoCopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& 
 				// otherwise we need to do an attachment clear
 				const bool depth = (dTexVK->GetType() == GSTexture::Type::DepthStencil);
 				OMSetRenderTargets(depth ? nullptr : dTexVK, depth ? dTexVK : nullptr, dtex_rc, false);
-				BeginRenderPassForStretchRect(dTexVK, dtex_rc, dst_rc);
+				BeginRenderPassForStretchRect(dTexVK, dtex_rc, GSVector4i(destX, destY, destX + r.width(), destY + r.height()));
 
 				// so use an attachment clear
 				VkClearAttachment ca;
@@ -539,7 +527,7 @@ void GSDeviceVK::DoCopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& 
 				ca.clearValue.depthStencil.stencil = 0;
 				ca.colorAttachment = 0;
 
-				const VkClearRect cr = { {{0, 0}, {static_cast<u32>(dst_rc.width()), static_cast<u32>(dst_rc.height())}}, 0u, 1u };
+				const VkClearRect cr = { {{0, 0}, {static_cast<u32>(r.width()), static_cast<u32>(r.height())}}, 0u, 1u };
 				vkCmdClearAttachments(g_vulkan_context->GetCurrentCommandBuffer(), 1, &ca, 1, &cr);
 				return;
 			}
@@ -551,13 +539,14 @@ void GSDeviceVK::DoCopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& 
 
 	// if the destination has been cleared, and we're not overwriting the whole thing, commit the clear first
 	// (the area outside of where we're copying to)
-	if (dTexVK->GetState() == GSTexture::State::Cleared && !dtex_rc.eq(dst_rc))
+	if (dTexVK->GetState() == GSTexture::State::Cleared && !dtex_rc.eq(r))
 		dTexVK->CommitClear();
 
 	// *now* we can do a normal image copy.
 	const VkImageAspectFlags src_aspect = (sTexVK->IsDepthStencil()) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 	const VkImageAspectFlags dst_aspect = (dTexVK->IsDepthStencil()) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-	const VkImageCopy ic = {{src_aspect, 0u, 0u, 1u}, {r.left, r.top, 0u}, {dst_aspect, 0u, 0u, 1u}, {dst_rc.left, dst_rc.top, 0u},
+	const VkImageCopy ic = {{src_aspect, 0u, 0u, 1u}, {r.left, r.top, 0u}, {dst_aspect, 0u, 0u, 1u},
+		{static_cast<s32>(destX), static_cast<s32>(destY), 0u},
 		{static_cast<u32>(r.width()), static_cast<u32>(r.height()), 1u}};
 
 	EndRenderPass();
@@ -2925,7 +2914,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 				config.drawarea.left, config.drawarea.top,
 				config.drawarea.width(), config.drawarea.height());
 
-			DoCopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea);
+			CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
 			PSSetShaderResource(2, draw_rt_clone, true);
 		}
 	}
@@ -2942,7 +2931,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 				config.drawarea.left, config.drawarea.top,
 				config.drawarea.width(), config.drawarea.height());
 
-			DoCopyRect(config.ds, copy_ds, config.drawarea, config.drawarea);
+			CopyRect(config.ds, copy_ds, config.drawarea, config.drawarea.left, config.drawarea.top);
 			PSSetShaderResource(0, copy_ds, true);
 		}
 	}
