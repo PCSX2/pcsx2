@@ -1571,7 +1571,7 @@ void GSRendererHW::Draw()
 						g_gs_device->CreateSparseRenderTarget(new_w, new_h, tex->GetFormat()) :
 						g_gs_device->CreateSparseDepthStencil(new_w, new_h, tex->GetFormat());
 					const GSVector4i r{ 0, 0, w, h };
-					g_gs_device->CopyRect(tex, t->m_texture, r);
+					g_gs_device->CopyRect(tex, t->m_texture, r, 0, 0);
 					g_gs_device->Recycle(tex);
 					t->m_texture->SetScale(up_s);
 					(is_rt ? rt_tex : ds_tex) = t->m_texture;
@@ -2017,11 +2017,11 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		const GSVector4i r_full(0, 0, tw, th);
 		if (GSTexture* rt = g_gs_device->CreateRenderTarget(tw, th, GSTexture::Format::Color))
 		{
-			g_gs_device->CopyRect(tex->m_texture, rt, r_full);
+			g_gs_device->CopyRect(tex->m_texture, rt, r_full, 0, 0);
 
 			g_gs_device->StretchRect(tex->m_texture, sRect, rt, dRect);
 
-			g_gs_device->CopyRect(rt, tex->m_texture, r_full);
+			g_gs_device->CopyRect(rt, tex->m_texture, r_full, 0, 0);
 
 			g_gs_device->Recycle(rt);
 		}

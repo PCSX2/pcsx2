@@ -401,19 +401,7 @@ void GSDevice12::DownloadTextureComplete()
 	UnmapStagingBuffer();
 }
 
-void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
-{
-	if (!sTex || !dTex)
-	{
-		ASSERT(0);
-		return;
-	}
-
-	const GSVector4i dst_rc(r - r.xyxy());
-	DoCopyRect(sTex, dTex, r, dst_rc);
-}
-
-void GSDevice12::DoCopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, const GSVector4i& dst_rc)
+void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 {
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
@@ -426,7 +414,7 @@ void GSDevice12::DoCopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& 
 		// source is cleared. if destination is a render target, we can carry the clear forward
 		if (dTexVK->IsRenderTargetOrDepthStencil())
 		{
-			if (dtex_rc.eq(dst_rc))
+			if (dtex_rc.eq(r))
 			{
 				// pass it forward if we're clearing the whole thing
 				if (sTexVK->IsDepthStencil())
@@ -464,7 +452,7 @@ void GSDevice12::DoCopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& 
 
 	// if the destination has been cleared, and we're not overwriting the whole thing, commit the clear first
 	// (the area outside of where we're copying to)
-	if (dTexVK->GetState() == GSTexture::State::Cleared && !dtex_rc.eq(dst_rc))
+	if (dTexVK->GetState() == GSTexture::State::Cleared && !dtex_rc.eq(r))
 		dTexVK->CommitClear();
 
 	EndRenderPass();
@@ -485,7 +473,7 @@ void GSDevice12::DoCopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& 
 	const D3D12_BOX srcbox{static_cast<UINT>(r.left), static_cast<UINT>(r.top), 0u,
 		static_cast<UINT>(r.right), static_cast<UINT>(r.bottom), 1u};
 	g_d3d12_context->GetCommandList()->CopyTextureRegion(
-		&dstloc, dst_rc.left, dst_rc.top, 0,
+		&dstloc, destX, destY, 0,
 		&srcloc, &srcbox);
 
 	dTexVK->SetState(GSTexture::State::Dirty);
@@ -2514,7 +2502,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 				config.drawarea.width(), config.drawarea.height());
 
 			draw_rt_clone->SetState(GSTexture::State::Invalidated);
-			DoCopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea);
+			CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
 			PSSetShaderResource(2, draw_rt_clone, true);
 		}
 	}
@@ -2532,7 +2520,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 				config.drawarea.width(), config.drawarea.height());
 
 			copy_ds->SetState(GSTexture::State::Invalidated);
-			DoCopyRect(config.ds, copy_ds, config.drawarea, config.drawarea);
+			CopyRect(config.ds, copy_ds, config.drawarea, config.drawarea.left, config.drawarea.top);
 			PSSetShaderResource(0, copy_ds, true);
 		}
 	}

@@ -1188,7 +1188,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		GSTexture* dTex = g_gs_device->CreateTexture(w, h, false, GSTexture::Format::Color, true);
 
 		GSVector4i area(x, y, x + w, y + h);
-		g_gs_device->CopyRect(sTex, dTex, area);
+		g_gs_device->CopyRect(sTex, dTex, area, 0, 0);
 
 		// Keep a trace of origin of the texture
 		src->m_texture = dTex;
@@ -1380,7 +1380,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		if (use_texture)
 		{
-			g_gs_device->CopyRect(sTex, dTex, sRect);
+			g_gs_device->CopyRect(sTex, dTex, sRect, 0, 0);
 		}
 		else
 		{
