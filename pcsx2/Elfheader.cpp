@@ -62,17 +62,27 @@ void ElfObject::initElfHeaders(bool isPSXElf)
 
 	DevCon.WriteLn( L"Initializing Elf: %d bytes", data.GetSizeInBytes());
 
-	if ( header.e_phnum > 0 )
-		proghead = (ELF_PHR*)&data[header.e_phoff];
+	if (header.e_phnum > 0)
+	{
+		if ((header.e_phoff + sizeof(ELF_PHR)) <= data.GetSizeInBytes())
+			proghead = reinterpret_cast<ELF_PHR*>(&data[header.e_phoff]);
+		else
+			Console.Error("(ELF) Program header offset %u is larger than file size %u", header.e_phoff, data.GetSizeInBytes());
+	}
 
-	if ( header.e_shnum > 0 )
-		secthead = (ELF_SHR*)&data[header.e_shoff];
+	if (header.e_shnum > 0)
+	{
+		if ((header.e_shoff + sizeof(ELF_SHR)) <= data.GetSizeInBytes())
+			secthead = reinterpret_cast<ELF_SHR*>(&data[header.e_shoff]);
+		else
+			Console.Error("(ELF) Section header offset %u is larger than file size %u", header.e_shoff, data.GetSizeInBytes());
+	}
 
-	if ( ( header.e_shnum > 0 ) && ( header.e_shentsize != sizeof(ELF_SHR) ) )
-		Console.Error( "(ELF) Size of section headers is not standard" );
+	if ((header.e_shnum > 0) && (header.e_shentsize != sizeof(ELF_SHR)))
+		Console.Error("(ELF) Size of section headers is not standard");
 
-	if ( ( header.e_phnum > 0 ) && ( header.e_phentsize != sizeof(ELF_PHR) ) )
-		Console.Error( "(ELF) Size of program headers is not standard" );
+	if ((header.e_phnum > 0) && (header.e_phentsize != sizeof(ELF_PHR)))
+		Console.Error("(ELF) Size of program headers is not standard");
 
 	//getCRC();
 
