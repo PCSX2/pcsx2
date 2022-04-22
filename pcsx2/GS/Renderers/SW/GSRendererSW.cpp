@@ -35,7 +35,7 @@ GSRendererSW::GSRendererSW(int threads)
 
 	memset(m_texture, 0, sizeof(m_texture));
 
-	m_rl = GSRasterizerList::Create<GSDrawScanline>(threads, &g_perfmon);
+	m_rl = GSRasterizerList::Create<GSDrawScanline>(threads);
 
 	m_output = (u8*)_aligned_malloc(1024 * 1024 * sizeof(u32), 32);
 
