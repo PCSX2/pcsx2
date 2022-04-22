@@ -197,8 +197,8 @@ protected:
 
 	GSRasterizerList(int threads, GSPerfMon* perfmon);
 
-	void OnWorkerStartup(int i);
-	void OnWorkerShutdown(int i);
+	static void OnWorkerStartup(int i);
+	static void OnWorkerShutdown(int i);
 
 public:
 	virtual ~GSRasterizerList();

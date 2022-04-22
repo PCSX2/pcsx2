@@ -1211,7 +1211,6 @@ void GSRasterizerList::OnWorkerStartup(int i)
 
 void GSRasterizerList::OnWorkerShutdown(int i)
 {
-	PerformanceMetrics::SetGSSWThreadTimer(i, Common::ThreadCPUTimer());
 }
 
 void GSRasterizerList::Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data)
