@@ -54,6 +54,7 @@ export UPD_INFO="gh-releases-zsync|PCSX2|pcsx2|latest|$name.AppImage.zsync"
 # a little bit hacky but should ensure maximum compatibility
 mkdir -p squashfs-root/usr/lib/wayland
 mv squashfs-root/usr/lib/libwayland-* squashfs-root/usr/lib/wayland
+rm squashfs-root/usr/lib/libgmodule-2.0.so.0
 curl -sSfL "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-$ARCH.AppImage" -o ./appimagetool-"$ARCH".AppImage
 chmod a+x appimagetool*.AppImage
 ./appimagetool-"$ARCH".AppImage "$GITHUB_WORKSPACE"/squashfs-root "$name.AppImage"
