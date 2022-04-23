@@ -19,7 +19,7 @@
 #include "GSDrawScanline.h"
 #include "GS/GSRingHeap.h"
 
-class GSRendererSW : public GSRenderer
+class GSRendererSW final : public GSRenderer
 {
 	static const GSVector4 m_pos_scale;
 #if _M_SSE >= 0x501
@@ -35,7 +35,6 @@ class GSRendererSW : public GSRenderer
 		};
 
 	public:
-		GSRendererSW* m_parent;
 		GSOffset::PageLooper m_fb_pages;
 		GSOffset::PageLooper m_zb_pages;
 		int m_fpsm;
@@ -50,7 +49,7 @@ class GSRendererSW : public GSRenderer
 		} m_syncpoint;
 
 	public:
-		SharedData(GSRendererSW* parent);
+		SharedData();
 		virtual ~SharedData();
 
 		void UsePages(const GSOffset::PageLooper* fb_pages, int fpsm, const GSOffset::PageLooper* zb_pages, int zpsm);
@@ -68,10 +67,10 @@ class GSRendererSW : public GSRenderer
 	void ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count);
 
 protected:
-	IRasterizer* m_rl;
+	std::unique_ptr<IRasterizer> m_rl;
+	std::unique_ptr<GSTextureCacheSW> m_tc;
 	GSRingHeap m_vertex_heap;
-	GSTextureCacheSW* m_tc;
-	GSTexture* m_texture[3];
+	std::array<GSTexture*, 3> m_texture = {};
 	u8* m_output;
 	GSPixelOffset4* m_fzb;
 	GSVector4i m_fzb_bbox;
@@ -101,4 +100,8 @@ protected:
 public:
 	GSRendererSW(int threads);
 	~GSRendererSW() override;
+
+	__fi static GSRendererSW* GetInstance() { return static_cast<GSRendererSW*>(g_gs_renderer.get()); }
+
+	void Destroy() override;
 };

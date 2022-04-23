@@ -202,25 +202,25 @@ public:
 	virtual ~GSRasterizerList();
 
 	template <class DS>
-	static IRasterizer* Create(int threads)
+	static std::unique_ptr<IRasterizer> Create(int threads)
 	{
 		threads = std::max<int>(threads, 0);
 
 		if (threads == 0)
 		{
-			return new GSRasterizer(new DS(), 0, 1);
+			return std::make_unique<GSRasterizer>(new DS(), 0, 1);
 		}
 
-		GSRasterizerList* rl = new GSRasterizerList(threads);
+		std::unique_ptr<GSRasterizerList> rl(new GSRasterizerList(threads));
 
 		for (int i = 0; i < threads; i++)
 		{
 			rl->m_r.push_back(std::unique_ptr<GSRasterizer>(new GSRasterizer(new DS(), i, threads)));
 			auto& r = *rl->m_r[i];
 			rl->m_workers.push_back(std::unique_ptr<GSWorker>(new GSWorker(
-				[rl, i]() { rl->OnWorkerStartup(i); },
+				[i]() { GSRasterizerList::OnWorkerStartup(i); },
 				[&r](GSRingHeap::SharedPtr<GSRasterizerData>& item) { r.Draw(item.get()); },
-				[rl, i]() { rl->OnWorkerShutdown(i); })));
+				[i]() { GSRasterizerList::OnWorkerShutdown(i); })));
 		}
 
 		return rl;

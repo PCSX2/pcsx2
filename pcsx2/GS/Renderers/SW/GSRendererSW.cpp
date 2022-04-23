@@ -31,10 +31,7 @@ GSRendererSW::GSRendererSW(int threads)
 {
 	m_nativeres = true; // ignore ini, sw is always native
 
-	m_tc = new GSTextureCacheSW(this);
-
-	memset(m_texture, 0, sizeof(m_texture));
-
+	m_tc = std::make_unique<GSTextureCacheSW>();
 	m_rl = GSRasterizerList::Create<GSDrawScanline>(threads);
 
 	m_output = (u8*)_aligned_malloc(1024 * 1024 * sizeof(u32), 32);
@@ -62,16 +59,10 @@ GSRendererSW::GSRendererSW(int threads)
 
 GSRendererSW::~GSRendererSW()
 {
-	// Need to destroy worker queue first to stop any pending thread work
-	delete m_rl;
-	delete m_tc;
-
-	for (GSTexture* tex : m_texture)
-	{
-		delete tex;
-	}
-
-	_aligned_free(m_output);
+	// strictly speaking we should always be destroyed when the destructor runs..
+	// except if an exception gets thrown during construction. this will go once
+	// we get rid of exceptions...
+	GSRendererSW::Destroy();
 }
 
 void GSRendererSW::Reset()
@@ -81,6 +72,22 @@ void GSRendererSW::Reset()
 	m_tc->RemoveAll();
 
 	GSRenderer::Reset();
+}
+
+void GSRendererSW::Destroy()
+{
+	// Need to destroy worker queue first to stop any pending thread work
+	m_rl.reset();
+	m_tc.reset();
+
+	for (GSTexture*& tex : m_texture)
+	{
+		delete tex;
+		tex = nullptr;
+	}
+
+	_aligned_free(m_output);
+	m_output = nullptr;
 }
 
 void GSRendererSW::VSync(u32 field, bool registers_written)
@@ -335,7 +342,7 @@ void GSRendererSW::Draw()
 		}
 	}
 
-	auto data = m_vertex_heap.make_shared<SharedData>(this).cast<GSRasterizerData>();
+	auto data = m_vertex_heap.make_shared<SharedData>().cast<GSRasterizerData>();
 	SharedData* sd = static_cast<SharedData*>(data.get());
 
 	sd->primclass = m_vt.m_primclass;
@@ -1419,9 +1426,8 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	return true;
 }
 
-GSRendererSW::SharedData::SharedData(GSRendererSW* parent)
-	: m_parent(parent)
-	, m_fpsm(0)
+GSRendererSW::SharedData::SharedData()
+	: m_fpsm(0)
 	, m_zpsm(0)
 	, m_using_pages(false)
 	, m_syncpoint(SyncNone)
@@ -1466,17 +1472,17 @@ void GSRendererSW::SharedData::UsePages(const GSOffset::PageLooper* fb_pages, in
 
 		if (global.sel.fb)
 		{
-			m_parent->UsePages(*fb_pages, 0);
+			GSRendererSW::GetInstance()->UsePages(*fb_pages, 0);
 		}
 
 		if (global.sel.zb)
 		{
-			m_parent->UsePages(*zb_pages, 1);
+			GSRendererSW::GetInstance()->UsePages(*zb_pages, 1);
 		}
 
 		for (size_t i = 0; m_tex[i].t != NULL; i++)
 		{
-			m_parent->UsePages(m_tex[i].t->m_pages, 2);
+			GSRendererSW::GetInstance()->UsePages(m_tex[i].t->m_pages, 2);
 		}
 	}
 
@@ -1500,17 +1506,17 @@ void GSRendererSW::SharedData::ReleasePages()
 
 		if (global.sel.fb)
 		{
-			m_parent->ReleasePages(m_fb_pages, 0);
+			GSRendererSW::GetInstance()->ReleasePages(m_fb_pages, 0);
 		}
 
 		if (global.sel.zb)
 		{
-			m_parent->ReleasePages(m_zb_pages, 1);
+			GSRendererSW::GetInstance()->ReleasePages(m_zb_pages, 1);
 		}
 
 		for (size_t i = 0; m_tex[i].t != NULL; i++)
 		{
-			m_parent->ReleasePages(m_tex[i].t->m_pages, 2);
+			GSRendererSW::GetInstance()->ReleasePages(m_tex[i].t->m_pages, 2);
 		}
 	}
 
@@ -1545,19 +1551,19 @@ void GSRendererSW::SharedData::UpdateSource()
 
 	// TODO
 
-	if (m_parent->s_dump)
+	if (g_gs_renderer->s_dump)
 	{
 		u64 frame = g_perfmon.GetFrame();
 
 		std::string s;
 
-		if (m_parent->s_savet && m_parent->s_n >= m_parent->s_saven)
+		if (g_gs_renderer->s_savet && g_gs_renderer->s_n >= g_gs_renderer->s_saven)
 		{
 			for (size_t i = 0; m_tex[i].t != NULL; i++)
 			{
-				const GIFRegTEX0& TEX0 = m_parent->GetTex0Layer(i);
+				const GIFRegTEX0& TEX0 = g_gs_renderer->GetTex0Layer(i);
 
-				s = format("%05d_f%lld_itex%d_%05x_%s.bmp", m_parent->s_n, frame, i, TEX0.TBP0, psm_str(TEX0.PSM));
+				s = format("%05d_f%lld_itex%d_%05x_%s.bmp", g_gs_renderer->s_n, frame, i, TEX0.TBP0, psm_str(TEX0.PSM));
 
 				m_tex[i].t->Save(root_sw + s);
 			}
@@ -1568,7 +1574,7 @@ void GSRendererSW::SharedData::UpdateSource()
 
 				t->Update(GSVector4i(0, 0, 256, 1), global.clut, sizeof(u32) * 256);
 
-				s = format("%05d_f%lld_itexp_%05x_%s.bmp", m_parent->s_n, frame, (int)m_parent->m_context->TEX0.CBP, psm_str(m_parent->m_context->TEX0.CPSM));
+				s = format("%05d_f%lld_itexp_%05x_%s.bmp", g_gs_renderer->s_n, frame, (int)g_gs_renderer->m_context->TEX0.CBP, psm_str(g_gs_renderer->m_context->TEX0.CPSM));
 
 				t->Save(root_sw + s);
 
