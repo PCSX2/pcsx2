@@ -22,6 +22,8 @@
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
+#include <KnownFolders.h>
+#include <ShlObj.h>
 #endif
 
 #include "common/Assertions.h"
@@ -52,6 +54,9 @@ static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 namespace QtHost {
 static void InitializeWxRubbish();
 static bool InitializeConfig();
+static bool ShouldUsePortableMode();
+static void SetResourcesDirectory();
+static void SetDataDirectory();
 static void HookSignals();
 static bool SetCriticalFolders();
 static void SetDefaultConfig();
@@ -105,15 +110,12 @@ bool QtHost::SetCriticalFolders()
 {
 	std::string program_path(FileSystem::GetProgramPath());
 	EmuFolders::AppRoot = wxDirName(wxFileName(StringUtil::UTF8StringToWxString(program_path)));
-	EmuFolders::DataRoot = EmuFolders::AppRoot;
-#ifndef _WIN32
-	const char* homedir = getenv("HOME");
-	if (homedir)
-		EmuFolders::DataRoot = Path::Combine(wxString::FromUTF8(homedir), wxString(L"PCSX2"));
-#endif
+	SetResourcesDirectory();
+	SetDataDirectory();
 
-	EmuFolders::Settings = EmuFolders::DataRoot.Combine(wxDirName(L"inis"));
-	EmuFolders::Resources = EmuFolders::AppRoot.Combine(wxDirName(L"resources"));
+	// allow SetDataDirectory() to change settings directory (if we want to split config later on)
+	if (!EmuFolders::Settings.IsOk())
+		EmuFolders::Settings = EmuFolders::DataRoot.Combine(wxDirName(L"inis"));
 
 	// Write crash dumps to the data directory, since that'll be accessible for certain.
 	CrashHandler::SetWriteDirectory(EmuFolders::DataRoot.ToUTF8().data());
@@ -127,6 +129,77 @@ bool QtHost::SetCriticalFolders()
 	}
 
 	return true;
+}
+
+bool QtHost::ShouldUsePortableMode()
+{
+	// Check whether portable.ini exists in the program directory.
+	return FileSystem::FileExists(Path::CombineStdString(EmuFolders::AppRoot, "portable.ini").c_str());
+}
+
+void QtHost::SetResourcesDirectory()
+{
+	// On Windows/Linux, these are in the binary directory.
+	EmuFolders::Resources = EmuFolders::AppRoot.Combine(wxDirName(L"resources"));
+}
+
+void QtHost::SetDataDirectory()
+{
+	if (ShouldUsePortableMode())
+	{
+		EmuFolders::DataRoot = EmuFolders::AppRoot;
+		return;
+	}
+
+#if defined(_WIN32)
+	// On Windows, use My Documents\PCSX2 to match old installs.
+	PWSTR documents_directory;
+	if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
+	{
+		if (std::wcslen(documents_directory) > 0)
+			EmuFolders::DataRoot = wxDirName(Path::Combine(wxString(documents_directory), L"PCSX2"));
+		CoTaskMemFree(documents_directory);
+	}
+#elif defined(__linux__)
+	// Check for $HOME/PCSX2 first, for legacy installs.
+	const char* home_dir = getenv("HOME");
+	const std::string legacy_dir(home_dir ? Path::CombineStdString(home_dir, "PCSX2") : std::string());
+	if (!legacy_dir.empty() && FileSystem::DirectoryExists(legacy_dir.c_str()))
+	{
+		EmuFolders::DataRoot = wxDirName(StringUtil::UTF8StringToWxString(legacy_dir));
+	}
+	else
+	{
+		// otherwise, use $XDG_CONFIG_HOME/PCSX2.
+		const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
+		if (xdg_config_home && xdg_config_home[0] == '/' && FileSystem::DirectoryExists(xdg_config_home))
+		{
+			EmuFolders::DataRoot = wxDirName(StringUtil::UTF8StringToWxString(Path::CombineStdString(xdg_config_home, "PCSX2")));
+		}
+		else if (!legacy_dir.empty())
+		{
+			// fall back to the legacy PCSX2-in-home.
+			EmuFolders::DataRoot = wxDirName(StringUtil::UTF8StringToWxString(legacy_dir));
+		}
+	}
+#elif defined(__APPLE__)
+	static constexpr char MAC_DATA_DIR[] = "Library/Application Support/PCSX2";
+	const char* home_dir = getenv("HOME");
+	if (home_dir)
+		EmuFolders::DataRoot = wxDirName(StringUtil::UTF8StringToWxString(Path::CombineStdString(home_dir, MAC_DATA_DIR)));
+#endif
+
+	// make sure it exists
+	if (EmuFolders::DataRoot.IsOk() && !EmuFolders::DataRoot.Exists())
+	{
+		// we're in trouble if we fail to create this directory... but try to hobble on with portable
+		if (!EmuFolders::DataRoot.Mkdir())
+			EmuFolders::DataRoot.Clear();
+	}
+
+	// couldn't determine the data directory? fallback to portable.
+	if (!EmuFolders::DataRoot.IsOk())
+		EmuFolders::DataRoot = EmuFolders::AppRoot;
 }
 
 void QtHost::UpdateFolders()
