@@ -3179,18 +3179,22 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 	{
 		// Optimisation aims to reduce the amount of texture loaded to only the bit which will be read
 		GSVector4 st = m_vt.m_min.t.xyxy(m_vt.m_max.t);
+		if (linear)
+			st += GSVector4(-0.5f, 0.5f).xxyy();
 
 		// Adjust texture range when sprites get scissor clipped. Since we linearly interpolate, this
 		// optimization doesn't work when perspective correction is enabled.
 		if (m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1)
 		{
-			const GSVector4i int_rc(m_vt.m_min.p.xyxy(m_vt.m_max.p));
+			// When coordinates are fractional, GS appears to draw to the right/bottom (effectively
+			// taking the ceiling), not to the top/left (taking the floor). 
+			const GSVector4i int_rc(m_vt.m_min.p.ceil().xyxy(m_vt.m_max.p.floor()));
 			const GSVector4i scissored_rc(int_rc.rintersect(GSVector4i(m_context->scissor.in)));
 			if (!int_rc.eq(scissored_rc))
 			{
 				// draw will get scissored, adjust UVs to suit
 				const GSVector2 pos_range(m_vt.m_max.p.x - m_vt.m_min.p.x, m_vt.m_max.p.y - m_vt.m_min.p.y);
-				const GSVector2 uv_range(st.z - st.x, st.w - st.y);
+				const GSVector2 uv_range(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
 				const GSVector2 grad(uv_range / pos_range);
 
 				// we need to check that it's not going to repeat over the non-clipped part
@@ -3210,9 +3214,6 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 				}
 			}
 		}
-
-		if (linear)
-			st += GSVector4(-0.5f, 0.5f).xxyy();
 
 		GSVector4i uv = GSVector4i(st.floor());
 		uses_border = GSVector4::cast((uv < vr).blend32<0xc>(uv >= vr)).mask();

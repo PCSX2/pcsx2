@@ -1840,7 +1840,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	if (config.ps.hdr)
 	{
 		GSVector2i size = config.rt->GetSize();
-		hdr_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::FloatColor);
+		hdr_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::FloatColor, false);
 		hdr_rt->CommitRegion(GSVector2i(config.drawarea.z, config.drawarea.w));
 		OMSetRenderTargets(hdr_rt, config.ds, &config.scissor);
 
