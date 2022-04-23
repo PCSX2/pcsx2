@@ -44,6 +44,7 @@ enum GamefixId
 	Fix_VUSync,
 	Fix_VUOverflow,
 	Fix_XGKick,
+	Fix_BlitInternalFPS,
 
 	GamefixId_COUNT
 };
@@ -796,7 +797,8 @@ struct Pcsx2Config
 			IbitHack : 1, // I bit hack. Needed to stop constant VU recompilation in some games
 			VUSyncHack : 1, // Makes microVU run behind the EE to avoid VU register reading/writing sync issues. Useful for M-Bit games
 			VUOverflowHack : 1, // Tries to simulate overflow flag checks (not really possible on x86 without soft floats)
-			XgKickHack : 1; // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
+			XgKickHack : 1, // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
+			BlitInternalFPSHack : 1; // Disables privileged register write-based FPS detection.
 		BITFIELD_END
 
 		GamefixOptions();

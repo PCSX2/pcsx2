@@ -8317,6 +8317,8 @@ SLAJ-25072:
 SLAJ-25073:
   name: "Resident Evil 4"
   region: "NTSC-Unk"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLAJ-25075:
@@ -10462,6 +10464,8 @@ SLES-50876:
   name: "Driv3r"
   region: "PAL-M5"
   compat: 4
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
 SLES-50877:
@@ -11791,6 +11795,8 @@ SLES-51510:
 SLES-51511:
   name: "Crash Nitro Kart"
   region: "PAL-M6"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLES-51522:
   name: "Return to Castle Wolfenstein - Operation Resurrection"
   region: "PAL-S"
@@ -13008,6 +13014,8 @@ SLES-52152:
 SLES-52153:
   name: "Driv3r"
   region: "PAL-E-S"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
 SLES-52155:
@@ -16131,6 +16139,8 @@ SLES-53553:
 SLES-53556:
   name: "Driver - Parallel Lines"
   region: "PAL-M3"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLES-53557:
   name: "Need for Speed - Most Wanted"
   region: "PAL-E"
@@ -17264,6 +17274,8 @@ SLES-54023:
 SLES-54027:
   name: "Driver - Parallel Lines"
   region: "PAL-M3"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLES-54030:
   name: "Black"
   region: "PAL-E"
@@ -20937,6 +20949,8 @@ SLES-82013:
   name: "Metal Gear Solid 3 - Snake Eater"
   region: "PAL-E-F"
   compat: 5
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurry characters.
 SLES-82018:
@@ -20958,11 +20972,15 @@ SLES-82021:
 SLES-82024:
   name: "Metal Gear Solid 3 - Snake Eater"
   region: "PAL-I"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurry characters.
 SLES-82026:
   name: "Metal Gear Solid 3 - Snake Eater"
   region: "PAL-S"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurry characters.
 SLES-82028:
@@ -21002,6 +21020,8 @@ SLES-82031:
 SLES-82032:
   name: "Metal Gear Solid 3 - Snake Eater"
   region: "PAL-G"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurry characters.
 SLES-82034:
@@ -21057,11 +21077,15 @@ SLES-82039:
 SLES-82042:
   name: "Metal Gear Solid 3 - Subsistence [Disc1of3]"
   region: "PAL-E-F"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLES-82043:
   name: "Metal Gear Solid 3 - Subsistence [Disc2of3]"
   region: "PAL-E-F"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
@@ -21069,11 +21093,15 @@ SLES-82043:
 SLES-82044:
   name: "Metal Gear Solid 3 - Subsistence [Disc1of3]"
   region: "PAL-I"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLES-82045:
   name: "Metal Gear Solid 3 - Subsistence [Disc2of3]"
   region: "PAL-I"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
@@ -21081,11 +21109,15 @@ SLES-82045:
 SLES-82046:
   name: "Metal Gear Solid 3 - Subsistence [Disc1of3]"
   region: "PAL-G"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLES-82047:
   name: "Metal Gear Solid 3 - Subsistence [Disc2of3]"
   region: "PAL-G"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
@@ -21093,11 +21125,15 @@ SLES-82047:
 SLES-82048:
   name: "Metal Gear Solid 3 - Subsistence [Disc1of3]"
   region: "PAL-S"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLES-82049:
   name: "Metal Gear Solid 3 - Subsistence [Disc2of3]"
   region: "PAL-S"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
@@ -21105,6 +21141,8 @@ SLES-82049:
 SLES-82050:
   name: "Metal Gear Solid 3 - Subsistence [Disc3of3]"
   region: "PAL-E-F"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
@@ -21112,6 +21150,8 @@ SLES-82050:
 SLES-82051:
   name: "Metal Gear Solid 3 - Subsistence [Disc3of3]"
   region: "PAL-I"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
@@ -21119,6 +21159,8 @@ SLES-82051:
 SLES-82052:
   name: "Metal Gear Solid 3 - Subsistence [Disc3of3]"
   region: "PAL-G"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
@@ -21126,6 +21168,8 @@ SLES-82052:
 SLES-82053:
   name: "Metal Gear Solid 3 - Subsistence [Disc3of3]"
   region: "PAL-S"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
@@ -21594,6 +21638,8 @@ SLKA-25249:
 SLKA-25251:
   name: "Metal Gear Solid 3 - Snake Eater"
   region: "NTSC-K"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLKA-25252:
   name: "Forgotten Realms - Demon Stone"
   region: "NTSC-K"
@@ -21777,6 +21823,8 @@ SLKA-25335:
 SLKA-25341:
   name: "Driver - Parallel Lines"
   region: "NTSC-K"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLKA-25342:
   name: "Ryu ga Gotoku"
   region: "NTSC-K"
@@ -21790,12 +21838,16 @@ SLKA-25353:
   name: "Metal Gear Solid 3 - Subsistence [Limited Edition] [Disc1of2]"
   region: "NTSC-K"
   compat: 5
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLKA-25354:
   name: "Metal Gear Solid 3 - Subsistence [Limited Edition] [Disc2of2]"
   region: "NTSC-K"
   compat: 5
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
@@ -26995,6 +27047,8 @@ SLPM-65740:
 SLPM-65741:
   name: "Driv3r"
   region: "NTSC-J"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
 SLPM-65742:
@@ -27142,9 +27196,13 @@ SLPM-65788:
 SLPM-65789:
   name: "Metal Gear Solid 3 - Snake Eater [Premium Pack]"
   region: "NTSC-J"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLPM-65790:
   name: "Metal Gear Solid 3 - Snake Eater"
   region: "NTSC-J"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLPM-65791:
   name: "S.L.A.I. - Steel Lancer Arena International"
   region: "NTSC-J"
@@ -28249,6 +28307,8 @@ SLPM-66116:
 SLPM-66117:
   name: "Metal Gear Solid 3 - Subsistence [with Headset]"
   region: "NTSC-J"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLPM-66122:
@@ -28594,6 +28654,8 @@ SLPM-66219:
 SLPM-66220:
   name: "Metal Gear Solid 3 - Subsistence [First Print Limited Edition] [Disc1of3]"
   region: "NTSC-J"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
@@ -28601,6 +28663,8 @@ SLPM-66220:
 SLPM-66221:
   name: "Metal Gear Solid 3 - Subsistence [First Print Limited Edition] [Disc2of3]"
   region: "NTSC-J"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
@@ -28608,6 +28672,8 @@ SLPM-66221:
 SLPM-66222:
   name: "Metal Gear Solid 3 - Subsistence [First Print Limited Edition] [Disc3of3]"
   region: "NTSC-J"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
@@ -28615,6 +28681,8 @@ SLPM-66222:
 SLPM-66223:
   name: "Metal Gear Solid 3 - Subsistence [Disc1of2]"
   region: "NTSC-J"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
@@ -28622,6 +28690,8 @@ SLPM-66223:
 SLPM-66224:
   name: "Metal Gear Solid 3 - Subsistence [Disc2of2]"
   region: "NTSC-J"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
@@ -29818,6 +29888,8 @@ SLPM-66566:
 SLPM-66567:
   name: "Driver - Parallel Lines"
   region: "NTSC-J"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLPM-66568:
   name: "Brothers In Arms - Road to Hill 30 [Ubisoft Best]"
   region: "NTSC-J"
@@ -30650,6 +30722,8 @@ SLPM-66792:
 SLPM-66794:
   name: "Metal Gear Solid 3 - Snake Eater [20th Anniversary Edition]"
   region: "NTSC-J"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLPM-66796:
   name: "Metal Gear Solid - 20th Anniversary Collection"
   region: "NTSC-J"
@@ -31443,6 +31517,8 @@ SLPM-68513:
 SLPM-68516:
   name: "Metal Gear Solid 3 - Snake Eater [Shareholder Edition]"
   region: "NTSC-J"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLPM-69001:
   name: "PictureParadise Club"
   region: "NTSC-J"
@@ -39162,6 +39238,8 @@ SLUS-20587:
   name: "Driv3r"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
 SLUS-20588:
@@ -39432,6 +39510,8 @@ SLUS-20649:
   name: "Crash Bandicoot - Nitro Kart"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLUS-20650:
   name: "MVP Baseball 2003"
   region: "NTSC-U"
@@ -40578,6 +40658,8 @@ SLUS-20915:
   name: "Metal Gear Solid 3 - Snake Eater"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLUS-20916:
   name: "Dance Dance Revolution EXTREME"
   region: "NTSC-U"
@@ -41659,6 +41741,8 @@ SLUS-21134:
   name: "Resident Evil 4"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLUS-21135:
@@ -42214,6 +42298,8 @@ SLUS-21243:
   name: "Metal Gear Solid 3 - Subsistence [Disc2of3]"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
@@ -42375,6 +42461,8 @@ SLUS-21271:
   name: "Driver - Parallel Lines"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLUS-21272:
   name: "Super Monkey Ball Adventure"
   region: "NTSC-U"
@@ -42844,11 +42932,15 @@ SLUS-21359:
   name: "Metal Gear Solid 3 - Subsistence [Disc1of3]"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLUS-21360:
   name: "Metal Gear Solid 3 - Subsistence [Disc3of3]"
   region: "NTSC-U"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
@@ -43072,6 +43164,8 @@ SLUS-21398:
 SLUS-21399:
   name: "Driver - Parallel Lines [Limited Edition]"
   region: "NTSC-U"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLUS-21400:
   name: "Monster House"
   region: "NTSC-U"
@@ -45774,6 +45868,8 @@ SLUS-29067:
 SLUS-29068:
   name: "Crash Nitro Kart [Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLUS-29069:
   name: "Prince of Persia - The Sands of Time [Demo]"
   region: "NTSC-U"
@@ -46051,6 +46147,8 @@ SLUS-29168:
 SLUS-29169:
   name: "Resident Evil 4 [Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLUS-29170:
@@ -46095,6 +46193,8 @@ SLUS-29183:
 SLUS-29185:
   name: "Driver - Parallel Lines [Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLUS-29188:
   name: "Steambot Chronicles [Regular Demo]"
   region: "NTSC-U"

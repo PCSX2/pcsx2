@@ -37,6 +37,7 @@ allowed_game_fixes = [
     "VUSyncHack",
     "VUOverflowHack",
     "XGKickHack",
+    "BlitInternalFPSHack",
 ]
 allowed_gs_hw_fixes = [
     "autoFlush",
