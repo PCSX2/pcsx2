@@ -152,7 +152,7 @@ void PerformanceMetrics::Update(bool gs_register_write, bool fb_blit)
 	s_accumulated_gpu_time = 0.0f;
 
 	// prefer privileged register write based framerate detection, it's less likely to have false positives
-	if (s_gs_privileged_register_writes_since_last_update > 0)
+	if (s_gs_privileged_register_writes_since_last_update > 0 && !EmuConfig.Gamefixes.BlitInternalFPSHack)
 	{
 		s_internal_fps = static_cast<float>(s_gs_privileged_register_writes_since_last_update) / time;
 		s_internal_fps_method = InternalFPSMethod::GSPrivilegedRegister;
