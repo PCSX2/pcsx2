@@ -52,6 +52,8 @@ static std::string GetDumpSerial()
 }
 #endif
 
+std::unique_ptr<GSRenderer> g_gs_renderer;
+
 GSRenderer::GSRenderer()
 	: m_shift_key(false)
 	, m_control_key(false)

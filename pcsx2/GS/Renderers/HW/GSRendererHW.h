@@ -154,6 +154,7 @@ public:
 	GSRendererHW();
 	virtual ~GSRendererHW() override;
 
+	__fi static GSRendererHW* GetInstance() { return static_cast<GSRendererHW*>(g_gs_renderer.get()); }
 	__fi GSTextureCache* GetTextureCache() const { return m_tc; }
 
 	void Destroy() override;

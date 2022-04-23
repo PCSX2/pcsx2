@@ -50,8 +50,7 @@ public:
 
 		HashCacheKey();
 
-		static HashCacheKey Create(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSRenderer* renderer, const u32* clut,
-			const GSVector2i* lod);
+		static HashCacheKey Create(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const u32* clut, const GSVector2i* lod);
 
 		HashCacheKey WithRemovedCLUTHash() const;
 		void RemoveCLUTHash();
@@ -76,9 +75,6 @@ public:
 
 	class Surface : public GSAlignedClass<32>
 	{
-	protected:
-		GSRenderer* m_renderer;
-
 	public:
 		GSTexture* m_texture;
 		HashCacheEntry* m_from_hash_cache;
@@ -90,7 +86,7 @@ public:
 		u32 m_end_block; // Hint of the surface area.
 
 	public:
-		Surface(GSRenderer* r);
+		Surface();
 		virtual ~Surface();
 
 		void UpdateAge();
@@ -110,10 +106,9 @@ public:
 		u32* m_clut;
 		u16 m_pal;
 		GSTexture* m_tex_palette;
-		const GSRenderer* m_renderer;
 
 	public:
-		Palette(const GSRenderer* renderer, u16 pal, bool need_gs_texture);
+		Palette(u16 pal, bool need_gs_texture);
 		~Palette();
 
 		// Disable copy constructor and copy operator
@@ -178,7 +173,7 @@ public:
 		GSOffset::PageLooper m_pages;
 
 	public:
-		Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool dummy_container = false);
+		Source(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool dummy_container = false);
 		virtual ~Source();
 
 		__fi bool CanPreload() const { return CanPreloadTextureSize(m_TEX0.TW, m_TEX0.TH); }
@@ -200,7 +195,7 @@ public:
 		bool m_dirty_alpha;
 
 	public:
-		Target(GSRenderer* r, const GIFRegTEX0& TEX0, const bool depth_supported, const int type);
+		Target(const GIFRegTEX0& TEX0, const bool depth_supported, const int type);
 
 		void UpdateValidity(const GSVector4i& rect);
 
@@ -211,7 +206,6 @@ public:
 	{
 	private:
 		static const u16 MAX_SIZE = 65535; // Max size of each map.
-		const GSRenderer* m_renderer;
 
 		// Array of 2 maps, the first for 64B palettes and the second for 1024B palettes.
 		// Each map stores the key PaletteKey (clut copy, pal value) pointing to the relevant shared pointer to Palette object.
@@ -219,7 +213,7 @@ public:
 		std::array<std::unordered_map<PaletteKey, std::shared_ptr<Palette>, PaletteKeyHash, PaletteKeyEqual>, 2> m_maps;
 
 	public:
-		PaletteMap(const GSRenderer* renderer);
+		PaletteMap();
 
 		// Retrieves a shared pointer to a valid Palette from m_maps or creates a new one adding it to the data structure
 		std::shared_ptr<Palette> LookupPalette(u16 pal, bool need_gs_texture);
@@ -276,7 +270,6 @@ public:
 	};
 
 protected:
-	GSRenderer* m_renderer;
 	PaletteMap m_palette_map;
 	SourceMap m_src;
 	std::unordered_map<HashCacheKey, HashCacheEntry, HashCacheKeyHash> m_hash_cache;
@@ -293,13 +286,13 @@ protected:
 	HashCacheEntry* LookupHashCache(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool& paltex, const u32* clut, const GSVector2i* lod);
 
 	static void PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSLocalMemory& mem, bool paltex, GSTexture* tex, u32 level);
-	static HashType HashTexture(GSRenderer* renderer, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA);
+	static HashType HashTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA);
 
 	// TODO: virtual void Write(Source* s, const GSVector4i& r) = 0;
 	// TODO: virtual void Write(Target* t, const GSVector4i& r) = 0;
 
 public:
-	GSTextureCache(GSRenderer* r);
+	GSTextureCache();
 	~GSTextureCache();
 
 	__fi u64 GetHashCacheMemoryUsage() const { return m_hash_cache_memory_usage; }
