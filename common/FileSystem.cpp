@@ -1190,6 +1190,13 @@ bool FileSystem::SetPathCompression(const char* path, bool enable)
 	if (attrs == INVALID_FILE_ATTRIBUTES)
 		return false;
 
+	const bool isCompressed = (attrs & FILE_ATTRIBUTE_COMPRESSED) != 0;
+	if (enable == isCompressed)
+	{
+		// already compressed/not compressed
+		return true;
+	}
+
 	const bool isFile = !(attrs & FILE_ATTRIBUTE_DIRECTORY);
 	const DWORD flags = isFile ? FILE_ATTRIBUTE_NORMAL : (FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_DIRECTORY);
 
