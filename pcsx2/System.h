@@ -201,3 +201,6 @@ namespace Msgbox
 #ifdef _WIN32
 extern void CheckIsUserOnHighPerfPowerPlan();
 #endif
+
+extern void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVUMXCSR);
+extern SSE_MXCSR g_sseVUMXCSR, g_sseMXCSR;

@@ -29,11 +29,28 @@
 #include "common/StringUtil.h"
 #include "CDVD/CDVD.h"
 
+#include "common/emitter/x86_intrin.h"
+
 #ifdef PCSX2_CORE
 #include "GSDumpReplayer.h"
 
 extern R5900cpu GSDumpReplayerCpu;
 #endif
+
+SSE_MXCSR g_sseMXCSR   = {DEFAULT_sseMXCSR};
+SSE_MXCSR g_sseVUMXCSR = {DEFAULT_sseVUMXCSR};
+
+// SetCPUState -- for assignment of SSE roundmodes and clampmodes.
+//
+void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVUMXCSR)
+{
+	//Msgbox::Alert("SetCPUState: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
+
+	g_sseMXCSR   = sseMXCSR.ApplyReserveMask();
+	g_sseVUMXCSR = sseVUMXCSR.ApplyReserveMask();
+
+	_mm_setcsr(g_sseMXCSR.bitmask);
+}
 
 // --------------------------------------------------------------------------------------
 //  RecompiledCodeReserve  (implementations)
