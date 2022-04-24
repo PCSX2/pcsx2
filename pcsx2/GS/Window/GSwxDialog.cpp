@@ -339,7 +339,7 @@ HacksTab::HacksTab(wxWindow* parent)
 	PaddedBoxSizer<wxBoxSizer> tab_box(wxVERTICAL);
 
 	auto hw_prereq = [this]{ return m_is_hardware; };
-	auto* hacks_check_box = m_ui.addCheckBox(tab_box.inner, "Manual HW Hacks", "UserHacks", -1, hw_prereq);
+	auto* hacks_check_box = m_ui.addCheckBox(tab_box.inner, "Manual HW Hacks (Disables automatic settings if checked)", "UserHacks", -1, hw_prereq);
 	auto hacks_prereq = [this, hacks_check_box]{ return m_is_hardware && hacks_check_box->GetValue(); };
 	auto upscale_hacks_prereq = [this, hacks_check_box]{ return !m_is_native_res && hacks_check_box->GetValue(); };
 
