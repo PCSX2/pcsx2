@@ -443,9 +443,6 @@
     <ClCompile Include="Dump.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="x86\iMisc.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
     <ClCompile Include="Pcsx2Config.cpp">
       <Filter>System</Filter>
     </ClCompile>
