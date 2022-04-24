@@ -197,7 +197,7 @@ void GSRendererNew::EmulateTextureShuffleAndFbmask()
 		// 3. SW blending isn't implemented yet.
 		switch (GSConfig.AccurateBlendingUnit)
 		{
-			case AccBlendLevel::Ultra:
+			case AccBlendLevel::Maximum:
 			case AccBlendLevel::Full:
 			case AccBlendLevel::High:
 			case AccBlendLevel::Medium:
@@ -651,7 +651,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool&
 
 		switch (GSConfig.AccurateBlendingUnit)
 		{
-			case AccBlendLevel::Ultra:
+			case AccBlendLevel::Maximum:
 				clr_blend1_2 = false;
 				sw_blending |= true;
 				[[fallthrough]];
@@ -694,7 +694,7 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool&
 
 		switch (GSConfig.AccurateBlendingUnit)
 		{
-			case AccBlendLevel::Ultra:
+			case AccBlendLevel::Maximum:
 				if (m_prim_overlap == PRIM_OVERLAP_NO)
 				{
 					clr_blend1_2 = false;

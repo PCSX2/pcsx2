@@ -182,7 +182,7 @@ enum class AccBlendLevel : u8
 	Medium,
 	High,
 	Full,
-	Ultra,
+	Maximum,
 };
 
 enum class TexturePreloadingLevel : u8

@@ -547,7 +547,7 @@
         <widget class="QComboBox" name="blending">
          <item>
           <property name="text">
-           <string>Minimum (Fastest)</string>
+           <string>Minimum</string>
           </property>
          </item>
          <item>
@@ -567,12 +567,12 @@
          </item>
          <item>
           <property name="text">
-           <string>Full (Very Slow)</string>
+           <string>Full (Slow)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Ultra (Ultra Slow)</string>
+           <string>Maximum (Very Slow)</string>
           </property>
          </item>
         </widget>

@@ -100,14 +100,14 @@ const char* dialog_message(int ID, bool* updateText)
 		case IDC_ACCURATE_BLEND_UNIT:
 			return cvtString("Control the accuracy level of the GS blending unit emulation.\n\n"
 				"Minimum:\nFast but introduces various rendering issues.\n"
-				"It is intended for slow computer.\n\n"
+				"It is intended for slow computers.\n\n"
 				"Basic:\nEmulate correctly most of the effects with a limited speed penalty.\n"
 				"This is the recommended setting.\n\n"
 				"Medium:\nExtend it to all sprites. Performance impact remains reasonable in 3D game.\n\n"
 				"High:\nExtend it to destination alpha blending and color wrapping (helps shadow and fog effects).\n"
 				"A good CPU is required.\n\n"
-				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is ultra slow!\n\n"
-				"Ultra:\nThe blending unit will be completely emulated by the shader. It is ultra slow!\n\n"
+				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is slow!\n\n"
+				"Maximum:\nThe blending unit will be completely emulated by the shader. It is very slow!\n\n"
 				"Note: Direct3D11's blending is capped at High and is reduced in capability compared to OpenGL/Vulkan");
 		case IDC_TC_DEPTH:
 			return cvtString("Disable the support of Depth buffer in the texture cache.\n"
