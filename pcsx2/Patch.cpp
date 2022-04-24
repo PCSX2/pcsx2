@@ -221,13 +221,8 @@ namespace PatchFunc
 		PatchesCon->WriteLn("Author: %.*s", static_cast<int>(text2.length()), text2.data());
 	}
 
-	void patchHelper(const std::string_view& cmd, const std::string_view& param)
+	void patch(const std::string_view& cmd, const std::string_view& param)
 	{
-		// Error Handling Note:  I just throw simple wxStrings here, and then catch them below and
-		// format them into more detailed cmd+data+error printouts.  If we want to add user-friendly
-		// (translated) messages for display in a popup window then we'll have to upgrade the
-		// exception a little bit.
-
 		// print the actual patch lines only in verbose mode (even in devel)
 		if (DevConWriterEnabled)
 		{
@@ -280,8 +275,6 @@ namespace PatchFunc
 
 #undef PATCH_ERROR
 	}
-
-	void patch(const std::string_view& cmd, const std::string_view& param) { patchHelper(cmd, param); }
 } // namespace PatchFunc
 
 // This is for applying patches directly to memory
