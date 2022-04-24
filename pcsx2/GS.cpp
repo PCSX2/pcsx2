@@ -248,17 +248,7 @@ void __fastcall gsWrite64_page_01( u32 mem, const mem64_t* value )
 				GUNIT_LOG("Busdir - EE->GS Upload");
 			}
 
-			//=========================================================================
-			// BUSDIR INSANITY !! MTGS FLUSH NEEDED
-			//
-			// Yup folks.  BUSDIR is evil.  The only safe way to handle it is to flush the whole MTGS
-			// and ensure complete MTGS and EEcore thread synchronization  This is very slow, no doubt,
-			// but on the bright side BUSDIR is used quite rarely, indeed.
-
-			// Important: writeback to gsRegs area *prior* to flushing the MTGS.  The flush will sync
-			// the GS and MTGS register states, and upload our screwy busdir register in the process. :)
 			gsWrite64_generic( mem, value );
-			GetMTGS().WaitGS();
 		return;
 
 		case GS_CSR:

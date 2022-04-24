@@ -294,8 +294,7 @@ enum MTGS_RingCommand
 	GS_RINGTYPE_CRC,
 	GS_RINGTYPE_GSPACKET,
 	GS_RINGTYPE_MTVU_GSPACKET,
-	GS_RINGTYPE_INIT_READ_FIFO1,
-	GS_RINGTYPE_INIT_READ_FIFO2,
+	GS_RINGTYPE_INIT_AND_READ_FIFO,
 	GS_RINGTYPE_ASYNC_CALL,
 };
 
@@ -384,6 +383,7 @@ public:
 	u8* GetDataPacketPtr() const;
 	void SetEvent();
 	void PostVsyncStart(bool registers_written);
+	void InitAndReadFIFO(u8* mem, u32 qwc);
 
 	bool IsGSOpened() const { return m_Opened; }
 

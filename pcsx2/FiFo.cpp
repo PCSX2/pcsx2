@@ -54,10 +54,7 @@ void __fastcall ReadFIFO_VIF1(mem128_t* out)
 		}
 		if (vif1Regs.stat.FQC > 0)
 		{
-			GetMTGS().WaitGS();
-			GetMTGS().SendPointerPacket(GS_RINGTYPE_INIT_READ_FIFO1, 0, out);
-			GetMTGS().WaitGS(false); // wait without reg sync
-			GSreadFIFO((u8*)out);
+			GetMTGS().InitAndReadFIFO(reinterpret_cast<u8*>(out), 1);
 			vif1.GSLastDownloadSize--;
 			GUNIT_LOG("ReadFIFO_VIF1");
 			if (vif1.GSLastDownloadSize <= 16)
