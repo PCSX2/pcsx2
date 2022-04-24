@@ -154,8 +154,6 @@ private:
 		ID3D11BlendState* bs;
 		float bf;
 		ID3D11RenderTargetView* rt_view;
-		GSTexture11* rt_texture;
-		GSTexture11* rt_ds;
 		ID3D11DepthStencilView* dsv;
 	} m_state;
 
@@ -228,7 +226,7 @@ private:
 
 public:
 	GSDevice11();
-	virtual ~GSDevice11() {}
+	~GSDevice11() override;
 
 	__fi static GSDevice11* GetInstance() { return static_cast<GSDevice11*>(g_gs_device.get()); }
 	__fi ID3D11Device* GetD3DDevice() const { return m_dev.get(); }
