@@ -265,13 +265,13 @@ namespace PatchFunc
 
 		if (iPatch.cpu == 0)
 		{
-			PATCH_ERROR("Unrecognized CPU Target: '%s'", static_cast<int>(pieces[1].size()), pieces[1].data());
+			PATCH_ERROR("Unrecognized CPU Target: '%.*s'", static_cast<int>(pieces[1].size()), pieces[1].data());
 			return;
 		}
 
 		if (iPatch.type == 0)
 		{
-			PATCH_ERROR("Unrecognized Operand Size: '%s'", static_cast<int>(pieces[3].size()), pieces[3].data());
+			PATCH_ERROR("Unrecognized Operand Size: '%.*s'", static_cast<int>(pieces[3].size()), pieces[3].data());
 			return;
 		}
 
