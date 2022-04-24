@@ -58,6 +58,14 @@ GSDevice11::GSDevice11()
 	m_features.stencil_buffer = true;
 }
 
+GSDevice11::~GSDevice11()
+{
+	if (m_state.rt_view)
+		m_state.rt_view->Release();
+	if (m_state.dsv)
+		m_state.dsv->Release();
+}
+
 bool GSDevice11::Create(HostDisplay* display)
 {
 	if (!__super::Create(display))
@@ -1153,15 +1161,25 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	if (rt) rtv = *(GSTexture11*)rt;
 	if (ds) dsv = *(GSTexture11*)ds;
 
-	if (m_state.rt_view != rtv || m_state.dsv != dsv)
+	const bool changed = (m_state.rt_view != rtv || m_state.dsv != dsv);
+	if (m_state.rt_view != rtv)
 	{
+		if (m_state.rt_view)
+			m_state.rt_view->Release();
+		if (rtv)
+			rtv->AddRef();
 		m_state.rt_view = rtv;
-		m_state.rt_texture = static_cast<GSTexture11*>(rt);
-		m_state.dsv = dsv;
-		m_state.rt_ds = static_cast<GSTexture11*>(ds);
-
-		m_ctx->OMSetRenderTargets(1, &rtv, dsv);
 	}
+	if (m_state.dsv != dsv)
+	{
+		if (m_state.dsv)
+			m_state.dsv->Release();
+		if (dsv)
+			dsv->AddRef();
+		m_state.dsv = dsv;
+	}
+	if (changed)
+		m_ctx->OMSetRenderTargets(1, &rtv, dsv);
 
 	const GSVector2i size = rt ? rt->GetSize() : ds->GetSize();
 	if (m_state.viewport != size)
