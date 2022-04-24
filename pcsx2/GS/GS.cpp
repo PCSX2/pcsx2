@@ -403,57 +403,12 @@ void GSwriteCSR(u32 csr)
 	}
 }
 
-void GSinitReadFIFO(u8* mem)
+void GSInitAndReadFIFO(u8* mem, u32 size)
 {
-	GL_PERF("Init Read FIFO1");
-	try
-	{
-		s_gs->InitReadFIFO(mem, 1);
-	}
-	catch (GSRecoverableError)
-	{
-	}
-	catch (const std::bad_alloc&)
-	{
-		fprintf(stderr, "GS: Memory allocation error\n");
-	}
-}
-
-void GSreadFIFO(u8* mem)
-{
-	try
-	{
-		s_gs->ReadFIFO(mem, 1);
-	}
-	catch (GSRecoverableError)
-	{
-	}
-	catch (const std::bad_alloc&)
-	{
-		fprintf(stderr, "GS: Memory allocation error\n");
-	}
-}
-
-void GSinitReadFIFO2(u8* mem, u32 size)
-{
-	GL_PERF("Init Read FIFO2");
+	GL_PERF("Init and read FIFO %u qwc", size);
 	try
 	{
 		s_gs->InitReadFIFO(mem, size);
-	}
-	catch (GSRecoverableError)
-	{
-	}
-	catch (const std::bad_alloc&)
-	{
-		fprintf(stderr, "GS: Memory allocation error\n");
-	}
-}
-
-void GSreadFIFO2(u8* mem, u32 size)
-{
-	try
-	{
 		s_gs->ReadFIFO(mem, size);
 	}
 	catch (GSRecoverableError)
