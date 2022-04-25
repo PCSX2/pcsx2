@@ -3380,7 +3380,7 @@ SCES-53300:
   name: "SOCOM 3 - U.S. Navy SEALs"
   region: "PAL-M5"
   clampModes:
-    vuClampMode: 0 # Fixes SPS ingame.
+    vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
 SCES-53304:
   name: "Buzz! The Music Quiz"
   region: "PAL-E"
@@ -3761,10 +3761,8 @@ SCES-54477:
   name: "SOCOM - US Navy Seals - Combined Assault"
   region: "PAL-M5"
   compat: 5
-  roundModes:
-    vuRoundMode: 0 # Fixes disappearing characters.
   clampModes:
-    vuClampMode: 2 # Fixes SPS ingame.
+    vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
 SCES-54496:
   name: "Buzz! The Mega Quiz"
   region: "PAL-E"
@@ -4521,7 +4519,7 @@ SCKA-20064:
   name: "SOCOM 3 - U.S. Navy SEALs"
   region: "NTSC-K"
   clampModes:
-    vuClampMode: 0 # Fixes SPS ingame.
+    vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
 SCKA-20069:
   name: "Siren 2"
   region: "NTSC-K"
@@ -7367,7 +7365,7 @@ SCUS-97474:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    vuClampMode: 0 # Fixes SPS ingame.
+    vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   patches:
     75ED4282:
       content: |-
@@ -7380,7 +7378,7 @@ SCUS-97475:
   name: "SOCOM 3 - U.S. Navy SEALs [Regular Demo]"
   region: "NTSC-U"
   clampModes:
-    vuClampMode: 0 # Fixes SPS ingame.
+    vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   patches:
     314F0905:
       content: |-
@@ -7460,7 +7458,7 @@ SCUS-97489:
   name: "SOCOM 3 - U.S. Navy SEALs [Public Beta v.1]"
   region: "NTSC-U"
   clampModes:
-    vuClampMode: 0 # Fixes SPS ingame.
+    vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
 SCUS-97490:
   name: "Rogue Galaxy"
   region: "NTSC-U"
@@ -7658,10 +7656,8 @@ SCUS-97545:
   name: "SOCOM - U.S. Navy SEALs - Combined Assault"
   region: "NTSC-U"
   compat: 5
-  roundModes:
-    vuRoundMode: 0 # Fixes disappearing characters.
   clampModes:
-    vuClampMode: 2 # Fixes SPS ingame.
+    vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
 SCUS-97548:
   name: "Ape Escape 3 [Demo]"
   region: "NTSC-U"
@@ -7689,10 +7685,8 @@ SCUS-97558:
 SCUS-97560:
   name: "SOCOM - U.S. Navy SEALs - Combined Assault [Demo]"
   region: "NTSC-U"
-  roundModes:
-    vuRoundMode: 0 # Fixes disappearing characters.
   clampModes:
-    vuClampMode: 2 # Fixes SPS ingame.
+    vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
 SCUS-97564:
   name: "Jampack Demo Disc Vol.15 [T-Rated]"
   region: "NTSC-U"
@@ -15089,7 +15083,7 @@ SLES-53300:
   name: "SOCOM 3 - U.S. Navy SEALs"
   region: "PAL-Unk"
   clampModes:
-    vuClampMode: 0 # Fixes SPS ingame.
+    vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
 SLES-53301:
   name: "Bomberman Hardball"
   region: "PAL-E"
