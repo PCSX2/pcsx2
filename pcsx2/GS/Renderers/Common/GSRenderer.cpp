@@ -91,6 +91,9 @@ bool GSRenderer::Merge(int field)
 			dr[i] = GetDisplayRect(i);
 			display_offsets[i] = GetResolutionOffset(i);
 
+			if (isinterlaced() && m_regs->SMODE2.FFMD)
+				display_offsets[i].y >>= 1;
+
 			display_combined.x = std::max(GetFrameMagnifiedRect(i).right + abs(display_offsets[i].x), display_combined.x);
 			display_combined.y = std::max(GetFrameMagnifiedRect(i).bottom + abs(display_offsets[i].y), display_combined.y);
 			display_baseline.x = std::min(dr[i].left, display_baseline.x);
@@ -343,11 +346,7 @@ bool GSRenderer::Merge(int field)
 				off.y += 1;
 		}
 		// End of Resize/Anti-Blur code.
-
-		// Offsets are in full rect form, needs resizing for the actual draw if interlaced half frame.
-		if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
-			off.y /= 2;
-
+		
 		// src_gs_read is the size which we're really reading from GS memory.
 		src_gs_read[i] = ((GSVector4(fr[i]) + GSVector4(0, y_offset[i], 0, y_offset[i])) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
 
