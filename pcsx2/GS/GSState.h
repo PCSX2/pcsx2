@@ -313,7 +313,8 @@ public:
 	virtual void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r) {}
 	virtual void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false) {}
 
-	void Move();
+	virtual void Move();
+
 	void Write(const u8* mem, int len);
 	void Read(u8* mem, int len);
 	void InitReadFIFO(u8* mem, int len);

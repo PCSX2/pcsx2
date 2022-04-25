@@ -283,6 +283,9 @@ protected:
 	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false, int x_offset = 0, int y_offset = 0, const GSVector2i* lod = nullptr, const GSVector4i* src_range = nullptr);
 	Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type, const bool clear);
 
+	/// Looks up a target in the cache, and only returns it if the BP/BW/PSM match exactly.
+	Target* GetExactTarget(u32 BP, u32 BW, u32 PSM) const;
+
 	HashCacheEntry* LookupHashCache(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool& paltex, const u32* clut, const GSVector2i* lod);
 
 	static void PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSLocalMemory& mem, bool paltex, GSTexture* tex, u32 level);
@@ -312,6 +315,7 @@ public:
 	void InvalidateVideoMemSubTarget(GSTextureCache::Target* rt);
 	void InvalidateVideoMem(const GSOffset& off, const GSVector4i& r, bool target = true);
 	void InvalidateLocalMem(const GSOffset& off, const GSVector4i& r);
+	bool Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u32 DBW, u32 DPSM, int dx, int dy, int w, int h);
 
 	void IncAge();
 
