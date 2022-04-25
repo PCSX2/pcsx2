@@ -113,6 +113,8 @@ bool MetalHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 		if (!adapter_name.empty())
 			Console.Warning("Metal: Couldn't find adapter %s, using default", null_terminated_adapter_name.c_str());
 		m_dev = GSMTLDevice(MRCTransfer(MTLCreateSystemDefaultDevice()));
+		if (!m_dev.dev)
+			Host::ReportErrorAsync("No Metal Devices Available", "No Metal-supporting GPUs were found.  PCSX2 requires a Metal GPU (available on all macs from 2012 onwards).");
 	}
 	m_queue = MRCTransfer([m_dev.dev newCommandQueue]);
 
