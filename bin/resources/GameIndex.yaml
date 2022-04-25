@@ -7658,6 +7658,12 @@ SCUS-97545:
   compat: 5
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
+  patches:
+    D7CFDCCF:
+      content: |-
+        author=Prafull
+        //Fix Slowdown when looking at sun (all Patches)
+        patch=1,EE,0019f480,word,00000000
 SCUS-97548:
   name: "Ape Escape 3 [Demo]"
   region: "NTSC-U"
