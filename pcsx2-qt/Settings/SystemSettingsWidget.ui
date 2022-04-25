@@ -232,12 +232,12 @@
         </item>
         <item>
          <property name="text">
-          <string>Extra + Preserve Sign</string>
+          <string>Extra</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Full</string>
+          <string>Extra + Preserve Sign</string>
          </property>
         </item>
        </widget>
