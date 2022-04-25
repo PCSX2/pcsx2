@@ -144,7 +144,7 @@ private Q_SLOTS:
 	void onDisplayWindowMouseWheelEvent(const QPoint& delta_angle);
 	void onDisplayWindowResized(int width, int height, float scale);
 	void onDisplayWindowFocused();
-	void onDisplayWindowKeyEvent(int key, int mods, bool pressed);
+	void onDisplayWindowKeyEvent(int key, bool pressed);
 
 private:
 	QThread* m_ui_thread;

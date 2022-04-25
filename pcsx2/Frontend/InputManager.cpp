@@ -650,6 +650,42 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value)
 	if (range.first == s_binding_map.end())
 		return false;
 
+	// Workaround for modifier keys. Basically, if we bind say, F1 and Shift+F1, and press shift
+	// and then F1, we'll fire bindings for both F1 and Shift+F1, when we really only want to fire
+	// the binding for Shift+F1. So, let's search through the binding list, and see if there's a
+	// "longer" binding (more keys), and if so, only activate that and not the shorter binding(s).
+	const InputBinding* longest_hotkey_binding = nullptr;
+	for (auto it = range.first; it != range.second; ++it)
+	{
+		InputBinding* binding = it->second.get();
+		if (binding->handler.IsAxis())
+			continue;
+
+		// find the key which matches us
+		for (u32 i = 0; i < binding->num_keys; i++)
+		{
+			if (binding->keys[i].MaskDirection() != masked_key)
+				continue;
+
+			const u8 bit = static_cast<u8>(1) << i;
+			const bool negative = binding->keys[i].negative;
+			const bool new_state = (negative ? (value < 0.0f) : (value > 0.0f));
+			const u8 new_mask = (new_state ? (binding->current_mask | bit) : (binding->current_mask & ~bit));
+			const bool prev_full_state = (binding->current_mask == binding->full_mask);
+			const bool new_full_state = (new_mask == binding->full_mask);
+
+			// If we're activating this chord, block activation of other bindings with fewer keys.
+			if (prev_full_state || new_full_state)
+			{
+				if (!longest_hotkey_binding || longest_hotkey_binding->num_keys < binding->num_keys)
+					longest_hotkey_binding = binding;
+			}
+
+			break;
+		}
+	}
+
+	// Now we can actually fire/activate bindings.
 	for (auto it = range.first; it != range.second; ++it)
 	{
 		InputBinding* binding = it->second.get();
@@ -663,6 +699,14 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value)
 			const u8 bit = static_cast<u8>(1) << i;
 			const bool negative = binding->keys[i].negative;
 			const bool new_state = (negative ? (value < 0.0f) : (value > 0.0f));
+
+			// Don't register the key press when we're part of a longer chord. That way,
+			// the state won't change, and it won't get the released event either.
+			if (longest_hotkey_binding && new_state && !binding->handler.IsAxis() &&
+				binding->num_keys != longest_hotkey_binding->num_keys)
+			{
+				continue;
+			}
 
 			// update state based on whether the whole chord was activated
 			const u8 new_mask = (new_state ? (binding->current_mask | bit) : (binding->current_mask & ~bit));

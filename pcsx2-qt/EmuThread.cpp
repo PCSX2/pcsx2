@@ -568,7 +568,7 @@ void EmuThread::onDisplayWindowMouseButtonEvent(int button, bool pressed)
 
 void EmuThread::onDisplayWindowMouseWheelEvent(const QPoint& delta_angle) {}
 
-void EmuThread::onDisplayWindowKeyEvent(int key, int mods, bool pressed)
+void EmuThread::onDisplayWindowKeyEvent(int key, bool pressed)
 {
 	InputManager::InvokeEvents(InputManager::MakeHostKeyboardKey(key), pressed ? 1.0f : 0.0f);
 }
