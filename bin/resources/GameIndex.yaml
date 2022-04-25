@@ -5832,6 +5832,9 @@ SCPS-55001:
 SCPS-55002:
   name: "Zero"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    disablePartialInvalidation: 1 # Fixes ghost rendering.
 SCPS-55003:
   name: "Vampire Night"
   region: "NTSC-J"
@@ -5996,6 +5999,7 @@ SCPS-55043:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
+    disablePartialInvalidation: 1 # Fixes ghost rendering.
 SCPS-55044:
   name: "Energy Airforce"
   region: "NTSC-J"
@@ -6090,18 +6094,9 @@ SCPS-56008:
   name: "Fatal Frame"
   region: "NTSC-K"
   compat: 5
-  patches:
-    default:
-      content: |-
-        // BCF04BF3
-        comment=- At least when using GSdx in D3D11 Hardware mode, and due to missing
-        comment=-  rendering-fixes, black stripes can show up on ghosts,
-        comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
-        comment=- This can be fixed by having 'Enable HW Hacks' set
-        comment=-  in the GSdx configuration dialog, and having 'Align Sprite' set
-        comment=-  and 'Sprite' set to Half in 'Advanced Settings and Hacks'.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
+    disablePartialInvalidation: 1 # Fixes ghost rendering.
 SCPS-56011:
   name: "U - Underwater Unit"
   region: "NTSC-J"
@@ -8141,6 +8136,8 @@ SLED-50359:
   region: "PAL-E"
   clampModes:
     vuClampMode: 3 # Fixes out of place polys (COP2).
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes corrupt textures.
 SLED-50478:
   name: "WWF Smackdown! - Just Bring It [Demo]"
   region: "PAL-E"
@@ -9116,6 +9113,8 @@ SLES-50358:
   name: "Devil May Cry"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes corrupt textures.
 SLES-50362:
   name: "Jonny Moseley Mad Trix"
   region: "PAL-E"
@@ -9971,18 +9970,9 @@ SLES-50821:
   name: "Project Zero"
   region: "PAL-M5"
   compat: 5
-  patches:
-    default:
-      content: |-
-        // 22E91837
-        comment=- At least when using GSdx in D3D11 Hardware mode, and due to missing
-        comment=-  rendering-fixes, black stripes can show up on ghosts,
-        comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
-        comment=- This can be fixed by having 'Enable HW Hacks' set
-        comment=-  in the GSdx configuration dialog, and having 'Align Sprite' set
-        comment=-  and 'Sprite' set to Half in 'Advanced Settings and Hacks'.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    disablePartialInvalidation: 1 # Fixes ghost rendering.
 SLES-50822:
   name: "Shadow Hearts"
   region: "PAL-M3"
@@ -19375,9 +19365,21 @@ SLES-55049:
 SLES-55050:
   name: "MX vs. ATV - Untamed"
   region: "PAL-E"
+  patches:
+    74912B29:
+      content: |-
+        comment=Rearranging COP2 ops to avoid clip flag response. Fixes SPS.
+        patch=1,EE,001a9c08,word,484E9000
+        patch=1,EE,001a9c0c,word,4BDBD9FF
 SLES-55051:
   name: "MX vs. ATV Extrême Limite"
   region: "PAL-F"
+  patches:
+    590C682E:
+      content: |-
+        comment=Rearranging COP2 ops to avoid clip flag response. Fixes SPS.
+        patch=1,EE,001a9c08,word,484E9000
+        patch=1,EE,001a9c0c,word,4BDBD9FF
 SLES-55052:
   name: "Alvin and the Chipmunks"
   region: "PAL-M5"
@@ -21907,6 +21909,12 @@ SLPM-60138:
     vuClampMode: 2 # Fixes water reflection.
   gameFixes:
     - EETimingHack # Fixes flickering graphics.
+SLPM-60167:
+  name: "Zero [Trial]"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    disablePartialInvalidation: 1 # Fixes ghost rendering.
 SLPM-60172:
   name: "Itadaki Street 3 - Okuman Chouja ni Shiteageru"
   region: "NTSC-J"
@@ -21991,6 +21999,11 @@ SLPM-61007:
   region: "NTSC-J"
   speedHacks:
     mvuFlagSpeedHack: 0
+SLPM-61008:
+  name: "Devil May Cry [Trial]"
+  region: "NTSC-J"
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes corrupt textures.
 SLPM-61009:
   name: "Silent Hill 2 (Red Ribbon) [Trial]"
   region: "NTSC-J"
@@ -22000,6 +22013,8 @@ SLPM-61009:
 SLPM-61010:
   name: "Devil May Cry [Trial Version]"
   region: "NTSC-J"
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes corrupt textures.
 SLPM-61011:
   name: "Silent Hill 2 (Black Ribbon) [Video Trial]"
   region: "NTSC-J"
@@ -24220,6 +24235,8 @@ SLPM-65022:
 SLPM-65023:
   name: "Devil May Cry [Demo] [BioHazard - Code Veronica - Perfect Version - Bonus Disc]"
   region: "NTSC-J"
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes corrupt textures.
 SLPM-65024:
   name: "BioHazard - 5th Anniversary Package - Nightmare Returns [Disc1of2]"
   region: "NTSC-J"
@@ -24243,6 +24260,8 @@ SLPM-65038:
   name: "Devil May Cry"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes corrupt textures.
 SLPM-65039:
   name: "Densha de Go! Shinkansen"
   region: "NTSC-J"
@@ -29086,6 +29105,8 @@ SLPM-66501:
 SLPM-66502:
   name: "Devil May Cry [Mega Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes corrupt textures.
 SLPM-66503:
   name: "Metal Gear Solid 2 [Mega Hits]"
   region: "NTSC-J"
@@ -30786,6 +30807,8 @@ SLPM-67502:
   name: "Devil May Cry"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes corrupt textures.
 SLPM-67505:
   name: "James Bond 007 - Agent Under Fire"
   region: "NTSC-K"
@@ -31012,6 +31035,8 @@ SLPM-74229:
 SLPM-74230:
   name: "Devil May Cry [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes corrupt textures.
 SLPM-74231:
   name: "Kessen III [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -32571,18 +32596,9 @@ SLPS-25074:
   name: "Project Zero"
   region: "NTSC-J"
   compat: 5
-  patches:
-    default:
-      content: |-
-        // 9883194E
-        comment=- At least when using GSdx in D3D11 Hardware mode, and due to missing
-        comment=-  rendering-fixes, black stripes can show up on ghosts,
-        comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
-        comment=- This can be fixed by having 'Enable HW Hacks' set
-        comment=-  in the GSdx configuration dialog, and having 'Align Sprite' set
-        comment=-  and 'Sprite' set to Half in 'Advanced Settings and Hacks'.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    disablePartialInvalidation: 1 # Fixes ghost rendering.
 SLPS-25075:
   name: "Sidewinder F"
   region: "NTSC-J"
@@ -35967,6 +35983,7 @@ SLPS-73255:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
+    disablePartialInvalidation: 1 # Fixes ghost rendering.
 SLPS-73256:
   name: "Fatal Frame II - Crimson Butterfly [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
@@ -36015,6 +36032,7 @@ SLPS-73405:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
+    disablePartialInvalidation: 1 # Fixes ghost rendering.
 SLPS-73406:
   name: "Dead or Alive 2 - Hardcore [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -36853,6 +36871,8 @@ SLUS-20216:
   name: "Devil May Cry"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes corrupt textures.
   patches:
     79B8A95F:
       content: |-
@@ -37583,18 +37603,9 @@ SLUS-20388:
   name: "Fatal Frame"
   region: "NTSC-U"
   compat: 5
-  patches:
-    default:
-      content: |-
-        // 339A0B8C
-        comment=- At least when using GSdx in D3D11 Hardware mode, and due to missing
-        comment=-  rendering-fixes, black stripes can show up on ghosts,
-        comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
-        comment=- This can be fixed by having 'Enable HW Hacks' set
-        comment=-  in the GSdx configuration dialog, and having 'Align Sprite' set
-        comment=-  and 'Sprite' set to Half in 'Advanced Settings and Hacks'.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
+    disablePartialInvalidation: 1 # Fixes ghost rendering.
 SLUS-20389:
   name: "Endgame"
   region: "NTSC-U"
@@ -40875,7 +40886,7 @@ SLUS-21104:
   patches:
     95BB1901:
       content: |-
-        comment=Rearranging COP2 ops to avoid clip flag resonse. Fixes SPS.
+        comment=Rearranging COP2 ops to avoid clip flag response. Fixes SPS.
         patch=1,EE,001b0458,word,484E9000
         patch=1,EE,001b045c,word,4BDBD9FF
 SLUS-21105:
@@ -43708,6 +43719,12 @@ SLUS-21701:
   name: "MX vs. ATV - Untamed"
   region: "NTSC-U"
   compat: 5
+  patches:
+    08FE7DFD:
+      content: |-
+        comment=Rearranging COP2 ops to avoid clip flag response. Fixes SPS.
+        patch=1,EE,001a9d98,word,484E9000
+        patch=1,EE,001a9d9c,word,4BDBD9FF
 SLUS-21702:
   name: "Fire Pro Wrestling - Returns"
   region: "NTSC-U"
@@ -44966,6 +44983,8 @@ SLUS-29008:
 SLUS-29009:
   name: "Devil May Cry [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes corrupt textures.
 SLUS-29010:
   name: "Crash Bandicoot - The Wrath of Cortex [Demo]"
   region: "NTSC-U"
