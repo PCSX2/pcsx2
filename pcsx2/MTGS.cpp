@@ -859,6 +859,8 @@ bool SysMtgsThread::WaitForOpen()
 	}
 
 	RethrowException();
+	if (!m_Opened) // EE thread will continue running and explode everything if we don't throw an exception
+		throw Exception::RuntimeError(std::runtime_error("GS failed to open."));
 	return m_Opened;
 #else
 	if (!m_sem_OpenDone.Wait(wxTimeSpan(0, 0, 12, 0)) || !m_Opened)
