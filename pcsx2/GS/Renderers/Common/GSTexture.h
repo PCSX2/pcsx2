@@ -143,9 +143,7 @@ public:
 	// different purpose than texture cache ages, do not attempt to merge
 	unsigned last_frame_used;
 
-	bool LikelyOffset;
-	float OffsetHack_modx;
-	float OffsetHack_mody;
+	float OffsetHack_modxy;
 
 	// Typical size of a RGBA texture
 	virtual u32 GetMemUsage() { return m_size.x * m_size.y * (m_format == Format::UNorm8 ? 1 : 4); }

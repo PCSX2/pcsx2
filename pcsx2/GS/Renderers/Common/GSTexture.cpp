@@ -31,9 +31,7 @@ GSTexture::GSTexture()
 	, m_sparse(false)
 	, m_needs_mipmaps_generated(true)
 	, last_frame_used(0)
-	, LikelyOffset(false)
-	, OffsetHack_modx(0.0f)
-	, OffsetHack_mody(0.0f)
+	, OffsetHack_modxy(0.0f)
 {
 }
 
@@ -83,9 +81,7 @@ void GSTexture::Swap(GSTexture* tex)
 	std::swap(m_sparse, tex->m_sparse);
 	std::swap(m_needs_mipmaps_generated, tex->m_needs_mipmaps_generated);
 	std::swap(last_frame_used, tex->last_frame_used);
-	std::swap(LikelyOffset, tex->LikelyOffset);
-	std::swap(OffsetHack_modx, tex->OffsetHack_modx);
-	std::swap(OffsetHack_mody, tex->OffsetHack_mody);
+	std::swap(OffsetHack_modxy, tex->OffsetHack_modxy);
 }
 
 u32 GSTexture::GetCompressedBytesPerBlock() const
