@@ -252,6 +252,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	connect(m_ui.enableHWFixes, &QCheckBox::stateChanged, this, &GraphicsSettingsWidget::onEnableHardwareFixesChanged);
 	updateRendererDependentOptions();
 
+	dialog->registerWidgetHelp(m_ui.enableHWFixes, tr("Manual Hardware Renderer Fixes"), tr("Unchecked"),
+		tr("Enabling this option gives you the ability to change the renderer and upscaling fixes "
+		   "to your games. However IF you have ENABLED this, you WILL DISABLE AUTOMATIC "
+		   "SETTINGS and you can re-enable automatic settings by unchecking this option."));
+
 	dialog->registerWidgetHelp(m_ui.useBlitSwapChain, tr("Use Blit Swap Chain"), tr("Unchecked"),
 		tr("Uses a blit presentation model instead of flipping when using the Direct3D 11 "
 		   "renderer. This usually results in slower performance, but may be required for some "
