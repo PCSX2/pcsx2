@@ -2696,6 +2696,8 @@ SCES-50889:
   name: "Ninja Assault"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes intro captions not displaying.
 SCES-50916:
   name: "Ratchet & Clank"
   region: "PAL-M5"
@@ -5807,6 +5809,8 @@ SCPS-51013:
 SCPS-51014:
   name: "Ninja Assault"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes intro captions not displaying.
 SCPS-51015:
   name: "Super Puzzle Bobble 2"
   region: "NTSC-J"
@@ -6108,6 +6112,8 @@ SCPS-56014:
 SCPS-56015:
   name: "Ninja Assault"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes intro captions not displaying.
 SCUS-21295:
   name: "Tony Hawk's American Wasteland Collector's Edition"
   region: "NTSC-U"
@@ -31659,6 +31665,8 @@ SLPS-20216:
 SLPS-20218:
   name: "Ninja Assault"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes intro captions not displaying.
 SLPS-20219:
   name: "Tsukande! Mawashite! Dossun Pazuru Egg Mania"
   region: "NTSC-J"
@@ -38094,6 +38102,8 @@ SLUS-20492:
   name: "Ninja Assault"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes intro captions not displaying.
 SLUS-20493:
   name: "Gungrave"
   region: "NTSC-U"
