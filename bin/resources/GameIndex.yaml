@@ -150,6 +150,9 @@ PAPX-90517:
   gsHWFixes:
     autoFlush: 1 # Reduces post-processing misalignment.
     roundSprite: 2 # Reduces post-processing misalignment.
+PBGP-0061:
+  name: "Suika A.S+ Eternal Name [First Press Limited Edition]"
+  region: "NTSC-J"
 PBGP-0065:
   name: "D.C. Da Capo The Origin [First Limited Edition]"
   region: "NTSC-J"
@@ -21587,6 +21590,9 @@ SLPM-55008:
   name: "Sengoku Basara X"
   region: "NTSC-J"
   compat: 5
+SLPM-55013:
+  name: "Sorayume"
+  region: "NTSC-J"
 SLPM-55015:
   name: "Yotsunoha - A Journey of Sincerity [Limited Edition]"
   region: "NTSC-J"
@@ -21598,6 +21604,18 @@ SLPM-55024:
   region: "NTSC-J"
 SLPM-55033:
   name: "J. League Winning Eleven 2008 - Club Championship"
+  region: "NTSC-J"
+SLPM-55039:
+  name: "Soukoku no Kusabi - Hiiro no Kakera 3 [Limited Edition]"
+  region: "NTSC-J"
+SLPM-55040:
+  name: "Soukoku no Kusabi - Hiiro no Kakera 3"
+  region: "NTSC-J"
+SLPM-55042:
+  name: "Suika A.S Eternal Name  - Sweet So Sweet [Best Edition]"
+  region: "NTSC-J"
+SLPM-55047:
+  name: "Sugar+Spice! - Anoko no Suteki na Nanimokamo"
   region: "NTSC-J"
 SLPM-55051:
   name: "Will o' Wisp - Easter no Kiseki"
@@ -21621,6 +21639,9 @@ SLPM-55065:
         // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
         // This patch skips over the stack code, allowing the game to boot.
         patch=1,EE,00131A64,word,10000003
+SLPM-55069:
+  name: "Saishuu Shiken Kujira - Alive [Sweet So Sweet]"
+  region: "NTSC-J"
 SLPM-55070:
   name: "Yumemi Hakusho - Second Dream [Limited Edition]"
   region: "NTSC-J"
@@ -21765,6 +21786,12 @@ SLPM-55169:
 SLPM-55170:
   name: "Skip Beat!"
   region: "NTSC-J"
+SLPM-55173:
+  name: "Strike Witches - Anata to Dekiru Koto [Limited Edition]"
+  region: "NTSC-J"
+SLPM-55174:
+  name: "Strike Witches - Anata to Dekiru Koto - A Little Peaceful Days"
+  region: "NTSC-J"
 SLPM-55175:
   name: "Under the Moon - Crescent"
   region: "NTSC-J"
@@ -21781,6 +21808,12 @@ SLPM-55184:
   name: "Melty Blood - Actress Again"
   region: "NTSC-J"
   compat: 5
+SLPM-55185:
+  name: "Sweet Honey Coming [Deluxe Pack]"
+  region: "NTSC-J"
+SLPM-55186:
+  name: "Sweet Honey Coming"
+  region: "NTSC-J"
 SLPM-55191:
   name: "L2 - Love x Loop"
   region: "NTSC-J"
@@ -21791,6 +21824,15 @@ SLPM-55191:
         // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
         // This patch skips over the stack code, allowing the game to boot.
         patch=1,EE,001B4828,word,10000008
+SLPM-55202:
+  name: "Shuumatsu Shoujo Gensou Alicematic Apocalypse [Russel Games Best]"
+  region: "NTSC-J"
+SLPM-55205:
+  name: "S.Y.K Shinsetsu Saiyuuki [Limited Edition]"
+  region: "NTSC-J"
+SLPM-55206:
+  name: "S.Y.K Shinsetsu Saiyuuki"
+  region: "NTSC-J"
 SLPM-55207:
   name: "Hakuouki - Zuisouroku [Limited Edition]"
   region: "NTSC-J"
@@ -21806,6 +21848,9 @@ SLPM-55222:
 SLPM-55226:
   name: "FIFA 10 - World Class Soccer"
   region: "NTSC-J"
+SLPM-55243:
+  name: "Suzunone Seven - Rebirth Knot"
+  region: "NTSC-J"
 SLPM-55244:
   name: "Need for Speed - Undercover [Ea-SY! 1980]"
   region: "NTSC-J"
@@ -21815,6 +21860,9 @@ SLPM-55244:
     skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLPM-55246:
   name: "Wand of Fortune - Mirai e no Prologue"
+  region: "NTSC-J"
+SLPM-55247:
+  name: "S.Y.K Renshouden"
   region: "NTSC-J"
 SLPM-55251:
   name: "WWE SmackDown vs. Raw 2009"
@@ -27787,6 +27835,9 @@ SLPM-66132:
   gsHWFixes:
     halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
+SLPM-66133:
+  name: "Shuffle! On the Stage [Deluxe Pack]"
+  region: "NTSC-J"
 SLPM-66134:
   name: "Shuffle! On the Stage"
   region: "NTSC-J"
