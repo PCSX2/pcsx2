@@ -1419,27 +1419,21 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		// Offset hack. Can be enabled via GS options.
 		// The offset will be used in Draw().
-
-		float modx = 0.0f;
-		float mody = 0.0f;
+		float modxy = 0.0f;
 
 		if (GSConfig.UserHacks_HalfPixelOffset == 1 && hack)
 		{
-			switch(g_gs_renderer->GetUpscaleMultiplier())
+			modxy = static_cast<float>(g_gs_renderer->GetUpscaleMultiplier());
+			switch (g_gs_renderer->GetUpscaleMultiplier())
 			{
-				case 2:  modx = 2.2f; mody = 2.2f; dst->m_texture->LikelyOffset = true;  break;
-				case 3:  modx = 3.1f; mody = 3.1f; dst->m_texture->LikelyOffset = true;  break;
-				case 4:  modx = 4.2f; mody = 4.2f; dst->m_texture->LikelyOffset = true;  break;
-				case 5:  modx = 5.3f; mody = 5.3f; dst->m_texture->LikelyOffset = true;  break;
-				case 6:  modx = 6.2f; mody = 6.2f; dst->m_texture->LikelyOffset = true;  break;
-				case 7:  modx = 7.1f; mody = 7.1f; dst->m_texture->LikelyOffset = true;  break;
-				case 8:  modx = 8.2f; mody = 8.2f; dst->m_texture->LikelyOffset = true;  break;
-				default: modx = 0.0f; mody = 0.0f; dst->m_texture->LikelyOffset = false; break;
+				case 2: case 4: case 6: case 8: modxy += 0.2f; break;
+				case 3: case 7:                 modxy += 0.1f; break;
+				case 5:                         modxy += 0.3f; break;
+				default:                        modxy  = 0.0f; break;
 			}
 		}
 
-		dst->m_texture->OffsetHack_modx = modx;
-		dst->m_texture->OffsetHack_mody = mody;
+		dst->m_texture->OffsetHack_modxy = modxy;
 	}
 	else
 	{
