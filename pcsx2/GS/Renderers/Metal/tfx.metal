@@ -263,55 +263,38 @@ struct PSMain
 		return palette.sample(palette_sampler, float2(idx, 0));
 	}
 
+	float2 clamp_wrap_uv_2(uint mode, float2 uv, float tex_size, float2 min_max, uint2 msk_fix)
+	{
+		if (mode == 2)
+		{
+			return clamp(uv, min_max.xx, min_max.yy);
+		}
+		if (mode == 3)
+		{
+			// wrap negative uv coords to avoid an off by one error that shifted
+			// textures. Fixes Xenosaga's hair issue.
+			if (!FST)
+				uv = fract(uv);
+
+			uv *= tex_size;
+			float2 masked = float2((uint2(uv) & msk_fix.xx) | msk_fix.yy);
+
+			if (msk_fix.x & 1) // For upscaling, let the bottom bit mask everything below
+				masked += fract(uv);
+
+			return masked / tex_size;
+		}
+		return uv;
+	}
+
 	float4 clamp_wrap_uv(float4 uv)
 	{
-		float4 uv_out = uv;
-		float4 tex_size = PS_INVALID_TEX0 ? cb.wh.zwzw : cb.wh.xyxy;
+		float2 tex_size = PS_INVALID_TEX0 ? cb.wh.zw : cb.wh.xy;
 
-		if (PS_WMS == PS_WMT)
-		{
-			if (PS_WMS == 2)
-			{
-				uv_out = clamp(uv, cb.uv_min_max.xyxy, cb.uv_min_max.zwzw);
-			}
-			else if (PS_WMS == 3)
-			{
-				// wrap negative uv coords to avoid an off by one error that shifted
-				// textures. Fixes Xenosaga's hair issue.
-				if (!FST)
-					uv = fract(uv);
+		uv.xz = clamp_wrap_uv_2(PS_WMS, uv.xz, tex_size.x, cb.uv_min_max.xz, cb.uv_msk_fix.xz);
+		uv.yw = clamp_wrap_uv_2(PS_WMT, uv.yw, tex_size.y, cb.uv_min_max.yw, cb.uv_msk_fix.yw);
 
-				uv_out = float4((ushort4(uv * tex_size) & ushort4(cb.uv_msk_fix.xyxy)) | ushort4(cb.uv_msk_fix.zwzw)) / tex_size;
-			}
-		}
-		else
-		{
-			if (PS_WMS == 2)
-			{
-				uv_out.xz = clamp(uv.xz, cb.uv_min_max.xx, cb.uv_min_max.zz);
-			}
-			else if (PS_WMS == 3)
-			{
-				if (!FST)
-					uv.xz = fract(uv.xz);
-
-				uv_out.xz = float2((ushort2(uv.xz * tex_size.xx) & ushort2(cb.uv_msk_fix.xx)) | ushort2(cb.uv_msk_fix.zz)) / tex_size.xx;
-			}
-
-			if (PS_WMT == 2)
-			{
-				uv_out.yw = clamp(uv.yw, cb.uv_min_max.yy, cb.uv_min_max.ww);
-			}
-			else if (PS_WMT == 3)
-			{
-				if (!FST)
-					uv.yw = fract(uv.yw);
-
-				uv_out.yw = float2((ushort2(uv.yw * tex_size.yy) & ushort2(cb.uv_msk_fix.yy)) | ushort2(cb.uv_msk_fix.ww)) / tex_size.yy;
-			}
-		}
-
-		return uv_out;
+		return uv;
 	}
 
 	float4x4 sample_4c(float4 uv)
@@ -379,39 +362,33 @@ struct PSMain
 
 	// MARK: Depth sampling
 
-	ushort2 clamp_wrap_uv_depth(ushort2 uv)
+	uint clamp_wrap_uv_depth_1(uint mode, uint uv, uint2 msk_fix)
 	{
-		ushort2 uv_out = uv;
 		// Keep the full precision
 		// It allow to multiply the ScalingFactor before the 1/16 coeff
-		ushort4 mask = ushort4(cb.uv_msk_fix) << 4;
+		uint2 mask = msk_fix << 4;
 
-		if (PS_WMS == PS_WMT)
+		if (mode == 2)
+			return clamp(uv, mask.x, mask.y | 0xF);
+		if (mode == 3)
 		{
-			if (PS_WMS == 2)
-				uv_out = clamp(uv, mask.xy, mask.zw);
-			else if (PS_WMS == 3)
-				uv_out = (uv & mask.xy) | mask.zw;
+			if (msk_fix.x & 1)
+				mask.x |= 0xF;
+			return (uv & mask.x) | mask.y;
 		}
-		else
-		{
-			if (PS_WMS == 2)
-				uv_out.x = clamp(uv.x, mask.x, mask.z);
-			else if (PS_WMS == 3)
-				uv_out.x = (uv.x & mask.x) | mask.z;
+		return uv;
+	}
 
-			if (PS_WMT == 2)
-				uv_out.y = clamp(uv.y, mask.y, mask.w);
-			else if (PS_WMT == 3)
-				uv_out.y = (uv.y & mask.y) | mask.w;
-		}
-
-		return uv_out;
+	uint2 clamp_wrap_uv_depth(uint2 uv)
+	{
+		uv.x = clamp_wrap_uv_depth_1(PS_WMS, uv.x, cb.uv_msk_fix.xz);
+		uv.y = clamp_wrap_uv_depth_1(PS_WMT, uv.y, cb.uv_msk_fix.yw);
+		return uv;
 	}
 
 	float4 sample_depth(float2 st)
 	{
-		float2 uv_f = float2(clamp_wrap_uv_depth(ushort2(st))) * (float2(SCALING_FACTOR) * float2(1.f / 16.f));
+		float2 uv_f = float2(clamp_wrap_uv_depth(uint2(st))) * (float2(SCALING_FACTOR) * float2(1.f / 16.f));
 		ushort2 uv = ushort2(uv_f);
 
 		float4 t = float4(0);
