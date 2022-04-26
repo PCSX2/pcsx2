@@ -40,11 +40,8 @@
 
 #include "CDVD.h"
 #include "CueParser.h"
-#include "3rdparty/include/ghc/filesystem.h"
 
 CDVD_API* CDVD = NULL;
-
-namespace fs = ghc::filesystem;
 
 // ----------------------------------------------------------------------------
 // diskTypeCached
@@ -260,6 +257,16 @@ static int FindDiskType(int mType)
 	}
 
 	return iCDType;
+}
+
+const u8* cdvdTrack::GetIndex(u32 n) const
+{
+	for (const auto& it : indices)
+	{
+		if (it.first == n)
+			return it.second;
+	}
+	return nullptr;
 }
 
 static void DetectDiskType()

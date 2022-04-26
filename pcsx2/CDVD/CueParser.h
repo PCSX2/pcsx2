@@ -55,18 +55,18 @@ namespace CueParser
 		File();
 		~File();
 
-		const cdvdSubQ* GetTrack(u32 n) const;
+		const cdvdTrack* GetTrack(u32 n) const;
 
 		bool Parse(std::FILE* fp, Common::Error* error);
 
 	private:
-		cdvdSubQ* GetMutableTrack(u32 n);
+		cdvdTrack* GetMutableTrack(u32 n);
 		cdvdTD trackDescriptor;
 
 		void SetError(u32 line_number, Common::Error* error, const char* format, ...);
 
 		static std::string_view GetToken(const char*& line);
-		static std::optional<cdvdSubQ> GetMSF(const std::string_view& token);
+		static std::optional<u8*> GetMSF(const std::string_view& token);
 
 		bool ParseLine(const char* line, u32 line_number, Common::Error* error);
 
@@ -80,7 +80,7 @@ namespace CueParser
 		bool SetTrackLengths(u32 line_number, Common::Error* error);
 
 		std::optional<std::string> m_current_file;
-		std::optional<cdvdSubQ> m_current_track;
+		std::optional<cdvdTrack> m_current_track;
 	};
 
 } // namespace CueParser

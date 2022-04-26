@@ -16,10 +16,24 @@
 #pragma once
 #include <string>
 #include <optional>
+#include <array>
 
+#include "IsoFileFormats.h"
 #include "3rdparty/include/ghc/filesystem.h"
 
 namespace fs = ghc::filesystem;
+
+typedef struct _cdvdTrack
+{
+	u32 flags;     // Flags from cueFile
+	u8 mode : 4;   // control and mode bits;
+	u8 trackNum;   // current track number (1 to 99)
+	const u8* start; // Starting index for track
+	std::string filePath; // Path of current track
+	std::optional<u32> length;
+	std::vector<std::pair<u32, u8*>> indices;
+	const u8* GetIndex(u32 n) const;
+} cdvdTrack;
 
 typedef struct _cdvdSubQ
 {
@@ -34,10 +48,6 @@ typedef struct _cdvdSubQ
 	u8 discM;      // current minute offset from first track (BCD encoded)
 	u8 discS;      // current sector offset from first track (BCD encoded)
 	u8 discF;      // current frame offset from first track (BCD encoded)
-	u8 startT;     // Starting index for track
-	u32 flags;     // Flags from cueFile
-	std::string filePath; // Path of current track
-	std::optional<u32> length;
 } cdvdSubQ;
 
 typedef struct _cdvdTD
@@ -179,16 +189,6 @@ extern s32 DoCDVDgetBuffer(u8* buffer);
 extern s32 DoCDVDdetectDiskType();
 extern void DoCDVDresetDiskTypeCache();
 
-static std::vector<cdvdSubQ> m_tracks;
-static std::vector<std::pair<u32, cdvdSubQ>> indices;
-static std::optional<cdvdSubQ> zero_pregap;
+static std::vector<cdvdTrack> m_tracks;
+static std::optional<u8*> zero_pregap;
 
-static const _cdvdSubQ* GetIndex(u32 n)
-{
-	for (const auto& it : indices)
-	{
-		if (it.first == n)
-			return &it.second;
-	}
-	return nullptr;
-}

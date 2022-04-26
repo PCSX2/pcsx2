@@ -797,8 +797,8 @@ __forceinline
 
 	if (PlayMode & 8)
 	{
-		// Experimental CDDA support
-		// The CDDA overrides all other mixer output.  It's a direct feed!
+		// Experimental PS2 CDDA support
+		// PS2 CDDA overrides all other mixer output.  It's a direct feed!
 
 		Out = Cores[1].ReadInput_HiFi();
 		//WaveLog::WriteCore( 1, "CDDA-32", OutL, OutR );

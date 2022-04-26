@@ -869,12 +869,6 @@ void cdrWrite1(u8 rt)
 			cdr.Mode = cdr.Param[0];
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
-			if (cdr.Mode & MODE_CDDA)
-			{
-				StopCdda();
-				cdvd.Type = CDVD_TYPE_PSCDDA;
-			}
-
 			setPs1CDVDSpeed(cdvd.Speed);
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;

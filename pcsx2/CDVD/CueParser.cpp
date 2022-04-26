@@ -40,7 +40,7 @@ namespace CueParser
 
 	File::~File() = default;
 
-	const cdvdSubQ* File::GetTrack(u32 n) const
+	const cdvdTrack* File::GetTrack(u32 n) const
 	{
 		for (const auto& it : m_tracks)
 		{
@@ -51,7 +51,7 @@ namespace CueParser
 		return nullptr;
 	}
 
-	cdvdSubQ* File::GetMutableTrack(u32 n)
+	cdvdTrack* File::GetMutableTrack(u32 n)
 	{
 		for (auto& it : m_tracks)
 		{
@@ -131,7 +131,7 @@ namespace CueParser
 		return ret;
 	}
 
-	std::optional<cdvdSubQ> File::GetMSF(const std::string_view& token)
+	std::optional<u8*> File::GetMSF(const std::string_view& token)
 	{
 		static const s32 max_values[] = {std::numeric_limits<s32>::max(), 60, 75};
 
@@ -169,10 +169,10 @@ namespace CueParser
 			start = end + 1;
 		}
 
-		cdvdSubQ ret;
-		ret.trackM = static_cast<u8>(parts[0]);
-		ret.trackS = static_cast<u8>(parts[1]);
-		ret.trackF = static_cast<u8>(parts[2]);
+		u8* ret = new u8[3];
+		ret[0] = static_cast<u8>(parts[0]);
+		ret[1] = static_cast<u8>(parts[1]);
+		ret[2] = static_cast<u8>(parts[2]);
 		return ret;
 	}
 
@@ -291,7 +291,7 @@ namespace CueParser
 			return false;
 		}
 
-		m_current_track = cdvdSubQ();
+		m_current_track = cdvdTrack();
 		m_current_track->trackNum = static_cast<u32>(track_number.value());
 		m_current_track->filePath = m_current_file.value();
 		m_current_track->mode = mode.type;
@@ -320,7 +320,7 @@ namespace CueParser
 			return false;
 		}
 
-		if (GetIndex(static_cast<u32>(index_number.value())) != nullptr)
+		if (m_current_track->GetIndex(static_cast<u32>(index_number.value())) != nullptr)
 		{
 			SetError(line_number, error, "Duplicate index %d", index_number.value());
 			return false;
@@ -333,14 +333,14 @@ namespace CueParser
 			return false;
 		}
 
-		const std::optional<cdvdSubQ> msf(GetMSF(msf_str));
+		const std::optional<u8*> msf(GetMSF(msf_str));
 		if (!msf.has_value())
 		{
 			SetError(line_number, error, "Invalid index location '%*s'", static_cast<int>(msf_str.size()), msf_str.data());
 			return false;
 		}
 
-		indices.emplace_back(static_cast<u32>(index_number.value()), msf.value());
+		m_current_track->indices.emplace_back(static_cast<u32>(index_number.value()), msf.value());
 		return true;
 	}
 
@@ -365,7 +365,7 @@ namespace CueParser
 			return false;
 		}
 
-		const std::optional<cdvdSubQ> msf(GetMSF(msf_str));
+		const std::optional<u8*> msf(GetMSF(msf_str));
 		if (!msf.has_value())
 		{
 			SetError(line_number, error, "Invalid pregap location '%*s'", static_cast<int>(msf_str.size()), msf_str.data());
@@ -409,7 +409,7 @@ namespace CueParser
 		if (!m_current_track.has_value())
 			return true;
 
-		const cdvdSubQ* index1 = GetIndex(1);
+		const u8* index1 = m_current_track->GetIndex(1);
 		if (!index1)
 		{
 			SetError(line_number, error, "Track %u is missing index 1", m_current_track->trackNum);
@@ -417,13 +417,13 @@ namespace CueParser
 		}
 
 		// check indices
-		for (const auto& [index_number, index_msf] : indices)
+		for (const auto& [index_number, index_msf] : m_current_track->indices)
 		{
 			if (index_number == 0)
 				continue;
 
-			const cdvdSubQ* prev_index = GetIndex(index_number - 1);
-			if (prev_index && prev_index->trackNum > index_msf.trackNum)
+			const u8* prev_index = m_current_track->GetIndex(index_number - 1);
+			if (prev_index && *prev_index > *index_msf)
 			{
 				SetError(line_number, error, "Index %u is after index %u in track %u", index_number - 1, index_number,
 					m_current_track->trackNum);
@@ -431,14 +431,14 @@ namespace CueParser
 			}
 		}
 
-		const cdvdSubQ* index0 = &indices[0].second;
+		const u8* index0 = m_current_track->GetIndex(0);
 		if (index0 && zero_pregap.has_value())
 		{
 			Console.Warning("Zero pregap and index 0 specified in track %u, ignoring zero pregap", m_current_track->trackNum);
 			zero_pregap.reset();
 		}
 
-		m_current_track->startT = index1->startT;
+		m_current_track->start = index1;
 
 		m_tracks.push_back(std::move(m_current_track.value()));
 		m_current_track.reset();
@@ -447,15 +447,15 @@ namespace CueParser
 
 	bool File::SetTrackLengths(u32 line_number, Common::Error* error)
 	{
-		for (const cdvdSubQ& track : m_tracks)
+		for (const cdvdTrack& track : m_tracks)
 		{
 			if (track.trackNum > 1)
 			{
 				// set the length of the previous track based on this track's start, if they're the same file
-				cdvdSubQ* previous_track = GetMutableTrack(track.trackNum - 1);
+				cdvdTrack* previous_track = GetMutableTrack(track.trackNum - 1);
 				if (previous_track && previous_track->filePath == track.filePath)
 				{
-					if (previous_track->startT > track.startT)
+					if (previous_track->start > track.start)
 					{
 						SetError(line_number, error, "Track %u start greater than track %u start", previous_track->trackNum,
 							track.trackNum);
@@ -463,10 +463,10 @@ namespace CueParser
 					}
 
 					// Use index 0, otherwise index 1.
-					const cdvdSubQ* start_index = GetIndex(0);
+					const u8* start_index = track.GetIndex(0);
 					u8 m, s, f;
 					if (!start_index)
-						start_index = GetIndex(1);
+						start_index = track.GetIndex(1);
 					lba_to_msf(trackDescriptor.lsn, &m, &s, &f);
 				}
 			}
@@ -474,5 +474,4 @@ namespace CueParser
 
 		return true;
 	}
-
 } // namespace CueParser
