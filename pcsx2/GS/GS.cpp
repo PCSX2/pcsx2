@@ -25,7 +25,7 @@
 #include "Renderers/SW/GSRendererSW.h"
 #include "Renderers/Null/GSRendererNull.h"
 #include "Renderers/Null/GSDeviceNull.h"
-#include "Renderers/HW/GSRendererNew.h"
+#include "Renderers/HW/GSRendererHW.h"
 #include "Renderers/HW/GSTextureReplacements.h"
 #include "GSLzma.h"
 
@@ -260,7 +260,7 @@ static bool DoGSOpen(GSRendererType renderer, u8* basemem)
 		}
 		else if (renderer != GSRendererType::SW)
 		{
-			g_gs_renderer = std::make_unique<GSRendererNew>();
+			g_gs_renderer = std::make_unique<GSRendererHW>();
 		}
 		else
 		{
