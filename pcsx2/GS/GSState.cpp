@@ -3201,16 +3201,16 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(st.x) & ~tw_mask) != (static_cast<int>(st.z) & ~tw_mask)))
 				{
 					if (int_rc.left < scissored_rc.left)
-						st.x += static_cast<float>(scissored_rc.left - int_rc.left) * grad.x;
+						st.x += floor(static_cast<float>(scissored_rc.left - int_rc.left)* grad.x);
 					if (int_rc.right > scissored_rc.right)
-						st.z -= static_cast<float>(int_rc.right - scissored_rc.right) * grad.x;
+						st.z -= floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
 				}
 				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(st.y) & ~th_mask) != (static_cast<int>(st.w) & ~th_mask)))
 				{
 					if (int_rc.top < scissored_rc.top)
-						st.y += static_cast<float>(scissored_rc.top - int_rc.top) * grad.y;
+						st.y += floor(static_cast<float>(scissored_rc.top - int_rc.top) * grad.y);
 					if (int_rc.bottom > scissored_rc.bottom)
-						st.w -= static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y;
+						st.w -= floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
 				}
 			}
 		}
