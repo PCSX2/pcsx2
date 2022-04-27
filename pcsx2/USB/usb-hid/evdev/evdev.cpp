@@ -206,7 +206,7 @@ namespace usb_hid
 								if (event.code == KEY_LEFTSHIFT || event.code == KEY_RIGHTSHIFT)
 									shift = (event.value > 0);
 
-								if (event.code == KEY_F12 && (event.value == 1) && shift)
+								if (event.code == KEY_F12 && (event.value == 1) && shift && g_GSdsp)
 								{
 									if (!grabbed)
 									{
