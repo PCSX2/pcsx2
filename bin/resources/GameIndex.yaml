@@ -153,6 +153,9 @@ PAPX-90517:
 PBGP-0061:
   name: "Suika A.S+ Eternal Name [First Press Limited Edition]"
   region: "NTSC-J"
+PBGP-0063:
+  name: "Saishuu Shiken Kujira - Alive [First Press Limited Edition]"
+  region: "NTSC-J"
 PBGP-0065:
   name: "D.C. Da Capo The Origin [First Limited Edition]"
   region: "NTSC-J"
@@ -21653,6 +21656,15 @@ SLPM-55081:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Fixes wrong color on some characters and breakable objects.
+SLPM-55086:
+  name: "Ever17 The Out of Infinity [Renai Game Selection]"
+  region: "NTSC-J"
+SLPM-55087:
+  name: "Remember11 The Age of Infinity [Renai Game Selection]"
+  region: "NTSC-J"
+SLPM-55088:
+  name: "Never7 The Age of Infinity [Renai Game Selection]"
+  region: "NTSC-J"
 SLPM-55090:
   name: "DanceDanceRevolution X"
   region: "NTSC-J"
@@ -21667,11 +21679,17 @@ SLPM-55096:
   name: "ThunderForce VI"
   region: "NTSC-J"
   compat: 5
+SLPM-55101:
+  name: "Memories Off Duet - 1st and 2nd Stories [Renai Game Selection]"
+  region: "NTSC-J"
 SLPM-55102:
   name: "Pia Carrot e Youkoso!! G.P. Gakuen Princess"
   region: "NTSC-J"
   gsHWFixes:
     pointListPalette: 1
+SLPM-55104:
+  name: "Real Rode"
+  region: "NTSC-J"
 SLPM-55108:
   name: "Fate - Unlimited Codes"
   region: "NTSC-J"
@@ -21813,6 +21831,12 @@ SLPM-55185:
   region: "NTSC-J"
 SLPM-55186:
   name: "Sweet Honey Coming"
+  region: "NTSC-J"
+SLPM-55188:
+  name: "Rosario to Vampire Capu 2 - Koi to Yume no Rapsodia [Limited Edition]"
+  region: "NTSC-J"
+SLPM-55189:
+  name: "Rosario to Vampire Capu 2 - Koi to Yume no Rapsodia"
   region: "NTSC-J"
 SLPM-55191:
   name: "L2 - Love x Loop"
@@ -28473,6 +28497,9 @@ SLPM-66307:
     - "SLPM-74249"
 SLPM-66308:
   name: "Harukanaru Toki no Naka Premium Boxset"
+  region: "NTSC-J"
+SLPM-66312:
+  name: "Saishuu Heiki Kanojo [Konami the Best]"
   region: "NTSC-J"
 SLPM-66313:
   name: "GuitarFreaksV & DrumManiaV"
@@ -45716,7 +45743,10 @@ TCPS-10148:
   name: "Zero Shikikan Josentoki Ni [Limited Edition]"
   region: "NTSC-J"
 TCPS-10152:
-  name: "Rozen Maiden - Duel Valzer"
+  name: "Rozen Maiden - Duellwalzer"
+  region: "NTSC-J"
+TCPS-10153:
+  name: "Rozen Maiden - Duellwalzer [Limited Edition]"
   region: "NTSC-J"
 TCPS-10154:
   name: "Ys V - Lost Kefin - Kingdom of Sand"
@@ -45732,6 +45762,15 @@ TCPS-10168:
   region: "NTSC-J"
 TCPS-10172:
   name: "Homura [Taito the Best]"
+  region: "NTSC-J"
+TCPS-10182:
+  name: "Rozen Maiden - Gebetgarten [Limited Edition]"
+  region: "NTSC-J"
+TCPS-10183:
+  name: "Taito Memories II - Gekan"
+  region: "NTSC-J"
+TCPS-10184:
+  name: "Rozen Maiden - Duellwalzer [Taito the Best]"
   region: "NTSC-J"
 TLES-52149:
   name: "Splinter Cell - Pandora Tomorrow Beta Trial Code"
