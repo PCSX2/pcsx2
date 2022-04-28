@@ -18,16 +18,6 @@
 set -u
 
 # Function declarations
-set_ncpu_toolfile()
-{
-    ncpu=$(getconf NPROCESSORS_ONLN 2>/dev/null || getconf _NPROCESSORS_ONLN)
-    if [ "$(uname -s)" = 'Darwin' ]; then
-        i386_flag="-DCMAKE_OSX_ARCHITECTURES=i386"
-    elif [ "$(uname -s)" != 'FreeBSD' ]; then
-        i386_flag="-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake"
-    fi
-}
-
 find_freetype()
 {
     if [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/include/x86_64-linux-gnu/freetype2/ft2build.h" ]; then
@@ -37,6 +27,7 @@ find_freetype()
 
 set_make()
 {
+    ncpu=$(getconf NPROCESSORS_ONLN 2>/dev/null || getconf _NPROCESSORS_ONLN)
     if command -v ninja >/dev/null ; then
         flags="$flags -GNinja"
         make=ninja
@@ -152,7 +143,6 @@ build="$root/build"
 coverity_dir="cov-int"
 coverity_result=pcsx2-coverity.xz
 
-set_ncpu_toolfile
 set_make
 
 for ARG in "$@"; do
