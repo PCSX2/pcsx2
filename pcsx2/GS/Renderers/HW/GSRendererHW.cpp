@@ -267,11 +267,14 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 	TEX0.TBW = DISPFB.FBW;
 	TEX0.PSM = DISPFB.PSM;
 
+	const int videomode = static_cast<int>(GetVideoMode()) - 1;
+	int display_height = VideoModeOffsets[videomode].y * ((isinterlaced() && !m_regs->SMODE2.FFMD) ? 2 : 1);
+	int fb_height = std::min(GetFramebufferHeight(), display_height);
 	// TRACE(_T("[%d] GetOutput %d %05x (%d)\n"), (int)m_perfmon.GetFrame(), i, (int)TEX0.TBP0, (int)TEX0.PSM);
 
 	GSTexture* t = NULL;
 
-	if (GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, GetTargetSize(), GetFramebufferHeight()))
+	if (GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, GetTargetSize(), fb_height))
 	{
 		t = rt->m_texture;
 
