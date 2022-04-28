@@ -1089,6 +1089,7 @@ void GSDrawScanlineCodeGenerator2::TestZ(const XYm& temp1, const XYm& temp2)
 			cvttps2dq(xym0, z);
 		}
 
+		// Clamp Z to ZPSM_FMT_MAX
 		if (m_sel.zclamp)
 		{
 			const u8 amt = (u8)((m_sel.zpsm & 0x3) * 8);
@@ -1124,7 +1125,7 @@ void GSDrawScanlineCodeGenerator2::TestZ(const XYm& temp1, const XYm& temp2)
 			psrld(temp2, static_cast<u8>(m_sel.zpsm * 8));
 		}
 
-		if (m_sel.zoverflow || m_sel.zpsm == 0)
+		if (m_sel.zpsm == 0)
 		{
 			// GSVector4i o = GSVector4i::x80000000();
 
@@ -2550,15 +2551,6 @@ void GSDrawScanlineCodeGenerator2::WriteZBuf()
 			movdqa(xym7, _rip_local(temp.zd));
 			blend8(xym1, xym7 /*, xym0 */);
 		}
-	}
-
-	// Clamp Z to ZPSM_FMT_MAX
-	if (m_sel.zclamp)
-	{
-		const u8 amt = (u8)((m_sel.zpsm & 0x3) * 8);
-		pcmpeqd(xym7, xym7);
-		psrld(xym7, amt);
-		pminsd(xym1, xym7);
 	}
 
 	bool fast = m_sel.ztest ? m_sel.zpsm < 2 : m_sel.zpsm == 0 && m_sel.notest;

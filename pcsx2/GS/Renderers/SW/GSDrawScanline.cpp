@@ -479,6 +479,9 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 					{
 						zs = VectorI(z);
 					}
+
+					if (sel.zclamp)
+						zs = zs.min_u32(VectorI::xffffffff().srl32(sel.zpsm * 8));
 				}
 				else
 				{
@@ -505,14 +508,11 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 					VectorI zso = zs;
 					VectorI zdo = zd;
 
-					if (sel.zoverflow || sel.zpsm == 0)
+					if (sel.zpsm == 0)
 					{
 						zso -= VectorI::x80000000();
 						zdo -= VectorI::x80000000();
 					}
-
-					if (sel.zclamp)
-						zso = zso.min_u32(VectorI::xffffffff().srl32(sel.zpsm * 8));
 
 					switch (sel.ztst)
 					{
@@ -1200,9 +1200,6 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 				{
 					zs = zs.blend8(zd, zm);
 				}
-
-				if (sel.zclamp)
-					zs = zs.min_u32(VectorI::xffffffff().srl32(sel.zpsm * 8));
 
 				bool fast = sel.ztest ? sel.zpsm < 2 : sel.zpsm == 0 && sel.notest;
 
