@@ -20,31 +20,12 @@ class alignas(16) GSVector4i
 	static const GSVector4i m_xff[17];
 	static const GSVector4i m_x0f[17];
 
-	constexpr static __m128i cxpr_setr_epi32(int x, int y, int z, int w)
+	struct cxpr_init_tag {};
+	static constexpr cxpr_init_tag cxpr_init{};
+
+	constexpr GSVector4i(cxpr_init_tag, int x, int y, int z, int w)
+		: I32{x, y, z, w}
 	{
-#ifdef __GNUC__
-		return (__m128i)(__v4si{x, y, z, w});
-#else
-		__m128i m = {};
-		m.m128i_i32[0] = x;
-		m.m128i_i32[1] = y;
-		m.m128i_i32[2] = z;
-		m.m128i_i32[3] = w;
-		return m;
-#endif
-	}
-	constexpr static __m128i cxpr_setr_epi8(char b0, char b1, char b2, char b3, char b4, char b5, char b6, char b7, char b8, char b9, char b10, char b11, char b12, char b13, char b14, char b15)
-	{
-#ifdef __GNUC__
-		return (__m128i)__v16qi{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15};
-#else
-		__m128i m = {};
-		m.m128i_i8[0]  = b0;  m.m128i_i8[1]  = b1;  m.m128i_i8[2]  = b2;  m.m128i_i8[3]  = b3;
-		m.m128i_i8[4]  = b4;  m.m128i_i8[5]  = b5;  m.m128i_i8[6]  = b6;  m.m128i_i8[7]  = b7;
-		m.m128i_i8[8]  = b8;  m.m128i_i8[9]  = b9;  m.m128i_i8[10] = b10; m.m128i_i8[11] = b11;
-		m.m128i_i8[12] = b12; m.m128i_i8[13] = b13; m.m128i_i8[14] = b14; m.m128i_i8[15] = b15;
-		return m;
-#endif
 	}
 
 public:
@@ -73,12 +54,12 @@ public:
 
 	constexpr static GSVector4i cxpr(int x, int y, int z, int w)
 	{
-		return GSVector4i(cxpr_setr_epi32(x, y, z, w));
+		return GSVector4i(cxpr_init, x, y, z, w);
 	}
 
 	constexpr static GSVector4i cxpr(int x)
 	{
-		return GSVector4i(cxpr_setr_epi32(x, x, x, x));
+		return GSVector4i(cxpr_init, x, x, x, x);
 	}
 
 	__forceinline GSVector4i(int x, int y, int z, int w)
@@ -97,7 +78,7 @@ public:
 	}
 
 	constexpr GSVector4i(char b0, char b1, char b2, char b3, char b4, char b5, char b6, char b7, char b8, char b9, char b10, char b11, char b12, char b13, char b14, char b15)
-		: m(cxpr_setr_epi8(b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15))
+		: I8{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15}
 	{
 	}
 
