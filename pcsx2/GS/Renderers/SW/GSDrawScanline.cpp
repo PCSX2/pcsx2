@@ -498,15 +498,15 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 					zd = GSVector4i::load((u8*)global.vm + za * 2, (u8*)global.vm + za * 2 + 16);
 #endif
 
-					switch (sel.zpsm)
-					{
-						case 1: zd = zd.sll32( 8).srl32( 8); break;
-						case 2: zd = zd.sll32(16).srl32(16); break;
-						default: break;
-					}
-
 					VectorI zso = zs;
 					VectorI zdo = zd;
+
+					switch (sel.zpsm)
+					{
+						case 1: zdo = zdo.sll32( 8).srl32( 8); break;
+						case 2: zdo = zdo.sll32(16).srl32(16); break;
+						default: break;
+					}
 
 					if (sel.zpsm == 0)
 					{
