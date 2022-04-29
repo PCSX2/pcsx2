@@ -516,8 +516,8 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 
 					switch (sel.ztst)
 					{
-					case ZTST_GEQUAL:  test |= zso <  zdo; break;
-					case ZTST_GREATER: test |= zso <= zdo; break;
+						case ZTST_GEQUAL:  test |= zso <  zdo; break;
+						case ZTST_GREATER: test |= zso <= zdo; break;
 					}
 
 					if (test.alltrue())
