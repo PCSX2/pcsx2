@@ -9188,6 +9188,9 @@ SLES-50386:
   name: "Crash Bandicoot - Wrath of Cortex"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.
 SLES-50390:
   name: "Driven"
   region: "PAL-M5"
@@ -22418,6 +22421,9 @@ SLPM-62113:
 SLPM-62114:
   name: "Crash Bandicoot 4 - Sakuretsu! Majin Power"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.
 SLPM-62117:
   name: "Momotaro Train X"
   region: "NTSC-J"
@@ -24189,9 +24195,18 @@ SLPM-64502:
 SLPM-64504:
   name: "Maximo"
   region: "NTSC-K"
-SLPM-64513:
-  name: "Crash Bandicoot - Return of the Demon King"
+SLPM-64509:
+  name: "Crash Bandicoot - Return of the Demon King [English Dub Edition]" # Wrath of Cortex
   region: "NTSC-K"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.  
+SLPM-64513:
+  name: "Crash Bandicoot - Return of the Demon King" # Wrath of Cortex
+  region: "NTSC-K"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.  
 SLPM-64522:
   name: "La Pucelle"
   region: "NTSC-K"
@@ -31017,6 +31032,9 @@ SLPM-74002:
 SLPM-74003:
   name: "Crash Bandicoot 4 - Sakuretsu! Majin Power! [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.
 SLPM-74004:
   name: "Maximo - Ghosts to Glory [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -37079,6 +37097,9 @@ SLUS-20238:
   name: "Crash Bandicoot - The Wrath of Cortex"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.
 SLUS-20239:
   name: "Driven"
   region: "NTSC-U"
@@ -45080,6 +45101,9 @@ SLUS-29009:
 SLUS-29010:
   name: "Crash Bandicoot - The Wrath of Cortex [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.
 SLUS-29011:
   name: "WWF SmackDown! - Just Bring It [Demo]"
   region: "NTSC-U"
@@ -45802,3 +45826,15 @@ TLES-82043:
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+VW067-J1:
+  name: "Crash Bandicoot 4 - Sakuretsu! Majin Power!"
+  region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.
+VW067-J2:
+  name: "Crash Bandicoot 4 - Sakuretsu! Majin Power! [PlayStation 2 The Best]"
+  region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.
