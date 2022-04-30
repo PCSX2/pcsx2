@@ -25145,8 +25145,10 @@ SLPM-65283:
   name: "Green Green - Sound of the Ring Romantic"
   region: "NTSC-J"
 SLPM-65284:
-  name: "World Rally Championship II Extreme"
+  name: "WRC II Extreme"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes SPS.
 SLPM-65285:
   name: "Love Hina Gorgeous [First Limited Edition]"
   region: "NTSC-J"
@@ -26027,8 +26029,10 @@ SLPM-65572:
   name: "Generation of Chaos 4"
   region: "NTSC-J"
 SLPM-65573:
-  name: "World Rally Championship II Extreme [Spike The Best]"
+  name: "WRC II Extreme [Spike The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes SPS.
 SLPM-65574:
   name: "Silent Hill 4 - The Room"
   region: "NTSC-J"
