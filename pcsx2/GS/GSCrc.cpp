@@ -142,6 +142,7 @@ const CRC::Game CRC::m_games[] =
 	{0xF8643F9B, CrashBandicootWoC, JP, 0},
 	{0x3A03D62F, CrashBandicootWoC, EU, 0},
 	{0x35D70452, CrashBandicootWoC, EU, 0},
+	{0x1E935600, CrashBandicootWoC, EU, 0},
 	{0x72E1E60E, Spartan, EU, 0},
 	{0x26689C87, Spartan, JP, 0},
 	{0x08277A9E, Spartan, US, 0},
