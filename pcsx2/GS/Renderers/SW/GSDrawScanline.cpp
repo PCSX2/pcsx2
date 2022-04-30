@@ -572,8 +572,8 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 						u = u.srav32(lodi);
 						v = v.srav32(lodi);
 
-						uv[0] = u.srav32(lodi);
-						uv[1] = v.srav32(lodi);
+						uv[0] = u;
+						uv[1] = v;
 
 						GSVector8i tmin = GSVector8i::broadcast128(global.t.min);
 						GSVector8i tminu = tmin.upl16().srlv32(lodi);
