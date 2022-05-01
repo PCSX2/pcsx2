@@ -940,6 +940,7 @@ struct Pcsx2Config
 		EnableCheats : 1, // enables cheat detection and application
 		EnablePINE : 1, // enables inter-process communication
 		EnableWideScreenPatches : 1,
+		EnableNoInterlacingPatches : 1,
 		// TODO - Vaser - where are these settings exposed in the Qt UI?
 		EnableRecordingTools : 1,
 #ifdef PCSX2_CORE
@@ -1032,6 +1033,7 @@ namespace EmuFolders
 	extern std::string Logs;
 	extern std::string Cheats;
 	extern std::string CheatsWS;
+	extern std::string CheatsNI;
 	extern std::string Resources;
 	extern std::string Cache;
 	extern std::string Covers;
