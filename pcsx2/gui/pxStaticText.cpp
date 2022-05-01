@@ -107,40 +107,6 @@ pxStaticText& pxStaticText::Bold()
 	return *this;
 }
 
-pxStaticText& pxStaticText::PaddingPixH(int pixels)
-{
-	m_paddingPix_horiz = pixels;
-	UpdateWrapping(false);
-	Refresh();
-	return *this;
-}
-
-pxStaticText& pxStaticText::PaddingPixV(int pixels)
-{
-	m_paddingPix_vert = pixels;
-	Refresh();
-	return *this;
-}
-
-pxStaticText& pxStaticText::PaddingPctH(float pct)
-{
-	pxAssert(pct < 0.5);
-
-	m_paddingPct_horiz = pct;
-	UpdateWrapping(false);
-	Refresh();
-	return *this;
-}
-
-pxStaticText& pxStaticText::PaddingPctV(float pct)
-{
-	pxAssert(pct < 0.5);
-
-	m_paddingPct_vert = pct;
-	Refresh();
-	return *this;
-}
-
 pxStaticText& pxStaticText::Unwrapped()
 {
 	m_autowrap = false;
@@ -198,30 +164,6 @@ wxSize pxStaticText::GetBestWrappedSize(const wxClientDC& dc) const
 	}
 
 	return dc.GetMultiLineTextExtent(pxTextWrapper().Wrap(this, m_label, idealWidth - calcPaddingWidth(idealWidth)).GetResult());
-}
-
-pxStaticText& pxStaticText::WrapAt(int width)
-{
-	m_autowrap = false;
-
-	if ((width <= 1) || (width == m_wrappedWidth))
-		return *this;
-
-	wxString wrappedLabel;
-	m_wrappedWidth = width;
-
-	if (width > 1)
-		wrappedLabel = pxTextWrapper().Wrap(this, m_label, width).GetResult();
-
-	if (m_wrappedLabel != wrappedLabel)
-	{
-		m_wrappedLabel = wrappedLabel;
-		wxSize area = wxClientDC(this).GetMultiLineTextExtent(m_wrappedLabel);
-		SetMinSize(wxSize(
-			area.GetWidth() + calcPaddingWidth(area.GetWidth()),
-			area.GetHeight() + calcPaddingHeight(area.GetHeight())));
-	}
-	return *this;
 }
 
 bool pxStaticText::_updateWrapping(bool textChanged)
@@ -327,32 +269,6 @@ void pxStaticText::paintEvent(wxPaintEvent& evt)
 
 	//dc.SetBrush( *wxTRANSPARENT_BRUSH );
 	//dc.DrawRectangle(wxPoint(), dc.GetSize());
-}
-
-// Overloaded form wxPanel and friends.
-wxSize pxStaticText::DoGetBestSize() const
-{
-	wxClientDC dc(const_cast<pxStaticText*>(this));
-	dc.SetFont(GetFontOk());
-
-	wxSize best;
-
-	if (m_autowrap)
-	{
-		best = GetBestWrappedSize(dc);
-		//best.x = wxDefaultCoord;
-	}
-	else
-	{
-		// No autowrapping, so we can force a specific size here!
-		best = dc.GetMultiLineTextExtent(GetLabel());
-		best.x += calcPaddingWidth(best.x);
-	}
-
-	best.y += calcPaddingHeight(best.y);
-
-	CacheBestSize(best);
-	return best;
 }
 
 // --------------------------------------------------------------------------------------

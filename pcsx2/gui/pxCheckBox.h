@@ -90,7 +90,6 @@ public:
 protected:
 	void Init(const wxString& label, const wxString& subtext, int flags);
 	void OnCheckpartCommand(wxCommandEvent& evt);
-	void OnSubtextClicked(wxCommandEvent& evt);
 };
 
 extern void operator+=(wxSizer& target, pxCheckBox& src);
