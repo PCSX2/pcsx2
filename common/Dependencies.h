@@ -23,22 +23,6 @@
 // This should prove useful....
 #define wxsFormat wxString::Format
 
-#ifdef PCSX2_DEBUG
-#define tryDEBUG try
-#define catchDEBUG(clause) catch (clause)
-#else
-#define tryDEBUG if (true)
-#define catchDEBUG(clause) if (false)
-#endif
-
-#if defined(PCSX2_DEVBUILD) || defined(PCSX2_DEBUG)
-#define tryDEVEL try
-#define catchDEVEL catch (clause)
-#else
-#define tryDEBUG if (true)
-#define catchDEBUG(clause) if (false)
-#endif
-
 // --------------------------------------------------------------------------------------
 //  ImplementEnumOperators  (macro)
 // --------------------------------------------------------------------------------------
@@ -138,30 +122,6 @@ private: \
 	explicit classname(const classname&); \
 	classname& operator=(const classname&)
 #endif
-
-
-// --------------------------------------------------------------------------------------
-//  ScopedBool  -  Makes sure a boolean is set back to FALSE when current scope is left
-// --------------------------------------------------------------------------------------
-// Exception-safe way of tracking entry and exit of various functions of execution zones.
-//
-class ScopedBool
-{
-protected:
-	bool* m_boolme;
-
-public:
-	ScopedBool(bool& boolme)
-	{
-		boolme = true;
-		m_boolme = &boolme;
-	}
-
-	~ScopedBool()
-	{
-		*m_boolme = false;
-	}
-};
 
 // --------------------------------------------------------------------------------------
 //  _(x) / _t(x) / _d(x) / pxL(x) / pxLt(x)  [macros]
