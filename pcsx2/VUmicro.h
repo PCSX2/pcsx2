@@ -125,19 +125,6 @@ public:
 	}
 	virtual ~BaseVUmicroCPU() = default;
 
-	// Called by the PS2 VM's event manager for every internal vertical sync (occurs at either
-	// 50hz (pal) or 59.94hz (NTSC).
-	//
-	// Exceptions:
-	//   This method is not allowed to throw exceptions, since exceptions may not propagate
-	//   safely from the context of recompiled code stackframes.
-	//
-	// Thread Affinity:
-	//   Called from the EEcore thread.  No locking is performed, so any necessary locks must
-	//   be implemented by the CPU provider manually.
-	//
-	virtual void Vsync() noexcept { }
-
 	virtual void Step() {
 		// Ideally this would fall back on interpretation for executing single instructions
 		// for all CPU types, but due to VU complexities and large discrepancies between
@@ -223,7 +210,6 @@ public:
 	void SetStartPC(u32 startPC);
 	void Execute(u32 cycles);
 	void Clear(u32 addr, u32 size);
-	void Vsync() noexcept;
 
 	uint GetCacheReserve() const;
 	void SetCacheReserve( uint reserveInMegs ) const;
@@ -244,7 +230,6 @@ public:
 	void SetStartPC(u32 startPC);
 	void Execute(u32 cycles);
 	void Clear(u32 addr, u32 size);
-	void Vsync() noexcept;
 	void ResumeXGkick();
 
 	uint GetCacheReserve() const;

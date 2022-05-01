@@ -570,10 +570,6 @@ static __fi void VSyncStart(u32 sCycle)
 	if(EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
 		SysTrace.EE.Counters.Write( "    ================  EE COUNTER VSYNC START (frame: %d)  ================", g_FrameCount );
 
-	// EE Profiling and Debug code.
-	CpuVU0->Vsync();
-	CpuVU1->Vsync();
-
 	hwIntcIrq(INTC_VBLANK_S);
 	psxVBlankStart();
 	
