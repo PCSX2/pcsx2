@@ -269,7 +269,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 
 	const int videomode = static_cast<int>(GetVideoMode()) - 1;
 	int display_height = VideoModeOffsets[videomode].y * ((isinterlaced() && !m_regs->SMODE2.FFMD) ? 2 : 1);
-	int fb_height = std::min(GetFramebufferHeight(), display_height);
+	int fb_height = std::min(GetFramebufferHeight(), display_height) + DISPFB.DBY;
 	// TRACE(_T("[%d] GetOutput %d %05x (%d)\n"), (int)m_perfmon.GetFrame(), i, (int)TEX0.TBP0, (int)TEX0.PSM);
 
 	GSTexture* t = NULL;
