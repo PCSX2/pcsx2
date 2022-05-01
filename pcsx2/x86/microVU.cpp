@@ -184,12 +184,6 @@ __fi void mVUclear(mV, u32 addr, u32 size)
 // Micro VU - Private Functions
 //------------------------------------------------------------------
 
-// Finds and Ages/Kills Programs if they haven't been used in a while.
-__ri void mVUvsyncUpdate(mV)
-{
-	//mVU.prog.curFrame++;
-}
-
 // Deletes a program
 __ri void mVUdeleteProg(microVU& mVU, microProgram*& prog)
 {
@@ -366,8 +360,6 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState)
 //------------------------------------------------------------------
 recMicroVU0::recMicroVU0() { m_Idx = 0; IsInterpreter = false; }
 recMicroVU1::recMicroVU1() { m_Idx = 1; IsInterpreter = false; }
-void recMicroVU0::Vsync() noexcept { mVUvsyncUpdate(microVU0); }
-void recMicroVU1::Vsync() noexcept { mVUvsyncUpdate(microVU1); }
 
 void recMicroVU0::Reserve()
 {
