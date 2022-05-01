@@ -34220,6 +34220,8 @@ SLPS-25534:
 SLPS-25535:
   name: "NeoGeo Online Collection Vol.3 - The King of Fighters - Orochi Collection [Special Pack]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLPS-25537:
   name: "Super Robot Wars - Alpha 3"
   region: "NTSC-J"
@@ -34450,6 +34452,8 @@ SLPS-25604:
 SLPS-25605:
   name: "NeoGeo Online Collection Vol.3 - The King of Fighters - Orochi Collection"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLPS-25606:
   name: "Zettai Zetsumei Toshi 2 - Itetsuita Kioutachi"
   region: "NTSC-J"
@@ -34734,6 +34738,8 @@ SLPS-25660:
 SLPS-25661:
   name: "King of Fighters, The - Nests"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLPS-25662:
   name: "Kyo Kara Maoh! The 1st trip of Maoh! [Premium Box]"
   region: "NTSC-J"
@@ -35176,6 +35182,8 @@ SLPS-25790:
 SLPS-25791:
   name: "King of Fighters, The - Orochi Collection [NeoGeo Online Collection the Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLPS-25792:
   name: "Bakumatsu Roman - Last Blade 2-in-1 [NeoGeo Online Collection the Best]"
   region: "NTSC-J"
@@ -35419,6 +35427,8 @@ SLPS-25864:
 SLPS-25865:
   name: "King of Fighters, The - Nests [SNK the Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLPS-25866:
   name: "Fuuun Super Combo [SNK the Best]"
   region: "NTSC-J"
