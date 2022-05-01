@@ -653,9 +653,7 @@ void Pcsx2Config::GSOptions::MaskUpscalingHacks()
 
 bool Pcsx2Config::GSOptions::UseHardwareRenderer() const
 {
-	return (Renderer == GSRendererType::DX11 || Renderer == GSRendererType::DX12 ||
-			Renderer == GSRendererType::OGL || Renderer == GSRendererType::VK ||
-			Renderer == GSRendererType::Metal);
+	return (Renderer != GSRendererType::Null && Renderer != GSRendererType::SW);
 }
 
 VsyncMode Pcsx2Config::GetEffectiveVsyncMode() const

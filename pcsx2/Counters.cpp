@@ -433,6 +433,8 @@ void frameLimitReset()
 extern uint eecount_on_last_vdec;
 extern bool FMVstarted;
 extern bool EnableFMV;
+
+static bool RendererSwitched = false;
 static bool s_last_fmv_state = false;
 
 static __fi void DoFMVSwitch()
@@ -477,11 +479,15 @@ static __fi void DoFMVSwitch()
 			break;
 	}
 
-	if (EmuConfig.Gamefixes.SoftwareRendererFMVHack && GSConfig.UseHardwareRenderer())
+	if (EmuConfig.Gamefixes.SoftwareRendererFMVHack && (GSConfig.UseHardwareRenderer() || (RendererSwitched && GSConfig.Renderer == GSRendererType::SW)))
 	{
+		RendererSwitched = GSConfig.UseHardwareRenderer();
+
 		// we don't use the sw toggle here, because it'll change back to auto if set to sw
-		GetMTGS().SwitchRenderer(new_fmv_state ? GSRendererType::SW : GSConfig.Renderer, false);
+		GetMTGS().SwitchRenderer(new_fmv_state ? GSRendererType::SW : EmuConfig.GS.Renderer, false);
 	}
+	else
+		RendererSwitched = false;
 }
 
 // Convenience function to update UI thread and set patches. 
