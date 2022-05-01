@@ -376,6 +376,8 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 			// No ws cheat files found at the cheats_ws folder, try the ws cheats zip file.
 			if (!s_widescreen_cheats_loaded)
 			{
+				s_widescreen_cheats_loaded = true;
+
 				std::optional<std::vector<u8>> data = Host::ReadResourceFile("cheats_ws.zip");
 				if (data.has_value())
 					s_widescreen_cheats_data = std::move(data.value());
