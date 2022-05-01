@@ -130,7 +130,6 @@ set(pcsx2Sources
 	Gif_Logger.cpp
 	Gif_Unit.cpp
 	GS.cpp
-	GSState.cpp
 	Host.cpp
 	HostDisplay.cpp
 	Hw.cpp

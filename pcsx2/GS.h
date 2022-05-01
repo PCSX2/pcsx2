@@ -461,22 +461,6 @@ void gsIrq();
 
 extern tGS_CSR CSRr;
 
-// GS Playback
-enum gsrun
-{
-	GSRUN_TRANS1	= 1,
-	GSRUN_TRANS2,
-	GSRUN_TRANS3,
-	GSRUN_VSYNC
-};
-
-#ifdef PCSX2_DEVBUILD
-
-extern int g_SaveGSStream;
-extern int g_nLeftGSFrames;
-
-#endif
-
 // Size of the ringbuffer as a power of 2 -- size is a multiple of simd128s.
 // (actual size is 1<<m_RingBufferSizeFactor simd vectors [128-bit values])
 // A value of 19 is a 8meg ring buffer.  18 would be 4 megs, and 20 would be 16 megs.

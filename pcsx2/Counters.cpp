@@ -571,10 +571,6 @@ static __fi void VSyncStart(u32 sCycle)
 		SysTrace.EE.Counters.Write( "    ================  EE COUNTER VSYNC START (frame: %d)  ================", g_FrameCount );
 
 	// EE Profiling and Debug code.
-	// FIXME: should probably be moved to VsyncInThread, and handled
-	// by UI implementations.  (ie, AppCoreThread in PCSX2-wx interface).
-	vSyncDebugStuff( g_FrameCount );
-
 	CpuVU0->Vsync();
 	CpuVU1->Vsync();
 
