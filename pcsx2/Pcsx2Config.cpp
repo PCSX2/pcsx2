@@ -44,6 +44,7 @@ namespace EmuFolders
 	std::string Logs;
 	std::string Cheats;
 	std::string CheatsWS;
+	std::string CheatsNI;
 	std::string Resources;
 	std::string Cache;
 	std::string Covers;
@@ -1040,6 +1041,7 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EnableCheats);
 	SettingsWrapBitBool(EnablePINE);
 	SettingsWrapBitBool(EnableWideScreenPatches);
+	SettingsWrapBitBool(EnableNoInterlacingPatches);
 	SettingsWrapBitBool(EnableRecordingTools);
 #ifdef PCSX2_CORE
 	SettingsWrapBitBool(EnableGameFixes);
@@ -1189,6 +1191,7 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	EnableCheats = cfg.EnableCheats;
 	EnablePINE = cfg.EnablePINE;
 	EnableWideScreenPatches = cfg.EnableWideScreenPatches;
+	EnableNoInterlacingPatches = cfg.EnableNoInterlacingPatches;
 	EnableRecordingTools = cfg.EnableRecordingTools;
 	UseBOOT2Injection = cfg.UseBOOT2Injection;
 	PatchBios = cfg.PatchBios;
@@ -1216,6 +1219,7 @@ void EmuFolders::SetDefaults()
 	Logs = Path::Combine(DataRoot, "logs");
 	Cheats = Path::Combine(DataRoot, "cheats");
 	CheatsWS = Path::Combine(DataRoot, "cheats_ws");
+	CheatsNI = Path::Combine(DataRoot, "cheats_ni");
 	Covers = Path::Combine(DataRoot, "covers");
 	GameSettings = Path::Combine(DataRoot, "gamesettings");
 	Cache = Path::Combine(DataRoot, "cache");
@@ -1239,6 +1243,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
 	Logs = LoadPathFromSettings(si, DataRoot, "Logs", "logs");
 	Cheats = LoadPathFromSettings(si, DataRoot, "Cheats", "cheats");
 	CheatsWS = LoadPathFromSettings(si, DataRoot, "CheatsWS", "cheats_ws");
+	CheatsNI = LoadPathFromSettings(si, DataRoot, "CheatsNI", "cheats_ni");
 	Covers = LoadPathFromSettings(si, DataRoot, "Covers", "covers");
 	GameSettings = LoadPathFromSettings(si, DataRoot, "GameSettings", "gamesettings");
 	Cache = LoadPathFromSettings(si, DataRoot, "Cache", "cache");
@@ -1251,6 +1256,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
 	Console.WriteLn("Logs Directory: %s", Logs.c_str());
 	Console.WriteLn("Cheats Directory: %s", Cheats.c_str());
 	Console.WriteLn("CheatsWS Directory: %s", CheatsWS.c_str());
+	Console.WriteLn("CheatsNI Directory: %s", CheatsNI.c_str());
 	Console.WriteLn("Covers Directory: %s", Covers.c_str());
 	Console.WriteLn("Game Settings Directory: %s", GameSettings.c_str());
 	Console.WriteLn("Cache Directory: %s", Cache.c_str());
@@ -1267,6 +1273,7 @@ void EmuFolders::Save(SettingsInterface& si)
 	si.SetStringValue("Folders", "Logs", Path::MakeRelative(Logs, DataRoot).c_str());
 	si.SetStringValue("Folders", "Cheats", Path::MakeRelative(Cheats, DataRoot).c_str());
 	si.SetStringValue("Folders", "CheatsWS", Path::MakeRelative(CheatsWS, DataRoot).c_str());
+	si.SetStringValue("Folders", "CheatsNI", Path::MakeRelative(CheatsNI, DataRoot).c_str());
 	si.SetStringValue("Folders", "Cache", Path::MakeRelative(Cache, DataRoot).c_str());
 	si.SetStringValue("Folders", "Textures", Path::MakeRelative(Textures, DataRoot).c_str());
 }
@@ -1281,6 +1288,7 @@ bool EmuFolders::EnsureFoldersExist()
 	result = FileSystem::CreateDirectoryPath(Logs.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(Cheats.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(CheatsWS.c_str(), false) && result;
+	result = FileSystem::CreateDirectoryPath(CheatsNI.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(Covers.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(GameSettings.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(Cache.c_str(), false) && result;

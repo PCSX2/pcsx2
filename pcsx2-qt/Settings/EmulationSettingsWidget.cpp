@@ -46,6 +46,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cheats, "EmuCore", "EnableCheats", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.widescreenPatches, "EmuCore", "EnableWideScreenPatches", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.noInterlacingPatches, "EmuCore", "EnableNoInterlacingPatches", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.perGameSettings, "EmuCore", "EnablePerGameSettings", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hostFilesystem, "EmuCore", "HostFs", false);
 

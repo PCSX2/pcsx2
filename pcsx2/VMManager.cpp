@@ -119,6 +119,9 @@ static std::string s_elf_override;
 static u32 s_active_game_fixes = 0;
 static std::vector<u8> s_widescreen_cheats_data;
 static bool s_widescreen_cheats_loaded = false;
+static std::vector<u8> s_no_interlacing_cheats_data;
+static bool s_no_interlacing_cheats_loaded = false;
+static u32 s_active_no_interlacing_patches = 0;
 static s32 s_current_save_slot = 1;
 static u32 s_frame_advance_count = 0;
 static u32 s_mxcsr_saved;
@@ -234,6 +237,8 @@ void VMManager::Internal::ReleaseMemory()
 {
 	std::vector<u8>().swap(s_widescreen_cheats_data);
 	s_widescreen_cheats_loaded = false;
+	std::vector<u8>().swap(s_no_interlacing_cheats_data);
+	s_no_interlacing_cheats_loaded = false;
 
 	s_vm_memory->DecommitAll();
 	s_vm_memory->ReleaseAll();
@@ -264,6 +269,10 @@ void VMManager::LoadSettings()
 	// Remove any user-specified hacks in the config (we don't want stale/conflicting values when it's globally disabled).
 	EmuConfig.GS.MaskUserHacks();
 	EmuConfig.GS.MaskUpscalingHacks();
+
+	// Disable interlacing if we have no-interlacing patches active.
+	if (s_active_no_interlacing_patches > 0 && EmuConfig.GS.InterlaceMode == GSInterlaceMode::Automatic)
+		EmuConfig.GS.InterlaceMode = GSInterlaceMode::Off;
 
 	// Force MTVU off when playing back GS dumps, it doesn't get used.
 	if (GSDumpReplayer::IsReplayingDump())
@@ -436,9 +445,52 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 			fmt::format_to(std::back_inserter(message), "{}{} widescreen patches", (patch_count > 0 || cheat_count > 0) ? " and " : "", ws_patch_count);
 	}
 
+	// no-interlacing patches
+	if (EmuConfig.EnableNoInterlacingPatches && s_game_crc != 0)
+	{
+		if (s_active_no_interlacing_patches = LoadPatchesFromDir(crc_string, EmuFolders::CheatsNI, "No-interlacing patches", false))
+		{
+			Console.WriteLn(Color_Gray, "Found no-interlacing patches in the cheats_ni folder --> skipping cheats_ni.zip");
+		}
+		else
+		{
+			// No ws cheat files found at the cheats_ws folder, try the ws cheats zip file.
+			if (!s_no_interlacing_cheats_loaded)
+			{
+				s_no_interlacing_cheats_loaded = true;
+
+				std::optional<std::vector<u8>> data = Host::ReadResourceFile("cheats_ni.zip");
+				if (data.has_value())
+					s_no_interlacing_cheats_data = std::move(data.value());
+			}
+
+			if (!s_no_interlacing_cheats_data.empty())
+			{
+				s_active_no_interlacing_patches = LoadPatchesFromZip(crc_string, s_no_interlacing_cheats_data.data(), s_no_interlacing_cheats_data.size());
+				PatchesCon->WriteLn(Color_Green, "(No-Interlacing Cheats DB) Patches Loaded: %u", s_active_no_interlacing_patches);
+			}
+		}
+
+		if (s_active_no_interlacing_patches > 0)
+		{
+			fmt::format_to(std::back_inserter(message), "{}{} no-interlacing patches", (patch_count > 0 || cheat_count > 0 || ws_patch_count > 0) ? " and " : "", s_active_no_interlacing_patches);
+
+			// Disable interlacing in GS if active.
+			if (EmuConfig.GS.InterlaceMode == GSInterlaceMode::Automatic)
+			{
+				EmuConfig.GS.InterlaceMode = GSInterlaceMode::Off;
+				GetMTGS().ApplySettings();
+			}
+		}
+	}
+	else
+	{
+		s_active_no_interlacing_patches = 0;
+	}
+
 	if (show_messages)
 	{
-		if (cheat_count > 0 || ws_patch_count > 0)
+		if (cheat_count > 0 || ws_patch_count > 0 || s_active_no_interlacing_patches > 0)
 		{
 			message += " are active.";
 			Host::AddKeyedOSDMessage("LoadPatches", std::move(message), 5.0f);
@@ -823,6 +875,8 @@ void VMManager::Shutdown(bool save_resume_state)
 		s_game_name.clear();
 		Host::OnGameChanged(s_disc_path, s_game_serial, s_game_name, 0);
 	}
+	s_active_game_fixes = 0;
+	s_active_no_interlacing_patches = 0;
 	UpdateGameSettingsLayer();
 
 	std::string().swap(s_elf_override);
@@ -858,6 +912,9 @@ void VMManager::Shutdown(bool save_resume_state)
 void VMManager::Reset()
 {
 	const bool game_was_started = g_GameStarted;
+
+	s_active_game_fixes = 0;
+	s_active_no_interlacing_patches = 0;
 
 	SysClearExecutionCache();
 	memBindConditionalHandlers();
@@ -1375,8 +1432,12 @@ void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)
 	CheckForDEV9ConfigChanges(old_config);
 	CheckForMemoryCardConfigChanges(old_config);
 
-	if (EmuConfig.EnableCheats != old_config.EnableCheats || EmuConfig.EnableWideScreenPatches != old_config.EnableWideScreenPatches)
+	if (EmuConfig.EnableCheats != old_config.EnableCheats ||
+		EmuConfig.EnableWideScreenPatches != old_config.EnableWideScreenPatches ||
+		EmuConfig.EnableNoInterlacingPatches != old_config.EnableNoInterlacingPatches)
+	{
 		VMManager::ReloadPatches(true);
+	}
 }
 
 void VMManager::ApplySettings()
