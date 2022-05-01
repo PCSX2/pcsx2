@@ -632,9 +632,6 @@
     <ClCompile Include="GS.cpp">
       <Filter>System\Ps2\GS\GIF</Filter>
     </ClCompile>
-    <ClCompile Include="GSState.cpp">
-      <Filter>System\Ps2\GS\GIF</Filter>
-    </ClCompile>
     <ClCompile Include="MTGS.cpp">
       <Filter>System\Ps2\GS\GIF</Filter>
     </ClCompile>
