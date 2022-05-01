@@ -2766,8 +2766,8 @@ msgstr "Ativar hacks de velocidade"
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr ""
-"O modo mais seguro e fácil de ter a certeza de que todos os hacks de "
-"velocidade estão completamente desativados."
+"Um modo seguro e fácil de garantir que todos os hacks de velocidade estão "
+"completamente desativados."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:143
 msgid "EE Cyclerate [Not Recommended]"
@@ -2789,7 +2789,7 @@ msgstr "Hack no sinalizador mVU"
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
-"Boa aceleração e alta compatibilidade; pode ocasionar gráficos ruins... "
+"Boa aceleração e alta compatibilidade; pode gerar gráficos ruins... "
 "[Recomendado]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
@@ -2801,8 +2801,8 @@ msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
 msgstr ""
-"Boa aceleração e alta compatibilidade; pode causar travamento...  "
-"[Recomendado para 3 ou mais núcleos]"
+"Boa aceleração e alta compatibilidade; pode causar travamento... [Recomendado "
+"se 3+ núcleos]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
 msgid "Other Hacks"
@@ -2817,7 +2817,7 @@ msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
 msgstr ""
-"Imensa aceleração para alguns jogos, com quase nenhum efeito colateral. "
+"Imensa aceleração para alguns jogos, quase sem efeitos colaterais. "
 "[Recomendado]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:193
@@ -2828,8 +2828,8 @@ msgstr "Ativar detecção de loop de espera"
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
-"Aceleração moderada para alguns jogos, com nenhum efeito colateral "
-"conhecido. [Recomendado]"
+"Aceleração moderada para alguns jogos, sem efeitos colaterais conhecidos. "
+"[Recomendado]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:196
 msgid "Enable fast CDVD"
@@ -2847,8 +2847,7 @@ msgstr "Desativar a limitação de quadros"
 msgid ""
 "Useful for running benchmarks. Toggle this option in-game by pressing F4."
 msgstr ""
-"Útil para executar benchmarks. Ative/desative essa opção no jogo "
-"pressionando F4."
+"Útil para rodar benchmarks. Alterne esta opção no jogo pressionando F4."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:57
 msgid "Base Framerate Adjust:"
@@ -2856,7 +2855,7 @@ msgstr "Ajuste da taxa de quadros base:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:63
 msgid "Slow Motion Adjust:"
-msgstr "Ajuste de câmera lenta:"
+msgstr "Ajuste de câmara lenta:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:69
 msgid "Turbo Adjust:"
@@ -2864,23 +2863,23 @@ msgstr "Ajuste do turbo:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:78
 msgid "NTSC Framerate:"
-msgstr "Taxa de quadro NTSC:"
+msgstr "Taxa de quadros NTSC:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:81 pcsx2/gui/Panels/VideoPanel.cpp:87
 msgid "FPS"
-msgstr "FPS"
+msgstr "QPS"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:84
 msgid "PAL Framerate:"
-msgstr "Taxa de quadro PAL:"
+msgstr "Taxa de quadros PAL:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:156
 msgid ""
 "Error while parsing either NTSC or PAL framerate settings.  Settings must be "
 "valid floating point numerics."
 msgstr ""
-"Ocorreu um erro ao analisar as configurações de taxa de quadro de NTSC ou "
-"PAL. As configurações devem ser pontos flutuantes numéricos válidos."
+"Erro ao analisar as definições de taxa de quadros de NTSC ou PAL. As "
+"definições devem ser pontos flutuantes numéricos válidos."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:176
 msgid "Disabled [default]"
@@ -2888,19 +2887,19 @@ msgstr "Desativado [padrão]"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:180
 msgid "Skip when on Turbo only (TAB to enable)"
-msgstr "Saltar somente ao usar Turbo (TAB para ativar)"
+msgstr "Pular apenas no turbo (TAB para ativar)"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:184
 msgid "Constant skipping"
-msgstr "Saltar constantemente"
+msgstr "Pular constantemente"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:186
 msgid ""
 "Normal and Turbo limit rates skip frames.  Slow motion mode will still "
 "disable frameskipping."
 msgstr ""
-"Taxas de salto de quadro no modo Normal e Turbo. O modo câmera lenta irá "
-"manter o salto de quadro desativado."
+"Taxas de pulo de quadros no modo Normal e turbo. O modo de câmara lenta ainda "
+"desativará o pulo de quadros."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:209
 msgid "Frames to Draw"
@@ -2908,7 +2907,7 @@ msgstr "Quadros a serem desenhados"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:214
 msgid "Frames to Skip"
-msgstr "Quadros a serem ignorados"
+msgstr "Quadros a serem pulados"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:290
 msgid "Use Synchronized MTGS"
@@ -2919,12 +2918,12 @@ msgid ""
 "For troubleshooting potential bugs in the MTGS only, as it is potentially "
 "very slow."
 msgstr ""
-"Somente para solucionar problemas de bugs em potencial no MTGS, pois este é "
-"potencialmente muito lento."
+"Só para a resolução de potenciais bugs no MTGS, uma vez que é potencialmente "
+"lentíssimo."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:303
 msgid "Frame Skipping"
-msgstr "Salto de quadro"
+msgstr "Pulo de quadros"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:306
 msgid "Framelimiter"
@@ -2932,7 +2931,7 @@ msgstr "Limitador de quadros"
 
 #: pcsx2/gui/RecentIsoList.cpp:139
 msgid "Clear ISO list"
-msgstr "Apagar lista de ISO"
+msgstr "Limpar lista de ISOs"
 
 #: pcsx2/gui/Saveslots.h:96
 #, c-format
@@ -2942,7 +2941,7 @@ msgstr "Compartimento %d - Vazio"
 #: pcsx2/gui/Saveslots.h:98
 #, c-format
 msgid "Slot %d - %s %s"
-msgstr "Compertimento %d - %s %s"
+msgstr "Compartimento %d - %s %s"
 
 #: pcsx2/gui/Saveslots.h:100
 #, c-format
@@ -2952,17 +2951,16 @@ msgstr "Compartimento %d - Hora desconhecida"
 #: pcsx2/gui/Saveslots.h:113
 #, c-format
 msgid "Write time is %s %s."
-msgstr "O hora da gravação é %s %s."
+msgstr "A hora da gravação é %s %s."
 
 #: pcsx2/gui/SysState.cpp:291 pcsx2/gui/SysState.cpp:298
 msgid "Cannot load this savestate. The state is an unsupported version."
 msgstr ""
-"Não é possível carregar este estado de jogo. O estado é uma versão não "
-"suportada."
+"Não pode carregar este estado salvo. O estado é uma versão ultrapassada."
 
 #: pcsx2/gui/SysState.cpp:334
 msgid "There is no active virtual machine state to download or save."
-msgstr "Não há um estado de máquina virtual ativa para baixar ou salvar."
+msgstr "Não há um estado de máquina virtual ativo para baixar ou salvar."
 
 #: pcsx2/gui/SysState.cpp:529
 msgid ""
@@ -2970,23 +2968,23 @@ msgid ""
 "may have been created by an older unsupported version of PCSX2, or it may be "
 "corrupted."
 msgstr ""
-"O estado de jogo salvo não pode ser carregado porque não é um arquivo gzip "
-"válido. Este pode ter sido criado por uma versão mais antiga e incompatível "
-"do PCSX2, ou pode estar corrompido."
+"O estado salvo não pode ser carregado pois não é um arquivo gzip válido. Ele "
+"pode ter sido criado por uma versão mais antiga e incompatível do PCSX2, ou "
+"pode estar corrompido."
 
 #: pcsx2/gui/SysState.cpp:588
 msgid "This file is not a valid PCSX2 savestate.  See the logfile for details."
 msgstr ""
-"Este arquivo não é um estado de jogo salvo válido para o PCSX2.  Consulte o "
-"registro para mais detalhes."
+"Este arquivo não é um estado salvo do PCSX2 válido. Veja o registro para mais "
+"detalhes."
 
 #: pcsx2/gui/SysState.cpp:607
 msgid ""
 "This savestate cannot be loaded due to missing critical components.  See the "
 "log file for details."
 msgstr ""
-"O estado de jogo salvo não pôde ser carregado por estar faltando componentes "
-"críticos. Consulte o registro para mais detalhes."
+"O estado salvo não pode ser carregado devido à falta de componentes críticos. "
+"Veja o registro para mais detalhes."
 
 #: pcsx2/gui/i18n.cpp:63
 msgid " (default)"
@@ -2995,21 +2993,21 @@ msgstr " (padrão)"
 #: pcsx2/ps2/BiosTools.cpp:90 pcsx2/ps2/BiosTools.cpp:158
 msgid "The selected BIOS file is not a valid PS2 BIOS.  Please re-configure."
 msgstr ""
-"O arquivo de BIOS selecionado não é uma BIOS de PS2 válida. Por favor, "
-"configure novamente."
+"O arquivo de BIOS selecionado não é um BIOS de PS2 válido. Por favor "
+"reconfigure."
 
 #: pcsx2/ps2/BiosTools.cpp:271
 msgid ""
 "The PS2 BIOS could not be loaded.  The BIOS has not been configured, or the "
 "configuration has been corrupted.  Please re-configure."
 msgstr ""
-"A BIOS de PS2 não pôde ser carregada. A BIOS não foi configurada ou a "
-"configuração foi corrompida. Por favor, configure novamente."
+"O BIOS de PS2 não pôde ser carregado. O BIOS não foi configurado ou a "
+"configuração foi corrompida. Por favor reconfigure."
 
 #: pcsx2/ps2/BiosTools.cpp:278
 msgid "The configured BIOS file does not exist.  Please re-configure."
 msgstr ""
-"O arquivo de BIOS configurado não existe. Por favor, configure novamente."
+"O arquivo de BIOS configurado não existe. Por favor reconfigure."
 
 #: pcsx2/x86/ix86-32/iR5900-32.cpp:472
 #, c-format
@@ -3017,16 +3015,15 @@ msgid ""
 "%s Extensions not found.  The R5900-32 recompiler requires a host CPU with "
 "SSE2 extensions."
 msgstr ""
-"Extensões %s não encontradas. O recompilador R5900-32 requer uma máquina com "
-"CPU com extensões SSE2."
+"Extensões %s não encontradas. O recompilador R5900-32 requer uma CPU com "
+"extensões SSE2."
 
 #: pcsx2/x86/microVU.cpp:32
 #, c-format
 msgid ""
 "%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
 msgstr ""
-"Extensões %s não encontradas. O microVU requer uma máquina com CPU com "
-"extensões SSE2."
+"Extensões %s não encontradas. O microVU requer uma CPU com extensões SSE2."
 
 #~ msgid "Previous versions"
 #~ msgstr "Versões anteriores"
@@ -3059,19 +3056,19 @@ msgstr ""
 #~ "de primeiro plano."
 
 #~ msgid "&Iso"
-#~ msgstr "Iso"
+#~ msgstr "ISO"
 
 #~ msgid "Reboot CDVD (f&ull)"
 #~ msgstr "Reiniciar CDVD (completo)"
 
 #~ msgid "Hard reset of the active VM."
-#~ msgstr "Reinício forçado da VM ativa."
+#~ msgstr "Reinício total da VM ativa."
 
 #~ msgid "Reboot CDVD (&fast)"
-#~ msgstr "Recarregar CDVD (rápido)"
+#~ msgstr "Reiniciar CDVD (rápido)"
 
 #~ msgid "Reboot using fast BOOT (skips splash screens)"
-#~ msgstr "Recarregar mais rápido (pula tela de inicialização)"
+#~ msgstr "Reiniciar mais rápido (pula telas de inicialização)"
 
 #~ msgid "Ignore Bus Direction on Path3 Transfer - Used for Hotwheels"
 #~ msgstr ""
@@ -3082,8 +3079,8 @@ msgstr ""
 #~ "Resets all speedhack options to their defaults, which consequently turns "
 #~ "them all OFF."
 #~ msgstr ""
-#~ "Reinicia todas opções de hack de velocidade para seus valores padrões, o "
-#~ "que consequentemente vai desabilitá-los."
+#~ "Reinicia todas as opções de hack de velocidade às suas predefinições, o que "
+#~ "consequentemente os desativará."
 
 #~ msgid "Betatesting"
 #~ msgstr "Testes beta"
@@ -3099,7 +3096,7 @@ msgstr ""
 
 #~ msgid "Dynamically toggle Vsync depending on frame rate (read tooltip!)"
 #~ msgstr ""
-#~ "Ativar de forma dinâmica a sincronização vertical dependendo da taxa de "
+#~ "Alternar dinamicamente a sincronização vertical dependendo da taxa de "
 #~ "quadros (leia a dica da opção!)"
 
 #~ msgid "%s  %d.%d.%d"
@@ -3111,8 +3108,8 @@ msgstr ""
 #~ msgid ""
 #~ "The safest way to make sure that all game fixes are completely disabled."
 #~ msgstr ""
-#~ "A forma mais segura de ter certeza que todas correções de jogos estão "
-#~ "completamente desabilitadas."
+#~ "A forma mais segura de garantir que todas as correções de jogo estão "
+#~ "completamente desativadas."
 
 #~ msgid "(modded)"
 #~ msgstr "(modulado)"
@@ -3121,23 +3118,20 @@ msgstr ""
 #~ "Cannot load this savestate.  The state is from an incompatible edition of "
 #~ "PCSX2 that is either newer than this version, or is no longer supported."
 #~ msgstr ""
-#~ "Não foi possível carregar o estado de jogo salvo. O estado é de uma "
-#~ "edição incompatível do PCSX2 que é ou mais nova que essa versão ou já "
-#~ "está ultrapassada."
+#~ "Não pode carregar este estado salvo. O estado é duma edição incompatível do "
+#~ "PCSX2 que ou é mais nova que esta versão ou já está ultrapassada."
 
 #~ msgid ""
 #~ "Cannot load this savestate. The state is an unsupported version, likely "
 #~ "created by a newer edition of PCSX2."
 #~ msgstr ""
-#~ "Não foi possível carregar o estado de jogo salvo. O arquivo é de uma "
-#~ "versão ultrapassada, provavelmente criado por uma edição mais nova do "
-#~ "PCSX2."
+#~ "Não pode carregar este estado salvo. O estado é uma versão ultrapassada, "
+#~ "provavelmente criado por uma edição mais nova do PCSX2"
 
 #~ msgid ""
 #~ "Good Speedup and High Compatibility; may cause bad graphics, SPS, etc..."
 #~ msgstr ""
-#~ "Boa aceleração e alta compatibilidade; pode ocasionar gráficos ruins, "
-#~ "SPS, etc."
+#~ "Boa aceleração e alta compatibilidade; pode gerar gráficos ruins, SPS etc."
 
 #~ msgid "mVU Block Hack"
 #~ msgstr "Hack de Bloco mVU"
