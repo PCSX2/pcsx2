@@ -75,23 +75,14 @@ public:
 	pxStaticText& SetHeight(int lines);
 	pxStaticText& Align(wxAlignment align);
 	pxStaticText& Bold();
-	pxStaticText& WrapAt(int width);
 
 	pxStaticText& Unwrapped();
-
-	pxStaticText& PaddingPixH(int pixels);
-	pxStaticText& PaddingPixV(int pixels);
-
-	pxStaticText& PaddingPctH(float pct);
-	pxStaticText& PaddingPctV(float pct);
-	//pxStaticText& DoBestGuessHeight();
 
 protected:
 	void SetPaddingDefaults();
 	void Init(const wxString& label);
 
 	wxSize GetBestWrappedSize(const wxClientDC& dc) const;
-	wxSize DoGetBestSize() const;
 
 	int calcPaddingWidth(int newWidth) const;
 	int calcPaddingHeight(int newHeight) const;

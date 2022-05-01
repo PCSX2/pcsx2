@@ -688,7 +688,6 @@ public:
 	virtual void OnFontChanged();
 
 	pxWindowTextWriter& WriteLn();
-	pxWindowTextWriter& FormatLn(const wxChar* fmt, ...);
 	pxWindowTextWriter& WriteLn(const wxChar* fmt);
 	pxWindowTextWriter& SetFont(const wxFont& font);
 	pxWindowTextWriter& Align(const wxAlignment& align);
@@ -728,7 +727,6 @@ public:
 	}
 
 	pxWindowTextWriter& SetY(int ypos);
-	pxWindowTextWriter& MoveY(int ydelta);
 };
 
 // --------------------------------------------------------------------------------------
@@ -818,7 +816,6 @@ extern wxTextCtrl* CreateNumericalTextCtrl(wxWindow* parent, int digits, long fl
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-extern bool pxDialogExists(const wxString& name);
 extern bool pxIsValidWindowPosition(const wxWindow& window, const wxPoint& windowPos);
 extern wxRect wxGetDisplayArea();
 extern wxString pxGetAppName();

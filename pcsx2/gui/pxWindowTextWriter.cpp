@@ -81,12 +81,6 @@ pxWindowTextWriter& pxWindowTextWriter::SetY(int ypos)
 	return *this;
 }
 
-pxWindowTextWriter& pxWindowTextWriter::MoveY(int ydelta)
-{
-	m_curpos.y += ydelta;
-	return *this;
-}
-
 void pxWindowTextWriter::_DoWriteLn(const wxString& msg)
 {
 	int tWidth, tHeight;
@@ -142,15 +136,6 @@ pxWindowTextWriter& pxWindowTextWriter::WriteLn()
 pxWindowTextWriter& pxWindowTextWriter::WriteLn(const wxChar* fmt)
 {
 	_DoWrite(fmt);
-	return *this;
-}
-
-pxWindowTextWriter& pxWindowTextWriter::FormatLn(const wxChar* fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	_DoWrite(pxsFmtV(fmt, args));
-	va_end(args);
 	return *this;
 }
 
