@@ -47,39 +47,29 @@ __fi void Threading::DisableHiresScheduler()
 	timeEndPeriod(1);
 }
 
-// This hacky union would probably fail on some cpu platforms if the contents of FILETIME aren't
-// packed (but for any x86 CPU and microsoft compiler, they will be).
-union FileTimeSucks
-{
-	FILETIME filetime;
-	u64 u64time;
-};
-
 u64 Threading::GetThreadCpuTime()
 {
-	FileTimeSucks user, kernel;
-	FILETIME dummy;
-	GetThreadTimes(GetCurrentThread(), &dummy, &dummy, &kernel.filetime, &user.filetime);
-	return user.u64time + kernel.u64time;
+	u64 ret = 0;
+	QueryThreadCycleTime(GetCurrentThread(), &ret);
+	return ret;
 }
 
 u64 Threading::GetThreadTicksPerSecond()
 {
-	return 10000000;
+	// On x86, despite what the MS documentation says, this basically appears to be rdtsc.
+	// So, the frequency is our base clock speed (and stable regardless of power management).
+	static u64 frequency = 0;
+	if (unlikely(frequency == 0))
+		frequency = x86caps.CachedMHz() * u64(1000000);
+	return frequency;
 }
 
 u64 Threading::pxThread::GetCpuTime() const
 {
-	if (!m_native_handle)
-		return 0;
-
-	FileTimeSucks user, kernel;
-	FILETIME dummy;
-
-	if (GetThreadTimes((HANDLE)m_native_handle, &dummy, &dummy, &kernel.filetime, &user.filetime))
-		return user.u64time + kernel.u64time;
-
-	return 0; // thread prolly doesn't exist anymore.
+	u64 ret = 0;
+	if (m_native_handle)
+		QueryThreadCycleTime((HANDLE)m_native_handle, &ret);
+	return ret;
 }
 
 void Threading::pxThread::_platform_specific_OnStartInThread()
