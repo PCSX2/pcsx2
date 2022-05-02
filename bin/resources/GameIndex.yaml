@@ -15333,9 +15333,35 @@ SLES-53380:
 SLES-53381:
   name: "King of Fighters 2002"
   region: "PAL-E"
+  patches:
+    CF1D71EE:
+      content: |-
+        author=kozarovv (adapted by Immersion95)
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,08056677
+        patch=1,EE,001599D4,word,0803ff00
+        patch=1,EE,001599D8,word,4bea497d
 SLES-53382:
   name: "King of Fighters 2003"
   region: "PAL-E"
+  patches:
+    B967F21F:
+      content: |-
+        author=kozarovv (adapted by Immersion95)
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,08053967
+        patch=1,EE,0014E594,word,0803ff00
+        patch=1,EE,0014E598,word,4bea497d
 SLES-53383:
   name: "Metal Slug 5"
   region: "PAL-E"
@@ -33621,6 +33647,19 @@ SLPS-25346:
 SLPS-25347:
   name: "King of Fighters 2002, The"
   region: "NTSC-J"
+  patches:
+    ABD16263:
+      content: |-
+        author=kozarovv (adapted by Immersion95)
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,0805E04B
+        patch=1,EE,00178124,word,0803ff00
+        patch=1,EE,00178128,word,4bea497d
 SLPS-25348:
   name: "Kokoro no Tobira [Limited Edition]"
   region: "NTSC-J"
@@ -33863,6 +33902,19 @@ SLPS-25406:
 SLPS-25407:
   name: "King of Fighters 2003, The"
   region: "NTSC-J"
+  patches:
+    D2EC432D:
+      content: |-
+        author=kozarovv (adapted by Immersion95)
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,080C5783
+        patch=1,EE,00315E04,word,0803ff00
+        patch=1,EE,00315E08,word,4bea497d
 SLPS-25408:
   name: "Armored Core - Nine Breaker"
   region: "NTSC-J"
@@ -34401,6 +34453,19 @@ SLPS-25558:
   name: "NeoGeo Battle Coliseum"
   region: "NTSC-J"
   compat: 5
+  patches:
+    7D6924E8:
+      content: |-
+        author=kozarovv (adapted by Immersion95)
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,080CE49B
+        patch=1,EE,00339264,word,0803ff00
+        patch=1,EE,00339268,word,4bea497d
 SLPS-25559:
   name: "Samurai Spirits - Tenkaichi Kenkakuden"
   region: "NTSC-J"
