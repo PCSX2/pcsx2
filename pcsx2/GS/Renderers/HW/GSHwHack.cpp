@@ -150,7 +150,7 @@ bool GSC_CrashBandicootWoC(const GSFrameInfo& fi, int& skip)
 			return false; // allowed
 		}
 
-		if (fi.TME && (fi.FBP == 0x01e40 || fi.FBP == 0x02200) && fi.FPSM == PSM_PSMZ24 && (fi.TBP0 == 0x01180 || fi.TBP0 == 0x01400) && fi.TPSM == PSM_PSMZ24)
+		if ((CRC_Full || !s_nativeres) && fi.TME && (fi.FBP == 0x01e40 || fi.FBP == 0x02200) && fi.FPSM == PSM_PSMZ24 && (fi.TBP0 == 0x01180 || fi.TBP0 == 0x01400) && fi.TPSM == PSM_PSMZ24)
 		{
 			skip = 42;
 		}
