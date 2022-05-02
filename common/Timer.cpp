@@ -21,6 +21,7 @@
 
 #if defined(_WIN32)
 #include "RedtapeWindows.h"
+#include "Threading.h"
 #elif defined(__APPLE__)
 #include <mach/mach_init.h>
 #include <mach/thread_act.h>
@@ -212,13 +213,9 @@ namespace Common
 	ThreadCPUTimer::Value ThreadCPUTimer::GetCurrentValue() const
 	{
 #if defined(_WIN32)
-		FILETIME create, exit, user, kernel;
-		if (!m_thread_handle || !GetThreadTimes((HANDLE)m_thread_handle, &create, &exit, &user, &kernel))
-			return 0;
-
-		Value value = (static_cast<Value>(user.dwHighDateTime) << 32) | (static_cast<Value>(user.dwLowDateTime));
-		value += (static_cast<Value>(kernel.dwHighDateTime) << 32) | (static_cast<Value>(kernel.dwLowDateTime));
-		return value;
+		ULONG64 ret = 0;
+		QueryThreadCycleTime((HANDLE)m_thread_handle, &ret);
+		return ret;
 #elif defined(__APPLE__)
 		thread_basic_info_data_t info;
 		mach_msg_type_number_t count = THREAD_BASIC_INFO_COUNT;
@@ -291,7 +288,16 @@ namespace Common
 	double ThreadCPUTimer::GetUtilizationPercentage(Timer::Value time_diff, Value cpu_time_diff)
 	{
 #if defined(_WIN32)
-		return ((static_cast<double>(cpu_time_diff) * 10000.0) / (static_cast<double>(time_diff) / s_counter_frequency));
+		// we need to convert from the rdtsc domain to the QPC domain (may not necessarily match)
+		static bool ratio_initialized = false;
+		static double ratio = 0.0;
+		if (unlikely(!ratio_initialized))
+		{
+			ratio = (static_cast<double>(Threading::GetThreadTicksPerSecond()) / static_cast<double>(GetTickFrequency())) / 100.0;
+			ratio_initialized = true;
+		}
+
+		return (static_cast<double>(cpu_time_diff) / (static_cast<double>(time_diff) * ratio));
 #elif defined(__APPLE__)
 		// microseconds, but time_tiff is in nanoseconds, so multiply by 1000 * 100
 		return (static_cast<double>(cpu_time_diff) * 100000.0) / static_cast<double>(time_diff);
@@ -304,8 +310,7 @@ namespace Common
 	double ThreadCPUTimer::ConvertValueToSeconds(Value value)
 	{
 #if defined(_WIN32)
-		// 100ns units
-		return (static_cast<double>(value) / 10000000.0);
+		return (static_cast<double>(value) / Threading::GetThreadTicksPerSecond());
 #elif defined(__APPLE__)
 		// microseconds
 		return (static_cast<double>(value) / 1000000.0);
@@ -318,7 +323,7 @@ namespace Common
 	double ThreadCPUTimer::ConvertValueToMilliseconds(Value value)
 	{
 #if defined(_WIN32)
-		return (static_cast<double>(value) / 10000.0);
+		return (static_cast<double>(value) / (Threading::GetThreadTicksPerSecond() / 1000.0));
 #elif defined(__APPLE__)
 		return (static_cast<double>(value) / 1000.0);
 #else
@@ -329,7 +334,7 @@ namespace Common
 	double ThreadCPUTimer::ConvertValueToNanoseconds(Value value)
 	{
 #if defined(_WIN32)
-		return (static_cast<double>(value) * 100.0);
+		return (static_cast<double>(value) / (Threading::GetThreadTicksPerSecond() / 1000000000.0));
 #elif defined(__APPLE__)
 		return (static_cast<double>(value) * 1000.0);
 #else
