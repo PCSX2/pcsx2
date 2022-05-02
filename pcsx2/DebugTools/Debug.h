@@ -68,8 +68,6 @@ struct SysTraceLogDescriptor
 class SysTraceLog : public TextFileTraceLog
 {
 public:
-	TraceLog_ImplementBaseAPI(SysTraceLog)
-
 	// Pass me a NULL and you *will* suffer!  Muahahaha.
 	SysTraceLog( const SysTraceLogDescriptor* desc )
 		: TextFileTraceLog( &desc->base ) {}
@@ -226,8 +224,6 @@ class ConsoleLogFromVM : public BaseTraceLogSource
 	typedef BaseTraceLogSource _parent;
 
 public:
-	ConsoleLog_ImplementBaseAPI(ConsoleLogFromVM)
-
 	ConsoleLogFromVM( const TraceLogDescriptor* desc ) : _parent( desc ) {}
 
 	bool Write( const wxString &msg ) const
