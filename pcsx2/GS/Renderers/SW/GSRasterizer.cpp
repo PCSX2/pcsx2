@@ -1204,7 +1204,7 @@ GSRasterizerList::~GSRasterizerList()
 void GSRasterizerList::OnWorkerStartup(int i)
 {
 	Threading::SetNameOfCurrentThread(StringUtil::StdStringFromFormat("GS-SW-%d", i).c_str());
-	PerformanceMetrics::SetGSSWThreadTimer(i, Common::ThreadCPUTimer::GetForCallingThread());
+	PerformanceMetrics::SetGSSWThread(i, Threading::ThreadHandle::GetForCallingThread());
 }
 
 void GSRasterizerList::OnWorkerShutdown(int i)
