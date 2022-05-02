@@ -90,6 +90,7 @@ class wxTimeSpan;
 
 namespace Threading
 {
+	class ThreadHandle;
 	class pxThread;
 	class RwMutex;
 
@@ -197,6 +198,45 @@ namespace Threading
 		void Wait();
 	};
 #endif
+
+	// --------------------------------------------------------------------------------------
+	//  ThreadHandle
+	// --------------------------------------------------------------------------------------
+	// Abstracts an OS's handle to a thread, closing the handle when necessary. Currently,
+	// only used for getting the CPU time for a thread.
+	//
+	class ThreadHandle
+	{
+	public:
+		ThreadHandle();
+		ThreadHandle(ThreadHandle&& handle);
+		ThreadHandle(const ThreadHandle& handle);
+		~ThreadHandle();
+
+		/// Returns a new handle for the calling thread.
+		static ThreadHandle GetForCallingThread();
+
+		ThreadHandle& operator=(ThreadHandle&& handle);
+		ThreadHandle& operator=(const ThreadHandle& handle);
+
+		operator void*() const { return m_native_handle; }
+		operator bool() const { return (m_native_handle != nullptr); }
+
+		/// Returns the amount of CPU time consumed by the thread, at the GetThreadTicksPerSecond() frequency.
+		u64 GetCPUTime() const;
+
+		/// Sets the affinity for a thread to the specified processors.
+		/// Obviously, only works up to 64 processors.
+		bool SetAffinity(u64 processor_mask) const;
+
+	private:
+		void* m_native_handle = nullptr;
+
+		// We need the thread ID for affinity adjustments on Linux.
+#if defined(__linux__)
+		unsigned int m_native_id = 0;
+#endif
+	};
 
 	// --------------------------------------------------------------------------------------
 	//  NonblockingMutex
