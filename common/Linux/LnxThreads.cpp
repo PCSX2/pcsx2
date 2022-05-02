@@ -14,9 +14,22 @@
  */
 
 #if !defined(_WIN32) && !defined(__APPLE__)
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <unistd.h>
 #if defined(__linux__)
 #include <sys/prctl.h>
+#include <sys/types.h>
+#include <sched.h>
+
+// glibc < v2.30 doesn't define gettid...
+#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
+#include <sys/syscall.h>
+#define gettid() syscall(SYS_gettid)
+#endif
+
 #elif defined(__unix__)
 #include <pthread_np.h>
 #endif
@@ -94,6 +107,96 @@ static u64 get_thread_time(uptr id = 0)
 u64 Threading::GetThreadCpuTime()
 {
 	return get_thread_time();
+}
+
+Threading::ThreadHandle::ThreadHandle() = default;
+
+Threading::ThreadHandle::ThreadHandle(const ThreadHandle& handle)
+	: m_native_handle(handle.m_native_handle)
+#ifdef __linux__
+	, m_native_id(handle.m_native_id)
+#endif
+{
+}
+
+Threading::ThreadHandle::ThreadHandle(ThreadHandle&& handle)
+	: m_native_handle(handle.m_native_handle)
+#ifdef __linux__
+	, m_native_id(handle.m_native_id)
+#endif
+{
+	handle.m_native_handle = nullptr;
+#ifdef __linux__
+	handle.m_native_id = 0;
+#endif
+}
+
+Threading::ThreadHandle::~ThreadHandle() = default;
+
+Threading::ThreadHandle Threading::ThreadHandle::GetForCallingThread()
+{
+	ThreadHandle ret;
+	ret.m_native_handle = (void*)pthread_self();
+#ifdef __linux__
+	ret.m_native_id = gettid();
+#endif
+	return ret;
+}
+
+Threading::ThreadHandle& Threading::ThreadHandle::operator=(ThreadHandle&& handle)
+{
+	m_native_handle = handle.m_native_handle;
+	handle.m_native_handle = nullptr;
+#ifdef __linux__
+	m_native_id = handle.m_native_id;
+	handle.m_native_id = 0;
+#endif
+	return *this;
+}
+
+Threading::ThreadHandle& Threading::ThreadHandle::operator=(const ThreadHandle& handle)
+{
+	m_native_handle = handle.m_native_handle;
+#ifdef __linux__
+	m_native_id = handle.m_native_id;
+#endif
+	return *this;
+}
+
+u64 Threading::ThreadHandle::GetCPUTime() const
+{
+	return m_native_handle ? get_thread_time((uptr)m_native_handle) : 0;
+}
+
+bool Threading::ThreadHandle::SetAffinity(u64 processor_mask) const
+{
+#if defined(__linux__)
+	cpu_set_t set;
+	CPU_ZERO(&set);
+
+	if (processor_mask != 0)
+	{
+		for (u32 i = 0; i < 64; i++)
+		{
+			if (processor_mask & (static_cast<u64>(1) << i))
+			{
+				CPU_SET(i, &set);
+			}
+		}
+	}
+	else
+	{
+		long num_processors = sysconf(_SC_NPROCESSORS_CONF);
+		for (long i = 0; i < num_processors; i++)
+		{
+			CPU_SET(i, &set);
+		}
+	}
+
+	return sched_setaffinity((pid_t)m_native_id, sizeof(set), &set) >= 0;
+#else
+	return false;
+#endif
 }
 
 u64 Threading::pxThread::GetCpuTime() const

@@ -47,6 +47,84 @@ __fi void Threading::DisableHiresScheduler()
 	timeEndPeriod(1);
 }
 
+Threading::ThreadHandle::ThreadHandle() = default;
+
+Threading::ThreadHandle::ThreadHandle(const ThreadHandle& handle)
+{
+	if (handle.m_native_handle)
+	{
+		HANDLE new_handle;
+		if (DuplicateHandle(GetCurrentProcess(), (HANDLE)handle.m_native_handle,
+				GetCurrentProcess(), &new_handle, THREAD_QUERY_INFORMATION | THREAD_SET_LIMITED_INFORMATION, FALSE, 0))
+		{
+			m_native_handle = (void*)new_handle;
+		}
+	}
+}
+
+Threading::ThreadHandle::ThreadHandle(ThreadHandle&& handle)
+	: m_native_handle(handle.m_native_handle)
+{
+	handle.m_native_handle = nullptr;
+}
+
+
+Threading::ThreadHandle::~ThreadHandle()
+{
+	if (m_native_handle)
+		CloseHandle(m_native_handle);
+}
+
+Threading::ThreadHandle Threading::ThreadHandle::GetForCallingThread()
+{
+	ThreadHandle ret;
+	ret.m_native_handle = (void*)OpenThread(THREAD_QUERY_INFORMATION | THREAD_SET_LIMITED_INFORMATION, FALSE, GetCurrentThreadId());
+	return ret;
+}
+
+Threading::ThreadHandle& Threading::ThreadHandle::operator=(ThreadHandle&& handle)
+{
+	if (m_native_handle)
+		CloseHandle((HANDLE)m_native_handle);
+	m_native_handle = handle.m_native_handle;
+	handle.m_native_handle = nullptr;
+	return *this;
+}
+
+Threading::ThreadHandle& Threading::ThreadHandle::operator=(const ThreadHandle& handle)
+{
+	if (m_native_handle)
+	{
+		CloseHandle((HANDLE)m_native_handle);
+		m_native_handle = nullptr;
+	}
+
+	HANDLE new_handle;
+	if (DuplicateHandle(GetCurrentProcess(), (HANDLE)handle.m_native_handle,
+			GetCurrentProcess(), &new_handle, THREAD_QUERY_INFORMATION | THREAD_SET_LIMITED_INFORMATION, FALSE, 0))
+	{
+		m_native_handle = (void*)new_handle;
+	}
+
+	return *this;
+}
+
+u64 Threading::ThreadHandle::GetCPUTime() const
+{
+	u64 ret = 0;
+	if (m_native_handle)
+		QueryThreadCycleTime((HANDLE)m_native_handle, &ret);
+	return ret;
+}
+
+bool Threading::ThreadHandle::SetAffinity(u64 processor_mask) const
+{
+	if (processor_mask == 0)
+		processor_mask = ~processor_mask;
+
+	return (SetThreadAffinityMask(GetCurrentThread(), (DWORD_PTR)processor_mask) != 0 || GetLastError() != ERROR_SUCCESS);
+}
+
 u64 Threading::GetThreadCpuTime()
 {
 	u64 ret = 0;
