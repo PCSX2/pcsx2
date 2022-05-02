@@ -18,7 +18,6 @@
 
 namespace Common
 {
-
 	class Timer
 	{
 	public:
@@ -50,45 +49,4 @@ namespace Common
 	private:
 		Value m_tvStartValue;
 	};
-
-	class ThreadCPUTimer
-	{
-	public:
-		using Value = std::uint64_t;
-
-		ThreadCPUTimer();
-		ThreadCPUTimer(ThreadCPUTimer&& move);
-		ThreadCPUTimer(const ThreadCPUTimer&) = delete;
-		~ThreadCPUTimer();
-
-		void Reset();
-		void ResetTo(Value value) { m_start_value = value; }
-
-		Value GetStartValue() const { return m_start_value; }
-		Value GetCurrentValue() const;
-
-		double GetTimeSeconds() const;
-		double GetTimeMilliseconds() const;
-		double GetTimeNanoseconds() const;
-
-		void GetUsageInSecondsAndReset(Value time_diff, double* usage_time, double* usage_percent);
-		void GetUsageInMillisecondsAndReset(Value time_diff, double* usage_time, double* usage_percent);
-		void GetUsageInNanosecondsAndReset(Value time_diff, double* usage_time, double* usage_percent);
-
-		static double GetUtilizationPercentage(Timer::Value time_diff, Value cpu_time_diff);
-
-		static double ConvertValueToSeconds(Value value);
-		static double ConvertValueToMilliseconds(Value value);
-		static double ConvertValueToNanoseconds(Value value);
-
-		static ThreadCPUTimer GetForCallingThread();
-
-		ThreadCPUTimer& operator=(const ThreadCPUTimer&) = delete;
-		ThreadCPUTimer& operator=(ThreadCPUTimer&& move);
-
-	private:
-		void* m_thread_handle = nullptr;
-		Value m_start_value = 0;
-	};
-
 } // namespace Common
