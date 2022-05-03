@@ -32,6 +32,23 @@ namespace D3D
 
 	// this is sort of a legacy thing that doesn't have much to do with d3d (just the easiest way)
 	// checks to see if the adapter at 0 is NV and thus we should prefer OpenGL
-	bool IsNvidia(IDXGIAdapter1* adapter);
-	bool ShouldPreferD3D();
+	enum VendorID
+	{
+		Unknown,
+		Nvidia,
+		AMD,
+		Intel
+	};
+
+	enum Renderer
+	{
+		Default,
+		OpenGL,
+		Vulkan,
+		Direct3D11,
+		Direct3D12
+	};
+
+	u8 Vendor();
+	u8 ShouldPreferRenderer();
 };
