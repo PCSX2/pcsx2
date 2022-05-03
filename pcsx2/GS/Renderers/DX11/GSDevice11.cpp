@@ -1297,7 +1297,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		IAUnmapVertexBuffer();
 	}
 	IASetIndexBuffer(config.indices, config.nindices);
-	D3D11_PRIMITIVE_TOPOLOGY topology;
+	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	switch (config.topology)
 	{
 		case GSHWDrawConfig::Topology::Point:    topology = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;    break;

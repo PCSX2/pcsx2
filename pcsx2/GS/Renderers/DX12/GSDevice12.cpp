@@ -342,7 +342,7 @@ bool GSDevice12::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTextu
 	const u32 height = rect.height();
 	const u32 pitch = Common::AlignUpPow2(width * D3D12::GetTexelSize(static_cast<GSTexture12*>(src)->GetNativeFormat()), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
 	const u32 size = pitch * height;
-	const u32 level = 0;
+	constexpr u32 level = 0;
 	if (!CheckStagingBufferSize(size))
 	{
 		Console.Error("Can't read back %ux%u", width, height);

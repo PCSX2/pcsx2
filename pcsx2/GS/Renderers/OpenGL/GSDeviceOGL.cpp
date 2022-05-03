@@ -120,7 +120,7 @@ void GSDeviceOGL::GenerateProfilerData()
 	GLuint64 time_start = 0;
 	GLuint64 time_end = 0;
 	std::vector<double> times;
-	const double ms = 0.000001;
+	constexpr double ms = 0.000001;
 
 	const int replay = theApp.GetConfigI("linux_replay");
 	const int first_query = replay > 1 ? m_profiler.last_query / replay : 0;
@@ -380,7 +380,7 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 				m_convert.ps[i].RegisterUniform("EMOD");
 		}
 
-		PSSamplerSelector point;
+		const PSSamplerSelector point;
 		m_convert.pt = GetSamplerID(point);
 
 		PSSamplerSelector bilinear;
