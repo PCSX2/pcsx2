@@ -1047,6 +1047,8 @@ SCAJ-20157:
 SCAJ-20158:
   name: "Ikusa Gami"
   region: "NTSC-Unk"
+  gameFixes:
+    - VIF1StallHack # Fixes black screen on boot.
 SCAJ-20159:
   name: "Soul Calibur III"
   region: "NTSC-Ch-E-J"
@@ -21476,6 +21478,8 @@ SLKA-25320:
   name: "Ikusa Gami"
   region: "NTSC-K"
   compat: 5
+  gameFixes:
+    - VIF1StallHack # Fixes black screen on boot.
 SLKA-25321:
   name: "K.League - Winning Eleven 9 - Asia Championship"
   region: "NTSC-K"
@@ -22205,6 +22209,16 @@ SLPM-61120:
 SLPM-61127:
   name: "FlatOut [Trial]"
   region: "NTSC-J"
+SLPM-61130:
+  name: "Ikusa Gami [Trial Version]"
+  region: "NTSC-J"
+  gameFixes:
+    - VIF1StallHack # Fixes black screen on boot.
+SLPM-61132:
+  name: "Ikusa Gami [Trial Version]"
+  region: "NTSC-J"
+  gameFixes:
+    - VIF1StallHack # Fixes black screen on boot.
 SLPM-61133:
   name: "Soul Calibur III [Trial Version]"
   region: "NTSC-J"
@@ -28130,6 +28144,8 @@ SLPM-66183:
 SLPM-66184:
   name: "Ikusa Gami"
   region: "NTSC-J"
+  gameFixes:
+    - VIF1StallHack # Fixes black screen on boot.
 SLPM-66185:
   name: "Game ni Nattayo! Dokura-chan [Limited Edition]"
   region: "NTSC-J"
@@ -31200,6 +31216,8 @@ SLPM-74226:
 SLPM-74227:
   name: "Ikusa Gami [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - VIF1StallHack # Fixes black screen on boot.
 SLPM-74228:
   name: "Fuuun Bakumatsu-den [PlayStation 2 The Best]"
   region: "NTSC-J"
