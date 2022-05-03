@@ -57,6 +57,7 @@
 
 #include "Frontend/INISettingsInterface.h"
 #include "Frontend/InputManager.h"
+#include "Frontend/GameList.h"
 
 #include "common/emitter/tools.h"
 #ifdef _M_X86
@@ -78,7 +79,7 @@ namespace VMManager
 	static void CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config);
 
 	static bool AutoDetectSource(const std::string& filename);
-	static bool ApplyBootParameters(const VMBootParameters& params);
+	static bool ApplyBootParameters(const VMBootParameters& params, std::string* state_to_load);
 	static bool CheckBIOSAvailability();
 	static void UpdateRunningGame(bool force);
 
@@ -515,14 +516,53 @@ bool VMManager::AutoDetectSource(const std::string& filename)
 	}
 }
 
-bool VMManager::ApplyBootParameters(const VMBootParameters& params)
+bool VMManager::ApplyBootParameters(const VMBootParameters& params, std::string* state_to_load)
 {
 	const bool default_fast_boot = Host::GetBoolSettingValue("EmuCore", "EnableFastBoot", true);
 	EmuConfig.UseBOOT2Injection = params.fast_boot.value_or(default_fast_boot);
 
 	s_elf_override = params.elf_override;
 	s_disc_path.clear();
+	if (!params.save_state.empty())
+		*state_to_load = params.save_state;
 
+	// if we're loading an indexed save state, we need to get the serial/crc from the disc.
+	if (params.state_index.has_value())
+	{
+		if (params.filename.empty())
+		{
+			Host::ReportErrorAsync("Error", "Cannot load an indexed save state without a boot filename.");
+			return false;
+		}
+
+		// try the game list first, but this won't work if we're in batch mode
+		{
+			auto lock = GameList::GetLock();
+			if (const GameList::Entry* entry = GameList::GetEntryForPath(params.filename.c_str()); entry)
+			{
+				*state_to_load = GetSaveStateFileName(entry->serial.c_str(), entry->crc, params.state_index.value());
+			}
+			else
+			{
+				// just scan it.. hopefully it'll come back okay
+				GameList::Entry temp_entry;
+				if (!GameList::PopulateEntryFromPath(params.filename.c_str(), &temp_entry))
+				{
+					Host::ReportFormattedErrorAsync("Error", "Could not scan path '%s' for indexed save state load.", params.filename.c_str());
+					return false;
+				}
+
+				*state_to_load = GetSaveStateFileName(temp_entry.serial.c_str(), temp_entry.crc, params.state_index.value());
+			}
+			if (state_to_load->empty())
+			{
+				Host::ReportFormattedErrorAsync("Error", "Could not resolve path indexed save state load.");
+				return false;
+			}
+		}
+	}
+
+	// resolve source type
 	if (params.source_type.has_value())
 	{
 		if (params.source_type.value() == CDVD_SourceType::Iso && !FileSystem::FileExists(params.filename.c_str()))
@@ -591,7 +631,8 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 
 	LoadSettings();
 
-	if (!ApplyBootParameters(boot_params))
+	std::string state_to_load;
+	if (!ApplyBootParameters(boot_params, &state_to_load))
 		return false;
 
 	EmuConfig.LimiterMode = GetInitialLimiterMode();
@@ -727,9 +768,9 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	PerformanceMetrics::Clear();
 
 	// do we want to load state?
-	if (!GSDumpReplayer::IsReplayingDump() && !boot_params.save_state.empty())
+	if (!GSDumpReplayer::IsReplayingDump() && !state_to_load.empty())
 	{
-		if (!DoLoadState(boot_params.save_state.c_str()))
+		if (!DoLoadState(state_to_load.c_str()))
 		{
 			Shutdown();
 			return false;

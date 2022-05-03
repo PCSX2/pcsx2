@@ -720,11 +720,17 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 
 	g_emu_thread->shutdownVM(allow_save_to_state);
 
-	if (block_until_done)
+	if (block_until_done || QtHost::InBatchMode())
 	{
 		// we need to yield here, since the display gets destroyed
 		while (VMManager::HasValidVM())
 			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+	}
+
+	if (QtHost::InBatchMode())
+	{
+		// closing the window should shut down everything.
+		close();
 	}
 
 	return true;
