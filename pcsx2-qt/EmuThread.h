@@ -59,7 +59,7 @@ public Q_SLOTS:
 	void startVM(std::shared_ptr<VMBootParameters> boot_params);
 	void resetVM();
 	void setVMPaused(bool paused);
-	bool shutdownVM(bool allow_save_to_state = true);
+	void shutdownVM(bool allow_save_to_state = true);
 	void loadState(const QString& filename);
 	void loadStateFromSlot(qint32 slot);
 	void saveState(const QString& filename);

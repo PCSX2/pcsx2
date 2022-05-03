@@ -48,7 +48,7 @@ namespace GameList
 	static Entry* GetMutableEntryForPath(const char* path);
 
 	static bool GetElfListEntry(const std::string& path, GameList::Entry* entry);
-	static bool GetGameListEntry(const std::string& path, GameList::Entry* entry);
+	static bool GetIsoListEntry(const std::string& path, GameList::Entry* entry);
 
 	static bool GetGameListEntryFromCache(const std::string& path, GameList::Entry* entry);
 	static void ScanDirectory(const char* path, bool recursive, const std::vector<std::string>& excluded_paths,
@@ -169,11 +169,8 @@ bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 	return true;
 }
 
-bool GameList::GetGameListEntry(const std::string& path, GameList::Entry* entry)
+bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 {
-	if (VMManager::IsElfFileName(path.c_str()))
-		return GetElfListEntry(path.c_str(), entry);
-
 	FILESYSTEM_STAT_DATA sd;
 	if (!FileSystem::StatFile(path.c_str(), &sd))
 		return false;
@@ -239,6 +236,14 @@ bool GameList::GetGameListEntry(const std::string& path, GameList::Entry* entry)
 	}
 
 	return true;
+}
+
+bool GameList::PopulateEntryFromPath(const std::string& path, GameList::Entry* entry)
+{
+	if (VMManager::IsElfFileName(path.c_str()))
+		return GetElfListEntry(path, entry);
+	else
+		return GetIsoListEntry(path, entry);
 }
 
 bool GameList::GetGameListEntryFromCache(const std::string& path, GameList::Entry* entry)
@@ -529,7 +534,7 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp)
 	DevCon.WriteLn("Scanning '%s'...", path.c_str());
 
 	Entry entry;
-	if (!GetGameListEntry(path, &entry))
+	if (!PopulateEntryFromPath(path, &entry))
 		return false;
 
 	entry.path = std::move(path);

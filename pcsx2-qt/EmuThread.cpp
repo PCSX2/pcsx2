@@ -143,16 +143,15 @@ void EmuThread::setVMPaused(bool paused)
 	VMManager::SetPaused(paused);
 }
 
-bool EmuThread::shutdownVM(bool allow_save_to_state /* = true */)
+void EmuThread::shutdownVM(bool allow_save_to_state /* = true */)
 {
 	const VMState state = VMManager::GetState();
 	if (state == VMState::Paused)
 		m_event_loop->quit();
 	else if (state != VMState::Running)
-		return true;
+		return;
 
 	VMManager::SetState(VMState::Stopping);
-	return true;
 }
 
 void EmuThread::loadState(const QString& filename)

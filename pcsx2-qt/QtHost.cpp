@@ -68,6 +68,7 @@ static void SaveSettings();
 //////////////////////////////////////////////////////////////////////////
 static std::unique_ptr<QTimer> s_settings_save_timer;
 static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
+static bool s_batch_mode = false;
 
 //////////////////////////////////////////////////////////////////////////
 // Initialization/Shutdown
@@ -375,6 +376,16 @@ void QtHost::QueueSettingsSave()
 	s_settings_save_timer->connect(s_settings_save_timer.get(), &QTimer::timeout, SaveSettings);
 	s_settings_save_timer->setSingleShot(true);
 	s_settings_save_timer->start(SETTINGS_SAVE_DELAY);
+}
+
+bool QtHost::InBatchMode()
+{
+	return s_batch_mode;
+}
+
+void QtHost::SetBatchMode(bool enabled)
+{
+	s_batch_mode = enabled;
 }
 
 void QtHost::RunOnUIThread(const std::function<void()>& func, bool block /*= false*/)
