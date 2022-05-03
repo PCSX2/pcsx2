@@ -113,7 +113,7 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 
 	// create the display, this may take a while...
 	m_is_fullscreen = boot_params->fullscreen.value_or(QtHost::GetBaseBoolSettingValue("UI", "StartFullscreen", false));
-	m_is_rendering_to_main = !m_is_fullscreen && QtHost::GetBaseBoolSettingValue("UI", "RenderToMainWindow", true);
+	m_is_rendering_to_main = QtHost::GetBaseBoolSettingValue("UI", "RenderToMainWindow", true);
 	if (!VMManager::Initialize(*boot_params))
 		return;
 
