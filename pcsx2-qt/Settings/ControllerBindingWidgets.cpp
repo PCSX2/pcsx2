@@ -29,6 +29,8 @@
 #include "common/StringUtil.h"
 #include "pcsx2/PAD/Host/PAD.h"
 
+#include "SettingWidgetBinder.h"
+
 ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port)
 	: QWidget(parent)
 	, m_dialog(dialog)
@@ -186,6 +188,26 @@ void ControllerBindingWidget_Base::initBindingWidgets()
 		default:
 			break;
 	}
+
+	if (QSlider* widget = findChild<QSlider*>(QStringLiteral("AxisScale")); widget)
+	{
+		// position 1.0f at the halfway point
+		const float range = static_cast<float>(widget->maximum()) * 0.5f;
+		QLabel* label = findChild<QLabel*>(QStringLiteral("AxisScaleLabel"));
+		if (label)
+		{
+			connect(widget, &QSlider::valueChanged, this, [range, label](int value) {
+				label->setText(tr("%1x").arg(static_cast<float>(value) / range, 0, 'f', 2));
+			});
+		}
+
+		SettingWidgetBinder::BindWidgetToNormalizedSetting(nullptr, widget, config_section, "AxisScale", range, 1.0f);
+	}
+
+	if (QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QStringLiteral("SmallMotorScale")); widget)
+		SettingWidgetBinder::BindWidgetToFloatSetting(nullptr, widget, config_section, "SmallMotorScale", 1.0f);
+	if (QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QStringLiteral("LargeMotorScale")); widget)
+		SettingWidgetBinder::BindWidgetToFloatSetting(nullptr, widget, config_section, "LargeMotorScale", 1.0f);
 }
 
 ControllerBindingWidget_DualShock2::ControllerBindingWidget_DualShock2(ControllerBindingWidget* parent)
