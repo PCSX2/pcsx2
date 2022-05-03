@@ -37,12 +37,6 @@
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/VMManager.h"
 
-#include "pcsx2/Frontend/OpenGLHostDisplay.h"
-
-#ifdef _WIN32
-#include "pcsx2/Frontend/D3D11HostDisplay.h"
-#endif
-
 #include "DisplayWidget.h"
 #include "EmuThread.h"
 #include "MainWindow.h"
