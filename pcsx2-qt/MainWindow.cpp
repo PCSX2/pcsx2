@@ -1108,8 +1108,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 {
-	pxAssertRel(!fullscreen || !render_to_main, "Not rendering to main and fullscreen");
-
 	HostDisplay* host_display = Host::GetHostDisplay();
 	if (!host_display)
 		return nullptr;
