@@ -42,6 +42,9 @@ namespace QtHost
 	void UpdateFolders();
 	void UpdateLogging();
 
+	/// Initializes early console logging (for printing command line arguments).
+	void InitializeEarlyConsole();
+
 	/// Executes a function on the UI thread.
 	void RunOnUIThread(const std::function<void()>& func, bool block = false);
 
