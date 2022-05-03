@@ -14,7 +14,7 @@
  */
 
 #pragma once
-#include "common/Timer.h"
+#include "common/Threading.h"
 
 namespace PerformanceMetrics
 {
@@ -31,11 +31,11 @@ namespace PerformanceMetrics
 	void OnGPUPresent(float gpu_time);
 
 	/// Sets the EE thread for CPU usage calculations.
-	void SetCPUThreadTimer(Common::ThreadCPUTimer timer);
+	void SetCPUThread(Threading::ThreadHandle thread);
 
 	/// Sets timers for GS software threads.
 	void SetGSSWThreadCount(u32 count);
-	void SetGSSWThreadTimer(u32 index, Common::ThreadCPUTimer timer);
+	void SetGSSWThread(u32 index, Threading::ThreadHandle thread);
 
 	/// Sets the vertical frequency, used in speed calculations.
 	void SetVerticalFrequency(float rate);

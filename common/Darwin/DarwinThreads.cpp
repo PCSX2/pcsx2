@@ -94,6 +94,52 @@ u64 Threading::GetThreadCpuTime()
 	return us;
 }
 
+Threading::ThreadHandle::ThreadHandle() = default;
+
+Threading::ThreadHandle::ThreadHandle(const ThreadHandle& handle)
+	: m_native_handle(handle.m_native_handle)
+{
+}
+
+Threading::ThreadHandle::ThreadHandle(ThreadHandle&& handle)
+	: m_native_handle(handle.m_native_handle)
+{
+	handle.m_native_handle = nullptr;
+}
+
+Threading::ThreadHandle::~ThreadHandle() = default;
+
+Threading::ThreadHandle Threading::ThreadHandle::GetForCallingThread()
+{
+	ThreadHandle ret;
+	ret.m_native_handle = pthread_self();
+	return ret;
+}
+
+Threading::ThreadHandle& Threading::ThreadHandle::operator=(ThreadHandle&& handle)
+{
+	m_native_handle = handle.m_native_handle;
+	handle.m_native_handle = nullptr;
+	return *this;
+}
+
+Threading::ThreadHandle& Threading::ThreadHandle::operator=(const ThreadHandle& handle)
+{
+	m_native_handle = handle.m_native_handle;
+	return *this;
+}
+
+u64 Threading::ThreadHandle::GetCPUTime() const
+{
+	return getthreadtime(pthread_mach_thread_np((pthread_t)m_native_handle));
+}
+
+bool Threading::ThreadHandle::SetAffinity(u64 processor_mask) const
+{
+	// Doesn't appear to be possible to set affinity.
+	return false;
+}
+
 u64 Threading::pxThread::GetCpuTime() const
 {
 	// Get the cpu time for the thread belonging to this object.  Use m_native_id and/or

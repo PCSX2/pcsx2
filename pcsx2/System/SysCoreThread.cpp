@@ -341,12 +341,12 @@ void SysCoreThread::TearDownSystems(SystemsMask systemsToTearDown)
 	if (systemsToTearDown & System_SPU2) SPU2close();
 	if (systemsToTearDown & System_MCD) FileMcd_EmuClose();
 
-	PerformanceMetrics::SetCPUThreadTimer(Common::ThreadCPUTimer());
+	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle());
 }
 
 void SysCoreThread::OnResumeInThread(SystemsMask systemsToReinstate)
 {
-	PerformanceMetrics::SetCPUThreadTimer(Common::ThreadCPUTimer::GetForCallingThread());
+	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle::GetForCallingThread());
 	PerformanceMetrics::Reset();
 
 	GetMTGS().WaitForOpen();

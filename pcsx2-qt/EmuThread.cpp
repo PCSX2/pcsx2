@@ -217,7 +217,7 @@ void EmuThread::saveStateToSlot(qint32 slot)
 
 void EmuThread::run()
 {
-	PerformanceMetrics::SetCPUThreadTimer(Common::ThreadCPUTimer::GetForCallingThread());
+	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle::GetForCallingThread());
 	m_event_loop = new QEventLoop();
 	m_started_semaphore.release();
 
@@ -244,7 +244,7 @@ void EmuThread::run()
 	destroyBackgroundControllerPollTimer();
 	InputManager::CloseSources();
 	VMManager::Internal::ReleaseMemory();
-	PerformanceMetrics::SetCPUThreadTimer(Common::ThreadCPUTimer());
+	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle());
 	moveToThread(m_ui_thread);
 	deleteLater();
 }

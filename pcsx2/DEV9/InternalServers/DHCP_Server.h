@@ -63,6 +63,8 @@ namespace InternalServers
 
 #ifdef __linux__
 		static std::vector<PacketReader::IP::IP_Address> GetGatewaysLinux(char* interfaceName);
+#elif defined(__FreeBSD__) || (__APPLE__)
+		static std::vector<PacketReader::IP::IP_Address> GetGatewaysBSD(char* interfaceName);
 #endif
 
 		~DHCP_Server();

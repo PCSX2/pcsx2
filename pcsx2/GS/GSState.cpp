@@ -3184,7 +3184,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 
 		// Adjust texture range when sprites get scissor clipped. Since we linearly interpolate, this
 		// optimization doesn't work when perspective correction is enabled.
-		if (m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1)
+		if (m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1 && m_index.tail < 3)
 		{
 			// When coordinates are fractional, GS appears to draw to the right/bottom (effectively
 			// taking the ceiling), not to the top/left (taking the floor). 
@@ -3198,14 +3198,14 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 				const GSVector2 grad(uv_range / pos_range);
 
 				// we need to check that it's not going to repeat over the non-clipped part
-				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(st.x) & ~tw_mask) != (static_cast<int>(st.z) & ~tw_mask)))
+				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(st.x) & ~tw_mask) == (static_cast<int>(st.z) & ~tw_mask)))
 				{
 					if (int_rc.left < scissored_rc.left)
 						st.x += floor(static_cast<float>(scissored_rc.left - int_rc.left)* grad.x);
 					if (int_rc.right > scissored_rc.right)
 						st.z -= floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
 				}
-				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(st.y) & ~th_mask) != (static_cast<int>(st.w) & ~th_mask)))
+				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(st.y) & ~th_mask) == (static_cast<int>(st.w) & ~th_mask)))
 				{
 					if (int_rc.top < scissored_rc.top)
 						st.y += floor(static_cast<float>(scissored_rc.top - int_rc.top) * grad.y);

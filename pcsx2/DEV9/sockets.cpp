@@ -493,6 +493,13 @@ bool SocketAdapter::GetIfAutoAdapter(ifaddrs* adapter, ifaddrs** buffer)
 
 			if (gateways.size() > 0)
 				hasGateway = true;
+
+#elif defined(__FreeBSD__) || (__APPLE__)
+			std::vector<IP_Address> gateways = InternalServers::DHCP_Server::GetGatewaysBSD(pAdapter->ifa_name);
+
+			if (gateways.size() > 0)
+				hasGateway = true;
+
 #else
 			Console.Error("DHCP: Unsupported OS, can't find Gateway");
 #endif

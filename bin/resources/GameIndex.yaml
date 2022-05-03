@@ -135,6 +135,8 @@ PAPX-90512:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 PAPX-90516:
@@ -225,6 +227,8 @@ PBPX-95524:
   name: "Gran Turismo 4 - Prologue"
   region: "NTSC-Unk"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
@@ -234,6 +238,8 @@ PBPX-95601:
   compat: 5
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters:
     - "SCAJ-20066"
     - "SCAJ-30006"
@@ -281,6 +287,8 @@ PCPX-96649:
   compat: 5
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 PCPX-96660:
@@ -569,6 +577,8 @@ SCAJ-20066:
   name: "Gran Turismo 4 - Prologue"
   region: "NTSC-Unk"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters: #vuClampMode = 2  Text in GT mode works.
     - "SCAJ-20066"
     - "SCAJ-30006"
@@ -1037,6 +1047,8 @@ SCAJ-20157:
 SCAJ-20158:
   name: "Ikusa Gami"
   region: "NTSC-Unk"
+  gameFixes:
+    - VIF1StallHack # Fixes black screen on boot.
 SCAJ-20159:
   name: "Soul Calibur III"
   region: "NTSC-Ch-E-J"
@@ -1298,6 +1310,8 @@ SCAJ-30006:
   region: "NTSC-Unk"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters:
     - "SCAJ-20066"
     - "SCAJ-30006"
@@ -1317,6 +1331,8 @@ SCAJ-30007:
   compat: 5
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 SCAJ-30008:
@@ -1324,6 +1340,8 @@ SCAJ-30008:
   region: "NTSC-Unk"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters:
     - "SCAJ-20066"
     - "SCAJ-30006"
@@ -1420,6 +1438,8 @@ SCCS-40022:
 SCCS-60002:
   name: "Gran Turismo 4 [Review Copy]"
   region: "NTSC-C"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
 SCED-50041:
   name: "Tekken Tag Tournament [Demo]"
   region: "PAL-E"
@@ -1956,12 +1976,16 @@ SCED-52549:
 SCED-52578:
   name: "Gran Turismo 4 BMW 1 Series Virtual Drive Dealership [Demo]"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
 SCED-52619:
   name: "Official PlayStation 2 Magazine Demo 48"
   region: "PAL-M5"
 SCED-52681:
   name: "Gran Turismo 4 BMW 1 Series Virtual Drive [Demo]"
   region: "PAL-M11"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
 SCED-52687:
   name: "Formula One 04 [Demo]"
   region: "PAL-M11"
@@ -2998,6 +3022,8 @@ SCES-51719:
   compat: 5
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters:
     - "SCES-51719"
     - "SCES-52438"
@@ -3185,6 +3211,8 @@ SCES-52438:
   name: "Gran Turismo 4 - Prologue"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters: #vuClampMode = 2  Text in GT mode works.
     - "SCES-51719"
     - "SCES-52438"
@@ -4320,6 +4348,8 @@ SCKA-20020:
 SCKA-20022:
   name: "Gran Turismo 4 Prologue"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
@@ -4657,6 +4687,8 @@ SCKA-30001:
   region: "NTSC-K"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 SCKA-30002:
@@ -5038,6 +5070,8 @@ SCPS-15054:
 SCPS-15055:
   name: "Gran Turismo 4 - Prologue"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters: #vuClampMode = 2  Text in GT mode works.
     - "SCAJ-20066"
     - "SCAJ-30006"
@@ -5400,6 +5434,8 @@ SCPS-17001:
   compat: 5
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters:
     - "SCAJ-20066"
     - "SCAJ-30006"
@@ -5563,6 +5599,8 @@ SCPS-19252:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters:
     - "SCAJ-20066"
     - "SCAJ-30006"
@@ -5597,6 +5635,8 @@ SCPS-19303:
 SCPS-19304:
   name: "Gran Turismo 4 - Prologue [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters: 
     - "SCAJ-20066"
     - "SCAJ-30006"
@@ -6884,6 +6924,8 @@ SCUS-97328:
   compat: 5
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters: # Allows car imports from GT3 or something.
     - "SCUS-97328"
     - "SCUS-97436"
@@ -7231,6 +7273,8 @@ SCUS-97436:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters:
     - "SCUS-97328"
     - "SCUS-97436"
@@ -7426,6 +7470,8 @@ SCUS-97483:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 SCUS-97484:
@@ -9188,6 +9234,9 @@ SLES-50386:
   name: "Crash Bandicoot - Wrath of Cortex"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.
 SLES-50390:
   name: "Driven"
   region: "PAL-M5"
@@ -11992,8 +12041,11 @@ SLES-51819:
 SLES-51820:
   name: "Sniper Elite"
   region: "PAL-M5"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fixes bloom misalignment.
+    halfPixelOffset: 2 # Fixes bloom misalignment.
 SLES-51821:
   name: "Alias"
   region: "PAL-M5"
@@ -16337,8 +16389,11 @@ SLES-53756:
 SLES-53758:
   name: "Sniper Elite [Pre-Production]"
   region: "PAL-E"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fixes bloom misalignment.
+    halfPixelOffset: 2 # Fixes bloom misalignment.
 SLES-53759:
   name: "Matrix, The - Path of Neo"
   region: "PAL-M5"
@@ -19739,6 +19794,8 @@ SLES-55237:
   compat: 5
   clampModes:
     vuClampMode: 2 # Fixes invisible QTE button prompts and overbright in some scenes.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
 SLES-55238:
   name: "Madden NFL 09"
   region: "PAL-E"
@@ -20233,9 +20290,13 @@ SLES-55480:
 SLES-55481:
   name: "Naruto Shippuden - Ultimate Ninja 4"
   region: "PAL-E-F"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
 SLES-55482:
   name: "Naruto Shippuden - Ultimate Ninja 4"
   region: "PAL-G-I-S"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
 SLES-55483:
   name: "Guilty Gear XX Accent Core Plus"
   region: "PAL-E"
@@ -20436,6 +20497,8 @@ SLES-55605:
   name: "Naruto Shippuuden - Ultimate Ninja 5"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
 SLES-55609:
   name: "Scooby-Doo! and the Spooky Swamp"
   region: "PAL-M5"
@@ -21415,6 +21478,8 @@ SLKA-25320:
   name: "Ikusa Gami"
   region: "NTSC-K"
   compat: 5
+  gameFixes:
+    - VIF1StallHack # Fixes black screen on boot.
 SLKA-25321:
   name: "K.League - Winning Eleven 9 - Asia Championship"
   region: "NTSC-K"
@@ -22144,6 +22209,16 @@ SLPM-61120:
 SLPM-61127:
   name: "FlatOut [Trial]"
   region: "NTSC-J"
+SLPM-61130:
+  name: "Ikusa Gami [Trial Version]"
+  region: "NTSC-J"
+  gameFixes:
+    - VIF1StallHack # Fixes black screen on boot.
+SLPM-61132:
+  name: "Ikusa Gami [Trial Version]"
+  region: "NTSC-J"
+  gameFixes:
+    - VIF1StallHack # Fixes black screen on boot.
 SLPM-61133:
   name: "Soul Calibur III [Trial Version]"
   region: "NTSC-J"
@@ -22159,6 +22234,8 @@ SLPM-61135:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Fixes invisible QTE button prompts and overbright in some scenes.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
 SLPM-61147:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Demo]"
   region: "NTSC-J"
@@ -22167,6 +22244,11 @@ SLPM-61147:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
+SLPM-61157:
+  name: "Naruto Shippuuden: Narutimate Accel [Trial]"
+  region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
 SLPM-62001:
   name: "Drum Mania"
   region: "NTSC-J"
@@ -22418,6 +22500,9 @@ SLPM-62113:
 SLPM-62114:
   name: "Crash Bandicoot 4 - Sakuretsu! Majin Power"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.
 SLPM-62117:
   name: "Momotaro Train X"
   region: "NTSC-J"
@@ -24189,9 +24274,18 @@ SLPM-64502:
 SLPM-64504:
   name: "Maximo"
   region: "NTSC-K"
-SLPM-64513:
-  name: "Crash Bandicoot - Return of the Demon King"
+SLPM-64509:
+  name: "Crash Bandicoot - Return of the Demon King [English Dub Edition]" # Wrath of Cortex
   region: "NTSC-K"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.  
+SLPM-64513:
+  name: "Crash Bandicoot - Return of the Demon King" # Wrath of Cortex
+  region: "NTSC-K"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.  
 SLPM-64522:
   name: "La Pucelle"
   region: "NTSC-K"
@@ -28050,6 +28144,8 @@ SLPM-66183:
 SLPM-66184:
   name: "Ikusa Gami"
   region: "NTSC-J"
+  gameFixes:
+    - VIF1StallHack # Fixes black screen on boot.
 SLPM-66185:
   name: "Game ni Nattayo! Dokura-chan [Limited Edition]"
   region: "NTSC-J"
@@ -30990,6 +31086,11 @@ SLPM-68005:
 SLPM-68018:
   name: "Virtua Fighter - 10th Anniversary Edition"
   region: "NTSC-J"
+SLPM-68019:
+  name: "Naruto Shippuuden - Narutimate Accel 2"
+  region: "NTSC-J" 
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
 SLPM-68503:
   name: "Metal Gear Solid 2 - Sons of Liberty [Shareholder Edition]"
   region: "NTSC-J"
@@ -31017,6 +31118,9 @@ SLPM-74002:
 SLPM-74003:
   name: "Crash Bandicoot 4 - Sakuretsu! Majin Power! [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.
 SLPM-74004:
   name: "Maximo - Ghosts to Glory [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -31112,6 +31216,8 @@ SLPM-74226:
 SLPM-74227:
   name: "Ikusa Gami [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - VIF1StallHack # Fixes black screen on boot.
 SLPM-74228:
   name: "Fuuun Bakumatsu-den [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -34406,6 +34512,8 @@ SLPS-25589:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Fixes invisible QTE button prompts and overbright in some scenes.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
 SLPS-25590:
   name: "Namco Museum Arcade Hits"
   region: "NTSC-J"
@@ -35089,6 +35197,8 @@ SLPS-25767:
 SLPS-25768:
   name: "Naruto Shippuuden Narutimate Accel"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
 SLPS-25769:
   name: "Netsu Chu! Pro Baseball 2007"
   region: "NTSC-J"
@@ -35327,6 +35437,8 @@ SLPS-25836:
 SLPS-25837:
   name: "Naruto Shippuuden - Narutimate Accel 2"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
 SLPS-25838:
   name: "Taiheiyou no Arashi - Senkan Yamato, Akatsuki ni Shutsugeki su"
   region: "NTSC-J"
@@ -36065,6 +36177,8 @@ SLPS-73251:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Fixes invisible QTE button prompts and overbright in some scenes.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
 SLPS-73252:
   name: "Tales of the Abyss [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -37089,6 +37203,9 @@ SLUS-20238:
   name: "Crash Bandicoot - The Wrath of Cortex"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.
 SLUS-20239:
   name: "Driven"
   region: "NTSC-U"
@@ -41613,8 +41730,11 @@ SLUS-21231:
   name: "Sniper Elite"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fixes bloom misalignment.
+    halfPixelOffset: 2 # Fixes bloom misalignment.
 SLUS-21232:
   name: "College Hoops 2K6"
   region: "NTSC-U"
@@ -43942,6 +44062,8 @@ SLUS-21727:
   compat: 5
   clampModes:
     vuClampMode: 2 # Fixes invisible QTE button prompts and overbright in some scenes.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
 SLUS-21728:
   name: "Crash - Mind Over Mutant"
   region: "NTSC-U"
@@ -44521,6 +44643,8 @@ SLUS-21862:
   name: "Naruto Shippuden - Ultimate Ninja 4"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
 SLUS-21863:
   name: "Suzuki TT Superbikes - Real Road Racing Championship"
   region: "NTSC-U"
@@ -45090,6 +45214,9 @@ SLUS-29009:
 SLUS-29010:
   name: "Crash Bandicoot - The Wrath of Cortex [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.
 SLUS-29011:
   name: "WWF SmackDown! - Just Bring It [Demo]"
   region: "NTSC-U"
@@ -45812,3 +45939,15 @@ TLES-82043:
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+VW067-J1:
+  name: "Crash Bandicoot 4 - Sakuretsu! Majin Power!"
+  region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.
+VW067-J2:
+  name: "Crash Bandicoot 4 - Sakuretsu! Majin Power! [PlayStation 2 The Best]"
+  region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
+    cpuFramebufferConversion: 1 # Fixes fog wall.

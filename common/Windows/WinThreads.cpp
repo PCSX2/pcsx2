@@ -47,39 +47,107 @@ __fi void Threading::DisableHiresScheduler()
 	timeEndPeriod(1);
 }
 
-// This hacky union would probably fail on some cpu platforms if the contents of FILETIME aren't
-// packed (but for any x86 CPU and microsoft compiler, they will be).
-union FileTimeSucks
+Threading::ThreadHandle::ThreadHandle() = default;
+
+Threading::ThreadHandle::ThreadHandle(const ThreadHandle& handle)
 {
-	FILETIME filetime;
-	u64 u64time;
-};
+	if (handle.m_native_handle)
+	{
+		HANDLE new_handle;
+		if (DuplicateHandle(GetCurrentProcess(), (HANDLE)handle.m_native_handle,
+				GetCurrentProcess(), &new_handle, THREAD_QUERY_INFORMATION | THREAD_SET_LIMITED_INFORMATION, FALSE, 0))
+		{
+			m_native_handle = (void*)new_handle;
+		}
+	}
+}
+
+Threading::ThreadHandle::ThreadHandle(ThreadHandle&& handle)
+	: m_native_handle(handle.m_native_handle)
+{
+	handle.m_native_handle = nullptr;
+}
+
+
+Threading::ThreadHandle::~ThreadHandle()
+{
+	if (m_native_handle)
+		CloseHandle(m_native_handle);
+}
+
+Threading::ThreadHandle Threading::ThreadHandle::GetForCallingThread()
+{
+	ThreadHandle ret;
+	ret.m_native_handle = (void*)OpenThread(THREAD_QUERY_INFORMATION | THREAD_SET_LIMITED_INFORMATION, FALSE, GetCurrentThreadId());
+	return ret;
+}
+
+Threading::ThreadHandle& Threading::ThreadHandle::operator=(ThreadHandle&& handle)
+{
+	if (m_native_handle)
+		CloseHandle((HANDLE)m_native_handle);
+	m_native_handle = handle.m_native_handle;
+	handle.m_native_handle = nullptr;
+	return *this;
+}
+
+Threading::ThreadHandle& Threading::ThreadHandle::operator=(const ThreadHandle& handle)
+{
+	if (m_native_handle)
+	{
+		CloseHandle((HANDLE)m_native_handle);
+		m_native_handle = nullptr;
+	}
+
+	HANDLE new_handle;
+	if (DuplicateHandle(GetCurrentProcess(), (HANDLE)handle.m_native_handle,
+			GetCurrentProcess(), &new_handle, THREAD_QUERY_INFORMATION | THREAD_SET_LIMITED_INFORMATION, FALSE, 0))
+	{
+		m_native_handle = (void*)new_handle;
+	}
+
+	return *this;
+}
+
+u64 Threading::ThreadHandle::GetCPUTime() const
+{
+	u64 ret = 0;
+	if (m_native_handle)
+		QueryThreadCycleTime((HANDLE)m_native_handle, &ret);
+	return ret;
+}
+
+bool Threading::ThreadHandle::SetAffinity(u64 processor_mask) const
+{
+	if (processor_mask == 0)
+		processor_mask = ~processor_mask;
+
+	return (SetThreadAffinityMask(GetCurrentThread(), (DWORD_PTR)processor_mask) != 0 || GetLastError() != ERROR_SUCCESS);
+}
 
 u64 Threading::GetThreadCpuTime()
 {
-	FileTimeSucks user, kernel;
-	FILETIME dummy;
-	GetThreadTimes(GetCurrentThread(), &dummy, &dummy, &kernel.filetime, &user.filetime);
-	return user.u64time + kernel.u64time;
+	u64 ret = 0;
+	QueryThreadCycleTime(GetCurrentThread(), &ret);
+	return ret;
 }
 
 u64 Threading::GetThreadTicksPerSecond()
 {
-	return 10000000;
+	// On x86, despite what the MS documentation says, this basically appears to be rdtsc.
+	// So, the frequency is our base clock speed (and stable regardless of power management).
+	static u64 frequency = 0;
+	if (unlikely(frequency == 0))
+		frequency = x86caps.CachedMHz() * u64(1000000);
+	return frequency;
 }
 
 u64 Threading::pxThread::GetCpuTime() const
 {
-	if (!m_native_handle)
-		return 0;
-
-	FileTimeSucks user, kernel;
-	FILETIME dummy;
-
-	if (GetThreadTimes((HANDLE)m_native_handle, &dummy, &dummy, &kernel.filetime, &user.filetime))
-		return user.u64time + kernel.u64time;
-
-	return 0; // thread prolly doesn't exist anymore.
+	u64 ret = 0;
+	if (m_native_handle)
+		QueryThreadCycleTime((HANDLE)m_native_handle, &ret);
+	return ret;
 }
 
 void Threading::pxThread::_platform_specific_OnStartInThread()
