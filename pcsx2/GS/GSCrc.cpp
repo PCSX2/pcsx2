@@ -147,7 +147,7 @@ const CRC::Game CRC::m_games[] =
 	{0x26689C87, Spartan, JP, 0},
 	{0x08277A9E, Spartan, US, 0},
 	{0xAC3C1147, SVCChaos, EU, 0}, // SVC Chaos: SNK vs. Capcom
-	{0xB00FF2ED, SVCChaos, JP, 0},
+	{0xABD16263, SVCChaos, JP, 0},
 	{0x94834BD3, SVCChaos, JP, 0},
 	{0xA32F7CD0, AceCombat4, US, 0}, // Also needed for automatic mipmapping
 	{0x5ED8FB53, AceCombat4, JP, 0},
