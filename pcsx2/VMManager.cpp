@@ -673,7 +673,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 		return false;
 	}
 
-	ScopedGuard close_gs = []() { GetMTGS().Suspend(); };
+	ScopedGuard close_gs = []() { GetMTGS().WaitForClose(); };
 
 	Console.WriteLn("Opening SPU2...");
 	if (SPU2init() != 0 || SPU2open() != 0)
@@ -827,14 +827,11 @@ void VMManager::Shutdown(bool allow_save_resume_state /* = true */)
 	DoCDVDclose();
 	FWclose();
 	FileMcd_EmuClose();
-	GetMTGS().Suspend();
+	GetMTGS().WaitForClose();
 	USBshutdown();
 	SPU2shutdown();
 	PADshutdown();
 	DEV9shutdown();
-
-	// GS mess here...
-	GetMTGS().Cancel();
 	GSshutdown();
 
 	s_vm_memory->DecommitAll();
