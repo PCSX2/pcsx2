@@ -37,7 +37,7 @@
 #include "wx_dialog/dialog.h"
 
 #ifndef __APPLE__
-Display* GSdsp;
+Display* GSdsp = nullptr;
 Window GSwin;
 #endif
 
@@ -263,7 +263,7 @@ void PADupdate(int pad)
 	// Emulate an user activity
 	static int count = 0;
 	count++;
-	if ((count & 0xFFF) == 0)
+	if (GSdsp && (count & 0xFFF) == 0)
 	{
 		// 1 call every 4096 Vsync is enough
 		XResetScreenSaver(GSdsp);
