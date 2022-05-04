@@ -723,7 +723,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 	if (block_until_done || QtHost::InBatchMode())
 	{
 		// we need to yield here, since the display gets destroyed
-		while (VMManager::HasValidVM())
+		while (VMManager::GetState() != VMState::Shutdown)
 			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 	}
 
