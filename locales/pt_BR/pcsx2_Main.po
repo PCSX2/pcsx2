@@ -2197,7 +2197,7 @@ msgstr "Adaptativo"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:67
 msgid "Disable window resize border"
-msgstr "Desativar a borda de redimensionamento da janela"
+msgstr "Desativar a borda de reescalonamento da janela"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:68
 msgid "Always hide mouse cursor"
@@ -2205,27 +2205,27 @@ msgstr "Sempre ocultar o cursor do mouse"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:69
 msgid "Hide window when paused"
-msgstr "Ocultar a janela quando estiver em pausa"
+msgstr "Ocultar janela quando pausado"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:70
 msgid "Default to fullscreen mode on open"
-msgstr "Sempre usar o modo de tela inteira ao iniciar"
+msgstr "Por padrão no modo de tela cheia ao abrir"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:71
 msgid "Double-click toggles fullscreen mode"
-msgstr "Clique duplo para ativar/desativar o modo de tela inteira"
+msgstr "Dois cliques alternam o modo de tela cheia"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:102
 msgid "Aspect Ratio:"
-msgstr "Proporção da tela:"
+msgstr "Proporção de tela:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:104
 msgid "FMV Aspect Ratio Override:"
-msgstr "Sobreposição da relação de aspecto do FMV:"
+msgstr "Sobreposição da proporção de tela do FMV:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:106
 msgid "Custom Window Size:"
-msgstr "Tamanho de janela personalizado:"
+msgstr "Tamanho de janela customizado:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:109
 msgid "Zoom:"
@@ -2233,14 +2233,14 @@ msgstr "Zoom:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:115
 msgid "Wait for Vsync on refresh:"
-msgstr "Aguardar sincronização vertical na atualização:"
+msgstr "Aguardar sincronização vertical na renovação:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:192
 msgid ""
 "Invalid window dimensions specified: Size cannot contain non-numeric digits! "
 ">_<"
 msgstr ""
-"Dimensões de janela inválidas especificadas: o tamanho não pode conter "
+"Dimensões de janela inválidas especificadas: o tamanho não pode ter "
 "dígitos não numéricos! >_<"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:25
@@ -2259,7 +2259,7 @@ msgid ""
 " * Radiata Stories\n"
 " * Valkyrie Profile 2"
 msgstr ""
-"Jogos que precisam desse hack para carregar:\n"
+"Jogos que precisam deste hack para iniciar:\n"
 " * Star Ocean 3\n"
 " * Radiata Sotries\n"
 " * Valkyrie Profile 2"
@@ -2267,7 +2267,7 @@ msgstr ""
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:44
 msgid "VU Clip Flag Hack - For Persona games (SuperVU recompiler only!)"
 msgstr ""
-"Hack no sinalizador de recorte do VU - Para jogos Persona (somente "
+"Hack no sinalizador de recorte do VU - Para jogos Persona (só "
 "recompilador do SuperVU!)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:48
@@ -2294,30 +2294,29 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:68
 msgid "EE timing hack - Multi purpose hack. Try if all else fails."
-msgstr "Hack de tempo da EE - Hack multipropósito. Tente se tudo mais falhar."
+msgstr "Hack de tempo da EE - Hack multiuso. Teste se o resto falhar."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:73
 msgid ""
 "Skip MPEG hack - Skips videos/FMVs in games to avoid game hanging/freezes."
 msgstr ""
-"Hack para ignorar MPEG - Ignora vídeos/FMVs nos jogos para evitar "
+"Hack de pular MPEG - Pula vídeos/FMVs nos jogos para evitar "
 "travamentos/congelamentos nos jogos."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:77
 msgid "OPH Flag hack - Try if your game freezes showing the same frame."
 msgstr ""
-"Hack no sinalizador OPH - Tente se o seu jogo congelar mostrando o mesmo "
+"Hack no sinalizador OPH - Teste se seu jogo congelar mostrando o mesmo "
 "quadro."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:82
 msgid "Ignore DMAC writes when it is busy."
-msgstr "Ignorar alterações no DMAC quando estiver ocupado."
+msgstr "Ignorar mudanças no DMAC quando está ocupado."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:87
 msgid "Simulate VIF1 FIFO read ahead. Fixes slow loading games."
 msgstr ""
-"Simular leitura antecipada de FIFO do V1F1. Corrige jogos de carregamento "
-"lento."
+"Simular leitura antecipada de FIFO do V1F1. Corrige jogos de carga lenta."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:92
 msgid ""
@@ -2331,14 +2330,13 @@ msgid ""
 "Enable the GIF FIFO (slower but needed for Hotwheels, Wallace and Gromit, DJ "
 "Hero)"
 msgstr ""
-"Ativar o FIFO do GIF (mais lento, mas necessário para Hotwheels, Wallace e "
-"Gromit DJ Hero)"
+"Ativar o FIFO do GIF (mais lento, mas preciso para Hotwheels, Wallace and "
+"Gromit e DJ Hero)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:100
 msgid "Switch to GSdx software rendering when an FMV plays"
 msgstr ""
-"Trocar para renderização por software do GSdx quando um FMV estiver sendo "
-"reproduzido"
+"Mudar para a renderização por software do GSdx ao executar um FMV"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:104
 msgid "Preload TLB hack to avoid tlb miss on Goemon"
@@ -2471,11 +2469,11 @@ msgstr "Excluir cartão de memória?"
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:742
 msgid "Duplicate memory card"
-msgstr "Duplicar cartão de memória"
+msgstr "Copiar cartão de memória"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
 msgid "Failed: Can only duplicate an existing card."
-msgstr "Erro: Só pode duplicar um cartão existente."
+msgstr "Erro: Só pode copiar um cartão existente."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
 msgid ""
@@ -2483,7 +2481,7 @@ msgid ""
 "( '.ps2' will be added automatically)"
 msgstr ""
 "Selecione um nome para o cartão duplicado\n"
-"('.ps2' será adicionado automaticamente)"
+"(".ps2" será adicionado automaticamente)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:741
 #, c-format
@@ -2497,7 +2495,7 @@ msgstr "Cópia falhou!"
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:773
 #, c-format
 msgid "Memory card '%s' duplicated to '%s'."
-msgstr "O cartão de memória '%s' foi duplicado para '%s'."
+msgstr "O cartão de memória '%s' foi copiado para "%s"."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:777
 msgid "Success"
@@ -2510,7 +2508,7 @@ msgid ""
 "( '.ps2' will be added automatically)"
 msgstr ""
 "Selecione o novo nome para o cartão de memória '%s'\n"
-"('.ps2' será adicionado automaticamente)"
+"(".ps2" será adicionado automaticamente)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:800
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:812
@@ -2541,7 +2539,7 @@ msgstr "Vazio"
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:958
 #, c-format
 msgid "Select a target port for '%s'"
-msgstr "Escolha uma porta para \"%s\""
+msgstr "Escolha uma porta para "%s""
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:959
 msgid "Insert card"
@@ -2557,7 +2555,7 @@ msgstr "&Inserir cartão..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1020
 msgid "D&uplicate card ..."
-msgstr "D&uplicar cartão ..."
+msgstr "&Copiar cartão..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1021
 msgid "&Rename card ..."
@@ -2667,7 +2665,7 @@ msgstr "Aplicar"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:126
 msgid "Make this language my default right now!"
-msgstr "Faça deste idioma meu padrão agora mesmo!"
+msgstr "Faça desta língua meu padrão agora mesmo!"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:38
 msgid "Cheats:"
@@ -2748,7 +2746,7 @@ msgid ""
 "Reason: %s\n"
 "O plug-in \n"
 msgstr ""
-"O plug-in escolhido falhou em carregar.\n"
+"O plug-in escolhido falhou na carga.\n"
 "\n"
 "Razão: %s\n"
 "\n"
@@ -2917,7 +2915,7 @@ msgid ""
 "For troubleshooting potential bugs in the MTGS only, as it is potentially "
 "very slow."
 msgstr ""
-"Só para a resolução de potenciais bugs no MTGS, uma vez que é potencialmente "
+"Só para a resolução de potenciais bugs no MTGS, pois é potencialmente "
 "lentíssimo."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:303
