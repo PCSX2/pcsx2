@@ -368,8 +368,7 @@ void SysCoreThread::OnCleanupInThread()
 	m_resetVirtualMachine = true;
 
 	R3000A::ioman::reset();
-	// FIXME: temporary workaround for deadlock on exit, which actually should be a crash
-	vu1Thread.WaitVU();
+	vu1Thread.Close();
 	USBclose();
 	SPU2close();
 	PADclose();

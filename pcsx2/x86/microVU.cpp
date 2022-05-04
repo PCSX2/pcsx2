@@ -371,7 +371,7 @@ void recMicroVU1::Reserve()
 	if (m_Reserved.exchange(1) == 0)
 	{
 		mVUinit(microVU1, 1);
-		vu1Thread.Start();
+		vu1Thread.Open();
 	}
 }
 

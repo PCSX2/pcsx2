@@ -18,8 +18,9 @@
 #include "MTVU.h"
 #include "newVif.h"
 #include "Gif_Unit.h"
+#include <thread>
 
-VU_Thread vu1Thread(CpuVU1, VU1);
+VU_Thread vu1Thread;
 
 #define MTVU_ALWAYS_KICK 0
 #define MTVU_SYNC_MODE 0
@@ -86,21 +87,35 @@ void SaveStateBase::mtvuFreeze()
 	Freeze(vu1Thread.vuCycleIdx);
 }
 
-VU_Thread::VU_Thread(BaseVUmicroCPU*& _vuCPU, VURegs& _vuRegs)
-	: vuCPU(_vuCPU)
-	, vuRegs(_vuRegs)
+VU_Thread::VU_Thread()
 {
-	m_name = L"MTVU";
 	Reset();
 }
 
 VU_Thread::~VU_Thread()
 {
-	try
-	{
-		pxThread::Cancel();
-	}
-	DESTRUCTOR_CATCHALL
+	Close();
+}
+
+void VU_Thread::Open()
+{
+	if (m_thread.joinable())
+		return;
+
+	Reset();
+	semaEvent.Reset();
+	m_shutdown_flag.store(false, std::memory_order_release);
+	m_thread = std::thread(&VU_Thread::ExecuteRingBuffer, this);
+}
+
+void VU_Thread::Close()
+{
+	if (!m_thread.joinable())
+		return;
+
+	m_shutdown_flag.store(true, std::memory_order_release);
+	semaEvent.NotifyOfWork();
+	m_thread.join();
 }
 
 void VU_Thread::Reset()
@@ -117,20 +132,17 @@ void VU_Thread::Reset()
 	vu1Thread.mtvuInterrupts = 0;
 }
 
-void VU_Thread::ExecuteTaskInThread()
-{
-	PCSX2_PAGEFAULT_PROTECT
-	{
-		ExecuteRingBuffer();
-	}
-	PCSX2_PAGEFAULT_EXCEPT;
-}
-
 void VU_Thread::ExecuteRingBuffer()
 {
+	m_thread_handle = Threading::ThreadHandle::GetForCallingThread();
+	Threading::SetNameOfCurrentThread("MTVU");
+
 	for (;;)
 	{
 		semaEvent.WaitForWork();
+		if (m_shutdown_flag.load(std::memory_order_acquire))
+			break;
+
 		while (m_ato_read_pos.load(std::memory_order_relaxed) != GetWritePos())
 		{
 			u32 tag = Read();
@@ -138,18 +150,18 @@ void VU_Thread::ExecuteRingBuffer()
 			{
 				case MTVU_VU_EXECUTE:
 				{
-					vuRegs.cycle = 0;
+					VU1.cycle = 0;
 					s32 addr = Read();
 					vifRegs.top = Read();
 					vifRegs.itop = Read();
 					vuFBRST = Read();
 					if (addr != -1)
-						vuRegs.VI[REG_TPC].UL = addr & 0x7FF;
-					vuCPU->SetStartPC(vuRegs.VI[REG_TPC].UL << 3);
-					vuCPU->Execute(vu1RunCycles);
+						VU1.VI[REG_TPC].UL = addr & 0x7FF;
+					CpuVU1->SetStartPC(VU1.VI[REG_TPC].UL << 3);
+					CpuVU1->Execute(vu1RunCycles);
 					gifUnit.gifPath[GIF_PATH_1].FinishGSPacketMTVU();
 					semaXGkick.Post(); // Tell MTGS a path1 packet is complete
-					vuCycles[vuCycleIdx].store(vuRegs.cycle, std::memory_order_release);
+					vuCycles[vuCycleIdx].store(VU1.cycle, std::memory_order_release);
 					vuCycleIdx = (vuCycleIdx + 1) & 3;
 					break;
 				}
@@ -157,22 +169,22 @@ void VU_Thread::ExecuteRingBuffer()
 				{
 					u32 vu_micro_addr = Read();
 					u32 size = Read();
-					vuCPU->Clear(vu_micro_addr, size);
-					Read(&vuRegs.Micro[vu_micro_addr], size);
+					CpuVU1->Clear(vu_micro_addr, size);
+					Read(&VU1.Micro[vu_micro_addr], size);
 					break;
 				}
 				case MTVU_VU_WRITE_DATA:
 				{
 					u32 vu_data_addr = Read();
 					u32 size = Read();
-					Read(&vuRegs.Mem[vu_data_addr], size);
+					Read(&VU1.Mem[vu_data_addr], size);
 					break;
 				}
 				case MTVU_VU_WRITE_VIREGS:
-					Read(&vuRegs.VI, size_u32(32));
+					Read(&VU1.VI, size_u32(32));
 					break;
 				case MTVU_VU_WRITE_VFREGS:
-					Read(&vuRegs.VF, size_u32(4*32));
+					Read(&VU1.VF, size_u32(4*32));
 					break;
 				case MTVU_VIF_WRITE_COL:
 					Read(&vif.MaskCol, sizeof(vif.MaskCol));
@@ -199,6 +211,9 @@ void VU_Thread::ExecuteRingBuffer()
 			CommitReadPos();
 		}
 	}
+
+	m_thread_handle = {};
+	semaEvent.Kill();
 }
 
 
