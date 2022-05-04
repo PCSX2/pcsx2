@@ -243,7 +243,6 @@ if(USE_OPENGL)
 				GL/ContextEGLWayland.cpp
 				GL/ContextEGLWayland.h
 			)
-			target_link_libraries(common PRIVATE ${WAYLAND_EGL_LIBRARIES})
 		endif()
 	endif()
 endif()
