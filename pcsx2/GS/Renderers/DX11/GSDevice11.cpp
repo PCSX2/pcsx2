@@ -89,17 +89,6 @@ bool GSDevice11::Create(HostDisplay* display)
 	m_ctx = static_cast<ID3D11DeviceContext*>(display->GetRenderContext());
 	level = m_dev->GetFeatureLevel();
 
-	bool amd_vendor = false;
-	{
-		if (auto dxgi_device = m_dev.try_query<IDXGIDevice>())
-		{
-			wil::com_ptr_nothrow<IDXGIAdapter> dxgi_adapter;
-			DXGI_ADAPTER_DESC adapter_desc;
-			if (SUCCEEDED(dxgi_device->GetAdapter(dxgi_adapter.put())) && SUCCEEDED(dxgi_adapter->GetDesc(&adapter_desc)))
-				amd_vendor = ((adapter_desc.VendorId == 0x1002) || (adapter_desc.VendorId == 0x1022));
-		}
-	}
-
 	if (!GSConfig.DisableShaderCache)
 	{
 		if (!m_shader_cache.Open(StringUtil::wxStringToUTF8String(EmuFolders::Cache.ToString()),
@@ -123,7 +112,7 @@ bool GSDevice11::Create(HostDisplay* display)
 	{
 		// HACK: check AMD
 		// Broken point sampler should be enabled only on AMD.
-		m_features.broken_point_sampler = amd_vendor;
+		m_features.broken_point_sampler = (D3D::Vendor() == D3D::VendorID::AMD);
 	}
 
 	SetFeatures();
