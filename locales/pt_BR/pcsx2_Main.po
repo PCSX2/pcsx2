@@ -2376,9 +2376,8 @@ msgid ""
 "Warning: Trace logging is typically very slow, and is a leading cause of "
 "'What happened to my FPS?' problems. :)"
 msgstr ""
-"Aviso: o registro de rastreamento geralmente é muito lento e é a principal "
-"causa do problema \"O que aconteceu com o meu FPS?\". :)"
-
+"Aviso: O registro de rastreamento é em geral lentíssimo, e é uma das "
+"principais razões dos problemas de "O que aconteceu com meu FPS?". :)"
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:187
 msgid "Select folder with PS2 memory cards"
 msgstr "Selecionar pasta com cartões de memória do PS2"
@@ -2390,7 +2389,7 @@ msgstr "Ejetar"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:389
 msgid "Duplicate ..."
-msgstr "Duplicar..."
+msgstr "Copiar..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:390
 msgid "Rename ..."
@@ -2425,15 +2424,15 @@ msgstr "Inserir..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:481
 msgid "Eject the card from this port"
-msgstr "Ejeta o cartão a partir dessa porta."
+msgstr "Ejeta o cartão a partir desta porta."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:481
 msgid "Insert this card to a port ..."
-msgstr "Insere esse cartão em uma porta."
+msgstr "Insere este cartão numa porta."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:485
 msgid "Create a duplicate of this memory card ..."
-msgstr "Cria uma duplicata desse cartão de memória."
+msgstr "Cria uma cópia deste cartão de memória."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:489
 msgid ""
@@ -2443,25 +2442,25 @@ msgid ""
 "Note: Only available when a memory card is formatted. Not available for PSX "
 "memory cards."
 msgstr ""
-"Converte este cartão de memória para ou de uma pasta de cartão de memória. "
-"Cria uma duplicata do cartão de memória atual no novo tipo..\n"
+"Converte este cartão de memória para/de uma pasta de cartão de memória. "
+"Cria uma cópia do cartão de memória atual no novo tipo.\n"
 "\n"
-"Nota: Disponível apenas quando um cartão de memória é formatado. Não "
-"disponível para cartões de memória do PSX."
+"Nota: Só disponível na formatação dum cartão de memória. Indisponível para "
+"cartões de memória do PSX."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:493
 msgid "Delete"
-msgstr "Eliminar"
+msgstr "Excluir"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:496
 msgid "Permanently delete this memory card from disk (all contents are lost)"
 msgstr ""
-"Elimina permanentemente esse cartão de memória do disco (todo o conteúdo é "
+"Exclui permanentemente este cartão de memória do disco (todo o conteúdo é "
 "perdido)."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:498
 msgid "Create a new memory card and assign it to this Port."
-msgstr "Criar um novo cartão de memória e alocá-lo a essa porta."
+msgstr "Criar um novo cartão de memória e o alocar a esta porta."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:683
 msgid "Delete memory file?"
@@ -2476,7 +2475,7 @@ msgstr "Duplicar cartão de memória"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
 msgid "Failed: Can only duplicate an existing card."
-msgstr "Erro: é possível duplicar apenas um cartão existente."
+msgstr "Erro: Só pode duplicar um cartão existente."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
 msgid ""
@@ -2493,7 +2492,7 @@ msgstr "Erro: %s"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:766
 msgid "Copy failed!"
-msgstr "Falha ao copiar!"
+msgstr "Cópia falhou!"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:773
 #, c-format
@@ -2521,7 +2520,7 @@ msgstr "Renomear cartão de memória"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:826
 msgid "Error: Rename could not be completed.\n"
-msgstr "Erro: a renomeação não pôde ser concluída.\n"
+msgstr "Erro: a renomeação não pôde ser feita.\n"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:926
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:134
@@ -2542,7 +2541,7 @@ msgstr "Vazio"
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:958
 #, c-format
 msgid "Select a target port for '%s'"
-msgstr "Selecione uma porta para \"%s\""
+msgstr "Escolha uma porta para \"%s\""
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:959
 msgid "Insert card"
@@ -2579,7 +2578,7 @@ msgstr "&Criar um novo cartão..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1035
 msgid "Re&fresh List"
-msgstr "&Atualizar lista"
+msgstr "&Renovar lista"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:99
 msgid "PS2 Port"
@@ -2631,11 +2630,11 @@ msgstr "[-- Cartões sem uso --]"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:167
 msgid "[-- No unused cards --]"
-msgstr "[-- Não há cartões sem uso --]"
+msgstr "[-- Sem cartões sem uso --]"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:34
 msgid "Usermode Selection"
-msgstr "Seleção do modo de usuário"
+msgstr "Escolha do modo de usuário"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:45
 msgid "User Documents (recommended)"
@@ -2647,20 +2646,20 @@ msgstr "Localização: "
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:50
 msgid "Custom folder:"
-msgstr "Pasta personalizada:"
+msgstr "Pasta customizada:"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:52
 msgid ""
 "This setting may require administration privileges from your operating "
 "system, depending on how your system is configured."
 msgstr ""
-"Esta configuração pode precisar de privilégios administrativos do seu "
+"Este ajuste pode precisar de privilégios administrativos do seu "
 "sistema operacional, dependendo de como o seu sistema está configurado."
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:61
 #, c-format
 msgid "Select a document root for %s"
-msgstr "Selecione uma pasta raiz para documentos para %s"
+msgstr "Escolha uma pasta raiz para documentos para %s"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:125
 msgid "Apply"
@@ -2668,7 +2667,7 @@ msgstr "Aplicar"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:126
 msgid "Make this language my default right now!"
-msgstr "Faça este idioma ser o meu padrão agora mesmo!"
+msgstr "Faça deste idioma meu padrão agora mesmo!"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:38
 msgid "Cheats:"
@@ -2676,15 +2675,15 @@ msgstr "Trapaças:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:39
 msgid "Select folder for Cheats"
-msgstr "Selecione a pasta para Trapaças"
+msgstr "Selecione a pasta para trapaças"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:46
 msgid "Savestates:"
-msgstr "Estados de jogos salvos:"
+msgstr "Estados salvos:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:47
 msgid "Select folder for Savestates"
-msgstr "Selecione a pasta para salvar os estados de jogos"
+msgstr "Escolha a pasta para salvar os estados salvos"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:54
 msgid "Snapshots:"
@@ -2692,7 +2691,7 @@ msgstr "Capturas de tela:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:55
 msgid "Select a folder for Snapshots"
-msgstr "Selecione uma pasta para as capturas de tela"
+msgstr "Escolha uma pasta para as capturas de tela"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:62
 msgid "Logs/Dumps:"
@@ -2700,11 +2699,11 @@ msgstr "Registros/Extrações:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:63
 msgid "Select a folder for logs/dumps"
-msgstr "Selecione uma pasta para os registros/extrações"
+msgstr "Escolha uma pasta para os registros/extrações"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:228
 msgid "Applying settings..."
-msgstr "Aplicando configurações..."
+msgstr "Aplicando ajustes..."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:238
 msgid "Shutdown PS2 virtual machine?"
@@ -2724,7 +2723,7 @@ msgstr "Caminho de pesquisa por plug-ins:"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:352
 msgid "Select a folder with PCSX2 plugins"
-msgstr "Selecione uma pasta com os plug-ins de PCSX2"
+msgstr "Escolha uma pasta com os plug-ins de PCSX2"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:365
 msgid "Configure..."
@@ -2733,13 +2732,13 @@ msgstr "Configurar..."
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:374
 msgid "Click the Browse button to select a different folder for PCSX2 plugins."
 msgstr ""
-"Clique no botão Pesquisar para selecionar uma pasta diferente para os plug-"
-"ins de PCSX2."
+"Clique no botão Pesquisar para escolher uma pasta diferente para os plug-ins"
+"de PCSX2."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:473
 #, c-format
 msgid "Please select a valid plugin for the %s."
-msgstr "Selecione um plug-in válido para o %s."
+msgstr "Escolha um plug-in válido para o %s."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:511
 #, c-format
@@ -2747,16 +2746,16 @@ msgid ""
 "The selected %s plugin failed to load.\n"
 "\n"
 "Reason: %s\n"
-"\n"
+"O plug-in \n"
 msgstr ""
-"O plug-in selecionado %s falhou ao carregar.\n"
+"O plug-in escolhido falhou em carregar.\n"
 "\n"
-"Motivo: %s\n"
+"Razão: %s\n"
 "\n"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:786
 msgid "Completing tasks..."
-msgstr "Completando tarefas..."
+msgstr "Concluindo tarefas..."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:122
 msgid "Enable speedhacks"
@@ -2771,11 +2770,11 @@ msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:143
 msgid "EE Cyclerate [Not Recommended]"
-msgstr "Taxa de ciclo da EE [Não recomendado]"
+msgstr "Taxa de ciclos da EE [Não recomendado]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
 msgid "EE Cycle Skipping [Not Recommended]"
-msgstr "Salto de ciclo da EE [Não recomendado]"
+msgstr "Pulo de ciclos da EE [Não recomendado]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
 msgid "microVU Hacks"
@@ -2794,7 +2793,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
 msgid "MTVU (Multi-Threaded microVU1)"
-msgstr "MTVU (Multi-Threaded microVU1)"
+msgstr "MTVU (microVU1 multithreaded)"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:177
 msgid ""
@@ -2867,7 +2866,7 @@ msgstr "Taxa de quadros NTSC:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:81 pcsx2/gui/Panels/VideoPanel.cpp:87
 msgid "FPS"
-msgstr "QPS"
+msgstr "FPS"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:84
 msgid "PAL Framerate:"
