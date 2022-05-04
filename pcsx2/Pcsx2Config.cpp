@@ -1239,8 +1239,8 @@ void EmuFolders::SetDefaults()
 	Covers = DataRoot.Combine(wxDirName("covers"));
 	GameSettings = DataRoot.Combine(wxDirName("gamesettings"));
 	Cache = DataRoot.Combine(wxDirName("cache"));
-	Resources = AppRoot.Combine(wxDirName("resources"));
-	Textures = AppRoot.Combine(wxDirName("textures"));
+
+	Textures = DataRoot.Combine(wxDirName("textures"));
 }
 
 static wxDirName LoadPathFromSettings(SettingsInterface& si, const wxDirName& root, const char* name, const char* def)
