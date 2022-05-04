@@ -27,6 +27,10 @@
 #include "IopMem.h"
 #include "SymbolMap.h"
 
+#ifndef PCSX2_CORE
+#include "System/SysThreads.h"
+#endif
+
 R5900DebugInterface r5900Debug;
 R3000DebugInterface r3000Debug;
 

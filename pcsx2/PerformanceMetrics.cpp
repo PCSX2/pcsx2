@@ -118,7 +118,7 @@ void PerformanceMetrics::Reset()
 	s_last_frame_time.Reset();
 
 	s_last_cpu_time = s_cpu_thread_handle.GetCPUTime();
-	s_last_gs_time = GetMTGS().GetCpuTime();
+	s_last_gs_time = GetMTGS().GetThreadHandle().GetCPUTime();
 	s_last_vu_time = THREAD_VU1 ? vu1Thread.GetThreadHandle().GetCPUTime() : 0;
 	s_last_ticks = GetCPUTicks();
 
@@ -183,7 +183,7 @@ void PerformanceMetrics::Update(bool gs_register_write, bool fb_blit)
 								(1.0 / static_cast<double>(s_frames_since_last_update));
 
 	const u64 cpu_time = s_cpu_thread_handle.GetCPUTime();
-	const u64 gs_time = GetMTGS().GetCpuTime();
+	const u64 gs_time = GetMTGS().GetThreadHandle().GetCPUTime();
 	const u64 vu_time = THREAD_VU1 ? vu1Thread.GetThreadHandle().GetCPUTime() : 0;
 
 	const u64 cpu_delta = cpu_time - s_last_cpu_time;
