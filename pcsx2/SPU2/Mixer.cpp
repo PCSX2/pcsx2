@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "Global.h"
 #include "common/Assertions.h"
+#include "CDVD/Ps1CD.h"
 
 void ADMAOutLogWrite(void* lpData, u32 ulSize);
 
@@ -105,6 +106,15 @@ static void __forceinline XA_decode_block(s16* buffer, const s16* block, s32& pr
 		prev1 = pcm2;
 	}
 }
+
+static void GrabCDAudio(StereoOut32& core0)
+{
+	core0.Left += samples[0][0];
+	samples[0].pop_back();
+	core0.Right += samples[1][0];
+	samples[1].pop_back();
+}
+
 
 static void __forceinline IncrementNextA(V_Core& thiscore, uint voiceidx)
 {

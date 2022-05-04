@@ -118,7 +118,7 @@ bool IOCtlSrc::ReadSectors2352(u32 sector, u32 count, u8* buffer) const
 	for (u32 n = 0; n < count; ++n)
 	{
 		u32 lba = sector + n;
-		lba_to_msf(lba, &data.msf.cdmsf_min0, &data.msf.cdmsf_sec0, &data.msf.cdmsf_frame0);
+		lsn_to_msf(lba, &data.msf.cdmsf_min0, &data.msf.cdmsf_sec0, &data.msf.cdmsf_frame0);
 		if (ioctl(m_device, CDROMREADRAW, &data) == -1)
 		{
 			fprintf(stderr, " * CDVD CDROMREADRAW sector %u failed: %s\n",

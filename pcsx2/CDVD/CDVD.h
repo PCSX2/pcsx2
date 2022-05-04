@@ -34,7 +34,7 @@ static __fi s32 msf_to_lsn(u8* Time)
 	return lsn;
 }
 
-static __fi s32 msf_to_lba(u8 m, u8 s, u8 f)
+static __fi s32 msf_to_lsn(u8 m, u8 s, u8 f)
 {
 	u32 lsn;
 	lsn = f;
@@ -57,12 +57,12 @@ static __fi void lsn_to_msf(u8* Time, s32 lsn)
 	Time[2] = itob(f);
 }
 
-static __fi void lba_to_msf(s32 lba, u8* m, u8* s, u8* f)
+static __fi void lsn_to_msf(s32 lsn, u8* m, u8* s, u8* f)
 {
-	lba += 150;
-	*m = lba / (60 * 75);
-	*s = (lba / 75) % 60;
-	*f = lba % 75;
+	lsn += 150;
+	*m = lsn / (60 * 75);
+	*s = (lsn / 75) % 60;
+	*f = lsn % 75;
 }
 
 struct cdvdRTC
@@ -182,4 +182,4 @@ extern s32 cdvdCtrlTrayClose();
 
 extern std::string DiscSerial;
 
-static CueParser::File* cueFile;
+static std::unique_ptr<CueParser::File> cueFile;

@@ -182,7 +182,7 @@ void StopKeepAliveThread()
 	s_keepalive_thread.join();
 }
 
-s32 CALLBACK DISCopen(const char* pTitle)
+s32 CALLBACK DISCopen(const char* pTitle, int track = 0)
 {
 	std::string drive(pTitle);
 	GetValidDrive(drive);
@@ -218,7 +218,7 @@ void CALLBACK DISCclose()
 	src.reset();
 }
 
-s32 CALLBACK DISCreadTrack(u32 lsn, int mode)
+s32 CALLBACK DISCreadTrack(u32 lsn, int mode, int trackNum = 0)
 {
 	csector = lsn;
 	cmode = mode;
@@ -442,7 +442,7 @@ s32 CALLBACK DISCgetTOC(void* toc)
 		tocBuff[17] = dec_to_bcd(diskInfo.etrack);
 
 		//DiskLength
-		lba_to_msf(trackInfo.lsn, &min, &sec, &frm);
+		lsn_to_msf(trackInfo.lsn, &min, &sec, &frm);
 		tocBuff[22] = 0xA2;
 		tocBuff[27] = dec_to_bcd(min);
 		tocBuff[28] = dec_to_bcd(sec);
@@ -453,7 +453,7 @@ s32 CALLBACK DISCgetTOC(void* toc)
 		for (i = diskInfo.strack; i <= diskInfo.etrack; i++)
 		{
 			err = DISCgetTD(i, &trackInfo);
-			lba_to_msf(trackInfo.lsn, &min, &sec, &frm);
+			lsn_to_msf(trackInfo.lsn, &min, &sec, &frm);
 			tocBuff[i * 10 + 30] = trackInfo.type;
 			tocBuff[i * 10 + 32] = err == -1 ? 0 : dec_to_bcd(i); //number
 			tocBuff[i * 10 + 37] = dec_to_bcd(min);

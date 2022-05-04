@@ -61,6 +61,8 @@ u8 monthmap[13] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 u8 cdvdParamLength[16] = { 0, 0, 0, 0, 0, 4, 11, 11, 11, 1, 255, 255, 7, 2, 11, 1 };
 
+static int currentTrackNum = 0;
+
 static __fi void SetSCMDResultSize(u8 size)
 {
 	cdvd.SCMDResultC = size;
@@ -1977,8 +1979,19 @@ static void cdvdWrite04(u8 rt)
 			// Read-ahead by telling CDVD about the track now.
 			// This helps improve performance on actual from-cd emulation
 			// (ie, not using the hard drive)
-			cdvd.RErr = DoCDVDreadTrack(cdvd.SeekToSector, cdvd.ReadMode);
 
+			cdvdSubQ *subQ = reinterpret_cast<cdvdSubQ*>(&cdvd.SCMDResult[1]);
+			// Only if the track has changed
+			if (m_tracks.size() > 0 && subQ->trackNum != currentTrackNum)
+			{
+				currentTrackNum = subQ->trackNum;
+				cdvd.RErr = DoCDVDreadTrack(cdvd.SeekToSector, subQ->mode, subQ->trackNum);
+			}
+			// Read the current sector from the iop
+			else
+			{
+				cdvd.RErr = DoCDVDreadTrack(cdvd.SeekToSector, cdvd.ReadMode);
+			}
 			// Set the reading block flag.  If a seek is pending then Readed will
 			// take priority in the handler anyway.  If the read is contiguous then
 			// this'll skip the seek delay.

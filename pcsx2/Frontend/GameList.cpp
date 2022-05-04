@@ -188,7 +188,7 @@ bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 
 	// This isn't great, we really want to make it all thread-local...
 	CDVD = &CDVDapi_Iso;
-	if (CDVD->open(path.c_str()) != 0)
+	if (CDVD->open(path.c_str(), 0) != 0)
 		return false;
 
 	const s32 type = DoCDVDdetectDiskType();

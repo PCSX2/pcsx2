@@ -24,12 +24,10 @@
 // Core 0 Input is "SPDIF mode" - Source audio is AC3 compressed.
 
 // Core 1 Input is "CDDA mode" - Source audio data is 32 bits.
-// PS2 note:  Very! few PS2 games use this mode.  Some PSX games used it, however no
-// *known* PS2 game does since it was likely only available if the game was recorded to CD
-// media (ie, not available in DVD mode, which almost all PS2 games use).  Plus PS2 games
-// generally prefer to use ADPCM streaming audio since they need as much storage space as
-// possible for FMVs and high-def textures.
-//
+// This is not CDDA from the cd disk player. This is for multitrack ps2 games like dance factory.
+// CDDA logic for ps1 mode and games like Tomb Raider is entirely seperate from ps2 mode.
+// As such we list 3 differing types of CDDA based audio in the code base.
+// CDDA - CD Audio player, PSCDDA - Playstation 1 multitrack CD audio, PS2CDDA - Playstation 2 multitrack CD audio.
 StereoOut32 V_Core::ReadInput_HiFi()
 {
 	if (psxmode)

@@ -27,12 +27,16 @@ typedef struct _cdvdTrack
 {
 	u32 flags;     // Flags from cueFile
 	u8 mode : 4;   // control and mode bits;
+	u8 type;
 	u8 trackNum;   // current track number (1 to 99)
-	const u8* start; // Starting index for track
+	u8* startMSF; // Starting postion in MSF form
+	u32 startLsn; // Starting Lsn for track
 	std::string filePath; // Path of current track
+	u8* GetIndex(u32 n) const;
+	InputIsoFile* fileReader;
 	std::optional<u32> length;
+	std::optional<u8*> zero_pregap;
 	std::vector<std::pair<u32, u8*>> indices;
-	const u8* GetIndex(u32 n) const;
 } cdvdTrack;
 
 typedef struct _cdvdSubQ
@@ -109,12 +113,12 @@ typedef struct _cdvdTN
 // CDVD
 // NOTE: The read/write functions CANNOT use XMM/MMX regs
 // If you want to use them, need to save and restore current ones
-typedef s32(CALLBACK* _CDVDopen)(const char* pTitleFilename);
+typedef s32(CALLBACK* _CDVDopen)(const char* pTitleFilenamem, int track);
 
 // Initiates an asynchronous track read operation.
 // Returns -1 on error (invalid track)
 // Returns 0 on success.
-typedef s32(CALLBACK* _CDVDreadTrack)(u32 lsn, int mode);
+typedef s32(CALLBACK* _CDVDreadTrack)(u32 lsn, int mode, int trackNum);
 
 // Copies loaded data to the target buffer.
 // Returns -2 if the asynchronous read is still pending.
@@ -184,11 +188,10 @@ extern CDVD_SourceType CDVDsys_GetSourceType();
 extern bool DoCDVDopen();
 extern void DoCDVDclose();
 extern s32 DoCDVDreadSector(u8* buffer, u32 lsn, int mode);
-extern s32 DoCDVDreadTrack(u32 lsn, int mode);
+extern s32 DoCDVDreadTrack(u32 lsn, int mode, int trackNum = 0);
 extern s32 DoCDVDgetBuffer(u8* buffer);
 extern s32 DoCDVDdetectDiskType();
 extern void DoCDVDresetDiskTypeCache();
+extern bool DoParseCueFile(fs::path ext);
 
-static std::vector<cdvdTrack> m_tracks;
-static std::optional<u8*> zero_pregap;
-
+extern std::vector<cdvdTrack> m_tracks;

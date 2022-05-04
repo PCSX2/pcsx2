@@ -76,6 +76,8 @@ const char* CmdName[0x100] = {
 cdrStruct cdr;
 s32 LoadCdBios;
 
+std::vector<s32> samples[2];
+
 u8 Test04[] = {0};
 u8 Test05[] = {0};
 u8 Test20[] = {0x98, 0x06, 0x10, 0xC3};
@@ -173,7 +175,7 @@ static __fi void SetResultSize(u8 size)
 	cdr.ResultReady = 1;
 }
 
-static void ReadTrack(u8* track = 0)
+static void ReadTrack(int trackNum = 0)
 {
 	cdr.Prev[0] = itob(cdr.SetSector[0]);
 	cdr.Prev[1] = itob(cdr.SetSector[1]);
@@ -183,7 +185,14 @@ static void ReadTrack(u8* track = 0)
 	if (EmuConfig.CdvdVerboseReads)
 		DevCon.WriteLn("CD Read Sector %x", msf_to_lsn(cdr.SetSector));
 	CDVD->getTN(&cdr.ResultTN);
-	cdr.RErr = DoCDVDreadTrack(msf_to_lsn(cdr.SetSector), CDVD_MODE_2340);
+	if (trackNum > 0)
+	{
+		cdr.RErr = DoCDVDreadTrack(msf_to_lsn(cdr.SetSector), cueFile->GetTrack(trackNum)->mode, trackNum);
+	}
+	else
+	{
+		cdr.RErr = DoCDVDreadTrack(msf_to_lsn(cdr.SetSector), CDVD_MODE_2340);
+	}
 }
 
 static void AddIrqQueue(u8 irq, u32 ecycle)
@@ -366,15 +375,28 @@ void cdrInterrupt()
 
 		case CdlGetlocP:
 			SetResultSize(8);
+			cdr.subQ = new cdvdSubQ();
 			CDVD->readSubQ(*cdr.SetSector, cdr.subQ);
-			cdr.Result[0] = cdr.subQ->trackNum;
-			cdr.Result[1] = cdr.subQ->trackIndex;
-			cdr.Result[2] = cdr.subQ->trackM;
-			cdr.Result[3] = cdr.subQ->trackS;
-			cdr.Result[4] = cdr.subQ->trackF;
-			cdr.Result[5] = cdr.subQ->discS;
-			cdr.Result[6] = cdr.subQ->discM;
-			cdr.Result[7] = cdr.subQ->discF;
+			if (cdr.subQ->trackNum > 0)
+			{
+				cdr.Result[0] = cdr.subQ->trackNum;
+				cdr.Result[1] = cdr.subQ->trackIndex;
+				cdr.Result[2] = cdr.subQ->trackM;
+				cdr.Result[3] = cdr.subQ->trackS;
+				cdr.Result[4] = cdr.subQ->trackF;
+				cdr.Result[5] = cdr.subQ->discS;
+				cdr.Result[6] = cdr.subQ->discM;
+				cdr.Result[7] = cdr.subQ->discF;
+			}
+			else
+			{
+				cdr.Result[0] = 1;
+				cdr.Result[1] = 1;
+				cdr.Result[2] = cdr.Prev[0];
+				cdr.Result[3] = itob((btoi(cdr.Prev[1])) - 2);
+				cdr.Result[4] = cdr.Prev[2];
+				memcpy(cdr.Result+5, cdr.Prev, 3);
+			}
 			cdr.Stat = Acknowledge;
 			break;
 
@@ -691,6 +713,21 @@ void setPs1CDVDSpeed(int speed)
 	//Console.Warning(L"cdReadTime: %d", unsigned(cdReadTime));
 }
 
+/*******************************************************************************
+* To play CD-DA Audio CDs, init the following SPU Registers: CD Audio Volume,
+* Main Volume, and SPU Control Bit0. Then send Demute command, and Play command.
+*******************************************************************************/
+
+void processCDDASector()
+{
+	// Samples are interleved
+	u32 sampleCount = 2352 / sizeof(s16) / 2;
+	for (u32 i = 0; i < sampleCount; i ++)
+	{
+
+	}
+}
+
 u8 cdrRead1(void)
 {
 	if (cdr.ResultReady && cdr.Ctrl & 0x1)
@@ -783,7 +820,8 @@ void cdrWrite1(u8 rt)
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			cdr.StatP |= STATUS_PLAY;
-			ReadTrack(cdr.SetSectorSeek);
+			// Result contains Subchannel Q data
+			ReadTrack(cdr.Result[0]);
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 

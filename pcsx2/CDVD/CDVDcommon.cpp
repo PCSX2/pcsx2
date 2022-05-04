@@ -43,6 +43,8 @@
 
 CDVD_API* CDVD = NULL;
 
+std::vector<cdvdTrack> m_tracks;
+
 // ----------------------------------------------------------------------------
 // diskTypeCached
 // Internal disc type cache, to reduce the overhead of disc type checks, which are
@@ -259,16 +261,6 @@ static int FindDiskType(int mType)
 	return iCDType;
 }
 
-const u8* cdvdTrack::GetIndex(u32 n) const
-{
-	for (const auto& it : indices)
-	{
-		if (it.first == n)
-			return it.second;
-	}
-	return nullptr;
-}
-
 static void DetectDiskType()
 {
 	if (CDVD->getTrayStatus() == CDVD_TRAY_OPEN)
@@ -393,7 +385,7 @@ bool DoCDVDopen()
 	if (fs::exists(ext) && ext.extension() == ".cue")
 	{
 		if (!cueFile)
-			cueFile = new CueParser::File();
+			cueFile = std::make_unique<CueParser::File>();
 
 		FILE* file = fopen(ext.string().c_str(), "r+");
 		if (file != nullptr)
@@ -403,7 +395,7 @@ bool DoCDVDopen()
 		}
 	}
 
-	int ret = CDVD->open(!ext.empty() ? ext.string().c_str() : nullptr);
+	int ret = CDVD->open(!ext.empty() ? ext.string().c_str() : nullptr, 0);
 	if (ret == -1)
 		return false; // error! (handled by caller)
 
@@ -516,7 +508,7 @@ s32 DoCDVDreadSector(u8* buffer, u32 lsn, int mode)
 	return ret;
 }
 
-s32 DoCDVDreadTrack(u32 lsn, int mode)
+s32 DoCDVDreadTrack(u32 lsn, int mode, int track)
 {
 	CheckNullCDVD();
 
@@ -546,7 +538,7 @@ s32 DoCDVDreadTrack(u32 lsn, int mode)
 
 	//DevCon.Warning("CDVD readTrack(lsn=%d,mode=%d)",params lsn, lastReadSize);
 	lastLSN = lsn;
-	return CDVD->readTrack(lsn, mode);
+	return CDVD->readTrack(lsn, mode, track);
 }
 
 s32 DoCDVDgetBuffer(u8* buffer)
@@ -596,7 +588,7 @@ void DoCDVDresetDiskTypeCache()
 
 
 
-s32 CALLBACK NODISCopen(const char* pTitle)
+s32 CALLBACK NODISCopen(const char* pTitle, int track)
 {
 	return 0;
 }
@@ -605,7 +597,7 @@ void CALLBACK NODISCclose()
 {
 }
 
-s32 CALLBACK NODISCreadTrack(u32 lsn, int mode)
+s32 CALLBACK NODISCreadTrack(u32 lsn, int mode, int track)
 {
 	return -1;
 }

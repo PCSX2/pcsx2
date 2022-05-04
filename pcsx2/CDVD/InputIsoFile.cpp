@@ -21,6 +21,7 @@
 #include "Config.h"
 
 #include "fmt/core.h"
+#include "CDVD.h"
 
 #include <errno.h>
 
@@ -282,9 +283,16 @@ bool InputIsoFile::Open(std::string srcfile, bool testOnly)
 
 void InputIsoFile::Close()
 {
-	delete m_reader;
-	m_reader = NULL;
-
+	if (m_reader != nullptr)
+	{
+		// We had a cue file loaded
+		if (m_tracks.size() > 0)
+		{
+			m_tracks.clear();
+		}
+		delete m_reader;
+		m_reader = nullptr;
+	}
 	_init();
 }
 

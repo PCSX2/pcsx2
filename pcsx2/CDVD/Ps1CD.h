@@ -88,6 +88,8 @@ struct cdrStruct
 
 extern cdrStruct cdr;
 
+extern std::vector<s32> samples[2];
+
 void cdrReset();
 void cdrInterrupt();
 void cdrReadInterrupt();
@@ -96,6 +98,7 @@ u8 cdrRead1(void);
 u8 cdrRead2(void);
 u8 cdrRead3(void);
 void setPs1CDVDSpeed(int speed);
+void processCDDASector();
 void cdrWrite0(u8 rt);
 void cdrWrite1(u8 rt);
 void cdrWrite2(u8 rt);

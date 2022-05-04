@@ -15,7 +15,6 @@
 
 #pragma once
 
-#include "CDVD.h"
 #include "AsyncFileReader.h"
 #include "CompressedFileReader.h"
 #include <memory>
@@ -37,7 +36,7 @@ static const int CD_FRAMESIZE_RAW = 2448;
 // --------------------------------------------------------------------------------------
 class InputIsoFile
 {
-	DeclareNoncopyableObject(InputIsoFile);
+	//DeclareNoncopyableObject(InputIsoFile);
 
 	static const uint MaxReadUnit = 128;
 
@@ -73,6 +72,7 @@ public:
 
 	isoType GetType() const { return m_type; }
 	uint GetBlockCount() const { return m_blocks; }
+	uint GetFileSize() const { return m_reader->GetBlockCount(); }
 	int GetBlockOffset() const { return m_blockofs; }
 
 	const std::string& GetFilename() const

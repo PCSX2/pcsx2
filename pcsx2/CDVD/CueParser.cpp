@@ -176,6 +176,16 @@ namespace CueParser
 		return ret;
 	}
 
+	u8* File::AddPregaps(u8* msf, u8* pregap)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			msf[i] += pregap[i];
+		}
+
+	return msf;
+	}
+
 	bool File::ParseLine(const char* line, u32 line_number, Common::Error* error)
 	{
 		const std::string_view command(GetToken(line));
@@ -268,33 +278,55 @@ namespace CueParser
 		}
 
 		const std::string_view mode_str = GetToken(line);
-		cdvdTD mode;
+		m_current_track = cdvdTrack();
 		if (TokenMatch(mode_str, "AUDIO"))
-			mode.type = CDVD_AUDIO_TRACK;
+		{
+			m_current_track->mode = CDVD_MODE_2352;
+			m_current_track->type = CDVD_AUDIO_TRACK;
+		}
 		else if (TokenMatch(mode_str, "MODE1/2048"))
-			mode.type = CDVD_MODE_2048;
+		{
+			m_current_track->mode = CDVD_MODE_2048;
+			m_current_track->type = CDVD_MODE1_TRACK;
+		}
 		else if (TokenMatch(mode_str, "MODE1/2352"))
-			mode.type = CDVD_MODE_2352;
+		{
+			m_current_track->mode = CDVD_MODE2_TRACK;
+			m_current_track->type = CDVD_MODE1_TRACK;
+		}
 		else if (TokenMatch(mode_str, "MODE2/2336"))
-			mode.type = CDVD_MODE_2336;
+		{
+			m_current_track->mode = CDVD_MODE_2336;
+			m_current_track->type = CDVD_MODE2_TRACK;
+		}
 		else if (TokenMatch(mode_str, "MODE2/2048"))
-			mode.type = CDVD_MODE_2048;
+		{
+			m_current_track->mode = CDVD_MODE_2048;
+			m_current_track->type = CDVD_MODE2_TRACK;
+		}
 		else if (TokenMatch(mode_str, "MODE2/2342"))
-			mode.type = CDVD_MODE_2342;
+		{
+			m_current_track->mode = CDVD_MODE_2342;
+			m_current_track->type = CDVD_MODE2_TRACK;
+		}
 		else if (TokenMatch(mode_str, "MODE2/2332"))
-			mode.type = CDVD_MODE_2332;
+		{
+			m_current_track->mode = CDVD_MODE_2332;
+			m_current_track->type = CDVD_MODE2_TRACK;
+		}
 		else if (TokenMatch(mode_str, "MODE2/2352"))
-			mode.type = CDVD_MODE_2352;
+		{
+			m_current_track->mode = CDVD_MODE_2352;
+			m_current_track->type = CDVD_MODE2_TRACK;
+		}
 		else
 		{
 			SetError(line_number, error, "Invalid mode: '%*s'", static_cast<int>(mode_str.length()), mode_str.data());
 			return false;
 		}
 
-		m_current_track = cdvdTrack();
 		m_current_track->trackNum = static_cast<u32>(track_number.value());
 		m_current_track->filePath = m_current_file.value();
-		m_current_track->mode = mode.type;
 		return true;
 	}
 
@@ -352,7 +384,7 @@ namespace CueParser
 			return false;
 		}
 
-		if (zero_pregap.has_value())
+		if (m_current_track->zero_pregap.has_value())
 		{
 			SetError(line_number, error, "Pregap already specified for track %u", m_current_track->trackNum);
 			return false;
@@ -372,7 +404,7 @@ namespace CueParser
 			return false;
 		}
 
-		zero_pregap = std::move(msf);
+		m_current_track->zero_pregap = std::move(msf);
 		return true;
 	}
 
@@ -409,7 +441,7 @@ namespace CueParser
 		if (!m_current_track.has_value())
 			return true;
 
-		const u8* index1 = m_current_track->GetIndex(1);
+		u8* index1 = m_current_track->GetIndex(1);
 		if (!index1)
 		{
 			SetError(line_number, error, "Track %u is missing index 1", m_current_track->trackNum);
@@ -422,7 +454,7 @@ namespace CueParser
 			if (index_number == 0)
 				continue;
 
-			const u8* prev_index = m_current_track->GetIndex(index_number - 1);
+			u8* prev_index = m_current_track->GetIndex(index_number - 1);
 			if (prev_index && *prev_index > *index_msf)
 			{
 				SetError(line_number, error, "Index %u is after index %u in track %u", index_number - 1, index_number,
@@ -431,23 +463,27 @@ namespace CueParser
 			}
 		}
 
-		const u8* index0 = m_current_track->GetIndex(0);
-		if (index0 && zero_pregap.has_value())
+		u8* index0 = m_current_track->GetIndex(0);
+		if (index0 && m_current_track->zero_pregap.has_value())
 		{
 			Console.Warning("Zero pregap and index 0 specified in track %u, ignoring zero pregap", m_current_track->trackNum);
-			zero_pregap.reset();
+			m_current_track->zero_pregap.reset();
 		}
 
-		m_current_track->start = index1;
+		u8* pregap = new u8[3]{0, 2, 0};
 
-		m_tracks.push_back(std::move(m_current_track.value()));
+		AddPregaps(index1, pregap);
+		m_current_track->startMSF = index1;
+		m_current_track->startLsn = msf_to_lsn(index1);
+
+		tempTracks.push_back(std::move(m_current_track.value()));
 		m_current_track.reset();
 		return true;
 	}
 
 	bool File::SetTrackLengths(u32 line_number, Common::Error* error)
 	{
-		for (const cdvdTrack& track : m_tracks)
+		for (const cdvdTrack& track : tempTracks)
 		{
 			if (track.trackNum > 1)
 			{
@@ -455,7 +491,7 @@ namespace CueParser
 				cdvdTrack* previous_track = GetMutableTrack(track.trackNum - 1);
 				if (previous_track && previous_track->filePath == track.filePath)
 				{
-					if (previous_track->start > track.start)
+					if (previous_track->startLsn > track.startLsn)
 					{
 						SetError(line_number, error, "Track %u start greater than track %u start", previous_track->trackNum,
 							track.trackNum);
@@ -463,11 +499,13 @@ namespace CueParser
 					}
 
 					// Use index 0, otherwise index 1.
-					const u8* start_index = track.GetIndex(0);
-					u8 m, s, f;
+					u8* start_index = track.GetIndex(0);
+					u32 length;
 					if (!start_index)
 						start_index = track.GetIndex(1);
-					lba_to_msf(trackDescriptor.lsn, &m, &s, &f);
+					length = previous_track->startLsn - msf_to_lsn(start_index);
+
+					previous_track->length = length;
 				}
 			}
 		}

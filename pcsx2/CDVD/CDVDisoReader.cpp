@@ -23,6 +23,7 @@
 #include "PrecompiledHeader.h"
 #include "IsoFileFormats.h"
 #include "AsyncFileReader.h"
+#include "common/FileSystem.h"
 #include "CDVD/CDVD.h"
 #include "common/Exceptions.h"
 
@@ -31,36 +32,55 @@
 
 static InputIsoFile iso;
 
-static int pmode, cdtype;
+static int pmode, cdtype, currentTrackNum;
 
 static s32 layer1start = -1;
 static bool layer1searched = false;
+
+static u32 maxLSN = 0;
+
+
+static constexpr std::array<u32, 8> sizes = {{2352, 2048, 2352, 2336, 2048, 2324, 2332, 2352}};
+
 
 void CALLBACK ISOclose()
 {
 	iso.Close();
 }
 
-s32 CALLBACK ISOopen(const char* pTitle)
+inline u8 dec_to_bcd(u8 dec)
 {
-	ISOclose(); // just in case
+	return ((dec / 10) << 4) | (dec % 10);
+}
 
-	std::shared_ptr<Common::Error> err;
+inline void lsn_to_msf(u8* minute, u8* second, u8* frame, u32 lsn)
+{
+	*frame = dec_to_bcd(lsn % 75);
+	lsn /= 75;
+	*second = dec_to_bcd(lsn % 60);
+	lsn /= 60;
+	*minute = dec_to_bcd(lsn % 100);
 
-	fs::path ext;
-	// In case this is a reset with a new disc
-	ext.clear();
+	Console.WriteLn("MSF: ", " Frame: ", frame, " Second: ", second, " Minute: ", minute);
+}
 
-	ext = pTitle;
-
+s32 CALLBACK ISOopen(const char* pTitle, int track)
+{
 	if ((pTitle == NULL) || (pTitle[0] == 0))
 	{
 		Console.Error("CDVDiso Error: No filename specified.");
 		return -1;
 	}
 
-	iso.Open(pTitle);
-
+	if (track >= 0 && m_tracks.size() > 0)
+	{
+		currentTrackNum = cueFile->GetTrack(track)->trackNum;
+		iso = *cueFile->GetTrack(currentTrackNum)->fileReader;
+	}
+	else
+	{
+		iso.Open(pTitle);
+	}
 	switch (iso.GetType())
 	{
 		case ISOTYPE_DVD:
@@ -80,30 +100,6 @@ s32 CALLBACK ISOopen(const char* pTitle)
 	return 0;
 }
 
-s32 CALLBACK ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
-{
-	// fake it
-	u8 min, sec, frm;
-	subq->ctrl = 4;
-	subq->mode = 1;
-	subq->trackNum = itob(1);
-	subq->trackIndex = itob(1);
-
-	lba_to_msf(lsn, &min, &sec, &frm);
-	subq->trackM = itob(min);
-	subq->trackS = itob(sec);
-	subq->trackF = itob(frm);
-
-	subq->pad = 0;
-
-	lba_to_msf(lsn + (2 * 75), &min, &sec, &frm);
-	subq->discM = itob(min);
-	subq->discS = itob(sec);
-	subq->discF = itob(frm);
-
-	return 0;
-}
-
 s32 CALLBACK ISOgetTN(cdvdTN* Buffer)
 {
 	Buffer->strack = 1;
@@ -115,16 +111,59 @@ s32 CALLBACK ISOgetTN(cdvdTN* Buffer)
 	return 0;
 }
 
+static void CalculateDiskLength()
+{
+	u32 trackLength = 0;
+	std::string oldFilePath = "";
+	for(int i = 0; i < m_tracks.size(); i++)
+	{
+		oldFilePath = m_tracks[i].filePath;
+
+		u64 fileSize = m_tracks[i].fileReader->GetBlockCount();
+
+		//fileSize /= sizes[cueFile->GetTrack(i)->mode];
+		if (!m_tracks[i].filePath.compare(oldFilePath.c_str()))
+		{
+			if (m_tracks[i].length.has_value())
+			{
+				trackLength = (m_tracks[i].length.value() - m_tracks[i].startLsn);
+			}
+			else
+			{
+				Console.Warning("File Size %d", fileSize);
+				trackLength = static_cast<u32>(fileSize - m_tracks[i].startLsn);
+			}
+			maxLSN += trackLength;
+		}
+		else
+		{
+			trackLength += m_tracks[i].startLsn;
+		}
+	}
+	Console.Warning("MaxLSN: %d", maxLSN);
+}
+
 s32 CALLBACK ISOgetTD(u8 Track, cdvdTD* Buffer)
 {
 	if (Track == 0)
 	{
-		Buffer->lsn = iso.GetBlockCount();
+		if (Buffer == nullptr)
+			return -1;
+		try
+		{
+			Buffer->lsn = iso.GetBlockCount();
+			Buffer->type = 0;
+			return 0;
+		}
+		catch (...)
+		{
+			return -1;
+		}
 	}
 	else
 	{
-		Buffer->type = CDVD_MODE1_TRACK;
-		Buffer->lsn = 0;
+		Buffer->type = cueFile->GetTrack(Track)->type;
+		Buffer->lsn = cueFile->GetTrack(Track)->startLsn;
 	}
 
 	return 0;
@@ -271,7 +310,7 @@ s32 CALLBACK ISOgetTOC(void* toc)
 			diskInfo.etrack = 0;
 			diskInfo.strack = 1;
 		}
-		if (ISOgetTD(0, &trackInfo) == -1)
+		if (ISOgetTD(1, &trackInfo) == -1)
 			trackInfo.lsn = 0;
 
 		tocBuff[0] = 0x41;
@@ -285,16 +324,27 @@ s32 CALLBACK ISOgetTOC(void* toc)
 		tocBuff[12] = 0xA1;
 		tocBuff[17] = itob(diskInfo.etrack);
 
-		//DiskLength
-		lba_to_msf(trackInfo.lsn, &min, &sec, &frm);
-		tocBuff[22] = 0xA2;
-		tocBuff[27] = itob(min);
-		tocBuff[28] = itob(sec);
-
+		if (m_tracks.size() <= 0)
+		{
+			lsn_to_msf(trackInfo.lsn, &min, &sec, &frm);
+			tocBuff[22] = 0xA2;
+			tocBuff[27] = itob(min);
+			tocBuff[28] = itob(sec);
+		}
+		// There were multiple tracks
+		if (m_tracks.size() > 0)
+		{
+			CalculateDiskLength();
+			lsn_to_msf(maxLSN, &min, &sec, &frm);
+			Console.Warning("MAX LSN: %d", maxLSN);
+			tocBuff[22] = 0xA2;
+			tocBuff[27] = itob(min);
+			tocBuff[28] = itob(sec);
+		}
 		for (i = diskInfo.strack; i <= diskInfo.etrack; i++)
 		{
 			err = ISOgetTD(i, &trackInfo);
-			lba_to_msf(trackInfo.lsn, &min, &sec, &frm);
+			lsn_to_msf(trackInfo.lsn, &min, &sec, &frm);
 			tocBuff[i * 10 + 30] = trackInfo.type;
 			tocBuff[i * 10 + 32] = err == -1 ? 0 : itob(i); //number
 			tocBuff[i * 10 + 37] = itob(min);
@@ -305,6 +355,20 @@ s32 CALLBACK ISOgetTOC(void* toc)
 	else
 		return -1;
 
+for(int i=0; i<2048/10; i+=10)
+{
+	Console.Warning("%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n",
+	tocBuff[i+0],
+	tocBuff[i+1],
+	tocBuff[i+2],
+	tocBuff[i+3],
+	tocBuff[i+4],
+	tocBuff[i+5],
+	tocBuff[i+6],
+	tocBuff[i+7],
+	tocBuff[i+8],
+	tocBuff[i+9]);
+}
 	return 0;
 }
 
@@ -314,8 +378,9 @@ s32 CALLBACK ISOreadSector(u8* tempbuffer, u32 lsn, int mode)
 
 	int _lsn = lsn;
 
-	if (_lsn < 0)
+	if (_lsn <= 0)
 		lsn = iso.GetBlockCount() + _lsn;
+	
 	if (lsn >= iso.GetBlockCount())
 		return -1;
 
@@ -359,9 +424,15 @@ s32 CALLBACK ISOreadSector(u8* tempbuffer, u32 lsn, int mode)
 	return 0;
 }
 
-s32 CALLBACK ISOreadTrack(u32 lsn, int mode)
+s32 CALLBACK ISOreadTrack(u32 lsn, int mode, int track = 0)
 {
 	int _lsn = lsn;
+
+	if (track > 0 && track != currentTrackNum)
+	{
+		currentTrackNum = cueFile->GetTrack(track)->trackNum;
+		iso = *cueFile->GetTrack(currentTrackNum)->fileReader;
+ 	}
 
 	if (_lsn < 0)
 		lsn = iso.GetBlockCount() + _lsn;
@@ -371,6 +442,46 @@ s32 CALLBACK ISOreadTrack(u32 lsn, int mode)
 	pmode = mode;
 
 	return 0;
+}
+
+s32 CALLBACK ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
+{
+	// fake it - NO!
+	u8 min, sec, frm;
+
+	// TODO: PS1 Libcrypt games will look like garbage data. This is a key being generated in SubQ that needs to be passed on!
+
+	s32 err = 0;
+
+	memset(subq, 0, sizeof(cdvdSubQ));
+
+	lsn_to_msf(lsn, &min, &sec, &frm);
+	subq->trackM = itob(min);
+	subq->trackS = itob(sec);
+	subq->trackF = itob(frm);
+
+	u8 i = 1;
+	while (i < m_tracks.size() && lsn >= cueFile->GetTrack(i + 1)->startLsn)
+		++i;
+
+	lsn -= cueFile->GetTrack(i)->startLsn;
+
+	lsn_to_msf(lsn + (2 * 75), &min, &sec, &frm);
+	subq->discM = itob(min);
+	subq->discS = itob(sec);
+	subq->discF = itob(frm);
+
+	Console.Warning("LSN: %d", lsn);
+
+	subq->mode = cueFile->GetTrack(i)->mode;
+	subq->ctrl = cueFile->GetTrack(i)->type;
+	// This is for error checking sake. Tracks on disk start at one!
+	subq->trackNum = cueFile->GetTrack(i)->trackNum;
+	subq->trackIndex = 1;
+
+	Console.Warning("Track num: %d", subq->trackNum);
+
+	return err;
 }
 
 s32 CALLBACK ISOgetBuffer(u8* buffer)
