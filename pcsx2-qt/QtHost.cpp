@@ -140,8 +140,13 @@ bool QtHost::ShouldUsePortableMode()
 
 void QtHost::SetResourcesDirectory()
 {
+#ifndef __APPLE__
 	// On Windows/Linux, these are in the binary directory.
 	EmuFolders::Resources = EmuFolders::AppRoot.Combine(wxDirName(L"resources"));
+#else
+	// On macOS, this is in the bundle resources directory.
+	EmuFolders::Resources = EmuFolders::AppRoot.Combine(wxDirName("../Resources"));
+#endif
 }
 
 void QtHost::SetDataDirectory()
