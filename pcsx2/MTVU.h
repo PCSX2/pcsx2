@@ -14,10 +14,12 @@
  */
 
 #pragma once
-#include "System/SysThreads.h"
+#include "common/Threading.h"
 #include "Vif.h"
 #include "Vif_Dma.h"
 #include "VUmicro.h"
+
+#include <thread>
 
 #define MTVU_LOG(...) do{} while(0)
 //#define MTVU_LOG DevCon.WriteLn
@@ -26,7 +28,7 @@
 // - This class should only be accessed from the EE thread...
 // - buffer_size must be power of 2
 // - ring-buffer has no complete pending packets when read_pos==write_pos
-class VU_Thread : public pxThread {
+class VU_Thread final {
 	static const s32 buffer_size = (_1mb * 16) / sizeof(s32);
 
 	u32 buffer[buffer_size];
@@ -35,14 +37,16 @@ class VU_Thread : public pxThread {
 	alignas(64) std::atomic<int> m_ato_write_pos;    // Only modified by EE thread
 	alignas(64) int  m_read_pos; // temporary read pos (local to the VU thread)
 	int  m_write_pos; // temporary write pos (local to the EE thread)
-	WorkSema semaEvent;
-	BaseVUmicroCPU*& vuCPU;
-	VURegs&          vuRegs;
+	Threading::WorkSema semaEvent;
+	std::atomic_bool m_shutdown_flag{false};
+
+	std::thread m_thread;
+	Threading::ThreadHandle m_thread_handle;
 
 public:
 	alignas(16)  vifStruct        vif;
 	alignas(16)  VIFregisters     vifRegs;
-	Semaphore semaXGkick;
+	Threading::Semaphore semaXGkick;
 	std::atomic<unsigned int> vuCycles[4]; // Used for VU cycle stealing hack
 	u32 vuCycleIdx;  // Used for VU cycle stealing hack
 	u32 vuFBRST;
@@ -59,8 +63,16 @@ public:
 	std::atomic<u64> gsLabel; // Used for GS Label command
 	std::atomic<u64> gsSignal; // Used for GS Signal command
 
-	VU_Thread(BaseVUmicroCPU*& _vuCPU, VURegs& _vuRegs);
-	virtual ~VU_Thread();
+	VU_Thread();
+	~VU_Thread();
+
+	__fi const Threading::ThreadHandle& GetThreadHandle() const { return m_thread_handle; }
+
+	/// Ensures the VU thread is started.
+	void Open();
+
+	/// Shuts down the VU thread if it is currently running.
+	void Close();
 
 	void Reset();
 
@@ -92,9 +104,6 @@ public:
 	void WriteCol(vifStruct& _vif);
 
 	void WriteRow(vifStruct& _vif);
-
-protected:
-	void ExecuteTaskInThread();
 
 private:
 	void ExecuteRingBuffer();
