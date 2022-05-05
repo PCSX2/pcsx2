@@ -30,7 +30,7 @@ static __fi void mVUthrowHardwareDeficiency(const wxChar* extFail, int vuIndex)
 {
 	throw Exception::HardwareDeficiency()
 		.SetDiagMsg(pxsFmt(L"microVU%d recompiler init failed: %s is not available.", vuIndex, extFail))
-		.SetUserMsg(pxsFmt(_("%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."), extFail));
+		.SetUserMsg(pxsFmt(_("%s Extensions not found.  microVU requires a host CPU with SSE4 extensions."), extFail));
 }
 
 void mVUreserveCache(microVU& mVU)
@@ -419,9 +419,6 @@ void recMicroVU0::Execute(u32 cycles)
 		return;
 	VU0.VI[REG_TPC].UL <<= 3;
 
-	// Sometimes games spin on vu0, so be careful with this value
-	// woody hangs if too high on sVU (untested on mVU)
-	// Edit: Need to test this again, if anyone ever has a "Woody" game :p
 	((mVUrecCall)microVU0.startFunct)(VU0.VI[REG_TPC].UL, cycles);
 	VU0.VI[REG_TPC].UL >>= 3;
 	if (microVU0.regs().flags & 0x4)
