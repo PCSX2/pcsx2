@@ -285,9 +285,6 @@
     <ClInclude Include="Path.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PersistentThread.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PrecompiledHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -322,9 +319,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="emitter\implement\test.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ThreadingInternal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="emitter\tools.h">

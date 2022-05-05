@@ -355,6 +355,7 @@
     <ClCompile Include="gui\DriveList.cpp" />
     <ClCompile Include="gui\IniInterface.cpp" />
     <ClCompile Include="gui\Panels\MemoryCardListView.cpp" />
+    <ClCompile Include="gui\PersistentThread.cpp" />
     <ClCompile Include="gui\pxCheckBox.cpp" />
     <ClCompile Include="gui\pxRadioPanel.cpp" />
     <ClCompile Include="gui\pxStaticText.cpp" />
@@ -802,6 +803,7 @@
     <ClInclude Include="gui\i18n.h" />
     <ClInclude Include="gui\DriveList.h" />
     <ClInclude Include="gui\IniInterface.h" />
+    <ClInclude Include="gui\PersistentThread.h" />
     <ClInclude Include="gui\pxCheckBox.h" />
     <ClInclude Include="gui\pxEvents.h" />
     <ClInclude Include="gui\pxRadioPanel.h" />
@@ -816,6 +818,7 @@
     <ClInclude Include="gui\Debugger\DebuggerLists.h" />
     <ClInclude Include="gui\Debugger\DisassemblyDialog.h" />
     <ClInclude Include="gui\Panels\MemoryCardPanels.h" />
+    <ClInclude Include="gui\ScopedPtrMT.h" />
     <ClInclude Include="gui\ThreadingDialogs.h" />
     <ClInclude Include="gui\wxAppWithHelpers.h" />
     <ClInclude Include="gui\wxSettingsInterface.h" />

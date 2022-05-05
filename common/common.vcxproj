@@ -151,7 +151,6 @@
     <ClInclude Include="StringUtil.h" />
     <ClInclude Include="SettingsInterface.h" />
     <ClInclude Include="SettingsWrapper.h" />
-    <ClInclude Include="ThreadingInternal.h" />
     <ClInclude Include="Assertions.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="Dependencies.h" />
@@ -178,7 +177,6 @@
     <ClInclude Include="Vulkan\Util.h" />
     <ClInclude Include="WindowInfo.h" />
     <ClInclude Include="Threading.h" />
-    <ClInclude Include="PersistentThread.h" />
     <ClInclude Include="RwMutex.h" />
     <ClInclude Include="emitter\implement\bmi.h" />
     <ClInclude Include="emitter\cpudetect_internal.h" />

@@ -16,7 +16,7 @@
 #if defined(_WIN32)
 
 #include "common/RedtapeWindows.h"
-#include "common/PersistentThread.h"
+#include "common/Threading.h"
 #include "common/emitter/tools.h"
 
 __fi void Threading::Sleep(int ms)
@@ -140,30 +140,6 @@ u64 Threading::GetThreadTicksPerSecond()
 	if (unlikely(frequency == 0))
 		frequency = x86caps.CachedMHz() * u64(1000000);
 	return frequency;
-}
-
-u64 Threading::pxThread::GetCpuTime() const
-{
-	u64 ret = 0;
-	if (m_native_handle)
-		QueryThreadCycleTime((HANDLE)m_native_handle, &ret);
-	return ret;
-}
-
-void Threading::pxThread::_platform_specific_OnStartInThread()
-{
-	// OpenThread Note: Vista and Win7 need only THREAD_QUERY_LIMITED_INFORMATION (XP and 2k need more),
-	// however we own our process threads, so shouldn't matter in any case...
-
-	m_native_id = (uptr)GetCurrentThreadId();
-	m_native_handle = (uptr)OpenThread(THREAD_QUERY_INFORMATION, false, (DWORD)m_native_id);
-
-	pxAssertDev(m_native_handle, wxNullChar);
-}
-
-void Threading::pxThread::_platform_specific_OnCleanupInThread()
-{
-	CloseHandle((HANDLE)m_native_handle);
 }
 
 void Threading::SetNameOfCurrentThread(const char* name)

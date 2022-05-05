@@ -49,7 +49,7 @@ class pxSynchronousCommandEvent;
 //   (sigh).  And, finally, it requires quite a bit of red tape to implement wxObjects because
 //   of the wx-custom runtime type information.  So I made my own.
 //
-class BaseDeletableObject : public virtual IDeletableObject
+class BaseDeletableObject
 {
 protected:
 	std::atomic<bool> m_IsBeingDeleted;
@@ -58,8 +58,8 @@ public:
 	BaseDeletableObject();
 	virtual ~BaseDeletableObject();
 
-	void DeleteSelf();
-	bool IsBeingDeleted() { return !!m_IsBeingDeleted; }
+	virtual void DeleteSelf();
+	virtual bool IsBeingDeleted() { return !!m_IsBeingDeleted; }
 
 	// Returns FALSE if the object is already marked for deletion, or TRUE if the app
 	// should schedule the object for deletion.  Only schedule if TRUE is returned, otherwise
