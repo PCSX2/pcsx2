@@ -67,9 +67,6 @@
     <ClCompile Include="pxTranslate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RwMutex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Semaphore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -289,9 +286,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RedtapeWindows.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RwMutex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SafeArray.h">
