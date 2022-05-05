@@ -17,7 +17,7 @@
 #include "MemoryTypes.h"
 #include "App.h"
 
-#include "System/SysThreads.h"
+#include "SysThreads.h"
 #include "SaveState.h"
 #include "VUmicro.h"
 

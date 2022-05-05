@@ -20,7 +20,7 @@
 #include "R5900OpcodeTables.h"
 #include "R5900Exceptions.h"
 #ifndef PCSX2_CORE
-#include "System/SysThreads.h"
+#include "gui/SysThreads.h"
 #else
 #include "VMManager.h"
 #endif

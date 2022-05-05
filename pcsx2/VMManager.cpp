@@ -46,7 +46,6 @@
 #include "R5900.h"
 #include "SPU2/spu2.h"
 #include "DEV9/DEV9.h"
-#include "System/SysThreads.h"
 #include "USB/USB.h"
 #include "PAD/Host/PAD.h"
 #include "Sio.h"

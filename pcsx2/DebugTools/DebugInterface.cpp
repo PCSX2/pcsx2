@@ -28,7 +28,7 @@
 #include "SymbolMap.h"
 
 #ifndef PCSX2_CORE
-#include "System/SysThreads.h"
+#include "gui/SysThreads.h"
 #endif
 
 R5900DebugInterface r5900Debug;

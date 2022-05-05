@@ -18,12 +18,15 @@
 #include "R3000A.h"
 #include "Common.h"
 #include "Config.h"
-#include "System/SysThreads.h"
 
 #include "R5900OpcodeTables.h"
 #include "DebugTools/Breakpoints.h"
 #include "IopBios.h"
 #include "IopHw.h"
+
+#ifndef PCSX2_CORE
+#include "gui/SysThreads.h"
+#endif
 
 using namespace R3000A;
 

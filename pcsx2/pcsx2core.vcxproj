@@ -322,7 +322,6 @@
     <ClCompile Include="SaveState.cpp" />
     <ClCompile Include="SourceLog.cpp" />
     <ClCompile Include="System.cpp" />
-    <ClCompile Include="System\SysThreadBase.cpp" />
     <ClCompile Include="Elfheader.cpp" />
     <ClCompile Include="CDVD\InputIsoFile.cpp" />
     <ClCompile Include="x86\BaseblockEx.cpp" />

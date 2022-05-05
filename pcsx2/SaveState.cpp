@@ -34,7 +34,6 @@
 #include "Elfheader.h"
 #include "Counters.h"
 #include "Patch.h"
-#include "System/SysThreads.h"
 #include "DebugTools/Breakpoints.h"
 #include "Host.h"
 #include "GS.h"
@@ -46,6 +45,7 @@
 #ifndef PCSX2_CORE
 #include "gui/App.h"
 #include "gui/ConsoleLogger.h"
+#include "gui/SysThreads.h"
 #else
 #include "VMManager.h"
 #endif

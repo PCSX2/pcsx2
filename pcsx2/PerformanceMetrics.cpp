@@ -23,7 +23,6 @@
 
 #include "PerformanceMetrics.h"
 #include "System.h"
-#include "System/SysThreads.h"
 
 #include "GS.h"
 #include "MTVU.h"
@@ -177,9 +176,9 @@ void PerformanceMetrics::Update(bool gs_register_write, bool fb_blit)
 	s_last_ticks = ticks;
 
 	const double pct_divider =
-		100.0 * (1.0 / ((static_cast<double>(ticks_delta) * static_cast<double>(GetThreadTicksPerSecond())) /
+		100.0 * (1.0 / ((static_cast<double>(ticks_delta) * static_cast<double>(Threading::GetThreadTicksPerSecond())) /
 						   static_cast<double>(GetTickFrequency())));
-	const double time_divider = 1000.0 * (1.0 / static_cast<double>(GetThreadTicksPerSecond())) *
+	const double time_divider = 1000.0 * (1.0 / static_cast<double>(Threading::GetThreadTicksPerSecond())) *
 								(1.0 / static_cast<double>(s_frames_since_last_update));
 
 	const u64 cpu_time = s_cpu_thread_handle.GetCPUTime();

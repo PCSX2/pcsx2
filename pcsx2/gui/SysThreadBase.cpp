@@ -332,13 +332,9 @@ bool SysThreadBase::StateCheckInThread()
 			m_RunningLock.Acquire();
 			if (m_ExecMode != ExecMode_Closing)
 			{
-#ifndef PCSX2_CORE
 				// AppCoreThread deals with Reseting CDVD
 				OnResumeInThread(g_CDVDReset ? static_cast<SystemsMask>(systemsToTearDown & ~(System_CDVD)) : systemsToTearDown);
 				g_CDVDReset = false;
-#else
-				OnResumeInThread(systemsToTearDown);
-#endif
 				break;
 			}
 			m_sem_ChangingExecMode.Post();
@@ -361,9 +357,7 @@ bool SysThreadBase::StateCheckInThread()
 
 			m_RunningLock.Acquire();
 			OnResumeInThread(static_cast<SystemsMask>(-1)); // All systems
-#ifndef PCSX2_CORE
 			g_CDVDReset = false;
-#endif
 			break;
 
 			jNO_DEFAULT;
