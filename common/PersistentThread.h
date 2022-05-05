@@ -58,9 +58,6 @@ namespace Threading
 		virtual void OnThreadCleanup() = 0;
 	};
 
-	/// Set the name of the current thread
-	void SetNameOfCurrentThread(const char* name);
-
 	// --------------------------------------------------------------------------------------
 	// pxThread - Helper class for the basics of starting/managing persistent threads.
 	// --------------------------------------------------------------------------------------
