@@ -15,8 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "gui/wxAppWithHelpers.h"
-#include "common/ThreadingInternal.h"
-#include "common/PersistentThread.h"
+#include "gui/PersistentThread.h"
 
 wxDEFINE_EVENT(pxEvt_StartIdleEventTimer, wxCommandEvent);
 wxDEFINE_EVENT(pxEvt_DeleteObject, wxCommandEvent);

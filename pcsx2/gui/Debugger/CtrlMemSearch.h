@@ -15,9 +15,9 @@
 
 #pragma once
 #include <wx/wx.h>
-#include "common/PersistentThread.h"
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
+#include "gui/PersistentThread.h"
 
 enum class SEARCHTYPE
 {

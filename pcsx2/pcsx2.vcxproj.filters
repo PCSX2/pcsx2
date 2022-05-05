@@ -1769,6 +1769,7 @@
     <ClCompile Include="GS\Renderers\DX12\GSDevice12.cpp">
       <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
     </ClCompile>
+    <ClCompile Include="gui\PersistentThread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2945,6 +2946,8 @@
     <ClInclude Include="GS\Renderers\DX12\GSTexture12.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
     </ClInclude>
+    <ClInclude Include="gui\ScopedPtrMT.h" />
+    <ClInclude Include="gui\PersistentThread.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="windows\wxResources.rc">

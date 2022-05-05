@@ -17,8 +17,8 @@
 
 #include "System.h"
 
-#include "common/PersistentThread.h"
 #include "common/emitter/tools.h"
+#include "PersistentThread.h"
 #include "PINE.h"
 
 

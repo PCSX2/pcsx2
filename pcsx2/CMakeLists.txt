@@ -1133,6 +1133,7 @@ set(pcsx2GuiSources
 	gui/Panels/PathsPanel.cpp
 	gui/Panels/SpeedhacksPanel.cpp
 	gui/Panels/VideoPanel.cpp
+	gui/PersistentThread.cpp
 	gui/pxCheckBox.cpp
 	gui/pxRadioPanel.cpp
 	gui/pxStaticText.cpp
@@ -1186,6 +1187,7 @@ set(pcsx2GuiHeaders
 	gui/Panels/ConfigurationPanels.h
 	gui/Panels/LogOptionsPanels.h
 	gui/Panels/MemoryCardPanels.h
+	gui/PersistentThread.h
 	gui/pxCheckBox.h
 	gui/pxEvents.h
 	gui/pxEventThread.h
@@ -1193,6 +1195,7 @@ set(pcsx2GuiHeaders
 	gui/pxStaticText.h
 	gui/RecentIsoList.h
 	gui/Saveslots.h
+	gui/ScopedPtrMT.h
 	gui/SysThreads.h
 	gui/ThreadingDialogs.h
 	gui/ThreadingDialogs.cpp

@@ -38,10 +38,6 @@ Fnptr_OutOfMemory pxDoOutOfMemory = NULL;
 #define DEVASSERT_INLINE __fi
 #endif
 
-// Using a threadlocal assertion guard.  Separate threads can assert at the same time.
-// That's ok.  What we don't want is the *same* thread recurse-asserting.
-static DeclareTls(int) s_assert_guard(0);
-
 pxDoAssertFnType* pxDoAssert = pxAssertImpl_LogIt;
 
 // make life easier for people using VC++ IDE by using this format, which allows double-click
@@ -54,8 +50,6 @@ wxString DiagnosticOrigin::ToString(const wxChar* msg) const
 
 	if (function != NULL)
 		message.Write("    Function:  %s\n", function);
-
-	message.Write(L"    Thread:    %s\n", WX_STR(Threading::pxGetCurrentThreadName()));
 
 	if (condition != NULL)
 		message.Write(L"    Condition: %ls\n", condition);
@@ -99,15 +93,6 @@ bool pxAssertImpl_LogIt(const DiagnosticOrigin& origin, const wxChar* msg)
 
 DEVASSERT_INLINE void pxOnAssert(const DiagnosticOrigin& origin, const wxString& msg)
 {
-	// Recursion guard: Allow at least one recursive call.  This is useful because sometimes
-	// we get meaningless assertions while unwinding stack traces after exceptions have occurred.
-
-	RecursionGuard guard(s_assert_guard);
-	if (guard.Counter > 2)
-	{
-		return pxTrap();
-	}
-
 	// wxWidgets doesn't come with debug builds on some Linux distros, and other distros make
 	// it difficult to use the debug build (compilation failures).  To handle these I've had to
 	// bypass the internal wxWidgets assertion handler entirely, since it may not exist even if

@@ -17,9 +17,9 @@
 
 #include "common/SafeArray.h"
 #include "common/EventSource.h"
-#include "common/PersistentThread.h"
 
 #include "gui/wxGuiTools.h"
+#include "gui/PersistentThread.h"
 #include "gui/pxRadioPanel.h"
 #include "gui/pxCheckBox.h"
 #include "gui/pxStaticText.h"

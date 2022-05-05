@@ -34,7 +34,7 @@
 #include <pthread_np.h>
 #endif
 
-#include "common/PersistentThread.h"
+#include "common/Threading.h"
 
 // We wont need this until we actually have this more then just stubbed out, so I'm commenting this out
 // to remove an unneeded dependency.
@@ -197,31 +197,6 @@ bool Threading::ThreadHandle::SetAffinity(u64 processor_mask) const
 #else
 	return false;
 #endif
-}
-
-u64 Threading::pxThread::GetCpuTime() const
-{
-	// Get the cpu time for the thread belonging to this object.  Use m_native_id and/or
-	// m_native_handle to implement it. Return value should be a measure of total time the
-	// thread has used on the CPU (scaled by the value returned by GetThreadTicksPerSecond(),
-	// which typically would be an OS-provided scalar or some sort).
-
-	if (!m_native_id)
-		return 0;
-
-	return get_thread_time(m_native_id);
-}
-
-void Threading::pxThread::_platform_specific_OnStartInThread()
-{
-	// Obtain linux-specific thread IDs or Handles here, which can be used to query
-	// kernel scheduler performance information.
-	m_native_id = (uptr)pthread_self();
-}
-
-void Threading::pxThread::_platform_specific_OnCleanupInThread()
-{
-	// Cleanup handles here, which were opened above.
 }
 
 void Threading::SetNameOfCurrentThread(const char* name)

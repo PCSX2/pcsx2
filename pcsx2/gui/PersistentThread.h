@@ -16,11 +16,137 @@
 #pragma once
 
 #include "common/Threading.h"
-#include "common/ScopedPtrMT.h"
 #include "common/EventSource.h"
+#include "ScopedPtrMT.h"
+
+#undef Yield // release the burden of windows.h global namespace spam.
+
+#define AffinityAssert_AllowFrom_MainUI() \
+	pxAssertMsg(wxThread::IsMain(), "Thread affinity violation: Call allowed from main thread only.")
+
+// --------------------------------------------------------------------------------------
+//  pxThreadLog / ConsoleLogSource_Threading
+// --------------------------------------------------------------------------------------
+
+class ConsoleLogSource_Threading : ConsoleLogSource
+{
+	typedef ConsoleLogSource _parent;
+
+public:
+	using _parent::IsActive;
+
+	ConsoleLogSource_Threading();
+
+	bool Write(const wxString& thrname, const wxChar* msg)
+	{
+		return _parent::Write(wxsFormat(L"(thread:%s) ", WX_STR(thrname)) + msg);
+	}
+	bool Warn(const wxString& thrname, const wxChar* msg)
+	{
+		return _parent::Warn(wxsFormat(L"(thread:%s) ", WX_STR(thrname)) + msg);
+	}
+	bool Error(const wxString& thrname, const wxChar* msg)
+	{
+		return _parent::Error(wxsFormat(L"(thread:%s) ", WX_STR(thrname)) + msg);
+	}
+};
+
+extern ConsoleLogSource_Threading pxConLog_Thread;
+
+#define pxThreadLog pxConLog_Thread.IsActive() && pxConLog_Thread
+
+
+namespace Exception
+{
+	class BaseThreadError : public RuntimeError
+	{
+		DEFINE_EXCEPTION_COPYTORS(BaseThreadError, RuntimeError)
+		DEFINE_EXCEPTION_MESSAGES(BaseThreadError)
+
+	public:
+		Threading::pxThread* m_thread;
+
+	protected:
+		BaseThreadError()
+		{
+			m_thread = NULL;
+		}
+
+	public:
+		explicit BaseThreadError(Threading::pxThread* _thread)
+		{
+			m_thread = _thread;
+			m_message_diag = L"An unspecified thread-related error occurred (thread=%s)";
+		}
+
+		explicit BaseThreadError(Threading::pxThread& _thread)
+		{
+			m_thread = &_thread;
+			m_message_diag = L"An unspecified thread-related error occurred (thread=%s)";
+		}
+
+		virtual wxString FormatDiagnosticMessage() const;
+		virtual wxString FormatDisplayMessage() const;
+
+		Threading::pxThread& Thread();
+		const Threading::pxThread& Thread() const;
+	};
+
+	class ThreadCreationError : public BaseThreadError
+	{
+		DEFINE_EXCEPTION_COPYTORS(ThreadCreationError, BaseThreadError)
+
+	public:
+		explicit ThreadCreationError(Threading::pxThread* _thread)
+		{
+			m_thread = _thread;
+			SetBothMsgs(L"Thread creation failure.  An unspecified error occurred while trying to create the %s thread.");
+		}
+
+		explicit ThreadCreationError(Threading::pxThread& _thread)
+		{
+			m_thread = &_thread;
+			SetBothMsgs(L"Thread creation failure.  An unspecified error occurred while trying to create the %s thread.");
+		}
+	};
+} // namespace Exception
 
 namespace Threading
 {
+	extern pxThread* pxGetCurrentThread();
+	extern wxString pxGetCurrentThreadName();
+	extern bool _WaitGui_RecursionGuard(const wxChar* name);
+
+	extern bool AllowDeletions();
+
+	// ----------------------------------------------------------------------------------------
+	//  RecursionGuard  -  Basic protection against function recursion
+	// ----------------------------------------------------------------------------------------
+	// Thread safety note: If used in a threaded environment, you shoud use a handle to a __threadlocal
+	// storage variable (protects aaginst race conditions and, in *most* cases, is more desirable
+	// behavior as well.
+	//
+	// Rationale: wxWidgets has its own wxRecursionGuard, but it has a sloppy implementation with
+	// entirely unnecessary assertion checks.
+	//
+	class RecursionGuard
+	{
+	public:
+		int& Counter;
+
+		RecursionGuard(int& counter)
+			: Counter(counter)
+		{
+			++Counter;
+		}
+
+		virtual ~RecursionGuard()
+		{
+			--Counter;
+		}
+
+		bool IsReentrant() const { return Counter > 1; }
+	};
 
 	// --------------------------------------------------------------------------------------
 	//  ThreadDeleteEvent
@@ -58,6 +184,48 @@ namespace Threading
 		virtual void OnThreadCleanup() = 0;
 	};
 
+	class Semaphore
+	{
+	protected:
+#ifdef __APPLE__
+		semaphore_t m_sema;
+		int m_counter;
+#else
+		sem_t m_sema;
+#endif
+
+	public:
+		Semaphore();
+		virtual ~Semaphore();
+
+		void Reset();
+		void Post();
+		void Post(int multiple);
+
+		void WaitWithoutYield();
+		bool WaitWithoutYield(const wxTimeSpan& timeout);
+		void WaitNoCancel();
+		void WaitNoCancel(const wxTimeSpan& timeout);
+		void WaitWithoutYieldWithSpin()
+		{
+			u32 waited = 0;
+			while (true)
+			{
+				if (TryWait())
+					return;
+				if (waited >= SPIN_TIME_NS)
+					break;
+				waited += ShortSpin();
+			}
+			WaitWithoutYield();
+		}
+		bool TryWait();
+		int Count();
+
+		void Wait();
+		bool Wait(const wxTimeSpan& timeout);
+	};
+
 	// --------------------------------------------------------------------------------------
 	// pxThread - Helper class for the basics of starting/managing persistent threads.
 	// --------------------------------------------------------------------------------------
@@ -89,13 +257,9 @@ namespace Threading
 	{
 		DeclareNoncopyableObject(pxThread);
 
-		friend void pxYield(int ms);
-
 	protected:
 		wxString m_name; // diagnostic name for our thread.
 		pthread_t m_thread;
-		uptr m_native_id; // typically an id, but implementing platforms can do whatever.
-		uptr m_native_handle; // typically a pointer/handle, but implementing platforms can do whatever.
 
 		WorkSema m_sem_event; // general wait event that's needed by most threads
 		Semaphore m_sem_startup; // startup sync tool
@@ -118,7 +282,6 @@ namespace Threading
 		pxThread(const wxString& name = L"pxThread");
 
 		pthread_t GetId() const { return m_thread; }
-		u64 GetCpuTime() const;
 
 		virtual void Start();
 		virtual void Cancel(bool isBlocking = true);
@@ -189,8 +352,6 @@ namespace Threading
 		// ----------------------------------------------------------------------------
 		// Section of methods for internal use only.
 
-		void _platform_specific_OnStartInThread();
-		void _platform_specific_OnCleanupInThread();
 		bool _basecancel();
 		void _selfRunningTest(const wxChar* name) const;
 		void _DoSetThreadName(const wxString& name);

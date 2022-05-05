@@ -21,7 +21,7 @@
 #include <mach/mach_port.h>
 
 #include "common/PrecompiledHeader.h"
-#include "common/PersistentThread.h"
+#include "common/Threading.h"
 
 // Note: assuming multicore is safer because it forces the interlocked routines to use
 // the LOCK prefix.  The prefix works on single core CPUs fine (but is slow), but not
@@ -138,32 +138,6 @@ bool Threading::ThreadHandle::SetAffinity(u64 processor_mask) const
 {
 	// Doesn't appear to be possible to set affinity.
 	return false;
-}
-
-u64 Threading::pxThread::GetCpuTime() const
-{
-	// Get the cpu time for the thread belonging to this object.  Use m_native_id and/or
-	// m_native_handle to implement it. Return value should be a measure of total time the
-	// thread has used on the CPU (scaled by the value returned by GetThreadTicksPerSecond(),
-	// which typically would be an OS-provided scalar or some sort).
-	if (!m_native_id)
-	{
-		return 0;
-	}
-
-	return getthreadtime((thread_port_t)m_native_id);
-}
-
-void Threading::pxThread::_platform_specific_OnStartInThread()
-{
-	m_native_id = (uptr)mach_thread_self();
-}
-
-void Threading::pxThread::_platform_specific_OnCleanupInThread()
-{
-	// cleanup of handles that were upened in
-	// _platform_specific_OnStartInThread
-	mach_port_deallocate(mach_task_self(), (thread_port_t)m_native_id);
 }
 
 // name can be up to 16 bytes
