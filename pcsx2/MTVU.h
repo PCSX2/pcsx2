@@ -46,7 +46,7 @@ class VU_Thread final {
 public:
 	alignas(16)  vifStruct        vif;
 	alignas(16)  VIFregisters     vifRegs;
-	Threading::Semaphore semaXGkick;
+	Threading::KernelSemaphore semaXGkick;
 	std::atomic<unsigned int> vuCycles[4]; // Used for VU cycle stealing hack
 	u32 vuCycleIdx;  // Used for VU cycle stealing hack
 	u32 vuFBRST;

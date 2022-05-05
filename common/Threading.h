@@ -295,7 +295,7 @@ namespace Threading
 		~KernelSemaphore();
 		void Post();
 		void Wait();
-		void WaitWithYield();
+		bool TryWait();
 	};
 
 	/// A semaphore for notifying a work-processing thread of new work in a (separate) queue

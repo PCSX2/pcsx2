@@ -229,7 +229,7 @@ void SysMtgsThread::PostVsyncStart(bool registers_written)
 	m_VsyncSignalListener.store(true, std::memory_order_release);
 	//Console.WriteLn( Color_Blue, "(EEcore Sleep) Vsync\t\tringpos=0x%06x, writepos=0x%06x", m_ReadPos.load(), m_WritePos.load() );
 
-	m_sem_Vsync.WaitNoCancel();
+	m_sem_Vsync.Wait();
 }
 
 void SysMtgsThread::InitAndReadFIFO(u8* mem, u32 qwc)
@@ -415,7 +415,7 @@ void SysMtgsThread::MainLoop()
 					{
 						mtvu_lock.Release();
 						// Wait for MTVU to complete vu1 program
-						vu1Thread.semaXGkick.WaitWithoutYield();
+						vu1Thread.semaXGkick.Wait();
 						mtvu_lock.Acquire();
 					}
 					Gif_Path& path = gifUnit.gifPath[GIF_PATH_1];
@@ -722,7 +722,7 @@ void SysMtgsThread::GenericStall(uint size)
 			{
 				m_SignalRingEnable.store(true, std::memory_order_release);
 				SetEvent();
-				m_sem_OnRingReset.WaitWithoutYield();
+				m_sem_OnRingReset.Wait();
 				readpos = m_ReadPos.load(std::memory_order_acquire);
 				//Console.WriteLn( Color_Blue, "(EEcore Awake) Report!\tringpos=0x%06x", readpos );
 
