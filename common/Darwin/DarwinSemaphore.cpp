@@ -73,8 +73,17 @@ void Threading::KernelSemaphore::Post()
 
 void Threading::KernelSemaphore::Wait()
 {
-	pxAssertMsg(!wxThread::IsMain(), "Unyielding semaphore wait issued from the main/gui thread.  Use WaitWithYield.");
 	MACH_CHECK(semaphore_wait(m_sema));
+}
+
+bool Threading::KernelSemaphore::TryWait()
+{
+	mach_timespec_t time = {};
+	kern_return_t res = semaphore_timedwait(m_sema, time);
+	if (res == KERN_OPERATION_TIMED_OUT)
+		return false;
+	MACH_CHECK(res);
+	return true;
 }
 
 /// Wait up to the given time
@@ -90,25 +99,6 @@ static bool WaitUpTo(semaphore_t sema, wxTimeSpan wxtime)
 		return false;
 	MACH_CHECK(res);
 	return true;
-}
-
-void Threading::KernelSemaphore::WaitWithYield()
-{
-#if wxUSE_GUI
-	if (!wxThread::IsMain() || (wxTheApp == NULL))
-	{
-		Wait();
-	}
-	else
-	{
-		while (!WaitUpTo(m_sema, def_yieldgui_interval))
-		{
-			YieldToMain();
-		}
-	}
-#else
-	WaitWithoutYield();
-#endif
 }
 
 Threading::Semaphore::Semaphore()

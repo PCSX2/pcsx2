@@ -336,8 +336,8 @@ public:
 	Threading::Mutex m_mtx_RingBufferBusy2; // Gets released on semaXGkick waiting...
 	Threading::Mutex m_mtx_WaitGS;
 	Threading::WorkSema m_sem_event;
-	Threading::Semaphore m_sem_OnRingReset;
-	Threading::Semaphore m_sem_Vsync;
+	Threading::KernelSemaphore m_sem_OnRingReset;
+	Threading::KernelSemaphore m_sem_Vsync;
 
 	// used to keep multiple threads from sending packets to the ringbuffer concurrently.
 	// (currently not used or implemented -- is a planned feature for a future threaded VU1)

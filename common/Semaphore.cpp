@@ -84,7 +84,7 @@ bool Threading::WorkSema::WaitForEmpty()
 			break;
 	}
 	pxAssertDev(!(value & STATE_FLAG_WAITING_EMPTY), "Multiple threads attempted to wait for empty (not currently supported)");
-	m_empty_sema.WaitWithYield();
+	m_empty_sema.Wait();
 	return !IsDead(m_state.load(std::memory_order_relaxed));
 }
 
@@ -102,7 +102,7 @@ bool Threading::WorkSema::WaitForEmptyWithSpin()
 		value = m_state.load(std::memory_order_acquire);
 	}
 	pxAssertDev(!(value & STATE_FLAG_WAITING_EMPTY), "Multiple threads attempted to wait for empty (not currently supported)");
-	m_empty_sema.WaitWithYield();
+	m_empty_sema.Wait();
 	return !IsDead(m_state.load(std::memory_order_relaxed));
 }
 
@@ -149,40 +149,19 @@ void Threading::KernelSemaphore::Post()
 
 void Threading::KernelSemaphore::Wait()
 {
-	pxAssertMsg(!wxThread::IsMain(), "Unyielding semaphore wait issued from the main/gui thread.  Use WaitWithYield.");
 #ifdef _WIN32
-	pthreadCancelableWait(m_sema);
+	WaitForSingleObject(m_sema, INFINITE);
 #else
 	sem_wait(&m_sema);
 #endif
 }
 
-void Threading::KernelSemaphore::WaitWithYield()
+bool Threading::KernelSemaphore::TryWait()
 {
-#if wxUSE_GUI
-	if (!wxThread::IsMain() || (wxTheApp == NULL))
-	{
-		Wait();
-	}
-	else
-	{
 #ifdef _WIN32
-		u64 millis = def_yieldgui_interval.GetMilliseconds().GetValue();
-		while (pthreadCancelableTimedWait(m_sema, millis) == ETIMEDOUT)
-			YieldToMain();
+	return WaitForSingleObject(m_sema, 0) == WAIT_OBJECT_0;
 #else
-		while (true)
-		{
-			wxDateTime megafail(wxDateTime::UNow() + def_yieldgui_interval);
-			const timespec fail = {megafail.GetTicks(), megafail.GetMillisecond() * 1000000};
-			if (sem_timedwait(&m_sema, &fail) == 0)
-				break;
-			YieldToMain();
-		}
-#endif
-	}
-#else
-	Wait();
+	return sem_trywait(&m_sema) == 0;
 #endif
 }
 
