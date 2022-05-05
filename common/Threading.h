@@ -100,6 +100,9 @@ namespace Threading
 	extern u64 GetThreadCpuTime();
 	extern u64 GetThreadTicksPerSecond();
 
+	/// Set the name of the current thread
+	extern void SetNameOfCurrentThread(const char* name);
+
 	// Yields the current thread and provides cancellation points if the thread is managed by
 	// pxThread.  Unmanaged threads use standard Sleep.
 	extern void pxYield(int ms);
