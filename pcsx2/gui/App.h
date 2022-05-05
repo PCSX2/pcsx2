@@ -22,6 +22,7 @@
 #include <wx/apptrait.h>
 #include <memory>
 
+#include "SysThreads.h"
 #include "pxEventThread.h"
 
 #include "AppCommon.h"
@@ -38,7 +39,6 @@ struct HostKeyEvent;
 
 #include "GS.h"
 #include "System.h"
-#include "System/SysThreads.h"
 
 // TODO: Not the best location for this, but it needs to be accessed by MTGS etc.
 extern WindowInfo g_gs_window_info;

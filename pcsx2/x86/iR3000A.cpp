@@ -24,7 +24,6 @@
 #include "R3000A.h"
 #include "BaseblockEx.h"
 #include "System/RecTypes.h"
-#include "System/SysThreads.h"
 #include "R5900OpcodeTables.h"
 #include "IopBios.h"
 #include "IopHw.h"
@@ -42,6 +41,10 @@
 
 #include "common/Perf.h"
 #include "DebugTools/Breakpoints.h"
+
+#ifndef PCSX2_CORE
+#include "gui/SysThreads.h"
+#endif
 
 using namespace x86Emitter;
 

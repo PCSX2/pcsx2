@@ -171,7 +171,6 @@ protected:
 	virtual void OnResumeInThread(SystemsMask systemsToReinstate) = 0;
 };
 
-#ifndef PCSX2_CORE
 // --------------------------------------------------------------------------------------
 //  SysCoreThread class
 // --------------------------------------------------------------------------------------
@@ -289,5 +288,3 @@ namespace PINESettings
 {
 	extern unsigned int slot;
 };
-
-#endif

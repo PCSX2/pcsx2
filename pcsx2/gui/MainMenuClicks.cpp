@@ -21,7 +21,7 @@
 #include "GSFrame.h"
 #include "IniInterface.h"
 #include "SPU2/spu2.h"
-#include "System/SysThreads.h"
+#include "SysThreads.h"
 #include "DEV9/DEV9.h"
 #include "USB/USB.h"
 #include "PAD/Gamepad.h"

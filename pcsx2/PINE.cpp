@@ -40,7 +40,7 @@
 #include "Memory.h"
 #include "gui/AppSaveStates.h"
 #include "gui/AppCoreThread.h"
-#include "System/SysThreads.h"
+#include "gui/SysThreads.h"
 #include "svnrev.h"
 #include "PINE.h"
 

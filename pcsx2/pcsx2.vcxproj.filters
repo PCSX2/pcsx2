@@ -452,13 +452,13 @@
     <ClCompile Include="SourceLog.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="System\SysCoreThread.cpp">
+    <ClCompile Include="gui\SysCoreThread.cpp">
       <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="System.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="System\SysThreadBase.cpp">
+    <ClCompile Include="gui\SysThreadBase.cpp">
       <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="Elfheader.cpp">
@@ -1807,7 +1807,7 @@
     <ClInclude Include="System.h">
       <Filter>System\Include</Filter>
     </ClInclude>
-    <ClInclude Include="System\SysThreads.h">
+    <ClInclude Include="gui\SysThreads.h">
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="System\RecTypes.h">

@@ -18,6 +18,7 @@
 #include "MTVU.h"
 #include "newVif.h"
 #include "Gif_Unit.h"
+#include "common/Threading.h"
 #include <thread>
 
 VU_Thread vu1Thread;
