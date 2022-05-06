@@ -45,6 +45,7 @@ public:
 		Jak3,
 		JakX,
 		KnightsOfTheTemple2,
+		KOF2002,
 		Kunoichi,
 		Lamune,
 		Manhunt2,
