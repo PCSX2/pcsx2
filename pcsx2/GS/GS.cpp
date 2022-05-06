@@ -117,6 +117,7 @@ void GSinitConfig()
 
 void GSshutdown()
 {
+#ifndef PCSX2_CORE
 	if (g_gs_renderer)
 	{
 		g_gs_renderer->Destroy();
@@ -129,6 +130,7 @@ void GSshutdown()
 	}
 
 	Host::ReleaseHostDisplay();
+#endif
 
 #ifdef _WIN32
 	if (SUCCEEDED(s_hr))

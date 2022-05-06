@@ -62,7 +62,7 @@ public Q_SLOTS:
 
 private Q_SLOTS:
 	DisplayWidget* createDisplay(bool fullscreen, bool render_to_main);
-	DisplayWidget* updateDisplay(bool fullscreen, bool render_to_main);
+	DisplayWidget* updateDisplay(bool fullscreen, bool render_to_main, bool surfaceless);
 	void displayResizeRequested(qint32 width, qint32 height);
 	void destroyDisplay();
 	void focusDisplayWidget();
@@ -134,6 +134,8 @@ private:
 	void clearProgressBar();
 
 	bool isShowingGameList() const;
+	bool isRenderingFullscreen() const;
+	bool isRenderingToMain() const;
 	void switchToGameListView();
 	void switchToEmulationView();
 
@@ -181,7 +183,7 @@ private:
 	bool m_vm_valid = false;
 	bool m_vm_paused = false;
 	bool m_save_states_invalidated = false;
-	bool m_was_focused_on_container_switch = false;
+	bool m_was_paused_on_surface_loss = false;
 
 	QString m_last_fps_status;
 };

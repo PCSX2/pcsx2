@@ -66,6 +66,7 @@ public Q_SLOTS:
 	void saveStateToSlot(qint32 slot);
 	void toggleFullscreen();
 	void setFullscreen(bool fullscreen);
+	void setSurfaceless(bool surfaceless);
 	void applySettings();
 	void reloadGameSettings();
 	void toggleSoftwareRendering();
@@ -81,7 +82,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
 	DisplayWidget* onCreateDisplayRequested(bool fullscreen, bool render_to_main);
-	DisplayWidget* onUpdateDisplayRequested(bool fullscreen, bool render_to_main);
+	DisplayWidget* onUpdateDisplayRequested(bool fullscreen, bool render_to_main, bool surfaceless);
 	void onResizeDisplayRequested(qint32 width, qint32 height);
 	void onDestroyDisplayRequested();
 
@@ -157,6 +158,7 @@ private:
 	bool m_verbose_status = false;
 	bool m_is_rendering_to_main = false;
 	bool m_is_fullscreen = false;
+	bool m_is_surfaceless = false;
 
 	float m_last_speed = 0.0f;
 	float m_last_game_fps = 0.0f;
@@ -171,11 +173,15 @@ private:
 class ScopedVMPause
 {
 public:
-	ScopedVMPause(bool was_paused);
+	ScopedVMPause(bool was_paused, bool was_fullscreen);
 	~ScopedVMPause();
+
+	__fi bool WasPaused() const { return m_was_paused; }
+	__fi bool WasFullscreen() const { return m_was_fullscreen; }
 
 private:
 	bool m_was_paused;
+	bool m_was_fullscreen;
 };
 
 extern EmuThread* g_emu_thread;
