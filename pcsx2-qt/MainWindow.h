@@ -160,6 +160,7 @@ private:
 	void populateLoadStateMenu(QMenu* menu, const QString& filename, const QString& serial, quint32 crc);
 	void populateSaveStateMenu(QMenu* menu, const QString& serial, quint32 crc);
 	void updateSaveStateMenus(const QString& filename, const QString& serial, quint32 crc);
+	void doDiscChange(const QString& path);
 
 	Ui::MainWindow m_ui;
 
@@ -184,6 +185,7 @@ private:
 	bool m_vm_paused = false;
 	bool m_save_states_invalidated = false;
 	bool m_was_paused_on_surface_loss = false;
+	bool m_was_disc_change_request = false;
 
 	QString m_last_fps_status;
 };
