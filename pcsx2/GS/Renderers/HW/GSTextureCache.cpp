@@ -162,9 +162,9 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 
 		m_src.m_surfaces.insert(src);
 	}
-	else if (g_gs_renderer->m_game.title == CRC::SVCChaos)
+	else if (g_gs_renderer->m_game.title == CRC::SVCChaos || g_gs_renderer->m_game.title == CRC::KOF2002)
 	{
-		// SVCChaos black screen on main menu, regardless of depth enabled or disabled.
+		// SVCChaos black screen & KOF2002 blue screen on main menu, regardless of depth enabled or disabled.
 		return LookupSource(TEX0, TEXA, r, nullptr);
 	}
 	else
