@@ -42,7 +42,6 @@ Q_SIGNALS:
 	void windowFocusEvent();
 	void windowResizedEvent(int width, int height, float scale);
 	void windowRestoredEvent();
-	void windowClosedEvent();
 	void windowKeyEvent(int key_code, bool pressed);
 	void windowMouseMoveEvent(int x, int y);
 	void windowMouseButtonEvent(int button, bool pressed);
