@@ -1129,6 +1129,8 @@ static MTLBlendOperation ConvertBlendOp(GSDevice::BlendOp generic)
 	}
 }
 
+static constexpr MTLColorWriteMask MTLColorWriteMaskRGB = MTLColorWriteMaskRed | MTLColorWriteMaskGreen | MTLColorWriteMaskBlue;
+
 void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDrawConfig::PSSelector pssel, GSHWDrawConfig::BlendState blend, GSHWDrawConfig::ColorMaskSelector cms)
 {
 	PipelineSelectorExtrasMTL extras(blend, m_current_render.color_target, cms, m_current_render.depth_target, m_current_render.stencil_target);
@@ -1224,7 +1226,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		color.sourceRGBBlendFactor = MTLBlendFactorOne;
 		color.destinationRGBBlendFactor = MTLBlendFactorOne;
 	}
-	else if (extras.blend_enable)
+	else if (extras.blend_enable && (extras.writemask & MTLColorWriteMaskRGB))
 	{
 		color.blendingEnabled = YES;
 		color.rgbBlendOperation = ConvertBlendOp(extras.blend_op);
