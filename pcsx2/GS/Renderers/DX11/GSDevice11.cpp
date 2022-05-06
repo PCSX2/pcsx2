@@ -1300,6 +1300,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	PSSetShaderResources(config.tex, config.pal);
 
 	GSTexture* rt_copy = nullptr;
+	GSTexture* ds_copy = nullptr;
 	if (config.require_one_barrier || (config.tex && config.tex == config.rt)) // Used as "bind rt" flag when texture barrier is unsupported
 	{
 		// Bind the RT.This way special effect can use it.
@@ -1320,9 +1321,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	{
 		// mainly for ico (depth buffer used as texture)
 		// binding to 0 here is safe, because config.tex can't equal both tex and rt
-		CloneTexture(config.ds, &rt_copy, config.drawarea);
-		if (rt_copy)
-			PSSetShaderResource(0, rt_copy);
+		CloneTexture(config.ds, &ds_copy, config.drawarea);
+		if (ds_copy)
+			PSSetShaderResource(0, ds_copy);
 	}
 
 	SetupOM(config.depth, convertSel(config.colormask, config.blend), config.blend.constant);
@@ -1375,6 +1376,8 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	if (rt_copy)
 		Recycle(rt_copy);
+	if (ds_copy)
+		Recycle(ds_copy);
 
 	if (hdr_rt)
 	{
