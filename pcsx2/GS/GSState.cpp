@@ -3275,9 +3275,9 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 			case CLAMP_CLAMP:
 			case CLAMP_REGION_CLAMP:
 				if (vr.x < uv.x)
-					vr.x = uv.x;
+					vr.x = std::min(uv.x, vr.z - 1);
 				if (vr.z > (uv.z + 1))
-					vr.z = uv.z + 1;
+					vr.z = std::max(uv.z, vr.x) + 1;
 				break;
 			case CLAMP_REGION_REPEAT:
 				if (UsesRegionRepeat(maxu, minu, uv.x, uv.z, &vr.x, &vr.z) || maxu >= tw)
@@ -3297,9 +3297,9 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 			case CLAMP_CLAMP:
 			case CLAMP_REGION_CLAMP:
 				if (vr.y < uv.y)
-					vr.y = uv.y;
+					vr.y = std::min(uv.y, vr.w - 1);
 				if (vr.w > (uv.w + 1))
-					vr.w = uv.w + 1;
+					vr.w = std::max(uv.w, vr.y) + 1;
 				break;
 			case CLAMP_REGION_REPEAT:
 				if (UsesRegionRepeat(maxv, minv, uv.y, uv.w, &vr.y, &vr.w) || maxv >= th)
