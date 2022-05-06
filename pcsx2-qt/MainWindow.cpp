@@ -811,8 +811,7 @@ void MainWindow::onGameListEntryActivated()
 	if (m_vm_valid)
 	{
 		// change disc on double click
-		g_emu_thread->changeDisc(QString::fromStdString(entry->path));
-		switchToEmulationView();
+		doDiscChange(QString::fromStdString(entry->path));
 		return;
 	}
 
@@ -923,6 +922,7 @@ void MainWindow::onChangeDiscFromFileActionTriggered()
 
 void MainWindow::onChangeDiscFromGameListActionTriggered()
 {
+	m_was_disc_change_request = true;
 	switchToGameListView();
 }
 
@@ -1069,6 +1069,7 @@ void MainWindow::onVMStarting()
 void MainWindow::onVMStarted()
 {
 	m_vm_valid = true;
+	m_was_disc_change_request = false;
 	updateEmulationActions(true, true);
 	updateWindowTitle();
 	updateStatusBarWidgetVisibility();
@@ -1097,6 +1098,7 @@ void MainWindow::onVMResumed()
 	}
 
 	m_vm_paused = false;
+	m_was_disc_change_request = false;
 	updateWindowTitle();
 	updateStatusBarWidgetVisibility();
 	m_status_fps_widget->setText(m_last_fps_status);
@@ -1698,4 +1700,23 @@ void MainWindow::updateSaveStateMenus(const QString& filename, const QString& se
 		populateLoadStateMenu(m_ui.menuLoadState, filename, serial, crc);
 	if (save_enabled)
 		populateSaveStateMenu(m_ui.menuSaveState, serial, crc);
+}
+
+void MainWindow::doDiscChange(const QString& path)
+{
+	bool reset_system = false;
+	if (!m_was_disc_change_request)
+	{
+		const int choice = QMessageBox::question(this, tr("Confirm Disc Change"), tr("Do you want to swap discs or boot the new image (via system reset)?"),
+			tr("Swap Disc"), tr("Reset"), tr("Cancel"), 0, 2);
+		if (choice == 2)
+			return;
+		reset_system = (choice != 0);
+	}
+
+	switchToEmulationView();
+
+	g_emu_thread->changeDisc(path);
+	if (reset_system)
+		g_emu_thread->resetVM();
 }
