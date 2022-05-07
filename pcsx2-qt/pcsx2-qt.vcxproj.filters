@@ -363,5 +363,8 @@
     <QtUi Include="Settings\DEV9SettingsWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
+    <QtUi Include="GameList\EmptyGameListWidget.ui">
+      <Filter>GameList</Filter>
+    </QtUi>
   </ItemGroup>
 </Project>

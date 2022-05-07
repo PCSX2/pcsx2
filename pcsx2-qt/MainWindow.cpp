@@ -215,6 +215,8 @@ void MainWindow::connectSignals()
 	connect(m_game_list_widget, &GameListWidget::entryActivated, this, &MainWindow::onGameListEntryActivated, Qt::QueuedConnection);
 	connect(
 		m_game_list_widget, &GameListWidget::entryContextMenuRequested, this, &MainWindow::onGameListEntryContextMenuRequested, Qt::QueuedConnection);
+	connect(m_game_list_widget, &GameListWidget::addGameDirectoryRequested, this,
+		[this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
 }
 
 void MainWindow::connectVMThreadSignals(EmuThread* thread)

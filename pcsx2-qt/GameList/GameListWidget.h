@@ -15,6 +15,7 @@
 
 #pragma once
 #include "pcsx2/Frontend/GameList.h"
+#include "ui_EmptyGameListWidget.h"
 #include <QtWidgets/QListView>
 #include <QtWidgets/QStackedWidget>
 #include <QtWidgets/QTableView>
@@ -69,6 +70,8 @@ Q_SIGNALS:
 	void entryActivated();
 	void entryContextMenuRequested(const QPoint& point);
 
+	void addGameDirectoryRequested();
+
 private Q_SLOTS:
 	void onRefreshProgress(const QString& status, int current, int total);
 	void onRefreshComplete();
@@ -106,6 +109,9 @@ private:
 	GameListSortModel* m_sort_model = nullptr;
 	QTableView* m_table_view = nullptr;
 	GameListGridListView* m_list_view = nullptr;
+
+	QWidget* m_empty_widget = nullptr;
+	Ui::EmptyGameListWidget m_empty_ui;
 
 	GameListRefreshThread* m_refresh_thread = nullptr;
 };
