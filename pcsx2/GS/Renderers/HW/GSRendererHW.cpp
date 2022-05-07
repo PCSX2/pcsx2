@@ -269,7 +269,14 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 
 	const int videomode = static_cast<int>(GetVideoMode()) - 1;
 	const int display_height = VideoModeOffsets[videomode].y * ((isinterlaced() && !m_regs->SMODE2.FFMD) ? 2 : 1);
-	const int fb_height = std::min(GetFramebufferHeight(), display_height) + DISPFB.DBY;
+	const int display_offset = GetResolutionOffset(i).y;
+	int fb_height = std::min(GetFramebufferHeight(), display_height) + DISPFB.DBY;
+	
+	// If there is a negative vertical offset on the picture, we need to read more.
+	if (display_offset < 0)
+	{
+		fb_height += -display_offset;
+	}
 	// TRACE(_T("[%d] GetOutput %d %05x (%d)\n"), (int)m_perfmon.GetFrame(), i, (int)TEX0.TBP0, (int)TEX0.PSM);
 
 	GSTexture* t = NULL;

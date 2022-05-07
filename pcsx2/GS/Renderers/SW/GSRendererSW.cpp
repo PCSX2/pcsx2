@@ -143,10 +143,15 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 	int w = DISPFB.FBW * 64;
 
 	const int videomode = static_cast<int>(GetVideoMode()) - 1;
-	int display_height = VideoModeOffsets[videomode].y * ((isinterlaced() && !m_regs->SMODE2.FFMD) ? 2 : 1);
+	const int display_offset = GetResolutionOffset(i).y;
+	const int display_height = VideoModeOffsets[videomode].y * ((isinterlaced() && !m_regs->SMODE2.FFMD) ? 2 : 1);
 	int h = std::min(GetFramebufferHeight(), display_height) + DISPFB.DBY;
 
-	// TODO: round up bottom
+	// If there is a negative vertical offset on the picture, we need to read more.
+	if (display_offset < 0)
+	{
+		h += -display_offset;
+	}
 
 	if (g_gs_device->ResizeTarget(&m_texture[i], w, h))
 	{
