@@ -43,6 +43,33 @@ class MainWindow final : public QMainWindow
 	Q_OBJECT
 
 public:
+	/// This class is a scoped lock on the VM, which prevents it from running while
+	/// the object exists. Its purpose is to be used for blocking/modal popup boxes,
+	/// where the VM needs to exit fullscreen temporarily.
+	class VMLock
+	{
+	public:
+		VMLock(VMLock&& lock);
+		VMLock(const VMLock&) = delete;
+		~VMLock();
+
+		/// Returns the parent widget, which can be used for any popup dialogs.
+		__fi QWidget* getDialogParent() const { return m_dialog_parent; }
+
+		/// Cancels any pending unpause/fullscreen transition.
+		/// Call when you're going to destroy the VM anyway.
+		void cancelResume();
+
+	private:
+		VMLock(QWidget* dialog_parent, bool was_paused, bool was_fullscreen);
+		friend MainWindow;
+
+		QWidget* m_dialog_parent;
+		bool m_was_paused;
+		bool m_was_fullscreen;
+	};
+
+	/// Default theme name for the platform.
 	static const char* DEFAULT_THEME_NAME;
 
 public:
@@ -51,6 +78,9 @@ public:
 
 	void initialize();
 	void connectVMThreadSignals(EmuThread* thread);
+
+	/// Locks the VM by pausing it, while a popup dialog is displayed.
+	VMLock pauseAndLockVM();
 
 public Q_SLOTS:
 	void refreshGameList(bool invalidate_cache);

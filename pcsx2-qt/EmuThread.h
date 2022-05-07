@@ -167,21 +167,4 @@ private:
 	int m_last_internal_height = 0;
 };
 
-/// <summary>
-/// Helper class to pause/unpause the emulation thread.
-/// </summary>
-class ScopedVMPause
-{
-public:
-	ScopedVMPause(bool was_paused, bool was_fullscreen);
-	~ScopedVMPause();
-
-	__fi bool WasPaused() const { return m_was_paused; }
-	__fi bool WasFullscreen() const { return m_was_fullscreen; }
-
-private:
-	bool m_was_paused;
-	bool m_was_fullscreen;
-};
-
 extern EmuThread* g_emu_thread;

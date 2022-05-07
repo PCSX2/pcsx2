@@ -136,7 +136,7 @@ void EmuThread::setVMPaused(bool paused)
 	}
 
 	// if we were surfaceless (view->game list, system->unpause), get our display widget back
-	if (m_is_surfaceless)
+	if (!paused && m_is_surfaceless)
 		setSurfaceless(false);
 
 	VMManager::SetPaused(paused);
@@ -870,23 +870,6 @@ void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false 
 	QMetaObject::invokeMethod(g_emu_thread, "runOnCPUThread",
 		block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
 		Q_ARG(const std::function<void()>&, std::move(function)));
-}
-
-ScopedVMPause::ScopedVMPause(bool was_paused, bool was_fullscreen)
-	: m_was_paused(was_paused), m_was_fullscreen(was_fullscreen)
-{
-	if (was_fullscreen)
-		g_emu_thread->setFullscreen(false);
-	if (!m_was_paused)
-		g_emu_thread->setVMPaused(true);
-}
-
-ScopedVMPause::~ScopedVMPause()
-{
-	if (!m_was_paused)
-		g_emu_thread->setVMPaused(false);
-	if (m_was_fullscreen)
-		g_emu_thread->setFullscreen(true);
 }
 
 alignas(16) static SysMtgsThread s_mtgs_thread;
