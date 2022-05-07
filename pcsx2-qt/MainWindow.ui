@@ -80,6 +80,7 @@
     <addaction name="actionStartBios"/>
     <addaction name="separator"/>
     <addaction name="actionPowerOff"/>
+    <addaction name="actionPowerOffWithoutSaving"/>
     <addaction name="actionReset"/>
     <addaction name="actionPause"/>
     <addaction name="menuChangeDisc"/>
@@ -283,6 +284,15 @@
    </property>
    <property name="text">
     <string>Shut &amp;Down</string>
+   </property>
+  </action>
+  <action name="actionPowerOffWithoutSaving">
+   <property name="icon">
+    <iconset theme="close-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Shut Down &amp;Without Saving</string>
    </property>
   </action>
   <action name="actionReset">

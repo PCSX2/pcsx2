@@ -59,7 +59,7 @@ public Q_SLOTS:
 	void startVM(std::shared_ptr<VMBootParameters> boot_params);
 	void resetVM();
 	void setVMPaused(bool paused);
-	void shutdownVM(bool allow_save_to_state = true);
+	void shutdownVM(bool save_state = true);
 	void loadState(const QString& filename);
 	void loadStateFromSlot(qint32 slot);
 	void saveState(const QString& filename);
@@ -159,6 +159,7 @@ private:
 	bool m_is_rendering_to_main = false;
 	bool m_is_fullscreen = false;
 	bool m_is_surfaceless = false;
+	bool m_save_state_on_shutdown = false;
 
 	float m_last_speed = 0.0f;
 	float m_last_game_fps = 0.0f;

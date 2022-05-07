@@ -939,6 +939,7 @@ struct Pcsx2Config
 #endif
 #ifdef PCSX2_CORE
 		EnableGameFixes : 1, // enables automatic game fixes
+		SaveStateOnShutdown : 1, // default value for saving state on shutdown
 #endif
 		// when enabled uses BOOT2 injection, skipping sony bios splashes
 		UseBOOT2Injection : 1,

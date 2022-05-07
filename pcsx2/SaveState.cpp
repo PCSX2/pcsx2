@@ -783,8 +783,7 @@ static bool SaveState_CompressScreenshot(SaveStateScreenshotData* data, zip_t* z
 // --------------------------------------------------------------------------------------
 //  CompressThread_VmState
 // --------------------------------------------------------------------------------------
-static void ZipStateToDiskOnThread(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot,
-	std::string filename, s32 slot_for_message)
+void SaveState_ZipToDisk(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, std::string filename, s32 slot_for_message)
 {
 #ifndef PCSX2_CORE
 	wxGetApp().StartPendingSave();
@@ -858,9 +857,10 @@ static void ZipStateToDiskOnThread(std::unique_ptr<ArchiveEntryList> srclist, st
 #endif
 }
 
-void SaveState_ZipToDisk(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, std::string filename, s32 slot_for_message)
+
+void SaveState_ZipToDiskOnThread(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, std::string filename, s32 slot_for_message)
 {
-	std::thread threaded_save(ZipStateToDiskOnThread, std::move(srclist), std::move(screenshot), std::move(filename), slot_for_message);
+	std::thread threaded_save(SaveState_ZipToDisk, std::move(srclist), std::move(screenshot), std::move(filename), slot_for_message);
 	threaded_save.detach();
 }
 
