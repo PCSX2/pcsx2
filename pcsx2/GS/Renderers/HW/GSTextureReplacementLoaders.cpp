@@ -336,6 +336,7 @@ struct DDS_PIXELFORMAT
 #define DDS_HEADER_FLAGS_VOLUME 0x00800000 // DDSD_DEPTH
 #define DDS_HEADER_FLAGS_PITCH 0x00000008 // DDSD_PITCH
 #define DDS_HEADER_FLAGS_LINEARSIZE 0x00080000 // DDSD_LINEARSIZE
+#define DDS_MAX_TEXTURE_SIZE 32768
 
 // Subset here matches D3D10_RESOURCE_DIMENSION and D3D11_RESOURCE_DIMENSION
 enum DDS_RESOURCE_DIMENSION
@@ -424,9 +425,13 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 	if (std::fread(&header, header_size, 1, fp) != 1 || header.dwSize < header_size)
 		return false;
 
-	// Required fields.
-	if ((header.dwFlags & DDS_HEADER_FLAGS_TEXTURE) != DDS_HEADER_FLAGS_TEXTURE)
+	// We should check for DDS_HEADER_FLAGS_TEXTURE here, but some tools don't seem
+	// to set it (e.g. compressonator). But we can still validate the size.
+	if (header.dwWidth == 0 || header.dwWidth >= DDS_MAX_TEXTURE_SIZE ||
+		header.dwHeight == 0 || header.dwHeight >= DDS_MAX_TEXTURE_SIZE)
+	{
 		return false;
+	}
 
 	// Image should be 2D.
 	if (header.dwFlags & DDS_HEADER_FLAGS_VOLUME)
