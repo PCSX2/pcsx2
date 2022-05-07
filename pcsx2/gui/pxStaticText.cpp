@@ -124,6 +124,32 @@ int pxStaticText::calcPaddingHeight(int newHeight) const
 	return (int)(newHeight * m_paddingPct_vert * 2) + (m_paddingPix_vert * 2);
 }
 
+// Overloaded form wxPanel and friends.
+wxSize pxStaticText::DoGetBestSize() const
+{
+	wxClientDC dc(const_cast<pxStaticText*>(this));
+	dc.SetFont(GetFontOk());
+
+	wxSize best;
+
+	if (m_autowrap)
+	{
+		best = GetBestWrappedSize(dc);
+		//best.x = wxDefaultCoord;
+	}
+	else
+	{
+		// No autowrapping, so we can force a specific size here!
+		best = dc.GetMultiLineTextExtent(GetLabel());
+		best.x += calcPaddingWidth(best.x);
+	}
+
+	best.y += calcPaddingHeight(best.y);
+
+	CacheBestSize(best);
+	return best;
+}
+
 wxSize pxStaticText::GetBestWrappedSize(const wxClientDC& dc) const
 {
 	pxAssert(m_autowrap);

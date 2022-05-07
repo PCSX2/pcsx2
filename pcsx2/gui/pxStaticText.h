@@ -57,6 +57,7 @@ protected:
 	bool AcceptsFocus() const { return false; }
 	bool HasTransparentBackground() { return true; }
 	void DoSetSize(int x, int y, int w, int h, int sizeFlags = wxSIZE_AUTO);
+	wxSize DoGetBestSize() const;
 
 public:
 	pxStaticText(wxWindow* parent, const wxString& label, wxAlignment align = wxALIGN_CENTRE_HORIZONTAL);
