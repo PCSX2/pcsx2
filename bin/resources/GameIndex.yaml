@@ -611,7 +611,8 @@ SCAJ-20070:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
+    halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
+    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
 SCAJ-20072:
   name: "Ghost in the Shell - Stand Alone Complex"
   region: "NTSC-Unk"
@@ -5949,7 +5950,8 @@ SCPS-55019:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
+    halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
+    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
 SCPS-55020:
   name: "Kengo 2"
   region: "NTSC-J"
@@ -20714,7 +20716,8 @@ SLES-82028:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
+    halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
+    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
 SLES-82029:
   name: "Star Ocean 3 - Till the End of Time [Disc2of2]"
   region: "PAL-E"
@@ -20722,7 +20725,8 @@ SLES-82029:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
+    halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
+    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
   memcardFilters:
     - "SLES-82028"
 SLES-82030:
@@ -24961,7 +24965,8 @@ SLPM-65209:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
+    halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
+    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
   patches:
     BEC32D49:
       content: |-
@@ -25746,7 +25751,8 @@ SLPM-65438:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
+    halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
+    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
 SLPM-65439:
   name: "Star Ocean 3 [Director's Cut] [Disc2of2]"
   region: "NTSC-J"
@@ -25754,7 +25760,8 @@ SLPM-65439:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
+    halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
+    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
   memcardFilters:
     - "SLPM-65438"
 SLPM-65441:
@@ -29216,7 +29223,8 @@ SLPM-66478:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
+    halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
+    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
 SLPM-66479:
   name: "Star Ocean 3 - Till the End of Time [Ultimate Hits] [Disc2of2]"
   region: "NTSC-J"
@@ -29224,7 +29232,8 @@ SLPM-66479:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
+    halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
+    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
   memcardFilters:
     - "SLPM-66478"
 SLPM-66480:
@@ -38359,7 +38368,8 @@ SLUS-20488:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
+    halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
+    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
 SLUS-20489:
   name: "Whirl Tour"
   region: "NTSC-U"
@@ -40100,7 +40110,8 @@ SLUS-20891:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    roundSprite: 2 # Fixes door transition vertical lines and minimap artifacts.
+    halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
+    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
   memcardFilters:
     - "SLUS-20488"
 SLUS-20892:
