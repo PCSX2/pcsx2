@@ -143,7 +143,8 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionChangeDiscFromGameList, &QAction::triggered, this, &MainWindow::onChangeDiscFromGameListActionTriggered);
 	connect(m_ui.menuChangeDisc, &QMenu::aboutToShow, this, &MainWindow::onChangeDiscMenuAboutToShow);
 	connect(m_ui.menuChangeDisc, &QMenu::aboutToHide, this, &MainWindow::onChangeDiscMenuAboutToHide);
-	connect(m_ui.actionPowerOff, &QAction::triggered, this, [this]() { requestShutdown(); });
+	connect(m_ui.actionPowerOff, &QAction::triggered, this, [this]() { requestShutdown(true, true); });
+	connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this, [this]() { requestShutdown(false, false); });
 	connect(m_ui.actionLoadState, &QAction::triggered, this, [this]() { m_ui.menuLoadState->exec(QCursor::pos()); });
 	connect(m_ui.actionSaveState, &QAction::triggered, this, [this]() { m_ui.menuSaveState->exec(QCursor::pos()); });
 	connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::close);
@@ -562,6 +563,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
 	m_ui.actionStartBios->setDisabled(starting_or_running);
 
 	m_ui.actionPowerOff->setEnabled(running);
+	m_ui.actionPowerOffWithoutSaving->setEnabled(running);
 	m_ui.actionReset->setEnabled(running);
 	m_ui.actionPause->setEnabled(running);
 	m_ui.actionChangeDisc->setEnabled(running);
@@ -739,18 +741,34 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 	if (!VMManager::HasValidVM())
 		return true;
 
+	// if we don't have a crc, we can't save state
+	allow_save_to_state &= (m_current_game_crc != 0);
+	bool save_state = allow_save_to_state && EmuConfig.SaveStateOnShutdown;
+
 	// only confirm on UI thread because we need to display a msgbox
 	if (allow_confirm && !GSDumpReplayer::IsReplayingDump() && QtHost::GetBaseBoolSettingValue("UI", "ConfirmShutdown", true))
 	{
 		VMLock lock(pauseAndLockVM());
-		if (QMessageBox::question(lock.getDialogParent(), tr("Confirm Shutdown"),
-			tr("Are you sure you want to shut down the virtual machine?\n\nAll unsaved progress will be lost.")) != QMessageBox::Yes)
-		{
+
+		QMessageBox msgbox(lock.getDialogParent());
+		msgbox.setIcon(QMessageBox::Question);
+		msgbox.setWindowTitle(tr("Confirm Shutdown"));
+		msgbox.setText("Are you sure you want to shut down the virtual machine?");
+
+		QCheckBox* save_cb = new QCheckBox(tr("Save State For Resume"), &msgbox);
+		save_cb->setChecked(save_state);
+		save_cb->setEnabled(allow_save_to_state);
+		msgbox.setCheckBox(save_cb);
+		msgbox.addButton(QMessageBox::Yes);
+		msgbox.addButton(QMessageBox::No);
+		msgbox.setDefaultButton(QMessageBox::Yes);
+		if (msgbox.exec() != QMessageBox::Yes)
 			return false;
-		}
+
+		save_state = save_cb->isChecked();
 	}
 
-	g_emu_thread->shutdownVM(allow_save_to_state);
+	g_emu_thread->shutdownVM(save_state);
 
 	if (block_until_done || QtHost::InBatchMode())
 	{
@@ -817,9 +835,16 @@ void MainWindow::onGameListEntryActivated()
 		return;
 	}
 
+	const std::optional<bool> resume = promptForResumeState(
+		QString::fromStdString(VMManager::GetSaveStateFileName(entry->serial.c_str(), entry->crc, -1)));
+	if (!resume.has_value())
+	{
+		// cancelled
+		return;
+	}
+
 	// only resume if the option is enabled, and we have one for this game
-	const bool resume = (VMManager::ShouldSaveResumeState() && VMManager::HasSaveStateInSlot(entry->serial.c_str(), entry->crc, -1));
-	startGameListEntry(entry, resume ? std::optional<s32>(-1) : std::optional<s32>(), std::nullopt);
+	startGameListEntry(entry, resume.value() ? std::optional<s32>(-1) : std::optional<s32>(), std::nullopt);
 }
 
 void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
@@ -856,7 +881,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 			connect(action, &QAction::triggered, [this, entry]() { startGameListEntry(entry); });
 
 			// Make bold to indicate it's the default choice when double-clicking
-			if (!VMManager::ShouldSaveResumeState() || !VMManager::HasSaveStateInSlot(entry->serial.c_str(), entry->crc, -1))
+			if (!VMManager::HasSaveStateInSlot(entry->serial.c_str(), entry->crc, -1))
 				QtUtils::MarkActionAsDefault(action);
 
 			action = menu.addAction(tr("Fast Boot"));
@@ -902,6 +927,15 @@ void MainWindow::onStartFileActionTriggered()
 
 	std::shared_ptr<VMBootParameters> params = std::make_shared<VMBootParameters>();
 	params->filename = filename.toStdString();
+
+	const std::optional<bool> resume(
+		promptForResumeState(
+			QString::fromStdString(VMManager::GetSaveStateFileName(params->filename.c_str(), -1))));
+	if (!resume.has_value())
+		return;
+	else if (resume.value())
+		params->state_index = -1;
+
 	g_emu_thread->startVM(std::move(params));
 }
 
@@ -1582,6 +1616,49 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 	m_game_list_widget->refreshGridCovers();
 }
 
+std::optional<bool> MainWindow::promptForResumeState(const QString& save_state_path)
+{
+	if (save_state_path.isEmpty())
+		return false;
+
+	QFileInfo fi(save_state_path);
+	if (!fi.exists())
+		return false;
+
+	QMessageBox msgbox(this);
+	msgbox.setIcon(QMessageBox::Question);
+	msgbox.setWindowTitle(tr("Load Resume State"));
+	msgbox.setText(
+		tr("A resume save state was found for this game, saved at:\n\n%1.\n\nDo you want to load this state, or start from a fresh boot?")
+			.arg(fi.lastModified().toLocalTime().toString()));
+
+	QPushButton* load = msgbox.addButton(tr("Load State"), QMessageBox::AcceptRole);
+	QPushButton* boot = msgbox.addButton(tr("Fresh Boot"), QMessageBox::RejectRole);
+	QPushButton* delboot = msgbox.addButton(tr("Delete And Boot"), QMessageBox::RejectRole);
+	QPushButton* cancel = msgbox.addButton(QMessageBox::Cancel);
+	msgbox.setDefaultButton(load);
+	msgbox.exec();
+
+	QAbstractButton* clicked = msgbox.clickedButton();
+	if (load == clicked)
+	{
+		return true;
+	}
+	else if (boot == clicked)
+	{
+		return false;
+	}
+	else if (delboot == clicked)
+	{
+		if (!QFile::remove(save_state_path))
+			QMessageBox::critical(this, tr("Error"), tr("Failed to delete save state file '%1'.").arg(save_state_path));
+
+		return false;
+	}
+
+	return std::nullopt;
+}
+
 void MainWindow::loadSaveStateSlot(s32 slot)
 {
 	if (m_vm_valid)
@@ -1659,8 +1736,7 @@ void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, con
 			connect(action, &QAction::triggered, [this]() { loadSaveStateSlot(-1); });
 
 			// Make bold to indicate it's the default choice when double-clicking
-			if (VMManager::ShouldSaveResumeState())
-				QtUtils::MarkActionAsDefault(action);
+			QtUtils::MarkActionAsDefault(action);
 		}
 	}
 

@@ -109,6 +109,7 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 	m_is_fullscreen = boot_params->fullscreen.value_or(QtHost::GetBaseBoolSettingValue("UI", "StartFullscreen", false));
 	m_is_rendering_to_main = QtHost::GetBaseBoolSettingValue("UI", "RenderToMainWindow", true);
 	m_is_surfaceless = false;
+	m_save_state_on_shutdown = false;
 	if (!VMManager::Initialize(*boot_params))
 		return;
 
@@ -142,14 +143,21 @@ void EmuThread::setVMPaused(bool paused)
 	VMManager::SetPaused(paused);
 }
 
-void EmuThread::shutdownVM(bool allow_save_to_state /* = true */)
+void EmuThread::shutdownVM(bool save_state /* = true */)
 {
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, "shutdownVM", Qt::QueuedConnection, Q_ARG(bool, save_state));
+		return;
+	}
+
 	const VMState state = VMManager::GetState();
 	if (state == VMState::Paused)
 		m_event_loop->quit();
 	else if (state != VMState::Running)
 		return;
 
+	m_save_state_on_shutdown = save_state;
 	VMManager::SetState(VMState::Stopping);
 }
 
@@ -254,7 +262,7 @@ void EmuThread::destroyVM()
 	m_last_video_fps = 0.0f;
 	m_last_internal_width = 0;
 	m_last_internal_height = 0;
-	VMManager::Shutdown();
+	VMManager::Shutdown(m_save_state_on_shutdown);
 }
 
 void EmuThread::executeVM()

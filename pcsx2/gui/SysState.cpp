@@ -61,7 +61,7 @@ protected:
 		std::unique_ptr<ArchiveEntryList> elist = SaveState_DownloadState();
 		UI_EnableStateActions();
 		paused_core.AllowResume();
-		SaveState_ZipToDisk(std::move(elist), nullptr, StringUtil::wxStringToUTF8String(m_filename), -1);
+		SaveState_ZipToDiskOnThread(std::move(elist), nullptr, StringUtil::wxStringToUTF8String(m_filename), -1);
 	}
 };
 

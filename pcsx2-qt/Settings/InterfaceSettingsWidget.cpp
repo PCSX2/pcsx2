@@ -42,7 +42,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.inhibitScreensaver, "UI", "InhibitScreensaver", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.discordPresence, "UI", "DiscordPresence", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.confirmShutdown, "UI", "ConfirmShutdown", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.saveStateOnExit, "EmuCore", "AutoStateLoadSave", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.saveStateOnShutdown, "EmuCore", "SaveStateOnShutdown", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnStart, "UI", "StartPaused", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnFocusLoss, "UI", "PauseOnFocusLoss", false);
 
@@ -87,7 +87,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 		m_ui.confirmShutdown, tr("Confirm Shutdown"), tr("Checked"),
 		tr("Determines whether a prompt will be displayed to confirm shutting down the virtual machine "
 		   "when the hotkey is pressed."));
-	dialog->registerWidgetHelp(m_ui.saveStateOnExit, tr("Save State On Exit"), tr("Checked"),
+	dialog->registerWidgetHelp(m_ui.saveStateOnShutdown, tr("Save State On Shutdown"), tr("Checked"),
 		tr("Automatically saves the emulator state when powering down or exiting. You can then "
 		   "resume directly from where you left off next time."));
 	dialog->registerWidgetHelp(m_ui.pauseOnStart, tr("Pause On Start"), tr("Unchecked"),
