@@ -740,8 +740,8 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 	// only confirm on UI thread because we need to display a msgbox
 	if (allow_confirm && !GSDumpReplayer::IsReplayingDump() && QtHost::GetBaseBoolSettingValue("UI", "ConfirmShutdown", true))
 	{
-		ScopedVMPause pauser(m_vm_paused, isRenderingFullscreen());
-		if (QMessageBox::question(m_display_widget, tr("Confirm Shutdown"),
+		VMLock lock(pauseAndLockVM());
+		if (QMessageBox::question(lock.getDialogParent(), tr("Confirm Shutdown"),
 			tr("Are you sure you want to shut down the virtual machine?\n\nAll unsaved progress will be lost.")) != QMessageBox::Yes)
 		{
 			return false;
@@ -911,9 +911,8 @@ void MainWindow::onStartBIOSActionTriggered()
 
 void MainWindow::onChangeDiscFromFileActionTriggered()
 {
-	ScopedVMPause pauser(m_vm_paused, isRenderingFullscreen());
-
-	QString filename = QFileDialog::getOpenFileName(this, tr("Select Disc Image"), QString(), tr(DISC_IMAGE_FILTER), nullptr);
+	VMLock lock(pauseAndLockVM());
+	QString filename = QFileDialog::getOpenFileName(lock.getDialogParent(), tr("Select Disc Image"), QString(), tr(DISC_IMAGE_FILTER), nullptr);
 	if (filename.isEmpty())
 		return;
 
@@ -1102,6 +1101,8 @@ void MainWindow::onVMResumed()
 	updateWindowTitle();
 	updateStatusBarWidgetVisibility();
 	m_status_fps_widget->setText(m_last_fps_status);
+	if (m_display_widget)
+		m_display_widget->setFocus();
 }
 
 void MainWindow::onVMStopped()
@@ -1227,12 +1228,13 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 
 DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, bool surfaceless)
 {
-	DevCon.WriteLn("updateDisplay(%u, %u, %u)", static_cast<u32>(fullscreen), static_cast<u32>(render_to_main), static_cast<u32>(surfaceless));
+	DevCon.WriteLn("updateDisplay() fullscreen=%s render_to_main=%s surfaceless=%s",
+		fullscreen ? "true" : "false", render_to_main ? "true" : "false", surfaceless ? "true" : "false");
 
 	HostDisplay* host_display = Host::GetHostDisplay();
 	QWidget* container = m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
-	const bool is_fullscreen = (container && container->isFullScreen());
-	const bool is_rendering_to_main = (!is_fullscreen && container && container->parent());
+	const bool is_fullscreen = isRenderingFullscreen();
+	const bool is_rendering_to_main = isRenderingToMain();
 	const std::string fullscreen_mode(QtHost::GetBaseStringSettingValue("EmuCore/GS", "FullscreenMode", ""));
 	const bool is_exclusive_fullscreen = (fullscreen && !fullscreen_mode.empty() && host_display->SupportsFullscreen());
 	const bool changing_surfaceless = (!m_display_widget != surfaceless);
@@ -1245,9 +1247,13 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 	const bool needs_container = DisplayContainer::IsNeeded(fullscreen, render_to_main);
 	if (!is_rendering_to_main && !render_to_main && !is_exclusive_fullscreen && has_container == needs_container && !needs_container && !changing_surfaceless)
 	{
-		Console.WriteLn("Toggling to %s without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
+		DevCon.WriteLn("Toggling to %s without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
 		if (host_display->IsFullscreen())
 			host_display->SetFullscreen(false, 0, 0, 0.0f);
+
+		// since we don't destroy the display widget, we need to save it here
+		if (!is_fullscreen && !is_rendering_to_main)
+			saveDisplayWindowGeometryToConfig();
 
 		if (fullscreen)
 		{
@@ -1395,6 +1401,13 @@ QWidget* MainWindow::getDisplayContainer() const
 
 void MainWindow::saveDisplayWindowGeometryToConfig()
 {
+	QWidget* container = getDisplayContainer();
+	if (container->windowState() & Qt::WindowFullScreen)
+	{
+		// if we somehow ended up here, don't save the fullscreen state to the config
+		return;
+	}
+
 	const QByteArray geometry = getDisplayContainer()->saveGeometry();
 	const QByteArray geometry_b64 = geometry.toBase64();
 	const std::string old_geometry_b64 = QtHost::GetBaseStringSettingValue("UI", "DisplayWindowGeometry");
@@ -1408,9 +1421,17 @@ void MainWindow::restoreDisplayWindowGeometryFromConfig()
 	const QByteArray geometry = QByteArray::fromBase64(QByteArray::fromStdString(geometry_b64));
 	QWidget* container = getDisplayContainer();
 	if (!geometry.isEmpty())
+	{
 		container->restoreGeometry(geometry);
+
+		// make sure we're not loading a dodgy config which had fullscreen set...
+		container->setWindowState(container->windowState() & ~(Qt::WindowFullScreen | Qt::WindowActive));
+	}
 	else
+	{
+		// default size
 		container->resize(640, 480);
+	}
 }
 
 void MainWindow::destroyDisplayWidget()
@@ -1418,8 +1439,7 @@ void MainWindow::destroyDisplayWidget()
 	if (!m_display_widget)
 		return;
 
-	const QWidget* container = m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
-	if (!container->parent() && !container->isFullScreen())
+	if (!isRenderingFullscreen() && !isRenderingToMain())
 		saveDisplayWindowGeometryToConfig();
 
 	if (m_display_container)
@@ -1720,3 +1740,48 @@ void MainWindow::doDiscChange(const QString& path)
 	if (reset_system)
 		g_emu_thread->resetVM();
 }
+
+MainWindow::VMLock MainWindow::pauseAndLockVM()
+{
+	const bool was_fullscreen = isRenderingFullscreen();
+	const bool was_paused = m_vm_paused;
+
+	// We use surfaceless rather than switching out of fullscreen, because
+	// we're paused, so we're not going to be rendering anyway.
+	if (was_fullscreen)
+		g_emu_thread->setSurfaceless(true);
+	if (!was_paused)
+		g_emu_thread->setVMPaused(true);
+
+	// We want to parent dialogs to the display widget, except if we were fullscreen,
+	// since it's going to get destroyed by the surfaceless call above.
+	QWidget* dialog_parent = was_fullscreen ? static_cast<QWidget*>(this) : getDisplayContainer();
+
+	return VMLock(dialog_parent, was_paused, was_fullscreen);
+}
+
+MainWindow::VMLock::VMLock(QWidget* dialog_parent, bool was_paused, bool was_fullscreen)
+	: m_dialog_parent(dialog_parent)
+	, m_was_paused(was_paused)
+	, m_was_fullscreen(was_fullscreen)	
+{
+}
+
+MainWindow::VMLock::VMLock(VMLock&& lock)
+	: m_dialog_parent(lock.m_dialog_parent)
+	, m_was_paused(lock.m_was_paused)
+	, m_was_fullscreen(lock.m_was_fullscreen)
+{
+	lock.m_dialog_parent = nullptr;
+	lock.m_was_paused = false;
+	lock.m_was_fullscreen = false;
+}
+
+MainWindow::VMLock::~VMLock()
+{
+	if (m_was_fullscreen)
+		g_emu_thread->setSurfaceless(false);
+	if (!m_was_paused)
+		g_emu_thread->setVMPaused(false);
+}
+
