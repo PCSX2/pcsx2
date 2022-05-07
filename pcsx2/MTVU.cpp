@@ -100,23 +100,23 @@ VU_Thread::~VU_Thread()
 
 void VU_Thread::Open()
 {
-	if (m_thread.joinable())
+	if (m_thread.Joinable())
 		return;
 
 	Reset();
 	semaEvent.Reset();
 	m_shutdown_flag.store(false, std::memory_order_release);
-	m_thread = std::thread(&VU_Thread::ExecuteRingBuffer, this);
+	m_thread.Start([this]() { ExecuteRingBuffer(); });
 }
 
 void VU_Thread::Close()
 {
-	if (!m_thread.joinable())
+	if (!m_thread.Joinable())
 		return;
 
 	m_shutdown_flag.store(true, std::memory_order_release);
 	semaEvent.NotifyOfWork();
-	m_thread.join();
+	m_thread.Join();
 }
 
 void VU_Thread::Reset()
@@ -135,7 +135,6 @@ void VU_Thread::Reset()
 
 void VU_Thread::ExecuteRingBuffer()
 {
-	m_thread_handle = Threading::ThreadHandle::GetForCallingThread();
 	Threading::SetNameOfCurrentThread("MTVU");
 
 	for (;;)
@@ -213,7 +212,6 @@ void VU_Thread::ExecuteRingBuffer()
 		}
 	}
 
-	m_thread_handle = {};
 	semaEvent.Kill();
 }
 

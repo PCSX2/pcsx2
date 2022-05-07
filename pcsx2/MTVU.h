@@ -40,8 +40,7 @@ class VU_Thread final {
 	Threading::WorkSema semaEvent;
 	std::atomic_bool m_shutdown_flag{false};
 
-	std::thread m_thread;
-	Threading::ThreadHandle m_thread_handle;
+	Threading::Thread m_thread;
 
 public:
 	alignas(16)  vifStruct        vif;
@@ -66,7 +65,7 @@ public:
 	VU_Thread();
 	~VU_Thread();
 
-	__fi const Threading::ThreadHandle& GetThreadHandle() const { return m_thread_handle; }
+	__fi const Threading::ThreadHandle& GetThreadHandle() const { return m_thread; }
 
 	/// Ensures the VU thread is started.
 	void Open();
