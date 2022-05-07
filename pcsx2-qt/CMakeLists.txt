@@ -30,6 +30,7 @@ target_sources(pcsx2-qt PRIVATE
 	QtUtils.cpp
 	QtUtils.h
 	SettingWidgetBinder.h
+	GameList/EmptyGameListWidget.ui
 	GameList/GameListModel.cpp
 	GameList/GameListModel.h
 	GameList/GameListRefreshThread.cpp

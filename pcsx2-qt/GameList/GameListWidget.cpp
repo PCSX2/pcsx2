@@ -32,6 +32,12 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 
+static const char* SUPPORTED_FORMATS_STRING = QT_TRANSLATE_NOOP(GameListWidget,
+	".bin/.iso (ISO Disc Images)\n"
+	".chd (Compressed Hunks of Data)\n"
+	".cso (Compressed ISO)\n"
+	".gz (Gzip Compressed ISO)");
+
 class GameListSortModel final : public QSortFilterProxyModel
 {
 public:
@@ -124,6 +130,13 @@ void GameListWidget::initialize()
 
 	insertWidget(1, m_list_view);
 
+	m_empty_widget = new QWidget(this);
+	m_empty_ui.setupUi(m_empty_widget);
+	m_empty_ui.supportedFormats->setText(qApp->translate("GameListWidget", SUPPORTED_FORMATS_STRING));
+	connect(m_empty_ui.addGameDirectory, &QPushButton::clicked, this, [this]() { emit addGameDirectoryRequested(); });
+	connect(m_empty_ui.scanForNewGames, &QPushButton::clicked, this, [this]() { refresh(false); });
+	insertWidget(2, m_empty_widget);
+
 	if (QtHost::GetBaseBoolSettingValue("UI", "GameListGridView", false))
 		setCurrentIndex(1);
 	else
@@ -167,6 +180,10 @@ void GameListWidget::refresh(bool invalidate_cache)
 
 void GameListWidget::onRefreshProgress(const QString& status, int current, int total)
 {
+	// switch away from the placeholder while we scan, in case we find anything
+	if (currentIndex() == 2)
+		setCurrentIndex(QtHost::GetBaseBoolSettingValue("UI", "GameListGridView", false) ? 1 : 0);
+
 	m_model->refresh();
 	emit refreshProgress(status, current, total);
 }
@@ -180,6 +197,10 @@ void GameListWidget::onRefreshComplete()
 	m_refresh_thread->wait();
 	delete m_refresh_thread;
 	m_refresh_thread = nullptr;
+
+	// if we still had no games, switch to the helper widget
+	if (m_model->rowCount() == 0)
+		setCurrentIndex(2);
 }
 
 void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
@@ -276,7 +297,7 @@ void GameListWidget::refreshGridCovers()
 
 void GameListWidget::showGameList()
 {
-	if (currentIndex() == 0)
+	if (currentIndex() == 0 || m_model->rowCount() == 0)
 		return;
 
 	QtHost::SetBaseBoolSettingValue("UI", "GameListGridView", false);
@@ -286,7 +307,7 @@ void GameListWidget::showGameList()
 
 void GameListWidget::showGameGrid()
 {
-	if (currentIndex() == 1)
+	if (currentIndex() == 1 || m_model->rowCount() == 0)
 		return;
 
 	QtHost::SetBaseBoolSettingValue("UI", "GameListGridView", true);
