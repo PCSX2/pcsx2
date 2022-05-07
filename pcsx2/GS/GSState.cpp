@@ -377,7 +377,7 @@ GSVector4i GSState::GetFrameMagnifiedRect(int i)
 {
 	GSVector4i rectangle = { 0, 0, 0, 0 };
 
-	if (!IsEnabled(0) && !IsEnabled(1))
+	if (!IsEnabled(i))
 		return rectangle;
 
 	const int videomode = static_cast<int>(GetVideoMode()) - 1;
@@ -468,12 +468,16 @@ GSVector4i GSState::GetDisplayRect(int i)
 
 GSVector2i GSState::GetResolutionOffset(int i)
 {
+	GSVector2i offset = { 0, 0 };
+
+	if (!IsEnabled(i))
+		return offset;
+
 	const int videomode = static_cast<int>(GetVideoMode()) - 1;
 	const auto& DISP = m_regs->DISP[i].DISPLAY;
 
 	const auto& SMODE2 = m_regs->SMODE2;
 	const int res_multi = (SMODE2.INT + 1);
-	GSVector2i offset;
 
 	offset.x = (static_cast<int>(DISP.DX) - VideoModeOffsets[videomode].z) / (VideoModeDividers[videomode].x + 1);
 	offset.y = (static_cast<int>(DISP.DY) - (VideoModeOffsets[videomode].w * ((IsAnalogue() && res_multi) ? res_multi : 1))) / (VideoModeDividers[videomode].y + 1);
@@ -506,6 +510,16 @@ GSVector2i GSState::GetResolution()
 		total_rect.w = std::min(total_rect.w, resolution.y);
 		resolution.x = total_rect.z;
 		resolution.y = total_rect.w;
+
+		// When we're ignoring offsets we need to account for pictures which are usually offset up off the screen
+		// where more of the bottom would normally be visible, stops some games looking so cut off.
+		const int display_offset = std::min(GetResolutionOffset(0).y, GetResolutionOffset(1).y);
+
+		// If there is a negative vertical offset on the picture, we need to read more.
+		if (display_offset < 0)
+		{
+			resolution.y += -display_offset;
+		}
 	}
 
 	return resolution;
@@ -517,10 +531,13 @@ GSVector4i GSState::GetFrameRect(int i)
 	if (i == -1)
 		return GetFrameRect(0).runion(GetFrameRect(1));
 
-	GSVector4i rectangle;
+	GSVector4i rectangle = { 0, 0, 0, 0 };
+
+	if (!IsEnabled(i))
+		return rectangle;
 
 	const auto& DISP = m_regs->DISP[i].DISPLAY;
-
+	
 	const u32 DW = DISP.DW + 1;
 	const u32 DH = DISP.DH + 1;
 	const GSVector2i magnification(DISP.MAGH+1, DISP.MAGV + 1);
