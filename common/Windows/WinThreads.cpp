@@ -15,9 +15,11 @@
 
 #if defined(_WIN32)
 
-#include "common/RedtapeWindows.h"
 #include "common/Threading.h"
+#include "common/Assertions.h"
 #include "common/emitter/tools.h"
+#include "common/RedtapeWindows.h"
+#include <process.h>
 
 __fi void Threading::Sleep(int ms)
 {
@@ -128,6 +130,81 @@ bool Threading::ThreadHandle::SetAffinity(u64 processor_mask) const
 		processor_mask = ~processor_mask;
 
 	return (SetThreadAffinityMask(GetCurrentThread(), (DWORD_PTR)processor_mask) != 0 || GetLastError() != ERROR_SUCCESS);
+}
+
+Threading::Thread::Thread() = default;
+
+Threading::Thread::Thread(Thread&& thread)
+	: ThreadHandle(thread)
+	, m_stack_size(thread.m_stack_size)
+{
+	thread.m_stack_size = 0;
+}
+
+Threading::Thread::Thread(EntryPoint func)
+	: ThreadHandle()
+{
+	if (!Start(std::move(func)))
+		pxFailRel("Failed to start implicitly started thread.");
+}
+
+Threading::Thread::~Thread()
+{
+	pxAssertRel(!m_native_handle, "Thread should be detached or joined at destruction");
+}
+
+void Threading::Thread::SetStackSize(u32 size)
+{
+	pxAssertRel(!m_native_handle, "Can't change the stack size on a started thread");
+	m_stack_size = size;
+}
+
+unsigned Threading::Thread::ThreadProc(void* param)
+{
+	std::unique_ptr<EntryPoint> entry(static_cast<EntryPoint*>(param));
+	(*entry.get())();
+	return 0;
+}
+
+bool Threading::Thread::Start(EntryPoint func)
+{
+	pxAssertRel(!m_native_handle, "Can't start an already-started thread");
+	
+	std::unique_ptr<EntryPoint> func_clone(std::make_unique<EntryPoint>(std::move(func)));
+	unsigned thread_id;
+	m_native_handle = reinterpret_cast<void*>(_beginthreadex(nullptr, m_stack_size, ThreadProc, func_clone.get(), 0, &thread_id));
+	if (!m_native_handle)
+		return false;
+
+	// thread started, it'll release the memory
+	func_clone.release();
+	return true;
+}
+
+void Threading::Thread::Detach()
+{
+	pxAssertRel(m_native_handle, "Can't detach without a thread");
+	CloseHandle((HANDLE)m_native_handle);
+	m_native_handle = nullptr;
+}
+
+void Threading::Thread::Join()
+{
+	pxAssertRel(m_native_handle, "Can't join without a thread");
+	const DWORD res = WaitForSingleObject((HANDLE)m_native_handle, INFINITE);
+	if (res != WAIT_OBJECT_0)
+		pxFailRel("WaitForSingleObject() for thread join failed");
+
+	CloseHandle((HANDLE)m_native_handle);
+	m_native_handle = nullptr;
+}
+
+Threading::ThreadHandle& Threading::Thread::operator=(Thread&& thread)
+{
+	ThreadHandle::operator=(thread);
+	m_stack_size = thread.m_stack_size;
+	thread.m_stack_size = 0;
+	return *this;
 }
 
 u64 Threading::GetThreadCpuTime()

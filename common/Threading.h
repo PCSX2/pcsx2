@@ -25,6 +25,7 @@
 #endif
 
 #include <atomic>
+#include <functional>
 
 namespace Threading
 {
@@ -84,13 +85,53 @@ namespace Threading
 		/// Obviously, only works up to 64 processors.
 		bool SetAffinity(u64 processor_mask) const;
 
-	private:
+	protected:
 		void* m_native_handle = nullptr;
 
 		// We need the thread ID for affinity adjustments on Linux.
 #if defined(__linux__)
 		unsigned int m_native_id = 0;
 #endif
+	};
+
+	// --------------------------------------------------------------------------------------
+	//  Thread
+	// --------------------------------------------------------------------------------------
+	// Abstracts a native thread in a lightweight manner. Provides more functionality than
+	// std::thread (allowing stack size adjustments).
+	//
+	class Thread : public ThreadHandle
+	{
+	public:
+		using EntryPoint = std::function<void()>;
+
+		Thread();
+		Thread(Thread&& thread);
+		Thread(const Thread&) = delete;
+		Thread(EntryPoint func);
+		~Thread();
+
+		ThreadHandle& operator=(Thread&& thread);
+		ThreadHandle& operator=(const Thread& handle) = delete;
+
+		__fi bool Joinable() const { return (m_native_handle != nullptr); }
+		__fi u32 GetStackSize() const { return m_stack_size; }
+
+		/// Sets the stack size for the thread. Do not call if the thread has already been started.
+		void SetStackSize(u32 size);
+
+		bool Start(EntryPoint func);
+		void Detach();
+		void Join();
+
+	protected:
+#ifdef _WIN32
+		static unsigned __stdcall ThreadProc(void* param);
+#else
+		static void* ThreadProc(void* param);
+#endif
+
+		u32 m_stack_size = 0;
 	};
 
 	/// A semaphore that may not have a fast userspace path
