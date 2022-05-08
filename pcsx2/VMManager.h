@@ -117,6 +117,9 @@ namespace VMManager
 	/// Saves state to the specified slot.
 	bool SaveStateToSlot(s32 slot, bool zip_on_thread = true);
 
+	/// Waits until all compressing save states have finished saving to disk.
+	void WaitForSaveStateFlush();
+
 	/// Returns the current limiter mode.
 	LimiterModeType GetLimiterMode();
 
