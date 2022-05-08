@@ -3214,20 +3214,46 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 				const GSVector2 uv_range(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
 				const GSVector2 grad(uv_range / pos_range);
 
+				const GSVertex* vert_first = &m_vertex.buff[m_index.buff[0]];
+				const GSVertex* vert_second = &m_vertex.buff[m_index.buff[1]];
+
+				const bool swap_x = vert_first->U > vert_second->U;
+				const bool swap_y = vert_first->V > vert_second->V;
+
 				// we need to check that it's not going to repeat over the non-clipped part
 				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(st.x) & ~tw_mask) == (static_cast<int>(st.z) & ~tw_mask)))
 				{
 					if (int_rc.left < scissored_rc.left)
-						st.x += floor(static_cast<float>(scissored_rc.left - int_rc.left)* grad.x);
+					{
+						if(!swap_x)
+							st.x += floor(static_cast<float>(scissored_rc.left - int_rc.left) * grad.x);
+						else
+							st.z -= floor(static_cast<float>(scissored_rc.left - int_rc.left) * grad.x);
+					}
 					if (int_rc.right > scissored_rc.right)
-						st.z -= floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
+					{
+						if (!swap_x)
+							st.z -= floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
+						else
+							st.x += floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
+					}
 				}
 				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(st.y) & ~th_mask) == (static_cast<int>(st.w) & ~th_mask)))
 				{
 					if (int_rc.top < scissored_rc.top)
-						st.y += floor(static_cast<float>(scissored_rc.top - int_rc.top) * grad.y);
+					{
+						if (!swap_y)
+							st.y += floor(static_cast<float>(scissored_rc.top - int_rc.top) * grad.y);
+						else
+							st.w -= floor(static_cast<float>(scissored_rc.top - int_rc.top) * grad.y);
+					}
 					if (int_rc.bottom > scissored_rc.bottom)
-						st.w -= floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
+					{
+						if (!swap_y)
+							st.w -= floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
+						else
+							st.y += floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
+					}
 				}
 			}
 		}
