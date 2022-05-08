@@ -835,6 +835,9 @@ void MainWindow::onGameListEntryActivated()
 		return;
 	}
 
+	// we might still be saving a resume state...
+	VMManager::WaitForSaveStateFlush();
+
 	const std::optional<bool> resume = promptForResumeState(
 		QString::fromStdString(VMManager::GetSaveStateFileName(entry->serial.c_str(), entry->crc, -1)));
 	if (!resume.has_value())
@@ -927,6 +930,9 @@ void MainWindow::onStartFileActionTriggered()
 
 	std::shared_ptr<VMBootParameters> params = std::make_shared<VMBootParameters>();
 	params->filename = filename.toStdString();
+
+	// we might still be saving a resume state...
+	VMManager::WaitForSaveStateFlush();
 
 	const std::optional<bool> resume(
 		promptForResumeState(

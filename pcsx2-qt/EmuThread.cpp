@@ -249,6 +249,7 @@ void EmuThread::run()
 	stopBackgroundControllerPollTimer();
 	destroyBackgroundControllerPollTimer();
 	InputManager::CloseSources();
+	VMManager::WaitForSaveStateFlush();
 	VMManager::Internal::ReleaseMemory();
 	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle());
 	moveToThread(m_ui_thread);
