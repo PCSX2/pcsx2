@@ -1828,7 +1828,8 @@ SCED-52049:
   clampModes:
     vuClampMode: 3 # Fixes minor SPS on characters.
   gsHWFixes:
-    preloadFrameData: 1
+    preloadFrameData: 1 # Fixes bad textures on Jake.
+    halfPixelOffset: 1 # Fixes double image.
 SCED-52051:
   name: "Official PlayStation 2 Magazine Demo 43"
   region: "PAL-M5"
@@ -2895,7 +2896,8 @@ SCES-51248:
   clampModes:
     vuClampMode: 3 # Fixes minor SPS on characters.
   gsHWFixes:
-    preloadFrameData: 1
+    preloadFrameData: 1 # Fixes bad textures on Jake.
+    halfPixelOffset: 1 # Fixes double image.
 SCES-51426:
   name: "The Getaway"
   region: "PAL-M5"
@@ -27538,7 +27540,8 @@ SLPM-65995:
   clampModes:
     vuClampMode: 3 # Fixes minor SPS on characters.
   gsHWFixes:
-    preloadFrameData: 1
+    preloadFrameData: 1 # Fixes bad textures on Jake.
+    halfPixelOffset: 1 # Fixes double image.
 SLPM-65996:
   name: "Mars of Destruction [Limited Edition]"
   region: "NTSC-J"
@@ -40811,7 +40814,8 @@ SLUS-21018:
   clampModes:
     vuClampMode: 3 # Fixes minor SPS on characters.
   gsHWFixes:
-    preloadFrameData: 1
+    preloadFrameData: 1 # Fixes bad textures on Jake.
+    halfPixelOffset: 1 # Fixes double image.
 SLUS-21019:
   name: "Technic Beat"
   region: "NTSC-U"
