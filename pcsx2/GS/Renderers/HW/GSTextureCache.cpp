@@ -2145,16 +2145,8 @@ void GSTextureCache::Target::Update()
 {
 	Surface::UpdateAge();
 
-	// FIXME: the union of the rects may also update wrong parts of the render target (but a lot faster :)
-	// GH: it must be doable
-	// 1/ rescale the new t to the good size
-	// 2/ copy each rectangle (rescale the rectangle) (use CopyRect or multiple vertex)
-	// Alternate
-	// 1/ uses multiple vertex rectangle
-
-	GSVector4i unscaled_size = GSVector4i(GSVector4(m_texture->GetSize()) / GSVector4(m_texture->GetScale()));
-	GSVector4i r = m_dirty.GetDirtyRectAndClear(m_TEX0, GSVector2i(unscaled_size.x, unscaled_size.y));
-
+	const GSVector4i unscaled_size = GSVector4i(GSVector4(m_texture->GetSize()) / GSVector4(m_texture->GetScale()));
+	const GSVector4i r = m_dirty.GetDirtyRect(m_TEX0, GSVector2i(unscaled_size.x, unscaled_size.y));
 	if (r.rempty())
 		return;
 
@@ -2163,7 +2155,7 @@ void GSTextureCache::Target::Update()
 	{
 		// do the most likely thing a direct write would do, clear it
 		GL_INS("ERROR: Update DepthStencil dummy");
-
+		m_dirty.clear();
 		return;
 	}
 	else if (m_type == DepthStencil && g_gs_renderer->m_game.title == CRC::FFX2)
@@ -2177,6 +2169,7 @@ void GSTextureCache::Target::Update()
 		// could be a gs transfer bug too due to unaligned-page transfer.
 		//
 		// So the quick and dirty solution is just to clean the depth buffer.
+		m_dirty.clear();
 		g_gs_device->ClearDepth(m_texture);
 		return;
 	}
@@ -2213,20 +2206,54 @@ void GSTextureCache::Target::Update()
 
 	// m_renderer->m_perfmon.Put(GSPerfMon::Unswizzle, w * h * 4);
 
-	// Copy the new GS memory content into the destination texture.
-	if (m_type == RenderTarget)
+	// The idea: If we have more than one dirty rectangle, we upload the whole thing, and then
+	// copy/upscale the specific areas we want into it.
+	if (m_dirty.size() > 1)
 	{
-		GL_INS("ERROR: Update RenderTarget 0x%x bw:%d (%d,%d => %d,%d)", m_TEX0.TBP0, m_TEX0.TBW, r.x, r.y, r.z, r.w);
+		const GSVector2i bs = GSLocalMemory::m_psm[m_TEX0.PSM].bs;
+		for (const auto& dr : m_dirty)
+		{
+			// dirty area in unscaled space
+			GSVector4i drc(dr.GetDirtyRect(m_TEX0));
+			drc = drc.ralign<Align_Outside>(bs).rintersect(GSVector4i(0, 0, unscaled_size.x, unscaled_size.y));
 
-		g_gs_device->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy());
+			// dirty area in normalized coordinates for temporary texture
+			const GSVector4 temprc(GSVector4(drc) / GSVector4(t->GetSize()).xyxy());
+
+			// dirty area in upscaled space
+			const GSVector4 drcup(GSVector4(drc) * GSVector4(m_texture->GetScale()).xyxy());
+
+			// Copy the new GS memory content into the destination texture.
+			if (m_type == RenderTarget)
+			{
+				GL_INS("ERROR: Update RenderTarget 0x%x bw:%d (%d,%d => %d,%d)", m_TEX0.TBP0, m_TEX0.TBW, drc.x, drc.y, drc.z, drc.w);
+				g_gs_device->StretchRect(t, temprc, m_texture, drcup, ShaderConvert::COPY, true);
+			}
+			else if (m_type == DepthStencil)
+			{
+				// doesn't make sense to linear filter depth.
+				GL_INS("ERROR: Update DepthStencil 0x%x", m_TEX0.TBP0);
+				g_gs_device->StretchRect(t, temprc, m_texture, drcup, ShaderConvert::RGBA8_TO_FLOAT32, false);
+			}
+		}
 	}
-	else if (m_type == DepthStencil)
+	else
 	{
-		GL_INS("ERROR: Update DepthStencil 0x%x", m_TEX0.TBP0);
-
-		// FIXME linear or not?
-		g_gs_device->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy(), ShaderConvert::RGBA8_TO_FLOAT32);
+		// Copy the new GS memory content into the destination texture.
+		if (m_type == RenderTarget)
+		{
+			GL_INS("ERROR: Update RenderTarget 0x%x bw:%d (%d,%d => %d,%d)", m_TEX0.TBP0, m_TEX0.TBW, r.x, r.y, r.z, r.w);
+			g_gs_device->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy(), ShaderConvert::COPY, true);
+		}
+		else if (m_type == DepthStencil)
+		{
+			// doesn't make sense to linear filter depth.
+			GL_INS("ERROR: Update DepthStencil 0x%x", m_TEX0.TBP0);
+			g_gs_device->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy(), ShaderConvert::RGBA8_TO_FLOAT32, false);
+		}
 	}
+
+	m_dirty.clear();
 
 	g_gs_device->Recycle(t);
 
