@@ -26,24 +26,6 @@
 
 #include <atomic>
 
-// --------------------------------------------------------------------------------------
-//  PCSX2_THREAD_LOCAL - Defines platform/operating system support for Thread Local Storage
-// --------------------------------------------------------------------------------------
-//
-// TLS is enabled by default. It will be disabled at compile time for Linux plugin.
-// If you link SPU2X/ZZOGL with a TLS library, you will consume a DVT slots. Slots
-// are rather limited and it ends up to "impossible to dlopen the library"
-// None of the above plugin uses TLS variable in a multithread context
-#ifndef PCSX2_THREAD_LOCAL
-#define PCSX2_THREAD_LOCAL 1
-#endif
-
-#if PCSX2_THREAD_LOCAL
-#define DeclareTls(x) thread_local x
-#else
-#define DeclareTls(x) x
-#endif
-
 namespace Threading
 {
 	// --------------------------------------------------------------------------------------

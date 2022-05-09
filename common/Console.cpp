@@ -20,10 +20,10 @@
 using namespace Threading;
 
 // thread-local console indentation setting.
-static DeclareTls(int) conlog_Indent(0);
+static thread_local int conlog_Indent(0);
 
 // thread-local console color storage.
-static DeclareTls(ConsoleColors) conlog_Color(DefaultConsoleColor);
+static thread_local ConsoleColors conlog_Color(DefaultConsoleColor);
 
 #ifdef __POSIX__
 #include <unistd.h>
