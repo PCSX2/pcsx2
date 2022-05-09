@@ -686,8 +686,8 @@ void SysExecEvent_CoreThreadPause::InvokeEvent()
 //  ScopedCoreThreadClose / ScopedCoreThreadPause
 // --------------------------------------------------------------------------------------
 
-static DeclareTls(bool) ScopedCore_IsPaused = false;
-static DeclareTls(bool) ScopedCore_IsFullyClosed = false;
+static thread_local bool ScopedCore_IsPaused = false;
+static thread_local bool ScopedCore_IsFullyClosed = false;
 
 BaseScopedCoreThread::BaseScopedCoreThread()
 {

@@ -60,8 +60,8 @@
 //
 
 
-__tls_emit u8* x86Ptr;
-__tls_emit XMMSSEType g_xmmtypes[iREGCNT_XMM] = {XMMT_INT};
+thread_local u8* x86Ptr;
+thread_local XMMSSEType g_xmmtypes[iREGCNT_XMM] = {XMMT_INT};
 
 namespace x86Emitter
 {
