@@ -200,6 +200,9 @@ public:
 		void UpdateValidity(const GSVector4i& rect);
 
 		void Update();
+
+		/// Updates the target, if the dirty area intersects with the specified rectangle.
+		void UpdateIfDirtyIntersects(const GSVector4i& rc);
 	};
 
 	class PaletteMap
