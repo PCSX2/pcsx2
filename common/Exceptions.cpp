@@ -23,6 +23,7 @@
 #include "common/Dependencies.h" // _ macro
 #include "common/Threading.h"
 #include "common/General.h"
+#include "common/StringHelpers.h"
 
 // for lack of a better place...
 Fnptr_OutOfMemory pxDoOutOfMemory = NULL;

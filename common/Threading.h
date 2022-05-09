@@ -15,21 +15,15 @@
 
 #pragma once
 
-#include <wx/datetime.h>
-#ifdef _WIN32
-// thanks I hate it.
-#include <wx/filefn.h>
-#define HAVE_MODE_T
-#endif
-#include <semaphore.h>
-#include <errno.h> // EBUSY
-#include <pthread.h>
-#ifdef __APPLE__
-#include <mach/semaphore.h>
-#endif
 #include "common/Pcsx2Defs.h"
-#include "common/TraceLog.h"
 #include "common/General.h"
+
+#if defined(__APPLE__)
+#include <mach/semaphore.h>
+#elif !defined(_WIN32)
+#include <semaphore.h>
+#endif
+
 #include <atomic>
 
 // --------------------------------------------------------------------------------------
@@ -52,29 +46,17 @@
 
 namespace Threading
 {
-	class ThreadHandle;
-	class pxThread;
-	class RwMutex;
-
-	extern void pxTestCancel();
-	extern void YieldToMain();
+	// --------------------------------------------------------------------------------------
+	//  Platform Specific External APIs
+	// --------------------------------------------------------------------------------------
+	// The following set of documented functions have Linux/Win32 specific implementations,
+	// which are found in WinThreads.cpp and LnxThreads.cpp
 
 	extern u64 GetThreadCpuTime();
 	extern u64 GetThreadTicksPerSecond();
 
 	/// Set the name of the current thread
 	extern void SetNameOfCurrentThread(const char* name);
-
-	extern const wxTimeSpan def_yieldgui_interval;
-} // namespace Threading
-
-namespace Threading
-{
-	// --------------------------------------------------------------------------------------
-	//  Platform Specific External APIs
-	// --------------------------------------------------------------------------------------
-	// The following set of documented functions have Linux/Win32 specific implementations,
-	// which are found in WinThreads.cpp and LnxThreads.cpp
 
 	// Releases a timeslice to other threads.
 	extern void Timeslice();
@@ -127,44 +109,6 @@ namespace Threading
 #if defined(__linux__)
 		unsigned int m_native_id = 0;
 #endif
-	};
-
-	// --------------------------------------------------------------------------------------
-	//  NonblockingMutex
-	// --------------------------------------------------------------------------------------
-	// This is a very simple non-blocking mutex, which behaves similarly to pthread_mutex's
-	// trylock(), but without any of the extra overhead needed to set up a structure capable
-	// of blocking waits.  It basically optimizes to a single InterlockedExchange.
-	//
-	// Simple use: if TryAcquire() returns false, the Bool is already interlocked by another thread.
-	// If TryAcquire() returns true, you've locked the object and are *responsible* for unlocking
-	// it later.
-	//
-	class NonblockingMutex
-	{
-	protected:
-		std::atomic_flag val;
-
-	public:
-		NonblockingMutex() { val.clear(); }
-		virtual ~NonblockingMutex() = default;
-
-		bool TryAcquire() noexcept
-		{
-			return !val.test_and_set();
-		}
-
-		// Can be done with a TryAcquire/Release but it is likely better to do it outside of the object
-		bool IsLocked()
-		{
-			pxAssertMsg(0, "IsLocked isn't supported for NonblockingMutex");
-			return false;
-		}
-
-		void Release()
-		{
-			val.clear();
-		}
 	};
 
 	/// A semaphore that may not have a fast userspace path
@@ -260,93 +204,5 @@ namespace Threading
 		/// Reset the semaphore to the initial state
 		/// Should be called by the worker thread if it restarts after dying
 		void Reset();
-	};
-
-	class Mutex
-	{
-	protected:
-		pthread_mutex_t m_mutex;
-
-	public:
-		Mutex();
-		virtual ~Mutex();
-		virtual bool IsRecursive() const { return false; }
-
-		void Recreate();
-		bool RecreateIfLocked();
-		void Detach();
-
-		void Acquire();
-		bool Acquire(const wxTimeSpan& timeout);
-		bool TryAcquire();
-		void Release();
-
-		void AcquireWithoutYield();
-		bool AcquireWithoutYield(const wxTimeSpan& timeout);
-
-		void Wait();
-		void WaitWithSpin();
-		bool Wait(const wxTimeSpan& timeout);
-		void WaitWithoutYield();
-		bool WaitWithoutYield(const wxTimeSpan& timeout);
-
-	protected:
-		// empty constructor used by MutexLockRecursive
-		Mutex(bool) {}
-	};
-
-	class MutexRecursive : public Mutex
-	{
-	public:
-		MutexRecursive();
-		virtual ~MutexRecursive();
-		virtual bool IsRecursive() const { return true; }
-	};
-
-	// --------------------------------------------------------------------------------------
-	//  ScopedLock
-	// --------------------------------------------------------------------------------------
-	// Helper class for using Mutexes.  Using this class provides an exception-safe (and
-	// generally clean) method of locking code inside a function or conditional block.  The lock
-	// will be automatically released on any return or exit from the function.
-	//
-	// Const qualification note:
-	//  ScopedLock takes const instances of the mutex, even though the mutex is modified
-	//  by locking and unlocking.  Two rationales:
-	//
-	//  1) when designing classes with accessors (GetString, GetValue, etc) that need mutexes,
-	//     this class needs a const hack to allow those accessors to be const (which is typically
-	//     *very* important).
-	//
-	//  2) The state of the Mutex is guaranteed to be unchanged when the calling function or
-	//     scope exits, by any means.  Only via manual calls to Release or Acquire does that
-	//     change, and typically those are only used in very special circumstances of their own.
-	//
-	class ScopedLock
-	{
-		DeclareNoncopyableObject(ScopedLock);
-
-	protected:
-		Mutex* m_lock;
-		bool m_IsLocked;
-
-	public:
-		virtual ~ScopedLock();
-		explicit ScopedLock(const Mutex* locker = NULL);
-		explicit ScopedLock(const Mutex& locker);
-		void AssignAndLock(const Mutex& locker);
-		void AssignAndLock(const Mutex* locker);
-
-		void Assign(const Mutex& locker);
-		void Assign(const Mutex* locker);
-
-		void Release();
-		void Acquire();
-
-		bool IsLocked() const { return m_IsLocked; }
-
-	protected:
-		// Special constructor used by ScopedTryLock
-		ScopedLock(const Mutex& locker, bool isTryLock);
 	};
 } // namespace Threading

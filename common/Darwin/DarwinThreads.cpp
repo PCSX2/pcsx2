@@ -15,6 +15,7 @@
 
 #if defined(__APPLE__)
 
+#include <sched.h>
 #include <unistd.h>
 #include <mach/mach_init.h>
 #include <mach/thread_act.h>
@@ -30,6 +31,11 @@
 __forceinline void Threading::Sleep(int ms)
 {
 	usleep(1000 * ms);
+}
+
+__forceinline void Threading::Timeslice()
+{
+	sched_yield();
 }
 
 // For use in spin/wait loops, acts as a hint to Intel CPUs and should, in theory

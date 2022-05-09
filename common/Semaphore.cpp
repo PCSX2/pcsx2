@@ -14,10 +14,13 @@
 */
 
 #include "common/Threading.h"
+#include "common/Assertions.h"
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
 #endif
+
+#include <limits>
 
 // --------------------------------------------------------------------------------------
 //  Semaphore Implementations
