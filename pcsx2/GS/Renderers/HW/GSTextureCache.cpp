@@ -1069,6 +1069,11 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	if (!src || !dst || src->m_texture->GetScale() != dst->m_texture->GetScale())
 		return false;
 
+	// We don't want to copy "old" data that the game has overwritten with writes,
+	// so flush any overlapping dirty area.
+	src->UpdateIfDirtyIntersects(GSVector4i(sx, sy, sx + w, sy + h));;
+	dst->UpdateIfDirtyIntersects(GSVector4i(dx, dy, dx + w, dy + h));
+
 	// Scale coordinates.
 	const GSVector2 scale(src->m_texture->GetScale());
 	const int scaled_sx = static_cast<int>(sx * scale.x);
@@ -2231,6 +2236,23 @@ void GSTextureCache::Target::Update()
 	g_gs_device->Recycle(t);
 
 	UpdateValidity(r);
+}
+
+void GSTextureCache::Target::UpdateIfDirtyIntersects(const GSVector4i& rc)
+{
+	for (const auto& dirty : m_dirty)
+	{
+		const GSVector4i dirty_rc(dirty.GetDirtyRect(m_TEX0));
+		if (dirty_rc.rintersect(rc).rempty())
+			continue;
+
+		// strictly speaking, we only need to update the area outside of the move.
+		// but, to keep things simple, just update the whole thing
+		GL_CACHE("TC: Update dirty rectangle [%d,%d,%d,%d] due to intersection with [%d,%d,%d,%d]",
+			dirty_rc.x, dirty_rc.y, dirty_rc.z, dirty_rc.w, rc.x, rc.y, rc.z, rc.w);
+		Update();
+		break;
+	}
 }
 
 void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
