@@ -24,6 +24,11 @@ __fi void Threading::Sleep(int ms)
 	::Sleep(ms);
 }
 
+__fi void Threading::Timeslice()
+{
+	::Sleep(0);
+}
+
 // For use in spin/wait loops,  Acts as a hint to Intel CPUs and should, in theory
 // improve performance and reduce cpu power consumption.
 __fi void Threading::SpinWait()

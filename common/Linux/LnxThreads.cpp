@@ -55,6 +55,11 @@ __forceinline void Threading::Sleep(int ms)
 	usleep(1000 * ms);
 }
 
+__forceinline void Threading::Timeslice()
+{
+	sched_yield();
+}
+
 // For use in spin/wait loops,  Acts as a hint to Intel CPUs and should, in theory
 // improve performance and reduce cpu power consumption.
 __forceinline void Threading::SpinWait()

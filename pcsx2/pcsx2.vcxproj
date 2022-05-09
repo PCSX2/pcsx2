@@ -354,6 +354,7 @@
     <ClCompile Include="gui\Dialogs\McdConfigDialog.cpp" />
     <ClCompile Include="gui\DriveList.cpp" />
     <ClCompile Include="gui\IniInterface.cpp" />
+    <ClCompile Include="gui\Mutex.cpp" />
     <ClCompile Include="gui\Panels\MemoryCardListView.cpp" />
     <ClCompile Include="gui\PersistentThread.cpp" />
     <ClCompile Include="gui\pxCheckBox.cpp" />
@@ -818,7 +819,6 @@
     <ClInclude Include="gui\Debugger\DebuggerLists.h" />
     <ClInclude Include="gui\Debugger\DisassemblyDialog.h" />
     <ClInclude Include="gui\Panels\MemoryCardPanels.h" />
-    <ClInclude Include="gui\ScopedPtrMT.h" />
     <ClInclude Include="gui\ThreadingDialogs.h" />
     <ClInclude Include="gui\wxAppWithHelpers.h" />
     <ClInclude Include="gui\wxSettingsInterface.h" />

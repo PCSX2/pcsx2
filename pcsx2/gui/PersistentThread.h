@@ -17,7 +17,16 @@
 
 #include "common/Threading.h"
 #include "common/EventSource.h"
-#include "ScopedPtrMT.h"
+#include "common/Console.h"
+#include "common/TraceLog.h"
+#include <wx/datetime.h>
+#include <pthread.h>
+
+#ifdef __APPLE__
+#include <mach/semaphore.h>
+#else
+#include <semaphore.h>
+#endif
 
 #undef Yield // release the burden of windows.h global namespace spam.
 
@@ -113,11 +122,226 @@ namespace Exception
 
 namespace Threading
 {
+	extern void pxTestCancel();
+	extern void YieldToMain();
+
+	extern const wxTimeSpan def_yieldgui_interval;
+
 	extern pxThread* pxGetCurrentThread();
 	extern wxString pxGetCurrentThreadName();
 	extern bool _WaitGui_RecursionGuard(const wxChar* name);
 
 	extern bool AllowDeletions();
+
+	class Mutex
+	{
+	protected:
+		pthread_mutex_t m_mutex;
+
+	public:
+		Mutex();
+		virtual ~Mutex();
+		virtual bool IsRecursive() const { return false; }
+
+		void Recreate();
+		bool RecreateIfLocked();
+		void Detach();
+
+		void Acquire();
+		bool Acquire(const wxTimeSpan& timeout);
+		bool TryAcquire();
+		void Release();
+
+		void AcquireWithoutYield();
+		bool AcquireWithoutYield(const wxTimeSpan& timeout);
+
+		void Wait();
+		void WaitWithSpin();
+		bool Wait(const wxTimeSpan& timeout);
+		void WaitWithoutYield();
+		bool WaitWithoutYield(const wxTimeSpan& timeout);
+
+	protected:
+		// empty constructor used by MutexLockRecursive
+		Mutex(bool) {}
+	};
+
+	class MutexRecursive : public Mutex
+	{
+	public:
+		MutexRecursive();
+		virtual ~MutexRecursive();
+		virtual bool IsRecursive() const { return true; }
+	};
+
+	// --------------------------------------------------------------------------------------
+	//  ScopedLock
+	// --------------------------------------------------------------------------------------
+	// Helper class for using Mutexes.  Using this class provides an exception-safe (and
+	// generally clean) method of locking code inside a function or conditional block.  The lock
+	// will be automatically released on any return or exit from the function.
+	//
+	// Const qualification note:
+	//  ScopedLock takes const instances of the mutex, even though the mutex is modified
+	//  by locking and unlocking.  Two rationales:
+	//
+	//  1) when designing classes with accessors (GetString, GetValue, etc) that need mutexes,
+	//     this class needs a const hack to allow those accessors to be const (which is typically
+	//     *very* important).
+	//
+	//  2) The state of the Mutex is guaranteed to be unchanged when the calling function or
+	//     scope exits, by any means.  Only via manual calls to Release or Acquire does that
+	//     change, and typically those are only used in very special circumstances of their own.
+	//
+	class ScopedLock
+	{
+		DeclareNoncopyableObject(ScopedLock);
+
+	protected:
+		Mutex* m_lock;
+		bool m_IsLocked;
+
+	public:
+		virtual ~ScopedLock();
+		explicit ScopedLock(const Mutex* locker = NULL);
+		explicit ScopedLock(const Mutex& locker);
+		void AssignAndLock(const Mutex& locker);
+		void AssignAndLock(const Mutex* locker);
+
+		void Assign(const Mutex& locker);
+		void Assign(const Mutex* locker);
+
+		void Release();
+		void Acquire();
+
+		bool IsLocked() const { return m_IsLocked; }
+
+	protected:
+		// Special constructor used by ScopedTryLock
+		ScopedLock(const Mutex& locker, bool isTryLock);
+	};
+
+	// --------------------------------------------------------------------------------------
+	//  ScopedPtrMT
+	// --------------------------------------------------------------------------------------
+
+	template <typename T>
+	class ScopedPtrMT
+	{
+		DeclareNoncopyableObject(ScopedPtrMT);
+
+	protected:
+		std::atomic<T*> m_ptr;
+		Threading::Mutex m_mtx;
+
+	public:
+		typedef T element_type;
+
+		wxEXPLICIT ScopedPtrMT(T* ptr = nullptr)
+		{
+			m_ptr = ptr;
+		}
+
+		~ScopedPtrMT() { _Delete_unlocked(); }
+
+		ScopedPtrMT& Reassign(T* ptr = nullptr)
+		{
+			T* doh = m_ptr.exchange(ptr);
+			if (ptr != doh)
+				delete doh;
+			return *this;
+		}
+
+		ScopedPtrMT& Delete() noexcept
+		{
+			ScopedLock lock(m_mtx);
+			_Delete_unlocked();
+		}
+
+		// Removes the pointer from scoped management, but does not delete!
+		// (ScopedPtr will be nullptr after this method)
+		T* DetachPtr()
+		{
+			ScopedLock lock(m_mtx);
+
+			return m_ptr.exchange(nullptr);
+		}
+
+		// Returns the managed pointer.  Can return nullptr as a valid result if the ScopedPtrMT
+		// has no object in management.
+		T* GetPtr() const
+		{
+			return m_ptr;
+		}
+
+		void SwapPtr(ScopedPtrMT& other)
+		{
+			ScopedLock lock(m_mtx);
+			m_ptr.exchange(other.m_ptr.exchange(m_ptr.load()));
+			T* const tmp = other.m_ptr;
+			other.m_ptr = m_ptr;
+			m_ptr = tmp;
+		}
+
+		// ----------------------------------------------------------------------------
+		//  ScopedPtrMT Operators
+		// ----------------------------------------------------------------------------
+		// I've decided to use the ATL's approach to pointer validity tests, opposed to
+		// the wx/boost approach (which uses some bizarre member method pointer crap, and can't
+		// allow the T* implicit casting.
+
+		bool operator!() const noexcept
+		{
+			return m_ptr.load() == nullptr;
+		}
+
+		// Equality
+		bool operator==(T* pT) const noexcept
+		{
+			return m_ptr == pT;
+		}
+
+		// Inequality
+		bool operator!=(T* pT) const noexcept
+		{
+			return !operator==(pT);
+		}
+
+		// Convenient assignment operator.  ScopedPtrMT = nullptr will issue an automatic deletion
+		// of the managed pointer.
+		ScopedPtrMT& operator=(T* src)
+		{
+			return Reassign(src);
+		}
+
+	#if 0
+		operator T*() const
+		{
+			return m_ptr;
+		}
+
+		// Dereference operator, returns a handle to the managed pointer.
+		// Generates a debug assertion if the object is nullptr!
+		T& operator*() const
+		{
+			pxAssert(m_ptr != nullptr);
+			return *m_ptr;
+		}
+
+		T* operator->() const
+		{
+			pxAssert(m_ptr != nullptr);
+			return m_ptr;
+		}
+	#endif
+
+	protected:
+		void _Delete_unlocked() noexcept
+		{
+			delete m_ptr.exchange(nullptr);
+		}
+	};
+
 
 	// ----------------------------------------------------------------------------------------
 	//  RecursionGuard  -  Basic protection against function recursion

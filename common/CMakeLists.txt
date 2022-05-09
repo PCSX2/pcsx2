@@ -20,7 +20,6 @@ target_sources(common PRIVATE
 	FastFormatString.cpp
 	FastJmp.cpp
 	FileSystem.cpp
-	Mutex.cpp
 	Misc.cpp
 	MD5Digest.cpp
 	PathUtils.cpp
@@ -33,7 +32,6 @@ target_sources(common PRIVATE
 	StringHelpers.cpp
 	StringUtil.cpp
 	Timer.cpp
-	ThreadTools.cpp
 	WindowInfo.cpp
 	emitter/bmi.cpp
 	emitter/cpudetect.cpp
