@@ -1095,7 +1095,7 @@ void GSDrawScanlineCodeGenerator2::TestZ(const XYm& temp1, const XYm& temp2)
 			const u8 amt = (u8)((m_sel.zpsm & 0x3) * 8);
 			pcmpeqd(temp1, temp1);
 			psrld(temp1, amt);
-			pminsd(xym0, temp1);
+			pminud(xym0, temp1);
 		}
 
 		if (m_sel.zwrite)
