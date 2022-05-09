@@ -14,15 +14,14 @@
 */
 
 #pragma once
-
-#include "common/Threading.h"
-
-using Threading::ScopedLock;
+#include "common/Pcsx2Defs.h"
+#include "common/Exceptions.h"
+#include "common/Console.h"
 
 template <typename ListenerType>
 typename EventSource<ListenerType>::ListenerIterator EventSource<ListenerType>::Add(ListenerType& listener)
 {
-	ScopedLock locker(m_listeners_lock);
+	std::unique_lock locker(m_listeners_lock);
 
 	// Check for duplicates before adding the event.
 	if (IsDebugBuild)
@@ -41,7 +40,7 @@ typename EventSource<ListenerType>::ListenerIterator EventSource<ListenerType>::
 template <typename ListenerType>
 void EventSource<ListenerType>::Remove(ListenerType& listener)
 {
-	ScopedLock locker(m_listeners_lock);
+	std::unique_lock locker(m_listeners_lock);
 	m_cache_valid = false;
 	m_listeners.remove(&listener);
 }
@@ -49,7 +48,7 @@ void EventSource<ListenerType>::Remove(ListenerType& listener)
 template <typename ListenerType>
 void EventSource<ListenerType>::Remove(const ListenerIterator& listenerHandle)
 {
-	ScopedLock locker(m_listeners_lock);
+	std::unique_lock locker(m_listeners_lock);
 	m_cache_valid = false;
 	m_listeners.erase(listenerHandle);
 }

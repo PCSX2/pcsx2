@@ -14,13 +14,15 @@
  */
 
 #if !defined(_WIN32)
-#include <wx/thread.h>
 #include <sys/mman.h>
 #include <signal.h>
 #include <errno.h>
 #include <unistd.h>
 
 #include "common/PageFaultSource.h"
+#include "common/Console.h"
+#include "common/Exceptions.h"
+#include "common/StringHelpers.h"
 
 // Apple uses the MAP_ANON define instead of MAP_ANONYMOUS, but they mean
 // the same thing.
@@ -55,7 +57,7 @@ static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void*)
 	// Note: This signal can be accessed by the EE or MTVU thread
 	// Source_PageFault is a global variable with its own state information
 	// so for now we lock this exception code unless someone can fix this better...
-	Threading::ScopedLock lock(PageFault_Mutex);
+	std::unique_lock lock(PageFault_Mutex);
 
 	Source_PageFault->Dispatch(PageFaultInfo((uptr)siginfo->si_addr & ~m_pagemask));
 

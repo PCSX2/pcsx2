@@ -20,6 +20,7 @@
 #include "GS/GS.h"
 #include <atomic>
 #include <functional>
+#include <mutex>
 #include <thread>
 
 extern double GetVerticalFrequency();
@@ -333,8 +334,8 @@ public:
 	std::atomic<int>	m_QueuedFrameCount;
 	std::atomic<bool>	m_VsyncSignalListener;
 
-	Threading::Mutex m_mtx_RingBufferBusy2; // Gets released on semaXGkick waiting...
-	Threading::Mutex m_mtx_WaitGS;
+	std::mutex m_mtx_RingBufferBusy2; // Gets released on semaXGkick waiting...
+	std::mutex m_mtx_WaitGS;
 	Threading::WorkSema m_sem_event;
 	Threading::KernelSemaphore m_sem_OnRingReset;
 	Threading::KernelSemaphore m_sem_Vsync;
@@ -355,7 +356,7 @@ public:
 	uint			m_packet_writepos;	// index of the data location in the ringbuffer.
 
 #ifdef RINGBUF_DEBUG_STACK
-	Threading::Mutex m_lock_Stack;
+	std::mutex m_lock_Stack;
 #endif
 
 	std::thread m_thread;
