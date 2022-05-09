@@ -16,6 +16,7 @@
 #include "common/Vulkan/Builders.h"
 #include "common/Vulkan/Util.h"
 #include "common/Assertions.h"
+#include <limits>
 
 namespace Vulkan
 {

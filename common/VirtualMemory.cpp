@@ -13,17 +13,15 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __WXMSW__
-#include <wx/thread.h>
-#endif
 #include "common/PageFaultSource.h"
 #include "common/EventSource.inl"
 #include "common/MemsetFast.inl"
+#include "common/Console.h"
 
 template class EventSource<IEventListener_PageFault>;
 
 SrcType_PageFault* Source_PageFault = NULL;
-Threading::Mutex PageFault_Mutex;
+std::mutex PageFault_Mutex;
 
 void pxInstallSignalHandler()
 {

@@ -276,7 +276,7 @@ void SysMtgsThread::MainLoop()
 	PacketTagType prevCmd;
 #endif
 
-	ScopedLock mtvu_lock(m_mtx_RingBufferBusy2);
+	std::unique_lock mtvu_lock(m_mtx_RingBufferBusy2);
 
 	while (true)
 	{
@@ -285,13 +285,12 @@ void SysMtgsThread::MainLoop()
 		// is very optimized (only 1 instruction test in most cases), so no point in trying
 		// to avoid it.
 
-		m_mtx_RingBufferBusy2.Release();
-
+		mtvu_lock.unlock();
 		m_sem_event.WaitForWork();
+		mtvu_lock.lock();
+
 		if (!m_open_flag.load(std::memory_order_acquire))
 			break;
-
-		m_mtx_RingBufferBusy2.Acquire();
 
 		// note: m_ReadPos is intentionally not volatile, because it should only
 		// ever be modified by this thread.
@@ -413,10 +412,10 @@ void SysMtgsThread::MainLoop()
 					MTVU_LOG("MTGS - Waiting on semaXGkick!");
 					if (!vu1Thread.semaXGkick.TryWait())
 					{
-						mtvu_lock.Release();
+						mtvu_lock.unlock();
 						// Wait for MTVU to complete vu1 program
 						vu1Thread.semaXGkick.Wait();
-						mtvu_lock.Acquire();
+						mtvu_lock.lock();
 					}
 					Gif_Path& path = gifUnit.gifPath[GIF_PATH_1];
 					GS_Packet gsPack = path.GetGSPacketMTVU(); // Get vu1 program's xgkick packet(s)
@@ -605,7 +604,9 @@ void SysMtgsThread::WaitGS(bool syncRegs, bool weakWait, bool isMTVU)
 		{
 			while (true)
 			{
-				m_mtx_RingBufferBusy2.Wait();
+				// m_mtx_RingBufferBusy2.Wait();
+				m_mtx_RingBufferBusy2.lock();
+				m_mtx_RingBufferBusy2.unlock();
 				if (path.GetPendingGSPackets() != startP1Packs)
 					break;
 			}
@@ -619,7 +620,7 @@ void SysMtgsThread::WaitGS(bool syncRegs, bool weakWait, bool isMTVU)
 
 	if (syncRegs)
 	{
-		ScopedLock lock(m_mtx_WaitGS);
+		std::unique_lock lock(m_mtx_WaitGS);
 		// Completely synchronize GS and MTGS register states.
 		memcpy(RingBuffer.Regs, PS2MEM_GS, sizeof(RingBuffer.Regs));
 	}
