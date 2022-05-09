@@ -21320,6 +21320,8 @@ SLKA-25219:
   name: "Monster Hunter G"
   region: "NTSC-K"
   compat: 5
+  clampModes:
+    vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
 SLKA-25221:
   name: "Busin Zero - Wizardry Alternative Neo"
   region: "NTSC-K"
@@ -27131,6 +27133,8 @@ SLPM-65869:
   name: "Monster Hunter G"
   region: "NTSC-J"
   compat: 5
+  clampModes:
+    vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
 SLPM-65870:
   name: "Magic Teacher Negima - Honor Version"
   region: "NTSC-J"
@@ -28538,6 +28542,8 @@ SLPM-66280:
   name: "Monster Hunter 2"
   region: "NTSC-J"
   compat: 5
+  clampModes:
+    vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
 SLPM-66281:
   name: "Sonic Riders"
   region: "NTSC-J"
@@ -31332,6 +31338,8 @@ SLPM-74244:
 SLPM-74245:
   name: "Monster Hunter 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
+  clampModes:
+    vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
 SLPM-74246:
   name: "Capcom vs. SNK 2 - Millionaire Fighting 2001 [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
@@ -31354,6 +31362,8 @@ SLPM-74247:
 SLPM-74248:
   name: "Monster Hunter G [PlayStation 2 The Best]"
   region: "NTSC-J"
+  clampModes:
+    vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
 SLPM-74249:
   name: "Sengoku Musou Mushoden [PlayStation 2 The Best]"
   region: "NTSC-J"
