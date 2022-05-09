@@ -118,9 +118,9 @@ static const pxEnumEnd_t pxEnumEnd = {};
 //
 #ifndef DeclareNoncopyableObject
 #define DeclareNoncopyableObject(classname) \
-private: \
-	explicit classname(const classname&); \
-	classname& operator=(const classname&)
+public: \
+	classname(const classname&) = delete; \
+	classname& operator=(const classname&) = delete
 #endif
 
 // --------------------------------------------------------------------------------------
