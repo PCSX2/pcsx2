@@ -31,6 +31,7 @@
 
 #ifndef PCSX2_CORE
 #include "gui/SysThreads.h"
+#include <pthread.h>
 #else
 #include "VMManager.h"
 #endif
@@ -733,13 +734,15 @@ static void recExecute()
 	if (eeRecNeedsReset.load())
 		recResetRaw();
 
-	int oldstate;
 	m_cpuException = nullptr;
 	m_Exception    = nullptr;
 
 	// setjmp will save the register context and will return 0
 	// A call to longjmp will restore the context (included the eip/rip)
 	// but will return the longjmp 2nd parameter (here 1)
+#ifndef PCSX2_CORE
+	int oldstate;
+#endif
 	if (!fastjmp_set(&m_SetJmp_StateCheck))
 	{
 		eeCpuExecuting = true;
@@ -749,14 +752,18 @@ static void recExecute()
 		// in Linux, which cannot have a C++ exception cross the recompiler.  Hence the changing
 		// of the cancelstate here!
 
+#ifndef PCSX2_CORE
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
+#endif
 		EnterRecompiledCode();
 
 		// Generally unreachable code here ...
 	}
 	else
 	{
+#ifndef PCSX2_CORE
 		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldstate);
+#endif
 	}
 
 	eeCpuExecuting = false;

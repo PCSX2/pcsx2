@@ -1616,7 +1616,6 @@ endif()
 if(WIN32)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		baseclasses
-		pthreads4w
 		WIL::WIL
 		D3D12MemAlloc
 		setupapi.lib
@@ -1635,6 +1634,11 @@ if(WIN32)
 		opengl32.lib
 		comsuppw.lib
 	)
+	if(NOT PCSX2_CORE)
+		target_link_libraries(PCSX2_FLAGS INTERFACE
+			pthreads4w
+		)
+	endif()
 elseif(APPLE)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		PCAP::PCAP
