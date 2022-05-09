@@ -53,7 +53,11 @@
 
 #include <stddef.h>
 #include <sys/stat.h>
+
+#ifndef PCSX2_CORE
+// pthreadsw32 is not needed when compiling PCSX2-Qt.
 #include <pthread.h>
+#endif
 
 
 #undef  TRUE

@@ -170,7 +170,7 @@ endif()
 if(WIN32)
 	enable_language(ASM_MASM)
 	target_sources(common PRIVATE FastJmp.asm)
-	target_link_libraries(common PUBLIC WIL::WIL D3D12MemAlloc pthreads4w Winmm.lib)
+	target_link_libraries(common PUBLIC WIL::WIL D3D12MemAlloc Winmm.lib)
 	target_sources(common PRIVATE
 		CrashHandler.cpp
 		CrashHandler.h
