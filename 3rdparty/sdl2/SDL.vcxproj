@@ -195,6 +195,7 @@
     <ClInclude Include="SDL\src\SDL_error_c.h" />
     <ClInclude Include="SDL\src\SDL_hints_c.h" />
     <ClInclude Include="SDL\src\SDL_internal.h" />
+    <ClInclude Include="SDL\src\SDL_list.h" />
     <ClInclude Include="SDL\src\sensor\dummy\SDL_dummysensor.h" />
     <ClInclude Include="SDL\src\sensor\SDL_sensor_c.h" />
     <ClInclude Include="SDL\src\sensor\SDL_syssensor.h" />
@@ -350,6 +351,7 @@
     <ClCompile Include="SDL\src\SDL_dataqueue.c" />
     <ClCompile Include="SDL\src\SDL_error.c" />
     <ClCompile Include="SDL\src\SDL_hints.c" />
+    <ClCompile Include="SDL\src\SDL_list.c" />
     <ClCompile Include="SDL\src\SDL_log.c" />
     <ClCompile Include="SDL\src\sensor\dummy\SDL_dummysensor.c" />
     <ClCompile Include="SDL\src\sensor\SDL_sensor.c" />
