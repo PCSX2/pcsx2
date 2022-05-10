@@ -2604,6 +2604,21 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 		m_conf.ps.blend_a = 0;
 		m_conf.ps.blend_b = 0;
 	}
+	else if (m_env.COLCLAMP.CLAMP && m_conf.ps.blend_a == 2
+		&& (m_conf.ps.blend_d == 2 || (m_conf.ps.blend_b == m_conf.ps.blend_d && (alpha_c0_high_min_one || alpha_c2_high_one))))
+	{
+		// CLAMP 1, negative result will be clamped to 0.
+		// Condition 1:
+		// (0  - Cs)*Alpha +  0, (0  - Cd)*Alpha +  0
+		// Condition 2:
+		// Alpha is either As or F higher than 1.0f
+		// (0  - Cd)*Alpha  + Cd, (0  - Cs)*F  + Cs
+		// Results will be 0.0f, make sure D is set to 2.
+		m_conf.ps.blend_a = 0;
+		m_conf.ps.blend_b = 0;
+		m_conf.ps.blend_c = 0;
+		m_conf.ps.blend_d = 2;
+	}
 
 	// Ad cases, alpha write is masked, one barrier is enough, for d3d11 read the fb
 	// Replace Ad with As, blend flags will be used from As since we are chaging the blend_index value.
