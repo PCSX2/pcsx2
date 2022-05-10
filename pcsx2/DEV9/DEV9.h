@@ -52,7 +52,7 @@ bool rx_fifo_can_rx();
 #define HDD_DEF "DEV9hdd.raw"
 #endif
 
-#define HDD_MIN_GB 40
+#define HDD_MIN_GB 8
 #define HDD_MAX_GB 120
 
 #ifndef PCSX2_CORE
