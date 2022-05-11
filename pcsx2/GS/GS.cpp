@@ -1326,6 +1326,8 @@ void GSApp::Init()
 	m_default_configuration["DumpReplaceableTextures"]                    = "0";
 	m_default_configuration["DumpReplaceableMipmaps"]                     = "0";
 	m_default_configuration["DumpTexturesWithFMVActive"]                  = "0";
+	m_default_configuration["DumpDirectTextures"]                         = "1";
+	m_default_configuration["DumpPaletteTextures"]                        = "1";
 	m_default_configuration["extrathreads"]                               = "2";
 	m_default_configuration["extrathreads_height"]                        = "4";
 	m_default_configuration["filter"]                                     = std::to_string(static_cast<s8>(BiFiltering::PS2));
