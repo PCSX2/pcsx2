@@ -28,6 +28,11 @@ class alignas(16) GSVector4
 	{
 	}
 
+	constexpr GSVector4(cxpr_init_tag, u64 x, u64 y)
+		: U64{x, y}
+	{
+	}
+
 public:
 	union
 	{
@@ -36,6 +41,7 @@ public:
 		struct { float left, top, right, bottom; };
 		float v[4];
 		float F32[4];
+		double F64[2];
 		s8  I8[16];
 		s16 I16[8];
 		s32 I32[4];
@@ -55,6 +61,7 @@ public:
 	static const GSVector4 m_four;
 	static const GSVector4 m_x4b000000;
 	static const GSVector4 m_x4f800000;
+	static const GSVector4 m_xc1e00000000fffff;
 	static const GSVector4 m_max;
 	static const GSVector4 m_min;
 
@@ -80,6 +87,16 @@ public:
 	constexpr static GSVector4 cxpr(int x)
 	{
 		return GSVector4(cxpr_init, x, x, x, x);
+	}
+
+	constexpr static GSVector4 cxpr64(u64 x, u64 y)
+	{
+		return GSVector4(cxpr_init, x, y);
+	}
+
+	constexpr static GSVector4 cxpr64(u64 x)
+	{
+		return GSVector4(cxpr_init, x, x);
 	}
 
 	__forceinline GSVector4(float x, float y, float z, float w)
@@ -116,6 +133,11 @@ public:
 
 	__forceinline constexpr explicit GSVector4(__m128 m)
 		: m(m)
+	{
+	}
+
+	__forceinline explicit GSVector4(__m128d m)
+		: m(_mm_castpd_ps(m))
 	{
 	}
 
@@ -161,6 +183,11 @@ public:
 	__forceinline static GSVector4 cast(const GSVector8i& v);
 
 #endif
+
+	__forceinline static GSVector4 f64(double x, double y)
+	{
+		return GSVector4(_mm_castpd_ps(_mm_set_pd(y, x)));
+	}
 
 	__forceinline void operator=(const GSVector4& v)
 	{
@@ -858,6 +885,36 @@ GSVector.h:2973:15: error:  shadows template parm 'int i'
 		return GSVector4(_mm_cmple_ps(v1, v2));
 	}
 
+	__forceinline GSVector4 mul64(const GSVector4& v) const
+	{
+		return GSVector4(_mm_mul_pd(_mm_castps_pd(m), _mm_castps_pd(v.m)));
+	}
+
+	__forceinline GSVector4 add64(const GSVector4& v) const
+	{
+		return GSVector4(_mm_add_pd(_mm_castps_pd(m), _mm_castps_pd(v.m)));
+	}
+
+	__forceinline GSVector4 sub64(const GSVector4& v) const
+	{
+		return GSVector4(_mm_sub_pd(_mm_castps_pd(m), _mm_castps_pd(v.m)));
+	}
+
+	__forceinline static GSVector4 f32to64(const GSVector4& v)
+	{
+		return GSVector4(_mm_cvtps_pd(v.m));
+	}
+
+	__forceinline static GSVector4 f32to64(const void* p)
+	{
+		return GSVector4(_mm_cvtps_pd(_mm_castpd_ps(_mm_load_sd(static_cast<const double*>(p)))));
+	}
+
+	__forceinline GSVector4i f64toi32(bool truncate = true) const
+	{
+		return GSVector4i(truncate ? _mm_cvttpd_epi32(_mm_castps_pd(m)) : _mm_cvtpd_epi32(_mm_castps_pd(m)));
+	}
+
 	// clang-format off
 
 	#define VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn) \
@@ -907,4 +964,9 @@ GSVector.h:2973:15: error:  shadows template parm 'int i'
 	}
 
 #endif
+
+	__forceinline static GSVector4 broadcast64(const void* d)
+	{
+		return GSVector4(_mm_loaddup_pd(static_cast<const double*>(d)));
+	}
 };
