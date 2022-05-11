@@ -98,7 +98,6 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData* data)
 	sel.fb = m_global.sel.fb;
 	sel.zb = m_global.sel.zb;
 	sel.zoverflow = m_global.sel.zoverflow;
-	sel.zequal = m_global.sel.zequal;
 	sel.notest = m_global.sel.notest;
 
 	m_sp = m_sp_map[sel];
@@ -138,23 +137,22 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 	const GSVector4 step_shift = shift[0];
 #endif
 
+	GSVector4 tstep = dscan.t * step_shift;
+
 	if (has_z || has_f)
 	{
 		if (sel.prim != GS_SPRITE_CLASS)
 		{
-#if _M_SSE >= 0x501
-			GSVector4 dp8 = dscan.p * step_shift;
-#endif
 			if (has_f)
 			{
 #if _M_SSE >= 0x501
-				local.d8.p.f = GSVector4i(dp8).extract32<3>();
+				local.d8.p.f = GSVector4i(tstep).extract32<3>();
 
-				GSVector8 df = GSVector8::broadcast32(&dscan.p.w);
+				GSVector8 df = GSVector8::broadcast32(&dscan.t.w);
 #else
-				GSVector4 df = dscan.p.wwww();
+				GSVector4 df = dscan.t.wwww();
 
-				local.d4.f = GSVector4i(df * shift[0]).xxzzlh();
+				local.d4.f = GSVector4i(tstep).zzzzh().wwww();
 #endif
 
 				for (int i = 0; i < vlen; i++)
@@ -165,25 +163,18 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 
 			if (has_z)
 			{
-				if (sel.zequal)
-				{
-					local.p.z = vertex[index[1]].t.U32[3];
-				}
-
-				{
 #if _M_SSE >= 0x501
-					local.d8.p.z = dp8.extract32<2>();
+				const VectorF dz = VectorF::broadcast32(&dscan.p.z);
 
-					const GSVector8 dz = GSVector8::broadcast32(&dscan.p.z);
+				local.d8.p.z = (dz.extract<0>() * step_shift).extract32<0>();
 #else
-					const GSVector4 dz = dscan.p.zzzz();
+				const GSVector4 dz = dscan.p.zzzz();
 
-					local.d4.z = dz * shift[0];
+				local.d4.z = dz * step_shift;
 #endif
-					for (int i = 0; i < vlen; i++)
-					{
-						local.d[i].z = dz * shift[1 + i];
-					}
+				for (int i = 0; i < vlen; i++)
+				{
+					local.d[i].z = dz * shift[1 + i];
 				}
 			}
 		}
@@ -207,8 +198,6 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 
 	if (has_t)
 	{
-		GSVector4 tstep = dscan.t * step_shift;
-
 		if (sel.fst)
 		{
 			LOCAL_STEP.stq = GSVector4::cast(GSVector4i(tstep));
@@ -361,9 +350,9 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 		if (sel.fwrite && sel.fge)
 		{
 #if _M_SSE >= 0x501
-			f = GSVector8i::broadcast16(GSVector4i(scan.p).srl<12>()).add16(local.d[skip].f);
+			f = GSVector8i::broadcast16(GSVector4i(scan.t).srl<12>()).add16(local.d[skip].f);
 #else
-			f = GSVector4i(scan.p).zzzzh().zzzz().add16(local.d[skip].f);
+			f = GSVector4i(scan.t).zzzzh().zzzz().add16(local.d[skip].f);
 #endif
 		}
 
@@ -378,9 +367,9 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 		if (sel.edge)
 		{
 #if _M_SSE >= 0x501
-			cov = GSVector8i::broadcast16(GSVector4i::cast(scan.t).srl<12>()).srl16(9);
+			cov = GSVector8i::broadcast16(GSVector4i::cast(scan.p)).srl16(9);
 #else
-			cov = GSVector4i::cast(scan.t).zzzzh().wwww().srl16(9);
+			cov = GSVector4i::cast(scan.p).xxxxl().xxxx().srl16(9);
 #endif
 		}
 
@@ -467,11 +456,7 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 					GSVector4 z = scan.p.zzzz() + zo;
 #endif
 
-					if (sel.zequal)
-					{
-						zs = local.p.z;
-					}
-					else if (sel.zoverflow)
+					if (sel.zoverflow)
 					{
 						zs = (VectorI(z * 0.5f) << 1) | (VectorI(z) & VectorI::x00000001());
 					}

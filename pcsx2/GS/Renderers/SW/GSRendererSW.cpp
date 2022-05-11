@@ -198,74 +198,6 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 {
 	// FIXME q_div wasn't added to AVX2 code path.
 
-#if 0 //_M_SSE >= 0x501
-
-	// TODO: something isn't right here, this makes other functions slower (split load/store? old sse code in 3rd party lib?)
-
-	GSVector8i o2((GSVector4i)m_context->XYOFFSET);
-	GSVector8 tsize2(GSVector4(0x10000 << m_context->TEX0.TW, 0x10000 << m_context->TEX0.TH, 1, 0));
-
-	for(int i = (int)m_vertex.next; i > 0; i -= 2, src += 2, dst += 2) // ok to overflow, allocator makes sure there is one more dummy vertex
-	{
-		GSVector8i v0 = GSVector8i::load<true>(src[0].m);
-		GSVector8i v1 = GSVector8i::load<true>(src[1].m);
-
-		GSVector8 stcq = GSVector8::cast(v0.ac(v1));
-		GSVector8i xyzuvf = v0.bd(v1);
-
-		//GSVector8 stcq = GSVector8::load(&src[0].m[0], &src[1].m[0]);
-		//GSVector8i xyzuvf = GSVector8i::load(&src[0].m[1], &src[1].m[1]);
-
-		GSVector8i xy = xyzuvf.upl16() - o2;
-		GSVector8i zf = xyzuvf.ywww().min_u32(GSVector8i::xffffff00());
-
-		GSVector8 p = GSVector8(xy).xyxy(GSVector8(zf) + (GSVector8::m_x4f800000 & GSVector8::cast(zf.sra32(31)))) * m_pos_scale2;
-		GSVector8 c = GSVector8(GSVector8i::cast(stcq).uph8().upl16() << 7);
-
-		GSVector8 t = GSVector8::zero();
-
-		if(tme)
-		{
-			if(fst)
-			{
-				t = GSVector8(xyzuvf.uph16() << (16 - 4));
-			}
-			else
-			{
-				t = stcq.xyww() * tsize2;
-			}
-		}
-
-		if(primclass == GS_SPRITE_CLASS)
-		{
-			t = t.insert32<1, 3>(GSVector8::cast(xyzuvf));
-		}
-
-		GSVector8::storel(&dst[0].p, p);
-
-		if(tme || primclass == GS_SPRITE_CLASS)
-		{
-			GSVector8::store<true>(&dst[0].t, t.ac(c));
-		}
-		else
-		{
-			GSVector8::storel(&dst[0].c, c);
-		}
-
-		GSVector8::storeh(&dst[1].p, p);
-
-		if(tme || primclass == GS_SPRITE_CLASS)
-		{
-			GSVector8::store<true>(&dst[1].t, t.bd(c));
-		}
-		else
-		{
-			GSVector8::storeh(&dst[1].c, c);
-		}
-	}
-
-#else
-
 	GSVector4i off = (GSVector4i)m_context->XYOFFSET;
 	GSVector4 tsize = GSVector4(0x10000 << m_context->TEX0.TW, 0x10000 << m_context->TEX0.TH, 1, 0);
 	GSVector4i z_max = GSVector4i::xffffffff().srl32(GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt * 8);
@@ -277,9 +209,7 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 		GSVector4i xyzuvf(src->m[1]);
 
 		GSVector4i xy = xyzuvf.upl16() - off;
-		GSVector4i zf = xyzuvf.ywww().min_u32(GSVector4i::xffffff00());
 
-		dst->p = GSVector4(xy).xyxy(GSVector4(zf) + (GSVector4::m_x4f800000 & GSVector4::cast(zf.sra32(31)))) * m_pos_scale;
 		dst->c = GSVector4(GSVector4i::cast(stcq).zzzz().u8to32() << 7);
 
 		GSVector4 t = GSVector4::zero();
@@ -311,10 +241,18 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 			}
 		}
 
-		if (primclass == GS_SPRITE_CLASS || m_vt.m_eq.z)
+		if (primclass == GS_SPRITE_CLASS)
 		{
+			dst->p = GSVector4(xy).xyyw(GSVector4(xyzuvf)) * m_pos_scale;
+
 			xyzuvf = xyzuvf.min_u32(z_max);
 			t = t.insert32<1, 3>(GSVector4::cast(xyzuvf));
+		}
+		else
+		{
+			float z = static_cast<float>(static_cast<u32>(xyzuvf.extract32<1>()));
+			dst->p = (GSVector4(xy) * m_pos_scale).upld(GSVector4(z, 0.0, 0.0, 0.0));
+			t = t.blend32<8>(GSVector4(xyzuvf << 7));
 		}
 
 		dst->t = t;
@@ -325,8 +263,6 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 
 #endif
 	}
-
-#endif
 }
 
 void GSRendererSW::Draw()
@@ -1352,7 +1288,6 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 		gd.sel.zpsm = GSLocalMemory::m_psm[context->ZBUF.PSM].fmt;
 		gd.sel.ztst = ztest ? context->TEST.ZTST : (int)ZTST_ALWAYS;
-		gd.sel.zequal = !!m_vt.m_eq.z;
 		gd.sel.zoverflow = (u32)GSVector4i(m_vt.m_max.p).z == 0x80000000U;
 		gd.sel.zclamp = (u32)GSVector4i(m_vt.m_max.p).z > z_max;
 	}

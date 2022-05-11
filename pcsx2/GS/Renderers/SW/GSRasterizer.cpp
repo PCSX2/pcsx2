@@ -963,7 +963,7 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 				{
 					AddScanline(e, 1, xi, top, edge);
 
-					e->t.U32[3] = (0x10000 - xf) & 0xffff;
+					e->p.U32[0] = (0x10000 - xf) & 0xffff;
 
 					e++;
 				}
@@ -986,7 +986,7 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 				{
 					AddScanline(e, 1, xi, top, edge);
 
-					e->t.U32[3] = xf;
+					e->p.U32[0] = xf;
 
 					e++;
 				}
@@ -1053,7 +1053,7 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 				{
 					AddScanline(e, 1, left, yi, edge);
 
-					e->t.U32[3] = (0x10000 - yf) & 0xffff;
+					e->p.U32[0] = (0x10000 - yf) & 0xffff;
 
 					e++;
 				}
@@ -1076,7 +1076,7 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 				{
 					AddScanline(e, 1, left, yi, edge);
 
-					e->t.U32[3] = yf;
+					e->p.U32[0] = yf;
 
 					e++;
 				}
