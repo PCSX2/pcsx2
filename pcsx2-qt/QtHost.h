@@ -20,6 +20,7 @@
 #include "pcsx2/Frontend/InputManager.h"
 #include "pcsx2/VMManager.h"
 #include <QtCore/QMetaType>
+#include <QtCore/QString>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -51,6 +52,12 @@ namespace QtHost
 
 	/// Executes a function on the UI thread.
 	void RunOnUIThread(const std::function<void()>& func, bool block = false);
+
+	/// Returns the application name and version, optionally including debug/devel config indicator.
+	QString GetAppNameAndVersion();
+
+	/// Returns the debug/devel config indicator.
+	QString GetAppConfigSuffix();
 
 	/// Thread-safe settings access.
 	SettingsInterface* GetBaseSettingsInterface();

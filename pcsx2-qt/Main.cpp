@@ -25,14 +25,13 @@
 
 #include "CDVD/CDVD.h"
 #include "Frontend/GameList.h"
-#include "svnrev.h"
 
 #include "common/CrashHandler.h"
 
 static void PrintCommandLineVersion()
 {
 	QtHost::InitializeEarlyConsole();
-	std::fprintf(stderr, "PCSX2 Version %s\n", GIT_REV);
+	std::fprintf(stderr, "%s\n", (QtHost::GetAppNameAndVersion() + QtHost::GetAppConfigSuffix()).toUtf8().constData());
 	std::fprintf(stderr, "https://pcsx2.net/\n");
 	std::fprintf(stderr, "\n");
 }
