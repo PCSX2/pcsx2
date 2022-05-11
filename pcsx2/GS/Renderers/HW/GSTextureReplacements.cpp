@@ -674,9 +674,6 @@ void GSTextureReplacements::SyncWorkerThread()
 void GSTextureReplacements::CancelPendingLoadsAndDumps()
 {
 	std::unique_lock<std::mutex> lock(s_worker_thread_mutex);
-	if (!s_worker_thread.joinable())
-		return;
-
 	while (!s_worker_thread_queue.empty())
 		s_worker_thread_queue.pop();
 	s_async_loaded_textures.clear();
