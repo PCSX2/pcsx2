@@ -1009,7 +1009,7 @@ namespace Vulkan
 			}
 		}
 
-		if (m_gpu_timing_enabled)
+		if (m_gpu_timing_enabled && resources.timestamp_written)
 		{
 			vkCmdWriteTimestamp(m_current_command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, m_timestamp_query_pool, m_current_frame * 2 + 1);
 		}
@@ -1184,36 +1184,41 @@ namespace Vulkan
 		if (res != VK_SUCCESS)
 			LOG_VULKAN_ERROR(res, "vkResetDescriptorPool failed: ");
 
-		m_current_frame = index;
-		m_current_command_buffer = resources.command_buffers[1];
+		if (m_gpu_timing_enabled)
+		{
+			if (resources.timestamp_written)
+			{
+				std::array<u64, 2> timestamps;
+				res = vkGetQueryPoolResults(m_device, m_timestamp_query_pool, index * 2, static_cast<u32>(timestamps.size()),
+					sizeof(u64) * timestamps.size(), timestamps.data(), sizeof(u64), VK_QUERY_RESULT_64_BIT);
+				if (res == VK_SUCCESS)
+				{
+					// if we didn't write the timestamp at the start of the cmdbuffer (just enabled timing), the first TS will be zero
+					if (timestamps[0] > 0)
+					{
+						const u64 ns_diff = (timestamps[1] - timestamps[0]) * static_cast<u64>(m_device_properties.limits.timestampPeriod);
+						m_accumulated_gpu_time += static_cast<double>(ns_diff) / 1000000.0;
+					}
+				}
+				else
+				{
+					LOG_VULKAN_ERROR(res, "vkGetQueryPoolResults failed: ");
+				}
+			}
+
+			vkCmdResetQueryPool(resources.command_buffers[1], m_timestamp_query_pool, index * 2, 2);
+			vkCmdWriteTimestamp(resources.command_buffers[1], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, m_timestamp_query_pool, index * 2);
+		}
+
 		resources.fence_counter = m_next_fence_counter++;
 		resources.init_buffer_used = false;
+		resources.timestamp_written = m_gpu_timing_enabled;
+
+		m_current_frame = index;
+		m_current_command_buffer = resources.command_buffers[1];
 
 		// using the lower 32 bits of the fence index should be sufficient here, I hope...
 		vmaSetCurrentFrameIndex(m_allocator, static_cast<u32>(m_next_fence_counter));
-
-		if (m_gpu_timing_enabled)
-		{
-			std::array<u64, 2> timestamps;
-			res = vkGetQueryPoolResults(m_device, m_timestamp_query_pool, index * 2, static_cast<u32>(timestamps.size()),
-				sizeof(u64) * timestamps.size(), timestamps.data(), sizeof(u64), VK_QUERY_RESULT_64_BIT);
-			if (res == VK_SUCCESS)
-			{
-				// if we didn't write the timestamp at the start of the cmdbuffer (just enabled timing), the first TS will be zero
-				if (timestamps[0] > 0)
-				{
-					const u64 ns_diff = (timestamps[1] - timestamps[0]) * static_cast<u64>(m_device_properties.limits.timestampPeriod);
-					m_accumulated_gpu_time += static_cast<double>(ns_diff) / 1000000.0;
-				}
-			}
-			else
-			{
-				LOG_VULKAN_ERROR(res, "vkGetQueryPoolResults failed: ");
-			}
-
-			vkCmdResetQueryPool(m_current_command_buffer, m_timestamp_query_pool, index * 2, 2);
-			vkCmdWriteTimestamp(m_current_command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, m_timestamp_query_pool, index * 2);
-		}
 	}
 
 	void Context::ExecuteCommandBuffer(bool wait_for_completion)
