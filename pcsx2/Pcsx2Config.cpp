@@ -336,6 +336,8 @@ Pcsx2Config::GSOptions::GSOptions()
 	DumpReplaceableTextures = false;
 	DumpReplaceableMipmaps = false;
 	DumpTexturesWithFMVActive = false;
+	DumpDirectTextures = true;
+	DumpPaletteTextures = true;
 	LoadTextureReplacements = false;
 	LoadTextureReplacementsAsync = true;
 	PrecacheTextureReplacements = false;
@@ -551,12 +553,14 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBoolEx(SaveFrame, "savef");
 	GSSettingBoolEx(SaveTexture, "savet");
 	GSSettingBoolEx(SaveDepth, "savez");
-	GSSettingBoolEx(DumpReplaceableTextures, "DumpReplaceableTextures");
-	GSSettingBoolEx(DumpReplaceableMipmaps, "DumpReplaceableMipmaps");
-	GSSettingBoolEx(DumpTexturesWithFMVActive, "DumpTexturesWithFMVActive");
-	GSSettingBoolEx(LoadTextureReplacements, "LoadTextureReplacements");
-	GSSettingBoolEx(LoadTextureReplacementsAsync, "LoadTextureReplacementsAsync");
-	GSSettingBoolEx(PrecacheTextureReplacements, "PrecacheTextureReplacements");
+	GSSettingBool(DumpReplaceableTextures);
+	GSSettingBool(DumpReplaceableMipmaps);
+	GSSettingBool(DumpTexturesWithFMVActive);
+	GSSettingBool(DumpDirectTextures);
+	GSSettingBool(DumpPaletteTextures);
+	GSSettingBool(LoadTextureReplacements);
+	GSSettingBool(LoadTextureReplacementsAsync);
+	GSSettingBool(PrecacheTextureReplacements);
 
 	GSSettingIntEnumEx(InterlaceMode, "deinterlace");
 

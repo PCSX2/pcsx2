@@ -475,6 +475,8 @@ struct Pcsx2Config
 					DumpReplaceableTextures : 1,
 					DumpReplaceableMipmaps : 1,
 					DumpTexturesWithFMVActive : 1,
+					DumpDirectTextures : 1,
+					DumpPaletteTextures : 1,
 					LoadTextureReplacements : 1,
 					LoadTextureReplacementsAsync : 1,
 					PrecacheTextureReplacements : 1;

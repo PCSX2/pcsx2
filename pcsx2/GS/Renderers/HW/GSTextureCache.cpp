@@ -1543,7 +1543,8 @@ extern bool FMVstarted;
 GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool& paltex, const u32* clut, const GSVector2i* lod)
 {
 	// don't bother hashing if we're not dumping or replacing.
-	const bool dump = GSConfig.DumpReplaceableTextures && (!FMVstarted || GSConfig.DumpTexturesWithFMVActive);
+	const bool dump = GSConfig.DumpReplaceableTextures && (!FMVstarted || GSConfig.DumpTexturesWithFMVActive) &&
+					  (clut ? GSConfig.DumpPaletteTextures : GSConfig.DumpDirectTextures);
 	const bool replace = GSConfig.LoadTextureReplacements;
 	const bool can_cache = CanCacheTextureSize(TEX0.TW, TEX0.TH);
 	if (!dump && !replace && !can_cache)
