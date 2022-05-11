@@ -192,21 +192,26 @@ void GSSetupPrimCodeGenerator2::Depth_XMM()
 
 		if (m_en.z)
 		{
-			// GSVector4 dz = p.zzzz();
+			// VectorF dz = VectorF::broadcast64(&dscan.p.z)
+			movddup(xmm0, ptr[_dscan + offsetof(GSVertexSW, p.z)]);
 
-			broadcastss(xym0, ptr[_dscan + offsetof(GSVertexSW, p.z)]);
-
-			// m_local.d4.z = dz * 4.0f;
-
-			THREEARG(mulps, xmm1, xmm0, xmm3);
-			movdqa(_rip_local_d_p(z), xmm1);
+			// m_local.d4.z = dz.mul64(GSVector4::f32to64(shift));
+			cvtps2pd(xmm1, xmm3);
+			mulpd(xmm1, xmm0);
+			movaps(_rip_local_d_p(z), xmm1);
 
 			for (int i = 0; i < (m_sel.notest ? 1 : 4); i++)
 			{
-				// m_local.d[i].z = dz * m_shift[i];
+				// m_local.d[i].z0 = dz.mul64(VectorF::f32to64(half_shift[2 * i + 2]));
+				// m_local.d[i].z1 = dz.mul64(VectorF::f32to64(half_shift[2 * i + 3]));
 
-				THREEARG(mulps, xmm1, xmm0, XYm(4 + i));
-				movdqa(_rip_local(d[i].z), xmm1);
+				cvtps2pd(xmm1, XYm(4 + i));
+				pshufd(xmm2, XYm(4 + i), _MM_SHUFFLE(1, 0, 3, 2));
+				cvtps2pd(xmm2, xmm2);
+				mulpd(xmm1, xmm0);
+				mulpd(xmm2, xmm0);
+				movaps(_rip_local(d[i].z0), xmm1);
+				movaps(_rip_local(d[i].z1), xmm2);
 			}
 		}
 	}
@@ -276,23 +281,34 @@ void GSSetupPrimCodeGenerator2::Depth_YMM()
 
 		if (m_en.z)
 		{
-			// const VectorF dz = VectorF::broadcast32(&dscan.p.z);
-			vbroadcastss(ymm0, ptr[_dscan + offsetof(GSVertexSW, p.z)]);
+			// const VectorF dz = VectorF::broadcast64(&dscan.p.z);
+			vbroadcastsd(ymm0, ptr[_dscan + offsetof(GSVertexSW, p.z)]);
 
-			// local.d8.p.z = (dz.extract<0>() * step_shift).extract32<0>();
-			vmulss(xmm1, xmm0, xmm3);
-			movss(_rip_local_d_p(z), xmm1);
+			// GSVector4::storel(&local.d8.p.z, dz.extract<0>().mul64(GSVector4::f32to64(shift)));
+			cvtss2sd(xmm1, xmm3);
+			vmulsd(xmm1, xmm0, xmm1);
+			movsd(_rip_local_d_p(z), xmm1);
 
 			for (int i = 0; i < (m_sel.notest ? 1 : dsize); i++)
 			{
-				// m_local.d[i].z = dz * shift[1 + i];
+				// m_local.d[i].z0 = dz.mul64(VectorF::f32to64(half_shift[2 * i + 2]));
+				// m_local.d[i].z1 = dz.mul64(VectorF::f32to64(half_shift[2 * i + 3]));
 
-				// Save a byte in the encoding for ymm8-11 by swapping with ymm0 (multiplication is communative)
 				if (i < 4 || many_regs)
-					vmulps(ymm1, Ymm(4 + i), ymm0);
+				{
+					cvtps2pd(ymm1, Xmm(4 + i));
+					vextracti128(xmm2, Ymm(4 + i), 1);
+					cvtps2pd(ymm2, xmm2);
+				}
 				else
-					vmulps(ymm1, ymm0, ptr[g_const->m_shift_256b[i + 1]]);
-				movaps(_rip_local(d[i].z), ymm1);
+				{
+					cvtps2pd(ymm1, ptr[&g_const->m_shift_256b[i + 1][0]]);
+					cvtps2pd(ymm2, ptr[&g_const->m_shift_256b[i + 1][4]]);
+				}
+				mulpd(ymm1, ymm0);
+				mulpd(ymm2, ymm0);
+				movaps(_rip_local(d[i].z0), ymm1);
+				movaps(_rip_local(d[i].z1), ymm2);
 			}
 		}
 	}

@@ -19,6 +19,16 @@
 
 struct alignas(32) GSVertexSW
 {
+	// When drawing sprites:
+	// p: x y _ f
+	// t: s t q z
+	// c: r g b a
+	// Otherwise:
+	// p: x y zl zh
+	// t: s t q f
+	// c: r g b a
+	// cov is placed in x since by the time it's known, xy are no longer needed
+
 	GSVector4 p, _pad, t, c;
 
 	__forceinline GSVertexSW() {}
@@ -43,7 +53,8 @@ struct alignas(32) GSVertexSW
 
 	__forceinline void operator+=(const GSVertexSW& v)
 	{
-		p += v.p;
+		GSVector4::storel(&p, GSVector4::loadl(&p) + GSVector4::loadl(&v.p));
+		p.F64[1] += v.p.F64[1];
 		t += v.t;
 		c += v.c;
 	}
@@ -52,7 +63,8 @@ struct alignas(32) GSVertexSW
 	{
 		GSVertexSW v;
 
-		v.p = a.p + b.p;
+		GSVector4::storel(&v.p, GSVector4::loadl(&a.p) + GSVector4::loadl(&b.p));
+		v.p.F64[1] = a.p.F64[1] + b.p.F64[1];
 		v.t = a.t + b.t;
 		v.c = a.c + b.c;
 
@@ -63,7 +75,8 @@ struct alignas(32) GSVertexSW
 	{
 		GSVertexSW v;
 
-		v.p = a.p - b.p;
+		GSVector4::storel(&v.p, GSVector4::loadl(&a.p) - GSVector4::loadl(&b.p));
+		v.p.F64[1] = a.p.F64[1] - b.p.F64[1];
 		v.t = a.t - b.t;
 		v.c = a.c - b.c;
 
@@ -74,7 +87,8 @@ struct alignas(32) GSVertexSW
 	{
 		GSVertexSW v;
 
-		v.p = a.p * b;
+		GSVector4::storel(&v.p, GSVector4::loadl(&a.p) * b);
+		v.p.F64[1] = a.p.F64[1] * b.F32[0];
 		v.t = a.t * b;
 		v.c = a.c * b;
 
@@ -85,7 +99,8 @@ struct alignas(32) GSVertexSW
 	{
 		GSVertexSW v;
 
-		v.p = a.p / b;
+		GSVector4::storel(&v.p, GSVector4::loadl(&a.p) / b);
+		v.p.F64[1] = a.p.F64[1] / b.F32[0];
 		v.t = a.t / b;
 		v.c = a.c / b;
 
@@ -249,8 +264,20 @@ struct alignas(32) GSVertexSW2
 	{
 		GSVertexSW2 v;
 
-		v.p = a.p - b.p;
+		GSVector4::storel(&v.p, GSVector4::loadl(&a.p) - GSVector4::loadl(&b.p));
+		v.p.F64[1] = a.p.F64[1] - b.p.F64[1];
 		v.tc = a.tc - b.tc;
+
+		return v;
+	}
+
+	__forceinline friend GSVertexSW2 operator*(const GSVertexSW2& a, const GSVector8& b)
+	{
+		GSVertexSW2 v;
+
+		GSVector4::storel(&v.p, GSVector4::loadl(&a.p) * b.extract<0>());
+		v.p.F64[1] = a.p.F64[1] * b.F32[0];
+		v.tc = a.tc * b;
 
 		return v;
 	}
