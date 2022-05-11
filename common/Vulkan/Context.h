@@ -274,6 +274,7 @@ namespace Vulkan
 			u64 fence_counter = 0;
 			bool init_buffer_used = false;
 			bool needs_fence_wait = false;
+			bool timestamp_written = false;
 
 			std::vector<std::function<void()>> cleanup_resources;
 		};
