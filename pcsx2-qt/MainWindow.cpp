@@ -43,7 +43,6 @@
 #include "Settings/GameListSettingsWidget.h"
 #include "Settings/InterfaceSettingsWidget.h"
 #include "SettingWidgetBinder.h"
-#include "svnrev.h"
 
 static constexpr char DISC_IMAGE_FILTER[] =
 	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.chd *.cso *.gz *.elf *.irx *.m3u *.gs *.gs.xz);;"
@@ -609,13 +608,9 @@ void MainWindow::updateStatusBarWidgetVisibility()
 
 void MainWindow::updateWindowTitle()
 {
-#if defined(_DEBUG)
-	QString main_title(QStringLiteral("PCSX2 [Debug] %1").arg(GIT_REV));
-	QString display_title(QStringLiteral("%1 [Debug]").arg(m_current_game_name));
-#else
-	QString main_title(QStringLiteral("PCSX2 %1").arg(GIT_REV));
-	QString display_title(m_current_game_name);
-#endif
+	QString suffix(QtHost::GetAppConfigSuffix());
+	QString main_title(QtHost::GetAppNameAndVersion() + suffix);
+	QString display_title(m_current_game_name + suffix);
 
 	if (!m_vm_valid || m_current_game_name.isEmpty())
 		display_title = main_title;

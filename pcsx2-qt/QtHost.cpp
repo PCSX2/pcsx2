@@ -42,6 +42,7 @@
 #include "GameList/GameListWidget.h"
 #include "MainWindow.h"
 #include "QtHost.h"
+#include "svnrev.h"
 
 #include "pcsx2/DebugTools/Debug.h"
 
@@ -399,6 +400,41 @@ void QtHost::RunOnUIThread(const std::function<void()>& func, bool block /*= fal
 	QMetaObject::invokeMethod(g_main_window, "runOnUIThread",
 		block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
 		Q_ARG(const std::function<void()>&, func));
+}
+
+QString QtHost::GetAppNameAndVersion()
+{
+	QString ret;
+	if constexpr (!PCSX2_isReleaseVersion && GIT_TAGGED_COMMIT)
+	{
+		ret = QStringLiteral("PCSX2 Nightly - " GIT_TAG);
+	}
+	else if constexpr (PCSX2_isReleaseVersion)
+	{
+#define APPNAME_STRINGIZE(x) #x
+		ret = QStringLiteral("PCSX2 "
+			APPNAME_STRINGIZE(PCSX2_VersionHi) "."
+			APPNAME_STRINGIZE(PCSX2_VersionMid) "."
+			APPNAME_STRINGIZE(PCSX2_VersionLo));
+#undef APPNAME_STRINGIZE
+	}
+	else
+	{
+		return QStringLiteral("PCSX2 " GIT_REV);
+	}
+
+	return ret;
+}
+
+QString QtHost::GetAppConfigSuffix()
+{
+#if defined(PCSX2_DEBUG)
+	return QStringLiteral(" [Debug]");
+#elif defined(PCSX2_DEVBUILD)
+	return QStringLiteral(" [Devel]");
+#else
+	return QString();
+#endif
 }
 
 std::optional<std::vector<u8>> Host::ReadResourceFile(const char* filename)
