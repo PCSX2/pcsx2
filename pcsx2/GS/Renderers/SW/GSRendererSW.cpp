@@ -249,8 +249,8 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 		}
 		else
 		{
-			float z = static_cast<float>(static_cast<u32>(xyzuvf.extract32<1>()));
-			dst->p = (GSVector4(xy) * m_pos_scale).upld(GSVector4(z, 0.0, 0.0, 0.0));
+			double z = static_cast<double>(static_cast<u32>(xyzuvf.extract32<1>()));
+			dst->p = (GSVector4(xy) * m_pos_scale).upld(GSVector4::f64(z, 0.0));
 			t = t.blend32<8>(GSVector4(xyzuvf << 7));
 		}
 

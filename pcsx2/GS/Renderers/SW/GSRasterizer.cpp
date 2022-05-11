@@ -463,7 +463,7 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u32* index)
 	GSVertexSW2 dv1 = v2 - v0;
 	GSVertexSW2 dv2 = v2 - v1;
 
-	GSVector4 cross = dv0.p * dv1.p.yxwz();
+	GSVector4 cross = GSVector4::loadl(&dv0.p) * GSVector4::loadl(&dv1.p).yxwz();
 
 	cross = (cross - cross.yxwz()).yyyy(); // select the second component, the negated cross product
 	// the longest horizontal span would be cross.x / dv1.p.y, but we don't need its actual value
@@ -487,18 +487,10 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u32* index)
 	ddx[2] = ddx[0].xzyw();
 
 	// Precision is important here. Don't use reciprocal, it will break Jak3/Xenosaga1
-	GSVector8 _dxy01c(dxy01 / cross);
+	GSVector8 dxy01c(dxy01 / cross);
 
-	/*
 	dscan = dv1 * dxy01c.yyyy() - dv0 * dxy01c.wwww();
 	dedge = dv0 * dxy01c.zzzz() - dv1 * dxy01c.xxxx();
-	*/
-
-	dscan.p = dv1.p * _dxy01c.yyyy().extract<0>() - dv0.p * _dxy01c.wwww().extract<0>();
-	dscan.tc = dv1.tc * _dxy01c.yyyy() - dv0.tc * _dxy01c.wwww();
-
-	dedge.p = dv0.p * _dxy01c.zzzz().extract<0>() - dv1.p * _dxy01c.xxxx().extract<0>();
-	dedge.tc = dv0.tc * _dxy01c.zzzz() - dv1.tc * _dxy01c.xxxx();
 
 	if (m1 & 1)
 	{
@@ -567,13 +559,12 @@ void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW2& edge, c
 
 	while (top < bottom)
 	{
-		GSVector8 dy(GSVector4(top) - p0.yyyy());
+		const float dy = static_cast<float>(top) - p0.y;
+		GSVector8 dyv(dy);
 
-		GSVertexSW2 scan;
+		GSVector4 xy = GSVector4::loadl(&edge.p) + GSVector4::loadl(&dedge.p) * dyv.extract<0>();
 
-		scan.p = edge.p + dedge.p * dy.extract<0>();
-
-		GSVector4 lrf = scan.p.ceil();
+		GSVector4 lrf = xy.ceil();
 		GSVector4 l = lrf.max(scissor);
 		GSVector4 r = lrf.min(scissor);
 		GSVector4i lr = GSVector4i(l.xxyy(r));
@@ -585,12 +576,13 @@ void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW2& edge, c
 
 		if (pixels > 0)
 		{
-			scan.tc = edge.tc + dedge.tc * dy;
+			float prestep = l.x - p0.x;
+			GSVector8 prestepv(prestep);
 
-			GSVector8 prestep((l - p0).xxxx());
-
-			scan.p = scan.p + dscan.p * prestep.extract<0>();
-			scan.tc = scan.tc + dscan.tc * prestep;
+			GSVertexSW2 scan;
+			GSVector4::storel(&scan.p, xy + GSVector4::loadl(&dscan.p) * prestepv.extract<0>());
+			scan.p.F64[1] = edge.p.F64[1] + dedge.p.F64[1] * dy + dscan.p.F64[1] * prestep;
+			scan.tc = edge.tc + dedge.tc * dyv + dscan.tc * prestepv;
 
 			AddScanline(e++, pixels, left, top, (GSVertexSW&)scan);
 		}
@@ -652,7 +644,7 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u32* index)
 	GSVertexSW dv1 = v2 - v0;
 	GSVertexSW dv2 = v2 - v1;
 
-	GSVector4 cross = dv0.p * dv1.p.yxwz();
+	GSVector4 cross = GSVector4::loadl(&dv0.p) * GSVector4::loadl(&dv1.p).yxwz();
 
 	cross = (cross - cross.yxwz()).yyyy(); // select the second component, the negated cross product
 	// the longest horizontal span would be cross.x / dv1.p.y, but we don't need its actual value
@@ -678,18 +670,8 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u32* index)
 	// Precision is important here. Don't use reciprocal, it will break Jak3/Xenosaga1
 	GSVector4 dxy01c = dxy01 / cross;
 
-	/*
 	dscan = dv1 * dxy01c.yyyy() - dv0 * dxy01c.wwww();
 	dedge = dv0 * dxy01c.zzzz() - dv1 * dxy01c.xxxx();
-	*/
-
-	dscan.p = dv1.p * dxy01c.yyyy() - dv0.p * dxy01c.wwww();
-	dscan.t = dv1.t * dxy01c.yyyy() - dv0.t * dxy01c.wwww();
-	dscan.c = dv1.c * dxy01c.yyyy() - dv0.c * dxy01c.wwww();
-
-	dedge.p = dv0.p * dxy01c.zzzz() - dv1.p * dxy01c.xxxx();
-	dedge.t = dv0.t * dxy01c.zzzz() - dv1.t * dxy01c.xxxx();
-	dedge.c = dv0.c * dxy01c.zzzz() - dv1.c * dxy01c.xxxx();
 
 	if (m1 & 1)
 	{
@@ -758,13 +740,11 @@ void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW& edge, co
 
 	while (top < bottom)
 	{
-		GSVector4 dy = GSVector4(top) - p0.yyyy();
+		const float dy = static_cast<float>(top) - p0.y;
 
-		GSVertexSW scan;
+		GSVector4 xy = GSVector4::loadl(&edge.p) + GSVector4::loadl(&dedge.p) * dy;
 
-		scan.p = edge.p + dedge.p * dy;
-
-		GSVector4 lrf = scan.p.ceil();
+		GSVector4 lrf = xy.ceil();
 		GSVector4 l = lrf.max(scissor);
 		GSVector4 r = lrf.min(scissor);
 		GSVector4i lr = GSVector4i(l.xxyy(r));
@@ -776,14 +756,13 @@ void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW& edge, co
 
 		if (pixels > 0)
 		{
-			scan.t = edge.t + dedge.t * dy;
-			scan.c = edge.c + dedge.c * dy;
+			const float prestep = l.x - p0.x;
 
-			GSVector4 prestep = (l - p0).xxxx();
-
-			scan.p = scan.p + dscan.p * prestep;
-			scan.t = scan.t + dscan.t * prestep;
-			scan.c = scan.c + dscan.c * prestep;
+			GSVertexSW scan;
+			GSVector4::storel(&scan.p, xy + GSVector4::loadl(&dscan.p) * prestep);
+			scan.p.F64[1] = edge.p.F64[1] + dedge.p.F64[1] * dy + dscan.p.F64[1] * prestep;
+			scan.t = edge.t + dedge.t * dy + dscan.t * prestep;
+			scan.c = edge.c + dedge.c * dy + dscan.c * prestep;
 
 			AddScanline(e++, pixels, left, top, scan);
 		}

@@ -82,7 +82,7 @@ class GSDrawScanlineCodeGenerator2 : public GSNewCodeGenerator
 	/// Available on both x86 and x64, not always valid
 	const XYm _rb, _ga, _fm, _zm, _fd, _test;
 	/// Always valid if needed, x64 only
-	const XYm _z, _f, _s, _t, _q, _f_rb, _f_ga;
+	const XYm _f, _s, _t, _q, _f_rb, _f_ga;
 
 	/// Returns the first arg on 32-bit, second on 64-bit
 	static LocalAddr chooseLocal(const void* addr32, AddressReg reg64)
@@ -117,6 +117,7 @@ private:
 	/// On YMM registers this will be a broadcast from a 16-bit value
 	/// On XMM registers this will be a load of a full 128-bit value, with the broadcast happening before storing to the local data
 	void pbroadcastwLocal(const XYm& reg, const Xbyak::Address& mem);
+	void broadcastsd(const XYm& reg, const Xbyak::Address& mem);
 	/// Broadcast a 32-bit GPR to a vector register
 	void broadcastGPRToVec(const XYm& vec, const Xbyak::Reg32& gpr);
 	void modulate16(const XYm& a, const Xbyak::Operand& f, u8 shift);
