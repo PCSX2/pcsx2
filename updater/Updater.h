@@ -17,8 +17,10 @@
 
 #include "common/ProgressCallback.h"
 
+#ifdef _WIN32
 #include "7z.h"
 #include "7zFile.h"
+#endif
 
 #include <string>
 #include <vector>
@@ -57,10 +59,13 @@ private:
 	std::vector<std::string> m_update_directories;
 
 	ProgressCallback* m_progress;
+
+#ifdef _WIN32
 	CFileInStream m_archive_stream = {};
 	CLookToRead2 m_look_stream = {};
 	CSzArEx m_archive = {};
 
 	bool m_file_opened = false;
 	bool m_archive_opened = false;
+#endif
 };

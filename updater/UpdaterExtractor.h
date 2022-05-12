@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include "SZErrors.h"
-
 #include "common/FileSystem.h"
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
@@ -28,6 +26,7 @@
 #include "7zAlloc.h"
 #include "7zCrc.h"
 #include "7zFile.h"
+#include "SZErrors.h"
 #endif
 
 #include <cstdio>
