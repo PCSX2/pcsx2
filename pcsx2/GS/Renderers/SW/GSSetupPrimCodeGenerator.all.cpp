@@ -200,18 +200,16 @@ void GSSetupPrimCodeGenerator2::Depth_XMM()
 			mulpd(xmm1, xmm0);
 			movaps(_rip_local_d_p(z), xmm1);
 
+			cvtpd2ps(xmm0, xmm0);
+			unpcklpd(xmm0, xmm0);
+
 			for (int i = 0; i < (m_sel.notest ? 1 : 4); i++)
 			{
 				// m_local.d[i].z0 = dz.mul64(VectorF::f32to64(half_shift[2 * i + 2]));
 				// m_local.d[i].z1 = dz.mul64(VectorF::f32to64(half_shift[2 * i + 3]));
 
-				cvtps2pd(xmm1, XYm(4 + i));
-				pshufd(xmm2, XYm(4 + i), _MM_SHUFFLE(1, 0, 3, 2));
-				cvtps2pd(xmm2, xmm2);
-				mulpd(xmm1, xmm0);
-				mulpd(xmm2, xmm0);
-				movaps(_rip_local(d[i].z0), xmm1);
-				movaps(_rip_local(d[i].z1), xmm2);
+				THREEARG(mulps, xmm1, xmm0, XYm(4 + i));
+				movdqa(_rip_local(d[i].z), xmm1);
 			}
 		}
 	}
@@ -282,33 +280,25 @@ void GSSetupPrimCodeGenerator2::Depth_YMM()
 		if (m_en.z)
 		{
 			// const VectorF dz = VectorF::broadcast64(&dscan.p.z);
-			vbroadcastsd(ymm0, ptr[_dscan + offsetof(GSVertexSW, p.z)]);
+			movsd(xmm0, ptr[_dscan + offsetof(GSVertexSW, p.z)]);
 
 			// GSVector4::storel(&local.d8.p.z, dz.extract<0>().mul64(GSVector4::f32to64(shift)));
-			cvtss2sd(xmm1, xmm3);
+			vcvtss2sd(xmm1, xmm3, xmm3);
 			vmulsd(xmm1, xmm0, xmm1);
 			movsd(_rip_local_d_p(z), xmm1);
 
+			cvtsd2ss(xmm0, xmm0);
+			vbroadcastss(ymm0, xmm0);
+
 			for (int i = 0; i < (m_sel.notest ? 1 : dsize); i++)
 			{
-				// m_local.d[i].z0 = dz.mul64(VectorF::f32to64(half_shift[2 * i + 2]));
-				// m_local.d[i].z1 = dz.mul64(VectorF::f32to64(half_shift[2 * i + 3]));
+				// m_local.d[i].z = dzf * shift[i + 1];
 
 				if (i < 4 || many_regs)
-				{
-					cvtps2pd(ymm1, Xmm(4 + i));
-					vextracti128(xmm2, Ymm(4 + i), 1);
-					cvtps2pd(ymm2, xmm2);
-				}
+					vmulps(ymm1, Ymm(4 + i), ymm0);
 				else
-				{
-					cvtps2pd(ymm1, ptr[&g_const->m_shift_256b[i + 1][0]]);
-					cvtps2pd(ymm2, ptr[&g_const->m_shift_256b[i + 1][4]]);
-				}
-				mulpd(ymm1, ymm0);
-				mulpd(ymm2, ymm0);
-				movaps(_rip_local(d[i].z0), ymm1);
-				movaps(_rip_local(d[i].z1), ymm2);
+					vmulps(ymm1, ymm0, ptr[g_const->m_shift_256b[i + 1]]);
+				movaps(_rip_local(d[i].z), ymm1);
 			}
 		}
 	}

@@ -723,19 +723,12 @@ void GSDrawScanlineCodeGenerator2::Init()
 			if (m_sel.zb)
 			{
 				// z = vp.zzzz() + m_local.d[skip].z;
-				broadcastsd(_z, ptr[a3 + offsetof(GSVertexSW, p.z)]); // v.p.z
-				if (hasAVX)
-				{
-					vaddpd(xym7, _z, ptr[a1 + offsetof(GSScanlineLocalData::skip, z0)]);
-					vaddpd(_z,   _z, ptr[a1 + offsetof(GSScanlineLocalData::skip, z1)]);
-				}
-				else
-				{
-					movaps(xym7, ptr[a1 + offsetof(GSScanlineLocalData::skip, z0)]);
-					addpd(xym7, _z);
-					addpd(_z, ptr[a1 + offsetof(GSScanlineLocalData::skip, z1)]);
-				}
+				broadcastsd(xym1, ptr[a3 + offsetof(GSVertexSW, p.z)]); // v.p.z
+				cvtps2pd(xym7, ptr[a1 + offsetof(GSScanlineLocalData::skip, z.I8[0])]);
+				addpd(xym7, xym1);
 				movaps(_rip_local(temp.z0), xym7);
+				cvtps2pd(_z, ptr[a1 + offsetof(GSScanlineLocalData::skip, z.I8[vecsize/2])]);
+				addpd(_z, xym1);
 			}
 		}
 	}
