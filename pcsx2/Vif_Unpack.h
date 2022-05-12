@@ -17,10 +17,10 @@
 
 struct vifStruct;
 
-typedef void (__fastcall *UNPACKFUNCTYPE)(void* dest, const void* src);
+typedef void (*UNPACKFUNCTYPE)(void* dest, const void* src);
 
-#define create_unpack_u_type(bits)		typedef void (__fastcall *UNPACKFUNCTYPE_u##bits)(u32* dest, const u##bits* src);
-#define create_unpack_s_type(bits)		typedef void (__fastcall *UNPACKFUNCTYPE_s##bits)(u32* dest, const s##bits* src);
+#define create_unpack_u_type(bits)		typedef void (*UNPACKFUNCTYPE_u##bits)(u32* dest, const u##bits* src);
+#define create_unpack_s_type(bits)		typedef void (*UNPACKFUNCTYPE_s##bits)(u32* dest, const s##bits* src);
 
 #define create_some_unpacks(bits)		\
 		create_unpack_u_type(bits);		\

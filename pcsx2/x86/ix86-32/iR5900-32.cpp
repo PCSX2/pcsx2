@@ -355,9 +355,9 @@ void recCall(void (*func)())
 //  R5900 Dispatchers
 // =====================================================================================================
 
-static void __fastcall recRecompile(const u32 startpc);
-static void __fastcall dyna_block_discard(u32 start, u32 sz);
-static void __fastcall dyna_page_reset(u32 start, u32 sz);
+static void recRecompile(const u32 startpc);
+static void dyna_block_discard(u32 start, u32 sz);
+static void dyna_page_reset(u32 start, u32 sz);
 
 // Recompiled code buffer for EE recompiler dispatchers!
 alignas(__pagesize) static u8 eeRecDispatchers[__pagesize];
@@ -1310,7 +1310,7 @@ void dynarecMemcheck()
 	recExitExecution();
 }
 
-void __fastcall dynarecMemLogcheck(u32 start, bool store)
+void dynarecMemLogcheck(u32 start, bool store)
 {
 	if (store)
 		DevCon.WriteLn("Hit store breakpoint @0x%x", start);
@@ -1640,7 +1640,7 @@ void recompileNextInstruction(int delayslot)
 // (Called from recompiled code)]
 // This function is called from the recompiler prior to starting execution of *every* recompiled block.
 // Calling of this function can be enabled or disabled through the use of EmuConfig.Recompiler.PreBlockChecks
-static void __fastcall PreBlockCheck(u32 blockpc)
+static void PreBlockCheck(u32 blockpc)
 {
 	/*static int lastrec = 0;
 	static int curcount = 0;
@@ -1667,7 +1667,7 @@ static u32 s_recblocks[] = {0};
 // Called when a block under manual protection fails it's pre-execution integrity check.
 // (meaning the actual code area has been modified -- ie dynamic modules being loaded or,
 //  less likely, self-modifying code)
-void __fastcall dyna_block_discard(u32 start, u32 sz)
+void dyna_block_discard(u32 start, u32 sz)
 {
 	eeRecPerfLog.Write(Color_StrongGray, "Clearing Manual Block @ 0x%08X  [size=%d]", start, sz * 4);
 	recClear(start, sz);
@@ -1676,7 +1676,7 @@ void __fastcall dyna_block_discard(u32 start, u32 sz)
 // called when a page under manual protection has been run enough times to be a candidate
 // for being reset under the faster vtlb write protection.  All blocks in the page are cleared
 // and the block is re-assigned for write protection.
-void __fastcall dyna_page_reset(u32 start, u32 sz)
+void dyna_page_reset(u32 start, u32 sz)
 {
 	recClear(start & ~0xfffUL, 0x400);
 	manual_counter[start >> 12]++;
@@ -1805,7 +1805,7 @@ void doPlace0Patches()
 	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
 }
 
-static void __fastcall recRecompile(const u32 startpc)
+static void recRecompile(const u32 startpc)
 {
 	u32 i = 0;
 	u32 willbranch3 = 0;

@@ -36,7 +36,7 @@ static __fi void IntCHackCheck()
 template< uint page > RETURNS_R128 _hwRead128(u32 mem);
 
 template< uint page, bool intcstathack >
-mem32_t __fastcall _hwRead32(u32 mem)
+mem32_t _hwRead32(u32 mem)
 {
 	pxAssume( (mem & 0x03) == 0 );
 
@@ -204,14 +204,14 @@ mem32_t __fastcall _hwRead32(u32 mem)
 }
 
 template< uint page >
-mem32_t __fastcall hwRead32(u32 mem)
+mem32_t hwRead32(u32 mem)
 {
 	mem32_t retval = _hwRead32<page,false>(mem);
 	eeHwTraceLog( mem, retval, true );
 	return retval;
 }
 
-mem32_t __fastcall hwRead32_page_0F_INTC_HACK(u32 mem)
+mem32_t hwRead32_page_0F_INTC_HACK(u32 mem)
 {
 	mem32_t retval = _hwRead32<0x0f,true>(mem);
 	eeHwTraceLog( mem, retval, true );
@@ -223,14 +223,14 @@ mem32_t __fastcall hwRead32_page_0F_INTC_HACK(u32 mem)
 // --------------------------------------------------------------------------------------
 
 template< uint page >
-mem8_t __fastcall _hwRead8(u32 mem)
+mem8_t _hwRead8(u32 mem)
 {
 	u32 ret32 = _hwRead32<page, false>(mem & ~0x03);
 	return ((u8*)&ret32)[mem & 0x03];
 }
 
 template< uint page >
-mem8_t __fastcall hwRead8(u32 mem)
+mem8_t hwRead8(u32 mem)
 {
 	mem8_t ret8 = _hwRead8<page>(mem);
 	eeHwTraceLog( mem, ret8, true );
@@ -238,7 +238,7 @@ mem8_t __fastcall hwRead8(u32 mem)
 }
 
 template< uint page >
-mem16_t __fastcall _hwRead16(u32 mem)
+mem16_t _hwRead16(u32 mem)
 {
 	pxAssume( (mem & 0x01) == 0 );
 
@@ -247,14 +247,14 @@ mem16_t __fastcall _hwRead16(u32 mem)
 }
 
 template< uint page >
-mem16_t __fastcall hwRead16(u32 mem)
+mem16_t hwRead16(u32 mem)
 {
 	u16 ret16 = _hwRead16<page>(mem);
 	eeHwTraceLog( mem, ret16, true );
 	return ret16;
 }
 
-mem16_t __fastcall hwRead16_page_0F_INTC_HACK(u32 mem)
+mem16_t hwRead16_page_0F_INTC_HACK(u32 mem)
 {
 	pxAssume( (mem & 0x01) == 0 );
 
@@ -393,12 +393,12 @@ RETURNS_R128 hwRead128(u32 mem)
 }
 
 #define InstantizeHwRead(pageidx) \
-	template mem8_t __fastcall hwRead8<pageidx>(u32 mem); \
-	template mem16_t __fastcall hwRead16<pageidx>(u32 mem); \
-	template mem32_t __fastcall hwRead32<pageidx>(u32 mem); \
+	template mem8_t hwRead8<pageidx>(u32 mem); \
+	template mem16_t hwRead16<pageidx>(u32 mem); \
+	template mem32_t hwRead32<pageidx>(u32 mem); \
 	template RETURNS_R64 hwRead64<pageidx>(u32 mem); \
 	template RETURNS_R128 hwRead128<pageidx>(u32 mem); \
-	template mem32_t __fastcall _hwRead32<pageidx, false>(u32 mem);
+	template mem32_t _hwRead32<pageidx, false>(u32 mem);
 
 InstantizeHwRead(0x00);	InstantizeHwRead(0x08);
 InstantizeHwRead(0x01);	InstantizeHwRead(0x09);

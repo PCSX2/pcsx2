@@ -30,6 +30,6 @@ struct fastjmp_buf
 };
 
 extern "C" {
-int __fastcall fastjmp_set(fastjmp_buf* buf);
-__noreturn void __fastcall fastjmp_jmp(const fastjmp_buf* buf, int ret);
+int fastjmp_set(fastjmp_buf* buf);
+__noreturn void fastjmp_jmp(const fastjmp_buf* buf, int ret);
 }

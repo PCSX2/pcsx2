@@ -198,7 +198,7 @@ extern R3000Acpu psxInt;
 extern R3000Acpu psxRec;
 
 extern void psxReset();
-extern void __fastcall psxException(u32 code, u32 step);
+extern void psxException(u32 code, u32 step);
 extern void iopEventTest();
 extern void psxMemReset();
 
@@ -214,6 +214,6 @@ extern void (*psxCP2[64])();
 extern void (*psxCP2BSC[32])();
 
 extern void psxBiosReset();
-extern bool __fastcall psxBiosCall();
+extern bool psxBiosCall();
 
 #endif /* __R3000A_H__ */

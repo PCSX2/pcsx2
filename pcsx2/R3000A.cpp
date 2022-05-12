@@ -82,7 +82,7 @@ void psxShutdown() {
 	//psxCpu->Shutdown();
 }
 
-void __fastcall psxException(u32 code, u32 bd)
+void psxException(u32 code, u32 bd)
 {
 //	PSXCPU_LOG("psxException %x: %x, %x", code, psxHu32(0x1070), psxHu32(0x1074));
 	//Console.WriteLn("!! psxException %x: %x, %x", code, psxHu32(0x1070), psxHu32(0x1074));

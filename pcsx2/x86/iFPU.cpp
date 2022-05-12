@@ -504,7 +504,7 @@ void FPU_SUB(int regd, int regt)
 // or SMALLER (by 0x1). (this means that x86's other rounding modes are only less similar to PS2's mul)
 //------------------------------------------------------------------
 
-u32 __fastcall FPU_MUL_HACK(u32 s, u32 t)
+u32 FPU_MUL_HACK(u32 s, u32 t)
 {
 	if ((s == 0x3e800000) && (t == 0x40490fdb))
 		return 0x3f490fda; // needed for Tales of Destiny Remake (only in a very specific room late-game)

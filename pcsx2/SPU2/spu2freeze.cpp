@@ -48,7 +48,7 @@ struct SPU2Savestate::DataBlock
 	int PlayMode;
 };
 
-s32 __fastcall SPU2Savestate::FreezeIt(DataBlock& spud)
+s32 SPU2Savestate::FreezeIt(DataBlock& spud)
 {
 	spud.spu2id = SAVE_ID;
 	spud.version = SAVE_VERSION;
@@ -77,7 +77,7 @@ s32 __fastcall SPU2Savestate::FreezeIt(DataBlock& spud)
 	return 0;
 }
 
-s32 __fastcall SPU2Savestate::ThawIt(DataBlock& spud)
+s32 SPU2Savestate::ThawIt(DataBlock& spud)
 {
 	if (spud.spu2id != SAVE_ID || spud.version < SAVE_VERSION)
 	{
@@ -145,7 +145,7 @@ s32 __fastcall SPU2Savestate::ThawIt(DataBlock& spud)
 	return 0;
 }
 
-s32 __fastcall SPU2Savestate::SizeIt()
+s32 SPU2Savestate::SizeIt()
 {
 	return sizeof(DataBlock);
 }
