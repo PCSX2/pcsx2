@@ -68,7 +68,7 @@
 static const char* UPDATE_TAGS[] = {"stable", "nightly"};
 
 // Bit annoying, because PCSX2_isReleaseVersion is a bool, but whatever.
-#define SCM_RELEASE_TAG (PCSX2_isReleaseVersion ? "stable" : "nightly")
+#define THIS_RELEASE_TAG (PCSX2_isReleaseVersion ? "stable" : "nightly")
 
 #endif
 
