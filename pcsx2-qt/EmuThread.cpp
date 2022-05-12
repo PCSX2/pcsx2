@@ -896,7 +896,8 @@ BEGIN_HOTKEY_LIST(g_host_hotkeys)
 DEFINE_HOTKEY("Screenshot", "General", "Save Screenshot", [](bool pressed) {
 	if (!pressed)
 	{
-		// TODO
+		Host::AddOSDMessage("Saved Screenshot.", 10.0f);
+		GSmakeSnapshot(EmuFolders::Snapshots.ToString().char_str());
 	}
 })
 DEFINE_HOTKEY("ShutdownVM", "System", "Shut Down Virtual Machine", [](bool pressed) {

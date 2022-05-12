@@ -133,6 +133,7 @@ private Q_SLOTS:
 	void onThemeChanged();
 	void onThemeChangedFromSettings();
 	void onLoggingOptionChanged();
+	void onScreenshotActionTriggered();
 
 	void onVMStarting();
 	void onVMStarted();

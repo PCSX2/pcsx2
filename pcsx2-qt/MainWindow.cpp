@@ -45,6 +45,8 @@
 #include "Settings/InterfaceSettingsWidget.h"
 #include "SettingWidgetBinder.h"
 
+extern u32 GSmakeSnapshot(char* path);
+
 static constexpr char DISC_IMAGE_FILTER[] =
 	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.chd *.cso *.gz *.elf *.irx *.m3u *.gs *.gs.xz);;"
 									"Single-Track Raw Images (*.bin *.iso);;"
@@ -148,6 +150,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionLoadState, &QAction::triggered, this, [this]() { m_ui.menuLoadState->exec(QCursor::pos()); });
 	connect(m_ui.actionSaveState, &QAction::triggered, this, [this]() { m_ui.menuSaveState->exec(QCursor::pos()); });
 	connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::close);
+	connect(m_ui.actionScreenshot, &QAction::triggered, this, &MainWindow::onScreenshotActionTriggered);
 	connect(m_ui.menuLoadState, &QMenu::aboutToShow, this, &MainWindow::onLoadStateMenuAboutToShow);
 	connect(m_ui.menuSaveState, &QMenu::aboutToShow, this, &MainWindow::onSaveStateMenuAboutToShow);
 	connect(m_ui.actionSettings, &QAction::triggered, [this]() { doSettings(); });
@@ -507,6 +510,12 @@ void MainWindow::setIconThemeFromSettings()
 		icon_theme = QStringLiteral("black");
 
 	QIcon::setThemeName(icon_theme);
+}
+
+void MainWindow::onScreenshotActionTriggered()
+{
+	Host::AddOSDMessage("Saved Screenshot.", 10.0f);
+	GSmakeSnapshot(EmuFolders::Snapshots.ToString().char_str());
 }
 
 void MainWindow::saveStateToConfig()
