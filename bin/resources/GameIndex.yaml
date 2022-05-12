@@ -25829,6 +25829,9 @@ SLPM-65454:
   name: "Prince of Tennis - Smash Hit! 2"
   region: "NTSC-J"
   compat: 5
+SLPM-65455:
+  name: "Nobunaga no Yabou - Soutenroku [with Power-Up Kit]"
+  region: "NTSC-J"
 SLPM-65456:
   name: "Magical Nurse Witch Komugi-chan [Limited Edition]"
   region: "NTSC-J"
@@ -26488,6 +26491,9 @@ SLPM-65671:
   region: "NTSC-J"
 SLPM-65672:
   name: "W - Wish"
+  region: "NTSC-J"
+SLPM-65673:
+  name: "Sangokushi IX [with Power-Up Kit]"
   region: "NTSC-J"
 SLPM-65674:
   name: "Taikou Risshiden V"
