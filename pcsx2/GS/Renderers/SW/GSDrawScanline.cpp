@@ -131,11 +131,9 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 
 #if _M_SSE >= 0x501
 	const GSVector8* shift = (GSVector8*)g_const->m_shift_256b;
-	const GSVector4* half_shift = reinterpret_cast<const GSVector4*>(shift);
 	const GSVector4 step_shift = GSVector4::broadcast32(&shift[0]);
 #else
 	const GSVector4* shift = (GSVector4*)g_const->m_shift_128b;
-	const u64* half_shift = reinterpret_cast<const u64*>(shift);
 	const GSVector4 step_shift = shift[0];
 #endif
 
@@ -165,16 +163,16 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 
 			if (has_z)
 			{
-				const VectorF dz = VectorF::broadcast64(&dscan.p.z);
+				const GSVector4 dz = GSVector4::broadcast64(&dscan.p.z);
+				const VectorF dzf(static_cast<float>(dscan.p.F64[1]));
 #if _M_SSE >= 0x501
-				GSVector4::storel(&local.d8.p.z, dz.extract<0>().mul64(GSVector4::f32to64(shift)));
+				GSVector4::storel(&local.d8.p.z, dz.mul64(GSVector4::f32to64(shift)));
 #else
 				local.d4.z = dz.mul64(GSVector4::f32to64(shift));
 #endif
 				for (int i = 0; i < vlen; i++)
 				{
-					local.d[i].z0 = dz.mul64(VectorF::f32to64(&half_shift[2 * i + 2]));
-					local.d[i].z1 = dz.mul64(VectorF::f32to64(&half_shift[2 * i + 3]));
+					local.d[i].z = dzf * shift[i + 1];
 				}
 			}
 		}
@@ -359,8 +357,8 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 		if (sel.zb)
 		{
 			VectorF zbase = VectorF::broadcast64(&scan.p.z);
-			z0 = zbase.add64(local.d[skip].z0);
-			z1 = zbase.add64(local.d[skip].z1);
+			z0 = zbase.add64(VectorF::f32to64(&local.d[skip].z.F32[0]));
+			z1 = zbase.add64(VectorF::f32to64(&local.d[skip].z.F32[vlen/2]));
 		}
 	}
 
