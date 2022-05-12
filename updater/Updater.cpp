@@ -14,16 +14,12 @@
  */
 
 #include "Updater.h"
-#include "SZErrors.h"
 
 #include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
-
-#include "7zAlloc.h"
-#include "7zCrc.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -37,8 +33,15 @@
 #include <shellapi.h>
 #endif
 
+#ifdef _WIN32
+
+#include "7zAlloc.h"
+#include "7zCrc.h"
+#include "SZErrors.h"
+
 static constexpr size_t kInputBufSize = ((size_t)1 << 18);
 static constexpr ISzAlloc g_Alloc = {SzAlloc, SzFree};
+#endif
 
 static std::FILE* s_file_console_stream;
 static constexpr IConsoleWriter s_file_console_writer = {
@@ -81,6 +84,7 @@ Updater::Updater(ProgressCallback* progress)
 
 Updater::~Updater()
 {
+#ifdef _WIN32
 	if (m_archive_opened)
 		SzArEx_Free(&m_archive, &g_Alloc);
 
@@ -88,6 +92,7 @@ Updater::~Updater()
 
 	if (m_file_opened)
 		File_Close(&m_archive_stream.file);
+#endif
 }
 
 void Updater::SetupLogging(ProgressCallback* progress, const std::string& destination_directory)
@@ -116,6 +121,7 @@ bool Updater::Initialize(std::string destination_directory)
 
 bool Updater::OpenUpdateZip(const char* path)
 {
+#ifdef _WIN32
 	FileInStream_CreateVTable(&m_archive_stream);
 	LookToRead2_CreateVTable(&m_look_stream, False);
 	CrcGenerateTable();
@@ -155,6 +161,9 @@ bool Updater::OpenUpdateZip(const char* path)
 	m_archive_opened = true;
 	m_progress->SetStatusText("Parsing update zip...");
 	return ParseZip();
+#else
+	return false;
+#endif
 }
 
 bool Updater::RecursiveDeleteDirectory(const char* path)
@@ -171,12 +180,13 @@ bool Updater::RecursiveDeleteDirectory(const char* path)
 
 	return (SHFileOperationW(&op) == 0 && !op.fAnyOperationsAborted);
 #else
-	return FileSystem::DeleteDirectory(path, true);
+	return FileSystem::RecursiveDeleteDirectory(path);
 #endif
 }
 
 bool Updater::ParseZip()
 {
+#ifdef _WIN32
 	std::vector<UInt16> filename_buffer;
 
 	for (u32 file_index = 0; file_index < m_archive.NumFiles; file_index++)
@@ -250,6 +260,9 @@ bool Updater::ParseZip()
 		m_progress->DisplayFormattedDebugMessage("Directory: %s", dir.c_str());
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 bool Updater::PrepareStagingDirectory()
@@ -292,6 +305,7 @@ bool Updater::StageUpdate()
 	m_progress->SetProgressRange(static_cast<u32>(m_update_paths.size()));
 	m_progress->SetProgressValue(0);
 
+#ifdef _WIN32
 	UInt32 block_index = 0xFFFFFFFF; /* it can have any value before first call (if outBuffer = 0) */
 	Byte* out_buffer = 0; /* it must be 0 before first call for each new archive. */
 	size_t out_buffer_size = 0; /* it can have any value before first call (if outBuffer = 0) */
@@ -339,6 +353,9 @@ bool Updater::StageUpdate()
 	}
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 bool Updater::CommitUpdate()
