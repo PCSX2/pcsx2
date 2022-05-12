@@ -169,4 +169,4 @@ private:
 
 
 // called from the dynarec
-u32 __fastcall standardizeBreakpointAddress(u32 addr);
+u32 standardizeBreakpointAddress(u32 addr);

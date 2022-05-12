@@ -544,12 +544,12 @@ static HANDLE s_old_console_stdin = NULL;
 static HANDLE s_old_console_stdout = NULL;
 static HANDLE s_old_console_stderr = NULL;
 
-static void __concall ConsoleWinQt_SetTitle(const wxString& title)
+static void ConsoleWinQt_SetTitle(const wxString& title)
 {
 	SetConsoleTitleW(title.wc_str());
 }
 
-static void __concall ConsoleWinQt_DoSetColor(ConsoleColors color)
+static void ConsoleWinQt_DoSetColor(ConsoleColors color)
 {
 	if (!s_console_handle)
 		return;
@@ -583,7 +583,7 @@ static void __concall ConsoleWinQt_DoSetColor(ConsoleColors color)
 	WriteConsoleW(s_console_handle, colortext, std::wcslen(colortext), &written, nullptr);
 }
 
-static void __concall ConsoleWinQt_Newline()
+static void ConsoleWinQt_Newline()
 {
 	if (!s_console_handle)
 		return;
@@ -595,7 +595,7 @@ static void __concall ConsoleWinQt_Newline()
 	WriteConsoleW(s_console_handle, L"\n", 1, &written, nullptr);
 }
 
-static void __concall ConsoleWinQt_DoWrite(const wxString& fmt)
+static void ConsoleWinQt_DoWrite(const wxString& fmt)
 {
 	if (!s_console_handle)
 		return;
@@ -607,7 +607,7 @@ static void __concall ConsoleWinQt_DoWrite(const wxString& fmt)
 	WriteConsoleW(s_console_handle, fmt.wc_str(), static_cast<DWORD>(fmt.size()), &written, nullptr);
 }
 
-static void __concall ConsoleWinQt_DoWriteLn(const wxString& fmt)
+static void ConsoleWinQt_DoWriteLn(const wxString& fmt)
 {
 	if (!s_console_handle)
 		return;

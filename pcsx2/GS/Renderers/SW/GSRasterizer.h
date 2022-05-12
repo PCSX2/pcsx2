@@ -69,7 +69,7 @@ class IDrawScanline : public GSAlignedClass<32>
 {
 public:
 	typedef void (*SetupPrimPtr)(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan);
-	typedef void(__fastcall* DrawScanlinePtr)(int pixels, int left, int top, const GSVertexSW& scan);
+	typedef void (*DrawScanlinePtr)(int pixels, int left, int top, const GSVertexSW& scan);
 	typedef void (IDrawScanline::*DrawRectPtr)(const GSVector4i& r, const GSVertexSW& v); // TODO: jit
 
 protected:

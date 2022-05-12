@@ -22,7 +22,7 @@
 #include "VUmicro.h"
 #include "MTVU.h"
 
-#define vifOp(vifCodeName) _vifT int __fastcall vifCodeName(int pass, const u32* data)
+#define vifOp(vifCodeName) _vifT int vifCodeName(int pass, const u32* data)
 #define pass1 if (pass == 0)
 #define pass2 if (pass == 1)
 #define pass3 if (pass == 2)

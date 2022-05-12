@@ -113,7 +113,7 @@ __inline int CheckCache(u32 addr)
 // See recVTLB.cpp for the dynarec versions.
 
 template< typename DataType >
-DataType __fastcall vtlb_memRead(u32 addr)
+DataType vtlb_memRead(u32 addr)
 {
 	static const uint DataSize = sizeof(DataType) * 8;
 	auto vmv = vtlbdata.vmap[addr>>VTLB_PAGE_BITS];
@@ -214,7 +214,7 @@ RETURNS_R128 vtlb_memRead128(u32 mem)
 }
 
 template< typename DataType >
-void __fastcall vtlb_memWrite(u32 addr, DataType data)
+void vtlb_memWrite(u32 addr, DataType data)
 {
 	static const uint DataSize = sizeof(DataType) * 8;
 
@@ -252,7 +252,7 @@ void __fastcall vtlb_memWrite(u32 addr, DataType data)
 	}
 }
 
-void __fastcall vtlb_memWrite64(u32 mem, const mem64_t* value)
+void vtlb_memWrite64(u32 mem, const mem64_t* value)
 {
 	auto vmv = vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
 
@@ -279,7 +279,7 @@ void __fastcall vtlb_memWrite64(u32 mem, const mem64_t* value)
 	}
 }
 
-void __fastcall vtlb_memWrite128(u32 mem, const mem128_t *value)
+void vtlb_memWrite128(u32 mem, const mem128_t *value)
 {
 	auto vmv = vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
 
@@ -338,7 +338,7 @@ static void GoemonTlbMissDebug()
 	}
 }
 
-void __fastcall GoemonPreloadTlb()
+void GoemonPreloadTlb()
 {
 	// 0x3d5580 is the address of the TLB cache table
 	GoemonTlb* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
@@ -362,7 +362,7 @@ void __fastcall GoemonPreloadTlb()
 	}
 }
 
-void __fastcall GoemonUnloadTlb(u32 key)
+void GoemonUnloadTlb(u32 key)
 {
 	// 0x3d5580 is the address of the TLB cache table
 	GoemonTlb* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
@@ -434,28 +434,28 @@ static __ri void vtlb_BusError(u32 addr,u32 mode)
 }
 
 template<typename OperandType, u32 saddr>
-OperandType __fastcall vtlbUnmappedVReadSm(u32 addr)                   { vtlb_Miss(addr|saddr,0); return 0; }
+OperandType vtlbUnmappedVReadSm(u32 addr)                   { vtlb_Miss(addr|saddr,0); return 0; }
 
 template<typename OperandType, u32 saddr>
 u_to_r<OperandType> __vectorcall vtlbUnmappedVReadLg(u32 addr)         { vtlb_Miss(addr|saddr,0); return rhelper<OperandType>::zero(); }
 
 template<typename OperandType, u32 saddr>
-void __fastcall vtlbUnmappedVWriteSm(u32 addr,OperandType data)        { vtlb_Miss(addr|saddr,1); }
+void vtlbUnmappedVWriteSm(u32 addr,OperandType data)        { vtlb_Miss(addr|saddr,1); }
 
 template<typename OperandType, u32 saddr>
-void __fastcall vtlbUnmappedVWriteLg(u32 addr,const OperandType* data) { vtlb_Miss(addr|saddr,1); }
+void vtlbUnmappedVWriteLg(u32 addr,const OperandType* data) { vtlb_Miss(addr|saddr,1); }
 
 template<typename OperandType, u32 saddr>
-OperandType __fastcall vtlbUnmappedPReadSm(u32 addr)                   { vtlb_BusError(addr|saddr,0); return 0; }
+OperandType vtlbUnmappedPReadSm(u32 addr)                   { vtlb_BusError(addr|saddr,0); return 0; }
 
 template<typename OperandType, u32 saddr>
 u_to_r<OperandType> __vectorcall vtlbUnmappedPReadLg(u32 addr)         { vtlb_BusError(addr|saddr,0); return rhelper<OperandType>::zero(); }
 
 template<typename OperandType, u32 saddr>
-void __fastcall vtlbUnmappedPWriteSm(u32 addr,OperandType data)        { vtlb_BusError(addr|saddr,1); }
+void vtlbUnmappedPWriteSm(u32 addr,OperandType data)        { vtlb_BusError(addr|saddr,1); }
 
 template<typename OperandType, u32 saddr>
-void __fastcall vtlbUnmappedPWriteLg(u32 addr,const OperandType* data) { vtlb_BusError(addr|saddr,1); }
+void vtlbUnmappedPWriteLg(u32 addr,const OperandType* data) { vtlb_BusError(addr|saddr,1); }
 
 // --------------------------------------------------------------------------------------
 //  VTLB mapping errors
@@ -464,19 +464,19 @@ void __fastcall vtlbUnmappedPWriteLg(u32 addr,const OperandType* data) { vtlb_Bu
 // properly.  All addressable physical memory should be configured as TLBMiss or Bus Error.
 //
 
-static mem8_t __fastcall vtlbDefaultPhyRead8(u32 addr)
+static mem8_t vtlbDefaultPhyRead8(u32 addr)
 {
 	pxFailDev(pxsFmt("(VTLB) Attempted read8 from unmapped physical address @ 0x%08X.", addr));
 	return 0;
 }
 
-static mem16_t __fastcall vtlbDefaultPhyRead16(u32 addr)
+static mem16_t vtlbDefaultPhyRead16(u32 addr)
 {
 	pxFailDev(pxsFmt("(VTLB) Attempted read16 from unmapped physical address @ 0x%08X.", addr));
 	return 0;
 }
 
-static mem32_t __fastcall vtlbDefaultPhyRead32(u32 addr)
+static mem32_t vtlbDefaultPhyRead32(u32 addr)
 {
 	pxFailDev(pxsFmt("(VTLB) Attempted read32 from unmapped physical address @ 0x%08X.", addr));
 	return 0;
@@ -494,27 +494,27 @@ static __m128i __vectorcall vtlbDefaultPhyRead128(u32 addr)
 	return r128_zero();
 }
 
-static void __fastcall vtlbDefaultPhyWrite8(u32 addr, mem8_t data)
+static void vtlbDefaultPhyWrite8(u32 addr, mem8_t data)
 {
 	pxFailDev(pxsFmt("(VTLB) Attempted write8 to unmapped physical address @ 0x%08X.", addr));
 }
 
-static void __fastcall vtlbDefaultPhyWrite16(u32 addr, mem16_t data)
+static void vtlbDefaultPhyWrite16(u32 addr, mem16_t data)
 {
 	pxFailDev(pxsFmt("(VTLB) Attempted write16 to unmapped physical address @ 0x%08X.", addr));
 }
 
-static void __fastcall vtlbDefaultPhyWrite32(u32 addr, mem32_t data)
+static void vtlbDefaultPhyWrite32(u32 addr, mem32_t data)
 {
 	pxFailDev(pxsFmt("(VTLB) Attempted write32 to unmapped physical address @ 0x%08X.", addr));
 }
 
-static void __fastcall vtlbDefaultPhyWrite64(u32 addr,const mem64_t* data)
+static void vtlbDefaultPhyWrite64(u32 addr,const mem64_t* data)
 {
 	pxFailDev(pxsFmt("(VTLB) Attempted write64 to unmapped physical address @ 0x%08X.", addr));
 }
 
-static void __fastcall vtlbDefaultPhyWrite128(u32 addr,const mem128_t* data)
+static void vtlbDefaultPhyWrite128(u32 addr,const mem128_t* data)
 {
 	pxFailDev(pxsFmt("(VTLB) Attempted write128 to unmapped physical address @ 0x%08X.", addr));
 }

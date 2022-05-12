@@ -90,11 +90,11 @@ void MSW_OutputDebugString(const wxString& text)
 //  ConsoleNull
 // --------------------------------------------------------------------------------------
 
-static void __concall ConsoleNull_SetTitle(const wxString& title) {}
-static void __concall ConsoleNull_DoSetColor(ConsoleColors color) {}
-static void __concall ConsoleNull_Newline() {}
-static void __concall ConsoleNull_DoWrite(const wxString& fmt) {}
-static void __concall ConsoleNull_DoWriteLn(const wxString& fmt) {}
+static void ConsoleNull_SetTitle(const wxString& title) {}
+static void ConsoleNull_DoSetColor(ConsoleColors color) {}
+static void ConsoleNull_Newline() {}
+static void ConsoleNull_DoWrite(const wxString& fmt) {}
+static void ConsoleNull_DoWriteLn(const wxString& fmt) {}
 
 const IConsoleWriter ConsoleWriter_Null =
 	{
@@ -172,23 +172,23 @@ static __fi const char* GetLinuxConsoleColor(ConsoleColors color)
 #endif
 
 // One possible default write action at startup and shutdown is to use the stdout.
-static void __concall ConsoleStdout_DoWrite(const wxString& fmt)
+static void ConsoleStdout_DoWrite(const wxString& fmt)
 {
 	MSW_OutputDebugString(fmt);
 }
 
 // Default write action at startup and shutdown is to use the stdout.
-static void __concall ConsoleStdout_DoWriteLn(const wxString& fmt)
+static void ConsoleStdout_DoWriteLn(const wxString& fmt)
 {
 	MSW_OutputDebugString(fmt + L"\n");
 }
 
-static void __concall ConsoleStdout_Newline()
+static void ConsoleStdout_Newline()
 {
 	MSW_OutputDebugString(L"\n");
 }
 
-static void __concall ConsoleStdout_DoSetColor(ConsoleColors color)
+static void ConsoleStdout_DoSetColor(ConsoleColors color)
 {
 #if defined(__POSIX__)
 	if (!supports_color)
@@ -198,7 +198,7 @@ static void __concall ConsoleStdout_DoSetColor(ConsoleColors color)
 #endif
 }
 
-static void __concall ConsoleStdout_SetTitle(const wxString& title)
+static void ConsoleStdout_SetTitle(const wxString& title)
 {
 #if defined(__POSIX__)
 	if (supports_color)
@@ -225,12 +225,12 @@ const IConsoleWriter ConsoleWriter_Stdout =
 //  ConsoleAssert
 // --------------------------------------------------------------------------------------
 
-static void __concall ConsoleAssert_DoWrite(const wxString& fmt)
+static void ConsoleAssert_DoWrite(const wxString& fmt)
 {
 	pxFail(L"Console class has not been initialized; Message written:\n\t" + fmt);
 }
 
-static void __concall ConsoleAssert_DoWriteLn(const wxString& fmt)
+static void ConsoleAssert_DoWriteLn(const wxString& fmt)
 {
 	pxFail(L"Console class has not been initialized; Message written:\n\t" + fmt);
 }

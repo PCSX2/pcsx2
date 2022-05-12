@@ -103,16 +103,19 @@ static const int __pagesize = PCSX2_PAGESIZE;
 // --------------------------------------------------------------------------------------
 
 	#define __assume(cond) do { if (!(cond)) __builtin_unreachable(); } while(0)
-	#define CALLBACK __attribute__((stdcall))
+
+	// SysV ABI passes vector parameters through registers unconditionally.
+	#ifndef _WIN32
+		#define __vectorcall
+		#define CALLBACK
+	#else
+		#define CALLBACK __attribute__((stdcall))
+	#endif
 
 	// Inlining note: GCC needs ((unused)) attributes defined on inlined functions to suppress
 	// warnings when a static inlined function isn't used in the scope of a single file (which
 	// happens *by design* like all the friggen time >_<)
 
-	#ifndef __fastcall
-		#define __fastcall
-	#endif
-	#define __vectorcall __fastcall
 	#define _inline __inline__ __attribute__((unused))
 	#ifdef NDEBUG
 		#define __forceinline __attribute__((always_inline, unused))
@@ -148,7 +151,6 @@ static const int __pagesize = PCSX2_PAGESIZE;
 
 #define __ri __releaseinline
 #define __fi __forceinline
-#define __fc __fastcall
 
 // Makes sure that if anyone includes xbyak, it doesn't do anything bad
 #define XBYAK_ENABLE_OMITTED_OPERAND

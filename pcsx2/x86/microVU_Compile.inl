@@ -19,12 +19,12 @@
 // Messages Called at Execution Time...
 //------------------------------------------------------------------
 
-static inline void __fc mVUbadOp0  (u32 prog, u32 pc) { Console.Error("microVU0 Warning: Exiting... Block contains an illegal opcode. [%04x] [%03d]", pc, prog); }
-static inline void __fc mVUbadOp1  (u32 prog, u32 pc) { Console.Error("microVU1 Warning: Exiting... Block contains an illegal opcode. [%04x] [%03d]", pc, prog); }
-static inline void __fc mVUwarning0(u32 prog, u32 pc) { Console.Error("microVU0 Warning: Exiting from Possible Infinite Loop [%04x] [%03d]", pc, prog); }
-static inline void __fc mVUwarning1(u32 prog, u32 pc) { Console.Error("microVU1 Warning: Exiting from Possible Infinite Loop [%04x] [%03d]", pc, prog); }
-static inline void __fc mVUprintPC1(u32 pc) { Console.WriteLn("Block Start PC = 0x%04x", pc); }
-static inline void __fc mVUprintPC2(u32 pc) { Console.WriteLn("Block End PC   = 0x%04x", pc); }
+static inline void mVUbadOp0  (u32 prog, u32 pc) { Console.Error("microVU0 Warning: Exiting... Block contains an illegal opcode. [%04x] [%03d]", pc, prog); }
+static inline void mVUbadOp1  (u32 prog, u32 pc) { Console.Error("microVU1 Warning: Exiting... Block contains an illegal opcode. [%04x] [%03d]", pc, prog); }
+static inline void mVUwarning0(u32 prog, u32 pc) { Console.Error("microVU0 Warning: Exiting from Possible Infinite Loop [%04x] [%03d]", pc, prog); }
+static inline void mVUwarning1(u32 prog, u32 pc) { Console.Error("microVU1 Warning: Exiting from Possible Infinite Loop [%04x] [%03d]", pc, prog); }
+static inline void mVUprintPC1(u32 pc) { Console.WriteLn("Block Start PC = 0x%04x", pc); }
+static inline void mVUprintPC2(u32 pc) { Console.WriteLn("Block End PC   = 0x%04x", pc); }
 
 //------------------------------------------------------------------
 // Program Range Checking and Setting up Ranges
@@ -901,7 +901,7 @@ __fi void* mVUblockFetch(microVU& mVU, u32 startPC, uptr pState)
 }
 
 // mVUcompileJIT() - Called By JR/JALR during execution
-_mVUt void* __fastcall mVUcompileJIT(u32 startPC, uptr ptr)
+_mVUt void* mVUcompileJIT(u32 startPC, uptr ptr)
 {
 	if (doJumpAsSameProgram) // Treat jump as part of same microProgram
 	{
