@@ -15,7 +15,17 @@
 
 #pragma once
 
-#include "common/Exceptions.h"
+#include "Pcsx2Defs.h"
+#include <cstring>
+#include <cstdlib>
+#include <new> // std::bad_alloc
+#include <memory>
+#include <type_traits>
+#include <utility>
+
+#ifdef _MSC_VER
+#include <malloc.h>
+#endif
 
 // pxUSE_SECURE_MALLOC - enables bounds checking on scoped malloc allocations.
 
@@ -108,6 +118,20 @@ public:
 		Alloc(size);
 	}
 
+	AlignedBuffer(const AlignedBuffer& copy)
+	{
+		Alloc(copy.m_size);
+		if (copy.m_size > 0)
+			std::memcpy(m_buffer.get(), copy.m_buffer.get(), copy.m_size);
+	}
+
+	AlignedBuffer(AlignedBuffer&& move)
+		: m_buffer(std::move(move.m_buffer))
+		, m_size(move.m_size)
+	{
+		move.m_size = 0;
+	}
+
 	size_t GetSize() const { return m_size; }
 	size_t GetLength() const { return m_size; }
 
@@ -143,6 +167,23 @@ public:
 		if (size <= m_size)
 			return;
 		Resize(size);
+	}
+
+	AlignedBuffer& operator=(const AlignedBuffer& copy)
+	{
+		Alloc(copy.m_size);
+		if (copy.m_size > 0)
+			std::memcpy(m_buffer.get(), copy.m_buffer.get(), copy.m_size);
+
+		return *this;
+	}
+
+	AlignedBuffer& operator=(AlignedBuffer&& move)
+	{
+		m_buffer = std::move(move.m_buffer);
+		m_size = move.m_size;
+		move.m_size = 0;
+		return *this;
 	}
 
 	T* GetPtr(uint idx = 0) const
