@@ -42,11 +42,11 @@ struct VMBootParameters
 	std::string filename;
 	std::string elf_override;
 	std::string save_state;
+	std::optional<s32> state_index;
 	std::optional<CDVD_SourceType> source_type;
 
 	std::optional<bool> fast_boot;
 	std::optional<bool> fullscreen;
-	std::optional<bool> batch_mode;
 };
 
 namespace VMManager
@@ -76,7 +76,7 @@ namespace VMManager
 	bool Initialize(const VMBootParameters& boot_params);
 
 	/// Destroys all system components.
-	void Shutdown(bool allow_save_resume_state = true);
+	void Shutdown(bool save_resume_state);
 
 	/// Resets all subsystems to a cold boot.
 	void Reset();
@@ -96,11 +96,11 @@ namespace VMManager
 	/// Reloads cheats/patches. If verbose is set, the number of patches loaded will be shown in the OSD.
 	void ReloadPatches(bool verbose);
 
-	/// Returns true if a resume save state should be saved/loaded.
-	bool ShouldSaveResumeState();
-
 	/// Returns the save state filename for the given game serial/crc.
 	std::string GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot);
+
+	/// Returns the path to save state for the specified disc/elf.
+	std::string GetSaveStateFileName(const char* filename, s32 slot);
 
 	/// Returns true if there is a save state in the specified slot.
 	bool HasSaveStateInSlot(const char* game_serial, u32 game_crc, s32 slot);
@@ -112,10 +112,13 @@ namespace VMManager
 	bool LoadStateFromSlot(s32 slot);
 
 	/// Saves state to the specified filename.
-	bool SaveState(const char* filename);
+	bool SaveState(const char* filename, bool zip_on_thread = true);
 
 	/// Saves state to the specified slot.
-	bool SaveStateToSlot(s32 slot);
+	bool SaveStateToSlot(s32 slot, bool zip_on_thread = true);
+
+	/// Waits until all compressing save states have finished saving to disk.
+	void WaitForSaveStateFlush();
 
 	/// Returns the current limiter mode.
 	LimiterModeType GetLimiterMode();

@@ -65,11 +65,6 @@ void pxFitToDigits(wxSpinCtrl* win, int digits)
 	win->SetMinSize(wxSize(ex + 10 + MagicSpinnerSize, wxDefaultCoord)); // +10 for text control borders/insets and junk.
 }
 
-bool pxDialogExists(const wxString& name)
-{
-	return wxFindWindowByName(name) != NULL;
-}
-
 // =====================================================================================================
 //  wxDialogWithHelpers Class Implementations
 // =====================================================================================================

@@ -717,11 +717,6 @@ Pcsx2App::Pcsx2App()
 Pcsx2App::~Pcsx2App()
 {
 	pxDoAssert = pxAssertImpl_LogIt;
-	try
-	{
-		vu1Thread.Cancel();
-	}
-	DESTRUCTOR_CATCHALL
 }
 
 void Pcsx2App::CleanUp()

@@ -16,10 +16,12 @@
 #pragma once
 
 #include "Common.h"
-#include "System/SysThreads.h"
 #include "Gif.h"
 #include "GS/GS.h"
+#include <atomic>
 #include <functional>
+#include <mutex>
+#include <thread>
 
 extern double GetVerticalFrequency();
 alignas(16) extern u8 g_RealGSMem[Ps2MemSize::GSregs];
@@ -316,10 +318,8 @@ struct MTGS_MemoryScreenshotData
 // --------------------------------------------------------------------------------------
 //  SysMtgsThread
 // --------------------------------------------------------------------------------------
-class SysMtgsThread : public SysThreadBase
+class SysMtgsThread
 {
-	typedef SysThreadBase _parent;
-
 public:
 	using AsyncCallType = std::function<void()>;
 
@@ -334,10 +334,11 @@ public:
 	std::atomic<int>	m_QueuedFrameCount;
 	std::atomic<bool>	m_VsyncSignalListener;
 
-	Mutex			m_mtx_RingBufferBusy2; // Gets released on semaXGkick waiting...
-	Mutex			m_mtx_WaitGS;
-	Semaphore		m_sem_OnRingReset;
-	Semaphore		m_sem_Vsync;
+	std::mutex m_mtx_RingBufferBusy2; // Gets released on semaXGkick waiting...
+	std::mutex m_mtx_WaitGS;
+	Threading::WorkSema m_sem_event;
+	Threading::KernelSemaphore m_sem_OnRingReset;
+	Threading::KernelSemaphore m_sem_Vsync;
 
 	// used to keep multiple threads from sending packets to the ringbuffer concurrently.
 	// (currently not used or implemented -- is a planned feature for a future threaded VU1)
@@ -347,9 +348,6 @@ public:
 	// has more than one command in it when the thread is kicked.
 	int				m_CopyDataTally;
 
-	Semaphore			m_sem_OpenDone;
-	std::atomic<bool>	m_Opened;
-
 	// These vars maintain instance data for sending Data Packets.
 	// Only one data packet can be constructed and uploaded at a time.
 
@@ -358,12 +356,27 @@ public:
 	uint			m_packet_writepos;	// index of the data location in the ringbuffer.
 
 #ifdef RINGBUF_DEBUG_STACK
-	Threading::Mutex m_lock_Stack;
+	std::mutex m_lock_Stack;
 #endif
+
+	std::thread m_thread;
+	Threading::ThreadHandle m_thread_handle;
+	std::atomic_bool m_open_flag{false};
+	std::atomic_bool m_shutdown_flag{false};
+	Threading::KernelSemaphore m_open_or_close_done;
 
 public:
 	SysMtgsThread();
 	virtual ~SysMtgsThread();
+
+	__fi const Threading::ThreadHandle& GetThreadHandle() const { return m_thread_handle; }
+	__fi bool IsOpen() const { return m_open_flag.load(std::memory_order_acquire); }
+
+	/// Starts the thread, if it hasn't already been started.
+	void StartThread();
+
+	/// Fully stops the thread, closing in the process if needed.
+	void ShutdownThread();
 
 	// Waits for the GS to empty out the entire ring buffer contents.
 	void WaitGS(bool syncRegs=true, bool weakWait=false, bool isMTVU=false);
@@ -374,6 +387,7 @@ public:
 	void SendDataPacket();
 	void SendGameCRC( u32 crc );
 	bool WaitForOpen();
+	void WaitForClose();
 	void Freeze( FreezeAction mode, MTGS_FreezeData& data );
 
 	void SendSimpleGSPacket( MTGS_RingCommand type, u32 offset, u32 size, GIF_PATH path );
@@ -384,8 +398,6 @@ public:
 	void SetEvent();
 	void PostVsyncStart(bool registers_written);
 	void InitAndReadFIFO(u8* mem, u32 qwc);
-
-	bool IsGSOpened() const { return m_Opened; }
 
 	void RunOnGSThread(AsyncCallType func);
 	void ApplySettings();
@@ -398,22 +410,16 @@ public:
 	bool SaveMemorySnapshot(u32 width, u32 height, std::vector<u32>* pixels);
 
 protected:
-	void OpenGS();
+	bool TryOpenGS();
 	void CloseGS();
 
-	void OnStart() override;
-	void OnResumeReady() override;
-
-	void OnSuspendInThread() override;
-	void OnPauseInThread(SystemsMask systemsToTearDown) override {}
-	void OnResumeInThread(SystemsMask systemsToReinstate) override;
-	void OnCleanupInThread() override;
+	void ThreadEntryPoint();
+	void MainLoop();
 
 	void GenericStall( uint size );
 
 	// Used internally by SendSimplePacket type functions
 	void _FinishSimplePacket();
-	void ExecuteTaskInThread() override;
 };
 
 // GetMTGS() is a required external implementation. This function is *NOT* provided
@@ -443,13 +449,13 @@ extern void gsWrite8(u32 mem, u8 value);
 extern void gsWrite16(u32 mem, u16 value);
 extern void gsWrite32(u32 mem, u32 value);
 
-extern void __fastcall gsWrite64_page_00( u32 mem, const mem64_t* value );
-extern void __fastcall gsWrite64_page_01( u32 mem, const mem64_t* value );
-extern void __fastcall gsWrite64_generic( u32 mem, const mem64_t* value );
+extern void gsWrite64_page_00( u32 mem, const mem64_t* value );
+extern void gsWrite64_page_01( u32 mem, const mem64_t* value );
+extern void gsWrite64_generic( u32 mem, const mem64_t* value );
 
-extern void __fastcall gsWrite128_page_00( u32 mem, const mem128_t* value );
-extern void __fastcall gsWrite128_page_01( u32 mem, const mem128_t* value );
-extern void __fastcall gsWrite128_generic( u32 mem, const mem128_t* value );
+extern void gsWrite128_page_00( u32 mem, const mem128_t* value );
+extern void gsWrite128_page_01( u32 mem, const mem128_t* value );
+extern void gsWrite128_generic( u32 mem, const mem128_t* value );
 
 extern u8   gsRead8(u32 mem);
 extern u16  gsRead16(u32 mem);

@@ -27,7 +27,7 @@ void mVUdispatcherAB(mV)
 	{
 		xScopedStackFrame frame(false, true);
 
-		// __fastcall = The caller has already put the needed parameters in ecx/edx:
+		// = The caller has already put the needed parameters in ecx/edx:
 		if (!isVU1) xFastCall((void*)mVUexecuteVU0, arg1reg, arg2reg);
 		else        xFastCall((void*)mVUexecuteVU1, arg1reg, arg2reg);
 
@@ -73,7 +73,7 @@ void mVUdispatcherAB(mV)
 		// Load EE's MXCSR state
 		xLDMXCSR(g_sseMXCSR);
 
-		// __fastcall = The first two DWORD or smaller arguments are passed in ECX and EDX registers;
+		// = The first two DWORD or smaller arguments are passed in ECX and EDX registers;
 		//              all other arguments are passed right to left.
 		if (!isVU1) xFastCall((void*)mVUcleanUpVU0);
 		else        xFastCall((void*)mVUcleanUpVU1);
@@ -128,7 +128,7 @@ void mVUdispatcherCD(mV)
 //------------------------------------------------------------------
 
 // Executes for number of cycles
-_mVUt void* __fastcall mVUexecute(u32 startPC, u32 cycles)
+_mVUt void* mVUexecute(u32 startPC, u32 cycles)
 {
 
 	microVU& mVU = mVUx;
@@ -187,7 +187,7 @@ _mVUt void mVUcleanUp()
 // Caller Functions
 //------------------------------------------------------------------
 
-void* __fastcall mVUexecuteVU0(u32 startPC, u32 cycles) { return mVUexecute<0>(startPC, cycles); }
-void* __fastcall mVUexecuteVU1(u32 startPC, u32 cycles) { return mVUexecute<1>(startPC, cycles); }
-void __fastcall mVUcleanUpVU0() { mVUcleanUp<0>(); }
-void __fastcall mVUcleanUpVU1() { mVUcleanUp<1>(); }
+void* mVUexecuteVU0(u32 startPC, u32 cycles) { return mVUexecute<0>(startPC, cycles); }
+void* mVUexecuteVU1(u32 startPC, u32 cycles) { return mVUexecute<1>(startPC, cycles); }
+void mVUcleanUpVU0() { mVUcleanUp<0>(); }
+void mVUcleanUpVU1() { mVUcleanUp<1>(); }

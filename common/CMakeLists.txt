@@ -20,7 +20,6 @@ target_sources(common PRIVATE
 	FastFormatString.cpp
 	FastJmp.cpp
 	FileSystem.cpp
-	Mutex.cpp
 	Misc.cpp
 	MD5Digest.cpp
 	PathUtils.cpp
@@ -28,13 +27,11 @@ target_sources(common PRIVATE
 	Perf.cpp
 	ProgressCallback.cpp
 	pxTranslate.cpp
-	RwMutex.cpp
 	Semaphore.cpp
 	SettingsWrapper.cpp
 	StringHelpers.cpp
 	StringUtil.cpp
 	Timer.cpp
-	ThreadTools.cpp
 	WindowInfo.cpp
 	emitter/bmi.cpp
 	emitter/cpudetect.cpp
@@ -85,10 +82,8 @@ target_sources(common PRIVATE
 	ProgressCallback.h
 	pxForwardDefs.h
 	RedtapeWindows.h
-	RwMutex.h
 	SafeArray.h
 	ScopedGuard.h
-	ScopedPtrMT.h
 	SettingsInterface.h
 	SettingsWrapper.h
 	StringHelpers.h
@@ -175,7 +170,7 @@ endif()
 if(WIN32)
 	enable_language(ASM_MASM)
 	target_sources(common PRIVATE FastJmp.asm)
-	target_link_libraries(common PUBLIC WIL::WIL D3D12MemAlloc pthreads4w Winmm.lib)
+	target_link_libraries(common PUBLIC WIL::WIL D3D12MemAlloc Winmm.lib)
 	target_sources(common PRIVATE
 		CrashHandler.cpp
 		CrashHandler.h
@@ -243,7 +238,6 @@ if(USE_OPENGL)
 				GL/ContextEGLWayland.cpp
 				GL/ContextEGLWayland.h
 			)
-			target_link_libraries(common PRIVATE ${WAYLAND_EGL_LIBRARIES})
 		endif()
 	endif()
 endif()

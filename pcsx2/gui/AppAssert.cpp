@@ -105,7 +105,7 @@ static wxString pxGetStackTrace( const FnChar_t* calledFrom )
 void Pcsx2App::OnAssertFailure( const wxChar *file, int line, const wxChar *func, const wxChar *cond, const wxChar *msg )
 {
 	// Re-entrant assertions are bad mojo -- trap immediately.
-	static DeclareTls(int) _reentrant_lock( 0 );
+	static thread_local int _reentrant_lock( 0 );
 	RecursionGuard guard( _reentrant_lock );
 	if( guard.IsReentrant() ) pxTrap();
 

@@ -117,6 +117,7 @@ void GSinitConfig()
 
 void GSshutdown()
 {
+#ifndef PCSX2_CORE
 	if (g_gs_renderer)
 	{
 		g_gs_renderer->Destroy();
@@ -129,6 +130,7 @@ void GSshutdown()
 	}
 
 	Host::ReleaseHostDisplay();
+#endif
 
 #ifdef _WIN32
 	if (SUCCEEDED(s_hr))
@@ -1324,6 +1326,8 @@ void GSApp::Init()
 	m_default_configuration["DumpReplaceableTextures"]                    = "0";
 	m_default_configuration["DumpReplaceableMipmaps"]                     = "0";
 	m_default_configuration["DumpTexturesWithFMVActive"]                  = "0";
+	m_default_configuration["DumpDirectTextures"]                         = "1";
+	m_default_configuration["DumpPaletteTextures"]                        = "1";
 	m_default_configuration["extrathreads"]                               = "2";
 	m_default_configuration["extrathreads_height"]                        = "4";
 	m_default_configuration["filter"]                                     = std::to_string(static_cast<s8>(BiFiltering::PS2));
@@ -1644,6 +1648,38 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){
 	{"ZoomOut", "Graphics", "Zoom Out", [](bool pressed) {
 		 if (!pressed)
 			 HotkeyAdjustZoom(-1.0);
+	 }},
+	{"ToggleTextureDumping", "Graphics", "Toggle Texture Dumping", [](bool pressed) {
+		 if (!pressed)
+		 {
+			 EmuConfig.GS.DumpReplaceableTextures = !EmuConfig.GS.DumpReplaceableTextures;
+			 Host::AddKeyedOSDMessage("ToggleTextureReplacements", EmuConfig.GS.DumpReplaceableTextures ? "Texture dumping is now enabled." : "Texture dumping is now disabled.", 10.0f);
+			 GetMTGS().ApplySettings();
+		 }
+	 }},
+	{"ToggleTextureReplacements", "Graphics", "Toggle Texture Replacements", [](bool pressed) {
+		 if (!pressed)
+		 {
+			 EmuConfig.GS.LoadTextureReplacements = !EmuConfig.GS.LoadTextureReplacements;
+			 Host::AddKeyedOSDMessage("ToggleTextureReplacements", EmuConfig.GS.LoadTextureReplacements ? "Texture replacements are now enabled." : "Texture replacements are now disabled.", 10.0f);
+			 GetMTGS().ApplySettings();
+		 }
+	 }},
+	{"ReloadTextureReplacements", "Graphics", "Reload Texture Replacements", [](bool pressed) {
+		 if (!pressed)
+		 {
+			 if (!EmuConfig.GS.LoadTextureReplacements)
+			 {
+				 Host::AddKeyedOSDMessage("ReloadTextureReplacements", "Texture replacements are not enabled.", 10.0f);
+			 }
+			 else
+			 {
+				 Host::AddKeyedOSDMessage("ReloadTextureReplacements", "Reloading texture replacements...", 10.0f);
+				 GetMTGS().RunOnGSThread([]() {
+					 GSTextureReplacements::ReloadReplacementMap();
+				 });
+			 }
+		 }
 	 }},
 END_HOTKEY_LIST()
 

@@ -479,6 +479,9 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 					{
 						zs = VectorI(z);
 					}
+
+					if (sel.zclamp)
+						zs = zs.min_u32(VectorI::xffffffff().srl32(sel.zpsm * 8));
 				}
 				else
 				{
@@ -495,29 +498,26 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 					zd = GSVector4i::load((u8*)global.vm + za * 2, (u8*)global.vm + za * 2 + 16);
 #endif
 
-					switch (sel.zpsm)
-					{
-						case 1: zd = zd.sll32( 8).srl32( 8); break;
-						case 2: zd = zd.sll32(16).srl32(16); break;
-						default: break;
-					}
-
 					VectorI zso = zs;
 					VectorI zdo = zd;
 
-					if (sel.zoverflow || sel.zpsm == 0)
+					switch (sel.zpsm)
+					{
+						case 1: zdo = zdo.sll32( 8).srl32( 8); break;
+						case 2: zdo = zdo.sll32(16).srl32(16); break;
+						default: break;
+					}
+
+					if (sel.zpsm == 0)
 					{
 						zso -= VectorI::x80000000();
 						zdo -= VectorI::x80000000();
 					}
 
-					if (sel.zclamp)
-						zso = zso.min_u32(VectorI::xffffffff().srl32(sel.zpsm * 8));
-
 					switch (sel.ztst)
 					{
-					case ZTST_GEQUAL:  test |= zso <  zdo; break;
-					case ZTST_GREATER: test |= zso <= zdo; break;
+						case ZTST_GEQUAL:  test |= zso <  zdo; break;
+						case ZTST_GREATER: test |= zso <= zdo; break;
 					}
 
 					if (test.alltrue())
@@ -572,8 +572,8 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 						u = u.srav32(lodi);
 						v = v.srav32(lodi);
 
-						uv[0] = u.srav32(lodi);
-						uv[1] = v.srav32(lodi);
+						uv[0] = u;
+						uv[1] = v;
 
 						GSVector8i tmin = GSVector8i::broadcast128(global.t.min);
 						GSVector8i tminu = tmin.upl16().srlv32(lodi);
@@ -1200,9 +1200,6 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 				{
 					zs = zs.blend8(zd, zm);
 				}
-
-				if (sel.zclamp)
-					zs = zs.min_u32(VectorI::xffffffff().srl32(sel.zpsm * 8));
 
 				bool fast = sel.ztest ? sel.zpsm < 2 : sel.zpsm == 0 && sel.notest;
 

@@ -89,17 +89,6 @@ bool GSDevice11::Create(HostDisplay* display)
 	m_ctx = static_cast<ID3D11DeviceContext*>(display->GetRenderContext());
 	level = m_dev->GetFeatureLevel();
 
-	bool amd_vendor = false;
-	{
-		if (auto dxgi_device = m_dev.try_query<IDXGIDevice>())
-		{
-			wil::com_ptr_nothrow<IDXGIAdapter> dxgi_adapter;
-			DXGI_ADAPTER_DESC adapter_desc;
-			if (SUCCEEDED(dxgi_device->GetAdapter(dxgi_adapter.put())) && SUCCEEDED(dxgi_adapter->GetDesc(&adapter_desc)))
-				amd_vendor = ((adapter_desc.VendorId == 0x1002) || (adapter_desc.VendorId == 0x1022));
-		}
-	}
-
 	if (!GSConfig.DisableShaderCache)
 	{
 		if (!m_shader_cache.Open(StringUtil::wxStringToUTF8String(EmuFolders::Cache.ToString()),
@@ -123,7 +112,7 @@ bool GSDevice11::Create(HostDisplay* display)
 	{
 		// HACK: check AMD
 		// Broken point sampler should be enabled only on AMD.
-		m_features.broken_point_sampler = amd_vendor;
+		m_features.broken_point_sampler = (D3D::Vendor() == D3D::VendorID::AMD);
 	}
 
 	SetFeatures();
@@ -1297,7 +1286,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		IAUnmapVertexBuffer();
 	}
 	IASetIndexBuffer(config.indices, config.nindices);
-	D3D11_PRIMITIVE_TOPOLOGY topology;
+	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	switch (config.topology)
 	{
 		case GSHWDrawConfig::Topology::Point:    topology = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;    break;
@@ -1311,6 +1300,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	PSSetShaderResources(config.tex, config.pal);
 
 	GSTexture* rt_copy = nullptr;
+	GSTexture* ds_copy = nullptr;
 	if (config.require_one_barrier || (config.tex && config.tex == config.rt)) // Used as "bind rt" flag when texture barrier is unsupported
 	{
 		// Bind the RT.This way special effect can use it.
@@ -1331,9 +1321,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	{
 		// mainly for ico (depth buffer used as texture)
 		// binding to 0 here is safe, because config.tex can't equal both tex and rt
-		CloneTexture(config.ds, &rt_copy, config.drawarea);
-		if (rt_copy)
-			PSSetShaderResource(0, rt_copy);
+		CloneTexture(config.ds, &ds_copy, config.drawarea);
+		if (ds_copy)
+			PSSetShaderResource(0, ds_copy);
 	}
 
 	SetupOM(config.depth, convertSel(config.colormask, config.blend), config.blend.constant);
@@ -1386,6 +1376,8 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	if (rt_copy)
 		Recycle(rt_copy);
+	if (ds_copy)
+		Recycle(ds_copy);
 
 	if (hdr_rt)
 	{

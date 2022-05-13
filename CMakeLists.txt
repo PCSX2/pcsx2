@@ -42,6 +42,11 @@ add_subdirectory(pcsx2)
 
 if (QT_BUILD)
 	add_subdirectory(pcsx2-qt)
+
+	# Updater is Windows only for now.
+	if (WIN32)
+		add_subdirectory(updater)
+	endif()
 endif()
 
 # tests

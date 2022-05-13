@@ -16,7 +16,7 @@
 #pragma once
 
 #include <list>
-#include "common/Threading.h"
+#include <mutex>
 
 // --------------------------------------------------------------------------------------
 //  EventSource< template EvtType >
@@ -41,7 +41,7 @@ protected:
 	ListenerList m_cache_copy;
 	bool m_cache_valid;
 
-	Threading::Mutex m_listeners_lock;
+	std::mutex m_listeners_lock;
 
 public:
 	EventSource()

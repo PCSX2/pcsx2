@@ -38,8 +38,7 @@ struct _VURegsNum {
 	int cycles;
 };
 
-#define __vuRegsCall __fastcall
-typedef void __vuRegsCall FnType_VuRegsN(_VURegsNum *VUregsn);
+typedef void FnType_VuRegsN(_VURegsNum *VUregsn);
 typedef FnType_VuRegsN* Fnptr_VuRegsN;
 
 alignas(16) extern const Fnptr_Void VU0_LOWER_OPCODE[128];

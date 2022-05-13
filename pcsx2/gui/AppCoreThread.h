@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "System/SysThreads.h"
+#include "SysThreads.h"
 #include "pxEventThread.h"
 
 #include "AppCommon.h"

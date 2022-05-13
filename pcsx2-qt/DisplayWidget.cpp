@@ -17,6 +17,7 @@
 
 #include "DisplayWidget.h"
 #include "EmuThread.h"
+#include "MainWindow.h"
 #include "QtHost.h"
 
 #include "pcsx2/GS/GSIntrin.h" // _BitScanForward
@@ -242,7 +243,13 @@ bool DisplayWidget::event(QEvent* event)
 
 		case QEvent::Close:
 		{
-			emit windowClosedEvent();
+			if (!g_main_window->requestShutdown())
+			{
+				// abort the window close
+				event->ignore();
+				return true;
+			}
+
 			QWidget::event(event);
 			return true;
 		}
@@ -317,18 +324,19 @@ DisplayWidget* DisplayContainer::removeDisplayWidget()
 
 bool DisplayContainer::event(QEvent* event)
 {
+	if (event->type() == QEvent::Close && !g_main_window->requestShutdown())
+	{
+		// abort the window close
+		event->ignore();
+		return true;
+	}
+
 	const bool res = QStackedWidget::event(event);
 	if (!m_display_widget)
 		return res;
 
 	switch (event->type())
 	{
-		case QEvent::Close:
-		{
-			emit m_display_widget->windowClosedEvent();
-		}
-		break;
-
 		case QEvent::WindowStateChange:
 		{
 			if (static_cast<QWindowStateChangeEvent*>(event)->oldState() & Qt::WindowMinimized)

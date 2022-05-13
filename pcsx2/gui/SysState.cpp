@@ -17,7 +17,7 @@
 #include "MemoryTypes.h"
 #include "App.h"
 
-#include "System/SysThreads.h"
+#include "SysThreads.h"
 #include "SaveState.h"
 #include "VUmicro.h"
 
@@ -61,7 +61,20 @@ protected:
 		std::unique_ptr<ArchiveEntryList> elist = SaveState_DownloadState();
 		UI_EnableStateActions();
 		paused_core.AllowResume();
-		SaveState_ZipToDisk(std::move(elist), nullptr, StringUtil::wxStringToUTF8String(m_filename), -1);
+
+		std::thread kickoff(&SysExecEvent_SaveState::ZipThreadProc,
+			std::move(elist), StringUtil::wxStringToUTF8String(m_filename));
+		kickoff.detach();
+	}
+
+	static void ZipThreadProc(std::unique_ptr<ArchiveEntryList> elist, std::string filename)
+	{
+		wxGetApp().StartPendingSave();
+		if (SaveState_ZipToDisk(std::move(elist), nullptr, filename.c_str()))
+			Console.WriteLn("(gzipThread) Data saved to disk without error.");
+		else
+			Console.Error("Failed to zip state to '%s'", filename.c_str());
+		wxGetApp().ClearPendingSave();
 	}
 };
 

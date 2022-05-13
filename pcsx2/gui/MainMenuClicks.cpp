@@ -21,7 +21,7 @@
 #include "GSFrame.h"
 #include "IniInterface.h"
 #include "SPU2/spu2.h"
-#include "System/SysThreads.h"
+#include "SysThreads.h"
 #include "DEV9/DEV9.h"
 #include "USB/USB.h"
 #include "PAD/Gamepad.h"
@@ -932,7 +932,7 @@ void MainEmuFrame::Menu_ShowConsole_Stdio(wxCommandEvent& event)
 
 void MainEmuFrame::Menu_GetStarted(wxCommandEvent& event)
 {
-	wxLaunchDefaultBrowser("https://pcsx2.net/getting-started.html");
+	wxLaunchDefaultBrowser("https://pcsx2.net/guides/basic-setup/");
 }
 
 void MainEmuFrame::Menu_Compatibility(wxCommandEvent& event)

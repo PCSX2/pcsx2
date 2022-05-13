@@ -24,8 +24,8 @@
 
 using namespace x86Emitter;
 
-__tls_emit u8* j8Ptr[32];
-__tls_emit u32* j32Ptr[32];
+thread_local u8* j8Ptr[32];
+thread_local u32* j32Ptr[32];
 
 u16 g_x86AllocCounter = 0;
 u16 g_xmmAllocCounter = 0;

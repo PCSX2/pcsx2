@@ -14,7 +14,13 @@
 */
 
 #include "common/Threading.h"
-#include "common/ThreadingInternal.h"
+#include "common/Assertions.h"
+
+#ifdef _WIN32
+#include "common/RedtapeWindows.h"
+#endif
+
+#include <limits>
 
 // --------------------------------------------------------------------------------------
 //  Semaphore Implementations
@@ -84,7 +90,7 @@ bool Threading::WorkSema::WaitForEmpty()
 			break;
 	}
 	pxAssertDev(!(value & STATE_FLAG_WAITING_EMPTY), "Multiple threads attempted to wait for empty (not currently supported)");
-	m_empty_sema.WaitWithYield();
+	m_empty_sema.Wait();
 	return !IsDead(m_state.load(std::memory_order_relaxed));
 }
 
@@ -102,7 +108,7 @@ bool Threading::WorkSema::WaitForEmptyWithSpin()
 		value = m_state.load(std::memory_order_acquire);
 	}
 	pxAssertDev(!(value & STATE_FLAG_WAITING_EMPTY), "Multiple threads attempted to wait for empty (not currently supported)");
-	m_empty_sema.WaitWithYield();
+	m_empty_sema.Wait();
 	return !IsDead(m_state.load(std::memory_order_relaxed));
 }
 
@@ -149,194 +155,20 @@ void Threading::KernelSemaphore::Post()
 
 void Threading::KernelSemaphore::Wait()
 {
-	pxAssertMsg(!wxThread::IsMain(), "Unyielding semaphore wait issued from the main/gui thread.  Use WaitWithYield.");
 #ifdef _WIN32
-	pthreadCancelableWait(m_sema);
+	WaitForSingleObject(m_sema, INFINITE);
 #else
 	sem_wait(&m_sema);
 #endif
 }
 
-void Threading::KernelSemaphore::WaitWithYield()
+bool Threading::KernelSemaphore::TryWait()
 {
-#if wxUSE_GUI
-	if (!wxThread::IsMain() || (wxTheApp == NULL))
-	{
-		Wait();
-	}
-	else
-	{
 #ifdef _WIN32
-		u64 millis = def_yieldgui_interval.GetMilliseconds().GetValue();
-		while (pthreadCancelableTimedWait(m_sema, millis) == ETIMEDOUT)
-			YieldToMain();
+	return WaitForSingleObject(m_sema, 0) == WAIT_OBJECT_0;
 #else
-		while (true)
-		{
-			wxDateTime megafail(wxDateTime::UNow() + def_yieldgui_interval);
-			const timespec fail = {megafail.GetTicks(), megafail.GetMillisecond() * 1000000};
-			if (sem_timedwait(&m_sema, &fail) == 0)
-				break;
-			YieldToMain();
-		}
-#endif
-	}
-#else
-	Wait();
-#endif
-}
-
-Threading::Semaphore::Semaphore()
-{
-	sem_init(&m_sema, false, 0);
-}
-
-Threading::Semaphore::~Semaphore()
-{
-	sem_destroy(&m_sema);
-}
-
-void Threading::Semaphore::Reset()
-{
-	sem_destroy(&m_sema);
-	sem_init(&m_sema, false, 0);
-}
-
-void Threading::Semaphore::Post()
-{
-	sem_post(&m_sema);
-}
-
-void Threading::Semaphore::Post(int multiple)
-{
-#if defined(_MSC_VER)
-	sem_post_multiple(&m_sema, multiple);
-#else
-	// Only w32pthreads has the post_multiple, but it's easy enough to fake:
-	while (multiple > 0)
-	{
-		multiple--;
-		sem_post(&m_sema);
-	}
-#endif
-}
-
-void Threading::Semaphore::WaitWithoutYield()
-{
-	pxAssertMsg(!wxThread::IsMain(), "Unyielding semaphore wait issued from the main/gui thread.  Please use Wait() instead.");
-	sem_wait(&m_sema);
-}
-
-bool Threading::Semaphore::WaitWithoutYield(const wxTimeSpan& timeout)
-{
-	wxDateTime megafail(wxDateTime::UNow() + timeout);
-	const timespec fail = {megafail.GetTicks(), megafail.GetMillisecond() * 1000000};
-	return sem_timedwait(&m_sema, &fail) == 0;
-}
-
-
-// This is a wxApp-safe implementation of Wait, which makes sure and executes the App's
-// pending messages *if* the Wait is performed on the Main/GUI thread.  This ensures that
-// user input continues to be handled and that windoes continue to repaint.  If the Wait is
-// called from another thread, no message pumping is performed.
-//
-void Threading::Semaphore::Wait()
-{
-#if wxUSE_GUI
-	if (!wxThread::IsMain() || (wxTheApp == NULL))
-	{
-		sem_wait(&m_sema);
-	}
-	else if (_WaitGui_RecursionGuard(L"Semaphore::Wait"))
-	{
-		sem_wait(&m_sema);
-	}
-	else
-	{
-		//ScopedBusyCursor hourglass( Cursor_KindaBusy );
-		while (!WaitWithoutYield(def_yieldgui_interval))
-			YieldToMain();
-	}
-#else
-	sem_wait(&m_sema);
-#endif
-}
-
-// This is a wxApp-safe implementation of WaitWithoutYield, which makes sure and executes the App's
-// pending messages *if* the Wait is performed on the Main/GUI thread.  This ensures that
-// user input continues to be handled and that windows continue to repaint.  If the Wait is
-// called from another thread, no message pumping is performed.
-//
-// Returns:
-//   false if the wait timed out before the semaphore was signaled, or true if the signal was
-//   reached prior to timeout.
-//
-bool Threading::Semaphore::Wait(const wxTimeSpan& timeout)
-{
-#if wxUSE_GUI
-	if (!wxThread::IsMain() || (wxTheApp == NULL))
-	{
-		return WaitWithoutYield(timeout);
-	}
-	else if (_WaitGui_RecursionGuard(L"Semaphore::TimedWait"))
-	{
-		return WaitWithoutYield(timeout);
-	}
-	else
-	{
-		//ScopedBusyCursor hourglass( Cursor_KindaBusy );
-		wxTimeSpan countdown((timeout));
-
-		do
-		{
-			if (WaitWithoutYield(def_yieldgui_interval))
-				break;
-			YieldToMain();
-			countdown -= def_yieldgui_interval;
-		} while (countdown.GetMilliseconds() > 0);
-
-		return countdown.GetMilliseconds() > 0;
-	}
-#else
-	return WaitWithoutYield(timeout);
-#endif
-}
-
-// Performs an uncancellable wait on a semaphore; restoring the thread's previous cancel state
-// after the wait has completed.  Useful for situations where the semaphore itself is stored on
-// the stack and passed to another thread via GUI message or such, avoiding complications where
-// the thread might be canceled and the stack value becomes invalid.
-//
-// Performance note: this function has quite a bit more overhead compared to Semaphore::WaitWithoutYield(), so
-// consider manually specifying the thread as uncancellable and using WaitWithoutYield() instead if you need
-// to do a lot of no-cancel waits in a tight loop worker thread, for example.
-void Threading::Semaphore::WaitNoCancel()
-{
-	int oldstate;
-	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
-	//WaitWithoutYield();
-	Wait();
-	pthread_setcancelstate(oldstate, NULL);
-}
-
-void Threading::Semaphore::WaitNoCancel(const wxTimeSpan& timeout)
-{
-	int oldstate;
-	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
-	//WaitWithoutYield( timeout );
-	Wait(timeout);
-	pthread_setcancelstate(oldstate, NULL);
-}
-
-bool Threading::Semaphore::TryWait()
-{
 	return sem_trywait(&m_sema) == 0;
+#endif
 }
 
-int Threading::Semaphore::Count()
-{
-	int retval;
-	sem_getvalue(&m_sema, &retval);
-	return retval;
-}
 #endif

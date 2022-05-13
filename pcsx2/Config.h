@@ -475,6 +475,8 @@ struct Pcsx2Config
 					DumpReplaceableTextures : 1,
 					DumpReplaceableMipmaps : 1,
 					DumpTexturesWithFMVActive : 1,
+					DumpDirectTextures : 1,
+					DumpPaletteTextures : 1,
 					LoadTextureReplacements : 1,
 					LoadTextureReplacementsAsync : 1,
 					PrecacheTextureReplacements : 1;
@@ -939,6 +941,7 @@ struct Pcsx2Config
 #endif
 #ifdef PCSX2_CORE
 		EnableGameFixes : 1, // enables automatic game fixes
+		SaveStateOnShutdown : 1, // default value for saving state on shutdown
 #endif
 		// when enabled uses BOOT2 injection, skipping sony bios splashes
 		UseBOOT2Injection : 1,

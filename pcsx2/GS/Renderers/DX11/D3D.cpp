@@ -69,44 +69,68 @@ namespace D3D
 		return adapter;
 	}
 
-	bool IsNvidia(IDXGIAdapter1* adapter)
+	u8 Vendor()
 	{
+		auto factory = CreateFactory(false);
+		auto adapter = GetAdapterFromIndex(factory.get(), 0);
+
 		ASSERT(adapter);
 
 		DXGI_ADAPTER_DESC1 desc = {};
 		if (FAILED(adapter->GetDesc1(&desc)))
 		{
 			fprintf(stderr, "D3D: failed to get the adapter description\n");
-			return false;
+			return VendorID::Unknown;
 		}
 
-		// NV magic number
-		return desc.VendorId == 0x10DE;
+		switch (desc.VendorId)
+		{
+			case 0x10DE:
+				return VendorID::Nvidia;
+			case 0x1002:
+			case 0x1022:
+				return VendorID::AMD;
+			case 0x163C:
+			case 0x8086:
+			case 0x8087:
+				return VendorID::Intel;
+			default:
+				return VendorID::Unknown;
+		}
 	}
 
-	bool SupportsFeatureLevel11(IDXGIAdapter1* adapter)
-	{
-		ASSERT(adapter);
-
-		D3D_FEATURE_LEVEL feature_level;
-
-		static const D3D_FEATURE_LEVEL check[] = { D3D_FEATURE_LEVEL_11_0 };
-		const HRESULT hr = D3D11CreateDevice(
-			adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0,
-			check, std::size(check), D3D11_SDK_VERSION, nullptr, &feature_level, nullptr
-		);
-
-		if (FAILED(hr))
-			return false;
-
-		return feature_level == D3D_FEATURE_LEVEL_11_0;
-	}
-
-	bool ShouldPreferD3D()
+	u8 ShouldPreferRenderer()
 	{
 		auto factory = CreateFactory(false);
 		auto adapter = GetAdapterFromIndex(factory.get(), 0);
 
-		return !(IsNvidia(adapter.get()) && SupportsFeatureLevel11(adapter.get()));
+		ASSERT(adapter);
+
+		D3D_FEATURE_LEVEL feature_level;
+
+		static const D3D_FEATURE_LEVEL check[] = {
+			D3D_FEATURE_LEVEL_12_1,
+			D3D_FEATURE_LEVEL_11_1,
+			D3D_FEATURE_LEVEL_11_0,
+		};
+
+		const HRESULT hr = D3D11CreateDevice(
+			adapter.get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0,
+			std::data(check), std::size(check), D3D11_SDK_VERSION, nullptr, &feature_level, nullptr
+		);
+
+		if (FAILED(hr))
+			return Renderer::Default;
+
+		if (Vendor() == VendorID::Nvidia)
+		{
+			if (feature_level == D3D_FEATURE_LEVEL_12_1)
+				return Renderer::Vulkan;
+			else if (feature_level == D3D_FEATURE_LEVEL_11_0)
+				return Renderer::OpenGL;
+		}
+
+		// Default is D3D11
+		return Renderer::Default;
 	}
 }

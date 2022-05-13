@@ -33,28 +33,24 @@
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);_7ZIP_ST</PreprocessorDefinitions>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <AdditionalIncludeDirectories>$(ProjectDir)/libchdr/include/;$(ProjectDir)/libchdr/src/;$(ProjectDir)/libchdr/deps/lzma-19.00/include;$(ProjectDir)/libchdr/deps/zlib-1.2.11;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)libchdr\include;$(ProjectDir)\libchdr\src;$(SolutionDir)3rdparty\lzma\include;$(SolutionDir)3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="libchdr\deps\lzma-19.00\src\Alloc.c" />
-    <ClCompile Include="libchdr\deps\lzma-19.00\src\Bra86.c" />
-    <ClCompile Include="libchdr\deps\lzma-19.00\src\BraIA64.c" />
-    <ClCompile Include="libchdr\deps\lzma-19.00\src\CpuArch.c" />
-    <ClCompile Include="libchdr\deps\lzma-19.00\src\Delta.c" />
-    <ClCompile Include="libchdr\deps\lzma-19.00\src\LzFind.c" />
-    <ClCompile Include="libchdr\deps\lzma-19.00\src\Lzma86Dec.c" />
-    <ClCompile Include="libchdr\deps\lzma-19.00\src\LzmaDec.c" />
-    <ClCompile Include="libchdr\deps\lzma-19.00\src\LzmaEnc.c" />
-    <ClCompile Include="libchdr\deps\lzma-19.00\src\Sort.c" />
-    <ClCompile Include="libchdr\src\libchdr_bitstream.c">
-      <DeploymentContent>false</DeploymentContent>
-    </ClCompile>
+    <ClCompile Include="libchdr\src\libchdr_bitstream.c" />
     <ClCompile Include="libchdr\src\libchdr_cdrom.c" />
     <ClCompile Include="libchdr\src\libchdr_chd.c" />
     <ClCompile Include="libchdr\src\libchdr_flac.c" />
     <ClCompile Include="libchdr\src\libchdr_huffman.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\lzma\lzma.vcxproj">
+      <Project>{a4323327-3f2b-4271-83d9-7f9a3c66b6b2}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\zlib\zlib.vcxproj">
+      <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

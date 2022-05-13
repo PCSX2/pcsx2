@@ -17,10 +17,6 @@
 
 #include "Console.h"
 
-// These macros are currently not needed (anymore), but might be needed aain in the future --air
-#define TraceLog_ImplementBaseAPI(thistype)
-#define ConsoleLog_ImplementBaseAPI(thistype)
-
 // --------------------------------------------------------------------------------------
 //  TraceLogDescriptor
 // --------------------------------------------------------------------------------------
@@ -84,8 +80,6 @@ protected:
 	}
 
 public:
-	TraceLog_ImplementBaseAPI(BaseTraceLogSource)
-
 		BaseTraceLogSource(const TraceLogDescriptor* desc)
 	{
 		pxAssumeDev(desc, "Trace logs must have a valid (non-NULL) descriptor.");
@@ -168,8 +162,6 @@ protected:
 	}
 
 public:
-	ConsoleLog_ImplementBaseAPI(ConsoleLogSource)
-
 		ConsoleLogSource(const TraceLogDescriptor* desc, ConsoleColors defaultColor = Color_Gray)
 		: BaseTraceLogSource(desc)
 	{

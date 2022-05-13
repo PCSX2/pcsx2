@@ -266,11 +266,11 @@ int mVUdebugNow = 0;
 extern void mVUclear(mV, u32, u32);
 extern void mVUreset(microVU& mVU, bool resetReserve);
 extern void* mVUblockFetch(microVU& mVU, u32 startPC, uptr pState);
-_mVUt extern void* __fastcall mVUcompileJIT(u32 startPC, uptr ptr);
+_mVUt extern void* mVUcompileJIT(u32 startPC, uptr ptr);
 
 // Prototypes for Linux
-extern void __fastcall mVUcleanUpVU0();
-extern void __fastcall mVUcleanUpVU1();
+extern void mVUcleanUpVU0();
+extern void mVUcleanUpVU1();
 mVUop(mVUopU);
 mVUop(mVUopL);
 
@@ -278,11 +278,11 @@ mVUop(mVUopL);
 extern void mVUcacheProg(microVU& mVU, microProgram& prog);
 extern void mVUdeleteProg(microVU& mVU, microProgram*& prog);
 _mVUt extern void* mVUsearchProg(u32 startPC, uptr pState);
-extern void* __fastcall mVUexecuteVU0(u32 startPC, u32 cycles);
-extern void* __fastcall mVUexecuteVU1(u32 startPC, u32 cycles);
+extern void* mVUexecuteVU0(u32 startPC, u32 cycles);
+extern void* mVUexecuteVU1(u32 startPC, u32 cycles);
 
 // recCall Function Pointer
-typedef void(__fastcall* mVUrecCall)(u32, u32);
+typedef void (*mVUrecCall)(u32, u32);
 typedef void (*mVUrecCallXG)(void);
 
 template <typename T>

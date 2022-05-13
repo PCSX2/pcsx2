@@ -25,6 +25,7 @@
 
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
+#include "common/Threading.h"
 
 #include "Ps1CD.h"
 #include "CDVD.h"
@@ -40,7 +41,7 @@
 #endif
 
 #ifndef PCSX2_CORE
-#include "System/SysThreads.h"
+#include "gui/SysThreads.h"
 #else
 #include "VMManager.h"
 #endif
@@ -372,8 +373,6 @@ s32 cdvdWriteConfig(const u8* config)
 	return 0;
 }
 
-static MutexRecursive Mutex_NewDiskCB;
-
 // Sets ElfCRC to the CRC of the game bound to the CDVD source.
 static __fi ElfObject* loadElf(std::string filename, bool isPSXElf)
 {
@@ -414,8 +413,6 @@ static __fi ElfObject* loadElf(std::string filename, bool isPSXElf)
 static __fi void _reloadElfInfo(std::string elfpath)
 {
 	// Now's a good time to reload the ELF info...
-	ScopedLock locker(Mutex_NewDiskCB);
-
 	if (elfpath == LastELF)
 		return;
 
@@ -911,13 +908,6 @@ void SaveStateBase::cdvdFreeze()
 
 void cdvdNewDiskCB()
 {
-	ScopedTryLock lock(Mutex_NewDiskCB);
-	if (lock.Failed())
-	{
-		DevCon.WriteLn(Color_Red, L"NewDiskCB Lock Failed");
-		return;
-	}
-
 	DoCDVDresetDiskTypeCache();
 	cdvdDetectDisk();
 

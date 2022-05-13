@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src\Alloc.c" />
+    <ClCompile Include="src\Bcj2.c" />
+    <ClCompile Include="src\Bcj2Enc.c" />
+    <ClCompile Include="src\Bra.c" />
+    <ClCompile Include="src\Bra86.c" />
+    <ClCompile Include="src\BraIA64.c" />
+    <ClCompile Include="src\CpuArch.c" />
+    <ClCompile Include="src\Delta.c" />
+    <ClCompile Include="src\LzFind.c" />
+    <ClCompile Include="src\Lzma2Dec.c" />
+    <ClCompile Include="src\Lzma2DecMt.c" />
+    <ClCompile Include="src\Lzma2Enc.c" />
+    <ClCompile Include="src\Lzma86Dec.c" />
+    <ClCompile Include="src\Lzma86Enc.c" />
+    <ClCompile Include="src\LzmaDec.c" />
+    <ClCompile Include="src\LzmaEnc.c" />
+    <ClCompile Include="src\LzmaLib.c" />
+    <ClCompile Include="src\Ppmd7.c" />
+    <ClCompile Include="src\Ppmd7Dec.c" />
+    <ClCompile Include="src\Ppmd7Enc.c" />
+    <ClCompile Include="src\Sha256.c" />
+    <ClCompile Include="src\Xz.c" />
+    <ClCompile Include="src\XzCrc64.c" />
+    <ClCompile Include="src\XzCrc64Opt.c" />
+    <ClCompile Include="src\XzDec.c" />
+    <ClCompile Include="src\XzEnc.c" />
+    <ClCompile Include="src\XzIn.c" />
+    <ClCompile Include="src\7zAlloc.c" />
+    <ClCompile Include="src\7zArcIn.c" />
+    <ClCompile Include="src\7zBuf.c" />
+    <ClCompile Include="src\7zBuf2.c" />
+    <ClCompile Include="src\7zCrc.c" />
+    <ClCompile Include="src\7zCrcOpt.c" />
+    <ClCompile Include="src\7zDec.c" />
+    <ClCompile Include="src\7zFile.c" />
+    <ClCompile Include="src\7zStream.c" />
+    <ClCompile Include="src\LzFindOpt.c" />
+    <ClCompile Include="src\Sha256Opt.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Alloc.h" />
+    <ClInclude Include="include\Bcj2.h" />
+    <ClInclude Include="include\Bra.h" />
+    <ClInclude Include="include\Compiler.h" />
+    <ClInclude Include="include\CpuArch.h" />
+    <ClInclude Include="include\Delta.h" />
+    <ClInclude Include="include\LzFind.h" />
+    <ClInclude Include="include\LzHash.h" />
+    <ClInclude Include="include\Lzma2Dec.h" />
+    <ClInclude Include="include\Lzma2DecMt.h" />
+    <ClInclude Include="include\Lzma2Enc.h" />
+    <ClInclude Include="include\Lzma86.h" />
+    <ClInclude Include="include\LzmaDec.h" />
+    <ClInclude Include="include\LzmaEnc.h" />
+    <ClInclude Include="include\LzmaLib.h" />
+    <ClInclude Include="include\Ppmd.h" />
+    <ClInclude Include="include\Ppmd7.h" />
+    <ClInclude Include="include\Precomp.h" />
+    <ClInclude Include="include\RotateDefs.h" />
+    <ClInclude Include="include\Sha256.h" />
+    <ClInclude Include="include\Xz.h" />
+    <ClInclude Include="include\XzCrc64.h" />
+    <ClInclude Include="include\XzEnc.h" />
+    <ClInclude Include="include\7z.h" />
+    <ClInclude Include="include\7zAlloc.h" />
+    <ClInclude Include="include\7zBuf.h" />
+    <ClInclude Include="include\7zCrc.h" />
+    <ClInclude Include="include\7zFile.h" />
+    <ClInclude Include="include\7zTypes.h" />
+    <ClInclude Include="include\7zVersion.h" />
+  </ItemGroup>
+</Project>

@@ -336,6 +336,8 @@ Pcsx2Config::GSOptions::GSOptions()
 	DumpReplaceableTextures = false;
 	DumpReplaceableMipmaps = false;
 	DumpTexturesWithFMVActive = false;
+	DumpDirectTextures = true;
+	DumpPaletteTextures = true;
 	LoadTextureReplacements = false;
 	LoadTextureReplacementsAsync = true;
 	PrecacheTextureReplacements = false;
@@ -551,12 +553,14 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBoolEx(SaveFrame, "savef");
 	GSSettingBoolEx(SaveTexture, "savet");
 	GSSettingBoolEx(SaveDepth, "savez");
-	GSSettingBoolEx(DumpReplaceableTextures, "DumpReplaceableTextures");
-	GSSettingBoolEx(DumpReplaceableMipmaps, "DumpReplaceableMipmaps");
-	GSSettingBoolEx(DumpTexturesWithFMVActive, "DumpTexturesWithFMVActive");
-	GSSettingBoolEx(LoadTextureReplacements, "LoadTextureReplacements");
-	GSSettingBoolEx(LoadTextureReplacementsAsync, "LoadTextureReplacementsAsync");
-	GSSettingBoolEx(PrecacheTextureReplacements, "PrecacheTextureReplacements");
+	GSSettingBool(DumpReplaceableTextures);
+	GSSettingBool(DumpReplaceableMipmaps);
+	GSSettingBool(DumpTexturesWithFMVActive);
+	GSSettingBool(DumpDirectTextures);
+	GSSettingBool(DumpPaletteTextures);
+	GSSettingBool(LoadTextureReplacements);
+	GSSettingBool(LoadTextureReplacementsAsync);
+	GSSettingBool(PrecacheTextureReplacements);
 
 	GSSettingIntEnumEx(InterlaceMode, "deinterlace");
 
@@ -1062,6 +1066,7 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 #endif
 #ifdef PCSX2_CORE
 	SettingsWrapBitBool(EnableGameFixes);
+	SettingsWrapBitBool(SaveStateOnShutdown);
 #endif
 	SettingsWrapBitBool(ConsoleToStdio);
 	SettingsWrapBitBool(HostFs);
@@ -1239,8 +1244,8 @@ void EmuFolders::SetDefaults()
 	Covers = DataRoot.Combine(wxDirName("covers"));
 	GameSettings = DataRoot.Combine(wxDirName("gamesettings"));
 	Cache = DataRoot.Combine(wxDirName("cache"));
-	Resources = AppRoot.Combine(wxDirName("resources"));
-	Textures = AppRoot.Combine(wxDirName("textures"));
+
+	Textures = DataRoot.Combine(wxDirName("textures"));
 }
 
 static wxDirName LoadPathFromSettings(SettingsInterface& si, const wxDirName& root, const char* name, const char* def)

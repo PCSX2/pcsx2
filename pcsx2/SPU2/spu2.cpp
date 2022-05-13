@@ -31,7 +31,7 @@
 
 using namespace Threading;
 
-MutexRecursive mtx_SPU2Status;
+std::recursive_mutex mtx_SPU2Status;
 
 int SampleRate = 48000;
 
@@ -259,7 +259,7 @@ uptr gsWindowHandle = 0;
 
 s32 SPU2open()
 {
-	ScopedLock lock(mtx_SPU2Status);
+	std::unique_lock lock(mtx_SPU2Status);
 	if (IsOpened)
 		return 0;
 
@@ -307,7 +307,7 @@ s32 SPU2open()
 
 void SPU2close()
 {
-	ScopedLock lock(mtx_SPU2Status);
+	std::unique_lock lock(mtx_SPU2Status);
 	if (!IsOpened)
 		return;
 	IsOpened = false;

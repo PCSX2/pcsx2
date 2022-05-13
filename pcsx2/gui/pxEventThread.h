@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "common/PersistentThread.h"
+#include "gui/PersistentThread.h"
 #include "gui/pxEvents.h"
 
 #include <wx/timer.h>
@@ -75,14 +75,14 @@ extern ConsoleLogSource_Event pxConLog_Event;
 //    the other class you want to turn into an event within it.  It might feel like more work
 //    but it *will* be less work in the long run.
 //
-class SysExecEvent : public ICloneable
+class SysExecEvent
 {
 protected:
 	SynchronousActionState*		m_sync;
 
 public:
 	virtual ~SysExecEvent() = default;
-	SysExecEvent* Clone() const { return new SysExecEvent( *this ); }
+	virtual SysExecEvent* Clone() const { return new SysExecEvent( *this ); }
 
 	SysExecEvent( SynchronousActionState* sync=NULL )
 	{

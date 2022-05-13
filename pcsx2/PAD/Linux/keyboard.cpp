@@ -194,7 +194,7 @@ void AnalyzeKeyEvent(HostKeyEvent& evt)
 #ifdef __unix__
 			if (evt.key == XK_Shift_R || evt.key == XK_Shift_L)
 				s_Shift = true;
-			if (evt.key == XK_F12 && s_Shift)
+			if (evt.key == XK_F12 && s_Shift && GSdsp)
 			{
 				if (!s_grab_input)
 				{

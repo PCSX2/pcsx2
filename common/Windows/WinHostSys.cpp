@@ -17,6 +17,7 @@
 
 #include "common/RedtapeWindows.h"
 #include "common/PageFaultSource.h"
+#include "common/Console.h"
 
 static long DoSysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 {
@@ -26,7 +27,7 @@ static long DoSysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 	// Note: This exception can be accessed by the EE or MTVU thread
 	// Source_PageFault is a global variable with its own state information
 	// so for now we lock this exception code unless someone can fix this better...
-	Threading::ScopedLock lock(PageFault_Mutex);
+	std::unique_lock lock(PageFault_Mutex);
 	Source_PageFault->Dispatch(PageFaultInfo((uptr)eps->ExceptionRecord->ExceptionInformation[1]));
 	return Source_PageFault->WasHandled() ? EXCEPTION_CONTINUE_EXECUTION : EXCEPTION_CONTINUE_SEARCH;
 }

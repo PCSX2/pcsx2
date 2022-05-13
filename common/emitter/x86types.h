@@ -16,6 +16,8 @@
 #pragma once
 
 #include "common/Threading.h"
+#include "common/Assertions.h"
+#include "common/Pcsx2Defs.h"
 
 static const uint iREGCNT_XMM = 16;
 static const uint iREGCNT_GPR = 16;
@@ -27,38 +29,8 @@ enum XMMSSEType
 	//XMMT_FPD = 3, // double
 };
 
-// --------------------------------------------------------------------------------------
-//  __tls_emit / x86EMIT_MULTITHREADED
-// --------------------------------------------------------------------------------------
-// Multithreaded support for the x86 emitter.  (defaults to 0)
-// To enable the multithreaded emitter, either set the below define to 1, or set the define
-// as a project option.  The multithreaded emitter relies on native compiler support for
-// TLS -- Macs are crap out of luck there (for now).
-
-#ifndef x86EMIT_MULTITHREADED
-#if PCSX2_THREAD_LOCAL
-#define x86EMIT_MULTITHREADED 1
-#else
-// No TLS support?  Force-clear the MT flag:
-#pragma message("x86emitter: TLS not available, multithreaded emitter disabled.")
-#undef x86EMIT_MULTITHREADED
-#define x86EMIT_MULTITHREADED 0
-#endif
-#endif
-
-#ifndef __tls_emit
-#if x86EMIT_MULTITHREADED
-#define __tls_emit thread_local
-#else
-// Using TlsVariable is sub-optimal and could result in huge executables, so we
-// force-disable TLS entirely, and disallow running multithreaded recompilation
-// components within PCSX2 manually.
-#define __tls_emit
-#endif
-#endif
-
-extern __tls_emit u8* x86Ptr;
-extern __tls_emit XMMSSEType g_xmmtypes[iREGCNT_XMM];
+extern thread_local u8* x86Ptr;
+extern thread_local XMMSSEType g_xmmtypes[iREGCNT_XMM];
 
 namespace x86Emitter
 {
