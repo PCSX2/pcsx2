@@ -1546,7 +1546,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 	const bool dump = GSConfig.DumpReplaceableTextures && (!FMVstarted || GSConfig.DumpTexturesWithFMVActive) &&
 					  (clut ? GSConfig.DumpPaletteTextures : GSConfig.DumpDirectTextures);
 	const bool replace = GSConfig.LoadTextureReplacements;
-	const bool can_cache = CanCacheTextureSize(TEX0.TW, TEX0.TH);
+	bool can_cache = CanCacheTextureSize(TEX0.TW, TEX0.TH);
 	if (!dump && !replace && !can_cache)
 		return nullptr;
 
@@ -1609,6 +1609,10 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 			// we didn't have a texture immediately, but there is a replacement available (and being loaded).
 			// so clear paltex, since when it gets injected back, it's not going to be indexed
 			paltex = false;
+
+			// if the hash cache is disabled, this will be false, and we need to force it to be cached,
+			// so that when the replacement comes back, there's something for it to swap with.
+			can_cache = true;
 		}
 	}
 
