@@ -113,6 +113,8 @@ const { data: releaseAssetsPost } = await octokit.rest.repos.listReleaseAssets({
 let expectedAssets = {
   "windows-64bit-sse4": false,
   "windows-64bit-avx2": false,
+  "windows-qt-sse4": false,
+  "windows-qt-avx2": false,
   "linux-appimage-64bit": false,
   "macos": false,
 }
