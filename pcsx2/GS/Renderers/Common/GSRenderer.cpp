@@ -80,7 +80,7 @@ bool GSRenderer::Merge(int field)
 
 	GSVector2i display_baseline = {INT_MAX, INT_MAX};
 	GSVector2i frame_baseline = {INT_MAX, INT_MAX};
-	GSVector2i display_combined = { 0, 0 };
+	GSVector2i display_combined = {0, 0};
 	bool feedback_merge = m_regs->EXTWRITE.WRITE == 1;
 
 	for (int i = 0; i < 2; i++)
@@ -93,22 +93,19 @@ bool GSRenderer::Merge(int field)
 			dr[i] = GetDisplayRect(i);
 			display_offsets[i] = GetResolutionOffset(i);
 
-			if (isinterlaced() && m_regs->SMODE2.FFMD)
-				display_offsets[i].y >>= 1;
+			display_combined.x = std::max(((dr[i].right) - dr[i].left) + display_offsets[i].x, display_combined.x);
+			display_combined.y = std::max((dr[i].bottom - dr[i].top) + display_offsets[i].y, display_combined.y);
 
-			display_combined.x = std::max(GetFrameMagnifiedRect(i).right + abs(display_offsets[i].x), display_combined.x);
-			display_combined.y = std::max(GetFrameMagnifiedRect(i).bottom + abs(display_offsets[i].y), display_combined.y);
-			display_baseline.x = std::min(dr[i].left, display_baseline.x);
-			display_baseline.y = std::min(dr[i].top, display_baseline.y);
+			display_baseline.x = std::min(display_offsets[i].x, display_baseline.x);
+			display_baseline.y = std::min(display_offsets[i].y, display_baseline.y);
 			frame_baseline.x = std::min(fr[i].left, frame_baseline.x);
 			frame_baseline.y = std::min(fr[i].top, frame_baseline.y);
 
-			//DevCon.Warning("Read offset was X %d(left %d) Y %d(top %d)", display_baseline.x, dr[i].left, display_baseline.y, dr[i].top);
-			//printf("[%d]: %d %d %d %d, %d %d %d %d\n", i, fr[i].x,fr[i].y,fr[i].z,fr[i].w , dr[i].x,dr[i].y,dr[i].z,dr[i].w);
+			/*DevCon.Warning("Read offset was X %d(left %d) Y %d(top %d)", display_baseline.x, dr[i].left, display_baseline.y, dr[i].top);
+			DevCon.Warning("[%d]: %d %d %d %d, %d %d %d %d\n", i, fr[i].x,fr[i].y,fr[i].z,fr[i].w , dr[i].x,dr[i].y,dr[i].z,dr[i].w);
+			DevCon.Warning("Offset X %d Offset Y %d", display_offsets[i].x, display_offsets[i].y);*/
 		}
 	}
-
-	//display_combined.y = display_combined.y * (IsAnalogue() ? (isinterlaced() + 1) : 1);
 
 	if (!en[0] && !en[1])
 	{
@@ -126,47 +123,6 @@ bool GSRenderer::Merge(int field)
 		m_regs->DISP[0].DISPFB.FBP == m_regs->DISP[1].DISPFB.FBP &&
 		m_regs->DISP[0].DISPFB.FBW == m_regs->DISP[1].DISPFB.FBW &&
 		m_regs->DISP[0].DISPFB.PSM == m_regs->DISP[1].DISPFB.PSM;
-
-	if (samesrc /*&& m_regs->PMODE.SLBG == 0 && m_regs->PMODE.MMOD == 1 && m_regs->PMODE.ALP == 0x80*/)
-	{
-		// persona 4:
-		//
-		// fr[0] = 0 0 640 448
-		// fr[1] = 0 1 640 448
-		// dr[0] = 159 50 779 498
-		// dr[1] = 159 50 779 497
-		//
-		// second image shifted up by 1 pixel and blended over itself
-		//
-		// god of war:
-		//
-		// fr[0] = 0 1 512 448
-		// fr[1] = 0 0 512 448
-		// dr[0] = 127 50 639 497
-		// dr[1] = 127 50 639 498
-		//
-		// same just the first image shifted
-		//
-		// These kinds of cases are now fixed by the more generic frame_diff code below, as the code here was too specific and has become obsolete.
-		// NOTE: Persona 4 and God Of War are not rare exceptions, many games have the same(or very similar) offsets.
-
-		int topDiff = fr[0].top - fr[1].top;
-		if (dr[0].eq(dr[1]) && (fr[0].eq(fr[1] + GSVector4i(0, topDiff, 0, topDiff)) || fr[1].eq(fr[0] + GSVector4i(0, topDiff, 0, topDiff))))
-		{
-			// dq5:
-			//
-			// fr[0] = 0 1 512 445
-			// fr[1] = 0 0 512 444
-			// dr[0] = 127 50 639 494
-			// dr[1] = 127 50 639 494
-
-			int top = std::min(fr[0].top, fr[1].top);
-			int bottom = std::min(fr[0].bottom, fr[1].bottom);
-
-			fr[0].top = fr[1].top = top;
-			fr[0].bottom = fr[1].bottom = bottom;
-		}
-	}
 
 	GSVector2i fs(0, 0);
 	GSVector2i ds(0, 0);
@@ -200,6 +156,7 @@ bool GSRenderer::Merge(int field)
 
 	GSVector2i resolution(GetResolution());
 	bool scanmask_frame = true;
+	const bool ignore_offset = !GSConfig.PCRTCOffsets;
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -209,10 +166,9 @@ bool GSRenderer::Merge(int field)
 		GSVector4i r = GetFrameMagnifiedRect(i);
 		GSVector4 scale = GSVector4(tex[i]->GetScale()).xyxy();
 
-		const bool ignore_offset = !GSConfig.PCRTCOffsets;
 
 		GSVector2i off(ignore_offset ? 0 : display_offsets[i]);
-		GSVector2i display_diff(dr[i].left - display_baseline.x, dr[i].top - display_baseline.y);
+		GSVector2i display_diff(display_offsets[i].x - display_baseline.x, display_offsets[i].y - display_baseline.y);
 		GSVector2i frame_diff(fr[i].left - frame_baseline.x, fr[i].top - frame_baseline.y);
 
 		// If using scanmsk we have to keep the single line offset, regardless of upscale
@@ -226,66 +182,27 @@ bool GSRenderer::Merge(int field)
 			if (!ignore_offset)
 				off.y &= ~1;
 		}
-		// All the following code is literally just to try and fill the window as much as possible and reduce blur put in by gamedevs by offsetting the DISPLAY's.
-		if (!ignore_offset && display_combined.y < (resolution.y) && display_combined.x < (resolution.x))
+
+		// Start of Anti-Blur code.
+		if (!ignore_offset)
 		{
-			float difference[2];
-			difference[0] = resolution.x / (float)display_combined.x;
-			difference[1] = resolution.y / (float)display_combined.y;
-
-			if (difference[0] > 1.0f)
-			{
-				float difference_to_use = (difference[0] < difference[1]) ? difference[0] : difference[1];
-				int width_change = (r.right * difference_to_use) - r.right;
-
-				r.right += width_change;
-				off.x -= width_change >> 1;
-
-				int height_change = (r.bottom * difference_to_use) - r.bottom;
-				if (height_change > 4)
-				{
-					r.bottom += height_change;
-					off.y -= height_change >> 1;
-				}
-			}
-			// Anti blur hax
-			// Offset by DISPLAY setting
 			if (samesrc)
 			{
+				// Offset by DISPLAY setting
 				if (display_diff.x < 4)
 					off.x -= display_diff.x;
 				if (display_diff.y < 4)
 					off.y -= display_diff.y;
 
+				// Offset by DISPFB setting
 				if (frame_diff.x == 1)
 					off.x += 1;
 				if (frame_diff.y == 1)
 					off.y += 1;
 			}
 		}
-		else if(ignore_offset) // Stretch to fit the window.
+		else
 		{
-			float difference[2];
-
-			//If the picture is offset we want to make sure we don't make it bigger, so this is the only place we need to now about the offset!
-			difference[0] = resolution.x / (float)((display_combined.x - display_offsets[i].x) + display_diff.x);
-			difference[1] = resolution.y / (float)((display_combined.y - display_offsets[i].y) + display_diff.y);
-
-			if (difference[0] > 1.0f)
-			{
-				const float difference_to_use = difference[0];
-				const int width_change = (r.right * difference_to_use) - r.right;
-
-				r.right += width_change;
-			}
-
-			const float difference_to_use = difference[1];
-			const int height_change = (r.bottom * difference_to_use) - r.bottom;
-
-			if (difference[1] > 1.0f && (!m_scanmask_used || height_change > 4))
-			{
-				r.bottom += height_change;
-			}
 			if (!slbg || !feedback_merge)
 			{
 				const int videomode = static_cast<int>(GetVideoMode()) - 1;
@@ -294,6 +211,7 @@ bool GSRenderer::Merge(int field)
 				if (isinterlaced() && !m_regs->SMODE2.FFMD)
 					base_resolution.y *= 2;
 
+				// If the offsets between the two displays are quite large, it's probably intended for an effect.
 				if (display_diff.x >= 4)
 					off.x = display_diff.x;
 
@@ -304,13 +222,13 @@ bool GSRenderer::Merge(int field)
 				if (samesrc)
 				{
 					// Offset by DISPLAY setting
-					if (display_diff.x < 4)
+					if (display_diff.x < 0)
 					{
 						off.x = 0;
 						if (base_resolution.x > resolution.x)
 							resolution.x -= display_diff.x;
 					}
-					if (display_diff.y < 4)
+					if (display_diff.y < 0)
 					{
 						off.y = 0;
 						if (base_resolution.y > resolution.y)
@@ -323,40 +241,27 @@ bool GSRenderer::Merge(int field)
 
 					if (frame_diff.y == 1)
 						off.y += 1;
+
+					// Don't do X, we only care about height, this would need to be tailored for games using X (Black does -5).
+					// Mainly for Hokuto no Ken which does -14 Y offset.
+					if (display_baseline.y < -4)
+						off.y += display_baseline.y;
 				}
-
-				if (display_diff.x > 4)
-					off.x = display_diff.x;
-
-				if (display_diff.y > 4)
-					off.y = display_diff.y;
 			}
 		}
-		// Anti blur hax if the resolution matches
-		else if (samesrc)
-		{
-			// Offset by DISPLAY setting
-			if (display_diff.x < 4)
-				off.x -= display_diff.x;
-			if (display_diff.y < 4)
-				off.y -= display_diff.y;
+		// End of Anti-Blur code.
 
-			// Offset by DISPFB setting
-			if (frame_diff.x == 1)
-				off.x += 1;
-			if (frame_diff.y == 1)
-				off.y += 1;
-		}
-		// End of Resize/Anti-Blur code.
-		
-		// src_gs_read is the size which we're really reading from GS memory.
-		src_gs_read[i] = ((GSVector4(fr[i]) + GSVector4(0, y_offset[i], 0, y_offset[i])) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
-
-		// src_out_rect is the resized rect for output.
-		src_out_rect[i] = (GSVector4(r) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
+		if (isinterlaced() && m_regs->SMODE2.FFMD)
+			off.y >>= 1;
 
 		// dst is the final destination rect with offset on the screen.
 		dst[i] = scale * (GSVector4(off).xyxy() + GSVector4(r.rsize()));
+
+		// src_gs_read is the size which we're really reading from GS memory.
+		src_gs_read[i] = ((GSVector4(fr[i]) + GSVector4(0, y_offset[i], 0, y_offset[i])) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
+
+		// src_out_rect is the resized rect for output. (Not really used)
+		src_out_rect[i] = (GSVector4(r) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
 
 		// Restore the single line offset for scanmsk.
 		if (m_scanmask_used && interlace_offset)
@@ -376,6 +281,22 @@ bool GSRenderer::Merge(int field)
 		dst[2] = GSVector4(scale * GSVector4(feedback_rect.rsize()));
 	}
 
+	// Set the resolution to the height of the displays (kind of a saturate height)
+	if (ignore_offset && !feedback_merge)
+	{
+		GSVector2i max_resolution = GetResolution();
+		resolution.x = display_combined.x - display_baseline.x;
+		resolution.y = display_combined.y - display_baseline.y;
+		
+		if (isinterlaced() && m_regs->SMODE2.FFMD)
+		{
+			resolution.y >>= 1;
+		}
+
+		resolution.x = std::min(max_resolution.x, resolution.x);
+		resolution.y = std::min(max_resolution.y, resolution.y);
+	}
+
 	fs = resolution * GSVector2i(GetUpscaleMultiplier());
 	ds = fs;
 
@@ -386,7 +307,7 @@ bool GSRenderer::Merge(int field)
 	}
 
 	m_real_size = ds;
-	
+
 	if (tex[0] || tex[1])
 	{
 		if ((tex[0] == tex[1]) && (src_out_rect[0] == src_out_rect[1]).alltrue() && (dst[0] == dst[1]).alltrue() && !feedback_merge && !slbg)
@@ -446,7 +367,7 @@ GSVector2i GSRenderer::GetInternalResolution()
 
 static float GetCurrentAspectRatioFloat(bool is_progressive)
 {
-	static constexpr std::array<float, static_cast<size_t>(AspectRatioType::MaxCount) + 1> ars = { {4.0f / 3.0f, 4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f, 3.0f / 2.0f} };
+	static constexpr std::array<float, static_cast<size_t>(AspectRatioType::MaxCount) + 1> ars = {{4.0f / 3.0f, 4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f, 3.0f / 2.0f}};
 	return ars[static_cast<u32>(GSConfig.AspectRatio) + (3u * (is_progressive && GSConfig.AspectRatio == AspectRatioType::RAuto4_3_3_2))];
 }
 
@@ -500,7 +421,7 @@ static GSVector4 CalculateDrawRect(s32 window_width, s32 window_height, s32 text
 
 		if (scale > 1.0)
 		{
-			const float adjust = std::floor(scale)  / scale;
+			const float adjust = std::floor(scale) / scale;
 			target_width = target_width * adjust;
 			target_height = target_height * adjust;
 		}
@@ -515,16 +436,16 @@ static GSVector4 CalculateDrawRect(s32 window_width, s32 window_height, s32 text
 	{
 		switch (alignment)
 		{
-		case HostDisplay::Alignment::Center:
-			target_x = (f_width - target_width) * 0.5f;
-			break;
-		case HostDisplay::Alignment::RightOrBottom:
-			target_x = (f_width - target_width);
-			break;
-		case HostDisplay::Alignment::LeftOrTop:
-		default:
-			target_x = 0.0f;
-			break;
+			case HostDisplay::Alignment::Center:
+				target_x = (f_width - target_width) * 0.5f;
+				break;
+			case HostDisplay::Alignment::RightOrBottom:
+				target_x = (f_width - target_width);
+				break;
+			case HostDisplay::Alignment::LeftOrTop:
+			default:
+				target_x = 0.0f;
+				break;
 		}
 	}
 	if (target_height >= f_height)
@@ -535,16 +456,16 @@ static GSVector4 CalculateDrawRect(s32 window_width, s32 window_height, s32 text
 	{
 		switch (alignment)
 		{
-		case HostDisplay::Alignment::Center:
-			target_y = (f_height - target_height) * 0.5f;
-			break;
-		case HostDisplay::Alignment::RightOrBottom:
-			target_y = (f_height - target_height);
-			break;
-		case HostDisplay::Alignment::LeftOrTop:
-		default:
-			target_y = 0.0f;
-			break;
+			case HostDisplay::Alignment::Center:
+				target_y = (f_height - target_height) * 0.5f;
+				break;
+			case HostDisplay::Alignment::RightOrBottom:
+				target_y = (f_height - target_height);
+				break;
+			case HostDisplay::Alignment::LeftOrTop:
+			default:
+				target_y = 0.0f;
+				break;
 		}
 	}
 
