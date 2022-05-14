@@ -1,6 +1,8 @@
+#!/bin/bash
+
 # Artifact Naming Scheme:
 # PCSX2-<OS>-<GUI>-[ARCH]-[SIMD]-[pr\[PR_NUM\]]-[title|sha\[SHA|PR_TITLE\]
-# -- limited to 150 chars
+# -- limited to 200 chars
 # Outputs:
 # - artifact-name
 
@@ -25,7 +27,7 @@ else
 fi
 
 # Add PR / Commit Metadata
-if [ $EVENT_NAME == "pull_request" ]; then
+if [ "$EVENT_NAME" == "pull_request" ]; then
   PR_SHA=$(git rev-parse --short "${PR_SHA}")
   if [ ! -z "${PR_NUM}" ]; then
     NAME="${NAME}-pr[${PR_NUM}]"
@@ -33,7 +35,7 @@ if [ $EVENT_NAME == "pull_request" ]; then
   NAME="${NAME}-sha[${PR_SHA}]"
   if [ ! -z "${PR_TITLE}" ]; then
     PR_TITLE=$(echo "${PR_TITLE}" | tr -cd '[a-zA-Z0-9[:space:]]_-')
-    NAME="${NAME}-title["${PR_TITLE}""
+    NAME="${NAME}-title[${PR_TITLE}"
   fi
 else
   SHA=$(git rev-parse --short "$GITHUB_SHA")
@@ -42,5 +44,5 @@ fi
 
 # Trim the Name
 NAME=$(printf "%.199s]" "$NAME")
-echo ${NAME}
+echo "${NAME}"
 echo "##[set-output name=artifact-name;]${NAME}"

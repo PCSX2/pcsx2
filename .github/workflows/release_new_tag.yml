@@ -22,7 +22,7 @@ on:
   #       required: true
 
 jobs:
-  tag-master:
+  cut-release:
     if: github.repository == 'PCSX2/pcsx2'
     runs-on: ubuntu-latest
     name: "Create Tag and Release"
@@ -39,6 +39,15 @@ jobs:
           github_token: ${{ secrets.BOT_PAT }}
           tag_prefix: v
           default_bump: patch
+
+      # TODO - we could do this and remove the node.js script, but auto-generated notes only work
+      # with PRs -- not commits (determine how much we care).
+      # - name: Create Draft Release
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.BOT_PAT }}
+      #   run: |
+      #     echo "Creating release with tag - ${{ steps.tag_version.outputs.new_tag }}"
+      #     gh release create ${{ steps.tag_version.outputs.new_tag }} --draft --generate-notes -title ${{ steps.tag_version.outputs.new_tag }}
 
       - name: Generate Release Notes
         env:
