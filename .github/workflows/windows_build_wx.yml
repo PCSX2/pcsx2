@@ -1,0 +1,118 @@
+name: Windows Build Steps - wxWidgets
+
+on:
+  workflow_call:
+    inputs:
+      jobName:
+        required: true
+        type: string
+      os:
+        required: false
+        type: string
+        default: windows-2019
+      platform:
+        required: false
+        type: string
+        default: x64
+      simd:
+        required: false
+        type: string
+        default: AVX2
+      configuration:
+        required: true
+        type: string
+
+jobs:
+  build_windows_wx:
+    name: ${{ inputs.jobName }}
+    runs-on: ${{ inputs.os }}
+    # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
+    timeout-minutes: 60
+    env:
+      POWERSHELL_TELEMETRY_OPTOUT: 1
+      BUILDCACHE_COMPRESS_FORMAT: ZSTD
+      BUILDCACHE_COMPRESS_LEVEL: 9
+      BUILDCACHE_MAX_CACHE_SIZE: 536870912 # 512MB
+      BUILDCACHE_DIRECT_MODE: true
+      BUILDCACHE_LOG_FILE: ${{ github.workspace }}\buildcache.log
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Prepare Artifact Metadata
+        id: artifact-metadata
+        shell: bash
+        env:
+          OS: windows
+          GUI_FRAMEWORK: wxWidgets
+          ARCH: ${{ inputs.platform }}
+          SIMD: ${{ inputs.simd }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+        run: ./.github/workflows/scripts/common/name-artifacts.sh
+
+      - name: Setup Buildcache
+        if: inputs.configuration == 'CMake' # TODO: buildcache on VS
+        uses: mikehardy/buildcache-action@v1.2.2
+        with:
+          cache_key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.configuration }}
+
+      - name: Setup msbuild
+        if: inputs.configuration != 'CMake'
+        uses: microsoft/setup-msbuild@v1
+
+      - name: Generate CMake
+        if: inputs.configuration == 'CMake'
+        id: cmake
+        shell: cmd
+        run: |
+          if "${{ github.event.inputs.retainDebugArtifacts }}"=="true" (SET type=RelWithDebInfo) else (SET type=Release)
+          if "${{ inputs.platform }}"=="Win32" (SET vcvars=vcvarsamd64_x86.bat) else (SET vcvars=vcvars64.bat)
+          call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\%vcvars%"
+          echo ::set-output name=buildtype::%type%
+          echo ::set-output name=vcvars::%vcvars%
+          cmake . -B build -DCMAKE_BUILD_TYPE=%type% -DLTO_PCSX2_CORE=ON -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=..\buildcache\bin\buildcache.exe -DCMAKE_CXX_COMPILER_LAUNCHER=..\buildcache\bin\buildcache.exe -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+
+      - name: Build PCSX2
+        shell: cmd
+        run: |
+          if "${{ inputs.configuration }}"=="CMake" (
+            call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\${{ steps.cmake.outputs.vcvars }}"
+            cmake --build build --config ${{ steps.cmake.outputs.buildtype }}
+            cp build/pcsx2/pcsx2* bin/
+          ) else (
+            msbuild "PCSX2_suite.sln" /m /v:m /p:Configuration="${{ inputs.configuration }}" /p:Platform="${{ inputs.platform }}"
+          )
+
+      - name: Run Tests
+        if: inputs.configuration == 'CMake'
+        shell: cmd
+        run: |
+          call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\${{ steps.cmake.outputs.vcvars }}"
+          cmake --build build --config ${{ steps.cmake.outputs.buildtype }} --target unittests
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.artifact-metadata.outputs.artifact-name }}
+          path: |
+            ./bin
+            !./bin/**/*.bsc
+            !./bin/**/*.exp
+            !./bin/**/*.ilk
+            !./bin/**/*.iobj
+            !./bin/**/*.ipdb
+            !./bin/**/*.pdb
+            !./bin/**/*.lib
+
+      - name: Upload artifact - with symbols
+        if: inputs.configuration != 'CMake'
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.artifact-metadata.outputs.artifact-name }}-symbols
+          path: ./bin/**/*.pdb
