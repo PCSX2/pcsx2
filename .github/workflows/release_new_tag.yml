@@ -22,26 +22,28 @@ on:
   #       required: true
 
 jobs:
-  cut-release:
+  tag-master:
     if: github.repository == 'PCSX2/pcsx2'
     runs-on: ubuntu-latest
+    name: "Create Tag and Release"
     steps:
       - uses: actions/checkout@v3
 
       # Docs - https://github.com/mathieudutour/github-tag-action
-      # Workflows cannot trigger other workflows implicitly
-      # - https://github.community/t/github-actions-workflow-not-triggering-with-tag-push/17053/7
       - name: Bump Version and Push Tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.0
         with:
+          # Workflows cannot trigger other workflows implicitly
+          # - https://github.community/t/github-actions-workflow-not-triggering-with-tag-push/17053/7
           github_token: ${{ secrets.BOT_PAT }}
           tag_prefix: v
           default_bump: patch
 
-      # Generate the Release Notes
       - name: Generate Release Notes
         env:
+          OWNER: PCSX2
+          REPO: pcsx2
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMIT_SHA: ${{ github.SHA }}
         run: |
@@ -49,9 +51,7 @@ jobs:
           npm ci
           node index.js
           mv ./release-notes.md ${GITHUB_WORKSPACE}/release-notes.md
-          ls
 
-      # Docs - https://github.com/softprops/action-gh-release
       - name: Create a GitHub Release
         uses: softprops/action-gh-release@v1
         if: steps.tag_version.outputs.new_tag
