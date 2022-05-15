@@ -419,6 +419,8 @@ void EmuThread::loadOurSettings()
 
 void EmuThread::checkForSettingChanges()
 {
+	QMetaObject::invokeMethod(g_main_window, &MainWindow::checkForSettingChanges, Qt::QueuedConnection);
+
 	if (VMManager::HasValidVM())
 	{
 		const bool render_to_main = Host::GetBaseBoolSettingValue("UI", "RenderToMainWindow", true);
@@ -585,29 +587,11 @@ void EmuThread::connectDisplaySignals(DisplayWidget* widget)
 	connect(widget, &DisplayWidget::windowFocusEvent, this, &EmuThread::onDisplayWindowFocused);
 	connect(widget, &DisplayWidget::windowResizedEvent, this, &EmuThread::onDisplayWindowResized);
 	// connect(widget, &DisplayWidget::windowRestoredEvent, this, &EmuThread::redrawDisplayWindow);
-	connect(widget, &DisplayWidget::windowKeyEvent, this, &EmuThread::onDisplayWindowKeyEvent);
-	connect(widget, &DisplayWidget::windowMouseMoveEvent, this, &EmuThread::onDisplayWindowMouseMoveEvent);
-	connect(widget, &DisplayWidget::windowMouseButtonEvent, this, &EmuThread::onDisplayWindowMouseButtonEvent);
-	connect(widget, &DisplayWidget::windowMouseWheelEvent, this, &EmuThread::onDisplayWindowMouseWheelEvent);
-}
-
-void EmuThread::onDisplayWindowMouseMoveEvent(int x, int y) {}
-
-void EmuThread::onDisplayWindowMouseButtonEvent(int button, bool pressed)
-{
-	InputManager::InvokeEvents(InputManager::MakeHostMouseButtonKey(button), pressed ? 1.0f : 0.0f);
-}
-
-void EmuThread::onDisplayWindowMouseWheelEvent(const QPoint& delta_angle) {}
-
-void EmuThread::onDisplayWindowKeyEvent(int key, bool pressed)
-{
-	InputManager::InvokeEvents(InputManager::MakeHostKeyboardKey(key), pressed ? 1.0f : 0.0f);
 }
 
 void EmuThread::onDisplayWindowResized(int width, int height, float scale)
 {
-	if (!VMManager::HasValidVM())
+	if (!s_host_display)
 		return;
 
 	GetMTGS().ResizeDisplayWindow(width, height, scale);

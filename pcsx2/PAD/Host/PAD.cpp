@@ -237,8 +237,13 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 	si.SetBoolValue("InputSources", "SDL", true);
 	si.SetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
 	si.SetBoolValue("InputSources", "XInput", false);
+	si.SetBoolValue("InputSources", "RawInput", false);
 	si.SetBoolValue("Pad", "MultitapPort1", false);
 	si.SetBoolValue("Pad", "MultitapPort2", false);
+	si.SetFloatValue("Pad", "PointerXScale", 8.0f);
+	si.SetFloatValue("Pad", "PointerYScale", 8.0f);
+	si.SetBoolValue("Pad", "PointerXInvert", false);
+	si.SetBoolValue("Pad", "PointerYInvert", false);
 
 	// PCSX2 Controller Settings - Controller 1 / Controller 2 / ...
 	// Use the automapper to set this up.

@@ -19,15 +19,18 @@
 #include <cmath>
 #include <deque>
 #include <mutex>
+#include <unordered_map>
 
 #include "fmt/core.h"
 
 #include "common/StringUtil.h"
+#include "common/Timer.h"
 #include "imgui.h"
 
 #include "Config.h"
 #include "Counters.h"
 #include "Frontend/ImGuiManager.h"
+#include "Frontend/InputManager.h"
 #include "GS.h"
 #include "GS/GS.h"
 #include "Host.h"
@@ -39,10 +42,21 @@
 #include "VMManager.h"
 #endif
 
-static void SetImGuiStyle();
-static bool LoadFontData();
-static void UnloadFontData();
-static bool AddImGuiFonts();
+namespace ImGuiManager
+{
+	static void SetStyle();
+	static void SetKeyMap();
+	static bool LoadFontData();
+	static void UnloadFontData();
+	static bool AddImGuiFonts();
+	static ImFont* AddTextFont(float size);
+	static ImFont* AddFixedFont(float size);
+	static bool AddIconFonts(float size);
+	static void AcquirePendingOSDMessages();
+	static void DrawOSDMessages();
+	static void FormatProcessorStat(std::string& text, double usage, double time);
+	static void DrawPerformanceOverlay();
+} // namespace ImGuiManager
 
 static float s_global_scale = 1.0f;
 
@@ -53,6 +67,17 @@ static std::vector<u8> s_standard_font_data;
 static std::vector<u8> s_fixed_font_data;
 static std::vector<u8> s_icon_font_data;
 
+static Common::Timer s_last_render_time;
+
+#ifdef PCSX2_CORE
+// cached copies of WantCaptureKeyboard/Mouse, used to know when to dispatch events
+static std::atomic_bool s_imgui_wants_keyboard{false};
+static std::atomic_bool s_imgui_wants_mouse{false};
+
+// mapping of host key -> imgui key
+static std::unordered_map<u32, ImGuiKey> s_imgui_key_map;
+#endif
+
 bool ImGuiManager::Initialize()
 {
 	if (!LoadFontData())
@@ -62,23 +87,30 @@ bool ImGuiManager::Initialize()
 	}
 
 	HostDisplay* display = Host::GetHostDisplay();
-
-	ImGui::CreateContext();
-	ImGui::GetIO().IniFilename = nullptr;
-
 	s_global_scale = std::max(1.0f, display->GetWindowScale() * static_cast<float>(EmuConfig.GS.OsdScale / 100.0));
 
-	ImGui::GetIO().DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
-	ImGui::GetIO().DisplaySize.x = static_cast<float>(display->GetWindowWidth());
-	ImGui::GetIO().DisplaySize.y = static_cast<float>(display->GetWindowHeight());
-	ImGui::GetStyle() = ImGuiStyle();
-	ImGui::GetStyle().WindowMinSize = ImVec2(1.0f, 1.0f);
-	SetImGuiStyle();
-	ImGui::GetStyle().ScaleAllSizes(s_global_scale);
+	ImGui::CreateContext();
+
+	ImGuiIO& io = ImGui::GetIO();
+	io.IniFilename = nullptr;
+#ifdef PCSX2_CORE
+	io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+	io.BackendUsingLegacyKeyArrays = 0;
+	io.BackendUsingLegacyNavInputArray = 0;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+#endif
+
+	io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
+	io.DisplaySize.x = static_cast<float>(display->GetWindowWidth());
+	io.DisplaySize.y = static_cast<float>(display->GetWindowHeight());
+
+	SetKeyMap();
+	SetStyle();
 
 	if (!display->CreateImGuiContext())
 	{
 		pxFailRel("Failed to create ImGui device context");
+		display->DestroyImGuiContext();
 		ImGui::DestroyContext();
 		UnloadFontData();
 		return false;
@@ -93,6 +125,9 @@ bool ImGuiManager::Initialize()
 		return false;
 	}
 
+	// don't need the font data anymore, save some memory
+	ImGui::GetIO().Fonts->ClearTexData();
+
 	NewFrame();
 	return true;
 }
@@ -104,6 +139,10 @@ void ImGuiManager::Shutdown()
 		display->DestroyImGuiContext();
 	if (ImGui::GetCurrentContext())
 		ImGui::DestroyContext();
+
+	s_standard_font = nullptr;
+	s_fixed_font = nullptr;
+
 	UnloadFontData();
 }
 
@@ -139,7 +178,7 @@ void ImGuiManager::UpdateScale()
 
 	ImGui::GetStyle() = ImGuiStyle();
 	ImGui::GetStyle().WindowMinSize = ImVec2(1.0f, 1.0f);
-	SetImGuiStyle();
+	SetStyle();
 	ImGui::GetStyle().ScaleAllSizes(scale);
 
 	if (!AddImGuiFonts())
@@ -153,14 +192,24 @@ void ImGuiManager::UpdateScale()
 
 void ImGuiManager::NewFrame()
 {
+	ImGuiIO& io = ImGui::GetIO();
+	io.DeltaTime = s_last_render_time.GetTimeSecondsAndReset();
+
 	ImGui::NewFrame();
+
+#ifdef PCSX2_CORE
+	s_imgui_wants_keyboard.store(io.WantCaptureKeyboard, std::memory_order_relaxed);
+	s_imgui_wants_mouse.store(io.WantCaptureMouse, std::memory_order_release);
+#endif
 }
 
-void SetImGuiStyle()
+void ImGuiManager::SetStyle()
 {
-	ImGuiStyle* style = &ImGui::GetStyle();
-	ImVec4* colors = style->Colors;
+	ImGuiStyle& style = ImGui::GetStyle();
+	style = ImGuiStyle();
+	style.WindowMinSize = ImVec2(1.0f, 1.0f);
 
+	ImVec4* colors = style.Colors;
 	colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
 	colors[ImGuiCol_TextDisabled] = ImVec4(0.36f, 0.42f, 0.47f, 1.00f);
 	colors[ImGuiCol_WindowBg] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
@@ -209,9 +258,58 @@ void SetImGuiStyle()
 	colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
 	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+
+	style.ScaleAllSizes(s_global_scale);
 }
 
-bool LoadFontData()
+void ImGuiManager::SetKeyMap()
+{
+#ifdef PCSX2_CORE
+	struct KeyMapping
+	{
+		int index;
+		const char* name;
+		const char* alt_name;
+	};
+
+	static constexpr KeyMapping mapping[] = {{ImGuiKey_LeftArrow, "Left"}, {ImGuiKey_RightArrow, "Right"}, {ImGuiKey_UpArrow, "Up"},
+		{ImGuiKey_DownArrow, "Down"}, {ImGuiKey_PageUp, "PageUp"}, {ImGuiKey_PageDown, "PageDown"}, {ImGuiKey_Home, "Home"},
+		{ImGuiKey_End, "End"}, {ImGuiKey_Insert, "Insert"}, {ImGuiKey_Delete, "Delete"}, {ImGuiKey_Backspace, "Backspace"},
+		{ImGuiKey_Space, "Space"}, {ImGuiKey_Enter, "Return"}, {ImGuiKey_Escape, "Escape"}, {ImGuiKey_LeftCtrl, "LeftCtrl", "Ctrl"},
+		{ImGuiKey_LeftShift, "LeftShift", "Shift"}, {ImGuiKey_LeftAlt, "LeftAlt", "Alt"}, {ImGuiKey_LeftSuper, "LeftSuper", "Super"},
+		{ImGuiKey_RightCtrl, "RightCtrl"}, {ImGuiKey_RightShift, "RightShift"}, {ImGuiKey_RightAlt, "RightAlt"},
+		{ImGuiKey_RightSuper, "RightSuper"}, {ImGuiKey_Menu, "Menu"}, {ImGuiKey_0, "0"}, {ImGuiKey_1, "1"}, {ImGuiKey_2, "2"},
+		{ImGuiKey_3, "3"}, {ImGuiKey_4, "4"}, {ImGuiKey_5, "5"}, {ImGuiKey_6, "6"}, {ImGuiKey_7, "7"}, {ImGuiKey_8, "8"}, {ImGuiKey_9, "9"},
+		{ImGuiKey_A, "A"}, {ImGuiKey_B, "B"}, {ImGuiKey_C, "C"}, {ImGuiKey_D, "D"}, {ImGuiKey_E, "E"}, {ImGuiKey_F, "F"}, {ImGuiKey_G, "G"},
+		{ImGuiKey_H, "H"}, {ImGuiKey_I, "I"}, {ImGuiKey_J, "J"}, {ImGuiKey_K, "K"}, {ImGuiKey_L, "L"}, {ImGuiKey_M, "M"}, {ImGuiKey_N, "N"},
+		{ImGuiKey_O, "O"}, {ImGuiKey_P, "P"}, {ImGuiKey_Q, "Q"}, {ImGuiKey_R, "R"}, {ImGuiKey_S, "S"}, {ImGuiKey_T, "T"}, {ImGuiKey_U, "U"},
+		{ImGuiKey_V, "V"}, {ImGuiKey_W, "W"}, {ImGuiKey_X, "X"}, {ImGuiKey_Y, "Y"}, {ImGuiKey_Z, "Z"}, {ImGuiKey_F1, "F1"},
+		{ImGuiKey_F2, "F2"}, {ImGuiKey_F3, "F3"}, {ImGuiKey_F4, "F4"}, {ImGuiKey_F5, "F5"}, {ImGuiKey_F6, "F6"}, {ImGuiKey_F7, "F7"},
+		{ImGuiKey_F8, "F8"}, {ImGuiKey_F9, "F9"}, {ImGuiKey_F10, "F10"}, {ImGuiKey_F11, "F11"}, {ImGuiKey_F12, "F12"},
+		{ImGuiKey_Apostrophe, "Apostrophe"}, {ImGuiKey_Comma, "Comma"}, {ImGuiKey_Minus, "Minus"}, {ImGuiKey_Period, "Period"},
+		{ImGuiKey_Slash, "Slash"}, {ImGuiKey_Semicolon, "Semicolon"}, {ImGuiKey_Equal, "Equal"}, {ImGuiKey_LeftBracket, "BracketLeft"},
+		{ImGuiKey_Backslash, "Backslash"}, {ImGuiKey_RightBracket, "BracketRight"}, {ImGuiKey_GraveAccent, "QuoteLeft"},
+		{ImGuiKey_CapsLock, "CapsLock"}, {ImGuiKey_ScrollLock, "ScrollLock"}, {ImGuiKey_NumLock, "NumLock"},
+		{ImGuiKey_PrintScreen, "PrintScreen"}, {ImGuiKey_Pause, "Pause"}, {ImGuiKey_Keypad0, "Keypad0"}, {ImGuiKey_Keypad1, "Keypad1"},
+		{ImGuiKey_Keypad2, "Keypad2"}, {ImGuiKey_Keypad3, "Keypad3"}, {ImGuiKey_Keypad4, "Keypad4"}, {ImGuiKey_Keypad5, "Keypad5"},
+		{ImGuiKey_Keypad6, "Keypad6"}, {ImGuiKey_Keypad7, "Keypad7"}, {ImGuiKey_Keypad8, "Keypad8"}, {ImGuiKey_Keypad9, "Keypad9"},
+		{ImGuiKey_KeypadDecimal, "KeypadPeriod"}, {ImGuiKey_KeypadDivide, "KeypadDivide"}, {ImGuiKey_KeypadMultiply, "KeypadMultiply"},
+		{ImGuiKey_KeypadSubtract, "KeypadMinus"}, {ImGuiKey_KeypadAdd, "KeypadPlus"}, {ImGuiKey_KeypadEnter, "KeypadReturn"},
+		{ImGuiKey_KeypadEqual, "KeypadEqual"}};
+
+	s_imgui_key_map.clear();
+	for (const KeyMapping& km : mapping)
+	{
+		std::optional<u32> map(InputManager::ConvertHostKeyboardStringToCode(km.name));
+		if (!map.has_value() && km.alt_name)
+			map = InputManager::ConvertHostKeyboardStringToCode(km.alt_name);
+		if (map.has_value())
+			s_imgui_key_map[map.value()] = km.index;
+	}
+#endif
+}
+
+bool ImGuiManager::LoadFontData()
 {
 	if (s_standard_font_data.empty())
 	{
@@ -243,14 +341,14 @@ bool LoadFontData()
 	return true;
 }
 
-void UnloadFontData()
+void ImGuiManager::UnloadFontData()
 {
 	std::vector<u8>().swap(s_standard_font_data);
 	std::vector<u8>().swap(s_fixed_font_data);
 	std::vector<u8>().swap(s_icon_font_data);
 }
 
-static ImFont* AddTextFont(float size /*= 15.0f*/)
+ImFont* ImGuiManager::AddTextFont(float size)
 {
 	static const ImWchar default_ranges[] = {
 		// Basic Latin + Latin Supplement + Central European diacritics
@@ -278,15 +376,15 @@ static ImFont* AddTextFont(float size /*= 15.0f*/)
 		s_standard_font_data.data(), static_cast<int>(s_standard_font_data.size()), size, &cfg, default_ranges);
 }
 
-static ImFont* AddFixedFont(float size)
+ImFont* ImGuiManager::AddFixedFont(float size)
 {
 	ImFontConfig cfg;
 	cfg.FontDataOwnedByAtlas = false;
-	return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_fixed_font_data.data(),
-		static_cast<int>(s_fixed_font_data.size()), size, &cfg, nullptr);
+	return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
+		s_fixed_font_data.data(), static_cast<int>(s_fixed_font_data.size()), size, &cfg, nullptr);
 }
 
-static bool AddIconFonts(float size)
+bool ImGuiManager::AddIconFonts(float size)
 {
 	static const ImWchar range_fa[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
 
@@ -297,11 +395,11 @@ static bool AddIconFonts(float size)
 	cfg.GlyphMaxAdvanceX = size * 0.75f;
 	cfg.FontDataOwnedByAtlas = false;
 
-	return (ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_icon_font_data.data(), static_cast<int>(s_icon_font_data.size()),
-				size * 0.75f, &cfg, range_fa) != nullptr);
+	return (ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
+				s_icon_font_data.data(), static_cast<int>(s_icon_font_data.size()), size * 0.75f, &cfg, range_fa) != nullptr);
 }
 
-bool AddImGuiFonts()
+bool ImGuiManager::AddImGuiFonts()
 {
 	const float standard_font_size = std::ceil(15.0f * s_global_scale);
 
@@ -387,7 +485,7 @@ void Host::ClearOSDMessages()
 	s_osd_active_messages.clear();
 }
 
-static void AcquirePendingOSDMessages()
+void ImGuiManager::AcquirePendingOSDMessages()
 {
 	std::atomic_thread_fence(std::memory_order_consume);
 	if (s_osd_posted_messages.empty())
@@ -403,10 +501,9 @@ static void AcquirePendingOSDMessages()
 		{
 			OSDMessage& new_msg = s_osd_posted_messages.front();
 			std::deque<OSDMessage>::iterator iter;
-			if (!new_msg.key.empty() && (iter = std::find_if(s_osd_active_messages.begin(), s_osd_active_messages.end(),
-											 [&new_msg](const OSDMessage& other) {
-												 return new_msg.key == other.key;
-											 })) != s_osd_active_messages.end())
+			if (!new_msg.key.empty() &&
+				(iter = std::find_if(s_osd_active_messages.begin(), s_osd_active_messages.end(),
+					 [&new_msg](const OSDMessage& other) { return new_msg.key == other.key; })) != s_osd_active_messages.end())
 			{
 				iter->text = std::move(new_msg.text);
 				iter->duration = new_msg.duration;
@@ -426,7 +523,7 @@ static void AcquirePendingOSDMessages()
 	}
 }
 
-static void DrawOSDMessages()
+void ImGuiManager::DrawOSDMessages()
 {
 	ImFont* const font = ImGui::GetFont();
 	const float scale = s_global_scale;
@@ -469,13 +566,13 @@ static void DrawOSDMessages()
 		ImDrawList* dl = ImGui::GetBackgroundDrawList();
 		dl->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x21, 0x21, 0x21, alpha), rounding);
 		dl->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x48, 0x48, 0x48, alpha), rounding);
-		dl->AddText(font, font->FontSize, ImVec2(text_rect.x, text_rect.y), IM_COL32(0xff, 0xff, 0xff, alpha),
-			msg.text.c_str(), msg.text.c_str() + msg.text.length(), max_width, &text_rect);
+		dl->AddText(font, font->FontSize, ImVec2(text_rect.x, text_rect.y), IM_COL32(0xff, 0xff, 0xff, alpha), msg.text.c_str(),
+			msg.text.c_str() + msg.text.length(), max_width, &text_rect);
 		position_y += size.y + spacing;
 	}
 }
 
-static void FormatProcessorStat(std::string& text, double usage, double time)
+void ImGuiManager::FormatProcessorStat(std::string& text, double usage, double time)
 {
 	// Some values, such as GPU (and even CPU to some extent) can be out of phase with the wall clock,
 	// which the processor time is divided by to get a utilization percentage. Let's clamp it at 100%,
@@ -486,7 +583,7 @@ static void FormatProcessorStat(std::string& text, double usage, double time)
 		fmt::format_to(std::back_inserter(text), "{:.1f}% ({:.2f}ms)", usage, time);
 }
 
-static void DrawPerformanceOverlay()
+void ImGuiManager::DrawPerformanceOverlay()
 {
 	const float scale = s_global_scale;
 	const float shadow_offset = std::ceil(1.0f * scale);
@@ -504,14 +601,11 @@ static void DrawPerformanceOverlay()
 #define DRAW_LINE(font, text, color) \
 	do \
 	{ \
-		text_size = \
-			font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, (text), nullptr, nullptr); \
-		dl->AddText( \
-			font, font->FontSize, \
+		text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, (text), nullptr, nullptr); \
+		dl->AddText(font, font->FontSize, \
 			ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x + shadow_offset, position_y + shadow_offset), \
 			IM_COL32(0, 0, 0, 100), (text)); \
-		dl->AddText(font, font->FontSize, ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x, position_y), color, \
-			(text)); \
+		dl->AddText(font, font->FontSize, ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x, position_y), color, (text)); \
 		position_y += text_size.y + spacing; \
 	} while (0)
 
@@ -528,18 +622,20 @@ static void DrawPerformanceOverlay()
 		{
 			switch (PerformanceMetrics::GetInternalFPSMethod())
 			{
-			case PerformanceMetrics::InternalFPSMethod::GSPrivilegedRegister:
-				fmt::format_to(std::back_inserter(text), "G: {:.2f} [P] | V: {:.2f}", PerformanceMetrics::GetInternalFPS(), PerformanceMetrics::GetFPS());
-				break;
+				case PerformanceMetrics::InternalFPSMethod::GSPrivilegedRegister:
+					fmt::format_to(std::back_inserter(text), "G: {:.2f} [P] | V: {:.2f}", PerformanceMetrics::GetInternalFPS(),
+						PerformanceMetrics::GetFPS());
+					break;
 
-			case PerformanceMetrics::InternalFPSMethod::DISPFBBlit:
-				fmt::format_to(std::back_inserter(text), "G: {:.2f} [B] | V: {:.2f}", PerformanceMetrics::GetInternalFPS(), PerformanceMetrics::GetFPS());
-				break;
+				case PerformanceMetrics::InternalFPSMethod::DISPFBBlit:
+					fmt::format_to(std::back_inserter(text), "G: {:.2f} [B] | V: {:.2f}", PerformanceMetrics::GetInternalFPS(),
+						PerformanceMetrics::GetFPS());
+					break;
 
-			case PerformanceMetrics::InternalFPSMethod::None:
-			default:
-				fmt::format_to(std::back_inserter(text), "V: {:.2f}", PerformanceMetrics::GetFPS());
-				break;
+				case PerformanceMetrics::InternalFPSMethod::None:
+				default:
+					fmt::format_to(std::back_inserter(text), "V: {:.2f}", PerformanceMetrics::GetFPS());
+					break;
 			}
 			first = false;
 		}
@@ -651,6 +747,9 @@ static void DrawPerformanceOverlay()
 
 void ImGuiManager::RenderOSD()
 {
+	// acquire for IO.MousePos.
+	std::atomic_thread_fence(std::memory_order_acquire);
+
 	DrawPerformanceOverlay();
 
 	AcquirePendingOSDMessages();
@@ -671,3 +770,96 @@ ImFont* ImGuiManager::GetFixedFont()
 {
 	return s_fixed_font;
 }
+
+#ifdef PCSX2_CORE
+
+void ImGuiManager::UpdateMousePosition(float x, float y)
+{
+	if (!ImGui::GetCurrentContext())
+		return;
+
+	ImGui::GetIO().MousePos = ImVec2(x, y);
+	std::atomic_thread_fence(std::memory_order_release);
+}
+
+bool ImGuiManager::ProcessPointerButtonEvent(InputBindingKey key, float value)
+{
+	if (!ImGui::GetCurrentContext() || key.data >= std::size(ImGui::GetIO().MouseDown))
+		return false;
+
+	// still update state anyway
+	GetMTGS().RunOnGSThread([button = key.data, down = (value != 0.0f)]() { ImGui::GetIO().AddMouseButtonEvent(button, down); });
+
+	return s_imgui_wants_mouse.load(std::memory_order_acquire);
+}
+
+bool ImGuiManager::ProcessPointerAxisEvent(InputBindingKey key, float value)
+{
+	if (!ImGui::GetCurrentContext() || value == 0.0f || key.data < static_cast<u32>(InputPointerAxis::WheelX))
+		return false;
+
+	// still update state anyway
+	const bool horizontal = (key.data == static_cast<u32>(InputPointerAxis::WheelX));
+	GetMTGS().RunOnGSThread([wheel_x = horizontal ? value : 0.0f, wheel_y = horizontal ? 0.0f : value]() {
+		ImGui::GetIO().AddMouseWheelEvent(wheel_x, wheel_y);
+	});
+
+	return s_imgui_wants_mouse.load(std::memory_order_acquire);
+}
+
+bool ImGuiManager::ProcessHostKeyEvent(InputBindingKey key, float value)
+{
+	decltype(s_imgui_key_map)::iterator iter;
+	if (!ImGui::GetCurrentContext() || (iter = s_imgui_key_map.find(key.data)) == s_imgui_key_map.end())
+		return false;
+
+	// still update state anyway
+	GetMTGS().RunOnGSThread([imkey = iter->second, down = (value != 0.0f)]() { ImGui::GetIO().AddKeyEvent(imkey, down); });
+
+	return s_imgui_wants_keyboard.load(std::memory_order_acquire);
+}
+
+bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value)
+{
+	static constexpr ImGuiKey key_map[] = {
+		ImGuiKey_None, // Unknown,
+		ImGuiKey_GamepadDpadUp, // DPadUp
+		ImGuiKey_GamepadDpadRight, // DPadRight
+		ImGuiKey_GamepadDpadLeft, // DPadLeft
+		ImGuiKey_GamepadDpadDown, // DPadDown
+		ImGuiKey_None, // LeftStickUp
+		ImGuiKey_None, // LeftStickRight
+		ImGuiKey_None, // LeftStickDown
+		ImGuiKey_None, // LeftStickLeft
+		ImGuiKey_GamepadL3, // L3
+		ImGuiKey_None, // RightStickUp
+		ImGuiKey_None, // RightStickRight
+		ImGuiKey_None, // RightStickDown
+		ImGuiKey_None, // RightStickLeft
+		ImGuiKey_GamepadR3, // R3
+		ImGuiKey_GamepadFaceUp, // Triangle
+		ImGuiKey_GamepadFaceRight, // Circle
+		ImGuiKey_GamepadFaceDown, // Cross
+		ImGuiKey_GamepadFaceLeft, // Square
+		ImGuiKey_GamepadBack, // Select
+		ImGuiKey_GamepadStart, // Start
+		ImGuiKey_None, // System
+		ImGuiKey_GamepadL1, // L1
+		ImGuiKey_GamepadL2, // L2
+		ImGuiKey_GamepadR1, // R1
+		ImGuiKey_GamepadL2, // R2
+	};
+
+	if (!ImGui::GetCurrentContext() || !s_imgui_wants_keyboard.load(std::memory_order_acquire))
+		return false;
+
+	if (static_cast<u32>(key) >= std::size(key_map) || key_map[static_cast<u32>(key)] == ImGuiKey_None)
+		return false;
+
+	GetMTGS().RunOnGSThread(
+		[key = key_map[static_cast<u32>(key)], value]() { ImGui::GetIO().AddKeyAnalogEvent(key, (value > 0.0f), value); });
+
+	return true;
+}
+
+#endif // PCSX2_CORE

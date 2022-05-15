@@ -498,7 +498,10 @@ bool SDLInputSource::HandleControllerButtonEvent(const SDL_ControllerButtonEvent
 		return false;
 
 	const InputBindingKey key(MakeGenericControllerButtonKey(InputSourceType::SDL, it->player_id, ev->button));
-	return InputManager::InvokeEvents(key, (ev->state == SDL_PRESSED) ? 1.0f : 0.0f);
+	const GenericInputBinding generic_key = (ev->button < std::size(s_sdl_generic_binding_button_mapping)) ?
+												s_sdl_generic_binding_button_mapping[ev->button] :
+                                                GenericInputBinding::Unknown;
+	return InputManager::InvokeEvents(key, (ev->state == SDL_PRESSED) ? 1.0f : 0.0f, generic_key);
 }
 
 std::vector<InputBindingKey> SDLInputSource::EnumerateMotors()

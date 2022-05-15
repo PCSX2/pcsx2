@@ -30,30 +30,37 @@ public:
 
 	QPaintEngine* paintEngine() const override;
 
+	__fi void setShouldHideCursor(bool hide) { m_should_hide_cursor = hide; }
+
 	int scaledWindowWidth() const;
 	int scaledWindowHeight() const;
 	qreal devicePixelRatioFromScreen() const;
 
 	std::optional<WindowInfo> getWindowInfo();
 
-	void setRelativeMode(bool enabled);
+	void updateRelativeMode(bool master_enable);
+	void updateCursor(bool master_enable);
 
 Q_SIGNALS:
 	void windowFocusEvent();
 	void windowResizedEvent(int width, int height, float scale);
 	void windowRestoredEvent();
-	void windowKeyEvent(int key_code, bool pressed);
-	void windowMouseMoveEvent(int x, int y);
-	void windowMouseButtonEvent(int button, bool pressed);
-	void windowMouseWheelEvent(const QPoint& angle_delta);
 
 protected:
 	bool event(QEvent* event) override;
 
 private:
-	QPoint m_relative_mouse_start_position{};
-	QPoint m_relative_mouse_last_position{};
+	void updateCenterPos();
+
+	QPoint m_relative_mouse_start_pos{};
+	QPoint m_relative_mouse_center_pos{};
 	bool m_relative_mouse_enabled = false;
+#ifdef _WIN32
+	bool m_clip_mouse_enabled = false;
+#endif
+	bool m_should_hide_cursor = false;
+	bool m_cursor_hidden = false;
+
 	std::vector<int> m_keys_pressed_with_modifiers;
 
 	u32 m_last_window_width = 0;
