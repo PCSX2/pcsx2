@@ -333,8 +333,18 @@ void GSTextureReplacements::ReloadReplacementMap()
 		s_replacement_textures_without_clut_hash.insert(name.value());
 	}
 
-	if (GSConfig.PrecacheTextureReplacements)
-		PrecacheReplacementTextures();
+	if (!s_replacement_texture_filenames.empty())
+	{
+		if (GSConfig.PrecacheTextureReplacements)
+			PrecacheReplacementTextures();
+
+		// log a warning when paltex is on and preloading is off, since we'll be disabling paltex
+		if (GSConfig.GPUPaletteConversion && GSConfig.TexturePreloading != TexturePreloadingLevel::Full)
+		{
+			Console.Warning("Replacement textures were found, and GPU palette conversion is enabled without full preloading.");
+			Console.Warning("Palette textures will be disabled. Please enable full preloading or disable GPU palette conversion.");
+		}
+	}
 }
 
 void GSTextureReplacements::UpdateConfig(Pcsx2Config::GSOptions& old_config)
@@ -376,6 +386,11 @@ void GSTextureReplacements::Shutdown()
 u32 GSTextureReplacements::CalcMipmapLevelsForReplacement(u32 width, u32 height)
 {
 	return static_cast<u32>(std::log2(std::max(width, height))) + 1u;
+}
+
+bool GSTextureReplacements::HasAnyReplacementTextures()
+{
+	return !s_replacement_texture_filenames.empty();
 }
 
 bool GSTextureReplacements::HasReplacementTextureWithOtherPalette(const GSTextureCache::HashCacheKey& hash)
