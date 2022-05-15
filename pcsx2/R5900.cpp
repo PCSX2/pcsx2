@@ -101,10 +101,10 @@ void cpuReset()
 	EEsCycle = 0;
 	EEoCycle = cpuRegs.cycle;
 
-	pgifInit();
-	hwReset();
-	rcntInit();
 	psxReset();
+	pgifInit();
+
+	hwReset();
 
 	extern void Deci2Reset();		// lazy, no good header for it yet.
 	Deci2Reset();
@@ -128,11 +128,6 @@ void cpuReset()
 	LastELF.clear();
 
 	g_eeloadMain = 0, g_eeloadExec = 0, g_osdsys_str = 0;
-}
-
-void cpuShutdown()
-{
-	hwShutdown();
 }
 
 __ri void cpuException(u32 code, u32 bd)

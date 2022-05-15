@@ -75,6 +75,7 @@ void ipuReset()
 
 	ipu_fifo.init();
 	ipu_cmd.clear();
+	ipuDmaReset();
 }
 
 void ReportIPU()

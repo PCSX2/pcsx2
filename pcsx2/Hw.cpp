@@ -18,7 +18,6 @@
 
 #include "Hardware.h"
 #include "newVif.h"
-#include "IPU/IPUdma.h"
 #include "Gif_Unit.h"
 #include "SPU2/spu2.h"
 
@@ -76,8 +75,8 @@ void hwReset()
 	vif0Reset();
 	vif1Reset();
 	gif_fifo.init();
-	// needed for legacy DMAC
-	ipuDmaReset();
+	rcntInit();
+
 }
 
 __fi uint intcInterrupt()
