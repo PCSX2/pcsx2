@@ -473,6 +473,8 @@ void SysMainMemory::DecommitAll()
 	// to the ring. Let's call it an extra safety valve :)
 	vu1Thread.Reset();
 
+	hwShutdown();
+
 	m_ee.Decommit();
 	m_iop.Decommit();
 	m_vu.Decommit();
