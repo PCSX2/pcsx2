@@ -40,6 +40,7 @@
 #include "pcsx2/GS.h"
 #ifdef PCSX2_CORE
 #include "pcsx2/HostSettings.h"
+#include "pcsx2/Frontend/FullscreenUI.h"
 #include "pcsx2/Frontend/InputManager.h"
 #endif
 
@@ -281,7 +282,13 @@ static bool DoGSOpen(GSRendererType renderer, u8* basemem)
 		return false;
 	}
 
+#ifdef PCSX2_CORE
+	// Don't override the fullscreen UI's vsync choice.
+	if (!FullscreenUI::IsInitialized())
+		display->SetVSync(EmuConfig.GetEffectiveVsyncMode());
+#else
 	display->SetVSync(EmuConfig.GetEffectiveVsyncMode());
+#endif
 	GSConfig.OsdShowGPU = EmuConfig.GS.OsdShowGPU && display->SetGPUTimingEnabled(true);
 
 	g_gs_renderer->SetRegsMem(basemem);

@@ -234,6 +234,7 @@ private:
 	QString m_current_game_serial;
 	QString m_current_game_name;
 	quint32 m_current_game_crc;
+	bool m_display_created = false;
 	bool m_vm_valid = false;
 	bool m_vm_paused = false;
 	bool m_save_states_invalidated = false;

@@ -188,7 +188,9 @@
     <ClCompile Include="DEV9\Win32\tap-win32.cpp" />
     <ClCompile Include="Frontend\D3D11HostDisplay.cpp" />
     <ClCompile Include="Frontend\D3D12HostDisplay.cpp" />
+    <ClCompile Include="Frontend\FullscreenUI.cpp" />
     <ClCompile Include="Frontend\GameList.cpp" />
+    <ClCompile Include="Frontend\ImGuiFullscreen.cpp" />
     <ClCompile Include="Frontend\ImGuiManager.cpp" />
     <ClCompile Include="Frontend\imgui_impl_dx11.cpp" />
     <ClCompile Include="Frontend\imgui_impl_dx12.cpp" />
@@ -508,7 +510,9 @@
     <ClInclude Include="DEV9\Win32\tap.h" />
     <ClInclude Include="Frontend\D3D11HostDisplay.h" />
     <ClInclude Include="Frontend\D3D12HostDisplay.h" />
+    <ClInclude Include="Frontend\FullscreenUI.h" />
     <ClInclude Include="Frontend\GameList.h" />
+    <ClInclude Include="Frontend\ImGuiFullscreen.h" />
     <ClInclude Include="Frontend\ImGuiManager.h" />
     <ClInclude Include="Frontend\imgui_impl_dx11.h" />
     <ClInclude Include="Frontend\imgui_impl_dx12.h" />

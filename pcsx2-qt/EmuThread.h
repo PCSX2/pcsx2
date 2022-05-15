@@ -43,6 +43,7 @@ public:
 
 	__fi QEventLoop* getEventLoop() const { return m_event_loop; }
 	__fi bool isFullscreen() const { return m_is_fullscreen; }
+	__fi bool isRunningFullscreenUI() const { return m_run_fullscreen_ui; }
 
 	bool isOnEmuThread() const;
 
@@ -57,6 +58,8 @@ public:
 	void updatePerformanceMetrics(bool force);
 
 public Q_SLOTS:
+	void startFullscreenUI();
+	void stopFullscreenUI();
 	void startVM(std::shared_ptr<VMBootParameters> boot_params);
 	void resetVM();
 	void setVMPaused(bool paused);
@@ -129,8 +132,11 @@ protected:
 	void run();
 
 private:
-	static constexpr u32 BACKGROUND_CONTROLLER_POLLING_INTERVAL =
-		100; /// Interval at which the controllers are polled when the system is not active.
+	/// Interval at which the controllers are polled when the system is not active.
+	static constexpr u32 BACKGROUND_CONTROLLER_POLLING_INTERVAL = 100;
+
+	/// Poll at half the vsync rate for FSUI to reduce the chance of getting a press+release in the same frame.
+	static constexpr u32 FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL = 8;
 
 	void destroyVM();
 	void executeVM();
@@ -139,6 +145,7 @@ private:
 	void createBackgroundControllerPollTimer();
 	void destroyBackgroundControllerPollTimer();
 	void loadOurSettings();
+	void loadOurInitialSettings();
 
 private Q_SLOTS:
 	void stopInThread();
@@ -155,6 +162,7 @@ private:
 	std::atomic_bool m_shutdown_flag{false};
 
 	bool m_verbose_status = false;
+	bool m_run_fullscreen_ui = false;
 	bool m_is_rendering_to_main = false;
 	bool m_is_fullscreen = false;
 	bool m_is_surfaceless = false;

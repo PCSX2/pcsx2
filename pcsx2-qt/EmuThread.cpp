@@ -30,6 +30,7 @@
 #include "pcsx2/Counters.h"
 #include "pcsx2/Frontend/InputManager.h"
 #include "pcsx2/Frontend/ImGuiManager.h"
+#include "pcsx2/Frontend/FullscreenUI.h"
 #include "pcsx2/GS.h"
 #include "pcsx2/GS/GS.h"
 #include "pcsx2/GSDumpReplayer.h"
@@ -92,6 +93,58 @@ void EmuThread::stopInThread()
 	m_shutdown_flag.store(true);
 }
 
+void EmuThread::startFullscreenUI()
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, &EmuThread::startFullscreenUI, Qt::QueuedConnection);
+		return;
+	}
+
+	if (VMManager::HasValidVM())
+		return;
+
+	// we want settings loaded so we choose the correct renderer
+	// this also sorts out input sources.
+	loadOurSettings();
+	loadOurInitialSettings();
+	VMManager::LoadSettings();
+	m_run_fullscreen_ui = true;
+
+	if (!GetMTGS().WaitForOpen())
+	{
+		m_run_fullscreen_ui = false;
+		return;
+	}
+
+	// poll more frequently so we don't lose events
+	stopBackgroundControllerPollTimer();
+	startBackgroundControllerPollTimer();
+}
+
+void EmuThread::stopFullscreenUI()
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, &EmuThread::stopFullscreenUI, Qt::QueuedConnection);
+
+		// wait until the host display is gone
+		while (s_host_display)
+			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+
+		return;
+	}
+
+	if (VMManager::HasValidVM())
+		destroyVM();
+
+	if (!s_host_display)
+		return;
+
+	m_run_fullscreen_ui = false;
+	GetMTGS().WaitForClose();
+}
+
 void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 {
 	if (!isOnEmuThread())
@@ -103,14 +156,13 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 
 	pxAssertRel(!VMManager::HasValidVM(), "VM is shut down");
 	loadOurSettings();
+	loadOurInitialSettings();
+
+	if (boot_params->fullscreen.has_value())
+		m_is_fullscreen = boot_params->fullscreen.value();
 
 	emit onVMStarting();
 
-	// create the display, this may take a while...
-	m_is_fullscreen = boot_params->fullscreen.value_or(Host::GetBaseBoolSettingValue("UI", "StartFullscreen", false));
-	m_is_rendering_to_main = Host::GetBaseBoolSettingValue("UI", "RenderToMainWindow", true);
-	m_is_surfaceless = false;
-	m_save_state_on_shutdown = false;
 	if (!VMManager::Initialize(*boot_params))
 		return;
 
@@ -319,7 +371,9 @@ void EmuThread::startBackgroundControllerPollTimer()
 	if (m_background_controller_polling_timer->isActive())
 		return;
 
-	m_background_controller_polling_timer->start(BACKGROUND_CONTROLLER_POLLING_INTERVAL);
+	m_background_controller_polling_timer->start(FullscreenUI::IsInitialized() ?
+													 FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL :
+                                                     BACKGROUND_CONTROLLER_POLLING_INTERVAL);
 }
 
 void EmuThread::stopBackgroundControllerPollTimer()
@@ -354,7 +408,7 @@ void EmuThread::setFullscreen(bool fullscreen)
 		return;
 	}
 
-	if (!VMManager::HasValidVM() || m_is_fullscreen == fullscreen)
+	if (!GetMTGS().IsOpen() || m_is_fullscreen == fullscreen)
 		return;
 
 	// This will call back to us on the MTGS thread.
@@ -374,7 +428,7 @@ void EmuThread::setSurfaceless(bool surfaceless)
 		return;
 	}
 
-	if (!VMManager::HasValidVM() || m_is_surfaceless == surfaceless)
+	if (!GetMTGS().IsOpen() || m_is_surfaceless == surfaceless)
 		return;
 
 	// This will call back to us on the MTGS thread.
@@ -425,6 +479,14 @@ void EmuThread::updateEmuFolders()
 void EmuThread::loadOurSettings()
 {
 	m_verbose_status = Host::GetBaseBoolSettingValue("UI", "VerboseStatusBar", false);
+}
+
+void EmuThread::loadOurInitialSettings()
+{
+	m_is_fullscreen = Host::GetBaseBoolSettingValue("UI", "StartFullscreen", false);
+	m_is_rendering_to_main = Host::GetBaseBoolSettingValue("UI", "RenderToMainWindow", true);
+	m_is_surfaceless = false;
+	m_save_state_on_shutdown = false;
 }
 
 void EmuThread::checkForSettingChanges()
@@ -680,6 +742,14 @@ HostDisplay* EmuThread::acquireHostDisplay(HostDisplay::RenderAPI api)
 	Console.WriteLn(Color_StrongGreen, "%s Graphics Driver Info:", HostDisplay::RenderAPIToString(s_host_display->GetRenderAPI()));
 	Console.Indent().WriteLn(s_host_display->GetDriverInfo());
 
+	if (m_run_fullscreen_ui && !FullscreenUI::Initialize())
+	{
+		Console.Error("Failed to initialize fullscreen UI");
+		releaseHostDisplay();
+		m_run_fullscreen_ui = false;
+		return nullptr;
+	}
+
 	return s_host_display.get();
 }
 
@@ -724,6 +794,7 @@ void Host::EndPresentFrame()
 	if (GSDumpReplayer::IsReplayingDump())
 		GSDumpReplayer::RenderUI();
 
+	FullscreenUI::Render();
 	ImGuiManager::RenderOSD();
 	s_host_display->EndPresent();
 	ImGuiManager::NewFrame();

@@ -70,7 +70,8 @@ static std::shared_ptr<VMBootParameters>& AutoBoot(std::shared_ptr<VMBootParamet
 	return autoboot;
 }
 
-static bool ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMBootParameters>& autoboot)
+static bool ParseCommandLineOptions(int argc, char* argv[],
+	std::shared_ptr<VMBootParameters>& autoboot, bool& start_fullscreen_ui)
 {
 	bool no_more_args = false;
 
@@ -145,6 +146,11 @@ static bool ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMBo
 			else if (CHECK_ARG("-earlyconsolelog"))
 			{
 				Host::InitializeEarlyConsole();
+				continue;
+			}
+			else if (CHECK_ARG("-bigpicture"))
+			{
+				start_fullscreen_ui = true;
 				continue;
 			}
 			else if (CHECK_ARG("--"))
@@ -223,7 +229,8 @@ int main(int argc, char* argv[])
 #endif
 
 	std::shared_ptr<VMBootParameters> autoboot;
-	if (!ParseCommandLineOptions(argc, argv, autoboot))
+	bool start_fullscreen_ui = false;
+	if (!ParseCommandLineOptions(argc, argv, autoboot, start_fullscreen_ui))
 		return EXIT_FAILURE;
 
 	MainWindow* main_window = new MainWindow(QApplication::style()->objectName());
@@ -242,6 +249,9 @@ int main(int argc, char* argv[])
 		main_window->refreshGameList(false);
 
 	main_window->show();
+
+	if (start_fullscreen_ui)
+		g_emu_thread->startFullscreenUI();
 
 	if (autoboot)
 		g_emu_thread->startVM(std::move(autoboot));

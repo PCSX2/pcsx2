@@ -43,11 +43,25 @@ namespace ImGuiManager
 	/// Returns the scale of all on-screen elements.
 	float GetGlobalScale();
 
+	/// Returns true if fullscreen fonts are present.
+	bool HasFullscreenFonts();
+
+	/// Allocates/adds fullscreen fonts if they're not loaded.
+	bool AddFullscreenFontsIfMissing();
+
 	/// Returns the standard font for external drawing.
 	ImFont* GetStandardFont();
 
 	/// Returns the fixed-width font for external drawing.
 	ImFont* GetFixedFont();
+
+	/// Returns the medium font for external drawing, scaled by ImGuiFullscreen.
+	/// This font is allocated on demand.
+	ImFont* GetMediumFont();
+
+	/// Returns the large font for external drawing, scaled by ImGuiFullscreen.
+	/// This font is allocated on demand.
+	ImFont* GetLargeFont();
 
 #ifdef PCSX2_CORE
 	/// Called on the UI or CPU thread in response to mouse movement.

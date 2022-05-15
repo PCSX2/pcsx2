@@ -76,6 +76,9 @@ namespace VMManager
 	/// Returns the name of the disc/executable currently running.
 	std::string GetGameName();
 
+	/// Loads global settings (i.e. EmuConfig).
+	void LoadSettings();
+
 	/// Initializes all system components.
 	bool Initialize(const VMBootParameters& boot_params);
 

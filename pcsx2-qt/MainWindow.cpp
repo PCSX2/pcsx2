@@ -292,6 +292,8 @@ void MainWindow::connectSignals()
 
 void MainWindow::connectVMThreadSignals(EmuThread* thread)
 {
+	connect(m_ui.actionStartFullscreenUI, &QAction::triggered, thread, &EmuThread::startFullscreenUI);
+	connect(m_ui.actionStartFullscreenUI2, &QAction::triggered, thread, &EmuThread::startFullscreenUI);
 	connect(thread, &EmuThread::onCreateDisplayRequested, this, &MainWindow::createDisplay, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onUpdateDisplayRequested, this, &MainWindow::updateDisplay, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onDestroyDisplayRequested, this, &MainWindow::destroyDisplay, Qt::BlockingQueuedConnection);
@@ -665,7 +667,6 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
 	m_ui.actionPause->setEnabled(running);
 	m_ui.actionChangeDisc->setEnabled(running);
 	m_ui.actionScreenshot->setEnabled(running);
-	m_ui.actionViewSystemDisplay->setEnabled(starting_or_running);
 	m_ui.menuChangeDisc->setEnabled(running);
 
 	m_ui.actionSaveState->setEnabled(running);
@@ -781,7 +782,7 @@ void MainWindow::switchToGameListView()
 		return;
 	}
 
-	if (m_vm_valid)
+	if (m_display_created)
 	{
 		m_was_paused_on_surface_loss = m_vm_paused;
 		if (!m_vm_paused)
@@ -802,7 +803,7 @@ void MainWindow::switchToGameListView()
 
 void MainWindow::switchToEmulationView()
 {
-	if (!m_vm_valid || (m_display_widget && centralWidget() == m_display_widget))
+	if (!m_display_created || (m_display_widget && centralWidget() == m_display_widget))
 		return;
 
 	// we're no longer surfaceless! this will call back to UpdateDisplay(), which will swap the widget out.
@@ -1127,7 +1128,7 @@ void MainWindow::onViewGameGridActionTriggered()
 
 void MainWindow::onViewSystemDisplayTriggered()
 {
-	if (m_vm_valid)
+	if (m_display_created)
 		switchToEmulationView();
 }
 
@@ -1454,6 +1455,9 @@ void MainWindow::closeEvent(QCloseEvent* event)
 		return;
 	}
 
+	if (g_emu_thread->isRunningFullscreenUI())
+		g_emu_thread->stopFullscreenUI();
+
 	saveStateToConfig();
 	QMainWindow::closeEvent(event);
 }
@@ -1582,11 +1586,16 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 		return nullptr;
 	}
 
+	m_display_created = true;
+
 	if (is_exclusive_fullscreen)
 		setDisplayFullscreen(fullscreen_mode);
 
 	updateWindowTitle();
 	m_display_widget->setFocus();
+	m_ui.actionStartFullscreenUI->setEnabled(false);
+	m_ui.actionStartFullscreenUI2->setEnabled(false);
+	m_ui.actionViewSystemDisplay->setEnabled(true);
 
 	m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
 	m_display_widget->updateRelativeMode(m_vm_valid && !m_vm_paused);
@@ -1761,7 +1770,13 @@ void MainWindow::destroyDisplay()
 		setCentralWidget(m_game_list_widget);
 		m_game_list_widget->setVisible(true);
 		m_game_list_widget->setFocus();
-	}	
+	}
+
+	m_display_created = false;
+
+	m_ui.actionStartFullscreenUI->setEnabled(true);
+	m_ui.actionStartFullscreenUI2->setEnabled(true);
+	m_ui.actionViewSystemDisplay->setEnabled(false);
 }
 
 void MainWindow::focusDisplayWidget()
