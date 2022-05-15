@@ -137,6 +137,9 @@ namespace GSTextureReplacements
 	/// Lookup map of texture names to replacements, if they exist.
 	static std::unordered_map<TextureName, std::string> s_replacement_texture_filenames;
 
+	/// Lookup map of texture names without CLUT hash, to know when we need to disable paltex.
+	static std::unordered_set<TextureName> s_replacement_textures_without_clut_hash;
+
 	/// Lookup map of texture names to replacement data which has been cached.
 	static std::unordered_map<TextureName, ReplacementTexture> s_replacement_texture_cache;
 	static std::mutex s_replacement_texture_cache_mutex;
@@ -290,9 +293,11 @@ void GSTextureReplacements::ReloadReplacementMap()
 
 	// clear out the caches
 	{
+		s_replacement_texture_filenames.clear();
+		s_replacement_textures_without_clut_hash.clear();
+
 		std::unique_lock<std::mutex> lock(s_replacement_texture_cache_mutex);
 		s_replacement_texture_cache.clear();
-		s_replacement_texture_filenames.clear();
 		s_pending_async_load_textures.clear();
 		s_async_loaded_textures.clear();
 	}
@@ -321,7 +326,11 @@ void GSTextureReplacements::ReloadReplacementMap()
 			continue;
 
 		DevCon.WriteLn("Found %ux%u replacement '%.*s'", name->Width(), name->Height(), static_cast<int>(filename.size()), filename.data());
-		s_replacement_texture_filenames.emplace(std::move(name.value()), std::move(fd.FileName));
+		s_replacement_texture_filenames.emplace(name.value(), std::move(fd.FileName));
+
+		// zero out the CLUT hash, because we need this for checking if there's any replacements with this hash when using paltex
+		name->CLUTHash = 0;
+		s_replacement_textures_without_clut_hash.insert(name.value());
 	}
 
 	if (GSConfig.PrecacheTextureReplacements)
@@ -367,6 +376,12 @@ void GSTextureReplacements::Shutdown()
 u32 GSTextureReplacements::CalcMipmapLevelsForReplacement(u32 width, u32 height)
 {
 	return static_cast<u32>(std::log2(std::max(width, height))) + 1u;
+}
+
+bool GSTextureReplacements::HasReplacementTextureWithOtherPalette(const GSTextureCache::HashCacheKey& hash)
+{
+	const TextureName name(CreateTextureName(hash.WithRemovedCLUTHash(), 0));
+	return s_replacement_textures_without_clut_hash.find(name) != s_replacement_textures_without_clut_hash.end();
 }
 
 GSTexture* GSTextureReplacements::LookupReplacementTexture(const GSTextureCache::HashCacheKey& hash, bool mipmap, bool* pending)
@@ -482,6 +497,7 @@ void GSTextureReplacements::PrecacheReplacementTextures()
 void GSTextureReplacements::ClearReplacementTextures()
 {
 	s_replacement_texture_filenames.clear();
+	s_replacement_textures_without_clut_hash.clear();
 
 	std::unique_lock<std::mutex> lock(s_replacement_texture_cache_mutex);
 	s_replacement_texture_cache.clear();

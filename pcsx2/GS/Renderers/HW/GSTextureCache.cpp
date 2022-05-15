@@ -1614,6 +1614,15 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 			// so that when the replacement comes back, there's something for it to swap with.
 			can_cache = true;
 		}
+		else if (paltex)
+		{
+			// there's an edge case here; when there's multiple textures with the same vram data, but different
+			// palettes, if we don't replace all of them, the first one to get loaded in will prevent any of the
+			// others from getting tested for replacement. so, disable paltex for the textures when any of the
+			// palette variants have replacements.
+			if (GSTextureReplacements::HasReplacementTextureWithOtherPalette(key))
+				paltex = false;
+		}
 	}
 
 	// if this texture isn't cacheable, bail out now since we don't want to waste time preloading it
