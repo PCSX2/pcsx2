@@ -766,6 +766,11 @@ bool MainWindow::isRenderingToMain() const
 	return (m_display_widget && m_display_widget->parent() == this);
 }
 
+bool MainWindow::shouldHideMouseCursor() const
+{
+	return isRenderingFullscreen() && Host::GetBoolSettingValue("UI", "HideMouseCursor", false);
+}
+
 void MainWindow::switchToGameListView()
 {
 	if (centralWidget() == m_game_list_widget)
@@ -895,6 +900,12 @@ void MainWindow::requestExit()
 		return;
 
 	close();
+}
+
+void MainWindow::checkForSettingChanges()
+{
+	if (m_display_widget)
+		m_display_widget->updateRelativeMode(m_vm_valid && !m_vm_paused);
 }
 
 void Host::InvalidateSaveStateCache()
@@ -1354,6 +1365,8 @@ void MainWindow::onVMPaused()
 	updateWindowTitle();
 	updateStatusBarWidgetVisibility();
 	m_status_fps_widget->setText(tr("Paused"));
+	m_display_widget->updateRelativeMode(false);
+	m_display_widget->updateCursor(false);
 }
 
 void MainWindow::onVMResumed()
@@ -1369,6 +1382,8 @@ void MainWindow::onVMResumed()
 	updateWindowTitle();
 	updateStatusBarWidgetVisibility();
 	m_status_fps_widget->setText(m_last_fps_status);
+	m_display_widget->updateRelativeMode(true);
+	m_display_widget->updateCursor(true);
 	if (m_display_widget)
 		m_display_widget->setFocus();
 }
@@ -1381,7 +1396,16 @@ void MainWindow::onVMStopped()
 	updateEmulationActions(false, false);
 	updateWindowTitle();
 	updateStatusBarWidgetVisibility();
-	switchToGameListView();
+
+	if (m_display_widget)
+	{
+		m_display_widget->updateRelativeMode(false);
+		m_display_widget->updateCursor(false);
+	}
+	else
+	{
+		switchToGameListView();
+	}
 }
 
 void MainWindow::onGameChanged(const QString& path, const QString& serial, const QString& name, quint32 crc)
@@ -1554,6 +1578,10 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 	updateWindowTitle();
 	m_display_widget->setFocus();
 
+	m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
+	m_display_widget->updateRelativeMode(m_vm_valid && !m_vm_paused);
+	m_display_widget->updateCursor(m_vm_valid && !m_vm_paused);
+
 	host_display->DoneRenderContextCurrent();
 	return m_display_widget;
 }
@@ -1676,6 +1704,9 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 
 	updateWindowTitle();
 	m_display_widget->setFocus();
+	m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
+	m_display_widget->updateRelativeMode(m_vm_valid && !m_vm_paused);
+	m_display_widget->updateCursor(m_vm_valid && !m_vm_paused);
 
 	QSignalBlocker blocker(m_ui.actionFullscreen);
 	m_ui.actionFullscreen->setChecked(fullscreen);

@@ -73,6 +73,7 @@ protected:
 	std::vector<InputBindingKey> m_new_bindings;
 	QTimer* m_input_listen_timer = nullptr;
 	u32 m_input_listen_remaining_seconds = 0;
+	QPoint m_input_listen_start_position{};
 };
 
 class InputVibrationBindingWidget : public QPushButton

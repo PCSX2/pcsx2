@@ -88,7 +88,7 @@
         <item row="1" column="1">
          <widget class="QCheckBox" name="hideMouseCursor">
           <property name="text">
-           <string>Hide Mouse Cursor</string>
+           <string>Hide Cursor In Fullscreen</string>
           </property>
          </widget>
         </item>

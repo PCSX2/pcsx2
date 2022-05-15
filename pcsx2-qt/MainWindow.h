@@ -93,6 +93,7 @@ public Q_SLOTS:
 	void runOnUIThread(const std::function<void()>& func);
 	bool requestShutdown(bool allow_confirm = true, bool allow_save_to_state = true, bool block_until_done = false);
 	void requestExit();
+	void checkForSettingChanges();
 
 private Q_SLOTS:
 	void onUpdateCheckComplete();
@@ -184,6 +185,7 @@ private:
 	bool isShowingGameList() const;
 	bool isRenderingFullscreen() const;
 	bool isRenderingToMain() const;
+	bool shouldHideMouseCursor() const;
 	void switchToGameListView();
 	void switchToEmulationView();
 

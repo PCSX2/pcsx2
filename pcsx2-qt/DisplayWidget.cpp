@@ -33,7 +33,9 @@
 #include <QtGui/QWindowStateChangeEvent>
 #include <cmath>
 
-#if !defined(_WIN32) && !defined(APPLE)
+#if defined(_WIN32)
+#include "common/RedtapeWindows.h"
+#elif !defined(APPLE)
 #include <qpa/qplatformnativeinterface.h>
 #endif
 
@@ -50,7 +52,13 @@ DisplayWidget::DisplayWidget(QWidget* parent)
 	setMouseTracking(true);
 }
 
-DisplayWidget::~DisplayWidget() = default;
+DisplayWidget::~DisplayWidget()
+{
+#ifdef _WIN32
+	if (m_clip_mouse_enabled)
+		ClipCursor(nullptr);
+#endif
+}
 
 qreal DisplayWidget::devicePixelRatioFromScreen() const
 {
@@ -110,27 +118,96 @@ std::optional<WindowInfo> DisplayWidget::getWindowInfo()
 	return wi;
 }
 
-void DisplayWidget::setRelativeMode(bool enabled)
+void DisplayWidget::updateRelativeMode(bool master_enable)
 {
-	if (m_relative_mouse_enabled == enabled)
+	bool relative_mode = master_enable && InputManager::HasPointerAxisBinds();
+
+#ifdef _WIN32
+	// prefer ClipCursor() over warping movement when we're using raw input
+	bool clip_cursor = relative_mode && false /*InputManager::IsUsingRawInput()*/;
+	if (m_relative_mouse_enabled == relative_mode && m_clip_mouse_enabled == clip_cursor)
 		return;
 
-	if (enabled)
-	{
-		m_relative_mouse_start_position = QCursor::pos();
+	DevCon.WriteLn("updateRelativeMode(): relative=%s, clip=%s", relative_mode ? "yes" : "no", clip_cursor ? "yes" : "no");
 
-		const QPoint center_pos = mapToGlobal(QPoint(width() / 2, height() / 2));
-		QCursor::setPos(center_pos);
-		m_relative_mouse_last_position = center_pos;
+	if (!clip_cursor && m_clip_mouse_enabled)
+	{
+		m_clip_mouse_enabled = false;
+		ClipCursor(nullptr);
+	}
+#else
+	if (m_relative_mouse_enabled == relative_mode)
+		return;
+
+	DevCon.WriteLn("updateRelativeMode(): relative=%s", relative_mode ? "yes" : "no");
+#endif
+
+	if (relative_mode)
+	{
+#ifdef _WIN32
+		m_relative_mouse_enabled = !clip_cursor;
+		m_clip_mouse_enabled = clip_cursor;
+#else
+		m_relative_mouse_enabled = true;
+#endif
+		m_relative_mouse_start_pos = QCursor::pos();
+		updateCenterPos();
 		grabMouse();
 	}
-	else
+	else if (m_relative_mouse_enabled)
 	{
-		QCursor::setPos(m_relative_mouse_start_position);
+		m_relative_mouse_enabled = false;
+		QCursor::setPos(m_relative_mouse_start_pos);
 		releaseMouse();
 	}
 
-	m_relative_mouse_enabled = enabled;
+}
+
+void DisplayWidget::updateCursor(bool master_enable)
+{
+#ifdef _WIN32
+	const bool hide = master_enable && (m_should_hide_cursor || m_relative_mouse_enabled || m_clip_mouse_enabled);
+#else
+	const bool hide = master_enable && (m_should_hide_cursor || m_relative_mouse_enabled);
+#endif
+	if (m_cursor_hidden == hide)
+		return;
+
+	m_cursor_hidden = hide;
+	if (hide)
+		setCursor(Qt::BlankCursor);
+	else
+		unsetCursor();
+}
+
+void DisplayWidget::updateCenterPos()
+{
+#ifdef _WIN32
+	if (m_clip_mouse_enabled)
+	{
+		RECT rc;
+		if (GetWindowRect(reinterpret_cast<HWND>(winId()), &rc))
+			ClipCursor(&rc);
+	}
+	else if (m_relative_mouse_enabled)
+	{
+		RECT rc;
+		if (GetWindowRect(reinterpret_cast<HWND>(winId()), &rc))
+		{
+			m_relative_mouse_center_pos.setX(((rc.right - rc.left) / 2) + rc.left);
+			m_relative_mouse_center_pos.setY(((rc.bottom - rc.top) / 2) + rc.top);
+			SetCursorPos(m_relative_mouse_center_pos.x(), m_relative_mouse_center_pos.y());
+		}
+	}
+#else
+	if (m_relative_mouse_enabled)
+	{
+		// we do a round trip here because these coordinates are dpi-unscaled
+		m_relative_mouse_center_pos = mapToGlobal(QPoint((width() + 1) / 2, (height() + 1) / 2));
+		QCursor::setPos(m_relative_mouse_center_pos);
+		m_relative_mouse_center_pos = QCursor::pos();
+	}
+#endif
 }
 
 QPaintEngine* DisplayWidget::paintEngine() const
@@ -172,7 +249,10 @@ bool DisplayWidget::event(QEvent* event)
 				m_keys_pressed_with_modifiers.push_back(key);
 			}
 
-			emit windowKeyEvent(key, pressed);
+			Host::RunOnCPUThread([key, pressed]() {
+				InputManager::InvokeEvents(InputManager::MakeHostKeyboardKey(key), static_cast<float>(pressed));
+			});
+
 			return true;
 		}
 
@@ -184,22 +264,39 @@ bool DisplayWidget::event(QEvent* event)
 			{
 				const qreal dpr = devicePixelRatioFromScreen();
 				const QPoint mouse_pos = mouse_event->pos();
-				const int scaled_x = static_cast<int>(static_cast<qreal>(mouse_pos.x()) * dpr);
-				const int scaled_y = static_cast<int>(static_cast<qreal>(mouse_pos.y()) * dpr);
 
-				windowMouseMoveEvent(scaled_x, scaled_y);
+				const float scaled_x = static_cast<float>(static_cast<qreal>(mouse_pos.x()) * dpr);
+				const float scaled_y = static_cast<float>(static_cast<qreal>(mouse_pos.y()) * dpr);
+				InputManager::UpdatePointerAbsolutePosition(0, scaled_x, scaled_y);
 			}
 			else
 			{
-				const QPoint center_pos = mapToGlobal(QPoint((width() + 1) / 2, (height() + 1) / 2));
-				const QPoint mouse_pos = mapToGlobal(mouse_event->pos());
+				// On windows, we use winapi here. The reason being that the coordinates in QCursor
+				// are un-dpi-scaled, so we lose precision at higher desktop scalings.
+				float dx = 0.0f, dy = 0.0f;
 
-				const int dx = mouse_pos.x() - center_pos.x();
-				const int dy = mouse_pos.y() - center_pos.y();
-				m_relative_mouse_last_position.setX(m_relative_mouse_last_position.x() + dx);
-				m_relative_mouse_last_position.setY(m_relative_mouse_last_position.y() + dy);
-				windowMouseMoveEvent(m_relative_mouse_last_position.x(), m_relative_mouse_last_position.y());
-				QCursor::setPos(center_pos);
+#ifndef _WIN32
+				const QPoint mouse_pos = QCursor::pos();
+				if (mouse_pos != m_relative_mouse_center_pos)
+				{
+					dx = static_cast<float>(mouse_pos.x() - m_relative_mouse_center_pos.x());
+					dy = static_cast<float>(mouse_pos.y() - m_relative_mouse_center_pos.y());
+					QCursor::setPos(m_relative_mouse_center_pos);
+				}
+#else
+				POINT mouse_pos;
+				if (GetCursorPos(&mouse_pos))
+				{
+					dx = static_cast<float>(mouse_pos.x - m_relative_mouse_center_pos.x());
+					dy = static_cast<float>(mouse_pos.y - m_relative_mouse_center_pos.y());
+					SetCursorPos(m_relative_mouse_center_pos.x(), m_relative_mouse_center_pos.y());
+				}
+#endif
+
+				if (dx != 0.0f)
+					InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::X, dx);
+				if (dy != 0.0f)
+					InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::Y, dy);
 			}
 
 			return true;
@@ -211,10 +308,16 @@ bool DisplayWidget::event(QEvent* event)
 		{
 			unsigned long button_index;
 			if (_BitScanForward(&button_index, static_cast<u32>(static_cast<const QMouseEvent*>(event)->button())))
-				emit windowMouseButtonEvent(static_cast<int>(button_index + 1u), event->type() != QEvent::MouseButtonRelease);
+			{
+				Host::RunOnCPUThread([button_index, pressed = (event->type() != QEvent::MouseButtonRelease)]() {
+					InputManager::InvokeEvents(InputManager::MakePointerButtonKey(0, button_index), static_cast<float>(pressed));
+				});
+			}
 
+			// don't toggle fullscreen when we're bound.. that wouldn't end well.
 			if (event->type() == QEvent::MouseButtonDblClick &&
 				static_cast<const QMouseEvent*>(event)->button() == Qt::LeftButton &&
+				!InputManager::HasAnyBindingsForKey(InputManager::MakePointerButtonKey(0, 0)) &&
 				Host::GetBoolSettingValue("UI", "DoubleClickTogglesFullscreen", true))
 			{
 				g_emu_thread->toggleFullscreen();
@@ -225,8 +328,18 @@ bool DisplayWidget::event(QEvent* event)
 
 		case QEvent::Wheel:
 		{
-			const QWheelEvent* wheel_event = static_cast<QWheelEvent*>(event);
-			emit windowMouseWheelEvent(wheel_event->angleDelta());
+			// wheel delta is 120 as in winapi
+			const QPoint delta_angle(static_cast<QWheelEvent*>(event)->angleDelta());
+			constexpr float DELTA = 120.0f;
+
+			const float dx = std::clamp(static_cast<float>(delta_angle.x()) / DELTA, -1.0f, 1.0f);
+			if (dx != 0.0f)
+				InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::WheelX, dx);
+
+			const float dy = std::clamp(static_cast<float>(delta_angle.y()) / DELTA, -1.0f, 1.0f);
+			if (dy != 0.0f)
+				InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::WheelY, dy);
+
 			return true;
 		}
 
@@ -249,6 +362,13 @@ bool DisplayWidget::event(QEvent* event)
 				emit windowResizedEvent(scaled_width, scaled_height, dpr);
 			}
 
+			updateCenterPos();
+			return true;
+		}
+
+		case QEvent::Move:
+		{
+			updateCenterPos();
 			return true;
 		}
 

@@ -35,6 +35,10 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableXInputSource, "InputSources", "XInput", false);
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.multitapPort1, "Pad", "MultitapPort1", false);
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.multitapPort2, "Pad", "MultitapPort2", false);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.pointerXInvert, "Pad", "PointerXInvert", false);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.pointerYInvert, "Pad", "PointerYInvert", false);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerXScale, "Pad", "PointerXScale", 8.0f);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerYScale, "Pad", "PointerYScale", 8.0f);
 
 	if (dialog->isEditingProfile())
 	{
@@ -55,6 +59,11 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 	connect(m_ui.enableSDLSource, &QCheckBox::stateChanged, this, &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
 	for (QCheckBox* cb : {m_ui.multitapPort1, m_ui.multitapPort2})
 		connect(cb, &QCheckBox::stateChanged, this, [this]() { emit bindingSetupChanged(); });
+
+	connect(m_ui.pointerXScale, &QSlider::valueChanged, this, [this](int value) { m_ui.pointerXScaleLabel->setText(QStringLiteral("%1").arg(value)); });
+	connect(m_ui.pointerYScale, &QSlider::valueChanged, this, [this](int value) { m_ui.pointerYScaleLabel->setText(QStringLiteral("%1").arg(value)); });
+	m_ui.pointerXScaleLabel->setText(QStringLiteral("%1").arg(m_ui.pointerXScale->value()));
+	m_ui.pointerYScaleLabel->setText(QStringLiteral("%1").arg(m_ui.pointerYScale->value()));
 
 	updateSDLOptionsEnabled();
 }
