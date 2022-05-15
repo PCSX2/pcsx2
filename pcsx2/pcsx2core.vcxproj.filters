@@ -1275,6 +1275,12 @@
     <ClCompile Include="Frontend\LogSink.cpp">
       <Filter>Host</Filter>
     </ClCompile>
+    <ClCompile Include="Frontend\ImGuiFullscreen.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\FullscreenUI.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2117,6 +2123,12 @@
       <Filter>Tools\Input Recording</Filter>
     </ClInclude>
     <ClInclude Include="Frontend\LogSink.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\ImGuiFullscreen.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\FullscreenUI.h">
       <Filter>Host</Filter>
     </ClInclude>
   </ItemGroup>

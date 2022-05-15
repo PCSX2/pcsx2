@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
+#include "pcsx2/SysForwardDefs.h"
+
 #include "AboutDialog.h"
 #include "QtHost.h"
 #include "QtUtils.h"
@@ -52,25 +54,25 @@ AboutDialog::~AboutDialog() = default;
 
 QString AboutDialog::getWebsiteUrl()
 {
-	return QStringLiteral("https://pcsx2.net/");
+	return QString::fromUtf8(PCSX2_WEBSITE_URL);
 }
 
 QString AboutDialog::getSupportForumsUrl()
 {
-	return QStringLiteral("https://forums.pcsx2.net/");
+	return QString::fromUtf8(PCSX2_FORUMS_URL);
 }
 
 QString AboutDialog::getGitHubRepositoryUrl()
 {
-	return QStringLiteral("https://github.com/PCSX2/pcsx2");
+	return QString::fromUtf8(PCSX2_GITHUB_URL);
 }
 
 QString AboutDialog::getLicenseUrl()
 {
-	return QStringLiteral("https://github.com/PCSX2/pcsx2/blob/master/pcsx2/Docs/License.txt");
+	return QString::fromUtf8(PCSX2_LICENSE_URL);
 }
 
 QString AboutDialog::getDiscordServerUrl()
 {
-	return QStringLiteral("https://discord.com/invite/TCz3t9k");
+	return QString::fromUtf8(PCSX2_DISCORD_URL);
 }
