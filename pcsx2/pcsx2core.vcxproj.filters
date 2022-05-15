@@ -1463,9 +1463,6 @@
     <ClInclude Include="CDVD\CDVDaccess.h">
       <Filter>System\Ps2\Iop\CDVD</Filter>
     </ClInclude>
-    <ClInclude Include="CDVD\CDVDisoReader.h">
-      <Filter>System\Ps2\Iop\CDVD</Filter>
-    </ClInclude>
     <ClInclude Include="IPU\IPU.h">
       <Filter>System\Ps2\IPU</Filter>
     </ClInclude>

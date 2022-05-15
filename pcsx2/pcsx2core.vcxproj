@@ -693,7 +693,6 @@
     <ClInclude Include="CDVD\CDVD.h" />
     <ClInclude Include="CDVD\CDVD_internal.h" />
     <ClInclude Include="CDVD\CDVDaccess.h" />
-    <ClInclude Include="CDVD\CDVDisoReader.h" />
     <ClInclude Include="Ipu\IPU.h" />
     <ClInclude Include="Ipu\IPU_Fifo.h" />
     <ClInclude Include="Ipu\yuv2rgb.h" />
