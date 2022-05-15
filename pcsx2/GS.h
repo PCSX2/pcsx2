@@ -367,6 +367,7 @@ public:
 	Threading::ThreadHandle m_thread_handle;
 	std::atomic_bool m_open_flag{false};
 	std::atomic_bool m_shutdown_flag{false};
+	std::atomic_bool m_run_idle_flag{false};
 	Threading::KernelSemaphore m_open_or_close_done;
 
 public:
@@ -416,6 +417,7 @@ public:
 	void SetSoftwareRendering(bool software, bool display_message = true);
 	void ToggleSoftwareRendering();
 	bool SaveMemorySnapshot(u32 width, u32 height, std::vector<u32>* pixels);
+	void SetRunIdle(bool enabled);
 
 protected:
 	bool TryOpenGS();

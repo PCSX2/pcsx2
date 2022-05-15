@@ -26,6 +26,30 @@
 //  Semaphore Implementations
 // --------------------------------------------------------------------------------------
 
+bool Threading::WorkSema::CheckForWork()
+{
+	s32 value = m_state.load(std::memory_order_relaxed);
+	pxAssert(!IsDead(value));
+
+	// we want to switch to the running state, but preserve the waiting empty bit for RUNNING_N -> RUNNING_0
+	// otherwise, we clear the waiting flag (since we're notifying the waiter that we're empty below)
+	while (!m_state.compare_exchange_weak(value,
+		IsReadyForSleep(value) ? STATE_RUNNING_0 : (value & STATE_FLAG_WAITING_EMPTY),
+		std::memory_order_acq_rel, std::memory_order_relaxed))
+	{
+	}
+
+	// if we're not empty, we have work to do
+	if (!IsReadyForSleep(value))
+		return true;
+
+	// this means we're empty, so notify any waiters
+	if (value & STATE_FLAG_WAITING_EMPTY)
+		m_empty_sema.Post();
+
+	// no work to do
+	return false;
+}
 
 void Threading::WorkSema::WaitForWork()
 {
