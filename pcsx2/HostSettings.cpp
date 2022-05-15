@@ -116,6 +116,11 @@ std::vector<std::string> Host::GetStringListSetting(const char* section, const c
 	return s_layered_settings_interface.GetStringList(section, key);
 }
 
+SettingsInterface* Host::Internal::GetBaseSettingsLayer()
+{
+	return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE);
+}
+
 void Host::Internal::SetBaseSettingsLayer(SettingsInterface* sif)
 {
 	pxAssertRel(s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE) == nullptr, "Base layer has not been set");

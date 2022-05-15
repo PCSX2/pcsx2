@@ -87,6 +87,7 @@ public:
 public Q_SLOTS:
 	void checkForUpdates(bool display_message);
 	void refreshGameList(bool invalidate_cache);
+	void cancelGameListRefresh();
 	void invalidateSaveStateCache();
 	void reportError(const QString& title, const QString& message);
 	void runOnUIThread(const std::function<void()>& func);

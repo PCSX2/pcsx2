@@ -163,13 +163,7 @@ bool GameListWidget::getShowGridCoverTitles() const
 
 void GameListWidget::refresh(bool invalidate_cache)
 {
-	if (m_refresh_thread)
-	{
-		m_refresh_thread->cancel();
-		m_refresh_thread->wait();
-		QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-		pxAssertRel(!m_refresh_thread, "Game list thread should be unreferenced by now");
-	}
+	cancelRefresh();
 
 	m_refresh_thread = new GameListRefreshThread(invalidate_cache);
 	connect(m_refresh_thread, &GameListRefreshThread::refreshProgress, this, &GameListWidget::onRefreshProgress,
@@ -177,6 +171,17 @@ void GameListWidget::refresh(bool invalidate_cache)
 	connect(m_refresh_thread, &GameListRefreshThread::refreshComplete, this, &GameListWidget::onRefreshComplete,
 		Qt::QueuedConnection);
 	m_refresh_thread->start();
+}
+
+void GameListWidget::cancelRefresh()
+{
+	if (!m_refresh_thread)
+		return;
+
+	m_refresh_thread->cancel();
+	m_refresh_thread->wait();
+	QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+	pxAssertRel(!m_refresh_thread, "Game list thread should be unreferenced by now");
 }
 
 void GameListWidget::onRefreshProgress(const QString& status, int current, int total)
