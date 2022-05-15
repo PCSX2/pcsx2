@@ -325,6 +325,9 @@
     <ClCompile Include="Frontend\D3D11HostDisplay.cpp" />
     <ClCompile Include="Frontend\D3D12HostDisplay.cpp" />
     <ClCompile Include="Frontend\ImGuiManager.cpp" />
+    <ClCompile Include="Frontend\imgui_impl_dx11.cpp" />
+    <ClCompile Include="Frontend\imgui_impl_dx12.cpp" />
+    <ClCompile Include="Frontend\imgui_impl_opengl3.cpp" />
     <ClCompile Include="Frontend\imgui_impl_vulkan.cpp" />
     <ClCompile Include="Frontend\OpenGLHostDisplay.cpp" />
     <ClCompile Include="Frontend\VulkanHostDisplay.cpp" />
@@ -789,6 +792,10 @@
     <ClInclude Include="Frontend\D3D11HostDisplay.h" />
     <ClInclude Include="Frontend\D3D12HostDisplay.h" />
     <ClInclude Include="Frontend\ImGuiManager.h" />
+    <ClInclude Include="Frontend\imgui_impl_dx11.h" />
+    <ClInclude Include="Frontend\imgui_impl_dx12.h" />
+    <ClInclude Include="Frontend\imgui_impl_opengl3.h" />
+    <ClInclude Include="Frontend\imgui_impl_vulkan.h" />
     <ClInclude Include="Frontend\OpenGLHostDisplay.h" />
     <ClInclude Include="Frontend\VulkanHostDisplay.h" />
     <ClInclude Include="GameDatabase.h" />

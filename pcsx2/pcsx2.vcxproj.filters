@@ -1739,9 +1739,6 @@
     <ClCompile Include="Frontend\VulkanHostDisplay.cpp">
       <Filter>Host</Filter>
     </ClCompile>
-    <ClCompile Include="Frontend\imgui_impl_vulkan.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
     <ClCompile Include="GS\Renderers\Vulkan\GSTextureVK.cpp">
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </ClCompile>
@@ -1774,6 +1771,18 @@
     </ClCompile>
     <ClCompile Include="gui\PersistentThread.cpp">
       <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\imgui_impl_dx12.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\imgui_impl_opengl3.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\imgui_impl_vulkan.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\imgui_impl_dx11.cpp">
+      <Filter>Host</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2953,6 +2962,18 @@
     </ClInclude>
     <ClInclude Include="gui\PersistentThread.h">
       <Filter>AppHost</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\imgui_impl_dx11.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\imgui_impl_dx12.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\imgui_impl_opengl3.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\imgui_impl_vulkan.h">
+      <Filter>Host</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
