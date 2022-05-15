@@ -905,6 +905,41 @@ void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false 
 		Q_ARG(const std::function<void()>&, std::move(function)));
 }
 
+void Host::RefreshGameListAsync(bool invalidate_cache)
+{
+	QMetaObject::invokeMethod(g_main_window, "refreshGameList", Qt::QueuedConnection,
+		Q_ARG(bool, invalidate_cache));
+}
+
+void Host::CancelGameListRefresh()
+{
+	QMetaObject::invokeMethod(g_main_window, "cancelGameListRefresh", Qt::BlockingQueuedConnection);
+}
+
+void Host::RequestExit(bool save_state_if_running)
+{
+	if (VMManager::HasValidVM())
+		g_emu_thread->shutdownVM(save_state_if_running);
+
+	QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection);
+}
+
+void Host::RequestVMShutdown(bool save_state)
+{
+	if (VMManager::HasValidVM())
+		g_emu_thread->shutdownVM(save_state);
+}
+
+bool Host::IsFullscreen()
+{
+	return g_emu_thread->isFullscreen();
+}
+
+void Host::SetFullscreen(bool enabled)
+{
+	g_emu_thread->setFullscreen(enabled);
+}
+
 alignas(16) static SysMtgsThread s_mtgs_thread;
 
 SysMtgsThread& GetMTGS()

@@ -211,4 +211,23 @@ namespace Host
 
 	/// Safely executes a function on the VM thread.
 	void RunOnCPUThread(std::function<void()> function, bool block = false);
+
+	/// Asynchronously starts refreshing the game list.
+	void RefreshGameListAsync(bool invalidate_cache);
+
+	/// Cancels game list refresh, if there is one in progress.
+	void CancelGameListRefresh();
+
+	/// Requests shut down and exit of the hosting application. This may not actually exit,
+	/// if the user cancels the shutdown confirmation.
+	void RequestExit(bool save_state_if_running);
+
+	/// Requests shut down of the current virtual machine.
+	void RequestVMShutdown(bool save_state);
+
+	/// Returns true if the hosting application is currently fullscreen.
+	bool IsFullscreen();
+
+	/// Alters fullscreen state of hosting application.
+	void SetFullscreen(bool enabled);
 }

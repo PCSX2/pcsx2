@@ -42,6 +42,7 @@ public:
 	static void stop();
 
 	__fi QEventLoop* getEventLoop() const { return m_event_loop; }
+	__fi bool isFullscreen() const { return m_is_fullscreen; }
 
 	bool isOnEmuThread() const;
 

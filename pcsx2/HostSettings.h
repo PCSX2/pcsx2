@@ -47,6 +47,9 @@ namespace Host
 
 	namespace Internal
 	{
+		/// Retrieves the base settings layer. Must call with lock held.
+		SettingsInterface* GetBaseSettingsLayer();
+
 		/// Sets the base settings layer. Should be called by the host at initialization time.
 		void SetBaseSettingsLayer(SettingsInterface* sif);
 
