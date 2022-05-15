@@ -251,8 +251,8 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
 	connect(m_ui.menuChangeDisc, &QMenu::aboutToShow, this, &MainWindow::onChangeDiscMenuAboutToShow);
 	connect(m_ui.menuChangeDisc, &QMenu::aboutToHide, this, &MainWindow::onChangeDiscMenuAboutToHide);
-	connect(m_ui.actionPowerOff, &QAction::triggered, this, [this]() { requestShutdown(true, true); });
-	connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this, [this]() { requestShutdown(false, false); });
+	connect(m_ui.actionPowerOff, &QAction::triggered, this, [this]() { requestShutdown(true, true, EmuConfig.SaveStateOnShutdown); });
+	connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this, [this]() { requestShutdown(false, false, false); });
 	connect(m_ui.actionLoadState, &QAction::triggered, this, [this]() { m_ui.menuLoadState->exec(QCursor::pos()); });
 	connect(m_ui.actionSaveState, &QAction::triggered, this, [this]() { m_ui.menuSaveState->exec(QCursor::pos()); });
 	connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::close);
@@ -354,6 +354,8 @@ void MainWindow::connectSignals()
 
 void MainWindow::connectVMThreadSignals(EmuThread* thread)
 {
+	connect(m_ui.actionStartFullscreenUI, &QAction::triggered, thread, &EmuThread::startFullscreenUI);
+	connect(m_ui.actionStartFullscreenUI2, &QAction::triggered, thread, &EmuThread::startFullscreenUI);
 	connect(thread, &EmuThread::messageConfirmed, this, &MainWindow::confirmMessage, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onCreateDisplayRequested, this, &MainWindow::createDisplay, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onUpdateDisplayRequested, this, &MainWindow::updateDisplay, Qt::BlockingQueuedConnection);
@@ -387,7 +389,7 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 void MainWindow::recreate()
 {
 	if (s_vm_valid)
-		requestShutdown(false, true, true);
+		requestShutdown(false, true, EmuConfig.SaveStateOnShutdown);
 
 	close();
 	g_main_window = nullptr;
@@ -950,7 +952,7 @@ void MainWindow::switchToGameListView()
 		return;
 	}
 
-	if (s_vm_valid)
+	if (m_display_created)
 	{
 		m_was_paused_on_surface_loss = s_vm_paused;
 		if (!s_vm_paused)
@@ -965,7 +967,7 @@ void MainWindow::switchToGameListView()
 
 void MainWindow::switchToEmulationView()
 {
-	if (!s_vm_valid || !isShowingGameList())
+	if (!m_display_created || !isShowingGameList())
 		return;
 
 	// we're no longer surfaceless! this will call back to UpdateDisplay(), which will swap the widget out.
@@ -1014,14 +1016,14 @@ void MainWindow::runOnUIThread(const std::function<void()>& func)
 	func();
 }
 
-bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_save_to_state /* = true */, bool block_until_done /* = false */)
+bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_save_to_state /* = true */, bool default_save_to_state /* = true */, bool block_until_done /* = false */)
 {
 	if (!s_vm_valid)
 		return true;
 
 	// If we don't have a crc, we can't save state.
 	allow_save_to_state &= (m_current_game_crc != 0);
-	bool save_state = allow_save_to_state && EmuConfig.SaveStateOnShutdown;
+	bool save_state = allow_save_to_state && default_save_to_state;
 
 	// Only confirm on UI thread because we need to display a msgbox.
 	if (!m_is_closing && allow_confirm && !GSDumpReplayer::IsReplayingDump() && Host::GetBaseBoolSettingValue("UI", "ConfirmShutdown", true))
@@ -1081,7 +1083,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 void MainWindow::requestExit()
 {
 	// this is block, because otherwise closeEvent() will also prompt
-	if (!requestShutdown(true, true, true))
+	if (!requestShutdown(true, true, EmuConfig.SaveStateOnShutdown, true))
 		return;
 
 	// We could use close here, but if we're not visible (e.g. quitting from fullscreen), closing the window
@@ -1334,7 +1336,7 @@ void MainWindow::onViewGameGridActionTriggered()
 
 void MainWindow::onViewSystemDisplayTriggered()
 {
-	if (s_vm_valid)
+	if (m_display_created)
 		switchToEmulationView();
 }
 
@@ -1643,7 +1645,7 @@ void MainWindow::showEvent(QShowEvent* event)
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-	if (!requestShutdown(true, true, true))
+	if (!requestShutdown(true, true, EmuConfig.SaveStateOnShutdown, true))
 	{
 		event->ignore();
 		return;
@@ -1742,6 +1744,8 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 		return nullptr;
 	}
 
+	m_display_created = true;
+
 	if (is_exclusive_fullscreen)
 		setDisplayFullscreen(fullscreen_mode);
 
@@ -1750,6 +1754,8 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 
 	m_ui.actionViewSystemDisplay->setEnabled(true);
 	m_ui.actionFullscreen->setEnabled(true);
+	m_ui.actionStartFullscreenUI->setEnabled(false);
+	m_ui.actionStartFullscreenUI2->setEnabled(false);
 
 	m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
 	m_display_widget->updateRelativeMode(s_vm_valid && !s_vm_paused);
@@ -1940,9 +1946,12 @@ void MainWindow::destroyDisplay()
 {
 	// Now we can safely destroy the display window.
 	destroyDisplayWidget(true);
+	m_display_created = false;
 
 	m_ui.actionViewSystemDisplay->setEnabled(false);
 	m_ui.actionFullscreen->setEnabled(false);
+	m_ui.actionStartFullscreenUI->setEnabled(true);
+	m_ui.actionStartFullscreenUI2->setEnabled(true);
 }
 
 void MainWindow::destroyDisplayWidget(bool show_game_list)

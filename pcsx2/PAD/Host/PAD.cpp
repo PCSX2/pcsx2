@@ -361,7 +361,8 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 	//  si.SetStringValue("Hotkeys", "FrameAdvance", "Keyboard"); TBD
 	//	si.SetStringValue("Hotkeys", "IncreaseSpeed", "Keyboard"); TBD
 	//  si.SetStringValue("Hotkeys", "ResetVM", "Keyboard"); TBD
-	si.SetStringValue("Hotkeys", "ShutdownVM", "Keyboard/Escape");
+	//  si.SetStringValue("Hotkeys", "ShutdownVM", "Keyboard"); TBD
+	si.SetStringValue("Hotkeys", "OpenPauseMenu", "Keyboard/Escape");
 	si.SetStringValue("Hotkeys", "ToggleFrameLimit", "Keyboard/F4");
 	si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Space");
 	si.SetStringValue("Hotkeys", "ToggleSlowMotion", "Keyboard/Shift & Keyboard/Backtab");

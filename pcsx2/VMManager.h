@@ -76,6 +76,9 @@ namespace VMManager
 	/// Returns the name of the disc/executable currently running.
 	std::string GetGameName();
 
+	/// Loads global settings (i.e. EmuConfig).
+	void LoadSettings();
+
 	/// Initializes all system components.
 	bool Initialize(VMBootParameters boot_params);
 
@@ -249,7 +252,7 @@ namespace Host
 	void RequestExit(bool save_state_if_running);
 
 	/// Requests shut down of the current virtual machine.
-	void RequestVMShutdown(bool allow_confirm, bool allow_save_state);
+	void RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool default_save_state);
 
 	/// Returns true if the hosting application is currently fullscreen.
 	bool IsFullscreen();

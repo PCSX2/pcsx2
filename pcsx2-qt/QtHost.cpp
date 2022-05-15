@@ -82,6 +82,8 @@ static std::unique_ptr<QTimer> s_settings_save_timer;
 static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
 static bool s_batch_mode = false;
 static bool s_nogui_mode = false;
+static bool s_start_fullscreen_ui = false;
+static bool s_start_fullscreen_ui_fullscreen = false;
 
 //////////////////////////////////////////////////////////////////////////
 // Initialization/Shutdown
@@ -617,6 +619,7 @@ bool QtHost::ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMB
 			else if (CHECK_ARG("-fullscreen"))
 			{
 				AutoBoot(autoboot)->fullscreen = true;
+				s_start_fullscreen_ui_fullscreen = true;
 				continue;
 			}
 			else if (CHECK_ARG("-nofullscreen"))
@@ -627,6 +630,11 @@ bool QtHost::ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMB
 			else if (CHECK_ARG("-earlyconsolelog"))
 			{
 				Host::InitializeEarlyConsole();
+				continue;
+			}
+			else if (CHECK_ARG("-bigpicture"))
+			{
+				s_start_fullscreen_ui = true;
 				continue;
 			}
 			else if (CHECK_ARG("--"))
@@ -662,7 +670,7 @@ bool QtHost::ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMB
 
 	// if we don't have autoboot, we definitely don't want batch mode (because that'll skip
 	// scanning the game list).
-	if (s_batch_mode && !autoboot)
+	if (s_batch_mode && !s_start_fullscreen_ui && !autoboot)
 	{
 		QMessageBox::critical(nullptr, QStringLiteral("Error"), s_nogui_mode ?
 			QStringLiteral("Cannot use no-gui mode, because no boot filename was specified.") :
@@ -750,10 +758,14 @@ int main(int argc, char* argv[])
 	if (!s_nogui_mode)
 		main_window->show();
 
+	// Initialize big picture mode if requested.
+	if (s_start_fullscreen_ui)
+		g_emu_thread->startFullscreenUI(s_start_fullscreen_ui_fullscreen);
+
 	// Skip the update check if we're booting a game directly.
 	if (autoboot)
 		g_emu_thread->startVM(std::move(autoboot));
-	else
+	else if (!s_nogui_mode)
 		main_window->startupUpdateCheck();
 
 	// This doesn't return until we exit.
