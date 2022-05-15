@@ -1545,7 +1545,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 	// don't bother hashing if we're not dumping or replacing.
 	const bool dump = GSConfig.DumpReplaceableTextures && (!FMVstarted || GSConfig.DumpTexturesWithFMVActive) &&
 					  (clut ? GSConfig.DumpPaletteTextures : GSConfig.DumpDirectTextures);
-	const bool replace = GSConfig.LoadTextureReplacements;
+	const bool replace = GSConfig.LoadTextureReplacements && GSTextureReplacements::HasAnyReplacementTextures();
 	bool can_cache = CanCacheTextureSize(TEX0.TW, TEX0.TH);
 	if (!dump && !replace && !can_cache)
 		return nullptr;
@@ -1604,25 +1604,36 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 			const HashCacheEntry entry{replacement_tex, 1u, 0u, true};
 			return &m_hash_cache.emplace(key, entry).first->second;
 		}
-		else if (replacement_texture_pending)
+		else if (
+			replacement_texture_pending ||
+
+			// With preloading + paltex; when there's multiple textures with the same vram data, but different
+			// palettes, if we don't replace all of them, the first one to get loaded in will prevent any of the
+			// others from getting tested for replacement. So, disable paltex for the textures when any of the
+			// palette variants have replacements.
+			(paltex && GSTextureReplacements::HasReplacementTextureWithOtherPalette(key)))
 		{
-			// we didn't have a texture immediately, but there is a replacement available (and being loaded).
-			// so clear paltex, since when it gets injected back, it's not going to be indexed
+			// We didn't have a texture immediately, but there is a replacement available (and being loaded).
+			// so clear paltex, since when it gets injected back, it's not going to be indexed.
 			paltex = false;
 
-			// if the hash cache is disabled, this will be false, and we need to force it to be cached,
+			// If the hash cache is disabled, this will be false, and we need to force it to be cached,
 			// so that when the replacement comes back, there's something for it to swap with.
 			can_cache = true;
 		}
-		else if (paltex)
-		{
-			// there's an edge case here; when there's multiple textures with the same vram data, but different
-			// palettes, if we don't replace all of them, the first one to get loaded in will prevent any of the
-			// others from getting tested for replacement. so, disable paltex for the textures when any of the
-			// palette variants have replacements.
-			if (GSTextureReplacements::HasReplacementTextureWithOtherPalette(key))
-				paltex = false;
-		}
+	}
+
+	// Using paltex without full preloading is a disaster case here. basically, unless *all* textures are
+	// replaced, any texture can get populated without the hash cache, which means it'll get partial invalidated,
+	// and unless it's 100% removed, this partial texture will always take precedence over future hash cache
+	// lookups, making replacements impossible.
+	if (paltex && !can_cache && TEX0.TW <= MAXIMUM_TEXTURE_HASH_CACHE_SIZE && TEX0.TH <= MAXIMUM_TEXTURE_HASH_CACHE_SIZE)
+	{
+		// We only need to remove paltex here if we're dumping, because we need all the palette permutations.
+		paltex &= !dump;
+
+		// We need to get it into the hash cache for dumping and replacing, because of the issue above.
+		can_cache = true;
 	}
 
 	// if this texture isn't cacheable, bail out now since we don't want to waste time preloading it

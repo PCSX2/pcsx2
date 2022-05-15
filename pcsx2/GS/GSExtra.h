@@ -114,10 +114,11 @@ extern Pcsx2Config::GSOptions GSConfig;
 
 // Maximum texture size to skip preload/hash path.
 // This is the width/height from the registers, i.e. not the power of 2.
+static constexpr u32 MAXIMUM_TEXTURE_HASH_CACHE_SIZE = 10; // 1024
 __fi static bool CanCacheTextureSize(u32 tw, u32 th)
 {
-	static constexpr u32 MAXIMUM_CACHE_SIZE = 10; // 1024
-	return (GSConfig.TexturePreloading == TexturePreloadingLevel::Full && tw <= MAXIMUM_CACHE_SIZE && th <= MAXIMUM_CACHE_SIZE);
+	return (GSConfig.TexturePreloading == TexturePreloadingLevel::Full &&
+			tw <= MAXIMUM_TEXTURE_HASH_CACHE_SIZE && th <= MAXIMUM_TEXTURE_HASH_CACHE_SIZE);
 }
 
 __fi static bool CanPreloadTextureSize(u32 tw, u32 th)
