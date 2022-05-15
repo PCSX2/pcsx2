@@ -17,13 +17,10 @@
 #include "PrecompiledHeader.h"
 #include "Common.h"
 
-#include "GS.h"
 #include "Gif.h"
 #include "Gif_Unit.h"
 #include "Vif.h"
 #include "Vif_Dma.h"
-#include "IPU/IPU.h"
-#include "IPU/IPU_Fifo.h"
 
 //////////////////////////////////////////////////////////////////////////
 /////////////////////////// Quick & dirty FIFO :D ////////////////////////

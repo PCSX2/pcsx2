@@ -30,7 +30,7 @@
 
 #include "IsoFS/IsoFS.h"
 #include "IsoFS/IsoFSCDVD.h"
-#include "CDVDisoReader.h"
+#include "IsoFileFormats.h"
 
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"

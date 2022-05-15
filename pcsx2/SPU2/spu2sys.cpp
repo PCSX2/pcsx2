@@ -214,9 +214,7 @@ void V_Core::Init(int index)
 	}
 
 	DMAICounter = 0;
-	AutoDmaFree = 0;
 	AdmaInProgress = false;
-	DmaStarted = false;
 
 	Regs.STATX = 0x80;
 	Regs.ENDX = 0xffffff; // PS2 confirmed
@@ -281,17 +279,6 @@ s32 V_Core::EffectsBufferIndexer(s32 offset) const
 void V_Core::UpdateEffectsBufferSize()
 {
 	const s32 newbufsize = EffectsEndA - EffectsStartA + 1;
-
-	if ((newbufsize * 2) > 0x20000) // max 128kb per core
-	{
-		//printf("too big, returning\n");
-		//return;
-	}
-
-	// bad optimization?
-	//if (newbufsize == EffectsBufferSize && EffectsStartA == EffectsBufferStart) return;
-
-	//printf("Rvb Area change: ESA = %x, EEA = %x, Size(dec) = %d, Size(hex) = %x FxEnable = %d\n", EffectsStartA, EffectsEndA, newbufsize * 2, newbufsize * 2, FxEnable);
 
 	RevBuffers.NeedsUpdated = false;
 	EffectsBufferSize = newbufsize;

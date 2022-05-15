@@ -329,8 +329,6 @@ extern void PSX_INT( IopEventId n, s32 ecycle);
 
 extern void psxSetNextBranch( u32 startCycle, s32 delta );
 extern void psxSetNextBranchDelta( s32 delta );
-extern int iopTestCycle( u32 startCycle, s32 delta );
-extern void _iopTestInterrupts();
 
 extern void psxHwReset();
 extern u8   psxHw4Read8 (u32 add);
