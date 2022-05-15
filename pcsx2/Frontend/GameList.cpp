@@ -86,6 +86,13 @@ const char* GameList::EntryTypeToString(EntryType type)
 	return names[static_cast<int>(type)];
 }
 
+const char* GameList::RegionToString(Region region)
+{
+	static std::array<const char*, static_cast<int>(Region::Count)> names = {
+		{"NTSC-U/C", "NTSC-J", "PAL", "Other"}};
+	return names[static_cast<int>(region)];
+}
+
 const char* GameList::EntryCompatibilityRatingToString(CompatibilityRating rating)
 {
 	// clang-format off
@@ -497,11 +504,11 @@ void GameList::ScanDirectory(const char* path, bool recursive, const std::vector
 
 		{
 			std::unique_lock lock(s_mutex);
-			if (GetEntryForPath(ffd.FileName.c_str()))
+			if (GetEntryForPath(ffd.FileName.c_str()) || AddFileFromCache(ffd.FileName, ffd.ModificationTime))
+			{
+				progress->IncrementProgressValue();
 				continue;
-
-			if (AddFileFromCache(ffd.FileName, ffd.ModificationTime))
-				continue;
+			}
 		}
 
 		// ownership of fp is transferred
