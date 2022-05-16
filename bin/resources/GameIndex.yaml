@@ -529,7 +529,9 @@ SCAJ-20047:
   region: "NTSC-Unk"
 SCAJ-20048:
   name: "R - Racing Evolution"
-  region: "NTSC-Unk"
+  region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SCAJ-20050:
   name: "Fatal Frame II - Crimson Butterfly"
   region: "NTSC-Unk"
@@ -14122,21 +14124,29 @@ SLES-52807:
   region: "PAL-E"
   clampModes:
     eeClampMode: 3 # Fixes the inability to collect items.
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces lighting misalignment but doesn't fully fix it.
 SLES-52808:
   name: "Lemony Snicket's A Series of Unfortunate Events"
   region: "PAL-F"
   clampModes:
     eeClampMode: 3 # Fixes the inability to collect items.
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces lighting misalignment but doesn't fully fix it.
 SLES-52809:
   name: "Lemony Snicket - Schauriger Schlamassel"
   region: "PAL-G"
   clampModes:
     eeClampMode: 3 # Fixes the inability to collect items.
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces lighting misalignment but doesn't fully fix it.
 SLES-52810:
   name: "Lemony Snicket's Una Serie Disfortunati Eventi"
   region: "PAL-I"
   clampModes:
     eeClampMode: 3 # Fixes the inability to collect items.
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces lighting misalignment but doesn't fully fix it.
 SLES-52811:
   name: "Get on da Mic"
   region: "PAL-M3"
@@ -14178,6 +14188,8 @@ SLES-52825:
   region: "PAL-S"
   clampModes:
     eeClampMode: 3 # Fixes the inability to collect items.
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces lighting misalignment but doesn't fully fix it.
 SLES-52831:
   name: "Syberia 2"
   region: "PAL-M5"
@@ -17414,6 +17426,8 @@ SLES-54205:
 SLES-54209:
   name: "Sopranos, The - Road to Respect"
   region: "PAL-E-S"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces ghosting but doesn't fully fix it.
 SLES-54210:
   name: "NBA 2K7"
   region: "PAL-M5"
@@ -18246,6 +18260,11 @@ SLES-54555:
 SLES-54559:
   name: "Free Running"
   region: "PAL-E"
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
+  gsHWFixes:
+    autoFlush: 1 # Reduces post-processing misalignment.
+    halfPixelOffset: 1 # Reduces lighting misalignment but doesn't fully fix it.
   patches:
     d6a0a3ef:
       content: |-
@@ -22090,6 +22109,15 @@ SLPM-60109:
 SLPM-60123:
   name: "Gekikuukan Pro Baseball - The End of the Century 1999 [Trial]"
   region: "NTSC-J"
+SLPM-60124:
+  name: "Shadow Hearts II [Demo]"
+  region: "NTSC-J"
+SLPM-60125:
+  name: "GI Jockey 2 [Demo]"
+  region: "NTSC-J"
+SLPM-60216:
+  name: "Hajime no Ippo - Victorious Boxers"
+  region: "NTSC-J"
 SLPM-60138:
   name: "Klonoa 2 - Lunatea's Veil [Trial]"
   region: "NTSC-J"
@@ -22115,6 +22143,11 @@ SLPM-60207:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   clampModes:
     eeClampMode: 3 # For camera issues in some scenes.
+SLPM-60207:
+  name: "R - Racing Evolution [Trial]"
+  region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPM-60239:
   name: "Katamari Damacy [Trial]"
   region: "NTSC-J"
@@ -33533,6 +33566,8 @@ SLPS-25299:
 SLPS-25300:
   name: "R - Racing Evolution"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-25301:
   name: "Missing Parts - The Tantei Stories - Side A"
   region: "NTSC-J"
@@ -39411,9 +39446,11 @@ SLUS-20720:
   region: "NTSC-U"
   compat: 5
 SLUS-20721:
-  name: "R Racing Evolution"
+  name: "R - Racing Evolution"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-20722:
   name: "Maximo vs. Army of Zin"
   region: "NTSC-U"
@@ -41112,6 +41149,8 @@ SLUS-21078:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes the inability to collect items.
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces lighting misalignment but doesn't fully fix it.
 SLUS-21079:
   name: "Armored Core Nexus [Revolution Disc]"
   region: "NTSC-U"
@@ -42723,6 +42762,8 @@ SLUS-21388:
   name: "Sopranos, The - Road to Respect"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces ghosting but doesn't fully fix it.
 SLUS-21389:
   name: "Xenosaga - Episode III - Also Sprach Zarathustra [Disc1of2]"
   region: "NTSC-U"
@@ -43360,6 +43401,8 @@ SLUS-21548:
 SLUS-21549:
   name: "Sopranos, The [Collector's Edition]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces ghosting but doesn't fully fix it.
 SLUS-21550:
   name: "Metal Slug Anthology"
   region: "NTSC-U"
