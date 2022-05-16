@@ -46,7 +46,7 @@
 #include "SettingWidgetBinder.h"
 
 static constexpr char DISC_IMAGE_FILTER[] =
-	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.chd *.cso *.gz *.elf *.irx *.m3u *.gs *.gs.xz);;"
+	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.chd *.cso *.gz *.elf *.irx *.m3u *.gs *.gs.xz *.gs.zst);;"
 									"Single-Track Raw Images (*.bin *.iso);;"
 									"Cue Sheets (*.cue);;"
 									"MAME CHD Images (*.chd);;"
@@ -55,7 +55,7 @@ static constexpr char DISC_IMAGE_FILTER[] =
 									"ELF Executables (*.elf);;"
 									"IRX Executables (*.irx);;"
 									"Playlists (*.m3u);;"
-									"GS Dumps (*.gs *.gs.xz)");
+									"GS Dumps (*.gs *.gs.xz *.gs.zst)");
 
 const char* MainWindow::DEFAULT_THEME_NAME = "darkfusion";
 

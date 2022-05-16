@@ -1111,7 +1111,9 @@ bool VMManager::IsElfFileName(const std::string& path)
 
 bool VMManager::IsGSDumpFileName(const std::string& path)
 {
-	return (StringUtil::EndsWithNoCase(path, ".gs") || StringUtil::EndsWithNoCase(path, ".gs.xz"));
+	return (StringUtil::EndsWithNoCase(path, ".gs") ||
+			StringUtil::EndsWithNoCase(path, ".gs.xz") ||
+			StringUtil::EndsWithNoCase(path, ".gs.zst"));
 }
 
 void VMManager::Execute()

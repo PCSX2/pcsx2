@@ -226,3 +226,92 @@ void GSDumpXz::Compress(lzma_action action, lzma_ret expected_status)
 
 	} while (m_strm.avail_out == 0);
 }
+
+//////////////////////////////////////////////////////////////////////
+// GSDumpZstd implementation
+//////////////////////////////////////////////////////////////////////
+
+GSDumpZst::GSDumpZst(const std::string& fn, const std::string& serial, u32 crc,
+	u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+	const freezeData& fd, const GSPrivRegSet* regs)
+	: GSDumpBase(fn + ".gs.zst")
+{
+	m_strm = ZSTD_createCStream();
+
+	// Compression level 6 provides a good balance between speed and ratio.
+	ZSTD_CCtx_setParameter(m_strm, ZSTD_c_compressionLevel, 6);
+
+	m_in_buff.reserve(_1mb);
+	m_out_buff.resize(_1mb);
+
+	AddHeader(serial, crc, screenshot_width, screenshot_height, screenshot_pixels, fd, regs);
+}
+
+GSDumpZst::~GSDumpZst()
+{
+	// Finish the stream
+	Compress(ZSTD_e_end);
+
+	ZSTD_freeCStream(m_strm);
+}
+
+void GSDumpZst::AppendRawData(const void* data, size_t size)
+{
+	size_t old_size = m_in_buff.size();
+	m_in_buff.resize(old_size + size);
+	memcpy(&m_in_buff[old_size], data, size);
+	MayFlush();
+}
+
+void GSDumpZst::AppendRawData(u8 c)
+{
+	m_in_buff.push_back(c);
+	MayFlush();
+}
+
+void GSDumpZst::MayFlush()
+{
+	if (m_in_buff.size() >= _1mb)
+		Compress(ZSTD_e_continue);
+}
+
+void GSDumpZst::Compress(ZSTD_EndDirective action)
+{
+	if (m_in_buff.empty())
+		return;
+
+	ZSTD_inBuffer inbuf = {m_in_buff.data(), m_in_buff.size(), 0};
+
+	for (;;)
+	{
+		ZSTD_outBuffer outbuf = {m_out_buff.data(), m_out_buff.size(), 0};
+
+		const size_t remaining = ZSTD_compressStream2(m_strm, &outbuf, &inbuf, action);
+		if (ZSTD_isError(remaining))
+		{
+			fprintf(stderr, "GSDumpZstd: Error %s\n", ZSTD_getErrorName(remaining));
+			return;
+		}
+
+		if (outbuf.pos > 0)
+		{
+			Write(m_out_buff.data(), outbuf.pos);
+			outbuf.pos = 0;
+		}
+
+		if (action == ZSTD_e_end)
+		{
+			// break when compression output has finished
+			if (remaining == 0)
+				break;
+		}
+		else
+		{
+			// break when all input data is consumed
+			if (inbuf.pos == inbuf.size)
+				break;
+		}
+	}
+
+	m_in_buff.clear();
+}

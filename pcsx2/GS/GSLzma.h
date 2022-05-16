@@ -15,10 +15,12 @@
 
 #pragma once
 
-#include <lzma.h>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include <lzma.h>
+#include <zstd.h>
 
 #define GEN_REG_ENUM_CLASS_CONTENT(ClassName, EntryName, Value) \
 	EntryName = Value,
@@ -353,6 +355,30 @@ class GSDumpLzma : public GSDumpFile
 public:
 	GSDumpLzma(FILE* file, FILE* repack_file);
 	virtual ~GSDumpLzma();
+
+	bool IsEof() final;
+	size_t Read(void* ptr, size_t size) final;
+};
+
+class GSDumpDecompressZst : public GSDumpFile
+{
+	static constexpr u32 INPUT_BUFFER_SIZE = 512 * _1kb;
+	static constexpr u32 OUTPUT_BUFFER_SIZE = 2 * _1mb;
+
+	ZSTD_DStream* m_strm;
+	ZSTD_inBuffer m_inbuf;
+
+	uint8_t* m_area;
+
+	size_t m_avail;
+	size_t m_start;
+
+	void Decompress();
+	void Initialize();
+
+public:
+	GSDumpDecompressZst(FILE* file, FILE* repack_file);
+	virtual ~GSDumpDecompressZst();
 
 	bool IsEof() final;
 	size_t Read(void* ptr, size_t size) final;

@@ -564,13 +564,21 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 					fd, m_regs));
 				compression_str = "with no compression";
 			}
-			else
+			else if (GSConfig.GSDumpCompression == GSDumpCompressionMethod::LZMA)
 			{
 				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpXz(m_snapshot, GetDumpSerial(), m_crc,
 					DUMP_SCREENSHOT_WIDTH, DUMP_SCREENSHOT_HEIGHT,
 					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
 					fd, m_regs));
 				compression_str = "with LZMA compression";
+			}
+			else
+			{
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpZst(m_snapshot, GetDumpSerial(), m_crc,
+					DUMP_SCREENSHOT_WIDTH, DUMP_SCREENSHOT_HEIGHT,
+					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
+					fd, m_regs));
+				compression_str = "with Zstandard compression";
 			}
 
 			delete[] fd.data;
@@ -642,7 +650,7 @@ void GSRenderer::QueueSnapshot(const std::string& path, u32 gsdump_frames)
 		return;
 
 	// Allows for providing a complete path
-	if (path.size() > 4 && StringUtil::compareNoCase(path.substr(path.size() - 4, 4), ".png"))
+	if (path.size() > 4 && StringUtil::EndsWithNoCase(path, ".png"))
 	{
 		m_snapshot = path.substr(0, path.size() - 4);
 	}
