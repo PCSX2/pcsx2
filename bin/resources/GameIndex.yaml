@@ -3282,7 +3282,7 @@ SCES-52677:
 SCES-52748:
   name: "EyeToy - Play 2"
   region: "PAL-M12"
-  compat: 2
+  compat: 5
 SCES-52756:
   name: "DJ - Decks & FX - Claudio Coccoluto Edition"
   region: "PAL-I"
@@ -7399,7 +7399,7 @@ SCUS-97467:
 SCUS-97468:
   name: "EyeToy - Play 2"
   region: "NTSC-U"
-  compat: 2
+  compat: 5
 SCUS-97469:
   name: "Neopets - The Darkest Faerie [Demo]"
   region: "NTSC-U"
