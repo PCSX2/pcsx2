@@ -17,14 +17,17 @@
 #include "GSDump.h"
 #include "GSExtra.h"
 #include "GSState.h"
+#include "common/Console.h"
+#include "common/FileSystem.h"
 
-GSDumpBase::GSDumpBase(const std::string& fn)
-	: m_frames(0)
+GSDumpBase::GSDumpBase(std::string fn)
+	: m_filename(std::move(fn))
+	, m_frames(0)
 	, m_extra_frames(2)
 {
-	m_gs = px_fopen(fn, "wb");
+	m_gs = FileSystem::OpenCFile(m_filename.c_str(), "wb");
 	if (!m_gs)
-		fprintf(stderr, "GSDump: Error failed to open %s\n", fn.c_str());
+		Console.Error("GSDump: Error failed to open %s", m_filename.c_str());
 }
 
 GSDumpBase::~GSDumpBase()

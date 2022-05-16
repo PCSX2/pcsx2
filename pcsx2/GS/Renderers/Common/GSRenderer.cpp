@@ -21,7 +21,9 @@
 #include "PerformanceMetrics.h"
 #include "pcsx2/Config.h"
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
+#include "fmt/core.h"
 
 #ifndef PCSX2_CORE
 #include "gui/AppCoreThread.h"
@@ -54,17 +56,9 @@ static std::string GetDumpSerial()
 
 std::unique_ptr<GSRenderer> g_gs_renderer;
 
-GSRenderer::GSRenderer()
-	: m_shift_key(false)
-	, m_control_key(false)
-	, m_texture_shuffle(false)
-	, m_real_size(0, 0)
-{
-}
+GSRenderer::GSRenderer() = default;
 
-GSRenderer::~GSRenderer()
-{
-}
+GSRenderer::~GSRenderer() = default;
 
 void GSRenderer::Destroy()
 {
@@ -541,10 +535,14 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 	g_gs_device->RestoreAPIState();
 
 	// snapshot
+	// wx is dumb and call this from the UI thread...
+#ifndef PCSX2_CORE
+	std::unique_lock snapshot_lock(m_snapshot_mutex);
+#endif
 
 	if (!m_snapshot.empty())
 	{
-		if (!m_dump && m_shift_key)
+		if (!m_dump && m_dump_frames > 0)
 		{
 			freezeData fd = {0, nullptr};
 			Freeze(&fd, true);
@@ -557,12 +555,14 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			std::vector<u32> screenshot_pixels;
 			SaveSnapshotToMemory(DUMP_SCREENSHOT_WIDTH, DUMP_SCREENSHOT_HEIGHT, &screenshot_pixels);
 
-			if (m_control_key)
+			std::string_view compression_str;
+			if (GSConfig.GSDumpCompression == GSDumpCompressionMethod::Uncompressed)
 			{
 				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, GetDumpSerial(), m_crc,
 					DUMP_SCREENSHOT_WIDTH, DUMP_SCREENSHOT_HEIGHT,
 					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
 					fd, m_regs));
+				compression_str = "with no compression";
 			}
 			else
 			{
@@ -570,26 +570,49 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 					DUMP_SCREENSHOT_WIDTH, DUMP_SCREENSHOT_HEIGHT,
 					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
 					fd, m_regs));
+				compression_str = "with LZMA compression";
 			}
 
 			delete[] fd.data;
+
+			Host::AddKeyedOSDMessage("GSDump", fmt::format("Saving {0} GS dump {1} to '{2}'",
+				(m_dump_frames == 1) ? "single frame" : "multi-frame", compression_str,
+				FileSystem::GetFileNameFromPath(m_dump->GetPath())), 10.0f);
 		}
 
 		if (GSTexture* t = g_gs_device->GetCurrent())
 		{
-			t->Save(m_snapshot + ".png");
+			const std::string path(m_snapshot + ".png");
+			const std::string_view filename(FileSystem::GetFileNameFromPath(path));
+			if (t->Save(path))
+			{
+				Host::AddKeyedOSDMessage("GSScreenshot",
+					fmt::format("Screenshot saved to '{}'.", FileSystem::GetFileNameFromPath(path)), 10.0f);
+			}
+			else
+			{
+				Host::AddFormattedOSDMessage(10.0f, "Failed to save screenshot to '%s'.", path.c_str());
+			}
 		}
 
-		m_snapshot.clear();
+		m_snapshot = {};
 	}
 	else if (m_dump)
 	{
-		if (m_dump->VSync(field, !m_control_key, m_regs))
+		const bool last = (m_dump_frames == 0);
+		if (m_dump->VSync(field, last, m_regs))
+		{
+			Host::AddKeyedOSDMessage("GSDump", fmt::format("Saved GS dump to '{}'.", FileSystem::GetFileNameFromPath(m_dump->GetPath())), 10.0f);
 			m_dump.reset();
+		}
+		else if (!last)
+		{
+			m_dump_frames--;
+		}
 	}
 
+#ifndef PCSX2_CORE
 	// capture
-
 	if (m_capture.IsCapturing())
 	{
 		if (GSTexture* current = g_gs_device->GetCurrent())
@@ -610,54 +633,73 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			}
 		}
 	}
+#endif
 }
 
-bool GSRenderer::MakeSnapshot(const std::string& path)
+void GSRenderer::QueueSnapshot(const std::string& path, u32 gsdump_frames)
 {
-	if (m_snapshot.empty())
+	if (!m_snapshot.empty())
+		return;
+
+	// Allows for providing a complete path
+	if (path.size() > 4 && StringUtil::compareNoCase(path.substr(path.size() - 4, 4), ".png"))
 	{
-		// Allows for providing a complete path
-		if (path.substr(path.size() - 4, 4) == ".png")
-			m_snapshot = path.substr(0, path.size() - 4);
-		else
+		m_snapshot = path.substr(0, path.size() - 4);
+	}
+	else
+	{
+		time_t cur_time = time(nullptr);
+		static time_t prev_snap;
+		// The variable 'n' is used for labelling the screenshots when multiple screenshots are taken in
+		// a single second, we'll start using this variable for naming when a second screenshot request is detected
+		// at the same time as the first one. Hence, we're initially setting this counter to 2 to imply that
+		// the captured image is the 2nd image captured at this specific time.
+		static int n = 2;
+		char local_time[16];
+
+		if (strftime(local_time, sizeof(local_time), "%Y%m%d%H%M%S", localtime(&cur_time)))
 		{
-			time_t cur_time = time(nullptr);
-			static time_t prev_snap;
-			// The variable 'n' is used for labelling the screenshots when multiple screenshots are taken in
-			// a single second, we'll start using this variable for naming when a second screenshot request is detected
-			// at the same time as the first one. Hence, we're initially setting this counter to 2 to imply that
-			// the captured image is the 2nd image captured at this specific time.
-			static int n = 2;
-			char local_time[16];
-
-			if (strftime(local_time, sizeof(local_time), "%Y%m%d%H%M%S", localtime(&cur_time)))
+			if (cur_time == prev_snap)
+				m_snapshot = fmt::format("gs_{0}_({1})", local_time, n++);
+			else
 			{
-				if (cur_time == prev_snap)
-					m_snapshot = format("%s_%s_(%d)", path.c_str(), local_time, n++);
-				else
-				{
-					n = 2;
-					m_snapshot = format("%s_%s", path.c_str(), local_time);
-				}
-				prev_snap = cur_time;
+				n = 2;
+				m_snapshot = fmt::format("gs_{}", local_time);
 			}
-
-			// append the game serial and title
-			if (std::string name(GetDumpName()); !name.empty())
-			{
-				FileSystem::SanitizeFileName(name);
-				m_snapshot += format("_%s", name.c_str());
-			}
-			if (std::string serial(GetDumpSerial()); !serial.empty())
-			{
-				FileSystem::SanitizeFileName(serial);
-				m_snapshot += format("_%s", serial.c_str());
-			}
+			prev_snap = cur_time;
 		}
+
+		// append the game serial and title
+		if (std::string name(GetDumpName()); !name.empty())
+		{
+			FileSystem::SanitizeFileName(name);
+			m_snapshot += '_';
+			m_snapshot += name;
+		}
+		if (std::string serial(GetDumpSerial()); !serial.empty())
+		{
+			FileSystem::SanitizeFileName(serial);
+			m_snapshot += '_';
+			m_snapshot += serial;
+		}
+
+		// prepend snapshots directory
+		m_snapshot = Path::CombineStdString(EmuFolders::Snapshots, m_snapshot);
 	}
 
-	return true;
+	// this is really gross, but wx we get the snapshot request after shift...
+#ifdef PCSX2_CORE
+	m_dump_frames = gsdump_frames;
+#endif
 }
+
+void GSRenderer::StopGSDump()
+{
+	m_snapshot = {};
+	m_dump_frames = 0;
+}
+
+#ifndef PCSX2_CORE
 
 bool GSRenderer::BeginCapture(std::string& filename)
 {
@@ -671,7 +713,6 @@ void GSRenderer::EndCapture()
 
 void GSRenderer::KeyEvent(const HostKeyEvent& e)
 {
-#if !defined(PCSX2_CORE)
 #ifdef _WIN32
 	m_shift_key = !!(::GetAsyncKeyState(VK_SHIFT) & 0x8000);
 	m_control_key = !!(::GetAsyncKeyState(VK_CONTROL) & 0x8000);
@@ -695,6 +736,19 @@ void GSRenderer::KeyEvent(const HostKeyEvent& e)
 			return;
 	}
 #endif
+
+	if (m_dump_frames == 0)
+	{
+		// start dumping
+		if (m_shift_key)
+			m_dump_frames = m_control_key ? std::numeric_limits<u32>::max() : 1;
+	}
+	else
+	{
+		// stop dumping
+		if (m_dump && !m_control_key)
+			m_dump_frames = 0;
+	}
 
 	if (e.type == HostKeyEvent::Type::KeyPressed)
 	{
@@ -732,8 +786,9 @@ void GSRenderer::KeyEvent(const HostKeyEvent& e)
 				return;
 		}
 	}
-#endif // PCSX2_CORE
 }
+
+#endif // PCSX2_CORE
 
 void GSRenderer::PurgePool()
 {

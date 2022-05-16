@@ -372,8 +372,7 @@ namespace Implementations
 
 	void Sys_TakeSnapshot()
 	{
-		if (GSmakeSnapshot(g_Conf->Folders.Snapshots.ToUTF8().data()))
-			OSDlog(ConsoleColors::Color_Black, true, "Snapshot taken");
+		GSQueueSnapshot(std::string(), 0);
 	}
 
 	void Sys_RenderToggle()

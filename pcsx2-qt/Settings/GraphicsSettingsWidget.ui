@@ -97,7 +97,7 @@
            <string>Auto Standard (4:3/3:2 Progressive)</string>
           </property>
          </item>
-		 <item>
+         <item>
           <property name="text">
            <string>Standard (4:3)</string>
           </property>
@@ -123,7 +123,7 @@
            <string>Off (Default)</string>
           </property>
          </item>
-		 <item>
+         <item>
           <property name="text">
            <string>Auto Standard (4:3/3:2 Progressive)</string>
           </property>
@@ -1146,7 +1146,7 @@
             </item>
            </widget>
           </item>
-          <item row="2" column="0" colspan="2">
+          <item row="3" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_7">
             <item row="0" column="0">
              <widget class="QCheckBox" name="useBlitSwapChain">
@@ -1177,6 +1177,27 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_34">
+            <property name="text">
+             <string>GS Dump Compression:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="gsDumpCompression">
+            <item>
+             <property name="text">
+              <string>Uncompressed</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>LZMA (XZ)</string>
+             </property>
+            </item>
+           </widget>
           </item>
          </layout>
         </widget>

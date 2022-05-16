@@ -611,6 +611,22 @@ void EmuThread::runOnCPUThread(const std::function<void()>& func)
 	func();
 }
 
+void EmuThread::queueSnapshot(quint32 gsdump_frames)
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, "queueSnapshot", Qt::QueuedConnection, Q_ARG(quint32, gsdump_frames));
+		return;
+	}
+
+	if (!VMManager::HasValidVM())
+		return;
+
+	GetMTGS().RunOnGSThread([gsdump_frames]() {
+		GSQueueSnapshot(std::string(), gsdump_frames);
+	});
+}
+
 void EmuThread::updateDisplay()
 {
 	pxAssertRel(!isOnEmuThread(), "Not on emu thread");
@@ -893,13 +909,6 @@ SysMtgsThread& GetMTGS()
 // ------------------------------------------------------------------------
 
 BEGIN_HOTKEY_LIST(g_host_hotkeys)
-DEFINE_HOTKEY("Screenshot", "General", "Save Screenshot", [](bool pressed) {
-	if (!pressed)
-	{
-		Host::AddOSDMessage("Saved Screenshot.", 10.0f);
-		GSmakeSnapshot(EmuFolders::Snapshots.ToString().char_str());
-	}
-})
 DEFINE_HOTKEY("ShutdownVM", "System", "Shut Down Virtual Machine", [](bool pressed) {
 	if (!pressed)
 	{

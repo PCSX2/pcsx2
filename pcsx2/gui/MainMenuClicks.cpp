@@ -1040,7 +1040,7 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent& even
 	{
 		return;
 	}
-	GSmakeSnapshot(g_Conf->Folders.Snapshots.ToString().char_str());
+	GSQueueSnapshot(std::string(), 0);
 }
 
 void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& event)
@@ -1056,7 +1056,7 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& e
 	wxFileDialog fileDialog(this, _("Select a file"), g_Conf->Folders.Snapshots.ToAscii(), wxEmptyString, "PNG files (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 	if (fileDialog.ShowModal() == wxID_OK)
-		GSmakeSnapshot((char*)fileDialog.GetPath().char_str());
+		GSQueueSnapshot(StringUtil::wxStringToUTF8String(fileDialog.GetPath()), 0);
 
 	// Resume emulation
 	if (!wasPaused)
