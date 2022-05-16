@@ -716,7 +716,15 @@ void Host::ReleaseHostDisplay()
 
 bool Host::BeginPresentFrame(bool frame_skip)
 {
-	return s_host_display->BeginPresent(frame_skip);
+	if (!s_host_display->BeginPresent(frame_skip))
+	{
+		// if we're skipping a frame, we need to reset imgui's state, since
+		// we won't be calling EndPresentFrame().
+		ImGuiManager::NewFrame();
+		return false;
+	}
+
+	return true;
 }
 
 void Host::EndPresentFrame()
