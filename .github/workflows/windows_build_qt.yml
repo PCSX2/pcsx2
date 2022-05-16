@@ -79,7 +79,7 @@ jobs:
             call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\${{ steps.cmake.outputs.vcvars }}"
             cmake --build build --config ${{ steps.cmake.outputs.buildtype }}
           ) else (
-            msbuild "PCSX2_suite.sln" /m /v:m /p:Configuration="${{ inputs.configuration }}" /p:Platform="${{ inputs.platform }}"
+            msbuild "PCSX2_qt.sln" /m /v:m /p:Configuration="${{ inputs.configuration }}" /p:Platform="${{ inputs.platform }}"
           )
 
       - name: Upload artifact
