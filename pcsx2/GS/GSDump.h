@@ -19,6 +19,7 @@
 #include "GSRegs.h"
 #include "Renderers/SW/GSVertexSW.h"
 #include <lzma.h>
+#include <zstd.h>
 
 /*
 
@@ -109,4 +110,23 @@ public:
 		u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
 		const freezeData& fd, const GSPrivRegSet* regs);
 	virtual ~GSDumpXz();
+};
+
+class GSDumpZst final : public GSDumpBase
+{
+	ZSTD_CStream* m_strm;
+
+	std::vector<u8> m_in_buff;
+	std::vector<u8> m_out_buff;
+
+	void MayFlush();
+	void Compress(ZSTD_EndDirective action);
+	void AppendRawData(const void* data, size_t size);
+	void AppendRawData(u8 c);
+
+public:
+	GSDumpZst(const std::string& fn, const std::string& serial, u32 crc,
+		u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+		const freezeData& fd, const GSPrivRegSet* regs);
+	virtual ~GSDumpZst();
 };

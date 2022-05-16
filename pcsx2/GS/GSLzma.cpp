@@ -66,6 +66,8 @@ std::unique_ptr<GSDumpFile> GSDumpFile::OpenGSDump(const char* filename, const c
 
 	if (StringUtil::EndsWithNoCase(filename, ".xz"))
 		return std::make_unique<GSDumpLzma>(fp, nullptr);
+	else if (StringUtil::EndsWithNoCase(filename, ".zst"))
+		return std::make_unique<GSDumpDecompressZst>(fp, nullptr);
 	else
 		return std::make_unique<GSDumpRaw>(fp, nullptr);
 }
@@ -355,6 +357,95 @@ GSDumpLzma::~GSDumpLzma()
 
 	if (m_inbuf)
 		_aligned_free(m_inbuf);
+	if (m_area)
+		_aligned_free(m_area);
+}
+
+/******************************************************************/
+GSDumpDecompressZst::GSDumpDecompressZst(FILE* file, FILE* repack_file)
+	: GSDumpFile(file, repack_file)
+{
+	Initialize();
+}
+
+void GSDumpDecompressZst::Initialize()
+{
+	m_strm = ZSTD_createDStream();
+
+	m_area      = (uint8_t*)_aligned_malloc(OUTPUT_BUFFER_SIZE, 32);
+	m_inbuf.src = (uint8_t*)_aligned_malloc(INPUT_BUFFER_SIZE, 32);
+	m_inbuf.pos = 0;
+	m_inbuf.size = 0;
+	m_avail     = 0;
+	m_start     = 0;
+}
+
+void GSDumpDecompressZst::Decompress()
+{
+	ZSTD_outBuffer outbuf = { m_area, OUTPUT_BUFFER_SIZE, 0 };
+	while (outbuf.pos == 0)
+	{
+		// Nothing left in the input buffer. Read data from the file
+		if (m_inbuf.pos == m_inbuf.size && !feof(m_fp))
+		{
+			m_inbuf.size = fread((void*)m_inbuf.src, 1, INPUT_BUFFER_SIZE, m_fp);
+			m_inbuf.pos = 0;
+
+			if (ferror(m_fp))
+			{
+				fprintf(stderr, "Read error: %s\n", strerror(errno));
+				throw "BAD"; // Just exit the program
+			}
+		}
+
+		size_t ret = ZSTD_decompressStream(m_strm, &outbuf, &m_inbuf);
+		if (ZSTD_isError(ret))
+		{
+			fprintf(stderr, "Decoder error: (error code %s)\n", ZSTD_getErrorName(ret));
+			throw "BAD"; // Just exit the program
+		}
+	}
+
+	m_start = 0;
+	m_avail = outbuf.pos;
+}
+
+bool GSDumpDecompressZst::IsEof()
+{
+	return feof(m_fp) && m_avail == 0 && m_inbuf.pos == m_inbuf.size;
+}
+
+size_t GSDumpDecompressZst::Read(void* ptr, size_t size)
+{
+	size_t off = 0;
+	uint8_t* dst = (uint8_t*)ptr;
+	while (size && !IsEof())
+	{
+		if (m_avail == 0)
+		{
+			Decompress();
+		}
+
+		size_t l = std::min(size, m_avail);
+		memcpy(dst + off, m_area + m_start, l);
+		m_avail -= l;
+		size    -= l;
+		m_start += l;
+		off     += l;
+	}
+
+	if (off > 0)
+		Repack(ptr, off);
+
+	return off;
+}
+
+GSDumpDecompressZst::~GSDumpDecompressZst()
+{
+	ZSTD_freeDStream(m_strm);
+
+	if (m_inbuf.src)
+		_aligned_free((void*)m_inbuf.src);
 	if (m_area)
 		_aligned_free(m_area);
 }

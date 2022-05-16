@@ -195,7 +195,8 @@ enum class TexturePreloadingLevel : u8
 enum class GSDumpCompressionMethod : u8
 {
 	Uncompressed,
-	LZMA
+	LZMA,
+	Zstandard,
 };
 
 // Template function for casting enumerations to their underlying type

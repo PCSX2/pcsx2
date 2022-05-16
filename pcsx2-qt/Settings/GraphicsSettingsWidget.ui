@@ -1194,7 +1194,12 @@
             </item>
             <item>
              <property name="text">
-              <string>LZMA (XZ)</string>
+              <string>LZMA (xz)</string>
+             </property>
+            </item>
+			<item>
+             <property name="text">
+              <string>Zstandard (zst)</string>
              </property>
             </item>
            </widget>
