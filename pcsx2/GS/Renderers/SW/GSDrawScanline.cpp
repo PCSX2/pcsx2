@@ -98,6 +98,7 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData* data)
 	sel.fb = m_global.sel.fb;
 	sel.zb = m_global.sel.zb;
 	sel.zoverflow = m_global.sel.zoverflow;
+	sel.zequal = m_global.sel.zequal;
 	sel.notest = m_global.sel.notest;
 
 	m_sp = m_sp_map[sel];
@@ -161,7 +162,7 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 				}
 			}
 
-			if (has_z)
+			if (has_z && !sel.zequal)
 			{
 				const GSVector4 dz = GSVector4::broadcast64(&dscan.p.z);
 				const VectorF dzf(static_cast<float>(dscan.p.F64[1]));
@@ -357,8 +358,20 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 		if (sel.zb)
 		{
 			VectorF zbase = VectorF::broadcast64(&scan.p.z);
-			z0 = zbase.add64(VectorF::f32to64(&local.d[skip].z.F32[0]));
-			z1 = zbase.add64(VectorF::f32to64(&local.d[skip].z.F32[vlen/2]));
+			if (sel.zequal)
+			{
+#if _M_SSE >= 0x501
+				z0 = GSVector8::cast(GSVector8i::broadcast32(zbase.extract<0>().f64toi32()));
+#else
+				z0 = GSVector4::cast(zbase.f64toi32());
+				z0 = z0.upld(z0);
+#endif
+			}
+			else
+			{
+				z0 = zbase.add64(VectorF::f32to64(&local.d[skip].z.F32[0]));
+				z1 = zbase.add64(VectorF::f32to64(&local.d[skip].z.F32[vlen/2]));
+			}
 		}
 	}
 
@@ -449,7 +462,11 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 
 				if (sel.prim != GS_SPRITE_CLASS)
 				{
-					if (sel.zoverflow)
+					if (sel.zequal)
+					{
+						zs = VectorI::cast(z0);
+					}
+					else if (sel.zoverflow)
 					{
 						// SSE only has double to int32 conversion, no double to uint32
 						// Work around this by subtracting 0x80000000 before converting, then adding it back after
@@ -1492,7 +1509,7 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 
 		if (sel.prim != GS_SPRITE_CLASS)
 		{
-			if (sel.zb)
+			if (sel.zb && !sel.zequal)
 			{
 #if _M_SSE >= 0x501
 				GSVector8 add = GSVector8::broadcast64(&local.d8.p.z);

@@ -720,7 +720,17 @@ void GSDrawScanlineCodeGenerator2::Init()
 				paddw(f, ptr[a1 + offsetof(GSScanlineLocalData::skip, f)]);
 			}
 
-			if (m_sel.zb)
+			if (m_sel.zb && m_sel.zequal)
+			{
+				Xmm zx(_z.getIdx());
+				cvttsd2si(rax, ptr[a3 + offsetof(GSVertexSW, p.z)]);
+				movd(zx, eax);
+				if (hasAVX2)
+					vpbroadcastd(_z, zx);
+				else
+					pshufd(_z, _z, _MM_SHUFFLE(0, 0, 0, 0));
+			}
+			else if (m_sel.zb)
 			{
 				// z = vp.zzzz() + m_local.d[skip].z;
 				broadcastsd(xym1, ptr[a3 + offsetof(GSVertexSW, p.z)]); // v.p.z
@@ -908,7 +918,7 @@ void GSDrawScanlineCodeGenerator2::Step()
 	{
 		// z += m_local.d4.z;
 
-		if (m_sel.zb)
+		if (m_sel.zb && !m_sel.zequal)
 		{
 			broadcastsd(xym7, _rip_local_d_p(z));
 			addpd(_z, xym7);
@@ -1054,7 +1064,11 @@ void GSDrawScanlineCodeGenerator2::TestZ(const XYm& temp1, const XYm& temp2)
 
 	if (m_sel.prim != GS_SPRITE_CLASS)
 	{
-		if (m_sel.zoverflow)
+		if (m_sel.zequal)
+		{
+			movdqa(xym0, _z);
+		}
+		else if (m_sel.zoverflow)
 		{
 			// GSVector4i zl = z0.add64(VectorF::m_xc1e00000000fffff).f64toi32();
 			// GSVector4i zh = z1.add64(VectorF::m_xc1e00000000fffff).f64toi32();
