@@ -553,7 +553,7 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u32* index)
 	}
 }
 
-void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW2& edge, const GSVertexSW2& dedge, const GSVertexSW2& dscan, const GSVector4& p0)
+void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW2& RESTRICT edge, const GSVertexSW2& RESTRICT dedge, const GSVertexSW2& RESTRICT dscan, const GSVector4& RESTRICT p0)
 {
 	ASSERT(top < bottom);
 	ASSERT(edge.p.x <= edge.p.y);
@@ -732,7 +732,7 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u32* index)
 	}
 }
 
-void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW& edge, const GSVertexSW& dedge, const GSVertexSW& dscan, const GSVector4& p0)
+void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW& RESTRICT edge, const GSVertexSW& RESTRICT dedge, const GSVertexSW& RESTRICT dscan, const GSVector4& RESTRICT p0)
 {
 	ASSERT(top < bottom);
 	ASSERT(edge.p.x <= edge.p.y);
