@@ -1608,10 +1608,9 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys)
 		 if (pressed)
 			 return;
 
-		 GetMTGS().RunOnGSThread([]() {
-			 GSConfig.AspectRatio = static_cast<AspectRatioType>((static_cast<int>(GSConfig.AspectRatio) + 1) % static_cast<int>(AspectRatioType::MaxCount));
-			 Host::AddKeyedFormattedOSDMessage("CycleAspectRatio", 10.0f, "Aspect ratio set to '%s'.", Pcsx2Config::GSOptions::AspectRatioNames[static_cast<int>(GSConfig.AspectRatio)]);
-		 });
+		 // technically this races, but the worst that'll happen is one frame uses the old AR.
+		 EmuConfig.CurrentAspectRatio = static_cast<AspectRatioType>((static_cast<int>(EmuConfig.CurrentAspectRatio) + 1) % static_cast<int>(AspectRatioType::MaxCount));
+		 Host::AddKeyedFormattedOSDMessage("CycleAspectRatio", 10.0f, "Aspect ratio set to '%s'.", Pcsx2Config::GSOptions::AspectRatioNames[static_cast<int>(EmuConfig.CurrentAspectRatio)]);
 	 }},
 	{"CycleMipmapMode", "Graphics", "Cycle Hardware Mipmapping", [](bool pressed) {
 		 if (pressed)
