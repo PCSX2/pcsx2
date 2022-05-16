@@ -56,9 +56,10 @@ struct GSDumpHeader
 
 class GSDumpBase
 {
+	FILE* m_gs;
+	std::string m_filename;
 	int m_frames;
 	int m_extra_frames;
-	FILE* m_gs;
 
 protected:
 	void AddHeader(const std::string& serial, u32 crc,
@@ -70,8 +71,10 @@ protected:
 	virtual void AppendRawData(u8 c) = 0;
 
 public:
-	GSDumpBase(const std::string& fn);
+	GSDumpBase(std::string fn);
 	virtual ~GSDumpBase();
+
+	__fi const std::string& GetPath() const { return m_filename; }
 
 	void ReadFIFO(u32 size);
 	void Transfer(int index, const u8* mem, size_t size);

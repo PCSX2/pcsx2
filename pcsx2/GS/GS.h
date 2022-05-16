@@ -66,15 +66,16 @@ void GSgifTransfer1(u8* mem, u32 addr);
 void GSgifTransfer2(u8* mem, u32 size);
 void GSgifTransfer3(u8* mem, u32 size);
 void GSvsync(u32 field, bool registers_written);
-u32 GSmakeSnapshot(char* path);
 int GSfreeze(FreezeAction mode, freezeData* data);
+void GSQueueSnapshot(const std::string& path, u32 gsdump_frames = 0);
+void GSStopGSDump();
 #ifndef PCSX2_CORE
 void GSkeyEvent(const HostKeyEvent& e);
 void GSconfigure();
 int GStest();
-#endif
 bool GSsetupRecording(std::string& filename);
 void GSendRecording();
+#endif
 void GSsetGameCRC(u32 crc, int options);
 void GSsetFrameSkip(int frameskip);
 
@@ -139,6 +140,7 @@ public:
 	std::vector<GSSetting> m_gs_crc_level;
 	std::vector<GSSetting> m_gs_acc_blend_level;
 	std::vector<GSSetting> m_gs_tv_shaders;
+	std::vector<GSSetting> m_gs_dump_compression;
 };
 
 struct GSError

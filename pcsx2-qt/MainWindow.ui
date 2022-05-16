@@ -136,8 +136,9 @@
      </property>
     </widget>
     <addaction name="separator"/>
-    <addaction name="actionToggleSoftwareRendering"/>
     <addaction name="menuDebugSwitchRenderer"/>
+    <addaction name="actionToggleSoftwareRendering"/>
+    <addaction name="actionSaveGSDump"/>
     <addaction name="separator"/>
     <addaction name="actionReloadPatches"/>
     <addaction name="separator"/>
@@ -561,11 +562,12 @@
    </property>
   </action>
   <action name="actionDEV9Settings">
+   <property name="icon">
+    <iconset theme="dashboard-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Network &amp;&amp; HDD</string>
-   </property>
-   <property name="icon">
-    <iconset theme="dashboard-line"/>
    </property>
   </action>
   <action name="actionViewToolbar">
@@ -736,6 +738,11 @@
    </property>
    <property name="text">
     <string>Enable IOP Console Logging</string>
+   </property>
+  </action>
+  <action name="actionSaveGSDump">
+   <property name="text">
+    <string>Save Single Frame GS Dump</string>
    </property>
   </action>
  </widget>

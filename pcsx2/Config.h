@@ -192,6 +192,12 @@ enum class TexturePreloadingLevel : u8
 	Full,
 };
 
+enum class GSDumpCompressionMethod : u8
+{
+	Uncompressed,
+	LZMA
+};
+
 // Template function for casting enumerations to their underlying type
 template <typename Enumeration>
 typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
@@ -519,6 +525,7 @@ struct Pcsx2Config
 		CRCHackLevel CRCHack{CRCHackLevel::Automatic};
 		BiFiltering TextureFiltering{BiFiltering::PS2};
 		TexturePreloadingLevel TexturePreloading{TexturePreloadingLevel::Off};
+		GSDumpCompressionMethod GSDumpCompression{GSDumpCompressionMethod::Uncompressed};
 		int Dithering{2};
 		int MaxAnisotropy{0};
 		int SWExtraThreads{2};

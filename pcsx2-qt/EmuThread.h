@@ -79,6 +79,7 @@ public Q_SLOTS:
 	void enumerateInputDevices();
 	void enumerateVibrationMotors();
 	void runOnCPUThread(const std::function<void()>& func);
+	void queueSnapshot(quint32 gsdump_frames);
 
 Q_SIGNALS:
 	DisplayWidget* onCreateDisplayRequested(bool fullscreen, bool render_to_main);

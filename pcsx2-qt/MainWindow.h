@@ -134,6 +134,7 @@ private Q_SLOTS:
 	void onThemeChangedFromSettings();
 	void onLoggingOptionChanged();
 	void onScreenshotActionTriggered();
+	void onSaveGSDumpActionTriggered();
 
 	void onVMStarting();
 	void onVMStarted();
