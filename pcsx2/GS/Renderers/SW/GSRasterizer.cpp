@@ -72,6 +72,13 @@ GSRasterizer::~GSRasterizer()
 	delete m_ds;
 }
 
+static void __fi AddScanlineInfo(GSVertexSW* e, int pixels, int left, int top)
+{
+	e->_pad.I32[0] = pixels;
+	e->_pad.I32[1] = left;
+	e->_pad.I32[2] = top;
+}
+
 bool GSRasterizer::IsOneOfMyScanlines(int top) const
 {
 	ASSERT(top >= 0 && top < 2048);
@@ -579,12 +586,10 @@ void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW2& edge, c
 			float prestep = l.x - p0.x;
 			GSVector8 prestepv(prestep);
 
-			GSVertexSW2 scan;
-			GSVector4::storel(&scan.p, xy + GSVector4::loadl(&dscan.p) * prestepv.extract<0>());
-			scan.p.F64[1] = edge.p.F64[1] + dedge.p.F64[1] * dy + dscan.p.F64[1] * prestep;
-			scan.tc = edge.tc + dedge.tc * dyv + dscan.tc * prestepv;
+			reinterpret_cast<GSVertexSW2*>(e)->p.F64[1] = edge.p.F64[1] + dedge.p.F64[1] * dy + dscan.p.F64[1] * prestep;
+			reinterpret_cast<GSVertexSW2*>(e)->tc = edge.tc + dedge.tc * dyv + dscan.tc * prestepv;
 
-			AddScanline(e++, pixels, left, top, (GSVertexSW&)scan);
+			AddScanlineInfo(e++, pixels, left, top);
 		}
 
 		top++;
@@ -758,13 +763,11 @@ void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW& edge, co
 		{
 			const float prestep = l.x - p0.x;
 
-			GSVertexSW scan;
-			GSVector4::storel(&scan.p, xy + GSVector4::loadl(&dscan.p) * prestep);
-			scan.p.F64[1] = edge.p.F64[1] + dedge.p.F64[1] * dy + dscan.p.F64[1] * prestep;
-			scan.t = edge.t + dedge.t * dy + dscan.t * prestep;
-			scan.c = edge.c + dedge.c * dy + dscan.c * prestep;
+			e->p.F64[1] = edge.p.F64[1] + dedge.p.F64[1] * dy + dscan.p.F64[1] * prestep;
+			e->t = edge.t + dedge.t * dy + dscan.t * prestep;
+			e->c = edge.c + dedge.c * dy + dscan.c * prestep;
 
-			AddScanline(e++, pixels, left, top, scan);
+			AddScanlineInfo(e++, pixels, left, top);
 		}
 
 		top++;
@@ -1075,10 +1078,7 @@ void GSRasterizer::DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GS
 void GSRasterizer::AddScanline(GSVertexSW* e, int pixels, int left, int top, const GSVertexSW& scan)
 {
 	*e = scan;
-
-	e->_pad.I32[0] = pixels;
-	e->_pad.I32[1] = left;
-	e->_pad.I32[2] = top;
+	AddScanlineInfo(e, pixels, left, top);
 }
 
 void GSRasterizer::Flush(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, bool edge)
