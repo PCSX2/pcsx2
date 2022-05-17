@@ -38,8 +38,13 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 	It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif()
 
-if(NOT MSVC)
+if(MSVC)
+	if (MSVC_VERSION GREATER_EQUAL 1930)
+		target_compile_options(PCSX2_FLAGS INTERFACE /fp:contract)
+	endif()
+else()
 	target_compile_options(PCSX2_FLAGS INTERFACE
+		-ffp-contract=fast
 		-fno-strict-aliasing
 		-Wstrict-aliasing # Allow to track strict aliasing issue.
 		-Wno-parentheses
