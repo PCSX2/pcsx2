@@ -312,7 +312,7 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 	const GSVector4i* const_test = (GSVector4i*)g_const->m_test_128b;
 #endif
 	VectorI test;
-	VectorF zo0, zo1;
+	VectorF z0, z1;
 	VectorI f;
 	VectorF s, t, q;
 	VectorI uf, vf;
@@ -358,8 +358,9 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 
 		if (sel.zb)
 		{
-			zo0 = local.d[skip].z0;
-			zo1 = local.d[skip].z1;
+			VectorF zbase = VectorF::broadcast64(&scan.p.z);
+			z0 = zbase.add64(local.d[skip].z0);
+			z1 = zbase.add64(local.d[skip].z1);
 		}
 	}
 
@@ -450,11 +451,6 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 
 				if (sel.prim != GS_SPRITE_CLASS)
 				{
-					// Need to handle when the float converts incorrectly
-					VectorF zbase = VectorF::broadcast64(&scan.p.z);
-					VectorF z0 = zbase.add64(zo0);
-					VectorF z1 = zbase.add64(zo1);
-
 					if (sel.zoverflow)
 					{
 						// SSE only has double to int32 conversion, no double to uint32
@@ -1505,8 +1501,8 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 #else
 				GSVector4 add = local.d4.z;
 #endif
-				zo0 = zo0.add64(add);
-				zo1 = zo1.add64(add);
+				z0 = z0.add64(add);
+				z1 = z1.add64(add);
 			}
 
 			if (sel.fwrite && sel.fge)

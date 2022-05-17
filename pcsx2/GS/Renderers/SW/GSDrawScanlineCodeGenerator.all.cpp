@@ -100,7 +100,7 @@ GSDrawScanlineCodeGenerator2::GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator*
 	, _m_local__gd(chooseLocal(m_local.gd, _64_m_local__gd))
 	, _m_local__gd__vm(chooseLocal(m_local.gd->vm, _64_m_local__gd__vm))
 	, _rb(xym5), _ga(xym6), _fm(xym3), _zm(xym4), _fd(xym2), _test(xym15)
-	, _f(xym9), _s(xym10), _t(xym11), _q(xym12), _f_rb(xym13), _f_ga(xym14)
+	, _z(xym8), _f(xym9), _s(xym10), _t(xym11), _q(xym12), _f_rb(xym13), _f_ga(xym14)
 {
 	m_sel.key = key;
 	use_lod = m_sel.mmin;
@@ -394,7 +394,7 @@ L("loop");
 	// xym4 = q (tme)   | free
 	// xym5 = rb (!tme)
 	// xym6 = ga (!tme)
-	// xym7 = test      | free
+	// xym7 = test      | z0
 	// xym15 =          | test
 
 	bool tme = m_sel.tfx != TFX_NONE;
@@ -723,20 +723,19 @@ void GSDrawScanlineCodeGenerator2::Init()
 			if (m_sel.zb)
 			{
 				// z = vp.zzzz() + m_local.d[skip].z;
-				broadcastsd(xym1, ptr[a3 + offsetof(GSVertexSW, p.z)]); // v.p.z
+				broadcastsd(_z, ptr[a3 + offsetof(GSVertexSW, p.z)]); // v.p.z
 				if (hasAVX)
 				{
-					vaddpd(xym0, xym1, ptr[a1 + offsetof(GSScanlineLocalData::skip, z0)]);
-					vaddpd(xym1, xym1, ptr[a1 + offsetof(GSScanlineLocalData::skip, z1)]);
+					vaddpd(xym7, _z, ptr[a1 + offsetof(GSScanlineLocalData::skip, z0)]);
+					vaddpd(_z,   _z, ptr[a1 + offsetof(GSScanlineLocalData::skip, z1)]);
 				}
 				else
 				{
-					movaps(xym0, ptr[a1 + offsetof(GSScanlineLocalData::skip, z0)]);
-					addpd(xym0, xym1);
-					addpd(xym1, ptr[a1 + offsetof(GSScanlineLocalData::skip, z1)]);
+					movaps(xym7, ptr[a1 + offsetof(GSScanlineLocalData::skip, z0)]);
+					addpd(xym7, _z);
+					addpd(_z, ptr[a1 + offsetof(GSScanlineLocalData::skip, z1)]);
 				}
-				movaps(_rip_local(temp.z0), xym0);
-				movaps(_rip_local(temp.z1), xym1);
+				movaps(_rip_local(temp.z0), xym7);
 			}
 		}
 	}
@@ -798,7 +797,7 @@ void GSDrawScanlineCodeGenerator2::Init()
 				}
 				else if (m_sel.ltf)
 				{
-					XYm vf = xym7;
+					XYm vf = xym5;
 					pshuflw(vf, t, _MM_SHUFFLE(2, 2, 0, 0));
 					pshufhw(vf, vf, _MM_SHUFFLE(2, 2, 0, 0));
 					psrlw(vf, 12);
@@ -918,20 +917,10 @@ void GSDrawScanlineCodeGenerator2::Step()
 
 		if (m_sel.zb)
 		{
-			broadcastsd(xym1, _rip_local_d_p(z));
-			if (hasAVX)
-			{
-				vaddpd(xym0, xym1, _rip_local(temp.z0));
-				vaddpd(xym1, xym1, _rip_local(temp.z1));
-			}
-			else
-			{
-				movaps(xym0, _rip_local(temp.z0));
-				addpd(xym0, xym1);
-				addpd(xym1, _rip_local(temp.z1));
-			}
-			movaps(_rip_local(temp.z0), xym0);
-			movaps(_rip_local(temp.z1), xym1);
+			broadcastsd(xym7, _rip_local_d_p(z));
+			addpd(_z, xym7);
+			addpd(xym7, _rip_local(temp.z0));
+			movaps(_rip_local(temp.z0), xym7);
 		}
 
 		// f = f.add16(m_local.d4.f);
@@ -1052,7 +1041,7 @@ void GSDrawScanlineCodeGenerator2::Step()
 	}
 }
 
-/// Inputs: xym0[x86]=z, t1=fza_base, t0=fza_offset, _test
+/// Inputs: xym0[x86]=z, xym7[x64]=z0, t1=fza_base, t0=fza_offset, _test
 /// Outputs: t2=za
 /// Destroys: rax, xym0, temp1, temp2
 void GSDrawScanlineCodeGenerator2::TestZ(const XYm& temp1, const XYm& temp2)
@@ -1082,18 +1071,9 @@ void GSDrawScanlineCodeGenerator2::TestZ(const XYm& temp1, const XYm& temp2)
 			auto m_imin = loadAddress(rax, &GSVector4::m_xc1e00000000fffff);
 			broadcastsd(temp1, ptr[m_imin]);
 
-			if (hasAVX)
-			{
-				vaddpd(xym0,  temp1, _rip_local(temp.z0));
-				vaddpd(temp1, temp1, _rip_local(temp.z1));
-			}
-			else
-			{
-				movaps(xym0, _rip_local(temp.z0));
-				addpd(xym0, temp1);
-				addpd(temp1, _rip_local(temp.z1));
-			}
-			cvtpd2dq(xmm0, xym0);
+			addpd(xym7, temp1);
+			addpd(temp1, _z);
+			cvtpd2dq(xmm0, xym7);
 			cvtpd2dq(Xmm(temp1.getIdx()), temp1);
 
 #if USING_YMM
@@ -1110,13 +1090,11 @@ void GSDrawScanlineCodeGenerator2::TestZ(const XYm& temp1, const XYm& temp2)
 		{
 			// zs = GSVector8i(z0.f64toi32(), z1.f64toi32());
 
+			cvttpd2dq(xmm0, xym7);
+			cvttpd2dq(Xmm(temp1.getIdx()), _z);
 #if USING_YMM
-			cvttpd2dq(xmm0, _rip_local_(yword, temp.z0));
-			cvttpd2dq(Xmm(temp1.getIdx()), _rip_local_(yword, temp.z1));
 			vinserti128(xym0, xym0, Xmm(temp1.getIdx()), 1);
 #else
-			cvttpd2dq(xmm0, _rip_local_(xword, temp.z0));
-			cvttpd2dq(temp1, _rip_local_(xword, temp.z1));
 			punpcklqdq(xym0, temp1);
 #endif
 		}
