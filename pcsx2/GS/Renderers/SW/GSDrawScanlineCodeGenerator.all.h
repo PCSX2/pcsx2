@@ -82,7 +82,7 @@ class GSDrawScanlineCodeGenerator2 : public GSNewCodeGenerator
 	/// Available on both x86 and x64, not always valid
 	const XYm _rb, _ga, _fm, _zm, _fd, _test;
 	/// Always valid if needed, x64 only
-	const XYm _f, _s, _t, _q, _f_rb, _f_ga;
+	const XYm _z, _f, _s, _t, _q, _f_rb, _f_ga;
 
 	/// Returns the first arg on 32-bit, second on 64-bit
 	static LocalAddr chooseLocal(const void* addr32, AddressReg reg64)
