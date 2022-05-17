@@ -481,18 +481,21 @@ void OpenGLHostDisplay::KickTimestampQuery()
 	m_timestamp_query_started = true;
 }
 
-void OpenGLHostDisplay::SetGPUTimingEnabled(bool enabled)
+bool OpenGLHostDisplay::SetGPUTimingEnabled(bool enabled)
 {
-	enabled &= (!m_gl_context->IsGLES() || GLAD_GL_EXT_disjoint_timer_query);
-
 	if (m_gpu_timing_enabled == enabled)
-		return;
+		return true;
+
+	if (enabled && m_gl_context->IsGLES() && !GLAD_GL_EXT_disjoint_timer_query)
+		return false;
 
 	m_gpu_timing_enabled = enabled;
 	if (m_gpu_timing_enabled)
 		CreateTimestampQueries();
 	else
 		DestroyTimestampQueries();
+
+	return true;
 }
 
 float OpenGLHostDisplay::GetAndResetAccumulatedGPUTime()

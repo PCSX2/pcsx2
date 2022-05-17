@@ -645,9 +645,10 @@ void D3D12HostDisplay::EndPresent()
 		m_swap_chain->Present(static_cast<UINT>(vsync), 0);
 }
 
-void D3D12HostDisplay::SetGPUTimingEnabled(bool enabled)
+bool D3D12HostDisplay::SetGPUTimingEnabled(bool enabled)
 {
 	g_d3d12_context->SetEnableGPUTiming(enabled);
+	return true;
 }
 
 float D3D12HostDisplay::GetAndResetAccumulatedGPUTime()

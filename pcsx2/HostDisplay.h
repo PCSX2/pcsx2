@@ -136,7 +136,7 @@ public:
 	virtual bool GetHostRefreshRate(float* refresh_rate);
 
 	/// Enables/disables GPU frame timing.
-	virtual void SetGPUTimingEnabled(bool enabled);
+	virtual bool SetGPUTimingEnabled(bool enabled);
 
 	/// Returns the amount of GPU time utilized since the last time this method was called.
 	virtual float GetAndResetAccumulatedGPUTime();

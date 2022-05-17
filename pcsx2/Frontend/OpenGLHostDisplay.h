@@ -62,7 +62,7 @@ public:
 	bool BeginPresent(bool frame_skip) override;
 	void EndPresent() override;
 
-	void SetGPUTimingEnabled(bool enabled) override;
+	bool SetGPUTimingEnabled(bool enabled) override;
 	float GetAndResetAccumulatedGPUTime() override;
 
 protected:

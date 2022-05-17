@@ -221,7 +221,7 @@ namespace Vulkan
 		void WaitForGPUIdle();
 
 		float GetAndResetAccumulatedGPUTime();
-		void SetEnableGPUTiming(bool enabled);
+		bool SetEnableGPUTiming(bool enabled);
 
 	private:
 		Context(VkInstance instance, VkPhysicalDevice physical_device);
