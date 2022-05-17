@@ -281,10 +281,10 @@ static bool DoGSOpen(GSRendererType renderer, u8* basemem)
 		return false;
 	}
 
-	g_gs_renderer->SetRegsMem(basemem);
-
 	display->SetVSync(EmuConfig.GetEffectiveVsyncMode());
-	display->SetGPUTimingEnabled(GSConfig.OsdShowGPU);
+	GSConfig.OsdShowGPU = EmuConfig.GS.OsdShowGPU && display->SetGPUTimingEnabled(true);
+
+	g_gs_renderer->SetRegsMem(basemem);
 	return true;
 }
 
@@ -861,7 +861,10 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	if (GSConfig.OsdShowGPU != old_config.OsdShowGPU)
 	{
 		if (HostDisplay* display = Host::GetHostDisplay(); display)
-			display->SetGPUTimingEnabled(GSConfig.OsdShowGPU);
+		{
+			if (!display->SetGPUTimingEnabled(GSConfig.OsdShowGPU))
+				GSConfig.OsdShowGPU = false;
+		}
 	}
 }
 

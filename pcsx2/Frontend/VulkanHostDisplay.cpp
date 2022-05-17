@@ -419,9 +419,9 @@ void VulkanHostDisplay::EndPresent()
 	g_vulkan_context->MoveToNextCommandBuffer();
 }
 
-void VulkanHostDisplay::SetGPUTimingEnabled(bool enabled)
+bool VulkanHostDisplay::SetGPUTimingEnabled(bool enabled)
 {
-	g_vulkan_context->SetEnableGPUTiming(enabled);
+	return g_vulkan_context->SetEnableGPUTiming(enabled);
 }
 
 float VulkanHostDisplay::GetAndResetAccumulatedGPUTime()
