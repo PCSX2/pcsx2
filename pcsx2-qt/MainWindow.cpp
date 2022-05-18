@@ -491,7 +491,7 @@ void MainWindow::setStyleFromSettings()
 
 		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
 	}
-		else if (theme == "PS2_GTK")
+		else if (theme == "Purple_GTK")
 	{
 		//THeme by Daisouji,  based on the Plum GTK Theme
 		qApp->setStyle(QStyleFactory::create("Fusion"));
@@ -539,7 +539,7 @@ void MainWindow::setIconThemeFromSettings()
 	const std::string theme(QtHost::GetBaseStringSettingValue("UI", "Theme", DEFAULT_THEME_NAME));
 	QString icon_theme;
 
-	if (theme == "darkfusion" || theme == "darkfusionblue" || theme == "dualtoneOrangeBlue" || theme == "ScarletDevilRed")
+	if (theme == "darkfusion" || theme == "darkfusionblue" || theme == "dualtoneOrangeBlue" || theme == "ScarletDevilRed" || theme == "Purple GTK")
 		icon_theme = QStringLiteral("white");
 	else
 		icon_theme = QStringLiteral("black");
