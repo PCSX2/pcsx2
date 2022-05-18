@@ -502,7 +502,6 @@ void MainWindow::setStyleFromSettings()
                 const QColor slate(18, 18, 18); 
                 const QColor brightPurple(72, 6, 127);
 
-
                 QPalette darkPalette;
                 darkPalette.setColor(QPalette::Window, slate);
                 darkPalette.setColor(QPalette::WindowText, Qt::white);
