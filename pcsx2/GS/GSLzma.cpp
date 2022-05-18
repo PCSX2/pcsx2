@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/AlignedMalloc.h"
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
 

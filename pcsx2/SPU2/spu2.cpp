@@ -169,7 +169,7 @@ s32 SPU2init()
 #ifdef SPU2_LOG
 	if (AccessLog())
 	{
-		spu2Log = OpenLog(AccessLogFileName);
+		spu2Log = OpenLog(AccessLogFileName.c_str());
 		setvbuf(spu2Log, nullptr, _IONBF, 0);
 		FileLog("SPU2init\n");
 	}

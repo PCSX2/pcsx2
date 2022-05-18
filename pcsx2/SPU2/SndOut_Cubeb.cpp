@@ -98,10 +98,9 @@ private:
 
 	static void LogCallback(const char* fmt, ...)
 	{
-		FastFormatAscii msg;
 		std::va_list ap;
 		va_start(ap, fmt);
-		msg.WriteV(fmt, ap);
+		std::string msg(StringUtil::StdStringFromFormatV(fmt, ap));
 		va_end(ap);
 		Console.WriteLn("(Cubeb): %s", msg.c_str());
 	}

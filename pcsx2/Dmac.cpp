@@ -273,7 +273,7 @@ static __ri void DmaExec( void (*func)(), u32 mem, u32 value )
 		static bool warned; //Check if the warning has already been output to console, to prevent constant spam.
 		if (!warned)
 		{
-			DevCon.Warning(L"%s CHCR.MOD set to 3, assuming 1 (chain)", ChcrName(mem));
+			DevCon.Warning("%s CHCR.MOD set to 3, assuming 1 (chain)", ChcrName(mem));
 			warned = true;
 		}
 		reg.chcr.MOD = 0x1;

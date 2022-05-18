@@ -13,7 +13,9 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "PersistentThread.h"
+#include <wx/thread.h>
 
 namespace Threading
 {
@@ -124,7 +126,7 @@ Threading::MutexRecursive::MutexRecursive()
 	if (++_attr_refcount == 1)
 	{
 		if (0 != pthread_mutexattr_init(&_attr_recursive))
-			throw Exception::OutOfMemory(L"Recursive mutexing attributes");
+			throw Exception::OutOfMemory("Recursive mutexing attributes");
 
 		pthread_mutexattr_settype(&_attr_recursive, PTHREAD_MUTEX_RECURSIVE);
 	}

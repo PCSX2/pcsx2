@@ -27,9 +27,10 @@
 #include "EventSource.h"
 #include "General.h"
 #include "Assertions.h"
-#include "Dependencies.h"
 #include <atomic>
+#include <memory>
 #include <mutex>
+#include <string>
 
 struct PageFaultInfo
 {
@@ -135,7 +136,7 @@ class VirtualMemoryManager
 {
 	DeclareNoncopyableObject(VirtualMemoryManager);
 
-	wxString m_name;
+	std::string m_name;
 
 	uptr m_baseptr;
 
@@ -149,7 +150,7 @@ public:
 	// If upper_bounds is nonzero and the OS fails to allocate memory that is below it,
 	// calls to IsOk() will return false and Alloc() will always return null pointers
 	// strict indicates that the allocation should quietly fail if the memory can't be mapped at `base`
-	VirtualMemoryManager(const wxString& name, uptr base, size_t size, uptr upper_bounds = 0, bool strict = false);
+	VirtualMemoryManager(std::string name, uptr base, size_t size, uptr upper_bounds = 0, bool strict = false);
 	~VirtualMemoryManager();
 
 	void* GetBase() const { return (void*)m_baseptr; }
@@ -195,7 +196,7 @@ class VirtualMemoryReserve
 	DeclareNoncopyableObject(VirtualMemoryReserve);
 
 protected:
-	wxString m_name;
+	std::string m_name;
 
 	// Where the memory came from (so we can return it)
 	VirtualMemoryManagerPtr m_allocator;
@@ -228,7 +229,7 @@ protected:
 	virtual size_t GetSize(size_t requestedSize);
 
 public:
-	VirtualMemoryReserve(const wxString& name, size_t size = 0);
+	VirtualMemoryReserve(std::string name, size_t size = 0);
 	virtual ~VirtualMemoryReserve()
 	{
 		Release();
@@ -260,7 +261,7 @@ public:
 	virtual void AllowModification();
 
 	bool IsOk() const { return m_baseptr != NULL; }
-	const wxString& GetName() const { return m_name; }
+	const std::string& GetName() const { return m_name; }
 
 	uptr GetReserveSizeInBytes() const { return m_pages_reserved * __pagesize; }
 	uptr GetReserveSizeInPages() const { return m_pages_reserved; }

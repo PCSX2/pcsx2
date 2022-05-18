@@ -141,20 +141,20 @@ s64 x86capabilities::_CPUSpeedHz(u64 time) const
 	return (s64)newCycleCount;
 }
 
-wxString x86capabilities::GetTypeName() const
+const char* x86capabilities::GetTypeName() const
 {
 	switch (TypeID)
 	{
 		case 0:
-			return L"Standard OEM";
+			return "Standard OEM";
 		case 1:
-			return L"Overdrive";
+			return "Overdrive";
 		case 2:
-			return L"Dual";
+			return "Dual";
 		case 3:
-			return L"Reserved";
+			return "Reserved";
 		default:
-			return L"Unknown";
+			return "Unknown";
 	}
 }
 

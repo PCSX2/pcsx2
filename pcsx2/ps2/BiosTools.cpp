@@ -303,8 +303,8 @@ bool LoadBIOS()
 	}
 
 #ifndef PCSX2_CORE
-	Console.SetTitle(StringUtil::UTF8StringToWxString(StringUtil::StdStringFromFormat("Running BIOS (%s v%u.%u)",
-		BiosZone.c_str(), BiosVersion >> 8, BiosVersion & 0xff)));
+	Console.SetTitle(StringUtil::StdStringFromFormat("Running BIOS (%s v%u.%u)",
+		BiosZone.c_str(), BiosVersion >> 8, BiosVersion & 0xff).c_str());
 #endif
 
 	//injectIRX("host.irx");	//not fully tested; still buggy

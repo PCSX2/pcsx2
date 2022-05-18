@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "fmt/core.h"
+
 #define eeAddrInRange(name, addr) \
 	(addr >= EEMemoryMap::name##_Start && addr < EEMemoryMap::name##_End)
 
@@ -269,20 +271,30 @@ static __ri void eeHwTraceLog( u32 addr, T val, bool mode )
 	if (!EmuConfig.Trace.Enabled || !EmuConfig.Trace.EE.m_EnableAll || !EmuConfig.Trace.EE.m_EnableRegisters) return;
 	if (!_eelog_enabled(addr)) return;
 
-	FastFormatAscii valStr;
-	FastFormatAscii labelStr;
-	labelStr.Write("Hw%s%u", mode ? "Read" : "Write", sizeof (T) * 8);
+	std::string labelStr(fmt::format("Hw{}{}", mode ? "Read" : "Write", sizeof(T) * 8));
+	std::string valStr;
 
-	switch( sizeof(T) )
+	if constexpr (sizeof(T) == 1)
 	{
-		case 1: valStr.Write("0x%02x", val); break;
-		case 2: valStr.Write("0x%04x", val); break;
-		case 4: valStr.Write("0x%08x", val); break;
-
-		case 8: valStr.Write("0x%08x.%08x", ((u32*)&val)[1], ((u32*)&val)[0]); break;
-		case 16: ((u128&)val).WriteTo(valStr);
+		valStr = fmt::format("0x{:02x}", val);
 	}
-			
+	else if constexpr (sizeof(T) == 2)
+	{
+		valStr = fmt::format("0x{:04x}", val);
+	}
+	else if constexpr (sizeof(T) == 4)
+	{
+		valStr = fmt::format("0x{:08x}", val);
+	}
+	else if constexpr (sizeof(T) == 8)
+	{
+		valStr = fmt::format("0x{:08x}.{:08x}", ((u32*)&val)[1], ((u32*)&val)[0]);
+	}
+	else if constexpr (sizeof(T) == 16)
+	{
+		valStr = StringUtil::U128ToString((u128&)val);
+	}
+
 	static const char* temp = "%-12s @ 0x%08X/%-16s %s %s";
 
 	if( const char* regname = _eelog_GetHwName<T>( addr, val ) )

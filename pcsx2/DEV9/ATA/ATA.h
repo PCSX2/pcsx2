@@ -22,6 +22,7 @@
 #include <condition_variable>
 #include <fstream>
 
+#include "common/Path.h"
 #include "DEV9/SimpleQueue.h"
 
 class ATA

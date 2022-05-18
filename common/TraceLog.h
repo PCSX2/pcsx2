@@ -16,6 +16,8 @@
 #pragma once
 
 #include "Console.h"
+#include "common/Assertions.h"
+#include "common/StringUtil.h"
 
 // --------------------------------------------------------------------------------------
 //  TraceLogDescriptor
@@ -26,15 +28,15 @@
 struct TraceLogDescriptor
 {
 	// short name, alphanumerics only: used for saving/loading options.
-	const wxChar* ShortName;
+	const char* ShortName;
 
 	// Standard UI name for this log source.  Used in menus, options dialogs.
-	const wxChar* Name;
+	const char* Name;
 
 	// Length description for use as a tooltip or menu item description.
-	const wxChar* Description;
+	const char* Description;
 
-	wxString GetShortName() const
+	const char* GetShortName() const
 	{
 		pxAssumeDev(Name, "Tracelog descriptors require a valid name!");
 		return ShortName ? ShortName : Name;
@@ -90,18 +92,18 @@ public:
 	// Provides a categorical identifier, typically in "group.subgroup.subgroup" form.
 	// (use periods in favor of colons, since they do not require escape characters when
 	// written to ini/config files).
-	virtual wxString GetCategory() const { return wxEmptyString; }
+	virtual std::string GetCategory() const { return std::string(); }
 
 	// This method should be used to determine if a log should be generated or not.
 	// See the class overview comments for details on how and why this method should
 	// be used.
 	virtual bool IsActive() const { return Enabled; }
 
-	virtual wxString GetShortName() const { return m_Descriptor->GetShortName(); }
-	virtual const wxChar* GetName() const { return m_Descriptor->Name; }
-	virtual const wxChar* GetDescription() const
+	virtual const char* GetShortName() const { return m_Descriptor->GetShortName(); }
+	virtual const char* GetName() const { return m_Descriptor->Name; }
+	virtual const char* GetDescription() const
 	{
-		return (m_Descriptor->Description != NULL) ? pxGetTranslation(m_Descriptor->Description) : wxEmptyString;
+		return (m_Descriptor->Description != NULL) ? m_Descriptor->Description : "";
 	}
 
 	virtual bool HasDescription() const { return m_Descriptor->Description != NULL; }
@@ -133,14 +135,14 @@ public:
 
 	bool WriteV(const char* fmt, va_list list) const
 	{
-		FastFormatAscii ascii;
+		std::string ascii;
 		ApplyPrefix(ascii);
-		ascii.WriteV(fmt, list);
-		DoWrite(ascii);
+		ascii += StringUtil::StdStringFromFormatV(fmt, list);
+		DoWrite(ascii.c_str());
 		return false;
 	}
 
-	virtual void ApplyPrefix(FastFormatAscii& ascii) const {}
+	virtual void ApplyPrefix(std::string& ascii) const {}
 	virtual void DoWrite(const char* fmt) const = 0;
 };
 
@@ -181,26 +183,6 @@ public:
 		return false;
 	}
 
-	bool Write(const wxChar* fmt, ...) const
-	{
-		va_list list;
-		va_start(list, fmt);
-		WriteV(fmt, list);
-		va_end(list);
-
-		return false;
-	}
-
-	bool Write(const wxString fmt, ...) const
-	{
-		va_list list;
-		va_start(list, fmt);
-		WriteV(fmt.wx_str(), list);
-		va_end(list);
-
-		return false;
-	}
-
 	// Writes to the console using the specified color.  This overrides the default color setting
 	// for this log.
 	bool Write(ConsoleColors color, const char* fmt, ...) const
@@ -213,68 +195,7 @@ public:
 		return false;
 	}
 
-	bool Write(ConsoleColors color, const wxChar* fmt, ...) const
-	{
-		va_list list;
-		va_start(list, fmt);
-		WriteV(color, fmt, list);
-		va_end(list);
-
-		return false;
-	}
-
-	// Writes to the console using bold yellow text -- overrides the log source's default
-	// color settings.
-	bool Warn(const wxChar* fmt, ...) const
-	{
-		va_list list;
-		va_start(list, fmt);
-		WriteV(Color_StrongYellow, fmt, list);
-		va_end(list);
-
-		return false;
-	}
-
-	bool Warn(const wxString fmt, ...) const
-	{
-		va_list list;
-		va_start(list, fmt);
-		WriteV(Color_StrongYellow, fmt.wx_str(), list);
-		va_end(list);
-
-		return false;
-	}
-
-	// Writes to the console using bold red text -- overrides the log source's default
-	// color settings.
-	bool Error(const wxChar* fmt, ...) const
-	{
-		va_list list;
-		va_start(list, fmt);
-		WriteV(Color_StrongRed, fmt, list);
-		va_end(list);
-
-		return false;
-	}
-
-	bool Error(const wxString fmt, ...) const
-	{
-		va_list list;
-		va_start(list, fmt);
-		WriteV(Color_StrongRed, fmt.wx_str(), list);
-		va_end(list);
-
-		return false;
-	}
-
 	bool WriteV(const char* fmt, va_list list) const;
-	bool WriteV(const wxChar* fmt, va_list list) const;
 
 	bool WriteV(ConsoleColors color, const char* fmt, va_list list) const;
-	bool WriteV(ConsoleColors color, const wxChar* fmt, va_list list) const;
-
-	virtual void DoWrite(const wxChar* msg) const
-	{
-		Console.DoWriteLn(msg);
-	}
 };

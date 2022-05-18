@@ -13,6 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "common/Assertions.h"
+
 class alignas(16) GSVector4i
 {
 	static const GSVector4i m_xff[17];
@@ -258,20 +260,6 @@ public:
 	GSVector4i fit(int arx, int ary) const;
 
 	GSVector4i fit(int preset) const;
-
-#ifdef _WIN32
-
-	__forceinline operator LPCRECT() const
-	{
-		return (LPCRECT)this;
-	}
-
-	__forceinline operator LPRECT()
-	{
-		return (LPRECT)this;
-	}
-
-#endif
 
 	//
 

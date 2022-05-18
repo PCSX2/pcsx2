@@ -16,17 +16,16 @@
 #pragma once
 
 #include <cinttypes>
+#include <wx/gdicmn.h>
 #include <wx/tokenzr.h>
-#include "common/Dependencies.h"
+#include "common/Pcsx2Defs.h"
 #include "common/SafeArray.h"
 #include "common/AlignedMalloc.h"
 
-#if _WIN32
-#define WX_STR(str) (str.wc_str())
-#else
-// Stupid wx3.0 doesn't support c_str for vararg function
-#define WX_STR(str) (static_cast<const char*>(str.c_str()))
-#endif
+// This should prove useful....
+#define wxsFormat wxString::Format
+
+#define WX_STR(str) ((str).wc_str())
 
 extern void px_fputs(FILE* fp, const char* src);
 
@@ -157,6 +156,9 @@ public:
 	}
 
 	FastFormatUnicode& operator+=(const char* psz);
+
+	wxScopedCharBuffer ToUTF8() const { return wxString(m_dest.GetPtr()).ToUTF8(); }
+	std::string ToStdString() const { return wxString(m_dest.GetPtr()).ToStdString(); }
 };
 
 #define pxsFmt FastFormatUnicode().Write
@@ -168,3 +170,67 @@ extern wxString operator+(const wxString& str1, const FastFormatUnicode& str2);
 extern wxString operator+(const wxChar* str1, const FastFormatUnicode& str2);
 extern wxString operator+(const FastFormatUnicode& str1, const wxString& str2);
 extern wxString operator+(const FastFormatUnicode& str1, const wxChar* str2);
+
+extern wxString fromUTF8(const std::string& str);
+extern wxString fromUTF8(const char* src);
+extern wxString fromAscii(const char* src);
+
+
+// --------------------------------------------------------------------------------------
+//  _(x) / _t(x) / _d(x) / pxL(x) / pxLt(x)  [macros]
+// --------------------------------------------------------------------------------------
+// Define pxWex's own i18n helpers.  These override the wxWidgets helpers and provide
+// additional functionality.  Define them FIRST THING, to make sure that wx's own gettext
+// macros aren't in place.
+//
+// _   is for standard translations
+// _t  is for tertiary low priority translations
+// _d  is for debug/devel build translations
+
+#define WXINTL_NO_GETTEXT_MACRO
+
+#ifndef _
+#define _(s) pxGetTranslation(_T(s))
+#endif
+
+#ifndef _t
+#define _t(s) pxGetTranslation(_T(s))
+#endif
+
+#ifndef _d
+#define _d(s) pxGetTranslation(_T(s))
+#endif
+
+// pxL / pxLt / pxDt -- macros provided for tagging translation strings, without actually running
+// them through the translator (which the _() does automatically, and sometimes we don't
+// want that).  This is a shorthand replacement for wxTRANSLATE.  pxL is a standard translation
+// moniker.  pxLt is for tertiary strings that have a very low translation priority.  pxDt is for
+// debug/devel specific translations.
+//
+#ifndef pxL
+#define pxL(a) wxT(a)
+#endif
+
+#ifndef pxLt
+#define pxLt(a) wxT(a)
+#endif
+
+#ifndef pxDt
+#define pxDt(a) wxT(a)
+#endif
+
+// --------------------------------------------------------------------------------------
+//  pxE(msg) and pxEt(msg)  [macros] => now same as _/_t/_d
+// --------------------------------------------------------------------------------------
+#define pxE(english) pxExpandMsg((english))
+
+// For use with tertiary translations (low priority).
+#define pxEt(english) pxExpandMsg((english))
+
+// For use with Dev/debug build translations (low priority).
+#define pxE_dev(english) pxExpandMsg((english))
+
+
+extern const wxChar* pxExpandMsg(const wxChar* message);
+extern const wxChar* pxGetTranslation(const wxChar* message);
+extern bool pxIsEnglish(int id);

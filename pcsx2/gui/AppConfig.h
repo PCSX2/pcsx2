@@ -88,6 +88,8 @@ bool IsPortable();
 
 extern InstallationModeType	InstallationMode;
 
+extern const wxChar* CDVD_SourceLabels[];
+
 // =====================================================================================================
 //  Pcsx2 Application Configuration. 
 // =====================================================================================================

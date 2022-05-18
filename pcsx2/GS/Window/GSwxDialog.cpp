@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSwxDialog.h"
 #include "gui/AppConfig.h"
+#include "gui/StringHelpers.h"
 #include "GS/GSUtil.h"
 #include "HostDisplay.h"
 

@@ -16,6 +16,7 @@
 #pragma once
 
 #include "Global.h"
+#include <string>
 #ifdef _WIN32
 #include <soundtouch\soundtouch\SoundTouch.h>
 #endif
@@ -57,12 +58,12 @@ static __forceinline bool MemDump() { return _MemDump & DebugEnabled; }
 static __forceinline bool RegDump() { return _RegDump & DebugEnabled; }
 static __forceinline bool VisualDebug() { return _visual_debug_enabled & DebugEnabled; }
 
-extern wxString AccessLogFileName;
-extern wxString DMA4LogFileName;
-extern wxString DMA7LogFileName;
-extern wxString CoresDumpFileName;
-extern wxString MemDumpFileName;
-extern wxString RegDumpFileName;
+extern std::string AccessLogFileName;
+extern std::string DMA4LogFileName;
+extern std::string DMA7LogFileName;
+extern std::string CoresDumpFileName;
+extern std::string MemDumpFileName;
+extern std::string RegDumpFileName;
 
 extern int Interpolation;
 extern int numSpeakers;

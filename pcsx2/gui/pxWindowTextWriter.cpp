@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include <wx/wx.h>
-#include "common/StringHelpers.h"
+#include "gui/StringHelpers.h"
 #include "gui/wxGuiTools.h"
 
 // --------------------------------------------------------------------------------------

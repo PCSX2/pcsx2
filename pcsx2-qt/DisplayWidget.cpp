@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/Assertions.h"
+
 #include "DisplayWidget.h"
 #include "EmuThread.h"
 #include "MainWindow.h"

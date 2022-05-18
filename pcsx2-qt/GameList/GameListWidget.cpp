@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/Assertions.h"
 #include "common/StringUtil.h"
 
 #include "pcsx2/Frontend/GameList.h"

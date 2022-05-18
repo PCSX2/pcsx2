@@ -114,7 +114,7 @@ static wxString INDEX_TEMPLATE_KEY(L"$(f)");
 //   then it's relative to base (not to cwd)
 // No checks are performed if the result file name can be created.
 // If this proves useful, we can move it into Path:: . Right now there's no need.
-static wxString ApplyTemplate(const wxString& name, const wxDirName& base,
+static wxString ApplyTemplate(const std::string& name, const wxDirName& base,
 							  const std::string& fileTemplate, const std::string& filename,
 							  bool canEndWithKey)
 {
@@ -127,9 +127,9 @@ static wxString ApplyTemplate(const wxString& name, const wxDirName& base,
 		|| first != tem.rfind(key) // more than one instance
 		|| !canEndWithKey && first == tem.length() - key.length())
 	{
-		Console.Error(L"Invalid %s template '%s'.\n"
-					  L"Template must contain exactly one '%s' and must not end with it. Abotring.",
-					  WX_STR(name), WX_STR(tem), WX_STR(key));
+		Console.Error("Invalid %s template '%s'.\n"
+					  "Template must contain exactly one '%s' and must not end with it. Abotring.",
+					  name.c_str(), tem.ToUTF8().data(), key.ToUTF8().data());
 		return L"";
 	}
 
@@ -181,7 +181,7 @@ static std::string iso2indexname(const std::string& isoname)
 	const wxDirName& appRoot = EmuFolders::DataRoot;
 #endif
 	//TestTemplate(appRoot, isoname, false);
-	return StringUtil::wxStringToUTF8String(ApplyTemplate(L"gzip index", appRoot, EmuConfig.GzipIsoIndexTemplate, isoname, false));
+	return StringUtil::wxStringToUTF8String(ApplyTemplate("gzip index", appRoot, EmuConfig.GzipIsoIndexTemplate, isoname, false));
 }
 
 GzippedFileReader::GzippedFileReader(void)
@@ -258,7 +258,7 @@ void GzippedFileReader::AsyncPrefetchChunk(s64 start)
 {
 	if (hOverlappedFile == INVALID_HANDLE_VALUE || asyncInProgress)
 	{
-		Console.Warning(L"Unexpected file handle or progress state. Aborting prefetch.");
+		Console.Warning("Unexpected file handle or progress state. Aborting prefetch.");
 		return;
 	}
 
@@ -384,7 +384,7 @@ int GzippedFileReader::ReadSync(void* pBuffer, uint sector, uint count)
 	int bytesToRead = count * m_blocksize;
 	int res = _ReadSync(pBuffer, offset, bytesToRead);
 	if (res < 0)
-		Console.Error(L"Error: iso-gzip read unsuccessful.");
+		Console.Error("Error: iso-gzip read unsuccessful.");
 	return res;
 }
 
@@ -486,7 +486,7 @@ int GzippedFileReader::_ReadSync(void* pBuffer, s64 offset, uint bytesToRead)
 
 	int duration = NOW() - s;
 	if (duration > 10)
-		Console.WriteLn(Color_Gray, L"gunzip: chunk #%5d-%2d : %1.2f MB - %d ms",
+		Console.WriteLn(Color_Gray, "gunzip: chunk #%5d-%2d : %1.2f MB - %d ms",
 						(int)(offset / 4 / 1024 / 1024),
 						(int)(offset % (4 * 1024 * 1024) / GZFILE_READ_CHUNK_SIZE),
 						(float)size / 1024 / 1024,

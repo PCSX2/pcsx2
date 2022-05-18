@@ -22,6 +22,7 @@
 #include <memory>
 
 class INISettingsInterface;
+class SettingsInterface;
 
 namespace GameList
 {

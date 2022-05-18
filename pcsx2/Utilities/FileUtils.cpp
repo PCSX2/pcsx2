@@ -14,20 +14,10 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "AsciiFile.h"
+#include "common/Path.h"
 
 #include <wx/dir.h>
 #include <wx/string.h>
-
-void AsciiFile::Printf( const char* fmt, ... )
-{
-	va_list list;
-	va_start( list, fmt );
-	FastFormatAscii ascii;
-	ascii.WriteV(fmt,list);
-	va_end( list );
-	Write( ascii, strlen(ascii) );
-}
 
 bool CopyDirectory( const wxString& from, const wxString& to ) {
 	wxDir src( from );
@@ -64,7 +54,7 @@ bool CopyDirectory( const wxString& from, const wxString& to ) {
 	return true;
 }
 
-bool RemoveDirectory( const wxString& dirname ) {
+bool RemoveWxDirectory( const wxString& dirname ) {
 		{
 			wxDir dir( dirname );
 			if ( !dir.IsOpened() ) {
@@ -76,7 +66,7 @@ bool RemoveDirectory( const wxString& dirname ) {
 			// delete subdirs recursively
 			if ( dir.GetFirst( &filename, wxEmptyString, wxDIR_DIRS | wxDIR_HIDDEN ) ) {
 				do {
-					if ( !RemoveDirectory( wxFileName( dirname, filename ).GetFullPath() ) ) {
+					if ( !RemoveWxDirectory( wxFileName( dirname, filename ).GetFullPath() ) ) {
 						return false;
 					}
 				} while ( dir.GetNext( &filename ) );

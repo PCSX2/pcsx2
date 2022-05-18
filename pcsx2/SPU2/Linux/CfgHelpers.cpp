@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "Config.h"
 #include "Dialogs.h"
+#include "pcsx2/Config.h"
 #include <wx/fileconf.h>
 
 wxFileConfig* spuConfig = nullptr;
@@ -36,7 +37,7 @@ void initIni()
 void setIni(const wchar_t* Section)
 {
 	initIni();
-	spuConfig->SetPath(wxsFormat(L"/%s", Section));
+	spuConfig->SetPath(wxString::Format(L"/%s", Section));
 }
 
 void CfgSetSettingsDir(const char* dir)

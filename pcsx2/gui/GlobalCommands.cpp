@@ -841,13 +841,13 @@ void AcceleratorDictionary::Map(const KeyAcceleratorCode& _acode, const char* se
 			}
 			if (_acode.ToString() != acode.ToString())
 			{
-				Console.WriteLn(Color_StrongGreen, L"Overriding '%s': assigning %s (instead of %s)",
+				Console.WriteLn(Color_StrongGreen, "Overriding '%ls': assigning %ls (instead of %ls)",
 								WX_STR(fromUTF8(searchfor)), WX_STR(acode.ToString()), WX_STR(_acode.ToString()));
 			}
 		}
 		else
 		{
-			Console.Error(L"Error overriding KB shortcut for '%s': can't understand '%s'",
+			Console.Error("Error overriding KB shortcut for '%ls': can't understand '%ls'",
 						  WX_STR(fromUTF8(searchfor)), WX_STR(overrideStr));
 		}
 	}
@@ -862,8 +862,8 @@ void AcceleratorDictionary::Map(const KeyAcceleratorCode& _acode, const char* se
 	if (result != NULL)
 	{
 		Console.Warning(
-			L"Kbd Accelerator '%s' is mapped multiple times.\n"
-			L"\t'Command %s' is being replaced by '%s'",
+			"Kbd Accelerator '%ls' is mapped multiple times.\n"
+			"\t'Command %ls' is being replaced by '%ls'",
 			WX_STR(acode.ToString()), WX_STR(fromUTF8(result->Id)), WX_STR(fromUTF8(searchfor)));
 	}
 
@@ -874,7 +874,7 @@ void AcceleratorDictionary::Map(const KeyAcceleratorCode& _acode, const char* se
 
 	if (result == NULL)
 	{
-		Console.Warning(L"Kbd Accelerator '%s' is mapped to unknown command '%s'",
+		Console.Warning("Kbd Accelerator '%ls' is mapped to unknown command '%ls'",
 						WX_STR(acode.ToString()), WX_STR(fromUTF8(searchfor)));
 	}
 	else
@@ -893,7 +893,7 @@ void AcceleratorDictionary::Map(const KeyAcceleratorCode& _acode, const char* se
 			// ctrl-shift to the base shortcut.
 			if (acode.cmd || acode.shift)
 			{
-				Console.Error(L"Cannot map %s to Sys_TakeSnapshot - must not include Shift or Ctrl - these modifiers will be added automatically.",
+				Console.Error("Cannot map %ls to Sys_TakeSnapshot - must not include Shift or Ctrl - these modifiers will be added automatically.",
 							  WX_STR(acode.ToString()));
 			}
 			else
@@ -908,7 +908,7 @@ void AcceleratorDictionary::Map(const KeyAcceleratorCode& _acode, const char* se
 
 				if (_acode.val32 != acode.val32)
 				{ // overriding default
-					Console.WriteLn(Color_Green, L"Sys_TakeSnapshot: automatically mapping also %s and %s",
+					Console.WriteLn(Color_Green, "Sys_TakeSnapshot: automatically mapping also %ls and %ls",
 									WX_STR(shifted.ToString()),
 									WX_STR(controlledShifted.ToString()));
 				}

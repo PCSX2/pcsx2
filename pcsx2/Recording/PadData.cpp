@@ -200,7 +200,7 @@ void PadData::LogPadData(u8 const& port)
 		wxString::Format("[PAD %d] Raw Bytes: Right Analog = [%s]\n", port + 1, rightAnalogBytes) +
 		wxString::Format("[PAD %d] Raw Bytes: Left Analog = [%s]\n", port + 1, leftAnalogBytes) +
 		wxString::Format("[PAD %d] Raw Bytes: Pressure = [%s]\n", port + 1, pressureBytes);
-	controlLog(fullLog);
+	controlLog(fullLog.ToUTF8());
 }
 
 #endif

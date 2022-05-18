@@ -109,7 +109,7 @@ void Dialogs::ConvertMemoryCardDialog::CreateControls( const MemoryCardType sour
 			m_radio_CardType = new pxRadioPanel( this, tblForFolder );
 			break;
 		default:
-			Console.Error( L"Memory Card Conversion: Invalid source type!" );
+			Console.Error( "Memory Card Conversion: Invalid source type!" );
 			return;
 	}
 

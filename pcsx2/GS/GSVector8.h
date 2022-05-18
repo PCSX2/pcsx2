@@ -13,6 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cassert>
+
 #if _M_SSE >= 0x500
 
 class alignas(32) GSVector8

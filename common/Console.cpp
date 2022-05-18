@@ -15,6 +15,7 @@
 
 #include "common/Threading.h"
 #include "common/TraceLog.h"
+#include "common/Assertions.h"
 #include "common/RedtapeWindows.h" // OutputDebugString
 
 using namespace Threading;
@@ -73,14 +74,14 @@ void Console_SetActiveHandler(const IConsoleWriter& writer, FILE* flushfp)
 
 // Writes text to the Visual Studio Output window (Microsoft Windows only).
 // On all other platforms this pipes to Stdout instead.
-void MSW_OutputDebugString(const wxString& text)
+static void MSW_OutputDebugString(const char* text)
 {
-#if defined(__WXMSW__) && !defined(__WXMICROWIN__)
-	static bool hasDebugger = wxIsDebuggerRunning();
+#ifdef _WIN32
+	static bool hasDebugger = IsDebuggerPresent();
 	if (hasDebugger)
-		OutputDebugString(text);
+		OutputDebugStringA(text);
 #else
-	fputs(text.utf8_str(), stdout_fp);
+	fputs(text, stdout_fp);
 	fflush(stdout_fp);
 #endif
 }
@@ -90,11 +91,11 @@ void MSW_OutputDebugString(const wxString& text)
 //  ConsoleNull
 // --------------------------------------------------------------------------------------
 
-static void ConsoleNull_SetTitle(const wxString& title) {}
+static void ConsoleNull_SetTitle(const char* title) {}
 static void ConsoleNull_DoSetColor(ConsoleColors color) {}
 static void ConsoleNull_Newline() {}
-static void ConsoleNull_DoWrite(const wxString& fmt) {}
-static void ConsoleNull_DoWriteLn(const wxString& fmt) {}
+static void ConsoleNull_DoWrite(const char* fmt) {}
+static void ConsoleNull_DoWriteLn(const char* fmt) {}
 
 const IConsoleWriter ConsoleWriter_Null =
 	{
@@ -172,20 +173,21 @@ static __fi const char* GetLinuxConsoleColor(ConsoleColors color)
 #endif
 
 // One possible default write action at startup and shutdown is to use the stdout.
-static void ConsoleStdout_DoWrite(const wxString& fmt)
+static void ConsoleStdout_DoWrite(const char* fmt)
 {
 	MSW_OutputDebugString(fmt);
 }
 
 // Default write action at startup and shutdown is to use the stdout.
-static void ConsoleStdout_DoWriteLn(const wxString& fmt)
+static void ConsoleStdout_DoWriteLn(const char* fmt)
 {
-	MSW_OutputDebugString(fmt + L"\n");
+	MSW_OutputDebugString(fmt);
+	MSW_OutputDebugString("\n");
 }
 
 static void ConsoleStdout_Newline()
 {
-	MSW_OutputDebugString(L"\n");
+	MSW_OutputDebugString("\n");
 }
 
 static void ConsoleStdout_DoSetColor(ConsoleColors color)
@@ -198,12 +200,12 @@ static void ConsoleStdout_DoSetColor(ConsoleColors color)
 #endif
 }
 
-static void ConsoleStdout_SetTitle(const wxString& title)
+static void ConsoleStdout_SetTitle(const char* title)
 {
 #if defined(__POSIX__)
 	if (supports_color)
 		fputs("\033]0;", stdout_fp);
-	fputs(title.utf8_str(), stdout_fp);
+	fputs(title, stdout_fp);
 	if (supports_color)
 		fputs("\007", stdout_fp);
 #endif
@@ -225,14 +227,14 @@ const IConsoleWriter ConsoleWriter_Stdout =
 //  ConsoleAssert
 // --------------------------------------------------------------------------------------
 
-static void ConsoleAssert_DoWrite(const wxString& fmt)
+static void ConsoleAssert_DoWrite(const char* fmt)
 {
-	pxFail(L"Console class has not been initialized; Message written:\n\t" + fmt);
+	pxFailRel("Console class has not been initialized");
 }
 
-static void ConsoleAssert_DoWriteLn(const wxString& fmt)
+static void ConsoleAssert_DoWriteLn(const char* fmt)
 {
-	pxFail(L"Console class has not been initialized; Message written:\n\t" + fmt);
+	pxFailRel("Console class has not been initialized");
 }
 
 const IConsoleWriter ConsoleWriter_Assert =
@@ -258,16 +260,27 @@ const IConsoleWriter ConsoleWriter_Assert =
 //   glob_indent - this parameter is used to specify a global indentation setting.  It is used by
 //      WriteLn function, but defaults to 0 for Warning and Error calls.  Local indentation always
 //      applies to all writes.
-wxString IConsoleWriter::_addIndentation(const wxString& src, int glob_indent = 0) const
+std::string IConsoleWriter::_addIndentation(const std::string& src, int glob_indent = 0) const
 {
 	const int indent = glob_indent + _imm_indentation;
-	if (indent == 0)
-		return src;
 
-	wxString result(src);
-	const wxString indentStr(L'\t', indent);
-	result.Replace(L"\n", L"\n" + indentStr);
-	return indentStr + result;
+	std::string indentStr;
+	for (int i = 0; i < indent; i++)
+		indentStr += '\t';
+
+	std::string result;
+	result.reserve(src.length() + 16 * indent);
+	result.append(indentStr);
+	result.append(src);
+
+	std::string::size_type pos = result.find('\n');
+	while (pos != std::string::npos)
+	{
+		result.insert(pos + 1, indentStr);
+		pos = result.find('\n', pos + 1);
+	}
+
+	return result;
 }
 
 // Sets the indentation to be applied to all WriteLn's.  The indentation is added to the
@@ -324,7 +337,16 @@ const IConsoleWriter& IConsoleWriter::ClearColor() const
 
 bool IConsoleWriter::FormatV(const char* fmt, va_list args) const
 {
-	DoWriteLn(_addIndentation(pxsFmtV(fmt, args), conlog_Indent));
+	// TODO: Make this less rubbish
+	if ((_imm_indentation + conlog_Indent) > 0)
+	{
+		DoWriteLn(_addIndentation(StringUtil::StdStringFromFormatV(fmt, args), conlog_Indent).c_str());
+	}
+	else
+	{
+		DoWriteLn(StringUtil::StdStringFromFormatV(fmt, args).c_str());
+	}
+
 	return false;
 }
 
@@ -371,105 +393,6 @@ bool IConsoleWriter::Warning(const char* fmt, ...) const
 	return false;
 }
 
-// --------------------------------------------------------------------------------------
-//  Write Variants - Unicode/UTF16 style
-// --------------------------------------------------------------------------------------
-
-bool IConsoleWriter::FormatV(const wxChar* fmt, va_list args) const
-{
-	DoWriteLn(_addIndentation(pxsFmtV(fmt, args), conlog_Indent));
-	return false;
-}
-
-bool IConsoleWriter::WriteLn(const wxChar* fmt, ...) const
-{
-	va_list args;
-	va_start(args, fmt);
-	FormatV(fmt, args);
-	va_end(args);
-
-	return false;
-}
-
-bool IConsoleWriter::WriteLn(ConsoleColors color, const wxChar* fmt, ...) const
-{
-	va_list args;
-	va_start(args, fmt);
-	ConsoleColorScope cs(color);
-	FormatV(fmt, args);
-	va_end(args);
-
-	return false;
-}
-
-bool IConsoleWriter::Error(const wxChar* fmt, ...) const
-{
-	va_list args;
-	va_start(args, fmt);
-	ConsoleColorScope cs(Color_StrongRed);
-	FormatV(fmt, args);
-	va_end(args);
-
-	return false;
-}
-
-bool IConsoleWriter::Warning(const wxChar* fmt, ...) const
-{
-	va_list args;
-	va_start(args, fmt);
-	ConsoleColorScope cs(Color_StrongOrange);
-	FormatV(fmt, args);
-	va_end(args);
-
-	return false;
-}
-
-// --------------------------------------------------------------------------------------
-//  Write Variants - Unknown style
-// --------------------------------------------------------------------------------------
-bool IConsoleWriter::WriteLn(const wxString fmt, ...) const
-{
-	va_list args;
-	va_start(args, fmt);
-	FormatV(fmt.wx_str(), args);
-	va_end(args);
-
-	return false;
-}
-
-bool IConsoleWriter::WriteLn(ConsoleColors color, const wxString fmt, ...) const
-{
-	va_list args;
-	va_start(args, fmt);
-	ConsoleColorScope cs(color);
-	FormatV(fmt.wx_str(), args);
-	va_end(args);
-
-	return false;
-}
-
-bool IConsoleWriter::Error(const wxString fmt, ...) const
-{
-	va_list args;
-	va_start(args, fmt);
-	ConsoleColorScope cs(Color_StrongRed);
-	FormatV(fmt.wx_str(), args);
-	va_end(args);
-
-	return false;
-}
-
-bool IConsoleWriter::Warning(const wxString fmt, ...) const
-{
-	va_list args;
-	va_start(args, fmt);
-	ConsoleColorScope cs(Color_StrongOrange);
-	FormatV(fmt.wx_str(), args);
-	va_end(args);
-
-	return false;
-}
-
 bool IConsoleWriter::WriteLn(ConsoleColors color, const std::string& str) const
 {
 	ConsoleColorScope cs(color);
@@ -478,7 +401,15 @@ bool IConsoleWriter::WriteLn(ConsoleColors color, const std::string& str) const
 
 bool IConsoleWriter::WriteLn(const std::string& str) const
 {
-	DoWriteLn(_addIndentation(fromUTF8(str), conlog_Indent));
+	// TODO: Make this less rubbish
+	if ((_imm_indentation + conlog_Indent) > 0)
+	{
+		DoWriteLn(_addIndentation(str, conlog_Indent).c_str());
+	}
+	else
+	{
+		DoWriteLn(str.c_str());
+	}
 
 	return false;
 }
@@ -533,11 +464,7 @@ ConsoleIndentScope::ConsoleIndentScope(int tabs)
 
 ConsoleIndentScope::~ConsoleIndentScope()
 {
-	try
-	{
-		LeaveScope();
-	}
-	DESTRUCTOR_CATCHALL
+	LeaveScope();
 }
 
 void ConsoleIndentScope::EnterScope()
@@ -560,12 +487,8 @@ ConsoleAttrScope::ConsoleAttrScope(ConsoleColors newcolor, int indent)
 
 ConsoleAttrScope::~ConsoleAttrScope()
 {
-	try
-	{
-		Console.SetColor(m_old_color);
-		Console.SetIndent(-m_tabsize);
-	}
-	DESTRUCTOR_CATCHALL
+	Console.SetColor(m_old_color);
+	Console.SetIndent(-m_tabsize);
 }
 
 
@@ -599,14 +522,7 @@ NullConsoleWriter NullCon = {};
 bool ConsoleLogSource::WriteV(ConsoleColors color, const char* fmt, va_list list) const
 {
 	ConsoleColorScope cs(color);
-	DoWrite(pxsFmtV(fmt, list).c_str());
-	return false;
-}
-
-bool ConsoleLogSource::WriteV(ConsoleColors color, const wxChar* fmt, va_list list) const
-{
-	ConsoleColorScope cs(color);
-	DoWrite(pxsFmtV(fmt, list).c_str());
+	Console.WriteLn(StringUtil::StdStringFromFormatV(fmt, list));
 	return false;
 }
 
@@ -614,12 +530,6 @@ bool ConsoleLogSource::WriteV(ConsoleColors color, const wxChar* fmt, va_list li
 // color will always be used, thus ConsoleColorScope() will not be effectual unless the
 // console's default color is Color_Default.
 bool ConsoleLogSource::WriteV(const char* fmt, va_list list) const
-{
-	WriteV(DefaultColor, fmt, list);
-	return false;
-}
-
-bool ConsoleLogSource::WriteV(const wxChar* fmt, va_list list) const
 {
 	WriteV(DefaultColor, fmt, list);
 	return false;

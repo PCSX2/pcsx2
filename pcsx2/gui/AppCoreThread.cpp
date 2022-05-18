@@ -467,7 +467,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	wxString consoleTitle = GameInfo::gameName + L" [" + GameInfo::gameSerial + L"]";
 	consoleTitle += L" [" + GameInfo::gameCRC + L"]" + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
 	if (ingame)
-		Console.SetTitle(consoleTitle);
+		Console.SetTitle(consoleTitle.ToUTF8());
 
 	gsUpdateFrequency(fixup);
 }

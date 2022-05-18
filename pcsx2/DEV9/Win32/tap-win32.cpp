@@ -18,6 +18,8 @@
 #include "common/RedtapeWindows.h"
 #include "common/StringUtil.h"
 
+#include "fmt/core.h"
+
 #include <stdio.h>
 #include <windows.h>
 #include <winsock2.h>
@@ -355,7 +357,7 @@ bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, 
 
 	//We must be bridged
 	Console.WriteLn("DEV9: Current adapter is probably bridged");
-	Console.WriteLn(L"DEV9: Adapter Display name: %s", pAdapterInfo->FriendlyName);
+	Console.WriteLn(fmt::format("DEV9: Adapter Display name: {}", StringUtil::WideStringToUTF8String(pAdapterInfo->FriendlyName)));
 
 	//We will need to find the bridge adapter that out adapter is
 	//as the IP information of the tap adapter is null
@@ -407,7 +409,7 @@ bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, 
 				PIP_ADAPTER_ADDRESSES potentialAdapter = FindAdapterViaIndex(AdapterInfoReduced.get(), row.HigherLayerInterfaceIndex);
 				if (potentialAdapter != nullptr)
 				{
-					Console.WriteLn(L"DEV9: %s is possible bridge (Check 1 passed)", potentialAdapter->Description);
+					Console.WriteLn(fmt::format("DEV9: {} is possible bridge (Check 1 passed)", StringUtil::WideStringToUTF8String(potentialAdapter->Description)));
 					potentialBridges.push_back(row.HigherLayerInterfaceIndex);
 				}
 				else
@@ -491,7 +493,7 @@ bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, 
 									wil::unique_cotaskmem_string dispName;
 									hr = component->GetDisplayName(dispName.put());
 									if (SUCCEEDED(hr))
-										Console.WriteLn(L"DEV9: %s is possible bridge (Check 2 passed)", dispName);
+										Console.WriteLn(fmt::format("DEV9: {} is possible bridge (Check 2 passed)", StringUtil::WideStringToUTF8String(dispName.get())));
 
 									//Check if adapter has the ms_bridge component bound to it.
 									auto bindings = bridge.try_query<INetCfgComponentBindings>();
@@ -504,7 +506,7 @@ bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, 
 
 									hr = component->GetDisplayName(dispName.put());
 									if (SUCCEEDED(hr))
-										Console.WriteLn(L"DEV9: %s is bridge (Check 3 passed)", dispName);
+										Console.WriteLn(fmt::format("DEV9: {} is bridge (Check 3 passed)", StringUtil::WideStringToUTF8String(dispName.get())));
 
 									bridgeAdapter = cAdapterInfo;
 									break;

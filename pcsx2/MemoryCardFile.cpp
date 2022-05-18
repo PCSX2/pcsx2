@@ -33,6 +33,8 @@
 
 #include "svnrev.h"
 
+#include "fmt/core.h"
+
 #include <wx/ffile.h>
 #include <map>
 
@@ -189,9 +191,9 @@ protected:
 	bool Seek(wxFFile& f, u32 adr);
 	bool Create(const wxString& mcdFile, uint sizeInMB);
 
-	wxString GetDisabledMessage(uint slot) const
+	std::string GetDisabledMessage(uint slot) const
 	{
-		return wxsFormat(pxE(L"The PS2-slot %d has been automatically disabled.  You can correct the problem\nand re-enable it at any time using Config:Memory cards from the main menu."), slot //TODO: translate internal slot index to human-readable slot description
+		return fmt::format("The PS2-slot {} has been automatically disabled.  You can correct the problem\nand re-enable it at any time using Config:Memory cards from the main menu.", slot //TODO: translate internal slot index to human-readable slot description
 		);
 	}
 };
@@ -304,7 +306,7 @@ void FileMemoryCard::Open()
 			cont = true;
 		}
 
-		Console.WriteLn(cont ? Color_Gray : Color_Green, L"McdSlot %u [File]: " + str, slot);
+		Console.WriteLn(cont ? Color_Gray : Color_Green, "McdSlot %u [File]: %s", slot, StringUtil::wxStringToUTF8String(str).c_str());
 		if (cont)
 			continue;
 
@@ -319,8 +321,8 @@ void FileMemoryCard::Open()
 			{
 #ifndef PCSX2_CORE
 				Msgbox::Alert(
-					wxsFormat(_("Could not create a memory card: \n\n%s\n\n"), str.c_str()) +
-					GetDisabledMessage(slot));
+					wxString::Format(_("Could not create a memory card: \n\n%s\n\n"), str.c_str()) +
+					StringUtil::UTF8StringToWxString(GetDisabledMessage(slot)));
 #endif
 			}
 		}
@@ -337,7 +339,7 @@ void FileMemoryCard::Open()
 			wxString newname = str + "x";
 			if (!ConvertNoECCtoRAW(str, newname))
 			{
-				Console.Error(L"Could convert memory card: " + str);
+				Console.Error("Could convert memory card: %s", str.ToUTF8().data());
 				wxRemoveFile(newname);
 				continue;
 			}
@@ -350,8 +352,8 @@ void FileMemoryCard::Open()
 			// for the duration of this session.
 #ifndef PCSX2_CORE
 			Msgbox::Alert(
-				wxsFormat(_("Access denied to memory card: \n\n%s\n\n"), str.c_str()) +
-				GetDisabledMessage(slot));
+				wxString::Format(_("Access denied to memory card: \n\n%s\n\n"), str.c_str()) +
+				StringUtil::UTF8StringToWxString(GetDisabledMessage(slot)));
 #endif
 		}
 		else // Load checksum
@@ -416,7 +418,7 @@ bool FileMemoryCard::Create(const wxString& mcdFile, uint sizeInMB)
 {
 	//int enc[16] = {0x77,0x7f,0x7f,0x77,0x7f,0x7f,0x77,0x7f,0x7f,0x77,0x7f,0x7f,0,0,0,0};
 
-	Console.WriteLn(L"(FileMcd) Creating new %uMB memory card: " + mcdFile, sizeInMB);
+	Console.WriteLn("(FileMcd) Creating new %uMB memory card: %s", sizeInMB, mcdFile.ToUTF8().data());
 
 	wxFFile fp(mcdFile, L"wb");
 	if (!fp.IsOpened())

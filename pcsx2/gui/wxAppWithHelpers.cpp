@@ -29,8 +29,8 @@ ConsoleLogSource_App::ConsoleLogSource_App()
 {
 	static const TraceLogDescriptor myDesc =
 		{
-			L"AppEvents", L"App Events",
-			pxLt("Includes idle event processing and some other uncommon event usages.")};
+			"AppEvents", "App Events",
+			"Includes idle event processing and some other uncommon event usages."};
 
 	m_Descriptor = &myDesc;
 }
@@ -175,8 +175,7 @@ void pxActionEvent::SetException(const BaseException& ex)
 
 void pxActionEvent::SetException(BaseException* ex)
 {
-	const wxString& prefix(pxsFmt(L"(%s) ", GetClassInfo()->GetClassName()));
-	ex->DiagMsg() = prefix + ex->DiagMsg();
+	ex->DiagMsg() = StringUtil::WideStringToUTF8String(GetClassInfo()->GetClassName()) + ex->DiagMsg();
 
 	if (!m_state)
 	{
@@ -499,7 +498,7 @@ void wxAppWithHelpers::OnSynchronousCommand(pxSynchronousCommandEvent& evt)
 {
 	AffinityAssert_AllowFrom_MainUI();
 
-	pxAppLog.Write(L"(App) Executing command event synchronously...");
+	pxAppLog.Write("(App) Executing command event synchronously...");
 	evt.SetEventType(evt.GetRealEventType());
 
 	try
@@ -512,7 +511,7 @@ void wxAppWithHelpers::OnSynchronousCommand(pxSynchronousCommandEvent& evt)
 	}
 	catch (std::runtime_error& ex)
 	{
-		evt.SetException(new Exception::RuntimeError(ex, evt.GetClassInfo()->GetClassName()));
+		evt.SetException(new Exception::RuntimeError(ex, StringUtil::wxStringToUTF8String(evt.GetClassInfo()->GetClassName()).c_str()));
 	}
 
 	if (Semaphore* sema = evt.GetSemaphore())
@@ -568,7 +567,7 @@ void wxAppWithHelpers::IdleEventDispatcher(const wxChar* action)
 		}
 		else
 		{
-			pxAppLog.Write(L"(AppIdleQueue%s) Dispatching event '%s'", action, deleteMe->GetClassInfo()->GetClassName());
+			pxAppLog.Write("(AppIdleQueue%s) Dispatching event '%ls'", action, deleteMe->GetClassInfo()->GetClassName());
 			ProcessEvent(*deleteMe); // dereference to prevent auto-deletion by ProcessEvent
 		}
 		lock.Acquire();
@@ -576,7 +575,7 @@ void wxAppWithHelpers::IdleEventDispatcher(const wxChar* action)
 
 	m_IdleEventQueue = postponed;
 	if (!m_IdleEventQueue.empty())
-		pxAppLog.Write(L"(AppIdleQueue%s) %d events postponed due to dependencies.", action, m_IdleEventQueue.size());
+		pxAppLog.Write("(AppIdleQueue%s) %d events postponed due to dependencies.", action, m_IdleEventQueue.size());
 }
 
 void wxAppWithHelpers::OnIdleEvent(wxIdleEvent& evt)

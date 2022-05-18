@@ -18,6 +18,10 @@
 #include "common/MemsetFast.inl"
 #include "common/Console.h"
 
+#include "fmt/core.h"
+
+#include <cinttypes>
+
 template class EventSource<IEventListener_PageFault>;
 
 SrcType_PageFault* Source_PageFault = NULL;
@@ -73,8 +77,8 @@ static size_t pageAlign(size_t size)
 //  VirtualMemoryManager  (implementations)
 // --------------------------------------------------------------------------------------
 
-VirtualMemoryManager::VirtualMemoryManager(const wxString& name, uptr base, size_t size, uptr upper_bounds, bool strict)
-	: m_name(name)
+VirtualMemoryManager::VirtualMemoryManager(std::string name, uptr base, size_t size, uptr upper_bounds, bool strict)
+	: m_name(std::move(name))
 	, m_baseptr(0)
 	, m_pageuse(nullptr)
 	, m_pages_reserved(0)
@@ -89,8 +93,8 @@ VirtualMemoryManager::VirtualMemoryManager(const wxString& name, uptr base, size
 
 	if (!m_baseptr || (upper_bounds != 0 && (((uptr)m_baseptr + reserved_bytes) > upper_bounds)))
 	{
-		DevCon.Warning(L"%s: host memory @ %ls -> %ls is unavailable; attempting to map elsewhere...",
-			WX_STR(m_name), pxsPtr(base), pxsPtr(base + size));
+		DevCon.Warning("%s: host memory @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " is unavailable; attempting to map elsewhere...",
+			m_name.c_str(), base, base + size);
 
 		SafeSysMunmap(m_baseptr, reserved_bytes);
 
@@ -117,15 +121,15 @@ VirtualMemoryManager::VirtualMemoryManager(const wxString& name, uptr base, size
 
 	m_pageuse = new std::atomic<bool>[m_pages_reserved]();
 
-	FastFormatUnicode mbkb;
+	std::string mbkb;
 	uint mbytes = reserved_bytes / _1mb;
 	if (mbytes)
-		mbkb.Write("[%umb]", mbytes);
+		mbkb = fmt::format("[{}mb]", mbytes);
 	else
-		mbkb.Write("[%ukb]", reserved_bytes / 1024);
+		mbkb = fmt::format("[{}kb]", reserved_bytes / 1024);
 
-	DevCon.WriteLn(Color_Gray, L"%-32s @ %ls -> %ls %ls", WX_STR(m_name),
-		pxsPtr(m_baseptr), pxsPtr((uptr)m_baseptr + reserved_bytes), mbkb.c_str());
+	DevCon.WriteLn(Color_Gray, "%-32s @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " %s", m_name.c_str(),
+		m_baseptr, (uptr)m_baseptr + reserved_bytes, mbkb.c_str());
 }
 
 VirtualMemoryManager::~VirtualMemoryManager()
@@ -231,8 +235,8 @@ void* VirtualMemoryBumpAllocator::Alloc(size_t size)
 // --------------------------------------------------------------------------------------
 //  VirtualMemoryReserve  (implementations)
 // --------------------------------------------------------------------------------------
-VirtualMemoryReserve::VirtualMemoryReserve(const wxString& name, size_t size)
-	: m_name(name)
+VirtualMemoryReserve::VirtualMemoryReserve(std::string name, size_t size)
+	: m_name(std::move(name))
 {
 	m_defsize = size;
 
@@ -283,15 +287,15 @@ void* VirtualMemoryReserve::Assign(VirtualMemoryManagerPtr allocator, void* base
 	if (!m_baseptr)
 		return nullptr;
 
-	FastFormatUnicode mbkb;
+	std::string mbkb;
 	uint mbytes = reserved_bytes / _1mb;
 	if (mbytes)
-		mbkb.Write("[%umb]", mbytes);
+		mbkb = fmt::format("[{}mb]", mbytes);
 	else
-		mbkb.Write("[%ukb]", reserved_bytes / 1024);
+		mbkb = fmt::format("[{}kb]", reserved_bytes / 1024);
 
-	DevCon.WriteLn(Color_Gray, L"%-32s @ %ls -> %ls %ls", WX_STR(m_name),
-		pxsPtr(m_baseptr), pxsPtr((uptr)m_baseptr + reserved_bytes), mbkb.c_str());
+	DevCon.WriteLn(Color_Gray, "%-32s @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " %s", m_name.c_str(),
+		m_baseptr, (uptr)m_baseptr + reserved_bytes, mbkb.c_str());
 
 	return m_baseptr;
 }
@@ -365,16 +369,16 @@ bool VirtualMemoryReserve::TryResize(uint newsize)
 		uint toReservePages = newPages - m_pages_reserved;
 		uint toReserveBytes = toReservePages * __pagesize;
 
-		DevCon.WriteLn(L"%-32s is being expanded by %u pages.", WX_STR(m_name), toReservePages);
+		DevCon.WriteLn("%-32s is being expanded by %u pages.", m_name.c_str(), toReservePages);
 
 		if (!m_allocator->AllocAtAddress(GetPtrEnd(), toReserveBytes))
 		{
-			Console.Warning("%-32s could not be passively resized due to virtual memory conflict!", WX_STR(m_name));
+			Console.Warning("%-32s could not be passively resized due to virtual memory conflict!", m_name.c_str());
 			Console.Indent().Warning("(attempted to map memory @ %08p -> %08p)", m_baseptr, (uptr)m_baseptr + toReserveBytes);
 			return false;
 		}
 
-		DevCon.WriteLn(Color_Gray, L"%-32s @ %08p -> %08p [%umb]", WX_STR(m_name),
+		DevCon.WriteLn(Color_Gray, "%-32s @ %08p -> %08p [%umb]", m_name.c_str(),
 			m_baseptr, (uptr)m_baseptr + toReserveBytes, toReserveBytes / _1mb);
 	}
 	else if (newPages < m_pages_reserved)
@@ -385,11 +389,11 @@ bool VirtualMemoryReserve::TryResize(uint newsize)
 		uint toRemovePages = m_pages_reserved - newPages;
 		uint toRemoveBytes = toRemovePages * __pagesize;
 
-		DevCon.WriteLn(L"%-32s is being shrunk by %u pages.", WX_STR(m_name), toRemovePages);
+		DevCon.WriteLn("%-32s is being shrunk by %u pages.", m_name.c_str(), toRemovePages);
 
 		m_allocator->Free(GetPtrEnd() - toRemoveBytes, toRemoveBytes);
 
-		DevCon.WriteLn(Color_Gray, L"%-32s @ %08p -> %08p [%umb]", WX_STR(m_name),
+		DevCon.WriteLn(Color_Gray, "%-32s @ %08p -> %08p [%umb]", m_name.c_str(),
 			m_baseptr, GetPtrEnd(), GetReserveSizeInBytes() / _1mb);
 	}
 
@@ -400,21 +404,21 @@ bool VirtualMemoryReserve::TryResize(uint newsize)
 // --------------------------------------------------------------------------------------
 //  PageProtectionMode  (implementations)
 // --------------------------------------------------------------------------------------
-wxString PageProtectionMode::ToString() const
+std::string PageProtectionMode::ToString() const
 {
-	wxString modeStr;
+	std::string modeStr;
 
 	if (m_read)
-		modeStr += L"Read";
+		modeStr += "Read";
 	if (m_write)
-		modeStr += L"Write";
+		modeStr += "Write";
 	if (m_exec)
-		modeStr += L"Exec";
+		modeStr += "Exec";
 
-	if (modeStr.IsEmpty())
-		return L"NoAccess";
-	if (modeStr.Length() <= 5)
-		modeStr += L"Only";
+	if (modeStr.empty())
+		return "NoAccess";
+	if (modeStr.length() <= 5)
+		modeStr += "Only";
 
 	return modeStr;
 }

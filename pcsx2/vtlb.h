@@ -113,7 +113,7 @@ protected:
 	VirtualMemoryReserve	m_reserve;
 
 public:
-	VtlbMemoryReserve( const wxString& name, size_t size );
+	VtlbMemoryReserve( std::string name, size_t size );
 
 	void Reserve( VirtualMemoryManagerPtr allocator, sptr offset );
 

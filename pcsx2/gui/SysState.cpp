@@ -142,12 +142,12 @@ void StateCopy_SaveToSlot(uint num)
 	{
 		const wxString copy(StringUtil::UTF8StringToWxString(SaveStateBase::GetSavestateFolder(num, true)) + pxsFmt(L".backup"));
 
-		Console.Indent().WriteLn(Color_StrongGreen, L"Backing up existing state in slot %d.", num);
+		Console.Indent().WriteLn(Color_StrongGreen, "Backing up existing state in slot %d.", num);
 		wxRenameFile(file, copy);
 	}
 
 	OSDlog(Color_StrongGreen, true, "Saving savestate to slot %d...", num);
-	Console.Indent().WriteLn(Color_StrongGreen, L"filename: %s", WX_STR(file));
+	Console.Indent().WriteLn(Color_StrongGreen, "filename: %ls", WX_STR(file));
 
 	StateCopy_SaveToFile(file);
 #ifdef USE_NEW_SAVESLOTS_UI
@@ -166,7 +166,7 @@ void StateCopy_LoadFromSlot(uint slot, bool isFromBackup)
 	}
 
 	OSDlog(Color_StrongGreen, true, "Loading savestate from slot %d...%s", slot, isFromBackup ? " (backup)" : "");
-	Console.Indent().WriteLn(Color_StrongGreen, L"filename: %s", WX_STR(file));
+	Console.Indent().WriteLn(Color_StrongGreen, "filename: %ls", WX_STR(file));
 
 	StateCopy_LoadFromFile(file);
 #ifdef USE_NEW_SAVESLOTS_UI

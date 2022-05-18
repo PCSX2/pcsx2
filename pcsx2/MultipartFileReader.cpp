@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
+#include "common/Assertions.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 
 // Tests for a filename extension in both upper and lower case, if the filesystem happens
@@ -85,14 +87,12 @@ void MultipartFileReader::FindParts()
 		i = 1;
 	}
 
-	FastFormatUnicode extbuf;
-
-	extbuf.Write( L"%c%02u", prefixch, i );
+	wxString extbuf = wxString::Format(L"%c%02u", prefixch, i );
 	nameparts.SetExt( extbuf );
 	if (!pxFileExists_WithExt(nameparts, extbuf))
 		return;
 
-	DevCon.WriteLn( Color_Blue, "isoFile: multi-part %s detected...", WX_STR(curext.Upper()) );
+	DevCon.WriteLn( Color_Blue, "isoFile: multi-part %s detected...", curext.Upper().ToUTF8().data() );
 	ConsoleIndentScope indent;
 
 	int bsize = m_parts[0].reader->GetBlockSize();
@@ -102,8 +102,7 @@ void MultipartFileReader::FindParts()
 
 	for (; i < MaxParts; ++i)
 	{
-		extbuf.Clear();
-		extbuf.Write( L"%c%02u", prefixch, i );
+		extbuf = wxString::Format(L"%c%02u", prefixch, i );
 		nameparts.SetExt( extbuf );
 		if (!pxFileExists_WithExt(nameparts, extbuf))
 			break;
@@ -123,9 +122,9 @@ void MultipartFileReader::FindParts()
 
 		thispart->end = blocks;
 
-		DevCon.WriteLn( Color_Blue, L"\tblocks %u - %u in: %s",
+		DevCon.WriteLn( Color_Blue, "\tblocks %u - %u in: %s",
 			thispart->start, thispart->end,
-			WX_STR(nameparts.GetFullPath())
+			nameparts.GetFullPath().ToUTF8().data()
 		);
 
 		++m_numparts;

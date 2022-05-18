@@ -21,6 +21,7 @@
 #include "newVif_UnpackSSE.h"
 #include "MTVU.h"
 #include "common/Perf.h"
+#include "fmt/core.h"
 
 static void recReset(int idx)
 {
@@ -34,7 +35,7 @@ static void recReset(int idx)
 void dVifReserve(int idx)
 {
 	if (!nVif[idx].recReserve)
-		nVif[idx].recReserve = new RecompiledCodeReserve(pxsFmt(L"VIF%u Unpack Recompiler Cache", idx), _8mb);
+		nVif[idx].recReserve = new RecompiledCodeReserve(fmt::format("VIF{} Unpack Recompiler Cache", idx), _8mb);
 
 	auto offset = idx ? HostMemoryMap::VIF1recOffset : HostMemoryMap::VIF0recOffset;
 	nVif[idx].recReserve->Reserve(GetVmMemory().MainMemory(), offset, 8 * _1mb);
@@ -249,7 +250,7 @@ void VifUnpackSSE_Dynarec::ModUnpack(int upknum, bool PostOp)
 		case 3:
 		case 7:
 		case 11:
-			pxFailRel(wxsFormat(L"Vpu/Vif - Invalid Unpack! [%d]", upknum));
+			pxFailRel(fmt::format("Vpu/Vif - Invalid Unpack! [%d]", upknum).c_str());
 			break;
 	}
 }
@@ -344,8 +345,8 @@ _vifT __fi nVifBlock* dVifCompile(nVifBlock& block, bool isFill)
 	// Check size before the compilation
 	if (v.recWritePtr > (v.recReserve->GetPtrEnd() - _256kb))
 	{
-		DevCon.WriteLn(L"nVif Recompiler Cache Reset! [%ls > %ls]",
-			pxsPtr(v.recWritePtr), pxsPtr(v.recReserve->GetPtrEnd()));
+		DevCon.WriteLn("nVif Recompiler Cache Reset! [0x%016" PRIXPTR " > 0x%016" PRIXPTR "]",
+			v.recWritePtr, v.recReserve->GetPtrEnd());
 		recReset(idx);
 	}
 

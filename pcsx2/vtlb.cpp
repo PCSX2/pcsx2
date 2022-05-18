@@ -38,6 +38,8 @@
 
 #include "common/MemsetFast.inl"
 
+#include "fmt/core.h"
+
 using namespace R5900;
 using namespace vtlb_private;
 
@@ -466,57 +468,57 @@ void vtlbUnmappedPWriteLg(u32 addr,const OperandType* data) { vtlb_BusError(addr
 
 static mem8_t vtlbDefaultPhyRead8(u32 addr)
 {
-	pxFailDev(pxsFmt("(VTLB) Attempted read8 from unmapped physical address @ 0x%08X.", addr));
+	pxFailDev(fmt::format("(VTLB) Attempted read8 from unmapped physical address @ 0x{:08X}.", addr).c_str());
 	return 0;
 }
 
 static mem16_t vtlbDefaultPhyRead16(u32 addr)
 {
-	pxFailDev(pxsFmt("(VTLB) Attempted read16 from unmapped physical address @ 0x%08X.", addr));
+	pxFailDev(fmt::format("(VTLB) Attempted read16 from unmapped physical address @ 0x{:08X}.", addr).c_str());
 	return 0;
 }
 
 static mem32_t vtlbDefaultPhyRead32(u32 addr)
 {
-	pxFailDev(pxsFmt("(VTLB) Attempted read32 from unmapped physical address @ 0x%08X.", addr));
+	pxFailDev(fmt::format("(VTLB) Attempted read32 from unmapped physical address @ 0x{:08X}.", addr).c_str());
 	return 0;
 }
 
 static __m128i __vectorcall vtlbDefaultPhyRead64(u32 addr)
 {
-	pxFailDev(pxsFmt("(VTLB) Attempted read64 from unmapped physical address @ 0x%08X.", addr));
+	pxFailDev(fmt::format("(VTLB) Attempted read64 from unmapped physical address @ 0x{:08X}.", addr).c_str());
 	return r64_zero();
 }
 
 static __m128i __vectorcall vtlbDefaultPhyRead128(u32 addr)
 {
-	pxFailDev(pxsFmt("(VTLB) Attempted read128 from unmapped physical address @ 0x%08X.", addr));
+	pxFailDev(fmt::format("(VTLB) Attempted read128 from unmapped physical address @ 0x{:08X}.", addr).c_str());
 	return r128_zero();
 }
 
 static void vtlbDefaultPhyWrite8(u32 addr, mem8_t data)
 {
-	pxFailDev(pxsFmt("(VTLB) Attempted write8 to unmapped physical address @ 0x%08X.", addr));
+	pxFailDev(fmt::format("(VTLB) Attempted write8 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
 static void vtlbDefaultPhyWrite16(u32 addr, mem16_t data)
 {
-	pxFailDev(pxsFmt("(VTLB) Attempted write16 to unmapped physical address @ 0x%08X.", addr));
+	pxFailDev(fmt::format("(VTLB) Attempted write16 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
 static void vtlbDefaultPhyWrite32(u32 addr, mem32_t data)
 {
-	pxFailDev(pxsFmt("(VTLB) Attempted write32 to unmapped physical address @ 0x%08X.", addr));
+	pxFailDev(fmt::format("(VTLB) Attempted write32 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
 static void vtlbDefaultPhyWrite64(u32 addr,const mem64_t* data)
 {
-	pxFailDev(pxsFmt("(VTLB) Attempted write64 to unmapped physical address @ 0x%08X.", addr));
+	pxFailDev(fmt::format("(VTLB) Attempted write64 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
 static void vtlbDefaultPhyWrite128(u32 addr,const mem128_t* data)
 {
-	pxFailDev(pxsFmt("(VTLB) Attempted write128 to unmapped physical address @ 0x%08X.", addr));
+	pxFailDev(fmt::format("(VTLB) Attempted write128 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
 // ===========================================================================================
@@ -800,8 +802,8 @@ void vtlb_Core_Alloc()
 		if (okay) {
 			vtlbdata.vmap = vmap;
 		} else {
-			throw Exception::OutOfMemory( L"VTLB Virtual Address Translation LUT" )
-				.SetDiagMsg(pxsFmt("(%u megs)", VTLB_VMAP_ITEMS * sizeof(*vtlbdata.vmap) / _1mb)
+			throw Exception::OutOfMemory( "VTLB Virtual Address Translation LUT" )
+				.SetDiagMsg(fmt::format("({} megs)", VTLB_VMAP_ITEMS * sizeof(*vtlbdata.vmap) / _1mb)
 			);
 		}
 	}
@@ -825,8 +827,8 @@ void vtlb_Alloc_Ppmap()
 	if (okay)
 		vtlbdata.ppmap = ppmap;
 	else
-		throw Exception::OutOfMemory(L"VTLB PS2 Virtual Address Translation LUT")
-			.SetDiagMsg(pxsFmt("(%u megs)", PPMAP_SIZE / _1mb));
+		throw Exception::OutOfMemory("VTLB PS2 Virtual Address Translation LUT")
+			.SetDiagMsg(fmt::format("({} megs)", PPMAP_SIZE / _1mb));
 
 	// By default a 1:1 virtual to physical mapping
 	for (u32 i = 0; i < VTLB_VMAP_ITEMS; i++)
@@ -847,17 +849,15 @@ void vtlb_Core_Free()
 	}
 }
 
-static wxString GetHostVmErrorMsg()
+static std::string GetHostVmErrorMsg()
 {
-	return pxE(
-		L"Your system is too low on virtual resources for PCSX2 to run. This can be caused by having a small or disabled swapfile, or by other programs that are hogging resources."
-	);
+	return "Your system is too low on virtual resources for PCSX2 to run. This can be caused by having a small or disabled swapfile, or by other programs that are hogging resources.";
 }
 // --------------------------------------------------------------------------------------
 //  VtlbMemoryReserve  (implementations)
 // --------------------------------------------------------------------------------------
-VtlbMemoryReserve::VtlbMemoryReserve( const wxString& name, size_t size )
-	: m_reserve( name, size )
+VtlbMemoryReserve::VtlbMemoryReserve( std::string name, size_t size )
+	: m_reserve( std::move(name), size )
 {
 	m_reserve.SetPageAccessOnCommit( PageAccess_ReadWrite() );
 }
@@ -867,7 +867,7 @@ void VtlbMemoryReserve::Reserve( VirtualMemoryManagerPtr allocator, sptr offset 
 	if (!m_reserve.Reserve( std::move(allocator), offset ))
 	{
 		throw Exception::OutOfMemory( m_reserve.GetName() )
-			.SetDiagMsg(L"Vtlb memory could not be reserved.")
+			.SetDiagMsg("Vtlb memory could not be reserved.")
 			.SetUserMsg(GetHostVmErrorMsg());
 	}
 }
@@ -878,7 +878,7 @@ void VtlbMemoryReserve::Commit()
 	if (!m_reserve.Commit())
 	{
 		throw Exception::OutOfMemory( m_reserve.GetName() )
-			.SetDiagMsg(L"Vtlb memory could not be committed.")
+			.SetDiagMsg("Vtlb memory could not be committed.")
 			.SetUserMsg(GetHostVmErrorMsg());
 	}
 }

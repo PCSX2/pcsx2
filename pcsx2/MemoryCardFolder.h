@@ -23,6 +23,8 @@
 
 #include "Config.h"
 
+#include "fmt/core.h"
+
 //#define DEBUG_WRITE_FOLDER_CARD_IN_MEMORY_TO_FILE_ON_CHANGE
 
 // --------------------------------------------------------------------------------------
@@ -577,14 +579,14 @@ protected:
 
 	void AttemptToRecreateIndexFile(fs::path directory) const;
 
-	wxString GetDisabledMessage(uint slot) const
+	std::string GetDisabledMessage(uint slot) const
 	{
-		return wxsFormat(pxE(L"The PS2-slot %d has been automatically disabled.  You can correct the problem\nand re-enable it at any time using Config:Memory cards from the main menu."), slot //TODO: translate internal slot index to human-readable slot description
+		return fmt::format("The PS2-slot {} has been automatically disabled.  You can correct the problem\nand re-enable it at any time using Config:Memory cards from the main menu.", slot //TODO: translate internal slot index to human-readable slot description
 		);
 	}
-	wxString GetCardFullMessage(const wxString& filePath) const
+	std::string GetCardFullMessage(const std::string_view& filePath) const
 	{
-		return wxsFormat(pxE(L"(FolderMcd) Memory Card is full, could not add: %s"), WX_STR(filePath));
+		return fmt::format("(FolderMcd) Memory Card is full, could not add: {}", filePath);
 	}
 
 	// get the list of files (and their timestamps) in directory ordered as specified by the index file

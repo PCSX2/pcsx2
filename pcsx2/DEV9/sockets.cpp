@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "common/Assertions.h"
 #include "common/StringUtil.h"
 
 #ifdef __POSIX__

@@ -15,8 +15,9 @@
 
 #pragma once
 
+#include "common/Pcsx2Defs.h"
+
 #include <wx/filename.h>
-#include "common/StringHelpers.h"
 
 #include "ghc/filesystem.h"
 
@@ -43,7 +44,7 @@ public:
 		: wxFileName(src)
 	{
 	}
-	explicit wxDirName(const char* src) { Assign(fromUTF8(src)); }
+	explicit wxDirName(const char* src) { Assign(wxString(src, wxMBConvUTF8())); }
 	explicit wxDirName(const wxString& src) { Assign(src); }
 
 	// ------------------------------------------------------------------------
@@ -187,14 +188,14 @@ public:
 	}
 	wxDirName& operator=(const char* dirname)
 	{
-		Assign(fromUTF8(dirname));
+		Assign(wxString(dirname, wxMBConvUTF8()));
 		return *this;
 	}
 
 	wxFileName operator+(const wxFileName& right) const { return Combine(right); }
 	wxDirName operator+(const wxDirName& right) const { return Combine(right); }
 	wxFileName operator+(const wxString& right) const { return Combine(wxFileName(right)); }
-	wxFileName operator+(const char* right) const { return Combine(wxFileName(fromUTF8(right))); }
+	wxFileName operator+(const char* right) const { return Combine(wxFileName(wxString(right, wxMBConvUTF8()))); }
 
 	bool operator==(const wxDirName& filename) const { return SameAs(filename); }
 	bool operator!=(const wxDirName& filename) const { return !SameAs(filename); }

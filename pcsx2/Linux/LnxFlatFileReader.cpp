@@ -17,6 +17,9 @@
 #include "AsyncFileReader.h"
 #include "common/FileSystem.h"
 
+#include <sys/types.h>
+#include <fcntl.h>
+
 FlatFileReader::FlatFileReader(bool shareWrite)
 	: shareWrite(shareWrite)
 {

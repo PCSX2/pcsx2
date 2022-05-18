@@ -18,6 +18,7 @@
 #include "PrecompiledHeader.h"
 #include "microVU.h"
 
+#include "common/AlignedMalloc.h"
 #include "common/Perf.h"
 
 //------------------------------------------------------------------
@@ -26,18 +27,18 @@
 alignas(__pagesize) static u8 vu0_RecDispatchers[mVUdispCacheSize];
 alignas(__pagesize) static u8 vu1_RecDispatchers[mVUdispCacheSize];
 
-static __fi void mVUthrowHardwareDeficiency(const wxChar* extFail, int vuIndex)
+static __fi void mVUthrowHardwareDeficiency(const char* extFail, int vuIndex)
 {
 	throw Exception::HardwareDeficiency()
-		.SetDiagMsg(pxsFmt(L"microVU%d recompiler init failed: %s is not available.", vuIndex, extFail))
-		.SetUserMsg(pxsFmt(_("%s Extensions not found.  microVU requires a host CPU with SSE4 extensions."), extFail));
+		.SetDiagMsg(fmt::format("microVU{} recompiler init failed: %s is not available.", vuIndex, extFail))
+		.SetUserMsg(fmt::format("{} Extensions not found.  microVU requires a host CPU with SSE4 extensions.", extFail));
 }
 
 void mVUreserveCache(microVU& mVU)
 {
 
-	mVU.cache_reserve = new RecompiledCodeReserve(pxsFmt("Micro VU%u Recompiler Cache", mVU.index), _16mb);
-	mVU.cache_reserve->SetProfilerName(pxsFmt("mVU%urec", mVU.index));
+	mVU.cache_reserve = new RecompiledCodeReserve(fmt::format("Micro VU{} Recompiler Cache", mVU.index), _16mb);
+	mVU.cache_reserve->SetProfilerName(fmt::format("mVU{}rec", mVU.index));
 
 	mVU.cache = mVU.index
 		? (u8*)mVU.cache_reserve->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::mVU1recOffset, mVU.cacheSize * _1mb)
@@ -51,7 +52,7 @@ void mVUinit(microVU& mVU, uint vuIndex)
 {
 
 	if (!x86caps.hasStreamingSIMD4Extensions)
-		mVUthrowHardwareDeficiency(L"SSE4", vuIndex);
+		mVUthrowHardwareDeficiency("SSE4", vuIndex);
 
 	memzero(mVU.prog);
 

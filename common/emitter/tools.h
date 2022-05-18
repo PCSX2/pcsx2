@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "common/Dependencies.h"
+#include "common/Pcsx2Defs.h"
 
 enum x86VendorType
 {
@@ -114,7 +114,7 @@ public:
 
 	void Identify();
 	void CountCores();
-	wxString GetTypeName() const;
+	const char* GetTypeName() const;
 
 	static u32 CachedMHz();
 	u32 CalculateMHz() const;

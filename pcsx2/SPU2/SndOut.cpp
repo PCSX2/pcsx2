@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Global.h"
+#include "common/Assertions.h"
 
 
 StereoOut32 StereoOut32::Empty(0, 0);

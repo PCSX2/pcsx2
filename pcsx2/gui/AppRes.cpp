@@ -23,7 +23,7 @@
 
 #include "MSWstuff.h"
 
-#include "common/EmbeddedImage.h"
+#include "gui/EmbeddedImage.h"
 #include "gui/Resources/BackgroundLogo.h"
 #include "gui/Resources/ButtonIcon_Camera.h"
 

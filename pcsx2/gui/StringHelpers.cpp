@@ -14,8 +14,10 @@
  */
 
 #include <wx/gdicmn.h> // for wxPoint/wxRect stuff
+#include "common/Exceptions.h"
+#include "common/StringUtil.h"
 #include "common/Pcsx2Defs.h"
-#include "common/StringHelpers.h"
+#include "StringHelpers.h"
 
 __fi wxString fromUTF8(const char* src)
 {
@@ -39,42 +41,6 @@ __fi wxString fromUTF8(const std::string& str)
 __fi wxString fromAscii(const char* src)
 {
 	return wxString::FromAscii(src);
-}
-
-wxString u128::ToString() const
-{
-	return pxsFmt(L"0x%08X.%08X.%08X.%08X", _u32[0], _u32[1], _u32[2], _u32[3]);
-}
-
-wxString u128::ToString64() const
-{
-	return pxsFmt(L"0x%08X%08X.%08X%08X", _u32[0], _u32[1], _u32[2], _u32[3]);
-}
-
-wxString u128::ToString8() const
-{
-	FastFormatUnicode result;
-	result.Write(L"0x%02X.%02X", _u8[0], _u8[1]);
-	for (uint i = 2; i < 16; i += 2)
-		result.Write(L".%02X.%02X", _u8[i], _u8[i + 1]);
-	return result;
-}
-
-void u128::WriteTo(FastFormatAscii& dest) const
-{
-	dest.Write("0x%08X.%08X.%08X.%08X", _u32[0], _u32[1], _u32[2], _u32[3]);
-}
-
-void u128::WriteTo64(FastFormatAscii& dest) const
-{
-	dest.Write("0x%08X%08X.%08X%08X", _u32[0], _u32[1], _u32[2], _u32[3]);
-}
-
-void u128::WriteTo8(FastFormatAscii& dest) const
-{
-	dest.Write("0x%02X.%02X", _u8[0], _u8[1]);
-	for (uint i = 2; i < 16; i += 2)
-		dest.Write(".%02X.%02X", _u8[i], _u8[i + 1]);
 }
 
 // Splits a string into parts and adds the parts into the given SafeList.
@@ -138,7 +104,7 @@ T Parse(const wxString& src, const wxString& separators = L",")
 {
 	T retval;
 	if (!TryParse(retval, src, separators))
-		throw Exception::ParseError("Parse failure on call to " + fromUTF8(__WXFUNCTION__) + ": " + src);
+		throw Exception::ParseError(StringUtil::StdStringFromFormat("Parse failure on call to %s: %ls", __WXFUNCTION__, WX_STR(src)));
 	return retval;
 }
 

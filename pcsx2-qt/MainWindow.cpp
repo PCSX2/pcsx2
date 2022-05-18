@@ -23,6 +23,7 @@
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QStyleFactory>
 
+#include "common/Assertions.h"
 #include "common/FileSystem.h"
 
 #include "pcsx2/CDVD/CDVDaccess.h"

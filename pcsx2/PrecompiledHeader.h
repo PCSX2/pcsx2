@@ -22,30 +22,57 @@
 #	pragma warning(disable:4996) //ignore the stricmp deprecated warning
 #endif
 
-#include "common/Dependencies.h"
+#include "common/Pcsx2Defs.h"
 
 #define NOMINMAX		// Disables other libs inclusion of their own min/max macros (we use std instead)
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// Welcome wxWidgets to the party!
+// Welcome wxWidgets to the party! How about no? Only for the old UI.
 
+#if !defined(PCSX2_CORE) && defined(_WIN32)
+// This deals with a mode_t redefinition conflict. The mode_t doesn't seem to be
+// used anywhere in w32pthreads, so I've chosen to use the wxWidgets mode_t
+// (I think it's unsigned int vs signed int)
+#include <wx/filefn.h>
+#define HAVE_MODE_T
+#endif
+
+#ifndef PCSX2_CORE
+#include <wx/gdicmn.h>
+#include <wx/gdiobj.h>
 #include <wx/string.h>
 #include <wx/tokenzr.h>
 #include <wx/intl.h>
 #include <wx/log.h>
 #include <wx/filename.h>
 
-//////////////////////////////////////////////////////////////////////////////////////////
-// Include the STL junk that's actually handy.
+// pthreadsw32 is not needed when compiling PCSX2-Qt.
+#include <pthread.h>
+#endif
 
-#include <stdexcept>
-#include <vector>
-#include <list>
-#include <stack>
+//////////////////////////////////////////////////////////////////////////////////////////
+// Include the STL that's actually handy.
+
+#include <algorithm>
+#include <cassert>
+#include <cinttypes>	// Printf format
+#include <condition_variable>
+#include <climits>
 #include <cstring>		// string.h under c++
 #include <cstdio>		// stdio.h under c++
 #include <cstdlib>
-#include <cinttypes>	// Printf format
+#include <cmath>
+#include <list>
+#include <memory>
+#include <mutex>
+#include <functional>
+#include <optional>
+#include <stack>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <thread>
+#include <vector>
 
 // ... and include some ANSI/POSIX C libs that are useful too, just for good measure.
 // (these compile lightning fast with or without PCH, but they never change so
@@ -54,17 +81,8 @@
 #include <stddef.h>
 #include <sys/stat.h>
 
-#ifndef PCSX2_CORE
-// pthreadsw32 is not needed when compiling PCSX2-Qt.
-#include <pthread.h>
-#endif
-
-
-#undef  TRUE
-#undef  FALSE
-#define TRUE  1
-#define FALSE 0
-
+// We use fmt a fair bit now.
+#include "fmt/core.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Begin Pcsx2 Includes: Add items here that are local to Pcsx2 but stay relatively
@@ -72,15 +90,11 @@
 // need a full recompile anyway, when modified (etc)
 
 #include "PCSX2Base.h"
-#include "gui/i18n.h"
 
-#include "common/Path.h"
 #include "common/Console.h"
 #include "common/MemcpyFast.h"
 #include "common/General.h"
 #include "common/emitter/tools.h"
-
-#include "Config.h"
 
 typedef void FnType_Void();
 typedef FnType_Void* Fnptr_Void;

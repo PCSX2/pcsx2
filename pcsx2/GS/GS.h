@@ -19,6 +19,7 @@
 #include "Window/GSSetting.h"
 #include "SaveState.h"
 #include "pcsx2/Config.h"
+#include "pcsx2/GS/config.h"
 
 #include <map>
 

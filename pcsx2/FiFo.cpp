@@ -60,7 +60,7 @@ void ReadFIFO_VIF1(mem128_t* out)
 		}
 	}
 
-	VIF_LOG("ReadFIFO/VIF1 -> %ls", WX_STR(out->ToString()));
+	VIF_LOG("ReadFIFO/VIF1 -> 0x%08X.%08X.%08X.%08X", out->_u32[0], out->_u32[1], out->_u32[2], out->_u32[3]);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ void ReadFIFO_VIF1(mem128_t* out)
 //
 void WriteFIFO_VIF0(const mem128_t* value)
 {
-	VIF_LOG("WriteFIFO/VIF0 <- %ls", WX_STR(value->ToString()));
+	VIF_LOG("WriteFIFO/VIF0 <- 0x%08X.%08X.%08X.%08X", value->_u32[0], value->_u32[1], value->_u32[2], value->_u32[3]);
 
 	vif0ch.qwc += 1;
 	if (vif0.irqoffset.value != 0 && vif0.vifstalled.enabled)
@@ -90,7 +90,7 @@ void WriteFIFO_VIF0(const mem128_t* value)
 
 void WriteFIFO_VIF1(const mem128_t* value)
 {
-	VIF_LOG("WriteFIFO/VIF1 <- %ls", WX_STR(value->ToString()));
+	VIF_LOG("WriteFIFO/VIF1 <- 0x%08X.%08X.%08X.%08X", value->_u32[0], value->_u32[1], value->_u32[2], value->_u32[3]);
 
 	if (vif1Regs.stat.FDR)
 	{

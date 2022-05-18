@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "common/Assertions.h"
 #include "Host.h"
 #include "HostSettings.h"
 #include "Frontend/LayeredSettingsInterface.h"

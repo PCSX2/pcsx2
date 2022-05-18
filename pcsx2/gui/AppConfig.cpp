@@ -352,8 +352,8 @@ namespace FilenameDefs
 					wxFileName(L"Mcd008.ps2"),
 				}};
 
-		IndexBoundsAssumeDev(L"FilenameDefs::Memcard", port, 2);
-		IndexBoundsAssumeDev(L"FilenameDefs::Memcard", slot, 4);
+		pxAssert(port < 2);
+		pxAssert(slot < 4);
 
 		return retval[port][slot];
 	}
@@ -624,6 +624,13 @@ void App_SaveInstallSettings(wxConfigBase* ini)
 }
 
 // ------------------------------------------------------------------------
+const wxChar* CDVD_SourceLabels[] =
+	{
+		L"ISO",
+		L"Disc",
+		L"NoDisc",
+		NULL};
+
 void AppConfig::LoadSaveRootItems(IniInterface& ini)
 {
 	IniEntry(MainGuiPosition);
@@ -1095,7 +1102,7 @@ void RelocateLogfile()
 
 	if ((emuLog != NULL) && (emuLogName != newlogname))
 	{
-		Console.WriteLn(L"\nRelocating Logfile...\n\tFrom: %s\n\tTo  : %s\n", WX_STR(emuLogName), WX_STR(newlogname));
+		Console.WriteLn("\nRelocating Logfile...\n\tFrom: %ls\n\tTo  : %ls\n", WX_STR(emuLogName), WX_STR(newlogname));
 		wxGetApp().DisableDiskLogging();
 
 		fclose(emuLog);
@@ -1128,14 +1135,14 @@ void AppConfig_OnChangedSettingsFolder(bool overwrite)
 	if (overwrite)
 	{
 		if (wxFileExists(iniFilename) && !wxRemoveFile(iniFilename))
-			throw Exception::AccessDenied(iniFilename)
-				.SetBothMsgs(pxL("Failed to overwrite existing settings file; permission was denied."));
+			throw Exception::AccessDenied(StringUtil::wxStringToUTF8String(iniFilename))
+				.SetBothMsgs("Failed to overwrite existing settings file; permission was denied.");
 
 		const wxString vmIniFilename(GetVmSettingsFilename());
 
 		if (wxFileExists(vmIniFilename) && !wxRemoveFile(vmIniFilename))
-			throw Exception::AccessDenied(vmIniFilename)
-				.SetBothMsgs(pxL("Failed to overwrite existing settings file; permission was denied."));
+			throw Exception::AccessDenied(StringUtil::wxStringToUTF8String(vmIniFilename))
+				.SetBothMsgs("Failed to overwrite existing settings file; permission was denied.");
 	}
 
 	// Bind into wxConfigBase to allow wx to use our config internally, and delete whatever

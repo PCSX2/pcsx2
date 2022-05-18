@@ -50,6 +50,8 @@
 #include "VMManager.h"
 #endif
 
+#include "fmt/core.h"
+
 #include <csetjmp>
 #include <png.h>
 
@@ -165,7 +167,7 @@ void SaveStateBase::PrepBlock( int size )
 void SaveStateBase::FreezeTag( const char* src )
 {
 	const uint allowedlen = sizeof( m_tagspace )-1;
-	pxAssertDev( strlen(src) < allowedlen, pxsFmt( L"Tag name exceeds the allowed length of %d chars.", allowedlen) );
+	pxAssertDev(strlen(src) < allowedlen, "Tag name exceeds the allowed length");
 
 	memzero( m_tagspace );
 	strcpy( m_tagspace, src );
@@ -173,9 +175,9 @@ void SaveStateBase::FreezeTag( const char* src )
 
 	if( strcmp( m_tagspace, src ) != 0 )
 	{
-		wxString msg( L"Savestate data corruption detected while reading tag: " + fromUTF8(src) );
-		pxFail( msg );
-		throw Exception::SaveStateLoadError().SetDiagMsg(msg);
+		std::string msg(fmt::format("Savestate data corruption detected while reading tag: {}", src));
+		pxFail( msg.c_str() );
+		throw Exception::SaveStateLoadError().SetDiagMsg(std::move(msg));
 	}
 }
 
@@ -344,20 +346,17 @@ void memLoadingState::FreezeMem( void* data, int size )
 	memcpy( data, src, size );
 }
 
-wxString Exception::SaveStateLoadError::FormatDiagnosticMessage() const
+std::string Exception::SaveStateLoadError::FormatDiagnosticMessage() const
 {
-	FastFormatUnicode retval;
-	retval.Write("Savestate is corrupt or incomplete!\n");
+	std::string retval = "Savestate is corrupt or incomplete!\n";
 	Host::AddOSDMessage("Error: Savestate is corrupt or incomplete!", 15.0f);
 	_formatDiagMsg(retval);
 	return retval;
 }
 
-wxString Exception::SaveStateLoadError::FormatDisplayMessage() const
+std::string Exception::SaveStateLoadError::FormatDisplayMessage() const
 {
-	FastFormatUnicode retval;
-	retval.Write(_("The savestate cannot be loaded, as it appears to be corrupt or incomplete."));
-	retval.Write("\n");
+	std::string retval = "The savestate cannot be loaded, as it appears to be corrupt or incomplete.\n";
 	Host::AddOSDMessage("Error: The savestate cannot be loaded, as it appears to be corrupt or incomplete.", 15.0f);
 	_formatUserMsg(retval);
 	return retval;
@@ -665,11 +664,11 @@ std::unique_ptr<ArchiveEntryList> SaveState_DownloadState()
 #ifndef PCSX2_CORE
 	if (!GetCoreThread().HasActiveMachine())
 		throw Exception::RuntimeError()
-			.SetDiagMsg(L"SysExecEvent_DownloadState: Cannot freeze/download an invalid VM state!")
-			.SetUserMsg(_("There is no active virtual machine state to download or save."));
+			.SetDiagMsg("SysExecEvent_DownloadState: Cannot freeze/download an invalid VM state!")
+			.SetUserMsg("There is no active virtual machine state to download or save.");
 #endif
 
-	std::unique_ptr<ArchiveEntryList> destlist = std::make_unique<ArchiveEntryList>(new VmStateBuffer(L"Zippable Savestate"));
+	std::unique_ptr<ArchiveEntryList> destlist = std::make_unique<ArchiveEntryList>(new VmStateBuffer("Zippable Savestate"));
 
 	memSavingState saveme(destlist->GetBuffer());
 	ArchiveEntry internals(EntryFilename_InternalStructures);
@@ -962,24 +961,24 @@ static void CheckVersion(const std::string& filename, zip_t* zf)
 	auto zff = zip_fopen_managed(zf, EntryFilename_StateVersion, 0);
 	if (!zff || zip_fread(zff.get(), &savever, sizeof(savever)) != sizeof(savever))
 	{
-		throw Exception::SaveStateLoadError(StringUtil::UTF8StringToWxString(filename))
-			.SetDiagMsg(L"Savestate file does not contain version indicator.")
-			.SetUserMsg(_("This file is not a valid PCSX2 savestate.  See the logfile for details."));
+		throw Exception::SaveStateLoadError(filename)
+			.SetDiagMsg("Savestate file does not contain version indicator.")
+			.SetUserMsg("This file is not a valid PCSX2 savestate.  See the logfile for details.");
 	}
 
 	// Major version mismatch.  Means we can't load this savestate at all.  Support for it
 	// was removed entirely.
 	if (savever > g_SaveVersion)
-		throw Exception::SaveStateLoadError(StringUtil::UTF8StringToWxString(filename))
-			.SetDiagMsg(pxsFmt(L"Savestate uses an unsupported or unknown savestate version.\n(PCSX2 ver=%x, state ver=%x)", g_SaveVersion, savever))
-			.SetUserMsg(_("Cannot load this savestate. The state is an unsupported version."));
+		throw Exception::SaveStateLoadError(filename)
+			.SetDiagMsg(fmt::format("Savestate uses an unsupported or unknown savestate version.\n(PCSX2 ver={:x}, state ver={:x})", g_SaveVersion, savever))
+			.SetUserMsg("Cannot load this savestate. The state is an unsupported version.");
 
 	// check for a "minor" version incompatibility; which happens if the savestate being loaded is a newer version
 	// than the emulator recognizes.  99% chance that trying to load it will just corrupt emulation or crash.
 	if ((savever >> 16) != (g_SaveVersion >> 16))
-		throw Exception::SaveStateLoadError(StringUtil::UTF8StringToWxString(filename))
-			.SetDiagMsg(pxsFmt(L"Savestate uses an unknown savestate version.\n(PCSX2 ver=%x, state ver=%x)", g_SaveVersion, savever))
-			.SetUserMsg(_("Cannot load this savestate. The state is an unsupported version."));
+		throw Exception::SaveStateLoadError(filename)
+			.SetDiagMsg(fmt::format("Savestate uses an unknown savestate version.\n(PCSX2 ver={:x}, state ver={:x})", g_SaveVersion, savever))
+			.SetUserMsg("Cannot load this savestate. The state is an unsupported version.");
 }
 
 static zip_int64_t CheckFileExistsInState(zip_t* zf, const char* name)
@@ -1006,7 +1005,7 @@ static bool LoadInternalStructuresState(zip_t* zf, s64 index)
 	if (!zff)
 		return false;
 
-	VmStateBuffer buffer(static_cast<int>(zst.size), L"StateBuffer_UnzipFromDisk"); // start with an 8 meg buffer to avoid frequent reallocation.
+	VmStateBuffer buffer(static_cast<int>(zst.size), "StateBuffer_UnzipFromDisk"); // start with an 8 meg buffer to avoid frequent reallocation.
 	if (zip_fread(zff.get(), buffer.GetPtr(), buffer.GetSizeInBytes()) != buffer.GetSizeInBytes())
 		return false;
 
@@ -1021,9 +1020,9 @@ void SaveState_UnzipFromDisk(const std::string& filename)
 	if (!zf)
 	{
 		Console.Error("Failed to open zip file '%s' for save state load: %s", filename.c_str(), zip_error_strerror(&ze));
-		throw Exception::SaveStateLoadError(StringUtil::UTF8StringToWxString(filename))
-			.SetDiagMsg(L"Savestate file is not a valid gzip archive.")
-			.SetUserMsg(_("This savestate cannot be loaded because it is not a valid gzip archive.  It may have been created by an older unsupported version of PCSX2, or it may be corrupted."));
+		throw Exception::SaveStateLoadError(filename)
+			.SetDiagMsg("Savestate file is not a valid gzip archive.")
+			.SetUserMsg("This savestate cannot be loaded because it is not a valid gzip archive.  It may have been created by an older unsupported version of PCSX2, or it may be corrupted.");
 	}
 
 	// look for version and screenshot information in the zip stream:
@@ -1068,9 +1067,9 @@ void SaveState_UnzipFromDisk(const std::string& filename)
 
 	if (throwIt)
 	{
-		throw Exception::SaveStateLoadError(StringUtil::UTF8StringToWxString(filename))
-			.SetDiagMsg(L"Savestate cannot be loaded: some required components were not found or are incomplete.")
-			.SetUserMsg(_("This savestate cannot be loaded due to missing critical components.  See the log file for details."));
+		throw Exception::SaveStateLoadError(filename)
+			.SetDiagMsg("Savestate cannot be loaded: some required components were not found or are incomplete.")
+			.SetUserMsg("This savestate cannot be loaded due to missing critical components.  See the log file for details.");
 	}
 
 	PostLoadPrep();

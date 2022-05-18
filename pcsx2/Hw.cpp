@@ -21,6 +21,8 @@
 #include "Gif_Unit.h"
 #include "SPU2/spu2.h"
 
+#include "fmt/core.h"
+
 using namespace R5900;
 
 const int rdram_devices = 2;	// put 8 for TOOL and 2 for PS2 and PSX
@@ -169,7 +171,7 @@ __ri bool hwMFIFOWrite(u32 addr, const u128* data, uint qwc)
 	else
 	{
 		SPR_LOG( "Scratchpad/MFIFO: invalid base physical address: 0x%08x", dmacRegs.rbor.ADDR );
-		pxFailDev( wxsFormat( L"Scratchpad/MFIFO: Invalid base physical address: 0x%08x", dmacRegs.rbor.ADDR) );
+		pxFailDev( fmt::format( "Scratchpad/MFIFO: Invalid base physical address: 0x{:08x}", u32(dmacRegs.rbor.ADDR)).c_str() );
 		return false;
 	}
 	

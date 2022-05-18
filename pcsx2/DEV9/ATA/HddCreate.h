@@ -18,6 +18,8 @@
 #include <atomic>
 #include <chrono>
 
+#include "common/Path.h"
+
 class HddCreate
 {
 public:

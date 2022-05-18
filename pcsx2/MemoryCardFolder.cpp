@@ -29,13 +29,14 @@
 #include "ryml_std.hpp"
 #include "ryml.hpp"
 #include "common/Path.h"
+#include <wx/time.h>
 
 #include "svnrev.h"
 
 #include <sstream>
 #include <optional>
 
-bool RemoveDirectory(const wxString& dirname);
+bool RemoveWxDirectory(const wxString& dirname);
 
 ryml::Tree parseYamlStr(const std::string& str)
 {
@@ -170,7 +171,7 @@ void FolderMemoryCard::Open(const wxString& fullPath, const Pcsx2Config::McdOpti
 		return;
 	}
 
-	Console.WriteLn(disabled ? Color_Gray : Color_Green, L"McdSlot %u: [Folder] " + str, m_slot);
+	Console.WriteLn(disabled ? Color_Gray : Color_Green, "McdSlot %u: [Folder] %s", m_slot, str.ToUTF8().data());
 	if (disabled)
 		return;
 
@@ -244,11 +245,11 @@ void FolderMemoryCard::LoadMemoryCardData(const u32 sizeInClusters, const bool e
 	{
 		if (enableFiltering)
 		{
-			Console.WriteLn(Color_Green, L"(FolderMcd) Indexing slot %u with filter \"%s\".", m_slot, WX_STR(filter));
+			Console.WriteLn(Color_Green, "(FolderMcd) Indexing slot %u with filter \"%s\".", m_slot, filter.ToUTF8().data());
 		}
 		else
 		{
-			Console.WriteLn(Color_Green, L"(FolderMcd) Indexing slot %u without filter.", m_slot);
+			Console.WriteLn(Color_Green, "(FolderMcd) Indexing slot %u without filter.", m_slot);
 		}
 
 		CreateFat();
@@ -484,7 +485,7 @@ bool FolderMemoryCard::AddFolder(MemoryCardFileEntry* const dirEntry, const wxSt
 				const u32 newNeededClusters = CalculateRequiredClustersOfDirectory(dirPath + L"/" + file.m_fileName) + ((dirEntry->entry.data.length % 2) == 0 ? 1 : 0);
 				if (newNeededClusters > GetAmountFreeDataClusters())
 				{
-					Console.Warning(GetCardFullMessage(file.m_fileName));
+					Console.Warning(GetCardFullMessage(StringUtil::wxStringToUTF8String(file.m_fileName)));
 					continue;
 				}
 
@@ -566,7 +567,7 @@ bool FolderMemoryCard::AddFile(MemoryCardFileEntry* const dirEntry, const wxStri
 		const u32 newNeededClusters = (dirEntry->entry.data.length % 2) == 0 ? countClusters + 1 : countClusters;
 		if (newNeededClusters > GetAmountFreeDataClusters())
 		{
-			Console.Warning(GetCardFullMessage(relativeFilePath.GetFullPath()));
+			Console.Warning(GetCardFullMessage(StringUtil::wxStringToUTF8String(relativeFilePath.GetFullPath())));
 			return false;
 		}
 
@@ -633,7 +634,7 @@ bool FolderMemoryCard::AddFile(MemoryCardFileEntry* const dirEntry, const wxStri
 	}
 	else
 	{
-		Console.WriteLn(L"(FolderMcd) Could not open file: %s", WX_STR(relativeFilePath.GetFullPath()));
+		Console.WriteLn("(FolderMcd) Could not open file: %s", relativeFilePath.GetFullPath().ToUTF8().data());
 		return false;
 	}
 }
@@ -1086,7 +1087,7 @@ void FolderMemoryCard::Flush()
 	WriteToFile(m_folderName.GetFullPath().RemoveLast() + L"-debug_" + wxDateTime::Now().Format(L"%Y-%m-%d-%H-%M-%S") + L"_pre-flush.ps2");
 #endif
 
-	Console.WriteLn(L"(FolderMcd) Writing data for slot %u to file system...", m_slot);
+	Console.WriteLn("(FolderMcd) Writing data for slot %u to file system...", m_slot);
 	const u64 timeFlushStart = wxGetLocalTimeMillis().GetValue();
 
 	// Keep a copy of the old file entries so we can figure out which files and directories, if any, have been deleted from the memory card.
@@ -1108,7 +1109,7 @@ void FolderMemoryCard::Flush()
 	FlushBlock(m_superBlock.data.backup_block2);
 	if (m_backupBlock2.programmedBlock != 0xFFFFFFFFu)
 	{
-		Console.Warning(L"(FolderMcd) Aborting flush of slot %u, emulation was interrupted during save process!", m_slot);
+		Console.Warning("(FolderMcd) Aborting flush of slot %u, emulation was interrupted during save process!", m_slot);
 		return;
 	}
 
@@ -1155,7 +1156,7 @@ void FolderMemoryCard::Flush()
 	m_oldDataCache.clear();
 
 	const u64 timeFlushEnd = wxGetLocalTimeMillis().GetValue();
-	Console.WriteLn(L"(FolderMcd) Done! Took %u ms.", timeFlushEnd - timeFlushStart);
+	Console.WriteLn("(FolderMcd) Done! Took %u ms.", timeFlushEnd - timeFlushStart);
 
 #ifdef DEBUG_WRITE_FOLDER_CARD_IN_MEMORY_TO_FILE_ON_CHANGE
 	WriteToFile(m_folderName.GetFullPath().RemoveLast() + L"-debug_" + wxDateTime::Now().Format(L"%Y-%m-%d-%H-%M-%S") + L"_post-flush.ps2");
@@ -1403,7 +1404,7 @@ void FolderMemoryCard::FlushDeletedFilesAndRemoveUnchangedDataFromCache(const st
 				if (wxFileName::DirExists(newFilePath))
 				{
 					// wxRenameFile doesn't overwrite directories, so we have to remove the old one first
-					RemoveDirectory(newFilePath);
+					RemoveWxDirectory(newFilePath);
 				}
 				wxRenameFile(filePath, newFilePath);
 				DeleteFromIndex(m_folderName.GetFullPath() + dirPath, fileName);

@@ -1116,6 +1116,7 @@ set(pcsx2GuiSources
 	gui/Debugger/DebugEvents.cpp
 	gui/DriveList.cpp
 	gui/ExecutorThread.cpp
+	gui/FastFormatString.cpp
 	gui/FrameForGS.cpp
 	gui/GlobalCommands.cpp
 	gui/IniInterface.cpp
@@ -1143,9 +1144,11 @@ set(pcsx2GuiSources
 	gui/pxCheckBox.cpp
 	gui/pxRadioPanel.cpp
 	gui/pxStaticText.cpp
+	gui/pxTranslate.cpp
 	gui/pxWindowTextWriter.cpp
 	gui/RecentIsoList.cpp
 	gui/Saveslots.cpp
+	gui/StringHelpers.cpp
 	gui/SysCoreThread.cpp
 	gui/SysState.cpp
 	gui/SysThreadBase.cpp
@@ -1201,6 +1204,7 @@ set(pcsx2GuiHeaders
 	gui/pxStaticText.h
 	gui/RecentIsoList.h
 	gui/Saveslots.h
+	gui/StringHelpers.h
 	gui/SysThreads.h
 	gui/ThreadingDialogs.h
 	gui/ThreadingDialogs.cpp
@@ -1387,11 +1391,6 @@ set(pcsx2SystemHeaders
 set(pcsx2UtilitiesSources
 	Utilities/FileUtils.cpp)
 
-# Utilities headers
-set(pcsx2UtilitiesHeaders
-	Utilities/AsciiFile.h)
-
-
 # Windows sources
 set(pcsx2WindowsSources
 	CDVD/Windows/DriveUtility.cpp
@@ -1520,7 +1519,7 @@ target_sources(PCSX2 PRIVATE
 	${pcsx2ps2Headers}
 	${pcsx2SystemHeaders}
 	${pcsx2UtilitiesSources}
-	${pcsx2UtilitiesHeaders})
+)
 
 # gui sources when not doing a qt build
 if (NOT PCSX2_CORE)

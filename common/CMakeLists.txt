@@ -17,7 +17,6 @@ target_sources(common PRIVATE
 	CrashHandler.cpp
 	EventSource.cpp
 	Exceptions.cpp
-	FastFormatString.cpp
 	FastJmp.cpp
 	FileSystem.cpp
 	Misc.cpp
@@ -26,10 +25,8 @@ target_sources(common PRIVATE
 	PrecompiledHeader.cpp
 	Perf.cpp
 	ProgressCallback.cpp
-	pxTranslate.cpp
 	Semaphore.cpp
 	SettingsWrapper.cpp
-	StringHelpers.cpp
 	StringUtil.cpp
 	Timer.cpp
 	WindowInfo.cpp
@@ -64,7 +61,6 @@ target_sources(common PRIVATE
 	boost_spsc_queue.hpp
 	Console.h
 	CrashHandler.h
-	Dependencies.h
 	EnumOps.h
 	EventSource.h
 	Exceptions.h
@@ -80,13 +76,11 @@ target_sources(common PRIVATE
 	PageFaultSource.h
 	PrecompiledHeader.h
 	ProgressCallback.h
-	pxForwardDefs.h
 	RedtapeWindows.h
 	SafeArray.h
 	ScopedGuard.h
 	SettingsInterface.h
 	SettingsWrapper.h
-	StringHelpers.h
 	StringUtil.h
 	Timer.h
 	Threading.h
@@ -262,7 +256,15 @@ if (USE_GCC AND CMAKE_INTERPROCEDURAL_OPTIMIZATION)
 	set_source_files_properties(FastJmp.cpp PROPERTIES COMPILE_FLAGS -fno-lto)
 endif()
 
-target_link_libraries(common PRIVATE ${LIBC_LIBRARIES} PUBLIC wxWidgets::all)
+target_link_libraries(common PRIVATE
+	${LIBC_LIBRARIES}
+)
+
+target_link_libraries(common PUBLIC
+	wxWidgets::all
+	fmt::fmt
+)
+
 target_compile_features(common PUBLIC cxx_std_17)
 target_include_directories(common PUBLIC ../3rdparty/include ../)
 target_compile_definitions(common PUBLIC "${PCSX2_DEFS}")

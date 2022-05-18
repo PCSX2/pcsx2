@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "common/Exceptions.h"
+
 class BaseR5900Exception;
 
 // --------------------------------------------------------------------------------------

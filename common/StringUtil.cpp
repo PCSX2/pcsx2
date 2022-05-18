@@ -21,6 +21,8 @@
 #include <sstream>
 #include <algorithm>
 
+#include "fmt/core.h"
+
 #ifdef _WIN32
 #include "RedtapeWindows.h"
 #endif
@@ -321,6 +323,25 @@ namespace StringUtil
 		return true;
 	}
 
+	void AppendUTF16CharacterToUTF8(std::string& s, u16 ch)
+	{
+		if (ch & 0xf800)
+		{
+			s.push_back(static_cast<char>(static_cast<u8>(0xe0 | static_cast<u8>(ch >> 12))));
+			s.push_back(static_cast<char>(static_cast<u8>(0x80 | static_cast<u8>(((ch >> 6) & 0x3f)))));
+			s.push_back(static_cast<char>(static_cast<u8>(0x80 | static_cast<u8>((ch & 0x3f)))));
+		}
+		else if (ch & 0xff80)
+		{
+			s.push_back(static_cast<char>(static_cast<u8>(0xc0 | static_cast<u8>((ch >> 6)))));
+			s.push_back(static_cast<char>(static_cast<u8>(0x80 | static_cast<u8>((ch & 0x3f)))));
+		}
+		else
+		{
+			s.push_back(static_cast<char>(static_cast<u8>(ch)));
+		}
+	}
+
 	std::wstring UTF8StringToWideString(const std::string_view& str)
 	{
 		std::wstring ret;
@@ -401,5 +422,16 @@ namespace StringUtil
 		dest.assign(buf.data(), buf.length());
 		return true;
 #endif
+	}
+
+	std::string U128ToString(const u128& u)
+	{
+		return fmt::format("0x{:08X}.{:08X}.{:08X}.{:08X}", u._u32[0], u._u32[1], u._u32[2], u._u32[3]);
+	}
+
+	std::string& AppendU128ToString(const u128& u, std::string& s)
+	{
+		fmt::format_to(std::back_inserter(s), "0x{:08X}.{:08X}.{:08X}.{:08X}", u._u32[0], u._u32[1], u._u32[2], u._u32[3]);
+		return s;
 	}
 } // namespace StringUtil

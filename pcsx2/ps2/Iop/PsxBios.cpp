@@ -18,6 +18,8 @@
 #include "R3000A.h"
 #include "IopMem.h"
 
+#include "fmt/core.h"
+
 static std::string psxout_buf;
 
 // This filtering should almost certainly be done in the console classes instead
@@ -40,7 +42,7 @@ static void flush_stdout(bool closing = false)
                 psxout_repeat++;
             else {
                 if (psxout_repeat) {
-                    iopConLog(wxString::Format(L"[%u more]\n", psxout_repeat));
+                    iopConLog(fmt::format("[{} more]\n", psxout_repeat));
                     psxout_repeat = 0;
                 }
                 psxout_last = psxout_buf.substr(0, linelen);
@@ -50,7 +52,7 @@ static void flush_stdout(bool closing = false)
         psxout_buf.erase(0, linelen);
     }
     if (closing && psxout_repeat) {
-        iopConLog(wxString::Format(L"[%u more]\n", psxout_repeat));
+        iopConLog(fmt::format("[{} more]\n", psxout_repeat));
         psxout_repeat = 0;
     }
 }

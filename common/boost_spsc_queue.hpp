@@ -45,6 +45,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 #include <atomic>
+#include "AlignedMalloc.h"
 
 template <typename T, size_t max_size>
 class ringbuffer_base

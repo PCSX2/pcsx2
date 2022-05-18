@@ -15,11 +15,20 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/Assertions.h"
+
 #ifdef __POSIX__
 #define SOCKET_ERROR -1
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
+#endif
+
+#ifdef _WIN32
+#include "common/RedtapeWindows.h"
+#include <winsock2.h>
+#else
+#include <unistd.h>
 #endif
 
 #include "UDP_Session.h"

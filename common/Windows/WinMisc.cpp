@@ -15,11 +15,12 @@
 
 #if defined(_WIN32)
 
-#include <wx/string.h>
 #include "common/Pcsx2Defs.h"
 #include "common/RedtapeWindows.h"
 #include "common/Exceptions.h"
-#include "common/Dependencies.h"
+#include "common/StringUtil.h"
+
+#include "fmt/core.h"
 
 #pragma comment(lib, "User32.lib")
 
@@ -52,27 +53,26 @@ u64 GetPhysicalMemory()
 
 // Calculates the Windows OS Version and processor architecture, and returns it as a
 // human-readable string. :)
-wxString GetOSVersionString()
+std::string GetOSVersionString()
 {
-	wxString retval;
+	std::string retval;
 
 	SYSTEM_INFO si;
 	GetNativeSystemInfo(&si);
 
 	if (!IsWindows8Point1OrGreater())
-		return L"Unsupported Operating System!";
+	{
+		retval = "Unsupported Operating System!";
+	}
+	else
+	{
+		retval = "Microsoft ";
 
-	retval += L"Microsoft ";
-
-	if (IsWindows10OrGreater())
-		retval += IsWindowsServer() ? L"Windows Server 2016" : L"Windows 10";
-	else // IsWindows8Point1OrGreater()
-		retval += IsWindowsServer() ? L"Windows Server 2012 R2" : L"Windows 8.1";
-
-	if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
-		retval += L", 64-bit";
-	else if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL)
-		retval += L", 32-bit";
+		if (IsWindows10OrGreater())
+			retval += IsWindowsServer() ? "Windows Server 2016" : "Windows 10";
+		else // IsWindows8Point1OrGreater()
+			retval += IsWindowsServer() ? "Windows Server 2012 R2" : "Windows 8.1";
+	}
 
 	return retval;
 }
@@ -83,30 +83,30 @@ wxString GetOSVersionString()
 Exception::WinApiError::WinApiError()
 {
 	ErrorId = GetLastError();
-	m_message_diag = L"Unspecified Windows API error.";
+	m_message_diag = "Unspecified Windows API error.";
 }
 
-wxString Exception::WinApiError::GetMsgFromWindows() const
+std::string Exception::WinApiError::GetMsgFromWindows() const
 {
 	if (!ErrorId)
-		return L"No valid error number was assigned to this exception!";
+		return "No valid error number was assigned to this exception!";
 
 	const DWORD BUF_LEN = 2048;
-	TCHAR t_Msg[BUF_LEN];
-	if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, 0, ErrorId, 0, t_Msg, BUF_LEN, 0))
-		return wxsFormat(L"Win32 Error #%d: %s", ErrorId, t_Msg);
+	wchar_t t_Msg[BUF_LEN];
+	if (FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, 0, ErrorId, 0, t_Msg, BUF_LEN, 0))
+		return fmt::format("Win32 Error #{}: {}", ErrorId, StringUtil::WideStringToUTF8String(t_Msg));
 
-	return wxsFormat(L"Win32 Error #%d (no text msg available)", ErrorId);
+	return fmt::format("Win32 Error #{} (no text msg available)", ErrorId);
 }
 
-wxString Exception::WinApiError::FormatDisplayMessage() const
+std::string Exception::WinApiError::FormatDisplayMessage() const
 {
-	return m_message_user + L"\n\n" + GetMsgFromWindows();
+	return m_message_user + "\n\n" + GetMsgFromWindows();
 }
 
-wxString Exception::WinApiError::FormatDiagnosticMessage() const
+std::string Exception::WinApiError::FormatDiagnosticMessage() const
 {
-	return m_message_diag + L"\n\t" + GetMsgFromWindows();
+	return m_message_diag + "\n\t" + GetMsgFromWindows();
 }
 
 void ScreensaverAllow(bool allow)

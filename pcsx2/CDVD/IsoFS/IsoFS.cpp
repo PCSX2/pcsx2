@@ -19,6 +19,8 @@
 #include "IsoFS.h"
 #include "IsoFile.h"
 
+#include "common/Assertions.h"
+#include "common/Exceptions.h"
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
 
@@ -159,7 +161,7 @@ int IsoDirectory::GetIndexOf(const std::string_view& fileName) const
 			return i;
 	}
 
-	throw Exception::FileNotFound(StringUtil::UTF8StringToWideString(fileName));
+	throw Exception::FileNotFound(std::string(fileName));
 }
 
 const IsoFileDescriptor& IsoDirectory::GetEntry(const std::string_view& fileName) const
@@ -189,7 +191,7 @@ IsoFileDescriptor IsoDirectory::FindFile(const std::string_view& filePath) const
 	{
 		info = dir->GetEntry(parts[index]);
 		if (info.IsFile())
-			throw Exception::FileNotFound(StringUtil::UTF8StringToWxString(filePath));
+			throw Exception::FileNotFound(std::string(filePath));
 
 		deleteme.reset(new IsoDirectory(internalReader, info));
 		dir = deleteme.get();

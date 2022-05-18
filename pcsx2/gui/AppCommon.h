@@ -29,5 +29,6 @@
 #include "AppConfig.h"
 #include "AppEventListeners.h"
 
+extern wxString AddAppName( const wxString& fmt );
 extern wxString AddAppName( const wxChar* fmt );
 extern wxString AddAppName( const char* fmt );

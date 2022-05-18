@@ -15,7 +15,9 @@
 
 #pragma once
 
-#include "common/StringHelpers.h"
+#include "Pcsx2Defs.h"
+
+#include <string>
 
 enum ConsoleColors
 {
@@ -70,11 +72,11 @@ struct IConsoleWriter
 {
 	// A direct console write, without tabbing or newlines.  Useful to devs who want to do quick
 	// logging of various junk; but should *not* be used in production code due.
-	void(* WriteRaw)(const wxString& fmt);
+	void(* WriteRaw)(const char* fmt);
 
 	// WriteLn implementation for internal use only.  Bypasses tabbing, prefixing, and other
 	// formatting.
-	void(* DoWriteLn)(const wxString& fmt);
+	void(* DoWriteLn)(const char* fmt);
 
 	// SetColor implementation for internal use only.
 	void(* DoSetColor)(ConsoleColors color);
@@ -82,16 +84,16 @@ struct IConsoleWriter
 	// Special implementation of DoWrite that's pretty much for MSVC use only.
 	// All implementations should map to DoWrite, except Stdio which should map to Null.
 	// (This avoids circular/recursive stdio output)
-	void(* DoWriteFromStdout)(const wxString& fmt);
+	void(* DoWriteFromStdout)(const char* fmt);
 
 	void(* Newline)();
-	void(* SetTitle)(const wxString& title);
+	void(* SetTitle)(const char* title);
 
 	// internal value for indentation of individual lines.  Use the Indent() member to invoke.
 	int _imm_indentation;
 
 	// For internal use only.
-	wxString _addIndentation(const wxString& src, int glob_indent) const;
+	std::string _addIndentation(const std::string& src, int glob_indent) const;
 
 	// ----------------------------------------------------------------------------
 	// Public members; call these to print stuff to console!
@@ -112,17 +114,6 @@ struct IConsoleWriter
 	bool Error(const char* fmt, ...) const;
 	bool Warning(const char* fmt, ...) const;
 
-	bool FormatV(const wxChar* fmt, va_list args) const;
-	bool WriteLn(ConsoleColors color, const wxChar* fmt, ...) const;
-	bool WriteLn(const wxChar* fmt, ...) const;
-	bool Error(const wxChar* fmt, ...) const;
-	bool Warning(const wxChar* fmt, ...) const;
-
-	bool WriteLn(ConsoleColors color, const wxString fmt, ...) const;
-	bool WriteLn(const wxString fmt, ...) const;
-	bool Error(const wxString fmt, ...) const;
-	bool Warning(const wxString fmt, ...) const;
-
 	bool WriteLn(ConsoleColors color, const std::string& str) const;
 	bool WriteLn(const std::string& str) const;
 	bool Error(const std::string& str) const;
@@ -136,12 +127,12 @@ struct IConsoleWriter
 //
 struct NullConsoleWriter
 {
-	void WriteRaw(const wxString& fmt) {}
-	void DoWriteLn(const wxString& fmt) {}
+	void WriteRaw(const char* fmt) {}
+	void DoWriteLn(const char* fmt) {}
 	void DoSetColor(ConsoleColors color) {}
-	void DoWriteFromStdout(const wxString& fmt) {}
+	void DoWriteFromStdout(const char* fmt) {}
 	void Newline() {}
-	void SetTitle(const wxString& title) {}
+	void SetTitle(const char* title) {}
 
 
 	ConsoleColors GetColor() const { return Color_Current; }
@@ -156,17 +147,6 @@ struct NullConsoleWriter
 	bool WriteLn(const char* fmt, ...) const { return false; }
 	bool Error(const char* fmt, ...) const { return false; }
 	bool Warning(const char* fmt, ...) const { return false; }
-
-	bool FormatV(const wxChar* fmt, va_list args) const { return false; }
-	bool WriteLn(ConsoleColors color, const wxChar* fmt, ...) const { return false; }
-	bool WriteLn(const wxChar* fmt, ...) const { return false; }
-	bool Error(const wxChar* fmt, ...) const { return false; }
-	bool Warning(const wxChar* fmt, ...) const { return false; }
-
-	bool WriteLn(ConsoleColors color, const wxString fmt, ...) const { return false; }
-	bool WriteLn(const wxString fmt, ...) const { return false; }
-	bool Error(const wxString fmt, ...) const { return false; }
-	bool Warning(const wxString fmt, ...) const { return false; }
 };
 
 // --------------------------------------------------------------------------------------
