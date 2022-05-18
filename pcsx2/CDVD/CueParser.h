@@ -81,8 +81,6 @@ namespace CueParser
 		bool CompleteLastTrack(u32 line_number, Common::Error* error);
 		bool SetTrackLengths(u32 line_number, Common::Error* error);
 
-		u8* AddPregaps(u8* msf, u8* pregap);
-
 		std::optional<std::string> m_current_file;
 		std::optional<cdvdTrack> m_current_track;
 	};

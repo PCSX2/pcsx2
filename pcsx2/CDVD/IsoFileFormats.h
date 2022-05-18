@@ -75,6 +75,8 @@ public:
 	uint GetFileSize() const { return m_reader->GetBlockCount(); }
 	int GetBlockOffset() const { return m_blockofs; }
 
+	void SetDiskSize();
+
 	const std::string& GetFilename() const
 	{
 		return m_filename;

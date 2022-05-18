@@ -135,7 +135,7 @@ namespace CueParser
 	{
 		static const s32 max_values[] = {std::numeric_limits<s32>::max(), 60, 75};
 
-		u32 parts[3] = {};
+		u32 *parts = new u32[3];
 		u32 part = 0;
 
 		u32 start = 0;
@@ -174,16 +174,6 @@ namespace CueParser
 		ret[1] = static_cast<u8>(parts[1]);
 		ret[2] = static_cast<u8>(parts[2]);
 		return ret;
-	}
-
-	u8* File::AddPregaps(u8* msf, u8* pregap)
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			msf[i] += pregap[i];
-		}
-
-	return msf;
 	}
 
 	bool File::ParseLine(const char* line, u32 line_number, Common::Error* error)
@@ -352,7 +342,7 @@ namespace CueParser
 			return false;
 		}
 
-		if (m_current_track->GetIndex(static_cast<u32>(index_number.value())) != nullptr)
+		if (m_current_track->GetIndex(static_cast<u32>(index_number.value())) != 0)
 		{
 			SetError(line_number, error, "Duplicate index %d", index_number.value());
 			return false;
@@ -365,14 +355,15 @@ namespace CueParser
 			return false;
 		}
 
-		const std::optional<u8*> msf(GetMSF(msf_str));
-		if (!msf.has_value())
+		u8 pregap[3] = {0, 2, 0};
+		u8* msf(GetMSF(msf_str).value());
+		if (!msf)
 		{
 			SetError(line_number, error, "Invalid index location '%*s'", static_cast<int>(msf_str.size()), msf_str.data());
 			return false;
 		}
 
-		m_current_track->indices.emplace_back(static_cast<u32>(index_number.value()), msf.value());
+		m_current_track->indices.emplace_back(index_number.value(), msf);
 		return true;
 	}
 
@@ -470,11 +461,9 @@ namespace CueParser
 			m_current_track->zero_pregap.reset();
 		}
 
-		u8* pregap = new u8[3]{0, 2, 0};
+		index1[1] = index1[1] + 2;
 
-		AddPregaps(index1, pregap);
-		m_current_track->startMSF = index1;
-		m_current_track->startLsn = msf_to_lsn(index1);
+		m_current_track->startAbsolute = msf_to_lsn(index1);
 
 		tempTracks.push_back(std::move(m_current_track.value()));
 		m_current_track.reset();
@@ -491,7 +480,7 @@ namespace CueParser
 				cdvdTrack* previous_track = GetMutableTrack(track.trackNum - 1);
 				if (previous_track && previous_track->filePath == track.filePath)
 				{
-					if (previous_track->startLsn > track.startLsn)
+					if (previous_track->startAbsolute > track.startAbsolute)
 					{
 						SetError(line_number, error, "Track %u start greater than track %u start", previous_track->trackNum,
 							track.trackNum);
@@ -499,11 +488,11 @@ namespace CueParser
 					}
 
 					// Use index 0, otherwise index 1.
-					u8* start_index = track.GetIndex(0);
+					u32 start_index = msf_to_lsn(track.GetIndex(0));
 					u32 length;
-					if (!start_index)
-						start_index = track.GetIndex(1);
-					length = previous_track->startLsn - msf_to_lsn(start_index);
+					if (start_index <= 0)
+						start_index = msf_to_lsn(track.GetIndex(1));
+					length = previous_track->startAbsolute - start_index;
 
 					previous_track->length = length;
 				}

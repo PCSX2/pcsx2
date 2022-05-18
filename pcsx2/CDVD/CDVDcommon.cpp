@@ -41,7 +41,10 @@
 #include "CDVD.h"
 #include "CueParser.h"
 
+
 CDVD_API* CDVD = NULL;
+
+u32 maxLSN = 0;
 
 std::vector<cdvdTrack> m_tracks;
 
@@ -54,6 +57,8 @@ std::vector<cdvdTrack> m_tracks;
 // a new DiskTypeCheck.  All subsequent checks use the non-negative value here.
 //
 static int diskTypeCached = -1;
+
+static u32 oldLength = 0;
 
 // used to bridge the gap between the old getBuffer api and the new getBuffer2 api.
 int lastReadSize;
@@ -261,6 +266,16 @@ static int FindDiskType(int mType)
 	return iCDType;
 }
 
+u8* cdvdTrack::GetIndex(u32 n) const
+{
+	for (const auto& it : indices)
+	{
+		if (it.first == n)
+			return it.second;
+	}
+	return 0;
+}
+
 static void DetectDiskType()
 {
 	if (CDVD->getTrayStatus() == CDVD_TRAY_OPEN)
@@ -358,6 +373,193 @@ void CDVDsys_ChangeSource(CDVD_SourceType type)
 	}
 }
 
+// ToDo calculate pregap index 0 and the two seconds to each track.
+static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
+{
+	u32 trackLength = 0;
+	u32 pregapLSN = 0;
+	u32 index0 = 0;
+	u32 index1 = 0;
+
+	cueFile->tempTracks[i].startAbsolute = maxLSN;
+	const u32 trackSize = sizes[cueFile->tempTracks[i].mode];
+	Console.Warning("I IS: %d", i);
+
+	if (cueFile->tempTracks[i].length.has_value())
+	{
+		trackLength = (cueFile->tempTracks[i].length.value() - cueFile->tempTracks[i].startAbsolute);
+	}
+	else
+	{
+		if ((i + 1) <= cueFile->tempTracks.size() && cueFile->tempTracks[i].filePath == cueFile->tempTracks[i + 1].filePath)
+		{
+			if (cueFile->tempTracks[i].GetIndex(0) != nullptr)
+			{
+				index0 = msf_to_lsn(cueFile->tempTracks[i].GetIndex(0));
+			}
+			index1 = msf_to_lsn(cueFile->tempTracks[i].GetIndex(1));
+
+			u32 nextIndex = msf_to_lsn(cueFile->tempTracks[i + 1].GetIndex(1));
+			
+			if (index0 > 0)
+			{
+				// There's always an index1 so this is safe according to Stenz
+				pregapLSN = index1 - index0;
+				maxLSN += pregapLSN;
+			}
+			else
+			{
+				// Breaks some games to add implicit 2 seconds to audio disks?
+				if (cueFile->tempTracks.size() > 1 && !couldBeAudio)
+				{
+					pregapLSN += 150;
+				}
+				if (pregapLSN > 0)
+				{
+					maxLSN += pregapLSN;
+				}
+			}
+
+			trackLength = (nextIndex - pregapLSN);
+			cueFile->tempTracks[i].startRelative = pregapLSN;
+		}
+		else
+		{
+			FILE* file = fopen(filePath.c_str(), "r");
+			FileSystem::FSeek64(file, 0, SEEK_END);
+			u64 fileSize = static_cast<u64>(FileSystem::FTell64(file));
+			FileSystem::FSeek64(file, 0, SEEK_SET);
+
+			fileSize /= trackSize;
+
+			if (cueFile->tempTracks[i].startAbsolute < fileSize)
+			{
+				Console.Error("Track Size is wrong");
+			}
+
+			Console.Warning("File Size %d", fileSize);
+			trackLength = static_cast<u32>(fileSize - cueFile->tempTracks[i].startAbsolute);
+
+			fclose(file);
+			file = nullptr;
+
+			if (cueFile->tempTracks[i].GetIndex(0) != nullptr)
+			{
+				index0 = msf_to_lsn(cueFile->tempTracks[i].GetIndex(0));
+			}
+			index1 = msf_to_lsn(cueFile->tempTracks[i].GetIndex(1));
+			if (index0 > 0)
+			{
+				// There's always an index1 so this is safe according to Stenz
+				pregapLSN = index1 - index0;
+				maxLSN += pregapLSN;
+			}
+			else
+			{
+				// Breaks some games to add implicit 2 seconds to audio disks?
+				if (cueFile->tempTracks.size() > 1 && !couldBeAudio)
+				{
+					pregapLSN += 150;
+				}
+				if (pregapLSN > 0)
+				{
+					maxLSN += pregapLSN;
+				}
+			}
+		}
+
+		u32 end = cueFile->tempTracks[i].startRelative + trackLength;
+		cueFile->tempTracks[i].length = (trackLength + pregapLSN);
+	}
+
+	cueFile->tempTracks[i].startAbsolute = maxLSN;
+
+	u32 lastStart = cueFile->tempTracks[i].startAbsolute;
+
+	for (int i = 1; i < 2; i++)
+	{
+		if (msf_to_lsn(cueFile->tempTracks[i].GetIndex(i)) > lastStart)
+		{
+			maxLSN = (msf_to_lsn(cueFile->tempTracks[i].GetIndex(i)) - lastStart);
+			lastStart = msf_to_lsn(cueFile->tempTracks[i].GetIndex(i));
+		}
+	}
+
+	u32 endOffset = cueFile->tempTracks[i].startAbsolute + trackLength;
+	if (endOffset > lastStart)
+	{
+		maxLSN += (endOffset - lastStart);
+	}
+
+	Console.Warning("MaxLSN: %d", maxLSN);
+}
+
+bool DoParseCueFile(fs::path ext)
+{
+	Common::Error *err = nullptr;
+
+	// Did we have the cue parser running previously?
+	if (m_tracks.size() > 0)
+	{
+		m_tracks.clear();
+	}
+
+	if (ext.extension() == ".bin")
+	{
+		ext.replace_extension(".cue");
+	}
+	if (fs::exists(ext) && ext.extension() == ".cue")
+	{
+		if (!cueFile)
+		{
+			cueFile = std::make_unique<CueParser::File>();
+		}
+
+		FILE* file = fopen(ext.string().c_str(), "r+");
+		if (file != nullptr)
+		{
+			if (cueFile->Parse(file, err))
+			{
+				bool audio = (cueFile->tempTracks[0].type == CDVD_AUDIO_TRACK);
+
+				for (int i = 0; i < cueFile->tempTracks.size(); i++)
+				{
+					ext = ext.parent_path() / cueFile->tempTracks[i].filePath;
+					CalculateDiskLength(i, ext.string(), audio);
+
+					cdvdTrack track = cueFile->tempTracks[i];
+					track.filePath = ext.string();
+
+					track.fileReader = new InputIsoFile();
+					track.fileReader->Open(track.filePath);
+					m_tracks.push_back(track);
+				}
+				cueFile->tempTracks.clear();
+			
+				int ret = CDVD->open(!ext.empty() ? cueFile->GetTrack(1)->filePath.c_str() : nullptr, 1);
+				if (ret == -1)
+					return false; // error! (handled by caller)
+
+				return true;
+			}
+			return false;
+		}
+	}
+	// There wasn't a cue file. Just try opening the bin.
+	else
+	{
+		ext.replace_extension(".bin");
+		int ret = CDVD->open(!ext.empty() ? ext.string().c_str() : nullptr, 1);
+		if (ret == -1)
+			return false; // error! (handled by caller)
+
+		return true;
+	}
+
+	return false;
+}
+
+
 bool DoCDVDopen()
 {
 	CheckNullCDVD();
@@ -377,28 +579,19 @@ bool DoCDVDopen()
 	fs::path ext(m_SourceFilename[CurrentSourceType]);
 
 	Common::Error *err = nullptr;
-
-	if (ext.extension() == ".bin")
+	
+	if (DoParseCueFile(ext))
 	{
-		ext.replace_extension(".cue");
+		int ret = CDVD->open(cueFile->GetTrack(1)->filePath.c_str(), 1);
+		if (ret == -1)
+			return false; // error! (handled by caller)
 	}
-	if (fs::exists(ext) && ext.extension() == ".cue")
+	else
 	{
-		if (!cueFile)
-			cueFile = std::make_unique<CueParser::File>();
-
-		FILE* file = fopen(ext.string().c_str(), "r+");
-		if (file != nullptr)
-		{
-			cueFile->Parse(file, err);
-			ext = ext.parent_path() / cueFile->GetTrack(1)->filePath;
-		}
+		int ret = CDVD->open(!ext.empty() ? ext.string().c_str() : nullptr, 0);
+		if (ret == -1)
+			return false; // error! (handled by caller)
 	}
-
-	int ret = CDVD->open(!ext.empty() ? ext.string().c_str() : nullptr, 0);
-	if (ret == -1)
-		return false; // error! (handled by caller)
-
 	int cdtype = DoCDVDdetectDiskType();
 
 	if (!EmuConfig.CdvdDumpBlocks || (cdtype == CDVD_TYPE_NODISC))

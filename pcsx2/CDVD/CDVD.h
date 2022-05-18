@@ -26,12 +26,19 @@
 
 static __fi s32 msf_to_lsn(u8* Time)
 {
-	u32 lsn;
-
-	lsn = Time[2];
-	lsn += (Time[1] - 2) * 75;
-	lsn += Time[0] * 75 * 60;
-	return lsn;
+	if (Time != nullptr)
+	{
+		u32 lsn;
+		lsn = Time[2];
+		lsn += (Time[1] - 2) * 75;
+		lsn += Time[0] * 75 * 60;
+		Console.Warning("Lsn: %d", lsn);
+		return lsn;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 static __fi s32 msf_to_lsn(u8 m, u8 s, u8 f)

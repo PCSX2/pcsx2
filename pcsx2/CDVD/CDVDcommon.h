@@ -29,13 +29,15 @@ typedef struct _cdvdTrack
 	u8 mode : 4;   // control and mode bits;
 	u8 type;
 	u8 trackNum;   // current track number (1 to 99)
-	u8* startMSF; // Starting postion in MSF form
-	u32 startLsn; // Starting Lsn for track
+	u16 crc;
+	u32 startRelative;
+	u32 startAbsolute;
 	std::string filePath; // Path of current track
 	u8* GetIndex(u32 n) const;
 	InputIsoFile* fileReader;
 	std::optional<u32> length;
 	std::optional<u8*> zero_pregap;
+	// Relative to the current track file
 	std::vector<std::pair<u32, u8*>> indices;
 } cdvdTrack;
 
@@ -195,3 +197,5 @@ extern void DoCDVDresetDiskTypeCache();
 extern bool DoParseCueFile(fs::path ext);
 
 extern std::vector<cdvdTrack> m_tracks;
+extern u32 maxLSN;
+static constexpr std::array<u32, 8> sizes = {{2352, 2048, 2352, 2336, 2048, 2324, 2332, 2352}};

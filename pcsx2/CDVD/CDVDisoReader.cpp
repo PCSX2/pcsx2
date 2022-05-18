@@ -37,11 +37,6 @@ static int pmode, cdtype, currentTrackNum;
 static s32 layer1start = -1;
 static bool layer1searched = false;
 
-static u32 maxLSN = 0;
-
-
-static constexpr std::array<u32, 8> sizes = {{2352, 2048, 2352, 2336, 2048, 2324, 2332, 2352}};
-
 
 void CALLBACK ISOclose()
 {
@@ -111,37 +106,6 @@ s32 CALLBACK ISOgetTN(cdvdTN* Buffer)
 	return 0;
 }
 
-static void CalculateDiskLength()
-{
-	u32 trackLength = 0;
-	std::string oldFilePath = "";
-	for(int i = 0; i < m_tracks.size(); i++)
-	{
-		oldFilePath = m_tracks[i].filePath;
-
-		u64 fileSize = m_tracks[i].fileReader->GetBlockCount();
-
-		//fileSize /= sizes[cueFile->GetTrack(i)->mode];
-		if (!m_tracks[i].filePath.compare(oldFilePath.c_str()))
-		{
-			if (m_tracks[i].length.has_value())
-			{
-				trackLength = (m_tracks[i].length.value() - m_tracks[i].startLsn);
-			}
-			else
-			{
-				Console.Warning("File Size %d", fileSize);
-				trackLength = static_cast<u32>(fileSize - m_tracks[i].startLsn);
-			}
-			maxLSN += trackLength;
-		}
-		else
-		{
-			trackLength += m_tracks[i].startLsn;
-		}
-	}
-	Console.Warning("MaxLSN: %d", maxLSN);
-}
 
 s32 CALLBACK ISOgetTD(u8 Track, cdvdTD* Buffer)
 {
@@ -151,7 +115,7 @@ s32 CALLBACK ISOgetTD(u8 Track, cdvdTD* Buffer)
 			return -1;
 		try
 		{
-			Buffer->lsn = iso.GetBlockCount();
+			Buffer->lsn = maxLSN;
 			Buffer->type = 0;
 			return 0;
 		}
@@ -163,7 +127,7 @@ s32 CALLBACK ISOgetTD(u8 Track, cdvdTD* Buffer)
 	else
 	{
 		Buffer->type = cueFile->GetTrack(Track)->type;
-		Buffer->lsn = cueFile->GetTrack(Track)->startLsn;
+		Buffer->lsn = cueFile->GetTrack(Track)->startAbsolute;
 	}
 
 	return 0;
@@ -310,7 +274,7 @@ s32 CALLBACK ISOgetTOC(void* toc)
 			diskInfo.etrack = 0;
 			diskInfo.strack = 1;
 		}
-		if (ISOgetTD(1, &trackInfo) == -1)
+		if (ISOgetTD(0, &trackInfo) == -1)
 			trackInfo.lsn = 0;
 
 		tocBuff[0] = 0x41;
@@ -324,23 +288,13 @@ s32 CALLBACK ISOgetTOC(void* toc)
 		tocBuff[12] = 0xA1;
 		tocBuff[17] = itob(diskInfo.etrack);
 
-		if (m_tracks.size() <= 0)
-		{
-			lsn_to_msf(trackInfo.lsn, &min, &sec, &frm);
-			tocBuff[22] = 0xA2;
-			tocBuff[27] = itob(min);
-			tocBuff[28] = itob(sec);
-		}
-		// There were multiple tracks
-		if (m_tracks.size() > 0)
-		{
-			CalculateDiskLength();
-			lsn_to_msf(maxLSN, &min, &sec, &frm);
-			Console.Warning("MAX LSN: %d", maxLSN);
-			tocBuff[22] = 0xA2;
-			tocBuff[27] = itob(min);
-			tocBuff[28] = itob(sec);
-		}
+		lsn_to_msf(trackInfo.lsn, &min, &sec, &frm);
+		Console.Warning("MAX LSN: %d", maxLSN);
+		tocBuff[22] = 0xA2;
+		tocBuff[27] = itob(min);
+		tocBuff[28] = itob(sec);
+		tocBuff[29] = itob(frm);
+
 		for (i = diskInfo.strack; i <= diskInfo.etrack; i++)
 		{
 			err = ISOgetTD(i, &trackInfo);
@@ -455,16 +409,16 @@ s32 CALLBACK ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 
 	memset(subq, 0, sizeof(cdvdSubQ));
 
-	lsn_to_msf(lsn, &min, &sec, &frm);
+	lsn_to_msf((cueFile->GetTrack(currentTrackNum)->startRelative + lsn), &min, &sec, &frm);
 	subq->trackM = itob(min);
 	subq->trackS = itob(sec);
 	subq->trackF = itob(frm);
 
 	u8 i = 1;
-	while (i < m_tracks.size() && lsn >= cueFile->GetTrack(i + 1)->startLsn)
+	while (i < m_tracks.size() && lsn >= cueFile->GetTrack(i + 1)->startAbsolute)
 		++i;
 
-	lsn -= cueFile->GetTrack(i)->startLsn;
+	lsn -= cueFile->GetTrack(i)->startAbsolute;
 
 	lsn_to_msf(lsn + (2 * 75), &min, &sec, &frm);
 	subq->discM = itob(min);

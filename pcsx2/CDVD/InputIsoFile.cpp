@@ -48,7 +48,7 @@ int InputIsoFile::ReadSync(u8* dst, uint lsn)
 {
 	if (lsn >= m_blocks)
 	{
-		std::string msg(fmt::format("isoFile error: Block index is past the end of file! ({} >= {}).", lsn, m_blocks));
+		std::string msg(fmt::format("isoFile error: Block index is past the end of file! Read Sync ({} >= {}).", lsn, m_blocks));
 		pxAssertDev(false, msg.c_str());
 		Console.Error(msg.c_str());
 		return -1;
@@ -65,7 +65,7 @@ void InputIsoFile::BeginRead2(uint lsn)
 	{
 		// While this usually indicates that the ISO is corrupted, some games do attempt
 		// to read past the end of the disc, so don't error here.
-		Console.WriteLn("isoFile error: Block index is past the end of file! (%u >= %u).", lsn, m_blocks);
+		Console.WriteLn("isoFile error: Block index is past the end of file! Begin Read (%u >= %u).", lsn, m_blocks);
 		return;
 	}
 
@@ -202,6 +202,19 @@ bool InputIsoFile::Test(std::string srcfile)
 	return Open(std::move(srcfile), true);
 }
 
+void InputIsoFile::SetDiskSize()
+{
+	if (maxLSN > 0)
+	{
+		m_blocks = maxLSN;
+	}
+	else
+	{
+		m_blocks = m_reader->GetBlockCount();
+	}
+	return;
+}
+
 bool InputIsoFile::Open(std::string srcfile, bool testOnly)
 {
 	Close();
@@ -265,8 +278,7 @@ bool InputIsoFile::Open(std::string srcfile, bool testOnly)
 		m_reader = MultipartFileReader::DetectMultipart(m_reader);
 	}
 
-	m_blocks = m_reader->GetBlockCount();
-
+	SetDiskSize();
 	Console.WriteLn(Color_StrongBlue, "isoFile open ok: %s", m_filename.c_str());
 
 	ConsoleIndentScope indent;
