@@ -14,15 +14,18 @@
  */
 
 #if !defined(_WIN32)
+#include <cstdio>
 #include <sys/mman.h>
 #include <signal.h>
 #include <errno.h>
 #include <unistd.h>
 
+#include "fmt/core.h"
+
 #include "common/PageFaultSource.h"
+#include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/Exceptions.h"
-#include "common/StringHelpers.h"
 
 // Apple uses the MAP_ANON define instead of MAP_ANONYMOUS, but they mean
 // the same thing.
@@ -66,10 +69,8 @@ static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void*)
 	if (Source_PageFault->WasHandled())
 		return;
 
-	if (!wxThread::IsMain())
-	{
-		pxFailRel(pxsFmt("Unhandled page fault @ 0x%08x", siginfo->si_addr));
-	}
+	std::fprintf(stderr, "Unhandled page fault @ 0x%08x", siginfo->si_addr);
+	pxFailRel("Unhandled page fault");
 
 	// Bad mojo!  Completely invalid address.
 	// Instigate a trap if we're in a debugger, and if not then do a SIGKILL.
@@ -95,25 +96,12 @@ void _platform_InstallSignalHandler()
 #endif
 }
 
-static __ri void PageSizeAssertionTest(size_t size)
-{
-	pxAssertMsg((__pagesize == getpagesize()), pxsFmt(
-												   "Internal system error: Operating system pagesize does not match compiled pagesize.\n\t"
-												   L"\tOS Page Size: 0x%x (%d), Compiled Page Size: 0x%x (%u)",
-												   getpagesize(), getpagesize(), __pagesize, __pagesize));
-
-	pxAssertDev((size & (__pagesize - 1)) == 0, pxsFmt(
-													L"Memory block size must be a multiple of the target platform's page size.\n"
-													L"\tPage Size: 0x%x (%u), Block Size: 0x%x (%u)",
-													__pagesize, __pagesize, size, size));
-}
-
 // returns FALSE if the mprotect call fails with an ENOMEM.
 // Raises assertions on other types of POSIX errors (since those typically reflect invalid object
 // or memory states).
 static bool _memprotect(void* baseaddr, size_t size, const PageProtectionMode& mode)
 {
-	PageSizeAssertionTest(size);
+	pxAssertDev((size & (__pagesize - 1)) == 0, "Size is page aligned");
 
 	uint lnxmode = 0;
 
@@ -132,13 +120,13 @@ static bool _memprotect(void* baseaddr, size_t size, const PageProtectionMode& m
 	switch (errno)
 	{
 		case EINVAL:
-			pxFailDev(pxsFmt(L"mprotect returned EINVAL @ 0x%08X -> 0x%08X  (mode=%s)",
-				baseaddr, (uptr)baseaddr + size, WX_STR(mode.ToString())));
+			pxFailDev(fmt::format("mprotect returned EINVAL @ 0x{:X} -> 0x{:X}  (mode={})",
+				baseaddr, (uptr)baseaddr + size, mode.ToString()).c_str());
 			break;
 
 		case EACCES:
-			pxFailDev(pxsFmt(L"mprotect returned EACCES @ 0x%08X -> 0x%08X  (mode=%s)",
-				baseaddr, (uptr)baseaddr + size, WX_STR(mode.ToString())));
+			pxFailDev(fmt::format("mprotect returned EACCES @ 0x{:X} -> 0x{:X}  (mode={})",
+				baseaddr, (uptr)baseaddr + size, mode.ToString()).c_str());
 			break;
 
 		case ENOMEM:
@@ -150,7 +138,7 @@ static bool _memprotect(void* baseaddr, size_t size, const PageProtectionMode& m
 
 void* HostSys::MmapReservePtr(void* base, size_t size)
 {
-	PageSizeAssertionTest(size);
+	pxAssertDev((size & (__pagesize - 1)) == 0, "Size is page aligned");
 
 	// On linux a reserve-without-commit is performed by using mmap on a read-only
 	// or anonymous source, with PROT_NONE (no-access) permission.  Since the mapping
@@ -172,21 +160,16 @@ bool HostSys::MmapCommitPtr(void* base, size_t size, const PageProtectionMode& m
 	if (_memprotect(base, size, mode))
 		return true;
 
-	if (!pxDoOutOfMemory)
-		return false;
-	pxDoOutOfMemory(size);
-	return _memprotect(base, size, mode);
+	return false;
 }
 
 void HostSys::MmapResetPtr(void* base, size_t size)
 {
-	PageSizeAssertionTest(size);
+	pxAssertDev((size & (__pagesize - 1)) == 0, "Size is page aligned");
 
 	void* result = mmap(base, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
 
-	pxAssertRel((uptr)result == (uptr)base, pxsFmt(
-												"Virtual memory decommit failed: memory at 0x%08X -> 0x%08X could not be remapped.",
-												base, (uptr)base + size));
+	pxAssertRel((uptr)result == (uptr)base, "Virtual memory decommit failed");
 }
 
 void* HostSys::MmapReserve(uptr base, size_t size)
@@ -206,7 +189,7 @@ void HostSys::MmapReset(uptr base, size_t size)
 
 void* HostSys::Mmap(uptr base, size_t size)
 {
-	PageSizeAssertionTest(size);
+	pxAssertDev((size & (__pagesize - 1)) == 0, "Size is page aligned");
 
 	// MAP_ANONYMOUS - means we have no associated file handle (or device).
 
@@ -224,9 +207,9 @@ void HostSys::MemProtect(void* baseaddr, size_t size, const PageProtectionMode& 
 {
 	if (!_memprotect(baseaddr, size, mode))
 	{
-		throw Exception::OutOfMemory(L"MemProtect")
-			.SetDiagMsg(pxsFmt(L"mprotect failed @ 0x%08X -> 0x%08X  (mode=%s)",
-				baseaddr, (uptr)baseaddr + size, WX_STR(mode.ToString())));
+		throw Exception::OutOfMemory("MemProtect")
+			.SetDiagMsg(fmt::format("mprotect failed @ 0x{:X} -> 0x{:X}  (mode={})",
+				baseaddr, (uptr)baseaddr + size, mode.ToString()));
 	}
 }
 #endif

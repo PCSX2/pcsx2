@@ -230,8 +230,8 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 		ret = std::fwrite(buffer, 1, bytes, fp.get());
 
 	if (ret != bytes)
-		Console.Error(L"Failed to %s %s. Did only %zu/%zu bytes",
-					  read ? L"read from" : L"write to", nvmfile.c_str(), ret, bytes);
+		Console.Error("Failed to %s %s. Did only %zu/%zu bytes",
+					  read ? "read from" : "write to", nvmfile.c_str(), ret, bytes);
 }
 
 static void cdvdReadNVM(u8* dst, int offset, int bytes)
@@ -639,7 +639,7 @@ static void cdvdUpdateReady(u8 NewReadyStatus)
 
 s32 cdvdCtrlTrayOpen()
 {
-	DevCon.WriteLn(Color_Green, L"Open virtual disk tray");
+	DevCon.WriteLn(Color_Green, "Open virtual disk tray");
 
 	// If we switch using a source change we need to pretend it's a new disc
 	if (CDVDsys_GetSourceType() == CDVD_SourceType::Disc)
@@ -660,7 +660,7 @@ s32 cdvdCtrlTrayOpen()
 	{
 		cdvd.Tray.cdvdActionSeconds = 3;
 		cdvd.Tray.trayState = CDVD_DISC_EJECT;
-		DevCon.WriteLn(Color_Green, L"Simulating ejected media");
+		DevCon.WriteLn(Color_Green, "Simulating ejected media");
 	}
 
 	return 0; // needs to be 0 for success according to homebrew test "CDVD"
@@ -668,11 +668,11 @@ s32 cdvdCtrlTrayOpen()
 
 s32 cdvdCtrlTrayClose()
 {
-	DevCon.WriteLn(Color_Green, L"Close virtual disk tray");
+	DevCon.WriteLn(Color_Green, "Close virtual disk tray");
 
 	if (!g_GameStarted && g_SkipBiosHack)
 	{
-		DevCon.WriteLn(Color_Green, L"Media already loaded (fast boot)");
+		DevCon.WriteLn(Color_Green, "Media already loaded (fast boot)");
 		cdvdUpdateReady(CDVD_DRIVE_READY);
 		cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 		cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
@@ -680,7 +680,7 @@ s32 cdvdCtrlTrayClose()
 	}
 	else
 	{
-		DevCon.WriteLn(Color_Green, L"Detecting media");
+		DevCon.WriteLn(Color_Green, "Detecting media");
 		cdvdUpdateReady(CDVD_DRIVE_BUSY);
 		cdvdUpdateStatus(CDVD_STATUS_SEEK);
 		cdvd.Tray.trayState = CDVD_DISC_DETECTING;
@@ -914,7 +914,7 @@ void cdvdNewDiskCB()
 	// If not ejected but we've swapped source pretend it got ejected
 	if ((g_GameStarted || !g_SkipBiosHack) && cdvd.Tray.trayState != CDVD_DISC_EJECT)
 	{
-		DevCon.WriteLn(Color_Green, L"Ejecting media");
+		DevCon.WriteLn(Color_Green, "Ejecting media");
 		cdvdUpdateStatus(CDVD_STATUS_TRAY_OPEN);
 		cdvdUpdateReady(CDVD_DRIVE_BUSY);
 		cdvd.Tray.trayState = CDVD_DISC_EJECT;
@@ -926,7 +926,7 @@ void cdvdNewDiskCB()
 	}
 	else if (cdvd.Type > 0)
 	{
-		DevCon.WriteLn(Color_Green, L"Seeking new media");
+		DevCon.WriteLn(Color_Green, "Seeking new media");
 		cdvdUpdateReady(CDVD_DRIVE_BUSY);
 		cdvdUpdateStatus(CDVD_STATUS_SEEK);
 		cdvd.Spinning = true;
@@ -1390,7 +1390,7 @@ void cdvdUpdateTrayState()
 					cdvdCtrlTrayClose();
 					break;
 				case CDVD_DISC_DETECTING:
-					DevCon.WriteLn(Color_Green, L"Seeking new disc");
+					DevCon.WriteLn(Color_Green, "Seeking new disc");
 					cdvd.Tray.trayState = CDVD_DISC_SEEKING;
 					cdvd.Tray.cdvdActionSeconds = 2;
 					cdvd.Spinning = true;
@@ -1401,7 +1401,7 @@ void cdvdUpdateTrayState()
 					cdvdUpdateReady(CDVD_DRIVE_READY);
 					if (CDVDsys_GetSourceType() != CDVD_SourceType::NoDisc)
 					{
-						DevCon.WriteLn(Color_Green, L"Media ready to read");
+						DevCon.WriteLn(Color_Green, "Media ready to read");
 						cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 					}
 					else
@@ -1871,7 +1871,7 @@ static void cdvdWrite04(u8 rt)
 				cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.ReadMode, cdvd.NCMDParam[10], cdvd.SpindlCtrl);
 
 			if (EmuConfig.CdvdVerboseReads)
-				Console.WriteLn(Color_Gray, L"CDRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx(%s) Spindle=%x",
+				Console.WriteLn(Color_Gray, "CDRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx(%s) Spindle=%x",
 					cdvd.SeekToSector, cdvd.nSectors, cdvd.BlockSize, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.SpindlCtrl);
 
 			cdvd.ReadTime = cdvdBlockReadTime((CDVD_MODE_TYPE)cdvdIsDVD());
@@ -1970,7 +1970,7 @@ static void cdvdWrite04(u8 rt)
 				cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.ReadMode, cdvd.NCMDParam[10], cdvd.SpindlCtrl);
 
 			if (EmuConfig.CdvdVerboseReads)
-				Console.WriteLn(Color_Gray, L"CdAudioRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx(%s) Spindle=%x",
+				Console.WriteLn(Color_Gray, "CdAudioRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx(%s) Spindle=%x",
 					cdvd.Sector, cdvd.nSectors, cdvd.BlockSize, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.SpindlCtrl);
 
 			cdvd.ReadTime = cdvdBlockReadTime(MODE_CDROM);
@@ -2066,7 +2066,7 @@ static void cdvdWrite04(u8 rt)
 				cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.ReadMode, cdvd.NCMDParam[10], cdvd.SpindlCtrl);
 
 			if (EmuConfig.CdvdVerboseReads)
-				Console.WriteLn(Color_Gray, L"DvdRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx(%s) SpindleCtrl=%x",
+				Console.WriteLn(Color_Gray, "DvdRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx(%s) SpindleCtrl=%x",
 					cdvd.SeekToSector, cdvd.nSectors, cdvd.BlockSize, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.SpindlCtrl);
 
 			cdvd.ReadTime = cdvdBlockReadTime(MODE_DVDROM);

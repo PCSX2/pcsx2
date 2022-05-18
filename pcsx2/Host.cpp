@@ -15,15 +15,14 @@
 
 #include "PrecompiledHeader.h"
 #include "Host.h"
-#include "common/StringHelpers.h"
+#include "common/StringUtil.h"
 #include <cstdarg>
 
 void Host::ReportFormattedErrorAsync(const std::string_view& title, const char* format, ...)
 {
 	std::va_list ap;
 	va_start(ap, format);
-	FastFormatAscii fmt;
-	fmt.WriteV(format, ap);
+	std::string message(StringUtil::StdStringFromFormatV(format, ap));
 	va_end(ap);
-	ReportErrorAsync(title, fmt.c_str());
+	ReportErrorAsync(title, message);
 }

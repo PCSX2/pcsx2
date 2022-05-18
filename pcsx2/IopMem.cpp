@@ -15,6 +15,7 @@
 
 
 #include "PrecompiledHeader.h"
+#include "common/AlignedMalloc.h"
 #include "R3000A.h"
 #include "Common.h"
 #include "ps2/pgif.h" // for PSX kernel TTY in iopMemWrite32
@@ -33,7 +34,7 @@ alignas(__pagesize) u8 iopHw[Ps2MemSize::IopHardware];
 //  iopMemoryReserve
 // --------------------------------------------------------------------------------------
 iopMemoryReserve::iopMemoryReserve()
-	: _parent( L"IOP Main Memory (2mb)", sizeof(*iopMem) )
+	: _parent( "IOP Main Memory (2mb)", sizeof(*iopMem) )
 {
 }
 

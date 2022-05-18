@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "common/Dependencies.h"
+#include "common/Pcsx2Defs.h"
 
 // pxUSE_SECURE_MALLOC - enables bounds checking on scoped malloc allocations.
 
@@ -43,7 +43,7 @@ public:
 	static const int DefaultChunkSize = 0x1000 * sizeof(T);
 
 public:
-	wxString Name; // user-assigned block name
+	std::string Name; // user-assigned block name
 	int ChunkSize;
 
 protected:
@@ -51,7 +51,7 @@ protected:
 	int m_size; // size of the allocation of memory
 
 protected:
-	SafeArray(const wxChar* name, T* allocated_mem, int initSize);
+	SafeArray(std::string name, T* allocated_mem, int initSize);
 	virtual T* _virtual_realloc(int newsize);
 
 	// A safe array index fetcher.  Asserts if the index is out of bounds (dev and debug
@@ -61,8 +61,8 @@ protected:
 public:
 	virtual ~SafeArray();
 
-	explicit SafeArray(const wxChar* name = L"Unnamed");
-	explicit SafeArray(int initialSize, const wxChar* name = L"Unnamed");
+	explicit SafeArray(std::string name = "Unnamed");
+	explicit SafeArray(int initialSize, std::string name = "Unnamed");
 
 	void Dispose();
 	void ExactAlloc(int newsize);
@@ -124,7 +124,7 @@ public:
 	static const int DefaultChunkSize = 0x80 * sizeof(T);
 
 public:
-	wxString Name; // user-assigned block name
+	std::string Name; // user-assigned block name
 	int ChunkSize; // assigned DefaultChunkSize on init, reconfigurable at any time.
 
 protected:
@@ -140,8 +140,8 @@ protected:
 
 public:
 	virtual ~SafeList();
-	explicit SafeList(const wxChar* name = L"Unnamed");
-	explicit SafeList(int initialSize, const wxChar* name = L"Unnamed");
+	explicit SafeList(const char* name = "Unnamed");
+	explicit SafeList(int initialSize, const char* name = "Unnamed");
 	virtual SafeList<T>* Clone() const;
 
 	void Remove(int index);
@@ -207,11 +207,11 @@ public:
 
 	virtual ~SafeAlignedArray();
 
-	explicit SafeAlignedArray(const wxChar* name = L"Unnamed")
+	explicit SafeAlignedArray(std::string name = "Unnamed")
 		: SafeArray<T>::SafeArray(name)
 	{
 	}
 
-	explicit SafeAlignedArray(int initialSize, const wxChar* name = L"Unnamed");
+	explicit SafeAlignedArray(int initialSize, std::string name = "Unnamed");
 	virtual SafeAlignedArray<T, Alignment>* Clone() const;
 };

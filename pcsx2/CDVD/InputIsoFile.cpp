@@ -16,6 +16,11 @@
 
 #include "PrecompiledHeader.h"
 #include "IsoFileFormats.h"
+#include "common/Assertions.h"
+#include "common/Exceptions.h"
+#include "Config.h"
+
+#include "fmt/core.h"
 
 #include <errno.h>
 
@@ -42,10 +47,8 @@ int InputIsoFile::ReadSync(u8* dst, uint lsn)
 {
 	if (lsn >= m_blocks)
 	{
-		FastFormatUnicode msg;
-		msg.Write("isoFile error: Block index is past the end of file! (%u >= %u).", lsn, m_blocks);
-
-		pxAssertDev(false, msg);
+		std::string msg(fmt::format("isoFile error: Block index is past the end of file! ({} >= {}).", lsn, m_blocks));
+		pxAssertDev(false, msg.c_str());
 		Console.Error(msg.c_str());
 		return -1;
 	}
@@ -248,8 +251,8 @@ bool InputIsoFile::Open(std::string srcfile, bool testOnly)
 
 	if (!detected)
 		throw Exception::BadStream()
-			.SetUserMsg(_("Unrecognized ISO image file format"))
-			.SetDiagMsg(L"ISO mounting failed: PCSX2 is unable to identify the ISO image type.");
+			.SetUserMsg("Unrecognized ISO image file format")
+			.SetDiagMsg("ISO mounting failed: PCSX2 is unable to identify the ISO image type.");
 
 	if (!isBlockdump && !isCompressed)
 	{

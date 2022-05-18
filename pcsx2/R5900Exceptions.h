@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "fmt/core.h"
+
 // --------------------------------------------------------------------------------------
 //  BaseR5900Exception
 // --------------------------------------------------------------------------------------
@@ -35,22 +37,22 @@ public:
 	u32 GetPc() const { return cpuState.pc; }
 	bool IsDelaySlot() const { return !!cpuState.IsDelaySlot; }
 
-	wxString& Message() { return m_message; }
-	wxString FormatMessage() const
+	std::string& Message() override { return m_message; }
+	std::string FormatMessage() const
 	{
-		return wxsFormat(L"(EE pc:%8.8X) ", cpuRegs.pc) + m_message;
+		return fmt::format("(EE pc:{:8.8X}) {}", cpuRegs.pc, m_message.c_str());
 	}
 
 protected:
-	void Init( const wxString& msg )
+	void Init(const char* msg)
 	{
-		m_message = msg;;
+		m_message = msg;
 		cpuState = cpuRegs;
 	}
 
-	void Init( const char* msg )
+	void Init(std::string msg)
 	{
-		m_message = fromUTF8( msg );
+		m_message = msg;
 		cpuState = cpuRegs;
 	}
 };
@@ -69,9 +71,9 @@ namespace R5900Exception
 		u32 Address;
 
 	protected:
-		void Init( u32 ps2addr, bool onWrite, const wxString& msg )
+		void Init( u32 ps2addr, bool onWrite, const char* msg )
 		{
-			_parent::Init( wxsFormat( msg+L", addr=0x%x [%s]", ps2addr, onWrite ? L"store" : L"load" ) );
+			_parent::Init(fmt::format("{}, addr=0x{:x} [{}]", msg, ps2addr, onWrite ? "store" : "load"));
 			OnWrite = onWrite;
 			Address = ps2addr;
 		}
@@ -83,7 +85,7 @@ namespace R5900Exception
 	public:
 		AddressError( u32 ps2addr, bool onWrite )
 		{
-			BaseAddressError::Init( ps2addr, onWrite, L"Address error" );
+			BaseAddressError::Init( ps2addr, onWrite, "Address error" );
 		}
 	};
 
@@ -94,7 +96,7 @@ namespace R5900Exception
 	public:
 		TLBMiss( u32 ps2addr, bool onWrite )
 		{
-			BaseAddressError::Init( ps2addr, onWrite, L"TLB Miss" );
+			BaseAddressError::Init( ps2addr, onWrite, "TLB Miss" );
 		}
 	};
 
@@ -105,7 +107,7 @@ namespace R5900Exception
 	public:
 		BusError( u32 ps2addr, bool onWrite )
 		{
-			BaseAddressError::Init( ps2addr, onWrite, L"Bus Error" );
+			BaseAddressError::Init( ps2addr, onWrite, "Bus Error" );
 		}
 	};
 

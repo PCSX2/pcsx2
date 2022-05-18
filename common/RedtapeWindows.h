@@ -24,10 +24,12 @@
 #define NOMINMAX
 #endif
 
+// Win8.1 is our minimum at the moment.
+#define _WIN32_WINNT 0x0603 // Windows 8.1
+
 #include <windows.h>
 #include <VersionHelpers.h>
 #include <ShTypes.h>
 #include <timeapi.h>
-#include <wx/msw/wrapwin.h>
 
 #endif

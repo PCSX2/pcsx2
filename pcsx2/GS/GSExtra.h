@@ -16,6 +16,7 @@
 #pragma once
 
 #include "GSVector.h"
+#include "pcsx2/Config.h"
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"

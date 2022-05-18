@@ -107,7 +107,7 @@ public:
 			Console.WriteLn("Slot cache says it is used.");
 
 		if (updated != wxInvalidDateTime)
-			Console.WriteLn(wxsFormat(_("Write time is %s %s."), updated.FormatDate(), updated.FormatTime()));
+			Console.WriteLn(wxsFormat(_("Write time is %s %s."), updated.FormatDate(), updated.FormatTime()).ToStdString());
 
 		//if (isUsed())
 		//	Console.WriteLn(wxsFormat(_("The disk has a file on it dated %s %s."), GetTimestamp().FormatDate(), GetTimestamp().FormatTime()));

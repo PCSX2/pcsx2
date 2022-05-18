@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #ifdef _WIN32
+#include "common/RedtapeWindows.h"
 #include <iphlpapi.h>
 #include <icmpapi.h>
 #elif defined(__POSIX__)
@@ -36,6 +37,7 @@
 #ifdef __linux__
 #include <linux/errqueue.h>
 #endif
+#include <unistd.h>
 #endif
 
 #include "ICMP_Session.h"

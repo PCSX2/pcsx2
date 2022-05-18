@@ -15,16 +15,20 @@
 
 #pragma once
 
+#include "common/AlignedMalloc.h"
+#include "common/Assertions.h"
+#include "common/Exceptions.h"
 #include "common/SafeArray.h"
-#include "common/StringHelpers.h"
+
+#include "fmt/core.h"
 
 // Internal constructor for use by derived classes.  This allows a derived class to
 // use its own memory allocation (with an aligned memory, for example).
 // Throws:
 //   Exception::OutOfMemory if the allocated_mem pointer is NULL.
 template <typename T>
-SafeArray<T>::SafeArray(const wxChar* name, T* allocated_mem, int initSize)
-	: Name(name)
+SafeArray<T>::SafeArray(std::string name, T* allocated_mem, int initSize)
+	: Name(std::move(name))
 {
 	ChunkSize = DefaultChunkSize;
 	m_ptr = allocated_mem;
@@ -32,7 +36,7 @@ SafeArray<T>::SafeArray(const wxChar* name, T* allocated_mem, int initSize)
 
 	if (m_ptr == NULL)
 		throw Exception::OutOfMemory(name)
-			.SetDiagMsg(wxsFormat(L"Called from 'SafeArray::ctor' [size=%d]", initSize));
+			.SetDiagMsg(fmt::format("Called from 'SafeArray::ctor' [size={}]", initSize));
 }
 
 template <typename T>
@@ -63,8 +67,8 @@ SafeArray<T>::~SafeArray()
 }
 
 template <typename T>
-SafeArray<T>::SafeArray(const wxChar* name)
-	: Name(name)
+SafeArray<T>::SafeArray(std::string name)
+	: Name(std::move(name))
 {
 	ChunkSize = DefaultChunkSize;
 	m_ptr = NULL;
@@ -72,8 +76,8 @@ SafeArray<T>::SafeArray(const wxChar* name)
 }
 
 template <typename T>
-SafeArray<T>::SafeArray(int initialSize, const wxChar* name)
-	: Name(name)
+SafeArray<T>::SafeArray(int initialSize, std::string name)
+	: Name(std::move(name))
 {
 	ChunkSize = DefaultChunkSize;
 	m_ptr = (initialSize == 0) ? NULL : (T*)malloc(initialSize * sizeof(T));
@@ -81,7 +85,7 @@ SafeArray<T>::SafeArray(int initialSize, const wxChar* name)
 
 	if ((initialSize != 0) && (m_ptr == NULL))
 		throw Exception::OutOfMemory(name)
-			.SetDiagMsg(wxsFormat(L"Called from 'SafeArray::ctor' [size=%d]", initialSize));
+			.SetDiagMsg(fmt::format("Called from 'SafeArray::ctor' [size={}]", initialSize));
 }
 
 // Clears the contents of the array to zero, and frees all memory allocations.
@@ -95,7 +99,7 @@ void SafeArray<T>::Dispose()
 template <typename T>
 T* SafeArray<T>::_getPtr(uint i) const
 {
-	IndexBoundsAssumeDev(WX_STR(Name), i, m_size);
+	pxAssumeDev(i < static_cast<uint>(m_size), "Array index in bounds");
 	return &m_ptr[i];
 }
 
@@ -110,7 +114,7 @@ void SafeArray<T>::ExactAlloc(int newsize)
 	m_ptr = _virtual_realloc(newsize);
 	if (m_ptr == NULL)
 		throw Exception::OutOfMemory(Name)
-			.SetDiagMsg(wxsFormat(L"Called from 'SafeArray::ExactAlloc' [oldsize=%d] [newsize=%d]", m_size, newsize));
+			.SetDiagMsg(fmt::format("Called from 'SafeArray::ExactAlloc' [oldsize={}] [newsize={}]", m_size, newsize));
 
 	m_size = newsize;
 }
@@ -147,9 +151,9 @@ SafeAlignedArray<T, Alignment>::~SafeAlignedArray()
 }
 
 template <typename T, uint Alignment>
-SafeAlignedArray<T, Alignment>::SafeAlignedArray(int initialSize, const wxChar* name)
+SafeAlignedArray<T, Alignment>::SafeAlignedArray(int initialSize, std::string name)
 	: SafeArray<T>::SafeArray(
-		  name,
+		  std::move(name),
 		  (T*)_aligned_malloc(initialSize * sizeof(T), Alignment),
 		  initialSize)
 {
@@ -180,7 +184,7 @@ SafeList<T>::~SafeList()
 }
 
 template <typename T>
-SafeList<T>::SafeList(const wxChar* name)
+SafeList<T>::SafeList(const char* name)
 	: Name(name)
 {
 	ChunkSize = DefaultChunkSize;
@@ -190,7 +194,7 @@ SafeList<T>::SafeList(const wxChar* name)
 }
 
 template <typename T>
-SafeList<T>::SafeList(int initialSize, const wxChar* name)
+SafeList<T>::SafeList(int initialSize, const char* name)
 	: Name(name)
 {
 	ChunkSize = DefaultChunkSize;
@@ -200,7 +204,7 @@ SafeList<T>::SafeList(int initialSize, const wxChar* name)
 
 	if (m_ptr == NULL)
 		throw Exception::OutOfMemory(Name)
-			.SetDiagMsg(wxsFormat(L"called from 'SafeList::ctor' [length=%d]", m_length));
+			.SetDiagMsg(fmt::format("called from 'SafeList::ctor' [length={}]", m_length));
 
 	for (int i = 0; i < m_allocsize; ++i)
 	{
@@ -211,7 +215,7 @@ SafeList<T>::SafeList(int initialSize, const wxChar* name)
 template <typename T>
 T* SafeList<T>::_getPtr(uint i) const
 {
-	IndexBoundsAssumeDev(WX_STR(Name), i, m_length);
+	pxAssumeDev(i < m_length, "Index in bounds");
 	return &m_ptr[i];
 }
 
@@ -226,7 +230,7 @@ void SafeList<T>::MakeRoomFor(int blockSize)
 		m_ptr = _virtual_realloc(newalloc);
 		if (m_ptr == NULL)
 			throw Exception::OutOfMemory(Name)
-				.SetDiagMsg(wxsFormat(L"Called from 'SafeList::MakeRoomFor' [oldlen=%d] [newlen=%d]", m_length, blockSize));
+				.SetDiagMsg(fmt::format("Called from 'SafeList::MakeRoomFor' [oldlen={}] [newlen={}]", m_length, blockSize));
 
 		for (; m_allocsize < newalloc; ++m_allocsize)
 		{
@@ -266,7 +270,7 @@ T& SafeList<T>::AddNew(const T& src)
 template <typename T>
 void SafeList<T>::Remove(int index)
 {
-	IndexBoundsAssumeDev(Name.c_str(), index, m_length);
+	pxAssert(index < m_length);
 
 	int copylen = m_length - index;
 	if (copylen > 0)

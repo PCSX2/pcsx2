@@ -18,9 +18,9 @@
 #include <time.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include <wx/utils.h>
 
 #include "common/Pcsx2Types.h"
+#include "common/General.h"
 
 // Returns 0 on failure (not supported by the operating system).
 u64 GetPhysicalMemory()
@@ -51,12 +51,12 @@ u64 GetCPUTicks()
 	return (static_cast<u64>(ts.tv_sec) * 1000000000ULL) + ts.tv_nsec;
 }
 
-wxString GetOSVersionString()
+std::string GetOSVersionString()
 {
 #if defined(__linux__)
-	return wxGetLinuxDistributionInfo().Description;
+	return "Linux";
 #else // freebsd
-	return wxGetOsDescription();
+	return "Other Unix";
 #endif
 }
 

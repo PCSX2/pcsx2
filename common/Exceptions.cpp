@@ -13,20 +13,19 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define WXINTL_NO_GETTEXT_MACRO
+#include "Threading.h"
+#include "General.h"
+#include "Exceptions.h"
 
-#include <wx/app.h>
-#if defined(__UNIX__)
-#include <signal.h>
+#include "fmt/core.h"
+
+#ifdef _WIN32
+#include "RedtapeWindows.h"
 #endif
 
-#include "common/Dependencies.h" // _ macro
-#include "common/Threading.h"
-#include "common/General.h"
-#include "common/StringHelpers.h"
-
-// for lack of a better place...
-Fnptr_OutOfMemory pxDoOutOfMemory = NULL;
+#ifdef __UNIX__
+#include <signal.h>
+#endif
 
 // ------------------------------------------------------------------------
 // Force DevAssert to *not* inline for devel builds (allows using breakpoints to trap assertions,
@@ -43,20 +42,20 @@ pxDoAssertFnType* pxDoAssert = pxAssertImpl_LogIt;
 
 // make life easier for people using VC++ IDE by using this format, which allows double-click
 // response times from the Output window...
-wxString DiagnosticOrigin::ToString(const wxChar* msg) const
+std::string DiagnosticOrigin::ToString(const char* msg) const
 {
-	FastFormatUnicode message;
+	std::string message;
 
-	message.Write(L"%ls(%d) : assertion failed:\n", srcfile, line);
+	fmt::format_to(std::back_inserter(message), "{}({}) : assertion failed:\n", srcfile, line);
 
-	if (function != NULL)
-		message.Write("    Function:  %s\n", function);
+	if (function)
+		fmt::format_to(std::back_inserter(message), "    Function:  {}\n", function);
 
-	if (condition != NULL)
-		message.Write(L"    Condition: %ls\n", condition);
+	if (condition)
+		fmt::format_to(std::back_inserter(message), "    Condition: {}\n", condition);
 
-	if (msg != NULL)
-		message.Write(L"    Message:   %ls\n", msg);
+	if (msg)
+		fmt::format_to(std::back_inserter(message), "    Message:   {}\n", msg);
 
 	return message;
 }
@@ -65,34 +64,33 @@ wxString DiagnosticOrigin::ToString(const wxChar* msg) const
 // Because wxTrap isn't available on Linux builds of wxWidgets (non-Debug, typically)
 void pxTrap()
 {
-#if defined(__WXMSW__) && !defined(__WXMICROWIN__)
+#if defined(_WIN32)
 	__debugbreak();
-#elif defined(__WXMAC__) && !defined(__DARWIN__)
-#if __powerc
-	Debugger();
-#else
-	SysBreak();
-#endif
-#elif defined(_MSL_USING_MW_C_HEADERS) && _MSL_USING_MW_C_HEADERS
-	Debugger();
 #elif defined(__UNIX__)
 	raise(SIGTRAP);
 #else
-// TODO
-#endif // Win/Unix
+	abort();
+#endif
 }
 
 
-bool pxAssertImpl_LogIt(const DiagnosticOrigin& origin, const wxChar* msg)
+bool pxAssertImpl_LogIt(const DiagnosticOrigin& origin, const char* msg)
 {
 	//wxLogError( L"%s", origin.ToString( msg ).c_str() );
-	wxMessageOutputDebug().Printf(L"%s", origin.ToString(msg).c_str());
+	std::string full_msg(origin.ToString(msg));
+#ifdef _WIN32
+	OutputDebugStringA(full_msg.c_str());
+	OutputDebugStringA("\n");
+#endif
+
+	std::fprintf(stderr, "%s\n", full_msg.c_str());
+
 	pxTrap();
 	return false;
 }
 
 
-DEVASSERT_INLINE void pxOnAssert(const DiagnosticOrigin& origin, const wxString& msg)
+DEVASSERT_INLINE void pxOnAssert(const DiagnosticOrigin& origin, const char* msg)
 {
 	// wxWidgets doesn't come with debug builds on some Linux distros, and other distros make
 	// it difficult to use the debug build (compilation failures).  To handle these I've had to
@@ -104,11 +102,11 @@ DEVASSERT_INLINE void pxOnAssert(const DiagnosticOrigin& origin, const wxString&
 	if (pxDoAssert == NULL)
 	{
 		// Note: Format uses MSVC's syntax for output window hotlinking.
-		trapit = pxAssertImpl_LogIt(origin, msg.wc_str());
+		trapit = pxAssertImpl_LogIt(origin, msg);
 	}
 	else
 	{
-		trapit = pxDoAssert(origin, msg.wc_str());
+		trapit = pxDoAssert(origin, msg);
 	}
 
 	if (trapit)
@@ -121,83 +119,87 @@ DEVASSERT_INLINE void pxOnAssert(const DiagnosticOrigin& origin, const wxString&
 //  BaseException  (implementations)
 // --------------------------------------------------------------------------------------
 
-BaseException& BaseException::SetBothMsgs(const wxChar* msg_diag)
+BaseException& BaseException::SetBothMsgs(const char* msg_diag)
 {
-	m_message_user = msg_diag ? wxString(wxGetTranslation(msg_diag)) : wxString("");
+	m_message_user = msg_diag ? std::string(msg_diag) : std::string();
 	return SetDiagMsg(msg_diag);
 }
 
-BaseException& BaseException::SetDiagMsg(const wxString& msg_diag)
+BaseException& BaseException::SetDiagMsg(std::string msg_diag)
 {
-	m_message_diag = msg_diag;
+	m_message_diag = std::move(msg_diag);
 	return *this;
 }
 
-BaseException& BaseException::SetUserMsg(const wxString& msg_user)
+BaseException& BaseException::SetUserMsg(std::string msg_user)
 {
-	m_message_user = msg_user;
+	m_message_user = std::move(msg_user);
 	return *this;
 }
 
-wxString BaseException::FormatDiagnosticMessage() const
+std::string BaseException::FormatDiagnosticMessage() const
 {
 	return m_message_diag;
 }
 
-wxString BaseException::FormatDisplayMessage() const
+std::string BaseException::FormatDisplayMessage() const
 {
-	return m_message_user.IsEmpty() ? m_message_diag : m_message_user;
+	return m_message_user.empty() ? m_message_diag : m_message_user;
 }
 
 // --------------------------------------------------------------------------------------
 //  Exception::RuntimeError   (implementations)
 // --------------------------------------------------------------------------------------
-Exception::RuntimeError::RuntimeError(const std::runtime_error& ex, const wxString& prefix)
+Exception::RuntimeError::RuntimeError(const std::runtime_error& ex, const char* prefix /* = nullptr */)
 {
 	IsSilent = false;
 
-	SetDiagMsg(pxsFmt(L"STL Runtime Error%s: %s",
-		(prefix.IsEmpty() ? L"" : pxsFmt(L" (%s)", WX_STR(prefix)).c_str()),
-		WX_STR(fromUTF8(ex.what()))));
+	const bool has_prefix = prefix && prefix[0] != 0;
+
+	SetDiagMsg(fmt::format("STL Runtime Error{}{}{}: {}",
+		has_prefix ? " (" : "", prefix ? prefix : "", has_prefix ? ")" : "",
+		ex.what()));
 }
 
-Exception::RuntimeError::RuntimeError(const std::exception& ex, const wxString& prefix)
+Exception::RuntimeError::RuntimeError(const std::exception& ex, const char* prefix /* = nullptr */)
 {
 	IsSilent = false;
 
-	SetDiagMsg(pxsFmt(L"STL Exception%s: %s",
-		(prefix.IsEmpty() ? L"" : pxsFmt(L" (%s)", WX_STR(prefix)).c_str()),
-		WX_STR(fromUTF8(ex.what()))));
+	const bool has_prefix = prefix && prefix[0] != 0;
+
+	SetDiagMsg(fmt::format("STL Exception{}{}{}: {}",
+		has_prefix ? " (" : "", prefix ? prefix : "", has_prefix ? ")" : "",
+		ex.what()));
 }
 
 // --------------------------------------------------------------------------------------
 //  Exception::OutOfMemory   (implementations)
 // --------------------------------------------------------------------------------------
-Exception::OutOfMemory::OutOfMemory(const wxString& allocdesc)
+Exception::OutOfMemory::OutOfMemory(std::string allocdesc)
+  : AllocDescription(std::move(allocdesc))
 {
-	AllocDescription = allocdesc;
 }
 
-wxString Exception::OutOfMemory::FormatDiagnosticMessage() const
+std::string Exception::OutOfMemory::FormatDiagnosticMessage() const
 {
-	FastFormatUnicode retmsg;
-	retmsg.Write(L"Out of memory");
-	if (!AllocDescription.IsEmpty())
-		retmsg.Write(L" while allocating '%s'", WX_STR(AllocDescription));
+	std::string retmsg;
+	retmsg = "Out of memory";
+	if (!AllocDescription.empty())
+		fmt::format_to(std::back_inserter(retmsg), " while allocating '{}'", AllocDescription);
 
-	if (!m_message_diag.IsEmpty())
-		retmsg.Write(L":\n%s", WX_STR(m_message_diag));
+	if (!m_message_diag.empty())
+		fmt::format_to(std::back_inserter(retmsg), ":\n{}", m_message_diag);
 
 	return retmsg;
 }
 
-wxString Exception::OutOfMemory::FormatDisplayMessage() const
+std::string Exception::OutOfMemory::FormatDisplayMessage() const
 {
-	FastFormatUnicode retmsg;
-	retmsg.Write(L"%s", _("Oh noes! Out of memory!"));
+	std::string retmsg;
+	retmsg = "Oh noes! Out of memory!";
 
-	if (!m_message_user.IsEmpty())
-		retmsg.Write(L"\n\n%s", WX_STR(m_message_user));
+	if (!m_message_user.empty())
+		fmt::format_to(std::back_inserter(retmsg), "\n\n{}", m_message_user);
 
 	return retmsg;
 }
@@ -206,106 +208,104 @@ wxString Exception::OutOfMemory::FormatDisplayMessage() const
 // --------------------------------------------------------------------------------------
 //  Exception::VirtualMemoryMapConflict   (implementations)
 // --------------------------------------------------------------------------------------
-Exception::VirtualMemoryMapConflict::VirtualMemoryMapConflict(const wxString& allocdesc)
+Exception::VirtualMemoryMapConflict::VirtualMemoryMapConflict(std::string allocdesc)
 {
-	AllocDescription = allocdesc;
-	m_message_user = _("Virtual memory mapping failure!  Your system may have conflicting device drivers, services, or may simply have insufficient memory or resources to meet PCSX2's lofty needs.");
+	AllocDescription = std::move(allocdesc);
+	m_message_user = "Virtual memory mapping failure!  Your system may have conflicting device drivers, services, or may simply have insufficient memory or resources to meet PCSX2's lofty needs.";
 }
 
-wxString Exception::VirtualMemoryMapConflict::FormatDiagnosticMessage() const
+std::string Exception::VirtualMemoryMapConflict::FormatDiagnosticMessage() const
 {
-	FastFormatUnicode retmsg;
-	retmsg.Write(L"Virtual memory map failed");
-	if (!AllocDescription.IsEmpty())
-		retmsg.Write(L" while reserving '%s'", WX_STR(AllocDescription));
+	std::string retmsg;
+	retmsg = "Virtual memory map failed";
+	if (!AllocDescription.empty())
+		fmt::format_to(std::back_inserter(retmsg), " while reserving '{}'", AllocDescription);
 
-	if (!m_message_diag.IsEmpty())
-		retmsg.Write(L":\n%s", WX_STR(m_message_diag));
+	if (!m_message_diag.empty())
+		fmt::format_to(std::back_inserter(retmsg), ":\n{}", m_message_diag);
 
 	return retmsg;
 }
 
-wxString Exception::VirtualMemoryMapConflict::FormatDisplayMessage() const
+std::string Exception::VirtualMemoryMapConflict::FormatDisplayMessage() const
 {
-	FastFormatUnicode retmsg;
-	retmsg.Write(L"%s",
-		pxE(L"There is not enough virtual memory available, or necessary virtual memory mappings have already been reserved by other processes, services, or DLLs."));
+	std::string retmsg;
+	retmsg = "There is not enough virtual memory available, or necessary virtual memory mappings have already been reserved by other processes, services, or DLLs.";
 
-	if (!m_message_diag.IsEmpty())
-		retmsg.Write(L"\n\n%s", WX_STR(m_message_diag));
+	if (!m_message_diag.empty())
+		fmt::format_to(std::back_inserter(retmsg), "\n\n{}", m_message_diag);
 
 	return retmsg;
 }
 
 
 // ------------------------------------------------------------------------
-wxString Exception::CancelEvent::FormatDiagnosticMessage() const
+std::string Exception::CancelEvent::FormatDiagnosticMessage() const
 {
-	return L"Action canceled: " + m_message_diag;
+	return "Action canceled: " + m_message_diag;
 }
 
-wxString Exception::CancelEvent::FormatDisplayMessage() const
+std::string Exception::CancelEvent::FormatDisplayMessage() const
 {
-	return L"Action canceled: " + m_message_diag;
+	return "Action canceled: " + m_message_diag;
 }
 
 // --------------------------------------------------------------------------------------
 //  Exception::BadStream  (implementations)
 // --------------------------------------------------------------------------------------
-wxString Exception::BadStream::FormatDiagnosticMessage() const
+std::string Exception::BadStream::FormatDiagnosticMessage() const
 {
-	FastFormatUnicode retval;
+	std::string retval;
 	_formatDiagMsg(retval);
 	return retval;
 }
 
-wxString Exception::BadStream::FormatDisplayMessage() const
+std::string Exception::BadStream::FormatDisplayMessage() const
 {
-	FastFormatUnicode retval;
+	std::string retval;
 	_formatUserMsg(retval);
 	return retval;
 }
 
-void Exception::BadStream::_formatDiagMsg(FastFormatUnicode& dest) const
+void Exception::BadStream::_formatDiagMsg(std::string& dest) const
 {
-	dest.Write(L"Path: ");
-	if (!StreamName.IsEmpty())
-		dest.Write(L"%s", WX_STR(StreamName));
+	fmt::format_to(std::back_inserter(dest), "Path: ");
+	if (!StreamName.empty())
+		fmt::format_to(std::back_inserter(dest), "{}", StreamName);
 	else
-		dest.Write(L"[Unnamed or unknown]");
+		dest += "[Unnamed or unknown]";
 
-	if (!m_message_diag.IsEmpty())
-		dest.Write(L"\n%s", WX_STR(m_message_diag));
+	if (!m_message_diag.empty())
+		fmt::format_to(std::back_inserter(dest), "\n{}", m_message_diag);
 }
 
-void Exception::BadStream::_formatUserMsg(FastFormatUnicode& dest) const
+void Exception::BadStream::_formatUserMsg(std::string& dest) const
 {
-	dest.Write(_("Path: "));
-	if (!StreamName.IsEmpty())
-		dest.Write(L"%s", WX_STR(StreamName));
+	fmt::format_to(std::back_inserter(dest), "Path: ");
+	if (!StreamName.empty())
+		fmt::format_to(std::back_inserter(dest), "{}", StreamName);
 	else
-		dest.Write(_("[Unnamed or unknown]"));
+		dest += "[Unnamed or unknown]";
 
-	if (!m_message_user.IsEmpty())
-		dest.Write(L"\n%s", WX_STR(m_message_user));
+	if (!m_message_user.empty())
+		fmt::format_to(std::back_inserter(dest), "\n{}", m_message_user);
 }
 
 // --------------------------------------------------------------------------------------
 //  Exception::CannotCreateStream  (implementations)
 // --------------------------------------------------------------------------------------
-wxString Exception::CannotCreateStream::FormatDiagnosticMessage() const
+std::string Exception::CannotCreateStream::FormatDiagnosticMessage() const
 {
-	FastFormatUnicode retval;
-	retval.Write("File could not be created.");
+	std::string retval;
+	retval = "File could not be created.";
 	_formatDiagMsg(retval);
 	return retval;
 }
 
-wxString Exception::CannotCreateStream::FormatDisplayMessage() const
+std::string Exception::CannotCreateStream::FormatDisplayMessage() const
 {
-	FastFormatUnicode retval;
-	retval.Write(_("A file could not be created."));
-	retval.Write("\n");
+	std::string retval;
+	retval = "A file could not be created.\n";
 	_formatUserMsg(retval);
 	return retval;
 }
@@ -313,19 +313,18 @@ wxString Exception::CannotCreateStream::FormatDisplayMessage() const
 // --------------------------------------------------------------------------------------
 //  Exception::FileNotFound  (implementations)
 // --------------------------------------------------------------------------------------
-wxString Exception::FileNotFound::FormatDiagnosticMessage() const
+std::string Exception::FileNotFound::FormatDiagnosticMessage() const
 {
-	FastFormatUnicode retval;
-	retval.Write("File not found.\n");
+	std::string retval;
+	retval = "File not found.\n";
 	_formatDiagMsg(retval);
 	return retval;
 }
 
-wxString Exception::FileNotFound::FormatDisplayMessage() const
+std::string Exception::FileNotFound::FormatDisplayMessage() const
 {
-	FastFormatUnicode retval;
-	retval.Write(_("File not found."));
-	retval.Write("\n");
+	std::string retval;
+	retval = "File not found.\n";
 	_formatUserMsg(retval);
 	return retval;
 }
@@ -333,19 +332,18 @@ wxString Exception::FileNotFound::FormatDisplayMessage() const
 // --------------------------------------------------------------------------------------
 //  Exception::AccessDenied  (implementations)
 // --------------------------------------------------------------------------------------
-wxString Exception::AccessDenied::FormatDiagnosticMessage() const
+std::string Exception::AccessDenied::FormatDiagnosticMessage() const
 {
-	FastFormatUnicode retval;
-	retval.Write("Permission denied to file.\n");
+	std::string retval;
+	retval = "Permission denied to file.\n";
 	_formatDiagMsg(retval);
 	return retval;
 }
 
-wxString Exception::AccessDenied::FormatDisplayMessage() const
+std::string Exception::AccessDenied::FormatDisplayMessage() const
 {
-	FastFormatUnicode retval;
-	retval.Write(_("Permission denied while trying to open file, likely due to insufficient user account rights."));
-	retval.Write("\n");
+	std::string retval;
+	retval = "Permission denied while trying to open file, likely due to insufficient user account rights.\n";
 	_formatUserMsg(retval);
 	return retval;
 }
@@ -353,19 +351,18 @@ wxString Exception::AccessDenied::FormatDisplayMessage() const
 // --------------------------------------------------------------------------------------
 //  Exception::EndOfStream  (implementations)
 // --------------------------------------------------------------------------------------
-wxString Exception::EndOfStream::FormatDiagnosticMessage() const
+std::string Exception::EndOfStream::FormatDiagnosticMessage() const
 {
-	FastFormatUnicode retval;
-	retval.Write("Unexpected end of file or stream.\n");
+	std::string retval;
+	retval = "Unexpected end of file or stream.\n";
 	_formatDiagMsg(retval);
 	return retval;
 }
 
-wxString Exception::EndOfStream::FormatDisplayMessage() const
+std::string Exception::EndOfStream::FormatDisplayMessage() const
 {
-	FastFormatUnicode retval;
-	retval.Write(_("Unexpected end of file or stream encountered.  File is probably truncated or corrupted."));
-	retval.Write("\n");
+	std::string retval;
+	retval = "Unexpected end of file or stream encountered.  File is probably truncated or corrupted.\n";
 	_formatUserMsg(retval);
 	return retval;
 }
@@ -376,35 +373,35 @@ wxString Exception::EndOfStream::FormatDisplayMessage() const
 
 // Translates an Errno code into an exception.
 // Throws an exception based on the given error code (usually taken from ANSI C's errno)
-BaseException* Exception::FromErrno(const wxString& streamname, int errcode)
+BaseException* Exception::FromErrno(std::string streamname, int errcode)
 {
 	pxAssumeDev(errcode != 0, "Invalid NULL error code?  (errno)");
 
 	switch (errcode)
 	{
 		case EINVAL:
-			pxFailDev(L"Invalid argument");
-			return &(new Exception::BadStream(streamname))->SetDiagMsg(L"Invalid argument? (likely caused by an unforgivable programmer error!)");
+			pxFailDev("Invalid argument");
+			return &(new Exception::BadStream(streamname))->SetDiagMsg("Invalid argument? (likely caused by an unforgivable programmer error!)");
 
 		case EACCES: // Access denied!
 			return new Exception::AccessDenied(streamname);
 
 		case EMFILE: // Too many open files!
-			return &(new Exception::CannotCreateStream(streamname))->SetDiagMsg(L"Too many open files"); // File handle allocation failure
+			return &(new Exception::CannotCreateStream(streamname))->SetDiagMsg("Too many open files"); // File handle allocation failure
 
 		case EEXIST:
-			return &(new Exception::CannotCreateStream(streamname))->SetDiagMsg(L"File already exists");
+			return &(new Exception::CannotCreateStream(streamname))->SetDiagMsg("File already exists");
 
 		case ENOENT: // File not found!
 			return new Exception::FileNotFound(streamname);
 
 		case EPIPE:
-			return &(new Exception::BadStream(streamname))->SetDiagMsg(L"Broken pipe");
+			return &(new Exception::BadStream(streamname))->SetDiagMsg("Broken pipe");
 
 		case EBADF:
-			return &(new Exception::BadStream(streamname))->SetDiagMsg(L"Bad file number");
+			return &(new Exception::BadStream(streamname))->SetDiagMsg("Bad file number");
 
 		default:
-			return &(new Exception::BadStream(streamname))->SetDiagMsg(pxsFmt(L"General file/stream error [errno: %d]", errcode));
+			return &(new Exception::BadStream(streamname))->SetDiagMsg(fmt::format("General file/stream error [errno: {}]", errcode));
 	}
 }

@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <memory>
+
 namespace PacketReader
 {
 	class Payload

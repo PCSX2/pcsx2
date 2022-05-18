@@ -75,21 +75,21 @@ __fi void EventSource<ListenerType>::_DispatchRaw(ListenerIterator iter, const L
 		{
 			if (IsDevBuild)
 			{
-				pxFailDev(L"Ignoring runtime error thrown from event listener (event listeners should not throw exceptions!): " + ex.FormatDiagnosticMessage());
+				pxFailDev(("Ignoring runtime error thrown from event listener (event listeners should not throw exceptions!): " + ex.FormatDiagnosticMessage()).c_str());
 			}
 			else
 			{
-				Console.Error(L"Ignoring runtime error thrown from event listener: " + ex.FormatDiagnosticMessage());
+				Console.Error("Ignoring runtime error thrown from event listener: %s", ex.FormatDiagnosticMessage().c_str());
 			}
 		}
 		catch (BaseException& ex)
 		{
 			if (IsDevBuild)
 			{
-				ex.DiagMsg() = L"Non-runtime BaseException thrown from event listener .. " + ex.DiagMsg();
+				ex.DiagMsg() = "Non-runtime BaseException thrown from event listener .. " + ex.DiagMsg();
 				throw;
 			}
-			Console.Error(L"Ignoring non-runtime BaseException thrown from event listener: " + ex.FormatDiagnosticMessage());
+			Console.Error("Ignoring non-runtime BaseException thrown from event listener: %s", ex.FormatDiagnosticMessage().c_str());
 		}
 		++iter;
 	}

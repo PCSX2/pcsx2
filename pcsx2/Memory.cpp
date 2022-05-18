@@ -47,6 +47,7 @@ BIOS
 #include "ps2/BiosTools.h"
 #include "SPU2/spu2.h"
 
+#include "common/AlignedMalloc.h"
 #include "common/PageFaultSource.h"
 
 #ifdef PCSX2_CORE
@@ -712,7 +713,7 @@ void memBindConditionalHandlers()
 //  eeMemoryReserve  (implementations)
 // --------------------------------------------------------------------------------------
 eeMemoryReserve::eeMemoryReserve()
-	: _parent( L"EE Main Memory", sizeof(*eeMem) )
+	: _parent( "EE Main Memory", sizeof(*eeMem) )
 {
 }
 

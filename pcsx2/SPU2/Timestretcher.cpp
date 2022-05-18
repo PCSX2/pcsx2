@@ -18,6 +18,7 @@
 #include "SoundTouch.h"
 #include <wx/datetime.h>
 #include <algorithm>
+#include <cmath>
 
 //Uncomment the next line to use the old time stretcher
 //#define SPU2X_USE_OLD_STRETCHER

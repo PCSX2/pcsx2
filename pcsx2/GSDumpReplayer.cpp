@@ -17,6 +17,8 @@
 
 #include <atomic>
 
+#include "fmt/core.h"
+
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
@@ -337,8 +339,9 @@ void GSDumpReplayer::RenderUI()
 
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 	ImFont* font = ImGuiManager::GetFixedFont();
-	FastFormatAscii text;
+	std::string text;
 	ImVec2 text_size;
+	text.reserve(128);
 
 #define DRAW_LINE(font, text, color) \
 	do \
@@ -349,11 +352,11 @@ void GSDumpReplayer::RenderUI()
 		position_y += text_size.y + spacing; \
 	} while (0)
 
-	text.Write("Dump Frame: %u", s_dump_frame_number);
+	fmt::format_to(std::back_inserter(text), "Dump Frame: {}", s_dump_frame_number);
 	DRAW_LINE(font, text.c_str(), IM_COL32(255, 255, 255, 255));
 
-	text.Clear();
-	text.Write("Packet Number: %u/%u", s_current_packet, static_cast<u32>(s_dump_file->GetPackets().size()));
+	text.clear();
+	fmt::format_to(std::back_inserter(text), "Packet Number: {}/{}", s_current_packet, static_cast<u32>(s_dump_file->GetPackets().size()));
 	DRAW_LINE(font, text.c_str(), IM_COL32(255, 255, 255, 255));
 
 #undef DRAW_LINE

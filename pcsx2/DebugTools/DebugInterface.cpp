@@ -27,6 +27,8 @@
 #include "IopMem.h"
 #include "SymbolMap.h"
 
+#include "common/StringUtil.h"
+
 #ifndef PCSX2_CORE
 #include "gui/SysThreads.h"
 #endif
@@ -506,7 +508,7 @@ u128 R5900DebugInterface::getRegister(int cat, int num)
 	return result;
 }
 
-wxString R5900DebugInterface::getRegisterString(int cat, int num)
+std::string R5900DebugInterface::getRegisterString(int cat, int num)
 {
 	switch (cat)
 	{
@@ -514,15 +516,11 @@ wxString R5900DebugInterface::getRegisterString(int cat, int num)
 		case EECAT_CP0:
 		case EECAT_FCR:
 		case EECAT_VU0F:
-			return getRegister(cat, num).ToString();
+			return StringUtil::U128ToString(getRegister(cat, num));
 		case EECAT_FPR:
-		{
-			char str[64];
-			sprintf(str, "%f", fpuRegs.fpr[num].f);
-			return wxString(str, wxConvUTF8);
-		}
+			return StringUtil::StdStringFromFormat("%f", fpuRegs.fpr[num].f);
 		default:
-			return L"";
+			return {};
 	}
 }
 
@@ -829,14 +827,14 @@ u128 R3000DebugInterface::getRegister(int cat, int num)
 	return u128::From32(value);
 }
 
-wxString R3000DebugInterface::getRegisterString(int cat, int num)
+std::string R3000DebugInterface::getRegisterString(int cat, int num)
 {
 	switch (cat)
 	{
 		case IOPCAT_GPR:
-			return getRegister(cat, num).ToString();
+			return StringUtil::U128ToString(getRegister(cat, num));
 		default:
-			return L"Invalid";
+			return "Invalid";
 	}
 }
 

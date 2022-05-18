@@ -174,6 +174,9 @@ namespace StringUtil
 	/// Parses an assignment string (Key = Value) into its two components.
 	bool ParseAssignmentString(const std::string_view& str, std::string_view* key, std::string_view* value);
 
+	/// Appends a UTF-16/UTF-32 codepoint to a UTF-8 string.
+	void AppendUTF16CharacterToUTF8(std::string& s, u16 ch);
+
 	/// Strided memcpy/memcmp.
 	static inline void StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,
 		std::size_t copy_size, std::size_t count)
@@ -244,4 +247,8 @@ namespace StringUtil
 	/// Converts the specified wide string to a UTF-8 string.
 	std::string WideStringToUTF8String(const std::wstring_view& str);
 	bool WideStringToUTF8String(std::string& dest, const std::wstring_view& str);
+
+	/// Converts unsigned 128-bit data to string.
+	std::string U128ToString(const u128& u);
+	std::string& AppendU128ToString(const u128& u, std::string& s);
 } // namespace StringUtil

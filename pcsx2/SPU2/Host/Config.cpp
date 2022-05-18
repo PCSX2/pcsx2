@@ -17,6 +17,8 @@
 
 #include "common/StringUtil.h"
 
+#include <cmath>
+
 #include "SPU2/Global.h"
 #include "SPU2/Host/Config.h"
 #include "SPU2/Host/Dialogs.h"

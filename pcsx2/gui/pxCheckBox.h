@@ -16,6 +16,7 @@
 #pragma once
 
 #include <wx/wx.h>
+#include "common/Assertions.h"
 #include "gui/wxGuiTools.h"
 
 // -------------------------------------------------------------------------------------

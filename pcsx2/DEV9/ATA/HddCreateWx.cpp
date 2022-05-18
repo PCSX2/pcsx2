@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "HddCreateWx.h"
+#include "gui/App.h"
 
 void HddCreateWx::Init()
 {

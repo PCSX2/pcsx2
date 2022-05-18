@@ -15,7 +15,9 @@
 
 #include "common/Pcsx2Defs.h"
 #include "common/SafeArray.inl"
-#include "common/StringHelpers.h"
+#include "gui/StringHelpers.h"
+#include <wx/wxcrt.h>
+#include <wx/wxcrtvararg.h>
 
 // Implement some very commonly used SafeArray types here
 // (done here for lack of a better place)
@@ -260,11 +262,6 @@ FastFormatAscii::FastFormatAscii()
 void FastFormatAscii::Clear()
 {
 	m_dest.GetPtr()[0] = 0;
-}
-
-const wxString FastFormatAscii::GetString() const
-{
-	return fromAscii(m_dest.GetPtr());
 }
 
 FastFormatAscii& FastFormatAscii::WriteV(const char* fmt, va_list argptr)

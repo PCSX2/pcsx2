@@ -209,7 +209,6 @@
     <ClCompile Include="GS\Renderers\DX12\GSTexture12.cpp" />
     <ClCompile Include="GS\Renderers\HW\GSTextureReplacementLoaders.cpp" />
     <ClCompile Include="GS\Renderers\HW\GSTextureReplacements.cpp" />
-    <ClCompile Include="GS\Window\GSwxDialog.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\GSDeviceVK.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\GSTextureVK.cpp" />
     <ClCompile Include="Host.cpp" />
@@ -273,7 +272,6 @@
     <ClCompile Include="GS\Renderers\DX11\GSDevice11.cpp" />
     <ClCompile Include="GS\Renderers\Null\GSDeviceNull.cpp" />
     <ClCompile Include="GS\Renderers\OpenGL\GSDeviceOGL.cpp" />
-    <ClCompile Include="GS\Window\GSDialog.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSDirtyRect.cpp" />
     <ClCompile Include="GS\GSDrawingContext.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSDrawScanline.cpp" />
@@ -524,7 +522,6 @@
     <ClInclude Include="GS\Renderers\DX12\GSDevice12.h" />
     <ClInclude Include="GS\Renderers\DX12\GSTexture12.h" />
     <ClInclude Include="GS\Renderers\HW\GSTextureReplacements.h" />
-    <ClInclude Include="GS\Window\GSwxDialog.h" />
     <ClInclude Include="GS\Renderers\Vulkan\GSDeviceVK.h" />
     <ClInclude Include="GS\Renderers\Vulkan\GSTextureVK.h" />
     <ClInclude Include="Host.h" />
@@ -572,7 +569,6 @@
     <ClInclude Include="GS\Renderers\DX11\GSDevice11.h" />
     <ClInclude Include="GS\Renderers\Null\GSDeviceNull.h" />
     <ClInclude Include="GS\Renderers\OpenGL\GSDeviceOGL.h" />
-    <ClInclude Include="GS\Window\GSDialog.h" />
     <ClInclude Include="GS\Renderers\Common\GSDirtyRect.h" />
     <ClInclude Include="GS\GSDrawingContext.h" />
     <ClInclude Include="GS\GSDrawingEnvironment.h" />

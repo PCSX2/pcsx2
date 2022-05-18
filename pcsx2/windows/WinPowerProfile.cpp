@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 #include "common/StringUtil.h"
+#include "common/RedtapeWindows.h"
+
 #include <powrprof.h>
 #include <wil/com.h>
 

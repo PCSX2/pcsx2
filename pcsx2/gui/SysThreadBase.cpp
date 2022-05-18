@@ -102,7 +102,7 @@ void SysThreadBase::Suspend(bool isBlocking)
 			case ExecMode_Pausing:
 			case ExecMode_Paused:
 				if (!isBlocking)
-					throw Exception::CancelEvent(L"Cannot suspend in non-blocking fashion: Another thread is pausing the VM state.");
+					throw Exception::CancelEvent("Cannot suspend in non-blocking fashion: Another thread is pausing the VM state.");
 
 				m_ExecMode = ExecMode_Closing;
 				m_sem_Resume.Post();

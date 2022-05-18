@@ -34,7 +34,7 @@
 static wxDataFormat drag_drop_format(L"PCSX2McdDragDrop");
 
 bool CopyDirectory(const wxString& from, const wxString& to);
-bool RemoveDirectory(const wxString& dirname);
+bool RemoveWxDirectory(const wxString& dirname);
 
 using namespace pxSizerFlags;
 using namespace Panels;
@@ -544,7 +544,7 @@ void Panels::MemoryCardListPanel_Simple::Apply()
 	_parent::Apply();
 
 	int used = 0;
-	Console.WriteLn(L"Apply memory cards:");
+	Console.WriteLn("Apply memory cards:");
 	for (uint slot = 0; slot < 8; ++slot)
 	{
 		g_Conf->EmuOptions.Mcd[slot].Type = m_Cards[slot].Type;
@@ -561,7 +561,7 @@ void Panels::MemoryCardListPanel_Simple::Apply()
 		}
 	}
 	if (!used)
-		Console.WriteLn(L"No active slots.");
+		Console.WriteLn("No active slots.");
 
 	SetForceMcdEjectTimeoutNow();
 }
@@ -582,16 +582,16 @@ void Panels::MemoryCardListPanel_Simple::AppStatusEvent_OnSettingsApplied()
 			{
 				if (!Dialogs::CreateMemoryCardDialog::CreateIt(targetFile, 8, false))
 				{
-					Console.Error(L"Automatic creation of memory card '%s' failed. Hope for the best...", WX_STR(targetFile));
+					Console.Error("Automatic creation of memory card '%ls' failed. Hope for the best...", WX_STR(targetFile));
 				}
 				else
 				{
-					Console.WriteLn(L"Memory card created: '%s'.", WX_STR(targetFile));
+					Console.WriteLn("Memory card created: '%ls'.", WX_STR(targetFile));
 				}
 			}
 			else
 			{
-				Console.Error(L"Memory card was enabled, but it had an invalid file name. Aborting automatic creation. Hope for the best... (%s)", WX_STR(errMsg));
+				Console.Error("Memory card was enabled, but it had an invalid file name. Aborting automatic creation. Hope for the best... (%ls)", WX_STR(errMsg));
 			}
 		}
 
@@ -674,11 +674,11 @@ void Panels::MemoryCardListPanel_Simple::UiCreateNewCard(McdSlotItem& card)
 		card.IsPresent = true;
 		if (card.Slot >= 0)
 		{
-			Console.WriteLn(L"Setting new memory card to slot %u: '%s'", card.Slot, WX_STR(card.Filename.GetFullName()));
+			Console.WriteLn("Setting new memory card to slot %u: '%ls'", card.Slot, WX_STR(card.Filename.GetFullName()));
 		}
 		else
 		{
-			Console.WriteLn(L"Created a new unassigned memory card file: '%s'", WX_STR(card.Filename.GetFullName()));
+			Console.WriteLn("Created a new unassigned memory card file: '%ls'", WX_STR(card.Filename.GetFullName()));
 		}
 	}
 	else
@@ -740,7 +740,7 @@ void Panels::MemoryCardListPanel_Simple::UiDeleteCard(McdSlotItem& card)
 		}
 		else
 		{
-			RemoveDirectory(fullpath.GetFullPath());
+			RemoveWxDirectory(fullpath.GetFullPath());
 		}
 
 		RefreshSelections();

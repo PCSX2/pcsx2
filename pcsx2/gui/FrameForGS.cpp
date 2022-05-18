@@ -178,7 +178,7 @@ void GSPanel::RemoveRecordingAccelerators()
 {
 	m_Accels.reset(new AcceleratorDictionary);
 	InitDefaultAccelerators();
-	recordingConLog(L"Disabled Input Recording Key Bindings\n");
+	recordingConLog("Disabled Input Recording Key Bindings\n");
 }
 #endif
 
@@ -191,7 +191,7 @@ GSPanel::GSPanel( wxWindow* parent )
 	m_HasFocus		= false;
 
 	if ( !wxWindow::Create(parent, wxID_ANY) )
-		throw Exception::RuntimeError().SetDiagMsg( L"GSPanel constructor explode!!" );
+		throw Exception::RuntimeError().SetDiagMsg( "GSPanel constructor explode!!" );
 
 	SetName( L"GSPanel" );
 

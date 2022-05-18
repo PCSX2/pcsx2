@@ -357,6 +357,7 @@
     <ClCompile Include="gui\Dialogs\GSDumpDialog.cpp" />
     <ClCompile Include="gui\Dialogs\McdConfigDialog.cpp" />
     <ClCompile Include="gui\DriveList.cpp" />
+    <ClCompile Include="gui\FastFormatString.cpp" />
     <ClCompile Include="gui\IniInterface.cpp" />
     <ClCompile Include="gui\Mutex.cpp" />
     <ClCompile Include="gui\Panels\MemoryCardListView.cpp" />
@@ -364,7 +365,9 @@
     <ClCompile Include="gui\pxCheckBox.cpp" />
     <ClCompile Include="gui\pxRadioPanel.cpp" />
     <ClCompile Include="gui\pxStaticText.cpp" />
+    <ClCompile Include="gui\pxTranslate.cpp" />
     <ClCompile Include="gui\pxWindowTextWriter.cpp" />
+    <ClCompile Include="gui\StringHelpers.cpp" />
     <ClCompile Include="gui\ThreadingDialogs.cpp" />
     <ClCompile Include="gui\wxAppWithHelpers.cpp" />
     <ClCompile Include="gui\wxSettingsInterface.cpp" />
@@ -827,6 +830,7 @@
     <ClInclude Include="gui\Debugger\DebuggerLists.h" />
     <ClInclude Include="gui\Debugger\DisassemblyDialog.h" />
     <ClInclude Include="gui\Panels\MemoryCardPanels.h" />
+    <ClInclude Include="gui\StringHelpers.h" />
     <ClInclude Include="gui\ThreadingDialogs.h" />
     <ClInclude Include="gui\wxAppWithHelpers.h" />
     <ClInclude Include="gui\wxSettingsInterface.h" />
@@ -1010,7 +1014,6 @@
     <ClInclude Include="USB\USB.h" />
     <ClInclude Include="USB\Win32\Config_usb.h" />
     <ClInclude Include="USB\Win32\resource_usb.h" />
-    <ClInclude Include="Utilities\AsciiFile.h" />
     <ClInclude Include="Elfheader.h" />
     <ClInclude Include="CDVD\IsoFileFormats.h" />
     <ClInclude Include="resource.h" />

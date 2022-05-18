@@ -18,6 +18,9 @@
 #include "common/RedtapeWindows.h"
 #include "common/PageFaultSource.h"
 #include "common/Console.h"
+#include "common/Exceptions.h"
+#include "common/StringUtil.h"
+#include "common/AlignedMalloc.h"
 
 static long DoSysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 {
@@ -97,14 +100,11 @@ bool HostSys::MmapCommitPtr(void* base, size_t size, const PageProtectionMode& m
 	}
 	else if (errcode != ERROR_NOT_ENOUGH_MEMORY && errcode != ERROR_OUTOFMEMORY)
 	{
-		pxFailDev(L"VirtualAlloc COMMIT failed: " + Exception::WinApiError().GetMsgFromWindows());
+		pxFailDev(("VirtualAlloc COMMIT failed: " + Exception::WinApiError().GetMsgFromWindows()).c_str());
 		return false;
 	}
 
-	if (!pxDoOutOfMemory)
-		return false;
-	pxDoOutOfMemory(size);
-	return VirtualAlloc(base, size, MEM_COMMIT, ConvertToWinApi(mode)) != NULL;
+	return false;
 }
 
 void HostSys::MmapResetPtr(void* base, size_t size)
@@ -144,10 +144,7 @@ void HostSys::Munmap(uptr base, size_t size)
 
 void HostSys::MemProtect(void* baseaddr, size_t size, const PageProtectionMode& mode)
 {
-	pxAssertDev(((size & (__pagesize - 1)) == 0), pxsFmt(
-													  L"Memory block size must be a multiple of the target platform's page size.\n"
-													  L"\tPage Size: 0x%04x (%d), Block Size: 0x%04x (%d)",
-													  __pagesize, __pagesize, size, size));
+	pxAssert((size & (__pagesize - 1)) == 0);
 
 	DWORD OldProtect; // enjoy my uselessness, yo!
 	if (!VirtualProtect(baseaddr, size, ConvertToWinApi(mode), &OldProtect))
@@ -155,10 +152,10 @@ void HostSys::MemProtect(void* baseaddr, size_t size, const PageProtectionMode& 
 		Exception::WinApiError apiError;
 
 		apiError.SetDiagMsg(
-			pxsFmt(L"VirtualProtect failed @ 0x%08X -> 0x%08X  (mode=%s)",
+			StringUtil::StdStringFromFormat("VirtualProtect failed @ 0x%08X -> 0x%08X  (mode=%s)",
 				baseaddr, (uptr)baseaddr + size, mode.ToString().c_str()));
 
-		pxFailDev(apiError.FormatDiagnosticMessage());
+		pxFailDev(apiError.FormatDiagnosticMessage().c_str());
 	}
 }
 #endif

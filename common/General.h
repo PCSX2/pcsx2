@@ -16,7 +16,7 @@
 #pragma once
 
 #include <atomic>
-#include <wx/string.h>
+#include <string>
 #include "common/Pcsx2Defs.h"
 
 // This macro is actually useful for about any and every possible application of C++
@@ -81,7 +81,7 @@ public:
 	bool CanExecute() const { return m_exec && m_read; }
 	bool IsNone() const { return !m_read && !m_write; }
 
-	wxString ToString() const;
+	std::string ToString() const;
 };
 
 static __fi PageProtectionMode PageAccess_None()
@@ -161,6 +161,6 @@ extern u32 ShortSpin();
 /// Number of ns to spin for before sleeping a thread
 extern const u32 SPIN_TIME_NS;
 
-extern wxString GetOSVersionString();
+extern std::string GetOSVersionString();
 
 void ScreensaverAllow(bool allow);

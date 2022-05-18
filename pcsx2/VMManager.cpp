@@ -346,7 +346,7 @@ bool VMManager::UpdateGameSettingsLayer()
 
 static void LoadPatches(const std::string& crc_string, bool show_messages, bool show_messages_when_disabled)
 {
-	FastFormatAscii message;
+	std::string message;
 
 	int patch_count = 0;
 	if (EmuConfig.EnablePatches)
@@ -356,7 +356,7 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 		if (patches && (patch_count = LoadPatchesFromString(*patches)) > 0)
 		{
 			PatchesCon->WriteLn(Color_Green, "(GameDB) Patches Loaded: %d", patch_count);
-			message.Write("%u game patches", patch_count);
+			fmt::format_to(std::back_inserter(message), "{} game patches", patch_count);
 		}
 	}
 
@@ -368,7 +368,7 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 		if (cheat_count > 0)
 		{
 			PatchesCon->WriteLn(Color_Green, "Cheats Loaded: %d", cheat_count);
-			message.Write("%s%u cheat patches", (patch_count > 0) ? " and " : "", cheat_count);
+			fmt::format_to(std::back_inserter(message), "{}{} cheat patches", (patch_count > 0) ? " and " : "", cheat_count);
 		}
 	}
 
@@ -400,15 +400,15 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 		}
 
 		if (ws_patch_count > 0)
-			message.Write("%s%u widescreen patches", (patch_count > 0 || cheat_count > 0) ? " and " : "", ws_patch_count);
+			fmt::format_to(std::back_inserter(message), "{}{} widescreen patches", (patch_count > 0 || cheat_count > 0) ? " and " : "", ws_patch_count);
 	}
 
 	if (show_messages)
 	{
 		if (cheat_count > 0 || ws_patch_count > 0)
 		{
-			message.Write(" are active.");
-			Host::AddKeyedOSDMessage("LoadPatches", message.GetString().ToStdString(), 5.0f);
+			message += " are active.";
+			Host::AddKeyedOSDMessage("LoadPatches", std::move(message), 5.0f);
 		}
 		else if (show_messages_when_disabled)
 		{

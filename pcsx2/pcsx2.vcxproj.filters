@@ -1784,6 +1784,15 @@
     <ClCompile Include="Frontend\imgui_impl_dx11.cpp">
       <Filter>Host</Filter>
     </ClCompile>
+    <ClCompile Include="gui\StringHelpers.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\FastFormatString.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\pxTranslate.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -1794,9 +1803,6 @@
     </ClInclude>
     <ClInclude Include="PrecompiledHeader.h">
       <Filter>Misc</Filter>
-    </ClInclude>
-    <ClInclude Include="Utilities\AsciiFile.h">
-      <Filter>Misc\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="Elfheader.h">
       <Filter>System\ISO</Filter>
@@ -2974,6 +2980,9 @@
     </ClInclude>
     <ClInclude Include="Frontend\imgui_impl_vulkan.h">
       <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\StringHelpers.h">
+      <Filter>AppHost</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

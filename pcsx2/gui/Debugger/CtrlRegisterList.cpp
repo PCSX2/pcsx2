@@ -17,6 +17,7 @@
 #include "CtrlRegisterList.h"
 #include "DebugTools/Debug.h"
 #include "common/BitCast.h"
+#include "common/StringUtil.h"
 
 #include "DebugEvents.h"
 #include "gui/AppConfig.h"
@@ -312,7 +313,7 @@ void CtrlRegisterList::OnDraw(wxDC& dc)
 				}
 				else
 				{
-					dc.DrawText(cpu->getRegisterString(category, i), x, y + 2);
+					dc.DrawText(StringUtil::UTF8StringToWxString(cpu->getRegisterString(category, i)), x, y + 2);
 					break;
 				}
 			}
@@ -490,7 +491,7 @@ void CtrlRegisterList::setCurrentRow(int row)
 {
 	char str[256];
 	u128 value;
-	wxString text;
+	std::string text;
 
 	const char* name = cpu->getRegisterName(category, row);
 
@@ -512,15 +513,15 @@ void CtrlRegisterList::setCurrentRow(int row)
 					sprintf(str, "%s = 0x%08X", name, value._u32[0]);
 					break;
 			}
-			text = wxString(str, wxConvUTF8);
+			text = str;
 			break;
 		case DebugInterface::SPECIAL:
-			text = wxString(name, wxConvUTF8) + L" = " + cpu->getRegisterString(category, row);
+			text = std::string(name) + " = " + cpu->getRegisterString(category, row);
 			break;
 	}
 
 	currentRows[category] = row;
-	postEvent(debEVT_SETSTATUSBARTEXT, text);
+	postEvent(debEVT_SETSTATUSBARTEXT, StringUtil::UTF8StringToWxString(text));
 	ensureVisible(currentRows[category] + 1); //offset due to header at scroll position 0
 	Refresh();
 }

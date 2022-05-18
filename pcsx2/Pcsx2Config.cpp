@@ -78,7 +78,7 @@ const char* EnumToString(SpeedhackId id)
 
 void Pcsx2Config::SpeedhackOptions::Set(SpeedhackId id, bool enabled)
 {
-	EnumAssert(id);
+	pxAssert(EnumIsValid(id));
 	switch (id)
 	{
 		case Speedhack_mvuFlag:
@@ -868,33 +868,9 @@ Pcsx2Config::GamefixOptions& Pcsx2Config::GamefixOptions::DisableAll()
 	return *this;
 }
 
-// Enables a full list of gamefixes.  The list can be either comma or pipe-delimited.
-//   Example:  "XGKick,IpuWait"  or  "EEtiming,FpuCompare"
-// If an unrecognized tag is encountered, a warning is printed to the console, but no error
-// is generated.  This allows the system to function in the event that future versions of
-// PCSX2 remove old hacks once they become obsolete.
-void Pcsx2Config::GamefixOptions::Set(const wxString& list, bool enabled)
-{
-	wxStringTokenizer izer(list, L",|", wxTOKEN_STRTOK);
-
-	while (izer.HasMoreTokens())
-	{
-		wxString token(izer.GetNextToken());
-
-		GamefixId i;
-		for (i = GamefixId_FIRST; i < pxEnumEnd; ++i)
-		{
-			if (token.CmpNoCase(EnumToString(i)) == 0)
-				break;
-		}
-		if (i < pxEnumEnd)
-			Set(i);
-	}
-}
-
 void Pcsx2Config::GamefixOptions::Set(GamefixId id, bool enabled)
 {
-	EnumAssert(id);
+	pxAssert(EnumIsValid(id));
 	switch (id)
 	{
 		case Fix_VuAddSub:            VuAddSubHack            = enabled; break;
@@ -919,7 +895,7 @@ void Pcsx2Config::GamefixOptions::Set(GamefixId id, bool enabled)
 
 bool Pcsx2Config::GamefixOptions::Get(GamefixId id) const
 {
-	EnumAssert(id);
+	pxAssert(EnumIsValid(id));
 	switch (id)
 	{
 		case Fix_VuAddSub:            return VuAddSubHack;

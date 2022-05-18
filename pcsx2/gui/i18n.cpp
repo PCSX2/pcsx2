@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "i18n.h"
 #include "AppConfig.h"
+#include "StringHelpers.h"
 #include "wxGuiTools.h"
 #include "common/SafeArray.h"
 #include <memory>
@@ -307,7 +308,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 
 	if( !locale->IsOk() )
 	{
-		Console.Warning( L"SetLanguage: '%s' [%s] is not supported by the operating system",
+		Console.Warning( "SetLanguage: '%ls' [%ls] is not supported by the operating system",
 			WX_STR(i18n_GetBetterLanguageName(info)), WX_STR(locale->GetCanonicalName())
 		);
 		return false;
@@ -328,7 +329,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 		return true;
 	}
 	
-	Console.WriteLn( L"Loading language translation databases for '%s' [%s]",
+	Console.WriteLn( "Loading language translation databases for '%ls' [%ls]",
 		WX_STR(i18n_GetBetterLanguageName(info)), WX_STR(locale->GetCanonicalName())
 	);
 

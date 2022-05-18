@@ -170,7 +170,7 @@ void ReadFIFO_IPUout(mem128_t* out)
 
 void WriteFIFO_IPUin(const mem128_t* value)
 {
-	IPU_LOG( "WriteFIFO/IPUin <- %ls", WX_STR(value->ToString()) );
+	IPU_LOG( "WriteFIFO/IPUin <- 0x%08X.%08X.%08X.%08X", value->_u32[0], value->_u32[1], value->_u32[2], value->_u32[3]);
 
 	//committing every 16 bytes
 	if( ipu_fifo.in.write((u32*)value, 1) == 0 )

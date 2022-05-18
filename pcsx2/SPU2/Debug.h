@@ -23,9 +23,9 @@ extern void ConLog(const char* fmt, ...);
 
 extern void DoFullDump();
 
-extern FILE* OpenBinaryLog(const wxString& logfile);
-extern FILE* OpenLog(const wxString& logfile);
-extern FILE* OpenDump(const wxString& logfile);
+extern FILE* OpenBinaryLog(const char* logfile);
+extern FILE* OpenLog(const char* logfile);
+extern FILE* OpenDump(const char* logfile);
 
 namespace WaveDump
 {

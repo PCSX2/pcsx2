@@ -20,7 +20,7 @@
 
 #include "gui/Dialogs/ModalPopups.h"
 
-#include "common/EmbeddedImage.h"
+#include "gui/EmbeddedImage.h"
 #include "gui/Resources/Logo.h"
 
 #include <wx/mstream.h>

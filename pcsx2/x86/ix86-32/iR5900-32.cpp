@@ -42,6 +42,7 @@
 #include "DebugTools/Breakpoints.h"
 #include "Patch.h"
 
+#include "common/AlignedMalloc.h"
 #include "common/FastJmp.h"
 #include "common/MemsetFast.inl"
 #include "common/Perf.h"
@@ -520,17 +521,17 @@ static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 }
 
 
-static void recThrowHardwareDeficiency(const wxChar* extFail)
+static void recThrowHardwareDeficiency(const char* extFail)
 {
 	throw Exception::HardwareDeficiency()
-		.SetDiagMsg(pxsFmt(L"R5900-32 recompiler init failed: %s is not available.", extFail))
-		.SetUserMsg(pxsFmt(_("%s Extensions not found.  The R5900-32 recompiler requires a host CPU with SSE2 extensions."), extFail));
+		.SetDiagMsg(fmt::format("R5900-32 recompiler init failed: {} is not available.", extFail))
+		.SetUserMsg(fmt::format("{} Extensions not found.  The R5900-32 recompiler requires a host CPU with SSE2 extensions.", extFail));
 }
 
 static void recReserveCache()
 {
 	if (!recMem)
-		recMem = new RecompiledCodeReserve(L"R5900-32 Recompiler Cache", _16mb);
+		recMem = new RecompiledCodeReserve("R5900-32 Recompiler Cache", _16mb);
 	recMem->SetProfilerName("EErec");
 
 	while (!recMem->IsOk())
@@ -552,7 +553,7 @@ static void recReserve()
 	// Hardware Requirements Check...
 
 	if (!x86caps.hasStreamingSIMD4Extensions)
-		recThrowHardwareDeficiency(L"SSE4");
+		recThrowHardwareDeficiency("SSE4");
 
 	recReserveCache();
 }
@@ -618,7 +619,7 @@ static void recAlloc()
 	}
 
 	if (s_pInstCache == NULL)
-		throw Exception::OutOfMemory(L"R5900-32 InstCache");
+		throw Exception::OutOfMemory("R5900-32 InstCache");
 
 	// No errors.. Proceed with initialization:
 
@@ -1892,7 +1893,7 @@ static void recRecompile(const u32 startpc)
 	// this is the only way patches get applied, doesn't depend on a hack
 	if (g_GameLoading && HWADDR(startpc) == ElfEntry)
 	{
-		Console.WriteLn(L"Elf entry point @ 0x%08x about to get recompiled. Load patches first.", startpc);
+		Console.WriteLn("Elf entry point @ 0x%08x about to get recompiled. Load patches first.", startpc);
 		xFastCall((void*)eeGameStarting);
 
 		// Apply patch as soon as possible. Normally it is done in

@@ -39,7 +39,7 @@
 
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
-#include "common/AppTrait.h"
+#include "AppTrait.h"
 
 #include <wx/stdpaths.h>
 
@@ -193,7 +193,7 @@ void Pcsx2App::PadKeyDispatch(const HostKeyEvent& ev)
 		if (strFromCode.EndsWith(L"\\"))
 			strFromCode += L"\\"; // If copied into PCSX2_keys.ini, \ needs escaping
 
-		Console.WriteLn(wxString(L"> Key: %s (Code: %ld)"),	WX_STR(strFromCode), m_kevt.m_keyCode);
+		Console.WriteLn(StringUtil::wxStringToUTF8String(wxString::Format("> Key: %s (Code: %ld)",	WX_STR(strFromCode), m_kevt.m_keyCode)));
 	}
 
 	if( m_kevt.GetEventType() == wxEVT_KEY_DOWN )
@@ -508,7 +508,7 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 		Console.Error( ex.FormatDiagnosticMessage() );
 		// I should probably figure out how to have the error message as well.
 		if (wxGetApp().HasGUI())
-			Msgbox::Alert( ex.FormatDisplayMessage() );
+			Msgbox::Alert(StringUtil::UTF8StringToWxString(ex.FormatDisplayMessage()));
 	}
 }
 
@@ -931,7 +931,7 @@ __fi bool SysHasValidState()
 void SysStatus( const wxString& text )
 {
 	// mirror output to the console!
-	Console.WriteLn( WX_STR(text) );
+	Console.WriteLn( text.ToStdString() );
 	sMainFrame.SetStatusText( text );
 }
 

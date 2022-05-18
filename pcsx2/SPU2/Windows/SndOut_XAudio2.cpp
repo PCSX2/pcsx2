@@ -15,7 +15,9 @@
 
 #include "PrecompiledHeader.h"
 #include "SPU2/Global.h"
+#ifndef PCSX2_CORE
 #include "Dialogs.h"
+#endif
 #include "common/Console.h"
 
 #include <xaudio2.h>

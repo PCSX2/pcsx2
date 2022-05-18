@@ -222,7 +222,7 @@ struct microVU
 	microProgManager               prog;     // Micro Program Data
 	microProfiler                  profiler; // Opcode Profiler
 	std::unique_ptr<microRegAlloc> regAlloc; // Reg Alloc Class
-	std::unique_ptr<AsciiFile>     logFile;  // Log File Pointer
+	std::FILE*                     logFile;  // Log File Pointer
 
 	RecompiledCodeReserve* cache_reserve;
 	u8* cache;        // Dynarec Cache Start (where we will start writing the recompiled code to)

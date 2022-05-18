@@ -17,7 +17,4 @@
 #include "EventSource.h"
 #include "EventSource.inl"
 
-#include <wx/event.h>
-
-//template class EventSource< wxCommandEvent >;
 //template class EventSource< int >;

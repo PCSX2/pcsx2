@@ -17,11 +17,6 @@
 
 #include "SettingsInterface.h"
 
-// TODO(Stenzek): Remove when wx goes bye bye.
-#include <wx/gdicmn.h>
-#include "Path.h"
-
-
 // Helper class which loads or saves depending on the derived class.
 class SettingsWrapper
 {

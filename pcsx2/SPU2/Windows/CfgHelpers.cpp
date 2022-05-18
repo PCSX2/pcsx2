@@ -18,8 +18,6 @@
 #include "SPU2/Global.h"
 #include "Dialogs.h"
 
-#include "common/StringHelpers.h"
-
 void SysMessage(const char* fmt, ...)
 {
 	va_list list;

@@ -802,9 +802,6 @@ struct Pcsx2Config
 		void LoadSave(SettingsWrapper& wrap);
 		GamefixOptions& DisableAll();
 
-		void Set(const wxString& list, bool enabled = true);
-		void Clear(const wxString& list) { Set(list, false); }
-
 		bool Get(GamefixId id) const;
 		void Set(GamefixId id, bool enabled = true);
 		void Clear(GamefixId id) { Set(id, false); }

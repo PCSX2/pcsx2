@@ -15,16 +15,17 @@
 
 #pragma once
 
-#include <string>
-#include <string_view>
-#include <optional>
-#include <wx/string.h>
-
-#include "common/Pcsx2Defs.h"
 #include <functional>
 #include <optional>
 #include <string>
 #include <vector>
+#include <string>
+#include <string_view>
+#include <optional>
+
+#include "common/Pcsx2Defs.h"
+
+#include "Config.h"
 
 enum class CDVD_SourceType : uint8_t;
 

@@ -18,7 +18,8 @@
 #include <memory>
 #include <stack>
 #include <wx/wx.h>
-#include "common/Dependencies.h"
+#include "common/Assertions.h"
+#include "common/Pcsx2Defs.h"
 
 // ----------------------------------------------------------------------------
 // wxGuiTools.h

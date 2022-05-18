@@ -16,9 +16,6 @@
     <ClCompile Include="Exceptions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FastFormatString.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="emitter\fpu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -61,16 +58,10 @@
     <ClCompile Include="PrecompiledHeader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pxTranslate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Semaphore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="emitter\simd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StringHelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VirtualMemory.cpp">
@@ -216,13 +207,7 @@
     <ClInclude Include="emitter\cpudetect_internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Dependencies.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="emitter\implement\dwshift.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EmbeddedImage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EventSource.h">
@@ -319,9 +304,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="emitter\implement\xchg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StringHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FastJmp.h">

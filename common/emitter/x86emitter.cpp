@@ -30,6 +30,7 @@
 
 #include "common/emitter/internal.h"
 #include "common/emitter/tools.h"
+#include <functional>
 
 // ------------------------------------------------------------------------
 // Notes on Thread Local Storage:
@@ -707,7 +708,7 @@ const xRegister32
 		else if (Index.IsEmpty())
 			Index = src;
 		else
-			pxAssumeDev(false, L"x86Emitter: address modifiers cannot have more than two index registers."); // oops, only 2 regs allowed per ModRm!
+			pxAssumeDev(false, "x86Emitter: address modifiers cannot have more than two index registers."); // oops, only 2 regs allowed per ModRm!
 
 		return *this;
 	}
@@ -732,7 +733,7 @@ const xRegister32
 			Factor += src.Factor;
 		}
 		else
-			pxAssumeDev(false, L"x86Emitter: address modifiers cannot have more than two index registers."); // oops, only 2 regs allowed per ModRm!
+			pxAssumeDev(false, "x86Emitter: address modifiers cannot have more than two index registers."); // oops, only 2 regs allowed per ModRm!
 
 		return *this;
 	}

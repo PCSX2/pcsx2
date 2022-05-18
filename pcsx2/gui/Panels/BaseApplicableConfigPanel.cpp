@@ -30,7 +30,7 @@ using namespace Dialogs;
 //
 void ApplyStateStruct::DoCleanup() noexcept
 {
-	pxAssertMsg( !PanelList.empty(), L"PanelList list hasn't been cleaned up." );
+	pxAssertMsg( !PanelList.empty(), "PanelList list hasn't been cleaned up." );
 	PanelList.clear();
 	ParentBook = NULL;
 }
@@ -100,7 +100,7 @@ bool ApplyStateStruct::ApplyPage( int pageid )
 
 		if( ex.IsVerbose )
 		{
-			Msgbox::Alert( ex.FormatDisplayMessage(), _("Cannot apply settings...") );
+			Msgbox::Alert( StringUtil::UTF8StringToWxString(ex.FormatDisplayMessage()), "Cannot apply settings..." );
 
 			if( ex.GetPanel() != NULL )
 				ex.GetPanel()->SetFocusToMe();

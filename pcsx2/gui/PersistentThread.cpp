@@ -13,6 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
+
 #ifdef __linux__
 #include <signal.h> // for pthread_kill, which is in pthread.h on w32-pthreads
 #endif
@@ -43,8 +45,8 @@ ConsoleLogSource_Threading::ConsoleLogSource_Threading()
 {
 	static const TraceLogDescriptor myDesc =
 		{
-			L"p&xThread", L"pxThread",
-			pxLt("Threading activity: start, detach, sync, deletion, etc.")};
+			"p&xThread", "pxThread",
+			"Threading activity: start, detach, sync, deletion, etc."};
 
 	m_Descriptor = &myDesc;
 }
@@ -202,7 +204,7 @@ bool Threading::pxThread::AffinityAssert_AllowFromSelf(const DiagnosticOrigin& o
 		return true;
 
 	if (IsDevBuild)
-		pxOnAssert(origin, pxsFmt(L"Thread affinity violation: Call allowed from '%s' thread only.", WX_STR(GetName())));
+		pxOnAssert(origin, pxsFmt(L"Thread affinity violation: Call allowed from '%s' thread only.", WX_STR(GetName())).ToUTF8().data());
 
 	return false;
 }
@@ -213,7 +215,7 @@ bool Threading::pxThread::AffinityAssert_DisallowFromSelf(const DiagnosticOrigin
 		return true;
 
 	if (IsDevBuild)
-		pxOnAssert(origin, pxsFmt(L"Thread affinity violation: Call is *not* allowed from '%s' thread.", WX_STR(GetName())));
+		pxOnAssert(origin, pxsFmt(L"Thread affinity violation: Call is *not* allowed from '%s' thread.", WX_STR(GetName())).ToUTF8().data());
 
 	return false;
 }
@@ -252,7 +254,7 @@ void Threading::pxThread::Start()
 
 	pxThreadLog.Write(GetName(), L"Calling pthread_create...");
 	if (pthread_create(&m_thread, NULL, _internal_callback, this) != 0)
-		throw Exception::ThreadCreationError(this).SetDiagMsg(L"Thread creation error: " + wxString(std::strerror(errno)));
+		throw Exception::ThreadCreationError(this).SetDiagMsg(StringUtil::StdStringFromFormat("Thread creation error: %s" , std::strerror(errno)));
 
 #ifdef ASAN_WORKAROUND
 	// Recent Asan + libc6 do pretty bad stuff on the thread init => https://gcc.gnu.org/bugzilla/show_bug.cgi?id=77982
@@ -262,7 +264,7 @@ void Threading::pxThread::Start()
 	if (!m_sem_startup.WaitWithoutYield(wxTimeSpan(0, 0, 0, 100)))
 	{
 		if (m_sem_startup.Count() == 0)
-			throw Exception::ThreadCreationError(this).SetDiagMsg(L"Thread creation error: %s thread never posted startup semaphore.");
+			throw Exception::ThreadCreationError(this).SetDiagMsg("Thread creation error: %s thread never posted startup semaphore.");
 	}
 #else
 	if (!m_sem_startup.WaitWithoutYield(wxTimeSpan(0, 0, 3, 0)))
@@ -270,7 +272,7 @@ void Threading::pxThread::Start()
 		RethrowException();
 
 		// And if the thread threw nothing of its own:
-		throw Exception::ThreadCreationError(this).SetDiagMsg(L"Thread creation error: %s thread never posted startup semaphore.");
+		throw Exception::ThreadCreationError(this).SetDiagMsg("Thread creation error: %s thread never posted startup semaphore.");
 	}
 #endif
 
@@ -446,7 +448,7 @@ void Threading::pxThread::_selfRunningTest(const wxChar* name) const
 	{
 		throw Exception::CancelEvent(pxsFmt(
 			L"Blocking thread %s was terminated while another thread was waiting on a %s.",
-			WX_STR(GetName()), name));
+			WX_STR(GetName()), name).ToStdString());
 	}
 
 	// Thread is still alive and kicking (for now) -- yield to other messages and hope
@@ -568,14 +570,14 @@ void Threading::pxThread::_try_virtual_invoke(void (pxThread::*method)())
 	//
 	catch (std::runtime_error& ex)
 	{
-		m_except = new Exception::RuntimeError(ex, WX_STR(GetName()));
+		m_except = new Exception::RuntimeError(ex, GetName().ToUTF8());
 	}
 
 	// ----------------------------------------------------------------------------
 	catch (Exception::RuntimeError& ex)
 	{
 		BaseException* woot = ex.Clone();
-		woot->DiagMsg() += pxsFmt(L"(thread:%s)", WX_STR(GetName()));
+		woot->DiagMsg() += pxsFmt(L"(thread:%s)", WX_STR(GetName())).ToUTF8();
 		m_except = woot;
 	}
 #ifndef PCSX2_DEVBUILD
@@ -601,7 +603,7 @@ void Threading::pxThread::_try_virtual_invoke(void (pxThread::*method)())
 	catch (BaseException& ex)
 	{
 		BaseException* woot = ex.Clone();
-		woot->DiagMsg() += pxsFmt(L"(thread:%s)", WX_STR(GetName()));
+		woot->DiagMsg() += pxsFmt(L"(thread:%s)", WX_STR(GetName())).ToUTF8();
 		m_except = woot;
 	}
 #endif
@@ -685,7 +687,7 @@ void Threading::pxThread::OnCleanupInThread()
 // callback function
 void* Threading::pxThread::_internal_callback(void* itsme)
 {
-	if (!pxAssertDev(itsme != NULL, wxNullChar))
+	if (!pxAssert(itsme != NULL))
 		return NULL;
 
 	internal_callback_helper(itsme);
@@ -748,16 +750,17 @@ void Threading::WaitEvent::Wait()
 //  BaseThreadError
 // --------------------------------------------------------------------------------------
 
-wxString Exception::BaseThreadError::FormatDiagnosticMessage() const
+std::string Exception::BaseThreadError::FormatDiagnosticMessage() const
 {
-	wxString null_str(L"Null Thread Object");
-	return pxsFmt(m_message_diag, (m_thread == NULL) ? WX_STR(null_str) : WX_STR(m_thread->GetName()));
+	// This is dangerous and stupid. Thanks wx/px/nonsense.
+	wxString thread_name = (m_thread == NULL) ? L"Null Thread Object" : m_thread->GetName();
+	return StringUtil::StdStringFromFormat(m_message_diag.c_str(), thread_name.ToUTF8().data());
 }
 
-wxString Exception::BaseThreadError::FormatDisplayMessage() const
+std::string Exception::BaseThreadError::FormatDisplayMessage() const
 {
-	wxString null_str(L"Null Thread Object");
-	return pxsFmt(m_message_user, (m_thread == NULL) ? WX_STR(null_str) : WX_STR(m_thread->GetName()));
+	wxString thread_name = (m_thread == NULL) ? L"Null Thread Object" : m_thread->GetName();
+	return StringUtil::StdStringFromFormat(m_message_diag.c_str(), thread_name.ToUTF8().data());
 }
 
 pxThread& Exception::BaseThreadError::Thread()

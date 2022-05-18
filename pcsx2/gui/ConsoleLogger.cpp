@@ -36,6 +36,20 @@ wxDEFINE_EVENT(pxEvt_FlushQueue, wxCommandEvent);
 // C++ requires abstract destructors to exist, even though they're abstract.
 PipeRedirectionBase::~PipeRedirectionBase() = default;
 
+// Writes text to the Visual Studio Output window (Microsoft Windows only).
+// On all other platforms this pipes to Stdout instead.
+void MSW_OutputDebugString(const wxString& text)
+{
+#if defined(__WXMSW__) && !defined(__WXMICROWIN__)
+	static bool hasDebugger = wxIsDebuggerRunning();
+	if (hasDebugger)
+		OutputDebugString(text);
+#else
+	fputs(text.utf8_str(), stdout);
+	fflush(stdout);
+#endif
+}
+
 // ----------------------------------------------------------------------------
 //
 void pxLogConsole::DoLogRecord(wxLogLevel level, const wxString &message, const wxLogRecordInfo &info)
@@ -66,15 +80,15 @@ void pxLogConsole::DoLogRecord(wxLogLevel level, const wxString &message, const 
 			// fallthrough!
 
 		case wxLOG_Message:
-			Console.WriteLn( L"[wx] %s", WX_STR(message));
+			Console.WriteLn( "[wx] %ls", WX_STR(message));
 		break;
 
 		case wxLOG_Error:
-			Console.Error(L"[wx] %s", WX_STR(message));
+			Console.Error("[wx] %ls", WX_STR(message));
 		break;
 
 		case wxLOG_Warning:
-			Console.Warning(L"[wx] %s", WX_STR(message));
+			Console.Warning("[wx] %ls", WX_STR(message));
 		break;
 	}
 }
@@ -89,8 +103,8 @@ void ConsoleTestThread::ExecuteTaskInThread()
 	{
 		// Two lines, both formatted, and varied colors.  This makes for a fairly realistic
 		// worst case scenario (without being entirely unrealistic).
-		Console.WriteLn( L"This is a threaded logging test. Something bad could happen... %d", ++numtrack );
-		Console.Warning( L"Testing high stress loads %s", L"(multi-color)" );
+		Console.WriteLn( "This is a threaded logging test. Something bad could happen... %d", ++numtrack );
+		Console.Warning( "Testing high stress loads %s", "(multi-color)" );
 		Yield( 0 );
 	}
 }
@@ -359,7 +373,7 @@ void ConLog_LoadSaveSettings( IniInterface& ini )
 			// IsSaving() is for clarity only, since log->Enabled initial value is ignored when loading.
 			if (ini.IsSaving() && !ConLogInitialized)
 				log->Enabled = ConLogDefaults[i];
-			ini.Entry( log->GetCategory() + L"." + log->GetShortName(), log->Enabled, ConLogDefaults[i] );
+			ini.Entry(StringUtil::UTF8StringToWxString(log->GetCategory() + "." + log->GetShortName()), log->Enabled, ConLogDefaults[i]);
 		}
 	}
 
@@ -377,8 +391,8 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	, m_timer_FlushUnlocker( this )
 	, m_ColorTable( options.FontSize )
 
-	, m_QueueColorSection( L"ConsoleLog::QueueColorSection" )
-	, m_QueueBuffer( L"ConsoleLog::QueueBuffer" )
+	, m_QueueColorSection( "ConsoleLog::QueueColorSection" )
+	, m_QueueBuffer( "ConsoleLog::QueueBuffer" )
 	, m_threadlogger( EnableThreadedLoggingTest ? new ConsoleTestThread() : NULL )
 {
 	m_CurQueuePos				= 0;
@@ -1082,16 +1096,16 @@ static void ConsoleToFile_Newline()
 #endif
 }
 
-static void ConsoleToFile_DoWrite( const wxString& fmt )
+static void ConsoleToFile_DoWrite( const char* fmt )
 {
 #if defined(__POSIX__)
 	if ((g_Conf) && (g_Conf->EmuOptions.ConsoleToStdio)) ConsoleWriter_Stdout.WriteRaw(fmt);
 #endif
 
-	px_fputs( emuLog, fmt.ToUTF8() );
+	px_fputs( emuLog, fmt );
 }
 
-static void ConsoleToFile_DoWriteLn( const wxString& fmt )
+static void ConsoleToFile_DoWriteLn( const char* fmt )
 {
 	ConsoleToFile_DoWrite( fmt );
 	ConsoleToFile_Newline();
@@ -1099,7 +1113,7 @@ static void ConsoleToFile_DoWriteLn( const wxString& fmt )
 	if (emuLog != NULL) fflush( emuLog );
 }
 
-static void ConsoleToFile_SetTitle( const wxString& title )
+static void ConsoleToFile_SetTitle( const char* title )
 {
 	ConsoleWriter_Stdout.SetTitle(title);
 }
@@ -1132,11 +1146,11 @@ Mutex& Pcsx2App::GetProgramLogLock()
 //  ConsoleToWindow Implementations
 // --------------------------------------------------------------------------------------
 template< const IConsoleWriter& secondary >
-static void ConsoleToWindow_SetTitle( const wxString& title )
+static void ConsoleToWindow_SetTitle( const char* title )
 {
 	secondary.SetTitle(title);
 	wxCommandEvent evt( pxEvt_SetTitleText );
-	evt.SetString( title );
+	evt.SetString( wxString::FromUTF8(title) );
 	wxGetApp().ProgramLog_PostEvent( evt );
 }
 
@@ -1158,25 +1172,25 @@ static void ConsoleToWindow_Newline()
 }
 
 template< const IConsoleWriter& secondary >
-static void ConsoleToWindow_DoWrite( const wxString& fmt )
+static void ConsoleToWindow_DoWrite( const char* fmt )
 {
 	if( secondary.WriteRaw != NULL )
 		secondary.WriteRaw( fmt );
 
 	ScopedLogLock locker;
-	bool needsSleep = locker.WindowPtr && locker.WindowPtr->Write( Console.GetColor(), fmt );
+	bool needsSleep = locker.WindowPtr && locker.WindowPtr->Write( Console.GetColor(), wxString::FromUTF8(fmt) );
 	locker.Release();
 	if( needsSleep ) wxGetApp().Ping();
 }
 
 template< const IConsoleWriter& secondary >
-static void ConsoleToWindow_DoWriteLn( const wxString& fmt )
+static void ConsoleToWindow_DoWriteLn( const char* fmt )
 {
 	if( secondary.DoWriteLn != NULL )
 		secondary.DoWriteLn( fmt );
 
 	ScopedLogLock locker;
-	bool needsSleep = locker.WindowPtr && locker.WindowPtr->Write( Console.GetColor(), fmt + L'\n' );
+	bool needsSleep = locker.WindowPtr && locker.WindowPtr->Write( Console.GetColor(), wxString::FromUTF8(fmt) + L'\n' );
 	locker.Release();
 	if( needsSleep ) wxGetApp().Ping();
 }

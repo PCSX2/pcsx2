@@ -16,9 +16,9 @@
 #pragma once
 
 #include <memory>
-#include <wx/string.h>
+#include <stdexcept>
 #include "common/Assertions.h"
-#include "common/Dependencies.h"
+#include "common/Pcsx2Defs.h"
 
 // Because wxTrap isn't available on Linux builds of wxWidgets (non-Debug, typically)
 void pxTrap();
@@ -69,7 +69,7 @@ namespace Exception
 	class BaseException;
 
 	int MakeNewType();
-	BaseException* FromErrno(const wxString& streamname, int errcode);
+	BaseException* FromErrno(std::string streamname, int errcode);
 
 	// --------------------------------------------------------------------------------------
 	//  BaseException
@@ -91,29 +91,29 @@ namespace Exception
 	class BaseException
 	{
 	protected:
-		wxString m_message_diag; // (untranslated) a "detailed" message of what disastrous thing has occurred!
-		wxString m_message_user; // (translated) a "detailed" message of what disastrous thing has occurred!
+		std::string m_message_diag; // (untranslated) a "detailed" message of what disastrous thing has occurred!
+		std::string m_message_user; // (translated) a "detailed" message of what disastrous thing has occurred!
 
 	public:
 		virtual ~BaseException() = default;
 
-		const wxString& DiagMsg() const { return m_message_diag; }
-		const wxString& UserMsg() const { return m_message_user; }
+		const std::string& DiagMsg() const { return m_message_diag; }
+		const std::string& UserMsg() const { return m_message_user; }
 
-		wxString& DiagMsg() { return m_message_diag; }
-		wxString& UserMsg() { return m_message_user; }
+		std::string& DiagMsg() { return m_message_diag; }
+		std::string& UserMsg() { return m_message_user; }
 
-		BaseException& SetBothMsgs(const wxChar* msg_diag);
-		BaseException& SetDiagMsg(const wxString& msg_diag);
-		BaseException& SetUserMsg(const wxString& msg_user);
+		BaseException& SetBothMsgs(const char* msg_diag);
+		BaseException& SetDiagMsg(std::string msg_diag);
+		BaseException& SetUserMsg(std::string msg_user);
 
 		// Returns a message suitable for diagnostic / logging purposes.
 		// This message is always in English, and includes a full stack trace.
-		virtual wxString FormatDiagnosticMessage() const;
+		virtual std::string FormatDiagnosticMessage() const;
 
 		// Returns a message suitable for end-user display.
 		// This message is usually meant for display in a user popup or such.
-		virtual wxString FormatDisplayMessage() const;
+		virtual std::string FormatDisplayMessage() const;
 
 		virtual void Rethrow() const = 0;
 		virtual BaseException* Clone() const = 0;
@@ -135,14 +135,14 @@ namespace Exception
 	class Ps2Generic
 	{
 	protected:
-		wxString m_message; // a "detailed" message of what disastrous thing has occurred!
+		std::string m_message; // a "detailed" message of what disastrous thing has occurred!
 
 	public:
 		virtual ~Ps2Generic() = default;
 
 		virtual u32 GetPc() const = 0;
 		virtual bool IsDelaySlot() const = 0;
-		virtual wxString& Message() { return m_message; }
+		virtual std::string& Message() { return m_message; }
 
 		virtual void Rethrow() const = 0;
 		virtual Ps2Generic* Clone() const = 0;
@@ -181,21 +181,21 @@ public: \
 
 #define DEFINE_EXCEPTION_MESSAGES(classname) \
 public: \
-	classname& SetBothMsgs(const wxChar* msg_diag) \
+	classname& SetBothMsgs(const char* msg_diag) \
 	{ \
 		BaseException::SetBothMsgs(msg_diag); \
 		return *this; \
 	} \
 \
-	classname& SetDiagMsg(const wxString& msg_diag) \
+	classname& SetDiagMsg(std::string msg_diag) \
 	{ \
 		m_message_diag = msg_diag; \
 		return *this; \
 	} \
 \
-	classname& SetUserMsg(const wxString& msg_user) \
+	classname& SetUserMsg(std::string msg_user) \
 	{ \
-		m_message_user = msg_user; \
+		m_message_user = std::move(msg_user); \
 		return *this; \
 	}
 
@@ -221,8 +221,8 @@ public: \
 		bool IsSilent;
 
 		RuntimeError() { IsSilent = false; }
-		RuntimeError(const std::runtime_error& ex, const wxString& prefix = wxEmptyString);
-		RuntimeError(const std::exception& ex, const wxString& prefix = wxEmptyString);
+		RuntimeError(const std::runtime_error& ex, const char* prefix = nullptr);
+		RuntimeError(const std::exception& ex, const char* prefix = nullptr);
 	};
 
 	// --------------------------------------------------------------------------------------
@@ -236,17 +236,17 @@ public: \
 	// an App message loop we'll still want it to be handled in a reasonably graceful manner.
 	class CancelEvent : public RuntimeError
 	{
-		DEFINE_RUNTIME_EXCEPTION(CancelEvent, RuntimeError, pxLt("No reason given."))
+		DEFINE_RUNTIME_EXCEPTION(CancelEvent, RuntimeError, "No reason given.")
 
 	public:
-		explicit CancelEvent(const wxString& logmsg)
+		explicit CancelEvent(std::string logmsg)
 		{
-			m_message_diag = logmsg;
+			m_message_diag = std::move(logmsg);
 			// overridden message formatters only use the diagnostic version...
 		}
 
-		virtual wxString FormatDisplayMessage() const;
-		virtual wxString FormatDiagnosticMessage() const;
+		virtual std::string FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const;
 	};
 
 	// ---------------------------------------------------------------------------------------
@@ -261,21 +261,21 @@ public: \
 	//
 	class OutOfMemory : public RuntimeError
 	{
-		DEFINE_RUNTIME_EXCEPTION(OutOfMemory, RuntimeError, wxEmptyString)
+		DEFINE_RUNTIME_EXCEPTION(OutOfMemory, RuntimeError, "")
 
 	public:
-		wxString AllocDescription;
+		std::string AllocDescription;
 
 	public:
-		OutOfMemory(const wxString& allocdesc);
+		OutOfMemory(std::string allocdesc);
 
-		virtual wxString FormatDisplayMessage() const;
-		virtual wxString FormatDiagnosticMessage() const;
+		virtual std::string FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const;
 	};
 
 	class ParseError : public RuntimeError
 	{
-		DEFINE_RUNTIME_EXCEPTION(ParseError, RuntimeError, pxL("Parse error"));
+		DEFINE_RUNTIME_EXCEPTION(ParseError, RuntimeError, "Parse error");
 	};
 
 	// ---------------------------------------------------------------------------------------
@@ -288,18 +288,18 @@ public: \
 	// we'd really like to have access to.
 	class VirtualMemoryMapConflict : public OutOfMemory
 	{
-		DEFINE_RUNTIME_EXCEPTION(VirtualMemoryMapConflict, OutOfMemory, wxEmptyString)
+		DEFINE_RUNTIME_EXCEPTION(VirtualMemoryMapConflict, OutOfMemory, "")
 
-		VirtualMemoryMapConflict(const wxString& allocdesc);
+		VirtualMemoryMapConflict(std::string allocdesc);
 
-		virtual wxString FormatDisplayMessage() const;
-		virtual wxString FormatDiagnosticMessage() const;
+		virtual std::string FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const;
 	};
 
 	class HardwareDeficiency : public RuntimeError
 	{
 	public:
-		DEFINE_RUNTIME_EXCEPTION(HardwareDeficiency, RuntimeError, pxL("Your machine's hardware is incapable of running PCSX2.  Sorry dood."));
+		DEFINE_RUNTIME_EXCEPTION(HardwareDeficiency, RuntimeError, "Your machine's hardware is incapable of running PCSX2.  Sorry dood.");
 	};
 
 	// ---------------------------------------------------------------------------------------
@@ -308,21 +308,21 @@ public: \
 	// ---------------------------------------------------------------------------------------
 
 #define DEFINE_STREAM_EXCEPTION_ACCESSORS(classname) \
-	virtual classname& SetStreamName(const wxString& name) \
+	virtual classname& SetStreamName(std::string name) \
 	{ \
-		StreamName = name; \
+		StreamName = std::move(name); \
 		return *this; \
 	} \
 \
 	virtual classname& SetStreamName(const char* name) \
 	{ \
-		StreamName = fromUTF8(name); \
+		StreamName = name; \
 		return *this; \
 	}
 
 #define DEFINE_STREAM_EXCEPTION(classname, parent) \
-	DEFINE_RUNTIME_EXCEPTION(classname, parent, wxEmptyString) \
-	classname(const wxString& filename) \
+	DEFINE_RUNTIME_EXCEPTION(classname, parent, "") \
+	classname(std::string filename) \
 	{ \
 		StreamName = filename; \
 	} \
@@ -337,14 +337,14 @@ public: \
 		DEFINE_STREAM_EXCEPTION(BadStream, RuntimeError)
 
 	public:
-		wxString StreamName; // name of the stream (if applicable)
+		std::string StreamName; // name of the stream (if applicable)
 
-		virtual wxString FormatDiagnosticMessage() const;
-		virtual wxString FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const;
+		virtual std::string FormatDisplayMessage() const;
 
 	protected:
-		void _formatDiagMsg(FastFormatUnicode& dest) const;
-		void _formatUserMsg(FastFormatUnicode& dest) const;
+		void _formatDiagMsg(std::string& dest) const;
+		void _formatUserMsg(std::string& dest) const;
 	};
 
 	// A generic exception for odd-ball stream creation errors.
@@ -353,8 +353,8 @@ public: \
 	{
 		DEFINE_STREAM_EXCEPTION(CannotCreateStream, BadStream)
 
-		virtual wxString FormatDiagnosticMessage() const;
-		virtual wxString FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const;
+		virtual std::string FormatDisplayMessage() const;
 	};
 
 	// Exception thrown when an attempt to open a non-existent file is made.
@@ -365,8 +365,8 @@ public: \
 	public:
 		DEFINE_STREAM_EXCEPTION(FileNotFound, CannotCreateStream)
 
-		virtual wxString FormatDiagnosticMessage() const;
-		virtual wxString FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const;
+		virtual std::string FormatDisplayMessage() const;
 	};
 
 	class AccessDenied : public CannotCreateStream
@@ -374,8 +374,8 @@ public: \
 	public:
 		DEFINE_STREAM_EXCEPTION(AccessDenied, CannotCreateStream)
 
-		virtual wxString FormatDiagnosticMessage() const;
-		virtual wxString FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const;
+		virtual std::string FormatDisplayMessage() const;
 	};
 
 	// EndOfStream can be used either as an error, or used just as a shortcut for manual
@@ -386,11 +386,11 @@ public: \
 	public:
 		DEFINE_STREAM_EXCEPTION(EndOfStream, BadStream)
 
-		virtual wxString FormatDiagnosticMessage() const;
-		virtual wxString FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const;
+		virtual std::string FormatDisplayMessage() const;
 	};
 
-#ifdef __WXMSW__
+#ifdef _WIN32
 	// --------------------------------------------------------------------------------------
 	//  Exception::WinApiError
 	// --------------------------------------------------------------------------------------
@@ -405,9 +405,9 @@ public: \
 	public:
 		WinApiError();
 
-		wxString GetMsgFromWindows() const;
-		virtual wxString FormatDisplayMessage() const;
-		virtual wxString FormatDiagnosticMessage() const;
+		std::string GetMsgFromWindows() const;
+		virtual std::string FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const;
 	};
 #endif
 } // namespace Exception

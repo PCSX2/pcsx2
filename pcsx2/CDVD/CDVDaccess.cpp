@@ -32,19 +32,14 @@
 #include "IsoFS/IsoFSCDVD.h"
 #include "IsoFileFormats.h"
 
+#include "common/Assertions.h"
+#include "common/Exceptions.h"
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
 #include "DebugTools/SymbolMap.h"
 #include "Config.h"
 
 CDVD_API* CDVD = NULL;
-
-const wxChar* CDVD_SourceLabels[] =
-	{
-		L"ISO",
-		L"Disc",
-		L"NoDisc",
-		NULL};
 
 // ----------------------------------------------------------------------------
 // diskTypeCached

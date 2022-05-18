@@ -27,6 +27,7 @@
 
 #include "common/emitter/legacy_internal.h"
 #include "common/Console.h"
+#include <cassert>
 
 emitterT void ModRM(uint mod, uint reg, uint rm)
 {

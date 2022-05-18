@@ -157,7 +157,7 @@ bool IsoDropTarget::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filen
 			return false;
 		}
 
-		Console.WriteLn( L"(Drag&Drop) Received filename: " + filenames[0] );
+		Console.WriteLn( "(Drag&Drop) Received filename: %ls", WX_STR(filenames[0]) );
 
 		// ---------------
 		//    ELF CHECK
@@ -166,7 +166,7 @@ bool IsoDropTarget::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filen
 		wxFileInputStream filechk( filenames[0] );
 
 		if( !filechk.IsOk() )
-			throw Exception::CannotCreateStream( filenames[0] );
+			throw Exception::CannotCreateStream(StringUtil::wxStringToUTF8String(filenames[0]));
 
 		u8 ident[16];
 		filechk.Read( ident, 16 );
@@ -174,7 +174,7 @@ bool IsoDropTarget::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filen
 
 		if( ((u32&)ident) == ((u32&)elfIdent) )
 		{
-			Console.WriteLn( L"(Drag&Drop) Found ELF file type!" );
+			Console.WriteLn( "(Drag&Drop) Found ELF file type!" );
 
 			g_Conf->CurrentELF = filenames[0];
 
@@ -191,7 +191,7 @@ bool IsoDropTarget::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filen
 
 		if (iso.Test( StringUtil::wxStringToUTF8String(filenames[0]) ))
 		{
-			DevCon.WriteLn( L"(Drag&Drop) Found valid ISO file type!" );
+			DevCon.WriteLn( "(Drag&Drop) Found valid ISO file type!" );
 			wxGetApp().PostEvent( DroppedIso(m_WindowBound, filenames[0]) );
 			return true;
 		}

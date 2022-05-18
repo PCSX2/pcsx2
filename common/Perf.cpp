@@ -14,8 +14,7 @@
  */
 
 #include "common/Perf.h"
-#include "common/Pcsx2Types.h"
-#include "common/Dependencies.h"
+#include "common/Pcsx2Defs.h"
 #ifdef __unix__
 #include <unistd.h>
 #endif

@@ -18,6 +18,8 @@
 #include "Common.h"
 #include "IopHw.h"
 
+#include "fmt/core.h"
+
 namespace IopMemory {
 namespace Internal {
 
@@ -209,18 +211,28 @@ static __ri void IopHwTraceLog( u32 addr, T val, bool mode )
 	if (!IsDevBuild) return;
 	if (!EmuConfig.Trace.Enabled || !EmuConfig.Trace.IOP.m_EnableAll || !EmuConfig.Trace.IOP.m_EnableRegisters) return;
 
-	FastFormatAscii valStr;
-	FastFormatAscii labelStr;
-	labelStr.Write("Hw%s%u", mode ? "Read" : "Write", sizeof (T) * 8);
+	std::string labelStr(fmt::format("Hw{}{}", mode ? "Read" : "Write", sizeof(T) * 8));
+	std::string valStr;
 
-	switch( sizeof (T) )
+	if constexpr (sizeof(T) == 1)
 	{
-		case 1: valStr.Write("0x%02x", val); break;
-		case 2: valStr.Write("0x%04x", val); break;
-		case 4: valStr.Write("0x%08x", val); break;
-
-		case 8: valStr.Write("0x%08x.%08x", ((u32*)&val)[1], ((u32*)&val)[0]); break;
-		case 16: ((u128&)val).WriteTo(valStr);
+		valStr = fmt::format("0x{:02x}", val);
+	}
+	else if constexpr (sizeof(T) == 2)
+	{
+		valStr = fmt::format("0x{:04x}", val);
+	}
+	else if constexpr (sizeof(T) == 4)
+	{
+		valStr = fmt::format("0x{:08x}", val);
+	}
+	else if constexpr (sizeof(T) == 8)
+	{
+		valStr = fmt::format("0x{:08x}.{:08x}", ((u32*)&val)[1], ((u32*)&val)[0]);
+	}
+	else if constexpr (sizeof(T) == 16)
+	{
+		valStr = StringUtil::U128ToString((u128&)val);
 	}
 
 	static const char* temp = "%-12s @ 0x%08X/%-16s %s %s";

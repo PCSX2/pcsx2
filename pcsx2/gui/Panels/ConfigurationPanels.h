@@ -27,7 +27,7 @@
 
 #include "gui/AppCommon.h"
 #include "gui/ApplyState.h"
-
+#include "gui/i18n.h"
 
 namespace Panels
 {

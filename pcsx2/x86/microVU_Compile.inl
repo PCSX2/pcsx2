@@ -48,7 +48,12 @@ __fi void mVUcheckIsSame(mV)
 void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC)
 {
 	std::deque<microRange>*& ranges = mVUcurProg.ranges;
-	pxAssertDev(pc <= (s64)mVU.microMemSize, pxsFmt("microVU%d: PC outside of VU memory PC=0x%04x", mVU.index, pc));
+	if (pc > (s64)mVU.microMemSize)
+	{
+		Console.Error("microVU%d: PC outside of VU memory PC=0x%04x", mVU.index, pc);
+		pxFailDev("microVU: PC out of VU memory");
+	}
+
 	if (isStartPC) // Check if startPC is already within a block we've recompiled
 	{
 		std::deque<microRange>::const_iterator it(ranges->begin());
@@ -892,8 +897,8 @@ __fi void* mVUentryGet(microVU& mVU, microBlockManager* block, u32 startPC, uptr
 __fi void* mVUblockFetch(microVU& mVU, u32 startPC, uptr pState)
 {
 
-	pxAssertDev((startPC & 7) == 0,              pxsFmt("microVU%d: unaligned startPC=0x%04x", mVU.index, startPC));
-	pxAssertDev(startPC <= mVU.microMemSize - 8, pxsFmt("microVU%d: invalid startPC=0x%04x",   mVU.index, startPC));
+	pxAssert((startPC & 7) == 0);
+	pxAssert(startPC <= mVU.microMemSize - 8);
 	startPC &= mVU.microMemSize - 8;
 
 	blockCreate(startPC / 8);

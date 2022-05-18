@@ -341,7 +341,7 @@ wxWindowID SwapOrReset_CdvdSrc(wxWindow* owner, CDVD_SourceType newsrc)
 
 	if (result != wxID_RESET)
 	{
-		Console.Indent().WriteLn(L"(CdvdSource) HotSwapping CDVD source types from %s to %s.",
+		Console.Indent().WriteLn("(CdvdSource) HotSwapping CDVD source types from %ls to %ls.",
 								 WX_STR(wxString(CDVD_SourceLabels[enum_cast(oldsrc)])),
 								 WX_STR(wxString(CDVD_SourceLabels[enum_cast(newsrc)])));
 		//CoreThread.ChangeCdvdSource();
