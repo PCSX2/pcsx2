@@ -491,6 +491,41 @@ void MainWindow::setStyleFromSettings()
 
 		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
 	}
+		else if (theme == "PS2_GTK")
+	{
+		//THeme by Daisouji,  based on the Plum GTK Theme
+		qApp->setStyle(QStyleFactory::create("Fusion"));
+
+                const QColor lighterGray(75, 75, 75);
+                const QColor gray(128, 128, 128);
+                const QColor black(25, 25, 25);
+                const QColor slate(18, 18, 18); 
+                const QColor brightPurple(72, 6, 127);
+
+
+                QPalette darkPalette;
+                darkPalette.setColor(QPalette::Window, slate);
+                darkPalette.setColor(QPalette::WindowText, Qt::white);
+                darkPalette.setColor(QPalette::Base, slate.lighter()); 
+                darkPalette.setColor(QPalette::AlternateBase, slate.lighter()); 
+                darkPalette.setColor(QPalette::ToolTipBase, slate);
+                darkPalette.setColor(QPalette::ToolTipText, Qt::white);
+                darkPalette.setColor(QPalette::Text, Qt::white);
+                darkPalette.setColor(QPalette::Button, slate);
+                darkPalette.setColor(QPalette::ButtonText, Qt::white);
+                darkPalette.setColor(QPalette::Link, slate);
+                darkPalette.setColor(QPalette::Highlight, brightPurple);
+                darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+
+                darkPalette.setColor(QPalette::Active, QPalette::Button, slate.lighter());
+                darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray); 
+                darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
+                darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray); 
+                darkPalette.setColor(QPalette::Disabled, QPalette::Light, slate.lighter());
+
+                qApp->setPalette(darkPalette);
+
+                qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
 	else
 	{
 		qApp->setPalette(QApplication::style()->standardPalette());
