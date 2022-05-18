@@ -1602,7 +1602,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	fmt::fmt
 	ryml
 	chdr-static
-	zip
+	libzip::zip
 	wxWidgets::all
 	ZLIB::ZLIB
 	PkgConfig::SOUNDTOUCH
