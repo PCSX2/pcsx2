@@ -145,7 +145,7 @@ else()
 	check_lib(SAMPLERATE samplerate samplerate.h)
 
 	if(NOT QT_BUILD)
-		check_lib(SDL2 SDL2 SDL.h PATH_SUFFIXES SDL2)
+		find_optional_system_library(SDL2 3rdparty/sdl2 2.0.12)
 	endif()
 
 	if(UNIX AND NOT APPLE)
@@ -224,7 +224,7 @@ if(QT_BUILD)
 	find_package(Qt6 COMPONENTS CoreTools Core GuiTools Gui WidgetsTools Widgets Network LinguistTools REQUIRED)
 
 	# We use the bundled (latest) SDL version for Qt.
-	add_subdirectory(3rdparty/sdl2 EXCLUDE_FROM_ALL)
+	find_optional_system_library(SDL2 3rdparty/sdl2 2.0.22)
 endif()
 
 add_subdirectory(3rdparty/lzma EXCLUDE_FROM_ALL)

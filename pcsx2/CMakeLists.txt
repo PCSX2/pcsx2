@@ -70,13 +70,13 @@ if(XDG_STD)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE XDG_STD)
 endif()
 
-if(TARGET PkgConfig::SDL2 OR QT_BUILD)
+if(TARGET SDL2::SDL2 OR TARGET SDL2::SDL2-static)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE SDL_BUILD)
-	if (QT_BUILD)
+	if ("${SDL2_TYPE}" STREQUAL Bundled)
 		# Use our in-tree SDL build.
 		target_link_libraries(PCSX2_FLAGS INTERFACE SDL2::SDL2-static)
 	else()
-		target_link_libraries(PCSX2_FLAGS INTERFACE PkgConfig::SDL2)
+		target_link_libraries(PCSX2_FLAGS INTERFACE SDL2::SDL2)
 	endif()
 	if(PCSX2_CORE)
 		target_sources(PCSX2 PRIVATE

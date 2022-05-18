@@ -22,6 +22,7 @@ optional_system_library(fmt)
 optional_system_library(ryml)
 optional_system_library(zstd)
 optional_system_library(libzip)
+optional_system_library(SDL2)
 option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
 
 if(WIN32)
