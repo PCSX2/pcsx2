@@ -144,7 +144,12 @@ void* HostSys::MmapReservePtr(void* base, size_t size)
 	// or anonymous source, with PROT_NONE (no-access) permission.  Since the mapping
 	// is completely inaccessible, the OS will simply reserve it and will not put it
 	// against the commit table.
-	return mmap(base, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	void* result = mmap(base, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
+
+	if (result == MAP_FAILED)
+		result = nullptr;
+
+	return result;
 }
 
 bool HostSys::MmapCommitPtr(void* base, size_t size, const PageProtectionMode& mode)
