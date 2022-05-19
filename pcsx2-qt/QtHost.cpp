@@ -53,7 +53,6 @@ static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 // Local function declarations
 //////////////////////////////////////////////////////////////////////////
 namespace QtHost {
-static void InitializeWxRubbish();
 static bool InitializeConfig();
 static bool ShouldUsePortableMode();
 static void SetResourcesDirectory();
@@ -84,7 +83,6 @@ bool QtHost::Initialize()
 	qRegisterMetaType<InputBindingKey>();
 	qRegisterMetaType<const GameList::Entry*>();
 
-	InitializeWxRubbish();
 	if (!InitializeConfig())
 	{
 		Console.WriteLn("Failed to initialize config.");
@@ -768,25 +766,4 @@ void QtHost::UpdateLogging()
 	SysConsole.iopConsole.Enabled = any_logging_sinks && QtHost::GetBaseBoolSettingValue("Logging", "EnableIOPConsole", true);
 
 	SetSystemConsoleEnabled(system_console_enabled);
-}
-
-#include <wx/module.h>
-
-#ifdef _WIN32
-extern "C" HINSTANCE wxGetInstance();
-extern void wxSetInstance(HINSTANCE hInst);
-#endif
-
-void QtHost::InitializeWxRubbish()
-{
-	wxLog::DoCreateOnDemand();
-	wxLog::GetActiveTarget();
-
-#ifdef _WIN32
-	if (!wxGetInstance())
-		wxSetInstance(::GetModuleHandle(NULL));
-#endif // _WIN32
-
-	wxModule::RegisterModules();
-	wxModule::InitializeModules();
 }
