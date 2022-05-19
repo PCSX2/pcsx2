@@ -41,6 +41,7 @@
 
 #include "common/AlignedMalloc.h"
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/Perf.h"
 #include "DebugTools/Breakpoints.h"
 
@@ -238,9 +239,9 @@ static void iIopDumpBlock(int startpc, u8* ptr)
 	int numused, count;
 
 	Console.WriteLn("dump1 %x:%x, %x", startpc, psxpc, psxRegs.cycle);
-	EmuFolders::Logs.Mkdir();
+	FileSystem::CreateDirectoryPath(EmuFolders::Logs.c_str(), false);
 
-	std::string filename(Path::CombineStdString(EmuFolders::Logs, fmt::format("psxdump{:.8X}.txt", startpc)));
+	std::string filename(Path::Combine(EmuFolders::Logs, fmt::format("psxdump{:.8X}.txt", startpc)));
 	std::FILE* f = FileSystem::OpenCFile(filename.c_str(), "w");
 	if (!f)
 		return;

@@ -23,6 +23,8 @@
 #include "sio_internal.h"
 #include "PAD/Gamepad.h"
 
+#include "common/Timer.h"
+
 #ifndef DISABLE_RECORDING
 #	include "Recording/InputRecording.h"
 #endif
@@ -609,12 +611,11 @@ SIO_WRITE memcardInit()
 		
 		//minimum tries reached. start counting millisec timeout.
 		if(numTimesAccessed == FORCED_MCD_EJECTION_MIN_TRIES)
-			mcd->ForceEjection_Timestamp = wxDateTime::UNow();
+			mcd->ForceEjection_Timestamp = Common::Timer::GetCurrentValue();
 
 		if(numTimesAccessed > FORCED_MCD_EJECTION_MIN_TRIES)
 		{
-			wxTimeSpan delta = wxDateTime::UNow().Subtract(mcd->ForceEjection_Timestamp);
-			if(delta.GetMilliseconds() >= FORCED_MCD_EJECTION_MAX_MS_AFTER_MIN_TRIES)
+			if(Common::Timer::ConvertValueToMilliseconds(Common::Timer::GetCurrentValue() - mcd->ForceEjection_Timestamp) >= FORCED_MCD_EJECTION_MAX_MS_AFTER_MIN_TRIES)
 			{
 				DevCon.Warning( "Auto-eject: Timeout reached after mcd was accessed %d times [port:%d, slot:%d]", numTimesAccessed, sio.GetPort(), sio.GetSlot());
 				mcd->ForceEjection_Timeout = 0;	//Done. on next sio access the card will be seen as inserted.
@@ -1006,7 +1007,7 @@ void sioNextFrame() {
 	}
 }
 
-void sioSetGameSerial( const wxString& serial ) {
+void sioSetGameSerial( const std::string& serial ) {
 	for ( uint port = 0; port < 2; ++port ) {
 		for ( uint slot = 0; slot < 4; ++slot ) {
 			if ( mcds[port][slot].ReIndex( serial ) ) {

@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSPng.h"
 #include "GSExtra.h"
+#include "common/FileSystem.h"
 #include <zlib.h>
 #include <png.h>
 
@@ -50,7 +51,7 @@ namespace GSPng
 		const int offset = first_image ? 0 : pixel[fmt].bytes_per_pixel_out;
 		const int bytes_per_pixel_out = first_image ? pixel[fmt].bytes_per_pixel_out : bytes_per_pixel_in - offset;
 
-		FILE* fp = px_fopen(file, "wb");
+		FILE* fp = FileSystem::OpenCFile(file.c_str(), "wb");
 		if (fp == nullptr)
 			return false;
 

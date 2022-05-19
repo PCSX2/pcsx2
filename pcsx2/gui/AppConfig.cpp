@@ -17,6 +17,7 @@
 #include "App.h"
 #include "MainFrame.h"
 #include "IniInterface.h"
+#include "common/FileSystem.h"
 #include "common/SettingsWrapper.h"
 #include "wxSettingsInterface.h"
 
@@ -170,7 +171,7 @@ namespace PathDefs
 				return GetUserLocalDataDir();
 #else
 			case DocsFolder_User:
-				return (wxDirName)Path::Combine(wxStandardPaths::Get().GetDocumentsDir(), pxGetAppName());
+				return (wxDirName)Path::CombineWx(wxStandardPaths::Get().GetDocumentsDir(), pxGetAppName());
 #endif
 			case DocsFolder_Custom:
 				return CustomDocumentsFolder;
@@ -472,43 +473,43 @@ void AppConfig::FolderOptions::Set(FoldersEnum_t folderidx, const wxString& src,
 		case FolderId_Settings:
 			SettingsFolder = src;
 			UseDefaultSettingsFolder = useDefault;
-			EmuFolders::Settings = GetSettingsFolder();
+			EmuFolders::Settings = GetSettingsFolder().ToUTF8();
 			break;
 
 		case FolderId_Bios:
 			Bios = src;
 			UseDefaultBios = useDefault;
-			EmuFolders::Bios = GetResolvedFolder(FolderId_Bios);
+			EmuFolders::Bios = GetResolvedFolder(FolderId_Bios).ToUTF8();
 			break;
 
 		case FolderId_Snapshots:
 			Snapshots = src;
 			UseDefaultSnapshots = useDefault;
-			EmuFolders::Snapshots = GetResolvedFolder(FolderId_Snapshots);
+			EmuFolders::Snapshots = GetResolvedFolder(FolderId_Snapshots).ToUTF8();
 			break;
 
 		case FolderId_Savestates:
 			Savestates = src;
 			UseDefaultSavestates = useDefault;
-			EmuFolders::Savestates = GetResolvedFolder(FolderId_Savestates);
+			EmuFolders::Savestates = GetResolvedFolder(FolderId_Savestates).ToUTF8();
 			break;
 
 		case FolderId_MemoryCards:
 			MemoryCards = src;
 			UseDefaultMemoryCards = useDefault;
-			EmuFolders::MemoryCards = GetResolvedFolder(FolderId_MemoryCards);
+			EmuFolders::MemoryCards = GetResolvedFolder(FolderId_MemoryCards).ToUTF8();
 			break;
 
 		case FolderId_Logs:
 			Logs = src;
 			UseDefaultLogs = useDefault;
-			EmuFolders::Logs = GetResolvedFolder(FolderId_Logs);
+			EmuFolders::Logs = GetResolvedFolder(FolderId_Logs).ToUTF8();
 			break;
 
 		case FolderId_Langs:
 			Langs = src;
 			UseDefaultLangs = useDefault;
-			EmuFolders::Langs = GetResolvedFolder(FolderId_Langs);
+			EmuFolders::Langs = GetResolvedFolder(FolderId_Langs).ToUTF8();
 			break;
 
 		case FolderId_Documents:
@@ -518,27 +519,27 @@ void AppConfig::FolderOptions::Set(FoldersEnum_t folderidx, const wxString& src,
 		case FolderId_Cheats:
 			Cheats = src;
 			UseDefaultCheats = useDefault;
-			EmuFolders::Cheats = GetResolvedFolder(FolderId_Cheats);
+			EmuFolders::Cheats = GetResolvedFolder(FolderId_Cheats).ToUTF8();
 			break;
 
 		case FolderId_CheatsWS:
 			CheatsWS = src;
 			UseDefaultCheatsWS = useDefault;
-			EmuFolders::CheatsWS = GetResolvedFolder(FolderId_CheatsWS);
+			EmuFolders::CheatsWS = GetResolvedFolder(FolderId_CheatsWS).ToUTF8();
 			break;
 
 		case FolderId_Cache:
 			Cache = src;
 			UseDefaultCache = useDefault;
-			EmuFolders::Cache = GetResolvedFolder(FolderId_Cache);
-			EmuFolders::Cache.Mkdir();
+			EmuFolders::Cache = GetResolvedFolder(FolderId_Cache).ToUTF8();
+			FileSystem::CreateDirectoryPath(EmuFolders::Cache.c_str(), false);
 			break;
 
 		case FolderId_Textures:
 			Textures = src;
 			UseDefaultTextures = useDefault;
-			EmuFolders::Textures = GetResolvedFolder(FolderId_Textures);
-			EmuFolders::Textures.Mkdir();
+			EmuFolders::Textures = GetResolvedFolder(FolderId_Textures).ToUTF8();
+			FileSystem::CreateDirectoryPath(EmuFolders::Textures.c_str(), false);
 			break;
 
 			jNO_DEFAULT
@@ -809,21 +810,21 @@ void AppConfig::FolderOptions::LoadSave(IniInterface& ini)
 
 void AppSetEmuFolders()
 {
-	EmuFolders::Settings = GetSettingsFolder();
-	EmuFolders::Bios = GetResolvedFolder(FolderId_Bios);
-	EmuFolders::Snapshots = GetResolvedFolder(FolderId_Snapshots);
-	EmuFolders::Savestates = GetResolvedFolder(FolderId_Savestates);
-	EmuFolders::MemoryCards = GetResolvedFolder(FolderId_MemoryCards);
-	EmuFolders::Logs = GetResolvedFolder(FolderId_Logs);
-	EmuFolders::Langs = GetResolvedFolder(FolderId_Langs);
-	EmuFolders::Cheats = GetResolvedFolder(FolderId_Cheats);
-	EmuFolders::CheatsWS = GetResolvedFolder(FolderId_CheatsWS);
-	EmuFolders::Resources = g_Conf->Folders.Resources;
-	EmuFolders::Cache = GetResolvedFolder(FolderId_Cache);
-	EmuFolders::Textures = GetResolvedFolder(FolderId_Textures);
+	EmuFolders::Settings = GetSettingsFolder().ToUTF8();
+	EmuFolders::Bios = GetResolvedFolder(FolderId_Bios).ToUTF8();
+	EmuFolders::Snapshots = GetResolvedFolder(FolderId_Snapshots).ToUTF8();
+	EmuFolders::Savestates = GetResolvedFolder(FolderId_Savestates).ToUTF8();
+	EmuFolders::MemoryCards = GetResolvedFolder(FolderId_MemoryCards).ToUTF8();
+	EmuFolders::Logs = GetResolvedFolder(FolderId_Logs).ToUTF8();
+	EmuFolders::Langs = GetResolvedFolder(FolderId_Langs).ToUTF8();
+	EmuFolders::Cheats = GetResolvedFolder(FolderId_Cheats).ToUTF8();
+	EmuFolders::CheatsWS = GetResolvedFolder(FolderId_CheatsWS).ToUTF8();
+	EmuFolders::Resources = g_Conf->Folders.Resources.ToUTF8();
+	EmuFolders::Cache = GetResolvedFolder(FolderId_Cache).ToUTF8();
+	EmuFolders::Textures = GetResolvedFolder(FolderId_Textures).ToUTF8();
 
 	// Ensure cache directory exists, since we're going to write to it (e.g. game database)
-	EmuFolders::Cache.Mkdir();
+	FileSystem::CreateDirectoryPath(EmuFolders::Cache.c_str(), false);
 }
 
 // ------------------------------------------------------------------------
@@ -1098,11 +1099,11 @@ void RelocateLogfile()
 {
 	g_Conf->Folders.Logs.Mkdir();
 
-	wxString newlogname(Path::Combine(g_Conf->Folders.Logs.ToString(), L"emuLog.txt"));
+	std::string newlogname(StringUtil::wxStringToUTF8String(Path::CombineWx(g_Conf->Folders.Logs.ToString(), L"emuLog.txt")));
 
 	if ((emuLog != NULL) && (emuLogName != newlogname))
 	{
-		Console.WriteLn("\nRelocating Logfile...\n\tFrom: %ls\n\tTo  : %ls\n", WX_STR(emuLogName), WX_STR(newlogname));
+		Console.WriteLn("\nRelocating Logfile...\n\tFrom: %ls\n\tTo  : %ls\n", emuLogName.c_str(), newlogname.c_str());
 		wxGetApp().DisableDiskLogging();
 
 		fclose(emuLog);
@@ -1112,7 +1113,7 @@ void RelocateLogfile()
 	if (emuLog == NULL)
 	{
 		emuLogName = newlogname;
-		emuLog = wxFopen(emuLogName, "wb");
+		emuLog = FileSystem::OpenCFile(emuLogName.c_str(), "wb");
 	}
 
 	wxGetApp().EnableAllLogging();
@@ -1359,4 +1360,49 @@ void AppSaveSettings()
 wxConfigBase* GetAppConfig()
 {
 	return wxConfigBase::Get(false);
+}
+
+
+//Tests if a string is a valid name for a new file within a specified directory.
+//returns true if:
+//     - the file name has a minimum length of minNumCharacters chars (default is 5 chars: at least 1 char + '.' + 3-chars extension)
+// and - the file name is within the basepath directory (doesn't contain .. , / , \ , etc)
+// and - file name doesn't already exist
+// and - can be created on current system (it is actually created and deleted for this test).
+bool isValidNewFilename(wxString filenameStringToTest, wxDirName atBasePath, wxString& out_errorMessage, uint minNumCharacters)
+{
+	if (filenameStringToTest.Length() < 1 || filenameStringToTest.Length() < minNumCharacters)
+	{
+		out_errorMessage = _("File name empty or too short");
+		return false;
+	}
+
+	if ((atBasePath + wxFileName(filenameStringToTest)).GetFullPath() != (atBasePath + wxFileName(filenameStringToTest).GetFullName()).GetFullPath())
+	{
+		out_errorMessage = _("File name outside of required directory");
+		return false;
+	}
+
+	if (wxFileExists((atBasePath + wxFileName(filenameStringToTest)).GetFullPath()))
+	{
+		out_errorMessage = _("File name already exists");
+		return false;
+	}
+	if (wxDirExists((atBasePath + wxFileName(filenameStringToTest)).GetFullPath()))
+	{
+		out_errorMessage = _("File name already exists");
+		return false;
+	}
+
+	wxFile fp;
+	if (!fp.Create((atBasePath + wxFileName(filenameStringToTest)).GetFullPath()))
+	{
+		out_errorMessage = _("The Operating-System prevents this file from being created");
+		return false;
+	}
+	fp.Close();
+	wxRemoveFile((atBasePath + wxFileName(filenameStringToTest)).GetFullPath());
+
+	out_errorMessage = L"[OK - New file name is valid]"; //shouldn't be displayed on success, hence not translatable.
+	return true;
 }

@@ -16,6 +16,9 @@
 #include "PrecompiledHeader.h"
 #include "Global.h"
 
+#include "common/Path.h"
+#include "common/StringUtil.h"
+
 #include "resource_pad.h"
 #include "InputManager.h"
 #include "PADConfig.h"
@@ -335,8 +338,7 @@ void PADsetSettingsDir(const char* dir)
 	//swprintf_s( iniFileUSB, L"%S", (dir==NULL) ? "inis" : dir );
 
 	//uint targlen = MultiByteToWideChar(CP_ACP, 0, dir, -1, NULL, 0);
-	wxString iniName = "PAD.ini";
-	StrCpyNW(iniFileUSB, EmuFolders::Settings.Combine(iniName).GetFullPath(), std::size(iniFileUSB));
+	StrCpyNW(iniFileUSB, StringUtil::UTF8StringToWideString(Path::Combine(EmuFolders::Settings, "PAD.ini")).c_str(), std::size(iniFileUSB));
 
 	createIniDir = false;
 

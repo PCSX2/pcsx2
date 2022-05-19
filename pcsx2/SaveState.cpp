@@ -18,6 +18,7 @@
 #include "SaveState.h"
 
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/SafeArray.inl"
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
@@ -128,7 +129,7 @@ std::string SaveStateBase::GetSavestateFolder(int slot, bool isSavingOrLoading)
 		}
 	}
 
-	return Path::CombineStdString(dir, StringUtil::StdStringFromFormat("%s (%s).%02d.p2s",
+	return Path::Combine(dir, StringUtil::StdStringFromFormat("%s (%s).%02d.p2s",
 		serialName.c_str(), CRCvalue.c_str(), slot));
 }
 #endif

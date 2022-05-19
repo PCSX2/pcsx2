@@ -20,10 +20,12 @@
 
 #include "common/Path.h"
 
+#include "ghc/filesystem.h"
+
 class HddCreate
 {
 public:
-	fs::path filePath;
+	ghc::filesystem::path filePath;
 	u64 neededSize;
 
 	std::atomic_bool errored{false};
@@ -48,5 +50,5 @@ protected:
 	void SetCanceled();
 
 private:
-	void WriteImage(fs::path hddPath, u64 reqSizeBytes);
+	void WriteImage(ghc::filesystem::path hddPath, u64 reqSizeBytes);
 };

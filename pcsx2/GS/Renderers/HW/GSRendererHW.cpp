@@ -18,6 +18,7 @@
 #include "GSTextureReplacements.h"
 #include "GS/GSGL.h"
 #include "Host.h"
+#include "common/StringUtil.h"
 
 GSRendererHW::GSRendererHW()
 	: GSRenderer()
@@ -299,7 +300,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 		{
 			if (s_savef && s_n >= s_saven)
 			{
-				t->Save(m_dump_root + format("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
+				t->Save(m_dump_root + StringUtil::StdStringFromFormat("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
 			}
 		}
 #endif
@@ -322,7 +323,7 @@ GSTexture* GSRendererHW::GetFeedbackOutput()
 
 #ifdef ENABLE_OGL_DEBUG
 	if (s_dump && s_savef && s_n >= s_saven)
-		t->Save(m_dump_root + format("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), 3, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
+		t->Save(m_dump_root + StringUtil::StdStringFromFormat("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), 3, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
 #endif
 
 	return t;
@@ -1215,13 +1216,13 @@ void GSRendererHW::Draw()
 		std::string s;
 
 		// Dump Register state
-		s = format("%05d_context.txt", s_n);
+		s = StringUtil::StdStringFromFormat("%05d_context.txt", s_n);
 
 		m_env.Dump(m_dump_root + s);
 		m_context->Dump(m_dump_root + s);
 
 		// Dump vertices
-		s = format("%05d_vertex.txt", s_n);
+		s = StringUtil::StdStringFromFormat("%05d_vertex.txt", s_n);
 		DumpVertices(m_dump_root + s);
 	}
 	if (IsBadFrame())
@@ -1633,7 +1634,7 @@ void GSRendererHW::Draw()
 
 		if (s_savet && s_n >= s_saven && m_src)
 		{
-			s = format("%05d_f%lld_itex_%05x_%s_%d%d_%02x_%02x_%02x_%02x.dds",
+			s = StringUtil::StdStringFromFormat("%05d_f%lld_itex_%05x_%s_%d%d_%02x_%02x_%02x_%02x.dds",
 				s_n, frame, (int)context->TEX0.TBP0, psm_str(context->TEX0.PSM),
 				(int)context->CLAMP.WMS, (int)context->CLAMP.WMT,
 				(int)context->CLAMP.MINU, (int)context->CLAMP.MAXU,
@@ -1643,7 +1644,7 @@ void GSRendererHW::Draw()
 
 			if (m_src->m_palette)
 			{
-				s = format("%05d_f%lld_itpx_%05x_%s.dds", s_n, frame, context->TEX0.CBP, psm_str(context->TEX0.CPSM));
+				s = StringUtil::StdStringFromFormat("%05d_f%lld_itpx_%05x_%s.dds", s_n, frame, context->TEX0.CBP, psm_str(context->TEX0.CPSM));
 
 				m_src->m_palette->Save(m_dump_root + s);
 			}
@@ -1651,7 +1652,7 @@ void GSRendererHW::Draw()
 
 		if (s_save && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rt0_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
+			s = StringUtil::StdStringFromFormat("%05d_f%lld_rt0_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
 
 			if (rt_tex)
 				rt_tex->Save(m_dump_root + s);
@@ -1659,7 +1660,7 @@ void GSRendererHW::Draw()
 
 		if (s_savez && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rz0_%05x_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
+			s = StringUtil::StdStringFromFormat("%05d_f%lld_rz0_%05x_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
 
 			if (ds_tex)
 				ds_tex->Save(m_dump_root + s);
@@ -1796,7 +1797,7 @@ void GSRendererHW::Draw()
 
 		if (s_save && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rt1_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
+			s = StringUtil::StdStringFromFormat("%05d_f%lld_rt1_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
 
 			if (rt_tex)
 				rt_tex->Save(m_dump_root + s);
@@ -1804,7 +1805,7 @@ void GSRendererHW::Draw()
 
 		if (s_savez && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rz1_%05x_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
+			s = StringUtil::StdStringFromFormat("%05d_f%lld_rz1_%05x_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
 
 			if (ds_tex)
 				ds_tex->Save(m_dump_root + s);

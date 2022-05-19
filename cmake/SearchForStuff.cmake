@@ -14,7 +14,9 @@ if (WIN32)
 	add_subdirectory(3rdparty/pthreads4w EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/soundtouch EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/wil EXCLUDE_FROM_ALL)
-	add_subdirectory(3rdparty/wxwidgets3.0 EXCLUDE_FROM_ALL)
+	if (NOT PCSX2_CORE)
+		add_subdirectory(3rdparty/wxwidgets3.0 EXCLUDE_FROM_ALL)
+	endif()
 	add_subdirectory(3rdparty/xz EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/D3D12MemAlloc EXCLUDE_FROM_ALL)
 else()
@@ -37,74 +39,76 @@ else()
 	find_package(PNG REQUIRED)
 	find_package(Vtune)
 
-	# Does not require the module (allow to compile non-wx plugins)
-	# Force the unicode build (the variable is only supported on cmake 2.8.3 and above)
-	# Warning do not put any double-quote for the argument...
-	# set(wxWidgets_CONFIG_OPTIONS --unicode=yes --debug=yes) # In case someone want to debug inside wx
-	#
-	# Fedora uses an extra non-standard option ... Arch must be the first option.
-	# They do uname -m if missing so only fix for cross compilations.
-	# http://pkgs.fedoraproject.org/cgit/wxGTK.git/plain/wx-config
-	if(Fedora AND CMAKE_CROSSCOMPILING)
-		set(wxWidgets_CONFIG_OPTIONS --arch ${PCSX2_TARGET_ARCHITECTURES} --unicode=yes)
-	else()
-		set(wxWidgets_CONFIG_OPTIONS --unicode=yes)
-	endif()
+	if(NOT PCSX2_CORE)
+		# Does not require the module (allow to compile non-wx plugins)
+		# Force the unicode build (the variable is only supported on cmake 2.8.3 and above)
+		# Warning do not put any double-quote for the argument...
+		# set(wxWidgets_CONFIG_OPTIONS --unicode=yes --debug=yes) # In case someone want to debug inside wx
+		#
+		# Fedora uses an extra non-standard option ... Arch must be the first option.
+		# They do uname -m if missing so only fix for cross compilations.
+		# http://pkgs.fedoraproject.org/cgit/wxGTK.git/plain/wx-config
+		if(Fedora AND CMAKE_CROSSCOMPILING)
+			set(wxWidgets_CONFIG_OPTIONS --arch ${PCSX2_TARGET_ARCHITECTURES} --unicode=yes)
+		else()
+			set(wxWidgets_CONFIG_OPTIONS --unicode=yes)
+		endif()
 
-	# I'm removing the version check, because it excludes newer versions and requires specifically 3.0.
-	#list(APPEND wxWidgets_CONFIG_OPTIONS --version=3.0)
+		# I'm removing the version check, because it excludes newer versions and requires specifically 3.0.
+		#list(APPEND wxWidgets_CONFIG_OPTIONS --version=3.0)
 
-	# The wx version must be specified so a mix of gtk2 and gtk3 isn't used
-	# as that can cause compile errors.
-	if(GTK2_API AND NOT APPLE)
-		list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk2)
-	elseif(NOT APPLE)
-		list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
-	endif()
+		# The wx version must be specified so a mix of gtk2 and gtk3 isn't used
+		# as that can cause compile errors.
+		if(GTK2_API AND NOT APPLE)
+			list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk2)
+		elseif(NOT APPLE)
+			list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
+		endif()
 
-	# wx2.8 => /usr/bin/wx-config-2.8
-	# lib32-wx2.8 => /usr/bin/wx-config32-2.8
-	# wx3.0 => /usr/bin/wx-config-3.0
-	# I'm going to take a wild guess and predict this:
-	# lib32-wx3.0 => /usr/bin/wx-config32-3.0
-	# FindwxWidgets only searches for wx-config.
-	if(CMAKE_CROSSCOMPILING)
-		# May need to fix the filenames for lib32-wx3.0.
-		if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
-			if (Fedora AND EXISTS "/usr/bin/wx-config-3.0")
+		# wx2.8 => /usr/bin/wx-config-2.8
+		# lib32-wx2.8 => /usr/bin/wx-config32-2.8
+		# wx3.0 => /usr/bin/wx-config-3.0
+		# I'm going to take a wild guess and predict this:
+		# lib32-wx3.0 => /usr/bin/wx-config32-3.0
+		# FindwxWidgets only searches for wx-config.
+		if(CMAKE_CROSSCOMPILING)
+			# May need to fix the filenames for lib32-wx3.0.
+			if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
+				if (Fedora AND EXISTS "/usr/bin/wx-config-3.0")
+					set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.0")
+				endif()
+				if (EXISTS "/usr/bin/wx-config32")
+					set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config32")
+				endif()
+				if (EXISTS "/usr/bin/wx-config32-3.0")
+					set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config32-3.0")
+				endif()
+			endif()
+		else()
+			if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+				set(wxWidgets_CONFIG_EXECUTABLE "/usr/local/bin/wxgtk3u-3.0-config")
+			endif()
+			if(EXISTS "/usr/bin/wx-config-3.2")
+				set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.2")
+			endif()
+			if(EXISTS "/usr/bin/wx-config-3.1")
+				set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.1")
+			endif()
+			if(EXISTS "/usr/bin/wx-config-3.0")
 				set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.0")
 			endif()
-			if (EXISTS "/usr/bin/wx-config32")
-				set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config32")
+			if(EXISTS "/usr/bin/wx-config")
+				set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config")
 			endif()
-			if (EXISTS "/usr/bin/wx-config32-3.0")
-				set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config32-3.0")
+			if(NOT GTK2_API AND EXISTS "/usr/bin/wx-config-gtk3")
+				set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-gtk3")
 			endif()
 		endif()
-	else()
-		if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-			set(wxWidgets_CONFIG_EXECUTABLE "/usr/local/bin/wxgtk3u-3.0-config")
-		endif()
-		if(EXISTS "/usr/bin/wx-config-3.2")
-			set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.2")
-		endif()
-		if(EXISTS "/usr/bin/wx-config-3.1")
-			set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.1")
-		endif()
-		if(EXISTS "/usr/bin/wx-config-3.0")
-			set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.0")
-		endif()
-		if(EXISTS "/usr/bin/wx-config")
-			set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config")
-		endif()
-		if(NOT GTK2_API AND EXISTS "/usr/bin/wx-config-gtk3")
-			set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-gtk3")
-		endif()
-	endif()
 
-	find_package(wxWidgets REQUIRED base core adv)
-	include(${wxWidgets_USE_FILE})
-	make_imported_target_if_missing(wxWidgets::all wxWidgets)
+		find_package(wxWidgets REQUIRED base core adv)
+		include(${wxWidgets_USE_FILE})
+		make_imported_target_if_missing(wxWidgets::all wxWidgets)
+	endif()
 
 	find_package(ZLIB REQUIRED)
 
@@ -189,7 +193,9 @@ endif()
 #----------------------------------------
 include(ApiValidation)
 
-WX_vs_SDL()
+if(NOT PCSX2_CORE)
+	WX_vs_SDL()
+endif()
 
 # Blacklist bad GCC
 if(GCC_VERSION VERSION_EQUAL "7.0" OR GCC_VERSION VERSION_EQUAL "7.1")

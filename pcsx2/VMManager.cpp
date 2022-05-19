@@ -19,7 +19,6 @@
 
 #include <atomic>
 #include <mutex>
-#include <wx/mstream.h>
 
 #include "common/Console.h"
 #include "common/FileSystem.h"
@@ -265,7 +264,7 @@ void VMManager::ApplyGameFixes()
 
 std::string VMManager::GetGameSettingsPath(u32 game_crc)
 {
-	return Path::CombineStdString(EmuFolders::GameSettings, StringUtil::StdStringFromFormat("%08X.ini", game_crc));
+	return Path::Combine(EmuFolders::GameSettings, StringUtil::StdStringFromFormat("%08X.ini", game_crc));
 }
 
 void VMManager::RequestDisplaySize(float scale /*= 0.0f*/)
@@ -459,7 +458,7 @@ void VMManager::UpdateRunningGame(bool force)
 				s_game_name = "Booting PS2 BIOS...";
 		}
 
-		sioSetGameSerial(StringUtil::UTF8StringToWxString(memcardFilters.empty() ? s_game_serial : memcardFilters));
+		sioSetGameSerial(memcardFilters.empty() ? s_game_serial : memcardFilters);
 	}
 
 	UpdateGameSettingsLayer();
@@ -854,7 +853,7 @@ std::string VMManager::GetSaveStateFileName(const char* game_serial, u32 game_cr
 		else
 			filename = StringUtil::StdStringFromFormat("%s (%08X).%02d.p2s", game_serial, game_crc, slot);
 
-		filename = Path::CombineStdString(EmuFolders::Savestates, filename);
+		filename = Path::Combine(EmuFolders::Savestates, filename);
 	}
 
 	return filename;
@@ -1332,7 +1331,7 @@ void VMManager::CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config)
 		if (sioSerial.empty())
 			sioSerial = s_game_serial;
 	}
-	sioSetGameSerial(StringUtil::UTF8StringToWxString(sioSerial));
+	sioSetGameSerial(sioSerial);
 }
 
 void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)

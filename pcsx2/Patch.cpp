@@ -18,12 +18,12 @@
 #define _PC_ // disables MIPS opcode macros.
 
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/ZipHelpers.h"
 
 #include "Config.h"
 #include "Patch.h"
-#include "PathDefs.h"
 
 #include <memory>
 #include <sstream>
@@ -165,29 +165,29 @@ int LoadPatchesFromZip(const std::string& crc, const u8* zip_data, size_t zip_da
 // This routine loads patches from *.pnach files
 // Returns number of patches loaded
 // Note: does not reset previously loaded patches (use ForgetLoadedPatches() for that)
-int LoadPatchesFromDir(const std::string& crc, const wxDirName& folder, const char* friendly_name, bool show_error_when_missing)
+int LoadPatchesFromDir(const std::string& crc, const std::string& folder, const char* friendly_name, bool show_error_when_missing)
 {
-	if (!folder.Exists())
+	if (!FileSystem::DirectoryExists(folder.c_str()))
 	{
-		Console.WriteLn(Color_Red, "The %s folder ('%s') is inaccessible. Skipping...", friendly_name, folder.ToUTF8().data());
+		Console.WriteLn(Color_Red, "The %s folder ('%s') is inaccessible. Skipping...", friendly_name, folder.c_str());
 		return 0;
 	}
 
 	FileSystem::FindResultsArray files;
-	FileSystem::FindFiles(folder.ToUTF8(), StringUtil::StdStringFromFormat("*.pnach", crc.c_str()).c_str(),
+	FileSystem::FindFiles(folder.c_str(), StringUtil::StdStringFromFormat("*.pnach", crc.c_str()).c_str(),
 		FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &files);
 
 	if (show_error_when_missing && files.empty())
 	{
 		PatchesCon->WriteLn(Color_Gray, "Not found %s file: %s" FS_OSPATH_SEPARATOR_STR "%s.pnach",
-			friendly_name, folder.ToUTF8().data(), crc.c_str());
+			friendly_name, folder.c_str(), crc.c_str());
 	}
 
 	int total_loaded = 0;
 
 	for (const FILESYSTEM_FIND_DATA& fd : files)
 	{
-		const std::string_view name(FileSystem::GetFileNameFromPath(fd.FileName));
+		const std::string_view name(Path::GetFileName(fd.FileName));
 		if (name.length() < crc.length() || StringUtil::Strncasecmp(name.data(), crc.c_str(), crc.size()) != 0)
 			continue;
 

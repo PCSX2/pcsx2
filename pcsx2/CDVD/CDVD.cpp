@@ -19,11 +19,12 @@
 #include "IopHw.h"
 #include "IopDma.h"
 
+#include <cctype>
+#include <ctime>
 #include <memory>
-#include <ctype.h>
-#include <wx/datetime.h>
 
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/Threading.h"
 
@@ -128,7 +129,7 @@ static int mg_BIToffset(u8* buffer)
 
 static void cdvdGetMechaVer(u8* ver)
 {
-	std::string mecfile(FileSystem::ReplaceExtension(BiosPath, "mec"));
+	std::string mecfile(Path::ReplaceExtension(BiosPath, "mec"));
 	auto fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "rb");
 	if (!fp || FileSystem::FSize64(fp.get()) < 4)
 	{
@@ -188,7 +189,7 @@ static void cdvdCreateNewNVM(std::FILE* fp)
 
 static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 {
-	std::string nvmfile(FileSystem::ReplaceExtension(BiosPath, "nvm"));
+	std::string nvmfile(Path::ReplaceExtension(BiosPath, "nvm"));
 	auto fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "r+b");
 	if (!fp || FileSystem::FSize64(fp.get()) < 1024)
 	{
@@ -852,28 +853,25 @@ void cdvdReset()
 		cdvd.RTC.year = 20;
 	}
 	else
+#endif
 	{
 		// CDVD internally uses GMT+9.  If you think the time's wrong, you're wrong.
 		// Set up your time zone and winter/summer in the BIOS.  No PS2 BIOS I know of features automatic DST.
-		wxDateTime curtime(wxDateTime::GetTimeNow());
-		cdvd.RTC.second = (u8)curtime.GetSecond();
-		cdvd.RTC.minute = (u8)curtime.GetMinute();
-		cdvd.RTC.hour = (u8)curtime.GetHour(wxDateTime::GMT9);
-		cdvd.RTC.day = (u8)curtime.GetDay(wxDateTime::GMT9);
-		cdvd.RTC.month = (u8)curtime.GetMonth(wxDateTime::GMT9) + 1; // WX returns Jan as "0"
-		cdvd.RTC.year = (u8)(curtime.GetYear(wxDateTime::GMT9) - 2000);
-	}
+		const std::time_t utc_time = std::time(nullptr);
+		const std::time_t gmt9_time = (utc_time + (60 * 60 * 9));
+		struct tm curtime = {};
+#ifdef _MSC_VER
+		gmtime_s(&curtime, &gmt9_time);
 #else
-	// CDVD internally uses GMT+9.  If you think the time's wrong, you're wrong.
-	// Set up your time zone and winter/summer in the BIOS.  No PS2 BIOS I know of features automatic DST.
-	wxDateTime curtime(wxDateTime::GetTimeNow());
-	cdvd.RTC.second = (u8)curtime.GetSecond();
-	cdvd.RTC.minute = (u8)curtime.GetMinute();
-	cdvd.RTC.hour = (u8)curtime.GetHour(wxDateTime::GMT9);
-	cdvd.RTC.day = (u8)curtime.GetDay(wxDateTime::GMT9);
-	cdvd.RTC.month = (u8)curtime.GetMonth(wxDateTime::GMT9) + 1; // WX returns Jan as "0"
-	cdvd.RTC.year = (u8)(curtime.GetYear(wxDateTime::GMT9) - 2000);
+		gmtime_r(&gmt9_time, &curtime);
 #endif
+		cdvd.RTC.second = (u8)curtime.tm_sec;
+		cdvd.RTC.minute = (u8)curtime.tm_min;
+		cdvd.RTC.hour = (u8)curtime.tm_hour;
+		cdvd.RTC.day = (u8)curtime.tm_mday;
+		cdvd.RTC.month = (u8)curtime.tm_mon + 1; // WX returns Jan as "0"
+		cdvd.RTC.year = (u8)(curtime.tm_year - 100); // offset from 2000
+	}
 
 	g_GameStarted = false;
 	g_GameLoading = false;

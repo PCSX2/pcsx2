@@ -44,8 +44,6 @@ extern uint FileMcd_GetMtapSlot(uint slot);
 extern bool FileMcd_IsMultitapSlot(uint slot);
 //extern wxFileName FileMcd_GetSimpleName(uint slot);
 extern std::string FileMcd_GetDefaultName(uint slot);
-extern bool isValidNewFilename(wxString filenameStringToTest, wxDirName atBasePath, wxString& out_errorMessage, uint minNumCharacters = 5);
-
 
 uint FileMcd_ConvertToSlot(uint port, uint slot);
 void FileMcd_EmuOpen();
@@ -58,7 +56,7 @@ s32 FileMcd_Save(uint port, uint slot, const u8* src, u32 adr, int size);
 s32 FileMcd_EraseBlock(uint port, uint slot, u32 adr);
 u64 FileMcd_GetCRC(uint port, uint slot);
 void FileMcd_NextFrame(uint port, uint slot);
-bool FileMcd_ReIndex(uint port, uint slot, const wxString& filter);
+bool FileMcd_ReIndex(uint port, uint slot, const std::string& filter);
 
 std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_cards);
 std::optional<AvailableMcdInfo> FileMcd_GetCardInfo(const std::string_view& name);

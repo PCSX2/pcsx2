@@ -422,7 +422,7 @@ void DEV9configure()
 		if (hddPath.is_relative())
 		{
 			//GHC uses UTF8 on all platforms
-			fs::path path(EmuFolders::Settings.ToString().wx_str());
+			ghc::filesystem::path path(EmuFolders::Settings);
 			hddPath = path / hddPath;
 		}
 

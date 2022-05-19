@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\wxWidgets3.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\xbyak;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\xz\xz\src\liblzma\api;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\baseclasses;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -358,9 +359,11 @@
     <ClCompile Include="gui\Dialogs\McdConfigDialog.cpp" />
     <ClCompile Include="gui\DriveList.cpp" />
     <ClCompile Include="gui\FastFormatString.cpp" />
+    <ClCompile Include="gui\FileUtils.cpp" />
     <ClCompile Include="gui\IniInterface.cpp" />
     <ClCompile Include="gui\Mutex.cpp" />
     <ClCompile Include="gui\Panels\MemoryCardListView.cpp" />
+    <ClCompile Include="gui\PathUtils.cpp" />
     <ClCompile Include="gui\PersistentThread.cpp" />
     <ClCompile Include="gui\pxCheckBox.cpp" />
     <ClCompile Include="gui\pxRadioPanel.cpp" />
@@ -549,7 +552,6 @@
     <ClCompile Include="GS\Renderers\Common\GSVertexList.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSVertexSW.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSVertexTrace.cpp" />
-    <ClCompile Include="Utilities\FileUtils.cpp" />
     <ClCompile Include="Dump.cpp" />
     <ClCompile Include="Pcsx2Config.cpp" />
     <ClCompile Include="windows\FlatFileReaderWindows.cpp" />

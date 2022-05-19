@@ -27,7 +27,7 @@
 #include "gui/Resources/NoIcon.h"
 #include "HostDisplay.h"
 
-#include "PathDefs.h"
+#include "gui/PathDefs.h"
 #include "gui/AppConfig.h"
 #include "gui/GSFrame.h"
 #include "Counters.h"

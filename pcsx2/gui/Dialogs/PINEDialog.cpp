@@ -22,7 +22,7 @@
 
 #include "gui/SysThreads.h"
 
-#include "PathDefs.h"
+#include "gui/PathDefs.h"
 #include "gui/AppConfig.h"
 
 using namespace pxSizerFlags;

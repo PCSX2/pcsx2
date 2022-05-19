@@ -14,9 +14,9 @@
 */
 
 #include "PrecompiledHeader.h"
-#include <wx/stdpaths.h>
 #include <fstream>
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 #include "Config.h"
 #include "ChunksCache.h"
@@ -104,7 +104,8 @@ static void WriteIndexToFile(Access* index, const char* filename)
 	}
 }
 
-static wxString INDEX_TEMPLATE_KEY(L"$(f)");
+static constexpr char* INDEX_TEMPLATE_KEY = "$(f)";
+
 // template:
 // must contain one and only one instance of '$(f)' (without the quotes)
 // if if !canEndWithKey -> must not end with $(f)
@@ -114,34 +115,33 @@ static wxString INDEX_TEMPLATE_KEY(L"$(f)");
 //   then it's relative to base (not to cwd)
 // No checks are performed if the result file name can be created.
 // If this proves useful, we can move it into Path:: . Right now there's no need.
-static wxString ApplyTemplate(const std::string& name, const wxDirName& base,
+static std::string ApplyTemplate(const std::string& name, const std::string& base,
 							  const std::string& fileTemplate, const std::string& filename,
 							  bool canEndWithKey)
 {
-	wxString tem(StringUtil::UTF8StringToWxString(fileTemplate));
-	wxString key = INDEX_TEMPLATE_KEY;
-	tem = tem.Trim(true).Trim(false); // both sides
+	// both sides
+	std::string trimmedTemplate(StringUtil::StripWhitespace(fileTemplate));
 
-	size_t first = tem.find(key);
-	if (first == wxString::npos    // not found
-		|| first != tem.rfind(key) // more than one instance
-		|| !canEndWithKey && first == tem.length() - key.length())
+	std::string::size_type first = trimmedTemplate.find(INDEX_TEMPLATE_KEY);
+	if (first == std::string::npos    // not found
+		|| first != trimmedTemplate.rfind(INDEX_TEMPLATE_KEY) // more than one instance
+		|| !canEndWithKey && first == trimmedTemplate.length() - std::strlen(INDEX_TEMPLATE_KEY))
 	{
 		Console.Error("Invalid %s template '%s'.\n"
 					  "Template must contain exactly one '%s' and must not end with it. Abotring.",
-					  name.c_str(), tem.ToUTF8().data(), key.ToUTF8().data());
-		return L"";
+					  name.c_str(), trimmedTemplate.c_str(), INDEX_TEMPLATE_KEY);
+		return {};
 	}
 
-	wxString fname(StringUtil::UTF8StringToWxString(filename));
+	std::string fname(filename);
 	if (first > 0)
-		fname = Path::GetFilename(fname); // without path
+		fname = Path::GetFileName(fname); // without path
 
-	tem.Replace(key, fname);
+	StringUtil::ReplaceAll(trimmedTemplate, INDEX_TEMPLATE_KEY, fname);
 	if (first > 0)
-		tem = Path::Combine(base, tem); // ignores appRoot if tem is absolute
+		trimmedTemplate = Path::Combine(base, trimmedTemplate); // ignores appRoot if tem is absolute
 
-	return tem;
+	return trimmedTemplate;
 }
 
 /*
@@ -173,6 +173,7 @@ static void TestTemplate(const wxDirName &base, const wxString &fname, bool canE
 
 static std::string iso2indexname(const std::string& isoname)
 {
+#if 0
 #ifndef PCSX2_CORE
 	//testTemplate(isoname);
 	wxDirName appRoot = // TODO: have only one of this in PCSX2. Right now have few...
@@ -182,6 +183,11 @@ static std::string iso2indexname(const std::string& isoname)
 #endif
 	//TestTemplate(appRoot, isoname, false);
 	return StringUtil::wxStringToUTF8String(ApplyTemplate("gzip index", appRoot, EmuConfig.GzipIsoIndexTemplate, isoname, false));
+#else
+	//FIXME
+	abort();
+	return {};
+#endif
 }
 
 GzippedFileReader::GzippedFileReader(void)

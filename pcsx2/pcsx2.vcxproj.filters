@@ -4,9 +4,6 @@
     <Filter Include="Misc">
       <UniqueIdentifier>{d1e5f218-107b-4e8c-9527-55cb9388b544}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Misc\Utilities">
-      <UniqueIdentifier>{acd41072-b36e-4653-a430-40ade53fb78a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Docs">
       <UniqueIdentifier>{5dc872c1-db13-4c70-9d44-a3fc4b6fc241}</UniqueIdentifier>
     </Filter>
@@ -436,9 +433,6 @@
     </ClInclude>
     <ClCompile Include="ShiftJisToUnicode.cpp">
       <Filter>Misc</Filter>
-    </ClCompile>
-    <ClCompile Include="Utilities\FileUtils.cpp">
-      <Filter>Misc\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="Dump.cpp">
       <Filter>System</Filter>
@@ -1791,6 +1785,12 @@
       <Filter>AppHost</Filter>
     </ClCompile>
     <ClCompile Include="gui\pxTranslate.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\FileUtils.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\PathUtils.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
   </ItemGroup>

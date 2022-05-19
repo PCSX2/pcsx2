@@ -24,6 +24,7 @@
 #include "Config.h"
 
 #include "common/FileSystem.h"
+#include "common/Path.h"
 
 #include "fmt/core.h"
 
@@ -210,8 +211,8 @@ void iDumpBlock(u32 ee_pc, u32 ee_size, uptr x86_pc, u32 x86_size)
 
 	DbgCon.WriteLn( Color_Gray, "dump block %x:%x (x86:0x%x)", ee_pc, ee_end, x86_pc );
 
-	EmuFolders::Logs.Mkdir();
-	std::string dump_filename(Path::CombineStdString(EmuFolders::Logs, fmt::format("R5900dump_{:.8X}:{:.8X}.txt", ee_pc, ee_end) ));
+	FileSystem::CreateDirectoryPath(EmuFolders::Logs.c_str(), false);
+	std::string dump_filename(Path::Combine(EmuFolders::Logs, fmt::format("R5900dump_{:.8X}:{:.8X}.txt", ee_pc, ee_end) ));
 	std::FILE* eff = FileSystem::OpenCFile(dump_filename.c_str(), "w");
 	if (!eff)
 		return;
@@ -251,7 +252,7 @@ void iDumpBlock(u32 ee_pc, u32 ee_size, uptr x86_pc, u32 x86_size)
 
 	// handy but slow solution (system call)
 #ifdef __linux__
-	std::string obj_filename(Path::CombineStdString(EmuFolders::Logs, "objdump_tmp.o"));
+	std::string obj_filename(Path::Combine(EmuFolders::Logs, "objdump_tmp.o"));
 	std::FILE* objdump = FileSystem::OpenCFile(obj_filename.c_str(), "wb");
 	if (!objdump)
 		return;
@@ -278,8 +279,8 @@ void iDumpBlock( int startpc, u8 * ptr )
 
 	DbgCon.WriteLn( Color_Gray, "dump1 %x:%x, %x", startpc, pc, cpuRegs.cycle );
 
-	EmuFolders::Logs.Mkdir();
-	std::FILE* eff = FileSystem::OpenCFile(Path::CombineStdString(EmuFolders::Logs, fmt::format("R5900dump{:.8X}.txt", startpc)).c_str(), "w");
+	FileSystem::CreateDirectoryPath(EmuFolders::Logs.c_str(), false);
+	std::FILE* eff = FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, fmt::format("R5900dump{:.8X}.txt", startpc)).c_str(), "w");
 	if (!eff)
 		return;
 

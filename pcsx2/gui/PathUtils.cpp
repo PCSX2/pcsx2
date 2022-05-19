@@ -16,6 +16,7 @@
 #include "common/Path.h"
 #include "common/Assertions.h"
 #include "common/Exceptions.h"
+#include "wxDirName.h"
 
 #include <wx/file.h>
 #include <wx/utils.h>
@@ -136,43 +137,19 @@ wxString Path::MakeAbsolute(const wxString& src)
 // Concatenates two pathnames together, inserting delimiters (backslash on win32)
 // as needed! Assumes the 'dest' is allocated to at least g_MaxPath length.
 //
-wxString Path::Combine(const wxString& srcPath, const wxString& srcFile)
+wxString Path::CombineWx(const wxString& srcPath, const wxString& srcFile)
 {
 	return (wxDirName(srcPath) + srcFile).GetFullPath();
 }
 
-wxString Path::Combine(const wxDirName& srcPath, const wxFileName& srcFile)
+wxString Path::CombineWx(const wxDirName& srcPath, const wxFileName& srcFile)
 {
 	return (srcPath + srcFile).GetFullPath();
 }
 
-wxString Path::Combine(const wxString& srcPath, const wxDirName& srcFile)
+wxString Path::CombineWx(const wxString& srcPath, const wxDirName& srcFile)
 {
 	return (wxDirName(srcPath) + srcFile).ToString();
-}
-
-std::string Path::CombineStdString(const wxDirName& srcPath, const std::string_view& srcFile)
-{
-	const wxString wxResult((srcPath + wxString::FromUTF8(srcFile.data(), srcFile.length())).GetFullPath());
-	const wxCharBuffer wxBuf(wxResult.ToUTF8());
-	return std::string(wxBuf.data(), wxBuf.length());
-}
-
-std::string Path::CombineStdString(const std::string_view& srcPath, const std::string_view& srcFile)
-{
-	const wxDirName srcPathDir(wxString::FromUTF8(srcPath.data(), srcPath.length()));
-	const wxString wxResult((srcPathDir + wxString::FromUTF8(srcFile.data(), srcFile.length())).GetFullPath());
-	const wxCharBuffer wxBuf(wxResult.ToUTF8());
-	return std::string(wxBuf.data(), wxBuf.length());
-}
-
-// Replaces the extension of the file with the one given.
-// This function works for path names as well as file names.
-wxString Path::ReplaceExtension(const wxString& src, const wxString& ext)
-{
-	wxFileName jojo(src);
-	jojo.SetExt(ext);
-	return jojo.GetFullPath();
 }
 
 wxString Path::ReplaceFilename(const wxString& src, const wxString& newfilename)

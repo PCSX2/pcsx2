@@ -31,5 +31,6 @@
 #include <VersionHelpers.h>
 #include <ShTypes.h>
 #include <timeapi.h>
+#include <tchar.h>
 
 #endif

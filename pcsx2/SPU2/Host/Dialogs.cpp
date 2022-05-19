@@ -18,41 +18,7 @@
 #include "PrecompiledHeader.h"
 #include "Dialogs.h"
 #include <cstring>
-
-#if !defined(PCSX2_CORE) && (defined(__unix__) || defined(__APPLE__))
-#include <wx/wx.h>
-
-void SysMessage(const char* fmt, ...)
-{
-	va_list list;
-	char msg[512];
-
-	va_start(list, fmt);
-	vsprintf(msg, fmt, list);
-	va_end(list);
-
-	if (msg[strlen(msg) - 1] == '\n')
-		msg[strlen(msg) - 1] = 0;
-
-	wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
-	dialog.ShowModal();
-}
-
-void SysMessage(const wchar_t* fmt, ...)
-{
-	va_list list;
-	va_start(list, fmt);
-	wxString msg;
-	msg.PrintfV(fmt, list);
-	va_end(list);
-
-	wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
-	dialog.ShowModal();
-}
-
-#else
-
-#include <wx/string.h>
+#include <cstdarg>
 
 void SysMessage(const char* fmt, ...)
 {
@@ -61,19 +27,6 @@ void SysMessage(const char* fmt, ...)
 	vfprintf(stderr, fmt, list);
 	va_end(list);
 }
-
-void SysMessage(const wchar_t* fmt, ...)
-{
-	va_list list;
-	va_start(list, fmt);
-	wxString msg;
-	msg.PrintfV(fmt, list);
-	va_end(list);
-
-	fprintf(stderr, "%s\n", msg.ToStdString().c_str());
-}
-
-#endif
 
 void DspUpdate()
 {

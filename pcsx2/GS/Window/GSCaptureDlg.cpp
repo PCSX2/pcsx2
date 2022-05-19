@@ -17,6 +17,7 @@
 #include "GS.h"
 #include "GSCaptureDlg.h"
 #include "GS/GSExtra.h"
+#include "common/StringUtil.h"
 #include <commdlg.h>
 
 // Ideally this belongs in WIL, but CAUUID is used by a *single* COM function in WinAPI.
@@ -57,7 +58,7 @@ GSCaptureDlg::GSCaptureDlg()
 {
 	m_width = theApp.GetConfigI("CaptureWidth");
 	m_height = theApp.GetConfigI("CaptureHeight");
-	m_filename = convert_utf8_to_utf16(theApp.GetConfigS("CaptureFileName"));
+	m_filename = StringUtil::UTF8StringToWideString(theApp.GetConfigS("CaptureFileName"));
 }
 
 int GSCaptureDlg::GetSelCodec(Codec& c)
@@ -118,7 +119,7 @@ void GSCaptureDlg::OnInit()
 
 	m_codecs.clear();
 
-	const std::wstring selected = convert_utf8_to_utf16(theApp.GetConfigS("CaptureVideoCodecDisplayName"));
+	const std::wstring selected = StringUtil::UTF8StringToWideString(theApp.GetConfigS("CaptureVideoCodecDisplayName"));
 
 	ComboBoxAppend(IDC_CODECS, "Uncompressed", 0, true);
 	ComboBoxAppend(IDC_COLORSPACE, "YUY2", 0, true);
@@ -244,10 +245,10 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 
 			theApp.SetConfig("CaptureWidth", m_width);
 			theApp.SetConfig("CaptureHeight", m_height);
-			theApp.SetConfig("CaptureFileName", convert_utf16_to_utf8(m_filename).c_str());
+			theApp.SetConfig("CaptureFileName", StringUtil::WideStringToUTF8String(m_filename).c_str());
 
 			if (ris != 2)
-				theApp.SetConfig("CaptureVideoCodecDisplayName", convert_utf16_to_utf8(c.DisplayName).c_str());
+				theApp.SetConfig("CaptureVideoCodecDisplayName", StringUtil::WideStringToUTF8String(c.DisplayName).c_str());
 			else
 				theApp.SetConfig("CaptureVideoCodecDisplayName", "");
 			break;

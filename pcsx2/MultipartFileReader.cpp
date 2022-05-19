@@ -16,21 +16,25 @@
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
 #include "common/Assertions.h"
+#include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
 // Tests for a filename extension in both upper and lower case, if the filesystem happens
 // to be case-sensitive.
-bool pxFileExists_WithExt( const wxFileName& filename, const wxString& ext )
+static bool pxFileExists_WithExt( const std::string& filename, const std::string& ext )
 {
-	wxFileName part1 = filename;
-	part1.SetExt( ext.Lower() );
+	std::string temp(Path::ReplaceExtension(filename, StringUtil::toLower(ext)));
+	if (FileSystem::FileExists(temp.c_str()))
+		return true;
 
-	if (part1.FileExists()) return true;
-	if (!wxFileName::IsCaseSensitive()) return false;
+#if defined(_WIN32) || defined(__DARWIN__)
+	temp = Path::ReplaceExtension(filename, StringUtil::toUpper(ext));
+	if (FileSystem::FileExists(temp.c_str()))
+		return true;
+#endif
 
-	part1.SetExt( ext.Upper() );
-	return part1.FileExists();
+	return false;
 }
 
 AsyncFileReader* MultipartFileReader::DetectMultipart(AsyncFileReader* reader)
@@ -69,9 +73,11 @@ MultipartFileReader::~MultipartFileReader(void)
 
 void MultipartFileReader::FindParts()
 {
-	wxFileName nameparts( StringUtil::UTF8StringToWxString(m_filename) );
-	wxString curext( nameparts.GetExt() );
-	wxChar prefixch = wxTolower(curext[0]);
+	std::string curext(Path::GetExtension(m_filename));
+	if (curext.empty())
+		return;
+
+	char prefixch = std::tolower(curext[0]);
 
 	// Multi-part rules!
 	//  * The first part can either be the proper extension (ISO, MDF, etc) or the numerical
@@ -81,18 +87,18 @@ void MultipartFileReader::FindParts()
 
 	uint i = 0;
 
-	if ((curext.Length() == 3) && (curext[1] == L'0') && (curext[2] == L'0'))
+	if ((curext.length() == 3) && (curext[1] == '0') && (curext[2] == '0'))
 	{
 		// First file is an OO, so skip 0 in the loop below:
 		i = 1;
 	}
 
-	wxString extbuf = wxString::Format(L"%c%02u", prefixch, i );
-	nameparts.SetExt( extbuf );
+	std::string extbuf(StringUtil::StdStringFromFormat("%c%02u", prefixch, i));
+	std::string nameparts(Path::ReplaceExtension(m_filename, extbuf));
 	if (!pxFileExists_WithExt(nameparts, extbuf))
 		return;
 
-	DevCon.WriteLn( Color_Blue, "isoFile: multi-part %s detected...", curext.Upper().ToUTF8().data() );
+	DevCon.WriteLn( Color_Blue, "isoFile: multi-part %s detected...", StringUtil::toUpper(curext).c_str() );
 	ConsoleIndentScope indent;
 
 	int bsize = m_parts[0].reader->GetBlockSize();
@@ -102,17 +108,15 @@ void MultipartFileReader::FindParts()
 
 	for (; i < MaxParts; ++i)
 	{
-		extbuf = wxString::Format(L"%c%02u", prefixch, i );
-		nameparts.SetExt( extbuf );
+		extbuf = StringUtil::StdStringFromFormat("%c%02u", prefixch, i );
+		nameparts = Path::ReplaceExtension(m_filename, extbuf);
 		if (!pxFileExists_WithExt(nameparts, extbuf))
 			break;
 
 		Part* thispart = m_parts + m_numparts;
 		AsyncFileReader* thisreader = thispart->reader = new FlatFileReader();
 
-		wxString name = nameparts.GetFullPath();
-
-		thisreader->Open(StringUtil::wxStringToUTF8String(name));
+		thisreader->Open(nameparts);
 		thisreader->SetBlockSize(bsize);
 
 		thispart->start = blocks;
@@ -124,7 +128,7 @@ void MultipartFileReader::FindParts()
 
 		DevCon.WriteLn( Color_Blue, "\tblocks %u - %u in: %s",
 			thispart->start, thispart->end,
-			nameparts.GetFullPath().ToUTF8().data()
+			nameparts.c_str()
 		);
 
 		++m_numparts;

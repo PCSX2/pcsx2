@@ -19,8 +19,6 @@
 #include "SPU2/Global.h"
 #include "SPU2/Config.h"
 
-#include <wx/string.h>
-
 namespace DebugConfig
 {
 	extern void ReadSettings();
@@ -28,15 +26,5 @@ namespace DebugConfig
 
 extern void CfgSetSettingsDir(const char* dir);
 extern void CfgSetLogDir(const char* dir);
-
-extern bool CfgReadBool(const wchar_t* Section, const wchar_t* Name, bool Default);
-extern void CfgReadStr(const wchar_t* Section, const wchar_t* Name, wxString& Data, const wchar_t* Default);
-extern int CfgReadInt(const wchar_t* Section, const wchar_t* Name, int Default);
-extern float CfgReadFloat(const wchar_t* Section, const wchar_t* Name, float Default);
-
-extern void CfgWriteBool(const wchar_t* Section, const wchar_t* Name, bool Value);
-extern void CfgWriteInt(const wchar_t* Section, const wchar_t* Name, int Value);
-extern void CfgWriteFloat(const wchar_t* Section, const wchar_t* Name, float Value);
-extern void CfgWriteStr(const wchar_t* Section, const wchar_t* Name, const wxString& Data);
 
 #endif

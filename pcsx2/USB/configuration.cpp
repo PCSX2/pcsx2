@@ -19,6 +19,9 @@
 #include "shared/inifile_usb.h"
 #include "platcompat.h"
 #include "Config.h"
+#include "common/Path.h"
+#include "common/StringUtil.h"
+#include "gui/StringHelpers.h"
 #include <map>
 #include <vector>
 
@@ -35,11 +38,7 @@ void USBsetSettingsDir()
 {
 	if(!USBpathSet)
 	{
-#ifdef _WIN32
-		IniPath = EmuFolders::Settings.Combine( iniFileUSB ).GetFullPath(); // default path, just in case
-#else
-		IniPath = std::string(EmuFolders::Settings.Combine( iniFileUSB ).GetFullPath()); // default path, just in case
-#endif
+		IniPath = StringUtil::UTF8StringToWxString(Path::Combine(EmuFolders::Settings, "USB.ini")); // default path, just in case
 		USBpathSet = true;
 	}
 }

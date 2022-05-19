@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "App.h"
 #include "common/Threading.h"
+#include "StringHelpers.h"
 
 #include <wx/stackwalk.h>
 
@@ -109,10 +110,10 @@ void Pcsx2App::OnAssertFailure( const wxChar *file, int line, const wxChar *func
 	RecursionGuard guard( _reentrant_lock );
 	if( guard.IsReentrant() ) pxTrap();
 
-	std::string nfile(StringUtil::WideStringToUTF8String(file));
-	std::string nfunc(StringUtil::WideStringToUTF8String(func));
-	std::string ncond(StringUtil::WideStringToUTF8String(cond));
-	std::string nmsg(StringUtil::WideStringToUTF8String(msg));
+	std::string nfile(StringUtil::wxStringToUTF8String(file));
+	std::string nfunc(StringUtil::wxStringToUTF8String(func));
+	std::string ncond(StringUtil::wxStringToUTF8String(cond));
+	std::string nmsg(StringUtil::wxStringToUTF8String(msg));
 	if( AppDoAssert( DiagnosticOrigin( nfile.c_str(), line, nfunc.c_str(), ncond.c_str()), nmsg.c_str()))
 	{
 		pxTrap();

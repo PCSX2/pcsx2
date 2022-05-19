@@ -605,21 +605,21 @@ void DEV9SettingsWidget::onHddFileEdit()
 {
 	//Check if file exists, if so set HddSize to correct value
 	//GHC uses UTF8 on all platforms
-	fs::path hddPath(m_ui.hddFile->text().toUtf8().constData());
+	ghc::filesystem::path hddPath(m_ui.hddFile->text().toUtf8().constData());
 
 	if (hddPath.empty())
 		return;
 
 	if (hddPath.is_relative())
 	{
-		fs::path path(EmuFolders::Settings.ToString().wx_str());
+		ghc::filesystem::path path(EmuFolders::Settings);
 		hddPath = path / hddPath;
 	}
 
-	if (!fs::exists(hddPath))
+	if (!ghc::filesystem::exists(hddPath))
 		return;
 
-	const uintmax_t size = fs::file_size(hddPath);
+	const uintmax_t size = ghc::filesystem::file_size(hddPath);
 
 	const u32 sizeSectors = (size / 512);
 	const int sizeGB = size / 1024 / 1024 / 1024;
@@ -655,7 +655,7 @@ void DEV9SettingsWidget::onHddSizeSpin(int i)
 void DEV9SettingsWidget::onHddCreateClicked()
 {
 	//Do the thing
-	fs::path hddPath(m_ui.hddFile->text().toUtf8().constData());
+	ghc::filesystem::path hddPath(m_ui.hddFile->text().toUtf8().constData());
 
 	u64 sizeBytes = (u64)m_dialog->getEffectiveIntValue("DEV9/Hdd", "HddSizeSectors", 0) * 512;
 	if (sizeBytes == 0 || hddPath.empty())
@@ -669,11 +669,11 @@ void DEV9SettingsWidget::onHddCreateClicked()
 	if (hddPath.is_relative())
 	{
 		//Note, EmuFolders is still wx strings
-		fs::path path(EmuFolders::Settings.ToString().wx_str());
+		ghc::filesystem::path path(EmuFolders::Settings);
 		hddPath = path / hddPath;
 	}
 
-	if (fs::exists(hddPath))
+	if (ghc::filesystem::exists(hddPath))
 	{
 		//GHC uses UTF8 on all platforms
 		QMessageBox::StandardButton selection =
@@ -685,7 +685,7 @@ void DEV9SettingsWidget::onHddCreateClicked()
 		if (selection == QMessageBox::No)
 			return;
 		else
-			fs::remove(hddPath);
+			ghc::filesystem::remove(hddPath);
 	}
 
 	HddCreateQt hddCreator(this);

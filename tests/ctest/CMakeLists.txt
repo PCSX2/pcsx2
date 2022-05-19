@@ -70,3 +70,4 @@ endmacro()
 
 add_subdirectory(x86emitter)
 add_subdirectory(GS)
+add_subdirectory(common)

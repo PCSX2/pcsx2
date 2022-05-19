@@ -22,6 +22,7 @@
 #include "common/Assertions.h"
 #include "common/Exceptions.h"
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 
 #include <memory>
@@ -176,7 +177,7 @@ IsoFileDescriptor IsoDirectory::FindFile(const std::string_view& filePath) const
 
 	// wxWidgets DOS-style parser should work fine for ISO 9660 path names.  Only practical difference
 	// is case sensitivity, and that won't matter for path splitting.
-	std::vector<std::string_view> parts(FileSystem::SplitWindowsPath(filePath));
+	std::vector<std::string_view> parts(Path::SplitWindowsPath(filePath));
 	IsoFileDescriptor info;
 	const IsoDirectory* dir = this;
 	std::unique_ptr<IsoDirectory> deleteme;

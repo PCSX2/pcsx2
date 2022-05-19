@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include "System.h"
 #include "common/Exceptions.h"
 

@@ -40,7 +40,7 @@
 using namespace R5900;
 
 FILE* emuLog;
-wxString emuLogName;
+std::string emuLogName;
 
 SysTraceLogPack SysTrace;
 SysConsoleLogPack SysConsole;

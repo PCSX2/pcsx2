@@ -35,7 +35,6 @@ BIOS
 */
 
 #include "PrecompiledHeader.h"
-#include <wx/file.h>
 
 #include "IopHw.h"
 #include "GS.h"

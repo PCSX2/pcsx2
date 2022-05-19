@@ -227,7 +227,6 @@ set(pcsx2Headers
 	MemoryCardFolder.h
 	MemoryTypes.h
 	Patch.h
-	PathDefs.h
 	PCSX2Base.h
 	PerformanceMetrics.h
 	PrecompiledHeader.h
@@ -812,7 +811,6 @@ endif()
 
 if(PCSX2_CORE)
 	list(APPEND pcsx2SPU2Headers
-		SPU2/Host/CfgHelpers.cpp
 		SPU2/Host/Config.cpp
 		SPU2/Host/ConfigDebug.cpp
 		SPU2/Host/ConfigSoundTouch.cpp
@@ -1117,6 +1115,7 @@ set(pcsx2GuiSources
 	gui/DriveList.cpp
 	gui/ExecutorThread.cpp
 	gui/FastFormatString.cpp
+	gui/FileUtils.cpp
 	gui/FrameForGS.cpp
 	gui/GlobalCommands.cpp
 	gui/IniInterface.cpp
@@ -1140,6 +1139,7 @@ set(pcsx2GuiSources
 	gui/Panels/PathsPanel.cpp
 	gui/Panels/SpeedhacksPanel.cpp
 	gui/Panels/VideoPanel.cpp
+	gui/PathUtils.cpp
 	gui/PersistentThread.cpp
 	gui/pxCheckBox.cpp
 	gui/pxRadioPanel.cpp
@@ -1193,6 +1193,7 @@ set(pcsx2GuiHeaders
 	gui/IsoDropTarget.h
 	gui/MainFrame.h
 	gui/MSWstuff.h
+	gui/PathDefs.h
 	gui/Panels/ConfigurationPanels.h
 	gui/Panels/LogOptionsPanels.h
 	gui/Panels/MemoryCardPanels.h
@@ -1208,6 +1209,7 @@ set(pcsx2GuiHeaders
 	gui/SysThreads.h
 	gui/ThreadingDialogs.h
 	gui/ThreadingDialogs.cpp
+	gui/wxDirName.h
 	gui/wxGuiTools.h
 	gui/wxSettingsInterface.h
 	)
@@ -1387,10 +1389,6 @@ set(pcsx2RecordingVirtualPadResources
 set(pcsx2SystemHeaders
 	System/RecTypes.h)
 
-# Utilities sources
-set(pcsx2UtilitiesSources
-	Utilities/FileUtils.cpp)
-
 # Windows sources
 set(pcsx2WindowsSources
 	CDVD/Windows/DriveUtility.cpp
@@ -1518,7 +1516,6 @@ target_sources(PCSX2 PRIVATE
 	${pcsx2ps2Sources}
 	${pcsx2ps2Headers}
 	${pcsx2SystemHeaders}
-	${pcsx2UtilitiesSources}
 )
 
 # gui sources when not doing a qt build
@@ -1602,7 +1599,6 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	ryml
 	chdr-static
 	libzip::zip
-	wxWidgets::all
 	ZLIB::ZLIB
 	PkgConfig::SOUNDTOUCH
 	PkgConfig::SAMPLERATE
@@ -1615,6 +1611,10 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 if(PCSX2_CORE)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		simpleini
+	)
+else()
+	target_link_libraries(PCSX2_FLAGS INTERFACE
+		wxWidgets::all
 	)
 endif()
 

@@ -175,7 +175,7 @@ void pxActionEvent::SetException(const BaseException& ex)
 
 void pxActionEvent::SetException(BaseException* ex)
 {
-	ex->DiagMsg() = StringUtil::WideStringToUTF8String(GetClassInfo()->GetClassName()) + ex->DiagMsg();
+	ex->DiagMsg() = StringUtil::wxStringToUTF8String(GetClassInfo()->GetClassName()) + ex->DiagMsg();
 
 	if (!m_state)
 	{

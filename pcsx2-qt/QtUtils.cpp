@@ -690,15 +690,4 @@ namespace QtUtils
 	{
 		return str.empty() ? QString() : QString::fromUtf8(str.data(), str.size());
 	}
-
-	wxString QStringToWxString(const QString& str)
-	{
-		return wxString(str.toStdWString());
-	}
-
-	QString WxStringToQString(const wxString& str)
-	{
-		return QString::fromStdWString(str.ToStdWstring());
-	}
-
 } // namespace QtUtils

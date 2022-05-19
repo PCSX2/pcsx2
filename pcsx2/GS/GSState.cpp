@@ -17,9 +17,11 @@
 #include "GSState.h"
 #include "GSGL.h"
 #include "GSUtil.h"
+#include "common/StringUtil.h"
 
 #include <algorithm> // clamp
 #include <cfloat> // FLT_MAX
+#include <fstream>
 #include <iomanip> // Dump Verticles
 
 int GSState::s_n = 0;
@@ -1855,7 +1857,7 @@ void GSState::Read(u8* mem, int len)
 
 	if (s_dump && s_save && s_n >= s_saven)
 	{
-		std::string s = m_dump_root + format(
+		std::string s = m_dump_root + StringUtil::StdStringFromFormat(
 			"%05d_read_%05x_%d_%d_%d_%d_%d_%d.bmp",
 			s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM,
 			r.left, r.top, r.right, r.bottom);

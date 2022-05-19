@@ -20,6 +20,7 @@
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/ProgressCallback.h"
 #include "common/StringUtil.h"
 #include <algorithm>
@@ -161,7 +162,7 @@ bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 	const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
 	entry->path = path;
 	entry->serial.clear();
-	entry->title = FileSystem::StripExtension(display_name);
+	entry->title = Path::StripExtension(display_name);
 	entry->region = Region::Other;
 	entry->total_size = static_cast<u64>(file_size);
 	entry->type = EntryType::ELF;
@@ -231,7 +232,7 @@ bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 	}
 	else
 	{
-		entry->title = FileSystem::GetFileTitleFromPath(path);
+		entry->title = Path::GetFileTitle(path);
 		entry->region = Region::Other;
 	}
 
@@ -358,7 +359,7 @@ bool GameList::LoadEntriesFromCache(std::FILE* stream)
 
 static std::string GetCacheFilename()
 {
-	return Path::CombineStdString(EmuFolders::Cache, "gamelist.cache");
+	return Path::Combine(EmuFolders::Cache, "gamelist.cache");
 }
 
 void GameList::LoadCache()
@@ -680,13 +681,13 @@ std::string GameList::GetCoverImagePath(const std::string& path, const std::stri
 	for (const char* extension : extensions)
 	{
 		// use the file title if it differs (e.g. modded games)
-		const std::string_view file_title(FileSystem::GetFileTitleFromPath(path));
+		const std::string_view file_title(Path::GetFileTitle(path));
 		if (!file_title.empty() && title != file_title)
 		{
 			std::string cover_filename(file_title);
 			cover_filename += extension;
 
-			cover_path = Path::CombineStdString(EmuFolders::Covers, cover_filename);
+			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
 				return cover_path;
 		}
@@ -695,7 +696,7 @@ std::string GameList::GetCoverImagePath(const std::string& path, const std::stri
 		if (!title.empty())
 		{
 			const std::string cover_filename(title + extension);
-			cover_path = Path::CombineStdString(EmuFolders::Covers, cover_filename);
+			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
 				return cover_path;
 		}
@@ -704,7 +705,7 @@ std::string GameList::GetCoverImagePath(const std::string& path, const std::stri
 		if (!serial.empty())
 		{
 			const std::string cover_filename(serial + extension);
-			cover_path = Path::CombineStdString(EmuFolders::Covers, cover_filename);
+			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
 				return cover_path;
 		}
@@ -729,5 +730,5 @@ std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const cha
 	}
 
 	const std::string cover_filename(entry->title + extension);
-	return Path::CombineStdString(EmuFolders::Covers, cover_filename);
+	return Path::Combine(EmuFolders::Covers, cover_filename);
 }

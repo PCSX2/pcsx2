@@ -82,7 +82,6 @@
     <ClCompile Include="Vulkan\Texture.cpp" />
     <ClCompile Include="Vulkan\Util.cpp" />
     <ClCompile Include="WindowInfo.cpp" />
-    <ClCompile Include="PathUtils.cpp" />
     <ClCompile Include="Perf.cpp" />
     <ClCompile Include="PrecompiledHeader.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -203,9 +202,6 @@
     </ProjectReference>
     <ProjectReference Include="..\3rdparty\glslang\glslang.vcxproj">
       <Project>{ef6834a9-11f3-4331-bc34-21b325abb180}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\3rdparty\wxwidgets3.0\build\msw\wx30_base.vcxproj">
-      <Project>{3fcc50c2-81e9-5db2-b8d8-2129427568b1}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -17,8 +17,7 @@
 #include "GS.h"
 #include "GSExtra.h"
 #include "GSUtil.h"
-#include <locale>
-#include <codecvt>
+#include "common/StringUtil.h"
 
 #ifdef _WIN32
 #include <VersionHelpers.h>
@@ -239,7 +238,7 @@ std::string GStempdir()
 #ifdef _WIN32
 	wchar_t path[MAX_PATH + 1];
 	GetTempPath(MAX_PATH, path);
-	return convert_utf16_to_utf8(path);
+	return StringUtil::WideStringToUTF8String(path);
 #else
 	return "/tmp";
 #endif

@@ -22,6 +22,7 @@
 #include "IniInterface.h"
 #include "StringHelpers.h"
 
+#include "common/FileSystem.h"
 #include "common/StringUtil.h"
 #include "DebugTools/Debug.h"
 #include "Dialogs/ModalPopups.h"
@@ -72,7 +73,7 @@ void Pcsx2App::DetectCpuAndUserMode()
 	EstablishAppUserMode();
 
 	// Check that the resources directory exists and contains our data files.
-	if (!EmuFolders::Resources.Exists())
+	if (!FileSystem::DirectoryExists(EmuFolders::Resources.c_str()))
 	{
 		throw Exception::RuntimeError()
 			.SetDiagMsg("Resources directory does not exist.")

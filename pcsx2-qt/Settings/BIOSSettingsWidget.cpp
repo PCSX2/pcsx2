@@ -105,7 +105,7 @@ void BIOSSettingsWidget::openSearchDirectory()
 void BIOSSettingsWidget::updateSearchDirectory()
 {
 	// this will generate a full path
-	m_ui.searchDirectory->setText(QtUtils::WxStringToQString(EmuFolders::Bios.ToString()));
+	m_ui.searchDirectory->setText(QString::fromStdString(EmuFolders::Bios));
 }
 
 void BIOSSettingsWidget::listRefreshed(const QVector<BIOSInfo>& items)

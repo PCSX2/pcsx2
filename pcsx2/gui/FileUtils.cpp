@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "common/Path.h"
+#include "wxDirName.h"
 
 #include <wx/dir.h>
 #include <wx/string.h>
