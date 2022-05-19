@@ -485,7 +485,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 
 	if (s_dump && s_n >= s_saven)
 	{
-		m_regs->Dump(root_sw + format("%05d_f%lld_gs_reg.txt", s_n, g_perfmon.GetFrame()));
+		m_regs->Dump(root_sw + StringUtil::StdStringFromFormat("%05d_f%lld_gs_reg.txt", s_n, g_perfmon.GetFrame()));
 	}
 
 	const int fb_sprite_blits = g_perfmon.GetDisplayFramebufferSpriteBlits();
@@ -585,17 +585,17 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 
 			Host::AddKeyedOSDMessage("GSDump", fmt::format("Saving {0} GS dump {1} to '{2}'",
 				(m_dump_frames == 1) ? "single frame" : "multi-frame", compression_str,
-				FileSystem::GetFileNameFromPath(m_dump->GetPath())), 10.0f);
+				Path::GetFileName(m_dump->GetPath())), 10.0f);
 		}
 
 		if (GSTexture* t = g_gs_device->GetCurrent())
 		{
 			const std::string path(m_snapshot + ".png");
-			const std::string_view filename(FileSystem::GetFileNameFromPath(path));
+			const std::string_view filename(Path::GetFileName(path));
 			if (t->Save(path))
 			{
 				Host::AddKeyedOSDMessage("GSScreenshot",
-					fmt::format("Screenshot saved to '{}'.", FileSystem::GetFileNameFromPath(path)), 10.0f);
+					fmt::format("Screenshot saved to '{}'.", Path::GetFileName(path)), 10.0f);
 			}
 			else
 			{
@@ -610,7 +610,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 		const bool last = (m_dump_frames == 0);
 		if (m_dump->VSync(field, last, m_regs))
 		{
-			Host::AddKeyedOSDMessage("GSDump", fmt::format("Saved GS dump to '{}'.", FileSystem::GetFileNameFromPath(m_dump->GetPath())), 10.0f);
+			Host::AddKeyedOSDMessage("GSDump", fmt::format("Saved GS dump to '{}'.", Path::GetFileName(m_dump->GetPath())), 10.0f);
 			m_dump.reset();
 		}
 		else if (!last)
@@ -680,19 +680,19 @@ void GSRenderer::QueueSnapshot(const std::string& path, u32 gsdump_frames)
 		// append the game serial and title
 		if (std::string name(GetDumpName()); !name.empty())
 		{
-			FileSystem::SanitizeFileName(name);
+			Path::SanitizeFileName(name);
 			m_snapshot += '_';
 			m_snapshot += name;
 		}
 		if (std::string serial(GetDumpSerial()); !serial.empty())
 		{
-			FileSystem::SanitizeFileName(serial);
+			Path::SanitizeFileName(serial);
 			m_snapshot += '_';
 			m_snapshot += serial;
 		}
 
 		// prepend snapshots directory
-		m_snapshot = Path::CombineStdString(EmuFolders::Snapshots, m_snapshot);
+		m_snapshot = Path::Combine(EmuFolders::Snapshots, m_snapshot);
 	}
 
 	// this is really gross, but wx we get the snapshot request after shift...

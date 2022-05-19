@@ -21,7 +21,6 @@ target_sources(common PRIVATE
 	FileSystem.cpp
 	Misc.cpp
 	MD5Digest.cpp
-	PathUtils.cpp
 	PrecompiledHeader.cpp
 	Perf.cpp
 	ProgressCallback.cpp
@@ -261,7 +260,6 @@ target_link_libraries(common PRIVATE
 )
 
 target_link_libraries(common PUBLIC
-	wxWidgets::all
 	fmt::fmt
 )
 

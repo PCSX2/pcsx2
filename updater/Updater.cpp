@@ -94,7 +94,7 @@ Updater::~Updater()
 
 void Updater::SetupLogging(ProgressCallback* progress, const std::string& destination_directory)
 {
-	const std::string log_path(Path::CombineStdString(destination_directory, "updater.log"));
+	const std::string log_path(Path::Combine(destination_directory, "updater.log"));
 	s_file_console_stream = FileSystem::OpenCFile(log_path.c_str(), "w");
 	if (!s_file_console_stream)
 	{

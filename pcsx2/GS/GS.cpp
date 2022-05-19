@@ -30,6 +30,8 @@
 #include "GSLzma.h"
 
 #include "common/Console.h"
+#include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 #include "pcsx2/Config.h"
 #include "pcsx2/Counters.h"
@@ -648,7 +650,7 @@ void GSgetStats(std::string& info)
 	{
 		const double fps = GetVerticalFrequency();
 		const double fillrate = pm.Get(GSPerfMon::Fillrate);
-		info = format("%s SW | %d S | %d P | %d D | %.2f U | %.2f D | %.2f mpps",
+		info = StringUtil::StdStringFromFormat("%s SW | %d S | %d P | %d D | %.2f U | %.2f D | %.2f mpps",
 			api_name,
 			(int)pm.Get(GSPerfMon::SyncPoint),
 			(int)pm.Get(GSPerfMon::Prim),
@@ -659,13 +661,13 @@ void GSgetStats(std::string& info)
 	}
 	else if (GSConfig.Renderer == GSRendererType::Null)
 	{
-		info = format("%s Null", api_name);
+		info = StringUtil::StdStringFromFormat("%s Null", api_name);
 	}
 	else
 	{
 		if (GSConfig.TexturePreloading == TexturePreloadingLevel::Full)
 		{
-			info = format("%s HW | HC: %d MB | %d P | %d D | %d DC | %d B | %d RB | %d TC | %d TU",
+			info = StringUtil::StdStringFromFormat("%s HW | HC: %d MB | %d P | %d D | %d DC | %d B | %d RB | %d TC | %d TU",
 				api_name,
 				(int)std::ceil(GSRendererHW::GetInstance()->GetTextureCache()->GetHashCacheMemoryUsage() / 1048576.0f),
 				(int)pm.Get(GSPerfMon::Prim),
@@ -678,7 +680,7 @@ void GSgetStats(std::string& info)
 		}
 		else
 		{
-			info = format("%s HW | %d P | %d D | %d DC | %d B | %d RB | %d TC | %d TU",
+			info = StringUtil::StdStringFromFormat("%s HW | %d P | %d D | %d DC | %d B | %d RB | %d TC | %d TU",
 				api_name,
 				(int)pm.Get(GSPerfMon::Prim),
 				(int)pm.Get(GSPerfMon::Draw),
@@ -989,6 +991,8 @@ void fifo_free(void* ptr, size_t size, size_t repeat)
 #else
 
 #include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 void* vmalloc(size_t size, bool code)
@@ -1106,7 +1110,7 @@ bool GSApp::WriteIniString(const char* lpAppName, const char* lpKeyName, const c
 	m_configuration_map[key] = value;
 
 	// Save config to a file
-	FILE* f = px_fopen(lpFileName, "w");
+	FILE* f = FileSystem::OpenCFile(lpFileName, "w");
 
 	if (f == NULL)
 		return false; // FIXME print a nice message
@@ -1427,7 +1431,7 @@ void GSApp::BuildConfigurationMap(const char* lpFileName)
 
 	// Load config from file
 #ifdef _WIN32
-	std::ifstream file(convert_utf8_to_utf16(lpFileName));
+	std::ifstream file(StringUtil::UTF8StringToWideString(lpFileName));
 #else
 	std::ifstream file(lpFileName);
 #endif
@@ -1467,8 +1471,7 @@ void GSApp::SetConfigDir()
 	// we need to initialize the ini folder later at runtime than at theApp init, as
 	// core settings aren't populated yet, thus we do populate it if needed either when
 	// opening GS settings or init -- govanify
-	wxString iniName(L"GS.ini");
-	m_ini = EmuFolders::Settings.Combine(iniName).GetFullPath().ToUTF8();
+	m_ini = Path::Combine(EmuFolders::Settings, "GS.ini");
 }
 
 std::string GSApp::GetConfigS(const char* entry)

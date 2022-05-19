@@ -209,7 +209,7 @@ std::optional<TextureName> GSTextureReplacements::ParseReplacementName(const std
 
 std::string GSTextureReplacements::GetGameTextureDirectory()
 {
-	return Path::CombineStdString(EmuFolders::Textures, s_current_serial);
+	return Path::Combine(EmuFolders::Textures, s_current_serial);
 }
 
 std::string GSTextureReplacements::GetDumpFilename(const TextureName& name, u32 level)
@@ -223,15 +223,15 @@ std::string GSTextureReplacements::GetDumpFilename(const TextureName& name, u32 
 	{
 		// create both dumps and replacements
 		if (!FileSystem::CreateDirectoryPath(game_dir.c_str(), false) ||
-			!FileSystem::EnsureDirectoryExists(Path::CombineStdString(game_dir, "dumps").c_str(), false) ||
-			!FileSystem::EnsureDirectoryExists(Path::CombineStdString(game_dir, "replacements").c_str(), false))
+			!FileSystem::EnsureDirectoryExists(Path::Combine(game_dir, "dumps").c_str(), false) ||
+			!FileSystem::EnsureDirectoryExists(Path::Combine(game_dir, "replacements").c_str(), false))
 		{
 			// if it fails to create, we're not going to be able to use it anyway
 			return ret;
 		}
 	}
 
-	const std::string game_subdir(Path::CombineStdString(game_dir, TEXTURE_DUMP_SUBDIRECTORY_NAME));
+	const std::string game_subdir(Path::Combine(game_dir, TEXTURE_DUMP_SUBDIRECTORY_NAME));
 
 	if (name.HasPalette())
 	{
@@ -239,7 +239,7 @@ std::string GSTextureReplacements::GetDumpFilename(const TextureName& name, u32 
 			(level > 0) ?
                 StringUtil::StdStringFromFormat(TEXTURE_FILENAME_CLUT_FORMAT_STRING "-mip%u.png", name.TEX0Hash, name.CLUTHash, name.bits, level) :
                 StringUtil::StdStringFromFormat(TEXTURE_FILENAME_CLUT_FORMAT_STRING ".png", name.TEX0Hash, name.CLUTHash, name.bits));
-		ret = Path::CombineStdString(game_subdir, filename);
+		ret = Path::Combine(game_subdir, filename);
 	}
 	else
 	{
@@ -247,7 +247,7 @@ std::string GSTextureReplacements::GetDumpFilename(const TextureName& name, u32 
 			(level > 0) ?
                 StringUtil::StdStringFromFormat(TEXTURE_FILENAME_FORMAT_STRING "-mip%u.png", name.TEX0Hash, name.bits, level) :
                 StringUtil::StdStringFromFormat(TEXTURE_FILENAME_FORMAT_STRING ".png", name.TEX0Hash, name.bits));
-		ret = Path::CombineStdString(game_subdir, filename);
+		ret = Path::Combine(game_subdir, filename);
 	}
 
 	return ret;
@@ -306,7 +306,7 @@ void GSTextureReplacements::ReloadReplacementMap()
 	if (s_current_serial.empty() || !GSConfig.LoadTextureReplacements)
 		return;
 
-	const std::string replacement_dir(Path::CombineStdString(GetGameTextureDirectory(), TEXTURE_REPLACEMENT_SUBDIRECTORY_NAME));
+	const std::string replacement_dir(Path::Combine(GetGameTextureDirectory(), TEXTURE_REPLACEMENT_SUBDIRECTORY_NAME));
 
 	FileSystem::FindResultsArray files;
 	if (!FileSystem::FindFiles(replacement_dir.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RECURSIVE, &files))
@@ -316,7 +316,7 @@ void GSTextureReplacements::ReloadReplacementMap()
 	for (FILESYSTEM_FIND_DATA& fd : files)
 	{
 		// file format we can handle?
-		filename = FileSystem::GetFileNameFromPath(fd.FileName);
+		filename = Path::GetFileName(fd.FileName);
 		if (!GetLoader(filename))
 			continue;
 
@@ -595,7 +595,7 @@ void GSTextureReplacements::DumpTexture(const GSTextureCache::HashCacheKey& hash
 	if (filename.empty() || FileSystem::FileExists(filename.c_str()))
 		return;
 
-	const std::string_view title(FileSystem::GetFileTitleFromPath(filename));
+	const std::string_view title(Path::GetFileTitle(filename));
 	DevCon.WriteLn("Dumping %ux%u texture '%.*s'.", name.Width(), name.Height(), static_cast<int>(title.size()), title.data());
 
 	// compute width/height

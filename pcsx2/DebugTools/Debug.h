@@ -20,7 +20,7 @@
 #include "Memory.h"
 
 extern FILE *emuLog;
-extern wxString emuLogName;
+extern std::string emuLogName;
 
 extern char* disVU0MicroUF(u32 code, u32 pc);
 extern char* disVU0MicroLF(u32 code, u32 pc);

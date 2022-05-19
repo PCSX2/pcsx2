@@ -16,6 +16,7 @@
 #pragma once
 
 #include <cinttypes>
+#include <string_view>
 #include <wx/gdicmn.h>
 #include <wx/tokenzr.h>
 #include "common/Pcsx2Defs.h"
@@ -234,3 +235,19 @@ extern wxString fromAscii(const char* src);
 extern const wxChar* pxExpandMsg(const wxChar* message);
 extern const wxChar* pxGetTranslation(const wxChar* message);
 extern bool pxIsEnglish(int id);
+
+namespace StringUtil
+{
+	/// Converts a wxString to a UTF-8 std::string.
+	static inline std::string wxStringToUTF8String(const wxString& str)
+	{
+		const wxScopedCharBuffer buf(str.ToUTF8());
+		return std::string(buf.data(), buf.length());
+	}
+
+	/// Converts a UTF-8 std::string to a wxString.
+	static inline wxString UTF8StringToWxString(const std::string_view& str)
+	{
+		return wxString::FromUTF8(str.data(), str.length());
+	}
+}

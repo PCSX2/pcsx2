@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 #include "pcsx2/Frontend/GameList.h"
 #include "pcsx2/Frontend/INISettingsInterface.h"
@@ -427,13 +428,13 @@ void SettingsDialog::openGamePropertiesDialog(const GameList::Entry* game, u32 c
 	}
 
 	std::unique_ptr<INISettingsInterface> sif =
-		std::make_unique<INISettingsInterface>(Path::CombineStdString(EmuFolders::GameSettings, StringUtil::StdStringFromFormat("%08X.ini", crc)));
+		std::make_unique<INISettingsInterface>(Path::Combine(EmuFolders::GameSettings, StringUtil::StdStringFromFormat("%08X.ini", crc)));
 	if (FileSystem::FileExists(sif->GetFileName().c_str()))
 		sif->Load();
 
 	const QString window_title(tr("%1 [%2]")
 								   .arg(game ? QtUtils::StringViewToQString(game->title) : QStringLiteral("<UNKNOWN>"))
-								   .arg(QtUtils::StringViewToQString(FileSystem::GetFileNameFromPath(sif->GetFileName()))));
+								   .arg(QtUtils::StringViewToQString(Path::GetFileName(sif->GetFileName()))));
 
 	SettingsDialog* dialog = new SettingsDialog(std::move(sif), game, crc);
 	dialog->setWindowTitle(window_title);

@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "SPU2/Global.h"
 #include "Dialogs.h"
+#include "common/StringUtil.h"
 
 #ifdef PCSX2_DEVBUILD
 static const int LATENCY_MAX = 3000;
@@ -117,10 +118,10 @@ void ReadSettings()
 	// Let's use xaudio2 until this is sorted (rama).
 
 	//	CfgReadStr(L"OUTPUT", L"Output_Module", omodid, 127, PortaudioOut->GetIdent());
-	CfgReadStr(L"OUTPUT", L"Output_Module", omodid, 127, XAudio2Out->GetIdent());
+	CfgReadStr(L"OUTPUT", L"Output_Module", omodid, 127, StringUtil::UTF8StringToWideString(XAudio2Out->GetIdent()).c_str());
 
 	// Find the driver index of this module:
-	OutputModule = FindOutputModuleById(omodid);
+	OutputModule = FindOutputModuleById(StringUtil::WideStringToUTF8String(omodid).c_str());
 
 	CfgReadStr(L"DSP PLUGIN", L"Filename", dspPlugin, 255, L"");
 	dspPluginModule = CfgReadInt(L"DSP PLUGIN", L"ModuleNum", 0);
@@ -342,7 +343,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			int modidx = 0;
 			while (mods[modidx] != nullptr)
 			{
-				swprintf_s(temp, 72, L"%d - %s", modidx, mods[modidx]->GetLongName());
+				swprintf_s(temp, 72, L"%d - %s", modidx, StringUtil::UTF8StringToWideString(mods[modidx]->GetLongName()).c_str());
 				SendDialogMsg(hWnd, IDC_OUTPUT, CB_ADDSTRING, 0, (LPARAM)temp);
 				++modidx;
 			}

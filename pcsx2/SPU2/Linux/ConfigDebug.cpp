@@ -18,6 +18,8 @@
 #include "Dialogs.h"
 #include "Config.h"
 #include "pcsx2/Config.h"
+#include "gui/StringHelpers.h"
+#include "gui/wxDirName.h"
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
 #include "common/Path.h"
@@ -64,32 +66,17 @@ void CfgSetLogDir(const char* dir)
 
 FILE* OpenBinaryLog(const char* logfile)
 {
-	return FileSystem::OpenCFile(Path::CombineStdString(EmuFolders::Logs, logfile).c_str(), "wb");
+	return FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, logfile).c_str(), "wb");
 }
 
 FILE* OpenLog(const char* logfile)
 {
-	return FileSystem::OpenCFile(Path::CombineStdString(EmuFolders::Logs, logfile).c_str(), "w");
+	return FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, logfile).c_str(), "w");
 }
 
 FILE* OpenDump(const char* logfile)
 {
-	return FileSystem::OpenCFile(Path::CombineStdString(EmuFolders::Logs, logfile).c_str(), "w");
-}
-
-FILE* OpenBinaryLog(const wxString& logfile)
-{
-	return wxFopen(Path::Combine(LogsFolder, logfile), L"wb");
-}
-
-FILE* OpenLog(const wxString& logfile)
-{
-	return wxFopen(Path::Combine(LogsFolder, logfile), L"w");
-}
-
-FILE* OpenDump(const wxString& logfile)
-{
-	return wxFopen(Path::Combine(DumpsFolder, logfile), L"w");
+	return FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, logfile).c_str(), "w");
 }
 
 namespace DebugConfig

@@ -223,6 +223,14 @@ namespace StringUtil
 		return newStr;
 	}
 
+	std::string toUpper(const std::string_view& input)
+	{
+		std::string newStr;
+		std::transform(input.begin(), input.end(), std::back_inserter(newStr),
+			[](unsigned char c) { return std::toupper(c); });
+		return newStr;
+	}
+
 	bool compareNoCase(const std::string_view& str1, const std::string_view& str2)
 	{
 		if (str1.length() != str2.length())
@@ -304,6 +312,21 @@ namespace StringUtil
 		return res;
 	}
 
+	std::string ReplaceAll(const std::string_view& subject, const std::string_view& search, const std::string_view& replacement)
+	{
+		std::string ret(subject);
+		if (!ret.empty())
+		{
+			std::string::size_type start_pos = 0;
+			while ((start_pos = ret.find(search, start_pos)) != std::string::npos)
+			{
+				ret.replace(start_pos, search.length(), replacement);
+				start_pos += replacement.length();
+			}
+		}
+		return ret;
+	}
+
 	bool ParseAssignmentString(const std::string_view& str, std::string_view* key, std::string_view* value)
 	{
 		const std::string_view::size_type pos = str.find('=');
@@ -342,6 +365,7 @@ namespace StringUtil
 		}
 	}
 
+#ifdef _WIN32
 	std::wstring UTF8StringToWideString(const std::string_view& str)
 	{
 		std::wstring ret;
@@ -353,7 +377,6 @@ namespace StringUtil
 
 	bool UTF8StringToWideString(std::wstring& dest, const std::string_view& str)
 	{
-#ifdef _WIN32
 		int wlen = MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), nullptr, 0);
 		if (wlen < 0)
 			return false;
@@ -363,22 +386,6 @@ namespace StringUtil
 			return false;
 
 		return true;
-#else
-		// This depends on wxString, which isn't great. But hopefully we won't need any wide strings outside
-		// of windows once wx is gone anyway.
-		if (str.empty())
-		{
-			dest.clear();
-			return true;
-		}
-
-		const wxString wxstr(wxString::FromUTF8(str.data(), str.length()));
-		if (wxstr.IsEmpty())
-			return false;
-
-		dest = wxstr.ToStdWstring();
-		return true;
-#endif
 	}
 
 	std::string WideStringToUTF8String(const std::wstring_view& str)
@@ -392,7 +399,6 @@ namespace StringUtil
 
 	bool WideStringToUTF8String(std::string& dest, const std::wstring_view& str)
 	{
-#ifdef _WIN32
 		int mblen = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), nullptr, 0, nullptr, nullptr);
 		if (mblen < 0)
 			return false;
@@ -405,24 +411,8 @@ namespace StringUtil
 		}
 
 		return true;
-#else
-		// This depends on wxString, which isn't great. But hopefully we won't need any wide strings outside
-		// of windows once wx is gone anyway.
-		if (str.empty())
-		{
-			dest.clear();
-			return true;
-		}
-
-		const wxString wxstr(str.data(), str.data() + str.length());
-		if (wxstr.IsEmpty())
-			return false;
-
-		const auto buf = wxstr.ToUTF8();
-		dest.assign(buf.data(), buf.length());
-		return true;
-#endif
 	}
+#endif
 
 	std::string U128ToString(const u128& u)
 	{

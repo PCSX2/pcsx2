@@ -20,6 +20,8 @@
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
 #include "common/Path.h"
+#include "gui/StringHelpers.h"
+#include "gui/wxDirName.h"
 
 
 bool DebugEnabled = false;
@@ -68,17 +70,17 @@ void CfgSetLogDir(const char* dir)
 
 FILE* OpenBinaryLog(const char* logfile)
 {
-	return FileSystem::OpenCFile(Path::CombineStdString(EmuFolders::Logs, logfile).c_str(), "wb");
+	return FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, logfile).c_str(), "wb");
 }
 
 FILE* OpenLog(const char* logfile)
 {
-	return FileSystem::OpenCFile(Path::CombineStdString(EmuFolders::Logs, logfile).c_str(), "w");
+	return FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, logfile).c_str(), "w");
 }
 
 FILE* OpenDump(const char* logfile)
 {
-	return FileSystem::OpenCFile(Path::CombineStdString(EmuFolders::Logs, logfile).c_str(), "w");
+	return FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, logfile).c_str(), "w");
 }
 
 namespace DebugConfig

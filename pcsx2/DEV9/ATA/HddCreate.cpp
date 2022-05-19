@@ -26,19 +26,19 @@ void HddCreate::Start()
 	Cleanup();
 }
 
-void HddCreate::WriteImage(fs::path hddPath, u64 reqSizeBytes)
+void HddCreate::WriteImage(ghc::filesystem::path hddPath, u64 reqSizeBytes)
 {
 	constexpr int buffsize = 4 * 1024;
 	u8 buff[buffsize] = {0}; //4kb
 
-	if (fs::exists(hddPath))
+	if (ghc::filesystem::exists(hddPath))
 	{
 		errored.store(true);
 		SetError();
 		return;
 	}
 
-	std::fstream newImage = fs::fstream(hddPath, std::ios::out | std::ios::binary);
+	std::fstream newImage = ghc::filesystem::fstream(hddPath, std::ios::out | std::ios::binary);
 
 	if (newImage.fail())
 	{
@@ -55,7 +55,7 @@ void HddCreate::WriteImage(fs::path hddPath, u64 reqSizeBytes)
 	if (newImage.fail())
 	{
 		newImage.close();
-		fs::remove(filePath);
+		ghc::filesystem::remove(filePath);
 		errored.store(true);
 		SetError();
 		return;
@@ -77,7 +77,7 @@ void HddCreate::WriteImage(fs::path hddPath, u64 reqSizeBytes)
 			if (newImage.fail())
 			{
 				newImage.close();
-				fs::remove(filePath);
+				ghc::filesystem::remove(filePath);
 				errored.store(true);
 				SetError();
 				return;
@@ -91,7 +91,7 @@ void HddCreate::WriteImage(fs::path hddPath, u64 reqSizeBytes)
 			if (newImage.fail())
 			{
 				newImage.close();
-				fs::remove(filePath);
+				ghc::filesystem::remove(filePath);
 				errored.store(true);
 				SetError();
 				return;
@@ -107,7 +107,7 @@ void HddCreate::WriteImage(fs::path hddPath, u64 reqSizeBytes)
 		if (canceled.load())
 		{
 			newImage.close();
-			fs::remove(filePath);
+			ghc::filesystem::remove(filePath);
 			errored.store(true);
 			SetError();
 			return;

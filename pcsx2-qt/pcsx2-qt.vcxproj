@@ -79,16 +79,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ResourceCompile Include="$(SolutionDir)3rdparty\wxwidgets3.0\include\wx\msw\wx.rc">
-      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\wxwidgets3.0\$(PlatformName);$(SolutionDir)3rdparty\wxwidgets3.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ResourceCompile>
     <ResourceCompile Include="..\pcsx2\PCSX2.rc" />
-    <ResourceCompile Include="..\pcsx2\GS\GS.rc" />
-    <ResourceCompile Include="..\pcsx2\PAD\Windows\PAD.rc" />
-    <ResourceCompile Include="..\pcsx2\SPU2\Windows\SPU2.rc" />
-    <ResourceCompile Include="..\pcsx2\USB\usb-pad\dx\versionproxy.rc" />
-    <ResourceCompile Include="..\pcsx2\USB\usb-pad\raw\raw-config.rc" />
-    <ResourceCompile Include="..\pcsx2\USB\Win32\USBDialog.rc" />
     <ResourceCompile Include="..\pcsx2\windows\wxResources.rc" />
   </ItemGroup>
   <ItemGroup>
@@ -110,9 +101,6 @@
     <ProjectReference Include="$(SolutionDir)3rdparty\soundtouch\SoundTouch.vcxproj">
       <Project>{e9b51944-7e6d-4bcd-83f2-7bbd5a46182d}</Project>
     </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\wxwidgets3.0\build\msw\wx30_base.vcxproj">
-      <Project>{3fcc50c2-81e9-5db2-b8d8-2129427568b1}</Project>
-    </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\xz\liblzma.vcxproj">
       <Project>{12728250-16ec-4dc6-94d7-e21dd88947f8}</Project>
     </ProjectReference>
@@ -121,10 +109,6 @@
     </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\zlib\zlib.vcxproj">
       <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)tools\bin2cpp\bin2c.vcxproj">
-      <Project>{677b7d11-d5e1-40b3-88b1-9a4df83d2213}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\jpgd\jpgd.vcxproj">

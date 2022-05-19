@@ -15,8 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
-#include <wx/fileconf.h>
-
+#include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/SettingsInterface.h"
 #include "common/SettingsWrapper.h"
 #include "common/StringUtil.h"
@@ -33,22 +33,22 @@
 
 namespace EmuFolders
 {
-	wxDirName AppRoot;
-	wxDirName DataRoot;
-	wxDirName Settings;
-	wxDirName Bios;
-	wxDirName Snapshots;
-	wxDirName Savestates;
-	wxDirName MemoryCards;
-	wxDirName Langs;
-	wxDirName Logs;
-	wxDirName Cheats;
-	wxDirName CheatsWS;
-	wxDirName Resources;
-	wxDirName Cache;
-	wxDirName Covers;
-	wxDirName GameSettings;
-	wxDirName Textures;
+	std::string AppRoot;
+	std::string DataRoot;
+	std::string Settings;
+	std::string Bios;
+	std::string Snapshots;
+	std::string Savestates;
+	std::string MemoryCards;
+	std::string Langs;
+	std::string Logs;
+	std::string Cheats;
+	std::string CheatsWS;
+	std::string Resources;
+	std::string Cache;
+	std::string Covers;
+	std::string GameSettings;
+	std::string Textures;
 } // namespace EmuFolders
 
 void TraceLogFilters::LoadSave(SettingsWrapper& wrap)
@@ -1127,13 +1127,13 @@ std::string Pcsx2Config::FullpathToBios() const
 {
 	std::string ret;
 	if (!BaseFilenames.Bios.empty())
-		ret = Path::CombineStdString(EmuFolders::Bios, BaseFilenames.Bios);
+		ret = Path::Combine(EmuFolders::Bios, BaseFilenames.Bios);
 	return ret;
 }
 
-wxString Pcsx2Config::FullpathToMcd(uint slot) const
+std::string Pcsx2Config::FullpathToMcd(uint slot) const
 {
-	return Path::Combine(EmuFolders::MemoryCards, StringUtil::UTF8StringToWxString(Mcd[slot].Filename));
+	return Path::Combine(EmuFolders::MemoryCards, Mcd[slot].Filename);
 }
 
 bool Pcsx2Config::operator==(const Pcsx2Config& right) const
@@ -1212,27 +1212,25 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 
 void EmuFolders::SetDefaults()
 {
-	Bios = DataRoot.Combine(wxDirName("bios"));
-	Snapshots = DataRoot.Combine(wxDirName("snaps"));
-	Savestates = DataRoot.Combine(wxDirName("sstates"));
-	MemoryCards = DataRoot.Combine(wxDirName("memcards"));
-	Logs = DataRoot.Combine(wxDirName("logs"));
-	Cheats = DataRoot.Combine(wxDirName("cheats"));
-	CheatsWS = DataRoot.Combine(wxDirName("cheats_ws"));
-	Covers = DataRoot.Combine(wxDirName("covers"));
-	GameSettings = DataRoot.Combine(wxDirName("gamesettings"));
-	Cache = DataRoot.Combine(wxDirName("cache"));
-
-	Textures = DataRoot.Combine(wxDirName("textures"));
+	Bios = Path::Combine(DataRoot, "bios");
+	Snapshots = Path::Combine(DataRoot, "snaps");
+	Savestates = Path::Combine(DataRoot, "sstates");
+	MemoryCards = Path::Combine(DataRoot, "memcards");
+	Logs = Path::Combine(DataRoot, "logs");
+	Cheats = Path::Combine(DataRoot, "cheats");
+	CheatsWS = Path::Combine(DataRoot, "cheats_ws");
+	Covers = Path::Combine(DataRoot, "covers");
+	GameSettings = Path::Combine(DataRoot, "gamesettings");
+	Cache = Path::Combine(DataRoot, "cache");
+	Textures = Path::Combine(DataRoot, "textures");
 }
 
-static wxDirName LoadPathFromSettings(SettingsInterface& si, const wxDirName& root, const char* name, const char* def)
+static std::string LoadPathFromSettings(SettingsInterface& si, const std::string& root, const char* name, const char* def)
 {
 	std::string value = si.GetStringValue("Folders", name, def);
-	wxDirName ret(StringUtil::UTF8StringToWxString(value));
-	if (!ret.IsAbsolute())
-		ret = root.Combine(ret);
-	return ret;
+	if (!Path::IsAbsolute(value))
+		value = Path::Combine(root, value);
+	return value;
 }
 
 void EmuFolders::LoadConfig(SettingsInterface& si)
@@ -1249,47 +1247,46 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
 	Cache = LoadPathFromSettings(si, DataRoot, "Cache", "cache");
 	Textures = LoadPathFromSettings(si, DataRoot, "Textures", "textures");
 
-	Console.WriteLn("BIOS Directory: %s", Bios.ToString().c_str().AsChar());
-	Console.WriteLn("Snapshots Directory: %s", Snapshots.ToString().c_str().AsChar());
-	Console.WriteLn("Savestates Directory: %s", Savestates.ToString().c_str().AsChar());
-	Console.WriteLn("MemoryCards Directory: %s", MemoryCards.ToString().c_str().AsChar());
-	Console.WriteLn("Logs Directory: %s", Logs.ToString().c_str().AsChar());
-	Console.WriteLn("Cheats Directory: %s", Cheats.ToString().c_str().AsChar());
-	Console.WriteLn("CheatsWS Directory: %s", CheatsWS.ToString().c_str().AsChar());
-	Console.WriteLn("Covers Directory: %s", Covers.ToString().c_str().AsChar());
-	Console.WriteLn("Game Settings Directory: %s", GameSettings.ToString().c_str().AsChar());
-	Console.WriteLn("Cache Directory: %s", Cache.ToString().c_str().AsChar());
-	Console.WriteLn("Textures Directory: %s", Textures.ToString().c_str().AsChar());
+	Console.WriteLn("BIOS Directory: %s", Bios.c_str());
+	Console.WriteLn("Snapshots Directory: %s", Snapshots.c_str());
+	Console.WriteLn("Savestates Directory: %s", Savestates.c_str());
+	Console.WriteLn("MemoryCards Directory: %s", MemoryCards.c_str());
+	Console.WriteLn("Logs Directory: %s", Logs.c_str());
+	Console.WriteLn("Cheats Directory: %s", Cheats.c_str());
+	Console.WriteLn("CheatsWS Directory: %s", CheatsWS.c_str());
+	Console.WriteLn("Covers Directory: %s", Covers.c_str());
+	Console.WriteLn("Game Settings Directory: %s", GameSettings.c_str());
+	Console.WriteLn("Cache Directory: %s", Cache.c_str());
+	Console.WriteLn("Textures Directory: %s", Textures.c_str());
 }
 
 void EmuFolders::Save(SettingsInterface& si)
 {
 	// convert back to relative
-	const wxString datarel(DataRoot.ToString());
-	si.SetStringValue("Folders", "Bios", wxDirName::MakeAutoRelativeTo(Bios, datarel).c_str());
-	si.SetStringValue("Folders", "Snapshots", wxDirName::MakeAutoRelativeTo(Snapshots, datarel).c_str());
-	si.SetStringValue("Folders", "Savestates", wxDirName::MakeAutoRelativeTo(Savestates, datarel).c_str());
-	si.SetStringValue("Folders", "MemoryCards", wxDirName::MakeAutoRelativeTo(MemoryCards, datarel).c_str());
-	si.SetStringValue("Folders", "Logs", wxDirName::MakeAutoRelativeTo(Logs, datarel).c_str());
-	si.SetStringValue("Folders", "Cheats", wxDirName::MakeAutoRelativeTo(Cheats, datarel).c_str());
-	si.SetStringValue("Folders", "CheatsWS", wxDirName::MakeAutoRelativeTo(CheatsWS, datarel).c_str());
-	si.SetStringValue("Folders", "Cache", wxDirName::MakeAutoRelativeTo(Cache, datarel).c_str());
-	si.SetStringValue("Folders", "Textures", wxDirName::MakeAutoRelativeTo(Textures, datarel).c_str());
+	si.SetStringValue("Folders", "Bios", Path::MakeRelative(Bios, DataRoot).c_str());
+	si.SetStringValue("Folders", "Snapshots", Path::MakeRelative(Snapshots, DataRoot).c_str());
+	si.SetStringValue("Folders", "Savestates", Path::MakeRelative(Savestates, DataRoot).c_str());
+	si.SetStringValue("Folders", "MemoryCards", Path::MakeRelative(MemoryCards, DataRoot).c_str());
+	si.SetStringValue("Folders", "Logs", Path::MakeRelative(Logs, DataRoot).c_str());
+	si.SetStringValue("Folders", "Cheats", Path::MakeRelative(Cheats, DataRoot).c_str());
+	si.SetStringValue("Folders", "CheatsWS", Path::MakeRelative(CheatsWS, DataRoot).c_str());
+	si.SetStringValue("Folders", "Cache", Path::MakeRelative(Cache, DataRoot).c_str());
+	si.SetStringValue("Folders", "Textures", Path::MakeRelative(Textures, DataRoot).c_str());
 }
 
 bool EmuFolders::EnsureFoldersExist()
 {
-	bool result = Bios.Mkdir();
-	result = Settings.Mkdir() && result;
-	result = Snapshots.Mkdir() && result;
-	result = Savestates.Mkdir() && result;
-	result = MemoryCards.Mkdir() && result;
-	result = Logs.Mkdir() && result;
-	result = Cheats.Mkdir() && result;
-	result = CheatsWS.Mkdir() && result;
-	result = Covers.Mkdir() && result;
-	result = GameSettings.Mkdir() && result;
-	result = Cache.Mkdir() && result;
-	result = Textures.Mkdir() && result;
+	bool result = FileSystem::CreateDirectoryPath(Bios.c_str(), false);
+	result = FileSystem::CreateDirectoryPath(Settings.c_str(), false) && result;
+	result = FileSystem::CreateDirectoryPath(Snapshots.c_str(), false) && result;
+	result = FileSystem::CreateDirectoryPath(Savestates.c_str(), false) && result;
+	result = FileSystem::CreateDirectoryPath(MemoryCards.c_str(), false) && result;
+	result = FileSystem::CreateDirectoryPath(Logs.c_str(), false) && result;
+	result = FileSystem::CreateDirectoryPath(Cheats.c_str(), false) && result;
+	result = FileSystem::CreateDirectoryPath(CheatsWS.c_str(), false) && result;
+	result = FileSystem::CreateDirectoryPath(Covers.c_str(), false) && result;
+	result = FileSystem::CreateDirectoryPath(GameSettings.c_str(), false) && result;
+	result = FileSystem::CreateDirectoryPath(Cache.c_str(), false) && result;
+	result = FileSystem::CreateDirectoryPath(Textures.c_str(), false) && result;
 	return result;
 }

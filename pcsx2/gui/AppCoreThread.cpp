@@ -410,9 +410,9 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	}
 
 	if (!gameMemCardFilter.IsEmpty())
-		sioSetGameSerial(gameMemCardFilter);
+		sioSetGameSerial(StringUtil::wxStringToUTF8String(gameMemCardFilter));
 	else
-		sioSetGameSerial(curGameKey);
+		sioSetGameSerial(StringUtil::wxStringToUTF8String(curGameKey));
 
 	if (GameInfo::gameName.IsEmpty() && GameInfo::gameSerial.IsEmpty() && GameInfo::gameCRC.IsEmpty())
 	{

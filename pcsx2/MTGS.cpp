@@ -17,7 +17,6 @@
 #include "Common.h"
 
 #include <list>
-#include <wx/datetime.h>
 
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"

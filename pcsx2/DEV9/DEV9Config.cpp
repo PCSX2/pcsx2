@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/StringUtil.h"
 #include "ghc/filesystem.h"
 #include <wx/fileconf.h>
 
@@ -38,7 +39,7 @@
 void SaveDnsHosts()
 {
 #ifndef PCSX2_CORE
-	std::unique_ptr<wxFileConfig> hini(OpenFileConfig(EmuFolders::Settings.Combine(wxString("DEV9Hosts.ini")).GetFullPath()));
+	std::unique_ptr<wxFileConfig> hini(OpenFileConfig(StringUtil::UTF8StringToWxString(Path::Combine(EmuFolders::Settings, "DEV9Hosts.ini"))));
 #else
 	std::unique_ptr<wxFileConfig> hini(new wxFileConfig(wxEmptyString, wxEmptyString, EmuFolders::Settings.Combine(wxString("DEV9Hosts.ini")).GetFullPath(), wxEmptyString, wxCONFIG_USE_RELATIVE_PATH));
 #endif
@@ -68,7 +69,7 @@ void SaveDnsHosts()
 
 void LoadDnsHosts()
 {
-	wxFileName iniPath = EmuFolders::Settings.Combine(wxString("DEV9Hosts.ini"));
+	wxFileName iniPath = StringUtil::UTF8StringToWxString(Path::Combine(EmuFolders::Settings, "DEV9Hosts.ini"));
 	config.EthHosts.clear();
 	//If no file exists, create one to provide an example config
 	if (!iniPath.FileExists())

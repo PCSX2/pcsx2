@@ -1143,7 +1143,7 @@ void MainWindow::startupUpdateCheck()
 
 void MainWindow::onToolsOpenDataDirectoryTriggered()
 {
-	const QString path(QtUtils::WxStringToQString(EmuFolders::DataRoot.ToString()));
+	const QString path(QString::fromStdString(EmuFolders::DataRoot));
 	QtUtils::OpenURL(this, QUrl::fromLocalFile(path));
 }
 

@@ -17,6 +17,7 @@
 #include "Global.h"
 #include "Device.h"
 #include "keyboard.h"
+#include "common/Path.h"
 #ifdef __APPLE__
 #include <Carbon/Carbon.h>
 #endif
@@ -60,8 +61,7 @@ void PADSaveConfig()
 {
 	FILE* f;
 
-	wxString iniName(L"PAD.ini");
-	const std::string iniFile = std::string(EmuFolders::Settings.Combine(iniName).GetFullPath()); // default path, just in case
+	const std::string iniFile = Path::Combine(EmuFolders::Settings, "PAD.ini"); // default path, just in case
 	f = fopen(iniFile.c_str(), "w");
 	if (f == NULL)
 	{
@@ -97,8 +97,7 @@ void PADLoadConfig()
 	g_conf.init();
 
 
-	wxString iniName(L"PAD.ini");
-	const std::string iniFile = std::string(EmuFolders::Settings.Combine(iniName).GetFullPath()); // default path, just in case
+	const std::string iniFile = Path::Combine(EmuFolders::Settings, "PAD.ini"); // default path, just in case
 	f = fopen(iniFile.c_str(), "r");
 	if (f == nullptr)
 	{

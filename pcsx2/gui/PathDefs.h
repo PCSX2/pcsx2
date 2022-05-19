@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "common/Path.h"
+#include "wxDirName.h"
 
 enum FoldersEnum_t
 {

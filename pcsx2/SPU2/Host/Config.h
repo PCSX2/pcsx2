@@ -17,7 +17,6 @@
 #define CONFIG_H_INCLUDED
 
 #include <string>
-#include <wx/fileconf.h>
 
 extern bool DebugEnabled;
 

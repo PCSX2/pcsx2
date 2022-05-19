@@ -18,25 +18,6 @@
 #include "GSVector.h"
 #include "pcsx2/Config.h"
 
-#ifdef _WIN32
-#include "common/RedtapeWindows.h"
-inline std::string convert_utf16_to_utf8(const std::wstring& utf16_string)
-{
-	const int size = WideCharToMultiByte(CP_UTF8, 0, utf16_string.c_str(), utf16_string.size(), nullptr, 0, nullptr, nullptr);
-	std::string converted_string(size, 0);
-	WideCharToMultiByte(CP_UTF8, 0, utf16_string.c_str(), utf16_string.size(), converted_string.data(), converted_string.size(), nullptr, nullptr);
-	return converted_string;
-}
-
-inline std::wstring convert_utf8_to_utf16(const std::string& utf8_string)
-{
-	int size = MultiByteToWideChar(CP_UTF8, 0, utf8_string.c_str(), -1, nullptr, 0);
-	std::vector<wchar_t> converted_string(size);
-	MultiByteToWideChar(CP_UTF8, 0, utf8_string.c_str(), -1, converted_string.data(), converted_string.size());
-	return {converted_string.data()};
-}
-#endif
-
 /// Like `memcmp(&a, &b, sizeof(T)) == 0` but faster
 template <typename T>
 __forceinline bool BitEqual(const T& a, const T& b)
@@ -95,16 +76,6 @@ __forceinline bool BitEqual(const T& a, const T& b)
 	return eqb;
 }
 
-// _wfopen has to be used on Windows for pathnames containing non-ASCII characters.
-inline FILE* px_fopen(const std::string& filename, const std::string& mode)
-{
-#ifdef _WIN32
-	return _wfopen(convert_utf8_to_utf16(filename).c_str(), convert_utf8_to_utf16(mode).c_str());
-#else
-	return fopen(filename.c_str(), mode.c_str());
-#endif
-}
-
 #ifdef ENABLE_ACCURATE_BUFFER_EMULATION
 static const GSVector2i default_rt_size(2048, 2048);
 #else
@@ -149,8 +120,6 @@ static constexpr int MAXIMUM_TEXTURE_MIPMAP_LEVELS = 7;
 // Helper path to dump texture
 extern const std::string root_sw;
 extern const std::string root_hw;
-
-extern std::string format(const char* fmt, ...);
 
 extern void* vmalloc(size_t size, bool code);
 extern void vmfree(void* ptr, size_t size);

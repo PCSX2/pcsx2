@@ -666,7 +666,7 @@ HostDisplay* EmuThread::acquireHostDisplay(HostDisplay::RenderAPI api)
 		return nullptr;
 	}
 
-	if (!s_host_display->InitializeRenderDevice(StringUtil::wxStringToUTF8String(EmuFolders::Cache.ToString()), false) ||
+	if (!s_host_display->InitializeRenderDevice(EmuFolders::Cache, false) ||
 		!ImGuiManager::Initialize())
 	{
 		Console.Error("Failed to initialize device/imgui");
