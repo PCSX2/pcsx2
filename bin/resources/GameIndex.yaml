@@ -22143,7 +22143,7 @@ SLPM-60207:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   clampModes:
     eeClampMode: 3 # For camera issues in some scenes.
-SLPM-60207:
+SLPM-60216:
   name: "R - Racing Evolution [Trial]"
   region: "NTSC-J"
   gsHWFixes:
