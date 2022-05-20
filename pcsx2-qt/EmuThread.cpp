@@ -744,6 +744,10 @@ void Host::ResizeHostDisplay(u32 new_window_width, u32 new_window_height, float 
 {
 	s_host_display->ResizeRenderWindow(new_window_width, new_window_height, new_window_scale);
 	ImGuiManager::WindowResized();
+
+	// if we're paused, re-present the current frame at the new window size.
+	if (VMManager::GetState() == VMState::Paused)
+		GetMTGS().PresentCurrentFrame();
 }
 
 void Host::RequestResizeHostDisplay(s32 width, s32 height)
@@ -755,6 +759,10 @@ void Host::UpdateHostDisplay()
 {
 	g_emu_thread->updateDisplay();
 	ImGuiManager::WindowResized();
+
+	// if we're paused, re-present the current frame at the new window size.
+	if (VMManager::GetState() == VMState::Paused)
+		GetMTGS().PresentCurrentFrame();
 }
 
 void Host::OnVMStarting()

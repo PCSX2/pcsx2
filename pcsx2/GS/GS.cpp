@@ -527,6 +527,11 @@ void GSStopGSDump()
 		g_gs_renderer->StopGSDump();
 }
 
+void GSPresentCurrentFrame()
+{
+	g_gs_renderer->PresentCurrentFrame();
+}
+
 #ifndef PCSX2_CORE
 
 void GSkeyEvent(const HostKeyEvent& e)
