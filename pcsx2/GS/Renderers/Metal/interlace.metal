@@ -20,7 +20,7 @@ using namespace metal;
 fragment float4 ps_interlace0(ConvertShaderData data [[stage_in]], ConvertPSRes res,
 	constant GSMTLInterlacePSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
 {
-	if (fract(data.t.y * uniform.hH) - 0.5f < 0.f)
+	if ((int(data.p.y) & 1) == 0)
 		discard_fragment();
 	return res.sample(data.t);
 }
@@ -28,7 +28,7 @@ fragment float4 ps_interlace0(ConvertShaderData data [[stage_in]], ConvertPSRes 
 fragment float4 ps_interlace1(ConvertShaderData data [[stage_in]], ConvertPSRes res,
 	constant GSMTLInterlacePSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
 {
-	if (0.5f - fract(data.t.y * uniform.hH) < 0.f)
+	if ((int(data.p.y) & 1) != 0)
 		discard_fragment();
 	return res.sample(data.t);
 }
