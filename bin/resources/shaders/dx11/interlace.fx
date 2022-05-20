@@ -6,7 +6,6 @@ SamplerState Sampler;
 cbuffer cb0
 {
 	float2 ZrH;
-	float hH;
 };
 
 struct PS_INPUT
@@ -17,14 +16,16 @@ struct PS_INPUT
 
 float4 ps_main0(PS_INPUT input) : SV_Target0
 {
-	clip(frac(input.t.y * hH) - 0.5);
+	if ((int(input.p.y) & 1) == 0)
+		discard;
 
 	return Texture.Sample(Sampler, input.t);
 }
 
 float4 ps_main1(PS_INPUT input) : SV_Target0
 {
-	clip(0.5 - frac(input.t.y * hH));
+	if ((int(input.p.y) & 1) != 0)
+		discard;
 
 	return Texture.Sample(Sampler, input.t);
 }

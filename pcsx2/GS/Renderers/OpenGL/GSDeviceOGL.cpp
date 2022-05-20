@@ -436,7 +436,6 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 				return false;
 			m_interlace.ps[i].SetFormattedName("Merge pipe %zu", i);
 			m_interlace.ps[i].RegisterUniform("ZrH");
-			m_interlace.ps[i].RegisterUniform("hH");
 		}
 	}
 
@@ -1382,7 +1381,6 @@ void GSDeviceOGL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool
 
 	m_interlace.ps[shader].Bind();
 	m_interlace.ps[shader].Uniform2f(0, 0, 1.0f / s.y);
-	m_interlace.ps[shader].Uniform1f(1, s.y / 2);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[shader], linear);
 }
