@@ -117,6 +117,10 @@ void ImGuiManager::WindowResized()
 	ImGui::GetIO().DisplaySize = ImVec2(static_cast<float>(new_width), static_cast<float>(new_height));
 
 	UpdateScale();
+
+	// restart imgui frame on the new window size to pick it up, otherwise we draw to the old size
+	ImGui::EndFrame();
+	NewFrame();
 }
 
 void ImGuiManager::UpdateScale()
