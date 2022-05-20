@@ -85,8 +85,7 @@ class InterlaceConstantBuffer
 {
 public:
 	GSVector2 ZrH;
-	float hH;
-	float _pad[1];
+	float _pad[2];
 
 	InterlaceConstantBuffer() { memset(this, 0, sizeof(*this)); }
 };

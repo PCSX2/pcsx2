@@ -315,6 +315,9 @@ bool GSRenderer::Merge(int field)
 
 		g_gs_device->Merge(tex, src_gs_read, dst, fs, m_regs->PMODE, m_regs->EXTBUF, c);
 
+		// Offset is not compatible with scanmsk, as scanmsk renders every other line, but at x7 the interlace offset will be 7 lines
+		const int offset = m_scanmask_used ? 0 : (int)(tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
+
 		if (m_regs->SMODE2.INT && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 		{
 			const bool scanmask = m_scanmask_used && scanmask_frame && GSConfig.InterlaceMode == GSInterlaceMode::Automatic;
@@ -323,12 +326,12 @@ bool GSRenderer::Merge(int field)
 			{
 				constexpr int field2 = 1;
 				constexpr int mode = 2;
-				g_gs_device->Interlace(ds, field ^ field2, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
+
+				g_gs_device->Interlace(ds, field ^ field2, mode, offset);
 			}
 			else
 			{
 				const int field2 = scanmask ? 0 : 1 - ((static_cast<int>(GSConfig.InterlaceMode) - 1) & 1);
-				const int offset = tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y;
 				const int mode = scanmask ? 2 : ((static_cast<int>(GSConfig.InterlaceMode) - 1) >> 1);
 
 				g_gs_device->Interlace(ds, field ^ field2, mode, offset);
