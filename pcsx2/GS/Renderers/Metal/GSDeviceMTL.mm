@@ -500,7 +500,6 @@ void GSDeviceMTL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool
 
 	GSMTLInterlacePSUniform cb = {};
 	cb.ZrH = {0, 1.f / s.y};
-	cb.hH = s.y / 2;
 
 	DoStretchRect(sTex, sRect, dTex, dRect, m_interlace_pipeline[shader], linear, shader > 1 ? LoadAction::DontCareIfFull : LoadAction::Load, &cb, sizeof(cb));
 }}
