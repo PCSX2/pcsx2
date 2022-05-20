@@ -322,6 +322,7 @@ RendererTab::RendererTab(wxWindow* parent)
 	auto* pcrtc_checks_box = new wxWrapSizer(wxHORIZONTAL);
 
 	m_ui.addCheckBox(pcrtc_checks_box, "Screen Offsets", "pcrtc_offsets", IDC_PCRTC_OFFSETS);
+	m_ui.addCheckBox(pcrtc_checks_box, "Disable Interlace Offset", "disable_interlace_offset", IDC_DISABLE_INTERLACE_OFFSETS);
 
 	general_box->Add(pcrtc_checks_box, wxSizerFlags().Center());
 

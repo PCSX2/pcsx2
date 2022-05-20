@@ -431,6 +431,7 @@ struct Pcsx2Config
 			struct
 			{
 				bool
+					DisableInterlaceOffset: 1,
 					PCRTCOffsets : 1,
 					IntegerScaling : 1,
 					LinearPresent : 1,

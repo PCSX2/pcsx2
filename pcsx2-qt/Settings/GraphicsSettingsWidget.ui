@@ -271,10 +271,17 @@
        </item>
        <item row="7" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout_5">
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="bilinearFiltering">
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="internalResolutionScreenshots">
            <property name="text">
-            <string>Bilinear Filtering</string>
+            <string>Internal Resolution Screenshots</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="PCRTCOffsets">
+           <property name="text">
+            <string>Screen Offsets</string>
            </property>
           </widget>
          </item>
@@ -285,13 +292,6 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="internalResolutionScreenshots">
-           <property name="text">
-            <string>Internal Resolution Screenshots</string>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="1">
           <widget class="QCheckBox" name="integerScaling">
            <property name="text">
@@ -299,10 +299,20 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QCheckBox" name="PCRTCOffsets">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="bilinearFiltering">
            <property name="text">
-            <string>Screen Offsets</string>
+            <string>Bilinear Filtering</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QCheckBox" name="DisableInterlaceOffset">
+           <property name="toolTip">
+            <string>Disables interlacing offset which may reduce blurring in some situations.</string>
+           </property>
+           <property name="text">
+            <string>Disable Interlace Offset</string>
            </property>
           </widget>
          </item>
@@ -1197,7 +1207,7 @@
               <string>LZMA (xz)</string>
              </property>
             </item>
-			<item>
+            <item>
              <property name="text">
               <string>Zstandard (zst)</string>
              </property>

@@ -296,6 +296,7 @@ Pcsx2Config::GSOptions::GSOptions()
 {
 	bitset = 0;
 
+	DisableInterlaceOffset = false;
 	PCRTCOffsets = false;
 	IntegerScaling = false;
 	LinearPresent = true;
@@ -509,7 +510,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 
 	// Unfortunately, because code in the GS still reads the setting by key instead of
 	// using these variables, we need to use the old names. Maybe post 2.0 we can change this.
-
+	GSSettingBoolEx(DisableInterlaceOffset, "disable_interlace_offset");
 	GSSettingBoolEx(PCRTCOffsets, "pcrtc_offsets");
 	GSSettingBool(IntegerScaling);
 	GSSettingBoolEx(LinearPresent, "linear_present");
