@@ -17,25 +17,6 @@
 
 #include "Hw.h"
 
-// --------------------------------------------------------------------------------------
-//  IsPageFor() / iswitch() / icase()   [macros!]
-// --------------------------------------------------------------------------------------
-// Page-granulated switch helpers: In order for the compiler to optimize hardware register
-// handlers, which dispatch registers along a series of switches, the compiler needs to know
-// that the case entry applies to the current page only.  Under MSVC, I tried all manners of
-// bitmasks against the templated page value, and this was the only one that worked:
-//
-// Note: MSVC 2008 actually fails to optimize "switch" properly due to being overly aggressive
-// about trying to use its clever BSP-tree logic for long switches.  It adds the BSP tree logic,
-// even though most of the "tree" is empty (resulting in several compare/jumps that do nothing).
-// Explained: Even though only one or two of the switch entires are valid, MSVC will still
-// compile in its BSP tree check (which divides the switch into 2 or 4 ranges of values).  Three
-// of the ranges just link to "RET", while the fourth range contains the handler for the one
-// register operation contained in the templated page.
-
-#define IsPageFor(_mem)	((page<<12) == (_mem&(0xf<<12)))
-#define icase(ugh)		if(IsPageFor(ugh) && (mem==ugh))
-#define iswitch(mem)
 
 // hw read functions
 template< uint page > extern mem8_t  hwRead8  (u32 mem);
