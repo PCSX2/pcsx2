@@ -49,8 +49,14 @@ namespace StringUtil
 		va_end(ap_copy);
 
 		std::string ret;
-		ret.resize(len);
-		std::vsnprintf(ret.data(), ret.size() + 1, format, ap);
+
+		// If an encoding error occurs, len is -1. Which we definitely don't want to resize to.
+		if (len > 0)
+		{
+			ret.resize(len);
+			std::vsnprintf(ret.data(), ret.size() + 1, format, ap);
+		}
+
 		return ret;
 	}
 
