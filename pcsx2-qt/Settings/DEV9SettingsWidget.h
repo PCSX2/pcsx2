@@ -60,7 +60,6 @@ protected:
 	bool eventFilter(QObject* object, QEvent* event);
 
 private:
-
 	void AddAdapter(const AdapterEntry& adapter);
 	void RefreshHostList();
 	int CountHostsConfig();
