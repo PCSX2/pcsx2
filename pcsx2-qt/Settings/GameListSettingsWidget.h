@@ -21,8 +21,6 @@
 
 class SettingsDialog;
 
-class GameListSearchDirectoriesModel;
-
 class GameListSettingsWidget : public QWidget
 {
 	Q_OBJECT
