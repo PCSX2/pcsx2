@@ -598,6 +598,10 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
 
 	if (!starting && !running)
 		m_ui.actionPause->setChecked(false);
+
+	// scanning needs to be disabled while running
+	m_ui.actionScanForNewGames->setDisabled(starting_or_running);
+	m_ui.actionRescanAllGames->setDisabled(starting_or_running);
 }
 
 void MainWindow::updateStatusBarWidgetVisibility()
@@ -728,6 +732,10 @@ void MainWindow::switchToEmulationView()
 
 void MainWindow::refreshGameList(bool invalidate_cache)
 {
+	// can't do this while the VM is running because of CDVD
+	if (m_vm_valid)
+		return;
+
 	m_game_list_widget->refresh(invalidate_cache);
 }
 
