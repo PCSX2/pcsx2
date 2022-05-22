@@ -1290,6 +1290,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_from_target = &dst->m_texture;
 		src->m_from_target_TEX0 = dst->m_TEX0;
 		src->m_end_block = dst->m_end_block;
+		src->m_texture->SetScale(dst->m_texture->GetScale());
 
 		// Even if we sample the framebuffer directly we might need the palette
 		// to handle the format conversion on GPU
