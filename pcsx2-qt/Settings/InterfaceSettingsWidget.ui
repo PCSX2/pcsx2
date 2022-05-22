@@ -39,13 +39,6 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="discordPresence">
-        <property name="text">
-         <string>Enable Discord Presence</string>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="0">
        <widget class="QCheckBox" name="pauseOnStart">
         <property name="text">
@@ -53,7 +46,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="0" column="1">
        <widget class="QCheckBox" name="pauseOnFocusLoss">
         <property name="text">
          <string>Pause On Focus Loss</string>
@@ -67,7 +60,7 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="2" column="1">
        <widget class="QCheckBox" name="saveStateOnShutdown">
         <property name="text">
          <string>Save State On Shutdown</string>
