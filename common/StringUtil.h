@@ -196,6 +196,7 @@ namespace StringUtil
 
 	/// Replaces all instances of search in subject with replacement.
 	std::string ReplaceAll(const std::string_view& subject, const std::string_view& search, const std::string_view& replacement);
+	void ReplaceAll(std::string* subject, const std::string_view& search, const std::string_view& replacement);
 
 	/// Parses an assignment string (Key = Value) into its two components.
 	bool ParseAssignmentString(const std::string_view& str, std::string_view* key, std::string_view* value);

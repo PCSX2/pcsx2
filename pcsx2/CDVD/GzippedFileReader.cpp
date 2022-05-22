@@ -23,6 +23,12 @@
 #include "GzippedFileReader.h"
 #include "zlib_indexed.h"
 
+#ifndef PCSX2_CORE
+#include "gui/StringHelpers.h"
+#include "gui/wxDirName.h"
+#include <wx/stdpaths.h>
+#endif
+
 #define CLAMP(val, minval, maxval) (std::min(maxval, std::max(minval, val)))
 
 #define GZIP_ID "PCSX2.index.gzip.v1|"
@@ -137,8 +143,8 @@ static std::string ApplyTemplate(const std::string& name, const std::string& bas
 	if (first > 0)
 		fname = Path::GetFileName(fname); // without path
 
-	StringUtil::ReplaceAll(trimmedTemplate, INDEX_TEMPLATE_KEY, fname);
-	if (first > 0)
+	StringUtil::ReplaceAll(&trimmedTemplate, INDEX_TEMPLATE_KEY, fname);
+	if (!Path::IsAbsolute(trimmedTemplate))
 		trimmedTemplate = Path::Combine(base, trimmedTemplate); // ignores appRoot if tem is absolute
 
 	return trimmedTemplate;
@@ -173,22 +179,15 @@ static void TestTemplate(const wxDirName &base, const wxString &fname, bool canE
 
 static std::string iso2indexname(const std::string& isoname)
 {
-#if 0
 #ifndef PCSX2_CORE
-	//testTemplate(isoname);
-	wxDirName appRoot = // TODO: have only one of this in PCSX2. Right now have few...
-		(wxDirName)(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath());
+	std::string appRoot = // TODO: have only one of this in PCSX2. Right now have few...
+		StringUtil::wxStringToUTF8String(((wxDirName)(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath())).ToString());
 #else
-	const wxDirName& appRoot = EmuFolders::DataRoot;
+	const std::string& appRoot = EmuFolders::DataRoot;
 #endif
-	//TestTemplate(appRoot, isoname, false);
-	return StringUtil::wxStringToUTF8String(ApplyTemplate("gzip index", appRoot, EmuConfig.GzipIsoIndexTemplate, isoname, false));
-#else
-	//FIXME
-	abort();
-	return {};
-#endif
+	return ApplyTemplate("gzip index", appRoot, EmuConfig.GzipIsoIndexTemplate, isoname, false);
 }
+
 
 GzippedFileReader::GzippedFileReader(void)
 	: mBytesRead(0)
