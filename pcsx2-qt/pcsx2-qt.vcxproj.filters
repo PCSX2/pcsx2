@@ -170,6 +170,9 @@
     <ClCompile Include="$(IntDir)Settings\moc_AudioSettingsWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="$(IntDir)Settings\moc_DEV9DnsHostDialog.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
     <ClCompile Include="$(IntDir)Settings\moc_DEV9SettingsWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
@@ -189,6 +192,9 @@
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="Settings\CreateMemoryCardDialog.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings\DEV9DnsHostDialog.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
     <ClCompile Include="Settings\DEV9SettingsWidget.cpp">
@@ -296,6 +302,9 @@
     <QtMoc Include="Settings\CreateMemoryCardDialog.h">
       <Filter>Settings</Filter>
     </QtMoc>
+    <QtMoc Include="Settings\DEV9DnsHostDialog.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
     <QtMoc Include="Settings\DEV9SettingsWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>
@@ -366,6 +375,9 @@
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\CreateMemoryCardDialog.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\DEV9DnsHostDialog.ui">
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\DEV9SettingsWidget.ui">

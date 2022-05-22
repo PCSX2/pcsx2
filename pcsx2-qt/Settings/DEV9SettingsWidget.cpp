@@ -28,6 +28,7 @@
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 #include "SettingsDialog.h"
+#include "Frontend/INISettingsInterface.h"
 
 #include "HddCreateQt.h"
 
@@ -244,6 +245,9 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 
 	connect(m_ui.ethHostAdd, &QPushButton::clicked, this, &DEV9SettingsWidget::onEthHostAdd);
 	connect(m_ui.ethHostDel, &QPushButton::clicked, this, &DEV9SettingsWidget::onEthHostDel);
+
+	connect(m_ui.ethHostExport, &QPushButton::clicked, this, &DEV9SettingsWidget::onEthHostExport);
+	connect(m_ui.ethHostImport, &QPushButton::clicked, this, &DEV9SettingsWidget::onEthHostImport);
 
 	if (m_dialog->isPerGameSettings())
 		m_ui.ethTabWidget->setTabEnabled(1, false);
@@ -487,6 +491,122 @@ void DEV9SettingsWidget::onEthHostDel()
 	}
 }
 
+void DEV9SettingsWidget::onEthHostExport()
+{
+	std::vector<HostEntryUi> hosts = ListHostsConfig();
+
+	DEV9DnsHostDialog exportDialog(hosts, this);
+
+	std::optional<std::vector<HostEntryUi>> selectedHosts = exportDialog.PromptList();
+
+	if (!selectedHosts.has_value())
+		return;
+
+	hosts = selectedHosts.value();
+
+	if (hosts.size() == 0)
+		return;
+
+	QString path =
+		QDir::toNativeSeparators(QFileDialog::getSaveFileName(QtUtils::GetRootWidget(this), tr("Hosts File"),
+			"hosts.ini", tr("ini (*.ini)"), nullptr));
+
+	if (path.isEmpty())
+		return;
+
+	std::unique_ptr<INISettingsInterface> exportFile = std::make_unique<INISettingsInterface>(path.toUtf8().constData());
+
+	//Count is not exported
+	for (size_t i = 0; i < hosts.size(); i++)
+	{
+		std::string section = "Host" + std::to_string(i);
+		HostEntryUi entry = hosts[i];
+
+		// clang-format off
+		exportFile->SetStringValue(section.c_str(), "Url", entry.Url.c_str());
+		exportFile->SetStringValue(section.c_str(), "Desc", entry.Desc.c_str());
+		exportFile->SetStringValue(section.c_str(), "Address", entry.Address.c_str());
+		exportFile->SetBoolValue(section.c_str(),   "Enabled", entry.Enabled);
+		// clang-format on
+	}
+
+	exportFile->Save();
+
+	QMessageBox::information(this, tr("DNS Hosts"),
+		tr("Exported Successfully"),
+		QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+}
+
+void DEV9SettingsWidget::onEthHostImport()
+{
+	std::vector<HostEntryUi> hosts;
+
+	QString path =
+		QDir::toNativeSeparators(QFileDialog::getOpenFileName(QtUtils::GetRootWidget(this), tr("Hosts File"),
+			"hosts.ini", tr("ini (*.ini)"), nullptr));
+
+	if (path.isEmpty())
+		return;
+
+	std::unique_ptr<INISettingsInterface> importFile = std::make_unique<INISettingsInterface>(path.toUtf8().constData());
+
+	if (!importFile->Load())
+	{
+		QMessageBox::warning(this, tr("DNS Hosts"),
+			tr("Failed to open file"),
+			QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		return;
+	}
+
+	size_t count = 0;
+	while (true)
+	{
+		std::string section = "Host" + std::to_string(count);
+		HostEntryUi entry;
+
+		entry.Url = importFile->GetStringValue(section.c_str(), "Url");
+
+		if (entry.Url.empty())
+			break;
+
+		// clang-format off
+		entry.Desc    = importFile->GetStringValue(section.c_str(), "Desc");
+		entry.Address = importFile->GetStringValue(section.c_str(), "Address");
+		entry.Enabled = importFile->GetBoolValue  (section.c_str(), "Enabled");
+		// clang-format on
+
+		hosts.push_back(entry);
+		count++;
+	}
+
+	if (hosts.size() == 0)
+	{
+		QMessageBox::warning(this, tr("DNS Hosts"),
+			tr("No Hosts in file"),
+			QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		return;
+	}
+
+	DEV9DnsHostDialog exportDialog(hosts, this);
+
+	std::optional<std::vector<HostEntryUi>> selectedHosts = exportDialog.PromptList();
+
+	if (!selectedHosts.has_value())
+		return;
+
+	hosts = selectedHosts.value();
+
+	if (hosts.size() == 0)
+		return;
+
+	for (size_t i = 0; i < hosts.size(); i++)
+		AddNewHostConfig(hosts[i]);
+
+	QMessageBox::information(this, tr("DNS Hosts"),
+		tr("Imported Successfully"),
+		QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+}
+
 void DEV9SettingsWidget::onEthHostEdit(QStandardItem* item)
 {
 	const int row = item->row();
@@ -711,22 +831,9 @@ void DEV9SettingsWidget::RefreshHostList()
 		m_ethHost_model->removeRow(0);
 
 	//Load list
-	std::vector<HostEntryUi> hosts;
+	std::vector<HostEntryUi> hosts = ListHostsConfig();
 
-	const int hostLength = CountHostsConfig();
-	for (int i = 0; i < hostLength; i++)
-	{
-		std::string section = "DEV9/Eth/Hosts/Host" + std::to_string(i);
-
-		HostEntryUi entry;
-		entry.Url = m_dialog->getStringValue(section.c_str(), "Url", "").value();
-		entry.Desc = m_dialog->getStringValue(section.c_str(), "Desc", "").value();
-		entry.Address = m_dialog->getStringValue(section.c_str(), "Address", "").value();
-		entry.Enabled = m_dialog->getBoolValue(section.c_str(), "Enabled", false).value();
-		hosts.push_back(entry);
-	}
-
-	for (int i = 0; i < hostLength; i++)
+	for (size_t i = 0; i < hosts.size(); i++)
 	{
 		HostEntryUi entry = hosts[i];
 		const int row = m_ethHost_model->rowCount();
@@ -759,6 +866,26 @@ void DEV9SettingsWidget::RefreshHostList()
 int DEV9SettingsWidget::CountHostsConfig()
 {
 	return m_dialog->getIntValue("DEV9/Eth/Hosts", "Count", 0).value();
+}
+
+std::vector<HostEntryUi> DEV9SettingsWidget::ListHostsConfig()
+{
+	std::vector<HostEntryUi> hosts;
+
+	const int hostLength = CountHostsConfig();
+	for (int i = 0; i < hostLength; i++)
+	{
+		std::string section = "DEV9/Eth/Hosts/Host" + std::to_string(i);
+
+		HostEntryUi entry;
+		entry.Url = m_dialog->getStringValue(section.c_str(), "Url", "").value();
+		entry.Desc = m_dialog->getStringValue(section.c_str(), "Desc", "").value();
+		entry.Address = m_dialog->getStringValue(section.c_str(), "Address", "").value();
+		entry.Enabled = m_dialog->getBoolValue(section.c_str(), "Enabled", false).value();
+		hosts.push_back(entry);
+	}
+
+	return hosts;
 }
 
 void DEV9SettingsWidget::AddNewHostConfig(const HostEntryUi& host)
