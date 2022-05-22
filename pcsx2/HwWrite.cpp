@@ -293,18 +293,18 @@ void _hwWrite8(u32 mem, u8 value)
 #endif
 	if (mem == SIO_TXFIFO)
 	{
-		static bool iggy_newline = false;
+		static bool included_newline = false;
 		static char sio_buffer[1024];
 		static int sio_count;
 
 		if (value == '\r')
 		{
-			iggy_newline = true;
+			included_newline = true;
 			sio_buffer[sio_count++] = '\n';
 		}
-		else if (!iggy_newline || (value != '\n'))
+		else if (!included_newline || (value != '\n'))
 		{
-			iggy_newline = false;
+			included_newline = false;
 			sio_buffer[sio_count++] = value;
 		}
 

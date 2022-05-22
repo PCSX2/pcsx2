@@ -126,16 +126,16 @@ void iopHwWrite8_Page3( u32 addr, mem8_t val )
 	{
 		static char pbuf[1024];
 		static int pidx;
-		static bool iggy_newline = false;
+		static bool included_newline = false;
 
 		if (val == '\r')
 		{
-			iggy_newline = true;
+			included_newline = true;
 			pbuf[pidx++] = '\n';
 		}
-		else if (!iggy_newline || (val != '\n'))
+		else if (!included_newline || (val != '\n'))
 		{
-			iggy_newline = false;
+			included_newline = false;
 			pbuf[pidx++] = val;
 		}
 
