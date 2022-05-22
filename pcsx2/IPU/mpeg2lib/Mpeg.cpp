@@ -920,7 +920,7 @@ finish_idec:
 	case 3:
 	{
 		u8 bit8;
-		if (!getBits8((u8*)&bit8, 0))
+		if (!getBits8((u8*)&bit8, 0, 1))
 		{
 			ipu_cmd.pos[0] = 3;
 			return false;
@@ -1196,7 +1196,7 @@ __fi bool mpeg2_slice()
 	case 4:
 	{
 		u8 bit8;
-		if (!getBits8((u8*)&bit8, 0))
+		if (!getBits8((u8*)&bit8, 0, 0))
 		{
 			ipu_cmd.pos[0] = 4;
 			return false;

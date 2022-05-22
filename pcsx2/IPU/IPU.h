@@ -303,5 +303,5 @@ extern void IPUProcessInterrupt();
 extern u8 getBits64(u8 *address, bool advance);
 extern u8 getBits32(u8 *address, bool advance);
 extern u8 getBits16(u8 *address, bool advance);
-extern u8 getBits8(u8 *address, bool advance);
+extern u8 getBits8(u8 *address, bool advance, bool idec);
 

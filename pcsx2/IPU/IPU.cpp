@@ -832,7 +832,7 @@ __fi u8 getBits16(u8 *address, bool advance)
 	return 1;
 }
 
-u8 getBits8(u8 *address, bool advance)
+u8 getBits8(u8 *address, bool advance, bool idec)
 {
 	if (!g_BP.FillBuffer(8)) return 0;
 
@@ -846,6 +846,12 @@ u8 getBits8(u8 *address, bool advance)
 	else
 	{
 		*(u8*)address = *(u8*)readpos;
+		
+		// Discard bits if we are searching for idec startcode in intra format.
+		if ((idec) && (decoder.intra_vlc_format))
+		{
+			g_BP.Advance(8);
+		}
 	}
 
 	if (advance) g_BP.Advance(8);
