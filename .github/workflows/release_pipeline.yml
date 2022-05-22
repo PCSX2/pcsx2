@@ -96,7 +96,7 @@ jobs:
       # Prepare artifacts, they are all zips from github!
       - name: Prepare Artifacts
         working-directory: ./ci-artifacts/
-        run: for d in *windows*/; do 7z a "${d}asset.7z" $d; done
+        run: for d in *windows*/; do 7z a "${d}asset.7z" ./$d/*; done
 
       # Artifact Naming:
       # MacOS: PCSX2-<tag>-macOS-[additional hyphen seperated tags]
