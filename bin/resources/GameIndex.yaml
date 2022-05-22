@@ -20815,25 +20815,6 @@ SLES-82038:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
-  patches:
-    812C5A96:
-      content: |-
-        comment=patched by Kozarrov and ported by Prafull
-        //Improve menus, and other 2D displays handled on IPU
-        // Set IPU_DATA IVF to Intra
-        patch=1,EE,003c3678,word,3C040020
-        // Set IPU_CMD to IDEC, and set QSC to 2
-        // Why 2? Because it seems to work best.
-        patch=1,EE,003c368c,word,3C021002
-        // Old patch by shadow lady (still needed)
-        patch=1,EE,00104170,word,00000000
-        // Disable print - we need that loop!
-        // Without loop ipu break itself.
-        patch=1,EE,0010FDC8,word,34190180
-        patch=1,EE,0010FDCC,word,1720FFFF
-        patch=1,EE,0010FDD0,word,2739FFFF
-        patch=1,EE,0010FDD4,word,03E00008
-        patch=1,EE,0010FDD8,word,00000000
 SLES-82039:
   name: "Onimusha - Dawn of Dreams [Disc2of2]"
   region: "PAL-M5"
@@ -20842,25 +20823,6 @@ SLES-82039:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
   memcardFilters:
     - "SLES-82038"
-  patches:
-    812C5A96:
-      content: |-
-        comment=patched by Kozarrov and ported by Prafull
-        //Improve menus, and other 2D displays handled on IPU
-        // Set IPU_DATA IVF to Intra
-        patch=1,EE,003c3678,word,3C040020
-        // Set IPU_CMD to IDEC, and set QSC to 2
-        // Why 2? Because it seems to work best.
-        patch=1,EE,003c368c,word,3C021002
-        // Old patch by shadow lady (still needed)
-        patch=1,EE,00104170,word,00000000
-        // Disable print - we need that loop!
-        // Without loop ipu break itself.
-        patch=1,EE,0010FDC8,word,34190180
-        patch=1,EE,0010FDCC,word,1720FFFF
-        patch=1,EE,0010FDD0,word,2739FFFF
-        patch=1,EE,0010FDD4,word,03E00008
-        patch=1,EE,0010FDD8,word,00000000
 SLES-82042:
   name: "Metal Gear Solid 3 - Subsistence [Disc1of3]"
   region: "PAL-E-F"
@@ -41617,24 +41579,6 @@ SLUS-21180:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
-  patches:
-    FE44479E:
-      content: |-
-       author=kozarovv
-       // Set IPU_DATA IVF to Intra
-       patch=1,EE,003BFDD8,word,3C040020
-       // Set IPU_CMD to IDEC, and set QSC to 2
-       // Why 2? Because it seems to work best.
-       patch=1,EE,003BFDEC,word,3C021002
-       // Old patch by shadow lady (still needed)
-       patch=1,EE,00104170,word,00000000
-       // Disable print - we need that loop!
-       // Without loop ipu break itself.
-       patch=1,EE,0010FDC8,word,34190180
-       patch=1,EE,0010FDCC,word,1720FFFF
-       patch=1,EE,0010FDD0,word,2739FFFF
-       patch=1,EE,0010FDD4,word,03E00008
-       patch=1,EE,0010FDD8,word,00000000
 SLUS-21181:
   name: "D.I.C.E. - DNA Integrated Cybernetic Enterprises"
   region: "NTSC-U"
