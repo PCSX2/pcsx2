@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "common/Assertions.h"
+#include "common/FileSystem.h"
 
 #include "ATA.h"
 #include "DEV9/DEV9.h"
@@ -75,14 +76,13 @@ void ATA::IO_Read()
 	}
 
 	const u64 pos = lba * 512;
-	hddImage.seekg(pos, std::ios::beg);
-	if (hddImage.fail())
+	if (FileSystem::FSeek64(hddImage, pos, SEEK_SET) != 0 ||
+		std::fread(readBuffer,  512, nsector, hddImage) != static_cast<size_t>(nsector))
 	{
 		Console.Error("DEV9: ATA: File read error");
 		pxAssert(false);
 		abort();
 	}
-	hddImage.read((char*)readBuffer, (u64)nsector * 512);
 	{
 		std::lock_guard ioSignallock(ioMutex);
 		ioRead = false;
@@ -99,15 +99,14 @@ bool ATA::IO_Write()
 		return false;
 	}
 
-	hddImage.seekp(entry.sector * 512, std::ios::beg);
-	hddImage.write((char*)entry.data, entry.length);
-	if (hddImage.fail())
+	if (FileSystem::FSeek64(hddImage, entry.sector * 512, SEEK_SET) != 0 ||
+		std::fwrite(entry.data, entry.length, 1, hddImage) != 1 ||
+		std::fflush(hddImage) != 0)
 	{
 		Console.Error("DEV9: ATA: File write error");
 		pxAssert(false);
 		abort();
 	}
-	hddImage.flush();
 	delete[] entry.data;
 	return true;
 }

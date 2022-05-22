@@ -184,12 +184,3 @@ wxString Path::GetRootDirectory(const wxString& src)
 	else
 		return wxString(src.begin(), src.begin() + pos);
 }
-
-fs::path Path::FromWxString(const wxString& path)
-{
-#ifdef _WIN32
-	return fs::path(path.ToStdWstring());
-#else
-	return fs::path(path.ToStdString());
-#endif
-}

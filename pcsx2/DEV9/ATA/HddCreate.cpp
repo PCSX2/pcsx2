@@ -15,7 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
-#include <fstream>
+#include "common/FileSystem.h"
+
 #include <fmt/format.h>
 #include "HddCreate.h"
 
@@ -26,21 +27,20 @@ void HddCreate::Start()
 	Cleanup();
 }
 
-void HddCreate::WriteImage(ghc::filesystem::path hddPath, u64 reqSizeBytes)
+void HddCreate::WriteImage(std::string hddPath, u64 reqSizeBytes)
 {
 	constexpr int buffsize = 4 * 1024;
 	u8 buff[buffsize] = {0}; //4kb
 
-	if (ghc::filesystem::exists(hddPath))
+	if (FileSystem::FileExists(hddPath.c_str()))
 	{
 		errored.store(true);
 		SetError();
 		return;
 	}
 
-	std::fstream newImage = ghc::filesystem::fstream(hddPath, std::ios::out | std::ios::binary);
-
-	if (newImage.fail())
+	auto newImage = FileSystem::OpenManagedCFile(hddPath.c_str(), "wb");
+	if (!newImage)
 	{
 		errored.store(true);
 		SetError();
@@ -48,22 +48,21 @@ void HddCreate::WriteImage(ghc::filesystem::path hddPath, u64 reqSizeBytes)
 	}
 
 	//Size file
-	newImage.seekp(reqSizeBytes - 1, std::ios::beg);
 	const char zero = 0;
-	newImage.write(&zero, 1);
+	bool success = FileSystem::FSeek64(newImage.get(), reqSizeBytes - 1, SEEK_SET) == 0;
+	success = success && std::fwrite(&zero, 1, 1, newImage.get()) == 1;
+	success = success && FileSystem::FSeek64(newImage.get(), 0, SEEK_SET) == 0;
 
-	if (newImage.fail())
+	if (!success)
 	{
-		newImage.close();
-		ghc::filesystem::remove(filePath);
+		newImage.reset();
+		FileSystem::DeleteFilePath(filePath.c_str());
 		errored.store(true);
 		SetError();
 		return;
 	}
 
 	lastUpdate = std::chrono::steady_clock::now();
-
-	newImage.seekp(0, std::ios::beg);
 
 	//Round up
 	const s32 reqMiB = (reqSizeBytes + ((1024 * 1024) - 1)) / (1024 * 1024);
@@ -73,11 +72,10 @@ void HddCreate::WriteImage(ghc::filesystem::path hddPath, u64 reqSizeBytes)
 		const s32 req4Kib = std::min<s32>(1024, (reqSizeBytes / 1024) - (u64)iMiB * 1024) / 4;
 		for (s32 i4kb = 0; i4kb < req4Kib; i4kb++)
 		{
-			newImage.write((char*)buff, buffsize);
-			if (newImage.fail())
+			if (std::fwrite(buff, buffsize, 1, newImage.get()) != 1)
 			{
-				newImage.close();
-				ghc::filesystem::remove(filePath);
+				newImage.reset();
+				FileSystem::DeleteFilePath(filePath.c_str());
 				errored.store(true);
 				SetError();
 				return;
@@ -87,11 +85,10 @@ void HddCreate::WriteImage(ghc::filesystem::path hddPath, u64 reqSizeBytes)
 		if (req4Kib != 256)
 		{
 			const s32 remainingBytes = reqSizeBytes - (((u64)iMiB) * (1024 * 1024) + req4Kib * 4096);
-			newImage.write((char*)buff, remainingBytes);
-			if (newImage.fail())
+			if (std::fwrite(buff, remainingBytes, 1, newImage.get()) != 1)
 			{
-				newImage.close();
-				ghc::filesystem::remove(filePath);
+				newImage.reset();
+				FileSystem::DeleteFilePath(filePath.c_str());
 				errored.store(true);
 				SetError();
 				return;
@@ -102,19 +99,17 @@ void HddCreate::WriteImage(ghc::filesystem::path hddPath, u64 reqSizeBytes)
 		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastUpdate).count() >= 100 || (iMiB + 1) == reqMiB)
 		{
 			lastUpdate = now;
-			SetFileProgress(newImage.tellp());
+			SetFileProgress(static_cast<u64>(FileSystem::FTell64(newImage.get())));
 		}
 		if (canceled.load())
 		{
-			newImage.close();
-			ghc::filesystem::remove(filePath);
+			newImage.reset();
+			FileSystem::DeleteFilePath(filePath.c_str());
 			errored.store(true);
 			SetError();
 			return;
 		}
 	}
-	newImage.flush();
-	newImage.close();
 }
 
 void HddCreate::SetFileProgress(u64 currentSize)

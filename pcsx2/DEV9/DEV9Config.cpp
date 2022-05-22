@@ -16,7 +16,6 @@
 #include "PrecompiledHeader.h"
 
 #include "common/StringUtil.h"
-#include "ghc/filesystem.h"
 #include <wx/fileconf.h>
 
 #include "DEV9.h"

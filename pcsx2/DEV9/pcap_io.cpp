@@ -28,9 +28,11 @@
 #elif defined(__linux__)
 #include <sys/ioctl.h>
 #include <net/if.h>
+#include <unistd.h>
 #elif defined(__POSIX__)
 #include <sys/types.h>
 #include <ifaddrs.h>
+#include <unistd.h>
 #endif
 
 #include <stdio.h>

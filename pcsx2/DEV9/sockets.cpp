@@ -27,6 +27,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <net/if.h>
+#include <unistd.h>
 #ifdef __linux__
 #include <sys/ioctl.h>
 #endif
