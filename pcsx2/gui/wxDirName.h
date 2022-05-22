@@ -19,10 +19,6 @@
 
 #include <wx/filename.h>
 
-#include "ghc/filesystem.h"
-
-namespace fs = ghc::filesystem;
-
 #define g_MaxPath 255 // 255 is safer with antiquated Win32 ASCII APIs.
 
 // --------------------------------------------------------------------------------------
@@ -235,5 +231,4 @@ namespace Path
 	extern wxString GetDirectory(const wxString& src);
 	extern wxString GetFilenameWithoutExt(const wxString& src);
 	extern wxString GetRootDirectory(const wxString& src);
-	extern fs::path FromWxString(const wxString& path);
 } // namespace Path

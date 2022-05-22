@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "common/Assertions.h"
+#include "common/FileSystem.h"
 
 #include "ATA.h"
 #include "DEV9/DEV9.h"
@@ -30,7 +31,13 @@ ATA::ATA()
 	ResetEnd(true);
 }
 
-int ATA::Open(ghc::filesystem::path hddPath)
+ATA::~ATA()
+{
+	if (hddImage)
+		std::fclose(hddImage);
+}
+
+int ATA::Open(const std::string& hddPath)
 {
 	readBufferLen = 256 * 512;
 	readBuffer = new u8[readBufferLen];
@@ -38,7 +45,7 @@ int ATA::Open(ghc::filesystem::path hddPath)
 	CreateHDDinfo(EmuConfig.DEV9.HddSizeSectors);
 
 	//Open File
-	if (!ghc::filesystem::exists(hddPath))
+	if (!FileSystem::FileExists(hddPath.c_str()))
 	{
 #ifndef PCSX2_CORE
 		HddCreateWx hddCreator;
@@ -52,11 +59,17 @@ int ATA::Open(ghc::filesystem::path hddPath)
 		return -1;
 #endif
 	}
-	hddImage = ghc::filesystem::fstream(hddPath, std::ios::in | std::ios::out | std::ios::binary);
+
+	hddImage = FileSystem::OpenCFile(hddPath.c_str(), "r+b");
+	const s64 size = hddImage ? FileSystem::FSize64(hddImage) : -1;
+	if (!hddImage || size < 0)
+	{
+		Console.Error("Failed to open HDD image '%s'", hddPath.c_str());
+		return -1;
+	}
 
 	//Store HddImage size for later check
-	hddImage.seekg(0, std::ios::end);
-	hddImageSize = hddImage.tellg();
+	hddImageSize = static_cast<u64>(size);
 
 	{
 		std::lock_guard ioSignallock(ioMutex);
@@ -95,8 +108,11 @@ void ATA::Close()
 	}
 
 	//Close File Handle
-	if (hddImage.is_open())
-		hddImage.close();
+	if (hddImage)
+	{
+		std::fclose(hddImage);
+		hddImage = nullptr;
+	}
 
 	delete[] readBuffer;
 	readBuffer = nullptr;
@@ -289,7 +305,7 @@ void ATA::Write16(u32 addr, u16 value)
 
 void ATA::Async(uint cycles)
 {
-	if (!hddImage.is_open())
+	if (!hddImage)
 		return;
 
 	if ((regStatus & (ATA_STAT_BUSY | ATA_STAT_DRQ)) == 0 ||
