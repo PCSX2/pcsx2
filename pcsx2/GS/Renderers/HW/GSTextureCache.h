@@ -164,7 +164,7 @@ public:
 		// Keep a trace of the target origin. There is no guarantee that pointer will
 		// still be valid on future. However it ought to be good when the source is created
 		// so it can be used to access un-converted data for the current draw call.
-		GSTexture* m_from_target;
+		GSTexture** m_from_target;
 		GIFRegTEX0 m_from_target_TEX0; // TEX0 of the target texture, if any, else equal to texture TEX0
 		GIFRegTEX0 m_layer_TEX0[7]; // Detect already loaded value
 		HashType m_layer_hash[7];

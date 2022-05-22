@@ -1625,6 +1625,12 @@ void GSRendererHW::Draw()
 		}
 	}
 
+	if (m_src && m_src->m_shared_texture && m_src->m_texture != *m_src->m_from_target)
+	{
+		// Target texture changed, update reference.
+		m_src->m_texture = *m_src->m_from_target;
+	}
+
 	if (s_dump)
 	{
 		const u64 frame = g_perfmon.GetFrame();
@@ -2159,7 +2165,7 @@ void GSRendererHW::EmulateChannelShuffle(const GSTextureCache::Source* tex)
 			GL_INS("Gran Turismo RGB Channel");
 			m_conf.ps.channel = ChannelFetch_RGB;
 			m_context->TEX0.TFX = TFX_DECAL;
-			m_conf.rt = tex->m_from_target;
+			m_conf.rt = *tex->m_from_target;
 		}
 		else if (m_game.title == CRC::Tekken5)
 		{
@@ -2172,7 +2178,7 @@ void GSRendererHW::EmulateChannelShuffle(const GSTextureCache::Source* tex)
 				// 12 pages: 2 calls by channel, 3 channels, 1 blit
 				// Minus current draw call
 				m_skip = 12 * (3 + 3 + 1) - 1;
-				m_conf.rt = tex->m_from_target;
+				m_conf.rt = *tex->m_from_target;
 			}
 			else
 			{
@@ -2278,7 +2284,7 @@ void GSRendererHW::EmulateChannelShuffle(const GSTextureCache::Source* tex)
 	// Effect is really a channel shuffle effect so let's cheat a little
 	if (m_channel_shuffle)
 	{
-		m_conf.tex = tex->m_from_target;
+		m_conf.tex = *tex->m_from_target;
 		if (m_conf.tex)
 		{
 			if (m_conf.tex == m_conf.rt)
