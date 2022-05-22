@@ -87,7 +87,7 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 		AddAdapter(adapter);
 #endif
 	for (const AdapterEntry& adapter : SocketAdapter::GetAdapters())
-		AddAdapter(adapter); 
+		AddAdapter(adapter);
 
 	std::sort(m_api_list.begin(), m_api_list.end());
 	for (auto& list : m_adapter_list)
@@ -377,7 +377,7 @@ void DEV9SettingsWidget::onEthDeviceChanged(int index)
 void DEV9SettingsWidget::onEthDHCPInterceptChanged(int state)
 {
 	const bool enabled = (state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("DEV9/Eth", "InterceptDHCP", false) : state) ||
-		((m_adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::DHCP_ForcedOn);
+						 ((m_adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::DHCP_ForcedOn);
 
 	// clang-format off
 	const bool ipOverride = (m_adapter_options & AdapterOptions::DHCP_OverrideIP)     == AdapterOptions::DHCP_OverrideIP;
