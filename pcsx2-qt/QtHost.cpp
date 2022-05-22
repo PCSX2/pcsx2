@@ -161,12 +161,14 @@ void QtHost::SetAppRoot()
 
 void QtHost::SetResourcesDirectory()
 {
-#ifndef __APPLE__
+#ifdef __APPLE__
+	// On macOS, this is in the bundle resources directory.
+	EmuFolders::Resources = Path::Canonicalize(Path::Combine(EmuFolders::AppRoot, "../Resources"));
+#elif !defined(PCSX2_APP_DATADIR)
 	// On Windows/Linux, these are in the binary directory.
 	EmuFolders::Resources = Path::Combine(EmuFolders::AppRoot, "resources");
 #else
-	// On macOS, this is in the bundle resources directory.
-	EmuFolders::Resources = Path::Canonicalize(Path::Combine(EmuFolders::AppRoot, "../Resources"));
+	EmuFolders::Resources = Path::Canonicalize(Path::Combine(EmuFolders::AppRoot, PCSX2_APP_DATADIR "/resources"));
 #endif
 }
 

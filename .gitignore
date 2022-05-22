@@ -74,6 +74,7 @@ oprofile_data/
 /bin/**/*.lib
 /bin/**/*.pdb
 /bin/pcsx2
+/bin/pcsx2-qt
 /bin/PCSX2-linux.sh
 /bin/*ReplayLoader
 /bin/GS*.txt
