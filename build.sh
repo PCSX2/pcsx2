@@ -158,9 +158,11 @@ for ARG in "$@"; do
         --rel|--release     ) flags="$flags -DCMAKE_BUILD_TYPE=Release" ; build="$root/build_rel";;
         --prof              ) flags="$flags -DCMAKE_BUILD_TYPE=RelWithDebInfo"; build="$root/build_prof";;
         --strip             ) flags="$flags -DCMAKE_BUILD_STRIP=TRUE" ;;
-        --use-system-yaml   ) flags="$flags -DUSE_SYSTEM_YAML=TRUE" ;;
         --asan              ) flags="$flags -DUSE_ASAN=TRUE" ;;
         --gtk2              ) flags="$flags -DGTK2_API=TRUE" ;;
+        --qt6               ) flags="$flags -DQT_BUILD=TRUE" ;;
+        --use-system ) flags="$flags -DUSE_SYSTEM_LIBS=ON" ;;
+        --use-bundled ) flags="$flags -DUSE_SYSTEM_LIBS=OFF" ;;
         --lto               ) flags="$flags -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE" ;;
         --pgo-optimize      ) flags="$flags -DUSE_PGO_OPTIMIZE=TRUE" ;;
         --pgo-generate      ) flags="$flags -DUSE_PGO_GENERATE=TRUE" ;;
@@ -185,13 +187,15 @@ for ARG in "$@"; do
             echo
             echo "** Distribution Compatibilities **"
             echo "--no-portaudio    : Skip portaudio for SPU2."
-            echo "--use-system-yaml : Use system rapidyaml library."
             echo
             echo "** Expert Developer option **"
             echo "--gtk2            : use GTK 2 instead of GTK 3."
+            echo "--qt6             : Experimental qt 6 ui."
             echo "--no-trans        : Don't regenerate mo files when building."
             echo "--strip           : Strip binaries to save a small amount of space."
             echo "--clang           : Build with Clang/llvm."
+            echo "--use-system      : Only use system libs."
+            echo "--use-bundled     : Only use bundled libs."
             echo "--intel           : Build with ICC (Intel compiler)."
             echo "--lto             : Use Link Time Optimization."
             echo "--pgo-generate    : Executable will generate profiling information when run."
