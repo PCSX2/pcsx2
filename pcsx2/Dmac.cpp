@@ -541,7 +541,7 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 		case (DMAC_FAKESTAT):
 		case (DMAC_STAT):
 		{
-			if (DMAC_FAKESTAT)
+			if (mem == DMAC_FAKESTAT)
 			{
 				HW_LOG("Midways own DMAC_STAT Write 32bit %x", value);
 			}
