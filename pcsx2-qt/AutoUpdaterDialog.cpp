@@ -54,6 +54,8 @@
 #define UPDATE_PLATFORM_STR "Windows"
 #if _M_SSE >= 0x500
 #define UPDATE_ADDITIONAL_TAGS "AVX2"
+#else
+#define UPDATE_ADDITIONAL_TAGS "SSE4"
 #endif
 #endif
 
