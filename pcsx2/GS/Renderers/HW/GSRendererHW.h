@@ -54,8 +54,6 @@ private:
 
 	void OO_BurnoutGames();
 
-	bool CU_TalesOfAbyss();
-
 	class Hacks
 	{
 		template <class T>

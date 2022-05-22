@@ -3696,8 +3696,6 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BurnoutGames, CRC::RegionCount, &GSRendererHW::OI_BurnoutGames));
 
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::BurnoutGames, CRC::RegionCount, &GSRendererHW::OO_BurnoutGames));
-
-	m_cu_list.push_back(HackEntry<CU_Ptr>(CRC::TalesOfAbyss, CRC::RegionCount, &GSRendererHW::CU_TalesOfAbyss));
 }
 
 void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
@@ -4388,11 +4386,4 @@ void GSRendererHW::OO_BurnoutGames()
 
 // Can Upscale hacks: disable upscaling for some draw calls
 
-bool GSRendererHW::CU_TalesOfAbyss()
-{
-	// full image blur and brightening
-
-	const u32 FBP = m_context->FRAME.Block();
-
-	return FBP != 0x036e0 && FBP != 0x03560 && FBP != 0x038e0;
-}
+// None required.
