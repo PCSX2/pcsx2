@@ -1508,6 +1508,7 @@ target_sources(PCSX2 PRIVATE
 	${pcsx2PADSources}
 	${pcsx2GSHeaders}
 	${pcsx2GSSources}
+	${pcsx2RecordingSources}
 	${pcsx2DebugToolsSources}
 	${pcsx2DebugToolsHeaders}
 	${pcsx2FrontendSources}
@@ -1523,7 +1524,6 @@ if (NOT PCSX2_CORE)
 		${pcsx2GuiSources}
 		${pcsx2GuiResources}
 		${pcsx2GuiHeaders}
-		${pcsx2RecordingSources}
 		${pcsx2RecordingVirtualPadResources}
 		${pcsx2RecordingHeaders}
 	)
