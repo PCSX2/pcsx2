@@ -606,6 +606,12 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 {
 	const Common::Timer init_timer;
 	pxAssertRel(s_state.load() == VMState::Shutdown, "VM is shutdown");
+
+	// cancel any game list scanning, we need to use CDVD!
+	// TODO: we can get rid of this once, we make CDVD not use globals...
+	// (or make it thread-local, but that seems silly.)
+	Host::CancelGameListRefresh();
+
 	s_state.store(VMState::Initializing);
 	Host::OnVMStarting();
 
