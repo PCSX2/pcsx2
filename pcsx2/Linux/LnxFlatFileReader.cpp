@@ -17,6 +17,7 @@
 #include "AsyncFileReader.h"
 #include "common/FileSystem.h"
 
+#include <unistd.h>
 #include <sys/types.h>
 #include <fcntl.h>
 
