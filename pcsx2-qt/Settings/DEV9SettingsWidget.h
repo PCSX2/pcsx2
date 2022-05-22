@@ -20,6 +20,8 @@
 
 #include "ui_DEV9SettingsWidget.h"
 
+#include "DEV9UiCommon.h"
+#include "DEV9DnsHostDialog.h"
 #include "DEV9/net.h"
 
 class SettingsDialog;
@@ -38,6 +40,8 @@ private Q_SLOTS:
 	void onEthDNSModeChanged(QComboBox* sender, int index, QLineEdit* input, const char* section, const char* key);
 	void onEthHostAdd();
 	void onEthHostDel();
+	void onEthHostExport();
+	void onEthHostImport();
 	void onEthHostEdit(QStandardItem* item);
 
 	void onHddEnabledChanged(int state);
@@ -60,6 +64,7 @@ private:
 	void AddAdapter(const AdapterEntry& adapter);
 	void RefreshHostList();
 	int CountHostsConfig();
+	std::vector<HostEntryUi> ListHostsConfig();
 	void AddNewHostConfig(const HostEntryUi& host);
 	void DeleteHostConfig(int index);
 
