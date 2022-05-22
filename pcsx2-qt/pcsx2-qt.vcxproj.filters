@@ -173,6 +173,9 @@
     <ClCompile Include="$(IntDir)Settings\moc_DEV9SettingsWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="$(IntDir)Settings\moc_DEV9UiCommon.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
     <ClCompile Include="Settings\GameSummaryWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
@@ -189,6 +192,9 @@
       <Filter>Settings</Filter>
     </ClCompile>
     <ClCompile Include="Settings\DEV9SettingsWidget.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings\DEV9UiCommon.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
     <ClCompile Include="Settings\HddCreateQt.cpp">
@@ -291,6 +297,9 @@
       <Filter>Settings</Filter>
     </QtMoc>
     <QtMoc Include="Settings\DEV9SettingsWidget.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
+    <QtMoc Include="Settings\DEV9UiCommon.h">
       <Filter>Settings</Filter>
     </QtMoc>
     <QtMoc Include="AutoUpdaterDialog.h" />
