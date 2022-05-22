@@ -185,6 +185,9 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		throw GSRecoverableError();
 	}
 
+	ASSERT(src->m_texture);
+	ASSERT(src->m_texture->GetScale() == (dst ? dst->m_texture->GetScale() : GSVector2(1, 1)));
+
 	return src;
 }
 
@@ -1532,6 +1535,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	}
 
 	ASSERT(src->m_texture);
+	ASSERT(src->m_target == (dst != nullptr));
+	ASSERT(src->m_from_target == (dst ? &dst->m_texture : nullptr));
+	ASSERT(src->m_texture->GetScale() == ((!dst || TEX0.PSM == PSM_PSMT8) ? GSVector2(1, 1) : dst->m_texture->GetScale()));
 
 	m_src.Add(src, TEX0, g_gs_renderer->m_context->offset.tex);
 
