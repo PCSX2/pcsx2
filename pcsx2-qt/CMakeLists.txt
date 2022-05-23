@@ -133,3 +133,4 @@ if(WIN32)
 	)
 endif()
 
+setup_main_executable(pcsx2-qt)
