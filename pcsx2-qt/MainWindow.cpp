@@ -51,7 +51,7 @@
 
 
 static constexpr char DISC_IMAGE_FILTER[] =
-	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.chd *.cso *.gz *.elf *.irx *.m3u *.gs *.gs.xz *.gs.zst);;"
+	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.chd *.cso *.gz *.elf *.irx *.m3u *.gs *.gs.xz *.gs.zst *.dump);;"
 									"Single-Track Raw Images (*.bin *.iso);;"
 									"Cue Sheets (*.cue);;"
 									"MAME CHD Images (*.chd);;"
@@ -60,7 +60,8 @@ static constexpr char DISC_IMAGE_FILTER[] =
 									"ELF Executables (*.elf);;"
 									"IRX Executables (*.irx);;"
 									"Playlists (*.m3u);;"
-									"GS Dumps (*.gs *.gs.xz *.gs.zst)");
+									"GS Dumps (*.gs *.gs.xz *.gs.zst);;"
+									"Block Dumps (*.dump)");
 
 const char* MainWindow::DEFAULT_THEME_NAME = "darkfusion";
 
