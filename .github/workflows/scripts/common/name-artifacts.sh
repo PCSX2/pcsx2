@@ -8,6 +8,7 @@
 
 # Inputs as env-vars
 # OS
+# BUILD_SYSTEM
 # GUI_FRAMEWORK
 # ARCH
 # SIMD
@@ -24,6 +25,14 @@ elif [ "${OS}" == "windows" ]; then
   NAME="PCSX2-${OS}-${GUI_FRAMEWORK}-${ARCH}-${SIMD}"
 else
   NAME="PCSX2-${OS}-${GUI_FRAMEWORK}-${ARCH}"
+fi
+
+# Add cmake if used to differentate it from msbuild builds
+# Else the two artifacts will have the same name and the files will be merged
+if [[ ! -z "${BUILD_SYSTEM}" ]]; then
+  if [ "${BUILD_SYSTEM}" == "cmake" ]; then
+    NAME="${NAME}-${BUILD_SYSTEM}"
+  fi
 fi
 
 # Add PR / Commit Metadata
