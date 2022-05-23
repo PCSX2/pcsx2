@@ -344,9 +344,6 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 					   "that you will have to reconfigure your settings after this update.</p>"));
 			}
 
-			changes_html += tr("<h4>Installing this update will download %1 MB through your internet connection.</h4>")
-								.arg(static_cast<double>(m_download_size) / 1000000.0, 0, 'f', 2);
-
 			m_ui.updateNotes->setText(changes_html);
 		}
 		else
