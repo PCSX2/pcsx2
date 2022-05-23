@@ -228,7 +228,8 @@ void EmuThread::run()
 	m_event_loop = new QEventLoop();
 	m_started_semaphore.release();
 
-	if (!VMManager::Internal::InitializeMemory())
+	// neither of these should ever fail.
+	if (!VMManager::Internal::InitializeGlobals() || !VMManager::Internal::InitializeMemory())
 		pxFailRel("Failed to allocate memory map");
 
 	// we need input sources ready for binding
@@ -252,6 +253,7 @@ void EmuThread::run()
 	InputManager::CloseSources();
 	VMManager::WaitForSaveStateFlush();
 	VMManager::Internal::ReleaseMemory();
+	VMManager::Internal::ReleaseGlobals();
 	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle());
 	moveToThread(m_ui_thread);
 	deleteLater();
