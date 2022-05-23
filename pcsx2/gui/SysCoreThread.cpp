@@ -112,7 +112,6 @@ void SysCoreThread::OnSuspendInThread()
 
 void SysCoreThread::Start()
 {
-	GSinit();
 	SPU2init();
 	PADinit();
 	DEV9init();
