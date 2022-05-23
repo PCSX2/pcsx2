@@ -285,9 +285,14 @@ void VMManager::ApplyGameFixes()
 	s_active_game_fixes += game->applyGSHardwareFixes(EmuConfig.GS);
 }
 
-std::string VMManager::GetGameSettingsPath(u32 game_crc)
+std::string VMManager::GetGameSettingsPath(const std::string_view& game_serial, u32 game_crc)
 {
-	return Path::Combine(EmuFolders::GameSettings, StringUtil::StdStringFromFormat("%08X.ini", game_crc));
+	std::string sanitized_serial(game_serial);
+	Path::SanitizeFileName(sanitized_serial);
+
+	return game_serial.empty() ?
+			   Path::Combine(EmuFolders::GameSettings, fmt::format("{:08X}.ini", game_crc)) :
+               Path::Combine(EmuFolders::GameSettings, fmt::format("{}_{:08X}.ini", sanitized_serial, game_crc));
 }
 
 void VMManager::RequestDisplaySize(float scale /*= 0.0f*/)
@@ -341,7 +346,13 @@ bool VMManager::UpdateGameSettingsLayer()
 	std::unique_ptr<INISettingsInterface> new_interface;
 	if (s_game_crc != 0)
 	{
-		const std::string filename(GetGameSettingsPath(s_game_crc));
+		std::string filename(GetGameSettingsPath(s_game_serial.c_str(), s_game_crc));
+		if (!FileSystem::FileExists(filename.c_str()))
+		{
+			// try the legacy format (crc.ini)
+			filename = GetGameSettingsPath({}, s_game_crc);
+		}
+
 		if (FileSystem::FileExists(filename.c_str()))
 		{
 			Console.WriteLn("Loading game settings from '%s'...", filename.c_str());

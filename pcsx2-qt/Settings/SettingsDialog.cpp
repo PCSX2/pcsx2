@@ -414,7 +414,7 @@ void SettingsDialog::setStringSettingValue(const char* section, const char* key,
 	g_emu_thread->applySettings();
 }
 
-void SettingsDialog::openGamePropertiesDialog(const GameList::Entry* game, u32 crc)
+void SettingsDialog::openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& serial, u32 crc)
 {
 	// check for an existing dialog with this crc
 	for (SettingsDialog* dialog : s_open_game_properties_dialogs)
@@ -427,8 +427,8 @@ void SettingsDialog::openGamePropertiesDialog(const GameList::Entry* game, u32 c
 		}
 	}
 
-	std::unique_ptr<INISettingsInterface> sif =
-		std::make_unique<INISettingsInterface>(Path::Combine(EmuFolders::GameSettings, StringUtil::StdStringFromFormat("%08X.ini", crc)));
+	std::string filename(VMManager::GetGameSettingsPath(serial, crc));
+	std::unique_ptr<INISettingsInterface> sif = std::make_unique<INISettingsInterface>(std::move(filename));
 	if (FileSystem::FileExists(sif->GetFileName().c_str()))
 		sif->Load();
 

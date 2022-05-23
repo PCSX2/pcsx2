@@ -50,7 +50,7 @@ public:
 	SettingsDialog(std::unique_ptr<SettingsInterface> sif, const GameList::Entry* game, u32 game_crc);
 	~SettingsDialog();
 
-	static void openGamePropertiesDialog(const GameList::Entry* game, u32 crc);
+	static void openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& serial, u32 crc);
 
 	__fi bool isPerGameSettings() const { return static_cast<bool>(m_sif); }
 	__fi SettingsInterface* getSettingsInterface() const { return m_sif.get(); }
