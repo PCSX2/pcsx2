@@ -40,9 +40,12 @@ public:
 	bool StageUpdate();
 	bool CommitUpdate();
 	void CleanupStagingDirectory();
+	void RemoveUpdateZip();
 
 private:
 	static bool RecursiveDeleteDirectory(const char* path);
+
+	void CloseUpdateZip();
 
 	struct FileToUpdate
 	{
@@ -52,6 +55,7 @@ private:
 
 	bool ParseZip();
 
+	std::string m_zip_path;
 	std::string m_destination_directory;
 	std::string m_staging_directory;
 
