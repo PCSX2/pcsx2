@@ -1165,6 +1165,10 @@ void VMManager::Internal::GameStartingOnCPUThread()
 	UpdateRunningGame(false);
 	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
 	ApplyLoadedPatches(PPT_COMBINED_0_1);
+
+	// If we don't reset the timer here, when using folder memcards the reindex will cause an eject,
+	// which a bunch of games don't like since they access the memory card on boot.
+	ClearMcdEjectTimeoutNow();
 }
 
 void VMManager::Internal::VSyncOnCPUThread()
