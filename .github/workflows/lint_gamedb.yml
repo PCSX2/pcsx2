@@ -19,9 +19,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Validate GameDB
+      - name: Validate Contents
         env:
-          SCRIPT_DIR: .github/workflows/scripts/validation/lint-gamedb
+          GAMEDB_PATH: ./bin/resources/GameIndex.yaml
+          SCRIPT_DIR: .github/workflows/scripts/lint/gamedb
         run: |
           pip install -r "${SCRIPT_DIR}/requirements.txt"
-          python "${SCRIPT_DIR}/lint-gamedb.py"
+          python "${SCRIPT_DIR}/lint.py"
+
+      - name: Check Formatting
+        run: |
+          npm install -g prettier
+          prettier --check ./bin/Resources/GameIndex.yaml

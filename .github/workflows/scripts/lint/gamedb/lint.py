@@ -1,7 +1,8 @@
+import os
 import yaml
 
 # Assumes this is ran from the root of the repository
-file_path = "./bin/resources/GameIndex.yaml"
+file_path = os.environ['GAMEDB_PATH']
 
 # These settings have to be manually kept in sync with the emulator code unfortunately.
 # up to date validation should ALWAYS be provided via the application!
@@ -209,11 +210,21 @@ option_validation_handlers = {
     "patches": (lambda serial, key, value: validate_patches(serial, key, value)),
 }
 
+class UniqueKeyLoader(yaml.FullLoader):
+    def construct_mapping(self, node, deep=False):
+        mapping = set()
+        for key_node, value_node in node.value:
+            key = self.construct_object(key_node, deep=deep)
+            if key in mapping:
+                raise ValueError(f"Duplicate {key!r} key found in YAML.")
+            mapping.add(key)
+        return super().construct_mapping(node, deep)
+
 print("Opening {}...".format(file_path))
-with open(file_path) as f:
+with open(file_path, encoding="utf-8") as f:
     try:
         print("Attempting to parse GameDB file...")
-        gamedb = yaml.load(f, Loader=yaml.FullLoader)
+        gamedb = yaml.load(f, Loader=UniqueKeyLoader)
     except Exception as err:
         print(err)
         print(
