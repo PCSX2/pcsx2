@@ -110,8 +110,16 @@ void SysMtgsThread::ShutdownThread()
 
 void SysMtgsThread::ThreadEntryPoint()
 {
-	m_thread_handle = Threading::ThreadHandle::GetForCallingThread();
 	Threading::SetNameOfCurrentThread("GS");
+
+	if (GSinit() != 0)
+	{
+		Host::ReportErrorAsync("Error", "GSinit() failed.");
+		m_open_or_close_done.Post();
+		return;
+	}
+
+	m_thread_handle = Threading::ThreadHandle::GetForCallingThread();
 
 	for (;;)
 	{
@@ -154,6 +162,8 @@ void SysMtgsThread::ThreadEntryPoint()
 		// we need to reset sem_event here, because MainLoop() kills it.
 		m_sem_event.Reset();
 	}
+
+	GSshutdown();
 }
 
 void SysMtgsThread::ResetGS()
