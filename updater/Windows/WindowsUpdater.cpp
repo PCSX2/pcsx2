@@ -385,6 +385,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	}
 
 	updater.CleanupStagingDirectory();
+	updater.RemoveUpdateZip();
 
 	progress.ModalInformation("Update complete.");
 

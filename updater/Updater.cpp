@@ -81,15 +81,7 @@ Updater::Updater(ProgressCallback* progress)
 
 Updater::~Updater()
 {
-#ifdef _WIN32
-	if (m_archive_opened)
-		SzArEx_Free(&m_archive, &g_Alloc);
-
-	ISzAlloc_Free(&g_Alloc, m_look_stream.buf);
-
-	if (m_file_opened)
-		File_Close(&m_archive_stream.file);
-#endif
+	CloseUpdateZip();
 }
 
 void Updater::SetupLogging(ProgressCallback* progress, const std::string& destination_directory)
@@ -122,6 +114,8 @@ bool Updater::OpenUpdateZip(const char* path)
 	FileInStream_CreateVTable(&m_archive_stream);
 	LookToRead2_CreateVTable(&m_look_stream, False);
 	CrcGenerateTable();
+
+	m_zip_path = path;
 
 	m_look_stream.buf = (Byte*)ISzAlloc_Alloc(&g_Alloc, kInputBufSize);
 	if (!m_look_stream.buf)
@@ -160,6 +154,29 @@ bool Updater::OpenUpdateZip(const char* path)
 	return ParseZip();
 #else
 	return false;
+#endif
+}
+
+void Updater::CloseUpdateZip()
+{
+#ifdef _WIN32
+	if (m_archive_opened)
+	{
+		SzArEx_Free(&m_archive, &g_Alloc);
+		m_archive_opened = false;
+	}
+
+	if (m_look_stream.buf)
+	{
+		ISzAlloc_Free(&g_Alloc, m_look_stream.buf);
+		m_look_stream.buf = nullptr;
+	}
+
+	if (m_file_opened)
+	{
+		File_Close(&m_archive_stream.file);
+		m_file_opened = false;
+	}
 #endif
 }
 
@@ -403,4 +420,15 @@ void Updater::CleanupStagingDirectory()
 	// remove staging directory itself
 	if (!RecursiveDeleteDirectory(m_staging_directory.c_str()))
 		m_progress->DisplayFormattedError("Failed to remove staging directory '%s'", m_staging_directory.c_str());
+}
+
+void Updater::RemoveUpdateZip()
+{
+	if (m_zip_path.empty())
+		return;
+
+	CloseUpdateZip();
+
+	if (!FileSystem::DeleteFilePath(m_zip_path.c_str()))
+		m_progress->DisplayFormattedError("Failed to remove update zip '%s'", m_zip_path.c_str());
 }
