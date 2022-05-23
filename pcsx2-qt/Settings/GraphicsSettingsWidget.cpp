@@ -33,6 +33,9 @@
 #include "Frontend/D3D11HostDisplay.h"
 #include "Frontend/D3D12HostDisplay.h"
 #endif
+#ifdef __APPLE__
+#include "GS/Renderers/Metal/GSMetalCPPAccessible.h"
+#endif
 
 struct RendererInfo
 {
@@ -384,7 +387,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	const bool is_sw_dx = false;
 #endif
 
-	const bool is_hardware = (type == GSRendererType::DX11 || type == GSRendererType::DX12 || type == GSRendererType::OGL || type == GSRendererType::VK);
+	const bool is_hardware = (type == GSRendererType::DX11 || type == GSRendererType::DX12 || type == GSRendererType::OGL || type == GSRendererType::VK || type == GSRendererType::Metal);
 	const bool is_software = (type == GSRendererType::SW);
 	const int current_tab = m_hardware_renderer_visible ? m_ui.hardwareRendererGroup->currentIndex() : m_ui.softwareRendererGroup->currentIndex();
 
@@ -460,6 +463,12 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 #ifdef ENABLE_VULKAN
 		case GSRendererType::VK:
 			modes = VulkanHostDisplay::StaticGetAdapterAndModeList(nullptr);
+			break;
+#endif
+
+#ifdef __APPLE__
+		case GSRendererType::Metal:
+			modes = GetMetalAdapterAndModeList();
 			break;
 #endif
 
