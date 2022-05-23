@@ -205,10 +205,13 @@ SIO_WRITE sioWriteController(u8 data)
 
 	default:
 		sio.buf[sio.bufCount] = PADpoll(data);
-		// Only examine controllers 1 / 2
-		if (sio.slot[sio.port] == 0 || sio.slot[sio.port] == 1)
+		if (EmuConfig.EnableRecordingTools)
 		{
-			g_InputRecording.ControllerInterrupt(data, sio.port, sio.bufCount, sio.buf);
+			// Only examine controllers 1 / 2
+			if (sio.slot[sio.port] == 0 || sio.slot[sio.port] == 1)
+			{
+				g_InputRecording.ControllerInterrupt(data, sio.port, sio.bufCount, sio.buf);
+			}
 		}
 		break;
 	}
