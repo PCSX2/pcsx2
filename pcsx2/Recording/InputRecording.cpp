@@ -149,7 +149,7 @@ void InputRecording::ControllerInterrupt(u8& data, u8& port, u16& bufCount, u8 b
 			}
 			// If the VirtualPad updated the PadData, we have to update the buffer
 			// before sending it to the game
-			else if (pads[port].virtualPad->IsShown() && pads[port].virtualPad->UpdateControllerData(bufIndex, pads[port].padData))
+			else if (pads[port].virtualPad && pads[port].virtualPad->IsShown() && pads[port].virtualPad->UpdateControllerData(bufIndex, pads[port].padData))
 				bufVal = pads[port].padData->PollControllerData(bufIndex);
 		}
 	}
