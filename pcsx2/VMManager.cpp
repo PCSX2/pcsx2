@@ -62,6 +62,10 @@
 #include "common/emitter/x86_intrin.h"
 #endif
 
+#ifdef _WIN32
+#include "common/RedtapeWindows.h"
+#endif
+
 namespace VMManager
 {
 	static void LoadSettings();
@@ -187,6 +191,18 @@ std::string VMManager::GetGameName()
 
 bool VMManager::Internal::InitializeGlobals()
 {
+	// On Win32, we have a bunch of things which use COM (e.g. SDL, XAudio2, etc).
+	// We need to initialize COM first, before anything else does, because otherwise they might
+	// initialize it in single-threaded/apartment mode, which can't be changed to multithreaded.
+#ifdef _WIN32
+	HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	if (FAILED(hr))
+	{
+		Host::ReportErrorAsync("Error", fmt::format("CoInitializeEx() failed: {:08X}", hr));
+		return false;
+	}
+#endif
+
 	x86caps.Identify();
 	x86caps.CountCores();
 	x86caps.SIMD_EstablishMXCSRmask();
@@ -194,6 +210,13 @@ bool VMManager::Internal::InitializeGlobals()
 	SysLogMachineCaps();
 
 	return true;
+}
+
+void VMManager::Internal::ReleaseGlobals()
+{
+#ifdef _WIN32
+	CoUninitialize();
+#endif
 }
 
 bool VMManager::Internal::InitializeMemory()

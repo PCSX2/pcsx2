@@ -86,12 +86,10 @@ bool QtHost::Initialize()
 
 	if (!InitializeConfig())
 	{
-		Console.WriteLn("Failed to initialize config.");
+		// NOTE: No point translating this, because no config means the language won't be loaded anyway.
+		QMessageBox::critical(nullptr, QStringLiteral("Error"), QStringLiteral("Failed to initialize config."));
 		return false;
 	}
-
-	if (!VMManager::Internal::InitializeGlobals())
-		return false;
 
 	HookSignals();
 	return true;
