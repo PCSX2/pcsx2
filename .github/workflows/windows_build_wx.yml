@@ -18,6 +18,10 @@ on:
         required: false
         type: string
         default: AVX2
+      buildSystem:
+        required: false
+        type: string
+        default: msbuild
       configuration:
         required: true
         type: string
@@ -47,6 +51,7 @@ jobs:
         shell: bash
         env:
           OS: windows
+          BUILD_SYSTEM: ${{ inputs.buildSystem }}
           GUI_FRAMEWORK: wxWidgets
           ARCH: ${{ inputs.platform }}
           SIMD: ${{ inputs.simd }}

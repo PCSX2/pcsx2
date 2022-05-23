@@ -64,4 +64,5 @@ jobs:
     with:
       jobName: wxWidgets
       configuration: CMake
+      buildSystem: cmake
     secrets: inherit

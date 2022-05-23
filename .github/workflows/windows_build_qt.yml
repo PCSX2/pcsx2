@@ -21,6 +21,10 @@ on:
         required: false
         type: string
         default: AVX2
+      buildSystem:
+        required: false
+        type: string
+        default: msbuild
       qt_binary_url:
         required: false
         type: string
@@ -51,6 +55,7 @@ jobs:
         shell: bash
         env:
           OS: windows
+          BUILD_SYSTEM: ${{ inputs.buildSystem }}
           GUI_FRAMEWORK: Qt
           ARCH: ${{ inputs.platform }}
           SIMD: ${{ inputs.simd }}
