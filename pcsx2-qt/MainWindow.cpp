@@ -898,7 +898,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		QAction* action = menu.addAction(tr("Properties..."));
 		action->setEnabled(!entry->serial.empty());
 		if (action->isEnabled())
-			connect(action, &QAction::triggered, [entry]() { SettingsDialog::openGamePropertiesDialog(entry, entry->crc); });
+			connect(action, &QAction::triggered, [entry]() { SettingsDialog::openGamePropertiesDialog(entry, entry->serial, entry->crc); });
 
 		action = menu.addAction(tr("Open Containing Directory..."));
 		connect(action, &QAction::triggered, [this, entry]() {
@@ -1075,14 +1075,14 @@ void MainWindow::onViewGamePropertiesActionTriggered()
 		const GameList::Entry* entry = GameList::GetEntryForPath(m_current_disc_path.toUtf8().constData());
 		if (entry)
 		{
-			SettingsDialog::openGamePropertiesDialog(entry, entry->crc);
+			SettingsDialog::openGamePropertiesDialog(entry, entry->serial, entry->crc);
 			return;
 		}
 	}
 
 	// open properties for the current running file (isn't in the game list)
 	if (m_current_game_crc != 0)
-		SettingsDialog::openGamePropertiesDialog(nullptr, m_current_game_crc);
+		SettingsDialog::openGamePropertiesDialog(nullptr, m_current_game_serial.toStdString(), m_current_game_crc);
 }
 
 void MainWindow::onGitHubRepositoryActionTriggered()
