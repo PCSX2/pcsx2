@@ -594,11 +594,9 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
 	m_ui.actionReset->setEnabled(running);
 	m_ui.actionPause->setEnabled(running);
 	m_ui.actionChangeDisc->setEnabled(running);
-	m_ui.actionCheats->setEnabled(running);
 	m_ui.actionScreenshot->setEnabled(running);
 	m_ui.actionViewSystemDisplay->setEnabled(starting_or_running);
 	m_ui.menuChangeDisc->setEnabled(running);
-	m_ui.menuCheats->setEnabled(running);
 
 	m_ui.actionSaveState->setEnabled(running);
 	m_ui.menuSaveState->setEnabled(running);

@@ -48,15 +48,6 @@
      <addaction name="actionRemoveDisc"/>
      <addaction name="separator"/>
     </widget>
-    <widget class="QMenu" name="menuCheats">
-     <property name="title">
-      <string>Cheats</string>
-     </property>
-     <property name="icon">
-      <iconset theme="flask-line">
-       <normaloff>.</normaloff>.</iconset>
-     </property>
-    </widget>
     <widget class="QMenu" name="menuLoadState">
      <property name="title">
       <string>Load State</string>
@@ -85,7 +76,6 @@
     <addaction name="actionPause"/>
     <addaction name="menuChangeDisc"/>
     <addaction name="separator"/>
-    <addaction name="menuCheats"/>
     <addaction name="actionScreenshot"/>
     <addaction name="separator"/>
     <addaction name="menuLoadState"/>
@@ -235,7 +225,6 @@
    <addaction name="actionReset"/>
    <addaction name="actionPause"/>
    <addaction name="actionChangeDisc"/>
-   <addaction name="actionCheats"/>
    <addaction name="actionScreenshot"/>
    <addaction name="separator"/>
    <addaction name="actionLoadState"/>
@@ -476,15 +465,6 @@
    </property>
    <property name="text">
     <string>Change Disc...</string>
-   </property>
-  </action>
-  <action name="actionCheats">
-   <property name="icon">
-    <iconset theme="flask-line">
-     <normaloff>.</normaloff>.</iconset>
-   </property>
-   <property name="text">
-    <string>Cheats...</string>
    </property>
   </action>
   <action name="actionAudioSettings">

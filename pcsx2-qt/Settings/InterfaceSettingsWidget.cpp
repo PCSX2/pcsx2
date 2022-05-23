@@ -100,6 +100,12 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 		m_ui.renderToMainWindow, tr("Render To Main Window"), tr("Checked"),
 		tr("Renders the display of the simulated console to the main window of the application, over "
 		   "the game list. If unchecked, the display will render in a separate window."));
+	
+	// Not yet used, disable the options
+	m_ui.pauseOnStart->setDisabled(true);
+	m_ui.pauseOnFocusLoss->setDisabled(true);
+	m_ui.disableWindowResizing->setDisabled(true);
+	m_ui.hideMouseCursor->setDisabled(true);
 }
 
 InterfaceSettingsWidget::~InterfaceSettingsWidget() = default;
