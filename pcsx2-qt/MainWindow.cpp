@@ -315,7 +315,7 @@ void MainWindow::setStyleFromSettings()
 		standardPalette.setColor(QPalette::Text, black);
 		standardPalette.setColor(QPalette::Button, tameTeal);
 		standardPalette.setColor(QPalette::ButtonText, Qt::white);
-		standardPalette.setColor(QPalette::Link, tameTeal);
+		standardPalette.setColor(QPalette::Link, black);
 		standardPalette.setColor(QPalette::Highlight, teal);
 		standardPalette.setColor(QPalette::HighlightedText, Qt::white);
 
@@ -352,7 +352,7 @@ void MainWindow::setStyleFromSettings()
 		standardPalette.setColor(QPalette::Text, black);
 		standardPalette.setColor(QPalette::Button, pink);
 		standardPalette.setColor(QPalette::ButtonText, black);
-		standardPalette.setColor(QPalette::Link, congoPink);
+		standardPalette.setColor(QPalette::Link, black);
 		standardPalette.setColor(QPalette::Highlight, congoPink);
 		standardPalette.setColor(QPalette::HighlightedText, black);
 
@@ -387,7 +387,7 @@ void MainWindow::setStyleFromSettings()
 		standardPalette.setColor(QPalette::Text, Qt::white);
 		standardPalette.setColor(QPalette::Button, blue);
 		standardPalette.setColor(QPalette::ButtonText, Qt::white);
-		standardPalette.setColor(QPalette::Link, blue);
+		standardPalette.setColor(QPalette::Link, darkBlue);
 		standardPalette.setColor(QPalette::Highlight, Qt::white);
 		standardPalette.setColor(QPalette::HighlightedText, black);
 
@@ -491,7 +491,7 @@ void MainWindow::setStyleFromSettings()
 		darkPalette.setColor(QPalette::Text, Qt::white);
 		darkPalette.setColor(QPalette::Button, darkRed);
 		darkPalette.setColor(QPalette::ButtonText, Qt::white);
-		darkPalette.setColor(QPalette::Link, darkRed);
+		darkPalette.setColor(QPalette::Link, brightRed);
 		darkPalette.setColor(QPalette::Highlight, brightRed);
 		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
 
