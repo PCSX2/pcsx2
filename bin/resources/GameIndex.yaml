@@ -1437,7 +1437,7 @@ SCCS-40019:
 SCCS-40022:
   name: "World Soccer Winning Eleven 8 - Asia Championship"
   region: "NTSC-C"
-  compat: 5 
+  compat: 5
 SCCS-60002:
   name: "Gran Turismo 4 [Review Copy]"
   region: "NTSC-C"
@@ -4637,7 +4637,7 @@ SCKA-20090:
 SCKA-20092:
   name: "K-1 World Grand Prix 2006"
   region: "NTSC-K"
-  speedHacks: 
+  speedHacks:
     InstantVU1SpeedHack: 0 # Fixes random black frames from happening when in a fight session.
     MTVUSpeedHack: 0
   gameFixes:
@@ -5642,7 +5642,7 @@ SCPS-19304:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-  memcardFilters: 
+  memcardFilters:
     - "SCAJ-20066"
     - "SCAJ-30006"
     - "SCAJ-30007"
@@ -8326,7 +8326,7 @@ SLED-53732:
   name: "Spartan - Total Warrior [Demo]"
   region: "PAL"
   gameFixes:
-    - EETimingHack # Fixes garbage textures flashing on the character model 
+    - EETimingHack # Fixes garbage textures flashing on the character model
 SLED-53745:
   name: "Total Overdose [Demo]"
   region: "PAL-M5"
@@ -9503,7 +9503,7 @@ SLES-50539:
   name: "James Bond 007 - Agent Under Fire"
   region: "PAL-M6"
   clampModes:
-    vuClampMode: 2 # Fixes corrupt textures. 
+    vuClampMode: 2 # Fixes corrupt textures.
 SLES-50540:
   name: "Simpsons Road Rage"
   region: "PAL-E"
@@ -10314,7 +10314,7 @@ SLES-50921:
   name: "Way of the Samurai"
   region: "PAL-M3"
   gameFixes:
-   - EETimingHack # Stops crash after intro movie
+    - EETimingHack # Stops crash after intro movie
 SLES-50922:
   name: "Terminator, The - Dawn of Fate"
   region: "PAL-M5"
@@ -10687,7 +10687,7 @@ SLES-51125:
   name: "Sega Soccer Slam"
   region: "PAL-E"
   gameFixes:
-   - EETimingHack # Fixes hang
+    - EETimingHack # Fixes hang
 SLES-51126:
   name: "Whirl Tour"
   region: "PAL-M5"
@@ -14674,7 +14674,7 @@ SLES-53022:
       content: |-
         author=Prafull
         comment=fixes hang at start
-        patch=1,EE,0034DA98,word,00000000  
+        patch=1,EE,0034DA98,word,00000000
 SLES-53023:
   name: "RTL Ski Jump 2005"
   region: "PAL-E-G"
@@ -14928,7 +14928,7 @@ SLES-53125:
   region: "PAL-M5"
   clampModes:
     eeClampMode: 3
-    vuClampMode: 3 
+    vuClampMode: 3
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLES-53127:
@@ -22254,7 +22254,7 @@ SLPM-61039:
     alignSprite: 1 # Fixes vertical lines.
     roundSprite: 2 # Fixes font artifacts.
     mergeSprite: 1 # Fixes flame-like bleeding.
-SLPM-61046:  
+SLPM-61046:
   name: "Dennou Senki - Virtual-On Marz [Trial]"
   region: "NTSC-J"
 SLPM-61051:
@@ -23492,8 +23492,8 @@ SLPM-62483:
   name: "Simple 2000 Series Vol. 48 - The Taxi - Untenshu ha Kimi da"
   region: "NTSC-J"
   roundModes:
-     eeRoundMode: 2
-     vuRoundMode: 2
+    eeRoundMode: 2
+    vuRoundMode: 2
 SLPM-62484:
   name: "Simple 2000 Series Vol. 50 - The Daibijin"
   region: "NTSC-J"
@@ -24358,13 +24358,13 @@ SLPM-64509:
   region: "NTSC-K"
   gsHWFixes:
     preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
-    cpuFramebufferConversion: 1 # Fixes fog wall.  
+    cpuFramebufferConversion: 1 # Fixes fog wall.
 SLPM-64513:
   name: "Crash Bandicoot - Return of the Demon King" # Wrath of Cortex
   region: "NTSC-K"
   gsHWFixes:
     preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
-    cpuFramebufferConversion: 1 # Fixes fog wall.  
+    cpuFramebufferConversion: 1 # Fixes fog wall.
 SLPM-64522:
   name: "La Pucelle"
   region: "NTSC-K"
@@ -24584,7 +24584,7 @@ SLPM-65053:
 SLPM-65054:
   name: "Abarenbou Princess"
   region: "NTSC-J"
-  compat: 5 
+  compat: 5
 SLPM-65056:
   name: "Orega Kantoku da Vol.2 - Getitou Pennant Race"
   region: "NTSC-J"
@@ -25051,7 +25051,7 @@ SLPM-65209:
         patch=1,IOP,000251E4,word,08009480 //j 0x25200
         patch=1,IOP,000251E8,word,AC8200BC //nop
         //Force jump to execute iReferEventFlagStatus
-        patch=1,IOP,00025198,word,0800946D  
+        patch=1,IOP,00025198,word,0800946D
 SLPM-65210:
   name: "Chou Battle Houshin [Premium Pack]"
   region: "NTSC-J"
@@ -29140,7 +29140,7 @@ SLPM-66444:
   name: "Spartan - Total Warrior"
   region: "NTSC-J"
   gameFixes:
-    - EETimingHack # Fixes garbage textures flashing on the character model 
+    - EETimingHack # Fixes garbage textures flashing on the character model
 SLPM-66445:
   name: "Persona 3"
   region: "NTSC-J"
@@ -31185,7 +31185,7 @@ SLPM-68018:
   region: "NTSC-J"
 SLPM-68019:
   name: "Naruto Shippuuden - Narutimate Accel 2"
-  region: "NTSC-J" 
+  region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
 SLPM-68503:
@@ -37136,7 +37136,7 @@ SLUS-20197:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 2 # Fixes Gauntlet Golf 
+    eeRoundMode: 2 # Fixes Gauntlet Golf
     vuRoundMode: 2 # Fixes game board jittering
 SLUS-20198:
   name: "FireBlade"
@@ -38045,7 +38045,7 @@ SLUS-20407:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-   - EETimingHack # Stops crash after intro movie
+    - EETimingHack # Stops crash after intro movie
 SLUS-20408:
   name: "Pitfall - The Lost Expedition"
   region: "NTSC-U"
@@ -38530,7 +38530,7 @@ SLUS-20509:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-   - EETimingHack # Fixes hang
+    - EETimingHack # Fixes hang
 SLUS-20510:
   name: "Star Wars - Clone Wars"
   region: "NTSC-U"
@@ -41620,21 +41620,21 @@ SLUS-21180:
   patches:
     FE44479E:
       content: |-
-       author=kozarovv
-       // Set IPU_DATA IVF to Intra
-       patch=1,EE,003BFDD8,word,3C040020
-       // Set IPU_CMD to IDEC, and set QSC to 2
-       // Why 2? Because it seems to work best.
-       patch=1,EE,003BFDEC,word,3C021002
-       // Old patch by shadow lady (still needed)
-       patch=1,EE,00104170,word,00000000
-       // Disable print - we need that loop!
-       // Without loop ipu break itself.
-       patch=1,EE,0010FDC8,word,34190180
-       patch=1,EE,0010FDCC,word,1720FFFF
-       patch=1,EE,0010FDD0,word,2739FFFF
-       patch=1,EE,0010FDD4,word,03E00008
-       patch=1,EE,0010FDD8,word,00000000
+        author=kozarovv
+        // Set IPU_DATA IVF to Intra
+        patch=1,EE,003BFDD8,word,3C040020
+        // Set IPU_CMD to IDEC, and set QSC to 2
+        // Why 2? Because it seems to work best.
+        patch=1,EE,003BFDEC,word,3C021002
+        // Old patch by shadow lady (still needed)
+        patch=1,EE,00104170,word,00000000
+        // Disable print - we need that loop!
+        // Without loop ipu break itself.
+        patch=1,EE,0010FDC8,word,34190180
+        patch=1,EE,0010FDCC,word,1720FFFF
+        patch=1,EE,0010FDD0,word,2739FFFF
+        patch=1,EE,0010FDD4,word,03E00008
+        patch=1,EE,0010FDD8,word,00000000
 SLUS-21181:
   name: "D.I.C.E. - DNA Integrated Cybernetic Enterprises"
   region: "NTSC-U"
@@ -45689,7 +45689,7 @@ SLUS-29126:
   region: "NTSC-U"
   compat: 4
 SLUS-29127:
-  name: "FIFA Soccer 2005 [Demo]" 
+  name: "FIFA Soccer 2005 [Demo]"
   region: "NTSC-U"
 SLUS-29129:
   name: "25 to Life [Public Beta Vol.1.0]"
