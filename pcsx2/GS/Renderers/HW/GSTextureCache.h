@@ -334,6 +334,10 @@ public:
 	SurfaceOffset ComputeSurfaceOffset(const uint32_t bp, const uint32_t bw, const uint32_t psm, const GSVector4i& r, const Target* t);
 	SurfaceOffset ComputeSurfaceOffset(const SurfaceOffsetKey& sok);
 
+	/// Expands a target when the block pointer for a display framebuffer is within another target, but the read offset
+	/// plus the height is larger than the current size of the target.
+	static void ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, int real_h);
+
 	/// Invalidates a temporary source, a partial copy only created from the current RT/DS for the current draw.
 	void InvalidateTemporarySource();
 
