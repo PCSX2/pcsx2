@@ -75,8 +75,6 @@ void GameListWidget::initialize()
 	m_model = new GameListModel(this);
 	m_model->setCoverScale(QtHost::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", 0.45f));
 	m_model->setShowCoverTitles(QtHost::GetBaseBoolSettingValue("UI", "GameListShowCoverTitles", true));
-	m_model->setCoverScale(0.45f);
-	m_model->setShowCoverTitles(true);
 
 	m_sort_model = new GameListSortModel(m_model);
 	m_sort_model->setSourceModel(m_model);
