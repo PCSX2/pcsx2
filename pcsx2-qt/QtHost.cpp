@@ -772,8 +772,8 @@ void QtHost::UpdateLogging()
 	SysConsole.iopConsole.Enabled = any_logging_sinks && QtHost::GetBaseBoolSettingValue("Logging", "EnableIOPConsole", true);
     
 	// Input Recording Logs
-	SysConsole.recordingConsole.Enabled = system_console_enabled && QtHost::GetBaseBoolSettingValue("Logging", "EnableInputRecordingLogs", true);
-	SysConsole.controlInfo.Enabled = system_console_enabled && QtHost::GetBaseBoolSettingValue("Logging", "EnableControllerLogs", true);
+	SysConsole.recordingConsole.Enabled = any_logging_sinks && QtHost::GetBaseBoolSettingValue("Logging", "EnableInputRecordingLogs", true);
+	SysConsole.controlInfo.Enabled = any_logging_sinks && QtHost::GetBaseBoolSettingValue("Logging", "EnableControllerLogs", false);
 
 	SetSystemConsoleEnabled(system_console_enabled);
 }
