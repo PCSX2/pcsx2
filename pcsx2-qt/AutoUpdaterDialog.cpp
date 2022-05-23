@@ -145,7 +145,9 @@ void AutoUpdaterDialog::reportError(const char* msg, ...)
 	std::string full_msg = StringUtil::StdStringFromFormatV(msg, ap);
 	va_end(ap);
 
-	QMessageBox::critical(this, tr("Updater Error"), QString::fromStdString(full_msg));
+	// don't display errors when we're doing an automatic background check, it's just annoying
+	if (m_display_messages)
+		QMessageBox::critical(this, tr("Updater Error"), QString::fromStdString(full_msg));
 }
 
 void AutoUpdaterDialog::queueUpdateCheck(bool display_message)
