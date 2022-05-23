@@ -34863,6 +34863,8 @@ SLPS-25642:
 SLPS-25643:
   name: "Kimikisu"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes textboxes and character portraits.
 SLPS-25644:
   name: "Simple 2000 Series Ultimate Vol. 31 - K-1 World Max 2005"
   region: "NTSC-J"
@@ -35633,6 +35635,8 @@ SLPS-25849:
 SLPS-25850:
   name: "KimiKiss [ebKore+]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes textboxes and character portraits.
 SLPS-25851:
   name: "Zettai Zetsumei Toshi 2 - Itetsuita Kioku Tachi [Irem Collection]"
   region: "NTSC-J"
