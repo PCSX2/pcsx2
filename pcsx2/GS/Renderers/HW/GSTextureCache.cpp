@@ -465,32 +465,46 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 		assert(type == RenderTarget);
 		// Let's try to find a perfect frame that contains valid data
 		for (auto t : list)
+		{
 			if (bp == t->m_TEX0.TBP0 && t->m_end_block >= bp)
 			{
 				dst = t;
 				GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x -> 0x%x %s)", size.x, size.y, dst->m_texture->GetID(), bp, t->m_end_block, psm_str(TEX0.PSM));
 				break;
 			}
+		}
 
 		// 2nd try ! Try to find a frame that include the bp
 		if (!dst)
+		{
 			for (auto t : list)
+			{
 				if (t->m_TEX0.TBP0 < bp && bp <= t->m_end_block)
 				{
 					dst = t;
 					GL_CACHE("TC: Lookup Frame %dx%d, inclusive hit: %d (0x%x, took 0x%x -> 0x%x %s)", size.x, size.y, t->m_texture->GetID(), bp, t->m_TEX0.TBP0, t->m_end_block, psm_str(TEX0.PSM));
+					if (real_h > 0)
+						ScaleTargetForDisplay(dst, TEX0, real_h);
+
 					break;
 				}
+			}
+		}
 
 		// 3rd try ! Try to find a frame that doesn't contain valid data (honestly I'm not sure we need to do it)
 		if (!dst)
+		{
 			for (auto t : list)
+			{
 				if (bp == t->m_TEX0.TBP0)
 				{
 					dst = t;
 					GL_CACHE("TC: Lookup Frame %dx%d, empty hit: %d (0x%x -> 0x%x %s)", size.x, size.y, dst->m_texture->GetID(), bp, t->m_end_block, psm_str(TEX0.PSM));
 					break;
 				}
+			}
+		}
+
 		if (dst)
 			dst->m_TEX0.TBW = TEX0.TBW; // Fix Jurassic Park - Operation Genesis loading disk logo.
 	}
@@ -610,6 +624,57 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, const int real_h)
 {
 	return LookupTarget(TEX0, size, RenderTarget, true, 0, true, real_h);
+}
+
+void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, int real_h)
+{
+	// This handles a case where you have two images stacked on top of one another (usually FMVs), and
+	// the size of the top framebuffer is larger than the height of the image. Usually happens when
+	// conservative FB is on, as off it'll create a 1280 high framebuffer.
+
+	// The game alternates DISPFB between the top image, where the block pointer matches the target,
+	// but when it switches to the other buffer, LookupTarget() will score a partial match on the target
+	// because e.g. 448 < 512, but the target doesn't actually contain the full image. This usually leads
+	// to flickering. Test case: Neo Contra intro FMVs.
+
+	// So, for these cases, we simply expand the target to include both images, based on the read height.
+	// It won't affect normal rendering, since that doesn't go through this path.
+	
+	// Compute offset into the target that we'll start reading from.
+	const int delta = dispfb.TBP0 - t->m_TEX0.TBP0;
+	int y_offset = 0;
+	if (delta > 0 && t->m_TEX0.TBW != 0)
+	{
+		const int pages = delta >> 5u;
+		const int y_pages = pages / t->m_TEX0.TBW;
+		y_offset = y_pages * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
+	}
+
+	// Take that into consideration to find the extent of the target which will be sampled.
+	GSTexture* old_texture = t->m_texture;
+	const int needed_height = std::min(real_h + y_offset, GSRendererHW::MAX_FRAMEBUFFER_HEIGHT);
+	const int scaled_needed_height = static_cast<int>(static_cast<float>(needed_height) * old_texture->GetScale().y);
+	if (scaled_needed_height <= old_texture->GetHeight())
+		return;
+
+	// We're expanding, so create a new texture.
+	GSTexture* new_texture = g_gs_device->CreateRenderTarget(old_texture->GetWidth(), scaled_needed_height, GSTexture::Format::Color, false);
+	if (!new_texture)
+	{
+		// Memory allocation failure, do our best to hobble along.
+		return;
+	}
+
+	GL_CACHE("Expanding target for display output, target height %d @ 0x%X, display %d @ 0x%X offset %d needed %d",
+		t->m_texture->GetHeight(), t->m_TEX0.TBP0, real_h, dispfb.TBP0, y_offset, needed_height);
+
+	// Fill the new texture with the old data, and discard the old texture.
+	g_gs_device->StretchRect(old_texture, new_texture, GSVector4(old_texture->GetSize()).zwxy(), ShaderConvert::COPY, false);
+	g_gs_device->Recycle(old_texture);
+	t->m_texture = new_texture;
+
+	// We unconditionally preload the frame here, because otherwise we'll end up with blackness for one frame (when the expand happens).
+	t->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, t->m_TEX0.TBW * 64, needed_height), t->m_TEX0.PSM, t->m_TEX0.TBW));
 }
 
 // Goal: Depth And Target at the same address is not possible. On GS it is

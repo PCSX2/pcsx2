@@ -125,7 +125,7 @@ void GSRendererHW::SetScaling()
 	// Until performance issue is properly fixed, let's keep an option to reduce the framebuffer size.
 	//
 	// m_large_framebuffer has been inverted to m_conservative_framebuffer, it isn't an option that benefits being enabled all the time for everyone.
-	int fb_height = 1280;
+	int fb_height = MAX_FRAMEBUFFER_HEIGHT;
 	if (GSConfig.ConservativeFramebuffer)
 	{
 		fb_height = fb_width < 1024 ? std::max(512, crtc_size.y) : 1024;
