@@ -96,6 +96,7 @@ void InputBindingDialog::onInputListenTimerTimeout()
 
 void InputBindingDialog::startListeningForInput(u32 timeout_in_seconds)
 {
+	m_new_bindings.clear();
 	m_input_listen_timer = new QTimer(this);
 	m_input_listen_timer->setSingleShot(false);
 	m_input_listen_timer->start(1000);
@@ -112,6 +113,7 @@ void InputBindingDialog::startListeningForInput(u32 timeout_in_seconds)
 	installEventFilter(this);
 	grabKeyboard();
 	grabMouse();
+	hookInputManager();
 }
 
 void InputBindingDialog::stopListeningForInput()
@@ -125,6 +127,7 @@ void InputBindingDialog::stopListeningForInput()
 	delete m_input_listen_timer;
 	m_input_listen_timer = nullptr;
 
+	unhookInputManager();
 	releaseMouse();
 	releaseKeyboard();
 	removeEventFilter(this);
