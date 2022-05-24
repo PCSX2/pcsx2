@@ -564,7 +564,7 @@ void VMManager::UpdateRunningGame(bool force, bool game_starting)
 
 	// check this here, for two cases: dynarec on, and when enable cheats is set per-game.
 	if (s_patches_crc != s_game_crc)
-		ReloadPatches(false);
+		ReloadPatches(true);
 
 	GetMTGS().SendGameCRC(new_crc);
 
@@ -1256,7 +1256,7 @@ void VMManager::Internal::EntryPointCompilingOnCPUThread()
 	// until the game entry point actually runs, because that can update settings, which
 	// can flush the JIT, etc. But we need to apply patches for games where the entry
 	// point is in the patch (e.g. WRC 4). So. Gross, but the only way to handle it really.
-	LoadPatches(SysGetDiscID(), ElfCRC, false, false);
+	LoadPatches(SysGetDiscID(), ElfCRC, true, false);
 	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
 }
 
