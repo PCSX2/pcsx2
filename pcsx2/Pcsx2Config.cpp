@@ -1079,11 +1079,11 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 
 	// For now, this in the derived config for backwards ini compatibility.
 #ifdef PCSX2_CORE
+	SettingsWrapEntryEx(CurrentBlockdump, "BlockDumpSaveDirectory");
+
 	BaseFilenames.LoadSave(wrap);
 	Framerate.LoadSave(wrap);
 	LoadSaveMemcards(wrap);
-
-	SettingsWrapEntry(GzipIsoIndexTemplate);
 
 #ifdef __WXMSW__
 	SettingsWrapEntry(McdCompressNTFS);
