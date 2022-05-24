@@ -128,6 +128,8 @@
     <addaction name="separator"/>
     <addaction name="menuDebugSwitchRenderer"/>
     <addaction name="actionToggleSoftwareRendering"/>
+    <addaction name="separator"/>
+    <addaction name="actionSaveBlockDump"/>
     <addaction name="actionSaveGSDump"/>
     <addaction name="separator"/>
     <addaction name="actionReloadPatches"/>
@@ -796,6 +798,14 @@
    </property>
    <property name="text">
     <string>Enable CDVD Read Logging</string>
+   </property>
+  </action>
+  <action name="actionSaveBlockDump">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Save CDVD Block Dump</string>
    </property>
   </action>
  </widget>

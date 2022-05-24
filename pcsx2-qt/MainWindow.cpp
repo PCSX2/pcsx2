@@ -219,6 +219,8 @@ void MainWindow::connectSignals()
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableFileLogging, "Logging", "EnableFileLogging", false);
 	connect(m_ui.actionEnableFileLogging, &QAction::triggered, this, &MainWindow::onLoggingOptionChanged);
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableCDVDVerboseReads, "EmuCore", "CdvdVerboseReads", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionSaveBlockDump, "EmuCore", "CdvdDumpBlocks", false);
+	connect(m_ui.actionSaveBlockDump, &QAction::toggled, this, &MainWindow::onBlockDumpActionToggled);
 
 	connect(m_ui.actionSaveGSDump, &QAction::triggered, this, &MainWindow::onSaveGSDumpActionTriggered);
 
@@ -539,6 +541,29 @@ void MainWindow::onScreenshotActionTriggered()
 void MainWindow::onSaveGSDumpActionTriggered()
 {
 	g_emu_thread->queueSnapshot(1);
+}
+
+void MainWindow::onBlockDumpActionToggled(bool checked)
+{
+	if (!checked)
+		return;
+
+	std::string old_directory(Host::GetBaseStringSettingValue("EmuCore", "BlockDumpSaveDirectory", ""));
+	if (old_directory.empty())
+		old_directory = FileSystem::GetWorkingDirectory();
+
+	// prompt for a location to save
+	const QString new_dir(
+		QFileDialog::getExistingDirectory(this, tr("Select location to save block dump:"),
+			QString::fromStdString(old_directory)));
+	if (new_dir.isEmpty())
+	{
+		// disable it again
+		m_ui.actionSaveBlockDump->setChecked(false);
+		return;
+	}
+
+	QtHost::SetBaseStringSettingValue("EmuCore", "BlockDumpSaveDirectory", new_dir.toUtf8().constData());
 }
 
 void MainWindow::saveStateToConfig()
