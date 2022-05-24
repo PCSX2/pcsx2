@@ -23,6 +23,8 @@
 #include <exception>
 #include <memory>
 
+#include "fmt/core.h"
+
 #include "IsoFS/IsoFS.h"
 #include "IsoFS/IsoFSCDVD.h"
 #include "IsoFileFormats.h"
@@ -34,6 +36,7 @@
 #include "common/StringUtil.h"
 #include "DebugTools/SymbolMap.h"
 #include "Config.h"
+#include "Host.h"
 
 CDVD_API* CDVD = NULL;
 
@@ -408,6 +411,10 @@ bool DoCDVDopen()
 
 	cdvdTD td;
 	CDVD->getTD(0, &td);
+
+#ifdef PCSX2_CORE
+	Host::AddKeyedOSDMessage("BlockDumpCreate", fmt::format("Saving CDVD block dump to '{}'.", temp), 10.0f);
+#endif
 
 	blockDumpFile.Create(std::move(temp), 2);
 
