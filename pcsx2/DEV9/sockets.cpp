@@ -17,7 +17,13 @@
 #include "common/Assertions.h"
 #include "common/StringUtil.h"
 
-#ifdef __POSIX__
+#ifdef _WIN32
+#include <winsock2.h>
+#include <iphlpapi.h>
+#elif defined(__POSIX__)
+#include <sys/types.h>
+#include <ifaddrs.h>
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <net/if.h>
@@ -27,6 +33,7 @@
 #endif
 
 #include "sockets.h"
+#include "AdapterUtils.h"
 #include "DEV9.h"
 
 #include "Sessions/ICMP_Session/ICMP_Session.h"
@@ -158,7 +165,7 @@ SocketAdapter::SocketAdapter()
 
 	if (strcmp(EmuConfig.DEV9.EthDevice.c_str(), "Auto") != 0)
 	{
-		foundAdapter = GetWin32SelectedAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
+		foundAdapter = AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
 
 		if (!foundAdapter)
 		{
@@ -166,17 +173,9 @@ SocketAdapter::SocketAdapter()
 			return;
 		}
 
-		PIP_ADAPTER_UNICAST_ADDRESS address = nullptr;
-
-		address = adapter.FirstUnicastAddress;
-		while (address != nullptr && address->Address.lpSockaddr->sa_family != AF_INET)
-			address = address->Next;
-
-		if (address != nullptr)
-		{
-			sockaddr_in* sockaddr = (sockaddr_in*)address->Address.lpSockaddr;
-			adapterIP = *(IP_Address*)&sockaddr->sin_addr;
-		}
+		std::optional<IP_Address> adIP = AdapterUtils::GetAdapterIP(&adapter);
+		if (adIP.has_value())
+			adapterIP = adIP.value();
 		else
 		{
 			Console.Error("DEV9: Socket: Failed To Get Adapter IP");
@@ -185,7 +184,7 @@ SocketAdapter::SocketAdapter()
 	}
 	else
 	{
-		foundAdapter = GetWin32AutoAdapter(&adapter, &buffer);
+		foundAdapter = AdapterUtils::GetWin32AdapterAuto(&adapter, &buffer);
 		adapterIP = {0};
 
 		if (!foundAdapter)
@@ -200,7 +199,7 @@ SocketAdapter::SocketAdapter()
 
 	if (strcmp(EmuConfig.DEV9.EthDevice.c_str(), "Auto") != 0)
 	{
-		foundAdapter = GetIfSelectedAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
+		foundAdapter = AdapterUtils::GetIfAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
 
 		if (!foundAdapter)
 		{
@@ -208,16 +207,9 @@ SocketAdapter::SocketAdapter()
 			return;
 		}
 
-		sockaddr* address = nullptr;
-
-		if (adapter.ifa_addr != nullptr && adapter.ifa_addr->sa_family == AF_INET)
-			address = adapter.ifa_addr;
-
-		if (address != nullptr)
-		{
-			sockaddr_in* sockaddr = (sockaddr_in*)address;
-			adapterIP = *(IP_Address*)&sockaddr->sin_addr;
-		}
+		std::optional<IP_Address> adIP = AdapterUtils::GetAdapterIP(&adapter);
+		if (adIP.has_value())
+			adapterIP = adIP.value();
 		else
 		{
 			Console.Error("DEV9: Socket: Failed To Get Adapter IP");
@@ -227,7 +219,7 @@ SocketAdapter::SocketAdapter()
 	}
 	else
 	{
-		foundAdapter = GetIfAutoAdapter(&adapter, &buffer);
+		foundAdapter = AdapterUtils::GetIfAdapterAuto(&adapter, &buffer);
 		adapterIP = {0};
 
 		if (!foundAdapter)
@@ -296,228 +288,6 @@ SocketAdapter::SocketAdapter()
 
 	initialized = true;
 }
-
-#ifdef _WIN32
-bool SocketAdapter::GetWin32SelectedAdapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer)
-{
-	int neededSize = 128;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-	ULONG dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
-
-	PIP_ADAPTER_ADDRESSES pAdapterInfo;
-
-	DWORD dwStatus = GetAdaptersAddresses(
-		AF_UNSPEC,
-		GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
-		NULL,
-		AdapterInfo.get(),
-		&dwBufLen);
-
-	if (dwStatus == ERROR_BUFFER_OVERFLOW)
-	{
-		DevCon.WriteLn("DEV9: GetWin32Adapter() buffer too small, resizing");
-		neededSize = dwBufLen / sizeof(IP_ADAPTER_ADDRESSES) + 1;
-		AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-		dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
-		DevCon.WriteLn("DEV9: New size %i", neededSize);
-
-		dwStatus = GetAdaptersAddresses(
-			AF_UNSPEC,
-			GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
-			NULL,
-			AdapterInfo.get(),
-			&dwBufLen);
-	}
-	if (dwStatus != ERROR_SUCCESS)
-		return false;
-
-	pAdapterInfo = AdapterInfo.get();
-
-	do
-	{
-		if (strcmp(pAdapterInfo->AdapterName, name.c_str()) == 0)
-		{
-			*adapter = *pAdapterInfo;
-			buffer->swap(AdapterInfo);
-			return true;
-		}
-
-		pAdapterInfo = pAdapterInfo->Next;
-	} while (pAdapterInfo);
-	return false;
-}
-bool SocketAdapter::GetWin32AutoAdapter(PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer)
-{
-	int neededSize = 128;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-	ULONG dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
-
-	PIP_ADAPTER_ADDRESSES pAdapterInfo;
-
-	DWORD dwStatus = GetAdaptersAddresses(
-		AF_UNSPEC,
-		GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
-		NULL,
-		AdapterInfo.get(),
-		&dwBufLen);
-
-	if (dwStatus == ERROR_BUFFER_OVERFLOW)
-	{
-		DevCon.WriteLn("DEV9: PCAPGetWin32Adapter() buffer too small, resizing");
-		//
-		neededSize = dwBufLen / sizeof(IP_ADAPTER_ADDRESSES) + 1;
-		AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-		dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
-		DevCon.WriteLn("DEV9: New size %i", neededSize);
-
-		dwStatus = GetAdaptersAddresses(
-			AF_UNSPEC,
-			GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
-			NULL,
-			AdapterInfo.get(),
-			&dwBufLen);
-	}
-
-	if (dwStatus != ERROR_SUCCESS)
-		return 0;
-
-	pAdapterInfo = AdapterInfo.get();
-
-	do
-	{
-		if (pAdapterInfo->IfType != IF_TYPE_SOFTWARE_LOOPBACK &&
-			pAdapterInfo->OperStatus == IfOperStatusUp)
-		{
-			//Search for an adapter with;
-			//IPv4 Address
-			//DNS
-			//Gateway
-
-			bool hasIPv4 = false;
-			bool hasDNS = false;
-			bool hasGateway = false;
-
-			//IPv4
-			PIP_ADAPTER_UNICAST_ADDRESS ipAddress = nullptr;
-			ipAddress = pAdapterInfo->FirstUnicastAddress;
-			while (ipAddress != nullptr && ipAddress->Address.lpSockaddr->sa_family != AF_INET)
-				ipAddress = ipAddress->Next;
-			if (ipAddress != nullptr)
-				hasIPv4 = true;
-
-			//DNS
-			PIP_ADAPTER_DNS_SERVER_ADDRESS dnsAddress = pAdapterInfo->FirstDnsServerAddress;
-			while (dnsAddress != nullptr && dnsAddress->Address.lpSockaddr->sa_family != AF_INET)
-				dnsAddress = dnsAddress->Next;
-			if (dnsAddress != nullptr)
-				hasDNS = true;
-
-			//Gateway
-			PIP_ADAPTER_GATEWAY_ADDRESS gatewayAddress = pAdapterInfo->FirstGatewayAddress;
-			while (gatewayAddress != nullptr && gatewayAddress->Address.lpSockaddr->sa_family != AF_INET)
-				gatewayAddress = gatewayAddress->Next;
-			if (gatewayAddress != nullptr)
-				hasGateway = true;
-
-			if (hasIPv4 && hasDNS && hasGateway)
-			{
-				*adapter = *pAdapterInfo;
-				buffer->swap(AdapterInfo);
-				return true;
-			}
-		}
-
-		pAdapterInfo = pAdapterInfo->Next;
-	} while (pAdapterInfo);
-
-	return false;
-}
-#elif defined(__POSIX__)
-bool SocketAdapter::GetIfSelectedAdapter(const std::string& name, ifaddrs* adapter, ifaddrs** buffer)
-{
-	ifaddrs* adapterInfo;
-	ifaddrs* pAdapter;
-
-	int error = getifaddrs(&adapterInfo);
-	if (error)
-		return false;
-
-	pAdapter = adapterInfo;
-
-	do
-	{
-		if (pAdapter->ifa_addr->sa_family == AF_INET && strcmp(pAdapter->ifa_name, name.c_str()) == 0)
-			break;
-
-		pAdapter = pAdapter->ifa_next;
-	} while (pAdapter);
-
-	if (pAdapter != nullptr)
-	{
-		*adapter = *pAdapter;
-		*buffer = adapterInfo;
-		return true;
-	}
-
-	freeifaddrs(adapterInfo);
-	return false;
-}
-bool SocketAdapter::GetIfAutoAdapter(ifaddrs* adapter, ifaddrs** buffer)
-{
-	ifaddrs* adapterInfo;
-	ifaddrs* pAdapter;
-
-	int error = getifaddrs(&adapterInfo);
-	if (error)
-		return false;
-
-	pAdapter = adapterInfo;
-
-	do
-	{
-		if ((pAdapter->ifa_flags & IFF_LOOPBACK) == 0 &&
-			(pAdapter->ifa_flags & IFF_UP) != 0)
-		{
-			//Search for an adapter with;
-			//IPv4 Address
-			//Gateway
-
-			bool hasIPv4 = false;
-			bool hasGateway = false;
-
-			if (pAdapter->ifa_addr->sa_family == AF_INET)
-				hasIPv4 = true;
-
-#ifdef __linux__
-			std::vector<IP_Address> gateways = InternalServers::DHCP_Server::GetGatewaysLinux(pAdapter->ifa_name);
-
-			if (gateways.size() > 0)
-				hasGateway = true;
-
-#elif defined(__FreeBSD__) || (__APPLE__)
-			std::vector<IP_Address> gateways = InternalServers::DHCP_Server::GetGatewaysBSD(pAdapter->ifa_name);
-
-			if (gateways.size() > 0)
-				hasGateway = true;
-
-#else
-			Console.Error("DHCP: Unsupported OS, can't find Gateway");
-#endif
-			if (hasIPv4 && hasGateway)
-			{
-				*adapter = *pAdapter;
-				*buffer = adapterInfo;
-				return true;
-			}
-		}
-
-		pAdapter = pAdapter->ifa_next;
-	} while (pAdapter);
-
-	freeifaddrs(adapterInfo);
-	return false;
-}
-#endif
 
 bool SocketAdapter::blocks()
 {
@@ -664,18 +434,18 @@ void SocketAdapter::reloadSettings()
 	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
 
 	if (strcmp(EmuConfig.DEV9.EthDevice.c_str(), "Auto") != 0)
-		foundAdapter = GetWin32SelectedAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
+		foundAdapter = AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
 	else
-		foundAdapter = GetWin32AutoAdapter(&adapter, &buffer);
+		foundAdapter = AdapterUtils::GetWin32AdapterAuto(&adapter, &buffer);
 
 #elif defined(__POSIX__)
 	ifaddrs adapter;
 	ifaddrs* buffer;
 
 	if (strcmp(EmuConfig.DEV9.EthDevice.c_str(), "Auto") != 0)
-		foundAdapter = GetIfSelectedAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
+		foundAdapter = AdapterUtils::GetIfAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
 	else
-		foundAdapter = GetIfAutoAdapter(&adapter, &buffer);
+		foundAdapter = AdapterUtils::GetIfAdapterAuto(&adapter, &buffer);
 #endif
 
 	const IP_Address ps2IP = {internalIP.bytes[0], internalIP.bytes[1], internalIP.bytes[2], 100};
