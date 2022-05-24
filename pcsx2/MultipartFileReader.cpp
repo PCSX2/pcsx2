@@ -22,7 +22,7 @@
 
 // Tests for a filename extension in both upper and lower case, if the filesystem happens
 // to be case-sensitive.
-static bool pxFileExists_WithExt( const std::string& filename, const std::string& ext )
+static bool pxFileExists_WithExt( std::string& filename, const std::string& ext )
 {
 	std::string temp(Path::ReplaceExtension(filename, StringUtil::toLower(ext)));
 	if (FileSystem::FileExists(temp.c_str()))
@@ -31,7 +31,11 @@ static bool pxFileExists_WithExt( const std::string& filename, const std::string
 #if defined(_WIN32) || defined(__DARWIN__)
 	temp = Path::ReplaceExtension(filename, StringUtil::toUpper(ext));
 	if (FileSystem::FileExists(temp.c_str()))
+	{
+		// make sure we open the correct one
+		filename = std::move(temp);
 		return true;
+	}
 #endif
 
 	return false;
@@ -114,11 +118,17 @@ void MultipartFileReader::FindParts()
 			break;
 
 		Part* thispart = m_parts + m_numparts;
-		AsyncFileReader* thisreader = thispart->reader = new FlatFileReader();
+		AsyncFileReader* thisreader = new FlatFileReader();
 
-		thisreader->Open(nameparts);
+		if (!thisreader->Open(nameparts))
+		{
+			delete thisreader;
+			break;
+		}
+
 		thisreader->SetBlockSize(bsize);
 
+		thispart->reader = thisreader;
 		thispart->start = blocks;
 
 		uint bcount =  thisreader->GetBlockCount();
