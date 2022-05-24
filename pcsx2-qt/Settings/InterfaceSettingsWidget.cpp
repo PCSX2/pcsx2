@@ -106,6 +106,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 	m_ui.pauseOnFocusLoss->setDisabled(true);
 	m_ui.disableWindowResizing->setDisabled(true);
 	m_ui.hideMouseCursor->setDisabled(true);
+	m_ui.language->setDisabled(true);
 }
 
 InterfaceSettingsWidget::~InterfaceSettingsWidget() = default;
