@@ -30,6 +30,7 @@
 #include "pcsx2/Frontend/GameList.h"
 #include "pcsx2/GSDumpReplayer.h"
 #include "pcsx2/HostDisplay.h"
+#include "pcsx2/HostSettings.h"
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/Recording/InputRecording.h"
 
@@ -98,16 +99,16 @@ void MainWindow::initialize()
 
 void MainWindow::setupAdditionalUi()
 {
-	const bool toolbar_visible = QtHost::GetBaseBoolSettingValue("UI", "ShowToolbar", false);
+	const bool toolbar_visible = Host::GetBaseBoolSettingValue("UI", "ShowToolbar", false);
 	m_ui.actionViewToolbar->setChecked(toolbar_visible);
 	m_ui.toolBar->setVisible(toolbar_visible);
 
-	const bool toolbars_locked = QtHost::GetBaseBoolSettingValue("UI", "LockToolbar", false);
+	const bool toolbars_locked = Host::GetBaseBoolSettingValue("UI", "LockToolbar", false);
 	m_ui.actionViewLockToolbar->setChecked(toolbars_locked);
 	m_ui.toolBar->setMovable(!toolbars_locked);
 	m_ui.toolBar->setContextMenuPolicy(Qt::PreventContextMenu);
 
-	const bool status_bar_visible = QtHost::GetBaseBoolSettingValue("UI", "ShowStatusBar", true);
+	const bool status_bar_visible = Host::GetBaseBoolSettingValue("UI", "ShowStatusBar", true);
 	m_ui.actionViewStatusBar->setChecked(status_bar_visible);
 	m_ui.statusBar->setVisible(status_bar_visible);
 
@@ -293,7 +294,7 @@ void MainWindow::recreate()
 
 void MainWindow::setStyleFromSettings()
 {
-	const std::string theme(QtHost::GetBaseStringSettingValue("UI", "Theme", DEFAULT_THEME_NAME));
+	const std::string theme(Host::GetBaseStringSettingValue("UI", "Theme", DEFAULT_THEME_NAME));
 
 	if (theme == "fusion")
 	{
@@ -522,7 +523,7 @@ void MainWindow::setStyleFromSettings()
 
 void MainWindow::setIconThemeFromSettings()
 {
-	const std::string theme(QtHost::GetBaseStringSettingValue("UI", "Theme", DEFAULT_THEME_NAME));
+	const std::string theme(Host::GetBaseStringSettingValue("UI", "Theme", DEFAULT_THEME_NAME));
 	QString icon_theme;
 
 	if (theme == "darkfusion" || theme == "darkfusionblue" || theme == "dualtoneOrangeBlue" || theme == "ScarletDevilRed")
@@ -571,7 +572,7 @@ void MainWindow::saveStateToConfig()
 	{
 		const QByteArray geometry = saveGeometry();
 		const QByteArray geometry_b64 = geometry.toBase64();
-		const std::string old_geometry_b64 = QtHost::GetBaseStringSettingValue("UI", "MainWindowGeometry");
+		const std::string old_geometry_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowGeometry");
 		if (old_geometry_b64 != geometry_b64.constData())
 			QtHost::SetBaseStringSettingValue("UI", "MainWindowGeometry", geometry_b64.constData());
 	}
@@ -579,7 +580,7 @@ void MainWindow::saveStateToConfig()
 	{
 		const QByteArray state = saveState();
 		const QByteArray state_b64 = state.toBase64();
-		const std::string old_state_b64 = QtHost::GetBaseStringSettingValue("UI", "MainWindowState");
+		const std::string old_state_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowState");
 		if (old_state_b64 != state_b64.constData())
 			QtHost::SetBaseStringSettingValue("UI", "MainWindowState", state_b64.constData());
 	}
@@ -588,14 +589,14 @@ void MainWindow::saveStateToConfig()
 void MainWindow::restoreStateFromConfig()
 {
 	{
-		const std::string geometry_b64 = QtHost::GetBaseStringSettingValue("UI", "MainWindowGeometry");
+		const std::string geometry_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowGeometry");
 		const QByteArray geometry = QByteArray::fromBase64(QByteArray::fromStdString(geometry_b64));
 		if (!geometry.isEmpty())
 			restoreGeometry(geometry);
 	}
 
 	{
-		const std::string state_b64 = QtHost::GetBaseStringSettingValue("UI", "MainWindowState");
+		const std::string state_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowState");
 		const QByteArray state = QByteArray::fromBase64(QByteArray::fromStdString(state_b64));
 		if (!state.isEmpty())
 			restoreState(state);
@@ -810,7 +811,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 	bool save_state = allow_save_to_state && EmuConfig.SaveStateOnShutdown;
 
 	// only confirm on UI thread because we need to display a msgbox
-	if (allow_confirm && !GSDumpReplayer::IsReplayingDump() && QtHost::GetBaseBoolSettingValue("UI", "ConfirmShutdown", true))
+	if (allow_confirm && !GSDumpReplayer::IsReplayingDump() && Host::GetBaseBoolSettingValue("UI", "ConfirmShutdown", true))
 	{
 		VMLock lock(pauseAndLockVM());
 
@@ -1189,7 +1190,7 @@ void MainWindow::onUpdateCheckComplete()
 
 void MainWindow::startupUpdateCheck()
 {
-	if (!QtHost::GetBaseBoolSettingValue("AutoUpdater", "CheckAtStartup", true))
+	if (!Host::GetBaseBoolSettingValue("AutoUpdater", "CheckAtStartup", true))
 		return;
 
 	checkForUpdates(false);
@@ -1397,7 +1398,7 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 	if (!host_display)
 		return nullptr;
 
-	const std::string fullscreen_mode(QtHost::GetBaseStringSettingValue("EmuCore/GS", "FullscreenMode", ""));
+	const std::string fullscreen_mode(Host::GetBaseStringSettingValue("EmuCore/GS", "FullscreenMode", ""));
 	const bool is_exclusive_fullscreen = (fullscreen && !fullscreen_mode.empty() && host_display->SupportsFullscreen());
 
 	QWidget* container;
@@ -1479,7 +1480,7 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 	QWidget* container = m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
 	const bool is_fullscreen = isRenderingFullscreen();
 	const bool is_rendering_to_main = isRenderingToMain();
-	const std::string fullscreen_mode(QtHost::GetBaseStringSettingValue("EmuCore/GS", "FullscreenMode", ""));
+	const std::string fullscreen_mode(Host::GetBaseStringSettingValue("EmuCore/GS", "FullscreenMode", ""));
 	const bool is_exclusive_fullscreen = (fullscreen && !fullscreen_mode.empty() && host_display->SupportsFullscreen());
 	const bool changing_surfaceless = (!m_display_widget != surfaceless);
 	if (fullscreen == is_fullscreen && is_rendering_to_main == render_to_main && !changing_surfaceless)
@@ -1654,14 +1655,14 @@ void MainWindow::saveDisplayWindowGeometryToConfig()
 
 	const QByteArray geometry = getDisplayContainer()->saveGeometry();
 	const QByteArray geometry_b64 = geometry.toBase64();
-	const std::string old_geometry_b64 = QtHost::GetBaseStringSettingValue("UI", "DisplayWindowGeometry");
+	const std::string old_geometry_b64 = Host::GetBaseStringSettingValue("UI", "DisplayWindowGeometry");
 	if (old_geometry_b64 != geometry_b64.constData())
 		QtHost::SetBaseStringSettingValue("UI", "DisplayWindowGeometry", geometry_b64.constData());
 }
 
 void MainWindow::restoreDisplayWindowGeometryFromConfig()
 {
-	const std::string geometry_b64 = QtHost::GetBaseStringSettingValue("UI", "DisplayWindowGeometry");
+	const std::string geometry_b64 = Host::GetBaseStringSettingValue("UI", "DisplayWindowGeometry");
 	const QByteArray geometry = QByteArray::fromBase64(QByteArray::fromStdString(geometry_b64));
 	QWidget* container = getDisplayContainer();
 	if (!geometry.isEmpty())

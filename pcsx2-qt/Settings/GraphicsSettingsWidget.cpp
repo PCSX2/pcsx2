@@ -21,6 +21,7 @@
 #include "SettingsDialog.h"
 #include <QtWidgets/QMessageBox>
 
+#include "pcsx2/HostSettings.h"
 #include "pcsx2/GS/GS.h"
 #include "pcsx2/GS/GSUtil.h"
 
@@ -235,7 +236,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	// per-game override for renderer is slightly annoying, since we need to populate the global setting field
 	if (sif)
 	{
-		const int global_renderer = QtHost::GetBaseIntSettingValue("EmuCore/GS", "Renderer", static_cast<int>(GSRendererType::Auto));
+		const int global_renderer = Host::GetBaseIntSettingValue("EmuCore/GS", "Renderer", static_cast<int>(GSRendererType::Auto));
 		QString global_renderer_name;
 		for (const RendererInfo& ri : s_renderer_info)
 		{
@@ -336,7 +337,7 @@ void GraphicsSettingsWidget::onShadeBoostChanged()
 
 void GraphicsSettingsWidget::onGpuPaletteConversionChanged(int state)
 {
-	const bool enabled = state == Qt::CheckState::PartiallyChecked ? QtHost::GetBaseBoolSettingValue("EmuCore/GS", "paltex", false) : state;
+	const bool enabled = state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("EmuCore/GS", "paltex", false) : state;
 
 	m_ui.anisotropicFiltering->setEnabled(!enabled);
 }
@@ -458,7 +459,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	{
 		QSignalBlocker sb(m_ui.adapter);
 
-		std::string current_adapter = QtHost::GetBaseStringSettingValue("EmuCore/GS", "Adapter", "");
+		std::string current_adapter = Host::GetBaseStringSettingValue("EmuCore/GS", "Adapter", "");
 		m_ui.adapter->clear();
 		m_ui.adapter->setEnabled(!modes.adapter_names.empty());
 		m_ui.adapter->addItem(tr("(Default)"));
@@ -488,7 +489,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	{
 		QSignalBlocker sb(m_ui.fullscreenModes);
 
-		std::string current_mode(QtHost::GetBaseStringSettingValue("EmuCore/GS", "FullscreenMode", ""));
+		std::string current_mode(Host::GetBaseStringSettingValue("EmuCore/GS", "FullscreenMode", ""));
 		m_ui.fullscreenModes->clear();
 		m_ui.fullscreenModes->addItem(tr("Borderless Fullscreen"));
 		m_ui.fullscreenModes->setCurrentIndex(0);

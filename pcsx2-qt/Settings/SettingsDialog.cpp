@@ -18,6 +18,8 @@
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
+
+#include "pcsx2/HostSettings.h"
 #include "pcsx2/Frontend/GameList.h"
 #include "pcsx2/Frontend/INISettingsInterface.h"
 
@@ -249,7 +251,7 @@ bool SettingsDialog::getEffectiveBoolValue(const char* section, const char* key,
 	if (m_sif && m_sif->GetBoolValue(section, key, &value))
 		return value;
 	else
-		return QtHost::GetBaseBoolSettingValue(section, key, default_value);
+		return Host::GetBaseBoolSettingValue(section, key, default_value);
 }
 
 int SettingsDialog::getEffectiveIntValue(const char* section, const char* key, int default_value) const
@@ -258,7 +260,7 @@ int SettingsDialog::getEffectiveIntValue(const char* section, const char* key, i
 	if (m_sif && m_sif->GetIntValue(section, key, &value))
 		return value;
 	else
-		return QtHost::GetBaseIntSettingValue(section, key, default_value);
+		return Host::GetBaseIntSettingValue(section, key, default_value);
 }
 
 float SettingsDialog::getEffectiveFloatValue(const char* section, const char* key, float default_value) const
@@ -267,14 +269,14 @@ float SettingsDialog::getEffectiveFloatValue(const char* section, const char* ke
 	if (m_sif && m_sif->GetFloatValue(section, key, &value))
 		return value;
 	else
-		return QtHost::GetBaseFloatSettingValue(section, key, default_value);
+		return Host::GetBaseFloatSettingValue(section, key, default_value);
 }
 
 std::string SettingsDialog::getEffectiveStringValue(const char* section, const char* key, const char* default_value) const
 {
 	std::string value;
 	if (!m_sif || !m_sif->GetStringValue(section, key, &value))
-		value = QtHost::GetBaseStringSettingValue(section, key, default_value);
+		value = Host::GetBaseStringSettingValue(section, key, default_value);
 	return value;
 }
 
@@ -291,7 +293,7 @@ std::optional<bool> SettingsDialog::getBoolValue(const char* section, const char
 	}
 	else
 	{
-		value = QtHost::GetBaseBoolSettingValue(section, key, default_value.value_or(false));
+		value = Host::GetBaseBoolSettingValue(section, key, default_value.value_or(false));
 	}
 
 	return value;
@@ -310,7 +312,7 @@ std::optional<int> SettingsDialog::getIntValue(const char* section, const char* 
 	}
 	else
 	{
-		value = QtHost::GetBaseIntSettingValue(section, key, default_value.value_or(0));
+		value = Host::GetBaseIntSettingValue(section, key, default_value.value_or(0));
 	}
 
 	return value;
@@ -329,7 +331,7 @@ std::optional<float> SettingsDialog::getFloatValue(const char* section, const ch
 	}
 	else
 	{
-		value = QtHost::GetBaseFloatSettingValue(section, key, default_value.value_or(0.0f));
+		value = Host::GetBaseFloatSettingValue(section, key, default_value.value_or(0.0f));
 	}
 
 	return value;
@@ -348,7 +350,7 @@ std::optional<std::string> SettingsDialog::getStringValue(const char* section, c
 	}
 	else
 	{
-		value = QtHost::GetBaseStringSettingValue(section, key, default_value.value_or(""));
+		value = Host::GetBaseStringSettingValue(section, key, default_value.value_or(""));
 	}
 
 	return value;
