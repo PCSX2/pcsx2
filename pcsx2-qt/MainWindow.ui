@@ -137,6 +137,8 @@
     <addaction name="actionEnableSystemConsole"/>
     <addaction name="actionEnableFileLogging"/>
     <addaction name="actionEnableVerboseLogging"/>
+    <addaction name="actionEnableLogTimestamps"/>
+    <addaction name="separator"/>
     <addaction name="actionEnableEEConsoleLogging"/>
     <addaction name="actionEnableIOPConsoleLogging"/>
     <addaction name="actionEnableCDVDVerboseReads"/>
@@ -806,6 +808,14 @@
    </property>
    <property name="text">
     <string>Save CDVD Block Dump</string>
+   </property>
+  </action>
+  <action name="actionEnableLogTimestamps">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable Log Timestamps</string>
    </property>
   </action>
  </widget>

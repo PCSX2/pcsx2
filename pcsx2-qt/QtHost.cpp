@@ -33,6 +33,7 @@
 #include "common/Path.h"
 #include "common/SettingsWrapper.h"
 #include "common/StringUtil.h"
+#include "common/Timer.h"
 
 #include "pcsx2/DebugTools/Debug.h"
 #include "pcsx2/Frontend/GameList.h"
@@ -521,6 +522,10 @@ static const char s_console_colors[][ConsoleColors_Count] = {
 };
 #undef CC
 
+static Common::Timer::Value s_log_start_timestamp = Common::Timer::GetCurrentValue();
+static bool s_log_timestamps = false;
+static std::mutex s_log_mutex;
+
 // Replacement for Console so we actually get output to our console window on Windows.
 #ifdef _WIN32
 
@@ -584,29 +589,10 @@ static void ConsoleQt_DoSetColor(ConsoleColors color)
 #endif
 }
 
-static void ConsoleQt_Newline()
-{
-#ifdef _WIN32
-	if (s_debugger_attached)
-		OutputDebugStringW(L"\n");
-
-	if (s_console_handle != INVALID_HANDLE_VALUE)
-	{
-		DWORD written;
-		WriteConsoleW(s_console_handle, L"\n", 1, &written, nullptr);
-	}
-#else
-	std::fputc('\n', stdout);
-#endif
-
-	if (emuLog)
-	{
-		std::fputs("\n", emuLog);
-	}
-}
-
 static void ConsoleQt_DoWrite(const char* fmt)
 {
+	std::unique_lock lock(s_log_mutex);
+
 #ifdef _WIN32
 	if (s_console_handle != INVALID_HANDLE_VALUE || s_debugger_attached)
 	{
@@ -635,35 +621,93 @@ static void ConsoleQt_DoWrite(const char* fmt)
 
 static void ConsoleQt_DoWriteLn(const char* fmt)
 {
-#ifdef _WIN32
-	if (s_console_handle != INVALID_HANDLE_VALUE || s_debugger_attached)
+	std::unique_lock lock(s_log_mutex);
+
+	// find time since start of process, but save a syscall if we're not writing timestamps
+	float message_time = s_log_timestamps ?
+							 static_cast<float>(
+								 Common::Timer::ConvertValueToSeconds(Common::Timer::GetCurrentValue() - s_log_start_timestamp)) :
+                             0.0f;
+
+	// split newlines up
+	const char* start = fmt;
+	do
 	{
-		// TODO: Put this on the stack.
-		std::wstring wfmt(StringUtil::UTF8StringToWideString(fmt));
+		const char* end = std::strchr(start, '\n');
 
-		if (s_debugger_attached)
+		std::string_view line;
+		if (end)
 		{
-			OutputDebugStringW(wfmt.c_str());
-			OutputDebugStringW(L"\n");
+			line = std::string_view(start, end - start);
+			start = end + 1;
+		}
+		else
+		{
+			line = std::string_view(start);
+			start = nullptr;
 		}
 
-		if (s_console_handle != INVALID_HANDLE_VALUE)
+#ifdef _WIN32
+		if (s_console_handle != INVALID_HANDLE_VALUE || s_debugger_attached)
 		{
-			DWORD written;
-			WriteConsoleW(s_console_handle, wfmt.c_str(), static_cast<DWORD>(wfmt.length()), &written, nullptr);
-			WriteConsoleW(s_console_handle, L"\n", 1, &written, nullptr);
+			// TODO: Put this on the stack.
+			std::wstring wfmt(StringUtil::UTF8StringToWideString(line));
+
+			if (s_debugger_attached)
+			{
+				// VS already timestamps logs (at least with the productivity power tools).
+				if (!wfmt.empty())
+					OutputDebugStringW(wfmt.c_str());
+				OutputDebugStringW(L"\n");
+			}
+
+			if (s_console_handle != INVALID_HANDLE_VALUE)
+			{
+				DWORD written;
+				if (s_log_timestamps)
+				{
+					wchar_t timestamp_text[128];
+					const int timestamp_len = _swprintf(timestamp_text, L"[%10.4f] ", message_time);
+					WriteConsoleW(s_console_handle, timestamp_text, static_cast<DWORD>(timestamp_len), &written, nullptr);
+				}
+
+				if (!wfmt.empty())
+					WriteConsoleW(s_console_handle, wfmt.c_str(), static_cast<DWORD>(wfmt.length()), &written, nullptr);
+
+				WriteConsoleW(s_console_handle, L"\n", 1, &written, nullptr);
+			}
 		}
-	}
 #else
-	std::fputs(fmt, stdout);
-	std::fputc('\n', stdout);
+		if (s_log_timestamps)
+		{
+			std::fprintf(stdout, "[%10.4f] %.*s\n", message_time, static_cast<int>(line.length()), line.data());
+		}
+		else
+		{
+			if (!line.empty())
+				std::fwrite(line.data(), line.length(), 1, stdout);
+			std::fputc('\n', stdout);
+		}
 #endif
 
-	if (emuLog)
-	{
-		std::fputs(fmt, emuLog);
-		std::fputc('\n', emuLog);
-	}
+		if (emuLog)
+		{
+			if (s_log_timestamps)
+			{
+				std::fprintf(emuLog, "[%10.4f] %.*s\n", message_time, static_cast<int>(line.length()), line.data());
+			}
+			else
+			{
+				std::fwrite(line.data(), line.length(), 1, emuLog);
+				std::fputc('\n', emuLog);
+			}
+		}
+	} while (start);
+}
+
+static void ConsoleQt_Newline()
+{
+	ConsoleQt_DoWriteLn("");
 }
 
 static const IConsoleWriter ConsoleWriter_WinQt =
@@ -787,6 +831,8 @@ void QtHost::UpdateLogging()
 {
 	const bool system_console_enabled = Host::GetBaseBoolSettingValue("Logging", "EnableSystemConsole", false);
 	const bool file_logging_enabled = Host::GetBaseBoolSettingValue("Logging", "EnableFileLogging", false);
+
+	s_log_timestamps = Host::GetBaseBoolSettingValue("Logging", "EnableTimestamps", true);
 
 	const bool any_logging_sinks = system_console_enabled || file_logging_enabled;
 	DevConWriterEnabled = any_logging_sinks && (IsDevBuild || Host::GetBaseBoolSettingValue("Logging", "EnableVerbose", false));
