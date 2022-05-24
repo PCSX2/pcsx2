@@ -1172,6 +1172,9 @@
     <ClCompile Include="SPU2\Wavedump_wav.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
+    <ClCompile Include="DEV9\AdapterUtils.cpp">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClCompile>
     <ClCompile Include="DEV9\ATA\Commands\ATA_Command.cpp">
       <Filter>System\Ps2\DEV9\ATA\Commands</Filter>
     </ClCompile>
@@ -2337,6 +2340,9 @@
     </ClInclude>
     <ClInclude Include="Recording\Utilities\InputRecordingLogger.h">
       <Filter>Recording\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\AdapterUtils.h">
+      <Filter>System\Ps2\DEV9</Filter>
     </ClInclude>
     <ClInclude Include="DEV9\ATA\ATA.h">
       <Filter>System\Ps2\DEV9\ATA</Filter>
