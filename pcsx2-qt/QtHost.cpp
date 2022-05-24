@@ -67,6 +67,7 @@ static void SaveSettings();
 //////////////////////////////////////////////////////////////////////////
 // Local variable declarations
 //////////////////////////////////////////////////////////////////////////
+const IConsoleWriter* PatchesCon = &Console;
 static std::unique_ptr<QTimer> s_settings_save_timer;
 static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
 static bool s_batch_mode = false;
@@ -487,18 +488,6 @@ void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
 //////////////////////////////////////////////////////////////////////////
 // Interface Stuff
 //////////////////////////////////////////////////////////////////////////
-
-const IConsoleWriter* PatchesCon = &Console;
-
-void LoadAllPatchesAndStuff(const Pcsx2Config& cfg)
-{
-	// FIXME
-}
-
-void PatchesVerboseReset()
-{
-	// FIXME
-}
 
 static void SignalHandler(int signal)
 {
