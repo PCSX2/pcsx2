@@ -133,9 +133,11 @@
     <addaction name="actionReloadPatches"/>
     <addaction name="separator"/>
     <addaction name="actionEnableSystemConsole"/>
+    <addaction name="actionEnableFileLogging"/>
     <addaction name="actionEnableVerboseLogging"/>
     <addaction name="actionEnableEEConsoleLogging"/>
     <addaction name="actionEnableIOPConsoleLogging"/>
+    <addaction name="actionEnableCDVDVerboseReads"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -778,6 +780,22 @@
    </property>
    <property name="text">
     <string>Input Recording Logs</string>
+   </property>
+  </action>
+  <action name="actionEnableFileLogging">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable &amp;File Logging</string>
+   </property>
+  </action>
+  <action name="actionEnableCDVDVerboseReads">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable CDVD Read Logging</string>
    </property>
   </action>
  </widget>
