@@ -22,6 +22,9 @@
 #include "common/StringUtil.h"
 #include "common/Console.h"
 #include <cmath>
+#ifdef __APPLE__
+#include <dispatch/dispatch.h>
+#endif
 
 static const char* s_sdl_axis_names[] = {
 	"LeftX", // SDL_CONTROLLER_AXIS_LEFTX
@@ -91,7 +94,7 @@ SDLInputSource::SDLInputSource() = default;
 
 SDLInputSource::~SDLInputSource() { pxAssert(m_controllers.empty()); }
 
-bool SDLInputSource::Initialize(SettingsInterface& si)
+bool SDLInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
 	std::optional<std::vector<u8>> controller_db_data = Host::ReadResourceFile("game_controller_db.txt");
 	if (controller_db_data.has_value())
@@ -106,11 +109,14 @@ bool SDLInputSource::Initialize(SettingsInterface& si)
 	}
 
 	LoadSettings(si);
+	settings_lock.unlock();
 	SetHints();
-	return InitializeSubsystem();
+	bool result = InitializeSubsystem();
+	settings_lock.lock();
+	return result;
 }
 
-void SDLInputSource::UpdateSettings(SettingsInterface& si)
+void SDLInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
 	const bool old_controller_enhanced_mode = m_controller_enhanced_mode;
 
@@ -118,9 +124,11 @@ void SDLInputSource::UpdateSettings(SettingsInterface& si)
 
 	if (m_controller_enhanced_mode != old_controller_enhanced_mode)
 	{
+		settings_lock.unlock();
 		ShutdownSubsystem();
 		SetHints();
 		InitializeSubsystem();
+		settings_lock.lock();
 	}
 }
 
@@ -142,7 +150,17 @@ void SDLInputSource::SetHints()
 
 bool SDLInputSource::InitializeSubsystem()
 {
-	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) < 0)
+	int result;
+#ifdef __APPLE__
+	// On macOS, SDL_InitSubSystem runs a main-thread-only call to some GameController framework method
+	// So send this to be run on the main thread
+	dispatch_sync_f(dispatch_get_main_queue(), &result, [](void* ctx){
+		*static_cast<int*>(ctx) = SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
+	});
+#else
+	result = SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
+#endif
+	if (result < 0)
 	{
 		Console.Error("SDL_InitSubSystem(SDL_INIT_JOYSTICK |SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) failed");
 		return false;
@@ -160,7 +178,13 @@ void SDLInputSource::ShutdownSubsystem()
 
 	if (m_sdl_subsystem_initialized)
 	{
+#ifdef __APPLE__
+		dispatch_sync_f(dispatch_get_main_queue(), nullptr, [](void*){
+			SDL_QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
+		});
+#else
 		SDL_QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
+#endif
 		m_sdl_subsystem_initialized = false;
 	}
 }

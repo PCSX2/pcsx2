@@ -292,12 +292,12 @@ SysCpuProviderPack& GetCpuProviders()
 
 void VMManager::LoadSettings()
 {
-	auto lock = Host::GetSettingsLock();
+	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
 	SettingsInterface* si = Host::GetSettingsInterface();
 	SettingsLoadWrapper slw(*si);
 	EmuConfig.LoadSave(slw);
 	PAD::LoadConfig(*si);
-	InputManager::ReloadSources(*si);
+	InputManager::ReloadSources(*si, lock);
 	InputManager::ReloadBindings(*si);
 
 	// Remove any user-specified hacks in the config (we don't want stale/conflicting values when it's globally disabled).

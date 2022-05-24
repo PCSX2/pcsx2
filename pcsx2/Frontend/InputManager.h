@@ -229,7 +229,7 @@ namespace InputManager
 	void ReloadBindings(SettingsInterface& si);
 
 	/// Re-parses the sources part of the config and initializes any backends.
-	void ReloadSources(SettingsInterface& si);
+	void ReloadSources(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock);
 
 	/// Shuts down any enabled input sources.
 	void CloseSources();
