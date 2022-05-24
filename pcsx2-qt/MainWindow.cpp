@@ -219,6 +219,8 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionEnableIOPConsoleLogging, &QAction::triggered, this, &MainWindow::onLoggingOptionChanged);
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableFileLogging, "Logging", "EnableFileLogging", false);
 	connect(m_ui.actionEnableFileLogging, &QAction::triggered, this, &MainWindow::onLoggingOptionChanged);
+	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableLogTimestamps, "Logging", "EnableTimestamps", true);
+	connect(m_ui.actionEnableLogTimestamps, &QAction::triggered, this, &MainWindow::onLoggingOptionChanged);
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableCDVDVerboseReads, "EmuCore", "CdvdVerboseReads", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionSaveBlockDump, "EmuCore", "CdvdDumpBlocks", false);
 	connect(m_ui.actionSaveBlockDump, &QAction::toggled, this, &MainWindow::onBlockDumpActionToggled);
