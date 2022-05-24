@@ -56,7 +56,9 @@ static std::atomic<bool> eeRecNeedsReset(false);
 static bool eeCpuExecuting = false;
 static bool eeRecExitRequested = false;
 static bool g_resetEeScalingStats = false;
+#ifndef PCSX2_CORE
 static int g_patchesNeedRedo = 0;
+#endif
 
 #define PC_GETBLOCK(x) PC_GETBLOCK_(x, recLUT)
 
@@ -665,7 +667,9 @@ static void recResetRaw()
 
 	g_branch = 0;
 	g_resetEeScalingStats = true;
+#ifndef PCSX2_CORE
 	g_patchesNeedRedo = 1;
+#endif
 }
 
 static void recShutdown()
@@ -1797,14 +1801,16 @@ bool skipMPEG_By_Pattern(u32 sPC)
 	return 0;
 }
 
+#ifndef PCSX2_CORE
 // defined at AppCoreThread.cpp but unclean and should not be public. We're the only
 // consumers of it, so it's declared only here.
 void LoadAllPatchesAndStuff(const Pcsx2Config&);
-void doPlace0Patches()
+static void doPlace0Patches()
 {
 	LoadAllPatchesAndStuff(EmuConfig);
 	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
 }
+#endif
 
 static void recRecompile(const u32 startpc)
 {
@@ -1878,6 +1884,7 @@ static void recRecompile(const u32 startpc)
 				Console.WriteLn("recRecompile: Could not enable launch arguments for fast boot mode; unidentified BIOS version! Please report this to the PCSX2 developers.");
 		}
 
+#ifndef PCSX2_CORE
 		// On fast/full boot this will have a crc of 0x0. But when the game/elf itself is
 		// recompiled (below - ElfEntry && g_GameLoading), then the crc would be from the elf.
 		// g_patchesNeedRedo is set on rec reset, and this is the only consumer.
@@ -1885,6 +1892,7 @@ static void recRecompile(const u32 startpc)
 		if (g_patchesNeedRedo)
 			doPlace0Patches();
 		g_patchesNeedRedo = 0;
+#endif
 	}
 
 	if (g_eeloadExec && HWADDR(startpc) == HWADDR(g_eeloadExec))
@@ -1896,9 +1904,13 @@ static void recRecompile(const u32 startpc)
 		Console.WriteLn("Elf entry point @ 0x%08x about to get recompiled. Load patches first.", startpc);
 		xFastCall((void*)eeGameStarting);
 
+#ifndef PCSX2_CORE
 		// Apply patch as soon as possible. Normally it is done in
 		// eeGameStarting but first block is already compiled.
 		doPlace0Patches();
+#else
+		VMManager::Internal::EntryPointCompilingOnCPUThread();
+#endif
 	}
 
 	g_branch = 0;

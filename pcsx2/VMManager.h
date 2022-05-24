@@ -164,6 +164,7 @@ namespace VMManager
 
 		const std::string& GetElfOverride();
 		bool IsExecutionInterrupted();
+		void EntryPointCompilingOnCPUThread();
 		void GameStartingOnCPUThread();
 		void VSyncOnCPUThread();
 	}

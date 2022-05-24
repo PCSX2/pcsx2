@@ -83,7 +83,9 @@ namespace VMManager
 	static bool AutoDetectSource(const std::string& filename);
 	static bool ApplyBootParameters(const VMBootParameters& params, std::string* state_to_load);
 	static bool CheckBIOSAvailability();
-	static void UpdateRunningGame(bool force);
+	static void LoadPatches(const std::string& serial, u32 crc,
+		bool show_messages, bool show_messages_when_disabled);
+	static void UpdateRunningGame(bool force, bool game_starting);
 
 	static std::string GetCurrentSaveStateFileName(s32 slot);
 	static bool DoLoadState(const char* filename);
@@ -113,6 +115,7 @@ static std::mutex s_save_state_threads_mutex;
 static std::mutex s_info_mutex;
 static std::string s_disc_path;
 static u32 s_game_crc;
+static u32 s_patches_crc;
 static std::string s_game_serial;
 static std::string s_game_name;
 static std::string s_elf_override;
@@ -386,15 +389,19 @@ bool VMManager::UpdateGameSettingsLayer()
 	return true;
 }
 
-static void LoadPatches(const std::string& crc_string, bool show_messages, bool show_messages_when_disabled)
+void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messages, bool show_messages_when_disabled)
 {
+	const std::string crc_string(fmt::format("{:08X}", crc));
+	s_patches_crc = crc;
+	ForgetLoadedPatches();
+
 	std::string message;
 
 	int patch_count = 0;
 	if (EmuConfig.EnablePatches)
 	{
-		const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(s_game_serial);
-		const std::string* patches = game ? game->findPatch(s_game_crc) : nullptr;
+		const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(serial);
+		const std::string* patches = game ? game->findPatch(crc) : nullptr;
 		if (patches && (patch_count = LoadPatchesFromString(*patches)) > 0)
 		{
 			PatchesCon->WriteLn(Color_Green, "(GameDB) Patches Loaded: %d", patch_count);
@@ -416,7 +423,7 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 
 	// wide screen patches
 	int ws_patch_count = 0;
-	if (EmuConfig.EnableWideScreenPatches && s_game_crc != 0)
+	if (EmuConfig.EnableWideScreenPatches && crc != 0)
 	{
 		if (ws_patch_count = LoadPatchesFromDir(crc_string, EmuFolders::CheatsWS, "Widescreen hacks", false))
 		{
@@ -446,7 +453,7 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 	}
 
 	// no-interlacing patches
-	if (EmuConfig.EnableNoInterlacingPatches && s_game_crc != 0)
+	if (EmuConfig.EnableNoInterlacingPatches && crc != 0)
 	{
 		if (s_active_no_interlacing_patches = LoadPatchesFromDir(crc_string, EmuFolders::CheatsNI, "No-interlacing patches", false))
 		{
@@ -502,7 +509,7 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 	}
 }
 
-void VMManager::UpdateRunningGame(bool force)
+void VMManager::UpdateRunningGame(bool force, bool game_starting)
 {
 	// The CRC can be known before the game actually starts (at the bios), so when
 	// we have the CRC but we're still at the bios and the settings are changed
@@ -545,22 +552,32 @@ void VMManager::UpdateRunningGame(bool force)
 		}
 
 		sioSetGameSerial(memcardFilters.empty() ? s_game_serial : memcardFilters);
+
+		// If we don't reset the timer here, when using folder memcards the reindex will cause an eject,
+		// which a bunch of games don't like since they access the memory card on boot.
+		if (game_starting)
+			ClearMcdEjectTimeoutNow();
 	}
 
 	UpdateGameSettingsLayer();
 	ApplySettings();
 
-	ForgetLoadedPatches();
-	LoadPatches(StringUtil::StdStringFromFormat("%08X", new_crc), true, false);
+	// check this here, for two cases: dynarec on, and when enable cheats is set per-game.
+	if (s_patches_crc != s_game_crc)
+		ReloadPatches(false);
+
 	GetMTGS().SendGameCRC(new_crc);
 
 	Host::OnGameChanged(s_disc_path, s_game_serial, s_game_name, s_game_crc);
+
+	MIPSAnalyst::ScanForFunctions(R5900SymbolMap, ElfTextRange.first, ElfTextRange.first + ElfTextRange.second, true);
+	R5900SymbolMap.UpdateActiveSymbols();
+	R3000SymbolMap.UpdateActiveSymbols();
 }
 
 void VMManager::ReloadPatches(bool verbose)
 {
-	ForgetLoadedPatches();
-	LoadPatches(StringUtil::StdStringFromFormat("%08X", s_game_crc), verbose, verbose);
+	LoadPatches(s_game_serial, s_game_crc, verbose, verbose);
 }
 
 static LimiterModeType GetInitialLimiterMode()
@@ -828,7 +845,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	s_state.store(VMState::Paused);
 	Host::OnVMStarted();
 
-	UpdateRunningGame(true);
+	UpdateRunningGame(true, true);
 
 	SetEmuThreadAffinities(true);
 
@@ -871,6 +888,7 @@ void VMManager::Shutdown(bool save_resume_state)
 		std::unique_lock lock(s_info_mutex);
 		s_disc_path.clear();
 		s_game_crc = 0;
+		s_patches_crc = 0;
 		s_game_serial.clear();
 		s_game_name.clear();
 		Host::OnGameChanged(s_disc_path, s_game_serial, s_game_name, 0);
@@ -924,7 +942,7 @@ void VMManager::Reset()
 
 	// gameid change, so apply settings
 	if (game_was_started)
-		UpdateRunningGame(true);
+		UpdateRunningGame(true, true);
 }
 
 std::string VMManager::GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot)
@@ -989,7 +1007,7 @@ bool VMManager::DoLoadState(const char* filename)
 	{
 		Host::OnSaveStateLoading(filename);
 		SaveState_UnzipFromDisk(filename);
-		UpdateRunningGame(false);
+		UpdateRunningGame(false, false);
 		Host::OnSaveStateLoaded(filename, true);
 		return true;
 	}
@@ -1232,21 +1250,21 @@ bool VMManager::Internal::IsExecutionInterrupted()
 	return s_state.load() != VMState::Running || s_cpu_implementation_changed.load();
 }
 
+void VMManager::Internal::EntryPointCompilingOnCPUThread()
+{
+	// Classic chicken and egg problem here. We don't want to update the running game
+	// until the game entry point actually runs, because that can update settings, which
+	// can flush the JIT, etc. But we need to apply patches for games where the entry
+	// point is in the patch (e.g. WRC 4). So. Gross, but the only way to handle it really.
+	LoadPatches(SysGetDiscID(), ElfCRC, false, false);
+	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
+}
+
 void VMManager::Internal::GameStartingOnCPUThread()
 {
-	GetMTGS().SendGameCRC(ElfCRC);
-
-	MIPSAnalyst::ScanForFunctions(R5900SymbolMap, ElfTextRange.first, ElfTextRange.first + ElfTextRange.second, true);
-	R5900SymbolMap.UpdateActiveSymbols();
-	R3000SymbolMap.UpdateActiveSymbols();
-
-	UpdateRunningGame(false);
+	UpdateRunningGame(false, true);
 	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
 	ApplyLoadedPatches(PPT_COMBINED_0_1);
-
-	// If we don't reset the timer here, when using folder memcards the reindex will cause an eject,
-	// which a bunch of games don't like since they access the memory card on boot.
-	ClearMcdEjectTimeoutNow();
 }
 
 void VMManager::Internal::VSyncOnCPUThread()
