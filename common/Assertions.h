@@ -15,8 +15,9 @@
 
 #pragma once
 
-#include <wx/string.h>
 #include "common/Pcsx2Defs.h"
+
+#include <string>
 
 #ifndef __pxFUNCTION__
 #if defined(__GNUG__)
@@ -26,25 +27,17 @@
 #endif
 #endif
 
-#ifndef wxNullChar
-#define wxNullChar ((wxChar*)NULL)
-#endif
-
-// FnChar_t - function name char type; typedef'd in case it ever changes between compilers
-//   (ie, a compiler decides to wchar_t it instead of char/UTF8).
-typedef char FnChar_t;
-
 // --------------------------------------------------------------------------------------
 //  DiagnosticOrigin
 // --------------------------------------------------------------------------------------
 struct DiagnosticOrigin
 {
-	const wxChar* srcfile;
-	const FnChar_t* function;
-	const wxChar* condition;
+	const char* srcfile;
+	const char* function;
+	const char* condition;
 	int line;
 
-	DiagnosticOrigin(const wxChar* _file, int _line, const FnChar_t* _func, const wxChar* _cond = NULL)
+	DiagnosticOrigin(const char* _file, int _line, const char* _func, const char* _cond = nullptr)
 		: srcfile(_file)
 		, function(_func)
 		, condition(_cond)
@@ -52,12 +45,12 @@ struct DiagnosticOrigin
 	{
 	}
 
-	wxString ToString(const wxChar* msg = NULL) const;
+	std::string ToString(const char* msg = nullptr) const;
 };
 
 // Returns ture if the assertion is to trap into the debugger, or false if execution
 // of the program should continue unimpeded.
-typedef bool pxDoAssertFnType(const DiagnosticOrigin& origin, const wxChar* msg);
+typedef bool pxDoAssertFnType(const DiagnosticOrigin& origin, const char* msg);
 
 extern pxDoAssertFnType pxAssertImpl_LogIt;
 
@@ -100,8 +93,8 @@ extern pxDoAssertFnType* pxDoAssert;
 // it can lead to the compiler optimizing out code and leading to crashes in dev/release
 // builds. To have code optimized, explicitly use pxAssume(false) or pxAssumeDev(false,msg);
 
-#define pxDiagSpot DiagnosticOrigin(__TFILE__, __LINE__, __pxFUNCTION__)
-#define pxAssertSpot(cond) DiagnosticOrigin(__TFILE__, __LINE__, __pxFUNCTION__, _T(#cond))
+#define pxDiagSpot DiagnosticOrigin(__FILE__, __LINE__, __pxFUNCTION__)
+#define pxAssertSpot(cond) DiagnosticOrigin(__FILE__, __LINE__, __pxFUNCTION__, #cond)
 
 // pxAssertRel ->
 // Special release-mode assertion.  Limited use since stack traces in release mode builds
@@ -170,28 +163,12 @@ extern pxDoAssertFnType* pxDoAssert;
 
 #endif
 
-#define pxAssert(cond) pxAssertMsg(cond, wxNullChar)
-#define pxAssume(cond) pxAssumeMsg(cond, wxNullChar)
+#define pxAssert(cond) pxAssertMsg(cond, nullptr)
+#define pxAssume(cond) pxAssumeMsg(cond, nullptr)
 
 #define pxAssertRelease(cond, msg)
 
-// Performs an unsigned index bounds check, and generates a debug assertion if the check fails.
-// For stricter checking in Devel builds as well as debug builds (but possibly slower), use
-// IndexBoundsCheckDev.
-
-#define IndexBoundsCheck(objname, idx, sze) pxAssertMsg((uint)(idx) < (uint)(sze), \
-	pxsFmt(L"Array index out of bounds accessing object '%s' (index=%d, size=%d)", objname, (idx), (sze)))
-
-#define IndexBoundsCheckDev(objname, idx, sze) pxAssertDev((uint)(idx) < (uint)(sze), \
-	pxsFmt(L"Array index out of bounds accessing object '%s' (index=%d, size=%d)", objname, (idx), (sze)))
-
-#define IndexBoundsAssume(objname, idx, sze) pxAssumeMsg((uint)(idx) < (uint)(sze), \
-	pxsFmt(L"Array index out of bounds accessing object '%s' (index=%d, size=%d)", objname, (idx), (sze)))
-
-#define IndexBoundsAssumeDev(objname, idx, sze) pxAssumeDev((uint)(idx) < (uint)(sze), \
-	pxsFmt(L"Array index out of bounds accessing object '%s' (index=%d, size=%d)", objname, (idx), (sze)))
-
-extern void pxOnAssert(const DiagnosticOrigin& origin, const wxString& msg);
+extern void pxOnAssert(const DiagnosticOrigin& origin, const char* msg);
 
 // --------------------------------------------------------------------------------------
 // jNO_DEFAULT -- disables the default case in a switch, which improves switch optimization

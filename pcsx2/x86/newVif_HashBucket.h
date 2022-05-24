@@ -16,6 +16,8 @@
 #pragma once
 
 #include <array>
+#include "fmt/core.h"
+#include "common/AlignedMalloc.h"
 
 // nVifBlock - Ordered for Hashing; the 'num' and 'upkType' fields are
 //             used as the hash bucket selector.
@@ -97,7 +99,7 @@ public:
 		if ((m_bucket[b] = (nVifBlock*)pcsx2_aligned_realloc(m_bucket[b], sizeof(nVifBlock) * (size + 2), 64, sizeof(nVifBlock) * (size + 1))) == NULL)
 		{
 			throw Exception::OutOfMemory(
-				wxsFormat(L"HashBucket Chain (bucket size=%d)", size + 2));
+				fmt::format("HashBucket Chain (bucket size={})", size + 2));
 		}
 
 		// Replace the empty cell by the new block and create a new empty cell
@@ -138,7 +140,7 @@ public:
 		{
 			if ((bucket = (nVifBlock*)_aligned_malloc(sizeof(nVifBlock), 64)) == nullptr)
 			{
-				throw Exception::OutOfMemory(wxsFormat(L"HashBucket Chain (bucket size=%d)", 1));
+				throw Exception::OutOfMemory(fmt::format("HashBucket Chain (bucket size=%d)", 1));
 			}
 
 			memset(bucket, 0, sizeof(nVifBlock));

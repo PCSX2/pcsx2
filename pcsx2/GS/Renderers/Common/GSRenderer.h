@@ -19,21 +19,29 @@
 #include "GS/GSCapture.h"
 #include <memory>
 
+#ifndef PCSX2_CORE
+#include <mutex>
+#endif
+
 struct HostKeyEvent;
 
 class GSRenderer : public GSState
 {
-	GSCapture m_capture;
-	std::string m_snapshot;
-
+private:
 	bool Merge(int field);
 
-	bool m_shift_key;
-	bool m_control_key;
+#ifndef PCSX2_CORE
+	GSCapture m_capture;
+	std::mutex m_snapshot_mutex;
+	bool m_shift_key = false;
+	bool m_control_key = false;
+#endif
+	std::string m_snapshot;
+	u32 m_dump_frames = 0;
 
 protected:
+	GSVector2i m_real_size{0, 0};
 	bool m_texture_shuffle;
-	GSVector2i m_real_size;
 
 	virtual GSTexture* GetOutput(int i, int& y_offset) = 0;
 	virtual GSTexture* GetFeedbackOutput() { return nullptr; }
@@ -45,20 +53,24 @@ public:
 	virtual void Destroy();
 
 	virtual void VSync(u32 field, bool registers_written);
-	virtual bool MakeSnapshot(const std::string& path);
-	virtual void KeyEvent(const HostKeyEvent& e);
 	virtual bool CanUpscale() { return false; }
 	virtual int GetUpscaleMultiplier() { return 1; }
 	virtual GSVector2 GetTextureScaleFactor() { return { 1.0f, 1.0f }; }
 	GSVector2i GetInternalResolution();
 
-	virtual bool BeginCapture(std::string& filename);
-	virtual void EndCapture();
-
 	virtual void PurgePool() override;
 	virtual void PurgeTextureCache();
 
 	bool SaveSnapshotToMemory(u32 width, u32 height, std::vector<u32>* pixels);
+
+	void QueueSnapshot(const std::string& path, u32 gsdump_frames);
+	void StopGSDump();
+
+#ifndef PCSX2_CORE
+	bool BeginCapture(std::string& filename);
+	void EndCapture();
+	void KeyEvent(const HostKeyEvent& e);
+#endif
 };
 
 extern std::unique_ptr<GSRenderer> g_gs_renderer;

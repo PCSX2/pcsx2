@@ -17,7 +17,7 @@
 #include "MemoryTypes.h"
 #include "App.h"
 
-#include "System/SysThreads.h"
+#include "SysThreads.h"
 #include "SaveState.h"
 #include "VUmicro.h"
 
@@ -61,7 +61,20 @@ protected:
 		std::unique_ptr<ArchiveEntryList> elist = SaveState_DownloadState();
 		UI_EnableStateActions();
 		paused_core.AllowResume();
-		SaveState_ZipToDisk(std::move(elist), nullptr, StringUtil::wxStringToUTF8String(m_filename), -1);
+
+		std::thread kickoff(&SysExecEvent_SaveState::ZipThreadProc,
+			std::move(elist), StringUtil::wxStringToUTF8String(m_filename));
+		kickoff.detach();
+	}
+
+	static void ZipThreadProc(std::unique_ptr<ArchiveEntryList> elist, std::string filename)
+	{
+		wxGetApp().StartPendingSave();
+		if (SaveState_ZipToDisk(std::move(elist), nullptr, filename.c_str()))
+			Console.WriteLn("(gzipThread) Data saved to disk without error.");
+		else
+			Console.Error("Failed to zip state to '%s'", filename.c_str());
+		wxGetApp().ClearPendingSave();
 	}
 };
 
@@ -129,12 +142,12 @@ void StateCopy_SaveToSlot(uint num)
 	{
 		const wxString copy(StringUtil::UTF8StringToWxString(SaveStateBase::GetSavestateFolder(num, true)) + pxsFmt(L".backup"));
 
-		Console.Indent().WriteLn(Color_StrongGreen, L"Backing up existing state in slot %d.", num);
+		Console.Indent().WriteLn(Color_StrongGreen, "Backing up existing state in slot %d.", num);
 		wxRenameFile(file, copy);
 	}
 
 	OSDlog(Color_StrongGreen, true, "Saving savestate to slot %d...", num);
-	Console.Indent().WriteLn(Color_StrongGreen, L"filename: %s", WX_STR(file));
+	Console.Indent().WriteLn(Color_StrongGreen, "filename: %ls", WX_STR(file));
 
 	StateCopy_SaveToFile(file);
 #ifdef USE_NEW_SAVESLOTS_UI
@@ -153,7 +166,7 @@ void StateCopy_LoadFromSlot(uint slot, bool isFromBackup)
 	}
 
 	OSDlog(Color_StrongGreen, true, "Loading savestate from slot %d...%s", slot, isFromBackup ? " (backup)" : "");
-	Console.Indent().WriteLn(Color_StrongGreen, L"filename: %s", WX_STR(file));
+	Console.Indent().WriteLn(Color_StrongGreen, "filename: %ls", WX_STR(file));
 
 	StateCopy_LoadFromFile(file);
 #ifdef USE_NEW_SAVESLOTS_UI

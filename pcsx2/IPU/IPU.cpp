@@ -75,6 +75,7 @@ void ipuReset()
 
 	ipu_fifo.init();
 	ipu_cmd.clear();
+	ipuDmaReset();
 }
 
 void ReportIPU()
@@ -652,7 +653,7 @@ static __ri bool ipuPACK(tIPU_CMD_CSC csc)
 		ipu_cmd.pos[1] = 0;
 	}
 
-	return TRUE;
+	return true;
 }
 
 static void ipuSETTH(u32 val)

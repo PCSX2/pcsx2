@@ -47,7 +47,7 @@ INT_PTR CALLBACK GSDialog::DialogProc(HWND hWnd, UINT message, WPARAM wParam, LP
 		GetMonitorInfo(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST), &mi);
 
 		GSVector4i r;
-		GetWindowRect(hWnd, r);
+		GetWindowRect(hWnd, reinterpret_cast<LPRECT>(&r));
 
 		int x = (mi.rcWork.left + mi.rcWork.right - r.width()) / 2;
 		int y = (mi.rcWork.top + mi.rcWork.bottom - r.height()) / 2;

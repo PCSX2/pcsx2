@@ -16,6 +16,7 @@
 #pragma once
 
 #include "GSSetting.h"
+#include "common/RedtapeWindows.h"
 
 class GSDialog
 {

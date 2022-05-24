@@ -17,6 +17,7 @@
 #include "SPU2/Global.h"
 #include "Dialogs.h"
 #include "Config.h"
+#include "gui/StringHelpers.h"
 
 #if defined(__unix__) || defined(__APPLE__)
 #include <SDL.h>
@@ -108,8 +109,8 @@ void ReadSettings()
 #endif
 
 	wxString temp;
-	CfgReadStr(L"OUTPUT", L"Output_Module", temp, defaultModule->GetIdent());
-	OutputModule = FindOutputModuleById(temp.c_str()); // Find the driver index of this module...
+	CfgReadStr(L"OUTPUT", L"Output_Module", temp, StringUtil::UTF8StringToWxString(defaultModule->GetIdent()).wc_str());
+	OutputModule = FindOutputModuleById(temp.ToUTF8()); // Find the driver index of this module...
 
 	SndOutLatencyMS = CfgReadInt(L"OUTPUT", L"Latency", 100);
 	SynchMode = CfgReadInt(L"OUTPUT", L"Synch_Mode", 0);

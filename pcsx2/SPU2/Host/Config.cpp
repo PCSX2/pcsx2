@@ -17,6 +17,8 @@
 
 #include "common/StringUtil.h"
 
+#include <cmath>
+
 #include "SPU2/Global.h"
 #include "SPU2/Host/Config.h"
 #include "SPU2/Host/Dialogs.h"
@@ -95,7 +97,7 @@ void ReadSettings()
 	VolumeAdjustLFE = powf(10, VolumeAdjustLFEdb / 10);
 
 	const std::string modname(Host::GetStringSettingValue("SPU2/Output", "OutputModule", "cubeb"));
-	OutputModule = FindOutputModuleById(StringUtil::UTF8StringToWideString(modname).c_str()); // Find the driver index of this module...
+	OutputModule = FindOutputModuleById(modname.c_str()); // Find the driver index of this module...
 
 	SndOutLatencyMS = Host::GetIntSettingValue("SPU2/Output", "Latency", 100);
 	SynchMode = Host::GetIntSettingValue("SPU2/Output", "SynchMode", 0);

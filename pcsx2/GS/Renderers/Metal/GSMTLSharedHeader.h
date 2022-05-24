@@ -42,7 +42,6 @@ struct GSMTLConvertPSUniform
 struct GSMTLInterlacePSUniform
 {
 	vector_float2 ZrH;
-	float hH;
 };
 
 struct GSMTLMainVSUniform

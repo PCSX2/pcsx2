@@ -15,7 +15,9 @@
 
 #include "PrecompiledHeader.h"
 #include "SPU2/Global.h"
+#ifndef PCSX2_CORE
 #include "Dialogs.h"
+#endif
 #include "common/Console.h"
 
 #include <xaudio2.h>
@@ -358,14 +360,14 @@ public:
 		m_paused = paused;
 	}
 
-	const wchar_t* GetIdent() const override
+	const char* GetIdent() const override
 	{
-		return L"xaudio2";
+		return "xaudio2";
 	}
 
-	const wchar_t* GetLongName() const override
+	const char* GetLongName() const override
 	{
-		return L"XAudio 2 (Recommended)";
+		return "XAudio 2 (Recommended)";
 	}
 
 } static XA2;

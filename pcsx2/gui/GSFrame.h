@@ -53,10 +53,8 @@ public:
 	void DirectKeyCommand( const KeyAcceleratorCode& kac );
 	void InitDefaultAccelerators();
 	wxString GetAssociatedKeyCode(const char* id);
-#ifndef DISABLE_RECORDING
 	void InitRecordingAccelerators();
 	void RemoveRecordingAccelerators();
-#endif
 
 protected:
 	void AppStatusEvent_OnSettingsApplied();

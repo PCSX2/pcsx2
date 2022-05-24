@@ -29,6 +29,7 @@
  */
 
 #pragma once
+#include <vector>
 
 namespace x86Emitter
 {

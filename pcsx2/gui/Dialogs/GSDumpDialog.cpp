@@ -21,13 +21,13 @@
 #include "gui/Dialogs/ModalPopups.h"
 
 
-#include "common/EmbeddedImage.h"
+#include "gui/EmbeddedImage.h"
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
 #include "gui/Resources/NoIcon.h"
 #include "HostDisplay.h"
 
-#include "PathDefs.h"
+#include "gui/PathDefs.h"
 #include "gui/AppConfig.h"
 #include "gui/GSFrame.h"
 #include "Counters.h"
@@ -222,6 +222,8 @@ void Dialogs::GSDumpDialog::GetDumpsList()
 			dumps.push_back(filename.substr(0, filename.length() - 3));
 		else if (filename.EndsWith(".gs.xz"))
 			dumps.push_back(filename.substr(0, filename.length() - 6));
+		else if (filename.EndsWith(".gs.zst"))
+			dumps.push_back(filename.substr(0, filename.length() - 7));
 		cont = snaps.GetNext(&filename);
 	}
 	std::sort(dumps.begin(), dumps.end(), [](const wxString& a, const wxString& b) { return a.CmpNoCase(b) < 0; });
@@ -249,6 +251,8 @@ void Dialogs::GSDumpDialog::SelectedDump(wxListEvent& evt)
 	wxString filename = g_Conf->Folders.Snapshots.ToAscii() + ("/" + evt.GetText()) + ".gs";
 	if (!wxFileExists(filename))
 		filename.append(".xz");
+	if (!wxFileExists(filename))
+		filename = filename.RemoveLast(3).append(".zst");
 	if (wxFileExists(filename_preview))
 	{
 		auto img = wxImage(filename_preview);

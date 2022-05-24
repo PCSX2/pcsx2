@@ -41,7 +41,7 @@
 
 static auto OpenResourceCFile(const char* filename, const char* mode)
 {
-	const std::string full_filename(Path::CombineStdString(EmuFolders::Resources, filename));
+	const std::string full_filename(Path::Combine(EmuFolders::Resources, filename));
 	auto fp = FileSystem::OpenManagedCFile(full_filename.c_str(), mode);
 	if (!fp)
 		Console.Error("Failed to open resource file '%s'", filename);
@@ -118,7 +118,7 @@ HostDisplay* Host::AcquireHostDisplay(HostDisplay::RenderAPI api)
 
 	if (!s_host_display->CreateRenderDevice(g_gs_window_info, GSConfig.Adapter, EmuConfig.GetEffectiveVsyncMode(),
 			GSConfig.ThreadedPresentation, GSConfig.UseDebugDevice) ||
-		!s_host_display->InitializeRenderDevice(StringUtil::wxStringToUTF8String(EmuFolders::Cache.ToString()), GSConfig.UseDebugDevice) ||
+		!s_host_display->InitializeRenderDevice(EmuFolders::Cache, GSConfig.UseDebugDevice) ||
 		!ImGuiManager::Initialize())
 	{
 		s_host_display->DestroyRenderDevice();
@@ -153,7 +153,16 @@ HostDisplay* Host::GetHostDisplay()
 bool Host::BeginPresentFrame(bool frame_skip)
 {
 	CheckForGSWindowResize();
-	return s_host_display->BeginPresent(frame_skip);
+
+	if (!s_host_display->BeginPresent(frame_skip))
+	{
+		// if we're skipping a frame, we need to reset imgui's state, since
+		// we won't be calling EndPresentFrame().
+		ImGuiManager::NewFrame();
+		return false;
+	}
+
+	return true;
 }
 
 void Host::EndPresentFrame()

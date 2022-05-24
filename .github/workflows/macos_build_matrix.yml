@@ -1,0 +1,17 @@
+name: 🍎 MacOS Builds
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build_macos_default:
+    name: "Defaults"
+    uses: ./.github/workflows/macos_build.yml
+    with:
+      jobName: "wxWidgets"
+    secrets: inherit

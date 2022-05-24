@@ -17,13 +17,13 @@
 
 #include "gui/App.h"
 #include "gui/MainFrame.h"
+#include "gui/PathDefs.h"
 #include "DisassemblyDialog.h"
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
 #include "DebugTools/Breakpoints.h"
 #include "DebugTools/MipsStackWalk.h"
 #include "BreakpointWindow.h"
-#include "PathDefs.h"
 #include "wx/busyinfo.h"
 
 #ifdef _WIN32
@@ -57,7 +57,7 @@ DebuggerHelpDialog::DebuggerHelpDialog(wxWindow* parent)
 {
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
 
-	auto fileName = Path::Combine(PathDefs::GetDocs(), wxFileName(L"debugger.txt"));
+	auto fileName = Path::CombineWx(PathDefs::GetDocs(), wxFileName(L"debugger.txt"));
 
 	wxTextFile file(fileName);
 	wxString text(L"");

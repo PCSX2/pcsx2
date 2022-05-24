@@ -535,11 +535,6 @@ struct V_Core
 
 	void LogAutoDMA(FILE* fp);
 
-	s32 NewDmaRead(u32* data, u32 bytesLeft, u32* bytesProcessed);
-	s32 NewDmaWrite(u32* data, u32 bytesLeft, u32* bytesProcessed);
-	void NewDmaInterrupt();
-
-	// old dma only
 	void DoDMAwrite(u16* pMem, u32 size);
 	void DoDMAread(u16* pMem, u32 size);
 	void FinishDMAread();
@@ -576,9 +571,9 @@ namespace SPU2Savestate
 {
 	struct DataBlock;
 
-	extern s32 __fastcall FreezeIt(DataBlock& spud);
-	extern s32 __fastcall ThawIt(DataBlock& spud);
-	extern s32 __fastcall SizeIt();
+	extern s32 FreezeIt(DataBlock& spud);
+	extern s32 ThawIt(DataBlock& spud);
+	extern s32 SizeIt();
 } // namespace SPU2Savestate
 
 // --------------------------------------------------------------------------------------

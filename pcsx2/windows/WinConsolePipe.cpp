@@ -59,7 +59,7 @@ protected:
 		try
 		{
 			if (ConnectNamedPipe(m_outpipe, nullptr) == 0 && GetLastError() != ERROR_PIPE_CONNECTED)
-				throw Exception::RuntimeError().SetDiagMsg(L"ConnectNamedPipe failed.");
+				throw Exception::RuntimeError().SetDiagMsg("ConnectNamedPipe failed.");
 
 			char s8_Buf[2049];
 			DWORD u32_Read = 0;
@@ -76,7 +76,7 @@ protected:
 						continue;
 					}
 
-					throw Exception::WinApiError().SetDiagMsg(L"ReadFile from pipe failed.");
+					throw Exception::WinApiError().SetDiagMsg("ReadFile from pipe failed.");
 				}
 
 				if( u32_Read <= 3 )
@@ -94,7 +94,7 @@ protected:
 					{
 						Yield();
 						if( !PeekNamedPipe(m_outpipe, 0, 0, 0, &u32_avail, 0) )
-							throw Exception::WinApiError().SetDiagMsg(L"Error peeking Pipe.");
+							throw Exception::WinApiError().SetDiagMsg("Error peeking Pipe.");
 
 						if( u32_avail == 0 ) break;
 
@@ -109,7 +109,7 @@ protected:
 				s8_Buf[u32_Read] = 0;
 
 				ConsoleColorScope cs(m_color);
-				Console.DoWriteFromStdout( fromUTF8(s8_Buf) );
+				Console.DoWriteFromStdout( s8_Buf );
 
 				TestCancel();
 			}
@@ -160,14 +160,14 @@ WinPipeRedirection::WinPipeRedirection( FILE* stdstream )
 
 		m_readpipe = CreateNamedPipe(pipe_name, PIPE_ACCESS_INBOUND, 0, 1, 2048, 2048, 0, nullptr);
 		if (m_readpipe == INVALID_HANDLE_VALUE)
-			throw Exception::WinApiError().SetDiagMsg(L"CreateNamedPipe failed.");
+			throw Exception::WinApiError().SetDiagMsg("CreateNamedPipe failed.");
 
 		m_Thread.Start();
 
 		// Binary flag set to prevent multiple \r characters before each \n.
 		m_fp = _wfreopen(pipe_name, L"wb", stdstream);
 		if (m_fp == nullptr)
-			throw Exception::RuntimeError().SetDiagMsg(L"_wfreopen returned NULL.");
+			throw Exception::RuntimeError().SetDiagMsg("_wfreopen returned NULL.");
 
 		setvbuf(stdstream, nullptr, _IONBF, 0);
 	}
@@ -182,7 +182,7 @@ WinPipeRedirection::WinPipeRedirection( FILE* stdstream )
 	catch( BaseException& ex )
 	{
 		Cleanup();
-		ex.DiagMsg() = (wxString)((stdstream==stdout) ? L"STDOUT" : L"STDERR") + L" Redirection Init failed: " + ex.DiagMsg();
+		ex.DiagMsg() = (std::string)((stdstream==stdout) ? "STDOUT" : "STDERR") + " Redirection Init failed: " + ex.DiagMsg();
 		throw;
 	}
 	catch( ... )

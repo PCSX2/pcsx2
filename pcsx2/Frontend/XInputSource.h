@@ -15,6 +15,7 @@
 
 #pragma once
 #include "Frontend/InputSource.h"
+#include "common/RedtapeWindows.h"
 #include <Xinput.h>
 #include <array>
 #include <functional>

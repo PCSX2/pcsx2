@@ -17,6 +17,7 @@
 #include "DebuggerLists.h"
 #include "BreakpointWindow.h"
 #include "DebugEvents.h"
+#include "pcsx2/gui/StringHelpers.h"
 
 wxBEGIN_EVENT_TABLE(GenericListView, wxWindow)
 	EVT_SIZE(GenericListView::sizeEvent)

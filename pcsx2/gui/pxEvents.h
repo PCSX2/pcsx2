@@ -17,8 +17,9 @@
 
 #include <wx/event.h>
 #include "common/General.h"
-#include "common/Dependencies.h"
+#include "common/Pcsx2Defs.h"
 #include "common/Threading.h"
+#include "gui/PersistentThread.h"
 
 wxDECLARE_EVENT(pxEvt_StartIdleEventTimer, wxCommandEvent);
 wxDECLARE_EVENT(pxEvt_DeleteObject, wxCommandEvent);

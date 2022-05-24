@@ -215,7 +215,7 @@ __fi void gsWrite32(u32 mem, u32 value)
 //////////////////////////////////////////////////////////////////////////
 // GS Write 64 bit
 
-void __fastcall gsWrite64_generic( u32 mem, const mem64_t* value )
+void gsWrite64_generic( u32 mem, const mem64_t* value )
 {
 	const u32* const srcval32 = (u32*)value;
 	GIF_LOG("GS Write64 at %8.8lx with data %8.8x_%8.8x", mem, srcval32[1], srcval32[0]);
@@ -223,14 +223,14 @@ void __fastcall gsWrite64_generic( u32 mem, const mem64_t* value )
 	*(u64*)PS2GS_BASE(mem) = *value;
 }
 
-void __fastcall gsWrite64_page_00( u32 mem, const mem64_t* value )
+void gsWrite64_page_00( u32 mem, const mem64_t* value )
 {
 	s_GSRegistersWritten |= (mem == GS_DISPFB1 || mem == GS_DISPFB2 || mem == GS_PMODE);
 
 	gsWrite64_generic( mem, value );
 }
 
-void __fastcall gsWrite64_page_01( u32 mem, const mem64_t* value )
+void gsWrite64_page_01( u32 mem, const mem64_t* value )
 {
 	GIF_LOG("GS Write64 at %8.8lx with data %8.8x_%8.8x", mem, (u32*)value[1], (u32*)value[0]);
 
@@ -266,12 +266,12 @@ void __fastcall gsWrite64_page_01( u32 mem, const mem64_t* value )
 //////////////////////////////////////////////////////////////////////////
 // GS Write 128 bit
 
-void __fastcall gsWrite128_page_00( u32 mem, const mem128_t* value )
+void gsWrite128_page_00( u32 mem, const mem128_t* value )
 {
 	gsWrite128_generic( mem, value );
 }
 
-void __fastcall gsWrite128_page_01( u32 mem, const mem128_t* value )
+void gsWrite128_page_01( u32 mem, const mem128_t* value )
 {
 	switch( mem )
 	{
@@ -287,7 +287,7 @@ void __fastcall gsWrite128_page_01( u32 mem, const mem128_t* value )
 	gsWrite128_generic( mem, value );
 }
 
-void __fastcall gsWrite128_generic( u32 mem, const mem128_t* value )
+void gsWrite128_generic( u32 mem, const mem128_t* value )
 {
 	const u32* const srcval32 = (u32*)value;
 

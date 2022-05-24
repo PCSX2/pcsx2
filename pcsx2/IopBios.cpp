@@ -27,6 +27,14 @@
 #include "ghc/filesystem.h"
 #include "common/FileSystem.h"
 
+#include <fcntl.h>
+
+#ifdef _WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
+
 #if !defined(S_ISREG) && defined(S_IFMT) && defined(S_IFREG)
 #define S_ISREG(m) (((m)&S_IFMT) == S_IFREG)
 #endif
@@ -994,7 +1002,7 @@ namespace R3000A
 			a0, a1, a2, a3);
 	}
 
-	void __fastcall irxImportLog_rec(u32 import_table, u16 index, const char* funcname)
+	void irxImportLog_rec(u32 import_table, u16 index, const char* funcname)
 	{
 		irxImportLog(iopMemReadString(import_table + 12, 8), index, funcname);
 	}

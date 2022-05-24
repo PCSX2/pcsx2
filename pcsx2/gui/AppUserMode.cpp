@@ -116,9 +116,9 @@ wxConfigBase* Pcsx2App::TestForPortableInstall()
 	{
 		wxString FilenameStr = portableIniFile.GetFullPath();
 		if (Startup.PortableMode)
-			Console.WriteLn( L"(UserMode) Portable mode requested via commandline switch!" );
+			Console.WriteLn( "(UserMode) Portable mode requested via commandline switch!" );
 		else
-			Console.WriteLn( L"(UserMode) Found portable install ini @ %s", WX_STR(FilenameStr) );
+			Console.WriteLn( "(UserMode) Found portable install ini @ %ls", WX_STR(FilenameStr) );
 
 		// Just because the portable ini file exists doesn't mean we can actually run in portable
 		// mode.  In order to determine our read/write permissions to the PCSX2, we must try to
@@ -159,7 +159,7 @@ wxConfigBase* Pcsx2App::TestForPortableInstall()
 			switch (result)
 			{
 				case wxID_CANCEL:
-					throw Exception::StartupAborted( L"User canceled portable mode due to insufficient user access/permissions." );
+					throw Exception::StartupAborted( "User canceled portable mode due to insufficient user access/permissions." );
 
 				case wxID_RETRY:
 					// do nothing (continues while loop)
@@ -217,7 +217,7 @@ static void DoFirstTimeWizard()
 		FirstTimeWizard wiz( NULL );
 		if( wiz.RunWizard( wiz.GetFirstPage() ) ) break;
 		if (wiz.GetReturnCode() != pxID_RestartWizard)
-			throw Exception::StartupAborted( L"User canceled FirstTime Wizard." );
+			throw Exception::StartupAborted( "User canceled FirstTime Wizard." );
 
 		Console.WriteLn( Color_StrongBlack, "Restarting First Time Wizard!" );
 	}

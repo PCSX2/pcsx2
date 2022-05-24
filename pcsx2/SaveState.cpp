@@ -18,6 +18,7 @@
 #include "SaveState.h"
 
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/SafeArray.inl"
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
@@ -34,7 +35,6 @@
 #include "Elfheader.h"
 #include "Counters.h"
 #include "Patch.h"
-#include "System/SysThreads.h"
 #include "DebugTools/Breakpoints.h"
 #include "Host.h"
 #include "GS.h"
@@ -46,9 +46,12 @@
 #ifndef PCSX2_CORE
 #include "gui/App.h"
 #include "gui/ConsoleLogger.h"
+#include "gui/SysThreads.h"
 #else
 #include "VMManager.h"
 #endif
+
+#include "fmt/core.h"
 
 #include <csetjmp>
 #include <png.h>
@@ -126,7 +129,7 @@ std::string SaveStateBase::GetSavestateFolder(int slot, bool isSavingOrLoading)
 		}
 	}
 
-	return Path::CombineStdString(dir, StringUtil::StdStringFromFormat("%s (%s).%02d.p2s",
+	return Path::Combine(dir, StringUtil::StdStringFromFormat("%s (%s).%02d.p2s",
 		serialName.c_str(), CRCvalue.c_str(), slot));
 }
 #endif
@@ -165,7 +168,7 @@ void SaveStateBase::PrepBlock( int size )
 void SaveStateBase::FreezeTag( const char* src )
 {
 	const uint allowedlen = sizeof( m_tagspace )-1;
-	pxAssertDev( strlen(src) < allowedlen, pxsFmt( L"Tag name exceeds the allowed length of %d chars.", allowedlen) );
+	pxAssertDev(strlen(src) < allowedlen, "Tag name exceeds the allowed length");
 
 	memzero( m_tagspace );
 	strcpy( m_tagspace, src );
@@ -173,9 +176,9 @@ void SaveStateBase::FreezeTag( const char* src )
 
 	if( strcmp( m_tagspace, src ) != 0 )
 	{
-		wxString msg( L"Savestate data corruption detected while reading tag: " + fromUTF8(src) );
-		pxFail( msg );
-		throw Exception::SaveStateLoadError().SetDiagMsg(msg);
+		std::string msg(fmt::format("Savestate data corruption detected while reading tag: {}", src));
+		pxFail( msg.c_str() );
+		throw Exception::SaveStateLoadError().SetDiagMsg(std::move(msg));
 	}
 }
 
@@ -282,9 +285,7 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	// to merit an HLE Bios sub-section... yet.
 	deci2Freeze();
 
-#ifndef DISABLE_RECORDING
 	InputRecordingFreeze();
-#endif
 
 	return *this;
 }
@@ -344,20 +345,17 @@ void memLoadingState::FreezeMem( void* data, int size )
 	memcpy( data, src, size );
 }
 
-wxString Exception::SaveStateLoadError::FormatDiagnosticMessage() const
+std::string Exception::SaveStateLoadError::FormatDiagnosticMessage() const
 {
-	FastFormatUnicode retval;
-	retval.Write("Savestate is corrupt or incomplete!\n");
+	std::string retval = "Savestate is corrupt or incomplete!\n";
 	Host::AddOSDMessage("Error: Savestate is corrupt or incomplete!", 15.0f);
 	_formatDiagMsg(retval);
 	return retval;
 }
 
-wxString Exception::SaveStateLoadError::FormatDisplayMessage() const
+std::string Exception::SaveStateLoadError::FormatDisplayMessage() const
 {
-	FastFormatUnicode retval;
-	retval.Write(_("The savestate cannot be loaded, as it appears to be corrupt or incomplete."));
-	retval.Write("\n");
+	std::string retval = "The savestate cannot be loaded, as it appears to be corrupt or incomplete.\n";
 	Host::AddOSDMessage("Error: The savestate cannot be loaded, as it appears to be corrupt or incomplete.", 15.0f);
 	_formatUserMsg(retval);
 	return retval;
@@ -665,11 +663,11 @@ std::unique_ptr<ArchiveEntryList> SaveState_DownloadState()
 #ifndef PCSX2_CORE
 	if (!GetCoreThread().HasActiveMachine())
 		throw Exception::RuntimeError()
-			.SetDiagMsg(L"SysExecEvent_DownloadState: Cannot freeze/download an invalid VM state!")
-			.SetUserMsg(_("There is no active virtual machine state to download or save."));
+			.SetDiagMsg("SysExecEvent_DownloadState: Cannot freeze/download an invalid VM state!")
+			.SetUserMsg("There is no active virtual machine state to download or save.");
 #endif
 
-	std::unique_ptr<ArchiveEntryList> destlist = std::make_unique<ArchiveEntryList>(new VmStateBuffer(L"Zippable Savestate"));
+	std::unique_ptr<ArchiveEntryList> destlist = std::make_unique<ArchiveEntryList>(new VmStateBuffer("Zippable Savestate"));
 
 	memSavingState saveme(destlist->GetBuffer());
 	ArchiveEntry internals(EntryFilename_InternalStructures);
@@ -780,46 +778,109 @@ static bool SaveState_CompressScreenshot(SaveStateScreenshotData* data, zip_t* z
 	return true;
 }
 
+static bool SaveState_ReadScreenshot(zip_t* zf, u32* out_width, u32* out_height, std::vector<u32>* out_pixels)
+{
+	auto zff = zip_fopen_managed(zf, EntryFilename_Screenshot, 0);
+	if (!zff)
+		return false;
+
+	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+	if (!png_ptr)
+		return false;
+
+	png_infop info_ptr = png_create_info_struct(png_ptr);
+	if (!info_ptr)
+	{
+		png_destroy_read_struct(&png_ptr, nullptr, nullptr);
+		return false;
+	}
+
+	ScopedGuard cleanup([&png_ptr, &info_ptr]() {
+		png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
+	});
+
+	if (setjmp(png_jmpbuf(png_ptr)))
+		return false;
+
+	png_set_read_fn(png_ptr, zff.get(), [](png_structp png_ptr, png_bytep data_ptr, png_size_t size) {
+		zip_fread(static_cast<zip_file_t*>(png_get_io_ptr(png_ptr)), data_ptr, size);
+	});
+
+	png_read_info(png_ptr, info_ptr);
+
+	png_uint_32 width = 0;
+	png_uint_32 height = 0;
+	int bitDepth = 0;
+	int colorType = -1;
+	if (png_get_IHDR(png_ptr, info_ptr, &width, &height, &bitDepth, &colorType, nullptr, nullptr, nullptr) != 1 ||
+		width == 0 || height == 0)
+	{
+		return false;
+	}
+
+	const png_uint_32 bytesPerRow = png_get_rowbytes(png_ptr, info_ptr);
+	std::vector<u8> rowData(bytesPerRow);
+
+	*out_width = width;
+	*out_height = height;
+	out_pixels->resize(width * height);
+
+	for (u32 y = 0; y < height; y++)
+	{
+		png_read_row(png_ptr, static_cast<png_bytep>(rowData.data()), nullptr);
+
+		const u8* row_ptr = rowData.data();
+		u32* out_ptr = &out_pixels->at(y * width);
+		if (colorType == PNG_COLOR_TYPE_RGB)
+		{
+			for (u32 x = 0; x < width; x++)
+			{
+				u32 pixel = static_cast<u32>(*(row_ptr)++);
+				pixel |= static_cast<u32>(*(row_ptr)++) << 8;
+				pixel |= static_cast<u32>(*(row_ptr)++) << 16;
+				pixel |= static_cast<u32>(*(row_ptr)++) << 24;
+				*(out_ptr++) = pixel | 0xFF000000u; // make opaque
+			}
+		}
+		else if (colorType == PNG_COLOR_TYPE_RGBA)
+		{
+			for (u32 x = 0; x < width; x++)
+			{
+				u32 pixel;
+				std::memcpy(&pixel, row_ptr, sizeof(u32));
+				row_ptr += sizeof(u32);
+				*(out_ptr++) = pixel | 0xFF000000u; // make opaque
+			}
+		}
+	}
+
+	return true;
+}
+
 // --------------------------------------------------------------------------------------
 //  CompressThread_VmState
 // --------------------------------------------------------------------------------------
-static void ZipStateToDiskOnThread(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot,
-	std::string filename, s32 slot_for_message)
+static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateScreenshotData* screenshot)
 {
-#ifndef PCSX2_CORE
-	wxGetApp().StartPendingSave();
-#endif
-
-	zip_error_t ze = {};
-	auto zf = zip_open_managed(filename.c_str(), ZIP_CREATE | ZIP_TRUNCATE, &ze);
-	if (!zf)
-	{
-		Console.Error("Failed to open zip file '%s' for save state: %s", filename.c_str(), zip_error_strerror(&ze));
-		return;
-	}
-
-	// discard zip file if we fail saving something
-	ScopedGuard zip_discarder([&zf]() { zip_discard(zf.release()); });
-
 	// use zstd compression, it can be 10x+ faster for saving.
 	const u32 compression = EmuConfig.SavestateZstdCompression ? ZIP_CM_ZSTD : ZIP_CM_DEFLATE;
 	const u32 compression_level = 0;
 
 	// version indicator
 	{
-		zip_source_t* const zs = zip_source_buffer(zf.get(), &g_SaveVersion, sizeof(g_SaveVersion), 0);
+		zip_source_t* const zs = zip_source_buffer(zf, &g_SaveVersion, sizeof(g_SaveVersion), 0);
 		if (!zs)
-			return;
+			return false;
 
 		// NOTE: Source should not be freed if successful.
-		const s64 fi = zip_file_add(zf.get(), EntryFilename_StateVersion, zs, ZIP_FL_ENC_UTF_8);
+		const s64 fi = zip_file_add(zf, EntryFilename_StateVersion, zs, ZIP_FL_ENC_UTF_8);
 		if (fi < 0)
 		{
 			zip_source_free(zs);
-			return;
+			return false;
 		}
 
-		zip_set_file_compression(zf.get(), fi, ZIP_CM_STORE, 0);
+		zip_set_file_compression(zf, fi, ZIP_CM_STORE, 0);
 	}
 
 	const uint listlen = srclist->GetLength();
@@ -829,39 +890,67 @@ static void ZipStateToDiskOnThread(std::unique_ptr<ArchiveEntryList> srclist, st
 		if (!entry.GetDataSize())
 			continue;
 
-		zip_source_t* const zs = zip_source_buffer(zf.get(), srclist->GetPtr(entry.GetDataIndex()), entry.GetDataSize(), 0);
+		zip_source_t* const zs = zip_source_buffer(zf, srclist->GetPtr(entry.GetDataIndex()), entry.GetDataSize(), 0);
 		if (!zs)
-			return;
+			return false;
 
-		const s64 fi = zip_file_add(zf.get(), entry.GetFilename().c_str(), zs, ZIP_FL_ENC_UTF_8);
+		const s64 fi = zip_file_add(zf, entry.GetFilename().c_str(), zs, ZIP_FL_ENC_UTF_8);
 		if (fi < 0)
 		{
 			zip_source_free(zs);
-			return;
+			return false;
 		}
 
-		zip_set_file_compression(zf.get(), fi, compression, compression_level);
+		zip_set_file_compression(zf, fi, compression, compression_level);
 	}
 
 	if (screenshot)
-		SaveState_CompressScreenshot(screenshot.get(), zf.get());
+	{
+		if (!SaveState_CompressScreenshot(screenshot, zf))
+			return false;
+	}
 
-	// force the zip to close, this is the expensive part with libzip.
-	zf.reset();
-
-#ifdef PCSX2_CORE
-	if (slot_for_message >= 0 && VMManager::HasValidVM())
-		Host::AddKeyedFormattedOSDMessage(StringUtil::StdStringFromFormat("SaveStateSlot%d", slot_for_message), 10.0f, "State saved to slot %d.", slot_for_message);
-#else
-	Console.WriteLn("(gzipThread) Data saved to disk without error.");
-	wxGetApp().ClearPendingSave();
-#endif
+	return true;
 }
 
-void SaveState_ZipToDisk(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, std::string filename, s32 slot_for_message)
+bool SaveState_ZipToDisk(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, const char* filename)
 {
-	std::thread threaded_save(ZipStateToDiskOnThread, std::move(srclist), std::move(screenshot), std::move(filename), slot_for_message);
-	threaded_save.detach();
+	zip_error_t ze = {};
+	zip_source_t* zs = zip_source_file_create(filename, 0, 0, &ze);
+	zip_t* zf = nullptr;
+	if (zs && !(zf = zip_open_from_source(zs, ZIP_CREATE | ZIP_TRUNCATE, &ze)))
+	{
+		Console.Error("Failed to open zip file '%s' for save state: %s", filename, zip_error_strerror(&ze));
+
+		// have to clean up source
+		zip_source_free(zs);
+		return false;
+	}
+
+	// discard zip file if we fail saving something
+	if (!SaveState_AddToZip(zf, srclist.get(), screenshot.get()))
+	{
+		Console.Error("Failed to save state to zip file '%s'", filename);
+		zip_discard(zf);
+		return false;
+	}
+
+	// force the zip to close, this is the expensive part with libzip.
+	zip_close(zf);
+	return true;
+}
+
+bool SaveState_ReadScreenshot(const std::string& filename, u32* out_width, u32* out_height, std::vector<u32>* out_pixels)
+{
+	zip_error_t ze = {};
+	auto zf = zip_open_managed(filename.c_str(), ZIP_RDONLY, &ze);
+	if (!zf)
+	{
+		Console.Error("Failed to open zip file '%s' for save state screenshot: %s", filename.c_str(), zip_error_strerror(&ze));
+		return false;
+	}
+
+	return SaveState_ReadScreenshot(zf.get(), out_width, out_height, out_pixels);
 }
 
 static void CheckVersion(const std::string& filename, zip_t* zf)
@@ -871,24 +960,24 @@ static void CheckVersion(const std::string& filename, zip_t* zf)
 	auto zff = zip_fopen_managed(zf, EntryFilename_StateVersion, 0);
 	if (!zff || zip_fread(zff.get(), &savever, sizeof(savever)) != sizeof(savever))
 	{
-		throw Exception::SaveStateLoadError(StringUtil::UTF8StringToWxString(filename))
-			.SetDiagMsg(L"Savestate file does not contain version indicator.")
-			.SetUserMsg(_("This file is not a valid PCSX2 savestate.  See the logfile for details."));
+		throw Exception::SaveStateLoadError(filename)
+			.SetDiagMsg("Savestate file does not contain version indicator.")
+			.SetUserMsg("This file is not a valid PCSX2 savestate.  See the logfile for details.");
 	}
 
 	// Major version mismatch.  Means we can't load this savestate at all.  Support for it
 	// was removed entirely.
 	if (savever > g_SaveVersion)
-		throw Exception::SaveStateLoadError(StringUtil::UTF8StringToWxString(filename))
-			.SetDiagMsg(pxsFmt(L"Savestate uses an unsupported or unknown savestate version.\n(PCSX2 ver=%x, state ver=%x)", g_SaveVersion, savever))
-			.SetUserMsg(_("Cannot load this savestate. The state is an unsupported version."));
+		throw Exception::SaveStateLoadError(filename)
+			.SetDiagMsg(fmt::format("Savestate uses an unsupported or unknown savestate version.\n(PCSX2 ver={:x}, state ver={:x})", g_SaveVersion, savever))
+			.SetUserMsg("Cannot load this savestate. The state is an unsupported version.");
 
 	// check for a "minor" version incompatibility; which happens if the savestate being loaded is a newer version
 	// than the emulator recognizes.  99% chance that trying to load it will just corrupt emulation or crash.
 	if ((savever >> 16) != (g_SaveVersion >> 16))
-		throw Exception::SaveStateLoadError(StringUtil::UTF8StringToWxString(filename))
-			.SetDiagMsg(pxsFmt(L"Savestate uses an unknown savestate version.\n(PCSX2 ver=%x, state ver=%x)", g_SaveVersion, savever))
-			.SetUserMsg(_("Cannot load this savestate. The state is an unsupported version."));
+		throw Exception::SaveStateLoadError(filename)
+			.SetDiagMsg(fmt::format("Savestate uses an unknown savestate version.\n(PCSX2 ver={:x}, state ver={:x})", g_SaveVersion, savever))
+			.SetUserMsg("Cannot load this savestate. The state is an unsupported version.");
 }
 
 static zip_int64_t CheckFileExistsInState(zip_t* zf, const char* name)
@@ -915,7 +1004,7 @@ static bool LoadInternalStructuresState(zip_t* zf, s64 index)
 	if (!zff)
 		return false;
 
-	VmStateBuffer buffer(static_cast<int>(zst.size), L"StateBuffer_UnzipFromDisk"); // start with an 8 meg buffer to avoid frequent reallocation.
+	VmStateBuffer buffer(static_cast<int>(zst.size), "StateBuffer_UnzipFromDisk"); // start with an 8 meg buffer to avoid frequent reallocation.
 	if (zip_fread(zff.get(), buffer.GetPtr(), buffer.GetSizeInBytes()) != buffer.GetSizeInBytes())
 		return false;
 
@@ -930,9 +1019,9 @@ void SaveState_UnzipFromDisk(const std::string& filename)
 	if (!zf)
 	{
 		Console.Error("Failed to open zip file '%s' for save state load: %s", filename.c_str(), zip_error_strerror(&ze));
-		throw Exception::SaveStateLoadError(StringUtil::UTF8StringToWxString(filename))
-			.SetDiagMsg(L"Savestate file is not a valid gzip archive.")
-			.SetUserMsg(_("This savestate cannot be loaded because it is not a valid gzip archive.  It may have been created by an older unsupported version of PCSX2, or it may be corrupted."));
+		throw Exception::SaveStateLoadError(filename)
+			.SetDiagMsg("Savestate file is not a valid gzip archive.")
+			.SetUserMsg("This savestate cannot be loaded because it is not a valid gzip archive.  It may have been created by an older unsupported version of PCSX2, or it may be corrupted.");
 	}
 
 	// look for version and screenshot information in the zip stream:
@@ -977,9 +1066,9 @@ void SaveState_UnzipFromDisk(const std::string& filename)
 
 	if (throwIt)
 	{
-		throw Exception::SaveStateLoadError(StringUtil::UTF8StringToWxString(filename))
-			.SetDiagMsg(L"Savestate cannot be loaded: some required components were not found or are incomplete.")
-			.SetUserMsg(_("This savestate cannot be loaded due to missing critical components.  See the log file for details."));
+		throw Exception::SaveStateLoadError(filename)
+			.SetDiagMsg("Savestate cannot be loaded: some required components were not found or are incomplete.")
+			.SetUserMsg("This savestate cannot be loaded due to missing critical components.  See the log file for details.");
 	}
 
 	PostLoadPrep();

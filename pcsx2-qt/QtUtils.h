@@ -34,9 +34,6 @@ class QVariant;
 class QWidget;
 class QUrl;
 
-// TODO: Get rid of wx interoperability later on.
-#include <wx/string.h>
-
 namespace QtUtils
 {
 	/// Marks an action as the "default" - i.e. makes the text bold.
@@ -79,8 +76,4 @@ namespace QtUtils
 
 	/// Converts a std::string_view to a QString safely.
 	QString StringViewToQString(const std::string_view& str);
-
-	// TODO: Get rid of wx interoperability later on.
-	wxString QStringToWxString(const QString& str);
-	QString WxStringToQString(const wxString& str);
 } // namespace QtUtils

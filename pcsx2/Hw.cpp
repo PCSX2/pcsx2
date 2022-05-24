@@ -18,9 +18,10 @@
 
 #include "Hardware.h"
 #include "newVif.h"
-#include "IPU/IPUdma.h"
 #include "Gif_Unit.h"
 #include "SPU2/spu2.h"
+
+#include "fmt/core.h"
 
 using namespace R5900;
 
@@ -76,8 +77,8 @@ void hwReset()
 	vif0Reset();
 	vif1Reset();
 	gif_fifo.init();
-	// needed for legacy DMAC
-	ipuDmaReset();
+	rcntInit();
+
 }
 
 __fi uint intcInterrupt()
@@ -170,7 +171,7 @@ __ri bool hwMFIFOWrite(u32 addr, const u128* data, uint qwc)
 	else
 	{
 		SPR_LOG( "Scratchpad/MFIFO: invalid base physical address: 0x%08x", dmacRegs.rbor.ADDR );
-		pxFailDev( wxsFormat( L"Scratchpad/MFIFO: Invalid base physical address: 0x%08x", dmacRegs.rbor.ADDR) );
+		pxFailDev( fmt::format( "Scratchpad/MFIFO: Invalid base physical address: 0x{:08x}", u32(dmacRegs.rbor.ADDR)).c_str() );
 		return false;
 	}
 	

@@ -21,6 +21,7 @@
 #include <wx/log.h>
 #include <wx/filename.h>
 #include "common/Console.h"
+#include "common/RedtapeWindows.h"
 #include <stdio.h>
 #include <assert.h>
 

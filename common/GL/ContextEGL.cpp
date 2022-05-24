@@ -17,6 +17,8 @@
 
 #include "common/Console.h"
 #include "ContextEGL.h"
+#include <algorithm>
+#include <cstring>
 #include <optional>
 #include <vector>
 

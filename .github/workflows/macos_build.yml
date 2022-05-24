@@ -1,0 +1,99 @@
+name: MacOS Build Steps
+
+on:
+  workflow_call:
+    inputs:
+      jobName:
+        required: true
+        type: string
+      os:
+        required: false
+        type: string
+        default: macos-11.0
+      platform:
+        required: false
+        type: string
+        default: x64
+
+jobs:
+  build_macos:
+    name: ${{ inputs.jobName }}
+    runs-on: ${{ inputs.os }}
+    # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
+    timeout-minutes: 60
+    env:
+      POWERSHELL_TELEMETRY_OPTOUT: 1
+      BUILDCACHE_COMPRESS_FORMAT: ZSTD
+      BUILDCACHE_COMPRESS_LEVEL: 9
+      BUILDCACHE_MAX_CACHE_SIZE: 536870912 # 512MB
+      BUILDCACHE_DIRECT_MODE: true
+      BUILDCACHE_LOG_FILE: ${{ github.workspace }}\buildcache.log
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Prepare Artifact Metadata
+        id: artifact-metadata
+        shell: bash
+        env:
+          OS: macos
+          GUI_FRAMEWORK: wxWidgets
+          ARCH: ${{ inputs.platform }}
+          SIMD: ''
+          EVENT_NAME: ${{ github.event_name }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+        run: ./.github/workflows/scripts/common/name-artifacts.sh
+
+      - name: Install Packages
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+          HOMEBREW_NO_ANALYTICS: 1
+        run: |
+          brew unlink libjpeg libpng # Conflicts with our self-built dependencies
+          # Unlike other packages, brew's MoltenVK build uses MoltenVK's minimum macOS version of 10.13 so we can use it
+          if ! brew install molten-vk; then
+            brew update
+            brew install molten-vk
+          fi
+
+      - name: Cache Dependencies
+        id: cache-deps
+        uses: actions/cache@v3
+        with:
+          path: ~/deps
+          key: ${{ inputs.os }} ${{ inputs.platform }} deps ${{ hashFiles('.github/workflows/scripts/macos/build-dependencies.sh') }}
+
+      - name: Build Dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: .github/workflows/scripts/macos/build-dependencies.sh
+
+      - name: Generate CMake Files
+        run: cmake -DCMAKE_PREFIX_PATH="$HOME/deps" -DCMAKE_BUILD_TYPE=Release -DUSE_OPENGL=OFF -DDISABLE_ADVANCE_SIMD=ON -DLTO_PCSX2_CORE=ON -DUSE_SYSTEM_LIBS=OFF -DUSE_SYSTEM_SDL2=ON -B build .
+
+      - name: Build PCSX2
+        working-directory: build
+        run: make -j$(getconf _NPROCESSORS_ONLN) # macOS doesn't use make install
+
+      - name: Run Tests
+        working-directory: build
+        run: make -j$(getconf _NPROCESSORS_ONLN) unittests
+
+      - name: Prepare Build Artifacts
+        run: |
+          cp /usr/local/lib/libMoltenVK.dylib build/pcsx2/PCSX2.app/Contents/Frameworks/
+          mv build/pcsx2/PCSX2.app "${{ steps.artifact-metadata.outputs.artifact-name }}.app"
+          tar cvzf "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.gz" "${{ steps.artifact-metadata.outputs.artifact-name }}.app"
+          mkdir ci-artifacts
+          cp "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.gz" ci-artifacts/macOS.tar.gz
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.artifact-metadata.outputs.artifact-name }}
+          path: "*.tar.gz"

@@ -22,13 +22,13 @@ using namespace x86Emitter;
 
 thread_local const char *currentTest;
 
-static void assertHandlerInternal(const DiagnosticOrigin& origin, const wxChar* msg) {
-	FAIL() << "Assertion failed: " << wxString(msg)
+static void assertHandlerInternal(const DiagnosticOrigin& origin, const char* msg) {
+	FAIL() << "Assertion failed: " << msg
 		<< "\n  at " << origin.srcfile << ":" << origin.line << ""
 		<< "\n  when trying to assemble " << currentTest;
 }
 
-static bool assertHandler(const DiagnosticOrigin& origin, const wxChar* msg) {
+static bool assertHandler(const DiagnosticOrigin& origin, const char* msg) {
 	assertHandlerInternal(origin, msg);
 	return false;
 }

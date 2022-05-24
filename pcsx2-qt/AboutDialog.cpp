@@ -16,8 +16,8 @@
 #include "PrecompiledHeader.h"
 
 #include "AboutDialog.h"
+#include "QtHost.h"
 #include "QtUtils.h"
-#include "svnrev.h"
 #include <QtCore/QString>
 #include <QtWidgets/QDialog>
 
@@ -30,7 +30,7 @@ AboutDialog::AboutDialog(QWidget* parent)
 	setFixedSize(geometry().width(), geometry().height());
 
 	m_ui.scmversion->setTextInteractionFlags(Qt::TextSelectableByMouse);
-	m_ui.scmversion->setText(GIT_REV);
+	m_ui.scmversion->setText(QtHost::GetAppNameAndVersion());
 
 	m_ui.links->setTextInteractionFlags(Qt::TextBrowserInteraction);
 	m_ui.links->setOpenExternalLinks(true);

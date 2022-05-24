@@ -19,6 +19,7 @@
 #include <cstring>
 
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 
 #include "Common.h"
@@ -180,7 +181,7 @@ static void LoadExtraRom(const char* ext, u8 (&dest)[_size])
 	if ((filesize = FileSystem::GetPathFileSize(Bios1.c_str())) <= 0)
 	{
 		// Try the name properly extensioned next (name.rom1)
-		Bios1 = FileSystem::ReplaceExtension(BiosPath, ext);
+		Bios1 = Path::ReplaceExtension(BiosPath, ext);
 		if ((filesize = FileSystem::GetPathFileSize(Bios1.c_str())) <= 0)
 		{
 			Console.WriteLn(Color_Gray, "BIOS %s module not found, skipping...", ext);
@@ -215,11 +216,10 @@ static void LoadIrx(const std::string& filename, u8* dest, size_t maxSize)
 
 static std::string FindBiosImage()
 {
-	const std::string dir(StringUtil::wxStringToUTF8String(EmuFolders::Bios.ToString()));
-	Console.WriteLn("Searching for a BIOS image in '%s'...", dir.c_str());
+	Console.WriteLn("Searching for a BIOS image in '%s'...", EmuFolders::Bios.c_str());
 
 	FileSystem::FindResultsArray results;
-	if (!FileSystem::FindFiles(dir.c_str(), "*.*", FILESYSTEM_FIND_FILES, &results))
+	if (!FileSystem::FindFiles(EmuFolders::Bios.c_str(), "*", FILESYSTEM_FIND_FILES, &results))
 		return std::string();
 
 	u32 version, region;
@@ -303,8 +303,8 @@ bool LoadBIOS()
 	}
 
 #ifndef PCSX2_CORE
-	Console.SetTitle(StringUtil::UTF8StringToWxString(StringUtil::StdStringFromFormat("Running BIOS (%s v%u.%u)",
-		BiosZone.c_str(), BiosVersion >> 8, BiosVersion & 0xff)));
+	Console.SetTitle(StringUtil::StdStringFromFormat("Running BIOS (%s v%u.%u)",
+		BiosZone.c_str(), BiosVersion >> 8, BiosVersion & 0xff).c_str());
 #endif
 
 	//injectIRX("host.irx");	//not fully tested; still buggy
@@ -322,7 +322,7 @@ bool LoadBIOS()
 
 bool IsBIOS(const char* filename, u32& version, std::string& description, u32& region, std::string& zone)
 {
-	const std::string bios_path(Path::CombineStdString(EmuFolders::Bios, filename));
+	const std::string bios_path(Path::Combine(EmuFolders::Bios, filename));
 	const auto fp = FileSystem::OpenManagedCFile(filename, "rb");
 	if (!fp)
 		return false;

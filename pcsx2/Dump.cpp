@@ -23,7 +23,10 @@
 #include "DebugTools/SymbolMap.h"
 #include "Config.h"
 
-#include "Utilities/AsciiFile.h"
+#include "common/FileSystem.h"
+#include "common/Path.h"
+
+#include "fmt/core.h"
 
 using namespace R5900;
 
@@ -208,23 +211,25 @@ void iDumpBlock(u32 ee_pc, u32 ee_size, uptr x86_pc, u32 x86_size)
 
 	DbgCon.WriteLn( Color_Gray, "dump block %x:%x (x86:0x%x)", ee_pc, ee_end, x86_pc );
 
-	EmuFolders::Logs.Mkdir();
-	wxString dump_filename = Path::Combine(EmuFolders::Logs, wxsFormat(L"R5900dump_%.8X:%.8X.txt", ee_pc, ee_end) );
-	AsciiFile eff( dump_filename, L"w" );
+	FileSystem::CreateDirectoryPath(EmuFolders::Logs.c_str(), false);
+	std::string dump_filename(Path::Combine(EmuFolders::Logs, fmt::format("R5900dump_{:.8X}:{:.8X}.txt", ee_pc, ee_end) ));
+	std::FILE* eff = FileSystem::OpenCFile(dump_filename.c_str(), "w");
+	if (!eff)
+		return;
 
 	// Print register content to detect the memory access type. Warning value are taken
 	// during the call of this function. There aren't the real value of the block.
-	eff.Printf("Dump register data: 0x%x\n", (uptr)&cpuRegs.GPR.r[0].UL[0]);
+	std::fprintf(eff, "Dump register data: 0x%p\n", &cpuRegs.GPR.r[0].UL[0]);
 	for (int reg = 0; reg < 32; reg++) {
 		// Only lower 32 bits (enough for address)
-		eff.Printf("\t%2s <= 0x%08x_%08x\n", R5900::GPR_REG[reg], cpuRegs.GPR.r[reg].UL[1],cpuRegs.GPR.r[reg].UL[0]);
+		std::fprintf(eff, "\t%2s <= 0x%08x_%08x\n", R5900::GPR_REG[reg], cpuRegs.GPR.r[reg].UL[1],cpuRegs.GPR.r[reg].UL[0]);
 	}
-	eff.Printf("\n");
+	std::fprintf(eff, "\n");
 
 
 	if (!R5900SymbolMap.GetLabelString(ee_pc).empty())
 	{
-		eff.Printf( "%s\n", R5900SymbolMap.GetLabelString(ee_pc).c_str() );
+		std::fprintf(eff, "%s\n", R5900SymbolMap.GetLabelString(ee_pc).c_str() );
 	}
 
 	for ( u32 i = ee_pc; i < ee_end; i += 4 )
@@ -232,29 +237,31 @@ void iDumpBlock(u32 ee_pc, u32 ee_size, uptr x86_pc, u32 x86_size)
 		std::string output;
 		//TLB Issue disR5900Fasm( output, memRead32( i ), i, false );
 		disR5900Fasm( output, psMu32(i), i, false );
-		eff.Printf( "0x%.X : %s\n", i, output.c_str() );
+		std::fprintf(eff, "0x%.X : %s\n", i, output.c_str() );
 	}
 
 	// Didn't find (search) a better solution
-	eff.Printf( "\nRaw x86 dump (https://www.onlinedisassembler.com/odaweb/):\n");
+	std::fprintf(eff, "\nRaw x86 dump (https://www.onlinedisassembler.com/odaweb/):\n");
 	u8* x86 = (u8*)x86_pc;
 	for (u32 i = 0; i < x86_size; i++) {
-		eff.Printf("%.2X", x86[i]);
+		std::fprintf(eff, "%.2X", x86[i]);
 	}
-	eff.Printf("\n\n");
+	std::fprintf(eff, "\n\n");
 
-	eff.Close(); // Close the file so it can be appended by objdump
+	std::fclose(eff); // Close the file so it can be appended by objdump
 
 	// handy but slow solution (system call)
 #ifdef __linux__
-	wxString obj_filename = Path::Combine(EmuFolders::Logs, wxString(L"objdump_tmp.o"));
-	wxFFile objdump(obj_filename , L"wb");
-	objdump.Write(x86, x86_size);
-	objdump.Close();
+	std::string obj_filename(Path::Combine(EmuFolders::Logs, "objdump_tmp.o"));
+	std::FILE* objdump = FileSystem::OpenCFile(obj_filename.c_str(), "wb");
+	if (!objdump)
+		return;
+	std::fwrite(x86, x86_size, 1, objdump);
+	std::fclose(objdump);
 
 	int status = std::system(
-			wxsFormat( L"objdump -D -b binary -mi386 --disassembler-options=intel --no-show-raw-insn --adjust-vma=%d %s >> %s",
-				   (u32) x86_pc, WX_STR(obj_filename), WX_STR(dump_filename)).mb_str()
+			fmt::format( "objdump -D -b binary -mi386 --disassembler-options=intel --no-show-raw-insn --adjust-vma=%d %s >> %s",
+				   (u32) x86_pc, obj_filename, dump_filename).c_str()
 			);
 
 	if (!WIFEXITED(status))
@@ -272,26 +279,26 @@ void iDumpBlock( int startpc, u8 * ptr )
 
 	DbgCon.WriteLn( Color_Gray, "dump1 %x:%x, %x", startpc, pc, cpuRegs.cycle );
 
-	EmuFolders::Logs.Mkdir();
-	AsciiFile eff(
-		Path::Combine( EmuFolders::Logs, wxsFormat(L"R5900dump%.8X.txt", startpc) ), L"w"
-	);
+	FileSystem::CreateDirectoryPath(EmuFolders::Logs.c_str(), false);
+	std::FILE* eff = FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, fmt::format("R5900dump{:.8X}.txt", startpc)).c_str(), "w");
+	if (!eff)
+		return;
 
 	if (!R5900SymbolMap.GetLabelString(startpc).empty())
 	{
-		eff.Printf( "%s\n", R5900SymbolMap.GetLabelString(startpc).c_str() );
+		std::fprintf(eff, "%s\n", R5900SymbolMap.GetLabelString(startpc).c_str() );
 	}
 
 	for ( uint i = startpc; i < s_nEndBlock; i += 4 )
 	{
 		std::string output;
 		disR5900Fasm( output, memRead32( i ), i, false );
-		eff.Printf( "%s\n", output.c_str() );
+		std::fprintf(eff, "%s\n", output.c_str() );
 	}
 
 	// write the instruction info
 
-	eff.Printf( "\n\nlive0 - %x, live2 - %x, lastuse - %x\nxmm - %x, used - %x\n",
+	std::fprintf(eff, "\n\nlive0 - %x, live2 - %x, lastuse - %x\nxmm - %x, used - %x\n",
 		EEINST_LIVE0, EEINST_LIVE2, EEINST_LASTUSE, EEINST_XMM, EEINST_USED
 	);
 
@@ -313,17 +320,17 @@ void iDumpBlock( int startpc, u8 * ptr )
 		}
 	}
 
-	eff.Printf( "       " );
+	std::fprintf(eff, "       " );
 	for(uint i = 0; i < std::size(s_pInstCache->regs); ++i) {
-		if( used[i] ) eff.Printf( "%2d ", i );
+		if( used[i] ) std::fprintf(eff, "%2d ", i );
 	}
-	eff.Printf( "\n" );
+	std::fprintf(eff, "\n" );
 	for(uint i = 0; i < std::size(s_pInstCache->fpuregs); ++i) {
-		if( fpuused[i] ) eff.Printf( "%2d ", i );
+		if( fpuused[i] ) std::fprintf(eff, "%2d ", i );
 	}
 
-	eff.Printf( "\n" );
-	eff.Printf( "       " );
+	std::fprintf(eff, "\n" );
+	std::fprintf(eff, "       " );
 
 	// TODO : Finish converting this over to wxWidgets wxFile stuff...
 	/*

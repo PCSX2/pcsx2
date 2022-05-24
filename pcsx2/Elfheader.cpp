@@ -34,7 +34,7 @@ bool isPSXElf;
 
 // All of ElfObjects functions.
 ElfObject::ElfObject(std::string srcfile, IsoFile& isofile, bool isPSXElf)
-	: data(isofile.getLength(), L"ELF headers")
+	: data(isofile.getLength(), "ELF headers")
 	, filename(std::move(srcfile))
 	, header(*(ELF_HEADER*)data.GetPtr())
 {
@@ -44,7 +44,7 @@ ElfObject::ElfObject(std::string srcfile, IsoFile& isofile, bool isPSXElf)
 }
 
 ElfObject::ElfObject(std::string srcfile, u32 hdrsize, bool isPSXElf)
-	: data(hdrsize, L"ELF headers")
+	: data(hdrsize, "ELF headers")
 	, filename(std::move(srcfile))
 	, header(*(ELF_HEADER*)data.GetPtr())
 {
@@ -60,7 +60,7 @@ void ElfObject::initElfHeaders(bool isPSXElf)
 		return;
 	}
 
-	DevCon.WriteLn( L"Initializing Elf: %d bytes", data.GetSizeInBytes());
+	DevCon.WriteLn("Initializing Elf: %d bytes", data.GetSizeInBytes());
 
 	if (header.e_phnum > 0)
 	{
@@ -157,40 +157,40 @@ std::pair<u32,u32> ElfObject::getTextRange()
 void ElfObject::readIso(IsoFile& file)
 {
 	int rsize = file.read(data.GetPtr(), data.GetSizeInBytes());
-	if (rsize < data.GetSizeInBytes()) throw Exception::EndOfStream(StringUtil::UTF8StringToWxString(filename));
+	if (rsize < data.GetSizeInBytes()) throw Exception::EndOfStream(filename);
 }
 
 void ElfObject::readFile()
 {
 	int rsize = 0;
 	FILE *f = FileSystem::OpenCFile( filename.c_str(), "rb");
-	if (f == NULL) throw Exception::FileNotFound(StringUtil::UTF8StringToWxString(filename));
+	if (f == NULL) throw Exception::FileNotFound(filename);
 
 	fseek(f, 0, SEEK_SET);
 	rsize = fread(data.GetPtr(), 1, data.GetSizeInBytes(), f);
 	fclose( f );
 
-	if (rsize < data.GetSizeInBytes()) throw Exception::EndOfStream(StringUtil::UTF8StringToWxString(filename));
+	if (rsize < data.GetSizeInBytes()) throw Exception::EndOfStream(filename);
 }
 
-static wxString GetMsg_InvalidELF()
+static std::string GetMsg_InvalidELF()
 {
 	return
-		_("Cannot load ELF binary image.  The file may be corrupt or incomplete.") + 
-		wxString(L"\n\n") +
-		_("If loading from an ISO image, this error may be caused by an unsupported ISO image type or a bug in PCSX2 ISO image support.");
+		"Cannot load ELF binary image.  The file may be corrupt or incomplete."
+		"\n\n"
+		"If loading from an ISO image, this error may be caused by an unsupported ISO image type or a bug in PCSX2 ISO image support.";
 }
 
 
 void ElfObject::checkElfSize(s64 elfsize)
 {
-	const wxChar* diagMsg = NULL;
-	if		(elfsize > 0xfffffff)	diagMsg = L"Illegal ELF file size over 2GB!";
-	else if	(elfsize == -1)			diagMsg = L"ELF file does not exist!";
-	else if	(elfsize == 0)			diagMsg = L"Unexpected end of ELF file.";
+	const char* diagMsg = NULL;
+	if		(elfsize > 0xfffffff)	diagMsg = "Illegal ELF file size over 2GB!";
+	else if	(elfsize == -1)			diagMsg = "ELF file does not exist!";
+	else if	(elfsize == 0)			diagMsg = "Unexpected end of ELF file.";
 
 	if (diagMsg)
-		throw Exception::BadStream(StringUtil::UTF8StringToWxString(filename))
+		throw Exception::BadStream(filename)
 			.SetDiagMsg(diagMsg)
 			.SetUserMsg(GetMsg_InvalidELF());
 }

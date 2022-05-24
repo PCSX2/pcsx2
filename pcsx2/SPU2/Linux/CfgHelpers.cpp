@@ -16,6 +16,9 @@
 #include "PrecompiledHeader.h"
 #include "Config.h"
 #include "Dialogs.h"
+#include "pcsx2/Config.h"
+#include "common/Path.h"
+#include "gui/StringHelpers.h"
 #include <wx/fileconf.h>
 
 wxFileConfig* spuConfig = nullptr;
@@ -26,7 +29,7 @@ void initIni()
 {
 	if (!pathSet)
 	{
-		path = EmuFolders::Settings.Combine(path).GetFullPath();
+		path = StringUtil::UTF8StringToWxString(Path::Combine(EmuFolders::Settings, "SPU2.ini"));
 		pathSet = true;
 	}
 	if (spuConfig == nullptr)
@@ -36,13 +39,13 @@ void initIni()
 void setIni(const wchar_t* Section)
 {
 	initIni();
-	spuConfig->SetPath(wxsFormat(L"/%s", Section));
+	spuConfig->SetPath(wxString::Format(L"/%s", Section));
 }
 
 void CfgSetSettingsDir(const char* dir)
 {
 	FileLog("CfgSetSettingsDir(%s)\n", dir);
-	path = Path::Combine((dir == nullptr) ? wxString(L"inis") : wxString::FromUTF8(dir), L"SPU2.ini");
+	path = StringUtil::UTF8StringToWxString(Path::Combine((dir == nullptr) ? std::string("inis") : std::string(dir), "SPU2.ini"));
 	pathSet = true;
 }
 

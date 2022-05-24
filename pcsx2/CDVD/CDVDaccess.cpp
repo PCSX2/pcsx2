@@ -18,33 +18,24 @@
 
 #define ENABLE_TIMESTAMPS
 
-#ifdef _WIN32
-#include <wx/msw/wrapwin.h>
-#endif
-
 #include <ctype.h>
 #include <time.h>
-#include <wx/datetime.h>
 #include <exception>
 #include <memory>
 
 #include "IsoFS/IsoFS.h"
 #include "IsoFS/IsoFSCDVD.h"
-#include "CDVDisoReader.h"
+#include "IsoFileFormats.h"
 
+#include "common/Assertions.h"
+#include "common/Exceptions.h"
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 #include "DebugTools/SymbolMap.h"
 #include "Config.h"
 
 CDVD_API* CDVD = NULL;
-
-const wxChar* CDVD_SourceLabels[] =
-	{
-		L"ISO",
-		L"Disc",
-		L"NoDisc",
-		NULL};
 
 // ----------------------------------------------------------------------------
 // diskTypeCached
@@ -386,7 +377,7 @@ bool DoCDVDopen()
 		return true;
 	}
 
-	std::string somepick(FileSystem::StripExtension(FileSystem::GetDisplayNameFromPath(m_SourceFilename[CurrentSourceType])));
+	std::string somepick(Path::StripExtension(FileSystem::GetDisplayNameFromPath(m_SourceFilename[CurrentSourceType])));
 	//FWIW Disc serial availability doesn't seem reliable enough, sometimes it's there and sometime it's just null
 	//Shouldn't the serial be available all time? Potentially need to look into Elfreloadinfo() reliability
 	//TODO: Add extra fallback case for CRC.
@@ -398,14 +389,20 @@ bool DoCDVDopen()
 	if (EmuConfig.CurrentBlockdump.empty())
 		EmuConfig.CurrentBlockdump = FileSystem::GetWorkingDirectory();
 
-	std::string temp(Path::CombineStdString(EmuConfig.CurrentBlockdump, somepick));
+	std::string temp(Path::Combine(EmuConfig.CurrentBlockdump, somepick));
 
 #ifdef ENABLE_TIMESTAMPS
-	wxDateTime curtime(wxDateTime::GetTimeNow());
+	std::time_t curtime_t = std::time(nullptr);
+	struct tm curtime = {};
+#ifdef _MSC_VER
+	localtime_s(&curtime, &curtime_t);
+#else
+	localtime_r(&curtime_t, &curtime);
+#endif
 
 	temp += StringUtil::StdStringFromFormat(" (%04d-%02d-%02d %02d-%02d-%02d)",
-		curtime.GetYear(), curtime.GetMonth(), curtime.GetDay(),
-		curtime.GetHour(), curtime.GetMinute(), curtime.GetSecond());
+		curtime.tm_year + 1900, curtime.tm_mon + 1, curtime.tm_mday,
+		curtime.tm_hour, curtime.tm_min, curtime.tm_sec);
 #endif
 	temp += ".dump";
 

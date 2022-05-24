@@ -18,6 +18,3 @@
 #include <csignal>
 #include <cerrno>
 #include <cstdio>
-
-#include <wx/string.h>
-#include <wx/gdicmn.h>

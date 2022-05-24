@@ -73,7 +73,7 @@ HWND gsWnd = nullptr;
 #include "gtk.h"
 #include <gdk/gdkx.h>
 #include <X11/X.h>
-Display* g_GSdsp;
+Display* g_GSdsp = nullptr;
 Window g_GSwin;
 #endif
 

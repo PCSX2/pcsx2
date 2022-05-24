@@ -1,0 +1,34 @@
+name: 📝 Validate GameDB
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '**/GameIndex.yaml'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - '**/GameIndex.yaml'
+
+jobs:
+  lint:
+    name: Lint and Validate GameDB
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Validate Contents
+        env:
+          GAMEDB_PATH: ./bin/resources/GameIndex.yaml
+          SCRIPT_DIR: .github/workflows/scripts/lint/gamedb
+        run: |
+          pip install -r "${SCRIPT_DIR}/requirements.txt"
+          python "${SCRIPT_DIR}/lint.py"
+
+      - name: Check Formatting
+        run: |
+          npm install -g prettier
+          prettier --check ./bin/resources/GameIndex.yaml

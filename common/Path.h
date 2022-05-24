@@ -15,227 +15,70 @@
 
 #pragma once
 
-#include <wx/filename.h>
-#include "common/StringHelpers.h"
+#include "common/Pcsx2Defs.h"
 
-#include "ghc/filesystem.h"
+#include <string>
+#include <string_view>
+#include <vector>
 
-namespace fs = ghc::filesystem;
-
-#define g_MaxPath 255 // 255 is safer with antiquated Win32 ASCII APIs.
-
-// --------------------------------------------------------------------------------------
-//  wxDirName
-// --------------------------------------------------------------------------------------
-class wxDirName : protected wxFileName
-{
-public:
-	explicit wxDirName(const wxFileName& src)
-	{
-		Assign(src.GetPath(), wxEmptyString);
-	}
-
-	wxDirName()
-		: wxFileName()
-	{
-	}
-	wxDirName(const wxDirName& src)
-		: wxFileName(src)
-	{
-	}
-	explicit wxDirName(const char* src) { Assign(fromUTF8(src)); }
-	explicit wxDirName(const wxString& src) { Assign(src); }
-
-	// ------------------------------------------------------------------------
-	void Assign(const wxString& volume, const wxString& path)
-	{
-		wxFileName::Assign(volume, path, wxEmptyString);
-	}
-
-	void Assign(const wxString& path)
-	{
-		wxFileName::Assign(path, wxEmptyString);
-	}
-
-	void Assign(const wxDirName& path)
-	{
-		wxFileName::Assign(path);
-	}
-
-	void Clear() { wxFileName::Clear(); }
-
-	wxCharBuffer ToUTF8() const { return GetPath().ToUTF8(); }
-	wxCharBuffer ToAscii() const { return GetPath().ToAscii(); }
-	wxString ToString() const { return GetPath(); }
-
-	// ------------------------------------------------------------------------
-	bool IsWritable() const { return IsDirWritable(); }
-	bool IsReadable() const { return IsDirReadable(); }
-	bool Exists() const { return DirExists(); }
-	bool FileExists() const { return wxFileName::FileExists(); }
-	bool IsOk() const { return wxFileName::IsOk(); }
-	bool IsRelative() const { return wxFileName::IsRelative(); }
-	bool IsAbsolute() const { return wxFileName::IsAbsolute(); }
-
-	bool SameAs(const wxDirName& filepath) const
-	{
-		return wxFileName::SameAs(filepath);
-	}
-
-	//Returns true if the file is somewhere inside this directory (and both file and directory are not relative).
-	bool IsContains(const wxFileName& file) const
-	{
-		if (this->IsRelative() || file.IsRelative())
-			return false;
-
-		wxFileName f(file);
-
-		while (1)
-		{
-			if (this->SameAs(wxDirName(f.GetPath())))
-				return true;
-
-			if (f.GetDirCount() == 0)
-				return false;
-
-			f.RemoveLastDir();
-		}
-
-		return false;
-	}
-
-	bool IsContains(const wxDirName& dir) const
-	{
-		return IsContains((wxFileName)dir);
-	}
-
-
-	//Auto relative works as follows:
-	// 1. if either base or subject are relative, return subject (should never be used with relative paths).
-	// 2. else if subject is somewhere inside base folder, then result is subject relative to base.
-	// 3. (windows only, implicitly) else if subject is on the same driveletter as base, result is absolute path of subject without the driveletter.
-	// 4. else, result is absolute path of subject.
-	//
-	// returns ok if both this and base are absolute paths.
-	static wxString MakeAutoRelativeTo(const wxFileName _subject, const wxString& pathbase)
-	{
-		wxFileName subject(_subject);
-		wxDirName base(pathbase);
-		if (base.IsRelative() || subject.IsRelative())
-			return subject.GetFullPath();
-
-		wxString bv(base.GetVolume());
-		bv.MakeUpper();
-		wxString sv(subject.GetVolume());
-		sv.MakeUpper();
-
-		if (base.IsContains(subject))
-		{
-			subject.MakeRelativeTo(base.GetFullPath());
-		}
-		else if (base.HasVolume() && subject.HasVolume() && bv == sv)
-		{
-			wxString unusedVolume;
-			wxString pathSansVolume;
-			subject.SplitVolume(subject.GetFullPath(), &unusedVolume, &pathSansVolume);
-			subject = pathSansVolume;
-		}
-		//implicit else: this stays fully absolute
-
-		return subject.GetFullPath();
-	}
-
-	static wxString MakeAutoRelativeTo(const wxDirName subject, const wxString& pathbase)
-	{
-		return MakeAutoRelativeTo(wxFileName(subject), pathbase);
-	}
-
-	// Returns the number of sub folders in this directory path
-	size_t GetCount() const { return GetDirCount(); }
-
-	// ------------------------------------------------------------------------
-	wxFileName Combine(const wxFileName& right) const;
-	wxDirName Combine(const wxDirName& right) const;
-
-	// removes the lastmost directory from the path
-	void RemoveLast() { wxFileName::RemoveDir(GetCount() - 1); }
-
-	wxDirName& Normalize(int flags = wxPATH_NORM_ALL, const wxString& cwd = wxEmptyString);
-	wxDirName& MakeRelativeTo(const wxString& pathBase = wxEmptyString);
-	wxDirName& MakeAbsolute(const wxString& cwd = wxEmptyString);
-
-	// ------------------------------------------------------------------------
-
-	void AssignCwd(const wxString& volume = wxEmptyString) { wxFileName::AssignCwd(volume); }
-	bool SetCwd() { return wxFileName::SetCwd(); }
-
-	// wxWidgets is missing the const qualifier for this one!  Shame!
-	void Rmdir() const;
-	bool Mkdir() const;
-
-	// ------------------------------------------------------------------------
-
-	wxDirName& operator=(const wxDirName& dirname)
-	{
-		Assign(dirname);
-		return *this;
-	}
-	wxDirName& operator=(const wxString& dirname)
-	{
-		Assign(dirname);
-		return *this;
-	}
-	wxDirName& operator=(const char* dirname)
-	{
-		Assign(fromUTF8(dirname));
-		return *this;
-	}
-
-	wxFileName operator+(const wxFileName& right) const { return Combine(right); }
-	wxDirName operator+(const wxDirName& right) const { return Combine(right); }
-	wxFileName operator+(const wxString& right) const { return Combine(wxFileName(right)); }
-	wxFileName operator+(const char* right) const { return Combine(wxFileName(fromUTF8(right))); }
-
-	bool operator==(const wxDirName& filename) const { return SameAs(filename); }
-	bool operator!=(const wxDirName& filename) const { return !SameAs(filename); }
-
-	bool operator==(const wxFileName& filename) const { return SameAs(wxDirName(filename)); }
-	bool operator!=(const wxFileName& filename) const { return !SameAs(wxDirName(filename)); }
-
-	// compare with a filename string interpreted as a native file name
-	bool operator==(const wxString& filename) const { return SameAs(wxDirName(filename)); }
-	bool operator!=(const wxString& filename) const { return !SameAs(wxDirName(filename)); }
-
-	const wxFileName& GetFilename() const { return *this; }
-	wxFileName& GetFilename() { return *this; }
-};
-
-// --------------------------------------------------------------------------------------
-//  Path Namespace
-// --------------------------------------------------------------------------------------
-// Cross-platform utilities for manipulation of paths and filenames.  Mostly these fall
-// back on wxWidgets APIs internally, but are still helpful because some of wx's file stuff
-// has minor glitches, or requires sloppy wxFileName typecasting.
-//
 namespace Path
 {
-	extern bool IsRelative(const wxString& path);
-	extern s64 GetFileSize(const wxString& path);
+	/// Converts any forward slashes to backslashes on Win32.
+	std::string ToNativePath(const std::string_view& path);
+	void ToNativePath(std::string* path);
 
-	extern wxString Normalize(const wxString& srcpath);
-	extern wxString Normalize(const wxDirName& srcpath);
-	extern wxString MakeAbsolute(const wxString& srcpath);
+	/// Builds a path relative to the specified file
+	std::string BuildRelativePath(const std::string_view& filename, const std::string_view& new_filename);
 
-	extern wxString Combine(const wxString& srcPath, const wxString& srcFile);
-	extern wxString Combine(const wxDirName& srcPath, const wxFileName& srcFile);
-	extern wxString Combine(const wxString& srcPath, const wxDirName& srcFile);
-	extern std::string CombineStdString(const wxDirName& srcPath, const std::string_view& srcFile);
-	extern std::string CombineStdString(const std::string_view& srcPath, const std::string_view& srcFile);
-	extern wxString ReplaceExtension(const wxString& src, const wxString& ext);
-	extern wxString ReplaceFilename(const wxString& src, const wxString& newfilename);
-	extern wxString GetFilename(const wxString& src);
-	extern wxString GetDirectory(const wxString& src);
-	extern wxString GetFilenameWithoutExt(const wxString& src);
-	extern wxString GetRootDirectory(const wxString& src);
-	extern fs::path FromWxString(const wxString& path);
+	/// Joins path components together, producing a new path.
+	std::string Combine(const std::string_view& base, const std::string_view& next);
+
+	/// Removes all .. and . components from a path.
+	std::string Canonicalize(const std::string_view& path);
+	void Canonicalize(std::string* path);
+
+	/// Sanitizes a filename for use in a filesystem.
+	void SanitizeFileName(char* Destination, u32 cbDestination, const char* FileName, bool StripSlashes /* = true */);
+	void SanitizeFileName(std::string& Destination, bool StripSlashes = true);
+
+	/// Returns true if the specified path is an absolute path (C:\Path on Windows or /path on Unix).
+	bool IsAbsolute(const std::string_view& path);
+
+	/// Makes the specified path relative to another (e.g. /a/b/c, /a/b -> ../c).
+	/// Both paths must be relative, otherwise this function will just return the input path.
+	std::string MakeRelative(const std::string_view& path, const std::string_view& relative_to);
+
+	/// Returns a view of the extension of a filename.
+	std::string_view GetExtension(const std::string_view& path);
+
+	/// Removes the extension of a filename.
+	std::string_view StripExtension(const std::string_view& path);
+
+	/// Replaces the extension of a filename with another.
+	std::string ReplaceExtension(const std::string_view& path, const std::string_view& new_extension);
+
+	/// Returns the directory component of a filename.
+	std::string_view GetDirectory(const std::string_view& path);
+
+	/// Returns the filename component of a filename.
+	std::string_view GetFileName(const std::string_view& path);
+
+	/// Returns the file title (less the extension and path) from a filename.
+	std::string_view GetFileTitle(const std::string_view& path);
+
+	/// Changes the filename in a path.
+	std::string ChangeFileName(const std::string_view& path, const std::string_view& new_filename);
+	void ChangeFileName(std::string* path, const std::string_view& new_filename);
+
+	/// Appends a directory to a path.
+	std::string AppendDirectory(const std::string_view& path, const std::string_view& new_dir);
+	void AppendDirectory(std::string* path, const std::string_view& new_dir);
+
+	/// Splits a path into its components, handling both Windows and Unix separators.
+	std::vector<std::string_view> SplitWindowsPath(const std::string_view& path);
+	std::string JoinWindowsPath(const std::vector<std::string_view>& components);
+
+	/// Splits a path into its components, only handling native separators.
+	std::vector<std::string_view> SplitNativePath(const std::string_view& path);
+	std::string JoinNativePath(const std::vector<std::string_view>& components);
 } // namespace Path

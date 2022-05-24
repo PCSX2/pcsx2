@@ -17,6 +17,7 @@
 
 #include "GameListModel.h"
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
@@ -201,7 +202,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 
 				case Column_FileTitle:
 				{
-					const std::string_view file_title(FileSystem::GetFileTitleFromPath(ge->path));
+					const std::string_view file_title(Path::GetFileTitle(ge->path));
 					return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
 				}
 
@@ -240,7 +241,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 
 				case Column_FileTitle:
 				{
-					const std::string_view file_title(FileSystem::GetFileTitleFromPath(ge->path));
+					const std::string_view file_title(Path::GetFileTitle(ge->path));
 					return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
 				}
 
@@ -415,8 +416,8 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
 
 		case Column_FileTitle:
 		{
-			const std::string_view file_title_left(FileSystem::GetFileTitleFromPath(left->path));
-			const std::string_view file_title_right(FileSystem::GetFileTitleFromPath(right->path));
+			const std::string_view file_title_left(Path::GetFileTitle(left->path));
+			const std::string_view file_title_right(Path::GetFileTitle(right->path));
 			if (file_title_left == file_title_right)
 				return titlesLessThan(left_row, right_row);
 
@@ -474,7 +475,7 @@ void GameListModel::loadCommonImages()
 	for (u32 i = 1; i < GameList::CompatibilityRatingCount; i++)
 		m_compatibiliy_pixmaps[i].load(QStringLiteral(":/icons/star-%1.png").arg(i - 1));
 
-	m_placeholder_pixmap.load(QString::fromStdString(Path::CombineStdString(EmuFolders::Resources, "cover-placeholder.png")));
+	m_placeholder_pixmap.load(QString::fromStdString(Path::Combine(EmuFolders::Resources, "cover-placeholder.png")));
 }
 
 void GameListModel::setColumnDisplayNames()

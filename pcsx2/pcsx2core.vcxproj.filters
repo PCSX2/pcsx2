@@ -232,6 +232,12 @@
     <Filter Include="System\Ps2\GS\Shaders\Direct3D">
       <UniqueIdentifier>{eb697f5b-85f5-424a-a7e4-8d8b73d3426e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Tools">
+      <UniqueIdentifier>{9153e32b-e1e3-49ac-b490-b56adfd1692f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tools\Input Recording">
+      <UniqueIdentifier>{03ba2aa7-2cd9-48cb-93c6-fc93d5bdc938}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Utilities\folderdesc.txt">
@@ -347,9 +353,6 @@
     <ClCompile Include="ShiftJisToUnicode.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
-    <ClCompile Include="Utilities\FileUtils.cpp">
-      <Filter>Misc\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="Dump.cpp">
       <Filter>System</Filter>
     </ClCompile>
@@ -363,9 +366,6 @@
       <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="System.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
-    <ClCompile Include="System\SysThreadBase.cpp">
       <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="Elfheader.cpp">
@@ -1124,13 +1124,7 @@
     <ClCompile Include="GS\Window\GSCaptureDlg.cpp">
       <Filter>System\Ps2\GS\Window</Filter>
     </ClCompile>
-    <ClCompile Include="GS\Window\GSDialog.cpp">
-      <Filter>System\Ps2\GS\Window</Filter>
-    </ClCompile>
     <ClCompile Include="GS\Window\GSSetting.cpp">
-      <Filter>System\Ps2\GS\Window</Filter>
-    </ClCompile>
-    <ClCompile Include="GS\Window\GSwxDialog.cpp">
       <Filter>System\Ps2\GS\Window</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\DX11\D3D.cpp">
@@ -1164,9 +1158,6 @@
       <Filter>Host</Filter>
     </ClCompile>
     <ClCompile Include="Frontend\VulkanHostDisplay.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\imgui_impl_vulkan.cpp">
       <Filter>Host</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\Vulkan\GSTextureVK.cpp">
@@ -1203,9 +1194,6 @@
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
     <ClCompile Include="SPU2\Host\Dialogs.cpp">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClCompile>
-    <ClCompile Include="SPU2\Host\CfgHelpers.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
     <ClCompile Include="SPU2\Host\Config.cpp">
@@ -1253,6 +1241,33 @@
     </ClCompile>
     <ClCompile Include="Frontend\D3D12HostDisplay.cpp">
       <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\imgui_impl_dx11.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\imgui_impl_dx12.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\imgui_impl_opengl3.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\imgui_impl_vulkan.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Recording\InputRecording.cpp">
+      <Filter>Tools\Input Recording</Filter>
+    </ClCompile>
+    <ClCompile Include="Recording\InputRecordingControls.cpp">
+      <Filter>Tools\Input Recording</Filter>
+    </ClCompile>
+    <ClCompile Include="Recording\InputRecordingFile.cpp">
+      <Filter>Tools\Input Recording</Filter>
+    </ClCompile>
+    <ClCompile Include="Recording\Utilities\InputRecordingLogger.cpp">
+      <Filter>Tools\Input Recording</Filter>
+    </ClCompile>
+    <ClCompile Include="Recording\PadData.cpp">
+      <Filter>Tools\Input Recording</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1464,9 +1479,6 @@
       <Filter>System\Ps2\Iop\CDVD</Filter>
     </ClInclude>
     <ClInclude Include="CDVD\CDVDaccess.h">
-      <Filter>System\Ps2\Iop\CDVD</Filter>
-    </ClInclude>
-    <ClInclude Include="CDVD\CDVDisoReader.h">
       <Filter>System\Ps2\Iop\CDVD</Filter>
     </ClInclude>
     <ClInclude Include="IPU\IPU.h">
@@ -1961,17 +1973,11 @@
     <ClInclude Include="GS\Window\GSCaptureDlg.h">
       <Filter>System\Ps2\GS\Window</Filter>
     </ClInclude>
-    <ClInclude Include="GS\Window\GSDialog.h">
-      <Filter>System\Ps2\GS\Window</Filter>
-    </ClInclude>
     <ClInclude Include="GS\Window\GSSetting.h">
       <Filter>System\Ps2\GS\Window</Filter>
     </ClInclude>
     <ClInclude Include="GS\resource.h">
       <Filter>System\Ps2\GS</Filter>
-    </ClInclude>
-    <ClInclude Include="GS\Window\GSwxDialog.h">
-      <Filter>System\Ps2\GS\Window</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\DX11\D3D.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
@@ -2074,11 +2080,33 @@
     <ClInclude Include="Frontend\D3D12HostDisplay.h">
       <Filter>Host</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="GS\GS.rc">
-      <Filter>System\Ps2\GS</Filter>
-    </ResourceCompile>
+    <ClInclude Include="Frontend\imgui_impl_dx11.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\imgui_impl_dx12.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\imgui_impl_opengl3.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\imgui_impl_vulkan.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Recording\InputRecording.h">
+      <Filter>Tools\Input Recording</Filter>
+    </ClInclude>
+    <ClInclude Include="Recording\InputRecordingControls.h">
+      <Filter>Tools\Input Recording</Filter>
+    </ClInclude>
+    <ClInclude Include="Recording\InputRecordingFile.h">
+      <Filter>Tools\Input Recording</Filter>
+    </ClInclude>
+    <ClInclude Include="Recording\Utilities\InputRecordingLogger.h">
+      <Filter>Tools\Input Recording</Filter>
+    </ClInclude>
+    <ClInclude Include="Recording\PadData.h">
+      <Filter>Tools\Input Recording</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="rdebug\deci2.h">

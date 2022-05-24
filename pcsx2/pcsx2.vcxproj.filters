@@ -4,9 +4,6 @@
     <Filter Include="Misc">
       <UniqueIdentifier>{d1e5f218-107b-4e8c-9527-55cb9388b544}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Misc\Utilities">
-      <UniqueIdentifier>{acd41072-b36e-4653-a430-40ade53fb78a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Docs">
       <UniqueIdentifier>{5dc872c1-db13-4c70-9d44-a3fc4b6fc241}</UniqueIdentifier>
     </Filter>
@@ -437,9 +434,6 @@
     <ClCompile Include="ShiftJisToUnicode.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
-    <ClCompile Include="Utilities\FileUtils.cpp">
-      <Filter>Misc\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="Dump.cpp">
       <Filter>System</Filter>
     </ClCompile>
@@ -452,13 +446,13 @@
     <ClCompile Include="SourceLog.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="System\SysCoreThread.cpp">
+    <ClCompile Include="gui\SysCoreThread.cpp">
       <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="System.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="System\SysThreadBase.cpp">
+    <ClCompile Include="gui\SysThreadBase.cpp">
       <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="Elfheader.cpp">
@@ -1739,9 +1733,6 @@
     <ClCompile Include="Frontend\VulkanHostDisplay.cpp">
       <Filter>Host</Filter>
     </ClCompile>
-    <ClCompile Include="Frontend\imgui_impl_vulkan.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
     <ClCompile Include="GS\Renderers\Vulkan\GSTextureVK.cpp">
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </ClCompile>
@@ -1769,6 +1760,39 @@
     <ClCompile Include="GS\Renderers\DX12\GSDevice12.cpp">
       <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
     </ClCompile>
+    <ClCompile Include="gui\Mutex.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\PersistentThread.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\imgui_impl_dx12.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\imgui_impl_opengl3.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\imgui_impl_vulkan.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\imgui_impl_dx11.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\StringHelpers.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\FastFormatString.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\pxTranslate.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\FileUtils.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\PathUtils.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -1779,9 +1803,6 @@
     </ClInclude>
     <ClInclude Include="PrecompiledHeader.h">
       <Filter>Misc</Filter>
-    </ClInclude>
-    <ClInclude Include="Utilities\AsciiFile.h">
-      <Filter>Misc\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="Elfheader.h">
       <Filter>System\ISO</Filter>
@@ -1807,7 +1828,7 @@
     <ClInclude Include="System.h">
       <Filter>System\Include</Filter>
     </ClInclude>
-    <ClInclude Include="System\SysThreads.h">
+    <ClInclude Include="gui\SysThreads.h">
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="System\RecTypes.h">
@@ -2944,6 +2965,24 @@
     </ClInclude>
     <ClInclude Include="GS\Renderers\DX12\GSTexture12.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\PersistentThread.h">
+      <Filter>AppHost</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\imgui_impl_dx11.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\imgui_impl_dx12.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\imgui_impl_opengl3.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\imgui_impl_vulkan.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\StringHelpers.h">
+      <Filter>AppHost</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

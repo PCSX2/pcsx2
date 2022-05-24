@@ -38,13 +38,13 @@ using namespace R5900;
 #define HELPSWITCH(m) (((m)>>4) & 0xff)
 #define mcase(src) case HELPSWITCH(src)
 
-template< uint page > void __fastcall _hwWrite8(u32 mem, u8 value);
-template< uint page > void __fastcall _hwWrite16(u32 mem, u8 value);
-template< uint page > void __fastcall _hwWrite128(u32 mem, u8 value);
+template< uint page > void _hwWrite8(u32 mem, u8 value);
+template< uint page > void _hwWrite16(u32 mem, u8 value);
+template< uint page > void _hwWrite128(u32 mem, u8 value);
 
 
 template<uint page>
-void __fastcall _hwWrite32( u32 mem, u32 value )
+void _hwWrite32( u32 mem, u32 value )
 {
 	pxAssume( (mem & 0x03) == 0 );
 
@@ -96,9 +96,9 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 					if (!vifWrite32<0>(mem, value)) return;
 				}
 			}
-			else iswitch(mem)
+			else switch(mem)
 			{
-				icase(GIF_CTRL)
+				case (GIF_CTRL):
 				{
 					// Not exactly sure what RST needs to do
 					gifRegs.ctrl.write(value & 9);
@@ -111,7 +111,7 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 					return;
 				}
 
-				icase(GIF_MODE)
+				case (GIF_MODE):
 				{
 					gifRegs.mode.write(value);
 					//Need to kickstart the GIF if the M3R mask comes off
@@ -275,7 +275,7 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 }
 
 template<uint page>
-void __fastcall hwWrite32( u32 mem, u32 value )
+void hwWrite32( u32 mem, u32 value )
 {
 	eeHwTraceLog( mem, value, false );
 	_hwWrite32<page>( mem, value );
@@ -286,26 +286,25 @@ void __fastcall hwWrite32( u32 mem, u32 value )
 // --------------------------------------------------------------------------------------
 
 template< uint page >
-void __fastcall _hwWrite8(u32 mem, u8 value)
+void _hwWrite8(u32 mem, u8 value)
 {
 #if PSX_EXTRALOGS
 	if ((mem & 0x1000ff00) == 0x1000f300) DevCon.Warning("8bit Write to SIF Register %x value %x wibble", mem, value);
 #endif
-	iswitch (mem)
-	icase(SIO_TXFIFO)
+	if (mem == SIO_TXFIFO)
 	{
-		static bool iggy_newline = false;
+		static bool included_newline = false;
 		static char sio_buffer[1024];
 		static int sio_count;
 
 		if (value == '\r')
 		{
-			iggy_newline = true;
+			included_newline = true;
 			sio_buffer[sio_count++] = '\n';
 		}
-		else if (!iggy_newline || (value != '\n'))
+		else if (!included_newline || (value != '\n'))
 		{
-			iggy_newline = false;
+			included_newline = false;
 			sio_buffer[sio_count++] = value;
 		}
 
@@ -336,14 +335,14 @@ void __fastcall _hwWrite8(u32 mem, u8 value)
 }
 
 template< uint page >
-void __fastcall hwWrite8(u32 mem, u8 value)
+void hwWrite8(u32 mem, u8 value)
 {
 	eeHwTraceLog( mem, value, false );
 	_hwWrite8<page>(mem, value);
 }
 
 template< uint page >
-void __fastcall _hwWrite16(u32 mem, u16 value)
+void _hwWrite16(u32 mem, u16 value)
 {
 	pxAssume( (mem & 0x01) == 0 );
 #if PSX_EXTRALOGS
@@ -367,14 +366,14 @@ void __fastcall _hwWrite16(u32 mem, u16 value)
 }
 
 template< uint page >
-void __fastcall hwWrite16(u32 mem, u16 value)
+void hwWrite16(u32 mem, u16 value)
 {
 	eeHwTraceLog( mem, value, false );
 	_hwWrite16<page>(mem, value);
 }
 
 template<uint page>
-void __fastcall _hwWrite64( u32 mem, const mem64_t* srcval )
+void _hwWrite64( u32 mem, const mem64_t* srcval )
 {
 	pxAssume( (mem & 0x07) == 0 );
 
@@ -413,14 +412,14 @@ void __fastcall _hwWrite64( u32 mem, const mem64_t* srcval )
 }
 
 template<uint page>
-void __fastcall hwWrite64( u32 mem, const mem64_t* srcval )
+void hwWrite64( u32 mem, const mem64_t* srcval )
 {
 	eeHwTraceLog( mem, *srcval, false );
 	_hwWrite64<page>(mem, srcval);
 }
 
 template< uint page >
-void __fastcall _hwWrite128(u32 mem, const mem128_t* srcval)
+void _hwWrite128(u32 mem, const mem128_t* srcval)
 {
 	pxAssume( (mem & 0x0f) == 0 );
 
@@ -477,18 +476,18 @@ void __fastcall _hwWrite128(u32 mem, const mem128_t* srcval)
 }
 
 template< uint page >
-void __fastcall hwWrite128(u32 mem, const mem128_t* srcval)
+void hwWrite128(u32 mem, const mem128_t* srcval)
 {
 	eeHwTraceLog( mem, *srcval, false );
 	_hwWrite128<page>(mem, srcval);
 }
 
 #define InstantizeHwWrite(pageidx) \
-	template void __fastcall hwWrite8<pageidx>(u32 mem, mem8_t value); \
-	template void __fastcall hwWrite16<pageidx>(u32 mem, mem16_t value); \
-	template void __fastcall hwWrite32<pageidx>(u32 mem, mem32_t value); \
-	template void __fastcall hwWrite64<pageidx>(u32 mem, const mem64_t* srcval); \
-	template void __fastcall hwWrite128<pageidx>(u32 mem, const mem128_t* srcval);
+	template void hwWrite8<pageidx>(u32 mem, mem8_t value); \
+	template void hwWrite16<pageidx>(u32 mem, mem16_t value); \
+	template void hwWrite32<pageidx>(u32 mem, mem32_t value); \
+	template void hwWrite64<pageidx>(u32 mem, const mem64_t* srcval); \
+	template void hwWrite128<pageidx>(u32 mem, const mem128_t* srcval);
 
 InstantizeHwWrite(0x00);	InstantizeHwWrite(0x08);
 InstantizeHwWrite(0x01);	InstantizeHwWrite(0x09);

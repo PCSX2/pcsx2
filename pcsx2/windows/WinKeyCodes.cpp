@@ -14,7 +14,8 @@
 */
 
 #include "PrecompiledHeader.h"
-#include <Windows.h>
+#include "common/Assertions.h"
+#include "common/RedtapeWindows.h"
 
 // VK values without MS constants. see - https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
 #define PX_VK_A 0x41

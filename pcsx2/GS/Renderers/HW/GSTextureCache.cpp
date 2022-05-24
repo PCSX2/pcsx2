@@ -145,7 +145,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		src->m_texture = dst->m_texture;
 		src->m_shared_texture = true;
 		src->m_target = true; // So renderer can check if a conversion is required
-		src->m_from_target = dst->m_texture; // avoid complex condition on the renderer
+		src->m_from_target = &dst->m_texture; // avoid complex condition on the renderer
 		src->m_from_target_TEX0 = dst->m_TEX0;
 		src->m_32_bits_fmt = dst->m_32_bits_fmt;
 		src->m_valid_rect = dst->m_valid;
@@ -162,9 +162,9 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 
 		m_src.m_surfaces.insert(src);
 	}
-	else if (g_gs_renderer->m_game.title == CRC::SVCChaos)
+	else if (g_gs_renderer->m_game.title == CRC::SVCChaos || g_gs_renderer->m_game.title == CRC::KOF2002)
 	{
-		// SVCChaos black screen on main menu, regardless of depth enabled or disabled.
+		// SVCChaos black screen & KOF2002 blue screen on main menu, regardless of depth enabled or disabled.
 		return LookupSource(TEX0, TEXA, r, nullptr);
 	}
 	else
@@ -184,6 +184,9 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		// Rendering is nicer (less garbage) if we skip the draw call.
 		throw GSRecoverableError();
 	}
+
+	ASSERT(src->m_texture);
+	ASSERT(src->m_texture->GetScale() == (dst ? dst->m_texture->GetScale() : GSVector2(1, 1)));
 
 	return src;
 }
@@ -1069,6 +1072,11 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	if (!src || !dst || src->m_texture->GetScale() != dst->m_texture->GetScale())
 		return false;
 
+	// We don't want to copy "old" data that the game has overwritten with writes,
+	// so flush any overlapping dirty area.
+	src->UpdateIfDirtyIntersects(GSVector4i(sx, sy, sx + w, sy + h));;
+	dst->UpdateIfDirtyIntersects(GSVector4i(dx, dy, dx + w, dy + h));
+
 	// Scale coordinates.
 	const GSVector2 scale(src->m_texture->GetScale());
 	const int scaled_sx = static_cast<int>(sx * scale.x);
@@ -1253,7 +1261,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// Keep a trace of origin of the texture
 		src->m_texture = dTex;
 		src->m_target = true;
-		src->m_from_target = dst->m_texture;
+		src->m_from_target = &dst->m_texture;
 		src->m_from_target_TEX0 = dst->m_TEX0;
 		src->m_texture->SetScale(scale);
 		src->m_end_block = dst->m_end_block;
@@ -1282,9 +1290,10 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// Keep a trace of origin of the texture
 		src->m_texture = dTex;
 		src->m_target = true;
-		src->m_from_target = dst->m_texture;
+		src->m_from_target = &dst->m_texture;
 		src->m_from_target_TEX0 = dst->m_TEX0;
 		src->m_end_block = dst->m_end_block;
+		src->m_texture->SetScale(dst->m_texture->GetScale());
 
 		// Even if we sample the framebuffer directly we might need the palette
 		// to handle the format conversion on GPU
@@ -1318,7 +1327,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		// Keep a trace of origin of the texture
 		src->m_target = true;
-		src->m_from_target = dst->m_texture;
+		src->m_from_target = &dst->m_texture;
 		src->m_from_target_TEX0 = dst->m_TEX0;
 		src->m_valid_rect = dst->m_valid;
 		src->m_end_block = dst->m_end_block;
@@ -1526,6 +1535,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	}
 
 	ASSERT(src->m_texture);
+	ASSERT(src->m_target == (dst != nullptr));
+	ASSERT(src->m_from_target == (dst ? &dst->m_texture : nullptr));
+	ASSERT(src->m_texture->GetScale() == ((!dst || TEX0.PSM == PSM_PSMT8) ? GSVector2(1, 1) : dst->m_texture->GetScale()));
 
 	m_src.Add(src, TEX0, g_gs_renderer->m_context->offset.tex);
 
@@ -1538,9 +1550,10 @@ extern bool FMVstarted;
 GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool& paltex, const u32* clut, const GSVector2i* lod)
 {
 	// don't bother hashing if we're not dumping or replacing.
-	const bool dump = GSConfig.DumpReplaceableTextures && (!FMVstarted || GSConfig.DumpTexturesWithFMVActive);
-	const bool replace = GSConfig.LoadTextureReplacements;
-	const bool can_cache = CanCacheTextureSize(TEX0.TW, TEX0.TH);
+	const bool dump = GSConfig.DumpReplaceableTextures && (!FMVstarted || GSConfig.DumpTexturesWithFMVActive) &&
+					  (clut ? GSConfig.DumpPaletteTextures : GSConfig.DumpDirectTextures);
+	const bool replace = GSConfig.LoadTextureReplacements && GSTextureReplacements::HasAnyReplacementTextures();
+	bool can_cache = CanCacheTextureSize(TEX0.TW, TEX0.TH);
 	if (!dump && !replace && !can_cache)
 		return nullptr;
 
@@ -1598,12 +1611,36 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 			const HashCacheEntry entry{replacement_tex, 1u, 0u, true};
 			return &m_hash_cache.emplace(key, entry).first->second;
 		}
-		else if (replacement_texture_pending)
+		else if (
+			replacement_texture_pending ||
+
+			// With preloading + paltex; when there's multiple textures with the same vram data, but different
+			// palettes, if we don't replace all of them, the first one to get loaded in will prevent any of the
+			// others from getting tested for replacement. So, disable paltex for the textures when any of the
+			// palette variants have replacements.
+			(paltex && GSTextureReplacements::HasReplacementTextureWithOtherPalette(key)))
 		{
-			// we didn't have a texture immediately, but there is a replacement available (and being loaded).
-			// so clear paltex, since when it gets injected back, it's not going to be indexed
+			// We didn't have a texture immediately, but there is a replacement available (and being loaded).
+			// so clear paltex, since when it gets injected back, it's not going to be indexed.
 			paltex = false;
+
+			// If the hash cache is disabled, this will be false, and we need to force it to be cached,
+			// so that when the replacement comes back, there's something for it to swap with.
+			can_cache = true;
 		}
+	}
+
+	// Using paltex without full preloading is a disaster case here. basically, unless *all* textures are
+	// replaced, any texture can get populated without the hash cache, which means it'll get partial invalidated,
+	// and unless it's 100% removed, this partial texture will always take precedence over future hash cache
+	// lookups, making replacements impossible.
+	if (paltex && !can_cache && TEX0.TW <= MAXIMUM_TEXTURE_HASH_CACHE_SIZE && TEX0.TH <= MAXIMUM_TEXTURE_HASH_CACHE_SIZE)
+	{
+		// We only need to remove paltex here if we're dumping, because we need all the palette permutations.
+		paltex &= !dump;
+
+		// We need to get it into the hash cache for dumping and replacing, because of the issue above.
+		can_cache = true;
 	}
 
 	// if this texture isn't cacheable, bail out now since we don't want to waste time preloading it
@@ -2231,6 +2268,23 @@ void GSTextureCache::Target::Update()
 	g_gs_device->Recycle(t);
 
 	UpdateValidity(r);
+}
+
+void GSTextureCache::Target::UpdateIfDirtyIntersects(const GSVector4i& rc)
+{
+	for (const auto& dirty : m_dirty)
+	{
+		const GSVector4i dirty_rc(dirty.GetDirtyRect(m_TEX0));
+		if (dirty_rc.rintersect(rc).rempty())
+			continue;
+
+		// strictly speaking, we only need to update the area outside of the move.
+		// but, to keep things simple, just update the whole thing
+		GL_CACHE("TC: Update dirty rectangle [%d,%d,%d,%d] due to intersection with [%d,%d,%d,%d]",
+			dirty_rc.x, dirty_rc.y, dirty_rc.z, dirty_rc.w, rc.x, rc.y, rc.z, rc.w);
+		Update();
+		break;
+	}
 }
 
 void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)

@@ -18,15 +18,8 @@
   </property>
   <property name="windowIcon">
    <iconset resource="resources/resources.qrc">
-    <normaloff>:/icons/AppIcon.png</normaloff>:/icons/AppIcon.png</iconset>
+    <normaloff>:/icons/AppIconLarge.png</normaloff>:/icons/AppIconLarge.png</iconset>
   </property>
-  <widget class="QStackedWidget" name="mainContainer">
-   <property name="currentIndex">
-    <number>0</number>
-   </property>
-   <widget class="QWidget" name="page"/>
-   <widget class="QWidget" name="page_2"/>
-  </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
@@ -55,15 +48,6 @@
      <addaction name="actionRemoveDisc"/>
      <addaction name="separator"/>
     </widget>
-    <widget class="QMenu" name="menuCheats">
-     <property name="title">
-      <string>Cheats</string>
-     </property>
-     <property name="icon">
-      <iconset theme="flask-line">
-       <normaloff>.</normaloff>.</iconset>
-     </property>
-    </widget>
     <widget class="QMenu" name="menuLoadState">
      <property name="title">
       <string>Load State</string>
@@ -87,11 +71,11 @@
     <addaction name="actionStartBios"/>
     <addaction name="separator"/>
     <addaction name="actionPowerOff"/>
+    <addaction name="actionPowerOffWithoutSaving"/>
     <addaction name="actionReset"/>
     <addaction name="actionPause"/>
     <addaction name="menuChangeDisc"/>
     <addaction name="separator"/>
-    <addaction name="menuCheats"/>
     <addaction name="actionScreenshot"/>
     <addaction name="separator"/>
     <addaction name="menuLoadState"/>
@@ -142,8 +126,9 @@
      </property>
     </widget>
     <addaction name="separator"/>
-    <addaction name="actionToggleSoftwareRendering"/>
     <addaction name="menuDebugSwitchRenderer"/>
+    <addaction name="actionToggleSoftwareRendering"/>
+    <addaction name="actionSaveGSDump"/>
     <addaction name="separator"/>
     <addaction name="actionReloadPatches"/>
     <addaction name="separator"/>
@@ -187,7 +172,21 @@
     <property name="title">
      <string>&amp;Tools</string>
     </property>
+    <widget class="QMenu" name="menuInput_Recording">
+     <property name="title">
+      <string>Input Recording</string>
+     </property>
+     <addaction name="actionInputRecNew"/>
+     <addaction name="actionInputRecPlay"/>
+     <addaction name="actionInputRecStop"/>
+     <addaction name="separator"/>
+     <addaction name="actionInputRecOpenSettings"/>
+     <addaction name="separator"/>
+     <addaction name="actionInputRecConsoleLogs"/>
+     <addaction name="actionInputRecControllerLogs"/>
+    </widget>
     <addaction name="actionOpenDataDirectory"/>
+    <addaction name="menuInput_Recording"/>
    </widget>
    <addaction name="menuSystem"/>
    <addaction name="menuSettings"/>
@@ -226,7 +225,6 @@
    <addaction name="actionReset"/>
    <addaction name="actionPause"/>
    <addaction name="actionChangeDisc"/>
-   <addaction name="actionCheats"/>
    <addaction name="actionScreenshot"/>
    <addaction name="separator"/>
    <addaction name="actionLoadState"/>
@@ -290,6 +288,15 @@
    </property>
    <property name="text">
     <string>Shut &amp;Down</string>
+   </property>
+  </action>
+  <action name="actionPowerOffWithoutSaving">
+   <property name="icon">
+    <iconset theme="close-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Shut Down &amp;Without Saving</string>
    </property>
   </action>
   <action name="actionReset">
@@ -460,15 +467,6 @@
     <string>Change Disc...</string>
    </property>
   </action>
-  <action name="actionCheats">
-   <property name="icon">
-    <iconset theme="flask-line">
-     <normaloff>.</normaloff>.</iconset>
-   </property>
-   <property name="text">
-    <string>Cheats...</string>
-   </property>
-  </action>
   <action name="actionAudioSettings">
    <property name="icon">
     <iconset theme="volume-up-line">
@@ -558,11 +556,12 @@
    </property>
   </action>
   <action name="actionDEV9Settings">
+   <property name="icon">
+    <iconset theme="dashboard-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Network &amp;&amp; HDD</string>
-   </property>
-   <property name="icon">
-    <iconset theme="dashboard-line"/>
    </property>
   </action>
   <action name="actionViewToolbar">
@@ -733,6 +732,52 @@
    </property>
    <property name="text">
     <string>Enable IOP Console Logging</string>
+   </property>
+  </action>
+  <action name="actionSaveGSDump">
+   <property name="text">
+    <string>Save Single Frame GS Dump</string>
+   </property>
+  </action>
+  <action name="actionInputRecNew">
+   <property name="text">
+    <string>New</string>
+   </property>
+  </action>
+  <action name="actionInputRecPlay">
+   <property name="text">
+    <string>Play</string>
+   </property>
+  </action>
+  <action name="actionInputRecStop">
+   <property name="text">
+    <string>Stop</string>
+   </property>
+  </action>
+  <action name="actionInputRecOpenSettings">
+   <property name="text">
+    <string>Settings</string>
+   </property>
+  </action>
+  <action name="actionRecording_Console_Logs">
+   <property name="text">
+    <string>Input Recording Logs</string>
+   </property>
+  </action>
+  <action name="actionInputRecControllerLogs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Controller Logs</string>
+   </property>
+  </action>
+  <action name="actionInputRecConsoleLogs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Input Recording Logs</string>
    </property>
   </action>
  </widget>

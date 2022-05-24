@@ -23,6 +23,7 @@
 #include <wx/string.h>
 
 #include "common/Pcsx2Types.h"
+#include "common/General.h"
 
 // Darwin (OSX) is a bit different from Linux when requesting properties of
 // the OS because of its BSD/Mach heritage. Helpfully, most of this code
@@ -85,7 +86,7 @@ static std::string sysctl_str(int category, int name)
 	return std::string(buf, len > 0 ? len - 1 : 0);
 }
 
-wxString GetOSVersionString()
+std::string GetOSVersionString()
 {
 	std::string type    = sysctl_str(CTL_KERN, KERN_OSTYPE);
 	std::string release = sysctl_str(CTL_KERN, KERN_OSRELEASE);

@@ -96,9 +96,6 @@ protected:
 	std::vector<D3D12::Texture> m_swap_chain_buffers;
 	u32 m_current_swap_chain_buffer = 0;
 
-	D3D12::DescriptorHeapManager m_imgui_descriptor_heap;
-	D3D12::DescriptorHandle m_imgui_descriptor_handle;
-
 	bool m_allow_tearing_supported = false;
 	bool m_using_allow_tearing = false;
 	bool m_vsync = true;

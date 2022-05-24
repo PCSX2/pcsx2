@@ -23,7 +23,7 @@
 #include "common/StringUtil.h"
 
 #include "imgui.h"
-#include "backends/imgui_impl_dx12.h"
+#include "imgui_impl_dx12.h"
 #include <array>
 #include <dxgi1_5.h>
 
@@ -584,23 +584,8 @@ bool D3D12HostDisplay::CreateImGuiContext()
 	ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
 	ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
 
-	if (!m_imgui_descriptor_heap.Create(g_d3d12_context->GetDevice(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1, true))
+	if (!ImGui_ImplDX12_Init(DXGI_FORMAT_R8G8B8A8_UNORM))
 		return false;
-
-	if (!m_imgui_descriptor_heap.Allocate(&m_imgui_descriptor_handle))
-	{
-		m_imgui_descriptor_heap.Destroy();
-		return false;
-	}
-
-	if (!ImGui_ImplDX12_Init(g_d3d12_context->GetDevice(), D3D12::Context::NUM_COMMAND_LISTS,
-			DXGI_FORMAT_R8G8B8A8_UNORM, m_imgui_descriptor_heap.GetDescriptorHeap(),
-			m_imgui_descriptor_handle, m_imgui_descriptor_handle))
-	{
-		m_imgui_descriptor_heap.Free(m_imgui_descriptor_handle);
-		m_imgui_descriptor_heap.Destroy();
-		return false;
-	}
 
 	return true;
 }
@@ -610,15 +595,11 @@ void D3D12HostDisplay::DestroyImGuiContext()
 	g_d3d12_context->WaitForGPUIdle();
 
 	ImGui_ImplDX12_Shutdown();
-
-	m_imgui_descriptor_heap.Free(&m_imgui_descriptor_handle);
-	m_imgui_descriptor_heap.Destroy();
 }
 
 bool D3D12HostDisplay::UpdateImGuiFontTexture()
 {
-	ImGui_ImplDX12_InvalidateDeviceObjects();
-	return ImGui_ImplDX12_CreateDeviceObjects();
+	return ImGui_ImplDX12_CreateFontsTexture();
 }
 
 bool D3D12HostDisplay::BeginPresent(bool frame_skip)
@@ -646,17 +627,13 @@ bool D3D12HostDisplay::BeginPresent(bool frame_skip)
 
 void D3D12HostDisplay::EndPresent()
 {
-	ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
-	ID3D12DescriptorHeap* heaps[] = {m_imgui_descriptor_heap.GetDescriptorHeap()};
-	cmdlist->SetDescriptorHeaps(std::size(heaps), heaps);
-
 	ImGui::Render();
-	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmdlist);
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData());
 
 	D3D12::Texture& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
 	m_current_swap_chain_buffer = ((m_current_swap_chain_buffer + 1) % static_cast<u32>(m_swap_chain_buffers.size()));
 
-	swap_chain_buf.TransitionToState(cmdlist, D3D12_RESOURCE_STATE_PRESENT);
+	swap_chain_buf.TransitionToState(g_d3d12_context->GetCommandList(), D3D12_RESOURCE_STATE_PRESENT);
 	g_d3d12_context->ExecuteCommandList(false);
 
 	const UINT vsync_rate = static_cast<UINT>(m_vsync_mode != VsyncMode::Off);

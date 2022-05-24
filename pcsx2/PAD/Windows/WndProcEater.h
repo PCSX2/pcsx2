@@ -10,8 +10,10 @@
  *  PURPOSE.  See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
+ *  If not, see <http://www.gnu.org/licenses/>.4
  */
+
+#include "common/RedtapeWindows.h"
 
 #define EATPROC_NO_UPDATE_WHILE_UPDATING_DEVICES 1
 

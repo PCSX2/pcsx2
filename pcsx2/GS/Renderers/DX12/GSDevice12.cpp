@@ -128,8 +128,7 @@ bool GSDevice12::Create(HostDisplay* display)
 
 	if (!GSConfig.DisableShaderCache)
 	{
-		if (!m_shader_cache.Open(StringUtil::wxStringToUTF8String(EmuFolders::Cache.ToString()),
-				g_d3d12_context->GetFeatureLevel(), SHADER_VERSION, GSConfig.UseDebugDevice))
+		if (!m_shader_cache.Open(EmuFolders::Cache, g_d3d12_context->GetFeatureLevel(), SHADER_VERSION, GSConfig.UseDebugDevice))
 		{
 			Console.Warning("Shader cache failed to open.");
 		}
@@ -342,7 +341,7 @@ bool GSDevice12::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTextu
 	const u32 height = rect.height();
 	const u32 pitch = Common::AlignUpPow2(width * D3D12::GetTexelSize(static_cast<GSTexture12*>(src)->GetNativeFormat()), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
 	const u32 size = pitch * height;
-	const u32 level = 0;
+	constexpr u32 level = 0;
 	if (!CheckStagingBufferSize(size))
 	{
 		Console.Error("Can't read back %ux%u", width, height);
@@ -721,7 +720,6 @@ void GSDevice12::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool 
 
 	InterlaceConstantBuffer cb;
 	cb.ZrH = GSVector2(0, 1.0f / s.y);
-	cb.hH = s.y / 2;
 
 	GL_PUSH("DoInterlace %dx%d Shader:%d Linear:%d", size.x, size.y, shader, linear);
 

@@ -85,10 +85,16 @@ std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, 
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
 
-	if ((GLAD_GL_ARB_texture_storage || GLAD_GL_ES_VERSION_3_0) && !data)
+	if (GLAD_GL_ARB_texture_storage || GLAD_GL_ES_VERSION_3_0)
+	{
 		glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	}
 	else
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	}
 
 	GLenum error = glGetError();
 	if (error != GL_NO_ERROR)
@@ -339,7 +345,6 @@ void OpenGLHostDisplay::DestroyImGuiContext()
 
 bool OpenGLHostDisplay::UpdateImGuiFontTexture()
 {
-	ImGui_ImplOpenGL3_DestroyFontsTexture();
 	return ImGui_ImplOpenGL3_CreateFontsTexture();
 }
 

@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include "System.h"
 #include "common/Exceptions.h"
 
@@ -58,7 +60,8 @@ class ArchiveEntryList;
 // These functions assume that the caller has paused the core thread.
 extern std::unique_ptr<ArchiveEntryList> SaveState_DownloadState();
 extern std::unique_ptr<SaveStateScreenshotData> SaveState_SaveScreenshot();
-extern void SaveState_ZipToDisk(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, std::string filename, s32 slot_for_message);
+extern bool SaveState_ZipToDisk(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, const char* filename);
+extern bool SaveState_ReadScreenshot(const std::string& filename, u32* out_width, u32* out_height, std::vector<u32>* out_pixels);
 extern void SaveState_UnzipFromDisk(const std::string& filename);
 
 // --------------------------------------------------------------------------------------
@@ -353,9 +356,7 @@ namespace Exception
 	{
 		DEFINE_STREAM_EXCEPTION(SaveStateLoadError, BadStream)
 
-		virtual wxString FormatDiagnosticMessage() const;
-		virtual wxString FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const;
+		virtual std::string FormatDisplayMessage() const;
 	};
 }; // namespace Exception
-
-extern wxString GetSavestateFolder( int slot );

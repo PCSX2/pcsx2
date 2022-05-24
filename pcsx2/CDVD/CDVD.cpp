@@ -19,17 +19,19 @@
 #include "IopHw.h"
 #include "IopDma.h"
 
+#include <cctype>
+#include <ctime>
 #include <memory>
-#include <ctype.h>
-#include <wx/datetime.h>
 
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
+#include "common/Threading.h"
 
 #include "Ps1CD.h"
 #include "CDVD.h"
 #include "CDVD_internal.h"
-#include "CDVDisoReader.h"
+#include "IsoFileFormats.h"
 
 #include "GS.h" // for gsVideoMode
 #include "Elfheader.h"
@@ -40,7 +42,7 @@
 #endif
 
 #ifndef PCSX2_CORE
-#include "System/SysThreads.h"
+#include "gui/SysThreads.h"
 #else
 #include "VMManager.h"
 #endif
@@ -127,7 +129,7 @@ static int mg_BIToffset(u8* buffer)
 
 static void cdvdGetMechaVer(u8* ver)
 {
-	std::string mecfile(FileSystem::ReplaceExtension(BiosPath, "mec"));
+	std::string mecfile(Path::ReplaceExtension(BiosPath, "mec"));
 	auto fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "rb");
 	if (!fp || FileSystem::FSize64(fp.get()) < 4)
 	{
@@ -187,7 +189,7 @@ static void cdvdCreateNewNVM(std::FILE* fp)
 
 static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 {
-	std::string nvmfile(FileSystem::ReplaceExtension(BiosPath, "nvm"));
+	std::string nvmfile(Path::ReplaceExtension(BiosPath, "nvm"));
 	auto fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "r+b");
 	if (!fp || FileSystem::FSize64(fp.get()) < 1024)
 	{
@@ -229,8 +231,8 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 		ret = std::fwrite(buffer, 1, bytes, fp.get());
 
 	if (ret != bytes)
-		Console.Error(L"Failed to %s %s. Did only %zu/%zu bytes",
-					  read ? L"read from" : L"write to", nvmfile.c_str(), ret, bytes);
+		Console.Error("Failed to %s %s. Did only %zu/%zu bytes",
+					  read ? "read from" : "write to", nvmfile.c_str(), ret, bytes);
 }
 
 static void cdvdReadNVM(u8* dst, int offset, int bytes)
@@ -372,8 +374,6 @@ s32 cdvdWriteConfig(const u8* config)
 	return 0;
 }
 
-static MutexRecursive Mutex_NewDiskCB;
-
 // Sets ElfCRC to the CRC of the game bound to the CDVD source.
 static __fi ElfObject* loadElf(std::string filename, bool isPSXElf)
 {
@@ -414,8 +414,6 @@ static __fi ElfObject* loadElf(std::string filename, bool isPSXElf)
 static __fi void _reloadElfInfo(std::string elfpath)
 {
 	// Now's a good time to reload the ELF info...
-	ScopedLock locker(Mutex_NewDiskCB);
-
 	if (elfpath == LastELF)
 		return;
 
@@ -642,7 +640,7 @@ static void cdvdUpdateReady(u8 NewReadyStatus)
 
 s32 cdvdCtrlTrayOpen()
 {
-	DevCon.WriteLn(Color_Green, L"Open virtual disk tray");
+	DevCon.WriteLn(Color_Green, "Open virtual disk tray");
 
 	// If we switch using a source change we need to pretend it's a new disc
 	if (CDVDsys_GetSourceType() == CDVD_SourceType::Disc)
@@ -663,7 +661,7 @@ s32 cdvdCtrlTrayOpen()
 	{
 		cdvd.Tray.cdvdActionSeconds = 3;
 		cdvd.Tray.trayState = CDVD_DISC_EJECT;
-		DevCon.WriteLn(Color_Green, L"Simulating ejected media");
+		DevCon.WriteLn(Color_Green, "Simulating ejected media");
 	}
 
 	return 0; // needs to be 0 for success according to homebrew test "CDVD"
@@ -671,11 +669,11 @@ s32 cdvdCtrlTrayOpen()
 
 s32 cdvdCtrlTrayClose()
 {
-	DevCon.WriteLn(Color_Green, L"Close virtual disk tray");
+	DevCon.WriteLn(Color_Green, "Close virtual disk tray");
 
 	if (!g_GameStarted && g_SkipBiosHack)
 	{
-		DevCon.WriteLn(Color_Green, L"Media already loaded (fast boot)");
+		DevCon.WriteLn(Color_Green, "Media already loaded (fast boot)");
 		cdvdUpdateReady(CDVD_DRIVE_READY);
 		cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 		cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
@@ -683,7 +681,7 @@ s32 cdvdCtrlTrayClose()
 	}
 	else
 	{
-		DevCon.WriteLn(Color_Green, L"Detecting media");
+		DevCon.WriteLn(Color_Green, "Detecting media");
 		cdvdUpdateReady(CDVD_DRIVE_BUSY);
 		cdvdUpdateStatus(CDVD_STATUS_SEEK);
 		cdvd.Tray.trayState = CDVD_DISC_DETECTING;
@@ -855,28 +853,25 @@ void cdvdReset()
 		cdvd.RTC.year = 20;
 	}
 	else
+#endif
 	{
 		// CDVD internally uses GMT+9.  If you think the time's wrong, you're wrong.
 		// Set up your time zone and winter/summer in the BIOS.  No PS2 BIOS I know of features automatic DST.
-		wxDateTime curtime(wxDateTime::GetTimeNow());
-		cdvd.RTC.second = (u8)curtime.GetSecond();
-		cdvd.RTC.minute = (u8)curtime.GetMinute();
-		cdvd.RTC.hour = (u8)curtime.GetHour(wxDateTime::GMT9);
-		cdvd.RTC.day = (u8)curtime.GetDay(wxDateTime::GMT9);
-		cdvd.RTC.month = (u8)curtime.GetMonth(wxDateTime::GMT9) + 1; // WX returns Jan as "0"
-		cdvd.RTC.year = (u8)(curtime.GetYear(wxDateTime::GMT9) - 2000);
-	}
+		const std::time_t utc_time = std::time(nullptr);
+		const std::time_t gmt9_time = (utc_time + (60 * 60 * 9));
+		struct tm curtime = {};
+#ifdef _MSC_VER
+		gmtime_s(&curtime, &gmt9_time);
 #else
-	// CDVD internally uses GMT+9.  If you think the time's wrong, you're wrong.
-	// Set up your time zone and winter/summer in the BIOS.  No PS2 BIOS I know of features automatic DST.
-	wxDateTime curtime(wxDateTime::GetTimeNow());
-	cdvd.RTC.second = (u8)curtime.GetSecond();
-	cdvd.RTC.minute = (u8)curtime.GetMinute();
-	cdvd.RTC.hour = (u8)curtime.GetHour(wxDateTime::GMT9);
-	cdvd.RTC.day = (u8)curtime.GetDay(wxDateTime::GMT9);
-	cdvd.RTC.month = (u8)curtime.GetMonth(wxDateTime::GMT9) + 1; // WX returns Jan as "0"
-	cdvd.RTC.year = (u8)(curtime.GetYear(wxDateTime::GMT9) - 2000);
+		gmtime_r(&gmt9_time, &curtime);
 #endif
+		cdvd.RTC.second = (u8)curtime.tm_sec;
+		cdvd.RTC.minute = (u8)curtime.tm_min;
+		cdvd.RTC.hour = (u8)curtime.tm_hour;
+		cdvd.RTC.day = (u8)curtime.tm_mday;
+		cdvd.RTC.month = (u8)curtime.tm_mon + 1; // WX returns Jan as "0"
+		cdvd.RTC.year = (u8)(curtime.tm_year - 100); // offset from 2000
+	}
 
 	g_GameStarted = false;
 	g_GameLoading = false;
@@ -911,20 +906,13 @@ void SaveStateBase::cdvdFreeze()
 
 void cdvdNewDiskCB()
 {
-	ScopedTryLock lock(Mutex_NewDiskCB);
-	if (lock.Failed())
-	{
-		DevCon.WriteLn(Color_Red, L"NewDiskCB Lock Failed");
-		return;
-	}
-
 	DoCDVDresetDiskTypeCache();
 	cdvdDetectDisk();
 
 	// If not ejected but we've swapped source pretend it got ejected
 	if ((g_GameStarted || !g_SkipBiosHack) && cdvd.Tray.trayState != CDVD_DISC_EJECT)
 	{
-		DevCon.WriteLn(Color_Green, L"Ejecting media");
+		DevCon.WriteLn(Color_Green, "Ejecting media");
 		cdvdUpdateStatus(CDVD_STATUS_TRAY_OPEN);
 		cdvdUpdateReady(CDVD_DRIVE_BUSY);
 		cdvd.Tray.trayState = CDVD_DISC_EJECT;
@@ -936,7 +924,7 @@ void cdvdNewDiskCB()
 	}
 	else if (cdvd.Type > 0)
 	{
-		DevCon.WriteLn(Color_Green, L"Seeking new media");
+		DevCon.WriteLn(Color_Green, "Seeking new media");
 		cdvdUpdateReady(CDVD_DRIVE_BUSY);
 		cdvdUpdateStatus(CDVD_STATUS_SEEK);
 		cdvd.Spinning = true;
@@ -1400,7 +1388,7 @@ void cdvdUpdateTrayState()
 					cdvdCtrlTrayClose();
 					break;
 				case CDVD_DISC_DETECTING:
-					DevCon.WriteLn(Color_Green, L"Seeking new disc");
+					DevCon.WriteLn(Color_Green, "Seeking new disc");
 					cdvd.Tray.trayState = CDVD_DISC_SEEKING;
 					cdvd.Tray.cdvdActionSeconds = 2;
 					cdvd.Spinning = true;
@@ -1411,7 +1399,7 @@ void cdvdUpdateTrayState()
 					cdvdUpdateReady(CDVD_DRIVE_READY);
 					if (CDVDsys_GetSourceType() != CDVD_SourceType::NoDisc)
 					{
-						DevCon.WriteLn(Color_Green, L"Media ready to read");
+						DevCon.WriteLn(Color_Green, "Media ready to read");
 						cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 					}
 					else
@@ -1881,7 +1869,7 @@ static void cdvdWrite04(u8 rt)
 				cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.ReadMode, cdvd.NCMDParam[10], cdvd.SpindlCtrl);
 
 			if (EmuConfig.CdvdVerboseReads)
-				Console.WriteLn(Color_Gray, L"CDRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx(%s) Spindle=%x",
+				Console.WriteLn(Color_Gray, "CDRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx(%s) Spindle=%x",
 					cdvd.SeekToSector, cdvd.nSectors, cdvd.BlockSize, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.SpindlCtrl);
 
 			cdvd.ReadTime = cdvdBlockReadTime((CDVD_MODE_TYPE)cdvdIsDVD());
@@ -1980,7 +1968,7 @@ static void cdvdWrite04(u8 rt)
 				cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.ReadMode, cdvd.NCMDParam[10], cdvd.SpindlCtrl);
 
 			if (EmuConfig.CdvdVerboseReads)
-				Console.WriteLn(Color_Gray, L"CdAudioRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx(%s) Spindle=%x",
+				Console.WriteLn(Color_Gray, "CdAudioRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx(%s) Spindle=%x",
 					cdvd.Sector, cdvd.nSectors, cdvd.BlockSize, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.SpindlCtrl);
 
 			cdvd.ReadTime = cdvdBlockReadTime(MODE_CDROM);
@@ -2076,7 +2064,7 @@ static void cdvdWrite04(u8 rt)
 				cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.ReadMode, cdvd.NCMDParam[10], cdvd.SpindlCtrl);
 
 			if (EmuConfig.CdvdVerboseReads)
-				Console.WriteLn(Color_Gray, L"DvdRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx(%s) SpindleCtrl=%x",
+				Console.WriteLn(Color_Gray, "DvdRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx(%s) SpindleCtrl=%x",
 					cdvd.SeekToSector, cdvd.nSectors, cdvd.BlockSize, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.SpindlCtrl);
 
 			cdvd.ReadTime = cdvdBlockReadTime(MODE_DVDROM);

@@ -15,8 +15,12 @@
 
 #pragma once
 
-#include "Utilities/AsciiFile.h"
 #include "Config.h"
+
+#include "common/FileSystem.h"
+#include "common/Path.h"
+
+#include "fmt/core.h"
 
 // writes text directly to mVU.logFile, no newlines appended.
 _mVUt void __mVULog(const char* fmt, ...)
@@ -26,16 +30,11 @@ _mVUt void __mVULog(const char* fmt, ...)
 	if (!mVU.logFile)
 		return;
 
-	char tmp[2024];
 	va_list list;
 	va_start(list, fmt);
-
-	// concatenate the log message after the prefix:
-	vsprintf(tmp, fmt, list);
+	std::vfprintf(mVU.logFile, fmt, list);
+	std::fflush(mVU.logFile);
 	va_end(list);
-
-	mVU.logFile->Write(tmp);
-	mVU.logFile->Flush();
 }
 
 #define commaIf() \
@@ -47,8 +46,6 @@ _mVUt void __mVULog(const char* fmt, ...)
 		} \
 	}
 
-#include "gui/AppConfig.h"
-
 void __mVUdumpProgram(microVU& mVU, microProgram& prog)
 {
 	bool bitX[7];
@@ -58,8 +55,10 @@ void __mVUdumpProgram(microVU& mVU, microProgram& prog)
 	int bPC     = iPC;
 	mVUbranch   = 0;
 
-	const wxString logname(wxsFormat(L"microVU%d prog - %02d.html", mVU.index, prog.idx));
-	mVU.logFile = std::unique_ptr<AsciiFile>(new AsciiFile(Path::Combine(EmuFolders::Logs, logname), L"w"));
+	const std::string logname(fmt::format("microVU{} prog - {:02d}.html"), mVU.index, prog.idx);
+	mVU.logFile = FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, logname).c_str(), "w");
+	if (!mVU.logFile)
+		return;
 
 	mVUlog("<html>\n");
 	mVUlog("<title>microVU%d MicroProgram Log</title>\n", mVU.index);
@@ -152,5 +151,6 @@ void __mVUdumpProgram(microVU& mVU, microProgram& prog)
 	iPC       = bPC;
 	setCode();
 
-	mVU.logFile.reset(nullptr);
+	std::fclose(mVU.logFile);
+	mVU.logFile = nullptr;
 }

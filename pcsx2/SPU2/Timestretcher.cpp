@@ -16,8 +16,9 @@
 #include "PrecompiledHeader.h"
 #include "Global.h"
 #include "SoundTouch.h"
-#include <wx/datetime.h>
+#include "common/Timer.h"
 #include <algorithm>
+#include <cmath>
 
 //Uncomment the next line to use the old time stretcher
 //#define SPU2X_USE_OLD_STRETCHER
@@ -245,15 +246,15 @@ void SndBuffer::UpdateTempoChangeSoundTouch2()
 	if (MsgOverruns())
 	{
 		static int iters = 0;
-		static wxDateTime last = wxDateTime::UNow();
-		wxDateTime unow = wxDateTime::UNow();
-		wxTimeSpan delta = unow.Subtract(last);
+		static u64 last = 0;
 
-		if (delta.GetMilliseconds() > 1000)
+		const u64 now = Common::Timer::GetCurrentValue();
+
+		if (Common::Timer::ConvertValueToSeconds(now - last) > 1.0f)
 		{ //report buffers state and tempo adjust every second
 			ConLog("buffers: %4d ms (%3.0f%%), tempo: %f, comp: %2.3f, iters: %d, (N-IPS:%d -> avg:%d, minokc:%d, div:%d) reset:%d\n",
 				   (int)(data / 48), (double)(100.0 * bufferFullness / baseTargetFullness), (double)tempoAdjust, (double)(dynamicTargetFullness / baseTargetFullness), iters, (int)targetIPS, AVERAGING_WINDOW, hys_min_ok_count, compensationDivider, gRequestStretcherReset);
-			last = unow;
+			last = now;
 			iters = 0;
 		}
 		iters++;

@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/StringUtil.h"
 #include "gui/App.h"
 #include "gui/ConsoleLogger.h"
 #include <unistd.h>
@@ -51,21 +52,21 @@ LinuxPipeThread::LinuxPipeThread(FILE* stdstream)
 	// Save the original stdout/stderr file descriptor
 	int dup_fd = dup(fileno(stdstream));
 	if (dup_fd == -1)
-		throw Exception::RuntimeError().SetDiagMsg(wxString::Format(
-			L"Redirect %s failed: dup: %s", stream_name, strerror(errno)));
+		throw Exception::RuntimeError().SetDiagMsg(StringUtil::StdStringFromFormat(
+			"Redirect %s failed: dup: %s", stream_name, strerror(errno)));
 	m_fp = fdopen(dup_fd, "w");
 	if (m_fp == nullptr) {
 		int error = errno;
 		close(dup_fd);
-		throw Exception::RuntimeError().SetDiagMsg(wxString::Format(
-			L"Redirect %s failed: fdopen: %s", stream_name, strerror(error)));
+		throw Exception::RuntimeError().SetDiagMsg(StringUtil::StdStringFromFormat(
+			"Redirect %s failed: fdopen: %s", stream_name, strerror(error)));
 	}
 
 	if (pipe(m_pipe_fd) == -1) {
 		int error = errno;
 		fclose(m_fp);
-		throw Exception::RuntimeError().SetDiagMsg(wxString::Format(
-			L"Redirect %s failed: pipe: %s", stream_name, strerror(error)));
+		throw Exception::RuntimeError().SetDiagMsg(StringUtil::StdStringFromFormat(
+			"Redirect %s failed: pipe: %s", stream_name, strerror(error)));
 	}
 }
 

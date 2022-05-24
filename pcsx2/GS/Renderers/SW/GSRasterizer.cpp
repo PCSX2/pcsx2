@@ -20,7 +20,6 @@
 #include "GS/GSExtra.h"
 #include "PerformanceMetrics.h"
 #include "common/StringUtil.h"
-#include "common/PersistentThread.h"
 
 #define ENABLE_DRAW_STATS 0
 

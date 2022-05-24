@@ -33,9 +33,6 @@
 #include <sstream>
 #endif
 
-// TODO: Remove me once wx is gone.
-#include <wx/string.h>
-
 namespace StringUtil
 {
 	/// Constructs a std::string from a format string.
@@ -143,25 +140,25 @@ namespace StringUtil
 	std::string EncodeHex(const u8* data, int length);
 
 	/// starts_with from C++20
-	static inline bool StartsWith(const std::string_view& str, const char* prefix)
+	static inline bool StartsWith(const std::string_view& str, const std::string_view& prefix)
 	{
-		return (str.compare(0, std::strlen(prefix), prefix) == 0);
+		return (str.compare(0, prefix.length(), prefix) == 0);
 	}
-	static inline bool EndsWith(const std::string_view& str, const char* suffix)
+	static inline bool EndsWith(const std::string_view& str, const std::string_view& suffix)
 	{
-		const std::size_t suffix_length = std::strlen(suffix);
+		const std::size_t suffix_length = suffix.length();
 		return (str.length() >= suffix_length && str.compare(str.length() - suffix_length, suffix_length, suffix) == 0);
 	}
 
 	/// StartsWith/EndsWith variants which aren't case sensitive.
-	static inline bool StartsWithNoCase(const std::string_view& str, const char* prefix)
+	static inline bool StartsWithNoCase(const std::string_view& str, const std::string_view& prefix)
 	{
-		return (Strncasecmp(str.data(), prefix, std::strlen(prefix)) == 0);
+		return (!str.empty() && Strncasecmp(str.data(), prefix.data(), prefix.length()) == 0);
 	}
-	static inline bool EndsWithNoCase(const std::string_view& str, const char* suffix)
+	static inline bool EndsWithNoCase(const std::string_view& str, const std::string_view& suffix)
 	{
-		const std::size_t suffix_length = std::strlen(suffix);
-		return (str.length() >= suffix_length && Strncasecmp(str.data() + (str.length() - suffix_length), suffix, suffix_length) == 0);
+		const std::size_t suffix_length = suffix.length();
+		return (str.length() >= suffix_length && Strncasecmp(str.data() + (str.length() - suffix_length), suffix.data(), suffix_length) == 0);
 	}
 
 	/// Strip whitespace from the start/end of the string.
@@ -171,8 +168,41 @@ namespace StringUtil
 	/// Splits a string based on a single character delimiter.
 	std::vector<std::string_view> SplitString(const std::string_view& str, char delimiter, bool skip_empty = true);
 
+	/// Joins a string together using the specified delimiter.
+	template<typename T>
+	static inline std::string JoinString(const T& start, const T& end, char delimiter)
+	{
+		std::string ret;
+		for (auto it = start; it != end; ++it)
+		{
+			if (it != start)
+				ret += delimiter;
+			ret.append(*it);
+		}
+		return ret;
+	}
+	template <typename T>
+	static inline std::string JoinString(const T& start, const T& end, const std::string_view& delimiter)
+	{
+		std::string ret;
+		for (auto it = start; it != end; ++it)
+		{
+			if (it != start)
+				ret.append(delimiter);
+			ret.append(*it);
+		}
+		return ret;
+	}
+
+	/// Replaces all instances of search in subject with replacement.
+	std::string ReplaceAll(const std::string_view& subject, const std::string_view& search, const std::string_view& replacement);
+	void ReplaceAll(std::string* subject, const std::string_view& search, const std::string_view& replacement);
+
 	/// Parses an assignment string (Key = Value) into its two components.
 	bool ParseAssignmentString(const std::string_view& str, std::string_view* key, std::string_view* value);
+
+	/// Appends a UTF-16/UTF-32 codepoint to a UTF-8 string.
+	void AppendUTF16CharacterToUTF8(std::string& s, u16 ch);
 
 	/// Strided memcpy/memcmp.
 	static inline void StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,
@@ -215,28 +245,11 @@ namespace StringUtil
 	}
 
 	std::string toLower(const std::string_view& str);
+	std::string toUpper(const std::string_view& str);
 	bool compareNoCase(const std::string_view& str1, const std::string_view& str2);
 	std::vector<std::string> splitOnNewLine(const std::string& str);
 
-	/// Converts a wxString to a UTF-8 std::string.
-	static inline std::string wxStringToUTF8String(const wxString& str)
-	{
-		const wxScopedCharBuffer buf(str.ToUTF8());
-		return std::string(buf.data(), buf.length());
-	}
-
-	/// Converts a UTF-8 std::string to a wxString.
-	static inline wxString UTF8StringToWxString(const std::string_view& str)
-	{
-		return wxString::FromUTF8(str.data(), str.length());
-	}
-
-	/// Converts a UTF-8 std::string to a wxString.
-	static inline wxString UTF8StringToWxString(const std::string& str)
-	{
-		return wxString::FromUTF8(str.data(), str.length());
-	}
-
+#ifdef _WIN32
 	/// Converts the specified UTF-8 string to a wide string.
 	std::wstring UTF8StringToWideString(const std::string_view& str);
 	bool UTF8StringToWideString(std::wstring& dest, const std::string_view& str);
@@ -244,4 +257,9 @@ namespace StringUtil
 	/// Converts the specified wide string to a UTF-8 string.
 	std::string WideStringToUTF8String(const std::wstring_view& str);
 	bool WideStringToUTF8String(std::string& dest, const std::wstring_view& str);
+#endif
+
+	/// Converts unsigned 128-bit data to string.
+	std::string U128ToString(const u128& u);
+	std::string& AppendU128ToString(const u128& u, std::string& s);
 } // namespace StringUtil

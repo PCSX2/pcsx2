@@ -15,7 +15,10 @@
 
 #pragma once
 
+#include "common/Assertions.h"
 #include "common/Path.h"
+#include "wxDirName.h"
+#include "StringHelpers.h"
 #include <wx/config.h>
 #include <wx/gdicmn.h>
 #include <string>

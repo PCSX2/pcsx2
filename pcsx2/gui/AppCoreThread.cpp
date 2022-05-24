@@ -37,9 +37,7 @@
 #include "R5900Exceptions.h"
 #include "Sio.h"
 
-#ifndef DISABLE_RECORDING
 #include "Recording/InputRecordingControls.h"
-#endif
 
 alignas(16) SysMtgsThread mtgsThread;
 alignas(16) AppCoreThread CoreThread;
@@ -238,16 +236,11 @@ void Pcsx2App::SysApplySettings()
 
 void AppCoreThread::OnResumeReady()
 {
-#ifndef DISABLE_RECORDING
 	if (!g_InputRecordingControls.IsFrameAdvancing())
 	{
 		wxGetApp().SysApplySettings();
 		wxGetApp().PostMethod(AppSaveSettings);
 	}
-#else
-	wxGetApp().SysApplySettings();
-	wxGetApp().PostMethod(AppSaveSettings);
-#endif
 
 	sApp.PostAppMethod(&Pcsx2App::leaveDebugMode);
 	_parent::OnResumeReady();
@@ -410,9 +403,9 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	}
 
 	if (!gameMemCardFilter.IsEmpty())
-		sioSetGameSerial(gameMemCardFilter);
+		sioSetGameSerial(StringUtil::wxStringToUTF8String(gameMemCardFilter));
 	else
-		sioSetGameSerial(curGameKey);
+		sioSetGameSerial(StringUtil::wxStringToUTF8String(curGameKey));
 
 	if (GameInfo::gameName.IsEmpty() && GameInfo::gameSerial.IsEmpty() && GameInfo::gameCRC.IsEmpty())
 	{
@@ -467,7 +460,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	wxString consoleTitle = GameInfo::gameName + L" [" + GameInfo::gameSerial + L"]";
 	consoleTitle += L" [" + GameInfo::gameCRC + L"]" + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
 	if (ingame)
-		Console.SetTitle(consoleTitle);
+		Console.SetTitle(consoleTitle.ToUTF8());
 
 	gsUpdateFrequency(fixup);
 }
@@ -686,8 +679,8 @@ void SysExecEvent_CoreThreadPause::InvokeEvent()
 //  ScopedCoreThreadClose / ScopedCoreThreadPause
 // --------------------------------------------------------------------------------------
 
-static DeclareTls(bool) ScopedCore_IsPaused = false;
-static DeclareTls(bool) ScopedCore_IsFullyClosed = false;
+static thread_local bool ScopedCore_IsPaused = false;
+static thread_local bool ScopedCore_IsFullyClosed = false;
 
 BaseScopedCoreThread::BaseScopedCoreThread()
 {

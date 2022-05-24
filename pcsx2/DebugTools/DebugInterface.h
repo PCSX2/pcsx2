@@ -18,6 +18,8 @@
 #include "ExpressionParser.h"
 #include "SymbolMap.h"
 
+#include <string>
+
 enum
 {
 	EECAT_GPR,
@@ -66,7 +68,7 @@ public:
 	virtual RegisterType getRegisterType(int cat) = 0;
 	virtual const char* getRegisterName(int cat, int num) = 0;
 	virtual u128 getRegister(int cat, int num) = 0;
-	virtual wxString getRegisterString(int cat, int num) = 0;
+	virtual std::string getRegisterString(int cat, int num) = 0;
 	virtual u128 getHI() = 0;
 	virtual u128 getLO() = 0;
 	virtual u32 getPC() = 0;
@@ -107,7 +109,7 @@ public:
 	RegisterType getRegisterType(int cat) override;
 	const char* getRegisterName(int cat, int num) override;
 	u128 getRegister(int cat, int num) override;
-	wxString getRegisterString(int cat, int num) override;
+	std::string getRegisterString(int cat, int num) override;
 	u128 getHI() override;
 	u128 getLO() override;
 	u32 getPC() override;
@@ -141,7 +143,7 @@ public:
 	RegisterType getRegisterType(int cat) override;
 	const char* getRegisterName(int cat, int num) override;
 	u128 getRegister(int cat, int num) override;
-	wxString getRegisterString(int cat, int num) override;
+	std::string getRegisterString(int cat, int num) override;
 	u128 getHI() override;
 	u128 getLO() override;
 	u32 getPC() override;

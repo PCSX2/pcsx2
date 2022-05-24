@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "newVif_UnpackSSE.h"
+#include "fmt/core.h"
 
 #define xMOV8(regX, loc)   xMOVSSZX(regX, loc)
 #define xMOV16(regX, loc)  xMOVSSZX(regX, loc)
@@ -286,7 +287,7 @@ void VifUnpackSSE_Base::xUnpack(int upknum) const
 		case 3:
 		case 7:
 		case 11:
-			pxFailRel(wxsFormat(L"Vpu/Vif - Invalid Unpack! [%d]", upknum));
+			pxFailRel(fmt::format("Vpu/Vif - Invalid Unpack! [{}]", upknum).c_str());
 			break;
 	}
 }
@@ -344,7 +345,7 @@ void VifUnpackSSE_Init()
 
 	DevCon.WriteLn("Generating SSE-optimized unpacking functions for VIF interpreters...");
 
-	nVifUpkExec = new RecompiledCodeReserve(L"VIF SSE-optimized Unpacking Functions", _64kb);
+	nVifUpkExec = new RecompiledCodeReserve("VIF SSE-optimized Unpacking Functions", _64kb);
 	nVifUpkExec->SetProfilerName("iVIF-SSE");
 	nVifUpkExec->Reserve(GetVmMemory().BumpAllocator(), _64kb);
 
@@ -361,10 +362,10 @@ void VifUnpackSSE_Init()
 
 	DevCon.WriteLn("Unpack function generation complete.  Generated function statistics:");
 	DevCon.Indent().WriteLn(
-		L"Reserved buffer    : %u bytes @ %ls\n"
-		L"x86 code generated : %u bytes\n",
+		"Reserved buffer    : %u bytes @ 0x%016" PRIXPTR "\n"
+		"x86 code generated : %u bytes\n",
 		(uint)nVifUpkExec->GetCommittedBytes(),
-		pxsPtr(nVifUpkExec->GetPtr()),
+		nVifUpkExec->GetPtr(),
 		(uint)(xGetPtr() - nVifUpkExec->GetPtr())
 	);
 }

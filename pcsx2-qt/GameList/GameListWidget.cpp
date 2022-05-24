@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/Assertions.h"
 #include "common/StringUtil.h"
 
 #include "pcsx2/Frontend/GameList.h"
@@ -31,6 +32,12 @@
 #include "GameListWidget.h"
 #include "QtHost.h"
 #include "QtUtils.h"
+
+static const char* SUPPORTED_FORMATS_STRING = QT_TRANSLATE_NOOP(GameListWidget,
+	".bin/.iso (ISO Disc Images)\n"
+	".chd (Compressed Hunks of Data)\n"
+	".cso (Compressed ISO)\n"
+	".gz (Gzip Compressed ISO)");
 
 class GameListSortModel final : public QSortFilterProxyModel
 {
@@ -68,8 +75,6 @@ void GameListWidget::initialize()
 	m_model = new GameListModel(this);
 	m_model->setCoverScale(QtHost::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", 0.45f));
 	m_model->setShowCoverTitles(QtHost::GetBaseBoolSettingValue("UI", "GameListShowCoverTitles", true));
-	m_model->setCoverScale(0.45f);
-	m_model->setShowCoverTitles(true);
 
 	m_sort_model = new GameListSortModel(m_model);
 	m_sort_model->setSourceModel(m_model);
@@ -124,6 +129,13 @@ void GameListWidget::initialize()
 
 	insertWidget(1, m_list_view);
 
+	m_empty_widget = new QWidget(this);
+	m_empty_ui.setupUi(m_empty_widget);
+	m_empty_ui.supportedFormats->setText(qApp->translate("GameListWidget", SUPPORTED_FORMATS_STRING));
+	connect(m_empty_ui.addGameDirectory, &QPushButton::clicked, this, [this]() { emit addGameDirectoryRequested(); });
+	connect(m_empty_ui.scanForNewGames, &QPushButton::clicked, this, [this]() { refresh(false); });
+	insertWidget(2, m_empty_widget);
+
 	if (QtHost::GetBaseBoolSettingValue("UI", "GameListGridView", false))
 		setCurrentIndex(1);
 	else
@@ -149,13 +161,7 @@ bool GameListWidget::getShowGridCoverTitles() const
 
 void GameListWidget::refresh(bool invalidate_cache)
 {
-	if (m_refresh_thread)
-	{
-		m_refresh_thread->cancel();
-		m_refresh_thread->wait();
-		QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-		pxAssertRel(!m_refresh_thread, "Game list thread should be unreferenced by now");
-	}
+	cancelRefresh();
 
 	m_refresh_thread = new GameListRefreshThread(invalidate_cache);
 	connect(m_refresh_thread, &GameListRefreshThread::refreshProgress, this, &GameListWidget::onRefreshProgress,
@@ -165,8 +171,23 @@ void GameListWidget::refresh(bool invalidate_cache)
 	m_refresh_thread->start();
 }
 
+void GameListWidget::cancelRefresh()
+{
+	if (!m_refresh_thread)
+		return;
+
+	m_refresh_thread->cancel();
+	m_refresh_thread->wait();
+	QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+	pxAssertRel(!m_refresh_thread, "Game list thread should be unreferenced by now");
+}
+
 void GameListWidget::onRefreshProgress(const QString& status, int current, int total)
 {
+	// switch away from the placeholder while we scan, in case we find anything
+	if (currentIndex() == 2)
+		setCurrentIndex(QtHost::GetBaseBoolSettingValue("UI", "GameListGridView", false) ? 1 : 0);
+
 	m_model->refresh();
 	emit refreshProgress(status, current, total);
 }
@@ -180,6 +201,10 @@ void GameListWidget::onRefreshComplete()
 	m_refresh_thread->wait();
 	delete m_refresh_thread;
 	m_refresh_thread = nullptr;
+
+	// if we still had no games, switch to the helper widget
+	if (m_model->rowCount() == 0)
+		setCurrentIndex(2);
 }
 
 void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
@@ -276,7 +301,7 @@ void GameListWidget::refreshGridCovers()
 
 void GameListWidget::showGameList()
 {
-	if (currentIndex() == 0)
+	if (currentIndex() == 0 || m_model->rowCount() == 0)
 		return;
 
 	QtHost::SetBaseBoolSettingValue("UI", "GameListGridView", false);
@@ -286,7 +311,7 @@ void GameListWidget::showGameList()
 
 void GameListWidget::showGameGrid()
 {
-	if (currentIndex() == 1)
+	if (currentIndex() == 1 || m_model->rowCount() == 0)
 		return;
 
 	QtHost::SetBaseBoolSettingValue("UI", "GameListGridView", true);

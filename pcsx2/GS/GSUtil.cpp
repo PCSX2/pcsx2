@@ -17,8 +17,7 @@
 #include "GS.h"
 #include "GSExtra.h"
 #include "GSUtil.h"
-#include <locale>
-#include <codecvt>
+#include "common/StringUtil.h"
 
 #ifdef _WIN32
 #include <VersionHelpers.h>
@@ -185,7 +184,7 @@ bool GSUtil::CheckSSE()
 
 CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)
 {
-	return type == GSRendererType::DX11 ? CRCHackLevel::Full : CRCHackLevel::Partial;
+	return (type == GSRendererType::DX11 || type == GSRendererType::DX12) ? CRCHackLevel::Full : CRCHackLevel::Partial;
 }
 
 GSRendererType GSUtil::GetPreferredRenderer()
@@ -194,16 +193,14 @@ GSRendererType GSUtil::GetPreferredRenderer()
 	// Mac: Prefer Metal hardware.
 	return GSRendererType::Metal;
 #elif defined(_WIN32)
+	if (D3D::ShouldPreferRenderer() == D3D::Renderer::Vulkan)
+		return GSRendererType::VK;
 #if defined(ENABLE_OPENGL)
-	// Windows: Prefer GL if available.
-	if (D3D::ShouldPreferD3D())
-		return GSRendererType::DX11;
-	else
+	else if (D3D::ShouldPreferRenderer() == D3D::Renderer::OpenGL)
 		return GSRendererType::OGL;
-#else
-	// DX11 is always available, otherwise.
-	return GSRendererType::DX11;
 #endif
+	else
+		return GSRendererType::DX11;
 #else
 	// Linux: Prefer GL/Vulkan, whatever is available.
 #if defined(ENABLE_OPENGL)
@@ -241,7 +238,7 @@ std::string GStempdir()
 #ifdef _WIN32
 	wchar_t path[MAX_PATH + 1];
 	GetTempPath(MAX_PATH, path);
-	return convert_utf16_to_utf8(path);
+	return StringUtil::WideStringToUTF8String(path);
 #else
 	return "/tmp";
 #endif

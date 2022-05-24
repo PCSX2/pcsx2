@@ -15,16 +15,17 @@
 
 #pragma once
 
-#include <string>
-#include <string_view>
-#include <optional>
-#include <wx/string.h>
-
-#include "common/Pcsx2Defs.h"
 #include <functional>
 #include <optional>
 #include <string>
 #include <vector>
+#include <string>
+#include <string_view>
+#include <optional>
+
+#include "common/Pcsx2Defs.h"
+
+#include "Config.h"
 
 enum class CDVD_SourceType : uint8_t;
 
@@ -42,11 +43,11 @@ struct VMBootParameters
 	std::string filename;
 	std::string elf_override;
 	std::string save_state;
+	std::optional<s32> state_index;
 	std::optional<CDVD_SourceType> source_type;
 
 	std::optional<bool> fast_boot;
 	std::optional<bool> fullscreen;
-	std::optional<bool> batch_mode;
 };
 
 namespace VMManager
@@ -76,7 +77,7 @@ namespace VMManager
 	bool Initialize(const VMBootParameters& boot_params);
 
 	/// Destroys all system components.
-	void Shutdown(bool allow_save_resume_state = true);
+	void Shutdown(bool save_resume_state);
 
 	/// Resets all subsystems to a cold boot.
 	void Reset();
@@ -96,11 +97,11 @@ namespace VMManager
 	/// Reloads cheats/patches. If verbose is set, the number of patches loaded will be shown in the OSD.
 	void ReloadPatches(bool verbose);
 
-	/// Returns true if a resume save state should be saved/loaded.
-	bool ShouldSaveResumeState();
-
 	/// Returns the save state filename for the given game serial/crc.
 	std::string GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot);
+
+	/// Returns the path to save state for the specified disc/elf.
+	std::string GetSaveStateFileName(const char* filename, s32 slot);
 
 	/// Returns true if there is a save state in the specified slot.
 	bool HasSaveStateInSlot(const char* game_serial, u32 game_crc, s32 slot);
@@ -112,10 +113,13 @@ namespace VMManager
 	bool LoadStateFromSlot(s32 slot);
 
 	/// Saves state to the specified filename.
-	bool SaveState(const char* filename);
+	bool SaveState(const char* filename, bool zip_on_thread = true);
 
 	/// Saves state to the specified slot.
-	bool SaveStateToSlot(s32 slot);
+	bool SaveStateToSlot(s32 slot, bool zip_on_thread = true);
+
+	/// Waits until all compressing save states have finished saving to disk.
+	void WaitForSaveStateFlush();
 
 	/// Returns the current limiter mode.
 	LimiterModeType GetLimiterMode();
@@ -137,7 +141,7 @@ namespace VMManager
 	bool IsGSDumpFileName(const std::string& path);
 
 	/// Returns the path for the game settings ini file for the specified CRC.
-	std::string GetGameSettingsPath(u32 game_crc);
+	std::string GetGameSettingsPath(const std::string_view& game_serial, u32 game_crc);
 
 	/// Resizes the render window to the display size, with an optional scale.
 	/// If the scale is set to 0, the internal resolution will be used, otherwise it is treated as a multiplier to 1x.
@@ -149,6 +153,9 @@ namespace VMManager
 		/// Performs early global initialization.
 		bool InitializeGlobals();
 
+		/// Releases resources allocated in InitializeGlobals().
+		void ReleaseGlobals();
+
 		/// Reserves memory for the virtual machines.
 		bool InitializeMemory();
 
@@ -157,6 +164,7 @@ namespace VMManager
 
 		const std::string& GetElfOverride();
 		bool IsExecutionInterrupted();
+		void EntryPointCompilingOnCPUThread();
 		void GameStartingOnCPUThread();
 		void VSyncOnCPUThread();
 	}
@@ -207,4 +215,23 @@ namespace Host
 
 	/// Safely executes a function on the VM thread.
 	void RunOnCPUThread(std::function<void()> function, bool block = false);
+
+	/// Asynchronously starts refreshing the game list.
+	void RefreshGameListAsync(bool invalidate_cache);
+
+	/// Cancels game list refresh, if there is one in progress.
+	void CancelGameListRefresh();
+
+	/// Requests shut down and exit of the hosting application. This may not actually exit,
+	/// if the user cancels the shutdown confirmation.
+	void RequestExit(bool save_state_if_running);
+
+	/// Requests shut down of the current virtual machine.
+	void RequestVMShutdown(bool save_state);
+
+	/// Returns true if the hosting application is currently fullscreen.
+	bool IsFullscreen();
+
+	/// Alters fullscreen state of hosting application.
+	void SetFullscreen(bool enabled);
 }

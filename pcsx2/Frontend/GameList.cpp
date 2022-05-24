@@ -20,6 +20,7 @@
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/ProgressCallback.h"
 #include "common/StringUtil.h"
 #include <algorithm>
@@ -48,7 +49,7 @@ namespace GameList
 	static Entry* GetMutableEntryForPath(const char* path);
 
 	static bool GetElfListEntry(const std::string& path, GameList::Entry* entry);
-	static bool GetGameListEntry(const std::string& path, GameList::Entry* entry);
+	static bool GetIsoListEntry(const std::string& path, GameList::Entry* entry);
 
 	static bool GetGameListEntryFromCache(const std::string& path, GameList::Entry* entry);
 	static void ScanDirectory(const char* path, bool recursive, const std::vector<std::string>& excluded_paths,
@@ -83,6 +84,13 @@ const char* GameList::EntryTypeToString(EntryType type)
 	static std::array<const char*, static_cast<int>(EntryType::Count)> names = {
 		{"PS2Disc", "PS1Disc", "ELF", "Playlist"}};
 	return names[static_cast<int>(type)];
+}
+
+const char* GameList::RegionToString(Region region)
+{
+	static std::array<const char*, static_cast<int>(Region::Count)> names = {
+		{"NTSC-U/C", "NTSC-J", "PAL", "Other"}};
+	return names[static_cast<int>(region)];
 }
 
 const char* GameList::EntryCompatibilityRatingToString(CompatibilityRating rating)
@@ -161,7 +169,7 @@ bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 	const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
 	entry->path = path;
 	entry->serial.clear();
-	entry->title = FileSystem::StripExtension(display_name);
+	entry->title = Path::StripExtension(display_name);
 	entry->region = Region::Other;
 	entry->total_size = static_cast<u64>(file_size);
 	entry->type = EntryType::ELF;
@@ -169,11 +177,8 @@ bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 	return true;
 }
 
-bool GameList::GetGameListEntry(const std::string& path, GameList::Entry* entry)
+bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 {
-	if (VMManager::IsElfFileName(path.c_str()))
-		return GetElfListEntry(path.c_str(), entry);
-
 	FILESYSTEM_STAT_DATA sd;
 	if (!FileSystem::StatFile(path.c_str(), &sd))
 		return false;
@@ -234,11 +239,19 @@ bool GameList::GetGameListEntry(const std::string& path, GameList::Entry* entry)
 	}
 	else
 	{
-		entry->title = FileSystem::GetFileTitleFromPath(path);
+		entry->title = Path::GetFileTitle(path);
 		entry->region = Region::Other;
 	}
 
 	return true;
+}
+
+bool GameList::PopulateEntryFromPath(const std::string& path, GameList::Entry* entry)
+{
+	if (VMManager::IsElfFileName(path.c_str()))
+		return GetElfListEntry(path, entry);
+	else
+		return GetIsoListEntry(path, entry);
 }
 
 bool GameList::GetGameListEntryFromCache(const std::string& path, GameList::Entry* entry)
@@ -353,7 +366,7 @@ bool GameList::LoadEntriesFromCache(std::FILE* stream)
 
 static std::string GetCacheFilename()
 {
-	return Path::CombineStdString(EmuFolders::Cache, "gamelist.cache");
+	return Path::Combine(EmuFolders::Cache, "gamelist.cache");
 }
 
 void GameList::LoadCache()
@@ -481,6 +494,8 @@ void GameList::ScanDirectory(const char* path, bool recursive, const std::vector
 	progress->SetProgressRange(static_cast<u32>(files.size()));
 	progress->SetProgressValue(0);
 
+	u32 cached_files = 0;
+
 	for (FILESYSTEM_FIND_DATA& ffd : files)
 	{
 		if (progress->IsCancelled() || !GameList::IsScannableFilename(ffd.FileName) ||
@@ -491,11 +506,11 @@ void GameList::ScanDirectory(const char* path, bool recursive, const std::vector
 
 		{
 			std::unique_lock lock(s_mutex);
-			if (GetEntryForPath(ffd.FileName.c_str()))
+			if (GetEntryForPath(ffd.FileName.c_str()) || AddFileFromCache(ffd.FileName, ffd.ModificationTime))
+			{
+				progress->IncrementProgressValue();
 				continue;
-
-			if (AddFileFromCache(ffd.FileName, ffd.ModificationTime))
-				continue;
+			}
 		}
 
 		// ownership of fp is transferred
@@ -529,7 +544,7 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp)
 	DevCon.WriteLn("Scanning '%s'...", path.c_str());
 
 	Entry entry;
-	if (!GetGameListEntry(path, &entry))
+	if (!PopulateEntryFromPath(path, &entry))
 		return false;
 
 	entry.path = std::move(path);
@@ -675,13 +690,13 @@ std::string GameList::GetCoverImagePath(const std::string& path, const std::stri
 	for (const char* extension : extensions)
 	{
 		// use the file title if it differs (e.g. modded games)
-		const std::string_view file_title(FileSystem::GetFileTitleFromPath(path));
+		const std::string_view file_title(Path::GetFileTitle(path));
 		if (!file_title.empty() && title != file_title)
 		{
 			std::string cover_filename(file_title);
 			cover_filename += extension;
 
-			cover_path = Path::CombineStdString(EmuFolders::Covers, cover_filename);
+			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
 				return cover_path;
 		}
@@ -690,7 +705,7 @@ std::string GameList::GetCoverImagePath(const std::string& path, const std::stri
 		if (!title.empty())
 		{
 			const std::string cover_filename(title + extension);
-			cover_path = Path::CombineStdString(EmuFolders::Covers, cover_filename);
+			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
 				return cover_path;
 		}
@@ -699,7 +714,7 @@ std::string GameList::GetCoverImagePath(const std::string& path, const std::stri
 		if (!serial.empty())
 		{
 			const std::string cover_filename(serial + extension);
-			cover_path = Path::CombineStdString(EmuFolders::Covers, cover_filename);
+			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
 				return cover_path;
 		}
@@ -724,5 +739,5 @@ std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const cha
 	}
 
 	const std::string cover_filename(entry->title + extension);
-	return Path::CombineStdString(EmuFolders::Covers, cover_filename);
+	return Path::Combine(EmuFolders::Covers, cover_filename);
 }

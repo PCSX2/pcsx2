@@ -22,6 +22,8 @@
 #include "common/StringUtil.h"
 #endif
 
+#include <mutex>
+
 static WavOutFile* _new_WavOutFile(const char* destfile)
 {
 	return new WavOutFile(destfile, 48000, 16, 2);
@@ -109,13 +111,13 @@ using namespace Threading;
 bool WavRecordEnabled = false;
 
 static WavOutFile* m_wavrecord = nullptr;
-static Mutex WavRecordMutex;
+static std::mutex WavRecordMutex;
 
 bool RecordStart(const std::string* filename)
 {
 	try
 	{
-		ScopedLock lock(WavRecordMutex);
+		std::unique_lock lock(WavRecordMutex);
 		safe_delete(m_wavrecord);
 		if (filename)
 #ifdef _WIN32
@@ -142,13 +144,13 @@ bool RecordStart(const std::string* filename)
 void RecordStop()
 {
 	WavRecordEnabled = false;
-	ScopedLock lock(WavRecordMutex);
+	std::unique_lock lock(WavRecordMutex);
 	safe_delete(m_wavrecord);
 }
 
 void RecordWrite(const StereoOut16& sample)
 {
-	ScopedLock lock(WavRecordMutex);
+	std::unique_lock lock(WavRecordMutex);
 	if (m_wavrecord == nullptr)
 		return;
 	m_wavrecord->write((s16*)&sample, 2);

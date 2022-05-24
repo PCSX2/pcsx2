@@ -19,6 +19,8 @@
 #include "gui/IniInterface.h"
 #include "DebugTools/Debug.h"
 
+#include "common/StringUtil.h"
+
 #include <wx/statline.h>
 
 
@@ -177,7 +179,7 @@ void SysTraceLog_LoadSaveSettings( IniInterface& ini )
 		if (SysTraceLog* log = traceLogList[i])
 		{
 			pxAssertMsg(log->GetName(), "Trace log without a name!" );
-			ini.Entry( log->GetCategory() + L"." + log->GetShortName(), log->Enabled, false );
+			ini.Entry( StringUtil::UTF8StringToWxString(log->GetCategory() + "." + log->GetShortName()), log->Enabled, false );
 		}
 	}
 }
@@ -191,11 +193,11 @@ static bool traceLogEnabled( const wxString& ident )
 
 	for( uint i=0; i<traceLogCount; ++i )
 	{
-		if( 0 == ident.CmpNoCase(traceLogList[i]->GetCategory()) )
+		if( 0 == ident.CmpNoCase(StringUtil::UTF8StringToWxString(traceLogList[i]->GetCategory())) )
 			return traceLogList[i]->Enabled;
 	}
 
-	pxFailDev( wxsFormat(L"Invalid or unknown TraceLog identifier: %s", ident.c_str()) );
+	pxFailDev( wxsFormat(L"Invalid or unknown TraceLog identifier: %s", ident.c_str()).ToUTF8() );
 	return false;
 }
 
@@ -217,7 +219,7 @@ Panels::LogOptionsPanel::LogOptionsPanel(wxWindow* parent )
 
 		pxAssertMsg(item.GetName(), "Trace log without a name!" );
 
-		wxStringTokenizer token( item.GetCategory(), L"." );
+		wxStringTokenizer token( StringUtil::UTF8StringToWxString(item.GetCategory()), L"." );
 		wxSizer* addsizer = NULL;
 		wxWindow* addparent = NULL;
 

@@ -42,6 +42,7 @@ public:
 	static void stop();
 
 	__fi QEventLoop* getEventLoop() const { return m_event_loop; }
+	__fi bool isFullscreen() const { return m_is_fullscreen; }
 
 	bool isOnEmuThread() const;
 
@@ -59,13 +60,14 @@ public Q_SLOTS:
 	void startVM(std::shared_ptr<VMBootParameters> boot_params);
 	void resetVM();
 	void setVMPaused(bool paused);
-	bool shutdownVM(bool allow_save_to_state = true);
+	void shutdownVM(bool save_state = true);
 	void loadState(const QString& filename);
 	void loadStateFromSlot(qint32 slot);
 	void saveState(const QString& filename);
 	void saveStateToSlot(qint32 slot);
 	void toggleFullscreen();
 	void setFullscreen(bool fullscreen);
+	void setSurfaceless(bool surfaceless);
 	void applySettings();
 	void reloadGameSettings();
 	void toggleSoftwareRendering();
@@ -78,10 +80,11 @@ public Q_SLOTS:
 	void enumerateInputDevices();
 	void enumerateVibrationMotors();
 	void runOnCPUThread(const std::function<void()>& func);
+	void queueSnapshot(quint32 gsdump_frames);
 
 Q_SIGNALS:
 	DisplayWidget* onCreateDisplayRequested(bool fullscreen, bool render_to_main);
-	DisplayWidget* onUpdateDisplayRequested(bool fullscreen, bool render_to_main);
+	DisplayWidget* onUpdateDisplayRequested(bool fullscreen, bool render_to_main, bool surfaceless);
 	void onResizeDisplayRequested(qint32 width, qint32 height);
 	void onDestroyDisplayRequested();
 
@@ -157,25 +160,14 @@ private:
 	bool m_verbose_status = false;
 	bool m_is_rendering_to_main = false;
 	bool m_is_fullscreen = false;
+	bool m_is_surfaceless = false;
+	bool m_save_state_on_shutdown = false;
 
 	float m_last_speed = 0.0f;
 	float m_last_game_fps = 0.0f;
 	float m_last_video_fps = 0.0f;
 	int m_last_internal_width = 0;
 	int m_last_internal_height = 0;
-};
-
-/// <summary>
-/// Helper class to pause/unpause the emulation thread.
-/// </summary>
-class ScopedVMPause
-{
-public:
-	ScopedVMPause(bool was_paused);
-	~ScopedVMPause();
-
-private:
-	bool m_was_paused;
 };
 
 extern EmuThread* g_emu_thread;

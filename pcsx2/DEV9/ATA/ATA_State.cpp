@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/Assertions.h"
+
 #include "ATA.h"
 #include "DEV9/DEV9.h"
 #ifndef PCSX2_CORE
@@ -28,7 +30,7 @@ ATA::ATA()
 	ResetEnd(true);
 }
 
-int ATA::Open(fs::path hddPath)
+int ATA::Open(ghc::filesystem::path hddPath)
 {
 	readBufferLen = 256 * 512;
 	readBuffer = new u8[readBufferLen];
@@ -36,7 +38,7 @@ int ATA::Open(fs::path hddPath)
 	CreateHDDinfo(EmuConfig.DEV9.HddSizeSectors);
 
 	//Open File
-	if (!fs::exists(hddPath))
+	if (!ghc::filesystem::exists(hddPath))
 	{
 #ifndef PCSX2_CORE
 		HddCreateWx hddCreator;
@@ -50,7 +52,7 @@ int ATA::Open(fs::path hddPath)
 		return -1;
 #endif
 	}
-	hddImage = fs::fstream(hddPath, std::ios::in | std::ios::out | std::ios::binary);
+	hddImage = ghc::filesystem::fstream(hddPath, std::ios::in | std::ios::out | std::ios::binary);
 
 	//Store HddImage size for later check
 	hddImage.seekg(0, std::ios::end);

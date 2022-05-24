@@ -129,5 +129,5 @@ void FlatFileReader::Close(void)
 
 uint FlatFileReader::GetBlockCount(void) const
 {
-	return (int)(Path::GetFileSize(m_filename) / m_blocksize);
+	return (int)(FileSystem::GetPathFileSize(m_filename.c_str()) / m_blocksize);
 }

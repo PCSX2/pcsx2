@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
 #include "IsoFileFormats.h"
+#include "common/Assertions.h"
 #include "common/FileSystem.h"
 
 #include <errno.h>

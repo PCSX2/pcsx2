@@ -23,9 +23,19 @@
 #include "Global.h"
 #include "SndOut.h"
 
+#ifdef PCSX2_CORE
+
+#include "HostSettings.h"
+
+#else
+
+#include "gui/StringHelpers.h"
+
 extern bool CfgReadBool(const wchar_t* Section, const wchar_t* Name, bool Default);
 extern int CfgReadInt(const wchar_t* Section, const wchar_t* Name, int Default);
 extern void CfgReadStr(const wchar_t* Section, const wchar_t* Name, wxString& Data, const wchar_t* Default);
+
+#endif
 
 class Cubeb : public SndOutModule
 {
@@ -98,10 +108,9 @@ private:
 
 	static void LogCallback(const char* fmt, ...)
 	{
-		FastFormatAscii msg;
 		std::va_list ap;
 		va_start(ap, fmt);
-		msg.WriteV(fmt, ap);
+		std::string msg(StringUtil::StdStringFromFormatV(fmt, ap));
 		va_end(ap);
 		Console.WriteLn("(Cubeb): %s", msg.c_str());
 	}
@@ -344,18 +353,19 @@ public:
 		return playedSinceLastTime;
 	}
 
-	const wchar_t* GetIdent() const override
+	const char* GetIdent() const override
 	{
-		return L"cubeb";
+		return "cubeb";
 	}
 
-	const wchar_t* GetLongName() const override
+	const char* GetLongName() const override
 	{
-		return L"Cubeb (Cross-platform)";
+		return "Cubeb (Cross-platform)";
 	}
 
 	void ReadSettings()
 	{
+#ifndef PCSX2_CORE
 		m_SuggestedLatencyMinimal = CfgReadBool(L"Cubeb", L"MinimalSuggestedLatency", false);
 		m_SuggestedLatencyMS = std::clamp(CfgReadInt(L"Cubeb", L"ManualSuggestedLatencyMS", MINIMUM_LATENCY_MS), MINIMUM_LATENCY_MS, MAXIMUM_LATENCY_MS);
 
@@ -363,6 +373,11 @@ public:
 		wxString backend;
 		CfgReadStr(L"Cubeb", L"BackendName", backend, L"");
 		m_Backend = StringUtil::wxStringToUTF8String(backend);
+#else
+		m_SuggestedLatencyMinimal = Host::GetBoolSettingValue("Cubeb", "MinimalSuggestedLatency", false);
+		m_SuggestedLatencyMS = std::clamp(Host::GetIntSettingValue("Cubeb", "ManualSuggestedLatencyMS", MINIMUM_LATENCY_MS), MINIMUM_LATENCY_MS, MAXIMUM_LATENCY_MS);
+		m_Backend = Host::GetStringSettingValue("Cubeb", "BackendName", "");
+#endif
 	}
 };
 

@@ -15,13 +15,14 @@
 
 #pragma once
 
-#include <wx/file.h>
-#include <wx/dir.h>
-#include <wx/ffile.h>
 #include <map>
+#include <string>
+#include <string_view>
 #include <vector>
 
 #include "Config.h"
+
+#include "fmt/core.h"
 
 //#define DEBUG_WRITE_FOLDER_CARD_IN_MEMORY_TO_FILE_ON_CHANGE
 
@@ -62,61 +63,9 @@ struct MemoryCardFileEntryDateTime
 	u8 month;
 	u16 year;
 
-	static MemoryCardFileEntryDateTime FromWxDateTime(const wxDateTime& time)
-	{
-		MemoryCardFileEntryDateTime t;
+	static MemoryCardFileEntryDateTime FromTime(time_t time);
 
-		if (time.IsValid())
-		{
-			wxDateTime::Tm tm = time.GetTm(wxDateTime::GMT9);
-
-			t.unused = 0;
-			t.second = tm.sec;
-			t.minute = tm.min;
-			t.hour = tm.hour;
-			t.day = tm.mday;
-			t.month = tm.mon + 1;
-			t.year = tm.year;
-		}
-		else
-		{
-			t.unused = 0;
-			t.second = 0;
-			t.minute = 0;
-			t.hour = 0;
-			t.day = 0;
-			t.month = 0;
-			t.year = 0;
-		}
-
-		return t;
-	}
-
-	static MemoryCardFileEntryDateTime FromTime(time_t time)
-	{
-		// TODO: When wx is gone, this will have to be handled differently; for now, rely on wx
-		return FromWxDateTime(wxDateTime(time));
-	}
-
-	wxDateTime ToWxDateTime() const
-	{
-		wxDateTime::Tm tm;
-		tm.sec = this->second;
-		tm.min = this->minute;
-		tm.hour = this->hour;
-		tm.mday = this->day;
-		tm.mon = (wxDateTime::Month)(this->month - 1);
-		tm.year = this->year;
-
-		wxDateTime time(tm);
-		return time.FromTimezone(wxDateTime::GMT9);
-	}
-
-	time_t ToTime() const
-	{
-		// TODO: When wx is gone, this will have to be handled differently; for now, rely on wx
-		return ToWxDateTime().GetTicks();
-	}
+	time_t ToTime() const;
 
 	bool operator==(const MemoryCardFileEntryDateTime& other) const
 	{
@@ -226,7 +175,7 @@ struct MemoryCardFileMetadataReference
 	u32 consecutiveCluster;
 
 	// returns true if filename was modified and metadata containing the actual filename should be written
-	bool GetPath(wxFileName* fileName) const;
+	bool GetPath(std::string* fileName) const;
 
 	// gives the internal memory card file system path, not to be used for writes to the host file system
 	void GetInternalPath(std::string* fileName) const;
@@ -235,7 +184,8 @@ struct MemoryCardFileMetadataReference
 struct MemoryCardFileHandleStructure
 {
 	MemoryCardFileMetadataReference* fileRef;
-	wxFFile* fileHandle;
+	std::string hostFilePath;
+	std::FILE* fileHandle;
 };
 
 // --------------------------------------------------------------------------------------
@@ -253,9 +203,9 @@ public:
 	~FileAccessHelper();
 
 	// Get an already opened file if possible, or open a new one and remember it
-	wxFFile* ReOpen(const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata = false);
+	std::FILE* ReOpen(const std::string_view& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata = false);
 	// Close all open files that start with the given path, so either a file if a filename is given or all files in a directory and its subdirectories when a directory is given
-	void CloseMatching(const wxString& path);
+	void CloseMatching(const std::string_view& path);
 	// Close all open files
 	void CloseAll();
 	// Flush the written data of all open files to the file system
@@ -268,19 +218,19 @@ public:
 	// returns true if any changes were made
 	static bool CleanMemcardFilename(char* name);
 
-	static void WriteIndex(wxFileName folderName, MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent);
+	static void WriteIndex(const std::string& baseFolderName, MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent);
 
 private:
 	// helper function for CleanMemcardFilename()
 	static bool CleanMemcardFilenameEndDotOrSpace(char* name, size_t length);
 
 	// Open a new file and remember it for later
-	wxFFile* Open(const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata = false);
+	std::FILE* Open(const std::string_view& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata = false);
 	// Close a file and delete its handle
 	// If entry is given, it also attempts to set the created and modified timestamps of the file according to the entry
-	void CloseFileHandle(wxFFile* file, const MemoryCardFileEntry* entry = nullptr);
+	void CloseFileHandle(std::FILE*& file, const MemoryCardFileEntry* entry = nullptr);
 
-	void WriteMetadata(wxFileName folderName, const MemoryCardFileMetadataReference* fileRef);
+	void WriteMetadata(const std::string_view& folderName, const MemoryCardFileMetadataReference* fileRef);
 };
 
 // --------------------------------------------------------------------------------------
@@ -355,7 +305,7 @@ protected:
 	FileAccessHelper m_lastAccessedFile;
 
 	// path to the folder that contains the files of this memory card
-	wxFileName m_folderName;
+	std::string m_folderName;
 
 	// PS2 memory card slot this card is inserted into
 	uint m_slot;
@@ -367,7 +317,7 @@ protected:
 
 	// currently active filter settings
 	bool m_filteringEnabled;
-	wxString m_filteringString;
+	std::string m_filteringString;
 
 public:
 	FolderMemoryCard();
@@ -377,16 +327,16 @@ public:
 	void Unlock();
 
 	// Initialize & Load Memory Card with values configured in the Memory Card Manager
-	void Open(const bool enableFiltering, const wxString& filter);
+	void Open(const bool enableFiltering, std::string filter);
 	// Initialize & Load Memory Card with provided custom values
-	void Open(const wxString& fullPath, const Pcsx2Config::McdOptions& mcdOptions, const u32 sizeInClusters, const bool enableFiltering, const wxString& filter, bool simulateFileWrites = false);
+	void Open(std::string fullPath, const Pcsx2Config::McdOptions& mcdOptions, const u32 sizeInClusters, const bool enableFiltering, std::string filter, bool simulateFileWrites = false);
 	// Close the memory card and flush changes to the file system. Set flush to false to not store changes.
 	void Close(bool flush = true);
 
 	// Closes and reopens card with given filter options if they differ from the current ones (returns true),
 	// or does nothing if they match already (returns false).
 	// Does nothing and returns false when called on a closed memory card.
-	bool ReIndex(bool enableFiltering, const wxString& filter);
+	bool ReIndex(bool enableFiltering, const std::string& filter);
 
 	s32 IsPresent() const;
 	void GetSizeInfo(McdSizeInfo& outways) const;
@@ -411,12 +361,12 @@ public:
 
 	static void CalculateECC(u8* ecc, const u8* data);
 
-	void WriteToFile(const wxString& filename);
+	void WriteToFile(const std::string& filename);
 
 protected:
 	struct EnumeratedFileEntry
 	{
-		wxString m_fileName; // TODO: Replace with std::string
+		std::string m_fileName;
 		time_t m_timeCreated;
 		time_t m_timeModified;
 		bool m_isFile;
@@ -455,14 +405,14 @@ protected:
 	// - originalDirCount: the point in fileName where to insert the found folder path, usually fileName->GetDirCount()
 	// - outClusterNumber: the cluster's sequential number of the file will be written to this pointer,
 	//                     which can be used to calculate the in-file offset of the address being accessed
-	MemoryCardFileEntry* GetFileEntryFromFileDataCluster(const u32 currentCluster, const u32 searchCluster, wxFileName* fileName, const size_t originalDirCount, u32* outClusterNumber);
+	MemoryCardFileEntry* GetFileEntryFromFileDataCluster(const u32 currentCluster, const u32 searchCluster, std::string* fileName, const size_t originalDirCount, u32* outClusterNumber);
 
 
 	// loads files and folders from the host file system if a superblock exists in the root directory
 	// - sizeInClusters: total memory card size in clusters, 0 for default
 	// - enableFiltering: if set to true, only folders whose name contain the filter string are loaded
 	// - filter: can include multiple filters by separating them with "/"
-	void LoadMemoryCardData(const u32 sizeInClusters, const bool enableFiltering, const wxString& filter);
+	void LoadMemoryCardData(const u32 sizeInClusters, const bool enableFiltering, const std::string& filter);
 
 	// creates the FAT and indirect FAT
 	void CreateFat();
@@ -498,17 +448,17 @@ protected:
 	// - dirPath: the full path to the directory in the host file system
 	// - parent: pointer to the parent dir's quick-access reference element
 	// - enableFiltering and filter: filter loaded contents, see LoadMemoryCardData()
-	bool AddFolder(MemoryCardFileEntry* const dirEntry, const wxString& dirPath, MemoryCardFileMetadataReference* parent = nullptr, const bool enableFiltering = false, const wxString& filter = L"");
+	bool AddFolder(MemoryCardFileEntry* const dirEntry, const std::string& dirPath, MemoryCardFileMetadataReference* parent = nullptr, const bool enableFiltering = false, const std::string_view& filter = "");
 
 	// adds a file in the host file sytem to the memory card
 	// - dirEntry: the entry of the directory in the parent directory, or the root "." entry
 	// - dirPath: the full path to the directory containing the file in the host file system
 	// - fileName: the name of the file, without path
 	// - parent: pointer to the parent dir's quick-access reference element
-	bool AddFile(MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const EnumeratedFileEntry& fileEntry, MemoryCardFileMetadataReference* parent = nullptr);
+	bool AddFile(MemoryCardFileEntry* const dirEntry, const std::string& dirPath, const EnumeratedFileEntry& fileEntry, MemoryCardFileMetadataReference* parent = nullptr);
 
 	// calculates the amount of clusters a directory would use up if put into a memory card
-	u32 CalculateRequiredClustersOfDirectory(const wxString& dirPath) const;
+	u32 CalculateRequiredClustersOfDirectory(const std::string& dirPath) const;
 
 
 	// adds a file to the quick-access dictionary, so it can be accessed more efficiently (ie, without searching through the entire file system) later
@@ -547,7 +497,7 @@ protected:
 	void FlushFileEntries();
 
 	// flush a directory's file entries and all its subdirectories to the internal data
-	void FlushFileEntries(const u32 dirCluster, const u32 remainingFiles, const wxString& dirPath = L"", MemoryCardFileMetadataReference* parent = nullptr);
+	void FlushFileEntries(const u32 dirCluster, const u32 remainingFiles, const std::string& dirPath = {}, MemoryCardFileMetadataReference* parent = nullptr);
 
 	// "delete" (prepend '_pcsx2_deleted_' to) any files that exist in oldFileEntries but no longer exist in m_fileEntryDict
 	// also calls RemoveUnchangedDataFromCache() since both operate on comparing with the old file entires
@@ -557,7 +507,7 @@ protected:
 	// - newCluster: Current directory dotdir cluster of the new entries.
 	// - newFileCount: Number of file entries in the new directory.
 	// - dirPath: Path to the current directory relative to the root of the memcard. Must be identical for both entries.
-	void FlushDeletedFilesAndRemoveUnchangedDataFromCache(const std::vector<MemoryCardFileEntryTreeNode>& oldFileEntries, const u32 newCluster, const u32 newFileCount, const wxString& dirPath);
+	void FlushDeletedFilesAndRemoveUnchangedDataFromCache(const std::vector<MemoryCardFileEntryTreeNode>& oldFileEntries, const u32 newCluster, const u32 newFileCount, const std::string& dirPath);
 
 	// try and remove unchanged data from m_cache
 	// oldEntry and newEntry should be equivalent entries found by FindEquivalent()
@@ -575,23 +525,16 @@ protected:
 	void SetTimeLastReadToNow();
 	void SetTimeLastWrittenToNow();
 
-	void AttemptToRecreateIndexFile(fs::path directory) const;
+	void AttemptToRecreateIndexFile(const std::string& directory) const;
 
-	wxString GetDisabledMessage(uint slot) const
-	{
-		return wxsFormat(pxE(L"The PS2-slot %d has been automatically disabled.  You can correct the problem\nand re-enable it at any time using Config:Memory cards from the main menu."), slot //TODO: translate internal slot index to human-readable slot description
-		);
-	}
-	wxString GetCardFullMessage(const wxString& filePath) const
-	{
-		return wxsFormat(pxE(L"(FolderMcd) Memory Card is full, could not add: %s"), WX_STR(filePath));
-	}
+	std::string GetDisabledMessage(uint slot) const;
+	std::string GetCardFullMessage(const std::string& filePath) const;
 
 	// get the list of files (and their timestamps) in directory ordered as specified by the index file
 	// for legacy entries without an entry in the index file, order is unspecified and should not be relied on
-	std::vector<EnumeratedFileEntry> GetOrderedFiles(const wxString& dirPath) const;
+	std::vector<EnumeratedFileEntry> GetOrderedFiles(const std::string& dirPath) const;
 
-	void DeleteFromIndex(const wxString& filePath, const wxString& entry) const;
+	void DeleteFromIndex(const std::string& filePath, const std::string_view& entry) const;
 };
 
 // --------------------------------------------------------------------------------------
@@ -607,7 +550,7 @@ protected:
 	// stores the specifics of the current filtering settings, so they can be
 	// re-applied automatically when memory cards are reloaded
 	bool m_enableFiltering = true;
-	wxString m_lastKnownFilter = L"";
+	std::string m_lastKnownFilter;
 
 public:
 	FolderMemoryCardAggregator();
@@ -626,5 +569,5 @@ public:
 	s32 EraseBlock(uint slot, u32 adr);
 	u64 GetCRC(uint slot);
 	void NextFrame(uint slot);
-	bool ReIndex(uint slot, const bool enableFiltering, const wxString& filter);
+	bool ReIndex(uint slot, const bool enableFiltering, const std::string& filter);
 };

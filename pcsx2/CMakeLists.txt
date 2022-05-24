@@ -9,7 +9,6 @@ else()
 	add_library(PCSX2)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE
 		"PCSX2_CORE"
-		"DISABLE_RECORDING"
 	)
 endif()
 target_link_libraries(PCSX2 PRIVATE PCSX2_FLAGS)
@@ -70,13 +69,13 @@ if(XDG_STD)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE XDG_STD)
 endif()
 
-if(TARGET PkgConfig::SDL2 OR QT_BUILD)
+if(TARGET SDL2::SDL2 OR TARGET SDL2::SDL2-static)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE SDL_BUILD)
-	if (QT_BUILD)
+	if ("${SDL2_TYPE}" STREQUAL Bundled)
 		# Use our in-tree SDL build.
 		target_link_libraries(PCSX2_FLAGS INTERFACE SDL2::SDL2-static)
 	else()
-		target_link_libraries(PCSX2_FLAGS INTERFACE PkgConfig::SDL2)
+		target_link_libraries(PCSX2_FLAGS INTERFACE SDL2::SDL2)
 	endif()
 	if(PCSX2_CORE)
 		target_sources(PCSX2 PRIVATE
@@ -227,7 +226,6 @@ set(pcsx2Headers
 	MemoryCardFolder.h
 	MemoryTypes.h
 	Patch.h
-	PathDefs.h
 	PCSX2Base.h
 	PerformanceMetrics.h
 	PrecompiledHeader.h
@@ -281,7 +279,6 @@ set(pcsx2CDVDHeaders
 	CDVD/CDVD.h
 	CDVD/CDVD_internal.h
 	CDVD/CDVDdiscReader.h
-	CDVD/CDVDisoReader.h
 	CDVD/ChunksCache.h
 	CDVD/CompressedFileReader.h
 	CDVD/ChdFileReader.h
@@ -813,7 +810,6 @@ endif()
 
 if(PCSX2_CORE)
 	list(APPEND pcsx2SPU2Headers
-		SPU2/Host/CfgHelpers.cpp
 		SPU2/Host/Config.cpp
 		SPU2/Host/ConfigDebug.cpp
 		SPU2/Host/ConfigSoundTouch.cpp
@@ -1004,9 +1000,11 @@ set(pcsx2FrontendHeaders
 if(USE_OPENGL)
 	list(APPEND pcsx2FrontendSources
 		Frontend/OpenGLHostDisplay.cpp
+		Frontend/imgui_impl_opengl3.cpp
 	)
 	list(APPEND pcsx2FrontendHeaders
 		Frontend/OpenGLHostDisplay.h
+		Frontend/imgui_impl_opengl3.h
 	)
 endif()
 
@@ -1025,10 +1023,14 @@ if(WIN32)
 	list(APPEND pcsx2FrontendSources
 		Frontend/D3D11HostDisplay.cpp
 		Frontend/D3D12HostDisplay.cpp
+		Frontend/imgui_impl_dx11.cpp
+		Frontend/imgui_impl_dx12.cpp
 	)
 	list(APPEND pcsx2FrontendHeaders
 		Frontend/D3D11HostDisplay.h
 		Frontend/D3D12HostDisplay.h
+		Frontend/imgui_impl_dx11.h
+		Frontend/imgui_impl_dx12.h
 	)
 elseif(APPLE)
 	list(APPEND pcsx2GSSources
@@ -1111,6 +1113,8 @@ set(pcsx2GuiSources
 	gui/Debugger/DebugEvents.cpp
 	gui/DriveList.cpp
 	gui/ExecutorThread.cpp
+	gui/FastFormatString.cpp
+	gui/FileUtils.cpp
 	gui/FrameForGS.cpp
 	gui/GlobalCommands.cpp
 	gui/IniInterface.cpp
@@ -1119,6 +1123,7 @@ set(pcsx2GuiSources
 	gui/MainFrame.cpp
 	gui/MainMenuClicks.cpp
 	gui/MessageBoxes.cpp
+	gui/Mutex.cpp
 	gui/MSWstuff.cpp
 	gui/Panels/BaseApplicableConfigPanel.cpp
 	gui/Panels/BiosSelectorPanel.cpp
@@ -1133,13 +1138,19 @@ set(pcsx2GuiSources
 	gui/Panels/PathsPanel.cpp
 	gui/Panels/SpeedhacksPanel.cpp
 	gui/Panels/VideoPanel.cpp
+	gui/PathUtils.cpp
+	gui/PersistentThread.cpp
 	gui/pxCheckBox.cpp
 	gui/pxRadioPanel.cpp
 	gui/pxStaticText.cpp
+	gui/pxTranslate.cpp
 	gui/pxWindowTextWriter.cpp
 	gui/RecentIsoList.cpp
 	gui/Saveslots.cpp
+	gui/StringHelpers.cpp
+	gui/SysCoreThread.cpp
 	gui/SysState.cpp
+	gui/SysThreadBase.cpp
 	gui/ThreadingDialogs.cpp
 	gui/UpdateUI.cpp
 	gui/wxAppWithHelpers.cpp
@@ -1181,9 +1192,11 @@ set(pcsx2GuiHeaders
 	gui/IsoDropTarget.h
 	gui/MainFrame.h
 	gui/MSWstuff.h
+	gui/PathDefs.h
 	gui/Panels/ConfigurationPanels.h
 	gui/Panels/LogOptionsPanels.h
 	gui/Panels/MemoryCardPanels.h
+	gui/PersistentThread.h
 	gui/pxCheckBox.h
 	gui/pxEvents.h
 	gui/pxEventThread.h
@@ -1191,8 +1204,11 @@ set(pcsx2GuiHeaders
 	gui/pxStaticText.h
 	gui/RecentIsoList.h
 	gui/Saveslots.h
+	gui/StringHelpers.h
+	gui/SysThreads.h
 	gui/ThreadingDialogs.h
 	gui/ThreadingDialogs.cpp
+	gui/wxDirName.h
 	gui/wxGuiTools.h
 	gui/wxSettingsInterface.h
 	)
@@ -1368,28 +1384,9 @@ set(pcsx2RecordingVirtualPadResources
 	${res_rec_vp_src}/upPressed.h
 )
 
-# System sources
-set(pcsx2SystemSources
-	System/SysThreadBase.cpp)
-if(NOT PCSX2_CORE)
-	list(APPEND pcsx2SystemSources
-		System/SysCoreThread.cpp
-	)
-endif()
-
 # System headers
 set(pcsx2SystemHeaders
-	System/RecTypes.h
-	System/SysThreads.h)
-
-# Utilities sources
-set(pcsx2UtilitiesSources
-	Utilities/FileUtils.cpp)
-
-# Utilities headers
-set(pcsx2UtilitiesHeaders
-	Utilities/AsciiFile.h)
-
+	System/RecTypes.h)
 
 # Windows sources
 set(pcsx2WindowsSources
@@ -1511,16 +1508,15 @@ target_sources(PCSX2 PRIVATE
 	${pcsx2PADSources}
 	${pcsx2GSHeaders}
 	${pcsx2GSSources}
+	${pcsx2RecordingSources}
 	${pcsx2DebugToolsSources}
 	${pcsx2DebugToolsHeaders}
 	${pcsx2FrontendSources}
 	${pcsx2FrontendHeaders}
 	${pcsx2ps2Sources}
 	${pcsx2ps2Headers}
-	${pcsx2SystemSources}
 	${pcsx2SystemHeaders}
-	${pcsx2UtilitiesSources}
-	${pcsx2UtilitiesHeaders})
+)
 
 # gui sources when not doing a qt build
 if (NOT PCSX2_CORE)
@@ -1528,7 +1524,6 @@ if (NOT PCSX2_CORE)
 		${pcsx2GuiSources}
 		${pcsx2GuiResources}
 		${pcsx2GuiHeaders}
-		${pcsx2RecordingSources}
 		${pcsx2RecordingVirtualPadResources}
 		${pcsx2RecordingHeaders}
 	)
@@ -1602,13 +1597,13 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	fmt::fmt
 	ryml
 	chdr-static
-	zip
-	wxWidgets::all
+	libzip::zip
 	ZLIB::ZLIB
 	PkgConfig::SOUNDTOUCH
 	PkgConfig::SAMPLERATE
 	PNG::PNG
 	LibLZMA::LibLZMA
+	Zstd::Zstd
 	${LIBC_LIBRARIES}
 )
 
@@ -1616,12 +1611,15 @@ if(PCSX2_CORE)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		simpleini
 	)
+else()
+	target_link_libraries(PCSX2_FLAGS INTERFACE
+		wxWidgets::all
+	)
 endif()
 
 if(WIN32)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		baseclasses
-		pthreads4w
 		WIL::WIL
 		D3D12MemAlloc
 		setupapi.lib
@@ -1640,6 +1638,11 @@ if(WIN32)
 		opengl32.lib
 		comsuppw.lib
 	)
+	if(NOT PCSX2_CORE)
+		target_link_libraries(PCSX2_FLAGS INTERFACE
+			pthreads4w
+		)
+	endif()
 elseif(APPLE)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		PCAP::PCAP

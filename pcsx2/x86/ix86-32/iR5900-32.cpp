@@ -30,7 +30,8 @@
 #include "Dump.h"
 
 #ifndef PCSX2_CORE
-#include "System/SysThreads.h"
+#include "gui/SysThreads.h"
+#include <pthread.h>
 #else
 #include "VMManager.h"
 #endif
@@ -41,6 +42,7 @@
 #include "DebugTools/Breakpoints.h"
 #include "Patch.h"
 
+#include "common/AlignedMalloc.h"
 #include "common/FastJmp.h"
 #include "common/MemsetFast.inl"
 #include "common/Perf.h"
@@ -54,7 +56,9 @@ static std::atomic<bool> eeRecNeedsReset(false);
 static bool eeCpuExecuting = false;
 static bool eeRecExitRequested = false;
 static bool g_resetEeScalingStats = false;
+#ifndef PCSX2_CORE
 static int g_patchesNeedRedo = 0;
+#endif
 
 #define PC_GETBLOCK(x) PC_GETBLOCK_(x, recLUT)
 
@@ -354,9 +358,9 @@ void recCall(void (*func)())
 //  R5900 Dispatchers
 // =====================================================================================================
 
-static void __fastcall recRecompile(const u32 startpc);
-static void __fastcall dyna_block_discard(u32 start, u32 sz);
-static void __fastcall dyna_page_reset(u32 start, u32 sz);
+static void recRecompile(const u32 startpc);
+static void dyna_block_discard(u32 start, u32 sz);
+static void dyna_page_reset(u32 start, u32 sz);
 
 // Recompiled code buffer for EE recompiler dispatchers!
 alignas(__pagesize) static u8 eeRecDispatchers[__pagesize];
@@ -519,17 +523,17 @@ static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 }
 
 
-static void recThrowHardwareDeficiency(const wxChar* extFail)
+static void recThrowHardwareDeficiency(const char* extFail)
 {
 	throw Exception::HardwareDeficiency()
-		.SetDiagMsg(pxsFmt(L"R5900-32 recompiler init failed: %s is not available.", extFail))
-		.SetUserMsg(pxsFmt(_("%s Extensions not found.  The R5900-32 recompiler requires a host CPU with SSE2 extensions."), extFail));
+		.SetDiagMsg(fmt::format("R5900-32 recompiler init failed: {} is not available.", extFail))
+		.SetUserMsg(fmt::format("{} Extensions not found.  The R5900-32 recompiler requires a host CPU with SSE2 extensions.", extFail));
 }
 
 static void recReserveCache()
 {
 	if (!recMem)
-		recMem = new RecompiledCodeReserve(L"R5900-32 Recompiler Cache", _16mb);
+		recMem = new RecompiledCodeReserve("R5900-32 Recompiler Cache", _16mb);
 	recMem->SetProfilerName("EErec");
 
 	while (!recMem->IsOk())
@@ -551,7 +555,7 @@ static void recReserve()
 	// Hardware Requirements Check...
 
 	if (!x86caps.hasStreamingSIMD4Extensions)
-		recThrowHardwareDeficiency(L"SSE4");
+		recThrowHardwareDeficiency("SSE4");
 
 	recReserveCache();
 }
@@ -617,7 +621,7 @@ static void recAlloc()
 	}
 
 	if (s_pInstCache == NULL)
-		throw Exception::OutOfMemory(L"R5900-32 InstCache");
+		throw Exception::OutOfMemory("R5900-32 InstCache");
 
 	// No errors.. Proceed with initialization:
 
@@ -663,7 +667,9 @@ static void recResetRaw()
 
 	g_branch = 0;
 	g_resetEeScalingStats = true;
+#ifndef PCSX2_CORE
 	g_patchesNeedRedo = 1;
+#endif
 }
 
 static void recShutdown()
@@ -733,13 +739,15 @@ static void recExecute()
 	if (eeRecNeedsReset.load())
 		recResetRaw();
 
-	int oldstate;
 	m_cpuException = nullptr;
 	m_Exception    = nullptr;
 
 	// setjmp will save the register context and will return 0
 	// A call to longjmp will restore the context (included the eip/rip)
 	// but will return the longjmp 2nd parameter (here 1)
+#ifndef PCSX2_CORE
+	int oldstate;
+#endif
 	if (!fastjmp_set(&m_SetJmp_StateCheck))
 	{
 		eeCpuExecuting = true;
@@ -749,14 +757,18 @@ static void recExecute()
 		// in Linux, which cannot have a C++ exception cross the recompiler.  Hence the changing
 		// of the cancelstate here!
 
+#ifndef PCSX2_CORE
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
+#endif
 		EnterRecompiledCode();
 
 		// Generally unreachable code here ...
 	}
 	else
 	{
+#ifndef PCSX2_CORE
 		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldstate);
+#endif
 	}
 
 	eeCpuExecuting = false;
@@ -1303,7 +1315,7 @@ void dynarecMemcheck()
 	recExitExecution();
 }
 
-void __fastcall dynarecMemLogcheck(u32 start, bool store)
+void dynarecMemLogcheck(u32 start, bool store)
 {
 	if (store)
 		DevCon.WriteLn("Hit store breakpoint @0x%x", start);
@@ -1633,7 +1645,7 @@ void recompileNextInstruction(int delayslot)
 // (Called from recompiled code)]
 // This function is called from the recompiler prior to starting execution of *every* recompiled block.
 // Calling of this function can be enabled or disabled through the use of EmuConfig.Recompiler.PreBlockChecks
-static void __fastcall PreBlockCheck(u32 blockpc)
+static void PreBlockCheck(u32 blockpc)
 {
 	/*static int lastrec = 0;
 	static int curcount = 0;
@@ -1660,7 +1672,7 @@ static u32 s_recblocks[] = {0};
 // Called when a block under manual protection fails it's pre-execution integrity check.
 // (meaning the actual code area has been modified -- ie dynamic modules being loaded or,
 //  less likely, self-modifying code)
-void __fastcall dyna_block_discard(u32 start, u32 sz)
+void dyna_block_discard(u32 start, u32 sz)
 {
 	eeRecPerfLog.Write(Color_StrongGray, "Clearing Manual Block @ 0x%08X  [size=%d]", start, sz * 4);
 	recClear(start, sz);
@@ -1669,7 +1681,7 @@ void __fastcall dyna_block_discard(u32 start, u32 sz)
 // called when a page under manual protection has been run enough times to be a candidate
 // for being reset under the faster vtlb write protection.  All blocks in the page are cleared
 // and the block is re-assigned for write protection.
-void __fastcall dyna_page_reset(u32 start, u32 sz)
+void dyna_page_reset(u32 start, u32 sz)
 {
 	recClear(start & ~0xfffUL, 0x400);
 	manual_counter[start >> 12]++;
@@ -1789,16 +1801,18 @@ bool skipMPEG_By_Pattern(u32 sPC)
 	return 0;
 }
 
+#ifndef PCSX2_CORE
 // defined at AppCoreThread.cpp but unclean and should not be public. We're the only
 // consumers of it, so it's declared only here.
 void LoadAllPatchesAndStuff(const Pcsx2Config&);
-void doPlace0Patches()
+static void doPlace0Patches()
 {
 	LoadAllPatchesAndStuff(EmuConfig);
 	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
 }
+#endif
 
-static void __fastcall recRecompile(const u32 startpc)
+static void recRecompile(const u32 startpc)
 {
 	u32 i = 0;
 	u32 willbranch3 = 0;
@@ -1870,6 +1884,7 @@ static void __fastcall recRecompile(const u32 startpc)
 				Console.WriteLn("recRecompile: Could not enable launch arguments for fast boot mode; unidentified BIOS version! Please report this to the PCSX2 developers.");
 		}
 
+#ifndef PCSX2_CORE
 		// On fast/full boot this will have a crc of 0x0. But when the game/elf itself is
 		// recompiled (below - ElfEntry && g_GameLoading), then the crc would be from the elf.
 		// g_patchesNeedRedo is set on rec reset, and this is the only consumer.
@@ -1877,6 +1892,7 @@ static void __fastcall recRecompile(const u32 startpc)
 		if (g_patchesNeedRedo)
 			doPlace0Patches();
 		g_patchesNeedRedo = 0;
+#endif
 	}
 
 	if (g_eeloadExec && HWADDR(startpc) == HWADDR(g_eeloadExec))
@@ -1885,12 +1901,16 @@ static void __fastcall recRecompile(const u32 startpc)
 	// this is the only way patches get applied, doesn't depend on a hack
 	if (g_GameLoading && HWADDR(startpc) == ElfEntry)
 	{
-		Console.WriteLn(L"Elf entry point @ 0x%08x about to get recompiled. Load patches first.", startpc);
+		Console.WriteLn("Elf entry point @ 0x%08x about to get recompiled. Load patches first.", startpc);
 		xFastCall((void*)eeGameStarting);
 
+#ifndef PCSX2_CORE
 		// Apply patch as soon as possible. Normally it is done in
 		// eeGameStarting but first block is already compiled.
 		doPlace0Patches();
+#else
+		VMManager::Internal::EntryPointCompilingOnCPUThread();
+#endif
 	}
 
 	g_branch = 0;

@@ -88,6 +88,8 @@ bool IsPortable();
 
 extern InstallationModeType	InstallationMode;
 
+extern const wxChar* CDVD_SourceLabels[];
+
 // =====================================================================================================
 //  Pcsx2 Application Configuration. 
 // =====================================================================================================
@@ -186,7 +188,6 @@ public:
 		void SanityCheck();
 	};
 
-#ifndef DISABLE_RECORDING
 	struct InputRecordingOptions
 	{
 		wxPoint VirtualPadPosition;
@@ -195,7 +196,6 @@ public:
 		InputRecordingOptions();
 		void loadSave(IniInterface& conf);
 	};
-#endif
 
 	struct UiTemplateOptions {
 		UiTemplateOptions();
@@ -211,9 +211,7 @@ public:
 		wxString OutputInterlaced;
 		wxString Paused;
 		wxString TitleTemplate;
-#ifndef DISABLE_RECORDING
 		wxString RecordingTemplate;
-#endif
 	};
 
 	struct CaptureOptions
@@ -285,9 +283,7 @@ public:
 	ConsoleLogOptions		ProgLogBox;
 	FolderOptions			Folders;
 	GSWindowOptions			GSWindow;
-#ifndef DISABLE_RECORDING
 	InputRecordingOptions   inputRecording;
-#endif
 	UiTemplateOptions		Templates;
 	CaptureOptions			AudioCapture;
 	
@@ -339,3 +335,5 @@ extern void AppConfig_OnChangedSettingsFolder( bool overwrite =  false );
 extern wxConfigBase* GetAppConfig();
 
 extern std::unique_ptr<AppConfig> g_Conf;
+
+extern bool isValidNewFilename(wxString filenameStringToTest, wxDirName atBasePath, wxString& out_errorMessage, uint minNumCharacters = 5);

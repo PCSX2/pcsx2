@@ -16,6 +16,8 @@
 #include <wx/gdicmn.h>
 
 #include "gui/IniInterface.h"
+#include "gui/StringHelpers.h"
+#include "common/Assertions.h"
 #include "common/Console.h"
 
 const wxRect wxDefaultRect(wxDefaultCoord, wxDefaultCoord, wxDefaultCoord, wxDefaultCoord);
@@ -41,7 +43,7 @@ static int _calcEnumLength(const wxChar* const* enumArray)
 ScopedIniGroup::ScopedIniGroup(IniInterface& mommy, const wxString& group)
 	: m_mom(mommy)
 {
-	pxAssertDev(wxStringTokenize(group, L"/").Count() <= 1, L"Cannot nest more than one group deep per instance of ScopedIniGroup.");
+	pxAssertDev(wxStringTokenize(group, L"/").Count() <= 1, "Cannot nest more than one group deep per instance of ScopedIniGroup.");
 	m_mom.SetPath(group);
 }
 
@@ -238,7 +240,7 @@ void IniLoader::_EnumEntry(const wxString& var, int& value, const wxChar* const*
 	// Confirm default value sanity...
 
 	const int cnt = _calcEnumLength(enumArray);
-	if (!IndexBoundsCheck(L"IniLoader EnumDefaultValue", defvalue, cnt))
+	if (defvalue > cnt)
 	{
 		Console.Error("(LoadSettings) Default enumeration index is out of bounds. Truncating.");
 		defvalue = cnt - 1;
@@ -261,7 +263,7 @@ void IniLoader::_EnumEntry(const wxString& var, int& value, const wxChar* const*
 
 	if (enumArray[i] == NULL)
 	{
-		Console.Warning(L"(LoadSettings) Warning: Unrecognized value '%s' on key '%s'\n\tUsing the default setting of '%s'.",
+		Console.Warning("(LoadSettings) Warning: Unrecognized value '%ls' on key '%ls'\n\tUsing the default setting of '%ls'.",
 			WX_STR(retval), WX_STR(var), enumArray[defvalue]);
 		value = defvalue;
 	}
@@ -413,7 +415,7 @@ void IniSaver::_EnumEntry(const wxString& var, int& value, const wxChar* const* 
 
 	// Confirm default value sanity...
 
-	if (!IndexBoundsCheck(L"IniSaver EnumDefaultValue", defvalue, cnt))
+	if (defvalue > cnt)
 	{
 		Console.Error("(SaveSettings) Default enumeration index is out of bounds. Truncating.");
 		defvalue = cnt - 1;
@@ -424,10 +426,10 @@ void IniSaver::_EnumEntry(const wxString& var, int& value, const wxChar* const* 
 
 	if (value >= cnt)
 	{
-		Console.Warning(L"(SaveSettings) An illegal enumerated index was detected when saving '%s'", WX_STR(var));
+		Console.Warning("(SaveSettings) An illegal enumerated index was detected when saving '%ls'", WX_STR(var));
 		Console.Indent().Warning(
-			L"Illegal Value: %d\n"
-			L"Using Default: %d (%s)\n",
+			"Illegal Value: %d\n"
+			"Using Default: %d (%ls)\n",
 			value, defvalue, enumArray[defvalue]);
 
 		// Cause a debug assertion, since this is a fully recoverable error.

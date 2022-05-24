@@ -301,7 +301,7 @@ static void DynGen_IndirectTlbDispatcher(int mode, int bits, bool sign)
 		xSUB(arg1regd, 0x80000000);
 	xSUB(arg1regd, eax);
 
-	// jump to the indirect handler, which is a __fastcall C++ function.
+	// jump to the indirect handler, which is a C++ function.
 	// [ecx is address, edx is data]
 	sptr table = (sptr)vtlbdata.RWFT[bits][mode];
 	if (table == (s32)table)

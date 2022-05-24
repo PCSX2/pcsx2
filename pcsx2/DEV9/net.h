@@ -31,6 +31,8 @@
 #include <ifaddrs.h>
 #endif
 
+#include "Config.h"
+
 #include "PacketReader/IP/IP_Address.h"
 #include "InternalServers/DHCP_Server.h"
 #include "InternalServers/DNS_Logger.h"

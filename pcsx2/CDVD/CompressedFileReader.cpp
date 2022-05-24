@@ -20,6 +20,7 @@
 #include "CsoFileReader.h"
 #include "GzippedFileReader.h"
 #include "common/FileSystem.h"
+#include <algorithm>
 #include <cctype>
 
 // CompressedFileReader factory.

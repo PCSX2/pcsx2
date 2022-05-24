@@ -78,6 +78,9 @@ static bool CreateMetalLayer(WindowInfo* wi)
 		return false;
 	}
 
+	// This needs to be retained, otherwise we double release below.
+	msgsend<void, id>(layer, "retain");
+
 	// [view setWantsLayer:YES]
 	msgsend<void, id, BOOL>(view, "setWantsLayer:", YES);
 

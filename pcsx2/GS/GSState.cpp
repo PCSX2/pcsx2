@@ -17,9 +17,11 @@
 #include "GSState.h"
 #include "GSGL.h"
 #include "GSUtil.h"
+#include "common/StringUtil.h"
 
 #include <algorithm> // clamp
 #include <cfloat> // FLT_MAX
+#include <fstream>
 #include <iomanip> // Dump Verticles
 
 int GSState::s_n = 0;
@@ -377,7 +379,7 @@ GSVector4i GSState::GetFrameMagnifiedRect(int i)
 {
 	GSVector4i rectangle = { 0, 0, 0, 0 };
 
-	if (!IsEnabled(0) && !IsEnabled(1))
+	if (!IsEnabled(i))
 		return rectangle;
 
 	const int videomode = static_cast<int>(GetVideoMode()) - 1;
@@ -468,12 +470,16 @@ GSVector4i GSState::GetDisplayRect(int i)
 
 GSVector2i GSState::GetResolutionOffset(int i)
 {
+	GSVector2i offset = { 0, 0 };
+
+	if (!IsEnabled(i))
+		return offset;
+
 	const int videomode = static_cast<int>(GetVideoMode()) - 1;
 	const auto& DISP = m_regs->DISP[i].DISPLAY;
 
 	const auto& SMODE2 = m_regs->SMODE2;
 	const int res_multi = (SMODE2.INT + 1);
-	GSVector2i offset;
 
 	offset.x = (static_cast<int>(DISP.DX) - VideoModeOffsets[videomode].z) / (VideoModeDividers[videomode].x + 1);
 	offset.y = (static_cast<int>(DISP.DY) - (VideoModeOffsets[videomode].w * ((IsAnalogue() && res_multi) ? res_multi : 1))) / (VideoModeDividers[videomode].y + 1);
@@ -517,10 +523,13 @@ GSVector4i GSState::GetFrameRect(int i)
 	if (i == -1)
 		return GetFrameRect(0).runion(GetFrameRect(1));
 
-	GSVector4i rectangle;
+	GSVector4i rectangle = { 0, 0, 0, 0 };
+
+	if (!IsEnabled(i))
+		return rectangle;
 
 	const auto& DISP = m_regs->DISP[i].DISPLAY;
-
+	
 	const u32 DW = DISP.DW + 1;
 	const u32 DH = DISP.DH + 1;
 	const GSVector2i magnification(DISP.MAGH+1, DISP.MAGV + 1);
@@ -538,7 +547,10 @@ GSVector4i GSState::GetFrameRect(int i)
 	rectangle.bottom = rectangle.top + h;
 
 	if (isinterlaced() && m_regs->SMODE2.FFMD && h > 1)
+	{
+		rectangle.bottom += 1;
 		rectangle.bottom >>= 1;
+	}
 
 	return rectangle;
 }
@@ -1845,7 +1857,7 @@ void GSState::Read(u8* mem, int len)
 
 	if (s_dump && s_save && s_n >= s_saven)
 	{
-		std::string s = m_dump_root + format(
+		std::string s = m_dump_root + StringUtil::StdStringFromFormat(
 			"%05d_read_%05x_%d_%d_%d_%d_%d_%d.bmp",
 			s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM,
 			r.left, r.top, r.right, r.bottom);
@@ -3197,20 +3209,46 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 				const GSVector2 uv_range(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
 				const GSVector2 grad(uv_range / pos_range);
 
+				const GSVertex* vert_first = &m_vertex.buff[m_index.buff[0]];
+				const GSVertex* vert_second = &m_vertex.buff[m_index.buff[1]];
+
+				const bool swap_x = vert_first->U > vert_second->U;
+				const bool swap_y = vert_first->V > vert_second->V;
+
 				// we need to check that it's not going to repeat over the non-clipped part
 				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(st.x) & ~tw_mask) == (static_cast<int>(st.z) & ~tw_mask)))
 				{
 					if (int_rc.left < scissored_rc.left)
-						st.x += floor(static_cast<float>(scissored_rc.left - int_rc.left)* grad.x);
+					{
+						if(!swap_x)
+							st.x += floor(static_cast<float>(scissored_rc.left - int_rc.left) * grad.x);
+						else
+							st.z -= floor(static_cast<float>(scissored_rc.left - int_rc.left) * grad.x);
+					}
 					if (int_rc.right > scissored_rc.right)
-						st.z -= floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
+					{
+						if (!swap_x)
+							st.z -= floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
+						else
+							st.x += floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
+					}
 				}
 				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(st.y) & ~th_mask) == (static_cast<int>(st.w) & ~th_mask)))
 				{
 					if (int_rc.top < scissored_rc.top)
-						st.y += floor(static_cast<float>(scissored_rc.top - int_rc.top) * grad.y);
+					{
+						if (!swap_y)
+							st.y += floor(static_cast<float>(scissored_rc.top - int_rc.top) * grad.y);
+						else
+							st.w -= floor(static_cast<float>(scissored_rc.top - int_rc.top) * grad.y);
+					}
 					if (int_rc.bottom > scissored_rc.bottom)
-						st.w -= floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
+					{
+						if (!swap_y)
+							st.w -= floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
+						else
+							st.y += floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
+					}
 				}
 			}
 		}
@@ -3232,9 +3270,9 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 			case CLAMP_CLAMP:
 			case CLAMP_REGION_CLAMP:
 				if (vr.x < uv.x)
-					vr.x = uv.x;
+					vr.x = std::min(uv.x, vr.z - 1);
 				if (vr.z > (uv.z + 1))
-					vr.z = uv.z + 1;
+					vr.z = std::max(uv.z, vr.x) + 1;
 				break;
 			case CLAMP_REGION_REPEAT:
 				if (UsesRegionRepeat(maxu, minu, uv.x, uv.z, &vr.x, &vr.z) || maxu >= tw)
@@ -3254,9 +3292,9 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 			case CLAMP_CLAMP:
 			case CLAMP_REGION_CLAMP:
 				if (vr.y < uv.y)
-					vr.y = uv.y;
+					vr.y = std::min(uv.y, vr.w - 1);
 				if (vr.w > (uv.w + 1))
-					vr.w = uv.w + 1;
+					vr.w = std::max(uv.w, vr.y) + 1;
 				break;
 			case CLAMP_REGION_REPEAT:
 				if (UsesRegionRepeat(maxv, minv, uv.y, uv.w, &vr.y, &vr.w) || maxv >= th)

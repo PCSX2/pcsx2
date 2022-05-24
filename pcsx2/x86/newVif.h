@@ -24,8 +24,8 @@
 using namespace x86Emitter;
 
 // newVif_HashBucket.h uses this typedef, so it has to be declared first.
-typedef u32 (__fastcall* nVifCall)(void*, const void*);
-typedef void(__fastcall* nVifrecCall)(uptr dest, uptr src);
+typedef u32  (*nVifCall)(void*, const void*);
+typedef void (*nVifrecCall)(uptr dest, uptr src);
 
 #include "newVif_HashBucket.h"
 

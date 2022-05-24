@@ -96,6 +96,7 @@ void GameListSettingsWidget::addPathToTable(const std::string& path, bool recurs
 
 	QTableWidgetItem* item = new QTableWidgetItem();
 	item->setText(QString::fromStdString(path));
+	item->setFlags(item->flags() & ~(Qt::ItemIsEditable));
 	m_ui.searchDirectoryList->setItem(row, 0, item);
 
 	QCheckBox* cb = new QCheckBox(m_ui.searchDirectoryList);

@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "common/Assertions.h"
 #include "Host.h"
 #include "HostSettings.h"
 #include "Frontend/LayeredSettingsInterface.h"
@@ -113,6 +114,11 @@ std::vector<std::string> Host::GetStringListSetting(const char* section, const c
 {
 	std::unique_lock lock(s_settings_mutex);
 	return s_layered_settings_interface.GetStringList(section, key);
+}
+
+SettingsInterface* Host::Internal::GetBaseSettingsLayer()
+{
+	return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE);
 }
 
 void Host::Internal::SetBaseSettingsLayer(SettingsInterface* sif)

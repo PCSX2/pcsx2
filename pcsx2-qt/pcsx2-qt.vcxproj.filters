@@ -13,30 +13,15 @@
     <Filter Include="GameList">
       <UniqueIdentifier>{aff229ec-39ea-40d4-b1c9-b5c4a932a2e0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Tools">
+      <UniqueIdentifier>{9ec02647-68e6-4894-9c97-d3347997cae6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tools\Input Recording">
+      <UniqueIdentifier>{d5c14016-9690-4e49-bcb9-a634a937951a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="$(SolutionDir)3rdparty\wxwidgets3.0\include\wx\msw\wx.rc">
-      <Filter>Resources</Filter>
-    </ResourceCompile>
-    <ResourceCompile Include="..\pcsx2\GS\GS.rc">
-      <Filter>Resources</Filter>
-    </ResourceCompile>
-    <ResourceCompile Include="..\pcsx2\PAD\Windows\PAD.rc">
-      <Filter>Resources</Filter>
-    </ResourceCompile>
     <ResourceCompile Include="..\pcsx2\PCSX2.rc">
-      <Filter>Resources</Filter>
-    </ResourceCompile>
-    <ResourceCompile Include="..\pcsx2\USB\usb-pad\raw\raw-config.rc">
-      <Filter>Resources</Filter>
-    </ResourceCompile>
-    <ResourceCompile Include="..\pcsx2\SPU2\Windows\SPU2.rc">
-      <Filter>Resources</Filter>
-    </ResourceCompile>
-    <ResourceCompile Include="..\pcsx2\USB\Win32\USBDialog.rc">
-      <Filter>Resources</Filter>
-    </ResourceCompile>
-    <ResourceCompile Include="..\pcsx2\USB\usb-pad\dx\versionproxy.rc">
       <Filter>Resources</Filter>
     </ResourceCompile>
     <ResourceCompile Include="..\pcsx2\windows\wxResources.rc">
@@ -209,6 +194,16 @@
     <ClCompile Include="Settings\HddCreateQt.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
+    <ClCompile Include="AutoUpdaterDialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_AutoUpdaterDialog.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Tools\InputRecording\moc_NewInputRecordingDlg.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\InputRecording\NewInputRecordingDlg.cpp">
+      <Filter>Tools\Input Recording</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -298,6 +293,10 @@
     <QtMoc Include="Settings\DEV9SettingsWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>
+    <QtMoc Include="AutoUpdaterDialog.h" />
+    <QtMoc Include="Tools\InputRecording\NewInputRecordingDlg.h">
+      <Filter>Tools\Input Recording</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">
@@ -362,6 +361,13 @@
     </QtUi>
     <QtUi Include="Settings\DEV9SettingsWidget.ui">
       <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="GameList\EmptyGameListWidget.ui">
+      <Filter>GameList</Filter>
+    </QtUi>
+    <QtUi Include="AutoUpdaterDialog.ui" />
+    <QtUi Include="Tools\InputRecording\NewInputRecordingDlg.ui">
+      <Filter>Tools\Input Recording</Filter>
     </QtUi>
   </ItemGroup>
 </Project>

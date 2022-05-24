@@ -1,11 +1,15 @@
 import { Octokit } from "@octokit/rest";
 import { throttling } from "@octokit/plugin-throttling";
 import { retry } from "@octokit/plugin-retry";
+
+let owner = process.env.OWNER;
+let repo = process.env.REPO;
+
 Octokit.plugin(throttling);
 Octokit.plugin(retry);
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
-  userAgent: 'PCSX2/pcsx2',
+  userAgent: `${owner}/${repo}`,
   log: {
     debug: () => { },
     info: () => { },
@@ -39,14 +43,14 @@ let commitSha = process.env.COMMIT_SHA;
 console.log(`Searching for Commit - ${commitSha}`);
 
 const { data: commit } = await octokit.rest.repos.getCommit({
-  owner: "PCSX2",
-  repo: "pcsx2",
+  owner: owner,
+  repo: repo,
   ref: commitSha,
 });
 
 const { data: associatedPulls } = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
-  owner: "PCSX2",
-  repo: "pcsx2",
+  owner: owner,
+  repo: repo,
   commit_sha: commit.sha,
 });
 

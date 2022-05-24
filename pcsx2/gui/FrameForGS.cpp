@@ -32,10 +32,8 @@
 
 #include "ConsoleLogger.h"
 
-#ifndef DISABLE_RECORDING
-#	include "Recording/InputRecording.h"
-#	include "Recording/Utilities/InputRecordingLogger.h"
-#endif
+#include "Recording/InputRecording.h"
+#include "Recording/Utilities/InputRecordingLogger.h"
 
 #include <wx/utils.h>
 #include <wx/graphics.h>
@@ -110,7 +108,6 @@ void GSPanel::InitDefaultAccelerators()
 	m_Accels->Map( FULLSCREEN_TOGGLE_ACCELERATOR_GSPANEL,		"FullscreenToggle" );
 }
 
-#ifndef DISABLE_RECORDING
 void GSPanel::InitRecordingAccelerators()
 {
 	// Note: these override GlobalAccels ( Pcsx2App::InitDefaultGlobalAccelerators() )
@@ -178,9 +175,8 @@ void GSPanel::RemoveRecordingAccelerators()
 {
 	m_Accels.reset(new AcceleratorDictionary);
 	InitDefaultAccelerators();
-	recordingConLog(L"Disabled Input Recording Key Bindings\n");
+	recordingConLog("Disabled Input Recording Key Bindings\n");
 }
-#endif
 
 GSPanel::GSPanel( wxWindow* parent )
 	: wxWindow()
@@ -191,18 +187,16 @@ GSPanel::GSPanel( wxWindow* parent )
 	m_HasFocus		= false;
 
 	if ( !wxWindow::Create(parent, wxID_ANY) )
-		throw Exception::RuntimeError().SetDiagMsg( L"GSPanel constructor explode!!" );
+		throw Exception::RuntimeError().SetDiagMsg( "GSPanel constructor explode!!" );
 
 	SetName( L"GSPanel" );
 
 	InitDefaultAccelerators();
 
-#ifndef DISABLE_RECORDING
 	if (g_Conf->EmuOptions.EnableRecordingTools)
 	{
 		InitRecordingAccelerators();
 	}
-#endif
 
 	SetBackgroundColour(wxColour((unsigned long)0));
 	if( g_Conf->GSWindow.AlwaysHideMouse )
@@ -705,9 +699,7 @@ void GSPanel::WaylandDestroySubsurface()
 // --------------------------------------------------------------------------------------
 
 static const uint TitleBarUpdateMs = 333;
-#ifndef DISABLE_RECORDING
 static const uint TitleBarUpdateMsWhenRecording = 50;
-#endif
 
 GSFrame::GSFrame( const wxString& title)
 	: wxFrame(NULL, wxID_ANY, title, g_Conf->GSWindow.WindowPos)
@@ -786,7 +778,6 @@ bool GSFrame::ShowFullScreen(bool show, bool updateConfig)
 
 void GSFrame::UpdateTitleUpdateFreq()
 {
-#ifndef DISABLE_RECORDING
 	if (g_Conf->EmuOptions.EnableRecordingTools)
 	{
 		m_timer_UpdateTitle.Start(TitleBarUpdateMsWhenRecording);
@@ -795,9 +786,6 @@ void GSFrame::UpdateTitleUpdateFreq()
 	{
 		m_timer_UpdateTitle.Start(TitleBarUpdateMs);
 	}
-#else
-	m_timer_UpdateTitle.Start(TitleBarUpdateMs);
-#endif
 }
 
 void GSFrame::CoreThread_OnResumed()
@@ -836,7 +824,6 @@ bool GSFrame::Show( bool shown )
 
 		if (!m_timer_UpdateTitle.IsRunning())
 		{
-#ifndef DISABLE_RECORDING
 			if (g_Conf->EmuOptions.EnableRecordingTools)
 			{
 				m_timer_UpdateTitle.Start(TitleBarUpdateMsWhenRecording);
@@ -845,9 +832,6 @@ bool GSFrame::Show( bool shown )
 			{
 				m_timer_UpdateTitle.Start(TitleBarUpdateMs);
 			}
-#else
-			m_timer_UpdateTitle.Start(TitleBarUpdateMs);
-#endif
 		}
 	}
 	else
@@ -916,10 +900,9 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	const u64& smode2 = *(u64*)PS2GS_BASE(GS_SMODE2);
 	wxString omodef = (smode2 & 2) ? templates.OutputFrame : templates.OutputField;
 	wxString omodei = (smode2 & 1) ? templates.OutputInterlaced : templates.OutputProgressive;
-#ifndef DISABLE_RECORDING
 	wxString title;
 	wxString movieMode;
-	if (g_InputRecording.IsActive()) 
+	if (g_InputRecording.IsActive())
 	{
 		title = templates.RecordingTemplate;
 		title.Replace(L"${frame}", pxsFmt(L"%d", g_InputRecording.GetFrameCounter()));
@@ -928,10 +911,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	} else {
 		title = templates.TitleTemplate;
 	}
-#else
-	wxString title = templates.TitleTemplate;
-#endif
-	
+
 	std::string gsStats;
 	GSgetTitleStats(gsStats);
 

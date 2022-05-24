@@ -13,9 +13,7 @@ The PCSX2 project has been running for more than ten years. Past versions could 
 
 The latest officially released stable version is version 1.6.0.
 
-Installers and binaries for both Windows and Linux are available from [our website](https://pcsx2.net/download.html).
-
-Development builds are also available from [Github](https://github.com/PCSX2/pcsx2/releases). 
+Installers and binaries for both stable and development builds are available from [our website](https://pcsx2.net/downloads/).
 
 ## System Requirements
 
@@ -47,4 +45,4 @@ _Note: Recommended GPU is based on 3x Internal, ~1080p resolution requirements. 
 -   Requirements benchmarks are based on a statistic from the Passmark CPU bench marking software. When we say "STR", we are referring to Passmark's "Single Thread Rating" statistic. You can look up your CPU on [Passmark's website for CPUs](https://cpubenchmark.net) to see how it compares to PCSX2's requirements.
 -   Vulkan requires an up-to-date GPU driver; old drivers may cause graphical problems.
 
-Want more? [Check out the PCSX2 website](https://pcsx2.net/demo-videos-screenshots/screenshots.html).
+Want more? [Check out the PCSX2 website](https://pcsx2.net/).

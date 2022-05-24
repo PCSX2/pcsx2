@@ -7,14 +7,13 @@ in vec2 PSin_t;
 in vec4 PSin_c;
 
 uniform vec2 ZrH;
-uniform float hH;
 
 layout(location = 0) out vec4 SV_Target0;
 
 // TODO ensure that clip (discard) is < 0 and not <= 0 ???
 void ps_main0()
 {
-    if (fract(PSin_t.y * hH) - 0.5 < 0.0)
+    if ((int(gl_FragCoord.y) & 1) == 0)
         discard;
     // I'm not sure it impact us but be safe to lookup texture before conditional if
     // see: http://www.opengl.org/wiki/GLSL_Sampler#Non-uniform_flow_control
@@ -25,7 +24,7 @@ void ps_main0()
 
 void ps_main1()
 {
-    if (0.5 - fract(PSin_t.y * hH) < 0.0)
+    if ((int(gl_FragCoord.y) & 1) != 0)
         discard;
     // I'm not sure it impact us but be safe to lookup texture before conditional if
     // see: http://www.opengl.org/wiki/GLSL_Sampler#Non-uniform_flow_control

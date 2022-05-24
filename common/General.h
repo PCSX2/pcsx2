@@ -16,7 +16,7 @@
 #pragma once
 
 #include <atomic>
-#include <wx/string.h>
+#include <string>
 #include "common/Pcsx2Defs.h"
 
 // This macro is actually useful for about any and every possible application of C++
@@ -35,68 +35,6 @@
 #define BITFIELD_END \
 		}; \
 	};
-
-
-// ----------------------------------------------------------------------------------------
-//  RecursionGuard  -  Basic protection against function recursion
-// ----------------------------------------------------------------------------------------
-// Thread safety note: If used in a threaded environment, you shoud use a handle to a __threadlocal
-// storage variable (protects aaginst race conditions and, in *most* cases, is more desirable
-// behavior as well.
-//
-// Rationale: wxWidgets has its own wxRecursionGuard, but it has a sloppy implementation with
-// entirely unnecessary assertion checks.
-//
-class RecursionGuard
-{
-public:
-	int& Counter;
-
-	RecursionGuard(int& counter)
-		: Counter(counter)
-	{
-		++Counter;
-	}
-
-	virtual ~RecursionGuard()
-	{
-		--Counter;
-	}
-
-	bool IsReentrant() const { return Counter > 1; }
-};
-
-// --------------------------------------------------------------------------------------
-//  ICloneable / IActionInvocation / IDeletableObject
-// --------------------------------------------------------------------------------------
-class IActionInvocation
-{
-public:
-	virtual ~IActionInvocation() = default;
-	virtual void InvokeAction() = 0;
-};
-
-class ICloneable
-{
-public:
-	virtual ICloneable* Clone() const = 0;
-};
-
-class IDeletableObject
-{
-public:
-	virtual ~IDeletableObject() = default;
-
-	virtual void DeleteSelf() = 0;
-	virtual bool IsBeingDeleted() = 0;
-
-protected:
-	// This function is GUI implementation dependent!  It's implemented by PCSX2's AppHost,
-	// but if the SysCore is being linked to another front end, you'll need to implement this
-	// yourself.  Most GUIs have built in message pumps.  If a platform lacks one then you'll
-	// need to implement one yourself (yay?).
-	virtual void DoDeletion() = 0;
-};
 
 // --------------------------------------------------------------------------------------
 //  PageProtectionMode
@@ -143,7 +81,7 @@ public:
 	bool CanExecute() const { return m_exec && m_read; }
 	bool IsNone() const { return !m_read && !m_write; }
 
-	wxString ToString() const;
+	std::string ToString() const;
 };
 
 static __fi PageProtectionMode PageAccess_None()
@@ -223,6 +161,6 @@ extern u32 ShortSpin();
 /// Number of ns to spin for before sleeping a thread
 extern const u32 SPIN_TIME_NS;
 
-extern wxString GetOSVersionString();
+extern std::string GetOSVersionString();
 
 void ScreensaverAllow(bool allow);

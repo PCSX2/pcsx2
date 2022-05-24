@@ -1542,7 +1542,7 @@ mVUop(mVU_XITOP)
 // XGkick
 //------------------------------------------------------------------
 
-void __fastcall mVU_XGKICK_(u32 addr)
+void mVU_XGKICK_(u32 addr)
 {
 	addr = (addr & 0x3ff) * 16;
 	u32 diff = 0x4000 - addr;
@@ -1560,7 +1560,7 @@ void __fastcall mVU_XGKICK_(u32 addr)
 	}
 }
 
-void __fastcall _vuXGKICKTransfermVU(bool flush)
+void _vuXGKICKTransfermVU(bool flush)
 {
 	while (VU1.xgkickenable && (flush || VU1.xgkickcyclecount >= 2))
 	{

@@ -159,7 +159,7 @@ void IPU_Fifo_Output::read(void *value, uint size)
 	}
 }
 
-void __fastcall ReadFIFO_IPUout(mem128_t* out)
+void ReadFIFO_IPUout(mem128_t* out)
 {
 	if (!pxAssertDev( ipuRegs.ctrl.OFC > 0, "Attempted read from IPUout's FIFO, but the FIFO is empty!" )) return;
 	ipu_fifo.out.read(out, 1);
@@ -168,9 +168,9 @@ void __fastcall ReadFIFO_IPUout(mem128_t* out)
 	// its either some glitchy game or a bug in pcsx2.
 }
 
-void __fastcall WriteFIFO_IPUin(const mem128_t* value)
+void WriteFIFO_IPUin(const mem128_t* value)
 {
-	IPU_LOG( "WriteFIFO/IPUin <- %ls", WX_STR(value->ToString()) );
+	IPU_LOG( "WriteFIFO/IPUin <- 0x%08X.%08X.%08X.%08X", value->_u32[0], value->_u32[1], value->_u32[2], value->_u32[3]);
 
 	//committing every 16 bytes
 	if( ipu_fifo.in.write((u32*)value, 1) == 0 )

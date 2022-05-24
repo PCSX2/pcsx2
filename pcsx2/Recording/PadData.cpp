@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2022  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,12 +14,10 @@
  */
 
 #include "PrecompiledHeader.h"
-
-#ifndef DISABLE_RECORDING
-
 #include "DebugTools/Debug.h"
-
 #include "Recording/PadData.h"
+
+#include <fmt/core.h>
 
 void PadData::UpdateControllerData(u16 bufIndex, u8 const& bufVal)
 {
@@ -100,7 +98,7 @@ void PadData::UpdateControllerData(u16 bufIndex, u8 const& bufVal)
 u8 PadData::PollControllerData(u16 bufIndex)
 {
 	u8 byte = 0;
-	BufferIndex index = static_cast<BufferIndex>(bufIndex);
+	const BufferIndex index = static_cast<BufferIndex>(bufIndex);
 	switch (index)
 	{
 		case BufferIndex::PressedFlagsGroupOne:
@@ -177,6 +175,9 @@ u8 PadData::BitmaskOrZero(bool pressed, ButtonResolver buttonInfo)
 	return pressed ? buttonInfo.buttonBitmask : 0;
 }
 
+#ifndef PCSX2_CORE
+// TODO - Vaser - kill with wxWidgets
+// TODO - Vaser - replace with this something better in Qt
 wxString PadData::RawPadBytesToString(int start, int end)
 {
 	wxString str;
@@ -200,6 +201,35 @@ void PadData::LogPadData(u8 const& port)
 		wxString::Format("[PAD %d] Raw Bytes: Right Analog = [%s]\n", port + 1, rightAnalogBytes) +
 		wxString::Format("[PAD %d] Raw Bytes: Left Analog = [%s]\n", port + 1, leftAnalogBytes) +
 		wxString::Format("[PAD %d] Raw Bytes: Pressure = [%s]\n", port + 1, pressureBytes);
+	controlLog(fullLog.ToUTF8());
+}
+
+#else
+
+std::string PadData::RawPadBytesToString(int start, int end)
+{
+	std::string str;
+	for (int i = start; i < end; i++)
+	{
+		str += fmt::format("{}", PollControllerData(i));
+
+		if (i != end - 1)
+			str += ", ";
+	}
+	return str;
+}
+
+void PadData::LogPadData(u8 const& port)
+{
+	std::string pressedBytes = RawPadBytesToString(0, 2);
+	std::string rightAnalogBytes = RawPadBytesToString(2, 4);
+	std::string leftAnalogBytes = RawPadBytesToString(4, 6);
+	std::string pressureBytes = RawPadBytesToString(6, 17);
+	std::string fullLog =
+		fmt::format("[PAD {}] Raw Bytes: Pressed = [{}]\n", port + 1, pressedBytes) +
+		fmt::format("[PAD {}] Raw Bytes: Right Analog = [{}]\n", port + 1, rightAnalogBytes) +
+		fmt::format("[PAD {}] Raw Bytes: Left Analog = [{}]\n", port + 1, leftAnalogBytes) +
+		fmt::format("[PAD {}] Raw Bytes: Pressure = [{}]\n", port + 1, pressureBytes);
 	controlLog(fullLog);
 }
 

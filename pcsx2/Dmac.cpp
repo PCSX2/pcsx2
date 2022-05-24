@@ -273,7 +273,7 @@ static __ri void DmaExec( void (*func)(), u32 mem, u32 value )
 		static bool warned; //Check if the warning has already been output to console, to prevent constant spam.
 		if (!warned)
 		{
-			DevCon.Warning(L"%s CHCR.MOD set to 3, assuming 1 (chain)", ChcrName(mem));
+			DevCon.Warning("%s CHCR.MOD set to 3, assuming 1 (chain)", ChcrName(mem));
 			warned = true;
 		}
 		reg.chcr.MOD = 0x1;
@@ -299,7 +299,7 @@ template< uint page >
 __fi u32 dmacRead32( u32 mem )
 {
 	// Fixme: OPH hack. Toggle the flag on GIF_STAT access. (rama)
-	if (IsPageFor(mem) && (mem == GIF_STAT) && CHECK_OPHFLAGHACK)
+	if ((CHECK_OPHFLAGHACK) && (page << 12) == (mem & (0xf << 12)) && (mem == GIF_STAT))
 	{
 		static unsigned counter = 1;
 		if (++counter == 8)
@@ -374,166 +374,110 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 		allow_write:;
 	}
 
-	iswitch(mem) {
-		icase(D0_CHCR) // dma0 - vif0
+	switch(mem) {
+
+		case (D0_QWC): // dma0 - vif0
+		case (D1_QWC): // dma1 - vif1
+		case (D2_QWC): // dma2 - gif
+		case (D3_QWC): // dma3 - fromIPU
+		case (D4_QWC): // dma4 - toIPU
+		case (D5_QWC): // dma5 - sif0
+		case (D6_QWC): // dma6 - sif1
+		case (D7_QWC): // dma7 - sif2
+		case (D8_QWC): // dma8 - fromSPR
+		case (D9_QWC): // dma9 - toSPR
+		{
+			psHu32(mem) = (u16)value;
+			return false;
+		}
+
+		case (D0_CHCR): // dma0 - vif0
 		{
 			DMA_LOG("VIF0dma EXECUTE, value=0x%x", value);
 			DmaExec(dmaVIF0, mem, value);
 			return false;
 		}
 
-		icase(D0_QWC) // dma0 - vif0
-		{
-			psHu32(mem) = (u16)value;
-			return false;
-		}
-
-		icase(D1_CHCR) // dma1 - vif1 - chcr
+		case (D1_CHCR): // dma1 - vif1 - chcr
 		{
 			DMA_LOG("VIF1dma EXECUTE, value=0x%x", value);
 			DmaExec(dmaVIF1, mem, value);
 			return false;
 		}
 
-		icase(D1_QWC) // dma1 - vif1
-		{
-			psHu32(mem) = (u16)value;
-			return false;
-		}
-
-		icase(D2_CHCR) // dma2 - gif
+		case (D2_CHCR): // dma2 - gif
 		{
 			DMA_LOG("GIFdma EXECUTE, value=0x%x", value);
 			DmaExec(dmaGIF, mem, value);
 			return false;
 		}
 
-		icase(D2_QWC) // dma2 - gif
-		{
-			psHu32(mem) = (u16)value;
-			return false;
-		}
-
-		icase(D3_CHCR) // dma3 - fromIPU
+		case (D3_CHCR): // dma3 - fromIPU
 		{
 			DMA_LOG("IPU0dma EXECUTE, value=0x%x\n", value);
 			DmaExec(dmaIPU0, mem, value);
 			return false;
 		}
 
-		icase(D3_QWC) // dma3 - fromIPU
-		{
-			psHu32(mem) = (u16)value;
-			return false;
-		}
-
-		icase(D4_CHCR) // dma4 - toIPU
+		case (D4_CHCR): // dma4 - toIPU
 		{
 			DMA_LOG("IPU1dma EXECUTE, value=0x%x\n", value);
 			DmaExec(dmaIPU1, mem, value);
 			return false;
 		}
 
-		icase(D4_QWC) // dma4 - toIPU
-		{
-			psHu32(mem) = (u16)value;
-			return false;
-		}
-
-		icase(D5_CHCR) // dma5 - sif0
+		case (D5_CHCR): // dma5 - sif0
 		{
 			DMA_LOG("SIF0dma EXECUTE, value=0x%x", value);
 			DmaExec(dmaSIF0, mem, value);
 			return false;
 		}
 
-		icase(D5_QWC) // dma5 - sif0
-		{
-			psHu32(mem) = (u16)value;
-			return false;
-		}
-
-		icase(D6_CHCR) // dma6 - sif1
+		case (D6_CHCR): // dma6 - sif1
 		{
 			DMA_LOG("SIF1dma EXECUTE, value=0x%x", value);
 			DmaExec(dmaSIF1, mem, value);
 			return false;
 		}
 
-		icase(D6_QWC) // dma6 - sif1
-		{
-			psHu32(mem) = (u16)value;
-			return false;
-		}
-
-		icase(D7_CHCR) // dma7 - sif2
+		case (D7_CHCR): // dma7 - sif2
 		{
 			DMA_LOG("SIF2dma EXECUTE, value=0x%x", value);
 			DmaExec(dmaSIF2, mem, value);
 			return false;
 		}
 
-		icase(D7_QWC) // dma7 - sif2
-		{
-			psHu32(mem) = (u16)value;
-			return false;
-		}
-
-		icase(D8_CHCR) // dma8 - fromSPR
+		case (D8_CHCR): // dma8 - fromSPR
 		{
 			DMA_LOG("SPR0dma EXECUTE (fromSPR), value=0x%x", value);
 			DmaExec(dmaSPR0, mem, value);
 			return false;
 		}
 
-		icase(D8_QWC) // dma8 - fromSPR
-		{
-			psHu32(mem) = (u16)value;
-			return false;
-		}
-
-		icase(fromSPR_MADR)
-		{
-			// SPR bit is fixed at 0 for this channel
-			psHu32(mem) = value & 0x7FFFFFFF;
-			return false;
-		}
-
-		icase(toSPR_MADR)
-		{
-			// SPR bit is fixed at 0 for this channel
-			psHu32(mem) = value & 0x7FFFFFFF;
-			return false;
-		}
-
-		icase(fromSPR_SADR)
-		{
-			// Address must be QW aligned and fit in the 16K range of SPR
-			psHu32(mem) = value & 0x3FF0;
-			return false;
-		}
-
-		icase(toSPR_SADR)
-		{
-			// Address must be QW aligned and fit in the 16K range of SPR
-			psHu32(mem) = value & 0x3FF0;
-			return false;
-		}
-
-		icase(D9_CHCR) // dma9 - toSPR
+		case (D9_CHCR): // dma9 - toSPR
 		{
 			DMA_LOG("SPR1dma EXECUTE (toSPR), value=0x%x", value);
 			DmaExec(dmaSPR1, mem, value);
 			return false;
 		}
 
-		icase(D9_QWC) // dma9 - toSPR
+		case (fromSPR_MADR):
+		case (toSPR_MADR):
 		{
-			psHu32(mem) = (u16)value;
+			// SPR bit is fixed at 0 for this channel
+			psHu32(mem) = value & 0x7FFFFFFF;
 			return false;
 		}
 
-		icase(DMAC_CTRL)
+		case (fromSPR_SADR):
+		case (toSPR_SADR):
+		{
+			// Address must be QW aligned and fit in the 16K range of SPR
+			psHu32(mem) = value & 0x3FF0;
+			return false;
+		}
+
+		case (DMAC_CTRL):
 		{
 			u32 oldvalue = psHu32(mem);
 
@@ -594,10 +538,14 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 
 		//Midway are a bunch of idiots, writing to E100 (reserved) instead of E010
 		//Which causes a CPCOND0 to fail.
-		icase(DMAC_FAKESTAT)
+		case (DMAC_FAKESTAT):
+		case (DMAC_STAT):
 		{
-			//DevCon.Warning("Midway fixup addr=%x writing %x for DMA_STAT", mem, value);
-			HW_LOG("Midways own DMAC_STAT Write 32bit %x", value);
+			if (mem == DMAC_FAKESTAT)
+			{
+				HW_LOG("Midways own DMAC_STAT Write 32bit %x", value);
+			}
+			else HW_LOG("DMAC_STAT Write 32bit %x", value);
 
 			// lower 16 bits: clear on 1
 			// upper 16 bits: reverse on 1
@@ -609,21 +557,7 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 			return false;
 		}
 
-		icase(DMAC_STAT)
-		{
-			HW_LOG("DMAC_STAT Write 32bit %x", value);
-
-			// lower 16 bits: clear on 1
-			// upper 16 bits: reverse on 1
-
-			psHu16(0xe010) &= ~(value & 0xffff);
-			psHu16(0xe012) ^= (u16)(value >> 16);
-
-			cpuTestDMACInts();
-			return false;
-		}
-
-		icase(DMAC_ENABLEW)
+		case (DMAC_ENABLEW):
 		{
 			HW_LOG("DMAC_ENABLEW Write 32bit %lx", value);
 			oldvalue = psHu8(DMAC_ENABLEW + 2);
@@ -635,6 +569,8 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 			}
 			return false;
 		}
+		default:
+			return true;
 	}
 
 	// fall-through: use the default writeback provided by caller.
