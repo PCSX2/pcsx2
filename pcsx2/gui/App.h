@@ -728,8 +728,6 @@ int AppOpenModalDialog(wxString panel_name, wxWindow* parent = NULL)
 		return DialogType(parent).ShowModal();
 }
 
-extern pxDoAssertFnType AppDoAssert;
-
 // --------------------------------------------------------------------------------------
 //  External App-related Globals and Shortcuts
 // --------------------------------------------------------------------------------------

@@ -16,50 +16,20 @@
 #include "Threading.h"
 #include "General.h"
 #include "Exceptions.h"
+#include "CrashHandler.h"
 
+#include <mutex>
 #include "fmt/core.h"
 
 #ifdef _WIN32
 #include "RedtapeWindows.h"
+#include <intrin.h>
+#include <tlhelp32.h>
 #endif
 
 #ifdef __UNIX__
 #include <signal.h>
 #endif
-
-// ------------------------------------------------------------------------
-// Force DevAssert to *not* inline for devel builds (allows using breakpoints to trap assertions,
-// and force it to inline for release builds (optimizes it out completely since IsDevBuild is a
-// const false).
-//
-#ifdef PCSX2_DEVBUILD
-#define DEVASSERT_INLINE __noinline
-#else
-#define DEVASSERT_INLINE __fi
-#endif
-
-pxDoAssertFnType* pxDoAssert = pxAssertImpl_LogIt;
-
-// make life easier for people using VC++ IDE by using this format, which allows double-click
-// response times from the Output window...
-std::string DiagnosticOrigin::ToString(const char* msg) const
-{
-	std::string message;
-
-	fmt::format_to(std::back_inserter(message), "{}({}) : assertion failed:\n", srcfile, line);
-
-	if (function)
-		fmt::format_to(std::back_inserter(message), "    Function:  {}\n", function);
-
-	if (condition)
-		fmt::format_to(std::back_inserter(message), "    Condition: {}\n", condition);
-
-	if (msg)
-		fmt::format_to(std::back_inserter(message), "    Message:   {}\n", msg);
-
-	return message;
-}
-
 
 // Because wxTrap isn't available on Linux builds of wxWidgets (non-Debug, typically)
 void pxTrap()
@@ -73,46 +43,105 @@ void pxTrap()
 #endif
 }
 
+static std::mutex s_assertion_failed_mutex;
 
-bool pxAssertImpl_LogIt(const DiagnosticOrigin& origin, const char* msg)
+static inline void FreezeThreads(void** handle)
 {
-	//wxLogError( L"%s", origin.ToString( msg ).c_str() );
-	std::string full_msg(origin.ToString(msg));
-#ifdef _WIN32
-	OutputDebugStringA(full_msg.c_str());
-	OutputDebugStringA("\n");
+#if defined(_WIN32) && !defined(_UWP)
+	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+	if (snapshot != INVALID_HANDLE_VALUE)
+	{
+		THREADENTRY32 threadEntry;
+		if (Thread32First(snapshot, &threadEntry))
+		{
+			do
+			{
+				if (threadEntry.th32ThreadID == GetCurrentThreadId())
+					continue;
+
+				HANDLE hThread = OpenThread(THREAD_SUSPEND_RESUME, FALSE, threadEntry.th32ThreadID);
+				if (hThread != nullptr)
+				{
+					SuspendThread(hThread);
+					CloseHandle(hThread);
+				}
+			} while (Thread32Next(snapshot, &threadEntry));
+		}
+	}
+
+	*handle = static_cast<void*>(snapshot);
+#else
+	* handle = nullptr;
 #endif
-
-	std::fprintf(stderr, "%s\n", full_msg.c_str());
-
-	pxTrap();
-	return false;
 }
 
-
-DEVASSERT_INLINE void pxOnAssert(const DiagnosticOrigin& origin, const char* msg)
+static inline void ResumeThreads(void* handle)
 {
-	// wxWidgets doesn't come with debug builds on some Linux distros, and other distros make
-	// it difficult to use the debug build (compilation failures).  To handle these I've had to
-	// bypass the internal wxWidgets assertion handler entirely, since it may not exist even if
-	// PCSX2 itself is compiled in debug mode (assertions enabled).
-
-	bool trapit;
-
-	if (pxDoAssert == NULL)
+#if defined(_WIN32) && !defined(_UWP)
+	if (handle != INVALID_HANDLE_VALUE)
 	{
-		// Note: Format uses MSVC's syntax for output window hotlinking.
-		trapit = pxAssertImpl_LogIt(origin, msg);
-	}
-	else
-	{
-		trapit = pxDoAssert(origin, msg);
-	}
+		THREADENTRY32 threadEntry;
+		if (Thread32First(reinterpret_cast<HANDLE>(handle), &threadEntry))
+		{
+			do
+			{
+				if (threadEntry.th32ThreadID == GetCurrentThreadId())
+					continue;
 
-	if (trapit)
-	{
-		pxTrap();
+				HANDLE hThread = OpenThread(THREAD_SUSPEND_RESUME, FALSE, threadEntry.th32ThreadID);
+				if (hThread != nullptr)
+				{
+					ResumeThread(hThread);
+					CloseHandle(hThread);
+				}
+			} while (Thread32Next(reinterpret_cast<HANDLE>(handle), &threadEntry));
+		}
+		CloseHandle(reinterpret_cast<HANDLE>(handle));
 	}
+#else
+#endif
+}
+
+void pxOnAssertFail(const char* file, int line, const char* func, const char* msg)
+{
+	std::unique_lock guard(s_assertion_failed_mutex);
+
+	void* handle;
+	FreezeThreads(&handle);
+
+	char full_msg[512];
+	std::snprintf(full_msg, sizeof(full_msg), "%s:%d: assertion failed in function %s: %s\n", file, line, func, msg);
+
+#if defined(_WIN32) && !defined(_UWP)
+	HANDLE error_handle = GetStdHandle(STD_ERROR_HANDLE);
+	if (error_handle != INVALID_HANDLE_VALUE)
+		WriteConsoleA(GetStdHandle(STD_ERROR_HANDLE), full_msg, static_cast<DWORD>(std::strlen(full_msg)), NULL, NULL);
+	OutputDebugStringA(full_msg);
+
+	std::snprintf(
+		full_msg, sizeof(full_msg),
+		"Assertion failed in function %s (%s:%d):\n\n%s\n\nPress Abort to exit, Retry to break to debugger, or Ignore to attempt to continue.",
+		func, file, line, msg);
+
+	int result = MessageBoxA(NULL, full_msg, NULL, MB_ABORTRETRYIGNORE | MB_ICONERROR);
+	if (result == IDRETRY)
+	{
+		__debugbreak();
+	}
+	else if (result != IDIGNORE)
+	{
+		// try to save a crash dump before exiting
+		CrashHandler::WriteDumpForCaller();
+		TerminateProcess(GetCurrentProcess(), 0xBAADC0DE);
+	}
+#else
+	fputs(full_msg, stderr);
+	fputs("\nAborting application.\n", stderr);
+	fflush(stderr);
+	abort();
+#endif
+
+	ResumeThreads(handle);
 }
 
 // --------------------------------------------------------------------------------------

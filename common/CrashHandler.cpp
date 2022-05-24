@@ -46,11 +46,7 @@ CrashHandlerStackWalker::CrashHandlerStackWalker(HANDLE out_file)
 {
 }
 
-CrashHandlerStackWalker::~CrashHandlerStackWalker()
-{
-	if (m_out_file)
-		CloseHandle(m_out_file);
-}
+CrashHandlerStackWalker::~CrashHandlerStackWalker() = default;
 
 void CrashHandlerStackWalker::OnOutput(LPCSTR szText)
 {
@@ -105,33 +101,8 @@ static void GenerateCrashFilename(wchar_t* buf, size_t len, const wchar_t* prefi
 		st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, extension);
 }
 
-static LONG NTAPI ExceptionHandler(PEXCEPTION_POINTERS exi)
+static void WriteMinidumpAndCallstack(PEXCEPTION_POINTERS exi)
 {
-	if (s_in_crash_handler)
-		return EXCEPTION_CONTINUE_SEARCH;
-
-	switch (exi->ExceptionRecord->ExceptionCode)
-	{
-		case EXCEPTION_ACCESS_VIOLATION:
-		case EXCEPTION_BREAKPOINT:
-		case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-		case EXCEPTION_INT_DIVIDE_BY_ZERO:
-		case EXCEPTION_INT_OVERFLOW:
-		case EXCEPTION_PRIV_INSTRUCTION:
-		case EXCEPTION_ILLEGAL_INSTRUCTION:
-		case EXCEPTION_NONCONTINUABLE_EXCEPTION:
-		case EXCEPTION_STACK_OVERFLOW:
-		case EXCEPTION_GUARD_PAGE:
-			break;
-
-		default:
-			return EXCEPTION_CONTINUE_SEARCH;
-	}
-
-	// if the debugger is attached, let it take care of it.
-	if (IsDebuggerPresent())
-		return EXCEPTION_CONTINUE_SEARCH;
-
 	s_in_crash_handler = true;
 
 	wchar_t filename[1024] = {};
@@ -139,7 +110,7 @@ static LONG NTAPI ExceptionHandler(PEXCEPTION_POINTERS exi)
 
 	// might fail
 	HANDLE hFile = CreateFileW(filename, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
-	if (hFile != INVALID_HANDLE_VALUE)
+	if (exi && hFile != INVALID_HANDLE_VALUE)
 	{
 		char line[1024];
 		DWORD written;
@@ -169,11 +140,40 @@ static LONG NTAPI ExceptionHandler(PEXCEPTION_POINTERS exi)
 		CloseHandle(hMinidumpFile);
 
 	CrashHandlerStackWalker sw(hFile);
-	sw.ShowCallstack(GetCurrentThread(), exi->ContextRecord);
+	sw.ShowCallstack(GetCurrentThread(), exi ? exi->ContextRecord : nullptr);
 
 	if (hFile != INVALID_HANDLE_VALUE)
 		CloseHandle(hFile);
+}
 
+static LONG NTAPI ExceptionHandler(PEXCEPTION_POINTERS exi)
+{
+	if (s_in_crash_handler)
+		return EXCEPTION_CONTINUE_SEARCH;
+
+	switch (exi->ExceptionRecord->ExceptionCode)
+	{
+		case EXCEPTION_ACCESS_VIOLATION:
+		case EXCEPTION_BREAKPOINT:
+		case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+		case EXCEPTION_INT_DIVIDE_BY_ZERO:
+		case EXCEPTION_INT_OVERFLOW:
+		case EXCEPTION_PRIV_INSTRUCTION:
+		case EXCEPTION_ILLEGAL_INSTRUCTION:
+		case EXCEPTION_NONCONTINUABLE_EXCEPTION:
+		case EXCEPTION_STACK_OVERFLOW:
+		case EXCEPTION_GUARD_PAGE:
+			break;
+
+		default:
+			return EXCEPTION_CONTINUE_SEARCH;
+	}
+
+	// if the debugger is attached, let it take care of it.
+	if (IsDebuggerPresent())
+		return EXCEPTION_CONTINUE_SEARCH;
+
+	WriteMinidumpAndCallstack(exi);
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 
@@ -193,6 +193,11 @@ void CrashHandler::SetWriteDirectory(const std::string_view& dump_directory)
 		return;
 
 	s_write_directory = StringUtil::UTF8StringToWideString(dump_directory);
+}
+
+void CrashHandler::WriteDumpForCaller()
+{
+	WriteMinidumpAndCallstack(nullptr);
 }
 
 void CrashHandler::Uninstall()
@@ -218,6 +223,10 @@ bool CrashHandler::Install()
 }
 
 void CrashHandler::SetWriteDirectory(const std::string_view& dump_directory)
+{
+}
+
+void CrashHandler::WriteDumpForCaller()
 {
 }
 

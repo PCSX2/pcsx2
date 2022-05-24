@@ -107,6 +107,26 @@ static void unmake_curthread_key()
 	curthread_key = 0;
 }
 
+// make life easier for people using VC++ IDE by using this format, which allows double-click
+// response times from the Output window...
+std::string DiagnosticOrigin::ToString(const char* msg) const
+{
+	std::string message;
+
+	fmt::format_to(std::back_inserter(message), "{}({}) : assertion failed:\n", srcfile, line);
+
+	if (function)
+		fmt::format_to(std::back_inserter(message), "    Function:  {}\n", function);
+
+	if (condition)
+		fmt::format_to(std::back_inserter(message), "    Condition: {}\n", condition);
+
+	if (msg)
+		fmt::format_to(std::back_inserter(message), "    Message:   {}\n", msg);
+
+	return message;
+}
+
 void Threading::pxTestCancel()
 {
 	pthread_testcancel();
@@ -204,7 +224,7 @@ bool Threading::pxThread::AffinityAssert_AllowFromSelf(const DiagnosticOrigin& o
 		return true;
 
 	if (IsDevBuild)
-		pxOnAssert(origin, pxsFmt(L"Thread affinity violation: Call allowed from '%s' thread only.", WX_STR(GetName())).ToUTF8().data());
+		pxOnAssertFail(origin.srcfile, origin.line, origin.function, pxsFmt(L"Thread affinity violation: Call allowed from '%s' thread only.", WX_STR(GetName())).ToUTF8().data());
 
 	return false;
 }
@@ -215,7 +235,7 @@ bool Threading::pxThread::AffinityAssert_DisallowFromSelf(const DiagnosticOrigin
 		return true;
 
 	if (IsDevBuild)
-		pxOnAssert(origin, pxsFmt(L"Thread affinity violation: Call is *not* allowed from '%s' thread.", WX_STR(GetName())).ToUTF8().data());
+		pxOnAssertFail(origin.srcfile, origin.line, origin.function, pxsFmt(L"Thread affinity violation: Call is *not* allowed from '%s' thread.", WX_STR(GetName())).ToUTF8().data());
 
 	return false;
 }
