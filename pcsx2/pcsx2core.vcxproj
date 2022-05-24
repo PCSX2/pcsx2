@@ -143,6 +143,7 @@
     <ClCompile Include="DebugTools\MipsAssemblerTables.cpp" />
     <ClCompile Include="DebugTools\MipsStackWalk.cpp" />
     <ClCompile Include="DebugTools\SymbolMap.cpp" />
+    <ClCompile Include="DEV9\AdapterUtils.cpp" />
     <ClCompile Include="DEV9\ATA\Commands\ATA_Command.cpp" />
     <ClCompile Include="DEV9\ATA\Commands\ATA_CmdDMA.cpp" />
     <ClCompile Include="DEV9\ATA\Commands\ATA_CmdExecuteDeviceDiag.cpp" />
@@ -466,6 +467,7 @@
     <ClInclude Include="DebugTools\MipsAssemblerTables.h" />
     <ClInclude Include="DebugTools\MipsStackWalk.h" />
     <ClInclude Include="DebugTools\SymbolMap.h" />
+    <ClInclude Include="DEV9\AdapterUtils.h" />
     <ClInclude Include="DEV9\ATA\ATA.h" />
     <ClInclude Include="DEV9\ATA\HddCreate.h" />
     <ClInclude Include="DEV9\DEV9.h" />
