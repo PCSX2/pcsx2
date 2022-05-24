@@ -16,14 +16,6 @@
 #pragma once
 #include <vector>
 
-#ifdef _WIN32
-#include <winsock2.h>
-#include <iphlpapi.h>
-#elif defined(__POSIX__)
-#include <sys/types.h>
-#include <ifaddrs.h>
-#endif
-
 #include "net.h"
 
 #include "PacketReader/IP/IP_Packet.h"
@@ -64,14 +56,6 @@ public:
 	static AdapterOptions GetAdapterOptions();
 
 private:
-#ifdef _WIN32
-	bool GetWin32SelectedAdapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer);
-	bool GetWin32AutoAdapter(PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer);
-#elif defined(__POSIX__)
-	bool GetIfSelectedAdapter(const std::string& name, ifaddrs* adapter, ifaddrs** buffer);
-	bool GetIfAutoAdapter(ifaddrs* adapter, ifaddrs** buffer);
-#endif // _WIN32
-
 	bool SendIP(PacketReader::IP::IP_Packet* ipPkt);
 	bool SendICMP(Sessions::ConnectionKey Key, PacketReader::IP::IP_Packet* ipPkt);
 	bool SendIGMP(Sessions::ConnectionKey Key, PacketReader::IP::IP_Packet* ipPkt);
