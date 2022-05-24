@@ -1846,7 +1846,7 @@ std::optional<bool> MainWindow::promptForResumeState(const QString& save_state_p
 	QPushButton* load = msgbox.addButton(tr("Load State"), QMessageBox::AcceptRole);
 	QPushButton* boot = msgbox.addButton(tr("Fresh Boot"), QMessageBox::RejectRole);
 	QPushButton* delboot = msgbox.addButton(tr("Delete And Boot"), QMessageBox::RejectRole);
-	QPushButton* cancel = msgbox.addButton(QMessageBox::Cancel);
+	msgbox.addButton(QMessageBox::Cancel);
 	msgbox.setDefaultButton(load);
 	msgbox.exec();
 

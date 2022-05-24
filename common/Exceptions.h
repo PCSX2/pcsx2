@@ -169,12 +169,12 @@ private: \
 public: \
 	virtual ~classname() = default; \
 \
-	virtual void Rethrow() const \
+	virtual void Rethrow() const override \
 	{ \
 		throw *this; \
 	} \
 \
-	virtual classname* Clone() const \
+	virtual classname* Clone() const override \
 	{ \
 		return new classname(*this); \
 	}
@@ -245,8 +245,8 @@ public: \
 			// overridden message formatters only use the diagnostic version...
 		}
 
-		virtual std::string FormatDisplayMessage() const;
-		virtual std::string FormatDiagnosticMessage() const;
+		virtual std::string FormatDisplayMessage() const override;
+		virtual std::string FormatDiagnosticMessage() const override;
 	};
 
 	// ---------------------------------------------------------------------------------------
@@ -269,8 +269,8 @@ public: \
 	public:
 		OutOfMemory(std::string allocdesc);
 
-		virtual std::string FormatDisplayMessage() const;
-		virtual std::string FormatDiagnosticMessage() const;
+		virtual std::string FormatDisplayMessage() const override;
+		virtual std::string FormatDiagnosticMessage() const override;
 	};
 
 	class ParseError : public RuntimeError
@@ -292,8 +292,8 @@ public: \
 
 		VirtualMemoryMapConflict(std::string allocdesc);
 
-		virtual std::string FormatDisplayMessage() const;
-		virtual std::string FormatDiagnosticMessage() const;
+		virtual std::string FormatDisplayMessage() const override;
+		virtual std::string FormatDiagnosticMessage() const override;
 	};
 
 	class HardwareDeficiency : public RuntimeError
@@ -307,26 +307,23 @@ public: \
 	//   Stream / BadStream / CannotCreateStream / FileNotFound / AccessDenied / EndOfStream
 	// ---------------------------------------------------------------------------------------
 
-#define DEFINE_STREAM_EXCEPTION_ACCESSORS(classname) \
-	virtual classname& SetStreamName(std::string name) \
-	{ \
-		StreamName = std::move(name); \
-		return *this; \
-	} \
-\
-	virtual classname& SetStreamName(const char* name) \
-	{ \
-		StreamName = name; \
-		return *this; \
-	}
-
 #define DEFINE_STREAM_EXCEPTION(classname, parent) \
 	DEFINE_RUNTIME_EXCEPTION(classname, parent, "") \
 	classname(std::string filename) \
 	{ \
 		StreamName = filename; \
 	} \
-	DEFINE_STREAM_EXCEPTION_ACCESSORS(classname)
+	virtual classname& SetStreamName(std::string name) override \
+	{ \
+		StreamName = std::move(name); \
+		return *this; \
+	} \
+\
+	virtual classname& SetStreamName(const char* name) override \
+	{ \
+		StreamName = name; \
+		return *this; \
+	}
 
 	// A generic base error class for bad streams -- corrupted data, sudden closures, loss of
 	// connection, or anything else that would indicate a failure to open a stream or read the
@@ -334,13 +331,28 @@ public: \
 	//
 	class BadStream : public RuntimeError
 	{
-		DEFINE_STREAM_EXCEPTION(BadStream, RuntimeError)
+		DEFINE_RUNTIME_EXCEPTION(BadStream, RuntimeError, "")
 
 	public:
+		BadStream(std::string filename)
+			: StreamName(std::move(filename))
+		{
+		}
+		virtual BadStream& SetStreamName(std::string name)
+		{
+			StreamName = std::move(name);
+			return *this;
+		}
+		virtual BadStream& SetStreamName(const char* name)
+		{
+			StreamName = name;
+			return *this;
+		}
+
 		std::string StreamName; // name of the stream (if applicable)
 
-		virtual std::string FormatDiagnosticMessage() const;
-		virtual std::string FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const override;
+		virtual std::string FormatDisplayMessage() const override;
 
 	protected:
 		void _formatDiagMsg(std::string& dest) const;
@@ -353,8 +365,8 @@ public: \
 	{
 		DEFINE_STREAM_EXCEPTION(CannotCreateStream, BadStream)
 
-		virtual std::string FormatDiagnosticMessage() const;
-		virtual std::string FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const override;
+		virtual std::string FormatDisplayMessage() const override;
 	};
 
 	// Exception thrown when an attempt to open a non-existent file is made.
@@ -365,8 +377,8 @@ public: \
 	public:
 		DEFINE_STREAM_EXCEPTION(FileNotFound, CannotCreateStream)
 
-		virtual std::string FormatDiagnosticMessage() const;
-		virtual std::string FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const override;
+		virtual std::string FormatDisplayMessage() const override;
 	};
 
 	class AccessDenied : public CannotCreateStream
@@ -374,8 +386,8 @@ public: \
 	public:
 		DEFINE_STREAM_EXCEPTION(AccessDenied, CannotCreateStream)
 
-		virtual std::string FormatDiagnosticMessage() const;
-		virtual std::string FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const override;
+		virtual std::string FormatDisplayMessage() const override;
 	};
 
 	// EndOfStream can be used either as an error, or used just as a shortcut for manual
@@ -386,8 +398,8 @@ public: \
 	public:
 		DEFINE_STREAM_EXCEPTION(EndOfStream, BadStream)
 
-		virtual std::string FormatDiagnosticMessage() const;
-		virtual std::string FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const override;
+		virtual std::string FormatDisplayMessage() const override;
 	};
 
 #ifdef _WIN32
@@ -406,8 +418,8 @@ public: \
 		WinApiError();
 
 		std::string GetMsgFromWindows() const;
-		virtual std::string FormatDisplayMessage() const;
-		virtual std::string FormatDiagnosticMessage() const;
+		virtual std::string FormatDisplayMessage() const override;
+		virtual std::string FormatDiagnosticMessage() const override;
 	};
 #endif
 } // namespace Exception

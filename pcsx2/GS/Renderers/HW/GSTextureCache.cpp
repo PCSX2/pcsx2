@@ -2896,12 +2896,10 @@ void GSTextureCache::PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TE
 	const GSOffset off(mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM));
 	const int read_width = std::max(tw, psm.bs.x);
 	u32 pitch = static_cast<u32>(read_width) * sizeof(u32);
-	u32 row_size = static_cast<u32>(tw) * sizeof(u32);
 	GSLocalMemory::readTexture rtx = psm.rtx;
 	if (paltex)
 	{
 		pitch >>= 2;
-		row_size >>= 2;
 		rtx = psm.rtxP;
 	}
 

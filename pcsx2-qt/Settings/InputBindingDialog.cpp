@@ -217,7 +217,7 @@ void InputBindingDialog::inputManagerHookCallback(InputBindingKey key, float val
 	{
 		InputBindingKey key_to_add = key;
 		key_to_add.negative = (value < 0.0f);
-		m_new_bindings.push_back(key);
+		m_new_bindings.push_back(key_to_add);
 	}
 }
 

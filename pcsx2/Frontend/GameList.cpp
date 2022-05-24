@@ -494,8 +494,6 @@ void GameList::ScanDirectory(const char* path, bool recursive, const std::vector
 	progress->SetProgressRange(static_cast<u32>(files.size()));
 	progress->SetProgressValue(0);
 
-	u32 cached_files = 0;
-
 	for (FILESYSTEM_FIND_DATA& ffd : files)
 	{
 		if (progress->IsCancelled() || !GameList::IsScannableFilename(ffd.FileName) ||

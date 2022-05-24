@@ -110,7 +110,7 @@ static void WriteIndexToFile(Access* index, const char* filename)
 	}
 }
 
-static constexpr char* INDEX_TEMPLATE_KEY = "$(f)";
+static const char* INDEX_TEMPLATE_KEY = "$(f)";
 
 // template:
 // must contain one and only one instance of '$(f)' (without the quotes)
