@@ -342,6 +342,19 @@ std::vector<std::string> PAD::GetControllerBinds(const std::string_view& type)
 	return ret;
 }
 
+void PAD::ClearPortBindings(SettingsInterface& si, u32 port)
+{
+	const std::string section(StringUtil::StdStringFromFormat("Pad%u", port + 1));
+	const std::string type(si.GetStringValue(section.c_str(), "Type", GetDefaultPadType(port)));
+
+	const ControllerInfo* info = GetControllerInfo(type);
+	if (!info)
+		return;
+
+	for (u32 i = 0; i < info->num_bindings; i++)
+		si.DeleteValue(section.c_str(), info->bindings[i].name);
+}
+
 PAD::VibrationCapabilities PAD::GetControllerVibrationCapabilities(const std::string_view& type)
 {
 	const ControllerInfo* info = GetControllerInfo(type);

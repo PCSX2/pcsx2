@@ -83,6 +83,16 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QPushButton" name="clearBindings">
+          <property name="text">
+           <string>Clear Bindings</string>
+          </property>
+          <property name="icon">
+           <iconset theme="file-reduce-line"/>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>

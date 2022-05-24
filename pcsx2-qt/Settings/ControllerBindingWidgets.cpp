@@ -45,6 +45,7 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
 	SettingWidgetBinder::BindWidgetToStringSetting(nullptr, m_ui.controllerType, m_config_section, "Type", "None");
 	connect(m_ui.controllerType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ControllerBindingWidget::onTypeChanged);
 	connect(m_ui.automaticBinding, &QPushButton::clicked, this, &ControllerBindingWidget::doAutomaticBinding);
+	connect(m_ui.clearBindings, &QPushButton::clicked, this, &ControllerBindingWidget::doClearBindings);
 }
 
 ControllerBindingWidget::~ControllerBindingWidget() = default;
@@ -107,6 +108,22 @@ void ControllerBindingWidget::doAutomaticBinding()
 	menu.exec(QCursor::pos());
 }
 
+void ControllerBindingWidget::doClearBindings()
+{
+	if (QMessageBox::question(QtUtils::GetRootWidget(this), tr("Clear Bindings"),
+		tr("Are you sure you want to clear all bindings for this controller? This action cannot be undone.")) != QMessageBox::Yes)
+	{
+		return;
+	}
+
+	{
+		auto lock = Host::GetSettingsLock();
+		PAD::ClearPortBindings(*Host::Internal::GetBaseSettingsLayer(), m_port_number);
+	}
+
+	saveAndRefresh();
+}
+
 void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
 {
 	std::vector<std::pair<GenericInputBinding, std::string>> mapping = InputManager::GetGenericBindingMapping(device.toStdString());
@@ -123,13 +140,16 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
 		result = PAD::MapController(*Host::Internal::GetBaseSettingsLayer(), m_port_number, mapping);
 	}
 
+	// force a refresh after mapping
 	if (result)
-	{
-		// force a refresh after mapping
-		onTypeChanged();
-		QtHost::QueueSettingsSave();
-		g_emu_thread->applySettings();
-	}
+		saveAndRefresh();
+}
+
+void ControllerBindingWidget::saveAndRefresh()
+{
+	onTypeChanged();
+	QtHost::QueueSettingsSave();
+	g_emu_thread->applySettings();
 }
 
 //////////////////////////////////////////////////////////////////////////
