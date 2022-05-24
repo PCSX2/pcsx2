@@ -92,6 +92,7 @@ bool QtHost::Initialize()
 	}
 
 	HookSignals();
+	EmuThread::start();
 	return true;
 }
 
