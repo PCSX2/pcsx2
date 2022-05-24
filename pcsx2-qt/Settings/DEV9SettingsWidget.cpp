@@ -20,6 +20,9 @@
 #include <algorithm>
 
 #include "common/StringUtil.h"
+
+#include "pcsx2/HostSettings.h"
+
 #include "DEV9SettingsWidget.h"
 #include "EmuThread.h"
 #include "QtUtils.h"
@@ -166,7 +169,7 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	//We replace the blank entry with one for global settings
 	if (m_dialog->isPerGameSettings())
 	{
-		const std::string valueAPI = QtHost::GetBaseStringSettingValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]);
+		const std::string valueAPI = Host::GetBaseStringSettingValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]);
 		for (int i = 0; Pcsx2Config::DEV9Options::NetApiNames[i] != nullptr; i++)
 		{
 			if (valueAPI == Pcsx2Config::DEV9Options::NetApiNames[i])
@@ -179,7 +182,7 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 		std::vector<AdapterEntry> baseList = m_adapter_list[static_cast<u32>(m_global_api)];
 
 		std::string baseAdapter = " ";
-		const std::string valueGUID = QtHost::GetBaseStringSettingValue("DEV9/Eth", "EthDevice", "");
+		const std::string valueGUID = Host::GetBaseStringSettingValue("DEV9/Eth", "EthDevice", "");
 		for (size_t i = 0; i < baseList.size(); i++)
 		{
 			if (baseList[i].guid == valueGUID)
@@ -239,11 +242,11 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 		m_ui.ethDNS1Addr   ->setText(QString::fromUtf8(m_dialog->getStringValue("DEV9/Eth", "DNS1",    "").value().c_str()));
 		m_ui.ethDNS2Addr   ->setText(QString::fromUtf8(m_dialog->getStringValue("DEV9/Eth", "DNS2",    "").value().c_str()));
 
-		m_ui.ethPS2Addr    ->setPlaceholderText(QString::fromUtf8(QtHost::GetBaseStringSettingValue("DEV9/Eth", "PS2IP",   "0.0.0.0").c_str()));
-		m_ui.ethNetMask    ->setPlaceholderText(QString::fromUtf8(QtHost::GetBaseStringSettingValue("DEV9/Eth", "Mask",    "0.0.0.0").c_str()));
-		m_ui.ethGatewayAddr->setPlaceholderText(QString::fromUtf8(QtHost::GetBaseStringSettingValue("DEV9/Eth", "Gateway", "0.0.0.0").c_str()));
-		m_ui.ethDNS1Addr   ->setPlaceholderText(QString::fromUtf8(QtHost::GetBaseStringSettingValue("DEV9/Eth", "DNS1",    "0.0.0.0").c_str()));
-		m_ui.ethDNS2Addr   ->setPlaceholderText(QString::fromUtf8(QtHost::GetBaseStringSettingValue("DEV9/Eth", "DNS2",    "0.0.0.0").c_str()));
+		m_ui.ethPS2Addr    ->setPlaceholderText(QString::fromUtf8(Host::GetBaseStringSettingValue("DEV9/Eth", "PS2IP",   "0.0.0.0").c_str()));
+		m_ui.ethNetMask    ->setPlaceholderText(QString::fromUtf8(Host::GetBaseStringSettingValue("DEV9/Eth", "Mask",    "0.0.0.0").c_str()));
+		m_ui.ethGatewayAddr->setPlaceholderText(QString::fromUtf8(Host::GetBaseStringSettingValue("DEV9/Eth", "Gateway", "0.0.0.0").c_str()));
+		m_ui.ethDNS1Addr   ->setPlaceholderText(QString::fromUtf8(Host::GetBaseStringSettingValue("DEV9/Eth", "DNS1",    "0.0.0.0").c_str()));
+		m_ui.ethDNS2Addr   ->setPlaceholderText(QString::fromUtf8(Host::GetBaseStringSettingValue("DEV9/Eth", "DNS2",    "0.0.0.0").c_str()));
 	}
 	else
 	{
@@ -319,7 +322,7 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	connect(m_ui.hddFile, &QLineEdit::editingFinished, this, &DEV9SettingsWidget::onHddFileEdit);
 	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.hddFile, "DEV9/Hdd", "HddFile", "DEV9hdd.raw");
 	if (m_dialog->isPerGameSettings())
-		m_ui.hddFile->setPlaceholderText(QString::fromUtf8(QtHost::GetBaseStringSettingValue("DEV9/Hdd", "HddFile", "DEV9hdd.raw")));
+		m_ui.hddFile->setPlaceholderText(QString::fromUtf8(Host::GetBaseStringSettingValue("DEV9/Hdd", "HddFile", "DEV9hdd.raw")));
 	connect(m_ui.hddBrowseFile, &QPushButton::clicked, this, &DEV9SettingsWidget::onHddBrowseFileClicked);
 
 	//TODO: need a getUintValue for if 48bit support occurs
@@ -327,7 +330,7 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 
 	if (m_dialog->isPerGameSettings())
 	{
-		const int sizeGlobal = (u64)QtHost::GetBaseIntSettingValue("DEV9/Hdd", "HddSizeSectors", 0) * 512 / (1024 * 1024 * 1024);
+		const int sizeGlobal = (u64)Host::GetBaseIntSettingValue("DEV9/Hdd", "HddSizeSectors", 0) * 512 / (1024 * 1024 * 1024);
 		m_ui.hddSizeSpinBox->setMinimum(39);
 		m_ui.hddSizeSpinBox->setSpecialValueText(tr("Global [%1]").arg(sizeGlobal));
 	}
@@ -345,7 +348,7 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 
 void DEV9SettingsWidget::onEthEnabledChanged(int state)
 {
-	const bool enabled = state == Qt::CheckState::PartiallyChecked ? QtHost::GetBaseBoolSettingValue("DEV9/Eth", "EthEnable", false) : state;
+	const bool enabled = state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("DEV9/Eth", "EthEnable", false) : state;
 
 	m_ui.ethDevType->setEnabled(enabled);
 	m_ui.ethDevTypeLabel->setEnabled(enabled);
@@ -434,7 +437,7 @@ void DEV9SettingsWidget::onEthDeviceChanged(int index)
 
 void DEV9SettingsWidget::onEthDHCPInterceptChanged(int state)
 {
-	const bool enabled = (state == Qt::CheckState::PartiallyChecked ? QtHost::GetBaseBoolSettingValue("DEV9/Eth", "InterceptDHCP", false) : state) ||
+	const bool enabled = (state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("DEV9/Eth", "InterceptDHCP", false) : state) ||
 		((m_adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::DHCP_ForcedOn);
 
 	// clang-format off
@@ -491,7 +494,7 @@ void DEV9SettingsWidget::onEthAutoChanged(QCheckBox* sender, int state, QLineEdi
 {
 	if (sender->isEnabled())
 	{
-		const bool manual = !(state == Qt::CheckState::PartiallyChecked ? QtHost::GetBaseBoolSettingValue(section, key, true) : state);
+		const bool manual = !(state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue(section, key, true) : state);
 		input->setEnabled(manual);
 	}
 	else
@@ -506,7 +509,7 @@ void DEV9SettingsWidget::onEthDNSModeChanged(QComboBox* sender, int index, QLine
 		{
 			if (index == 0)
 			{
-				const std::string value = QtHost::GetBaseStringSettingValue(section, key, Pcsx2Config::DEV9Options::DnsModeNames[static_cast<int>(Pcsx2Config::DEV9Options::DnsMode::Auto)]);
+				const std::string value = Host::GetBaseStringSettingValue(section, key, Pcsx2Config::DEV9Options::DnsModeNames[static_cast<int>(Pcsx2Config::DEV9Options::DnsMode::Auto)]);
 				for (int i = 0; Pcsx2Config::DEV9Options::DnsModeNames[i] != nullptr; i++)
 				{
 					if (value == Pcsx2Config::DEV9Options::DnsModeNames[i])

@@ -19,6 +19,8 @@
 #include <QtWidgets/QMessageBox>
 #include <limits>
 
+#include "pcsx2/HostSettings.h"
+
 #include "EmulationSettingsWidget.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -82,7 +84,7 @@ EmulationSettingsWidget::~EmulationSettingsWidget() = default;
 
 void EmulationSettingsWidget::initializeSpeedCombo(QComboBox* cb, const char* section, const char* key, float default_value)
 {
-	float value = QtHost::GetBaseFloatSettingValue(section, key, default_value);
+	float value = Host::GetBaseFloatSettingValue(section, key, default_value);
 	if (m_dialog->isPerGameSettings())
 	{
 		cb->addItem(tr("Use Global Setting [%1%]").arg(value * 100.0f, 0, 'f', 0));

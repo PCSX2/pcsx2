@@ -264,41 +264,6 @@ void QtHost::SetDefaultConfig()
 	PAD::SetDefaultConfig(si);
 }
 
-SettingsInterface* QtHost::GetBaseSettingsInterface()
-{
-	return s_base_settings_interface.get();
-}
-
-std::string QtHost::GetBaseStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
-{
-	auto lock = Host::GetSettingsLock();
-	return s_base_settings_interface->GetStringValue(section, key, default_value);
-}
-
-bool QtHost::GetBaseBoolSettingValue(const char* section, const char* key, bool default_value /*= false*/)
-{
-	auto lock = Host::GetSettingsLock();
-	return s_base_settings_interface->GetBoolValue(section, key, default_value);
-}
-
-int QtHost::GetBaseIntSettingValue(const char* section, const char* key, int default_value /*= 0*/)
-{
-	auto lock = Host::GetSettingsLock();
-	return s_base_settings_interface->GetIntValue(section, key, default_value);
-}
-
-float QtHost::GetBaseFloatSettingValue(const char* section, const char* key, float default_value /*= 0.0f*/)
-{
-	auto lock = Host::GetSettingsLock();
-	return s_base_settings_interface->GetFloatValue(section, key, default_value);
-}
-
-std::vector<std::string> QtHost::GetBaseStringListSetting(const char* section, const char* key)
-{
-	auto lock = Host::GetSettingsLock();
-	return s_base_settings_interface->GetStringList(section, key);
-}
-
 void QtHost::SetBaseBoolSettingValue(const char* section, const char* key, bool value)
 {
 	auto lock = Host::GetSettingsLock();
@@ -831,17 +796,17 @@ void QtHost::InitializeEarlyConsole()
 
 void QtHost::UpdateLogging()
 {
-	const bool system_console_enabled = QtHost::GetBaseBoolSettingValue("Logging", "EnableSystemConsole", false);
-	const bool file_logging_enabled = QtHost::GetBaseBoolSettingValue("Logging", "EnableFileLogging", false);
+	const bool system_console_enabled = Host::GetBaseBoolSettingValue("Logging", "EnableSystemConsole", false);
+	const bool file_logging_enabled = Host::GetBaseBoolSettingValue("Logging", "EnableFileLogging", false);
 
 	const bool any_logging_sinks = system_console_enabled || file_logging_enabled;
-	DevConWriterEnabled = any_logging_sinks && (IsDevBuild || QtHost::GetBaseBoolSettingValue("Logging", "EnableVerbose", false));
-	SysConsole.eeConsole.Enabled = any_logging_sinks && QtHost::GetBaseBoolSettingValue("Logging", "EnableEEConsole", false);
-	SysConsole.iopConsole.Enabled = any_logging_sinks && QtHost::GetBaseBoolSettingValue("Logging", "EnableIOPConsole", false);
+	DevConWriterEnabled = any_logging_sinks && (IsDevBuild || Host::GetBaseBoolSettingValue("Logging", "EnableVerbose", false));
+	SysConsole.eeConsole.Enabled = any_logging_sinks && Host::GetBaseBoolSettingValue("Logging", "EnableEEConsole", false);
+	SysConsole.iopConsole.Enabled = any_logging_sinks && Host::GetBaseBoolSettingValue("Logging", "EnableIOPConsole", false);
     
 	// Input Recording Logs
-	SysConsole.recordingConsole.Enabled = any_logging_sinks && QtHost::GetBaseBoolSettingValue("Logging", "EnableInputRecordingLogs", true);
-	SysConsole.controlInfo.Enabled = any_logging_sinks && QtHost::GetBaseBoolSettingValue("Logging", "EnableControllerLogs", false);
+	SysConsole.recordingConsole.Enabled = any_logging_sinks && Host::GetBaseBoolSettingValue("Logging", "EnableInputRecordingLogs", true);
+	SysConsole.controlInfo.Enabled = any_logging_sinks && Host::GetBaseBoolSettingValue("Logging", "EnableControllerLogs", false);
 
 	UpdateLoggingSinks(system_console_enabled, file_logging_enabled);
 }

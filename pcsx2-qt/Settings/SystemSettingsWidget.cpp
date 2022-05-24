@@ -18,6 +18,8 @@
 #include <QtWidgets/QMessageBox>
 #include <algorithm>
 
+#include "pcsx2/HostSettings.h"
+
 #include "EmuThread.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -50,7 +52,7 @@ SystemSettingsWidget::SystemSettingsWidget(SettingsDialog* dialog, QWidget* pare
 		m_ui.eeCycleRate->insertItem(
 			0, tr("Use Global Setting [%1]")
 				   .arg(m_ui.eeCycleRate->itemText(
-					   std::clamp(QtHost::GetBaseIntSettingValue("EmuCore/Speedhacks", "EECycleRate", DEFAULT_EE_CYCLE_RATE) - MINIMUM_EE_CYCLE_RATE,
+					   std::clamp(Host::GetBaseIntSettingValue("EmuCore/Speedhacks", "EECycleRate", DEFAULT_EE_CYCLE_RATE) - MINIMUM_EE_CYCLE_RATE,
 						   0, MAXIMUM_EE_CYCLE_RATE - MINIMUM_EE_CYCLE_RATE))));
 		m_ui.eeClampMode->insertItem(0, tr("Use Global Setting [%1]").arg(m_ui.eeClampMode->itemText(getGlobalClampingModeIndex(false))));
 		m_ui.vuClampMode->insertItem(0, tr("Use Global Setting [%1]").arg(m_ui.vuClampMode->itemText(getGlobalClampingModeIndex(true))));
@@ -86,13 +88,13 @@ void SystemSettingsWidget::updateVU1InstantState()
 
 int SystemSettingsWidget::getGlobalClampingModeIndex(bool vu) const
 {
-	if (QtHost::GetBaseBoolSettingValue("EmuCore/CPU/Recompiler", vu ? "vuSignOverflow" : "fpuFullMode", false))
+	if (Host::GetBaseBoolSettingValue("EmuCore/CPU/Recompiler", vu ? "vuSignOverflow" : "fpuFullMode", false))
 		return 3;
 
-	if (QtHost::GetBaseBoolSettingValue("EmuCore/CPU/Recompiler", vu ? "vuExtraOverflow" : "fpuExtraOverflow", false))
+	if (Host::GetBaseBoolSettingValue("EmuCore/CPU/Recompiler", vu ? "vuExtraOverflow" : "fpuExtraOverflow", false))
 		return 2;
 
-	if (QtHost::GetBaseBoolSettingValue("EmuCore/CPU/Recompiler", vu ? "vuOverflow" : "fpuOverflow", true))
+	if (Host::GetBaseBoolSettingValue("EmuCore/CPU/Recompiler", vu ? "vuOverflow" : "fpuOverflow", true))
 		return 1;
 
 	return 0;

@@ -33,6 +33,7 @@
 #include "pcsx2/GS/GS.h"
 #include "pcsx2/GSDumpReplayer.h"
 #include "pcsx2/HostDisplay.h"
+#include "pcsx2/HostSettings.h"
 #include "pcsx2/PAD/Host/PAD.h"
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/Recording/InputRecordingControls.h"
@@ -106,8 +107,8 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 	emit onVMStarting();
 
 	// create the display, this may take a while...
-	m_is_fullscreen = boot_params->fullscreen.value_or(QtHost::GetBaseBoolSettingValue("UI", "StartFullscreen", false));
-	m_is_rendering_to_main = QtHost::GetBaseBoolSettingValue("UI", "RenderToMainWindow", true);
+	m_is_fullscreen = boot_params->fullscreen.value_or(Host::GetBaseBoolSettingValue("UI", "StartFullscreen", false));
+	m_is_rendering_to_main = Host::GetBaseBoolSettingValue("UI", "RenderToMainWindow", true);
 	m_is_surfaceless = false;
 	m_save_state_on_shutdown = false;
 	if (!VMManager::Initialize(*boot_params))
@@ -409,14 +410,14 @@ void EmuThread::reloadGameSettings()
 
 void EmuThread::loadOurSettings()
 {
-	m_verbose_status = QtHost::GetBaseBoolSettingValue("UI", "VerboseStatusBar", false);
+	m_verbose_status = Host::GetBaseBoolSettingValue("UI", "VerboseStatusBar", false);
 }
 
 void EmuThread::checkForSettingChanges()
 {
 	if (VMManager::HasValidVM())
 	{
-		const bool render_to_main = QtHost::GetBaseBoolSettingValue("UI", "RenderToMainWindow", true);
+		const bool render_to_main = Host::GetBaseBoolSettingValue("UI", "RenderToMainWindow", true);
 		if (!m_is_fullscreen && m_is_rendering_to_main != render_to_main)
 		{
 			m_is_rendering_to_main = render_to_main;

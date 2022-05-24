@@ -27,6 +27,7 @@
 #include "SettingsDialog.h"
 
 #include "common/StringUtil.h"
+#include "pcsx2/HostSettings.h"
 #include "pcsx2/PAD/Host/PAD.h"
 
 #include "SettingWidgetBinder.h"
@@ -64,7 +65,7 @@ void ControllerBindingWidget::onTypeChanged()
 		m_current_widget = nullptr;
 	}
 
-	m_controller_type = QtHost::GetBaseStringSettingValue(m_config_section.c_str(), "Type");
+	m_controller_type = Host::GetBaseStringSettingValue(m_config_section.c_str(), "Type");
 
 	const int index = m_ui.controllerType->findData(QString::fromStdString(m_controller_type));
 	if (index >= 0 && index != m_ui.controllerType->currentIndex())
@@ -119,7 +120,7 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
 	bool result;
 	{
 		auto lock = Host::GetSettingsLock();
-		result = PAD::MapController(*QtHost::GetBaseSettingsInterface(), m_port_number, mapping);
+		result = PAD::MapController(*Host::Internal::GetBaseSettingsLayer(), m_port_number, mapping);
 	}
 
 	if (result)

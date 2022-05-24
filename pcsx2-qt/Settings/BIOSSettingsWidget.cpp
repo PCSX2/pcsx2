@@ -19,6 +19,7 @@
 #include <QtWidgets/QFileDialog>
 #include <algorithm>
 
+#include "pcsx2/HostSettings.h"
 #include "pcsx2/ps2/BiosTools.h"
 
 #include "BIOSSettingsWidget.h"
@@ -110,7 +111,7 @@ void BIOSSettingsWidget::updateSearchDirectory()
 
 void BIOSSettingsWidget::listRefreshed(const QVector<BIOSInfo>& items)
 {
-	const std::string selected_bios(QtHost::GetBaseStringSettingValue("Filenames", "BIOS"));
+	const std::string selected_bios(Host::GetBaseStringSettingValue("Filenames", "BIOS"));
 
 	QSignalBlocker sb(m_ui.fileList);
 	for (const BIOSInfo& bi : items)
