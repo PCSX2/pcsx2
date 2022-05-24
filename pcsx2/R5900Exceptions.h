@@ -40,7 +40,7 @@ public:
 	std::string& Message() override { return m_message; }
 	std::string FormatMessage() const
 	{
-		return fmt::format("(EE pc:{:8.8X}) {}", cpuRegs.pc, m_message.c_str());
+		return fmt::format("(EE pc:{:08X}) {}", cpuRegs.pc, m_message.c_str());
 	}
 
 protected:
