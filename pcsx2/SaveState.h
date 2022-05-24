@@ -356,7 +356,7 @@ namespace Exception
 	{
 		DEFINE_STREAM_EXCEPTION(SaveStateLoadError, BadStream)
 
-		virtual std::string FormatDiagnosticMessage() const;
-		virtual std::string FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const override;
+		virtual std::string FormatDisplayMessage() const override;
 	};
 }; // namespace Exception

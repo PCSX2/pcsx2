@@ -594,7 +594,6 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 		if (GSTexture* t = g_gs_device->GetCurrent())
 		{
 			const std::string path(m_snapshot + ".png");
-			const std::string_view filename(Path::GetFileName(path));
 			if (t->Save(path))
 			{
 				Host::AddKeyedOSDMessage("GSScreenshot",

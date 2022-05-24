@@ -104,7 +104,6 @@ namespace VMManager
 static std::unique_ptr<SysMainMemory> s_vm_memory;
 static std::unique_ptr<SysCpuProviderPack> s_cpu_provider_pack;
 static std::unique_ptr<INISettingsInterface> s_game_settings_interface;
-static u64 s_emu_thread_affinity;
 
 static std::atomic<VMState> s_state{VMState::Shutdown};
 static std::atomic_bool s_cpu_implementation_changed{false};

@@ -604,6 +604,8 @@ void InputRecording::IncrementFrameCounter()
 			case InputRecordingMode::Replaying:
 				if (frameCounter == inputRecordingData.GetTotalFrames())
 					incrementUndo = false;
+			default:
+				break;
 		}
 	}
 }

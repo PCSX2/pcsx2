@@ -782,7 +782,7 @@ void Pcsx2Config::DEV9Options::LoadSave(SettingsWrapper& wrap)
 		SettingsWrapEntryEx(hostCount, "Count");
 	}
 
-	for (size_t i = 0; i < hostCount; i++)
+	for (int i = 0; i < hostCount; i++)
 	{
 		std::string section = "DEV9/Eth/Hosts/Host" + std::to_string(i);
 		SettingsWrapSection(section.c_str());

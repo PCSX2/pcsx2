@@ -64,7 +64,7 @@ void ElfObject::initElfHeaders(bool isPSXElf)
 
 	if (header.e_phnum > 0)
 	{
-		if ((header.e_phoff + sizeof(ELF_PHR)) <= data.GetSizeInBytes())
+		if ((header.e_phoff + sizeof(ELF_PHR)) <= static_cast<u32>(data.GetSizeInBytes()))
 			proghead = reinterpret_cast<ELF_PHR*>(&data[header.e_phoff]);
 		else
 			Console.Error("(ELF) Program header offset %u is larger than file size %u", header.e_phoff, data.GetSizeInBytes());
@@ -72,7 +72,7 @@ void ElfObject::initElfHeaders(bool isPSXElf)
 
 	if (header.e_shnum > 0)
 	{
-		if ((header.e_shoff + sizeof(ELF_SHR)) <= data.GetSizeInBytes())
+		if ((header.e_shoff + sizeof(ELF_SHR)) <= static_cast<u32>(data.GetSizeInBytes()))
 			secthead = reinterpret_cast<ELF_SHR*>(&data[header.e_shoff]);
 		else
 			Console.Error("(ELF) Section header offset %u is larger than file size %u", header.e_shoff, data.GetSizeInBytes());
