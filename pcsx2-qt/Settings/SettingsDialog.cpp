@@ -93,9 +93,7 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 				tr("<strong>Summary</strong><hr>Eventually this will be where we can see patches and compute hashes/verify dumps/etc."));
 		}
 
-		// remove the preset buttons. but we might want to enable these in the future.
 		m_ui.restoreDefaultsButton->setVisible(false);
-		m_ui.settingsPreset->setVisible(false);
 	}
 
 	// Common to both per-game and global settings.
@@ -142,6 +140,9 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this, &SettingsDialog::onCategoryCurrentRowChanged);
 	connect(m_ui.closeButton, &QPushButton::clicked, this, &SettingsDialog::accept);
 	connect(m_ui.restoreDefaultsButton, &QPushButton::clicked, this, &SettingsDialog::onRestoreDefaultsClicked);
+
+	// TODO: Remove this once they're implemented.
+	m_ui.restoreDefaultsButton->setVisible(false);
 }
 
 SettingsDialog::~SettingsDialog()
