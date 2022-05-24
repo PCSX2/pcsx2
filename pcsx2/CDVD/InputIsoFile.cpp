@@ -262,10 +262,7 @@ bool InputIsoFile::Open(std::string srcfile, bool testOnly)
 		m_reader->SetBlockSize(m_blocksize);
 
 		// Returns the original reader if single-part or a Multipart reader otherwise
-		AsyncFileReader* m_reader_old = m_reader;
 		m_reader = MultipartFileReader::DetectMultipart(m_reader);
-		if (m_reader != m_reader_old) // Not the same object the old one need to be deleted
-			delete m_reader_old;
 	}
 
 	m_blocks = m_reader->GetBlockCount();
