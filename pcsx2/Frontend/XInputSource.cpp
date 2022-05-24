@@ -94,7 +94,7 @@ XInputSource::XInputSource() = default;
 
 XInputSource::~XInputSource() = default;
 
-bool XInputSource::Initialize(SettingsInterface& si)
+bool XInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	// xinput1_3.dll is flawed and obsolete, but it's also commonly used by wrappers.
@@ -142,7 +142,7 @@ bool XInputSource::Initialize(SettingsInterface& si)
 	return true;
 }
 
-void XInputSource::UpdateSettings(SettingsInterface& si)
+void XInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
 }
 

@@ -955,19 +955,19 @@ GenericInputBindingMapping InputManager::GetGenericBindingMapping(const std::str
 }
 
 template <typename T>
-static void UpdateInputSourceState(SettingsInterface& si, InputSourceType type, bool default_state)
+static void UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock, InputSourceType type, bool default_state)
 {
 	const bool enabled = si.GetBoolValue("InputSources", InputManager::InputSourceToString(type), default_state);
 	if (enabled)
 	{
 		if (s_input_sources[static_cast<u32>(type)])
 		{
-			s_input_sources[static_cast<u32>(type)]->UpdateSettings(si);
+			s_input_sources[static_cast<u32>(type)]->UpdateSettings(si, settings_lock);
 		}
 		else
 		{
 			std::unique_ptr<InputSource> source = std::make_unique<T>();
-			if (!source->Initialize(si))
+			if (!source->Initialize(si, settings_lock))
 			{
 				Console.Error("(InputManager) Source '%s' failed to initialize.", InputManager::InputSourceToString(type));
 				return;
@@ -994,12 +994,12 @@ static void UpdateInputSourceState(SettingsInterface& si, InputSourceType type, 
 #include "Frontend/SDLInputSource.h"
 #endif
 
-void InputManager::ReloadSources(SettingsInterface& si)
+void InputManager::ReloadSources(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
 #ifdef _WIN32
-	UpdateInputSourceState<XInputSource>(si, InputSourceType::XInput, false);
+	UpdateInputSourceState<XInputSource>(si, settings_lock, InputSourceType::XInput, false);
 #endif
 #ifdef SDL_BUILD
-	UpdateInputSourceState<SDLInputSource>(si, InputSourceType::SDL, true);
+	UpdateInputSourceState<SDLInputSource>(si, settings_lock, InputSourceType::SDL, true);
 #endif
 }

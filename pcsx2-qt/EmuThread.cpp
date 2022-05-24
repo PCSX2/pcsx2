@@ -498,9 +498,9 @@ void EmuThread::reloadInputSources()
 		return;
 	}
 
-	auto lock = Host::GetSettingsLock();
+	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
 	SettingsInterface* si = Host::GetSettingsInterface();
-	InputManager::ReloadSources(*si);
+	InputManager::ReloadSources(*si, lock);
 
 	// skip loading bindings if we're not running, since it'll get done on startup anyway
 	if (VMManager::HasValidVM())
