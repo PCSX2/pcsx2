@@ -83,25 +83,6 @@
    <item row="2" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QComboBox" name="settingsPreset">
-       <item>
-        <property name="text">
-         <string>Preset: Custom</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Preset: Safe (Default)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Preset: Fast</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="restoreDefaultsButton">
        <property name="text">
         <string>Restore Defaults</string>
