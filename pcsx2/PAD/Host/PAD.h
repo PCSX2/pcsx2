@@ -54,6 +54,9 @@ namespace PAD
 	/// Restores default configuration.
 	void SetDefaultConfig(SettingsInterface& si);
 
+	/// Clears all bindings for a given port.
+	void ClearPortBindings(SettingsInterface& si, u32 port);
+
 	/// Updates vibration and other internal state. Called at the *end* of a frame.
 	void Update();
 
