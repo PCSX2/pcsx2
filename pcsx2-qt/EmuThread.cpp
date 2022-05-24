@@ -70,7 +70,6 @@ void EmuThread::start()
 	g_emu_thread->QThread::start();
 	g_emu_thread->m_started_semaphore.acquire();
 	g_emu_thread->moveToThread(g_emu_thread);
-	g_main_window->connectVMThreadSignals(g_emu_thread);
 }
 
 void EmuThread::stop()

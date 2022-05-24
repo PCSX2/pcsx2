@@ -88,6 +88,7 @@ void MainWindow::initialize()
 	setupAdditionalUi();
 	setStyleFromSettings();
 	connectSignals();
+	connectVMThreadSignals(g_emu_thread);
 
 	restoreStateFromConfig();
 	switchToGameListView();

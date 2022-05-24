@@ -203,8 +203,8 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
+	// actually show the window, the emuthread might still be starting up at this point
 	main_window->initialize();
-	EmuThread::start();
 
 	// skip scanning the game list when running in batch mode
 	if (!QtHost::InBatchMode())
