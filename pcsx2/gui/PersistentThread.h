@@ -30,6 +30,30 @@
 #include <semaphore.h>
 #endif
 
+// --------------------------------------------------------------------------------------
+//  DiagnosticOrigin
+// --------------------------------------------------------------------------------------
+struct DiagnosticOrigin
+{
+	const char* srcfile;
+	const char* function;
+	const char* condition;
+	int line;
+
+	DiagnosticOrigin(const char* _file, int _line, const char* _func, const char* _cond = nullptr)
+		: srcfile(_file)
+		, function(_func)
+		, condition(_cond)
+		, line(_line)
+	{
+	}
+
+	std::string ToString(const char* msg = nullptr) const;
+};
+
+#define pxDiagSpot DiagnosticOrigin(__FILE__, __LINE__, __pxFUNCTION__)
+#define pxAssertSpot(cond) DiagnosticOrigin(__FILE__, __LINE__, __pxFUNCTION__, #cond)
+
 namespace Threading
 {
 class pxThread;

@@ -27,35 +27,6 @@
 #endif
 #endif
 
-// --------------------------------------------------------------------------------------
-//  DiagnosticOrigin
-// --------------------------------------------------------------------------------------
-struct DiagnosticOrigin
-{
-	const char* srcfile;
-	const char* function;
-	const char* condition;
-	int line;
-
-	DiagnosticOrigin(const char* _file, int _line, const char* _func, const char* _cond = nullptr)
-		: srcfile(_file)
-		, function(_func)
-		, condition(_cond)
-		, line(_line)
-	{
-	}
-
-	std::string ToString(const char* msg = nullptr) const;
-};
-
-// Returns ture if the assertion is to trap into the debugger, or false if execution
-// of the program should continue unimpeded.
-typedef bool pxDoAssertFnType(const DiagnosticOrigin& origin, const char* msg);
-
-extern pxDoAssertFnType pxAssertImpl_LogIt;
-
-extern pxDoAssertFnType* pxDoAssert;
-
 // ----------------------------------------------------------------------------------------
 //  pxAssert / pxAssertDev
 // ----------------------------------------------------------------------------------------
@@ -93,16 +64,15 @@ extern pxDoAssertFnType* pxDoAssert;
 // it can lead to the compiler optimizing out code and leading to crashes in dev/release
 // builds. To have code optimized, explicitly use pxAssume(false) or pxAssumeDev(false,msg);
 
-#define pxDiagSpot DiagnosticOrigin(__FILE__, __LINE__, __pxFUNCTION__)
-#define pxAssertSpot(cond) DiagnosticOrigin(__FILE__, __LINE__, __pxFUNCTION__, #cond)
-
 // pxAssertRel ->
 // Special release-mode assertion.  Limited use since stack traces in release mode builds
 // (especially with LTCG) are highly suspect.  But when troubleshooting crashes that only
 // rear ugly heads in optimized builds, this is one of the few tools we have.
 
-#define pxAssertRel(cond, msg) ((likely(cond)) || (pxOnAssert(pxAssertSpot(cond), msg), false))
-#define pxAssumeRel(cond, msg) ((void)((!likely(cond)) && (pxOnAssert(pxAssertSpot(cond), msg), false)))
+extern void pxOnAssertFail(const char* file, int line, const char* func, const char* msg);
+
+#define pxAssertRel(cond, msg) ((likely(cond)) || (pxOnAssertFail(__FILE__, __LINE__, __pxFUNCTION__, msg), false))
+#define pxAssumeRel(cond, msg) ((void)((!likely(cond)) && (pxOnAssertFail(__FILE__, __LINE__, __pxFUNCTION__, msg), false)))
 #define pxFailRel(msg) pxAssertRel(false, msg)
 
 #if defined(PCSX2_DEBUG)
@@ -167,8 +137,6 @@ extern pxDoAssertFnType* pxDoAssert;
 #define pxAssume(cond) pxAssumeMsg(cond, nullptr)
 
 #define pxAssertRelease(cond, msg)
-
-extern void pxOnAssert(const DiagnosticOrigin& origin, const char* msg);
 
 // --------------------------------------------------------------------------------------
 // jNO_DEFAULT -- disables the default case in a switch, which improves switch optimization

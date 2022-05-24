@@ -388,8 +388,6 @@ bool Pcsx2App::OnInit()
 
 	InitCPUTicks();
 
-	pxDoAssert = AppDoAssert;
-
 	g_Conf = std::make_unique<AppConfig>();
 	wxInitAllImageHandlers();
 
@@ -623,7 +621,6 @@ void Pcsx2App::CleanupOnExit()
 
 	// FIXME: performing a wxYield() here may fix that problem. -- air
 
-	pxDoAssert = pxAssertImpl_LogIt;
 	Console_SetActiveHandler(ConsoleWriter_Stdout);
 }
 
@@ -732,7 +729,6 @@ Pcsx2App::Pcsx2App()
 
 Pcsx2App::~Pcsx2App()
 {
-	pxDoAssert = pxAssertImpl_LogIt;
 }
 
 void Pcsx2App::CleanUp()

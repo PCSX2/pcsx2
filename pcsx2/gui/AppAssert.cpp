@@ -114,10 +114,7 @@ void Pcsx2App::OnAssertFailure( const wxChar *file, int line, const wxChar *func
 	std::string nfunc(StringUtil::wxStringToUTF8String(func));
 	std::string ncond(StringUtil::wxStringToUTF8String(cond));
 	std::string nmsg(StringUtil::wxStringToUTF8String(msg));
-	if( AppDoAssert( DiagnosticOrigin( nfile.c_str(), line, nfunc.c_str(), ncond.c_str()), nmsg.c_str()))
-	{
-		pxTrap();
-	}
+	pxOnAssertFail(nfile.c_str(), line, nfunc.c_str(), nmsg.empty() ? ncond.c_str() : nmsg.c_str());
 }
 
 #endif
