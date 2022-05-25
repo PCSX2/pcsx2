@@ -636,11 +636,11 @@ void D3D12HostDisplay::EndPresent()
 	swap_chain_buf.TransitionToState(g_d3d12_context->GetCommandList(), D3D12_RESOURCE_STATE_PRESENT);
 	g_d3d12_context->ExecuteCommandList(false);
 
-	const UINT vsync_rate = static_cast<UINT>(m_vsync_mode != VsyncMode::Off);
-	if (!m_vsync && m_using_allow_tearing)
+	const bool vsync = static_cast<UINT>(m_vsync_mode != VsyncMode::Off);
+	if (!vsync && m_using_allow_tearing)
 		m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
 	else
-		m_swap_chain->Present(vsync_rate, 0);
+		m_swap_chain->Present(static_cast<UINT>(vsync), 0);
 }
 
 void D3D12HostDisplay::SetGPUTimingEnabled(bool enabled)
