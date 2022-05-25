@@ -12674,8 +12674,6 @@ SLES-52103:
   name: "Tak & Le Pouvoir de Juju"
   region: "PAL-F"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-52104:
   name: "Tak and the Power of JuJu"
   region: "PAL-G"
