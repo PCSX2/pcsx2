@@ -42,6 +42,10 @@
 #define PCAP_NETMASK_UNKNOWN 0xffffffff
 #endif
 
+#ifdef _WIN32
+#define PCAPPREFIX "\\Device\\NPF_"
+#endif
+
 pcap_t* adhandle;
 pcap_dumper_t* dump_pcap = nullptr;
 char errbuf[PCAP_ERRBUF_SIZE];
@@ -64,8 +68,6 @@ mac_address host_mac;
 //after it's finished reading the needed data from IP_ADAPTER_ADDRESSES
 bool PCAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer)
 {
-	const int guidindex = strlen("\\Device\\NPF_");
-
 	int neededSize = 128;
 	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
 	ULONG dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
@@ -101,7 +103,7 @@ bool PCAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter,
 
 	do
 	{
-		if (0 == strcmp(pAdapterInfo->AdapterName, &name.c_str()[guidindex]))
+		if (0 == strcmp(pAdapterInfo->AdapterName, name.c_str()))
 		{
 			*adapter = *pAdapterInfo;
 			buffer->swap(AdapterInfo);
@@ -190,8 +192,13 @@ int pcap_io_init(const std::string& adapter, bool switched, mac_address virtual_
 
 	pcap_io_switched = switched;
 
+#ifdef _WIN32
+	std::string pcapAdapter = PCAPPREFIX + adapter;
+#else
+	std::string pcapAdapter = adapter;
+#endif
 	/* Open the adapter */
-	if ((adhandle = pcap_open_live(adapter.c_str(), // name of the device
+	if ((adhandle = pcap_open_live(pcapAdapter.c_str(), // name of the device
 			 65536, // portion of the packet to capture.
 			 // 65536 grants that the whole packet will be captured on all the MACs.
 			 switched ? 1 : 0,
@@ -508,7 +515,14 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 		entry.type = Pcsx2Config::DEV9Options::NetApi::PCAP_Switched;
 #ifdef _WIN32
 		//guid
-		entry.guid = std::string(d->name);
+		if (!StringUtil::StartsWith(d->name, PCAPPREFIX))
+		{
+			Console.Error("PCAP: Unexpected Device: ", d->name);
+			d = d->next;
+			continue;
+		}
+
+		entry.guid = std::string(&d->name[strlen(PCAPPREFIX)]);
 
 		IP_ADAPTER_ADDRESSES adapterInfo;
 		std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
