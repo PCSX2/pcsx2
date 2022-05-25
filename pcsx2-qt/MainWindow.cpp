@@ -24,6 +24,7 @@
 #include <QtWidgets/QStyleFactory>
 
 #include "common/Assertions.h"
+#include "common/CocoaTools.h"
 #include "common/FileSystem.h"
 
 #include "pcsx2/CDVD/CDVDaccess.h"
@@ -84,12 +85,25 @@ MainWindow::~MainWindow()
 	// we compare here, since recreate destroys the window later
 	if (g_main_window == this)
 		g_main_window = nullptr;
+#ifdef __APPLE__
+	CocoaTools::RemoveThemeChangeHandler(this);
+#endif
 }
 
 void MainWindow::initialize()
 {
 	setStyleFromSettings();
 	setIconThemeFromStyle();
+#ifdef __APPLE__
+	CocoaTools::AddThemeChangeHandler(this, [](void* ctx){
+		// This handler is called *before* the style change has propagated far enough for Qt to see it
+		// Use RunOnUIThread to delay until it has
+		QtHost::RunOnUIThread([ctx = static_cast<MainWindow*>(ctx)]{
+			ctx->setStyleFromSettings(); // Qt won't notice the style change without us touching the palette in some way
+			ctx->setIconThemeFromStyle();
+		});
+	});
+#endif
 	m_ui.setupUi(this);
 	setupAdditionalUi();
 	connectSignals();
