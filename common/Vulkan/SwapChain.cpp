@@ -15,6 +15,7 @@
 
 #include "common/Vulkan/SwapChain.h"
 #include "common/Assertions.h"
+#include "common/CocoaTools.h"
 #include "common/Console.h"
 #include "common/Vulkan/Context.h"
 #include "common/Vulkan/Util.h"
@@ -24,96 +25,6 @@
 
 #if defined(VK_USE_PLATFORM_XLIB_KHR)
 #include <X11/Xlib.h>
-#endif
-
-#if defined(__APPLE__)
-#include <objc/message.h>
-#include <dispatch/dispatch.h>
-
-#ifdef __i386__
-typedef float CGFloat;
-#else
-typedef double CGFloat;
-#endif
-
-template <typename Ret, typename Self, typename... Args>
-Ret msgsend(Self self, const char* sel, Args... args)
-{
-	void (*fn)(void) = objc_msgSend;
-#ifdef __i386__
-	if (std::is_same<Ret, float>::value || std::is_same<Ret, double>::value || std::is_same<Ret, long double>::value)
-		fn = objc_msgSend_fpret;
-#endif
-#ifdef __x86_64__
-	if (std::is_same<Ret, long double>::value)
-		fn = objc_msgSend_fpret;
-#endif
-	return reinterpret_cast<Ret(*)(Self, SEL, Args...)>(fn)(self, sel_getUid(sel), args...);
-}
-
-static bool CreateMetalLayer(WindowInfo* wi)
-{
-	// if (![NSThread isMainThread])
-	if (!msgsend<BOOL, Class>(objc_getClass("NSThread"), "isMainThread"))
-	{
-		__block bool ret;
-		dispatch_sync(dispatch_get_main_queue(), ^{ ret = CreateMetalLayer(wi); });
-		return ret;
-	}
-
-	id view = reinterpret_cast<id>(wi->window_handle);
-
-	Class clsCAMetalLayer = objc_getClass("CAMetalLayer");
-	if (!clsCAMetalLayer)
-	{
-		Console.Error("Failed to get CAMetalLayer class.");
-		return false;
-	}
-
-	// [CAMetalLayer layer]
-	id layer = msgsend<id, Class>(clsCAMetalLayer, "layer");
-	if (!layer)
-	{
-		Console.Error("Failed to create Metal layer.");
-		return false;
-	}
-
-	// This needs to be retained, otherwise we double release below.
-	msgsend<void, id>(layer, "retain");
-
-	// [view setWantsLayer:YES]
-	msgsend<void, id, BOOL>(view, "setWantsLayer:", YES);
-
-	// [view setLayer:layer]
-	msgsend<void, id, id>(view, "setLayer:", layer);
-
-	// NSScreen* screen = [NSScreen mainScreen]
-	id screen = msgsend<id, Class>(objc_getClass("NSScreen"), "mainScreen");
-
-	// CGFloat factor = [screen backingScaleFactor]
-	CGFloat factor = msgsend<CGFloat, id>(screen, "backingScaleFactor");
-
-	// layer.contentsScale = factor
-	msgsend<void, id, CGFloat>(layer, "setContentsScale:", factor);
-
-	// Store the layer pointer, that way MoltenVK doesn't call [NSView layer] outside the main thread.
-	wi->surface_handle = layer;
-	return true;
-}
-
-static void DestroyMetalLayer(WindowInfo* wi)
-{
-	id view = reinterpret_cast<id>(wi->window_handle);
-	id layer = reinterpret_cast<id>(wi->surface_handle);
-	if (layer == nil)
-		return;
-
-	reinterpret_cast<void (*)(id, SEL, id)>(objc_msgSend)(view, sel_getUid("setLayer:"), nil);
-	reinterpret_cast<void (*)(id, SEL, BOOL)>(objc_msgSend)(view, sel_getUid("setWantsLayer:"), NO);
-	reinterpret_cast<void (*)(id, SEL)>(objc_msgSend)(layer, sel_getUid("release"));
-	wi->surface_handle = nullptr;
-}
-
 #endif
 
 namespace Vulkan
@@ -435,7 +346,7 @@ namespace Vulkan
 #if defined(VK_USE_PLATFORM_METAL_EXT)
 		if (wi->type == WindowInfo::Type::MacOS)
 		{
-			if (!wi->surface_handle && !CreateMetalLayer(wi))
+			if (!wi->surface_handle && !CocoaTools::CreateMetalLayer(wi))
 				return VK_NULL_HANDLE;
 
 			VkMetalSurfaceCreateInfoEXT surface_create_info = {VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT, nullptr,
@@ -483,7 +394,7 @@ namespace Vulkan
 
 #if defined(__APPLE__)
 		if (wi->type == WindowInfo::Type::MacOS && wi->surface_handle)
-			DestroyMetalLayer(wi);
+			CocoaTools::DestroyMetalLayer(wi);
 #endif
 	}
 
