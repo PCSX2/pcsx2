@@ -64,7 +64,11 @@ static constexpr char DISC_IMAGE_FILTER[] =
 									"GS Dumps (*.gs *.gs.xz *.gs.zst);;"
 									"Block Dumps (*.dump)");
 
+#ifdef __APPLE__
+const char* MainWindow::DEFAULT_THEME_NAME = "";
+#else
 const char* MainWindow::DEFAULT_THEME_NAME = "darkfusion";
+#endif
 
 MainWindow* g_main_window = nullptr;
 
@@ -97,8 +101,30 @@ void MainWindow::initialize()
 	updateSaveStateMenus(QString(), QString(), 0);
 }
 
+// TODO: Figure out how to set this in the .ui file
+/// Marks the icons for all actions in the given menu as mask icons
+/// This means macOS's menubar renderer will ignore color values and use only the alpha in the image.
+/// The color value will instead be taken from the system theme.
+/// Since the menubar follows the OS's dark/light mode and not our current theme's, this prevents problems where a theme mismatch puts white icons in light mode or dark icons in dark mode.
+static void makeIconsMasks(QWidget* menu)
+{
+	for (QAction* action : menu->actions())
+	{
+		if (!action->icon().isNull())
+		{
+			QIcon icon = action->icon();
+			icon.setIsMask(true);
+			action->setIcon(icon);
+		}
+		if (action->menu())
+			makeIconsMasks(action->menu());
+	}
+}
+
 void MainWindow::setupAdditionalUi()
 {
+	makeIconsMasks(menuBar());
+
 	const bool toolbar_visible = Host::GetBaseBoolSettingValue("UI", "ShowToolbar", false);
 	m_ui.actionViewToolbar->setChecked(toolbar_visible);
 	m_ui.toolBar->setVisible(toolbar_visible);
