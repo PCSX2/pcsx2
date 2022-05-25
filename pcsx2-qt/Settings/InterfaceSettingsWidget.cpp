@@ -21,17 +21,29 @@
 #include "SettingWidgetBinder.h"
 #include "SettingsDialog.h"
 
-static const char* THEME_NAMES[] = {QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Native [Light]"),
+static const char* THEME_NAMES[] = {
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Native"),
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Fusion [Light]"),
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Dark Fusion (Gray) [Dark]"),
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Dark Fusion (Blue) [Dark]"),
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Untouched Lagoon (Grayish Green/-Blue ) [Light]"),
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Baby Pastel (Pink) [Light]"),
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "PCSX2 (White/Blue) [Light]"),
-	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Scarlet Devil (Red/Purple) [Dark]"), nullptr};
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Scarlet Devil (Red/Purple) [Dark]"),
+	nullptr
+};
 
-static const char* THEME_VALUES[] = {"", "fusion", "darkfusion", "darkfusionblue", 
-	"UntouchedLagoon", "BabyPastel", "PCSX2Blue", "ScarletDevilRed", nullptr};
+static const char* THEME_VALUES[] = {
+	"",
+	"fusion",
+	"darkfusion",
+	"darkfusionblue",
+	"UntouchedLagoon",
+	"BabyPastel",
+	"PCSX2Blue",
+	"ScarletDevilRed",
+	nullptr
+};
 
 InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	: QWidget(parent)
