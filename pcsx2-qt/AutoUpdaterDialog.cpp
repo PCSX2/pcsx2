@@ -133,7 +133,7 @@ QString AutoUpdaterDialog::getCurrentVersionDate()
 QString AutoUpdaterDialog::getCurrentUpdateTag() const
 {
 #ifdef AUTO_UPDATER_SUPPORTED
-	return QString::fromStdString(QtHost::GetBaseStringSettingValue("AutoUpdater", "UpdateTag", THIS_RELEASE_TAG));
+	return QString::fromStdString(Host::GetBaseStringSettingValue("AutoUpdater", "UpdateTag", THIS_RELEASE_TAG));
 #else
 	return QString();
 #endif
