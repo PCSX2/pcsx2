@@ -229,3 +229,20 @@ function(find_optional_system_library library bundled_path)
 		set(${library}_TYPE "Bundled" PARENT_SCOPE)
 	endif()
 endfunction()
+
+function(fixup_file_properties target)
+	get_target_property(SOURCES ${target} SOURCES)
+	if(APPLE)
+		foreach(source IN LISTS SOURCES)
+			# Set the right file types for .inl files in Xcode
+			if("${source}" MATCHES "\\.(inl|h)$")
+				set_source_files_properties("${source}" PROPERTIES XCODE_EXPLICIT_FILE_TYPE sourcecode.cpp.h)
+			endif()
+			# CMake makefile and ninja generators will attempt to share one PCH for both cpp and mm files
+			# That's not actually OK
+			if("${source}" MATCHES "\\.mm$")
+				set_source_files_properties("${source}" PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+			endif()
+		endforeach()
+	endif()
+endfunction()

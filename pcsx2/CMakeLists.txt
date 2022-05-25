@@ -1749,6 +1749,8 @@ if(GETTEXT_FOUND AND NOT NO_TRANSLATION AND NOT PCSX2_CORE)
 	GETTEXT_CREATE_TRANSLATIONS_PCSX2(${CMAKE_SOURCE_DIR}/locales/templates/pcsx2_Main.pot     ${PO_MAIN_FILES})
 endif()
 
+fixup_file_properties(PCSX2)
+
 if (APPLE)
 	find_library(METAL_LIBRARY Metal)
 	find_library(QUARTZCORE_LIBRARY QuartzCore)
@@ -1758,19 +1760,6 @@ if (APPLE)
 	# We have a bunch of page-sized arrays in bss that we use for jit
 	# Obviously not being able to make those arrays executable would be a problem
 	target_link_options(PCSX2_FLAGS INTERFACE -Wl,-segprot,__DATA,rwx,rw)
-
-	get_target_property(PCSX2_SOURCES PCSX2 SOURCES)
-	foreach(source IN LISTS PCSX2_SOURCES)
-		# Set the right file types for .inl files in Xcode
-		if("${source}" MATCHES "\\.(inl|h)$")
-			set_source_files_properties("${source}" PROPERTIES XCODE_EXPLICIT_FILE_TYPE sourcecode.cpp.h)
-		endif()
-		# CMake makefile and ninja generators will attempt to share one PCH for both cpp and mm files
-		# That's not actually OK
-		if("${source}" MATCHES "\\.mm$")
-			set_source_files_properties("${source}" PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
-		endif()
-	endforeach()
 endif()
 
 set_property(GLOBAL PROPERTY PCSX2_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})

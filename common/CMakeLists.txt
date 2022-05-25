@@ -191,6 +191,15 @@ if(WIN32)
 	)
 endif()
 
+if(APPLE)
+	target_sources(common PRIVATE
+		CocoaTools.mm
+		CocoaTools.h
+	)
+	target_compile_options(common PRIVATE -fobjc-arc)
+	target_link_options(common PRIVATE -fobjc-link-runtime)
+endif()
+
 if(USE_OPENGL)
 	if(WIN32)
 		target_sources(common PRIVATE
@@ -203,9 +212,6 @@ if(USE_OPENGL)
 			GL/ContextAGL.mm
 			GL/ContextAGL.h
 		)
-		set_source_files_properties(GL/ContextAGL.mm PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
-		target_compile_options(common PRIVATE -fobjc-arc)
-		target_link_options(common PRIVATE -fobjc-link-runtime)
 	else()
 		if(X11_API OR WAYLAND_API)
 			target_sources(common PRIVATE
@@ -263,6 +269,7 @@ target_link_libraries(common PUBLIC
 	fmt::fmt
 )
 
+fixup_file_properties(common)
 target_compile_features(common PUBLIC cxx_std_17)
 target_include_directories(common PUBLIC ../3rdparty/include ../)
 target_compile_definitions(common PUBLIC "${PCSX2_DEFS}")
