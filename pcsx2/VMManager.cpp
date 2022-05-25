@@ -85,7 +85,7 @@ namespace VMManager
 	static bool CheckBIOSAvailability();
 	static void LoadPatches(const std::string& serial, u32 crc,
 		bool show_messages, bool show_messages_when_disabled);
-	static void UpdateRunningGame(bool force, bool game_starting);
+	static void UpdateRunningGame(bool resetting, bool game_starting);
 
 	static std::string GetCurrentSaveStateFileName(s32 slot);
 	static bool DoLoadState(const char* filename);
@@ -508,7 +508,7 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 	}
 }
 
-void VMManager::UpdateRunningGame(bool force, bool game_starting)
+void VMManager::UpdateRunningGame(bool resetting, bool game_starting)
 {
 	// The CRC can be known before the game actually starts (at the bios), so when
 	// we have the CRC but we're still at the bios and the settings are changed
@@ -528,7 +528,7 @@ void VMManager::UpdateRunningGame(bool force, bool game_starting)
 		new_serial = GSDumpReplayer::GetDumpSerial();
 	}
 
-	if (!force && s_game_crc == new_crc && s_game_serial == new_serial)
+	if (!resetting && s_game_crc == new_crc && s_game_serial == new_serial)
 		return;
 
 	{
@@ -554,7 +554,7 @@ void VMManager::UpdateRunningGame(bool force, bool game_starting)
 
 		// If we don't reset the timer here, when using folder memcards the reindex will cause an eject,
 		// which a bunch of games don't like since they access the memory card on boot.
-		if (game_starting)
+		if (game_starting || resetting)
 			ClearMcdEjectTimeoutNow();
 	}
 
@@ -563,7 +563,7 @@ void VMManager::UpdateRunningGame(bool force, bool game_starting)
 
 	// check this here, for two cases: dynarec on, and when enable cheats is set per-game.
 	if (s_patches_crc != s_game_crc)
-		ReloadPatches(true);
+		ReloadPatches(game_starting, false);
 
 	GetMTGS().SendGameCRC(new_crc);
 
@@ -574,9 +574,9 @@ void VMManager::UpdateRunningGame(bool force, bool game_starting)
 	R3000SymbolMap.UpdateActiveSymbols();
 }
 
-void VMManager::ReloadPatches(bool verbose)
+void VMManager::ReloadPatches(bool verbose, bool show_messages_when_disabled)
 {
-	LoadPatches(s_game_serial, s_game_crc, verbose, verbose);
+	LoadPatches(s_game_serial, s_game_crc, verbose, show_messages_when_disabled);
 }
 
 static LimiterModeType GetInitialLimiterMode()
@@ -844,7 +844,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	s_state.store(VMState::Paused);
 	Host::OnVMStarted();
 
-	UpdateRunningGame(true, true);
+	UpdateRunningGame(true, false);
 
 	SetEmuThreadAffinities(true);
 
@@ -941,7 +941,7 @@ void VMManager::Reset()
 
 	// gameid change, so apply settings
 	if (game_was_started)
-		UpdateRunningGame(true, true);
+		UpdateRunningGame(true, false);
 }
 
 std::string VMManager::GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot)
@@ -1351,7 +1351,7 @@ void VMManager::CheckForPatchConfigChanges(const Pcsx2Config& old_config)
 		return;
 	}
 
-	ReloadPatches(true);
+	ReloadPatches(true, true);
 }
 
 void VMManager::CheckForSPU2ConfigChanges(const Pcsx2Config& old_config)
@@ -1453,7 +1453,7 @@ void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)
 		EmuConfig.EnableWideScreenPatches != old_config.EnableWideScreenPatches ||
 		EmuConfig.EnableNoInterlacingPatches != old_config.EnableNoInterlacingPatches)
 	{
-		VMManager::ReloadPatches(true);
+		VMManager::ReloadPatches(true, true);
 	}
 }
 

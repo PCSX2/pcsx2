@@ -487,7 +487,7 @@ void EmuThread::reloadPatches()
 	if (!VMManager::HasValidVM())
 		return;
 
-	VMManager::ReloadPatches(true);
+	VMManager::ReloadPatches(true, true);
 }
 
 void EmuThread::reloadInputSources()
