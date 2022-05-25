@@ -22,6 +22,10 @@ namespace CocoaTools
 {
 	bool CreateMetalLayer(WindowInfo* wi);
 	void DestroyMetalLayer(WindowInfo* wi);
+	/// Add a handler to be run when macOS changes between dark and light themes
+	void AddThemeChangeHandler(void* ctx, void(handler)(void* ctx));
+	/// Remove a handler previously added using AddThemeChangeHandler with the given context
+	void RemoveThemeChangeHandler(void* ctx);
 }
 
 #endif // __APPLE__
