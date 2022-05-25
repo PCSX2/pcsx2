@@ -546,8 +546,6 @@ SCAJ-20056:
 SCAJ-20057:
   name: "Front Mission 4"
   region: "NTSC-Unk"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     preloadFrameData: 1 # Fixes mech shadows.
     roundSprite: 2 # Fixes font artifacts.
@@ -839,8 +837,6 @@ SCAJ-20118:
 SCAJ-20119:
   name: "Gladiator - Road to Freedom"
   region: "NTSC-Unk"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
@@ -1094,8 +1090,6 @@ SCAJ-20165:
 SCAJ-20166:
   name: "Front Mission 5 - Scars of the War"
   region: "NTSC-Unk"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes blurriness but no fix for font or other artifacts possible with round sprite.
 SCAJ-20167:
@@ -9699,8 +9693,6 @@ SLES-50649:
   name: "Taz Wanted"
   region: "PAL-M5"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-50650:
   name: "Resident Evil Gun Survivor 2 - Code Veronica"
   region: "PAL-E"
@@ -11434,8 +11426,6 @@ SLES-51443:
 SLES-51445:
   name: "Rygar - The Legendary Adventure"
   region: "PAL-M5"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLES-51448:
   name: "Resident Evil - Dead Aim"
   region: "PAL-M5"
@@ -12067,8 +12057,6 @@ SLES-51819:
 SLES-51820:
   name: "Sniper Elite"
   region: "PAL-M5"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   gsHWFixes:
     autoFlush: 1 # Fixes bloom misalignment.
     halfPixelOffset: 2 # Fixes bloom misalignment.
@@ -12545,8 +12533,6 @@ SLES-52011:
   name: "Tak and The Power of Juju"
   region: "PAL-E"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-52015:
   name: "Les Chevaliers de Baphomet"
   region: "PAL-F"
@@ -12698,8 +12684,6 @@ SLES-52104:
   name: "Tak and the Power of JuJu"
   region: "PAL-G"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-52106:
   name: "Cabela's Dangerous Hunts"
   region: "PAL-E"
@@ -12815,16 +12799,12 @@ SLES-52187:
   name: "Baldur's Gate - Dark Alliance II"
   region: "PAL-M3"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV and weird colored squares.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
 SLES-52188:
   name: "Baldur's Gate - Dark Alliance II"
   region: "PAL-M3"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV and weird colored squares.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
 SLES-52190:
@@ -13012,14 +12992,10 @@ SLES-52286:
   name: "Tak and The Power of JuJu"
   region: "PAL-S"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-52287:
   name: "Tak and The Power of JuJu"
   region: "PAL-I"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-52288:
   name: "Tom Clancy's Rainbow Six 3"
   region: "PAL-M5"
@@ -13076,8 +13052,6 @@ SLES-52322:
   compat: 5
   clampModes:
     eeClampMode: 3 # Characters are visible in-game.
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and textures wrong.
 SLES-52323:
   name: "Richard Burns Rally"
   region: "PAL-M5"
@@ -14211,8 +14185,6 @@ SLES-52831:
 SLES-52832:
   name: "Mega Man X - Command Mission"
   region: "PAL-M3"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-52834:
   name: "Sega Superstars Eyetoy Bundle"
   region: "PAL-M4"
@@ -14562,8 +14534,6 @@ SLES-52986:
 SLES-52988:
   name: "Mega Man X8"
   region: "PAL-M5"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   memcardFilters: # Reads Command Mission save for bonus boss.
     - "SLES-52988"
     - "SLES-52832"
@@ -14740,8 +14710,6 @@ SLES-53036:
   name: "Tak 2 - The Staff of Dreams"
   region: "PAL-M3"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-53037:
   name: "Super Monkey Ball Deluxe"
   region: "PAL-M5"
@@ -14952,8 +14920,6 @@ SLES-53129:
   name: "Tak 2 - The Staff of Dreams"
   region: "PAL-F-G"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLES-53130:
   name: "World Championship Poker"
   region: "PAL-M5"
@@ -15307,8 +15273,6 @@ SLES-53355:
 SLES-53356:
   name: "Colosseum - Road to Freedom"
   region: "PAL-E"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
@@ -16453,8 +16417,6 @@ SLES-53756:
 SLES-53758:
   name: "Sniper Elite [Pre-Production]"
   region: "PAL-E"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   gsHWFixes:
     autoFlush: 1 # Fixes bloom misalignment.
     halfPixelOffset: 2 # Fixes bloom misalignment.
@@ -18015,8 +17977,6 @@ SLES-54453:
 SLES-54454:
   name: "Disgaea 2 - Cursed Memories"
   region: "PAL-E"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes flickering FMV's.
   # Comments from old GameIndex.dbf for this Game.
   #  Voices can be switched between Japanese and English via Options menu.
 SLES-54455:
@@ -21403,8 +21363,6 @@ SLKA-25221:
 SLKA-25222:
   name: "Rockman X8"
   region: "NTSC-K"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLKA-25224:
   name: "Detective Saburo Jinguji 9 - Kind of Blue"
   region: "NTSC-K"
@@ -25742,8 +25700,6 @@ SLPM-65407:
   name: "Transformers Tatakai"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes flickering FMVs.
 SLPM-65408:
   name: "Growlanser IV - Wayfarer of the Time"
   region: "NTSC-J"
@@ -25871,8 +25827,6 @@ SLPM-65442:
 SLPM-65443:
   name: "Front Mission 4"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     preloadFrameData: 1 # Fixes mech shadows.
     roundSprite: 2 # Fixes font artifacts.
@@ -26499,8 +26453,6 @@ SLPM-65642:
 SLPM-65643:
   name: "RockMan X - Command Mission"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLPM-65644:
   name: "Guilty Gear Isuka"
   region: "NTSC-J"
@@ -27162,8 +27114,6 @@ SLPM-65845:
   name: "Baldur's Gate - Dark Alliance II"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV and weird colored squares.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
 SLPM-65846:
@@ -28094,8 +28044,6 @@ SLPM-66131:
 SLPM-66132:
   name: "Gladiator - Road to Freedom - Remix"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
@@ -28356,8 +28304,6 @@ SLPM-66205:
   name: "Front Mission 5 - Scars of the War"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes blurriness but no fix for font or other artifacts possible with round sprite.
 SLPM-66206:
@@ -29102,16 +29048,12 @@ SLPM-66419:
 SLPM-66420:
   name: "Front Mission 4 [Ultimate Hits]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     preloadFrameData: 1 # Fixes mech shadows.
     roundSprite: 2 # Fixes font artifacts.
 SLPM-66421:
   name: "Front Mission 5 - Scars of the War [Ultimate Hits]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes blurriness but no fix for font or other artifacts possible with round sprite.
 SLPM-66422:
@@ -29680,8 +29622,6 @@ SLPM-66576:
 SLPM-66577:
   name: "Gladiator - Road to Freedom [Special Remix] [Ertain the Best]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
@@ -34249,8 +34189,6 @@ SLPS-25455:
 SLPS-25456:
   name: "Gladiator - Road to Freedom"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
@@ -34777,14 +34715,10 @@ SLPS-25606:
 SLPS-25607:
   name: "Makai Senki Disgaea 2 [Limited Edition]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes flickering FMV's.
 SLPS-25608:
   name: "Makai Senki Disgaea 2"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes flickering FMV's.
 SLPS-25609:
   name: "King of Fighters, The - Maximum Impact 2"
   region: "NTSC-J"
@@ -37417,8 +37351,6 @@ SLUS-20236:
   name: "Taz Wanted"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLUS-20237:
   name: "ESPN - X Games Skateboarding"
   region: "NTSC-U"
@@ -38446,8 +38378,6 @@ SLUS-20471:
   name: "Rygar - The Legendary Adventure"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLUS-20472:
   name: "Micro Machines"
   region: "NTSC-U"
@@ -38647,8 +38577,6 @@ SLUS-20519:
   name: "Tak and The Power of Juju"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLUS-20520:
   name: "Lord of the Rings, The - The Fellowship of the Ring"
   region: "NTSC-U"
@@ -39344,8 +39272,6 @@ SLUS-20675:
   name: "Baldur's Gate - Dark Alliance II"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV and weird colored squares.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
 SLUS-20676:
@@ -39461,8 +39387,6 @@ SLUS-20702:
   name: "Monster Rancher 4"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLUS-20703:
   name: "Airforce - Delta Strike"
   region: "NTSC-U"
@@ -39589,8 +39513,6 @@ SLUS-20732:
   compat: 5
   clampModes:
     eeClampMode: 3 # Characters are visible in-game.
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and textures wrong.
 SLUS-20733:
   name: "Castlevania - Lament of Innocence"
   region: "NTSC-U"
@@ -40243,8 +40165,6 @@ SLUS-20888:
   name: "Front Mission 4"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     preloadFrameData: 1 # Fixes mech shadows.
     roundSprite: 2 # Fixes font artifacts.
@@ -40321,8 +40241,6 @@ SLUS-20903:
   name: "Mega Man X - Command Mission"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLUS-20904:
   name: "SpongeBob SquarePants - The Movie"
   region: "NTSC-U"
@@ -40564,8 +40482,6 @@ SLUS-20952:
   name: "Tak 2 - The Staff of Dreams"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLUS-20953:
   name: "Shaman King - Power of Spirit"
   region: "NTSC-U"
@@ -40600,8 +40516,6 @@ SLUS-20960:
   name: "Mega Man X8"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   memcardFilters:
     - "SLUS-20960"
     - "SLUS-20903"
@@ -41689,8 +41603,6 @@ SLUS-21179:
   name: "Colosseum - Road to Freedom"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
@@ -41966,8 +41878,6 @@ SLUS-21231:
   name: "Sniper Elite"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   gsHWFixes:
     autoFlush: 1 # Fixes bloom misalignment.
     halfPixelOffset: 2 # Fixes bloom misalignment.
@@ -42889,8 +42799,6 @@ SLUS-21397:
   name: "Disgaea 2 - Cursed Memories"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes flickering FMV's.
 SLUS-21398:
   name: "Dynasty Warriors 5 - Empires"
   region: "NTSC-U"
@@ -45614,8 +45522,6 @@ SLUS-29067:
   name: "Tak and the Power of Juju [Demo]"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLUS-29068:
   name: "Crash Nitro Kart [Demo]"
   region: "NTSC-U"
@@ -45682,8 +45588,6 @@ SLUS-29086:
 SLUS-29087:
   name: "Square Enix Sampler Disc Vol.1 - Drakengard Playable Demo"
   region: "NTSC-U"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and textures wrong.
 SLUS-29088:
   name: "Champions of Norrath - Realms of EverQuest [Demo]"
   region: "NTSC-U"
@@ -45707,8 +45611,6 @@ SLUS-29096:
 SLUS-29098:
   name: "Square Enix Sampler Disc Vol.2 - Front Mission 4 Playable Demo"
   region: "NTSC-U"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     preloadFrameData: 1 # Fixes mech shadows.
     roundSprite: 2 # Fixes font artifacts.
