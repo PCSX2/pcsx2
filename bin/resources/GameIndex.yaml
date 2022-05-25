@@ -9724,8 +9724,6 @@ SLES-50672:
   name: "Baldur's Gate - Dark Alliance"
   region: "PAL-M5"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV and weird colored squares.
 SLES-50677:
   name: "Shadow Hearts"
   region: "PAL-E"
@@ -12241,8 +12239,6 @@ SLES-51885:
   name: "Mega Man X7"
   region: "PAL-M5"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   clampModes:
     eeClampMode: 3 # For camera issues in some scenes.
 SLES-51886:
@@ -21157,8 +21153,6 @@ SLKA-25115:
   name: "Rockman X7"
   region: "NTSC-K"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   clampModes:
     eeClampMode: 3 # For camera issues in some scenes.
 SLKA-25125:
@@ -22146,8 +22140,6 @@ SLPM-60207:
   name: "Rockman X7"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   clampModes:
     eeClampMode: 3 # For camera issues in some scenes.
 SLPM-60216:
@@ -25485,8 +25477,6 @@ SLPM-65331:
   name: "Rockman X7"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   clampModes:
     eeClampMode: 3 # For camera issues in some scenes.
 SLPM-65332:
@@ -33067,8 +33057,6 @@ SLPS-25139:
   name: "Baldur's Gate - Dark Alliance"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV and weird colored squares.
 SLPS-25141:
   name: "Pac-Man World 2"
   region: "NTSC-J"
@@ -33528,8 +33516,6 @@ SLPS-25291:
   name: "Baldur's Gate - Dark Alliance [PCCW The Best]"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV and weird colored squares.
 SLPS-25292:
   name: "D-A - Black"
   region: "NTSC-J"
@@ -36601,8 +36587,6 @@ SLUS-20035:
   name: "Baldur's Gate - Dark Alliance"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV and weird colored squares.
 SLUS-20037:
   name: "Run Like Hell - Hunt or Be Hunted"
   region: "NTSC-U"
@@ -38438,8 +38422,6 @@ SLUS-20487:
   name: "Mega Man X7"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   clampModes:
     eeClampMode: 3 # For camera issues in some scenes.
 SLUS-20488:
