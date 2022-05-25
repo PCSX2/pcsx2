@@ -37,6 +37,7 @@
 #include "DEV9/PacketReader/IP/UDP/DHCP/DHCP_Packet.h"
 
 #include "DEV9/DEV9.h"
+#include "DEV9/AdapterUtils.h"
 
 using namespace PacketReader;
 using namespace PacketReader::IP;
@@ -110,195 +111,6 @@ namespace InternalServers
 		AutoBroadcast(ps2IP, netmask);
 	}
 
-#ifdef __POSIX__
-	//skipsEmpty
-	std::vector<std::string> DHCP_Server::SplitString(std::string str, char delimiter)
-	{
-		std::vector<std::string> ret;
-		size_t last = 0;
-		size_t next = 0;
-		std::string token;
-		while ((next = str.find(delimiter, last)) != std::string::npos)
-		{
-			token = str.substr(last, next - last);
-			if (next != last)
-				ret.push_back(token);
-			last = next + 1;
-		}
-		token = str.substr(last);
-		if (next != last)
-			ret.push_back(token);
-
-		return ret;
-	}
-#ifdef __linux__
-	std::vector<IP_Address> DHCP_Server::GetGatewaysLinux(char* interfaceName)
-	{
-		///proc/net/route contains some information about gateway addresses,
-		//and separates the information about by each interface.
-		std::vector<IP_Address> collection;
-		std::vector<std::string> routeLines;
-		std::fstream route("/proc/net/route", std::ios::in);
-		if (route.fail())
-		{
-			route.close();
-			Console.Error("DHCP: Failed to open /proc/net/route");
-			return collection;
-		}
-
-		std::string line;
-		while (std::getline(route, line))
-			routeLines.push_back(line);
-		route.close();
-
-		//Columns are as follows (first-line header):
-		//Iface  Destination  Gateway  Flags  RefCnt  Use  Metric  Mask  MTU  Window  IRTT
-		for (size_t i = 1; i < routeLines.size(); i++)
-		{
-			std::string line = routeLines[i];
-			if (line.rfind(interfaceName, 0) == 0)
-			{
-				std::vector<std::string> split = SplitString(line, '\t');
-				std::string gatewayIPHex = split[2];
-				int addressValue = std::stoi(gatewayIPHex, 0, 16);
-				//Skip device routes without valid NextHop IP address
-				if (addressValue != 0)
-				{
-					IP_Address gwIP = *(IP_Address*)&addressValue;
-					collection.push_back(gwIP);
-				}
-			}
-		}
-		return collection;
-	}
-#elif defined(__FreeBSD__) || (__APPLE__)
-	std::vector<IP_Address> DHCP_Server::GetGatewaysBSD(char* interfaceName)
-	{
-		std::vector<IP_Address> collection;
-
-		//Get index for our adapter by matching the adapter name
-		int ifIndex = -1;
-
-		struct if_nameindex* ifNI;
-		ifNI = if_nameindex();
-		if (ifNI == nullptr)
-		{
-			Console.Error("DHCP: if_nameindex Failed");
-			return collection;
-		}
-
-		struct if_nameindex* i = ifNI;
-		while (i->if_index != 0 && i->if_name != nullptr)
-		{
-			if (strcmp(i->if_name, interfaceName) == 0)
-			{
-				ifIndex = i->if_index;
-				break;
-			}
-			i++;
-		}
-		if_freenameindex(ifNI);
-
-		//Check if we found the adapter
-		if (ifIndex == -1)
-		{
-			Console.Error("DHCP: Failed to get index for adapter");
-			return collection;
-		}
-
-		//Find the gateway by looking though the routing information
-		int name[] = {CTL_NET, PF_ROUTE, 0, AF_INET, NET_RT_DUMP, 0};
-		size_t bufferLen = 0;
-
-		if (sysctl(name, 6, NULL, &bufferLen, NULL, 0) != 0)
-		{
-			Console.Error("DHCP: Failed to perform NET_RT_DUMP");
-			return collection;
-		}
-
-		//len is an estimate, double it to be safe
-		bufferLen *= 2;
-		std::unique_ptr<u8[]> buffer = std::make_unique<u8[]>(bufferLen);
-
-		if (sysctl(name, 6, buffer.get(), &bufferLen, NULL, 0) != 0)
-		{
-			Console.Error("DHCP: Failed to perform NET_RT_DUMP");
-			return collection;
-		}
-
-		rt_msghdr* hdr;
-		for (size_t i = 0; i < bufferLen; i += hdr->rtm_msglen)
-		{
-			hdr = (rt_msghdr*)&buffer[i];
-
-			if (hdr->rtm_flags & RTF_GATEWAY && hdr->rtm_addrs & RTA_GATEWAY && (hdr->rtm_index == ifIndex))
-			{
-				sockaddr* sockaddrs = (sockaddr*)(hdr + 1);
-				pxAssert(sockaddrs[RTAX_DST].sa_family == AF_INET);
-
-				//Default gateway has no destination address
-				sockaddr_in* sockaddr = (sockaddr_in*)&sockaddrs[RTAX_DST];
-				if (sockaddr->sin_addr.s_addr != 0)
-					continue;
-
-				sockaddr = (sockaddr_in*)&sockaddrs[RTAX_GATEWAY];
-				IP_Address gwIP = *(IP_Address*)&sockaddr->sin_addr;
-				collection.push_back(gwIP);
-			}
-		}
-		return collection;
-	}
-#endif
-	std::vector<IP_Address> DHCP_Server::GetDNSUnix()
-	{
-		//On Linux and OSX, DNS is system wide, not adapter specific, so we can ignore adapter
-
-		// Parse /etc/resolv.conf for all of the "nameserver" entries.
-		// These are the DNS servers the machine is configured to use.
-		// On OSX, this file is not directly used by most processes for DNS
-		// queries/routing, but it is automatically generated instead, with
-		// the machine's DNS servers listed in it.
-		std::vector<IP_Address> collection;
-
-		std::fstream servers("/etc/resolv.conf", std::ios::in);
-		if (servers.fail())
-		{
-			servers.close();
-			Console.Error("DHCP: Failed to open /etc/resolv.conf");
-			return collection;
-		}
-
-		std::string line;
-		std::vector<std::string> serversLines;
-		while (std::getline(servers, line))
-			serversLines.push_back(line);
-		servers.close();
-
-		const IP_Address systemdDNS{127, 0, 0, 53};
-		for (size_t i = 1; i < serversLines.size(); i++)
-		{
-			std::string line = serversLines[i];
-			if (line.rfind("nameserver", 0) == 0)
-			{
-				std::vector<std::string> split = SplitString(line, '\t');
-				if (split.size() == 1)
-					split = SplitString(line, ' ');
-				std::string dns = split[1];
-
-				IP_Address address;
-				if (inet_pton(AF_INET, dns.c_str(), &address) != 1)
-					continue;
-
-				if (address == systemdDNS)
-					Console.Error("DHCP: systemd-resolved DNS server is not supported");
-
-				collection.push_back(address);
-			}
-		}
-		return collection;
-	}
-#endif
-
 #ifdef _WIN32
 	void DHCP_Server::AutoNetmask(PIP_ADAPTER_ADDRESSES adapter)
 	{
@@ -316,23 +128,6 @@ namespace InternalServers
 			}
 		}
 	}
-
-	void DHCP_Server::AutoGateway(PIP_ADAPTER_ADDRESSES adapter)
-	{
-		if (adapter != nullptr)
-		{
-			PIP_ADAPTER_GATEWAY_ADDRESS address = adapter->FirstGatewayAddress;
-			while (address != nullptr && address->Address.lpSockaddr->sa_family != AF_INET)
-				address = address->Next;
-
-			if (address != nullptr)
-			{
-				sockaddr_in* sockaddr = (sockaddr_in*)address->Address.lpSockaddr;
-				gateway = *(IP_Address*)&sockaddr->sin_addr;
-			}
-		}
-	}
-
 #elif defined(__POSIX__)
 	void DHCP_Server::AutoNetmask(ifaddrs* adapter)
 	{
@@ -345,53 +140,28 @@ namespace InternalServers
 			}
 		}
 	}
-
-	void DHCP_Server::AutoGateway(ifaddrs* adapter)
-	{
-		if (adapter != nullptr)
-		{
-#ifdef __linux__
-			std::vector<IP_Address> gateways = GetGatewaysLinux(adapter->ifa_name);
-
-			if (gateways.size() > 0)
-				gateway = gateways[0];
-
-#elif defined(__FreeBSD__) || (__APPLE__)
-			std::vector<IP_Address> gateways = GetGatewaysBSD(adapter->ifa_name);
-
-			if (gateways.size() > 0)
-				gateway = gateways[0];
-
-#else
-			Console.Error("DHCP: Unsupported OS, can't find Gateway");
-#endif
-		}
-	}
 #endif
 
 #ifdef _WIN32
-	void DHCP_Server::AutoDNS(PIP_ADAPTER_ADDRESSES adapter, bool autoDNS1, bool autoDNS2)
+	void DHCP_Server::AutoGateway(PIP_ADAPTER_ADDRESSES adapter)
+#elif defined(__POSIX__)
+	void DHCP_Server::AutoGateway(ifaddrs* adapter)
+#endif
 	{
-		std::vector<IP_Address> dnsIPs;
+		std::vector<IP_Address> gateways = AdapterUtils::GetGateways(adapter);
 
-		if (adapter != nullptr)
-		{
-			PIP_ADAPTER_DNS_SERVER_ADDRESS address = adapter->FirstDnsServerAddress;
-			while (address != nullptr)
-			{
-				if (address->Address.lpSockaddr->sa_family == AF_INET)
-				{
-					sockaddr_in* sockaddr = (sockaddr_in*)address->Address.lpSockaddr;
-					dnsIPs.push_back(*(IP_Address*)&sockaddr->sin_addr);
-				}
-				address = address->Next;
-			}
-		}
+		if (gateways.size() > 0)
+			gateway = gateways[0];
+	}
+
+#ifdef _WIN32
+	void DHCP_Server::AutoDNS(PIP_ADAPTER_ADDRESSES adapter, bool autoDNS1, bool autoDNS2)
 #elif defined(__POSIX__)
 	void DHCP_Server::AutoDNS(ifaddrs* adapter, bool autoDNS1, bool autoDNS2)
-	{
-		std::vector<IP_Address> dnsIPs = GetDNSUnix();
 #endif
+	{
+		std::vector<IP_Address> dnsIPs = AdapterUtils::GetDNS(adapter);
+
 		if (autoDNS1)
 		{
 			//Auto DNS1
