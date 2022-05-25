@@ -169,7 +169,7 @@ private:
 	void setupAdditionalUi();
 	void connectSignals();
 	void setStyleFromSettings();
-	void setIconThemeFromSettings();
+	void setIconThemeFromStyle();
 
 	void saveStateToConfig();
 	void restoreStateFromConfig();

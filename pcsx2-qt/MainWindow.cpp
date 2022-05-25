@@ -88,10 +88,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::initialize()
 {
-	setIconThemeFromSettings();
+	setStyleFromSettings();
+	setIconThemeFromStyle();
 	m_ui.setupUi(this);
 	setupAdditionalUi();
-	setStyleFromSettings();
 	connectSignals();
 	connectVMThreadSignals(g_emu_thread);
 
@@ -549,17 +549,11 @@ void MainWindow::setStyleFromSettings()
 	}
 }
 
-void MainWindow::setIconThemeFromSettings()
+void MainWindow::setIconThemeFromStyle()
 {
-	const std::string theme(Host::GetBaseStringSettingValue("UI", "Theme", DEFAULT_THEME_NAME));
-	QString icon_theme;
-
-	if (theme == "darkfusion" || theme == "darkfusionblue" || theme == "dualtoneOrangeBlue" || theme == "ScarletDevilRed")
-		icon_theme = QStringLiteral("white");
-	else
-		icon_theme = QStringLiteral("black");
-
-	QIcon::setThemeName(icon_theme);
+	QPalette palette = qApp->palette();
+	bool dark = palette.windowText().color().value() > palette.window().color().value();
+	QIcon::setThemeName(dark ? QStringLiteral("white") : QStringLiteral("black"));
 }
 
 void MainWindow::onScreenshotActionTriggered()
@@ -1219,7 +1213,7 @@ void MainWindow::onToolsOpenDataDirectoryTriggered()
 void MainWindow::onThemeChanged()
 {
 	setStyleFromSettings();
-	setIconThemeFromSettings();
+	setIconThemeFromStyle();
 	recreate();
 }
 
