@@ -17,8 +17,6 @@
 
 #include "zlib_indexed.h"
 
-#define CLAMP(val, minval, maxval) (std::min(maxval, std::max(minval, val)))
-
 class ChunksCache
 {
 public:
@@ -36,7 +34,7 @@ public:
 	static int CopyAvailable(void* pSrc, s64 srcOffset, int srcSize,
 							 void* pDst, s64 dstOffset, int maxCopySize)
 	{
-		int available = CLAMP(maxCopySize, 0, (int)(srcOffset + srcSize - dstOffset));
+		int available = std::clamp(maxCopySize, 0, std::max((int)(srcOffset + srcSize - dstOffset), 0));
 		memcpy(pDst, (char*)pSrc + (dstOffset - srcOffset), available);
 		return available;
 	};
@@ -68,5 +66,3 @@ private:
 	s64 m_size;
 	s64 m_limit;
 };
-
-#undef CLAMP
