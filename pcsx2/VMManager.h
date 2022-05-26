@@ -135,10 +135,16 @@ namespace VMManager
 	bool ChangeDisc(std::string path);
 
 	/// Returns true if the specified path is an ELF.
-	bool IsElfFileName(const std::string& path);
+	bool IsElfFileName(const std::string_view& path);
 
 	/// Returns true if the specified path is a GS Dump.
-	bool IsGSDumpFileName(const std::string& path);
+	bool IsGSDumpFileName(const std::string_view& path);
+
+	/// Returns true if the specified path is a save state.
+	bool IsSaveStateFileName(const std::string_view& path);
+
+	/// Returns true if the specified path is a disc/elf/etc.
+	bool IsLoadableFileName(const std::string_view& path);
 
 	/// Returns the path for the game settings ini file for the specified CRC.
 	std::string GetGameSettingsPath(const std::string_view& game_serial, u32 game_crc);
