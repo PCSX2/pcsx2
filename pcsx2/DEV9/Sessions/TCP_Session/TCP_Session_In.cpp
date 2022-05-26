@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <sys/select.h>
 #define SD_RECEIVE SHUT_RD
 #endif
 
