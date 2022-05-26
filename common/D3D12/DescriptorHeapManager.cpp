@@ -36,9 +36,12 @@ bool DescriptorHeapManager::Create(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_T
 		return false;
 
 	m_heap_base_cpu = m_descriptor_heap->GetCPUDescriptorHandleForHeapStart();
-	m_heap_base_gpu = m_descriptor_heap->GetGPUDescriptorHandleForHeapStart();
+	if (shader_visible)
+		m_heap_base_gpu = m_descriptor_heap->GetGPUDescriptorHandleForHeapStart();
+
 	m_num_descriptors = num_descriptors;
 	m_descriptor_increment_size = device->GetDescriptorHandleIncrementSize(type);
+	m_shader_visible = shader_visible;
 
 	// Set all slots to unallocated (1)
 	const u32 bitset_count = num_descriptors / BITSET_SIZE + (((num_descriptors % BITSET_SIZE) != 0) ? 1 : 0);
@@ -56,6 +59,7 @@ void DescriptorHeapManager::Destroy()
 		pxAssert(bs.all());
 	}
 
+	m_shader_visible = false;
 	m_num_descriptors = 0;
 	m_descriptor_increment_size = 0;
 	m_heap_base_cpu = {};
@@ -85,7 +89,7 @@ bool DescriptorHeapManager::Allocate(DescriptorHandle* handle)
 
 		handle->index = index;
 		handle->cpu_handle.ptr = m_heap_base_cpu.ptr + index * m_descriptor_increment_size;
-		handle->gpu_handle.ptr = m_heap_base_gpu.ptr + index * m_descriptor_increment_size;
+		handle->gpu_handle.ptr = m_shader_visible ? (m_heap_base_gpu.ptr + index * m_descriptor_increment_size) : 0;
 		return true;
 	}
 
