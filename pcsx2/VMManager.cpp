@@ -1208,16 +1208,26 @@ bool VMManager::ChangeDisc(std::string path)
 	return result;
 }
 
-bool VMManager::IsElfFileName(const std::string& path)
+bool VMManager::IsElfFileName(const std::string_view& path)
 {
 	return StringUtil::EndsWithNoCase(path, ".elf");
 }
 
-bool VMManager::IsGSDumpFileName(const std::string& path)
+bool VMManager::IsGSDumpFileName(const std::string_view& path)
 {
 	return (StringUtil::EndsWithNoCase(path, ".gs") ||
 			StringUtil::EndsWithNoCase(path, ".gs.xz") ||
 			StringUtil::EndsWithNoCase(path, ".gs.zst"));
+}
+
+bool VMManager::IsSaveStateFileName(const std::string_view& path)
+{
+	return StringUtil::EndsWithNoCase(path, ".p2s");
+}
+
+bool VMManager::IsLoadableFileName(const std::string_view& path)
+{
+	return IsElfFileName(path) || IsGSDumpFileName(path) || GameList::IsScannableFilename(path);
 }
 
 void VMManager::Execute()

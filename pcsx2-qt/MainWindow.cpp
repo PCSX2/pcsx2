@@ -990,26 +990,12 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 
 void MainWindow::onStartFileActionTriggered()
 {
-	QString filename =
+	QString path =
 		QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, tr("Select Disc Image"), QString(), tr(DISC_IMAGE_FILTER), nullptr));
-	if (filename.isEmpty())
+	if (path.isEmpty())
 		return;
 
-	std::shared_ptr<VMBootParameters> params = std::make_shared<VMBootParameters>();
-	params->filename = filename.toStdString();
-
-	// we might still be saving a resume state...
-	VMManager::WaitForSaveStateFlush();
-
-	const std::optional<bool> resume(
-		promptForResumeState(
-			QString::fromStdString(VMManager::GetSaveStateFileName(params->filename.c_str(), -1))));
-	if (!resume.has_value())
-		return;
-	else if (resume.value())
-		params->state_index = -1;
-
-	g_emu_thread->startVM(std::move(params));
+	doStartDisc(path);
 }
 
 void MainWindow::onStartBIOSActionTriggered()
@@ -1390,6 +1376,59 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 	saveStateToConfig();
 	QMainWindow::closeEvent(event);
+}
+
+static QString getFilenameFromMimeData(const QMimeData* md)
+{
+	QString filename;
+	if (md->hasUrls())
+	{
+		// only one url accepted
+		const QList<QUrl> urls(md->urls());
+		if (urls.size() == 1)
+			filename = urls.front().toLocalFile();
+	}
+
+	return filename;
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent* event)
+{
+	const std::string filename(getFilenameFromMimeData(event->mimeData()).toStdString());
+
+	// allow save states being dragged in
+	if (!VMManager::IsLoadableFileName(filename) && !VMManager::IsSaveStateFileName(filename))
+		return;
+
+	event->acceptProposedAction();
+}
+
+void MainWindow::dropEvent(QDropEvent* event)
+{
+	const QString filename(getFilenameFromMimeData(event->mimeData()));
+	const std::string filename_str(filename.toStdString());
+	if (VMManager::IsSaveStateFileName(filename_str))
+	{
+		// can't load a save state without a current VM 
+		if (m_vm_valid)
+		{
+			event->acceptProposedAction();
+			g_emu_thread->loadState(filename);
+		}
+		else
+		{
+			QMessageBox::critical(this, tr("Load State Failed"), tr("Cannot load a save state without a running VM."));
+		}
+	}
+	else if (VMManager::IsLoadableFileName(filename_str))
+	{
+		// if we're already running, do a disc change, otherwise start
+		event->acceptProposedAction();
+		if (m_vm_valid)
+			doDiscChange(filename);
+		else
+			doStartDisc(filename);
+	}	
 }
 
 DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
@@ -2011,6 +2050,28 @@ void MainWindow::updateSaveStateMenus(const QString& filename, const QString& se
 		populateLoadStateMenu(m_ui.menuLoadState, filename, serial, crc);
 	if (save_enabled)
 		populateSaveStateMenu(m_ui.menuSaveState, serial, crc);
+}
+
+void MainWindow::doStartDisc(const QString& path)
+{
+	if (m_vm_valid)
+		return;
+
+	std::shared_ptr<VMBootParameters> params = std::make_shared<VMBootParameters>();
+	params->filename = path.toStdString();
+
+	// we might still be saving a resume state...
+	VMManager::WaitForSaveStateFlush();
+
+	const std::optional<bool> resume(
+		promptForResumeState(
+			QString::fromStdString(VMManager::GetSaveStateFileName(params->filename.c_str(), -1))));
+	if (!resume.has_value())
+		return;
+	else if (resume.value())
+		params->state_index = -1;
+
+	g_emu_thread->startVM(std::move(params));
 }
 
 void MainWindow::doDiscChange(const QString& path)

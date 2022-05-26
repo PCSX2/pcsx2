@@ -72,7 +72,7 @@ namespace GameList
 	const char* RegionToString(Region region);
 	const char* EntryCompatibilityRatingToString(CompatibilityRating rating);
 
-	bool IsScannableFilename(const std::string& path);
+	bool IsScannableFilename(const std::string_view& path);
 
 	/// Fills in boot parameters (iso or elf) based on the game list entry.
 	void FillBootParametersForEntry(VMBootParameters* params, const Entry* entry);

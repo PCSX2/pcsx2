@@ -110,17 +110,13 @@ const char* GameList::EntryCompatibilityRatingToString(CompatibilityRating ratin
 	// clang-format on
 }
 
-bool GameList::IsScannableFilename(const std::string& path)
+bool GameList::IsScannableFilename(const std::string_view& path)
 {
 	static const char* extensions[] = {".iso", ".mdf", ".nrg", ".bin", ".img", ".gz", ".cso", ".chd", ".elf", ".irx"};
 
-	const std::string::size_type pos = path.rfind('.');
-	if (pos == std::string::npos)
-		return false;
-
 	for (const char* test_extension : extensions)
 	{
-		if (StringUtil::Strcasecmp(&path[pos], test_extension) == 0)
+		if (StringUtil::EndsWithNoCase(path, test_extension))
 			return true;
 	}
 
