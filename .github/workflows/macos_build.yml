@@ -87,8 +87,14 @@ jobs:
       - name: Prepare Build Artifacts
         run: |
           cp /usr/local/lib/libMoltenVK.dylib build/pcsx2/PCSX2.app/Contents/Frameworks/
-          mv build/pcsx2/PCSX2.app "${{ steps.artifact-metadata.outputs.artifact-name }}.app"
-          tar cvzf "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.gz" "${{ steps.artifact-metadata.outputs.artifact-name }}.app"
+          TAG="$(git tag --points-at HEAD)"
+          if [ -z "$TAG" ]; then
+            APPNAME="${{ steps.artifact-metadata.outputs.artifact-name }}"
+          else
+            APPNAME="PCSX2-$TAG"
+          fi
+          mv build/pcsx2/PCSX2.app "$APPNAME.app"
+          tar cvzf "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.gz" "$APPNAME.app"
           mkdir ci-artifacts
           cp "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.gz" ci-artifacts/macOS.tar.gz
 
