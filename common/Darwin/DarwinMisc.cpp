@@ -20,7 +20,6 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <mach/mach_time.h>
-#include <wx/string.h>
 
 #include "common/Pcsx2Types.h"
 #include "common/General.h"
