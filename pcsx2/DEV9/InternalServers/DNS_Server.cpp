@@ -202,7 +202,7 @@ namespace InternalServers
 	bool DNS_Server::CheckHostList(std::string url, DNS_State* state)
 	{
 		std::transform(url.begin(), url.end(), url.begin(),
-					   [](unsigned char c) { return std::tolower(c); });
+			[](unsigned char c) { return std::tolower(c); });
 
 		auto f = hosts.find(url);
 		if (f != hosts.end())

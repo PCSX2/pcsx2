@@ -419,9 +419,7 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 	pcap_if_t* d;
 
 	if (pcap_findalldevs(&alldevs, errbuf) == -1)
-	{
 		return nic;
-	}
 
 	d = alldevs;
 	while (d != NULL)
@@ -456,7 +454,7 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 
 			std::unique_ptr<wchar_t[]> buf = std::make_unique<wchar_t[]>(len_buf);
 			MultiByteToWideChar(CP_ACP, 0, d->description, len_desc, buf.get(), len_buf);
-			
+
 			entry.name = StringUtil::WideStringToUTF8String(std::wstring(buf.get()));
 		}
 #else
