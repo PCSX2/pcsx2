@@ -983,6 +983,8 @@ SCAJ-20144:
 SCAJ-20145:
   name: "Tales of Legendia"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes garbage textures presumably from texture cache issue.
 SCAJ-20146:
   name: "Shadow of the Colossus"
   region: "NTSC-Ch-E-J"
@@ -4476,6 +4478,8 @@ SCKA-20050:
   name: "Tales of Legendia"
   region: "NTSC-K"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes garbage textures presumably from texture cache issue.
 SCKA-20051:
   name: "Minna Daisuki Katamari Damacy"
   region: "NTSC-K"
@@ -8332,7 +8336,7 @@ SLED-53732:
   name: "Spartan - Total Warrior [Demo]"
   region: "PAL"
   gameFixes:
-    - EETimingHack # Fixes garbage textures flashing on the character model
+    - EETimingHack # Fixes garbage textures flashing on the character model.
 SLED-53745:
   name: "Total Overdose [Demo]"
   region: "PAL-M5"
@@ -15369,6 +15373,9 @@ SLES-53386:
 SLES-53387:
   name: "Batman Begins"
   region: "PAL-M7"
+  gsHWFixes:
+    autoFlush: 1 # Fixes lighting misalignment.
+    halfPixelOffset: 2 # Fixes lighting misalignment.
 SLES-53388:
   name: "Rhythmic Star!"
   region: "PAL-M5"
@@ -15384,16 +15391,16 @@ SLES-53391:
   clampModes:
     vuClampMode: 0 # Fixes Spider-Man's eye texture colour.
 SLES-53393:
-  name: "Spartan Total Warrior"
+  name: "Spartan - Total Warrior"
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - EETimingHack # Fixes garbage textures flashing on the character model
+    - EETimingHack # Fixes garbage textures flashing on the character model.
 SLES-53396:
-  name: "Spartan Total Warrior"
+  name: "Spartan - Total Warrior"
   region: "PAL-M3"
   gameFixes:
-    - EETimingHack # Fixes garbage textures flashing on the character model
+    - EETimingHack # Fixes garbage textures flashing on the character model.
 SLES-53398:
   name: "Zombie Zone"
   region: "PAL-E"
@@ -29119,7 +29126,7 @@ SLPM-66444:
   name: "Spartan - Total Warrior"
   region: "NTSC-J"
   gameFixes:
-    - EETimingHack # Fixes garbage textures flashing on the character model
+    - EETimingHack # Fixes garbage textures flashing on the character model.
 SLPM-66445:
   name: "Persona 3"
   region: "NTSC-J"
@@ -34436,6 +34443,8 @@ SLPS-25533:
   name: "Tales of Legendia"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes garbage textures presumably from texture cache issue.
 SLPS-25534:
   name: "Twinkle Star Sprites - La Petite Princesse"
   region: "NTSC-J"
@@ -36268,6 +36277,8 @@ SLPS-73241:
 SLPS-73242:
   name: "Tales of Legendia [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes garbage textures presumably from texture cache issue.
 SLPS-73243:
   name: "Namco X Capcom [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -41690,6 +41701,9 @@ SLUS-21198:
   name: "Batman Begins"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes lighting misalignment.
+    halfPixelOffset: 2 # Fixes lighting misalignment.
 SLUS-21199:
   name: "Medal of Honor - European Assault"
   region: "NTSC-U"
@@ -41706,6 +41720,8 @@ SLUS-21201:
   name: "Tales of Legendia"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes garbage textures presumably from texture cache issue.
 SLUS-21202:
   name: "Romance of the Three Kingdoms X"
   region: "NTSC-U"
@@ -41756,7 +41772,7 @@ SLUS-21212:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - EETimingHack # Fixes garbage textures flashing on the character model
+    - EETimingHack # Fixes garbage textures flashing on the character model.
 SLUS-21213:
   name: "Madden NFL '06"
   region: "NTSC-U"
