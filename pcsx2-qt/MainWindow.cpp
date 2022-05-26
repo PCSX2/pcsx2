@@ -1893,7 +1893,9 @@ void MainWindow::loadSaveStateFile(const QString& filename, const QString& state
 {
 	if (m_vm_valid)
 	{
-		g_emu_thread->loadState(filename);
+		if (!filename.isEmpty() && m_current_disc_path != filename)
+			g_emu_thread->changeDisc(m_current_disc_path);
+		g_emu_thread->loadState(state_filename);
 	}
 	else
 	{
