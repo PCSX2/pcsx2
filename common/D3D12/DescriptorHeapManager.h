@@ -80,6 +80,7 @@ namespace D3D12
 		wil::com_ptr_nothrow<ID3D12DescriptorHeap> m_descriptor_heap;
 		u32 m_num_descriptors = 0;
 		u32 m_descriptor_increment_size = 0;
+		bool m_shader_visible = false;
 
 		D3D12_CPU_DESCRIPTOR_HANDLE m_heap_base_cpu = {};
 		D3D12_GPU_DESCRIPTOR_HANDLE m_heap_base_gpu = {};
