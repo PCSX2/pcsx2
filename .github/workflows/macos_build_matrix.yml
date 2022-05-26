@@ -9,9 +9,17 @@ on:
       - master
 
 jobs:
-  build_macos_default:
+  build_macos_wx:
     name: "Defaults"
     uses: ./.github/workflows/macos_build.yml
     with:
       jobName: "wxWidgets"
+      gui: "wxWidgets"
+    secrets: inherit
+  build_macos_qt:
+    name: "Defaults"
+    uses: ./.github/workflows/macos_build.yml
+    with:
+      jobName: "Qt"
+      gui: "Qt"
     secrets: inherit

@@ -14,13 +14,16 @@ on:
         required: false
         type: string
         default: x64
+      gui:
+        required: true
+        type: string
 
 jobs:
   build_macos:
     name: ${{ inputs.jobName }}
     runs-on: ${{ inputs.os }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       POWERSHELL_TELEMETRY_OPTOUT: 1
       BUILDCACHE_COMPRESS_FORMAT: ZSTD
@@ -40,7 +43,7 @@ jobs:
         shell: bash
         env:
           OS: macos
-          GUI_FRAMEWORK: wxWidgets
+          GUI_FRAMEWORK: ${{ inputs.gui }}
           ARCH: ${{ inputs.platform }}
           SIMD: ''
           EVENT_NAME: ${{ github.event_name }}
@@ -67,14 +70,18 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/deps
-          key: ${{ inputs.os }} ${{ inputs.platform }} deps ${{ hashFiles('.github/workflows/scripts/macos/build-dependencies.sh') }}
+          key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.gui }} deps ${{ hashFiles('.github/workflows/scripts/macos/build-dependencies.sh') }}
 
       - name: Build Dependencies
         if: steps.cache-deps.outputs.cache-hit != 'true'
+        env:
+          GUI: ${{ inputs.gui }}
         run: .github/workflows/scripts/macos/build-dependencies.sh
 
       - name: Generate CMake Files
-        run: cmake -DCMAKE_PREFIX_PATH="$HOME/deps" -DCMAKE_BUILD_TYPE=Release -DUSE_OPENGL=OFF -DDISABLE_ADVANCE_SIMD=ON -DLTO_PCSX2_CORE=ON -DUSE_SYSTEM_LIBS=OFF -DUSE_SYSTEM_SDL2=ON -B build .
+        run: |
+          QT_BUILD=$([ "${{ inputs.gui }}" == "Qt" ] && echo "ON" || echo "OFF")
+          cmake -DCMAKE_PREFIX_PATH="$HOME/deps" -DCMAKE_BUILD_TYPE=Release -DQT_BUILD="$QT_BUILD" -DUSE_OPENGL=OFF -DDISABLE_ADVANCE_SIMD=ON -DLTO_PCSX2_CORE=ON -DUSE_SYSTEM_LIBS=OFF -DUSE_SYSTEM_SDL2=ON -B build .
 
       - name: Build PCSX2
         working-directory: build
@@ -86,17 +93,17 @@ jobs:
 
       - name: Prepare Build Artifacts
         run: |
-          cp /usr/local/lib/libMoltenVK.dylib build/pcsx2/PCSX2.app/Contents/Frameworks/
+          cp /usr/local/lib/libMoltenVK.dylib build/pcsx2*/PCSX2.app/Contents/Frameworks/
           TAG="$(git tag --points-at HEAD)"
           if [ -z "$TAG" ]; then
             APPNAME="${{ steps.artifact-metadata.outputs.artifact-name }}"
           else
             APPNAME="PCSX2-$TAG"
           fi
-          mv build/pcsx2/PCSX2.app "$APPNAME.app"
+          mv build/pcsx2*/PCSX2.app "$APPNAME.app"
           tar cvzf "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.gz" "$APPNAME.app"
           mkdir ci-artifacts
-          cp "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.gz" ci-artifacts/macOS.tar.gz
+          cp "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.gz" ci-artifacts/macOS-${{ inputs.gui }}.tar.gz
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3

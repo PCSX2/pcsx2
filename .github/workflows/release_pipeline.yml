@@ -59,12 +59,22 @@ jobs:
     secrets: inherit
 
   # MacOS
-  build_macos_default:
+  build_macos_wx:
     if: github.repository == 'PCSX2/pcsx2'
-    name: "MacOS - Defaults"
+    name: "MacOS"
     uses: ./.github/workflows/macos_build.yml
     with:
       jobName: "wxWidgets"
+      gui: "wxWidgets"
+    secrets: inherit
+
+  build_macos_qt:
+    if: github.repository == 'PCSX2/pcsx2'
+    name: "MacOS"
+    uses: ./.github/workflows/macos_build.yml
+    with:
+      jobName: "Qt"
+      gui: "Qt"
     secrets: inherit
 
   # Upload the Artifacts
@@ -76,7 +86,8 @@ jobs:
       - build_wx_avx2
       - build_qt_sse4
       - build_qt_avx2
-      - build_macos_default
+      - build_macos_wx
+      - build_macos_qt
     name: "Upload Artifacts"
     runs-on: ubuntu-latest
     steps:
