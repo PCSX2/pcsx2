@@ -66,13 +66,13 @@ GSRendererSW::~GSRendererSW()
 	GSRendererSW::Destroy();
 }
 
-void GSRendererSW::Reset()
+void GSRendererSW::Reset(bool hardware_reset)
 {
 	Sync(-1);
 
 	m_tc->RemoveAll();
 
-	GSRenderer::Reset();
+	GSRenderer::Reset(hardware_reset);
 }
 
 void GSRendererSW::Destroy()

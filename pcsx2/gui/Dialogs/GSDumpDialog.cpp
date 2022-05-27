@@ -882,7 +882,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	}
 
 	GSvsync(1, false);
-	GSreset();
+	GSreset(false);
 	GSfreeze(FreezeAction::Load, &fd);
 
 	size_t i = 0;

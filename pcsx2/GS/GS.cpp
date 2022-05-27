@@ -373,11 +373,11 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 	return true;
 }
 
-void GSreset()
+void GSreset(bool hardware_reset)
 {
 	try
 	{
-		g_gs_renderer->Reset();
+		g_gs_renderer->Reset(hardware_reset);
 	}
 	catch (GSRecoverableError)
 	{

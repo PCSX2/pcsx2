@@ -183,7 +183,7 @@ public:
 	GSVector2 GetTextureScaleFactor() override;
 	GSVector2i GetTargetSize();
 
-	void Reset() override;
+	void Reset(bool hardware_reset) override;
 	void UpdateSettings(const Pcsx2Config::GSOptions& old_config) override;
 	void VSync(u32 field, bool registers_written) override;
 

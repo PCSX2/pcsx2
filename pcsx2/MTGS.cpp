@@ -166,7 +166,7 @@ void SysMtgsThread::ThreadEntryPoint()
 	GSshutdown();
 }
 
-void SysMtgsThread::ResetGS()
+void SysMtgsThread::ResetGS(bool hardware_reset)
 {
 	pxAssertDev(!IsOpen() || (m_ReadPos == m_WritePos), "Must close or terminate the GS thread prior to gsReset.");
 
@@ -180,7 +180,7 @@ void SysMtgsThread::ResetGS()
 	m_VsyncSignalListener = 0;
 
 	MTGS_LOG("MTGS: Sending Reset...");
-	SendSimplePacket(GS_RINGTYPE_RESET, 0, 0, 0);
+	SendSimplePacket(GS_RINGTYPE_RESET, static_cast<int>(hardware_reset), 0, 0);
 	SendSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
 	SetEvent();
 }
@@ -495,7 +495,7 @@ void SysMtgsThread::MainLoop()
 
 						case GS_RINGTYPE_RESET:
 							MTGS_LOG("(MTGS Packet Read) ringtype=Reset");
-							GSreset();
+							GSreset(tag.data != 0);
 							break;
 
 						case GS_RINGTYPE_SOFTRESET:
