@@ -176,7 +176,11 @@ int LoadPatchesFromDir(const std::string& crc, const std::string& folder, const 
 	FileSystem::FindResultsArray files;
 	FileSystem::FindFiles(folder.c_str(), StringUtil::StdStringFromFormat("*.pnach", crc.c_str()).c_str(),
 		FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &files);
+	FileSystem::FindResultsArray subfolder;
+	FileSystem::FindFiles((folder + FS_OSPATH_SEPARATOR_STR + crc).c_str(), StringUtil::StdStringFromFormat("*.pnach", crc.c_str()).c_str(),
+		FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &subfolder);
 
+	files.insert(files.end(), subfolder.begin(), subfolder.end());
 	if (show_error_when_missing && files.empty())
 	{
 		PatchesCon->WriteLn(Color_Gray, "Not found %s file: %s" FS_OSPATH_SEPARATOR_STR "%s.pnach",
@@ -254,9 +258,28 @@ namespace PatchFunc
 		}
 
 		iPatch.cpu = (patch_cpu_type)PatchTableExecute(pieces[1], std::string_view(), cpuCore);
-		iPatch.addr = StringUtil::FromChars<u32>(pieces[2], 16).value_or(0);
 		iPatch.type = (patch_data_type)PatchTableExecute(pieces[3], std::string_view(), dataType);
-		iPatch.data = StringUtil::FromChars<u64>(pieces[4], 16).value_or(0);
+
+
+		if (StringUtil::StartsWithNoCase(pieces[2], "0x"))
+		{
+			const std::vector<std::string_view> split(StringUtil::SplitString(pieces[2], 'x'));
+			iPatch.addr = StringUtil::FromChars<u32>(split[1], 16).value_or(0);
+		}
+		else
+		{
+			iPatch.addr = StringUtil::FromChars<u32>(pieces[2], 16).value_or(0);
+		}
+
+		if (StringUtil::StartsWithNoCase(pieces[4], "0x"))
+		{
+			const std::vector<std::string_view> split(StringUtil::SplitString(pieces[4], 'x'));
+			iPatch.data = StringUtil::FromChars<u64>(split[1], 16).value_or(0);
+		}
+		else
+		{
+			iPatch.data = StringUtil::FromChars<u64>(pieces[4], 16).value_or(0);
+		}
 
 		if (iPatch.cpu == 0)
 		{
