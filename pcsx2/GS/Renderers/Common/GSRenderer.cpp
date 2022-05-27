@@ -60,6 +60,15 @@ GSRenderer::GSRenderer() = default;
 
 GSRenderer::~GSRenderer() = default;
 
+void GSRenderer::Reset(bool hardware_reset)
+{
+	// clear the current display texture
+	if (hardware_reset)
+		g_gs_device->ClearCurrent();
+
+	GSState::Reset(hardware_reset);
+}
+
 void GSRenderer::Destroy()
 {
 }

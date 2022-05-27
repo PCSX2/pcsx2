@@ -496,6 +496,10 @@ int GSfreeze(FreezeAction mode, freezeData* data)
 		}
 		else if (mode == FreezeAction::Load)
 		{
+			// Since Defrost doesn't do a hardware reset (since it would be clearing
+			// local memory just before it's overwritten), we have to manually wipe
+			// out the current textures.
+			g_gs_device->ClearCurrent();
 			return g_gs_renderer->Defrost(data);
 		}
 	}
