@@ -230,16 +230,17 @@ bool DisplayWidget::event(QEvent* event)
 			return true;
 		}
 
+		// According to https://bugreports.qt.io/browse/QTBUG-95925 the recommended practice for handling DPI change is responding to paint events
+		case QEvent::Paint:
 		case QEvent::Resize:
 		{
 			QWidget::event(event);
 
 			const qreal dpr = devicePixelRatioFromScreen();
-			const QSize size = static_cast<QResizeEvent*>(event)->size();
-			const int width = static_cast<int>(std::ceil(static_cast<qreal>(size.width()) * devicePixelRatioFromScreen()));
-			const int height = static_cast<int>(std::ceil(static_cast<qreal>(size.height()) * devicePixelRatioFromScreen()));
+			const int scaled_width = static_cast<int>(std::ceil(static_cast<qreal>(width()) * devicePixelRatioFromScreen()));
+			const int scaled_height = static_cast<int>(std::ceil(static_cast<qreal>(height()) * devicePixelRatioFromScreen()));
 
-			emit windowResizedEvent(width, height, dpr);
+			emit windowResizedEvent(scaled_width, scaled_height, dpr);
 			return true;
 		}
 
