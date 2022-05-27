@@ -78,7 +78,7 @@ protected:
 	std::atomic<u32> m_fzb_pages[512]; // u16 frame/zbuf pages interleaved
 	std::atomic<u16> m_tex_pages[512];
 
-	void Reset() override;
+	void Reset(bool hardware_reset) override;
 	void VSync(u32 field, bool registers_written) override;
 	GSTexture* GetOutput(int i, int& y_offset) override;
 	GSTexture* GetFeedbackOutput() override;

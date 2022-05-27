@@ -137,7 +137,7 @@ GSState::GSState()
 	m_env.PRMODECONT.AC = 1;
 	m_last_prim.U32[0] = PRIM->U32[0];
 
-	Reset();
+	Reset(false);
 
 	ResetHandlers();
 }
@@ -178,10 +178,11 @@ void GSState::SetFrameSkip(int skip)
 	}
 }
 
-void GSState::Reset()
+void GSState::Reset(bool hardware_reset)
 {
 	// FIXME: bios logo not shown cut in half after reset, missing graphics in GoW after first FMV
-	// memset(m_mem.m_vm8, 0, m_mem.m_vmsize);
+	if (hardware_reset)
+		memset(m_mem.m_vm8, 0, m_mem.m_vmsize);
 	memset(&m_path, 0, sizeof(m_path));
 	memset(&m_v, 0, sizeof(m_v));
 
@@ -2396,7 +2397,7 @@ int GSState::Defrost(const freezeData* fd)
 
 	Flush();
 
-	Reset();
+	Reset(false);
 
 	ReadState(&m_env.PRIM, data);
 

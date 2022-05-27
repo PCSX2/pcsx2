@@ -380,7 +380,7 @@ public:
 
 	// Waits for the GS to empty out the entire ring buffer contents.
 	void WaitGS(bool syncRegs=true, bool weakWait=false, bool isMTVU=false);
-	void ResetGS();
+	void ResetGS(bool hardware_reset);
 
 	void PrepDataPacket( MTGS_RingCommand cmd, u32 size );
 	void PrepDataPacket( GIF_PATH pathidx, u32 size );

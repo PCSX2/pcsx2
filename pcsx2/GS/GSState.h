@@ -302,7 +302,7 @@ public:
 
 	float GetTvRefreshRate();
 
-	virtual void Reset();
+	virtual void Reset(bool hardware_reset);
 	virtual void UpdateSettings(const Pcsx2Config::GSOptions& old_config);
 
 	void Flush();

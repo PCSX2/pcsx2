@@ -202,14 +202,14 @@ int GSRendererHW::GetUpscaleMultiplier()
 	return GSConfig.UpscaleMultiplier;
 }
 
-void GSRendererHW::Reset()
+void GSRendererHW::Reset(bool hardware_reset)
 {
 	// TODO: GSreset can come from the main thread too => crash
 	// m_tc->RemoveAll();
 
 	m_reset = true;
 
-	GSRenderer::Reset();
+	GSRenderer::Reset(hardware_reset);
 }
 
 void GSRendererHW::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
