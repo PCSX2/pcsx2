@@ -27,15 +27,11 @@ bool Gif_HandlerAD(u8* pMem)
 {
 	u32 reg = pMem[8];
 	u32* data = (u32*)pMem;
-	if (reg == 0x50)
+	if (reg >= GIF_A_D_REG_BITBLTBUF && reg <= GIF_A_D_REG_TRXREG)
 	{
-		vif1.BITBLTBUF._u64 = *(u64*)pMem;
+		vif1.transfer_registers[reg - GIF_A_D_REG_BITBLTBUF] = *(u64*)pMem;
 	}
-	else if (reg == 0x52)
-	{
-		vif1.TRXREG._u64 = *(u64*)pMem;
-	}
-	else if (reg == 0x53)
+	else if (reg == GIF_A_D_REG_TRXDIR)
 	{ // TRXDIR
 		if ((pMem[0] & 3) == 1)
 		{                // local -> host
@@ -63,7 +59,7 @@ bool Gif_HandlerAD(u8* pMem)
 			vif1.GSLastDownloadSize = vif1.TRXREG.RRW * vif1.TRXREG.RRH * bpp >> 7;
 		}
 	}
-	else if (reg == 0x60)
+	else if (reg == GIF_A_D_REG_SIGNAL)
 	{ // SIGNAL
 		if (CSRreg.SIGNAL)
 		{ // Time to ignore all subsequent drawing operations.
@@ -85,12 +81,12 @@ bool Gif_HandlerAD(u8* pMem)
 			CSRreg.SIGNAL = true;
 		}
 	}
-	else if (reg == 0x61)
+	else if (reg == GIF_A_D_REG_FINISH)
 	{ // FINISH
 		GUNIT_WARN("GIF Handler - FINISH");
 		CSRreg.FINISH = true;
 	}
-	else if (reg == 0x62)
+	else if (reg == GIF_A_D_REG_LABEL)
 	{ // LABEL
 		GUNIT_WARN("GIF Handler - LABEL");
 		GSSIGLBLID.LBLID = (GSSIGLBLID.LBLID & ~data[1]) | (data[0] & data[1]);
@@ -108,7 +104,7 @@ bool Gif_HandlerAD_MTVU(u8* pMem)
 	u32 reg = pMem[8];
 	u32* data = (u32*)pMem;
 
-	if (reg == 0x60)
+	if (reg == GIF_A_D_REG_SIGNAL)
 	{ // SIGNAL
 		GUNIT_WARN("GIF Handler - SIGNAL");
 		if (vu1Thread.mtvuInterrupts.load(std::memory_order_acquire) & VU_Thread::InterruptFlagSignal)
@@ -116,14 +112,14 @@ bool Gif_HandlerAD_MTVU(u8* pMem)
 		vu1Thread.gsSignal.store(((u64)data[1] << 32) | data[0], std::memory_order_relaxed);
 		vu1Thread.mtvuInterrupts.fetch_or(VU_Thread::InterruptFlagSignal, std::memory_order_release);
 	}
-	else if (reg == 0x61)
+	else if (reg == GIF_A_D_REG_FINISH)
 	{ // FINISH
 		GUNIT_WARN("GIF Handler - FINISH");
 		u32 old = vu1Thread.mtvuInterrupts.fetch_or(VU_Thread::InterruptFlagFinish, std::memory_order_relaxed);
 		if (old & VU_Thread::InterruptFlagFinish)
 			Console.Error("GIF Handler MTVU - Double FINISH Not Handled");
 	}
-	else if (reg == 0x62)
+	else if (reg == GIF_A_D_REG_LABEL)
 	{ // LABEL
 		GUNIT_WARN("GIF Handler - LABEL");
 		// It's okay to coalesce label updates

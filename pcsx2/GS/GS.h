@@ -62,6 +62,7 @@ void GSclose();
 void GSgifSoftReset(u32 mask);
 void GSwriteCSR(u32 csr);
 void GSInitAndReadFIFO(u8* mem, u32 size);
+void GSReadLocalMemoryUnsync(u8* mem, u32 qwc, u64 BITBLITBUF, u64 TRXPOS, u64 TRXREG);
 void GSgifTransfer(const u8* mem, u32 size);
 void GSgifTransfer1(u8* mem, u32 addr);
 void GSgifTransfer2(u8* mem, u32 size);

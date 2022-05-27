@@ -244,7 +244,10 @@ void SysMtgsThread::PostVsyncStart(bool registers_written)
 void SysMtgsThread::InitAndReadFIFO(u8* mem, u32 qwc)
 {
 	if (GSConfig.HWDisableReadbacks && GSConfig.UseHardwareRenderer())
+	{
+		GSReadLocalMemoryUnsync(mem, qwc, vif1.BITBLTBUF._u64, vif1.TRXPOS._u64, vif1.TRXREG._u64);
 		return;
+	}
 
 	SendPointerPacket(GS_RINGTYPE_INIT_AND_READ_FIFO, qwc, mem);
 	WaitGS(false, false, false);

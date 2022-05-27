@@ -423,6 +423,11 @@ void GSInitAndReadFIFO(u8* mem, u32 size)
 	}
 }
 
+void GSReadLocalMemoryUnsync(u8* mem, u32 qwc, u64 BITBLITBUF, u64 TRXPOS, u64 TRXREG)
+{
+	g_gs_renderer->ReadLocalMemoryUnsync(mem, qwc, GIFRegBITBLTBUF{BITBLITBUF}, GIFRegTRXPOS{TRXPOS}, GIFRegTRXREG{TRXREG});
+}
+
 void GSgifTransfer(const u8* mem, u32 size)
 {
 	try

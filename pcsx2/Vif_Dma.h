@@ -44,9 +44,27 @@ union tBITBLTBUF {
 	};
 };
 
-union tTRXREG {
+union tTRXPOS {
 	u64 _u64;
 	struct {
+		u32 SSAX : 11;
+		u32 _PAD1 : 5;
+		u32 SSAY : 11;
+		u32 _PAD2 : 5;
+		u32 DSAX : 11;
+		u32 _PAD3 : 5;
+		u32 DSAY : 11;
+		u32 DIRY : 1;
+		u32 DIRX : 1;
+		u32 _PAD4 : 3;
+	};
+};
+
+union tTRXREG
+{
+	u64 _u64;
+	struct
+	{
 		u32 RRW : 12;
 		u32 _pad12 : 20;
 		u32 RRH : 12;
@@ -83,8 +101,17 @@ struct vifStruct {
 	int unpackcalls;
 	// GS registers used for calculating the size of the last local->host transfer initiated on the GS
 	// Transfer size calculation should be restricted to GS emulation in the future
-	tBITBLTBUF BITBLTBUF;
-	tTRXREG    TRXREG;
+	union
+	{
+		struct
+		{
+			tBITBLTBUF BITBLTBUF;
+			tTRXPOS    TRXPOS;
+			tTRXREG    TRXREG;
+		};
+		u64 transfer_registers[3];
+	};
+
 	u32        GSLastDownloadSize;
 
 	tVIF_CTRL  irqoffset; // 32bit offset where next vif code is
