@@ -2016,21 +2016,21 @@ void GSState::Move()
 	{
 		if (spsm.trbpp == 32)
 		{
-			copyFast(m_mem.m_vm32, dpo.assertSizesMatch(GSLocalMemory::swizzle32), spo.assertSizesMatch(GSLocalMemory::swizzle32), [](u32* d, u32* s)
+			copyFast(m_mem.vm32(), dpo.assertSizesMatch(GSLocalMemory::swizzle32), spo.assertSizesMatch(GSLocalMemory::swizzle32), [](u32* d, u32* s)
 			{
 				*d = *s;
 			});
 		}
 		else if (spsm.trbpp == 24)
 		{
-			copyFast(m_mem.m_vm32, dpo.assertSizesMatch(GSLocalMemory::swizzle32), spo.assertSizesMatch(GSLocalMemory::swizzle32), [](u32* d, u32* s)
+			copyFast(m_mem.vm32(), dpo.assertSizesMatch(GSLocalMemory::swizzle32), spo.assertSizesMatch(GSLocalMemory::swizzle32), [](u32* d, u32* s)
 			{
 				*d = (*d & 0xff000000) | (*s & 0x00ffffff);
 			});
 		}
 		else // if(spsm.trbpp == 16)
 		{
-			copyFast(m_mem.m_vm16, dpo.assertSizesMatch(GSLocalMemory::swizzle16), spo.assertSizesMatch(GSLocalMemory::swizzle16), [](u16* d, u16* s)
+			copyFast(m_mem.vm16(), dpo.assertSizesMatch(GSLocalMemory::swizzle16), spo.assertSizesMatch(GSLocalMemory::swizzle16), [](u16* d, u16* s)
 			{
 				*d = *s;
 			});

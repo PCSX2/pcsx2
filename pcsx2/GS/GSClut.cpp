@@ -204,7 +204,7 @@ template <int n>
 void GSClut::WriteCLUT32_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
 	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT32);
-	auto pa = off.paMulti(m_mem->m_vm32, TEXCLUT.COU << 4, TEXCLUT.COV);
+	auto pa = off.paMulti(m_mem->vm32(), TEXCLUT.COU << 4, TEXCLUT.COV);
 
 	u16* RESTRICT clut = m_clut + ((TEX0.CSA & 15) << 4);
 
@@ -221,7 +221,7 @@ template <int n>
 void GSClut::WriteCLUT16_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
 	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT16);
-	auto pa = off.paMulti(m_mem->m_vm16, TEXCLUT.COU << 4, TEXCLUT.COV);
+	auto pa = off.paMulti(m_mem->vm16(), TEXCLUT.COU << 4, TEXCLUT.COV);
 
 	u16* RESTRICT clut = m_clut + (TEX0.CSA << 4);
 
@@ -235,7 +235,7 @@ template <int n>
 void GSClut::WriteCLUT16S_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
 	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT16S);
-	auto pa = off.paMulti(m_mem->m_vm16, TEXCLUT.COU << 4, TEXCLUT.COV);
+	auto pa = off.paMulti(m_mem->vm16(), TEXCLUT.COU << 4, TEXCLUT.COV);
 
 	u16* RESTRICT clut = m_clut + (TEX0.CSA << 4);
 
