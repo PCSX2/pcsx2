@@ -19,6 +19,7 @@ target_sources(pcsx2-qt PRIVATE
 	AutoUpdaterDialog.ui
 	DisplayWidget.cpp
 	DisplayWidget.h
+	EarlyHardwareCheck.cpp
 	EmuThread.cpp
 	EmuThread.h
 	Main.cpp

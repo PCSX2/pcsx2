@@ -128,6 +128,38 @@ static s32 s_current_save_slot = 1;
 static u32 s_frame_advance_count = 0;
 static u32 s_mxcsr_saved;
 
+bool VMManager::PerformEarlyHardwareChecks(const char** error)
+{
+#define COMMON_DOWNLOAD_MESSAGE \
+	"PCSX2 builds can be downloaded from https://pcsx2.net/downloads/"
+
+#if defined(_M_X86)
+	// On Windows, this gets called as a global object constructor, before any of our objects are constructed.
+	// So, we have to put it on the stack instead.
+	x86capabilities temp_x86_caps;
+	temp_x86_caps.Identify();
+
+	if (!temp_x86_caps.hasStreamingSIMD4Extensions)
+	{
+		*error = "PCSX2 requires the Streaming SIMD 4 Extensions instruction set, which your CPU does not support.\n\n"
+				 "SSE4 is now a minimum requirement for PCSX2. You should either upgrade your CPU, or use an older build such as 1.6.0.\n\n" COMMON_DOWNLOAD_MESSAGE;
+		return false;
+	}
+
+#if _M_SSE >= 0x0501
+	if (!temp_x86_caps.hasAVX || !temp_x86_caps.hasAVX2)
+	{
+		*error = "This build of PCSX2 requires the Advanced Vector Extensions 2 instruction set, which your CPU does not support.\n\n"
+				 "You should download and run the SSE4 build of PCSX2 instead, or upgrade to a CPU that supports AVX2 to use this build.\n\n" COMMON_DOWNLOAD_MESSAGE;
+		return false;
+	}
+#endif
+#endif
+
+#undef COMMON_DOWNLOAD_MESSAGE
+	return true;
+}
+
 VMState VMManager::GetState()
 {
 	return s_state.load();

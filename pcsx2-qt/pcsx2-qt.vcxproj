@@ -134,6 +134,7 @@
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="EarlyHardwareCheck.cpp" />
     <ClCompile Include="Tools\InputRecording\NewInputRecordingDlg.cpp" />
     <ClCompile Include="Settings\BIOSSettingsWidget.cpp" />
     <ClCompile Include="Settings\ControllerBindingWidgets.cpp" />

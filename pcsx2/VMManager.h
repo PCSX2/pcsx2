@@ -52,6 +52,9 @@ struct VMBootParameters
 
 namespace VMManager
 {
+	/// Makes sure that AVX2 is available if we were compiled with it.
+	bool PerformEarlyHardwareChecks(const char** error);
+
 	/// Returns the current state of the VM.
 	VMState GetState();
 
