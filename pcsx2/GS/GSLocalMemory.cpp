@@ -79,9 +79,6 @@ GSLocalMemory::GSLocalMemory()
 		m_use_fifo_alloc = false;
 	}
 
-	m_vm16 = (u16*)m_vm8;
-	m_vm32 = (u32*)m_vm8;
-
 	memset(m_vm8, 0, m_vmsize);
 
 	for (psm_t& psm : m_psm)
@@ -1190,7 +1187,7 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const u8* src, int len, GIFReg
 	{
 		case PSM_PSMCT32:
 		case PSM_PSMZ32:
-			readWriteHelper(m_vm32, tx, ty, len / 4, 1, sx, w, off.assertSizesMatch(swizzle32), [&](auto& pa, int x)
+			readWriteHelper(vm32(), tx, ty, len / 4, 1, sx, w, off.assertSizesMatch(swizzle32), [&](auto& pa, int x)
 			{
 				*pa.value(x) = *pd;
 				pd++;
@@ -1199,7 +1196,7 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const u8* src, int len, GIFReg
 
 		case PSM_PSMCT24:
 		case PSM_PSMZ24:
-			readWriteHelper(m_vm32, tx, ty, len / 3, 1, sx, w, off.assertSizesMatch(swizzle32), [&](auto& pa, int x)
+			readWriteHelper(vm32(), tx, ty, len / 3, 1, sx, w, off.assertSizesMatch(swizzle32), [&](auto& pa, int x)
 			{
 				WritePixel24(pa.value(x), *(u32*)pb);
 				pb += 3;
@@ -1210,7 +1207,7 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const u8* src, int len, GIFReg
 		case PSM_PSMCT16S:
 		case PSM_PSMZ16:
 		case PSM_PSMZ16S:
-			readWriteHelper(m_vm16, tx, ty, len / 2, 1, sx, w, off.assertSizesMatch(swizzle16), [&](auto& pa, int x)
+			readWriteHelper(vm16(), tx, ty, len / 2, 1, sx, w, off.assertSizesMatch(swizzle16), [&](auto& pa, int x)
 			{
 				*pa.value(x) = *pw;
 				pw++;
@@ -1235,7 +1232,7 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const u8* src, int len, GIFReg
 			break;
 
 		case PSM_PSMT8H:
-			readWriteHelper(m_vm32, tx, ty, len, 1, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8H), [&](auto& pa, int x)
+			readWriteHelper(vm32(), tx, ty, len, 1, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8H), [&](auto& pa, int x)
 			{
 				WritePixel8H(pa.value(x), *pb);
 				pb++;
@@ -1243,7 +1240,7 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const u8* src, int len, GIFReg
 			break;
 
 		case PSM_PSMT4HL:
-			readWriteHelper(m_vm32, tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HL), [&](auto& pa, int x)
+			readWriteHelper(vm32(), tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HL), [&](auto& pa, int x)
 			{
 				WritePixel4HL(pa.value(x), *pb & 0xf);
 				WritePixel4HL(pa.value(x + 1), *pb >> 4);
@@ -1252,7 +1249,7 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const u8* src, int len, GIFReg
 			break;
 
 		case PSM_PSMT4HH:
-			readWriteHelper(m_vm32, tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HH), [&](auto& pa, int x)
+			readWriteHelper(vm32(), tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HH), [&](auto& pa, int x)
 			{
 				WritePixel4HH(pa.value(x), *pb & 0xf);
 				WritePixel4HH(pa.value(x + 1), *pb >> 4);
@@ -1296,7 +1293,7 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, u8* dst, int len, GIFRegBITBLTB
 
 			len /= 4;
 
-			GSOffset::PAPtrHelper pa = off.assertSizesMatch(swizzle32).paMulti(m_vm32, 0, y);
+			GSOffset::PAPtrHelper pa = off.assertSizesMatch(swizzle32).paMulti(vm32(), 0, y);
 
 			while (len > 0)
 			{
@@ -1327,7 +1324,7 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, u8* dst, int len, GIFRegBITBLTB
 				{
 					y++;
 					x = sx;
-					pa = off.assertSizesMatch(swizzle32).paMulti(m_vm32, 0, y);
+					pa = off.assertSizesMatch(swizzle32).paMulti(vm32(), 0, y);
 				}
 			}
 
@@ -1338,7 +1335,7 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, u8* dst, int len, GIFRegBITBLTB
 
 		case PSM_PSMCT24:
 		case PSM_PSMZ24:
-			readWriteHelper(m_vm32, tx, ty, len / 3, 1, sx, w, off.assertSizesMatch(swizzle32), [&](auto& pa, int x)
+			readWriteHelper(vm32(), tx, ty, len / 3, 1, sx, w, off.assertSizesMatch(swizzle32), [&](auto& pa, int x)
 			{
 				u32 c = *pa.value(x);
 				pb[0] = (u8)(c);
@@ -1352,7 +1349,7 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, u8* dst, int len, GIFRegBITBLTB
 		case PSM_PSMCT16S:
 		case PSM_PSMZ16:
 		case PSM_PSMZ16S:
-			readWriteHelper(m_vm16, tx, ty, len / 2, 1, sx, w, off.assertSizesMatch(swizzle16), [&](auto& pa, int x)
+			readWriteHelper(vm16(), tx, ty, len / 2, 1, sx, w, off.assertSizesMatch(swizzle16), [&](auto& pa, int x)
 			{
 				*pw = *pa.value(x);
 				pw++;
@@ -1377,7 +1374,7 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, u8* dst, int len, GIFRegBITBLTB
 			break;
 
 		case PSM_PSMT8H:
-			readWriteHelper(m_vm32, tx, ty, len, 1, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8H), [&](auto& pa, int x)
+			readWriteHelper(vm32(), tx, ty, len, 1, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8H), [&](auto& pa, int x)
 			{
 				*pb = (u8)(*pa.value(x) >> 24);
 				pb++;
@@ -1385,7 +1382,7 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, u8* dst, int len, GIFRegBITBLTB
 			break;
 
 		case PSM_PSMT4HL:
-			readWriteHelper(m_vm32, tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HL), [&](auto& pa, int x)
+			readWriteHelper(vm32(), tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HL), [&](auto& pa, int x)
 			{
 				u32 c0 = *pa.value(x) >> 24 & 0x0f;
 				u32 c1 = *pa.value(x + 1) >> 20 & 0xf0;
@@ -1395,7 +1392,7 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, u8* dst, int len, GIFRegBITBLTB
 			break;
 
 		case PSM_PSMT4HH:
-			readWriteHelper(m_vm32, tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HH), [&](auto& pa, int x)
+			readWriteHelper(vm32(), tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HH), [&](auto& pa, int x)
 			{
 				u32 c0 = *pa.value(x) >> 28 & 0x0f;
 				u32 c1 = *pa.value(x + 1) >> 24 & 0xf0;

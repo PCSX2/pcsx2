@@ -476,8 +476,6 @@ public:
 	static const int m_vmsize = 1024 * 1024 * 4;
 
 	u8* m_vm8;
-	u16* m_vm16;
-	u32* m_vm32;
 
 	GSClut m_clut;
 
@@ -521,6 +519,9 @@ protected:
 public:
 	GSLocalMemory();
 	virtual ~GSLocalMemory();
+
+	__forceinline u16* vm16() const { return reinterpret_cast<u16*>(m_vm8); }
+	__forceinline u32* vm32() const { return reinterpret_cast<u32*>(m_vm8); }
 
 	GSOffset GetOffset(u32 bp, u32 bw, u32 psm) const
 	{
@@ -669,17 +670,17 @@ public:
 
 	__forceinline u32 ReadPixel32(u32 addr) const
 	{
-		return m_vm32[addr];
+		return vm32()[addr];
 	}
 
 	__forceinline u32 ReadPixel24(u32 addr) const
 	{
-		return m_vm32[addr] & 0x00ffffff;
+		return vm32()[addr] & 0x00ffffff;
 	}
 
 	__forceinline u32 ReadPixel16(u32 addr) const
 	{
-		return (u32)m_vm16[addr];
+		return (u32)vm16()[addr];
 	}
 
 	__forceinline u32 ReadPixel8(u32 addr) const
@@ -694,27 +695,27 @@ public:
 
 	__forceinline u32 ReadPixel8H(u32 addr) const
 	{
-		return m_vm32[addr] >> 24;
+		return vm32()[addr] >> 24;
 	}
 
 	__forceinline u32 ReadPixel4HL(u32 addr) const
 	{
-		return (m_vm32[addr] >> 24) & 0x0f;
+		return (vm32()[addr] >> 24) & 0x0f;
 	}
 
 	__forceinline u32 ReadPixel4HH(u32 addr) const
 	{
-		return (m_vm32[addr] >> 28) & 0x0f;
+		return (vm32()[addr] >> 28) & 0x0f;
 	}
 
 	__forceinline u32 ReadFrame24(u32 addr) const
 	{
-		return 0x80000000 | (m_vm32[addr] & 0xffffff);
+		return 0x80000000 | (vm32()[addr] & 0xffffff);
 	}
 
 	__forceinline u32 ReadFrame16(u32 addr) const
 	{
-		u32 c = (u32)m_vm16[addr];
+		u32 c = (u32)vm16()[addr];
 
 		return ((c & 0x8000) << 16) | ((c & 0x7c00) << 9) | ((c & 0x03e0) << 6) | ((c & 0x001f) << 3);
 	}
@@ -816,7 +817,7 @@ public:
 
 	__forceinline void WritePixel32(u32 addr, u32 c)
 	{
-		m_vm32[addr] = c;
+		vm32()[addr] = c;
 	}
 
 	__forceinline static void WritePixel24(u32* addr, u32 c)
@@ -826,12 +827,12 @@ public:
 
 	__forceinline void WritePixel24(u32 addr, u32 c)
 	{
-		WritePixel24(m_vm32 + addr, c);
+		WritePixel24(vm32() + addr, c);
 	}
 
 	__forceinline void WritePixel16(u32 addr, u32 c)
 	{
-		m_vm16[addr] = (u16)c;
+		vm16()[addr] = (u16)c;
 	}
 
 	__forceinline void WritePixel8(u32 addr, u32 c)
@@ -854,7 +855,7 @@ public:
 
 	__forceinline void WritePixel8H(u32 addr, u32 c)
 	{
-		WritePixel8H(m_vm32 + addr, c);
+		WritePixel8H(vm32() + addr, c);
 	}
 
 	__forceinline static void WritePixel4HL(u32* addr, u32 c)
@@ -864,7 +865,7 @@ public:
 
 	__forceinline void WritePixel4HL(u32 addr, u32 c)
 	{
-		WritePixel4HL(m_vm32 + addr, c);
+		WritePixel4HL(vm32() + addr, c);
 	}
 
 	__forceinline static void WritePixel4HH(u32* addr, u32 c)
@@ -874,7 +875,7 @@ public:
 
 	__forceinline void WritePixel4HH(u32 addr, u32 c)
 	{
-		WritePixel4HH(m_vm32 + addr, c);
+		WritePixel4HH(vm32() + addr, c);
 	}
 
 	__forceinline void WriteFrame16(u32 addr, u32 c)
@@ -972,12 +973,12 @@ public:
 
 	void WritePixel32(u8* RESTRICT src, u32 pitch, const GSOffset& off, const GSVector4i& r)
 	{
-		off.loopPixels(r, m_vm32, (u32*)src, pitch, [&](u32* dst, u32* src) { *dst = *src; });
+		off.loopPixels(r, vm32(), (u32*)src, pitch, [&](u32* dst, u32* src) { *dst = *src; });
 	}
 
 	void WritePixel24(u8* RESTRICT src, u32 pitch, const GSOffset& off, const GSVector4i& r)
 	{
-		off.loopPixels(r, m_vm32, (u32*)src, pitch,
+		off.loopPixels(r, vm32(), (u32*)src, pitch,
 		[&](u32* dst, u32* src)
 		{
 			*dst = (*dst & 0xff000000) | (*src & 0x00ffffff);
@@ -986,12 +987,12 @@ public:
 
 	void WritePixel16(u8* RESTRICT src, u32 pitch, const GSOffset& off, const GSVector4i& r)
 	{
-		off.loopPixels(r, m_vm16, (u16*)src, pitch, [&](u16* dst, u16* src) { *dst = *src; });
+		off.loopPixels(r, vm16(), (u16*)src, pitch, [&](u16* dst, u16* src) { *dst = *src; });
 	}
 
 	void WriteFrame16(u8* RESTRICT src, u32 pitch, const GSOffset& off, const GSVector4i& r)
 	{
-		off.loopPixels(r, m_vm16, (u32*)src, pitch,
+		off.loopPixels(r, vm16(), (u32*)src, pitch,
 		[&](u16* dst, u32* src)
 		{
 			u32 rb = *src & 0x00f800f8;
@@ -1003,17 +1004,17 @@ public:
 
 	__forceinline u32 ReadTexel32(u32 addr, const GIFRegTEXA& TEXA) const
 	{
-		return m_vm32[addr];
+		return vm32()[addr];
 	}
 
 	__forceinline u32 ReadTexel24(u32 addr, const GIFRegTEXA& TEXA) const
 	{
-		return Expand24To32(m_vm32[addr], TEXA);
+		return Expand24To32(vm32()[addr], TEXA);
 	}
 
 	__forceinline u32 ReadTexel16(u32 addr, const GIFRegTEXA& TEXA) const
 	{
-		return Expand16To32(m_vm16[addr], TEXA);
+		return Expand16To32(vm16()[addr], TEXA);
 	}
 
 	__forceinline u32 ReadTexel8(u32 addr, const GIFRegTEXA& TEXA) const
