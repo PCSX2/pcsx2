@@ -46,6 +46,11 @@ using namespace x86Emitter;
 
 alignas(16) x86capabilities x86caps;
 
+#ifdef _MSC_VER
+// We disable optimizations for this function, because we need x86capabilities for AVX
+// detection, but if we keep opts on, it'll use AVX instructions for inlining memzero.
+#pragma optimize("", off)
+#endif
 x86capabilities::x86capabilities()
 	: isIdentified(false)
 	, VendorID(x86Vendor_Unknown)
@@ -65,6 +70,9 @@ x86capabilities::x86capabilities()
 	memzero(VendorName);
 	memzero(FamilyName);
 }
+#ifdef _MSC_VER
+#pragma optimize("", on)
+#endif
 
 // Warning!  We've had problems with the MXCSR detection code causing stack corruption in
 // MSVC PGO builds.  The problem was fixed when I moved the MXCSR code to this function, and
