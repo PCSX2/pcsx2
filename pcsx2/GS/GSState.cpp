@@ -2090,6 +2090,25 @@ void GSState::ReadFIFO(u8* mem, int size)
 		m_dump->ReadFIFO(size);
 }
 
+void GSState::ReadLocalMemoryUnsync(u8* mem, int qwc, GIFRegBITBLTBUF BITBLTBUF, GIFRegTRXPOS TRXPOS, GIFRegTRXREG TRXREG)
+{
+	const int sx = TRXPOS.SSAX;
+	const int sy = TRXPOS.SSAY;
+	const int w = TRXREG.RRW;
+	const int h = TRXREG.RRH;
+
+	const u16 bpp = GSLocalMemory::m_psm[BITBLTBUF.SPSM].trbpp;
+
+	GSTransferBuffer tb;
+	tb.Init(TRXPOS.SSAX, TRXPOS.SSAY, BITBLTBUF);
+
+	int len = qwc * 16;
+	if (!tb.Update(w, h, bpp, len))
+		return;
+
+	m_mem.ReadImageX(tb.x, tb.y, mem, len, BITBLTBUF, TRXPOS, TRXREG);
+}
+
 template void GSState::Transfer<0>(const u8* mem, u32 size);
 template void GSState::Transfer<1>(const u8* mem, u32 size);
 template void GSState::Transfer<2>(const u8* mem, u32 size);
