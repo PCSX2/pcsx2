@@ -683,7 +683,17 @@ std::string GameList::GetCoverImagePath(const std::string& path, const std::stri
 	std::string cover_path;
 	for (const char* extension : extensions)
 	{
-		// use the file title if it differs (e.g. modded games)
+
+		// Prioritize lookup by serial (Most specific)
+		if (!serial.empty())
+		{
+			const std::string cover_filename(serial + extension);
+			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
+			if (FileSystem::FileExists(cover_path.c_str()))
+				return cover_path;
+		}
+
+		// Try file title (for modded games or specific like above)
 		const std::string_view file_title(Path::GetFileTitle(path));
 		if (!file_title.empty() && title != file_title)
 		{
@@ -695,19 +705,10 @@ std::string GameList::GetCoverImagePath(const std::string& path, const std::stri
 				return cover_path;
 		}
 
-		// try the title
+		// Last resort, check the game title
 		if (!title.empty())
 		{
 			const std::string cover_filename(title + extension);
-			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
-			if (FileSystem::FileExists(cover_path.c_str()))
-				return cover_path;
-		}
-
-		// then the code
-		if (!serial.empty())
-		{
-			const std::string cover_filename(serial + extension);
 			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
 				return cover_path;
