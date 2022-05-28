@@ -39606,7 +39606,7 @@ SLUS-20757:
   clampModes:
     vuClampMode: 2 # Fixes black textures on characters.
 SLUS-20758:
-  name: "Growlanser Generations [Disc1of2]"
+  name: "Growlanser Generations [Disc1of2] - Growlanser II - The Sense of Justice"
   region: "NTSC-U"
   compat: 5
   patches:
@@ -39620,7 +39620,7 @@ SLUS-20758:
         comment=IPU freeze fix
         patch=0,EE,00109d04,word,00000000
 SLUS-20759:
-  name: "Growlanser Generations [Disc2of2]"
+  name: "Growlanser Generations [Disc2of2] - Growlanser III - The Dual Darkness"
   region: "NTSC-U"
   compat: 5
   patches:
