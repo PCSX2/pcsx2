@@ -38,6 +38,16 @@ set REV2=%REV3: =%
 set REV1=%REV2:-=%
 set REV=%REV1::=%
 
+SET SIGNATURELINE=// H[%GIT_HASH%] T[%GIT_TAG%]
+SET /P EXISTINGLINE=<"%CD%\svnrev.h"
+
+IF "%EXISTINGLINE%"=="%SIGNATURELINE%" (
+  goto cleanup
+)
+
+ECHO Updating "%CD%\svnrev.h"...
+echo %SIGNATURELINE%> "%CD%\svnrev.h"
+
 git show -s > NUL 2>&1
 if %ERRORLEVEL% NEQ 0 (
   echo Automatic version detection unavailable.
@@ -46,7 +56,7 @@ if %ERRORLEVEL% NEQ 0 (
   echo or in your PATH.
   echo You can safely ignore this message - a dummy string will be printed.
 
-  echo #define SVN_REV_UNKNOWN > "%CD%\svnrev.h"
+  echo #define SVN_REV_UNKNOWN >> "%CD%\svnrev.h"
   echo #define SVN_REV 0ll >> "%CD%\svnrev.h"
   echo #define GIT_REV "" >> "%CD%\svnrev.h"
   echo #define GIT_HASH "" >> "%CD%\svnrev.h"
@@ -56,7 +66,7 @@ if %ERRORLEVEL% NEQ 0 (
   :: Support New Tagged Release Model
   if [%GIT_TAG%] NEQ [] (
     echo Detected that the current commit is tagged, using that!
-    echo #define SVN_REV %REV%ll > "%CD%\svnrev.h"
+    echo #define SVN_REV %REV%ll >> "%CD%\svnrev.h"
     echo #define GIT_REV "" >> "%CD%\svnrev.h"
     echo #define GIT_HASH "%GIT_HASH%" >> "%CD%\svnrev.h"
     echo #define GIT_TAG "%GIT_TAG%" >> "%CD%\svnrev.h"
@@ -72,7 +82,7 @@ if %ERRORLEVEL% NEQ 0 (
 
     echo #define GIT_TAGGED_COMMIT 1 >> "%CD%\svnrev.h"
   ) else (
-    echo #define SVN_REV %REV%ll > "%CD%\svnrev.h"
+    echo #define SVN_REV %REV%ll >> "%CD%\svnrev.h"
     echo #define GIT_REV "%GIT_REV%" >> "%CD%\svnrev.h"
     echo #define GIT_HASH "%GIT_HASH%" >> "%CD%\svnrev.h"
     echo #define GIT_TAG "" >> "%CD%\svnrev.h"
@@ -80,6 +90,7 @@ if %ERRORLEVEL% NEQ 0 (
   )
 )
 
+:cleanup
 ENDLOCAL
 :: Always return an errorlevel of 0 -- this allows compilation to continue if SubWCRev failed.
 exit /B 0
