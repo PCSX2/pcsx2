@@ -21160,6 +21160,8 @@ SLKA-25115:
   compat: 5
   clampModes:
     eeClampMode: 3 # For camera issues in some scenes.
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes black screens.
 SLKA-25125:
   name: "SNK vs. Capcom - Chaos"
   region: "NTSC-K"
@@ -22147,6 +22149,8 @@ SLPM-60207:
   compat: 5
   clampModes:
     eeClampMode: 3 # For camera issues in some scenes.
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes black screens.
 SLPM-60216:
   name: "R - Racing Evolution [Trial]"
   region: "NTSC-J"
@@ -24958,6 +24962,9 @@ SLPM-65186:
 SLPM-65187:
   name: "Thread Colors"
   region: "NTSC-J"
+SLPM-65190:
+  name: "Tony Hawk's Pro Skater 3"
+  region: "NTSC-J"
 SLPM-65191:
   name: "V-Rally 3"
   region: "NTSC-J"
@@ -25484,6 +25491,8 @@ SLPM-65331:
   compat: 5
   clampModes:
     eeClampMode: 3 # For camera issues in some scenes.
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes Fixes black screens.
 SLPM-65332:
   name: "Mahoromatic Automatic Maiden [Limited Edition]"
   region: "NTSC-J"
@@ -25798,7 +25807,7 @@ SLPM-65438:
   region: "NTSC-J"
   compat: 5
   gameFixes:
-    - VuAddSubHack
+    - VuAddSubHack # Fixes ELF decryption.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
     roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
@@ -25807,7 +25816,7 @@ SLPM-65439:
   region: "NTSC-J"
   compat: 5
   gameFixes:
-    - VuAddSubHack
+    - VuAddSubHack # Fixes ELF decryption.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
     roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
@@ -31769,6 +31778,9 @@ SLPS-20095:
   region: "NTSC-J"
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes missing arena, fighters and other missing graphics.
+SLPS-20096:
+  name: "Gambler Densetsu Tetsuya"
+  region: "NTSC-J"
 SLPS-20097:
   name: "Magical Sports - Koshien"
   region: "NTSC-J"
@@ -31852,6 +31864,12 @@ SLPS-20137:
   compat: 5
 SLPS-20139:
   name: "All Star Pro-Wrestling II"
+  region: "NTSC-J"
+SLPS-20140:
+  name: "Dream Audition SuperHit Disc 1"
+  region: "NTSC-J"
+SLPS-20141:
+  name: "Dream Audition SuperHit Disc 2"
   region: "NTSC-J"
 SLPS-20143:
   name: "RPG Tsukuru 5"
@@ -32281,6 +32299,9 @@ SLPS-20394:
   region: "NTSC-J"
 SLPS-20396:
   name: "Slotter UP - Mania 5"
+  region: "NTSC-J"
+SLPS-20397:
+  name: "Pachitte Chonmage Tatsujin 7 - CR Pachinko Dokaben"
   region: "NTSC-J"
 SLPS-20398:
   name: "La Pucelle - Hikari no Seijyo Densetsu Nijuu"
@@ -45890,6 +45911,11 @@ SLUS-80421:
 SLUS-90009:
   name: "Resident Evil 2 [Trade Demo]"
   region: "NTSC-U"
+SLUS-97133:
+  name: "Getaway, The"
+  region: "NTSC-U"
+  gsHWFixes:
+    textureInsideRT: 1
 SLUS-97405:
   name: "ATV Offroad Fury 3 [Greatest Hits]"
   region: "NTSC-U"
