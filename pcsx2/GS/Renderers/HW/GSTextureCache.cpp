@@ -664,6 +664,8 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 		// Memory allocation failure, do our best to hobble along.
 		return;
 	}
+	// Keep the scale of the original texture.
+	new_texture->SetScale(old_texture->GetScale());
 
 	GL_CACHE("Expanding target for display output, target height %d @ 0x%X, display %d @ 0x%X offset %d needed %d",
 		t->m_texture->GetHeight(), t->m_TEX0.TBP0, real_h, dispfb.TBP0, y_offset, needed_height);
