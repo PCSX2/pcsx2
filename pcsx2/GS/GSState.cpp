@@ -3238,7 +3238,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(st.y) & ~th_mask) == (static_cast<int>(st.w) & ~th_mask)))
 				{
 					// Check if the UV coords are going in a different direction to the verts, if they match direction, no need to swap
-					const bool v_forward = vert_first->U < vert_second->U;
+					const bool v_forward = vert_first->V < vert_second->V;
 					const bool y_forward = vert_first->XYZ.Y < vert_second->XYZ.Y;
 					const bool swap_y = v_forward != y_forward;
 
