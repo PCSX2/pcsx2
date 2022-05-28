@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <mach/mach_time.h>
+#include <IOKit/pwr_mgt/IOPMLib.h>
 
 #include "common/Pcsx2Types.h"
 #include "common/General.h"
@@ -93,8 +94,17 @@ std::string GetOSVersionString()
 	return type + " " + release + " " + arch;
 }
 
+static IOPMAssertionID s_pm_assertion;
+
 void ScreensaverAllow(bool allow)
 {
-	// no-op
+	if (s_pm_assertion)
+	{
+		IOPMAssertionRelease(s_pm_assertion);
+		s_pm_assertion = 0;
+	}
+
+	if (!allow)
+		IOPMAssertionCreateWithName(kIOPMAssertionTypePreventUserIdleDisplaySleep, kIOPMAssertionLevelOn, CFSTR("Playing a game"), &s_pm_assertion);
 }
 #endif
