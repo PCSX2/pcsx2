@@ -193,6 +193,7 @@ bool Win32ProgressCallback::Create()
 		wc.hIconSm = LoadIcon(wc.hInstance, MAKEINTRESOURCE(IDI_ICON1));
 		wc.hCursor = LoadCursor(NULL, IDC_WAIT);
 		wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
+		wc.style = CS_NOCLOSE;
 		wc.lpszClassName = CLASS_NAME;
 		if (!RegisterClassExW(&wc))
 		{
@@ -206,7 +207,7 @@ bool Win32ProgressCallback::Create()
 	m_com_initialized = SUCCEEDED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED));
 
 	m_window_hwnd =
-		CreateWindowExW(WS_EX_CLIENTEDGE, CLASS_NAME, L"Win32ProgressCallback", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
+		CreateWindowExW(WS_EX_CLIENTEDGE, CLASS_NAME, L"Win32ProgressCallback", WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX, CW_USEDEFAULT,
 			CW_USEDEFAULT, WINDOW_WIDTH, WINDOW_HEIGHT, nullptr, nullptr, wil::GetModuleInstanceHandle(), this);
 	if (!m_window_hwnd)
 	{
