@@ -128,7 +128,7 @@ ID3D12Resource* GSTexture12::AllocateUploadStagingBuffer(const void* data, u32 p
 	const D3D12_RESOURCE_DESC resource_desc = {
 		D3D12_RESOURCE_DIMENSION_BUFFER, 0, buffer_size, 1, 1, 1, DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
 		D3D12_RESOURCE_FLAG_NONE};
-	HRESULT hr = g_d3d12_context->GetAllocator()->CreateResource(&allocation_desc, &resource_desc, D3D12_RESOURCE_STATE_COPY_SOURCE,
+	HRESULT hr = g_d3d12_context->GetAllocator()->CreateResource(&allocation_desc, &resource_desc, D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr, allocation.put(), IID_PPV_ARGS(resource.put()));
 	if (FAILED(hr))
 	{

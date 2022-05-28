@@ -498,7 +498,7 @@ void Context::ExecuteCommandList(bool wait_for_completion)
 	}
 
 	// Update fence when GPU has completed.
-	hr = m_command_queue->Signal(m_fence.get(), m_current_fence_value);
+	hr = m_command_queue->Signal(m_fence.get(), res.ready_fence_value);
 	pxAssertRel(SUCCEEDED(hr), "Signal fence");
 
 	MoveToNextCommandList();
@@ -555,9 +555,9 @@ void Context::DestroyPendingResources(CommandListResources& cmdlist)
 
 	for (const auto& it : cmdlist.pending_resources)
 	{
+		it.second->Release();
 		if (it.first)
 			it.first->Release();
-		it.second->Release();
 	}
 	cmdlist.pending_resources.clear();
 }
