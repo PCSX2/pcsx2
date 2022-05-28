@@ -13600,7 +13600,7 @@ SLES-52573:
   roundModes:
     eeRoundMode: 2 # Fixes abnormal character behaviour.
 SLES-52576:
-  name: "Yu-Gi-Oh! - Capsule Monster Coliseum"
+  name: "Yu-Gi-Oh! Capsule Monster Coliseum"
   region: "PAL-M5"
 SLES-52579:
   name: "Legends of Wrestling - Showdown"
@@ -27264,7 +27264,7 @@ SLPM-65896:
   name: "Tsuki wa Kirisaku"
   region: "NTSC-J"
 SLPM-65897:
-  name: "C1 Grand Prix Racing Battle"
+  name: "Racing Battle - C1 Grand Prix"
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes black lines when upscaling.
