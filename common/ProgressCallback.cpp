@@ -128,6 +128,7 @@ public:
 	void SetProgressRange(u32 range) override {}
 	void SetProgressValue(u32 value) override {}
 	void IncrementProgressValue() override {}
+	void SetProgressState(ProgressState state) override {}
 
 	void DisplayError(const char* message) override { Console.Error("%s", message); }
 	void DisplayWarning(const char* message) override { Console.Warning("%s", message); }
@@ -147,12 +148,6 @@ static NullProgressCallbacks s_nullProgressCallbacks;
 ProgressCallback* ProgressCallback::NullProgressCallback = &s_nullProgressCallbacks;
 
 BaseProgressCallback::BaseProgressCallback()
-	: m_cancellable(false)
-	, m_cancelled(false)
-	, m_progress_range(1)
-	, m_progress_value(0)
-	, m_base_progress_value(0)
-	, m_saved_state(NULL)
 {
 }
 
@@ -239,10 +234,16 @@ void BaseProgressCallback::SetProgressRange(u32 range)
 
 void BaseProgressCallback::SetProgressValue(u32 value)
 {
+	SetProgressState(ProgressState::Normal);
 	m_progress_value = m_base_progress_value + value;
 }
 
 void BaseProgressCallback::IncrementProgressValue()
 {
 	SetProgressValue((m_progress_value - m_base_progress_value) + 1);
+}
+
+void BaseProgressCallback::SetProgressState(ProgressState state)
+{
+	m_progress_state = state;
 }

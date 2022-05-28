@@ -24,11 +24,21 @@
 
 #include <CommCtrl.h>
 #include <shellapi.h>
+#include <Shobjidl.h>
+
+#include <thread>
+
+#include <wil/com.h>
+#include <wil/resource.h>
+#include <wil/win32_helpers.h>
+
+#pragma comment(lib, "synchronization.lib")
 
 class Win32ProgressCallback final : public BaseProgressCallback
 {
 public:
 	Win32ProgressCallback();
+	~Win32ProgressCallback() override;
 
 	void PushState() override;
 	void PopState() override;
@@ -38,6 +48,7 @@ public:
 	void SetStatusText(const char* text) override;
 	void SetProgressRange(u32 range) override;
 	void SetProgressValue(u32 value) override;
+	void SetProgressState(ProgressState state) override;
 
 	void DisplayError(const char* message) override;
 	void DisplayWarning(const char* message) override;
@@ -65,18 +76,38 @@ private:
 	static LRESULT CALLBACK WndProcThunk(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 	LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
+	void UIThreadProc(wil::slim_event_manual_reset* creationEvent);
+
+	std::thread m_ui_thread;
+
 	HWND m_window_hwnd{};
 	HWND m_text_hwnd{};
 	HWND m_progress_hwnd{};
 	HWND m_list_box_hwnd{};
 
+	wil::com_ptr_nothrow<ITaskbarList3> m_taskbar_list;
+
 	int m_last_progress_percent = -1;
+	bool m_com_initialized = false;
+
+	static inline const UINT s_uTBBC = RegisterWindowMessageW(L"TaskbarButtonCreated");
+	static constexpr UINT WMAPP_SETTASKBARPROGRESS = WM_USER+0;
+	static constexpr UINT WMAPP_SETTASKBARSTATE = WM_USER+1;
 };
 
 Win32ProgressCallback::Win32ProgressCallback()
 	: BaseProgressCallback()
 {
-	Create();
+	wil::slim_event_manual_reset creationEvent;
+	m_ui_thread = std::thread(&Win32ProgressCallback::UIThreadProc, this, &creationEvent);
+	creationEvent.wait();
+}
+
+Win32ProgressCallback::~Win32ProgressCallback()
+{
+	if (m_window_hwnd)
+		PostMessageW(m_window_hwnd, WM_CLOSE, 0, 0);
+	m_ui_thread.join();
 }
 
 void Win32ProgressCallback::PushState()
@@ -119,6 +150,33 @@ void Win32ProgressCallback::SetProgressValue(u32 value)
 	Redraw(false);
 }
 
+void Win32ProgressCallback::SetProgressState(ProgressState state)
+{
+	BaseProgressCallback::SetProgressState(state);
+	Redraw(true);
+}
+
+void Win32ProgressCallback::UIThreadProc(wil::slim_event_manual_reset* creationEvent)
+{
+	if (Create())
+	{
+		creationEvent->SetEvent();
+
+		MSG msg;
+		while (GetMessageW(&msg, m_window_hwnd, 0, 0) > 0)
+		{
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
+		}
+
+		Destroy();
+	}
+	else
+	{
+		creationEvent->SetEvent();
+	}
+}
+
 bool Win32ProgressCallback::Create()
 {
 	static const wchar_t* CLASS_NAME = L"PCSX2Win32ProgressCallbackWindow";
@@ -128,10 +186,9 @@ bool Win32ProgressCallback::Create()
 	{
 		InitCommonControls();
 
-		WNDCLASSEX wc = {};
-		wc.cbSize = sizeof(WNDCLASSEX);
+		WNDCLASSEX wc = {sizeof(wc)};
 		wc.lpfnWndProc = WndProcThunk;
-		wc.hInstance = GetModuleHandle(nullptr);
+		wc.hInstance = wil::GetModuleInstanceHandle();
 		wc.hIcon = LoadIcon(wc.hInstance, MAKEINTRESOURCE(IDI_ICON1));
 		wc.hIconSm = LoadIcon(wc.hInstance, MAKEINTRESOURCE(IDI_ICON1));
 		wc.hCursor = LoadCursor(NULL, IDC_WAIT);
@@ -146,30 +203,38 @@ bool Win32ProgressCallback::Create()
 		class_registered = true;
 	}
 
+	m_com_initialized = SUCCEEDED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED));
+
 	m_window_hwnd =
 		CreateWindowExW(WS_EX_CLIENTEDGE, CLASS_NAME, L"Win32ProgressCallback", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
-			CW_USEDEFAULT, WINDOW_WIDTH, WINDOW_HEIGHT, nullptr, nullptr, GetModuleHandle(nullptr), this);
+			CW_USEDEFAULT, WINDOW_WIDTH, WINDOW_HEIGHT, nullptr, nullptr, wil::GetModuleInstanceHandle(), this);
 	if (!m_window_hwnd)
 	{
 		MessageBoxW(nullptr, L"Failed to create window", L"Error", MB_OK);
 		return false;
 	}
 
-	SetWindowLongPtr(m_window_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 	ShowWindow(m_window_hwnd, SW_SHOW);
+
+	// Pump messages manually just this one time to give the chance for the taskbar icon to be created etc.
 	PumpMessages();
 	return true;
 }
 
 void Win32ProgressCallback::Destroy()
 {
-	if (!m_window_hwnd)
-		return;
+	m_taskbar_list.reset();
 
-	DestroyWindow(m_window_hwnd);
-	m_window_hwnd = {};
-	m_text_hwnd = {};
-	m_progress_hwnd = {};
+	if (m_window_hwnd)
+	{
+		DestroyWindow(m_window_hwnd);
+		m_window_hwnd = {};
+		m_text_hwnd = {};
+		m_progress_hwnd = {};
+	}
+
+	if (m_com_initialized)
+		CoUninitialize();
 }
 
 void Win32ProgressCallback::PumpMessages()
@@ -188,17 +253,35 @@ void Win32ProgressCallback::Redraw(bool force)
 		static_cast<int>((static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range)) * 100.0f);
 	if (percent == m_last_progress_percent && !force)
 	{
-		PumpMessages();
 		return;
 	}
 
 	m_last_progress_percent = percent;
 
-	SendMessageW(m_progress_hwnd, PBM_SETRANGE, 0, MAKELPARAM(0, m_progress_range));
-	SendMessageW(m_progress_hwnd, PBM_SETPOS, static_cast<WPARAM>(m_progress_value), 0);
+	const LONG_PTR style = GetWindowLongPtrW(m_progress_hwnd, GWL_STYLE);
+	LONG_PTR newStyle = style;
+	if (m_progress_state == ProgressState::Normal)
+	{
+		newStyle = style & ~(PBS_MARQUEE);
+		SendMessageW(m_window_hwnd, WMAPP_SETTASKBARPROGRESS, m_progress_value, m_progress_range);
+	}
+	else if (m_progress_state == ProgressState::Indeterminate)
+	{
+		newStyle = style | PBS_MARQUEE;
+		SendMessageW(m_window_hwnd, WMAPP_SETTASKBARSTATE, TBPF_INDETERMINATE, 0);
+	}
+	
+	if (style != newStyle)
+	{
+		SetWindowLongPtrW(m_progress_hwnd, GWL_STYLE, newStyle);
+		SendMessageW(m_progress_hwnd, PBM_SETMARQUEE, m_progress_state == ProgressState::Indeterminate, 0);
+	}
+	if (m_progress_state != ProgressState::Indeterminate)
+	{
+		SendMessageW(m_progress_hwnd, PBM_SETRANGE, 0, MAKELPARAM(0, m_progress_range));
+		SendMessageW(m_progress_hwnd, PBM_SETPOS, static_cast<WPARAM>(m_progress_value), 0);
+	}
 	SetWindowTextW(m_text_hwnd, StringUtil::UTF8StringToWideString(m_status_text).c_str());
-	RedrawWindow(m_text_hwnd, nullptr, nullptr, RDW_INVALIDATE);
-	PumpMessages();
 }
 
 LRESULT CALLBACK Win32ProgressCallback::WndProcThunk(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -243,10 +326,50 @@ LRESULT CALLBACK Win32ProgressCallback::WndProc(HWND hwnd, UINT msg, WPARAM wpar
 					WINDOW_MARGIN, y, SUBWINDOW_WIDTH, 170, hwnd, nullptr, cs->hInstance, nullptr);
 			SendMessageW(m_list_box_hwnd, WM_SETFONT, WPARAM(default_font), TRUE);
 			y += 170;
+
+			// In case the application is run elevated, allow the
+			// TaskbarButtonCreated message through.
+			ChangeWindowMessageFilterEx(hwnd, s_uTBBC, MSGFLT_ALLOW, nullptr);
+
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+		}
+		break;
+
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			return 0;
+
+		case WMAPP_SETTASKBARPROGRESS:
+		{
+			if (m_taskbar_list)
+				m_taskbar_list->SetProgressValue(m_window_hwnd, wparam, lparam);
+		}
+		break;
+
+		case WMAPP_SETTASKBARSTATE:
+		{
+			if (m_taskbar_list)
+				m_taskbar_list->SetProgressState(m_window_hwnd, static_cast<TBPFLAG>(wparam));
 		}
 		break;
 
 		default:
+			if (msg == s_uTBBC)
+			{
+				if (m_com_initialized)
+				{
+					m_taskbar_list = wil::CoCreateInstanceNoThrow<ITaskbarList3>(CLSID_TaskbarList);
+					if (m_taskbar_list)
+					{
+						if (FAILED(m_taskbar_list->HrInit()))
+						{
+							m_taskbar_list.reset();
+						}
+					}
+				}
+
+				return 0;
+			}
 			return DefWindowProcW(hwnd, msg, wparam, lparam);
 	}
 
@@ -258,7 +381,6 @@ void Win32ProgressCallback::DisplayError(const char* message)
 	Console.Error(message);
 	SendMessageW(m_list_box_hwnd, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(StringUtil::UTF8StringToWideString(message).c_str()));
 	SendMessageW(m_list_box_hwnd, WM_VSCROLL, SB_BOTTOM, 0);
-	PumpMessages();
 }
 
 void Win32ProgressCallback::DisplayWarning(const char* message)
@@ -266,7 +388,6 @@ void Win32ProgressCallback::DisplayWarning(const char* message)
 	Console.Warning(message);
 	SendMessageW(m_list_box_hwnd, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(StringUtil::UTF8StringToWideString(message).c_str()));
 	SendMessageW(m_list_box_hwnd, WM_VSCROLL, SB_BOTTOM, 0);
-	PumpMessages();
 }
 
 void Win32ProgressCallback::DisplayInformation(const char* message)
@@ -274,7 +395,6 @@ void Win32ProgressCallback::DisplayInformation(const char* message)
 	Console.WriteLn(message);
 	SendMessageW(m_list_box_hwnd, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(StringUtil::UTF8StringToWideString(message).c_str()));
 	SendMessageW(m_list_box_hwnd, WM_VSCROLL, SB_BOTTOM, 0);
-	PumpMessages();
 }
 
 void Win32ProgressCallback::DisplayDebugMessage(const char* message)
@@ -284,17 +404,12 @@ void Win32ProgressCallback::DisplayDebugMessage(const char* message)
 
 void Win32ProgressCallback::ModalError(const char* message)
 {
-	PumpMessages();
 	MessageBoxW(m_window_hwnd, StringUtil::UTF8StringToWideString(message).c_str(), L"Error", MB_ICONERROR | MB_OK);
-	PumpMessages();
 }
 
 bool Win32ProgressCallback::ModalConfirmation(const char* message)
 {
-	PumpMessages();
-	bool result = MessageBoxW(m_window_hwnd, StringUtil::UTF8StringToWideString(message).c_str(), L"Confirmation", MB_ICONQUESTION | MB_YESNO) == IDYES;
-	PumpMessages();
-	return result;
+	return MessageBoxW(m_window_hwnd, StringUtil::UTF8StringToWideString(message).c_str(), L"Confirmation", MB_ICONQUESTION | MB_YESNO) == IDYES;
 }
 
 void Win32ProgressCallback::ModalInformation(const char* message)
@@ -320,26 +435,25 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	Win32ProgressCallback progress;
 
 	int argc = 0;
-	LPWSTR* argv = CommandLineToArgvW(lpCmdLine, &argc);
+	wil::unique_hlocal_ptr<LPWSTR[]> argv(CommandLineToArgvW(GetCommandLineW(), &argc));
 	if (!argv || argc <= 0)
 	{
 		progress.ModalError("Failed to parse command line.");
 		return 1;
 	}
-	if (argc != 4)
+	if (argc != 5)
 	{
 		progress.ModalError("Expected 4 arguments: parent process id, output directory, update zip, program to "
 							"launch.\n\nThis program is not intended to be run manually, please use the Qt frontend and "
 							"click Help->Check for Updates.");
-		LocalFree(argv);
 		return 1;
 	}
 
-	const int parent_process_id = StringUtil::FromChars<int>(StringUtil::WideStringToUTF8String(argv[0])).value_or(0);
-	const std::string destination_directory = StringUtil::WideStringToUTF8String(argv[1]);
-	const std::string zip_path = StringUtil::WideStringToUTF8String(argv[2]);
-	const std::wstring program_to_launch(argv[3]);
-	LocalFree(argv);
+	const int parent_process_id = StringUtil::FromChars<int>(StringUtil::WideStringToUTF8String(argv[1])).value_or(0);
+	const std::string destination_directory = StringUtil::WideStringToUTF8String(argv[2]);
+	const std::string zip_path = StringUtil::WideStringToUTF8String(argv[3]);
+	const std::wstring program_to_launch(argv[4]);
+	argv.reset();
 
 	if (parent_process_id <= 0 || destination_directory.empty() || zip_path.empty() || program_to_launch.empty())
 	{
@@ -348,11 +462,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	}
 
 	Updater::SetupLogging(&progress, destination_directory);
+	Updater updater(&progress);
 
 	progress.SetFormattedStatusText("Waiting for parent process %d to exit...", parent_process_id);
+	progress.SetProgressState(ProgressCallback::ProgressState::Indeterminate);
 	WaitForProcessToExit(parent_process_id);
 
-	Updater updater(&progress);
 	if (!updater.Initialize(destination_directory))
 	{
 		progress.ModalError("Failed to initialize updater.");

@@ -25,6 +25,14 @@
 class ProgressCallback
 {
 public:
+	enum class ProgressState
+	{
+		Normal,
+		Indeterminate,
+		Paused,
+		Error
+	};
+
 	virtual ~ProgressCallback();
 
 	virtual void PushState() = 0;
@@ -40,6 +48,7 @@ public:
 	virtual void SetProgressRange(u32 range) = 0;
 	virtual void SetProgressValue(u32 value) = 0;
 	virtual void IncrementProgressValue() = 0;
+	virtual void SetProgressState(ProgressState state) = 0;
 
 	void SetFormattedStatusText(const char* Format, ...);
 
@@ -81,6 +90,7 @@ public:
 	virtual void SetProgressRange(u32 range) override;
 	virtual void SetProgressValue(u32 value) override;
 	virtual void IncrementProgressValue() override;
+	virtual void SetProgressState(ProgressState state) override;
 
 protected:
 	struct State
@@ -93,13 +103,14 @@ protected:
 		bool cancellable;
 	};
 
-	bool m_cancellable;
-	bool m_cancelled;
+	bool m_cancellable = false;
+	bool m_cancelled = false;
 	std::string m_status_text;
-	u32 m_progress_range;
-	u32 m_progress_value;
+	u32 m_progress_range = 1;
+	u32 m_progress_value = 0;
+	ProgressState m_progress_state = ProgressState::Normal;
 
-	u32 m_base_progress_value;
+	u32 m_base_progress_value = 0;
 
-	State* m_saved_state;
+	State* m_saved_state = nullptr;
 };
