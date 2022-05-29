@@ -17,6 +17,7 @@
 
 #include "Pcsx2Defs.h"
 #include <string>
+#include <optional>
 #include <vector>
 
 class SettingsInterface
@@ -85,5 +86,71 @@ public:
 		if (!GetStringValue(section, key, &value))
 			value.assign(default_value);
 		return value;
+	}
+
+	__fi std::optional<int> GetOptionalIntValue(const char* section, const char* key, std::optional<int> default_value = std::nullopt)
+	{
+		int ret;
+		return GetIntValue(section, key, &ret) ? std::optional<int>(ret) : default_value;
+	}
+
+	__fi std::optional<uint> GetOptionalUIntValue(const char* section, const char* key, std::optional<uint> default_value = std::nullopt)
+	{
+		uint ret;
+		return GetUIntValue(section, key, &ret) ? std::optional<uint>(ret) : default_value;
+	}
+
+	__fi std::optional<float> GetOptionalFloatValue(const char* section, const char* key, std::optional<float> default_value = std::nullopt)
+	{
+		float ret;
+		return GetFloatValue(section, key, &ret) ? std::optional<float>(ret) : default_value;
+	}
+
+	__fi std::optional<double> GetOptionalDoubleValue(const char* section, const char* key, std::optional<double> default_value = std::nullopt)
+	{
+		double ret;
+		return GetDoubleValue(section, key, &ret) ? std::optional<double>(ret) : default_value;
+	}
+
+	__fi std::optional<bool> GetOptionalBoolValue(const char* section, const char* key, std::optional<bool> default_value = std::nullopt)
+	{
+		bool ret;
+		return GetBoolValue(section, key, &ret) ? std::optional<bool>(ret) : default_value;
+	}
+
+	__fi std::optional<std::string> GetOptionalStringValue(const char* section, const char* key, std::optional<const char*> default_value = std::nullopt) const
+	{
+		std::string ret;
+		return GetStringValue(section, key, &ret) ? std::optional<std::string>(ret) : default_value;
+	}
+
+	__fi void SetOptionalIntValue(const char* section, const char* key, const std::optional<int>& value)
+	{
+		value.has_value() ? SetIntValue(section, key, value.value()) : DeleteValue(section, key);
+	}
+
+	__fi void SetOptionalUIntValue(const char* section, const char* key, const std::optional<uint>& value)
+	{
+		value.has_value() ? SetUIntValue(section, key, value.value()) : DeleteValue(section, key);
+	}
+
+	__fi void SetOptionalFloatValue(const char* section, const char* key, const std::optional<float>& value)
+	{
+		value.has_value() ? SetFloatValue(section, key, value.value()) : DeleteValue(section, key);
+	}
+
+	__fi void SetOptionalDoubleValue(const char* section, const char* key, const std::optional<double>& value)
+	{
+		value.has_value() ? SetDoubleValue(section, key, value.value()) : DeleteValue(section, key);
+	}
+
+	__fi void SetOptionalBoolValue(const char* section, const char* key, const std::optional<bool>& value)
+	{
+		value.has_value() ? SetBoolValue(section, key, value.value()) : DeleteValue(section, key);
+	}
+
+	__fi void SetOptionalStringValue(const char* section, const char* key, const std::optional<const char*>& value)
+	{
+		value.has_value() ? SetStringValue(section, key, value.value()) : DeleteValue(section, key);
 	}
 };
