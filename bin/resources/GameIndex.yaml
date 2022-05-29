@@ -9858,6 +9858,8 @@ SLES-50731:
   compat: 5
   clampModes:
     vuClampMode: 2 # White textures.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurriness.
 SLES-50735:
   name: "Jade Cocoon 2"
   region: "PAL-E"
@@ -31127,6 +31129,14 @@ SLPM-67524:
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
+SLPM-67527:
+  name: "Need for Speed - Hot Pursuit 2"
+  region: "NTSC-K"
+  compat: 5
+  clampModes:
+    vuClampMode: 2 # White textures.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurriness.
 SLPM-67528:
   name: "Hajime no Ippo - Victorious Boxers [Championship Edition]"
   region: "NTSC-K"
@@ -37874,6 +37884,8 @@ SLUS-20362:
   compat: 5
   clampModes:
     vuClampMode: 2 # White textures.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurriness.
 SLUS-20363:
   name: "Sled Storm"
   region: "NTSC-U"
