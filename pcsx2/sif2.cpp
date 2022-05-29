@@ -17,8 +17,10 @@
 
 #define _PC_	// disables MIPS opcode macros.
 
-#include "IopCommon.h"
+#include "R3000A.h"
+#include "Common.h"
 #include "Sif.h"
+#include "IopHw.h"
 
 _sif sif2;
 
@@ -370,7 +372,7 @@ __fi void  EEsif2Interrupt()
 __fi void dmaSIF2()
 {
 	DevCon.Warning("SIF2 EE CHCR %x", sif2dma.chcr._u32);
-	SIF_LOG(wxString(L"dmaSIF2" + sif2dma.cmqt_to_str()).To8BitData());
+	SIF_LOG("dmaSIF2%s", sif2dma.cmqt_to_str().c_str());
 
 	if (sif2.fifo.readPos != sif2.fifo.writePos)
 	{

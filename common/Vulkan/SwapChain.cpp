@@ -78,6 +78,9 @@ static bool CreateMetalLayer(WindowInfo* wi)
 		return false;
 	}
 
+	// This needs to be retained, otherwise we double release below.
+	msgsend<void, id>(layer, "retain");
+
 	// [view setWantsLayer:YES]
 	msgsend<void, id, BOOL>(view, "setWantsLayer:", YES);
 
@@ -825,6 +828,7 @@ namespace Vulkan
 		DestroySwapChainImages();
 		DestroySwapChain();
 		DestroySurface();
+		DestroySemaphores();
 
 		// Re-create the surface with the new native handle
 		m_window_info = new_wi;
@@ -849,7 +853,7 @@ namespace Vulkan
 		}
 
 		// Finally re-create the swap chain
-		if (!CreateSwapChain() || !SetupSwapChainImages())
+		if (!CreateSwapChain() || !SetupSwapChainImages() || !CreateSemaphores())
 			return false;
 
 		return true;

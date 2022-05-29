@@ -18,6 +18,7 @@
 #include "GS.h"
 #include "common/boost_spsc_queue.hpp"
 #include "common/General.h"
+#include "common/Threading.h"
 #include <condition_variable>
 #include <functional>
 #include <mutex>
@@ -33,51 +34,20 @@ private:
 	bool m_exit;
 	ringbuffer_base<T, CAPACITY> m_queue;
 
-	std::mutex m_lock;
-	std::mutex m_wait_lock;
-	std::condition_variable m_empty;
-	std::condition_variable m_notempty;
+	Threading::WorkSema m_sema;
 
 	void ThreadProc()
 	{
 		if (m_startup)
 			m_startup();
 
-		std::unique_lock<std::mutex> l(m_lock);
-
 		while (true)
 		{
-
-			while (m_queue.empty())
-			{
-				if (m_exit)
-					return;
-
-				m_notempty.wait(l);
-			}
-
-			l.unlock();
-
-			u32 waited = 0;
-			while (true)
-			{
-				while (m_queue.consume_one(*this))
-					waited = 0;
-
-				if (waited == 0)
-				{
-					{
-						std::lock_guard<std::mutex> wait_guard(m_wait_lock);
-					}
-					m_empty.notify_one();
-				}
-
-				if (waited >= SPIN_TIME_NS)
-					break;
-				waited += ShortSpin();
-			}
-
-			l.lock();
+			m_sema.WaitForWorkWithSpin();
+			if (m_exit)
+				break;
+			while (m_queue.consume_one(*this))
+				;
 		}
 
 		if (m_shutdown)
@@ -96,12 +66,8 @@ public:
 
 	~GSJobQueue()
 	{
-		{
-			std::lock_guard<std::mutex> l(m_lock);
-			m_exit = true;
-		}
-		m_notempty.notify_one();
-
+		m_exit = true;
+		m_sema.NotifyOfWork();
 		m_thread.join();
 	}
 
@@ -114,29 +80,12 @@ public:
 	{
 		while (!m_queue.push(item))
 			std::this_thread::yield();
-
-		{
-			std::lock_guard<std::mutex> l(m_lock);
-		}
-		m_notempty.notify_one();
+		m_sema.NotifyOfWork();
 	}
 
 	void Wait()
 	{
-		u32 waited = 0;
-		while (true)
-		{
-			if (IsEmpty())
-				return;
-			if (waited >= SPIN_TIME_NS)
-				break;
-			waited += ShortSpin();
-		}
-
-		std::unique_lock<std::mutex> l(m_wait_lock);
-		while (!IsEmpty())
-			m_empty.wait(l);
-
+		m_sema.WaitForEmptyWithSpin();
 		assert(IsEmpty());
 	}
 

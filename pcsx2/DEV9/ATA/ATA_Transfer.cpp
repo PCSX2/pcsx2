@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/Assertions.h"
+
 #include "ATA.h"
 #include "DEV9/DEV9.h"
 

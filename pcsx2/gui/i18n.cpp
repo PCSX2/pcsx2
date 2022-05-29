@@ -16,6 +16,8 @@
 #include "PrecompiledHeader.h"
 #include "i18n.h"
 #include "AppConfig.h"
+#include "StringHelpers.h"
+#include "wxGuiTools.h"
 #include "common/SafeArray.h"
 #include <memory>
 
@@ -35,11 +37,13 @@ static wxString i18n_GetBetterLanguageName( const wxLanguageInfo* info )
 {
 	switch (info->Language)
 	{
-		case wxLANGUAGE_CHINESE:				return L"Chinese (Traditional)";
-		case wxLANGUAGE_CHINESE_TRADITIONAL:	return L"Chinese (Traditional)";
-		case wxLANGUAGE_CHINESE_TAIWAN:			return L"Chinese (Traditional)";
-		case wxLANGUAGE_CHINESE_HONGKONG:		return L"Chinese (Traditional, Hong Kong)";
-		case wxLANGUAGE_CHINESE_MACAU:			return L"Chinese (Traditional, Macau)";
+		case wxLANGUAGE_CHINESE:             return L"Chinese (Traditional)";
+#if !wxCHECK_VERSION(3, 1, 6)
+		case wxLANGUAGE_CHINESE_TRADITIONAL: return L"Chinese (Traditional)";
+#endif
+		case wxLANGUAGE_CHINESE_TAIWAN:      return L"Chinese (Traditional)";
+		case wxLANGUAGE_CHINESE_HONGKONG:    return L"Chinese (Traditional, Hong Kong)";
+		case wxLANGUAGE_CHINESE_MACAU:       return L"Chinese (Traditional, Macau)";
 	}
 
 	return info->Description;
@@ -304,7 +308,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 
 	if( !locale->IsOk() )
 	{
-		Console.Warning( L"SetLanguage: '%s' [%s] is not supported by the operating system",
+		Console.Warning( "SetLanguage: '%ls' [%ls] is not supported by the operating system",
 			WX_STR(i18n_GetBetterLanguageName(info)), WX_STR(locale->GetCanonicalName())
 		);
 		return false;
@@ -325,7 +329,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 		return true;
 	}
 	
-	Console.WriteLn( L"Loading language translation databases for '%s' [%s]",
+	Console.WriteLn( "Loading language translation databases for '%ls' [%ls]",
 		WX_STR(i18n_GetBetterLanguageName(info)), WX_STR(locale->GetCanonicalName())
 	);
 
@@ -346,7 +350,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 			foundone = true;
 	}
 
-	if (!foundone)	
+	if (!foundone)
 	{
 		Console.Warning("SetLanguage: Requested translation is not implemented yet.");
 		return false;

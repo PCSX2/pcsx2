@@ -16,7 +16,9 @@
 #include "PrecompiledHeader.h"
 #include "ChdFileReader.h"
 
+#include "common/Assertions.h"
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 
 ChdFileReader::~ChdFileReader()
@@ -86,12 +88,12 @@ bool ChdFileReader::Open2(std::string fileName)
 		}
 
 		bool found_parent = false;
-		dirname = FileSystem::GetPathDirectory(chds[chd_depth]);
+		dirname = Path::GetDirectory(chds[chd_depth]);
 		if (FileSystem::FindFiles(dirname.c_str(), "*.*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &results))
 		{
 			for (const FILESYSTEM_FIND_DATA& fd : results)
 			{
-				const std::string_view extension(FileSystem::GetExtension(fd.FileName));
+				const std::string_view extension(Path::GetExtension(fd.FileName));
 				if (extension.empty() || StringUtil::Strncasecmp(extension.data(), "chd", 3) != 0)
 					continue;
 
@@ -114,7 +116,7 @@ bool ChdFileReader::Open2(std::string fileName)
 
 	if (error != CHDERR_NONE)
 	{
-		Console.Error(L"CDVD: chd_open return error: %s", chd_error_string(error));
+		Console.Error("CDVD: chd_open return error: %s", chd_error_string(error));
 		return false;
 	}
 
@@ -131,7 +133,7 @@ bool ChdFileReader::Open2(std::string fileName)
 		error = chd_open_wrapper(chds[d].c_str(), &fp, CHD_OPEN_READ, parent, &child);
 		if (error != CHDERR_NONE)
 		{
-			Console.Error(L"CDVD: chd_open return error: %s", chd_error_string(error));
+			Console.Error("CDVD: chd_open return error: %s", chd_error_string(error));
 			if (parent)
 				chd_close(parent);
 			return false;
@@ -175,7 +177,7 @@ int ChdFileReader::ReadChunk(void* dst, s64 chunkID)
 	chd_error error = chd_read(ChdFile, chunkID, dst);
 	if (error != CHDERR_NONE)
 	{
-		Console.Error(L"CDVD: chd_read returned error: %s", chd_error_string(error));
+		Console.Error("CDVD: chd_read returned error: %s", chd_error_string(error));
 		return 0;
 	}
 

@@ -120,7 +120,7 @@ void GSDeviceOGL::GenerateProfilerData()
 	GLuint64 time_start = 0;
 	GLuint64 time_end = 0;
 	std::vector<double> times;
-	const double ms = 0.000001;
+	constexpr double ms = 0.000001;
 
 	const int replay = theApp.GetConfigI("linux_replay");
 	const int first_query = replay > 1 ? m_profiler.last_query / replay : 0;
@@ -206,7 +206,7 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 
 	if (!theApp.GetConfigB("disable_shader_cache"))
 	{
-		if (!m_shader_cache.Open(false, StringUtil::wxStringToUTF8String(EmuFolders::Cache.ToString()), SHADER_VERSION))
+		if (!m_shader_cache.Open(false, EmuFolders::Cache, SHADER_VERSION))
 			Console.Warning("Shader cache failed to open.");
 	}
 	else
@@ -369,7 +369,7 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 		{
 			const char* name = shaderName(static_cast<ShaderConvert>(i));
 			const std::string macro_sel = (static_cast<ShaderConvert>(i) == ShaderConvert::RGBA_TO_8I) ?
-                                              format("#define PS_SCALE_FACTOR %d\n", GSConfig.UpscaleMultiplier) :
+                                              StringUtil::StdStringFromFormat("#define PS_SCALE_FACTOR %d\n", GSConfig.UpscaleMultiplier) :
                                               std::string();
 			const std::string ps(GetShaderSource(name, GL_FRAGMENT_SHADER, m_shader_common_header, *shader, macro_sel));
 			if (!m_shader_cache.GetProgram(&m_convert.ps[i], m_convert.vs, {}, ps))
@@ -380,7 +380,7 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 				m_convert.ps[i].RegisterUniform("EMOD");
 		}
 
-		PSSamplerSelector point;
+		const PSSamplerSelector point;
 		m_convert.pt = GetSamplerID(point);
 
 		PSSamplerSelector bilinear;
@@ -408,7 +408,7 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 
 		for (size_t i = 0; i < std::size(m_merge_obj.ps); i++)
 		{
-			const std::string ps(GetShaderSource(format("ps_main%d", i), GL_FRAGMENT_SHADER, m_shader_common_header, *shader, {}));
+			const std::string ps(GetShaderSource(StringUtil::StdStringFromFormat("ps_main%d", i), GL_FRAGMENT_SHADER, m_shader_common_header, *shader, {}));
 			if (!m_shader_cache.GetProgram(&m_merge_obj.ps[i], m_convert.vs, {}, ps))
 				return false;
 			m_merge_obj.ps[i].SetFormattedName("Merge pipe %zu", i);
@@ -431,12 +431,11 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 
 		for (size_t i = 0; i < std::size(m_interlace.ps); i++)
 		{
-			const std::string ps(GetShaderSource(format("ps_main%d", i), GL_FRAGMENT_SHADER, m_shader_common_header, *shader, {}));
+			const std::string ps(GetShaderSource(StringUtil::StdStringFromFormat("ps_main%d", i), GL_FRAGMENT_SHADER, m_shader_common_header, *shader, {}));
 			if (!m_shader_cache.GetProgram(&m_interlace.ps[i], m_convert.vs, {}, ps))
 				return false;
 			m_interlace.ps[i].SetFormattedName("Merge pipe %zu", i);
 			m_interlace.ps[i].RegisterUniform("ZrH");
-			m_interlace.ps[i].RegisterUniform("hH");
 		}
 	}
 
@@ -829,40 +828,17 @@ GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 	GLuint sampler;
 	glCreateSamplers(1, &sampler);
 
-	// Bilinear filtering
-	if (sel.biln)
+	glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, sel.IsMagFilterLinear() ? GL_LINEAR : GL_NEAREST);
+	if (!sel.UseMipmapFiltering())
 	{
-		glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, sel.IsMinFilterLinear() ? GL_LINEAR : GL_NEAREST);
 	}
 	else
 	{
-		glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	}
-
-	switch (static_cast<GS_MIN_FILTER>(sel.triln))
-	{
-		case GS_MIN_FILTER::Nearest:
-			// Nop based on biln
-			break;
-		case GS_MIN_FILTER::Linear:
-			// Nop based on biln
-			break;
-		case GS_MIN_FILTER::Nearest_Mipmap_Nearest:
-			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-			break;
-		case GS_MIN_FILTER::Nearest_Mipmap_Linear:
-			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-			break;
-		case GS_MIN_FILTER::Linear_Mipmap_Nearest:
-			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-			break;
-		case GS_MIN_FILTER::Linear_Mipmap_Linear:
-			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			break;
-		default:
-			break;
+		if (sel.IsMipFilterLinear())
+			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, sel.IsMinFilterLinear() ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR);
+		else
+			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, sel.IsMinFilterLinear() ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST);
 	}
 
 	glSamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, -1000.0f);
@@ -931,7 +907,7 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area)
 
 	// Create a texture to avoid the useless clean@0
 	if (m_date.t == NULL)
-		m_date.t = CreateTexture(rtsize.x, rtsize.y, false, GSTexture::Format::Int32);
+		m_date.t = CreateTexture(rtsize.x, rtsize.y, false, GSTexture::Format::PrimID);
 
 	// Clean with the max signed value
 	const int max_int = 0x7FFFFFFF;
@@ -1043,11 +1019,11 @@ std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 	Console.WriteLn("Compiling new vertex shader with selector 0x%" PRIX64, sel.key);
 #endif
 
-	std::string macro = format("#define VS_INT_FST %d\n", sel.int_fst)
-		+ format("#define VS_IIP %d\n", sel.iip)
-		+ format("#define VS_POINT_SIZE %d\n", sel.point_size);
+	std::string macro = StringUtil::StdStringFromFormat("#define VS_INT_FST %d\n", sel.int_fst)
+		+ StringUtil::StdStringFromFormat("#define VS_IIP %d\n", sel.iip)
+		+ StringUtil::StdStringFromFormat("#define VS_POINT_SIZE %d\n", sel.point_size);
 	if (sel.point_size)
-		macro += format("#define VS_POINT_SIZE_VALUE %d\n", GSConfig.UpscaleMultiplier);
+		macro += StringUtil::StdStringFromFormat("#define VS_POINT_SIZE_VALUE %d\n", GSConfig.UpscaleMultiplier);
 
 	std::string src = GenGlslHeader("vs_main", GL_VERTEX_SHADER, macro);
 	src += m_shader_common_header;
@@ -1061,9 +1037,9 @@ std::string GSDeviceOGL::GetGSSource(GSSelector sel)
 	Console.WriteLn("Compiling new geometry shader with selector 0x%" PRIX64, sel.key);
 #endif
 
-	std::string macro = format("#define GS_POINT %d\n", sel.point)
-		+ format("#define GS_LINE %d\n", sel.line)
-		+ format("#define GS_IIP %d\n", sel.iip);
+	std::string macro = StringUtil::StdStringFromFormat("#define GS_POINT %d\n", sel.point)
+		+ StringUtil::StdStringFromFormat("#define GS_LINE %d\n", sel.line)
+		+ StringUtil::StdStringFromFormat("#define GS_IIP %d\n", sel.iip);
 
 	std::string src = GenGlslHeader("gs_main", GL_GEOMETRY_SHADER, macro);
 	src += m_shader_common_header;
@@ -1077,52 +1053,52 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 	Console.WriteLn("Compiling new pixel shader with selector 0x%" PRIX64 "%08X", sel.key_hi, sel.key_lo);
 #endif
 
-	std::string macro = format("#define PS_FST %d\n", sel.fst)
-		+ format("#define PS_WMS %d\n", sel.wms)
-		+ format("#define PS_WMT %d\n", sel.wmt)
-		+ format("#define PS_AEM_FMT %d\n", sel.aem_fmt)
-		+ format("#define PS_PAL_FMT %d\n", sel.pal_fmt)
-		+ format("#define PS_DFMT %d\n", sel.dfmt)
-		+ format("#define PS_DEPTH_FMT %d\n", sel.depth_fmt)
-		+ format("#define PS_CHANNEL_FETCH %d\n", sel.channel)
-		+ format("#define PS_URBAN_CHAOS_HLE %d\n", sel.urban_chaos_hle)
-		+ format("#define PS_TALES_OF_ABYSS_HLE %d\n", sel.tales_of_abyss_hle)
-		+ format("#define PS_TEX_IS_FB %d\n", sel.tex_is_fb)
-		+ format("#define PS_INVALID_TEX0 %d\n", sel.invalid_tex0)
-		+ format("#define PS_AEM %d\n", sel.aem)
-		+ format("#define PS_TFX %d\n", sel.tfx)
-		+ format("#define PS_TCC %d\n", sel.tcc)
-		+ format("#define PS_ATST %d\n", sel.atst)
-		+ format("#define PS_FOG %d\n", sel.fog)
-		+ format("#define PS_CLR_HW %d\n", sel.clr_hw)
-		+ format("#define PS_FBA %d\n", sel.fba)
-		+ format("#define PS_LTF %d\n", sel.ltf)
-		+ format("#define PS_AUTOMATIC_LOD %d\n", sel.automatic_lod)
-		+ format("#define PS_MANUAL_LOD %d\n", sel.manual_lod)
-		+ format("#define PS_COLCLIP %d\n", sel.colclip)
-		+ format("#define PS_DATE %d\n", sel.date)
-		+ format("#define PS_TCOFFSETHACK %d\n", sel.tcoffsethack)
-		+ format("#define PS_POINT_SAMPLER %d\n", sel.point_sampler)
-		+ format("#define PS_BLEND_A %d\n", sel.blend_a)
-		+ format("#define PS_BLEND_B %d\n", sel.blend_b)
-		+ format("#define PS_BLEND_C %d\n", sel.blend_c)
-		+ format("#define PS_BLEND_D %d\n", sel.blend_d)
-		+ format("#define PS_IIP %d\n", sel.iip)
-		+ format("#define PS_SHUFFLE %d\n", sel.shuffle)
-		+ format("#define PS_READ_BA %d\n", sel.read_ba)
-		+ format("#define PS_WRITE_RG %d\n", sel.write_rg)
-		+ format("#define PS_FBMASK %d\n", sel.fbmask)
-		+ format("#define PS_HDR %d\n", sel.hdr)
-		+ format("#define PS_DITHER %d\n", sel.dither)
-		+ format("#define PS_ZCLAMP %d\n", sel.zclamp)
-		+ format("#define PS_BLEND_MIX %d\n", sel.blend_mix)
-		+ format("#define PS_PABE %d\n", sel.pabe)
-		+ format("#define PS_SCANMSK %d\n", sel.scanmsk)
-		+ format("#define PS_SCALE_FACTOR %d\n", GSConfig.UpscaleMultiplier)
-		+ format("#define PS_NO_COLOR %d\n", sel.no_color)
-		+ format("#define PS_NO_COLOR1 %d\n", sel.no_color1)
-		+ format("#define PS_NO_ABLEND %d\n", sel.no_ablend)
-		+ format("#define PS_ONLY_ALPHA %d\n", sel.only_alpha)
+	std::string macro = StringUtil::StdStringFromFormat("#define PS_FST %d\n", sel.fst)
+		+ StringUtil::StdStringFromFormat("#define PS_WMS %d\n", sel.wms)
+		+ StringUtil::StdStringFromFormat("#define PS_WMT %d\n", sel.wmt)
+		+ StringUtil::StdStringFromFormat("#define PS_AEM_FMT %d\n", sel.aem_fmt)
+		+ StringUtil::StdStringFromFormat("#define PS_PAL_FMT %d\n", sel.pal_fmt)
+		+ StringUtil::StdStringFromFormat("#define PS_DFMT %d\n", sel.dfmt)
+		+ StringUtil::StdStringFromFormat("#define PS_DEPTH_FMT %d\n", sel.depth_fmt)
+		+ StringUtil::StdStringFromFormat("#define PS_CHANNEL_FETCH %d\n", sel.channel)
+		+ StringUtil::StdStringFromFormat("#define PS_URBAN_CHAOS_HLE %d\n", sel.urban_chaos_hle)
+		+ StringUtil::StdStringFromFormat("#define PS_TALES_OF_ABYSS_HLE %d\n", sel.tales_of_abyss_hle)
+		+ StringUtil::StdStringFromFormat("#define PS_TEX_IS_FB %d\n", sel.tex_is_fb)
+		+ StringUtil::StdStringFromFormat("#define PS_INVALID_TEX0 %d\n", sel.invalid_tex0)
+		+ StringUtil::StdStringFromFormat("#define PS_AEM %d\n", sel.aem)
+		+ StringUtil::StdStringFromFormat("#define PS_TFX %d\n", sel.tfx)
+		+ StringUtil::StdStringFromFormat("#define PS_TCC %d\n", sel.tcc)
+		+ StringUtil::StdStringFromFormat("#define PS_ATST %d\n", sel.atst)
+		+ StringUtil::StdStringFromFormat("#define PS_FOG %d\n", sel.fog)
+		+ StringUtil::StdStringFromFormat("#define PS_CLR_HW %d\n", sel.clr_hw)
+		+ StringUtil::StdStringFromFormat("#define PS_FBA %d\n", sel.fba)
+		+ StringUtil::StdStringFromFormat("#define PS_LTF %d\n", sel.ltf)
+		+ StringUtil::StdStringFromFormat("#define PS_AUTOMATIC_LOD %d\n", sel.automatic_lod)
+		+ StringUtil::StdStringFromFormat("#define PS_MANUAL_LOD %d\n", sel.manual_lod)
+		+ StringUtil::StdStringFromFormat("#define PS_COLCLIP %d\n", sel.colclip)
+		+ StringUtil::StdStringFromFormat("#define PS_DATE %d\n", sel.date)
+		+ StringUtil::StdStringFromFormat("#define PS_TCOFFSETHACK %d\n", sel.tcoffsethack)
+		+ StringUtil::StdStringFromFormat("#define PS_POINT_SAMPLER %d\n", sel.point_sampler)
+		+ StringUtil::StdStringFromFormat("#define PS_BLEND_A %d\n", sel.blend_a)
+		+ StringUtil::StdStringFromFormat("#define PS_BLEND_B %d\n", sel.blend_b)
+		+ StringUtil::StdStringFromFormat("#define PS_BLEND_C %d\n", sel.blend_c)
+		+ StringUtil::StdStringFromFormat("#define PS_BLEND_D %d\n", sel.blend_d)
+		+ StringUtil::StdStringFromFormat("#define PS_IIP %d\n", sel.iip)
+		+ StringUtil::StdStringFromFormat("#define PS_SHUFFLE %d\n", sel.shuffle)
+		+ StringUtil::StdStringFromFormat("#define PS_READ_BA %d\n", sel.read_ba)
+		+ StringUtil::StdStringFromFormat("#define PS_WRITE_RG %d\n", sel.write_rg)
+		+ StringUtil::StdStringFromFormat("#define PS_FBMASK %d\n", sel.fbmask)
+		+ StringUtil::StdStringFromFormat("#define PS_HDR %d\n", sel.hdr)
+		+ StringUtil::StdStringFromFormat("#define PS_DITHER %d\n", sel.dither)
+		+ StringUtil::StdStringFromFormat("#define PS_ZCLAMP %d\n", sel.zclamp)
+		+ StringUtil::StdStringFromFormat("#define PS_BLEND_MIX %d\n", sel.blend_mix)
+		+ StringUtil::StdStringFromFormat("#define PS_PABE %d\n", sel.pabe)
+		+ StringUtil::StdStringFromFormat("#define PS_SCANMSK %d\n", sel.scanmsk)
+		+ StringUtil::StdStringFromFormat("#define PS_SCALE_FACTOR %d\n", GSConfig.UpscaleMultiplier)
+		+ StringUtil::StdStringFromFormat("#define PS_NO_COLOR %d\n", sel.no_color)
+		+ StringUtil::StdStringFromFormat("#define PS_NO_COLOR1 %d\n", sel.no_color1)
+		+ StringUtil::StdStringFromFormat("#define PS_NO_ABLEND %d\n", sel.no_ablend)
+		+ StringUtil::StdStringFromFormat("#define PS_ONLY_ALPHA %d\n", sel.only_alpha)
 	;
 
 	std::string src = GenGlslHeader("ps_main", GL_FRAGMENT_SHADER, macro);
@@ -1145,7 +1121,7 @@ bool GSDeviceOGL::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSText
 // Copy a sub part of texture (same as below but force a conversion)
 void GSDeviceOGL::BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2i& dsize, bool at_origin, bool linear)
 {
-	GL_PUSH(format("CopyRectConv from %d", static_cast<GSTextureOGL*>(sTex)->GetID()).c_str());
+	GL_PUSH(StringUtil::StdStringFromFormat("CopyRectConv from %d", static_cast<GSTextureOGL*>(sTex)->GetID()).c_str());
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 	// NOTE: This previously used glCopyTextureSubImage2D(), but this appears to leak memory in
@@ -1168,7 +1144,7 @@ void GSDeviceOGL::BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2
 }
 
 // Copy a sub part of a texture into another
-void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
+void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 {
 	ASSERT(sTex && dTex);
 	if (!(sTex && dTex))
@@ -1190,7 +1166,7 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 	glCopyImageSubData(sid, GL_TEXTURE_2D,
 		0, r.x, r.y, 0,
 		did, GL_TEXTURE_2D,
-		0, 0, 0, 0,
+		0, destX, destY, 0,
 		r.width(), r.height(), 1);
 }
 
@@ -1220,7 +1196,8 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 {
 	ASSERT(sTex);
 
-	const bool draw_in_depth = ps == m_convert.ps[static_cast<int>(ShaderConvert::RGBA8_TO_FLOAT32)]
+	const bool draw_in_depth = ps == m_convert.ps[static_cast<int>(ShaderConvert::DEPTH_COPY)]
+	                        || ps == m_convert.ps[static_cast<int>(ShaderConvert::RGBA8_TO_FLOAT32)]
 	                        || ps == m_convert.ps[static_cast<int>(ShaderConvert::RGBA8_TO_FLOAT24)]
 	                        || ps == m_convert.ps[static_cast<int>(ShaderConvert::RGBA8_TO_FLOAT16)]
 	                        || ps == m_convert.ps[static_cast<int>(ShaderConvert::RGB5A1_TO_FLOAT16)];
@@ -1348,7 +1325,7 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 	{
 		// 2nd output is enabled and selected. Copy it to destination so we can blend it with 1st output
 		// Note: value outside of dRect must contains the background color (c)
-		StretchRect(sTex[1], sRect[1], dTex, dRect[1], ShaderConvert::COPY);
+		StretchRect(sTex[1], sRect[1], dTex, PMODE.SLBG ? dRect[2] : dRect[1], ShaderConvert::COPY);
 	}
 
 	// Upload constant to select YUV algo
@@ -1360,8 +1337,8 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 	}
 
 	// Save 2nd output
-	if (feedback_write_2) // FIXME I'm not sure dRect[1] is always correct
-		StretchRect(dTex, full_r, sTex[2], dRect[1], ShaderConvert::YUV);
+	if (feedback_write_2)
+		StretchRect(dTex, full_r, sTex[2], dRect[2], ShaderConvert::YUV);
 
 	// Restore background color to process the normal merge
 	if (feedback_write_2_but_blend_bg)
@@ -1387,8 +1364,8 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 		}
 	}
 
-	if (feedback_write_1) // FIXME I'm not sure dRect[0] is always correct
-		StretchRect(dTex, full_r, sTex[2], dRect[0], ShaderConvert::YUV);
+	if (feedback_write_1)
+		StretchRect(dTex, full_r, sTex[2], dRect[2], ShaderConvert::YUV);
 }
 
 void GSDeviceOGL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset)
@@ -1404,7 +1381,6 @@ void GSDeviceOGL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool
 
 	m_interlace.ps[shader].Bind();
 	m_interlace.ps[shader].Uniform2f(0, 0, 1.0f / s.y);
-	m_interlace.ps[shader].Uniform1f(1, s.y / 2);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[shader], linear);
 }
@@ -1863,7 +1839,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	if (config.ps.hdr)
 	{
 		GSVector2i size = config.rt->GetSize();
-		hdr_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::FloatColor);
+		hdr_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::FloatColor, false);
 		hdr_rt->CommitRegion(GSVector2i(config.drawarea.z, config.drawarea.w));
 		OMSetRenderTargets(hdr_rt, config.ds, &config.scissor);
 
@@ -1982,7 +1958,26 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
 
-	SendHWDraw(config);
+	SendHWDraw(config, psel.ps.IsFeedbackLoop());
+
+	if (config.separate_alpha_pass)
+	{
+		GSHWDrawConfig::BlendState dummy_bs;
+		SetHWDrawConfigForAlphaPass(&psel.ps, &config.colormask, &dummy_bs, &config.depth);
+		SetupPipeline(psel);
+		OMSetColorMaskState(config.alpha_second_pass.colormask);
+		SetupOM(config.alpha_second_pass.depth);
+		OMSetBlendState();
+		SendHWDraw(config, psel.ps.IsFeedbackLoop());
+
+		// restore blend state if we're doing a second pass
+		if (config.alpha_second_pass.enable)
+		{
+			OMSetBlendState(config.blend.enable, s_gl_blend_factors[config.blend.src_factor],
+				s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
+				config.blend.constant_enable, config.blend.constant);
+		}
+	}
 
 	if (config.alpha_second_pass.enable)
 	{
@@ -1998,25 +1993,18 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		SetupPipeline(psel);
 		OMSetColorMaskState(config.alpha_second_pass.colormask);
 		SetupOM(config.alpha_second_pass.depth);
+		SendHWDraw(config, psel.ps.IsFeedbackLoop());
 
-		SendHWDraw(config);
-	}
-	if (config.alpha_third_pass.enable)
-	{
-		// cbuffer will definitely be dirty if aref changes, no need to check it
-		if (config.cb_ps.FogColor_AREF.a != config.alpha_third_pass.ps_aref)
+		if (config.second_separate_alpha_pass)
 		{
-			config.cb_ps.FogColor_AREF.a = config.alpha_third_pass.ps_aref;
-			WriteToStreamBuffer(m_fragment_uniform_stream_buffer.get(), g_ps_cb_index,
-				m_uniform_buffer_alignment, &config.cb_ps, sizeof(config.cb_ps));
+			GSHWDrawConfig::BlendState dummy_bs;
+			SetHWDrawConfigForAlphaPass(&psel.ps, &config.colormask, &dummy_bs, &config.depth);
+			SetupPipeline(psel);
+			OMSetColorMaskState(config.alpha_second_pass.colormask);
+			SetupOM(config.alpha_second_pass.depth);
+			OMSetBlendState();
+			SendHWDraw(config, psel.ps.IsFeedbackLoop());
 		}
-
-		psel.ps = config.alpha_third_pass.ps;
-		SetupPipeline(psel);
-		OMSetColorMaskState(config.alpha_third_pass.colormask);
-		SetupOM(config.alpha_third_pass.depth);
-
-		SendHWDraw(config);
 	}
 
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
@@ -2037,7 +2025,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 }
 
-void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config)
+void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool needs_barrier)
 {
 	if (config.drawlist)
 	{
@@ -2056,37 +2044,50 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config)
 		        config.nindices / config.indices_per_prim, config.drawlist->size(), message.c_str());
 #endif
 
+		g_perfmon.Put(GSPerfMon::Barriers, static_cast<u32>(config.drawlist->size()));
+
 		for (size_t count = 0, p = 0, n = 0; n < config.drawlist->size(); p += count, ++n)
 		{
 			count = (*config.drawlist)[n] * config.indices_per_prim;
 			glTextureBarrier();
 			DrawIndexedPrimitive(p, count);
 		}
+
+		return;
 	}
-	else if (config.require_full_barrier)
+
+	const bool tex_is_ds = config.tex && config.tex == config.ds;
+	if (needs_barrier || tex_is_ds)
 	{
-		GL_PUSH("Split the draw");
-
-		GL_PERF("Split single draw in %d draw", config.nindices / config.indices_per_prim);
-
-		for (size_t p = 0; p < config.nindices; p += config.indices_per_prim)
+		if (config.require_full_barrier)
 		{
+			GL_PUSH("Split the draw");
+
+			GL_PERF("Split single draw in %d draw", config.nindices / config.indices_per_prim);
+			g_perfmon.Put(GSPerfMon::Barriers, config.nindices / config.indices_per_prim);
+
+			for (size_t p = 0; p < config.nindices; p += config.indices_per_prim)
+			{
+				glTextureBarrier();
+				DrawIndexedPrimitive(p, config.indices_per_prim);
+			}
+
+			return;
+		}
+
+		if (config.require_one_barrier || tex_is_ds)
+		{
+			// The common renderer code doesn't put a barrier here because D3D/VK need to copy the DS, so we need to check it.
+			// One barrier needed for non-overlapping draw.
+			g_perfmon.Put(GSPerfMon::Barriers, 1);
 			glTextureBarrier();
-			DrawIndexedPrimitive(p, config.indices_per_prim);
+			DrawIndexedPrimitive();
+			return;
 		}
 	}
-	else if (config.require_one_barrier || (config.tex && config.tex == config.ds))
-	{
-		// The common renderer code doesn't put a barrier here because D3D/VK need to copy the DS, so we need to check it.
-		// One barrier needed for non-overlapping draw.
-		glTextureBarrier();
-		DrawIndexedPrimitive();
-	}
-	else
-	{
-		// No barriers needed
-		DrawIndexedPrimitive();
-	}
+
+	// No barriers needed
+	DrawIndexedPrimitive();
 }
 
 // Note: used as a callback of DebugMessageCallback. Don't change the signature

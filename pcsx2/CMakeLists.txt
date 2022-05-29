@@ -9,7 +9,6 @@ else()
 	add_library(PCSX2)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE
 		"PCSX2_CORE"
-		"DISABLE_RECORDING"
 	)
 endif()
 target_link_libraries(PCSX2 PRIVATE PCSX2_FLAGS)
@@ -39,8 +38,13 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 	It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif()
 
-if(NOT MSVC)
+if(MSVC)
+	if (MSVC_VERSION GREATER_EQUAL 1930)
+		target_compile_options(PCSX2_FLAGS INTERFACE /fp:contract)
+	endif()
+else()
 	target_compile_options(PCSX2_FLAGS INTERFACE
+		-ffp-contract=fast
 		-fno-strict-aliasing
 		-Wstrict-aliasing # Allow to track strict aliasing issue.
 		-Wno-parentheses
@@ -70,13 +74,13 @@ if(XDG_STD)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE XDG_STD)
 endif()
 
-if(TARGET PkgConfig::SDL2 OR QT_BUILD)
+if(TARGET SDL2::SDL2 OR TARGET SDL2::SDL2-static)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE SDL_BUILD)
-	if (QT_BUILD)
+	if ("${SDL2_TYPE}" STREQUAL Bundled)
 		# Use our in-tree SDL build.
 		target_link_libraries(PCSX2_FLAGS INTERFACE SDL2::SDL2-static)
 	else()
-		target_link_libraries(PCSX2_FLAGS INTERFACE PkgConfig::SDL2)
+		target_link_libraries(PCSX2_FLAGS INTERFACE SDL2::SDL2)
 	endif()
 	if(PCSX2_CORE)
 		target_sources(PCSX2 PRIVATE
@@ -119,6 +123,7 @@ set(pcsx2Sources
 	COP0.cpp
 	COP2.cpp
 	Counters.cpp
+	Dmac.cpp
 	GameDatabase.cpp
 	Dump.cpp
 	Elfheader.cpp
@@ -129,7 +134,6 @@ set(pcsx2Sources
 	Gif_Logger.cpp
 	Gif_Unit.cpp
 	GS.cpp
-	GSState.cpp
 	Host.cpp
 	HostDisplay.cpp
 	Hw.cpp
@@ -213,7 +217,6 @@ set(pcsx2Headers
 	HostDisplay.h
 	Hw.h
 	IopBios.h
-	IopCommon.h
 	IopCounters.h
 	IopDma.h
 	IopGte.h
@@ -228,7 +231,6 @@ set(pcsx2Headers
 	MemoryCardFolder.h
 	MemoryTypes.h
 	Patch.h
-	PathDefs.h
 	PCSX2Base.h
 	PerformanceMetrics.h
 	PrecompiledHeader.h
@@ -256,7 +258,7 @@ set(pcsx2Headers
 # CDVD sources
 set(pcsx2CDVDSources
 	CDVD/BlockdumpFileReader.cpp
-	CDVD/CdRom.cpp
+	CDVD/Ps1CD.cpp
 	CDVD/CDVDaccess.cpp
 	CDVD/CDVD.cpp
 	CDVD/CDVDdiscReader.cpp
@@ -277,12 +279,11 @@ set(pcsx2CDVDSources
 
 # CDVD headers
 set(pcsx2CDVDHeaders
-	CDVD/CdRom.h
+	CDVD/Ps1CD.h
 	CDVD/CDVDaccess.h
 	CDVD/CDVD.h
 	CDVD/CDVD_internal.h
 	CDVD/CDVDdiscReader.h
-	CDVD/CDVDisoReader.h
 	CDVD/ChunksCache.h
 	CDVD/CompressedFileReader.h
 	CDVD/ChdFileReader.h
@@ -686,7 +687,6 @@ set(pcsx2GSSources
 	GS/Renderers/Null/GSTextureNull.cpp
 	GS/Renderers/HW/GSHwHack.cpp
 	GS/Renderers/HW/GSRendererHW.cpp
-	GS/Renderers/HW/GSRendererNew.cpp
 	GS/Renderers/HW/GSTextureCache.cpp
 	GS/Renderers/HW/GSTextureReplacementLoaders.cpp
 	GS/Renderers/HW/GSTextureReplacements.cpp
@@ -700,10 +700,6 @@ set(pcsx2GSSources
 	GS/Renderers/SW/GSSetupPrimCodeGenerator.all.cpp
 	GS/Renderers/SW/GSTextureCacheSW.cpp
 	GS/Renderers/SW/GSTextureSW.cpp
-	GS/Renderers/OpenGL/GLLoader.cpp
-	GS/Renderers/OpenGL/GLState.cpp
-	GS/Renderers/OpenGL/GSDeviceOGL.cpp
-	GS/Renderers/OpenGL/GSTextureOGL.cpp
 	GS/Window/GSSetting.cpp
 	)
 
@@ -752,7 +748,6 @@ set(pcsx2GSHeaders
 	GS/Renderers/Null/GSRendererNull.h
 	GS/Renderers/Null/GSTextureNull.h
 	GS/Renderers/HW/GSRendererHW.h
-	GS/Renderers/HW/GSRendererNew.h
 	GS/Renderers/HW/GSTextureCache.h
 	GS/Renderers/HW/GSTextureReplacements.h
 	GS/Renderers/HW/GSVertexHW.h
@@ -768,15 +763,27 @@ set(pcsx2GSHeaders
 	GS/Renderers/SW/GSTextureCacheSW.h
 	GS/Renderers/SW/GSTextureSW.h
 	GS/Renderers/SW/GSVertexSW.h
-	GS/Renderers/OpenGL/GLLoader.h
-	GS/Renderers/OpenGL/GLState.h
-	GS/Renderers/OpenGL/GSDeviceOGL.h
-	GS/Renderers/OpenGL/GSTextureOGL.h
-	GS/Renderers/OpenGL/GSUniformBufferOGL.h
 	GS/Window/GSCaptureDlg.h
 	GS/Window/GSDialog.h
 	GS/Window/GSSetting.h
 	)
+
+if(USE_OPENGL)
+	list(APPEND pcsx2GSSources
+		GS/Renderers/OpenGL/GLLoader.cpp
+		GS/Renderers/OpenGL/GLState.cpp
+		GS/Renderers/OpenGL/GSDeviceOGL.cpp
+		GS/Renderers/OpenGL/GSTextureOGL.cpp
+	)
+	list(APPEND pcsx2GSHeaders
+		GS/Renderers/OpenGL/GLLoader.h
+		GS/Renderers/OpenGL/GLState.h
+		GS/Renderers/OpenGL/GSDeviceOGL.h
+		GS/Renderers/OpenGL/GSTextureOGL.h
+		GS/Renderers/OpenGL/GSUniformBufferOGL.h
+	)
+	target_link_libraries(PCSX2_FLAGS INTERFACE glad)
+endif()
 
 if(USE_VULKAN)
 	list(APPEND pcsx2GSSources
@@ -789,6 +796,14 @@ if(USE_VULKAN)
 	)
 endif()
 
+set(pcsx2GSMetalShaders
+	GS/Renderers/Metal/convert.metal
+	GS/Renderers/Metal/merge.metal
+	GS/Renderers/Metal/interlace.metal
+	GS/Renderers/Metal/tfx.metal
+	GS/Renderers/Metal/fxaa.metal
+)
+
 if(NOT PCSX2_CORE)
 	list(APPEND pcsx2GSSources
 		GS/Window/GSwxDialog.cpp
@@ -800,7 +815,6 @@ endif()
 
 if(PCSX2_CORE)
 	list(APPEND pcsx2SPU2Headers
-		SPU2/Host/CfgHelpers.cpp
 		SPU2/Host/Config.cpp
 		SPU2/Host/ConfigDebug.cpp
 		SPU2/Host/ConfigSoundTouch.cpp
@@ -880,6 +894,8 @@ elseif(WIN32)
 		GS/Renderers/DX11/GSDevice11.cpp
 		GS/Renderers/DX11/GSTexture11.cpp
 		GS/Renderers/DX11/GSTextureFX11.cpp
+		GS/Renderers/DX12/GSDevice12.cpp
+		GS/Renderers/DX12/GSTexture12.cpp
 		GS/Window/GSCaptureDlg.cpp
 		GS/Window/GSDialog.cpp
 	)
@@ -887,6 +903,8 @@ elseif(WIN32)
 		GS/Renderers/DX11/D3D.h
 		GS/Renderers/DX11/GSDevice11.h
 		GS/Renderers/DX11/GSTexture11.h
+		GS/Renderers/DX12/GSDevice12.h
+		GS/Renderers/DX12/GSTexture12.h
 	)
 else()
 	list(APPEND pcsx2SPU2Sources
@@ -977,14 +995,23 @@ set(pcsx2DebugToolsHeaders
 # Frontend sources
 set(pcsx2FrontendSources
 	Frontend/ImGuiManager.cpp
-	Frontend/OpenGLHostDisplay.cpp
 )
 
 # Frontend headers
 set(pcsx2FrontendHeaders
 	Frontend/ImGuiManager.h
-	Frontend/OpenGLHostDisplay.h
 )
+
+if(USE_OPENGL)
+	list(APPEND pcsx2FrontendSources
+		Frontend/OpenGLHostDisplay.cpp
+		Frontend/imgui_impl_opengl3.cpp
+	)
+	list(APPEND pcsx2FrontendHeaders
+		Frontend/OpenGLHostDisplay.h
+		Frontend/imgui_impl_opengl3.h
+	)
+endif()
 
 if(USE_VULKAN)
 	list(APPEND pcsx2FrontendSources
@@ -1000,9 +1027,35 @@ endif()
 if(WIN32)
 	list(APPEND pcsx2FrontendSources
 		Frontend/D3D11HostDisplay.cpp
+		Frontend/D3D12HostDisplay.cpp
+		Frontend/imgui_impl_dx11.cpp
+		Frontend/imgui_impl_dx12.cpp
 	)
 	list(APPEND pcsx2FrontendHeaders
 		Frontend/D3D11HostDisplay.h
+		Frontend/D3D12HostDisplay.h
+		Frontend/imgui_impl_dx11.h
+		Frontend/imgui_impl_dx12.h
+	)
+elseif(APPLE)
+	list(APPEND pcsx2GSSources
+		GS/Renderers/Metal/GSDeviceMTL.mm
+		GS/Renderers/Metal/GSMTLDeviceInfo.mm
+		GS/Renderers/Metal/GSTextureMTL.mm
+	)
+	list(APPEND pcsx2GSHeaders
+		GS/Renderers/Metal/GSDeviceMTL.h
+		GS/Renderers/Metal/GSMetalCPPAccessible.h
+		GS/Renderers/Metal/GSMTLDeviceInfo.h
+		GS/Renderers/Metal/GSMTLSharedHeader.h
+		GS/Renderers/Metal/GSMTLShaderCommon.h
+		GS/Renderers/Metal/GSTextureMTL.h
+	)
+	list(APPEND pcsx2FrontendSources
+		Frontend/MetalHostDisplay.mm
+	)
+	list(APPEND pcsx2FrontendHeaders
+		Frontend/MetalHostDisplay.h
 	)
 endif()
 
@@ -1065,13 +1118,17 @@ set(pcsx2GuiSources
 	gui/Debugger/DebugEvents.cpp
 	gui/DriveList.cpp
 	gui/ExecutorThread.cpp
+	gui/FastFormatString.cpp
+	gui/FileUtils.cpp
 	gui/FrameForGS.cpp
 	gui/GlobalCommands.cpp
+	gui/IniInterface.cpp
 	gui/i18n.cpp
 	gui/IsoDropTarget.cpp
 	gui/MainFrame.cpp
 	gui/MainMenuClicks.cpp
 	gui/MessageBoxes.cpp
+	gui/Mutex.cpp
 	gui/MSWstuff.cpp
 	gui/Panels/BaseApplicableConfigPanel.cpp
 	gui/Panels/BiosSelectorPanel.cpp
@@ -1086,13 +1143,19 @@ set(pcsx2GuiSources
 	gui/Panels/PathsPanel.cpp
 	gui/Panels/SpeedhacksPanel.cpp
 	gui/Panels/VideoPanel.cpp
+	gui/PathUtils.cpp
+	gui/PersistentThread.cpp
 	gui/pxCheckBox.cpp
 	gui/pxRadioPanel.cpp
 	gui/pxStaticText.cpp
+	gui/pxTranslate.cpp
 	gui/pxWindowTextWriter.cpp
 	gui/RecentIsoList.cpp
 	gui/Saveslots.cpp
+	gui/StringHelpers.cpp
+	gui/SysCoreThread.cpp
 	gui/SysState.cpp
+	gui/SysThreadBase.cpp
 	gui/ThreadingDialogs.cpp
 	gui/UpdateUI.cpp
 	gui/wxAppWithHelpers.cpp
@@ -1130,12 +1193,15 @@ set(pcsx2GuiHeaders
 	gui/DriveList.h
 	gui/GSFrame.h
 	gui/i18n.h
+	gui/IniInterface.h
 	gui/IsoDropTarget.h
 	gui/MainFrame.h
 	gui/MSWstuff.h
+	gui/PathDefs.h
 	gui/Panels/ConfigurationPanels.h
 	gui/Panels/LogOptionsPanels.h
 	gui/Panels/MemoryCardPanels.h
+	gui/PersistentThread.h
 	gui/pxCheckBox.h
 	gui/pxEvents.h
 	gui/pxEventThread.h
@@ -1143,8 +1209,11 @@ set(pcsx2GuiHeaders
 	gui/pxStaticText.h
 	gui/RecentIsoList.h
 	gui/Saveslots.h
+	gui/StringHelpers.h
+	gui/SysThreads.h
 	gui/ThreadingDialogs.h
 	gui/ThreadingDialogs.cpp
+	gui/wxDirName.h
 	gui/wxGuiTools.h
 	gui/wxSettingsInterface.h
 	)
@@ -1218,6 +1287,7 @@ if(NOT PCSX2_CORE)
 	)
 	list(APPEND pcsx2OSXSources
 		Linux/LnxConsolePipe.cpp
+		Darwin/DarwinKeyCodes.cpp
 	)
 	list(APPEND pcsx2FreeBSDSources
 		Linux/LnxConsolePipe.cpp
@@ -1233,7 +1303,6 @@ set(pcsx2LinuxHeaders
 set(pcsx2ps2Sources
 	ps2/BiosTools.cpp
 	ps2/pgif.cpp
-	ps2/LegacyDmac.cpp
 	ps2/Iop/IopHwRead.cpp
 	ps2/Iop/IopHwWrite.cpp
 	ps2/Iop/PsxBios.cpp)
@@ -1320,28 +1389,9 @@ set(pcsx2RecordingVirtualPadResources
 	${res_rec_vp_src}/upPressed.h
 )
 
-# System sources
-set(pcsx2SystemSources
-	System/SysThreadBase.cpp)
-if(NOT PCSX2_CORE)
-	list(APPEND pcsx2SystemSources
-		System/SysCoreThread.cpp
-	)
-endif()
-
 # System headers
 set(pcsx2SystemHeaders
-	System/RecTypes.h
-	System/SysThreads.h)
-
-# Utilities sources
-set(pcsx2UtilitiesSources
-	Utilities/FileUtils.cpp)
-
-# Utilities headers
-set(pcsx2UtilitiesHeaders
-	Utilities/AsciiFile.h)
-
+	System/RecTypes.h)
 
 # Windows sources
 set(pcsx2WindowsSources
@@ -1350,7 +1400,6 @@ set(pcsx2WindowsSources
 	windows/FlatFileReaderWindows.cpp
 	windows/Optimus.cpp
 	windows/VCprojects/IopSif.cpp
-	windows/WinCompressNTFS.cpp
 	windows/WinConsolePipe.cpp
 	windows/WinKeyCodes.cpp
 	windows/WinPowerProfile.cpp
@@ -1368,7 +1417,6 @@ set(pcsx2x86Sources
 	x86/iCore.cpp
 	x86/iFPU.cpp
 	x86/iFPUd.cpp
-	x86/iMisc.cpp
 	x86/iMMI.cpp
 	x86/iR3000A.cpp
 	x86/iR3000Atables.cpp
@@ -1465,16 +1513,15 @@ target_sources(PCSX2 PRIVATE
 	${pcsx2PADSources}
 	${pcsx2GSHeaders}
 	${pcsx2GSSources}
+	${pcsx2RecordingSources}
 	${pcsx2DebugToolsSources}
 	${pcsx2DebugToolsHeaders}
 	${pcsx2FrontendSources}
 	${pcsx2FrontendHeaders}
 	${pcsx2ps2Sources}
 	${pcsx2ps2Headers}
-	${pcsx2SystemSources}
 	${pcsx2SystemHeaders}
-	${pcsx2UtilitiesSources}
-	${pcsx2UtilitiesHeaders})
+)
 
 # gui sources when not doing a qt build
 if (NOT PCSX2_CORE)
@@ -1482,7 +1529,6 @@ if (NOT PCSX2_CORE)
 		${pcsx2GuiSources}
 		${pcsx2GuiResources}
 		${pcsx2GuiHeaders}
-		${pcsx2RecordingSources}
 		${pcsx2RecordingVirtualPadResources}
 		${pcsx2RecordingHeaders}
 	)
@@ -1552,17 +1598,17 @@ endif()
 
 target_link_libraries(PCSX2_FLAGS INTERFACE
 	common
-	glad
 	imgui
 	fmt::fmt
 	ryml
 	chdr-static
-	wxWidgets::all
+	libzip::zip
 	ZLIB::ZLIB
 	PkgConfig::SOUNDTOUCH
 	PkgConfig::SAMPLERATE
 	PNG::PNG
 	LibLZMA::LibLZMA
+	Zstd::Zstd
 	${LIBC_LIBRARIES}
 )
 
@@ -1570,13 +1616,17 @@ if(PCSX2_CORE)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		simpleini
 	)
+else()
+	target_link_libraries(PCSX2_FLAGS INTERFACE
+		wxWidgets::all
+	)
 endif()
 
 if(WIN32)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		baseclasses
-		pthreads4w
 		WIL::WIL
+		D3D12MemAlloc
 		setupapi.lib
 		ws2_32.lib
 		shlwapi.lib
@@ -1593,6 +1643,11 @@ if(WIN32)
 		opengl32.lib
 		comsuppw.lib
 	)
+	if(NOT PCSX2_CORE)
+		target_link_libraries(PCSX2_FLAGS INTERFACE
+			pthreads4w
+		)
+	endif()
 elseif(APPLE)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		PCAP::PCAP
@@ -1710,6 +1765,49 @@ if(GETTEXT_FOUND AND NOT NO_TRANSLATION AND NOT PCSX2_CORE)
 endif()
 
 if (APPLE)
+	find_library(METAL_LIBRARY Metal)
+	target_link_libraries(PCSX2 PRIVATE ${METAL_LIBRARY})
+
+	if(CMAKE_GENERATOR MATCHES "Xcode")
+		# If we're generating an xcode project, you can just add the shaders to the main pcsx2 target and xcode will deal with them properly
+		# This will make sure xcode supplies code completion, etc (if you use a custom command, it won't)
+		set_target_properties(PCSX2 PROPERTIES
+			XCODE_ATTRIBUTE_MTL_ENABLE_DEBUG_INFO INCLUDE_SOURCE
+		)
+		foreach(shader IN LISTS pcsx2GSMetalShaders)
+			target_sources(PCSX2 PRIVATE ${shader})
+			set_source_files_properties(${shader} PROPERTIES LANGUAGE METAL)
+		endforeach()
+	else()
+		function(generateMetallib std target outputName)
+			set(pcsx2GSMetalShaderOut)
+			set(flags
+				-ffast-math
+				$<$<NOT:$<CONFIG:Release,MinSizeRel>>:-gline-tables-only>
+				$<$<NOT:$<CONFIG:Release,MinSizeRel>>:-MO>
+			)
+			foreach(shader IN LISTS pcsx2GSMetalShaders)
+				set(shaderOut ${CMAKE_CURRENT_BINARY_DIR}/${outputName}/${shader}.air)
+				list(APPEND pcsx2GSMetalShaderOut ${shaderOut})
+				get_filename_component(shaderDir ${shaderOut} DIRECTORY)
+				add_custom_command(OUTPUT ${shaderOut}
+					COMMAND ${CMAKE_COMMAND} -E make_directory ${shaderDir}
+					COMMAND xcrun metal ${flags} -std=${std} -target ${target} -o ${shaderOut} -c ${CMAKE_CURRENT_SOURCE_DIR}/${shader}
+					DEPENDS ${shader} GS/Renderers/Metal/GSMTLSharedHeader.h GS/Renderers/Metal/GSMTLShaderCommon.h
+				)
+				set(metallib ${CMAKE_CURRENT_BINARY_DIR}/${outputName}.metallib)
+			endforeach()
+			add_custom_command(OUTPUT ${metallib}
+				COMMAND xcrun metallib -o ${metallib} ${pcsx2GSMetalShaderOut}
+				DEPENDS ${pcsx2GSMetalShaderOut}
+			)
+			pcsx2_resource(${metallib} ${CMAKE_CURRENT_BINARY_DIR})
+		endfunction()
+		generateMetallib(macos-metal2.0 air64-apple-macos10.13 default)
+		generateMetallib(macos-metal2.2 air64-apple-macos10.15 Metal22)
+		generateMetallib(macos-metal2.3 air64-apple-macos11.0  Metal23)
+	endif()
+
 	# MacOS defaults to having a maximum protection of the __DATA segment of rw (non-executable)
 	# We have a bunch of page-sized arrays in bss that we use for jit
 	# Obviously not being able to make those arrays executable would be a problem
@@ -1737,11 +1835,16 @@ if (APPLE)
 	)
 	add_dependencies(pcsx2-postprocess-bundle PCSX2)
 
-	# Set the right file types for .inl files in Xcode
 	get_target_property(PCSX2_SOURCES PCSX2 SOURCES)
 	foreach(source IN LISTS PCSX2_SOURCES)
+		# Set the right file types for .inl files in Xcode
 		if("${source}" MATCHES "\\.(inl|h)$")
 			set_source_files_properties("${source}" PROPERTIES XCODE_EXPLICIT_FILE_TYPE sourcecode.cpp.h)
+		endif()
+		# CMake makefile and ninja generators will attempt to share one PCH for both cpp and mm files
+		# That's not actually OK
+		if("${source}" MATCHES "\\.mm$")
+			set_source_files_properties("${source}" PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 		endif()
 	endforeach()
 endif()
@@ -1761,6 +1864,7 @@ source_group(System/Ps2/DEV9 REGULAR_EXPRESSION DEV9/*)
 source_group(System/Ps2/PAD FILES ${pcsx2PADSources} ${pcsx2PADHeaders})
 source_group(System/Ps2/SPU2 REGULAR_EXPRESSION SPU2/*)
 source_group(System/Ps2/USB REGULAR_EXPRESSION USB/*)
+source_group(System/Ps2/GS/Renderers/Metal REGULAR_EXPRESSION GS/Renderers/Metal/*)
 
 # Generated resource files
 source_group(Resources/GUI FILES ${pcsx2GuiResources})

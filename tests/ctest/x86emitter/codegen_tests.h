@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common/Dependencies.h"
+#include "common/Pcsx2Defs.h"
 
 void runCodegenTest(void (*exec)(void *base), const char* description, const char* expected);
 

@@ -16,8 +16,10 @@
 #include "PrecompiledHeader.h"
 
 #include <cstdio>
+#include <cstring>
 
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 
 #include "Common.h"
@@ -55,18 +57,17 @@ std::string BiosDescription;
 std::string BiosZone;
 std::string BiosPath;
 BiosDebugInformation CurrentBiosInformation;
+s64 BiosRegionOffset = 0;
 
 static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& description, u32& region, std::string& zone)
 {
-	uint i;
 	romdir rd;
-
-	for (i = 0; i < 512 * 1024; i++)
+	for (u32 i = 0; i < 512 * 1024; i++)
 	{
 		if (std::fread(&rd, sizeof(rd), 1, fp) != 1)
 			return false;
 
-		if (std::strncmp(rd.fileName, "RESET", 5) == 0)
+		if (std::strncmp(rd.fileName, "RESET", sizeof(rd.fileName)) == 0)
 			break; /* found romdir */
 	}
 
@@ -74,9 +75,10 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 	s64 fileSize = FileSystem::FSize64(fp);
 	bool foundRomVer = false;
 
-	while (strlen(rd.fileName) > 0)
+	// ensure it's a null-terminated and not zero-length string
+	while (rd.fileName[0] != '\0' && strnlen(rd.fileName, sizeof(rd.fileName)) != sizeof(rd.fileName))
 	{
-		if (strcmp(rd.fileName, "ROMVER") == 0)
+		if (std::strncmp(rd.fileName, "ROMVER", sizeof(rd.fileName)) == 0)
 		{
 			char romver[14 + 1] = {}; // ascii version loaded from disk.
 
@@ -90,19 +92,25 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 			switch (romver[4])
 			{
 				// clang-format off
-				case 'T': zone = "T10K";   region = 0; break;
-				case 'X': zone = "Test";	 region = 1; break;
-				case 'J': zone = "Japan";	 region = 2; break;
-				case 'A': zone = "USA";		 region = 3; break;
-				case 'E': zone = "Europe"; region = 4; break;
-				case 'H': zone = "HK";     region = 5; break;
-				case 'P': zone = "Free";   region = 6; break;
-				case 'C': zone = "China";  region = 7; break;
-					// clang-format on
-				default:
-					zone.clear();
-					zone += romver[4];
-					break;
+				case 'T': region = 0; break;
+				case 'X': region = 1; break;
+				case 'J': region = 2; break;
+				case 'A': region = 3; break;
+				case 'E': region = 4; break;
+				case 'H': region = 5; break;
+				case 'P': region = 6; break;
+				case 'C': region = 7; break;
+				// clang-format on
+			}
+
+			if (region <= 7)
+			{
+				zone = BiosZoneStrings[region];
+			}
+			else
+			{
+				zone.clear();
+				zone += romver[4];
 			}
 
 			char vermaj[3] = {romver[0], romver[1], 0};
@@ -119,6 +127,7 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 			version = strtol(vermaj, (char**)NULL, 0) << 8;
 			version |= strtol(vermin, (char**)NULL, 0);
 			foundRomVer = true;
+			BiosRegionOffset = fileOffset;
 
 			Console.WriteLn("Bios Found: %s", description.c_str());
 		}
@@ -172,7 +181,7 @@ static void LoadExtraRom(const char* ext, u8 (&dest)[_size])
 	if ((filesize = FileSystem::GetPathFileSize(Bios1.c_str())) <= 0)
 	{
 		// Try the name properly extensioned next (name.rom1)
-		Bios1 = FileSystem::ReplaceExtension(BiosPath, ext);
+		Bios1 = Path::ReplaceExtension(BiosPath, ext);
 		if ((filesize = FileSystem::GetPathFileSize(Bios1.c_str())) <= 0)
 		{
 			Console.WriteLn(Color_Gray, "BIOS %s module not found, skipping...", ext);
@@ -207,11 +216,10 @@ static void LoadIrx(const std::string& filename, u8* dest, size_t maxSize)
 
 static std::string FindBiosImage()
 {
-	const std::string dir(StringUtil::wxStringToUTF8String(EmuFolders::Bios.ToString()));
-	Console.WriteLn("Searching for a BIOS image in '%s'...", dir.c_str());
+	Console.WriteLn("Searching for a BIOS image in '%s'...", EmuFolders::Bios.c_str());
 
 	FileSystem::FindResultsArray results;
-	if (!FileSystem::FindFiles(dir.c_str(), "*.*", FILESYSTEM_FIND_FILES, &results))
+	if (!FileSystem::FindFiles(EmuFolders::Bios.c_str(), "*", FILESYSTEM_FIND_FILES, &results))
 		return std::string();
 
 	u32 version, region;
@@ -287,9 +295,16 @@ bool LoadBIOS()
 	ChecksumIt(BiosChecksum, eeMem->ROM);
 	BiosPath = std::move(path);
 
+	// Patch the region
+	if (EmuConfig.PatchBios)
+	{
+		eeMem->ROM[BiosRegionOffset + 4] = EmuConfig.PatchRegion[0];
+		Console.WriteLn("Patching ROM with region code %c", EmuConfig.PatchRegion[0]);
+	}
+
 #ifndef PCSX2_CORE
-	Console.SetTitle(StringUtil::UTF8StringToWxString(StringUtil::StdStringFromFormat("Running BIOS (%s v%u.%u)",
-		BiosZone.c_str(), BiosVersion >> 8, BiosVersion & 0xff)));
+	Console.SetTitle(StringUtil::StdStringFromFormat("Running BIOS (%s v%u.%u)",
+		BiosZone.c_str(), BiosVersion >> 8, BiosVersion & 0xff).c_str());
 #endif
 
 	//injectIRX("host.irx");	//not fully tested; still buggy
@@ -307,7 +322,7 @@ bool LoadBIOS()
 
 bool IsBIOS(const char* filename, u32& version, std::string& description, u32& region, std::string& zone)
 {
-	const std::string bios_path(Path::CombineStdString(EmuFolders::Bios, filename));
+	const std::string bios_path(Path::Combine(EmuFolders::Bios, filename));
 	const auto fp = FileSystem::OpenManagedCFile(filename, "rb");
 	if (!fp)
 		return false;

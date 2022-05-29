@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include "System.h"
 #include "common/Exceptions.h"
 
@@ -56,10 +58,11 @@ class ArchiveEntryList;
 
 // Wrappers to generate a save state compatible across all frontends.
 // These functions assume that the caller has paused the core thread.
-extern void SaveState_DownloadState(ArchiveEntryList* destlist);
+extern std::unique_ptr<ArchiveEntryList> SaveState_DownloadState();
 extern std::unique_ptr<SaveStateScreenshotData> SaveState_SaveScreenshot();
-extern void SaveState_ZipToDisk(ArchiveEntryList* srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, const wxString& filename, s32 slot_for_message);
-extern void SaveState_UnzipFromDisk(const wxString& filename);
+extern bool SaveState_ZipToDisk(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, const char* filename);
+extern bool SaveState_ReadScreenshot(const std::string& filename, u32* out_width, u32* out_height, std::vector<u32>* out_pixels);
+extern void SaveState_UnzipFromDisk(const std::string& filename);
 
 // --------------------------------------------------------------------------------------
 //  SaveStateBase class
@@ -83,7 +86,7 @@ public:
 	virtual ~SaveStateBase() { }
 
 #ifndef PCSX2_CORE
-	static wxString GetSavestateFolder( int slot, bool isSavingOrLoading = false );
+	static std::string GetSavestateFolder(int slot, bool isSavingOrLoading = false);
 #endif
 
 	// Gets the version of savestate that this object is acting on.
@@ -93,7 +96,6 @@ public:
 		return (m_version & 0xffff);
 	}
 
-	virtual SaveStateBase& FreezeMainMemory();
 	virtual SaveStateBase& FreezeBios();
 	virtual SaveStateBase& FreezeInternals();
 
@@ -196,13 +198,13 @@ protected:
 class ArchiveEntry
 {
 protected:
-	wxString	m_filename;
+	std::string	m_filename;
 	uptr		m_dataidx;
 	size_t		m_datasize;
 
 public:
-	ArchiveEntry(const wxString& filename = wxEmptyString)
-		: m_filename(filename)
+	ArchiveEntry(std::string filename)
+		: m_filename(std::move(filename))
 	{
 		m_dataidx = 0;
 		m_datasize = 0;
@@ -222,7 +224,7 @@ public:
 		return *this;
 	}
 
-	wxString GetFilename() const
+	const std::string& GetFilename() const
 	{
 		return m_filename;
 	}
@@ -354,9 +356,7 @@ namespace Exception
 	{
 		DEFINE_STREAM_EXCEPTION(SaveStateLoadError, BadStream)
 
-		virtual wxString FormatDiagnosticMessage() const;
-		virtual wxString FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const override;
+		virtual std::string FormatDisplayMessage() const override;
 	};
 }; // namespace Exception
-
-extern wxString GetSavestateFolder( int slot );

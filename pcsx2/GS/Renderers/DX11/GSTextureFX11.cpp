@@ -155,7 +155,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 	{
 		ShaderMacro sm(m_shader_cache.GetFeatureLevel());
 
-		sm.AddMacro("PS_SCALE_FACTOR", std::max(1u, GSConfig.UpscaleMultiplier));
+		sm.AddMacro("PS_SCALE_FACTOR", GSConfig.UpscaleMultiplier);
 		sm.AddMacro("PS_FST", sel.fst);
 		sm.AddMacro("PS_WMS", sel.wms);
 		sm.AddMacro("PS_WMT", sel.wmt);

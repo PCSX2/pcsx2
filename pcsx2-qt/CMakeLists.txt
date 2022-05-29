@@ -14,8 +14,12 @@ target_sources(pcsx2-qt PRIVATE
 	AboutDialog.cpp
 	AboutDialog.h
 	AboutDialog.ui
+	AutoUpdaterDialog.cpp
+	AutoUpdaterDialog.h
+	AutoUpdaterDialog.ui
 	DisplayWidget.cpp
 	DisplayWidget.h
+	EarlyHardwareCheck.cpp
 	EmuThread.cpp
 	EmuThread.h
 	Main.cpp
@@ -30,6 +34,7 @@ target_sources(pcsx2-qt PRIVATE
 	QtUtils.cpp
 	QtUtils.h
 	SettingWidgetBinder.h
+	GameList/EmptyGameListWidget.ui
 	GameList/GameListModel.cpp
 	GameList/GameListModel.h
 	GameList/GameListRefreshThread.cpp
@@ -97,6 +102,9 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/SystemSettingsWidget.cpp
 	Settings/SystemSettingsWidget.h
 	Settings/SystemSettingsWidget.ui
+	Tools/InputRecording/NewInputRecordingDlg.cpp
+	Tools/InputRecording/NewInputRecordingDlg.h
+	Tools/InputRecording/NewInputRecordingDlg.ui
 	resources/resources.qrc
 )
 
@@ -117,3 +125,11 @@ target_link_libraries(pcsx2-qt PRIVATE
 	Qt6::Widgets
 	Qt6::Network
 )
+
+# Currently, 7z is only needed for the Windows updater.
+if(WIN32)
+	target_link_libraries(pcsx2-qt PRIVATE
+		LZMA::LZMA
+	)
+endif()
+

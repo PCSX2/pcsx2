@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "common/Assertions.h"
 #include "common/StringUtil.h"
 
 #ifdef __POSIX__
@@ -232,7 +233,6 @@ SocketAdapter::SocketAdapter()
 		if (!foundAdapter)
 		{
 			Console.Error("DEV9: Socket: Auto Selection Failed, Check You Connection or Manually Specify Adapter");
-			freeifaddrs(buffer);
 			return;
 		}
 	}
@@ -493,6 +493,13 @@ bool SocketAdapter::GetIfAutoAdapter(ifaddrs* adapter, ifaddrs** buffer)
 
 			if (gateways.size() > 0)
 				hasGateway = true;
+
+#elif defined(__FreeBSD__) || (__APPLE__)
+			std::vector<IP_Address> gateways = InternalServers::DHCP_Server::GetGatewaysBSD(pAdapter->ifa_name);
+
+			if (gateways.size() > 0)
+				hasGateway = true;
+
 #else
 			Console.Error("DHCP: Unsupported OS, can't find Gateway");
 #endif
@@ -669,9 +676,6 @@ void SocketAdapter::reloadSettings()
 		foundAdapter = GetIfSelectedAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
 	else
 		foundAdapter = GetIfAutoAdapter(&adapter, &buffer);
-
-	if (foundAdapter)
-		freeifaddrs(buffer);
 #endif
 
 	const IP_Address ps2IP = {internalIP.bytes[0], internalIP.bytes[1], internalIP.bytes[2], 100};

@@ -18,9 +18,9 @@
 #include <time.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include <wx/utils.h>
 
 #include "common/Pcsx2Types.h"
+#include "common/General.h"
 
 // Returns 0 on failure (not supported by the operating system).
 u64 GetPhysicalMemory()
@@ -41,22 +41,22 @@ void InitCPUTicks()
 
 u64 GetTickFrequency()
 {
-	return 1000000; // unix measures in microseconds
+	return 1000000000;// unix measures in nanoseconds
 }
 
 u64 GetCPUTicks()
 {
-	struct timeval t;
-	gettimeofday(&t, NULL);
-	return ((u64)t.tv_sec * GetTickFrequency()) + t.tv_usec;
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return (static_cast<u64>(ts.tv_sec) * 1000000000ULL) + ts.tv_nsec;
 }
 
-wxString GetOSVersionString()
+std::string GetOSVersionString()
 {
 #if defined(__linux__)
-	return wxGetLinuxDistributionInfo().Description;
+	return "Linux";
 #else // freebsd
-	return wxGetOsDescription();
+	return "Other Unix";
 #endif
 }
 

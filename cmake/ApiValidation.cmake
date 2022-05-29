@@ -84,35 +84,37 @@ int main()
 }
 ")
 
-function(WX_vs_SDL)
-	file(WRITE "${CMAKE_BINARY_DIR}/wx_sdl.c" "${wx_sdl_c_code}")
-	enable_language(C)
+if (NOT PCSX2_CORE)
+	function(WX_vs_SDL)
+		file(WRITE "${CMAKE_BINARY_DIR}/wx_sdl.c" "${wx_sdl_c_code}")
+		enable_language(C)
 
-	try_compile(
-		wx_linked_to_sdl
-		"${CMAKE_BINARY_DIR}"
-		"${CMAKE_BINARY_DIR}/wx_sdl.c"
-		CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${wxWidgets_INCLUDE_DIRS}"
-		LINK_LIBRARIES "${wxWidgets_LIBRARIES}"
-		COPY_FILE "${CMAKE_BINARY_DIR}/wx_sdl"
-	)
+		try_compile(
+			wx_linked_to_sdl
+			"${CMAKE_BINARY_DIR}"
+			"${CMAKE_BINARY_DIR}/wx_sdl.c"
+			CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${wxWidgets_INCLUDE_DIRS}"
+			LINK_LIBRARIES "${wxWidgets_LIBRARIES}"
+			COPY_FILE "${CMAKE_BINARY_DIR}/wx_sdl"
+		)
 
-	if (NOT wx_linked_to_sdl)
-		return()
-	endif()
+		if (NOT wx_linked_to_sdl)
+			return()
+		endif()
 
-	execute_process(
-		COMMAND ldd "${CMAKE_BINARY_DIR}/wx_sdl"
-		COMMAND grep -c SDL2
-		OUTPUT_VARIABLE sdl2_count
-	)
+		execute_process(
+			COMMAND ldd "${CMAKE_BINARY_DIR}/wx_sdl"
+			COMMAND grep -c SDL2
+			OUTPUT_VARIABLE sdl2_count
+		)
 
-	if (SDL2_API AND sdl2_count STREQUAL "0")
-		message(FATAL_ERROR "wxWidgets is linked to SDL1.2. Please use -DSDL2_API=FALSE.")
-	elseif (NOT SDL2_API AND NOT sdl2_count STREQUAL "0")
-		message(FATAL_ERROR "wxWidgets is linked to SDL2. Please use -DSDL2_API=TRUE")
-	endif()
-endfunction()
+		if (SDL2_API AND sdl2_count STREQUAL "0")
+			message(FATAL_ERROR "wxWidgets is linked to SDL1.2. Please use -DSDL2_API=FALSE.")
+		elseif (NOT SDL2_API AND NOT sdl2_count STREQUAL "0")
+			message(FATAL_ERROR "wxWidgets is linked to SDL2. Please use -DSDL2_API=TRUE")
+		endif()
+	endfunction()
+endif()
 
 function(GCC7_BUG)
 	# try_run doesn't work when cross-compiling is enabled. It is completely silly in our case

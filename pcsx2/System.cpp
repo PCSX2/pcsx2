@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Common.h"
-#include "IopCommon.h"
+#include "R3000A.h"
 #include "VUmicro.h"
 #include "newVif.h"
 #include "MTVU.h"
@@ -26,12 +26,31 @@
 
 #include "common/MemsetFast.inl"
 #include "common/Perf.h"
+#include "common/StringUtil.h"
+#include "CDVD/CDVD.h"
+
+#include "common/emitter/x86_intrin.h"
 
 #ifdef PCSX2_CORE
 #include "GSDumpReplayer.h"
 
 extern R5900cpu GSDumpReplayerCpu;
 #endif
+
+SSE_MXCSR g_sseMXCSR   = {DEFAULT_sseMXCSR};
+SSE_MXCSR g_sseVUMXCSR = {DEFAULT_sseVUMXCSR};
+
+// SetCPUState -- for assignment of SSE roundmodes and clampmodes.
+//
+void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVUMXCSR)
+{
+	//Msgbox::Alert("SetCPUState: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
+
+	g_sseMXCSR   = sseMXCSR.ApplyReserveMask();
+	g_sseVUMXCSR = sseVUMXCSR.ApplyReserveMask();
+
+	_mm_setcsr(g_sseMXCSR.bitmask);
+}
 
 // --------------------------------------------------------------------------------------
 //  RecompiledCodeReserve  (implementations)
@@ -40,8 +59,8 @@ extern R5900cpu GSDumpReplayerCpu;
 // Constructor!
 // Parameters:
 //   name - a nice long name that accurately describes the contents of this reserve.
-RecompiledCodeReserve::RecompiledCodeReserve( const wxString& name, uint defCommit )
-	: VirtualMemoryReserve( name, defCommit )
+RecompiledCodeReserve::RecompiledCodeReserve( std::string name, uint defCommit )
+	: VirtualMemoryReserve( std::move(name), defCommit )
 {
 	m_prot_mode		= PageAccess_Any();
 }
@@ -53,9 +72,9 @@ RecompiledCodeReserve::~RecompiledCodeReserve()
 
 void RecompiledCodeReserve::_registerProfiler()
 {
-	if (m_profiler_name.IsEmpty() || !IsOk()) return;
+	if (m_profiler_name.empty() || !IsOk()) return;
 
-	Perf::any.map((uptr)m_baseptr, GetReserveSizeInBytes(), m_profiler_name.ToUTF8());
+	Perf::any.map((uptr)m_baseptr, GetReserveSizeInBytes(), m_profiler_name.c_str());
 }
 
 void RecompiledCodeReserve::_termProfiler()
@@ -99,9 +118,9 @@ bool RecompiledCodeReserve::Commit()
 // Sets the abbreviated name used by the profiler.  Name should be under 10 characters long.
 // After a name has been set, a profiler source will be automatically registered and cleared
 // in accordance with changes in the reserve area.
-RecompiledCodeReserve& RecompiledCodeReserve::SetProfilerName( const wxString& shortname )
+RecompiledCodeReserve& RecompiledCodeReserve::SetProfilerName( std::string shortname )
 {
-	m_profiler_name = shortname;
+	m_profiler_name = std::move(shortname);
 	_registerProfiler();
 	return *this;
 }
@@ -112,44 +131,9 @@ void RecompiledCodeReserve::ThrowIfNotOk() const
 	if (IsOk()) return;
 
 	throw Exception::OutOfMemory(m_name)
-		.SetDiagMsg(pxsFmt( L"Recompiled code cache could not be mapped." ))
-		.SetUserMsg( pxE( L"This recompiler was unable to reserve contiguous memory required for internal caches.  This error can be caused by low virtual memory resources, such as a small or disabled swapfile, or by another program that is hogging a lot of memory."
-		));
+		.SetDiagMsg("Recompiled code cache could not be mapped.")
+		.SetUserMsg("This recompiler was unable to reserve contiguous memory required for internal caches.  This error can be caused by low virtual memory resources, such as a small or disabled swapfile, or by another program that is hogging a lot of memory.");
 }
-
-void SysOutOfMemory_EmergencyResponse(uptr blocksize)
-{
-	// An out of memory error occurred.  All we can try to do in response is reset the various
-	// recompiler caches (which can sometimes total over 120megs, so it can be quite helpful).
-	// If the user is using interpreters, or if the memory allocation failure was on a very small
-	// allocation, then this code could fail; but that's fine.  We're already trying harder than
-	// 99.995% of all programs ever written. -- air
-
-	if (Cpu)
-	{
-		Cpu->SetCacheReserve( (Cpu->GetCacheReserve() * 2) / 3 );
-		Cpu->Reset();
-	}
-
-	if (CpuVU0)
-	{
-		CpuVU0->SetCacheReserve( (CpuVU0->GetCacheReserve() * 2) / 3 );
-		CpuVU0->Reset();
-	}
-
-	if (CpuVU1)
-	{
-		CpuVU1->SetCacheReserve( (CpuVU1->GetCacheReserve() * 2) / 3 );
-		CpuVU1->Reset();
-	}
-
-	if (psxCpu)
-	{
-		psxCpu->SetCacheReserve( (psxCpu->GetCacheReserve() * 2) / 3 );
-		psxCpu->Reset();
-	}
-}
-
 
 #include "svnrev.h"
 
@@ -166,9 +150,9 @@ void SysLogMachineCaps()
 			// tagged commit - more modern implementation of dev build versioning
 			// - there is no need to include the commit - that is associated with the tag, 
 			// - git is implied and the tag is timestamped
-			Console.WriteLn(Color_StrongGreen, "\nPCSX2 Nightly - %s Compiled on %s", GIT_TAG, __DATE__);
+			Console.WriteLn(Color_StrongGreen, "PCSX2 Nightly - %s Compiled on %s", GIT_TAG, __DATE__);
 		} else {
-			Console.WriteLn(Color_StrongGreen, "\nPCSX2 %u.%u.%u-%lld"
+			Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld"
 #ifndef DISABLE_BUILD_DATE
 											   "- compiled on " __DATE__
 #endif
@@ -192,54 +176,50 @@ void SysLogMachineCaps()
 	Console.WriteLn( Color_StrongBlack, "Host Machine Init:" );
 
 	Console.Indent().WriteLn(
-		L"Operating System =  %s\n"
-		L"Physical RAM     =  %u MB",
+		"Operating System =  %s\n"
+		"Physical RAM     =  %u MB",
 
-		WX_STR(GetOSVersionString()),
+		GetOSVersionString().c_str(),
 		(u32)(GetPhysicalMemory() / _1mb)
 	);
 
 	u32 speed = x86caps.CalculateMHz();
 
 	Console.Indent().WriteLn(
-		L"CPU name         =  %s\n"
-		L"Vendor/Model     =  %s (stepping %02X)\n"
-		L"CPU speed        =  %u.%03u ghz (%u logical thread%ls)\n"
-		L"x86PType         =  %s\n"
-		L"x86Flags         =  %08x %08x\n"
-		L"x86EFlags        =  %08x",
-			WX_STR(fromUTF8( x86caps.FamilyName ).Trim().Trim(false)),
-			WX_STR(fromUTF8( x86caps.VendorName )), x86caps.StepID,
+		"CPU name         =  %s\n"
+		"Vendor/Model     =  %s (stepping %02X)\n"
+		"CPU speed        =  %u.%03u ghz (%u logical thread%ls)\n"
+		"x86PType         =  %s\n"
+		"x86Flags         =  %08x %08x\n"
+		"x86EFlags        =  %08x",
+			x86caps.FamilyName,
+			x86caps.VendorName, x86caps.StepID,
 			speed / 1000, speed % 1000,
 			x86caps.LogicalCores, (x86caps.LogicalCores==1) ? L"" : L"s",
-			WX_STR(x86caps.GetTypeName()),
+			x86caps.GetTypeName(),
 			x86caps.Flags, x86caps.Flags2,
 			x86caps.EFlags
 	);
 
 	Console.Newline();
 
-	wxArrayString features[2];	// 2 lines, for readability!
+	std::string features;
 
-	if( x86caps.hasStreamingSIMD2Extensions )		features[0].Add( L"SSE2" );
-	if( x86caps.hasStreamingSIMD3Extensions )		features[0].Add( L"SSE3" );
-	if( x86caps.hasSupplementalStreamingSIMD3Extensions ) features[0].Add( L"SSSE3" );
-	if( x86caps.hasStreamingSIMD4Extensions )		features[0].Add( L"SSE4.1" );
-	if( x86caps.hasStreamingSIMD4Extensions2 )		features[0].Add( L"SSE4.2" );
-	if( x86caps.hasAVX )							features[0].Add( L"AVX" );
-	if( x86caps.hasAVX2 )							features[0].Add( L"AVX2" );
-	if( x86caps.hasFMA)								features[0].Add( L"FMA" );
+	if( x86caps.hasStreamingSIMD2Extensions )		features += "SSE2 ";
+	if( x86caps.hasStreamingSIMD3Extensions )		features += "SSE3 ";
+	if( x86caps.hasSupplementalStreamingSIMD3Extensions ) features += "SSSE3 ";
+	if( x86caps.hasStreamingSIMD4Extensions )		features += "SSE4.1 ";
+	if( x86caps.hasStreamingSIMD4Extensions2 )		features += "SSE4.2 ";
+	if( x86caps.hasAVX )							features += "AVX ";
+	if( x86caps.hasAVX2 )							features += "AVX2 ";
+	if( x86caps.hasFMA)								features += "FMA ";
 
-	if( x86caps.hasStreamingSIMD4ExtensionsA )		features[1].Add( L"SSE4a " );
+	if( x86caps.hasStreamingSIMD4ExtensionsA )		features += "SSE4a ";
 
-	const wxString result[2] =
-	{
-		JoinString( features[0], L".. " ),
-		JoinString( features[1], L".. " )
-	};
+	StringUtil::StripWhitespace(&features);
 
-	Console.WriteLn( Color_StrongBlack,	L"x86 Features Detected:" );
-	Console.Indent().WriteLn(result[0] + (result[1].IsEmpty() ? L"" : (L"\n" + result[1])));
+	Console.WriteLn(Color_StrongBlack,	"x86 Features Detected:");
+	Console.Indent().WriteLn("%s", features.c_str());
 
 	Console.Newline();
 
@@ -284,13 +264,13 @@ CpuInitializer< CpuType >::CpuInitializer()
 	}
 	catch( Exception::RuntimeError& ex )
 	{
-		Console.Error( L"CPU provider error:\n\t" + ex.FormatDiagnosticMessage() );
+		Console.Error( "CPU provider error:\n\t%s", ex.FormatDiagnosticMessage().c_str() );
 		MyCpu = nullptr;
 		ExThrown = ScopedExcept(ex.Clone());
 	}
 	catch( std::runtime_error& ex )
 	{
-		Console.Error( L"CPU provider error (STL Exception)\n\tDetails:" + fromUTF8( ex.what() ) );
+		Console.Error( "CPU provider error (STL Exception)\n\tDetails:%s", ex.what() );
 		MyCpu = nullptr;
 		ExThrown = ScopedExcept(new Exception::RuntimeError(ex));
 	}
@@ -322,14 +302,6 @@ public:
 	CpuInitializerSet() {}
 	virtual ~CpuInitializerSet() = default;
 };
-
-
-// returns the translated error message for the Virtual Machine failing to allocate!
-static wxString GetMemoryErrorVM()
-{
-	return pxE( L"PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close out some memory hogging background tasks and try again."
-	);
-}
 
 namespace HostMemoryMap {
 	// For debuggers
@@ -454,6 +426,8 @@ void SysMainMemory::DecommitAll()
 	// to the ring. Let's call it an extra safety valve :)
 	vu1Thread.Reset();
 
+	hwShutdown();
+
 	m_ee.Decommit();
 	m_iop.Decommit();
 	m_vu.Decommit();
@@ -503,7 +477,7 @@ SysCpuProviderPack::SysCpuProviderPack()
 	catch( Exception::RuntimeError& ex )
 	{
 		m_RecExceptionEE = ScopedExcept(ex.Clone());
-		Console.Error( L"EE Recompiler Reservation Failed:\n" + ex.FormatDiagnosticMessage() );
+		Console.Error( "EE Recompiler Reservation Failed:\n%s", ex.FormatDiagnosticMessage().c_str() );
 		recCpu.Shutdown();
 	}
 
@@ -513,7 +487,7 @@ SysCpuProviderPack::SysCpuProviderPack()
 	catch( Exception::RuntimeError& ex )
 	{
 		m_RecExceptionIOP = ScopedExcept(ex.Clone());
-		Console.Error( L"IOP Recompiler Reservation Failed:\n" + ex.FormatDiagnosticMessage() );
+		Console.Error( "IOP Recompiler Reservation Failed:\n%s", ex.FormatDiagnosticMessage().c_str() );
 		psxRec.Shutdown();
 	}
 
@@ -592,7 +566,10 @@ void SysCpuProviderPack::ApplyConfig() const
 // Use this method to reset the recs when important global pointers like the MTGS are re-assigned.
 void SysClearExecutionCache()
 {
+	// Done by VMManager in Qt.
+#ifndef PCSX2_CORE
 	GetCpuProviders().ApplyConfig();
+#endif
 
 	Cpu->Reset();
 	psxCpu->Reset();
@@ -642,21 +619,21 @@ u8* SysMmapEx(uptr base, u32 size, uptr bounds, const char *caller)
 	return Mem;
 }
 
-wxString SysGetBiosDiscID()
+std::string SysGetBiosDiscID()
 {
 	// FIXME: we should return a serial based on
 	// the BIOS being run (either a checksum of the BIOS roms, and/or a string based on BIOS
 	// region and revision).
 
-	return wxEmptyString;
+	return {};
 }
 
 // This function always returns a valid DiscID -- using the Sony serial when possible, and
 // falling back on the CRC checksum of the ELF binary if the PS2 software being run is
 // homebrew or some other serial-less item.
-wxString SysGetDiscID()
+std::string SysGetDiscID()
 {
-	if( !DiscSerial.IsEmpty() ) return DiscSerial;
+	if( !DiscSerial.empty() ) return DiscSerial;
 
 	if( !ElfCRC )
 	{
@@ -664,5 +641,5 @@ wxString SysGetDiscID()
 		return SysGetBiosDiscID();
 	}
 
-	return pxsFmt( L"%08x", ElfCRC );
+	return StringUtil::StdStringFromFormat("%08x", ElfCRC);
 }

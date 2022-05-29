@@ -39,9 +39,7 @@
 #include "VMManager.h"
 #endif
 
-#ifndef DISABLE_RECORDING
-#	include "Recording/InputRecordingControls.h"
-#endif
+#include "Recording/InputRecordingControls.h"
 
 using namespace Threading;
 
@@ -433,6 +431,8 @@ void frameLimitReset()
 extern uint eecount_on_last_vdec;
 extern bool FMVstarted;
 extern bool EnableFMV;
+
+static bool RendererSwitched = false;
 static bool s_last_fmv_state = false;
 
 static __fi void DoFMVSwitch()
@@ -464,6 +464,9 @@ static __fi void DoFMVSwitch()
 	{
 		case FMVAspectRatioSwitchType::Off:
 			break;
+		case FMVAspectRatioSwitchType::RAuto4_3_3_2:
+			EmuConfig.CurrentAspectRatio = new_fmv_state ? AspectRatioType::RAuto4_3_3_2 : EmuConfig.GS.AspectRatio;
+			break;
 		case FMVAspectRatioSwitchType::R4_3:
 			EmuConfig.CurrentAspectRatio = new_fmv_state ? AspectRatioType::R4_3 : EmuConfig.GS.AspectRatio;
 			break;
@@ -474,11 +477,15 @@ static __fi void DoFMVSwitch()
 			break;
 	}
 
-	if (EmuConfig.Gamefixes.SoftwareRendererFMVHack && EmuConfig.GS.UseHardwareRenderer())
+	if (EmuConfig.Gamefixes.SoftwareRendererFMVHack && (GSConfig.UseHardwareRenderer() || (RendererSwitched && GSConfig.Renderer == GSRendererType::SW)))
 	{
+		RendererSwitched = GSConfig.UseHardwareRenderer();
+
 		// we don't use the sw toggle here, because it'll change back to auto if set to sw
 		GetMTGS().SwitchRenderer(new_fmv_state ? GSRendererType::SW : EmuConfig.GS.Renderer, false);
 	}
+	else
+		RendererSwitched = false;
 }
 
 // Convenience function to update UI thread and set patches. 
@@ -488,10 +495,13 @@ static __fi void frameLimitUpdateCore()
 
 #ifndef PCSX2_CORE
 	GetCoreThread().VsyncInThread();
+	if (GetCoreThread().HasPendingStateChangeRequest())
+		Cpu->ExitExecution();
 #else
 	VMManager::Internal::VSyncOnCPUThread();
+	if (VMManager::Internal::IsExecutionInterrupted())
+		Cpu->ExitExecution();
 #endif
-	Cpu->CheckExecutionState();
 }
 
 // Framelimiter - Measures the delta time between calls and stalls until a
@@ -544,14 +554,12 @@ static __fi void frameLimit()
 
 static __fi void VSyncStart(u32 sCycle)
 {
-#ifndef DISABLE_RECORDING
-	if (g_Conf->EmuOptions.EnableRecordingTools)
+	if (EmuConfig.EnableRecordingTools)
 	{
 		// It is imperative that any frame locking that must happen occurs before Vsync is started
 		// Not doing so would sacrifice a frame of a savestate-based recording when loading any savestate
 		g_InputRecordingControls.HandlePausingAndLocking();
 	}
-#endif
 
 #ifdef PCSX2_CORE
 	// Update vibration at the end of a frame.
@@ -563,14 +571,6 @@ static __fi void VSyncStart(u32 sCycle)
 
 	if(EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
 		SysTrace.EE.Counters.Write( "    ================  EE COUNTER VSYNC START (frame: %d)  ================", g_FrameCount );
-
-	// EE Profiling and Debug code.
-	// FIXME: should probably be moved to VsyncInThread, and handled
-	// by UI implementations.  (ie, AppCoreThread in PCSX2-wx interface).
-	vSyncDebugStuff( g_FrameCount );
-
-	CpuVU0->Vsync();
-	CpuVU1->Vsync();
 
 	hwIntcIrq(INTC_VBLANK_S);
 	psxVBlankStart();
@@ -616,12 +616,10 @@ static __fi void GSVSync()
 
 static __fi void VSyncEnd(u32 sCycle)
 {
-#ifndef DISABLE_RECORDING
-	if (g_Conf->EmuOptions.EnableRecordingTools)
+	if (EmuConfig.EnableRecordingTools)
 	{
 		g_InputRecordingControls.CheckPauseStatus();
 	}
-#endif
 
 	if(EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
 		SysTrace.EE.Counters.Write( "    ================  EE COUNTER VSYNC END (frame: %d)  ================", g_FrameCount );
@@ -1057,24 +1055,24 @@ __fi u16 rcntRead32( u32 mem )
 	// are all fixed to 0, so we always truncate everything in these two pages using a u16
 	// return value! --air
 
-	iswitch( mem ) {
-	icase(RCNT0_COUNT)	return (u16)rcntRcount(0);
-	icase(RCNT0_MODE)	return (u16)counters[0].modeval;
-	icase(RCNT0_TARGET)	return (u16)counters[0].target;
-	icase(RCNT0_HOLD)	return (u16)counters[0].hold;
+	switch( mem ) {
+	case(RCNT0_COUNT):	return (u16)rcntRcount(0);
+	case(RCNT0_MODE):	return (u16)counters[0].modeval;
+	case(RCNT0_TARGET):	return (u16)counters[0].target;
+	case(RCNT0_HOLD):	return (u16)counters[0].hold;
 
-	icase(RCNT1_COUNT)	return (u16)rcntRcount(1);
-	icase(RCNT1_MODE)	return (u16)counters[1].modeval;
-	icase(RCNT1_TARGET)	return (u16)counters[1].target;
-	icase(RCNT1_HOLD)	return (u16)counters[1].hold;
+	case(RCNT1_COUNT):	return (u16)rcntRcount(1);
+	case(RCNT1_MODE):	return (u16)counters[1].modeval;
+	case(RCNT1_TARGET):	return (u16)counters[1].target;
+	case(RCNT1_HOLD):	return (u16)counters[1].hold;
 
-	icase(RCNT2_COUNT)	return (u16)rcntRcount(2);
-	icase(RCNT2_MODE)	return (u16)counters[2].modeval;
-	icase(RCNT2_TARGET)	return (u16)counters[2].target;
+	case(RCNT2_COUNT):	return (u16)rcntRcount(2);
+	case(RCNT2_MODE):	return (u16)counters[2].modeval;
+	case(RCNT2_TARGET):	return (u16)counters[2].target;
 
-	icase(RCNT3_COUNT)	return (u16)rcntRcount(3);
-	icase(RCNT3_MODE)	return (u16)counters[3].modeval;
-	icase(RCNT3_TARGET)	return (u16)counters[3].target;
+	case(RCNT3_COUNT):	return (u16)rcntRcount(3);
+	case(RCNT3_MODE):	return (u16)counters[3].modeval;
+	case(RCNT3_TARGET):	return (u16)counters[3].target;
 	}
 	
 	return psHu16(mem);
@@ -1089,24 +1087,24 @@ __fi bool rcntWrite32( u32 mem, mem32_t& value )
 	// count, mode, target, and hold. This will allow for a simplified handler for register
 	// reads.
 
-	iswitch( mem ) {
-	icase(RCNT0_COUNT)	return rcntWcount(0, value),	false;
-	icase(RCNT0_MODE)	return rcntWmode(0, value),		false;
-	icase(RCNT0_TARGET)	return rcntWtarget(0, value),	false;
-	icase(RCNT0_HOLD)	return rcntWhold(0, value),		false;
+	switch( mem ) {
+	case(RCNT0_COUNT):	return rcntWcount(0, value),	false;
+	case(RCNT0_MODE):	return rcntWmode(0, value),		false;
+	case(RCNT0_TARGET):	return rcntWtarget(0, value),	false;
+	case(RCNT0_HOLD):	return rcntWhold(0, value),		false;
 
-	icase(RCNT1_COUNT)	return rcntWcount(1, value),	false;
-	icase(RCNT1_MODE)	return rcntWmode(1, value),		false;
-	icase(RCNT1_TARGET)	return rcntWtarget(1, value),	false;
-	icase(RCNT1_HOLD)	return rcntWhold(1, value),		false;
+	case(RCNT1_COUNT):	return rcntWcount(1, value),	false;
+	case(RCNT1_MODE):	return rcntWmode(1, value),		false;
+	case(RCNT1_TARGET):	return rcntWtarget(1, value),	false;
+	case(RCNT1_HOLD):	return rcntWhold(1, value),		false;
 
-	icase(RCNT2_COUNT)	return rcntWcount(2, value),	false;
-	icase(RCNT2_MODE)	return rcntWmode(2, value),		false;
-	icase(RCNT2_TARGET)	return rcntWtarget(2, value),	false;
+	case(RCNT2_COUNT):	return rcntWcount(2, value),	false;
+	case(RCNT2_MODE):	return rcntWmode(2, value),		false;
+	case(RCNT2_TARGET):	return rcntWtarget(2, value),	false;
 
-	icase(RCNT3_COUNT)	return rcntWcount(3, value),	false;
-	icase(RCNT3_MODE)	return rcntWmode(3, value),		false;
-	icase(RCNT3_TARGET)	return rcntWtarget(3, value),	false;
+	case(RCNT3_COUNT):	return rcntWcount(3, value),	false;
+	case(RCNT3_MODE):	return rcntWmode(3, value),		false;
+	case(RCNT3_TARGET):	return rcntWtarget(3, value),	false;
 	}
 
 	// unhandled .. do memory writeback.

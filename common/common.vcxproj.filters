@@ -16,16 +16,10 @@
     <ClCompile Include="Exceptions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FastFormatString.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="emitter\fpu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="emitter\groups.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IniInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="emitter\jmp.cpp">
@@ -55,37 +49,16 @@
     <ClCompile Include="Misc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mutex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PathUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Perf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PrecompiledHeader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pxStreams.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pxTranslate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RwMutex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Semaphore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="emitter\simd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StringHelpers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ThreadTools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VirtualMemory.cpp">
@@ -184,6 +157,33 @@
     <ClCompile Include="D3D11\ShaderCompiler.cpp">
       <Filter>Source Files\D3D11</Filter>
     </ClCompile>
+    <ClCompile Include="D3D12\Context.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12\DescriptorHeapManager.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12\ShaderCache.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12\StreamBuffer.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12\Texture.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12\Util.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12\Builders.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="StackWalker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CrashHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlignedMalloc.h">
@@ -204,13 +204,7 @@
     <ClInclude Include="emitter\cpudetect_internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Dependencies.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="emitter\implement\dwshift.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EmbeddedImage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EventSource.h">
@@ -264,16 +258,10 @@
     <ClInclude Include="Path.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PersistentThread.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PrecompiledHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RedtapeWindows.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RwMutex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SafeArray.h">
@@ -303,13 +291,7 @@
     <ClInclude Include="emitter\implement\test.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ThreadingInternal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="emitter\tools.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wxBaseTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="emitter\x86emitter.h">
@@ -319,9 +301,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="emitter\implement\xchg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StringHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FastJmp.h">
@@ -420,6 +399,36 @@
     <ClInclude Include="D3D11\ShaderCompiler.h">
       <Filter>Header Files\D3D11</Filter>
     </ClInclude>
+    <ClInclude Include="ZipHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12\Context.h">
+      <Filter>Header Files\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12\DescriptorHeapManager.h">
+      <Filter>Header Files\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12\ShaderCache.h">
+      <Filter>Header Files\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12\StreamBuffer.h">
+      <Filter>Header Files\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12\Texture.h">
+      <Filter>Header Files\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12\Util.h">
+      <Filter>Header Files\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12\Builders.h">
+      <Filter>Header Files\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="CrashHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StackWalker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -445,6 +454,12 @@
     </Filter>
     <Filter Include="Header Files\D3D11">
       <UniqueIdentifier>{764ddf71-77a6-41b8-bc65-1eef94b6997b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\D3D12">
+      <UniqueIdentifier>{96f78eb9-089b-4166-a23e-78c4e7d90b64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\D3D12">
+      <UniqueIdentifier>{cf37623d-bb05-4c54-8c72-1c20b5331c69}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

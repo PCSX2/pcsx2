@@ -16,12 +16,15 @@
 #include "PrecompiledHeader.h"
 #include "GSwxDialog.h"
 #include "gui/AppConfig.h"
+#include "gui/StringHelpers.h"
 #include "GS/GSUtil.h"
 #include "HostDisplay.h"
 
 #ifdef _WIN32
 #include "Frontend/D3D11HostDisplay.h"
+#include "Frontend/D3D12HostDisplay.h"
 #endif
+#include "GS/Renderers/Metal/GSMetalCPPAccessible.h"
 
 #ifdef ENABLE_VULKAN
 #include "Frontend/VulkanHostDisplay.h"
@@ -275,6 +278,7 @@ RendererTab::RendererTab(wxWindow* parent)
 	auto upscale_prereq = [this]{ return !m_is_native_res; };
 
 	PaddedBoxSizer<wxBoxSizer> tab_box(wxVERTICAL);
+	PaddedBoxSizer<wxStaticBoxSizer> general_box(wxVERTICAL, this, "General GS Settings");
 	PaddedBoxSizer<wxStaticBoxSizer> hardware_box(wxVERTICAL, this, "Hardware Mode");
 	PaddedBoxSizer<wxStaticBoxSizer> software_box(wxVERTICAL, this, "Software Mode");
 
@@ -314,8 +318,17 @@ RendererTab::RendererTab(wxWindow* parent)
 	m_ui.addSpinAndLabel(thread_box, "Extra Rendering threads:", "extrathreads", 0, 32, 2, IDC_SWTHREADS, sw_prereq);
 	software_box->Add(thread_box, wxSizerFlags().Centre());
 
+	// General GS Settings box
+	auto* pcrtc_checks_box = new wxWrapSizer(wxHORIZONTAL);
+
+	m_ui.addCheckBox(pcrtc_checks_box, "Screen Offsets", "pcrtc_offsets", IDC_PCRTC_OFFSETS);
+	m_ui.addCheckBox(pcrtc_checks_box, "Disable Interlace Offset", "disable_interlace_offset", IDC_DISABLE_INTERLACE_OFFSETS);
+
+	general_box->Add(pcrtc_checks_box, wxSizerFlags().Center());
+
 	tab_box->Add(hardware_box.outer, wxSizerFlags().Expand());
 	tab_box->Add(software_box.outer, wxSizerFlags().Expand());
+	tab_box->Add(general_box.outer, wxSizerFlags().Expand());
 
 	SetSizerAndFit(tab_box.outer);
 }
@@ -328,7 +341,9 @@ HacksTab::HacksTab(wxWindow* parent)
 	PaddedBoxSizer<wxBoxSizer> tab_box(wxVERTICAL);
 
 	auto hw_prereq = [this]{ return m_is_hardware; };
-	auto* hacks_check_box = m_ui.addCheckBox(tab_box.inner, "Manual HW Hacks", "UserHacks", -1, hw_prereq);
+	auto* hacks_check_box = m_ui.addCheckBox(tab_box.inner, "Manual HW Hacks (Disables automatic settings if checked)", "UserHacks", -1, hw_prereq);
+	m_ui.addCheckBox(tab_box.inner, "Skip Presenting Duplicate Frames", "skip_duplicate_frames", -1);
+
 	auto hacks_prereq = [this, hacks_check_box]{ return m_is_hardware && hacks_check_box->GetValue(); };
 	auto upscale_hacks_prereq = [this, hacks_check_box]{ return !m_is_native_res && hacks_check_box->GetValue(); };
 
@@ -536,6 +551,7 @@ DebugTab::DebugTab(wxWindow* parent)
 	PaddedBoxSizer<wxBoxSizer> tab_box(wxVERTICAL);
 
 	auto ogl_hw_prereq = [this]{ return m_is_ogl_hw; };
+	auto vk_ogl_hw_prereq = [this] { return m_is_ogl_hw || m_is_vk_hw; };
 
 	if (g_Conf->DevMode || IsDevBuild)
 	{
@@ -570,10 +586,11 @@ DebugTab::DebugTab(wxWindow* parent)
 
 	PaddedBoxSizer<wxStaticBoxSizer> ogl_box(wxVERTICAL, this, "Overrides");
 	auto* ogl_grid = new wxFlexGridSizer(2, space, space);
-	m_ui.addComboBoxAndLabel(ogl_grid, "Texture Barriers:", "OverrideTextureBarriers",                 &theApp.m_gs_generic_list, -1);
-	m_ui.addComboBoxAndLabel(ogl_grid, "Geometry Shader:",  "OverrideGeometryShaders",                 &theApp.m_gs_generic_list, IDC_GEOMETRY_SHADER_OVERRIDE);
+	m_ui.addComboBoxAndLabel(ogl_grid, "Texture Barriers:", "OverrideTextureBarriers",                 &theApp.m_gs_generic_list, -1,                           vk_ogl_hw_prereq);
+	m_ui.addComboBoxAndLabel(ogl_grid, "Geometry Shader:",  "OverrideGeometryShaders",                 &theApp.m_gs_generic_list, IDC_GEOMETRY_SHADER_OVERRIDE, vk_ogl_hw_prereq);
 	m_ui.addComboBoxAndLabel(ogl_grid, "Image Load Store:", "override_GL_ARB_shader_image_load_store", &theApp.m_gs_generic_list, IDC_IMAGE_LOAD_STORE,         ogl_hw_prereq);
 	m_ui.addComboBoxAndLabel(ogl_grid, "Sparse Texture:",   "override_GL_ARB_sparse_texture",          &theApp.m_gs_generic_list, IDC_SPARSE_TEXTURE,           ogl_hw_prereq);
+	m_ui.addComboBoxAndLabel(ogl_grid, "Dump Compression:", "GSDumpCompression",                       &theApp.m_gs_dump_compression, -1);
 	ogl_box->Add(ogl_grid);
 
 	tab_box->Add(ogl_box.outer, wxSizerFlags().Expand());
@@ -616,7 +633,7 @@ Dialog::Dialog()
 	m_adapter_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, {});
 	top_grid->Add(m_adapter_select, wxSizerFlags().Expand());
 
-	m_ui.addComboBoxAndLabel(top_grid, "Deinterlacing (F5):", "interlace", &theApp.m_gs_interlace);
+	m_ui.addComboBoxAndLabel(top_grid, "Deinterlacing (F5):", "deinterlace", &theApp.m_gs_deinterlace);
 
 	m_bifilter_select = m_ui.addComboBoxAndLabel(top_grid, "Texture Filtering:", "filter", &theApp.m_gs_bifilter, IDC_FILTER).first;
 
@@ -689,10 +706,18 @@ void Dialog::RendererChange()
 	case GSRendererType::DX11:
 		list = D3D11HostDisplay::StaticGetAdapterAndModeList();
 		break;
+	case GSRendererType::DX12:
+		list = D3D12HostDisplay::StaticGetAdapterAndModeList();
+		break;
 #endif
 #ifdef ENABLE_VULKAN
 	case GSRendererType::VK:
 		list = VulkanHostDisplay::StaticGetAdapterAndModeList(nullptr);
+		break;
+#endif
+#ifdef __APPLE__
+	case GSRendererType::Metal:
+		list = GetMetalAdapterAndModeList();
 		break;
 #endif
 	default:
@@ -774,7 +799,7 @@ void Dialog::Update()
 	else
 	{
 		// cross-tab dependencies yay
-		const bool is_hw = renderer == GSRendererType::OGL || renderer == GSRendererType::DX11 || renderer == GSRendererType::VK;
+		const bool is_hw = renderer == GSRendererType::OGL || renderer == GSRendererType::DX11 || renderer == GSRendererType::VK || renderer == GSRendererType::Metal || renderer == GSRendererType::DX12;
 		const bool is_upscale = m_renderer_panel->m_internal_resolution->GetSelection() != 0;
 		m_hacks_panel->m_is_native_res = !is_hw || !is_upscale;
 		m_hacks_panel->m_is_hardware = is_hw;
@@ -782,6 +807,7 @@ void Dialog::Update()
 		m_renderer_panel->m_is_native_res = !is_hw || !is_upscale;
 		m_post_panel->m_is_vk_hw = renderer == GSRendererType::VK;
 		m_debug_panel->m_is_ogl_hw = renderer == GSRendererType::OGL;
+		m_debug_panel->m_is_vk_hw = renderer == GSRendererType::VK;
 
 		m_ui.Update();
 		m_hacks_panel->DoUpdate();

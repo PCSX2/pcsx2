@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "App.h"
 #include "common/Threading.h"
+#include "StringHelpers.h"
 
 #include <wx/stackwalk.h>
 
@@ -29,7 +30,7 @@ protected:
 	int					m_skipped;
 
 public:
-	StackDump( const FnChar_t* src_function_name )
+	StackDump( const char* src_function_name )
 	{
 		if( src_function_name != NULL )
 			m_srcFuncName = fromUTF8(src_function_name);
@@ -89,7 +90,7 @@ protected:
 	}
 };
 
-static wxString pxGetStackTrace( const FnChar_t* calledFrom )
+static wxString pxGetStackTrace( const char* calledFrom )
 {
 	StackDump dump( calledFrom );
 	dump.Walk( 3 );
@@ -105,20 +106,20 @@ static wxString pxGetStackTrace( const FnChar_t* calledFrom )
 void Pcsx2App::OnAssertFailure( const wxChar *file, int line, const wxChar *func, const wxChar *cond, const wxChar *msg )
 {
 	// Re-entrant assertions are bad mojo -- trap immediately.
-	static DeclareTls(int) _reentrant_lock( 0 );
+	static thread_local int _reentrant_lock( 0 );
 	RecursionGuard guard( _reentrant_lock );
 	if( guard.IsReentrant() ) pxTrap();
 
-	wxCharBuffer bleh( wxString(func).ToUTF8() );
-	if( AppDoAssert( DiagnosticOrigin( file, line, bleh, cond ), msg ) )
-	{
-		pxTrap();
-	}
+	std::string nfile(StringUtil::wxStringToUTF8String(file));
+	std::string nfunc(StringUtil::wxStringToUTF8String(func));
+	std::string ncond(StringUtil::wxStringToUTF8String(cond));
+	std::string nmsg(StringUtil::wxStringToUTF8String(msg));
+	pxOnAssertFail(nfile.c_str(), line, nfunc.c_str(), nmsg.empty() ? ncond.c_str() : nmsg.c_str());
 }
 
 #endif
 
-bool AppDoAssert( const DiagnosticOrigin& origin, const wxChar *msg )
+bool AppDoAssert( const DiagnosticOrigin& origin, const char *msg )
 {
 	// Used to allow the user to suppress future assertions during this application's session.
 	static bool disableAsserts = false;
@@ -129,12 +130,12 @@ bool AppDoAssert( const DiagnosticOrigin& origin, const wxChar *msg )
 #else
 	wxString trace( "Warning: Platform doesn't support wx stackwalker" );
 #endif
-	wxString dbgmsg( origin.ToString( msg ) );
+	std::string dbgmsg( origin.ToString( msg ) );
 
-	wxMessageOutputDebug().Printf( L"%s", WX_STR(dbgmsg) );
+	wxMessageOutputDebug().Printf( "%s", dbgmsg.c_str() );
 
-	Console.Error( L"%s", WX_STR(dbgmsg) );
-	Console.WriteLn( L"%s", WX_STR(trace) );
+	Console.Error( dbgmsg );
+	Console.WriteLn( "%ls", WX_STR(trace) );
 
 	wxString windowmsg( L"Assertion failed: " );
 	if( msg != NULL )
@@ -142,7 +143,7 @@ bool AppDoAssert( const DiagnosticOrigin& origin, const wxChar *msg )
 	else if( origin.condition != NULL )
 		windowmsg += origin.condition;
 
-	int retval = Msgbox::Assertion( windowmsg, dbgmsg + L"\nStacktrace:\n" + trace );
+	int retval = Msgbox::Assertion( windowmsg, StringUtil::UTF8StringToWxString(dbgmsg) + L"\nStacktrace:\n" + trace );
 
 	if( retval == wxID_YES ) return true;
 	if( retval == wxID_IGNORE ) disableAsserts = true;

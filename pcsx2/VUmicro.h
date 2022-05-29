@@ -19,6 +19,8 @@
 #include "VUops.h"
 #include "R5900.h"
 
+#include "common/Exceptions.h"
+
 static const uint VU0_MEMSIZE	= 0x1000;		// 4kb
 static const uint VU0_PROGSIZE	= 0x1000;		// 4kb
 static const uint VU1_MEMSIZE	= 0x4000;		// 16kb
@@ -72,7 +74,7 @@ public:
 	}
 
 	virtual const char* GetShortName() const=0;
-	virtual wxString GetLongName() const=0;
+	virtual const char* GetLongName() const=0;
 
 	// returns the number of bytes committed to the working caches for this CPU
 	// provider (typically this refers to recompiled code caches, but could also refer
@@ -95,7 +97,7 @@ public:
 	// C++ Calling Conventions are unstable, and some compilers don't even allow us to take the
 	// address of C++ methods.  We need to use a wrapper function to invoke the ExecuteBlock from
 	// recompiled code.
-	static void __fastcall ExecuteBlockJIT( BaseCpuProvider* cpu )
+	static void ExecuteBlockJIT( BaseCpuProvider* cpu )
 	{
 		cpu->Execute(1024);
 	}
@@ -125,19 +127,6 @@ public:
 	}
 	virtual ~BaseVUmicroCPU() = default;
 
-	// Called by the PS2 VM's event manager for every internal vertical sync (occurs at either
-	// 50hz (pal) or 59.94hz (NTSC).
-	//
-	// Exceptions:
-	//   This method is not allowed to throw exceptions, since exceptions may not propagate
-	//   safely from the context of recompiled code stackframes.
-	//
-	// Thread Affinity:
-	//   Called from the EEcore thread.  No locking is performed, so any necessary locks must
-	//   be implemented by the CPU provider manually.
-	//
-	virtual void Vsync() noexcept { }
-
 	virtual void Step() {
 		// Ideally this would fall back on interpretation for executing single instructions
 		// for all CPU types, but due to VU complexities and large discrepancies between
@@ -147,7 +136,7 @@ public:
 	// Executes a Block based on EE delta time (see VUmicro.cpp)
 	virtual void ExecuteBlock(bool startUp=0);
 
-	static void __fastcall ExecuteBlockJIT(BaseVUmicroCPU* cpu, bool interlocked);
+	static void ExecuteBlockJIT(BaseVUmicroCPU* cpu, bool interlocked);
 
 	// VU1 sometimes needs to break execution on XGkick Path1 transfers if
 	// there is another gif path 2/3 transfer already taking place.
@@ -166,7 +155,7 @@ public:
 	virtual ~InterpVU0() { Shutdown(); }
 
 	const char* GetShortName() const	{ return "intVU0"; }
-	wxString GetLongName() const		{ return L"VU0 Interpreter"; }
+	const char* GetLongName() const		{ return "VU0 Interpreter"; }
 
 	void Reserve() { }
 	void Shutdown() noexcept { }
@@ -188,7 +177,7 @@ public:
 	virtual ~InterpVU1() { Shutdown(); }
 
 	const char* GetShortName() const	{ return "intVU1"; }
-	wxString GetLongName() const		{ return L"VU1 Interpreter"; }
+	const char* GetLongName() const		{ return "VU1 Interpreter"; }
 
 	void Reserve() { }
 	void Shutdown() noexcept;
@@ -214,7 +203,7 @@ public:
 	virtual ~recMicroVU0() { Shutdown(); }
 
 	const char* GetShortName() const	{ return "mVU0"; }
-	wxString GetLongName() const		{ return L"microVU0 Recompiler"; }
+	const char* GetLongName() const		{ return "microVU0 Recompiler"; }
 
 	void Reserve();
 	void Shutdown() noexcept;
@@ -223,7 +212,6 @@ public:
 	void SetStartPC(u32 startPC);
 	void Execute(u32 cycles);
 	void Clear(u32 addr, u32 size);
-	void Vsync() noexcept;
 
 	uint GetCacheReserve() const;
 	void SetCacheReserve( uint reserveInMegs ) const;
@@ -236,7 +224,7 @@ public:
 	virtual ~recMicroVU1() { Shutdown(); }
 
 	const char* GetShortName() const	{ return "mVU1"; }
-	wxString GetLongName() const		{ return L"microVU1 Recompiler"; }
+	const char* GetLongName() const		{ return "microVU1 Recompiler"; }
 
 	void Reserve();
 	void Shutdown() noexcept;
@@ -244,7 +232,6 @@ public:
 	void SetStartPC(u32 startPC);
 	void Execute(u32 cycles);
 	void Clear(u32 addr, u32 size);
-	void Vsync() noexcept;
 	void ResumeXGkick();
 
 	uint GetCacheReserve() const;
@@ -257,7 +244,7 @@ extern BaseVUmicroCPU* CpuVU1;
 
 // VU0
 extern void vu0ResetRegs();
-extern void __fastcall vu0ExecMicro(u32 addr);
+extern void vu0ExecMicro(u32 addr);
 extern void vu0Exec(VURegs* VU);
 extern void _vu0FinishMicro();
 extern void vu0Finish();
@@ -266,7 +253,7 @@ extern void iDumpVU0Registers();
 // VU1
 extern void vu1Finish(bool add_cycles);
 extern void vu1ResetRegs();
-extern void __fastcall vu1ExecMicro(u32 addr);
+extern void vu1ExecMicro(u32 addr);
 extern void vu1Exec(VURegs* VU);
 extern void iDumpVU1Registers();
 

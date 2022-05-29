@@ -114,7 +114,6 @@ private:
 	static constexpr u32 MAX_TEXTURES = 3;
 	static constexpr u32 MAX_SAMPLERS = 2;
 
-	float m_hack_topleft_offset;
 	int m_d3d_texsize;
 
 	void SetFeatures();
@@ -155,8 +154,6 @@ private:
 		ID3D11BlendState* bs;
 		float bf;
 		ID3D11RenderTargetView* rt_view;
-		GSTexture11* rt_texture;
-		GSTexture11* rt_ds;
 		ID3D11DepthStencilView* dsv;
 	} m_state;
 
@@ -229,7 +226,7 @@ private:
 
 public:
 	GSDevice11();
-	virtual ~GSDevice11() {}
+	~GSDevice11() override;
 
 	__fi static GSDevice11* GetInstance() { return static_cast<GSDevice11*>(g_gs_device.get()); }
 	__fi ID3D11Device* GetD3DDevice() const { return m_dev.get(); }
@@ -254,8 +251,7 @@ public:
 
 	void CloneTexture(GSTexture* src, GSTexture** dest, const GSVector4i& rect);
 
-	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r);
-	void CopyRect(GSTexture* sTex, const GSVector4i& sRect, GSTexture* dTex, u32 destX, u32 destY);
+	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
 
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) final;
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, bool linear = true);

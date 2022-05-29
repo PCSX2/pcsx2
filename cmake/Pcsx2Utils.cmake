@@ -39,6 +39,7 @@ function(get_git_version_info)
 	set(PCSX2_WC_TIME 0)
 	set(PCSX2_GIT_REV "")
 	set(PCSX2_GIT_TAG "")
+	set(PCSX2_GIT_HASH "")
 	if (GIT_FOUND AND EXISTS ${PROJECT_SOURCE_DIR}/.git)
 		EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} show -s --format=%ci HEAD
 			OUTPUT_VARIABLE PCSX2_WC_TIME
@@ -56,8 +57,16 @@ function(get_git_version_info)
 			OUTPUT_VARIABLE PCSX2_GIT_TAG
 			OUTPUT_STRIP_TRAILING_WHITESPACE
 			ERROR_QUIET)
+
+		EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
+			OUTPUT_VARIABLE PCSX2_GIT_HASH
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+			ERROR_QUIET)
 	endif()
-	if(PCSX2_GIT_REV)
+	if ("${PCSX2_GIT_TAG}" MATCHES "^v([0-9]+)\\.([0-9]+)\\.([0-9]+)$")
+		string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" PCSX2_VERSION_LONG  "${PCSX2_GIT_TAG}")
+		string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" PCSX2_VERSION_SHORT "${PCSX2_GIT_TAG}")
+	elseif(PCSX2_GIT_REV)
 		set(PCSX2_VERSION_LONG "${PCSX2_GIT_REV}")
 		string(REGEX MATCH "[0-9]+\\.[0-9]+(\\.[0-9]+)?(-[a-z][a-z0-9]+)?" PCSX2_VERSION_SHORT "${PCSX2_VERSION_LONG}")
 	else()
@@ -71,6 +80,7 @@ function(get_git_version_info)
 	set(PCSX2_WC_TIME "${PCSX2_WC_TIME}" PARENT_SCOPE)
 	set(PCSX2_GIT_REV "${PCSX2_GIT_REV}" PARENT_SCOPE)
 	set(PCSX2_GIT_TAG "${PCSX2_GIT_TAG}" PARENT_SCOPE)
+	set(PCSX2_GIT_HASH "${PCSX2_GIT_HASH}" PARENT_SCOPE)
 	set(PCSX2_VERSION_LONG "${PCSX2_VERSION_LONG}" PARENT_SCOPE)
 	set(PCSX2_VERSION_SHORT "${PCSX2_VERSION_SHORT}" PARENT_SCOPE)
 endfunction()
@@ -86,6 +96,7 @@ function(write_svnrev_h)
 				"#define GIT_TAG_MID ${CMAKE_MATCH_2}\n"
 				"#define GIT_TAG_LO  ${CMAKE_MATCH_3}\n"
 				"#define GIT_REV \"\"\n"
+				"#define GIT_HASH \"${PCSX2_GIT_HASH}\"\n"
 			)
 		else()
 			file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h
@@ -93,6 +104,7 @@ function(write_svnrev_h)
 				"#define GIT_TAG \"${PCSX2_GIT_TAG}\"\n"
 				"#define GIT_TAGGED_COMMIT 1\n"
 				"#define GIT_REV \"\"\n"
+				"#define GIT_HASH \"${PCSX2_GIT_HASH}\"\n"
 			)
 		endif()
 	else()
@@ -101,6 +113,7 @@ function(write_svnrev_h)
 			"#define GIT_TAG \"${PCSX2_GIT_TAG}\"\n"
 			"#define GIT_TAGGED_COMMIT 0\n"
 			"#define GIT_REV \"${PCSX2_GIT_REV}\"\n"
+			"#define GIT_HASH \"${PCSX2_GIT_HASH}\"\n"
 		)
 	endif()
 endfunction()
@@ -142,8 +155,10 @@ endfunction()
 # like add_library(new ALIAS old) but avoids add_library cannot create ALIAS target "new" because target "old" is imported but not globally visible. on older cmake
 function(alias_library new old)
 	string(REPLACE "::" "" library_no_namespace ${old})
-	add_library(_alias_${library_no_namespace} INTERFACE)
-	target_link_libraries(_alias_${library_no_namespace} INTERFACE ${old})
+	if (NOT TARGET _alias_${library_no_namespace})
+		add_library(_alias_${library_no_namespace} INTERFACE)
+		target_link_libraries(_alias_${library_no_namespace} INTERFACE ${old})
+	endif()
 	add_library(${new} ALIAS _alias_${library_no_namespace})
 endfunction()
 
@@ -179,4 +194,38 @@ function(source_groups_from_vcxproj_filters file)
 		string(REGEX REPLACE "${regex}" "\\2" group "${filterstring}")
 		source_group("${group}" FILES "${parent}/${path}")
 	endforeach()
+endfunction()
+
+function(optional_system_library library)
+	string(TOUPPER ${library} upperlib)
+	set(USE_SYSTEM_${upperlib} "" CACHE STRING "Use system ${library} instead of bundled.  ON - Always use system and fail if unavailable, OFF - Always use bundled, AUTO - Use system if available, otherwise use bundled, blank - Delegate to USE_SYSTEM_LIBS.  Default is blank.")
+	if ("${USE_SYSTEM_${upperlib}}" STREQUAL "")
+		set(RESOLVED_USE_SYSTEM_${upperlib} ${USE_SYSTEM_LIBS} PARENT_SCOPE)
+	else()
+		set(RESOLVED_USE_SYSTEM_${upperlib} ${USE_SYSTEM_${upperlib}} PARENT_SCOPE)
+	endif()
+endfunction()
+
+function(find_optional_system_library library bundled_path)
+	string(TOUPPER ${library} upperlib)
+	if (RESOLVED_USE_SYSTEM_${upperlib})
+		find_package(${library} ${ARGN} QUIET)
+		if ((NOT ${library}_FOUND) AND (NOT ${RESOLVED_USE_SYSTEM_${upperlib}} STREQUAL "AUTO"))
+			find_package(${library} ${ARGN}) # For the message
+			message(FATAL_ERROR "No system ${library} was found.  Please install it or set USE_SYSTEM_${upperlib} to AUTO.")
+		endif()
+	endif()
+	if (${library}_FOUND)
+		message("Found ${library}: ${${library}_VERSION}")
+		set(${library}_TYPE "System" PARENT_SCOPE)
+	else()
+		if (${RESOLVED_USE_SYSTEM_${upperlib}} STREQUAL "AUTO")
+			message("No system ${library} was found.  Using bundled.")
+		endif()
+		if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${bundled_path}/CMakeLists.txt")
+			message(FATAL_ERROR "No bundled ${library} was found.  Did you forget to checkout submodules?")
+		endif()
+		add_subdirectory(${bundled_path} EXCLUDE_FROM_ALL)
+		set(${library}_TYPE "Bundled" PARENT_SCOPE)
+	endif()
 endfunction()

@@ -15,7 +15,7 @@
 
 #pragma once
 
-#ifndef DISABLE_RECORDING
+#ifndef PCSX2_CORE
 
 #include <map>
 #include <queue>
@@ -23,6 +23,7 @@
 #include "gui/AppConfig.h"
 #include "common/Pcsx2Types.h"
 
+#include "wx/button.h"
 #include "wx/checkbox.h"
 #include "wx/dc.h"
 #include "wx/event.h"

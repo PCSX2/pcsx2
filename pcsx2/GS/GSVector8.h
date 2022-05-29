@@ -13,44 +13,28 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cassert>
+
 #if _M_SSE >= 0x500
 
 class alignas(32) GSVector8
 {
-	constexpr static __m256 cxpr_setr_ps(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1)
+	struct cxpr_init_tag {};
+	static constexpr cxpr_init_tag cxpr_init{};
+
+	constexpr GSVector8(cxpr_init_tag, float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1)
+		: F32{x0, y0, z0, w0, x1, y1, z1, w1}
 	{
-#ifdef __GNUC__
-		return __m256{x0, y0, z0, w0, x1, y1, z1, w1};
-#else
-		__m256 m = {};
-		m.m256_f32[0] = x0;
-		m.m256_f32[1] = y0;
-		m.m256_f32[2] = z0;
-		m.m256_f32[3] = w0;
-		m.m256_f32[4] = x1;
-		m.m256_f32[5] = y1;
-		m.m256_f32[6] = z1;
-		m.m256_f32[7] = w1;
-		return m;
-#endif
 	}
 
-	constexpr static __m256 cxpr_setr_epi32(int x0, int y0, int z0, int w0, int x1, int y1, int z1, int w1)
+	constexpr GSVector8(cxpr_init_tag, int x0, int y0, int z0, int w0, int x1, int y1, int z1, int w1)
+		: I32{x0, y0, z0, w0, x1, y1, z1, w1}
 	{
-#ifdef __GNUC__
-		return (__m256)__v8si{x0, y0, z0, w0, x1, y1, z1, w1};
-#else
-		union { __m256 m; int i[8]; } t = {};
-		t.i[0] = x0;
-		t.i[1] = y0;
-		t.i[2] = z0;
-		t.i[3] = w0;
-		t.i[4] = x1;
-		t.i[5] = y1;
-		t.i[6] = z1;
-		t.i[7] = w1;
-		return t.m;
-#endif
+	}
+
+	constexpr GSVector8(cxpr_init_tag, u64 x, u64 y, u64 z, u64 w)
+		: U64{x, y, z, w}
+	{
 	}
 
 public:
@@ -60,6 +44,7 @@ public:
 		struct { float r0, g0, b0, a0, r1, g1, b1, a1; };
 		float v[8];
 		float F32[8];
+		double F64[4];
 		s8  I8[32];
 		s16 I16[16];
 		s32 I32[8];
@@ -78,6 +63,7 @@ public:
 	static const GSVector8 m_x80000000;
 	static const GSVector8 m_x4b000000;
 	static const GSVector8 m_x4f800000;
+	static const GSVector8 m_xc1e00000000fffff;
 	static const GSVector8 m_max;
 	static const GSVector8 m_min;
 
@@ -85,27 +71,37 @@ public:
 
 	static constexpr GSVector8 cxpr(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1)
 	{
-		return GSVector8(cxpr_setr_ps(x0, y0, z0, w0, x1, y1, z1, w1));
+		return GSVector8(cxpr_init, x0, y0, z0, w0, x1, y1, z1, w1);
 	}
 
 	static constexpr GSVector8 cxpr(float x)
 	{
-		return GSVector8(cxpr_setr_ps(x, x, x, x, x, x, x, x));
+		return GSVector8(cxpr_init, x, x, x, x, x, x, x, x);
 	}
 
 	static constexpr GSVector8 cxpr(int x0, int y0, int z0, int w0, int x1, int y1, int z1, int w1)
 	{
-		return GSVector8(cxpr_setr_epi32(x0, y0, z0, w0, x1, y1, z1, w1));
+		return GSVector8(cxpr_init, x0, y0, z0, w0, x1, y1, z1, w1);
 	}
 
 	static constexpr GSVector8 cxpr(int x)
 	{
-		return GSVector8(cxpr_setr_epi32(x, x, x, x, x, x, x, x));
+		return GSVector8(cxpr_init, x, x, x, x, x, x, x, x);
 	}
 
 	static constexpr GSVector8 cxpr(u32 x)
 	{
 		return cxpr(static_cast<int>(x));
+	}
+
+	constexpr static GSVector8 cxpr64(u64 x, u64 y, u64 z, u64 w)
+	{
+		return GSVector8(cxpr_init, x, y, z, w);
+	}
+
+	constexpr static GSVector8 cxpr64(u64 x)
+	{
+		return GSVector8(cxpr_init, x, x, x, x);
 	}
 
 	__forceinline GSVector8(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1)
@@ -160,6 +156,11 @@ public:
 
 	__forceinline constexpr explicit GSVector8(__m256 m)
 		: m(m)
+	{
+	}
+
+	__forceinline explicit GSVector8(__m256d m)
+		: m(_mm256_castpd_ps(m))
 	{
 	}
 
@@ -794,6 +795,36 @@ public:
 		return GSVector8(_mm256_cmp_ps(v1, v2, _CMP_LE_OQ));
 	}
 
+	__forceinline GSVector8 mul64(const GSVector8& v) const
+	{
+		return GSVector8(_mm256_mul_pd(_mm256_castps_pd(m), _mm256_castps_pd(v.m)));
+	}
+
+	__forceinline GSVector8 add64(const GSVector8& v) const
+	{
+		return GSVector8(_mm256_add_pd(_mm256_castps_pd(m), _mm256_castps_pd(v.m)));
+	}
+
+	__forceinline GSVector8 sub64(const GSVector8& v) const
+	{
+		return GSVector8(_mm256_sub_pd(_mm256_castps_pd(m), _mm256_castps_pd(v.m)));
+	}
+
+	__forceinline static GSVector8 f32to64(const GSVector4& v)
+	{
+		return GSVector8(_mm256_cvtps_pd(v.m));
+	}
+
+	__forceinline static GSVector8 f32to64(const void* p)
+	{
+		return GSVector8(_mm256_cvtps_pd(_mm_load_ps(static_cast<const float*>(p))));
+	}
+
+	__forceinline GSVector4i f64toi32(bool truncate = true) const
+	{
+		return GSVector4i(truncate ? _mm256_cvttpd_epi32(_mm256_castps_pd(m)) : _mm256_cvtpd_epi32(_mm256_castps_pd(m)));
+	}
+
 	// clang-format off
 
 	// x = v[31:0] / v[159:128]
@@ -907,6 +938,11 @@ public:
 	__forceinline static GSVector8 broadcast32(const void* f)
 	{
 		return GSVector8(_mm256_broadcastss_ps(_mm_load_ss((const float*)f)));
+	}
+
+	__forceinline static GSVector8 broadcast64(const void* d)
+	{
+		return GSVector8(_mm256_broadcast_sd(static_cast<const double*>(d)));
 	}
 
 	// TODO: v.(x0|y0|z0|w0|x1|y1|z1|w1) // broadcast element

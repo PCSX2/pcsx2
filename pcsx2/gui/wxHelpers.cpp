@@ -20,7 +20,7 @@
 #include <wx/spinctrl.h>
 #include "common/General.h"
 #include "common/Threading.h"
-#include "common/IniInterface.h"
+#include "gui/IniInterface.h"
 #include "gui/wxGuiTools.h"
 #include "gui/pxStaticText.h"
 
@@ -63,11 +63,6 @@ void pxFitToDigits(wxSpinCtrl* win, int digits)
 	int ex;
 	win->GetTextExtent(wxString(L'0', digits + 1), &ex, NULL);
 	win->SetMinSize(wxSize(ex + 10 + MagicSpinnerSize, wxDefaultCoord)); // +10 for text control borders/insets and junk.
-}
-
-bool pxDialogExists(const wxString& name)
-{
-	return wxFindWindowByName(name) != NULL;
 }
 
 // =====================================================================================================

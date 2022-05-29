@@ -22,9 +22,6 @@
 #include <string_view>
 #include <optional>
 
-Q_DECLARE_METATYPE(std::optional<bool>);
-Q_DECLARE_METATYPE(std::function<void()>);
-
 class ByteStream;
 
 class QAction;
@@ -36,9 +33,6 @@ class QTreeView;
 class QVariant;
 class QWidget;
 class QUrl;
-
-// TODO: Get rid of wx interoperability later on.
-#include <wx/string.h>
 
 namespace QtUtils
 {
@@ -82,8 +76,4 @@ namespace QtUtils
 
 	/// Converts a std::string_view to a QString safely.
 	QString StringViewToQString(const std::string_view& str);
-
-	// TODO: Get rid of wx interoperability later on.
-	wxString QStringToWxString(const QString& str);
-	QString WxStringToQString(const wxString& str);
 } // namespace QtUtils

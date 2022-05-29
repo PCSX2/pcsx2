@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
-#ifndef DISABLE_RECORDING
+#ifndef PCSX2_CORE
 
 #include <wx/spinctrl.h>
 

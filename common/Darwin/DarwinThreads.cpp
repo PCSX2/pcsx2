@@ -15,13 +15,14 @@
 
 #if defined(__APPLE__)
 
+#include <sched.h>
 #include <unistd.h>
 #include <mach/mach_init.h>
 #include <mach/thread_act.h>
 #include <mach/mach_port.h>
 
 #include "common/PrecompiledHeader.h"
-#include "common/PersistentThread.h"
+#include "common/Threading.h"
 
 // Note: assuming multicore is safer because it forces the interlocked routines to use
 // the LOCK prefix.  The prefix works on single core CPUs fine (but is slow), but not
@@ -30,6 +31,11 @@
 __forceinline void Threading::Sleep(int ms)
 {
 	usleep(1000 * ms);
+}
+
+__forceinline void Threading::Timeslice()
+{
+	sched_yield();
 }
 
 // For use in spin/wait loops, acts as a hint to Intel CPUs and should, in theory
@@ -94,30 +100,50 @@ u64 Threading::GetThreadCpuTime()
 	return us;
 }
 
-u64 Threading::pxThread::GetCpuTime() const
-{
-	// Get the cpu time for the thread belonging to this object.  Use m_native_id and/or
-	// m_native_handle to implement it. Return value should be a measure of total time the
-	// thread has used on the CPU (scaled by the value returned by GetThreadTicksPerSecond(),
-	// which typically would be an OS-provided scalar or some sort).
-	if (!m_native_id)
-	{
-		return 0;
-	}
+Threading::ThreadHandle::ThreadHandle() = default;
 
-	return getthreadtime((thread_port_t)m_native_id);
+Threading::ThreadHandle::ThreadHandle(const ThreadHandle& handle)
+	: m_native_handle(handle.m_native_handle)
+{
 }
 
-void Threading::pxThread::_platform_specific_OnStartInThread()
+Threading::ThreadHandle::ThreadHandle(ThreadHandle&& handle)
+	: m_native_handle(handle.m_native_handle)
 {
-	m_native_id = (uptr)mach_thread_self();
+	handle.m_native_handle = nullptr;
 }
 
-void Threading::pxThread::_platform_specific_OnCleanupInThread()
+Threading::ThreadHandle::~ThreadHandle() = default;
+
+Threading::ThreadHandle Threading::ThreadHandle::GetForCallingThread()
 {
-	// cleanup of handles that were upened in
-	// _platform_specific_OnStartInThread
-	mach_port_deallocate(mach_task_self(), (thread_port_t)m_native_id);
+	ThreadHandle ret;
+	ret.m_native_handle = pthread_self();
+	return ret;
+}
+
+Threading::ThreadHandle& Threading::ThreadHandle::operator=(ThreadHandle&& handle)
+{
+	m_native_handle = handle.m_native_handle;
+	handle.m_native_handle = nullptr;
+	return *this;
+}
+
+Threading::ThreadHandle& Threading::ThreadHandle::operator=(const ThreadHandle& handle)
+{
+	m_native_handle = handle.m_native_handle;
+	return *this;
+}
+
+u64 Threading::ThreadHandle::GetCPUTime() const
+{
+	return getthreadtime(pthread_mach_thread_np((pthread_t)m_native_handle));
+}
+
+bool Threading::ThreadHandle::SetAffinity(u64 processor_mask) const
+{
+	// Doesn't appear to be possible to set affinity.
+	return false;
 }
 
 // name can be up to 16 bytes

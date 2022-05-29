@@ -22,6 +22,9 @@
 #include <condition_variable>
 #include <fstream>
 
+#include "ghc/filesystem.h"
+
+#include "common/Path.h"
 #include "DEV9/SimpleQueue.h"
 
 class ATA
@@ -153,7 +156,7 @@ private:
 public:
 	ATA();
 
-	int Open(fs::path hddPath);
+	int Open(ghc::filesystem::path hddPath);
 	void Close();
 
 	void ATA_HardReset();

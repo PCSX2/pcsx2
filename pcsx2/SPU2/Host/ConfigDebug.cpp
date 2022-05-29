@@ -15,11 +15,12 @@
 
 #include "PrecompiledHeader.h"
 
-#include "Config.h"
+#include "pcsx2/Config.h"
 
 #include "SPU2/Global.h"
 #include "SPU2/Host/Dialogs.h"
 #include "SPU2/Host/Config.h"
+#include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 #include "HostSettings.h"
@@ -41,14 +42,14 @@ bool _CoresDump = false;
 bool _MemDump = false;
 bool _RegDump = false;
 
-wxString AccessLogFileName;
-wxString WaveLogFileName;
-wxString DMA4LogFileName;
-wxString DMA7LogFileName;
+std::string AccessLogFileName;
+std::string WaveLogFileName;
+std::string DMA4LogFileName;
+std::string DMA7LogFileName;
 
-wxString CoresDumpFileName;
-wxString MemDumpFileName;
-wxString RegDumpFileName;
+std::string CoresDumpFileName;
+std::string MemDumpFileName;
+std::string RegDumpFileName;
 
 void CfgSetSettingsDir(const char* dir)
 {
@@ -58,19 +59,19 @@ void CfgSetLogDir(const char* dir)
 {
 }
 
-FILE* OpenBinaryLog(const wxString& logfile)
+FILE* OpenBinaryLog(const char* logfile)
 {
-	return wxFopen(Path::Combine(EmuFolders::Logs, logfile), L"wb");
+	return FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, logfile).c_str(), "wb");
 }
 
-FILE* OpenLog(const wxString& logfile)
+FILE* OpenLog(const char* logfile)
 {
-	return wxFopen(Path::Combine(EmuFolders::Logs, logfile), L"w");
+	return FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, logfile).c_str(), "w");
 }
 
-FILE* OpenDump(const wxString& logfile)
+FILE* OpenDump(const char* logfile)
 {
-	return wxFopen(Path::Combine(EmuFolders::Logs, logfile), L"w");
+	return FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, logfile).c_str(), "w");
 }
 
 namespace DebugConfig
@@ -96,13 +97,13 @@ namespace DebugConfig
 		_MemDump = Host::GetBoolSettingValue(Section, "Dump_Memory", 0);
 		_RegDump = Host::GetBoolSettingValue(Section, "Dump_Regs", 0);
 
-		AccessLogFileName = StringUtil::UTF8StringToWxString(Host::GetStringSettingValue(Section, "Access_Log_Filename", "SPU2Log.txt"));
-		WaveLogFileName = StringUtil::UTF8StringToWxString(Host::GetStringSettingValue(Section, "WaveLog_Filename", "SPU2log.wav"));
-		DMA4LogFileName = StringUtil::UTF8StringToWxString(Host::GetStringSettingValue(Section, "DMA4Log_Filename", "SPU2dma4.dat"));
-		DMA7LogFileName = StringUtil::UTF8StringToWxString(Host::GetStringSettingValue(Section, "DMA7Log_Filename", "SPU2dma7.dat"));
+		AccessLogFileName = Host::GetStringSettingValue(Section, "Access_Log_Filename", "SPU2Log.txt");
+		WaveLogFileName = Host::GetStringSettingValue(Section, "WaveLog_Filename", "SPU2log.wav");
+		DMA4LogFileName = Host::GetStringSettingValue(Section, "DMA4Log_Filename", "SPU2dma4.dat");
+		DMA7LogFileName = Host::GetStringSettingValue(Section, "DMA7Log_Filename", "SPU2dma7.dat");
 
-		CoresDumpFileName = StringUtil::UTF8StringToWxString(Host::GetStringSettingValue(Section, "Info_Dump_Filename", "SPU2Cores.txt"));
-		MemDumpFileName = StringUtil::UTF8StringToWxString(Host::GetStringSettingValue(Section, "Mem_Dump_Filename", "SPU2mem.dat"));
-		RegDumpFileName = StringUtil::UTF8StringToWxString(Host::GetStringSettingValue(Section, "Reg_Dump_Filename", "SPU2regs.dat"));
+		CoresDumpFileName = Host::GetStringSettingValue(Section, "Info_Dump_Filename", "SPU2Cores.txt");
+		MemDumpFileName = Host::GetStringSettingValue(Section, "Mem_Dump_Filename", "SPU2mem.dat");
+		RegDumpFileName = Host::GetStringSettingValue(Section, "Reg_Dump_Filename", "SPU2regs.dat");
 	}
 } // namespace DebugConfig

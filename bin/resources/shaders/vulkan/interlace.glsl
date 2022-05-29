@@ -21,7 +21,6 @@ layout(location = 0) out vec4 o_col0;
 layout(push_constant) uniform cb0
 {
 	vec2 ZrH;
-	float hH;
 };
 
 layout(set = 0, binding = 0) uniform sampler2D samp0;
@@ -30,7 +29,7 @@ layout(set = 0, binding = 0) uniform sampler2D samp0;
 void ps_main0()
 {
 	o_col0 = texture(samp0, v_tex);
-	if (fract(v_tex.y * hH) - 0.5 < 0.0)
+	if ((int(gl_FragCoord.y) & 1) == 0)
 		discard;
 }
 #endif
@@ -39,7 +38,7 @@ void ps_main0()
 void ps_main1()
 {
 	o_col0 = texture(samp0, v_tex);
-	if (0.5 - fract(v_tex.y * hH) < 0.0)
+	if ((int(gl_FragCoord.y) & 1) != 0)
 		discard;
 }
 #endif

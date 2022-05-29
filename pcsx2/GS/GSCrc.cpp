@@ -17,6 +17,7 @@
 #include "GSCrc.h"
 #include "GSExtra.h"
 #include "GS.h"
+#include "common/StringUtil.h"
 
 const CRC::Game CRC::m_games[] =
 {
@@ -142,11 +143,17 @@ const CRC::Game CRC::m_games[] =
 	{0xF8643F9B, CrashBandicootWoC, JP, 0},
 	{0x3A03D62F, CrashBandicootWoC, EU, 0},
 	{0x35D70452, CrashBandicootWoC, EU, 0},
+	{0x1E935600, CrashBandicootWoC, EU, 0},
 	{0x72E1E60E, Spartan, EU, 0},
 	{0x26689C87, Spartan, JP, 0},
 	{0x08277A9E, Spartan, US, 0},
 	{0xAC3C1147, SVCChaos, EU, 0}, // SVC Chaos: SNK vs. Capcom
 	{0xB00FF2ED, SVCChaos, JP, 0},
+	{0x94834BD3, SVCChaos, JP, 0},
+	{0xCF1D71EE, KOF2002, EU, 0}, // The King of Fighters 2002
+	{0xABD16263, KOF2002, JP, 0},
+	{0x424A8601, KOF2002, JP, 0},
+	{0x7F74D8D0, KOF2002, US, 0},
 	{0xA32F7CD0, AceCombat4, US, 0}, // Also needed for automatic mipmapping
 	{0x5ED8FB53, AceCombat4, JP, 0},
 	{0x1B9B7563, AceCombat4, EU, 0},
@@ -340,7 +347,7 @@ std::string ToLower(std::string str)
 // E.g. Disable hacks for these CRCs:   CrcHacksExclusions=0x0F0C4A9C, 0x0EE5646B, 0x7ACF7E03
 bool IsCrcExcluded(std::string exclusionList, u32 crc)
 {
-	std::string target = format("0x%08x", crc);
+	std::string target = StringUtil::StdStringFromFormat("0x%08x", crc);
 	exclusionList = ToLower(exclusionList);
 	return exclusionList.find(target) != std::string::npos || exclusionList.find("all") != std::string::npos;
 }

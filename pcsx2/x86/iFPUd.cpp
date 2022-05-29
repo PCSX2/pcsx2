@@ -63,7 +63,7 @@ namespace Dynarec {
 namespace OpcodeImpl {
 namespace COP1 {
 
-u32 __fastcall FPU_MUL_HACK(u32 s, u32 t);
+u32 FPU_MUL_HACK(u32 s, u32 t);
 
 namespace DOUBLE {
 

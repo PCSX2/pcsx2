@@ -15,6 +15,10 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // We abuse the preprocessor here to only need to specify function names once.
 // Function names are prefixed so to not conflict with system symbols at runtime.
 #define VULKAN_MODULE_ENTRY_POINT(name, required) extern PFN_##name pcsx2_##name;
@@ -26,6 +30,10 @@
 #undef VULKAN_DEVICE_ENTRY_POINT
 #undef VULKAN_INSTANCE_ENTRY_POINT
 #undef VULKAN_MODULE_ENTRY_POINT
+
+#ifdef __cplusplus
+}
+#endif
 
 #define vkCreateInstance pcsx2_vkCreateInstance
 #define vkGetInstanceProcAddr pcsx2_vkGetInstanceProcAddr
@@ -42,7 +50,6 @@
 #define vkGetPhysicalDeviceProperties pcsx2_vkGetPhysicalDeviceProperties
 #define vkGetPhysicalDeviceQueueFamilyProperties pcsx2_vkGetPhysicalDeviceQueueFamilyProperties
 #define vkGetPhysicalDeviceMemoryProperties pcsx2_vkGetPhysicalDeviceMemoryProperties
-#define vkGetPhysicalDeviceFeatures2 pcsx2_vkGetPhysicalDeviceFeatures2
 #define vkCreateDevice pcsx2_vkCreateDevice
 #define vkEnumerateDeviceExtensionProperties pcsx2_vkEnumerateDeviceExtensionProperties
 #define vkEnumerateDeviceLayerProperties pcsx2_vkEnumerateDeviceLayerProperties
@@ -74,7 +81,6 @@
 #define vkSetDebugUtilsObjectTagEXT pcsx2_vkSetDebugUtilsObjectTagEXT
 #define vkSubmitDebugUtilsMessageEXT pcsx2_vkSubmitDebugUtilsMessageEXT
 
-#define vkGetPhysicalDeviceProperties2 pcsx2_vkGetPhysicalDeviceProperties2
 #define vkGetPhysicalDeviceSurfaceCapabilities2KHR pcsx2_vkGetPhysicalDeviceSurfaceCapabilities2KHR
 #define vkGetPhysicalDeviceDisplayPropertiesKHR pcsx2_vkGetPhysicalDeviceDisplayPropertiesKHR
 #define vkGetPhysicalDeviceDisplayPlanePropertiesKHR pcsx2_vkGetPhysicalDeviceDisplayPlanePropertiesKHR
@@ -83,6 +89,11 @@
 #define vkCreateDisplayModeKHR pcsx2_vkCreateDisplayModeKHR
 #define vkGetDisplayPlaneCapabilitiesKHR pcsx2_vkGetDisplayPlaneCapabilitiesKHR
 #define vkCreateDisplayPlaneSurfaceKHR pcsx2_vkCreateDisplayPlaneSurfaceKHR
+
+// Vulkan 1.1 functions.
+#define vkGetPhysicalDeviceFeatures2 pcsx2_vkGetPhysicalDeviceFeatures2
+#define vkGetPhysicalDeviceProperties2 pcsx2_vkGetPhysicalDeviceProperties2
+#define vkGetPhysicalDeviceMemoryProperties2 pcsx2_vkGetPhysicalDeviceMemoryProperties2
 
 #define vkDestroyDevice pcsx2_vkDestroyDevice
 #define vkGetDeviceQueue pcsx2_vkGetDeviceQueue
@@ -209,6 +220,12 @@
 #define vkGetSwapchainImagesKHR pcsx2_vkGetSwapchainImagesKHR
 #define vkAcquireNextImageKHR pcsx2_vkAcquireNextImageKHR
 #define vkQueuePresentKHR pcsx2_vkQueuePresentKHR
+
+// Vulkan 1.1 functions.
+#define vkGetBufferMemoryRequirements2 pcsx2_vkGetBufferMemoryRequirements2
+#define vkGetImageMemoryRequirements2 pcsx2_vkGetImageMemoryRequirements2
+#define vkBindBufferMemory2 pcsx2_vkBindBufferMemory2
+#define vkBindImageMemory2 pcsx2_vkBindImageMemory2
 
 #ifdef SUPPORTS_VULKAN_EXCLUSIVE_FULLSCREEN
 #define vkAcquireFullScreenExclusiveModeEXT pcsx2_vkAcquireFullScreenExclusiveModeEXT

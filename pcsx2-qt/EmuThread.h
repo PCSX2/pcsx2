@@ -42,28 +42,32 @@ public:
 	static void stop();
 
 	__fi QEventLoop* getEventLoop() const { return m_event_loop; }
+	__fi bool isFullscreen() const { return m_is_fullscreen; }
 
 	bool isOnEmuThread() const;
 
 	/// Called back from the GS thread when the display state changes (e.g. fullscreen, render to main).
 	HostDisplay* acquireHostDisplay(HostDisplay::RenderAPI api);
+	void connectDisplaySignals(DisplayWidget* widget);
 	void releaseHostDisplay();
 	void updateDisplay();
 
 	void startBackgroundControllerPollTimer();
 	void stopBackgroundControllerPollTimer();
+	void updatePerformanceMetrics(bool force);
 
 public Q_SLOTS:
 	void startVM(std::shared_ptr<VMBootParameters> boot_params);
 	void resetVM();
 	void setVMPaused(bool paused);
-	bool shutdownVM(bool allow_save_to_state = true);
+	void shutdownVM(bool save_state = true);
 	void loadState(const QString& filename);
 	void loadStateFromSlot(qint32 slot);
 	void saveState(const QString& filename);
 	void saveStateToSlot(qint32 slot);
 	void toggleFullscreen();
 	void setFullscreen(bool fullscreen);
+	void setSurfaceless(bool surfaceless);
 	void applySettings();
 	void reloadGameSettings();
 	void toggleSoftwareRendering();
@@ -75,10 +79,12 @@ public Q_SLOTS:
 	void requestDisplaySize(float scale);
 	void enumerateInputDevices();
 	void enumerateVibrationMotors();
+	void runOnCPUThread(const std::function<void()>& func);
+	void queueSnapshot(quint32 gsdump_frames);
 
 Q_SIGNALS:
 	DisplayWidget* onCreateDisplayRequested(bool fullscreen, bool render_to_main);
-	DisplayWidget* onUpdateDisplayRequested(bool fullscreen, bool render_to_main);
+	DisplayWidget* onUpdateDisplayRequested(bool fullscreen, bool render_to_main, bool surfaceless);
 	void onResizeDisplayRequested(qint32 width, qint32 height);
 	void onDestroyDisplayRequested();
 
@@ -99,6 +105,9 @@ Q_SIGNALS:
 
 	/// Provided by the host; called when the running executable changes.
 	void onGameChanged(const QString& path, const QString& serial, const QString& name, quint32 crc);
+
+	/// Called when performance metrics are changed, approx. once a second.
+	void onPerformanceMetricsUpdated(const QString& fps_stats, const QString& gs_stats);
 
 	void onInputDevicesEnumerated(const QList<QPair<QString, QString>>& devices);
 	void onInputDeviceConnected(const QString& identifier, const QString& device_name);
@@ -122,13 +131,13 @@ private:
 	static constexpr u32 BACKGROUND_CONTROLLER_POLLING_INTERVAL =
 		100; /// Interval at which the controllers are polled when the system is not active.
 
-	void connectDisplaySignals(DisplayWidget* widget);
 	void destroyVM();
 	void executeVM();
 	void checkForSettingChanges();
 
 	void createBackgroundControllerPollTimer();
 	void destroyBackgroundControllerPollTimer();
+	void loadOurSettings();
 
 private Q_SLOTS:
 	void stopInThread();
@@ -138,7 +147,7 @@ private Q_SLOTS:
 	void onDisplayWindowMouseWheelEvent(const QPoint& delta_angle);
 	void onDisplayWindowResized(int width, int height, float scale);
 	void onDisplayWindowFocused();
-	void onDisplayWindowKeyEvent(int key, int mods, bool pressed);
+	void onDisplayWindowKeyEvent(int key, bool pressed);
 
 private:
 	QThread* m_ui_thread;
@@ -148,21 +157,17 @@ private:
 
 	std::atomic_bool m_shutdown_flag{false};
 
+	bool m_verbose_status = false;
 	bool m_is_rendering_to_main = false;
 	bool m_is_fullscreen = false;
-};
+	bool m_is_surfaceless = false;
+	bool m_save_state_on_shutdown = false;
 
-/// <summary>
-/// Helper class to pause/unpause the emulation thread.
-/// </summary>
-class ScopedVMPause
-{
-public:
-	ScopedVMPause(bool was_paused);
-	~ScopedVMPause();
-
-private:
-	bool m_was_paused;
+	float m_last_speed = 0.0f;
+	float m_last_game_fps = 0.0f;
+	float m_last_video_fps = 0.0f;
+	int m_last_internal_width = 0;
+	int m_last_internal_height = 0;
 };
 
 extern EmuThread* g_emu_thread;

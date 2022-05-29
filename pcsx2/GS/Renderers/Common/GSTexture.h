@@ -46,7 +46,7 @@ public:
 		UNorm8,       ///< A8UNorm texture for paletted textures and the OSD font
 		UInt16,       ///< UInt16 texture for reading back 16-bit depth
 		UInt32,       ///< UInt32 texture for reading back 24 and 32-bit depth
-		Int32,        ///< Int32 texture for date emulation
+		PrimID,       ///< Prim ID tracking texture for date emulation
 		BC1,          ///< BC1, aka DXT1 compressed texture for replacements
 		BC2,          ///< BC2, aka DXT2/3 compressed texture for replacements
 		BC3,          ///< BC3, aka DXT4/5 compressed texture for replacements
@@ -143,9 +143,7 @@ public:
 	// different purpose than texture cache ages, do not attempt to merge
 	unsigned last_frame_used;
 
-	bool LikelyOffset;
-	float OffsetHack_modx;
-	float OffsetHack_mody;
+	float OffsetHack_modxy;
 
 	// Typical size of a RGBA texture
 	virtual u32 GetMemUsage() { return m_size.x * m_size.y * (m_format == Format::UNorm8 ? 1 : 4); }

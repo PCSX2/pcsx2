@@ -15,8 +15,11 @@
 
 #include "PrecompiledHeader.h"
 #include "CDVDdiscReader.h"
+#include "CDVD/CDVD.h"
 
 #include <condition_variable>
+#include <mutex>
+#include <thread>
 
 void (*newDiscCB)();
 

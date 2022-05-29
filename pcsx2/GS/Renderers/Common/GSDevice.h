@@ -79,16 +79,13 @@ public:
 	u32 EMODA;
 	u32 EMODC;
 	u32 pad[2];
-
-	MergeConstantBuffer() { memset(this, 0, sizeof(*this)); }
 };
 
 class InterlaceConstantBuffer
 {
 public:
 	GSVector2 ZrH;
-	float hH;
-	float _pad[1];
+	float _pad[2];
 
 	InterlaceConstantBuffer() { memset(this, 0, sizeof(*this)); }
 };
@@ -271,7 +268,9 @@ struct alignas(16) GSHWDrawConfig
 
 		__fi bool IsFeedbackLoop() const
 		{
-			return tex_is_fb || fbmask || date > 0 || blend_a == 1 || blend_b == 1 || blend_c == 1 || blend_d == 1;
+			const u32 sw_blend_bits = blend_a | blend_b | blend_d;
+			const bool sw_blend_needs_rt = sw_blend_bits != 0 && ((sw_blend_bits | blend_c) & 1u);
+			return tex_is_fb || fbmask || (date > 0 && date != 3) || sw_blend_needs_rt;
 		}
 
 		/// Disables color output from the pixel shader, this is done when all channels are masked.
@@ -353,6 +352,12 @@ struct alignas(16) GSHWDrawConfig
 		{
 			return (triln == static_cast<u8>(GS_MIN_FILTER::Nearest_Mipmap_Linear) ||
 					triln == static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Linear));
+		}
+
+		/// Returns true if mipmaps should be used when filtering (i.e. LOD not clamped to zero).
+		__fi bool UseMipmapFiltering() const
+		{
+			return (triln >= static_cast<u8>(GS_MIN_FILTER::Nearest_Mipmap_Nearest));
 		}
 	};
 	struct DepthStencilSelector
@@ -551,6 +556,8 @@ struct alignas(16) GSHWDrawConfig
 	DestinationAlphaMode destination_alpha;
 	bool datm : 1;
 	bool line_expand : 1;
+	bool separate_alpha_pass : 1;
+	bool second_separate_alpha_pass : 1;
 
 	struct AlphaPass
 	{
@@ -563,7 +570,6 @@ struct alignas(16) GSHWDrawConfig
 	static_assert(sizeof(AlphaPass) == 24, "alpha pass is 24 bytes");
 
 	AlphaPass alpha_second_pass;
-	AlphaPass alpha_third_pass;
 
 	VSConstantBuffer cb_vs;
 	PSConstantBuffer cb_ps;
@@ -593,18 +599,16 @@ public:
 			memset(this, 0, sizeof(*this));
 		}
 	};
-	// clang-format on
 
-	// clang-format off
-	enum : u8
+	enum BlendFactor : u8
 	{
 		// HW blend factors
-		SRC_COLOR, INV_SRC_COLOR, DST_COLOR, INV_DST_COLOR,
-		SRC1_COLOR, INV_SRC1_COLOR, SRC_ALPHA, INV_SRC_ALPHA,
-		DST_ALPHA, INV_DST_ALPHA, SRC1_ALPHA, INV_SRC1_ALPHA,
-		CONST_COLOR, INV_CONST_COLOR, CONST_ONE, CONST_ZERO,
+		SRC_COLOR,   INV_SRC_COLOR,   DST_COLOR,  INV_DST_COLOR,
+		SRC1_COLOR,  INV_SRC1_COLOR,  SRC_ALPHA,  INV_SRC_ALPHA,
+		DST_ALPHA,   INV_DST_ALPHA,   SRC1_ALPHA, INV_SRC1_ALPHA,
+		CONST_COLOR, INV_CONST_COLOR, CONST_ONE,  CONST_ZERO,
 	};
-	enum : u8
+	enum BlendOp : u8
 	{
 		// HW blend operations
 		OP_ADD, OP_SUBTRACT, OP_REV_SUBTRACT
@@ -712,7 +716,7 @@ public:
 	/// Must be called to free resources after calling `DownloadTexture` or `DownloadTextureConvert`
 	virtual void DownloadTextureComplete() {}
 
-	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r) {}
+	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) {}
 	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) {}
 	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha) {}
 
@@ -771,6 +775,12 @@ public:
 		return (IsDualSourceBlendFactor(m_blendMap[index].src) ||
 				IsDualSourceBlendFactor(m_blendMap[index].dst));
 	}
+
+	/// Alters the pipeline configuration for drawing the separate alpha pass.
+	static void SetHWDrawConfigForAlphaPass(GSHWDrawConfig::PSSelector* ps,
+		GSHWDrawConfig::ColorMaskSelector* cms,
+		GSHWDrawConfig::BlendState* bs,
+		GSHWDrawConfig::DepthStencilSelector* dss);
 };
 
 struct GSAdapter
@@ -798,5 +808,8 @@ struct GSAdapter
 	// TODO
 #endif
 };
+
+template <>
+struct std::hash<GSHWDrawConfig::PSSelector> : public GSHWDrawConfig::PSSelectorHash {};
 
 extern std::unique_ptr<GSDevice> g_gs_device;

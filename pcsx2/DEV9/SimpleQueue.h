@@ -15,6 +15,10 @@
 
 #pragma once
 
+#include <atomic>
+
+#include "common/Assertions.h"
+
 //Designed to allow one thread to queue data to another thread
 template <class T>
 class SimpleQueue

@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Global.h"
+#include "common/Assertions.h"
 
 static const s32 ADSR_MAX_VOL = 0x7fffffff;
 

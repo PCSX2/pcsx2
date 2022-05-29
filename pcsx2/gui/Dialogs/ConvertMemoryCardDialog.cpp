@@ -109,7 +109,7 @@ void Dialogs::ConvertMemoryCardDialog::CreateControls( const MemoryCardType sour
 			m_radio_CardType = new pxRadioPanel( this, tblForFolder );
 			break;
 		default:
-			Console.Error( L"Memory Card Conversion: Invalid source type!" );
+			Console.Error( "Memory Card Conversion: Invalid source type!" );
 			return;
 	}
 
@@ -178,7 +178,7 @@ bool Dialogs::ConvertMemoryCardDialog::ConvertToFile( const wxFileName& sourcePa
 	Pcsx2Config::McdOptions config;
 	config.Enabled = true;
 	config.Type = MemoryCardType::Folder;
-	sourceFolderMemoryCard.Open( sourcePath.GetFullPath(), config, ( sizeInMB * 1024 * 1024 ) / FolderMemoryCard::ClusterSize, false, L"" );
+	sourceFolderMemoryCard.Open( StringUtil::wxStringToUTF8String(sourcePath.GetFullPath()), config, ( sizeInMB * 1024 * 1024 ) / FolderMemoryCard::ClusterSize, false, "" );
 
 	u8 buffer[FolderMemoryCard::PageSizeRaw];
 	u32 adr = 0;
@@ -214,7 +214,7 @@ bool Dialogs::ConvertMemoryCardDialog::ConvertToFolder( const wxFileName& source
 		// This ensures that if we crash/fail due to a corrupted memory card file system or similar, we do so during
 		// the simulation run, and don't actually write out any partial data to the host file system.
 		bool simulateWrites = i == 0;
-		targetFolderMemoryCard.Open( targetPath.GetFullPath(), config, 0, false, L"", simulateWrites );
+		targetFolderMemoryCard.Open(StringUtil::wxStringToUTF8String(targetPath.GetFullPath()), config, 0, false, "", simulateWrites );
 
 		adr = 0;
 		sourceFile.Seek( 0 );
@@ -233,7 +233,7 @@ bool Dialogs::ConvertMemoryCardDialog::ConvertToFolder( const wxFileName& source
 
 	if ( adr != FolderMemoryCard::TotalSizeRaw ) {
 		// reset memory card metrics in superblock to the default 8MB, since the converted card was different
-		targetFolderMemoryCard.Open( targetPath.GetFullPath(), config, 0, true, L"" );
+		targetFolderMemoryCard.Open(StringUtil::wxStringToUTF8String(targetPath.GetFullPath()), config, 0, true, "" );
 		targetFolderMemoryCard.SetSizeInMB( 8 );
 		targetFolderMemoryCard.Close();
 	}

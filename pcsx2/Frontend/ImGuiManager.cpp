@@ -16,10 +16,12 @@
 #include "PrecompiledHeader.h"
 
 #include <chrono>
+#include <cmath>
 #include <deque>
 #include <mutex>
 
-#include "common/StringHelpers.h"
+#include "fmt/core.h"
+
 #include "common/StringUtil.h"
 #include "imgui.h"
 
@@ -469,15 +471,15 @@ static void DrawOSDMessages()
 	}
 }
 
-static void FormatProcessorStat(FastFormatAscii& text, double usage, double time)
+static void FormatProcessorStat(std::string& text, double usage, double time)
 {
 	// Some values, such as GPU (and even CPU to some extent) can be out of phase with the wall clock,
 	// which the processor time is divided by to get a utilization percentage. Let's clamp it at 100%,
 	// so that people don't get confused, and remove the decimal places when it's there while we're at it.
 	if (usage >= 99.95)
-		text.Write("100%% (%.2fms)", time);
+		fmt::format_to(std::back_inserter(text), "100% ({:.2f}ms)", time);
 	else
-		text.Write("%.1f%% (%.2fms)", usage, time);
+		fmt::format_to(std::back_inserter(text), "{:.1f}% ({:.2f}ms)", usage, time);
 }
 
 static void DrawPerformanceOverlay()
@@ -489,9 +491,11 @@ static void DrawPerformanceOverlay()
 	float position_y = margin;
 
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
-	FastFormatAscii text;
+	std::string text;
 	ImVec2 text_size;
 	bool first = true;
+
+	text.reserve(128);
 
 #define DRAW_LINE(font, text, color) \
 	do \
@@ -521,33 +525,33 @@ static void DrawPerformanceOverlay()
 			switch (PerformanceMetrics::GetInternalFPSMethod())
 			{
 			case PerformanceMetrics::InternalFPSMethod::GSPrivilegedRegister:
-				text.Write("G: %.2f [P] | V: %.2f", PerformanceMetrics::GetInternalFPS(), PerformanceMetrics::GetFPS());
+				fmt::format_to(std::back_inserter(text), "G: {:.2f} [P] | V: {:.2f}", PerformanceMetrics::GetInternalFPS(), PerformanceMetrics::GetFPS());
 				break;
 
 			case PerformanceMetrics::InternalFPSMethod::DISPFBBlit:
-				text.Write("G: %.2f [B] | V: %.2f", PerformanceMetrics::GetInternalFPS(), PerformanceMetrics::GetFPS());
+				fmt::format_to(std::back_inserter(text), "G: {:.2f} [B] | V: {:.2f}", PerformanceMetrics::GetInternalFPS(), PerformanceMetrics::GetFPS());
 				break;
 
 			case PerformanceMetrics::InternalFPSMethod::None:
 			default:
-				text.Write("V: %.2f", PerformanceMetrics::GetFPS());
+				fmt::format_to(std::back_inserter(text), "V: {:.2f}", PerformanceMetrics::GetFPS());
 				break;
 			}
 			first = false;
 		}
 		if (GSConfig.OsdShowSpeed)
 		{
-			text.Write("%s%u%%", first ? "" : " | ", static_cast<u32>(std::round(speed)));
+			fmt::format_to(std::back_inserter(text), "{}{}%", first ? "" : " | ", static_cast<u32>(std::round(speed)));
 
 			// We read the main config here, since MTGS doesn't get updated with speed toggles.
 			if (EmuConfig.GS.LimitScalar == 0.0)
-				text.Write(" (Max)");
+				text += " (Max)";
 			else
-				text.Write(" (%.0f%%)", EmuConfig.GS.LimitScalar * 100.0);
+				fmt::format_to(std::back_inserter(text), " ({:.0f}%)", EmuConfig.GS.LimitScalar * 100.0);
 
 			first = false;
 		}
-		if (!text.IsEmpty())
+		if (!text.empty())
 		{
 			ImU32 color;
 			if (speed < 95.0f)
@@ -572,44 +576,42 @@ static void DrawPerformanceOverlay()
 			int width, height;
 			GSgetInternalResolution(&width, &height);
 
-			text.Clear();
-			text.Write("%dx%d %s %s", width, height, ReportVideoMode(), ReportInterlaceMode());
+			text.clear();
+			fmt::format_to(std::back_inserter(text), "{}x{} {} {}", width, height, ReportVideoMode(), ReportInterlaceMode());
 			DRAW_LINE(s_fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 		}
 
 		if (GSConfig.OsdShowCPU)
 		{
-			text.Clear();
-			text.Write("%.2fms (%.2fms worst)", PerformanceMetrics::GetAverageFrameTime(),
+			text.clear();
+			fmt::format_to(std::back_inserter(text), "{:.2f}ms ({:.2f}ms worst)", PerformanceMetrics::GetAverageFrameTime(),
 				PerformanceMetrics::GetWorstFrameTime());
 			DRAW_LINE(s_fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 
-			text.Clear();
+			text.clear();
 			if (EmuConfig.Speedhacks.EECycleRate != 0 || EmuConfig.Speedhacks.EECycleSkip != 0)
-				text.Write("EE[%d/%d]: ", EmuConfig.Speedhacks.EECycleRate, EmuConfig.Speedhacks.EECycleSkip);
+				fmt::format_to(std::back_inserter(text), "EE[{}/{}]: ", EmuConfig.Speedhacks.EECycleRate, EmuConfig.Speedhacks.EECycleSkip);
 			else
-				text.Write("EE: ");
+				text = "EE: ";
 			FormatProcessorStat(text, PerformanceMetrics::GetCPUThreadUsage(), PerformanceMetrics::GetCPUThreadAverageTime());
 			DRAW_LINE(s_fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 
-			text.Clear();
-			text.Write("GS: ");
+			text = "GS: ";
 			FormatProcessorStat(text, PerformanceMetrics::GetGSThreadUsage(), PerformanceMetrics::GetGSThreadAverageTime());
 			DRAW_LINE(s_fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 
 			const u32 gs_sw_threads = PerformanceMetrics::GetGSSWThreadCount();
 			for (u32 i = 0; i < gs_sw_threads; i++)
 			{
-				text.Clear();
-				text.Write("SW-%u: ", i);
+				text.clear();
+				fmt::format_to(std::back_inserter(text), "SW-{}: ", i);
 				FormatProcessorStat(text, PerformanceMetrics::GetGSSWThreadUsage(i), PerformanceMetrics::GetGSSWThreadAverageTime(i));
 				DRAW_LINE(s_fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 			}
 
 			if (THREAD_VU1)
 			{
-				text.Clear();
-				text.Write("VU: ");
+				text = "VU: ";
 				FormatProcessorStat(text, PerformanceMetrics::GetVUThreadUsage(), PerformanceMetrics::GetVUThreadAverageTime());
 				DRAW_LINE(s_fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 			}
@@ -617,8 +619,7 @@ static void DrawPerformanceOverlay()
 
 		if (GSConfig.OsdShowGPU)
 		{
-			text.Clear();
-			text.Write("GPU: ");
+			text = "GPU: ";
 			FormatProcessorStat(text, PerformanceMetrics::GetGPUUsage(), PerformanceMetrics::GetGPUAverageTime());
 			DRAW_LINE(s_fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 		}

@@ -58,6 +58,14 @@ GSDevice11::GSDevice11()
 	m_features.stencil_buffer = true;
 }
 
+GSDevice11::~GSDevice11()
+{
+	if (m_state.rt_view)
+		m_state.rt_view->Release();
+	if (m_state.dsv)
+		m_state.dsv->Release();
+}
+
 bool GSDevice11::Create(HostDisplay* display)
 {
 	if (!__super::Create(display))
@@ -81,25 +89,9 @@ bool GSDevice11::Create(HostDisplay* display)
 	m_ctx = static_cast<ID3D11DeviceContext*>(display->GetRenderContext());
 	level = m_dev->GetFeatureLevel();
 
-	bool nvidia_vendor = false;
-	bool amd_vendor = false;
-	{
-		if (auto dxgi_device = m_dev.try_query<IDXGIDevice>())
-		{
-			wil::com_ptr_nothrow<IDXGIAdapter> dxgi_adapter;
-			DXGI_ADAPTER_DESC adapter_desc;
-			if (SUCCEEDED(dxgi_device->GetAdapter(dxgi_adapter.put())) && SUCCEEDED(dxgi_adapter->GetDesc(&adapter_desc)))
-			{
-				nvidia_vendor = (adapter_desc.VendorId == 0x10DE);
-				amd_vendor = ((adapter_desc.VendorId == 0x1002) || (adapter_desc.VendorId == 0x1022));
-			}
-		}
-	}
-
 	if (!GSConfig.DisableShaderCache)
 	{
-		if (!m_shader_cache.Open(StringUtil::wxStringToUTF8String(EmuFolders::Cache.ToString()),
-				m_dev->GetFeatureLevel(), SHADER_VERSION, GSConfig.UseDebugDevice))
+		if (!m_shader_cache.Open(EmuFolders::Cache, m_dev->GetFeatureLevel(), SHADER_VERSION, GSConfig.UseDebugDevice))
 		{
 			Console.Warning("Shader cache failed to open.");
 		}
@@ -117,14 +109,9 @@ bool GSDevice11::Create(HostDisplay* display)
 		m_d3d_texsize = D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
 
 	{
-		// HACK: check nVIDIA
-		// Note: It can cause issues on several games such as SOTC, Fatal Frame, plus it adds border offset.
-		const bool disable_safe_features = theApp.GetConfigB("UserHacks") && theApp.GetConfigB("UserHacks_Disable_Safe_Features");
-		m_hack_topleft_offset = (GSConfig.UpscaleMultiplier != 1 && nvidia_vendor && !disable_safe_features) ? -0.01f : 0.0f;
-
 		// HACK: check AMD
 		// Broken point sampler should be enabled only on AMD.
-		m_features.broken_point_sampler = amd_vendor;
+		m_features.broken_point_sampler = (D3D::Vendor() == D3D::VendorID::AMD);
 	}
 
 	SetFeatures();
@@ -155,7 +142,7 @@ bool GSDevice11::Create(HostDisplay* display)
 	}
 
 	ShaderMacro sm_convert(m_shader_cache.GetFeatureLevel());
-	sm_convert.AddMacro("PS_SCALE_FACTOR", std::max(1u, GSConfig.UpscaleMultiplier));
+	sm_convert.AddMacro("PS_SCALE_FACTOR", GSConfig.UpscaleMultiplier);
 
 	D3D_SHADER_MACRO* sm_convert_ptr = sm_convert.GetPtr();
 
@@ -364,11 +351,11 @@ void GSDevice11::RestoreAPIState()
 	m_ctx->PSSetShader(m_state.ps, nullptr, 0);
 	m_ctx->PSSetConstantBuffers(0, 1, &m_state.ps_cb);
 
-	const CD3D11_VIEWPORT vp(m_hack_topleft_offset, m_hack_topleft_offset,
+	const CD3D11_VIEWPORT vp(0.0f, 0.0f,
 		static_cast<float>(m_state.viewport.x), static_cast<float>(m_state.viewport.y),
 		0.0f, 1.0f);
 	m_ctx->RSSetViewports(1, &vp);
-	m_ctx->RSSetScissorRects(1, m_state.scissor);
+	m_ctx->RSSetScissorRects(1, reinterpret_cast<const D3D11_RECT*>(&m_state.scissor));
 	m_ctx->RSSetState(m_rs.get());
 
 	m_ctx->OMSetDepthStencilState(m_state.dss, m_state.sref);
@@ -451,7 +438,7 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 		case GSTexture::Format::UNorm8:       dxformat = DXGI_FORMAT_A8_UNORM;           break;
 		case GSTexture::Format::UInt16:       dxformat = DXGI_FORMAT_R16_UINT;           break;
 		case GSTexture::Format::UInt32:       dxformat = DXGI_FORMAT_R32_UINT;           break;
-		case GSTexture::Format::Int32:        dxformat = DXGI_FORMAT_R32_SINT;           break;
+		case GSTexture::Format::PrimID:       dxformat = DXGI_FORMAT_R32_SINT;           break;
 		case GSTexture::Format::BC1:          dxformat = DXGI_FORMAT_BC1_UNORM;          break;
 		case GSTexture::Format::BC2:          dxformat = DXGI_FORMAT_BC2_UNORM;          break;
 		case GSTexture::Format::BC3:          dxformat = DXGI_FORMAT_BC3_UNORM;          break;
@@ -516,7 +503,7 @@ bool GSDevice11::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTextu
 	m_download_tex.reset(static_cast<GSTexture11*>(CreateOffscreen(rect.width(), rect.height(), src->GetFormat())));
 	if (!m_download_tex)
 		return false;
-	CopyRect(src, m_download_tex.get(), rect);
+	CopyRect(src, m_download_tex.get(), rect, 0, 0);
 	return m_download_tex->Map(out_map);
 }
 
@@ -529,22 +516,11 @@ void GSDevice11::DownloadTextureComplete()
 	}
 }
 
-void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
-{
-	if (!sTex || !dTex)
-	{
-		ASSERT(0);
-		return;
-	}
-
-	CopyRect(sTex, r, dTex, 0, 0);
-}
-
-void GSDevice11::CopyRect(GSTexture* sTex, const GSVector4i& sRect, GSTexture* dTex, u32 destX, u32 destY)
+void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 {
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-	D3D11_BOX box = {(UINT)sRect.left, (UINT)sRect.top, 0U, (UINT)sRect.right, (UINT)sRect.bottom, 1U};
+	D3D11_BOX box = {(UINT)r.left, (UINT)r.top, 0U, (UINT)r.right, (UINT)r.bottom, 1U};
 
 	// DX api isn't happy if we pass a box for depth copy
 	// It complains that depth/multisample must be a full copy
@@ -566,12 +542,12 @@ void GSDevice11::CloneTexture(GSTexture* src, GSTexture** dest, const GSVector4i
 	{
 		// DX11 requires that you copy the entire depth buffer.
 		*dest = CreateDepthStencil(w, h, src->GetFormat(), false);
-		CopyRect(src, GSVector4i(0, 0, w, h), *dest, 0, 0);
+		CopyRect(src, *dest, GSVector4i(0, 0, w, h), 0, 0);
 	}
 	else
 	{
 		*dest = CreateRenderTarget(w, h, src->GetFormat(), false);
-		CopyRect(src, rect, *dest, rect.left, rect.top);
+		CopyRect(src, *dest, rect, rect.left, rect.top);
 	}
 }
 
@@ -704,10 +680,7 @@ void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	// Upload constant to select YUV algo, but skip constant buffer update if we don't need it
 	if (feedback_write_2 || feedback_write_1 || sTex[0])
 	{
-		MergeConstantBuffer cb;
-		cb.BGColor = c;
-		cb.EMODA = EXTBUF.EMODA;
-		cb.EMODC = EXTBUF.EMODC;
+		const MergeConstantBuffer cb = {c, EXTBUF.EMODA, EXTBUF.EMODC};
 		m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
 	}
 
@@ -715,13 +688,13 @@ void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	{
 		// 2nd output is enabled and selected. Copy it to destination so we can blend it with 1st output
 		// Note: value outside of dRect must contains the background color (c)
-		StretchRect(sTex[1], sRect[1], dTex, dRect[1], ShaderConvert::COPY);
+		StretchRect(sTex[1], sRect[1], dTex, PMODE.SLBG ? dRect[2] : dRect[1], ShaderConvert::COPY);
 	}
 
 	// Save 2nd output
 	if (feedback_write_2)
 	{
-		StretchRect(dTex, full_r, sTex[2], dRect[1], m_convert.ps[static_cast<int>(ShaderConvert::YUV)].get(),
+		StretchRect(dTex, full_r, sTex[2], dRect[2], m_convert.ps[static_cast<int>(ShaderConvert::YUV)].get(),
 			m_merge.cb.get(), nullptr, true);
 	}
 
@@ -737,7 +710,7 @@ void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 
 	if (feedback_write_1)
 	{
-		StretchRect(dTex, full_r, sTex[2], dRect[0], m_convert.ps[static_cast<int>(ShaderConvert::YUV)].get(),
+		StretchRect(sTex[0], full_r, sTex[2], dRect[2], m_convert.ps[static_cast<int>(ShaderConvert::YUV)].get(),
 			m_merge.cb.get(), nullptr, true);
 	}
 }
@@ -752,7 +725,6 @@ void GSDevice11::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool 
 	InterlaceConstantBuffer cb;
 
 	cb.ZrH = GSVector2(0, 1.0f / s.y);
-	cb.hH = s.y / 2;
 
 	m_ctx->UpdateSubresource(m_interlace.cb.get(), 0, nullptr, &cb, 0, 0);
 
@@ -1165,15 +1137,25 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	if (rt) rtv = *(GSTexture11*)rt;
 	if (ds) dsv = *(GSTexture11*)ds;
 
-	if (m_state.rt_view != rtv || m_state.dsv != dsv)
+	const bool changed = (m_state.rt_view != rtv || m_state.dsv != dsv);
+	if (m_state.rt_view != rtv)
 	{
+		if (m_state.rt_view)
+			m_state.rt_view->Release();
+		if (rtv)
+			rtv->AddRef();
 		m_state.rt_view = rtv;
-		m_state.rt_texture = static_cast<GSTexture11*>(rt);
-		m_state.dsv = dsv;
-		m_state.rt_ds = static_cast<GSTexture11*>(ds);
-
-		m_ctx->OMSetRenderTargets(1, &rtv, dsv);
 	}
+	if (m_state.dsv != dsv)
+	{
+		if (m_state.dsv)
+			m_state.dsv->Release();
+		if (dsv)
+			dsv->AddRef();
+		m_state.dsv = dsv;
+	}
+	if (changed)
+		m_ctx->OMSetRenderTargets(1, &rtv, dsv);
 
 	const GSVector2i size = rt ? rt->GetSize() : ds->GetSize();
 	if (m_state.viewport != size)
@@ -1183,8 +1165,8 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		D3D11_VIEWPORT vp;
 		memset(&vp, 0, sizeof(vp));
 
-		vp.TopLeftX = m_hack_topleft_offset;
-		vp.TopLeftY = m_hack_topleft_offset;
+		vp.TopLeftX = 0.0f;
+		vp.TopLeftY = 0.0f;
 		vp.Width = (float)size.x;
 		vp.Height = (float)size.y;
 		vp.MinDepth = 0.0f;
@@ -1199,7 +1181,7 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	{
 		m_state.scissor = r;
 
-		m_ctx->RSSetScissorRects(1, r);
+		m_ctx->RSSetScissorRects(1, reinterpret_cast<const D3D11_RECT*>(&r));
 	}
 }
 
@@ -1302,7 +1284,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		IAUnmapVertexBuffer();
 	}
 	IASetIndexBuffer(config.indices, config.nindices);
-	D3D11_PRIMITIVE_TOPOLOGY topology;
+	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	switch (config.topology)
 	{
 		case GSHWDrawConfig::Topology::Point:    topology = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;    break;
@@ -1316,6 +1298,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	PSSetShaderResources(config.tex, config.pal);
 
 	GSTexture* rt_copy = nullptr;
+	GSTexture* ds_copy = nullptr;
 	if (config.require_one_barrier || (config.tex && config.tex == config.rt)) // Used as "bind rt" flag when texture barrier is unsupported
 	{
 		// Bind the RT.This way special effect can use it.
@@ -1336,9 +1319,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	{
 		// mainly for ico (depth buffer used as texture)
 		// binding to 0 here is safe, because config.tex can't equal both tex and rt
-		CloneTexture(config.ds, &rt_copy, config.drawarea);
-		if (rt_copy)
-			PSSetShaderResource(0, rt_copy);
+		CloneTexture(config.ds, &ds_copy, config.drawarea);
+		if (ds_copy)
+			PSSetShaderResource(0, ds_copy);
 	}
 
 	SetupOM(config.depth, convertSel(config.colormask, config.blend), config.blend.constant);
@@ -1347,6 +1330,16 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	SetupPS(config.ps, &config.cb_ps, config.sampler);
 
 	DrawIndexedPrimitive();
+
+	if (config.separate_alpha_pass)
+	{
+		GSHWDrawConfig::BlendState sap_blend = {};
+		SetHWDrawConfigForAlphaPass(&config.ps, &config.colormask, &sap_blend, &config.depth);
+		SetupOM(config.depth, convertSel(config.colormask, sap_blend), config.blend.constant);
+		SetupPS(config.ps, &config.cb_ps, config.sampler);
+
+		DrawIndexedPrimitive();
+	}
 
 	if (config.alpha_second_pass.enable)
 	{
@@ -1365,12 +1358,24 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		SetupOM(config.alpha_second_pass.depth, convertSel(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
 
 		DrawIndexedPrimitive();
+
+		if (config.second_separate_alpha_pass)
+		{
+			GSHWDrawConfig::BlendState sap_blend = {};
+			SetHWDrawConfigForAlphaPass(&config.alpha_second_pass.ps, &config.alpha_second_pass.colormask, &sap_blend, &config.alpha_second_pass.depth);
+			SetupOM(config.alpha_second_pass.depth, convertSel(config.alpha_second_pass.colormask, sap_blend), config.blend.constant);
+			SetupPS(config.alpha_second_pass.ps, &config.cb_ps, config.sampler);
+
+			DrawIndexedPrimitive();
+		}
 	}
 
 	EndScene();
 
 	if (rt_copy)
 		Recycle(rt_copy);
+	if (ds_copy)
+		Recycle(ds_copy);
 
 	if (hdr_rt)
 	{

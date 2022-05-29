@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Global.h"
+#include "common/Assertions.h"
 
 
 StereoOut32 StereoOut32::Empty(0, 0);
@@ -54,14 +55,14 @@ public:
 	void SetPaused(bool paused) override {}
 	int GetEmptySampleCount() override { return 0; }
 
-	const wchar_t* GetIdent() const override
+	const char* GetIdent() const override
 	{
-		return L"nullout";
+		return "nullout";
 	}
 
-	const wchar_t* GetLongName() const override
+	const char* GetLongName() const override
 	{
-		return L"No Sound (Emulate SPU2 only)";
+		return "No Sound (Emulate SPU2 only)";
 	}
 };
 
@@ -80,12 +81,12 @@ SndOutModule* mods[] =
 		nullptr // signals the end of our list
 };
 
-int FindOutputModuleById(const wchar_t* omodid)
+int FindOutputModuleById(const char* omodid)
 {
 	int modcnt = 0;
 	while (mods[modcnt] != nullptr)
 	{
-		if (wcscmp(mods[modcnt]->GetIdent(), omodid) == 0)
+		if (std::strcmp(mods[modcnt]->GetIdent(), omodid) == 0)
 			break;
 		++modcnt;
 	}

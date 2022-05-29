@@ -14,6 +14,8 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "common/RedtapeWindows.h"
+
 #include "Global.h"
 #include "DeviceEnumerator.h"
 #include "KeyboardQueue.h"

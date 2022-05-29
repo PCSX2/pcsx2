@@ -17,9 +17,9 @@
 
 #include "common/SafeArray.h"
 #include "common/EventSource.h"
-#include "common/PersistentThread.h"
 
 #include "gui/wxGuiTools.h"
+#include "gui/PersistentThread.h"
 #include "gui/pxRadioPanel.h"
 #include "gui/pxCheckBox.h"
 #include "gui/pxStaticText.h"
@@ -29,5 +29,6 @@
 #include "AppConfig.h"
 #include "AppEventListeners.h"
 
+extern wxString AddAppName( const wxString& fmt );
 extern wxString AddAppName( const wxChar* fmt );
 extern wxString AddAppName( const char* fmt );

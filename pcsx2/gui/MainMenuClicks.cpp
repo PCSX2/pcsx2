@@ -19,8 +19,9 @@
 #include "CDVD/CDVD.h"
 #include "GS.h"
 #include "GSFrame.h"
+#include "IniInterface.h"
 #include "SPU2/spu2.h"
-#include "System/SysThreads.h"
+#include "SysThreads.h"
 #include "DEV9/DEV9.h"
 #include "USB/USB.h"
 #include "PAD/Gamepad.h"
@@ -33,16 +34,13 @@
 #include "Dialogs/ConfigurationDialog.h"
 #include "Debugger/DisassemblyDialog.h"
 
-#include "common/IniInterface.h"
 
 #include "fmt/core.h"
 #include "wx/numdlg.h"
 
-#ifndef DISABLE_RECORDING
 #include "Recording/InputRecording.h"
 #include "Recording/InputRecordingControls.h"
 #include "Recording/VirtualPad/VirtualPad.h"
-#endif
 
 
 using namespace Dialogs;
@@ -207,10 +205,8 @@ wxWindowID SwapOrReset_Iso(wxWindow* owner, IScopedCoreThread& core_control, con
 		dialog += dialog.GetCharHeight();
 		dialog += dialog.Heading(_("Do you want to swap discs or boot the new image (via system reset)?"));
 
-#ifndef DISABLE_RECORDING
 		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
 			dialog += dialog.Text(_("\n(Warning: The savestate accompanying the active input recording\nmay not be compatible with the new source)"));
-#endif
 
 		result = pxIssueConfirmation(dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
 		if (result == wxID_CANCEL)
@@ -268,10 +264,8 @@ wxWindowID SwapOrReset_Disc(wxWindow* owner, IScopedCoreThread& core, const wxSt
 		dialog += dialog.GetCharHeight();
 		dialog += dialog.Heading(_("Do you want to swap discs or boot the new disc (via system reset)?"));
 
-#ifndef DISABLE_RECORDING
 		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
 			dialog += dialog.Text(_("\n(Warning: The savestate accompanying the active input recording\nmay not be compatible with the new source)"));
-#endif
 
 		result = pxIssueConfirmation(dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
 		if (result == wxID_CANCEL)
@@ -320,10 +314,8 @@ wxWindowID SwapOrReset_CdvdSrc(wxWindow* owner, CDVD_SourceType newsrc)
 		dialog += dialog.Heading(changeMsg + L"\n\n" +
 								 _("Do you want to swap discs or boot the new image (system reset)?"));
 
-#ifndef DISABLE_RECORDING
 		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
 			dialog += dialog.Text(_("\n(Warning: The savestate accompanying the active input recording\nmay not be compatible with the new source)"));
-#endif
 
 		result = pxIssueConfirmation(dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
 
@@ -341,7 +333,7 @@ wxWindowID SwapOrReset_CdvdSrc(wxWindow* owner, CDVD_SourceType newsrc)
 
 	if (result != wxID_RESET)
 	{
-		Console.Indent().WriteLn(L"(CdvdSource) HotSwapping CDVD source types from %s to %s.",
+		Console.Indent().WriteLn("(CdvdSource) HotSwapping CDVD source types from %ls to %ls.",
 								 WX_STR(wxString(CDVD_SourceLabels[enum_cast(oldsrc)])),
 								 WX_STR(wxString(CDVD_SourceLabels[enum_cast(newsrc)])));
 		//CoreThread.ChangeCdvdSource();
@@ -514,19 +506,19 @@ void MainEmuFrame::Menu_CdvdSource_Click(wxCommandEvent& event)
 	}
 
 	SwapOrReset_CdvdSrc(this, newsrc);
-#ifndef DISABLE_RECORDING
 	if (!g_InputRecording.IsActive())
-#endif
+	{
 		ApplyCDVDStatus();
+	}
 }
 
 void MainEmuFrame::Menu_BootCdvd_Click(wxCommandEvent& event)
 {
-#ifndef DISABLE_RECORDING
 	if (g_InputRecording.IsActive())
+	{
 		g_InputRecording.GoToFirstFrame(this);
+	}
 	else
-#endif
 	{
 		g_Conf->EmuOptions.UseBOOT2Injection = g_Conf->EnableFastBoot;
 		_DoBootCdvd();
@@ -687,7 +679,6 @@ void MainEmuFrame::Menu_EnableWideScreenPatches_Click(wxCommandEvent&)
 	AppSaveSettings();
 }
 
-#ifndef DISABLE_RECORDING
 void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 {
 	bool checked = GetMenuBar()->IsChecked(MenuId_EnableInputRecording);
@@ -751,7 +742,6 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 	AppApplySettings();
 	AppSaveSettings();
 }
-#endif
 
 void MainEmuFrame::Menu_EnableHostFs_Click(wxCommandEvent&)
 {
@@ -835,12 +825,10 @@ protected:
 		if (CoreThread.IsOpen())
 		{
 			CoreThread.Suspend();
-#ifndef DISABLE_RECORDING
 			// Disable recording controls that only make sense if the game is running
 			sMainFrame.enableRecordingMenuItem(MenuId_Recording_FrameAdvance, false);
 			sMainFrame.enableRecordingMenuItem(MenuId_Recording_TogglePause, false);
 			sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, false);
-#endif
 		}
 		else
 			CoreThread.Resume();
@@ -862,7 +850,6 @@ void MainEmuFrame::Menu_SuspendResume_Click(wxCommandEvent& event)
 void MainEmuFrame::Menu_SysShutdown_Click(wxCommandEvent& event)
 {
 	bool doShutdown = true;
-#ifndef DISABLE_RECORDING
 	if (!g_InputRecording.IsActive())
 	{
 		if (g_InputRecordingControls.IsPaused())
@@ -888,7 +875,6 @@ void MainEmuFrame::Menu_SysShutdown_Click(wxCommandEvent& event)
 			doShutdown = false;
 		}
 	}
-#endif
 	if (doShutdown)
 	{
 		if (m_capturingVideo)
@@ -932,7 +918,7 @@ void MainEmuFrame::Menu_ShowConsole_Stdio(wxCommandEvent& event)
 
 void MainEmuFrame::Menu_GetStarted(wxCommandEvent& event)
 {
-	wxLaunchDefaultBrowser("https://pcsx2.net/getting-started.html");
+	wxLaunchDefaultBrowser("https://pcsx2.net/guides/basic-setup/");
 }
 
 void MainEmuFrame::Menu_Compatibility(wxCommandEvent& event)
@@ -1040,7 +1026,7 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent& even
 	{
 		return;
 	}
-	GSmakeSnapshot(g_Conf->Folders.Snapshots.ToString().char_str());
+	GSQueueSnapshot(std::string(), 0);
 }
 
 void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& event)
@@ -1056,14 +1042,13 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& e
 	wxFileDialog fileDialog(this, _("Select a file"), g_Conf->Folders.Snapshots.ToAscii(), wxEmptyString, "PNG files (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 	if (fileDialog.ShowModal() == wxID_OK)
-		GSmakeSnapshot((char*)fileDialog.GetPath().char_str());
+		GSQueueSnapshot(StringUtil::wxStringToUTF8String(fileDialog.GetPath()), 0);
 
 	// Resume emulation
 	if (!wasPaused)
 		CoreThread.Resume();
 }
 
-#ifndef DISABLE_RECORDING
 void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent& event)
 {
 	const bool emulation_initially_paused = CoreThread.IsPaused();
@@ -1196,4 +1181,3 @@ void MainEmuFrame::Menu_Recording_VirtualPad_Open_Click(wxCommandEvent& event)
 {
 	g_InputRecording.ShowVirtualPad(event.GetId() - MenuId_Recording_VirtualPad_Port0);
 }
-#endif

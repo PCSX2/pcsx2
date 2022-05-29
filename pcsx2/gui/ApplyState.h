@@ -50,7 +50,7 @@ namespace Exception
 	public:
 		explicit CannotApplySettings( BaseApplicableConfigPanel* thispanel )
 		{
-			SetBothMsgs(pxL("Cannot apply new settings, one of the settings is invalid."));
+			SetBothMsgs("Cannot apply new settings, one of the settings is invalid.");
 			m_Panel = thispanel;
 			IsVerbose = true;
 		}

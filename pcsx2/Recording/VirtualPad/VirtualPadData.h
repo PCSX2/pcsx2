@@ -15,7 +15,7 @@
 
 #pragma once
 
-#ifndef DISABLE_RECORDING
+#ifndef PCSX2_CORE
 
 #include "common/Pcsx2Types.h"
 

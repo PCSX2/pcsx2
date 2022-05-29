@@ -15,12 +15,6 @@
 
 #include "PrecompiledHeader.h"
 
-#include "EmuThread.h"
-#include "QtHost.h"
-#include "QtUtils.h"
-#include "Settings/ControllerSettingsDialog.h"
-#include "Settings/InputBindingDialog.h"
-#include "Settings/InputBindingWidget.h"
 #include <QtCore/QTimer>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QMouseEvent>
@@ -28,7 +22,16 @@
 #include <cmath>
 #include <sstream>
 
+#include "pcsx2/HostSettings.h"
+
 #include "pcsx2/GS/GSIntrin.h" // _BitScanForward
+
+#include "EmuThread.h"
+#include "QtHost.h"
+#include "QtUtils.h"
+#include "Settings/ControllerSettingsDialog.h"
+#include "Settings/InputBindingDialog.h"
+#include "Settings/InputBindingWidget.h"
 
 InputBindingWidget::InputBindingWidget(QWidget* parent)
 	: QPushButton(parent)
@@ -56,7 +59,7 @@ void InputBindingWidget::setKey(std::string section_name, std::string key_name)
 {
 	m_section_name = std::move(section_name);
 	m_key_name = std::move(key_name);
-	m_bindings = QtHost::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
+	m_bindings = Host::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
 	updateText();
 }
 
@@ -183,7 +186,7 @@ void InputBindingWidget::clearBinding()
 
 void InputBindingWidget::reloadBinding()
 {
-	m_bindings = QtHost::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
+	m_bindings = Host::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
 	updateText();
 }
 
@@ -319,7 +322,7 @@ void InputVibrationBindingWidget::setKey(ControllerSettingsDialog* dialog, std::
 	m_dialog = dialog;
 	m_section_name = std::move(section_name);
 	m_key_name = std::move(key_name);
-	m_binding = QtHost::GetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str());
+	m_binding = Host::GetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str());
 	setText(QString::fromStdString(m_binding));
 }
 

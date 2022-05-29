@@ -18,6 +18,7 @@
 #include <QtWidgets/QStackedWidget>
 #include <QtWidgets/QWidget>
 #include <optional>
+#include <vector>
 
 class DisplayWidget final : public QWidget
 {
@@ -41,8 +42,7 @@ Q_SIGNALS:
 	void windowFocusEvent();
 	void windowResizedEvent(int width, int height, float scale);
 	void windowRestoredEvent();
-	void windowClosedEvent();
-	void windowKeyEvent(int key_code, int mods, bool pressed);
+	void windowKeyEvent(int key_code, bool pressed);
 	void windowMouseMoveEvent(int x, int y);
 	void windowMouseButtonEvent(int button, bool pressed);
 	void windowMouseWheelEvent(const QPoint& angle_delta);
@@ -54,6 +54,7 @@ private:
 	QPoint m_relative_mouse_start_position{};
 	QPoint m_relative_mouse_last_position{};
 	bool m_relative_mouse_enabled = false;
+	std::vector<int> m_keys_pressed_with_modifiers;
 };
 
 class DisplayContainer final : public QStackedWidget

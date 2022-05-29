@@ -16,7 +16,12 @@
 #include "PrecompiledHeader.h"
 #include "SPU2/Global.h"
 #include "Dialogs.h"
+#include "pcsx2/Config.h"
+#include "common/FileSystem.h"
+#include "common/StringUtil.h"
 #include "common/Path.h"
+#include "gui/StringHelpers.h"
+#include "gui/wxDirName.h"
 
 
 bool DebugEnabled = false;
@@ -48,13 +53,13 @@ static wxString CfgDumpsFolder;
 static wxDirName LogsFolder;
 static wxDirName DumpsFolder;
 
-wxString AccessLogFileName;
-wxString DMA4LogFileName;
-wxString DMA7LogFileName;
+std::string AccessLogFileName;
+std::string DMA4LogFileName;
+std::string DMA7LogFileName;
 
-wxString CoresDumpFileName;
-wxString MemDumpFileName;
-wxString RegDumpFileName;
+std::string CoresDumpFileName;
+std::string MemDumpFileName;
+std::string RegDumpFileName;
 
 void CfgSetLogDir(const char* dir)
 {
@@ -63,19 +68,19 @@ void CfgSetLogDir(const char* dir)
 	LogLocationSetByPcsx2 = (dir != nullptr);
 }
 
-FILE* OpenBinaryLog(const wxString& logfile)
+FILE* OpenBinaryLog(const char* logfile)
 {
-	return wxFopen(Path::Combine(LogsFolder, logfile), L"wb");
+	return FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, logfile).c_str(), "wb");
 }
 
-FILE* OpenLog(const wxString& logfile)
+FILE* OpenLog(const char* logfile)
 {
-	return wxFopen(Path::Combine(LogsFolder, logfile), L"w");
+	return FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, logfile).c_str(), "w");
 }
 
-FILE* OpenDump(const wxString& logfile)
+FILE* OpenDump(const char* logfile)
 {
-	return wxFopen(Path::Combine(DumpsFolder, logfile), L"w");
+	return FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, logfile).c_str(), "w");
 }
 
 namespace DebugConfig
@@ -107,13 +112,26 @@ namespace DebugConfig
 		CfgReadStr(Section, L"Logs_Folder", CfgLogsFolder, L"logs");
 		CfgReadStr(Section, L"Dumps_Folder", CfgDumpsFolder, L"logs");
 
-		CfgReadStr(Section, L"Access_Log_Filename", AccessLogFileName, L"SPU2Log.txt");
-		CfgReadStr(Section, L"DMA4Log_Filename", DMA4LogFileName, L"SPU2dma4.dat");
-		CfgReadStr(Section, L"DMA7Log_Filename", DMA7LogFileName, L"SPU2dma7.dat");
+		wxString wxAccessLogFileName;
+		wxString wxDMA4LogFileName;
+		wxString wxDMA7LogFileName;
+		wxString wxCoresDumpFileName;
+		wxString wxMemDumpFileName;
+		wxString wxRegDumpFileName;
+		CfgReadStr(Section, L"Access_Log_Filename", wxAccessLogFileName, L"SPU2Log.txt");
+		CfgReadStr(Section, L"DMA4Log_Filename", wxDMA4LogFileName, L"SPU2dma4.dat");
+		CfgReadStr(Section, L"DMA7Log_Filename", wxDMA7LogFileName, L"SPU2dma7.dat");
 
-		CfgReadStr(Section, L"Info_Dump_Filename", CoresDumpFileName, L"SPU2Cores.txt");
-		CfgReadStr(Section, L"Mem_Dump_Filename", MemDumpFileName, L"SPU2mem.dat");
-		CfgReadStr(Section, L"Reg_Dump_Filename", RegDumpFileName, L"SPU2regs.dat");
+		CfgReadStr(Section, L"Info_Dump_Filename", wxCoresDumpFileName, L"SPU2Cores.txt");
+		CfgReadStr(Section, L"Mem_Dump_Filename", wxMemDumpFileName, L"SPU2mem.dat");
+		CfgReadStr(Section, L"Reg_Dump_Filename", wxRegDumpFileName, L"SPU2regs.dat");
+
+		AccessLogFileName = StringUtil::wxStringToUTF8String(wxAccessLogFileName);
+		DMA4LogFileName = StringUtil::wxStringToUTF8String(wxDMA4LogFileName);
+		DMA7LogFileName = StringUtil::wxStringToUTF8String(wxDMA7LogFileName);
+		CoresDumpFileName = StringUtil::wxStringToUTF8String(wxCoresDumpFileName);
+		MemDumpFileName = StringUtil::wxStringToUTF8String(wxMemDumpFileName);
+		RegDumpFileName = StringUtil::wxStringToUTF8String(wxRegDumpFileName);
 
 		if (!LogLocationSetByPcsx2)
 		{
@@ -150,13 +168,13 @@ namespace DebugConfig
 		CfgWriteStr(Section, L"Logs_Folder", CfgLogsFolder);
 		CfgWriteStr(Section, L"Dumps_Folder", CfgDumpsFolder);
 
-		CfgWriteStr(Section, L"Access_Log_Filename", AccessLogFileName);
-		CfgWriteStr(Section, L"DMA4Log_Filename", DMA4LogFileName);
-		CfgWriteStr(Section, L"DMA7Log_Filename", DMA7LogFileName);
+		CfgWriteStr(Section, L"Access_Log_Filename", StringUtil::UTF8StringToWxString(AccessLogFileName));
+		CfgWriteStr(Section, L"DMA4Log_Filename", StringUtil::UTF8StringToWxString(DMA4LogFileName));
+		CfgWriteStr(Section, L"DMA7Log_Filename", StringUtil::UTF8StringToWxString(DMA7LogFileName));
 
-		CfgWriteStr(Section, L"Info_Dump_Filename", CoresDumpFileName);
-		CfgWriteStr(Section, L"Mem_Dump_Filename", MemDumpFileName);
-		CfgWriteStr(Section, L"Reg_Dump_Filename", RegDumpFileName);
+		CfgWriteStr(Section, L"Info_Dump_Filename", StringUtil::UTF8StringToWxString(CoresDumpFileName));
+		CfgWriteStr(Section, L"Mem_Dump_Filename", StringUtil::UTF8StringToWxString(MemDumpFileName));
+		CfgWriteStr(Section, L"Reg_Dump_Filename", StringUtil::UTF8StringToWxString(RegDumpFileName));
 	}
 
 	static void EnableMessages(HWND hWnd)

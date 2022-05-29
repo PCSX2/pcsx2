@@ -27,6 +27,8 @@
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
 
+#include "pcsx2/HostSettings.h"
+
 #include "EmuThread.h"
 #include "QtHost.h"
 #include "Settings/SettingsDialog.h"
@@ -387,7 +389,7 @@ namespace SettingWidgetBinder
 	{
 		using Accessor = SettingAccessor<WidgetType>;
 
-		const bool value = QtHost::GetBaseBoolSettingValue(section.c_str(), key.c_str(), default_value);
+		const bool value = Host::GetBaseBoolSettingValue(section.c_str(), key.c_str(), default_value);
 
 		if (sif)
 		{
@@ -427,7 +429,7 @@ namespace SettingWidgetBinder
 	{
 		using Accessor = SettingAccessor<WidgetType>;
 
-		const s32 value = QtHost::GetBaseIntSettingValue(section.c_str(), key.c_str(), static_cast<s32>(default_value)) - option_offset;
+		const s32 value = Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), static_cast<s32>(default_value)) - option_offset;
 
 		if (sif)
 		{
@@ -466,7 +468,7 @@ namespace SettingWidgetBinder
 	{
 		using Accessor = SettingAccessor<WidgetType>;
 
-		const float value = QtHost::GetBaseFloatSettingValue(section.c_str(), key.c_str(), default_value);
+		const float value = Host::GetBaseFloatSettingValue(section.c_str(), key.c_str(), default_value);
 
 		if (sif)
 		{
@@ -506,7 +508,7 @@ namespace SettingWidgetBinder
 	{
 		using Accessor = SettingAccessor<WidgetType>;
 
-		const float value = QtHost::GetBaseFloatSettingValue(section.c_str(), key.c_str(), default_value);
+		const float value = Host::GetBaseFloatSettingValue(section.c_str(), key.c_str(), default_value);
 
 		if (sif)
 		{
@@ -546,7 +548,7 @@ namespace SettingWidgetBinder
 	{
 		using Accessor = SettingAccessor<WidgetType>;
 
-		const QString value(QString::fromStdString(QtHost::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str())));
+		const QString value(QString::fromStdString(Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str())));
 
 		if (sif)
 		{
@@ -591,7 +593,7 @@ namespace SettingWidgetBinder
 		using Accessor = SettingAccessor<WidgetType>;
 		using UnderlyingType = std::underlying_type_t<DataType>;
 
-		const std::string value(QtHost::GetBaseStringSettingValue(section.c_str(), key.c_str(), to_string_function(default_value)));
+		const std::string value(Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), to_string_function(default_value)));
 		const std::optional<DataType> typed_value = from_string_function(value.c_str());
 
 		if (sif)
@@ -651,7 +653,7 @@ namespace SettingWidgetBinder
 		using UnderlyingType = std::underlying_type_t<DataType>;
 
 		const std::string value(
-			QtHost::GetBaseStringSettingValue(section.c_str(), key.c_str(), enum_names[static_cast<UnderlyingType>(default_value)]));
+			Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), enum_names[static_cast<UnderlyingType>(default_value)]));
 
 		UnderlyingType enum_index = static_cast<UnderlyingType>(default_value);
 		for (UnderlyingType i = 0; enum_names[i] != nullptr; i++)
@@ -710,7 +712,7 @@ namespace SettingWidgetBinder
 	{
 		using Accessor = SettingAccessor<WidgetType>;
 
-		const std::string value = QtHost::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value);
+		const std::string value = Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value);
 
 		for (int i = 0; enum_names[i] != nullptr; i++)
 			widget->addItem(QString::fromUtf8(enum_names[i]));

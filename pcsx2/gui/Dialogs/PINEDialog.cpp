@@ -20,9 +20,9 @@
 
 #include "gui/Dialogs/ModalPopups.h"
 
-#include "System/SysThreads.h"
+#include "gui/SysThreads.h"
 
-#include "PathDefs.h"
+#include "gui/PathDefs.h"
 #include "gui/AppConfig.h"
 
 using namespace pxSizerFlags;

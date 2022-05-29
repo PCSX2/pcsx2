@@ -40,10 +40,12 @@ public:
 private Q_SLOTS:
 	void onTypeChanged();
 	void doAutomaticBinding();
+	void doClearBindings();
 
 private:
 	void populateControllerTypes();
 	void doDeviceAutomaticBinding(const QString& device);
+	void saveAndRefresh();
 
 	Ui::ControllerBindingWidget m_ui;
 

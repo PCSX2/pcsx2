@@ -2,11 +2,11 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="UserMacros">
     <BinaryOutputDir>$(SolutionDir)bin\</BinaryOutputDir>
-    <PCSX2QTDIRDefault Condition="'$(Platform)'=='x64'">$(SolutionDir)3rdparty\qt\6.2.2\msvc2019_64\</PCSX2QTDIRDefault>
-    <PCSX2QTDIRDefault Condition="'$(Platform)'=='ARM64'">$(SolutionDir)3rdparty\qt\6.2.2\msvc2019_arm64\</PCSX2QTDIRDefault>
+    <PCSX2QTDIRDefault Condition="'$(Platform)'=='x64'">$(SolutionDir)3rdparty\qt\6.3.0\msvc2019_64\</PCSX2QTDIRDefault>
+    <PCSX2QTDIRDefault Condition="'$(Platform)'=='ARM64'">$(SolutionDir)3rdparty\qt\6.3.0\msvc2019_arm64\</PCSX2QTDIRDefault>
     <PCSX2QTDIR Condition="Exists('$(PCSX2QTDIRDefault)') And ('$(PCSX2QTDIR)'=='' Or !Exists('$(PCSX2QTDIR)'))">$(PCSX2QTDIRDefault)</PCSX2QTDIR>
     <PCSX2QTDIR Condition="Exists('$(PCSX2QTDIR)') And !HasTrailingSlash('$(PCSX2QTDIR)')">$(PCSX2QTDIR)\</PCSX2QTDIR>
-    <PCSX2QTDIRHost>$(SolutionDir)3rdparty\qt\6.2.2\msvc2019_64\</PCSX2QTDIRHost>
+    <PCSX2QTDIRHost>$(SolutionDir)3rdparty\qt\6.3.0\msvc2019_64\</PCSX2QTDIRHost>
     <QtDirValid>false</QtDirValid>
     <QtDirValid Condition="Exists('$(PCSX2QTDIR)')">true</QtDirValid>
     <QtIncludeDir>$(PCSX2QTDIR)include\</QtIncludeDir>
@@ -21,6 +21,7 @@
     <QtDebugSuffix>d</QtDebugSuffix>
     <QtLibSuffix Condition="$(Configuration.Contains(Debug))">$(QtDebugSuffix)</QtLibSuffix>
     <QtPluginFolder>QtPlugins</QtPluginFolder>
+    <QtEntryPointLib>$(QtLibDir)Qt6EntryPoint$(QtLibSuffix).lib</QtEntryPointLib>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -124,14 +125,17 @@
     <QtPlugins Condition="$(Configuration.Contains(Debug))" Include="@(QtAllPlugins)" />
     <QtPlugins Condition="!$(Configuration.Contains(Debug))" Exclude="$(QtPluginsDir)**\*$(QtDebugSuffix).dll" Include="@(QtAllPlugins)" />
     <QtPluginsDest Include="@(QtPlugins -> '$(BinaryOutputDir)$(QtPluginFolder)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <!--Our normal *d filter fails for the TLS DLLs, because backend ends in d. -->
+    <QtTLSDlls Include="$(QtPluginsDir)tls\qcertonlybackend$(QtLibSuffix).dll;$(QtPluginsDir)tls\qschannelbackend$(QtLibSuffix).dll" />
+    <QtTLSDllsDest Include="@(QtTLSDlls -> '$(BinaryOutputDir)$(QtPluginFolder)\tls\%(Filename)%(Extension)')" />
   </ItemGroup>
   <PropertyGroup>
     <QtConfFile>$(BinaryOutputDir)qt.conf</QtConfFile>
   </PropertyGroup>
   <Target Name="QtCopyBinaries"
     AfterTargets="Build"
-    Inputs="@(QtDlls);@(QtPlugins)"
-    Outputs="@(QtDlls -> '$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)');@(QtPlugins -> '$(BinaryOutputDir)$(QtPluginFolder)\%(RecursiveDir)%(Filename)%(Extension)')">
+    Inputs="@(QtDlls);@(QtPlugins);@(QtTLSDlls)"
+    Outputs="@(QtDlls -> '$(BinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)');@(QtPluginsDest);@(QtTLSDllsDest)">
     <Message Text="Copying Qt .dlls" Importance="High" />
     <Copy
       SourceFiles="@(QtDlls)"
@@ -141,6 +145,11 @@
     <Copy
       SourceFiles="@(QtPlugins)"
       DestinationFiles="@(QtPluginsDest)"
+      SkipUnchangedFiles="true"
+    />
+    <Copy
+      SourceFiles="@(QtTLSDlls)"
+      DestinationFiles="@(QtTLSDllsDest)"
       SkipUnchangedFiles="true"
     />
   </Target>

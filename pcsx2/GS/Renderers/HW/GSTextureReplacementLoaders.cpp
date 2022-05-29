@@ -17,6 +17,7 @@
 
 #include "common/Align.h"
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/ScopedGuard.h"
 
@@ -42,7 +43,7 @@ static constexpr LoaderDefinition s_loaders[] = {
 
 GSTextureReplacements::ReplacementTextureLoader GSTextureReplacements::GetLoader(const std::string_view& filename)
 {
-	const std::string_view extension(FileSystem::GetExtension(filename));
+	const std::string_view extension(Path::GetExtension(filename));
 	if (extension.empty())
 		return nullptr;
 

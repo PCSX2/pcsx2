@@ -18,6 +18,7 @@
 #include "PrecompiledHeader.h"
 #include "microVU.h"
 
+#include "common/AlignedMalloc.h"
 #include "common/Perf.h"
 
 //------------------------------------------------------------------
@@ -26,18 +27,18 @@
 alignas(__pagesize) static u8 vu0_RecDispatchers[mVUdispCacheSize];
 alignas(__pagesize) static u8 vu1_RecDispatchers[mVUdispCacheSize];
 
-static __fi void mVUthrowHardwareDeficiency(const wxChar* extFail, int vuIndex)
+static __fi void mVUthrowHardwareDeficiency(const char* extFail, int vuIndex)
 {
 	throw Exception::HardwareDeficiency()
-		.SetDiagMsg(pxsFmt(L"microVU%d recompiler init failed: %s is not available.", vuIndex, extFail))
-		.SetUserMsg(pxsFmt(_("%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."), extFail));
+		.SetDiagMsg(fmt::format("microVU{} recompiler init failed: %s is not available.", vuIndex, extFail))
+		.SetUserMsg(fmt::format("{} Extensions not found.  microVU requires a host CPU with SSE4 extensions.", extFail));
 }
 
 void mVUreserveCache(microVU& mVU)
 {
 
-	mVU.cache_reserve = new RecompiledCodeReserve(pxsFmt("Micro VU%u Recompiler Cache", mVU.index), _16mb);
-	mVU.cache_reserve->SetProfilerName(pxsFmt("mVU%urec", mVU.index));
+	mVU.cache_reserve = new RecompiledCodeReserve(fmt::format("Micro VU{} Recompiler Cache", mVU.index), _16mb);
+	mVU.cache_reserve->SetProfilerName(fmt::format("mVU{}rec", mVU.index));
 
 	mVU.cache = mVU.index
 		? (u8*)mVU.cache_reserve->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::mVU1recOffset, mVU.cacheSize * _1mb)
@@ -51,7 +52,7 @@ void mVUinit(microVU& mVU, uint vuIndex)
 {
 
 	if (!x86caps.hasStreamingSIMD4Extensions)
-		mVUthrowHardwareDeficiency(L"SSE4", vuIndex);
+		mVUthrowHardwareDeficiency("SSE4", vuIndex);
 
 	memzero(mVU.prog);
 
@@ -183,12 +184,6 @@ __fi void mVUclear(mV, u32 addr, u32 size)
 //------------------------------------------------------------------
 // Micro VU - Private Functions
 //------------------------------------------------------------------
-
-// Finds and Ages/Kills Programs if they haven't been used in a while.
-__ri void mVUvsyncUpdate(mV)
-{
-	//mVU.prog.curFrame++;
-}
 
 // Deletes a program
 __ri void mVUdeleteProg(microVU& mVU, microProgram*& prog)
@@ -366,8 +361,6 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState)
 //------------------------------------------------------------------
 recMicroVU0::recMicroVU0() { m_Idx = 0; IsInterpreter = false; }
 recMicroVU1::recMicroVU1() { m_Idx = 1; IsInterpreter = false; }
-void recMicroVU0::Vsync() noexcept { mVUvsyncUpdate(microVU0); }
-void recMicroVU1::Vsync() noexcept { mVUvsyncUpdate(microVU1); }
 
 void recMicroVU0::Reserve()
 {
@@ -379,7 +372,7 @@ void recMicroVU1::Reserve()
 	if (m_Reserved.exchange(1) == 0)
 	{
 		mVUinit(microVU1, 1);
-		vu1Thread.Start();
+		vu1Thread.Open();
 	}
 }
 
@@ -427,9 +420,6 @@ void recMicroVU0::Execute(u32 cycles)
 		return;
 	VU0.VI[REG_TPC].UL <<= 3;
 
-	// Sometimes games spin on vu0, so be careful with this value
-	// woody hangs if too high on sVU (untested on mVU)
-	// Edit: Need to test this again, if anyone ever has a "Woody" game :p
 	((mVUrecCall)microVU0.startFunct)(VU0.VI[REG_TPC].UL, cycles);
 	VU0.VI[REG_TPC].UL >>= 3;
 	if (microVU0.regs().flags & 0x4)

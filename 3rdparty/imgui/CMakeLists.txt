@@ -10,17 +10,11 @@ add_library(imgui
 	imgui/imstb_rectpack.h
 	imgui/imstb_textedit.h
 	imgui/imstb_truetype.h
-	include/imgui_impl_opengl3.h
-	src/imgui_impl_opengl3.cpp
 )
 
-if(WIN32)
-	target_sources(imgui PRIVATE
-		include/imgui_impl_dx11.h
-		src/imgui_impl_dx11.cpp
-	)
-endif()
-
 target_include_directories(imgui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui" "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_link_libraries(imgui glad)
+
+# Needed for macOS compile.
+set_property(TARGET imgui PROPERTY CXX_STANDARD 17)
+set_property(TARGET imgui PROPERTY CXX_STANDARD_REQUIRED ON)
 

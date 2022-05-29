@@ -16,6 +16,8 @@
 #include "PrecompiledHeader.h"
 #include "ThreadedFileReader.h"
 
+#include "common/Threading.h"
+
 // Make sure buffer size is bigger than the cutoff where PCSX2 emulates a seek
 // If buffers are smaller than that, we can't keep up with linear reads
 static constexpr u32 MINIMUM_SIZE = 128 * 1024;
@@ -70,22 +72,35 @@ void ThreadedFileReader::Loop()
 		if (m_quit)
 			return;
 
-		u64 requestOffset = m_requestOffset;
-		u32 requestSize = m_requestSize;
-		void* ptr = m_requestPtr.load(std::memory_order_relaxed);
-
-		m_running = true;
-		lock.unlock();
+		void* ptr;
+		u64 requestOffset;
+		u32 requestSize;
 
 		bool ok = true;
+		m_running = true;
 
-		if (ptr)
+		for (;;)
 		{
-			ok = Decompress(ptr, requestOffset, requestSize);
-		}
+			ptr = m_requestPtr.load(std::memory_order_acquire);
+			requestOffset = m_requestOffset;
+			requestSize = m_requestSize;
+			lock.unlock();
 
-		m_requestPtr.store(nullptr, std::memory_order_release);
-		m_condition.notify_one();
+			if (ptr)
+				ok = Decompress(ptr, requestOffset, requestSize);
+
+			// There's a potential for a race here when doing synchronous reads. Basically, another request can come in,
+			// after we release the lock, but before we store null to indicate we're finished. So, we do a compare-exchange
+			// instead, to detect when this happens, and if so, reload all the inputs and try again.
+			if (!m_requestPtr.compare_exchange_strong(ptr, nullptr, std::memory_order_release))
+			{
+				lock.lock();
+				continue;
+			}
+
+			m_condition.notify_one();
+			break;
+		}
 
 		if (ok)
 		{
@@ -326,7 +341,7 @@ int ThreadedFileReader::FinishRead(void)
 	if (m_requestPtr.load(std::memory_order_acquire) == nullptr)
 		return m_amtRead;
 	std::unique_lock<std::mutex> lock(m_mtx);
-	while (m_requestPtr)
+	while (m_requestPtr.load(std::memory_order_acquire))
 		m_condition.wait(lock);
 	return m_amtRead;
 }

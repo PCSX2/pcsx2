@@ -27,8 +27,8 @@
 #define PINE_DEFAULT_SLOT 28011
 #define PINE_EMULATOR_NAME "pcsx2"
 
-#include "common/PersistentThread.h"
-#include "System/SysThreads.h"
+#include "gui/PersistentThread.h"
+#include "gui/SysThreads.h"
 #include <string>
 #ifdef _WIN32
 #include <WinSock2.h>

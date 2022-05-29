@@ -19,6 +19,7 @@
 #include "GSRegs.h"
 #include "Renderers/SW/GSVertexSW.h"
 #include <lzma.h>
+#include <zstd.h>
 
 /*
 
@@ -56,9 +57,10 @@ struct GSDumpHeader
 
 class GSDumpBase
 {
+	FILE* m_gs;
+	std::string m_filename;
 	int m_frames;
 	int m_extra_frames;
-	FILE* m_gs;
 
 protected:
 	void AddHeader(const std::string& serial, u32 crc,
@@ -70,8 +72,10 @@ protected:
 	virtual void AppendRawData(u8 c) = 0;
 
 public:
-	GSDumpBase(const std::string& fn);
+	GSDumpBase(std::string fn);
 	virtual ~GSDumpBase();
+
+	__fi const std::string& GetPath() const { return m_filename; }
 
 	void ReadFIFO(u32 size);
 	void Transfer(int index, const u8* mem, size_t size);
@@ -106,4 +110,23 @@ public:
 		u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
 		const freezeData& fd, const GSPrivRegSet* regs);
 	virtual ~GSDumpXz();
+};
+
+class GSDumpZst final : public GSDumpBase
+{
+	ZSTD_CStream* m_strm;
+
+	std::vector<u8> m_in_buff;
+	std::vector<u8> m_out_buff;
+
+	void MayFlush();
+	void Compress(ZSTD_EndDirective action);
+	void AppendRawData(const void* data, size_t size);
+	void AppendRawData(u8 c);
+
+public:
+	GSDumpZst(const std::string& fn, const std::string& serial, u32 crc,
+		u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+		const freezeData& fd, const GSPrivRegSet* regs);
+	virtual ~GSDumpZst();
 };

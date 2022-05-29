@@ -19,6 +19,7 @@
 #include "Window/GSSetting.h"
 #include "SaveState.h"
 #include "pcsx2/Config.h"
+#include "pcsx2/GS/config.h"
 
 #include <map>
 
@@ -60,27 +61,26 @@ void GSreset();
 void GSclose();
 void GSgifSoftReset(u32 mask);
 void GSwriteCSR(u32 csr);
-void GSinitReadFIFO(u8* mem);
-void GSreadFIFO(u8* mem);
-void GSinitReadFIFO2(u8* mem, u32 size);
-void GSreadFIFO2(u8* mem, u32 size);
+void GSInitAndReadFIFO(u8* mem, u32 size);
 void GSgifTransfer(const u8* mem, u32 size);
 void GSgifTransfer1(u8* mem, u32 addr);
 void GSgifTransfer2(u8* mem, u32 size);
 void GSgifTransfer3(u8* mem, u32 size);
 void GSvsync(u32 field, bool registers_written);
-u32 GSmakeSnapshot(char* path);
 int GSfreeze(FreezeAction mode, freezeData* data);
+void GSQueueSnapshot(const std::string& path, u32 gsdump_frames = 0);
+void GSStopGSDump();
 #ifndef PCSX2_CORE
 void GSkeyEvent(const HostKeyEvent& e);
 void GSconfigure();
 int GStest();
-#endif
 bool GSsetupRecording(std::string& filename);
 void GSendRecording();
+#endif
 void GSsetGameCRC(u32 crc, int options);
 void GSsetFrameSkip(int frameskip);
 
+GSVideoMode GSgetDisplayMode();
 void GSgetInternalResolution(int* width, int* height);
 void GSgetStats(std::string& info);
 void GSgetTitleStats(std::string& info);
@@ -127,7 +127,7 @@ public:
 	void SetConfigDir();
 
 	std::vector<GSSetting> m_gs_renderers;
-	std::vector<GSSetting> m_gs_interlace;
+	std::vector<GSSetting> m_gs_deinterlace;
 	std::vector<GSSetting> m_gs_upscale_multiplier;
 	std::vector<GSSetting> m_gs_max_anisotropy;
 	std::vector<GSSetting> m_gs_dithering;
@@ -141,6 +141,7 @@ public:
 	std::vector<GSSetting> m_gs_crc_level;
 	std::vector<GSSetting> m_gs_acc_blend_level;
 	std::vector<GSSetting> m_gs_tv_shaders;
+	std::vector<GSSetting> m_gs_dump_compression;
 };
 
 struct GSError

@@ -17,10 +17,10 @@
 #include "PrecompiledHeader.h"
 #include <time.h>
 
-#include "IopCommon.h"
 #include "iR3000A.h"
 #include "IopMem.h"
 #include "IopDma.h"
+#include "IopGte.h"
 
 using namespace x86Emitter;
 

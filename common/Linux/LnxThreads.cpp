@@ -14,14 +14,27 @@
  */
 
 #if !defined(_WIN32) && !defined(__APPLE__)
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <unistd.h>
 #if defined(__linux__)
 #include <sys/prctl.h>
+#include <sys/types.h>
+#include <sched.h>
+
+// glibc < v2.30 doesn't define gettid...
+#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
+#include <sys/syscall.h>
+#define gettid() syscall(SYS_gettid)
+#endif
+
 #elif defined(__unix__)
 #include <pthread_np.h>
 #endif
 
-#include "common/PersistentThread.h"
+#include "common/Threading.h"
 
 // We wont need this until we actually have this more then just stubbed out, so I'm commenting this out
 // to remove an unneeded dependency.
@@ -40,6 +53,11 @@
 __forceinline void Threading::Sleep(int ms)
 {
 	usleep(1000 * ms);
+}
+
+__forceinline void Threading::Timeslice()
+{
+	sched_yield();
 }
 
 // For use in spin/wait loops,  Acts as a hint to Intel CPUs and should, in theory
@@ -96,29 +114,94 @@ u64 Threading::GetThreadCpuTime()
 	return get_thread_time();
 }
 
-u64 Threading::pxThread::GetCpuTime() const
+Threading::ThreadHandle::ThreadHandle() = default;
+
+Threading::ThreadHandle::ThreadHandle(const ThreadHandle& handle)
+	: m_native_handle(handle.m_native_handle)
+#ifdef __linux__
+	, m_native_id(handle.m_native_id)
+#endif
 {
-	// Get the cpu time for the thread belonging to this object.  Use m_native_id and/or
-	// m_native_handle to implement it. Return value should be a measure of total time the
-	// thread has used on the CPU (scaled by the value returned by GetThreadTicksPerSecond(),
-	// which typically would be an OS-provided scalar or some sort).
-
-	if (!m_native_id)
-		return 0;
-
-	return get_thread_time(m_native_id);
 }
 
-void Threading::pxThread::_platform_specific_OnStartInThread()
+Threading::ThreadHandle::ThreadHandle(ThreadHandle&& handle)
+	: m_native_handle(handle.m_native_handle)
+#ifdef __linux__
+	, m_native_id(handle.m_native_id)
+#endif
 {
-	// Obtain linux-specific thread IDs or Handles here, which can be used to query
-	// kernel scheduler performance information.
-	m_native_id = (uptr)pthread_self();
+	handle.m_native_handle = nullptr;
+#ifdef __linux__
+	handle.m_native_id = 0;
+#endif
 }
 
-void Threading::pxThread::_platform_specific_OnCleanupInThread()
+Threading::ThreadHandle::~ThreadHandle() = default;
+
+Threading::ThreadHandle Threading::ThreadHandle::GetForCallingThread()
 {
-	// Cleanup handles here, which were opened above.
+	ThreadHandle ret;
+	ret.m_native_handle = (void*)pthread_self();
+#ifdef __linux__
+	ret.m_native_id = gettid();
+#endif
+	return ret;
+}
+
+Threading::ThreadHandle& Threading::ThreadHandle::operator=(ThreadHandle&& handle)
+{
+	m_native_handle = handle.m_native_handle;
+	handle.m_native_handle = nullptr;
+#ifdef __linux__
+	m_native_id = handle.m_native_id;
+	handle.m_native_id = 0;
+#endif
+	return *this;
+}
+
+Threading::ThreadHandle& Threading::ThreadHandle::operator=(const ThreadHandle& handle)
+{
+	m_native_handle = handle.m_native_handle;
+#ifdef __linux__
+	m_native_id = handle.m_native_id;
+#endif
+	return *this;
+}
+
+u64 Threading::ThreadHandle::GetCPUTime() const
+{
+	return m_native_handle ? get_thread_time((uptr)m_native_handle) : 0;
+}
+
+bool Threading::ThreadHandle::SetAffinity(u64 processor_mask) const
+{
+#if defined(__linux__)
+	cpu_set_t set;
+	CPU_ZERO(&set);
+
+	if (processor_mask != 0)
+	{
+		for (u32 i = 0; i < 64; i++)
+		{
+			if (processor_mask & (static_cast<u64>(1) << i))
+			{
+				CPU_SET(i, &set);
+			}
+		}
+	}
+	else
+	{
+		long num_processors = sysconf(_SC_NPROCESSORS_CONF);
+		for (long i = 0; i < num_processors; i++)
+		{
+			CPU_SET(i, &set);
+		}
+	}
+
+	return sched_setaffinity((pid_t)m_native_id, sizeof(set), &set) >= 0;
+#else
+	return false;
+#endif
 }
 
 void Threading::SetNameOfCurrentThread(const char* name)

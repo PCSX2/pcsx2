@@ -14,7 +14,11 @@
  */
 
 #include "PrecompiledHeader.h"
+
+#include "common/RedtapeWindows.h"
+
 #include <commdlg.h>
+
 #include "usb-msd.h"
 #include "USB/Win32/Config_usb.h"
 #include "USB/Win32/resource_usb.h"

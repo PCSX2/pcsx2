@@ -15,6 +15,10 @@
 
 #pragma once
 
+#include "common/Pcsx2Defs.h"
+#include <string_view>
+#include <vector>
+
 enum IsoFS_Type
 {
 	FStype_ISO9660 = 1,
@@ -33,21 +37,21 @@ public:
 	IsoDirectory(SectorSource& r, IsoFileDescriptor directoryEntry);
 	virtual ~IsoDirectory() = default;
 
-	wxString FStype_ToString() const;
+	std::string FStype_ToString() const;
 	SectorSource& GetReader() const { return internalReader; }
 
-	bool Exists(const wxString& filePath) const;
-	bool IsFile(const wxString& filePath) const;
-	bool IsDir(const wxString& filePath) const;
+	bool Exists(const std::string_view& filePath) const;
+	bool IsFile(const std::string_view& filePath) const;
+	bool IsDir(const std::string_view& filePath) const;
 
-	u32 GetFileSize(const wxString& filePath) const;
+	u32 GetFileSize(const std::string_view& filePath) const;
 
-	IsoFileDescriptor FindFile(const wxString& filePath) const;
+	IsoFileDescriptor FindFile(const std::string_view& filePath) const;
 
 protected:
-	const IsoFileDescriptor& GetEntry(const wxString& fileName) const;
+	const IsoFileDescriptor& GetEntry(const std::string_view& fileName) const;
 	const IsoFileDescriptor& GetEntry(int index) const;
 
 	void Init(const IsoFileDescriptor& directoryEntry);
-	int GetIndexOf(const wxString& fileName) const;
+	int GetIndexOf(const std::string_view& fileName) const;
 };

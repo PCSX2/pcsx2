@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 
 #include <QtWidgets/QMessageBox>
@@ -126,8 +128,8 @@ void CreateMemoryCardDialog::createCard()
 #ifdef  _WIN32
 	if (m_ui.ntfsCompression->isChecked() && m_type == MemoryCardType::File)
 	{
-		const std::string fullPath(Path::CombineStdString(EmuFolders::MemoryCards, nameStr));
-		NTFS_CompressFile(StringUtil::UTF8StringToWxString(fullPath), true);
+		const std::string fullPath(Path::Combine(EmuFolders::MemoryCards, nameStr));
+		FileSystem::SetPathCompression(fullPath.c_str(), true);
 	}
 #endif
 

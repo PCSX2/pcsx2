@@ -18,6 +18,9 @@
 #include "IsoFileDescriptor.h"
 #include "SectorSource.h"
 
+#include "common/Pcsx2Defs.h"
+#include <string_view>
+
 class IsoFile
 {
 public:
@@ -35,13 +38,13 @@ protected:
 	int sectorOffset;
 
 public:
-	IsoFile(const IsoDirectory& dir, const wxString& filename);
-	IsoFile(SectorSource& reader, const wxString& filename);
+	IsoFile(const IsoDirectory& dir, const std::string_view& filename);
+	IsoFile(SectorSource& reader, const std::string_view& filename);
 	IsoFile(SectorSource& reader, const IsoFileDescriptor& fileEntry);
 	virtual ~IsoFile() = default;
 
 	u32 seek(u32 absoffset);
-	u32 seek(s64 offset, wxSeekMode ref_position);
+	u32 seek(s64 offset, int mode);
 	void reset();
 
 	s32 skip(s32 n);

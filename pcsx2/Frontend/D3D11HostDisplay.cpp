@@ -25,6 +25,7 @@
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/StringUtil.h"
+#include "common/RedtapeWindows.h"
 
 #include "Config.h"
 

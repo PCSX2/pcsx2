@@ -16,6 +16,8 @@
 #ifndef __ELF_H__
 #define __ELF_H__
 
+#include "common/SafeArray.h"
+#include "common/SafeArray.inl"
 #include "CDVD/IsoFS/IsoFSCDVD.h"
 #include "CDVD/IsoFS/IsoFS.h"
 
@@ -121,9 +123,9 @@ class ElfObject
 {
 	private:
 		SafeArray<u8> data;
-		ELF_PHR* proghead;
-		ELF_SHR* secthead;
-		wxString filename;
+		ELF_PHR* proghead = nullptr;
+		ELF_SHR* secthead = nullptr;
+		std::string filename;
 
 		void initElfHeaders(bool isPSXElf);
 		void readIso(IsoFile& file);
@@ -137,8 +139,8 @@ class ElfObject
 		// C++ does all the cleanup automagically for us.
 		virtual ~ElfObject() = default;
 
-		ElfObject(const wxString& srcfile, IsoFile& isofile, bool isPSXElf);
-		ElfObject( const wxString& srcfile, uint hdrsize, bool isPSXElf );
+		ElfObject(std::string srcfile, IsoFile& isofile, bool isPSXElf);
+		ElfObject(std::string srcfile, u32 hdrsize, bool isPSXElf);
 
 		void loadProgramHeaders();
 		void loadSectionHeaders();
@@ -153,14 +155,14 @@ class ElfObject
 };
 
 //-------------------
-extern void loadElfFile(const wxString& filename);
-extern int  GetPS2ElfName( wxString& dest );
+extern void loadElfFile(const std::string& filename);
+extern int  GetPS2ElfName( std::string& dest );
 
 
 extern u32 ElfCRC;
 extern u32 ElfEntry;
 extern std::pair<u32,u32> ElfTextRange;
-extern wxString LastELF;
+extern std::string LastELF;
 extern bool isPSXElf;
 
 #endif

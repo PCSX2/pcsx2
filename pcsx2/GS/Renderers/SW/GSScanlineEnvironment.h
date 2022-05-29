@@ -101,16 +101,26 @@ union GSScanlineSelector
 		return prim == GS_SPRITE_CLASS && iip == 0 && tfx == TFX_NONE && abe == 0 && ztst <= 1 && atst <= 1 && date == 0 && fge == 0;
 	}
 
+	std::string to_string() const
+	{
+		char str[1024];
+		sprintf(str,
+			"fpsm:%d zpsm:%d ztst:%d ztest:%d atst:%d afail:%d iip:%d rfb:%d fb:%d zb:%d zw:%d "
+			"tfx:%d tcc:%d fst:%d ltf:%d tlu:%d wms:%d wmt:%d mmin:%d lcm:%d tw:%d "
+			"fba:%d cclamp:%d date:%d datm:%d "
+			"prim:%d abe:%d %d%d%d%d fge:%d dthe:%d notest:%d pabe:%d aa1:%d "
+			"fwrite:%d ftest:%d zoverflow:%d zclamp:%d edge:%d",
+			fpsm, zpsm, ztst, ztest, atst, afail, iip, rfb, fb, zb, zwrite,
+			tfx, tcc, fst, ltf, tlu, wms, wmt, mmin, lcm, tw,
+			fba, colclamp, date, datm,
+			prim, abe, aba, abb, abc, abd, fge, dthe, notest, pabe, aa1,
+			fwrite, ftest, zoverflow, zclamp, edge);
+		return str;
+	}
+
 	void Print() const
 	{
-		fprintf(stderr, "fpsm:%d zpsm:%d ztst:%d ztest:%d atst:%d afail:%d iip:%d rfb:%d fb:%d zb:%d zw:%d "
-		                "tfx:%d tcc:%d fst:%d ltf:%d tlu:%d wms:%d wmt:%d mmin:%d lcm:%d tw:%d "
-		                "fba:%d cclamp:%d date:%d datm:%d "
-		                "prim:%d abe:%d %d%d%d%d fge:%d dthe:%d notest:%d\n",
-		        fpsm, zpsm, ztst, ztest, atst, afail, iip, rfb, fb, zb, zwrite,
-		        tfx, tcc, fst, ltf, tlu, wms, wmt, mmin, lcm, tw,
-		        fba, colclamp, date, datm,
-		        prim, abe, aba, abb, abc, abd, fge, dthe, notest);
+		fprintf(stderr, "%s\n", to_string().c_str());
 	}
 };
 
@@ -162,15 +172,15 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 #if _M_SSE >= 0x501
 
 	struct skip { GSVector8 z, s, t, q; GSVector8i rb, ga, f, _pad; } d[8];
-	struct step { GSVector4 stq; struct { u32 rb, ga; } c; struct { u32 z, f; } p; } d8;
-	struct { GSVector8i rb, ga; } c;
+	struct step { GSVector4 stq; struct { u32 rb, ga; } c; struct { u64 z; u32 f; } p; } d8;
 	struct { u32 z, f; } p;
+	struct { GSVector8i rb, ga; } c;
 
 	// these should be stored on stack as normal local variables (no free regs to use, esp cannot be saved to anywhere, and we need an aligned stack)
 
 	struct
 	{
-		GSVector8 z, zo;
+		GSVector8 z0, z1;
 		GSVector8i f;
 		GSVector8 s, t, q;
 		GSVector8i rb, ga;
@@ -198,7 +208,7 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 
 	struct
 	{
-		GSVector4 z, zo;
+		GSVector4 z0, z1;
 		GSVector4i f;
 		GSVector4 s, t, q;
 		GSVector4i rb, ga;

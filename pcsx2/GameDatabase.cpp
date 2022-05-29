@@ -18,6 +18,7 @@
 #include "GameDatabase.h"
 #include "Host.h"
 #include "Patch.h"
+#include "vtlb.h"
 
 #include "common/FileSystem.h"
 #include "common/Path.h"
@@ -56,23 +57,22 @@ std::string GameDatabaseSchema::GameEntry::memcardFiltersAsString() const
 	return fmt::to_string(fmt::join(memcardFilters, "/"));
 }
 
-const GameDatabaseSchema::Patch* GameDatabaseSchema::GameEntry::findPatch(const std::string_view& crc) const
+const std::string* GameDatabaseSchema::GameEntry::findPatch(u32 crc) const
 {
-	std::string crcLower = StringUtil::toLower(crc);
-	Console.WriteLn(fmt::format("[GameDB] Searching for patch with CRC '{}'", crc));
+	Console.WriteLn(fmt::format("[GameDB] Searching for patch with CRC '{:08X}'", crc));
 
-	auto it = patches.find(crcLower);
+	auto it = patches.find(crc);
 	if (it != patches.end())
 	{
-		Console.WriteLn(fmt::format("[GameDB] Found patch with CRC '{}'", crc));
-		return &patches.at(crcLower);
+		Console.WriteLn(fmt::format("[GameDB] Found patch with CRC '{:08X}'", crc));
+		return &it->second;
 	}
 
-	it = patches.find("default");
+	it = patches.find(0);
 	if (it != patches.end())
 	{
 		Console.WriteLn("[GameDB] Found and falling back to default patch");
-		return &patches.at("default");
+		return &it->second;
 	}
 	Console.WriteLn("[GameDB] No CRC-specific patch or default patch found");
 	return nullptr;
@@ -244,20 +244,24 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 	{
 		for (const ryml::NodeRef& n : node["patches"].children())
 		{
-			auto crc = StringUtil::toLower(std::string(n.key().str, n.key().len));
-			if (gameEntry.patches.count(crc) == 1)
+			// use a crc of 0 for default patches
+			const std::string_view crc_str(n.key().str, n.key().len);
+			const std::optional<u32> crc = (StringUtil::compareNoCase(crc_str, "default")) ? std::optional<u32>(0) : StringUtil::FromChars<u32>(crc_str, 16);
+			if (!crc.has_value())
 			{
-				Console.Error(fmt::format("[GameDB] Duplicate CRC '{}' found for serial: '{}'. Skipping, CRCs are case-insensitive!", crc, serial));
+				Console.Error(fmt::format("[GameDB] Invalid CRC '{}' found for serial: '{}'. Skipping!", crc_str, serial));
 				continue;
 			}
-			GameDatabaseSchema::Patch patch;
-			if (n.has_child("content"))
+			if (gameEntry.patches.find(crc.value()) != gameEntry.patches.end())
 			{
-				std::string patchLines;
-				n["content"] >> patchLines;
-				patch = StringUtil::splitOnNewLine(patchLines);
+				Console.Error(fmt::format("[GameDB] Duplicate CRC '{}' found for serial: '{}'. Skipping, CRCs are case-insensitive!", crc_str, serial));
+				continue;
 			}
-			gameEntry.patches[crc] = patch;
+
+			std::string patch;
+			if (n.has_child("content"))
+				n["content"] >> patch;
+			gameEntry.patches.emplace(crc.value(), std::move(patch));
 		}
 	}
 
@@ -285,6 +289,7 @@ static const char* s_gs_hw_fix_names[] = {
 	"halfPixelOffset",
 	"roundSprite",
 	"texturePreloading",
+	"deinterlace",
 };
 static_assert(std::size(s_gs_hw_fix_names) == static_cast<u32>(GameDatabaseSchema::GSHWFixId::Count), "HW fix name lookup is correct size");
 
@@ -308,6 +313,7 @@ bool GameDatabaseSchema::isUserHackHWFix(GSHWFixId id)
 {
 	switch (id)
 	{
+		case GSHWFixId::Deinterlace:
 		case GSHWFixId::Mipmap:
 		case GSHWFixId::TexturePreloading:
 		case GSHWFixId::ConservativeFramebuffer:
@@ -323,6 +329,113 @@ bool GameDatabaseSchema::isUserHackHWFix(GSHWFixId id)
 		default:
 			return true;
 	}
+}
+
+u32 GameDatabaseSchema::GameEntry::applyGameFixes(Pcsx2Config& config, bool applyAuto) const
+{
+	// Only apply core game fixes if the user has enabled them.
+	if (!applyAuto)
+		Console.Warning("[GameDB] Game Fixes are disabled");
+
+	u32 num_applied_fixes = 0;
+
+	if (eeRoundMode != GameDatabaseSchema::RoundMode::Undefined)
+	{
+		const SSE_RoundMode eeRM = (SSE_RoundMode)enum_cast(eeRoundMode);
+		if (EnumIsValid(eeRM))
+		{
+			if (applyAuto)
+			{
+				PatchesCon->WriteLn("(GameDB) Changing EE/FPU roundmode to %d [%s]", eeRM, EnumToString(eeRM));
+				config.Cpu.sseMXCSR.SetRoundMode(eeRM);
+				num_applied_fixes++;
+			}
+			else
+				PatchesCon->Warning("[GameDB] Skipping changing EE/FPU roundmode to %d [%s]", eeRM, EnumToString(eeRM));
+		}
+	}
+
+	if (vuRoundMode != GameDatabaseSchema::RoundMode::Undefined)
+	{
+		const SSE_RoundMode vuRM = (SSE_RoundMode)enum_cast(vuRoundMode);
+		if (EnumIsValid(vuRM))
+		{
+			if (applyAuto)
+			{
+				PatchesCon->WriteLn("(GameDB) Changing VU0/VU1 roundmode to %d [%s]", vuRM, EnumToString(vuRM));
+				config.Cpu.sseVUMXCSR.SetRoundMode(vuRM);
+				num_applied_fixes++;
+			}
+			else
+				PatchesCon->Warning("[GameDB] Skipping changing VU0/VU1 roundmode to %d [%s]", vuRM, EnumToString(vuRM));
+		}
+	}
+
+	if (eeClampMode != GameDatabaseSchema::ClampMode::Undefined)
+	{
+		const int clampMode = enum_cast(eeClampMode);
+		if (applyAuto)
+		{
+			PatchesCon->WriteLn("(GameDB) Changing EE/FPU clamp mode [mode=%d]", clampMode);
+			config.Cpu.Recompiler.fpuOverflow = (clampMode >= 1);
+			config.Cpu.Recompiler.fpuExtraOverflow = (clampMode >= 2);
+			config.Cpu.Recompiler.fpuFullMode = (clampMode >= 3);
+			num_applied_fixes++;
+		}
+		else
+			PatchesCon->Warning("[GameDB] Skipping changing EE/FPU clamp mode [mode=%d]", clampMode);
+	}
+
+	if (vuClampMode != GameDatabaseSchema::ClampMode::Undefined)
+	{
+		const int clampMode = enum_cast(vuClampMode);
+		if (applyAuto)
+		{
+			PatchesCon->WriteLn("(GameDB) Changing VU0/VU1 clamp mode [mode=%d]", clampMode);
+			config.Cpu.Recompiler.vuOverflow = (clampMode >= 1);
+			config.Cpu.Recompiler.vuExtraOverflow = (clampMode >= 2);
+			config.Cpu.Recompiler.vuSignOverflow = (clampMode >= 3);
+			num_applied_fixes++;
+		}
+		else
+			PatchesCon->Warning("[GameDB] Skipping changing VU0/VU1 clamp mode [mode=%d]", clampMode);
+	}
+
+	// TODO - config - this could be simplified with maps instead of bitfields and enums
+	for (const auto& it : speedHacks)
+	{
+		const bool mode = it.second != 0;
+		if (!applyAuto)
+		{
+			PatchesCon->Warning("[GameDB] Skipping setting Speedhack '%s' to [mode=%d]", EnumToString(it.first), mode);
+			continue;
+		}
+		// Legacy note - speedhacks are setup in the GameDB as integer values, but
+		// are effectively booleans like the gamefixes
+		config.Speedhacks.Set(it.first, mode);
+		PatchesCon->WriteLn("(GameDB) Setting Speedhack '%s' to [mode=%d]", EnumToString(it.first), mode);
+		num_applied_fixes++;
+	}
+
+	// TODO - config - this could be simplified with maps instead of bitfields and enums
+	for (const GamefixId id : gameFixes)
+	{
+		if (!applyAuto)
+		{
+			PatchesCon->Warning("[GameDB] Skipping Gamefix: %s", EnumToString(id));
+			continue;
+		}
+		// if the fix is present, it is said to be enabled
+		config.Gamefixes.Set(id, true);
+		PatchesCon->WriteLn("(GameDB) Enabled Gamefix: %s", EnumToString(id));
+		num_applied_fixes++;
+
+		// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
+		if (id == Fix_GoemonTlbMiss && true)
+			vtlb_Alloc_Ppmap();
+	}
+
+	return num_applied_fixes;
 }
 
 u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& config) const
@@ -406,7 +519,12 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 			case GSHWFixId::TrilinearFiltering:
 			{
 				if (value >= 0 && value <= static_cast<int>(TriFiltering::Forced))
-					config.UserHacks_TriFilter = static_cast<TriFiltering>(value);
+				{
+					if (config.UserHacks_TriFilter == TriFiltering::Automatic)
+						config.UserHacks_TriFilter = static_cast<TriFiltering>(value);
+					else if (config.UserHacks_TriFilter == TriFiltering::Off)
+						Console.Warning("[GameDB] Game requires trilinear filtering but it has been force disabled.");
+				}
 			}
 			break;
 
@@ -435,6 +553,16 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 				if (value >= 0 && value <= static_cast<int>(TexturePreloadingLevel::Full))
 					config.TexturePreloading = std::min(config.TexturePreloading, static_cast<TexturePreloadingLevel>(value));
 			}
+			break;
+
+			case GSHWFixId::Deinterlace:
+				if (value >= 0 && value <= static_cast<int>(GSInterlaceMode::Automatic))
+				{
+					if (config.InterlaceMode == GSInterlaceMode::Automatic)
+						config.InterlaceMode = static_cast<GSInterlaceMode>(value);
+					else
+						Console.Warning("[GameDB] Game requires different deinterlace mode but it has been overridden by user setting.");
+				}
 			break;
 
 			default:

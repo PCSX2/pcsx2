@@ -18,7 +18,8 @@
 #include <memory>
 #include <stack>
 #include <wx/wx.h>
-#include "common/Dependencies.h"
+#include "common/Assertions.h"
+#include "common/Pcsx2Defs.h"
 
 // ----------------------------------------------------------------------------
 // wxGuiTools.h
@@ -688,7 +689,6 @@ public:
 	virtual void OnFontChanged();
 
 	pxWindowTextWriter& WriteLn();
-	pxWindowTextWriter& FormatLn(const wxChar* fmt, ...);
 	pxWindowTextWriter& WriteLn(const wxChar* fmt);
 	pxWindowTextWriter& SetFont(const wxFont& font);
 	pxWindowTextWriter& Align(const wxAlignment& align);
@@ -728,7 +728,6 @@ public:
 	}
 
 	pxWindowTextWriter& SetY(int ypos);
-	pxWindowTextWriter& MoveY(int ydelta);
 };
 
 // --------------------------------------------------------------------------------------
@@ -777,6 +776,35 @@ public:
 };
 
 // --------------------------------------------------------------------------------------
+//  wxDoNotLogInThisScope
+// --------------------------------------------------------------------------------------
+// This class is used to disable wx's sometimes inappropriate amount of forced error logging
+// during specific activities.  For example, when using wxDynamicLibrary to detect the
+// validity of DLLs, wx will log errors for missing symbols. (sigh)
+//
+// Usage: Basic auto-cleanup destructor class.  Create an instance inside a scope, and
+// logging will be re-enabled when scope is terminated. :)
+//
+class wxDoNotLogInThisScope
+{
+	DeclareNoncopyableObject(wxDoNotLogInThisScope);
+
+protected:
+	bool m_prev;
+
+public:
+	wxDoNotLogInThisScope()
+	{
+		m_prev = wxLog::EnableLogging(false);
+	}
+
+	virtual ~wxDoNotLogInThisScope()
+	{
+		wxLog::EnableLogging(m_prev);
+	}
+};
+
+// --------------------------------------------------------------------------------------
 //  pxFitToDigits
 // --------------------------------------------------------------------------------------
 // Fits a given text or spinner control to the number of digits requested, since by default
@@ -789,7 +817,6 @@ extern wxTextCtrl* CreateNumericalTextCtrl(wxWindow* parent, int digits, long fl
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-extern bool pxDialogExists(const wxString& name);
 extern bool pxIsValidWindowPosition(const wxWindow& window, const wxPoint& windowPos);
 extern wxRect wxGetDisplayArea();
 extern wxString pxGetAppName();

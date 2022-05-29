@@ -17,6 +17,8 @@
 
 #include "common/Console.h"
 #include "ContextEGL.h"
+#include <algorithm>
+#include <cstring>
 #include <optional>
 #include <vector>
 
@@ -285,23 +287,18 @@ namespace GL
 		Console.WriteLn(
 			"Trying version %u.%u (%s)", version.major_version, version.minor_version,
 			version.profile == Context::Profile::ES ? "ES" : (version.profile == Context::Profile::Core ? "Core" : "None"));
-		int surface_attribs[16];
-		int nsurface_attribs = 0;
-		surface_attribs[nsurface_attribs++] = EGL_RENDERABLE_TYPE;
-		surface_attribs[nsurface_attribs++] = (version.profile == Profile::ES) ?
-                                                  ((version.major_version >= 3) ? EGL_OPENGL_ES3_BIT :
-                                                                                  ((version.major_version == 2) ? EGL_OPENGL_ES2_BIT : EGL_OPENGL_ES_BIT)) :
-                                                  EGL_OPENGL_BIT;
-		surface_attribs[nsurface_attribs++] = EGL_SURFACE_TYPE;
-		surface_attribs[nsurface_attribs++] = (m_wi.type != WindowInfo::Type::Surfaceless) ? EGL_WINDOW_BIT : 0;
-		surface_attribs[nsurface_attribs++] = EGL_RED_SIZE;
-		surface_attribs[nsurface_attribs++] = 8;
-		surface_attribs[nsurface_attribs++] = EGL_GREEN_SIZE;
-		surface_attribs[nsurface_attribs++] = 8;
-		surface_attribs[nsurface_attribs++] = EGL_BLUE_SIZE;
-		surface_attribs[nsurface_attribs++] = 8;
-		surface_attribs[nsurface_attribs++] = EGL_NONE;
-		surface_attribs[nsurface_attribs++] = 0;
+
+		const int renderable_type = version.profile == Profile::ES
+			? ((version.major_version >= 3) ? EGL_OPENGL_ES3_BIT : ((version.major_version == 2) ? EGL_OPENGL_ES2_BIT : EGL_OPENGL_ES_BIT))
+			: EGL_OPENGL_BIT;
+		const int surface_attribs[] = {
+			EGL_RENDERABLE_TYPE, renderable_type,
+			EGL_SURFACE_TYPE, (m_wi.type != WindowInfo::Type::Surfaceless) ? EGL_WINDOW_BIT : 0,
+			EGL_RED_SIZE, 8,
+			EGL_GREEN_SIZE, 8,
+			EGL_BLUE_SIZE, 8,
+			EGL_NONE
+		};
 
 		EGLint num_configs;
 		if (!eglChooseConfig(m_display, surface_attribs, nullptr, 0, &num_configs) || num_configs == 0)
@@ -318,33 +315,30 @@ namespace GL
 		}
 		configs.resize(static_cast<u32>(num_configs));
 
-		std::optional<EGLConfig> config;
-		for (EGLConfig check_config : configs)
-		{
-			if (CheckConfigSurfaceFormat(check_config))
+		m_config = [this, &configs]() {
+			const auto found_config = std::find_if(std::begin(configs), std::end(configs), [&](const auto& check_config) {
+				 return CheckConfigSurfaceFormat(check_config);
+			});
+			if (found_config == std::end(configs))
 			{
-				config = check_config;
-				break;
+				Console.Warning("No EGL configs matched exactly, using first.");
+				return configs.front();
 			}
-		}
+			else
+			{
+				return *found_config;
+			}
+		}();
 
-		if (!config.has_value())
-		{
-			Console.Warning("No EGL configs matched exactly, using first.");
-			config = configs.front();
-		}
-
-		int attribs[8];
-		int nattribs = 0;
-		if (version.profile != Profile::NoProfile)
-		{
-			attribs[nattribs++] = EGL_CONTEXT_MAJOR_VERSION;
-			attribs[nattribs++] = version.major_version;
-			attribs[nattribs++] = EGL_CONTEXT_MINOR_VERSION;
-			attribs[nattribs++] = version.minor_version;
-		}
-		attribs[nattribs++] = EGL_NONE;
-		attribs[nattribs++] = 0;
+		const auto attribs = [version]() -> std::array<int, 8> {
+			if (version.profile != Profile::NoProfile)
+				return {
+					EGL_CONTEXT_MAJOR_VERSION, version.major_version,
+					EGL_CONTEXT_MINOR_VERSION, version.minor_version,
+					EGL_NONE
+				};
+			return {EGL_NONE};
+		}();
 
 		if (!eglBindAPI((version.profile == Profile::ES) ? EGL_OPENGL_ES_API : EGL_OPENGL_API))
 		{
@@ -352,7 +346,7 @@ namespace GL
 			return false;
 		}
 
-		m_context = eglCreateContext(m_display, config.value(), share_context, attribs);
+		m_context = eglCreateContext(m_display, m_config, share_context, attribs.data());
 		if (!m_context)
 		{
 			Console.Error("eglCreateContext() failed: %d", eglGetError());
@@ -363,7 +357,6 @@ namespace GL
 			"Got version %u.%u (%s)", version.major_version, version.minor_version,
 			version.profile == Context::Profile::ES ? "ES" : (version.profile == Context::Profile::Core ? "Core" : "None"));
 
-		m_config = config.value();
 		m_version = version;
 		return true;
 	}

@@ -69,12 +69,17 @@ namespace GameList
 	};
 
 	const char* EntryTypeToString(EntryType type);
+	const char* RegionToString(Region region);
 	const char* EntryCompatibilityRatingToString(CompatibilityRating rating);
 
-	bool IsScannableFilename(const std::string& path);
+	bool IsScannableFilename(const std::string_view& path);
 
 	/// Fills in boot parameters (iso or elf) based on the game list entry.
 	void FillBootParametersForEntry(VMBootParameters* params, const Entry* entry);
+
+	/// Populates a game list entry struct with information from the iso/elf.
+	/// Do *not* call while the system is running, it will mess with CDVD state.
+	bool PopulateEntryFromPath(const std::string& path, GameList::Entry* entry);
 
 	// Game list access. It's the caller's responsibility to hold the lock while manipulating the entry in any way.
 	std::unique_lock<std::recursive_mutex> GetLock();

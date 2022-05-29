@@ -377,7 +377,7 @@ struct V_Core
 {
 	static const uint NumVoices = 24;
 
-	int Index; // Core index identifier.
+	u32 Index; // Core index identifier.
 
 	// Voice Gates -- These are SSE-related values, and must always be
 	// first to ensure 16 byte alignment
@@ -535,11 +535,6 @@ struct V_Core
 
 	void LogAutoDMA(FILE* fp);
 
-	s32 NewDmaRead(u32* data, u32 bytesLeft, u32* bytesProcessed);
-	s32 NewDmaWrite(u32* data, u32 bytesLeft, u32* bytesProcessed);
-	void NewDmaInterrupt();
-
-	// old dma only
 	void DoDMAwrite(u16* pMem, u32 size);
 	void DoDMAread(u16* pMem, u32 size);
 	void FinishDMAread();
@@ -554,9 +549,9 @@ extern V_Core Cores[2];
 extern V_SPDIF Spdif;
 
 // Output Buffer Writing Position (the same for all data);
-extern s16 OutPos;
+extern u16 OutPos;
 // Input Buffer Reading Position (the same for all data);
-extern s16 InputPos;
+extern u16 InputPos;
 // SPU Mixing Cycles ("Ticks mixed" counter)
 extern u32 Cycles;
 
@@ -576,9 +571,9 @@ namespace SPU2Savestate
 {
 	struct DataBlock;
 
-	extern s32 __fastcall FreezeIt(DataBlock& spud);
-	extern s32 __fastcall ThawIt(DataBlock& spud);
-	extern s32 __fastcall SizeIt();
+	extern s32 FreezeIt(DataBlock& spud);
+	extern s32 ThawIt(DataBlock& spud);
+	extern s32 SizeIt();
 } // namespace SPU2Savestate
 
 // --------------------------------------------------------------------------------------

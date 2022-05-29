@@ -24,7 +24,9 @@
 #include "Global.h"
 #include "Dma.h"
 #include "IopDma.h"
-#include "IopCommon.h"
+#include "IopCounters.h"
+#include "R3000A.h"
+#include "IopHw.h"
 
 #include "spu2.h" // needed until I figure out a nice solution for irqcallback dependencies.
 
@@ -35,8 +37,8 @@ V_CoreDebug DebugCores[2];
 V_Core Cores[2];
 V_SPDIF Spdif;
 
-s16 OutPos;
-s16 InputPos;
+u16 OutPos;
+u16 InputPos;
 u32 Cycles;
 
 int PlayMode;
@@ -212,9 +214,7 @@ void V_Core::Init(int index)
 	}
 
 	DMAICounter = 0;
-	AutoDmaFree = 0;
 	AdmaInProgress = false;
-	DmaStarted = false;
 
 	Regs.STATX = 0x80;
 	Regs.ENDX = 0xffffff; // PS2 confirmed
@@ -279,17 +279,6 @@ s32 V_Core::EffectsBufferIndexer(s32 offset) const
 void V_Core::UpdateEffectsBufferSize()
 {
 	const s32 newbufsize = EffectsEndA - EffectsStartA + 1;
-
-	if ((newbufsize * 2) > 0x20000) // max 128kb per core
-	{
-		//printf("too big, returning\n");
-		//return;
-	}
-
-	// bad optimization?
-	//if (newbufsize == EffectsBufferSize && EffectsStartA == EffectsBufferStart) return;
-
-	//printf("Rvb Area change: ESA = %x, EEA = %x, Size(dec) = %d, Size(hex) = %x FxEnable = %d\n", EffectsStartA, EffectsEndA, newbufsize * 2, newbufsize * 2, FxEnable);
 
 	RevBuffers.NeedsUpdated = false;
 	EffectsBufferSize = newbufsize;
@@ -1121,7 +1110,7 @@ static __forceinline u16 GetLoWord(u32& src)
 }
 
 template <int CoreIdx, int VoiceIdx, int param>
-static void __fastcall RegWrite_VoiceParams(u16 value)
+static void RegWrite_VoiceParams(u16 value)
 {
 	const int core = CoreIdx;
 	const int voice = VoiceIdx;
@@ -1191,7 +1180,7 @@ static void __fastcall RegWrite_VoiceParams(u16 value)
 }
 
 template <int CoreIdx, int VoiceIdx, int address>
-static void __fastcall RegWrite_VoiceAddr(u16 value)
+static void RegWrite_VoiceAddr(u16 value)
 {
 	const int core = CoreIdx;
 	const int voice = VoiceIdx;
@@ -1270,7 +1259,7 @@ static void __fastcall RegWrite_VoiceAddr(u16 value)
 }
 
 template <int CoreIdx, int cAddr>
-static void __fastcall RegWrite_Core(u16 value)
+static void RegWrite_Core(u16 value)
 {
 	const int omem = cAddr;
 	const int core = CoreIdx;
@@ -1583,7 +1572,7 @@ static void __fastcall RegWrite_Core(u16 value)
 }
 
 template <int CoreIdx, int addr>
-static void __fastcall RegWrite_CoreExt(u16 value)
+static void RegWrite_CoreExt(u16 value)
 {
 	V_Core& thiscore = Cores[CoreIdx];
 	const int core = CoreIdx;
@@ -1659,7 +1648,7 @@ static void __fastcall RegWrite_CoreExt(u16 value)
 
 
 template <int core, int addr>
-static void __fastcall RegWrite_Reverb(u16 value)
+static void RegWrite_Reverb(u16 value)
 {
 	// Signal to the Reverb code that the effects buffers need to be re-aligned.
 	// This is both simple, efficient, and safe, since we only want to re-align
@@ -1674,19 +1663,19 @@ static void __fastcall RegWrite_Reverb(u16 value)
 }
 
 template <int addr>
-static void __fastcall RegWrite_SPDIF(u16 value)
+static void RegWrite_SPDIF(u16 value)
 {
 	*(regtable[addr >> 1]) = value;
 	UpdateSpdifMode();
 }
 
 template <int addr>
-static void __fastcall RegWrite_Raw(u16 value)
+static void RegWrite_Raw(u16 value)
 {
 	*(regtable[addr >> 1]) = value;
 }
 
-static void __fastcall RegWrite_Null(u16 value)
+static void RegWrite_Null(u16 value)
 {
 }
 
@@ -1725,7 +1714,7 @@ static void __fastcall RegWrite_Null(u16 value)
 //  tbl_reg_writes  - Register Write Function Invocation LUT
 // --------------------------------------------------------------------------------------
 
-typedef void __fastcall RegWriteHandler(u16 value);
+typedef void RegWriteHandler(u16 value);
 static RegWriteHandler* const tbl_reg_writes[0x401] =
 	{
 		VoiceParamsCore(0), // 0x000 -> 0x180

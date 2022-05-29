@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Global.h"
+#include "common/Assertions.h"
 
 void ADMAOutLogWrite(void* lpData, u32 ulSize);
 

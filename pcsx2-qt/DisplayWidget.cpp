@@ -15,8 +15,11 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/Assertions.h"
+
 #include "DisplayWidget.h"
 #include "EmuThread.h"
+#include "MainWindow.h"
 #include "QtHost.h"
 
 #include "pcsx2/GS/GSIntrin.h" // _BitScanForward
@@ -24,6 +27,7 @@
 #include <QtCore/QDebug>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QKeyEvent>
+#include <QtGui/QResizeEvent>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
 #include <QtGui/QWindowStateChangeEvent>
@@ -41,6 +45,7 @@ DisplayWidget::DisplayWidget(QWidget* parent)
 	setAttribute(Qt::WA_NativeWindow, true);
 	setAttribute(Qt::WA_NoSystemBackground, true);
 	setAttribute(Qt::WA_PaintOnScreen, true);
+	setAttribute(Qt::WA_KeyCompression, false);
 	setFocusPolicy(Qt::StrongFocus);
 	setMouseTracking(true);
 }
@@ -141,12 +146,33 @@ bool DisplayWidget::event(QEvent* event)
 		case QEvent::KeyRelease:
 		{
 			const QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
-			if (!key_event->isAutoRepeat())
+			if (key_event->isAutoRepeat())
+				return true;
+
+			// For some reason, Windows sends "fake" key events.
+			// Scenario: Press shift, press F1, release shift, release F1.
+			// Events: Shift=Pressed, F1=Pressed, Shift=Released, **F1=Pressed**, F1=Released.
+			// To work around this, we keep track of keys pressed with modifiers in a list, and
+			// discard the press event when it's been previously activated. It's pretty gross,
+			// but I can't think of a better way of handling it, and there doesn't appear to be
+			// any window flag which changes this behavior that I can see.
+
+			const int key = key_event->key();
+			const bool pressed = (key_event->type() == QEvent::KeyPress);
+			const auto it = std::find(m_keys_pressed_with_modifiers.begin(), m_keys_pressed_with_modifiers.end(), key);
+			if (it != m_keys_pressed_with_modifiers.end())
 			{
-				emit windowKeyEvent(key_event->key(), static_cast<int>(key_event->modifiers()),
-					event->type() == QEvent::KeyPress);
+				if (pressed)
+					return true;
+				else
+					m_keys_pressed_with_modifiers.erase(it);
+			}
+			else if (key_event->modifiers() != Qt::NoModifier && pressed)
+			{
+				m_keys_pressed_with_modifiers.push_back(key);
 			}
 
+			emit windowKeyEvent(key, pressed);
 			return true;
 		}
 
@@ -208,13 +234,24 @@ bool DisplayWidget::event(QEvent* event)
 		{
 			QWidget::event(event);
 
-			emit windowResizedEvent(scaledWindowWidth(), scaledWindowHeight(), devicePixelRatioFromScreen());
+			const qreal dpr = devicePixelRatioFromScreen();
+			const QSize size = static_cast<QResizeEvent*>(event)->size();
+			const int width = static_cast<int>(std::ceil(static_cast<qreal>(size.width()) * devicePixelRatioFromScreen()));
+			const int height = static_cast<int>(std::ceil(static_cast<qreal>(size.height()) * devicePixelRatioFromScreen()));
+
+			emit windowResizedEvent(width, height, dpr);
 			return true;
 		}
 
 		case QEvent::Close:
 		{
-			emit windowClosedEvent();
+			if (!g_main_window->requestShutdown())
+			{
+				// abort the window close
+				event->ignore();
+				return true;
+			}
+
 			QWidget::event(event);
 			return true;
 		}
@@ -262,7 +299,7 @@ bool DisplayContainer::IsNeeded(bool fullscreen, bool render_to_main)
 #if defined(_WIN32) || defined(__APPLE__)
 	return false;
 #else
-	if (fullscreen || render_to_main)
+	if (!fullscreen && render_to_main)
 		return false;
 
 	// We only need this on Wayland because of client-side decorations...
@@ -289,18 +326,19 @@ DisplayWidget* DisplayContainer::removeDisplayWidget()
 
 bool DisplayContainer::event(QEvent* event)
 {
+	if (event->type() == QEvent::Close && !g_main_window->requestShutdown())
+	{
+		// abort the window close
+		event->ignore();
+		return true;
+	}
+
 	const bool res = QStackedWidget::event(event);
 	if (!m_display_widget)
 		return res;
 
 	switch (event->type())
 	{
-		case QEvent::Close:
-		{
-			emit m_display_widget->windowClosedEvent();
-		}
-		break;
-
 		case QEvent::WindowStateChange:
 		{
 			if (static_cast<QWindowStateChangeEvent*>(event)->oldState() & Qt::WindowMinimized)

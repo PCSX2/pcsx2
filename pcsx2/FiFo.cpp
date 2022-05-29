@@ -17,13 +17,10 @@
 #include "PrecompiledHeader.h"
 #include "Common.h"
 
-#include "GS.h"
 #include "Gif.h"
 #include "Gif_Unit.h"
 #include "Vif.h"
 #include "Vif_Dma.h"
-#include "IPU/IPU.h"
-#include "IPU/IPU_Fifo.h"
 
 //////////////////////////////////////////////////////////////////////////
 /////////////////////////// Quick & dirty FIFO :D ////////////////////////
@@ -39,7 +36,7 @@
 // 0x6000 - 0x7000 : GS    (all registers map to 0x6000)
 // 0x7000 - 0x8000 : IPU   (registers map to 0x7000 and 0x7010, respectively)
 
-void __fastcall ReadFIFO_VIF1(mem128_t* out)
+void ReadFIFO_VIF1(mem128_t* out)
 {
 	if (vif1Regs.stat.test(VIF1_STAT_INT | VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS))
 		DevCon.Warning("Reading from vif1 fifo when stalled");
@@ -54,10 +51,7 @@ void __fastcall ReadFIFO_VIF1(mem128_t* out)
 		}
 		if (vif1Regs.stat.FQC > 0)
 		{
-			GetMTGS().WaitGS();
-			GetMTGS().SendPointerPacket(GS_RINGTYPE_INIT_READ_FIFO1, 0, out);
-			GetMTGS().WaitGS(false); // wait without reg sync
-			GSreadFIFO((u8*)out);
+			GetMTGS().InitAndReadFIFO(reinterpret_cast<u8*>(out), 1);
 			vif1.GSLastDownloadSize--;
 			GUNIT_LOG("ReadFIFO_VIF1");
 			if (vif1.GSLastDownloadSize <= 16)
@@ -66,15 +60,15 @@ void __fastcall ReadFIFO_VIF1(mem128_t* out)
 		}
 	}
 
-	VIF_LOG("ReadFIFO/VIF1 -> %ls", WX_STR(out->ToString()));
+	VIF_LOG("ReadFIFO/VIF1 -> 0x%08X.%08X.%08X.%08X", out->_u32[0], out->_u32[1], out->_u32[2], out->_u32[3]);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // WriteFIFO Pages
 //
-void __fastcall WriteFIFO_VIF0(const mem128_t* value)
+void WriteFIFO_VIF0(const mem128_t* value)
 {
-	VIF_LOG("WriteFIFO/VIF0 <- %ls", WX_STR(value->ToString()));
+	VIF_LOG("WriteFIFO/VIF0 <- 0x%08X.%08X.%08X.%08X", value->_u32[0], value->_u32[1], value->_u32[2], value->_u32[3]);
 
 	vif0ch.qwc += 1;
 	if (vif0.irqoffset.value != 0 && vif0.vifstalled.enabled)
@@ -94,9 +88,9 @@ void __fastcall WriteFIFO_VIF0(const mem128_t* value)
 	pxAssertDev(ret, "vif stall code not implemented");
 }
 
-void __fastcall WriteFIFO_VIF1(const mem128_t* value)
+void WriteFIFO_VIF1(const mem128_t* value)
 {
-	VIF_LOG("WriteFIFO/VIF1 <- %ls", WX_STR(value->ToString()));
+	VIF_LOG("WriteFIFO/VIF1 <- 0x%08X.%08X.%08X.%08X", value->_u32[0], value->_u32[1], value->_u32[2], value->_u32[3]);
 
 	if (vif1Regs.stat.FDR)
 	{
@@ -134,7 +128,7 @@ void __fastcall WriteFIFO_VIF1(const mem128_t* value)
 	pxAssertDev(ret, "vif stall code not implemented");
 }
 
-void __fastcall WriteFIFO_GIF(const mem128_t* value)
+void WriteFIFO_GIF(const mem128_t* value)
 {
 	GUNIT_LOG("WriteFIFO_GIF()");
 	if ((!gifUnit.CanDoPath3() || gif_fifo.fifoSize > 0))

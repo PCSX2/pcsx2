@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\wxWidgets3.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\xbyak;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\xz\xz\src\liblzma\api;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\baseclasses;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -42,13 +43,16 @@
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\glad\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\cubeb\cubeb\include;$(SolutionDir)3rdparty\cubeb\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\imgui\imgui;$(SolutionDir)3rdparty\imgui\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\libzip;$(SolutionDir)3rdparty\libzip\libzip\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\d3d12memalloc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\zstd\zstd\lib</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
       <AdditionalOptions>/Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;LZMA_API_STATIC;BUILD_DX=1;ENABLE_VULKAN;SPU2X_CUBEB;DIRECTINPUT_VERSION=0x0800;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;ZIP_STATIC;LZMA_API_STATIC;BUILD_DX=1;ENABLE_OPENGL;ENABLE_VULKAN;SPU2X_CUBEB;DIRECTINPUT_VERSION=0x0800;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Debug))">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Devel))">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Release))">NDEBUG;_SECURE_SCL_=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -320,7 +324,11 @@
     <ClCompile Include="DEV9\net.cpp" />
     <ClCompile Include="DEV9\Win32\tap-win32.cpp" />
     <ClCompile Include="Frontend\D3D11HostDisplay.cpp" />
+    <ClCompile Include="Frontend\D3D12HostDisplay.cpp" />
     <ClCompile Include="Frontend\ImGuiManager.cpp" />
+    <ClCompile Include="Frontend\imgui_impl_dx11.cpp" />
+    <ClCompile Include="Frontend\imgui_impl_dx12.cpp" />
+    <ClCompile Include="Frontend\imgui_impl_opengl3.cpp" />
     <ClCompile Include="Frontend\imgui_impl_vulkan.cpp" />
     <ClCompile Include="Frontend\OpenGLHostDisplay.cpp" />
     <ClCompile Include="Frontend\VulkanHostDisplay.cpp" />
@@ -328,6 +336,8 @@
     <ClCompile Include="Gif_Logger.cpp" />
     <ClCompile Include="Gif_Unit.cpp" />
     <ClCompile Include="GS\Renderers\DX11\D3D.cpp" />
+    <ClCompile Include="GS\Renderers\DX12\GSDevice12.cpp" />
+    <ClCompile Include="GS\Renderers\DX12\GSTexture12.cpp" />
     <ClCompile Include="GS\Renderers\HW\GSTextureReplacementLoaders.cpp" />
     <ClCompile Include="GS\Renderers\HW\GSTextureReplacements.cpp" />
     <ClCompile Include="GS\Window\GSwxDialog.cpp" />
@@ -348,11 +358,19 @@
     <ClCompile Include="gui\Dialogs\GSDumpDialog.cpp" />
     <ClCompile Include="gui\Dialogs\McdConfigDialog.cpp" />
     <ClCompile Include="gui\DriveList.cpp" />
+    <ClCompile Include="gui\FastFormatString.cpp" />
+    <ClCompile Include="gui\FileUtils.cpp" />
+    <ClCompile Include="gui\IniInterface.cpp" />
+    <ClCompile Include="gui\Mutex.cpp" />
     <ClCompile Include="gui\Panels\MemoryCardListView.cpp" />
+    <ClCompile Include="gui\PathUtils.cpp" />
+    <ClCompile Include="gui\PersistentThread.cpp" />
     <ClCompile Include="gui\pxCheckBox.cpp" />
     <ClCompile Include="gui\pxRadioPanel.cpp" />
     <ClCompile Include="gui\pxStaticText.cpp" />
+    <ClCompile Include="gui\pxTranslate.cpp" />
     <ClCompile Include="gui\pxWindowTextWriter.cpp" />
+    <ClCompile Include="gui\StringHelpers.cpp" />
     <ClCompile Include="gui\ThreadingDialogs.cpp" />
     <ClCompile Include="gui\wxAppWithHelpers.cpp" />
     <ClCompile Include="gui\wxSettingsInterface.cpp" />
@@ -425,8 +443,8 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ps2\Iop\PsxBios.cpp" />
-    <ClCompile Include="ps2\LegacyDmac.cpp" />
     <ClCompile Include="ps2\pgif.cpp" />
+    <ClCompile Include="Dmac.cpp" />
     <ClCompile Include="Recording\InputRecordingControls.cpp" />
     <ClCompile Include="Recording\VirtualPad\VirtualPad.cpp" />
     <ClCompile Include="Recording\VirtualPad\VirtualPadData.cpp" />
@@ -514,7 +532,6 @@
     <ClCompile Include="GS\Renderers\SW\GSRasterizer.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSRenderer.cpp" />
     <ClCompile Include="GS\Renderers\HW\GSRendererHW.cpp" />
-    <ClCompile Include="GS\Renderers\HW\GSRendererNew.cpp" />
     <ClCompile Include="GS\Renderers\Null\GSRendererNull.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSRendererSW.cpp" />
     <ClCompile Include="GS\Window\GSSetting.cpp" />
@@ -535,9 +552,7 @@
     <ClCompile Include="GS\Renderers\Common\GSVertexList.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSVertexSW.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSVertexTrace.cpp" />
-    <ClCompile Include="Utilities\FileUtils.cpp" />
     <ClCompile Include="Dump.cpp" />
-    <ClCompile Include="x86\iMisc.cpp" />
     <ClCompile Include="Pcsx2Config.cpp" />
     <ClCompile Include="windows\FlatFileReaderWindows.cpp" />
     <ClCompile Include="Darwin\DarwinFlatFileReader.cpp">
@@ -545,9 +560,9 @@
     </ClCompile>
     <ClCompile Include="SaveState.cpp" />
     <ClCompile Include="SourceLog.cpp" />
-    <ClCompile Include="System\SysCoreThread.cpp" />
+    <ClCompile Include="gui\SysCoreThread.cpp" />
     <ClCompile Include="System.cpp" />
-    <ClCompile Include="System\SysThreadBase.cpp" />
+    <ClCompile Include="gui\SysThreadBase.cpp" />
     <ClCompile Include="Elfheader.cpp" />
     <ClCompile Include="CDVD\InputIsoFile.cpp" />
     <ClCompile Include="x86\BaseblockEx.cpp" />
@@ -628,7 +643,7 @@
     <ClCompile Include="IopHw.cpp" />
     <ClCompile Include="ps2\Iop\IopHwRead.cpp" />
     <ClCompile Include="ps2\Iop\IopHwWrite.cpp" />
-    <ClCompile Include="CDVD\CdRom.cpp" />
+    <ClCompile Include="CDVD\Ps1CD.cpp" />
     <ClCompile Include="CDVD\CDVD.cpp" />
     <ClCompile Include="CDVD\CDVDaccess.cpp" />
     <ClCompile Include="CDVD\CDVDisoReader.cpp" />
@@ -638,7 +653,6 @@
     <ClCompile Include="Ipu\mpeg2lib\Idct.cpp" />
     <ClCompile Include="Ipu\mpeg2lib\Mpeg.cpp" />
     <ClCompile Include="GS.cpp" />
-    <ClCompile Include="GSState.cpp" />
     <ClCompile Include="MTGS.cpp" />
     <ClCompile Include="DebugTools\DisR3000A.cpp" />
     <ClCompile Include="DebugTools\DisR5900asm.cpp" />
@@ -711,7 +725,6 @@
     <ClCompile Include="gui\Panels\PathsPanel.cpp" />
     <ClCompile Include="gui\Panels\SpeedhacksPanel.cpp" />
     <ClCompile Include="gui\Panels\VideoPanel.cpp" />
-    <ClCompile Include="windows\WinCompressNTFS.cpp" />
     <ClCompile Include="windows\WinConsolePipe.cpp" />
     <ClCompile Include="windows\WinPowerProfile.cpp" />
     <ClCompile Include="Linux\LnxKeyCodes.cpp">
@@ -782,12 +795,19 @@
     <ClInclude Include="DEV9\Win32\pcap_io_win32_funcs.h" />
     <ClInclude Include="DEV9\Win32\tap.h" />
     <ClInclude Include="Frontend\D3D11HostDisplay.h" />
+    <ClInclude Include="Frontend\D3D12HostDisplay.h" />
     <ClInclude Include="Frontend\ImGuiManager.h" />
+    <ClInclude Include="Frontend\imgui_impl_dx11.h" />
+    <ClInclude Include="Frontend\imgui_impl_dx12.h" />
+    <ClInclude Include="Frontend\imgui_impl_opengl3.h" />
+    <ClInclude Include="Frontend\imgui_impl_vulkan.h" />
     <ClInclude Include="Frontend\OpenGLHostDisplay.h" />
     <ClInclude Include="Frontend\VulkanHostDisplay.h" />
     <ClInclude Include="GameDatabase.h" />
     <ClInclude Include="Gif_Unit.h" />
     <ClInclude Include="GS\Renderers\DX11\D3D.h" />
+    <ClInclude Include="GS\Renderers\DX12\GSDevice12.h" />
+    <ClInclude Include="GS\Renderers\DX12\GSTexture12.h" />
     <ClInclude Include="GS\Renderers\HW\GSTextureReplacements.h" />
     <ClInclude Include="GS\Window\GSwxDialog.h" />
     <ClInclude Include="GS\Renderers\Vulkan\GSDeviceVK.h" />
@@ -796,6 +816,8 @@
     <ClInclude Include="gui\CheckedStaticBox.h" />
     <ClInclude Include="gui\i18n.h" />
     <ClInclude Include="gui\DriveList.h" />
+    <ClInclude Include="gui\IniInterface.h" />
+    <ClInclude Include="gui\PersistentThread.h" />
     <ClInclude Include="gui\pxCheckBox.h" />
     <ClInclude Include="gui\pxEvents.h" />
     <ClInclude Include="gui\pxRadioPanel.h" />
@@ -810,6 +832,7 @@
     <ClInclude Include="gui\Debugger\DebuggerLists.h" />
     <ClInclude Include="gui\Debugger\DisassemblyDialog.h" />
     <ClInclude Include="gui\Panels\MemoryCardPanels.h" />
+    <ClInclude Include="gui\StringHelpers.h" />
     <ClInclude Include="gui\ThreadingDialogs.h" />
     <ClInclude Include="gui\wxAppWithHelpers.h" />
     <ClInclude Include="gui\wxSettingsInterface.h" />
@@ -895,7 +918,6 @@
     <ClInclude Include="GS\Renderers\SW\GSRasterizer.h" />
     <ClInclude Include="GS\Renderers\Common\GSRenderer.h" />
     <ClInclude Include="GS\Renderers\HW\GSRendererHW.h" />
-    <ClInclude Include="GS\Renderers\HW\GSRendererNew.h" />
     <ClInclude Include="GS\Renderers\Null\GSRendererNull.h" />
     <ClInclude Include="GS\Renderers\SW\GSRendererSW.h" />
     <ClInclude Include="GS\Renderers\SW\GSScanlineEnvironment.h" />
@@ -994,18 +1016,16 @@
     <ClInclude Include="USB\USB.h" />
     <ClInclude Include="USB\Win32\Config_usb.h" />
     <ClInclude Include="USB\Win32\resource_usb.h" />
-    <ClInclude Include="Utilities\AsciiFile.h" />
     <ClInclude Include="Elfheader.h" />
     <ClInclude Include="CDVD\IsoFileFormats.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Dump.h" />
-    <ClInclude Include="IopCommon.h" />
     <ClInclude Include="SaveState.h" />
     <ClInclude Include="SingleRegisterTypes.h" />
     <ClInclude Include="System.h" />
-    <ClInclude Include="System\SysThreads.h" />
+    <ClInclude Include="gui\SysThreads.h" />
     <ClInclude Include="System\RecTypes.h" />
     <ClInclude Include="Counters.h" />
     <ClInclude Include="Dmac.h" />
@@ -1062,7 +1082,7 @@
     <ClInclude Include="x86\iR3000A.h" />
     <ClInclude Include="IopHw.h" />
     <ClInclude Include="ps2\Iop\IopHw_Internal.h" />
-    <ClInclude Include="CDVD\CdRom.h" />
+    <ClInclude Include="CDVD\Ps1CD.h" />
     <ClInclude Include="CDVD\CDVD.h" />
     <ClInclude Include="CDVD\CDVD_internal.h" />
     <ClInclude Include="CDVD\CDVDaccess.h" />
@@ -1204,6 +1224,9 @@
     </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\imgui\imgui.vcxproj">
       <Project>{88fb34ec-845e-4f21-a552-f1573b9ed167}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\libzip\libzip.vcxproj">
+      <Project>{20b2e9fe-f020-42a0-b324-956f5b06ea68}</Project>
     </ProjectReference>
     <ProjectReference Include="..\common\common.vcxproj">
       <Project>{4639972e-424e-4e13-8b07-ca403c481346}</Project>

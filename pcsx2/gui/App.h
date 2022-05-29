@@ -22,6 +22,7 @@
 #include <wx/apptrait.h>
 #include <memory>
 
+#include "SysThreads.h"
 #include "pxEventThread.h"
 
 #include "AppCommon.h"
@@ -29,16 +30,13 @@
 #include "RecentIsoList.h"
 #include "DriveList.h"
 
-#ifndef DISABLE_RECORDING
 #include "Recording/NewRecordingFrame.h"
-#endif
 
 class DisassemblyDialog;
 struct HostKeyEvent;
 
 #include "GS.h"
 #include "System.h"
-#include "System/SysThreads.h"
 
 // TODO: Not the best location for this, but it needs to be accessed by MTGS etc.
 extern WindowInfo g_gs_window_info;
@@ -72,9 +70,7 @@ enum TopLevelMenuIndices
 	TopLevelMenu_Config,
 	TopLevelMenu_Window,
 	TopLevelMenu_Capture,
-#ifndef DISABLE_RECORDING
 	TopLevelMenu_InputRecording,
-#endif
 	TopLevelMenu_Help
 };
 
@@ -186,7 +182,6 @@ enum MenuIdentifiers
 	MenuId_Capture_Screenshot_Screenshot,
 	MenuId_Capture_Screenshot_Screenshot_As,
 
-#ifndef DISABLE_RECORDING
 	// Input Recording Subsection
 	MenuId_Recording_New,
 	MenuId_Recording_Play,
@@ -198,7 +193,6 @@ enum MenuIdentifiers
 	MenuId_Recording_ToggleRecordingMode,
 	MenuId_Recording_VirtualPad_Port0,
 	MenuId_Recording_VirtualPad_Port1,
-#endif
 
 	//  Subsection
 	MenuId_PINE,
@@ -215,12 +209,12 @@ namespace Exception
 	//
 	class StartupAborted : public CancelEvent
 	{
-		DEFINE_RUNTIME_EXCEPTION(StartupAborted, CancelEvent, L"Startup initialization was aborted by the user.")
+		DEFINE_RUNTIME_EXCEPTION(StartupAborted, CancelEvent, "Startup initialization was aborted by the user.")
 
 	public:
-		StartupAborted(const wxString& reason)
+		StartupAborted(std::string reason)
 		{
-			m_message_diag = L"Startup aborted: " + reason;
+			m_message_diag = "Startup aborted: " + reason;
 		}
 	};
 
@@ -481,10 +475,7 @@ protected:
 	wxWindowID m_id_GsFrame;
 	wxWindowID m_id_ProgramLogBox;
 	wxWindowID m_id_Disassembler;
-
-#ifndef DISABLE_RECORDING
 	wxWindowID m_id_NewRecordingFrame;
-#endif
 
 	wxKeyEvent m_kevt;
 
@@ -510,7 +501,7 @@ public:
 	MainEmuFrame* GetMainFramePtr() const { return (MainEmuFrame*)wxWindow::FindWindowById(m_id_MainFrame); }
 	DisassemblyDialog* GetDisassemblyPtr() const { return (DisassemblyDialog*)wxWindow::FindWindowById(m_id_Disassembler); }
 
-#ifndef DISABLE_RECORDING
+#ifndef PCSX2_CORE
 	NewRecordingFrame* GetNewRecordingFramePtr() const
 	{
 		return (NewRecordingFrame*)wxWindow::FindWindowById(m_id_NewRecordingFrame);
@@ -737,8 +728,6 @@ int AppOpenModalDialog(wxString panel_name, wxWindow* parent = NULL)
 		return DialogType(parent).ShowModal();
 }
 
-extern pxDoAssertFnType AppDoAssert;
-
 // --------------------------------------------------------------------------------------
 //  External App-related Globals and Shortcuts
 // --------------------------------------------------------------------------------------
@@ -764,7 +753,6 @@ extern void UI_DisableSysActions();
 extern void UI_EnableSysActions();
 
 extern void UI_DisableSysShutdown();
-
 
 #define AffinityAssert_AllowFrom_SysExecutor() \
 	pxAssertMsg(wxGetApp().SysExecutorThread.IsSelf(), "Thread affinity violation: Call allowed from SysExecutor thread only.")

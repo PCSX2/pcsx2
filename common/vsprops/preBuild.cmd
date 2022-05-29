@@ -30,6 +30,10 @@ FOR /F "tokens=* USEBACKQ" %%i IN (`git tag --points-at HEAD`) DO (
   set GIT_TAG=%%i
 )
 
+FOR /F "tokens=* USEBACKQ" %%i IN (`git rev-parse HEAD`) DO (
+  set GIT_HASH=%%i
+)
+
 set REV2=%REV3: =%
 set REV1=%REV2:-=%
 set REV=%REV1::=%
@@ -45,15 +49,16 @@ if %ERRORLEVEL% NEQ 0 (
   echo #define SVN_REV_UNKNOWN > "%CD%\svnrev.h"
   echo #define SVN_REV 0ll >> "%CD%\svnrev.h"
   echo #define GIT_REV "" >> "%CD%\svnrev.h"
+  echo #define GIT_HASH "" >> "%CD%\svnrev.h"
   echo #define GIT_TAG "" >> "%CD%\svnrev.h"
   echo #define GIT_TAGGED_COMMIT 0 >> "%CD%\svnrev.h"
 ) else (
   :: Support New Tagged Release Model
   if [%GIT_TAG%] NEQ [] (
     echo Detected that the current commit is tagged, using that!
-    echo #define SVN_REV_UNKNOWN > "%CD%\svnrev.h"
-    echo #define SVN_REV 0ll >> "%CD%\svnrev.h"
+    echo #define SVN_REV %REV%ll > "%CD%\svnrev.h"
     echo #define GIT_REV "" >> "%CD%\svnrev.h"
+    echo #define GIT_HASH "%GIT_HASH%" >> "%CD%\svnrev.h"
     echo #define GIT_TAG "%GIT_TAG%" >> "%CD%\svnrev.h"
 
     echo %GIT_TAG%|FINDSTR /R "^v[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*$" > NUL
@@ -69,6 +74,7 @@ if %ERRORLEVEL% NEQ 0 (
   ) else (
     echo #define SVN_REV %REV%ll > "%CD%\svnrev.h"
     echo #define GIT_REV "%GIT_REV%" >> "%CD%\svnrev.h"
+    echo #define GIT_HASH "%GIT_HASH%" >> "%CD%\svnrev.h"
     echo #define GIT_TAG "" >> "%CD%\svnrev.h"
     echo #define GIT_TAGGED_COMMIT 0 >> "%CD%\svnrev.h"
   )

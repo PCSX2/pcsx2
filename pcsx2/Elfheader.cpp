@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "Common.h"
 #include "common/FileSystem.h"
+#include "common/StringUtil.h"
 
 #include "GS.h"			// for sending game crc to mtgs
 #include "Elfheader.h"
@@ -28,28 +29,24 @@
 u32 ElfCRC;
 u32 ElfEntry;
 std::pair<u32,u32> ElfTextRange;
-wxString LastELF;
+std::string LastELF;
 bool isPSXElf;
 
 // All of ElfObjects functions.
-ElfObject::ElfObject(const wxString& srcfile, IsoFile& isofile, bool isPSXElf)
-	: data( wxULongLong(isofile.getLength()).GetLo(), L"ELF headers" )
-	, proghead( NULL )
-	, secthead( NULL )
-	, filename( srcfile )
-	, header( *(ELF_HEADER*)data.GetPtr() )
+ElfObject::ElfObject(std::string srcfile, IsoFile& isofile, bool isPSXElf)
+	: data(isofile.getLength(), "ELF headers")
+	, filename(std::move(srcfile))
+	, header(*(ELF_HEADER*)data.GetPtr())
 {
 	checkElfSize(data.GetSizeInBytes());
 	readIso(isofile);
 	initElfHeaders(isPSXElf);
 }
 
-ElfObject::ElfObject( const wxString& srcfile, uint hdrsize, bool isPSXElf )
-	: data( wxULongLong(hdrsize).GetLo(), L"ELF headers" )
-	, proghead( NULL )
-	, secthead( NULL )
-	, filename( srcfile )
-	, header( *(ELF_HEADER*)data.GetPtr() )
+ElfObject::ElfObject(std::string srcfile, u32 hdrsize, bool isPSXElf)
+	: data(hdrsize, "ELF headers")
+	, filename(std::move(srcfile))
+	, header(*(ELF_HEADER*)data.GetPtr())
 {
 	checkElfSize(data.GetSizeInBytes());
 	readFile();
@@ -63,19 +60,29 @@ void ElfObject::initElfHeaders(bool isPSXElf)
 		return;
 	}
 
-	DevCon.WriteLn( L"Initializing Elf: %d bytes", data.GetSizeInBytes());
+	DevCon.WriteLn("Initializing Elf: %d bytes", data.GetSizeInBytes());
 
-	if ( header.e_phnum > 0 )
-		proghead = (ELF_PHR*)&data[header.e_phoff];
+	if (header.e_phnum > 0)
+	{
+		if ((header.e_phoff + sizeof(ELF_PHR)) <= static_cast<u32>(data.GetSizeInBytes()))
+			proghead = reinterpret_cast<ELF_PHR*>(&data[header.e_phoff]);
+		else
+			Console.Error("(ELF) Program header offset %u is larger than file size %u", header.e_phoff, data.GetSizeInBytes());
+	}
 
-	if ( header.e_shnum > 0 )
-		secthead = (ELF_SHR*)&data[header.e_shoff];
+	if (header.e_shnum > 0)
+	{
+		if ((header.e_shoff + sizeof(ELF_SHR)) <= static_cast<u32>(data.GetSizeInBytes()))
+			secthead = reinterpret_cast<ELF_SHR*>(&data[header.e_shoff]);
+		else
+			Console.Error("(ELF) Section header offset %u is larger than file size %u", header.e_shoff, data.GetSizeInBytes());
+	}
 
-	if ( ( header.e_shnum > 0 ) && ( header.e_shentsize != sizeof(ELF_SHR) ) )
-		Console.Error( "(ELF) Size of section headers is not standard" );
+	if ((header.e_shnum > 0) && (header.e_shentsize != sizeof(ELF_SHR)))
+		Console.Error("(ELF) Size of section headers is not standard");
 
-	if ( ( header.e_phnum > 0 ) && ( header.e_phentsize != sizeof(ELF_PHR) ) )
-		Console.Error( "(ELF) Size of program headers is not standard" );
+	if ((header.e_phnum > 0) && (header.e_phentsize != sizeof(ELF_PHR)))
+		Console.Error("(ELF) Size of program headers is not standard");
 
 	//getCRC();
 
@@ -156,8 +163,8 @@ void ElfObject::readIso(IsoFile& file)
 void ElfObject::readFile()
 {
 	int rsize = 0;
-	FILE *f = FileSystem::OpenCFile( filename.ToUTF8(), "rb" );
-	if (f == NULL) throw Exception::FileNotFound( filename );
+	FILE *f = FileSystem::OpenCFile( filename.c_str(), "rb");
+	if (f == NULL) throw Exception::FileNotFound(filename);
 
 	fseek(f, 0, SEEK_SET);
 	rsize = fread(data.GetPtr(), 1, data.GetSizeInBytes(), f);
@@ -166,21 +173,21 @@ void ElfObject::readFile()
 	if (rsize < data.GetSizeInBytes()) throw Exception::EndOfStream(filename);
 }
 
-static wxString GetMsg_InvalidELF()
+static std::string GetMsg_InvalidELF()
 {
 	return
-		_("Cannot load ELF binary image.  The file may be corrupt or incomplete.") + 
-		wxString(L"\n\n") +
-		_("If loading from an ISO image, this error may be caused by an unsupported ISO image type or a bug in PCSX2 ISO image support.");
+		"Cannot load ELF binary image.  The file may be corrupt or incomplete."
+		"\n\n"
+		"If loading from an ISO image, this error may be caused by an unsupported ISO image type or a bug in PCSX2 ISO image support.";
 }
 
 
 void ElfObject::checkElfSize(s64 elfsize)
 {
-	const wxChar* diagMsg = NULL;
-	if		(elfsize > 0xfffffff)	diagMsg = L"Illegal ELF file size over 2GB!";
-	else if	(elfsize == -1)			diagMsg = L"ELF file does not exist!";
-	else if	(elfsize == 0)			diagMsg = L"Unexpected end of ELF file.";
+	const char* diagMsg = NULL;
+	if		(elfsize > 0xfffffff)	diagMsg = "Illegal ELF file size over 2GB!";
+	else if	(elfsize == -1)			diagMsg = "ELF file does not exist!";
+	else if	(elfsize == 0)			diagMsg = "Unexpected end of ELF file.";
 
 	if (diagMsg)
 		throw Exception::BadStream(filename)
@@ -313,51 +320,56 @@ void ElfObject::loadHeaders()
 //   0 - Invalid or unknown disc.
 //   1 - PS1 CD
 //   2 - PS2 CD
-int GetPS2ElfName( wxString& name )
+int GetPS2ElfName( std::string& name )
 {
 	int retype = 0;
 
 	try {
 		IsoFSCDVD isofs;
-		IsoFile file( isofs, L"SYSTEM.CNF;1");
+		IsoFile file( isofs, "SYSTEM.CNF;1");
 
 		int size = file.getLength();
 		if( size == 0 ) return 0;
 
 		while( !file.eof() )
 		{
-			const wxString original( fromUTF8(file.readLine().c_str()) );
-			const ParsedAssignmentString parts( original );
+			const std::string line(file.readLine());
+			std::string_view key, value;
+			if (!StringUtil::ParseAssignmentString(line, &key, &value))
+				continue;
 
-			if( parts.lvalue.IsEmpty() && parts.rvalue.IsEmpty() ) continue;
-			if( parts.rvalue.IsEmpty() && file.getLength() != file.getSeekPos() )
+			if( value.empty() && file.getLength() != file.getSeekPos() )
 			{ // Some games have a character on the last line of the file, don't print the error in those cases.
 				Console.Warning( "(SYSTEM.CNF) Unusual or malformed entry in SYSTEM.CNF ignored:" );
-				Console.Indent().WriteLn( original );
+				Console.Indent().WriteLn(line);
 				continue;
 			}
 
-			if( parts.lvalue == L"BOOT2" )
+			if( key == "BOOT2" )
 			{
-				name = parts.rvalue;
-				Console.WriteLn( Color_StrongBlue, L"(SYSTEM.CNF) Detected PS2 Disc = " + name );
+				Console.WriteLn( Color_StrongBlue, "(SYSTEM.CNF) Detected PS2 Disc = %.*s",
+					static_cast<int>(value.size()), value.data());
+				name = value;
 				retype = 2;
 			}
-			else if( parts.lvalue == L"BOOT" )
+			else if( key == "BOOT" )
 			{
-				name = parts.rvalue;
-				Console.WriteLn( Color_StrongBlue, L"(SYSTEM.CNF) Detected PSX/PSone Disc = " + name );
+				Console.WriteLn( Color_StrongBlue, "(SYSTEM.CNF) Detected PSX/PSone Disc = %.*s",
+					static_cast<int>(value.size()), value.data());
+				name = value;
 				retype = 1;
 			}
-			else if( parts.lvalue == L"VMODE" )
+			else if( key == "VMODE" )
 			{
-				Console.WriteLn( Color_Blue, L"(SYSTEM.CNF) Disc region type = " + parts.rvalue );
+				Console.WriteLn( Color_Blue, "(SYSTEM.CNF) Disc region type = %.*s",
+					static_cast<int>(value.size()), value.data());
 			}
-			else if( parts.lvalue == L"VER" )
+			else if( key == "VER" )
 			{
-				Console.WriteLn( Color_Blue, L"(SYSTEM.CNF) Software version = " + parts.rvalue );
+				Console.WriteLn( Color_Blue, "(SYSTEM.CNF) Software version = %.*s",
+					static_cast<int>(value.size()), value.data());
 #ifndef PCSX2_CORE
-				GameInfo::gameVersion = parts.rvalue;
+				GameInfo::gameVersion = StringUtil::UTF8StringToWxString(value);
 #endif
 			}
 		}

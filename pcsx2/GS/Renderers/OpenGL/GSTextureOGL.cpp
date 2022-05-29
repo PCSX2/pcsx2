@@ -189,7 +189,7 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 	switch (m_format)
 	{
 		// 1 Channel integer
-		case Format::Int32:
+		case Format::PrimID:
 			gl_fmt          = GL_R32I;
 			m_int_format    = GL_RED_INTEGER;
 			m_int_type      = GL_INT;
@@ -311,7 +311,7 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 
 		case Format::Color:
 		case Format::UInt32:
-		case Format::Int32:
+		case Format::PrimID:
 			m_sparse &= GLLoader::found_compatible_GL_ARB_sparse_texture2;
 			SetGpuPageSize(GSVector2i(127, 127));
 			break;
@@ -645,7 +645,7 @@ bool GSTextureOGL::Save(const std::string& fn)
 
 		fmt = GSPng::RGB_A_PNG;
 	}
-	else if (m_format == Format::Int32)
+	else if (m_format == Format::PrimID)
 	{
 		// Note: 4.5 function used for accurate DATE
 		// barely used outside of dev and not sparse anyway

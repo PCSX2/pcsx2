@@ -17,95 +17,87 @@
 
 #define _PC_ // disables MIPS opcode macros.
 
+#include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
-#include "IopCommon.h"
-#include "Patch.h"
+#include "common/ZipHelpers.h"
+
 #include "Config.h"
+#include "Patch.h"
 
 #include <memory>
+#include <sstream>
 #include <vector>
-#include <wx/textfile.h>
-#include <wx/dir.h>
-#include <wx/txtstrm.h>
-#include <wx/zipstrm.h>
-#include <wx/wfstream.h>
-#include "PathDefs.h"
 
 // This is a declaration for PatchMemory.cpp::_ApplyPatch where we're (patch.cpp)
 // the only consumer, so it's not made public via Patch.h
 // Applies a single patch line to emulation memory regardless of its "place" value.
 extern void _ApplyPatch(IniPatch* p);
 
-
 static std::vector<IniPatch> Patch;
-
 
 struct PatchTextTable
 {
-	int				code;
-	const wxChar*	text;
-	PATCHTABLEFUNC*	func;
+	int code;
+	const char* text;
+	PATCHTABLEFUNC* func;
 };
 
 static const PatchTextTable commands_patch[] =
-{
-	{ 1, L"author",		PatchFunc::author},
-	{ 2, L"comment",	PatchFunc::comment },
-	{ 3, L"patch",		PatchFunc::patch },
-	{ 0, wxEmptyString, NULL } // Array Terminator
+	{
+		{1, "author", PatchFunc::author},
+		{2, "comment", PatchFunc::comment},
+		{3, "patch", PatchFunc::patch},
+		{0, nullptr, nullptr} // Array Terminator
 };
 
 static const PatchTextTable dataType[] =
-{
-	{ 1, L"byte", NULL },
-	{ 2, L"short", NULL },
-	{ 3, L"word", NULL },
-	{ 4, L"double", NULL },
-	{ 5, L"extended", NULL },
-	{ 6, L"leshort", NULL},
-	{ 7, L"leword", NULL},
-	{ 8, L"ledouble", NULL},
-	{ 0, wxEmptyString, NULL }
+	{
+		{1, "byte", nullptr},
+		{2, "short", nullptr},
+		{3, "word", nullptr},
+		{4, "double", nullptr},
+		{5, "extended", nullptr},
+		{6, "leshort", nullptr},
+		{7, "leword", nullptr},
+		{8, "ledouble", nullptr},
+		{0, nullptr, nullptr} // Array Terminator
 };
 
 static const PatchTextTable cpuCore[] =
-{
-	{ 1, L"EE", NULL },
-	{ 2, L"IOP", NULL },
-	{ 0, wxEmptyString,  NULL }
+	{
+		{1, "EE", nullptr},
+		{2, "IOP", nullptr},
+		{0, nullptr, nullptr} // Array Terminator
 };
 
 // IniFile Functions.
 
-static void inifile_trim(wxString& buffer)
+static void inifile_trim(std::string& buffer)
 {
-	buffer.Trim(false); // trims left side.
-
-	if (buffer.Length() <= 1) // this I'm not sure about... - air
+	StringUtil::StripWhitespace(&buffer);
+	if (std::strncmp(buffer.c_str(), "//", 2) == 0)
 	{
-		buffer.Empty();
-		return;
+		// comment
+		buffer.clear();
 	}
 
-	if (buffer.Left(2) == L"//")
-	{
-		buffer.Empty();
-		return;
-	}
-
-	buffer.Trim(true); // trims right side.
+	// check for comments at the end of a line
+	const std::string::size_type pos = buffer.find("//");
+	if (pos != std::string::npos)
+		buffer.erase(pos);
 }
 
-static int PatchTableExecute(const ParsedAssignmentString& set, const PatchTextTable* Table)
+static int PatchTableExecute(const std::string_view& lhs, const std::string_view& rhs, const PatchTextTable* Table)
 {
 	int i = 0;
 
-	while (Table[i].text[0])
+	while (Table[i].text)
 	{
-		if (!set.lvalue.Cmp(Table[i].text))
+		if (lhs.compare(Table[i].text) == 0)
 		{
 			if (Table[i].func)
-				Table[i].func(set.lvalue, set.rvalue);
+				Table[i].func(lhs, rhs);
 			break;
 		}
 		i++;
@@ -115,48 +107,33 @@ static int PatchTableExecute(const ParsedAssignmentString& set, const PatchTextT
 }
 
 // This routine is for executing the commands of the ini file.
-static void inifile_command(const wxString& cmd)
+static void inifile_command(const std::string& cmd)
 {
-	ParsedAssignmentString set(cmd);
+	std::string_view key, value;
+	StringUtil::ParseAssignmentString(cmd, &key, &value);
 
 	// Is this really what we want to be doing here? Seems like just leaving it empty/blank
 	// would make more sense... --air
-	if (set.rvalue.IsEmpty())
-		set.rvalue = set.lvalue;
+	if (value.empty())
+		value = key;
 
-	/*int code = */ PatchTableExecute(set, commands_patch);
+	/*int code = */ PatchTableExecute(key, value, commands_patch);
 }
 
-// This routine loads patches from the game database (but not the config/game fixes/hacks)
-// Returns number of patches loaded
-int LoadPatchesFromGamesDB(const std::string& crc, const GameDatabaseSchema::GameEntry& game)
+int LoadPatchesFromString(const std::string& patches)
 {
-	const GameDatabaseSchema::Patch* patch = game.findPatch(crc);
-	if (patch)
+	const size_t before = Patch.size();
+
+	std::istringstream ss(patches);
+	std::string line;
+	while (std::getline(ss, line))
 	{
-		for (const std::string& line : *patch)
-			inifile_command(StringUtil::UTF8StringToWxString(line));
+		inifile_trim(line);
+		if (!line.empty())
+			inifile_command(line);
 	}
 
-	return Patch.size();
-}
-
-void inifile_processString(const wxString& inStr)
-{
-	wxString str(inStr);
-	inifile_trim(str);
-	if (!str.IsEmpty())
-		inifile_command(str);
-}
-
-// This routine receives a file from inifile_read, trims it,
-// Then sends the command to be parsed.
-void inifile_process(wxTextFile& f1)
-{
-	for (uint i = 0; i < f1.GetLineCount(); i++)
-	{
-		inifile_processString(f1[i]);
-	}
+	return static_cast<int>(Patch.size() - before);
 }
 
 void ForgetLoadedPatches()
@@ -164,181 +141,140 @@ void ForgetLoadedPatches()
 	Patch.clear();
 }
 
-static int _LoadPatchFiles(const wxDirName& folderName, wxString& fileSpec, const wxString& friendlyName, int& numberFoundPatchFiles)
-{
-	numberFoundPatchFiles = 0;
-
-	if (!folderName.Exists())
-	{
-		Console.WriteLn(Color_Red, L"The %s folder ('%s') is inaccessible. Skipping...", WX_STR(friendlyName), WX_STR(folderName.ToString()));
-		return 0;
-	}
-	wxDir dir(folderName.ToString());
-
-	int before = Patch.size();
-	wxString buffer;
-	wxTextFile f;
-	bool found = dir.GetFirst(&buffer, L"*", wxDIR_FILES);
-	while (found)
-	{
-		if (buffer.Upper().Matches(fileSpec.Upper()))
-		{
-			PatchesCon->WriteLn(Color_Green, L"Found %s file: '%s'", WX_STR(friendlyName), WX_STR(buffer));
-			int before = Patch.size();
-			f.Open(Path::Combine(dir.GetName(), buffer));
-			inifile_process(f);
-			f.Close();
-			int loaded = Patch.size() - before;
-			PatchesCon->WriteLn((loaded ? Color_Green : Color_Gray), L"Loaded %d %s from '%s' at '%s'",
-								loaded, WX_STR(friendlyName), WX_STR(buffer), WX_STR(folderName.ToString()));
-			numberFoundPatchFiles++;
-		}
-		found = dir.GetNext(&buffer);
-	}
-
-	return Patch.size() - before;
-}
-
 // This routine loads patches from a zip file
 // Returns number of patches loaded
 // Note: does not reset previously loaded patches (use ForgetLoadedPatches() for that)
 // Note: only load patches from the root folder of the zip
-int LoadPatchesFromZip(const wxString& gameCRC, const wxString& patchesArchiveFilename, wxInputStream* stream)
+int LoadPatchesFromZip(const std::string& crc, const u8* zip_data, size_t zip_data_size)
 {
-	wxString upperGameCRC(gameCRC.Upper());
+	zip_error ze = {};
+	auto zf = zip_open_buffer_managed(zip_data, zip_data_size, ZIP_RDONLY, 0, &ze);
+	if (!zf)
+		return 0;
 
-	int before = Patch.size();
+	const std::string pnach_filename(crc + ".pnach");
+	std::optional<std::string> pnach_data(ReadFileInZipToString(zf.get(), pnach_filename.c_str()));
+	if (!pnach_data.has_value())
+		return 0;
 
-	std::unique_ptr<wxZipEntry> entry;
-	wxZipInputStream zip(stream);
-	while (entry.reset(zip.GetNextEntry()), entry.get() != NULL)
-	{
-		wxString name = entry->GetName();
-		name.MakeUpper();
-		if (name.Find(upperGameCRC) == 0 && name.Find(L".PNACH") + 6u == name.Length())
-		{
-			PatchesCon->WriteLn(Color_Green, L"Loading patch '%s' from archive '%s'",
-								WX_STR(entry->GetName()), WX_STR(patchesArchiveFilename));
-			wxTextInputStream pnach(zip);
-			while (!zip.Eof())
-			{
-				inifile_processString(pnach.ReadLine());
-			}
-		}
-	}
-	return Patch.size() - before;
+	PatchesCon->WriteLn(Color_Green, "Loading patch '%s' from archive.", pnach_filename.c_str());
+	return LoadPatchesFromString(pnach_data.value());
 }
 
 
 // This routine loads patches from *.pnach files
 // Returns number of patches loaded
 // Note: does not reset previously loaded patches (use ForgetLoadedPatches() for that)
-int LoadPatchesFromDir(const wxString& name, const wxDirName& folderName, const wxString& friendlyName)
+int LoadPatchesFromDir(const std::string& crc, const std::string& folder, const char* friendly_name, bool show_error_when_missing)
 {
-	int loaded = 0;
-	int numberFoundPatchFiles;
-
-	wxString filespec = name + L"*.pnach";
-	loaded += _LoadPatchFiles(folderName, filespec, friendlyName, numberFoundPatchFiles);
-
-	if (folderName.ToString().IsSameAs(EmuFolders::Cheats.ToString()) && numberFoundPatchFiles == 0)
+	if (!FileSystem::DirectoryExists(folder.c_str()))
 	{
-		wxString pathName = Path::Combine(folderName, name.Upper() + L".pnach");
-		PatchesCon->WriteLn(Color_Gray, L"Not found %s file: %s", WX_STR(friendlyName), WX_STR(pathName));
+		Console.WriteLn(Color_Red, "The %s folder ('%s') is inaccessible. Skipping...", friendly_name, folder.c_str());
+		return 0;
 	}
 
-	PatchesCon->WriteLn((loaded ? Color_Green : Color_Gray), L"Overall %d %s loaded", loaded, WX_STR(friendlyName));
-	return loaded;
-}
+	FileSystem::FindResultsArray files;
+	FileSystem::FindFiles(folder.c_str(), StringUtil::StdStringFromFormat("*.pnach", crc.c_str()).c_str(),
+		FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &files);
 
-static u32 StrToU32(const wxString& str, int base = 10)
-{
-	unsigned long l;
-	str.ToULong(&l, base);
-	return l;
-}
+	if (show_error_when_missing && files.empty())
+	{
+		PatchesCon->WriteLn(Color_Gray, "Not found %s file: %s" FS_OSPATH_SEPARATOR_STR "%s.pnach",
+			friendly_name, folder.c_str(), crc.c_str());
+	}
 
-static u64 StrToU64(const wxString& str, int base = 10)
-{
-	wxULongLong_t l;
-	str.ToULongLong(&l, base);
-	return l;
+	int total_loaded = 0;
+
+	for (const FILESYSTEM_FIND_DATA& fd : files)
+	{
+		const std::string_view name(Path::GetFileName(fd.FileName));
+		if (name.length() < crc.length() || StringUtil::Strncasecmp(name.data(), crc.c_str(), crc.size()) != 0)
+			continue;
+
+		PatchesCon->WriteLn(Color_Green, "Found %s file: '%.*s'", friendly_name, static_cast<int>(name.size()), name.data());
+
+		const std::optional<std::string> pnach_data(FileSystem::ReadFileToString(fd.FileName.c_str()));
+		if (!pnach_data.has_value())
+			continue;
+
+		const int loaded = LoadPatchesFromString(pnach_data.value());
+		total_loaded += loaded;
+
+		PatchesCon->WriteLn((loaded ? Color_Green : Color_Gray), "Loaded %d %s from '%.*s'.",
+			loaded, friendly_name, static_cast<int>(name.size()), name.data());
+	}
+
+	PatchesCon->WriteLn((total_loaded ? Color_Green : Color_Gray), "Overall %d %s loaded", total_loaded, friendly_name);
+	return total_loaded;
 }
 
 // PatchFunc Functions.
 namespace PatchFunc
 {
-	void comment(const wxString& text1, const wxString& text2)
+	void comment(const std::string_view& text1, const std::string_view& text2)
 	{
-		PatchesCon->WriteLn(L"comment: " + text2);
+		PatchesCon->WriteLn("comment: %.*s", static_cast<int>(text2.length()), text2.data());
 	}
 
-	void author(const wxString& text1, const wxString& text2)
+	void author(const std::string_view& text1, const std::string_view& text2)
 	{
-		PatchesCon->WriteLn(L"Author: " + text2);
+		PatchesCon->WriteLn("Author: %.*s", static_cast<int>(text2.length()), text2.data());
 	}
 
-	struct PatchPieces
+	void patch(const std::string_view& cmd, const std::string_view& param)
 	{
-		wxArrayString m_pieces;
-
-		PatchPieces(const wxString& param)
-		{
-			SplitString(m_pieces, param, L",");
-			if (m_pieces.Count() < 5)
-				throw wxsFormat(L"Expected 5 data parameters; only found %d", m_pieces.Count());
-		}
-
-		const wxString& PlaceToPatch() const { return m_pieces[0]; }
-		const wxString& CpuType() const { return m_pieces[1]; }
-		const wxString& MemAddr() const { return m_pieces[2]; }
-		const wxString& OperandSize() const { return m_pieces[3]; }
-		const wxString& WriteValue() const { return m_pieces[4]; }
-	};
-
-	void patchHelper(const wxString& cmd, const wxString& param)
-	{
-		// Error Handling Note:  I just throw simple wxStrings here, and then catch them below and
-		// format them into more detailed cmd+data+error printouts.  If we want to add user-friendly
-		// (translated) messages for display in a popup window then we'll have to upgrade the
-		// exception a little bit.
-
 		// print the actual patch lines only in verbose mode (even in devel)
 		if (DevConWriterEnabled)
-			DevCon.WriteLn(cmd + L" " + param);
-
-		try
 		{
-			PatchPieces pieces(param);
-
-			IniPatch iPatch = {0};
-			iPatch.enabled = 0;
-			iPatch.placetopatch = StrToU32(pieces.PlaceToPatch(), 10);
-
-			if (iPatch.placetopatch >= _PPT_END_MARKER)
-				throw wxsFormat(L"Invalid 'place' value '%s' (0 - once on startup, 1: continuously)", WX_STR(pieces.PlaceToPatch()));
-
-			iPatch.cpu = (patch_cpu_type)PatchTableExecute(pieces.CpuType(), cpuCore);
-			iPatch.addr = StrToU32(pieces.MemAddr(), 16);
-			iPatch.type = (patch_data_type)PatchTableExecute(pieces.OperandSize(), dataType);
-			iPatch.data = StrToU64(pieces.WriteValue(), 16);
-
-			if (iPatch.cpu == 0)
-				throw wxsFormat(L"Unrecognized CPU Target: '%s'", WX_STR(pieces.CpuType()));
-
-			if (iPatch.type == 0)
-				throw wxsFormat(L"Unrecognized Operand Size: '%s'", WX_STR(pieces.OperandSize()));
-
-			iPatch.enabled = 1; // omg success!!
-			Patch.push_back(iPatch);
+			DevCon.WriteLn("%.*s %.*s", static_cast<int>(cmd.size()), cmd.data(),
+				static_cast<int>(param.size()), param.data());
 		}
-		catch (wxString& exmsg)
+
+#define PATCH_ERROR(fmt, ...) Console.Error("(Patch) Error Parsing: %.*s=%.*s: " fmt, \
+	static_cast<int>(cmd.size()), cmd.data(), static_cast<int>(param.size()), param.data(), \
+	__VA_ARGS__)
+
+		// [0]=PlaceToPatch,[1]=CpuType,[2]=MemAddr,[3]=OperandSize,[4]=WriteValue
+		const std::vector<std::string_view> pieces(StringUtil::SplitString(param, ',', false));
+		if (pieces.size() != 5)
 		{
-			Console.Error(L"(Patch) Error Parsing: %s=%s", WX_STR(cmd), WX_STR(param));
-			Console.Indent().Error(exmsg);
+			PATCH_ERROR("Expected 5 data parameters; only found %zu", pieces.size());
+			return;
 		}
+
+		IniPatch iPatch = {0};
+		iPatch.enabled = 0;
+		iPatch.placetopatch = StringUtil::FromChars<u32>(pieces[0]).value_or(_PPT_END_MARKER);
+
+		if (iPatch.placetopatch >= _PPT_END_MARKER)
+		{
+			PATCH_ERROR("Invalid 'place' value '%.*s' (0 - once on startup, 1: continuously)",
+				static_cast<int>(pieces[0].size()), pieces[0].data());
+			return;
+		}
+
+		iPatch.cpu = (patch_cpu_type)PatchTableExecute(pieces[1], std::string_view(), cpuCore);
+		iPatch.addr = StringUtil::FromChars<u32>(pieces[2], 16).value_or(0);
+		iPatch.type = (patch_data_type)PatchTableExecute(pieces[3], std::string_view(), dataType);
+		iPatch.data = StringUtil::FromChars<u64>(pieces[4], 16).value_or(0);
+
+		if (iPatch.cpu == 0)
+		{
+			PATCH_ERROR("Unrecognized CPU Target: '%.*s'", static_cast<int>(pieces[1].size()), pieces[1].data());
+			return;
+		}
+
+		if (iPatch.type == 0)
+		{
+			PATCH_ERROR("Unrecognized Operand Size: '%.*s'", static_cast<int>(pieces[3].size()), pieces[3].data());
+			return;
+		}
+
+		iPatch.enabled = 1;
+		Patch.push_back(iPatch);
+
+#undef PATCH_ERROR
 	}
-	void patch(const wxString& cmd, const wxString& param) { patchHelper(cmd, param); }
 } // namespace PatchFunc
 
 // This is for applying patches directly to memory

@@ -67,6 +67,7 @@ CONSTINIT const GSVector4 GSVector4::m_two = cxpr(2.0f);
 CONSTINIT const GSVector4 GSVector4::m_four = cxpr(4.0f);
 CONSTINIT const GSVector4 GSVector4::m_x4b000000 = cxpr(0x4b000000);
 CONSTINIT const GSVector4 GSVector4::m_x4f800000 = cxpr(0x4f800000);
+CONSTINIT const GSVector4 GSVector4::m_xc1e00000000fffff = cxpr64(0xc1e00000000fffffull);
 CONSTINIT const GSVector4 GSVector4::m_max = cxpr(FLT_MAX);
 CONSTINIT const GSVector4 GSVector4::m_min = cxpr(FLT_MIN);
 
@@ -78,6 +79,7 @@ CONSTINIT const GSVector8 GSVector8::m_x7fffffff = cxpr(0x7fffffff);
 CONSTINIT const GSVector8 GSVector8::m_x80000000 = cxpr(0x80000000);
 CONSTINIT const GSVector8 GSVector8::m_x4b000000 = cxpr(0x4b000000);
 CONSTINIT const GSVector8 GSVector8::m_x4f800000 = cxpr(0x4f800000);
+CONSTINIT const GSVector8 GSVector8::m_xc1e00000000fffff = cxpr64(0xc1e00000000fffffull);
 CONSTINIT const GSVector8 GSVector8::m_max = cxpr(FLT_MAX);
 CONSTINIT const GSVector8 GSVector8::m_min = cxpr(FLT_MAX);
 

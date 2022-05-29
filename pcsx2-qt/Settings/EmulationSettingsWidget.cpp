@@ -19,6 +19,8 @@
 #include <QtWidgets/QMessageBox>
 #include <limits>
 
+#include "pcsx2/HostSettings.h"
+
 #include "EmulationSettingsWidget.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -46,6 +48,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cheats, "EmuCore", "EnableCheats", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.widescreenPatches, "EmuCore", "EnableWideScreenPatches", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.noInterlacingPatches, "EmuCore", "EnableNoInterlacingPatches", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.perGameSettings, "EmuCore", "EnablePerGameSettings", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hostFilesystem, "EmuCore", "HostFs", false);
 
@@ -67,6 +70,12 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 	dialog->registerWidgetHelp(m_ui.perGameSettings, tr("Enable Per-Game Settings"), tr("Checked"),
 		tr("When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should "
 		   "leave this option enabled except when testing enhancements with incompatible games."));
+	dialog->registerWidgetHelp(m_ui.optimalFramePacing, tr("Optimal Frame Pacing"), tr("Unchecked"),
+		tr("Sets the vsync queue size to 0, making every frame be completed and presented by the GS before input is polled, and the next frame begins. "
+		   "Using this setting can reduce input lag, at the cost of measurably higher CPU and GPU requirements."));
+	dialog->registerWidgetHelp(m_ui.maxFrameLatency, tr("Maximum Frame Latency"), tr("2 Frames"),
+		tr("Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. "
+		   "Higher values can assist with smoothing out irregular frame times, but add additional input lag."));
 
 	updateOptimalFramePacing();
 }
@@ -75,7 +84,7 @@ EmulationSettingsWidget::~EmulationSettingsWidget() = default;
 
 void EmulationSettingsWidget::initializeSpeedCombo(QComboBox* cb, const char* section, const char* key, float default_value)
 {
-	float value = QtHost::GetBaseFloatSettingValue(section, key, default_value);
+	float value = Host::GetBaseFloatSettingValue(section, key, default_value);
 	if (m_dialog->isPerGameSettings())
 	{
 		cb->addItem(tr("Use Global Setting [%1%]").arg(value * 100.0f, 0, 'f', 0));
@@ -163,10 +172,20 @@ void EmulationSettingsWidget::onOptimalFramePacingChanged()
 	const QSignalBlocker sb(m_ui.maxFrameLatency);
 
 	std::optional<int> value;
+	bool optimal = false;
 	if (m_ui.optimalFramePacing->checkState() != Qt::PartiallyChecked)
-		value = m_ui.optimalFramePacing->isChecked() ? 0 : DEFAULT_FRAME_LATENCY;
+	{
+		optimal = m_ui.optimalFramePacing->isChecked();
+		value = optimal ? 0 : DEFAULT_FRAME_LATENCY;
+	}
+	else
+	{
+		value = m_dialog->getEffectiveIntValue("EmuCore/GS", "VsyncQueueSize", DEFAULT_FRAME_LATENCY);
+		optimal = (value == 0);
+	}
 
-	m_ui.maxFrameLatency->setValue(DEFAULT_FRAME_LATENCY);
+	m_ui.maxFrameLatency->setMinimum(optimal ? 0 : 1);
+	m_ui.maxFrameLatency->setValue(optimal ? 0 : DEFAULT_FRAME_LATENCY);
 	m_ui.maxFrameLatency->setEnabled(!m_dialog->isPerGameSettings() && !m_ui.optimalFramePacing->isChecked());
 
 	m_dialog->setIntSettingValue("EmuCore/GS", "VsyncQueueSize", value);
@@ -190,5 +209,6 @@ void EmulationSettingsWidget::updateOptimalFramePacing()
 		m_ui.maxFrameLatency->setEnabled(!optimal);
 	}
 
-	m_ui.maxFrameLatency->setValue(optimal ? DEFAULT_FRAME_LATENCY : value);
+	m_ui.maxFrameLatency->setMinimum(optimal ? 0 : 1);
+	m_ui.maxFrameLatency->setValue(optimal ? 0 : value);
 }

@@ -57,7 +57,7 @@ void vu1Finish(bool add_cycles) {
 	}
 }
 
-void __fastcall vu1ExecMicro(u32 addr)
+void vu1ExecMicro(u32 addr)
 {
 	if (THREAD_VU1) {
 		VU0.VI[REG_VPU_STAT].UL &= ~0xFF00;

@@ -27,7 +27,10 @@
 #include "SettingsDialog.h"
 
 #include "common/StringUtil.h"
+#include "pcsx2/HostSettings.h"
 #include "pcsx2/PAD/Host/PAD.h"
+
+#include "SettingWidgetBinder.h"
 
 ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port)
 	: QWidget(parent)
@@ -42,6 +45,7 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
 	SettingWidgetBinder::BindWidgetToStringSetting(nullptr, m_ui.controllerType, m_config_section, "Type", "None");
 	connect(m_ui.controllerType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ControllerBindingWidget::onTypeChanged);
 	connect(m_ui.automaticBinding, &QPushButton::clicked, this, &ControllerBindingWidget::doAutomaticBinding);
+	connect(m_ui.clearBindings, &QPushButton::clicked, this, &ControllerBindingWidget::doClearBindings);
 }
 
 ControllerBindingWidget::~ControllerBindingWidget() = default;
@@ -62,7 +66,7 @@ void ControllerBindingWidget::onTypeChanged()
 		m_current_widget = nullptr;
 	}
 
-	m_controller_type = QtHost::GetBaseStringSettingValue(m_config_section.c_str(), "Type");
+	m_controller_type = Host::GetBaseStringSettingValue(m_config_section.c_str(), "Type");
 
 	const int index = m_ui.controllerType->findData(QString::fromStdString(m_controller_type));
 	if (index >= 0 && index != m_ui.controllerType->currentIndex())
@@ -104,6 +108,22 @@ void ControllerBindingWidget::doAutomaticBinding()
 	menu.exec(QCursor::pos());
 }
 
+void ControllerBindingWidget::doClearBindings()
+{
+	if (QMessageBox::question(QtUtils::GetRootWidget(this), tr("Clear Bindings"),
+		tr("Are you sure you want to clear all bindings for this controller? This action cannot be undone.")) != QMessageBox::Yes)
+	{
+		return;
+	}
+
+	{
+		auto lock = Host::GetSettingsLock();
+		PAD::ClearPortBindings(*Host::Internal::GetBaseSettingsLayer(), m_port_number);
+	}
+
+	saveAndRefresh();
+}
+
 void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
 {
 	std::vector<std::pair<GenericInputBinding, std::string>> mapping = InputManager::GetGenericBindingMapping(device.toStdString());
@@ -117,16 +137,19 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
 	bool result;
 	{
 		auto lock = Host::GetSettingsLock();
-		result = PAD::MapController(*QtHost::GetBaseSettingsInterface(), m_port_number, mapping);
+		result = PAD::MapController(*Host::Internal::GetBaseSettingsLayer(), m_port_number, mapping);
 	}
 
+	// force a refresh after mapping
 	if (result)
-	{
-		// force a refresh after mapping
-		onTypeChanged();
-		QtHost::QueueSettingsSave();
-		g_emu_thread->applySettings();
-	}
+		saveAndRefresh();
+}
+
+void ControllerBindingWidget::saveAndRefresh()
+{
+	onTypeChanged();
+	QtHost::QueueSettingsSave();
+	g_emu_thread->applySettings();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -186,6 +209,26 @@ void ControllerBindingWidget_Base::initBindingWidgets()
 		default:
 			break;
 	}
+
+	if (QSlider* widget = findChild<QSlider*>(QStringLiteral("AxisScale")); widget)
+	{
+		// position 1.0f at the halfway point
+		const float range = static_cast<float>(widget->maximum()) * 0.5f;
+		QLabel* label = findChild<QLabel*>(QStringLiteral("AxisScaleLabel"));
+		if (label)
+		{
+			connect(widget, &QSlider::valueChanged, this, [range, label](int value) {
+				label->setText(tr("%1x").arg(static_cast<float>(value) / range, 0, 'f', 2));
+			});
+		}
+
+		SettingWidgetBinder::BindWidgetToNormalizedSetting(nullptr, widget, config_section, "AxisScale", range, 1.0f);
+	}
+
+	if (QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QStringLiteral("SmallMotorScale")); widget)
+		SettingWidgetBinder::BindWidgetToFloatSetting(nullptr, widget, config_section, "SmallMotorScale", 1.0f);
+	if (QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QStringLiteral("LargeMotorScale")); widget)
+		SettingWidgetBinder::BindWidgetToFloatSetting(nullptr, widget, config_section, "LargeMotorScale", 1.0f);
 }
 
 ControllerBindingWidget_DualShock2::ControllerBindingWidget_DualShock2(ControllerBindingWidget* parent)

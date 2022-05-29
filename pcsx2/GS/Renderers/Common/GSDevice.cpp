@@ -49,7 +49,7 @@ const char* shaderName(ShaderConvert value)
 	}
 }
 
-static const int MipmapLevelsForSize(int width, int height)
+static int MipmapLevelsForSize(int width, int height)
 {
 	return std::min(static_cast<int>(std::log2(std::max(width, height))) + 1, MAXIMUM_TEXTURE_MIPMAP_LEVELS);
 }
@@ -358,8 +358,9 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	if (mode == 0 || mode == 2) // weave or blend
 	{
 		// weave first
+		const int offset = static_cast<int>(yoffset) * (1 - field);
 
-		DoInterlace(m_merge, m_weavebob, field, false, 0);
+		DoInterlace(m_merge, m_weavebob, field, false, GSConfig.DisableInterlaceOffset ? 0 : offset);
 
 		if (mode == 2)
 		{
@@ -475,6 +476,33 @@ bool GSDevice::ResizeTarget(GSTexture** t)
 {
 	GSVector2i s = m_current->GetSize();
 	return ResizeTexture(t, GSTexture::Type::RenderTarget, s.x, s.y);
+}
+
+void GSDevice::SetHWDrawConfigForAlphaPass(GSHWDrawConfig::PSSelector* ps,
+	GSHWDrawConfig::ColorMaskSelector* cms,
+	GSHWDrawConfig::BlendState* bs,
+	GSHWDrawConfig::DepthStencilSelector* dss)
+{
+	// only need to compute the alpha component (allow the shader to optimize better)
+	ps->no_ablend = false;
+	ps->only_alpha = true;
+
+	// definitely don't need to compute software blend (this may get rid of some barriers)
+	ps->blend_a = ps->blend_b = ps->blend_c = ps->blend_d = 0;
+
+	// only write alpha (RGB=0,A=1)
+	cms->wrgba = (1 << 3);
+
+	// no need for hardware blending, since we're not writing RGB
+	bs->enable = false;
+
+	// if depth writes are on, we can optimize to an EQUAL test, otherwise we leave the tests alone
+	// since the alpha channel isn't blended, the last fragment wins and this'll be okay
+	if (dss->zwe)
+	{
+		dss->zwe = false;
+		dss->ztst = ZTST_GEQUAL;
+	}
 }
 
 GSAdapter::operator std::string() const

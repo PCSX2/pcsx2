@@ -22,7 +22,7 @@
 alignas(16) VURegs vuRegs[2];
 
 vuMemoryReserve::vuMemoryReserve()
-	: _parent( L"VU0/1 on-chip memory", VU1_PROGSIZE + VU1_MEMSIZE + VU0_PROGSIZE + VU0_MEMSIZE )
+	: _parent( "VU0/1 on-chip memory", VU1_PROGSIZE + VU1_MEMSIZE + VU0_PROGSIZE + VU0_MEMSIZE )
 {
 }
 

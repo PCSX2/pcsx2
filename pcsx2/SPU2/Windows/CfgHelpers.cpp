@@ -17,8 +17,8 @@
 #include "Config.h"
 #include "SPU2/Global.h"
 #include "Dialogs.h"
-
-#include "common/StringHelpers.h"
+#include "common/StringUtil.h"
+#include "gui/StringHelpers.h"
 
 void SysMessage(const char* fmt, ...)
 {
@@ -56,7 +56,7 @@ void initIni()
 {
 	if (!pathSet)
 	{
-		CfgFile = EmuFolders::Settings.Combine(CfgFile).GetFullPath();
+		CfgFile = StringUtil::UTF8StringToWxString(Path::Combine(EmuFolders::Settings, "SPU2.ini"));
 		pathSet = true;
 	}
 }

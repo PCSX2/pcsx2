@@ -15,22 +15,14 @@
 
 
 #include "PrecompiledHeader.h"
-#include "IopCommon.h"
 #include "IsoFileFormats.h"
+#include "common/Exceptions.h"
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
 
+#include "fmt/core.h"
+
 #include <errno.h>
-
-void pxStream_OpenCheck(std::FILE* stream, const std::string& fname, const wxString& mode)
-{
-	if (stream)
-		return;
-
-	ScopedExcept ex(Exception::FromErrno(StringUtil::UTF8StringToWxString(fname), errno));
-	ex->SetDiagMsg(pxsFmt(L"Unable to open the file for %s: %s", WX_STR(mode), WX_STR(ex->DiagMsg())));
-	ex->Rethrow();
-}
 
 OutputIsoFile::OutputIsoFile()
 {
@@ -63,7 +55,12 @@ void OutputIsoFile::Create(std::string filename, int version)
 	m_blocksize = 2048;
 
 	m_outstream = FileSystem::OpenCFile(m_filename.c_str(), "wb");
-	pxStream_OpenCheck(m_outstream, m_filename, L"writing");
+	if (!m_outstream)
+	{
+		Console.Error("(OutputIsoFile::Create) Unable to open the file '%s' for writing: %d", m_filename.c_str(), errno);
+		ScopedExcept ex(Exception::FromErrno(filename, errno));
+		ex->Rethrow();
+	}
 
 	Console.WriteLn("isoFile create ok: %s ", m_filename.c_str());
 }
@@ -129,12 +126,12 @@ void OutputIsoFile::WriteBuffer(const void* src, size_t size)
 		int err = errno;
 		if (!err)
 		{
-			throw Exception::BadStream(StringUtil::UTF8StringToWxString(m_filename))
-				.SetDiagMsg(pxsFmt(L"An error occurred while writing %u bytes to file", size));
+			throw Exception::BadStream(m_filename)
+				.SetDiagMsg(fmt::format("An error occurred while writing {} bytes to file", size));
 		}
 
-		ScopedExcept ex(Exception::FromErrno(StringUtil::UTF8StringToWxString(m_filename), err));
-		ex->SetDiagMsg(pxsFmt(L"An error occurred while writing %u bytes to file: %s", size, WX_STR(ex->DiagMsg())));
+		ScopedExcept ex(Exception::FromErrno(m_filename, err));
+		ex->SetDiagMsg(fmt::format("An error occurred while writing {} bytes to file: {}", size, ex->DiagMsg()));
 		ex->Rethrow();
 	}
 }

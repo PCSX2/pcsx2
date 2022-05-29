@@ -15,8 +15,14 @@
 
 
 #include "PrecompiledHeader.h"
-#include "IopCommon.h"
 #include "SaveState.h"
+
+#include "common/FileSystem.h"
+#include "common/Path.h"
+#include "common/SafeArray.inl"
+#include "common/ScopedGuard.h"
+#include "common/StringUtil.h"
+#include "common/ZipHelpers.h"
 
 #include "ps2/BiosTools.h"
 #include "COP0.h"
@@ -24,46 +30,44 @@
 #include "MTVU.h"
 #include "Cache.h"
 #include "Config.h"
-
+#include "CDVD/CDVD.h"
+#include "R3000A.h"
 #include "Elfheader.h"
 #include "Counters.h"
 #include "Patch.h"
-#include "System/SysThreads.h"
 #include "DebugTools/Breakpoints.h"
 #include "Host.h"
 #include "GS.h"
-
-#include "common/pxStreams.h"
-#include "common/SafeArray.inl"
-#include "common/ScopedGuard.h"
-#include "common/StringUtil.h"
 #include "GS/GS.h"
 #include "SPU2/spu2.h"
 #include "USB/USB.h"
 #include "PAD/Gamepad.h"
 
-#include <wx/wfstream.h>
-
 #ifndef PCSX2_CORE
 #include "gui/App.h"
 #include "gui/ConsoleLogger.h"
+#include "gui/SysThreads.h"
 #else
 #include "VMManager.h"
 #endif
 
-#include "common/pxStreams.h"
-#include <wx/wfstream.h>
-#include <wx/zipstrm.h>
+#include "fmt/core.h"
 
 #include <csetjmp>
 #include <png.h>
 
 using namespace R5900;
 
-
 static void PreLoadPrep()
 {
+	// ensure everything is in sync before we start overwriting stuff.
+	if (THREAD_VU1)
+		vu1Thread.WaitVU();
+	GetMTGS().WaitGS(false);
 	SysClearExecutionCache();
+#ifndef PCSX2_CORE
+	PatchesVerboseReset();
+#endif
 }
 
 static void PostLoadPrep()
@@ -82,29 +86,22 @@ static void PostLoadPrep()
 //  SaveStateBase  (implementations)
 // --------------------------------------------------------------------------------------
 #ifndef PCSX2_CORE
-wxString SaveStateBase::GetSavestateFolder( int slot, bool isSavingOrLoading )
+std::string SaveStateBase::GetSavestateFolder(int slot, bool isSavingOrLoading)
 {
-	wxString CRCvalue = wxString::Format(wxT("%08X"), ElfCRC);
-	wxString serialName(DiscSerial);
+	std::string CRCvalue(StringUtil::StdStringFromFormat("%08X", ElfCRC));
+	std::string serialName;
 
 	if (g_GameStarted || g_GameLoading)
 	{
-		if (DiscSerial.IsEmpty())
+		if (DiscSerial.empty())
 		{
-			std::string ElfString = LastELF.ToStdString();
-			std::string ElfString_delimiter = "/";
-
-#ifndef _UNIX_
-			std::replace(ElfString.begin(), ElfString.end(), '\\', '/');
-#endif
-			size_t pos = 0;
-			while ((pos = ElfString.find(ElfString_delimiter)) != std::string::npos)
-			{
-				// Running homebrew/standalone ELF, return only the ELF name.
-				ElfString.erase(0, pos + ElfString_delimiter.length());
-			}
-			wxString ElfString_toWxString(ElfString.c_str(), wxConvUTF8);
-			serialName = ElfString_toWxString;
+			// Running homebrew/standalone ELF, return only the ELF name.
+			// can't use FileSystem here because it's DOS paths
+			const std::string::size_type pos = std::min(DiscSerial.rfind('/'), DiscSerial.rfind('\\'));
+			if (pos != std::string::npos)
+				serialName = DiscSerial.substr(pos + 1);
+			else
+				serialName = DiscSerial;
 		}
 		else
 		{
@@ -116,22 +113,24 @@ wxString SaveStateBase::GetSavestateFolder( int slot, bool isSavingOrLoading )
 	else
 	{
 		// Still inside the BIOS/not running a game (why would anyone want to do this?)
-		const std::string biosString(StringUtil::StdStringFromFormat("BIOS (%s v%u.%u)", BiosZone.c_str(), (BiosVersion >> 8), BiosVersion & 0xff));
-		serialName = StringUtil::UTF8StringToWxString(biosString);
-		CRCvalue = L"None";
+		serialName = StringUtil::StdStringFromFormat("BIOS (%s v%u.%u)", BiosZone.c_str(), (BiosVersion >> 8), BiosVersion & 0xff);
+		CRCvalue = "None";
 	}
 
-	wxFileName dirname = wxFileName::DirName(g_Conf->FullpathToSaveState(serialName, CRCvalue));
+	const std::string dir(StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s - (%s)",
+		g_Conf->Folders.Savestates.ToUTF8().data(), serialName.c_str(), CRCvalue.c_str()));
 
 	if (isSavingOrLoading)
 	{
-		if (!wxDirExists(g_Conf->FullpathToSaveState(serialName, CRCvalue)))
+		if (!FileSystem::DirectoryExists(dir.c_str()))
 		{
-			wxMkdir(g_Conf->FullpathToSaveState(serialName, CRCvalue));
+			// sstates should exist, no need to create it
+			FileSystem::CreateDirectoryPath(dir.c_str(), false);
 		}
 	}
-	return (dirname.GetPath() + "/" +
-			pxsFmt( L"%s (%s).%02d.p2s", WX_STR(serialName), WX_STR(CRCvalue), slot ));
+
+	return Path::Combine(dir, StringUtil::StdStringFromFormat("%s (%s).%02d.p2s",
+		serialName.c_str(), CRCvalue.c_str(), slot));
 }
 #endif
 
@@ -169,7 +168,7 @@ void SaveStateBase::PrepBlock( int size )
 void SaveStateBase::FreezeTag( const char* src )
 {
 	const uint allowedlen = sizeof( m_tagspace )-1;
-	pxAssertDev( strlen(src) < allowedlen, pxsFmt( L"Tag name exceeds the allowed length of %d chars.", allowedlen) );
+	pxAssertDev(strlen(src) < allowedlen, "Tag name exceeds the allowed length");
 
 	memzero( m_tagspace );
 	strcpy( m_tagspace, src );
@@ -177,9 +176,9 @@ void SaveStateBase::FreezeTag( const char* src )
 
 	if( strcmp( m_tagspace, src ) != 0 )
 	{
-		wxString msg( L"Savestate data corruption detected while reading tag: " + fromUTF8(src) );
-		pxFail( msg );
-		throw Exception::SaveStateLoadError().SetDiagMsg(msg);
+		std::string msg(fmt::format("Savestate data corruption detected while reading tag: {}", src));
+		pxFail( msg.c_str() );
+		throw Exception::SaveStateLoadError().SetDiagMsg(std::move(msg));
 	}
 }
 
@@ -214,42 +213,11 @@ SaveStateBase& SaveStateBase::FreezeBios()
 	return *this;
 }
 
-static const uint MainMemorySizeInBytes =
-	Ps2MemSize::MainRam	+ Ps2MemSize::Scratch		+ Ps2MemSize::Hardware +
-	Ps2MemSize::IopRam	+ Ps2MemSize::IopHardware;
-
-SaveStateBase& SaveStateBase::FreezeMainMemory()
-{
-	vu1Thread.WaitVU(); // Finish VU1 just in-case...
-	if (IsLoading()) PreLoadPrep();
-	else m_memory->MakeRoomFor( m_idx + MainMemorySizeInBytes );
-
-	// First Block - Memory Dumps
-	// ---------------------------
-	FreezeMem(eeMem->Main,		Ps2MemSize::MainRam);		// 32 MB main memory
-	FreezeMem(eeMem->Scratch,	Ps2MemSize::Scratch);		// scratch pad
-	FreezeMem(eeHw,				Ps2MemSize::Hardware);		// hardware memory
-
-	FreezeMem(iopMem->Main, 	Ps2MemSize::IopRam);		// 2 MB main memory
-	FreezeMem(iopHw,			Ps2MemSize::IopHardware);	// hardware memory
-	
-	FreezeMem(vuRegs[0].Micro,	VU0_PROGSIZE);
-	FreezeMem(vuRegs[0].Mem,	VU0_MEMSIZE);
-
-	FreezeMem(vuRegs[1].Micro,	VU1_PROGSIZE);
-	FreezeMem(vuRegs[1].Mem,	VU1_MEMSIZE);
-	
-	return *this;
-}
-
 SaveStateBase& SaveStateBase::FreezeInternals()
 {
-	vu1Thread.WaitVU(); // Finish VU1 just in-case...
 	// Print this until the MTVU problem in gifPathFreeze is taken care of (rama)
 	if (THREAD_VU1) Console.Warning("MTVU speedhack is enabled, saved states may not be stable");
 	
-	if (IsLoading()) PreLoadPrep();
-
 	// Second Block - Various CPU Registers and States
 	// -----------------------------------------------
 	FreezeTag( "cpuRegs" );
@@ -264,10 +232,10 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	Freeze(ElfCRC);
 
 	char localDiscSerial[256];
-	StringUtil::Strlcpy(localDiscSerial, DiscSerial.ToUTF8(), sizeof(localDiscSerial));
+	StringUtil::Strlcpy(localDiscSerial, DiscSerial.c_str(), sizeof(localDiscSerial));
 	Freeze(localDiscSerial);
 	if (IsLoading())
-		DiscSerial = wxString::FromUTF8(localDiscSerial);
+		DiscSerial = localDiscSerial;
 
 	// Third Block - Cycle Timers and Events
 	// -------------------------------------
@@ -317,12 +285,7 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	// to merit an HLE Bios sub-section... yet.
 	deci2Freeze();
 
-#ifndef DISABLE_RECORDING
 	InputRecordingFreeze();
-#endif
-
-	if( IsLoading() )
-		PostLoadPrep();
 
 	return *this;
 }
@@ -382,20 +345,17 @@ void memLoadingState::FreezeMem( void* data, int size )
 	memcpy( data, src, size );
 }
 
-wxString Exception::SaveStateLoadError::FormatDiagnosticMessage() const
+std::string Exception::SaveStateLoadError::FormatDiagnosticMessage() const
 {
-	FastFormatUnicode retval;
-	retval.Write("Savestate is corrupt or incomplete!\n");
+	std::string retval = "Savestate is corrupt or incomplete!\n";
 	Host::AddOSDMessage("Error: Savestate is corrupt or incomplete!", 15.0f);
 	_formatDiagMsg(retval);
 	return retval;
 }
 
-wxString Exception::SaveStateLoadError::FormatDisplayMessage() const
+std::string Exception::SaveStateLoadError::FormatDisplayMessage() const
 {
-	FastFormatUnicode retval;
-	retval.Write(_("The savestate cannot be loaded, as it appears to be corrupt or incomplete."));
-	retval.Write("\n");
+	std::string retval = "The savestate cannot be loaded, as it appears to be corrupt or incomplete.\n";
 	Host::AddOSDMessage("Error: The savestate cannot be loaded, as it appears to be corrupt or incomplete.", 15.0f);
 	_formatUserMsg(retval);
 	return retval;
@@ -404,9 +364,9 @@ wxString Exception::SaveStateLoadError::FormatDisplayMessage() const
 // Used to hold the current state backup (fullcopy of PS2 memory and subcomponents states).
 //static VmStateBuffer state_buffer( L"Public Savestate Buffer" );
 
-static const wxChar* EntryFilename_StateVersion = L"PCSX2 Savestate Version.id";
-static const wxChar* EntryFilename_Screenshot = L"Screenshot.png";
-static const wxChar* EntryFilename_InternalStructures = L"PCSX2 Internal Structures.dat";
+static const char* EntryFilename_StateVersion = "PCSX2 Savestate Version.id";
+static const char* EntryFilename_Screenshot = "Screenshot.png";
+static const char* EntryFilename_InternalStructures = "PCSX2 Internal Structures.dat";
 
 struct SysState_Component
 {
@@ -447,7 +407,7 @@ static void SysState_ComponentFreezeOutRoot(void* dest, SysState_Component comp)
 		throw std::runtime_error(std::string(" * ") + comp.name + std::string(": Error saving state!\n"));
 }
 
-static void SysState_ComponentFreezeIn(pxInputStream& infp, SysState_Component comp)
+static void SysState_ComponentFreezeIn(zip_file_t* zf, SysState_Component comp)
 {
 	freezeData fP = { 0, nullptr };
 	if (comp.freeze(FreezeAction::Size, &fP) != 0)
@@ -455,21 +415,10 @@ static void SysState_ComponentFreezeIn(pxInputStream& infp, SysState_Component c
 
 	Console.Indent().WriteLn("Loading %s", comp.name);
 
-	if (!infp.IsOk() || !infp.Length())
-	{
-		// no state data to read, but component expects some state data?
-		// Issue a warning to console...
-		if (fP.size != 0)
-			Console.Indent().Warning("Warning: No data for %s found. Status may be unpredictable.", comp.name);
-
-		return;
-	}
-
 	auto data = std::make_unique<u8[]>(fP.size);
 	fP.data = data.get();
 
-	infp.Read(fP.data, fP.size);
-	if (comp.freeze(FreezeAction::Load, &fP) != 0)
+	if (zip_fread(zf, data.get(), fP.size) != static_cast<zip_int64_t>(fP.size) || comp.freeze(FreezeAction::Load, &fP) != 0)
 		throw std::runtime_error(std::string(" * ") + comp.name + std::string(": Error loading state!\n"));
 }
 
@@ -497,8 +446,8 @@ protected:
 public:
 	virtual ~BaseSavestateEntry() = default;
 
-	virtual wxString GetFilename() const = 0;
-	virtual void FreezeIn(pxInputStream& reader) const = 0;
+	virtual const char* GetFilename() const = 0;
+	virtual void FreezeIn(zip_file_t* zf) const = 0;
 	virtual void FreezeOut(SaveStateBase& writer) const = 0;
 	virtual bool IsRequired() const = 0;
 };
@@ -510,28 +459,24 @@ protected:
 	virtual ~MemorySavestateEntry() = default;
 
 public:
-	virtual void FreezeIn(pxInputStream& reader) const;
+	virtual void FreezeIn(zip_file_t* zf) const;
 	virtual void FreezeOut(SaveStateBase& writer) const;
 	virtual bool IsRequired() const { return true; }
 
 protected:
 	virtual u8* GetDataPtr() const = 0;
-	virtual uint GetDataSize() const = 0;
+	virtual u32 GetDataSize() const = 0;
 };
 
-void MemorySavestateEntry::FreezeIn(pxInputStream& reader) const
+void MemorySavestateEntry::FreezeIn(zip_file_t* zf) const
 {
-	const uint entrySize = reader.Length();
-	const uint expectedSize = GetDataSize();
-
-	if (entrySize < expectedSize)
+	const u32 expectedSize = GetDataSize();
+	const s64 bytesRead = zip_fread(zf, GetDataPtr(), expectedSize);
+	if (bytesRead != static_cast<s64>(expectedSize))
 	{
 		Console.WriteLn(Color_Yellow, " '%s' is incomplete (expected 0x%x bytes, loading only 0x%x bytes)",
-			WX_STR(GetFilename()), expectedSize, entrySize);
+			GetFilename(), expectedSize, static_cast<u32>(bytesRead));
 	}
-
-	uint copylen = std::min(entrySize, expectedSize);
-	reader.Read(GetDataPtr(), copylen);
 }
 
 void MemorySavestateEntry::FreezeOut(SaveStateBase& writer) const
@@ -553,14 +498,14 @@ class SavestateEntry_EmotionMemory : public MemorySavestateEntry
 public:
 	virtual ~SavestateEntry_EmotionMemory() = default;
 
-	wxString GetFilename() const { return L"eeMemory.bin"; }
+	const char* GetFilename() const { return "eeMemory.bin"; }
 	u8* GetDataPtr() const { return eeMem->Main; }
 	uint GetDataSize() const { return sizeof(eeMem->Main); }
 
-	virtual void FreezeIn(pxInputStream& reader) const
+	virtual void FreezeIn(zip_file_t* zf) const
 	{
 		SysClearExecutionCache();
-		MemorySavestateEntry::FreezeIn(reader);
+		MemorySavestateEntry::FreezeIn(zf);
 	}
 };
 
@@ -569,7 +514,7 @@ class SavestateEntry_IopMemory : public MemorySavestateEntry
 public:
 	virtual ~SavestateEntry_IopMemory() = default;
 
-	wxString GetFilename() const { return L"iopMemory.bin"; }
+	const char* GetFilename() const { return "iopMemory.bin"; }
 	u8* GetDataPtr() const { return iopMem->Main; }
 	uint GetDataSize() const { return sizeof(iopMem->Main); }
 };
@@ -579,7 +524,7 @@ class SavestateEntry_HwRegs : public MemorySavestateEntry
 public:
 	virtual ~SavestateEntry_HwRegs() = default;
 
-	wxString GetFilename() const { return L"eeHwRegs.bin"; }
+	const char* GetFilename() const { return "eeHwRegs.bin"; }
 	u8* GetDataPtr() const { return eeHw; }
 	uint GetDataSize() const { return sizeof(eeHw); }
 };
@@ -589,7 +534,7 @@ class SavestateEntry_IopHwRegs : public MemorySavestateEntry
 public:
 	virtual ~SavestateEntry_IopHwRegs() = default;
 
-	wxString GetFilename() const { return L"iopHwRegs.bin"; }
+	const char* GetFilename() const { return "iopHwRegs.bin"; }
 	u8* GetDataPtr() const { return iopHw; }
 	uint GetDataSize() const { return sizeof(iopHw); }
 };
@@ -599,7 +544,7 @@ class SavestateEntry_Scratchpad : public MemorySavestateEntry
 public:
 	virtual ~SavestateEntry_Scratchpad() = default;
 
-	wxString GetFilename() const { return L"Scratchpad.bin"; }
+	const char* GetFilename() const { return "Scratchpad.bin"; }
 	u8* GetDataPtr() const { return eeMem->Scratch; }
 	uint GetDataSize() const { return sizeof(eeMem->Scratch); }
 };
@@ -609,7 +554,7 @@ class SavestateEntry_VU0mem : public MemorySavestateEntry
 public:
 	virtual ~SavestateEntry_VU0mem() = default;
 
-	wxString GetFilename() const { return L"vu0Memory.bin"; }
+	const char* GetFilename() const { return "vu0Memory.bin"; }
 	u8* GetDataPtr() const { return vuRegs[0].Mem; }
 	uint GetDataSize() const { return VU0_MEMSIZE; }
 };
@@ -619,7 +564,7 @@ class SavestateEntry_VU1mem : public MemorySavestateEntry
 public:
 	virtual ~SavestateEntry_VU1mem() = default;
 
-	wxString GetFilename() const { return L"vu1Memory.bin"; }
+	const char* GetFilename() const { return "vu1Memory.bin"; }
 	u8* GetDataPtr() const { return vuRegs[1].Mem; }
 	uint GetDataSize() const { return VU1_MEMSIZE; }
 };
@@ -629,7 +574,7 @@ class SavestateEntry_VU0prog : public MemorySavestateEntry
 public:
 	virtual ~SavestateEntry_VU0prog() = default;
 
-	wxString GetFilename() const { return L"vu0MicroMem.bin"; }
+	const char* GetFilename() const { return "vu0MicroMem.bin"; }
 	u8* GetDataPtr() const { return vuRegs[0].Micro; }
 	uint GetDataSize() const { return VU0_PROGSIZE; }
 };
@@ -639,7 +584,7 @@ class SavestateEntry_VU1prog : public MemorySavestateEntry
 public:
 	virtual ~SavestateEntry_VU1prog() = default;
 
-	wxString GetFilename() const { return L"vu1MicroMem.bin"; }
+	const char* GetFilename() const { return "vu1MicroMem.bin"; }
 	u8* GetDataPtr() const { return vuRegs[1].Micro; }
 	uint GetDataSize() const { return VU1_PROGSIZE; }
 };
@@ -649,8 +594,8 @@ class SavestateEntry_SPU2 : public BaseSavestateEntry
 public:
 	virtual ~SavestateEntry_SPU2() = default;
 
-	wxString GetFilename() const { return L"SPU2.bin"; }
-	void FreezeIn(pxInputStream& reader) const { return SysState_ComponentFreezeIn(reader, SPU2); }
+	const char* GetFilename() const { return "SPU2.bin"; }
+	void FreezeIn(zip_file_t* zf) const { return SysState_ComponentFreezeIn(zf, SPU2); }
 	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, SPU2); }
 	bool IsRequired() const { return true; }
 };
@@ -660,8 +605,8 @@ class SavestateEntry_USB : public BaseSavestateEntry
 public:
 	virtual ~SavestateEntry_USB() = default;
 
-	wxString GetFilename() const { return L"USB.bin"; }
-	void FreezeIn(pxInputStream& reader) const { return SysState_ComponentFreezeIn(reader, USB); }
+	const char* GetFilename() const { return "USB.bin"; }
+	void FreezeIn(zip_file_t* zf) const { return SysState_ComponentFreezeIn(zf, USB); }
 	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, USB); }
 	bool IsRequired() const { return false; }
 };
@@ -671,8 +616,8 @@ class SavestateEntry_PAD : public BaseSavestateEntry
 public:
 	virtual ~SavestateEntry_PAD() = default;
 
-	wxString GetFilename() const { return L"PAD.bin"; }
-	void FreezeIn(pxInputStream& reader) const { return SysState_ComponentFreezeIn(reader, PAD_); }
+	const char* GetFilename() const { return "PAD.bin"; }
+	void FreezeIn(zip_file_t* zf) const { return SysState_ComponentFreezeIn(zf, PAD_); }
 	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, PAD_); }
 	bool IsRequired() const { return true; }
 };
@@ -682,8 +627,8 @@ class SavestateEntry_GS : public BaseSavestateEntry
 public:
 	virtual ~SavestateEntry_GS() = default;
 
-	wxString GetFilename() const { return L"GS.bin"; }
-	void FreezeIn(pxInputStream& reader) const { return SysState_ComponentFreezeIn(reader, GS); }
+	const char* GetFilename() const { return "GS.bin"; }
+	void FreezeIn(zip_file_t* zf) const { return SysState_ComponentFreezeIn(zf, GS); }
 	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, GS); }
 	bool IsRequired() const { return true; }
 };
@@ -713,42 +658,16 @@ static const std::unique_ptr<BaseSavestateEntry> SavestateEntries[] = {
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_GS),
 };
 
-// It's bad mojo to have savestates trying to read and write from the same file at the
-// same time.  To prevent that we use this mutex lock, which is used by both the
-// CompressThread and the UnzipFromDisk events.  (note that CompressThread locks the
-// mutex during OnStartInThread, which ensures that the ZipToDisk event blocks; preventing
-// the SysExecutor's Idle Event from re-enabing savestates and slots.)
-//
-static Mutex mtx_CompressToDisk;
-
-static void CheckVersion(pxInputStream& thr)
-{
-	u32 savever;
-	thr.Read(savever);
-
-	// Major version mismatch.  Means we can't load this savestate at all.  Support for it
-	// was removed entirely.
-	if (savever > g_SaveVersion)
-		throw Exception::SaveStateLoadError(thr.GetStreamName())
-		.SetDiagMsg(pxsFmt(L"Savestate uses an unsupported or unknown savestate version.\n(PCSX2 ver=%x, state ver=%x)", g_SaveVersion, savever))
-		.SetUserMsg(_("Cannot load this savestate. The state is an unsupported version."));
-
-	// check for a "minor" version incompatibility; which happens if the savestate being loaded is a newer version
-	// than the emulator recognizes.  99% chance that trying to load it will just corrupt emulation or crash.
-	if ((savever >> 16) != (g_SaveVersion >> 16))
-		throw Exception::SaveStateLoadError(thr.GetStreamName())
-		.SetDiagMsg(pxsFmt(L"Savestate uses an unknown savestate version.\n(PCSX2 ver=%x, state ver=%x)", g_SaveVersion, savever))
-		.SetUserMsg(_("Cannot load this savestate. The state is an unsupported version."));
-};
-
-void SaveState_DownloadState(ArchiveEntryList* destlist)
+std::unique_ptr<ArchiveEntryList> SaveState_DownloadState()
 {
 #ifndef PCSX2_CORE
 	if (!GetCoreThread().HasActiveMachine())
 		throw Exception::RuntimeError()
-			.SetDiagMsg(L"SysExecEvent_DownloadState: Cannot freeze/download an invalid VM state!")
-			.SetUserMsg(_("There is no active virtual machine state to download or save."));
+			.SetDiagMsg("SysExecEvent_DownloadState: Cannot freeze/download an invalid VM state!")
+			.SetUserMsg("There is no active virtual machine state to download or save.");
 #endif
+
+	std::unique_ptr<ArchiveEntryList> destlist = std::make_unique<ArchiveEntryList>(new VmStateBuffer("Zippable Savestate"));
 
 	memSavingState saveme(destlist->GetBuffer());
 	ArchiveEntry internals(EntryFilename_InternalStructures);
@@ -769,6 +688,8 @@ void SaveState_DownloadState(ArchiveEntryList* destlist)
 				.SetDataIndex(startpos)
 				.SetDataSize(saveme.GetCurrentPos() - startpos));
 	}
+
+	return destlist;
 }
 
 std::unique_ptr<SaveStateScreenshotData> SaveState_SaveScreenshot()
@@ -790,21 +711,29 @@ std::unique_ptr<SaveStateScreenshotData> SaveState_SaveScreenshot()
 	return data;
 }
 
-static bool SaveState_CompressScreenshot(SaveStateScreenshotData* data, wxZipOutputStream* gzfp)
+static bool SaveState_CompressScreenshot(SaveStateScreenshotData* data, zip_t* zf)
 {
+	zip_error_t ze = {};
+	zip_source_t* const zs = zip_source_buffer_create(nullptr, 0, 0, &ze);
+	if (!zs)
+		return false;
+
+	if (zip_source_begin_write(zs) != 0)
+	{
+		zip_source_free(zs);
+		return false;
+	}
+
+	ScopedGuard zs_free([zs]() { zip_source_free(zs); });
+
 	png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	png_infop info_ptr = nullptr;
 	if (!png_ptr)
 		return false;
 
-	wxZipEntry* const vent = new wxZipEntry(EntryFilename_Screenshot);
-	vent->SetMethod(wxZIP_METHOD_STORE);
-	gzfp->PutNextEntry(vent);
-
-	ScopedGuard cleanup([&png_ptr, &info_ptr, gzfp]() {
+	ScopedGuard cleanup([&png_ptr, &info_ptr]() {
 		if (png_ptr)
 			png_destroy_write_struct(&png_ptr, info_ptr ? &info_ptr : nullptr);
-		gzfp->CloseEntry();
 	});
 
 	info_ptr = png_create_info_struct(png_ptr);
@@ -814,8 +743,8 @@ static bool SaveState_CompressScreenshot(SaveStateScreenshotData* data, wxZipOut
 	if (setjmp(png_jmpbuf(png_ptr)))
 		return false;
 
-	png_set_write_fn(png_ptr, gzfp, [](png_structp png_ptr, png_bytep data_ptr, png_size_t size) {
-		((wxZipOutputStream*)png_get_io_ptr(png_ptr))->Write(data_ptr, size);
+	png_set_write_fn(png_ptr, zs, [](png_structp png_ptr, png_bytep data_ptr, png_size_t size) {
+		zip_source_write(static_cast<zip_source_t*>(png_get_io_ptr(png_ptr)), data_ptr, size);
 	}, [](png_structp png_ptr) {});
 	png_set_compression_level(png_ptr, 5);
 	png_set_IHDR(png_ptr, info_ptr, data->width, data->height, 8, PNG_COLOR_TYPE_RGBA,
@@ -833,213 +762,314 @@ static bool SaveState_CompressScreenshot(SaveStateScreenshotData* data, wxZipOut
 	}
 
 	png_write_end(png_ptr, nullptr);
+
+	if (zip_source_commit_write(zs) != 0)
+		return false;
+
+	const s64 file_index = zip_file_add(zf, EntryFilename_Screenshot, zs, 0);
+	if (file_index < 0)
+		return false;
+
+	// png is already compressed, no point doing it twice
+	zip_set_file_compression(zf, file_index, ZIP_CM_STORE, 0);
+
+	// source is now owned by the zip file for later compression
+	zs_free.Cancel();
+	return true;
+}
+
+static bool SaveState_ReadScreenshot(zip_t* zf, u32* out_width, u32* out_height, std::vector<u32>* out_pixels)
+{
+	auto zff = zip_fopen_managed(zf, EntryFilename_Screenshot, 0);
+	if (!zff)
+		return false;
+
+	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+	if (!png_ptr)
+		return false;
+
+	png_infop info_ptr = png_create_info_struct(png_ptr);
+	if (!info_ptr)
+	{
+		png_destroy_read_struct(&png_ptr, nullptr, nullptr);
+		return false;
+	}
+
+	ScopedGuard cleanup([&png_ptr, &info_ptr]() {
+		png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
+	});
+
+	if (setjmp(png_jmpbuf(png_ptr)))
+		return false;
+
+	png_set_read_fn(png_ptr, zff.get(), [](png_structp png_ptr, png_bytep data_ptr, png_size_t size) {
+		zip_fread(static_cast<zip_file_t*>(png_get_io_ptr(png_ptr)), data_ptr, size);
+	});
+
+	png_read_info(png_ptr, info_ptr);
+
+	png_uint_32 width = 0;
+	png_uint_32 height = 0;
+	int bitDepth = 0;
+	int colorType = -1;
+	if (png_get_IHDR(png_ptr, info_ptr, &width, &height, &bitDepth, &colorType, nullptr, nullptr, nullptr) != 1 ||
+		width == 0 || height == 0)
+	{
+		return false;
+	}
+
+	const png_uint_32 bytesPerRow = png_get_rowbytes(png_ptr, info_ptr);
+	std::vector<u8> rowData(bytesPerRow);
+
+	*out_width = width;
+	*out_height = height;
+	out_pixels->resize(width * height);
+
+	for (u32 y = 0; y < height; y++)
+	{
+		png_read_row(png_ptr, static_cast<png_bytep>(rowData.data()), nullptr);
+
+		const u8* row_ptr = rowData.data();
+		u32* out_ptr = &out_pixels->at(y * width);
+		if (colorType == PNG_COLOR_TYPE_RGB)
+		{
+			for (u32 x = 0; x < width; x++)
+			{
+				u32 pixel = static_cast<u32>(*(row_ptr)++);
+				pixel |= static_cast<u32>(*(row_ptr)++) << 8;
+				pixel |= static_cast<u32>(*(row_ptr)++) << 16;
+				pixel |= static_cast<u32>(*(row_ptr)++) << 24;
+				*(out_ptr++) = pixel | 0xFF000000u; // make opaque
+			}
+		}
+		else if (colorType == PNG_COLOR_TYPE_RGBA)
+		{
+			for (u32 x = 0; x < width; x++)
+			{
+				u32 pixel;
+				std::memcpy(&pixel, row_ptr, sizeof(u32));
+				row_ptr += sizeof(u32);
+				*(out_ptr++) = pixel | 0xFF000000u; // make opaque
+			}
+		}
+	}
+
 	return true;
 }
 
 // --------------------------------------------------------------------------------------
 //  CompressThread_VmState
 // --------------------------------------------------------------------------------------
-static void ZipStateToDiskOnThread(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, std::unique_ptr<wxFFileOutputStream> outbase, wxString filename, wxString tempfile, s32 slot_for_message)
+static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateScreenshotData* screenshot)
 {
-#ifndef PCSX2_CORE
-	wxGetApp().StartPendingSave();
-#endif
+	// use zstd compression, it can be 10x+ faster for saving.
+	const u32 compression = EmuConfig.SavestateZstdCompression ? ZIP_CM_ZSTD : ZIP_CM_DEFLATE;
+	const u32 compression_level = 0;
 
-	std::unique_ptr<pxOutputStream> out(new pxOutputStream(tempfile, new wxZipOutputStream(outbase.release())));
-	wxZipOutputStream* gzfp = (wxZipOutputStream*)out->GetWxStreamBase();
-
+	// version indicator
 	{
-		wxZipEntry* vent = new wxZipEntry(EntryFilename_StateVersion);
-		vent->SetMethod(wxZIP_METHOD_STORE);
-		gzfp->PutNextEntry(vent);
-		out->Write(g_SaveVersion);
-		gzfp->CloseEntry();
+		zip_source_t* const zs = zip_source_buffer(zf, &g_SaveVersion, sizeof(g_SaveVersion), 0);
+		if (!zs)
+			return false;
+
+		// NOTE: Source should not be freed if successful.
+		const s64 fi = zip_file_add(zf, EntryFilename_StateVersion, zs, ZIP_FL_ENC_UTF_8);
+		if (fi < 0)
+		{
+			zip_source_free(zs);
+			return false;
+		}
+
+		zip_set_file_compression(zf, fi, ZIP_CM_STORE, 0);
 	}
 
-	if (screenshot)
-		SaveState_CompressScreenshot(screenshot.get(), gzfp);
-
-	uint listlen = srclist->GetLength();
+	const uint listlen = srclist->GetLength();
 	for (uint i = 0; i < listlen; ++i)
 	{
 		const ArchiveEntry& entry = (*srclist)[i];
 		if (!entry.GetDataSize())
 			continue;
 
-		gzfp->PutNextEntry(entry.GetFilename());
+		zip_source_t* const zs = zip_source_buffer(zf, srclist->GetPtr(entry.GetDataIndex()), entry.GetDataSize(), 0);
+		if (!zs)
+			return false;
 
-		static const uint BlockSize = 0x64000;
-		uint curidx = 0;
-
-		do
+		const s64 fi = zip_file_add(zf, entry.GetFilename().c_str(), zs, ZIP_FL_ENC_UTF_8);
+		if (fi < 0)
 		{
-			uint thisBlockSize = std::min(BlockSize, entry.GetDataSize() - curidx);
-			gzfp->Write(srclist->GetPtr(entry.GetDataIndex() + curidx), thisBlockSize);
-			curidx += thisBlockSize;
-		} while (curidx < entry.GetDataSize());
+			zip_source_free(zs);
+			return false;
+		}
 
-		gzfp->CloseEntry();
+		zip_set_file_compression(zf, fi, compression, compression_level);
 	}
 
-	gzfp->Close();
-
-	if (!wxRenameFile(out->GetStreamName(), filename, true))
+	if (screenshot)
 	{
-		Console.Error("Failed to rename save state '%s' to '%s'", static_cast<const char*>(out->GetStreamName().c_str()), static_cast<const char*>(filename.c_str()));
-#ifndef PCSX2_CORE
-		Msgbox::Alert(_("The savestate was not properly saved. The temporary file was created successfully but could not be moved to its final resting place."));
-#endif
-	}
-	else
-	{
-		Console.WriteLn("(gzipThread) Data saved to disk without error.");
+		if (!SaveState_CompressScreenshot(screenshot, zf))
+			return false;
 	}
 
-#ifdef PCSX2_CORE
-	if (slot_for_message >= 0 && VMManager::HasValidVM())
-		Host::AddKeyedFormattedOSDMessage(StringUtil::StdStringFromFormat("SaveStateSlot%d", slot_for_message), 10.0f, "State saved to slot %d.", slot_for_message);
-#endif
-
-#ifndef PCSX2_CORE
-	wxGetApp().ClearPendingSave();
-#endif
+	return true;
 }
 
-void SaveState_ZipToDisk(ArchiveEntryList* srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, const wxString& filename, s32 slot_for_message)
+bool SaveState_ZipToDisk(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, const char* filename)
 {
-	// Provisionals for scoped cleanup, in case of exception:
-	std::unique_ptr<ArchiveEntryList> elist(srclist);
+	zip_error_t ze = {};
+	zip_source_t* zs = zip_source_file_create(filename, 0, 0, &ze);
+	zip_t* zf = nullptr;
+	if (zs && !(zf = zip_open_from_source(zs, ZIP_CREATE | ZIP_TRUNCATE, &ze)))
+	{
+		Console.Error("Failed to open zip file '%s' for save state: %s", filename, zip_error_strerror(&ze));
 
-	wxString tempfile(filename + L".tmp");
-	std::unique_ptr<wxFFileOutputStream> out = std::make_unique<wxFFileOutputStream>(tempfile);
-	if (!out->IsOk())
-		throw Exception::CannotCreateStream(tempfile);
+		// have to clean up source
+		zip_source_free(zs);
+		return false;
+	}
 
-	std::thread threaded_save(ZipStateToDiskOnThread, std::move(elist), std::move(screenshot), std::move(out), filename, tempfile, slot_for_message);
-	threaded_save.detach();
+	// discard zip file if we fail saving something
+	if (!SaveState_AddToZip(zf, srclist.get(), screenshot.get()))
+	{
+		Console.Error("Failed to save state to zip file '%s'", filename);
+		zip_discard(zf);
+		return false;
+	}
+
+	// force the zip to close, this is the expensive part with libzip.
+	zip_close(zf);
+	return true;
 }
 
-void SaveState_UnzipFromDisk(const wxString& filename)
+bool SaveState_ReadScreenshot(const std::string& filename, u32* out_width, u32* out_height, std::vector<u32>* out_pixels)
 {
-	ScopedLock lock(mtx_CompressToDisk);
+	zip_error_t ze = {};
+	auto zf = zip_open_managed(filename.c_str(), ZIP_RDONLY, &ze);
+	if (!zf)
+	{
+		Console.Error("Failed to open zip file '%s' for save state screenshot: %s", filename.c_str(), zip_error_strerror(&ze));
+		return false;
+	}
 
-	// Ugh.  Exception handling made crappy because wxWidgets classes don't support scoped pointers yet.
+	return SaveState_ReadScreenshot(zf.get(), out_width, out_height, out_pixels);
+}
 
-	std::unique_ptr<wxFFileInputStream> woot(new wxFFileInputStream(filename));
-	if (!woot->IsOk())
-		throw Exception::CannotCreateStream(filename).SetDiagMsg(L"Cannot open file for reading.");
+static void CheckVersion(const std::string& filename, zip_t* zf)
+{
+	u32 savever;
 
-	std::unique_ptr<pxInputStream> reader(new pxInputStream(filename, new wxZipInputStream(woot.get())));
-	woot.release();
-
-	if (!reader->IsOk())
+	auto zff = zip_fopen_managed(zf, EntryFilename_StateVersion, 0);
+	if (!zff || zip_fread(zff.get(), &savever, sizeof(savever)) != sizeof(savever))
 	{
 		throw Exception::SaveStateLoadError(filename)
-			.SetDiagMsg(L"Savestate file is not a valid gzip archive.")
-			.SetUserMsg(_("This savestate cannot be loaded because it is not a valid gzip archive.  It may have been created by an older unsupported version of PCSX2, or it may be corrupted."));
+			.SetDiagMsg("Savestate file does not contain version indicator.")
+			.SetUserMsg("This file is not a valid PCSX2 savestate.  See the logfile for details.");
 	}
 
-	wxZipInputStream* gzreader = (wxZipInputStream*)reader->GetWxStreamBase();
+	// Major version mismatch.  Means we can't load this savestate at all.  Support for it
+	// was removed entirely.
+	if (savever > g_SaveVersion)
+		throw Exception::SaveStateLoadError(filename)
+			.SetDiagMsg(fmt::format("Savestate uses an unsupported or unknown savestate version.\n(PCSX2 ver={:x}, state ver={:x})", g_SaveVersion, savever))
+			.SetUserMsg("Cannot load this savestate. The state is an unsupported version.");
+
+	// check for a "minor" version incompatibility; which happens if the savestate being loaded is a newer version
+	// than the emulator recognizes.  99% chance that trying to load it will just corrupt emulation or crash.
+	if ((savever >> 16) != (g_SaveVersion >> 16))
+		throw Exception::SaveStateLoadError(filename)
+			.SetDiagMsg(fmt::format("Savestate uses an unknown savestate version.\n(PCSX2 ver={:x}, state ver={:x})", g_SaveVersion, savever))
+			.SetUserMsg("Cannot load this savestate. The state is an unsupported version.");
+}
+
+static zip_int64_t CheckFileExistsInState(zip_t* zf, const char* name)
+{
+	zip_int64_t index = zip_name_locate(zf, name, /*ZIP_FL_NOCASE*/ 0);
+	if (index >= 0)
+	{
+		DevCon.WriteLn(Color_Green, " ... found '%s'", name);
+		return index;
+	}
+
+	Console.WriteLn(Color_Red, " ... not found '%s'!", name);
+	return index;
+}
+
+static bool LoadInternalStructuresState(zip_t* zf, s64 index)
+{
+	zip_stat_t zst;
+	if (zip_stat_index(zf, index, 0, &zst) != 0 || zst.size > std::numeric_limits<int>::max())
+		return false;
+
+	// Load all the internal data
+	auto zff = zip_fopen_index_managed(zf, index, 0);
+	if (!zff)
+		return false;
+
+	VmStateBuffer buffer(static_cast<int>(zst.size), "StateBuffer_UnzipFromDisk"); // start with an 8 meg buffer to avoid frequent reallocation.
+	if (zip_fread(zff.get(), buffer.GetPtr(), buffer.GetSizeInBytes()) != buffer.GetSizeInBytes())
+		return false;
+
+	memLoadingState(buffer).FreezeBios().FreezeInternals();
+	return true;
+}
+
+void SaveState_UnzipFromDisk(const std::string& filename)
+{
+	zip_error_t ze = {};
+	auto zf = zip_open_managed(filename.c_str(), ZIP_RDONLY, &ze);
+	if (!zf)
+	{
+		Console.Error("Failed to open zip file '%s' for save state load: %s", filename.c_str(), zip_error_strerror(&ze));
+		throw Exception::SaveStateLoadError(filename)
+			.SetDiagMsg("Savestate file is not a valid gzip archive.")
+			.SetUserMsg("This savestate cannot be loaded because it is not a valid gzip archive.  It may have been created by an older unsupported version of PCSX2, or it may be corrupted.");
+	}
 
 	// look for version and screenshot information in the zip stream:
+	CheckVersion(filename, zf.get());
 
-	bool foundVersion = false;
-	//bool foundScreenshot = false;
-	//bool foundEntry[ArraySize(SavestateEntries)] = false;
-
-	std::unique_ptr<wxZipEntry> foundInternal;
-	std::unique_ptr<wxZipEntry> foundEntry[std::size(SavestateEntries)];
-
-	while (true)
-	{
-		Threading::pxTestCancel();
-
-		std::unique_ptr<wxZipEntry> entry(gzreader->GetNextEntry());
-		if (!entry)
-			break;
-
-		if (entry->GetName().CmpNoCase(EntryFilename_StateVersion) == 0)
-		{
-			DevCon.WriteLn(Color_Green, L" ... found '%s'", EntryFilename_StateVersion);
-			foundVersion = true;
-			CheckVersion(*reader);
-			continue;
-		}
-
-		if (entry->GetName().CmpNoCase(EntryFilename_InternalStructures) == 0)
-		{
-			DevCon.WriteLn(Color_Green, L" ... found '%s'", EntryFilename_InternalStructures);
-			foundInternal = std::move(entry);
-			continue;
-		}
-
-		// No point in finding screenshots when loading states -- the screenshots are
-		// only useful for the UI savestate browser.
-		/*if (entry->GetName().CmpNoCase(EntryFilename_Screenshot) == 0)
-		{
-			foundScreenshot = true;
-		}*/
-
-		for (uint i = 0; i < std::size(SavestateEntries); ++i)
-		{
-			if (entry->GetName().CmpNoCase(SavestateEntries[i]->GetFilename()) == 0)
-			{
-				DevCon.WriteLn(Color_Green, L" ... found '%s'", WX_STR(SavestateEntries[i]->GetFilename()));
-				foundEntry[i] = std::move(entry);
-				break;
-			}
-		}
-	}
-
-	if (!foundVersion || !foundInternal)
-	{
-		throw Exception::SaveStateLoadError(filename)
-			.SetDiagMsg(pxsFmt(L"Savestate file does not contain '%s'",
-								  !foundVersion ? EntryFilename_StateVersion : EntryFilename_InternalStructures))
-			.SetUserMsg(_("This file is not a valid PCSX2 savestate.  See the logfile for details."));
-	}
+	// check that all parts are included
+	const s64 internal_index = CheckFileExistsInState(zf.get(), EntryFilename_InternalStructures);
+	s64 entryIndices[std::size(SavestateEntries)];
 
 	// Log any parts and pieces that are missing, and then generate an exception.
-	bool throwIt = false;
-	for (uint i = 0; i < std::size(SavestateEntries); ++i)
+	bool throwIt = (internal_index < 0);
+	for (u32 i = 0; i < std::size(SavestateEntries); i++)
 	{
-		if (foundEntry[i])
-			continue;
-
-		if (SavestateEntries[i]->IsRequired())
-		{
+		entryIndices[i] = CheckFileExistsInState(zf.get(), SavestateEntries[i]->GetFilename());
+		if (entryIndices[i] < 0 && SavestateEntries[i]->IsRequired())
 			throwIt = true;
-			Console.WriteLn(Color_Red, " ... not found '%s'!", WX_STR(SavestateEntries[i]->GetFilename()));
+	}
+
+	if (!throwIt)
+	{
+		PreLoadPrep();
+		throwIt = !LoadInternalStructuresState(zf.get(), internal_index);
+	}
+
+	if (!throwIt)
+	{
+		for (u32 i = 0; i < std::size(SavestateEntries); ++i)
+		{
+			if (entryIndices[i] < 0)
+				continue;
+
+			auto zff = zip_fopen_index_managed(zf.get(), entryIndices[i], 0);
+			if (!zff)
+			{
+				throwIt = true;
+				break;
+			}
+
+			SavestateEntries[i]->FreezeIn(zff.get());
 		}
 	}
 
 	if (throwIt)
-		throw Exception::SaveStateLoadError(filename)
-			.SetDiagMsg(L"Savestate cannot be loaded: some required components were not found or are incomplete.")
-			.SetUserMsg(_("This savestate cannot be loaded due to missing critical components.  See the log file for details."));
-
-#ifndef PCSX2_CORE
-	PatchesVerboseReset();
-#endif
-	SysClearExecutionCache();
-
-	for (uint i = 0; i < std::size(SavestateEntries); ++i)
 	{
-		if (!foundEntry[i])
-			continue;
-
-		Threading::pxTestCancel();
-
-		gzreader->OpenEntry(*foundEntry[i]);
-		SavestateEntries[i]->FreezeIn(*reader);
+		throw Exception::SaveStateLoadError(filename)
+			.SetDiagMsg("Savestate cannot be loaded: some required components were not found or are incomplete.")
+			.SetUserMsg("This savestate cannot be loaded due to missing critical components.  See the log file for details.");
 	}
 
-	// Load all the internal data
-
-	gzreader->OpenEntry(*foundInternal);
-
-	VmStateBuffer buffer(foundInternal->GetSize(), L"StateBuffer_UnzipFromDisk"); // start with an 8 meg buffer to avoid frequent reallocation.
-	reader->Read(buffer.GetPtr(), foundInternal->GetSize());
-
-	memLoadingState(buffer).FreezeBios().FreezeInternals();
+	PostLoadPrep();
 }

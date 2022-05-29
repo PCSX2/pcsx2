@@ -18,7 +18,6 @@
 #include "gui/App.h"
 #include "ConfigurationDialog.h"
 #include "gui/Panels/ConfigurationPanels.h"
-#include "common/pxStreams.h"
 #include "GS/GSLzma.h"
 
 #include <wx/wizard.h>

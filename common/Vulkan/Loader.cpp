@@ -30,6 +30,8 @@
 #include <mach-o/dyld.h>
 #endif
 
+extern "C" {
+
 #define VULKAN_MODULE_ENTRY_POINT(name, required) PFN_##name pcsx2_##name;
 #define VULKAN_INSTANCE_ENTRY_POINT(name, required) PFN_##name pcsx2_##name;
 #define VULKAN_DEVICE_ENTRY_POINT(name, required) PFN_##name pcsx2_##name;
@@ -37,6 +39,8 @@
 #undef VULKAN_DEVICE_ENTRY_POINT
 #undef VULKAN_INSTANCE_ENTRY_POINT
 #undef VULKAN_MODULE_ENTRY_POINT
+
+}
 
 namespace Vulkan
 {

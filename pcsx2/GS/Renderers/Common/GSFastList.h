@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "common/AlignedMalloc.h"
+
 template <class T>
 struct Element
 {

@@ -13,167 +13,162 @@
 *  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#if !defined(__APPLE__)
-
 #include "common/Threading.h"
-#include "common/wxBaseTools.h"
-#include "common/ThreadingInternal.h"
+#include "common/Assertions.h"
+
+#ifdef _WIN32
+#include "common/RedtapeWindows.h"
+#endif
+
+#include <limits>
 
 // --------------------------------------------------------------------------------------
 //  Semaphore Implementations
 // --------------------------------------------------------------------------------------
 
-Threading::Semaphore::Semaphore()
-{
-	sem_init(&m_sema, false, 0);
-}
 
-Threading::Semaphore::~Semaphore()
+void Threading::WorkSema::WaitForWork()
 {
-	sem_destroy(&m_sema);
-}
-
-void Threading::Semaphore::Reset()
-{
-	sem_destroy(&m_sema);
-	sem_init(&m_sema, false, 0);
-}
-
-void Threading::Semaphore::Post()
-{
-	sem_post(&m_sema);
-}
-
-void Threading::Semaphore::Post(int multiple)
-{
-#if defined(_MSC_VER)
-	sem_post_multiple(&m_sema, multiple);
-#else
-	// Only w32pthreads has the post_multiple, but it's easy enough to fake:
-	while (multiple > 0)
+	// State change:
+	// SLEEPING, SPINNING: This is the worker thread and it's clearly not asleep or spinning, so these states should be impossible
+	// RUNNING_0: Change state to SLEEPING, wake up thread if WAITING_EMPTY
+	// RUNNING_N: Change state to RUNNING_0 (and preserve WAITING_EMPTY flag)
+	s32 value = m_state.load(std::memory_order_relaxed);
+	pxAssert(!IsDead(value));
+	while (!m_state.compare_exchange_weak(value, NextStateWaitForWork(value), std::memory_order_acq_rel, std::memory_order_relaxed))
+		;
+	if (IsReadyForSleep(value))
 	{
-		multiple--;
-		sem_post(&m_sema);
+		if (value & STATE_FLAG_WAITING_EMPTY)
+			m_empty_sema.Post();
+		m_sema.Wait();
+		// Acknowledge any additional work added between wake up request and getting here
+		m_state.fetch_and(STATE_FLAG_WAITING_EMPTY, std::memory_order_acquire);
 	}
-#endif
 }
 
-void Threading::Semaphore::WaitWithoutYield()
+void Threading::WorkSema::WaitForWorkWithSpin()
 {
-	pxAssertMsg(!wxThread::IsMain(), "Unyielding semaphore wait issued from the main/gui thread.  Please use Wait() instead.");
-	sem_wait(&m_sema);
-}
-
-bool Threading::Semaphore::WaitWithoutYield(const wxTimeSpan& timeout)
-{
-	wxDateTime megafail(wxDateTime::UNow() + timeout);
-	const timespec fail = {megafail.GetTicks(), megafail.GetMillisecond() * 1000000};
-	return sem_timedwait(&m_sema, &fail) == 0;
-}
-
-
-// This is a wxApp-safe implementation of Wait, which makes sure and executes the App's
-// pending messages *if* the Wait is performed on the Main/GUI thread.  This ensures that
-// user input continues to be handled and that windoes continue to repaint.  If the Wait is
-// called from another thread, no message pumping is performed.
-//
-void Threading::Semaphore::Wait()
-{
-#if wxUSE_GUI
-	if (!wxThread::IsMain() || (wxTheApp == NULL))
+	s32 value = m_state.load(std::memory_order_relaxed);
+	pxAssert(!IsDead(value));
+	while (IsReadyForSleep(value))
 	{
-		sem_wait(&m_sema);
-	}
-	else if (_WaitGui_RecursionGuard(L"Semaphore::Wait"))
-	{
-		sem_wait(&m_sema);
-	}
-	else
-	{
-		//ScopedBusyCursor hourglass( Cursor_KindaBusy );
-		while (!WaitWithoutYield(def_yieldgui_interval))
-			YieldToMain();
-	}
-#else
-	sem_wait(&m_sema);
-#endif
-}
-
-// This is a wxApp-safe implementation of WaitWithoutYield, which makes sure and executes the App's
-// pending messages *if* the Wait is performed on the Main/GUI thread.  This ensures that
-// user input continues to be handled and that windows continue to repaint.  If the Wait is
-// called from another thread, no message pumping is performed.
-//
-// Returns:
-//   false if the wait timed out before the semaphore was signaled, or true if the signal was
-//   reached prior to timeout.
-//
-bool Threading::Semaphore::Wait(const wxTimeSpan& timeout)
-{
-#if wxUSE_GUI
-	if (!wxThread::IsMain() || (wxTheApp == NULL))
-	{
-		return WaitWithoutYield(timeout);
-	}
-	else if (_WaitGui_RecursionGuard(L"Semaphore::TimedWait"))
-	{
-		return WaitWithoutYield(timeout);
-	}
-	else
-	{
-		//ScopedBusyCursor hourglass( Cursor_KindaBusy );
-		wxTimeSpan countdown((timeout));
-
-		do
+		if (m_state.compare_exchange_weak(value, STATE_SPINNING, std::memory_order_release, std::memory_order_relaxed))
 		{
-			if (WaitWithoutYield(def_yieldgui_interval))
-				break;
-			YieldToMain();
-			countdown -= def_yieldgui_interval;
-		} while (countdown.GetMilliseconds() > 0);
-
-		return countdown.GetMilliseconds() > 0;
+			if (value & STATE_FLAG_WAITING_EMPTY)
+				m_empty_sema.Post();
+			value = STATE_SPINNING;
+			break;
+		}
 	}
+	u32 waited = 0;
+	while (value < 0)
+	{
+		if (waited > SPIN_TIME_NS)
+		{
+			if (!m_state.compare_exchange_weak(value, STATE_SLEEPING, std::memory_order_relaxed))
+				continue;
+			m_sema.Wait();
+			break;
+		}
+		waited += ShortSpin();
+		value = m_state.load(std::memory_order_relaxed);
+	}
+	// Clear back to STATE_RUNNING_0 (but preserve waiting empty flag)
+	m_state.fetch_and(STATE_FLAG_WAITING_EMPTY, std::memory_order_acquire);
+}
+
+bool Threading::WorkSema::WaitForEmpty()
+{
+	s32 value = m_state.load(std::memory_order_acquire);
+	while (true)
+	{
+		if (value < 0)
+			return !IsDead(value); // STATE_SLEEPING or STATE_SPINNING, queue is empty!
+		// Note: We technically only need memory_order_acquire on *failure* (because that's when we could leave without sleeping), but libstdc++ still asserts on failure < success
+		if (m_state.compare_exchange_weak(value, value | STATE_FLAG_WAITING_EMPTY, std::memory_order_acquire))
+			break;
+	}
+	pxAssertDev(!(value & STATE_FLAG_WAITING_EMPTY), "Multiple threads attempted to wait for empty (not currently supported)");
+	m_empty_sema.Wait();
+	return !IsDead(m_state.load(std::memory_order_relaxed));
+}
+
+bool Threading::WorkSema::WaitForEmptyWithSpin()
+{
+	s32 value = m_state.load(std::memory_order_acquire);
+	u32 waited = 0;
+	while (true)
+	{
+		if (value < 0)
+			return !IsDead(value); // STATE_SLEEPING or STATE_SPINNING, queue is empty!
+		if (waited > SPIN_TIME_NS && m_state.compare_exchange_weak(value, value | STATE_FLAG_WAITING_EMPTY, std::memory_order_acquire))
+			break;
+		waited += ShortSpin();
+		value = m_state.load(std::memory_order_acquire);
+	}
+	pxAssertDev(!(value & STATE_FLAG_WAITING_EMPTY), "Multiple threads attempted to wait for empty (not currently supported)");
+	m_empty_sema.Wait();
+	return !IsDead(m_state.load(std::memory_order_relaxed));
+}
+
+void Threading::WorkSema::Kill()
+{
+	s32 value = m_state.exchange(std::numeric_limits<s32>::min(), std::memory_order_release);
+	if (value & STATE_FLAG_WAITING_EMPTY)
+		m_empty_sema.Post();
+}
+
+void Threading::WorkSema::Reset()
+{
+	m_state = STATE_RUNNING_0;
+}
+
+#if !defined(__APPLE__) // macOS implementations are in DarwinSemaphore
+
+Threading::KernelSemaphore::KernelSemaphore()
+{
+#ifdef _WIN32
+	m_sema = CreateSemaphore(nullptr, 0, LONG_MAX, nullptr);
 #else
-	return WaitWithoutYield(timeout);
+	sem_init(&m_sema, false, 0);
 #endif
 }
 
-// Performs an uncancellable wait on a semaphore; restoring the thread's previous cancel state
-// after the wait has completed.  Useful for situations where the semaphore itself is stored on
-// the stack and passed to another thread via GUI message or such, avoiding complications where
-// the thread might be canceled and the stack value becomes invalid.
-//
-// Performance note: this function has quite a bit more overhead compared to Semaphore::WaitWithoutYield(), so
-// consider manually specifying the thread as uncancellable and using WaitWithoutYield() instead if you need
-// to do a lot of no-cancel waits in a tight loop worker thread, for example.
-void Threading::Semaphore::WaitNoCancel()
+Threading::KernelSemaphore::~KernelSemaphore()
 {
-	int oldstate;
-	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
-	//WaitWithoutYield();
-	Wait();
-	pthread_setcancelstate(oldstate, NULL);
+#ifdef _WIN32
+	CloseHandle(m_sema);
+#else
+	sem_destroy(&m_sema);
+#endif
 }
 
-void Threading::Semaphore::WaitNoCancel(const wxTimeSpan& timeout)
+void Threading::KernelSemaphore::Post()
 {
-	int oldstate;
-	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
-	//WaitWithoutYield( timeout );
-	Wait(timeout);
-	pthread_setcancelstate(oldstate, NULL);
+#ifdef _WIN32
+	ReleaseSemaphore(m_sema, 1, nullptr);
+#else
+	sem_post(&m_sema);
+#endif
 }
 
-bool Threading::Semaphore::TryWait()
+void Threading::KernelSemaphore::Wait()
 {
+#ifdef _WIN32
+	WaitForSingleObject(m_sema, INFINITE);
+#else
+	sem_wait(&m_sema);
+#endif
+}
+
+bool Threading::KernelSemaphore::TryWait()
+{
+#ifdef _WIN32
+	return WaitForSingleObject(m_sema, 0) == WAIT_OBJECT_0;
+#else
 	return sem_trywait(&m_sema) == 0;
+#endif
 }
 
-int Threading::Semaphore::Count()
-{
-	int retval;
-	sem_getvalue(&m_sema, &retval);
-	return retval;
-}
 #endif

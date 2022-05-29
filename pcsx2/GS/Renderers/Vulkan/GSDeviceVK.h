@@ -223,8 +223,7 @@ public:
 	bool DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map) override;
 	void DownloadTextureComplete() override;
 
-	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r) override;
-	void DoCopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, const GSVector4i& dst_rc);
+	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
 
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 		ShaderConvert shader = ShaderConvert::COPY, bool linear = true) override;
@@ -240,7 +239,7 @@ public:
 		u32 dLevel, bool linear);
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, bool datm, const GSVector4i& bbox);
-	GSTextureVK* SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, PipelineSelector& pipe);
+	GSTextureVK* SetupPrimitiveTrackingDATE(GSHWDrawConfig& config);
 
 	void IASetVertexBuffer(const void* vertex, size_t stride, size_t count);
 	bool IAMapVertexBuffer(void** vertex, size_t stride, size_t count);
@@ -257,7 +256,7 @@ public:
 	bool BindDrawPipeline(const PipelineSelector& p);
 
 	void RenderHW(GSHWDrawConfig& config) override;
-	void UpdateHWPipelineSelector(GSHWDrawConfig& config);
+	void UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe);
 	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt);
 
 	//////////////////////////////////////////////////////////////////////////

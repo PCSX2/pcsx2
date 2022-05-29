@@ -117,6 +117,7 @@ private:
 	/// On YMM registers this will be a broadcast from a 16-bit value
 	/// On XMM registers this will be a load of a full 128-bit value, with the broadcast happening before storing to the local data
 	void pbroadcastwLocal(const XYm& reg, const Xbyak::Address& mem);
+	void broadcastsd(const XYm& reg, const Xbyak::Address& mem);
 	/// Broadcast a 32-bit GPR to a vector register
 	void broadcastGPRToVec(const XYm& vec, const Xbyak::Reg32& gpr);
 	void modulate16(const XYm& a, const Xbyak::Operand& f, u8 shift);

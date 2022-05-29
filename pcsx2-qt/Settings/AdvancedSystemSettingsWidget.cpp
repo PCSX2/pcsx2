@@ -42,7 +42,7 @@ AdvancedSystemSettingsWidget::AdvancedSystemSettingsWidget(SettingsDialog* dialo
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.iopRecompiler, "EmuCore/CPU/Recompiler", "EnableIOP", true);
 
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gameFixes, "", "EnableGameFixes", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gameFixes, "EmuCore", "EnableGameFixes", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.patches, "EmuCore", "EnablePatches", true);
 
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.ntscFrameRate, "EmuCore/GS", "FramerateNTSC", 59.94f);

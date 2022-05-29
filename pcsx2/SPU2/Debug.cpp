@@ -15,6 +15,9 @@
 
 #include "PrecompiledHeader.h"
 #include "Global.h"
+#include "common/FileSystem.h"
+
+#include <cstdarg>
 
 int crazy_debug = 0;
 
@@ -103,7 +106,7 @@ void DoFullDump()
 
 	if (MemDump())
 	{
-		dump = fopen(wxString(MemDumpFileName).ToUTF8(), "wb");
+		dump = FileSystem::OpenCFile(MemDumpFileName.c_str(), "wb");
 		if (dump)
 		{
 			fwrite(_spu2mem, 0x200000, 1, dump);
@@ -112,7 +115,7 @@ void DoFullDump()
 	}
 	if (RegDump())
 	{
-		dump = fopen(wxString(RegDumpFileName).ToUTF8(), "wb");
+		dump = FileSystem::OpenCFile(RegDumpFileName.c_str(), "wb");
 		if (dump)
 		{
 			fwrite(spu2regs, 0x2000, 1, dump);
@@ -122,7 +125,7 @@ void DoFullDump()
 
 	if (!CoresDump())
 		return;
-	dump = fopen(wxString(CoresDumpFileName).ToUTF8(), "wt");
+	dump = FileSystem::OpenCFile(CoresDumpFileName.c_str(), "wt");
 	if (dump)
 	{
 		for (c = 0; c < 2; c++)

@@ -38,8 +38,8 @@
 #include "common/Pcsx2Defs.h"
 #include "SysForwardDefs.h"
 #include "GameDatabase.h"
-
-class wxInputStream;
+#include <string>
+#include <string_view>
 
 enum patch_cpu_type {
 	NO_CPU,
@@ -85,7 +85,7 @@ enum patch_place_type {
 	_PPT_END_MARKER
 };
 
-typedef void PATCHTABLEFUNC( const wxString& text1, const wxString& text2 );
+typedef void PATCHTABLEFUNC(const std::string_view& text1, const std::string_view& text2);
 
 struct IniPatch
 {
@@ -108,9 +108,9 @@ namespace PatchFunc
 // The following LoadPatchesFrom* functions:
 // - do not reset/unload previously loaded patches (use ForgetLoadedPatches() for that)
 // - do not actually patch the emulation memory (that happens at ApplyLoadedPatches(...) )
-extern int  LoadPatchesFromGamesDB(const std::string& crc, const GameDatabaseSchema::GameEntry& game);
-extern int  LoadPatchesFromDir(const wxString& name, const wxDirName& folderName, const wxString& friendlyName);
-extern int  LoadPatchesFromZip(const wxString& gameCRC, const wxString& patchesArchiveFilename, wxInputStream* stream);
+extern int  LoadPatchesFromString(const std::string& patches);
+extern int  LoadPatchesFromDir(const std::string& crc, const std::string& folder, const char* friendly_name, bool show_error_when_missing);
+extern int  LoadPatchesFromZip(const std::string& crc, const u8* zip_data, size_t zip_data_size);
 
 // Patches the emulation memory by applying all the loaded patches with a specific place value.
 // Note: unless you know better, there's no need to check whether or not different patch sources

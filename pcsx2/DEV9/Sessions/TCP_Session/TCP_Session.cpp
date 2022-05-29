@@ -17,6 +17,13 @@
 
 #include "TCP_Session.h"
 
+#ifdef _WIN32
+#include "common/RedtapeWindows.h"
+#include <winsock2.h>
+#else
+#include <unistd.h>
+#endif
+
 using namespace PacketReader;
 using namespace PacketReader::IP;
 using namespace PacketReader::IP::TCP;

@@ -115,13 +115,6 @@ void pxCheckBox::OnCheckpartCommand(wxCommandEvent& evt)
 	GetEventHandler()->ProcessEvent(newevt);
 }
 
-void pxCheckBox::OnSubtextClicked(wxCommandEvent& evt)
-{
-	// TODO?
-	// We can enable the ability to allow clicks on the subtext desc/label to toggle
-	// the checkmark.  Not sure if that's desirable.
-}
-
 void operator+=(wxSizer& target, pxCheckBox* src)
 {
 	if (src)

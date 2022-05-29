@@ -15,8 +15,8 @@
 
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
-#include "IopCommon.h"
 #include "IsoFileFormats.h"
+#include "common/Assertions.h"
 #include "common/FileSystem.h"
 
 #include <errno.h>
@@ -35,10 +35,9 @@ bool BlockdumpFileReader::DetectBlockdump(AsyncFileReader* reader)
 
 	reader->SetBlockSize(1);
 
-	char buf[5] = {0};
-	reader->ReadSync(buf, 0, 4);
-
-	bool isbd = (strncmp(buf, "BDV2", 4) == 0);
+	char buf[4] = {0};
+	bool isbd = (reader->ReadSync(buf, 0, sizeof(buf)) == 4 &&
+				 std::memcmp(buf, "BDV2", sizeof(buf)) == 0);
 
 	if (!isbd)
 		reader->SetBlockSize(oldbs);

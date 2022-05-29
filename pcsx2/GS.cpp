@@ -32,6 +32,7 @@ void gsSetVideoMode(GS_VideoMode mode)
 {
 	gsVideoMode = mode;
 	UpdateVSyncRate();
+	CSRreg.FIELD = 1;
 }
 
 // Make sure framelimiter options are in sync with GS capabilities.
@@ -84,9 +85,10 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		//gifUnit.Reset(true); // Don't think gif should be reset...
 		gifUnit.gsSIGNAL.queued = false;
 		GetMTGS().SendSimplePacket(GS_RINGTYPE_RESET, 0, 0, 0);
-
+		const u32 field = CSRreg.FIELD;
 		CSRreg.Reset();
 		GSIMR.reset();
+		CSRreg.FIELD = field;
 	}
 
 	if(csr.FLUSH)
@@ -213,7 +215,7 @@ __fi void gsWrite32(u32 mem, u32 value)
 //////////////////////////////////////////////////////////////////////////
 // GS Write 64 bit
 
-void __fastcall gsWrite64_generic( u32 mem, const mem64_t* value )
+void gsWrite64_generic( u32 mem, const mem64_t* value )
 {
 	const u32* const srcval32 = (u32*)value;
 	GIF_LOG("GS Write64 at %8.8lx with data %8.8x_%8.8x", mem, srcval32[1], srcval32[0]);
@@ -221,14 +223,14 @@ void __fastcall gsWrite64_generic( u32 mem, const mem64_t* value )
 	*(u64*)PS2GS_BASE(mem) = *value;
 }
 
-void __fastcall gsWrite64_page_00( u32 mem, const mem64_t* value )
+void gsWrite64_page_00( u32 mem, const mem64_t* value )
 {
 	s_GSRegistersWritten |= (mem == GS_DISPFB1 || mem == GS_DISPFB2 || mem == GS_PMODE);
 
 	gsWrite64_generic( mem, value );
 }
 
-void __fastcall gsWrite64_page_01( u32 mem, const mem64_t* value )
+void gsWrite64_page_01( u32 mem, const mem64_t* value )
 {
 	GIF_LOG("GS Write64 at %8.8lx with data %8.8x_%8.8x", mem, (u32*)value[1], (u32*)value[0]);
 
@@ -246,17 +248,7 @@ void __fastcall gsWrite64_page_01( u32 mem, const mem64_t* value )
 				GUNIT_LOG("Busdir - EE->GS Upload");
 			}
 
-			//=========================================================================
-			// BUSDIR INSANITY !! MTGS FLUSH NEEDED
-			//
-			// Yup folks.  BUSDIR is evil.  The only safe way to handle it is to flush the whole MTGS
-			// and ensure complete MTGS and EEcore thread synchronization  This is very slow, no doubt,
-			// but on the bright side BUSDIR is used quite rarely, indeed.
-
-			// Important: writeback to gsRegs area *prior* to flushing the MTGS.  The flush will sync
-			// the GS and MTGS register states, and upload our screwy busdir register in the process. :)
 			gsWrite64_generic( mem, value );
-			GetMTGS().WaitGS();
 		return;
 
 		case GS_CSR:
@@ -274,12 +266,12 @@ void __fastcall gsWrite64_page_01( u32 mem, const mem64_t* value )
 //////////////////////////////////////////////////////////////////////////
 // GS Write 128 bit
 
-void __fastcall gsWrite128_page_00( u32 mem, const mem128_t* value )
+void gsWrite128_page_00( u32 mem, const mem128_t* value )
 {
 	gsWrite128_generic( mem, value );
 }
 
-void __fastcall gsWrite128_page_01( u32 mem, const mem128_t* value )
+void gsWrite128_page_01( u32 mem, const mem128_t* value )
 {
 	switch( mem )
 	{
@@ -295,7 +287,7 @@ void __fastcall gsWrite128_page_01( u32 mem, const mem128_t* value )
 	gsWrite128_generic( mem, value );
 }
 
-void __fastcall gsWrite128_generic( u32 mem, const mem128_t* value )
+void gsWrite128_generic( u32 mem, const mem128_t* value )
 {
 	const u32* const srcval32 = (u32*)value;
 
@@ -326,19 +318,20 @@ __fi u16 gsRead16(u32 mem)
 		case GS_SIGLBLID:
 			return *(u16*)PS2GS_BASE(mem);
 		default: // Only SIGLBLID and CSR are readable, everything else mirrors CSR
-			return *(u16*)PS2GS_BASE(GS_CSR + (mem & 0xF));
+			return *(u16*)PS2GS_BASE(GS_CSR + (mem & 0x7));
 	}
 }
 
 __fi u32 gsRead32(u32 mem)
 {
 	GIF_LOG("GS read 32 from %8.8lx  value: %8.8lx", mem, *(u32*)PS2GS_BASE(mem));
+
 	switch (mem & ~0xF)
 	{
 		case GS_SIGLBLID:
 			return *(u32*)PS2GS_BASE(mem);
 		default: // Only SIGLBLID and CSR are readable, everything else mirrors CSR
-			return *(u32*)PS2GS_BASE(GS_CSR + (mem & 0xF));
+			return *(u32*)PS2GS_BASE(GS_CSR + (mem & 0xC));
 	}
 }
 
@@ -346,12 +339,13 @@ __fi u64 gsRead64(u32 mem)
 {
 	// fixme - PS2GS_BASE(mem+4) = (g_RealGSMem+(mem + 4 & 0x13ff))
 	GIF_LOG("GS read 64 from %8.8lx  value: %8.8lx_%8.8lx", mem, *(u32*)PS2GS_BASE(mem+4), *(u32*)PS2GS_BASE(mem) );
+
 	switch (mem & ~0xF)
 	{
 		case GS_SIGLBLID:
 			return *(u64*)PS2GS_BASE(mem);
 		default: // Only SIGLBLID and CSR are readable, everything else mirrors CSR
-			return *(u64*)PS2GS_BASE(GS_CSR + (mem & 0xF));
+			return *(u64*)PS2GS_BASE(GS_CSR + (mem & 0x8));
 	}
 }
 

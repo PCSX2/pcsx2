@@ -14,6 +14,8 @@
  */
 
 #include "PrecompiledHeader.h"
+
+#include "common/Assertions.h"
 #include <memory>
 
 #ifdef _WIN32

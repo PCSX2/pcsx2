@@ -89,6 +89,14 @@ const char* dialog_message(int ID, bool* updateText)
 			return cvtString("Enabled: GPU converts colormap-textures.\n"
 				"Disabled: CPU converts colormap-textures.\n\n"
 				"It is a trade-off between GPU and CPU.");
+		case IDC_PCRTC_OFFSETS:
+			return cvtString("Enable: Takes in to account offsets in the analogue circuits.\n"
+				"This will use the intended aspect ratios and screen offsets, may cause odd black borders.\n"
+				"Used for screen positioning and screen shake in Wipeout Fusion.");
+		case IDC_DISABLE_INTERLACE_OFFSETS:
+			return cvtString("Enable: Removes the offset for interlacing when upscaling.\n"
+				"Can reduce blurring in some games, where the opposite is true most of the time.\n"
+				"Used for ICO to reduce blur.");
 		case IDC_ACCURATE_DATE:
 			return cvtString("Implement a more accurate algorithm to compute GS destination alpha testing.\n"
 				"It improves shadow and transparency rendering.\n\n"
@@ -96,14 +104,14 @@ const char* dialog_message(int ID, bool* updateText)
 		case IDC_ACCURATE_BLEND_UNIT:
 			return cvtString("Control the accuracy level of the GS blending unit emulation.\n\n"
 				"Minimum:\nFast but introduces various rendering issues.\n"
-				"It is intended for slow computer.\n\n"
+				"It is intended for slow computers.\n\n"
 				"Basic:\nEmulate correctly most of the effects with a limited speed penalty.\n"
 				"This is the recommended setting.\n\n"
 				"Medium:\nExtend it to all sprites. Performance impact remains reasonable in 3D game.\n\n"
 				"High:\nExtend it to destination alpha blending and color wrapping (helps shadow and fog effects).\n"
 				"A good CPU is required.\n\n"
-				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is ultra slow!\n\n"
-				"Ultra:\nThe blending unit will be completely emulated by the shader. It is ultra slow!\n\n"
+				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is slow!\n\n"
+				"Maximum:\nThe blending unit will be completely emulated by the shader. It is very slow!\n\n"
 				"Note: Direct3D11's blending is capped at High and is reduced in capability compared to OpenGL/Vulkan");
 		case IDC_TC_DEPTH:
 			return cvtString("Disable the support of Depth buffer in the texture cache.\n"
@@ -144,9 +152,7 @@ const char* dialog_message(int ID, bool* updateText)
 				"Disables accurate Unscale Point and Line rendering.\n"
 				"It can help Xenosaga games.\n\n"
 				"Disables accurate GS Memory Clearing to be done on the CPU, and let only the GPU handle it.\n"
-				"It can help Kingdom Hearts games.\n\n"
-				"Disables special Nvidia hack.\n"
-				"It can help SOTC, Fatal Frame games and possibly others too.");
+				"It can help Kingdom Hearts games.");
 		case IDC_MEMORY_WRAPPING:
 			return cvtString("Emulates GS memory wrapping accurately. This fixes issues where part of the image is cut-off by block shaped sections such as the FMVs in Wallace & Gromit: The Curse of the Were-Rabbit and Thrillville.\n\n"
 				"Note: This hack can have a small impact on performance.");

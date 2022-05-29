@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
+#include "StringHelpers.h"
 #include "wxSettingsInterface.h"
 #include "common/Assertions.h"
 #include "common/StringUtil.h"

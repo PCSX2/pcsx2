@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "App.h"
-#include "common/IniInterface.h"
+#include "IniInterface.h"
 #include "common/EventSource.inl"
 
 template class EventSource< IEventListener_CoreThread >;

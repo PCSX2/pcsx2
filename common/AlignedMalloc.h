@@ -15,32 +15,23 @@
 
 #pragma once
 
-#include "common/Exceptions.h"
+#include "Pcsx2Defs.h"
+#include <cstring>
+#include <cstdlib>
+#include <new> // std::bad_alloc
+#include <memory>
+#include <type_traits>
+#include <utility>
+
+#ifdef _MSC_VER
+#include <malloc.h>
+#endif
 
 // pxUSE_SECURE_MALLOC - enables bounds checking on scoped malloc allocations.
 
 #ifndef pxUSE_SECURE_MALLOC
 #define pxUSE_SECURE_MALLOC 0
 #endif
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// Safe deallocation macros -- checks pointer validity (non-null) when needed, and sets
-// pointer to null after deallocation.
-
-#define safe_delete(ptr) \
-	((void)(delete (ptr)), (ptr) = NULL)
-
-#define safe_delete_array(ptr) \
-	((void)(delete[](ptr)), (ptr) = NULL)
-
-// No checks for NULL -- wxWidgets says it's safe to skip NULL checks and it runs on
-// just about every compiler and libc implementation of any recentness.
-#define safe_free(ptr) \
-	((void)(free(ptr), !!0), (ptr) = NULL)
-//((void) (( ( (ptr) != NULL ) && (free( ptr ), !!0) ), (ptr) = NULL))
-
-#define safe_fclose(ptr) \
-	((void)((((ptr) != NULL) && (fclose(ptr), !!0)), (ptr) = NULL))
 
 // Implementation note: all known implementations of _aligned_free check the pointer for
 // NULL status (our implementation under GCC, and microsoft's under MSVC), so no need to
@@ -50,34 +41,13 @@
 
 // aligned_malloc: Implement/declare linux equivalents here!
 #if !defined(_MSC_VER)
-extern void* __fastcall _aligned_malloc(size_t size, size_t align);
-extern void* __fastcall pcsx2_aligned_realloc(void* handle, size_t new_size, size_t align, size_t old_size);
+extern void* _aligned_malloc(size_t size, size_t align);
+extern void* pcsx2_aligned_realloc(void* handle, size_t new_size, size_t align, size_t old_size);
 extern void _aligned_free(void* pmem);
 #else
 #define pcsx2_aligned_realloc(handle, new_size, align, old_size) \
 	_aligned_realloc(handle, new_size, align)
 #endif
-
-// --------------------------------------------------------------------------------------
-//  pxDoOutOfMemory
-// --------------------------------------------------------------------------------------
-
-typedef void FnType_OutOfMemory(uptr blocksize);
-typedef FnType_OutOfMemory* Fnptr_OutOfMemory;
-
-// This method is meant to be assigned by applications that link against pxWex.  It is called
-// (invoked) prior to most pxWex built-in memory/array classes throwing exceptions, and can be
-// used by an application to remove unneeded memory allocations and/or reduce internal cache
-// reserves.
-//
-// Example: PCSX2 uses several bloated recompiler code caches.  Larger caches improve performance,
-// however a rouge cache growth could cause memory constraints in the operating system.  If an out-
-// of-memory error occurs, PCSX2's implementation of this function attempts to reset all internal
-// recompiler caches.  This can typically free up 100-150 megs of memory, and will allow the app
-// to continue running without crashing or hanging the operating system, etc.
-//
-extern Fnptr_OutOfMemory pxDoOutOfMemory;
-
 
 // --------------------------------------------------------------------------------------
 //  AlignedBuffer
@@ -106,6 +76,20 @@ public:
 	AlignedBuffer(size_t size = 0)
 	{
 		Alloc(size);
+	}
+
+	AlignedBuffer(const AlignedBuffer& copy)
+	{
+		Alloc(copy.m_size);
+		if (copy.m_size > 0)
+			std::memcpy(m_buffer.get(), copy.m_buffer.get(), copy.m_size);
+	}
+
+	AlignedBuffer(AlignedBuffer&& move)
+		: m_buffer(std::move(move.m_buffer))
+		, m_size(move.m_size)
+	{
+		move.m_size = 0;
 	}
 
 	size_t GetSize() const { return m_size; }
@@ -143,6 +127,23 @@ public:
 		if (size <= m_size)
 			return;
 		Resize(size);
+	}
+
+	AlignedBuffer& operator=(const AlignedBuffer& copy)
+	{
+		Alloc(copy.m_size);
+		if (copy.m_size > 0)
+			std::memcpy(m_buffer.get(), copy.m_buffer.get(), copy.m_size);
+
+		return *this;
+	}
+
+	AlignedBuffer& operator=(AlignedBuffer&& move)
+	{
+		m_buffer = std::move(move.m_buffer);
+		m_size = move.m_size;
+		move.m_size = 0;
+		return *this;
 	}
 
 	T* GetPtr(uint idx = 0) const

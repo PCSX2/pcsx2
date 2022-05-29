@@ -20,7 +20,7 @@
 #include "Memory.h"
 
 extern FILE *emuLog;
-extern wxString emuLogName;
+extern std::string emuLogName;
 
 extern char* disVU0MicroUF(u32 code, u32 pc);
 extern char* disVU0MicroLF(u32 code, u32 pc);
@@ -68,8 +68,6 @@ struct SysTraceLogDescriptor
 class SysTraceLog : public TextFileTraceLog
 {
 public:
-	TraceLog_ImplementBaseAPI(SysTraceLog)
-
 	// Pass me a NULL and you *will* suffer!  Muahahaha.
 	SysTraceLog( const SysTraceLogDescriptor* desc )
 		: TextFileTraceLog( &desc->base ) {}
@@ -88,13 +86,13 @@ class SysTraceLog_EE : public SysTraceLog
 public:
 	SysTraceLog_EE( const SysTraceLogDescriptor* desc ) : _parent( desc ) {}
 
-	void ApplyPrefix( FastFormatAscii& ascii ) const override;
+	void ApplyPrefix( std::string& ascii ) const override;
 	bool IsActive() const override
 	{
 		return SysTraceLog::IsActive() && EmuConfig.Trace.EE.m_EnableAll;
 	}
 	
-	wxString GetCategory() const override { return L"EE"; }
+	std::string GetCategory() const override { return "EE"; }
 };
 
 class SysTraceLog_VIFcode : public SysTraceLog_EE
@@ -104,7 +102,7 @@ class SysTraceLog_VIFcode : public SysTraceLog_EE
 public:
 	SysTraceLog_VIFcode( const SysTraceLogDescriptor* desc ) : _parent( desc ) {}
 
-	void ApplyPrefix( FastFormatAscii& ascii ) const override;
+	void ApplyPrefix(std::string& ascii ) const override;
 };
 
 class SysTraceLog_EE_Disasm : public SysTraceLog_EE
@@ -119,7 +117,7 @@ public:
 		return _parent::IsActive() && EmuConfig.Trace.EE.m_EnableDisasm;
 	}
 
-	wxString GetCategory() const override { return _parent::GetCategory() + L".Disasm"; }
+	std::string GetCategory() const override { return _parent::GetCategory() + ".Disasm"; }
 };
 
 class SysTraceLog_EE_Registers : public SysTraceLog_EE
@@ -134,7 +132,7 @@ public:
 		return _parent::IsActive() && EmuConfig.Trace.EE.m_EnableRegisters;
 	}
 
-	wxString GetCategory() const override { return _parent::GetCategory() + L".Registers"; }
+	std::string GetCategory() const override { return _parent::GetCategory() + ".Registers"; }
 };
 
 class SysTraceLog_EE_Events : public SysTraceLog_EE
@@ -149,7 +147,7 @@ public:
 		return _parent::IsActive() && EmuConfig.Trace.EE.m_EnableEvents;
 	}
 
-	wxString GetCategory() const override { return _parent::GetCategory() + L".Events"; }
+	std::string GetCategory() const override { return _parent::GetCategory() + ".Events"; }
 };
 
 
@@ -160,13 +158,13 @@ class SysTraceLog_IOP : public SysTraceLog
 public:
 	SysTraceLog_IOP( const SysTraceLogDescriptor* desc ) : _parent( desc ) {}
 
-	void ApplyPrefix( FastFormatAscii& ascii ) const override;
+	void ApplyPrefix( std::string& ascii ) const override;
 	bool IsActive() const override
 	{
 		return SysTraceLog::IsActive() && EmuConfig.Trace.IOP.m_EnableAll;
 	}
 
-	wxString GetCategory() const override { return L"IOP"; }
+	std::string GetCategory() const override { return "IOP"; }
 };
 
 class SysTraceLog_IOP_Disasm : public SysTraceLog_IOP
@@ -180,7 +178,7 @@ public:
 		return _parent::IsActive() && EmuConfig.Trace.IOP.m_EnableDisasm;
 	}
 
-	wxString GetCategory() const override { return _parent::GetCategory() + L".Disasm"; }
+	std::string GetCategory() const override { return _parent::GetCategory() + ".Disasm"; }
 };
 
 class SysTraceLog_IOP_Registers : public SysTraceLog_IOP
@@ -194,7 +192,7 @@ public:
 		return _parent::IsActive() && EmuConfig.Trace.IOP.m_EnableRegisters;
 	}
 
-	wxString GetCategory() const override { return _parent::GetCategory() + L".Registers"; }
+	std::string GetCategory() const override { return _parent::GetCategory() + ".Registers"; }
 };
 
 class SysTraceLog_IOP_Events : public SysTraceLog_IOP
@@ -208,7 +206,7 @@ public:
 		return _parent::IsActive() && EmuConfig.Trace.IOP.m_EnableEvents;
 	}
 
-	wxString GetCategory() const override { return _parent::GetCategory() + L".Events"; }
+	std::string GetCategory() const override { return _parent::GetCategory() + ".Events"; }
 };
 
 // --------------------------------------------------------------------------------------
@@ -226,14 +224,12 @@ class ConsoleLogFromVM : public BaseTraceLogSource
 	typedef BaseTraceLogSource _parent;
 
 public:
-	ConsoleLog_ImplementBaseAPI(ConsoleLogFromVM)
-
 	ConsoleLogFromVM( const TraceLogDescriptor* desc ) : _parent( desc ) {}
 
-	bool Write( const wxString &msg ) const
+	bool Write( const char* msg ) const
 	{
 		ConsoleColorScope cs(conColor);
-		Console.WriteRaw( msg );
+		Console.WriteRaw(msg);
 
 		// Buffered output isn't compatible with the testsuite. The end of test
 		// doesn't always get flushed. Let's just flush all the output if EE/IOP
@@ -245,7 +241,7 @@ public:
 
 	bool Write(const std::string& msg) const
 	{
-		return Write(fromUTF8(msg));
+		return Write(msg.c_str());
 	}
 };
 
@@ -349,13 +345,6 @@ extern void __Log( const char* fmt, ... );
 #	define SysTraceActive(trace)	SysTrace.trace.IsActive()
 #else
 #	define SysTraceActive(trace)	(false)
-#endif
-
-#ifdef __WXMAC__
-    // Not available on OSX, apparently always double buffered window.
-#   define                          SetDoubleBuffered(x)
-
-    // TODO OSX OsxKeyCodes.cpp pending
 #endif
 
 #define macTrace(trace)	SysTraceActive(trace) && SysTrace.trace.Write

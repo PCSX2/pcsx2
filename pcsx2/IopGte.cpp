@@ -18,8 +18,9 @@
 //#include <stdlib.h>
 //#include <math.h>
 #include "IopGte.h"
-//#include "R3000A.h"
-#include "IopCommon.h"
+#include "R3000A.h"
+#include "IopMem.h"
+
 #include "common/MathUtils.h"
 #ifdef GTE_DUMP
 #define G_OP(name,delay) fprintf(gteLog, "* : %08X : %02d : %s\n", psxRegs.code, delay, name);

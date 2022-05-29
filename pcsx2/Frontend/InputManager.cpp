@@ -25,6 +25,7 @@
 #include <mutex>
 #include <sstream>
 #include <unordered_map>
+#include <variant>
 #include <vector>
 
 // ------------------------------------------------------------------------
@@ -45,102 +46,7 @@ enum : u32
 // This class acts as an adapter to convert from normalized values to
 // binary values when the callback is a binary/button handler. That way
 // you don't need to convert float->bool in your callbacks.
-
-class InputEventHandler
-{
-public:
-	InputEventHandler()
-	{
-		new (&u.button) InputButtonEventHandler;
-		is_axis = false;
-	}
-
-	InputEventHandler(InputButtonEventHandler button)
-	{
-		new (&u.button) InputButtonEventHandler(std::move(button));
-		is_axis = false;
-	}
-
-	InputEventHandler(InputAxisEventHandler axis)
-	{
-		new (&u.axis) InputAxisEventHandler(std::move(axis));
-		is_axis = true;
-	}
-
-	InputEventHandler(const InputEventHandler& copy)
-	{
-		if (copy.is_axis)
-			new (&u.axis) InputAxisEventHandler(copy.u.axis);
-		else
-			new (&u.button) InputButtonEventHandler(copy.u.button);
-		is_axis = copy.is_axis;
-	}
-
-	InputEventHandler(InputEventHandler&& move)
-	{
-		if (move.is_axis)
-			new (&u.axis) InputAxisEventHandler(std::move(move.u.axis));
-		else
-			new (&u.button) InputButtonEventHandler(std::move(move.u.button));
-		is_axis = move.is_axis;
-	}
-
-	~InputEventHandler()
-	{
-		// call the right destructor... :D
-		if (is_axis)
-			u.axis.InputAxisEventHandler::~InputAxisEventHandler();
-		else
-			u.button.InputButtonEventHandler::~InputButtonEventHandler();
-	}
-
-	InputEventHandler& operator=(const InputEventHandler& copy)
-	{
-		InputEventHandler::~InputEventHandler();
-
-		if (copy.is_axis)
-			new (&u.axis) InputAxisEventHandler(copy.u.axis);
-		else
-			new (&u.button) InputButtonEventHandler(copy.u.button);
-		is_axis = copy.is_axis;
-		return *this;
-	}
-
-	InputEventHandler& operator=(InputEventHandler&& move)
-	{
-		InputEventHandler::~InputEventHandler();
-
-		if (move.is_axis)
-			new (&u.axis) InputAxisEventHandler(std::move(move.u.axis));
-		else
-			new (&u.button) InputButtonEventHandler(std::move(move.u.button));
-		is_axis = move.is_axis;
-		return *this;
-	}
-
-	__fi bool IsAxis() const { return is_axis; }
-
-	__fi void Invoke(float value) const
-	{
-		if (is_axis)
-			u.axis(value);
-		else
-			u.button(value > 0.0f);
-	}
-
-private:
-	union HandlerUnion
-	{
-		// constructor/destructor needs to be declared
-		HandlerUnion() {}
-		~HandlerUnion() {}
-
-		InputButtonEventHandler button;
-		InputAxisEventHandler axis;
-	} u;
-
-	bool is_axis;
-};
+using InputEventHandler = std::variant<InputAxisEventHandler, InputButtonEventHandler>;
 
 // ------------------------------------------------------------------------
 // Binding Type
@@ -193,6 +99,8 @@ namespace InputManager
 	static bool SplitBinding(const std::string_view& binding, std::string_view* source, std::string_view* sub_binding);
 	static void AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler);
 	static bool ParseBindingAndGetSource(const std::string_view& binding, InputBindingKey* key, InputSource** source);
+
+	static bool IsAxisHandler(const InputEventHandler& handler);
 
 	static void AddHotkeyBindings(SettingsInterface& si);
 	static void AddPadBindings(SettingsInterface& si, u32 pad, const char* default_type);
@@ -639,6 +547,11 @@ bool InputManager::HasAnyBindingsForKey(InputBindingKey key)
 	return (s_binding_map.find(key.MaskDirection()) != s_binding_map.end());
 }
 
+bool InputManager::IsAxisHandler(const InputEventHandler& handler)
+{
+	return std::holds_alternative<InputAxisEventHandler>(handler);
+}
+
 bool InputManager::InvokeEvents(InputBindingKey key, float value)
 {
 	if (DoEventHook(key, value))
@@ -650,6 +563,42 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value)
 	if (range.first == s_binding_map.end())
 		return false;
 
+	// Workaround for modifier keys. Basically, if we bind say, F1 and Shift+F1, and press shift
+	// and then F1, we'll fire bindings for both F1 and Shift+F1, when we really only want to fire
+	// the binding for Shift+F1. So, let's search through the binding list, and see if there's a
+	// "longer" binding (more keys), and if so, only activate that and not the shorter binding(s).
+	const InputBinding* longest_hotkey_binding = nullptr;
+	for (auto it = range.first; it != range.second; ++it)
+	{
+		InputBinding* binding = it->second.get();
+		if (IsAxisHandler(binding->handler))
+			continue;
+
+		// find the key which matches us
+		for (u32 i = 0; i < binding->num_keys; i++)
+		{
+			if (binding->keys[i].MaskDirection() != masked_key)
+				continue;
+
+			const u8 bit = static_cast<u8>(1) << i;
+			const bool negative = binding->keys[i].negative;
+			const bool new_state = (negative ? (value < 0.0f) : (value > 0.0f));
+			const u8 new_mask = (new_state ? (binding->current_mask | bit) : (binding->current_mask & ~bit));
+			const bool prev_full_state = (binding->current_mask == binding->full_mask);
+			const bool new_full_state = (new_mask == binding->full_mask);
+
+			// If we're activating this chord, block activation of other bindings with fewer keys.
+			if (prev_full_state || new_full_state)
+			{
+				if (!longest_hotkey_binding || longest_hotkey_binding->num_keys < binding->num_keys)
+					longest_hotkey_binding = binding;
+			}
+
+			break;
+		}
+	}
+
+	// Now we can actually fire/activate bindings.
 	for (auto it = range.first; it != range.second; ++it)
 	{
 		InputBinding* binding = it->second.get();
@@ -664,6 +613,14 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value)
 			const bool negative = binding->keys[i].negative;
 			const bool new_state = (negative ? (value < 0.0f) : (value > 0.0f));
 
+			// Don't register the key press when we're part of a longer chord. That way,
+			// the state won't change, and it won't get the released event either.
+			if (longest_hotkey_binding && new_state && !IsAxisHandler(binding->handler) &&
+				binding->num_keys != longest_hotkey_binding->num_keys)
+			{
+				continue;
+			}
+
 			// update state based on whether the whole chord was activated
 			const u8 new_mask = (new_state ? (binding->current_mask | bit) : (binding->current_mask & ~bit));
 			const bool prev_full_state = (binding->current_mask == binding->full_mask);
@@ -675,11 +632,18 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value)
                                                                                                         0.0f);
 
 			// axes are fired regardless of a state change, unless they're zero
+			// (but going from not-zero to zero will still fire, because of the full state)
 			// for buttons, we can use the state of the last chord key, because it'll be 1 on press,
 			// and 0 on release (when the full state changes).
-			if (prev_full_state != new_full_state || (binding->handler.IsAxis() && value_to_pass > 0.0f))
+			if (IsAxisHandler(binding->handler))
 			{
-				binding->handler.Invoke(value_to_pass);
+				if (prev_full_state != new_full_state || value_to_pass >= 0.0f)
+					std::get<InputAxisEventHandler>(binding->handler)(value_to_pass);
+			}
+			else
+			{
+				if (prev_full_state != new_full_state)
+					std::get<InputButtonEventHandler>(binding->handler)(value_to_pass > 0.0f);
 			}
 
 			// bail out, since we shouldn't have the same key twice in the chord

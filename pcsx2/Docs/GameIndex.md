@@ -40,6 +40,11 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
     - IbitHack
     - VUSyncHack
     - VUOverflowHack
+    - SoftwareRendererFMVHack
+  # The value of the GS Fixes is assumed to be an integer
+  gsHWFixes:
+    mipmap: 1
+    preloadFrameData: 1
   # The value of the speedhacks is assumed to be an integer,
   # but at the time of writing speedhacks are effectively booleans (0/1)
   speedHacks:
@@ -137,20 +142,21 @@ The clamp modes are also numerically based.
 
 ### GS Hardware General Fixes
 
-*   conservativeFramebuffer   [`0` or `1`]            {Off or On}                           Default: On (`1`)
-*   texturePreloading         [`0` or `1` or `2`]     {None, Partial or Full Hash Cache}    Default: None (`0`)
+*   conservativeFramebuffer   [`0` or `1`]                 {Off or On}                                                                 Default: On (`1`)
+*   texturePreloading         [`0` or `1` or `2`]          {None, Partial or Full Hash Cache}                                          Default: None (`0`)
+*   deinterlace               [Value between `0` to `7`]   {Off, WeaveTFF, WeaveBFF, BobTFF, BobBFF, BlendTFF, BlendBFF, Automatic}    Default: Automatic (No value, looks up GameDB)
 
 ### GS Hardware Renderer Fixes
 
-*   autoFlush                [`0` or `1`]   {Off or On}                          Default: Off (`0`)
-*   disableDepthSupport      [`0` or `1`]   {Off or On}                          Default: Off (`0`)
+*   autoFlush                   [`0` or `1`]   {Off or On}                          Default: Off (`0`)
+*   disableDepthSupport         [`0` or `1`]   {Off or On}                          Default: Off (`0`)
 *   disablePartialInvalidation  [`0` or `1`]   {Off or On}                          Default: Off (`0`)
-*   cpuFramebufferConversion [`0` or `1`]   {Off or On}                          Default: Off (`0`)
-*   wrapGSMem                [`0` or `1`]   {Off or On}                          Default: Off (`0`)
-*   preloadFrameData         [`0` or `1`]   {Off or On}                          Default: Off (`0`)
-*   textureInsideRT          [`0` or `1`]   {Off or On}                          Default: Off (`0`)
-*   halfBottomOverride       [`0` or `1`]   {Force-Disabled or Force-Enabled}    Default: Automatic (No value, looks up GameDB)
-*   pointListPalette         [`0` or `1`]   {Off or On}                          Default: Off (`0`)
+*   cpuFramebufferConversion    [`0` or `1`]   {Off or On}                          Default: Off (`0`)
+*   wrapGSMem                   [`0` or `1`]   {Off or On}                          Default: Off (`0`)
+*   preloadFrameData            [`0` or `1`]   {Off or On}                          Default: Off (`0`)
+*   textureInsideRT             [`0` or `1`]   {Off or On}                          Default: Off (`0`)
+*   halfBottomOverride          [`0` or `1`]   {Force-Disabled or Force-Enabled}    Default: Automatic (No value, looks up GameDB)
+*   pointListPalette            [`0` or `1`]   {Off or On}                          Default: Off (`0`)
 
 ### GS Hardware Upscaling Fixes
 
@@ -212,6 +218,9 @@ These values are case-sensitive so take care.  If you incorrectly specify a Game
 
 *   `VUOverflowHack`
     *   VU Overflow hack to check for possible float overflows (Superman Returns).
+
+*   `SoftwareRendererFMVHack`
+    *   Forces rendering into software mode during FMVs.
 
 ## SpeedHacks
 

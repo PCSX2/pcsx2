@@ -18,16 +18,6 @@
 #include <cstdint>
 
 // --------------------------------------------------------------------------------------
-//  Forward declarations
-// --------------------------------------------------------------------------------------
-// Forward declarations for wxWidgets-supporting features.
-// If you aren't linking against wxWidgets libraries, then functions that
-// depend on these types will not be usable (they will yield linker errors).
-class wxString;
-class FastFormatAscii;
-class FastFormatUnicode;
-
-// --------------------------------------------------------------------------------------
 //  Basic Atomic Types
 // --------------------------------------------------------------------------------------
 
@@ -99,17 +89,6 @@ union u128
 	{
 		return (lo != right.lo) || (hi != right.hi);
 	}
-
-	// In order for the following ToString() and WriteTo methods to be available, you must
-	// be linking to both wxWidgets and the pxWidgets extension library.  If you are not
-	// using them, then you will need to provide your own implementations of these methods.
-	wxString ToString() const;
-	wxString ToString64() const;
-	wxString ToString8() const;
-
-	void WriteTo(FastFormatAscii& dest) const;
-	void WriteTo8(FastFormatAscii& dest) const;
-	void WriteTo64(FastFormatAscii& dest) const;
 };
 
 struct s128

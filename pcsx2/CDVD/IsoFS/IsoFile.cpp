@@ -15,18 +15,22 @@
 
 
 #include "PrecompiledHeader.h"
+#include "common/Assertions.h"
+#include "common/Exceptions.h"
 
 #include "IsoFS.h"
 #include "IsoFile.h"
 
-IsoFile::IsoFile(SectorSource& reader, const wxString& filename)
+#include <cstdio>
+
+IsoFile::IsoFile(SectorSource& reader, const std::string_view& filename)
 	: internalReader(reader)
 	, fileEntry(IsoDirectory(reader).FindFile(filename))
 {
 	Init();
 }
 
-IsoFile::IsoFile(const IsoDirectory& dir, const wxString& filename)
+IsoFile::IsoFile(const IsoDirectory& dir, const std::string_view& filename)
 	: internalReader(dir.GetReader())
 	, fileEntry(dir.FindFile(filename))
 {
@@ -74,19 +78,19 @@ u32 IsoFile::seek(u32 absoffset)
 
 // Returns the new offset in the file.  Out-of-bounds seeks are automatically truncated at 0
 // and fileLength.
-u32 IsoFile::seek(s64 offset, wxSeekMode ref_position)
+u32 IsoFile::seek(s64 offset, int mode)
 {
-	switch (ref_position)
+	switch (mode)
 	{
-		case wxFromStart:
+		case SEEK_SET:
 			pxAssertDev(offset >= 0 && offset <= (s64)ULONG_MAX, "Invalid seek position from start.");
 			return seek(offset);
 
-		case wxFromCurrent:
+		case SEEK_CUR:
 			// truncate negative values to zero, and positive values to 4gb
 			return seek(std::min(std::max<s64>(0, (s64)currentOffset + offset), (s64)ULONG_MAX));
 
-		case wxFromEnd:
+		case SEEK_END:
 			// truncate negative values to zero, and positive values to 4gb
 			return seek(std::min(std::max<s64>(0, (s64)fileEntry.size + offset), (s64)ULONG_MAX));
 

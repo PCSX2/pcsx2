@@ -20,7 +20,7 @@
 #include "R5900OpcodeTables.h"
 #include "R5900Exceptions.h"
 #ifndef PCSX2_CORE
-#include "System/SysThreads.h"
+#include "gui/SysThreads.h"
 #else
 #include "VMManager.h"
 #endif
@@ -38,6 +38,7 @@ extern int vu0branch, vu1branch;
 static int branch2 = 0;
 static u32 cpuBlockCycles = 0;		// 3 bit fixed point version of cycle count
 static std::string disOut;
+static bool intExitExecution = false;
 
 static void intEventTest();
 
@@ -198,7 +199,7 @@ static __fi void _doBranch_shared(u32 tar)
 	}
 }
 
-static void __fastcall doBranch( u32 target )
+static void doBranch( u32 target )
 {
 	_doBranch_shared( target );
 	cpuRegs.cycle += cpuBlockCycles >> 3;
@@ -206,7 +207,7 @@ static void __fastcall doBranch( u32 target )
 	intEventTest();
 }
 
-void __fastcall intDoBranch(u32 target)
+void intDoBranch(u32 target)
 {
 	//Console.WriteLn("Interpreter Branch ");
 	_doBranch_shared( target );
@@ -498,6 +499,12 @@ static void intEventTest()
 {
 	// Perform counters, ints, and IOP updates:
 	_cpuEventTest_Shared();
+	
+	if (intExitExecution)
+	{
+		intExitExecution = false;
+		throw Exception::ExitCpuExecute();
+	}
 }
 
 static void intExecute()
@@ -574,15 +581,14 @@ static void intExecute()
 	} while (instruction_was_cancelled);
 }
 
-static void intCheckExecutionState()
+static void intSafeExitExecution()
 {
-#ifndef PCSX2_CORE
-	if( GetCoreThread().HasPendingStateChangeRequest() )
+	// If we're currently processing events, we can't safely jump out of the interpreter here, because we'll
+	// leave things in an inconsistent state. So instead, we flag it for exiting once cpuEventTest() returns.
+	if (eeEventTestIsActive)
+		intExitExecution = true;
+	else
 		throw Exception::ExitCpuExecute();
-#else
-	if (VMManager::Internal::IsExecutionInterrupted())
-		throw Exception::ExitCpuExecute();
-#endif
 }
 
 static void intStep()
@@ -627,7 +633,7 @@ R5900cpu intCpu =
 	intStep,
 	intExecute,
 
-	intCheckExecutionState,
+	intSafeExitExecution,
 	intThrowException,
 	intThrowException,
 	intClear,

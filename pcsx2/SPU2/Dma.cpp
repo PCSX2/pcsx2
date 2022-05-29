@@ -16,7 +16,8 @@
 #include "PrecompiledHeader.h"
 #include "Global.h"
 #include "Dma.h"
-#include "IopCommon.h"
+#include "R3000A.h"
+#include "IopHw.h"
 
 #include "spu2.h" // temporary until I resolve cyclePtr/TimeUpdate dependencies.
 
@@ -34,11 +35,11 @@ void DMALogOpen()
 {
 	if (!DMALog())
 		return;
-	DMA4LogFile = OpenBinaryLog(DMA4LogFileName);
-	DMA7LogFile = OpenBinaryLog(DMA7LogFileName);
-	ADMA4LogFile = OpenBinaryLog(L"adma4.raw");
-	ADMA7LogFile = OpenBinaryLog(L"adma7.raw");
-	ADMAOutLogFile = OpenBinaryLog(L"admaOut.raw");
+	DMA4LogFile = OpenBinaryLog(DMA4LogFileName.c_str());
+	DMA7LogFile = OpenBinaryLog(DMA7LogFileName.c_str());
+	ADMA4LogFile = OpenBinaryLog("adma4.raw");
+	ADMA7LogFile = OpenBinaryLog("adma7.raw");
+	ADMAOutLogFile = OpenBinaryLog("admaOut.raw");
 }
 
 void DMA4LogWrite(void* lpData, u32 ulSize)
@@ -97,7 +98,7 @@ void V_Core::LogAutoDMA(FILE* fp)
 
 void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not split stereo
 {
-	int spos = InputPosWrite & 0x100; // Starting position passed by TSA
+	u32 spos = InputPosWrite & 0x100; // Starting position passed by TSA
 	bool leftbuffer = !(InputPosWrite & 0x80);
 
 	if (InputPosWrite == 0xFFFF) // Data request not made yet

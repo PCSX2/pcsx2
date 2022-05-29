@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "common/Exceptions.h"
+
 class BaseR5900Exception;
 
 // --------------------------------------------------------------------------------------
@@ -266,7 +268,7 @@ void intSetBranch();
 
 // This is a special form of the interpreter's doBranch that is run from various
 // parts of the Recs (namely COP0's branch codes and stuff).
-void __fastcall intDoBranch(u32 target);
+void intDoBranch(u32 target);
 
 // modules loaded at hardcoded addresses by the kernel
 const u32 EEKERNEL_START	= 0;
@@ -275,9 +277,9 @@ const u32 EELOAD_START		= 0x82000;
 const u32 EELOAD_SIZE		= 0x20000; // overestimate for searching
 extern u32 g_eeloadMain, g_eeloadExec;
 
-extern void __fastcall eeGameStarting();
-extern void __fastcall eeloadHook();
-extern void __fastcall eeloadHook2();
+extern void eeGameStarting();
+extern void eeloadHook();
+extern void eeloadHook2();
 
 // --------------------------------------------------------------------------------------
 //  R5900cpu
@@ -347,22 +349,10 @@ struct R5900cpu
 	//
 	void (*Execute)();
 
-	// Checks for execution suspension or cancellation.  In pthreads terms this provides
-	// a "cancellation point."  Execution state checks are typically performed at Vsyncs
-	// by the generic VM event handlers in R5900.cpp/Counters.cpp (applies to both recs
-	// and ints).
-	//
-	// Implementation note: Because of the nuances of recompiled code execution, setjmp
-	// may be used in place of thread cancellation or C++ exceptions (non-SEH exceptions
-	// cannot unwind through the recompiled code stackframes, thus longjmp must be used).
-	//
-	// Thread Affinity:
-	//   Must be called on the same thread as Execute.
-	//
-	// Exception Throws:
-	//   May throw Execution/Pthreads cancellations if the compiler supports SEH.
-	//
-	void (*CheckExecutionState)();
+	// Immediately exits execution of recompiled code if we are in a state to do so, or
+	// queues an exit as soon as it is safe. Safe in this case refers to whether we are
+	// currently executing events or not.
+	void (*ExitExecution)();
 
 	// Safely throws host exceptions from executing code (either recompiled or interpreted).
 	// If this function is called outside the context of the CPU's code execution, then the
@@ -430,16 +420,14 @@ extern void CPU_INT( EE_EventType n, s32 ecycle );
 extern uint intcInterrupt();
 extern uint dmacInterrupt();
 
-
-extern void cpuInit();
 extern void cpuReset();		// can throw Exception::FileNotFound.
 extern void cpuException(u32 code, u32 bd);
 extern void cpuTlbMissR(u32 addr, u32 bd);
 extern void cpuTlbMissW(u32 addr, u32 bd);
 extern void cpuTestHwInts();
 extern void cpuClearInt(uint n);
-extern void __fastcall GoemonPreloadTlb();
-extern void __fastcall GoemonUnloadTlb(u32 key);
+extern void GoemonPreloadTlb();
+extern void GoemonUnloadTlb(u32 key);
 
 extern void cpuSetNextEvent( u32 startCycle, s32 delta );
 extern void cpuSetNextEventDelta( s32 delta );

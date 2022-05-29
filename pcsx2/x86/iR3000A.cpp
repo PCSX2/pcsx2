@@ -21,10 +21,13 @@
 #include "PrecompiledHeader.h"
 
 #include "iR3000A.h"
+#include "R3000A.h"
 #include "BaseblockEx.h"
 #include "System/RecTypes.h"
-#include "System/SysThreads.h"
 #include "R5900OpcodeTables.h"
+#include "IopBios.h"
+#include "IopHw.h"
+#include "Common.h"
 
 #include <time.h>
 
@@ -32,13 +35,21 @@
 #include <sys/types.h>
 #endif
 
-#include "IopCommon.h"
 #include "iCore.h"
 
 #include "Config.h"
 
+#include "common/AlignedMalloc.h"
+#include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/Perf.h"
 #include "DebugTools/Breakpoints.h"
+
+#ifndef PCSX2_CORE
+#include "gui/SysThreads.h"
+#endif
+
+#include "fmt/core.h"
 
 using namespace x86Emitter;
 
@@ -102,7 +113,7 @@ static u32 psxdump = 0;
 //  Dynamically Compiled Dispatchers - R3000A style
 // =====================================================================================================
 
-static void __fastcall iopRecRecompile(const u32 startpc);
+static void iopRecRecompile(const u32 startpc);
 
 // Recompiled code buffer for EE recompiler dispatchers!
 alignas(__pagesize) static u8 iopRecDispatchers[__pagesize];
@@ -219,7 +230,6 @@ static void _DynGen_Dispatchers()
 
 ////////////////////////////////////////////////////
 using namespace R3000A;
-#include "Utilities/AsciiFile.h"
 
 static void iIopDumpBlock(int startpc, u8* ptr)
 {
@@ -229,20 +239,22 @@ static void iIopDumpBlock(int startpc, u8* ptr)
 	int numused, count;
 
 	Console.WriteLn("dump1 %x:%x, %x", startpc, psxpc, psxRegs.cycle);
-	EmuFolders::Logs.Mkdir();
+	FileSystem::CreateDirectoryPath(EmuFolders::Logs.c_str(), false);
 
-	wxString filename(Path::Combine(EmuFolders::Logs, wxsFormat(L"psxdump%.8X.txt", startpc)));
-	AsciiFile f(filename, L"w");
+	std::string filename(Path::Combine(EmuFolders::Logs, fmt::format("psxdump{:.8X}.txt", startpc)));
+	std::FILE* f = FileSystem::OpenCFile(filename.c_str(), "w");
+	if (!f)
+		return;
 
-	f.Printf("Dump PSX register data: 0x%x\n\n", (uptr)&psxRegs);
+	std::fprintf(f, "Dump PSX register data: 0x%p\n\n", &psxRegs);
 
 	for (i = startpc; i < s_nEndBlock; i += 4)
 	{
-		f.Printf("%s\n", disR3000AF(iopMemRead32(i), i));
+		std::fprintf(f, "%s\n", disR3000AF(iopMemRead32(i), i));
 	}
 
 	// write the instruction info
-	f.Printf("\n\nlive0 - %x, lastuse - %x used - %x\n", EEINST_LIVE0, EEINST_LASTUSE, EEINST_USED);
+	std::fprintf(f, "\n\nlive0 - %x, lastuse - %x used - %x\n", EEINST_LIVE0, EEINST_LASTUSE, EEINST_USED);
 
 	memzero(used);
 	numused = 0;
@@ -255,49 +267,53 @@ static void iIopDumpBlock(int startpc, u8* ptr)
 		}
 	}
 
-	f.Printf("       ");
+	std::fprintf(f, "       ");
 	for (i = 0; i < std::size(s_pInstCache->regs); ++i)
 	{
 		if (used[i])
-			f.Printf("%2d ", i);
+			std::fprintf(f, "%2d ", i);
 	}
-	f.Printf("\n");
+	std::fprintf(f, "\n");
 
-	f.Printf("       ");
+	std::fprintf(f, "       ");
 	for (i = 0; i < std::size(s_pInstCache->regs); ++i)
 	{
 		if (used[i])
-			f.Printf("%s ", disRNameGPR[i]);
+			std::fprintf(f, "%s ", disRNameGPR[i]);
 	}
-	f.Printf("\n");
+	std::fprintf(f, "\n");
 
 	pcur = s_pInstCache + 1;
 	for (i = 0; i < (s_nEndBlock - startpc) / 4; ++i, ++pcur)
 	{
-		f.Printf("%2d: %2.2x ", i + 1, pcur->info);
+		std::fprintf(f, "%2d: %2.2x ", i + 1, pcur->info);
 
 		count = 1;
 		for (j = 0; j < std::size(s_pInstCache->regs); j++)
 		{
 			if (used[j])
 			{
-				f.Printf("%2.2x%s", pcur->regs[j], ((count % 8) && count < numused) ? "_" : " ");
+				std::fprintf(f, "%2.2x%s", pcur->regs[j], ((count % 8) && count < numused) ? "_" : " ");
 				++count;
 			}
 		}
-		f.Printf("\n");
+		std::fprintf(f, "\n");
 	}
-	f.Close();
+	std::fclose(f);
 
 #ifdef __linux__
 	// dump the asm
 	{
-		AsciiFile f2(L"mydump1", L"w");
-		f2.Write(ptr, (uptr)x86Ptr - (uptr)ptr);
+		f = std::fopen("mydump1", "wb");
+		if (!f)
+			return;
+
+		std::fwrite(ptr, (uptr)x86Ptr - (uptr)ptr, 1, f);
+		std::fclose(f);
 	}
 
-	int status = std::system(wxsFormat(L"objdump -D -b binary -mi386 -M intel --no-show-raw-insn %s >> %s; rm %s",
-		"mydump1", WX_STR(filename), "mydump1").mb_str());
+	int status = std::system(fmt::format("objdump -D -b binary -mi386 -M intel --no-show-raw-insn {} >> {}; rm {}",
+		"mydump1", filename.c_str(), "mydump1").c_str());
 
 	if (!WIFEXITED(status))
 		Console.Error("IOP dump didn't terminate normally");
@@ -681,7 +697,7 @@ static const uint m_recBlockAllocSize =
 static void recReserveCache()
 {
 	if (!recMem)
-		recMem = new RecompiledCodeReserve(L"R3000A Recompiler Cache", _8mb);
+		recMem = new RecompiledCodeReserve("R3000A Recompiler Cache", _8mb);
 	recMem->SetProfilerName("IOPrec");
 
 	while (!recMem->IsOk())
@@ -715,7 +731,7 @@ static void recAlloc()
 		m_recBlockAlloc = (u8*)_aligned_malloc(m_recBlockAllocSize, 4096);
 
 	if (m_recBlockAlloc == NULL)
-		throw Exception::OutOfMemory(L"R3000A BASEBLOCK lookup tables");
+		throw Exception::OutOfMemory("R3000A BASEBLOCK lookup tables");
 
 	u8* curpos = m_recBlockAlloc;
 	recRAM  = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::IopRam / 4) * sizeof(BASEBLOCK);
@@ -731,7 +747,7 @@ static void recAlloc()
 	}
 
 	if (s_pInstCache == NULL)
-		throw Exception::OutOfMemory(L"R3000 InstCache.");
+		throw Exception::OutOfMemory("R3000 InstCache.");
 
 	_DynGen_Dispatchers();
 }
@@ -814,12 +830,6 @@ static void iopClearRecLUT(BASEBLOCK* base, int count)
 {
 	for (int i = 0; i < count; i++)
 		base[i].SetFnptr((uptr)iopJITCompile);
-}
-
-static void recExecute()
-{
-	// note: this function is currently never used.
-	//for (;;) R3000AExecute();
 }
 
 static __noinline s32 recExecuteBlock(s32 eeCycles)
@@ -1094,11 +1104,11 @@ void rpsxBREAK()
 	//if (!psxbranch) psxbranch = 2;
 }
 
-void psxDynarecCheckBreakpoint()
+static bool psxDynarecCheckBreakpoint()
 {
 	u32 pc = psxRegs.pc;
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_IOP, pc) == pc)
-		return;
+		return false;
 
 	int bpFlags = psxIsBreakpointNeeded(pc);
 	bool hit = false;
@@ -1120,29 +1130,35 @@ void psxDynarecCheckBreakpoint()
 	}
 
 	if (!hit)
-		return;
+		return false;
 
 	CBreakPoints::SetBreakpointTriggered(true);
 #ifndef PCSX2_CORE
 	GetCoreThread().PauseSelfDebug();
 #endif
-	iopBreakpoint = true;
+
+	// Exit the EE too.
+	Cpu->ExitExecution();
+	return true;
 }
 
-void psxDynarecMemcheck()
+static bool psxDynarecMemcheck()
 {
 	u32 pc = psxRegs.pc;
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_IOP, pc) == pc)
-		return;
+		return false;
 
 	CBreakPoints::SetBreakpointTriggered(true);
 #ifndef PCSX2_CORE
 	GetCoreThread().PauseSelfDebug();
 #endif
-	iopBreakpoint = true;
+
+	// Exit the EE too.
+	Cpu->ExitExecution();
+	return true;
 }
 
-void __fastcall psxDynarecMemLogcheck(u32 start, bool store)
+static void psxDynarecMemLogcheck(u32 start, bool store)
 {
 	if (store)
 		DevCon.WriteLn("Hit store breakpoint @0x%x", start);
@@ -1150,7 +1166,7 @@ void __fastcall psxDynarecMemLogcheck(u32 start, bool store)
 		DevCon.WriteLn("Hit load breakpoint @0x%x", start);
 }
 
-void psxRecMemcheck(u32 op, u32 bits, bool store)
+static void psxRecMemcheck(u32 op, u32 bits, bool store)
 {
 	_psxFlushCall(FLUSH_EVERYTHING | FLUSH_PC);
 
@@ -1196,29 +1212,27 @@ void psxRecMemcheck(u32 op, u32 bits, bool store)
 		if (checks[i].result & MEMCHECK_BREAK)
 		{
 			xFastCall((void*)psxDynarecMemcheck);
+			xTEST(al, al);
+			xJNZ(iopExitRecompiledCode);
 		}
 
 		next1.SetTarget();
 		next2.SetTarget();
 	}
-	// get out of here
-	xCMP(ptr8[&iopBreakpoint], 0);
-	xJNE(iopExitRecompiledCode);
 }
 
-void psxEncodeBreakpoint()
+static void psxEncodeBreakpoint()
 {
 	if (psxIsBreakpointNeeded(psxpc) != 0)
 	{
 		_psxFlushCall(FLUSH_EVERYTHING | FLUSH_PC);
 		xFastCall((void*)psxDynarecCheckBreakpoint);
-		// get out of here
-		xCMP(ptr8[&iopBreakpoint], 0);
-		xJNE(iopExitRecompiledCode);
+		xTEST(al, al);
+		xJNZ(iopExitRecompiledCode);
 	}
 }
 
-void psxEncodeMemcheck()
+static void psxEncodeMemcheck()
 {
 	int needed = psxIsMemcheckNeeded(psxpc);
 	if (needed == 0)
@@ -1268,7 +1282,7 @@ void psxRecompileNextInstruction(int delayslot)
 	_clearNeededX86regs();
 }
 
-static void __fastcall PreBlockCheck(u32 blockpc)
+static void PreBlockCheck(u32 blockpc)
 {
 #ifdef PCSX2_DEBUG
 	extern void iDumpPsxRegisters(u32 startpc, u32 temp);
@@ -1294,7 +1308,7 @@ static void __fastcall PreBlockCheck(u32 blockpc)
 #endif
 }
 
-static void __fastcall iopRecRecompile(const u32 startpc)
+static void iopRecRecompile(const u32 startpc)
 {
 	u32 i;
 	u32 willbranch3 = 0;
@@ -1559,7 +1573,6 @@ static uint recGetCacheReserve()
 R3000Acpu psxRec = {
 	recReserve,
 	recResetIOP,
-	recExecute,
 	recExecuteBlock,
 	recClearIOP,
 	recShutdown,

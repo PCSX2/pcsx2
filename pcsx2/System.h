@@ -17,6 +17,7 @@
 
 #include "SysForwardDefs.h"
 
+#include "common/Exceptions.h"
 #include "common/SafeArray.h"
 #include "common/Threading.h"		// to use threading stuff, include the Threading namespace in your file.
 
@@ -159,35 +160,13 @@ extern SysCpuProviderPack& GetCpuProviders();
 
 extern void SysLogMachineCaps();		// Detects cpu type and fills cpuInfo structs.
 extern void SysClearExecutionCache();	// clears recompiled execution caches!
-extern void SysOutOfMemory_EmergencyResponse(uptr blocksize);
 
 extern u8 *SysMmapEx(uptr base, u32 size, uptr bounds, const char *caller="Unnamed");
-extern void vSyncDebugStuff( uint frame );
-extern void NTFS_CompressFile( const wxString& file, bool compressStatus=true );
 
-extern wxString SysGetBiosDiscID();
-extern wxString SysGetDiscID();
+extern std::string SysGetBiosDiscID();
+extern std::string SysGetDiscID();
 
 extern SysMainMemory& GetVmMemory();
-
-// --------------------------------------------------------------------------------------
-//  PCSX2_SEH - Defines existence of "built in" Structured Exception Handling support.
-// --------------------------------------------------------------------------------------
-// This should be available on Windows, via Microsoft or Intel compilers (I'm pretty sure Intel
-// supports native SEH model).  GNUC in Windows, or any compiler in a non-windows platform, will
-// need to use setjmp/longjmp instead to exit recompiled code.
-// In addition, we don't currently set up SEH properly on Windows x64 so disable it there too
-//
-
-//#define PCSX2_SEH		0		// use this to force disable SEH on win32, to test setjmp functionality.
-
-#ifndef PCSX2_SEH
-#	if defined(_WIN32) && !defined(__GNUC__) && !defined(_WIN64)
-#		define PCSX2_SEH	1
-#	else
-#		define PCSX2_SEH	0
-#	endif
-#endif
 
 // special macro which disables inlining on functions that require their own function stackframe.
 // This is due to how Win32 handles structured exception handling.  Linux uses signals instead
@@ -206,15 +185,22 @@ extern SysMainMemory& GetVmMemory();
 // responded to the prompt.
 //
 
+#ifndef PCSX2_CORE
+#include <wx/string.h>
+
 namespace Msgbox
 {
-	extern bool	Alert( const wxString& text, const wxString& caption=_("PCSX2 Message"), int icon=wxICON_EXCLAMATION );
-	extern bool	OkCancel( const wxString& text, const wxString& caption=_("PCSX2 Message"), int icon=0 );
-	extern bool	YesNo( const wxString& text, const wxString& caption=_("PCSX2 Message"), int icon=wxICON_QUESTION );
+	extern bool	Alert( const wxString& text, const wxString& caption="PCSX2 Message", int icon=wxICON_EXCLAMATION );
+	extern bool	OkCancel( const wxString& text, const wxString& caption="PCSX2 Message", int icon=0 );
+	extern bool	YesNo( const wxString& text, const wxString& caption="PCSX2 Message", int icon=wxICON_QUESTION );
 
 	extern int	Assertion( const wxString& text, const wxString& stacktrace );
 }
+#endif
 
 #ifdef _WIN32
 extern void CheckIsUserOnHighPerfPowerPlan();
 #endif
+
+extern void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVUMXCSR);
+extern SSE_MXCSR g_sseVUMXCSR, g_sseMXCSR;
