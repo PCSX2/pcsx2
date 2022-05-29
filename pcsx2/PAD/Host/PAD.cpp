@@ -43,7 +43,6 @@ namespace PAD
 		bool trigger_state; ///< Whether the macro button is active.
 	};
 
-	static const char* GetDefaultPadType(u32 pad);
 	static void LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std::string_view& type, const std::string& section);
 	static void ApplyMacroButton(u32 pad, const MacroButton& mb);
 	static void UpdateMacroButtons();
@@ -245,7 +244,7 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 	si.SetStringValue("Hotkeys", "ZoomIn", "Keyboard/Control & Keyboard/Plus");
 	si.SetStringValue("Hotkeys", "ZoomOut", "Keyboard/Control & Keyboard/Minus");
 	// Missing hotkey for resetting zoom back to 100 with Keyboard/Control & Keyboard/Asterisk
-	
+
 	// PCSX2 Controller Settings - Hotkeys - Input Recording
 	si.SetStringValue("Hotkeys", "InputRecToggleMode", "Keyboard/Shift & Keyboard/R");
 
@@ -273,52 +272,42 @@ void PAD::Update()
 	UpdateMacroButtons();
 }
 
-struct ControllerBindingInfo
-{
-	const char* name;
-	GenericInputBinding generic_mapping;
-};
-struct ControllerInfo
-{
-	const char* name;
-	const ControllerBindingInfo* bindings;
-	u32 num_bindings;
-	PAD::VibrationCapabilities vibration_caps;
-};
-
-static const ControllerBindingInfo s_dualshock2_binds[] = {
-	{"Up", GenericInputBinding::DPadUp },
-	{"Right",GenericInputBinding::DPadRight },
-	{"Down", GenericInputBinding::DPadDown },
-	{"Left", GenericInputBinding::DPadLeft },
-	{"Triangle", GenericInputBinding::Triangle },
-	{"Circle", GenericInputBinding::Circle },
-	{"Cross", GenericInputBinding::Cross },
-	{"Square", GenericInputBinding::Square },
-	{"Select", GenericInputBinding::Select },
-	{"Start", GenericInputBinding::Start },
-	{"L1", GenericInputBinding::L1 },
-	{"L2", GenericInputBinding::L2 },
-	{"R1", GenericInputBinding::R1 },
-	{"R2", GenericInputBinding::R2 },
-	{"L3", GenericInputBinding::L3 },
-	{"R3", GenericInputBinding::R3 },
-	{"Analog", GenericInputBinding::System},
-	{"LUp", GenericInputBinding::LeftStickUp },
-	{"LRight", GenericInputBinding::LeftStickRight },
-	{"LDown", GenericInputBinding::LeftStickDown },
-	{"LLeft", GenericInputBinding::LeftStickLeft },
-	{"RUp", GenericInputBinding::RightStickUp },
-	{"RRight", GenericInputBinding::RightStickRight },
-	{"RDown", GenericInputBinding::RightStickDown },
-	{"RLeft", GenericInputBinding::RightStickLeft },
+static const PAD::ControllerBindingInfo s_dualshock2_binds[] = {
+	{"Up", "D-Pad Up", PAD::ControllerBindingType::Button, GenericInputBinding::DPadUp},
+	{"Right", "D-Pad Right", PAD::ControllerBindingType::Button, GenericInputBinding::DPadRight},
+	{"Down", "D-Pad Down", PAD::ControllerBindingType::Button, GenericInputBinding::DPadDown},
+	{"Left", "D-Pad Left", PAD::ControllerBindingType::Button, GenericInputBinding::DPadLeft},
+	{"Triangle", "Triangle", PAD::ControllerBindingType::Button, GenericInputBinding::Triangle},
+	{"Circle", "Circle", PAD::ControllerBindingType::Button, GenericInputBinding::Circle},
+	{"Cross", "Cross", PAD::ControllerBindingType::Button, GenericInputBinding::Cross},
+	{"Square", "Square", PAD::ControllerBindingType::Button, GenericInputBinding::Square},
+	{"Select", "Select", PAD::ControllerBindingType::Button, GenericInputBinding::Select},
+	{"Start", "Start", PAD::ControllerBindingType::Button, GenericInputBinding::Start},
+	{"L1", "L1 (Left Bumper)", PAD::ControllerBindingType::Button, GenericInputBinding::L1},
+	{"L2", "L2 (Left Trigger)", PAD::ControllerBindingType::HalfAxis, GenericInputBinding::L2},
+	{"R1", "R1 (Right Bumper)", PAD::ControllerBindingType::Button, GenericInputBinding::R1},
+	{"R2", "R2 (Right Trigger)", PAD::ControllerBindingType::HalfAxis, GenericInputBinding::R2},
+	{"L3", "L3 (Left Stick Button)", PAD::ControllerBindingType::Button, GenericInputBinding::L3},
+	{"R3", "R3 (Right Stick Button)", PAD::ControllerBindingType::Button, GenericInputBinding::R3},
+	{"Analog", "Analog Toggle", PAD::ControllerBindingType::Button, GenericInputBinding::System},
+	{"LUp", "Left Stick Up", PAD::ControllerBindingType::HalfAxis, GenericInputBinding::LeftStickUp},
+	{"LRight", "Left Stick Right", PAD::ControllerBindingType::HalfAxis, GenericInputBinding::LeftStickRight},
+	{"LDown", "Left Stick Down", PAD::ControllerBindingType::HalfAxis, GenericInputBinding::LeftStickDown},
+	{"LLeft", "Left Stick Left", PAD::ControllerBindingType::HalfAxis, GenericInputBinding::LeftStickLeft},
+	{"RUp", "Right Stick Up", PAD::ControllerBindingType::HalfAxis, GenericInputBinding::RightStickUp},
+	{"RRight", "Right Stick Right", PAD::ControllerBindingType::HalfAxis, GenericInputBinding::RightStickRight},
+	{"RDown", "Right Stick Down", PAD::ControllerBindingType::HalfAxis, GenericInputBinding::RightStickDown},
+	{"RLeft", "Right Stick Left", PAD::ControllerBindingType::HalfAxis, GenericInputBinding::RightStickLeft},
+	{"LargeMotor", "Large (Low Frequency) Motor", PAD::ControllerBindingType::Motor, GenericInputBinding::LargeMotor},
+	{"SmallMotor", "Small (High Frequency) Motor", PAD::ControllerBindingType::Motor, GenericInputBinding::SmallMotor},
 };
 
-static const ControllerInfo s_controller_info[] = {
-	{ "DualShock2", s_dualshock2_binds, std::size(s_dualshock2_binds), PAD::VibrationCapabilities::LargeSmallMotors },
+static const PAD::ControllerInfo s_controller_info[] = {
+	{"None", "Not Connected", nullptr, 0, PAD::VibrationCapabilities::NoVibration},
+	{"DualShock2", "DuckShock 2", s_dualshock2_binds, std::size(s_dualshock2_binds), PAD::VibrationCapabilities::LargeSmallMotors},
 };
 
-static const ControllerInfo* GetControllerInfo(const std::string_view& name)
+const PAD::ControllerInfo* PAD::GetControllerInfo(const std::string_view& name)
 {
 	for (const ControllerInfo& info : s_controller_info)
 	{
@@ -329,12 +318,11 @@ static const ControllerInfo* GetControllerInfo(const std::string_view& name)
 	return nullptr;
 }
 
-std::vector<std::string> PAD::GetControllerTypeNames()
+std::vector<std::pair<std::string, std::string>> PAD::GetControllerTypeNames()
 {
-	std::vector<std::string> ret;
-
+	std::vector<std::pair<std::string, std::string>> ret;
 	for (const ControllerInfo& info : s_controller_info)
-		ret.emplace_back(info.name);
+		ret.emplace_back(info.name, info.display_name);
 
 	return ret;
 }
@@ -347,7 +335,13 @@ std::vector<std::string> PAD::GetControllerBinds(const std::string_view& type)
 	if (info)
 	{
 		for (u32 i = 0; i < info->num_bindings; i++)
+		{
+			const ControllerBindingInfo& bi = info->bindings[i];
+			if (bi.type == ControllerBindingType::Unknown || bi.type == ControllerBindingType::Motor)
+				continue;
+
 			ret.emplace_back(info->bindings[i].name);
+		}
 	}
 
 	return ret;
