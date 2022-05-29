@@ -445,6 +445,11 @@ std::vector<std::string_view> Path::SplitWindowsPath(const std::string_view& pat
 
 	std::string::size_type start = 0;
 	std::string::size_type pos = 0;
+
+	// preserve unc paths
+	if (path.size() > 2 && path[0] == '\\' && path[1] == '\\')
+		pos = 2;
+
 	while (pos < path.size())
 	{
 		if (path[pos] != '/' && path[pos] != '\\')
