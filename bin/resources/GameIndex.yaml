@@ -17793,8 +17793,6 @@ SLES-54379:
   region: "PAL-E"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
-  gameFixes:
-    - GIFFIFOHack # Fixes corrupt textures.
 SLES-54380:
   name: "Babe"
   region: "PAL-M6"
@@ -43240,8 +43238,6 @@ SLUS-21482:
   compat: 5
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
-  gameFixes:
-    - GIFFIFOHack # Fixes corrupt textures.
 SLUS-21483:
   name: "Tiger Woods PGA Tour 07"
   region: "NTSC-U"
