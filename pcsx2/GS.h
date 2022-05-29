@@ -145,6 +145,11 @@ union tGS_CSR
 		_u32 ^= 0x2000;
 	}
 
+	void SetField()
+	{
+		_u32 |= 0x2000;
+	}
+
     void Reset()
     {
         _u64	= 0;
