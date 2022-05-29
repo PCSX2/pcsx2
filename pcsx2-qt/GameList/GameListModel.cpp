@@ -300,7 +300,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 
 				case Column_Compatibility:
 				{
-					return m_compatibiliy_pixmaps[static_cast<int>(
+					return m_compatibility_pixmaps[static_cast<int>(
 						(static_cast<u32>(ge->compatibility_rating) >= GameList::CompatibilityRatingCount) ?
                             GameList::CompatibilityRating::Unknown :
                             ge->compatibility_rating)];
@@ -473,7 +473,7 @@ void GameListModel::loadCommonImages()
 	m_region_other_pixmap = QIcon(QStringLiteral(":/icons/flag-other.png")).pixmap(QSize(42, 30));
 
 	for (u32 i = 1; i < GameList::CompatibilityRatingCount; i++)
-		m_compatibiliy_pixmaps[i].load(QStringLiteral(":/icons/star-%1.png").arg(i - 1));
+		m_compatibility_pixmaps[i].load(QStringLiteral(":/icons/star-%1.png").arg(i - 1));
 
 	m_placeholder_pixmap.load(QString::fromStdString(Path::Combine(EmuFolders::Resources, "cover-placeholder.png")));
 }
