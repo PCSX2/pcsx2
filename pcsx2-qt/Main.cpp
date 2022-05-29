@@ -54,6 +54,7 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "  -statefile <filename>: Loads state from the specified filename.\n");
 	std::fprintf(stderr, "  -fullscreen: Enters fullscreen mode immediately after starting.\n");
 	std::fprintf(stderr, "  -nofullscreen: Prevents fullscreen mode from triggering if enabled.\n");
+	std::fprintf(stderr, "  -earlyconsolelog: Forces logging of early console messages to console.\n");
 	std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
 						 "    parameters make up the filename. Use when the filename contains\n"
 						 "    spaces or starts with a dash.\n");
@@ -138,6 +139,11 @@ static bool ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMBo
 			else if (CHECK_ARG("-nofullscreen"))
 			{
 				AutoBoot(autoboot)->fullscreen = false;
+				continue;
+			}
+			else if (CHECK_ARG("-earlyconsolelog"))
+			{
+				QtHost::InitializeEarlyConsole();
 				continue;
 			}
 			else if (CHECK_ARG("--"))
