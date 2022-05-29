@@ -14515,8 +14515,6 @@ SLES-52982:
   region: "PAL-E"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
-  gameFixes:
-    - GIFFIFOHack # Fixes garbage graphics.
 SLES-52983:
   name: "Fitness Fun"
   region: "PAL-E"
@@ -41338,8 +41336,6 @@ SLUS-21118:
   compat: 5
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
-  gameFixes:
-    - GIFFIFOHack # Fixes garbage graphics.
 SLUS-21119:
   name: "Kessen III"
   region: "NTSC-U"
