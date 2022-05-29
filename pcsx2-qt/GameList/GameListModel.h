@@ -92,6 +92,6 @@ private:
 
 	QPixmap m_placeholder_pixmap;
 
-	std::array<QPixmap, static_cast<int>(GameList::CompatibilityRatingCount)> m_compatibiliy_pixmaps;
+	std::array<QPixmap, static_cast<int>(GameList::CompatibilityRatingCount)> m_compatibility_pixmaps;
 	mutable std::unordered_map<std::string, QPixmap> m_cover_pixmap_cache;
 };
