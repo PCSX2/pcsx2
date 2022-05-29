@@ -52,9 +52,8 @@ ControllerBindingWidget::~ControllerBindingWidget() = default;
 
 void ControllerBindingWidget::populateControllerTypes()
 {
-	m_ui.controllerType->addItem(tr("None (Not Connected)"), QStringLiteral("None"));
-	for (const std::string& type : PAD::GetControllerTypeNames())
-		m_ui.controllerType->addItem(QString::fromStdString(type), QString::fromStdString(type));
+	for (const auto& [name, display_name] : PAD::GetControllerTypeNames())
+		m_ui.controllerType->addItem(QString::fromStdString(display_name), QString::fromStdString(name));
 }
 
 void ControllerBindingWidget::onTypeChanged()
