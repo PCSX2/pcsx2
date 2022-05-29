@@ -498,7 +498,7 @@ void SysMtgsThread::MainLoop()
 
 						case GS_RINGTYPE_RESET:
 							MTGS_LOG("(MTGS Packet Read) ringtype=Reset");
-							GSreset(tag.data != 0);
+							GSreset(tag.data[0] != 0);
 							break;
 
 						case GS_RINGTYPE_SOFTRESET:
