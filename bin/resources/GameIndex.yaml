@@ -17687,6 +17687,8 @@ SLES-54347:
   name: "Sims 2, The - Pets"
   region: "PAL-M11"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned textures.
 SLES-54348:
   name: "Superman Returns"
   region: "PAL-F"
@@ -43363,6 +43365,8 @@ SLUS-21536:
   name: "Sims 2, The - Pets"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned textures.
 SLUS-21537:
   name: "NeoGeo Fatal Fury Collection"
   region: "NTSC-U"
