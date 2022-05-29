@@ -15847,8 +15847,6 @@ SLES-53541:
   region: "PAL-M4"
   clampModes:
     vuClampMode: 3 # Fix black textures on characters.
-  gameFixes:
-    - SkipMPEGHack # Fixes hang after EA intro (IPU).
 SLES-53542:
   name: "Shadow the Hedgehog"
   region: "PAL-M5"
@@ -18979,8 +18977,6 @@ SLES-54867:
   region: "PAL-E-F"
   clampModes:
     vuClampMode: 2 # Fix black textures on characters.
-  gameFixes:
-    - SkipMPEGHack # Fixes hang after EA intro.
 SLES-54870:
   name: "FIFA '08"
   region: "PAL-E"
@@ -20825,25 +20821,6 @@ SLES-82038:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
-  patches:
-    812C5A96:
-      content: |-
-        comment=patched by Kozarrov and ported by Prafull
-        //Improve menus, and other 2D displays handled on IPU
-        // Set IPU_DATA IVF to Intra
-        patch=1,EE,003c3678,word,3C040020
-        // Set IPU_CMD to IDEC, and set QSC to 2
-        // Why 2? Because it seems to work best.
-        patch=1,EE,003c368c,word,3C021002
-        // Old patch by shadow lady (still needed)
-        patch=1,EE,00104170,word,00000000
-        // Disable print - we need that loop!
-        // Without loop ipu break itself.
-        patch=1,EE,0010FDC8,word,34190180
-        patch=1,EE,0010FDCC,word,1720FFFF
-        patch=1,EE,0010FDD0,word,2739FFFF
-        patch=1,EE,0010FDD4,word,03E00008
-        patch=1,EE,0010FDD8,word,00000000
 SLES-82039:
   name: "Onimusha - Dawn of Dreams [Disc2of2]"
   region: "PAL-M5"
@@ -20852,25 +20829,6 @@ SLES-82039:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
   memcardFilters:
     - "SLES-82038"
-  patches:
-    812C5A96:
-      content: |-
-        comment=patched by Kozarrov and ported by Prafull
-        //Improve menus, and other 2D displays handled on IPU
-        // Set IPU_DATA IVF to Intra
-        patch=1,EE,003c3678,word,3C040020
-        // Set IPU_CMD to IDEC, and set QSC to 2
-        // Why 2? Because it seems to work best.
-        patch=1,EE,003c368c,word,3C021002
-        // Old patch by shadow lady (still needed)
-        patch=1,EE,00104170,word,00000000
-        // Disable print - we need that loop!
-        // Without loop ipu break itself.
-        patch=1,EE,0010FDC8,word,34190180
-        patch=1,EE,0010FDCC,word,1720FFFF
-        patch=1,EE,0010FDD0,word,2739FFFF
-        patch=1,EE,0010FDD4,word,03E00008
-        patch=1,EE,0010FDD8,word,00000000
 SLES-82042:
   name: "Metal Gear Solid 3 - Subsistence [Disc1of3]"
   region: "PAL-E-F"
@@ -26252,12 +26210,6 @@ SLPM-65583:
   compat: 4
   gameFixes:
     - XGKickHack
-  patches:
-    C4467D30:
-      content: |-
-        comment=Patch by Nachbrenner
-        // Skip sceIpuSync.
-        patch=1,EE,0027c808,word,03e00008
 SLPM-65585:
   name: "Princess Holiday"
   region: "NTSC-J"
@@ -28269,8 +28221,6 @@ SLPM-66191:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Fixes black textures on characters.
-  gameFixes:
-    - SkipMPEGHack # Fixes hang after EA intro (IPU).
 SLPM-66192:
   name: "Izumo 2"
   region: "NTSC-J"
@@ -41624,24 +41574,6 @@ SLUS-21180:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
-  patches:
-    FE44479E:
-      content: |-
-        author=kozarovv
-        // Set IPU_DATA IVF to Intra
-        patch=1,EE,003BFDD8,word,3C040020
-        // Set IPU_CMD to IDEC, and set QSC to 2
-        // Why 2? Because it seems to work best.
-        patch=1,EE,003BFDEC,word,3C021002
-        // Old patch by shadow lady (still needed)
-        patch=1,EE,00104170,word,00000000
-        // Disable print - we need that loop!
-        // Without loop ipu break itself.
-        patch=1,EE,0010FDC8,word,34190180
-        patch=1,EE,0010FDCC,word,1720FFFF
-        patch=1,EE,0010FDD0,word,2739FFFF
-        patch=1,EE,0010FDD4,word,03E00008
-        patch=1,EE,0010FDD8,word,00000000
 SLUS-21181:
   name: "D.I.C.E. - DNA Integrated Cybernetic Enterprises"
   region: "NTSC-U"
@@ -42088,8 +42020,6 @@ SLUS-21264:
   compat: 5
   clampModes:
     vuClampMode: 3 # Fix black textures on characters.
-  gameFixes:
-    - SkipMPEGHack # Fixes hang after EA intro (IPU).
 SLUS-21265:
   name: "Sims 2, The"
   region: "NTSC-U"
@@ -43888,8 +43818,6 @@ SLUS-21646:
   compat: 5
   clampModes:
     vuClampMode: 2 # Fix black textures on characters.
-  gameFixes:
-    - SkipMPEGHack # Fixes hang after EA intro.
 SLUS-21647:
   name: "NHL '08"
   region: "NTSC-U"
