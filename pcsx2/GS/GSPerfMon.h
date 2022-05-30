@@ -52,7 +52,7 @@ public:
 	u64 GetFrame() { return m_frame; }
 	void EndFrame();
 
-	void Put(counter_t c, double val = 0) { m_counters[c] += val; }
+	void Put(counter_t c, double val) { m_counters[c] += val; }
 	double Get(counter_t c) { return m_stats[c]; }
 	void Update();
 

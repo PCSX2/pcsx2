@@ -2555,7 +2555,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 
 		const GSVector4 sRect(GSVector4(render_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
 		DrawStretchRect(sRect, GSVector4(render_area), rtsize);
-		g_perfmon.Put(GSPerfMon::TextureCopies);
+		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 		GL_POP();
 	}
@@ -2640,7 +2640,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		SetPipeline(m_hdr_finish_pipelines[pipe.ds].get());
 		SetUtilityTexture(hdr_rt, m_point_sampler_cpu);
 		DrawStretchRect(sRect, GSVector4(render_area), rtsize);
-		g_perfmon.Put(GSPerfMon::TextureCopies);
+		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 		Recycle(hdr_rt);
 	}
