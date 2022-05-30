@@ -30,6 +30,7 @@ TEST(FileSystem, ToNativePath)
 	ASSERT_EQ(Path::ToNativePath("foo\\bar/baz"), "foo\\bar\\baz");
 	ASSERT_EQ(Path::ToNativePath("foo/bar/baz"), "foo\\bar\\baz");
 	ASSERT_EQ(Path::ToNativePath("foo/🙃bar/b🙃az"), "foo\\🙃bar\\b🙃az");
+	ASSERT_EQ(Path::ToNativePath("\\\\foo\\bar\\baz"), "\\\\foo\\bar\\baz");
 #else
 	ASSERT_EQ(Path::ToNativePath("foo"), "foo");
 	ASSERT_EQ(Path::ToNativePath("foo/"), "foo");
@@ -50,6 +51,7 @@ TEST(FileSystem, IsAbsolute)
 	ASSERT_TRUE(Path::IsAbsolute("C:\\foo/bar"));
 	ASSERT_TRUE(Path::IsAbsolute("C://foo\\bar"));
 	ASSERT_FALSE(Path::IsAbsolute("\\foo/bar"));
+	ASSERT_TRUE(Path::IsAbsolute("\\\\foo\\bar\\baz"));
 #else
 	ASSERT_TRUE(Path::IsAbsolute("/foo/bar"));
 #endif
@@ -72,6 +74,7 @@ TEST(FileSystem, Canonicalize)
 	ASSERT_EQ(Path::Canonicalize("C:/foo\\bar\\..\\baz\\.\\foo"), "C:\\foo\\baz\\foo");
 	ASSERT_EQ(Path::Canonicalize("foo\\bar\\..\\baz\\.\\foo"), "foo\\baz\\foo");
 	ASSERT_EQ(Path::Canonicalize("foo\\bar/..\\baz/.\\foo"), "foo\\baz\\foo");
+	ASSERT_EQ(Path::Canonicalize("\\\\foo\\bar\\baz/..\\foo"), "\\\\foo\\bar\\foo");
 #else
 	ASSERT_EQ(Path::Canonicalize("/foo/bar/../baz/./foo"), "/foo/baz/foo");
 #endif
@@ -92,6 +95,7 @@ TEST(FileSystem, Combine)
 	ASSERT_EQ(Path::Combine("foo\\bar", "baz"), "foo\\bar\\baz");
 	ASSERT_EQ(Path::Combine("foo\\bar\\", "baz"), "foo\\bar\\baz");
 	ASSERT_EQ(Path::Combine("foo/bar\\", "\\baz"), "foo\\bar\\baz");
+	ASSERT_EQ(Path::Combine("\\\\foo\\bar", "baz"), "\\\\foo\\bar\\baz");
 #else
 	ASSERT_EQ(Path::Combine("/foo/bar", "baz"), "/foo/bar/baz");
 #endif
@@ -132,6 +136,12 @@ TEST(FileSystem, MakeRelative)
 	ASSERT_EQ(Path::MakeRelative(A "ŻąłóРстуぬねのはen🍪⟑η∏☉ⴤℹ︎∩₲ ₱⟑♰⫳🐱/b🙃ar", A "ŻąłóРстуぬねのはen🍪⟑η∏☉ⴤℹ︎∩₲ ₱⟑♰⫳🐱/b🙃az"), Path::ToNativePath("../b🙃ar"));
 
 #undef A
+
+#ifdef _WIN32
+	ASSERT_EQ(Path::MakeRelative("\\\\foo\\bar\\baz\\foo", "\\\\foo\\bar\\baz"), "foo");
+	ASSERT_EQ(Path::MakeRelative("\\\\foo\\bar\\foo", "\\\\foo\\bar\\baz"), "..\\foo");
+	ASSERT_EQ(Path::MakeRelative("\\\\foo\\bar\\foo", "\\\\other\\bar\\foo"), "\\\\foo\\bar\\foo");
+#endif
 }
 
 TEST(FileSystem, GetExtension)
@@ -201,6 +211,7 @@ TEST(FileSystem, ChangeFileName)
 #ifdef _WIN32
 	ASSERT_EQ(Path::ChangeFileName("foo/bar", "baz"), "foo\\baz");
 	ASSERT_EQ(Path::ChangeFileName("foo//bar\\foo", "baz"), "foo\\bar\\baz");
+	ASSERT_EQ(Path::ChangeFileName("\\\\foo\\bar\\foo", "baz"), "\\\\foo\\bar\\baz");
 #else
 	ASSERT_EQ(Path::ChangeFileName("/foo/bar", "baz"), "/foo/baz");
 #endif
