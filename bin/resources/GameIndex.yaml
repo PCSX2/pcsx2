@@ -2407,7 +2407,7 @@ SCED-55119:
   region: "PAL-M5"
 SCED-55120:
   name: "Official PlayStation 2 Magazine Demo 101"
-  region: "PAL-DU"
+  region: "PAL-NL"
 SCES-50000:
   name: "Ridge Racer V"
   region: "PAL-M5"
@@ -2628,7 +2628,7 @@ SCES-50596:
   region: "PAL-D"
 SCES-50597:
   name: "Monsters en Co - Schrik Eiland"
-  region: "PAL-DU"
+  region: "PAL-NL"
 SCES-50598:
   name: "Monsterit Oy"
   region: "PAL-FI"
@@ -2819,7 +2819,7 @@ SCES-51040:
   region: "PAL-F"
 SCES-51041:
   name: "This is Football 2003"
-  region: "PAL-F-DU"
+  region: "PAL-BE"
 SCES-51102:
   name: "Ape Escape 2"
   region: "PAL-F"
@@ -2968,7 +2968,7 @@ SCES-51608:
     preloadFrameData: 1 # Fixes Sony splash at boot.
 SCES-51610:
   name: "This is Football 2004 (Red Devils 2004)"
-  region: "PAL-F-DU"
+  region: "PAL-BE"
 SCES-51611:
   name: "This is Football 2004"
   region: "PAL-M4"
@@ -3207,7 +3207,7 @@ SCES-52431:
   region: "PAL-A-E"
 SCES-52432:
   name: "This is Football 2005"
-  region: "PAL-F-DU"
+  region: "PAL-BE"
 SCES-52438:
   name: "Gran Turismo 4 - Prologue"
   region: "PAL-M5"
@@ -3519,7 +3519,7 @@ SCES-53606:
   region: "PAL-S"
 SCES-53607:
   name: "SingStar '80s"
-  region: "PAL-DU"
+  region: "PAL-NL"
 SCES-53609:
   name: "SingStar '80s"
   region: "PAL-SW"
@@ -3608,7 +3608,7 @@ SCES-53891:
   region: "PAL-G"
 SCES-53893:
   name: "SingStar Rocks! [Promo]"
-  region: "PAL-DU"
+  region: "PAL-NL"
 SCES-53894:
   name: "SingStar Rocks!"
   region: "PAL-HR"
@@ -3757,7 +3757,7 @@ SCES-54266:
   region: "PAL-M3"
 SCES-54267:
   name: "Buzz! The Sports Quiz"
-  region: "PAL-PL"
+  region: "PAL-FI"
 SCES-54268:
   name: "Buzz! The Sports Quiz"
   region: "PAL-M3"
@@ -4011,9 +4011,12 @@ SCES-55093:
 SCES-55094:
   name: "Buzz! The Pop Quiz"
   region: "PAL-M3"
+SCES-55097:
+  name: "Buzz! The Pop Quiz"
+  region: "PAL-FI"
 SCES-55127:
   name: "SingStar Summer Party"
-  region: "PAL-DU"
+  region: "PAL-NL"
 SCES-55128:
   name: "SingStar Summer Party"
   region: "PAL-P"
@@ -4100,7 +4103,7 @@ SCES-55387:
   region: "PAL-G"
 SCES-55401:
   name: "SingStar Zingt met Disney"
-  region: "PAL-DU"
+  region: "PAL-NL"
 SCES-55435:
   name: "SingStar ABBA"
   region: "PAL-E"
@@ -4146,7 +4149,7 @@ SCES-55513:
   region: "PAL-PL"
 SCES-55514:
   name: "SingStar Studio 100"
-  region: "PAL-DU"
+  region: "PAL-NL"
 SCES-55515:
   name: "SingStar Morangos com Açúcar"
   region: "PAL-P"
@@ -4177,7 +4180,7 @@ SCES-55552:
   region: "PAL-G"
 SCES-55553:
   name: "SingStar MoTown"
-  region: "PAL-DU"
+  region: "PAL-NL"
 SCES-55554:
   name: "SingStar Take That"
   region: "PAL-M5"
@@ -10929,7 +10932,7 @@ SLES-51217:
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51218:
   name: "Harry Potter en de Geheime Kamer"
-  region: "PAL-DU"
+  region: "PAL-NL"
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
@@ -11755,7 +11758,7 @@ SLES-51667:
   region: "PAL-I"
 SLES-51668:
   name: "Piglet's Big Game"
-  region: "PAL-DU"
+  region: "PAL-NL"
 SLES-51670:
   name: "Alter Echo"
   region: "PAL-E"
@@ -14142,7 +14145,7 @@ SLES-52812:
   compat: 5
 SLES-52813:
   name: "Incredibles, The"
-  region: "PAL-DU-F"
+  region: "PAL-NL-F"
   compat: 5
 SLES-52814:
   name: "Incredibles, The"
@@ -15128,7 +15131,7 @@ SLES-53280:
   compat: 5
 SLES-53281:
   name: "Fantastic Four"
-  region: "PAL-DU"
+  region: "PAL-NL"
 SLES-53282:
   name: "Harvest Fishing"
   region: "PAL-E"
@@ -15320,7 +15323,7 @@ SLES-53371:
   region: "PAL-E"
 SLES-53373:
   name: "Madagascar"
-  region: "PAL-DU"
+  region: "PAL-NL"
 SLES-53374:
   name: "X-Men Legends II - Rise of Apocalypse"
   region: "PAL-M3"
@@ -15578,7 +15581,7 @@ SLES-53468:
   region: "PAL-M6"
 SLES-53470:
   name: "De Grote Nederlandse Voetbalquiz"
-  region: "PAL-DU"
+  region: "PAL-NL"
 SLES-53471:
   name: "LMA Manager 2006"
   region: "PAL-M5"
@@ -15642,7 +15645,7 @@ SLES-53498:
   region: "PAL-S"
 SLES-53499:
   name: "Nickelodeon SpongeBob SquarePants - Licht uit, Camera aan!"
-  region: "PAL-DU"
+  region: "PAL-NL"
 SLES-53501:
   name: "Star Wars - Battlefront II"
   region: "PAL-M3"
@@ -16255,7 +16258,7 @@ SLES-53708:
     halfPixelOffset: 2 # Fixes lighting misalignment.
 SLES-53709:
   name: "Chronicles of Narnia, The - The Lion, The Witch and The Wardrobe"
-  region: "PAL-DU-F"
+  region: "PAL-NL-F"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes lighting misalignment.
 SLES-53710:
@@ -16348,7 +16351,7 @@ SLES-53736:
   region: "PAL-E"
 SLES-53738:
   name: "Disney's Chicken Little"
-  region: "PAL-DU-F"
+  region: "PAL-NL-F"
 SLES-53739:
   name: "Disney's Chicken Little"
   region: "PAL-F-S"
@@ -16815,7 +16818,7 @@ SLES-53952:
   region: "PAL-M5"
 SLES-53955:
   name: "Friends - The One with All the Trivia"
-  region: "PAL-DU"
+  region: "PAL-NL"
 SLES-53956:
   name: "Aeon Flux"
   region: "PAL-E"
@@ -16920,7 +16923,7 @@ SLES-53988:
     MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-53989:
   name: "Over the Hedge"
-  region: "PAL-DU"
+  region: "PAL-NL"
   speedHacks:
     MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-53991:
@@ -16971,7 +16974,7 @@ SLES-54003:
   region: "PAL-G"
 SLES-54004:
   name: "Disney-Pixar's Cars"
-  region: "PAL-DU-P"
+  region: "PAL-NL-P"
 SLES-54006:
   name: "Disney-Pixar's Cars"
   region: "PAL-F"
@@ -17752,7 +17755,7 @@ SLES-54365:
   region: "PAL-M6"
 SLES-54366:
   name: "David Douillet Judo"
-  region: "PAL-DU-F"
+  region: "PAL-NL-F"
 SLES-54368:
   name: "RTL Ski Jumping 2007"
   region: "PAL-E-G"
@@ -19691,7 +19694,7 @@ SLES-55167:
   region: "PAL-E-J"
 SLES-55168:
   name: "Paard & Pony - Topruiter"
-  region: "PAL-DU"
+  region: "PAL-NL"
 SLES-55169:
   name: "Monster Lab"
   region: "PAL-M5"
@@ -20250,6 +20253,9 @@ SLES-55415:
 SLES-55418:
   name: "Tube Mania"
   region: "PAL-F-DU"
+SLES-55421:
+  name: "Buzz! Brain of Switzerland"
+  region: "PAL-SWI"
 SLES-55428:
   name: "Disney Bolt"
   region: "PAL-M4"
@@ -45163,7 +45169,7 @@ SLUS-21948:
   compat: 5
 SLUS-21949:
   name: "Netflix Streaming Disc"
-  region: "NTSC-U" # Brazil / Portuguese
+  region: "NTSC-B" # Brazil / Portuguese
 SLUS-21950:
   name: "NBA 2K12"
   region: "NTSC-U"
@@ -45193,7 +45199,7 @@ SLUS-27034:
   region: "NTSC-U"
 SLUS-27093:
   name: "FIFA 14"
-  region: "NTSC-U" # Brazil with En,Fr,Es
+  region: "NTSC-B" # Brazil with En,Fr,Es
 SLUS-28002:
   name: "Red Faction [Trade Demo]"
   region: "NTSC-U"
