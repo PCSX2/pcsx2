@@ -241,7 +241,21 @@ u8 pad_poll(u8 value)
 					b1=b1 & 0x1f;
 #endif
 
-				uint16_t buttons = g_key_status.GetButtons(query.port);
+				uint32_t buttons = g_key_status.GetButtons(query.port);
+				if (!test_bit(buttons, PAD_ANALOG) && !pad->modeLock)
+				{
+					switch (pad->mode)
+					{
+						case MODE_ANALOG:
+						case MODE_DS2_NATIVE:
+							pad->set_mode(MODE_DIGITAL);
+							break;
+						case MODE_DIGITAL:
+						default:
+							pad->set_mode(MODE_ANALOG);
+							break;
+					}
+				}
 
 				query.numBytes = 5;
 

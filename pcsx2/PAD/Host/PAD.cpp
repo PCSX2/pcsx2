@@ -303,6 +303,7 @@ static const ControllerBindingInfo s_dualshock2_binds[] = {
 	{"R2", GenericInputBinding::R2 },
 	{"L3", GenericInputBinding::L3 },
 	{"R3", GenericInputBinding::R3 },
+	{"Analog", GenericInputBinding::System},
 	{"LUp", GenericInputBinding::LeftStickUp },
 	{"LRight", GenericInputBinding::LeftStickRight },
 	{"LDown", GenericInputBinding::LeftStickDown },

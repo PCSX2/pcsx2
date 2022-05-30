@@ -397,86 +397,6 @@
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
       <layout class="QGridLayout" name="gridLayout_27">
-       <item row="0" column="0" rowspan="2">
-        <widget class="QGroupBox" name="groupBox_21">
-         <property name="title">
-          <string>L2</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_21">
-          <property name="leftMargin">
-           <number>6</number>
-          </property>
-          <property name="topMargin">
-           <number>6</number>
-          </property>
-          <property name="rightMargin">
-           <number>6</number>
-          </property>
-          <property name="bottomMargin">
-           <number>6</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="InputBindingWidget" name="L2">
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="3" rowspan="2">
-        <widget class="QGroupBox" name="groupBox_24">
-         <property name="title">
-          <string>R1</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_24">
-          <property name="leftMargin">
-           <number>6</number>
-          </property>
-          <property name="topMargin">
-           <number>6</number>
-          </property>
-          <property name="rightMargin">
-           <number>6</number>
-          </property>
-          <property name="bottomMargin">
-           <number>6</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="InputBindingWidget" name="R1">
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
        <item row="2" column="0" rowspan="2">
         <widget class="QGroupBox" name="groupBox_22">
          <property name="title">
@@ -497,12 +417,142 @@
           </property>
           <item row="0" column="0">
            <widget class="InputBindingWidget" name="L1">
-            <property name="minimumSize">
+            <property name="maximumSize">
              <size>
               <width>100</width>
-              <height>0</height>
+              <height>16777215</height>
              </size>
             </property>
+            <property name="text">
+             <string>PushButton</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="0" rowspan="2">
+        <widget class="QGroupBox" name="groupBox_21">
+         <property name="title">
+          <string>L2</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_21">
+          <property name="leftMargin">
+           <number>6</number>
+          </property>
+          <property name="topMargin">
+           <number>6</number>
+          </property>
+          <property name="rightMargin">
+           <number>6</number>
+          </property>
+          <property name="bottomMargin">
+           <number>6</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="InputBindingWidget" name="L2">
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>PushButton</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="5" rowspan="2">
+        <widget class="QGroupBox" name="groupBox_24">
+         <property name="title">
+          <string>R1</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_24">
+          <property name="leftMargin">
+           <number>6</number>
+          </property>
+          <property name="topMargin">
+           <number>6</number>
+          </property>
+          <property name="rightMargin">
+           <number>6</number>
+          </property>
+          <property name="bottomMargin">
+           <number>6</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="InputBindingWidget" name="R1">
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>PushButton</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="5" rowspan="2">
+        <widget class="QGroupBox" name="groupBox_23">
+         <property name="title">
+          <string>R2</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_23">
+          <property name="leftMargin">
+           <number>6</number>
+          </property>
+          <property name="topMargin">
+           <number>6</number>
+          </property>
+          <property name="rightMargin">
+           <number>6</number>
+          </property>
+          <property name="bottomMargin">
+           <number>6</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="InputBindingWidget" name="R2">
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>PushButton</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="4">
+        <widget class="QGroupBox" name="groupBox_26">
+         <property name="title">
+          <string>Start</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_26">
+          <property name="leftMargin">
+           <number>6</number>
+          </property>
+          <property name="topMargin">
+           <number>6</number>
+          </property>
+          <property name="rightMargin">
+           <number>6</number>
+          </property>
+          <property name="bottomMargin">
+           <number>6</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="InputBindingWidget" name="Start">
             <property name="maximumSize">
              <size>
               <width>100</width>
@@ -537,12 +587,6 @@
           </property>
           <item row="0" column="0">
            <widget class="InputBindingWidget" name="Select">
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>0</height>
-             </size>
-            </property>
             <property name="maximumSize">
              <size>
               <width>100</width>
@@ -557,32 +601,14 @@
          </layout>
         </widget>
        </item>
-       <item row="0" column="3" rowspan="2">
-        <widget class="QGroupBox" name="groupBox_23">
+       <item row="0" column="2" colspan="2">
+        <widget class="QGroupBox" name="groupBox_31">
          <property name="title">
-          <string>R2</string>
+          <string>Analog</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_23">
-          <property name="leftMargin">
-           <number>6</number>
-          </property>
-          <property name="topMargin">
-           <number>6</number>
-          </property>
-          <property name="rightMargin">
-           <number>6</number>
-          </property>
-          <property name="bottomMargin">
-           <number>6</number>
-          </property>
+         <layout class="QGridLayout" name="gridLayout_33">
           <item row="0" column="0">
-           <widget class="InputBindingWidget" name="R2">
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>0</height>
-             </size>
-            </property>
+           <widget class="InputBindingWidget" name="Analog">
             <property name="maximumSize">
              <size>
               <width>100</width>
@@ -597,47 +623,7 @@
          </layout>
         </widget>
        </item>
-       <item row="0" column="2">
-        <widget class="QGroupBox" name="groupBox_26">
-         <property name="title">
-          <string>Start</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_26">
-          <property name="leftMargin">
-           <number>6</number>
-          </property>
-          <property name="topMargin">
-           <number>6</number>
-          </property>
-          <property name="rightMargin">
-           <number>6</number>
-          </property>
-          <property name="bottomMargin">
-           <number>6</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="InputBindingWidget" name="Start">
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="1" rowspan="2" colspan="2">
+       <item row="2" column="1" rowspan="2" colspan="4">
         <widget class="QGroupBox" name="groupBox_30">
          <property name="title">
           <string>Axis Scale</string>
