@@ -138,7 +138,7 @@ void pxOnAssertFail(const char* file, int line, const char* func, const char* ms
 	fputs(full_msg, stderr);
 	fputs("\nAborting application.\n", stderr);
 	fflush(stderr);
-	abort();
+	AbortWithMessage(full_msg);
 #endif
 
 	ResumeThreads(handle);
