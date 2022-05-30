@@ -322,7 +322,7 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 	*left		+= m_fpan		| pxExpand;
 	*left		+= 5;
 	
-	*s_vsyncs	+= Label(_("Vsyncs in MTGS Queue:")) | StdExpand();
+	*s_vsyncs	+= left->Label(_("Vsyncs in MTGS Queue:")) | StdExpand();
 	*s_vsyncs	+= m_spinner_VsyncQueue | pxBorder(wxTOP, -2).Right();
 	*left		+= s_vsyncs | StdExpand();
 #ifdef  PCSX2_DEVBUILD 
