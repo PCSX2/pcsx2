@@ -28,7 +28,7 @@
 #include "common/Pcsx2Defs.h"
 
 static const u32 GAMEPAD_NUMBER = 2;
-static const u32 MAX_KEYS = 24;
+static const u32 MAX_KEYS = 25;
 
 enum gamePadValues
 {
@@ -48,6 +48,7 @@ enum gamePadValues
 	PAD_R2,       // R2 button
 	PAD_L3,       // Left joystick button (L3)
 	PAD_R3,       // Right joystick button (R3)
+	PAD_ANALOG,   // Analog mode toggle
 	PAD_L_UP,     // Left joystick (Up) ↑
 	PAD_L_RIGHT,  // Left joystick (Right) →
 	PAD_L_DOWN,   // Left joystick (Down) ↓

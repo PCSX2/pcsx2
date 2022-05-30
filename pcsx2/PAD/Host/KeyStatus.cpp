@@ -31,7 +31,7 @@ void KeyStatus::Init()
 {
 	for (u32 pad = 0; pad < GAMEPAD_NUMBER; pad++)
 	{
-		m_button[pad] = 0xFFFF;
+		m_button[pad] = 0xFFFFFFFF;
 
 		for (u32 index = 0; index < MAX_KEYS; index++)
 			m_button_pressure[pad][index] = 0;
@@ -107,6 +107,7 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 			1, // PAD_R2
 			9, // PAD_L3
 			10, // PAD_R3
+			16, // Analog
 			// remainder are analogs and not used here
 		} };
 
@@ -118,7 +119,7 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 	}
 }
 
-u16 KeyStatus::GetButtons(u32 pad)
+u32 KeyStatus::GetButtons(u32 pad)
 {
 	return m_button[pad];
 }
