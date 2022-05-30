@@ -187,13 +187,26 @@ void PAD::LoadConfig(const SettingsInterface& si)
 	{
 		const std::string section(StringUtil::StdStringFromFormat("Pad%u", i + 1u));
 		const std::string type(si.GetStringValue(section.c_str(), "Type", GetDefaultPadType(i)));
-		const float axis_scale = si.GetFloatValue(section.c_str(), "AxisScale", 1.0f);
-		const float large_motor_scale = si.GetFloatValue(section.c_str(), "LargeMotorScale", 1.0f);
-		const float small_motor_scale = si.GetFloatValue(section.c_str(), "SmallMotorScale", 1.0f);
 
+		const ControllerInfo* ci = GetControllerInfo(type);
+		if (!ci)
+		{
+			g_key_status.SetType(i, ControllerType::NotConnected);
+			continue;
+		}
+
+		g_key_status.SetType(i, ci->type);
+
+		const float axis_scale = si.GetFloatValue(section.c_str(), "AxisScale", 1.0f);
 		g_key_status.SetAxisScale(i, axis_scale);
-		g_key_status.SetVibrationScale(i, 0, large_motor_scale);
-		g_key_status.SetVibrationScale(i, 1, small_motor_scale);
+
+		if (ci->vibration_caps != VibrationCapabilities::NoVibration)
+		{
+			const float large_motor_scale = si.GetFloatValue(section.c_str(), "LargeMotorScale", 1.0f);
+			const float small_motor_scale = si.GetFloatValue(section.c_str(), "SmallMotorScale", 1.0f);
+			g_key_status.SetVibrationScale(i, 0, large_motor_scale);
+			g_key_status.SetVibrationScale(i, 1, small_motor_scale);
+		}
 
 		LoadMacroButtonConfig(si, i, type, section);
 	}
@@ -303,9 +316,20 @@ static const PAD::ControllerBindingInfo s_dualshock2_binds[] = {
 };
 
 static const PAD::ControllerInfo s_controller_info[] = {
-	{"None", "Not Connected", nullptr, 0, PAD::VibrationCapabilities::NoVibration},
-	{"DualShock2", "DuckShock 2", s_dualshock2_binds, std::size(s_dualshock2_binds), PAD::VibrationCapabilities::LargeSmallMotors},
+	{"None", "Not Connected", nullptr, 0, PAD::ControllerType::NotConnected, PAD::VibrationCapabilities::NoVibration},
+	{"DualShock2", "DuckShock 2", s_dualshock2_binds, std::size(s_dualshock2_binds), PAD::ControllerType::DualShock2, PAD::VibrationCapabilities::LargeSmallMotors},
 };
+
+const PAD::ControllerInfo* PAD::GetControllerInfo(ControllerType type)
+{
+	for (const ControllerInfo& info : s_controller_info)
+	{
+		if (type == info.type)
+			return &info;
+	}
+
+	return nullptr;
+}
 
 const PAD::ControllerInfo* PAD::GetControllerInfo(const std::string_view& name)
 {

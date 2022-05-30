@@ -37,6 +37,13 @@ u8 PADpoll(u8 value);
 
 namespace PAD
 {
+	enum class ControllerType: u8
+	{
+		NotConnected,
+		DualShock2,
+		Count
+	};
+
 	enum class ControllerBindingType : u8
 	{
 		Unknown,
@@ -69,6 +76,7 @@ namespace PAD
 		const char* display_name;
 		const ControllerBindingInfo* bindings;
 		u32 num_bindings;
+		ControllerType type;
 		PAD::VibrationCapabilities vibration_caps;
 	};
 
@@ -100,6 +108,7 @@ namespace PAD
 	VibrationCapabilities GetControllerVibrationCapabilities(const std::string_view& type);
 
 	/// Returns general information for the specified controller type.
+	const ControllerInfo* GetControllerInfo(ControllerType type);
 	const ControllerInfo* GetControllerInfo(const std::string_view& name);
 
 	/// Performs automatic controller mapping with the provided list of generic mappings.
