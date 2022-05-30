@@ -71,3 +71,31 @@ static u32 GetSpinTime()
 }
 
 const u32 SPIN_TIME_NS = GetSpinTime();
+
+#ifdef __APPLE__
+// https://alastairs-place.net/blog/2013/01/10/interesting-os-x-crash-report-tidbits/
+// https://opensource.apple.com/source/WebKit2/WebKit2-7608.3.10.0.3/Platform/spi/Cocoa/CrashReporterClientSPI.h.auto.html
+struct crash_info_t
+{
+	u64 version;
+	u64 message;
+	u64 signature;
+	u64 backtrace;
+	u64 message2;
+	u64 reserved;
+	u64 reserved2;
+};
+#define CRASH_ANNOTATION __attribute__((section("__DATA,__crash_info")))
+#define CRASH_VERSION 4
+extern "C" crash_info_t gCRAnnotations CRASH_ANNOTATION = { CRASH_VERSION };
+#endif
+
+void AbortWithMessage(const char* msg)
+{
+#ifdef __APPLE__
+	gCRAnnotations.message = reinterpret_cast<size_t>(msg);
+	// Some macOS's seem to have issues displaying non-static `message`s, so throw it in here too
+	gCRAnnotations.backtrace = gCRAnnotations.message;
+#endif
+	abort();
+}
