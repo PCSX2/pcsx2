@@ -56,7 +56,7 @@ int GSinit();
 void GSinitConfig();
 void GSshutdown();
 bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* basemem);
-bool GSreopen(bool recreate_display);
+bool GSreopen(bool recreate_display, const Pcsx2Config::GSOptions& old_config);
 void GSreset(bool hardware_reset);
 void GSclose();
 void GSgifSoftReset(u32 mask);
