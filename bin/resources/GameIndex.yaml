@@ -6,7 +6,12 @@
 # Credits
 # ---------------------------------------------
 # Game Data (serials, titles, and region info) is
-# based on the information found at http://sonyindex.com
+# based on the information found at:
+# https://web.archive.org/web/20141105075540/http://sonyindex.com/,
+# https://serialstation.com,
+# https://psxdatacenter.com,
+# http://redump.org/
+#
 # Additional Games and Data by PCSX2 team
 
 # ---------------------------------------------
@@ -343,7 +348,7 @@ SCAJ-10013:
   name: "Taiko no Tatsujin - Tobikkiri! Anime Special"
   region: "NTSC-Unk"
 SCAJ-10014:
-  name: "Taiko no Tatsujin Wai Wai Happy Muyome"
+  name: "Taiko no Tatsujin Wai Wai Happy Rokudaime"
   region: "NTSC-Unk"
 SCAJ-10015:
   name: "Taiko No Tatsujin Doka! To Omori 7Daime"
@@ -1283,7 +1288,7 @@ SCAJ-25047:
   name: "Dororo"
   region: "NTSC-Unk"
 SCAJ-30001:
-  name: "Xenosaga Episode I [PlayStation 2 The Best]"
+  name: "Xenosaga - Episode I - Der Wille zur Macht [PlayStation 2 The Best]"
   region: "NTSC-Unk"
   compat: 5
   gsHWFixes:
@@ -25128,7 +25133,7 @@ SLPM-65233:
   memcardFilters:
     - "SLPM-65232"
 SLPM-65234:
-  name: "Gregory Horror Show - Soul Collector"
+  name: "Bakusou Dekotora Densetsu - Otoko Hanamichi Yume Roman"
   region: "NTSC-J"
 SLPM-65235:
   name: "New Roommania - Porori Seishun"
@@ -32407,10 +32412,10 @@ SLPS-20448:
   name: "Kamen Rider Hibiki - Taiko no Tatsujin Special Version [Trial]"
   region: "NTSC-J"
 SLPS-20450:
-  name: "Taiko no Tatsujin - Wai Wai Happy Muyome [with Tatacon]"
+  name: "Taiko no Tatsujin - Wai Wai Happy Rokudaime [with Tatacon]"
   region: "NTSC-J"
 SLPS-20451:
-  name: "Taiko no Tatsujin - Wai Wai Happy Muyome"
+  name: "Taiko no Tatsujin - Wai Wai Happy Rokudaime"
   region: "NTSC-J"
 SLPS-20452:
   name: "Simple 2000 Series Ultimate Vol. 30 - Kourin! Zokusha Goddo!"
@@ -35890,7 +35895,9 @@ SLPS-29001:
   name: "Xenosaga Episode 1 - Der Wille zur Macht [Premium Box]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fixes shadows in cutscenes.
+    halfPixelOffset: 2 # Removes puppet lines shadows.
+    roundSprite: 2 # Fixes font artifacts.
   patches:
     A3D63039:
       content: |-
@@ -35913,7 +35920,9 @@ SLPS-29002:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fixes shadows in cutscenes.
+    halfPixelOffset: 2 # Removes puppet lines shadows.
+    roundSprite: 2 # Fixes font artifacts.
   patches:
     A3D63039:
       content: |-
@@ -35946,7 +35955,9 @@ SLPS-29005:
   name: "Xenosaga Episode 1 - Der Wille zur Macht [Reloaded]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fixes shadows in cutscenes.
+    halfPixelOffset: 2 # Removes puppet lines shadows.
+    roundSprite: 2 # Fixes font artifacts.
 SLPS-72501:
   name: "Final Fantasy X [Mega Hits]"
   region: "NTSC-J"
@@ -36463,7 +36474,9 @@ SLPS-73901:
   name: "Xenosaga Episode 1 - Der Wille zur Macht [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fixes shadows in cutscenes.
+    halfPixelOffset: 2 # Removes puppet lines shadows.
+    roundSprite: 2 # Fixes font artifacts.
   patches:
     A3D63039:
       content: |-
@@ -38337,7 +38350,9 @@ SLUS-20469:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fixes shadows in cutscenes.
+    halfPixelOffset: 2 # Removes puppet lines shadows.
+    roundSprite: 2 # Fixes font artifacts.
   patches:
     6D1276AB:
       content: |-
