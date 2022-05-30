@@ -108,7 +108,7 @@ int FlatFileReader::FinishRead(void)
 
 	while (aio_suspend(aiocb_list, 1, nullptr) == -1 && errno == EINTR)
 		;
-	return aio_return(&m_aiocb) == -1 ? -1 : 1;
+	return aio_return(&m_aiocb);
 }
 
 void FlatFileReader::CancelRead(void)
