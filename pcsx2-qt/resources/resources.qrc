@@ -46,6 +46,8 @@
 		<file>icons/black/index.theme</file>
 		<file>icons/discord.png</file>
 		<file>icons/flag-a.png</file>
+		<file>icons/flag-af.png</file>
+		<file>icons/flag-au.png</file>
 		<file>icons/flag-b.png</file>		
 		<file>icons/flag-be.png</file>			
 		<file>icons/flag-c.png</file>		
@@ -57,15 +59,19 @@
 		<file>icons/flag-gr.png</file>	
 		<file>icons/flag-hk.png</file>
 		<file>icons/flag-i.png</file>
+		<file>icons/flag-in.png</file>
 		<file>icons/flag-jp.png</file>
 		<file>icons/flag-k.png</file>
 		<file>icons/flag-nl.png</file>
 		<file>icons/flag-no.png</file>
 		<file>icons/flag-other.png</file>
+		<file>icons/flag-p.png</file>
 		<file>icons/flag-r.png</file>
 		<file>icons/flag-s.png</file>
+		<file>icons/flag-sc.png</file>
 		<file>icons/flag-sw.png</file>
 		<file>icons/flag-swi.png</file>
+		<file>icons/flag-t.png</file>
 		<file>icons/flag-uk.png</file>
 		<file>icons/flag-us.png</file>
 		<file>icons/logo.png</file>

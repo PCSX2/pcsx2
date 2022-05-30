@@ -96,11 +96,29 @@
      </property>
      <item>
       <property name="text">
-       <string>NTSC-U/C (US/Canada)</string>
+       <string>NTSC-B (Brazil)</string>
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-us.png</normaloff>:/icons/flag-us.png</iconset>
+        <normaloff>:/icons/flag-b.png</normaloff>:/icons/flag-b.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>NTSC-C (China)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-c.png</normaloff>:/icons/flag-c.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>NTSC-HK (Hong Kong)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-hk.png</normaloff>:/icons/flag-hk.png</iconset>
       </property>
      </item>
      <item>
@@ -114,11 +132,29 @@
      </item>
      <item>
       <property name="text">
-       <string>PAL (Europe/Australia)</string>
+       <string>NTSC-K (Korea)</string>
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-eu.png</normaloff>:/icons/flag-eu.png</iconset>
+        <normaloff>:/icons/flag-k.png</normaloff>:/icons/flag-k.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>NTSC-T (Taiwan)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-t.png</normaloff>:/icons/flag-t.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>NTSC-U (US)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-us.png</normaloff>:/icons/flag-us.png</iconset>
       </property>
      </item>
      <item>
@@ -128,6 +164,204 @@
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
         <normaloff>:/icons/flag-other.png</normaloff>:/icons/flag-other.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL (Europe)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-eu.png</normaloff>:/icons/flag-eu.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-A (Australia)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-a.png</normaloff>:/icons/flag-a.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-AF (South Africa)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-af.png</normaloff>:/icons/flag-af.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-AU (Austria)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-au.png</normaloff>:/icons/flag-au.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-BE (Belgium)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-be.png</normaloff>:/icons/flag-be.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-E (Europe/Australia)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-eu.png</normaloff>:/icons/flag-eu.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-F (France)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-f.png</normaloff>:/icons/flag-f.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-FI (Finland)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-fi.png</normaloff>:/icons/flag-fi.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-G (Germany)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-g.png</normaloff>:/icons/flag-g.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-GR (Greece)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-gr.png</normaloff>:/icons/flag-gr.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-I (Italy)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-i.png</normaloff>:/icons/flag-i.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-IN (India)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-in.png</normaloff>:/icons/flag-in.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-NL (Netherlands)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-nl.png</normaloff>:/icons/flag-nl.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-M (Europe/Australia)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-eu.png</normaloff>:/icons/flag-eu.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-NO (Norway)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-no.png</normaloff>:/icons/flag-no.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-P (Portugal)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-p.png</normaloff>:/icons/flag-p.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-R (Russia)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-r.png</normaloff>:/icons/flag-r.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-S (Spain)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-s.png</normaloff>:/icons/flag-s.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-SC (Scandinavia)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-sc.png</normaloff>:/icons/flag-sc.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-SW (Sweden)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-sw.png</normaloff>:/icons/flag-sw.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-SWI (Switzerland)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-swi.png</normaloff>:/icons/flag-swi.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-UK (United Kingdom)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flag-uk.png</normaloff>:/icons/flag-uk.png</iconset>
       </property>
      </item>
     </widget>
