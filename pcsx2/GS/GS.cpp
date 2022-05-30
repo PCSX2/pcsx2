@@ -288,7 +288,7 @@ static bool DoGSOpen(GSRendererType renderer, u8* basemem)
 	return true;
 }
 
-bool GSreopen(bool recreate_display)
+bool GSreopen(bool recreate_display, const Pcsx2Config::GSOptions& old_config)
 {
 	Console.WriteLn("Reopening GS with %s display", recreate_display ? "new" : "existing");
 
@@ -329,20 +329,49 @@ bool GSreopen(bool recreate_display)
 		Host::ReleaseHostDisplay();
 		if (!Host::AcquireHostDisplay(GetAPIForRenderer(GSConfig.Renderer)))
 		{
-			pxFailRel("(GSreopen) Failed to reacquire host display");
-			return false;
+			Console.Error("(GSreopen) Failed to reacquire host display");
+
+			// try to get the old one back
+			if (!Host::AcquireHostDisplay(GetAPIForRenderer(old_config.Renderer)))
+			{
+				pxFailRel("Failed to recreate old config host display");
+				return false;
+			}
+
+			Host::AddKeyedOSDMessage("GSReopenFailed", fmt::format("Failed to open {} display, switching back to {}.",
+														   HostDisplay::RenderAPIToString(GetAPIForRenderer(GSConfig.Renderer)),
+														   HostDisplay::RenderAPIToString(GetAPIForRenderer(old_config.Renderer)), 10.0f));
+			GSConfig = old_config;
 		}
 	}
 
 	if (!DoGSOpen(GSConfig.Renderer, basemem))
 	{
-		pxFailRel("(GSreopen) Failed to recreate GS");
-		return false;
+		Console.Error("(GSreopen) Failed to recreate GS");
+
+		// try the old config
+		if (recreate_display && GSConfig.Renderer != old_config.Renderer)
+		{
+			Host::ReleaseHostDisplay();
+			if (!Host::AcquireHostDisplay(GetAPIForRenderer(old_config.Renderer)))
+			{
+				pxFailRel("Failed to recreate old config host display (part 2)");
+				return false;
+			}
+		}
+
+		Host::AddKeyedOSDMessage("GSReopenFailed","Failed to reopen, restoring old configuration.", 10.0f);
+		GSConfig = old_config;
+		if (!DoGSOpen(GSConfig.Renderer, basemem))
+		{
+			pxFailRel("Failed to reopen GS on old config");
+			return false;
+		}
 	}
 
 	if (g_gs_renderer->Defrost(&fd) != 0)
 	{
-		pxFailRel("(GSreopen) Failed to defrost");
+		Console.Error("(GSreopen) Failed to defrost");
 		return false;
 	}
 
@@ -758,7 +787,8 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 			GSConfig.DisableShaderCache != old_config.DisableShaderCache ||
 			GSConfig.ThreadedPresentation != old_config.ThreadedPresentation
 		);
-		GSreopen(do_full_restart);
+		if (!GSreopen(do_full_restart, old_config))
+			pxFailRel("Failed to do full GS reopen");
 		return;
 	}
 
@@ -781,7 +811,9 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.ShaderFX_Conf != old_config.ShaderFX_Conf ||
 		GSConfig.ShaderFX_GLSL != old_config.ShaderFX_GLSL)
 	{
-		GSreopen(false);
+		if (!GSreopen(false, old_config))
+			pxFailRel("Failed to do quick GS reopen");
+
 		return;
 	}
 
@@ -851,8 +883,11 @@ void GSSwitchRenderer(GSRendererType new_renderer)
 		existing_api = HostDisplay::RenderAPI::OpenGL;
 
 	const bool is_software_switch = (new_renderer == GSRendererType::SW || GSConfig.Renderer == GSRendererType::SW);
+	const bool recreate_display = (!is_software_switch && existing_api != GetAPIForRenderer(new_renderer));
+	const Pcsx2Config::GSOptions old_config(GSConfig);
 	GSConfig.Renderer = new_renderer;
-	GSreopen(!is_software_switch && existing_api != GetAPIForRenderer(new_renderer));
+	if (!GSreopen(recreate_display, old_config))
+		pxFailRel("Failed to reopen GS for renderer switch.");
 }
 
 void GSResetAPIState()
