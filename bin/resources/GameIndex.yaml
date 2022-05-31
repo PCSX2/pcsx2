@@ -113,12 +113,14 @@ PAPX-90222:
   name: "Jak x Daxter - Kyuu Sekai no Isan [Demo, Taikenban]"
   region: "NTSC-J"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
 PAPX-90223:
   name: "Jak x Daxter - Kyuu Sekai no Isan [Demo, Taikenban]"
   region: "NTSC-J"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
 PAPX-90231:
@@ -148,6 +150,7 @@ PAPX-90516:
   name: "Jak and Daxter II [Trial]"
   region: "NTSC-J"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -628,6 +631,7 @@ SCAJ-20073:
   name: "Jak and Daxter II"
   region: "NTSC-Unk"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -1552,6 +1556,7 @@ SCED-50614:
   name: "Jak and Daxter - The Precursor Legacy [Demo]"
   region: "PAL-Unk"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCED-50622:
@@ -1803,6 +1808,7 @@ SCED-51700:
   name: "Jak II - Renegade [Demo]"
   region: "PAL-M5"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -2025,6 +2031,7 @@ SCED-52952:
   name: "Jak 3 [Demo]"
   region: "PAL-M5"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -2526,6 +2533,7 @@ SCES-50361:
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCES-50408:
@@ -2668,6 +2676,7 @@ SCES-50614:
   name: "Jak and Daxter - The Precursor Legacy"
   region: "PAL-Unk"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCES-50759:
@@ -2899,6 +2908,7 @@ SCES-51248:
   clampModes:
     vuClampMode: 3 # Fixes minor SPS on characters.
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     preloadFrameData: 1 # Fixes bad textures on Jake.
     halfPixelOffset: 1 # Fixes double image.
 SCES-51426:
@@ -2967,6 +2977,7 @@ SCES-51608:
   region: "PAL-M7"
   compat: 5
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -3243,6 +3254,7 @@ SCES-52460:
   region: "PAL-M7"
   compat: 5
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -3413,6 +3425,7 @@ SCES-53286:
   name: "Jak X - Combat Racing"
   region: "PAL-M7"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     textureInsideRT: 1
     preloadFrameData: 1 # Fixes Sony splash at boot.
   memcardFilters: # Reads Ratchet Gladiator data.
@@ -4154,6 +4167,8 @@ SCES-55496:
 SCES-55510:
   name: "Jak and Daxter - The Lost Frontier"
   region: "PAL-M12"
+  gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
 SCES-55513:
   name: "SingStar Polskie Hity"
   region: "PAL-PL"
@@ -4310,6 +4325,7 @@ SCKA-20010:
   name: "Jak II"
   region: "NTSC-K"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -4455,6 +4471,7 @@ SCKA-20040:
   name: "Jak 3"
   region: "NTSC-K"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -4951,6 +4968,7 @@ SCPS-15021:
   name: "Jak x Daxter - Kyuusekai no Isan"
   region: "NTSC-J"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCPS-15022:
@@ -5113,6 +5131,7 @@ SCPS-15057:
   name: "Jak and Daxter II"
   region: "NTSC-J"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -5579,6 +5598,7 @@ SCPS-19210:
   name: "Jak x Daxter - Kyuusekai no Isan [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCPS-19211:
@@ -5906,6 +5926,7 @@ SCPS-55004:
   name: "Jak x Daxter - Kyuusekai no Isan"
   region: "NTSC-J"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCPS-55005:
@@ -6146,6 +6167,7 @@ SCPS-56003:
   name: "Jak and Daxter - The Precursor Legacy"
   region: "NTSC-K"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCPS-56005:
@@ -6291,6 +6313,7 @@ SCUS-97124:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCUS-97125:
@@ -6466,12 +6489,14 @@ SCUS-97170:
   name: "Jak and Daxter - The Precursor Legacy [Cingular Wireless Demo]"
   region: "NTSC-U"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCUS-97171:
   name: "Jak and Daxter - The Precursor Legacy [PS Underground Demo]"
   region: "NTSC-U"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCUS-97172:
@@ -6804,6 +6829,7 @@ SCUS-97265:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -6841,6 +6867,7 @@ SCUS-97273:
   name: "Jak II [Demo]"
   region: "NTSC-U"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -6848,6 +6875,8 @@ SCUS-97273:
 SCUS-97274:
   name: "Jak II [Video Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
 SCUS-97275:
   name: "SOCOM II - U.S. Navy SEALs"
   region: "NTSC-U"
@@ -6965,6 +6994,7 @@ SCUS-97330:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -7085,6 +7115,7 @@ SCUS-97374:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -7200,6 +7231,7 @@ SCUS-97412:
   name: "Jak 3 [Demo]"
   region: "NTSC-U"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -7266,6 +7298,7 @@ SCUS-97429:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     textureInsideRT: 1
     preloadFrameData: 1 # Fixes Sony splash at boot.
   memcardFilters:
@@ -7316,6 +7349,7 @@ SCUS-97440:
   name: "Jak and Daxter Trilogy [Demo]"
   region: "NTSC-U"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -7518,6 +7552,7 @@ SCUS-97486:
   name: "Jak X - Combat Racing [Regular Demo]"
   region: "NTSC-U"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     textureInsideRT: 1
     preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97487:
@@ -7533,6 +7568,7 @@ SCUS-97488:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     textureInsideRT: 1
     preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97489:
@@ -7611,6 +7647,7 @@ SCUS-97509:
   name: "Jak II [Greatest Hits]"
   region: "NTSC-U"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -7652,6 +7689,7 @@ SCUS-97516:
   name: "Jak 3 [Greatest Hits]"
   region: "NTSC-U"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -7757,6 +7795,7 @@ SCUS-97555:
   name: "Jak and Daxter Complete Trilogy [Demo]"
   region: "NTSC-U"
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCUS-97556:
@@ -7769,6 +7808,8 @@ SCUS-97558:
   name: "Jak and Daxter - The Lost Frontier"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
 SCUS-97560:
   name: "SOCOM - U.S. Navy SEALs - Combined Assault [Demo]"
   region: "NTSC-U"
@@ -45938,7 +45979,9 @@ TCES-53286:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
+    roundSprite: 1 # Fix line in the sky.
     textureInsideRT: 1
+    preloadFrameData: 1 # Fixes Sony splash at boot.
 TCPS-10058:
   name: "Densha de Go! Shinkansen [with Controller]"
   region: "NTSC-J"
