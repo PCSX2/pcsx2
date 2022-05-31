@@ -1313,17 +1313,23 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 	if (dst && (x_offset != 0 || y_offset != 0))
 	{
-		GSVector2 scale = dst->m_texture->GetScale();
-		int x = (int)(scale.x * x_offset);
-		int y = (int)(scale.y * y_offset);
-		int w = (int)(scale.x * tw);
-		int h = (int)(scale.y * th);
+		const GSVector2 scale(dst->m_texture->GetScale());
+		const int x = static_cast<int>(scale.x * x_offset);
+		const int y = static_cast<int>(scale.y * y_offset);
+		const int w = static_cast<int>(scale.x * tw);
+		const int h = static_cast<int>(scale.y * th);
 
+		// if we have a source larger than the target (from tex-in-rt), we need to clear it, otherwise we'll read junk
+		const bool outside_target = ((x + w) > dst->m_texture->GetWidth() || (y + h) > dst->m_texture->GetHeight());
 		GSTexture* sTex = dst->m_texture;
-		GSTexture* dTex = g_gs_device->CreateTexture(w, h, false, GSTexture::Format::Color, true);
+		GSTexture* dTex = outside_target ?
+			g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Color, true) :
+			g_gs_device->CreateTexture(w, h, false, GSTexture::Format::Color, true);
 
-		GSVector4i area(x, y, x + w, y + h);
-		g_gs_device->CopyRect(sTex, dTex, area, 0, 0);
+		// copy the rt in
+		const GSVector4i area(GSVector4i(x, y, x + w, y + h).rintersect(GSVector4i(sTex->GetSize()).zwxy()));
+		if (!area.rempty())
+			g_gs_device->CopyRect(sTex, dTex, area, 0, 0);
 
 		// Keep a trace of origin of the texture
 		src->m_texture = dTex;
