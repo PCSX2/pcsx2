@@ -50,7 +50,6 @@ namespace GameList
 		NTSC_T,
 		NTSC_U,
 		Other,
-		PAL,
 		PAL_A,
 		PAL_AF,
 		PAL_AU,
