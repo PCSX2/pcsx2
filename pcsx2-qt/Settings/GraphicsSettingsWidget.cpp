@@ -73,6 +73,7 @@ static const char* s_anisotropic_filtering_entries[] = {QT_TRANSLATE_NOOP("Graph
 static const char* s_anisotropic_filtering_values[] = {"0", "2", "4", "8", "16", nullptr};
 
 static constexpr int DEFAULT_INTERLACE_MODE = 7;
+static constexpr int DEFAULT_TV_SHADER_MODE = 0;
 
 GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	: QWidget(parent)
@@ -129,6 +130,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostBrightness, "EmuCore/GS", "ShadeBoost_Brightness", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostContrast, "EmuCore/GS", "ShadeBoost_Contrast", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostSaturation, "EmuCore/GS", "ShadeBoost_Saturation", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.tvShader, "EmuCore/GS", "TVShader", DEFAULT_TV_SHADER_MODE);
 
 	connect(m_ui.shadeBoost, QOverload<int>::of(&QCheckBox::stateChanged), this, &GraphicsSettingsWidget::onShadeBoostChanged);
 	onShadeBoostChanged();
