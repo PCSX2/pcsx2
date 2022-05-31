@@ -1075,6 +1075,42 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_35">
+            <property name="text">
+             <string>TV Shader</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="tvShader">
+            <item>
+             <property name="text">
+              <string>None</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Scanline Filter</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Diagonal Filter</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Triangular Filter</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Wave Filter</string>
+             </property>
+            </item>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
