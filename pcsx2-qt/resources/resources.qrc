@@ -45,35 +45,35 @@
 		<file>icons/black/svg/window-2-line.svg</file>
 		<file>icons/black/index.theme</file>
 		<file>icons/discord.png</file>
-		<file>icons/flag-a.png</file>
-		<file>icons/flag-af.png</file>
-		<file>icons/flag-au.png</file>
-		<file>icons/flag-b.png</file>		
-		<file>icons/flag-be.png</file>			
-		<file>icons/flag-c.png</file>		
-		<file>icons/flag-cn.png</file>
-		<file>icons/flag-eu.png</file>
-		<file>icons/flag-f.png</file>		
-		<file>icons/flag-fi.png</file>		
-		<file>icons/flag-g.png</file>		
-		<file>icons/flag-gr.png</file>	
-		<file>icons/flag-hk.png</file>
-		<file>icons/flag-i.png</file>
-		<file>icons/flag-in.png</file>
-		<file>icons/flag-jp.png</file>
-		<file>icons/flag-k.png</file>
-		<file>icons/flag-nl.png</file>
-		<file>icons/flag-no.png</file>
-		<file>icons/flag-other.png</file>
-		<file>icons/flag-p.png</file>
-		<file>icons/flag-r.png</file>
-		<file>icons/flag-s.png</file>
-		<file>icons/flag-sc.png</file>
-		<file>icons/flag-sw.png</file>
-		<file>icons/flag-swi.png</file>
-		<file>icons/flag-t.png</file>
-		<file>icons/flag-uk.png</file>
-		<file>icons/flag-us.png</file>
+		<file>icons/flags/flag-a.png</file>
+		<file>icons/flags/flag-af.png</file>
+		<file>icons/flags/flag-au.png</file>
+		<file>icons/flags/flag-b.png</file>		
+		<file>icons/flags/flag-be.png</file>			
+		<file>icons/flags/flag-c.png</file>		
+		<file>icons/flags/flag-cn.png</file>
+		<file>icons/flags/flag-eu.png</file>
+		<file>icons/flags/flag-f.png</file>		
+		<file>icons/flags/flag-fi.png</file>		
+		<file>icons/flags/flag-g.png</file>		
+		<file>icons/flags/flag-gr.png</file>	
+		<file>icons/flags/flag-hk.png</file>
+		<file>icons/flags/flag-i.png</file>
+		<file>icons/flags/flag-in.png</file>
+		<file>icons/flags/flag-jp.png</file>
+		<file>icons/flags/flag-k.png</file>
+		<file>icons/flags/flag-nl.png</file>
+		<file>icons/flags/flag-no.png</file>
+		<file>icons/flags/flag-other.png</file>
+		<file>icons/flags/flag-p.png</file>
+		<file>icons/flags/flag-r.png</file>
+		<file>icons/flags/flag-s.png</file>
+		<file>icons/flags/flag-sc.png</file>
+		<file>icons/flags/flag-sw.png</file>
+		<file>icons/flags/flag-swi.png</file>
+		<file>icons/flags/flag-t.png</file>
+		<file>icons/flags/flag-uk.png</file>
+		<file>icons/flags/flag-us.png</file>
 		<file>icons/logo.png</file>
 		<file>icons/media-optical-24.png</file>
 		<file>icons/media-optical-gear-24.png</file>

@@ -100,7 +100,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-b.png</normaloff>:/icons/flag-b.png</iconset>
+        <normaloff>:/icons/flags/flag-b.png</normaloff>:/icons/flags/flag-b.png</iconset>
       </property>
      </item>
      <item>
@@ -109,7 +109,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-c.png</normaloff>:/icons/flag-c.png</iconset>
+        <normaloff>:/icons/flags/flag-c.png</normaloff>:/icons/flags/flag-c.png</iconset>
       </property>
      </item>
      <item>
@@ -118,7 +118,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-hk.png</normaloff>:/icons/flag-hk.png</iconset>
+        <normaloff>:/icons/flags/flag-hk.png</normaloff>:/icons/flags/flag-hk.png</iconset>
       </property>
      </item>
      <item>
@@ -127,7 +127,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-jp.png</normaloff>:/icons/flag-jp.png</iconset>
+        <normaloff>:/icons/flags/flag-jp.png</normaloff>:/icons/flags/flag-jp.png</iconset>
       </property>
      </item>
      <item>
@@ -136,7 +136,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-k.png</normaloff>:/icons/flag-k.png</iconset>
+        <normaloff>:/icons/flags/flag-k.png</normaloff>:/icons/flags/flag-k.png</iconset>
       </property>
      </item>
      <item>
@@ -145,7 +145,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-t.png</normaloff>:/icons/flag-t.png</iconset>
+        <normaloff>:/icons/flags/flag-t.png</normaloff>:/icons/flags/flag-t.png</iconset>
       </property>
      </item>
      <item>
@@ -154,7 +154,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-us.png</normaloff>:/icons/flag-us.png</iconset>
+        <normaloff>:/icons/flags/flag-us.png</normaloff>:/icons/flags/flag-us.png</iconset>
       </property>
      </item>
      <item>
@@ -163,7 +163,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-other.png</normaloff>:/icons/flag-other.png</iconset>
+        <normaloff>:/icons/flags/flag-other.png</normaloff>:/icons/flags/flag-other.png</iconset>
       </property>
      </item>
      <item>
@@ -172,7 +172,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-eu.png</normaloff>:/icons/flag-eu.png</iconset>
+        <normaloff>:/icons/flags/flag-eu.png</normaloff>:/icons/flags/flag-eu.png</iconset>
       </property>
      </item>
      <item>
@@ -181,7 +181,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-a.png</normaloff>:/icons/flag-a.png</iconset>
+        <normaloff>:/icons/flags/flag-a.png</normaloff>:/icons/flags/flag-a.png</iconset>
       </property>
      </item>
      <item>
@@ -190,7 +190,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-af.png</normaloff>:/icons/flag-af.png</iconset>
+        <normaloff>:/icons/flags/flag-af.png</normaloff>:/icons/flags/flag-af.png</iconset>
       </property>
      </item>
      <item>
@@ -199,7 +199,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-au.png</normaloff>:/icons/flag-au.png</iconset>
+        <normaloff>:/icons/flags/flag-au.png</normaloff>:/icons/flags/flag-au.png</iconset>
       </property>
      </item>
      <item>
@@ -208,7 +208,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-be.png</normaloff>:/icons/flag-be.png</iconset>
+        <normaloff>:/icons/flags/flag-be.png</normaloff>:/icons/flags/flag-be.png</iconset>
       </property>
      </item>
      <item>
@@ -217,7 +217,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-eu.png</normaloff>:/icons/flag-eu.png</iconset>
+        <normaloff>:/icons/flags/flag-eu.png</normaloff>:/icons/flags/flag-eu.png</iconset>
       </property>
      </item>
      <item>
@@ -226,7 +226,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-f.png</normaloff>:/icons/flag-f.png</iconset>
+        <normaloff>:/icons/flags/flag-f.png</normaloff>:/icons/flags/flag-f.png</iconset>
       </property>
      </item>
      <item>
@@ -235,7 +235,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-fi.png</normaloff>:/icons/flag-fi.png</iconset>
+        <normaloff>:/icons/flags/flag-fi.png</normaloff>:/icons/flags/flag-fi.png</iconset>
       </property>
      </item>
      <item>
@@ -244,7 +244,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-g.png</normaloff>:/icons/flag-g.png</iconset>
+        <normaloff>:/icons/flags/flag-g.png</normaloff>:/icons/flags/flag-g.png</iconset>
       </property>
      </item>
      <item>
@@ -253,7 +253,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-gr.png</normaloff>:/icons/flag-gr.png</iconset>
+        <normaloff>:/icons/flags/flag-gr.png</normaloff>:/icons/flags/flag-gr.png</iconset>
       </property>
      </item>
      <item>
@@ -262,7 +262,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-i.png</normaloff>:/icons/flag-i.png</iconset>
+        <normaloff>:/icons/flags/flag-i.png</normaloff>:/icons/flags/flag-i.png</iconset>
       </property>
      </item>
      <item>
@@ -271,7 +271,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-in.png</normaloff>:/icons/flag-in.png</iconset>
+        <normaloff>:/icons/flags/flag-in.png</normaloff>:/icons/flags/flag-in.png</iconset>
       </property>
      </item>
      <item>
@@ -280,7 +280,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-nl.png</normaloff>:/icons/flag-nl.png</iconset>
+        <normaloff>:/icons/flags/flag-nl.png</normaloff>:/icons/flags/flag-nl.png</iconset>
       </property>
      </item>
      <item>
@@ -289,7 +289,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-eu.png</normaloff>:/icons/flag-eu.png</iconset>
+        <normaloff>:/icons/flags/flag-eu.png</normaloff>:/icons/flags/flag-eu.png</iconset>
       </property>
      </item>
      <item>
@@ -298,7 +298,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-no.png</normaloff>:/icons/flag-no.png</iconset>
+        <normaloff>:/icons/flags/flag-no.png</normaloff>:/icons/flags/flag-no.png</iconset>
       </property>
      </item>
      <item>
@@ -307,7 +307,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-p.png</normaloff>:/icons/flag-p.png</iconset>
+        <normaloff>:/icons/flags/flag-p.png</normaloff>:/icons/flags/flag-p.png</iconset>
       </property>
      </item>
      <item>
@@ -316,7 +316,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-r.png</normaloff>:/icons/flag-r.png</iconset>
+        <normaloff>:/icons/flags/flag-r.png</normaloff>:/icons/flags/flag-r.png</iconset>
       </property>
      </item>
      <item>
@@ -325,7 +325,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-s.png</normaloff>:/icons/flag-s.png</iconset>
+        <normaloff>:/icons/flags/flag-s.png</normaloff>:/icons/flags/flag-s.png</iconset>
       </property>
      </item>
      <item>
@@ -334,7 +334,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-sc.png</normaloff>:/icons/flag-sc.png</iconset>
+        <normaloff>:/icons/flags/flag-sc.png</normaloff>:/icons/flags/flag-sc.png</iconset>
       </property>
      </item>
      <item>
@@ -343,7 +343,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-sw.png</normaloff>:/icons/flag-sw.png</iconset>
+        <normaloff>:/icons/flags/flag-sw.png</normaloff>:/icons/flags/flag-sw.png</iconset>
       </property>
      </item>
      <item>
@@ -352,7 +352,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-swi.png</normaloff>:/icons/flag-swi.png</iconset>
+        <normaloff>:/icons/flags/flag-swi.png</normaloff>:/icons/flags/flag-swi.png</iconset>
       </property>
      </item>
      <item>
@@ -361,7 +361,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flag-uk.png</normaloff>:/icons/flag-uk.png</iconset>
+        <normaloff>:/icons/flags/flag-uk.png</normaloff>:/icons/flags/flag-uk.png</iconset>
       </property>
      </item>
     </widget>
