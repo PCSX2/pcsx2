@@ -4148,6 +4148,9 @@ SCES-55485:
 SCES-55489:
   name: "SingStar Mallorca Party"
   region: "PAL-G"
+SCES-55496:
+  name: "Secret Agent Clank"
+  region: "PAL-M12"
 SCES-55510:
   name: "Jak and Daxter - The Lost Frontier"
   region: "PAL-M12"
