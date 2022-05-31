@@ -73,6 +73,11 @@ public:
 
 private:
 	void loadCommonImages();
+struct regionStruct {
+  Region regionindex;
+  QPixmap flagimage;
+}
+	regionStruct regionArray[100];
 	void setColumnDisplayNames();
 
 	float m_cover_scale = 1.0f;
@@ -85,35 +90,6 @@ private:
 	QPixmap m_type_exe_pixmap;
 	QPixmap m_type_playlist_pixmap;
 
-	QPixmap m_region_a_pixmap;
-	QPixmap m_region_af_pixmap;
-	QPixmap m_region_au_pixmap;
-	QPixmap m_region_b_pixmap;
-	QPixmap m_region_be_pixmap;
-	QPixmap m_region_c_pixmap;
-	QPixmap m_region_eu_pixmap;
-	QPixmap m_region_f_pixmap;
-	QPixmap m_region_fi_pixmap;
-	QPixmap m_region_g_pixmap;
-	QPixmap m_region_gr_pixmap;
-	QPixmap m_region_hk_pixmap;
-	QPixmap m_region_i_pixmap;
-	QPixmap m_region_jp_pixmap;
-	QPixmap m_region_in_pixmap;
-	QPixmap m_region_k_pixmap;
-	QPixmap m_region_nl_pixmap;
-	QPixmap m_region_no_pixmap;
-	QPixmap m_region_other_pixmap;
-	QPixmap m_region_p_pixmap;
-	QPixmap m_region_r_pixmap;
-	QPixmap m_region_s_pixmap;
-	QPixmap m_region_t_pixmap;
-	QPixmap m_region_uk_pixmap;
-	QPixmap m_region_us_pixmap;
-	QPixmap m_region_sc_pixmap;
-	QPixmap m_region_sw_pixmap;
-	QPixmap m_region_swi_pixmap;
-	
 	QPixmap m_placeholder_pixmap;
 
 	std::array<QPixmap, static_cast<int>(GameList::CompatibilityRatingCount)> m_compatibility_pixmaps;

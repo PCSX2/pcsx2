@@ -89,7 +89,7 @@ const char* GameList::EntryTypeToString(EntryType type)
 const char* GameList::RegionToString(Region region)
 {
 	static std::array<const char*, static_cast<int>(Region::Count)> names = {
-		{"NTSC-B", "NTSC-C", "NTSC-HK", "NTSC-J", "NTSC-K", "NTSC-T", "NTSC-U", "Other", "PAL", "PAL-A", "PAL-AF", "PAL-AU", "PAL-BE", "PAL-E", "PAL-F", "PAL-FI", "PAL-G", "PAL-GR", "PAL-I", "PAL-IN", "PAL-M", "PAL-NL", "PAL-NO", "PAL-P", "PAL-R", "PAL-S", "PAL-SC", "PAL-SW", "PAL-SWI", "PAL-UK"}};
+		{"NTSC-B", "NTSC-C", "NTSC-HK", "NTSC-J", "NTSC-K", "NTSC-T", "NTSC-U", "Other", "PAL-A", "PAL-AF", "PAL-AU", "PAL-BE", "PAL-E", "PAL-F", "PAL-FI", "PAL-G", "PAL-GR", "PAL-I", "PAL-IN", "PAL-M", "PAL-NL", "PAL-NO", "PAL-P", "PAL-R", "PAL-S", "PAL-SC", "PAL-SW", "PAL-SWI", "PAL-UK"}};
 		
 	return names[static_cast<int>(region)];
 }
@@ -239,8 +239,6 @@ bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 			entry->region = Region::NTSC_T;
 		else if (StringUtil::StartsWith(db_entry->region, "NTSC-U"))
 			entry->region = Region::NTSC_U;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL"))
-			entry->region = Region::PAL;
 		else if (StringUtil::StartsWith(db_entry->region, "PAL-A"))
 			entry->region = Region::PAL_A;
 		else if (StringUtil::StartsWith(db_entry->region, "PAL-AF"))
