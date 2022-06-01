@@ -73,11 +73,6 @@ public:
 
 private:
 	void loadCommonImages();
-struct regionStruct {
-  Region regionindex;
-  QPixmap flagimage;
-}
-	regionStruct regionArray[100];
 	void setColumnDisplayNames();
 
 	float m_cover_scale = 1.0f;
@@ -89,7 +84,7 @@ struct regionStruct {
 	QPixmap m_type_disc_with_settings_pixmap;
 	QPixmap m_type_exe_pixmap;
 	QPixmap m_type_playlist_pixmap;
-
+	QPixmap m_region_pixmaps[static_cast<u32>(GameList::Region::Count)];
 	QPixmap m_placeholder_pixmap;
 
 	std::array<QPixmap, static_cast<int>(GameList::CompatibilityRatingCount)> m_compatibility_pixmaps;

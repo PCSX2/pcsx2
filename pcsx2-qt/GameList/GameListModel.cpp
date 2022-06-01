@@ -283,7 +283,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 				}
 				case Column_Region:
                 {
-                    return regionArray[static_cast<int>(ge->region)].pixmap;
+					return m_region_pixmaps[static_cast<int>(ge->region)];
 				}
 
 				case Column_Compatibility:
@@ -456,92 +456,12 @@ void GameListModel::loadCommonImages()
 	m_type_exe_pixmap = QIcon(QStringLiteral(":/icons/applications-system-24.png")).pixmap(QSize(24, 24));
 	m_type_playlist_pixmap = QIcon(QStringLiteral(":/icons/address-book-new-22.png")).pixmap(QSize(22, 22));
 
-	regionArray[Region::NTSC_B].regionindex = NTSC-B;
-	regionArray[Region::NTSC_B].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-b.png")).pixmap(QSize(42, 30));
-
-	regionArray[Region::NTSC_C].regionindex = NTSC-C;
-	regionArray[Region::NTSC_C].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-c.png")).pixmap(QSize(42, 30));
-
-	regionArray[Region::NTSC_HK].regionindex = NTSC-HK;
-	regionArray[Region::NTSC_HK].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-hk.png")).pixmap(QSize(42, 30));
-	
-	regionArray[Region::NTSC_J].regionindex = NTSC-J;
-	regionArray[Region::NTSC_J].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-jp.png")).pixmap(QSize(42, 30));
-	
-	regionArray[Region::NTSC_K].regionindex = NTSC-K;
-	regionArray[Region::NTSC_K].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-k.png")).pixmap(QSize(42, 30));
-
-	regionArray[Region::NTSC_T].regionindex = NTSC-T;
-	regionArray[Region::NTSC_T].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-t.png")).pixmap(QSize(42, 30));
-
-	regionArray[Region::NTSC_U].regionindex = NTSC-U;
-	regionArray[Region::NTSC_U].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-us.png")).pixmap(QSize(42, 30));
-
-	regionArray[Region::Other].regionindex = Other;
-	regionArray[Region::Other].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-other.png")).pixmap(QSize(42, 30));
-	
-	regionArray[Region::PAL_A].regionindex = PAL-A;
-	regionArray[Region::PAL_A].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-a.png")).pixmap(QSize(42, 30));
-	
-	regionArray[Region::PAL_AF].regionindex = NTSC-AF;
-	regionArray[Region::PAL_AF].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-af.png")).pixmap(QSize(42, 30));
-	
-	regionArray[Region::PAL_AU].regionindex = PAL-AU;
-	regionArray[Region::PAL_AU].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-au.png")).pixmap(QSize(42, 30));
-	
-	regionArray[Region::PAL_BE].regionindex = PAL-BE;
-	regionArray[Region::PAL_BE].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-be.png")).pixmap(QSize(42, 30));
-
-	regionArray[Region::PAL_E].regionindex = PAL-E;
-	regionArray[Region::PAL_E].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-eu.png")).pixmap(QSize(42, 30));
-
-	regionArray[Region::PAL_F].regionindex = PAL-F;
-	regionArray[Region::PAL_F].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-f.png")).pixmap(QSize(42, 30));
-
-	regionArray[Region::PAL_FI].regionindex = PAL-FI;
-	regionArray[Region::PAL_FI].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-fi.png")).pixmap(QSize(42, 30));
-
-	regionArray[Region::PAL_G].regionindex = PAL-G;
-	regionArray[Region::PAL_G].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-g.png")).pixmap(QSize(42, 30));
-	
-	regionArray[Region::PAL_GR].regionindex = PAL-GR;
-	regionArray[Region::PAL_GR].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-gr.png")).pixmap(QSize(42, 30));
-
-	regionArray[Region::PAL_I].regionindex = PAL-I;
-	regionArray[Region::PAL_I].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-i.png")).pixmap(QSize(42, 30));
-
-	regionArray[Region::PAL_IN].regionindex = PAL-IN;
-	regionArray[Region::PAL_IN].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-in.png")).pixmap(QSize(42, 30));
-	
-	regionArray[Region::PAL_M].regionindex = PAL-M;
-	regionArray[Region::PAL_M].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-eu.png")).pixmap(QSize(42, 30));	
-	
-	regionArray[Region::PAL_NL].regionindex = PAL-NL;
-	regionArray[Region::PAL_NL].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-nl.png")).pixmap(QSize(42, 30));	
-
-	regionArray[Region::PAL_NO].regionindex = PAL-NO;
-	regionArray[Region::PAL_NO].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-no.png")).pixmap(QSize(42, 30));	
-
-	regionArray[Region::PAL_P].regionindex = PAL-P;
-	regionArray[Region::PAL_P].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-p.png")).pixmap(QSize(42, 30));
-
-	regionArray[Region::PAL_R].regionindex = PAL-R;
-	regionArray[Region::PAL_R].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-r.png")).pixmap(QSize(42, 30));
-
-	regionArray[Region::PAL_S].regionindex = PAL-S;
-	regionArray[Region::PAL_S].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-s.png")).pixmap(QSize(42, 30));
-
-	regionArray[Region::PAL_SC].regionindex = PAL-SC;
-	regionArray[Region::PAL_SC].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-sc.png")).pixmap(QSize(42, 30));
-	
-	regionArray[Region::PAL_SW].regionindex = PAL-SW;
-	regionArray[Region::PAL_SW].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-sw.png")).pixmap(QSize(42, 30));	
-	
-	regionArray[Region::PAL_SWI].regionindex = PAL-SWI;
-	regionArray[Region::PAL_SWI].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-swi.png")).pixmap(QSize(42, 30));		
-	
-	regionArray[Region::PAL_UK].regionindex = PAL-UK;
-	regionArray[Region::PAL_UK].flagimage = QIcon(QStringLiteral(":/icons/flags/flag-uk.png")).pixmap(QSize(42, 30));			
+for (u32 i = 0; i < static_cast<u32>(GameList::Region::Count); i++) 
+	{
+		m_region_pixmaps[i] = QIcon(
+								   QStringLiteral(":/icons/flags/%1.png").arg(GameList::RegionToString(static_cast<GameList::Region>(i))))
+								   .pixmap(QSize(42, 30));
+	}			
 
 	for (u32 i = 1; i < GameList::CompatibilityRatingCount; i++)
 		m_compatibility_pixmaps[i].load(QStringLiteral(":/icons/star-%1.png").arg(i - 1));
