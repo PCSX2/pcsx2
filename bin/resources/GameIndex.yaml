@@ -22494,7 +22494,7 @@ SLPM-62067:
   name: "Hunter X Hunter - Ryumyaku no Saidan"
   region: "NTSC-J"
 SLPM-62068:
-  name: "Egbrowser"
+  name: "EGBrowser"
   region: "NTSC-J"
 SLPM-62069:
   name: "All-Star Baseball 2002"
@@ -22658,6 +22658,9 @@ SLPM-62133:
 SLPM-62134:
   name: "Final Fantasy XI [Beta Edition]"
   region: "NTSC-J"
+SLPM-62136:
+  name: "NetFront for Delta"
+  region: "NTSC-J"
 SLPM-62137:
   name: "Psyvariar Complete Edition [Special Sound Box]"
   region: "NTSC-J"
@@ -22735,7 +22738,7 @@ SLPM-62175:
   name: "beatmania Da Da Da!! THE BEST Da"
   region: "NTSC-J"
 SLPM-62176:
-  name: "Egbrowser BB"
+  name: "EGBrowser BB"
   region: "NTSC-J"
 SLPM-62177:
   name: "Kuusen [Kadokawa The Best]"
@@ -31210,6 +31213,12 @@ SLPM-68516:
   region: "NTSC-J"
 SLPM-69001:
   name: "PictureParadise Club"
+  region: "NTSC-J"
+SLPM-69002:
+  name: "NetFront"
+  region: "NTSC-J"
+SLPM-69004:
+  name: "EGBrowser Light for I-O Data Device, Inc."
   region: "NTSC-J"
 SLPM-69006:
   name: "PictureParadise Club Vol. 2"
