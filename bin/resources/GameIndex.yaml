@@ -31811,6 +31811,9 @@ SLPS-20122:
 SLPS-20125:
   name: "Shanghai - The Four Elements [Super Value 2800]"
   region: "NTSC-J"
+SLPS-20127:
+  name: "Chou! Rakushii Internet Tomodachi Nowa [Type-OS]"
+  region: "NTSC-J"
 SLPS-20128:
   name: "Toshiyuki Morikawa Private Collection - Puppet Princess of Marl's Kingdom"
   region: "NTSC-J"
@@ -31847,6 +31850,9 @@ SLPS-20143:
 SLPS-20144:
   name: "Seed, The"
   region: "NTSC-J"
+SLPS-20149:
+  name: "Chou! Rakushii Internet Tomodachi Nowa [Broadband]"
+  region: "NTSC-J"
 SLPS-20150:
   name: "Akira Psycho Ball"
   region: "NTSC-J"
@@ -31865,6 +31871,9 @@ SLPS-20165:
   region: "NTSC-J"
 SLPS-20167:
   name: "La Pucelle"
+  region: "NTSC-J"
+SLPS-20169:
+  name: "Chou! Rakushii Internet Tomodachi Nowa [Type-PG]"
   region: "NTSC-J"
 SLPS-20171:
   name: "Smash Court Tennis Pro"
