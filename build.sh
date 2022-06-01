@@ -161,8 +161,8 @@ for ARG in "$@"; do
         --asan              ) flags="$flags -DUSE_ASAN=TRUE" ;;
         --gtk2              ) flags="$flags -DGTK2_API=TRUE" ;;
         --qt6               ) flags="$flags -DQT_BUILD=TRUE" ;;
-        --use-system ) flags="$flags -DUSE_SYSTEM_LIBS=ON" ;;
-        --use-bundled ) flags="$flags -DUSE_SYSTEM_LIBS=OFF" ;;
+        --use-system        ) flags="$flags -DUSE_SYSTEM_LIBS=ON" ;;
+        --use-bundled       ) flags="$flags -DUSE_SYSTEM_LIBS=OFF" ;;
         --lto               ) flags="$flags -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE" ;;
         --pgo-optimize      ) flags="$flags -DUSE_PGO_OPTIMIZE=TRUE" ;;
         --pgo-generate      ) flags="$flags -DUSE_PGO_GENERATE=TRUE" ;;
