@@ -317,7 +317,7 @@ static const PAD::ControllerBindingInfo s_dualshock2_binds[] = {
 
 static const PAD::ControllerInfo s_controller_info[] = {
 	{"None", "Not Connected", nullptr, 0, PAD::ControllerType::NotConnected, PAD::VibrationCapabilities::NoVibration},
-	{"DualShock2", "DuckShock 2", s_dualshock2_binds, std::size(s_dualshock2_binds), PAD::ControllerType::DualShock2, PAD::VibrationCapabilities::LargeSmallMotors},
+	{"DualShock2", "DualShock 2", s_dualshock2_binds, std::size(s_dualshock2_binds), PAD::ControllerType::DualShock2, PAD::VibrationCapabilities::LargeSmallMotors},
 };
 
 const PAD::ControllerInfo* PAD::GetControllerInfo(ControllerType type)
