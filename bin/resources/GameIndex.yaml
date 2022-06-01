@@ -15995,7 +15995,7 @@ SLES-53561:
     wildArmsHack: 1 # Reduces depth ghosting.
     roundSprite: 2 # Reduces depth ghosting.
 SLES-53563:
-  name: "Spongebob SquarePants and Friends - Untie!"
+  name: "Spongebob SquarePants and Friends - Unite!"
   region: "PAL-M6"
 SLES-53564:
   name: "Darkwatch"
