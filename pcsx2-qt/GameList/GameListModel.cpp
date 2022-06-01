@@ -281,8 +281,9 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 							return m_type_exe_pixmap;
 					}
 				}
+
 				case Column_Region:
-                {
+				{
 					return m_region_pixmaps[static_cast<int>(ge->region)];
 				}
 
@@ -459,9 +460,9 @@ void GameListModel::loadCommonImages()
 for (u32 i = 0; i < static_cast<u32>(GameList::Region::Count); i++) 
 	{
 		m_region_pixmaps[i] = QIcon(
-								   QStringLiteral(":/icons/flags/%1.png").arg(GameList::RegionToString(static_cast<GameList::Region>(i))))
-								   .pixmap(QSize(42, 30));
-	}			
+								QStringLiteral(":/icons/flags/%1.png").arg(GameList::RegionToString(static_cast<GameList::Region>(i))))
+								.pixmap(QSize(42, 30));
+	}
 
 	for (u32 i = 1; i < GameList::CompatibilityRatingCount; i++)
 		m_compatibility_pixmaps[i].load(QStringLiteral(":/icons/star-%1.png").arg(i - 1));
