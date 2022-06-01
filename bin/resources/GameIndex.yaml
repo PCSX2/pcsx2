@@ -4772,6 +4772,27 @@ SCPM-85101:
 SCPM-85301:
   name: "Gran Turismo Concept - Copen Special Edition [Demo]"
   region: "NTSC-J"
+SCPN-60101:
+  name: "PlayStation BB Navigator - Version 0.10 [Prerelease] [Disc 1]"
+  region: "NTSC-J"
+SCPN-60103:
+  name: "PlayStation BB Navigator - Version 0.10 [Prerelease] [Disc 2]"
+  region: "NTSC-J"
+SCPN-60111:
+  name: "PlayStation BB Navigator - Version 0.10 [Prerelease] [Disc 2]"
+  region: "NTSC-J"
+SCPN-60130:
+  name: "PlayStation BB Navigator - Version 0.20"
+  region: "NTSC-J"
+SCPN-60140:
+  name: "PlayStation BB Navigator - Version 0.30"
+  region: "NTSC-J"
+SCPN-60150:
+  name: "PlayStation BB Navigator - Version 0.31"
+  region: "NTSC-J"
+SCPN-60160:
+  name: "PlayStation BB Navigator - Version 0.32"
+  region: "NTSC-J"
 SCPS-11001:
   name: "I.Q. Remix"
   region: "NTSC-J"
