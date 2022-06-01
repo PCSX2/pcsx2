@@ -583,9 +583,9 @@ void GSTextureReplacements::ProcessAsyncLoadedTextures()
 
 void GSTextureReplacements::DumpTexture(const GSTextureCache::HashCacheKey& hash, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSLocalMemory& mem, u32 level)
 {
-	// check if it's been dumped already
+	// check if it's been dumped or replaced already
 	const TextureName name(CreateTextureName(hash, level));
-	if (s_dumped_textures.find(name) != s_dumped_textures.end())
+	if (s_dumped_textures.find(name) != s_dumped_textures.end() || s_replacement_texture_filenames.find(name) != s_replacement_texture_filenames.end())
 		return;
 
 	s_dumped_textures.insert(name);
