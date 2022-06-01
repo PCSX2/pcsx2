@@ -16782,6 +16782,8 @@ SLES-53899:
 SLES-53900:
   name: "Kaido Racer 2"
   region: "PAL-M3"
+  gsHWFixes:
+    alignSprite: 1 # Fixes black lines when upscaling.
 SLES-53901:
   name: "Torino 2006"
   region: "PAL-M5"
@@ -27726,6 +27728,8 @@ SLPM-66021:
 SLPM-66022:
   name: "Kaido Touge no Densetsu"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes black lines when upscaling.
 SLPM-66023:
   name: "Fushigi Yuugi - ShigiYuugi Kurotake Kaiden Gaiden - Kagami no Fujo [Limited Edition]"
   region: "NTSC-J"
@@ -42883,6 +42887,8 @@ SLUS-21394:
   name: "Tokyo Xtreme Racer Drift 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes black lines when upscaling.
 SLUS-21395:
   name: "Avatar - The Last Airbender"
   region: "NTSC-U"
