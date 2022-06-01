@@ -185,12 +185,51 @@ PBPX-95204:
 PBPX-95205:
   name: "Playstation 2 - Demo Disc 2000"
   region: "PAL-M5"
+PBPX-95206:
+  name: "DVD Player Version 2.01"
+  region: "NTSC-J"
+PBPX-95207:
+  name: "DVD Player Version 2.10"
+  region: "NTSC-J"
+PBPX-95208:
+  name: "DVD Player Version 2.10"
+  region: "PAL-M8"
+PBPX-95209:
+  name: "DVD Player Version 2.10"
+  region: "PAL-A"
+PBPX-95210:
+  name: "DVD Player Version 2.10"
+  region: "NTSC-U"
 PBPX-95211:
   name: "HDD Utility Disc"
   region: "NTSC-U"
 PBPX-95216:
   name: "HDD Utility Disc [Beta]"
   region: "NTSC-U"
+PBPX-95218:
+  name: "DVD Player Version 2.12"
+  region: "NTSC-U"
+PBPX-95219:
+  name: "DVD Player Version 2.14"
+  region: "PAL-E"
+PBPX-95220:
+  name: "DVD Player Version 2.14"
+  region: "PAL-M7"
+PBPX-95221:
+  name: "DVD Player Version 2.12"
+  region: "NTSC-J"
+PBPX-95222:
+  name: "DVD Player Version 2.14"
+  region: "NTSC-J"
+PBPX-95223:
+  name: "DVD Player Version 2.14"
+  region: "NTSC-U"
+PBPX-95224:
+  name: "DVD Player Version 2.16"
+  region: "NTSC-J"
+PBPX-95228:
+  name: "DVD Player Version 3.00"
+  region: "NTSC-J"
 PBPX-95503:
   name: "Gran Turismo 3 - A-Spec [PS2 Bundle]"
   region: "NTSC-U"
@@ -306,6 +345,9 @@ PCPX-98017:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+PDPX-99109:
+  name: "DVD Player Version 3.04"
+  region: "NTSC-J"
 PKP2-00702:
   name: "Pandora - Kimi no Namae o Boku wa Shiru [Limited Edition]"
   region: "NTSC-J"
