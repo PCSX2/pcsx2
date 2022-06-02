@@ -23,6 +23,7 @@ struct IPUStatus {
 	bool DataRequested;
 };
 
+extern void ipuCMDProcess();
 extern void ipu0Interrupt();
 extern void ipu1Interrupt();
 
