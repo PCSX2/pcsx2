@@ -290,6 +290,7 @@ static IPUregisters& ipuRegs = (IPUregisters&)eeHw[0x2000];
 
 alignas(16) extern tIPU_cmd ipu_cmd;
 extern int coded_block_pattern;
+extern bool CommandExecuteQueued;
 
 extern void ipuReset();
 

@@ -20,11 +20,13 @@
 #include "mpeg2lib/Mpeg.h"
 
 IPUStatus IPU1Status;
+bool CommandExecuteQueued;
 
 void ipuDmaReset()
 {
 	IPU1Status.InProgress	= false;
 	IPU1Status.DMAFinished	= true;
+	CommandExecuteQueued	= false;
 }
 
 void SaveStateBase::ipuDmaFreeze()
@@ -137,6 +139,8 @@ void IPU1dma()
 		}
 	}
 
+
+	CommandExecuteQueued = true;
 	CPU_INT(IPU_PROCESS, totalqwc * BIAS);
 
 	IPU_LOG("Completed Call IPU1 DMA QWC Remaining %x Finished %d In Progress %d tadr %x", ipu1ch.qwc, IPU1Status.DMAFinished, IPU1Status.InProgress, ipu1ch.tadr);
@@ -146,7 +150,8 @@ void IPU0dma()
 {
 	if(!ipuRegs.ctrl.OFC)
 	{
-		IPUProcessInterrupt();
+		if(!CommandExecuteQueued)
+			IPUProcessInterrupt();
 		return;
 	}
 
@@ -183,7 +188,10 @@ void IPU0dma()
 	IPU_INT_FROM( readsize * BIAS );
 
 	if (ipu0ch.qwc > 0)
+	{
+		CommandExecuteQueued = true;
 		CPU_INT(IPU_PROCESS, 4);
+	}
 }
 
 __fi void dmaIPU0() // fromIPU
@@ -261,6 +269,7 @@ __fi void dmaIPU1() // toIPU
 
 void ipuCMDProcess()
 {
+	CommandExecuteQueued = false;
 	IPUProcessInterrupt();
 }
 
