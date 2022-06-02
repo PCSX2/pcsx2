@@ -457,7 +457,7 @@ void GameListModel::loadCommonImages()
 	m_type_exe_pixmap = QIcon(QStringLiteral(":/icons/applications-system-24.png")).pixmap(QSize(24, 24));
 	m_type_playlist_pixmap = QIcon(QStringLiteral(":/icons/address-book-new-22.png")).pixmap(QSize(22, 22));
 
-for (u32 i = 0; i < static_cast<u32>(GameList::Region::Count); i++) 
+	for (u32 i = 0; i < static_cast<u32>(GameList::Region::Count); i++) 
 	{
 		m_region_pixmaps[i] = QIcon(
 								QStringLiteral(":/icons/flags/%1.png").arg(GameList::RegionToString(static_cast<GameList::Region>(i))))

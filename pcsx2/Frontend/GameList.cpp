@@ -39,7 +39,7 @@
 enum : u32
 {
 	GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
-	GAME_LIST_CACHE_VERSION = 31
+	GAME_LIST_CACHE_VERSION = 32
 };
 
 namespace GameList
@@ -175,7 +175,7 @@ bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 	entry->compatibility_rating = CompatibilityRating::Unknown;
 	return true;
 }
-
+// clang-format off
 bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 {
 	FILESYSTEM_STAT_DATA sd;
@@ -298,7 +298,7 @@ bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 
 	return true;
 }
-
+// clang-format off
 bool GameList::PopulateEntryFromPath(const std::string& path, GameList::Entry* entry)
 {
 	if (VMManager::IsElfFileName(path.c_str()))
