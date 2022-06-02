@@ -121,7 +121,7 @@ void IPU1dma()
 	if(totalqwc == 0 || (IPU1Status.DMAFinished && !IPU1Status.InProgress))
 	{
 		totalqwc = std::max(4, totalqwc);
-		IPU_INT_TO(totalqwc);
+		IPU_INT_TO(totalqwc * BIAS);
 	}
 	else
 	{
@@ -133,18 +133,18 @@ void IPU1dma()
 		}
 		else
 		{
-			IPU_INT_TO(totalqwc*BIAS);
+			IPU_INT_TO(totalqwc * BIAS);
 		}
 	}
 
-	IPUProcessInterrupt();
+	CPU_INT(IPU_PROCESS, totalqwc * BIAS);
 
 	IPU_LOG("Completed Call IPU1 DMA QWC Remaining %x Finished %d In Progress %d tadr %x", ipu1ch.qwc, IPU1Status.DMAFinished, IPU1Status.InProgress, ipu1ch.tadr);
 }
 
 void IPU0dma()
 {
-	if(!ipuRegs.ctrl.OFC) 
+	if(!ipuRegs.ctrl.OFC)
 	{
 		IPUProcessInterrupt();
 		return;
@@ -181,6 +181,9 @@ void IPU0dma()
 	}
 
 	IPU_INT_FROM( readsize * BIAS );
+
+	if (ipu0ch.qwc > 0)
+		CPU_INT(IPU_PROCESS, 4);
 }
 
 __fi void dmaIPU0() // fromIPU
@@ -254,6 +257,11 @@ __fi void dmaIPU1() // toIPU
 			else
 				cpuRegs.eCycle[4] = 0x9999;
 	}
+}
+
+void ipuCMDProcess()
+{
+	IPUProcessInterrupt();
 }
 
 void ipu0Interrupt()

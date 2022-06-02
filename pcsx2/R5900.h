@@ -413,7 +413,8 @@ enum EE_EventType
 	
 	DMAC_GIF_UNIT,
 	VIF_VU0_FINISH,
-	VIF_VU1_FINISH
+	VIF_VU1_FINISH,
+	IPU_PROCESS
 };
 
 extern void CPU_INT( EE_EventType n, s32 ecycle );
