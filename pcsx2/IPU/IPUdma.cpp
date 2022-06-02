@@ -33,6 +33,7 @@ void SaveStateBase::ipuDmaFreeze()
 {
 	FreezeTag( "IPUdma" );
 	Freeze(IPU1Status);
+	Freeze(CommandExecuteQueued);
 }
 
 static __fi int IPU1chain() {
