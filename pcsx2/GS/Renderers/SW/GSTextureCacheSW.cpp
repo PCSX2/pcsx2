@@ -172,6 +172,41 @@ GSTextureCacheSW::Texture::~Texture()
 	}
 }
 
+void GSTextureCacheSW::Texture::Reset(u32 tw0, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
+{
+	if (m_buff && (m_TEX0.TW != TEX0.TW || m_TEX0.TH != TEX0.TH))
+	{
+		_aligned_free(m_buff);
+		m_buff = NULL;
+	}
+
+	m_tw = tw0;
+	m_age = 0;
+	m_complete = false;
+	m_p2t = NULL;
+	m_TEX0 = TEX0;
+	m_TEXA = TEXA;
+
+	if (m_tw == 0)
+	{
+		m_tw = std::max<int>(m_TEX0.TW, GSLocalMemory::m_psm[m_TEX0.PSM].pal == 0 ? 3 : 5); // makes one row 32 bytes at least, matches the smallest block size that is allocated for m_buff
+	}
+
+	memset(m_valid, 0, sizeof(m_valid));
+
+	m_sharedbits = GSUtil::HasSharedBitsPtr(m_TEX0.PSM);
+
+	m_offset = g_gs_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
+	m_pages = m_offset.pageLooperForRect(GSVector4i(0, 0, 1 << TEX0.TW, 1 << TEX0.TH));
+
+	m_repeating = m_TEX0.IsRepeating(); // repeating mode always works, it is just slightly slower
+
+	if (m_repeating)
+	{
+		m_p2t = g_gs_renderer->m_mem.GetPage2TileMap(m_TEX0);
+	}
+}
+
 bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 {
 	if (m_complete)

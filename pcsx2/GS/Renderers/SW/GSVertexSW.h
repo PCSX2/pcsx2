@@ -17,6 +17,9 @@
 
 #include "GS/GSVector.h"
 
+class GSDrawingContext;
+struct GSVertex;
+
 struct alignas(32) GSVertexSW
 {
 	// When drawing sprites:
@@ -242,6 +245,18 @@ struct alignas(32) GSVertexSW
 
 #endif
 	}
+
+	typedef void (*ConvertVertexBufferPtr)(GSDrawingContext* RESTRICT ctx, GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count);
+
+	static ConvertVertexBufferPtr s_cvb[4][2][2][2];
+
+	template <u32 primclass, u32 tme, u32 fst, u32 q_div>
+	static void ConvertVertexBuffer(GSDrawingContext* RESTRICT ctx, GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count);
+
+	static const GSVector4 m_pos_scale;
+#if _M_SSE >= 0x501
+	static const GSVector8 m_pos_scale2;
+#endif
 };
 
 #if _M_SSE >= 0x501

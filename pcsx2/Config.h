@@ -543,6 +543,7 @@ struct Pcsx2Config
 		int UserHacks_RoundSprite{0};
 		int UserHacks_TCOffsetX{0};
 		int UserHacks_TCOffsetY{0};
+		int UserHacks_CPUSpriteRenderBW{0};
 		TriFiltering UserHacks_TriFilter{TriFiltering::Automatic};
 		int OverrideTextureBarriers{-1};
 		int OverrideGeometryShaders{-1};

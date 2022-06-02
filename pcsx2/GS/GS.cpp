@@ -838,7 +838,8 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.UserHacks_CPUFBConversion != old_config.UserHacks_CPUFBConversion ||
 		GSConfig.UserHacks_DisableDepthSupport != old_config.UserHacks_DisableDepthSupport ||
 		GSConfig.UserHacks_DisablePartialInvalidation != old_config.UserHacks_DisablePartialInvalidation ||
-		GSConfig.UserHacks_TextureInsideRt != old_config.UserHacks_TextureInsideRt)
+		GSConfig.UserHacks_TextureInsideRt != old_config.UserHacks_TextureInsideRt ||
+		GSConfig.UserHacks_CPUSpriteRenderBW != old_config.UserHacks_CPUSpriteRenderBW)
 	{
 		g_gs_renderer->PurgeTextureCache();
 		g_gs_renderer->PurgePool();

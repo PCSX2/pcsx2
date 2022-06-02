@@ -23,6 +23,8 @@
 #include "common/Align.h"
 #include "common/HashCombine.h"
 
+//#define DISABLE_HW_TEXTURE_CACHE 1
+
 #define XXH_STATIC_LINKING_ONLY 1
 #define XXH_INLINE_ALL 1
 #include "xxhash.h"
@@ -931,11 +933,17 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					u32 rowsize = bw * 8192;
 					u32 offset = (u32)((t->m_TEX0.TBP0 - bp) * 256);
 
-					if (rowsize > 0 && offset % rowsize == 0)
+					// This grossness is needed to fix incorrect invalidations in True Crime: New York City.
+					// Because it's writing tiny texture blocks (which are later decompressed) over previous targets,
+					// we need to be ensure said targets are invalidated, otherwise the SW prim render path won't be
+					// triggered. This whole thing needs rewriting anyway, because it can't handle non-page-aligned
+					// writes, but for now we'll just use the unsafer logic when the TC hack is enabled.
+					const bool start_of_page = rowsize > 0 && (offset % rowsize == 0);
+					if (start_of_page || (rowsize > 0 && GSConfig.UserHacks_CPUSpriteRenderBW != 0))
 					{
 						int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
 
-						if (r.bottom > y)
+						if (r.bottom > y && (start_of_page || r.top >= y))
 						{
 							GL_CACHE("TC: Dirty After Target(%s) %d (0x%x)", to_string(type),
 								t->m_texture ? t->m_texture->GetID() : 0,
@@ -1206,6 +1214,20 @@ GSTextureCache::Target* GSTextureCache::GetExactTarget(u32 BP, u32 BW, u32 PSM) 
 	{
 		Target* t = *it;
 		if (t->m_TEX0.TBP0 == BP && t->m_TEX0.TBW == BW && t->m_TEX0.PSM == PSM)
+			return t;
+	}
+
+	return nullptr;
+}
+
+GSTextureCache::Target* GSTextureCache::GetTargetWithSharedBits(u32 BP, u32 PSM) const
+{
+	auto& rts = m_dst[GSLocalMemory::m_psm[PSM].depth ? DepthStencil : RenderTarget];
+	for (auto it = rts.begin(); it != rts.end(); ++it) // Iterate targets from MRU to LRU.
+	{
+		Target* t = *it;
+		u32 t_psm = (t->m_dirty_alpha) ? t->m_TEX0.PSM & ~0x1 : t->m_TEX0.PSM;
+		if (GSUtil::HasSharedBits(BP, PSM, t->m_TEX0.TBP0, t_psm))
 			return t;
 	}
 

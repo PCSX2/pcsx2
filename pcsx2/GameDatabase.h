@@ -82,6 +82,7 @@ namespace GameDatabaseSchema
 		RoundSprite,
 		TexturePreloading,
 		Deinterlace,
+		CPUSpriteRenderBW,
 
 		Count
 	};
