@@ -22,9 +22,9 @@
 
 static FILE* s_fp = LOG ? fopen("c:\\temp1\\_.txt", "w") : NULL;
 
-CONSTINIT const GSVector4 GSRendererSW::m_pos_scale = GSVector4::cxpr(1.0f / 16, 1.0f / 16, 1.0f, 128.0f);
+CONSTINIT const GSVector4 GSVertexSW::m_pos_scale = GSVector4::cxpr(1.0f / 16, 1.0f / 16, 1.0f, 128.0f);
 #if _M_SSE >= 0x501
-CONSTINIT const GSVector8 GSRendererSW::m_pos_scale2 = GSVector8::cxpr(1.0f / 16, 1.0f / 16, 1.0f, 128.0f, 1.0f / 16, 1.0f / 16, 1.0f, 128.0f);
+CONSTINIT const GSVector8 GSVertexSW::m_pos_scale2 = GSVector8::cxpr(1.0f / 16, 1.0f / 16, 1.0f, 128.0f, 1.0f / 16, 1.0f / 16, 1.0f, 128.0f);
 #endif
 
 GSRendererSW::GSRendererSW(int threads)
@@ -39,21 +39,6 @@ GSRendererSW::GSRendererSW(int threads)
 
 	std::fill(std::begin(m_fzb_pages), std::end(m_fzb_pages), 0);
 	std::fill(std::begin(m_tex_pages), std::end(m_tex_pages), 0);
-
-	#define InitCVB2(P, Q) \
-		m_cvb[P][0][0][Q] = &GSRendererSW::ConvertVertexBuffer<P, 0, 0, Q>; \
-		m_cvb[P][0][1][Q] = &GSRendererSW::ConvertVertexBuffer<P, 0, 1, Q>; \
-		m_cvb[P][1][0][Q] = &GSRendererSW::ConvertVertexBuffer<P, 1, 0, Q>; \
-		m_cvb[P][1][1][Q] = &GSRendererSW::ConvertVertexBuffer<P, 1, 1, Q>;
-
-	#define InitCVB(P) \
-		InitCVB2(P, 0) \
-		InitCVB2(P, 1)
-
-	InitCVB(GS_POINT_CLASS);
-	InitCVB(GS_LINE_CLASS);
-	InitCVB(GS_TRIANGLE_CLASS);
-	InitCVB(GS_SPRITE_CLASS);
 
 	m_dump_root = root_sw;
 }
@@ -195,15 +180,15 @@ GSTexture* GSRendererSW::GetFeedbackOutput()
 
 
 template <u32 primclass, u32 tme, u32 fst, u32 q_div>
-void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count)
+void GSVertexSW::ConvertVertexBuffer(GSDrawingContext* RESTRICT ctx, GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count)
 {
 	// FIXME q_div wasn't added to AVX2 code path.
 
-	GSVector4i off = (GSVector4i)m_context->XYOFFSET;
-	GSVector4 tsize = GSVector4(0x10000 << m_context->TEX0.TW, 0x10000 << m_context->TEX0.TH, 1, 0);
-	GSVector4i z_max = GSVector4i::xffffffff().srl32(GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt * 8);
+	GSVector4i off = (GSVector4i)ctx->XYOFFSET;
+	GSVector4 tsize = GSVector4(0x10000 << ctx->TEX0.TW, 0x10000 << ctx->TEX0.TH, 1, 0);
+	GSVector4i z_max = GSVector4i::xffffffff().srl32(GSLocalMemory::m_psm[ctx->ZBUF.PSM].fmt * 8);
 
-	for (int i = (int)m_vertex.next; i > 0; i--, src++, dst++)
+	for (int i = (int)count; i > 0; i--, src++, dst++)
 	{
 		GSVector4 stcq = GSVector4::load<true>(&src->m[0]); // s t rgba q
 
@@ -266,6 +251,23 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 	}
 }
 
+// clang-format off
+GSVertexSW::ConvertVertexBufferPtr GSVertexSW::s_cvb[4][2][2][2] = {
+#define InitCVB3(P, T, F) { &GSVertexSW::ConvertVertexBuffer<P, T, F, 0>, &GSVertexSW::ConvertVertexBuffer<P, T, F, 1> }
+#define InitCVB2(P, T) { InitCVB3(P, T, 0), InitCVB3(P, T, 1) }
+#define InitCVB(P) { InitCVB2(static_cast<u32>(P), 0), InitCVB2(static_cast<u32>(P), 1) }
+
+	InitCVB(GS_POINT_CLASS),
+	InitCVB(GS_LINE_CLASS),
+	InitCVB(GS_TRIANGLE_CLASS),
+	InitCVB(GS_SPRITE_CLASS)
+
+#undef InitCVB
+#undef InitCVB2
+#undef InitCVB3
+};
+// clang-format on
+
 void GSRendererSW::Draw()
 {
 	const GSDrawingContext* context = m_context;
@@ -304,7 +306,7 @@ void GSRendererSW::Draw()
 	// If you have both GS_SPRITE_CLASS && m_vt.m_eq.q, it will depends on the first part of the 'OR'
 	u32 q_div = !IsMipMapActive() && ((m_vt.m_eq.q && m_vt.m_min.t.z != 1.0f) || (!m_vt.m_eq.q && m_vt.m_primclass == GS_SPRITE_CLASS));
 
-	(this->*m_cvb[m_vt.m_primclass][PRIM->TME][PRIM->FST][q_div])(sd->vertex, m_vertex.buff, m_vertex.next);
+	GSVertexSW::s_cvb[m_vt.m_primclass][PRIM->TME][PRIM->FST][q_div](m_context, sd->vertex, m_vertex.buff, m_vertex.next);
 
 	memcpy(sd->index, m_index.buff, sizeof(u32) * m_index.tail);
 

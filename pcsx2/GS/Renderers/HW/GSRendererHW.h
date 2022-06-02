@@ -18,7 +18,10 @@
 #include "GSTextureCache.h"
 #include "GS/Renderers/Common/GSFunctionMap.h"
 #include "GS/Renderers/Common/GSRenderer.h"
+#include "GS/Renderers/SW/GSTextureCacheSW.h"
 #include "GS/GSState.h"
+
+class GSRasterizer;
 
 class GSRendererHW : public GSRenderer
 {
@@ -130,6 +133,9 @@ private:
 	void SwSpriteRender();
 	bool CanUseSwSpriteRender();
 
+	bool CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_tex);
+	bool SwPrimRender();
+
 	template <bool linear>
 	void RoundSpriteOffset();
 
@@ -159,6 +165,11 @@ private:
 	GSVector2i m_lod; // Min & Max level of detail
 
 	GSHWDrawConfig m_conf;
+
+	// software sprite renderer state
+	std::vector<GSVertexSW> m_sw_vertex_buffer;
+	std::unique_ptr<GSTextureCacheSW::Texture> m_sw_texture;
+	std::unique_ptr<GSRasterizer> m_sw_rasterizer;
 
 public:
 	GSRendererHW();

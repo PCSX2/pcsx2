@@ -9433,6 +9433,8 @@ SLES-50288:
   name: "Stuntman"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes textures.
 SLES-50296:
   name: "Gift"
   region: "PAL-F"
@@ -13507,6 +13509,8 @@ SLES-52371:
 SLES-52372:
   name: "Spider-Man 2"
   region: "PAL-M5"
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLES-52373:
   name: "Champions of Norrath"
   region: "PAL-E-S"
@@ -13653,6 +13657,8 @@ SLES-52446:
 SLES-52447:
   name: "Spider-Man 2"
   region: "PAL-I"
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLES-52448:
   name: "Knights of the Temple"
   region: "PAL-M4"
@@ -13753,6 +13759,8 @@ SLES-52490:
 SLES-52493:
   name: "Spider-Man 2"
   region: "PAL-E"
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLES-52495:
   name: "Bujingai - Swordmaster"
   region: "PAL-M5"
@@ -14458,9 +14466,13 @@ SLES-52781:
 SLES-52782:
   name: "Call of Duty - Finest Hour"
   region: "PAL-E"
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLES-52783:
   name: "Call of Duty - Le Jour de Gloire"
   region: "PAL-F"
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
   patches:
     30AE5279:
       content: |-
@@ -14470,6 +14482,8 @@ SLES-52783:
 SLES-52784:
   name: "Call of Duty - Finest Hour"
   region: "PAL-G"
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLES-52798:
   name: "Vietcong - Purple Haze"
   region: "PAL-M4"
@@ -15766,11 +15780,15 @@ SLES-53390:
   compat: 5
   clampModes:
     vuClampMode: 0 # Fixes Spider-Man's eye texture colour.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
 SLES-53391:
   name: "Ultimate Spider-Man"
   region: "PAL-M5"
   clampModes:
     vuClampMode: 0 # Fixes Spider-Man's eye texture colour.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
 SLES-53393:
   name: "Spartan - Total Warrior"
   region: "PAL-M5"
@@ -15849,6 +15867,7 @@ SLES-53415:
     - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLES-53416:
   name: "Call of Duty 2 - Big Red One"
   region: "PAL-M3"
@@ -15856,6 +15875,7 @@ SLES-53416:
     - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLES-53417:
   name: "Call of Duty 2 - Big Red One"
   region: "PAL-G"
@@ -15863,6 +15883,7 @@ SLES-53417:
     - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLES-53418:
   name: "Tak - The Great JuJu Challenge"
   region: "PAL-A"
@@ -15870,6 +15891,8 @@ SLES-53418:
 SLES-53419:
   name: "LA Rush"
   region: "PAL-M5"
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes textures.
 SLES-53420:
   name: "Winnie the Pooh's Rumbly Tumbly Adventure"
   region: "PAL-PL"
@@ -16404,15 +16427,23 @@ SLES-53616:
   region: "PAL-E"
   clampModes:
     eeClampMode: 2 # Fixes SPS on highway.
+  roundModes:
+    eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes ghosting.
+    cpuSpriteRenderBW: 1 # Fixes textures.
+    preloadFrameData: 1 # Fixes static text screens.
+    roundSprite: 1 # Fixes lines in some post-effects.
 SLES-53618:
   name: "True Crime - New York City"
   region: "PAL-S"
   clampModes:
     eeClampMode: 2 # Fixes SPS on highway.
+  roundModes:
+    eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes ghosting.
+    cpuSpriteRenderBW: 1 # Fixes textures.
+    preloadFrameData: 1 # Fixes static text screens.
+    roundSprite: 1 # Fixes lines in some post-effects.
 SLES-53621:
   name: "Wallace & Grommit - The Curse of the Were Rabbit"
   region: "PAL-M5"
@@ -16535,6 +16566,8 @@ SLES-53672:
   region: "PAL-E"
   clampModes:
     vuClampMode: 0 # Fixes Fixes Spider-Man's eye texture colour.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
 SLES-53676:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "PAL-E"
@@ -16688,6 +16721,7 @@ SLES-53722:
     - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLES-53724:
   name: "World Series of Poker"
   region: "PAL-E"
@@ -16766,9 +16800,13 @@ SLES-53749:
 SLES-53751:
   name: "Shrek Superslam"
   region: "PAL-M3"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
 SLES-53752:
   name: "Shrek Superslam"
   region: "PAL-M4"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
 SLES-53753:
   name: "Test Drive Unlimited"
   region: "PAL-M5"
@@ -17667,16 +17705,22 @@ SLES-54166:
   region: "PAL-E"
   clampModes:
     eeClampMode: 3
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLES-54167:
   name: "Call of Duty 3"
   region: "PAL-M3"
   clampModes:
     eeClampMode: 3
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLES-54168:
   name: "Call of Duty 3"
   region: "PAL-G"
   clampModes:
     eeClampMode: 3
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLES-54169:
   name: "Aeon Flux"
   region: "PAL-M4"
@@ -18979,11 +19023,15 @@ SLES-54723:
   compat: 4
   roundModes:
     eeRoundMode: 0 # Fixes idle camera behaviour.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
 SLES-54724:
   name: "Spider-Man 3"
   region: "PAL-M4"
   roundModes:
     eeRoundMode: 0 # Fixes idle camera behaviour.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
 SLES-54725:
   name: "Kirikou and the Wild Beasts"
   region: "PAL-M5"
@@ -19812,6 +19860,8 @@ SLES-55030:
 SLES-55031:
   name: "Kung Fu Panda"
   region: "PAL-F"
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLES-55032:
   name: "Off Road"
   region: "PAL-M5"
@@ -20211,12 +20261,18 @@ SLES-55233:
 SLES-55234:
   name: "Kung Fu Panda"
   region: "PAL-SW"
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLES-55235:
   name: "Kung Fu Panda"
   region: "PAL-I"
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLES-55236:
   name: "Kung Fu Panda"
   region: "PAL-G-S"
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLES-55237:
   name: "Naruto - Ultimate Ninja 3"
   region: "PAL-M5"
@@ -20779,6 +20835,8 @@ SLES-55518:
 SLES-55520:
   name: "Transformers - Revenge of the Fallen"
   region: "PAL-M5"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
 SLES-55522:
   name: "Disney-Pixar Up"
   region: "PAL-E"
@@ -22270,6 +22328,8 @@ SLKA-25385:
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 0 # Fixes idle camera behaviour.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
 SLKA-25388:
   name: "One Piece - Grand Adventure"
   region: "NTSC-K"
@@ -28394,6 +28454,8 @@ SLPM-66018:
 SLPM-66019:
   name: "Stuntman"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes textures.
 SLPM-66020:
   name: "Psi-Ops - The Mindgate Conspiracy"
   region: "NTSC-J"
@@ -28865,6 +28927,8 @@ SLPM-66158:
 SLPM-66159:
   name: "Call of Duty - Final Hour"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLPM-66160:
   name: "Devil May Cry 3 [Special Edition]"
   region: "NTSC-J"
@@ -29480,6 +29544,7 @@ SLPM-66328:
     - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLPM-66329:
   name: "Mahou Sensei Negima! Kagai Jugyou"
   region: "NTSC-J"
@@ -29721,6 +29786,8 @@ SLPM-66404:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 0 # Fixes Spider-Man's eye texture colour.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
 SLPM-66405:
   name: "Rajirugi - Precious"
   region: "NTSC-J"
@@ -29977,8 +30044,12 @@ SLPM-66473:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Fixes SPS on highway.
+  roundModes:
+    eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes ghosting.
+    cpuSpriteRenderBW: 1 # Fixes textures.
+    preloadFrameData: 1 # Fixes static text screens.
+    roundSprite: 1 # Fixes lines in some post-effects.
 SLPM-66474:
   name: "Odin Sphere"
   region: "NTSC-J"
@@ -32171,8 +32242,12 @@ SLPM-74243:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Fixes SPS on highway.
+  roundModes:
+    eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes ghosting.
+    cpuSpriteRenderBW: 1 # Fixes textures.
+    preloadFrameData: 1 # Fixes static text screens.
+    roundSprite: 1 # Fixes lines in some post-effects.
 SLPM-74244:
   name: "Phantasy Star Universe [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -36377,6 +36452,8 @@ SLPS-25823:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Fixes idle camera behaviour.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
 SLPS-25825:
   name: "Zero no Tsukaima [Best Collection]"
   region: "NTSC-J"
@@ -38243,6 +38320,8 @@ SLUS-20250:
   name: "Stuntman"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes textures.
 SLUS-20251:
   name: "Harvest Moon - Save the Homeland"
   region: "NTSC-U"
@@ -40347,6 +40426,8 @@ SLUS-20725:
   name: "Call of Duty - Finest Hour"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLUS-20726:
   name: "ESPN - NBA Basketball"
   region: "NTSC-U"
@@ -40596,6 +40677,8 @@ SLUS-20776:
   name: "Spider-Man 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLUS-20777:
   name: "Obscure"
   region: "NTSC-U"
@@ -40975,6 +41058,8 @@ SLUS-20870:
   compat: 5
   clampModes:
     vuClampMode: 0 # Fixes wrong texture colour.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
 SLUS-20871:
   name: "Naval Ops - Commander"
   region: "NTSC-U"
@@ -42144,8 +42229,12 @@ SLUS-21106:
   compat: 5
   clampModes:
     eeClampMode: 2 # Fixes SPS on highway.
+  roundModes:
+    eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes ghosting.
+    cpuSpriteRenderBW: 1 # Fixes textures.
+    preloadFrameData: 1 # Fixes static text screens.
+    roundSprite: 1 # Fixes lines in some post-effects.
 SLUS-21107:
   name: "X-Men - The Official Game"
   region: "NTSC-U"
@@ -42177,6 +42266,8 @@ SLUS-21112:
   name: "L.A. Rush"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes textures.
 SLUS-21113:
   name: "Atelier Iris - Eternal Mana"
   region: "NTSC-U"
@@ -42566,6 +42657,8 @@ SLUS-21197:
   name: "Shrek Superslam"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
 SLUS-21198:
   name: "Batman Begins"
   region: "NTSC-U"
@@ -42724,6 +42817,7 @@ SLUS-21228:
     - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLUS-21229:
   name: "Motocross Mania 3"
   region: "NTSC-U"
@@ -43061,6 +43155,8 @@ SLUS-21285:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 0 # Fixes Spider-Man's eyes texture.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
 SLUS-21286:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "NTSC-U"
@@ -43232,7 +43328,7 @@ SLUS-21318:
     - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
-    cpuFramebufferConversion: 1 # Fixes some textures but most are still massively broken.
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLUS-21319:
   name: "Flow - Urban Dance Uprising"
   region: "NTSC-U"
@@ -43855,6 +43951,8 @@ SLUS-21426:
   compat: 5
   clampModes:
     eeClampMode: 3
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLUS-21427:
   name: "WWE SmackDown! vs. RAW 2007"
   region: "NTSC-U"
@@ -44318,6 +44416,8 @@ SLUS-21552:
   compat: 4
   roundModes:
     eeRoundMode: 0 # Fixes idle camera behaviour.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
 SLUS-21553:
   name: "Lumines Plus"
   region: "NTSC-U"
@@ -45255,6 +45355,8 @@ SLUS-21757:
   name: "Kung Fu Panda"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
 SLUS-21758:
   name: "Rock Band - Track Pack Vol.1"
   region: "NTSC-U"
@@ -45752,6 +45854,8 @@ SLUS-21881:
   name: "Transformers - Revenge of the Fallen"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
   patches:
     137C792E:
       content: |-

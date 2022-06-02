@@ -286,9 +286,6 @@ protected:
 	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false, int x_offset = 0, int y_offset = 0, const GSVector2i* lod = nullptr, const GSVector4i* src_range = nullptr);
 	Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type, const bool clear);
 
-	/// Looks up a target in the cache, and only returns it if the BP/BW/PSM match exactly.
-	Target* GetExactTarget(u32 BP, u32 BW, u32 PSM) const;
-
 	HashCacheEntry* LookupHashCache(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool& paltex, const u32* clut, const GSVector2i* lod);
 
 	static void PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSLocalMemory& mem, bool paltex, GSTexture* tex, u32 level);
@@ -313,6 +310,10 @@ public:
 
 	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask = 0, const bool is_frame = false, const int real_h = 0);
 	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, const int real_h);
+
+	/// Looks up a target in the cache, and only returns it if the BP/BW/PSM match exactly.
+	Target* GetExactTarget(u32 BP, u32 BW, u32 PSM) const;
+	Target* GetTargetWithSharedBits(u32 BP, u32 PSM) const;
 
 	void InvalidateVideoMemType(int type, u32 bp);
 	void InvalidateVideoMemSubTarget(GSTextureCache::Target* rt);
