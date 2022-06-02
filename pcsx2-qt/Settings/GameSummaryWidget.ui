@@ -100,7 +100,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-b.png</normaloff>:/icons/flags/flag-b.png</iconset>
+        <normaloff>:/icons/flags/NTSC-B.png</normaloff>:/icons/flags/NTSC-B.png</iconset>
       </property>
      </item>
      <item>
@@ -109,7 +109,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-c.png</normaloff>:/icons/flags/flag-c.png</iconset>
+        <normaloff>:/icons/flags/NTSC-C.png</normaloff>:/icons/flags/NTSC-C.png</iconset>
       </property>
      </item>
      <item>
@@ -118,7 +118,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-hk.png</normaloff>:/icons/flags/flag-hk.png</iconset>
+        <normaloff>:/icons/flags/NTSC-HK.png</normaloff>:/icons/flags/NTSC-HK.png</iconset>
       </property>
      </item>
      <item>
@@ -127,7 +127,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-jp.png</normaloff>:/icons/flags/flag-jp.png</iconset>
+        <normaloff>:/icons/flags/NTSC-J.png</normaloff>:/icons/flags/NTSC-J.png</iconset>
       </property>
      </item>
      <item>
@@ -136,7 +136,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-k.png</normaloff>:/icons/flags/flag-k.png</iconset>
+        <normaloff>:/icons/flags/NTSC-K.png</normaloff>:/icons/flags/NTSC-K.png</iconset>
       </property>
      </item>
      <item>
@@ -145,7 +145,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-t.png</normaloff>:/icons/flags/flag-t.png</iconset>
+        <normaloff>:/icons/flags/NTSC-T.png</normaloff>:/icons/flags/NTSC-T.png</iconset>
       </property>
      </item>
      <item>
@@ -154,7 +154,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-us.png</normaloff>:/icons/flags/flag-us.png</iconset>
+        <normaloff>:/icons/flags/NTSC-U.png</normaloff>:/icons/flags/NTSC-U.png</iconset>
       </property>
      </item>
      <item>
@@ -163,16 +163,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-other.png</normaloff>:/icons/flags/flag-other.png</iconset>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>PAL (Europe)</string>
-      </property>
-      <property name="icon">
-       <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-eu.png</normaloff>:/icons/flags/flag-eu.png</iconset>
+        <normaloff>:/icons/flags/Other.png</normaloff>:/icons/flags/Other.png</iconset>
       </property>
      </item>
      <item>
@@ -181,7 +172,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-a.png</normaloff>:/icons/flags/flag-a.png</iconset>
+        <normaloff>:/icons/flags/PAL-A.png</normaloff>:/icons/flags/PAL-A.png</iconset>
       </property>
      </item>
      <item>
@@ -190,7 +181,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-af.png</normaloff>:/icons/flags/flag-af.png</iconset>
+        <normaloff>:/icons/flags/PAL-AF.png</normaloff>:/icons/flags/PAL-AF.png</iconset>
       </property>
      </item>
      <item>
@@ -199,7 +190,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-au.png</normaloff>:/icons/flags/flag-au.png</iconset>
+        <normaloff>:/icons/flags/PAL-AU.png</normaloff>:/icons/flags/PAL-AU.png</iconset>
       </property>
      </item>
      <item>
@@ -208,7 +199,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-be.png</normaloff>:/icons/flags/flag-be.png</iconset>
+        <normaloff>:/icons/flags/PAL-BE.png</normaloff>:/icons/flags/PAL-BE.png</iconset>
       </property>
      </item>
      <item>
@@ -217,7 +208,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-eu.png</normaloff>:/icons/flags/flag-eu.png</iconset>
+        <normaloff>:/icons/flags/PAL-E.png</normaloff>:/icons/flags/PAL-E.png</iconset>
       </property>
      </item>
      <item>
@@ -226,7 +217,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-f.png</normaloff>:/icons/flags/flag-f.png</iconset>
+        <normaloff>:/icons/flags/PAL-F.png</normaloff>:/icons/flags/PAL-F.png</iconset>
       </property>
      </item>
      <item>
@@ -235,7 +226,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-fi.png</normaloff>:/icons/flags/flag-fi.png</iconset>
+        <normaloff>:/icons/flags/PAL-FI.png</normaloff>:/icons/flags/PAL-FI.png</iconset>
       </property>
      </item>
      <item>
@@ -244,7 +235,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-g.png</normaloff>:/icons/flags/flag-g.png</iconset>
+        <normaloff>:/icons/flags/PAL-G.png</normaloff>:/icons/flags/PAL-G.png</iconset>
       </property>
      </item>
      <item>
@@ -253,7 +244,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-gr.png</normaloff>:/icons/flags/flag-gr.png</iconset>
+        <normaloff>:/icons/flags/PAL-GR.png</normaloff>:/icons/flags/PAL-GR.png</iconset>
       </property>
      </item>
      <item>
@@ -262,7 +253,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-i.png</normaloff>:/icons/flags/flag-i.png</iconset>
+        <normaloff>:/icons/flags/PAL-I.png</normaloff>:/icons/flags/PAL-I.png</iconset>
       </property>
      </item>
      <item>
@@ -271,16 +262,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-in.png</normaloff>:/icons/flags/flag-in.png</iconset>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>PAL-NL (Netherlands)</string>
-      </property>
-      <property name="icon">
-       <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-nl.png</normaloff>:/icons/flags/flag-nl.png</iconset>
+        <normaloff>:/icons/flags/PAL-IN.png</normaloff>:/icons/flags/PAL-IN.png</iconset>
       </property>
      </item>
      <item>
@@ -289,7 +271,16 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-eu.png</normaloff>:/icons/flags/flag-eu.png</iconset>
+        <normaloff>:/icons/flags/PAL-M.png</normaloff>:/icons/flags/PAL-M.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PAL-NL (Netherlands)</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../resources/resources.qrc">
+        <normaloff>:/icons/flags/PAL-NL.png</normaloff>:/icons/flags/PAL-NL.png</iconset>
       </property>
      </item>
      <item>
@@ -298,7 +289,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-no.png</normaloff>:/icons/flags/flag-no.png</iconset>
+        <normaloff>:/icons/flags/PAL-NO.png</normaloff>:/icons/flags/PAL-NO.png</iconset>
       </property>
      </item>
      <item>
@@ -307,7 +298,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-p.png</normaloff>:/icons/flags/flag-p.png</iconset>
+        <normaloff>:/icons/flags/PAL-P.png</normaloff>:/icons/flags/PAL-P.png</iconset>
       </property>
      </item>
      <item>
@@ -316,7 +307,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-r.png</normaloff>:/icons/flags/flag-r.png</iconset>
+        <normaloff>:/icons/flags/PAL-R.png</normaloff>:/icons/flags/PAL-R.png</iconset>
       </property>
      </item>
      <item>
@@ -325,7 +316,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-s.png</normaloff>:/icons/flags/flag-s.png</iconset>
+        <normaloff>:/icons/flags/PAL-S.png</normaloff>:/icons/flags/PAL-S.png</iconset>
       </property>
      </item>
      <item>
@@ -334,7 +325,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-sc.png</normaloff>:/icons/flags/flag-sc.png</iconset>
+        <normaloff>:/icons/flags/PAL-SC.png</normaloff>:/icons/flags/PAL-SC.png</iconset>
       </property>
      </item>
      <item>
@@ -343,7 +334,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-sw.png</normaloff>:/icons/flags/flag-sw.png</iconset>
+        <normaloff>:/icons/flags/PAL-SW.png</normaloff>:/icons/flags/PAL-SW.png</iconset>
       </property>
      </item>
      <item>
@@ -352,7 +343,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-swi.png</normaloff>:/icons/flags/flag-swi.png</iconset>
+        <normaloff>:/icons/flags/PAL-SWI.png</normaloff>:/icons/flags/PAL-SWI.png</iconset>
       </property>
      </item>
      <item>
@@ -361,7 +352,7 @@
       </property>
       <property name="icon">
        <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/flags/flag-uk.png</normaloff>:/icons/flags/flag-uk.png</iconset>
+        <normaloff>:/icons/flags/PAL-UK.png</normaloff>:/icons/flags/PAL-UK.png</iconset>
       </property>
      </item>
     </widget>
