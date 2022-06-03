@@ -188,7 +188,7 @@ void IPU0dma()
 
 	IPU_INT_FROM( readsize * BIAS );
 
-	if (ipu0ch.qwc > 0)
+	if (ipu0ch.qwc > 0 && !CommandExecuteQueued)
 	{
 		CommandExecuteQueued = true;
 		CPU_INT(IPU_PROCESS, 4);
