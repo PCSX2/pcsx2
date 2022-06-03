@@ -9061,13 +9061,12 @@ SLES-50252:
   patches:
     FBE2613D:
       content: |-
-        comment=Patch by Prafull
-        // Fixes VSync issues.
-        patch=0,EE,001a66ac,word,03e00008
-        // Avoids hanging at first loading screen.
-        patch=0,EE,001a6688,word,00000000
-        // Skips movies.
-        patch=0,EE,001b1b00,word,24020001
+        // Avoid stack corruption, fix TLB misses.
+        patch=1,EE,00174538,word,27BDFF00
+        patch=1,EE,00174680,word,27BD0100
+        // Skip Vsync on WcCard::CommandWait loop.
+        // Before removing this patch, check initial loading with unformatted memory card.
+        patch=1,EE,0017CED0,word,00000000
 SLES-50253:
   name: "Modern Groove - Ministry of Sound Edition"
   region: "PAL-E"
@@ -32796,19 +32795,27 @@ SLPS-25013:
 SLPS-25014:
   name: "Choro Q - High Grade [Limited Edition]"
   region: "NTSC-J"
+  patches:
+    6F9C4D7C:
+      content: |-
+        // Avoid stack corruption, fix TLB misses.
+        patch=1,EE,00172950,word,27BDFF00
+        patch=1,EE,00172A8C,word,27BD0100
+        // Skip Vsync on WcCard::CommandWait loop.
+        // Before removing this patch, check initial loading with unformatted memory card.
+        patch=1,EE,0017B2A8,word,00000000
 SLPS-25015:
   name: "Choro Q - High Grade"
   region: "NTSC-J"
   patches:
     6F9C4D7C:
       content: |-
-        comment=Patch by Prafull
-        // Fixes VSync issues.
-        patch=1,EE,001a341c,word,03e00008
-        // Avoid hang at first loading screen.
-        patch=1,EE,001a33f8,word,00000000
-        // Skips movies.
-        patch=1,EE,001adc38,word,24020001
+        // Avoid stack corruption, fix TLB misses.
+        patch=1,EE,00172950,word,27BDFF00
+        patch=1,EE,00172A8C,word,27BD0100
+        // Skip Vsync on WcCard::CommandWait loop.
+        // Before removing this patch, check initial loading with unformatted memory card.
+        patch=1,EE,0017B2A8,word,00000000
 SLPS-25016:
   name: "Neo Atlas 3"
   region: "NTSC-J"
@@ -37418,13 +37425,12 @@ SLUS-20225:
   patches:
     03854A28:
       content: |-
-        comment=Patch by Prafull
-        // Fixes VSync issues.
-        patch=0,EE,001a62ac,word,03e00008
-        // Avoid hang at first loading screen.
-        patch=0,EE,001a6288,word,00000000
-        // Skips movies.
-        patch=0,EE,001b1700,word,24020001
+        // Avoid stack corruption, fix TLB misses.
+        patch=1,EE,00174138,word,27BDFF00
+        patch=1,EE,00174274,word,27BD0100
+        // Skip Vsync on WcCard::CommandWait loop.
+        // Before removing this patch, check initial loading with unformatted memory card.
+        patch=1,EE,0017CAC0,word,00000000
 SLUS-20226:
   name: "Batman - Vengeance"
   region: "NTSC-U"
