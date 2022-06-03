@@ -19998,6 +19998,14 @@ SLES-55249:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Reduces ghosting and vertical lines.
+  patches:
+    CA5F8BC1:
+      content: |-
+        // Avoids bad COP2 errors due to the instant nature of the PCSX2's COP2 handling.
+        patch=1,EE,0034829c,word,4B000460
+        patch=1,EE,003482a0,word,4AF103BC
+        patch=1,EE,003482b8,word,4A800460
+        patch=1,EE,003482bc,word,4B7103BC
 SLES-55250:
   name: "WWE SmackDown vs. Raw 2009"
   region: "PAL-A"
