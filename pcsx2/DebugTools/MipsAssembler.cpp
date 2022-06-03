@@ -686,6 +686,19 @@ void CMipsInstruction::encodeNormal()
 {
 	encoding = Opcode.destencoding;
 
+	if (Opcode.flags & MO_PSEUDO)
+	{
+		// Special opcodes that are legal mips instructions
+		// but are actually other instructions
+		switch (Opcode.destencoding)
+		{
+			case MIPS_OP(0x0D):
+				// li RT, IMM -> ori RT, $zero, IMM
+				encoding |= MIPS_RS(0);
+				break;
+		}
+	}
+
 	if (registers.grs.num != -1) encoding |= MIPS_RS(registers.grs.num);	// source reg
 	if (registers.grt.num != -1) encoding |= MIPS_RT(registers.grt.num);	// target reg
 	if (registers.grd.num != -1) encoding |= MIPS_RD(registers.grd.num);	// dest reg

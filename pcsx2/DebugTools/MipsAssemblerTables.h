@@ -45,6 +45,7 @@
 #define MO_VFPU			0x00008000	// vfpu type opcode
 #define MO_64BIT		0x00010000	// only available on 64 bit cpus
 #define MO_FPU			0x00020000	// only available with an fpu
+#define MO_PSEUDO		0x00040000	// psuedo op
 
 #define BITFIELD(START,LENGTH,VALUE)	(((VALUE) << (START)))
 #define MIPS_FUNC(VALUE)				BITFIELD(0,6,(VALUE))

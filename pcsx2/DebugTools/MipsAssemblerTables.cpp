@@ -437,6 +437,10 @@ const tMipsOpcode MipsOpcodes[] = {
 	{ "seh",		"d,t",		MIPS_ALLEGREX0(16),			MA_PSP },
 	{ "seh",		"d,t",		MIPS_ALLEGREX0(24),			MA_PSP },
 
+	// Special PSEUDO instructions
+	// li    -> ori
+	{ "li",			"t,i",			MIPS_OP(0x0D),				MA_MIPS1,	MO_PSEUDO},
+	
 	// END
 	{ NULL,		NULL,		0,			0 }
 };
