@@ -48,11 +48,6 @@ static bool IsIntConvertShader(ShaderConvert i)
 
 static bool IsDATMConvertShader(ShaderConvert i) { return (i == ShaderConvert::DATM_0 || i == ShaderConvert::DATM_1); }
 
-static bool IsPresentConvertShader(ShaderConvert i)
-{
-	return (i == ShaderConvert::COPY || (i >= ShaderConvert::SCANLINE && i <= ShaderConvert::COMPLEX_FILTER));
-}
-
 static D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE GetLoadOpForTexture(GSTexture12* tex)
 {
 	if (!tex)
@@ -157,8 +152,9 @@ bool GSDevice12::Create(HostDisplay* display)
 	if (!CreateBuffers())
 		return false;
 
-	if (!CompileConvertPipelines() || !CompileInterlacePipelines() ||
-		!CompileMergePipelines() || !CompilePostProcessingPipelines())
+	if (!CompileConvertPipelines() || !CompilePresentPipelines() ||
+		!CompileInterlacePipelines() || !CompileMergePipelines() ||
+		!CompilePostProcessingPipelines())
 	{
 		Host::ReportErrorAsync("GS", "Failed to compile utility pipelines");
 		return false;
@@ -499,6 +495,20 @@ void GSDevice12::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	const u32 index = (red ? 1 : 0) | (green ? 2 : 0) | (blue ? 4 : 0) | (alpha ? 8 : 0);
 	DoStretchRect(
 		static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect, m_color_copy[index].get(), false);
+}
+
+void GSDevice12::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
+	PresentShader shader, float shaderTime, bool linear)
+{
+	DisplayConstantBuffer cb;
+	cb.SetSource(sRect, sTex->GetSize());
+	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GSVector2i(m_display->GetWindowWidth(), m_display->GetWindowHeight()));
+	cb.SetTime(shaderTime);
+	SetUtilityRootSignature();
+	SetUtilityPushConstants(&cb, sizeof(cb));
+
+	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect,
+		m_present[static_cast<int>(shader)].get(), linear);
 }
 
 void GSDevice12::BeginRenderPassForStretchRect(GSTexture12* dTex, const GSVector4i& dtex_rc, const GSVector4i& dst_rc)
@@ -1132,17 +1142,6 @@ bool GSDevice12::CompileConvertPipelines()
 
 		D3D12::SetObjectNameFormatted(m_convert[index].get(), "Convert pipeline %d", i);
 
-		if (/*swapchain && */ IsPresentConvertShader(i))
-		{
-			// TODO: compile a present variant too
-			gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
-			m_present[index] = gpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
-			if (!m_present[index])
-				return false;
-
-			D3D12::SetObjectNameFormatted(m_present[index].get(), "Convert pipeline %d (Present)", i);
-		}
-
 		if (i == ShaderConvert::COPY)
 		{
 			// compile the variant for setting up hdr rendering
@@ -1213,6 +1212,50 @@ bool GSDevice12::CompileConvertPipelines()
 
 			D3D12::SetObjectNameFormatted(m_date_image_setup_pipelines[ds][datm].get(), "DATE image clear pipeline (ds=%u, datm=%u)", ds, datm);
 		}
+	}
+
+	return true;
+}
+
+bool GSDevice12::CompilePresentPipelines()
+{
+	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/dx11/present.fx");
+	if (!shader)
+	{
+		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/present.fx.");
+		return false;
+	}
+
+	ComPtr<ID3DBlob> m_convert_vs = GetUtilityVertexShader(*shader, "vs_main");
+	if (!m_convert_vs)
+		return false;
+
+	D3D12::GraphicsPipelineBuilder gpb;
+	gpb.SetRootSignature(m_utility_root_signature.get());
+	AddUtilityVertexAttributes(gpb);
+	gpb.SetNoCullRasterizationState();
+	gpb.SetNoBlendingState();
+	gpb.SetVertexShader(m_convert_vs.get());
+	gpb.SetDepthState(false, false, D3D12_COMPARISON_FUNC_ALWAYS);
+	gpb.SetNoStencilState();
+	gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+	for (PresentShader i = PresentShader::COPY; static_cast<int>(i) < static_cast<int>(PresentShader::Count);
+		 i = static_cast<PresentShader>(static_cast<int>(i) + 1))
+	{
+		const int index = static_cast<int>(i);
+
+		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, shaderName(i)));
+		if (!ps)
+			return false;
+
+		gpb.SetPixelShader(ps.get());
+
+		m_present[index] = gpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
+		if (!m_present[index])
+			return false;
+
+		D3D12::SetObjectNameFormatted(m_present[index].get(), "Present pipeline %d", i);
 	}
 
 	return true;

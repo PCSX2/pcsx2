@@ -22,16 +22,13 @@ const char* shaderName(ShaderConvert value)
 {
 	switch (value)
 	{
+			// clang-format off
 		case ShaderConvert::COPY:                return "ps_copy";
 		case ShaderConvert::RGBA8_TO_16_BITS:    return "ps_convert_rgba8_16bits";
 		case ShaderConvert::DATM_1:              return "ps_datm1";
 		case ShaderConvert::DATM_0:              return "ps_datm0";
 		case ShaderConvert::MOD_256:             return "ps_mod256";
-		case ShaderConvert::SCANLINE:            return "ps_filter_scanlines";
-		case ShaderConvert::DIAGONAL_FILTER:     return "ps_filter_diagonal";
 		case ShaderConvert::TRANSPARENCY_FILTER: return "ps_filter_transparency";
-		case ShaderConvert::TRIANGULAR_FILTER:   return "ps_filter_triangular";
-		case ShaderConvert::COMPLEX_FILTER:      return "ps_filter_complex";
 		case ShaderConvert::FLOAT32_TO_16_BITS:  return "ps_convert_float32_32bits";
 		case ShaderConvert::FLOAT32_TO_32_BITS:  return "ps_convert_float32_32bits";
 		case ShaderConvert::FLOAT32_TO_RGBA8:    return "ps_convert_float32_rgba8";
@@ -43,9 +40,27 @@ const char* shaderName(ShaderConvert value)
 		case ShaderConvert::DEPTH_COPY:          return "ps_depth_copy";
 		case ShaderConvert::RGBA_TO_8I:          return "ps_convert_rgba_8i";
 		case ShaderConvert::YUV:                 return "ps_yuv";
+			// clang-format on
 		default:
 			ASSERT(0);
 			return "ShaderConvertUnknownShader";
+	}
+}
+
+const char* shaderName(PresentShader value)
+{
+	switch (value)
+	{
+			// clang-format off
+		case PresentShader::COPY:              return "ps_copy";
+		case PresentShader::SCANLINE:          return "ps_filter_scanlines";
+		case PresentShader::DIAGONAL_FILTER:   return "ps_filter_diagonal";
+		case PresentShader::TRIANGULAR_FILTER: return "ps_filter_triangular";
+		case PresentShader::COMPLEX_FILTER:    return "ps_filter_complex";
+			// clang-format on
+		default:
+			ASSERT(0);
+			return "DisplayShaderUnknownShader";
 	}
 }
 
@@ -56,18 +71,7 @@ static int MipmapLevelsForSize(int width, int height)
 
 std::unique_ptr<GSDevice> g_gs_device;
 
-GSDevice::GSDevice()
-	: m_merge(NULL)
-	, m_weavebob(NULL)
-	, m_blend(NULL)
-	, m_target_tmp(NULL)
-	, m_current(NULL)
-	, m_frame(0)
-	, m_rbswapped(false)
-{
-	memset(&m_vertex, 0, sizeof(m_vertex));
-	memset(&m_index, 0, sizeof(m_index));
-}
+GSDevice::GSDevice() = default;
 
 GSDevice::~GSDevice()
 {

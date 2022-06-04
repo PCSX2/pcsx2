@@ -36,11 +36,7 @@ enum class ShaderConvert
 	DATM_1,
 	DATM_0,
 	MOD_256,
-	SCANLINE,
-	DIAGONAL_FILTER,
 	TRANSPARENCY_FILTER,
-	TRIANGULAR_FILTER,
-	COMPLEX_FILTER,
 	FLOAT32_TO_16_BITS,
 	FLOAT32_TO_32_BITS,
 	FLOAT32_TO_RGBA8,
@@ -55,9 +51,20 @@ enum class ShaderConvert
 	Count
 };
 
+enum class PresentShader
+{
+	COPY = 0,
+	SCANLINE,
+	DIAGONAL_FILTER,
+	TRIANGULAR_FILTER,
+	COMPLEX_FILTER,
+	Count
+};
+
 /// Get the name of a shader
 /// (Can't put methods on an enum class)
 const char* shaderName(ShaderConvert value);
+const char* shaderName(PresentShader value);
 
 enum ChannelFetch
 {
@@ -71,6 +78,41 @@ enum ChannelFetch
 };
 
 #pragma pack(push, 1)
+
+class DisplayConstantBuffer
+{
+public:
+	GSVector4 SourceRect; // +0,xyzw
+	GSVector4 TargetRect; // +16,xyzw
+	GSVector2 SourceSize; // +32,xy
+	GSVector2 TargetSize; // +40,zw
+	GSVector2 TargetResolution; // +48,xy
+	GSVector2 RcpTargetResolution; // +56,zw
+	GSVector2 SourceResolution; // +64,xy
+	GSVector2 RcpSourceResolution; // +72,zw
+	GSVector4 TimeAndPad; // seconds since GS init +76,xyzw
+	// +96
+
+	// assumes that sRect is normalized
+	void SetSource(const GSVector4& sRect, const GSVector2i& sSize)
+	{
+		SourceRect = sRect;
+		SourceResolution = GSVector2(static_cast<float>(sSize.x), static_cast<float>(sSize.y));
+		RcpSourceResolution = GSVector2(1.0f) / SourceResolution;
+		SourceSize = GSVector2((sRect.z - sRect.x) * SourceResolution.x, (sRect.w - sRect.y) * SourceResolution.y);
+	}
+	void SetTarget(const GSVector4& dRect, const GSVector2i& dSize)
+	{
+		TargetRect = dRect;
+		TargetResolution = GSVector2(static_cast<float>(dSize.x), static_cast<float>(dSize.y));
+		RcpTargetResolution = GSVector2(1.0f) / TargetResolution;
+		TargetSize = GSVector2(dRect.z - dRect.x, dRect.w - dRect.y);
+	}
+	void SetTime(float time)
+	{
+		TimeAndPad = GSVector4(time);
+	}
+};
 
 class MergeConstantBuffer
 {
@@ -623,22 +665,23 @@ private:
 protected:
 	static constexpr u32 MAX_POOLED_TEXTURES = 300;
 
-	HostDisplay* m_display;
-	GSTexture* m_merge;
-	GSTexture* m_weavebob;
-	GSTexture* m_blend;
-	GSTexture* m_target_tmp;
-	GSTexture* m_current;
+	HostDisplay* m_display = nullptr;
+
+	GSTexture* m_merge = nullptr;
+	GSTexture* m_weavebob = nullptr;
+	GSTexture* m_blend = nullptr;
+	GSTexture* m_target_tmp = nullptr;
+	GSTexture* m_current = nullptr;
 	struct
 	{
 		size_t stride, start, count, limit;
-	} m_vertex;
+	} m_vertex = {};
 	struct
 	{
 		size_t start, count, limit;
-	} m_index;
-	unsigned int m_frame; // for ageing the pool
-	bool m_rbswapped;
+	} m_index = {};
+	unsigned int m_frame = 0; // for ageing the pool
+	bool m_rbswapped = false;
 	FeatureSupport m_features;
 
 	virtual GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) = 0;
@@ -721,6 +764,9 @@ public:
 	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha) {}
 
 	void StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true);
+
+	/// Performs a screen blit for display. If dTex is null, it assumes you are writing to the system framebuffer/swap chain.
+	virtual void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear) {}
 
 	virtual void RenderHW(GSHWDrawConfig& config) {}
 

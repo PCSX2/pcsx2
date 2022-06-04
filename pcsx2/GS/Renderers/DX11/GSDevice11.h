@@ -172,6 +172,14 @@ private:
 
 	struct
 	{
+		wil::com_ptr_nothrow<ID3D11InputLayout> il;
+		wil::com_ptr_nothrow<ID3D11VertexShader> vs;
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps[static_cast<int>(PresentShader::Count)];
+		wil::com_ptr_nothrow<ID3D11Buffer> ps_cb;
+	} m_present;
+
+	struct
+	{
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps[2];
 		wil::com_ptr_nothrow<ID3D11Buffer> cb;
 		wil::com_ptr_nothrow<ID3D11BlendState> bs;
@@ -257,6 +265,7 @@ public:
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, bool linear = true);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, ID3D11BlendState* bs, bool linear = true);
+	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear) override;
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm);
 

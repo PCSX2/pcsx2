@@ -39,6 +39,19 @@ struct GSMTLConvertPSUniform
 	int emodc;
 };
 
+struct GSMTLPresentPSUniform
+{
+	vector_float4 source_rect;
+	vector_float4 target_rect;
+	vector_float2 source_size;
+	vector_float2 target_size;
+	vector_float2 target_resolution;
+	vector_float2 rcp_target_resolution; ///< 1 / target_resolution
+	vector_float2 source_resolution;
+	vector_float2 rcp_source_resolution; ///< 1 / source_resolution
+	float time;
+};
+
 struct GSMTLInterlacePSUniform
 {
 	vector_float2 ZrH;

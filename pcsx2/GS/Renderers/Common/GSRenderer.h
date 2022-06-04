@@ -30,6 +30,8 @@ class GSRenderer : public GSState
 private:
 	bool Merge(int field);
 
+	u64 m_shader_time_start = 0;
+
 #ifndef PCSX2_CORE
 	GSCapture m_capture;
 	std::mutex m_snapshot_mutex;

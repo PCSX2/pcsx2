@@ -23,7 +23,9 @@
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
+#include "common/Timer.h"
 #include "fmt/core.h"
+#include <array>
 
 #ifndef PCSX2_CORE
 #include "gui/AppCoreThread.h"
@@ -54,9 +56,17 @@ static std::string GetDumpSerial()
 }
 #endif
 
+static constexpr std::array<PresentShader, 5> s_tv_shader_indices = {
+	PresentShader::COPY, PresentShader::SCANLINE,
+	PresentShader::DIAGONAL_FILTER, PresentShader::TRIANGULAR_FILTER,
+	PresentShader::COMPLEX_FILTER};
+
 std::unique_ptr<GSRenderer> g_gs_renderer;
 
-GSRenderer::GSRenderer() = default;
+GSRenderer::GSRenderer()
+	: m_shader_time_start(Common::Timer::GetCurrentValue())
+{
+}
 
 GSRenderer::~GSRenderer() = default;
 
@@ -559,11 +569,11 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			const GSVector4 draw_rect(CalculateDrawRect(display->GetWindowWidth(), display->GetWindowHeight(),
 				current->GetWidth(), current->GetHeight(), display->GetDisplayAlignment(), display->UsesLowerLeftOrigin(), GetVideoMode() == GSVideoMode::SDTV_480P));
 
-			static constexpr ShaderConvert s_shader[5] = {ShaderConvert::COPY, ShaderConvert::SCANLINE,
-				ShaderConvert::DIAGONAL_FILTER, ShaderConvert::TRIANGULAR_FILTER,
-				ShaderConvert::COMPLEX_FILTER}; // FIXME
+			const u64 current_time = Common::Timer::GetCurrentValue();
+			const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
 
-			g_gs_device->StretchRect(current, nullptr, draw_rect, s_shader[GSConfig.TVShader], GSConfig.LinearPresent);
+			g_gs_device->PresentRect(current, GSVector4(0, 0, 1, 1), nullptr, draw_rect,
+				s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent);
 		}
 
 		Host::EndPresentFrame();
@@ -757,12 +767,11 @@ void GSRenderer::PresentCurrentFrame()
 			HostDisplay* const display = g_gs_device->GetDisplay();
 			const GSVector4 draw_rect(CalculateDrawRect(display->GetWindowWidth(), display->GetWindowHeight(),
 				current->GetWidth(), current->GetHeight(), display->GetDisplayAlignment(), display->UsesLowerLeftOrigin(), GetVideoMode() == GSVideoMode::SDTV_480P));
+			const u64 current_time = Common::Timer::GetCurrentValue();
+			const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
 
-			static constexpr ShaderConvert s_shader[5] = { ShaderConvert::COPY, ShaderConvert::SCANLINE,
-				ShaderConvert::DIAGONAL_FILTER, ShaderConvert::TRIANGULAR_FILTER,
-				ShaderConvert::COMPLEX_FILTER }; // FIXME
-
-			g_gs_device->StretchRect(current, nullptr, draw_rect, s_shader[GSConfig.TVShader], GSConfig.LinearPresent);
+			g_gs_device->PresentRect(current, GSVector4(0, 0, 1, 1), nullptr, draw_rect,
+				s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent);
 		}
 
 		Host::EndPresentFrame();
