@@ -923,7 +923,7 @@ static void GetKeyboardGenericBindingMapping(std::vector<std::pair<GenericInputB
 	mapping->emplace_back(GenericInputBinding::L2, "Keyboard/1");
 	mapping->emplace_back(GenericInputBinding::L3, "Keyboard/2");
 	mapping->emplace_back(GenericInputBinding::R1, "Keyboard/E");
-	mapping->emplace_back(GenericInputBinding::R2, "Keyboard/2");
+	mapping->emplace_back(GenericInputBinding::R2, "Keyboard/3");
 	mapping->emplace_back(GenericInputBinding::R3, "Keyboard/4");
 }
 
