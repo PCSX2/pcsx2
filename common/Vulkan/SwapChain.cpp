@@ -674,6 +674,8 @@ namespace Vulkan
 
 		vkDestroySwapchainKHR(g_vulkan_context->GetDevice(), m_swap_chain, nullptr);
 		m_swap_chain = VK_NULL_HANDLE;
+		m_window_info.surface_width = 0;
+		m_window_info.surface_height = 0;
 	}
 
 	VkResult SwapChain::AcquireNextImage()
@@ -685,7 +687,7 @@ namespace Vulkan
 			m_image_available_semaphore, VK_NULL_HANDLE, &m_current_image);
 	}
 
-	bool SwapChain::ResizeSwapChain(u32 new_width /* = 0 */, u32 new_height /* = 0 */)
+	bool SwapChain::ResizeSwapChain(u32 new_width, u32 new_height, float new_scale)
 	{
 		DestroySwapChainImages();
 		DestroySemaphores();
@@ -695,6 +697,8 @@ namespace Vulkan
 			m_window_info.surface_width = new_width;
 			m_window_info.surface_height = new_height;
 		}
+
+		m_window_info.surface_scale = new_scale;
 
 		if (!CreateSwapChain() || !SetupSwapChainImages() || !CreateSemaphores())
 		{
