@@ -207,6 +207,13 @@
              </widget>
             </item>
             <item>
+             <widget class="QPushButton" name="ethHostPerGame">
+              <property name="text">
+               <string>Per game</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <spacer name="verticalSpacer_2">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
