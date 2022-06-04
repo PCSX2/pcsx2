@@ -23492,7 +23492,11 @@ SLPM-62437:
   name: "Suisui Sweet - Amai Ai no Mitsukekata"
   region: "NTSC-J"
 SLPM-62438:
-  name: "Growlanser Collection"
+  name: "Growlanser Collection - The Dual Darkness"
+  region: "NTSC-J"
+  compat: 4
+SLPM-62439:
+  name: "Growlanser Collection - The Sense of Justice"
   region: "NTSC-J"
   compat: 4
 SLPM-62440:
