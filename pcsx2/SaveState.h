@@ -28,12 +28,13 @@ enum class FreezeAction
 };
 
 // Savestate Versioning!
-//  If you make changes to the savestate version, please increment the value below.
-//  If the change is minor and compatibility with old states is retained, increment
-//  the lower 16 bit value.  IF the change is breaking of all compatibility with old
-//  states, increment the upper 16 bit value, and clear the lower 16 bits to 0.
+
+// NOTICE: When updating g_SaveVersion, please make sure you add the following line to your commit message somewhere:
+// [SAVEVERSION+]
+// This informs the auto updater that the users savestates will be invalidated.
 
 static const u32 g_SaveVersion = (0x9A2D << 16) | 0x0000;
+
 
 // the freezing data between submodules and core
 // an interesting thing to note is that this dates back from before plugin
