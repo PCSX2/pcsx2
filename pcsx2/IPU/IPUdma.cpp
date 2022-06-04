@@ -140,9 +140,11 @@ void IPU1dma()
 		}
 	}
 
-
-	CommandExecuteQueued = true;
-	CPU_INT(IPU_PROCESS, totalqwc * BIAS);
+	if (ipuRegs.ctrl.BUSY && !CommandExecuteQueued)
+	{
+		CommandExecuteQueued = true;
+		CPU_INT(IPU_PROCESS, totalqwc * BIAS);
+	}
 
 	IPU_LOG("Completed Call IPU1 DMA QWC Remaining %x Finished %d In Progress %d tadr %x", ipu1ch.qwc, IPU1Status.DMAFinished, IPU1Status.InProgress, ipu1ch.tadr);
 }
@@ -188,7 +190,7 @@ void IPU0dma()
 
 	IPU_INT_FROM( readsize * BIAS );
 
-	if (ipu0ch.qwc > 0 && !CommandExecuteQueued)
+	if (ipuRegs.ctrl.BUSY && !CommandExecuteQueued)
 	{
 		CommandExecuteQueued = true;
 		CPU_INT(IPU_PROCESS, 4);

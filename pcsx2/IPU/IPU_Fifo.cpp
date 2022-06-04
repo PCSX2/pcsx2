@@ -178,7 +178,10 @@ void WriteFIFO_IPUin(const mem128_t* value)
 	//committing every 16 bytes
 	if( ipu_fifo.in.write((u32*)value, 1) == 0 )
 	{
-		CommandExecuteQueued = true;
-		CPU_INT(IPU_PROCESS, 1 * BIAS);
+		if (ipuRegs.ctrl.BUSY && !CommandExecuteQueued)
+		{
+			CommandExecuteQueued = true;
+			CPU_INT(IPU_PROCESS, 1 * BIAS);
+		}
 	}
 }
