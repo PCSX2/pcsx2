@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2022  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -189,7 +189,7 @@ __fi void gifCheckPathStatus(bool calledFromGIF)
 	// If GIF is running on it's own, let it handle its own timing.
 	if (calledFromGIF && gifch.chcr.STR)
 	{
-		if(gif_fifo.fifoSize == 16)
+		if (gif_fifo.fifoSize == 16)
 			GifDMAInt(16);
 		return;
 	}
@@ -328,6 +328,10 @@ static u32 WRITERING_DMA(u32* pMem, u32 qwc)
 		else
 			qwc = std::min(qwc, 8u);
 	}
+	// If the packet is larger than 8qw, try to time the packet somewhat so any "finish" signals don't fire way too early and GIF syncs with other units.
+	// (Mana Khemia exhibits flickering characters without).
+	else if (qwc > 8)
+		qwc -= 8;
 
 	uint size;
 
