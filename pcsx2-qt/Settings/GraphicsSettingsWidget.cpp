@@ -265,24 +265,168 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	// only allow disabling readbacks for per-game settings, it's too dangerous
 	m_ui.disableHardwareReadbacks->setEnabled(m_dialog->isPerGameSettings());
 
-	dialog->registerWidgetHelp(m_ui.enableHWFixes, tr("Manual Hardware Renderer Fixes"), tr("Unchecked"),
-		tr("Enabling this option gives you the ability to change the renderer and upscaling fixes "
-		   "to your games. However IF you have ENABLED this, you WILL DISABLE AUTOMATIC "
-		   "SETTINGS and you can re-enable automatic settings by unchecking this option."));
+	// Display tab
+	{
+		dialog->registerWidgetHelp(m_ui.fmvAspectRatio, tr("FMV Aspect Ratio"), tr("Off (Default)"),
+			tr("Overrides the FMV aspect ratio."));
+	}
 
-	dialog->registerWidgetHelp(m_ui.useBlitSwapChain, tr("Use Blit Swap Chain"), tr("Unchecked"),
-		tr("Uses a blit presentation model instead of flipping when using the Direct3D 11 "
-		   "renderer. This usually results in slower performance, but may be required for some "
-		   "streaming applications, or to uncap framerates on some systems."));
+	// Rendering tab
+	{
+		// Hardware
+		dialog->registerWidgetHelp(m_ui.mipmapping, tr("Mipmapping"), tr("Automatic (Default)"),
+			tr("Control the accuracy level of the mipmapping emulation."));
 
-	dialog->registerWidgetHelp(m_ui.skipPresentingDuplicateFrames, tr("Skip Presenting Duplicate Frames"), tr("Unchecked"),
-		tr("Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means "
-		   "the GPU has more time to complete it (this is NOT frame skipping). Can smooth our frame time fluctuations when the CPU/GPU are near maximum "
-		   "utilization, but makes frame pacing more inconsistent and can increase input lag."));
-	dialog->registerWidgetHelp(m_ui.disableHardwareReadbacks, tr("Disable Hardware Readbacks"), tr("Unchecked"),
-		tr("Skips synchronizing with the GS thread and host GPU for GS downloads. "
-		   "Can result in a large speed boost on slower systems, at the cost of many broken graphical effects. "
-		   "If games are broken and you have this option enabled, please disable it first."));
+		dialog->registerWidgetHelp(m_ui.textureFiltering, tr("Texture Filtering"), tr("Bilinear (PS2)"),
+			tr("Control the texture filtering of the emulation."));
+
+		dialog->registerWidgetHelp(m_ui.trilinearFiltering, tr("Trilinear Filtering"), tr("Automatic (Default)"),
+			tr("Control the texture tri-filtering of the emulation."));
+
+		dialog->registerWidgetHelp(m_ui.anisotropicFiltering, tr("Anisotropic Filtering"), tr("Off (Default)"),
+			tr("Reduces texture aliasing at extreme viewing angles."));
+
+		dialog->registerWidgetHelp(m_ui.dithering, tr("Dithering"), tr("Unscaled (Default)"),
+			tr("Reduces banding between colors and improves the perceived color depth."));
+
+		dialog->registerWidgetHelp(m_ui.crcFixLevel, tr("CRC Fix Level"), tr("Automatic (Default)"),
+			tr("Control the number of Auto-CRC fixes and hacks applied to games."));
+
+		dialog->registerWidgetHelp(m_ui.blending, tr("Blending Accuracy"), tr("Basic (Recommended)"),
+			tr("Control the accuracy level of the GS blending unit emulation. "
+			   "The higher the setting, the more blending is emulated in the shader accurately, and the higher the speed penalty will be. "
+			   "Do note that Direct3D's blending is reduced in capability compared to OpenGL/Vulkan"));
+
+		dialog->registerWidgetHelp(m_ui.texturePreloading, tr("Texture Preloading"), tr(""),
+			tr("Uploads entire textures at once instead of small pieces, avoiding redundant uploads when possible. "
+			   "Improves performance in most games, but can make a small selection slower."));
+
+		dialog->registerWidgetHelp(m_ui.accurateDATE, tr("Accurate DestinationAlpha Test"), tr("Checked"),
+			tr("Implement a more accurate algorithm to compute GS destination alpha testing. "
+			   "It improves shadow and transparency rendering."));
+
+		dialog->registerWidgetHelp(m_ui.conservativeBufferAllocation, tr("Conservative Buffer Allocation"), tr("Checked"),
+			tr("Disabled: Reserves a larger framebuffer to prevent FMV flickers. Increases GPU/memory requirements. "
+			   "Disabling this can amplify stuttering due to low RAM/VRAM."));
+
+		dialog->registerWidgetHelp(m_ui.gpuPaletteConversion, tr("GPU Palette Conversion"), tr("Unchecked"),
+			tr("When enabled GPU converts colormap-textures, otherwise the CPU will. "
+			   "It is a trade-off between GPU and CPU."));
+
+		dialog->registerWidgetHelp(m_ui.enableHWFixes, tr("Manual Hardware Renderer Fixes"), tr("Unchecked"),
+			tr("Enabling this option gives you the ability to change the renderer and upscaling fixes "
+			   "to your games. However IF you have ENABLED this, you WILL DISABLE AUTOMATIC "
+			   "SETTINGS and you can re-enable automatic settings by unchecking this option."));
+
+		// Software
+		dialog->registerWidgetHelp(m_ui.extraSWThreads, tr("Extra Rendering Threads"), tr("2 threads"),
+			tr("Number of rendering threads: 0 for single thread, 2 or more for multithread (1 is for debugging). "
+			   "If you have 4 threads on your CPU pick 2 or 3. You can calculate how to get the best performance (amount of CPU threads - 2). "
+			   "7+ threads will not give much more performance and could perhaps even lower it."));
+
+		dialog->registerWidgetHelp(m_ui.swAutoFlush, tr("Auto Flush"), tr("Checked"),
+			tr("Force a primitive flush when a framebuffer is also an input texture. "
+			   "Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA."));
+
+		dialog->registerWidgetHelp(m_ui.swAA1, tr("Edge Anti-Aliasing"), tr("Checked"),
+			tr("Internal GS feature. Reduces edge aliasing of lines and triangles when the game requests it."));
+
+		dialog->registerWidgetHelp(m_ui.swMipmap, tr("Mipmapping"), tr("Checked"),
+			tr("Enables mipmapping, which some games require to render correctly."));
+	}
+
+	// Hardware Fixes tab
+	{
+		dialog->registerWidgetHelp(m_ui.halfScreenFix, tr("Half Screen Fix"), tr("Automatic (Default)"),
+			tr("Control the half-screen fix detection on texture shuffling."));
+
+		dialog->registerWidgetHelp(m_ui.skipDrawStart, tr("Skipdraw Range Start"), tr("0"),
+			tr("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right."));
+
+		dialog->registerWidgetHelp(m_ui.skipDrawEnd, tr("Skipdraw Range End"), tr("0"),
+			tr("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right."));
+
+		dialog->registerWidgetHelp(m_ui.hwAutoFlush, tr("Auto Flush"), tr("Unchecked"),
+			tr("Force a primitive flush when a framebuffer is also an input texture. "
+			   "Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA."));
+
+		dialog->registerWidgetHelp(m_ui.disableDepthEmulation, tr("Disable Depth Emulation"), tr("Unchecked"),
+			tr("Force a primitive flush when a framebuffer is also an input texture. "
+			   "Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA."));
+
+		dialog->registerWidgetHelp(m_ui.disableSafeFeatures, tr("Disable Safe Features"), tr("Unchecked"),
+			tr("This option disables multiple safe features. "
+			   "Disables accurate Unscale Point and Line rendering which can help Xenosaga games. "
+			   "Disables accurate GS Memory Clearing to be done on the CPU, and let the GPU handle it, which can help Kingdom Hearts games."));
+
+		dialog->registerWidgetHelp(m_ui.disablePartialInvalidation, tr("Disable Partial Invalidation"), tr("Unchecked"),
+			tr("By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise. "
+			   "This hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load. "
+			   "It helps snowblind engine games."));
+		dialog->registerWidgetHelp(m_ui.frameBufferConversion, tr("Frame Buffer Conversion"), tr("Unchecked"),
+			tr("Convert 4-bit and 8-bit frame buffer on the CPU instead of the GPU. "
+			   "Helps Harry Potter and Stuntman games. It has a big impact on performance."));
+
+		dialog->registerWidgetHelp(m_ui.memoryWrapping, tr("Memory Wrapping"), tr("Unchecked"),
+			tr("Emulates GS memory wrapping accurately. "
+			   "This fixes issues where part of the image is cut-off by block shaped sections such as the FMVs in "
+			   "Wallace & Gromit: The Curse of the Were-Rabbit and Thrillville."));
+
+		dialog->registerWidgetHelp(m_ui.preloadFrameData, tr("Preload Frame Data"), tr("Unchecked"),
+			tr("Uploads GS data when rendering a new frame to reproduce some effects accurately. "
+			   "Fixes black screen issues in games like Armored Core: Last Raven."));
+
+		dialog->registerWidgetHelp(m_ui.textureInsideRt, tr("Texture Inside RT"), tr("Unchecked"),
+			tr("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer. "
+			   "In some selected games this is enabled by default regardless of this setting."));
+	}
+
+	// Upscaling Fixes tab
+	{
+		dialog->registerWidgetHelp(m_ui.halfPixelOffset, tr("Half Pixel Offset"), tr("Off (Default)"),
+			tr("Might fix some misaligned fog, bloom, or blend effect."));
+
+		dialog->registerWidgetHelp(m_ui.roundSprite, tr("Round Sprite"), tr("Off (Default)"),
+			tr("Corrects the sampling of 2D sprite textures when upscaling. "
+			   "Fixes lines in sprites of games like Ar tonelico when upscaling. Half option is for flat sprites, Full is for all sprites."));
+
+		dialog->registerWidgetHelp(m_ui.offsetX, tr("Texture Offsets X"), tr("0"),
+			tr("Offset for the ST/UV texture coordinates. Fixes some odd texture issues and might fix some post processing alignment too."));
+
+		dialog->registerWidgetHelp(m_ui.offsetY, tr("Texture Offsets Y"), tr("0"),
+			tr("Offset for the ST/UV texture coordinates. Fixes some odd texture issues and might fix some post processing alignment too."));
+
+		dialog->registerWidgetHelp(m_ui.alignSprite, tr("Align Sprite"), tr("Unchecked"),
+			tr("Fixes issues with upscaling(vertical lines) in Namco games like Ace Combat, Tekken, Soul Calibur, etc."));
+
+		dialog->registerWidgetHelp(m_ui.wildHack, tr("Wild Arms Hack"), tr("Unchecked"),
+			tr("Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games."));
+
+		dialog->registerWidgetHelp(m_ui.mergeSprite, tr("Merge Sprite"), tr("Unchecked"),
+			tr("Replaces post-processing multiple paving sprites by a single fat sprite. It reduces various upscaling lines."));
+	}
+
+	// Advanced tab
+	{
+		dialog->registerWidgetHelp(m_ui.overrideGeometryShader, tr("Override Geometry Shader"), tr("Automatic (Default)"),
+			tr("Allows the GPU instead of just the CPU to transform lines into sprites. "
+			   "This reduces CPU load and bandwidth requirement, but it is heavier on the GPU."));
+
+		dialog->registerWidgetHelp(m_ui.useBlitSwapChain, tr("Use Blit Swap Chain"), tr("Unchecked"),
+			tr("Uses a blit presentation model instead of flipping when using the Direct3D 11 "
+			   "renderer. This usually results in slower performance, but may be required for some "
+			   "streaming applications, or to uncap framerates on some systems."));
+
+		dialog->registerWidgetHelp(m_ui.skipPresentingDuplicateFrames, tr("Skip Presenting Duplicate Frames"), tr("Unchecked"),
+			tr("Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means "
+			   "the GPU has more time to complete it (this is NOT frame skipping). Can smooth our frame time fluctuations when the CPU/GPU are near maximum "
+			   "utilization, but makes frame pacing more inconsistent and can increase input lag."));
+
+		dialog->registerWidgetHelp(m_ui.disableHardwareReadbacks, tr("Disable Hardware Readbacks"), tr("Unchecked"),
+			tr("Skips synchronizing with the GS thread and host GPU for GS downloads. "
+			   "Can result in a large speed boost on slower systems, at the cost of many broken graphical effects. "
+			   "If games are broken and you have this option enabled, please disable it first."));
+	}
 }
 
 GraphicsSettingsWidget::~GraphicsSettingsWidget() = default;
