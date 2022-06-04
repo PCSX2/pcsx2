@@ -12435,6 +12435,7 @@ SLES-51914:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     roundSprite: 2 # Fixes various lines / reduces bars on right edge.
+    disablePartialInvalidation: 1 # Fixes textureless graphics ingame.
 SLES-51915:
   name: "Pro Evolution Soccer 3"
   region: "PAL-I"
@@ -21227,6 +21228,7 @@ SLKA-25093:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     roundSprite: 2 # Fixes various lines / reduces bars on right edge.
+    disablePartialInvalidation: 1 # Fixes textureless graphics ingame.
 SLKA-25100:
   name: "Dragon Quest V Dragon Quarter"
   region: "NTSC-K"
@@ -25827,6 +25829,7 @@ SLPM-65413:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     roundSprite: 2 # Fixes various lines / reduces bars on right edge.
+    disablePartialInvalidation: 1 # Fixes textureless graphics ingame.
 SLPM-65414:
   name: "Simple 2000 Series Vol. 45 - The Koi to Namida to, Tsuioku to..."
   region: "NTSC-J"
@@ -39509,6 +39512,7 @@ SLUS-20694:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     roundSprite: 2 # Fixes various lines / reduces bars on right edge.
+    disablePartialInvalidation: 1 # Fixes textureless graphics ingame.
 SLUS-20695:
   name: "Chaos Legion"
   region: "NTSC-U"
