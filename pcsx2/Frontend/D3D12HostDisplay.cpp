@@ -191,14 +191,15 @@ bool D3D12HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 	}
 
 	m_window_info = wi;
+
+	if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain(nullptr))
+		return false;
+
 	return true;
 }
 
 bool D3D12HostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
 {
-	if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain(nullptr))
-		return false;
-
 	return true;
 }
 
