@@ -938,13 +938,20 @@ finish_idec:
 					return false;
 				}
 				start_check = UBITS(24);
-				if (start_check == 1)
+				if (start_check != 0)
 				{
-					ipuRegs.ctrl.SCD = 1;
+					if (start_check == 1)
+					{
+						ipuRegs.ctrl.SCD = 1;
+					}
+					else
+					{
+						ipuRegs.ctrl.ECD = 1;
+					}
 					break;
 				}
 				DUMPBITS(8);
-			} while (start_check != 1);
+			} while (1);
 		}
 	}
 		[[fallthrough]];
@@ -1229,13 +1236,20 @@ __fi bool mpeg2_slice()
 					return false;
 				}
 				start_check = UBITS(24);
-				if (start_check == 1)
+				if (start_check != 0)
 				{
-					ipuRegs.ctrl.SCD = 1;
+					if (start_check == 1)
+					{
+						ipuRegs.ctrl.SCD = 1;
+					}
+					else
+					{
+						ipuRegs.ctrl.ECD = 1;
+					}
 					break;
 				}
 				DUMPBITS(8);
-			} while (start_check != 1);
+			} while (1);
 		}
 	}
 		[[fallthrough]];
