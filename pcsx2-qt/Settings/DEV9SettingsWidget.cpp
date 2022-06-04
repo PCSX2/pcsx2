@@ -251,8 +251,7 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	connect(m_ui.ethHostExport, &QPushButton::clicked, this, &DEV9SettingsWidget::onEthHostExport);
 	connect(m_ui.ethHostImport, &QPushButton::clicked, this, &DEV9SettingsWidget::onEthHostImport);
 
-	if (m_dialog->isPerGameSettings())
-		m_ui.ethTabWidget->setTabEnabled(1, false);
+	connect(m_ui.ethHostPerGame, &QPushButton::clicked, this, &DEV9SettingsWidget::onEthHostPerGame);
 
 	//////////////////////////////////////////////////////////////////////////
 	// HDD Settings
@@ -495,7 +494,7 @@ void DEV9SettingsWidget::onEthHostDel()
 
 void DEV9SettingsWidget::onEthHostExport()
 {
-	std::vector<HostEntryUi> hosts = ListHostsConfig();
+	std::vector<HostEntryUi> hosts = ListHostsConfig().value();
 
 	DEV9DnsHostDialog exportDialog(hosts, this);
 
@@ -607,6 +606,55 @@ void DEV9SettingsWidget::onEthHostImport()
 	QMessageBox::information(this, tr("DNS Hosts"),
 		tr("Imported Successfully"),
 		QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+}
+
+void DEV9SettingsWidget::onEthHostPerGame()
+{
+	const std::optional<int> hostLengthOpt = m_dialog->getIntValue("DEV9/Eth/Hosts", "Count", std::nullopt);
+	if (!hostLengthOpt.has_value())
+	{
+		QMessageBox::StandardButton ret = QMessageBox::question(this, tr("Per Game Host list"),
+			tr("Copy global settings?"),
+			QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No | QMessageBox::StandardButton::Cancel, QMessageBox::StandardButton::Yes);
+
+		switch (ret)
+		{
+			case QMessageBox::StandardButton::No:
+				m_dialog->setIntSettingValue("DEV9/Eth/Hosts", "Count", 0);
+				break;
+
+			case QMessageBox::StandardButton::Yes:
+			{
+				m_dialog->setIntSettingValue("DEV9/Eth/Hosts", "Count", 0);
+				std::vector<HostEntryUi> hosts = ListBaseHostsConfig();
+				for (size_t i = 0; i < hosts.size(); i++)
+					AddNewHostConfig(hosts[i]);
+				break;
+			}
+
+			case QMessageBox::StandardButton::Cancel:
+				return;
+
+			default:
+				return;
+		}
+	}
+	else
+	{
+		QMessageBox::StandardButton ret = QMessageBox::question(this, tr("Per Game Host list"),
+			tr("Delete per game host list?"),
+			QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::Cancel, QMessageBox::StandardButton::Yes);
+
+		if (ret == QMessageBox::StandardButton::Yes)
+		{
+			const int hostLength = CountHostsConfig();
+			for (int i = hostLength - 1; i >= 0; i--)
+				DeleteHostConfig(i);
+		}
+		m_dialog->setIntSettingValue("DEV9/Eth/Hosts", nullptr, std::nullopt);
+	}
+
+	RefreshHostList();
 }
 
 void DEV9SettingsWidget::onEthHostEdit(QStandardItem* item)
@@ -825,9 +873,42 @@ void DEV9SettingsWidget::RefreshHostList()
 	while (m_ethHost_model->rowCount() > 0)
 		m_ethHost_model->removeRow(0);
 
-	//Load list
-	std::vector<HostEntryUi> hosts = ListHostsConfig();
+	bool enableHostsUi;
 
+	std::vector<HostEntryUi> hosts;
+
+	if (m_dialog->isPerGameSettings())
+	{
+		m_ui.ethHostPerGame->setVisible(true);
+
+		std::optional<std::vector<HostEntryUi>> hostsOpt = ListHostsConfig();
+		if (hostsOpt.has_value())
+		{
+			m_ui.ethHostPerGame->setText(tr("Use Global"));
+			hosts = hostsOpt.value();
+			enableHostsUi = true;
+		}
+		else
+		{
+			m_ui.ethHostPerGame->setText(tr("Override"));
+			hosts = ListBaseHostsConfig();
+			enableHostsUi = false;
+		}
+	}
+	else
+	{
+		m_ui.ethHostPerGame->setVisible(false);
+		hosts = ListHostsConfig().value();
+		enableHostsUi = true;
+	}
+
+	m_ui.ethHosts->setEnabled(enableHostsUi);
+	m_ui.ethHostAdd->setEnabled(enableHostsUi);
+	m_ui.ethHostDel->setEnabled(enableHostsUi);
+	m_ui.ethHostExport->setEnabled(enableHostsUi);
+	m_ui.ethHostImport->setEnabled(enableHostsUi);
+
+	//Load list
 	for (size_t i = 0; i < hosts.size(); i++)
 	{
 		HostEntryUi entry = hosts[i];
@@ -863,11 +944,21 @@ int DEV9SettingsWidget::CountHostsConfig()
 	return m_dialog->getIntValue("DEV9/Eth/Hosts", "Count", 0).value();
 }
 
-std::vector<HostEntryUi> DEV9SettingsWidget::ListHostsConfig()
+std::optional<std::vector<HostEntryUi>> DEV9SettingsWidget::ListHostsConfig()
 {
 	std::vector<HostEntryUi> hosts;
 
-	const int hostLength = CountHostsConfig();
+	std::optional<int> hostLengthOpt;
+	if (m_dialog->isPerGameSettings())
+	{
+		hostLengthOpt = m_dialog->getIntValue("DEV9/Eth/Hosts", "Count", std::nullopt);
+		if (!hostLengthOpt.has_value())
+			return std::nullopt;
+	}
+	else
+		hostLengthOpt = m_dialog->getIntValue("DEV9/Eth/Hosts", "Count", 0);
+
+	const int hostLength = hostLengthOpt.value();
 	for (int i = 0; i < hostLength; i++)
 	{
 		std::string section = "DEV9/Eth/Hosts/Host" + std::to_string(i);
@@ -877,6 +968,26 @@ std::vector<HostEntryUi> DEV9SettingsWidget::ListHostsConfig()
 		entry.Desc = m_dialog->getStringValue(section.c_str(), "Desc", "").value();
 		entry.Address = m_dialog->getStringValue(section.c_str(), "Address", "").value();
 		entry.Enabled = m_dialog->getBoolValue(section.c_str(), "Enabled", false).value();
+		hosts.push_back(entry);
+	}
+
+	return hosts;
+}
+
+std::vector<HostEntryUi> DEV9SettingsWidget::ListBaseHostsConfig()
+{
+	std::vector<HostEntryUi> hosts;
+
+	const int hostLength = Host::GetBaseIntSettingValue("DEV9/Eth/Hosts", "Count", 0);
+	for (int i = 0; i < hostLength; i++)
+	{
+		std::string section = "DEV9/Eth/Hosts/Host" + std::to_string(i);
+
+		HostEntryUi entry;
+		entry.Url = Host::GetBaseStringSettingValue(section.c_str(), "Url", "");
+		entry.Desc = Host::GetBaseStringSettingValue(section.c_str(), "Desc", "");
+		entry.Address = Host::GetBaseStringSettingValue(section.c_str(), "Address", "");
+		entry.Enabled = Host::GetBaseBoolSettingValue(section.c_str(), "Enabled", false);
 		hosts.push_back(entry);
 	}
 

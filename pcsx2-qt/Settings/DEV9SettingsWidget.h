@@ -42,6 +42,7 @@ private Q_SLOTS:
 	void onEthHostDel();
 	void onEthHostExport();
 	void onEthHostImport();
+	void onEthHostPerGame();
 	void onEthHostEdit(QStandardItem* item);
 
 	void onHddEnabledChanged(int state);
@@ -63,7 +64,8 @@ private:
 	void AddAdapter(const AdapterEntry& adapter);
 	void RefreshHostList();
 	int CountHostsConfig();
-	std::vector<HostEntryUi> ListHostsConfig();
+	std::optional<std::vector<HostEntryUi>> ListHostsConfig();
+	std::vector<HostEntryUi> ListBaseHostsConfig();
 	void AddNewHostConfig(const HostEntryUi& host);
 	void DeleteHostConfig(int index);
 
