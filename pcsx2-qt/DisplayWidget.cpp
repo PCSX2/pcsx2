@@ -63,15 +63,15 @@ qreal DisplayWidget::devicePixelRatioFromScreen() const
 
 int DisplayWidget::scaledWindowWidth() const
 {
-	return static_cast<int>(std::ceil(static_cast<qreal>(width()) * devicePixelRatioFromScreen()));
+	return std::max(static_cast<int>(std::ceil(static_cast<qreal>(width()) * devicePixelRatioFromScreen())), 1);
 }
 
 int DisplayWidget::scaledWindowHeight() const
 {
-	return static_cast<int>(std::ceil(static_cast<qreal>(height()) * devicePixelRatioFromScreen()));
+	return std::max(static_cast<int>(std::ceil(static_cast<qreal>(height()) * devicePixelRatioFromScreen())), 1);
 }
 
-std::optional<WindowInfo> DisplayWidget::getWindowInfo() const
+std::optional<WindowInfo> DisplayWidget::getWindowInfo()
 {
 	WindowInfo wi;
 
@@ -104,9 +104,9 @@ std::optional<WindowInfo> DisplayWidget::getWindowInfo() const
 	}
 #endif
 
-	wi.surface_width = scaledWindowWidth();
-	wi.surface_height = scaledWindowHeight();
-	wi.surface_scale = devicePixelRatioFromScreen();
+	m_last_window_width = wi.surface_width = static_cast<u32>(scaledWindowWidth());
+	m_last_window_height = wi.surface_height = static_cast<u32>(scaledWindowHeight());
+	m_last_window_scale = wi.surface_scale = static_cast<float>(devicePixelRatioFromScreen());
 	return wi;
 }
 
@@ -236,11 +236,19 @@ bool DisplayWidget::event(QEvent* event)
 		{
 			QWidget::event(event);
 
-			const qreal dpr = devicePixelRatioFromScreen();
-			const int scaled_width = static_cast<int>(std::ceil(static_cast<qreal>(width()) * devicePixelRatioFromScreen()));
-			const int scaled_height = static_cast<int>(std::ceil(static_cast<qreal>(height()) * devicePixelRatioFromScreen()));
+			const float dpr = devicePixelRatioFromScreen();
+			const u32 scaled_width = static_cast<u32>(std::max(static_cast<int>(std::ceil(static_cast<qreal>(width()) * dpr)), 1));
+			const u32 scaled_height = static_cast<u32>(std::max(static_cast<int>(std::ceil(static_cast<qreal>(height()) * dpr)), 1));
 
-			emit windowResizedEvent(scaled_width, scaled_height, dpr);
+			// avoid spamming resize events for paint events (sent on move on windows)
+			if (m_last_window_width != scaled_width || m_last_window_height != scaled_height || m_last_window_scale != dpr)
+			{
+				m_last_window_width = scaled_width;
+				m_last_window_height = scaled_height;
+				m_last_window_scale = dpr;
+				emit windowResizedEvent(scaled_width, scaled_height, dpr);
+			}
+
 			return true;
 		}
 
