@@ -34,7 +34,7 @@ public:
 	int scaledWindowHeight() const;
 	qreal devicePixelRatioFromScreen() const;
 
-	std::optional<WindowInfo> getWindowInfo() const;
+	std::optional<WindowInfo> getWindowInfo();
 
 	void setRelativeMode(bool enabled);
 
@@ -55,6 +55,10 @@ private:
 	QPoint m_relative_mouse_last_position{};
 	bool m_relative_mouse_enabled = false;
 	std::vector<int> m_keys_pressed_with_modifiers;
+
+	u32 m_last_window_width = 0;
+	u32 m_last_window_height = 0;
+	float m_last_window_scale = 1.0f;
 };
 
 class DisplayContainer final : public QStackedWidget
