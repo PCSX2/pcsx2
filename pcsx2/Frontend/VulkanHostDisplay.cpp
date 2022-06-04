@@ -121,9 +121,16 @@ bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
 
 void VulkanHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
 {
+	if (m_swap_chain->GetWidth() == new_window_width && m_swap_chain->GetHeight() == new_window_height)
+	{
+		// skip unnecessary resizes
+		m_window_info.surface_scale = new_window_scale;
+		return;
+	}
+
 	g_vulkan_context->WaitForGPUIdle();
 
-	if (!m_swap_chain->ResizeSwapChain(new_window_width, new_window_height))
+	if (!m_swap_chain->ResizeSwapChain(new_window_width, new_window_height, new_window_scale))
 	{
 		// AcquireNextImage() will fail, and we'll recreate the surface.
 		Console.Error("Failed to resize swap chain. Next present will fail.");

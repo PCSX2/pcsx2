@@ -58,6 +58,7 @@ namespace Vulkan
 		__fi const WindowInfo& GetWindowInfo() const { return m_window_info; }
 		__fi u32 GetWidth() const { return m_window_info.surface_width; }
 		__fi u32 GetHeight() const { return m_window_info.surface_height; }
+		__fi float GetScale() const { return m_window_info.surface_scale; }
 		__fi u32 GetCurrentImageIndex() const { return m_current_image; }
 		__fi u32 GetImageCount() const { return static_cast<u32>(m_images.size()); }
 		__fi VkImage GetCurrentImage() const { return m_images[m_current_image].image; }
@@ -71,7 +72,7 @@ namespace Vulkan
 		VkResult AcquireNextImage();
 
 		bool RecreateSurface(const WindowInfo& new_wi);
-		bool ResizeSwapChain(u32 new_width = 0, u32 new_height = 0);
+		bool ResizeSwapChain(u32 new_width = 0, u32 new_height = 0, float new_scale = 1.0f);
 		bool RecreateSwapChain();
 
 		// Change vsync enabled state. This may fail as it causes a swapchain recreation.
