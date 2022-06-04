@@ -95,6 +95,8 @@ GUST-00009:
     eeRoundMode: 0 # Fixes jump issue.
   gameFixes:
     - SoftwareRendererFMVHack # Vertical lines in FMV.
+  gsHWFixes:
+    roundSprite: 1 # Fixes misalignment of textures in the Pause Menu.
 PAPX-90201:
   name: "Fantavision [Taikenban]"
   region: "NTSC-J"
@@ -20406,6 +20408,8 @@ SLES-55443:
     eeRoundMode: 0 # Fixes jump issue.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
+  gsHWFixes:
+    roundSprite: 1 # Fixes misalignment of textures in the Pause Menu.
 SLES-55444:
   name: "Ar tonelico II - Melody of Metafalica"
   region: "PAL-E"
@@ -44415,6 +44419,8 @@ SLUS-21735:
     eeRoundMode: 0 # Fixes jump issue.
   gameFixes:
     - SoftwareRendererFMVHack # Vertical lines in FMV.
+  gsHWFixes:
+    roundSprite: 1 # Fixes misalignment of textures in the Pause Menu.
 SLUS-21736:
   name: "Wall-E"
   region: "NTSC-U"
