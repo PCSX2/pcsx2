@@ -45095,6 +45095,12 @@ SLUS-21881:
   name: "Transformers - Revenge of the Fallen"
   region: "NTSC-U"
   compat: 5
+  patches:
+    137C792E:
+      content: |-
+        // Fix Pause menu, some hud parts, etc.
+        patch=1,EE,0016ee38,word,3464fff0
+        patch=1,EE,0016ee58,word,3464fffc
 SLUS-21882:
   name: "Ghostbusters"
   region: "NTSC-U"
