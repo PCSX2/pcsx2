@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "GameListModel.h"
+#include "QtHost.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
@@ -457,17 +458,19 @@ void GameListModel::loadCommonImages()
 	m_type_exe_pixmap = QIcon(QStringLiteral(":/icons/applications-system-24.png")).pixmap(QSize(24, 24));
 	m_type_playlist_pixmap = QIcon(QStringLiteral(":/icons/address-book-new-22.png")).pixmap(QSize(22, 22));
 
+	const QString base_path(QtHost::GetResourcesBasePath());
+
 	for (u32 i = 0; i < static_cast<u32>(GameList::Region::Count); i++) 
 	{
 		m_region_pixmaps[i] = QIcon(
-								QStringLiteral(":/icons/flags/%1.png").arg(GameList::RegionToString(static_cast<GameList::Region>(i))))
+								QStringLiteral("%1/icons/flags/%2.png").arg(base_path).arg(GameList::RegionToString(static_cast<GameList::Region>(i))))
 								.pixmap(QSize(42, 30));
 	}
 
 	for (u32 i = 1; i < GameList::CompatibilityRatingCount; i++)
-		m_compatibility_pixmaps[i].load(QStringLiteral(":/icons/star-%1.png").arg(i - 1));
+		m_compatibility_pixmaps[i].load(QStringLiteral("%1/icons/star-%2.png").arg(base_path).arg(i - 1));
 
-	m_placeholder_pixmap.load(QString::fromStdString(Path::Combine(EmuFolders::Resources, "cover-placeholder.png")));
+	m_placeholder_pixmap.load(QStringLiteral("%1/cover-placeholder.png").arg(base_path));
 }
 
 void GameListModel::setColumnDisplayNames()

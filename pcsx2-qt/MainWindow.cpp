@@ -137,6 +137,7 @@ static void makeIconsMasks(QWidget* menu)
 
 void MainWindow::setupAdditionalUi()
 {
+	setWindowIcon(QIcon(QStringLiteral("%1/icons/AppIconLarge.png").arg(QtHost::GetResourcesBasePath())));
 	makeIconsMasks(menuBar());
 
 	const bool toolbar_visible = Host::GetBaseBoolSettingValue("UI", "ShowToolbar", false);
