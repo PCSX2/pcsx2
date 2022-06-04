@@ -52,6 +52,7 @@ public:
 	__fi GameListModel* getModel() const { return m_model; }
 
 	void initialize();
+	void resizeTableViewColumnsToFit();
 
 	void refresh(bool invalidate_cache);
 	void cancelRefresh();
@@ -97,7 +98,6 @@ protected:
 	void resizeEvent(QResizeEvent* event);
 
 private:
-	void resizeTableViewColumnsToFit();
 	void loadTableViewColumnVisibilitySettings();
 	void saveTableViewColumnVisibilitySettings();
 	void saveTableViewColumnVisibilitySettings(int column);

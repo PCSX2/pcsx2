@@ -156,6 +156,7 @@ private Q_SLOTS:
 	void recreate();
 
 protected:
+	void showEvent(QShowEvent* event) override;
 	void closeEvent(QCloseEvent* event) override;
 	void dragEnterEvent(QDragEnterEvent* event) override;
 	void dropEvent(QDropEvent* event) override;

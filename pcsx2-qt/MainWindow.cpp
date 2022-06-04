@@ -1400,6 +1400,17 @@ void MainWindow::onPerformanceMetricsUpdated(const QString& fps_stat, const QStr
 	m_status_gs_widget->setText(gs_stat);
 }
 
+void MainWindow::showEvent(QShowEvent* event)
+{
+	QMainWindow::showEvent(event);
+
+	// This is a bit silly, but for some reason resizing *before* the window is shown
+	// gives the incorrect sizes for columns, if you set the style before setting up
+	// the rest of the window... so, instead, let's just force it to be resized on show.
+	if (isShowingGameList())
+		m_game_list_widget->resizeTableViewColumnsToFit();
+}
+
 void MainWindow::closeEvent(QCloseEvent* event)
 {
 	if (!requestShutdown(true, true, true))
