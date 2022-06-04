@@ -342,7 +342,7 @@ HacksTab::HacksTab(wxWindow* parent)
 
 	auto hw_prereq = [this]{ return m_is_hardware; };
 	auto* hacks_check_box = m_ui.addCheckBox(tab_box.inner, "Manual HW Hacks (Disables automatic settings if checked)", "UserHacks", -1, hw_prereq);
-	m_ui.addCheckBox(tab_box.inner, "Skip Presenting Duplicate Frames", "skip_duplicate_frames", -1);
+	m_ui.addCheckBox(tab_box.inner, "Skip Presenting Duplicate Frames", "SkipDuplicateFrames", -1);
 
 	auto hacks_prereq = [this, hacks_check_box]{ return m_is_hardware && hacks_check_box->GetValue(); };
 	auto upscale_hacks_prereq = [this, hacks_check_box]{ return !m_is_native_res && hacks_check_box->GetValue(); };

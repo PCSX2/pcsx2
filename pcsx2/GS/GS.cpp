@@ -1426,7 +1426,7 @@ void GSApp::Init()
 	m_default_configuration["shaderfx"]                                   = "0";
 	m_default_configuration["shaderfx_conf"]                              = "shaders/GS_FX_Settings.ini";
 	m_default_configuration["shaderfx_glsl"]                              = "shaders/GS.fx";
-	m_default_configuration["skip_duplicate_frames"]                      = "0";
+	m_default_configuration["SkipDuplicateFrames"]                        = "0";
 	m_default_configuration["texture_preloading"]                         = "0";
 	m_default_configuration["ThreadedPresentation"]                       = "0";
 	m_default_configuration["TVShader"]                                   = "0";
