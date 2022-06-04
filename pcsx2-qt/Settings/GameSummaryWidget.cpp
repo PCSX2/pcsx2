@@ -20,10 +20,24 @@
 #include "Frontend/GameList.h"
 
 #include "GameSummaryWidget.h"
+#include "QtHost.h"
 
 GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsDialog* dialog, QWidget* parent)
 {
 	m_ui.setupUi(this);
+
+	const QString base_path(QtHost::GetResourcesBasePath());
+	for (int i = 0; i < m_ui.region->count(); i++)
+	{
+		m_ui.region->setItemIcon(i, QIcon(
+										QStringLiteral("%1/icons/flags/%2.png").arg(base_path).arg(GameList::RegionToString(static_cast<GameList::Region>(i)))));
+	}
+	for (int i = 1; i < m_ui.compatibility->count(); i++)
+	{
+		m_ui.compatibility->setItemIcon(i, QIcon(
+											   QStringLiteral("%1/icons/star-%2.png").arg(base_path).arg(i)));
+	}
+
 	populateUi(entry);
 }
 

@@ -1,7 +1,6 @@
 <RCC>
 	<qresource>
 		<file>icons/address-book-new-22.png</file>
-		<file>icons/AppIconLarge.png</file>
 		<file>icons/applications-system-24.png</file>
 		<file>icons/black/svg/artboard-2-line.svg</file>
 		<file>icons/black/svg/book-open-line.svg</file>
@@ -45,46 +44,11 @@
 		<file>icons/black/svg/window-2-line.svg</file>
 		<file>icons/black/index.theme</file>
 		<file>icons/discord.png</file>
-		<file>icons/flags/NTSC-B.png</file>
-		<file>icons/flags/NTSC-C.png</file>
-		<file>icons/flags/NTSC-HK.png</file>
-		<file>icons/flags/NTSC-J.png</file>
-		<file>icons/flags/NTSC-K.png</file>
-		<file>icons/flags/NTSC-T.png</file>
-		<file>icons/flags/NTSC-U.png</file>
-		<file>icons/flags/Other.png</file>
-		<file>icons/flags/PAL-A.png</file>
-		<file>icons/flags/PAL-AF.png</file>
-		<file>icons/flags/PAL-AU.png</file>	
-		<file>icons/flags/PAL-BE.png</file>
-		<file>icons/flags/PAL-E.png</file>
-		<file>icons/flags/PAL-F.png</file>
-		<file>icons/flags/PAL-FI.png</file>
-		<file>icons/flags/PAL-G.png</file>
-		<file>icons/flags/PAL-GR.png</file>
-		<file>icons/flags/PAL-I.png</file>
-		<file>icons/flags/PAL-IN.png</file>
-		<file>icons/flags/PAL-M.png</file>
-		<file>icons/flags/PAL-NL.png</file>
-		<file>icons/flags/PAL-NO.png</file>
-		<file>icons/flags/PAL-P.png</file>
-		<file>icons/flags/PAL-R.png</file>
-		<file>icons/flags/PAL-S.png</file>
-		<file>icons/flags/PAL-SC.png</file>
-		<file>icons/flags/PAL-SW.png</file>
-		<file>icons/flags/PAL-SWI.png</file>
-		<file>icons/flags/PAL-UK.png</file>
 		<file>icons/logo.png</file>
 		<file>icons/media-optical-24.png</file>
 		<file>icons/media-optical-gear-24.png</file>
 		<file>icons/media-optical.png</file>
 		<file>icons/QT.png</file>
-		<file>icons/star-0.png</file>
-		<file>icons/star-1.png</file>
-		<file>icons/star-2.png</file>
-		<file>icons/star-3.png</file>
-		<file>icons/star-4.png</file>
-		<file>icons/star-5.png</file>
 		<file>icons/update.png</file>
 		<file>icons/white/svg/artboard-2-line.svg</file>
 		<file>icons/white/svg/book-open-line.svg</file>

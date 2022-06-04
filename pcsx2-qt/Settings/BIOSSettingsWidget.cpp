@@ -23,6 +23,7 @@
 #include "pcsx2/ps2/BiosTools.h"
 
 #include "BIOSSettingsWidget.h"
+#include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 #include "SettingsDialog.h"
@@ -112,6 +113,7 @@ void BIOSSettingsWidget::updateSearchDirectory()
 void BIOSSettingsWidget::listRefreshed(const QVector<BIOSInfo>& items)
 {
 	const std::string selected_bios(Host::GetBaseStringSettingValue("Filenames", "BIOS"));
+	const QString res_path(QtHost::GetResourcesBasePath());
 
 	QSignalBlocker sb(m_ui.fileList);
 	for (const BIOSInfo& bi : items)
@@ -123,30 +125,30 @@ void BIOSSettingsWidget::listRefreshed(const QVector<BIOSInfo>& items)
 		switch (bi.region)
 		{
 			case 2: // Japan
-				item->setIcon(0, QIcon(QStringLiteral(":/icons/flags/NTSC-J.png")));
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/NTSC-J.png").arg(res_path)));
 				break;
 
 			case 3: // USA
-				item->setIcon(0, QIcon(QStringLiteral(":/icons/flags/NTSC-U.png")));
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/NTSC-U.png").arg(res_path)));
 				break;
 
 			case 4: // Europe
-				item->setIcon(0, QIcon(QStringLiteral(":/icons/flags/PAL-E.png")));
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/PAL-E.png").arg(res_path)));
 				break;
 
 			case 7: // China
-				item->setIcon(0, QIcon(QStringLiteral(":/icons//flags/NTSC-C.png")));
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons//flags/NTSC-C.png").arg(res_path)));
 				break;
 
 			case 5: // HK
-				item->setIcon(0, QIcon(QStringLiteral(":/icons/flags/NTSC-HK.png")));
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/NTSC-HK.png").arg(res_path)));
 				break;
 
 			case 6: // Free
 			case 0: // T10K
 			case 1: // Test
 			default:
-				item->setIcon(0, QIcon(QStringLiteral(":/icons/flags/NTSC-J.png")));
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/NTSC-J.png").arg(res_path)));
 				break;
 		}
 

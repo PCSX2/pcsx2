@@ -16,10 +16,6 @@
   <property name="windowTitle">
    <string>PCSX2</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="resources/resources.qrc">
-    <normaloff>:/icons/AppIconLarge.png</normaloff>:/icons/AppIconLarge.png</iconset>
-  </property>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>

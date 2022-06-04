@@ -59,6 +59,9 @@ namespace QtHost
 	/// Returns the debug/devel config indicator.
 	QString GetAppConfigSuffix();
 
+	/// Returns the base path for resources. This may be : prefixed, if we're using embedded resources.
+	QString GetResourcesBasePath();
+
 	/// Thread-safe settings access.
 	void SetBaseBoolSettingValue(const char* section, const char* key, bool value);
 	void SetBaseIntSettingValue(const char* section, const char* key, int value);

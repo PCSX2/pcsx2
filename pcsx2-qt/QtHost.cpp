@@ -421,6 +421,11 @@ QString QtHost::GetAppConfigSuffix()
 #endif
 }
 
+QString QtHost::GetResourcesBasePath()
+{
+	return QString::fromStdString(EmuFolders::Resources);
+}
+
 std::optional<std::vector<u8>> Host::ReadResourceFile(const char* filename)
 {
 	const std::string path(Path::Combine(EmuFolders::Resources, filename));
