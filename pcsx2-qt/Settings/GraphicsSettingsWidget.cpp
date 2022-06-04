@@ -73,6 +73,7 @@ static const char* s_anisotropic_filtering_entries[] = {QT_TRANSLATE_NOOP("Graph
 static const char* s_anisotropic_filtering_values[] = {"0", "2", "4", "8", "16", nullptr};
 
 static constexpr int DEFAULT_INTERLACE_MODE = 7;
+static constexpr int DEFAULT_TV_SHADER_MODE = 0;
 
 GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	: QWidget(parent)
@@ -129,6 +130,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostBrightness, "EmuCore/GS", "ShadeBoost_Brightness", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostContrast, "EmuCore/GS", "ShadeBoost_Contrast", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostSaturation, "EmuCore/GS", "ShadeBoost_Saturation", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.tvShader, "EmuCore/GS", "TVShader", DEFAULT_TV_SHADER_MODE);
 
 	connect(m_ui.shadeBoost, QOverload<int>::of(&QCheckBox::stateChanged), this, &GraphicsSettingsWidget::onShadeBoostChanged);
 	onShadeBoostChanged();
@@ -257,6 +259,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	connect(m_ui.enableHWFixes, &QCheckBox::stateChanged, this, &GraphicsSettingsWidget::onEnableHardwareFixesChanged);
 	updateRendererDependentOptions();
 
+	// only allow disabling readbacks for per-game settings, it's too dangerous
+	m_ui.disableHardwareReadbacks->setEnabled(m_dialog->isPerGameSettings());
+
 	dialog->registerWidgetHelp(m_ui.enableHWFixes, tr("Manual Hardware Renderer Fixes"), tr("Unchecked"),
 		tr("Enabling this option gives you the ability to change the renderer and upscaling fixes "
 		   "to your games. However IF you have ENABLED this, you WILL DISABLE AUTOMATIC "
@@ -271,6 +276,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		tr("Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means "
 		   "the GPU has more time to complete it (this is NOT frame skipping). Can smooth our frame time fluctuations when the CPU/GPU are near maximum "
 		   "utilization, but makes frame pacing more inconsistent and can increase input lag."));
+	dialog->registerWidgetHelp(m_ui.disableHardwareReadbacks, tr("Disable Hardware Readbacks"), tr("Unchecked"),
+		tr("Skips synchronizing with the GS thread and host GPU for GS downloads. "
+		   "Can result in a large speed boost on slower systems, at the cost of many broken graphical effects. "
+		   "If games are broken and you have this option enabled, please disable it first."));
 }
 
 GraphicsSettingsWidget::~GraphicsSettingsWidget() = default;

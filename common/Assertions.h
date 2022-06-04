@@ -133,8 +133,8 @@ extern void pxOnAssertFail(const char* file, int line, const char* func, const c
 
 #endif
 
-#define pxAssert(cond) pxAssertMsg(cond, nullptr)
-#define pxAssume(cond) pxAssumeMsg(cond, nullptr)
+#define pxAssert(cond) pxAssertMsg(cond, #cond)
+#define pxAssume(cond) pxAssumeMsg(cond, #cond)
 
 #define pxAssertRelease(cond, msg)
 

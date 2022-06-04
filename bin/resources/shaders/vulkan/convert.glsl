@@ -157,7 +157,7 @@ void ps_filter_complex() // triangular
 {
 	const float PI = 3.14159265359f;
 	vec2 texdim = vec2(textureSize(samp0, 0));
-	if (dFdy(v_tex.y) * texdim.y > 0.5) 
+	if (dFdy(v_tex.y) * v_tex.y > 0.5) 
 		o_col0 = sample_c(v_tex); 
 	else
 		o_col0 = (0.9 - 0.4 * cos(2 * PI * v_tex.y * texdim.y)) * sample_c(vec2(v_tex.x, (floor(v_tex.y * texdim.y) + 0.5) / texdim.y));

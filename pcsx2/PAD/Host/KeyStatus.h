@@ -17,6 +17,11 @@
 
 #include "PAD/Host/Global.h"
 
+namespace PAD
+{
+enum class ControllerType : u8;
+}
+
 class KeyStatus
 {
 private:
@@ -28,7 +33,8 @@ private:
 		u8 rx, ry;
 	};
 
-	u16 m_button[GAMEPAD_NUMBER];
+	PAD::ControllerType m_type[GAMEPAD_NUMBER] = {};
+	u32 m_button[GAMEPAD_NUMBER];
 	u8 m_button_pressure[GAMEPAD_NUMBER][MAX_KEYS];
 	PADAnalog m_analog[GAMEPAD_NUMBER];
 	float m_axis_scale[GAMEPAD_NUMBER];
@@ -40,11 +46,14 @@ public:
 
 	void Set(u32 pad, u32 index, float value);
 
+	__fi PAD::ControllerType GetType(u32 pad) { return m_type[pad]; }
+	__fi void SetType(u32 pad, PAD::ControllerType type) { m_type[pad] = type; }
+
 	__fi void SetAxisScale(u32 pad, float scale) { m_axis_scale[pad] = scale; }
 	__fi float GetVibrationScale(u32 pad, u32 motor) const { return m_vibration_scale[pad][motor]; }
 	__fi void SetVibrationScale(u32 pad, u32 motor, float scale) { m_vibration_scale[pad][motor] = scale; }
 
-	u16 GetButtons(u32 pad);
+	u32 GetButtons(u32 pad);
 	u8 GetPressure(u32 pad, u32 index);
 };
 

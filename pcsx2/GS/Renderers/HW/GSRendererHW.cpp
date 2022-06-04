@@ -202,14 +202,14 @@ int GSRendererHW::GetUpscaleMultiplier()
 	return GSConfig.UpscaleMultiplier;
 }
 
-void GSRendererHW::Reset()
+void GSRendererHW::Reset(bool hardware_reset)
 {
 	// TODO: GSreset can come from the main thread too => crash
 	// m_tc->RemoveAll();
 
 	m_reset = true;
 
-	GSRenderer::Reset();
+	GSRenderer::Reset(hardware_reset);
 }
 
 void GSRendererHW::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
@@ -943,8 +943,8 @@ void GSRendererHW::SwSpriteRender()
 
 	for (int y = 0; y < h; y++, ++sy, ++dy)
 	{
-		const auto& spa = spo.paMulti(m_mem.m_vm32, sx, sy);
-		const auto& dpa = dpo.paMulti(m_mem.m_vm32, dx, dy);
+		const auto& spa = spo.paMulti(m_mem.vm32(), sx, sy);
+		const auto& dpa = dpo.paMulti(m_mem.vm32(), dx, dy);
 
 		ASSERT(w % 2 == 0);
 
@@ -3831,7 +3831,7 @@ void GSRendererHW::OI_GsMemClear()
 			// Based on WritePixel32
 			for (int y = r.top; y < r.bottom; y++)
 			{
-				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.m_vm32, 0, y);
+				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.vm32(), 0, y);
 
 				for (int x = r.left; x < r.right; x++)
 				{
@@ -3844,7 +3844,7 @@ void GSRendererHW::OI_GsMemClear()
 			// Based on WritePixel24
 			for (int y = r.top; y < r.bottom; y++)
 			{
-				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.m_vm32, 0, y);
+				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.vm32(), 0, y);
 
 				for (int x = r.left; x < r.right; x++)
 				{

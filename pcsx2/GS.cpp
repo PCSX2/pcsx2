@@ -38,7 +38,7 @@ void gsSetVideoMode(GS_VideoMode mode)
 // Make sure framelimiter options are in sync with GS capabilities.
 void gsReset()
 {
-	GetMTGS().ResetGS();
+	GetMTGS().ResetGS(true);
 
 	UpdateVSyncRate();
 	memzero(g_RealGSMem);

@@ -17,6 +17,7 @@
 
 #include "PAD/Host/StateManagement.h"
 #include "PAD/Host/KeyStatus.h"
+#include "PAD/Host/PAD.h"
 #include "Frontend/InputManager.h"
 
 template <class T>
@@ -62,19 +63,31 @@ void QueryInfo::reset()
 
 u8 QueryInfo::start_poll(int _port)
 {
-	if (port > 1)
+	if (_port >= static_cast<int>(GAMEPAD_NUMBER))
 	{
 		reset();
 		return 0;
 	}
 
-	queryDone = 0;
 	port = _port;
 	slot = slots[port];
-	numBytes = 2;
-	lastByte = 0;
 
-	return 0xFF;
+	if (g_key_status.GetType(_port) == PAD::ControllerType::NotConnected)
+	{
+		queryDone = 1;
+		numBytes = 0;
+		lastByte = 1;
+
+		return 0;
+	}
+	else
+	{
+		queryDone = 0;
+		numBytes = 2;
+		lastByte = 0;
+
+		return 0xFF;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -241,7 +254,21 @@ u8 pad_poll(u8 value)
 					b1=b1 & 0x1f;
 #endif
 
-				uint16_t buttons = g_key_status.GetButtons(query.port);
+				uint32_t buttons = g_key_status.GetButtons(query.port);
+				if (!test_bit(buttons, PAD_ANALOG) && !pad->modeLock)
+				{
+					switch (pad->mode)
+					{
+						case MODE_ANALOG:
+						case MODE_DS2_NATIVE:
+							pad->set_mode(MODE_DIGITAL);
+							break;
+						case MODE_DIGITAL:
+						default:
+							pad->set_mode(MODE_ANALOG);
+							break;
+					}
+				}
 
 				query.numBytes = 5;
 

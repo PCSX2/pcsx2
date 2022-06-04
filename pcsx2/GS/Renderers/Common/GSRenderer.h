@@ -51,6 +51,8 @@ public:
 	GSRenderer();
 	virtual ~GSRenderer();
 
+	virtual void Reset(bool hardware_reset) override;
+
 	virtual void Destroy();
 
 	virtual void VSync(u32 field, bool registers_written);

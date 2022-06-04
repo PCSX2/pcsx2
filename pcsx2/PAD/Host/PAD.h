@@ -37,7 +37,24 @@ u8 PADpoll(u8 value);
 
 namespace PAD
 {
-	enum class VibrationCapabilities
+	enum class ControllerType: u8
+	{
+		NotConnected,
+		DualShock2,
+		Count
+	};
+
+	enum class ControllerBindingType : u8
+	{
+		Unknown,
+		Button,
+		Axis,
+		HalfAxis,
+		Motor,
+		Macro
+	};
+
+	enum class VibrationCapabilities : u8
 	{
 		NoVibration,
 		LargeSmallMotors,
@@ -45,8 +62,29 @@ namespace PAD
 		Count
 	};
 
+	struct ControllerBindingInfo
+	{
+		const char* name;
+		const char* display_name;
+		ControllerBindingType type;
+		GenericInputBinding generic_mapping;
+	};
+
+	struct ControllerInfo
+	{
+		const char* name;
+		const char* display_name;
+		const ControllerBindingInfo* bindings;
+		u32 num_bindings;
+		ControllerType type;
+		PAD::VibrationCapabilities vibration_caps;
+	};
+
 	/// Number of macro buttons per controller.
 	static constexpr u32 NUM_MACRO_BUTTONS_PER_CONTROLLER = 4;
+
+	/// Returns the default type for the specified port.
+	const char* GetDefaultPadType(u32 pad);
 
 	/// Reloads configuration.
 	void LoadConfig(const SettingsInterface& si);
@@ -60,14 +98,18 @@ namespace PAD
 	/// Updates vibration and other internal state. Called at the *end* of a frame.
 	void Update();
 
-	/// Returns a list of controller type names.
-	std::vector<std::string> GetControllerTypeNames();
+	/// Returns a list of controller type names. Pair of [name, display name].
+	std::vector<std::pair<std::string, std::string>> GetControllerTypeNames();
 
 	/// Returns the list of binds for the specified controller type.
 	std::vector<std::string> GetControllerBinds(const std::string_view& type);
 
 	/// Returns the vibration configuration for the specified controller type.
 	VibrationCapabilities GetControllerVibrationCapabilities(const std::string_view& type);
+
+	/// Returns general information for the specified controller type.
+	const ControllerInfo* GetControllerInfo(ControllerType type);
+	const ControllerInfo* GetControllerInfo(const std::string_view& name);
 
 	/// Performs automatic controller mapping with the provided list of generic mappings.
 	bool MapController(SettingsInterface& si, u32 controller,

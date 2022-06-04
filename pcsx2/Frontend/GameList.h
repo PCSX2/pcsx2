@@ -42,10 +42,35 @@ namespace GameList
 
 	enum class Region
 	{
-		NTSC_UC,
+		NTSC_B,
+		NTSC_C,
+		NTSC_HK,
 		NTSC_J,
-		PAL,
+		NTSC_K,
+		NTSC_T,
+		NTSC_U,
 		Other,
+		PAL_A,
+		PAL_AU,
+		PAL_AF,
+		PAL_BE,
+		PAL_E,
+		PAL_F,
+		PAL_FI,
+		PAL_G,
+		PAL_GR,
+		PAL_I,
+		PAL_IN,
+		PAL_M,
+		PAL_NL,
+		PAL_NO,
+		PAL_P,
+		PAL_R,
+		PAL_S,
+		PAL_SC,
+		PAL_SW,
+		PAL_SWI,
+		PAL_UK,
 		Count
 	};
 

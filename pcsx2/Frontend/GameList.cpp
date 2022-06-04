@@ -39,7 +39,7 @@
 enum : u32
 {
 	GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
-	GAME_LIST_CACHE_VERSION = 31
+	GAME_LIST_CACHE_VERSION = 32
 };
 
 namespace GameList
@@ -89,7 +89,10 @@ const char* GameList::EntryTypeToString(EntryType type)
 const char* GameList::RegionToString(Region region)
 {
 	static std::array<const char*, static_cast<int>(Region::Count)> names = {
-		{"NTSC-U/C", "NTSC-J", "PAL", "Other"}};
+		{"NTSC-B", "NTSC-C", "NTSC-HK", "NTSC-J", "NTSC-K", "NTSC-T", "NTSC-U",
+		 "Other",
+		 "PAL-A", "PAL-AF", "PAL-AU", "PAL-BE", "PAL-E", "PAL-F", "PAL-FI", "PAL-G", "PAL-GR", "PAL-I", "PAL-IN", "PAL-M", "PAL-NL", "PAL-NO", "PAL-P", "PAL-R", "PAL-S", "PAL-SC", "PAL-SW", "PAL-SWI", "PAL-UK"}};
+		
 	return names[static_cast<int>(region)];
 }
 
@@ -172,7 +175,7 @@ bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 	entry->compatibility_rating = CompatibilityRating::Unknown;
 	return true;
 }
-
+// clang-format off
 bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 {
 	FILESYSTEM_STAT_DATA sd;
@@ -224,12 +227,66 @@ bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 	{
 		entry->title = std::move(db_entry->name);
 		entry->compatibility_rating = db_entry->compat;
-		if (StringUtil::StartsWith(db_entry->region, "NTSC-J"))
+							////// NTSC //////
+							//////////////////
+		if (StringUtil::StartsWith(db_entry->region, "NTSC-B"))
+			entry->region = Region::NTSC_B;
+		else if (StringUtil::StartsWith(db_entry->region, "NTSC-C"))
+			entry->region = Region::NTSC_C;
+		else if (StringUtil::StartsWith(db_entry->region, "NTSC-HK"))
+			entry->region = Region::NTSC_HK;
+		else if (StringUtil::StartsWith(db_entry->region, "NTSC-J"))
 			entry->region = Region::NTSC_J;
-		else if (StringUtil::StartsWith(db_entry->region, "NTSC"))
-			entry->region = Region::NTSC_UC;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL"))
-			entry->region = Region::PAL;
+		else if (StringUtil::StartsWith(db_entry->region, "NTSC-K"))
+			entry->region = Region::NTSC_K;
+		else if (StringUtil::StartsWith(db_entry->region, "NTSC-T"))
+			entry->region = Region::NTSC_T;
+		else if (StringUtil::StartsWith(db_entry->region, "NTSC-U"))
+			entry->region = Region::NTSC_U;
+							////// PAL //////
+							//////////////////
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-AF"))
+			entry->region = Region::PAL_AF;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-AU"))
+			entry->region = Region::PAL_AU;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-A"))
+			entry->region = Region::PAL_A;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-BE"))
+			entry->region = Region::PAL_BE;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-E"))
+			entry->region = Region::PAL_E;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-FI"))
+			entry->region = Region::PAL_FI;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-F"))
+			entry->region = Region::PAL_F;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-GR"))
+			entry->region = Region::PAL_GR;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-G"))
+			entry->region = Region::PAL_G;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-IN"))
+			entry->region = Region::PAL_IN;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-I"))
+			entry->region = Region::PAL_I;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-M"))
+			entry->region = Region::PAL_M;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-NL"))
+			entry->region = Region::PAL_NL;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-NO"))
+			entry->region = Region::PAL_NO;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-P"))
+			entry->region = Region::PAL_P;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-R"))
+			entry->region = Region::PAL_R;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-SC"))
+			entry->region = Region::PAL_SC;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-SWI"))
+			entry->region = Region::PAL_SWI;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-SW"))
+			entry->region = Region::PAL_SW;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-S"))
+			entry->region = Region::PAL_S;
+		else if (StringUtil::StartsWith(db_entry->region, "PAL-UK"))
+			entry->region = Region::PAL_UK;
 		else
 			entry->region = Region::Other;
 	}
@@ -241,7 +298,7 @@ bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 
 	return true;
 }
-
+// clang-format off
 bool GameList::PopulateEntryFromPath(const std::string& path, GameList::Entry* entry)
 {
 	if (VMManager::IsElfFileName(path.c_str()))

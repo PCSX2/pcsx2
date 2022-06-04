@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2022  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -58,7 +58,7 @@ void tIPU_cmd::clear()
 
 __fi void IPUProcessInterrupt()
 {
-	if (ipuRegs.ctrl.BUSY) // && (g_BP.FP || g_BP.IFC || (ipu1ch.chcr.STR && ipu1ch.qwc > 0)))
+	if (ipuRegs.ctrl.BUSY && !CommandExecuteQueued) // && (g_BP.FP || g_BP.IFC || (ipu1ch.chcr.STR && ipu1ch.qwc > 0)))
 		IPUWorker();
 }
 
@@ -191,8 +191,6 @@ __fi u32 ipuRead32(u32 mem)
 	pxAssert((mem & ~0xff) == 0x10002000);
 	mem &= 0xff;	// ipu repeats every 0x100
 
-	IPUProcessInterrupt();
-
 	switch (mem)
 	{
 		ipucase(IPU_CMD) : // IPU_CMD
@@ -242,8 +240,6 @@ __fi RETURNS_R64 ipuRead64(u32 mem)
 
 	pxAssert((mem & ~0xff) == 0x10002000);
 	mem &= 0xff;	// ipu repeats every 0x100
-
-	IPUProcessInterrupt();
 
 	switch (mem)
 	{
@@ -318,7 +314,6 @@ __fi bool ipuWrite32(u32 mem, u32 value)
 		ipucase(IPU_CMD): // IPU_CMD
 			IPU_LOG("write32: IPU_CMD=0x%08X", value);
 			IPUCMD_WRITE(value);
-			IPUProcessInterrupt();
 		return false;
 
 		ipucase(IPU_CTRL): // IPU_CTRL
@@ -354,7 +349,6 @@ __fi bool ipuWrite64(u32 mem, u64 value)
 		ipucase(IPU_CMD):
 			IPU_LOG("write64: IPU_CMD=0x%08X", value);
 			IPUCMD_WRITE((u32)value);
-			IPUProcessInterrupt();
 		return false;
 	}
 
@@ -928,7 +922,15 @@ __fi void IPUCMD_WRITE(u32 val)
 
 	ipuRegs.ctrl.BUSY = 1;
 
-	//if(!ipu1ch.chcr.STR) hwIntcIrq(INTC_IPU);
+	// Have a short delay immitating the time it takes to run IDEC/BDEC, other commands are near instant.
+	// Mana Khemia/Metal Saga start IDEC then change IPU0 expecting there to be a delay before IDEC sends data.
+	if (!CommandExecuteQueued && (ipu_cmd.CMD == SCE_IPU_IDEC || ipu_cmd.CMD == SCE_IPU_BDEC))
+	{
+		CommandExecuteQueued = true;
+		CPU_INT(IPU_PROCESS, 64);
+	}
+	else
+		IPUWorker();
 }
 
 __noinline void IPUWorker()

@@ -293,23 +293,23 @@ static __fi void _cpuTestInterrupts()
 	/* These are 'pcsx2 interrupts', they handle asynchronous stuff
 	   that depends on the cycle timings */
 
-	TESTINT(DMAC_VIF1,		vif1Interrupt);	
+	TESTINT(DMAC_VIF1,		vif1Interrupt);
 	TESTINT(DMAC_GIF,		gifInterrupt);
 	TESTINT(DMAC_SIF0,		EEsif0Interrupt);
 	TESTINT(DMAC_SIF1,		EEsif1Interrupt);
-	
 	// Profile-guided Optimization (sorta)
 	// The following ints are rarely called.  Encasing them in a conditional
 	// as follows helps speed up most games.
 
 	if (cpuRegs.interrupt & ((1 << DMAC_VIF0) | (1 << DMAC_FROM_IPU) | (1 << DMAC_TO_IPU)
 		| (1 << DMAC_FROM_SPR) | (1 << DMAC_TO_SPR) | (1 << DMAC_MFIFO_VIF) | (1 << DMAC_MFIFO_GIF)
-		| (1 << VIF_VU0_FINISH) | (1 << VIF_VU1_FINISH)))
+		| (1 << VIF_VU0_FINISH) | (1 << VIF_VU1_FINISH) | (1 << IPU_PROCESS)))
 	{
 		TESTINT(DMAC_VIF0,		vif0Interrupt);
 
 		TESTINT(DMAC_FROM_IPU,	ipu0Interrupt);
 		TESTINT(DMAC_TO_IPU,	ipu1Interrupt);
+		TESTINT(IPU_PROCESS,	ipuCMDProcess);
 
 		TESTINT(DMAC_FROM_SPR,	SPRFROMinterrupt);
 		TESTINT(DMAC_TO_SPR,	SPRTOinterrupt);

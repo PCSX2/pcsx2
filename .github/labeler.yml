@@ -75,9 +75,12 @@
 'GS':
   - 'pcsx2/GS/*'
   - 'pcsx2/GS/**/*'
-'GS: Direct3D':
+'GS: Direct3D 11':
   - 'pcsx2/GS/Renderers/DX11/*'
   - 'pcsx2/GS/Renderers/DX11/**/*'
+'GS: Direct3D 12':
+  - 'pcsx2/GS/Renderers/DX12/*'
+  - 'pcsx2/GS/Renderers/DX12/**/*'
 'GS: Hardware':
   - 'pcsx2/GS/Renderers/HW/*'
   - 'pcsx2/GS/Renderers/HW/**/*'
@@ -87,6 +90,9 @@
 'GS: Vulkan':
   - 'pcsx2/GS/Renderers/Vulkan/*'
   - 'pcsx2/GS/Renderers/Vulkan/**/*'
+'GS: Metal':
+  - 'pcsx2/GS/Renderers/Metal/*'
+  - 'pcsx2/GS/Renderers/Metal/**/*'
 'GS: Texture Cache':
   - 'pcsx2/GS/Renderers/*TextureCache*.*'
   - 'pcsx2/GS/Renderers/**/*TextureCache*.*'

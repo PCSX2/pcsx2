@@ -56,6 +56,7 @@ static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 namespace QtHost {
 static bool InitializeConfig();
 static bool ShouldUsePortableMode();
+static void SetAppRoot();
 static void SetResourcesDirectory();
 static void SetDataDirectory();
 static void HookSignals();
@@ -115,9 +116,14 @@ void QtHost::Shutdown()
 
 bool QtHost::SetCriticalFolders()
 {
-	EmuFolders::AppRoot = Path::Canonicalize(Path::GetDirectory(FileSystem::GetProgramPath()));
+	SetAppRoot();
 	SetResourcesDirectory();
 	SetDataDirectory();
+
+	// logging of directories in case something goes wrong super early
+	Console.WriteLn("AppRoot Directory: %s", EmuFolders::AppRoot.c_str());
+	Console.WriteLn("DataRoot Directory: %s", EmuFolders::DataRoot.c_str());
+	Console.WriteLn("Resources Directory: %s", EmuFolders::Resources.c_str());
 
 	// allow SetDataDirectory() to change settings directory (if we want to split config later on)
 	if (EmuFolders::Settings.empty())
@@ -141,6 +147,14 @@ bool QtHost::ShouldUsePortableMode()
 {
 	// Check whether portable.ini exists in the program directory.
 	return FileSystem::FileExists(Path::Combine(EmuFolders::AppRoot, "portable.ini").c_str());
+}
+
+void QtHost::SetAppRoot()
+{
+	std::string program_path(FileSystem::GetProgramPath());
+	Console.WriteLn("Program Path: %s", program_path.c_str());
+
+	EmuFolders::AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
 }
 
 void QtHost::SetResourcesDirectory()
@@ -227,6 +241,7 @@ bool QtHost::InitializeConfig()
 		return false;
 
 	const std::string path(Path::Combine(EmuFolders::Settings, "PCSX2.ini"));
+	Console.WriteLn("Loading config from %s.", path.c_str());
 	s_base_settings_interface = std::make_unique<INISettingsInterface>(std::move(path));
 	Host::Internal::SetBaseSettingsLayer(s_base_settings_interface.get());
 

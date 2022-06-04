@@ -920,6 +920,7 @@ finish_idec:
 	case 3:
 	{
 		u8 bit8;
+		u32 start_check;
 		if (!getBits8((u8*)&bit8, 0))
 		{
 			ipu_cmd.pos[0] = 3;
@@ -929,7 +930,21 @@ finish_idec:
 		if (bit8 == 0)
 		{
 			g_BP.Align();
-			ipuRegs.ctrl.SCD = 1;
+			do
+			{
+				if (!g_BP.FillBuffer(24)) 
+				{
+					ipu_cmd.pos[0] = 3;
+					return false;
+				}
+				start_check = UBITS(24);
+				if (start_check == 1)
+				{
+					ipuRegs.ctrl.SCD = 1;
+					break;
+				}
+				DUMPBITS(8);
+			} while (start_check != 1);
 		}
 	}
 		[[fallthrough]];
@@ -1196,6 +1211,7 @@ __fi bool mpeg2_slice()
 	case 4:
 	{
 		u8 bit8;
+		u32 start_check;
 		if (!getBits8((u8*)&bit8, 0))
 		{
 			ipu_cmd.pos[0] = 4;
@@ -1205,7 +1221,21 @@ __fi bool mpeg2_slice()
 		if (bit8 == 0)
 		{
 			g_BP.Align();
-			ipuRegs.ctrl.SCD = 1;
+			do
+			{
+				if (!g_BP.FillBuffer(24)) 
+				{
+					ipu_cmd.pos[0] = 4;
+					return false;
+				}
+				start_check = UBITS(24);
+				if (start_check == 1)
+				{
+					ipuRegs.ctrl.SCD = 1;
+					break;
+				}
+				DUMPBITS(8);
+			} while (start_check != 1);
 		}
 	}
 		[[fallthrough]];

@@ -36,8 +36,8 @@ bool BlockdumpFileReader::DetectBlockdump(AsyncFileReader* reader)
 	reader->SetBlockSize(1);
 
 	char buf[4] = {0};
-	bool isbd = (reader->ReadSync(buf, 0, sizeof(buf)) == 4 &&
-				 std::memcmp(buf, "BDV2", sizeof(buf)) == 0);
+	bool isbd = (reader->ReadSync(buf, 0, sizeof(buf)) == 4
+	          && std::memcmp(buf, "BDV2", sizeof(buf)) == 0);
 
 	if (!isbd)
 		reader->SetBlockSize(oldbs);
@@ -71,9 +71,9 @@ bool BlockdumpFileReader::Open(std::string fileName)
 	}
 
 	//m_flags = ISOFLAGS_BLOCKDUMP_V2;
-	if (std::fread(&m_blocksize, sizeof(m_blocksize), 1, m_file) != 1 ||
-		std::fread(&m_blocks, sizeof(m_blocks), 1, m_file) != 1 ||
-		std::fread(&m_blockofs, sizeof(m_blockofs), 1, m_file) != 1)
+	if (std::fread(&m_blocksize, sizeof(m_blocksize), 1, m_file) != 1
+	 || std::fread(&m_blocks,    sizeof(m_blocks),    1, m_file) != 1
+	 || std::fread(&m_blockofs,  sizeof(m_blockofs),  1, m_file) != 1)
 	{
 		return false;
 	}

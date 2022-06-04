@@ -73,6 +73,11 @@ static bool IsInterlacedVideoMode()
 	return (gsVideoMode == GS_VideoMode::PAL || gsVideoMode == GS_VideoMode::NTSC || gsVideoMode == GS_VideoMode::DVD_NTSC || gsVideoMode == GS_VideoMode::DVD_PAL || gsVideoMode == GS_VideoMode::HDTV_1080I);
 }
 
+static bool IsProgressiveVideoMode()
+{
+	return (gsVideoMode == GS_VideoMode::VESA || gsVideoMode == GS_VideoMode::SDTV_480P || gsVideoMode == GS_VideoMode::SDTV_576P || gsVideoMode == GS_VideoMode::HDTV_720P || gsVideoMode == GS_VideoMode::HDTV_1080P);
+}
+
 void rcntReset(int index) {
 	counters[index].count = 0;
 	counters[index].sCycleT = cpuRegs.cycle;
@@ -604,7 +609,11 @@ static __fi void VSyncStart(u32 sCycle)
 static __fi void GSVSync()
 {
 	// CSR is swapped and GS vBlank IRQ is triggered roughly 3.5 hblanks after VSync Start
-	CSRreg.SwapField();
+
+	if (IsProgressiveVideoMode())
+		CSRreg.SetField();
+	else
+		CSRreg.SwapField();
 
 	if (!CSRreg.VSINT)
 	{

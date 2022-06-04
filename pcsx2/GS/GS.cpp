@@ -373,11 +373,11 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 	return true;
 }
 
-void GSreset()
+void GSreset(bool hardware_reset)
 {
 	try
 	{
-		g_gs_renderer->Reset();
+		g_gs_renderer->Reset(hardware_reset);
 	}
 	catch (GSRecoverableError)
 	{
@@ -421,6 +421,11 @@ void GSInitAndReadFIFO(u8* mem, u32 size)
 	{
 		fprintf(stderr, "GS: Memory allocation error\n");
 	}
+}
+
+void GSReadLocalMemoryUnsync(u8* mem, u32 qwc, u64 BITBLITBUF, u64 TRXPOS, u64 TRXREG)
+{
+	g_gs_renderer->ReadLocalMemoryUnsync(mem, qwc, GIFRegBITBLTBUF{BITBLITBUF}, GIFRegTRXPOS{TRXPOS}, GIFRegTRXREG{TRXREG});
 }
 
 void GSgifTransfer(const u8* mem, u32 size)
@@ -496,6 +501,10 @@ int GSfreeze(FreezeAction mode, freezeData* data)
 		}
 		else if (mode == FreezeAction::Load)
 		{
+			// Since Defrost doesn't do a hardware reset (since it would be clearing
+			// local memory just before it's overwritten), we have to manually wipe
+			// out the current textures.
+			g_gs_device->ClearCurrent();
 			return g_gs_renderer->Defrost(data);
 		}
 	}

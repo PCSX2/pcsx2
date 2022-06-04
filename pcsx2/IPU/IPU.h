@@ -91,6 +91,8 @@ struct alignas(16) tIPU_BP {
 
 	__fi void Advance(uint bits)
 	{
+		FillBuffer(bits);
+
 		BP += bits;
 		pxAssume( BP <= 256 );
 
@@ -112,10 +114,10 @@ struct alignas(16) tIPU_BP {
 				// if FP == 0 then an already-drained buffer is being advanced, and we need to drop a
 				// quadword from the IPU FIFO.
 
-				if (!FP)
-					ipu_fifo.in.read(&internal_qwc[0]);
-
-				FP = 0;
+				if (ipu_fifo.in.read(&internal_qwc[0]))
+					FP = 1;
+				else
+					FP = 0;
 			}
 		}
 	}
@@ -288,6 +290,7 @@ static IPUregisters& ipuRegs = (IPUregisters&)eeHw[0x2000];
 
 alignas(16) extern tIPU_cmd ipu_cmd;
 extern int coded_block_pattern;
+extern bool CommandExecuteQueued;
 
 extern void ipuReset();
 

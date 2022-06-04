@@ -154,7 +154,9 @@
     <ClCompile Include="Settings\ControllerSettingsDialog.cpp" />
     <ClCompile Include="Settings\AudioSettingsWidget.cpp" />
     <ClCompile Include="Settings\MemoryCardSettingsWidget.cpp" />
+    <ClCompile Include="Settings\DEV9DnsHostDialog.cpp" />
     <ClCompile Include="Settings\DEV9SettingsWidget.cpp" />
+    <ClCompile Include="Settings\DEV9UiCommon.cpp" />
     <ClCompile Include="Settings\HddCreateQt.cpp" />
     <ClCompile Include="Settings\GameSummaryWidget.cpp" />
     <ClCompile Include="GameList\GameListModel.cpp" />
@@ -189,7 +191,9 @@
     <QtMoc Include="Settings\ControllerSettingsDialog.h" />
     <QtMoc Include="Settings\AudioSettingsWidget.h" />
     <QtMoc Include="Settings\MemoryCardSettingsWidget.h" />
+    <QtMoc Include="Settings\DEV9DnsHostDialog.h" />
     <QtMoc Include="Settings\DEV9SettingsWidget.h" />
+    <QtMoc Include="Settings\DEV9UiCommon.h" />
     <ClInclude Include="Settings\HddCreateQt.h" />
     <QtMoc Include="Settings\GameSummaryWidget.h" />
     <QtMoc Include="Settings\CreateMemoryCardDialog.h" />
@@ -233,7 +237,9 @@
     <ClCompile Include="$(IntDir)Settings\moc_InputBindingWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_AudioSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_MemoryCardSettingsWidget.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_DEV9DnsHostDialog.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_DEV9SettingsWidget.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_DEV9UiCommon.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_GameSummaryWidget.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListModel.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListRefreshThread.cpp" />
@@ -304,6 +310,9 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\MemoryCardSettingsWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Settings\DEV9DnsHostDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\DEV9SettingsWidget.ui">

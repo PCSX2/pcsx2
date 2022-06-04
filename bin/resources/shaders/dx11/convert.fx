@@ -200,7 +200,7 @@ PS_OUTPUT ps_filter_complex(PS_INPUT input) // triangular
 
 	float2 texdim, halfpixel; 
 	Texture.GetDimensions(texdim.x, texdim.y); 
-	if (ddy(input.t.y) * texdim.y > 0.5) 
+	if (ddy(input.t.y) * input.t.y > 0.5) 
 		output.c = sample_c(input.t); 
 	else
 		output.c = (0.9 - 0.4 * cos(2 * PI * input.t.y * texdim.y)) * sample_c(float2(input.t.x, (floor(input.t.y * texdim.y) + 0.5) / texdim.y));

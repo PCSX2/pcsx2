@@ -302,7 +302,7 @@ public:
 
 	float GetTvRefreshRate();
 
-	virtual void Reset();
+	virtual void Reset(bool hardware_reset);
 	virtual void UpdateSettings(const Pcsx2Config::GSOptions& old_config);
 
 	void Flush();
@@ -322,6 +322,7 @@ public:
 	void SoftReset(u32 mask);
 	void WriteCSR(u32 csr) { m_regs->CSR.U32[1] = csr; }
 	void ReadFIFO(u8* mem, int size);
+	void ReadLocalMemoryUnsync(u8* mem, int qwc, GIFRegBITBLTBUF BITBLTBUF, GIFRegTRXPOS TRXPOS, GIFRegTRXREG TRXREG);
 	template<int index> void Transfer(const u8* mem, u32 size);
 	int Freeze(freezeData* fd, bool sizeonly);
 	int Defrost(const freezeData* fd);

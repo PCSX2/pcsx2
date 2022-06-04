@@ -16,43 +16,15 @@
 #pragma once
 
 #include <QtWidgets/QWidget>
-#include <QtWidgets/QItemDelegate>
 #include <QtGui/QStandardItemModel>
 
 #include "ui_DEV9SettingsWidget.h"
 
+#include "DEV9UiCommon.h"
+#include "DEV9DnsHostDialog.h"
 #include "DEV9/net.h"
 
 class SettingsDialog;
-
-class IPValidator : public QValidator
-{
-	Q_OBJECT
-
-public:
-	explicit IPValidator(QObject* parent = nullptr, bool allowEmpty = false);
-	virtual State validate(QString& input, int& pos) const override;
-
-private:
-	static const QRegularExpression intermediateRegex;
-	static const QRegularExpression finalRegex;
-
-	bool m_allowEmpty;
-};
-
-class IPItemDelegate : public QItemDelegate
-{
-	Q_OBJECT
-
-public:
-	explicit IPItemDelegate(QObject* parent = nullptr);
-
-protected:
-	QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-	void setEditorData(QWidget* editor, const QModelIndex& index) const;
-	void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const;
-	void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-};
 
 class DEV9SettingsWidget : public QWidget
 {
@@ -68,6 +40,8 @@ private Q_SLOTS:
 	void onEthDNSModeChanged(QComboBox* sender, int index, QLineEdit* input, const char* section, const char* key);
 	void onEthHostAdd();
 	void onEthHostDel();
+	void onEthHostExport();
+	void onEthHostImport();
 	void onEthHostEdit(QStandardItem* item);
 
 	void onHddEnabledChanged(int state);
@@ -86,17 +60,10 @@ protected:
 	bool eventFilter(QObject* object, QEvent* event);
 
 private:
-	struct HostEntryUi
-	{
-		std::string Url;
-		std::string Desc;
-		std::string Address = "0.0.0.0";
-		bool Enabled;
-	};
-
 	void AddAdapter(const AdapterEntry& adapter);
 	void RefreshHostList();
 	int CountHostsConfig();
+	std::vector<HostEntryUi> ListHostsConfig();
 	void AddNewHostConfig(const HostEntryUi& host);
 	void DeleteHostConfig(int index);
 
