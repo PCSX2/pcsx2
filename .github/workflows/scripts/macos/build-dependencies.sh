@@ -35,6 +35,7 @@ fe7cbf3127882e3fc7259a75a0cb585620272c51745d3852ab9dd87960697f2e  $SDL.tar.gz
 6900996607258496ce126924a19fe9d598af9d892cf3f33d1e4daaa9b42ae0b1  $SOUNDTOUCH.tar.gz
 4980e86c6494adcd527a41fc0a4e436777ba41d1893717d7b7176c59c2061c25  wxWidgets-$WXWIDGETS.tar.bz2
 d9924d6fd4fa5f8e24458c87f73ef3dfc1e7c9b877a5407c040d89e6736e2634  qtbase-everywhere-src-$QT.tar.xz
+23ec4c14259d799bb6aaf1a07559d6b1bd2cf6d0da3ac439221ebf9e46ff3fd2  qtsvg-everywhere-src-$QT.tar.xz
 17f40689c4a1706a1b7db22fa92f6ab79f7b698a89e100cab4d10e19335f8267  qttools-everywhere-src-$QT.tar.xz
 bd1aac74a892c60b2f147b6d53bb5b55ab7a6409e63097d38198933f8024fa51  qttranslations-everywhere-src-$QT.tar.xz
 EOF
@@ -48,6 +49,7 @@ curl -L \
 	-O "https://www.surina.net/soundtouch/$SOUNDTOUCH.tar.gz" \
 	-O "https://github.com/wxWidgets/wxWidgets/releases/download/v$WXWIDGETS/wxWidgets-$WXWIDGETS.tar.bz2" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
+	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
 
@@ -117,6 +119,13 @@ if [ "$GUI" == "Qt" ]; then
 	tar xf "qtbase-everywhere-src-$QT.tar.xz"
 	cd "qtbase-everywhere-src-$QT"
 	cmake -B build -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release -DFEATURE_optimize_size=ON -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF
+	make -C build "-j$NPROCS"
+	make -C build install
+	cd ..
+	echo "Installing Qt SVG..."
+	tar xf "qtsvg-everywhere-src-$QT.tar.xz"
+	cd "qtsvg-everywhere-src-$QT"
+	cmake -B build -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=MinSizeRel
 	make -C build "-j$NPROCS"
 	make -C build install
 	cd ..
