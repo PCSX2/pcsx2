@@ -153,6 +153,30 @@ bool GSDevice11::Create(HostDisplay* display)
 			return false;
 	}
 
+	shader = Host::ReadResourceFileToString("shaders/dx11/present.fx");
+	if (!shader.has_value())
+		return false;
+	if (!m_shader_cache.GetVertexShaderAndInputLayout(m_dev.get(), m_present.vs.put(), m_present.il.put(),
+			il_convert, std::size(il_convert), *shader, sm_model.GetPtr(), "vs_main"))
+	{
+		return false;
+	}
+
+	for (size_t i = 0; i < std::size(m_present.ps); i++)
+	{
+		m_present.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm_model.GetPtr(), shaderName(static_cast<PresentShader>(i)));
+		if (!m_present.ps[i])
+			return false;
+	}
+
+	memset(&bd, 0, sizeof(bd));
+
+	bd.ByteWidth = sizeof(DisplayConstantBuffer);
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	m_dev->CreateBuffer(&bd, nullptr, m_present.ps_cb.put());
+
 	memset(&dsd, 0, sizeof(dsd));
 
 	m_dev->CreateDepthStencilState(&dsd, m_convert.dss.put());
@@ -653,6 +677,83 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	PSSetShaderResources(sTex, nullptr);
 	PSSetSamplerState(linear ? m_convert.ln.get() : m_convert.pt.get(), nullptr);
 	PSSetShader(ps, ps_cb);
+
+	//
+
+	DrawPrimitive();
+
+	//
+
+	EndScene();
+
+	PSSetShaderResources(nullptr, nullptr);
+}
+
+void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
+{
+	ASSERT(sTex);
+
+	BeginScene();
+
+	GSVector2i ds;
+	if (dTex)
+	{
+		ds = dTex->GetSize();
+		OMSetRenderTargets(dTex, nullptr);
+	}
+	else
+	{
+		ds = GSVector2i(m_display->GetWindowWidth(), m_display->GetWindowHeight());
+	}
+
+	DisplayConstantBuffer cb;
+	cb.SetSource(sRect, sTex->GetSize());
+	cb.SetTarget(dRect, ds);
+	cb.SetTime(shaderTime);
+	m_ctx->UpdateSubresource(m_present.ps_cb.get(), 0, nullptr, &cb, 0, 0);
+
+	// om
+	OMSetDepthStencilState(m_convert.dss.get(), 0);
+	OMSetBlendState(m_convert.bs.get(), 0);
+
+
+
+	// ia
+
+	const float left = dRect.x * 2 / ds.x - 1.0f;
+	const float top = 1.0f - dRect.y * 2 / ds.y;
+	const float right = dRect.z * 2 / ds.x - 1.0f;
+	const float bottom = 1.0f - dRect.w * 2 / ds.y;
+
+	GSVertexPT1 vertices[] =
+	{
+		{GSVector4(left, top, 0.5f, 1.0f), GSVector2(sRect.x, sRect.y)},
+		{GSVector4(right, top, 0.5f, 1.0f), GSVector2(sRect.z, sRect.y)},
+		{GSVector4(left, bottom, 0.5f, 1.0f), GSVector2(sRect.x, sRect.w)},
+		{GSVector4(right, bottom, 0.5f, 1.0f), GSVector2(sRect.z, sRect.w)},
+	};
+
+
+
+	IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
+	IASetInputLayout(m_present.il.get());
+	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+	// vs
+
+	VSSetShader(m_present.vs.get(), nullptr);
+
+
+	// gs
+
+	GSSetShader(nullptr, nullptr);
+
+
+	// ps
+
+	PSSetShaderResources(sTex, nullptr);
+	PSSetSamplerState(linear ? m_convert.ln.get() : m_convert.pt.get(), nullptr);
+	PSSetShader(m_present.ps[static_cast<u32>(shader)].get(), m_present.ps_cb.get());
 
 	//
 

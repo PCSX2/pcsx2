@@ -51,11 +51,6 @@ static bool IsIntConvertShader(ShaderConvert i)
 
 static bool IsDATMConvertShader(ShaderConvert i) { return (i == ShaderConvert::DATM_0 || i == ShaderConvert::DATM_1); }
 
-static bool IsPresentConvertShader(ShaderConvert i)
-{
-	return (i == ShaderConvert::COPY || (i >= ShaderConvert::SCANLINE && i <= ShaderConvert::COMPLEX_FILTER));
-}
-
 static VkAttachmentLoadOp GetLoadOpForTexture(GSTextureVK* tex)
 {
 	if (!tex)
@@ -120,8 +115,9 @@ bool GSDeviceVK::Create(HostDisplay* display)
 	if (!CreateBuffers())
 		return false;
 
-	if (!CompileConvertPipelines() || !CompileInterlacePipelines() ||
-		!CompileMergePipelines() || !CompilePostProcessingPipelines())
+	if (!CompileConvertPipelines() || !CompilePresentPipelines() ||
+		!CompileInterlacePipelines() || !CompileMergePipelines() ||
+		!CompilePostProcessingPipelines())
 	{
 		Host::ReportErrorAsync("GS", "Failed to compile utility pipelines");
 		return false;
@@ -582,6 +578,19 @@ void GSDeviceVK::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	const u32 index = (red ? 1 : 0) | (green ? 2 : 0) | (blue ? 4 : 0) | (alpha ? 8 : 0);
 	DoStretchRect(
 		static_cast<GSTextureVK*>(sTex), sRect, static_cast<GSTextureVK*>(dTex), dRect, m_color_copy[index], false);
+}
+
+void GSDeviceVK::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
+	PresentShader shader, float shaderTime, bool linear)
+{
+	DisplayConstantBuffer cb;
+	cb.SetSource(sRect, sTex->GetSize());
+	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GSVector2i(m_display->GetWindowWidth(), m_display->GetWindowHeight()));
+	cb.SetTime(shaderTime);
+	SetUtilityPushConstants(&cb, sizeof(cb));
+
+	DoStretchRect(static_cast<GSTextureVK*>(sTex), sRect, static_cast<GSTextureVK*>(dTex), dRect,
+		m_present[static_cast<int>(shader)], linear);
 }
 
 void GSDeviceVK::BeginRenderPassForStretchRect(GSTextureVK* dTex, const GSVector4i& dtex_rc, const GSVector4i& dst_rc)
@@ -1397,19 +1406,6 @@ bool GSDeviceVK::CompileConvertPipelines()
 
 		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_convert[index], "Convert pipeline %d", i);
 
-		if (swapchain && IsPresentConvertShader(i))
-		{
-			// compile a present variant too
-			gpb.SetRenderPass(m_swap_chain_render_pass, 0);
-			m_present[index] =
-				gpb.Create(g_vulkan_context->GetDevice(), g_vulkan_shader_cache->GetPipelineCache(true), false);
-			if (!m_present[index])
-				return false;
-
-			Vulkan::Util::SetObjectName(
-				g_vulkan_context->GetDevice(), m_present[index], "Convert pipeline %d (Present)", i);
-		}
-
 		if (i == ShaderConvert::COPY)
 		{
 			// compile the variant for setting up hdr rendering
@@ -1518,6 +1514,70 @@ bool GSDeviceVK::CompileConvertPipelines()
 
 	return true;
 }
+
+bool GSDeviceVK::CompilePresentPipelines()
+{
+	// we may not have a swap chain if running in headless mode.
+	Vulkan::SwapChain* swapchain = static_cast<Vulkan::SwapChain*>(m_display->GetRenderSurface());
+	if (swapchain)
+	{
+		m_swap_chain_render_pass =
+			g_vulkan_context->GetRenderPass(swapchain->GetSurfaceFormat().format, VK_FORMAT_UNDEFINED);
+		if (!m_swap_chain_render_pass)
+			return false;
+	}
+
+	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/vulkan/present.glsl");
+	if (!shader)
+	{
+		Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan/present.glsl.");
+		return false;
+	}
+
+	VkShaderModule vs = GetUtilityVertexShader(*shader);
+	if (vs == VK_NULL_HANDLE)
+		return false;
+	ScopedGuard vs_guard([&vs]() { Vulkan::Util::SafeDestroyShaderModule(vs); });
+
+	Vulkan::GraphicsPipelineBuilder gpb;
+	AddUtilityVertexAttributes(gpb);
+	gpb.SetPipelineLayout(m_utility_pipeline_layout);
+	gpb.SetDynamicViewportAndScissorState();
+	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
+	gpb.SetNoCullRasterizationState();
+	gpb.SetNoBlendingState();
+	gpb.SetVertexShader(vs);
+	gpb.SetDepthState(false, false, VK_COMPARE_OP_ALWAYS);
+	gpb.SetNoStencilState();
+	gpb.SetRenderPass(m_swap_chain_render_pass, 0);
+
+	// we enable provoking vertex here anyway, in case it doesn't support multiple modes in the same pass
+	if (m_features.provoking_vertex_last)
+		gpb.SetProvokingVertex(VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT);
+
+	for (PresentShader i = PresentShader::COPY; static_cast<int>(i) < static_cast<int>(PresentShader::Count);
+		i = static_cast<PresentShader>(static_cast<int>(i) + 1))
+	{
+		const int index = static_cast<int>(i);
+
+		VkShaderModule ps = GetUtilityFragmentShader(*shader, shaderName(i));
+		if (ps == VK_NULL_HANDLE)
+			return false;
+
+		ScopedGuard ps_guard([&ps]() { Vulkan::Util::SafeDestroyShaderModule(ps); });
+		gpb.SetFragmentShader(ps);
+
+		m_present[index] =
+			gpb.Create(g_vulkan_context->GetDevice(), g_vulkan_shader_cache->GetPipelineCache(true), false);
+		if (!m_present[index])
+			return false;
+
+		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_present[index], "Present pipeline %d", i);
+	}
+
+	return true;
+}
+
 
 bool GSDeviceVK::CompileInterlacePipelines()
 {

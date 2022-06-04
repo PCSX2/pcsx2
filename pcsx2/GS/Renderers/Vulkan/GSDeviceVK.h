@@ -77,7 +77,7 @@ public:
 		NUM_TFX_TEXTURES = NUM_TFX_SAMPLERS + NUM_TFX_RT_TEXTURES,
 		NUM_CONVERT_TEXTURES = 1,
 		NUM_CONVERT_SAMPLERS = 1,
-		CONVERT_PUSH_CONSTANTS_SIZE = 32,
+		CONVERT_PUSH_CONSTANTS_SIZE = 96,
 
 		VERTEX_BUFFER_SIZE = 32 * 1024 * 1024,
 		INDEX_BUFFER_SIZE = 16 * 1024 * 1024,
@@ -116,7 +116,7 @@ private:
 	std::unordered_map<u32, VkSampler> m_samplers;
 
 	std::array<VkPipeline, static_cast<int>(ShaderConvert::Count)> m_convert{};
-	std::array<VkPipeline, static_cast<int>(ShaderConvert::Count)> m_present{};
+	std::array<VkPipeline, static_cast<int>(PresentShader::Count)> m_present{};
 	std::array<VkPipeline, 16> m_color_copy{};
 	std::array<VkPipeline, 2> m_merge{};
 	std::array<VkPipeline, 4> m_interlace{};
@@ -177,6 +177,7 @@ private:
 	bool CreateRenderPasses();
 
 	bool CompileConvertPipelines();
+	bool CompilePresentPipelines();
 	bool CompileInterlacePipelines();
 	bool CompileMergePipelines();
 	bool CompilePostProcessingPipelines();
@@ -229,6 +230,8 @@ public:
 		ShaderConvert shader = ShaderConvert::COPY, bool linear = true) override;
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red,
 		bool green, bool blue, bool alpha) override;
+	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
+		PresentShader shader, float shaderTime, bool linear) override;
 
 	void BeginRenderPassForStretchRect(GSTextureVK* dTex, const GSVector4i& dtex_rc, const GSVector4i& dst_rc);
 	void DoStretchRect(GSTextureVK* sTex, const GSVector4& sRect, GSTextureVK* dTex, const GSVector4& dRect,

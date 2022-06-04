@@ -47,18 +47,6 @@ vec4 sample_c()
     return texture(TextureSampler, PSin_t);
 }
 
-vec4 ps_crt(uint i)
-{
-    vec4 mask[4] = vec4[4]
-        (
-         vec4(1, 0, 0, 0),
-         vec4(0, 1, 0, 0),
-         vec4(0, 0, 1, 0),
-         vec4(1, 1, 1, 0)
-        );
-    return sample_c() * clamp((mask[i] + 0.5f), 0.0f, 1.0f);
-}
-
 #ifdef ps_copy
 void ps_copy()
 {
@@ -237,70 +225,6 @@ void ps_filter_transparency()
     vec4 c = sample_c();
 
     c.a = dot(c.rgb, vec3(0.299, 0.587, 0.114));
-
-    SV_Target0 = c;
-}
-#endif
-
-#ifdef ps_filter_scanlines
-vec4 ps_scanlines(uint i)
-{
-    vec4 mask[2] =
-    {
-        vec4(1, 1, 1, 0),
-        vec4(0, 0, 0, 0)
-    };
-
-    return sample_c() * clamp((mask[i] + 0.5f), 0.0f, 1.0f);
-}
-
-void ps_filter_scanlines() // scanlines
-{
-    highp uvec4 p = uvec4(gl_FragCoord);
-
-    vec4 c = ps_scanlines(p.y % 2u);
-
-    SV_Target0 = c;
-}
-#endif
-
-#ifdef ps_filter_diagonal
-void ps_filter_diagonal() // diagonal
-{
-    highp uvec4 p = uvec4(gl_FragCoord);
-
-    vec4 c = ps_crt((p.x + (p.y % 3u)) % 3u);
-
-    SV_Target0 = c;
-}
-#endif
-
-#ifdef ps_filter_triangular
-void ps_filter_triangular() // triangular
-{
-    highp uvec4 p = uvec4(gl_FragCoord);
-
-    vec4 c = ps_crt(((p.x + ((p.y >> 1u) & 1u) * 3u) >> 1u) % 3u);
-
-    SV_Target0 = c;
-}
-#endif
-
-#ifdef ps_filter_complex
-void ps_filter_complex()
-{
-
-    const float PI = 3.14159265359f;
-
-    vec2 texdim = vec2(textureSize(TextureSampler, 0));
-
-    vec4 c;
-    if (dFdy(PSin_t.y) * PSin_t.y > 0.5f) {
-        c = sample_c();
-    } else {
-        float factor = (0.9f - 0.4f * cos(2.0f * PI * PSin_t.y * texdim.y));
-        c =  factor * texture(TextureSampler, vec2(PSin_t.x, (floor(PSin_t.y * texdim.y) + 0.5f) / texdim.y));
-    }
 
     SV_Target0 = c;
 }
