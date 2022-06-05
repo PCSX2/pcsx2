@@ -1210,7 +1210,7 @@ SCAJ-20177:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SCAJ-20178:
   name: "Ape Escape - Million Monkeys"
@@ -1301,7 +1301,7 @@ SCAJ-20197:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SCAJ-20198:
   name: "Everybody's Tennis [PlayStation 2 The Best]"
@@ -4689,7 +4689,7 @@ SCKA-20079:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SCKA-20081:
   name: "Tekken 5 [PlayStation 2 Big Hit Series]"
@@ -18609,7 +18609,7 @@ SLES-54644:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SLES-54645:
   name: "Valkyrie Profile 2 - Silmeria"
@@ -18617,7 +18617,7 @@ SLES-54645:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SLES-54646:
   name: "Valkyrie Profile 2 - Silmeria"
@@ -18626,7 +18626,7 @@ SLES-54646:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SLES-54647:
   name: "Valkyrie Profile 2 - Silmeria"
@@ -18635,7 +18635,7 @@ SLES-54647:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SLES-54648:
   name: "Valkyrie Profile 2 - Silmeria"
@@ -18643,7 +18643,7 @@ SLES-54648:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SLES-54653:
   name: "Freak Out - Extreme Freeride"
@@ -29240,7 +29240,7 @@ SLPM-66419:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SLPM-66420:
   name: "Front Mission 4 [Ultimate Hits]"
@@ -30573,7 +30573,7 @@ SLPM-66782:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
 SLPM-66783:
   name: "Idol Janshi Suchie-Pai 4 [Limited Edition]"
@@ -43394,7 +43394,7 @@ SLUS-21452:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines.
 SLUS-21453:
   name: "Disney's Meet the Robinsons"
