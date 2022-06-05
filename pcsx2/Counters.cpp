@@ -78,7 +78,9 @@ static bool IsInterlacedVideoMode()
 
 static bool IsProgressiveVideoMode()
 {
-	return (gsVideoMode == GS_VideoMode::VESA || gsVideoMode == GS_VideoMode::SDTV_480P || gsVideoMode == GS_VideoMode::SDTV_576P || gsVideoMode == GS_VideoMode::HDTV_720P || gsVideoMode == GS_VideoMode::HDTV_1080P);
+	// The FIELD register only flips if the CMOD field in SMODE1 is set to anything but 0 and Front Porch bottom bit in SYNCV is set.
+	// Also see "isReallyInterlaced()" in GSState.cpp
+	return !(*(u32*)PS2GS_BASE(GS_SYNCV) & 0x1) || !(*(u32*)PS2GS_BASE(GS_SMODE1) & 0x6000);
 }
 
 void rcntReset(int index) {
@@ -231,7 +233,7 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, double framesPerSecond, u32 sca
 	// Jak II - random speedups
 	// Shadow of Rome - FMV audio issues
 	const u64 HalfFrame = Frame / 2;
-	const u64 Blank = Scanline * (gsVideoMode == GS_VideoMode::NTSC ? 22 : 26);
+	const u64 Blank = Scanline *((gsVideoMode == GS_VideoMode::NTSC ? 22 : 25) + static_cast<int>(gsIsInterlaced));
 	const u64 Render = HalfFrame - Blank;
 	const u64 GSBlank = Scanline * 3.5; // GS VBlank/CSR Swap happens roughly 3.5 Scanlines after VBlank Start
 
@@ -404,23 +406,32 @@ u32 UpdateVSyncRate()
 	switch (gsVideoMode)
 	{
 	case GS_VideoMode::Uninitialized: // SYSCALL instruction hasn't executed yet, give some temporary values.
-		total_scanlines = SCANLINES_TOTAL_NTSC;
+		if(gsIsInterlaced)
+			total_scanlines = SCANLINES_TOTAL_NTSC_I;
+		else
+			total_scanlines = SCANLINES_TOTAL_NTSC_NI;
 		break;
 	case GS_VideoMode::PAL:
 	case GS_VideoMode::DVD_PAL:
 		custom = (EmuConfig.GS.FrameratePAL != 50.0);
-		total_scanlines = SCANLINES_TOTAL_PAL;
+		if (gsIsInterlaced)
+			total_scanlines = SCANLINES_TOTAL_PAL_I;
+		else
+			total_scanlines = SCANLINES_TOTAL_PAL_NI;
 		break;
 	case GS_VideoMode::NTSC:
 	case GS_VideoMode::DVD_NTSC:
 		custom = (EmuConfig.GS.FramerateNTSC != 59.94);
-		total_scanlines = SCANLINES_TOTAL_NTSC;
+		if (gsIsInterlaced)
+			total_scanlines = SCANLINES_TOTAL_NTSC_I;
+		else
+			total_scanlines = SCANLINES_TOTAL_NTSC_NI;
 		break;
 	case GS_VideoMode::SDTV_480P:
 	case GS_VideoMode::SDTV_576P:
 	case GS_VideoMode::HDTV_720P:
 	case GS_VideoMode::VESA:
-		total_scanlines = SCANLINES_TOTAL_NTSC;
+		total_scanlines = SCANLINES_TOTAL_NTSC_I;
 		break;
 	case GS_VideoMode::HDTV_1080P:
 	case GS_VideoMode::HDTV_1080I:
@@ -428,7 +439,10 @@ u32 UpdateVSyncRate()
 		break;
 	case GS_VideoMode::Unknown:
 	default:
-		total_scanlines = SCANLINES_TOTAL_NTSC;
+		if (gsIsInterlaced)
+			total_scanlines = SCANLINES_TOTAL_NTSC_I;
+		else
+			total_scanlines = SCANLINES_TOTAL_NTSC_NI;
 		Console.Error("PCSX2-Counters: Unknown video mode detected");
 		pxAssertDev(false , "Unknown video mode detected via SetGsCrt");
 	}
@@ -728,8 +742,7 @@ __fi void rcntUpdate_hScanline()
 
 __fi void rcntUpdate_vSync()
 {
-	s32 diff = (cpuRegs.cycle - vsyncCounter.sCycle);
-	if( diff < vsyncCounter.CycleT ) return;
+	if (!cpuTestCycle(vsyncCounter.sCycle, vsyncCounter.CycleT)) return;
 
 	if (vsyncCounter.Mode == MODE_VSYNC)
 	{
