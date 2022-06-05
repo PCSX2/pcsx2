@@ -481,9 +481,10 @@ GSVector2i GSState::GetResolutionOffset(int i)
 
 	const auto& SMODE2 = m_regs->SMODE2;
 	const int res_multi = (SMODE2.INT + 1);
+	const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
 
-	offset.x = (static_cast<int>(DISP.DX) - VideoModeOffsets[videomode].z) / (VideoModeDividers[videomode].x + 1);
-	offset.y = (static_cast<int>(DISP.DY) - (VideoModeOffsets[videomode].w * ((IsAnalogue() && res_multi) ? res_multi : 1))) / (VideoModeDividers[videomode].y + 1);
+	offset.x = (static_cast<int>(DISP.DX) - offsets.z) / (VideoModeDividers[videomode].x + 1);
+	offset.y = (static_cast<int>(DISP.DY) - (offsets.w * ((IsAnalogue() && res_multi) ? res_multi : 1))) / (VideoModeDividers[videomode].y + 1);
 
 	return offset;
 }
@@ -493,7 +494,9 @@ GSVector2i GSState::GetResolution()
 	const int videomode = static_cast<int>(GetVideoMode()) - 1;
 	const bool ignore_offset = !GSConfig.PCRTCOffsets;
 
-	GSVector2i resolution(VideoModeOffsets[videomode].x, VideoModeOffsets[videomode].y);
+	const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
+
+	GSVector2i resolution(offsets.x, offsets.y);
 
 	// The resolution of the framebuffer is double when in FRAME mode and interlaced.
 	// Also we need a special check because no-interlace patches like to render in the original height, but in non-interlaced mode
