@@ -495,7 +495,10 @@ GSVector2i GSState::GetResolution()
 
 	GSVector2i resolution(VideoModeOffsets[videomode].x, VideoModeOffsets[videomode].y);
 
-	if (isinterlaced() && !m_regs->SMODE2.FFMD)
+	// The resolution of the framebuffer is double when in FRAME mode and interlaced.
+	// Also we need a special check because no-interlace patches like to render in the original height, but in non-interlaced mode
+	// which means it would normally go off the bottom of the screen. Advantages of emulation, i guess... Limited to Ignore Offsets + Deinterlacing = Off.
+	if ((isinterlaced() && !m_regs->SMODE2.FFMD) || (GSConfig.InterlaceMode == GSInterlaceMode::Off && !GSConfig.PCRTCOffsets))
 		resolution.y *= 2;
 
 	if (ignore_offset)
