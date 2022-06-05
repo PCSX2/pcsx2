@@ -340,6 +340,12 @@ bool GSState::isinterlaced()
 	return !!m_regs->SMODE2.INT;
 }
 
+bool GSState::isReallyInterlaced()
+{
+	// The FIELD register only flips if the CMOD field in SMODE1 is set to anything but 0 and Front Porch bottom bit in SYNCV is set.
+	return (m_regs->SYNCV.VFP & 0x1) && m_regs->SMODE1.CMOD;
+}
+
 GSVideoMode GSState::GetVideoMode()
 {
 	// TODO: Get confirmation of videomode from SYSCALL ? not necessary but would be nice.

@@ -298,6 +298,7 @@ public:
 
 	bool IsEnabled(int i);
 	bool isinterlaced();
+	bool isReallyInterlaced();
 	bool IsAnalogue();
 
 	float GetTvRefreshRate();
