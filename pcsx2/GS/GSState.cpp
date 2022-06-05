@@ -512,6 +512,10 @@ GSVector2i GSState::GetResolution()
 		// such as Johnny Mosleys Mad Trix and Transformers render too much but design it to go off the screen.
 		int magnified_width = (VideoModeDividers[videomode].z + 1) / GetDisplayHMagnification();
 
+		// When viewing overscan allow up to the overscan size
+		if (GSConfig.PCRTCOverscan)
+			magnified_width = std::max(magnified_width, offsets.x);
+
 		GSVector4i total_rect = GetDisplayRect(0).runion(GetDisplayRect(1));
 		total_rect.z = total_rect.z - total_rect.x;
 		total_rect.w = total_rect.w - total_rect.y;

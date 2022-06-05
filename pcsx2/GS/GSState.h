@@ -273,8 +273,8 @@ public:
 	};
 
 	const GSVector4i VideoModeOffsetsOverscan[6] = {
-		GSVector4i(640, 240, 642, 12),
-		GSVector4i(640, 288, 676, 18),
+		GSVector4i(711, 243, 498, 12),
+		GSVector4i(702, 288, 532, 18),
 		GSVector4i(640, 480, 276, 34),
 		GSVector4i(720, 480, 232, 35),
 		GSVector4i(1280, 720, 302, 24),
