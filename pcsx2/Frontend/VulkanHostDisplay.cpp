@@ -1,6 +1,7 @@
 ﻿#include "PrecompiledHeader.h"
 
 #include "VulkanHostDisplay.h"
+#include "common/Align.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/ScopedGuard.h"
@@ -194,25 +195,26 @@ std::string VulkanHostDisplay::GetDriverInfo() const
 static bool UploadBufferToTexture(
 	Vulkan::Texture* texture, VkCommandBuffer cmdbuf, u32 width, u32 height, const void* data, u32 data_stride)
 {
-	const u32 tight_stride = Vulkan::Util::GetTexelSize(texture->GetFormat()) * width;
-	const u32 tight_size = tight_stride * height;
+	const u32 upload_stride = Common::AlignUpPow2(Vulkan::Util::GetTexelSize(texture->GetFormat()) * width,
+		g_vulkan_context->GetBufferCopyRowPitchAlignment());
+	const u32 upload_size = upload_stride * height;
 
 	Vulkan::StreamBuffer& buf = g_vulkan_context->GetTextureUploadBuffer();
-	if (!buf.ReserveMemory(tight_size, g_vulkan_context->GetBufferImageGranularity()))
+	if (!buf.ReserveMemory(upload_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
 	{
 		Console.WriteLn("Executing command buffer for UploadBufferToTexture()");
 		g_vulkan_context->ExecuteCommandBuffer(false);
-		if (!buf.ReserveMemory(tight_size, g_vulkan_context->GetBufferImageGranularity()))
+		if (!buf.ReserveMemory(upload_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
 		{
-			Console.WriteLn("Failed to allocate %u bytes in stream buffer for UploadBufferToTexture()", tight_size);
+			Console.WriteLn("Failed to allocate %u bytes in stream buffer for UploadBufferToTexture()", upload_size);
 			return false;
 		}
 		cmdbuf = g_vulkan_context->GetCurrentInitCommandBuffer();
 	}
 
 	const u32 buf_offset = buf.GetCurrentOffset();
-	StringUtil::StrideMemCpy(buf.GetCurrentHostPointer(), tight_stride, data, data_stride, tight_stride, height);
-	buf.CommitMemory(tight_size);
+	StringUtil::StrideMemCpy(buf.GetCurrentHostPointer(), upload_stride, data, data_stride, upload_stride, height);
+	buf.CommitMemory(upload_size);
 
 	texture->UpdateFromBuffer(cmdbuf, 0, 0, 0, 0, width, height, width, buf.GetBuffer(), buf_offset);
 	return true;
