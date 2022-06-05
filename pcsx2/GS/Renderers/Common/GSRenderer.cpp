@@ -219,7 +219,8 @@ bool GSRenderer::Merge(int field)
 			if (!slbg || !feedback_merge)
 			{
 				const int videomode = static_cast<int>(GetVideoMode()) - 1;
-				GSVector2i base_resolution(VideoModeOffsets[videomode].x, VideoModeOffsets[videomode].y);
+				const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
+				GSVector2i base_resolution(offsets.x, offsets.y);
 
 				if (isinterlaced() && !m_regs->SMODE2.FFMD)
 					base_resolution.y *= 2;

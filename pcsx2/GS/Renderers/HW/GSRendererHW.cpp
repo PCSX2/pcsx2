@@ -57,7 +57,8 @@ void GSRendererHW::SetScaling()
 	{
 		const int videomode = static_cast<int>(GetVideoMode()) - 1;
 		const int display_width = (VideoModeDividers[videomode].z + 1) / GetDisplayHMagnification();
-		int display_height = VideoModeOffsets[videomode].y;
+		const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
+		int display_height = offsets.y;
 
 		if (isinterlaced() && !m_regs->SMODE2.FFMD)
 			display_height *= 2;
@@ -269,7 +270,8 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 	TEX0.PSM = DISPFB.PSM;
 
 	const int videomode = static_cast<int>(GetVideoMode()) - 1;
-	const int display_height = VideoModeOffsets[videomode].y * ((isinterlaced() && !m_regs->SMODE2.FFMD) ? 2 : 1);
+	const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
+	const int display_height = offsets.y * ((isinterlaced() && !m_regs->SMODE2.FFMD) ? 2 : 1);
 	const int display_offset = GetResolutionOffset(i).y;
 	int fb_height = std::min(GetFramebufferHeight(), display_height) + DISPFB.DBY;
 	

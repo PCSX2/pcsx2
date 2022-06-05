@@ -299,6 +299,7 @@ Pcsx2Config::GSOptions::GSOptions()
 
 	DisableInterlaceOffset = false;
 	PCRTCOffsets = false;
+	PCRTCOverscan = false;
 	IntegerScaling = false;
 	LinearPresent = true;
 	SyncToHostRefreshRate = false;
@@ -516,6 +517,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	// using these variables, we need to use the old names. Maybe post 2.0 we can change this.
 	GSSettingBoolEx(DisableInterlaceOffset, "disable_interlace_offset");
 	GSSettingBoolEx(PCRTCOffsets, "pcrtc_offsets");
+	GSSettingBoolEx(PCRTCOverscan, "pcrtc_overscan");
 	GSSettingBool(IntegerScaling);
 	GSSettingBoolEx(LinearPresent, "linear_present");
 	GSSettingBool(UseDebugDevice);
