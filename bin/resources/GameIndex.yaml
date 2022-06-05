@@ -454,6 +454,8 @@ SCAJ-20011:
   region: "NTSC-Unk"
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
   memcardFilters:
     - "SCAJ-20011"
     - "SCPS-55014"
@@ -856,7 +858,9 @@ SCAJ-20110:
   name: "Dragon Quest VIII - Sora to Daichi to Norowareshi Himegimi"
   region: "NTSC-Unk"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes shadows of characters.
+    autoFlush: 1 # Fixes missing bloom from surfaces like windows.
+    # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
+    halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
 SCAJ-20111:
   name: "Crash Bandicoot 5"
@@ -1181,6 +1185,7 @@ SCAJ-20173:
     mipmap: 1
     roundSprite: 2 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
+    mergeSprite: 1 # Better aligns main menu strips, improving font readability.
   memcardFilters:
     - "SCAJ-20173"
     - "SLPS-25629"
@@ -4652,6 +4657,7 @@ SCKA-20070:
     mipmap: 1
     roundSprite: 2 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
+    mergeSprite: 1 # Better aligns main menu strips, improving font readability.
   patches:
     2799A4E5:
       content: |-
@@ -6046,6 +6052,8 @@ SCPS-55014:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
 SCPS-55015:
   name: "Zettai Zetsumei Toshi"
   region: "NTSC-J"
@@ -6295,6 +6303,7 @@ SCUS-21494:
     eeClampMode: 3 # Fixes game hang after opening intro.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SCUS-90174:
   name: "Toy Story 3 (PlayStation 2 Bundle)"
   region: "NTSC-U"
@@ -8289,12 +8298,13 @@ SLAJ-25088:
   name: "FIFA Soccer 2007"
   region: "NTSC-Unk"
 SLAJ-25091:
-  name: "Need for Speed - Carbon"
-  region: "NTSC-Unk"
+  name: "Need for Speed - Carbon [Collector's Edition]"
+  region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes game hang after opening intro.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLAJ-25092:
   name: "Shin Sangoku Musou 4 [PlayStation 2 The Best]"
   region: "NTSC-Unk"
@@ -8505,6 +8515,7 @@ SLED-54312:
     eeClampMode: 3 # Fixes game hang after opening intro.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLES-50003:
   name: "Swap Magic DVD Disc v2.0"
   region: "PAL-Unk"
@@ -9558,6 +9569,8 @@ SLES-50481:
   name: "Vexx"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes geometry alignment, removing lines.
 SLES-50484:
   name: "Rayman M"
   region: "PAL-Unk"
@@ -11385,6 +11398,8 @@ SLES-51356:
   name: "Road Trip Adventure"
   region: "PAL-M3"
   compat: 5
+  gsHWFixes:
+    roundSprite: 2 # Fixes sprite ghosting.
 SLES-51357:
   name: "G1 Jockey 3"
   region: "PAL-E"
@@ -11496,6 +11511,8 @@ SLES-51399:
   region: "PAL-E"
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
 SLES-51400:
   name: "Tenchu - Wrath of Heaven"
   region: "PAL-S"
@@ -11746,6 +11763,9 @@ SLES-51579:
     eeRoundMode: 2 # Partially fixes battle animation.
   clampModes:
     eeClampMode: 2 # Partially fixes battle animation.
+  gsHWFixes:
+    roundSprite: 1 # Corrects some font artifacts.
+    wildArmsHack: 1 # Corrects some more font artifacts a little.
 SLES-51580:
   name: "London Racer World Challenge"
   region: "PAL-M4"
@@ -13410,6 +13430,7 @@ SLES-52440:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
 SLES-52444:
   name: "Hyper Street Fighter II - The Anniversary Edition"
   region: "PAL-E"
@@ -13501,6 +13522,9 @@ SLES-52480:
     eeRoundMode: 2 # Partially fixes battle animation.
   clampModes:
     eeClampMode: 2 # Partially fixes battle animation.
+  gsHWFixes:
+    roundSprite: 1 # Corrects some font artifacts.
+    wildArmsHack: 1 # Corrects some more font artifacts a little.
 SLES-52481:
   name: "Hot Wheels - Stunt Track Challenge"
   region: "PAL-E"
@@ -13596,6 +13620,7 @@ SLES-52527:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
 SLES-52531:
   name: "Suffering, The"
   region: "PAL-G"
@@ -13728,6 +13753,8 @@ SLES-52569:
   name: "Spyro - A Hero's Tail"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned bloom effects that streak on-screen, causes occasional trash shadows at places.
 SLES-52570:
   name: "Area 51"
   region: "PAL-M5"
@@ -13817,6 +13844,7 @@ SLES-52600:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
 SLES-52601:
   name: "Ex Zeus"
   region: "PAL-E"
@@ -14534,6 +14562,8 @@ SLES-52931:
   compat: 5
   clampModes:
     vuClampMode: 3 # Fixes broken polygons on trees.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes stretched shadows.
 SLES-52934:
   name: "Guilty Gear Isuka [Preview]"
   region: "PAL-E"
@@ -17031,7 +17061,9 @@ SLES-53974:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes shadows of characters.
+    autoFlush: 1 # Fixes missing bloom from surfaces like windows.
+    # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
+    halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
 SLES-53976:
   name: "Evolution GT"
@@ -17757,6 +17789,7 @@ SLES-54321:
     eeClampMode: 3 # Fixes game hang after opening intro.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLES-54322:
   name: "Need for Speed - Carbon"
   region: "PAL-M8"
@@ -17764,6 +17797,7 @@ SLES-54322:
     eeClampMode: 3 # Fixes game hang after opening intro.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLES-54323:
   name: "Need for Speed - Carbon"
   region: "PAL-I-S"
@@ -17771,6 +17805,7 @@ SLES-54323:
     eeClampMode: 3 # Fixes game hang after opening intro.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLES-54324:
   name: "Need for Speed - Carbon"
   region: "PAL-R"
@@ -17778,6 +17813,7 @@ SLES-54324:
     eeClampMode: 3 # Fixes game hang after opening intro.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLES-54326:
   name: "Raceway - Drag Stock Racing"
   region: "PAL-E"
@@ -18012,6 +18048,7 @@ SLES-54402:
     eeClampMode: 3 # Fixes game hang after opening intro.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLES-54420:
   name: "Arthur & The Minimoys"
   region: "PAL-M7"
@@ -18261,6 +18298,7 @@ SLES-54492:
     eeClampMode: 3 # Fixes game hang after opening intro.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLES-54493:
   name: "Need for Speed - Carbon [Collector's Edition]"
   region: "PAL-F-G"
@@ -18268,6 +18306,7 @@ SLES-54493:
     eeClampMode: 3 # Fixes game hang after opening intro.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLES-54494:
   name: "Little Britain - The Video Game"
   region: "PAL-E"
@@ -21086,6 +21125,8 @@ SLKA-15007:
 SLKA-15008:
   name: "Choro Q HG2"
   region: "NTSC-E-F-G"
+  gsHWFixes:
+    roundSprite: 2 # Fixes sprite ghosting.
 SLKA-15021:
   name: "GrowLanser3"
   region: "NTSC-K"
@@ -21161,6 +21202,8 @@ SLKA-25041:
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
   memcardFilters:
     - "SLKA-25041"
     - "SLPM-67524"
@@ -21376,6 +21419,7 @@ SLKA-25172:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
 SLKA-25175:
   name: "Transformers"
   region: "NTSC-K"
@@ -21884,6 +21928,14 @@ SLPM-55047:
 SLPM-55051:
   name: "Will o' Wisp - Easter no Kiseki"
   region: "NTSC-J"
+SLPM-55061:
+  name: "Need for Speed - Carbon [EA-SY! 1980]"
+  region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLPM-55062:
   name: "Jikkyou Powerful Major League 3"
   region: "NTSC-J"
@@ -22693,6 +22745,8 @@ SLPM-62102:
 SLPM-62104:
   name: "Choro-Q HG2"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Fixes sprite ghosting.
 SLPM-62107:
   name: "Growlanser 3 - The Duel Darkness"
   region: "NTSC-J"
@@ -23292,6 +23346,8 @@ SLPM-62354:
 SLPM-62355:
   name: "Choro Q - High Grade 2"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Fixes sprite ghosting.
 SLPM-62356:
   name: "World Soccer Winning Eleven 7"
   region: "NTSC-J"
@@ -23659,7 +23715,9 @@ SLPM-62490:
   name: "Dragon Quest VIII [Premium Disc]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes shadows of characters.
+    autoFlush: 1 # Fixes missing bloom from surfaces like windows.
+    # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
+    halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
 SLPM-62491:
   name: "RockMan Power Battle Fighters"
@@ -24439,6 +24497,8 @@ SLPM-62760:
 SLPM-62761:
   name: "Choro Q - HG 2 [Atlus Best Collection]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Fixes sprite ghosting.
 SLPM-62762:
   name: "Sangokushi VIII [with Power-Up Kit] [Koei Selection Series]"
   region: "NTSC-J"
@@ -26474,6 +26534,7 @@ SLPM-65612:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
 SLPM-65613:
   name: "Yu-Gi-Oh! Capsule Monster Coliseum"
   region: "NTSC-J"
@@ -27379,7 +27440,9 @@ SLPM-65888:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes shadows of characters.
+    autoFlush: 1 # Fixes missing bloom from surfaces like windows.
+    # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
+    halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
 SLPM-65889:
   name: "Kazoku Keikaku - Kokoro no Kizuna"
@@ -29429,7 +29492,9 @@ SLPM-66481:
   name: "Dragon Quest VIII [Ultimate Hits]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes shadows of characters.
+    autoFlush: 1 # Fixes missing bloom from surfaces like windows.
+    # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
+    halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
 SLPM-66482:
   name: "Tokimeki Memorial - Girl's Side 2nd Kiss"
@@ -29893,6 +29958,7 @@ SLPM-66617:
     eeClampMode: 3 # Fixes game hang after opening intro.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLPM-66618:
   name: "Yumemishi [First Print Limited Edition]"
   region: "NTSC-J"
@@ -30756,6 +30822,7 @@ SLPM-66869:
     eeClampMode: 3 # Fixes game hang after opening intro.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLPM-66870:
   name: "Kuri no Okurimono [First Print Special Edition]"
   region: "NTSC-J"
@@ -31254,6 +31321,8 @@ SLPM-67524:
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
 SLPM-67527:
   name: "Need for Speed - Hot Pursuit 2"
   region: "NTSC-K"
@@ -33193,6 +33262,8 @@ SLPS-25112:
   compat: 5
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
 SLPS-25113:
   name: "Zettai Zetsumei Toshi"
   region: "NTSC-J"
@@ -33376,6 +33447,8 @@ SLPS-25169:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
   memcardFilters:
     - "SCAJ-20011"
     - "SCPS-55014"
@@ -34988,6 +35061,7 @@ SLPS-25629:
     mipmap: 1
     roundSprite: 2 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
+    mergeSprite: 1 # Better aligns main menu strips, improving font readability.
   memcardFilters:
     - "SCAJ-20173"
     - "SLPS-25629"
@@ -36528,6 +36602,7 @@ SLPS-73250:
     mipmap: 1
     roundSprite: 2 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
+    mergeSprite: 1 # Better aligns main menu strips, improving font readability.
   memcardFilters:
     - "SCAJ-20173"
     - "SLPS-25629"
@@ -36653,6 +36728,8 @@ SLPS-73417:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
 SLPS-73418:
   name: "Shadow Hearts [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -36666,6 +36743,8 @@ SLPS-73420:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
   memcardFilters:
     - "SCAJ-20011"
     - "SCPS-55014"
@@ -38167,6 +38246,8 @@ SLUS-20383:
   name: "Vexx"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes geometry alignment, removing lines.
 SLUS-20384:
   name: "SkyGunner"
   region: "NTSC-U"
@@ -38237,12 +38318,16 @@ SLUS-20397:
 SLUS-20398:
   name: "Road Trip"
   region: "NTSC-U"
+  gsHWFixes:
+    roundSprite: 2 # Fixes sprite ghosting.
 SLUS-20399:
   name: "MTX Mototrax"
   region: "NTSC-U"
   compat: 5
   roundModes:
     vuRoundMode: 0 # Fixes glitchy graphics ingame.
+  gsHWFixes:
+    roundSprite: 2 # Fixes sprite ghosting.
 SLUS-20400:
   name: "Mission Impossible - Operation Surma"
   region: "NTSC-U"
@@ -38420,6 +38505,8 @@ SLUS-20435:
   region: "NTSC-U"
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
 SLUS-20436:
   name: "Guilty Gear X2"
   region: "NTSC-U"
@@ -38778,6 +38865,9 @@ SLUS-20515:
     eeRoundMode: 2 # Partially fixes battle animation.
   clampModes:
     eeClampMode: 2 # Partially fixes battle animation.
+  gsHWFixes:
+    roundSprite: 1 # Corrects some font artifacts.
+    wildArmsHack: 1 # Corrects some more font artifacts a little.
 SLUS-20516:
   name: "Shrek - Super Party"
   region: "NTSC-U"
@@ -40594,6 +40684,7 @@ SLUS-20926:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
 SLUS-20927:
   name: "Time Crisis - Crisis Zone"
   region: "NTSC-U"
@@ -41967,7 +42058,9 @@ SLUS-21207:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes shadows of characters.
+    autoFlush: 1 # Fixes missing bloom from surfaces like windows.
+    # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
+    halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
 SLUS-21208:
   name: "Tony Hawk's American Wasteland"
@@ -42204,6 +42297,8 @@ SLUS-21248:
   compat: 5
   clampModes:
     vuClampMode: 3 # Fixes broken polygons on trees.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes stretched shadows.
 SLUS-21249:
   name: "Yourself! Fitness - Lifestyle"
   region: "NTSC-U"
@@ -42250,6 +42345,9 @@ SLUS-21258:
     - "SLUS-21488"
     - "SLUS-21489"
     - "SLUS-21480"
+  gsHWFixes:
+    halfPixelOffset: 2 # Sharpens world in far distances.
+    roundSprite: 1 # Corrects proportions of some letters in HUD.
 SLUS-21259:
   name: "Stacked with Daniel Negreanu"
   region: "NTSC-U"
@@ -42709,6 +42807,7 @@ SLUS-21346:
     mipmap: 1
     roundSprite: 2 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
+    mergeSprite: 1 # Better aligns main menu strips, improving font readability.
   memcardFilters:
     - "SLUS-21346"
     - "SLUS-20152"
@@ -43514,6 +43613,7 @@ SLUS-21493:
     eeClampMode: 3 # Fixes game hang after opening intro.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLUS-21494:
   name: "Need for Speed - Carbon [Collector's Edition]"
   region: "NTSC-U"
@@ -43521,6 +43621,7 @@ SLUS-21494:
     eeClampMode: 3 # Fixes game hang after opening intro.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLUS-21495:
   name: "Sudoku, Carol Vorderman's"
   region: "NTSC-U"
@@ -44665,6 +44766,8 @@ SLUS-21774:
   name: "Dynasty Warriors 6"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Corrects rendered menu strips, making font more legible.
 SLUS-21775:
   name: "Mummy, The - Tomb of the Dragon Emperor"
   region: "NTSC-U"
@@ -45990,7 +46093,9 @@ SLUS-29157:
   name: "Dragon Quest VIII - Journey of the Cursed King [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes shadows of characters.
+    autoFlush: 1 # Fixes missing bloom from surfaces like windows.
+    # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
+    halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
 SLUS-29159:
   name: "One Piece - Grand Battle [Demo]"
@@ -46093,6 +46198,7 @@ SLUS-29193:
     eeClampMode: 3 # Fixes game hang after opening intro.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLUS-29194:
   name: "FIFA '07 [Demo]"
   region: "NTSC-U"
@@ -46111,8 +46217,11 @@ SLUS-29198:
   name: "Guitar Hero II [Demo]"
   region: "NTSC-U"
 SLUS-29199:
-  name: "dot hack - G.U. Vol.1 - Rebirth"
+  name: "dot hack - G.U. Vol.1 - Rebirth [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Sharpens world in far distances.
+    roundSprite: 1 # Corrects proportions of some letters in HUD.
 SLUS-29200:
   name: "FIFA Soccer 08 [Demo]"
   region: "NTSC-U"
