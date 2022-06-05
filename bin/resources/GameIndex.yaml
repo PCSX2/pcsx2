@@ -10068,7 +10068,9 @@ SLES-50777:
 SLES-50778:
   name: "TD Overdrive - The Brotherhood of Speed"
   region: "PAL-M5"
-  compat: 2
+  compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes fog line.
   patches:
     AE9EB9A0:
       content: |-
@@ -37427,6 +37429,8 @@ SLUS-20213:
   name: "Test Drive"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes fog line.
   patches:
     D4A56F59:
       content: |-
