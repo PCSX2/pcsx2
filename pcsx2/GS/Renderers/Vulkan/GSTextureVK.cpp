@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSDeviceVK.h"
 #include "GSTextureVK.h"
+#include "common/Align.h"
 #include "common/Assertions.h"
 #include "common/Vulkan/Builders.h"
 #include "common/Vulkan/Context.h"
@@ -144,8 +145,9 @@ VkCommandBuffer GSTextureVK::GetCommandBufferForUpdate()
 	return g_vulkan_context->GetCurrentInitCommandBuffer();
 }
 
-static VkBuffer AllocateUploadStagingBuffer(const void* data, u32 size)
+static VkBuffer AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 height)
 {
+	const u32 size = upload_pitch * height;
 	const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0,
 		static_cast<VkDeviceSize>(size), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr};
 
@@ -170,7 +172,7 @@ static VkBuffer AllocateUploadStagingBuffer(const void* data, u32 size)
 	g_vulkan_context->DeferBufferDestruction(buffer, allocation);
 
 	// And write the data.
-	std::memcpy(ai.pMappedData, data, size);
+	StringUtil::StrideMemCpy(ai.pMappedData, upload_pitch, data, pitch, pitch, height);
 	vmaFlushAllocation(g_vulkan_context->GetAllocator(), allocation, 0, size);
 	return buffer;
 }
@@ -184,8 +186,8 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 
 	const u32 width = r.width();
 	const u32 height = r.height();
-	const u32 row_length = CalcUploadRowLengthFromPitch(pitch);
-	const u32 required_size = CalcUploadSize(height, pitch);
+	const u32 upload_pitch = Common::AlignUpPow2(pitch, g_vulkan_context->GetBufferCopyRowPitchAlignment());
+	const u32 required_size = CalcUploadSize(height, upload_pitch);
 
 	// If the texture is larger than half our streaming buffer size, use a separate buffer.
 	// Otherwise allocation will either fail, or require lots of cmdbuffer submissions.
@@ -194,18 +196,18 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 	if (required_size > (g_vulkan_context->GetTextureUploadBuffer().GetCurrentSize() / 2))
 	{
 		buffer_offset = 0;
-		buffer = AllocateUploadStagingBuffer(data, required_size);
+		buffer = AllocateUploadStagingBuffer(data, pitch, upload_pitch, height);
 		if (buffer == VK_NULL_HANDLE)
 			return false;
 	}
 	else
 	{
 		Vulkan::StreamBuffer& sbuffer = g_vulkan_context->GetTextureUploadBuffer();
-		if (!sbuffer.ReserveMemory(required_size, g_vulkan_context->GetBufferImageGranularity()))
+		if (!sbuffer.ReserveMemory(required_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
 		{
 			GSDeviceVK::GetInstance()->ExecuteCommandBuffer(
 				false, "While waiting for %u bytes in texture upload buffer", required_size);
-			if (!sbuffer.ReserveMemory(required_size, g_vulkan_context->GetBufferImageGranularity()))
+			if (!sbuffer.ReserveMemory(required_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
 			{
 				Console.Error("Failed to reserve texture upload memory (%u bytes).", required_size);
 				return false;
@@ -214,7 +216,7 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 
 		buffer = sbuffer.GetBuffer();
 		buffer_offset = sbuffer.GetCurrentOffset();
-		std::memcpy(sbuffer.GetCurrentHostPointer(), data, required_size);
+		StringUtil::StrideMemCpy(sbuffer.GetCurrentHostPointer(), upload_pitch, data, pitch, pitch, height);
 		sbuffer.CommitMemory(required_size);
 	}
 
@@ -234,7 +236,8 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 			m_state = State::Dirty;
 	}
 
-	m_texture.UpdateFromBuffer(cmdbuf, layer, 0, r.x, r.y, width, height, row_length, buffer, buffer_offset);
+	m_texture.UpdateFromBuffer(cmdbuf, layer, 0, r.x, r.y, width, height,
+		CalcUploadRowLengthFromPitch(upload_pitch), buffer, buffer_offset);
 	m_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	if (m_type == Type::Texture)
@@ -252,7 +255,8 @@ bool GSTextureVK::Map(GSMap& m, const GSVector4i* r, int layer)
 	m_map_area = r ? *r : GSVector4i(0, 0, m_texture.GetWidth(), m_texture.GetHeight());
 	m_map_level = layer;
 
-	m.pitch = m_map_area.width() * Vulkan::Util::GetTexelSize(m_texture.GetFormat());
+	m.pitch = Common::AlignUpPow2(m_map_area.width() * Vulkan::Util::GetTexelSize(m_texture.GetFormat()),
+		g_vulkan_context->GetBufferCopyRowPitchAlignment());
 
 	// see note in Update() for the reason why.
 	const u32 required_size = m.pitch * m_map_area.height();
@@ -260,11 +264,11 @@ bool GSTextureVK::Map(GSMap& m, const GSVector4i* r, int layer)
 	if (required_size >= (buffer.GetCurrentSize() / 2))
 		return false;
 
-	if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferImageGranularity()))
+	if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
 	{
 		GSDeviceVK::GetInstance()->ExecuteCommandBuffer(
 			false, "While waiting for %u bytes in texture upload buffer", required_size);
-		if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferImageGranularity()))
+		if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
 			pxFailRel("Failed to reserve texture upload memory");
 	}
 
@@ -280,7 +284,9 @@ void GSTextureVK::Unmap()
 	// TODO: non-tightly-packed formats
 	const u32 width = static_cast<u32>(m_map_area.width());
 	const u32 height = static_cast<u32>(m_map_area.height());
-	const u32 required_size = width * height * Vulkan::Util::GetTexelSize(m_texture.GetFormat());
+	const u32 pitch = Common::AlignUpPow2(m_map_area.width() * Vulkan::Util::GetTexelSize(m_texture.GetFormat()),
+		g_vulkan_context->GetBufferCopyRowPitchAlignment());
+	const u32 required_size = pitch * height;
 	Vulkan::StreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
 	const u32 buffer_offset = buffer.GetCurrentOffset();
 	buffer.CommitMemory(required_size);
@@ -302,8 +308,8 @@ void GSTextureVK::Unmap()
 			m_state = State::Dirty;
 	}
 
-	m_texture.UpdateFromBuffer(cmdbuf, m_map_level, 0, m_map_area.x, m_map_area.y, width, height, width,
-		buffer.GetBuffer(), buffer_offset);
+	m_texture.UpdateFromBuffer(cmdbuf, m_map_level, 0, m_map_area.x, m_map_area.y, width, height,
+		CalcUploadRowLengthFromPitch(pitch), buffer.GetBuffer(), buffer_offset);
 	m_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	if (m_type == Type::Texture)

@@ -99,23 +99,34 @@ namespace Vulkan
 		__fi const OptionalExtensions& GetOptionalExtensions() const { return m_optional_extensions; }
 
 		// Helpers for getting constants
-		__fi VkDeviceSize GetUniformBufferAlignment() const
+		__fi u32 GetUniformBufferAlignment() const
 		{
-			return m_device_properties.limits.minUniformBufferOffsetAlignment;
+			return static_cast<u32>(m_device_properties.limits.minUniformBufferOffsetAlignment);
 		}
-		__fi VkDeviceSize GetTexelBufferAlignment() const
+		__fi u32 GetTexelBufferAlignment() const
 		{
-			return m_device_properties.limits.minTexelBufferOffsetAlignment;
+			return static_cast<u32>(m_device_properties.limits.minTexelBufferOffsetAlignment);
 		}
-		__fi VkDeviceSize GetStorageBufferAlignment() const
+		__fi u32 GetStorageBufferAlignment() const
 		{
-			return m_device_properties.limits.minStorageBufferOffsetAlignment;
+			return static_cast<u32>(m_device_properties.limits.minStorageBufferOffsetAlignment);
 		}
-		__fi VkDeviceSize GetBufferImageGranularity() const
+		__fi u32 GetBufferImageGranularity() const
 		{
-			return m_device_properties.limits.bufferImageGranularity;
+			return static_cast<u32>(m_device_properties.limits.bufferImageGranularity);
 		}
-		__fi VkDeviceSize GetMaxImageDimension2D() const { return m_device_properties.limits.maxImageDimension2D; }
+		__fi u32 GetBufferCopyOffsetAlignment() const
+		{
+			return static_cast<u32>(m_device_properties.limits.optimalBufferCopyOffsetAlignment);
+		}
+		__fi u32 GetBufferCopyRowPitchAlignment() const
+		{
+			return static_cast<u32>(m_device_properties.limits.optimalBufferCopyRowPitchAlignment);
+		}
+		__fi u32 GetMaxImageDimension2D() const
+		{
+			return m_device_properties.limits.maxImageDimension2D;
+		}
 
 		// Creates a simple render pass.
 		__ri VkRenderPass GetRenderPass(VkFormat color_format, VkFormat depth_format,

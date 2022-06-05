@@ -73,4 +73,20 @@ namespace Common
 		value |= (value >> 16);
 		return value - (value >> 1);
 	}
+
+	template<typename T>
+	static constexpr __fi T NextPow2(T value)
+	{
+		if (value == static_cast<T>(0))
+			return 0;
+
+		value--;
+		value |= value >> 1;
+		value |= value >> 2;
+		value |= value >> 4;
+		value |= value >> 8;
+		value |= value >> 16;
+		value++;
+		return value;
+	}
 } // namespace Common
