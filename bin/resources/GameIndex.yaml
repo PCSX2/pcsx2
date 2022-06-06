@@ -1610,6 +1610,14 @@ SCED-50463:
 SCED-50506:
   name: "Official PlayStation 2 Magazine Demo 12" # German
   region: "PAL-M5"
+SCED-50520:
+  name: "World Rally Championship [Demo]"
+  region: "PAL-E"
+  compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes crash when using the Subaru.
+  gameFixes:
+    - EETimingHack # Fix in-game Freeze.
 SCED-50543:
   name: "Official PlayStation 2 Magazine Demo 12" # French
   region: "PAL-M5"
@@ -1969,6 +1977,14 @@ SCED-52092:
 SCED-52120:
   name: "Official PlayStation 2 Magazine Demo 55" # German
   region: "PAL-E-G"
+SCED-52141:
+  name: "WRC 3 [Demo]"
+  region: "NTSC-J"
+  compat: 5
+  gameFixes:
+    - XGKickHack
+  gsHWFixes:
+    roundSprite: 2 # Correct misaligned font, better aligns car shadow.
 SCED-52160:
   name: "Official PlayStation 2 Magazine Demo 45"
   region: "PAL-M5"
@@ -3090,7 +3106,9 @@ SCES-51684:
   region: "PAL-M8"
   compat: 5
   gameFixes:
-    - XGKickHack # Fixes SPS.
+    - XGKickHack
+  gsHWFixes:
+    roundSprite: 2 # Correct misaligned font, better aligns car shadow.
 SCES-51685:
   name: "Primal"
   region: "PAL-E-R"
@@ -17190,9 +17208,16 @@ SLES-54002:
   name: "FlatOut 2"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    mipmap: 1
+    halfPixelOffset: 2 # Corrects most vertical lines.
 SLES-54003:
   name: "FlatOut 2"
   region: "PAL-G"
+  compat: 5
+  gsHWFixes:
+    mipmap: 1
+    halfPixelOffset: 2 # Corrects most vertical lines.
 SLES-54004:
   name: "Disney-Pixar's Cars"
   region: "PAL-NL-P"
@@ -21871,6 +21896,13 @@ SLKA-25397:
   name: "Dragon Ball Z Sparking NEO"
   region: "NTSC-K"
   compat: 5
+SLKA-25401:
+  name: "FlatOut 2"
+  region: "NTSC-K"
+  compat: 5
+  gsHWFixes:
+    mipmap: 1
+    halfPixelOffset: 2 # Corrects most vertical lines.
 SLKA-25406:
   name: "King of Fighters, The - Maximum Impact - Regulation A"
   region: "NTSC-K"
@@ -26488,9 +26520,11 @@ SLPM-65582:
 SLPM-65583:
   name: "WRC 3"
   region: "NTSC-J"
-  compat: 4
+  compat: 5
   gameFixes:
     - XGKickHack
+  gsHWFixes:
+    roundSprite: 2 # Correct misaligned font, better aligns car shadow.
 SLPM-65585:
   name: "Princess Holiday"
   region: "NTSC-J"
@@ -28191,6 +28225,11 @@ SLPM-66102:
 SLPM-66103:
   name: "WRC 3 [Spike the Best]"
   region: "NTSC-J"
+  compat: 5
+  gameFixes:
+    - XGKickHack
+  gsHWFixes:
+    roundSprite: 2 # Correct misaligned font, better aligns car shadow.
 SLPM-66104:
   name: "Puyo Puyo Fever 2"
   region: "NTSC-J"
@@ -29905,6 +29944,10 @@ SLPM-66590:
 SLPM-66591:
   name: "FlatOut 2 GTR"
   region: "NTSC-J"
+  compat: 5
+  gsHWFixes:
+    mipmap: 1
+    halfPixelOffset: 2 # Corrects most vertical lines.
 SLPM-66592:
   name: "Negima! 3-Jikanme [Theater Version]"
   region: "NTSC-J"
@@ -42369,6 +42412,9 @@ SLUS-21251:
   name: "FlatOut 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 1
+    halfPixelOffset: 2 # Corrects most vertical lines.
 SLUS-21252:
   name: "SpongeBob SquarePants - Lights, Camera, PANTS!"
   region: "NTSC-U"
