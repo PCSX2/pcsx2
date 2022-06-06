@@ -342,11 +342,11 @@ void FileMemoryCard::Open()
 			}
 
 			// store the original filename
-			m_file[slot] = FileSystem::OpenCFile(newname.c_str(), "r+b");
+			m_file[slot] = FileSystem::OpenSharedCFile(newname.c_str(), "r+b", FileSystem::FileShareMode::DenyWrite);
 		}
 		else
 		{
-			m_file[slot] = FileSystem::OpenCFile(fname.c_str(), "r+b");
+			m_file[slot] = FileSystem::OpenSharedCFile(fname.c_str(), "r+b", FileSystem::FileShareMode::DenyWrite);
 		}
 
 		if (!m_file[slot])
@@ -805,7 +805,7 @@ static bool IsMemoryCardFolder(const std::string& path)
 
 static bool IsMemoryCardFormatted(const std::string& path)
 {
-	auto fp = FileSystem::OpenManagedCFile(path.c_str(), "rb");
+	auto fp = FileSystem::OpenManagedSharedCFile(path.c_str(), "rb", FileSystem::FileShareMode::DenyNone);
 	if (!fp)
 		return false;
 
