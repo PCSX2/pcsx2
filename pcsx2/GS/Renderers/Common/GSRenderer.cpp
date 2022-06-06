@@ -56,10 +56,10 @@ static std::string GetDumpSerial()
 }
 #endif
 
-static constexpr std::array<PresentShader, 5> s_tv_shader_indices = {
+static constexpr std::array<PresentShader, 6> s_tv_shader_indices = {
 	PresentShader::COPY, PresentShader::SCANLINE,
 	PresentShader::DIAGONAL_FILTER, PresentShader::TRIANGULAR_FILTER,
-	PresentShader::COMPLEX_FILTER};
+	PresentShader::COMPLEX_FILTER, PresentShader::LOTTES_FILTER};
 
 std::unique_ptr<GSRenderer> g_gs_renderer;
 

@@ -57,6 +57,7 @@ const char* shaderName(PresentShader value)
 		case PresentShader::DIAGONAL_FILTER:   return "ps_filter_diagonal";
 		case PresentShader::TRIANGULAR_FILTER: return "ps_filter_triangular";
 		case PresentShader::COMPLEX_FILTER:    return "ps_filter_complex";
+		case PresentShader::LOTTES_FILTER:     return "ps_filter_lottes";
 			// clang-format on
 		default:
 			ASSERT(0);
