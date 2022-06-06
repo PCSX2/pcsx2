@@ -619,7 +619,11 @@ void FileMcd_EmuOpen()
 	// detect inserted memory card types
 	for (uint slot = 0; slot < 8; ++slot)
 	{
-		if (EmuConfig.Mcd[slot].Enabled)
+		if (EmuConfig.Mcd[slot].Filename.empty())
+		{
+			EmuConfig.Mcd[slot].Type = MemoryCardType::Empty;
+		}
+		else if (EmuConfig.Mcd[slot].Enabled)
 		{
 			MemoryCardType type = MemoryCardType::File; // default to file if we can't find anything at the path so it gets auto-generated
 
