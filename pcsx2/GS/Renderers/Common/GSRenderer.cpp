@@ -135,7 +135,7 @@ bool GSRenderer::Merge(int field)
 		en[0] && en[1] &&
 		m_regs->DISP[0].DISPFB.FBP == m_regs->DISP[1].DISPFB.FBP &&
 		m_regs->DISP[0].DISPFB.FBW == m_regs->DISP[1].DISPFB.FBW &&
-		m_regs->DISP[0].DISPFB.PSM == m_regs->DISP[1].DISPFB.PSM;
+		GSUtil::HasCompatibleBits(m_regs->DISP[0].DISPFB.PSM, m_regs->DISP[1].DISPFB.PSM);
 
 	GSVector2i fs(0, 0);
 	GSVector2i ds(0, 0);
