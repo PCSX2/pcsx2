@@ -175,17 +175,12 @@ void psxRcntInit()
 
 static bool _rcntFireInterrupt(int i, bool isOverflow)
 {
-	const int flag = IOPCNT_INT_CMPFLAG << (1 * isOverflow);
 	bool ret = false;
 #
-	// IRQ doesn't trigger if the status flag is already set
-	if (psxCounters[i].mode & flag)
-		return false;
-
 	if (psxCounters[i].mode & IOPCNT_INT_REQ)
 	{
 		// IRQ fired
-		//DevCon.Warning("Counter %d %s IRQ Fired count %x", i, isOverflow ? "Overflow" : "Target", psxCounters[i].count);
+		PSXCNT_LOG("Counter %d %s IRQ Fired count %x", i, isOverflow ? "Overflow" : "Target", psxCounters[i].count);
 		psxHu32(0x1070) |= psxCounters[i].interrupt;
 		iopTestIntc();
 		ret = true;
@@ -195,7 +190,7 @@ static bool _rcntFireInterrupt(int i, bool isOverflow)
 		//DevCon.Warning("Counter %d IRQ not fired count %x", i, psxCounters[i].count);
 		if (!(psxCounters[i].mode & IOPCNT_INT_REPEAT)) // One shot
 		{
-			Console.WriteLn("Counter %x repeat intr not set on zero ret, ignoring target", i);
+			PSXCNT_LOG("Counter %x ignoring %s interrupt (One Shot)", i, isOverflow ? "Overflow" : "Target");
 			return false;
 		}
 	}
@@ -223,7 +218,6 @@ static void _rcntTestTarget(int i)
 	if (psxCounters[i].mode & IOPCNT_INT_TARGET)
 	{
 		// Target interrupt
-
 		if (_rcntFireInterrupt(i, false))
 			psxCounters[i].mode |= IOPCNT_INT_CMPFLAG;
 	}
@@ -246,10 +240,10 @@ static __fi void _rcntTestOverflow(int i)
 
 	PSXCNT_LOG("IOP Counter[%d] overflow 0x%I64x >= 0x%I64x (mode: %x)",
 			   i, psxCounters[i].count, maxTarget, psxCounters[i].mode);
-	
-	// Overflow interrupt
+
 	if ((psxCounters[i].mode & IOPCNT_INT_OVERFLOW))
 	{
+		// Overflow interrupt
 		if (_rcntFireInterrupt(i, true))
 			psxCounters[i].mode |= IOPCNT_INT_OFLWFLAG; // Overflow flag
 	}
@@ -776,7 +770,7 @@ __fi void psxRcntWmode32(int index, u32 value)
 void psxRcntWtarget16(int index, u32 value)
 {
 	pxAssert(index < 3);
-	//DevCon.Warning("IOP Counter[%d] writeTarget16 = %lx", index, value);
+	PSXCNT_LOG("IOP Counter[%d] writeTarget16 = %lx", index, value);
 	psxCounters[index].target = value & 0xffff;
 
 	if (!(psxCounters[index].mode & IOPCNT_INT_TOGGLE))
@@ -797,7 +791,7 @@ void psxRcntWtarget16(int index, u32 value)
 void psxRcntWtarget32(int index, u32 value)
 {
 	pxAssert(index >= 3 && index < 6);
-	//DevCon.Warning("IOP Counter[%d] writeTarget32 = %lx mode %x", index, value, psxCounters[index].mode);
+	PSXCNT_LOG("IOP Counter[%d] writeTarget32 = %lx mode %x", index, value, psxCounters[index].mode);
 
 	psxCounters[index].target = value;
 
