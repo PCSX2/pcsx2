@@ -88,6 +88,12 @@ CPCS-01005:
     alignSprite: 1 # Fixes vertical lines.
     roundSprite: 2 # Fixes font artifacts.
     mergeSprite: 1 # Fixes flame-like bleeding.
+CPCS-01020:
+  name: "Monster Hunter 2 [DX Hunters Box]"
+  region: "NTSC-J"
+  compat: 5
+  clampModes:
+    vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
 GUST-00009:
   name: "Mana Khemia - Alchemists of Al-Revis [Premium Box]"
   region: "NTSC-J"
@@ -1084,6 +1090,8 @@ SCAJ-20152:
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SCAJ-20153:
   name: "Code Age Commanders"
   region: "NTSC-J"
@@ -2261,8 +2269,16 @@ SCED-53514:
 SCED-53515:
   name: "Bonus Demo 10 (Retail)"
   region: "PAL-M5"
+SCED-53622:
+  name: "24 - The Game [Demo]"
+  region: "PAL-M9"
+  clampModes:
+    vuClampMode: 2 # Fixes minimap HUD.
+  gsHWFixes:
+    autoFlush: 1 # Fixes pause menu backgrounds.
+    roundSprite: 1 # Corrects proportions of fonts and pause-screen lines, adjusts display closer to software.
 SCED-53679:
-  name: "Fire It Up Lads Demo"
+  name: "Fire It Up Lads [Demo]"
   region: "PAL-E"
   patches:
     default:
@@ -3547,6 +3563,7 @@ SCES-53358:
     vuClampMode: 2 # Fixes minimap HUD.
   gsHWFixes:
     autoFlush: 1 # Fixes pause menu backgrounds.
+    roundSprite: 1 # Corrects proportions of fonts and pause-screen lines, adjusts display closer to software.
 SCES-53372:
   name: "Tourist Trophy - The Real Riding Simulator"
   region: "PAL-M5"
@@ -3632,6 +3649,8 @@ SCES-53688:
   compat: 5
   gameFixes:
     - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SCES-53795:
   name: "SingStar '80s"
   region: "PAL-Unk"
@@ -4651,6 +4670,13 @@ SCKA-20064:
   region: "NTSC-K"
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
+SCKA-20065:
+  name: "Urban Reign"
+  region: "NTSC-K"
+  gameFixes:
+    - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SCKA-20069:
   name: "Siren 2"
   region: "NTSC-K"
@@ -22403,6 +22429,13 @@ SLPM-60271:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes black screen.
+SLPM-60272:
+  name: "Urban Reign [Trial]"
+  region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPM-60273:
   name: "Zettai Zetsumei Toshi 2 - Itetsuita Kioku-tachi [Trial B]"
   region: "NTSC-J"
@@ -22829,12 +22862,8 @@ SLPM-62131:
   name: "Romance of the Three Kingdoms VIII"
   region: "NTSC-J"
 SLPM-62132:
-  name: "24 - The Game"
+  name: "Internet Othello - Othello World 24"
   region: "NTSC-J"
-  clampModes:
-    vuClampMode: 2 # Fixes minimap HUD.
-  gsHWFixes:
-    autoFlush: 1 # Fixes pause menu backgrounds.
 SLPM-62133:
   name: "Bloody Roar 3 [Konami The Best]"
   region: "NTSC-J"
@@ -34824,6 +34853,8 @@ SLPS-25557:
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-25558:
   name: "NeoGeo Battle Coliseum"
   region: "NTSC-J"
@@ -42101,7 +42132,7 @@ SLUS-21209:
   gameFixes:
     - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
   gsHWFixes:
-    alignSprite: 1 # Fixes black lines when upscaling.
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-21212:
   name: "Spartan - Total Warrior"
   region: "NTSC-U"
@@ -42433,6 +42464,7 @@ SLUS-21268:
     vuClampMode: 2 # Fixes minimap HUD.
   gsHWFixes:
     autoFlush: 1 # Fixes pause menu backgrounds.
+    roundSprite: 1 # Corrects proportions of fonts and pause-screen lines, adjusts display closer to software.
 SLUS-21269:
   name: "Bully"
   region: "NTSC-U"
