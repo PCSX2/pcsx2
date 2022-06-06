@@ -1325,6 +1325,7 @@ void GSApp::Init()
 	m_gs_tv_shaders.push_back(GSSetting(2, "Diagonal filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(3, "Triangular filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(4, "Wave filter", ""));
+	m_gs_tv_shaders.push_back(GSSetting(5, "Lottes CRT filter", ""));
 
 	m_gs_dump_compression.push_back(GSSetting(static_cast<u32>(GSDumpCompressionMethod::Uncompressed), "Uncompressed", ""));
 	m_gs_dump_compression.push_back(GSSetting(static_cast<u32>(GSDumpCompressionMethod::LZMA), "LZMA (xz)", ""));

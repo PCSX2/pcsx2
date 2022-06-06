@@ -1240,6 +1240,11 @@
               <string>Wave Filter</string>
              </property>
             </item>
+            <item>
+             <property name="text">
+              <string>Lottes CRT</string>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>
