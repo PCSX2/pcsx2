@@ -88,6 +88,12 @@ CPCS-01005:
     alignSprite: 1 # Fixes vertical lines.
     roundSprite: 2 # Fixes font artifacts.
     mergeSprite: 1 # Fixes flame-like bleeding.
+CPCS-01020:
+  name: "Monster Hunter 2 [DX Hunters Box]"
+  region: "NTSC-J"
+  compat: 5
+  clampModes:
+    vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
 GUST-00009:
   name: "Mana Khemia - Alchemists of Al-Revis [Premium Box]"
   region: "NTSC-J"
@@ -561,6 +567,9 @@ SCAJ-20035:
 SCAJ-20037:
   name: "Monster Farm 4"
   region: "NTSC-Unk"
+  compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects shadow misalignment.
 SCAJ-20038:
   name: "Arc the Lad - Twilight of the Spirits"
   region: "NTSC-Unk"
@@ -791,6 +800,8 @@ SCAJ-20089:
 SCAJ-20090:
   name: "Gacha Mecha Stadium - Saru Battle"
   region: "NTSC-Unk"
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects fullscreen bloom misalignment.
 SCAJ-20092:
   name: "Samurai Spirits Zero"
   region: "NTSC-Unk"
@@ -1086,6 +1097,8 @@ SCAJ-20152:
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SCAJ-20153:
   name: "Code Age Commanders"
   region: "NTSC-J"
@@ -1371,8 +1384,10 @@ SCAJ-30004:
   name: "Waga Ryuu o Miyo - Pride of the Dragon Peace"
   region: "NTSC-Unk"
 SCAJ-30005:
-  name: "Gacha Mecha Stadium Saru Battle"
+  name: "Gacha Mecha Stadium - Saru Battle"
   region: "NTSC-Unk"
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects fullscreen bloom misalignment.
 SCAJ-30006:
   name: "Gran Turismo 4"
   region: "NTSC-Unk"
@@ -1488,6 +1503,8 @@ SCCS-40015:
 SCCS-40016:
   name: "Ape Escape - Pumped & Primed"
   region: "NTSC-C"
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects fullscreen bloom misalignment.
 SCCS-40017:
   name: "EyeToy - Play"
   region: "NTSC-C"
@@ -1600,6 +1617,14 @@ SCED-50463:
 SCED-50506:
   name: "Official PlayStation 2 Magazine Demo 12" # German
   region: "PAL-M5"
+SCED-50520:
+  name: "World Rally Championship [Demo]"
+  region: "PAL-E"
+  compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes crash when using the Subaru.
+  gameFixes:
+    - EETimingHack # Fix in-game Freeze.
 SCED-50543:
   name: "Official PlayStation 2 Magazine Demo 12" # French
   region: "PAL-M5"
@@ -1959,6 +1984,14 @@ SCED-52092:
 SCED-52120:
   name: "Official PlayStation 2 Magazine Demo 55" # German
   region: "PAL-E-G"
+SCED-52141:
+  name: "WRC 3 [Demo]"
+  region: "NTSC-J"
+  compat: 5
+  gameFixes:
+    - XGKickHack # Fixes SPS.
+  gsHWFixes:
+    roundSprite: 2 # Correct misaligned font, better aligns car shadow.
 SCED-52160:
   name: "Official PlayStation 2 Magazine Demo 45"
   region: "PAL-M5"
@@ -2259,8 +2292,16 @@ SCED-53514:
 SCED-53515:
   name: "Bonus Demo 10 (Retail)"
   region: "PAL-M5"
+SCED-53622:
+  name: "24 - The Game [Demo]"
+  region: "PAL-M9"
+  clampModes:
+    vuClampMode: 2 # Fixes minimap HUD.
+  gsHWFixes:
+    autoFlush: 1 # Fixes pause menu backgrounds.
+    roundSprite: 1 # Corrects proportions of fonts and pause-screen lines, adjusts display closer to software.
 SCED-53679:
-  name: "Fire It Up Lads Demo"
+  name: "Fire It Up Lads [Demo]"
   region: "PAL-E"
   patches:
     default:
@@ -3073,6 +3114,8 @@ SCES-51684:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes SPS.
+  gsHWFixes:
+    roundSprite: 2 # Correct misaligned font, better aligns car shadow.
 SCES-51685:
   name: "Primal"
   region: "PAL-E-R"
@@ -3545,6 +3588,7 @@ SCES-53358:
     vuClampMode: 2 # Fixes minimap HUD.
   gsHWFixes:
     autoFlush: 1 # Fixes pause menu backgrounds.
+    roundSprite: 1 # Corrects proportions of fonts and pause-screen lines, adjusts display closer to software.
 SCES-53372:
   name: "Tourist Trophy - The Real Riding Simulator"
   region: "PAL-M5"
@@ -3630,6 +3674,8 @@ SCES-53688:
   compat: 5
   gameFixes:
     - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SCES-53795:
   name: "SingStar '80s"
   region: "PAL-Unk"
@@ -4649,6 +4695,13 @@ SCKA-20064:
   region: "NTSC-K"
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
+SCKA-20065:
+  name: "Urban Reign"
+  region: "NTSC-K"
+  gameFixes:
+    - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SCKA-20069:
   name: "Siren 2"
   region: "NTSC-K"
@@ -5310,6 +5363,8 @@ SCPS-15071:
 SCPS-15072:
   name: "Gacha Mecha Stadium - Saru Battle"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects fullscreen bloom misalignment.
 SCPS-15073:
   name: "EyeToy - Groove [with Camera]"
   region: "NTSC-J"
@@ -17187,9 +17242,16 @@ SLES-54002:
   name: "FlatOut 2"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    mipmap: 1
+    halfPixelOffset: 2 # Corrects most vertical lines.
 SLES-54003:
   name: "FlatOut 2"
   region: "PAL-G"
+  compat: 5
+  gsHWFixes:
+    mipmap: 1
+    halfPixelOffset: 2 # Corrects most vertical lines.
 SLES-54004:
   name: "Disney-Pixar's Cars"
   region: "PAL-NL-P"
@@ -19848,6 +19910,8 @@ SLES-55132:
 SLES-55133:
   name: "LEGO Indiana Jones - The Original Adventure"
   region: "PAL-M6"
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects bloom misalignment.
 SLES-55134:
   name: "Monster Jam"
   region: "PAL-M5"
@@ -21872,6 +21936,13 @@ SLKA-25397:
   name: "Dragon Ball Z Sparking NEO"
   region: "NTSC-K"
   compat: 5
+SLKA-25401:
+  name: "FlatOut 2"
+  region: "NTSC-K"
+  compat: 5
+  gsHWFixes:
+    mipmap: 1
+    halfPixelOffset: 2 # Corrects most vertical lines.
 SLKA-25406:
   name: "King of Fighters, The - Maximum Impact - Regulation A"
   region: "NTSC-K"
@@ -22430,6 +22501,13 @@ SLPM-60271:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes black screen.
+SLPM-60272:
+  name: "Urban Reign [Trial]"
+  region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPM-60273:
   name: "Zettai Zetsumei Toshi 2 - Itetsuita Kioku-tachi [Trial B]"
   region: "NTSC-J"
@@ -22856,12 +22934,8 @@ SLPM-62131:
   name: "Romance of the Three Kingdoms VIII"
   region: "NTSC-J"
 SLPM-62132:
-  name: "24 - The Game"
+  name: "Internet Othello - Othello World 24"
   region: "NTSC-J"
-  clampModes:
-    vuClampMode: 2 # Fixes minimap HUD.
-  gsHWFixes:
-    autoFlush: 1 # Fixes pause menu backgrounds.
 SLPM-62133:
   name: "Bloody Roar 3 [Konami The Best]"
   region: "NTSC-J"
@@ -26486,9 +26560,11 @@ SLPM-65582:
 SLPM-65583:
   name: "WRC 3"
   region: "NTSC-J"
-  compat: 4
+  compat: 5
   gameFixes:
-    - XGKickHack
+    - XGKickHack # Fixes SPS.
+  gsHWFixes:
+    roundSprite: 2 # Correct misaligned font, better aligns car shadow.
 SLPM-65585:
   name: "Princess Holiday"
   region: "NTSC-J"
@@ -28190,6 +28266,11 @@ SLPM-66102:
 SLPM-66103:
   name: "WRC 3 [Spike the Best]"
   region: "NTSC-J"
+  compat: 5
+  gameFixes:
+    - XGKickHack # Fixes SPS.
+  gsHWFixes:
+    roundSprite: 2 # Correct misaligned font, better aligns car shadow.
 SLPM-66104:
   name: "Puyo Puyo Fever 2"
   region: "NTSC-J"
@@ -29904,6 +29985,10 @@ SLPM-66590:
 SLPM-66591:
   name: "FlatOut 2 GTR"
   region: "NTSC-J"
+  compat: 5
+  gsHWFixes:
+    mipmap: 1
+    halfPixelOffset: 2 # Corrects most vertical lines.
 SLPM-66592:
   name: "Negima! 3-Jikanme [Theater Version]"
   region: "NTSC-J"
@@ -33810,6 +33895,12 @@ SLPS-25262:
   name: "Private Nurse Maria"
   region: "NTSC-J"
   compat: 5
+SLPS-25263:
+  name: "Monster Farm 4"
+  region: "NTSC-J"
+  compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects shadow misalignment.
 SLPS-25264:
   name: "RahXephon [Limited Edition]"
   region: "NTSC-J"
@@ -34877,6 +34968,8 @@ SLPS-25557:
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-25558:
   name: "NeoGeo Battle Coliseum"
   region: "NTSC-J"
@@ -36833,6 +36926,9 @@ SLPS-73422:
 SLPS-73423:
   name: "Monster Farm 4 [PlayStation 2 The Best]"
   region: "NTSC-J"
+  compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects shadow misalignment.
 SLPS-73424:
   name: "Guilty Gear XX [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -39774,6 +39870,8 @@ SLUS-20702:
   name: "Monster Rancher 4"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects shadow misalignment.
 SLUS-20703:
   name: "Airforce - Delta Strike"
   region: "NTSC-U"
@@ -41613,6 +41711,8 @@ SLUS-21096:
   name: "Ape Escape - Pumped & Primed"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects fullscreen bloom misalignment.
 SLUS-21097:
   name: "MX World Tour featuring Jamie Little"
   region: "NTSC-U"
@@ -42154,7 +42254,7 @@ SLUS-21209:
   gameFixes:
     - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
   gsHWFixes:
-    alignSprite: 1 # Fixes black lines when upscaling.
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-21212:
   name: "Spartan - Total Warrior"
   region: "NTSC-U"
@@ -42391,6 +42491,9 @@ SLUS-21251:
   name: "FlatOut 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 1
+    halfPixelOffset: 2 # Corrects most vertical lines.
 SLUS-21252:
   name: "SpongeBob SquarePants - Lights, Camera, PANTS!"
   region: "NTSC-U"
@@ -42486,6 +42589,7 @@ SLUS-21268:
     vuClampMode: 2 # Fixes minimap HUD.
   gsHWFixes:
     autoFlush: 1 # Fixes pause menu backgrounds.
+    roundSprite: 1 # Corrects proportions of fonts and pause-screen lines, adjusts display closer to software.
 SLUS-21269:
   name: "Bully"
   region: "NTSC-U"
@@ -44789,6 +44893,8 @@ SLUS-21759:
   name: "LEGO Indiana Jones - The Original Adventures"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects bloom misalignment.
 SLUS-21760:
   name: "Jeep Thrills"
   region: "NTSC-U"
