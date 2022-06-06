@@ -5968,6 +5968,9 @@ SCPS-51010:
 SCPS-51011:
   name: "Raging Bless - Gouma Mokushiroku"
   region: "NTSC-J"
+  compat: 5
+  gsHWFixes:
+    deinterlace: 6 # Fixes blurriness.
 SCPS-51012:
   name: "Gigantic Drive"
   region: "NTSC-J"
@@ -11139,6 +11142,8 @@ SLES-51235:
   name: "Raging Blades"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    deinterlace: 6 # Fixes blurriness.
 SLES-51236:
   name: "Gungrave"
   region: "PAL-M3"
@@ -24570,6 +24575,12 @@ SLPM-64513:
   gsHWFixes:
     preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
     cpuFramebufferConversion: 1 # Fixes fog wall.
+SLPM-64521:
+  name: "Raging Bless - Hangma Muksirok"
+  region: "NTSC-K"
+  compat: 5
+  gsHWFixes:
+    deinterlace: 6 # Fixes blurriness.
 SLPM-64522:
   name: "La Pucelle"
   region: "NTSC-K"
@@ -32169,6 +32180,9 @@ SLPS-20196:
 SLPS-20198:
   name: "Raging Bless"
   region: "NTSC-J"
+  compat: 5
+  gsHWFixes:
+    deinterlace: 6 # Fixes blurriness.
 SLPS-20199:
   name: "F1 2002"
   region: "NTSC-J"
