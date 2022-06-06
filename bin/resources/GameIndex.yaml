@@ -554,6 +554,9 @@ SCAJ-20035:
 SCAJ-20037:
   name: "Monster Farm 4"
   region: "NTSC-Unk"
+  compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects shadow misalignment.
 SCAJ-20038:
   name: "Arc the Lad - Twilight of the Spirits"
   region: "NTSC-Unk"
@@ -784,6 +787,8 @@ SCAJ-20089:
 SCAJ-20090:
   name: "Gacha Mecha Stadium - Saru Battle"
   region: "NTSC-Unk"
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects fullscreen bloom misalignment.
 SCAJ-20092:
   name: "Samurai Spirits Zero"
   region: "NTSC-Unk"
@@ -1364,8 +1369,10 @@ SCAJ-30004:
   name: "Waga Ryuu o Miyo - Pride of the Dragon Peace"
   region: "NTSC-Unk"
 SCAJ-30005:
-  name: "Gacha Mecha Stadium Saru Battle"
+  name: "Gacha Mecha Stadium - Saru Battle"
   region: "NTSC-Unk"
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects fullscreen bloom misalignment.
 SCAJ-30006:
   name: "Gran Turismo 4"
   region: "NTSC-Unk"
@@ -1481,6 +1488,8 @@ SCCS-40015:
 SCCS-40016:
   name: "Ape Escape - Pumped & Primed"
   region: "NTSC-C"
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects fullscreen bloom misalignment.
 SCCS-40017:
   name: "EyeToy - Play"
   region: "NTSC-C"
@@ -5303,6 +5312,8 @@ SCPS-15071:
 SCPS-15072:
   name: "Gacha Mecha Stadium - Saru Battle"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects fullscreen bloom misalignment.
 SCPS-15073:
   name: "EyeToy - Groove [with Camera]"
   region: "NTSC-J"
@@ -19809,6 +19820,8 @@ SLES-55132:
 SLES-55133:
   name: "LEGO Indiana Jones - The Original Adventure"
   region: "PAL-M6"
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects bloom misalignment.
 SLES-55134:
   name: "Monster Jam"
   region: "PAL-M5"
@@ -33739,6 +33752,12 @@ SLPS-25262:
   name: "Private Nurse Maria"
   region: "NTSC-J"
   compat: 5
+SLPS-20263:
+  name: "Monster Farm 4"
+  region: "NTSC-J"
+  compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects shadow misalignment.
 SLPS-25264:
   name: "RahXephon [Limited Edition]"
   region: "NTSC-J"
@@ -36761,6 +36780,9 @@ SLPS-73422:
 SLPS-73423:
   name: "Monster Farm 4 [PlayStation 2 The Best]"
   region: "NTSC-J"
+  compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects shadow misalignment.
 SLPS-73424:
   name: "Guilty Gear XX [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -39698,6 +39720,8 @@ SLUS-20702:
   name: "Monster Rancher 4"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects shadow misalignment.
 SLUS-20703:
   name: "Airforce - Delta Strike"
   region: "NTSC-U"
@@ -41534,6 +41558,8 @@ SLUS-21096:
   name: "Ape Escape - Pumped & Primed"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects fullscreen bloom misalignment.
 SLUS-21097:
   name: "MX World Tour featuring Jamie Little"
   region: "NTSC-U"
@@ -44695,6 +44721,8 @@ SLUS-21759:
   name: "LEGO Indiana Jones - The Original Adventures"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects bloom misalignment.
 SLUS-21760:
   name: "Jeep Thrills"
   region: "NTSC-U"
