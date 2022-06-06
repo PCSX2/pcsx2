@@ -322,7 +322,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	OsdShowGSStats = false;
 	OsdShowIndicators = true;
 
-	HWDisableReadbacks = false;
+	HWDownloadMode = GSHardwareDownloadMode::Enabled;
 	GPUPaletteConversion = false;
 	AutoFlushSW = true;
 	PreloadFrameWithGSData = false;
@@ -403,6 +403,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(TextureFiltering) &&
 		OpEqu(TexturePreloading) &&
 		OpEqu(GSDumpCompression) &&
+		OpEqu(HWDownloadMode) &&
 		OpEqu(Dithering) &&
 		OpEqu(MaxAnisotropy) &&
 		OpEqu(SWExtraThreads) &&
@@ -541,7 +542,6 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBool(OsdShowGSStats);
 	GSSettingBool(OsdShowIndicators);
 
-	GSSettingBool(HWDisableReadbacks);
 	GSSettingBoolEx(GPUPaletteConversion, "paltex");
 	GSSettingBoolEx(AutoFlushSW, "autoflush_sw");
 	GSSettingBoolEx(PreloadFrameWithGSData, "preload_frame_with_gs_data");
@@ -588,6 +588,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingIntEnumEx(TextureFiltering, "filter");
 	GSSettingIntEnumEx(TexturePreloading, "texture_preloading");
 	GSSettingIntEnumEx(GSDumpCompression, "GSDumpCompression");
+	GSSettingIntEnumEx(HWDownloadMode, "HWDownloadMode");
 	GSSettingIntEx(Dithering, "dithering_ps2");
 	GSSettingIntEx(MaxAnisotropy, "MaxAnisotropy");
 	GSSettingIntEx(SWExtraThreads, "extrathreads");

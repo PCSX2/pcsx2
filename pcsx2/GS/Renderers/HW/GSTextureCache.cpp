@@ -1023,16 +1023,16 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 		r.z,
 		r.w);
 
-	if (GSConfig.HWDisableReadbacks)
-	{
-		Console.Error("Skipping readback of %ux%u @ %u,%u", r.width(), r.height(), r.left, r.top);
-		return;
-	}
-
 	// No depth handling please.
 	if (psm == PSM_PSMZ32 || psm == PSM_PSMZ24 || psm == PSM_PSMZ16 || psm == PSM_PSMZ16S)
 	{
 		GL_INS("ERROR: InvalidateLocalMem depth format isn't supported (%d,%d to %d,%d)", r.x, r.y, r.z, r.w);
+		if (GSConfig.HWDownloadMode != GSHardwareDownloadMode::Enabled)
+		{
+			DevCon.Error("Skipping depth readback of %ux%u @ %u,%u", r.width(), r.height(), r.left, r.top);
+			return;
+		}
+
 		if (!GSConfig.UserHacks_DisableDepthSupport)
 		{
 			auto& dss = m_dst[DepthStencil];
@@ -1082,7 +1082,12 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				if (t->m_32_bits_fmt && t->m_TEX0.PSM > PSM_PSMCT24)
 					t->m_TEX0.PSM = PSM_PSMCT32;
 
-				if (GSConfig.UserHacks_DisablePartialInvalidation)
+				if (GSConfig.HWDownloadMode != GSHardwareDownloadMode::Enabled)
+				{
+					const GSVector4i rb_rc((!GSConfig.UserHacks_DisablePartialInvalidation && r.x == 0 && r.y == 0) ? t->m_valid : r.rintersect(t->m_valid));
+					DevCon.Error("Skipping depth readback of %ux%u @ %u,%u", rb_rc.width(), rb_rc.height(), rb_rc.left, rb_rc.top);
+				}
+				else if (GSConfig.UserHacks_DisablePartialInvalidation)
 				{
 					Read(t, r.rintersect(t->m_valid));
 				}

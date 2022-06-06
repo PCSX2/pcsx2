@@ -199,6 +199,14 @@ enum class GSDumpCompressionMethod : u8
 	Zstandard,
 };
 
+enum class GSHardwareDownloadMode : u8
+{
+	Enabled,
+	NoReadbacks,
+	Unsynchronized,
+	Disabled
+};
+
 // Template function for casting enumerations to their underlying type
 template <typename Enumeration>
 typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
@@ -462,7 +470,6 @@ struct Pcsx2Config
 					OsdShowIndicators : 1;
 
 				bool
-					HWDisableReadbacks : 1,
 					GPUPaletteConversion : 1,
 					AutoFlushSW : 1,
 					PreloadFrameWithGSData : 1,
@@ -535,6 +542,7 @@ struct Pcsx2Config
 		BiFiltering TextureFiltering{BiFiltering::PS2};
 		TexturePreloadingLevel TexturePreloading{TexturePreloadingLevel::Full};
 		GSDumpCompressionMethod GSDumpCompression{GSDumpCompressionMethod::LZMA};
+		GSHardwareDownloadMode HWDownloadMode{GSHardwareDownloadMode::Enabled};
 		int Dithering{2};
 		int MaxAnisotropy{0};
 		int SWExtraThreads{2};
