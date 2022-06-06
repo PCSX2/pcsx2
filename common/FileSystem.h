@@ -110,6 +110,20 @@ namespace FileSystem
 
 	int OpenFDFile(const char* filename, int flags, int mode);
 
+	/// Sharing modes for OpenSharedCFile().
+	enum class FileShareMode
+	{
+		DenyReadWrite, /// Exclusive access.
+		DenyWrite, /// Other processes can read from this file.
+		DenyRead, /// Other processes can write to this file.
+		DenyNone, /// Other processes can read and write to this file.
+	};
+
+	/// Opens a file in shareable mode (where other processes can access it concurrently).
+	/// Only has an effect on Windows systems.
+	ManagedCFilePtr OpenManagedSharedCFile(const char* filename, const char* mode, FileShareMode share_mode);
+	std::FILE* OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode);
+
 	std::optional<std::vector<u8>> ReadBinaryFile(const char* filename);
 	std::optional<std::vector<u8>> ReadBinaryFile(std::FILE* fp);
 	std::optional<std::string> ReadFileToString(const char* filename);
