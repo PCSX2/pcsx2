@@ -22818,12 +22818,8 @@ SLPM-62131:
   name: "Romance of the Three Kingdoms VIII"
   region: "NTSC-J"
 SLPM-62132:
-  name: "24 - The Game"
+  name: " Internet Othello - Othello World 24"
   region: "NTSC-J"
-  clampModes:
-    vuClampMode: 2 # Fixes minimap HUD.
-  gsHWFixes:
-    autoFlush: 1 # Fixes pause menu backgrounds.
 SLPM-62133:
   name: "Bloody Roar 3 [Konami The Best]"
   region: "NTSC-J"
