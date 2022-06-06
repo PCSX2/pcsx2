@@ -88,6 +88,7 @@ protected:
 private Q_SLOTS:
 	void listContextMenuRequested(const QPoint& pos);
 	void refresh();
+	void swapCards();
 
 private:
 	struct SlotGroup
@@ -99,6 +100,7 @@ private:
 	};
 
 	void createSlotWidgets(SlotGroup* port, u32 slot);
+	void setupAdditionalUi();
 	void autoSizeUI();
 
 	void tryInsertCard(u32 slot, const QString& newCard);
