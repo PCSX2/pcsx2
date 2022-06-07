@@ -391,10 +391,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Corrects the sampling of 2D sprite textures when upscaling. "
 			   "Fixes lines in sprites of games like Ar tonelico when upscaling. Half option is for flat sprites, Full is for all sprites."));
 
-		dialog->registerWidgetHelp(m_ui.offsetX, tr("Texture Offsets X"), tr("0"),
+		dialog->registerWidgetHelp(m_ui.textureOffsetX, tr("Texture Offsets X"), tr("0"),
 			tr("Offset for the ST/UV texture coordinates. Fixes some odd texture issues and might fix some post processing alignment too."));
 
-		dialog->registerWidgetHelp(m_ui.offsetY, tr("Texture Offsets Y"), tr("0"),
+		dialog->registerWidgetHelp(m_ui.textureOffsetY, tr("Texture Offsets Y"), tr("0"),
 			tr("Offset for the ST/UV texture coordinates. Fixes some odd texture issues and might fix some post processing alignment too."));
 
 		dialog->registerWidgetHelp(m_ui.alignSprite, tr("Align Sprite"), tr("Unchecked"),
