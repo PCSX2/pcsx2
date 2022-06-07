@@ -96,7 +96,7 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>The multitap enables up to 8 controllers to be connected to the console. Each multitap provides 4 ports. Multitap is not supported by all games. (NOT YET IMPLEMENTED)</string>
+           <string>The multitap enables up to 8 controllers to be connected to the console. Each multitap provides 4 ports. Multitap is not supported by all games.</string>
           </property>
           <property name="wordWrap">
            <bool>true</bool>
@@ -105,9 +105,6 @@
         </item>
         <item>
          <widget class="QCheckBox" name="multitapPort1">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
           <property name="text">
            <string>Multitap on Console Port 1</string>
           </property>
@@ -115,9 +112,6 @@
         </item>
         <item>
          <widget class="QCheckBox" name="multitapPort2">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
           <property name="text">
            <string>Multitap on Console Port 2</string>
           </property>

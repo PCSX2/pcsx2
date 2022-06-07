@@ -19,6 +19,7 @@
 #include "PAD/Host/KeyStatus.h"
 #include "PAD/Host/PAD.h"
 #include "Frontend/InputManager.h"
+#include "Sio.h"
 
 template <class T>
 static bool __fi test_bit(T& value, int bit)
@@ -63,7 +64,7 @@ void QueryInfo::reset()
 
 u8 QueryInfo::start_poll(int _port)
 {
-	if (_port >= static_cast<int>(GAMEPAD_NUMBER))
+	if (_port >= 2)
 	{
 		reset();
 		return 0;
@@ -72,7 +73,9 @@ u8 QueryInfo::start_poll(int _port)
 	port = _port;
 	slot = slots[port];
 
-	if (g_key_status.GetType(_port) == PAD::ControllerType::NotConnected)
+	const u32 ext_port = sioConvertPortAndSlotToPad(port, slot);
+
+	if (g_key_status.GetType(ext_port) == PAD::ControllerType::NotConnected)
 	{
 		queryDone = 1;
 		numBytes = 0;
@@ -163,7 +166,7 @@ void Pad::rumble_all()
 {
 	for (unsigned port = 0; port < 2; port++)
 		for (unsigned slot = 0; slot < 4; slot++)
-			pads[port][slot].rumble(port);
+			pads[port][slot].rumble(sioConvertPortAndSlotToPad(port, slot));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -254,7 +257,8 @@ u8 pad_poll(u8 value)
 					b1=b1 & 0x1f;
 #endif
 
-				uint32_t buttons = g_key_status.GetButtons(query.port);
+				const u32 ext_port = sioConvertPortAndSlotToPad(query.port, query.slot);
+				const u32 buttons = g_key_status.GetButtons(ext_port);
 				if (!test_bit(buttons, PAD_ANALOG) && !pad->modeLock)
 				{
 					switch (pad->mode)
@@ -279,28 +283,28 @@ u8 pad_poll(u8 value)
 				{ // ANALOG || DS2 native
 					query.numBytes = 9;
 
-					query.response[5] = g_key_status.GetPressure(query.port, PAD_R_RIGHT);
-					query.response[6] = g_key_status.GetPressure(query.port, PAD_R_UP);
-					query.response[7] = g_key_status.GetPressure(query.port, PAD_L_RIGHT);
-					query.response[8] = g_key_status.GetPressure(query.port, PAD_L_UP);
+					query.response[5] = g_key_status.GetPressure(ext_port, PAD_R_RIGHT);
+					query.response[6] = g_key_status.GetPressure(ext_port, PAD_R_UP);
+					query.response[7] = g_key_status.GetPressure(ext_port, PAD_L_RIGHT);
+					query.response[8] = g_key_status.GetPressure(ext_port, PAD_L_UP);
 
 					if (pad->mode != MODE_ANALOG)
 					{ // DS2 native
 						query.numBytes = 21;
 
-						query.response[9] = !test_bit(buttons, 13) ? g_key_status.GetPressure(query.port, PAD_RIGHT) : 0;
-						query.response[10] = !test_bit(buttons, 15) ? g_key_status.GetPressure(query.port, PAD_LEFT) : 0;
-						query.response[11] = !test_bit(buttons, 12) ? g_key_status.GetPressure(query.port, PAD_UP) : 0;
-						query.response[12] = !test_bit(buttons, 14) ? g_key_status.GetPressure(query.port, PAD_DOWN) : 0;
+						query.response[9] = !test_bit(buttons, 13) ? g_key_status.GetPressure(ext_port, PAD_RIGHT) : 0;
+						query.response[10] = !test_bit(buttons, 15) ? g_key_status.GetPressure(ext_port, PAD_LEFT) : 0;
+						query.response[11] = !test_bit(buttons, 12) ? g_key_status.GetPressure(ext_port, PAD_UP) : 0;
+						query.response[12] = !test_bit(buttons, 14) ? g_key_status.GetPressure(ext_port, PAD_DOWN) : 0;
 
-						query.response[13] = !test_bit(buttons, 4) ? g_key_status.GetPressure(query.port, PAD_TRIANGLE) : 0;
-						query.response[14] = !test_bit(buttons, 5) ? g_key_status.GetPressure(query.port, PAD_CIRCLE) : 0;
-						query.response[15] = !test_bit(buttons, 6) ? g_key_status.GetPressure(query.port, PAD_CROSS) : 0;
-						query.response[16] = !test_bit(buttons, 7) ? g_key_status.GetPressure(query.port, PAD_SQUARE) : 0;
-						query.response[17] = !test_bit(buttons, 2) ? g_key_status.GetPressure(query.port, PAD_L1) : 0;
-						query.response[18] = !test_bit(buttons, 3) ? g_key_status.GetPressure(query.port, PAD_R1) : 0;
-						query.response[19] = !test_bit(buttons, 0) ? g_key_status.GetPressure(query.port, PAD_L2) : 0;
-						query.response[20] = !test_bit(buttons, 1) ? g_key_status.GetPressure(query.port, PAD_R2) : 0;
+						query.response[13] = !test_bit(buttons, 4) ? g_key_status.GetPressure(ext_port, PAD_TRIANGLE) : 0;
+						query.response[14] = !test_bit(buttons, 5) ? g_key_status.GetPressure(ext_port, PAD_CIRCLE) : 0;
+						query.response[15] = !test_bit(buttons, 6) ? g_key_status.GetPressure(ext_port, PAD_CROSS) : 0;
+						query.response[16] = !test_bit(buttons, 7) ? g_key_status.GetPressure(ext_port, PAD_SQUARE) : 0;
+						query.response[17] = !test_bit(buttons, 2) ? g_key_status.GetPressure(ext_port, PAD_L1) : 0;
+						query.response[18] = !test_bit(buttons, 3) ? g_key_status.GetPressure(ext_port, PAD_R1) : 0;
+						query.response[19] = !test_bit(buttons, 0) ? g_key_status.GetPressure(ext_port, PAD_L2) : 0;
+						query.response[20] = !test_bit(buttons, 1) ? g_key_status.GetPressure(ext_port, PAD_R2) : 0;
 					}
 				}
 

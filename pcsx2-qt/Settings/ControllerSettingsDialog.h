@@ -42,7 +42,7 @@ public:
 
 	enum : u32
 	{
-		MAX_PORTS = 2
+		MAX_PORTS = 8
 	};
 
 	ControllerSettingsDialog(QWidget* parent = nullptr);
@@ -63,6 +63,8 @@ private Q_SLOTS:
 	void onInputDeviceConnected(const QString& identifier, const QString& device_name);
 	void onInputDeviceDisconnected(const QString& identifier);
 	void onVibrationMotorsEnumerated(const QList<InputBindingKey>& motors);
+
+	void createPortWidgets();
 
 private:
 	Ui::ControllerSettingsDialog m_ui;

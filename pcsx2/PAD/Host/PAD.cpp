@@ -26,11 +26,13 @@
 #include "PAD/Host/KeyStatus.h"
 #include "PAD/Host/StateManagement.h"
 
+#include <array>
+
 const u32 revision = 3;
 const u32 build = 0; // increase that with each version
 #define PAD_SAVE_STATE_VERSION ((revision << 8) | (build << 0))
 
-KeyStatus g_key_status;
+PAD::KeyStatus g_key_status;
 
 namespace PAD
 {
@@ -47,7 +49,7 @@ namespace PAD
 	static void ApplyMacroButton(u32 pad, const MacroButton& mb);
 	static void UpdateMacroButtons();
 
-	static std::array<std::array<MacroButton, NUM_MACRO_BUTTONS_PER_CONTROLLER>, GAMEPAD_NUMBER> s_macro_buttons;
+	static std::array<std::array<MacroButton, NUM_MACRO_BUTTONS_PER_CONTROLLER>, NUM_CONTROLLER_PORTS> s_macro_buttons;
 } // namespace PAD
 
 s32 PADinit()
@@ -183,7 +185,7 @@ void PAD::LoadConfig(const SettingsInterface& si)
 	PAD::s_macro_buttons = {};
 
 	// This is where we would load controller types, if onepad supported them.
-	for (u32 i = 0; i < GAMEPAD_NUMBER; i++)
+	for (u32 i = 0; i < NUM_CONTROLLER_PORTS; i++)
 	{
 		const std::string section(StringUtil::StdStringFromFormat("Pad%u", i + 1u));
 		const std::string type(si.GetStringValue(section.c_str(), "Type", GetDefaultPadType(i)));
@@ -221,7 +223,7 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 {
 	si.ClearSection("InputSources");
 
-	for (u32 i = 0; i < GAMEPAD_NUMBER; i++)
+	for (u32 i = 0; i < NUM_CONTROLLER_PORTS; i++)
 		si.ClearSection(StringUtil::StdStringFromFormat("Pad%u", i + 1).c_str());
 
 	si.ClearSection("Hotkeys");
@@ -455,7 +457,7 @@ bool PAD::MapController(SettingsInterface& si, u32 controller,
 
 void PAD::SetControllerState(u32 controller, u32 bind, float value)
 {
-	if (controller >= GAMEPAD_NUMBER || bind >= MAX_KEYS)
+	if (controller >= NUM_CONTROLLER_PORTS || bind >= MAX_KEYS)
 		return;
 
 	g_key_status.Set(controller, bind, value);
@@ -502,7 +504,7 @@ void PAD::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std:
 
 void PAD::SetMacroButtonState(u32 pad, u32 index, bool state)
 {
-	if (pad >= GAMEPAD_NUMBER || index >= NUM_MACRO_BUTTONS_PER_CONTROLLER)
+	if (pad >= NUM_CONTROLLER_PORTS || index >= NUM_MACRO_BUTTONS_PER_CONTROLLER)
 		return;
 
 	MacroButton& mb = s_macro_buttons[pad][index];
@@ -527,7 +529,7 @@ void PAD::ApplyMacroButton(u32 pad, const MacroButton& mb)
 
 void PAD::UpdateMacroButtons()
 {
-	for (u32 pad = 0; pad < GAMEPAD_NUMBER; pad++)
+	for (u32 pad = 0; pad < NUM_CONTROLLER_PORTS; pad++)
 	{
 		for (u32 index = 0; index < NUM_MACRO_BUTTONS_PER_CONTROLLER; index++)
 		{
