@@ -35,6 +35,9 @@ public:
 	void addDeviceToList(const QString& identifier, const QString& name);
 	void removeDeviceFromList(const QString& identifier);
 
+Q_SIGNALS:
+	void multitapModeChanged();
+
 private:
 	void updateSDLOptionsEnabled();
 

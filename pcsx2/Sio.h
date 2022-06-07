@@ -127,3 +127,13 @@ extern void ClearMcdEjectTimeoutNow();
 extern void sioStatRead();
 extern void sioSetGameSerial(const std::string& serial);
 extern void sioNextFrame();
+
+/// Converts a global pad index to a multitap port and slot.
+extern std::tuple<u32, u32> sioConvertPadToPortAndSlot(u32 index);
+
+/// Converts a multitap port and slot to a global pad index.
+extern u32 sioConvertPortAndSlotToPad(u32 port, u32 slot);
+
+/// Returns true if the given pad index is a multitap slot.
+extern bool sioPadIsMultitapSlot(u32 index);
+extern bool sioPortAndSlotIsMultitap(u32 port, u32 slot);

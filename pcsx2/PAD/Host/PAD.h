@@ -16,6 +16,7 @@
 #pragma once
 
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -79,6 +80,9 @@ namespace PAD
 		ControllerType type;
 		PAD::VibrationCapabilities vibration_caps;
 	};
+
+	/// Total number of pad ports, across both multitaps.
+	static constexpr u32 NUM_CONTROLLER_PORTS = 8;
 
 	/// Number of macro buttons per controller.
 	static constexpr u32 NUM_MACRO_BUTTONS_PER_CONTROLLER = 4;

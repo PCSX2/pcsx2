@@ -174,9 +174,6 @@ class InputSource;
 
 namespace InputManager
 {
-	/// Number of emulated pads. TODO: Multitap support.
-	static constexpr u32 MAX_PAD_NUMBER = 2;
-
 	/// Minimum interval between vibration updates when the effect is continuous.
 	static constexpr double VIBRATION_UPDATE_INTERVAL_SECONDS = 0.5;		// 500ms
 

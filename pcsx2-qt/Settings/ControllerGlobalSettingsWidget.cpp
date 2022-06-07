@@ -29,8 +29,13 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.enableSDLSource, "InputSources", "SDL", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.enableSDLEnhancedMode, "InputSources", "SDLControllerEnhancedMode", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.enableXInputSource, "InputSources", "XInput", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.multitapPort1, "EmuCore", "MultitapPort0_Enabled", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.multitapPort2, "EmuCore", "MultitapPort1_Enabled", false);
 
 	connect(m_ui.enableSDLSource, &QCheckBox::stateChanged, this, &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
+	for (QCheckBox* cb : {m_ui.multitapPort1, m_ui.multitapPort2})
+		connect(cb, &QCheckBox::stateChanged, this, [this]() { emit multitapModeChanged(); });
+
 	updateSDLOptionsEnabled();
 }
 

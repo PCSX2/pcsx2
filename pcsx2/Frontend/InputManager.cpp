@@ -808,12 +808,6 @@ bool InputManager::DoEventHook(InputBindingKey key, float value)
 // Binding Updater
 // ------------------------------------------------------------------------
 
-// TODO(Stenzek): Find a better place for this. Maybe in PAD?
-static constexpr std::array<const char*, InputManager::MAX_PAD_NUMBER> s_default_pad_types = {{
-	"DualShock2", // Pad 1
-	"None" // Pad 2
-}};
-
 void InputManager::ReloadBindings(SettingsInterface& si)
 {
 	PauseVibration();
@@ -825,8 +819,8 @@ void InputManager::ReloadBindings(SettingsInterface& si)
 
 	AddHotkeyBindings(si);
 
-	for (u32 pad = 0; pad < MAX_PAD_NUMBER; pad++)
-		AddPadBindings(si, pad, s_default_pad_types[pad]);
+	for (u32 pad = 0; pad < PAD::NUM_CONTROLLER_PORTS; pad++)
+		AddPadBindings(si, pad, PAD::GetDefaultPadType(pad));
 }
 
 // ------------------------------------------------------------------------
