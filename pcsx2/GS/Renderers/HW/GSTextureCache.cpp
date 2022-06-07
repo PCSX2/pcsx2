@@ -871,8 +871,13 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					GL_CACHE("TC: Dirty Target(%s) %d (0x%x) r(%d,%d,%d,%d)", to_string(type),
 						t->m_texture ? t->m_texture->GetID() : 0,
 						t->m_TEX0.TBP0, r.x, r.y, r.z, r.w);
-					t->m_TEX0.TBW = bw;
-					t->m_dirty.push_back(GSDirtyRect(r, psm, bw));
+					t->m_TEX0.TBW = bw;							
+					if (GSConfig.UserHacks_PushbackTargetValid)
+					{
+						t->m_dirty.push_back(GSDirtyRect(GSVector4i(t->m_valid), psm, bw));
+					}
+					else
+						t->m_dirty.push_back(GSDirtyRect(r, psm, bw));
 				}
 				else
 				{
@@ -924,7 +929,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 
 			// GH: Try to detect texture write that will overlap with a target buffer
 			// TODO Use ComputeSurfaceOffset below.
-			if (GSUtil::HasSharedBits(psm, t->m_TEX0.PSM))
+			if (GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) && !GSConfig.UserHacks_PushbackTargetValid )
 			{
 				if (bp < t->m_TEX0.TBP0)
 				{
