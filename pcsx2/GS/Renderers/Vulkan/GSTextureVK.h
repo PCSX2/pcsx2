@@ -79,6 +79,8 @@ public:
 
 private:
 	VkCommandBuffer GetCommandBufferForUpdate();
+	void CopyTextureDataForUpload(void* dst, const void* src, u32 pitch, u32 upload_pitch, u32 height) const;
+	VkBuffer AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 height) const;
 
 	Vulkan::Texture m_texture;
 

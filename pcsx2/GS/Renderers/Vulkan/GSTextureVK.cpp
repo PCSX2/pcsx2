@@ -145,7 +145,14 @@ VkCommandBuffer GSTextureVK::GetCommandBufferForUpdate()
 	return g_vulkan_context->GetCurrentInitCommandBuffer();
 }
 
-static VkBuffer AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 height)
+void GSTextureVK::CopyTextureDataForUpload(void* dst, const void* src, u32 pitch, u32 upload_pitch, u32 height) const
+{
+	const u32 block_size = GetCompressedBlockSize();
+	const u32 count = (height + (block_size - 1)) / block_size;
+	StringUtil::StrideMemCpy(dst, upload_pitch, src, pitch, std::min(upload_pitch, pitch), count);
+}
+
+VkBuffer GSTextureVK::AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 height) const
 {
 	const u32 size = upload_pitch * height;
 	const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0,
@@ -172,7 +179,7 @@ static VkBuffer AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upl
 	g_vulkan_context->DeferBufferDestruction(buffer, allocation);
 
 	// And write the data.
-	StringUtil::StrideMemCpy(ai.pMappedData, upload_pitch, data, pitch, pitch, height);
+	CopyTextureDataForUpload(ai.pMappedData, data, pitch, upload_pitch, height);
 	vmaFlushAllocation(g_vulkan_context->GetAllocator(), allocation, 0, size);
 	return buffer;
 }
@@ -216,7 +223,7 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 
 		buffer = sbuffer.GetBuffer();
 		buffer_offset = sbuffer.GetCurrentOffset();
-		StringUtil::StrideMemCpy(sbuffer.GetCurrentHostPointer(), upload_pitch, data, pitch, pitch, height);
+		CopyTextureDataForUpload(sbuffer.GetCurrentHostPointer(), data, pitch, upload_pitch, height);
 		sbuffer.CommitMemory(required_size);
 	}
 
