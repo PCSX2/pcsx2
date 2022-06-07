@@ -9874,6 +9874,7 @@ SLES-50672:
   compat: 5
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes performance issues.
 SLES-50677:
   name: "Shadow Hearts"
   region: "PAL-E"
@@ -11722,11 +11723,13 @@ SLES-51525:
   region: "PAL-M3"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes perfomrance issues.
 SLES-51526:
   name: "Fallout - Brotherhood of Steel"
   region: "PAL-M3"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes performace issues.
 SLES-51541:
   name: "Grand Theft Auto - San Andreas"
   region: "PAL-Unk"
@@ -13224,6 +13227,7 @@ SLES-52325:
   region: "PAL-M3"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes performance issues.
 SLES-52326:
   name: "Spawn - Armageddon"
   region: "PAL-M5"
@@ -14480,6 +14484,7 @@ SLES-52894:
   region: "PAL-E"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes performance issues.
 SLES-52895:
   name: "Spongebob SquarePants - The Movie"
   region: "PAL-E"
@@ -14916,6 +14921,7 @@ SLES-53039:
   compat: 5
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes performance issues.
   memcardFilters: # Allows import of characters from first game.
     - "SLES-53039"
     - "SLES-52325"
@@ -15165,6 +15171,7 @@ SLES-53154:
   region: "PAL-M8"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes performance issues.
 SLES-53155:
   name: "Star Wars - Episode III - Revenge of the Sith"
   region: "PAL-M3"
@@ -18068,6 +18075,7 @@ SLES-54423:
   region: "PAL-M5"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes performamce issues.
   clampModes:
     vuClampMode: 2 # Fixes ingame SPS for the capes.
 SLES-54424:
@@ -21568,6 +21576,7 @@ SLKA-25246:
   region: "NTSC-K"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes performance issues.
 SLKA-25249:
   name: "Ys - The Ark of Napishtim [with Guide Book]"
   region: "NTSC-K"
@@ -27547,6 +27556,7 @@ SLPM-65915:
   region: "NTSC-J"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes performance issues.
 SLPM-65916:
   name: "Harukanaru Jikuu no Kade - Hachiha Katsunori"
   region: "NTSC-J"
@@ -33819,6 +33829,7 @@ SLPS-25291:
   compat: 5
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes perforamnce issues.
 SLPS-25292:
   name: "D-A - Black"
   region: "NTSC-J"
@@ -36912,6 +36923,7 @@ SLUS-20035:
     - SoftwareRendererFMVHack # Fixes FMVs.
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes performance issues.
 SLUS-20037:
   name: "Run Like Hell - Hunt or Be Hunted"
   region: "NTSC-U"
@@ -39116,6 +39128,7 @@ SLUS-20565:
   compat: 5
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes performance issues.
 SLUS-20566:
   name: "Buffy the Vampire Slayer - Chaos Bleeds"
   region: "NTSC-U"
@@ -39764,6 +39777,7 @@ SLUS-20715:
   region: "NTSC-U"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes performance issues.
 SLUS-20716:
   name: "Teenage Mutant Ninja Turtles"
   region: "NTSC-U"
@@ -40922,6 +40936,7 @@ SLUS-20973:
   compat: 5
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes performance issues.
   memcardFilters:
     - "SLUS-20973"
     - "SLUS-20565"
@@ -42597,6 +42612,7 @@ SLUS-21304:
   compat: 5
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes performance issues.
   clampModes:
     vuClampMode: 2 # Ingame capes become SPS mess with lower than extra VU clamp.
 SLUS-21305:
@@ -45649,6 +45665,7 @@ SLUS-28054:
   region: "NTSC-U"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes performance issues.
 SLUS-28056:
   name: "State of Emergency 2 [Trade Demo]"
   region: "NTSC-U"
@@ -46028,6 +46045,7 @@ SLUS-29126:
   compat: 4
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1 # Fixes perfromance issues.
 SLUS-29127:
   name: "FIFA Soccer 2005 [Demo]"
   region: "NTSC-U"
