@@ -352,8 +352,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			   "Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA."));
 
 		dialog->registerWidgetHelp(m_ui.disableDepthEmulation, tr("Disable Depth Emulation"), tr("Unchecked"),
-			tr("Force a primitive flush when a framebuffer is also an input texture. "
-			   "Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA."));
+			tr("Disable the support of Depth buffer in the texture cache. "
+			   "It can help to increase speed but it will likely create various glitches."));
 
 		dialog->registerWidgetHelp(m_ui.disableSafeFeatures, tr("Disable Safe Features"), tr("Unchecked"),
 			tr("This option disables multiple safe features. "
