@@ -56,10 +56,20 @@ namespace Host
 	std::unique_lock<std::mutex> GetSettingsLock();
 	SettingsInterface* GetSettingsInterface();
 
+	/// Returns the settings interface that controller bindings should be loaded from.
+	/// If an input profile is being used, this will be the input layer, otherwise the layered interface.
+	SettingsInterface* GetSettingsInterfaceForBindings();
+
 	namespace Internal
 	{
 		/// Retrieves the base settings layer. Must call with lock held.
 		SettingsInterface* GetBaseSettingsLayer();
+
+		/// Retrieves the game settings layer, if present. Must call with lock held.
+		SettingsInterface* GetGameSettingsLayer();
+
+		/// Retrieves the input settings layer, if present. Must call with lock held.
+		SettingsInterface* GetInputSettingsLayer();
 
 		/// Sets the base settings layer. Should be called by the host at initialization time.
 		void SetBaseSettingsLayer(SettingsInterface* sif);

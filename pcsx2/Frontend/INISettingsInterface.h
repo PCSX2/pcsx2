@@ -48,6 +48,7 @@ public:
 	void SetDoubleValue(const char* section, const char* key, double value) override;
 	void SetBoolValue(const char* section, const char* key, bool value) override;
 	void SetStringValue(const char* section, const char* key, const char* value) override;
+	bool ContainsValue(const char* section, const char* key) const override;
 	void DeleteValue(const char* section, const char* key) override;
 	void ClearSection(const char* section) override;
 

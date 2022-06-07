@@ -185,6 +185,11 @@ void INISettingsInterface::SetStringValue(const char* section, const char* key, 
 	m_ini.SetValue(section, key, value, nullptr, true);
 }
 
+bool INISettingsInterface::ContainsValue(const char* section, const char* key) const
+{
+	return (m_ini.GetValue(section, key, nullptr) != nullptr);
+}
+
 void INISettingsInterface::DeleteValue(const char* section, const char* key)
 {
 	m_dirty = true;

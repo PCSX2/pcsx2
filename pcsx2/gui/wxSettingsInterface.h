@@ -44,11 +44,12 @@ public:
 
   void SetStringValue(const char* section, const char* key, const char* value) override;
 
-  std::vector<std::string> GetStringList(const char* section, const char* key) override;
+  std::vector<std::string> GetStringList(const char* section, const char* key) const override;
   void SetStringList(const char* section, const char* key, const std::vector<std::string>& items) override;
   bool RemoveFromStringList(const char* section, const char* key, const char* item) override;
   bool AddToStringList(const char* section, const char* key, const char* item) override;
 
+  bool ContainsValue(const char* section, const char* key) const override;
   void DeleteValue(const char* section, const char* key) override;
   void ClearSection(const char* section) override;
 
