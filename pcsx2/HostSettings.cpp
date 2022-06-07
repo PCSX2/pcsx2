@@ -32,6 +32,12 @@ SettingsInterface* Host::GetSettingsInterface()
 	return &s_layered_settings_interface;
 }
 
+SettingsInterface* Host::GetSettingsInterfaceForBindings()
+{
+	SettingsInterface* input_layer = s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_INPUT);
+	return input_layer ? input_layer : &s_layered_settings_interface;
+}
+
 std::string Host::GetBaseStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
 {
 	std::unique_lock lock(s_settings_mutex);
@@ -167,6 +173,16 @@ std::vector<std::string> Host::GetStringListSetting(const char* section, const c
 SettingsInterface* Host::Internal::GetBaseSettingsLayer()
 {
 	return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE);
+}
+
+SettingsInterface* Host::Internal::GetGameSettingsLayer()
+{
+	return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_GAME);
+}
+
+SettingsInterface* Host::Internal::GetInputSettingsLayer()
+{
+	return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_INPUT);
 }
 
 void Host::Internal::SetBaseSettingsLayer(SettingsInterface* sif)

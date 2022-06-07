@@ -141,7 +141,7 @@ void wxSettingsInterface::SetStringValue(const char* section, const char* key, c
 	m_config->Write(key, wxString::FromUTF8(value));
 }
 
-std::vector<std::string> wxSettingsInterface::GetStringList(const char* section, const char* key)
+std::vector<std::string> wxSettingsInterface::GetStringList(const char* section, const char* key) const
 {
 	pxFailRel("Not implemented");
 	return {};
@@ -161,6 +161,12 @@ bool wxSettingsInterface::RemoveFromStringList(const char* section, const char* 
 bool wxSettingsInterface::AddToStringList(const char* section, const char* key, const char* item)
 {
 	return false;
+}
+
+bool wxSettingsInterface::ContainsValue(const char* section, const char* key) const
+{
+	CheckPath(section);
+	return m_config->Exists(key);
 }
 
 void wxSettingsInterface::DeleteValue(const char* section, const char* key)
