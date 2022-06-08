@@ -718,7 +718,7 @@ void setPs1CDVDSpeed(int speed)
 * Main Volume, and SPU Control Bit0. Then send Demute command, and Play command.
 *******************************************************************************/
 
-void processCDDASector()
+void processCDDASector(const u8 *sector_ptr)
 {
 	// Samples are interleved
 	u32 sampleCount = 2352 / sizeof(s16) / 2;
@@ -811,17 +811,22 @@ void cdrWrite1(u8 rt)
 		}
 		break;
 		case CdlPlay:
-			if (cdr.SetlocPending)
-			{
-				memcpy(cdr.SetSectorSeek, cdr.SetSector, 4);
-				cdr.SetlocPending = 0;
+			if (!cdr.SetSector[0] & !cdr.SetSector[1] & !cdr.SetSector[2]) {
+				if (CDVD->getTN(&cdr.ResultTN) != -1) {
+					if (cdr.CurTrack > cdr.ResultTN.etrack) cdr.CurTrack = cdr.ResultTN.etrack;
+					if (CDVD->getTD((unsigned char)(cdr.CurTrack), reinterpret_cast<cdvdTD *>(cdr.ResultTD)) != -1) {
+						int tmp = cdr.ResultTD[2];
+						cdr.ResultTD[2] = cdr.ResultTD[0];
+						cdr.ResultTD[0] = tmp;
+						processCDDASector(cdr.ResultTD);
+					}
+				}
 			}
+			else 
+				processCDDASector(cdr.SetSector);
 			cdr.Play = 1;
-			cdr.Ctrl |= 0x80;
-			cdr.Stat = NoIntr;
-			cdr.StatP |= STATUS_PLAY;
-			// Result contains Subchannel Q data
-			ReadTrack(cdr.Result[0]);
+			cdr.Ctrl|= 0x80;
+			cdr.Stat = NoIntr; 
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 

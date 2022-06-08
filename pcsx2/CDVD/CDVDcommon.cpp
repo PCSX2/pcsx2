@@ -381,9 +381,7 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 	u32 index0 = 0;
 	u32 index1 = 0;
 
-	cueFile->tempTracks[i].startAbsolute = maxLSN;
 	const u32 trackSize = sizes[cueFile->tempTracks[i].mode];
-	Console.Warning("I IS: %d", i);
 
 	if (cueFile->tempTracks[i].length.has_value())
 	{
@@ -400,27 +398,23 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 			index1 = msf_to_lsn(cueFile->tempTracks[i].GetIndex(1));
 
 			u32 nextIndex = msf_to_lsn(cueFile->tempTracks[i + 1].GetIndex(1));
-			
+
 			if (index0 > 0)
 			{
 				// There's always an index1 so this is safe according to Stenz
 				pregapLSN = index1 - index0;
-				maxLSN += pregapLSN;
 			}
 			else
 			{
 				// Breaks some games to add implicit 2 seconds to audio disks?
 				if (cueFile->tempTracks.size() > 1 && !couldBeAudio)
 				{
-					pregapLSN += 150;
-				}
-				if (pregapLSN > 0)
-				{
-					maxLSN += pregapLSN;
+					pregapLSN = 150;
 				}
 			}
-
-			trackLength = (nextIndex - pregapLSN);
+			trackLength = (nextIndex - index1);
+			maxLSN += pregapLSN;
+			cueFile->tempTracks[i].startAbsolute = index1;
 			cueFile->tempTracks[i].startRelative = pregapLSN;
 		}
 		else
@@ -432,10 +426,8 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 
 			fileSize /= trackSize;
 
-			if (cueFile->tempTracks[i].startAbsolute < fileSize)
-			{
-				Console.Error("Track Size is wrong");
-			}
+			cueFile->tempTracks[i].startAbsolute = maxLSN;
+			cueFile->tempTracks[i].startRelative = pregapLSN;
 
 			Console.Warning("File Size %d", fileSize);
 			trackLength = static_cast<u32>(fileSize - cueFile->tempTracks[i].startAbsolute);
@@ -452,7 +444,6 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 			{
 				// There's always an index1 so this is safe according to Stenz
 				pregapLSN = index1 - index0;
-				maxLSN += pregapLSN;
 			}
 			else
 			{
@@ -461,18 +452,12 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 				{
 					pregapLSN += 150;
 				}
-				if (pregapLSN > 0)
-				{
-					maxLSN += pregapLSN;
-				}
 			}
 		}
 
-		u32 end = cueFile->tempTracks[i].startRelative + trackLength;
+		maxLSN += pregapLSN;
 		cueFile->tempTracks[i].length = (trackLength + pregapLSN);
 	}
-
-	cueFile->tempTracks[i].startAbsolute = maxLSN;
 
 	u32 lastStart = cueFile->tempTracks[i].startAbsolute;
 
@@ -542,8 +527,8 @@ bool DoParseCueFile(fs::path ext)
 
 				return true;
 			}
-			return false;
 		}
+		return false;
 	}
 	// There wasn't a cue file. Just try opening the bin.
 	else
@@ -580,13 +565,8 @@ bool DoCDVDopen()
 
 	Common::Error *err = nullptr;
 	
-	if (DoParseCueFile(ext))
-	{
-		int ret = CDVD->open(cueFile->GetTrack(1)->filePath.c_str(), 1);
-		if (ret == -1)
-			return false; // error! (handled by caller)
-	}
-	else
+	int ret = DoParseCueFile(ext);
+	if (ret == -1)
 	{
 		int ret = CDVD->open(!ext.empty() ? ext.string().c_str() : nullptr, 0);
 		if (ret == -1)

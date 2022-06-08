@@ -109,10 +109,14 @@ static void __forceinline XA_decode_block(s16* buffer, const s16* block, s32& pr
 
 static void GrabCDAudio(StereoOut32& core0)
 {
-	core0.Left += samples[0][0];
-	samples[0].pop_back();
-	core0.Right += samples[1][0];
-	samples[1].pop_back();
+	if (samples->size() > 0)
+	{
+		core0.Left += samples[0][0];
+		samples[0].pop_back();
+
+		core0.Right += samples[1][0];
+		samples[1].pop_back();
+	}
 }
 
 
@@ -805,6 +809,7 @@ __forceinline
 	Ext = ApplyVolume(Ext, Cores[1].ExtVol);
 	StereoOut32 Out(Cores[1].Mix(VoiceData[1], InputData[1], Ext));
 
+
 	if (PlayMode & 8)
 	{
 		// Experimental PS2 CDDA support
@@ -828,6 +833,8 @@ __forceinline
 		// Good thing though that this code gets the volume exactly right, as per tests :)
 		Out = clamp_mix(Out, SndOutVolumeShift);
 	}
+
+	GrabCDAudio(Out);
 
 	// Configurable output volume
 	Out.Left *= FinalVolume;

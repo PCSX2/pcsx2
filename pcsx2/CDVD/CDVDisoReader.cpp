@@ -109,10 +109,10 @@ s32 CALLBACK ISOgetTN(cdvdTN* Buffer)
 
 s32 CALLBACK ISOgetTD(u8 Track, cdvdTD* Buffer)
 {
+	if (Buffer == nullptr)
+		return -1;
 	if (Track == 0)
 	{
-		if (Buffer == nullptr)
-			return -1;
 		try
 		{
 			Buffer->lsn = maxLSN;
@@ -124,13 +124,13 @@ s32 CALLBACK ISOgetTD(u8 Track, cdvdTD* Buffer)
 			return -1;
 		}
 	}
-	else
+	else if (Track >= 1)
 	{
 		Buffer->type = cueFile->GetTrack(Track)->type;
 		Buffer->lsn = cueFile->GetTrack(Track)->startAbsolute;
+		return 0;
 	}
-
-	return 0;
+	return -1;
 }
 
 static bool testForPrimaryVolumeDescriptor(const std::array<u8, CD_FRAMESIZE_RAW>& buffer)
@@ -295,6 +295,8 @@ s32 CALLBACK ISOgetTOC(void* toc)
 		tocBuff[28] = itob(sec);
 		tocBuff[29] = itob(frm);
 
+		fprintf(stderr, "Track 0: %u mins %u secs %u frames\n", min, sec, frm);
+
 		for (i = diskInfo.strack; i <= diskInfo.etrack; i++)
 		{
 			err = ISOgetTD(i, &trackInfo);
@@ -304,6 +306,7 @@ s32 CALLBACK ISOgetTOC(void* toc)
 			tocBuff[i * 10 + 37] = itob(min);
 			tocBuff[i * 10 + 38] = itob(sec);
 			tocBuff[i * 10 + 39] = itob(frm);
+			fprintf(stderr, "Track %u: %u mins %u secs %u frames\n", i, min, sec, frm);
 		}
 	}
 	else
@@ -384,6 +387,7 @@ s32 CALLBACK ISOreadTrack(u32 lsn, int mode, int track = 0)
 
 	if (track > 0 && track != currentTrackNum)
 	{
+		Console.Warning("Track Num: %d", track);
 		currentTrackNum = cueFile->GetTrack(track)->trackNum;
 		iso = *cueFile->GetTrack(currentTrackNum)->fileReader;
  	}
@@ -403,7 +407,8 @@ s32 CALLBACK ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 	// fake it - NO!
 	u8 min, sec, frm;
 
-	// TODO: PS1 Libcrypt games will look like garbage data. This is a key being generated in SubQ that needs to be passed on!
+	// TODO: PS1 Libcrypt games will look like garbage data. 
+	// This is a key being generated in SubQ that needs to be passed on!
 
 	s32 err = 0;
 
@@ -429,7 +434,6 @@ s32 CALLBACK ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 
 	subq->mode = cueFile->GetTrack(i)->mode;
 	subq->ctrl = cueFile->GetTrack(i)->type;
-	// This is for error checking sake. Tracks on disk start at one!
 	subq->trackNum = cueFile->GetTrack(i)->trackNum;
 	subq->trackIndex = 1;
 
