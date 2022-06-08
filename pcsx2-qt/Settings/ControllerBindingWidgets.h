@@ -32,6 +32,8 @@ public:
 	ControllerBindingWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port);
 	~ControllerBindingWidget();
 
+	QIcon getIcon() const;
+
 	__fi ControllerSettingsDialog* getDialog() const { return m_dialog; }
 	__fi const std::string& getConfigSection() const { return m_config_section; }
 	__fi const std::string& getControllerType() const { return m_controller_type; }
@@ -71,6 +73,8 @@ public:
 	__fi const std::string& getControllerType() const { return static_cast<ControllerBindingWidget*>(parent())->getControllerType(); }
 	__fi u32 getPortNumber() const { return static_cast<ControllerBindingWidget*>(parent())->getPortNumber(); }
 
+	virtual QIcon getIcon() const;
+
 protected:
 	void initBindingWidgets();
 };
@@ -82,6 +86,8 @@ class ControllerBindingWidget_DualShock2 final : public ControllerBindingWidget_
 public:
 	ControllerBindingWidget_DualShock2(ControllerBindingWidget* parent);
 	~ControllerBindingWidget_DualShock2();
+
+	QIcon getIcon() const override;
 
 	static ControllerBindingWidget_Base* createInstance(ControllerBindingWidget* parent);
 

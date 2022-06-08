@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/SettingsInterface.h"
 
@@ -184,6 +186,9 @@ void PAD::LoadConfig(const SettingsInterface& si)
 {
 	PAD::s_macro_buttons = {};
 
+	EmuConfig.MultitapPort0_Enabled = si.GetBoolValue("Pad", "MultitapPort1", false);
+	EmuConfig.MultitapPort1_Enabled = si.GetBoolValue("Pad", "MultitapPort2", false);
+
 	// This is where we would load controller types, if onepad supported them.
 	for (u32 i = 0; i < NUM_CONTROLLER_PORTS; i++)
 	{
@@ -232,6 +237,8 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 	si.SetBoolValue("InputSources", "SDL", true);
 	si.SetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
 	si.SetBoolValue("InputSources", "XInput", false);
+	si.SetBoolValue("Pad", "MultitapPort1", false);
+	si.SetBoolValue("Pad", "MultitapPort2", false);
 
 	// PCSX2 Controller Settings - Controller 1 / Controller 2 / ...
 	// Use the automapper to set this up.
@@ -386,6 +393,62 @@ void PAD::ClearPortBindings(SettingsInterface& si, u32 port)
 		si.DeleteValue(section.c_str(), info->bindings[i].name);
 }
 
+void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si,
+	bool copy_pad_config, bool copy_pad_bindings, bool copy_hotkey_bindings)
+{
+	if (copy_pad_config)
+	{
+		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort1");
+		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort2");
+	}
+
+	for (u32 port = 0; port < NUM_CONTROLLER_PORTS; port++)
+	{
+		const std::string section(fmt::format("Pad{}", port + 1));
+		const std::string type(src_si.GetStringValue(section.c_str(), "Type", GetDefaultPadType(port)));
+		if (copy_pad_config)
+			dest_si->SetStringValue(section.c_str(), "Type", type.c_str());
+
+		const ControllerInfo* info = GetControllerInfo(type);
+		if (!info)
+			return;
+
+		if (copy_pad_bindings)
+		{
+			for (u32 i = 0; i < info->num_bindings; i++)
+			{
+				const ControllerBindingInfo& bi = info->bindings[i];
+				dest_si->CopyStringListValue(src_si, section.c_str(), bi.name);
+			}
+
+			for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
+			{
+				dest_si->CopyStringListValue(src_si, section.c_str(), fmt::format("Macro{}", i + 1).c_str());
+				dest_si->CopyStringValue(src_si, section.c_str(), fmt::format("Macro{}Binds", i + 1).c_str());
+				dest_si->CopyUIntValue(src_si, section.c_str(), fmt::format("Macro{}Frequency", i + 1).c_str());
+			}
+		}
+
+		if (copy_pad_config)
+		{
+			dest_si->CopyFloatValue(src_si, section.c_str(), "AxisScale");
+
+			if (info->vibration_caps != VibrationCapabilities::NoVibration)
+			{
+				dest_si->CopyFloatValue(src_si, section.c_str(), "LargeMotorScale");
+				dest_si->CopyFloatValue(src_si, section.c_str(), "SmallMotorScale");
+			}
+		}
+	}
+
+	if (copy_hotkey_bindings)
+	{
+		std::vector<const HotkeyInfo*> hotkeys(InputManager::GetHotkeyList());
+		for (const HotkeyInfo* hki : hotkeys)
+			dest_si->CopyStringListValue(src_si, "Hotkeys", hki->name);
+	}
+}
+
 PAD::VibrationCapabilities PAD::GetControllerVibrationCapabilities(const std::string_view& type)
 {
 	const ControllerInfo* info = GetControllerInfo(type);
@@ -518,6 +581,20 @@ void PAD::SetMacroButtonState(u32 pad, u32 index, bool state)
 		mb.toggle_state = state;
 		ApplyMacroButton(pad, mb);
 	}
+}
+
+std::vector<std::string> PAD::GetInputProfileNames()
+{
+	FileSystem::FindResultsArray results;
+	FileSystem::FindFiles(EmuFolders::InputProfiles.c_str(), "*.ini",
+		FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS,
+		&results);
+
+	std::vector<std::string> ret;
+	ret.reserve(results.size());
+	for (FILESYSTEM_FIND_DATA& fd : results)
+		ret.emplace_back(Path::GetFileTitle(fd.FileName));
+	return ret;
 }
 
 void PAD::ApplyMacroButton(u32 pad, const MacroButton& mb)

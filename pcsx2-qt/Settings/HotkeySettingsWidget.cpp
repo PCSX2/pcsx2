@@ -29,6 +29,7 @@
 
 HotkeySettingsWidget::HotkeySettingsWidget(QWidget* parent, ControllerSettingsDialog* dialog)
 	: QWidget(parent)
+	, m_dialog(dialog)
 {
 	createUi();
 }
@@ -79,6 +80,6 @@ void HotkeySettingsWidget::createButtons()
 		const int target_row = layout->count() / 2;
 
 		layout->addWidget(new QLabel(qApp->translate("Hotkeys", hotkey->display_name), container), target_row, 0);
-		layout->addWidget(new InputBindingWidget(container, "Hotkeys", hotkey->name), target_row, 1);
+		layout->addWidget(new InputBindingWidget(container, m_dialog->getProfileSettingsInterface(), "Hotkeys", hotkey->name), target_row, 1);
 	}
 }

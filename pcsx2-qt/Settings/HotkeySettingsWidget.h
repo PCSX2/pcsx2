@@ -37,6 +37,7 @@ private:
 	void createUi();
 	void createButtons();
 
+	ControllerSettingsDialog* m_dialog;
 	QTabWidget* m_tab_widget;
 
 	struct Category

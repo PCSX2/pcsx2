@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>834</width>
+    <width>833</width>
     <height>560</height>
    </rect>
   </property>
@@ -62,34 +62,13 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="loadProfile">
-          <property name="text">
-           <string>Load Profile</string>
-          </property>
-          <property name="icon">
-           <iconset theme="folder-open-line">
-            <normaloff>.</normaloff>.</iconset>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="saveProfile">
-          <property name="text">
-           <string>Save Profile</string>
-          </property>
-          <property name="icon">
-           <iconset theme="save-3-line">
-            <normaloff>.</normaloff>.</iconset>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QPushButton" name="clearBindings">
           <property name="text">
            <string>Clear Bindings</string>
           </property>
           <property name="icon">
-           <iconset theme="file-reduce-line"/>
+           <iconset theme="file-reduce-line">
+            <normaloff>.</normaloff>.</iconset>
           </property>
          </widget>
         </item>

@@ -39,7 +39,7 @@ InputBindingWidget::InputBindingWidget(QWidget* parent)
 	connect(this, &QPushButton::clicked, this, &InputBindingWidget::onClicked);
 }
 
-InputBindingWidget::InputBindingWidget(QWidget* parent, std::string section_name, std::string key_name)
+InputBindingWidget::InputBindingWidget(QWidget* parent, SettingsInterface* sif, std::string section_name, std::string key_name)
 	: QPushButton(parent)
 {
 	setMinimumWidth(225);
@@ -47,7 +47,7 @@ InputBindingWidget::InputBindingWidget(QWidget* parent, std::string section_name
 
 	connect(this, &QPushButton::clicked, this, &InputBindingWidget::onClicked);
 
-	setKey(std::move(section_name), std::move(key_name));
+	initialize(sif, std::move(section_name), std::move(key_name));
 }
 
 InputBindingWidget::~InputBindingWidget()
@@ -55,12 +55,12 @@ InputBindingWidget::~InputBindingWidget()
 	Q_ASSERT(!isListeningForInput());
 }
 
-void InputBindingWidget::setKey(std::string section_name, std::string key_name)
+void InputBindingWidget::initialize(SettingsInterface* sif, std::string section_name, std::string key_name)
 {
+	m_sif = sif;
 	m_section_name = std::move(section_name);
 	m_key_name = std::move(key_name);
-	m_bindings = Host::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
-	updateText();
+	reloadBinding();
 }
 
 void InputBindingWidget::updateText()
@@ -168,8 +168,17 @@ void InputBindingWidget::setNewBinding()
 		InputManager::ConvertInputBindingKeysToString(m_new_bindings.data(), m_new_bindings.size()));
 	if (!new_binding.empty())
 	{
-		QtHost::SetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str(), new_binding.c_str());
-		g_emu_thread->reloadInputBindings();
+		if (m_sif)
+		{
+			m_sif->SetStringValue(m_section_name.c_str(), m_key_name.c_str(), new_binding.c_str());
+			m_sif->Save();
+			g_emu_thread->reloadGameSettings();
+		}
+		else
+		{
+			QtHost::SetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str(), new_binding.c_str());
+			g_emu_thread->reloadInputBindings();
+		}
 	}
 
 	m_bindings.clear();
@@ -179,14 +188,25 @@ void InputBindingWidget::setNewBinding()
 void InputBindingWidget::clearBinding()
 {
 	m_bindings.clear();
-	QtHost::RemoveBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
-	g_emu_thread->reloadInputBindings();
-	updateText();
+	if (m_sif)
+	{
+		m_sif->DeleteValue(m_section_name.c_str(), m_key_name.c_str());
+		m_sif->Save();
+		g_emu_thread->reloadGameSettings();
+	}
+	else
+	{
+		QtHost::RemoveBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
+		g_emu_thread->reloadInputBindings();
+	}
+	reloadBinding();
 }
 
 void InputBindingWidget::reloadBinding()
 {
-	m_bindings = Host::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
+	m_bindings = m_sif ?
+		m_sif->GetStringList(m_section_name.c_str(), m_key_name.c_str()) :
+		Host::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
 	updateText();
 }
 
@@ -236,7 +256,7 @@ void InputBindingWidget::startListeningForInput(u32 timeout_in_seconds)
 
 void InputBindingWidget::stopListeningForInput()
 {
-	updateText();
+	reloadBinding();
 	delete m_input_listen_timer;
 	m_input_listen_timer = nullptr;
 	std::vector<InputBindingKey>().swap(m_new_bindings);
@@ -293,7 +313,7 @@ void InputBindingWidget::unhookInputManager()
 
 void InputBindingWidget::openDialog()
 {
-	InputBindingDialog binding_dialog(m_section_name, m_key_name, m_bindings, QtUtils::GetRootWidget(this));
+	InputBindingDialog binding_dialog(m_sif, m_section_name, m_key_name, m_bindings, QtUtils::GetRootWidget(this));
 	binding_dialog.exec();
 	reloadBinding();
 }
