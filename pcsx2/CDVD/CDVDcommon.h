@@ -54,6 +54,7 @@ typedef struct _cdvdSubQ
 	u8 discM;      // current minute offset from first track (BCD encoded)
 	u8 discS;      // current sector offset from first track (BCD encoded)
 	u8 discF;      // current frame offset from first track (BCD encoded)
+	bool ComputeCRC(); // LibCrypt support XOR on every eight bytes in certain sectors
 } cdvdSubQ;
 
 typedef struct _cdvdTD

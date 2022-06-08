@@ -389,6 +389,7 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 	}
 	else
 	{
+		// SINGLE FILE MULTI TRACK
 		if ((i + 1) <= cueFile->tempTracks.size() && cueFile->tempTracks[i].filePath == cueFile->tempTracks[i + 1].filePath)
 		{
 			if (cueFile->tempTracks[i].GetIndex(0) != nullptr)
@@ -417,6 +418,7 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 			cueFile->tempTracks[i].startAbsolute = index1;
 			cueFile->tempTracks[i].startRelative = pregapLSN;
 		}
+		// MULTI FILE MULTI TRACK
 		else
 		{
 			FILE* file = fopen(filePath.c_str(), "r");
@@ -453,10 +455,9 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 					pregapLSN += 150;
 				}
 			}
+			cueFile->tempTracks[i].length = (trackLength + pregapLSN);
+			maxLSN += cueFile->tempTracks[i].length.value();
 		}
-
-		maxLSN += pregapLSN;
-		cueFile->tempTracks[i].length = (trackLength + pregapLSN);
 	}
 
 	u32 lastStart = cueFile->tempTracks[i].startAbsolute;
@@ -544,6 +545,11 @@ bool DoParseCueFile(fs::path ext)
 	return false;
 }
 
+bool cdvdSubQ::ComputeCRC()
+{
+	uint16_t key = 0;
+
+}
 
 bool DoCDVDopen()
 {
