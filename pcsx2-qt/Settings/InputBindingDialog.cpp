@@ -25,9 +25,10 @@
 // _BitScanForward()
 #include "pcsx2/GS/GSIntrin.h"
 
-InputBindingDialog::InputBindingDialog(std::string section_name, std::string key_name,
+InputBindingDialog::InputBindingDialog(SettingsInterface* sif, std::string section_name, std::string key_name,
 	std::vector<std::string> bindings, QWidget* parent)
 	: QDialog(parent)
+	, m_sif(sif)
 	, m_section_name(std::move(section_name))
 	, m_key_name(std::move(key_name))
 	, m_bindings(std::move(bindings))
@@ -186,12 +187,23 @@ void InputBindingDialog::updateList()
 
 void InputBindingDialog::saveListToSettings()
 {
-	if (!m_bindings.empty())
-		QtHost::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
+	if (m_sif)
+	{
+		if (!m_bindings.empty())
+			m_sif->SetStringList(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
+		else
+			m_sif->DeleteValue(m_section_name.c_str(), m_key_name.c_str());
+		m_sif->Save();
+		g_emu_thread->reloadGameSettings();
+	}
 	else
-		QtHost::RemoveBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
-
-	g_emu_thread->reloadInputBindings();
+	{
+		if (!m_bindings.empty())
+			QtHost::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
+		else
+			QtHost::RemoveBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
+		g_emu_thread->reloadInputBindings();
+	}
 }
 
 void InputBindingDialog::inputManagerHookCallback(InputBindingKey key, float value)

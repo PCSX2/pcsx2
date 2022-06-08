@@ -1067,8 +1067,11 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(SavestateZstdCompression);
 	SettingsWrapBitBool(McdEnableEjection);
 	SettingsWrapBitBool(McdFolderAutoManage);
+#ifndef PCSX2_CORE
+	// We put mtap in the Pad section for Qt to make it easier to manually edit input profiles.
 	SettingsWrapBitBool(MultitapPort0_Enabled);
 	SettingsWrapBitBool(MultitapPort1_Enabled);
+#endif
 
 	// Process various sub-components:
 

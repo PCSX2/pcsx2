@@ -504,11 +504,12 @@ void EmuThread::reloadInputSources()
 
 	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
 	SettingsInterface* si = Host::GetSettingsInterface();
+	SettingsInterface* bindings_si = Host::GetSettingsInterfaceForBindings();
 	InputManager::ReloadSources(*si, lock);
 
 	// skip loading bindings if we're not running, since it'll get done on startup anyway
 	if (VMManager::HasValidVM())
-		InputManager::ReloadBindings(*si);
+		InputManager::ReloadBindings(*si, *bindings_si);
 }
 
 void EmuThread::reloadInputBindings()
@@ -525,7 +526,8 @@ void EmuThread::reloadInputBindings()
 
 	auto lock = Host::GetSettingsLock();
 	SettingsInterface* si = Host::GetSettingsInterface();
-	InputManager::ReloadBindings(*si);
+	SettingsInterface* bindings_si = Host::GetSettingsInterfaceForBindings();
+	InputManager::ReloadBindings(*si, *bindings_si);
 }
 
 void EmuThread::requestDisplaySize(float scale)

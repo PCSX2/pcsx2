@@ -231,6 +231,9 @@
     <ClInclude Include="Settings\HddCreateQt.h">
       <Filter>Settings</Filter>
     </ClInclude>
+    <ClInclude Include="Settings\ControllerSettingWidgetBinder.h">
+      <Filter>Settings</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="MainWindow.h" />

@@ -37,5 +37,8 @@ public:
 private:
 	void populateUi(const GameList::Entry* entry);
 
+	void onInputProfileChanged(int index);
+
 	Ui::GameSummaryWidget m_ui;
+	SettingsDialog* m_dialog;
 };

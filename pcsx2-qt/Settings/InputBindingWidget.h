@@ -22,6 +22,7 @@
 class QTimer;
 
 class ControllerSettingsDialog;
+class SettingsInterface;
 
 class InputBindingWidget : public QPushButton
 {
@@ -29,10 +30,10 @@ class InputBindingWidget : public QPushButton
 
 public:
 	InputBindingWidget(QWidget* parent);
-	InputBindingWidget(QWidget* parent, std::string section_name, std::string key_name);
+	InputBindingWidget(QWidget* parent, SettingsInterface* sif, std::string section_name, std::string key_name);
 	~InputBindingWidget();
 
-	void setKey(std::string section_name, std::string key_name);
+	void initialize(SettingsInterface* sif, std::string section_name, std::string key_name);
 
 public Q_SLOTS:
 	void clearBinding();
@@ -65,6 +66,7 @@ protected:
 	void hookInputManager();
 	void unhookInputManager();
 
+	SettingsInterface* m_sif = nullptr;
 	std::string m_section_name;
 	std::string m_key_name;
 	std::vector<std::string> m_bindings;

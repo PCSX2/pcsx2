@@ -36,10 +36,11 @@ public:
 	void removeDeviceFromList(const QString& identifier);
 
 Q_SIGNALS:
-	void multitapModeChanged();
+	void bindingSetupChanged();
 
 private:
 	void updateSDLOptionsEnabled();
 
 	Ui::ControllerGlobalSettingsWidget m_ui;
+	ControllerSettingsDialog* m_dialog;
 };

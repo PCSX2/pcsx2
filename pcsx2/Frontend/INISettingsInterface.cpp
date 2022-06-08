@@ -203,7 +203,7 @@ void INISettingsInterface::ClearSection(const char* section)
 	m_ini.SetValue(section, nullptr, nullptr);
 }
 
-std::vector<std::string> INISettingsInterface::GetStringList(const char* section, const char* key)
+std::vector<std::string> INISettingsInterface::GetStringList(const char* section, const char* key) const
 {
 	std::list<CSimpleIniA::Entry> entries;
 	if (!m_ini.GetAllValues(section, key, entries))
