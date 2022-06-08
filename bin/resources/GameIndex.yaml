@@ -8030,6 +8030,9 @@ SCUS-97623:
   name: "Secret Agent Clank"
   region: "NTSC-U"
   compat: 5
+SCUS-97625:
+  name: "NBA 09 - The Inside"
+  region: "NTSC-U"
 SCUS-97626:
   name: "SingStar '90s"
   region: "NTSC-U"
@@ -8079,6 +8082,10 @@ SCUS-97653:
   compat: 5
 SCUS-97654:
   name: "MotorStorm Arctic Edge"
+  region: "NTSC-U"
+  compat: 5
+SCUS-97657:
+  name: "MLB 11 - The Show"
   region: "NTSC-U"
   compat: 5
 SCUS-97660:
@@ -44424,6 +44431,9 @@ SLUS-21694:
   name: "Final Fantasy XI - Wings of the Goddess"
   region: "NTSC-U"
   compat: 3
+SLUS-21696:
+  name: "Ford Racing - Off Road"
+  region: "NTSC-U"
 SLUS-21697:
   name: "Iridium Runners"
   region: "NTSC-U"
@@ -44464,6 +44474,9 @@ SLUS-21704:
   name: "Final Fantasy XI - Vana'diel Collection 2008"
   region: "NTSC-U"
   compat: 3
+SLUS-21705:
+  name: "Madden NFL 08"
+  region: "NTSC-U"
 SLUS-21706:
   name: "Alvin and the Chipmunks"
   region: "NTSC-U"
@@ -44509,6 +44522,11 @@ SLUS-21712:
   name: "History Channel - Battle for the Pacific"
   region: "NTSC-U"
   compat: 5
+SLUS-21713:
+  name: "Winter Sports 2008 - The Ultimate Challenge"
+  region: "NTSC-U"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLUS-21714:
   name: "Baroque"
   region: "NTSC-U"
