@@ -11822,7 +11822,7 @@ SLES-51615:
   region: "PAL-M5"
 SLES-51616:
   name: "Virtua Fighter 4 Evolution"
-  region: "PAL-UM5"
+  region: "PAL-M5"
   compat: 5
 SLES-51617:
   name: "Starsky & Hutch"
@@ -44810,6 +44810,9 @@ SLUS-21776:
   name: "FIFA 2009"
   region: "NTSC-U"
   compat: 5
+SLUS-21777:
+  name: "NBA Live '09"
+  region: "NTSC-U"
 SLUS-21778:
   name: "Dokapon Kingdom"
   region: "NTSC-U"
