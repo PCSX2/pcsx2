@@ -92,6 +92,7 @@ void GameListWidget::initialize()
 	m_table_view->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
 	m_table_view->verticalHeader()->hide();
 	m_table_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+	m_table_view->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
 
 	loadTableViewColumnVisibilitySettings();
 	loadTableViewColumnSortSettings();
@@ -119,6 +120,8 @@ void GameListWidget::initialize()
 	m_list_view->setContextMenuPolicy(Qt::CustomContextMenu);
 	m_list_view->setFrameStyle(QFrame::NoFrame);
 	m_list_view->setSpacing(m_model->getCoverArtSpacing());
+	m_list_view->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
+
 	updateListFont();
 
 	connect(m_list_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
