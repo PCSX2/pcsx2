@@ -6977,6 +6977,19 @@ SCUS-97275:
   gameFixes:
     - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+  patches:
+    default:
+      Author: "NightFyre"
+      content: |-
+        author=Harry62
+        // r0001 Render Fix
+        // This will only be applied if the game is version r0001
+        patch=1,EE,D033CD68,extended,000000DB
+        patch=1,EE,2033CD68,extended,100000DB
+        // r0004 Render Fix
+        // This will only be applied if the game is version r0004
+        patch=1,EE,D035A2F8,extended,000000DB
+        patch=1,EE,2035A2F8,extended,100000DB
 SCUS-97276:
   name: "NFL GameDay 2004"
   region: "NTSC-U"
