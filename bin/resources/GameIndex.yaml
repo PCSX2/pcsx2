@@ -8030,6 +8030,9 @@ SCUS-97623:
   name: "Secret Agent Clank"
   region: "NTSC-U"
   compat: 5
+SCUS-97625:
+  name: "NBA 09 - The Inside"
+  region: "NTSC-U"
 SCUS-97626:
   name: "SingStar '90s"
   region: "NTSC-U"
@@ -8079,6 +8082,10 @@ SCUS-97653:
   compat: 5
 SCUS-97654:
   name: "MotorStorm Arctic Edge"
+  region: "NTSC-U"
+  compat: 5
+SCUS-97657:
+  name: "MLB 11 - The Show"
   region: "NTSC-U"
   compat: 5
 SCUS-97660:
@@ -11822,7 +11829,7 @@ SLES-51615:
   region: "PAL-M5"
 SLES-51616:
   name: "Virtua Fighter 4 Evolution"
-  region: "PAL-UM5"
+  region: "PAL-M5"
   compat: 5
 SLES-51617:
   name: "Starsky & Hutch"
@@ -13153,7 +13160,7 @@ SLES-52283:
   name: "Terminator 3 - The Redemption"
   region: "PAL-M5"
 SLES-52284:
-  name: "Deadly Skies II"
+  name: "Deadly Skies III"
   region: "PAL-M5"
 SLES-52286:
   name: "Tak and The Power of JuJu"
@@ -18283,6 +18290,10 @@ SLES-54478:
 SLES-54483:
   name: "Fast and the Furious, The"
   region: "PAL-E"
+  compat: 5
+  gsHWFixes:
+    mergeSprite: 1 # Fixes bluriness.
+    halfPixelOffset: 1 # Fixes bluriness.
 SLES-54485:
   name: "Cinderella"
   region: "PAL-M3"
@@ -43407,9 +43418,12 @@ SLUS-21448:
   region: "NTSC-U"
   compat: 5
 SLUS-21449:
-  name: "Fast and the Furious, The - Tokyo Drift"
+  name: "Fast and the Furious, The"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mergeSprite: 1 # Fixes bluriness.
+    halfPixelOffset: 1 # Fixes bluriness.
 SLUS-21450:
   name: "Super PickUps"
   region: "NTSC-U"
@@ -44424,6 +44438,9 @@ SLUS-21694:
   name: "Final Fantasy XI - Wings of the Goddess"
   region: "NTSC-U"
   compat: 3
+SLUS-21696:
+  name: "Ford Racing - Off Road"
+  region: "NTSC-U"
 SLUS-21697:
   name: "Iridium Runners"
   region: "NTSC-U"
@@ -44464,6 +44481,9 @@ SLUS-21704:
   name: "Final Fantasy XI - Vana'diel Collection 2008"
   region: "NTSC-U"
   compat: 3
+SLUS-21705:
+  name: "Madden NFL 08"
+  region: "NTSC-U"
 SLUS-21706:
   name: "Alvin and the Chipmunks"
   region: "NTSC-U"
@@ -44509,6 +44529,11 @@ SLUS-21712:
   name: "History Channel - Battle for the Pacific"
   region: "NTSC-U"
   compat: 5
+SLUS-21713:
+  name: "Winter Sports 2008 - The Ultimate Challenge"
+  region: "NTSC-U"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLUS-21714:
   name: "Baroque"
   region: "NTSC-U"
@@ -44810,6 +44835,9 @@ SLUS-21776:
   name: "FIFA 2009"
   region: "NTSC-U"
   compat: 5
+SLUS-21777:
+  name: "NBA Live '09"
+  region: "NTSC-U"
 SLUS-21778:
   name: "Dokapon Kingdom"
   region: "NTSC-U"

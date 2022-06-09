@@ -342,11 +342,11 @@ void FileMemoryCard::Open()
 			}
 
 			// store the original filename
-			m_file[slot] = FileSystem::OpenCFile(newname.c_str(), "r+b");
+			m_file[slot] = FileSystem::OpenSharedCFile(newname.c_str(), "r+b", FileSystem::FileShareMode::DenyWrite);
 		}
 		else
 		{
-			m_file[slot] = FileSystem::OpenCFile(fname.c_str(), "r+b");
+			m_file[slot] = FileSystem::OpenSharedCFile(fname.c_str(), "r+b", FileSystem::FileShareMode::DenyWrite);
 		}
 
 		if (!m_file[slot])
@@ -619,7 +619,11 @@ void FileMcd_EmuOpen()
 	// detect inserted memory card types
 	for (uint slot = 0; slot < 8; ++slot)
 	{
-		if (EmuConfig.Mcd[slot].Enabled)
+		if (EmuConfig.Mcd[slot].Filename.empty())
+		{
+			EmuConfig.Mcd[slot].Type = MemoryCardType::Empty;
+		}
+		else if (EmuConfig.Mcd[slot].Enabled)
 		{
 			MemoryCardType type = MemoryCardType::File; // default to file if we can't find anything at the path so it gets auto-generated
 
@@ -805,7 +809,7 @@ static bool IsMemoryCardFolder(const std::string& path)
 
 static bool IsMemoryCardFormatted(const std::string& path)
 {
-	auto fp = FileSystem::OpenManagedCFile(path.c_str(), "rb");
+	auto fp = FileSystem::OpenManagedSharedCFile(path.c_str(), "rb", FileSystem::FileShareMode::DenyNone);
 	if (!fp)
 		return false;
 

@@ -1535,6 +1535,21 @@ void VMManager::CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config)
 	FileMcd_EmuClose();
 	FileMcd_EmuOpen();
 
+	// force card eject when files change
+	for (u32 port = 0; port < 2; port++)
+	{
+		for (u32 slot = 0; slot < 4; slot++)
+		{
+			const uint index = FileMcd_ConvertToSlot(port, slot);
+			if (EmuConfig.Mcd[index].Enabled != old_config.Mcd[index].Enabled ||
+				EmuConfig.Mcd[index].Filename != old_config.Mcd[index].Filename)
+			{
+				Console.WriteLn("Replugging memory card %u (port %u slot %u) due to source change", index, port, slot);
+				SetForceMcdEjectTimeoutNow(port, slot);
+			}
+		}
+	}
+
 	// force reindexing, mc folder code is janky
 	std::string sioSerial;
 	{
