@@ -18290,6 +18290,10 @@ SLES-54478:
 SLES-54483:
   name: "Fast and the Furious, The"
   region: "PAL-E"
+  compat: 5
+  gsHWFixes:
+    mergeSprite: 1 # Fixes bluriness.
+    halfPixelOffset: 1 # Fixes bluriness.
 SLES-54485:
   name: "Cinderella"
   region: "PAL-M3"
@@ -43414,9 +43418,12 @@ SLUS-21448:
   region: "NTSC-U"
   compat: 5
 SLUS-21449:
-  name: "Fast and the Furious, The - Tokyo Drift"
+  name: "Fast and the Furious, The"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mergeSprite: 1 # Fixes bluriness.
+    halfPixelOffset: 1 # Fixes bluriness.
 SLUS-21450:
   name: "Super PickUps"
   region: "NTSC-U"
