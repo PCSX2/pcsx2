@@ -24412,12 +24412,6 @@ SLPM-62717:
 SLPM-62718:
   name: "Sega Ages 2500 Series Vol.27 - Panzer Dragoon"
   region: "NTSC-J"
-  patches:
-    8D984276:
-      content: |-
-        // By PSI
-        comment=Stop screen shaking (game switches to Progressive)
-        patch=1,EE,20158558,extended,30420000
 SLPM-62719:
   name: "Nobunaga no Yabou - Tenka Souyo"
   region: "NTSC-J"
