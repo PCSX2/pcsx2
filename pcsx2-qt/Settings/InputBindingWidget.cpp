@@ -19,6 +19,7 @@
 #include <QtGui/QKeyEvent>
 #include <QtGui/QMouseEvent>
 #include <QtWidgets/QInputDialog>
+#include <QtWidgets/QMessageBox>
 #include <cmath>
 #include <sstream>
 
@@ -362,7 +363,14 @@ void InputVibrationBindingWidget::onClicked()
 	const QString current(QString::fromStdString(m_binding));
 	QStringList input_options(m_dialog->getVibrationMotors());
 	if (!current.isEmpty() && input_options.indexOf(current) < 0)
+	{
 		input_options.append(current);
+	}
+	else if (input_options.isEmpty())
+	{
+		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"), tr("No devices with vibration motors were detected."));
+		return;
+	}
 
 	QInputDialog input_dialog(this);
 	input_dialog.setWindowTitle(full_key);
