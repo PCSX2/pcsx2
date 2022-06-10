@@ -80,7 +80,6 @@ bool GSsetupRecording(std::string& filename);
 void GSendRecording();
 #endif
 void GSsetGameCRC(u32 crc, int options);
-void GSsetFrameSkip(int frameskip);
 
 GSVideoMode GSgetDisplayMode();
 void GSgetInternalResolution(int* width, int* height);

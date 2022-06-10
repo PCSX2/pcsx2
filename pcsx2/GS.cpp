@@ -358,71 +358,6 @@ void gsIrq() {
 	hwIntcIrq(INTC_GS);
 }
 
-// --------------------------------------------------------------------------------------
-//  gsFrameSkip
-// --------------------------------------------------------------------------------------
-// This function regulates the frameskipping status of the GS.  Our new frameskipper for
-// 0.9.7 is a very simple logic pattern compared to the old mess.  The goal now is to provide
-// the most compatible and efficient frameskip, instead of doing the adaptive logic of
-// 0.9.6.  This is almost a necessity because of how many games treat the GS: they upload
-// great amounts of data while rendering 2 frames at a time (using double buffering), and
-// then use a simple pageswap to display the contents of the second frame for that vsync.
-//  (this approach is mostly seen on interlace games; progressive games less so)
-// The result is that any skip pattern besides a fully consistent 2on,2off would reuslt in
-// tons of missing geometry, rendering frameskip useless.
-//
-// So instead we use a simple "always skipping" or "never skipping" logic.
-//
-// EE vs MTGS:
-//   This function does not regulate frame limiting, meaning it does no stalling. Stalling
-//   functions are performed by the EE, which itself uses thread sleep logic to avoid spin
-//   waiting as much as possible (maximizes CPU resource availability for the GS).
-static bool s_isSkippingCurrentFrame = false;
-
-__fi void gsFrameSkip()
-{
-	static int consec_skipped = 0;
-	static int consec_drawn = 0;
-
-	if( !EmuConfig.GS.FrameSkipEnable )
-	{
-		if( s_isSkippingCurrentFrame )
-		{
-			// Frameskipping disabled on-the-fly .. make sure the GS is restored to non-skip
-			// behavior.
-			GSsetFrameSkip( false );
-			s_isSkippingCurrentFrame = false;
-		}
-		return;
-	}
-
-	GSsetFrameSkip( s_isSkippingCurrentFrame );
-
-	if( s_isSkippingCurrentFrame )
-	{
-		++consec_skipped;
-		if( consec_skipped >= EmuConfig.GS.FramesToSkip )
-		{
-			consec_skipped = 0;
-			s_isSkippingCurrentFrame = false;
-		}
-	}
-	else
-	{
-		++consec_drawn;
-		if( consec_drawn >= EmuConfig.GS.FramesToDraw )
-		{
-			consec_drawn = 0;
-			s_isSkippingCurrentFrame = true;
-		}
-	}
-}
-
-extern bool gsIsSkippingCurrentFrame()
-{
-	return s_isSkippingCurrentFrame;
-}
-
 //These are done at VSync Start.  Drawing is done when VSync is off, then output the screen when Vsync is on
 //The GS needs to be told at the start of a vsync else it loses half of its picture (could be responsible for some halfscreen issues)
 //We got away with it before i think due to our awful GS timing, but now we have it right (ish)
@@ -433,17 +368,6 @@ void gsPostVsyncStart()
 	const bool registers_written = s_GSRegistersWritten;
 	s_GSRegistersWritten = false;
 	GetMTGS().PostVsyncStart(registers_written);
-}
-
-void _gs_ResetFrameskip()
-{
-	GSsetFrameSkip( 0 );
-}
-
-// Disables the GS Frameskip at runtime without any racy mess...
-void gsResetFrameSkip()
-{
-	GetMTGS().SendSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
 }
 
 void SaveStateBase::gsFreeze()

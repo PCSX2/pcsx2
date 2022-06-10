@@ -181,7 +181,6 @@ void SysMtgsThread::ResetGS(bool hardware_reset)
 
 	MTGS_LOG("MTGS: Sending Reset...");
 	SendSimplePacket(GS_RINGTYPE_RESET, static_cast<int>(hardware_reset), 0, 0);
-	SendSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
 	SetEvent();
 }
 
@@ -463,7 +462,6 @@ void SysMtgsThread::MainLoop()
 
 							// CSR & 0x2000; is the pageflip id.
 							GSvsync((((u32&)RingBuffer.Regs[0x1000]) & 0x2000) ? 0 : 1, remainder[4] != 0);
-							gsFrameSkip();
 
 							m_QueuedFrameCount.fetch_sub(1);
 							if (m_VsyncSignalListener.exchange(false))
@@ -481,11 +479,6 @@ void SysMtgsThread::MainLoop()
 								(*func)();
 								delete func;
 							}
-							break;
-
-						case GS_RINGTYPE_FRAMESKIP:
-							MTGS_LOG("(MTGS Packet Read) ringtype=Frameskip");
-							_gs_ResetFrameskip();
 							break;
 
 						case GS_RINGTYPE_FREEZE:
