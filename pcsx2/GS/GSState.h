@@ -230,7 +230,6 @@ public:
 	CRC::Game m_game;
 	std::unique_ptr<GSDumpBase> m_dump;
 	int m_options;
-	int m_frameskip;
 	bool m_nativeres;
 	bool m_mipmap;
 	bool m_primflush;
@@ -344,7 +343,6 @@ public:
 	u8* GetRegsMem() const { return reinterpret_cast<u8*>(m_regs); }
 	void SetRegsMem(u8* basemem) { m_regs = reinterpret_cast<GSPrivRegSet*>(basemem); }
 
-	void SetFrameSkip(int skip);
 	void DumpVertices(const std::string& filename);
 
 	PRIM_OVERLAP PrimitiveOverlap();

@@ -501,12 +501,8 @@ struct Pcsx2Config
 		// style. Useful for debugging potential bugs in the MTGS pipeline.
 		bool SynchronousMTGS{false};
 		bool FrameLimitEnable{true};
-		bool FrameSkipEnable{false};
 
 		VsyncMode VsyncEnable{VsyncMode::Off};
-
-		int FramesToDraw{2}; // number of consecutive frames (fields) to render
-		int FramesToSkip{2}; // number of consecutive frames (fields) to skip
 
 		double LimitScalar{1.0};
 		double FramerateNTSC{59.94};
@@ -887,9 +883,6 @@ struct Pcsx2Config
 	// ------------------------------------------------------------------------
 	struct FramerateOptions
 	{
-		bool SkipOnLimit{false};
-		bool SkipOnTurbo{false};
-
 		double NominalScalar{1.0};
 		double TurboScalar{2.0};
 		double SlomoScalar{0.5};
@@ -899,7 +892,7 @@ struct Pcsx2Config
 
 		bool operator==(const FramerateOptions& right) const
 		{
-			return OpEqu(SkipOnLimit) && OpEqu(SkipOnTurbo) && OpEqu(NominalScalar) && OpEqu(TurboScalar) && OpEqu(SlomoScalar);
+			return OpEqu(NominalScalar) && OpEqu(TurboScalar) && OpEqu(SlomoScalar);
 		}
 
 		bool operator!=(const FramerateOptions& right) const

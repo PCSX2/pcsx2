@@ -361,11 +361,7 @@ bool Pcsx2Config::GSOptions::operator==(const GSOptions& right) const
 		OpEqu(SynchronousMTGS) &&
 		OpEqu(VsyncQueueSize) &&
 
-		OpEqu(FrameSkipEnable) &&
 		OpEqu(FrameLimitEnable) &&
-
-		OpEqu(FramesToDraw) &&
-		OpEqu(FramesToSkip) &&
 
 		OpEqu(LimitScalar) &&
 		OpEqu(FramerateNTSC) &&
@@ -457,15 +453,11 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(VsyncQueueSize);
 
 	SettingsWrapEntry(FrameLimitEnable);
-	SettingsWrapEntry(FrameSkipEnable);
 	wrap.EnumEntry(CURRENT_SETTINGS_SECTION, "VsyncEnable", VsyncEnable, NULL, VsyncEnable);
 
 	// LimitScalar is set at runtime.
 	SettingsWrapEntry(FramerateNTSC);
 	SettingsWrapEntry(FrameratePAL);
-
-	SettingsWrapEntry(FramesToDraw);
-	SettingsWrapEntry(FramesToSkip);
 
 #ifdef PCSX2_CORE
 	// These are loaded from GSWindow in wx.
@@ -1005,9 +997,6 @@ void Pcsx2Config::FramerateOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(NominalScalar);
 	SettingsWrapEntry(TurboScalar);
 	SettingsWrapEntry(SlomoScalar);
-
-	SettingsWrapEntry(SkipOnLimit);
-	SettingsWrapEntry(SkipOnTurbo);
 }
 
 Pcsx2Config::Pcsx2Config()

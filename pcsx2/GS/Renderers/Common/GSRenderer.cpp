@@ -514,7 +514,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 	const int fb_sprite_blits = g_perfmon.GetDisplayFramebufferSpriteBlits();
 	const bool fb_sprite_frame = (fb_sprite_blits > 0);
 
-	bool skip_frame = m_frameskip;
+	bool skip_frame = false;
 	if (GSConfig.SkipDuplicateFrames)
 	{
 		bool is_unique_frame;

@@ -656,11 +656,6 @@ void GSsetGameCRC(u32 crc, int options)
 	g_gs_renderer->SetGameCRC(crc, options);
 }
 
-void GSsetFrameSkip(int frameskip)
-{
-	g_gs_renderer->SetFrameSkip(frameskip);
-}
-
 GSVideoMode GSgetDisplayMode()
 {
 	GSRenderer* gs = g_gs_renderer.get();
