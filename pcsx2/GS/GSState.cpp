@@ -2109,8 +2109,6 @@ void GSState::ReadFIFO(u8* mem, int size)
 
 void GSState::ReadLocalMemoryUnsync(u8* mem, int qwc, GIFRegBITBLTBUF BITBLTBUF, GIFRegTRXPOS TRXPOS, GIFRegTRXREG TRXREG)
 {
-	const int sx = TRXPOS.SSAX;
-	const int sy = TRXPOS.SSAY;
 	const int w = TRXREG.RRW;
 	const int h = TRXREG.RRH;
 
