@@ -225,6 +225,8 @@ public:
 	GSPrivRegSet* m_regs;
 	GSLocalMemory m_mem;
 	GSDrawingEnvironment m_env;
+	GSDrawingEnvironment m_backup_env;
+	GSDrawingEnvironment m_prev_env;
 	GSDrawingContext* m_context;
 	u32 m_crc;
 	CRC::Game m_game;
@@ -232,8 +234,8 @@ public:
 	int m_options;
 	bool m_nativeres;
 	bool m_mipmap;
-	bool m_primflush;
-	GIFRegPRIM m_last_prim;
+	bool m_reg_texture_dirty;
+	bool m_reg_draw_dirty;
 
 	static int s_n;
 	bool s_dump;
@@ -314,8 +316,9 @@ public:
 	virtual void Reset(bool hardware_reset);
 	virtual void UpdateSettings(const Pcsx2Config::GSOptions& old_config);
 
-	void Flush();
-	void FlushPrim();
+	void Flush(bool forced = false);
+	void FlushPrim(bool forced);
+	bool TestDrawChanged();
 	void FlushWrite();
 	virtual void Draw() = 0;
 	virtual void PurgePool() = 0;
