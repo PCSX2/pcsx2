@@ -25279,7 +25279,7 @@ SLPM-65209:
         patch=1,IOP,000251A8,word,00000000
         patch=1,IOP,000251AC,word,00000000
         patch=1,IOP,000251B0,word,00000000
-        //Execute removed iReferEventFlagStatus 
+        //Execute removed iReferEventFlagStatus
         patch=1,IOP,000251B4,word,3C040003    //lui    a0,0x0003
         patch=1,IOP,000251B8,word,8C84D368    //lw    a0,-0x2C98(a0)
         patch=1,IOP,000251BC,word,0C00AFD3    //jal    pos_0002BF4C iReferEventFlagStatus
@@ -32308,12 +32308,12 @@ SLPS-20257:
   name: "Yamasa Digi World 4DX"
   region: "NTSC-J"
   gameFixes:
-    - SoftwareRendererFMVHack  # Fix flickering and bad textures in FMV.
+    - SoftwareRendererFMVHack # Fix flickering and bad textures in FMV.
 SLPS-20258:
   name: "Yamasa Digi World 4"
   region: "NTSC-J"
   gameFixes:
-    - SoftwareRendererFMVHack  # Fix flickering and bad textures in FMV.
+    - SoftwareRendererFMVHack # Fix flickering and bad textures in FMV.
 SLPS-20259:
   name: "Kotoba no Puzzle - Mojipittan"
   region: "NTSC-J"
@@ -40013,8 +40013,8 @@ SLUS-20758:
       content: |-
         author=kozarovv
         // Growlanser Generations (2 and 3), When game fail at sceCdReadClock due to bad sema/thread state, it will just use 0 as timestamp.
-        // That make issues with next saves, and finally lead to freeze. 
-        // Patch force game to use WaitSema instead of PollSema in problematic place, that force thread rescheduling. 
+        // That make issues with next saves, and finally lead to freeze.
+        // Patch force game to use WaitSema instead of PollSema in problematic place, that force thread rescheduling.
         patch=1,EE,001153DC,word,0C042618
         comment=IPU freeze fix
         patch=0,EE,00109d04,word,00000000
@@ -40028,8 +40028,8 @@ SLUS-20759:
         // CRC 4AD529BB, 4CD3663F
         author=kozarovv
         // Growlanser Generations (2 and 3), When game fail at sceCdReadClock due to bad sema/thread state, it will just use 0 as timestamp.
-        // That make issues with next saves, and finally lead to freeze. 
-        // Patch force game to use WaitSema instead of PollSema in problematic place, that force thread rescheduling. 
+        // That make issues with next saves, and finally lead to freeze.
+        // Patch force game to use WaitSema instead of PollSema in problematic place, that force thread rescheduling.
         patch=1,EE,00114CBC,word,0C042618
         comment=IPU freeze fix
         patch=0,EE,00109d04,word,00000000
