@@ -183,9 +183,9 @@ void GSState::Reset(bool hardware_reset)
 	m_vertex.next = 0;
 	m_index.tail = 0;
 	m_scanmask_used = false;
+	m_dirty_gs_regs = 0;
+	m_backed_up_ctx = -1;
 
-	m_reg_draw_dirty = false;
-	m_reg_texture_dirty = false;
 	memcpy(&m_prev_env, &m_env, sizeof(m_prev_env));
 }
 
@@ -703,11 +703,11 @@ void GSState::DumpVertices(const std::string& filename)
 
 __inline void GSState::CheckFlushes()
 {
-	if (m_index.tail > 0)
+	if (m_dirty_gs_regs && m_index.tail > 0)
 	{
 		if (TestDrawChanged())
 		{
-			Flush(true);
+			Flush();
 		}
 	}
 
@@ -772,7 +772,9 @@ void GSState::GIFPackedRegHandlerUV_Hack(const GIFPackedReg* RESTRICT r)
 template <u32 prim, u32 adc, bool auto_flush, bool index_swap>
 void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 {
-	CheckFlushes();
+	const bool skip = adc ? 1 : r->XYZ2.Skip();
+	if (!skip)
+		CheckFlushes();
 
 	GSVector4i xy = GSVector4i::loadl(&r->U64[0]);
 	GSVector4i zf = GSVector4i::loadl(&r->U64[1]);
@@ -782,13 +784,15 @@ void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 
 	m_v.m[1] = xy.upl32(zf);
 
-	VertexKick<prim, auto_flush, index_swap>(adc ? 1 : r->XYZF2.Skip());
+	VertexKick<prim, auto_flush, index_swap>(skip);
 }
 
 template <u32 prim, u32 adc, bool auto_flush, bool index_swap>
 void GSState::GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r)
 {
-	CheckFlushes();
+	const bool skip = adc ? 1 : r->XYZ2.Skip();
+	if(!skip)
+		CheckFlushes();
 
 	const GSVector4i xy = GSVector4i::loadl(&r->U64[0]);
 	const GSVector4i z = GSVector4i::loadl(&r->U64[1]);
@@ -796,7 +800,7 @@ void GSState::GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r)
 
 	m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV));
 
-	VertexKick<prim, auto_flush, index_swap>(adc ? 1 : r->XYZ2.Skip());
+	VertexKick<prim, auto_flush, index_swap>(skip);
 }
 
 void GSState::GIFPackedRegHandlerFOG(const GIFPackedReg* RESTRICT r)
@@ -890,7 +894,6 @@ void GSState::GIFRegHandlerNull(const GIFReg* RESTRICT r)
 
 __forceinline void GSState::ApplyPRIM(u32 prim)
 {
-
 	if (m_env.PRMODECONT.AC == 1)
 	{
 		m_env.PRIM.U32[0] = prim;
@@ -898,11 +901,12 @@ __forceinline void GSState::ApplyPRIM(u32 prim)
 		UpdateContext();
 	}
 	else
-	{
 		m_env.PRIM.PRIM = prim & 0x7;
-	}
 
-	m_reg_draw_dirty = true;
+	if (m_prev_env.PRIM.U32[0] ^ m_env.PRIM.U32[0])
+		m_dirty_gs_regs |= (1 << DIRTY_REG_PRIM);
+	else
+		m_dirty_gs_regs &= ~(1<< DIRTY_REG_PRIM);
 
 	UpdateVertexKick();
 
@@ -997,9 +1001,6 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 	// extremely broken for the same reasons as MLB Power Pros in that it spams TEX0 with
 	// complete garbage making for a nice 1G heap of GSOffset.
 
-	m_reg_texture_dirty = true;
-	m_reg_draw_dirty = true;
-
 	GL_REG("Apply TEX0_%d = 0x%x_%x", i, TEX0.U32[1], TEX0.U32[0]);
 
 	// even if TEX0 did not change, a new palette may have been uploaded and will overwrite the currently queued for drawing
@@ -1007,10 +1008,8 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 
 	// clut loading already covered with WriteTest, for drawing only have to check CPSM and CSA (MGS3 intro skybox would be drawn piece by piece without this)
 
-	constexpr u64 mask = 0x1f78001fffffffffull; // TBP0 TBW PSM TW TH TCC TFX CPSM CSA
-
-	if (wt && (TEX0.PSM & 0x30))
-		Flush(true);
+	if (wt)
+		Flush();
 
 	TEX0.CPSM &= 0xa; // 1010b
 
@@ -1061,6 +1060,15 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 		}
 
 		m_mem.m_clut.Write(m_env.CTXT[i].TEX0, m_env.TEXCLUT);
+	}
+
+	constexpr u64 mask = 0x1f78001fffffffffull; // TBP0 TBW PSM TW TH TCC TFX CPSM CSA
+	if (i == m_prev_env.PRIM.CTXT)
+	{
+		if ((m_prev_env.CTXT[i].TEX0.U64 ^ m_env.CTXT[i].TEX0.U64) & mask)
+			m_dirty_gs_regs |= (1 << DIRTY_REG_TEX0);
+		else
+			m_dirty_gs_regs &= ~(1 << DIRTY_REG_TEX0);
 	}
 }
 
@@ -1132,7 +1140,17 @@ void GSState::GIFRegHandlerTEX0(const GIFReg* RESTRICT r)
 	ApplyTEX0<i>(TEX0);
 
 	if (MTBAReloaded)
+	{
 		m_env.CTXT[i].MIPTBP1 = temp_MIPTBP1;
+
+		if (i == m_prev_env.PRIM.CTXT)
+		{
+			if (m_prev_env.CTXT[i].MIPTBP1.U64 ^ m_env.CTXT[i].MIPTBP1.U64)
+				m_dirty_gs_regs |= (1 << DIRTY_REG_MIPTBP1);
+			else
+				m_dirty_gs_regs &= ~(1 << DIRTY_REG_MIPTBP1);
+		}
+	}
 }
 
 template <int i>
@@ -1140,10 +1158,15 @@ void GSState::GIFRegHandlerCLAMP(const GIFReg* RESTRICT r)
 {
 	GL_REG("CLAMP_%d = 0x%x_%x", i, r->U32[1], r->U32[0]);
 
-	m_reg_texture_dirty = true;
-	m_reg_draw_dirty = true;
-
 	m_env.CTXT[i].CLAMP = (GSVector4i)r->CLAMP;
+
+	if (i == m_prev_env.PRIM.CTXT)
+	{
+		if (m_prev_env.CTXT[i].CLAMP.U64 ^ m_env.CTXT[i].CLAMP.U64)
+			m_dirty_gs_regs |= (1 << DIRTY_REG_CLAMP);
+		else
+			m_dirty_gs_regs &= ~(1 << DIRTY_REG_CLAMP);
+	}
 }
 
 void GSState::GIFRegHandlerFOG(const GIFReg* RESTRICT r)
@@ -1160,10 +1183,15 @@ void GSState::GIFRegHandlerTEX1(const GIFReg* RESTRICT r)
 {
 	GL_REG("TEX1_%d = 0x%x_%x", i, r->U32[1], r->U32[0]);
 
-	m_reg_texture_dirty = true;
-	m_reg_draw_dirty = true;
-
 	m_env.CTXT[i].TEX1 = (GSVector4i)r->TEX1;
+
+	if (i == m_prev_env.PRIM.CTXT)
+	{
+		if (m_prev_env.CTXT[i].TEX1.U64 ^ m_env.CTXT[i].TEX1.U64)
+			m_dirty_gs_regs |= (1 << DIRTY_REG_TEX1);
+		else
+			m_dirty_gs_regs &= ~(1 << DIRTY_REG_TEX1);
+	}
 }
 
 template <int i>
@@ -1193,9 +1221,15 @@ void GSState::GIFRegHandlerXYOFFSET(const GIFReg* RESTRICT r)
 
 	const GSVector4i o = (GSVector4i)r->XYOFFSET & GSVector4i::x0000ffff();
 
-	m_reg_draw_dirty = true;
-
 	m_env.CTXT[i].XYOFFSET = o;
+
+	if (i == m_prev_env.PRIM.CTXT)
+	{
+		if (m_prev_env.CTXT[i].XYOFFSET.U64 ^ m_env.CTXT[i].XYOFFSET.U64)
+			m_dirty_gs_regs |= (1 << DIRTY_REG_XYOFFSET);
+		else
+			m_dirty_gs_regs &= ~(1 << DIRTY_REG_XYOFFSET);
+	}
 
 	m_env.CTXT[i].UpdateScissor();
 
@@ -1221,7 +1255,10 @@ void GSState::GIFRegHandlerPRMODE(const GIFReg* RESTRICT r)
 	m_env.PRIM = (GSVector4i)r->PRMODE;
 	m_env.PRIM.PRIM = _PRIM;
 
-	m_reg_draw_dirty = true;
+	if (m_prev_env.PRIM.U32[0] ^ m_env.PRIM.U32[0])
+		m_dirty_gs_regs |= (1 << DIRTY_REG_PRIM);
+	else
+		m_dirty_gs_regs &= ~(1 << DIRTY_REG_PRIM);
 
 	UpdateContext();
 }
@@ -1235,11 +1272,15 @@ void GSState::GIFRegHandlerTEXCLUT(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerSCANMSK(const GIFReg* RESTRICT r)
 {
-	m_reg_draw_dirty = true;
-
 	m_env.SCANMSK = (GSVector4i)r->SCANMSK;
+
 	if (m_env.SCANMSK.MSK & 2)
 		m_scanmask_used = true;
+
+	if (m_prev_env.SCANMSK.MSK != m_env.SCANMSK.MSK)
+		m_dirty_gs_regs |= (1 << DIRTY_REG_SCANMSK);
+	else
+		m_dirty_gs_regs &= ~(1 << DIRTY_REG_SCANMSK);
 }
 
 template <int i>
@@ -1247,10 +1288,15 @@ void GSState::GIFRegHandlerMIPTBP1(const GIFReg* RESTRICT r)
 {
 	GL_REG("MIPTBP1_%d = 0x%x_%x", i, r->U32[1], r->U32[0]);
 
-	m_reg_texture_dirty = true;
-	m_reg_draw_dirty = true;
-
 	m_env.CTXT[i].MIPTBP1 = (GSVector4i)r->MIPTBP1;
+
+	if (i == m_prev_env.PRIM.CTXT)
+	{
+		if (m_prev_env.CTXT[i].MIPTBP1.U64 != m_env.CTXT[i].MIPTBP1.U64)
+			m_dirty_gs_regs |= (1 << DIRTY_REG_MIPTBP1);
+		else
+			m_dirty_gs_regs &= ~(1 << DIRTY_REG_MIPTBP1);
+	}
 }
 
 template <int i>
@@ -1258,29 +1304,39 @@ void GSState::GIFRegHandlerMIPTBP2(const GIFReg* RESTRICT r)
 {
 	GL_REG("MIPTBP2_%d = 0x%x_%x", i, r->U32[1], r->U32[0]);
 
-	m_reg_texture_dirty = true;
-	m_reg_draw_dirty = true;
-
 	m_env.CTXT[i].MIPTBP2 = (GSVector4i)r->MIPTBP2;
+
+	if (i == m_prev_env.PRIM.CTXT)
+	{
+		if (m_prev_env.CTXT[i].MIPTBP2.U64 != m_env.CTXT[i].MIPTBP2.U64)
+			m_dirty_gs_regs |= (1 << DIRTY_REG_MIPTBP2);
+		else
+			m_dirty_gs_regs &= ~(1 << DIRTY_REG_MIPTBP2);
+	}
 }
 
 void GSState::GIFRegHandlerTEXA(const GIFReg* RESTRICT r)
 {
 	GL_REG("TEXA = 0x%x_%x", r->U32[1], r->U32[0]);
 
-	m_reg_texture_dirty = true;
-	m_reg_draw_dirty = true;
-
 	m_env.TEXA = (GSVector4i)r->TEXA;
+
+	if (m_prev_env.TEXA != m_env.TEXA)
+		m_dirty_gs_regs |= (1 << DIRTY_REG_TEXA);
+	else
+		m_dirty_gs_regs &= ~(1 << DIRTY_REG_TEXA);
 }
 
 void GSState::GIFRegHandlerFOGCOL(const GIFReg* RESTRICT r)
 {
 	GL_REG("FOGCOL = 0x%x_%x", r->U32[1], r->U32[0]);
 
-	m_reg_draw_dirty = true;
-
 	m_env.FOGCOL = (GSVector4i)r->FOGCOL;
+
+	if (m_prev_env.FOGCOL != m_env.FOGCOL)
+		m_dirty_gs_regs |= (1 << DIRTY_REG_FOGCOL);
+	else
+		m_dirty_gs_regs &= ~(1 << DIRTY_REG_FOGCOL);
 }
 
 void GSState::GIFRegHandlerTEXFLUSH(const GIFReg* RESTRICT r)
@@ -1291,14 +1347,21 @@ void GSState::GIFRegHandlerTEXFLUSH(const GIFReg* RESTRICT r)
 	// This won't get picked up by the new autoflush logic (which checks for page crossings for the PS2 Texture Cache flush)
 	// so we need to do it here.
 	if (IsAutoFlushEnabled())
-		Flush(true);
+		Flush();
 }
 
 template <int i>
 void GSState::GIFRegHandlerSCISSOR(const GIFReg* RESTRICT r)
 {
 	m_env.CTXT[i].SCISSOR = (GSVector4i)r->SCISSOR;
-	m_reg_draw_dirty = true;
+
+	if (i == m_prev_env.PRIM.CTXT)
+	{
+		if (m_prev_env.CTXT[i].SCISSOR.U64 != m_env.CTXT[i].SCISSOR.U64)
+			m_dirty_gs_regs |= (1 << DIRTY_REG_SCISSOR);
+		else
+			m_dirty_gs_regs &= ~(1 << DIRTY_REG_SCISSOR);
+	}
 
 	m_env.CTXT[i].UpdateScissor();
 
@@ -1310,8 +1373,6 @@ void GSState::GIFRegHandlerALPHA(const GIFReg* RESTRICT r)
 {
 	GL_REG("ALPHA = 0x%x_%x", r->U32[1], r->U32[0]);
 
-	m_reg_draw_dirty = true;
-
 	m_env.CTXT[i].ALPHA = (GSVector4i)r->ALPHA;
 
 	// value of 3 is not allowed by the spec
@@ -1320,13 +1381,19 @@ void GSState::GIFRegHandlerALPHA(const GIFReg* RESTRICT r)
 	m_env.CTXT[i].ALPHA.B = std::clamp<u32>(r->ALPHA.B, 0, 2);
 	m_env.CTXT[i].ALPHA.C = std::clamp<u32>(r->ALPHA.C, 0, 2);
 	m_env.CTXT[i].ALPHA.D = std::clamp<u32>(r->ALPHA.D, 0, 2);
+
+	if (i == m_prev_env.PRIM.CTXT)
+	{
+		if (m_prev_env.CTXT[i].ALPHA.U64 != m_env.CTXT[i].ALPHA.U64)
+			m_dirty_gs_regs |= (1 << DIRTY_REG_ALPHA);
+		else
+			m_dirty_gs_regs &= ~(1 << DIRTY_REG_ALPHA);
+	}
 }
 
 void GSState::GIFRegHandlerDIMX(const GIFReg* RESTRICT r)
 {
 	bool update = false;
-
-	m_reg_draw_dirty = true;
 
 	if (r->DIMX != m_env.DIMX)
 		update = true;
@@ -1335,51 +1402,76 @@ void GSState::GIFRegHandlerDIMX(const GIFReg* RESTRICT r)
 
 	if (update)
 		m_env.UpdateDIMX();
+
+	if (m_prev_env.DIMX != m_env.DIMX)
+		m_dirty_gs_regs |= (1 << DIRTY_REG_DIMX);
+	else
+		m_dirty_gs_regs &= ~(1 << DIRTY_REG_DIMX);
 }
 
 void GSState::GIFRegHandlerDTHE(const GIFReg* RESTRICT r)
 {
-	m_reg_draw_dirty = true;
-
 	m_env.DTHE = (GSVector4i)r->DTHE;
+
+	if (m_prev_env.DTHE != m_env.DTHE)
+		m_dirty_gs_regs |= (1 << DIRTY_REG_DTHE);
+	else
+		m_dirty_gs_regs &= ~(1 << DIRTY_REG_DTHE);
 }
 
 void GSState::GIFRegHandlerCOLCLAMP(const GIFReg* RESTRICT r)
 {
-	m_reg_draw_dirty = true;
-
 	m_env.COLCLAMP = (GSVector4i)r->COLCLAMP;
+
+	if (m_prev_env.COLCLAMP != m_env.COLCLAMP)
+		m_dirty_gs_regs |= (1 << DIRTY_REG_COLCLAMP);
+	else
+		m_dirty_gs_regs &= ~(1 << DIRTY_REG_COLCLAMP);
 }
 
 template <int i>
 void GSState::GIFRegHandlerTEST(const GIFReg* RESTRICT r)
 {
-	m_reg_draw_dirty = true;
-
 	m_env.CTXT[i].TEST = (GSVector4i)r->TEST;
+
+	if (i == m_prev_env.PRIM.CTXT)
+	{
+		if (m_prev_env.CTXT[i].TEST != m_env.CTXT[i].TEST)
+			m_dirty_gs_regs |= (1 << DIRTY_REG_TEST);
+		else
+			m_dirty_gs_regs &= ~(1 << DIRTY_REG_TEST);
+	}
 }
 
 void GSState::GIFRegHandlerPABE(const GIFReg* RESTRICT r)
 {
-	m_reg_draw_dirty = true;
 
 	m_env.PABE = (GSVector4i)r->PABE;
+
+	if (m_prev_env.PABE != m_env.PABE)
+		m_dirty_gs_regs |= (1 << DIRTY_REG_PABE);
+	else
+		m_dirty_gs_regs &= ~(1 << DIRTY_REG_PABE);
 }
 
 template <int i>
 void GSState::GIFRegHandlerFBA(const GIFReg* RESTRICT r)
 {
-	m_reg_draw_dirty = true;
-
 	m_env.CTXT[i].FBA = (GSVector4i)r->FBA;
+
+	if (i == m_prev_env.PRIM.CTXT)
+	{
+		if (m_prev_env.CTXT[i].FBA != m_env.CTXT[i].FBA)
+			m_dirty_gs_regs |= (1 << DIRTY_REG_FBA);
+		else
+			m_dirty_gs_regs &= ~(1 << DIRTY_REG_FBA);
+	}
 }
 
 template <int i>
 void GSState::GIFRegHandlerFRAME(const GIFReg* RESTRICT r)
 {
 	GL_REG("FRAME_%d = 0x%x_%x", i, r->U32[1], r->U32[0]);
-
-	m_reg_draw_dirty = true;
 
 	GIFRegFRAME NewFrame = r->FRAME;
 	// FBW is clamped between 1 and 32, however this is wrong, FBW of 0 *should* work and does on Dobiestation
@@ -1390,6 +1482,14 @@ void GSState::GIFRegHandlerFRAME(const GIFReg* RESTRICT r)
 		m_env.CTXT[i].ZBUF.PSM &= ~0x30;
 	else
 		m_env.CTXT[i].ZBUF.PSM |= 0x30;
+
+	if ((m_env.CTXT[i].FRAME.U32[0] ^ NewFrame.U32[0]) & 0x3f3f01ff) // FBP FBW PSM
+	{
+		m_env.CTXT[i].offset.fb = m_mem.GetOffset(NewFrame.Block(), NewFrame.FBW, NewFrame.PSM);
+		m_env.CTXT[i].offset.zb = m_mem.GetOffset(m_env.CTXT[i].ZBUF.Block(), NewFrame.FBW, m_env.CTXT[i].ZBUF.PSM);
+		m_env.CTXT[i].offset.fzb = m_mem.GetPixelOffset(NewFrame, m_env.CTXT[i].ZBUF);
+		m_env.CTXT[i].offset.fzb4 = m_mem.GetPixelOffset4(NewFrame, m_env.CTXT[i].ZBUF);
+	}
 
 	m_env.CTXT[i].FRAME = (GSVector4i)NewFrame;
 
@@ -1414,14 +1514,20 @@ void GSState::GIFRegHandlerFRAME(const GIFReg* RESTRICT r)
 		default:
 			break;
 	}
+
+	if (i == m_prev_env.PRIM.CTXT)
+	{
+		if (m_prev_env.CTXT[i].FRAME != m_env.CTXT[i].FRAME)
+			m_dirty_gs_regs |= (1 << DIRTY_REG_FRAME);
+		else
+			m_dirty_gs_regs &= ~(1 << DIRTY_REG_FRAME);
+	}
 }
 
 template <int i>
 void GSState::GIFRegHandlerZBUF(const GIFReg* RESTRICT r)
 {
 	GL_REG("ZBUF_%d = 0x%x_%x", i, r->U32[1], r->U32[0]);
-
-	m_reg_draw_dirty = true;
 
 	GIFRegZBUF ZBUF = r->ZBUF;
 
@@ -1436,7 +1542,22 @@ void GSState::GIFRegHandlerZBUF(const GIFReg* RESTRICT r)
 	else
 		ZBUF.PSM |= 0x30;
 
+	if ((m_env.CTXT[i].ZBUF.U32[0] ^ ZBUF.U32[0]) & 0x3f0001ff) // ZBP PSM
+	{
+		m_env.CTXT[i].offset.zb = m_mem.GetOffset(ZBUF.Block(), m_env.CTXT[i].FRAME.FBW, ZBUF.PSM);
+		m_env.CTXT[i].offset.fzb = m_mem.GetPixelOffset(m_env.CTXT[i].FRAME, ZBUF);
+		m_env.CTXT[i].offset.fzb4 = m_mem.GetPixelOffset4(m_env.CTXT[i].FRAME, ZBUF);
+	}
+
 	m_env.CTXT[i].ZBUF = (GSVector4i)ZBUF;
+
+	if (i == m_prev_env.PRIM.CTXT)
+	{
+		if (m_prev_env.CTXT[i].ZBUF != m_env.CTXT[i].ZBUF)
+			m_dirty_gs_regs |= (1 << DIRTY_REG_ZBUF);
+		else
+			m_dirty_gs_regs &= ~(1 << DIRTY_REG_ZBUF);
+	}
 }
 
 void GSState::GIFRegHandlerBITBLTBUF(const GIFReg* RESTRICT r)
@@ -1482,7 +1603,7 @@ void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
 {
 	GL_REG("TRXDIR = 0x%x_%x", r->U32[1], r->U32[0]);
 
-	Flush(true);
+	Flush();
 
 	m_env.TRXDIR = (GSVector4i)r->TRXDIR;
 
@@ -1514,41 +1635,53 @@ void GSState::GIFRegHandlerHWREG(const GIFReg* RESTRICT r)
 	Write(reinterpret_cast<const u8*>(r), 8); // haunting ground
 }
 
-void GSState::Flush(bool forced)
+inline void GSState::CopyEnv(GSDrawingEnvironment* dest, GSDrawingEnvironment* src, int ctx)
+{
+	memcpy(dest, src, 88);
+	memcpy(&dest->CTXT[ctx], &src->CTXT[ctx], 96);
+	dest->CTXT[ctx].m_fixed_tex0 = src->CTXT[ctx].m_fixed_tex0;
+}
+
+void GSState::Flush()
 {
 	FlushWrite();
+
 	if (m_index.tail > 0)
 	{
-		const int ctx = m_prev_env.PRIM.CTXT;
+		if (m_dirty_gs_regs)
+		{
+			const int ctx = m_prev_env.PRIM.CTXT;
+			bool restore_offsets = false;
 
-		memcpy(&m_backup_env, &m_env, 88);
-		memcpy(&m_backup_env.CTXT[ctx], &m_env.CTXT[ctx], 96);
-		m_backup_env.CTXT[ctx].m_fixed_tex0 = m_env.CTXT[ctx].m_fixed_tex0;
+			CopyEnv(&m_backup_env, &m_env, ctx);
+			CopyEnv(&m_env, &m_prev_env, ctx);
 
-		memcpy(&m_env, &m_prev_env, 88);
-		memcpy(&m_env.CTXT[ctx], &m_prev_env.CTXT[ctx], 96);
-		m_env.CTXT[ctx].m_fixed_tex0 = m_prev_env.CTXT[ctx].m_fixed_tex0;
+			m_env.UpdateDIMX();
+			m_env.CTXT[ctx].UpdateScissor();
+			UpdateContext();
 
-		m_env.CTXT[ctx].offset.fb = m_mem.GetOffset(m_env.CTXT[ctx].FRAME.Block(), m_env.CTXT[ctx].FRAME.FBW, m_env.CTXT[ctx].FRAME.PSM);
-		m_env.CTXT[ctx].offset.zb = m_mem.GetOffset(m_env.CTXT[ctx].ZBUF.Block(), m_env.CTXT[ctx].FRAME.FBW, m_env.CTXT[ctx].ZBUF.PSM);
-		m_env.CTXT[ctx].offset.fzb = m_mem.GetPixelOffset(m_env.CTXT[ctx].FRAME, m_env.CTXT[ctx].ZBUF);
-		m_env.CTXT[ctx].offset.fzb4 = m_mem.GetPixelOffset4(m_env.CTXT[ctx].FRAME, m_env.CTXT[ctx].ZBUF);
+			if (((m_backup_env.CTXT[ctx].ZBUF.U32[0] ^ m_env.CTXT[ctx].ZBUF.U32[0]) & 0x3f0001ff) || ((m_backup_env.CTXT[ctx].FRAME.U32[0] ^ m_env.CTXT[ctx].FRAME.U32[0]) & 0x3f3f01ff))
+			{
+				memcpy(&m_backup_env.CTXT[ctx].offset, &m_env.CTXT[ctx].offset, sizeof(m_env.CTXT[ctx].offset));
+				memcpy(&m_env.CTXT[ctx].offset, &m_prev_env.CTXT[ctx].offset, sizeof(m_env.CTXT[ctx].offset));
+				restore_offsets = true;
+			}
 
-		m_env.UpdateDIMX();
-		m_env.CTXT[ctx].UpdateScissor();
-		UpdateContext();
+			FlushPrim();
 
-		FlushPrim(forced);
+			if (restore_offsets)
+				memcpy(&m_env.CTXT[ctx].offset, &m_backup_env.CTXT[ctx].offset, sizeof(m_env.CTXT[ctx].offset));
 
-		memcpy(&m_env, &m_backup_env, 88);
-		memcpy(&m_env.CTXT[ctx], &m_backup_env.CTXT[ctx], 96);
-		m_env.CTXT[ctx].m_fixed_tex0 = m_backup_env.CTXT[ctx].m_fixed_tex0;
-			
-		m_env.CTXT[ctx].UpdateScissor();
-		UpdateContext();
+			CopyEnv(&m_env, &m_backup_env, ctx);
+			m_env.CTXT[ctx].UpdateScissor();
+			m_env.UpdateDIMX();
+			UpdateContext();
+			m_backed_up_ctx = -1;
+		}
+		else
+			FlushPrim();
 
-		m_reg_draw_dirty = false;
-		m_reg_texture_dirty = false;
+		m_dirty_gs_regs = 0;
 	}
 }
 
@@ -1577,92 +1710,71 @@ void GSState::FlushWrite()
 	g_perfmon.Put(GSPerfMon::Swizzle, len);
 }
 
+// This function decides if the context has changed in a way which warrants flushing the draw.
 inline bool GSState::TestDrawChanged()
 {
-	if (!m_reg_draw_dirty)
-		return false;
+	// Check if PRIM has changed we need to check if it's just a different triangle or the context is changing.
+	if (m_dirty_gs_regs & (1 << DIRTY_REG_PRIM))
+	{
+		u32 prim_mask = 0x7ff;
 
-	m_reg_draw_dirty = false;
-	// Check if PRIM has changed (if so then it's defo a different draw)
-	u32 prim_mask = 0x7ff;
+		if (GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) == GSUtil::GetPrimClass(m_env.PRIM.PRIM))
+			prim_mask &= ~0x7;
+		else
+			return true;
 
-	if (GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) == GSUtil::GetPrimClass(m_env.PRIM.PRIM))
-		prim_mask &= ~0x7;
+		if (GSConfig.UseHardwareRenderer() && GSUtil::GetPrimClass(m_env.PRIM.PRIM) == GS_TRIANGLE_CLASS)
+			prim_mask &= ~0x80; // Mask out AA1.
 
-	if (GSConfig.UseHardwareRenderer() && (GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) == GS_TRIANGLE_CLASS && GSUtil::GetPrimClass(m_env.PRIM.PRIM) == GS_TRIANGLE_CLASS))
-		prim_mask &= ~0x80; // Mask out AA1.
+		if ((m_env.PRIM.U32[0] ^ m_prev_env.PRIM.U32[0]) & prim_mask)
+			return true;
 
-	if ((m_env.PRIM.U32[0] & prim_mask) != (m_prev_env.PRIM.U32[0] & prim_mask))
+		m_dirty_gs_regs &= ~(1 << DIRTY_REG_PRIM);
+
+		// Shortcut, a bunch of games just change the prim reg
+		if (!m_dirty_gs_regs)
+			return false;
+	}
+
+	if ((m_dirty_gs_regs & ((1 << DIRTY_REG_TEST) | (1 << DIRTY_REG_SCISSOR) | (1 << DIRTY_REG_XYOFFSET) | (1 << DIRTY_REG_SCANMSK) | (1 << DIRTY_REG_DTHE))) || ((m_dirty_gs_regs & (1 << DIRTY_REG_DIMX)) && m_prev_env.DTHE.DTHE))
+		return true;
+
+	if (m_env.PRIM.ABE && (m_dirty_gs_regs & ((1 << DIRTY_REG_ALPHA) | (1 << DIRTY_REG_PABE))))
+		return true;
+
+	if (m_env.PRIM.FGE && (m_dirty_gs_regs & (1 << DIRTY_REG_FOGCOL)))
 		return true;
 
 	const int context = m_env.PRIM.CTXT;
 
-	if (m_env.CTXT[context].TEST != m_prev_env.CTXT[context].TEST)
-		return true;
-
 	// If the frame is getting updated check the FRAME, otherwise, we can ignore it
-	if (!m_env.CTXT[context].TEST.ATE || (m_env.CTXT[context].TEST.ATST != ATST_NEVER) || (m_env.CTXT[context].TEST.AFAIL & 1) || m_env.CTXT[context].TEST.DATE)
+	if ((m_env.CTXT[context].TEST.ATST != ATST_NEVER) || !m_env.CTXT[context].TEST.ATE || (m_env.CTXT[context].TEST.AFAIL & 1) || m_env.CTXT[context].TEST.DATE)
 	{
-		if (m_env.CTXT[context].FRAME != m_prev_env.CTXT[context].FRAME)
-			return true;
-
-		if (m_env.COLCLAMP != m_prev_env.COLCLAMP)
-			return true;
-
-		if (m_env.CTXT[context].FBA != m_prev_env.CTXT[context].FBA)
+		if ((m_dirty_gs_regs & ((1 << DIRTY_REG_FRAME) | (1 << DIRTY_REG_COLCLAMP) | (1 << DIRTY_REG_FBA))))
 			return true;
 	}
 
-	if (!m_env.CTXT[context].TEST.ATE || (m_env.CTXT[context].TEST.ATST != ATST_NEVER) || m_env.CTXT[context].TEST.AFAIL == AFAIL_ZB_ONLY)
+	if ((m_env.CTXT[context].TEST.ATST != ATST_NEVER) || !m_env.CTXT[context].TEST.ATE || m_env.CTXT[context].TEST.AFAIL == AFAIL_ZB_ONLY)
 	{
-		if (m_env.CTXT[context].ZBUF != m_prev_env.CTXT[context].ZBUF)
+		if (m_dirty_gs_regs & (1 << DIRTY_REG_ZBUF))
 			return true;
 	}
 
-	if (m_env.CTXT[context].SCISSOR != m_prev_env.CTXT[context].SCISSOR)
-		return true;
-
-	if (m_reg_texture_dirty && m_env.PRIM.TME)
+	if (m_env.PRIM.TME)
 	{
-		m_reg_texture_dirty = false;
-
-		if (m_env.CTXT[context].CLAMP != m_prev_env.CTXT[context].CLAMP)
+		if (m_dirty_gs_regs & ((1 << DIRTY_REG_TEX0) | (1 << DIRTY_REG_TEX1) | (1 << DIRTY_REG_CLAMP) | (1 << DIRTY_REG_TEXA)))
 			return true;
 
-		if (memcmp(&m_env.CTXT[context].TEX0, &m_prev_env.CTXT[context].TEX0, 16)) // TEX0 and TEX1
-			return true;
-
-		// Don't need to test TEXA if 32bit colour used.
-		if (m_env.CTXT[context].TEX0.PSM == 0 || m_env.CTXT[context].TEX0.CPSM == 0)
-		{
-			// Do nothing.
-		}
-		else if (m_env.TEXA != m_prev_env.TEXA)
-			return true;
-
-		if(m_env.CTXT[context].TEX1.MXL > 0 && memcmp(&m_env.CTXT[context].MIPTBP1, &m_prev_env.CTXT[context].MIPTBP1, 16)) // MIPTBP1 and MIPTBP2
+		if(m_env.CTXT[context].TEX1.MXL > 0 && (m_dirty_gs_regs & ((1 << DIRTY_REG_MIPTBP1) | (1 << DIRTY_REG_MIPTBP2))))
 			return true;
 	}
 
-	if (m_env.PRIM.ABE && (m_env.CTXT[context].ALPHA != m_prev_env.CTXT[context].ALPHA))
-		return true;
-	else
-		if (m_env.PABE != m_prev_env.PABE)
-			return true;
-
-	if (m_env.PRIM.FGE && (m_env.FOGCOL != m_prev_env.FOGCOL))
-		return true;
-
-	if (m_env.CTXT[context].XYOFFSET != m_prev_env.CTXT[context].XYOFFSET)
-		return true;
-
-	if (m_env.SCANMSK != m_prev_env.SCANMSK)
-		return true;
+	m_dirty_gs_regs = 0;
 
 	return false;
 }
 
-void GSState::FlushPrim(bool forced)
+void GSState::FlushPrim()
 {
 	const u32 new_prim = PRIM->U32[0];
 
@@ -1816,7 +1928,7 @@ void GSState::Write(const u8* mem, int len)
 
 	if ((PRIM->TME && (blit.DBP == m_context->TEX0.TBP0 || blit.DBP == m_context->TEX0.CBP)) ||
 		(m_prev_env.PRIM.TME && (blit.DBP == m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0.TBP0 || blit.DBP == m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0.CBP))) // TODO: hmmmm
-		Flush(true);
+		Flush();
 
 	if (m_tr.end == 0 && len >= m_tr.total)
 	{
@@ -2113,7 +2225,7 @@ void GSState::SoftReset(u32 mask)
 
 void GSState::ReadFIFO(u8* mem, int size)
 {
-	Flush(true);
+	Flush();
 
 	size *= 16;
 
@@ -2357,9 +2469,9 @@ int GSState::Freeze(freezeData* fd, bool sizeonly)
 	if (!fd->data || fd->size < m_sssize)
 		return -1;
 
-	Flush(true);
+	Flush();
 
-    u8* data = fd->data;
+	u8* data = fd->data;
 
 	WriteState(data, &m_version);
 	WriteState(data, &m_env.PRIM);
@@ -2444,7 +2556,7 @@ int GSState::Defrost(const freezeData* fd)
 		return -1;
 	}
 
-	Flush(true);
+	Flush();
 
 	Reset(false);
 
@@ -2853,7 +2965,7 @@ __forceinline void GSState::HandleAutoFlush()
 				area_out = area_out.rintersect(GSVector4i(m_context->scissor.in));
 				// Intersect with texture
 				if (!area_out.rintersect(tex_rect).rempty())
-					Flush(true);
+					Flush();
 			}
 			else // Storage of the TEX and FRAME/Z is different, so uhh, just fall back to flushing each page. It's slower, sorry.
 			{
@@ -2874,10 +2986,10 @@ __forceinline void GSState::HandleAutoFlush()
 					area_out.w += GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.y;
 
 					if (!area_out.rintersect(tex_rect).rempty())
-						Flush(true);
+						Flush();
 				}
 				else // Page width is different, so it's much more difficult to calculate where it's modifying.
-					Flush(true);
+					Flush();
 			}
 		}
 	}
@@ -3037,11 +3149,12 @@ __forceinline void GSState::VertexKick(u32 skip)
 	if (tail >= m_vertex.maxcount)
 		GrowVertexBuffer();
 
-	if (m_index.tail == 0)
+	if (m_index.tail == 0 && ((m_backed_up_ctx != m_env.PRIM.CTXT) || m_dirty_gs_regs))
 	{
-		memcpy(&m_prev_env, &m_env, 88);
-		memcpy(&m_prev_env.CTXT[m_prev_env.PRIM.CTXT], &m_env.CTXT[m_prev_env.PRIM.CTXT], 96);
-		m_prev_env.CTXT[m_prev_env.PRIM.CTXT].m_fixed_tex0 = m_env.CTXT[m_prev_env.PRIM.CTXT].m_fixed_tex0;
+		CopyEnv(&m_prev_env, &m_env, m_env.PRIM.CTXT);
+		memcpy(&m_prev_env.CTXT[m_prev_env.PRIM.CTXT].offset, &m_env.CTXT[m_prev_env.PRIM.CTXT].offset, sizeof(m_env.CTXT[m_prev_env.PRIM.CTXT].offset));
+		m_dirty_gs_regs = 0;
+		m_backed_up_ctx = m_env.PRIM.CTXT;
 	}
 
 	u32* RESTRICT buff = &m_index.buff[m_index.tail];
