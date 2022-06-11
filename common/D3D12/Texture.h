@@ -74,10 +74,10 @@ namespace D3D12
 		Texture& operator=(Texture&& texture);
 
 		// NOTE: Does not handle compressed formats.
-		bool BeginStreamUpdate(u32 level, u32 x, u32 y, u32 width, u32 height, void** out_data, u32* out_data_pitch);
-		void EndStreamUpdate(u32 level, u32 x, u32 y, u32 width, u32 height);
-		bool LoadData(u32 level, u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch);
-		void CopyFromBuffer(u32 level, u32 x, u32 y, u32 width, u32 height, u32 pitch, ID3D12Resource* buffer, u32 buffer_offset);
+		ID3D12GraphicsCommandList* BeginStreamUpdate(ID3D12GraphicsCommandList* cmdlist, u32 level, u32 x, u32 y, u32 width, u32 height, void** out_data, u32* out_data_pitch);
+		void EndStreamUpdate(ID3D12GraphicsCommandList* cmdlist, u32 level, u32 x, u32 y, u32 width, u32 height);
+		bool LoadData(ID3D12GraphicsCommandList* cmdlist, u32 level, u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch);
+		void CopyFromBuffer(ID3D12GraphicsCommandList* cmdlist, u32 level, u32 x, u32 y, u32 width, u32 height, u32 pitch, ID3D12Resource* buffer, u32 buffer_offset);
 
 	private:
 		static bool CreateSRVDescriptor(ID3D12Resource* resource, u32 levels, DXGI_FORMAT format, DescriptorHandle* dh);

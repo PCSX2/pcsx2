@@ -271,7 +271,7 @@ bool ImGui_ImplDX12_CreateFontsTexture()
         }
     }
 
-    if (!bd->FontTexture.LoadData(0, 0, 0, width, height, pixels, width * sizeof(u32)))
+    if (!bd->FontTexture.LoadData(g_d3d12_context->GetInitCommandList(), 0, 0, 0, width, height, pixels, width * sizeof(u32)))
       return false;
 
     io.Fonts->SetTexID((ImTextureID)&bd->FontTexture);

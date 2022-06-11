@@ -85,7 +85,8 @@ bool D3D12HostDisplay::HasRenderSurface() const
 	return static_cast<bool>(m_swap_chain);
 }
 
-std::unique_ptr<HostDisplayTexture> D3D12HostDisplay::CreateTexture(u32 width, u32 height, const void* data, u32 data_stride, bool dynamic /* = false */)
+std::unique_ptr<HostDisplayTexture> D3D12HostDisplay::CreateTexture(
+	u32 width, u32 height, const void* data, u32 data_stride, bool dynamic /* = false */)
 {
 	D3D12::Texture tex;
 	if (!tex.Create(width, height, 1, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN,
@@ -94,17 +95,17 @@ std::unique_ptr<HostDisplayTexture> D3D12HostDisplay::CreateTexture(u32 width, u
 		return {};
 	}
 
-	if (data && !tex.LoadData(0, 0, 0, width, height, data, data_stride))
+	if (data && !tex.LoadData(g_d3d12_context->GetInitCommandList(), 0, 0, 0, width, height, data, data_stride))
 		return {};
 
 	return std::make_unique<D3D12HostDisplayTexture>(std::move(tex));
 }
 
-void D3D12HostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
-	const void* texture_data, u32 texture_data_stride)
+void D3D12HostDisplay::UpdateTexture(
+	HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* texture_data, u32 texture_data_stride)
 {
-	static_cast<D3D12HostDisplayTexture*>(texture)->GetTexture().LoadData(0, x, y, width, height, texture_data,
-		texture_data_stride);
+	static_cast<D3D12HostDisplayTexture*>(texture)->GetTexture().LoadData(
+		g_d3d12_context->GetCommandList(), 0, x, y, width, height, texture_data, texture_data_stride);
 }
 
 bool D3D12HostDisplay::GetHostRefreshRate(float* refresh_rate)
