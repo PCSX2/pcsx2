@@ -4763,11 +4763,15 @@ SCKA-20086:
   region: "NTSC-K"
   gameFixes:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes upscaling lines.
 SCKA-20087:
   name: "Shin Onimusha - Dawn of Dreams [Disc2of2]"
   region: "NTSC-K"
   gameFixes:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes upscaling lines.
   memcardFilters:
     - "SCKA-20086"
 SCKA-20090:
@@ -21125,12 +21129,16 @@ SLES-82038:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes upscaling lines.
 SLES-82039:
   name: "Onimusha - Dawn of Dreams [Disc2of2]"
   region: "PAL-M5"
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes upscaling lines.
   memcardFilters:
     - "SLES-82038"
 SLES-82042:
@@ -28870,24 +28878,18 @@ SLPM-66275:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
-  patches:
-    BD17248E:
-      content: |-
-        comment=Patch by Shadow Lady
-        patch=0,EE,00104170,word,00000000
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes upscaling lines.
 SLPM-66276:
   name: "Shin Onimusha - Dawn of Dreams [Disc2of2]"
   region: "NTSC-J"
-  compat: 2
+  compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes upscaling lines.
   memcardFilters:
     - "SLPM-66275"
-  patches:
-    BD17248E:
-      content: |-
-        comment=Patch by Shadow Lady
-        patch=0,EE,00104170,word,00000000
 SLPM-66277:
   name: "Juiced"
   region: "NTSC-J"
@@ -31670,6 +31672,17 @@ SLPM-74232:
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes upscaling lines.
+SLPM-74233:
+  name: "Shin Onimusha - Dawn of Dreams [PlayStation 2 The Best][Disc 2]"
+  region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Wrong white textures in FMV.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes upscaling lines.
+  memcardFilters:
+    - "SLPM-74232"
 SLPM-74234:
   name: "Ryu Ga Gotoku [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -31756,11 +31769,17 @@ SLPM-74251:
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes upscaling lines.
 SLPM-74252:
   name: "Shin Onimusha - Dawn of Dreams [Playstation 2 the Best - Reprint Disc 2]"
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes upscaling lines.
+  memcardFilters:
+    - "SLPM-74251"
 SLPM-74253:
   name: "Ryu ga Gotoku [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
@@ -43097,13 +43116,10 @@ SLUS-21362:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes upscaling lines.
   memcardFilters:
     - "SLUS-21180"
-  patches:
-    FFDE85E9:
-      content: |-
-        comment=Patch by Shadow Lady
-        patch=0,EE,00104170,word,00000000
 SLUS-21363:
   name: "Zatch Bell! Mamodo Fury"
   region: "NTSC-U"
