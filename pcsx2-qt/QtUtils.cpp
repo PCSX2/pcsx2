@@ -690,4 +690,15 @@ namespace QtUtils
 	{
 		return str.empty() ? QString() : QString::fromUtf8(str.data(), str.size());
 	}
+
+	void SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited)
+	{
+		if (widget->font().italic() != inherited)
+		{
+			QFont new_font(widget->font());
+			new_font.setItalic(inherited);
+			widget->setFont(new_font);
+		}
+	}
+
 } // namespace QtUtils

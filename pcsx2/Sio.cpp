@@ -1055,3 +1055,33 @@ void SaveStateBase::sioFreeze()
 		}
 	}
 }
+
+std::tuple<u32, u32> sioConvertPadToPortAndSlot(u32 index)
+{
+	if (index > 4) // [5,6,7]
+		return std::make_tuple(1, index - 4); // 2B,2C,2D
+	else if (index > 1) // [2,3,4]
+		return std::make_tuple(0, index - 1); // 1B,1C,1D
+	else // [0,1]
+		return std::make_tuple(index, 0); // 1A,2A
+}
+
+u32 sioConvertPortAndSlotToPad(u32 port, u32 slot)
+{
+	if (slot == 0)
+		return port;
+	else if (port == 0) // slot=[0,1]
+		return slot + 1; // 2,3,4
+	else
+		return slot + 4; // 5,6,7
+}
+
+bool sioPadIsMultitapSlot(u32 index)
+{
+	return (index >= 2);
+}
+
+bool sioPortAndSlotIsMultitap(u32 port, u32 slot)
+{
+	return (slot != 0);
+}

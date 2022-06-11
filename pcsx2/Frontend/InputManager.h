@@ -174,9 +174,6 @@ class InputSource;
 
 namespace InputManager
 {
-	/// Number of emulated pads. TODO: Multitap support.
-	static constexpr u32 MAX_PAD_NUMBER = 2;
-
 	/// Minimum interval between vibration updates when the effect is continuous.
 	static constexpr double VIBRATION_UPDATE_INTERVAL_SECONDS = 0.5;		// 500ms
 
@@ -226,7 +223,7 @@ namespace InputManager
 	GenericInputBindingMapping GetGenericBindingMapping(const std::string_view& device);
 
 	/// Re-parses the config and registers all hotkey and pad bindings.
-	void ReloadBindings(SettingsInterface& si);
+	void ReloadBindings(SettingsInterface& si, SettingsInterface& binding_si);
 
 	/// Re-parses the sources part of the config and initializes any backends.
 	void ReloadSources(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock);

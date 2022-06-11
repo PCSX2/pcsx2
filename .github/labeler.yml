@@ -40,8 +40,6 @@
 'GameDB':
   - '**/GameIndex.*'
 'Installer | Package':
-  - 'nsis/*'
-  - 'nsis/**/*'
   - 'build.sh'
 
 # Tools / Features

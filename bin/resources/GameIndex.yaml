@@ -378,6 +378,9 @@ SCAJ-10007:
 SCAJ-10008:
   name: "Taiko no Tatsujin - Atsumare! Matsuri da!! Yondaime"
   region: "NTSC-Unk"
+  gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
+    alignSprite: 1 # Fixes vertical lines.
 SCAJ-10009:
   name: "Psikyo Shooting Collection Vol.1 - Strikers 1&2"
   region: "NTSC-Unk"
@@ -392,6 +395,7 @@ SCAJ-10012:
   name: "Taiko Drum Master"
   region: "NTSC-Unk"
   gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SCAJ-10013:
   name: "Taiko no Tatsujin - Tobikkiri! Anime Special"
@@ -400,8 +404,11 @@ SCAJ-10014:
   name: "Taiko no Tatsujin Wai Wai Happy Rokudaime"
   region: "NTSC-Unk"
 SCAJ-10015:
-  name: "Taiko No Tatsujin Doka! To Omori 7Daime"
+  name: "Taiko no Tatsujin - Doka! to Oomori Nanadaime"
   region: "NTSC-Unk"
+  gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
+    alignSprite: 1 # Fixes vertical lines.
 SCAJ-20001:
   name: "Ratchet & Clank"
   region: "NTSC-Unk"
@@ -3347,7 +3354,7 @@ SCES-52756:
   name: "DJ - Decks & FX - Claudio Coccoluto Edition"
   region: "PAL-I"
 SCES-52758:
-  name: " Getaway, The - Black Monday"
+  name: "Getaway, The - Black Monday"
   region: "PAL-M6"
   gsHWFixes:
     textureInsideRT: 1
@@ -3392,7 +3399,7 @@ SCES-52930:
   region: "PAL-M5"
   compat: 2
 SCES-52948:
-  name: " Getaway, The - Black Monday"
+  name: "Getaway, The - Black Monday"
   region: "PAL-M4"
   gsHWFixes:
     textureInsideRT: 1
@@ -24412,12 +24419,6 @@ SLPM-62717:
 SLPM-62718:
   name: "Sega Ages 2500 Series Vol.27 - Panzer Dragoon"
   region: "NTSC-J"
-  patches:
-    8D984276:
-      content: |-
-        // By PSI
-        comment=Stop screen shaking (game switches to Progressive)
-        patch=1,EE,20158558,extended,30420000
 SLPM-62719:
   name: "Nobunaga no Yabou - Tenka Souyo"
   region: "NTSC-J"
@@ -25272,7 +25273,7 @@ SLPM-65209:
         patch=1,IOP,000251A8,word,00000000
         patch=1,IOP,000251AC,word,00000000
         patch=1,IOP,000251B0,word,00000000
-        //Execute removed iReferEventFlagStatus 
+        //Execute removed iReferEventFlagStatus
         patch=1,IOP,000251B4,word,3C040003    //lui    a0,0x0003
         patch=1,IOP,000251B8,word,8C84D368    //lw    a0,-0x2C98(a0)
         patch=1,IOP,000251BC,word,0C00AFD3    //jal    pos_0002BF4C iReferEventFlagStatus
@@ -32229,6 +32230,9 @@ SLPS-20215:
 SLPS-20216:
   name: "Air Ranger - Rescue Helicopter"
   region: "NTSC-J"
+SLPS-20217:
+  name: "Hokka Hoka Sentou"
+  region: "NTSC-J"
 SLPS-20218:
   name: "Ninja Assault"
   region: "NTSC-J"
@@ -32244,6 +32248,9 @@ SLPS-20219:
         author=kr_ps2
         patch=1,EE,0011836C,word,00000000
         patch=1,EE,00118374,word,00000000
+SLPS-20220:
+  name: "Pachi-Slot Aruze Oukoku 7 (Disc 1) (Ekishou Disc)"
+  region: "NTSC-J"
 SLPS-20221:
   name: "Taiko no Tatsujin [with Tatacon Reproduction Controller]"
   region: "NTSC-J"
@@ -32284,13 +32291,23 @@ SLPS-20250:
 SLPS-20251:
   name: "Makai Senki Disgaea"
   region: "NTSC-J"
+SLPS-20255:
+  name: "Million God"
+  region: "NTSC-J"
 SLPS-20256:
   name: "Cool Shot - Yukawa Keiko"
   region: "NTSC-J"
   compat: 5
-SLPS-20258:
-  name: "Yamasa Digi World 4D"
+SLPS-20257:
+  name: "Yamasa Digi World 4DX"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fix flickering and bad textures in FMV.
+SLPS-20258:
+  name: "Yamasa Digi World 4"
+  region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fix flickering and bad textures in FMV.
 SLPS-20259:
   name: "Kotoba no Puzzle - Mojipittan"
   region: "NTSC-J"
@@ -32546,7 +32563,7 @@ SLPS-20379:
   name: "Eikan wa Kimi ni 2004 - Koushien no Kodou [Artdink Best Choice]"
   region: "NTSC-J"
 SLPS-20380:
-  name: "Shinkon Gattai Gondannar!!"
+  name: "Shinkon Gattai Godannar!!"
   region: "NTSC-J"
 SLPS-20381:
   name: "Monkey Turn V"
@@ -32558,6 +32575,9 @@ SLPS-20382:
 SLPS-20383:
   name: "Taiko no Tatsujin - Atsumare! Matsuri da!! Yondaime"
   region: "NTSC-J"
+  gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-20384:
   name: "Hayarigami - Keishichou Kaii Jiken File"
   region: "NTSC-J"
@@ -32636,15 +32656,17 @@ SLPS-20412:
   name: "Hissatsu Pachinko Station v10"
   region: "NTSC-J"
 SLPS-20413:
-  name: "Taiko no Tatsujin - Taiko Drum Masters [with Drum Controller]"
+  name: "Taiko no Tatsujin - Taiko Drum Master [with Tatacon Controller]"
   region: "NTSC-J"
   gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20414:
-  name: "Taiko no Tatsujin - Taiko Drum Masters"
+  name: "Taiko no Tatsujin - Taiko Drum Master"
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20416:
   name: "Inyou Taisenki - Byakko Enbu [with EyeToy]"
@@ -32845,11 +32867,17 @@ SLPS-20484:
   name: "Simple 2000 Series Ultimate Vol. 34 - Sakigake!! Otokojuku"
   region: "NTSC-J"
 SLPS-20485:
-  name: "Taiko no Tatsujin Doka! [with Tatacon Controller]"
+  name: "Taiko no Tatsujin - Doka! to Oomori Nanadaime [with Tatacon Controller]"
   region: "NTSC-J"
+  gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-20486:
-  name: "Taiko no Tatsujin Bang Tap! Toomori 7 Daimei"
+  name: "Taiko no Tatsujin - Doka! to Oomori Nanadaime"
   region: "NTSC-J"
+  gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-20487:
   name: "Pachi-Slot King! Kagaku Ninja-Tai Gatchaman"
   region: "NTSC-J"
@@ -39979,8 +40007,8 @@ SLUS-20758:
       content: |-
         author=kozarovv
         // Growlanser Generations (2 and 3), When game fail at sceCdReadClock due to bad sema/thread state, it will just use 0 as timestamp.
-        // That make issues with next saves, and finally lead to freeze. 
-        // Patch force game to use WaitSema instead of PollSema in problematic place, that force thread rescheduling. 
+        // That make issues with next saves, and finally lead to freeze.
+        // Patch force game to use WaitSema instead of PollSema in problematic place, that force thread rescheduling.
         patch=1,EE,001153DC,word,0C042618
         comment=IPU freeze fix
         patch=0,EE,00109d04,word,00000000
@@ -39994,8 +40022,8 @@ SLUS-20759:
         // CRC 4AD529BB, 4CD3663F
         author=kozarovv
         // Growlanser Generations (2 and 3), When game fail at sceCdReadClock due to bad sema/thread state, it will just use 0 as timestamp.
-        // That make issues with next saves, and finally lead to freeze. 
-        // Patch force game to use WaitSema instead of PollSema in problematic place, that force thread rescheduling. 
+        // That make issues with next saves, and finally lead to freeze.
+        // Patch force game to use WaitSema instead of PollSema in problematic place, that force thread rescheduling.
         patch=1,EE,00114CBC,word,0C042618
         comment=IPU freeze fix
         patch=0,EE,00109d04,word,00000000
@@ -40163,6 +40191,7 @@ SLUS-20800:
   name: "Taiko Drum Master"
   region: "NTSC-U"
   gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLUS-20801:
   name: "Midway Arcade Treasures"

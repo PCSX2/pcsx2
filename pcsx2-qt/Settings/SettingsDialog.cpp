@@ -363,13 +363,13 @@ void SettingsDialog::setBoolSettingValue(const char* section, const char* key, s
 	{
 		value.has_value() ? m_sif->SetBoolValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
 		m_sif->Save();
+		g_emu_thread->reloadGameSettings();
 	}
 	else
 	{
 		value.has_value() ? QtHost::SetBaseBoolSettingValue(section, key, value.value()) : QtHost::RemoveBaseSettingValue(section, key);
+		g_emu_thread->applySettings();
 	}
-
-	g_emu_thread->applySettings();
 }
 
 void SettingsDialog::setIntSettingValue(const char* section, const char* key, std::optional<int> value)
@@ -378,13 +378,13 @@ void SettingsDialog::setIntSettingValue(const char* section, const char* key, st
 	{
 		value.has_value() ? m_sif->SetIntValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
 		m_sif->Save();
+		g_emu_thread->reloadGameSettings();
 	}
 	else
 	{
 		value.has_value() ? QtHost::SetBaseIntSettingValue(section, key, value.value()) : QtHost::RemoveBaseSettingValue(section, key);
+		g_emu_thread->applySettings();
 	}
-
-	g_emu_thread->applySettings();
 }
 
 void SettingsDialog::setFloatSettingValue(const char* section, const char* key, std::optional<float> value)
@@ -393,13 +393,13 @@ void SettingsDialog::setFloatSettingValue(const char* section, const char* key, 
 	{
 		value.has_value() ? m_sif->SetFloatValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
 		m_sif->Save();
+		g_emu_thread->reloadGameSettings();
 	}
 	else
 	{
 		value.has_value() ? QtHost::SetBaseFloatSettingValue(section, key, value.value()) : QtHost::RemoveBaseSettingValue(section, key);
+		g_emu_thread->applySettings();
 	}
-
-	g_emu_thread->applySettings();
 }
 
 void SettingsDialog::setStringSettingValue(const char* section, const char* key, std::optional<const char*> value)
@@ -408,13 +408,13 @@ void SettingsDialog::setStringSettingValue(const char* section, const char* key,
 	{
 		value.has_value() ? m_sif->SetStringValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
 		m_sif->Save();
+		g_emu_thread->reloadGameSettings();
 	}
 	else
 	{
 		value.has_value() ? QtHost::SetBaseStringSettingValue(section, key, value.value()) : QtHost::RemoveBaseSettingValue(section, key);
+		g_emu_thread->applySettings();
 	}
-
-	g_emu_thread->applySettings();
 }
 
 void SettingsDialog::openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& serial, u32 crc)

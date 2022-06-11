@@ -300,11 +300,12 @@ void VMManager::LoadSettings()
 {
 	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
 	SettingsInterface* si = Host::GetSettingsInterface();
+	SettingsInterface* binding_si = Host::GetSettingsInterfaceForBindings();
 	SettingsLoadWrapper slw(*si);
 	EmuConfig.LoadSave(slw);
-	PAD::LoadConfig(*si);
+	PAD::LoadConfig(*binding_si);
 	InputManager::ReloadSources(*si, lock);
-	InputManager::ReloadBindings(*si);
+	InputManager::ReloadBindings(*si, *binding_si);
 
 	// Remove any user-specified hacks in the config (we don't want stale/conflicting values when it's globally disabled).
 	EmuConfig.GS.MaskUserHacks();
@@ -425,7 +426,7 @@ bool VMManager::UpdateGameSettingsLayer()
 
 	std::string input_profile_name;
 	if (new_interface)
-		new_interface->GetStringValue("Pad", "InputProfileName", &input_profile_name);
+		new_interface->GetStringValue("EmuCore", "InputProfileName", &input_profile_name);
 
 	if (!s_game_settings_interface && !new_interface && s_input_profile_name == input_profile_name)
 		return false;

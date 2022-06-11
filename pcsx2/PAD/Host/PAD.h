@@ -16,6 +16,7 @@
 #pragma once
 
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -80,6 +81,9 @@ namespace PAD
 		PAD::VibrationCapabilities vibration_caps;
 	};
 
+	/// Total number of pad ports, across both multitaps.
+	static constexpr u32 NUM_CONTROLLER_PORTS = 8;
+
 	/// Number of macro buttons per controller.
 	static constexpr u32 NUM_MACRO_BUTTONS_PER_CONTROLLER = 4;
 
@@ -94,6 +98,10 @@ namespace PAD
 
 	/// Clears all bindings for a given port.
 	void ClearPortBindings(SettingsInterface& si, u32 port);
+
+	/// Copies pad configuration from one interface (ini) to another.
+	void CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si,
+		bool copy_pad_config = true, bool copy_pad_bindings = true, bool copy_hotkey_bindings = true);
 
 	/// Updates vibration and other internal state. Called at the *end* of a frame.
 	void Update();
@@ -120,4 +128,7 @@ namespace PAD
 
 	/// Sets the state of the specified macro button.
 	void SetMacroButtonState(u32 pad, u32 index, bool state);
+
+	/// Returns a list of input profiles available.
+	std::vector<std::string> GetInputProfileNames();
 } // namespace PAD

@@ -185,6 +185,11 @@ void INISettingsInterface::SetStringValue(const char* section, const char* key, 
 	m_ini.SetValue(section, key, value, nullptr, true);
 }
 
+bool INISettingsInterface::ContainsValue(const char* section, const char* key) const
+{
+	return (m_ini.GetValue(section, key, nullptr) != nullptr);
+}
+
 void INISettingsInterface::DeleteValue(const char* section, const char* key)
 {
 	m_dirty = true;
@@ -198,7 +203,7 @@ void INISettingsInterface::ClearSection(const char* section)
 	m_ini.SetValue(section, nullptr, nullptr);
 }
 
-std::vector<std::string> INISettingsInterface::GetStringList(const char* section, const char* key)
+std::vector<std::string> INISettingsInterface::GetStringList(const char* section, const char* key) const
 {
 	std::list<CSimpleIniA::Entry> entries;
 	if (!m_ini.GetAllValues(section, key, entries))

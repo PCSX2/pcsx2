@@ -18,19 +18,44 @@
 #include "Frontend/InputManager.h"
 #include "Settings/ControllerGlobalSettingsWidget.h"
 #include "Settings/ControllerSettingsDialog.h"
+#include "Settings/ControllerSettingWidgetBinder.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 
 ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, ControllerSettingsDialog* dialog)
 	: QWidget(parent)
+	, m_dialog(dialog)
 {
 	m_ui.setupUi(this);
 
-	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.enableSDLSource, "InputSources", "SDL", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.enableSDLEnhancedMode, "InputSources", "SDLControllerEnhancedMode", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.enableXInputSource, "InputSources", "XInput", false);
+	SettingsInterface* sif = dialog->getProfileSettingsInterface();
+
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLEnhancedMode, "InputSources", "SDLControllerEnhancedMode", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableXInputSource, "InputSources", "XInput", false);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.multitapPort1, "Pad", "MultitapPort1", false);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.multitapPort2, "Pad", "MultitapPort2", false);
+
+	if (dialog->isEditingProfile())
+	{
+		m_ui.useProfileHotkeyBindings->setChecked(m_dialog->getBoolValue("Pad", "UseProfileHotkeyBindings", false));
+		connect(m_ui.useProfileHotkeyBindings, &QCheckBox::stateChanged, this, [this](int new_state) {
+			m_dialog->setBoolValue("Pad", "UseProfileHotkeyBindings", (new_state == Qt::Checked));
+			emit bindingSetupChanged();
+		});
+	}
+	else
+	{
+		// remove profile options from the UI.
+		m_ui.mainLayout->removeWidget(m_ui.profileSettings);
+		m_ui.profileSettings->deleteLater();
+		m_ui.profileSettings = nullptr;
+	}
 
 	connect(m_ui.enableSDLSource, &QCheckBox::stateChanged, this, &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
+	for (QCheckBox* cb : {m_ui.multitapPort1, m_ui.multitapPort2})
+		connect(cb, &QCheckBox::stateChanged, this, [this]() { emit bindingSetupChanged(); });
+
 	updateSDLOptionsEnabled();
 }
 

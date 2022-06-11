@@ -35,8 +35,12 @@ public:
 	void addDeviceToList(const QString& identifier, const QString& name);
 	void removeDeviceFromList(const QString& identifier);
 
+Q_SIGNALS:
+	void bindingSetupChanged();
+
 private:
 	void updateSDLOptionsEnabled();
 
 	Ui::ControllerGlobalSettingsWidget m_ui;
+	ControllerSettingsDialog* m_dialog;
 };

@@ -42,11 +42,12 @@ public:
 	virtual void SetBoolValue(const char* section, const char* key, bool value) = 0;
 	virtual void SetStringValue(const char* section, const char* key, const char* value) = 0;
 
-	virtual std::vector<std::string> GetStringList(const char* section, const char* key) = 0;
+	virtual std::vector<std::string> GetStringList(const char* section, const char* key) const = 0;
 	virtual void SetStringList(const char* section, const char* key, const std::vector<std::string>& items) = 0;
 	virtual bool RemoveFromStringList(const char* section, const char* key, const char* item) = 0;
 	virtual bool AddToStringList(const char* section, const char* key, const char* item) = 0;
 
+	virtual bool ContainsValue(const char* section, const char* key) const = 0;
 	virtual void DeleteValue(const char* section, const char* key) = 0;
 	virtual void ClearSection(const char* section) = 0;
 
@@ -152,5 +153,68 @@ public:
 	__fi void SetOptionalStringValue(const char* section, const char* key, const std::optional<const char*>& value)
 	{
 		value.has_value() ? SetStringValue(section, key, value.value()) : DeleteValue(section, key);
+	}
+
+	__fi void CopyBoolValue(const SettingsInterface& si, const char* section, const char* key)
+	{
+		bool value;
+		if (si.GetBoolValue(section, key, &value))
+			SetBoolValue(section, key, value);
+		else
+			DeleteValue(section, key);
+	}
+
+	__fi void CopyIntValue(const SettingsInterface& si, const char* section, const char* key)
+	{
+		int value;
+		if (si.GetIntValue(section, key, &value))
+			SetIntValue(section, key, value);
+		else
+			DeleteValue(section, key);
+	}
+
+	__fi void CopyUIntValue(const SettingsInterface& si, const char* section, const char* key)
+	{
+		uint value;
+		if (si.GetUIntValue(section, key, &value))
+			SetUIntValue(section, key, value);
+		else
+			DeleteValue(section, key);
+	}
+
+	__fi void CopyFloatValue(const SettingsInterface& si, const char* section, const char* key)
+	{
+		float value;
+		if (si.GetFloatValue(section, key, &value))
+			SetFloatValue(section, key, value);
+		else
+			DeleteValue(section, key);
+	}
+
+	__fi void CopyDoubleValue(const SettingsInterface& si, const char* section, const char* key)
+	{
+		double value;
+		if (si.GetDoubleValue(section, key, &value))
+			SetDoubleValue(section, key, value);
+		else
+			DeleteValue(section, key);
+	}
+
+	__fi void CopyStringValue(const SettingsInterface& si, const char* section, const char* key)
+	{
+		std::string value;
+		if (si.GetStringValue(section, key, &value))
+			SetStringValue(section, key, value.c_str());
+		else
+			DeleteValue(section, key);
+	}
+
+	__fi void CopyStringListValue(const SettingsInterface& si, const char* section, const char* key)
+	{
+		std::vector<std::string> value(si.GetStringList(section, key));
+		if (!value.empty())
+			SetStringList(section, key, value);
+		else
+			DeleteValue(section, key);
 	}
 };

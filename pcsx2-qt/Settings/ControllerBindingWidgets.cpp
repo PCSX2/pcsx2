@@ -19,18 +19,17 @@
 #include <QtWidgets/QMessageBox>
 #include <algorithm>
 
-#include "ControllerBindingWidgets.h"
-#include "ControllerSettingsDialog.h"
+#include "Settings/ControllerBindingWidgets.h"
+#include "Settings/ControllerSettingsDialog.h"
+#include "Settings/ControllerSettingWidgetBinder.h"
+#include "Settings/SettingsDialog.h"
 #include "EmuThread.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
-#include "SettingsDialog.h"
 
 #include "common/StringUtil.h"
 #include "pcsx2/HostSettings.h"
 #include "pcsx2/PAD/Host/PAD.h"
-
-#include "SettingWidgetBinder.h"
 
 ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port)
 	: QWidget(parent)
@@ -42,13 +41,20 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
 	populateControllerTypes();
 	onTypeChanged();
 
-	SettingWidgetBinder::BindWidgetToStringSetting(nullptr, m_ui.controllerType, m_config_section, "Type", "None");
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileString(m_dialog->getProfileSettingsInterface(),
+		m_ui.controllerType, m_config_section, "Type", PAD::GetDefaultPadType(port));
+
 	connect(m_ui.controllerType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ControllerBindingWidget::onTypeChanged);
 	connect(m_ui.automaticBinding, &QPushButton::clicked, this, &ControllerBindingWidget::doAutomaticBinding);
 	connect(m_ui.clearBindings, &QPushButton::clicked, this, &ControllerBindingWidget::doClearBindings);
 }
 
 ControllerBindingWidget::~ControllerBindingWidget() = default;
+
+QIcon ControllerBindingWidget::getIcon() const
+{
+	return m_current_widget->getIcon();
+}
 
 void ControllerBindingWidget::populateControllerTypes()
 {
@@ -58,14 +64,15 @@ void ControllerBindingWidget::populateControllerTypes()
 
 void ControllerBindingWidget::onTypeChanged()
 {
-	if (m_current_widget)
+	const bool is_initializing = (m_current_widget == nullptr);
+	m_controller_type = m_dialog->getStringValue(m_config_section.c_str(), "Type", PAD::GetDefaultPadType(m_port_number));
+
+	if (!is_initializing)
 	{
 		m_ui.verticalLayout->removeWidget(m_current_widget);
 		delete m_current_widget;
 		m_current_widget = nullptr;
 	}
-
-	m_controller_type = Host::GetBaseStringSettingValue(m_config_section.c_str(), "Type");
 
 	const int index = m_ui.controllerType->findData(QString::fromStdString(m_controller_type));
 	if (index >= 0 && index != m_ui.controllerType->currentIndex())
@@ -80,6 +87,10 @@ void ControllerBindingWidget::onTypeChanged()
 		m_current_widget = new ControllerBindingWidget_Base(this);
 
 	m_ui.verticalLayout->addWidget(m_current_widget, 1);
+
+	// no need to do this on first init, only changes
+	if (!is_initializing)
+		m_dialog->updateListDescription(m_port_number, this);
 }
 
 void ControllerBindingWidget::doAutomaticBinding()
@@ -110,14 +121,19 @@ void ControllerBindingWidget::doAutomaticBinding()
 void ControllerBindingWidget::doClearBindings()
 {
 	if (QMessageBox::question(QtUtils::GetRootWidget(this), tr("Clear Bindings"),
-		tr("Are you sure you want to clear all bindings for this controller? This action cannot be undone.")) != QMessageBox::Yes)
+			tr("Are you sure you want to clear all bindings for this controller? This action cannot be undone.")) != QMessageBox::Yes)
 	{
 		return;
 	}
 
+	if (m_dialog->isEditingGlobalSettings())
 	{
 		auto lock = Host::GetSettingsLock();
 		PAD::ClearPortBindings(*Host::Internal::GetBaseSettingsLayer(), m_port_number);
+	}
+	else
+	{
+		PAD::ClearPortBindings(*m_dialog->getProfileSettingsInterface(), m_port_number);
 	}
 
 	saveAndRefresh();
@@ -134,9 +150,16 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
 	}
 
 	bool result;
+	if (m_dialog->isEditingGlobalSettings())
 	{
 		auto lock = Host::GetSettingsLock();
 		result = PAD::MapController(*Host::Internal::GetBaseSettingsLayer(), m_port_number, mapping);
+	}
+	else
+	{
+		result = PAD::MapController(*m_dialog->getProfileSettingsInterface(), m_port_number, mapping);
+		m_dialog->getProfileSettingsInterface()->Save();
+		g_emu_thread->reloadInputBindings();
 	}
 
 	// force a refresh after mapping
@@ -162,11 +185,17 @@ ControllerBindingWidget_Base::~ControllerBindingWidget_Base()
 {
 }
 
+QIcon ControllerBindingWidget_Base::getIcon() const
+{
+	return QIcon::fromTheme("artboard-2-line");
+}
+
 void ControllerBindingWidget_Base::initBindingWidgets()
 {
 	const std::string& type = getControllerType();
 	const std::string& config_section = getConfigSection();
 	std::vector<std::string> bindings(PAD::GetControllerBinds(type));
+	SettingsInterface* sif = getDialog()->getProfileSettingsInterface();
 
 	for (std::string& binding : bindings)
 	{
@@ -178,7 +207,7 @@ void ControllerBindingWidget_Base::initBindingWidgets()
 			continue;
 		}
 
-		widget->setKey(config_section, std::move(binding));
+		widget->initialize(sif, config_section, std::move(binding));
 	}
 
 	const PAD::VibrationCapabilities vibe_caps = PAD::GetControllerVibrationCapabilities(type);
@@ -221,13 +250,13 @@ void ControllerBindingWidget_Base::initBindingWidgets()
 			});
 		}
 
-		SettingWidgetBinder::BindWidgetToNormalizedSetting(nullptr, widget, config_section, "AxisScale", range, 1.0f);
+		ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(sif, widget, config_section, "AxisScale", range, 1.0f);
 	}
 
 	if (QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QStringLiteral("SmallMotorScale")); widget)
-		SettingWidgetBinder::BindWidgetToFloatSetting(nullptr, widget, config_section, "SmallMotorScale", 1.0f);
+		ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, widget, config_section, "SmallMotorScale", 1.0f);
 	if (QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QStringLiteral("LargeMotorScale")); widget)
-		SettingWidgetBinder::BindWidgetToFloatSetting(nullptr, widget, config_section, "LargeMotorScale", 1.0f);
+		ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, widget, config_section, "LargeMotorScale", 1.0f);
 }
 
 ControllerBindingWidget_DualShock2::ControllerBindingWidget_DualShock2(ControllerBindingWidget* parent)
@@ -239,6 +268,11 @@ ControllerBindingWidget_DualShock2::ControllerBindingWidget_DualShock2(Controlle
 
 ControllerBindingWidget_DualShock2::~ControllerBindingWidget_DualShock2()
 {
+}
+
+QIcon ControllerBindingWidget_DualShock2::getIcon() const
+{
+	return QIcon::fromTheme("gamepad-line");
 }
 
 ControllerBindingWidget_Base* ControllerBindingWidget_DualShock2::createInstance(ControllerBindingWidget* parent)

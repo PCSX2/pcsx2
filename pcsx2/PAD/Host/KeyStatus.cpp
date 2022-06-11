@@ -16,12 +16,17 @@
 #include "PrecompiledHeader.h"
 
 #include "PAD/Host/KeyStatus.h"
+#include "PAD/Host/Global.h"
+
+#include <array>
+
+using namespace PAD;
 
 KeyStatus::KeyStatus()
 {
 	Init();
 
-	for (u32 pad = 0; pad < GAMEPAD_NUMBER; pad++)
+	for (u32 pad = 0; pad < NUM_CONTROLLER_PORTS; pad++)
 	{
 		m_axis_scale[pad] = 1.0f;
 	}
@@ -29,7 +34,7 @@ KeyStatus::KeyStatus()
 
 void KeyStatus::Init()
 {
-	for (u32 pad = 0; pad < GAMEPAD_NUMBER; pad++)
+	for (u32 pad = 0; pad < NUM_CONTROLLER_PORTS; pad++)
 	{
 		m_button[pad] = 0xFFFFFFFF;
 

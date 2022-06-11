@@ -21,12 +21,14 @@
 #include <string>
 #include <vector>
 
+class SettingsInterface;
+
 class InputBindingDialog : public QDialog
 {
 	Q_OBJECT
 
 public:
-	InputBindingDialog(std::string section_name, std::string key_name, std::vector<std::string> bindings, QWidget* parent);
+	InputBindingDialog(SettingsInterface* sif, std::string section_name, std::string key_name, std::vector<std::string> bindings, QWidget* parent);
 	~InputBindingDialog();
 
 protected Q_SLOTS:
@@ -58,6 +60,7 @@ protected:
 
 	Ui::InputBindingDialog m_ui;
 
+	SettingsInterface* m_sif;
 	std::string m_section_name;
 	std::string m_key_name;
 	std::vector<std::string> m_bindings;

@@ -15,19 +15,8 @@
 
 #pragma once
 
-#include <stdio.h>
-#include <assert.h>
-#include <array>
-#include <vector>
-#include <map>
-#include <string>
-#include <memory>
-#include <mutex>
-#include <queue>
-
 #include "common/Pcsx2Defs.h"
 
-static const u32 GAMEPAD_NUMBER = 2;
 static const u32 MAX_KEYS = 25;
 
 enum gamePadValues

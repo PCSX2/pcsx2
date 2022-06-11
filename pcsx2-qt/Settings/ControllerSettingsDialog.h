@@ -22,10 +22,13 @@
 #include <QtCore/QStringList>
 #include <QtWidgets/QDialog>
 #include <array>
+#include <string>
 
 class ControllerGlobalSettingsWidget;
 class ControllerBindingWidget;
 class HotkeySettingsWidget;
+
+class SettingsInterface;
 
 class ControllerSettingsDialog final : public QDialog
 {
@@ -42,29 +45,57 @@ public:
 
 	enum : u32
 	{
-		MAX_PORTS = 2
+		MAX_PORTS = 8
 	};
 
 	ControllerSettingsDialog(QWidget* parent = nullptr);
 	~ControllerSettingsDialog();
 
-	HotkeySettingsWidget* getHotkeySettingsWidget() const { return m_hotkey_settings; }
+	__fi HotkeySettingsWidget* getHotkeySettingsWidget() const { return m_hotkey_settings; }
 
 	__fi const QList<QPair<QString, QString>>& getDeviceList() const { return m_device_list; }
 	__fi const QStringList& getVibrationMotors() const { return m_vibration_motors; }
+
+	__fi bool isEditingGlobalSettings() const { return m_profile_name.isEmpty(); }
+	__fi bool isEditingProfile() const { return !m_profile_name.isEmpty(); }
+	__fi SettingsInterface* getProfileSettingsInterface() { return m_profile_interface.get(); }
+
+	void updateListDescription(u32 global_slot, ControllerBindingWidget* widget);
+
+	// Helper functions for updating setting values globally or in the profile.
+	bool getBoolValue(const char* section, const char* key, bool default_value) const;
+	std::string getStringValue(const char* section, const char* key, const char* default_value) const;
+	void setBoolValue(const char* section, const char* key, bool value);
+	void setStringValue(const char* section, const char* key, const char* value);
+	void clearSettingValue(const char* section, const char* key);
+
+Q_SIGNALS:
+	void inputProfileSwitched();
 
 public Q_SLOTS:
 	void setCategory(Category category);
 
 private Q_SLOTS:
 	void onCategoryCurrentRowChanged(int row);
+	void onCurrentProfileChanged(int index);
+	void onNewProfileClicked();
+	void onLoadProfileClicked();
+	void onDeleteProfileClicked();
+	void onRestoreDefaultsClicked();
 
 	void onInputDevicesEnumerated(const QList<QPair<QString, QString>>& devices);
 	void onInputDeviceConnected(const QString& identifier, const QString& device_name);
 	void onInputDeviceDisconnected(const QString& identifier);
 	void onVibrationMotorsEnumerated(const QList<InputBindingKey>& motors);
 
+	void createWidgets();
+
 private:
+	static QIcon getIconForType(const std::string& type);
+
+	void refreshProfileList();
+	void switchProfile(const QString& name);
+
 	Ui::ControllerSettingsDialog m_ui;
 
 	ControllerGlobalSettingsWidget* m_global_settings = nullptr;
@@ -73,4 +104,7 @@ private:
 
 	QList<QPair<QString, QString>> m_device_list;
 	QStringList m_vibration_motors;
+
+	QString m_profile_name;
+	std::unique_ptr<SettingsInterface> m_profile_interface;
 };
