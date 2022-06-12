@@ -6286,7 +6286,7 @@ SCPS-56008:
     disablePartialInvalidation: 1 # Fixes ghost rendering.
 SCPS-56011:
   name: "U - Underwater Unit"
-  region: "NTSC-J"
+  region: "NTSC-K"
 SCPS-56012:
   name: "Raw Danger"
   region: "NTSC-K"
@@ -6296,9 +6296,15 @@ SCPS-56014:
   compat: 5
 SCPS-56015:
   name: "Ninja Assault"
-  region: "NTSC-J"
+  region: "NTSC-K"
   gsHWFixes:
     preloadFrameData: 1 # Fixes intro captions not displaying.
+SCPS-56016:
+  name: "Axel Impact - The Extreme Racing" # DT Racer
+  region: "NTSC-K"
+  gameFixes:
+    - GIFFIFOHack
+    - VUSyncHack
 SCUS-21295:
   name: "Tony Hawk's American Wasteland Collector's Edition"
   region: "NTSC-U"
