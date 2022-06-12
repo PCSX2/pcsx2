@@ -6363,7 +6363,6 @@ SCPS-56016:
   region: "NTSC-K"
   gameFixes:
     - GIFFIFOHack
-    - VUSyncHack
 SCUS-21295:
   name: "Tony Hawk's American Wasteland Collector's Edition"
   region: "NTSC-U"
