@@ -41,9 +41,10 @@ void IPU_Fifo_Input::clear()
 
 	// Because the FIFO is drained it will request more data immediately
 	IPU1Status.DataRequested = true;
+
 	if (ipu1ch.chcr.STR && cpuRegs.eCycle[4] == 0x9999)
 	{
-		CPU_INT(DMAC_TO_IPU, 32);
+		CPU_INT(DMAC_TO_IPU, 4);
 	}
 }
 

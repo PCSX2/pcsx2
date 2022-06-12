@@ -58,7 +58,7 @@ void tIPU_cmd::clear()
 
 __fi void IPUProcessInterrupt()
 {
-	if (ipuRegs.ctrl.BUSY && !CommandExecuteQueued) // && (g_BP.FP || g_BP.IFC || (ipu1ch.chcr.STR && ipu1ch.qwc > 0)))
+	if (ipuRegs.ctrl.BUSY && !CommandExecuteQueued)
 		IPUWorker();
 }
 
@@ -277,16 +277,6 @@ __fi RETURNS_R64 ipuRead64(u32 mem)
 
 void ipuSoftReset()
 {
-	if (ipu1ch.chcr.STR && g_BP.IFC < 8 && IPU1Status.DataRequested)
-	{
-		DevCon.Warning("Refill input fifo on reset");
-		ipu1Interrupt();
-	}
-
-	if (!ipu1ch.chcr.STR)
-		psHu32(DMAC_STAT) &= ~(1 << DMAC_TO_IPU);
-
-
 	ipu_fifo.clear();
 	memzero(g_BP);
 
@@ -317,8 +307,8 @@ __fi bool ipuWrite32(u32 mem, u32 value)
 		return false;
 
 		ipucase(IPU_CTRL): // IPU_CTRL
-            // CTRL = the first 16 bits of ctrl [0x8000ffff], + value for the next 16 bits,
-            // minus the reserved bits. (18-19; 27-29) [0x47f30000]
+			// CTRL = the first 16 bits of ctrl [0x8000ffff], + value for the next 16 bits,
+			// minus the reserved bits. (18-19; 27-29) [0x47f30000]
 			ipuRegs.ctrl.write(value);
 			if (ipuRegs.ctrl.IDP == 3)
 			{
@@ -361,12 +351,6 @@ __fi bool ipuWrite64(u32 mem, u64 value)
 
 static void ipuBCLR(u32 val)
 {
-	if (ipu1ch.chcr.STR && g_BP.IFC < 8 && IPU1Status.DataRequested)
-		ipu1Interrupt();
-
-	if(!ipu1ch.chcr.STR)
-		psHu32(DMAC_STAT) &= ~(1 << DMAC_TO_IPU);
-
 	ipu_fifo.in.clear();
 	memzero(g_BP);
 	g_BP.BP = val & 0x7F;
@@ -950,11 +934,6 @@ __noinline void IPUWorker()
 			//ipuRegs.ctrl.OFC = 0;
 			ipuRegs.topbusy = 0;
 			ipuRegs.cmd.BUSY = 0;
-
-			// CHECK!: IPU0dma remains when IDEC is done, so we need to clear it
-			// Check Mana Khemia 1 "off campus" to trigger a GUST IDEC messup.
-			// This hackfixes it :/
-			//if (ipu0ch.qwc > 0 && ipu0ch.chcr.STR) ipu0Interrupt();
 			break;
 
 		case SCE_IPU_BDEC:
