@@ -69,11 +69,11 @@ void KeyStatus::press(u32 pad, u32 index, s32 value)
 		// Force range :			  80 -> 0  -> 7F
 		// Normal mode : expect value 0  -> 80 -> FF
 		// Reverse mode: expect value FF -> 7F -> 0
-		u8 force = (value / 256);
+		u8 force = (value >> 8);
 		if (analog_is_reversed(pad, index))
 			analog_set(pad, index, m_analog_released_val - force);
 		else
-			analog_set(pad, index, m_analog_released_val + force);
+			analog_set(pad, index, m_analog_released_val + force + 1);
 	}
 }
 
