@@ -92,6 +92,9 @@ public:
 		void UpdateAge();
 		bool Inside(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
 		bool Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
+
+		void ResizeTexture(int new_width, int new_height);
+		void ResizeTexture(int new_width, int new_height, GSVector2 new_scale);
 	};
 
 	struct PaletteKey

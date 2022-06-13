@@ -166,6 +166,8 @@ public:
 
 	__fi static GSRendererHW* GetInstance() { return static_cast<GSRendererHW*>(g_gs_renderer.get()); }
 	__fi GSTextureCache* GetTextureCache() const { return m_tc; }
+	__fi int GetDefaultTargetWidth() const { return m_width; }
+	__fi int GetDefaultTargetHeight() const { return m_height; }
 
 	void Destroy() override;
 
@@ -181,7 +183,7 @@ public:
 	void MergeSprite(GSTextureCache::Source* tex);
 	GSVector2 GetTextureScaleFactor(const bool force_upscaling);
 	GSVector2 GetTextureScaleFactor() override;
-	GSVector2i GetTargetSize();
+	GSVector2i GetTargetSize(bool for_output);
 
 	void Reset(bool hardware_reset) override;
 	void UpdateSettings(const Pcsx2Config::GSOptions& old_config) override;

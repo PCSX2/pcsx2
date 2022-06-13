@@ -284,7 +284,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 
 	GSTexture* t = NULL;
 
-	if (GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, GetTargetSize(), fb_height))
+	if (GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, GetTargetSize(true), fb_height))
 	{
 		t = rt->m_texture;
 
@@ -319,7 +319,7 @@ GSTexture* GSRendererHW::GetFeedbackOutput()
 	TEX0.TBW = m_regs->EXTBUF.EXBW;
 	TEX0.PSM = m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPFB.PSM;
 
-	GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, GetTargetSize(), /*GetFrameRect(i).bottom*/ m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPLAY.DH);
+	GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, GetTargetSize(true), /*GetFrameRect(i).bottom*/ m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPLAY.DH);
 
 	GSTexture* t = rt->m_texture;
 
@@ -779,9 +779,19 @@ GSVector2 GSRendererHW::GetTextureScaleFactor()
 	return GetTextureScaleFactor(false);
 }
 
-GSVector2i GSRendererHW::GetTargetSize()
+GSVector2i GSRendererHW::GetTargetSize(bool for_output)
 {
-	const GSVector2i t_size = { m_width, m_height };
+	GSVector2i t_size = { m_width, m_height };
+	if (!for_output && GSConfig.ConservativeFramebuffer)
+	{
+		// Try to set the framebuffer size based on the current context.
+		// Why do we only clamp only the height to m_height? Because games set unnecessarily high scissor
+		// rectangles and don't use most of it. But they do set wider targets than the CRTC/final blit for
+		// render-to-texture effects, so that needs to expand past m_width when necessary.
+		t_size.x = (m_context->FRAME.FBW * 64u) * GSConfig.UpscaleMultiplier;
+		t_size.y = std::min<u32>(m_height, std::max<u32>(m_context->scissor.in.w, m_r.w) * GSConfig.UpscaleMultiplier);
+	}
+
 	if (GetUpscaleMultiplier() == 1 || CanUpscale())
 		return t_size;
 	// Undo the upscaling for native resolution draws.
@@ -1559,7 +1569,9 @@ void GSRendererHW::Draw()
 		}
 	}
 
-	const GSVector2i t_size = GetTargetSize();
+	// The rectangle of the draw
+	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
+	const GSVector2i t_size = GetTargetSize(false);
 
 	TEX0.TBP0 = context->FRAME.Block();
 	TEX0.TBW = context->FRAME.FBW;
@@ -1593,38 +1605,39 @@ void GSRendererHW::Draw()
 		rt->m_32_bits_fmt = m_texture_shuffle || (GSLocalMemory::m_psm[context->FRAME.PSM].bpp != 16);
 	}
 
-	// The rectangle of the draw
-	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
-
 	{
-		const GSVector2 up_s = GetTextureScaleFactor();
-		const int up_w = static_cast<int>(std::ceil(static_cast<float>(m_r.z) * up_s.x));
-		const int up_h = static_cast<int>(std::ceil(static_cast<float>(m_r.w) * up_s.y));
-		const int new_w = std::max(up_w, std::max(rt_tex ? rt_tex->GetWidth() : 0, ds_tex ? ds_tex->GetWidth() : 0));
-		const int new_h = std::max(up_h, std::max(rt_tex ? rt_tex->GetHeight() : 0, ds_tex ? ds_tex->GetHeight() : 0));
-		std::array<GSTextureCache::Target*, 2> ts{ rt, ds };
-		for (GSTextureCache::Target* t : ts)
+		// Conservative framebuffer doubles as a "clamp draw to framebuffer" option here.
+		// When disabled, we'll always expand to fit the draw in the scissor.
+		const GSVector2 up_s(GetTextureScaleFactor());
+		int new_w, new_h;
+		if (!GSConfig.ConservativeFramebuffer)
 		{
-			if (t)
-			{
-				// Adjust texture size to fit current draw if necessary.
-				GSTexture* tex = t->m_texture;
-				assert(up_s == tex->GetScale());
-				const int w = tex->GetWidth();
-				const int h = tex->GetHeight();
-				if (w != new_w || h != new_h)
-				{
-					const bool is_rt = t == rt;
-					t->m_texture = is_rt ?
-						g_gs_device->CreateSparseRenderTarget(new_w, new_h, tex->GetFormat()) :
-						g_gs_device->CreateSparseDepthStencil(new_w, new_h, tex->GetFormat());
-					const GSVector4i r{ 0, 0, w, h };
-					g_gs_device->CopyRect(tex, t->m_texture, r, 0, 0);
-					g_gs_device->Recycle(tex);
-					t->m_texture->SetScale(up_s);
-					(is_rt ? rt_tex : ds_tex) = t->m_texture;
-				}
-			}
+			const int up_w = static_cast<int>(std::ceil(static_cast<float>(m_r.z) * up_s.x));
+			const int up_h = static_cast<int>(std::ceil(static_cast<float>(m_r.w) * up_s.y));
+			new_w = std::max(up_w, std::max(rt_tex ? rt_tex->GetWidth() : 0, ds_tex ? ds_tex->GetWidth() : 0));
+			new_h = std::max(up_h, std::max(rt_tex ? rt_tex->GetHeight() : 0, ds_tex ? ds_tex->GetHeight() : 0));
+		}
+		else
+		{
+			// We still need to make sure the dimensions of the targets match.
+			new_w = std::max(t_size.x, std::max(rt_tex ? rt_tex->GetWidth() : 0, ds_tex ? ds_tex->GetWidth() : 0));
+			new_h = std::max(t_size.y, std::max(rt_tex ? rt_tex->GetHeight() : 0, ds_tex ? ds_tex->GetHeight() : 0));
+
+			// Ensure draw rect is clamped to framebuffer size. Necessary for updating valid area.
+			m_r = m_r.rintersect(GSVector4i(0, 0, new_w, new_h));
+		}
+
+		if (rt)
+		{
+			pxAssert(rt->m_texture->GetScale() == up_s);
+			rt->ResizeTexture(new_w, new_h, up_s);
+			rt_tex = rt->m_texture;
+		}
+		if (ds)
+		{
+			pxAssert(ds->m_texture->GetScale() == up_s);
+			ds->ResizeTexture(new_w, new_h, up_s);
+			ds_tex = ds->m_texture;
 		}
 	}
 
@@ -4134,7 +4147,7 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 			TEX0.TBW = m_context->FRAME.FBW;
 			TEX0.PSM = m_context->FRAME.PSM;
 
-			if (GSTextureCache::Target* tmp_rt = m_tc->LookupTarget(TEX0, GetTargetSize(), GSTextureCache::RenderTarget, true))
+			if (GSTextureCache::Target* tmp_rt = m_tc->LookupTarget(TEX0, GetTargetSize(false), GSTextureCache::RenderTarget, true))
 			{
 				GL_INS("OI_RozenMaidenGebetGarden FB clear");
 				tmp_rt->m_texture->Commit(); // Don't bother to save few MB for a single game
@@ -4153,7 +4166,7 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 			TEX0.TBW = m_context->FRAME.FBW;
 			TEX0.PSM = m_context->ZBUF.PSM;
 
-			if (GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, GetTargetSize(), GSTextureCache::DepthStencil, true))
+			if (GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, GetTargetSize(false), GSTextureCache::DepthStencil, true))
 			{
 				GL_INS("OI_RozenMaidenGebetGarden ZB clear");
 				tmp_ds->m_texture->Commit(); // Don't bother to save few MB for a single game
@@ -4191,12 +4204,14 @@ bool GSRendererHW::OI_SonicUnleashed(GSTexture* rt, GSTexture* ds, GSTextureCach
 
 	GL_INS("OI_SonicUnleashed replace draw by a copy");
 
-	GSTextureCache::Target* src = m_tc->LookupTarget(Texture, GetTargetSize(), GSTextureCache::RenderTarget, true);
+	GSTextureCache::Target* src = m_tc->LookupTarget(Texture, default_rt_size, GSTextureCache::RenderTarget, true);
 
-	const GSVector2i size = rt->GetSize();
+	const GSVector2i rt_size(rt->GetSize());
+	const GSVector2i src_size(src->m_texture->GetSize());
+	const GSVector2i copy_size(std::min(rt_size.x, src_size.x), std::min(rt_size.y, src_size.y));
 
-	const GSVector4 sRect(0, 0, 1, 1);
-	const GSVector4 dRect(0, 0, size.x, size.y);
+	const GSVector4 sRect(0.0f, 0.0f, static_cast<float>(copy_size.x) / static_cast<float>(src_size.x), static_cast<float>(copy_size.y) / static_cast<float>(src_size.y));
+	const GSVector4 dRect(0, 0, copy_size.x, copy_size.y);
 
 	g_gs_device->StretchRect(src->m_texture, sRect, rt, dRect, true, true, true, false);
 

@@ -1183,6 +1183,19 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	const int scaled_w = static_cast<int>(w * scale.x);
 	const int scaled_h = static_cast<int>(h * scale.y);
 
+	// Expand the target when we used a more conservative size.
+	const int required_dh = scaled_dy + scaled_h;
+	if (GSConfig.ConservativeFramebuffer && (scaled_dx + scaled_w) <= dst->m_texture->GetWidth() && required_dh > dst->m_texture->GetHeight())
+	{
+		// But don't go beyond what we would have otherwise used for the height.
+		const int default_height = GSRendererHW::GetInstance()->GetDefaultTargetHeight();
+		if (required_dh > default_height)
+			return false;
+
+		GL_INS("Resize %dx%d target to %dx%d for move", dst->m_texture->GetWidth(), dst->m_texture->GetHeight(), dst->m_texture->GetHeight(), default_height);
+		dst->ResizeTexture(dst->m_texture->GetWidth(), default_height);
+	}
+
 	// Make sure the copy doesn't go out of bounds (it shouldn't).
 	if ((scaled_sx + scaled_w) > src->m_texture->GetWidth() || (scaled_sy + scaled_h) > src->m_texture->GetHeight() ||
 		(scaled_dx + scaled_w) > dst->m_texture->GetWidth() || (scaled_dy + scaled_h) > dst->m_texture->GetHeight())
@@ -1981,6 +1994,36 @@ bool GSTextureCache::Surface::Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i
 	return overlap;
 }
 
+void GSTextureCache::Surface::ResizeTexture(int new_width, int new_height)
+{
+	ResizeTexture(new_width, new_height, m_texture->GetScale());
+}
+
+void GSTextureCache::Surface::ResizeTexture(int new_width, int new_height, GSVector2 new_scale)
+{
+	const int width = m_texture->GetWidth();
+	const int height = m_texture->GetHeight();
+	if (width == new_width && height == new_height)
+		return;
+
+	const bool clear = (new_width > width || new_height > height);
+	GSTexture* tex = m_texture->IsDepthStencil() ?
+						 g_gs_device->CreateSparseDepthStencil(new_width, new_height, m_texture->GetFormat(), clear) :
+                         g_gs_device->CreateSparseRenderTarget(new_width, new_height, m_texture->GetFormat(), clear);
+	if (!tex)
+	{
+		Console.Error("(GSTextureCache::Surface::ResizeTexture) Failed to allocate %dx%d texture", new_width, new_height);
+		return;
+	}
+
+	tex->SetScale(new_scale);
+
+	const GSVector4i rc(0, 0, std::min(width, new_width), std::min(height, new_height));
+	g_gs_device->CopyRect(m_texture, tex, rc, 0, 0);
+	g_gs_device->Recycle(m_texture);
+	m_texture = tex;
+}
+
 // GSTextureCache::Source
 
 GSTextureCache::Source::Source(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool dummy_container)
@@ -2392,7 +2435,10 @@ void GSTextureCache::Target::UpdateIfDirtyIntersects(const GSVector4i& rc)
 
 void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 {
-	m_valid = m_valid.runion(rect);
+	if (m_valid.eq(GSVector4i::zero()))
+		m_valid = rect;
+	else
+		m_valid = m_valid.runion(rect);
 
 	// Block of the bottom right texel of the validity rectangle, last valid block of the texture
 	m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].info.bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW); // Valid only for color formats

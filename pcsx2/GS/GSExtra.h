@@ -79,7 +79,7 @@ __forceinline bool BitEqual(const T& a, const T& b)
 #ifdef ENABLE_ACCURATE_BUFFER_EMULATION
 static const GSVector2i default_rt_size(2048, 2048);
 #else
-static const GSVector2i default_rt_size(0, 0);
+static const GSVector2i default_rt_size(1, 1);
 #endif
 
 extern Pcsx2Config::GSOptions GSConfig;
