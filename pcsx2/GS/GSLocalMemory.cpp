@@ -481,8 +481,6 @@ GSPixelOffset4* GSLocalMemory::GetPixelOffset4(const GIFRegFRAME& FRAME, const G
 	return off;
 }
 
-static bool cmp_vec2x(const GSVector2i& a, const GSVector2i& b) { return a.x < b.x; }
-
 std::vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 {
 	u64 hash = TEX0.U64 & 0x3ffffffffull; // TBP0 TBW PSM TW TH
@@ -553,7 +551,7 @@ std::vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 			p2t[page].push_back(GSVector2i(j.first, ~j.second));
 		}
 
-		std::sort(p2t[page].begin(), p2t[page].end(), cmp_vec2x);
+		std::sort(p2t[page].begin(), p2t[page].end(), [](const GSVector2i& a, const GSVector2i& b) { return a.x < b.x; });
 	}
 
 	m_p2tmap[hash] = p2t;
