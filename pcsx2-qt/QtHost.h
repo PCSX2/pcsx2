@@ -40,8 +40,6 @@ namespace QtHost
 	bool Initialize();
 	void Shutdown();
 
-	void UpdateFolders();
-
 	/// Sets batch mode (exit after game shutdown).
 	bool InBatchMode();
 	void SetBatchMode(bool enabled);

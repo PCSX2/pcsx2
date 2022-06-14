@@ -20,17 +20,23 @@
 
 #include <QtCore/QtCore>
 #include <QtGui/QAction>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDoubleSpinBox>
+#include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
 
+#include "common/Path.h"
+
+#include "pcsx2/Config.h"
 #include "pcsx2/HostSettings.h"
 
 #include "EmuThread.h"
 #include "QtHost.h"
+#include "QtUtils.h"
 #include "Settings/SettingsDialog.h"
 
 namespace SettingWidgetBinder
@@ -228,7 +234,7 @@ namespace SettingWidgetBinder
 		static std::optional<QString> getNullableStringValue(const QCheckBox* widget)
 		{
 			return (widget->checkState() == Qt::PartiallyChecked) ?
-                       std::nullopt :
+					   std::nullopt :
                        std::optional<QString>(widget->isChecked() ? QStringLiteral("1") : QStringLiteral("0"));
 		}
 		static void setNullableStringValue(QCheckBox* widget, std::optional<QString> value)
@@ -769,4 +775,70 @@ namespace SettingWidgetBinder
 		}
 	}
 
+	template <typename WidgetType>
+	static void BindWidgetToFolderSetting(SettingsInterface* sif, WidgetType* widget,
+		QAbstractButton* browse_button, QAbstractButton* open_button, QAbstractButton* reset_button,
+		std::string section, std::string key, std::string default_value)
+	{
+		using Accessor = SettingAccessor<WidgetType>;
+
+		std::string current_path(Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str()));
+		if (!Path::IsAbsolute(current_path))
+			current_path = Path::Combine(EmuFolders::DataRoot, current_path);
+
+		const QString value(QString::fromStdString(current_path));
+		Accessor::setStringValue(widget, value);
+
+		// if we're doing per-game settings, disable the widget, we only allow folder changes in the base config
+		if (sif)
+		{
+			widget->setEnabled(false);
+			if (browse_button)
+				browse_button->setEnabled(false);
+			if (reset_button)
+				reset_button->setEnabled(false);
+			return;
+		}
+
+		Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
+			const std::string new_value(Accessor::getStringValue(widget).toStdString());
+			if (!new_value.empty())
+			{
+				std::string relative_path(Path::MakeRelative(new_value, EmuFolders::DataRoot));
+				QtHost::SetBaseStringSettingValue(section.c_str(), key.c_str(), relative_path.c_str());
+			}
+			else
+			{
+				QtHost::RemoveBaseSettingValue(section.c_str(), key.c_str());
+			}
+
+			g_emu_thread->updateEmuFolders();
+		});
+
+		if (browse_button)
+		{
+			QObject::connect(browse_button, &QAbstractButton::clicked, browse_button, [widget, key]() {
+				const QString path(QDir::toNativeSeparators(QFileDialog::getExistingDirectory(QtUtils::GetRootWidget(widget),
+					qApp->translate("SettingWidgetBinder", "Select folder for %1").arg(QString::fromStdString(key)))));
+				if (path.isEmpty())
+					return;
+
+				Accessor::setStringValue(widget, path);
+			});
+		}
+		if (open_button)
+		{
+			QObject::connect(open_button, &QAbstractButton::clicked, open_button, [widget]() {
+				QString path(Accessor::getStringValue(widget));
+				if (!path.isEmpty())
+					QtUtils::OpenURL(QtUtils::GetRootWidget(widget), QUrl::fromLocalFile(path));
+			});
+		}
+		if (reset_button)
+		{
+			QObject::connect(reset_button, &QAbstractButton::clicked, reset_button, [widget, default_value = std::move(default_value)]() {
+				Accessor::setStringValue(widget, QString::fromStdString(Path::Combine(EmuFolders::AppRoot, default_value)));
+			});
+		}
+	}
 } // namespace SettingWidgetBinder
