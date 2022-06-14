@@ -826,7 +826,7 @@ SCAJ-20098:
   name: "EyeToy - Oosawagi! Ukkiiuki Game Tenkomori!!"
   region: "NTSC-Unk"
 SCAJ-20099:
-  name: "Ico"
+  name: "ICO"
   region: "NTSC-Unk"
   compat: 5
   clampModes:
@@ -2785,7 +2785,7 @@ SCES-50759:
   region: "PAL-M5"
   compat: 5
 SCES-50760:
-  name: "Ico"
+  name: "ICO"
   region: "PAL-M5"
   compat: 5
   clampModes:
@@ -4511,7 +4511,7 @@ SCKA-20027:
     halfPixelOffset: 1 # Fixes texture and lighting misalignment.
     mergeSprite: 1 # Fixes most vertical lines and lighting misalignment.
 SCKA-20028:
-  name: "Ico [PlayStation2 Big Hit Series]"
+  name: "ICO [PlayStation2 Big Hit Series]"
   region: "NTSC-K"
   compat: 5
   clampModes:
@@ -4896,7 +4896,7 @@ SCPS-11002:
   region: "NTSC-J"
   compat: 5
 SCPS-11003:
-  name: "Ico"
+  name: "ICO"
   region: "NTSC-J"
   compat: 5
   clampModes:
@@ -5669,7 +5669,7 @@ SCPS-19102:
   name: "Boku to Maou [PlayStation 2 The Best]"
   region: "NTSC-J"
 SCPS-19103:
-  name: "Ico [PlayStation 2 The Best]"
+  name: "ICO [PlayStation 2 The Best]"
   region: "NTSC-J"
   compat: 5
   clampModes:
@@ -5687,7 +5687,7 @@ SCPS-19105:
   name: "Bravo Music [PlayStation 2 The Best]"
   region: "NTSC-J"
 SCPS-19151:
-  name: "Ico [PlayStation 2 The Best]"
+  name: "ICO [PlayStation 2 The Best]"
   region: "NTSC-J"
   compat: 5
   clampModes:
@@ -6057,7 +6057,7 @@ SCPS-51016:
   clampModes:
     vuClampMode: 3
 SCPS-55001:
-  name: "Ico"
+  name: "ICO"
   region: "NTSC-J"
   compat: 5
   clampModes:
@@ -6303,7 +6303,7 @@ SCPS-55903:
   name: "Gran Turismo - Concept 2002 Tokyo-Geneva"
   region: "NTSC-J"
 SCPS-56001:
-  name: "Ico"
+  name: "ICO"
   region: "NTSC-K"
   compat: 5
   clampModes:
@@ -6433,7 +6433,7 @@ SCUS-97112:
   region: "NTSC-U"
   compat: 5
 SCUS-97113:
-  name: "Ico"
+  name: "ICO"
   region: "NTSC-U"
   compat: 5
   clampModes:
@@ -6610,7 +6610,7 @@ SCUS-97158:
   name: "Official U.S. PlayStation Magazine Demo Disc 049"
   region: "NTSC-U"
 SCUS-97159:
-  name: "Ico [Demo]"
+  name: "ICO [Demo]"
   region: "NTSC-U"
   compat: 5
   clampModes:
@@ -34931,7 +34931,7 @@ SLPS-25584:
   name: "From TV Animation - One Piece - Pirates Carnival [with Multitap for new models]"
   region: "NTSC-J"
 SLPS-25585:
-  name: "Monster Farm 5"
+  name: "Monster Farm 5 - Circus Caravan"
   region: "NTSC-J"
 SLPS-25586:
   name: "Tales of the Abyss"
@@ -42677,9 +42677,11 @@ SLUS-21329:
   region: "NTSC-U"
   compat: 3
 SLUS-21330:
-  name: "Monster Rancher 5"
+  name: "Monster Rancher Evo"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs.
 SLUS-21331:
   name: "Sonic Riders"
   region: "NTSC-U"
