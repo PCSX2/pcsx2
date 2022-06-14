@@ -772,9 +772,7 @@ void GSState::GIFPackedRegHandlerUV_Hack(const GIFPackedReg* RESTRICT r)
 template <u32 prim, u32 adc, bool auto_flush, bool index_swap>
 void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 {
-	const bool skip = adc ? 1 : r->XYZ2.Skip();
-	if (!skip)
-		CheckFlushes();
+	CheckFlushes();
 
 	GSVector4i xy = GSVector4i::loadl(&r->U64[0]);
 	GSVector4i zf = GSVector4i::loadl(&r->U64[1]);
@@ -784,15 +782,13 @@ void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 
 	m_v.m[1] = xy.upl32(zf);
 
-	VertexKick<prim, auto_flush, index_swap>(skip);
+	VertexKick<prim, auto_flush, index_swap>(adc ? 1 : r->XYZ2.Skip());
 }
 
 template <u32 prim, u32 adc, bool auto_flush, bool index_swap>
 void GSState::GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r)
 {
-	const bool skip = adc ? 1 : r->XYZ2.Skip();
-	if(!skip)
-		CheckFlushes();
+	CheckFlushes();
 
 	const GSVector4i xy = GSVector4i::loadl(&r->U64[0]);
 	const GSVector4i z = GSVector4i::loadl(&r->U64[1]);
@@ -800,7 +796,7 @@ void GSState::GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r)
 
 	m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV));
 
-	VertexKick<prim, auto_flush, index_swap>(skip);
+	VertexKick<prim, auto_flush, index_swap>(adc ? 1 : r->XYZ2.Skip());
 }
 
 void GSState::GIFPackedRegHandlerFOG(const GIFPackedReg* RESTRICT r)
