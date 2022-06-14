@@ -832,7 +832,8 @@ void GSLocalMemory::WriteImage(int& tx, int& ty, const u8* src, int len, GIFRegB
 
 	int la = (l + (bsx - 1)) & ~(bsx - 1);
 	int ra = r & ~(bsx - 1);
-	int srcpitch = (r - l) * trbpp >> 3;
+	// Round up to the nearest byte (NFL 2K5 does r = 1, l = 0 bpp =4, causing divide by zero)
+	int srcpitch = (((r - l) * trbpp) + 7) >> 3;
 	int h = len / srcpitch;
 
 	if (ra - la >= bsx && h > 0) // "transfer width" >= "block width" && there is at least one full row
