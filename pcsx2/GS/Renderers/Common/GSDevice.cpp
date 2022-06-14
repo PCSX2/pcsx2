@@ -377,7 +377,7 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	if (mode == 0 || mode == 2) // weave or blend
 	{
 		// weave first
-		const int offset = static_cast<int>(yoffset) * (1 - field);
+		const int offset = static_cast<int>(yoffset) * field;
 
 		DoInterlace(m_merge, m_weavebob, field, false, GSConfig.DisableInterlaceOffset ? 0 : offset);
 
@@ -398,7 +398,8 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	}
 	else if (mode == 1) // bob
 	{
-		DoInterlace(m_merge, m_weavebob, 3, true, yoffset * field);
+		// Field is reversed here as we are countering the bounce.
+		DoInterlace(m_merge, m_weavebob, 3, true, yoffset * (1-field));
 
 		m_current = m_weavebob;
 	}

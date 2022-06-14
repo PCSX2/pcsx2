@@ -1370,6 +1370,7 @@ void GSApp::Init()
 	m_default_configuration["fxaa"]                                       = "0";
 	m_default_configuration["GSDumpCompression"]                          = "0";
 	m_default_configuration["HWDisableReadbacks"]                         = "0";
+	m_default_configuration["pcrtc_antiblur"]                             = "1";
 	m_default_configuration["disable_interlace_offset"]                   = "0";
 	m_default_configuration["pcrtc_offsets"]                              = "0";
 	m_default_configuration["pcrtc_overscan"]                             = "0";

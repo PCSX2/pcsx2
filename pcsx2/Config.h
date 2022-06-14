@@ -433,6 +433,7 @@ struct Pcsx2Config
 			struct
 			{
 				bool
+					PCRTCAntiBlur : 1,
 					DisableInterlaceOffset : 1,
 					PCRTCOffsets : 1,
 					PCRTCOverscan : 1,

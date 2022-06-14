@@ -324,7 +324,7 @@ RendererTab::RendererTab(wxWindow* parent)
 	m_ui.addCheckBox(pcrtc_checks_box, "Screen Offsets", "pcrtc_offsets", IDC_PCRTC_OFFSETS);
 	m_ui.addCheckBox(pcrtc_checks_box, "Show Overscan", "pcrtc_overscan", IDC_PCRTC_OVERSCAN);
 	m_ui.addCheckBox(pcrtc_checks_box, "Disable Interlace Offset", "disable_interlace_offset", IDC_DISABLE_INTERLACE_OFFSETS);
-
+	m_ui.addCheckBox(pcrtc_checks_box, "Anti-Blur", "pcrtc_antiblur", IDC_PCRTC_ANTIBLUR);
 	general_box->Add(pcrtc_checks_box, wxSizerFlags().Center());
 
 	tab_box->Add(hardware_box.outer, wxSizerFlags().Expand());
