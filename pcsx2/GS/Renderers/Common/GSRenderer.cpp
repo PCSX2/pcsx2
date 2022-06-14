@@ -95,6 +95,7 @@ bool GSRenderer::Merge(int field)
 	GSVector2i frame_baseline = {INT_MAX, INT_MAX};
 	GSVector2i display_combined = {0, 0};
 	bool feedback_merge = m_regs->EXTWRITE.WRITE == 1;
+	bool display_offset = false;
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -114,6 +115,7 @@ bool GSRenderer::Merge(int field)
 			frame_baseline.x = std::min(fr[i].left, frame_baseline.x);
 			frame_baseline.y = std::min(fr[i].top, frame_baseline.y);
 
+			display_offset |= std::abs(display_baseline.y - display_offsets[i].y) == 1;
 			/*DevCon.Warning("Read offset was X %d(left %d) Y %d(top %d)", display_baseline.x, dr[i].left, display_baseline.y, dr[i].top);
 			DevCon.Warning("[%d]: %d %d %d %d, %d %d %d %d\n", i, fr[i].x,fr[i].y,fr[i].z,fr[i].w , dr[i].x,dr[i].y,dr[i].z,dr[i].w);
 			DevCon.Warning("Offset X %d Offset Y %d", display_offsets[i].x, display_offsets[i].y);*/
@@ -168,7 +170,7 @@ bool GSRenderer::Merge(int field)
 	const bool slbg = m_regs->PMODE.SLBG;
 
 	GSVector2i resolution(GetResolution());
-	bool scanmask_frame = true;
+	bool scanmask_frame = m_scanmask_used && !display_offset;
 	const bool ignore_offset = !GSConfig.PCRTCOffsets;
 
 	for (int i = 0; i < 2; i++)
@@ -186,55 +188,64 @@ bool GSRenderer::Merge(int field)
 
 		// If using scanmsk we have to keep the single line offset, regardless of upscale
 		// so we handle this separately after the rect calculations.
-		const int interlace_offset = display_diff.y & 1;
-
-		if (m_scanmask_used && interlace_offset)
+		float interlace_offset = 0.0f;
+		
+		if ((!GSConfig.PCRTCAntiBlur || m_scanmask_used) && display_offset)
 		{
-			display_diff.y &= ~1;
-			scanmask_frame = false;
+			interlace_offset = static_cast<float>(display_diff.y & 1);
+
+			// When the displays are offset by 1 we need to adjust for upscale to handle it (reduces bounce in MGS2 when upscaling)
+			interlace_offset += (tex[i]->GetScale().y - 1.0f)  / 2;
+
 			if (!ignore_offset)
 				off.y &= ~1;
+
+			display_diff.y &= ~1;
 		}
 
 		// Start of Anti-Blur code.
 		if (!ignore_offset)
 		{
-			if (samesrc)
+			if (GSConfig.PCRTCAntiBlur)
 			{
-				// Offset by DISPLAY setting
-				if (display_diff.x < 4)
-					off.x -= display_diff.x;
-				if (display_diff.y < 4)
-					off.y -= display_diff.y;
+				if (samesrc)
+				{
+					// Offset by DISPLAY setting
+					if (display_diff.x < 4)
+						off.x -= display_diff.x;
+					if (display_diff.y < 4)
+						off.y -= display_diff.y;
 
-				// Offset by DISPFB setting
-				if (frame_diff.x == 1)
-					off.x += 1;
-				if (frame_diff.y == 1)
-					off.y += 1;
+					// Offset by DISPFB setting
+					if (frame_diff.x == 1)
+						off.x += 1;
+					if (frame_diff.y == 1)
+						off.y += 1;
+				}
 			}
 		}
 		else
 		{
 			if (!slbg || !feedback_merge)
 			{
-				const int videomode = static_cast<int>(GetVideoMode()) - 1;
-				const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
-				GSVector2i base_resolution(offsets.x, offsets.y);
-
-				if (isinterlaced() && !m_regs->SMODE2.FFMD)
-					base_resolution.y *= 2;
-
 				// If the offsets between the two displays are quite large, it's probably intended for an effect.
-				if (display_diff.x >= 4)
+				if (display_diff.x >= 4 || !GSConfig.PCRTCAntiBlur)
 					off.x = display_diff.x;
 
-				if (display_diff.y >= 4)
+				if (display_diff.y >= 4 || !GSConfig.PCRTCAntiBlur)
 					off.y = display_diff.y;
 
-				// Anti blur hax.
+				
 				if (samesrc)
 				{
+					// Adjusting the screen offset when using a negative offset.
+					const int videomode = static_cast<int>(GetVideoMode()) - 1;
+					const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
+					GSVector2i base_resolution(offsets.x, offsets.y);
+
+					if (isinterlaced() && !m_regs->SMODE2.FFMD)
+						base_resolution.y *= 2;
+
 					// Offset by DISPLAY setting
 					if (display_diff.x < 0)
 					{
@@ -249,17 +260,21 @@ bool GSRenderer::Merge(int field)
 							resolution.y -= display_diff.y;
 					}
 
-					// Offset by DISPFB setting
-					if (frame_diff.x == 1)
-						off.x += 1;
-
-					if (frame_diff.y == 1)
-						off.y += 1;
-
 					// Don't do X, we only care about height, this would need to be tailored for games using X (Black does -5).
 					// Mainly for Hokuto no Ken which does -14 Y offset.
 					if (display_baseline.y < -4)
 						off.y += display_baseline.y;
+
+					// Anti-Blur stuff
+					if (GSConfig.PCRTCAntiBlur)
+					{
+						// Offset by DISPFB setting
+						if (frame_diff.x == 1)
+							off.x += 1;
+
+						if (frame_diff.y == 1)
+							off.y += 1;
+					}
 				}
 			}
 		}
@@ -277,9 +292,8 @@ bool GSRenderer::Merge(int field)
 		// src_out_rect is the resized rect for output. (Not really used)
 		src_out_rect[i] = (GSVector4(r) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
 
-		// Restore the single line offset for scanmsk.
-		if (m_scanmask_used && interlace_offset)
-			dst[i] += GSVector4(0.0f, 1.0f, 0.0f, 1.0f);
+		// Restore manually offset "interlace" lines
+		dst[i] += GSVector4(0.0f, interlace_offset, 0.0f, interlace_offset);
 	}
 
 	if (feedback_merge && tex[2])
@@ -335,24 +349,24 @@ bool GSRenderer::Merge(int field)
 
 		g_gs_device->Merge(tex, src_gs_read, dst, fs, m_regs->PMODE, m_regs->EXTBUF, c);
 
-		// Offset is not compatible with scanmsk, as scanmsk renders every other line, but at x7 the interlace offset will be 7 lines
-		const int offset = (m_scanmask_used || !m_regs->SMODE2.FFMD) ? 0 : (int)(tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
+		// Use offset for bob deinterlacing, for normal deinterlacing we add an extra 1 since it's clearer, with bob that causes extra shake.
+		const bool is_bob = GSConfig.InterlaceMode == GSInterlaceMode::BobTFF || GSConfig.InterlaceMode == GSInterlaceMode::BobBFF;
+		const float offset = (!m_regs->SMODE2.FFMD && !is_bob) ? 0 : ((tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y));
 
 		if (isReallyInterlaced() && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 		{
-			const bool scanmask = m_scanmask_used && scanmask_frame && GSConfig.InterlaceMode == GSInterlaceMode::Automatic;
-
-			if (GSConfig.InterlaceMode == GSInterlaceMode::Automatic && (m_regs->SMODE2.FFMD)) // Auto interlace enabled / Odd frame interlace setting
+			// FFMD (half frames) requires blend deinterlacing, so automatically use that. Same when SCANMSK is used but not blended in the merge circuit (Alpine Racer 3)
+			if (GSConfig.InterlaceMode == GSInterlaceMode::Automatic && (m_regs->SMODE2.FFMD || scanmask_frame))
 			{
-				constexpr int field2 = 1;
+				constexpr int field2 = 0;
 				constexpr int mode = 2;
 
 				g_gs_device->Interlace(ds, field ^ field2, mode, offset);
 			}
 			else
 			{
-				const int field2 = scanmask ? 0 : 1 - ((static_cast<int>(GSConfig.InterlaceMode) - 1) & 1);
-				const int mode = scanmask ? 2 : ((static_cast<int>(GSConfig.InterlaceMode) - 1) >> 1);
+				const int field2 = ((static_cast<int>(GSConfig.InterlaceMode) - 1) & 1);
+				const int mode = ((static_cast<int>(GSConfig.InterlaceMode) - 1) >> 1);
 
 				g_gs_device->Interlace(ds, field ^ field2, mode, offset);
 			}

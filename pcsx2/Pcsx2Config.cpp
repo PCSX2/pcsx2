@@ -300,6 +300,7 @@ Pcsx2Config::GSOptions::GSOptions()
 {
 	bitset = 0;
 
+	PCRTCAntiBlur = true;
 	DisableInterlaceOffset = false;
 	PCRTCOffsets = false;
 	PCRTCOverscan = false;
@@ -510,6 +511,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 
 	// Unfortunately, because code in the GS still reads the setting by key instead of
 	// using these variables, we need to use the old names. Maybe post 2.0 we can change this.
+	GSSettingBoolEx(PCRTCAntiBlur, "pcrtc_antiblur");
 	GSSettingBoolEx(DisableInterlaceOffset, "disable_interlace_offset");
 	GSSettingBoolEx(PCRTCOffsets, "pcrtc_offsets");
 	GSSettingBoolEx(PCRTCOverscan, "pcrtc_overscan");
