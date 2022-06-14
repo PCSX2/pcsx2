@@ -47,9 +47,6 @@ public:
 
 private Q_SLOTS:
 	void refreshList();
-	void browseSearchDirectory();
-	void openSearchDirectory();
-	void updateSearchDirectory();
 
 	void listItemChanged(const QTreeWidgetItem* current, const QTreeWidgetItem* previous);
 	void listRefreshed(const QVector<BIOSInfo>& items);

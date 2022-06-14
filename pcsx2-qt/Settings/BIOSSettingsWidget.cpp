@@ -38,28 +38,17 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastBoot, "EmuCore", "EnableFastBoot", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.patchRegion, "EmuCore", "PatchBios", false);
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.regionComboBox, "EmuCore", "PatchRegion", BiosZoneStrings, BiosZoneBytes, BiosZoneBytes[0]);
+	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.searchDirectory, m_ui.browseSearchDirectory, m_ui.openSearchDirectory,
+		m_ui.resetSearchDirectory, "Folders", "Bios", "bios");
 
-	dialog->registerWidgetHelp(m_ui.patchRegion, tr("Patch Region"),tr("Unchecked"),
+	dialog->registerWidgetHelp(m_ui.patchRegion, tr("Patch Region"), tr("Unchecked"),
 		tr("Patches the BIOS region byte in ROM. Not recommended unless you really know what you're doing."));
 	dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Unchecked"),
 		tr("Patches the BIOS to skip the console's boot animation."));
 
-	updateSearchDirectory();
 	refreshList();
 
-	connect(m_ui.searchDirectory, &QLineEdit::textChanged, [this](const QString& text) {
-		QtHost::SetBaseStringSettingValue("Folders", "Bios", text.toUtf8().constData());
-		QtHost::UpdateFolders();
-		refreshList();
-	});
-	connect(m_ui.resetSearchDirectory, &QPushButton::clicked, [this]() {
-		QtHost::RemoveBaseSettingValue("Folders", "Bios");
-		QtHost::UpdateFolders();
-		updateSearchDirectory();
-		refreshList();
-	});
-	connect(m_ui.browseSearchDirectory, &QPushButton::clicked, this, &BIOSSettingsWidget::browseSearchDirectory);
-	connect(m_ui.openSearchDirectory, &QPushButton::clicked, this, &BIOSSettingsWidget::openSearchDirectory);
+	connect(m_ui.searchDirectory, &QLineEdit::textChanged, this, &BIOSSettingsWidget::refreshList);
 	connect(m_ui.refresh, &QPushButton::clicked, this, &BIOSSettingsWidget::refreshList);
 	connect(m_ui.fileList, &QTreeWidget::currentItemChanged, this, &BIOSSettingsWidget::listItemChanged);
 
@@ -87,27 +76,6 @@ void BIOSSettingsWidget::refreshList()
 
 	m_refresh_thread = new RefreshThread(this, m_ui.searchDirectory->text());
 	m_refresh_thread->start();
-}
-
-void BIOSSettingsWidget::browseSearchDirectory()
-{
-	QString directory = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(
-		QtUtils::GetRootWidget(this), tr("Select Directory"), m_ui.searchDirectory->text()));
-	if (directory.isEmpty())
-		return;
-
-	m_ui.searchDirectory->setText(directory);
-}
-
-void BIOSSettingsWidget::openSearchDirectory()
-{
-	QtUtils::OpenURL(this, QUrl::fromLocalFile(m_ui.searchDirectory->text()));
-}
-
-void BIOSSettingsWidget::updateSearchDirectory()
-{
-	// this will generate a full path
-	m_ui.searchDirectory->setText(QString::fromStdString(EmuFolders::Bios));
 }
 
 void BIOSSettingsWidget::listRefreshed(const QVector<BIOSInfo>& items)

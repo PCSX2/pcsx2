@@ -412,6 +412,17 @@ void EmuThread::reloadGameSettings()
 	}
 }
 
+void EmuThread::updateEmuFolders()
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, &EmuThread::updateEmuFolders, Qt::QueuedConnection);
+		return;
+	}
+
+	Host::Internal::UpdateEmuFolders();
+}
+
 void EmuThread::loadOurSettings()
 {
 	m_verbose_status = Host::GetBaseBoolSettingValue("UI", "VerboseStatusBar", false);

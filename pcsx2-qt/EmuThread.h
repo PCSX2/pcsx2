@@ -70,6 +70,7 @@ public Q_SLOTS:
 	void setSurfaceless(bool surfaceless);
 	void applySettings();
 	void reloadGameSettings();
+	void updateEmuFolders();
 	void toggleSoftwareRendering();
 	void switchRenderer(GSRendererType renderer);
 	void changeDisc(const QString& path);
