@@ -120,6 +120,9 @@ struct PadFullFreezeData
 	u8 slot[2];
 	PadFreezeData padData[2][4];
 	QueryInfo query;
+	// unused padding data, present only so that data size
+	// matches Windows version for cross-platform save/load
+	char padding[8];
 };
 
 extern QueryInfo query;
