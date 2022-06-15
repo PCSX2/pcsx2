@@ -2045,7 +2045,7 @@ void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, con
 		if (!FileSystem::StatFile(state_filename.c_str(), &sd))
 			continue;
 
-		action = menu->addAction(tr("Save Slot %1 (%2)").arg(i).arg(formatTimestampForSaveStateMenu(sd.ModificationTime)));
+		action = menu->addAction(tr("Load Slot %1 (%2)").arg(i).arg(formatTimestampForSaveStateMenu(sd.ModificationTime)));
 		connect(action, &QAction::triggered, [this, i]() { loadSaveStateSlot(i); });
 	}
 }
