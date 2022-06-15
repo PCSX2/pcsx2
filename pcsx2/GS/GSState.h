@@ -132,7 +132,6 @@ class GSState : public GSAlignedClass<32>
 	{
 		int x, y;
 		int start, end, total;
-		bool overflow;
 		u8* buff;
 		GIFRegBITBLTBUF m_blit;
 

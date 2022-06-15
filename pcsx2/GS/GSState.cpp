@@ -3792,7 +3792,6 @@ GIFRegTEX0 GSState::GetTex0Layer(u32 lod)
 GSState::GSTransferBuffer::GSTransferBuffer()
 {
 	x = y = 0;
-	overflow = false;
 	start = end = total = 0;
 
 	constexpr size_t alloc_size = 1024 * 1024 * 4;
@@ -3814,24 +3813,21 @@ void GSState::GSTransferBuffer::Init(int tx, int ty, const GIFRegBITBLTBUF& blit
 
 bool GSState::GSTransferBuffer::Update(int tw, int th, int bpp, int& len)
 {
-	u32 packet_size = 0;
-	u32 tex_size = 0;
+	int tex_size = (((tw * th * bpp) + 7) >> 3); // Round to nearest byte
+	int packet_size = (tex_size + 15) & ~0xF; // Round up to the nearest quadword
+
 	if (total == 0)
 	{
 		start = end = 0;
-		tex_size = (((tw * th * bpp) + 7) >> 3);
-		packet_size = (tex_size + 15) & ~0xF; // Round up to the nearest quadword
 		total = std::min<int>(tex_size, 1024 * 1024 * 4);
-		overflow = false;
 	}
 
 	const int remaining = total - end;
 
 	if (len > remaining)
 	{
-		if (!overflow && len > packet_size)
+		if (len > packet_size)
 		{
-			overflow = true;
 #if defined(PCSX2_DEVBUILD) || defined(_DEBUG)
 			Console.Warning("GS transfer buffer overflow len %d remaining %d, tex_size %d tw %d th %d bpp %d", len, remaining, tex_size, tw, th, bpp);
 #endif
