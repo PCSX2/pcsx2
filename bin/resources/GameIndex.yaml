@@ -9402,6 +9402,8 @@ SLES-50355:
   region: "PAL-M6"
   gameFixes:
     - EETimingHack # Fixes video speed.
+  gsHWFixes:
+    halfPixelOffset: 3 # Fixes ghosting on Batman
 SLES-50356:
   name: "ESPN International Winter Sports"
   region: "PAL-E"
@@ -37560,6 +37562,8 @@ SLUS-20226:
   compat: 5
   gameFixes:
     - EETimingHack # Fixes video speed.
+  gsHWFixes:
+    halfPixelOffset: 3 # Fixes ghosting on Batman
 SLUS-20227:
   name: "Star Trek Voyager - Elite Force"
   region: "NTSC-U"
