@@ -48,6 +48,7 @@
 #include "Frontend/InputManager.h"
 #include "VMManager.h"
 #endif
+#include <pcsx2/Recording/InputRecording.h>
 
 namespace ImGuiManager
 {
