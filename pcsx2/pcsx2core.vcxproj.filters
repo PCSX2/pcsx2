@@ -238,6 +238,9 @@
     <Filter Include="Tools\Input Recording">
       <UniqueIdentifier>{03ba2aa7-2cd9-48cb-93c6-fc93d5bdc938}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Tools\Input Recording\Utilities">
+      <UniqueIdentifier>{78c9db9c-9c7c-4385-90e7-9fa71b922f60}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Utilities\folderdesc.txt">
@@ -1263,11 +1266,11 @@
     <ClCompile Include="Recording\InputRecordingFile.cpp">
       <Filter>Tools\Input Recording</Filter>
     </ClCompile>
-    <ClCompile Include="Recording\Utilities\InputRecordingLogger.cpp">
-      <Filter>Tools\Input Recording</Filter>
-    </ClCompile>
     <ClCompile Include="Recording\PadData.cpp">
       <Filter>Tools\Input Recording</Filter>
+    </ClCompile>
+    <ClCompile Include="Recording\Utilities\InputRecordingLogger.cpp">
+      <Filter>Tools\Input Recording\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="Frontend\LogSink.cpp">
       <Filter>Host</Filter>
@@ -2128,11 +2131,11 @@
     <ClInclude Include="Recording\InputRecordingFile.h">
       <Filter>Tools\Input Recording</Filter>
     </ClInclude>
-    <ClInclude Include="Recording\Utilities\InputRecordingLogger.h">
-      <Filter>Tools\Input Recording</Filter>
-    </ClInclude>
     <ClInclude Include="Recording\PadData.h">
       <Filter>Tools\Input Recording</Filter>
+    </ClInclude>
+    <ClInclude Include="Recording\Utilities\InputRecordingLogger.h">
+      <Filter>Tools\Input Recording\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="Frontend\LogSink.h">
       <Filter>Host</Filter>

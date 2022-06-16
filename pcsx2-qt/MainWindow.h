@@ -22,6 +22,7 @@
 #include <functional>
 #include <optional>
 
+#include "Tools/InputRecording/InputRecordingViewer.h"
 #include "Settings/ControllerSettingsDialog.h"
 #include "Settings/SettingsDialog.h"
 #include "ui_MainWindow.h"
@@ -163,6 +164,7 @@ private Q_SLOTS:
 	void onInputRecPlayActionTriggered();
 	void onInputRecStopActionTriggered();
 	void onInputRecOpenSettingsTriggered();
+	void onInputRecOpenViewer();
 
 	void onVMStarting();
 	void onVMStarted();
@@ -224,6 +226,9 @@ private:
 	SettingsDialog* getSettingsDialog();
 	void doSettings(const char* category = nullptr);
 
+	InputRecordingViewer* getInputRecordingViewer();
+	void updateInputRecordingActions(bool started);
+
 	ControllerSettingsDialog* getControllerSettingsDialog();
 	void doControllerSettings(ControllerSettingsDialog::Category category = ControllerSettingsDialog::Category::Count);
 
@@ -250,6 +255,7 @@ private:
 	DisplayContainer* m_display_container = nullptr;
 
 	SettingsDialog* m_settings_dialog = nullptr;
+	InputRecordingViewer* m_input_recording_viewer = nullptr;
 	ControllerSettingsDialog* m_controller_settings_dialog = nullptr;
 	AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
 
