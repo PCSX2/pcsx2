@@ -150,15 +150,10 @@ public:
 	// Closes the underlying input recording file, writing the header and
 	// prepares for a possible new recording to be started
 	bool Close();
-	// Retrieve the input recording's filename (not the path)
-	const std::string& GetFilename();
-	// Retrieve the input recording's header which contains high-level metadata on the recording
-	InputRecordingFileHeader& GetHeader();
-	// The maximum number of frames, or in other words, the length of the recording
-	long& GetTotalFrames();
+	
 	// The number of times a save-state has been loaded while recording this movie
 	// this is also often referred to as a "re-record"
-	unsigned long& GetUndoCount();
+	
 	// Whether or not this input recording starts by loading a save-state or by booting the game fresh
 	bool FromSaveState();
 	// Increment the number of undo actions and commit it to the recording file
@@ -177,6 +172,16 @@ public:
 	bool WriteHeader();
 	// Writes the current frame's input data to the file so it can be replayed
 	bool WriteKeyBuffer(const uint& frame, const uint port, const uint bufIndex, const u8& buf);
+
+
+	// Retrieve the input recording's filename (not the path)
+	const std::string& getFilename() const;
+	InputRecordingFileHeader& getHeader();
+	const long& getTotalFrames() const;
+	const unsigned long& getUndoCount() const;
+
+	void logRecordingMetadata();
+	std::vector<PadData> bulkReadPadData(long frameStart, long frameEnd, const uint port);
 
 private:
 	static const int controllerPortsSupported = 2;

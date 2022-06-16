@@ -19,38 +19,40 @@
 
 #include "DebugTools/Debug.h"
 #include "common/Console.h"
-#include "GS.h"				// GSosdlog
+#include "GS.h"
 #include "Host.h"
 
 #include <fmt/core.h>
 
-namespace inputRec
+namespace InputRec
 {
 	void log(const std::string& log)
 	{
-		if (log.empty())
-			return;
-
-		recordingConLog(fmt::format("[REC]: {}\n", log));
-
-		// NOTE - Color is not currently used for OSD logs
-		Host::AddOSDMessage(log, 15.0f);
+		if (!log.empty())
+		{
+			recordingConLog(fmt::format("[REC]: {}\n", log));
+			Host::AddOSDMessage(log, 15.0f);
+		}
 	}
 
 	void consoleLog(const std::string& log)
 	{
-		if (log.empty())
-			return;
-
-		recordingConLog(fmt::format("[REC]: {}\n", log));
+		if (!log.empty())
+		{
+			recordingConLog(fmt::format("[REC]: {}\n", log));
+		}
 	}
 
 	void consoleMultiLog(const std::vector<std::string>& logs)
 	{
-		std::string log;
-		for (std::string l : logs)
-			log.append(fmt::format("[REC]: {}\n", l));
-
-		recordingConLog(log);
+		if (!logs.empty())
+		{
+			std::string log;
+			for (std::string l : logs)
+			{
+				log.append(fmt::format("[REC]: {}\n", l));
+			}
+			recordingConLog(log);
+		}
 	}
-} // namespace inputRec
+} // namespace InputRecording
