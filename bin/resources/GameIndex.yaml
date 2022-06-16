@@ -14813,6 +14813,9 @@ SLES-52986:
 SLES-52988:
   name: "Mega Man X8"
   region: "PAL-M5"
+  gsHWFixes:
+    autoFlush: 1 # Fixes bloom.
+    roundSprite: 1 # Fixes misalliged bloom.
   memcardFilters: # Reads Command Mission save for bonus boss.
     - "SLES-52988"
     - "SLES-52832"
@@ -21597,6 +21600,9 @@ SLKA-25221:
 SLKA-25222:
   name: "Rockman X8"
   region: "NTSC-K"
+  gsHWFixes:
+    autoFlush: 1 # Fixes bloom.
+    roundSprite: 1 # Fixes misalliged bloom.
 SLKA-25224:
   name: "Detective Saburo Jinguji 9 - Kind of Blue"
   region: "NTSC-K"
@@ -27007,6 +27013,9 @@ SLPM-65729:
 SLPM-65730:
   name: "Rockman X8"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes bloom.
+    roundSprite: 1 # Fixes misalliged bloom.
   gameFixes:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   memcardFilters:
@@ -40921,6 +40930,9 @@ SLUS-20960:
   name: "Mega Man X8"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes bloom.
+    roundSprite: 1 # Fixes misalliged bloom.
   memcardFilters:
     - "SLUS-20960"
     - "SLUS-20903"
