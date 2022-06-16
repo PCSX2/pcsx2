@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-namespace inputRec
+namespace InputRec
 {
 	void log(const std::string& log);
 	void consoleLog(const std::string& log);

@@ -242,6 +242,9 @@ bool InputRecordingFile::verifyRecordingFileHeader()
 
 #include <fmt/format.h>
 
+#include <vector>
+#include <array>
+
 void InputRecordingFileHeader::Init()
 {
 	memset(author, 0, std::size(author));
@@ -282,22 +285,22 @@ bool InputRecordingFile::Close()
 	return true;
 }
 
-const std::string& InputRecordingFile::GetFilename()
+const std::string& InputRecordingFile::getFilename() const
 {
 	return filename;
 }
 
-InputRecordingFileHeader& InputRecordingFile::GetHeader()
+InputRecordingFileHeader& InputRecordingFile::getHeader()
 {
 	return header;
 }
 
-long& InputRecordingFile::GetTotalFrames()
+const long& InputRecordingFile::getTotalFrames() const
 {
 	return totalFrames;
 }
 
-unsigned long& InputRecordingFile::GetUndoCount()
+const unsigned long& InputRecordingFile::getUndoCount() const
 {
 	return undoCount;
 }
@@ -339,10 +342,10 @@ bool InputRecordingFile::open(const std::string_view& path, bool newRecording)
 			return true;
 		}
 		Close();
-		inputRec::consoleLog("Input recording file header is invalid");
+		InputRec::consoleLog("Input recording file header is invalid");
 		return false;
 	}
-	inputRec::consoleLog(fmt::format("Input recording file opening failed. Error - {}", strerror(errno)));
+	InputRec::consoleLog(fmt::format("Input recording file opening failed. Error - {}", strerror(errno)));
 	return false;
 }
 
@@ -418,6 +421,49 @@ bool InputRecordingFile::WriteKeyBuffer(const uint& frame, const uint port, cons
 	return true;
 }
 
+void InputRecordingFile::logRecordingMetadata()
+{
+	InputRec::consoleMultiLog({fmt::format("File: {}", getFilename()),
+		fmt::format("PCSX2 Version Used: {}", std::string(getHeader().emu)),
+		fmt::format("Recording File Version: {}", getHeader().version),
+		fmt::format("Associated Game Name or ISO Filename: {}", std::string(getHeader().gameName)),
+		fmt::format("Author: {}", getHeader().author),
+		fmt::format("Total Frames: {}", getTotalFrames()),
+		fmt::format("Undo Count: {}", getUndoCount())});
+}
+
+std::vector<PadData> InputRecordingFile::bulkReadPadData(long frameStart, long frameEnd, const uint port)
+{
+	std::vector<PadData> data = {};
+
+	if (recordingFile == nullptr)
+	{
+		return data;
+	}
+
+	frameStart = frameStart < 0 ? 0 : frameStart;
+
+	std::array<u8, controllerInputBytes> padBytes;
+
+	// TODO - there are probably issues here if the file is too small / the frame counters are invalid!
+	for (int frame = frameStart; frame < frameEnd; frame++)
+	{
+		const long seek = getRecordingBlockSeekPoint(frame) + controllerInputBytes * port;
+		fseek(recordingFile, seek, SEEK_SET);
+		if (fread(&padBytes, 1, padBytes.size(), recordingFile))
+		{
+			PadData frameData;
+			for (int i = 0; i < padBytes.size(); i++)
+			{
+				frameData.UpdateControllerData(i, padBytes.at(i));
+			}
+			data.push_back(frameData);
+		}
+	}
+
+	return data;
+}
+
 long InputRecordingFile::getRecordingBlockSeekPoint(const long& frame)
 {
 	return headerSize + sizeof(bool) + frame * inputBytesPerFrame;
@@ -439,7 +485,7 @@ bool InputRecordingFile::verifyRecordingFileHeader()
 	// Check for current verison
 	if (header.version != 1)
 	{
-		inputRec::consoleLog(fmt::format("Input recording file is not a supported version - {}", header.version));
+		InputRec::consoleLog(fmt::format("Input recording file is not a supported version - {}", header.version));
 		return false;
 	}
 	return true;
