@@ -104,6 +104,11 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			_("VU XGkick Sync - Use accurate timing for VU XGKicks (Slower)"),
 			pxEt(L"Fixes graphical errors on WRC, Erementar Gerad, Tennis Court Smash and others."
 			)
+		},
+		{
+			_("Use Blit for internal FPS"),
+			pxEt(L"Use alternative method to calclate internal FPS to avoid false readings in some games."
+			)
 		}
 	};
 
