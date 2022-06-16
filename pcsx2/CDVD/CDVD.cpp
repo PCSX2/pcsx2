@@ -841,8 +841,22 @@ void cdvdReset()
 
 	// If we are recording, always use the same RTC setting
 	// for games that use the RTC to seed their RNG -- this is very important to be the same everytime!
-#ifndef DISABLE_RECORDING
+#ifndef PCSX2_CORE
 	if (g_InputRecording.IsActive())
+	{
+		Console.WriteLn("Input Recording Active - Using Constant RTC of 04-03-2020 (DD-MM-YYYY)");
+		// Why not just 0 everything? Some games apparently require the date to be valid in terms of when
+		// the PS2 / Game actually came out. (MGS3).  So set it to a value well beyond any PS2 game's release date.
+		cdvd.RTC.second = 0;
+		cdvd.RTC.minute = 0;
+		cdvd.RTC.hour = 0;
+		cdvd.RTC.day = 4;
+		cdvd.RTC.month = 3;
+		cdvd.RTC.year = 20;
+	}
+	else
+#else
+	if (g_InputRecording.isActive())
 	{
 		Console.WriteLn("Input Recording Active - Using Constant RTC of 04-03-2020 (DD-MM-YYYY)");
 		// Why not just 0 everything? Some games apparently require the date to be valid in terms of when

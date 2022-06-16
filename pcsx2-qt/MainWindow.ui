@@ -762,21 +762,33 @@
    </property>
   </action>
   <action name="actionInputRecNew">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>New</string>
    </property>
   </action>
   <action name="actionInputRecPlay">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Play</string>
    </property>
   </action>
   <action name="actionInputRecStop">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Stop</string>
    </property>
   </action>
   <action name="actionInputRecOpenSettings">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Settings</string>
    </property>
