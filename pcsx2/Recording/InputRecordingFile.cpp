@@ -124,10 +124,10 @@ bool InputRecordingFile::open(const wxString path, bool newRecording)
 			return true;
 		}
 		Close();
-		inputRec::consoleLog("Input recording file header is invalid");
+		InputRec::consoleLog("Input recording file header is invalid");
 		return false;
 	}
-	inputRec::consoleLog(fmt::format("Input recording file opening failed. Error - {}", strerror(errno)));
+	InputRec::consoleLog(fmt::format("Input recording file opening failed. Error - {}", strerror(errno)));
 	return false;
 }
 
@@ -224,7 +224,7 @@ bool InputRecordingFile::verifyRecordingFileHeader()
 	// Check for current verison
 	if (header.version != 1)
 	{
-		inputRec::consoleLog(fmt::format("Input recording file is not a supported version - {}", header.version));
+		InputRec::consoleLog(fmt::format("Input recording file is not a supported version - {}", header.version));
 		return false;
 	}
 	return true;
