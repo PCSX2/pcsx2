@@ -32159,6 +32159,9 @@ SLPS-20106:
   name: "Growlanser II - The Sense of Justice"
   region: "NTSC-J"
   compat: 4
+SLPS-20107:
+  name: "NBA Street"
+  region: "NTSC-J"
 SLPS-20108:
   name: "Quake III - Revolution"
   region: "NTSC-J"
@@ -32209,6 +32212,9 @@ SLPS-20131:
 SLPS-20132:
   name: "Chenuen no San Goku Shi (Chen Wen's Romance of the Three Kingdoms)"
   region: "NTSC-J"
+SLPS-20135:
+  name: "Pai Chenjan"
+  region: "NTSC-J"
 SLPS-20136:
   name: "Guilty Gear X Plus [DX Pack]"
   region: "NTSC-J"
@@ -32217,6 +32223,9 @@ SLPS-20137:
   name: "Guilty Gear X Plus"
   region: "NTSC-J"
   compat: 5
+SLPS-20138:
+  name: "Digital Holmes"
+  region: "NTSC-J"
 SLPS-20139:
   name: "All Star Pro-Wrestling II"
   region: "NTSC-J"
@@ -32254,20 +32263,35 @@ SLPS-20165:
 SLPS-20167:
   name: "La Pucelle"
   region: "NTSC-J"
+SLPS-20168:
+  name: "NHL 2002"
+  region: "NTSC-J"
 SLPS-20169:
   name: "Chou! Rakushii Internet Tomodachi Nowa [Type-PG]"
+  region: "NTSC-J"
+SLPS-20170:
+  name: "Wave Rally"
   region: "NTSC-J"
 SLPS-20171:
   name: "Smash Court Tennis Pro"
   region: "NTSC-J"
+SLPS-20173:
+  name: "Magical Sports - Hard Hitter 2"
+  region: "NTSC-J"
+SLPS-20174:
+  name: "Typing Renai Hakusho - Boys Be... [with Keyboard]"
+  region: "NTSC-J"
 SLPS-20175:
-  name: "Typing Love Story - Boys Be"
+  name: "Typing Renai Hakusho - Boys Be..."
   region: "NTSC-J"
 SLPS-20177:
   name: "Make Your Dream Home"
   region: "NTSC-J"
 SLPS-20178:
   name: "Samurai"
+  region: "NTSC-J"
+SLPS-20183:
+  name: "Motto Golful Golf"
   region: "NTSC-J"
 SLPS-20185:
   name: "Wangan Midnight"
@@ -33569,6 +33593,11 @@ SLPS-25155:
 SLPS-25156:
   name: "King of Fighters 2000, The"
   region: "NTSC-J"
+SLPS-25157:
+  name: "Madden NFL Super Bowl 2003"
+  region: "NTSC-J"
+  clampModes:
+    vuClampMode: 3 # Missing geometry with microVU.
 SLPS-25158:
   name: "dot hack - Outbreak Part 3"
   region: "NTSC-J"
@@ -33629,6 +33658,9 @@ SLPS-25171:
 SLPS-25172:
   name: "Tales of Destiny 2"
   region: "NTSC-J"
+SLPS-25173:
+  name: "Omoide ni Kawaru Kimi - Memories Off"
+  region: "NTSC-J"
 SLPS-25174:
   name: "Dragon Ball Z - Budokai"
   region: "NTSC-J"
@@ -33664,6 +33696,9 @@ SLPS-25185:
   region: "NTSC-J"
 SLPS-25186:
   name: "Kidou Shinsengumi - Moe yo Ken"
+  region: "NTSC-J"
+SLPS-25188:
+  name: "Erde - Nezu no Ki no Shita de"
   region: "NTSC-J"
 SLPS-25190:
   name: "Sweet Legacy"
