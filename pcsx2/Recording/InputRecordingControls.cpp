@@ -244,9 +244,9 @@ void InputRecordingControls::toggleRecordMode()
 	}
 }
 
-void InputRecordingControls::setRecordMode()
+void InputRecordingControls::setRecordMode(bool waitForFrameToEnd)
 {
-	if (VMManager::GetState() == VMState::Paused)
+	if (!waitForFrameToEnd || VMManager::GetState() == VMState::Paused)
 	{
 		m_state = Mode::Recording;
 		InputRec::log("Record mode ON");
@@ -260,9 +260,9 @@ void InputRecordingControls::setRecordMode()
 	}
 }
 
-void InputRecordingControls::setReplayMode()
+void InputRecordingControls::setReplayMode(bool waitForFrameToEnd)
 {
-	if (VMManager::GetState() == VMState::Paused)
+	if (!waitForFrameToEnd || VMManager::GetState() == VMState::Paused)
 	{
 		m_state = Mode::Replaying;
 		InputRec::log("Replay mode ON");
