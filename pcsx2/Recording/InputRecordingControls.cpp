@@ -167,7 +167,7 @@ void InputRecordingControls::TogglePause()
 	{
 		resumeEmulation = pauseEmulation;
 		pauseEmulation = !pauseEmulation;
-		inputRec::log(pauseEmulation ? "Paused Emulation" : "Resumed Emulation");
+		InputRec::log(pauseEmulation ? "Paused Emulation" : "Resumed Emulation");
 	}
 	else
 		g_InputRecording.SetToRecordMode();
@@ -211,7 +211,7 @@ void InputRecordingControls::StopCapture() const
 		if (mainFrame->IsCapturing())
 		{
 			mainFrame->VideoCaptureToggle();
-			inputRec::log("Capture completed");
+			InputRec::log("Capture completed");
 		}
 	}
 }

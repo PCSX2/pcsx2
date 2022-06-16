@@ -162,7 +162,7 @@ void GSPanel::InitRecordingAccelerators()
 		GetAssociatedKeyCode("InputRecordingModeToggle"),
 		g_InputRecording.IsActive());
 
-	inputRec::consoleLog("Initialized Input Recording Key Bindings");
+	InputRec::consoleLog("Initialized Input Recording Key Bindings");
 }
 
 wxString GSPanel::GetAssociatedKeyCode(const char* id)

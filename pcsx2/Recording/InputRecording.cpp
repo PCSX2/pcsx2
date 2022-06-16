@@ -113,7 +113,7 @@ void InputRecording::ControllerInterrupt(u8 port, size_t fifoSize, u8 dataIn, u8
 			if (frameCounter >= 0 && frameCounter < INT_MAX)
 			{
 				if (!inputRecordingData.ReadKeyBuffer(bufVal, frameCounter, port, bufIndex))
-					inputRec::consoleLog(fmt::format("Failed to read input data at frame {}", frameCounter));
+					InputRec::consoleLog(fmt::format("Failed to read input data at frame {}", frameCounter));
 
 				// Update controller data state for future VirtualPad / logging usage.
 				pads[port].padData->UpdateControllerData(bufIndex, bufVal);
@@ -144,7 +144,7 @@ void InputRecording::ControllerInterrupt(u8 port, size_t fifoSize, u8 dataIn, u8
 					}
 
 					if (frameCounter < INT_MAX && !inputRecordingData.WriteKeyBuffer(frameCounter, port, bufIndex, bufVal))
-						inputRec::consoleLog(fmt::format("Failed to write input data at frame {}", frameCounter));
+						InputRec::consoleLog(fmt::format("Failed to write input data at frame {}", frameCounter));
 				}
 			}
 			// If the VirtualPad updated the PadData, we have to update the buffer
@@ -245,7 +245,7 @@ void InputRecording::SetToRecordMode()
 	state = InputRecordingMode::Recording;
 	pads[CONTROLLER_PORT_ONE].virtualPad->SetReadOnlyMode(false);
 	pads[CONTROLLER_PORT_TWO].virtualPad->SetReadOnlyMode(false);
-	inputRec::log("Record mode ON");
+	InputRec::log("Record mode ON");
 }
 
 void InputRecording::SetToReplayMode()
@@ -253,15 +253,15 @@ void InputRecording::SetToReplayMode()
 	state = InputRecordingMode::Replaying;
 	pads[CONTROLLER_PORT_ONE].virtualPad->SetReadOnlyMode(true);
 	pads[CONTROLLER_PORT_TWO].virtualPad->SetReadOnlyMode(true);
-	inputRec::log("Replay mode ON");
+	InputRec::log("Replay mode ON");
 }
 
 void InputRecording::SetFrameCounter(u32 newGFrameCount)
 {
 	if (newGFrameCount > startingFrame + (u32)inputRecordingData.GetTotalFrames())
 	{
-		inputRec::consoleLog("Warning, you've loaded PCSX2 emulation to a point after the end of the original recording. This should be avoided.");
-		inputRec::consoleLog("Savestate's framecount has been ignored.");
+		InputRec::consoleLog("Warning, you've loaded PCSX2 emulation to a point after the end of the original recording. This should be avoided.");
+		InputRec::consoleLog("Savestate's framecount has been ignored.");
 		frameCounter = inputRecordingData.GetTotalFrames();
 		if (state == InputRecordingMode::Replaying)
 			SetToRecordMode();
@@ -271,7 +271,7 @@ void InputRecording::SetFrameCounter(u32 newGFrameCount)
 	{
 		if (newGFrameCount < startingFrame)
 		{
-			inputRec::consoleLog("Warning, you've loaded PCSX2 emulation to a point before the start of the original recording. This should be avoided.");
+			InputRec::consoleLog("Warning, you've loaded PCSX2 emulation to a point before the start of the original recording. This should be avoided.");
 			if (state == InputRecordingMode::Recording)
 				SetToReplayMode();
 		}
@@ -287,8 +287,8 @@ void InputRecording::SetupInitialState(u32 newStartingFrame)
 	startingFrame = newStartingFrame;
 	if (state != InputRecordingMode::Replaying)
 	{
-		inputRec::log("Started new input recording");
-		inputRec::consoleLog(fmt::format("Filename {}", inputRecordingData.GetFilename().ToUTF8()));
+		InputRec::log("Started new input recording");
+		InputRec::consoleLog(fmt::format("Filename {}", inputRecordingData.GetFilename().ToUTF8()));
 		SetToRecordMode();
 	}
 	else
@@ -296,11 +296,11 @@ void InputRecording::SetupInitialState(u32 newStartingFrame)
 		// Check if the current game matches with the one used to make the original recording
 		if (!g_Conf->CurrentIso.IsEmpty())
 			if (resolveGameName() != inputRecordingData.GetHeader().gameName)
-				inputRec::consoleLog("Input recording was possibly constructed for a different game.");
+				InputRec::consoleLog("Input recording was possibly constructed for a different game.");
 
 		incrementUndo = true;
-		inputRec::log("Replaying input recording");
-		inputRec::consoleMultiLog({fmt::format("File: {}", inputRecordingData.GetFilename().ToUTF8()),
+		InputRec::log("Replaying input recording");
+		InputRec::consoleMultiLog({fmt::format("File: {}", inputRecordingData.GetFilename().ToUTF8()),
 			fmt::format("PCSX2 Version Used: {}", std::string(inputRecordingData.GetHeader().emu)),
 			fmt::format("Recording File Version: {}", inputRecordingData.GetHeader().version),
 			fmt::format("Associated Game Name or ISO Filename: {}", std::string(inputRecordingData.GetHeader().gameName)),
@@ -311,7 +311,7 @@ void InputRecording::SetupInitialState(u32 newStartingFrame)
 	}
 
 	if (inputRecordingData.FromSaveState())
-		inputRec::consoleLog(fmt::format("Internal Starting Frame: {}", startingFrame));
+		InputRec::consoleLog(fmt::format("Internal Starting Frame: {}", startingFrame));
 	frameCounter = 0;
 	initialLoad = false;
 	g_InputRecordingControls.Lock(startingFrame);
@@ -319,8 +319,8 @@ void InputRecording::SetupInitialState(u32 newStartingFrame)
 
 void InputRecording::FailedSavestate()
 {
-	inputRec::consoleLog(fmt::format("{} is not compatible with this version of PCSX2", savestate.ToUTF8()));
-	inputRec::consoleLog(fmt::format("Original PCSX2 version used: {}", inputRecordingData.GetHeader().emu));
+	InputRec::consoleLog(fmt::format("{} is not compatible with this version of PCSX2", savestate.ToUTF8()));
+	InputRec::consoleLog(fmt::format("Original PCSX2 version used: {}", inputRecordingData.GetHeader().emu));
 	inputRecordingData.Close();
 	initialLoad = false;
 	state = InputRecordingMode::NotActive;
@@ -334,7 +334,7 @@ void InputRecording::Stop()
 	pads[CONTROLLER_PORT_TWO].virtualPad->SetReadOnlyMode(false);
 	incrementUndo = false;
 	if (inputRecordingData.Close())
-		inputRec::log("Input recording stopped");
+		InputRec::log("Input recording stopped");
 }
 
 bool InputRecording::Create(wxString fileName, const bool fromSaveState, wxString authorName)
@@ -378,7 +378,7 @@ bool InputRecording::Play(wxWindow* parent, wxString filename)
 	{
 		if (!GetCoreThread().IsOpen())
 		{
-			inputRec::consoleLog("Game is not open, aborting playing input recording which starts on a save-state.");
+			InputRec::consoleLog("Game is not open, aborting playing input recording which starts on a save-state.");
 			inputRecordingData.Close();
 			return false;
 		}
@@ -390,14 +390,14 @@ bool InputRecording::Play(wxWindow* parent, wxString filename)
 				L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
 			if (loadStateDialog.ShowModal() == wxID_CANCEL)
 			{
-				inputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}", savestate.ToUTF8()));
-				inputRec::log("Savestate load failed");
+				InputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}", savestate.ToUTF8()));
+				InputRec::log("Savestate load failed");
 				inputRecordingData.Close();
 				return false;
 			}
 
 			savestate = loadStateDialog.GetPath();
-			inputRec::consoleLog(fmt::format("Base savestate set to {}", savestate.ToUTF8()));
+			InputRec::consoleLog(fmt::format("Base savestate set to {}", savestate.ToUTF8()));
 		}
 		state = InputRecordingMode::Replaying;
 		initialLoad = true;
@@ -423,7 +423,7 @@ void InputRecording::GoToFirstFrame(wxWindow* parent)
 			if (!initiallyPaused)
 				g_InputRecordingControls.PauseImmediately();
 
-			inputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}\n", savestate.ToUTF8()));
+			InputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}\n", savestate.ToUTF8()));
 			wxFileDialog loadStateDialog(parent, _("Select a savestate to accompany the recording with"), L"", L"",
 				L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
 			int result = loadStateDialog.ShowModal();
@@ -432,11 +432,11 @@ void InputRecording::GoToFirstFrame(wxWindow* parent)
 
 			if (result == wxID_CANCEL)
 			{
-				inputRec::log("Savestate load cancelled");
+				InputRec::log("Savestate load cancelled");
 				return;
 			}
 			savestate = loadStateDialog.GetPath();
-			inputRec::consoleLog(fmt::format("Base savestate swapped to {}", savestate.ToUTF8()));
+			InputRec::consoleLog(fmt::format("Base savestate swapped to {}", savestate.ToUTF8()));
 		}
 		StateCopy_LoadFromFile(savestate);
 	}
