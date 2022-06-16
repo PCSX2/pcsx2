@@ -137,6 +137,7 @@
     <ClCompile Include="QtProgressCallback.cpp" />
     <ClCompile Include="Settings\FolderSettingsWidget.cpp" />
     <ClCompile Include="Settings\MemoryCardConvertWorker.cpp" />
+    <ClCompile Include="Tools\InputRecording\InputRecordingViewer.cpp" />
     <ClCompile Include="Tools\InputRecording\NewInputRecordingDlg.cpp" />
     <ClCompile Include="Settings\BIOSSettingsWidget.cpp" />
     <ClCompile Include="Settings\ControllerBindingWidgets.cpp" />
@@ -209,6 +210,7 @@
     <QtMoc Include="GameList\GameListWidget.h" />
     <QtMoc Include="GameList\GameListRefreshThread.h" />
     <QtMoc Include="Tools\InputRecording\NewInputRecordingDlg.h" />
+    <QtMoc Include="Tools\InputRecording\InputRecordingViewer.h" />
     <ClInclude Include="QtUtils.h" />
     <QtMoc Include="Settings\ControllerBindingWidgets.h" />
     <QtMoc Include="Settings\ControllerGlobalSettingsWidget.h" />
@@ -264,6 +266,7 @@
     <ClCompile Include="$(IntDir)moc_QtHost.cpp" />
     <ClCompile Include="$(IntDir)moc_QtProgressCallback.cpp" />
     <ClCompile Include="$(IntDir)Tools\InputRecording\moc_NewInputRecordingDlg.cpp" />
+    <ClCompile Include="$(IntDir)Tools\InputRecording\moc_InputRecordingViewer.cpp" />
     <ClCompile Include="$(IntDir)qrc_resources.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -351,6 +354,9 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\AchievementSettingsWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Tools\InputRecording\InputRecordingViewer.ui">
       <FileType>Document</FileType>
     </QtUi>
   </ItemGroup>

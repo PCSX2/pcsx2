@@ -211,6 +211,9 @@
     <ClCompile Include="$(IntDir)Tools\InputRecording\moc_NewInputRecordingDlg.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="$(IntDir)Tools\InputRecording\moc_InputRecordingViewer.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
     <ClCompile Include="Tools\InputRecording\NewInputRecordingDlg.cpp">
       <Filter>Tools\Input Recording</Filter>
     </ClCompile>
@@ -244,6 +247,9 @@
     <ClCompile Include="Settings\MemoryCardConvertWorker.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
+    <ClCompile Include="Tools\InputRecording\InputRecordingViewer.cpp">
+      <Filter>Tools\Input Recording</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -262,6 +268,9 @@
     </ClInclude>
     <ClInclude Include="Settings\MemoryCardConvertWorker.h">
       <Filter>Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\InputRecording\InputRecordingViewer.h">
+      <Filter>Tools\Input Recording</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -450,6 +459,9 @@
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="CoverDownloadDialog.ui" />
+    <QtUi Include="Tools\InputRecording\InputRecordingViewer.ui">
+      <Filter>Tools\Input Recording</Filter>
+    </QtUi>
   </ItemGroup>
   <ItemGroup>
     <None Include="Settings\FolderSettingsWidget.ui">

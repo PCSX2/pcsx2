@@ -176,6 +176,7 @@
      <addaction name="actionInputRecPlay"/>
      <addaction name="actionInputRecStop"/>
      <addaction name="separator"/>
+     <addaction name="actionInputRecOpenViewer"/>
      <addaction name="actionInputRecOpenSettings"/>
      <addaction name="separator"/>
      <addaction name="actionInputRecConsoleLogs"/>
@@ -862,6 +863,11 @@
    </property>
    <property name="text">
     <string>Show Advanced Settings</string>
+   </property>
+  </action>
+  <action name="actionInputRecOpenViewer">
+   <property name="text">
+    <string>Recording Viewer</string>
    </property>
   </action>
  </widget>
