@@ -47,7 +47,7 @@ void InputRecordingViewer::loadTable()
 	m_ui.tableWidget->setHorizontalHeaderLabels(headers);
 
 	int frameNum = 0;
-	for (auto& const frame : data)
+	for (const auto& frame : data)
 	{
 		// TODO - disgusting, clean it up
 		m_ui.tableWidget->setItem(frameNum, 0, new QTableWidgetItem(tr("%1 %2").arg(frame.leftAnalogX).arg(frame.leftAnalogY)));

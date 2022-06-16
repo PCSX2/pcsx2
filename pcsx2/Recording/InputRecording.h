@@ -169,7 +169,6 @@ public:
 	void controllerInterrupt(u8& data, u8& port, u16& BufCount, u8 buf[]);
 	void incFrameCounter();
 	u64 getFrameCounter() const;
-	bool isInitialSavestateLoadComplete() const;
 	bool isActive() const;
 
 	// Main handler for ingesting input data and either saving it to the recording file (recording)
@@ -178,14 +177,8 @@ public:
     
 	void handleExceededFrameCounter();
 	void handleLoadingSavestate();
-
 	bool isTypeSavestate() const;
-
-	void setStartingFrame(u64 startingFrame);
-	void setInitialSavestateLoaded();
 	void adjustFrameCounterOnReRecord(u64 newFrameCounter);
-
-	void watchForRerecords();
 
 	InputRecordingControls& getControls();
 	const InputRecordingFile& getData() const;
@@ -211,6 +204,7 @@ private:
 	u64 m_startingFrame = 0;
 
 	void initializeState();
+	void setStartingFrame(u64 startingFrame);
 
 private:
 	// Resolve the name and region of the game currently loaded using the GameDB

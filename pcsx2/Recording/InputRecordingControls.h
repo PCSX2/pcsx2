@@ -116,8 +116,8 @@ public:
 	};
 
 	void toggleRecordMode();
-	void setRecordMode();
-	void setReplayMode();
+	void setRecordMode(bool waitForFrameToEnd = true);
+	void setReplayMode(bool waitForFrameToEnd = true);
 
 	bool isRecording() const;
 	bool isReplaying() const;
