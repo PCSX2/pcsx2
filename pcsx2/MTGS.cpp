@@ -242,7 +242,7 @@ void SysMtgsThread::PostVsyncStart(bool registers_written)
 
 void SysMtgsThread::InitAndReadFIFO(u8* mem, u32 qwc)
 {
-	if (GSConfig.HWDisableReadbacks && GSConfig.UseHardwareRenderer())
+	if (EmuConfig.GS.HWDisableReadbacks && GSConfig.UseHardwareRenderer())
 	{
 		GSReadLocalMemoryUnsync(mem, qwc, vif1.BITBLTBUF._u64, vif1.TRXPOS._u64, vif1.TRXREG._u64);
 		return;
@@ -916,6 +916,13 @@ void SysMtgsThread::ApplySettings()
 	RunOnGSThread([opts = EmuConfig.GS]() {
 		GSUpdateConfig(opts);
 	});
+
+	// We need to synchronize the thread when changing any settings when the download mode
+	// is unsynchronized, because otherwise we might potentially read in the middle of
+	// the GS renderer being reopened.
+	if (EmuConfig.GS.HWDisableReadbacks)
+		WaitGS(false, false, false);
+
 }
 
 void SysMtgsThread::ResizeDisplayWindow(int width, int height, float scale)
@@ -960,6 +967,10 @@ void SysMtgsThread::SwitchRenderer(GSRendererType renderer, bool display_message
 	RunOnGSThread([renderer]() {
 		GSSwitchRenderer(renderer);
 	});
+
+	// See note in ApplySettings() for reasoning here.
+	if (EmuConfig.GS.HWDisableReadbacks)
+		WaitGS(false, false, false);
 }
 
 void SysMtgsThread::SetSoftwareRendering(bool software, bool display_message /* = true */)
