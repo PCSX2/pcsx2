@@ -46,6 +46,7 @@
 #include "Frontend/ImGuiFullscreen.h"
 #include "Frontend/InputManager.h"
 #include "VMManager.h"
+#include "pcsx2/Recording/InputRecording.h"
 #endif
 
 namespace ImGuiManager
@@ -55,6 +56,7 @@ namespace ImGuiManager
 #ifdef PCSX2_CORE
 	static void DrawSettingsOverlay();
 	static void DrawInputsOverlay();
+	static void DrawInputRecordingOverlay();
 #endif
 } // namespace ImGuiManager
 
@@ -452,10 +454,64 @@ void ImGuiManager::DrawInputsOverlay()
 
 #endif
 
+#ifdef PCSX2_CORE
+void ImGuiManager::DrawInputRecordingOverlay()
+{
+	const float scale = ImGuiManager::GetGlobalScale();
+	const float shadow_offset = std::ceil(1.0f * scale);
+	const float margin = std::ceil(10.0f * scale);
+	const float spacing = std::ceil(5.0f * scale);
+	float position_y = margin;
+
+	ImFont* const fixed_font = ImGuiManager::GetFixedFont();
+	ImFont* const standard_font = ImGuiManager::GetStandardFont();
+
+	ImDrawList* dl = ImGui::GetBackgroundDrawList();
+	std::string text;
+	ImVec2 text_size;
+	bool first = true;
+
+	text.reserve(128);
+#define DRAW_LINE(font, text, color) \
+	do \
+	{ \
+		text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, (text), nullptr, nullptr); \
+		dl->AddText(font, font->FontSize, \
+			ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x + shadow_offset, position_y + shadow_offset), \
+			IM_COL32(0, 0, 0, 100), (text)); \
+		dl->AddText(font, font->FontSize, ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x, position_y), color, (text)); \
+		position_y += text_size.y + spacing; \
+	} while (0)
+	// TODO - is there a way to forcibly update the imgui frame without requiring to wait until the next vsync?
+	// TODO - icon list that would be nice to add
+	// - 'video' when screen capturing
+	if (g_InputRecording.isActive())
+	{
+		// Status Indicators
+		if (g_InputRecording.getControls().isRecording())
+		{
+			DRAW_LINE(standard_font, fmt::format("{} Recording", ICON_FA_CIRCLE).c_str(), IM_COL32(255, 0, 0, 255));
+		}
+		else
+		{
+			DRAW_LINE(standard_font, fmt::format("{} Replaying", ICON_FA_PLAY).c_str(), IM_COL32(97, 240, 84, 255));
+		}
+
+		// Input Recording Metadata
+		DRAW_LINE(fixed_font, fmt::format("Input Recording Active: {}", g_InputRecording.getData().getFilename()).c_str(), IM_COL32(117, 255, 241, 255));
+		DRAW_LINE(fixed_font, fmt::format("Frame: {}/{} ({})", g_InputRecording.getFrameCounter() + 1, g_InputRecording.getData().getTotalFrames(), g_FrameCount).c_str(), IM_COL32(117, 255, 241, 255));
+		DRAW_LINE(fixed_font, fmt::format("Undo Count: {}", g_InputRecording.getData().getUndoCount()).c_str(), IM_COL32(117, 255, 241, 255));
+	}
+
+#undef DRAW_LINE
+}
+#endif
+
 void ImGuiManager::RenderOverlays()
 {
 	DrawPerformanceOverlay();
 #ifdef PCSX2_CORE
+	DrawInputRecordingOverlay();
 	DrawSettingsOverlay();
 	DrawInputsOverlay();
 #endif
