@@ -129,6 +129,7 @@ static std::vector<u8> s_widescreen_cheats_data;
 static bool s_widescreen_cheats_loaded = false;
 static std::vector<u8> s_no_interlacing_cheats_data;
 static bool s_no_interlacing_cheats_loaded = false;
+static s32 s_active_widescreen_patches = 0;
 static u32 s_active_no_interlacing_patches = 0;
 static s32 s_current_save_slot = 1;
 static u32 s_frame_advance_count = 0;
@@ -315,6 +316,16 @@ void VMManager::LoadSettings()
 	if (s_active_no_interlacing_patches > 0 && EmuConfig.GS.InterlaceMode == GSInterlaceMode::Automatic)
 		EmuConfig.GS.InterlaceMode = GSInterlaceMode::Off;
 
+	// Switch to 16:9 if widescreen patches are enabled, and AR is auto.
+	if (s_active_widescreen_patches > 0 && EmuConfig.GS.AspectRatio == AspectRatioType::RAuto4_3_3_2)
+	{
+		// Don't change when reloading settings in the middle of a FMV with switch.
+		if (EmuConfig.CurrentAspectRatio == EmuConfig.GS.AspectRatio)
+			EmuConfig.CurrentAspectRatio = AspectRatioType::R16_9;
+
+		EmuConfig.GS.AspectRatio = AspectRatioType::R16_9;
+	}
+
 	// Force MTVU off when playing back GS dumps, it doesn't get used.
 	if (GSDumpReplayer::IsReplayingDump())
 		EmuConfig.Speedhacks.vuThread = false;
@@ -468,6 +479,8 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 {
 	const std::string crc_string(fmt::format("{:08X}", crc));
 	s_patches_crc = crc;
+	s_active_widescreen_patches = 0;
+	s_active_no_interlacing_patches = 0;
 	ForgetLoadedPatches();
 
 	std::string message;
@@ -497,10 +510,9 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 	}
 
 	// wide screen patches
-	int ws_patch_count = 0;
 	if (EmuConfig.EnableWideScreenPatches && crc != 0)
 	{
-		if (ws_patch_count = LoadPatchesFromDir(crc_string, EmuFolders::CheatsWS, "Widescreen hacks", false))
+		if (s_active_widescreen_patches = LoadPatchesFromDir(crc_string, EmuFolders::CheatsWS, "Widescreen hacks", false))
 		{
 			Console.WriteLn(Color_Gray, "Found widescreen patches in the cheats_ws folder --> skipping cheats_ws.zip");
 		}
@@ -518,13 +530,25 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 
 			if (!s_widescreen_cheats_data.empty())
 			{
-				ws_patch_count = LoadPatchesFromZip(crc_string, s_widescreen_cheats_data.data(), s_widescreen_cheats_data.size());
-				PatchesCon->WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", ws_patch_count);
+				s_active_widescreen_patches = LoadPatchesFromZip(crc_string, s_widescreen_cheats_data.data(), s_widescreen_cheats_data.size());
+				PatchesCon->WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", s_active_widescreen_patches);
 			}
 		}
 
-		if (ws_patch_count > 0)
-			fmt::format_to(std::back_inserter(message), "{}{} widescreen patches", (patch_count > 0 || cheat_count > 0) ? " and " : "", ws_patch_count);
+		if (s_active_widescreen_patches > 0)
+		{
+			fmt::format_to(std::back_inserter(message), "{}{} widescreen patches", (patch_count > 0 || cheat_count > 0) ? " and " : "", s_active_widescreen_patches);
+
+			// Switch to 16:9 if widescreen patches are enabled, and AR is auto.
+			if (EmuConfig.GS.AspectRatio == AspectRatioType::RAuto4_3_3_2)
+			{
+				// Don't change when reloading settings in the middle of a FMV with switch.
+				if (EmuConfig.CurrentAspectRatio == EmuConfig.GS.AspectRatio)
+					EmuConfig.CurrentAspectRatio = AspectRatioType::R16_9;
+
+				EmuConfig.GS.AspectRatio = AspectRatioType::R16_9;
+			}
+		}
 	}
 
 	// no-interlacing patches
@@ -555,7 +579,7 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 
 		if (s_active_no_interlacing_patches > 0)
 		{
-			fmt::format_to(std::back_inserter(message), "{}{} no-interlacing patches", (patch_count > 0 || cheat_count > 0 || ws_patch_count > 0) ? " and " : "", s_active_no_interlacing_patches);
+			fmt::format_to(std::back_inserter(message), "{}{} no-interlacing patches", (patch_count > 0 || cheat_count > 0 || s_active_widescreen_patches > 0) ? " and " : "", s_active_no_interlacing_patches);
 
 			// Disable interlacing in GS if active.
 			if (EmuConfig.GS.InterlaceMode == GSInterlaceMode::Automatic)
@@ -572,7 +596,7 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 
 	if (show_messages)
 	{
-		if (cheat_count > 0 || ws_patch_count > 0 || s_active_no_interlacing_patches > 0)
+		if (cheat_count > 0 || s_active_widescreen_patches > 0 || s_active_no_interlacing_patches > 0)
 		{
 			message += " are active.";
 			Host::AddKeyedOSDMessage("LoadPatches", std::move(message), 5.0f);
@@ -979,6 +1003,7 @@ void VMManager::Shutdown(bool save_resume_state)
 		Host::OnGameChanged(s_disc_path, s_game_serial, s_game_name, 0);
 	}
 	s_active_game_fixes = 0;
+	s_active_widescreen_patches = 0;
 	s_active_no_interlacing_patches = 0;
 	UpdateGameSettingsLayer();
 
@@ -1017,6 +1042,7 @@ void VMManager::Reset()
 	const bool game_was_started = g_GameStarted;
 
 	s_active_game_fixes = 0;
+	s_active_widescreen_patches = 0;
 	s_active_no_interlacing_patches = 0;
 
 	SysClearExecutionCache();
