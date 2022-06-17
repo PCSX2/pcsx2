@@ -1654,6 +1654,23 @@ static void HotkeyCycleSaveSlot(s32 delta)
 	}
 }
 
+static void HotkeyLoadStateSlot(s32 slot)
+{
+	if (s_game_crc == 0)
+	{
+		Host::AddKeyedOSDMessage("LoadStateFromSlot", "Cannot load state without a game running.", 10.0f);
+		return;
+	}
+
+	if (!VMManager::HasSaveStateInSlot(s_game_serial.c_str(), s_game_crc, slot))
+	{
+		Host::AddKeyedOSDMessage("LoadStateFromSlot", fmt::format("No save state found in slot {}.", slot));
+		return;
+	}
+
+	VMManager::LoadStateFromSlot(slot);
+}
+
 BEGIN_HOTKEY_LIST(g_vm_manager_hotkeys)
 DEFINE_HOTKEY("ToggleFrameLimit", "System", "Toggle Frame Limit", [](bool pressed) {
 	if (!pressed)
@@ -1710,7 +1727,7 @@ DEFINE_HOTKEY("SaveStateToSlot", "Save States", "Save State To Selected Slot", [
 })
 DEFINE_HOTKEY("LoadStateFromSlot", "Save States", "Load State From Selected Slot", [](bool pressed) {
 	if (!pressed)
-		VMManager::LoadStateFromSlot(s_current_save_slot);
+		HotkeyLoadStateSlot(s_current_save_slot);
 })
 
 #define DEFINE_HOTKEY_SAVESTATE_X(slotnum,slotnumstr) DEFINE_HOTKEY("SaveStateToSlot" #slotnum, \
@@ -1728,7 +1745,7 @@ DEFINE_HOTKEY_SAVESTATE_X(10, 10)
 #define DEFINE_HOTKEY_LOADSTATE_X(slotnum, slotnumstr) DEFINE_HOTKEY("LoadStateFromSlot" #slotnum, \
 	"Save States", "Load State From Slot " #slotnumstr , [](bool pressed) { \
 		if (!pressed) \
-			VMManager::LoadStateFromSlot(slotnum); \
+			HotkeyLoadStateSlot(slotnum); \
 	})
 DEFINE_HOTKEY_LOADSTATE_X(1, 01)
 DEFINE_HOTKEY_LOADSTATE_X(2, 02)
