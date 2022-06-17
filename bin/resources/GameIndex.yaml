@@ -388,8 +388,10 @@ SCAJ-10008:
     deinterlace: 4 # Game requires bob bff deinterlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SCAJ-10009:
-  name: "Psikyo Shooting Collection Vol.1 - Strikers 1&2"
+  name: "Psikyo Shooting Collection Vol.1 - Strikers 1-2"
   region: "NTSC-Unk"
+  gameFixes:
+    - EETimingHack # Fixes part II intro screen.
 SCAJ-10010:
   name: "Mahjong Party - Play Mahjong with Swimsuit Beauty"
   region: "NTSC-Unk"
@@ -12155,8 +12157,10 @@ SLES-51735:
   name: "Perfect Ace - Pro Tournament Tennis"
   region: "PAL-M5"
 SLES-51741:
-  name: "1945 I & II - The Arcade Games"
+  name: "1945 I-II - The Arcade Games"
   region: "PAL-M5"
+  gameFixes:
+    - EETimingHack # Fixes part II into screen.
 SLES-51746:
   name: "Space Invaders - Invasion Day"
   region: "PAL-M5"
@@ -15269,16 +15273,22 @@ SLES-53155:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs.
 SLES-53156:
   name: "Star Wars - Episode III - La Revanche des Sith"
   region: "PAL-F"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs.
 SLES-53157:
   name: "Star Wars - Episode III - Die Rache der Sith"
   region: "PAL-G"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs.
 SLES-53158:
   name: "Cold Fear"
   region: "PAL-M5"
@@ -21184,9 +21194,11 @@ SLKA-15004:
   name: "Gunbird - Premium Package"
   region: "NTSC-J"
 SLKA-15005:
-  name: "Strikers 1945 III"
+  name: "Strikers 1945 I-II"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes part II intro screen.
 SLKA-15007:
   name: "GrowLanser2"
   region: "NTSC-K"
@@ -23889,9 +23901,11 @@ SLPM-62514:
   name: "Sim People [EA Best Hits]"
   region: "NTSC-J"
 SLPM-62515:
-  name: "Psikyo Shooting Collection Vol.1 - Strikers 1945 1&2"
+  name: "Psikyo Shooting Collection Vol.1 - Strikers 1945 1-2"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes part II intro screen.
 SLPM-62516:
   name: "EyeToy Sports - Let's Play Sports!"
   region: "NTSC-J"
@@ -24312,8 +24326,10 @@ SLPM-62652:
     roundSprite: 1 # Fixes HUD artifacts.
     wildArmsHack: 1 # Lessens the bloom misalignment but still an issue.
 SLPM-62653:
-  name: "Psikyo Shooting Collection Vol.1 - Strikers 1945 1&2 [Taito The Best]"
+  name: "Psikyo Shooting Collection Vol.1 - Strikers 1945 1-2 [Taito The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Fixes part II intro screen.
 SLPM-62655:
   name: "Sega Ages 2500 Series Vol.11 - Hokuto no Ken"
   region: "NTSC-J"
@@ -28073,6 +28089,8 @@ SLPM-66046:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs.
 SLPM-66047:
   name: "FIFA Street"
   region: "NTSC-J"
@@ -29734,6 +29752,10 @@ SLPM-66514:
 SLPM-66515:
   name: "Star Wars - Episode III - Sith no Fukushuu [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs.
 SLPM-66516:
   name: "Sims, The & The Urbz - Sims in the City [EA Best Hits]"
   region: "NTSC-J"
@@ -41841,6 +41863,8 @@ SLUS-21143:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs.
 SLUS-21144:
   name: "Tom Clancy's Rainbow Six - Lockdown"
   region: "NTSC-U"
