@@ -39,6 +39,7 @@ class GameFixSettingsWidget;
 class GraphicsSettingsWidget;
 class AudioSettingsWidget;
 class MemoryCardSettingsWidget;
+class FolderSettingsWidget;
 class DEV9SettingsWidget;
 
 class SettingsDialog final : public QDialog
@@ -65,6 +66,7 @@ public:
 	__fi GraphicsSettingsWidget* getGraphicsSettingsWidget() const { return m_graphics_settings; }
 	__fi AudioSettingsWidget* getAudioSettingsWidget() const { return m_audio_settings; }
 	__fi MemoryCardSettingsWidget* getMemoryCardSettingsWidget() const { return m_memory_card_settings; }
+	__fi FolderSettingsWidget* getFolderSettingsWidget() const { return m_folder_settings; }
 	__fi DEV9SettingsWidget* getDEV9SettingsWidget() const { return m_dev9_settings; }
 
 	void registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text);
@@ -122,6 +124,7 @@ private:
 	GraphicsSettingsWidget* m_graphics_settings = nullptr;
 	AudioSettingsWidget* m_audio_settings = nullptr;
 	MemoryCardSettingsWidget* m_memory_card_settings = nullptr;
+	FolderSettingsWidget* m_folder_settings = nullptr;
 	DEV9SettingsWidget* m_dev9_settings = nullptr;
 
 	std::array<QString, MAX_SETTINGS_WIDGETS> m_category_help_text;

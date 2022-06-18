@@ -211,6 +211,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionAudioSettings, &QAction::triggered, [this]() { doSettings("Audio"); });
 	connect(m_ui.actionMemoryCardSettings, &QAction::triggered, [this]() { doSettings("Memory Cards"); });
 	connect(m_ui.actionDEV9Settings, &QAction::triggered, [this]() { doSettings("Network & HDD"); });
+	connect(m_ui.actionFolderSettings, &QAction::triggered, [this]() { doSettings("Folders"); });
 	connect(
 		m_ui.actionControllerSettings, &QAction::triggered, [this]() { doControllerSettings(ControllerSettingsDialog::Category::GlobalSettings); });
 	connect(m_ui.actionHotkeySettings, &QAction::triggered, [this]() { doControllerSettings(ControllerSettingsDialog::Category::HotkeySettings); });

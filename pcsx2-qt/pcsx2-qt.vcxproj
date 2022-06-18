@@ -135,6 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EarlyHardwareCheck.cpp" />
+    <ClCompile Include="Settings\FolderSettingsWidget.cpp" />
     <ClCompile Include="Tools\InputRecording\NewInputRecordingDlg.cpp" />
     <ClCompile Include="Settings\BIOSSettingsWidget.cpp" />
     <ClCompile Include="Settings\ControllerBindingWidgets.cpp" />
@@ -195,6 +196,7 @@
     <QtMoc Include="Settings\DEV9SettingsWidget.h" />
     <QtMoc Include="Settings\DEV9UiCommon.h" />
     <ClInclude Include="Settings\ControllerSettingWidgetBinder.h" />
+    <QtMoc Include="Settings\FolderSettingsWidget.h" />
     <ClInclude Include="Settings\HddCreateQt.h" />
     <QtMoc Include="Settings\GameSummaryWidget.h" />
     <QtMoc Include="Settings\CreateMemoryCardDialog.h" />
@@ -238,6 +240,7 @@
     <ClCompile Include="$(IntDir)Settings\moc_InputBindingWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_AudioSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_MemoryCardSettingsWidget.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_FolderSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_DEV9DnsHostDialog.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_DEV9SettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_DEV9UiCommon.cpp" />
@@ -328,6 +331,9 @@
     <QtUi Include="Tools\InputRecording\NewInputRecordingDlg.ui">
       <FileType>Document</FileType>
     </QtUi>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Settings\FolderSettingsWidget.ui" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(SolutionDir)common\vsprops\QtCompile.targets" />
