@@ -86,6 +86,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 	m_ui.setupUi(this);
 
+	// start hidden, fixup in updateRendererDependentOptions()
+	m_ui.hardwareRendererGroup->setVisible(false);
+	m_ui.verticalLayout->removeWidget(m_ui.hardwareRendererGroup);
+	m_ui.softwareRendererGroup->setVisible(false);
+	m_ui.verticalLayout->removeWidget(m_ui.softwareRendererGroup);
+
 	//////////////////////////////////////////////////////////////////////////
 	// Global Settings
 	//////////////////////////////////////////////////////////////////////////
@@ -209,6 +215,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.loadTextureReplacements, "EmuCore/GS", "LoadTextureReplacements", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.loadTextureReplacementsAsync, "EmuCore/GS", "LoadTextureReplacementsAsync", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.precacheTextureReplacements, "EmuCore/GS", "PrecacheTextureReplacements", false);
+	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.texturesDirectory, m_ui.texturesBrowse, m_ui.texturesOpen, m_ui.texturesReset,
+		"Folders", "Textures", "textures");
 
 	//////////////////////////////////////////////////////////////////////////
 	// Advanced Settings
@@ -538,7 +546,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	const int current_tab = m_hardware_renderer_visible ? m_ui.hardwareRendererGroup->currentIndex() : m_ui.softwareRendererGroup->currentIndex();
 
 	// move advanced tab to the correct parent
-	static constexpr std::array<const char*, 3> move_tab_names = {{"Display", "On-Screen Display", "Advanced"}};
+	static constexpr std::array<const char*, 3> move_tab_names = {{"Display", "OSD", "Advanced"}};
 	const std::array<QWidget*, 3> move_tab_pointers = {{m_ui.gameDisplayTab, m_ui.osdTab, m_ui.advancedTab}};
 	for (size_t i = 0; i < move_tab_pointers.size(); i++)
 	{
@@ -565,7 +573,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 		{
 			// map first two tabs over, skip hacks
 			m_ui.verticalLayout->insertWidget(1, m_ui.hardwareRendererGroup);
-			m_ui.hardwareRendererGroup->setCurrentIndex((current_tab < 2) ? current_tab : (current_tab + 2));
+			m_ui.hardwareRendererGroup->setCurrentIndex((current_tab < 2) ? current_tab : (current_tab + 3));
 		}
 
 		m_hardware_renderer_visible = is_hardware;
@@ -685,5 +693,6 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	}
 
 	m_ui.enableHWFixes->setEnabled(is_hardware);
-	onEnableHardwareFixesChanged();
+	if (is_hardware)
+		onEnableHardwareFixesChanged();
 }
