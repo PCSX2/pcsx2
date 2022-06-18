@@ -47,6 +47,7 @@ namespace PAD
 		bool trigger_state; ///< Whether the macro button is active.
 	};
 
+	static std::string GetConfigSection(u32 pad_index);
 	static void LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std::string_view& type, const std::string& section);
 	static void ApplyMacroButton(u32 pad, const MacroButton& mb);
 	static void UpdateMacroButtons();
@@ -182,6 +183,11 @@ u8 PADpoll(u8 value)
 	return pad_poll(value);
 }
 
+std::string PAD::GetConfigSection(u32 pad_index)
+{
+	return fmt::format("Pad{}", pad_index + 1);
+}
+
 void PAD::LoadConfig(const SettingsInterface& si)
 {
 	PAD::s_macro_buttons = {};
@@ -192,7 +198,7 @@ void PAD::LoadConfig(const SettingsInterface& si)
 	// This is where we would load controller types, if onepad supported them.
 	for (u32 i = 0; i < NUM_CONTROLLER_PORTS; i++)
 	{
-		const std::string section(StringUtil::StdStringFromFormat("Pad%u", i + 1u));
+		const std::string section(GetConfigSection(i));
 		const std::string type(si.GetStringValue(section.c_str(), "Type", GetDefaultPadType(i)));
 
 		const ControllerInfo* ci = GetControllerInfo(type);
@@ -204,13 +210,14 @@ void PAD::LoadConfig(const SettingsInterface& si)
 
 		g_key_status.SetType(i, ci->type);
 
-		const float axis_scale = si.GetFloatValue(section.c_str(), "AxisScale", 1.0f);
-		g_key_status.SetAxisScale(i, axis_scale);
+		const float axis_deadzone = si.GetFloatValue(section.c_str(), "Deadzone", DEFAULT_STICK_DEADZONE);
+		const float axis_scale = si.GetFloatValue(section.c_str(), "AxisScale", DEFAULT_STICK_SCALE);
+		g_key_status.SetAxisScale(i, axis_deadzone, axis_scale);
 
 		if (ci->vibration_caps != VibrationCapabilities::NoVibration)
 		{
-			const float large_motor_scale = si.GetFloatValue(section.c_str(), "LargeMotorScale", 1.0f);
-			const float small_motor_scale = si.GetFloatValue(section.c_str(), "SmallMotorScale", 1.0f);
+			const float large_motor_scale = si.GetFloatValue(section.c_str(), "LargeMotorScale", DEFAULT_MOTOR_SCALE);
+			const float small_motor_scale = si.GetFloatValue(section.c_str(), "SmallMotorScale", DEFAULT_MOTOR_SCALE);
 			g_key_status.SetVibrationScale(i, 0, large_motor_scale);
 			g_key_status.SetVibrationScale(i, 1, small_motor_scale);
 		}
@@ -227,11 +234,8 @@ const char* PAD::GetDefaultPadType(u32 pad)
 void PAD::SetDefaultConfig(SettingsInterface& si)
 {
 	si.ClearSection("InputSources");
-
-	for (u32 i = 0; i < NUM_CONTROLLER_PORTS; i++)
-		si.ClearSection(StringUtil::StdStringFromFormat("Pad%u", i + 1).c_str());
-
 	si.ClearSection("Hotkeys");
+	si.ClearSection("Pad");
 
 	// PCSX2 Controller Settings - Global Settings
 	si.SetBoolValue("InputSources", "SDL", true);
@@ -245,9 +249,20 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 	si.SetBoolValue("Pad", "PointerXInvert", false);
 	si.SetBoolValue("Pad", "PointerYInvert", false);
 
+	// PCSX2 Controller Settings - Default pad types and parameters.
+	for (u32 i = 0; i < NUM_CONTROLLER_PORTS; i++)
+	{
+		const std::string section(GetConfigSection(i));
+		si.ClearSection(section.c_str());
+		si.SetStringValue(section.c_str(), "Type", GetDefaultPadType(i));
+		si.SetFloatValue(section.c_str(), "Deadzone", DEFAULT_STICK_DEADZONE);
+		si.SetFloatValue(section.c_str(), "AxisScale", DEFAULT_STICK_SCALE);
+		si.SetFloatValue(section.c_str(), "LargeMotorScale", DEFAULT_MOTOR_SCALE);
+		si.SetFloatValue(section.c_str(), "SmallMotorScale", DEFAULT_MOTOR_SCALE);
+	}
+
 	// PCSX2 Controller Settings - Controller 1 / Controller 2 / ...
 	// Use the automapper to set this up.
-	si.SetStringValue("Pad1", "Type", GetDefaultPadType(0));
 	MapController(si, 0, InputManager::GetGenericBindingMapping("Keyboard"));
 
 	// PCSX2 Controller Settings - Hotkeys

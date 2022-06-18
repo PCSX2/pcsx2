@@ -28,7 +28,8 @@ KeyStatus::KeyStatus()
 
 	for (u32 pad = 0; pad < NUM_CONTROLLER_PORTS; pad++)
 	{
-		m_axis_scale[pad] = 1.0f;
+		m_axis_scale[pad][0] = 0.0f;
+		m_axis_scale[pad][1] = 1.0f;
 	}
 }
 
@@ -50,10 +51,10 @@ void KeyStatus::Init()
 
 void KeyStatus::Set(u32 pad, u32 index, float value)
 {
-	m_button_pressure[pad][index] = static_cast<u8>(std::clamp(value * m_axis_scale[pad] * 255.0f, 0.0f, 255.0f));
-
 	if (IsAnalogKey(index))
 	{
+		m_button_pressure[pad][index] = static_cast<u8>(std::clamp(((value < m_axis_scale[pad][0]) ? 0.0f : value) * m_axis_scale[pad][1] * 255.0f, 0.0f, 255.0f));
+
 		//                          Left -> -- -> Right
 		// Value range :        FFFF8002 -> 0  -> 7FFE
 		// Force range :			  80 -> 0  -> 7F
@@ -94,8 +95,10 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 	}
 	else
 	{
+		m_button_pressure[pad][index] = static_cast<u8>(std::clamp(value * 255.0f, 0.0f, 255.0f));
+
 		// Since we reordered the buttons for better UI, we need to remap them here.
-		static constexpr std::array<u8, MAX_KEYS> bitmask_mapping = { {
+		static constexpr std::array<u8, MAX_KEYS> bitmask_mapping = {{
 			12, // PAD_UP
 			13, // PAD_RIGHT
 			14, // PAD_DOWN
@@ -114,7 +117,7 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 			10, // PAD_R3
 			16, // Analog
 			// remainder are analogs and not used here
-		} };
+		}};
 
 		// TODO: Deadzone here?
 		if (value > 0.0f)

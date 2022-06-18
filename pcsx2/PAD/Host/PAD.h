@@ -87,6 +87,11 @@ namespace PAD
 	/// Number of macro buttons per controller.
 	static constexpr u32 NUM_MACRO_BUTTONS_PER_CONTROLLER = 4;
 
+	/// Default stick deadzone/sensitivity.
+	static constexpr float DEFAULT_STICK_DEADZONE = 0.0f;
+	static constexpr float DEFAULT_STICK_SCALE = 1.33f;
+	static constexpr float DEFAULT_MOTOR_SCALE = 1.0f;
+
 	/// Returns the default type for the specified port.
 	const char* GetDefaultPadType(u32 pad);
 

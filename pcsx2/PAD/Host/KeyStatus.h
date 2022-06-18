@@ -36,7 +36,7 @@ namespace PAD
 		u32 m_button[NUM_CONTROLLER_PORTS];
 		u8 m_button_pressure[NUM_CONTROLLER_PORTS][MAX_KEYS];
 		PADAnalog m_analog[NUM_CONTROLLER_PORTS];
-		float m_axis_scale[NUM_CONTROLLER_PORTS];
+		float m_axis_scale[NUM_CONTROLLER_PORTS][2];
 		float m_vibration_scale[NUM_CONTROLLER_PORTS][2];
 
 	public:
@@ -48,7 +48,11 @@ namespace PAD
 		__fi PAD::ControllerType GetType(u32 pad) { return m_type[pad]; }
 		__fi void SetType(u32 pad, PAD::ControllerType type) { m_type[pad] = type; }
 
-		__fi void SetAxisScale(u32 pad, float scale) { m_axis_scale[pad] = scale; }
+		__fi void SetAxisScale(u32 pad, float deadzone, float scale)
+		{
+			m_axis_scale[pad][0] = deadzone;
+			m_axis_scale[pad][1] = scale;
+		}
 		__fi float GetVibrationScale(u32 pad, u32 motor) const { return m_vibration_scale[pad][motor]; }
 		__fi void SetVibrationScale(u32 pad, u32 motor, float scale) { m_vibration_scale[pad][motor] = scale; }
 
