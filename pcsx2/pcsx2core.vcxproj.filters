@@ -1272,6 +1272,9 @@
     <ClCompile Include="Recording\PadData.cpp">
       <Filter>Tools\Input Recording</Filter>
     </ClCompile>
+    <ClCompile Include="Frontend\LogSink.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2112,6 +2115,9 @@
     </ClInclude>
     <ClInclude Include="Recording\PadData.h">
       <Filter>Tools\Input Recording</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\LogSink.h">
+      <Filter>Host</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

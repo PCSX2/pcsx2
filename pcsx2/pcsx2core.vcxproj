@@ -198,6 +198,7 @@
     <ClCompile Include="Frontend\InputManager.cpp" />
     <ClCompile Include="Frontend\InputSource.cpp" />
     <ClCompile Include="Frontend\LayeredSettingsInterface.cpp" />
+    <ClCompile Include="Frontend\LogSink.cpp" />
     <ClCompile Include="Frontend\OpenGLHostDisplay.cpp" />
     <ClCompile Include="Frontend\SDLInputSource.cpp" />
     <ClCompile Include="Frontend\VulkanHostDisplay.cpp" />
@@ -517,6 +518,7 @@
     <ClInclude Include="Frontend\InputManager.h" />
     <ClInclude Include="Frontend\InputSource.h" />
     <ClInclude Include="Frontend\LayeredSettingsInterface.h" />
+    <ClInclude Include="Frontend\LogSink.h" />
     <ClInclude Include="Frontend\OpenGLHostDisplay.h" />
     <ClInclude Include="Frontend\SDLInputSource.h" />
     <ClInclude Include="Frontend\VulkanHostDisplay.h" />

@@ -29,6 +29,7 @@
 
 #include "pcsx2/CDVD/CDVDaccess.h"
 #include "pcsx2/Frontend/GameList.h"
+#include "pcsx2/Frontend/LogSink.h"
 #include "pcsx2/GSDumpReplayer.h"
 #include "pcsx2/HostDisplay.h"
 #include "pcsx2/HostSettings.h"
@@ -1252,7 +1253,7 @@ void MainWindow::onThemeChangedFromSettings()
 
 void MainWindow::onLoggingOptionChanged()
 {
-	QtHost::UpdateLogging();
+	Host::UpdateLogging();
 }
 
 void MainWindow::onInputRecNewActionTriggered()
