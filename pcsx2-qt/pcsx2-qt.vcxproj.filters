@@ -217,6 +217,12 @@
       <Filter>Tools\Input Recording</Filter>
     </ClCompile>
     <ClCompile Include="EarlyHardwareCheck.cpp" />
+    <ClCompile Include="Settings\FolderSettingsWidget.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Settings\moc_FolderSettingsWidget.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -319,6 +325,7 @@
     <QtMoc Include="Tools\InputRecording\NewInputRecordingDlg.h">
       <Filter>Tools\Input Recording</Filter>
     </QtMoc>
+    <QtMoc Include="Settings\FolderSettingsWidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">
@@ -394,5 +401,10 @@
     <QtUi Include="Tools\InputRecording\NewInputRecordingDlg.ui">
       <Filter>Tools\Input Recording</Filter>
     </QtUi>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Settings\FolderSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </None>
   </ItemGroup>
 </Project>

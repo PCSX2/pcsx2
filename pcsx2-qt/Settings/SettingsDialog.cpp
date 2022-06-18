@@ -37,6 +37,7 @@
 #include "GameListSettingsWidget.h"
 #include "GraphicsSettingsWidget.h"
 #include "DEV9SettingsWidget.h"
+#include "FolderSettingsWidget.h"
 #include "HotkeySettingsWidget.h"
 #include "InterfaceSettingsWidget.h"
 #include "MemoryCardSettingsWidget.h"
@@ -132,6 +133,12 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	addWidget(m_dev9_settings = new DEV9SettingsWidget(this, m_ui.settingsContainer), tr("Network & HDD"), QStringLiteral("dashboard-line"),
 		tr("<strong>Network & HDD Settings</strong><hr>These options control the network connectivity and internal HDD storage of the console.<br><br>"
 		   "Mouse over an option for additional information."));
+
+	if (!isPerGameSettings())
+	{
+		addWidget(m_folder_settings = new FolderSettingsWidget(this, m_ui.settingsContainer), tr("Folders"), QStringLiteral("folder-open-line"),
+			tr("<strong>Folder Settings</strong><hr>These options control where PCSX2 will save runtime data files."));
+	}
 
 	m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	m_ui.settingsCategory->setCurrentRow(0);
