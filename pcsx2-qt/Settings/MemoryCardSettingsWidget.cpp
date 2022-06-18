@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include <QtGui/QDrag>
+#include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
@@ -48,12 +49,14 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsDialog* dialog, QWidg
 	// this is a bit lame, but resizeEvent() isn't good enough to autosize our columns,
 	// since the group box hasn't been resized at that point.
 	m_ui.cardGroupBox->installEventFilter(this);
-
+	
+	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.directory, m_ui.browse, m_ui.open, m_ui.reset, "Folders", "MemoryCards", "memcards");
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoEject, "EmuCore", "McdEnableEjection", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.automaticManagement, "EmuCore", "McdFolderAutoManage", true);
 
 	setupAdditionalUi();
 
+	connect(m_ui.directory, &QLineEdit::textChanged, this, &MemoryCardSettingsWidget::refresh);
 	m_ui.cardList->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(m_ui.cardList, &MemoryCardListWidget::itemSelectionChanged, this, &MemoryCardSettingsWidget::updateCardActions);
 	connect(m_ui.cardList, &MemoryCardListWidget::customContextMenuRequested, this, &MemoryCardSettingsWidget::listContextMenuRequested);
