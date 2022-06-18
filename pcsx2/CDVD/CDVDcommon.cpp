@@ -413,7 +413,7 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 					pregapLSN = 150;
 				}
 			}
-			trackLength = (nextIndex - index1);
+			trackLength = (nextIndex - pregapLSN);
 			maxLSN += pregapLSN;
 			cueFile->tempTracks[i].startAbsolute = index1;
 			cueFile->tempTracks[i].startRelative = pregapLSN;
@@ -432,7 +432,7 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 			cueFile->tempTracks[i].startRelative = pregapLSN;
 
 			Console.Warning("File Size %d", fileSize);
-			trackLength = static_cast<u32>(fileSize - cueFile->tempTracks[i].startAbsolute);
+			trackLength = static_cast<u32>(fileSize - pregapLSN);
 
 			fclose(file);
 			file = nullptr;

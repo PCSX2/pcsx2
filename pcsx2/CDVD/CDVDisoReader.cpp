@@ -282,18 +282,18 @@ s32 CALLBACK ISOgetTOC(void* toc)
 
 		//Number of FirstTrack
 		tocBuff[2] = 0xA0;
-		tocBuff[7] = itob(diskInfo.strack);
+		tocBuff[7] = dec_to_bcd(diskInfo.strack);
 
 		//Number of LastTrack
 		tocBuff[12] = 0xA1;
-		tocBuff[17] = itob(diskInfo.etrack);
+		tocBuff[17] = dec_to_bcd(diskInfo.etrack);
 
 		lsn_to_msf(trackInfo.lsn, &min, &sec, &frm);
 		Console.Warning("MAX LSN: %d", maxLSN);
 		tocBuff[22] = 0xA2;
-		tocBuff[27] = itob(min);
-		tocBuff[28] = itob(sec);
-		tocBuff[29] = itob(frm);
+		tocBuff[27] = dec_to_bcd(min);
+		tocBuff[28] = dec_to_bcd(sec);
+		tocBuff[29] = dec_to_bcd(frm);
 
 		fprintf(stderr, "Track 0: %u mins %u secs %u frames\n", min, sec, frm);
 
@@ -302,10 +302,10 @@ s32 CALLBACK ISOgetTOC(void* toc)
 			err = ISOgetTD(i, &trackInfo);
 			lsn_to_msf(trackInfo.lsn, &min, &sec, &frm);
 			tocBuff[i * 10 + 30] = trackInfo.type;
-			tocBuff[i * 10 + 32] = err == -1 ? 0 : itob(i); //number
-			tocBuff[i * 10 + 37] = itob(min);
-			tocBuff[i * 10 + 38] = itob(sec);
-			tocBuff[i * 10 + 39] = itob(frm);
+			tocBuff[i * 10 + 32] = err == -1 ? 0 : dec_to_bcd(i); //number
+			tocBuff[i * 10 + 37] = dec_to_bcd(min);
+			tocBuff[i * 10 + 38] = dec_to_bcd(sec);
+			tocBuff[i * 10 + 39] = dec_to_bcd(frm);
 			fprintf(stderr, "Track %u: %u mins %u secs %u frames\n", i, min, sec, frm);
 		}
 	}
@@ -414,10 +414,10 @@ s32 CALLBACK ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 
 	memset(subq, 0, sizeof(cdvdSubQ));
 
-	lsn_to_msf((cueFile->GetTrack(currentTrackNum)->startRelative + lsn), &min, &sec, &frm);
-	subq->trackM = itob(min);
-	subq->trackS = itob(sec);
-	subq->trackF = itob(frm);
+	lsn_to_msf((cueFile->GetTrack(currentTrackNum)->startRelative), &min, &sec, &frm);
+	subq->trackM = dec_to_bcd(min);
+	subq->trackS = dec_to_bcd(sec);
+	subq->trackF = dec_to_bcd(frm);
 
 	u8 i = 1;
 	while (i < m_tracks.size() && lsn >= cueFile->GetTrack(i + 1)->startAbsolute)
@@ -425,10 +425,10 @@ s32 CALLBACK ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 
 	lsn -= cueFile->GetTrack(i)->startAbsolute;
 
-	lsn_to_msf(lsn + (2 * 75), &min, &sec, &frm);
-	subq->discM = itob(min);
-	subq->discS = itob(sec);
-	subq->discF = itob(frm);
+	lsn_to_msf(cueFile->GetTrack(i)->startAbsolute  + 150, &min, &sec, &frm);
+	subq->discM = dec_to_bcd(min);
+	subq->discS = dec_to_bcd(sec);
+	subq->discF = dec_to_bcd(frm);
 
 	Console.Warning("LSN: %d", lsn);
 
