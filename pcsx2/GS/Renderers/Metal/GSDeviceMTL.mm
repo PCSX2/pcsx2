@@ -1753,7 +1753,7 @@ void GSDeviceMTL::RenderImGui(ImDrawData* data)
 	[enc setVertexBytes:&transform length:sizeof(transform) atIndex:GSMTLBufferIndexUniforms];
 
 	simd::uint4 last_scissor = simd::make_uint4(0, 0, m_display->GetWindowWidth(), m_display->GetWindowHeight());
-	simd::float2 fb_size = simd::float2(last_scissor.zw);
+	simd::float2 fb_size = simd_float(last_scissor.zw);
 	simd::float2 clip_off   = ToSimd(data->DisplayPos);       // (0,0) unless using multi-viewports
 	simd::float2 clip_scale = ToSimd(data->FramebufferScale); // (1,1) unless using retina display which are often (2,2)
 	ImTextureID last_tex = nullptr;
@@ -1779,7 +1779,7 @@ void GSDeviceMTL::RenderImGui(ImDrawData* data)
 			clip_max = simd::min(clip_max, fb_size);
 			if (simd::any(clip_min >= clip_max))
 				continue;
-			simd::uint4 scissor = simd::make_uint4(simd::uint2(clip_min), simd::uint2(clip_max - clip_min));
+			simd::uint4 scissor = simd::make_uint4(simd_uint(clip_min), simd_uint(clip_max - clip_min));
 			ImTextureID tex = cmd.GetTexID();
 			if (simd::any(scissor != last_scissor))
 			{
