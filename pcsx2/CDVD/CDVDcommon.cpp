@@ -413,10 +413,32 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 					pregapLSN = 150;
 				}
 			}
-			trackLength = (nextIndex - pregapLSN);
+
 			maxLSN += pregapLSN;
-			cueFile->tempTracks[i].startAbsolute = index1;
-			cueFile->tempTracks[i].startRelative = pregapLSN;
+
+			// Last Track
+			if (i == cueFile->tempTracks.size())
+			{
+				FILE* file = fopen(filePath.c_str(), "r");
+				FileSystem::FSeek64(file, 0, SEEK_END);
+				u64 fileSize = static_cast<u64>(FileSystem::FTell64(file));
+				FileSystem::FSeek64(file, 0, SEEK_SET);
+
+				fileSize /= trackSize;
+
+				trackLength = (fileSize - pregapLSN);
+				cueFile->tempTracks[i].startAbsolute = (fileSize + 150 + pregapLSN);
+				cueFile->tempTracks[i].startRelative = pregapLSN;
+
+				fclose(file);
+			}
+
+			else
+			{
+				trackLength = (nextIndex - pregapLSN);
+				cueFile->tempTracks[i].startAbsolute = index1;
+				cueFile->tempTracks[i].startRelative = pregapLSN;
+			}
 		}
 		// MULTI FILE MULTI TRACK
 		else
@@ -428,8 +450,6 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 
 			fileSize /= trackSize;
 
-			cueFile->tempTracks[i].startAbsolute = maxLSN;
-			cueFile->tempTracks[i].startRelative = pregapLSN;
 
 			Console.Warning("File Size %d", fileSize);
 			trackLength = static_cast<u32>(fileSize - pregapLSN);
@@ -437,10 +457,10 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 			fclose(file);
 			file = nullptr;
 
-			if (cueFile->tempTracks[i].GetIndex(0) != nullptr)
-			{
+		if (cueFile->tempTracks[i].GetIndex(0) != nullptr)
+		{
 				index0 = msf_to_lsn(cueFile->tempTracks[i].GetIndex(0));
-			}
+		}
 			index1 = msf_to_lsn(cueFile->tempTracks[i].GetIndex(1));
 			if (index0 > 0)
 			{
@@ -455,28 +475,24 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 					pregapLSN += 150;
 				}
 			}
-			cueFile->tempTracks[i].length = (trackLength + pregapLSN);
-			maxLSN += cueFile->tempTracks[i].length.value();
+
+			if (i == cueFile->tempTracks.size())
+			{
+				cueFile->tempTracks[i].startAbsolute = (maxLSN + 150 + pregapLSN);
+				cueFile->tempTracks[i].startRelative = pregapLSN;
+				cueFile->tempTracks[i].length = (trackLength + pregapLSN);
+			}
+
+			else
+			{
+	
+				cueFile->tempTracks[i].length = (trackLength + pregapLSN);
+				cueFile->tempTracks[i].startAbsolute = maxLSN;
+				cueFile->tempTracks[i].startRelative = pregapLSN;
+				maxLSN += cueFile->tempTracks[i].length.value();
+			}
 		}
 	}
-
-	u32 lastStart = cueFile->tempTracks[i].startAbsolute;
-
-	for (int i = 1; i < 2; i++)
-	{
-		if (msf_to_lsn(cueFile->tempTracks[i].GetIndex(i)) > lastStart)
-		{
-			maxLSN = (msf_to_lsn(cueFile->tempTracks[i].GetIndex(i)) - lastStart);
-			lastStart = msf_to_lsn(cueFile->tempTracks[i].GetIndex(i));
-		}
-	}
-
-	u32 endOffset = cueFile->tempTracks[i].startAbsolute + trackLength;
-	if (endOffset > lastStart)
-	{
-		maxLSN += (endOffset - lastStart);
-	}
-
 	Console.Warning("MaxLSN: %d", maxLSN);
 }
 
