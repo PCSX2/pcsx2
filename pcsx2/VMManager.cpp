@@ -134,6 +134,7 @@ static u32 s_active_no_interlacing_patches = 0;
 static s32 s_current_save_slot = 1;
 static u32 s_frame_advance_count = 0;
 static u32 s_mxcsr_saved;
+static std::optional<LimiterModeType> s_limiter_mode_prior_to_hold_interaction;
 
 bool VMManager::PerformEarlyHardwareChecks(const char** error)
 {
@@ -1005,6 +1006,8 @@ void VMManager::Shutdown(bool save_resume_state)
 	s_active_game_fixes = 0;
 	s_active_widescreen_patches = 0;
 	s_active_no_interlacing_patches = 0;
+	s_limiter_mode_prior_to_hold_interaction.reset();
+
 	UpdateGameSettingsLayer();
 
 	std::string().swap(s_elf_override);
@@ -1044,6 +1047,7 @@ void VMManager::Reset()
 	s_active_game_fixes = 0;
 	s_active_widescreen_patches = 0;
 	s_active_no_interlacing_patches = 0;
+	s_limiter_mode_prior_to_hold_interaction.reset();
 
 	SysClearExecutionCache();
 	memBindConditionalHandlers();
@@ -1707,11 +1711,17 @@ DEFINE_HOTKEY("ToggleFrameLimit", "System", "Toggle Frame Limit", [](bool presse
 	}
 })
 DEFINE_HOTKEY("ToggleTurbo", "System", "Toggle Turbo", [](bool pressed) {
-	if (!pressed)
+	if (pressed && !s_limiter_mode_prior_to_hold_interaction.has_value())
 	{
-		VMManager::SetLimiterMode((EmuConfig.LimiterMode != LimiterModeType::Turbo) ?
+		s_limiter_mode_prior_to_hold_interaction = VMManager::GetLimiterMode();
+		VMManager::SetLimiterMode((s_limiter_mode_prior_to_hold_interaction.value() != LimiterModeType::Turbo) ?
                                       LimiterModeType::Turbo :
                                       LimiterModeType::Nominal);
+	}
+	else if (!pressed && s_limiter_mode_prior_to_hold_interaction.has_value())
+	{
+		VMManager::SetLimiterMode(s_limiter_mode_prior_to_hold_interaction.value());
+		s_limiter_mode_prior_to_hold_interaction.reset();
 	}
 })
 DEFINE_HOTKEY("ToggleSlowMotion", "System", "Toggle Slow Motion", [](bool pressed) {
