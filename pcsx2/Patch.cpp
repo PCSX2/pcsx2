@@ -176,11 +176,7 @@ int LoadPatchesFromDir(const std::string& crc, const std::string& folder, const 
 	FileSystem::FindResultsArray files;
 	FileSystem::FindFiles(folder.c_str(), StringUtil::StdStringFromFormat("*.pnach", crc.c_str()).c_str(),
 		FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &files);
-	FileSystem::FindResultsArray subfolder;
-	FileSystem::FindFiles((folder + FS_OSPATH_SEPARATOR_STR + crc).c_str(), StringUtil::StdStringFromFormat("*.pnach", crc.c_str()).c_str(),
-		FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &subfolder);
-
-	files.insert(files.end(), subfolder.begin(), subfolder.end());
+	FileSystem::FindFiles(Path::Combine(folder, crc).c_str(), "*.pnach", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_KEEP_ARRAY, &files);
 	if (show_error_when_missing && files.empty())
 	{
 		PatchesCon->WriteLn(Color_Gray, "Not found %s file: %s" FS_OSPATH_SEPARATOR_STR "%s.pnach",
