@@ -23,12 +23,17 @@ namespace GSDumpReplayer
 {
 bool IsReplayingDump();
 
+/// If set, playback will repeat once it reaches the last frame.
+void SetLoopCount(s32 loop_count = 0);
+
 bool Initialize(const char* filename);
 void Reset();
 void Shutdown();
 
 std::string GetDumpSerial();
 u32 GetDumpCRC();
+
+u32 GetFrameNumber();
 
 void RenderUI();
 }
