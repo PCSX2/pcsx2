@@ -57,6 +57,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "updater", "updater\updater.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cpuinfo", "3rdparty\cpuinfo\cpuinfo.vcxproj", "{7E183337-A7E9-460C-9D3D-568BC9F9BCC1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pcsx2-gsrunner", "pcsx2-gsrunner\pcsx2-gsrunner.vcxproj", "{BB98BF81-A132-444A-BB81-96D510F433A8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug AVX2|x64 = Debug AVX2|x64
@@ -379,6 +381,12 @@ Global
 		{7E183337-A7E9-460C-9D3D-568BC9F9BCC1}.Release AVX2|x64.Build.0 = Release|x64
 		{7E183337-A7E9-460C-9D3D-568BC9F9BCC1}.Release|x64.ActiveCfg = Release|x64
 		{7E183337-A7E9-460C-9D3D-568BC9F9BCC1}.Release|x64.Build.0 = Release|x64
+		{BB98BF81-A132-444A-BB81-96D510F433A8}.Debug AVX2|x64.ActiveCfg = Debug AVX2|x64
+		{BB98BF81-A132-444A-BB81-96D510F433A8}.Debug|x64.ActiveCfg = Debug|x64
+		{BB98BF81-A132-444A-BB81-96D510F433A8}.Devel AVX2|x64.ActiveCfg = Devel AVX2|x64
+		{BB98BF81-A132-444A-BB81-96D510F433A8}.Devel|x64.ActiveCfg = Devel|x64
+		{BB98BF81-A132-444A-BB81-96D510F433A8}.Release AVX2|x64.ActiveCfg = Release AVX2|x64
+		{BB98BF81-A132-444A-BB81-96D510F433A8}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
