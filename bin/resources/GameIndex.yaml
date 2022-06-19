@@ -241,6 +241,24 @@ PBPX-95224:
 PBPX-95228:
   name: "DVD Player Version 3.00"
   region: "NTSC-J"
+PBPX-95239:
+  name: "Online Start-Up Disc v3.0"
+  region: "NTSC-U"
+PBPX-95242:
+  name: "Online Start-Up Disc v3.0"
+  region: "NTSC-U"
+PBPX-95245:
+  name: "Online Start-Up Disc v1.0"
+  region: "NTSC-U"
+PBPX-95246:
+  name: "Online Start-Up Disc v3.5 - Broadband Only"
+  region: "NTSC-U"
+PBPX-95247:
+  name: "Online Start-Up Disc v3.5 - Broadband Only"
+  region: "NTSC-U"
+PBPX-95248:
+  name: "Online Start-Up Disc 4.0 - Broadband Only"
+  region: "NTSC-U"
 PBPX-95503:
   name: "Gran Turismo 3 - A-Spec [PS2 Bundle]"
   region: "NTSC-U"
@@ -2977,7 +2995,7 @@ SCES-51176:
     - EETimingHack # Fixes hang before going ingame.
 SCES-51177:
   name: "Disney's Treasure Planet"
-  region: "PAL"
+  region: "PAL-M5"
   clampModes:
     vuClampMode: 3 # Fixes SPS when the solar surfer's engines are inactive.
   gameFixes:
@@ -3036,7 +3054,7 @@ SCES-51533:
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
 SCES-51578:
-  name: "Network Access Disc [Original, v4.02 & v4.03]"
+  name: "Network Access Disc [v1.03 - v6.00]"
   region: "PAL-M7"
 SCES-51592:
   name: "Formula One 2003"
@@ -3937,6 +3955,9 @@ SCES-54499:
 SCES-54500:
   name: "Buzz! El Mega Concurso"
   region: "PAL-S"
+SCES-54505:
+  name: "Buzz! The Mega Quiz"
+  region: "PAL-M3"
 SCES-54507:
   name: "Buzz! The Mega Quiz"
   region: "PAL-M3"
@@ -4002,6 +4023,9 @@ SCES-54601:
 SCES-54625:
   name: "Buzz! Junior - Monster Rumble"
   region: "PAL-M7"
+SCES-54637:
+  name: "Gaelic Games - Hurling"
+  region: "PAL-M2"
 SCES-54638:
   name: "Gaelic Games - Football 2"
   region: "PAL-E-GA"
@@ -4098,6 +4122,9 @@ SCES-54909:
 SCES-54910:
   name: "SingStar Rock Ballads"
   region: "PAL-S"
+SCES-54924:
+  name: "NBA 08"
+  region: "PAL-M5"
 SCES-55019:
   name: "Ratchet & Clank - Size Matters"
   region: "PAL-M5"
@@ -4139,6 +4166,9 @@ SCES-55094:
 SCES-55097:
   name: "Buzz! The Pop Quiz"
   region: "PAL-FI"
+SCES-55098:
+  name: "Buzz! The Pop Quiz"
+  region: "PAL-M3"
 SCES-55127:
   name: "SingStar Summer Party"
   region: "PAL-NL"
@@ -4338,6 +4368,9 @@ SCES-55571:
 SCES-55573:
   name: "MotorStorm - Arctic Edge"
   region: "PAL-M14"
+SCES-55591:
+  name: "Street Cricket Champions"
+  region: "PAL-IN"
 SCES-55594:
   name: "SingStar Vasco"
   region: "PAL-I"
@@ -4371,12 +4404,15 @@ SCES-55640:
 SCES-55641:
   name: "SingStar Après-Ski Party 2"
   region: "PAL-G"
+SCES-55649:
+  name: "Cart Kings"
+  region: "PAL-IN"
 SCES-55650:
   name: "SingStar SuomiSuosikit"
   region: "PAL-FI"
 SCES-55661:
   name: "RA.ONE - The Game"
-  region: "PAL-E"
+  region: "PAL-IN"
   compat: 5
 SCES-55662:
   name: "Chandragupta - Warrior Prince"
@@ -7448,7 +7484,7 @@ SCUS-97424:
   name: "Kiosk Demo Disc Q3-Q4 2005"
   region: "NTSC-U"
 SCUS-97425:
-  name: "Network Adapter Start-Up Disc Ver.3.0"
+  name: "Online Start-Up Disc v3.0"
   region: "NTSC-U"
 SCUS-97427:
   name: "Hot Shots Golf FORE! [Online Public Beta]"
@@ -14021,6 +14057,9 @@ SLES-52638:
 SLES-52639:
   name: "V8 Supercars 2"
   region: "PAL-M5"
+SLES-52640:
+  name: "Dance-UK XL"
+  region: "PAL-UK"
 SLES-52641:
   name: "Leisure Suit Larry - Magna Cum Laude (Uncut)"
   region: "PAL-E"
@@ -14059,7 +14098,7 @@ SLES-52652:
   region: "PAL-E"
 SLES-52653:
   name: "Liverpool FC - Club Football 2005"
-  region: "PAL-Unk"
+  region: "PAL-M3"
 SLES-52654:
   name: "Club Football - Real Madri 2005"
   region: "PAL-M5"
@@ -14597,10 +14636,10 @@ SLES-52902:
   name: "Arcade Classics Vol.1"
   region: "PAL-E"
 SLES-52906:
-  name: "Eyetoy -Spongebob and Friends - Movin'"
+  name: "Nickelodeon SpongeBob SquarePants - Movin' with Friends"
   region: "PAL-E"
 SLES-52907:
-  name: "Eyetoy - Spongebob and Friends - Movin'"
+  name: "Nickelodeon SpongeBob SquarePants - Movin' with Friends"
   region: "PAL-M4"
 SLES-52908:
   name: "Urbz, The - Sims in the City"
@@ -18758,7 +18797,7 @@ SLES-54666:
   region: "PAL-M11"
   compat: 5
 SLES-54668:
-  name: "EyeToy - Thomas & Friends - A Day at the Races"
+  name: "Thomas & Friends - A Day at the Races"
   region: "PAL-E"
 SLES-54669:
   name: "Lassie"
@@ -19539,6 +19578,9 @@ SLES-54983:
 SLES-54984:
   name: "Water Horse, The - Legend of the Deep"
   region: "PAL-M11"
+SLES-54985:
+  name: "Thomas & Friends - A Day at the Races"
+  region: "PAL-M4"
 SLES-54986:
   name: "Bratz - The Movie"
   region: "PAL-E-F"
@@ -20708,6 +20750,9 @@ SLES-55537:
 SLES-55542:
   name: "Disney Sing It - Pop Hits"
   region: "PAL-M6"
+SLES-55544:
+  name: "Guitar Hero - Greatest Hits"
+  region: "PAL-M5"
 SLES-55545:
   name: "WWE SmackDown vs. Raw 2010"
   region: "PAL-M5"
@@ -21207,7 +21252,7 @@ SLKA-15007:
     - OPHFlagHack
 SLKA-15008:
   name: "Choro Q HG2"
-  region: "NTSC-E-F-G"
+  region: "NTSC-K"
   gsHWFixes:
     roundSprite: 2 # Fixes sprite ghosting.
 SLKA-15021:
@@ -32352,6 +32397,9 @@ SLPS-20194:
   region: "NTSC-J"
 SLPS-20196:
   name: "Akagawa Jiro - Tsuki no Hikari - Shizumeru Kane no Satsujin"
+  region: "NTSC-J"
+SLPS-20197:
+  name: "Surfing Air Show with RatBoy"
   region: "NTSC-J"
 SLPS-20198:
   name: "Raging Bless"
