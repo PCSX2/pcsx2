@@ -36,6 +36,9 @@ INISettingsInterface::~INISettingsInterface()
 
 bool INISettingsInterface::Load()
 {
+	if (m_filename.empty())
+		return false;
+
 	SI_Error err = SI_FAIL;
 	auto fp = FileSystem::OpenManagedCFile(m_filename.c_str(), "rb");
 	if (fp)
@@ -46,6 +49,9 @@ bool INISettingsInterface::Load()
 
 bool INISettingsInterface::Save()
 {
+	if (m_filename.empty())
+		return false;
+
 	SI_Error err = SI_FAIL;
 	std::FILE* fp = FileSystem::OpenCFile(m_filename.c_str(), "wb");
 	if (fp)
