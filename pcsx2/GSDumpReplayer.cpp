@@ -54,6 +54,7 @@ static void GSDumpReplayerCpuClear(u32 addr, u32 size);
 static std::unique_ptr<GSDumpFile> s_dump_file;
 static u32 s_current_packet = 0;
 static u32 s_dump_frame_number = 0;
+static s32 s_dump_loop_count = 0;
 static bool s_dump_running = false;
 static bool s_needs_state_loaded = false;
 static u64 s_frame_ticks = 0;
@@ -78,6 +79,11 @@ bool GSDumpReplayer::IsReplayingDump()
 	return static_cast<bool>(s_dump_file);
 }
 
+void GSDumpReplayer::SetLoopCount(s32 loop_count)
+{
+	s_dump_loop_count = loop_count - 1;
+}
+
 bool GSDumpReplayer::Initialize(const char* filename)
 {
 	Common::Timer timer;
@@ -98,6 +104,9 @@ bool GSDumpReplayer::Initialize(const char* filename)
 	psxCpu = &psxInt;
 	CpuVU0 = &gsDumpVU0;
 	CpuVU1 = &gsDumpVU1;
+
+	// loop infinitely by default
+	s_dump_loop_count = -1;
 
 	return true;
 }
@@ -142,6 +151,11 @@ std::string GSDumpReplayer::GetDumpSerial()
 u32 GSDumpReplayer::GetDumpCRC()
 {
 	return s_dump_file->GetCRC();
+}
+
+u32 GSDumpReplayer::GetFrameNumber()
+{
+	return s_dump_frame_number;
 }
 
 void GSDumpReplayerCpuReserve()
@@ -226,7 +240,16 @@ void GSDumpReplayerCpuStep()
 	const GSDumpFile::GSData& packet = s_dump_file->GetPackets()[s_current_packet];
 	s_current_packet = (s_current_packet + 1) % static_cast<u32>(s_dump_file->GetPackets().size());
 	if (s_current_packet == 0)
+	{
 		s_dump_frame_number = 0;
+		if (s_dump_loop_count > 0)
+			s_dump_loop_count--;
+		else if (s_dump_loop_count == 0)
+		{
+			Host::RequestVMShutdown(false, false, false);
+			s_dump_running = false;
+		}
+	}
 
 	switch (packet.id)
 	{
