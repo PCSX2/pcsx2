@@ -42,7 +42,7 @@ GSState::GSState()
 	, m_skip(0)
 	, m_skip_offset(0)
 	, m_q(1.0f)
-	, m_scanmask_used(false)
+	, m_scanmask_used(0)
 	, tex_flushed(true)
 	, m_vt(this, IsFirstProvokingVertex())
 	, m_regs(NULL)
@@ -182,7 +182,7 @@ void GSState::Reset(bool hardware_reset)
 	m_vertex.tail = 0;
 	m_vertex.next = 0;
 	m_index.tail = 0;
-	m_scanmask_used = false;
+	m_scanmask_used = 0;
 	m_dirty_gs_regs = 0;
 	m_backed_up_ctx = -1;
 
@@ -1271,7 +1271,7 @@ void GSState::GIFRegHandlerSCANMSK(const GIFReg* RESTRICT r)
 	m_env.SCANMSK = (GSVector4i)r->SCANMSK;
 
 	if (m_env.SCANMSK.MSK & 2)
-		m_scanmask_used = true;
+		m_scanmask_used = 2;
 
 	if (m_prev_env.SCANMSK.MSK != m_env.SCANMSK.MSK)
 		m_dirty_gs_regs |= (1 << DIRTY_REG_SCANMSK);

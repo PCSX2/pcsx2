@@ -161,7 +161,7 @@ protected:
 	GSVector4i m_scissor;
 	GSVector4i m_ofxy;
 
-	bool m_scanmask_used;
+	u8 m_scanmask_used;
 	bool tex_flushed;
 
 	struct

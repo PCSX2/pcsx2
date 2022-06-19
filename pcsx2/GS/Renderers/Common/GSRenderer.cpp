@@ -388,7 +388,8 @@ bool GSRenderer::Merge(int field)
 		}
 	}
 
-	m_scanmask_used = false;
+	if (m_scanmask_used)
+		m_scanmask_used--;
 
 	return true;
 }
