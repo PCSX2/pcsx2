@@ -61,6 +61,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rainterface", "3rdparty\rai
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "discord-rpc", "3rdparty\discord-rpc\discord-rpc.vcxproj", "{E960DFDF-1BD3-4C29-B251-D1A0919C9B09}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pcsx2-gsrunner", "pcsx2-gsrunner\pcsx2-gsrunner.vcxproj", "{BB98BF81-A132-444A-BB81-96D510F433A8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug AVX2|x64 = Debug AVX2|x64
@@ -407,6 +409,12 @@ Global
 		{E960DFDF-1BD3-4C29-B251-D1A0919C9B09}.Release AVX2|x64.Build.0 = Release|x64
 		{E960DFDF-1BD3-4C29-B251-D1A0919C9B09}.Release|x64.ActiveCfg = Release|x64
 		{E960DFDF-1BD3-4C29-B251-D1A0919C9B09}.Release|x64.Build.0 = Release|x64
+		{BB98BF81-A132-444A-BB81-96D510F433A8}.Debug AVX2|x64.ActiveCfg = Debug AVX2|x64
+		{BB98BF81-A132-444A-BB81-96D510F433A8}.Debug|x64.ActiveCfg = Debug|x64
+		{BB98BF81-A132-444A-BB81-96D510F433A8}.Devel AVX2|x64.ActiveCfg = Devel AVX2|x64
+		{BB98BF81-A132-444A-BB81-96D510F433A8}.Devel|x64.ActiveCfg = Devel|x64
+		{BB98BF81-A132-444A-BB81-96D510F433A8}.Release AVX2|x64.ActiveCfg = Release AVX2|x64
+		{BB98BF81-A132-444A-BB81-96D510F433A8}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
