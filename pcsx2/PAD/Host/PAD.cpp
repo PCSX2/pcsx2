@@ -291,6 +291,7 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 	si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Space");
 	si.SetStringValue("Hotkeys", "ToggleSlowMotion", "Keyboard/Shift & Keyboard/Backtab");
 	si.SetStringValue("Hotkeys", "ToggleTurbo", "Keyboard/Tab");
+	si.SetStringValue("Hotkeys", "HoldTurbo", "Keyboard/Period");
 }
 
 void PAD::Update()
