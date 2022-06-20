@@ -687,12 +687,8 @@ void EmuThread::releaseHostDisplay()
 {
 	ImGuiManager::Shutdown();
 
-	if (s_host_display)
-		s_host_display->DestroyRenderDevice();
-
-	emit onDestroyDisplayRequested();
-
 	s_host_display.reset();
+	emit onDestroyDisplayRequested();
 }
 
 HostDisplay* Host::GetHostDisplay()

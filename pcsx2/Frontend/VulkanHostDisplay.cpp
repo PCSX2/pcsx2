@@ -51,8 +51,14 @@ VulkanHostDisplay::VulkanHostDisplay() = default;
 
 VulkanHostDisplay::~VulkanHostDisplay()
 {
-	pxAssertRel(!g_vulkan_context, "Context should have been destroyed by now");
-	pxAssertRel(!m_swap_chain, "Swap chain should have been destroyed by now");
+	if (g_vulkan_context)
+	{
+		g_vulkan_context->WaitForGPUIdle();
+		m_swap_chain.reset();
+
+		Vulkan::ShaderCache::Destroy();
+		Vulkan::Context::Destroy();
+	}
 }
 
 HostDisplay::RenderAPI VulkanHostDisplay::GetRenderAPI() const
@@ -163,7 +169,6 @@ HostDisplay::AdapterAndModeList VulkanHostDisplay::GetAdapterAndModeList()
 
 void VulkanHostDisplay::DestroyRenderSurface()
 {
-	m_window_info = {};
 	g_vulkan_context->WaitForGPUIdle();
 	m_swap_chain.reset();
 }
@@ -318,18 +323,6 @@ void VulkanHostDisplay::DestroyImGuiContext()
 bool VulkanHostDisplay::UpdateImGuiFontTexture()
 {
 	return ImGui_ImplVulkan_CreateFontsTexture();
-}
-
-void VulkanHostDisplay::DestroyRenderDevice()
-{
-	if (!g_vulkan_context)
-		return;
-
-	g_vulkan_context->WaitForGPUIdle();
-	m_swap_chain.reset();
-
-	Vulkan::ShaderCache::Destroy();
-	Vulkan::Context::Destroy();
 }
 
 bool VulkanHostDisplay::MakeRenderContextCurrent()

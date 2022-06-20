@@ -49,6 +49,9 @@ MetalHostDisplay::MetalHostDisplay()
 
 MetalHostDisplay::~MetalHostDisplay()
 {
+	MetalHostDisplay::DestroyRenderSurface();
+	m_queue = nullptr;
+	m_dev.Reset();
 }
 
 HostDisplay::AdapterAndModeList GetMetalAdapterAndModeList()
@@ -157,13 +160,6 @@ bool MetalHostDisplay::InitializeRenderDevice(std::string_view shader_cache_dire
 
 bool MetalHostDisplay::MakeRenderContextCurrent() { return true; }
 bool MetalHostDisplay::DoneRenderContextCurrent() { return true; }
-
-void MetalHostDisplay::DestroyRenderDevice()
-{
-	DestroyRenderSurface();
-	m_queue = nullptr;
-	m_dev.Reset();
-}
 
 void MetalHostDisplay::DestroyRenderSurface()
 {

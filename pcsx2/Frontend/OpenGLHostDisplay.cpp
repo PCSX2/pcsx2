@@ -53,7 +53,11 @@ OpenGLHostDisplay::OpenGLHostDisplay() = default;
 
 OpenGLHostDisplay::~OpenGLHostDisplay()
 {
-	pxAssertMsg(!m_gl_context, "Context should have been destroyed by now");
+	if (m_gl_context)
+	{
+		m_gl_context->DoneCurrent();
+		m_gl_context.reset();
+	}
 }
 
 HostDisplay::RenderAPI OpenGLHostDisplay::GetRenderAPI() const
@@ -237,15 +241,6 @@ bool OpenGLHostDisplay::MakeRenderContextCurrent()
 bool OpenGLHostDisplay::DoneRenderContextCurrent()
 {
 	return m_gl_context->DoneCurrent();
-}
-
-void OpenGLHostDisplay::DestroyRenderDevice()
-{
-	if (!m_gl_context)
-		return;
-
-	m_gl_context->DoneCurrent();
-	m_gl_context.reset();
 }
 
 bool OpenGLHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
