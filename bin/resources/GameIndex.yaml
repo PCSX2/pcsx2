@@ -8242,7 +8242,12 @@ SLAJ-25016:
   region: "NTSC-Unk"
 SLAJ-25018:
   name: "Shutokou Battle 01"
-  region: "NTSC-Unk"
+  region: "NTSC-HK"
+  compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # Improves visual clarity whilst upscaling.
+    roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
 SLAJ-25023:
   name: "Shin Sangoku Musou 3 - Mushoden"
   region: "NTSC-Unk"
@@ -21409,6 +21414,14 @@ SLKA-25082:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes cutscene freezes.
+SLKA-25084:
+  name: "Shutokou Battle 01"
+  region: "NTSC-K"
+  compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # Improves visual clarity whilst upscaling.
+    roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
 SLKA-25087:
   name: "FIFA Soccer 2004"
   region: "NTSC-J"
@@ -25768,6 +25781,8 @@ SLPM-65308:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # Improves visual clarity whilst upscaling.
+    roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
 SLPM-65309:
   name: "Splashdown [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -31658,6 +31673,8 @@ SLPM-74204:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # Improves visual clarity whilst upscaling.
+    roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
 SLPM-74205:
   name: "Shin Megami Tensei III - Nocturne [PlayStation 2 The Best]"
   region: "NTSC-J"
