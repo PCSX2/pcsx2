@@ -1711,6 +1711,14 @@ DEFINE_HOTKEY("ToggleFrameLimit", "System", "Toggle Frame Limit", [](bool presse
 	}
 })
 DEFINE_HOTKEY("ToggleTurbo", "System", "Toggle Turbo", [](bool pressed) {
+	if (!pressed)
+	{
+		VMManager::SetLimiterMode((EmuConfig.LimiterMode != LimiterModeType::Turbo) ?
+									  LimiterModeType::Turbo :
+                                      LimiterModeType::Nominal);
+	}
+})
+DEFINE_HOTKEY("HoldTurbo", "System", "Turbo (Hold)", [](bool pressed) {
 	if (pressed && !s_limiter_mode_prior_to_hold_interaction.has_value())
 	{
 		s_limiter_mode_prior_to_hold_interaction = VMManager::GetLimiterMode();
