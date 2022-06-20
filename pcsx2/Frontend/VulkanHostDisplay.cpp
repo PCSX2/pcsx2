@@ -326,9 +326,9 @@ void VulkanHostDisplay::DestroyRenderDevice()
 		return;
 
 	g_vulkan_context->WaitForGPUIdle();
+	m_swap_chain.reset();
 
 	Vulkan::ShaderCache::Destroy();
-	DestroyRenderSurface();
 	Vulkan::Context::Destroy();
 }
 

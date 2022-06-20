@@ -688,10 +688,7 @@ void EmuThread::releaseHostDisplay()
 	ImGuiManager::Shutdown();
 
 	if (s_host_display)
-	{
-		s_host_display->DestroyRenderSurface();
 		s_host_display->DestroyRenderDevice();
-	}
 
 	emit onDestroyDisplayRequested();
 
