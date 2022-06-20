@@ -850,11 +850,11 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 	if (!VMManager::HasValidVM())
 		return true;
 
-	// if we don't have a crc, we can't save state
+	// If we don't have a crc, we can't save state.
 	allow_save_to_state &= (m_current_game_crc != 0);
 	bool save_state = allow_save_to_state && EmuConfig.SaveStateOnShutdown;
 
-	// only confirm on UI thread because we need to display a msgbox
+	// Only confirm on UI thread because we need to display a msgbox.
 	if (allow_confirm && !GSDumpReplayer::IsReplayingDump() && Host::GetBaseBoolSettingValue("UI", "ConfirmShutdown", true))
 	{
 		VMLock lock(pauseAndLockVM());
@@ -875,20 +875,23 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 			return false;
 
 		save_state = save_cb->isChecked();
+
+		// Don't switch back to fullscreen when we're shutting down anyway.
+		lock.cancelResume();
 	}
 
 	g_emu_thread->shutdownVM(save_state);
 
 	if (block_until_done || QtHost::InBatchMode())
 	{
-		// we need to yield here, since the display gets destroyed
+		// We need to yield here, since the display gets destroyed.
 		while (VMManager::GetState() != VMState::Shutdown)
 			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 	}
 
 	if (QtHost::InBatchMode())
 	{
-		// closing the window should shut down everything.
+		// Closing the window should shut down everything.
 		close();
 	}
 
@@ -2209,7 +2212,7 @@ MainWindow::VMLock::VMLock(VMLock&& lock)
 	, m_was_fullscreen(lock.m_was_fullscreen)
 {
 	lock.m_dialog_parent = nullptr;
-	lock.m_was_paused = false;
+	lock.m_was_paused = true;
 	lock.m_was_fullscreen = false;
 }
 
@@ -2219,5 +2222,11 @@ MainWindow::VMLock::~VMLock()
 		g_emu_thread->setSurfaceless(false);
 	if (!m_was_paused)
 		g_emu_thread->setVMPaused(false);
+}
+
+void MainWindow::VMLock::cancelResume()
+{
+	m_was_paused = true;
+	m_was_fullscreen = false;
 }
 
