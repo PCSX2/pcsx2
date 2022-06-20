@@ -40349,6 +40349,8 @@ SLUS-20831:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # Improves visual clarity whilst upscaling.
+    roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
 SLUS-20833:
   name: "Mega Man Anniversary Collection"
   region: "NTSC-U"
