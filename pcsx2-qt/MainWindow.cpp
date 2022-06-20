@@ -1635,6 +1635,11 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 			container->showNormal();
 		}
 
+		m_display_widget->setFocus();
+		m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
+		m_display_widget->updateRelativeMode(m_vm_valid && !m_vm_paused);
+		m_display_widget->updateCursor(m_vm_valid && !m_vm_paused);
+
 		QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 		return m_display_widget;
 	}
