@@ -1367,8 +1367,11 @@ void MainWindow::onVMPaused()
 	updateWindowTitle();
 	updateStatusBarWidgetVisibility();
 	m_status_fps_widget->setText(tr("Paused"));
-	m_display_widget->updateRelativeMode(false);
-	m_display_widget->updateCursor(false);
+	if (m_display_widget)
+	{
+		m_display_widget->updateRelativeMode(false);
+		m_display_widget->updateCursor(false);
+	}
 }
 
 void MainWindow::onVMResumed()
@@ -1384,10 +1387,12 @@ void MainWindow::onVMResumed()
 	updateWindowTitle();
 	updateStatusBarWidgetVisibility();
 	m_status_fps_widget->setText(m_last_fps_status);
-	m_display_widget->updateRelativeMode(true);
-	m_display_widget->updateCursor(true);
 	if (m_display_widget)
+	{
+		m_display_widget->updateRelativeMode(true);
+		m_display_widget->updateCursor(true);
 		m_display_widget->setFocus();
+	}
 }
 
 void MainWindow::onVMStopped()
