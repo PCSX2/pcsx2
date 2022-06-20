@@ -95,8 +95,9 @@ D3D11HostDisplay::D3D11HostDisplay() = default;
 
 D3D11HostDisplay::~D3D11HostDisplay()
 {
-	pxAssertMsg(!m_context, "Context should have been destroyed by now");
-	pxAssertMsg(!m_swap_chain, "Swap chain should have been destroyed by now");
+	D3D11HostDisplay::DestroyRenderSurface();
+	m_context.Reset();
+	m_device.Reset();
 }
 
 HostDisplay::RenderAPI D3D11HostDisplay::GetRenderAPI() const
@@ -330,13 +331,6 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 bool D3D11HostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
 {
 	return true;
-}
-
-void D3D11HostDisplay::DestroyRenderDevice()
-{
-	DestroyRenderSurface();
-	m_context.Reset();
-	m_device.Reset();
 }
 
 bool D3D11HostDisplay::MakeRenderContextCurrent()

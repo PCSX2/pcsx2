@@ -56,7 +56,6 @@ public:
 	bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device) override;
 	bool MakeRenderContextCurrent() override;
 	bool DoneRenderContextCurrent() override;
-	void DestroyRenderDevice() override;
 	void DestroyRenderSurface() override;
 	bool ChangeRenderWindow(const WindowInfo& wi) override;
 	bool SupportsFullscreen() const override;

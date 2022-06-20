@@ -51,8 +51,12 @@ D3D12HostDisplay::D3D12HostDisplay() = default;
 
 D3D12HostDisplay::~D3D12HostDisplay()
 {
-	pxAssertMsg(!g_d3d12_context, "Context should have been destroyed by now");
-	pxAssertMsg(!m_swap_chain, "Swap chain should have been destroyed by now");
+	if (g_d3d12_context)
+	{
+		g_d3d12_context->WaitForGPUIdle();
+		D3D12HostDisplay::DestroyRenderSurface();
+		g_d3d12_context->Destroy();
+	}
 }
 
 HostDisplay::RenderAPI D3D12HostDisplay::GetRenderAPI() const
@@ -202,15 +206,6 @@ bool D3D12HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 bool D3D12HostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
 {
 	return true;
-}
-
-void D3D12HostDisplay::DestroyRenderDevice()
-{
-	g_d3d12_context->ExecuteCommandList(true);
-
-	DestroyRenderSurface();
-	if (g_d3d12_context)
-		g_d3d12_context->Destroy();
 }
 
 bool D3D12HostDisplay::MakeRenderContextCurrent()
