@@ -27,6 +27,8 @@
 #include "gui/StringHelpers.h"
 #include "gui/wxDirName.h"
 #include <wx/stdpaths.h>
+#else
+#include "HostSettings.h"
 #endif
 
 #define CLAMP(val, minval, maxval) (std::min(maxval, std::max(minval, val)))
@@ -182,10 +184,11 @@ static std::string iso2indexname(const std::string& isoname)
 #ifndef PCSX2_CORE
 	std::string appRoot = // TODO: have only one of this in PCSX2. Right now have few...
 		StringUtil::wxStringToUTF8String(((wxDirName)(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath())).ToString());
+	return ApplyTemplate("gzip index", appRoot, EmuConfig.GzipIsoIndexTemplate, isoname, false);
 #else
 	const std::string& appRoot = EmuFolders::DataRoot;
+	return ApplyTemplate("gzip index", appRoot, Host::GetBaseStringSettingValue("EmuCore", "GzipIsoIndexTemplate", "$(f).pindex.tmp"), isoname, false);
 #endif
-	return ApplyTemplate("gzip index", appRoot, EmuConfig.GzipIsoIndexTemplate, isoname, false);
 }
 
 
