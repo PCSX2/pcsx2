@@ -95,7 +95,7 @@ void CreateMemoryCardDialog::restoreDefaults()
 
 void CreateMemoryCardDialog::updateState()
 {
-	const bool okay = (m_ui.name->text().length() > 4);
+	const bool okay = (m_ui.name->text().length() > 0);
 
 	m_ui.buttonBox->button(QDialogButtonBox::Ok)->setEnabled(okay);
 #ifdef _WIN32
