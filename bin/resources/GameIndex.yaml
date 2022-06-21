@@ -39132,7 +39132,7 @@ SLUS-20541:
   clampModes:
     vuClampMode: 2 # Fixes transparency issues.
 SLUS-20543:
-  name: "Metal Gear Solid 2"
+  name: "Document of Metal Gear Solid 2, The"
   region: "NTSC-U"
   compat: 5
 SLUS-20544:
