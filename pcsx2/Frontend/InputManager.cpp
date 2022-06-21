@@ -622,8 +622,11 @@ bool InputManager::IsAxisHandler(const InputEventHandler& handler)
 
 bool InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key)
 {
-	if (PreprocessEvent(key, value, generic_key))
+	if (DoEventHook(key, value))
 		return true;
+
+	// If imgui ate the event, don't fire our handlers.
+	const bool skip_button_handlers = PreprocessEvent(key, value, generic_key);
 
 	// find all the bindings associated with this key
 	const InputBindingKey masked_key = key.MaskDirection();
@@ -631,42 +634,8 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBi
 	if (range.first == s_binding_map.end())
 		return false;
 
-	// Workaround for modifier keys. Basically, if we bind say, F1 and Shift+F1, and press shift
-	// and then F1, we'll fire bindings for both F1 and Shift+F1, when we really only want to fire
-	// the binding for Shift+F1. So, let's search through the binding list, and see if there's a
-	// "longer" binding (more keys), and if so, only activate that and not the shorter binding(s).
-	const InputBinding* longest_hotkey_binding = nullptr;
-	for (auto it = range.first; it != range.second; ++it)
-	{
-		InputBinding* binding = it->second.get();
-		if (IsAxisHandler(binding->handler))
-			continue;
-
-		// find the key which matches us
-		for (u32 i = 0; i < binding->num_keys; i++)
-		{
-			if (binding->keys[i].MaskDirection() != masked_key)
-				continue;
-
-			const u8 bit = static_cast<u8>(1) << i;
-			const bool negative = binding->keys[i].negative;
-			const bool new_state = (negative ? (value < 0.0f) : (value > 0.0f));
-			const u8 new_mask = (new_state ? (binding->current_mask | bit) : (binding->current_mask & ~bit));
-			const bool prev_full_state = (binding->current_mask == binding->full_mask);
-			const bool new_full_state = (new_mask == binding->full_mask);
-
-			// If we're activating this chord, block activation of other bindings with fewer keys.
-			if (prev_full_state || new_full_state)
-			{
-				if (!longest_hotkey_binding || longest_hotkey_binding->num_keys < binding->num_keys)
-					longest_hotkey_binding = binding;
-			}
-
-			break;
-		}
-	}
-
 	// Now we can actually fire/activate bindings.
+	u32 min_num_keys = 0;
 	for (auto it = range.first; it != range.second; ++it)
 	{
 		InputBinding* binding = it->second.get();
@@ -680,20 +649,6 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBi
 			const u8 bit = static_cast<u8>(1) << i;
 			const bool negative = binding->keys[i].negative;
 			const bool new_state = (negative ? (value < 0.0f) : (value > 0.0f));
-
-			// Don't register the key press when we're part of a longer chord. That way,
-			// the state won't change, and it won't get the released event either.
-			if (longest_hotkey_binding && new_state && !IsAxisHandler(binding->handler) &&
-				binding->num_keys != longest_hotkey_binding->num_keys)
-			{
-				continue;
-			}
-
-			// update state based on whether the whole chord was activated
-			const u8 new_mask = (new_state ? (binding->current_mask | bit) : (binding->current_mask & ~bit));
-			const bool prev_full_state = (binding->current_mask == binding->full_mask);
-			const bool new_full_state = (new_mask == binding->full_mask);
-			binding->current_mask = new_mask;
 
 			// invert if we're negative, since the handler expects 0..1
 			const float value_to_pass = (negative ? ((value < 0.0f) ? -value : 0.0f) : (value > 0.0f) ? value : 0.0f);
@@ -704,13 +659,60 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBi
 			// and 0 on release (when the full state changes).
 			if (IsAxisHandler(binding->handler))
 			{
-				if (prev_full_state != new_full_state || value_to_pass >= 0.0f)
+				if (value_to_pass >= 0.0f)
 					std::get<InputAxisEventHandler>(binding->handler)(value_to_pass);
 			}
-			else
+			else if (binding->num_keys >= min_num_keys)
 			{
-				if (prev_full_state != new_full_state)
-					std::get<InputButtonEventHandler>(binding->handler)(value_to_pass > 0.0f);
+				// update state based on whether the whole chord was activated
+				const u8 new_mask = (new_state ? (binding->current_mask | bit) : (binding->current_mask & ~bit));
+				const bool prev_full_state = (binding->current_mask == binding->full_mask);
+				const bool new_full_state = (new_mask == binding->full_mask);
+				binding->current_mask = new_mask;
+
+				// Workaround for multi-key bindings that share the same keys.
+				if (binding->num_keys > 1 && new_full_state && prev_full_state != new_full_state &&
+					range.first != range.second)
+				{
+					// Because the binding map isn't ordered, we could iterate in the order of Shift+F1 and then
+					// F1, which would mean that F1 wouldn't get cancelled and still activate. So, to handle this
+					// case, we skip activating any future bindings with a fewer number of keys.
+					min_num_keys = std::max<u32>(min_num_keys, binding->num_keys);
+
+					// Basically, if we bind say, F1 and Shift+F1, and press shift and then F1, we'll fire bindings
+					// for both F1 and Shift+F1, when we really only want to fire the binding for Shift+F1. So,
+					// when we activate a multi-key chord (key press), we go through the binding map for all the
+					// other keys in the chord, and cancel them if they have a shorter chord. If they're longer,
+					// they could still activate and take precedence over us, so we leave them alone.
+					for (u32 i = 0; i < binding->num_keys; i++)
+					{
+						const auto range = s_binding_map.equal_range(binding->keys[i].MaskDirection());
+						for (auto it = range.first; it != range.second; ++it)
+						{
+							InputBinding* other_binding = it->second.get();
+							if (other_binding == binding || IsAxisHandler(other_binding->handler) ||
+								other_binding->num_keys >= binding->num_keys)
+							{
+								continue;
+							}
+
+							// We only need to cancel the binding if it was fully active before. Which in the above
+							// case of Shift+F1 / F1, it will be.
+							if (other_binding->current_mask == other_binding->full_mask)
+								std::get<InputButtonEventHandler>(other_binding->handler)(-1);
+
+							// Zero out the current bits so that we don't release this binding, if the other part
+							// of the chord releases first.
+							other_binding->current_mask = 0;
+						}
+					}
+				}
+
+				if (prev_full_state != new_full_state && binding->num_keys >= min_num_keys)
+				{
+					const s32 pressed = skip_button_handlers ? -1 : static_cast<s32>(value_to_pass > 0.0f);
+					std::get<InputButtonEventHandler>(binding->handler)(pressed);
+				}
 			}
 
 			// bail out, since we shouldn't have the same key twice in the chord
@@ -723,9 +725,6 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBi
 
 bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key)
 {
-	if (DoEventHook(key, value))
-		return true;
-
 	// does imgui want the event?
 	if (key.source_type == InputSourceType::Keyboard)
 	{
@@ -739,7 +738,7 @@ bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInpu
 	}
 	else if (generic_key != GenericInputBinding::Unknown)
 	{
-		if (ImGuiManager::ProcessGenericInputEvent(generic_key, value))
+		if (ImGuiManager::ProcessGenericInputEvent(generic_key, value) && value != 0.0f)
 			return true;
 	}
 
