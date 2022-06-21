@@ -952,7 +952,7 @@ SysMtgsThread& GetMTGS()
 // ------------------------------------------------------------------------
 
 BEGIN_HOTKEY_LIST(g_host_hotkeys)
-DEFINE_HOTKEY("ShutdownVM", "System", "Shut Down Virtual Machine", [](bool pressed) {
+DEFINE_HOTKEY("ShutdownVM", "System", "Shut Down Virtual Machine", [](s32 pressed) {
 	if (!pressed)
 	{
 		// run it on the host thread, that way we get the confirm prompt (if enabled)
@@ -960,16 +960,16 @@ DEFINE_HOTKEY("ShutdownVM", "System", "Shut Down Virtual Machine", [](bool press
 			Q_ARG(bool, true), Q_ARG(bool, true), Q_ARG(bool, true));
 	}
 })
-DEFINE_HOTKEY("TogglePause", "System", "Toggle Pause", [](bool pressed) {
+DEFINE_HOTKEY("TogglePause", "System", "Toggle Pause", [](s32 pressed) {
 	if (!pressed)
 		g_emu_thread->setVMPaused(VMManager::GetState() != VMState::Paused);
 })
-DEFINE_HOTKEY("ToggleFullscreen", "General", "Toggle Fullscreen", [](bool pressed) {
+DEFINE_HOTKEY("ToggleFullscreen", "General", "Toggle Fullscreen", [](s32 pressed) {
 	if (!pressed)
 		g_emu_thread->toggleFullscreen();
 })
 // Input Recording Hot Keys
-DEFINE_HOTKEY("InputRecToggleMode", "Input Recording", "Toggle Recording Mode", [](bool pressed) {
+DEFINE_HOTKEY("InputRecToggleMode", "Input Recording", "Toggle Recording Mode", [](s32 pressed) {
 	if (!pressed) // ?? - not pressed so it is on key up?
 	{
 		g_InputRecordingControls.RecordModeToggle();
