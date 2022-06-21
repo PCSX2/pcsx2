@@ -457,11 +457,11 @@ void XInputSource::CheckForStateChangesSCP(u32 index, const SCP_EXTN& new_state)
 
 	s32 axis = 0, button = 0;
 
-#define CHECK_AXIS(field) \
+#define CHECK_AXIS(field, mult) \
 	if (ogp.field != ngp.field) \
 	{ \
 		InputManager::InvokeEvents( \
-			MakeGenericControllerAxisKey(InputSourceType::XInput, index, axis), ngp.field); \
+			MakeGenericControllerAxisKey(InputSourceType::XInput, index, axis), ngp.field * mult); \
 	} \
 	axis++;
 
@@ -473,12 +473,12 @@ void XInputSource::CheckForStateChangesSCP(u32 index, const SCP_EXTN& new_state)
 	} \
 	button++;
 
-	CHECK_AXIS(SCP_LX);
-	CHECK_AXIS(SCP_LY);
-	CHECK_AXIS(SCP_RX);
-	CHECK_AXIS(SCP_RY);
-	CHECK_AXIS(SCP_L2);
-	CHECK_AXIS(SCP_R2);
+	CHECK_AXIS(SCP_LX, 1.0f);
+	CHECK_AXIS(SCP_LY, -1.0f);
+	CHECK_AXIS(SCP_RX, 1.0f);
+	CHECK_AXIS(SCP_RY, -1.0f);
+	CHECK_AXIS(SCP_L2, 1.0f);
+	CHECK_AXIS(SCP_R2, 1.0f);
 
 	CHECK_BUTTON(SCP_UP);
 	CHECK_BUTTON(SCP_DOWN);
