@@ -43244,12 +43244,14 @@ SLUS-21388:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but doesn't fully fix it.
 SLUS-21389:
-  name: "Xenosaga - Episode III - Also Sprach Zarathustra [Disc1of2]"
+  name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc1of2]"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
     textureInsideRT: 1
     autoFlush: 1
+    halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows.
+    roundSprite: 2 # Fixes font artifacts.
   memcardFilters: # Allows import of Xenosaga II save data.
     - "SLUS-21389"
     - "SLUS-20892"
@@ -43371,12 +43373,14 @@ SLUS-21416:
   clampModes:
     eeClampMode: 3 # Fixes black screen.
 SLUS-21417:
-  name: "Xenosaga - Episode III - Also Sprach Zarathustra [Disc2of2]"
+  name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc2of2]"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
     textureInsideRT: 1
     autoFlush: 1
+    halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows.
+    roundSprite: 2 # Fixes font artifacts.
   memcardFilters:
     - "SLUS-21389"
     - "SLUS-20892"
