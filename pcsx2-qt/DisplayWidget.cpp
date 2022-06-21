@@ -21,6 +21,7 @@
 #include "EmuThread.h"
 #include "MainWindow.h"
 #include "QtHost.h"
+#include "QtUtils.h"
 
 #include "pcsx2/GS/GSIntrin.h" // _BitScanForward
 
@@ -234,7 +235,8 @@ bool DisplayWidget::event(QEvent* event)
 			// but I can't think of a better way of handling it, and there doesn't appear to be
 			// any window flag which changes this behavior that I can see.
 
-			const int key = key_event->key();
+			const u32 key = QtUtils::KeyEventToCode(key_event);
+			const Qt::KeyboardModifiers modifiers = key_event->modifiers();
 			const bool pressed = (key_event->type() == QEvent::KeyPress);
 			const auto it = std::find(m_keys_pressed_with_modifiers.begin(), m_keys_pressed_with_modifiers.end(), key);
 			if (it != m_keys_pressed_with_modifiers.end())
@@ -244,7 +246,7 @@ bool DisplayWidget::event(QEvent* event)
 				else
 					m_keys_pressed_with_modifiers.erase(it);
 			}
-			else if (key_event->modifiers() != Qt::NoModifier && pressed)
+			else if (modifiers != Qt::NoModifier && modifiers != Qt::KeypadModifier && pressed)
 			{
 				m_keys_pressed_with_modifiers.push_back(key);
 			}

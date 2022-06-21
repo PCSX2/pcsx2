@@ -17,6 +17,7 @@
 
 #include "EmuThread.h"
 #include "QtHost.h"
+#include "QtUtils.h"
 #include "Settings/InputBindingDialog.h"
 #include <QtCore/QTimer>
 #include <QtGui/QKeyEvent>
@@ -64,7 +65,7 @@ bool InputBindingDialog::eventFilter(QObject* watched, QEvent* event)
 	else if (event_type == QEvent::KeyPress)
 	{
 		const QKeyEvent* key_event = static_cast<const QKeyEvent*>(event);
-		m_new_bindings.push_back(InputManager::MakeHostKeyboardKey(key_event->key()));
+		m_new_bindings.push_back(InputManager::MakeHostKeyboardKey(QtUtils::KeyEventToCode(key_event)));
 		return true;
 	}
 	else if (event_type == QEvent::MouseButtonPress || event_type == QEvent::MouseButtonDblClick)

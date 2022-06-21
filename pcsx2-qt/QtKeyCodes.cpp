@@ -15,7 +15,13 @@
 
 #include "PrecompiledHeader.h"
 
+#include "QtUtils.h"
+
 #include "pcsx2/Frontend/InputManager.h"
+
+#include "common/StringUtil.h"
+
+#include <QtGui/QKeyEvent>
 
 struct KeyCodeName
 {
@@ -465,10 +471,18 @@ static constexpr KeyCodeName s_qt_key_names[] = {
 
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view& str)
 {
+	std::string compare_name(str);
+	u32 modifier_bits = 0;
+	if (StringUtil::StartsWith(compare_name, "Numpad"))
+	{
+		compare_name = compare_name.substr(6);
+		modifier_bits |= Qt::KeypadModifier;
+	}
+
 	for (const KeyCodeName& name : s_qt_key_names)
 	{
-		if (str == name.name)
-			return static_cast<u32>(name.code);
+		if (compare_name == name.name)
+			return static_cast<u32>(name.code) | modifier_bits;
 	}
 
 	return std::nullopt;
@@ -476,11 +490,28 @@ std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::stri
 
 std::optional<std::string> InputManager::ConvertHostKeyboardCodeToString(u32 code)
 {
+	std::optional<std::string> ret;
+
+	const u32 modifier_bits = (code & Qt::KeyboardModifierMask);
+	const u32 masked_code = (code & ~Qt::KeyboardModifierMask);
+
 	for (const KeyCodeName& name : s_qt_key_names)
 	{
-		if (static_cast<int>(code) == name.code)
-			return std::string(name.name);
+		if (static_cast<int>(masked_code) == name.code)
+		{
+			if (modifier_bits & Qt::KeypadModifier)
+				ret = fmt::format("Numpad{}", name.name);
+			else
+				ret = std::string(name.name);
+
+			break;
+		}
 	}
 
-	return std::nullopt;
+	return ret;
+}
+
+u32 QtUtils::KeyEventToCode(const QKeyEvent* ev)
+{
+	return static_cast<u32>(ev->key()) | (static_cast<u32>(ev->modifiers()) & static_cast<u32>(Qt::KeypadModifier));
 }

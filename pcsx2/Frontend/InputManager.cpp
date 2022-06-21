@@ -352,11 +352,11 @@ void InputManager::AddBindings(const std::vector<std::string>& bindings, const I
 // Key Decoders
 // ------------------------------------------------------------------------
 
-InputBindingKey InputManager::MakeHostKeyboardKey(s32 key_code)
+InputBindingKey InputManager::MakeHostKeyboardKey(u32 key_code)
 {
 	InputBindingKey key = {};
 	key.source_type = InputSourceType::Keyboard;
-	key.data = static_cast<u32>(key_code);
+	key.data = key_code;
 	return key;
 }
 
