@@ -212,7 +212,7 @@ namespace InputManager
 	std::optional<std::string> ConvertHostKeyboardCodeToString(u32 code);
 
 	/// Creates a key for a host-specific key code.
-	InputBindingKey MakeHostKeyboardKey(s32 key_code);
+	InputBindingKey MakeHostKeyboardKey(u32 key_code);
 
 	/// Creates a key for a host-specific button.
 	InputBindingKey MakePointerButtonKey(u32 index, u32 button_index);
