@@ -695,7 +695,7 @@ bool VMManager::AutoDetectSource(const std::string& filename)
 	{
 		if (!FileSystem::FileExists(filename.c_str()))
 		{
-			Host::ReportFormattedErrorAsync("Error", "Requested filename '%s' does not exist.", filename.c_str());
+			Host::ReportErrorAsync("Error", fmt::format("Requested filename '{}' does not exist.", filename));
 			return false;
 		}
 
@@ -752,7 +752,7 @@ bool VMManager::ApplyBootParameters(const VMBootParameters& params, std::string*
 		*state_to_load = GetSaveStateFileName(params.filename.c_str(), params.state_index.value());
 		if (state_to_load->empty())
 		{
-			Host::ReportFormattedErrorAsync("Error", "Could not resolve path indexed save state load.");
+			Host::ReportErrorAsync("Error", "Could not resolve path indexed save state load.");
 			return false;
 		}
 	}
@@ -762,7 +762,7 @@ bool VMManager::ApplyBootParameters(const VMBootParameters& params, std::string*
 	{
 		if (params.source_type.value() == CDVD_SourceType::Iso && !FileSystem::FileExists(params.filename.c_str()))
 		{
-			Host::ReportFormattedErrorAsync("Error", "Requested filename '%s' does not exist.", params.filename.c_str());
+			Host::ReportErrorAsync("Error", fmt::format("Requested filename '{}' does not exist.", params.filename));
 			return false;
 		}
 
@@ -782,7 +782,7 @@ bool VMManager::ApplyBootParameters(const VMBootParameters& params, std::string*
 	{
 		if (!FileSystem::FileExists(s_elf_override.c_str()))
 		{
-			Host::ReportFormattedErrorAsync("Error", "Requested boot ELF '%s' does not exist.", s_elf_override.c_str());
+			Host::ReportErrorAsync("Error", fmt::format("Requested boot ELF '{}' does not exist.", s_elf_override));
 			return false;
 		}
 
@@ -1066,9 +1066,9 @@ std::string VMManager::GetSaveStateFileName(const char* game_serial, u32 game_cr
 	if (game_crc != 0)
 	{
 		if (slot < 0)
-			filename = StringUtil::StdStringFromFormat("%s (%08X).resume.p2s", game_serial, game_crc);
+			filename = fmt::format("{} ({:08X}).resume.p2s", game_serial, game_crc);
 		else
-			filename = StringUtil::StdStringFromFormat("%s (%08X).%02d.p2s", game_serial, game_crc, slot);
+			filename = fmt::format("{} ({:08X}).{:02d}.p2s", game_serial, game_crc, slot);
 
 		filename = Path::Combine(EmuFolders::Savestates, filename);
 	}
@@ -1135,7 +1135,7 @@ bool VMManager::DoLoadState(const char* filename)
 	}
 	catch (Exception::BaseException& e)
 	{
-		Host::ReportErrorAsync("Failed to load save state", static_cast<const char*>(e.UserMsg().c_str()));
+		Host::ReportErrorAsync("Failed to load save state", e.UserMsg());
 		Host::OnSaveStateLoaded(filename, false);
 		return false;
 	}
@@ -1146,7 +1146,7 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 	if (GSDumpReplayer::IsReplayingDump())
 		return false;
 
-	std::string osd_key(StringUtil::StdStringFromFormat("SaveStateSlot%d", slot_for_message));
+	std::string osd_key(fmt::format("SaveStateSlot{}", slot_for_message));
 
 	try
 	{
@@ -1171,7 +1171,7 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 	}
 	catch (Exception::BaseException& e)
 	{
-		Host::AddKeyedFormattedOSDMessage(std::move(osd_key), 15.0f, "Failed to save save state: %s", static_cast<const char*>(e.DiagMsg().c_str()));
+		Host::AddKeyedOSDMessage(std::move(osd_key), fmt::format("Failed to save save state: {}.", e.DiagMsg()), 15.0f);
 		return false;
 	}
 }
@@ -1185,11 +1185,11 @@ void VMManager::ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
 	if (SaveState_ZipToDisk(std::move(elist), std::move(screenshot), filename))
 	{
 		if (slot_for_message >= 0 && VMManager::HasValidVM())
-			Host::AddKeyedFormattedOSDMessage(std::move(osd_key), 10.0f, "State saved to slot %d.", slot_for_message);
+			Host::AddKeyedOSDMessage(std::move(osd_key), fmt::format("State saved to slot {}.", slot_for_message), 10.0f);
 	}
 	else
 	{
-		Host::AddKeyedFormattedOSDMessage(std::move(osd_key), 15.0f, "Failed to save save state to slot %d", slot_for_message);
+		Host::AddKeyedOSDMessage(std::move(osd_key), fmt::format("Failed to save save state to slot {}.", slot_for_message), 15.0f);
 	}
 
 	DevCon.WriteLn("Zipping save state to '%s' took %.2f ms", filename, timer.GetTimeMilliseconds());
@@ -1246,11 +1246,11 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 	const std::string filename(GetCurrentSaveStateFileName(slot));
 	if (filename.empty())
 	{
-		Host::AddKeyedFormattedOSDMessage("LoadStateFromSlot", 5.0f, "There is no save state in slot %d.", slot);
+		Host::AddKeyedOSDMessage("LoadStateFromSlot", fmt::format("There is no save state in slot {}.", slot), 5.0f);
 		return false;
 	}
 
-	Host::AddKeyedFormattedOSDMessage("LoadStateFromSlot", 5.0f, "Loading state from slot %d...", slot);
+	Host::AddKeyedOSDMessage("LoadStateFromSlot", fmt::format("Loading state from slot {}...", slot), 5.0f);
 	return DoLoadState(filename.c_str());
 }
 
@@ -1266,7 +1266,7 @@ bool VMManager::SaveStateToSlot(s32 slot, bool zip_on_thread)
 		return false;
 
 	// if it takes more than a minute.. well.. wtf.
-	Host::AddKeyedFormattedOSDMessage(StringUtil::StdStringFromFormat("SaveStateSlot%d", slot), 60.0f, "Saving state to slot %d...", slot);
+	Host::AddKeyedOSDMessage(fmt::format("SaveStateSlot{}", slot), fmt::format("Saving state to slot {}...", slot), 60.0f);
 	return DoSaveState(filename.c_str(), slot, zip_on_thread);
 }
 
@@ -1307,17 +1307,17 @@ bool VMManager::ChangeDisc(std::string path)
 	const bool result = DoCDVDopen();
 	if (result)
 	{
-		Host::AddFormattedOSDMessage(5.0f, "Disc changed to '%s'.", display_name.c_str());
+		Host::AddOSDMessage(fmt::format("Disc changed to '{}'.", display_name), 5.0f);
 	}
 	else
 	{
-		Host::AddFormattedOSDMessage(20.0f, "Failed to open new disc image '%s'. Reverting to old image.", display_name.c_str());
+		Host::AddOSDMessage(fmt::format("Failed to open new disc image '{}'. Reverting to old image.", display_name), 20.0f);
 		CDVDsys_ChangeSource(old_type);
 		if (!old_path.empty())
 			CDVDsys_SetFile(old_type, std::move(old_path));
 		if (!DoCDVDopen())
 		{
-			Host::AddFormattedOSDMessage(20.0f, "Failed to switch back to old disc image. Removing disc.");
+			Host::AddOSDMessage("Failed to switch back to old disc image. Removing disc.", 20.0f);
 			CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
 			DoCDVDopen();
 		}
@@ -1646,7 +1646,7 @@ static void HotkeyAdjustTargetSpeed(double delta)
 	VMManager::SetLimiterMode(LimiterModeType::Nominal);
 	gsUpdateFrequency(EmuConfig);
 	GetMTGS().SetVSync(EmuConfig.GetEffectiveVsyncMode());
-	Host::AddKeyedFormattedOSDMessage("SpeedChanged", 5.0f, "Target speed set to %.0f%%.", std::round(EmuConfig.Framerate.NominalScalar * 100.0));
+	Host::AddKeyedOSDMessage("SpeedChanged", fmt::format("Target speed set to {:.0f}%.", std::round(EmuConfig.Framerate.NominalScalar * 100.0)), 5.0f);
 }
 
 static constexpr s32 CYCLE_SAVE_STATE_SLOTS = 10;
@@ -1676,11 +1676,11 @@ static void HotkeyCycleSaveSlot(s32 delta)
 		if (len > 0 && date_buf[len - 1] == '\n')
 			date_buf[len - 1] = 0;
 
-		Host::AddKeyedFormattedOSDMessage("CycleSaveSlot", 5.0f, "Save slot %d selected (last save: %s).", s_current_save_slot, date_buf);
+		Host::AddKeyedOSDMessage("CycleSaveSlot", fmt::format("Save slot {} selected (last save: {}).", s_current_save_slot, date_buf), 5.0f);
 	}
 	else
 	{
-		Host::AddKeyedFormattedOSDMessage("CycleSaveSlot", 5.0f, "Save slot %d selected (no save yet).", s_current_save_slot);
+		Host::AddKeyedOSDMessage("CycleSaveSlot", fmt::format("Save slot {} selected (no save yet).", s_current_save_slot), 5.0f);
 	}
 }
 
@@ -1688,7 +1688,7 @@ static void HotkeyLoadStateSlot(s32 slot)
 {
 	if (s_game_crc == 0)
 	{
-		Host::AddKeyedOSDMessage("LoadStateFromSlot", "Cannot load state without a game running.", 10.0f);
+		Host::AddKeyedOSDMessage("LoadStateFromSlot", "Cannot load state from a slot without a game running.", 10.0f);
 		return;
 	}
 
@@ -1699,6 +1699,17 @@ static void HotkeyLoadStateSlot(s32 slot)
 	}
 
 	VMManager::LoadStateFromSlot(slot);
+}
+
+static void HotkeySaveStateSlot(s32 slot)
+{
+	if (s_game_crc == 0)
+	{
+		Host::AddKeyedOSDMessage("SaveStateToSlot", "Cannot save state to a slot without a game running.", 10.0f);
+		return;
+	}
+
+	VMManager::SaveStateToSlot(slot);
 }
 
 BEGIN_HOTKEY_LIST(g_vm_manager_hotkeys)
@@ -1774,8 +1785,8 @@ DEFINE_HOTKEY("LoadStateFromSlot", "Save States", "Load State From Selected Slot
 		HotkeyLoadStateSlot(s_current_save_slot);
 })
 
-#define DEFINE_HOTKEY_SAVESTATE_X(slotnum,slotnumstr) DEFINE_HOTKEY("SaveStateToSlot" #slotnum, \
-	"Save States", "Save State To Slot " #slotnumstr, [](bool pressed) { if (!pressed) VMManager::SaveStateToSlot(slotnum); })
+#define DEFINE_HOTKEY_SAVESTATE_X(slotnum, slotnumstr) DEFINE_HOTKEY("SaveStateToSlot" #slotnum, \
+	"Save States", "Save State To Slot " #slotnumstr, [](bool pressed) { if (!pressed) HotkeySaveStateSlot(slotnum); })
 DEFINE_HOTKEY_SAVESTATE_X(1, 01)
 DEFINE_HOTKEY_SAVESTATE_X(2, 02)
 DEFINE_HOTKEY_SAVESTATE_X(3, 03)
@@ -1787,7 +1798,7 @@ DEFINE_HOTKEY_SAVESTATE_X(8, 08)
 DEFINE_HOTKEY_SAVESTATE_X(9, 09)
 DEFINE_HOTKEY_SAVESTATE_X(10, 10)
 #define DEFINE_HOTKEY_LOADSTATE_X(slotnum, slotnumstr) DEFINE_HOTKEY("LoadStateFromSlot" #slotnum, \
-	"Save States", "Load State From Slot " #slotnumstr , [](bool pressed) { \
+	"Save States", "Load State From Slot " #slotnumstr, [](bool pressed) { \
 		if (!pressed) \
 			HotkeyLoadStateSlot(slotnum); \
 	})
