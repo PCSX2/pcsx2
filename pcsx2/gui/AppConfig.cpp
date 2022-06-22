@@ -944,7 +944,7 @@ AppConfig::UiTemplateOptions::UiTemplateOptions()
 	OutputProgressive = L"Progressive";
 	OutputInterlaced = L"Interlaced";
 	Paused = L"<PAUSED> ";
-	TitleTemplate = L"Slot: ${slot} | Speed: ${speed} (${vfps}) | ${videomode} | Limiter: ${limiter} | ${gsdx} | ${omodei} | ${cpuusage}";
+	TitleTemplate = L"Slot: ${slot} | Speed: ${speed} (${vfps}) | ${videomode} | Limiter: ${limiter} | ${gs} | ${omodei} | ${cpuusage}";
 	RecordingTemplate = L"Slot: ${slot} | Frame: ${frame}/${maxFrame} | Rec. Mode: ${mode} | Speed: ${speed} (${vfps}) | Limiter: ${limiter}";
 }
 

@@ -921,7 +921,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	title.Replace(L"${cpuusage}",	cpuUsage);
 	title.Replace(L"${omodef}",		omodef);
 	title.Replace(L"${omodei}",		omodei);
-	title.Replace(L"${gsdx}", StringUtil::UTF8StringToWxString(gsStats));
+	title.Replace(L"${gs}", StringUtil::UTF8StringToWxString(gsStats));
 	title.Replace(L"${videomode}",	ReportVideoMode());
 	if (CoreThread.IsPaused() && !GSDump::isRunning)
 		title = templates.Paused + title;
