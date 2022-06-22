@@ -480,8 +480,11 @@ SCAJ-20009:
   name: "Herdy Gerdy"
   region: "NTSC-Unk"
 SCAJ-20010:
-  name: "Bakusou Dekotora Densetsu 3"
+  name: "Bakusou Dekotora Densetsu - Otoko Hanamichi Yume Roman"
   region: "NTSC-Unk"
+  gsHWFixes:
+    skipDrawStart: 2 # Without Skipdraw everything but rearview mirrors renders black.
+    skipDrawEnd: 2 # Without Skipdraw everything but rearview mirrors renders black.
 SCAJ-20011:
   name: "Armored Core 3 - Silent Line"
   region: "NTSC-Unk"
@@ -25524,6 +25527,9 @@ SLPM-65233:
 SLPM-65234:
   name: "Bakusou Dekotora Densetsu - Otoko Hanamichi Yume Roman"
   region: "NTSC-J"
+  gsHWFixes:
+    skipDrawStart: 2 # Without Skipdraw everything but rearview mirrors renders black.
+    skipDrawEnd: 2 # Without Skipdraw everything but rearview mirrors renders black.
 SLPM-65235:
   name: "New Roommania - Porori Seishun"
   region: "NTSC-J"
