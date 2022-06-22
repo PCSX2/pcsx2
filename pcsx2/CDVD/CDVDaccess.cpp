@@ -59,6 +59,8 @@ u32 lastLSN; // needed for block dumping
 
 static OutputIsoFile blockDumpFile;
 
+static std::string ps1ModeErr = "PS1 Mode: still in development. \n Use ps1 emulators like DuckStation for a proper experience \n If you want to proceed enable iop interpreter and PS1Mode option";
+
 // Assertion check for CDVD != NULL (in devel and debug builds), because its handier than
 // relying on DEP exceptions -- and a little more reliable too.
 static void CheckNullCDVD()
@@ -91,7 +93,15 @@ static int CheckDiskTypeFS(int baseType)
 				pos = strstr(buffer.get(), "BOOT");
 				if (pos == NULL)
 					return CDVD_TYPE_ILLEGAL;
-				return CDVD_TYPE_PSCD;
+				if (EmuConfig.EnablePS1Mode)
+				{
+					return CDVD_TYPE_PSCD;
+				}
+				else
+				{
+					Host::ReportErrorAsync("PS1 Mode", ps1ModeErr);
+					return CDVD_TYPE_ILLEGAL;
+				}
 			}
 
 			return (baseType == CDVD_TYPE_DETCTCD) ? CDVD_TYPE_PS2CD : CDVD_TYPE_PS2DVD;
@@ -110,15 +120,22 @@ static int CheckDiskTypeFS(int baseType)
 		{
 		}
 
-		try
+		if (EmuConfig.EnablePS1Mode)
 		{
-			IsoFile file(rootdir, "PSX.EXE;1");
-			return CDVD_TYPE_PSCD;
+			try
+			{
+				IsoFile file(rootdir, "PSX.EXE;1");
+				return CDVD_TYPE_PSCD;
+			}
+			catch (Exception::FileNotFound&)
+			{
+			}
 		}
-		catch (Exception::FileNotFound&)
+		else
 		{
+			Host::ReportErrorAsync("PS1 Mode", ps1ModeErr);
+			return CDVD_TYPE_ILLEGAL;
 		}
-
 		try
 		{
 			IsoFile file(rootdir, "VIDEO_TS/VIDEO_TS.IFO;1");

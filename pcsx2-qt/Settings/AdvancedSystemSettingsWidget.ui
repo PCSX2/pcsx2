@@ -99,10 +99,17 @@
       <string>I/O Processor (IOP, MIPS-I)</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="0">
+      <item row="2" column="0">
        <widget class="QCheckBox" name="iopRecompiler">
         <property name="text">
          <string>Enable Recompiler</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="ps1Mode">
+        <property name="text">
+         <string>PS1 Mode</string>
         </property>
        </widget>
       </item>

@@ -1046,6 +1046,7 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EnablePatches);
 	SettingsWrapBitBool(EnableCheats);
 	SettingsWrapBitBool(EnablePINE);
+	SettingsWrapBitBool(EnablePS1Mode);
 	SettingsWrapBitBool(EnableWideScreenPatches);
 	SettingsWrapBitBool(EnableNoInterlacingPatches);
 	SettingsWrapBitBool(EnableRecordingTools);
@@ -1199,6 +1200,7 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	EnablePatches = cfg.EnablePatches;
 	EnableCheats = cfg.EnableCheats;
 	EnablePINE = cfg.EnablePINE;
+	EnablePS1Mode = cfg.EnablePS1Mode;
 	EnableWideScreenPatches = cfg.EnableWideScreenPatches;
 	EnableNoInterlacingPatches = cfg.EnableNoInterlacingPatches;
 	EnableRecordingTools = cfg.EnableRecordingTools;

@@ -42,6 +42,7 @@ AdvancedSystemSettingsWidget::AdvancedSystemSettingsWidget(SettingsDialog* dialo
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.iopRecompiler, "EmuCore/CPU/Recompiler", "EnableIOP", true);
 
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ps1Mode, "EmuCore", "EnablePS1Mode", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gameFixes, "EmuCore", "EnableGameFixes", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.patches, "EmuCore", "EnablePatches", true);
 
