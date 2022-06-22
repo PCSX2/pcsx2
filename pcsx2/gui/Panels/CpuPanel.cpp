@@ -153,7 +153,7 @@ Panels::CpuPanelEE::CpuPanelEE( wxWindow* parent )
 	s_ee	+= m_panel_RecEE	| StdExpand();
 	s_ee    += m_check_EECacheEnable = &(new pxCheckBox( this, _("Enable EE Cache (Slower)") ))->SetToolTip(_("Interpreter only; provided for diagnostic"));
 	s_iop	+= m_panel_RecIOP	| StdExpand();
-	s_iop   += m_check_IOPPs1Mode = &(new pxCheckBox( this, _("Enable PS1 Mode (Experimental)") ))->SetToolTip(_("A highly experimental and otherwise currently broken feature"));
+	s_iop   += m_check_IOPPs1Mode = &(new pxCheckBox( this, _("Enable PS1 Mode (Experimental)") ))->SetToolTip(_("A highly experimental and broken feature"));
 
 	s_recs	+= s_ee				| SubGroup();
 	s_recs	+= s_iop			| SubGroup();
@@ -231,7 +231,7 @@ void Panels::CpuPanelEE::Apply()
 	recOps.EnableEE		  = !!m_panel_RecEE->GetSelection();
 	recOps.EnableIOP	  = !!m_panel_RecIOP->GetSelection();
 	recOps.EnableEECache  = m_check_EECacheEnable->GetValue();
-	EmuConfig.EnablePS1Mode = m_check_IOPPs1Mode->GetValue();
+	g_Conf->EmuOptions.EnablePS1Mode = m_check_IOPPs1Mode->GetValue();
 }
 
 void Panels::CpuPanelEE::AppStatusEvent_OnSettingsApplied()
@@ -245,7 +245,7 @@ void Panels::CpuPanelEE::ApplyConfigToGui( AppConfig& configToApply, int flags )
 	m_panel_RecEE->SetSelection( (int)recOps.EnableEE );
 	m_panel_RecIOP->SetSelection( (int)recOps.EnableIOP );
 
-	m_check_IOPPs1Mode->SetValue( EmuConfig.EnablePS1Mode );
+	m_check_IOPPs1Mode->SetValue( g_Conf->EmuOptions.EnablePS1Mode );
 	m_check_IOPPs1Mode->Enable(!configToApply.EnablePresets && m_panel_RecIOP->GetSelection() == 0);
 
 	m_panel_RecEE->Enable(!configToApply.EnablePresets);
