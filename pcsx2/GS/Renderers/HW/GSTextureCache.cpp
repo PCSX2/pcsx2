@@ -2936,7 +2936,12 @@ static void HashTextureLevel(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Blo
 
 	// For textures which are smaller than the block size, we expand and then hash.
 	// This is because otherwise we get the padding bytes, which can be random junk.
-	if (tw < bs.x || th < bs.y)
+	// We also expand formats where the bits contributing to the texture do not cover
+	// all the 32 bits, as otherwise we'll get differing hash values if game overlap
+	// the texture data with other textures/framebuffers/etc (which is common).
+	// Even though you might think this would be slower than just hashing for the hash
+	// cache, it actually ends up faster (unswizzling is faster than hashing).
+	if (tw < bs.x || th < bs.y || psm.fmsk != 0xFFFFFFFFu)
 	{
 		// Expand texture indices. Align to 32 bytes for AVX2.
 		const u32 pitch = Common::AlignUpPow2(static_cast<u32>(block_rect.w), 32);
