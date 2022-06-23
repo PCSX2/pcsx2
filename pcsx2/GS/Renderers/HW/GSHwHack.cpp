@@ -26,8 +26,7 @@ static CRCHackLevel s_crc_hack_level = CRCHackLevel::Full;
 CRC::Region g_crc_region = CRC::NoRegion;
 
 ////////////////////////////////////////////////////////////////////////////////
-// Broken on both DirectX and OpenGL
-// (note: could potentially work with latest OpenGL)
+// Partial level, broken on all renderers.
 ////////////////////////////////////////////////////////////////////////////////
 
 bool GSC_BigMuthaTruckers(const GSFrameInfo& fi, int& skip)
@@ -312,7 +311,7 @@ bool GSC_Tekken5(const GSFrameInfo& fi, int& skip)
 		{
 			// Don't enable hack on native res if crc is below aggressive.
 			// Fixes/removes ghosting/blur effect and white lines appearing in stages: Moonfit Wilderness, Acid Rain - caused by upscaling.
-			// Downside is it also removes the channel effect which is fixed on OpenGL.
+			// Downside is it also removes the channel effect which is fixed.
 			// Let's enable this hack for Aggressive only since it's an upscaling issue for both renders.
 			skip = 95;
 		}
@@ -475,8 +474,7 @@ bool GSC_ZettaiZetsumeiToshi2(const GSFrameInfo& fi, int& skip)
 		}
 		else if ((fi.FBP | fi.TBP0) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x3FFF)
 		{
-			// Note start of the effect (texture shuffle) is fixed in openGL but maybe not the extra draw
-			// call....
+			// Note start of the effect (texture shuffle) is fixed but maybe not the extra draw call
 			skip = 1000;
 		}
 	}
@@ -620,7 +618,7 @@ bool GSC_Simple2000Vol114(const GSFrameInfo& fi, int& skip)
 		}
 		if (fi.TME && (fi.FBP == 0x0e00) && (fi.TBP0 == 0x1000) && (fi.FBMSK == 0x0000))
 		{
-			// Depth shadows, they don't work properly on OpenGL as well.
+			// Depth shadows.
 			skip = 1;
 		}
 	}
@@ -696,7 +694,7 @@ bool GSC_YakuzaGames(const GSFrameInfo& fi, int& skip)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Correctly emulated on OpenGL but can be used as potential speed hack
+// Full level, ccrrectly emulated on OpenGL/Vulkan but can be used as potential speed hack
 ////////////////////////////////////////////////////////////////////////////////
 
 bool GSC_GetawayGames(const GSFrameInfo& fi, int& skip)
@@ -938,7 +936,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::YakuzaGames] = GSC_YakuzaGames;
 	}
 
-	// Hacks that were fixed on OpenGL
+	// CRC FULL is for Direct3D, they are fixed on OpenGL/Vulkan
 	if (CRC_Full)
 	{
 		// Accurate Blending
