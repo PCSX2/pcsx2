@@ -35,8 +35,8 @@ mkdir -p squashfs-root/usr/lib/
 mkdir -p squashfs-root/usr/optional/libstdc++
 mkdir -p squashfs-root/usr/optional/libgcc_s
 cp ./.github/workflows/scripts/linux/AppRun "$GITHUB_WORKSPACE"/squashfs-root/AppRun
-curl -sSfL "https://github.com/darealshinji/AppImageKit-checkrt/releases/download/continuous/AppRun-patched-$APPARCH" -o "$GITHUB_WORKSPACE"/squashfs-root/AppRun-patched
-curl -sSfL "https://github.com/darealshinji/AppImageKit-checkrt/releases/download/continuous/exec-$APPARCH.so" -o "$GITHUB_WORKSPACE"/squashfs-root/usr/optional/exec.so
+curl -sSfL "https://github.com/PCSX2/appimage-checkrt-branch/releases/download/AppImage-checkrt/AppRun_patched" -o "$GITHUB_WORKSPACE"/squashfs-root/AppRun-patched
+curl -sSfL "https://github.com/PCSX2/appimage-checkrt-branch/releases/download/AppImage-checkrt/exec.so" -o "$GITHUB_WORKSPACE"/squashfs-root/usr/optional/exec.so
 chmod a+x ./squashfs-root/AppRun
 chmod a+x ./squashfs-root/runtime
 chmod a+x ./squashfs-root/AppRun-patched
