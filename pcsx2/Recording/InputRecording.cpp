@@ -517,17 +517,17 @@ bool InputRecording::create(const std::string_view& fileName, const bool fromSav
 		{
 			FileSystem::CopyFilePath(savestatePath.c_str(), fmt::format("{}.bak", savestatePath).c_str(), true);
 		}
-		m_initialSavestateLoadComplete = false;
+		m_initial_savestate_load_complete = false;
 		m_type = Type::FROM_SAVESTATE;
-		m_isActive = true;
+		m_is_active = true;
 		// TODO - error handling
 		VMManager::SaveState(savestatePath.c_str());
 	}
 	else
 	{
-		m_startingFrame = 0;
+		m_starting_frame = 0;
 		m_type = Type::POWER_ON;
-		m_isActive = true;
+		m_is_active = true;
 		// TODO - should this be an explicit [full] boot instead of a reset?
 		VMManager::Reset();
 	}
@@ -561,22 +561,22 @@ bool InputRecording::play(const std::string_view& filename)
 			return false;
 		}
 		m_type = Type::FROM_SAVESTATE;
-		m_initialSavestateLoadComplete = false;
-		m_isActive = true;
+		m_initial_savestate_load_complete = false;
+		m_is_active = true;
 		const auto loaded = VMManager::LoadState(savestatePath.c_str());
 		if (!loaded)
 		{
 			InputRec::log("Savestate load failed, unsupported version?");
 			m_file.Close();
-			m_isActive = false;
+			m_is_active = false;
 			return false;
 		}
 	}
 	else
 	{
-		m_startingFrame = 0;
+		m_starting_frame = 0;
 		m_type = Type::POWER_ON;
-		m_isActive = true;
+		m_is_active = true;
 		// TODO - should this be an explicit [full] boot instead of a reset?
 		VMManager::Reset();
 	}
@@ -594,7 +594,7 @@ bool InputRecording::play(const std::string_view& filename)
 
 void InputRecording::stop()
 {
-	m_isActive = false;
+	m_is_active = false;
 	if (m_file.Close())
 	{
 		InputRec::log("Input recording stopped");
@@ -614,15 +614,15 @@ void InputRecording::ControllerInterrupt(u8 port, size_t fifoSize, u8 dataIn, u8
 	}
 
 	// If there is data to read (previous two bytes looked correct)
-	if (bufCount >= 3 && m_padDataAvailable)
+	if (bufCount >= 3 && m_pad_data_available)
 	{
 		u8& bufVal = dataOut;
 		const u16 bufIndex = fifoSize - 3;
 		if (state == InputRecordingMode::Replaying)
 		{
-			if (!m_file.ReadKeyBuffer(bufVal, m_frameCounter, port, bufIndex))
+			if (!m_file.ReadKeyBuffer(bufVal, m_frame_counter, port, bufIndex))
 			{
-				InputRec::consoleLog(fmt::format("Failed to read input data at frame {}", m_frameCounter));
+				InputRec::consoleLog(fmt::format("Failed to read input data at frame {}", m_frame_counter));
 			}
 			// Update controller data state for future VirtualPad / logging usage.
 			//pads[port].padData->UpdateControllerData(bufIndex, bufVal);
@@ -635,16 +635,16 @@ void InputRecording::ControllerInterrupt(u8 port, size_t fifoSize, u8 dataIn, u8
 			// Commit the byte to the movie file if we are recording
 			if (m_controls.isRecording())
 			{
-				if (!m_file.WriteKeyBuffer(m_frameCounter, port, bufIndex, bufVal))
+				if (!m_file.WriteKeyBuffer(m_frame_counter, port, bufIndex, bufVal))
 				{
-					InputRec::consoleLog(fmt::format("Failed to write input data at frame {}", m_frameCounter));
+					InputRec::consoleLog(fmt::format("Failed to write input data at frame {}", m_frame_counter));
 				}
 			}
 		}
 	}
 	if (bufCount > 20)
 	{
-		m_padDataAvailable = false;
+		m_pad_data_available = false;
 	}
 }
 
@@ -665,51 +665,51 @@ std::string InputRecording::resolveGameName()
 
 void InputRecording::incFrameCounter()
 {
-	if (m_frameCounter >= std::numeric_limits<u64>::max())
+	if (m_frame_counter >= std::numeric_limits<u64>::max())
 	{
 		// TODO - log the incredible achievment of playing for longer than 4 billion years, and end the recording
 		stop();
 		return;
 	}
-	m_frameCounter++;
+	m_frame_counter++;
 
 	if (m_controls.isReplaying())
 	{
 		// If we've reached the end of the recording while replaying, pause
-		if (m_frameCounter == m_file.getTotalFrames() - 1)
+		if (m_frame_counter == m_file.getTotalFrames() - 1)
 		{
 			VMManager::SetPaused(true);
 			// Can also stop watching for re-records, they've watched to the end of the recording
-			m_watchingForRerecords = false;
+			m_watching_for_rerecords = false;
 		}
 	}
 	if (m_controls.isRecording())
 	{
-		m_file.SetTotalFrames(m_frameCounter);
+		m_file.SetTotalFrames(m_frame_counter);
 		// If we've been in record mode and moved to the next frame, we've overrote something
 		// if this was following a save-state loading, this is considered a re-record, a.k.a an undo
-		if (m_watchingForRerecords)
+		if (m_watching_for_rerecords)
 		{
 			m_file.IncrementUndoCount();
-			m_watchingForRerecords = false;
+			m_watching_for_rerecords = false;
 		}
 	}
 }
 
 u64 InputRecording::getFrameCounter() const
 {
-	return m_frameCounter;
+	return m_frame_counter;
 }
 
 bool InputRecording::isActive() const
 {
-	return m_isActive;
+	return m_is_active;
 }
 
 void InputRecording::handleExceededFrameCounter()
 {
 	// if we go past the end, switch to recording mode so nothing is lost
-	if (m_frameCounter >= m_file.getTotalFrames() && m_controls.isReplaying())
+	if (m_frame_counter >= m_file.getTotalFrames() && m_controls.isReplaying())
 	{
 		m_controls.setRecordMode(false);
 	}
@@ -724,15 +724,15 @@ void InputRecording::handleLoadingSavestate()
 	// Why?
 	// - When you re-record you load another save-state which has it's own frame counter
 	//   stored within, we use this to adjust the frame we are replaying/recording to
-	if (isTypeSavestate() && !m_initialSavestateLoadComplete)
+	if (isTypeSavestate() && !m_initial_savestate_load_complete)
 	{
 		setStartingFrame(g_FrameCount);
-		m_initialSavestateLoadComplete = true;
+		m_initial_savestate_load_complete = true;
 	}
 	else
 	{
 		adjustFrameCounterOnReRecord(g_FrameCount);
-		m_watchingForRerecords = true;
+		m_watching_for_rerecords = true;
 	}
 }
 
@@ -748,27 +748,27 @@ void InputRecording::setStartingFrame(u64 startingFrame)
 		return;
 	}
 	InputRec::consoleLog(fmt::format("Internal Starting Frame: {}", startingFrame));
-	m_startingFrame = startingFrame;
+	m_starting_frame = startingFrame;
 }
 
 void InputRecording::adjustFrameCounterOnReRecord(u64 newFrameCounter)
 {
-	if (newFrameCounter > m_startingFrame + (u64)m_file.getTotalFrames())
+	if (newFrameCounter > m_starting_frame + (u64)m_file.getTotalFrames())
 	{
 		InputRec::consoleLog("Warning, you've loaded PCSX2 emulation to a point after the end of the original recording. This should be avoided.");
 		InputRec::consoleLog("Savestate's framecount has been ignored, using the max length of the recording instead.");
-		m_frameCounter = m_file.getTotalFrames();
+		m_frame_counter = m_file.getTotalFrames();
 		if (getControls().isReplaying())
 		{
 			getControls().setRecordMode();
 		}
 		return;
 	}
-	if (newFrameCounter < m_startingFrame)
+	if (newFrameCounter < m_starting_frame)
 	{
 		InputRec::consoleLog("Warning, you've loaded PCSX2 emulation to a point before the start of the original recording. This should be avoided.");
 		InputRec::consoleLog("Savestate's framecount has been ignored, starting from the beginning in replay mode.");
-		m_frameCounter = 0;
+		m_frame_counter = 0;
 		if (getControls().isRecording())
 		{
 			getControls().setReplayMode();
@@ -779,7 +779,7 @@ void InputRecording::adjustFrameCounterOnReRecord(u64 newFrameCounter)
 	{
 		getControls().setReplayMode();
 	}
-	m_frameCounter = newFrameCounter - m_startingFrame;
+	m_frame_counter = newFrameCounter - m_starting_frame;
 }
 
 InputRecordingControls& InputRecording::getControls()
@@ -794,8 +794,8 @@ const InputRecordingFile& InputRecording::getData() const
 
 void InputRecording::initializeState()
 {
-	m_frameCounter = 0;
-	m_watchingForRerecords = false;
+	m_frame_counter = 0;
+	m_watching_for_rerecords = false;
 }
 
 #endif

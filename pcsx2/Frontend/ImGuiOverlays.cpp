@@ -482,7 +482,6 @@ void ImGuiManager::DrawInputRecordingOverlay()
 		dl->AddText(font, font->FontSize, ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x, position_y), color, (text)); \
 		position_y += text_size.y + spacing; \
 	} while (0)
-	// TODO - is there a way to forcibly update the imgui frame without requiring to wait until the next vsync?
 	// TODO - icon list that would be nice to add
 	// - 'video' when screen capturing
 	if (g_InputRecording.isActive())
@@ -490,7 +489,7 @@ void ImGuiManager::DrawInputRecordingOverlay()
 		// Status Indicators
 		if (g_InputRecording.getControls().isRecording())
 		{
-			DRAW_LINE(standard_font, fmt::format("{} Recording", ICON_FA_CIRCLE).c_str(), IM_COL32(255, 0, 0, 255));
+			DRAW_LINE(standard_font, fmt::format("{} Recording", ICON_FA_RECORD_VINYL).c_str(), IM_COL32(255, 0, 0, 255));
 		}
 		else
 		{

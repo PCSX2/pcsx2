@@ -227,13 +227,10 @@ void InputRecordingControls::StopCapture() const
 
 #include "VMManager.h"
 
+// TODO - update ImGUI when controls are changed - `GetMTGS().PresentCurrentFrame()`, becareful about only running it on the emu/cpu thread
+
 void InputRecordingControls::toggleRecordMode()
 {
-	// TODO - this needs to be fixed
-	// NOTE - delete logic here that prevented switching to replay immediately until frame was complete
-	// Has to be a better new way to do such a thing
-	//
-	// Set a lambda (or list of lambdas) to be executed on the next vsync perhaps?
 	if (isReplaying())
 	{
 		setRecordMode();
