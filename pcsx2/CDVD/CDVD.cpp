@@ -515,7 +515,7 @@ void cdvdReloadElfInfo(std::string elfoverride)
 		// Recognized and PS2 (BOOT2).  Good job, user.
 		_reloadElfInfo(std::move(elfpath));
 	}
-	catch (Exception::FileNotFound& e)
+	catch ([[maybe_unused]] Exception::FileNotFound& e)
 	{
 #ifdef PCSX2_CORE
 		Console.Error("Failed to load ELF info");
