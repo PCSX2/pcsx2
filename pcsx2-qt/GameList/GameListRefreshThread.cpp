@@ -122,6 +122,6 @@ void GameListRefreshThread::cancel()
 
 void GameListRefreshThread::run()
 {
-	GameList::Refresh(m_invalidate_cache, &m_progress);
+	GameList::Refresh(m_invalidate_cache, false, &m_progress);
 	emit refreshComplete();
 }

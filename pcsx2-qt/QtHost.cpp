@@ -708,16 +708,20 @@ int main(int argc, char* argv[])
 	QtHost::HookSignals();
 	EmuThread::start();
 
-	// Actually show the window, the emuthread might still be starting up at this point.
+	// Create all window objects, the emuthread might still be starting up at this point.
 	main_window->initialize();
 
-	// Skip scanning the game list when running in batch mode.
+	// When running in batch mode, ensure game list is loaded, but don't scan for any new files.
 	if (!s_batch_mode)
 		main_window->refreshGameList(false);
+	else
+		GameList::Refresh(false, true);
 
+	// Don't bother showing the window in no-gui mode.
 	if (!s_nogui_mode)
 		main_window->show();
 
+	// Skip the update check if we're booting a game directly.
 	if (autoboot)
 		g_emu_thread->startVM(std::move(autoboot));
 	else
