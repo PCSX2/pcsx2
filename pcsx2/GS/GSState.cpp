@@ -1772,8 +1772,6 @@ inline bool GSState::TestDrawChanged()
 
 void GSState::FlushPrim()
 {
-	const u32 new_prim = PRIM->U32[0];
-
 	if (m_index.tail > 0)
 	{
 		GL_REG("FlushPrim ctxt %d", PRIM->CTXT);
