@@ -1638,7 +1638,7 @@ void MainWindow::onInputRecNewActionTriggered()
 	const bool wasRunning = s_vm_valid;
 	if (wasRunning && !wasPaused)
 	{
-		VMManager::SetPaused(true);
+		g_emu_thread->setVMPaused(true);
 	}
 
 	NewInputRecordingDlg dlg(this);
@@ -1646,20 +1646,26 @@ void MainWindow::onInputRecNewActionTriggered()
 
 	if (result == QDialog::Accepted)
 	{
-		if (g_InputRecording.create(
-				dlg.getFilePath(),
-				dlg.getInputRecType() == InputRecording::Type::FROM_SAVESTATE,
-				dlg.getAuthorName()))
-		{
-			m_ui.actionInputRecNew->setEnabled(false);
-			m_ui.actionInputRecStop->setEnabled(true);
-			return;
-		}
+		Host::RunOnCPUThread([&, filePath = dlg.getFilePath(),
+								 fromSavestate = dlg.getInputRecType() == InputRecording::Type::FROM_SAVESTATE,
+								 authorName = dlg.getAuthorName()]() {
+			if (g_InputRecording.create(
+					filePath,
+					fromSavestate,
+					authorName))
+			{
+				QtHost::RunOnUIThread([&]() {
+					m_ui.actionInputRecNew->setEnabled(false);
+					m_ui.actionInputRecStop->setEnabled(true);
+					return;
+				});
+			}
+		});
 	}
 
 	if (wasRunning && !wasPaused)
 	{
-		VMManager::SetPaused(false);
+		g_emu_thread->setVMPaused(false);
 	}
 }
 
@@ -1669,7 +1675,7 @@ void MainWindow::onInputRecPlayActionTriggered()
 
 	if (!wasPaused)
 	{
-		VMManager::SetPaused(true);
+		g_emu_thread->setVMPaused(true);
 	}
 
 	QFileDialog dialog(this);
@@ -1685,7 +1691,7 @@ void MainWindow::onInputRecPlayActionTriggered()
 	{
 		if (!wasPaused)
 		{
-			VMManager::SetPaused(false);
+			g_emu_thread->setVMPaused(false);
 			return;
 		}
 	}
@@ -1694,14 +1700,22 @@ void MainWindow::onInputRecPlayActionTriggered()
 	{
 		if (g_InputRecording.isActive())
 		{
-			g_InputRecording.stop();
+			Host::RunOnCPUThread([]() {
+				g_InputRecording.stop();
+			});
 			m_ui.actionInputRecStop->setEnabled(false);
 		}
-		if (g_InputRecording.play(fileNames.first().toStdString()))
-		{
-			m_ui.actionInputRecStop->setEnabled(true);
-			return;
-		}
+		Host::RunOnCPUThread([&, filename = fileNames.first().toStdString()]() {
+			if (g_InputRecording.play(filename))
+			{
+				QtHost::RunOnUIThread([&]() {
+					m_ui.actionInputRecStop->setEnabled(true);
+					return;
+				});
+				m_ui.actionInputRecStop->setEnabled(true);
+				return;
+			}
+		});
 	}
 }
 
@@ -1709,9 +1723,13 @@ void MainWindow::onInputRecStopActionTriggered()
 {
 	if (g_InputRecording.isActive())
 	{
-		g_InputRecording.stop();
-		m_ui.actionInputRecNew->setEnabled(true);
-		m_ui.actionInputRecStop->setEnabled(false);
+		Host::RunOnCPUThread([&]() {
+			g_InputRecording.stop();
+			QtHost::RunOnUIThread([&]() {
+				m_ui.actionInputRecNew->setEnabled(true);
+				m_ui.actionInputRecStop->setEnabled(false);
+			});
+		});
 	}
 }
 

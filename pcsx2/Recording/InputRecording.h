@@ -194,14 +194,14 @@ private:
 
 	Type m_type;
 
-	bool m_initialSavestateLoadComplete = false;
-	bool m_isActive = false;
-	bool m_padDataAvailable = false;
-	bool m_watchingForRerecords = false;
+	bool m_initial_savestate_load_complete = false;
+	bool m_is_active = false;
+	bool m_pad_data_available = false;
+	bool m_watching_for_rerecords = false;
 
-	u64 m_frameCounter = 0;
+	u64 m_frame_counter = 0;
 	// Either 0 for a power-on movie, or the g_FrameCount that is stored on the starting frame
-	u64 m_startingFrame = 0;
+	u64 m_starting_frame = 0;
 
 	void initializeState();
 	void setStartingFrame(u64 startingFrame);
