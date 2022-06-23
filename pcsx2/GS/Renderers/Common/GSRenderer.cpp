@@ -349,9 +349,15 @@ bool GSRenderer::Merge(int field)
 
 		g_gs_device->Merge(tex, src_gs_read, dst, fs, m_regs->PMODE, m_regs->EXTBUF, c);
 
-		// Use offset for bob deinterlacing, for normal deinterlacing we add an extra 1 since it's clearer, with bob that causes extra shake.
+		// Use offset for bob deinterlacing always, extra offset added later for FFMD mode.
 		const bool is_bob = GSConfig.InterlaceMode == GSInterlaceMode::BobTFF || GSConfig.InterlaceMode == GSInterlaceMode::BobBFF;
-		const float offset = (!m_regs->SMODE2.FFMD && !is_bob) ? 0 : ((tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y));
+		float offset = (!m_regs->SMODE2.FFMD && !is_bob) ? 0 : ((tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y));
+
+		// Offset accounts for the upscaling interlace offset difference, but we need to also account for the internal framebuffer movement in Frame mode.
+		if (m_regs->SMODE2.FFMD && !is_bob)
+		{
+			offset += 1.0f;
+		}
 
 		if (isReallyInterlaced() && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 		{
