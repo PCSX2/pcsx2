@@ -280,13 +280,13 @@ void EnumRawInputDevices()
 		wchar_t* productID = displayName + 10000;
 
 		RAWINPUTDEVICELIST* list = (RAWINPUTDEVICELIST*)malloc(sizeof(RAWINPUTDEVICELIST) * count);
-		int keyboardCount = 1;
-		int mouseCount = 1;
 		count = GetRawInputDeviceList(list, (unsigned int*)&count, sizeof(RAWINPUTDEVICELIST));
 
 		// Not necessary, but reminder that count is -1 on failure.
 		if (count > 0)
 		{
+			int keyboardCount = 1;
+			int mouseCount = 1;
 			for (int i = 0; i < count; i++)
 			{
 				if (list[i].dwType != RIM_TYPEKEYBOARD && list[i].dwType != RIM_TYPEMOUSE)
