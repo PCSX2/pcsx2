@@ -28,10 +28,8 @@ static unsigned psxout_repeat;
 
 static void flush_stdout(bool closing = false)
 {
-    size_t linelen;
-
     while (!psxout_buf.empty()) {
-        linelen = psxout_buf.find_first_of("\n\0", 0, 2);
+        size_t linelen = psxout_buf.find_first_of("\n\0", 0, 2);
         if (linelen == std::string::npos) {
             if (!closing)
                 return;
