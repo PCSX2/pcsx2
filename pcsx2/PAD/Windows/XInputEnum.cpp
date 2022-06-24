@@ -116,32 +116,33 @@ public:
 
 	wchar_t* GetPhysicalControlName(PhysicalControl* c)
 	{
-		const static wchar_t* names[] = {
-			L"D-pad Up",
-			L"D-pad Down",
-			L"D-pad Left",
-			L"D-pad Right",
-			L"Start",
-			L"Back",
-			L"Left Thumb",
-			L"Right Thumb",
-			L"Left Shoulder",
-			L"Right Shoulder",
-			L"Guide",
-			L"A",
-			L"B",
-			L"X",
-			L"Y",
-			L"Left Trigger",
-			L"Right Trigger",
-			L"Left Thumb X",
-			L"Left Thumb Y",
-			L"Right Thumb X",
-			L"Right Thumb Y",
-		};
 		unsigned int i = (unsigned int)(c - physicalControls);
 		if (i < 21)
 		{
+			const static wchar_t* names[] = {
+				L"D-pad Up",
+				L"D-pad Down",
+				L"D-pad Left",
+				L"D-pad Right",
+				L"Start",
+				L"Back",
+				L"Left Thumb",
+				L"Right Thumb",
+				L"Left Shoulder",
+				L"Right Shoulder",
+				L"Guide",
+				L"A",
+				L"B",
+				L"X",
+				L"Y",
+				L"Left Trigger",
+				L"Right Trigger",
+				L"Left Thumb X",
+				L"Left Thumb Y",
+				L"Right Thumb X",
+				L"Right Thumb Y",
+			};
+
 			return (wchar_t*)names[i];
 		}
 		return Device::GetPhysicalControlName(c);
