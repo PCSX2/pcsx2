@@ -9534,6 +9534,8 @@ SLES-50396:
   compat: 4
   gameFixes:
     - VUSyncHack # Fixes SPS.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLES-50397:
   name: "Prisoner of War"
   region: "PAL-M5"
@@ -38261,6 +38263,8 @@ SLUS-20345:
   compat: 4
   gameFixes:
     - VUSyncHack # Fixes SPS.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-20346:
   name: "AirBlade"
   region: "NTSC-U"
