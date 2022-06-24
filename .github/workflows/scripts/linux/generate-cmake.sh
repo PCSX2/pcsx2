@@ -22,6 +22,7 @@ cmake                                       \
 -DPACKAGE_MODE=TRUE                         \
 -DWAYLAND_API=TRUE                          \
 -DDISABLE_ADVANCE_SIMD=TRUE                 \
+-DCMAKE_PREFIX_PATH="$HOME/Depends"         \
 -DDISABLE_PCSX2_WRAPPER=TRUE                \
 -DCMAKE_INSTALL_PREFIX="squashfs-root/usr/" \
 -DOpenGL_GL_PREFERENCE="LEGACY"             \

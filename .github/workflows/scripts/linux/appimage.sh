@@ -2,6 +2,9 @@
 
 set -ex
 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/Depends/lib/
+
+
 echo "${PLATFORM}"
 if [ "${PLATFORM}" == "x86" ]; then
   APPARCH="i686"
@@ -19,7 +22,7 @@ chmod a+x linuxdeploy*.AppImage
 curl -sSfL "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh" -o /tmp/squashfs-root/usr/bin/linuxdeploy-plugin-gtk.sh
 chmod a+x /tmp/squashfs-root/usr/bin/linuxdeploy-plugin-gtk.sh
 mv /tmp/squashfs-root/usr/bin/patchelf /tmp/squashfs-root/usr/bin/patchelf.orig
-sudo cp /usr/local/bin/patchelf /tmp/squashfs-root/usr/bin/patchelf
+sudo cp "$HOME/Depends/bin/patchelf" /tmp/squashfs-root/usr/bin/
 cd "$GITHUB_WORKSPACE"
 ninja -C build install
 cp ./pcsx2/gui/Resources/AppIcon64.png ./squashfs-root/PCSX2.png

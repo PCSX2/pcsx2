@@ -41,8 +41,6 @@ jobs:
       CCACHE_COMPRESS: true
       CCACHE_COMPRESSLEVEL: 9
       CCACHE_MAXSIZE: 100M
-      SDL: SDL2-2.0.22
-      PATCHELF_VERSION: 0.12
 
     steps:
       - name: Checkout Repository
@@ -86,35 +84,14 @@ jobs:
         run: .github/workflows/scripts/linux/install-packages.sh
 
       - name: Cache Dependencies
+        id: cache-deps
         uses: actions/cache@v3
         with:
-          path: |
-            3rdparty/${{ env.SDL }}
-            3rdparty/patchelf-${{ env.PATCHELF_VERSION }}
-          key: ${{ inputs.os }} ${{ inputs.platform }} ${{ env.SDL }} patchelf-${{ env.PATCHELF_VERSION }}
+          path: ~/Depends
+          key: ${{ inputs.os }} ${{ inputs.platform }} deps ${{ hashFiles('.github/workflows/scripts/linux/build-dependencies.sh') }}
 
       - name: Build Dependencies
-        run: |
-          if [[ ! -e 3rdparty/patchelf-${{ env.PATCHELF_VERSION }} ]]; then
-            curl -sSfL https://github.com/NixOS/patchelf/releases/download/${{ env.PATCHELF_VERSION }}/patchelf-${{ env.PATCHELF_VERSION }}.tar.bz2 | tar -xjC 3rdparty
-            mv 3rdparty/patchelf-${{ env.PATCHELF_VERSION }}* 3rdparty/patchelf-${{ env.PATCHELF_VERSION }}
-            cd 3rdparty/patchelf-${{ env.PATCHELF_VERSION }}
-            ./configure
-            make && cd ../../
-          fi
-          sudo make -C 3rdparty/patchelf-${{ env.PATCHELF_VERSION }} install
-          if [[ ! -e 3rdparty/${{ env.SDL }} ]]; then
-            curl -sL https://libsdl.org/release/${{ env.SDL }}.tar.gz | tar -xzC 3rdparty
-            cd 3rdparty/${{ env.SDL }}
-            if [ "${{ inputs.platform }}" == "x86" ]; then
-              ./configure --build=i686-pc-linux-gnu CC=${{ inputs.compiler }} CFLAGS=-m32 CXXFLAGS=-m32 LDFLAGS=-m32 --prefix=/usr --libdir=/usr/lib/i386-linux-gnu
-            else
-              ./configure --prefix=/usr --libdir=/usr/lib/x86_64-linux-gnu
-            fi
-            make -j $(getconf _NPROCESSORS_ONLN) && cd ../../
-          fi
-          sudo make -C 3rdparty/${{ env.SDL }} install
-
+        run: .github/workflows/scripts/linux/build-dependencies.sh
       - name: Generate CMake
         env:
           PLATFORM: ${{ inputs.platform }}
