@@ -68,7 +68,6 @@ static __fi int IPU1chain() {
 
 void IPU1dma()
 {
-	int ipu1cycles = 0;
 	int totalqwc = 0;
 
 	if(!ipu1ch.chcr.STR || ipu1ch.chcr.MOD == 2)
@@ -101,7 +100,7 @@ void IPU1dma()
 		}
 		ipu1ch.madr = ptag[1]._u32;
 
-		ipu1cycles += 1; // Add 1 cycles from the QW read for the tag
+		totalqwc += 1; // Add 1 cycles from the QW read for the tag
 
 		if (ipu1ch.chcr.TTE) DevCon.Warning("TTE?");
 
