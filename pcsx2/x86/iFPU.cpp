@@ -182,14 +182,13 @@ void recCTC1()
 
 void recMFC1()
 {
-	int regt, regs;
 	if (!_Rt_)
 		return;
 	EE::Profiler.EmitOp(eeOpcode::MFC1);
 
 	_eeOnWriteReg(_Rt_, 1);
 
-	regs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
+	const int regs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
 
 	if (regs >= 0)
 	{
@@ -198,7 +197,7 @@ void recMFC1()
 	}
 	else
 	{
-		regt = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
+		const int regt = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
 
 		if (regt >= 0)
 		{
@@ -514,7 +513,7 @@ u32 FPU_MUL_HACK(u32 s, u32 t)
 
 void FPU_MUL(int regd, int regt, bool reverseOperands)
 {
-	u8 *noHack, *endMul = nullptr;
+	u8 *endMul = nullptr;
 
 	if (CHECK_FPUMULHACK)
 	{
@@ -522,7 +521,7 @@ void FPU_MUL(int regd, int regt, bool reverseOperands)
 		xMOVD(edx, xRegisterSSE(reverseOperands ? regd : regt));
 		xFastCall((void*)(uptr)&FPU_MUL_HACK, ecx, edx); //returns the hacked result or 0
 		xTEST(eax, eax);
-		noHack = JZ8(0);
+		u8* noHack = JZ8(0);
 			xMOVDZX(xRegisterSSE(regd), eax);
 			endMul = JMP8(0);
 		x86SetJ8(noHack);
@@ -1182,8 +1181,7 @@ FPURECOMPILE_CONSTCODE(DIV_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 void recMADDtemp(int info, int regd)
 {
-	int t1reg;
-	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+	const int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
 
 	switch (info & (PROCESS_EE_S | PROCESS_EE_T))
 	{
@@ -1337,7 +1335,7 @@ void recMADDtemp(int info, int regd)
 		default:
 			if (regd == EEREC_ACC)
 			{
-				t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+				const int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				xMOVSSZX(xRegisterSSE(t1reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(t0reg); fpuFloat2(t1reg); }
@@ -1435,7 +1433,6 @@ FPURECOMPILE_CONSTCODE(MOV_S, XMMINFO_WRITED | XMMINFO_READS);
 //------------------------------------------------------------------
 void recMSUBtemp(int info, int regd)
 {
-	int t1reg;
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
 
 	switch (info & (PROCESS_EE_S | PROCESS_EE_T))
@@ -1562,7 +1559,7 @@ void recMSUBtemp(int info, int regd)
 		default:
 			if (regd == EEREC_ACC)
 			{
-				t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+				const int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				xMOVSSZX(xRegisterSSE(t1reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(t0reg); fpuFloat2(t1reg); }
@@ -1744,7 +1741,6 @@ FPURECOMPILE_CONSTCODE(SUBA_S, XMMINFO_WRITEACC | XMMINFO_READS | XMMINFO_READT)
 void recSQRT_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::SQRT_F);
-	u8* pjmp;
 	bool roundmodeFlag = false;
 	//Console.WriteLn("FPU: SQRT");
 
@@ -1772,7 +1768,7 @@ void recSQRT_S_xmm(int info)
 		/*--- Check for negative SQRT ---*/
 		xMOVMSKPS(xRegister32(tempReg), xRegisterSSE(EEREC_D));
 		xAND(xRegister32(tempReg), 1); //Check sign
-		pjmp = JZ8(0); //Skip if none are
+		u8* pjmp = JZ8(0); //Skip if none are
 			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI | FPUflagSI); // Set I and SI flags
 			xAND.PS(xRegisterSSE(EEREC_D), ptr[&s_pos[0]]); // Make EEREC_D Positive
 		x86SetJ8(pjmp);
