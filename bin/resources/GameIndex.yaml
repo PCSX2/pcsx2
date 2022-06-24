@@ -4436,8 +4436,20 @@ SCES-82035:
   memcardFilters:
     - "SLES-82034"
     - "SCES-82034"
+SCKA-10001:
+  name: "Gangcheol Gigap Sadan - Online Battlefield"
+  region: "NTSC-K"
+SCKA-10005:
+  name: "EyeToy - Edukids"
+  region: "NTSC-K"
 SCKA-10006:
   name: "Come on Baby"
+  region: "NTSC-K"
+SCKA-10007:
+  name: "EyeToy - Tales"
+  region: "NTSC-K"
+SCKA-20003:
+  name: "War of the Monsters - Kaijuu Daigekisen"
   region: "NTSC-K"
 SCKA-20004:
   name: "Sly Cooper and the Thievius Raccoonus"
@@ -4501,6 +4513,9 @@ SCKA-20016:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+SCKA-20017:
+  name: "EyeToy - Play"
+  region: "NTSC-K"
 SCKA-20018:
   name: "Getaway, The"
   region: "NTSC-K"
@@ -4529,6 +4544,9 @@ SCKA-20023:
   name: "Fatal Frame II"
   region: "NTSC-K"
   compat: 5
+SCKA-20024:
+  name: "EyeToy - Groove"
+  region: "NTSC-K"
 SCKA-20025:
   name: "Katamari Damacy"
   region: "NTSC-K"
@@ -4590,6 +4608,9 @@ SCKA-20035:
   gsHWFixes:
     mipmap: 1
     trilinearFiltering: 1
+SCKA-20036:
+  name: "EyeToy - Monkey Mania"
+  region: "NTSC-K"
 SCKA-20037:
   name: "Ratchet & Clank 3"
   region: "NTSC-K"
@@ -4618,6 +4639,9 @@ SCKA-20040:
     textureInsideRT: 1
     autoFlush: 1
     preloadFrameData: 1 # Fixes Sony splash at boot.
+SCKA-20041:
+  name: "EyeToy - Play 2"
+  region: "NTSC-K"
 SCKA-20043:
   name: "Magna Carta"
   region: "NTSC-K"
@@ -4684,6 +4708,9 @@ SCKA-20055:
 SCKA-20056:
   name: "LuluRara - Powered by Zillerner [with USB microphone]"
   region: "NTSC-K"
+SCKA-20057:
+  name: "Minna no Golf 4 - Everybody's Golf"
+  region: "NTSC-K"
 SCKA-20058:
   name: "Bumpy Trot"
   region: "NTSC-K"
@@ -4740,6 +4767,15 @@ SCKA-20065:
     - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+SCKA-20066:
+  name: "EyeToy - Play 3"
+  region: "NTSC-K"
+SCKA-20067:
+  name: "Stuart Little 3 - Big Photo Adventure"
+  region: "NTSC-K"
+SCKA-20068:
+  name: "Disney-Pixar's Cars"
+  region: "NTSC-K"
 SCKA-20069:
   name: "Siren 2"
   region: "NTSC-K"
@@ -4827,11 +4863,22 @@ SCKA-20092:
     MTVUSpeedHack: 0
   gameFixes:
     - XGKickHack # Fixes grey fighters problem.
+SCKA-20093:
+  name: "Ratatouille"
+  region: "NTSC-K"
+  roundModes:
+    vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blooming misalignment.
+    wildArmsHack: 1 # Reduces blooming misalignment.
 SCKA-20096:
   name: "Barnyard"
   region: "NTSC-K"
   gsHWFixes:
     mipmap: 1
+SCKA-20098:
+  name: "Spongebob Squarepants - Creature from the Krusty Krab"
+  region: "NTSC-K"
 SCKA-20099:
   name: "Persona 3"
   region: "NTSC-K"
@@ -6365,6 +6412,9 @@ SCPS-56003:
     roundSprite: 1 # Fix line in the sky.
     mipmap: 1
     textureInsideRT: 1
+SCPS-56004:
+  name: "Otostaz"
+  region: "NTSC-K"
 SCPS-56005:
   name: "Gran Turismo Concept 2002 Tokyo-Seoul"
   region: "NTSC-K"
@@ -6381,6 +6431,9 @@ SCPS-56008:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
     disablePartialInvalidation: 1 # Fixes ghost rendering.
+SCPS-56009:
+  name: "Smash Court Pro Tournament"
+  region: "NTSC-K"
 SCPS-56011:
   name: "U - Underwater Unit"
   region: "NTSC-K"
@@ -21239,15 +21292,18 @@ SLES-82053:
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82048"
+SLKA-15002:
+  name: "Space Raiders"
+  region: "NTSC-K"
 SLKA-15003:
   name: "Shikigami no Shiro II"
   region: "NTSC-K"
 SLKA-15004:
   name: "Gunbird - Premium Package"
-  region: "NTSC-J"
+  region: "NTSC-K"
 SLKA-15005:
   name: "Strikers 1945 I-II"
-  region: "NTSC-J"
+  region: "NTSC-K"
   compat: 5
   gameFixes:
     - EETimingHack # Fixes part II intro screen.
@@ -21262,16 +21318,53 @@ SLKA-15008:
   region: "NTSC-K"
   gsHWFixes:
     roundSprite: 2 # Fixes sprite ghosting.
+SLKA-15009:
+  name: "Hudson Selection Vol. 4 - Takahashi Meijin no Bouken Jima"
+  region: "NTSC-K"
+SLKA-15013:
+  name: "Grand Slam 2003 Tennis" # Hard Hitter 2
+  region: "NTSC-K"
+SLKA-15018:
+  name: "Kidou Senshi Gundam Seed"
+  region: "NTSC-K"
+  roundModes:
+    eeRoundMode: 1 # Fixes camera issue.
+  gameFixes:
+    - FpuNegDivHack # Fixes target loss issue.
 SLKA-15021:
   name: "GrowLanser3"
   region: "NTSC-K"
   compat: 5
   gameFixes:
     - OPHFlagHack
+SLKA-15028:
+  name: "Simple 2000 Series Ultimate Vol. 6 - Love - Upper!"
+  region: "NTSC-K"
+SLKA-15029:
+  name: "Simple 2000 Series Vol. 37 - The Shooting - Double Shienryu"
+  region: "NTSC-K"
+SLKA-15030:
+  name: "Simple 2000 Series Vol. 5 - The Block Kuzushi Hyper"
+  region: "NTSC-K"
 SLKA-15032:
   name: "Gradius V"
   region: "NTSC-K"
   compat: 5
+SLKA-15033:
+  name: "Princess Maker 2"
+  region: "NTSC-K"
+SLKA-15044:
+  name: "Super Puzzle Bobble 2"
+  region: "NTSC-K"
+SLKA-25006:
+  name: "Twin Caliber"
+  region: "NTSC-K"
+SLKA-25009:
+  name: "Kengo 2"
+  region: "NTSC-K"
+SLKA-25010:
+  name: "Mystic Heroes"
+  region: "NTSC-K"
 SLKA-25012:
   name: "Devil May Cry 2 Dante"
   region: "NTSC-K"
@@ -21287,6 +21380,9 @@ SLKA-25014:
   region: "NTSC-J"
 SLKA-25015:
   name: "Evolution Skateboarding"
+  region: "NTSC-K"
+SLKA-25018:
+  name: "Sphinx and the Cursed Mummy"
   region: "NTSC-K"
 SLKA-25021:
   name: "Shinobi"
@@ -21304,6 +21400,9 @@ SLKA-25026:
     textureInsideRT: 1 # Fixes rainbow shadow of legions.
     alignSprite: 1 # Fixes green vertical lines.
     roundSprite: 2 # Fixes vertical lines and some font artifacts but not completely fixed.
+SLKA-25027:
+  name: "NBA Street Vol. 2"
+  region: "NTSC-K"
 SLKA-25029:
   name: "MVP Baseball 2003"
   region: "NTSC-K"
@@ -21311,6 +21410,9 @@ SLKA-25029:
     vuClampMode: 3 # Fixes missing environment.
 SLKA-25030:
   name: "WWE SmackDown! Shut Your Mouth"
+  region: "NTSC-K"
+SLKA-25031:
+  name: "Tom Clancy's Ghost Recon"
   region: "NTSC-K"
 SLKA-25032:
   name: "Enter the Matrix"
@@ -21321,6 +21423,9 @@ SLKA-25033:
   name: "Gregory Horror Show"
   region: "NTSC-K"
   compat: 1
+SLKA-25034:
+  name: "Real Bass Fishing - Top Angler"
+  region: "NTSC-K"
 SLKA-25035:
   name: "Mobile Suit Gundam - Lost War Chronicles"
   region: "NTSC-K"
@@ -21365,15 +21470,29 @@ SLKA-25048:
 SLKA-25049:
   name: "Metal Slug 3"
   region: "NTSC-K"
+SLKA-25050:
+  name: "Shin Sangoku Musou 3"
+  region: "NTSC-K"
 SLKA-25051:
   name: "Clock Tower 3"
   region: "NTSC-K"
   compat: 5
 SLKA-25052:
+  name: "Finding nemo"
+  region: "NTSC-K"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+SLKA-25055:
+  name: "Hitman - Silent Assasin"
+  region: "NTSC-K"
+SLKA-25056:
   name: "Air Ranger 2 - Rescue Helicopter"
   region: "NTSC-K"
 SLKA-25060:
   name: "I.Q. Remix+ - Intelligent Qube"
+  region: "NTSC-K"
+SLKA-25061:
+  name: "Tom Clancy's Splinter Cell"
   region: "NTSC-K"
 SLKA-25062:
   name: "Dragon Ball Z 2"
@@ -21386,6 +21505,13 @@ SLKA-25064:
   name: "Tenchu 3 Wrath of Heaven"
   region: "NTSC-K"
   compat: 5
+SLKA-25065:
+  name: "Silent Hill 3"
+  region: "NTSC-K"
+  clampModes:
+    vuClampMode: 2 # Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes blackscreen when FMV.
 SLKA-25066:
   name: "Zone of the Enders - The 2nd Runner SE"
   region: "NTSC-K"
@@ -21400,6 +21526,14 @@ SLKA-25071:
   name: "Tantei Jinguji Saburo 8 Innocent Black"
   region: "NTSC-K"
   compat: 5
+SLKA-25073:
+  name: "Tomb Raider - The Angel of Darkness"
+  region: "NTSC-K"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes garbage pixels.
+SLKA-25076:
+  name: "Shin Megami Tensei 3"
+  region: "NTSC-K"
 SLKA-25077:
   name: "Culdcept II - Expansion"
   region: "NTSC-K"
@@ -21407,6 +21541,9 @@ SLKA-25078:
   name: "Rayman 3 - Hoodlum Havoc"
   region: "NTSC-K"
   compat: 5
+SLKA-25080:
+  name: "dot hack - Infection"
+  region: "NTSC-K"
 SLKA-25081:
   name: "SD Gundam G Generation Neo"
   region: "NTSC-K"
@@ -21424,12 +21561,18 @@ SLKA-25084:
     alignSprite: 1 # Fixes vertical lines.
     wildArmsHack: 1 # Improves visual clarity whilst upscaling.
     roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
+SLKA-25085:
+  name: "Shin Sangoku Musou 3 - Mushouden"
+  region: "NTSC-K"
 SLKA-25087:
   name: "FIFA Soccer 2004"
   region: "NTSC-J"
   compat: 5
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
+SLKA-25090:
+  name: "Starsky & Hutch"
+  region: "NTSC-K"
 SLKA-25091:
   name: "Hanjuku Hero vs. 3D"
   region: "NTSC-K"
@@ -21451,12 +21594,27 @@ SLKA-25093:
     halfPixelOffset: 2 # Fixes ghosting.
     roundSprite: 2 # Fixes various lines / reduces bars on right edge.
     disablePartialInvalidation: 1 # Fixes textureless graphics ingame.
+SLKA-25098:
+  name: "Lord of the Rings, The - The Return of the King"
+  region: "NTSC-K"
 SLKA-25100:
   name: "Dragon Quest V Dragon Quarter"
   region: "NTSC-K"
   compat: 5
 SLKA-25103:
   name: "Neon Genesis Evangelion 2"
+  region: "NTSC-K"
+SLKA-25105:
+  name: "XII Stag"
+  region: "NTSC-K"
+SLKA-25108:
+  name: "Eve Burst Error Plus"
+  region: "NTSC-K"
+SLKA-25109:
+  name: "Shirachuu Tankenbu"
+  region: "NTSC-K"
+SLKA-25111:
+  name: "King of Fighters 2001, The"
   region: "NTSC-K"
 SLKA-25112:
   name: "King of Fighters 2001, The"
@@ -21469,8 +21627,32 @@ SLKA-25115:
     eeClampMode: 3 # For camera issues in some scenes.
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes black screens.
+SLKA-25117:
+  name: "World Soccer Winning Eleven 7 International"
+  region: "NTSC-K"
+SLKA-25118:
+  name: "SSX 3"
+  region: "NTSC-K"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
+    halfPixelOffset: 2 # Fixes depth lines.
+SLKA-25120:
+  name: "Prince of Persia - The Sands of Time"
+  region: "NTSC-K"
+  gsHWFixes:
+    autoFlush: 1 # Reduces post-processing misalignment.
+    roundSprite: 2 # Reduces post-processing misalignment.
+SLKA-25122:
+  name: "Sonic Heroes"
+  region: "NTSC-K"
+SLKA-25123:
+  name: "Taishou Mononoke Ibunroku"
+  region: "NTSC-K"
 SLKA-25125:
   name: "SNK vs. Capcom - Chaos"
+  region: "NTSC-K"
+SLKA-25128:
+  name: "Sangokushi IX"
   region: "NTSC-K"
 SLKA-25130:
   name: "Bloody Roar 4"
@@ -21492,8 +21674,26 @@ SLKA-25135:
   name: "Kunoichi"
   region: "NTSC-K"
   compat: 5
+SLKA-25136:
+  name: "Need for Speed - Underground"
+  region: "NTSC-K"
+  gameFixes:
+    - EETimingHack # Fixes broken textures.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned post-processing.
+SLKA-25137:
+  name: "Sims, The - Bustin' Out"
+  region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes vertical lines, font and others.
+SLKA-25138:
+  name: "dot hack - Mutation"
+  region: "NTSC-K"
 SLKA-25139:
   name: "Fu-un Shinsengumi"
+  region: "NTSC-K"
+SLKA-25140:
+  name: "Medal of Honor - Rising Sun"
   region: "NTSC-K"
 SLKA-25144:
   name: "Final Fantasy X-2"
@@ -21503,6 +21703,12 @@ SLKA-25144:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
+SLKA-25145:
+  name: "dot hack  - Outbreak"
+  region: "NTSC-K"
+SLKA-25146:
+  name: "Kaido Battle 2 - Chain Reaction"
+  region: "NTSC-K"
 SLKA-25149:
   name: "Silent Hill 4 The Room"
   region: "NTSC-K"
@@ -21528,6 +21734,9 @@ SLKA-25160:
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 0 # Ladder glitch in "Assembly of Nihilo B11" level.
+SLKA-25161:
+  name: "Aqua Kids"
+  region: "NTSC-K"
 SLKA-25165:
   name: "Mobile Suit Gundam - Seed Destiny - Rengou vs. Z.A.F.T. II Plus"
   region: "NTSC-K"
@@ -21540,6 +21749,9 @@ SLKA-25166:
   region: "NTSC-K"
 SLKA-25167:
   name: "King of Fighters XI, The"
+  region: "NTSC-K"
+SLKA-25168:
+  name: "WWE SmackDown! vs. RAW 2007"
   region: "NTSC-K"
 SLKA-25170:
   name: "SD Gundam G Generation Seed"
@@ -21563,8 +21775,17 @@ SLKA-25172:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
+SLKA-25174:
+  name: "dot hack - Quarantine"
+  region: "NTSC-K"
 SLKA-25175:
   name: "Transformers"
+  region: "NTSC-K"
+SLKA-25176:
+  name: "Pump It Up - Exceed"
+  region: "NTSC-K"
+SLKA-25180:
+  name: "Tom Clancy's Splinter Cell - Pandora Tomorrow"
   region: "NTSC-K"
 SLKA-25181:
   name: "Energy Airforce Aim Strike"
@@ -21578,6 +21799,16 @@ SLKA-25183:
 SLKA-25186:
   name: "King of Fighters, The - Maximum Impact [Limited Edition]"
   region: "NTSC-K"
+SLKA-25187:
+  name: "Shin Sangoku Musou 3 - Empires"
+  region: "NTSC-K"
+SLKA-25196:
+  name: "DRIV3R"
+  region: "NTSC-K"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
+  gsHWFixes:
+    autoFlush: 1
 SLKA-25198:
   name: "Tenchu Kurenai"
   region: "NTSC-K"
@@ -21632,6 +21863,9 @@ SLKA-25209:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
   gsHWFixes:
     mipmap: 1
+SLKA-25211:
+  name: "King of Fighters, The - Maximum Impact"
+  region: "NTSC-K"
 SLKA-25213:
   name: "Berserk"
   region: "NTSC-K"
@@ -21696,11 +21930,22 @@ SLKA-25232:
 SLKA-25233:
   name: "Sonic - Mega Collection Plus"
   region: "NTSC-K"
+SLKA-25237:
+  name: "Lord of the Rings, The - The Third Age"
+  region: "NTSC-K"
+SLKA-25241:
+  name: "Need for Speed - Underground 2"
+  region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned post-processing.
 SLKA-25243:
   name: "Medal of Honor - European Assault"
   region: "NTSC-K"
 SLKA-25244:
   name: "WWE SmackDown! vs. Raw"
+  region: "NTSC-K"
+SLKA-25245:
+  name: "Spongebob SquarePants - Movin' With Friends"
   region: "NTSC-K"
 SLKA-25246:
   name: "Bard's Tale, The"
@@ -21836,6 +22081,18 @@ SLKA-25301:
   memcardFilters:
     - "SLKA-25301"
     - "SLKA-25300"
+SLKA-25303:
+  name: "Matrix, The - Path of Neo"
+  region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fix effects upscaling.
+SLKA-25304:
+  name: "Burnout Revenge"
+  region: "NTSC-K"
+  clampModes:
+    vuClampMode: 0 # Fixes buggy lighting on certain objects.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth lines.
 SLKA-25307:
   name: "Dragon Ball Z Sparking"
   region: "NTSC-K"
@@ -21858,8 +22115,17 @@ SLKA-25314:
     eeRoundMode: 1 # Fixes camera issue.
   gameFixes:
     - FpuNegDivHack # Fixes target loss issue.
+SLKA-25315:
+  name: "NBA Live 06"
+  region: "NTSC-K"
 SLKA-25317:
   name: "Shin Sangoku Musou 3 [PlayStation 2 - Big Hit Series]"
+  region: "NTSC-K"
+SLKA-25318:
+  name: "WWE SmackDown! vs. RAW 2006"
+  region: "NTSC-K"
+SLKA-25319:
+  name: "Spongebob SquarePants - Lights, Camera, PANTS"
   region: "NTSC-K"
 SLKA-25320:
   name: "Ikusa Gami"
@@ -21875,7 +22141,10 @@ SLKA-25322:
   region: "NTSC-K"
 SLKA-25323:
   name: "SSX On Tour"
-  region: "NTSC-J-K"
+  region: "NTSC-J"
+SLKA-25325:
+  name: "SSX On Tour"
+  region: "NTSC-K"
 SLKA-25328:
   name: "Castlevania - Curse of Darkness"
   region: "NTSC-K"
@@ -21892,9 +22161,17 @@ SLKA-25329:
 SLKA-25331:
   name: "Marc Ecko's Getting Up - Contents Under Pressure"
   region: "NTSC-K"
+SLKA-25332:
+  name: "Marc Ecko's Getting Up - Contents Under Pressure"
+  region: "NTSC-K"
 SLKA-25333:
   name: "Metal Slug Complete"
   region: "NTSC-K"
+SLKA-25334:
+  name: "Need for Speed - Most Wanted"
+  region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
 SLKA-25335:
   name: "Shadow the Hedgehog"
   region: "NTSC-K"
@@ -21906,6 +22183,12 @@ SLKA-25341:
 SLKA-25342:
   name: "Ryu ga Gotoku"
   region: "NTSC-K"
+SLKA-25346:
+  name: "Prince of Persia - The Two Thrones"
+  region: "NTSC-K"
+  gsHWFixes:
+    autoFlush: 1 # Reduces post-processing misalignment.
+    halfPixelOffset: 1 # Reduces post-processing misalignment.
 SLKA-25351:
   name: "One Piece Pirates Carnival"
   region: "NTSC-K"
@@ -21936,6 +22219,11 @@ SLKA-25359:
 SLKA-25361:
   name: "Keroro Gunsou MeroMero Battle Royale Z"
   region: "NTSC-K"
+SLKA-25363:
+  name: "Guitar Hero III - Legends of Rock"
+  region: "NTSC-K"
+  roundModes:
+    vuRoundMode: 0 # Crashes without.
 SLKA-25364:
   name: "Mobile Suit Gundam - Climax U.C."
   region: "NTSC-K"
@@ -21955,6 +22243,9 @@ SLKA-25374:
     - GIFFIFOHack # Fixes flag corruptions.
 SLKA-25375:
   name: "Transformers - The Game"
+  region: "NTSC-K"
+SLKA-25378:
+  name: "FIFA world cup 2006"
   region: "NTSC-K"
 SLKA-25381:
   name: "Winning Eleven 10"
@@ -22337,6 +22628,18 @@ SLPM-55207:
   region: "NTSC-J"
 SLPM-55208:
   name: "Hakuouki - Zuisouroku"
+  region: "NTSC-J"
+SLPM-55209:
+  name: "World Soccer Winning Eleven 2010"
+  region: "NTSC-J"
+SLPM-55210:
+  name: "Final Fantasy XII International Zodiac Job System [Ultimate Hits]"
+  region: "NTSC-J"
+SLPM-55211:
+  name: "Pachislot Higurashi no Naku Koro ni Matsuri"
+  region: "NTSC-J"
+SLPM-55212:
+  name: "Jigoku Shoujo Mioyosuga [Limited Edition]"
   region: "NTSC-J"
 SLPM-55221:
   name: "beatmania IIDX 16 EMPRESS + PREMIUM BEST (EMPRESS DISC)"
@@ -23669,7 +23972,7 @@ SLPM-62418:
   region: "NTSC-J"
   compat: 5
 SLPM-62422:
-  name: "Hudson Selection Vol.4 - Adventure Island (Takahashi Meijin no Bouken Jima)"
+  name: "Hudson Selection Vol.4 - Takahashi Meijin no Bouken Jima"
   region: "NTSC-J"
   compat: 5
 SLPM-62423:
@@ -24711,6 +25014,9 @@ SLPM-62780:
 SLPM-62784:
   name: "Kao no nai Tsuki Select Story"
   region: "NTSC-J"
+SLPM-64501:
+  name: "Shin Sangoku Musou"
+  region: "NTSC-K"
 SLPM-64502:
   name: "Winback"
   region: "NTSC-J"
@@ -24731,6 +25037,9 @@ SLPM-64513:
   gsHWFixes:
     preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
     cpuFramebufferConversion: 1 # Fixes fog wall.
+SLPM-64514:
+  name: "Legends of Wrestling"
+  region: "NTSC-K"
 SLPM-64521:
   name: "Raging Bless - Hangma Muksirok"
   region: "NTSC-K"
@@ -24756,6 +25065,17 @@ SLPM-64528:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+SLPM-64532:
+  name: "Digital Holmes"
+  region: "NTSC-K"
+SLPM-64534:
+  name: "Psyvariar - Complete Edition"
+  region: "NTSC-K"
+SLPM-64540:
+  name: "Sims, The"
+  region: "NTSC-K"
+  speedHacks:
+    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLPM-64549:
   name: "Shikigami no Shiro"
   region: "NTSC-K"
@@ -31490,6 +31810,14 @@ SLPM-67502:
   compat: 5
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
+SLPM-67503:
+  name: "FIFA 2002"
+  region: "NTSC-K"
+SLPM-67504:
+  name: "SSX Tricky"
+  region: "NTSC-K"
+  roundModes:
+    eeRoundMode: 0 # Fixes riders vanish into the floor.
 SLPM-67505:
   name: "James Bond 007 - Agent Under Fire"
   region: "NTSC-K"
@@ -31506,6 +31834,9 @@ SLPM-67508:
   roundModes:
     eeRoundMode: 1
     vuRoundMode: 3
+SLPM-67512:
+  name: "FIFA World Cup 2002"
+  region: "NTSC-K"
 SLPM-67513:
   name: "Final Fantasy X International"
   region: "NTSC-K"
@@ -31524,6 +31855,15 @@ SLPM-67519:
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 0 # Fixes game hanging in the "Clark running away" ingame cutscene.
+SLPM-67521:
+  name: "E.O.E. - Eve of Extinction"
+  region: "NTSC-K"
+SLPM-67522:
+  name: "Sangokushi Senki"
+  region: "NTSC-K"
+SLPM-67523:
+  name: "Shin Sangoku Musou 2"
+  region: "NTSC-K"
 SLPM-67524:
   name: "Armored Core 3"
   region: "NTSC-K"
@@ -31531,6 +31871,9 @@ SLPM-67524:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
+SLPM-67526:
+  name: "Ghost Vibration"
+  region: "NTSC-K"
 SLPM-67527:
   name: "Need for Speed - Hot Pursuit 2"
   region: "NTSC-K"
@@ -31567,15 +31910,24 @@ SLPM-67535:
 SLPM-67536:
   name: "Bongsin Yeonui 2"
   region: "NTSC-K"
+SLPM-67537:
+  name: "FIFA 2003"
+  region: "NTSC-K"
 SLPM-67540:
   name: "Auto Modellista"
   region: "NTSC-K"
   compat: 5
+SLPM-67545:
+  name: "Project Minerva"
+  region: "NTSC-K"
 SLPM-67546:
   name: "Lord of the Rings - The Two Towers"
   region: "NTSC-K"
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
+SLPM-67550:
+  name: "Shin Sangoku Musou 2 - Mushouden"
+  region: "NTSC-K"
 SLPM-67552:
   name: "Tomak - Save the Earth Again [Complete Edition]"
   region: "NTSC-K"
