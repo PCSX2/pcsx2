@@ -831,13 +831,12 @@ namespace usb_pad
 									cfg->pt[plyCapturing] = IsDlgButtonChecked(hW, IDC_DFP_PASS) > 0;
 									break;
 								case IDC_UNBIND:
-									int sel;
 									HWND lhW;
 									lhW = GetDlgItem(hW, IDC_LIST1);
 									while (1)
 									{
 										ZeroMemory(&lv, sizeof(LVITEM));
-										sel = ListView_GetNextItem(lhW, -1, LVNI_SELECTED);
+										int sel = ListView_GetNextItem(lhW, -1, LVNI_SELECTED);
 										if (sel < 0)
 											break;
 										lv.iItem = sel;

@@ -525,7 +525,6 @@ namespace usb_pad
 
 		int GtkPadConfigure(int port, const char* dev_type, const char* apititle, const char* apiname, GtkWindow* parent, ApiCallbacks& apicbs)
 		{
-			GtkWidget *ro_frame, *rs_cb;
 			GtkWidget *right_vbox, *left_vbox;
 
 			ConfigData cfg{};
@@ -633,7 +632,7 @@ namespace usb_pad
 
 				gtk_box_pack_start(GTK_BOX(right_vbox), cfg.label, TRUE, TRUE, 5);
 			}
-			ro_frame = gtk_frame_new("Force feedback");
+			GtkWidget* ro_frame = gtk_frame_new("Force feedback");
 			gtk_box_pack_start(GTK_BOX(right_vbox), ro_frame, TRUE, FALSE, 5);
 
 			//GtkWidget *frame_vbox = gtk_vbox_new (FALSE, 5);
@@ -704,7 +703,7 @@ namespace usb_pad
 				g_signal_connect(G_OBJECT(chk_btn), "toggled", G_CALLBACK(checkbox_toggled), reinterpret_cast<gboolean*>(&cfg.use_hidraw_ff_pt));
 				gtk_box_pack_start(GTK_BOX(frame_vbox), chk_btn, FALSE, FALSE, 5);
 
-				rs_cb = new_combobox("Device:", frame_vbox, true);
+				GtkWidget* rs_cb = new_combobox("Device:", frame_vbox, true);
 
 				const std::vector<uint16_t> whitelist{PAD_LG_FFB_WHITELIST};
 				int idx = 0, sel_idx = 0;

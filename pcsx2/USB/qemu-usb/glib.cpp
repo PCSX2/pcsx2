@@ -115,11 +115,9 @@ void* my_g_malloc_n(size_t n_blocks,
 void* my_g_realloc(void* mem,
 				   size_t n_bytes)
 {
-	void* newmem;
-
 	if (G_LIKELY(n_bytes))
 	{
-		newmem = realloc(mem, n_bytes);
+		void* newmem = realloc(mem, n_bytes);
 		//TRACE (GLIB_MEM_REALLOC((void*) newmem, (void*)mem, (unsigned int) n_bytes, 0));
 		if (newmem)
 			return newmem;

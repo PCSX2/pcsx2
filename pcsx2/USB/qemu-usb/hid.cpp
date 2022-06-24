@@ -469,11 +469,9 @@ static void hid_pointer_sync(HIDState* hs)
 
 static void hid_keyboard_event(HIDState* hs, InputEvent* evt)
 {
-	int scancodes[3], i, count;
-	int slot;
+	int scancodes[3];
 	InputKeyEvent* key = &evt->u.key;
-
-	count = qemu_input_key_value_to_scancode(&key->key,
+	const int count = qemu_input_key_value_to_scancode(&key->key,
 											 key->down,
 											 scancodes);
 	if (hs->n + count > QUEUE_LENGTH)
@@ -481,9 +479,9 @@ static void hid_keyboard_event(HIDState* hs, InputEvent* evt)
 		//trace_hid_kbd_queue_full();
 		return;
 	}
-	for (i = 0; i < count; i++)
+	for (int i = 0; i < count; i++)
 	{
-		slot = (hs->head + hs->n) & QUEUE_MASK;
+		const int slot = (hs->head + hs->n) & QUEUE_MASK;
 		hs->n++;
 		hs->kbd.keycodes[slot] = scancodes[i];
 	}

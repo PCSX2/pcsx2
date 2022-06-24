@@ -54,10 +54,11 @@ static void populateApiWidget(SettingsCB* settingsCB, const std::string& device)
 	gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(settingsCB->combo)));
 
 	auto dev = RegisterDevice::instance().Device(device);
-	int port = 1 - settingsCB->player;
 	GtkComboBox* widget = settingsCB->combo;
 	if (dev)
 	{
+		int port = 1 - settingsCB->player;
+
 		std::string api;
 
 		auto it = changedAPIs.find(std::make_pair(port, device));
@@ -90,10 +91,10 @@ static void populateSubtypeWidget(SettingsCB* settingsCB, const std::string& dev
 	gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(settingsCB->subtype)));
 
 	auto dev = RegisterDevice::instance().Device(device);
-	int port = 1 - settingsCB->player;
 	GtkComboBox* widget = settingsCB->subtype;
 	if (dev)
 	{
+		int port = 1 - settingsCB->player;
 		int sel = 0;
 		if (!LoadSetting(nullptr, port, device, N_DEV_SUBTYPE, sel))
 		{
@@ -134,7 +135,6 @@ static void apiChanged(GtkComboBox* widget, gpointer data)
 	SettingsCB* settingsCB = (SettingsCB*)data;
 	int player = settingsCB->player;
 	gint active = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-	int port = 1 - player;
 
 	auto& name = settingsCB->device;
 	auto dev = RegisterDevice::instance().Device(name);
@@ -145,6 +145,7 @@ static void apiChanged(GtkComboBox* widget, gpointer data)
 		std::advance(it, active);
 		if (it != apis.end())
 		{
+			int port = 1 - player;
 			auto pair = std::make_pair(port, name);
 			auto itAPI = changedAPIs.find(pair);
 
@@ -162,12 +163,12 @@ static void subtypeChanged(GtkComboBox* widget, gpointer data)
 	SettingsCB* settingsCB = (SettingsCB*)data;
 	int player = settingsCB->player;
 	gint active = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-	int port = 1 - player;
 
 	auto& name = settingsCB->device;
 	auto dev = RegisterDevice::instance().Device(name);
 	if (dev)
 	{
+		int port = 1 - player;
 		changedSubtype[std::make_pair(port, name)] = active;
 	}
 }
@@ -176,14 +177,15 @@ static void configureApi(GtkWidget* widget, gpointer data)
 {
 	SettingsCB* settingsCB = (SettingsCB*)data;
 	int player = settingsCB->player;
-	int port = 1 - player;
 
 	auto& name = settingsCB->device;
-	auto& api = settingsCB->api;
 	auto dev = RegisterDevice::instance().Device(name);
 
 	if (dev)
 	{
+		int port = 1 - player;
+		auto& api = settingsCB->api;
+
 		GtkWidget* dlg = GTK_WIDGET(g_object_get_data(G_OBJECT(widget), "dlg"));
 		[[maybe_unused]]int res = dev->Configure(port, api, dlg);
 	}

@@ -462,15 +462,13 @@ static int usb_hub_handle_control(USBDevice* dev, int request, int value,
 static int usb_hub_handle_data(USBDevice* dev, int pid,
 							   uint8_t devep, uint8_t* data, int len)
 {
-	USBHubState* s = (USBHubState*)dev;
-	int ret;
-
+	int ret = 0;
 	switch (pid)
 	{
 		case USB_TOKEN_IN:
 			if (devep == 1)
 			{
-				USBHubPort* port;
+				USBHubState* s = (USBHubState*)dev;
 				unsigned int status;
 				int i, n;
 				n = (s->nb_ports + 1 + 7) / 8;
@@ -485,7 +483,7 @@ static int usb_hub_handle_data(USBDevice* dev, int pid,
 				status = 0;
 				for (i = 0; i < s->nb_ports; i++)
 				{
-					port = &s->ports[i];
+					USBHubPort* port = &s->ports[i];
 					if (port->wPortChange)
 						status |= (1 << (i + 1));
 				}
@@ -520,17 +518,13 @@ static int usb_hub_broadcast_packet(USBHubState* s, int pid,
 									uint8_t devaddr, uint8_t devep,
 									uint8_t* data, int len)
 {
-	USBHubPort* port;
-	USBDevice* dev;
-	int i, ret;
-
-	for (i = 0; i < s->nb_ports; i++)
+	for (int i = 0; i < s->nb_ports; i++)
 	{
-		port = &s->ports[i];
-		dev = port->port.dev;
+		USBHubPort* port = &s->ports[i];
+		USBDevice* dev = port->port.dev;
 		if (dev && (port->wPortStatus & PORT_STAT_ENABLE))
 		{
-			ret = dev->handle_packet(dev, pid,
+			int ret = dev->handle_packet(dev, pid,
 									 devaddr, devep,
 									 data, len);
 			if (ret != USB_RET_NODEV)
@@ -570,13 +564,9 @@ static void usb_hub_handle_destroy(USBDevice* dev)
 
 USBDevice* usb_hub_init(int nb_ports)
 {
-	USBHubState* s;
-	USBHubPort* port;
-	int i;
-
 	if (nb_ports > MAX_PORTS)
 		return NULL;
-	s = (USBHubState*)qemu_mallocz(sizeof(USBHubState));
+	USBHubState* s = (USBHubState*)qemu_mallocz(sizeof(USBHubState));
 	if (!s)
 		return NULL;
 	s->dev.speed = USB_SPEED_FULL;
@@ -591,9 +581,9 @@ USBDevice* usb_hub_init(int nb_ports)
 	strncpy(s->dev.devname, "QEMU USB Hub", sizeof(s->dev.devname));
 
 	s->nb_ports = nb_ports;
-	for (i = 0; i < s->nb_ports; i++)
+	for (int i = 0; i < s->nb_ports; i++)
 	{
-		port = &s->ports[i];
+		USBHubPort* port = &s->ports[i];
 		port->port.opaque = s;
 		port->port.index = i;
 		port->port.attach = usb_hub_attach;
