@@ -97,18 +97,17 @@ int InputIsoFile::FinishRead3(u8* dst, uint mode)
 	if (m_current_lsn >= m_blocks)
 		return 0;
 
-	int _offset = 0;
-	int length = 0;
-	int ret = 0;
-
 	if (m_read_inprogress)
 	{
-		ret = m_reader->FinishRead();
+		const int ret = m_reader->FinishRead();
 		m_read_inprogress = false;
 
 		if (ret < 0)
 			return ret;
 	}
+
+	int _offset = 0;
+	int length = 0;
 
 	switch (mode)
 	{

@@ -785,12 +785,12 @@ static uint cdvdRotationalLatency(CDVD_MODE_TYPE mode)
 
 static uint cdvdBlockReadTime(CDVD_MODE_TYPE mode)
 {
-	int numSectors = 0;
-	int offset = 0;
-
 	// CAV Read speed is roughly 41% in the centre full speed on outer edge. I imagine it's more logarithmic than this
 	if (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV)
 	{
+		int numSectors = 0;
+		int offset = 0;
+
 		// Sector counts are taken from google for Single layer, Dual layer DVD's and for 700MB CD's
 		switch (cdvd.Type)
 		{
