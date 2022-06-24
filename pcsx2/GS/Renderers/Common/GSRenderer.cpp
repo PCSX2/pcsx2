@@ -172,6 +172,20 @@ bool GSRenderer::Merge(int field)
 	GSVector2i resolution(GetResolution());
 	bool scanmask_frame = m_scanmask_used && !display_offset;
 	const bool ignore_offset = !GSConfig.PCRTCOffsets;
+	const bool is_bob = GSConfig.InterlaceMode == GSInterlaceMode::BobTFF || GSConfig.InterlaceMode == GSInterlaceMode::BobBFF;
+
+	// Use offset for bob deinterlacing always, extra offset added later for FFMD mode.
+	float offset = is_bob ? (tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) : 0.0f;
+
+	int field2 = 0;
+	int mode = 2;
+
+	// FFMD (half frames) requires blend deinterlacing, so automatically use that. Same when SCANMSK is used but not blended in the merge circuit (Alpine Racer 3)
+	if (GSConfig.InterlaceMode != GSInterlaceMode::Automatic || (!m_regs->SMODE2.FFMD && !scanmask_frame))
+	{
+		field2 = ((static_cast<int>(GSConfig.InterlaceMode) - 1) & 1);
+		mode = ((static_cast<int>(GSConfig.InterlaceMode) - 1) >> 1);
+	}
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -292,6 +306,12 @@ bool GSRenderer::Merge(int field)
 		// src_out_rect is the resized rect for output. (Not really used)
 		src_out_rect[i] = (GSVector4(r) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
 
+		if (m_regs->SMODE2.FFMD && !is_bob && !GSConfig.DisableInterlaceOffset)
+		{
+			interlace_offset += (tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) * static_cast<float>(field ^ field2);
+			// We're handling the interlacing offset for upscaling in the merge circuit, rather than in the interlacing shader.
+			offset = 0.0f;
+		}
 		// Restore manually offset "interlace" lines
 		dst[i] += GSVector4(0.0f, interlace_offset, 0.0f, interlace_offset);
 	}
@@ -330,9 +350,7 @@ bool GSRenderer::Merge(int field)
 
 	// When interlace(FRAME) mode, the rect is half height, so it needs to be stretched.
 	if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
-	{
 		ds.y *= 2;
-	}
 
 	m_real_size = ds;
 
@@ -349,34 +367,8 @@ bool GSRenderer::Merge(int field)
 
 		g_gs_device->Merge(tex, src_gs_read, dst, fs, m_regs->PMODE, m_regs->EXTBUF, c);
 
-		// Use offset for bob deinterlacing always, extra offset added later for FFMD mode.
-		const bool is_bob = GSConfig.InterlaceMode == GSInterlaceMode::BobTFF || GSConfig.InterlaceMode == GSInterlaceMode::BobBFF;
-		float offset = (!m_regs->SMODE2.FFMD && !is_bob) ? 0 : ((tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y));
-
-		// Offset accounts for the upscaling interlace offset difference, but we need to also account for the internal framebuffer movement in Frame mode.
-		if (m_regs->SMODE2.FFMD && !is_bob)
-		{
-			offset += 1.0f;
-		}
-
 		if (isReallyInterlaced() && GSConfig.InterlaceMode != GSInterlaceMode::Off)
-		{
-			// FFMD (half frames) requires blend deinterlacing, so automatically use that. Same when SCANMSK is used but not blended in the merge circuit (Alpine Racer 3)
-			if (GSConfig.InterlaceMode == GSInterlaceMode::Automatic && (m_regs->SMODE2.FFMD || scanmask_frame))
-			{
-				constexpr int field2 = 0;
-				constexpr int mode = 2;
-
-				g_gs_device->Interlace(ds, field ^ field2, mode, offset);
-			}
-			else
-			{
-				const int field2 = ((static_cast<int>(GSConfig.InterlaceMode) - 1) & 1);
-				const int mode = ((static_cast<int>(GSConfig.InterlaceMode) - 1) >> 1);
-
-				g_gs_device->Interlace(ds, field ^ field2, mode, offset);
-			}
-		}
+			g_gs_device->Interlace(ds, field ^ field2, mode, offset);
 
 		if (GSConfig.ShadeBoost)
 		{
