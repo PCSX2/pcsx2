@@ -54,17 +54,17 @@ REC_FUNC_DEL(MADDU1, _Rd_);
 // if upper is 1, write in upper 64 bits of LO/HI
 void recWritebackHILO(int info, int writed, int upper)
 {
-	int regd, reglo = -1, reghi, savedlo = 0;
+	int savedlo = 0;
 	uptr loaddr = (uptr)&cpuRegs.LO.UL[upper ? 2 : 0];
-	uptr hiaddr = (uptr)&cpuRegs.HI.UL[upper ? 2 : 0];
-	u8 testlive = upper ? EEINST_LIVE2 : EEINST_LIVE0;
+	const uptr hiaddr = (uptr)&cpuRegs.HI.UL[upper ? 2 : 0];
+	const u8 testlive = upper ? EEINST_LIVE2 : EEINST_LIVE0;
 
 	if (g_pCurInstInfo->regs[XMMGPR_HI] & testlive)
 		xMOVSX(rcx, edx);
 
 	if (g_pCurInstInfo->regs[XMMGPR_LO] & testlive)
 	{
-
+		int reglo = 0;
 		if ((reglo = _checkXMMreg(XMMTYPE_GPRREG, XMMGPR_LO, MODE_READ)) >= 0)
 		{
 			if (xmmregs[reglo].mode & MODE_WRITE)
@@ -87,7 +87,7 @@ void recWritebackHILO(int info, int writed, int upper)
 	{
 		_eeOnWriteReg(_Rd_, 1);
 
-		regd = -1;
+		int regd = -1;
 		if (g_pCurInstInfo->regs[_Rd_] & EEINST_XMM)
 		{
 			if (savedlo)
@@ -112,6 +112,7 @@ void recWritebackHILO(int info, int writed, int upper)
 
 	if (g_pCurInstInfo->regs[XMMGPR_HI] & testlive)
 	{
+		int reghi = 0;
 		if ((reghi = _checkXMMreg(XMMTYPE_GPRREG, XMMGPR_HI, MODE_READ)) >= 0)
 		{
 			if (xmmregs[reghi].mode & MODE_WRITE)
@@ -132,14 +133,13 @@ void recWritebackHILO(int info, int writed, int upper)
 
 void recWritebackConstHILO(u64 res, int writed, int upper)
 {
-	int reglo, reghi;
 	uptr loaddr = (uptr)&cpuRegs.LO.UL[upper ? 2 : 0];
 	uptr hiaddr = (uptr)&cpuRegs.HI.UL[upper ? 2 : 0];
 	u8 testlive = upper ? EEINST_LIVE2 : EEINST_LIVE0;
 
 	if (g_pCurInstInfo->regs[XMMGPR_LO] & testlive)
 	{
-		reglo = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_LO, MODE_WRITE | MODE_READ);
+		int reglo = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_LO, MODE_WRITE | MODE_READ);
 
 		if (reglo >= 0)
 		{
@@ -158,7 +158,7 @@ void recWritebackConstHILO(u64 res, int writed, int upper)
 	if (g_pCurInstInfo->regs[XMMGPR_HI] & testlive)
 	{
 
-		reghi = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_HI, MODE_WRITE | MODE_READ);
+		int reghi = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_HI, MODE_WRITE | MODE_READ);
 
 		if (reghi >= 0)
 		{
