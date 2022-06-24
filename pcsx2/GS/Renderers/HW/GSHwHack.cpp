@@ -694,7 +694,7 @@ bool GSC_YakuzaGames(const GSFrameInfo& fi, int& skip)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Full level, ccrrectly emulated on OpenGL/Vulkan but can be used as potential speed hack
+// Full level, correctly emulated on OpenGL/Vulkan but can be used as potential speed hack
 ////////////////////////////////////////////////////////////////////////////////
 
 bool GSC_GetawayGames(const GSFrameInfo& fi, int& skip)
