@@ -80,8 +80,6 @@ int eeProcessHILO(int reg, int mode, int mmx)
 // core of reg caching
 void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNPTR_INFO consttcode, R5900FNPTR_INFO noconstcode, int xmminfo)
 {
-	int mmreg1, mmreg2, mmreg3, mmtemp, moded;
-
 	if (!_Rd_ && (xmminfo & XMMINFO_WRITED))
 		return;
 
@@ -97,11 +95,12 @@ void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNP
 		return;
 	}
 
-	moded = MODE_WRITE | ((xmminfo & XMMINFO_READD) ? MODE_READ : 0);
+	const int moded = MODE_WRITE | ((xmminfo & XMMINFO_READD) ? MODE_READ : 0);
 
 	// test if should write xmm, mirror to mmx code
 	if (g_pCurInstInfo->info & EEINST_XMM)
 	{
+		int mmreg1, mmreg3, mmtemp;
 		pxAssert(0);
 
 		if (xmminfo & (XMMINFO_READLO | XMMINFO_WRITELO))
@@ -183,7 +182,7 @@ void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNP
 		{
 			// no const regs
 			mmreg1 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rs_, MODE_READ);
-			mmreg2 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rt_, MODE_READ);
+			int mmreg2 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rt_, MODE_READ);
 
 			if (mmreg1 >= 0 || mmreg2 >= 0)
 			{
