@@ -724,16 +724,17 @@ void GSRenderer::QueueSnapshot(const std::string& path, u32 gsdump_frames)
 	else
 	{
 		time_t cur_time = time(nullptr);
-		static time_t prev_snap;
-		// The variable 'n' is used for labelling the screenshots when multiple screenshots are taken in
-		// a single second, we'll start using this variable for naming when a second screenshot request is detected
-		// at the same time as the first one. Hence, we're initially setting this counter to 2 to imply that
-		// the captured image is the 2nd image captured at this specific time.
-		static int n = 2;
 		char local_time[16];
 
 		if (strftime(local_time, sizeof(local_time), "%Y%m%d%H%M%S", localtime(&cur_time)))
 		{
+			static time_t prev_snap;
+			// The variable 'n' is used for labelling the screenshots when multiple screenshots are taken in
+			// a single second, we'll start using this variable for naming when a second screenshot request is detected
+			// at the same time as the first one. Hence, we're initially setting this counter to 2 to imply that
+			// the captured image is the 2nd image captured at this specific time.
+			static int n = 2;
+
 			if (cur_time == prev_snap)
 				m_snapshot = fmt::format("gs_{0}_({1})", local_time, n++);
 			else
