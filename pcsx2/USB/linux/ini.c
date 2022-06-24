@@ -83,19 +83,13 @@ void INIAddOutExt(char *tempname, int temppos) {
 
 // Returns number of bytes read to get line (0 means end-of-file)
 int INIReadLine(ACTUALHANDLE infile, char *buffer) {
-  int charcount;
-  int i;
-  char tempin[2];
-  int retflag;
-  int retval;
-
-  charcount = 0;
-  i = 0;
-  tempin[1] = 0;
-  retflag = 0;
+  int charcount = 0;
+  int i = 0;
+  char tempin[2] = {0};
+  int retflag = 0;
 
   while((i < INIMAXLEN) && (retflag < 2)) {
-    retval = ActualFileRead(infile, 1, tempin);
+    const int retval = ActualFileRead(infile, 1, tempin);
     charcount++;
     if(retval != 1) {
       retflag = 2;
@@ -118,22 +112,17 @@ int INIReadLine(ACTUALHANDLE infile, char *buffer) {
 
 // Returns: number of bytes to get to start of section (or -1)
 int INIFindSection(ACTUALHANDLE infile, const char *section) {
-  int charcount;
-  int i;
-  int retflag;
+  int charcount = 0;
+  int retflag = 0;
   int retval;
   char scanbuffer[INIMAXLEN+1];
-
-
-  charcount = 0;
-  retflag = 0;
 
   while(retflag == 0) {
     retval = INIReadLine(infile, scanbuffer);
     if(retval == 0)  return(-1); // EOF? Stop here.
 
     if(scanbuffer[0] == '[') {
-      i = 0;
+      int i = 0;
       while((i < INIMAXLEN) &&
             (*(section + i) != 0) &&
             (*(section + i) == scanbuffer[i + 1]))  i++;
@@ -152,22 +141,16 @@ int INIFindSection(ACTUALHANDLE infile, const char *section) {
 
 // Returns: number of bytes to get to start of keyword (or -1)
 int INIFindKeyword(ACTUALHANDLE infile, const char *keyword, char *buffer) {
-  int charcount;
-  int i;
-  int j;
-  int retflag;
-  int retval;
+  int charcount = 0;
+  int retflag = 0;
   char scanbuffer[INIMAXLEN+1];
 
-  charcount = 0;
-  retflag = 0;
-
   while(retflag == 0) {
-    retval = INIReadLine(infile, scanbuffer);
+    int retval = INIReadLine(infile, scanbuffer);
     if(retval == 0)  return(-1); // EOF? Stop here.
     if(scanbuffer[0] == '[')  return(-1); // New section? Stop here.
 
-    i = 0;
+    int i = 0;
     while((i < INIMAXLEN) &&
           (*(keyword + i) != 0) &&
           (*(keyword + i) == scanbuffer[i]))  i++;
@@ -176,7 +159,7 @@ int INIFindKeyword(ACTUALHANDLE infile, const char *keyword, char *buffer) {
         retflag = 1;
         if(buffer != NULL) {
           i++;
-          j = 0;
+          int j = 0;
           while((i < INIMAXLEN) && (scanbuffer[i] != 0)) {
             *(buffer + j) = scanbuffer[i];
             i++;
@@ -197,15 +180,13 @@ int INIFindKeyword(ACTUALHANDLE infile, const char *keyword, char *buffer) {
 // Returns: number of bytes left to write... (from charcount back)
 int INICopy(ACTUALHANDLE infile, ACTUALHANDLE outfile, int charcount) {
   char buffer[4096];
-  int i;
-  int chunk;
-  int retval;
+  int chunk = 4096;
 
-  i = charcount;
+  int i = charcount;
   chunk = 4096;
   if(i < chunk)  chunk = i;
   while(chunk > 0) {
-    retval = ActualFileRead(infile, chunk, buffer);
+    int retval = ActualFileRead(infile, chunk, buffer);
     if(retval <= 0)  return(i); // Trouble? Stop here.
     if(retval < chunk)  chunk = retval; // Short block? Note it.
 

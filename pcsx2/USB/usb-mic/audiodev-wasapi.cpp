@@ -895,7 +895,6 @@ namespace usb_mic
 
 		static BOOL CALLBACK WASAPIDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
-			int tmp = 0;
 			WASAPISettings* s;
 
 			switch (uMsg)
@@ -954,6 +953,7 @@ namespace usb_mic
 					{
 						case EN_CHANGE:
 						{
+							int tmp = 0;
 							switch (LOWORD(wParam))
 							{
 								case IDC_BUFFER1_USB:

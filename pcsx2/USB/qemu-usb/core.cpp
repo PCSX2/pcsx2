@@ -742,14 +742,13 @@ void usb_ep_dump(USBDevice* dev)
 		/* [USB_ENDPOINT_XFER_BULK]    = */ "bulk",
 		/* [USB_ENDPOINT_XFER_INT]     = */ "int",
 	};
-	int ifnum, ep, first;
 
 	Console.Warning("Device \"%s\", config %d\n",
 			dev->product_desc, dev->configuration);
-	for (ifnum = 0; ifnum < 16; ifnum++)
+	for (int ifnum = 0; ifnum < 16; ifnum++)
 	{
-		first = 1;
-		for (ep = 0; ep < USB_MAX_ENDPOINTS; ep++)
+		int first = 1;
+		for (int ep = 0; ep < USB_MAX_ENDPOINTS; ep++)
 		{
 			if (dev->ep_in[ep].type != USB_ENDPOINT_XFER_INVALID &&
 				dev->ep_in[ep].ifnum == ifnum)
