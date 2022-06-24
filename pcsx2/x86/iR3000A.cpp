@@ -1288,13 +1288,14 @@ static void PreBlockCheck(u32 blockpc)
 	extern void iDumpPsxRegisters(u32 startpc, u32 temp);
 
 	static u32 lastrec = 0;
-	static int curcount = 0;
-	const int skip = 0;
 
 	//*(int*)PSXM(0x27990) = 1; // enables cdvd bios output for scph10000
 
 	if ((psxdump & 2) && lastrec != blockpc)
 	{
+		static int curcount = 0;
+		constexpr int skip = 0;
+
 		curcount++;
 
 		if (curcount > skip)
