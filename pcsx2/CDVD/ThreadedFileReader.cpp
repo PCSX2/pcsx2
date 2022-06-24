@@ -72,7 +72,6 @@ void ThreadedFileReader::Loop()
 		if (m_quit)
 			return;
 
-		void* ptr;
 		u64 requestOffset;
 		u32 requestSize;
 
@@ -81,7 +80,7 @@ void ThreadedFileReader::Loop()
 
 		for (;;)
 		{
-			ptr = m_requestPtr.load(std::memory_order_acquire);
+			void* ptr = m_requestPtr.load(std::memory_order_acquire);
 			requestOffset = m_requestOffset;
 			requestSize = m_requestSize;
 			lock.unlock();
