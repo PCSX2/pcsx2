@@ -714,7 +714,7 @@ namespace usb_eyetoy
 				}
 			}
 
-			int sel_new;
+			int sel_new = 0;
 			g_signal_connect(G_OBJECT(rs_cb), "changed", G_CALLBACK(deviceChanged), (gpointer)&sel_new);
 
 			gtk_widget_show_all(dlg);
