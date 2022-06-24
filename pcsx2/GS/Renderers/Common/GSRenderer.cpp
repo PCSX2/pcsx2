@@ -308,7 +308,8 @@ bool GSRenderer::Merge(int field)
 
 		if (m_regs->SMODE2.FFMD && !is_bob && !GSConfig.DisableInterlaceOffset)
 		{
-			interlace_offset += (tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) * static_cast<float>(field ^ field2);
+			// Why 3/4? Mainly to line up the odd scanlines for the interlacing routine.
+			interlace_offset += ((tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) * 0.75f) * static_cast<float>(field ^ field2);
 			// We're handling the interlacing offset for upscaling in the merge circuit, rather than in the interlacing shader.
 			offset = 0.0f;
 		}

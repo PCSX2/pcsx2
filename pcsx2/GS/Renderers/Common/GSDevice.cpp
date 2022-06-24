@@ -378,7 +378,7 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	if (mode == 0 || mode == 2) // weave or blend
 	{
 		// weave first
-		const float offset = -yoffset * static_cast<float>(field);
+		const float offset = yoffset * static_cast<float>(field);
 
 		DoInterlace(m_merge, m_weavebob, field, false, GSConfig.DisableInterlaceOffset ? 0.0f : offset);
 
