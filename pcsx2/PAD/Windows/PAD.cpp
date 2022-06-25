@@ -621,8 +621,7 @@ void Update(unsigned int port, unsigned int slot)
 					{
 						s[port][slot].sticks[0].vert = -s[port][slot].sticks[0].vert;
 					}
-					// GH2 hack.
-					else if (config.GH2)
+					else // GH2 hack.
 					{
 						const unsigned int oldIdList[5] = {ID_R2, ID_CIRCLE, ID_TRIANGLE, ID_CROSS, ID_SQUARE};
 						const unsigned int idList[5] = {ID_L2, ID_L1, ID_R1, ID_R2, ID_CROSS};
