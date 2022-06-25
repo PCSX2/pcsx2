@@ -13,13 +13,10 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __DECI2DCMP_H__
-#define __DECI2DCMP_H__
+#pragma once
 
 #include "Common.h"
 #include "deci2.h"
 
 void D2_DCMP(const u8 *inbuffer, u8 *outbuffer, char *message);
 void sendDCMP(u16 protocol, u8 source, u8 destination, u8 type, u8 code, char *data, int size);
-
-#endif//__DECI2DCMP_H__

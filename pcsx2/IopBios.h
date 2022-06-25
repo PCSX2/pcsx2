@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PSXBIOS_H__
-#define __PSXBIOS_H__
+#pragma once
 
 #define IOP_ENOENT 2
 #define IOP_EIO 5
@@ -87,5 +86,3 @@ namespace R3000A
 } // namespace R3000A
 
 extern void Hle_SetElfPath(const char* elfFileName);
-
-#endif /* __PSXBIOS_H__ */

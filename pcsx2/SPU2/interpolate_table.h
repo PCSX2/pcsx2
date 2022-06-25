@@ -1,5 +1,19 @@
-#ifndef __INTERPOLATE_TABLE_H_
-#define __INTERPOLATE_TABLE_H_
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#pragma once
 
 static const s16 interpTable[0x200] = {
   -0x001, -0x001, -0x001, -0x001, -0x001, -0x001, -0x001, -0x001, //
@@ -67,8 +81,3 @@ static const s16 interpTable[0x200] = {
   0x593A, 0x5949, 0x5958, 0x5965, 0x5971, 0x597C, 0x5986, 0x598F, //
   0x5997, 0x599E, 0x59A4, 0x59A9, 0x59AD, 0x59B0, 0x59B2, 0x59B3  //
 };
-
-
-
-
-#endif // __INTERPOLATE_TABLE_H_

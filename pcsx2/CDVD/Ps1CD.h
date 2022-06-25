@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CDROM_H__
-#define __CDROM_H__
+#pragma once
 
 #include "CDVDaccess.h"
 
@@ -99,5 +98,3 @@ void cdrWrite0(u8 rt);
 void cdrWrite1(u8 rt);
 void cdrWrite2(u8 rt);
 void cdrWrite3(u8 rt);
-
-#endif /* __CDROM_H__ */

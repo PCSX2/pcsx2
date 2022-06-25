@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __IR5900SHIFT_H__
-#define __IR5900SHIFT_H__
+#pragma once
 
 /*********************************************************
 * Shift arithmetic with constant shift                   *
@@ -45,5 +44,3 @@ namespace OpcodeImpl {
 } // namespace OpcodeImpl
 } // namespace Dynarec
 } // namespace R5900
-
-#endif

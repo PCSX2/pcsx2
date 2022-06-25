@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __IR5900JUMP_H__
-#define __IR5900JUMP_H__
+#pragma once
 
 /*********************************************************
 * Jump to target                                         *
@@ -33,5 +32,3 @@ namespace OpcodeImpl {
 } // namespace OpcodeImpl
 } // namespace Dynarec
 } // namespace R5900
-
-#endif

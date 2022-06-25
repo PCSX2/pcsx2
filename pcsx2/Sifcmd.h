@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SIFCMD_H__
-#define __SIFCMD_H__
+#pragma once
 
 struct t_sif_dma_transfer
 {
@@ -23,5 +22,3 @@ struct t_sif_dma_transfer
 	s32 size;
 	s32 attr;
 };
-
-#endif//__SIFCMD_H__

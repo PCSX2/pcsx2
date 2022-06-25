@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __DECI2_H__
-#define __DECI2_H__
+#pragma once
 
 #include "Common.h"
 #include "deci2_dcmp.h"
@@ -61,5 +60,3 @@ extern s32		connected;
 
 int	writeData(const u8 *result);
 void	exchangeSD(DECI2_HEADER *h);
-
-#endif//__DECI2_H__

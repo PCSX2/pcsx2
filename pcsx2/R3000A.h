@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __R3000A_H__
-#define __R3000A_H__
+#pragma once
 
 #include <stdio.h>
 
@@ -215,5 +214,3 @@ extern void (*psxCP2BSC[32])();
 
 extern void psxBiosReset();
 extern bool psxBiosCall();
-
-#endif /* __R3000A_H__ */
