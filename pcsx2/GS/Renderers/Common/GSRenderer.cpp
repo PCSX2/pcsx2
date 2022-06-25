@@ -175,7 +175,7 @@ bool GSRenderer::Merge(int field)
 	const bool is_bob = GSConfig.InterlaceMode == GSInterlaceMode::BobTFF || GSConfig.InterlaceMode == GSInterlaceMode::BobBFF;
 
 	// Use offset for bob deinterlacing always, extra offset added later for FFMD mode.
-	float offset = is_bob ? (tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) : 0.0f;
+	float offset = (tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
 
 	int field2 = 0;
 	int mode = 2;
@@ -306,12 +306,11 @@ bool GSRenderer::Merge(int field)
 		// src_out_rect is the resized rect for output. (Not really used)
 		src_out_rect[i] = (GSVector4(r) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
 
-		if (m_regs->SMODE2.FFMD && !is_bob && !GSConfig.DisableInterlaceOffset && GSConfig.InterlaceMode != GSInterlaceMode::Off)
+		if (m_regs->SMODE2.FFMD && !is_bob && !GSConfig.DisableInterlaceOffset && GSConfig.InterlaceMode != GSInterlaceMode::Off && GetUpscaleMultiplier() > 1)
 		{
-			// Why 3/4? Mainly to line up the odd scanlines for the interlacing routine.
-			interlace_offset += ((tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) * 0.75f) * static_cast<float>(field ^ field2);
-			// We're handling the interlacing offset for upscaling in the merge circuit, rather than in the interlacing shader.
-			offset = 0.0f;
+			// We do half because FFMD is a half sized framebuffer, then we offset by 1 in the shader for the actual interlace
+			interlace_offset += ((((tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) + 0.5f) * 0.5f) - 1.0f) * static_cast<float>(field ^ field2);
+			offset = 1.0f;
 		}
 		// Restore manually offset "interlace" lines
 		dst[i] += GSVector4(0.0f, interlace_offset, 0.0f, interlace_offset);
