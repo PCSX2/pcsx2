@@ -2,33 +2,18 @@
 
 set -e
 
-if [ "${COMPILER}" = "gcc" ]; then
-  export CC=gcc-10
-  export CXX=g++-10
-else
-  export CC=clang
-  export CXX=clang++
-fi
-
-if [ "${PLATFORM}" = x86 ]; then
-  ADDITIONAL_CMAKE_ARGS="$ADDITIONAL_CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake"
-fi
 echo "Additional CMake Args - ${ADDITIONAL_CMAKE_ARGS}"
 
 # Generate CMake into ./build
-cmake                                       \
--DCMAKE_CXX_COMPILER_LAUNCHER=ccache        \
--DCMAKE_BUILD_TYPE=Release                  \
--DPACKAGE_MODE=TRUE                         \
--DWAYLAND_API=TRUE                          \
--DDISABLE_ADVANCE_SIMD=TRUE                 \
--DCMAKE_PREFIX_PATH="$HOME/Depends"         \
--DDISABLE_PCSX2_WRAPPER=TRUE                \
+cmake                                     \
+-DCMAKE_BUILD_TYPE=RelWithDebInfo          \
 -DCMAKE_INSTALL_PREFIX="squashfs-root/usr/" \
--DOpenGL_GL_PREFERENCE="LEGACY"             \
--DOPENGL_opengl_LIBRARY=""                  \
--DXDG_STD=TRUE                              \
--DUSE_SYSTEM_ZSTD=FALSE                     \
-$ADDITIONAL_CMAKE_ARGS                      \
--GNinja                                     \
+-DCMAKE_PREFIX_PATH="$HOME/Depends"          \
+-DWAYLAND_API=ON                              \
+-DQT_BUILD=ON                                  \
+-DXDG_STD=TRUE                                  \
+-DUSE_VULKAN=ON                                  \
+-DPACKAGE_MODE=ON                                 \
+-DDISABLE_SETCAP=ON                                \
+-GNinja                                             \
 -B build

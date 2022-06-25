@@ -16,9 +16,9 @@ else
   LIBARCH="x86_64-linux-gnu"
 fi
 cd /tmp
-curl -sSfLO "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$ARCH.AppImage"
-chmod a+x linuxdeploy*.AppImage
-./linuxdeploy-"$ARCH".AppImage --appimage-extract
+wget "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage"
+chmod a+x linuxdeploy-plugin-qt-x86_64.AppImage
+./linuxdeploy-plugin-qt-x86_64.AppImage --appimage-extract
 curl -sSfL "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh" -o /tmp/squashfs-root/usr/bin/linuxdeploy-plugin-gtk.sh
 chmod a+x /tmp/squashfs-root/usr/bin/linuxdeploy-plugin-gtk.sh
 mv /tmp/squashfs-root/usr/bin/patchelf /tmp/squashfs-root/usr/bin/patchelf.orig
@@ -52,7 +52,7 @@ cp --dereference /lib/"$LIBARCH"/libgcc_s.so.1 "$GITHUB_WORKSPACE"/squashfs-root
 chmod +x .github/workflows/scripts/linux/app-variables.sh
 cp .github/workflows/scripts/linux/app-variables.sh "$GITHUB_WORKSPACE"/squashfs-root/apprun-hooks
 export UPD_INFO="gh-releases-zsync|PCSX2|pcsx2|latest|$name.AppImage.zsync"
-/tmp/squashfs-root/AppRun --appdir="$GITHUB_WORKSPACE"/squashfs-root/ --plugin gtk -d "$GITHUB_WORKSPACE"/squashfs-root/PCSX2.desktop -i "$GITHUB_WORKSPACE"/squashfs-root/PCSX2.png
+/tmp/squashfs-root/AppRun --appdir="$GITHUB_WORKSPACE"/squashfs-root/ --plugin qt -d "$GITHUB_WORKSPACE"/squashfs-root/PCSX2.desktop -i "$GITHUB_WORKSPACE"/squashfs-root/PCSX2.png
 # see LD_LIBRARY_PATH in app-variables.sh - the intent is to use system wayland if available but fall back to app-image provided
 # a little bit hacky but should ensure maximum compatibility
 mkdir -p squashfs-root/usr/lib/wayland

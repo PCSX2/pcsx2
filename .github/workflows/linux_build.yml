@@ -9,7 +9,7 @@ on:
       os:
         required: false
         type: string
-        default: ubuntu-18.04
+        default: ubuntu-20.04
       platform:
         required: false
         type: string
@@ -41,6 +41,7 @@ jobs:
       CCACHE_COMPRESS: true
       CCACHE_COMPRESSLEVEL: 9
       CCACHE_MAXSIZE: 100M
+      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$HOME/Depends/lib/
 
     steps:
       - name: Checkout Repository
@@ -92,12 +93,17 @@ jobs:
 
       - name: Build Dependencies
         run: .github/workflows/scripts/linux/build-dependencies.sh
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+      
       - name: Generate CMake
         env:
           PLATFORM: ${{ inputs.platform }}
           COMPILER: ${{ inputs.compiler }}
           ADDITIONAL_CMAKE_ARGS: ${{ inputs.cmakeflags }}
         run: .github/workflows/scripts/linux/generate-cmake.sh
+
+      - name: QT 6 paths
+        run: ls $HOME/Depends/bin && sudo ln -s $HOME/Depends/$(find bin/ -name qmake) /usr/bin
 
       - name: Build PCSX2
         working-directory: build
