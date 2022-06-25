@@ -866,7 +866,7 @@ void GSRendererHW::SwSpriteRender()
 	ASSERT(!m_env.PABE.PABE); // No PABE
 
 	// PSMCT32 pixel format
-	ASSERT(!PRIM->TME || (PRIM->TME && m_context->TEX0.PSM == PSM_PSMCT32));
+	ASSERT(!PRIM->TME || m_context->TEX0.PSM == PSM_PSMCT32);
 	ASSERT(m_context->FRAME.PSM == PSM_PSMCT32);
 
 	// No rasterization required
