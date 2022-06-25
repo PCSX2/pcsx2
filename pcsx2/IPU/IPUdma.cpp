@@ -68,8 +68,6 @@ static __fi int IPU1chain() {
 
 void IPU1dma()
 {
-	int totalqwc = 0;
-
 	if(!ipu1ch.chcr.STR || ipu1ch.chcr.MOD == 2)
 	{
 		//We MUST stop the IPU from trying to fill the FIFO with more data if the DMA has been suspended
@@ -86,6 +84,9 @@ void IPU1dma()
 		return;
 	}
 
+	int tagcycles = 0;
+	int totalqwc = 0;
+
 	IPU_LOG("IPU1 DMA Called QWC %x Finished %d In Progress %d tadr %x", ipu1ch.qwc, IPU1Status.DMAFinished, IPU1Status.InProgress, ipu1ch.tadr);
 	if (!IPU1Status.InProgress)
 	{
@@ -100,7 +101,7 @@ void IPU1dma()
 		}
 		ipu1ch.madr = ptag[1]._u32;
 
-		totalqwc += 1; // Add 1 cycles from the QW read for the tag
+		tagcycles += 1; // Add 1 cycles from the QW read for the tag
 
 		if (ipu1ch.chcr.TTE) DevCon.Warning("TTE?");
 
@@ -122,7 +123,7 @@ void IPU1dma()
 	//Do this here to prevent double settings on Chain DMA's
 	if(totalqwc == 0 || (IPU1Status.DMAFinished && !IPU1Status.InProgress))
 	{
-		totalqwc = std::max(4, totalqwc);
+		totalqwc = std::max(4, totalqwc) + tagcycles;
 		IPU_INT_TO(totalqwc * BIAS);
 	}
 	else
@@ -135,6 +136,7 @@ void IPU1dma()
 		}
 		else
 		{
+			totalqwc = std::max(4, totalqwc) + tagcycles;
 			IPU_INT_TO(totalqwc * BIAS);
 		}
 	}
