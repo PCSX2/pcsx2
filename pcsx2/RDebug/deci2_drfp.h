@@ -13,12 +13,9 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __DECI2DRFP_H__
-#define __DECI2DRFP_H__
+#pragma once
 
 #include "Common.h"
 #include "deci2.h"
 
 void D2_(char *inbuffer, char *outbuffer, char *message);
-
-#endif//__DECI2DRFP_H__

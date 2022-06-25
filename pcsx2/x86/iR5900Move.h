@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __IR5900MOVE_H__
-#define __IR5900MOVE_H__
+#pragma once
 
 namespace R5900 {
 namespace Dynarec {
@@ -31,5 +30,3 @@ namespace OpcodeImpl {
 } // namespace OpcodeImpl
 } // namespace Dynarec
 } // namespace R5900
-
-#endif

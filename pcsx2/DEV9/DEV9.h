@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __DEV9_H__
-#define __DEV9_H__
+#pragma once
 
 #include <stdio.h>
 #include <string>
@@ -721,5 +720,4 @@ void DEV9CheckChanges(const Pcsx2Config& old_config);
 
 #ifdef _WIN32
 #pragma warning(error : 4013)
-#endif
 #endif

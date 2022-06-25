@@ -13,8 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __IR5900LOADSTORE_H__
-#define __IR5900LOADSTORE_H__
+#pragma once
+
 /*********************************************************
 * Load and store for GPR                                 *
 * Format:  OP rt, offset(base)                           *
@@ -53,5 +53,3 @@ namespace OpcodeImpl {
 } // namespace OpcodeImpl
 } // namespace Dynarec
 } // namespace R5900
-
-#endif

@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DIALOG_H_INCLUDED
-#define DIALOG_H_INCLUDED
+#pragma once
 
 #include "SPU2/Global.h"
 #include "SPU2/Config.h"
@@ -26,5 +25,3 @@ namespace DebugConfig
 
 extern void CfgSetSettingsDir(const char* dir);
 extern void CfgSetLogDir(const char* dir);
-
-#endif

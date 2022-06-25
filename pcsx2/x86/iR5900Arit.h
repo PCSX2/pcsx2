@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __IR5900ARIT_H__
-#define __IR5900ARIT_H__
+#pragma once
 
 /*********************************************************
 * Register arithmetic                                    *
@@ -43,4 +42,3 @@ namespace OpcodeImpl {
 } // namespace OpcodeImpl
 } // namespace Dynarec
 } // namespace R5900
-#endif

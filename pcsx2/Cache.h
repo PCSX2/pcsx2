@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CACHE_H__
-#define __CACHE_H__
+#pragma once
 
 #include "Common.h"
 #include "SingleRegisterTypes.h"
@@ -30,5 +29,3 @@ u16 readCache16(u32 mem);
 u32 readCache32(u32 mem);
 RETURNS_R64  readCache64(u32 mem);
 RETURNS_R128 readCache128(u32 mem);
-
-#endif /* __CACHE_H__ */

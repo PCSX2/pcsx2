@@ -13,12 +13,9 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __DECI2ILOADP_H__
-#define __DECI2ILOADP_H__
+#pragma once
 
 #include "Common.h"
 #include "deci2.h"
 
 void D2_ILOADP(const u8 *inbuffer, u8 *outbuffer, char *message);
-
-#endif//__DECI2ILOADP_H__

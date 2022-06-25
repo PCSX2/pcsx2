@@ -27,8 +27,7 @@
 // just result in the linker having to remove a whole lot of redundant/unused decoder
 // tables and static functions. -- air
 
-#ifndef __VLC_H__
-#define __VLC_H__
+#pragma once
 
 static __fi int GETWORD()
 {
@@ -662,5 +661,3 @@ alignas(16) static const DCTtabSet DCT =
 	  {30,1,16}, {29,1,16}, {28,1,16}, {27,1,16} }
 
 };
-
-#endif//__VLC_H__

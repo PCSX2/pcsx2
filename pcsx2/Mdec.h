@@ -16,9 +16,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef __MDEC_H__
-#define __MDEC_H__
-
+#pragma once
 
 // mdec status:
 #define MDEC_BUSY 0x20000000
@@ -100,5 +98,3 @@ void iqtab_init(int *iqtab,unsigned char *iq_y);
 void round_init(void);
 void yuv2rgb24(int *blk,unsigned char *image);
 void yuv2rgb15(int *blk,u16 *image);
-
-#endif /* __MDEC_H__ */

@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __IFPU_H__
-#define __IFPU_H__
+#pragma once
 
 alignas(16) extern const u32 g_minvals[4];
 alignas(16) extern const u32 g_maxvals[4];
@@ -64,5 +63,3 @@ namespace COP1 {
 } // namespace OpcodeImpl
 } // namespace Dynarec
 } // namespace R5900
-
-#endif

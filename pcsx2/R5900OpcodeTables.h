@@ -12,8 +12,7 @@
  *  You should have received a copy of the GNU General Public License along with PCSX2.
  *  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef _R5900_OPCODETABLES_H
-#define _R5900_OPCODETABLES_H
+#pragma once
 
 #include "common/Pcsx2Defs.h"
 
@@ -931,5 +930,3 @@ void VRGET();
 void VRINIT();
 void VRXOR();
 //*******************END OF SPECIAL2 *********************
-
-#endif

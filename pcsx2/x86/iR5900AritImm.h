@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __IR5900ARITIMM_H__
-#define __IR5900ARITIMM_H__
+#pragma once
 
 /*********************************************************
 * Arithmetic with immediate operand                      *
@@ -38,5 +37,3 @@ namespace OpcodeImpl {
 } // namespace OpcodeImpl
 } // namespace Dynarec
 } // namespace R5900
-
-#endif

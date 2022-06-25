@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __IR5900MULTDIV_H__
-#define __IR5900MULTDIV_H__
+#pragma once
 
 /*********************************************************
 * Register mult/div & Register trap logic                *
@@ -33,5 +32,3 @@ namespace OpcodeImpl {
 } // namespace OpcodeImpl
 } // namespace Dynarec
 } // namespace R5900
-
-#endif
