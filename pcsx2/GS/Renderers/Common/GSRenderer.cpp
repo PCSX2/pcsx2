@@ -306,7 +306,7 @@ bool GSRenderer::Merge(int field)
 		// src_out_rect is the resized rect for output. (Not really used)
 		src_out_rect[i] = (GSVector4(r) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
 
-		if (m_regs->SMODE2.FFMD && !is_bob && !GSConfig.DisableInterlaceOffset)
+		if (m_regs->SMODE2.FFMD && !is_bob && !GSConfig.DisableInterlaceOffset && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 		{
 			// Why 3/4? Mainly to line up the odd scanlines for the interlacing routine.
 			interlace_offset += ((tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) * 0.75f) * static_cast<float>(field ^ field2);
