@@ -227,3 +227,39 @@ void COP2FlagHackPass::CommitAllFlags()
 	CommitMACFlag();
 	CommitClipFlag();
 }
+
+COP2MicroFinishPass::COP2MicroFinishPass() = default;
+
+COP2MicroFinishPass::~COP2MicroFinishPass() = default;
+
+void COP2MicroFinishPass::Run(u32 start, u32 end, EEINST* inst_cache)
+{
+	bool needs_vu0_finish = true;
+
+	ForEachInstruction(start, end, inst_cache, [&needs_vu0_finish](u32 apc, EEINST* inst) {
+		// Catch SQ/SB/SH/SW/SD to potential DMA->VIF0->VU0 exec.
+		// This is very unlikely in a cop2 chain.
+		if (_Opcode_ == 037 || _Opcode_ == 050 || _Opcode_ == 051 || _Opcode_ == 053 || _Opcode_ == 077)
+		{
+			needs_vu0_finish = true;
+			return true;
+		}
+
+		// Look for COP2 instructions.
+		if (_Opcode_ != 022)
+			return true;
+
+		// Set the flag on the current instruction, and clear it for the next.
+		if (needs_vu0_finish)
+		{
+			inst->info |= EEINST_COP2_FINISH_VU0_MICRO;
+			needs_vu0_finish = false;
+		}
+
+		// Except for VCALLMS/VCALLMSR, that can start a micro, so the next instruction needs to finish it.
+		if (_Funct_ == 070 || _Funct_ == 071)
+			needs_vu0_finish = true;
+
+		return true;
+	});
+}

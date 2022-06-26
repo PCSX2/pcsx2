@@ -220,6 +220,7 @@ int _signExtendXMMtoM(uptr to, x86SSERegType from, int candestroy); // returns t
 #define EEINST_COP2_STATUS_FLAG 0x400
 #define EEINST_COP2_MAC_FLAG 0x800
 #define EEINST_COP2_CLIP_FLAG 0x1000
+#define EEINST_COP2_FINISH_VU0_MICRO 0x2000
 
 struct EEINST
 {
