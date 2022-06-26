@@ -100,14 +100,12 @@ namespace usb_pad
 		if (!mFFdev)
 			return;
 
-		static int warned = 0;
 		DevCon.WriteLn("FFB %02X, %02X, %02X, %02X : %02X, %02X, %02X, %02X",
 				   ffdata->cmdslot, ffdata->type, ffdata->u.params[0], ffdata->u.params[1],
 				   ffdata->u.params[2], ffdata->u.params[3], ffdata->u.params[4], ffdata->padd0);
 
 		if (ffdata->cmdslot != CMD_EXTENDED_CMD)
 		{
-			int caps = 0;
 			uint8_t slots = (ffdata->cmdslot & 0xF0) >> 4;
 			uint8_t cmd = ffdata->cmdslot & 0x0F;
 
@@ -132,6 +130,8 @@ namespace usb_pad
 						}
 					}
 
+					static int warned = 0;
+					int caps = 0;
 					switch (ffdata->type)
 					{
 						case FTYPE_CONSTANT:
