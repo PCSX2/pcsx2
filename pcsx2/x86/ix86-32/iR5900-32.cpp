@@ -2190,10 +2190,12 @@ StartRecomp:
 	}
 
 	// eventually we'll want to have a vector of passes or something.
-	if (has_cop2_instructions && EmuConfig.Speedhacks.vuFlagHack)
+	if (has_cop2_instructions)
 	{
-		COP2FlagHackPass fhpass;
-		fhpass.Run(startpc, s_nEndBlock, s_pInstCache + 1);
+		COP2MicroFinishPass().Run(startpc, s_nEndBlock, s_pInstCache + 1);
+
+		if (EmuConfig.Speedhacks.vuFlagHack)
+			COP2FlagHackPass().Run(startpc, s_nEndBlock, s_pInstCache + 1);
 	}
 
 	// analyze instructions //
