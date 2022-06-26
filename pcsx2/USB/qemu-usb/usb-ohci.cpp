@@ -506,14 +506,13 @@ static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 	int pid;
 	int ret;
 	int i;
-	USBDevice* dev;
 	USBEndpoint* ep;
 	struct ohci_iso_td iso_td;
 	uint32_t addr;
 	uint16_t starting_frame;
 	int16_t relative_frame_number;
 	int frame_count;
-	uint32_t start_offset, next_offset, end_offset = 0;
+	uint32_t start_offset, next_offset;
 	uint32_t start_addr, end_addr;
 
 	addr = ed->head & OHCI_DPTR_MASK;
@@ -635,7 +634,7 @@ static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 
 	if (relative_frame_number < frame_count)
 	{
-		end_offset = next_offset - 1;
+		const uint32_t end_offset = next_offset - 1;
 		if ((end_offset & 0x1000) == 0)
 		{
 			end_addr = (iso_td.bp & OHCI_PAGE_MASK) |
@@ -684,9 +683,9 @@ static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 
 	if (!completion)
 	{
-		bool int_req = relative_frame_number == frame_count &&
+		const bool int_req = relative_frame_number == frame_count &&
 					   OHCI_BM(iso_td.flags, TD_DI) == 0;
-		dev = ohci_find_device(ohci, OHCI_BM(ed->flags, ED_FA));
+		USBDevice* dev = ohci_find_device(ohci, OHCI_BM(ed->flags, ED_FA));
 		if (dev == NULL)
 		{
 			//trace_usb_ohci_td_dev_error();

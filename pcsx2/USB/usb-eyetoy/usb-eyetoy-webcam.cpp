@@ -323,7 +323,6 @@ namespace usb_eyetoy
 	{
 		EYETOYState* s = (EYETOYState*)dev;
 		static const int max_ep_size = 960; // 961
-		uint8_t data[max_ep_size];
 		uint8_t devep = p->ep->nr;
 
 		if (!s->hw_camera_running)
@@ -338,6 +337,7 @@ namespace usb_eyetoy
 			case USB_TOKEN_IN:
 				if (devep == 1)
 				{
+					uint8_t data[max_ep_size];
 					memset(data, 0x00, sizeof(data));
 
 					if (s->frame_step == 0)

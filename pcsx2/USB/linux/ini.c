@@ -114,11 +114,10 @@ int INIReadLine(ACTUALHANDLE infile, char *buffer) {
 int INIFindSection(ACTUALHANDLE infile, const char *section) {
   int charcount = 0;
   int retflag = 0;
-  int retval;
   char scanbuffer[INIMAXLEN+1];
 
   while(retflag == 0) {
-    retval = INIReadLine(infile, scanbuffer);
+    const int retval = INIReadLine(infile, scanbuffer);
     if(retval == 0)  return(-1); // EOF? Stop here.
 
     if(scanbuffer[0] == '[') {
