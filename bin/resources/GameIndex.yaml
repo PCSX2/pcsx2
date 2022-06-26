@@ -21478,16 +21478,16 @@ SLKA-25051:
   region: "NTSC-K"
   compat: 5
 SLKA-25052:
-  name: "Finding nemo"
+  name: "Air Ranger 2 - Rescue Helicopter"
   region: "NTSC-K"
-  gsHWFixes:
-    alignSprite: 1 # Fixes vertical lines.
 SLKA-25055:
   name: "Hitman - Silent Assasin"
   region: "NTSC-K"
 SLKA-25056:
-  name: "Air Ranger 2 - Rescue Helicopter"
+  name: "Finding Nemo"
   region: "NTSC-K"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLKA-25060:
   name: "I.Q. Remix+ - Intelligent Qube"
   region: "NTSC-K"
