@@ -458,7 +458,7 @@ void ADD_SS_TriAceHack(microVU& mVU, const xmm& to, const xmm& from)
 		mVUclamp3(mVU, to, t1, (isPS) ? 0xf : 0x8); \
 		mVUclamp3(mVU, from, t1, (isPS) ? 0xf : 0x8); \
 		opX(to, from); \
-		mVUclamp4(to, t1, (isPS) ? 0xf : 0x8); \
+		mVUclamp4(mVU, to, t1, (isPS) ? 0xf : 0x8); \
 	} while (0)
 
 void SSE_MAXPS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
