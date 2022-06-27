@@ -249,10 +249,19 @@ void COP2MicroFinishPass::Run(u32 start, u32 end, EEINST* inst_cache)
 		if (_Opcode_ != 022)
 			return true;
 
+		// If it's CFC2/CTC2/QMFC2/QMTC2 and it's not interlocked, we don't want to errornously set the flag.
+		if ((_Rs_ == 001 || _Rs_ == 002 || _Rs_ == 005 || _Rs_ == 006) && !(cpuRegs.code & 1))
+			return true;
+
 		// Set the flag on the current instruction, and clear it for the next.
 		if (needs_vu0_finish)
 		{
 			inst->info |= EEINST_COP2_FINISH_VU0_MICRO;
+
+			// QMTC2 and CTC2 interlock on M-Bit not just VU end, so VU0 might continue to run, so we need to continue to check.
+			if ((_Rs_ == 005 || _Rs_ == 006) && (cpuRegs.code & 1))
+				return true;
+
 			needs_vu0_finish = false;
 		}
 
