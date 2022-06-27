@@ -484,11 +484,12 @@ SCAJ-20010:
   region: "NTSC-Unk"
 SCAJ-20011:
   name: "Armored Core 3 - Silent Line"
-  region: "NTSC-Unk"
+  region: "NTSC-HK"
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
+    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
   memcardFilters:
     - "SCAJ-20011"
     - "SCPS-55014"
@@ -6208,6 +6209,7 @@ SCPS-55014:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
+    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
 SCPS-55015:
   name: "Zettai Zetsumei Toshi"
   region: "NTSC-J"
@@ -11703,6 +11705,7 @@ SLES-51399:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
+    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
 SLES-51400:
   name: "Tenchu - Wrath of Heaven"
   region: "PAL-S"
@@ -13174,6 +13177,11 @@ SLES-52203:
   name: "Armored Core - Silent Line"
   region: "PAL-E"
   compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes Z-Fighting.
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
+    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
   memcardFilters:
     - "SLES-51399"
     - "SLES-52203"
@@ -21447,6 +21455,7 @@ SLKA-25041:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
+    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
   memcardFilters:
     - "SLKA-25041"
     - "SLPM-67524"
@@ -31874,6 +31883,7 @@ SLPM-67524:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
+    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
 SLPM-67526:
   name: "Ghost Vibration"
   region: "NTSC-K"
@@ -33905,6 +33915,7 @@ SLPS-25112:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
+    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
 SLPS-25113:
   name: "Zettai Zetsumei Toshi"
   region: "NTSC-J"
@@ -34095,6 +34106,7 @@ SLPS-25169:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
+    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
   memcardFilters:
     - "SCAJ-20011"
     - "SCPS-55014"
@@ -37251,6 +37263,7 @@ SLPS-73417:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
+    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
 SLPS-73418:
   name: "Shadow Hearts [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -37266,6 +37279,7 @@ SLPS-73420:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
+    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
   memcardFilters:
     - "SCAJ-20011"
     - "SCPS-55014"
@@ -39038,6 +39052,7 @@ SLUS-20435:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
+    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
 SLUS-20436:
   name: "Guilty Gear X2"
   region: "NTSC-U"
@@ -39978,6 +39993,12 @@ SLUS-20643BD:
 SLUS-20644:
   name: "Armored Core - Silent Line"
   region: "NTSC-U"
+  compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes Z-Fighting.
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
+    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
   memcardFilters: # Can import data from AC3.
     - "SLUS-20435"
     - "SLUS-20644"
