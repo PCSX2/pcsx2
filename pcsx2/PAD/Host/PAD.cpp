@@ -222,6 +222,9 @@ void PAD::LoadConfig(const SettingsInterface& si)
 			g_key_status.SetVibrationScale(i, 1, small_motor_scale);
 		}
 
+		const float pressure_modifier = si.GetFloatValue(section.c_str(), "PressureModifier", 1.0f);
+		g_key_status.SetPressureModifier(i, pressure_modifier);
+
 		LoadMacroButtonConfig(si, i, type, section);
 	}
 }
@@ -259,6 +262,7 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 		si.SetFloatValue(section.c_str(), "AxisScale", DEFAULT_STICK_SCALE);
 		si.SetFloatValue(section.c_str(), "LargeMotorScale", DEFAULT_MOTOR_SCALE);
 		si.SetFloatValue(section.c_str(), "SmallMotorScale", DEFAULT_MOTOR_SCALE);
+		si.SetFloatValue(section.c_str(), "PressureModifier", DEFAULT_PRESSURE_MODIFIER);
 	}
 
 	// PCSX2 Controller Settings - Controller 1 / Controller 2 / ...
@@ -333,6 +337,7 @@ static const PAD::ControllerBindingInfo s_dualshock2_binds[] = {
 	{"L3", "L3 (Left Stick Button)", PAD::ControllerBindingType::Button, GenericInputBinding::L3},
 	{"R3", "R3 (Right Stick Button)", PAD::ControllerBindingType::Button, GenericInputBinding::R3},
 	{"Analog", "Analog Toggle", PAD::ControllerBindingType::Button, GenericInputBinding::System},
+	{"Pressure", "Apply Pressure", PAD::ControllerBindingType::Button, GenericInputBinding::Unknown},
 	{"LUp", "Left Stick Up", PAD::ControllerBindingType::HalfAxis, GenericInputBinding::LeftStickUp},
 	{"LRight", "Left Stick Right", PAD::ControllerBindingType::HalfAxis, GenericInputBinding::LeftStickRight},
 	{"LDown", "Left Stick Down", PAD::ControllerBindingType::HalfAxis, GenericInputBinding::LeftStickDown},

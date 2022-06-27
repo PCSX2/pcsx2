@@ -270,9 +270,11 @@ void ControllerBindingWidget_Base::initBindingWidgets()
 	}
 
 	if (QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QStringLiteral("SmallMotorScale")); widget)
-		ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, widget, config_section, "SmallMotorScale", 1.0f);
+		ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, widget, config_section, "SmallMotorScale", PAD::DEFAULT_MOTOR_SCALE);
 	if (QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QStringLiteral("LargeMotorScale")); widget)
-		ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, widget, config_section, "LargeMotorScale", 1.0f);
+		ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, widget, config_section, "LargeMotorScale", PAD::DEFAULT_MOTOR_SCALE);
+	if (QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QStringLiteral("PressureModifier")); widget)
+		ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, widget, config_section, "PressureModifier", PAD::DEFAULT_PRESSURE_MODIFIER);
 }
 
 ControllerBindingWidget_DualShock2::ControllerBindingWidget_DualShock2(ControllerBindingWidget* parent)

@@ -25,7 +25,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
+  <layout class="QGridLayout" name="gridLayout_35">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -38,7 +38,7 @@
    <property name="bottomMargin">
     <number>0</number>
    </property>
-   <item>
+   <item row="0" column="0" rowspan="3">
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
       <widget class="QGroupBox" name="groupBox">
@@ -379,6 +379,65 @@
       </widget>
      </item>
      <item>
+      <widget class="QGroupBox" name="groupBox_29">
+       <property name="title">
+        <string>Large Motor</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_30">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="InputVibrationBindingWidget" name="LargeMotor">
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>PushButton</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QDoubleSpinBox" name="LargeMotorScale">
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="suffix">
+           <string>x</string>
+          </property>
+          <property name="maximum">
+           <double>3.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer_5">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -393,551 +452,271 @@
      </item>
     </layout>
    </item>
-   <item>
-    <layout class="QVBoxLayout" name="verticalLayout_3">
-     <item>
-      <layout class="QGridLayout" name="gridLayout_27">
-       <item row="2" column="0" rowspan="2">
-        <widget class="QGroupBox" name="groupBox_22">
-         <property name="title">
-          <string>L1</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_22">
-          <property name="leftMargin">
-           <number>6</number>
+   <item row="0" column="1">
+    <layout class="QGridLayout" name="gridLayout_27">
+     <item row="0" column="0">
+      <widget class="QGroupBox" name="groupBox_21">
+       <property name="title">
+        <string>L2</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_21">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="InputBindingWidget" name="L2">
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>16777215</height>
+           </size>
           </property>
-          <property name="topMargin">
-           <number>6</number>
+          <property name="text">
+           <string>PushButton</string>
           </property>
-          <property name="rightMargin">
-           <number>6</number>
-          </property>
-          <property name="bottomMargin">
-           <number>6</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="InputBindingWidget" name="L1">
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="0" rowspan="2">
-        <widget class="QGroupBox" name="groupBox_21">
-         <property name="title">
-          <string>L2</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_21">
-          <property name="leftMargin">
-           <number>6</number>
-          </property>
-          <property name="topMargin">
-           <number>6</number>
-          </property>
-          <property name="rightMargin">
-           <number>6</number>
-          </property>
-          <property name="bottomMargin">
-           <number>6</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="InputBindingWidget" name="L2">
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="5" rowspan="2">
-        <widget class="QGroupBox" name="groupBox_24">
-         <property name="title">
-          <string>R1</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_24">
-          <property name="leftMargin">
-           <number>6</number>
-          </property>
-          <property name="topMargin">
-           <number>6</number>
-          </property>
-          <property name="rightMargin">
-           <number>6</number>
-          </property>
-          <property name="bottomMargin">
-           <number>6</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="InputBindingWidget" name="R1">
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="5" rowspan="2">
-        <widget class="QGroupBox" name="groupBox_23">
-         <property name="title">
-          <string>R2</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_23">
-          <property name="leftMargin">
-           <number>6</number>
-          </property>
-          <property name="topMargin">
-           <number>6</number>
-          </property>
-          <property name="rightMargin">
-           <number>6</number>
-          </property>
-          <property name="bottomMargin">
-           <number>6</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="InputBindingWidget" name="R2">
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="4">
-        <widget class="QGroupBox" name="groupBox_26">
-         <property name="title">
-          <string>Start</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_26">
-          <property name="leftMargin">
-           <number>6</number>
-          </property>
-          <property name="topMargin">
-           <number>6</number>
-          </property>
-          <property name="rightMargin">
-           <number>6</number>
-          </property>
-          <property name="bottomMargin">
-           <number>6</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="InputBindingWidget" name="Start">
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QGroupBox" name="groupBox_25">
-         <property name="title">
-          <string>Select</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_25">
-          <property name="leftMargin">
-           <number>6</number>
-          </property>
-          <property name="topMargin">
-           <number>6</number>
-          </property>
-          <property name="rightMargin">
-           <number>6</number>
-          </property>
-          <property name="bottomMargin">
-           <number>6</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="InputBindingWidget" name="Select">
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="2" colspan="2">
-        <widget class="QGroupBox" name="groupBox_31">
-         <property name="title">
-          <string>Analog</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_33">
-          <item row="0" column="0">
-           <widget class="InputBindingWidget" name="Analog">
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="3" rowspan="2" colspan="2">
-        <widget class="QGroupBox" name="groupBox_30">
-         <property name="title">
-          <string>Analog Sensitivity</string>
-         </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="QSlider" name="AxisScale">
-            <property name="maximum">
-             <number>200</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="AxisScaleLabel">
-            <property name="text">
-             <string>100%</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="1" rowspan="2" colspan="2">
-        <widget class="QGroupBox" name="groupBox_33">
-         <property name="title">
-          <string>Analog Deadzone</string>
-         </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
-          <item>
-           <widget class="QSlider" name="Deadzone">
-            <property name="maximum">
-             <number>100</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="DeadzoneLabel">
-            <property name="text">
-             <string>0%</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
-       <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>400</width>
-           <height>266</height>
-          </size>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="pixmap">
-          <pixmap resource="../resources/resources.qrc">:/images/dualshock-2.png</pixmap>
-         </property>
-         <property name="scaledContents">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
+     <item row="0" column="1">
+      <widget class="QGroupBox" name="groupBox_25">
+       <property name="title">
+        <string>Select</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_25">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="InputBindingWidget" name="Select">
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>PushButton</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </item>
-     <item>
-      <layout class="QGridLayout" name="gridLayout_32">
-       <item row="0" column="1">
-        <widget class="QGroupBox" name="groupBox_29">
-         <property name="title">
-          <string>Large Motor</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_30">
-          <property name="leftMargin">
-           <number>6</number>
+     <item row="0" column="2">
+      <widget class="QGroupBox" name="groupBox_26">
+       <property name="title">
+        <string>Start</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_26">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="InputBindingWidget" name="Start">
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>16777215</height>
+           </size>
           </property>
-          <property name="topMargin">
-           <number>6</number>
+          <property name="text">
+           <string>PushButton</string>
           </property>
-          <property name="rightMargin">
-           <number>6</number>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QGroupBox" name="groupBox_23">
+       <property name="title">
+        <string>R2</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_23">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="InputBindingWidget" name="R2">
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>16777215</height>
+           </size>
           </property>
-          <property name="bottomMargin">
-           <number>6</number>
+          <property name="text">
+           <string>PushButton</string>
           </property>
-          <item row="1" column="0">
-           <widget class="QDoubleSpinBox" name="LargeMotorScale">
-            <property name="suffix">
-             <string>x</string>
-            </property>
-            <property name="maximum">
-             <double>3.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.100000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="InputVibrationBindingWidget" name="LargeMotor">
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QGroupBox" name="groupBox_32">
-         <property name="title">
-          <string>Small Motor</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_31">
-          <property name="leftMargin">
-           <number>6</number>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QGroupBox" name="groupBox_22">
+       <property name="title">
+        <string>L1</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_22">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="InputBindingWidget" name="L1">
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>16777215</height>
+           </size>
           </property>
-          <property name="topMargin">
-           <number>6</number>
+          <property name="text">
+           <string>PushButton</string>
           </property>
-          <property name="rightMargin">
-           <number>6</number>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="1" column="1" colspan="2">
+      <widget class="QGroupBox" name="groupBox_34">
+       <property name="title">
+        <string>Pressure Modifier</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_34">
+        <item row="0" column="1">
+         <widget class="QDoubleSpinBox" name="PressureModifier">
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>0</height>
+           </size>
           </property>
-          <property name="bottomMargin">
-           <number>6</number>
+          <property name="suffix">
+           <string>x</string>
           </property>
-          <item row="0" column="0">
-           <widget class="InputVibrationBindingWidget" name="SmallMotor">
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QDoubleSpinBox" name="SmallMotorScale">
-            <property name="suffix">
-             <string>x</string>
-            </property>
-            <property name="maximum">
-             <double>3.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.100000000000000</double>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="3">
-        <widget class="QGroupBox" name="groupBox_28">
-         <property name="title">
-          <string>R3</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_29">
-          <property name="leftMargin">
-           <number>6</number>
+          <property name="maximum">
+           <double>1.000000000000000</double>
           </property>
-          <property name="topMargin">
-           <number>6</number>
+          <property name="singleStep">
+           <double>0.010000000000000</double>
           </property>
-          <property name="rightMargin">
-           <number>6</number>
+          <property name="value">
+           <double>0.500000000000000</double>
           </property>
-          <property name="bottomMargin">
-           <number>6</number>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="InputBindingWidget" name="Pressure">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
-          <item row="0" column="0">
-           <widget class="InputBindingWidget" name="R3">
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QGroupBox" name="groupBox_27">
-         <property name="title">
-          <string>L3</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_28">
-          <property name="leftMargin">
-           <number>6</number>
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>0</height>
+           </size>
           </property>
-          <property name="topMargin">
-           <number>6</number>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
           </property>
-          <property name="rightMargin">
-           <number>6</number>
+          <property name="text">
+           <string>PushButton</string>
           </property>
-          <property name="bottomMargin">
-           <number>6</number>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QGroupBox" name="groupBox_24">
+       <property name="title">
+        <string>R1</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_24">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="InputBindingWidget" name="R1">
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>16777215</height>
+           </size>
           </property>
-          <item row="0" column="0">
-           <widget class="InputBindingWidget" name="L3">
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="1" column="0" colspan="4">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
+          <property name="text">
+           <string>PushButton</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </item>
     </layout>
    </item>
-   <item>
+   <item row="0" column="2" rowspan="3">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <widget class="QGroupBox" name="groupBox_16">
@@ -1114,46 +893,6 @@
         <string>Right Analog</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_11">
-        <item row="3" column="1" colspan="2">
-         <widget class="QGroupBox" name="groupBox_12">
-          <property name="title">
-           <string>Down</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_12">
-           <property name="leftMargin">
-            <number>6</number>
-           </property>
-           <property name="topMargin">
-            <number>6</number>
-           </property>
-           <property name="rightMargin">
-            <number>6</number>
-           </property>
-           <property name="bottomMargin">
-            <number>6</number>
-           </property>
-           <item row="0" column="0">
-            <widget class="InputBindingWidget" name="RDown">
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>100</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>PushButton</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
         <item row="2" column="0" colspan="2">
          <widget class="QGroupBox" name="groupBox_13">
           <property name="title">
@@ -1194,12 +933,12 @@
           </layout>
          </widget>
         </item>
-        <item row="0" column="1" colspan="2">
-         <widget class="QGroupBox" name="groupBox_14">
+        <item row="3" column="1" colspan="2">
+         <widget class="QGroupBox" name="groupBox_12">
           <property name="title">
-           <string>Up</string>
+           <string>Down</string>
           </property>
-          <layout class="QGridLayout" name="gridLayout_14">
+          <layout class="QGridLayout" name="gridLayout_12">
            <property name="leftMargin">
             <number>6</number>
            </property>
@@ -1213,7 +952,7 @@
             <number>6</number>
            </property>
            <item row="0" column="0">
-            <widget class="InputBindingWidget" name="RUp">
+            <widget class="InputBindingWidget" name="RDown">
              <property name="minimumSize">
               <size>
                <width>100</width>
@@ -1274,6 +1013,99 @@
           </layout>
          </widget>
         </item>
+        <item row="0" column="1" colspan="2">
+         <widget class="QGroupBox" name="groupBox_14">
+          <property name="title">
+           <string>Up</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_14">
+           <property name="leftMargin">
+            <number>6</number>
+           </property>
+           <property name="topMargin">
+            <number>6</number>
+           </property>
+           <property name="rightMargin">
+            <number>6</number>
+           </property>
+           <property name="bottomMargin">
+            <number>6</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="InputBindingWidget" name="RUp">
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>PushButton</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox_32">
+       <property name="title">
+        <string>Small Motor</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_31">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="InputVibrationBindingWidget" name="SmallMotor">
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>PushButton</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QDoubleSpinBox" name="SmallMotorScale">
+          <property name="suffix">
+           <string>x</string>
+          </property>
+          <property name="maximum">
+           <double>3.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>
@@ -1289,6 +1121,232 @@
         </size>
        </property>
       </spacer>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>400</width>
+         <height>266</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="pixmap">
+        <pixmap resource="../resources/resources.qrc">:/images/dualshock-2.png</pixmap>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item row="2" column="1">
+    <layout class="QGridLayout" name="gridLayout_32">
+     <item row="0" column="0">
+      <widget class="QGroupBox" name="groupBox_27">
+       <property name="title">
+        <string>L3</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_28">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="InputBindingWidget" name="L3">
+          <property name="minimumSize">
+           <size>
+            <width>150</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>PushButton</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="2" column="0" colspan="4">
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="0" column="3">
+      <widget class="QGroupBox" name="groupBox_28">
+       <property name="title">
+        <string>R3</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_29">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="InputBindingWidget" name="R3">
+          <property name="minimumSize">
+           <size>
+            <width>150</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>PushButton</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="1" column="2" colspan="2">
+      <widget class="QGroupBox" name="groupBox_30">
+       <property name="title">
+        <string>Analog Sensitivity</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QSlider" name="AxisScale">
+          <property name="maximum">
+           <number>200</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="AxisScaleLabel">
+          <property name="text">
+           <string>100%</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="1" column="0" colspan="2">
+      <widget class="QGroupBox" name="groupBox_33">
+       <property name="title">
+        <string>Analog Deadzone</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QSlider" name="Deadzone">
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="DeadzoneLabel">
+          <property name="text">
+           <string>0%</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="0" column="1" colspan="2">
+      <widget class="QGroupBox" name="groupBox_31">
+       <property name="title">
+        <string>Analog</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_33">
+        <item row="0" column="0">
+         <widget class="InputBindingWidget" name="Analog">
+          <property name="maximumSize">
+           <size>
+            <width>150</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>PushButton</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </item>
     </layout>
    </item>

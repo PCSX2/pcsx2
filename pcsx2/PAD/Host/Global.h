@@ -38,6 +38,7 @@ enum gamePadValues
 	PAD_L3,       // Left joystick button (L3)
 	PAD_R3,       // Right joystick button (R3)
 	PAD_ANALOG,   // Analog mode toggle
+	PAD_PRESSURE, // Pressure modifier
 	PAD_L_UP,     // Left joystick (Up) ↑
 	PAD_L_RIGHT,  // Left joystick (Right) →
 	PAD_L_DOWN,   // Left joystick (Down) ↓
