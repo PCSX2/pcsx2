@@ -1209,6 +1209,7 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	PatchBios = cfg.PatchBios;
 	PatchRegion = cfg.PatchRegion;
 	BackupSavestate = cfg.BackupSavestate;
+	SavestateZstdCompression = cfg.SavestateZstdCompression;
 	McdEnableEjection = cfg.McdEnableEjection;
 	McdFolderAutoManage = cfg.McdFolderAutoManage;
 	MultitapPort0_Enabled = cfg.MultitapPort0_Enabled;
