@@ -47,6 +47,27 @@ AdvancedSystemSettingsWidget::AdvancedSystemSettingsWidget(SettingsDialog* dialo
 
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.ntscFrameRate, "EmuCore/GS", "FramerateNTSC", 59.94f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.palFrameRate, "EmuCore/GS", "FrameratePAL", 50.00f);
+
+	dialog->registerWidgetHelp(m_ui.eeRecompiler, tr("Enable Recompiler"), tr("Checked"),
+		tr("Performs just - in - time binary translation of 64 - bit MIPS - IV machine code to x86."));
+
+	dialog->registerWidgetHelp(m_ui.eeWaitLoopDetection, tr("Wait Loop Detection"), tr("Checked"),
+		tr("Moderate speedup for some games, with no known side effects."));
+
+	dialog->registerWidgetHelp(m_ui.eeCache, tr("Enable Cache (Slow)"), tr("Unchecked"),
+		tr("Interpreter only, provided for diagnostic."));
+
+	dialog->registerWidgetHelp(m_ui.eeINTCSpinDetection, tr("INTC Spin Detection"), tr("Checked"),
+		tr("Huge speedup for some games, with almost no compatibility side effects."));
+
+	dialog->registerWidgetHelp(m_ui.vuFlagHack, tr("mVU Flag Hack"), tr("Checked"),
+		tr("Good speedup and high compatibility, may cause graphical errors."));
+
+	dialog->registerWidgetHelp(m_ui.iopRecompiler, tr("Enable Recompiler"), tr("Checked"),
+		tr("Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86."));
+
+	dialog->registerWidgetHelp(m_ui.gameFixes, tr("Enable Game Fixes"), tr("Checked"),
+		tr("Automatically loads and applies gamefixes to known problematic games on game start."));
 }
 
 AdvancedSystemSettingsWidget::~AdvancedSystemSettingsWidget() = default;
