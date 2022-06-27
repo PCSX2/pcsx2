@@ -55,8 +55,10 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 	dialog->registerWidgetHelp(m_ui.normalSpeed, tr("Normal Speed"), "100%",
 		tr("Sets the target emulation speed. It is not guaranteed that this speed will be reached, "
 		   "and if not, the emulator will run as fast as it can manage."));
+
 	dialog->registerWidgetHelp(m_ui.fastForwardSpeed, tr("Fast Forward Speed"), tr("User Preference"),
 		tr("Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled."));
+
 	dialog->registerWidgetHelp(m_ui.slowMotionSpeed, tr("Slow Motion Speed"), tr("User Preference"),
 		tr("Sets the slow motion speed. This speed will be used when the slow motion hotkey is pressed/toggled."));
 
@@ -66,13 +68,24 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 		   "potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if "
 		   "the console's refresh rate is too far from the host's refresh rate. Users with variable refresh rate displays "
 		   "should disable this option."));
-	dialog->registerWidgetHelp(m_ui.cheats, tr("Enable Cheats"), tr("Unchecked"), tr("Automatically loads and applies cheats on game start."));
+
+	dialog->registerWidgetHelp(m_ui.cheats, tr("Enable Cheats"), tr("Unchecked"),
+		tr("Automatically loads and applies cheats on game start."));
+
+	dialog->registerWidgetHelp(m_ui.widescreenPatches, tr("Enable Widescreen Patches"), tr("Unchecked"),
+		tr("Automatically loads and applies widescreen patches on game start. Can cause issues."));
+
+	dialog->registerWidgetHelp(m_ui.noInterlacingPatches, tr("Enable No-Interlacing Patches"), tr("Unchecked"),
+		tr("Automatically loads and applies no-interlacing patches on game start. Can cause issues."));
+
 	dialog->registerWidgetHelp(m_ui.perGameSettings, tr("Enable Per-Game Settings"), tr("Checked"),
 		tr("When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should "
 		   "leave this option enabled except when testing enhancements with incompatible games."));
+
 	dialog->registerWidgetHelp(m_ui.optimalFramePacing, tr("Optimal Frame Pacing"), tr("Unchecked"),
 		tr("Sets the vsync queue size to 0, making every frame be completed and presented by the GS before input is polled, and the next frame begins. "
 		   "Using this setting can reduce input lag, at the cost of measurably higher CPU and GPU requirements."));
+
 	dialog->registerWidgetHelp(m_ui.maxFrameLatency, tr("Maximum Frame Latency"), tr("2 Frames"),
 		tr("Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. "
 		   "Higher values can assist with smoothing out irregular frame times, but add additional input lag."));
