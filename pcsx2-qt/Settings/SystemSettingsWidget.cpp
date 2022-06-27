@@ -76,6 +76,25 @@ SystemSettingsWidget::SystemSettingsWidget(SettingsDialog* dialog, QWidget* pare
 	connect(m_ui.eeClampMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) { setClampingMode(false, index); });
 	connect(m_ui.vuClampMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) { setClampingMode(true, index); });
 
+	dialog->registerWidgetHelp(m_ui.eeCycleRate, tr("Cycle Rate"), tr("100% (Normal Speed)"),
+		tr("Higher values may increase internal framerate in games, but will increase CPU requirements substantially. "
+			"Lower values will reduce the CPU load allowing lightweight games to run full speed on weaker CPUs."));
+
+	dialog->registerWidgetHelp(m_ui.eeCycleSkipping, tr("Cycle Skip"), tr("Normal Speed"),
+		tr("Makes the emulated Emotion Engine skip cycles. "
+		   "Helps a small subset of games like SOTC. Most of the time it's harmful to performance."));
+
+	dialog->registerWidgetHelp(m_ui.MTVU, tr("MTVU (Multi-threaded VU1)"), tr("Unchecked"),
+		tr("Generally a speedup on CPUs with 3 or more threads. "
+		   "Safe for most games, but a few are incompatible and may hang."));
+
+	dialog->registerWidgetHelp(m_ui.instantVU1, tr("Instant VU1"), tr("Checked"),
+		tr("Runs VU1 instantly (when MTVU is disabled). Provides a modest speed improvement. "
+		   "Safe for most games, but a few games may exhibit graphical errors."));
+
+	dialog->registerWidgetHelp(m_ui.fastCDVD, tr("Enable Fast CDVD"), tr("Unchecked"),
+		tr("Fast disc access, less loading times. Check HDLoader compatibility lists for known games that have issues with this."));
+
 	updateVU1InstantState();
 	connect(m_ui.MTVU, &QCheckBox::stateChanged, this, &SystemSettingsWidget::updateVU1InstantState);
 }
