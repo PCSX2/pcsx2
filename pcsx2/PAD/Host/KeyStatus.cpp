@@ -30,6 +30,7 @@ KeyStatus::KeyStatus()
 	{
 		m_axis_scale[pad][0] = 0.0f;
 		m_axis_scale[pad][1] = 1.0f;
+		m_pressure_modifier[pad] = 0.5f;
 	}
 }
 
@@ -95,7 +96,8 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 	}
 	else
 	{
-		m_button_pressure[pad][index] = static_cast<u8>(std::clamp(value * 255.0f, 0.0f, 255.0f));
+		const float pmod = ((m_button[pad] & (1u << PAD_PRESSURE)) == 0) ? m_pressure_modifier[pad] : 1.0f;
+		m_button_pressure[pad][index] = static_cast<u8>(std::clamp(value * pmod * 255.0f, 0.0f, 255.0f));
 
 		// Since we reordered the buttons for better UI, we need to remap them here.
 		static constexpr std::array<u8, MAX_KEYS> bitmask_mapping = {{
@@ -115,7 +117,8 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 			1, // PAD_R2
 			9, // PAD_L3
 			10, // PAD_R3
-			16, // Analog
+			16, // PAD_ANALOG
+			17, // PAD_PRESSURE
 			// remainder are analogs and not used here
 		}};
 
