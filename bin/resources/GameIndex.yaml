@@ -21321,6 +21321,9 @@ SLKA-15008:
 SLKA-15009:
   name: "Hudson Selection Vol. 4 - Takahashi Meijin no Bouken Jima"
   region: "NTSC-K"
+SLKA-15011:
+  name: "XII Stag"
+  region: "NTSC-K"
 SLKA-15013:
   name: "Grand Slam 2003 Tennis" # Hard Hitter 2
   region: "NTSC-K"
@@ -21605,7 +21608,7 @@ SLKA-25103:
   name: "Neon Genesis Evangelion 2"
   region: "NTSC-K"
 SLKA-25105:
-  name: "XII Stag"
+  name: "XIII"
   region: "NTSC-K"
 SLKA-25108:
   name: "Eve Burst Error Plus"
