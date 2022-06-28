@@ -325,7 +325,9 @@
     <QtMoc Include="Tools\InputRecording\NewInputRecordingDlg.h">
       <Filter>Tools\Input Recording</Filter>
     </QtMoc>
-    <QtMoc Include="Settings\FolderSettingsWidget.h" />
+    <QtMoc Include="Settings\FolderSettingsWidget.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">

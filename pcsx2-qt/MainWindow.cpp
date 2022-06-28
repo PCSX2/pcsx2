@@ -728,6 +728,16 @@ void MainWindow::updateWindowTitle()
 	}
 }
 
+void MainWindow::updateWindowVisibility()
+{
+	// Need to test both valid and display widget because of startup (vm invalid while window is created).
+	const bool hide_window = !g_emu_thread->isRenderingToMain() && Host::GetBaseBoolSettingValue("UI", "HideMainWindowWhenRunning", false);
+	const bool new_state = !hide_window || (!m_vm_valid && !m_display_widget);
+
+	if (isVisible() != new_state)
+		setVisible(new_state);
+}
+
 void MainWindow::setProgressBar(int current, int total)
 {
 	m_status_progress_widget->setValue(current);
@@ -847,7 +857,7 @@ void MainWindow::runOnUIThread(const std::function<void()>& func)
 
 bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_save_to_state /* = true */, bool block_until_done /* = false */)
 {
-	if (!VMManager::HasValidVM())
+	if (!m_vm_valid)
 		return true;
 
 	// If we don't have a crc, we can't save state.
@@ -880,6 +890,15 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 		lock.cancelResume();
 	}
 
+	// This is a little bit annoying. Qt will close everything down if we don't have at least one window visible,
+	// but we might not be visible because the user is using render-to-separate and hide. We don't want to always
+	// reshow the main window during display updates, because otherwise fullscreen transitions and renderer switches
+	// would briefly show and then hide the main window. So instead, we do it on shutdown, here. Except if we're in
+	// batch mode, when we're going to exit anyway.
+	if (!isRenderingToMain() && isHidden() && !QtHost::InBatchMode())
+		show();
+
+	// Now we can actually shut down the VM.
 	g_emu_thread->shutdownVM(save_state);
 
 	if (block_until_done || QtHost::InBatchMode())
@@ -911,6 +930,8 @@ void MainWindow::checkForSettingChanges()
 {
 	if (m_display_widget)
 		m_display_widget->updateRelativeMode(m_vm_valid && !m_vm_paused);
+
+	updateWindowVisibility();
 }
 
 void Host::InvalidateSaveStateCache()
@@ -1405,6 +1426,7 @@ void MainWindow::onVMStopped()
 	m_last_fps_status = QString();
 	updateEmulationActions(false, false);
 	updateWindowTitle();
+	updateWindowVisibility();
 	updateStatusBarWidgetVisibility();
 
 	if (m_display_widget)
@@ -1586,8 +1608,9 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 		setDisplayFullscreen(fullscreen_mode);
 
 	updateWindowTitle();
-	m_display_widget->setFocus();
+	updateWindowVisibility();
 
+	m_display_widget->setFocus();
 	m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
 	m_display_widget->updateRelativeMode(m_vm_valid && !m_vm_paused);
 	m_display_widget->updateCursor(m_vm_valid && !m_vm_paused);
@@ -1718,6 +1741,8 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 		setDisplayFullscreen(fullscreen_mode);
 
 	updateWindowTitle();
+	updateWindowVisibility();
+
 	m_display_widget->setFocus();
 	m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
 	m_display_widget->updateRelativeMode(m_vm_valid && !m_vm_paused);
@@ -1752,9 +1777,10 @@ void MainWindow::displayResizeRequested(qint32 width, qint32 height)
 
 void MainWindow::destroyDisplay()
 {
+	// Now we can safely destroy the display window.
 	destroyDisplayWidget();
 
-	// switch back to game list view, we're not going back to display, so we can't use switchToGameListView().
+	// Switch back to game list view, we're not going back to display, so we can't use switchToGameListView().
 	if (centralWidget() != m_game_list_widget)
 	{
 		takeCentralWidget();

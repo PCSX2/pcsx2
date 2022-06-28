@@ -78,24 +78,17 @@
      <layout class="QFormLayout" name="formLayout_3">
       <item row="0" column="0" colspan="2">
        <layout class="QGridLayout" name="gridLayout_3">
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="disableWindowResizing">
+          <property name="text">
+           <string>Disable Window Resizing</string>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="0">
          <widget class="QCheckBox" name="startFullscreen">
           <property name="text">
            <string>Start Fullscreen</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QCheckBox" name="hideMouseCursor">
-          <property name="text">
-           <string>Hide Cursor In Fullscreen</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QCheckBox" name="renderToMainWindow">
-          <property name="text">
-           <string>Render To Main Window</string>
           </property>
          </widget>
         </item>
@@ -106,10 +99,24 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QCheckBox" name="disableWindowResizing">
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="renderToSeparateWindow">
           <property name="text">
-           <string>Disable Window Resizing</string>
+           <string>Render To Separate Window</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QCheckBox" name="hideMouseCursor">
+          <property name="text">
+           <string>Hide Cursor In Fullscreen</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="hideMainWindow">
+          <property name="text">
+           <string>Hide Main Window When Running</string>
           </property>
          </widget>
         </item>
