@@ -32,6 +32,9 @@ public:
 Q_SIGNALS:
 	void themeChanged();
 
+private Q_SLOTS:
+	void onRenderToSeparateWindowChanged();
+
 private:
 	Ui::InterfaceSettingsWidget m_ui;
 };

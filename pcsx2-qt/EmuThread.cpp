@@ -108,7 +108,7 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 
 	// create the display, this may take a while...
 	m_is_fullscreen = boot_params->fullscreen.value_or(Host::GetBaseBoolSettingValue("UI", "StartFullscreen", false));
-	m_is_rendering_to_main = Host::GetBaseBoolSettingValue("UI", "RenderToMainWindow", true);
+	m_is_rendering_to_main = !Host::GetBaseBoolSettingValue("UI", "RenderToSeparateWindow", false);
 	m_is_surfaceless = false;
 	m_save_state_on_shutdown = false;
 	if (!VMManager::Initialize(*boot_params))
@@ -433,7 +433,7 @@ void EmuThread::checkForSettingChanges()
 
 	if (VMManager::HasValidVM())
 	{
-		const bool render_to_main = Host::GetBaseBoolSettingValue("UI", "RenderToMainWindow", true);
+		const bool render_to_main = !Host::GetBaseBoolSettingValue("UI", "RenderToSeparateWindow", false);
 		if (!m_is_fullscreen && m_is_rendering_to_main != render_to_main)
 		{
 			m_is_rendering_to_main = render_to_main;
