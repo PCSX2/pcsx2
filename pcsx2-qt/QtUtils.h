@@ -68,4 +68,10 @@ namespace QtUtils
 
 	/// Sets a widget to italics if the setting value is inherited.
 	void SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited);
+
+	/// Changes whether a window is resizable.
+	void SetWindowResizeable(QWidget* widget, bool resizeable);
+
+	/// Adjusts the fixed size for a window if it's not resizeable.
+	void ResizePotentiallyFixedSizeWindow(QWidget* widget, int width, int height);
 } // namespace QtUtils

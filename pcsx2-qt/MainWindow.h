@@ -179,7 +179,7 @@ private:
 	void updateEmulationActions(bool starting, bool running);
 	void updateStatusBarWidgetVisibility();
 	void updateWindowTitle();
-	void updateWindowVisibility();
+	void updateWindowState(bool force_visible = false);
 	void setProgressBar(int current, int total);
 	void clearProgressBar();
 
