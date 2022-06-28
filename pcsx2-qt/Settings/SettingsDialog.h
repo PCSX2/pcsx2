@@ -48,7 +48,7 @@ class SettingsDialog final : public QDialog
 
 public:
 	explicit SettingsDialog(QWidget* parent);
-	SettingsDialog(std::unique_ptr<SettingsInterface> sif, const GameList::Entry* game, u32 game_crc);
+	SettingsDialog(QWidget* parent, std::unique_ptr<SettingsInterface> sif, const GameList::Entry* game, u32 game_crc);
 	~SettingsDialog();
 
 	static void openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& serial, u32 crc);

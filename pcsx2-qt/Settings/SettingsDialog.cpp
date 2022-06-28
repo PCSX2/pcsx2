@@ -24,6 +24,7 @@
 #include "pcsx2/Frontend/INISettingsInterface.h"
 
 #include "EmuThread.h"
+#include "MainWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingsDialog.h"
@@ -55,8 +56,8 @@ SettingsDialog::SettingsDialog(QWidget* parent)
 	setupUi(nullptr);
 }
 
-SettingsDialog::SettingsDialog(std::unique_ptr<SettingsInterface> sif, const GameList::Entry* game, u32 game_crc)
-	: QDialog()
+SettingsDialog::SettingsDialog(QWidget* parent, std::unique_ptr<SettingsInterface> sif, const GameList::Entry* game, u32 game_crc)
+	: QDialog(parent)
 	, m_sif(std::move(sif))
 	, m_game_crc(game_crc)
 {
@@ -446,7 +447,8 @@ void SettingsDialog::openGamePropertiesDialog(const GameList::Entry* game, const
 								   .arg(game ? QtUtils::StringViewToQString(game->title) : QStringLiteral("<UNKNOWN>"))
 								   .arg(QtUtils::StringViewToQString(Path::GetFileName(sif->GetFileName()))));
 
-	SettingsDialog* dialog = new SettingsDialog(std::move(sif), game, crc);
+	SettingsDialog* dialog = new SettingsDialog(g_main_window, std::move(sif), game, crc);
 	dialog->setWindowTitle(window_title);
+	dialog->setModal(false);
 	dialog->show();
 }
