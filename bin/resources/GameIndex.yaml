@@ -39662,6 +39662,8 @@ SLUS-20573:
 SLUS-20574:
   name: "NCAA March Madness 2003"
   region: "NTSC-U"
+  clampModes:
+    vuClampMode: 3 # Fixes missing textures.
 SLUS-20575:
   name: "Island Xtreme Stunts"
   region: "NTSC-U"
@@ -40547,6 +40549,8 @@ SLUS-20770:
 SLUS-20771:
   name: "NCAA March Madness 2004"
   region: "NTSC-U"
+  clampModes:
+    vuClampMode: 3 # Fixes missing textures.
 SLUS-20772:
   name: "SSX 3"
   region: "NTSC-U"
@@ -46405,6 +46409,8 @@ SLUS-29077:
 SLUS-29079:
   name: "NCAA March Madness 2004 [Demo]"
   region: "NTSC-U"
+  clampModes:
+    vuClampMode: 3 # Fixes missing textures.
 SLUS-29080:
   name: "Whiplash [Demo]"
   region: "NTSC-U"
