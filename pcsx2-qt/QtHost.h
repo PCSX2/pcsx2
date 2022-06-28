@@ -29,11 +29,14 @@ class SettingsInterface;
 
 class EmuThread;
 
+enum class CDVD_SourceType : uint8_t;
+
 Q_DECLARE_METATYPE(std::shared_ptr<VMBootParameters>);
 Q_DECLARE_METATYPE(std::optional<bool>);
 Q_DECLARE_METATYPE(std::function<void()>);
 Q_DECLARE_METATYPE(GSRendererType);
 Q_DECLARE_METATYPE(InputBindingKey);
+Q_DECLARE_METATYPE(CDVD_SourceType);
 
 namespace QtHost
 {

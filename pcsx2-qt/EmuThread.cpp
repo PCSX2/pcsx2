@@ -497,18 +497,18 @@ void EmuThread::switchRenderer(GSRendererType renderer)
 	GetMTGS().SwitchRenderer(renderer);
 }
 
-void EmuThread::changeDisc(const QString& path)
+void EmuThread::changeDisc(CDVD_SourceType source, const QString& path)
 {
 	if (!isOnEmuThread())
 	{
-		QMetaObject::invokeMethod(this, "changeDisc", Qt::QueuedConnection, Q_ARG(const QString&, path));
+		QMetaObject::invokeMethod(this, "changeDisc", Qt::QueuedConnection, Q_ARG(CDVD_SourceType, source), Q_ARG(const QString&, path));
 		return;
 	}
 
 	if (!VMManager::HasValidVM())
 		return;
 
-	VMManager::ChangeDisc(path.toStdString());
+	VMManager::ChangeDisc(source, path.toStdString());
 }
 
 void EmuThread::reloadPatches()

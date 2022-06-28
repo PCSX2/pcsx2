@@ -30,6 +30,8 @@
 class DisplayWidget;
 struct VMBootParameters;
 
+enum class CDVD_SourceType : uint8_t;
+
 class EmuThread : public QThread
 {
 	Q_OBJECT
@@ -74,7 +76,7 @@ public Q_SLOTS:
 	void updateEmuFolders();
 	void toggleSoftwareRendering();
 	void switchRenderer(GSRendererType renderer);
-	void changeDisc(const QString& path);
+	void changeDisc(CDVD_SourceType source, const QString& path);
 	void reloadPatches();
 	void reloadInputSources();
 	void reloadInputBindings();

@@ -1294,15 +1294,15 @@ void VMManager::FrameAdvance(u32 num_frames /*= 1*/)
 	SetState(VMState::Running);
 }
 
-bool VMManager::ChangeDisc(std::string path)
+bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 {
-	std::string old_path(CDVDsys_GetFile(CDVD_SourceType::Iso));
-	CDVD_SourceType old_type = CDVDsys_GetSourceType();
+	const CDVD_SourceType old_type = CDVDsys_GetSourceType();
+	const std::string old_path(CDVDsys_GetFile(old_type));
 
-	const std::string display_name(path.empty() ? std::string() : FileSystem::GetDisplayNameFromPath(path));
-	CDVDsys_ChangeSource(path.empty() ? CDVD_SourceType::NoDisc : CDVD_SourceType::Iso);
+	const std::string display_name((source != CDVD_SourceType::Iso) ? path : FileSystem::GetDisplayNameFromPath(path));
+	CDVDsys_ChangeSource(source);
 	if (!path.empty())
-		CDVDsys_SetFile(CDVD_SourceType::Iso, std::move(path));
+		CDVDsys_SetFile(source, std::move(path));
 
 	const bool result = DoCDVDopen();
 	if (result)

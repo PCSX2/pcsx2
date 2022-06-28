@@ -85,6 +85,7 @@ bool QtHost::Initialize()
 	qRegisterMetaType<std::shared_ptr<VMBootParameters>>();
 	qRegisterMetaType<GSRendererType>();
 	qRegisterMetaType<InputBindingKey>();
+	qRegisterMetaType<CDVD_SourceType>();
 	qRegisterMetaType<const GameList::Entry*>();
 
 	if (!InitializeConfig())
