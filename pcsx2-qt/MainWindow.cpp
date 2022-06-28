@@ -74,6 +74,10 @@ const char* MainWindow::DEFAULT_THEME_NAME = "darkfusion";
 
 MainWindow* g_main_window = nullptr;
 
+// UI thread VM validity.
+static bool s_vm_valid = false;
+static bool s_vm_paused = false;
+
 MainWindow::MainWindow(const QString& unthemed_style_name)
 	: m_unthemed_style_name(unthemed_style_name)
 {
@@ -324,7 +328,7 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 
 void MainWindow::recreate()
 {
-	if (m_vm_valid)
+	if (s_vm_valid)
 		requestShutdown(false, true, true);
 
 	close();
@@ -702,8 +706,8 @@ void MainWindow::updateStatusBarWidgetVisibility()
 		}
 	};
 
-	Update(m_status_gs_widget, m_vm_valid && !m_vm_paused, 1);
-	Update(m_status_fps_widget, m_vm_valid, 0);
+	Update(m_status_gs_widget, s_vm_valid && !s_vm_paused, 1);
+	Update(m_status_fps_widget, s_vm_valid, 0);
 }
 
 void MainWindow::updateWindowTitle()
@@ -712,7 +716,7 @@ void MainWindow::updateWindowTitle()
 	QString main_title(QtHost::GetAppNameAndVersion() + suffix);
 	QString display_title(m_current_game_name + suffix);
 
-	if (!m_vm_valid || m_current_game_name.isEmpty())
+	if (!s_vm_valid || m_current_game_name.isEmpty())
 		display_title = main_title;
 	else if (isRenderingToMain())
 		main_title = display_title;
@@ -732,7 +736,7 @@ void MainWindow::updateWindowState(bool force_visible)
 {
 	const bool hide_window = !g_emu_thread->isRenderingToMain() && Host::GetBaseBoolSettingValue("UI", "HideMainWindowWhenRunning", false);
 	const bool disable_resize = Host::GetBaseBoolSettingValue("UI", "DisableWindowResize", false);
-	const bool has_window = m_vm_valid || m_display_widget;
+	const bool has_window = s_vm_valid || m_display_widget;
 
 	// Need to test both valid and display widget because of startup (vm invalid while window is created).
 	const bool visible = force_visible || !hide_window || !has_window;
@@ -802,10 +806,10 @@ void MainWindow::switchToGameListView()
 		return;
 	}
 
-	if (m_vm_valid)
+	if (s_vm_valid)
 	{
-		m_was_paused_on_surface_loss = m_vm_paused;
-		if (!m_vm_paused)
+		m_was_paused_on_surface_loss = s_vm_paused;
+		if (!s_vm_paused)
 			g_emu_thread->setVMPaused(true);
 
 		// switch to surfaceless. we have to wait until the display widget is gone before we swap over.
@@ -823,14 +827,14 @@ void MainWindow::switchToGameListView()
 
 void MainWindow::switchToEmulationView()
 {
-	if (!m_vm_valid || (m_display_widget && centralWidget() == m_display_widget))
+	if (!s_vm_valid || (m_display_widget && centralWidget() == m_display_widget))
 		return;
 
 	// we're no longer surfaceless! this will call back to UpdateDisplay(), which will swap the widget out.
 	g_emu_thread->setSurfaceless(false);
 
 	// resume if we weren't paused at switch time
-	if (m_vm_paused && !m_was_paused_on_surface_loss)
+	if (s_vm_paused && !m_was_paused_on_surface_loss)
 		g_emu_thread->setVMPaused(false);
 
 	if (m_display_widget)
@@ -840,7 +844,7 @@ void MainWindow::switchToEmulationView()
 void MainWindow::refreshGameList(bool invalidate_cache)
 {
 	// can't do this while the VM is running because of CDVD
-	if (m_vm_valid)
+	if (s_vm_valid)
 		return;
 
 	m_game_list_widget->refresh(invalidate_cache);
@@ -868,7 +872,7 @@ void MainWindow::runOnUIThread(const std::function<void()>& func)
 
 bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_save_to_state /* = true */, bool block_until_done /* = false */)
 {
-	if (!m_vm_valid)
+	if (!s_vm_valid)
 		return true;
 
 	// If we don't have a crc, we can't save state.
@@ -940,7 +944,7 @@ void MainWindow::requestExit()
 void MainWindow::checkForSettingChanges()
 {
 	if (m_display_widget)
-		m_display_widget->updateRelativeMode(m_vm_valid && !m_vm_paused);
+		m_display_widget->updateRelativeMode(s_vm_valid && !s_vm_paused);
 
 	updateWindowState();
 }
@@ -978,7 +982,7 @@ void MainWindow::onGameListEntryActivated()
 	if (!entry)
 		return;
 
-	if (m_vm_valid)
+	if (s_vm_valid)
 	{
 		// change disc on double click
 		doDiscChange(QString::fromStdString(entry->path));
@@ -1028,7 +1032,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 
 		menu.addSeparator();
 
-		if (!m_vm_valid)
+		if (!s_vm_valid)
 		{
 			action = menu.addAction(tr("Default Boot"));
 			connect(action, &QAction::triggered, [this, entry]() { startGameListEntry(entry); });
@@ -1159,13 +1163,13 @@ void MainWindow::onViewGameGridActionTriggered()
 
 void MainWindow::onViewSystemDisplayTriggered()
 {
-	if (m_vm_valid)
+	if (s_vm_valid)
 		switchToEmulationView();
 }
 
 void MainWindow::onViewGamePropertiesActionTriggered()
 {
-	if (!m_vm_valid)
+	if (!s_vm_valid)
 		return;
 
 	// prefer to use a game list entry, if we have one, that way the summary is populated
@@ -1294,8 +1298,8 @@ void MainWindow::onLoggingOptionChanged()
 
 void MainWindow::onInputRecNewActionTriggered()
 {
-	const bool wasPaused = m_vm_paused;
-	const bool wasRunning = m_vm_valid;
+	const bool wasPaused = s_vm_paused;
+	const bool wasRunning = s_vm_valid;
 	if (wasRunning && !wasPaused)
 	{
 		VMManager::SetPaused(true);
@@ -1325,7 +1329,7 @@ void MainWindow::onInputRecNewActionTriggered()
 
 void MainWindow::onInputRecPlayActionTriggered()
 {
-	const bool wasPaused = m_vm_paused;
+	const bool wasPaused = s_vm_paused;
 
 	if (!wasPaused)
 		g_InputRecordingControls.PauseImmediately();
@@ -1373,7 +1377,7 @@ void MainWindow::onInputRecOpenSettingsTriggered()
 
 void MainWindow::onVMStarting()
 {
-	m_vm_valid = true;
+	s_vm_valid = true;
 	updateEmulationActions(true, false);
 	updateWindowTitle();
 
@@ -1383,7 +1387,7 @@ void MainWindow::onVMStarting()
 
 void MainWindow::onVMStarted()
 {
-	m_vm_valid = true;
+	s_vm_valid = true;
 	m_was_disc_change_request = false;
 	updateEmulationActions(true, true);
 	updateWindowTitle();
@@ -1398,7 +1402,7 @@ void MainWindow::onVMPaused()
 		m_ui.actionPause->setChecked(true);
 	}
 
-	m_vm_paused = true;
+	s_vm_paused = true;
 	updateWindowTitle();
 	updateStatusBarWidgetVisibility();
 	m_status_fps_widget->setText(tr("Paused"));
@@ -1417,7 +1421,7 @@ void MainWindow::onVMResumed()
 		m_ui.actionPause->setChecked(false);
 	}
 
-	m_vm_paused = false;
+	s_vm_paused = false;
 	m_was_disc_change_request = false;
 	updateWindowTitle();
 	updateStatusBarWidgetVisibility();
@@ -1432,8 +1436,8 @@ void MainWindow::onVMResumed()
 
 void MainWindow::onVMStopped()
 {
-	m_vm_valid = false;
-	m_vm_paused = false;
+	s_vm_valid = false;
+	s_vm_paused = false;
 	m_last_fps_status = QString();
 	updateEmulationActions(false, false);
 	updateWindowTitle();
@@ -1523,7 +1527,7 @@ void MainWindow::dropEvent(QDropEvent* event)
 	if (VMManager::IsSaveStateFileName(filename_str))
 	{
 		// can't load a save state without a current VM 
-		if (m_vm_valid)
+		if (s_vm_valid)
 		{
 			event->acceptProposedAction();
 			g_emu_thread->loadState(filename);
@@ -1537,7 +1541,7 @@ void MainWindow::dropEvent(QDropEvent* event)
 	{
 		// if we're already running, do a disc change, otherwise start
 		event->acceptProposedAction();
-		if (m_vm_valid)
+		if (s_vm_valid)
 			doDiscChange(filename);
 		else
 			doStartDisc(filename);
@@ -1623,8 +1627,8 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 
 	m_display_widget->setFocus();
 	m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
-	m_display_widget->updateRelativeMode(m_vm_valid && !m_vm_paused);
-	m_display_widget->updateCursor(m_vm_valid && !m_vm_paused);
+	m_display_widget->updateRelativeMode(s_vm_valid && !s_vm_paused);
+	m_display_widget->updateCursor(s_vm_valid && !s_vm_paused);
 
 	host_display->DoneRenderContextCurrent();
 	return m_display_widget;
@@ -1671,8 +1675,8 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 
 		m_display_widget->setFocus();
 		m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
-		m_display_widget->updateRelativeMode(m_vm_valid && !m_vm_paused);
-		m_display_widget->updateCursor(m_vm_valid && !m_vm_paused);
+		m_display_widget->updateRelativeMode(s_vm_valid && !s_vm_paused);
+		m_display_widget->updateCursor(s_vm_valid && !s_vm_paused);
 
 		QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 		return m_display_widget;
@@ -1756,8 +1760,8 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 
 	m_display_widget->setFocus();
 	m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
-	m_display_widget->updateRelativeMode(m_vm_valid && !m_vm_paused);
-	m_display_widget->updateCursor(m_vm_valid && !m_vm_paused);
+	m_display_widget->updateRelativeMode(s_vm_valid && !s_vm_paused);
+	m_display_widget->updateCursor(s_vm_valid && !s_vm_paused);
 
 	QSignalBlocker blocker(m_ui.actionFullscreen);
 	m_ui.actionFullscreen->setChecked(fullscreen);
@@ -2040,7 +2044,7 @@ std::optional<bool> MainWindow::promptForResumeState(const QString& save_state_p
 
 void MainWindow::loadSaveStateSlot(s32 slot)
 {
-	if (m_vm_valid)
+	if (s_vm_valid)
 	{
 		// easy when we're running
 		g_emu_thread->loadStateFromSlot(slot);
@@ -2059,7 +2063,7 @@ void MainWindow::loadSaveStateSlot(s32 slot)
 
 void MainWindow::loadSaveStateFile(const QString& filename, const QString& state_filename)
 {
-	if (m_vm_valid)
+	if (s_vm_valid)
 	{
 		if (!filename.isEmpty() && m_current_disc_path != filename)
 			g_emu_thread->changeDisc(m_current_disc_path);
@@ -2167,7 +2171,7 @@ void MainWindow::populateSaveStateMenu(QMenu* menu, const QString& serial, quint
 void MainWindow::updateSaveStateMenus(const QString& filename, const QString& serial, quint32 crc)
 {
 	const bool load_enabled = !serial.isEmpty();
-	const bool save_enabled = !serial.isEmpty() && m_vm_valid;
+	const bool save_enabled = !serial.isEmpty() && s_vm_valid;
 	m_ui.menuLoadState->clear();
 	m_ui.menuLoadState->setEnabled(load_enabled);
 	m_ui.actionLoadState->setEnabled(load_enabled);
@@ -2183,7 +2187,7 @@ void MainWindow::updateSaveStateMenus(const QString& filename, const QString& se
 
 void MainWindow::doStartDisc(const QString& path)
 {
-	if (m_vm_valid)
+	if (s_vm_valid)
 		return;
 
 	std::shared_ptr<VMBootParameters> params = std::make_shared<VMBootParameters>();
@@ -2225,7 +2229,7 @@ void MainWindow::doDiscChange(const QString& path)
 MainWindow::VMLock MainWindow::pauseAndLockVM()
 {
 	const bool was_fullscreen = isRenderingFullscreen();
-	const bool was_paused = m_vm_paused;
+	const bool was_paused = s_vm_paused;
 
 	// We use surfaceless rather than switching out of fullscreen, because
 	// we're paused, so we're not going to be rendering anyway.
@@ -2272,3 +2276,12 @@ void MainWindow::VMLock::cancelResume()
 	m_was_fullscreen = false;
 }
 
+bool QtHost::IsVMValid()
+{
+	return s_vm_valid;
+}
+
+bool QtHost::IsVMPaused()
+{
+	return s_vm_paused;
+}
