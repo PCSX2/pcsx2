@@ -207,6 +207,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionChangeDiscFromFile, &QAction::triggered, this, &MainWindow::onChangeDiscFromFileActionTriggered);
 	connect(m_ui.actionChangeDiscFromDevice, &QAction::triggered, this, &MainWindow::onChangeDiscFromDeviceActionTriggered);
 	connect(m_ui.actionChangeDiscFromGameList, &QAction::triggered, this, &MainWindow::onChangeDiscFromGameListActionTriggered);
+	connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
 	connect(m_ui.menuChangeDisc, &QMenu::aboutToShow, this, &MainWindow::onChangeDiscMenuAboutToShow);
 	connect(m_ui.menuChangeDisc, &QMenu::aboutToHide, this, &MainWindow::onChangeDiscMenuAboutToHide);
 	connect(m_ui.actionPowerOff, &QAction::triggered, this, [this]() { requestShutdown(true, true); });
@@ -1139,6 +1140,11 @@ void MainWindow::onChangeDiscFromDeviceActionTriggered()
 		return;
 
 	g_emu_thread->changeDisc(CDVD_SourceType::Disc, path);
+}
+
+void MainWindow::onRemoveDiscActionTriggered()
+{
+	g_emu_thread->changeDisc(CDVD_SourceType::NoDisc, QString());
 }
 
 void MainWindow::onChangeDiscMenuAboutToShow()

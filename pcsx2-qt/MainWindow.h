@@ -118,6 +118,7 @@ private Q_SLOTS:
 	void onChangeDiscFromFileActionTriggered();
 	void onChangeDiscFromGameListActionTriggered();
 	void onChangeDiscFromDeviceActionTriggered();
+	void onRemoveDiscActionTriggered();
 	void onChangeDiscMenuAboutToShow();
 	void onChangeDiscMenuAboutToHide();
 	void onLoadStateMenuAboutToShow();
