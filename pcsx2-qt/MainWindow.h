@@ -39,6 +39,8 @@ namespace GameList
 	struct Entry;
 }
 
+enum class CDVD_SourceType : uint8_t;
+
 class MainWindow final : public QMainWindow
 {
 	Q_OBJECT
@@ -111,6 +113,7 @@ private Q_SLOTS:
 	void onGameListEntryContextMenuRequested(const QPoint& point);
 
 	void onStartFileActionTriggered();
+	void onStartDiscActionTriggered();
 	void onStartBIOSActionTriggered();
 	void onChangeDiscFromFileActionTriggered();
 	void onChangeDiscFromGameListActionTriggered();
@@ -202,6 +205,8 @@ private:
 	ControllerSettingsDialog* getControllerSettingsDialog();
 	void doControllerSettings(ControllerSettingsDialog::Category category = ControllerSettingsDialog::Category::Count);
 
+	QString getDiscDevicePath(const QString& title);
+
 	void startGameListEntry(const GameList::Entry* entry, std::optional<s32> save_slot = std::nullopt,
 		std::optional<bool> fast_boot = std::nullopt);
 	void setGameListEntryCoverImage(const GameList::Entry* entry);
@@ -212,8 +217,8 @@ private:
 	void populateLoadStateMenu(QMenu* menu, const QString& filename, const QString& serial, quint32 crc);
 	void populateSaveStateMenu(QMenu* menu, const QString& serial, quint32 crc);
 	void updateSaveStateMenus(const QString& filename, const QString& serial, quint32 crc);
-	void doStartDisc(const QString& path);
-	void doDiscChange(const QString& path);
+	void doStartFile(std::optional<CDVD_SourceType> source, const QString& path);
+	void doDiscChange(CDVD_SourceType source, const QString& path);
 
 	Ui::MainWindow m_ui;
 

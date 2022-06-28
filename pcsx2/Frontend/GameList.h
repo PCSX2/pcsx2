@@ -91,6 +91,8 @@ namespace GameList
 		u32 crc = 0;
 
 		CompatibilityRating compatibility_rating = CompatibilityRating::Unknown;
+
+		__fi bool IsDisc() const { return (type == EntryType::PS1Disc || type == EntryType::PS2Disc); }
 	};
 
 	const char* EntryTypeToString(EntryType type);

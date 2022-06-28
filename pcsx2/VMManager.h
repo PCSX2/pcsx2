@@ -135,7 +135,7 @@ namespace VMManager
 
 	/// Changes the disc in the virtual CD/DVD drive. Passing an empty will remove any current disc.
 	/// Returns false if the new disc can't be opened.
-	bool ChangeDisc(std::string path);
+	bool ChangeDisc(CDVD_SourceType source, std::string path);
 
 	/// Returns true if the specified path is an ELF.
 	bool IsElfFileName(const std::string_view& path);
