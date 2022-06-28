@@ -117,7 +117,6 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 		tr("Hides the main window (with the game list) when a game is running, requires Render To Separate Window to be enabled."));
 
 	// Not yet used, disable the options
-	m_ui.pauseOnFocusLoss->setDisabled(true);
 	m_ui.language->setDisabled(true);
 
 	onRenderToSeparateWindowChanged();

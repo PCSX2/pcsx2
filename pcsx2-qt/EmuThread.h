@@ -140,12 +140,13 @@ private:
 	void createBackgroundControllerPollTimer();
 	void destroyBackgroundControllerPollTimer();
 	void loadOurSettings();
+	void connectSignals();
 
 private Q_SLOTS:
 	void stopInThread();
 	void doBackgroundControllerPoll();
 	void onDisplayWindowResized(int width, int height, float scale);
-	void onDisplayWindowFocused();
+	void onApplicationStateChanged(Qt::ApplicationState state);
 	void redrawDisplayWindow();
 
 private:
@@ -161,6 +162,9 @@ private:
 	bool m_is_fullscreen = false;
 	bool m_is_surfaceless = false;
 	bool m_save_state_on_shutdown = false;
+	bool m_pause_on_focus_loss = false;
+
+	bool m_was_paused_by_focus_loss = false;
 
 	float m_last_speed = 0.0f;
 	float m_last_game_fps = 0.0f;
