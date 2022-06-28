@@ -306,10 +306,11 @@ bool GSRenderer::Merge(int field)
 		// src_out_rect is the resized rect for output. (Not really used)
 		src_out_rect[i] = (GSVector4(r) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
 
-		if (m_regs->SMODE2.FFMD && !is_bob && !GSConfig.DisableInterlaceOffset && GSConfig.InterlaceMode != GSInterlaceMode::Off && GetUpscaleMultiplier() > 1)
+		if (m_regs->SMODE2.FFMD && !is_bob && !GSConfig.DisableInterlaceOffset && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 		{
 			// We do half because FFMD is a half sized framebuffer, then we offset by 1 in the shader for the actual interlace
-			interlace_offset += ((((tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) + 0.5f) * 0.5f) - 1.0f) * static_cast<float>(field ^ field2);
+			if(GetUpscaleMultiplier() > 1)
+				interlace_offset += ((((tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) + 0.5f) * 0.5f) - 1.0f) * static_cast<float>(field ^ field2);
 			offset = 1.0f;
 		}
 		// Restore manually offset "interlace" lines
