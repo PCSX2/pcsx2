@@ -969,7 +969,7 @@ void* fifo_alloc(size_t size, size_t repeat)
 	if (repeat >= std::size(s_Next))
 	{
 		fprintf(stderr, "Memory mapping overflow (%zu >= %u)\n", repeat, static_cast<unsigned>(std::size(s_Next)));
-		return vmalloc(size * repeat, false); // Fallback to default vmalloc
+		return nullptr; // Fallback to default vmalloc
 	}
 
 	s_fh = CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, size, nullptr);
@@ -977,7 +977,7 @@ void* fifo_alloc(size_t size, size_t repeat)
 	if (s_fh == NULL)
 	{
 		fprintf(stderr, "Failed to reserve memory. WIN API ERROR:%u\n", errorID);
-		return vmalloc(size * repeat, false); // Fallback to default vmalloc
+		return nullptr; // Fallback to default vmalloc
 	}
 
 	int mmap_segment_failed = 0;
@@ -994,7 +994,7 @@ void* fifo_alloc(size_t size, size_t repeat)
 			{
 				fprintf(stderr, "Memory mapping failed after %d attempts, aborting. WIN API ERROR:%u\n", mmap_segment_failed, errorID);
 				fifo_free(fifo, size, repeat);
-				return vmalloc(size * repeat, false); // Fallback to default vmalloc
+				return nullptr; // Fallback to default vmalloc
 			}
 			do
 			{
