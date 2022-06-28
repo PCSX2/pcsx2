@@ -175,7 +175,7 @@ bool GSRenderer::Merge(int field)
 	const bool is_bob = GSConfig.InterlaceMode == GSInterlaceMode::BobTFF || GSConfig.InterlaceMode == GSInterlaceMode::BobBFF;
 
 	// Use offset for bob deinterlacing always, extra offset added later for FFMD mode.
-	float offset = (tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
+	float offset = is_bob ? (tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) : 0.0f;
 
 	int field2 = 0;
 	int mode = 2;
