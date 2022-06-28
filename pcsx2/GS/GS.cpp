@@ -959,6 +959,79 @@ void vmfree(void* ptr, size_t size)
 	VirtualFree(ptr, 0, MEM_RELEASE);
 }
 
+#ifdef PCSX2_CORE
+// Safe, placeholder-based mapping for Win10+ and Qt.
+
+static HANDLE s_fh = NULL;
+
+void* fifo_alloc(size_t size, size_t repeat)
+{
+	pxAssertRel(!s_fh, "Has no file mapping");
+
+	s_fh = CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, size, nullptr);
+	if (s_fh == NULL)
+	{
+		Console.Error("Failed to create file mapping of size %zu. WIN API ERROR:%u", size, GetLastError());
+		return nullptr;
+	}
+
+	// Reserve the whole area with repeats.
+	u8* base = static_cast<u8*>(VirtualAlloc2(
+		GetCurrentProcess(), nullptr, repeat * size,
+		MEM_RESERVE | MEM_RESERVE_PLACEHOLDER, PAGE_NOACCESS,
+		nullptr, 0));
+	if (base)
+	{
+		bool okay = true;
+		for (size_t i = 0; i < repeat; i++)
+		{
+			// Everything except the last needs the placeholders split to map over them. Then map the same file over the region.
+			u8* addr = base + i * size;
+			if ((i != (repeat - 1) && !VirtualFreeEx(GetCurrentProcess(), addr, size, MEM_RELEASE | MEM_PRESERVE_PLACEHOLDER)) ||
+				!MapViewOfFile3(s_fh, GetCurrentProcess(), addr, 0, size, MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0))
+			{
+				Console.Error("Failed to map repeat %zu of size %zu.", i, size);
+				okay = false;
+
+				for (size_t j = 0; j < i; j++)
+					UnmapViewOfFile2(GetCurrentProcess(), addr, MEM_PRESERVE_PLACEHOLDER);
+			}
+		}
+
+		if (okay)
+		{
+			DbgCon.WriteLn("fifo_alloc(): Mapped %zu repeats of %zu bytes at %p.", repeat, size, base);
+			return base;
+		}
+
+		VirtualFreeEx(GetCurrentProcess(), base, 0, MEM_RELEASE);
+	}
+
+	Console.Error("Failed to reserve VA space of size %zu. WIN API ERROR:%u", size, GetLastError());
+	CloseHandle(s_fh);
+	s_fh = NULL;
+	return nullptr;
+}
+
+void fifo_free(void* ptr, size_t size, size_t repeat)
+{
+	pxAssertRel(s_fh, "Has a file mapping");
+
+	for (size_t i = 0; i < repeat; i++)
+	{
+		u8* addr = (u8*)ptr + i * size;
+		UnmapViewOfFile2(GetCurrentProcess(), addr, MEM_PRESERVE_PLACEHOLDER);
+	}
+
+	VirtualFreeEx(GetCurrentProcess(), ptr, 0, MEM_RELEASE);
+	s_fh = NULL;
+}
+
+#else
+
+// "Best effort" mapping for <Win10 and wx build.
+// This can be removed once the wx UI is dropped.
+
 static HANDLE s_fh = NULL;
 static u8* s_Next[8];
 
@@ -1034,6 +1107,8 @@ void fifo_free(void* ptr, size_t size, size_t repeat)
 	CloseHandle(s_fh);
 	s_fh = NULL;
 }
+
+#endif // PCSX2_CORE
 
 #else
 
