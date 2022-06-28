@@ -259,7 +259,7 @@ void COP2MicroFinishPass::Run(u32 start, u32 end, EEINST* inst_cache)
 			inst->info |= EEINST_COP2_FINISH_VU0_MICRO;
 
 			// QMTC2 and CTC2 interlock on M-Bit not just VU end, so VU0 might continue to run, so we need to continue to check.
-			if ((_Rs_ == 005 || _Rs_ == 006) && (cpuRegs.code & 1))
+			if (_Rs_ == 005 || _Rs_ == 006)
 				return true;
 
 			needs_vu0_finish = false;
