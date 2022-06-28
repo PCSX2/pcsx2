@@ -66,4 +66,8 @@ namespace QtHost
 	bool RemoveBaseValueFromStringList(const char* section, const char* key, const char* value);
 	void RemoveBaseSettingValue(const char* section, const char* key);
 	void QueueSettingsSave();
+
+	/// VM state, safe to access on UI thread.
+	bool IsVMValid();
+	bool IsVMPaused();
 } // namespace QtHost
