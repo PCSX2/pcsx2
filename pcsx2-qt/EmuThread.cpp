@@ -247,6 +247,7 @@ void EmuThread::run()
 	reloadInputSources();
 	createBackgroundControllerPollTimer();
 	startBackgroundControllerPollTimer();
+	connectSignals();
 
 	while (!m_shutdown_flag.load())
 	{
@@ -277,6 +278,7 @@ void EmuThread::destroyVM()
 	m_last_video_fps = 0.0f;
 	m_last_internal_width = 0;
 	m_last_internal_height = 0;
+	m_was_paused_by_focus_loss = false;
 	VMManager::Shutdown(m_save_state_on_shutdown);
 }
 
@@ -436,6 +438,12 @@ void EmuThread::updateEmuFolders()
 void EmuThread::loadOurSettings()
 {
 	m_verbose_status = Host::GetBaseBoolSettingValue("UI", "VerboseStatusBar", false);
+	m_pause_on_focus_loss = Host::GetBaseBoolSettingValue("UI", "PauseOnFocusLoss", false);
+}
+
+void EmuThread::connectSignals()
+{
+	connect(qApp, &QGuiApplication::applicationStateChanged, this, &EmuThread::onApplicationStateChanged);
 }
 
 void EmuThread::checkForSettingChanges()
@@ -605,9 +613,8 @@ void EmuThread::connectDisplaySignals(DisplayWidget* widget)
 {
 	widget->disconnect(this);
 
-	connect(widget, &DisplayWidget::windowFocusEvent, this, &EmuThread::onDisplayWindowFocused);
 	connect(widget, &DisplayWidget::windowResizedEvent, this, &EmuThread::onDisplayWindowResized);
-	// connect(widget, &DisplayWidget::windowRestoredEvent, this, &EmuThread::redrawDisplayWindow);
+	connect(widget, &DisplayWidget::windowRestoredEvent, this, &EmuThread::redrawDisplayWindow);
 }
 
 void EmuThread::onDisplayWindowResized(int width, int height, float scale)
@@ -618,7 +625,31 @@ void EmuThread::onDisplayWindowResized(int width, int height, float scale)
 	GetMTGS().ResizeDisplayWindow(width, height, scale);
 }
 
-void EmuThread::onDisplayWindowFocused() {}
+void EmuThread::onApplicationStateChanged(Qt::ApplicationState state)
+{
+	// NOTE: This is executed on the emu thread, not UI thread.
+	if (!m_pause_on_focus_loss || !VMManager::HasValidVM())
+		return;
+
+	const bool focus_loss = (state != Qt::ApplicationActive);
+	if (focus_loss)
+	{
+		if (!m_was_paused_by_focus_loss && VMManager::GetState() == VMState::Running)
+		{
+			m_was_paused_by_focus_loss = true;
+			VMManager::SetPaused(true);
+		}
+	}
+	else
+	{
+		if (m_was_paused_by_focus_loss)
+		{
+			m_was_paused_by_focus_loss = false;
+			if (VMManager::GetState() == VMState::Paused)
+				VMManager::SetPaused(false);
+		}
+	}
+}
 
 void EmuThread::redrawDisplayWindow()
 {

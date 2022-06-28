@@ -397,22 +397,6 @@ bool DisplayWidget::event(QEvent* event)
 			return true;
 		}
 
-		case QEvent::FocusIn:
-		{
-			QWidget::event(event);
-			emit windowFocusEvent();
-			return true;
-		}
-
-		case QEvent::ActivationChange:
-		{
-			QWidget::event(event);
-			if (isActiveWindow())
-				emit windowFocusEvent();
-
-			return true;
-		}
-
 		default:
 			return QWidget::event(event);
 	}
@@ -474,19 +458,6 @@ bool DisplayContainer::event(QEvent* event)
 		{
 			if (static_cast<QWindowStateChangeEvent*>(event)->oldState() & Qt::WindowMinimized)
 				emit m_display_widget->windowRestoredEvent();
-		}
-		break;
-
-		case QEvent::FocusIn:
-		{
-			emit m_display_widget->windowFocusEvent();
-		}
-		break;
-
-		case QEvent::ActivationChange:
-		{
-			if (isActiveWindow())
-				emit m_display_widget->windowFocusEvent();
 		}
 		break;
 

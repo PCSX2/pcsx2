@@ -42,7 +42,6 @@ public:
 	void updateCursor(bool master_enable);
 
 Q_SIGNALS:
-	void windowFocusEvent();
 	void windowResizedEvent(int width, int height, float scale);
 	void windowRestoredEvent();
 
