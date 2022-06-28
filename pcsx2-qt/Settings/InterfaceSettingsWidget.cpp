@@ -62,6 +62,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hideMouseCursor, "UI", "HideMouseCursor", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.renderToSeparateWindow, "UI", "RenderToSeparateWindow", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hideMainWindow, "UI", "HideMainWindowWhenRunning", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableWindowResizing, "UI", "DisableWindowResize", false);
 	connect(m_ui.renderToSeparateWindow, &QCheckBox::stateChanged, this, &InterfaceSettingsWidget::onRenderToSeparateWindowChanged);
 
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.theme, "UI", "Theme", THEME_NAMES, THEME_VALUES,
@@ -118,7 +119,6 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 	// Not yet used, disable the options
 	m_ui.pauseOnStart->setDisabled(true);
 	m_ui.pauseOnFocusLoss->setDisabled(true);
-	m_ui.disableWindowResizing->setDisabled(true);
 	m_ui.language->setDisabled(true);
 
 	onRenderToSeparateWindowChanged();

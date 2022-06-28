@@ -728,14 +728,25 @@ void MainWindow::updateWindowTitle()
 	}
 }
 
-void MainWindow::updateWindowVisibility()
+void MainWindow::updateWindowState(bool force_visible)
 {
-	// Need to test both valid and display widget because of startup (vm invalid while window is created).
 	const bool hide_window = !g_emu_thread->isRenderingToMain() && Host::GetBaseBoolSettingValue("UI", "HideMainWindowWhenRunning", false);
-	const bool new_state = !hide_window || (!m_vm_valid && !m_display_widget);
+	const bool disable_resize = Host::GetBaseBoolSettingValue("UI", "DisableWindowResize", false);
+	const bool has_window = m_vm_valid || m_display_widget;
 
-	if (isVisible() != new_state)
-		setVisible(new_state);
+	// Need to test both valid and display widget because of startup (vm invalid while window is created).
+	const bool visible = force_visible || !hide_window || !has_window;
+	if (isVisible() != visible)
+		setVisible(visible);
+
+	// No point changing realizability if we're not visible.
+	const bool resizeable = force_visible || !disable_resize || !has_window;
+	if (visible)
+		QtUtils::SetWindowResizeable(this, resizeable);
+
+	// Update the display widget too if rendering separately.
+	if (m_display_widget && !isRenderingToMain())
+		QtUtils::SetWindowResizeable(getDisplayContainer(), resizeable);
 }
 
 void MainWindow::setProgressBar(int current, int total)
@@ -896,7 +907,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 	// would briefly show and then hide the main window. So instead, we do it on shutdown, here. Except if we're in
 	// batch mode, when we're going to exit anyway.
 	if (!isRenderingToMain() && isHidden() && !QtHost::InBatchMode())
-		show();
+		updateWindowState(true);
 
 	// Now we can actually shut down the VM.
 	g_emu_thread->shutdownVM(save_state);
@@ -931,7 +942,7 @@ void MainWindow::checkForSettingChanges()
 	if (m_display_widget)
 		m_display_widget->updateRelativeMode(m_vm_valid && !m_vm_paused);
 
-	updateWindowVisibility();
+	updateWindowState();
 }
 
 void Host::InvalidateSaveStateCache()
@@ -1426,7 +1437,7 @@ void MainWindow::onVMStopped()
 	m_last_fps_status = QString();
 	updateEmulationActions(false, false);
 	updateWindowTitle();
-	updateWindowVisibility();
+	updateWindowState();
 	updateStatusBarWidgetVisibility();
 
 	if (m_display_widget)
@@ -1608,7 +1619,7 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 		setDisplayFullscreen(fullscreen_mode);
 
 	updateWindowTitle();
-	updateWindowVisibility();
+	updateWindowState();
 
 	m_display_widget->setFocus();
 	m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
@@ -1741,7 +1752,7 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 		setDisplayFullscreen(fullscreen_mode);
 
 	updateWindowTitle();
-	updateWindowVisibility();
+	updateWindowState();
 
 	m_display_widget->setFocus();
 	m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
@@ -1766,13 +1777,13 @@ void MainWindow::displayResizeRequested(qint32 width, qint32 height)
 	if (m_display_container || !m_display_widget->parent())
 	{
 		// no parent - rendering to separate window. easy.
-		getDisplayContainer()->resize(QSize(std::max<qint32>(width, 1), std::max<qint32>(height, 1)));
+		QtUtils::ResizePotentiallyFixedSizeWindow(getDisplayContainer(), width, height);
 		return;
 	}
 
 	// we are rendering to the main window. we have to add in the extra height from the toolbar/status bar.
 	const s32 extra_height = this->height() - m_display_widget->height();
-	resize(QSize(std::max<qint32>(width, 1), std::max<qint32>(height + extra_height, 1)));
+	QtUtils::ResizePotentiallyFixedSizeWindow(this, width, height + extra_height);
 }
 
 void MainWindow::destroyDisplay()
