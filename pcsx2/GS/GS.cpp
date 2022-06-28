@@ -285,6 +285,7 @@ static bool DoGSOpen(GSRendererType renderer, u8* basemem)
 	GSConfig.OsdShowGPU = EmuConfig.GS.OsdShowGPU && display->SetGPUTimingEnabled(true);
 
 	g_gs_renderer->SetRegsMem(basemem);
+	g_perfmon.Reset();
 	return true;
 }
 

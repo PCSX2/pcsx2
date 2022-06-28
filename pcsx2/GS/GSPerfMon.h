@@ -38,15 +38,17 @@ public:
 	};
 
 protected:
-	double m_counters[CounterLast];
-	double m_stats[CounterLast];
-	u64 m_frame;
-	clock_t m_lastframe;
-	int m_count;
-	int m_disp_fb_sprite_blits;
+	double m_counters[CounterLast] = {};
+	double m_stats[CounterLast] = {};
+	u64 m_frame = 0;
+	clock_t m_lastframe = 0;
+	int m_count = 0;
+	int m_disp_fb_sprite_blits = 0;
 
 public:
 	GSPerfMon();
+
+	void Reset();
 
 	void SetFrame(u64 frame) { m_frame = frame; }
 	u64 GetFrame() { return m_frame; }
