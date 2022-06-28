@@ -146,6 +146,7 @@ private Q_SLOTS:
 	void doBackgroundControllerPoll();
 	void onDisplayWindowResized(int width, int height, float scale);
 	void onDisplayWindowFocused();
+	void redrawDisplayWindow();
 
 private:
 	QThread* m_ui_thread;
