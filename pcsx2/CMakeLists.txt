@@ -1649,7 +1649,11 @@ if(WIN32)
 		opengl32.lib
 		comsuppw.lib
 	)
-	if(NOT PCSX2_CORE)
+	if(PCSX2_CORE)
+		target_link_libraries(PCSX2_FLAGS INTERFACE
+			OneCore.lib
+		)
+	else()
 		target_link_libraries(PCSX2_FLAGS INTERFACE
 			pthreads4w
 		)
