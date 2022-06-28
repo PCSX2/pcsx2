@@ -27,6 +27,10 @@
 #include "common/Timer.h"
 #include "imgui.h"
 
+#ifdef PCSX2_CORE
+#include "imgui_internal.h"
+#endif
+
 #include "Config.h"
 #include "Counters.h"
 #include "Frontend/ImGuiManager.h"
@@ -198,6 +202,9 @@ void ImGuiManager::NewFrame()
 	ImGui::NewFrame();
 
 #ifdef PCSX2_CORE
+	// Disable nav input on the implicit (Debug##Default) window. Otherwise we end up requesting keyboard
+	// focus when there's nothing there. We use GetCurrentWindowRead() because otherwise it'll make it visible.
+	ImGui::GetCurrentWindowRead()->Flags |= ImGuiWindowFlags_NoNavInputs;
 	s_imgui_wants_keyboard.store(io.WantCaptureKeyboard, std::memory_order_relaxed);
 	s_imgui_wants_mouse.store(io.WantCaptureMouse, std::memory_order_release);
 #endif

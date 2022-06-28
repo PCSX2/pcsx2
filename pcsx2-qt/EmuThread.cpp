@@ -114,7 +114,18 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 	if (!VMManager::Initialize(*boot_params))
 		return;
 
-	VMManager::SetState(VMState::Running);
+	if (!Host::GetBoolSettingValue("UI", "StartPaused", false))
+	{
+		// This will come back and call OnVMResumed().
+		VMManager::SetState(VMState::Running);
+	}
+	else
+	{
+		// When starting paused, redraw the window, so there's at least something there.
+		redrawDisplayWindow();
+		Host::OnVMPaused();
+	}
+
 	m_event_loop->quit();
 }
 
@@ -608,6 +619,21 @@ void EmuThread::onDisplayWindowResized(int width, int height, float scale)
 }
 
 void EmuThread::onDisplayWindowFocused() {}
+
+void EmuThread::redrawDisplayWindow()
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, &EmuThread::redrawDisplayWindow, Qt::QueuedConnection);
+		return;
+	}
+
+	// If we're running, we're going to re-present anyway.
+	if (!VMManager::HasValidVM() || VMManager::GetState() == VMState::Running)
+		return;
+
+	GetMTGS().RunOnGSThread([]() { GetMTGS().PresentCurrentFrame(); });
+}
 
 void EmuThread::runOnCPUThread(const std::function<void()>& func)
 {
