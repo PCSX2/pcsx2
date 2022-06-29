@@ -33,6 +33,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLEnhancedMode, "InputSources", "SDLControllerEnhancedMode", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableXInputSource, "InputSources", "XInput", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableMouseMapping, "UI", "EnableMouseMapping", false);
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.multitapPort1, "Pad", "MultitapPort1", false);
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.multitapPort2, "Pad", "MultitapPort2", false);
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.pointerXInvert, "Pad", "PointerXInvert", false);

@@ -69,4 +69,5 @@ protected:
 	QTimer* m_input_listen_timer = nullptr;
 	u32 m_input_listen_remaining_seconds = 0;
 	QPoint m_input_listen_start_position{};
+	bool m_mouse_mapping_enabled = false;
 };
