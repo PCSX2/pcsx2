@@ -625,6 +625,9 @@ void MainWindow::onBlockDumpActionToggled(bool checked)
 
 void MainWindow::saveStateToConfig()
 {
+	if (!isVisible())
+		return;
+
 	{
 		const QByteArray geometry = saveGeometry();
 		const QByteArray geometry_b64 = geometry.toBase64();
@@ -746,6 +749,10 @@ void MainWindow::updateWindowTitle()
 
 void MainWindow::updateWindowState(bool force_visible)
 {
+	// Skip all of this when we're closing, since we don't want to make ourselves visible and cancel it.
+	if (m_is_closing)
+		return;
+
 	const bool hide_window = !g_emu_thread->isRenderingToMain() && Host::GetBaseBoolSettingValue("UI", "HideMainWindowWhenRunning", false);
 	const bool disable_resize = Host::GetBaseBoolSettingValue("UI", "DisableWindowResize", false);
 	const bool has_window = s_vm_valid || m_display_widget;
@@ -892,7 +899,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 	bool save_state = allow_save_to_state && EmuConfig.SaveStateOnShutdown;
 
 	// Only confirm on UI thread because we need to display a msgbox.
-	if (allow_confirm && !GSDumpReplayer::IsReplayingDump() && Host::GetBaseBoolSettingValue("UI", "ConfirmShutdown", true))
+	if (!m_is_closing && allow_confirm && !GSDumpReplayer::IsReplayingDump() && Host::GetBaseBoolSettingValue("UI", "ConfirmShutdown", true))
 	{
 		VMLock lock(pauseAndLockVM());
 
@@ -928,16 +935,18 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 	// Now we can actually shut down the VM.
 	g_emu_thread->shutdownVM(save_state);
 
-	if (block_until_done || QtHost::InBatchMode())
+	if (block_until_done || m_is_closing || QtHost::InBatchMode())
 	{
 		// We need to yield here, since the display gets destroyed.
 		while (VMManager::GetState() != VMState::Shutdown)
 			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 	}
 
-	if (QtHost::InBatchMode())
+	if (!m_is_closing && QtHost::InBatchMode())
 	{
-		// Closing the window should shut down everything.
+		// Closing the window should shut down everything. If we don't set the closing flag here,
+		// the VM shutdown may not complete by the time closeEvent() is called, leading to a confirm.
+		m_is_closing = true;
 		close();
 	}
 
@@ -1527,6 +1536,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
 	}
 
 	saveStateToConfig();
+	m_is_closing = true;
+
 	QMainWindow::closeEvent(event);
 }
 

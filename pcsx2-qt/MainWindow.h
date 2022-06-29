@@ -245,6 +245,7 @@ private:
 	bool m_save_states_invalidated = false;
 	bool m_was_paused_on_surface_loss = false;
 	bool m_was_disc_change_request = false;
+	bool m_is_closing = false;
 
 	QString m_last_fps_status;
 };
