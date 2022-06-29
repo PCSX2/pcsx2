@@ -1590,7 +1590,7 @@ void MainWindow::dropEvent(QDropEvent* event)
 		if (s_vm_valid)
 			doDiscChange(CDVD_SourceType::Iso, filename);
 		else
-			doStartFile(CDVD_SourceType::Iso, filename);
+			doStartFile(std::nullopt, filename);
 	}
 }
 
