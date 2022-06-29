@@ -316,6 +316,7 @@ namespace R3000A
 			ghc::filesystem::directory_iterator dirent(path.c_str(), err);
 			if (err)
 				return -IOP_ENOENT; // Should return ENOTDIR if path is a file?
+                                    // Would love to but err's code is platform dependent
 
 			*dir = new HostDir(dirent);
 			if (!*dir)
@@ -633,8 +634,13 @@ namespace R3000A
 			{
 				const std::string path = full_path.substr(full_path.find(':') + 1);
 				const ghc::filesystem::path file_path{host_path(path)};
-				const bool succeeded = ghc::filesystem::remove(file_path);
-				v0 = succeeded ? 0 : -IOP_EIO;
+				std::error_code err;
+				const bool succeeded = ghc::filesystem::remove(file_path, err);
+
+				if(err)
+					Console.Warning("IOPHLE remove_HLE: '%s'", err.message().c_str());
+
+				v0 = (succeeded && !err) ? 0 : -IOP_EIO;
 				pc = ra;
 			}
 			return 0;
@@ -648,8 +654,13 @@ namespace R3000A
 			{
 				const std::string path = full_path.substr(full_path.find(':') + 1);
 				const ghc::filesystem::path folder_path{host_path(path)};
-				const bool succeeded = ghc::filesystem::create_directory(folder_path);
-				v0 = succeeded ? 0 : -IOP_EIO;
+				std::error_code err;
+				const bool succeeded = ghc::filesystem::create_directory(folder_path, err);
+
+				if (err)
+					Console.Warning("IOPHLE mkdir_HLE: '%s'", err.message().c_str());
+
+				v0 = (succeeded && !err) ? 0 : -IOP_EIO;
 				pc = ra;
 				return 1;
 			}
@@ -687,8 +698,13 @@ namespace R3000A
 			{
 				const std::string path = full_path.substr(full_path.find(':') + 1);
 				const ghc::filesystem::path folder_path{host_path(path)};
-				const bool succeeded = ghc::filesystem::remove(folder_path);
-				v0 = succeeded ? 0 : -IOP_EIO;
+				std::error_code err;
+				const bool succeeded = ghc::filesystem::remove(folder_path, err);
+
+				if (err)
+					Console.Warning("IOPHLE rmdir_HLE: '%s'", err.message().c_str());
+
+				v0 = (succeeded && !err) ? 0 : -IOP_EIO;
 				pc = ra;
 				return 1;
 			}
