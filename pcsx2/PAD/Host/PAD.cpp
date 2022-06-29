@@ -546,7 +546,7 @@ bool PAD::MapController(SettingsInterface& si, u32 controller,
 
 void PAD::SetControllerState(u32 controller, u32 bind, float value)
 {
-	if (controller >= NUM_CONTROLLER_PORTS || bind >= MAX_KEYS)
+	if (controller >= NUM_CONTROLLER_PORTS || bind > MAX_KEYS)
 		return;
 
 	g_key_status.Set(controller, bind, value);
