@@ -17,8 +17,6 @@
 
 #include "common/Pcsx2Defs.h"
 
-static const u32 MAX_KEYS = 25;
-
 enum gamePadValues
 {
 	PAD_UP,       // Directional pad ↑
@@ -46,7 +44,8 @@ enum gamePadValues
 	PAD_R_UP,     // Right joystick (Up) ↑
 	PAD_R_RIGHT,  // Right joystick (Right) →
 	PAD_R_DOWN,   // Right joystick (Down) ↓
-	PAD_R_LEFT    // Right joystick (Left) ←
+	PAD_R_LEFT,   // Right joystick (Left) ←
+	MAX_KEYS,
 };
 
 static inline bool IsAnalogKey(int index)
