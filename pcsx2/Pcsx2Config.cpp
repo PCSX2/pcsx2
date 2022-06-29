@@ -385,8 +385,16 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 
 		OpEqu(Zoom) &&
 		OpEqu(StretchY) &&
+#ifndef PCSX2_CORE
 		OpEqu(OffsetX) &&
 		OpEqu(OffsetY) &&
+#else
+		OpEqu(Crop[0]) &&
+		OpEqu(Crop[1]) &&
+		OpEqu(Crop[2]) &&
+		OpEqu(Crop[3]) &&
+#endif
+
 		OpEqu(OsdScale) &&
 
 		OpEqu(Renderer) &&
@@ -469,8 +477,10 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 
 	SettingsWrapEntry(Zoom);
 	SettingsWrapEntry(StretchY);
-	SettingsWrapEntry(OffsetX);
-	SettingsWrapEntry(OffsetY);
+	SettingsWrapEntryEx(Crop[0], "CropLeft");
+	SettingsWrapEntryEx(Crop[1], "CropTop");
+	SettingsWrapEntryEx(Crop[2], "CropRight");
+	SettingsWrapEntryEx(Crop[3], "CropBottom");
 #endif
 
 #ifndef PCSX2_CORE
