@@ -56,6 +56,11 @@ InputBindingWidget::~InputBindingWidget()
 	Q_ASSERT(!isListeningForInput());
 }
 
+bool InputBindingWidget::isMouseMappingEnabled()
+{
+	return Host::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false);
+}
+
 void InputBindingWidget::initialize(SettingsInterface* sif, std::string section_name, std::string key_name)
 {
 	m_sif = sif;
@@ -126,7 +131,7 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
 			m_new_bindings.push_back(InputManager::MakePointerButtonKey(0, button_index));
 		return true;
 	}
-	else if (event_type == QEvent::MouseMove)
+	else if (event_type == QEvent::MouseMove && m_mouse_mapping_enabled)
 	{
 		// if we've moved more than a decent distance from the center of the widget, bind it.
 		// this is so we don't accidentally bind to the mouse if you bump it while reaching for your pad.
@@ -266,6 +271,7 @@ void InputBindingWidget::onInputListenTimerTimeout()
 void InputBindingWidget::startListeningForInput(u32 timeout_in_seconds)
 {
 	m_new_bindings.clear();
+	m_mouse_mapping_enabled = isMouseMappingEnabled();
 	m_input_listen_start_position = QCursor::pos();
 	m_input_listen_timer = new QTimer(this);
 	m_input_listen_timer->setSingleShot(false);
