@@ -112,6 +112,9 @@ namespace GameDatabaseSchema
 
 		/// Applies GS hardware fixes to an existing config. Returns the number of applied fixes.
 		u32 applyGSHardwareFixes(Pcsx2Config::GSOptions& config) const;
+
+		/// Returns true if the current config value for the specified hw fix id matches the value.
+		bool configMatchesHWFix(const Pcsx2Config::GSOptions& config, GSHWFixId id, int value) const;
 	};
 };
 
