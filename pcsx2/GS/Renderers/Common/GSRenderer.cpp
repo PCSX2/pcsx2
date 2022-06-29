@@ -407,7 +407,7 @@ static float GetCurrentAspectRatioFloat(bool is_progressive)
 	return ars[static_cast<u32>(GSConfig.AspectRatio) + (3u * (is_progressive && GSConfig.AspectRatio == AspectRatioType::RAuto4_3_3_2))];
 }
 
-static GSVector4 CalculateDrawRect(s32 window_width, s32 window_height, s32 texture_width, s32 texture_height, HostDisplay::Alignment alignment, bool flip_y, bool is_progressive)
+static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const GSVector4i& src_rect, const GSVector2i& src_size, HostDisplay::Alignment alignment, bool flip_y, bool is_progressive)
 {
 	const float f_width = static_cast<float>(window_width);
 	const float f_height = static_cast<float>(window_height);
@@ -428,7 +428,10 @@ static GSVector4 CalculateDrawRect(s32 window_width, s32 window_height, s32 text
 	else if (EmuConfig.CurrentAspectRatio == AspectRatioType::R16_9)
 		targetAr = 16.0f / 9.0f;
 
-	const double arr = targetAr / clientAr;
+	const float crop_adjust = (static_cast<float>(src_rect.width()) / static_cast<float>(src_size.x)) /
+		(static_cast<float>(src_rect.height()) / static_cast<float>(src_size.y));
+
+	const double arr = (targetAr * crop_adjust) / clientAr;
 	float target_width = f_width;
 	float target_height = f_height;
 	if (arr < 1)
@@ -446,8 +449,8 @@ static GSVector4 CalculateDrawRect(s32 window_width, s32 window_height, s32 text
 	if (GSConfig.IntegerScaling)
 	{
 		// make target width/height an integer multiple of the texture width/height
-		const float t_width = static_cast<double>(texture_width);
-		const float t_height = static_cast<double>(texture_height);
+		const float t_width = static_cast<double>(src_rect.width());
+		const float t_height = static_cast<double>(src_rect.height());
 
 		float scale;
 		if ((t_width / t_height) >= 1.0)
@@ -505,9 +508,11 @@ static GSVector4 CalculateDrawRect(s32 window_width, s32 window_height, s32 text
 		}
 	}
 
+#ifndef PCSX2_CORE
 	const float unit = .01f * std::min(target_x, target_y);
 	target_x += unit * GSConfig.OffsetX;
 	target_y += unit * GSConfig.OffsetY;
+#endif
 
 	GSVector4 ret(target_x, target_y, target_x + target_width, target_y + target_height);
 
@@ -519,6 +524,21 @@ static GSVector4 CalculateDrawRect(s32 window_width, s32 window_height, s32 text
 	}
 
 	return ret;
+}
+
+static GSVector4i CalculateDrawSrcRect(const GSTexture* src)
+{
+#ifndef PCSX2_CORE
+	return GSVector4i(0, 0, src->GetWidth(), src->GetHeight());
+#else
+	const int upscale = GSConfig.UpscaleMultiplier;
+	const GSVector2i size(src->GetSize());
+	const int left = GSConfig.Crop[0] * upscale;
+	const int top = GSConfig.Crop[1] * upscale;
+	const int right = size.x - (GSConfig.Crop[2] * upscale);
+	const int bottom = size.y - (GSConfig.Crop[3] * upscale);
+	return GSVector4i(left, top, right, bottom);
+#endif
 }
 
 void GSRenderer::VSync(u32 field, bool registers_written)
@@ -586,13 +606,16 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 		if (current && !blank_frame)
 		{
 			HostDisplay* const display = g_gs_device->GetDisplay();
-			const GSVector4 draw_rect(CalculateDrawRect(display->GetWindowWidth(), display->GetWindowHeight(),
-				current->GetWidth(), current->GetHeight(), display->GetDisplayAlignment(), display->UsesLowerLeftOrigin(), GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)));
+			const GSVector4i src_rect(CalculateDrawSrcRect(current));
+			const GSVector4 src_uv(GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy());
+			const GSVector4 draw_rect(CalculateDrawDstRect(display->GetWindowWidth(), display->GetWindowHeight(),
+				src_rect, current->GetSize(), display->GetDisplayAlignment(), display->UsesLowerLeftOrigin(),
+				GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)));
 
 			const u64 current_time = Common::Timer::GetCurrentValue();
 			const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
 
-			g_gs_device->PresentRect(current, GSVector4(0, 0, 1, 1), nullptr, draw_rect,
+			g_gs_device->PresentRect(current, src_uv, nullptr, draw_rect,
 				s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent);
 		}
 
@@ -786,13 +809,16 @@ void GSRenderer::PresentCurrentFrame()
 		if (current)
 		{
 			HostDisplay* const display = g_gs_device->GetDisplay();
-			const GSVector4 draw_rect(CalculateDrawRect(display->GetWindowWidth(), display->GetWindowHeight(),
-				current->GetWidth(), current->GetHeight(), display->GetDisplayAlignment(), display->UsesLowerLeftOrigin(), GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)));
+			const GSVector4i src_rect(CalculateDrawSrcRect(current));
+			const GSVector4 src_uv(GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy());
+			const GSVector4 draw_rect(CalculateDrawDstRect(display->GetWindowWidth(), display->GetWindowHeight(),
+				src_rect, current->GetSize(), display->GetDisplayAlignment(), display->UsesLowerLeftOrigin(),
+				GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)));
 
 			const u64 current_time = Common::Timer::GetCurrentValue();
 			const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
 
-			g_gs_device->PresentRect(current, GSVector4(0, 0, 1, 1), nullptr, draw_rect,
+			g_gs_device->PresentRect(current, src_uv, nullptr, draw_rect,
 				s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent);
 		}
 
@@ -907,7 +933,9 @@ bool GSRenderer::SaveSnapshotToMemory(u32 width, u32 height, std::vector<u32>* p
 	if (!current)
 		return false;
 
-	GSVector4 draw_rect(CalculateDrawRect(width, height, current->GetWidth(), current->GetHeight(),
+	const GSVector4i src_rect(CalculateDrawSrcRect(current));
+	const GSVector4 src_uv(GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy());
+	GSVector4 draw_rect(CalculateDrawDstRect(width, height, src_rect, current->GetSize(),
 		HostDisplay::Alignment::LeftOrTop, false, GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)));
 	u32 draw_width = static_cast<u32>(draw_rect.z - draw_rect.x);
 	u32 draw_height = static_cast<u32>(draw_rect.w - draw_rect.y);
@@ -926,7 +954,7 @@ bool GSRenderer::SaveSnapshotToMemory(u32 width, u32 height, std::vector<u32>* p
 
 	GSTexture::GSMap map;
 	const bool result = g_gs_device->DownloadTextureConvert(
-		current, GSVector4(0.0f, 0.0f, 1.0f, 1.0f),
+		current, src_uv,
 		GSVector2i(draw_width, draw_height), GSTexture::Format::Color,
 		ShaderConvert::COPY, map, true);
 	if (result)

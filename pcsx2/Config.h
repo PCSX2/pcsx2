@@ -516,8 +516,12 @@ struct Pcsx2Config
 
 		double Zoom{100.0};
 		double StretchY{100.0};
+#ifndef PCSX2_CORE
 		double OffsetX{0.0};
 		double OffsetY{0.0};
+#else
+		int Crop[4]{};
+#endif
 
 		double OsdScale{100.0};
 
