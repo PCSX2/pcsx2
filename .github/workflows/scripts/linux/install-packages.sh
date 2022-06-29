@@ -28,22 +28,18 @@ declare -a PCSX2_PACKAGES=(
   "libsamplerate0-dev"
   "libsoundtouch-dev"
   "libudev-dev"
+  "libwayland-dev"
   "libwxgtk3.0-gtk3-dev"
   "libx11-xcb-dev"
-  "libxcb-keysyms1"
-  "libxcb-randr0"
-  "libxcb-render-util0"
-  "libxcb-icccm4"
-  "libxcb-image0-dev"
   "pkg-config"
   "portaudio19-dev"
   "zlib1g-dev"
 )
 
 if [ "${COMPILER}" = "gcc" ]; then
-  BUILD_PACKAGES+=("g++-10-multilib")
+  BUILD_PACKAGES+=("g++-10")
 else
-  BUILD_PACKAGES+=("clang-9")
+  BUILD_PACKAGES+=("libclang-11-dev")
   PCSX2_PACKAGES+=("libstdc++-10-dev")
 fi
 
@@ -61,6 +57,7 @@ sudo apt-get -qq update
 echo "Will install the following packages for building - ${BUILD_PACKAGES[*]}"
 #sudo apt remove gcc-9 g++-9
 sudo apt-get -y install "${BUILD_PACKAGES[@]}"
+sudo apt install -y '^libxcb.*-dev' '^libxcb-util.*-dev' '^libxkbcommon.*-dev'
 
 # Install packages needed by pcsx2
 PCSX2_PACKAGES=("${PCSX2_PACKAGES[@]/%/"${ARCH}"}")
