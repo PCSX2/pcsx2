@@ -381,16 +381,24 @@ s32 CALLBACK ISOreadSector(u8* tempbuffer, u32 lsn, int mode)
 	return 0;
 }
 
+inline void ChangeTracks(int track)
+{
+	if (track > 0 && track != currentTrackNum)
+	{
+		Console.Warning("Track Num: %d", track);
+		currentTrackNum = track;
+		iso = *cueFile->GetTrack(currentTrackNum)->fileReader;
+	}
+
+	return;
+}
+
+
 s32 CALLBACK ISOreadTrack(u32 lsn, int mode, int track = 0)
 {
 	int _lsn = lsn;
 
-	if (track > 0 && track != currentTrackNum)
-	{
-		Console.Warning("Track Num: %d", track);
-		currentTrackNum = cueFile->GetTrack(track)->trackNum;
-		iso = *cueFile->GetTrack(currentTrackNum)->fileReader;
- 	}
+	ChangeTracks(track);
 
 	if (_lsn < 0)
 		lsn = iso.GetBlockCount() + _lsn;

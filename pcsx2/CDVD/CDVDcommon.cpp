@@ -429,6 +429,7 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 				trackLength = (fileSize - pregapLSN);
 				cueFile->tempTracks[i].startAbsolute = (fileSize + 150 + pregapLSN);
 				cueFile->tempTracks[i].startRelative = pregapLSN;
+				cueFile->tempTracks[i].length = trackLength;
 
 				fclose(file);
 			}
@@ -438,6 +439,7 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 				trackLength = (nextIndex - pregapLSN);
 				cueFile->tempTracks[i].startAbsolute = index1;
 				cueFile->tempTracks[i].startRelative = pregapLSN;
+				cueFile->tempTracks[i].length = trackLength;
 			}
 		}
 		// MULTI FILE MULTI TRACK
@@ -457,10 +459,10 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 			fclose(file);
 			file = nullptr;
 
-		if (cueFile->tempTracks[i].GetIndex(0) != nullptr)
-		{
+			if (cueFile->tempTracks[i].GetIndex(0) != nullptr)
+			{
 				index0 = msf_to_lsn(cueFile->tempTracks[i].GetIndex(0));
-		}
+			}
 			index1 = msf_to_lsn(cueFile->tempTracks[i].GetIndex(1));
 			if (index0 > 0)
 			{
@@ -486,7 +488,7 @@ static void CalculateDiskLength(int i, std::string filePath, bool couldBeAudio)
 			else
 			{
 	
-				cueFile->tempTracks[i].length = (trackLength + pregapLSN);
+				cueFile->tempTracks[i].length = trackLength;
 				cueFile->tempTracks[i].startAbsolute = maxLSN;
 				cueFile->tempTracks[i].startRelative = pregapLSN;
 				maxLSN += cueFile->tempTracks[i].length.value();
@@ -538,11 +540,12 @@ bool DoParseCueFile(fs::path ext)
 				}
 				cueFile->tempTracks.clear();
 			
-				int ret = CDVD->open(!ext.empty() ? cueFile->GetTrack(1)->filePath.c_str() : nullptr, 1);
+				int ret = CDVD->open(cueFile->GetTrack(1)->filePath.c_str(), 1);
 				if (ret == -1)
 					return false; // error! (handled by caller)
 
-				return true;
+				else
+					return true;
 			}
 		}
 		return false;
