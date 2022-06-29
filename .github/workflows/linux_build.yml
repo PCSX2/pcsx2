@@ -54,7 +54,7 @@ jobs:
         shell: bash
         env:
           OS: linux
-          GUI_FRAMEWORK: wxWidgets
+          GUI_FRAMEWORK: QT
           ARCH: ${{ inputs.platform }}
           SIMD: ''
           EVENT_NAME: ${{ github.event_name }}
@@ -103,7 +103,7 @@ jobs:
         run: .github/workflows/scripts/linux/generate-cmake.sh
 
       - name: QT 6 paths
-        run: ls $HOME/Depends/bin && sudo ln -s $HOME/Depends/$(find bin/ -name qmake) /usr/bin
+        run: sudo ln -s $(find $HOME/Depends/ -name qmake) /usr/bin
 
       - name: Build PCSX2
         working-directory: build
