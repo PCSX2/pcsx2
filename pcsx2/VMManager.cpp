@@ -1335,6 +1335,11 @@ bool VMManager::IsElfFileName(const std::string_view& path)
 	return StringUtil::EndsWithNoCase(path, ".elf");
 }
 
+bool VMManager::IsBlockDumpFileName(const std::string_view& path)
+{
+	return StringUtil::EndsWithNoCase(path, ".dump");
+}
+
 bool VMManager::IsGSDumpFileName(const std::string_view& path)
 {
 	return (StringUtil::EndsWithNoCase(path, ".gs") ||
@@ -1349,7 +1354,7 @@ bool VMManager::IsSaveStateFileName(const std::string_view& path)
 
 bool VMManager::IsLoadableFileName(const std::string_view& path)
 {
-	return IsElfFileName(path) || IsGSDumpFileName(path) || GameList::IsScannableFilename(path);
+	return IsElfFileName(path) || IsGSDumpFileName(path) || IsBlockDumpFileName(path) || GameList::IsScannableFilename(path);
 }
 
 void VMManager::Execute()
