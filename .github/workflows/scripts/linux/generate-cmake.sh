@@ -12,8 +12,9 @@ cmake                                     \
 -DWAYLAND_API=ON                              \
 -DQT_BUILD=ON                                  \
 -DXDG_STD=TRUE                                  \
--DUSE_VULKAN=ON                                  \
--DPACKAGE_MODE=ON                                 \
--DDISABLE_SETCAP=ON                                \
--GNinja                                             \
+-DDISABLE_ADVANCE_SIMD=TRUE						           \
+-DUSE_VULKAN=ON                                   \
+-DPACKAGE_MODE=ON                                  \
+-DDISABLE_SETCAP=ON                                 \
+-GNinja                                              \
 -B build
