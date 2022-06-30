@@ -28,6 +28,9 @@ on:
         required: false
         type: string
         default: ""
+      gui:
+        required: true
+        type: string
 
 jobs:
   build_linux:
@@ -54,7 +57,7 @@ jobs:
         shell: bash
         env:
           OS: linux
-          GUI_FRAMEWORK: QT
+          GUI_FRAMEWORK: ${{ inputs.gui }}
           ARCH: ${{ inputs.platform }}
           SIMD: ''
           EVENT_NAME: ${{ github.event_name }}
@@ -92,9 +95,12 @@ jobs:
           key: ${{ inputs.os }} ${{ inputs.platform }} deps ${{ hashFiles('.github/workflows/scripts/linux/build-dependencies.sh') }}
 
       - name: Build Dependencies
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          COMPILER: ${{ inputs.compiler }}
         run: .github/workflows/scripts/linux/build-dependencies.sh
         if: steps.cache-deps.outputs.cache-hit != 'true'
-      
+
       - name: Generate CMake
         env:
           PLATFORM: ${{ inputs.platform }}
@@ -103,7 +109,7 @@ jobs:
         run: .github/workflows/scripts/linux/generate-cmake.sh
 
       - name: QT 6 paths
-        run: sudo ln -s $(find $HOME/Depends/ -name qmake) /usr/bin
+        run: sudo ln -s $HOME/Depends/bin/qmake /usr/bin
 
       - name: Build PCSX2
         working-directory: build
@@ -118,6 +124,7 @@ jobs:
         env:
           PLATFORM: ${{ inputs.platform }}
           COMPILER: ${{ inputs.compiler }}
+          GUI: ${{ inputs.gui }}
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}
         run: .github/workflows/scripts/linux/appimage.sh
 

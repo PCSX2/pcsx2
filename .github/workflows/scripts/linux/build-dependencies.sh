@@ -8,14 +8,18 @@ QT=6.3.0
 SDL=SDL2-2.0.22
 PATCHELF_VERSION=0.14.5
 
-export CC=gcc-10; export CXX=g++-10
+if [ "${COMPILER}" = "gcc" ]; then
+  export CC=gcc-10; export CXX=g++-10
+else
+  export CC=clang; export CXX=clang++
+fi
 export CFLAGS="-I$INSTALLDIR/include -Os $CFLAGS"
 export CXXFLAGS="-I$INSTALLDIR/include -Os $CXXFLAGS"
 export LDFLAGS="-L$INSTALLDIR/lib $LDFLAGS"
 export PKG_CONFIG_PATH="$INSTALLDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 export Qt6_DIR="$HOME/Depends/lib/cmake/Qt6"
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/Depends/lib/
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/Depends/lib/"
 
 cd "$SRCDIR"
 
@@ -30,7 +34,7 @@ e4dd4ef892a34a9514a19238f189a33ed85c76f31dcad6599ced93b1e33440b3  qttranslations
 e7b567f6e43ffc5918d4aa825ce1eced66a00cb0a87133b2912ba5c1b2a02190  qtwayland-everywhere-src-$QT.tar.xz
 EOF
 
-wget -q https://libsdl.org/release/$SDL.tar.gz \
+wget -q https://libsdl.org/release/"$SDL".tar.gz \
 https://github.com/NixOS/patchelf/releases/download/"$PATCHELF_VERSION/patchelf-$PATCHELF_VERSION.tar.bz2" \
 https://download.qt.io/official_releases/qt/"${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
 https://download.qt.io/official_releases/qt/"${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
@@ -59,9 +63,9 @@ ninja -j$(nproc) && ninja install
 
 cd ../..
 
-tar xf patchelf-$PATCHELF_VERSION.tar.bz2
+tar xf patchelf-"$PATCHELF_VERSION".tar.bz2
 
-cd patchelf-$PATCHELF_VERSION
+cd patchelf-"$PATCHELF_VERSION"
 
 ./configure --prefix "$INSTALLDIR"
 make -j$(nproc) && make install

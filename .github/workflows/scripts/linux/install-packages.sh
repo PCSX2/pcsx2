@@ -18,7 +18,6 @@ declare -a PCSX2_PACKAGES=(
   "libgl1-mesa-dev"
   "libgtk-3-dev"
   "libharfbuzz-dev"
-  "libclang-11-dev"
   "libjpeg-dev"
   "liblzma-dev"
   "libpcap0.8-dev"
@@ -36,26 +35,17 @@ declare -a PCSX2_PACKAGES=(
   "zlib1g-dev"
 )
 
-if [ "${COMPILER}" = "gcc" ]; then
-  BUILD_PACKAGES+=("g++-10")
-else
-  BUILD_PACKAGES+=("libclang-11-dev")
-  PCSX2_PACKAGES+=("libstdc++-10-dev")
-fi
+BUILD_PACKAGES+=("libclang-11-dev")
+PCSX2_PACKAGES+=("libstdc++-10-dev")
+
 
 # - https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md
 ARCH=""
-echo "${PLATFORM}"
-if [ "${PLATFORM}" == "x86" ]; then
-  ARCH=":i386"
-  sudo dpkg --add-architecture i386
-fi
 
 sudo apt-get -qq update
 
 # Install packages needed for building
 echo "Will install the following packages for building - ${BUILD_PACKAGES[*]}"
-#sudo apt remove gcc-9 g++-9
 sudo apt-get -y install "${BUILD_PACKAGES[@]}"
 sudo apt install -y '^libxcb.*-dev' '^libxcb-util.*-dev' '^libxkbcommon.*-dev'
 
