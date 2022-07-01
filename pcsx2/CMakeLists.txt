@@ -1550,7 +1550,6 @@ if(Linux)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		PkgConfig::AIO
 		PkgConfig::LIBUDEV
-		ALSA::ALSA
 	)
 endif()
 

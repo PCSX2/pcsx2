@@ -20,11 +20,6 @@ if (WIN32)
 	add_subdirectory(3rdparty/xz EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/D3D12MemAlloc EXCLUDE_FROM_ALL)
 else()
-	## Use cmake package to find module
-	if (Linux)
-		find_package(ALSA REQUIRED)
-		make_imported_target_if_missing(ALSA::ALSA ALSA)
-	endif()
 	find_package(PCAP REQUIRED)
 	find_package(Gettext) # translation tool
 	find_package(LibLZMA REQUIRED)
