@@ -34273,10 +34273,14 @@ SLPS-25196:
 SLPS-25197:
   name: "Kingdom Hearts - Final Mix [Limited Edition]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes picture artifacts.
 SLPS-25198:
   name: "Kingdom Hearts - Final Mix"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes picture artifacts.
 SLPS-25199:
   name: "Unlimited Saga"
   region: "NTSC-J"
