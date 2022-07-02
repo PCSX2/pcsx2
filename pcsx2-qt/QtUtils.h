@@ -36,6 +36,9 @@ class QUrl;
 
 namespace QtUtils
 {
+	/// Wheel delta is 120 as in winapi.
+	static constexpr float MOUSE_WHEEL_DELTA = 120.0f;
+
 	/// Marks an action as the "default" - i.e. makes the text bold.
 	void MarkActionAsDefault(QAction* action);
 

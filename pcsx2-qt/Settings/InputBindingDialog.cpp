@@ -23,6 +23,7 @@
 #include <QtCore/QTimer>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QMouseEvent>
+#include <QtGui/QWheelEvent>
 
 // _BitScanForward()
 #include "pcsx2/GS/GSIntrin.h"
@@ -75,6 +76,33 @@ bool InputBindingDialog::eventFilter(QObject* watched, QEvent* event)
 		unsigned long button_index;
 		if (_BitScanForward(&button_index, static_cast<u32>(static_cast<const QMouseEvent*>(event)->button())))
 			m_new_bindings.push_back(InputManager::MakePointerButtonKey(0, button_index));
+		return true;
+	}
+	else if (event_type == QEvent::Wheel)
+	{
+		const QPoint delta_angle(static_cast<QWheelEvent*>(event)->angleDelta());
+		const float dx = std::clamp(static_cast<float>(delta_angle.x()) / QtUtils::MOUSE_WHEEL_DELTA, -1.0f, 1.0f);
+		if (dx != 0.0f)
+		{
+			InputBindingKey key(InputManager::MakePointerAxisKey(0, InputPointerAxis::WheelX));
+			key.negative = (dx < 0.0f);
+			m_new_bindings.push_back(key);
+		}
+
+		const float dy = std::clamp(static_cast<float>(delta_angle.y()) / QtUtils::MOUSE_WHEEL_DELTA, -1.0f, 1.0f);
+		if (dy != 0.0f)
+		{
+			InputBindingKey key(InputManager::MakePointerAxisKey(0, InputPointerAxis::WheelY));
+			key.negative = (dy < 0.0f);
+			m_new_bindings.push_back(key);
+		}
+
+		if (dx != 0.0f || dy != 0.0f)
+		{
+			addNewBinding();
+			stopListeningForInput();
+		}
+
 		return true;
 	}
 	else if (event_type == QEvent::MouseMove && m_mouse_mapping_enabled)
