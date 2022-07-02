@@ -193,6 +193,9 @@ bool ThreadedFileReader::Decompress(void* target, u64 begin, u32 size)
 	u64 off = begin;
 	while (remaining)
 	{
+		if (m_requestCancelled.load(std::memory_order_relaxed))
+			return false;
+
 		Chunk chunk = ChunkForOffset(off);
 		if (m_internalBlockSize || chunk.offset != off || chunk.length > remaining)
 		{
@@ -304,6 +307,11 @@ void ThreadedFileReader::CancelAndWaitUntilStopped(void)
 {
 	m_requestCancelled.store(true, std::memory_order_relaxed);
 	std::unique_lock<std::mutex> lock(m_mtx);
+
+	// Prevent the last request being picked up, if there was one.
+	// m_requestCancelled just stops the current decompress.
+	m_requestSize = 0;
+
 	while (m_running)
 		m_condition.wait(lock);
 }
