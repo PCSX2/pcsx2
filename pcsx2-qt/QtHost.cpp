@@ -188,25 +188,29 @@ void QtHost::SetDataDirectory()
 		CoTaskMemFree(documents_directory);
 	}
 #elif defined(__linux__)
-	// Check for $HOME/PCSX2 first, for legacy installs.
-	const char* home_dir = getenv("HOME");
-	const std::string legacy_dir(home_dir ? Path::Combine(home_dir, "PCSX2") : std::string());
-	if (!legacy_dir.empty() && FileSystem::DirectoryExists(legacy_dir.c_str()))
+	// Use $XDG_CONFIG_HOME/PCSX2 if it exists.
+	const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
+	if (xdg_config_home && Path::IsAbsolute(xdg_config_home))
 	{
-		EmuFolders::DataRoot = std::move(legacy_dir);
+		EmuFolders::DataRoot = Path::Combine(xdg_config_home, "PCSX2");
 	}
 	else
 	{
-		// otherwise, use $XDG_CONFIG_HOME/PCSX2.
-		const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
-		if (xdg_config_home && xdg_config_home[0] == '/' && FileSystem::DirectoryExists(xdg_config_home))
+		// Use ~/PCSX2 for non-XDG, and ~/.config/PCSX2 for XDG.
+		// Maybe we should drop the former when Qt goes live.
+		const char* home_dir = getenv("HOME");
+		if (home_dir)
 		{
-			EmuFolders::DataRoot = Path::Combine(xdg_config_home, "PCSX2");
-		}
-		else if (!legacy_dir.empty())
-		{
-			// fall back to the legacy PCSX2-in-home.
-			EmuFolders::DataRoot = std::move(legacy_dir);
+#ifndef XDG_STD
+			EmuFolders::DataRoot = Path::Combine(home_dir, "PCSX2");
+#else
+			// ~/.config should exist, but just in case it doesn't and this is a fresh profile..
+			const std::string config_dir(Path::Combine(home_dir, ".config"));
+			if (!FileSystem::DirectoryExists(config_dir.c_str()))
+				FileSystem::CreateDirectoryPath(config_dir.c_str(), false);
+
+			EmuFolders::DataRoot = Path::Combine(config_dir, "PCSX2");
+#endif
 		}
 	}
 #elif defined(__APPLE__)
