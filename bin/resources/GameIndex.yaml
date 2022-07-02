@@ -791,6 +791,7 @@ SCAJ-20086:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
+    texturePreloading: 0
   memcardFilters:
     - "SLPS-29001"
     - "SLPS-29002"
@@ -805,6 +806,7 @@ SCAJ-20087:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
+    texturePreloading: 0
   memcardFilters:
     - "SLPS-29001"
     - "SLPS-29002"
@@ -962,6 +964,7 @@ SCAJ-20123:
   gsHWFixes:
     textureInsideRT: 1
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    roundSprite: 1 # Fixes font artifacts.
   memcardFilters:
     - "SCAJ-20123"
     - "SCPS-15091"
@@ -1286,6 +1289,7 @@ SCAJ-20183:
   region: "NTSC-J"
   gsHWFixes:
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    roundSprite: 1 # Fixes font sizes.
 SCAJ-20184:
   name: "Seiken Densetsu 4"
   region: "NTSC-Unk"
@@ -1361,7 +1365,7 @@ SCAJ-25004:
   name: "Kingdom Hearts - Final Mix"
   region: "NTSC-Unk"
 SCAJ-25008:
-  name: "Initial D - Street Stage"
+  name: "Initial D - Special Stage"
   region: "NTSC-Unk"
 SCAJ-25012:
   name: "Final Fantasy X-2"
@@ -1551,6 +1555,7 @@ SCED-50041:
   region: "PAL-E"
   gsHWFixes:
     alignSprite: 1
+    texturePreloading: 1
 SCED-50065:
   name: "Official PlayStation 2 Magazine Demo 1"
   region: "PAL-M5"
@@ -2557,6 +2562,7 @@ SCES-50001:
   compat: 5
   gsHWFixes:
     alignSprite: 1
+    texturePreloading: 1
 SCES-50002:
   name: "FantaVision"
   region: "PAL-M5"
@@ -4426,9 +4432,9 @@ SCES-82034:
   region: "PAL-M3"
   gsHWFixes:
     autoFlush: 1
+    texturePreloading: 0
   memcardFilters:
     - "SLES-82034"
-    - "SCES-82034"
 SCES-82035:
   name: "Xenosaga II - Jenseits von Gut und Bose [Disc 2]"
   region: "PAL-M3"
@@ -26340,7 +26346,7 @@ SLPM-65362:
   name: "NHK Tensai Bit-Kun - Guramon Battle"
   region: "NTSC-J"
 SLPM-65364:
-  name: "School Heaven - Boy's Love Scramble!"
+  name: "Shoujo Yoshitsune-den"
   region: "NTSC-J"
 SLPM-65365:
   name: "Tokimeki Memorial - Girl's Side [Konami The Best]"
@@ -32388,7 +32394,7 @@ SLPM-74416:
   name: "Clock Tower 3"
   region: "NTSC-J"
 SLPM-74420:
-  name: "Initial D - Street Stage [PlayStation 2 The Best]"
+  name: "Initial D - Special Stage [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74421:
   name: "Dennou Senki - Virtual-On Marz [PlayStation 2 The Best]"
@@ -42354,6 +42360,7 @@ SLUS-21133:
   compat: 5
   gsHWFixes:
     autoFlush: 1
+    texturePreloading: 0
   memcardFilters:
     - "SLUS-20469"
     - "SLUS-20892"
@@ -43190,6 +43197,7 @@ SLUS-21292:
   gsHWFixes:
     textureInsideRT: 1
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    roundSprite: 1 # Fixes font artifacts.
   memcardFilters: # Allows import of Alter Code F clear data.
     - "SLUS-21292"
     - "SLUS-20937"
@@ -44721,6 +44729,7 @@ SLUS-21615:
   compat: 5
   gsHWFixes:
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    roundSprite: 1 # Fixes font sizes.
 SLUS-21616:
   name: "Tony Hawk's Proving Ground"
   region: "NTSC-U"
@@ -44965,6 +44974,8 @@ SLUS-21672:
   compat: 5
   roundModes:
     vuRoundMode: 0 # Crashes without.
+  gsHWFixes:
+    textureInsideRT: 1 # Crowd textures.
 SLUS-21673:
   name: "College Hoops 2K8"
   region: "NTSC-U"
@@ -46579,6 +46590,7 @@ SLUS-29088:
   region: "NTSC-U"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+    disablePartialInvalidation: 1
 SLUS-29089:
   name: "Resident Evil Outbreak [Public Beta 1.0]"
   region: "NTSC-U"
