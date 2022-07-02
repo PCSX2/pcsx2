@@ -330,15 +330,12 @@ bool DisplayWidget::event(QEvent* event)
 
 		case QEvent::Wheel:
 		{
-			// wheel delta is 120 as in winapi
 			const QPoint delta_angle(static_cast<QWheelEvent*>(event)->angleDelta());
-			constexpr float DELTA = 120.0f;
-
-			const float dx = std::clamp(static_cast<float>(delta_angle.x()) / DELTA, -1.0f, 1.0f);
+			const float dx = std::clamp(static_cast<float>(delta_angle.x()) / QtUtils::MOUSE_WHEEL_DELTA, -1.0f, 1.0f);
 			if (dx != 0.0f)
 				InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::WheelX, dx);
 
-			const float dy = std::clamp(static_cast<float>(delta_angle.y()) / DELTA, -1.0f, 1.0f);
+			const float dy = std::clamp(static_cast<float>(delta_angle.y()) / QtUtils::MOUSE_WHEEL_DELTA, -1.0f, 1.0f);
 			if (dy != 0.0f)
 				InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::WheelY, dy);
 
