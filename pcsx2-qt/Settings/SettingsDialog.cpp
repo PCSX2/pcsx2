@@ -85,7 +85,7 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 			tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by PCSX2 to populate the game "
 			   "list. Search directories can be added, removed, and switched to recursive/non-recursive."));
 		addWidget(m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"), QStringLiteral("hard-drive-2-line"),
-			tr("<strong>BIOS Settings</strong><hr>"));
+			tr("<strong>BIOS Settings</strong><hr>Configure your BIOS here.<br><br>Mouse over an option for additional information."));
 	}
 	else
 	{
@@ -100,15 +100,14 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 
 	// Common to both per-game and global settings.
 	addWidget(m_emulation_settings = new EmulationSettingsWidget(this, m_ui.settingsContainer), tr("Emulation"), QStringLiteral("dashboard-line"),
-		tr("<strong>Emulation Settings</strong><hr>"));
+		tr("<strong>Emulation Settings</strong><hr>These options determine the configuration of frame pacing and game settings.<br><br>Mouse over an option for additional information."));
 	addWidget(m_system_settings = new SystemSettingsWidget(this, m_ui.settingsContainer), tr("System"), QStringLiteral("artboard-2-line"),
-		tr("<strong>System Settings</strong><hr>These options determine the configuration of the simulated console.<br><br>Mouse over an option for "
-		   "additional information."));
+		tr("<strong>System Settings</strong><hr>These options determine the configuration of the simulated console.<br><br>Mouse over an option for additional information."));
 
 	if (show_advanced_settings)
 	{
 		addWidget(m_advanced_system_settings = new AdvancedSystemSettingsWidget(this, m_ui.settingsContainer), tr("Advanced System"),
-			QStringLiteral("artboard-2-line"), tr("<strong>Advanced System Settings</strong><hr>"));
+			QStringLiteral("artboard-2-line"), tr("<strong>Advanced System Settings</strong><hr>These are Advanced options to determine the configuration of the simulated console.<br><br>Mouse over an option for additional information."));
 
 		// Only show the game fixes for per-game settings, there's really no reason to be setting them globally.
 		if (isPerGameSettings())
@@ -119,16 +118,15 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	}
 
 	addWidget(m_graphics_settings = new GraphicsSettingsWidget(this, m_ui.settingsContainer), tr("Graphics"), QStringLiteral("brush-line"),
-		tr("<strong>Graphics Settings</strong><hr>"));
+		tr("<strong>Graphics Settings</strong><hr>These options determine the configuration of the graphical output.<br><br>Mouse over an option for additional information."));
 	addWidget(m_audio_settings = new AudioSettingsWidget(this, m_ui.settingsContainer), tr("Audio"), QStringLiteral("volume-up-line"),
-		tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console. Mouse over an option for additional "
-		   "information."));
+		tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console.<br><br>Mouse over an option for additional information."));
 
 	// for now, memory cards aren't settable per-game
 	if (!isPerGameSettings())
 	{
 		addWidget(m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
-			QStringLiteral("sd-card-line"), tr("<strong>Memory Card Settings</strong><hr>"));
+			QStringLiteral("sd-card-line"), tr("<strong>Memory Card Settings</strong><hr>Create and configure Memory Cards here.<br><br>Mouse over an option for additional information."));
 	}
 	
 	addWidget(m_dev9_settings = new DEV9SettingsWidget(this, m_ui.settingsContainer), tr("Network & HDD"), QStringLiteral("dashboard-line"),
