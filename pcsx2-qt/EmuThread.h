@@ -110,9 +110,6 @@ Q_SIGNALS:
 	/// Provided by the host; called when the running executable changes.
 	void onGameChanged(const QString& path, const QString& serial, const QString& name, quint32 crc);
 
-	/// Called when performance metrics are changed, approx. once a second.
-	void onPerformanceMetricsUpdated(const QString& fps_stats, const QString& gs_stats);
-
 	void onInputDevicesEnumerated(const QList<QPair<QString, QString>>& devices);
 	void onInputDeviceConnected(const QString& identifier, const QString& device_name);
 	void onInputDeviceDisconnected(const QString& identifier);
@@ -173,6 +170,7 @@ private:
 	float m_last_video_fps = 0.0f;
 	int m_last_internal_width = 0;
 	int m_last_internal_height = 0;
+	GSRendererType m_last_renderer = GSRendererType::Null;
 };
 
 extern EmuThread* g_emu_thread;

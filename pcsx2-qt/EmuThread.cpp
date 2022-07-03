@@ -851,15 +851,12 @@ void Host::OnGameChanged(const std::string& disc_path, const std::string& game_s
 
 void EmuThread::updatePerformanceMetrics(bool force)
 {
-	QString fps_stat, gs_stat;
-	bool changed = force;
-
 	if (m_verbose_status && VMManager::HasValidVM())
 	{
 		std::string gs_stat_str;
 		GSgetTitleStats(gs_stat_str);
-		changed = true;
 
+		QString gs_stat;
 		if (THREAD_VU1)
 		{
 			gs_stat =
@@ -876,8 +873,11 @@ void EmuThread::updatePerformanceMetrics(bool force)
 						  .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
 						  .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
 		}
+
+		QMetaObject::invokeMethod(g_main_window->getStatusVerboseWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, gs_stat));
 	}
 
+	const GSRendererType renderer = GSConfig.Renderer;
 	const float speed = std::round(PerformanceMetrics::GetSpeed());
 	const float gfps = std::round(PerformanceMetrics::GetInternalFPS());
 	const float vfps = std::round(PerformanceMetrics::GetFPS());
@@ -886,41 +886,56 @@ void EmuThread::updatePerformanceMetrics(bool force)
 
 	if (iwidth != m_last_internal_width || iheight != m_last_internal_height ||
 		speed != m_last_speed || gfps != m_last_game_fps || vfps != m_last_video_fps ||
-		changed)
+		renderer != m_last_renderer || force)
 	{
-		m_last_internal_width = iwidth;
-		m_last_internal_height = iheight;
-		m_last_speed = speed;
-		m_last_game_fps = gfps;
-		m_last_video_fps = vfps;
-		changed = true;
-
 		if (iwidth == 0 && iheight == 0)
 		{
 			// if we don't have width/height yet, we're not going to have fps either.
 			// and we'll probably be <100% due to compiling. so just leave it blank for now.
-		}
-		else if (PerformanceMetrics::IsInternalFPSValid())
-		{
-			fps_stat = QStringLiteral("%1x%2 | G: %3 | V: %4 | %5%")
-						   .arg(iwidth)
-						   .arg(iheight)
-						   .arg(gfps, 0, 'f', 0)
-						   .arg(vfps, 0, 'f', 0)
-						   .arg(speed, 0, 'f', 0);
+			QString blank;
+			QMetaObject::invokeMethod(g_main_window->getStatusRendererWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, blank));
+			QMetaObject::invokeMethod(g_main_window->getStatusResolutionWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, blank));
+			QMetaObject::invokeMethod(g_main_window->getStatusFPSWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, blank));
+			QMetaObject::invokeMethod(g_main_window->getStatusVPSWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, blank));
+			return;
 		}
 		else
 		{
-			fps_stat = QStringLiteral("%1x%2 | V: %3 | %4%")
-						   .arg(iwidth)
-						   .arg(iheight)
-						   .arg(vfps, 0, 'f', 0)
-						   .arg(speed, 0, 'f', 0);
+			if (renderer != m_last_renderer || force)
+			{
+				QMetaObject::invokeMethod(g_main_window->getStatusRendererWidget(), "setText", Qt::QueuedConnection,
+					Q_ARG(const QString&, QString::fromUtf8(Pcsx2Config::GSOptions::GetRendererName(renderer))));
+				m_last_renderer = renderer;
+			}
+			if (iwidth != m_last_internal_width || iheight != m_last_internal_height || force)
+			{
+				QMetaObject::invokeMethod(g_main_window->getStatusResolutionWidget(), "setText", Qt::QueuedConnection,
+					Q_ARG(const QString&, tr("%1x%2")
+											  .arg(iwidth)
+											  .arg(iheight)));
+				m_last_internal_width = iwidth;
+				m_last_internal_height = iheight;
+			}
+
+			if (gfps != m_last_game_fps || force)
+			{
+				QMetaObject::invokeMethod(g_main_window->getStatusFPSWidget(), "setText", Qt::QueuedConnection,
+					Q_ARG(const QString&, tr("Game: %1 FPS")
+											  .arg(gfps, 0, 'f', 0)));
+				m_last_game_fps = gfps;
+			}
+
+			if (speed != m_last_speed || vfps != m_last_video_fps || force)
+			{
+				QMetaObject::invokeMethod(g_main_window->getStatusVPSWidget(), "setText", Qt::QueuedConnection,
+					Q_ARG(const QString&, tr("Video: %1 FPS (%2%)")
+											  .arg(vfps, 0, 'f', 0)
+											  .arg(speed, 0, 'f', 0)));
+				m_last_speed = speed;
+				m_last_video_fps = vfps;
+			}
 		}
 	}
-
-	if (changed)
-		emit onPerformanceMetricsUpdated(fps_stat, gs_stat);
 }
 
 void Host::OnPerformanceMetricsUpdated()
