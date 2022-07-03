@@ -86,6 +86,13 @@ public:
 	/// Locks the VM by pausing it, while a popup dialog is displayed.
 	VMLock pauseAndLockVM();
 
+	/// Accessors for the status bar widgets, updated by the emulation thread.
+	__fi QLabel* getStatusVerboseWidget() const { return m_status_verbose_widget; }
+	__fi QLabel* getStatusRendererWidget() const { return m_status_renderer_widget; }
+	__fi QLabel* getStatusResolutionWidget() const { return m_status_resolution_widget; }
+	__fi QLabel* getStatusFPSWidget() const { return m_status_fps_widget; }
+	__fi QLabel* getStatusVPSWidget() const { return m_status_vps_widget; }
+
 public Q_SLOTS:
 	void checkForUpdates(bool display_message);
 	void refreshGameList(bool invalidate_cache);
@@ -156,7 +163,6 @@ private Q_SLOTS:
 	void onVMStopped();
 
 	void onGameChanged(const QString& path, const QString& serial, const QString& name, quint32 crc);
-	void onPerformanceMetricsUpdated(const QString& fps_stat, const QString& gs_stat);
 
 	void recreate();
 
@@ -234,8 +240,11 @@ private:
 	AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
 
 	QProgressBar* m_status_progress_widget = nullptr;
-	QLabel* m_status_gs_widget = nullptr;
+	QLabel* m_status_verbose_widget = nullptr;
+	QLabel* m_status_renderer_widget = nullptr;
 	QLabel* m_status_fps_widget = nullptr;
+	QLabel* m_status_vps_widget = nullptr;
+	QLabel* m_status_resolution_widget = nullptr;
 
 	QString m_current_disc_path;
 	QString m_current_game_serial;

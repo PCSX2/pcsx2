@@ -179,15 +179,28 @@ void MainWindow::setupAdditionalUi()
 	m_status_progress_widget->setFixedSize(140, 16);
 	m_status_progress_widget->hide();
 
-	m_status_gs_widget = new QLabel(m_ui.statusBar);
-	m_status_gs_widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	m_status_gs_widget->setFixedHeight(16);
-	m_status_gs_widget->hide();
+	m_status_verbose_widget = new QLabel(m_ui.statusBar);
+	m_status_verbose_widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	m_status_verbose_widget->setFixedHeight(16);
+	m_status_verbose_widget->hide();
+
+	m_status_renderer_widget = new QLabel(m_ui.statusBar);
+	m_status_renderer_widget->setFixedHeight(16);
+	m_status_renderer_widget->setFixedSize(65, 16);
+	m_status_renderer_widget->hide();
+
+	m_status_resolution_widget = new QLabel(m_ui.statusBar);
+	m_status_resolution_widget->setFixedHeight(16);
+	m_status_resolution_widget->setFixedSize(70, 16);
+	m_status_resolution_widget->hide();
 
 	m_status_fps_widget = new QLabel(m_ui.statusBar);
-	m_status_fps_widget->setAlignment(Qt::AlignRight);
-	m_status_fps_widget->setFixedHeight(16);
+	m_status_fps_widget->setFixedSize(85, 16);
 	m_status_fps_widget->hide();
+
+	m_status_vps_widget = new QLabel(m_ui.statusBar);
+	m_status_vps_widget->setFixedSize(125, 16);
+	m_status_vps_widget->hide();
 
 	for (u32 scale = 0; scale <= 10; scale++)
 	{
@@ -319,7 +332,6 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 	connect(thread, &EmuThread::onVMResumed, this, &MainWindow::onVMResumed);
 	connect(thread, &EmuThread::onVMStopped, this, &MainWindow::onVMStopped);
 	connect(thread, &EmuThread::onGameChanged, this, &MainWindow::onGameChanged);
-	connect(thread, &EmuThread::onPerformanceMetricsUpdated, this, &MainWindow::onPerformanceMetricsUpdated);
 
 	connect(m_ui.actionReset, &QAction::triggered, thread, &EmuThread::resetVM);
 	connect(m_ui.actionPause, &QAction::toggled, thread, &EmuThread::setVMPaused);
@@ -721,8 +733,11 @@ void MainWindow::updateStatusBarWidgetVisibility()
 		}
 	};
 
-	Update(m_status_gs_widget, s_vm_valid && !s_vm_paused, 1);
+	Update(m_status_verbose_widget, s_vm_valid, 1);
+	Update(m_status_renderer_widget, s_vm_valid, 0);
+	Update(m_status_resolution_widget, s_vm_valid, 0);
 	Update(m_status_fps_widget, s_vm_valid, 0);
+	Update(m_status_vps_widget, s_vm_valid, 0);
 }
 
 void MainWindow::updateWindowTitle()
@@ -1449,7 +1464,8 @@ void MainWindow::onVMPaused()
 	s_vm_paused = true;
 	updateWindowTitle();
 	updateStatusBarWidgetVisibility();
-	m_status_fps_widget->setText(tr("Paused"));
+	m_last_fps_status = m_status_verbose_widget->text();
+	m_status_verbose_widget->setText(tr("Paused"));
 	if (m_display_widget)
 	{
 		m_display_widget->updateRelativeMode(false);
@@ -1469,7 +1485,8 @@ void MainWindow::onVMResumed()
 	m_was_disc_change_request = false;
 	updateWindowTitle();
 	updateStatusBarWidgetVisibility();
-	m_status_fps_widget->setText(m_last_fps_status);
+	m_status_verbose_widget->setText(m_last_fps_status);
+	m_last_fps_status = QString();
 	if (m_display_widget)
 	{
 		m_display_widget->updateRelativeMode(true);
@@ -1507,13 +1524,6 @@ void MainWindow::onGameChanged(const QString& path, const QString& serial, const
 	m_current_game_crc = crc;
 	updateWindowTitle();
 	updateSaveStateMenus(path, serial, crc);
-}
-
-void MainWindow::onPerformanceMetricsUpdated(const QString& fps_stat, const QString& gs_stat)
-{
-	m_last_fps_status = fps_stat;
-	m_status_fps_widget->setText(m_last_fps_status);
-	m_status_gs_widget->setText(gs_stat);
 }
 
 void MainWindow::showEvent(QShowEvent* event)
