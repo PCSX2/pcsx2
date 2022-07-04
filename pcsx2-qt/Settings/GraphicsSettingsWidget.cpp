@@ -156,7 +156,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	dialog->registerWidgetHelp(m_ui.osdShowResolution, tr("Show Resolution"), tr("Unchecked"),
 		tr("Shows the resolution of the game in the top-right corner of the display."));
 	dialog->registerWidgetHelp(m_ui.osdShowCPU, tr("Show CPU Usage"), tr("Unchecked"),
-		tr("Shows workload percentage of host's CPU. Not related to performance outside of PCSX2."));
+		tr("Shows workload percentage of host's CPU."));
 	dialog->registerWidgetHelp(m_ui.osdShowGPU, tr("Show GPU Usage"), tr("Unchecked"),
 		tr("Shows workload percentage of host's GPU."));
 	dialog->registerWidgetHelp(m_ui.osdShowGSStats, tr("Show Statistics"), tr("Unchecked"),
