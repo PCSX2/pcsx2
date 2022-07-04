@@ -158,7 +158,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	dialog->registerWidgetHelp(m_ui.osdShowCPU, tr("Show CPU Usage"), tr("Unchecked"),
 		tr("Shows workload percentage of host's CPU. Not related to performance outside of PCSX2."));
 	dialog->registerWidgetHelp(m_ui.osdShowGPU, tr("Show GPU Usage"), tr("Unchecked"),
-		tr("Shows workload percentage of host's GPU. Not related to performance outside of PCSX2."));
+		tr("Shows workload percentage of host's GPU."));
 	dialog->registerWidgetHelp(m_ui.osdShowGSStats, tr("Show Statistics"), tr("Unchecked"),
 		tr("Shows counters for internal graphical workloads, useful for debugging."));
 	dialog->registerWidgetHelp(m_ui.osdShowIndicators, tr("Show Indicators"), tr("Unchecked"),
