@@ -155,6 +155,20 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
 	dialog->registerWidgetHelp(m_ui.osdShowResolution, tr("Show Resolution"), tr("Unchecked"),
 		tr("Shows the resolution of the game in the top-right corner of the display."));
+	dialog->registerWidgetHelp(m_ui.osdShowCPU, tr("Show CPU Usage"), tr("Unchecked"),
+		tr("Shows workload percentage of host's CPU. Not related to performance outside of PCSX2."));
+	dialog->registerWidgetHelp(m_ui.osdShowGPU, tr("Show GPU Usage"), tr("Unchecked"),
+		tr("Shows workload percentage of host's GPU. Not related to performance outside of PCSX2."));
+	dialog->registerWidgetHelp(m_ui.osdShowGSStats, tr("Show Statistics"), tr("Unchecked"),
+		tr("Shows counters for internal graphical workloads, useful for debugging."));
+	dialog->registerWidgetHelp(m_ui.osdShowIndicators, tr("Show Indicators"), tr("Unchecked"),
+		tr("Shows OSD icon indicators for emulation states such as Pausing, Turbo, Fast Forward, and Slow Motion."));
+
+    dialog->registerWidgetHelp(m_ui.shadeBoost, tr("Shade Boost"), tr("Unchecked"),
+		tr("Enables saturation, contrast, and brightness to be adjusted. Values of brightness, saturation, and contrast are at default 50."));
+	dialog->registerWidgetHelp(m_ui.fxaa, tr("FXAA"), tr("Unchecked"),
+		tr("Applies the FXAA anti-aliasing algorithm to improve the visual quality of games."));
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Settings
