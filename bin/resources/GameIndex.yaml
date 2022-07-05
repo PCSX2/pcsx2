@@ -41086,7 +41086,7 @@ SLUS-20868:
   name: "MVP Baseball 2004"
   region: "NTSC-U"
   memcardFilters:
-    - "PSCD10088" # Enables EA Sports .
+    - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20868"
 SLUS-20869:
   name: "Judge Dredd - Dredd vs. Death"
