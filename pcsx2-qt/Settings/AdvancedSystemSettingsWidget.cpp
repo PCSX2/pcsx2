@@ -60,6 +60,12 @@ AdvancedSystemSettingsWidget::AdvancedSystemSettingsWidget(SettingsDialog* dialo
 	dialog->registerWidgetHelp(m_ui.eeINTCSpinDetection, tr("INTC Spin Detection"), tr("Checked"),
 		tr("Huge speedup for some games, with almost no compatibility side effects."));
 
+	dialog->registerWidgetHelp(m_ui.vu0Recompiler, tr("Enable VU0 Recompiler"), tr("Checked"),
+		tr("Enables VU0 Recompiler."));
+
+	dialog->registerWidgetHelp(m_ui.vu1Recompiler, tr("Enable VU1 Recompiler"), tr("Checked"),
+		tr("Enables VU1 Recompiler."));
+
 	dialog->registerWidgetHelp(m_ui.vuFlagHack, tr("mVU Flag Hack"), tr("Checked"),
 		tr("Good speedup and high compatibility, may cause graphical errors."));
 
@@ -68,6 +74,9 @@ AdvancedSystemSettingsWidget::AdvancedSystemSettingsWidget(SettingsDialog* dialo
 
 	dialog->registerWidgetHelp(m_ui.gameFixes, tr("Enable Game Fixes"), tr("Checked"),
 		tr("Automatically loads and applies gamefixes to known problematic games on game start."));
+
+	dialog->registerWidgetHelp(m_ui.patches, tr("Enable Compatibility Patches"), tr("Checked"),
+		tr("Automatically loads and applies compatibility patches to known problematic games."));
 }
 
 AdvancedSystemSettingsWidget::~AdvancedSystemSettingsWidget() = default;

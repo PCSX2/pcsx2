@@ -60,7 +60,10 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 		tr("Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled."));
 
 	dialog->registerWidgetHelp(m_ui.slowMotionSpeed, tr("Slow Motion Speed"), tr("User Preference"),
-		tr("Sets the slow motion speed. This speed will be used when the slow motion hotkey is pressed/toggled."));
+		tr("Sets the slow motion speed. This speed will be used when the slow motion hotkey is pressed/toggled."));	
+
+	dialog->registerWidgetHelp(m_ui.speedLimiter, tr("Speed Limiter"), tr("checked"),
+		tr("Limits the emulation to the appropriate framerate for the currently running game."));
 
 	dialog->registerWidgetHelp(m_ui.syncToHostRefreshRate, tr("Sync To Host Refresh Rate"), tr("Unchecked"),
 		tr("Adjusts the emulation speed so the console's refresh rate matches the host's refresh rate when both VSync and "
