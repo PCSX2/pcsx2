@@ -40411,7 +40411,7 @@ SLUS-20719:
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
   memcardFilters:
-    - "PSCD10088" # Enables EA Sports BIO (2004-only Cross Game Profile System)
+    - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20719"
 SLUS-20720:
   name: "Romance of the Three Kingdoms VIII"
@@ -40554,7 +40554,7 @@ SLUS-20750:
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
   memcardFilters:
-    - "PSCD10088" # Enables EA Sports BIO (2004-only Cross Game Profile System)
+    - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20750"
 SLUS-20751:
   name: "James Bond 007 - Everything or Nothing"
@@ -40566,7 +40566,7 @@ SLUS-20752:
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
   memcardFilters:
-    - "PSCD10088" # Enables EA Sports BIO (2004-only Cross Game Profile System)
+    - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20752"
 SLUS-20753:
   name: "Medal of Honor - Rising Sun"
@@ -40576,7 +40576,7 @@ SLUS-20754:
   name: "NASCAR Thunder 2004"
   region: "NTSC-U"
   memcardFilters:
-    - "PSCD10088" # Enables EA Sports BIO (2004-only Cross Game Profile System)
+    - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20754"
 SLUS-20755:
   name: "NBA Live 2004"
@@ -40584,13 +40584,13 @@ SLUS-20755:
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
   memcardFilters:
-    - "PSCD10088" # Enables EA Sports BIO (2004-only Cross Game Profile System)
+    - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20755"
 SLUS-20756:
   name: "NHL 2004"
   region: "NTSC-U"
   memcardFilters:
-    - "PSCD10088" # Enables EA Sports BIO (2004-only Cross Game Profile System)
+    - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20756"
 SLUS-20757:
   name: "Tiger Woods PGA Tour 2004"
@@ -40599,7 +40599,7 @@ SLUS-20757:
   clampModes:
     vuClampMode: 2 # Fixes black textures on characters.
   memcardFilters:
-    - "PSCD10088" # Enables EA Sports BIO (2004-only Cross Game Profile System)
+    - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20757"
 SLUS-20758:
   name: "Growlanser Generations [Disc1of2] - Growlanser II - The Sense of Justice"
@@ -40688,7 +40688,7 @@ SLUS-20771:
   clampModes:
     vuClampMode: 3 # Fixes missing textures.
   memcardFilters:
-    - "PSCD10088" # Enables EA Sports BIO (2004-only Cross Game Profile System)
+    - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20771"
 SLUS-20772:
   name: "SSX 3"
@@ -40891,7 +40891,7 @@ SLUS-20824:
   name: "NASCAR Thunder 2004"
   region: "NTSC-U"
   memcardFilters:
-    - "PSCD10088" # Enables EA Sports BIO (2004-only Cross Game Profile System)
+    - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20824"
 SLUS-20826:
   name: "Harry Potter & the Sorcerer's Stone"
