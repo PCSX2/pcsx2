@@ -292,6 +292,19 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 	// Display tab
 	{
+
+		dialog->registerWidgetHelp(m_ui.DisableInterlaceOffset, tr("Disable Interlace Offset"), tr("UnChecked"),
+			tr("Disables interlacing offset which may reduce blurring in some situations."));
+
+		dialog->registerWidgetHelp(m_ui.bilinearFiltering, tr("Bilinear Filtering"), tr("Checked"),
+			tr("Enables bilinear post processing filter. Smooths the overall picture as it is displayed on the screen. Corrects positioning between pixels."));
+
+		dialog->registerWidgetHelp(m_ui.PCRTCOffsets, tr("Screen Offsets"), tr("UnChecked"),
+			tr("Enables PCRTC Offsets which position the screen as the game requests. Useful for some games such as WipEout Fusion for its screen shake effect, but can make the picture blurry."));
+
+		dialog->registerWidgetHelp(m_ui.PCRTCOverscan, tr("Show Overscan"), tr("UnChecked"),
+			tr("Enables the option to show the overscan area on games which draw more than the safe area of the screen."));
+
 		dialog->registerWidgetHelp(m_ui.fmvAspectRatio, tr("FMV Aspect Ratio"), tr("Off (Default)"),
 			tr("Overrides the FMV aspect ratio."));
 	
