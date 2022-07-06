@@ -315,9 +315,6 @@
          </item>
          <item row="4" column="0">
           <widget class="QCheckBox" name="DisableInterlaceOffset">
-           <property name="toolTip">
-            <string>Disables interlacing offset which may reduce blurring in some situations.</string>
-           </property>
            <property name="text">
             <string>Disable Interlace Offset</string>
            </property>
