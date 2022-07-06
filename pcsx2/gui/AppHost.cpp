@@ -121,7 +121,6 @@ HostDisplay* Host::AcquireHostDisplay(HostDisplay::RenderAPI api)
 		!s_host_display->InitializeRenderDevice(EmuFolders::Cache, GSConfig.UseDebugDevice) ||
 		!ImGuiManager::Initialize())
 	{
-		s_host_display->DestroyRenderDevice();
 		s_host_display.reset();
 		return nullptr;
 	}
@@ -137,10 +136,7 @@ void Host::ReleaseHostDisplay()
 	ImGuiManager::Shutdown();
 
 	if (s_host_display)
-	{
-		s_host_display->DestroyRenderDevice();
 		s_host_display.reset();
-	}
 
 	sApp.CloseGsPanel();
 }

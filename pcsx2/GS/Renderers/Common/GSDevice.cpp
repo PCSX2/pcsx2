@@ -57,6 +57,7 @@ const char* shaderName(PresentShader value)
 		case PresentShader::DIAGONAL_FILTER:   return "ps_filter_diagonal";
 		case PresentShader::TRIANGULAR_FILTER: return "ps_filter_triangular";
 		case PresentShader::COMPLEX_FILTER:    return "ps_filter_complex";
+		case PresentShader::LOTTES_FILTER:     return "ps_filter_lottes";
 			// clang-format on
 		default:
 			ASSERT(0);
@@ -377,9 +378,9 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	if (mode == 0 || mode == 2) // weave or blend
 	{
 		// weave first
-		const int offset = static_cast<int>(yoffset) * (1 - field);
+		const float offset = yoffset * static_cast<float>(field);
 
-		DoInterlace(m_merge, m_weavebob, field, false, GSConfig.DisableInterlaceOffset ? 0 : offset);
+		DoInterlace(m_merge, m_weavebob, field, false, GSConfig.DisableInterlaceOffset ? 0.0f : offset);
 
 		if (mode == 2)
 		{
@@ -398,7 +399,8 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	}
 	else if (mode == 1) // bob
 	{
-		DoInterlace(m_merge, m_weavebob, 3, true, yoffset * field);
+		// Field is reversed here as we are countering the bounce.
+		DoInterlace(m_merge, m_weavebob, 3, true, yoffset * (1-field));
 
 		m_current = m_weavebob;
 	}

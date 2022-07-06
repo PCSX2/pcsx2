@@ -34,9 +34,9 @@ alignas(16) const u32 sse4_maxvals[2][4] = {
 // gotten a NaN value, then something went wrong; and the NaN's sign
 // is not to be trusted. Games like positive values better usually,
 // and its faster... so just always make NaNs into positive infinity.
-void mVUclamp1(const xmm& reg, const xmm& regT1, int xyzw, bool bClampE = 0)
+void mVUclamp1(microVU& mVU, const xmm& reg, const xmm& regT1, int xyzw, bool bClampE = 0)
 {
-	if ((!clampE && CHECK_VU_OVERFLOW) || (clampE && bClampE))
+	if (((!clampE && CHECK_VU_OVERFLOW) || (clampE && bClampE)) && mVU.regAlloc->checkVFClamp(reg.Id))
 	{
 		switch (xyzw)
 		{
@@ -59,7 +59,7 @@ void mVUclamp1(const xmm& reg, const xmm& regT1, int xyzw, bool bClampE = 0)
 // so we just use a temporary mem location for our backup for now... (non-sse4 version only)
 void mVUclamp2(microVU& mVU, const xmm& reg, const xmm& regT1in, int xyzw, bool bClampE = 0)
 {
-	if ((!clampE && CHECK_VU_SIGN_OVERFLOW) || (clampE && bClampE && CHECK_VU_SIGN_OVERFLOW))
+	if (((!clampE && CHECK_VU_SIGN_OVERFLOW) || (clampE && bClampE && CHECK_VU_SIGN_OVERFLOW)) && mVU.regAlloc->checkVFClamp(reg.Id))
 	{
 		int i = (xyzw == 1 || xyzw == 2 || xyzw == 4 || xyzw == 8) ? 0 : 1;
 		xPMIN.SD(reg, ptr128[&sse4_maxvals[i][0]]);
@@ -67,13 +67,13 @@ void mVUclamp2(microVU& mVU, const xmm& reg, const xmm& regT1in, int xyzw, bool 
 		return;
 	}
 	else
-		mVUclamp1(reg, regT1in, xyzw, bClampE);
+		mVUclamp1(mVU, reg, regT1in, xyzw, bClampE);
 }
 
 // Used for operand clamping on every SSE instruction (add/sub/mul/div)
 void mVUclamp3(microVU& mVU, const xmm& reg, const xmm& regT1, int xyzw)
 {
-	if (clampE)
+	if (clampE && mVU.regAlloc->checkVFClamp(reg.Id))
 		mVUclamp2(mVU, reg, regT1, xyzw, 1);
 }
 
@@ -83,8 +83,8 @@ void mVUclamp3(microVU& mVU, const xmm& reg, const xmm& regT1, int xyzw)
 // emulated opcodes (causing crashes). Since we're clamping the operands
 // with mVUclamp3, we should almost never be getting a NaN result,
 // but this clamp is just a precaution just-in-case.
-void mVUclamp4(const xmm& reg, const xmm& regT1, int xyzw)
+void mVUclamp4(microVU& mVU, const xmm& reg, const xmm& regT1, int xyzw)
 {
-	if (clampE && !CHECK_VU_SIGN_OVERFLOW)
-		mVUclamp1(reg, regT1, xyzw, 1);
+	if (clampE && !CHECK_VU_SIGN_OVERFLOW && mVU.regAlloc->checkVFClamp(reg.Id))
+		mVUclamp1(mVU, reg, regT1, xyzw, 1);
 }

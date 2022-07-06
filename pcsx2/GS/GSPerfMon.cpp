@@ -19,13 +19,15 @@
 
 GSPerfMon g_perfmon;
 
-GSPerfMon::GSPerfMon()
-	: m_frame(0)
-	, m_lastframe(0)
-	, m_count(0)
+GSPerfMon::GSPerfMon() = default;
+
+void GSPerfMon::Reset()
 {
-	memset(m_counters, 0, sizeof(m_counters));
-	memset(m_stats, 0, sizeof(m_stats));
+	m_frame = 0;
+	m_lastframe = 0;
+	m_count = 0;
+	std::memset(m_counters, 0, sizeof(m_counters));
+	std::memset(m_stats, 0, sizeof(m_stats));
 }
 
 void GSPerfMon::EndFrame()

@@ -60,20 +60,16 @@ CreateMemoryCardDialog::~CreateMemoryCardDialog() = default;
 
 void CreateMemoryCardDialog::nameTextChanged()
 {
-	const QString controlName(m_ui.name->text());
+	QString controlName(m_ui.name->text());
 	const int cursorPos = m_ui.name->cursorPosition();
 
-	QString nameWithoutExtension;
-	if (controlName.endsWith(QStringLiteral(".ps2")))
-		nameWithoutExtension = controlName.left(controlName.size() - 4);
-	else
-		nameWithoutExtension = controlName;
+	controlName.replace(".", "");
 
 	QSignalBlocker sb(m_ui.name);
-	if (nameWithoutExtension.isEmpty())
+	if (controlName.isEmpty())
 		m_ui.name->setText(QString());
 	else
-		m_ui.name->setText(nameWithoutExtension + QStringLiteral(".ps2"));
+		m_ui.name->setText(controlName);
 
 	m_ui.name->setCursorPosition(cursorPos);
 	updateState();
@@ -99,7 +95,7 @@ void CreateMemoryCardDialog::restoreDefaults()
 
 void CreateMemoryCardDialog::updateState()
 {
-	const bool okay = (m_ui.name->text().length() > 4);
+	const bool okay = (m_ui.name->text().length() > 0);
 
 	m_ui.buttonBox->button(QDialogButtonBox::Ok)->setEnabled(okay);
 #ifdef _WIN32
@@ -109,8 +105,20 @@ void CreateMemoryCardDialog::updateState()
 
 void CreateMemoryCardDialog::createCard()
 {
-	const QString name(m_ui.name->text());
-	const std::string nameStr(name.toStdString());
+	QString name(m_ui.name->text());
+	std::string nameStr;
+
+	if (m_fileType == MemoryCardFileType::PS1)
+	{
+		name += QStringLiteral(".mcr");
+	}
+	else
+	{
+		name += QStringLiteral(".ps2");
+	}
+
+	nameStr = name.toStdString();
+
 	if (FileMcd_GetCardInfo(nameStr).has_value())
 	{
 		QMessageBox::critical(this, tr("Create Memory Card"),

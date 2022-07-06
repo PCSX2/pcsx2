@@ -13,13 +13,10 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __DECI2TTYP_H__
-#define __DECI2TTYP_H__
+#pragma once
 
 #include "Common.h"
 #include "deci2.h"
 
 //void D2_(char *inbuffer, char *outbuffer, char *message);
 void sendTTYP(u16 protocol, u8 source, char *data);
-
-#endif//__DECI2TTYP_H__

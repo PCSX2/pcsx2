@@ -19,6 +19,8 @@
 #include <QtWidgets/QFileDialog>
 #include <algorithm>
 
+#include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 
 #include "pcsx2/HostSettings.h"
@@ -662,24 +664,21 @@ void DEV9SettingsWidget::onHddBrowseFileClicked()
 void DEV9SettingsWidget::onHddFileEdit()
 {
 	//Check if file exists, if so set HddSize to correct value
-	//GHC uses UTF8 on all platforms
-	ghc::filesystem::path hddPath(m_ui.hddFile->text().toUtf8().constData());
-
+	std::string hddPath(m_ui.hddFile->text().toStdString());
 	if (hddPath.empty())
 		return;
 
-	if (hddPath.is_relative())
-	{
-		ghc::filesystem::path path(EmuFolders::Settings);
-		hddPath = path / hddPath;
-	}
+	if (!Path::IsAbsolute(hddPath))
+		hddPath = Path::Combine(EmuFolders::Settings, hddPath);
 
-	if (!ghc::filesystem::exists(hddPath))
+	if (!FileSystem::FileExists(hddPath.c_str()))
 		return;
 
-	const uintmax_t size = ghc::filesystem::file_size(hddPath);
+	const s64 size = FileSystem::GetPathFileSize(hddPath.c_str());
+	if (size < 0)
+		return;
 
-	const u32 sizeSectors = (size / 512);
+	const u32 sizeSectors = static_cast<u32>(size / 512);
 	const int sizeGB = size / 1024 / 1024 / 1024;
 
 	QSignalBlocker sb1(m_ui.hddSizeSpinBox);
@@ -713,7 +712,7 @@ void DEV9SettingsWidget::onHddSizeSpin(int i)
 void DEV9SettingsWidget::onHddCreateClicked()
 {
 	//Do the thing
-	ghc::filesystem::path hddPath(m_ui.hddFile->text().toUtf8().constData());
+	std::string hddPath(m_ui.hddFile->text().toStdString());
 
 	u64 sizeBytes = (u64)m_dialog->getEffectiveIntValue("DEV9/Hdd", "HddSizeSectors", 0) * 512;
 	if (sizeBytes == 0 || hddPath.empty())
@@ -724,30 +723,26 @@ void DEV9SettingsWidget::onHddCreateClicked()
 		return;
 	}
 
-	if (hddPath.is_relative())
-	{
-		//Note, EmuFolders is still wx strings
-		ghc::filesystem::path path(EmuFolders::Settings);
-		hddPath = path / hddPath;
-	}
+	if (!Path::IsAbsolute(hddPath))
+		hddPath = Path::Combine(EmuFolders::Settings, hddPath);
 
-	if (ghc::filesystem::exists(hddPath))
+	if (!FileSystem::FileExists(hddPath.c_str()))
 	{
 		//GHC uses UTF8 on all platforms
 		QMessageBox::StandardButton selection =
 			QMessageBox::question(this, tr("Overwrite File?"),
 				tr("HDD image \"%1\" already exists?\n\n"
 				   "Do you want to overwrite?")
-					.arg(QString::fromUtf8(hddPath.u8string().c_str())),
+					.arg(QString::fromStdString(hddPath)),
 				QMessageBox::Yes | QMessageBox::No);
 		if (selection == QMessageBox::No)
 			return;
 		else
-			ghc::filesystem::remove(hddPath);
+			FileSystem::DeleteFilePath(hddPath.c_str());
 	}
 
 	HddCreateQt hddCreator(this);
-	hddCreator.filePath = hddPath;
+	hddCreator.filePath = std::move(hddPath);
 	hddCreator.neededSize = sizeBytes;
 	hddCreator.Start();
 

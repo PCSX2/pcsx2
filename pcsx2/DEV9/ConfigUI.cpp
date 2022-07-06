@@ -26,6 +26,8 @@
 #include <wx/spinctrl.h>
 #include <wx/gbsizer.h>
 
+#include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 
 #include "Config.h"
@@ -417,16 +419,12 @@ void DEV9configure()
 	{
 		dialog.Save(g_Conf->EmuOptions.DEV9);
 
-		fs::path hddPath(g_Conf->EmuOptions.DEV9.HddFile);
+		std::string hddPath(g_Conf->EmuOptions.DEV9.HddFile);
 
-		if (hddPath.is_relative())
-		{
-			//GHC uses UTF8 on all platforms
-			ghc::filesystem::path path(EmuFolders::Settings);
-			hddPath = path / hddPath;
-		}
+		if (!Path::IsAbsolute(hddPath))
+			hddPath = Path::Combine(EmuFolders::Settings, hddPath);
 
-		if (g_Conf->EmuOptions.DEV9.HddEnable && !fs::exists(hddPath))
+		if (g_Conf->EmuOptions.DEV9.HddEnable && !FileSystem::FileExists(hddPath.c_str()))
 		{
 			HddCreateWx hddCreator;
 			hddCreator.filePath = hddPath;

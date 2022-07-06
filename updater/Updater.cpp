@@ -238,7 +238,9 @@ bool Updater::ParseZip()
 		if (!entry.destination_filename.empty() && entry.destination_filename.back() != FS_OSPATH_SEPARATOR_CHARACTER)
 		{
 			// skip updater itself, since it was already pre-extracted.
-			if (StringUtil::Strcasecmp(entry.destination_filename.c_str(), "updater.exe") != 0)
+			// also skips portable.ini to not mess with future non-portable installs.
+			if (StringUtil::Strcasecmp(entry.destination_filename.c_str(), "updater.exe") != 0 &&
+				StringUtil::Strcasecmp(entry.destination_filename.c_str(), "portable.ini") != 0)
 			{
 				m_progress->DisplayFormattedInformation("Found file in zip: '%s'", entry.destination_filename.c_str());
 				m_update_paths.push_back(std::move(entry));

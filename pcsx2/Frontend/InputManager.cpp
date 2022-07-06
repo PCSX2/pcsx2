@@ -16,10 +16,14 @@
 #include "PrecompiledHeader.h"
 #include "Frontend/InputManager.h"
 #include "Frontend/InputSource.h"
+#include "Frontend/ImGuiManager.h"
 #include "PAD/Host/PAD.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 #include "VMManager.h"
+
+#include "fmt/core.h"
+
 #include <array>
 #include <memory>
 #include <mutex>
@@ -36,7 +40,7 @@ enum : u32
 {
 	MAX_KEYS_PER_BINDING = 4,
 	MAX_MOTORS_PER_PAD = 2,
-	FIRST_EXTERNAL_INPUT_SOURCE = static_cast<u32>(InputSourceType::Mouse) + 1u,
+	FIRST_EXTERNAL_INPUT_SOURCE = static_cast<u32>(InputSourceType::Pointer) + 1u,
 	LAST_EXTERNAL_INPUT_SOURCE = static_cast<u32>(InputSourceType::Count),
 };
 
@@ -90,10 +94,8 @@ struct PadVibrationBinding
 // ------------------------------------------------------------------------
 namespace InputManager
 {
-	static std::optional<InputBindingKey> ParseHostKeyboardKey(
-		const std::string_view& source, const std::string_view& sub_binding);
-	static std::optional<InputBindingKey> ParseHostMouseKey(
-		const std::string_view& source, const std::string_view& sub_binding);
+	static std::optional<InputBindingKey> ParseHostKeyboardKey(const std::string_view& source, const std::string_view& sub_binding);
+	static std::optional<InputBindingKey> ParsePointerKey(const std::string_view& source, const std::string_view& sub_binding);
 
 	static std::vector<std::string_view> SplitChord(const std::string_view& binding);
 	static bool SplitBinding(const std::string_view& binding, std::string_view* source, std::string_view* sub_binding);
@@ -105,8 +107,10 @@ namespace InputManager
 	static void AddHotkeyBindings(SettingsInterface& si);
 	static void AddPadBindings(SettingsInterface& si, u32 pad, const char* default_type);
 	static void UpdateContinuedVibration();
+	static void GenerateRelativeMouseEvents();
 
 	static bool DoEventHook(InputBindingKey key, float value);
+	static bool PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key);
 } // namespace InputManager
 
 // ------------------------------------------------------------------------
@@ -131,6 +135,24 @@ static std::array<std::unique_ptr<InputSource>, static_cast<u32>(InputSourceType
 // Hotkeys
 // ------------------------------------------------------------------------
 static const HotkeyInfo* const s_hotkey_list[] = {g_vm_manager_hotkeys, g_gs_hotkeys, g_host_hotkeys};
+
+// ------------------------------------------------------------------------
+// Tracking host mouse movement and turning into relative events
+// 4 axes: pointer left/right, wheel vertical/horizontal. Last/Next/Normalized.
+// ------------------------------------------------------------------------
+static constexpr const std::array<const char*, static_cast<u8>(InputPointerAxis::Count)> s_pointer_axis_names = {
+	{"X", "Y", "WheelX", "WheelY"}};
+static constexpr const std::array<const char*, 3> s_pointer_button_names = {{"LeftButton", "RightButton", "MiddleButton"}};
+
+struct PointerAxisState
+{
+	std::atomic<s32> delta;
+	float last_value;
+};
+static std::array<std::array<float, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES> s_host_pointer_positions;
+static std::array<std::array<PointerAxisState, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
+	s_pointer_state;
+static std::array<float, static_cast<u8>(InputPointerAxis::Count)> s_pointer_axis_scale;
 
 // ------------------------------------------------------------------------
 // Binding Parsing
@@ -166,8 +188,7 @@ std::vector<std::string_view> InputManager::SplitChord(const std::string_view& b
 	return parts;
 }
 
-bool InputManager::SplitBinding(
-	const std::string_view& binding, std::string_view* source, std::string_view* sub_binding)
+bool InputManager::SplitBinding(const std::string_view& binding, std::string_view* source, std::string_view* sub_binding)
 {
 	const std::string_view::size_type slash_pos = binding.find('/');
 	if (slash_pos == std::string_view::npos)
@@ -192,9 +213,9 @@ std::optional<InputBindingKey> InputManager::ParseInputBindingKey(const std::str
 	{
 		return ParseHostKeyboardKey(source, sub_binding);
 	}
-	else if (StringUtil::StartsWith(source, "Mouse"))
+	else if (StringUtil::StartsWith(source, "Pointer"))
 	{
-		return ParseHostMouseKey(source, sub_binding);
+		return ParsePointerKey(source, sub_binding);
 	}
 	else
 	{
@@ -241,17 +262,21 @@ std::string InputManager::ConvertInputBindingKeyToString(InputBindingKey key)
 	{
 		const std::optional<std::string> str(ConvertHostKeyboardCodeToString(key.data));
 		if (str.has_value() && !str->empty())
-			return StringUtil::StdStringFromFormat("Keyboard/%s", str->c_str());
+			return fmt::format("Keyboard/{}", str->c_str());
 	}
-	else if (key.source_type == InputSourceType::Mouse)
+	else if (key.source_type == InputSourceType::Pointer)
 	{
-		if (key.source_subtype == InputSubclass::MouseButton)
-			return StringUtil::StdStringFromFormat("Mouse%u/Button%u", key.source_index, key.data);
-		else if (key.source_subtype == InputSubclass::MousePointer)
-			return StringUtil::StdStringFromFormat("Mouse%u/Pointer%u", key.source_index, key.data);
-		else if (key.source_subtype == InputSubclass::MouseWheel)
-			return StringUtil::StdStringFromFormat(
-				"Mouse%u/Wheel%u%c", key.source_index, key.data, key.negative ? '-' : '+');
+		if (key.source_subtype == InputSubclass::PointerButton)
+		{
+			if (key.data < s_pointer_button_names.size())
+				return fmt::format("Pointer-{}/{}", u32{key.source_index}, s_pointer_button_names[key.data]);
+			else
+				return fmt::format("Pointer-{}/Button{}", u32{key.source_index}, key.data);
+		}
+		else if (key.source_subtype == InputSubclass::PointerAxis)
+		{
+			return fmt::format("Pointer-{}/{}{:c}", u32{key.source_index}, s_pointer_axis_names[key.data], key.negative ? '-' : '+');
+		}
 	}
 	else if (key.source_type < InputSourceType::Count && s_input_sources[static_cast<u32>(key.source_type)])
 	{
@@ -327,29 +352,31 @@ void InputManager::AddBindings(const std::vector<std::string>& bindings, const I
 // Key Decoders
 // ------------------------------------------------------------------------
 
-InputBindingKey InputManager::MakeHostKeyboardKey(s32 key_code)
+InputBindingKey InputManager::MakeHostKeyboardKey(u32 key_code)
 {
 	InputBindingKey key = {};
 	key.source_type = InputSourceType::Keyboard;
-	key.data = static_cast<u32>(key_code);
+	key.data = key_code;
 	return key;
 }
 
-InputBindingKey InputManager::MakeHostMouseButtonKey(s32 button_index)
+InputBindingKey InputManager::MakePointerButtonKey(u32 index, u32 button_index)
 {
 	InputBindingKey key = {};
-	key.source_type = InputSourceType::Mouse;
-	key.source_subtype = InputSubclass::MouseButton;
-	key.data = static_cast<u32>(button_index);
+	key.source_index = index;
+	key.source_type = InputSourceType::Pointer;
+	key.source_subtype = InputSubclass::PointerButton;
+	key.data = button_index;
 	return key;
 }
 
-InputBindingKey InputManager::MakeHostMouseWheelKey(s32 axis_index)
+InputBindingKey InputManager::MakePointerAxisKey(u32 index, InputPointerAxis axis)
 {
 	InputBindingKey key = {};
-	key.source_type = InputSourceType::Mouse;
-	key.source_subtype = InputSubclass::MouseWheel;
-	key.data = static_cast<u32>(axis_index);
+	key.data = static_cast<u32>(axis);
+	key.source_index = index;
+	key.source_type = InputSourceType::Pointer;
+	key.source_subtype = InputSubclass::PointerAxis;
 	return key;
 }
 
@@ -389,8 +416,7 @@ std::optional<InputSourceType> InputManager::ParseInputSourceString(const std::s
 	return std::nullopt;
 }
 
-std::optional<InputBindingKey> InputManager::ParseHostKeyboardKey(
-	const std::string_view& source, const std::string_view& sub_binding)
+std::optional<InputBindingKey> InputManager::ParseHostKeyboardKey(const std::string_view& source, const std::string_view& sub_binding)
 {
 	if (source != "Keyboard")
 		return std::nullopt;
@@ -405,14 +431,15 @@ std::optional<InputBindingKey> InputManager::ParseHostKeyboardKey(
 	return key;
 }
 
-std::optional<InputBindingKey> InputManager::ParseHostMouseKey(
-	const std::string_view& source, const std::string_view& sub_binding)
+std::optional<InputBindingKey> InputManager::ParsePointerKey(const std::string_view& source, const std::string_view& sub_binding)
 {
-	if (source != "Mouse")
+	const std::optional<s32> pointer_index = StringUtil::FromChars<s32>(source.substr(8));
+	if (!pointer_index.has_value() || pointer_index.value() < 0)
 		return std::nullopt;
 
 	InputBindingKey key = {};
-	key.source_type = InputSourceType::Mouse;
+	key.source_type = InputSourceType::Pointer;
+	key.source_index = static_cast<u32>(pointer_index.value());
 
 	if (StringUtil::StartsWith(sub_binding, "Button"))
 	{
@@ -420,15 +447,41 @@ std::optional<InputBindingKey> InputManager::ParseHostMouseKey(
 		if (!button_number.has_value() || button_number.value() < 0)
 			return std::nullopt;
 
-		key.source_subtype = InputSubclass::MouseButton;
+		key.source_subtype = InputSubclass::PointerButton;
 		key.data = static_cast<u32>(button_number.value());
-	}
-	else
-	{
-		return std::nullopt;
+		return key;
 	}
 
-	return key;
+	for (u32 i = 0; i < s_pointer_axis_names.size(); i++)
+	{
+		if (StringUtil::StartsWith(sub_binding, s_pointer_axis_names[i]))
+		{
+			key.source_subtype = InputSubclass::PointerAxis;
+			key.data = i;
+
+			const std::string_view dir_part(sub_binding.substr(std::strlen(s_pointer_axis_names[i])));
+			if (dir_part == "+")
+				key.negative = false;
+			else if (dir_part == "-")
+				key.negative = true;
+			else
+				return std::nullopt;
+
+			return key;
+		}
+	}
+
+	for (u32 i = 0; i < s_pointer_button_names.size(); i++)
+	{
+		if (sub_binding == s_pointer_button_names[i])
+		{
+			key.source_subtype = InputSubclass::PointerButton;
+			key.data = i;
+			return key;
+		}
+	}
+
+	return std::nullopt;
 }
 
 // ------------------------------------------------------------------------
@@ -484,17 +537,16 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 			if (!bindings.empty())
 			{
 				// we use axes for all pad bindings to simplify things, and because they are pressure sensitive
-				AddBindings(bindings, InputAxisEventHandler{[pad_index, bind_index, bind_names](float value) {
-					PAD::SetControllerState(pad_index, bind_index, value);
-				}});
+				AddBindings(bindings, InputAxisEventHandler{[pad_index, bind_index, bind_names](
+																float value) { PAD::SetControllerState(pad_index, bind_index, value); }});
 			}
 		}
 	}
 
 	for (u32 macro_button_index = 0; macro_button_index < PAD::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_button_index++)
 	{
-		const std::vector<std::string> bindings(si.GetStringList(section.c_str(),
-			StringUtil::StdStringFromFormat("Macro%u", macro_button_index + 1).c_str()));
+		const std::vector<std::string> bindings(
+			si.GetStringList(section.c_str(), StringUtil::StdStringFromFormat("Macro%u", macro_button_index + 1).c_str()));
 		if (!bindings.empty())
 		{
 			AddBindings(bindings, InputButtonEventHandler{[pad_index, macro_button_index](bool state) {
@@ -547,15 +599,34 @@ bool InputManager::HasAnyBindingsForKey(InputBindingKey key)
 	return (s_binding_map.find(key.MaskDirection()) != s_binding_map.end());
 }
 
+bool InputManager::HasAnyBindingsForSource(InputBindingKey key)
+{
+	std::unique_lock lock(s_binding_map_write_lock);
+	for (const auto& it : s_binding_map)
+	{
+		const InputBindingKey& okey = it.first;
+		if (okey.source_type == key.source_type && okey.source_index == key.source_index &&
+			okey.source_subtype == key.source_subtype)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool InputManager::IsAxisHandler(const InputEventHandler& handler)
 {
 	return std::holds_alternative<InputAxisEventHandler>(handler);
 }
 
-bool InputManager::InvokeEvents(InputBindingKey key, float value)
+bool InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key)
 {
 	if (DoEventHook(key, value))
 		return true;
+
+	// If imgui ate the event, don't fire our handlers.
+	const bool skip_button_handlers = PreprocessEvent(key, value, generic_key);
 
 	// find all the bindings associated with this key
 	const InputBindingKey masked_key = key.MaskDirection();
@@ -563,42 +634,8 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value)
 	if (range.first == s_binding_map.end())
 		return false;
 
-	// Workaround for modifier keys. Basically, if we bind say, F1 and Shift+F1, and press shift
-	// and then F1, we'll fire bindings for both F1 and Shift+F1, when we really only want to fire
-	// the binding for Shift+F1. So, let's search through the binding list, and see if there's a
-	// "longer" binding (more keys), and if so, only activate that and not the shorter binding(s).
-	const InputBinding* longest_hotkey_binding = nullptr;
-	for (auto it = range.first; it != range.second; ++it)
-	{
-		InputBinding* binding = it->second.get();
-		if (IsAxisHandler(binding->handler))
-			continue;
-
-		// find the key which matches us
-		for (u32 i = 0; i < binding->num_keys; i++)
-		{
-			if (binding->keys[i].MaskDirection() != masked_key)
-				continue;
-
-			const u8 bit = static_cast<u8>(1) << i;
-			const bool negative = binding->keys[i].negative;
-			const bool new_state = (negative ? (value < 0.0f) : (value > 0.0f));
-			const u8 new_mask = (new_state ? (binding->current_mask | bit) : (binding->current_mask & ~bit));
-			const bool prev_full_state = (binding->current_mask == binding->full_mask);
-			const bool new_full_state = (new_mask == binding->full_mask);
-
-			// If we're activating this chord, block activation of other bindings with fewer keys.
-			if (prev_full_state || new_full_state)
-			{
-				if (!longest_hotkey_binding || longest_hotkey_binding->num_keys < binding->num_keys)
-					longest_hotkey_binding = binding;
-			}
-
-			break;
-		}
-	}
-
 	// Now we can actually fire/activate bindings.
+	u32 min_num_keys = 0;
 	for (auto it = range.first; it != range.second; ++it)
 	{
 		InputBinding* binding = it->second.get();
@@ -612,24 +649,9 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value)
 			const u8 bit = static_cast<u8>(1) << i;
 			const bool negative = binding->keys[i].negative;
 			const bool new_state = (negative ? (value < 0.0f) : (value > 0.0f));
-
-			// Don't register the key press when we're part of a longer chord. That way,
-			// the state won't change, and it won't get the released event either.
-			if (longest_hotkey_binding && new_state && !IsAxisHandler(binding->handler) &&
-				binding->num_keys != longest_hotkey_binding->num_keys)
-			{
-				continue;
-			}
-
-			// update state based on whether the whole chord was activated
-			const u8 new_mask = (new_state ? (binding->current_mask | bit) : (binding->current_mask & ~bit));
-			const bool prev_full_state = (binding->current_mask == binding->full_mask);
-			const bool new_full_state = (new_mask == binding->full_mask);
-			binding->current_mask = new_mask;
 
 			// invert if we're negative, since the handler expects 0..1
-			const float value_to_pass = (negative ? ((value < 0.0f) ? -value : 0.0f) : (value > 0.0f) ? value :
-                                                                                                        0.0f);
+			const float value_to_pass = (negative ? ((value < 0.0f) ? -value : 0.0f) : (value > 0.0f) ? value : 0.0f);
 
 			// axes are fired regardless of a state change, unless they're zero
 			// (but going from not-zero to zero will still fire, because of the full state)
@@ -637,13 +659,60 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value)
 			// and 0 on release (when the full state changes).
 			if (IsAxisHandler(binding->handler))
 			{
-				if (prev_full_state != new_full_state || value_to_pass >= 0.0f)
+				if (value_to_pass >= 0.0f)
 					std::get<InputAxisEventHandler>(binding->handler)(value_to_pass);
 			}
-			else
+			else if (binding->num_keys >= min_num_keys)
 			{
-				if (prev_full_state != new_full_state)
-					std::get<InputButtonEventHandler>(binding->handler)(value_to_pass > 0.0f);
+				// update state based on whether the whole chord was activated
+				const u8 new_mask = (new_state ? (binding->current_mask | bit) : (binding->current_mask & ~bit));
+				const bool prev_full_state = (binding->current_mask == binding->full_mask);
+				const bool new_full_state = (new_mask == binding->full_mask);
+				binding->current_mask = new_mask;
+
+				// Workaround for multi-key bindings that share the same keys.
+				if (binding->num_keys > 1 && new_full_state && prev_full_state != new_full_state &&
+					range.first != range.second)
+				{
+					// Because the binding map isn't ordered, we could iterate in the order of Shift+F1 and then
+					// F1, which would mean that F1 wouldn't get cancelled and still activate. So, to handle this
+					// case, we skip activating any future bindings with a fewer number of keys.
+					min_num_keys = std::max<u32>(min_num_keys, binding->num_keys);
+
+					// Basically, if we bind say, F1 and Shift+F1, and press shift and then F1, we'll fire bindings
+					// for both F1 and Shift+F1, when we really only want to fire the binding for Shift+F1. So,
+					// when we activate a multi-key chord (key press), we go through the binding map for all the
+					// other keys in the chord, and cancel them if they have a shorter chord. If they're longer,
+					// they could still activate and take precedence over us, so we leave them alone.
+					for (u32 i = 0; i < binding->num_keys; i++)
+					{
+						const auto range = s_binding_map.equal_range(binding->keys[i].MaskDirection());
+						for (auto it = range.first; it != range.second; ++it)
+						{
+							InputBinding* other_binding = it->second.get();
+							if (other_binding == binding || IsAxisHandler(other_binding->handler) ||
+								other_binding->num_keys >= binding->num_keys)
+							{
+								continue;
+							}
+
+							// We only need to cancel the binding if it was fully active before. Which in the above
+							// case of Shift+F1 / F1, it will be.
+							if (other_binding->current_mask == other_binding->full_mask)
+								std::get<InputButtonEventHandler>(other_binding->handler)(-1);
+
+							// Zero out the current bits so that we don't release this binding, if the other part
+							// of the chord releases first.
+							other_binding->current_mask = 0;
+						}
+					}
+				}
+
+				if (prev_full_state != new_full_state && binding->num_keys >= min_num_keys)
+				{
+					const s32 pressed = skip_button_handlers ? -1 : static_cast<s32>(value_to_pass > 0.0f);
+					std::get<InputButtonEventHandler>(binding->handler)(pressed);
+				}
 			}
 
 			// bail out, since we shouldn't have the same key twice in the chord
@@ -652,6 +721,86 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value)
 	}
 
 	return true;
+}
+
+bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key)
+{
+	// does imgui want the event?
+	if (key.source_type == InputSourceType::Keyboard)
+	{
+		if (ImGuiManager::ProcessHostKeyEvent(key, value))
+			return true;
+	}
+	else if (key.source_type == InputSourceType::Pointer && key.source_subtype == InputSubclass::PointerButton)
+	{
+		if (ImGuiManager::ProcessPointerButtonEvent(key, value))
+			return true;
+	}
+	else if (generic_key != GenericInputBinding::Unknown)
+	{
+		if (ImGuiManager::ProcessGenericInputEvent(generic_key, value) && value != 0.0f)
+			return true;
+	}
+
+	return false;
+}
+
+void InputManager::GenerateRelativeMouseEvents()
+{
+	for (u32 device = 0; device < MAX_POINTER_DEVICES; device++)
+	{
+		for (u32 axis = 0; axis < static_cast<u32>(static_cast<u8>(InputPointerAxis::Count)); axis++)
+		{
+			PointerAxisState& state = s_pointer_state[device][axis];
+			const float delta = static_cast<float>(state.delta.exchange(0, std::memory_order_acquire)) / 65536.0f;
+			const float unclamped_value = delta * s_pointer_axis_scale[axis];
+
+			const InputBindingKey key(MakePointerAxisKey(device, static_cast<InputPointerAxis>(axis)));
+			if (axis >= static_cast<u32>(InputPointerAxis::WheelX) && ImGuiManager::ProcessPointerAxisEvent(key, unclamped_value))
+				continue;
+
+			const float value = std::clamp(unclamped_value, -1.0f, 1.0f);
+			if (value != state.last_value)
+			{
+				state.last_value = value;
+				InvokeEvents(key, value, GenericInputBinding::Unknown);
+			}
+		}
+	}
+}
+
+void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y)
+{
+	const float dx = x - std::exchange(s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)], x);
+	const float dy = y - std::exchange(s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)], y);
+
+	if (dx != 0.0f)
+		UpdatePointerRelativeDelta(index, InputPointerAxis::X, dx);
+	if (dy != 0.0f)
+		UpdatePointerRelativeDelta(index, InputPointerAxis::Y, dy);
+
+	ImGuiManager::UpdateMousePosition(x, y);
+}
+
+void InputManager::UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input)
+{
+	s_pointer_state[index][static_cast<u8>(axis)].delta.fetch_add(static_cast<s32>(d * 65536.0f), std::memory_order_release);
+}
+
+bool InputManager::HasPointerAxisBinds()
+{
+	std::unique_lock lock(s_binding_map_write_lock);
+	for (const auto& it : s_binding_map)
+	{
+		const InputBindingKey& key = it.first;
+		if (key.source_type == InputSourceType::Pointer && key.source_subtype == InputSubclass::PointerAxis &&
+			key.data >= static_cast<u32>(InputPointerAxis::X) && key.data <= static_cast<u32>(InputPointerAxis::Y))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 // ------------------------------------------------------------------------
@@ -684,7 +833,8 @@ void InputManager::SetPadVibrationIntensity(u32 pad_index, float large_or_single
 		{
 			// both motors are bound to the same source, do an optimal update
 			large_motor.last_update_time = Common::Timer::GetCurrentValue();
-			large_motor.source->UpdateMotorState(large_motor.binding, small_motor.binding, large_or_single_motor_intensity, small_motor_intensity);
+			large_motor.source->UpdateMotorState(
+				large_motor.binding, small_motor.binding, large_or_single_motor_intensity, small_motor_intensity);
 		}
 		else
 		{
@@ -801,7 +951,11 @@ bool InputManager::DoEventHook(InputBindingKey key, float value)
 		return false;
 
 	const InputInterceptHook::CallbackResult action = m_event_intercept_callback(key, value);
-	return (action == InputInterceptHook::CallbackResult::StopProcessingEvent);
+	if (action >= InputInterceptHook::CallbackResult::RemoveHookAndStopProcessingEvent)
+		m_event_intercept_callback = {};
+
+	return (action == InputInterceptHook::CallbackResult::RemoveHookAndStopProcessingEvent ||
+			action == InputInterceptHook::CallbackResult::StopProcessingEvent);
 }
 
 // ------------------------------------------------------------------------
@@ -825,6 +979,17 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 	// falling back to the base configuration.
 	for (u32 pad = 0; pad < PAD::NUM_CONTROLLER_PORTS; pad++)
 		AddPadBindings(binding_si, pad, PAD::GetDefaultPadType(pad));
+
+	for (u32 axis = 0; axis < static_cast<u32>(InputPointerAxis::Count); axis++)
+	{
+		// From lilypad: 1 mouse pixel = 1/8th way down.
+		const float default_scale = (axis <= static_cast<u32>(InputPointerAxis::Y)) ? 8.0f : 1.0f;
+		const float invert =
+			si.GetBoolValue("Pad", fmt::format("Pointer{}Invert", s_pointer_axis_names[axis]).c_str(), false) ? -1.0f : 1.0f;
+		s_pointer_axis_scale[axis] =
+			invert /
+			std::max(si.GetFloatValue("Pad", fmt::format("Pointer{}Scale", s_pointer_axis_names[axis]).c_str(), default_scale), 1.0f);
+	}
 }
 
 // ------------------------------------------------------------------------
@@ -850,6 +1015,8 @@ void InputManager::PollSources()
 		if (s_input_sources[i])
 			s_input_sources[i]->PollEvents();
 	}
+
+	GenerateRelativeMouseEvents();
 
 	if (VMManager::GetState() == VMState::Running && !s_pad_vibration_array.empty())
 		UpdateContinuedVibration();
@@ -953,7 +1120,8 @@ GenericInputBindingMapping InputManager::GetGenericBindingMapping(const std::str
 }
 
 template <typename T>
-static void UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock, InputSourceType type, bool default_state)
+static void UpdateInputSourceState(
+	SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock, InputSourceType type, bool default_state)
 {
 	const bool enabled = si.GetBoolValue("InputSources", InputManager::InputSourceToString(type), default_state);
 	if (enabled)

@@ -18,8 +18,7 @@
 *   MMI opcodes                                          *
 *                                                        *
 *********************************************************/
-#ifndef __IMMI_H__
-#define __IMMI_H__
+#pragma once
 
 namespace R5900 {
 namespace Dynarec {
@@ -142,5 +141,3 @@ namespace MMI {
 } // namespace OpcodeImpl
 } // namespace Dynarec
 } // namespace R5900
-
-#endif

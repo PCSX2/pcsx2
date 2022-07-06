@@ -14,8 +14,7 @@
 *  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __GTE_H__
-#define __GTE_H__
+#pragma once
 
 void gteMFC2();
 void gteCFC2();
@@ -46,5 +45,3 @@ void gteRTPT();
 void gteGPF();
 void gteGPL();
 void gteNCCT();
-
-#endif /* __GTE_H__ */

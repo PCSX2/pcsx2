@@ -13,10 +13,10 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common/PrecompiledHeader.h"
-
+#include "common/GL/ContextWGL.h"
+#include "common/Assertions.h"
 #include "common/Console.h"
-#include "ContextWGL.h"
+#include "common/ScopedGuard.h"
 
 static void* GetProcAddressCallback(const char* name)
 {
@@ -43,8 +43,7 @@ namespace GL
 		if (m_rc)
 			wglDeleteContext(m_rc);
 
-		if (m_dc)
-			ReleaseDC(GetHWND(), m_dc);
+		ReleaseDC();
 	}
 
 	std::unique_ptr<Context> ContextWGL::Create(const WindowInfo& wi, const Version* versions_to_try,
@@ -66,7 +65,7 @@ namespace GL
 		}
 		else
 		{
-			Console.Error("PBuffer not implemented");
+			Console.Error("ContextWGL must always start with a valid surface.");
 			return false;
 		}
 
@@ -102,11 +101,7 @@ namespace GL
 	{
 		const bool was_current = (wglGetCurrentContext() == m_rc);
 
-		if (m_dc)
-		{
-			ReleaseDC(GetHWND(), m_dc);
-			m_dc = {};
-		}
+		ReleaseDC();
 
 		m_wi = new_wi;
 		if (!InitializeDC())
@@ -187,7 +182,7 @@ namespace GL
 		return context;
 	}
 
-	bool ContextWGL::InitializeDC()
+	HDC ContextWGL::GetDCAndSetPixelFormat(HWND hwnd)
 	{
 		PIXELFORMATDESCRIPTOR pfd = {};
 		pfd.nSize = sizeof(pfd);
@@ -200,26 +195,154 @@ namespace GL
 		pfd.cBlueBits = 8;
 		pfd.cColorBits = 24;
 
-		m_dc = GetDC(GetHWND());
-		if (!m_dc)
+		HDC hDC = ::GetDC(hwnd);
+		if (!hDC)
 		{
 			Console.Error("GetDC() failed: 0x%08X", GetLastError());
 			return false;
 		}
 
-		const int pf = ChoosePixelFormat(m_dc, &pfd);
-		if (pf == 0)
+		if (!m_pixel_format.has_value())
 		{
-			Console.Error("ChoosePixelFormat() failed: 0x%08X", GetLastError());
-			return false;
+			const int pf = ChoosePixelFormat(hDC, &pfd);
+			if (pf == 0)
+			{
+				Console.Error("ChoosePixelFormat() failed: 0x%08X", GetLastError());
+				::ReleaseDC(hwnd, hDC);
+				return false;
+			}
+
+			m_pixel_format = pf;
 		}
 
-		if (!SetPixelFormat(m_dc, pf, &pfd))
+		if (!SetPixelFormat(hDC, m_pixel_format.value(), &pfd))
 		{
 			Console.Error("SetPixelFormat() failed: 0x%08X", GetLastError());
+			::ReleaseDC(hwnd, hDC);
+			return {};
+		}
+
+		return hDC;
+	}
+
+	bool ContextWGL::InitializeDC()
+	{
+		if (m_wi.type == WindowInfo::Type::Win32)
+		{
+			m_dc = GetDCAndSetPixelFormat(GetHWND());
+			if (!m_dc)
+			{
+				Console.Error("Failed to get DC for window");
+				return false;
+			}
+
+			return true;
+		}
+		else if (m_wi.type == WindowInfo::Type::Surfaceless)
+		{
+			return CreatePBuffer();
+		}
+		else
+		{
+			Console.Error("Unknown window info type %u", static_cast<unsigned>(m_wi.type));
+			return false;
+		}
+	}
+
+	void ContextWGL::ReleaseDC()
+	{
+		if (m_pbuffer)
+		{
+			wglReleasePbufferDCARB(m_pbuffer, m_dc);
+			m_dc = {};
+
+			wglDestroyPbufferARB(m_pbuffer);
+			m_pbuffer = {};
+
+			::ReleaseDC(m_dummy_window, m_dummy_dc);
+			m_dummy_dc = {};
+
+			DestroyWindow(m_dummy_window);
+			m_dummy_window = {};
+		}
+		else if (m_dc)
+		{
+			::ReleaseDC(GetHWND(), m_dc);
+			m_dc = {};
+		}
+	}
+
+	bool ContextWGL::CreatePBuffer()
+	{
+		static bool window_class_registered = false;
+		static const wchar_t* window_class_name = L"ContextWGLPBuffer";
+
+		if (!window_class_registered)
+		{
+			WNDCLASSEXW wc = {};
+			wc.cbSize = sizeof(WNDCLASSEXW);
+			wc.style = 0;
+			wc.lpfnWndProc = DefWindowProcW;
+			wc.cbClsExtra = 0;
+			wc.cbWndExtra = 0;
+			wc.hInstance = GetModuleHandle(nullptr);
+			wc.hIcon = NULL;
+			wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+			wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+			wc.lpszMenuName = NULL;
+			wc.lpszClassName = window_class_name;
+			wc.hIconSm = NULL;
+
+			if (!RegisterClassExW(&wc))
+			{
+				Console.Error("(ContextWGL::CreatePBuffer) RegisterClassExW() failed");
+				return false;
+			}
+
+			window_class_registered = true;
+		}
+
+		HWND hwnd = CreateWindowExW(0, window_class_name, window_class_name, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
+		if (!hwnd)
+		{
+			Console.Error("(ContextWGL::CreatePBuffer) CreateWindowEx() failed");
 			return false;
 		}
 
+		ScopedGuard hwnd_guard([hwnd]() { DestroyWindow(hwnd); });
+
+		HDC hdc = GetDCAndSetPixelFormat(hwnd);
+		if (!hdc)
+			return false;
+
+		ScopedGuard hdc_guard([hdc, hwnd]() { ::ReleaseDC(hwnd, hdc); });
+
+		static constexpr const int pb_attribs[] = {0, 0};
+
+		pxAssertRel(m_pixel_format.has_value(), "Has pixel format for pbuffer");
+		HPBUFFERARB pbuffer = wglCreatePbufferARB(hdc, m_pixel_format.value(), 1, 1, pb_attribs);
+		if (!pbuffer)
+		{
+			Console.Error("(ContextWGL::CreatePBuffer) wglCreatePbufferARB() failed");
+			return false;
+		}
+
+		ScopedGuard pbuffer_guard([pbuffer]() { wglDestroyPbufferARB(pbuffer); });
+
+		m_dc = wglGetPbufferDCARB(pbuffer);
+		if (!m_dc)
+		{
+			Console.Error("(ContextWGL::CreatePbuffer) wglGetPbufferDCARB() failed");
+			return false;
+		}
+
+		m_dummy_window = hwnd;
+		m_dummy_dc = hdc;
+		m_pbuffer = pbuffer;
+
+		pbuffer_guard.Cancel();
+		hdc_guard.Cancel();
+		hwnd_guard.Cancel();
 		return true;
 	}
 

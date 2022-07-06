@@ -39,18 +39,21 @@ WindowsMouse::WindowsMouse(DeviceAPI api, int hWheel, wchar_t* displayName, wcha
 
 wchar_t* WindowsMouse::GetPhysicalControlName(PhysicalControl* control)
 {
-	wchar_t* names[9] = {
-		L"L Button",
-		L"R Button",
-		L"M Button",
-		L"Mouse 4",
-		L"Mouse 5",
-		L"X Axis",
-		L"Y Axis",
-		L"Y Wheel",
-		L"X Wheel"};
 	if (control->id < 9)
+	{
+		wchar_t* names[9] = {
+			L"L Button",
+			L"R Button",
+			L"M Button",
+			L"Mouse 4",
+			L"Mouse 5",
+			L"X Axis",
+			L"Y Axis",
+			L"Y Wheel",
+			L"X Wheel"};
+
 		return names[control->id];
+	}
 	return Device::GetPhysicalControlName(control);
 }
 

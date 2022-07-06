@@ -580,20 +580,18 @@ namespace usb_pad
 			HBITMAP hAABitmap = (HBITMAP)GetCurrentObject(hAADC, OBJ_BITMAP);
 			GetBitmapBits(hAABitmap, dstSize, lpDstBits);
 
-			int gridSize = scale * scale;
+			const int gridSize = scale * scale;
 			int resultRed, resultGreen, resultBlue;
-			int dstX, dstY = 0, dstOffset;
-			int srcX, srcY, srcOffset;
+			int dstY = 0;
 			int tmpX, tmpY, tmpOffset;
 			for (int y = 1; y < dstHeight - 2; y++)
 			{
-				dstX = 0;
-				srcX = 0;
-				srcY = (y * scale) * srcPitch;
+				int dstX = 0;
+				const int srcY = (y * scale) * srcPitch;
 				for (int x = 1; x < dstWidth - 2; x++)
 				{
-					srcX = (x * scale) * 4;
-					srcOffset = srcY + srcX;
+					const int srcX = (x * scale) * 4;
+					const int srcOffset = srcY + srcX;
 
 					resultRed = resultGreen = resultBlue = 0;
 					tmpY = -srcPitch;
@@ -613,7 +611,7 @@ namespace usb_pad
 						tmpY += srcPitch;
 					}
 
-					dstOffset = dstY + dstX;
+					const int dstOffset = dstY + dstX;
 					lpDstBits[dstOffset + 2] = (BYTE)(resultRed / gridSize);
 					lpDstBits[dstOffset + 1] = (BYTE)(resultGreen / gridSize);
 					lpDstBits[dstOffset] = (BYTE)(resultBlue / gridSize);

@@ -605,7 +605,7 @@ GSTexture::GSMap GSTextureOGL::Read(const GSVector4i& r, AlignedBuffer<u8, 32>& 
 	buffer.MakeRoomFor(m.pitch * r.height());
 	m.bits = buffer.GetPtr();
 
-	// The fastest way will be to use a PBO to read the data asynchronously. Unfortunately GSdx
+	// The fastest way will be to use a PBO to read the data asynchronously. Unfortunately GS
 	// architecture is waiting the data right now.
 
 	// Bind the texture to the read framebuffer to avoid any disturbance

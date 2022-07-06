@@ -63,7 +63,7 @@ jobs:
 
       - name: Setup Buildcache
         if: inputs.configuration == 'CMake' # TODO: buildcache on VS
-        uses: mikehardy/buildcache-action@v1.2.2
+        uses: mikehardy/buildcache-action@v1.3.0
         with:
           cache_key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.configuration }}
 

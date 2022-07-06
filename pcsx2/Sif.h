@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SIF_H__
-#define __SIF_H__
+#pragma once
 
 static const int FIFO_SIF_W = 128;
 
@@ -182,5 +181,3 @@ extern bool WriteFifoSingleWord();
 #define sif0tag DMA_TAG(sif0data)
 #define sif1tag DMA_TAG(sif1data)
 #define sif2tag DMA_TAG(sif2data)
-
-#endif /* __SIF_H__ */

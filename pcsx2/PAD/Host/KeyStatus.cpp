@@ -28,7 +28,9 @@ KeyStatus::KeyStatus()
 
 	for (u32 pad = 0; pad < NUM_CONTROLLER_PORTS; pad++)
 	{
-		m_axis_scale[pad] = 1.0f;
+		m_axis_scale[pad][0] = 0.0f;
+		m_axis_scale[pad][1] = 1.0f;
+		m_pressure_modifier[pad] = 0.5f;
 	}
 }
 
@@ -50,10 +52,10 @@ void KeyStatus::Init()
 
 void KeyStatus::Set(u32 pad, u32 index, float value)
 {
-	m_button_pressure[pad][index] = static_cast<u8>(std::clamp(value * m_axis_scale[pad] * 255.0f, 0.0f, 255.0f));
-
 	if (IsAnalogKey(index))
 	{
+		m_button_pressure[pad][index] = static_cast<u8>(std::clamp(((value < m_axis_scale[pad][0]) ? 0.0f : value) * m_axis_scale[pad][1] * 255.0f, 0.0f, 255.0f));
+
 		//                          Left -> -- -> Right
 		// Value range :        FFFF8002 -> 0  -> 7FFE
 		// Force range :			  80 -> 0  -> 7F
@@ -94,8 +96,12 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 	}
 	else
 	{
+		// Don't affect L2/R2, since they are analog on most pads.
+		const float pmod = ((m_button[pad] & (1u << PAD_PRESSURE)) == 0 && !IsTriggerKey(index)) ? m_pressure_modifier[pad] : 1.0f;
+		m_button_pressure[pad][index] = static_cast<u8>(std::clamp(value * pmod * 255.0f, 0.0f, 255.0f));
+
 		// Since we reordered the buttons for better UI, we need to remap them here.
-		static constexpr std::array<u8, MAX_KEYS> bitmask_mapping = { {
+		static constexpr std::array<u8, MAX_KEYS> bitmask_mapping = {{
 			12, // PAD_UP
 			13, // PAD_RIGHT
 			14, // PAD_DOWN
@@ -112,15 +118,30 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 			1, // PAD_R2
 			9, // PAD_L3
 			10, // PAD_R3
-			16, // Analog
+			16, // PAD_ANALOG
+			17, // PAD_PRESSURE
 			// remainder are analogs and not used here
-		} };
+		}};
 
 		// TODO: Deadzone here?
 		if (value > 0.0f)
 			m_button[pad] &= ~(1u << bitmask_mapping[index]);
 		else
 			m_button[pad] |= (1u << bitmask_mapping[index]);
+
+		// Adjust pressure of all other face buttons which are active when pressure modifier is pressed..
+		if (index == PAD_PRESSURE)
+		{
+			const float adjust_pmod = ((m_button[pad] & (1u << PAD_PRESSURE)) == 0) ? m_pressure_modifier[pad] : (1.0f / m_pressure_modifier[pad]);
+			for (int i = 0; i < MAX_KEYS; i++)
+			{
+				if (i == index || IsAnalogKey(i) || IsTriggerKey(i))
+					continue;
+
+				// We add 0.5 here so that the round trip between 255->127->255 when applying works as expected.
+				m_button_pressure[pad][i] = static_cast<u8>(std::clamp((static_cast<float>(m_button_pressure[pad][i]) + 0.5f) * adjust_pmod, 0.0f, 255.0f));
+			}
+		}
 	}
 }
 

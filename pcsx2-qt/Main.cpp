@@ -26,12 +26,13 @@
 
 #include "CDVD/CDVD.h"
 #include "Frontend/GameList.h"
+#include "Frontend/LogSink.h"
 
 #include "common/CrashHandler.h"
 
 static void PrintCommandLineVersion()
 {
-	QtHost::InitializeEarlyConsole();
+	Host::InitializeEarlyConsole();
 	std::fprintf(stderr, "%s\n", (QtHost::GetAppNameAndVersion() + QtHost::GetAppConfigSuffix()).toUtf8().constData());
 	std::fprintf(stderr, "https://pcsx2.net/\n");
 	std::fprintf(stderr, "\n");
@@ -143,7 +144,7 @@ static bool ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMBo
 			}
 			else if (CHECK_ARG("-earlyconsolelog"))
 			{
-				QtHost::InitializeEarlyConsole();
+				Host::InitializeEarlyConsole();
 				continue;
 			}
 			else if (CHECK_ARG("--"))
@@ -153,7 +154,7 @@ static bool ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMBo
 			}
 			else if (argv[i][0] == '-')
 			{
-				QtHost::InitializeEarlyConsole();
+				Host::InitializeEarlyConsole();
 				std::fprintf(stderr, "Unknown parameter: '%s'", argv[i]);
 				return false;
 			}
@@ -172,7 +173,7 @@ static bool ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMBo
 	// or disc, we don't want to actually start.
 	if (autoboot && !autoboot->source_type.has_value() && autoboot->filename.empty() && autoboot->elf_override.empty())
 	{
-		QtHost::InitializeEarlyConsole();
+		Host::InitializeEarlyConsole();
 		Console.Warning("Skipping autoboot due to no boot parameters.");
 		autoboot.reset();
 	}
@@ -181,7 +182,7 @@ static bool ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMBo
 	// scanning the game list).
 	if (QtHost::InBatchMode() && !autoboot)
 	{
-		QtHost::InitializeEarlyConsole();
+		Host::InitializeEarlyConsole();
 		Console.Warning("Disabling batch mode, because we have no autoboot.");
 		QtHost::SetBatchMode(false);
 	}

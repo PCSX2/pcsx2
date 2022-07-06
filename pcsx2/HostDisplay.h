@@ -101,7 +101,6 @@ public:
 	virtual bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device) = 0;
 	virtual bool MakeRenderContextCurrent() = 0;
 	virtual bool DoneRenderContextCurrent() = 0;
-	virtual void DestroyRenderDevice() = 0;
 	virtual void DestroyRenderSurface() = 0;
 	virtual bool ChangeRenderWindow(const WindowInfo& wi) = 0;
 	virtual bool SupportsFullscreen() const = 0;
@@ -136,7 +135,7 @@ public:
 	virtual bool GetHostRefreshRate(float* refresh_rate);
 
 	/// Enables/disables GPU frame timing.
-	virtual void SetGPUTimingEnabled(bool enabled);
+	virtual bool SetGPUTimingEnabled(bool enabled);
 
 	/// Returns the amount of GPU time utilized since the last time this method was called.
 	virtual float GetAndResetAccumulatedGPUTime();

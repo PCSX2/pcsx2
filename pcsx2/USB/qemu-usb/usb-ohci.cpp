@@ -506,14 +506,10 @@ static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 	int pid;
 	int ret;
 	int i;
-	USBDevice* dev;
-	USBEndpoint* ep;
 	struct ohci_iso_td iso_td;
 	uint32_t addr;
-	uint16_t starting_frame;
 	int16_t relative_frame_number;
-	int frame_count;
-	uint32_t start_offset, next_offset, end_offset = 0;
+	uint32_t next_offset;
 	uint32_t start_addr, end_addr;
 
 	addr = ed->head & OHCI_DPTR_MASK;
@@ -525,8 +521,8 @@ static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 		return 1;
 	}
 
-	starting_frame = OHCI_BM(iso_td.flags, TD_SF);
-	frame_count = OHCI_BM(iso_td.flags, TD_FC);
+	const uint16_t starting_frame = OHCI_BM(iso_td.flags, TD_SF);
+	const int frame_count = OHCI_BM(iso_td.flags, TD_FC);
 	relative_frame_number = USUB(ohci->frame_number, starting_frame);
 
 	/*trace_usb_ohci_iso_td_head(
@@ -598,7 +594,7 @@ static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 		return 1;
 	}
 
-	start_offset = iso_td.offset[relative_frame_number];
+	const uint32_t start_offset = iso_td.offset[relative_frame_number];
 	if (relative_frame_number < frame_count)
 	{
 		next_offset = iso_td.offset[relative_frame_number + 1];
@@ -635,7 +631,7 @@ static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 
 	if (relative_frame_number < frame_count)
 	{
-		end_offset = next_offset - 1;
+		const uint32_t end_offset = next_offset - 1;
 		if ((end_offset & 0x1000) == 0)
 		{
 			end_addr = (iso_td.bp & OHCI_PAGE_MASK) |
@@ -684,15 +680,15 @@ static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 
 	if (!completion)
 	{
-		bool int_req = relative_frame_number == frame_count &&
+		const bool int_req = relative_frame_number == frame_count &&
 					   OHCI_BM(iso_td.flags, TD_DI) == 0;
-		dev = ohci_find_device(ohci, OHCI_BM(ed->flags, ED_FA));
+		USBDevice* dev = ohci_find_device(ohci, OHCI_BM(ed->flags, ED_FA));
 		if (dev == NULL)
 		{
 			//trace_usb_ohci_td_dev_error();
 			return 1;
 		}
-		ep = usb_ep_get(dev, pid, OHCI_BM(ed->flags, ED_EN));
+		USBEndpoint* ep = usb_ep_get(dev, pid, OHCI_BM(ed->flags, ED_EN));
 		usb_packet_setup(&ohci->usb_packet, pid, ep, 0, addr, false, int_req);
 		usb_packet_addbuf(&ohci->usb_packet, ohci->usb_buf, len);
 		usb_handle_packet(dev, &ohci->usb_packet);

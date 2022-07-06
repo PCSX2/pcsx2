@@ -1325,8 +1325,7 @@ void recPADSBH()
 
 	EE::Profiler.EmitOp(eeOpcode::PADSBH);
 
-	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
-	int t0reg;
+	const int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
 
 	if (EEREC_S == EEREC_T)
 	{
@@ -1338,7 +1337,7 @@ void recPADSBH()
 	}
 	else
 	{
-		t0reg = _allocTempXMMreg(XMMT_INT, -1);
+		const int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 

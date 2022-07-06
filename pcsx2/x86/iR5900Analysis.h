@@ -62,4 +62,13 @@ namespace R5900
 
 		u32 m_cfc2_pc = 0;
 	};
+
+	class COP2MicroFinishPass final : public AnalysisPass
+	{
+	public:
+		COP2MicroFinishPass();
+		~COP2MicroFinishPass();
+
+		void Run(u32 start, u32 end, EEINST* inst_cache) override;
+	};
 } // namespace R5900

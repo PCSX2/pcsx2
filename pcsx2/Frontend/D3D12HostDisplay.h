@@ -51,7 +51,6 @@ public:
 
 	bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, VsyncMode vsync, bool threaded_presentation, bool debug_device) override;
 	bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device) override;
-	void DestroyRenderDevice() override;
 
 	bool MakeRenderContextCurrent() override;
 	bool DoneRenderContextCurrent() override;
@@ -75,7 +74,7 @@ public:
 	bool BeginPresent(bool frame_skip) override;
 	void EndPresent() override;
 
-	void SetGPUTimingEnabled(bool enabled) override;
+	bool SetGPUTimingEnabled(bool enabled) override;
 	float GetAndResetAccumulatedGPUTime() override;
 
 	static AdapterAndModeList StaticGetAdapterAndModeList();

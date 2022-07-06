@@ -29,7 +29,7 @@ const char* XInputSource::s_axis_names[XInputSource::NUM_AXES] = {
 	"LeftTrigger", // AXIS_TRIGGERLEFT
 	"RightTrigger", // AXIS_TRIGGERRIGHT
 };
-static const GenericInputBinding s_sdl_generic_binding_axis_mapping[][2] = {
+static const GenericInputBinding s_xinput_generic_binding_axis_mapping[][2] = {
 	{GenericInputBinding::LeftStickLeft, GenericInputBinding::LeftStickRight}, // AXIS_LEFTX
 	{GenericInputBinding::LeftStickUp, GenericInputBinding::LeftStickDown}, // AXIS_LEFTY
 	{GenericInputBinding::RightStickLeft, GenericInputBinding::RightStickRight}, // AXIS_RIGHTX
@@ -72,7 +72,7 @@ const u16 XInputSource::s_button_masks[XInputSource::NUM_BUTTONS] = {
 	XINPUT_GAMEPAD_Y,
 	0x400, // XINPUT_GAMEPAD_GUIDE
 };
-static const GenericInputBinding s_sdl_generic_binding_button_mapping[] = {
+static const GenericInputBinding s_xinput_generic_binding_button_mapping[] = {
 	GenericInputBinding::DPadUp, // XINPUT_GAMEPAD_DPAD_UP
 	GenericInputBinding::DPadDown, // XINPUT_GAMEPAD_DPAD_DOWN
 	GenericInputBinding::DPadLeft, // XINPUT_GAMEPAD_DPAD_LEFT
@@ -347,19 +347,19 @@ bool XInputSource::GetGenericBindingMapping(const std::string_view& device, Gene
 
 	// assume all buttons are present.
 	const s32 pid = player_id.value();
-	for (u32 i = 0; i < std::size(s_sdl_generic_binding_axis_mapping); i++)
+	for (u32 i = 0; i < std::size(s_xinput_generic_binding_axis_mapping); i++)
 	{
-		const GenericInputBinding negative = s_sdl_generic_binding_axis_mapping[i][0];
-		const GenericInputBinding positive = s_sdl_generic_binding_axis_mapping[i][1];
+		const GenericInputBinding negative = s_xinput_generic_binding_axis_mapping[i][0];
+		const GenericInputBinding positive = s_xinput_generic_binding_axis_mapping[i][1];
 		if (negative != GenericInputBinding::Unknown)
 			mapping->emplace_back(negative, StringUtil::StdStringFromFormat("XInput-%d/-%s", pid, s_axis_names[i]));
 
 		if (positive != GenericInputBinding::Unknown)
 			mapping->emplace_back(positive, StringUtil::StdStringFromFormat("XInput-%d/+%s", pid, s_axis_names[i]));
 	}
-	for (u32 i = 0; i < std::size(s_sdl_generic_binding_button_mapping); i++)
+	for (u32 i = 0; i < std::size(s_xinput_generic_binding_button_mapping); i++)
 	{
-		const GenericInputBinding binding = s_sdl_generic_binding_button_mapping[i];
+		const GenericInputBinding binding = s_xinput_generic_binding_button_mapping[i];
 		if (binding != GenericInputBinding::Unknown)
 			mapping->emplace_back(binding, StringUtil::StdStringFromFormat("XInput-%d/%s", pid, s_button_names[i]));
 	}
@@ -435,9 +435,12 @@ void XInputSource::CheckForStateChanges(u32 index, const XINPUT_STATE& new_state
 			const u16 button_mask = s_button_masks[button];
 			if ((old_button_bits & button_mask) != (new_button_bits & button_mask))
 			{
+				const GenericInputBinding generic_key = (button < std::size(s_xinput_generic_binding_button_mapping)) ?
+					s_xinput_generic_binding_button_mapping[button] : GenericInputBinding::Unknown;
+				const float value = ((new_button_bits & button_mask) != 0) ? 1.0f : 0.0f;
 				InputManager::InvokeEvents(
 					MakeGenericControllerButtonKey(InputSourceType::XInput, index, button),
-					(new_button_bits & button_mask) != 0);
+					value, generic_key);
 			}
 		}
 	}
@@ -454,11 +457,11 @@ void XInputSource::CheckForStateChangesSCP(u32 index, const SCP_EXTN& new_state)
 
 	s32 axis = 0, button = 0;
 
-#define CHECK_AXIS(field) \
+#define CHECK_AXIS(field, mult) \
 	if (ogp.field != ngp.field) \
 	{ \
 		InputManager::InvokeEvents( \
-			MakeGenericControllerAxisKey(InputSourceType::XInput, index, axis), ngp.field); \
+			MakeGenericControllerAxisKey(InputSourceType::XInput, index, axis), ngp.field * mult); \
 	} \
 	axis++;
 
@@ -470,12 +473,12 @@ void XInputSource::CheckForStateChangesSCP(u32 index, const SCP_EXTN& new_state)
 	} \
 	button++;
 
-	CHECK_AXIS(SCP_LX);
-	CHECK_AXIS(SCP_LY);
-	CHECK_AXIS(SCP_RX);
-	CHECK_AXIS(SCP_RY);
-	CHECK_AXIS(SCP_L2);
-	CHECK_AXIS(SCP_R2);
+	CHECK_AXIS(SCP_LX, 1.0f);
+	CHECK_AXIS(SCP_LY, -1.0f);
+	CHECK_AXIS(SCP_RX, 1.0f);
+	CHECK_AXIS(SCP_RY, -1.0f);
+	CHECK_AXIS(SCP_L2, 1.0f);
+	CHECK_AXIS(SCP_R2, 1.0f);
 
 	CHECK_BUTTON(SCP_UP);
 	CHECK_BUTTON(SCP_DOWN);

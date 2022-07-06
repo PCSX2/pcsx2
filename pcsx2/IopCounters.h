@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PSXCOUNTERS_H__
-#define __PSXCOUNTERS_H__
+#pragma once
 
 struct psxCounter {
 	u64 count, target;
@@ -44,5 +43,3 @@ extern void psxVBlankStart();
 extern void psxVBlankEnd();
 extern void psxCheckStartGate16(int i);
 extern void psxCheckEndGate16(int i);
-
-#endif /* __PSXCOUNTERS_H__ */

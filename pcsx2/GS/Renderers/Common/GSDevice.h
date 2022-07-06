@@ -58,6 +58,7 @@ enum class PresentShader
 	DIAGONAL_FILTER,
 	TRIANGULAR_FILTER,
 	COMPLEX_FILTER,
+	LOTTES_FILTER,
 	Count
 };
 

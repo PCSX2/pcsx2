@@ -634,8 +634,14 @@ namespace Vulkan
 			vkGetDeviceQueue(m_device, m_present_queue_family_index, 0, &m_present_queue);
 		}
 
-		m_gpu_timing_supported = (queue_family_properties[m_graphics_queue_family_index].timestampValidBits > 0);
-		DevCon.WriteLn("GPU timing is %s", m_gpu_timing_supported ? "supported" : "not supported");
+		m_gpu_timing_supported = (m_device_properties.limits.timestampComputeAndGraphics != 0 &&
+								  queue_family_properties[m_graphics_queue_family_index].timestampValidBits > 0 &&
+								  m_device_properties.limits.timestampPeriod > 0);
+		DevCon.WriteLn("GPU timing is %s (TS=%u TS valid bits=%u, TS period=%f)",
+			m_gpu_timing_supported ? "supported" : "not supported",
+			static_cast<u32>(m_device_properties.limits.timestampComputeAndGraphics),
+			queue_family_properties[m_graphics_queue_family_index].timestampValidBits,
+			m_device_properties.limits.timestampPeriod);
 
 		ProcessDeviceExtensions();
 		return true;
@@ -845,6 +851,7 @@ namespace Vulkan
 			if (res != VK_SUCCESS)
 			{
 				LOG_VULKAN_ERROR(res, "vkCreateQueryPool failed: ");
+				m_gpu_timing_supported = false;
 				return false;
 			}
 		}
@@ -959,9 +966,10 @@ namespace Vulkan
 		return time;
 	}
 
-	void Context::SetEnableGPUTiming(bool enabled)
+	bool Context::SetEnableGPUTiming(bool enabled)
 	{
 		m_gpu_timing_enabled = enabled && m_gpu_timing_supported;
+		return (enabled == m_gpu_timing_enabled);
 	}
 
 	void Context::WaitForCommandBufferCompletion(u32 index)
@@ -1199,8 +1207,8 @@ namespace Vulkan
 					// if we didn't write the timestamp at the start of the cmdbuffer (just enabled timing), the first TS will be zero
 					if (timestamps[0] > 0)
 					{
-						const u64 ns_diff = (timestamps[1] - timestamps[0]) * static_cast<u64>(m_device_properties.limits.timestampPeriod);
-						m_accumulated_gpu_time += static_cast<double>(ns_diff) / 1000000.0;
+						const double ns_diff = (timestamps[1] - timestamps[0]) * static_cast<double>(m_device_properties.limits.timestampPeriod);
+						m_accumulated_gpu_time += ns_diff / 1000000.0;
 					}
 				}
 				else

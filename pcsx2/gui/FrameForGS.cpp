@@ -77,7 +77,6 @@ void GSPanel::InitDefaultAccelerators()
 	m_Accels->Map( AAC( WXK_F2 ).Shift(),		"States_CycleSlotBackward" );
 
 	m_Accels->Map( AAC( WXK_F4 ),				"Framelimiter_MasterToggle");
-	m_Accels->Map( AAC( WXK_F4 ).Shift(),		"Frameskip_Toggle");
 	m_Accels->Map( AAC( WXK_TAB ),				"Framelimiter_TurboToggle" );
 	m_Accels->Map( AAC( WXK_TAB ).Shift(),		"Framelimiter_SlomoToggle" );
 
@@ -922,7 +921,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	title.Replace(L"${cpuusage}",	cpuUsage);
 	title.Replace(L"${omodef}",		omodef);
 	title.Replace(L"${omodei}",		omodei);
-	title.Replace(L"${gsdx}", StringUtil::UTF8StringToWxString(gsStats));
+	title.Replace(L"${gs}", StringUtil::UTF8StringToWxString(gsStats));
 	title.Replace(L"${videomode}",	ReportVideoMode());
 	if (CoreThread.IsPaused() && !GSDump::isRunning)
 		title = templates.Paused + title;

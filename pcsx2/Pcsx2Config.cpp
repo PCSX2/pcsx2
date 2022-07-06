@@ -300,6 +300,7 @@ Pcsx2Config::GSOptions::GSOptions()
 {
 	bitset = 0;
 
+	PCRTCAntiBlur = true;
 	DisableInterlaceOffset = false;
 	PCRTCOffsets = false;
 	PCRTCOverscan = false;
@@ -362,11 +363,7 @@ bool Pcsx2Config::GSOptions::operator==(const GSOptions& right) const
 		OpEqu(SynchronousMTGS) &&
 		OpEqu(VsyncQueueSize) &&
 
-		OpEqu(FrameSkipEnable) &&
 		OpEqu(FrameLimitEnable) &&
-
-		OpEqu(FramesToDraw) &&
-		OpEqu(FramesToSkip) &&
 
 		OpEqu(LimitScalar) &&
 		OpEqu(FramerateNTSC) &&
@@ -415,6 +412,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(UserHacks_RoundSprite) &&
 		OpEqu(UserHacks_TCOffsetX) &&
 		OpEqu(UserHacks_TCOffsetY) &&
+		OpEqu(UserHacks_CPUSpriteRenderBW) &&
 		OpEqu(UserHacks_TriFilter) &&
 		OpEqu(OverrideTextureBarriers) &&
 		OpEqu(OverrideGeometryShaders) &&
@@ -458,15 +456,11 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(VsyncQueueSize);
 
 	SettingsWrapEntry(FrameLimitEnable);
-	SettingsWrapEntry(FrameSkipEnable);
 	wrap.EnumEntry(CURRENT_SETTINGS_SECTION, "VsyncEnable", VsyncEnable, NULL, VsyncEnable);
 
 	// LimitScalar is set at runtime.
 	SettingsWrapEntry(FramerateNTSC);
 	SettingsWrapEntry(FrameratePAL);
-
-	SettingsWrapEntry(FramesToDraw);
-	SettingsWrapEntry(FramesToSkip);
 
 #ifdef PCSX2_CORE
 	// These are loaded from GSWindow in wx.
@@ -519,6 +513,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 
 	// Unfortunately, because code in the GS still reads the setting by key instead of
 	// using these variables, we need to use the old names. Maybe post 2.0 we can change this.
+	GSSettingBoolEx(PCRTCAntiBlur, "pcrtc_antiblur");
 	GSSettingBoolEx(DisableInterlaceOffset, "disable_interlace_offset");
 	GSSettingBoolEx(PCRTCOffsets, "pcrtc_offsets");
 	GSSettingBoolEx(PCRTCOverscan, "pcrtc_overscan");
@@ -605,6 +600,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingIntEx(UserHacks_RoundSprite, "UserHacks_round_sprite_offset");
 	GSSettingIntEx(UserHacks_TCOffsetX, "UserHacks_TCOffsetX");
 	GSSettingIntEx(UserHacks_TCOffsetY, "UserHacks_TCOffsetY");
+	GSSettingIntEx(UserHacks_CPUSpriteRenderBW, "UserHacks_CPUSpriteRenderBW");
 	GSSettingIntEnumEx(UserHacks_TriFilter, "UserHacks_TriFilter");
 	GSSettingIntEx(OverrideTextureBarriers, "OverrideTextureBarriers");
 	GSSettingIntEx(OverrideGeometryShaders, "OverrideGeometryShaders");
@@ -652,6 +648,7 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 	UserHacks_TextureInsideRt = false;
 	UserHacks_TCOffsetX = 0;
 	UserHacks_TCOffsetY = 0;
+	UserHacks_CPUSpriteRenderBW = 0;
 	SkipDrawStart = 0;
 	SkipDrawEnd = 0;
 
@@ -663,13 +660,16 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 
 void Pcsx2Config::GSOptions::MaskUpscalingHacks()
 {
-	if (UpscaleMultiplier == 1 || ManualUserHacks)
+	if (UpscaleMultiplier != 1 && ManualUserHacks)
 		return;
 
 	UserHacks_AlignSpriteX = false;
 	UserHacks_MergePPSprite = false;
+	UserHacks_WildHack = false;
 	UserHacks_HalfPixelOffset = 0;
 	UserHacks_RoundSprite = 0;
+	UserHacks_TCOffsetX = 0;
+	UserHacks_TCOffsetY = 0;
 }
 
 bool Pcsx2Config::GSOptions::UseHardwareRenderer() const
@@ -863,7 +863,8 @@ static const char* const tbl_GamefixNames[] =
 	"Ibit",
 	"VUSync",
 	"VUOverflow",
-	"XGKick"
+	"XGKick",
+	"BlitInternalFPS"
 };
 
 const char* EnumToString(GamefixId id)
@@ -904,6 +905,7 @@ void Pcsx2Config::GamefixOptions::Set(GamefixId id, bool enabled)
 		case Fix_Ibit:                IbitHack                = enabled; break;
 		case Fix_VUSync:              VUSyncHack              = enabled; break;
 		case Fix_VUOverflow:          VUOverflowHack          = enabled; break;
+		case Fix_BlitInternalFPS:     BlitInternalFPSHack     = enabled; break;
 		jNO_DEFAULT;
 	}
 }
@@ -929,6 +931,7 @@ bool Pcsx2Config::GamefixOptions::Get(GamefixId id) const
 		case Fix_Ibit:                return IbitHack;
 		case Fix_VUSync:              return VUSyncHack;
 		case Fix_VUOverflow:          return VUOverflowHack;
+		case Fix_BlitInternalFPS:     return BlitInternalFPSHack;
 		jNO_DEFAULT;
 	}
 	return false; // unreachable, but we still need to suppress warnings >_<
@@ -954,6 +957,7 @@ void Pcsx2Config::GamefixOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(IbitHack);
 	SettingsWrapBitBool(VUSyncHack);
 	SettingsWrapBitBool(VUOverflowHack);
+	SettingsWrapBitBool(BlitInternalFPSHack);
 }
 
 
@@ -1008,9 +1012,6 @@ void Pcsx2Config::FramerateOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(NominalScalar);
 	SettingsWrapEntry(TurboScalar);
 	SettingsWrapEntry(SlomoScalar);
-
-	SettingsWrapEntry(SkipOnLimit);
-	SettingsWrapEntry(SkipOnTurbo);
 }
 
 Pcsx2Config::Pcsx2Config()
@@ -1214,6 +1215,7 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	PatchBios = cfg.PatchBios;
 	PatchRegion = cfg.PatchRegion;
 	BackupSavestate = cfg.BackupSavestate;
+	SavestateZstdCompression = cfg.SavestateZstdCompression;
 	McdEnableEjection = cfg.McdEnableEjection;
 	McdFolderAutoManage = cfg.McdFolderAutoManage;
 	MultitapPort0_Enabled = cfg.MultitapPort0_Enabled;

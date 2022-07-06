@@ -72,7 +72,7 @@ mVUop(mVU_DIV)
 		cjmp.SetTarget();
 			xMOV(ptr32[&mVU.divFlag], 0); // Clear I/D flags
 			SSE_DIVSS(mVU, Fs, Ft);
-			mVUclamp1(Fs, t1, 8, true);
+			mVUclamp1(mVU, Fs, t1, 8, true);
 		djmp.SetTarget();
 
 		writeQreg(Fs, mVUinfo.writeQ);
@@ -148,7 +148,7 @@ mVUop(mVU_RSQRT)
 			xForwardJump8 djmp;
 		ajmp.SetTarget();
 			SSE_DIVSS(mVU, Fs, Ft);
-			mVUclamp1(Fs, t1, 8, true);
+			mVUclamp1(mVU, Fs, t1, 8, true);
 		djmp.SetTarget();
 
 		writeQreg(Fs, mVUinfo.writeQ);

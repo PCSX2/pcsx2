@@ -323,35 +323,40 @@ void recBC2TL() { _setupBranchTest(JZ32,  true);  }
 
 void COP2_Interlock(bool mBitSync)
 {
-
 	if (cpuRegs.code & 1)
 	{
 		s_nBlockInterlocked = true;
-		_freeX86reg(eax);
-		xMOV(eax, ptr32[&cpuRegs.cycle]);
-		xADD(eax, scaleblockcycles_clear());
-		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
 
-		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
-		xForwardJZ32 skipvuidle;
-		_cop2BackupRegs();
-		if (mBitSync)
+		// We can safely skip the _vu0FinishMicro() call, when there's nothing
+		// that can trigger a VU0 program between CFC2/CTC2/COP2 instructions.
+		if ((g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0_MICRO) || mBitSync)
 		{
-			xSUB(eax, ptr32[&VU0.cycle]);
-			xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-			xCMP(eax, 4);
-			xForwardJL32 skip;
-			xLoadFarAddr(arg1reg, CpuVU0);
-			xMOV(arg2reg, s_nBlockInterlocked);
-			xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg, arg2reg);
-			skip.SetTarget();
+			_freeX86reg(eax);
+			xMOV(eax, ptr32[&cpuRegs.cycle]);
+			xADD(eax, scaleblockcycles_clear());
+			xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
 
-			xFastCall((void*)_vu0WaitMicro);
+			xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+			xForwardJZ32 skipvuidle;
+			_cop2BackupRegs();
+			if (mBitSync)
+			{
+				xSUB(eax, ptr32[&VU0.cycle]);
+				xSUB(eax, ptr32[&VU0.nextBlockCycles]);
+				xCMP(eax, 4);
+				xForwardJL32 skip;
+				xLoadFarAddr(arg1reg, CpuVU0);
+				xMOV(arg2reg, s_nBlockInterlocked);
+				xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg, arg2reg);
+				skip.SetTarget();
+
+				xFastCall((void*)_vu0WaitMicro);
+			}
+			else
+				xFastCall((void*)_vu0FinishMicro);
+			_cop2RestoreRegs();
+			skipvuidle.SetTarget();
 		}
-		else
-			xFastCall((void*)_vu0FinishMicro);
-		_cop2RestoreRegs();
-		skipvuidle.SetTarget();
 	}
 }
 
@@ -665,12 +670,15 @@ namespace OpcodeImpl {
 void recCOP2_BC2() { recCOP2_BC2t[_Rt_](); }
 void recCOP2_SPEC1()
 {
-	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
-	xForwardJZ32 skipvuidle;
-	_cop2BackupRegs();
-	xFastCall((void*)_vu0FinishMicro);
-	_cop2RestoreRegs();
-	skipvuidle.SetTarget();
+	if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0_MICRO)
+	{
+		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+		xForwardJZ32 skipvuidle;
+		_cop2BackupRegs();
+		xFastCall((void*)_vu0FinishMicro);
+		_cop2RestoreRegs();
+		skipvuidle.SetTarget();
+	}
 
 	recCOP2SPECIAL1t[_Funct_]();
 

@@ -141,6 +141,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QCheckBox" name="BlitInternalFPSHack">
+        <property name="text">
+         <string>Force Blit Internal FPS Detection (When auto-detection fails)</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

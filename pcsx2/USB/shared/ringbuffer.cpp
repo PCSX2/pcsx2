@@ -81,10 +81,9 @@ size_t RingBuffer::read(uint8_t* dst, size_t nbytes)
 
 void RingBuffer::write(uint8_t* src, size_t nbytes)
 {
-	size_t bytes;
 	while (nbytes > 0)
 	{
-		bytes = std::min(nbytes, m_capacity - m_end);
+		size_t bytes = std::min(nbytes, m_capacity - m_end);
 		memcpy(back(), src, bytes);
 		write(bytes);
 		src += bytes;

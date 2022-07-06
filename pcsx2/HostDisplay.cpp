@@ -65,8 +65,9 @@ bool HostDisplay::GetHostRefreshRate(float* refresh_rate)
 	return WindowInfo::QueryRefreshRateForWindow(m_window_info, refresh_rate);
 }
 
-void HostDisplay::SetGPUTimingEnabled(bool enabled)
+bool HostDisplay::SetGPUTimingEnabled(bool enabled)
 {
+	return false;
 }
 
 float HostDisplay::GetAndResetAccumulatedGPUTime()

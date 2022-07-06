@@ -160,6 +160,8 @@ extern u64 GetPhysicalMemory();
 extern u32 ShortSpin();
 /// Number of ns to spin for before sleeping a thread
 extern const u32 SPIN_TIME_NS;
+/// Like C abort() but adds the given message to the crashlog
+[[noreturn]] void AbortWithMessage(const char* msg);
 
 extern std::string GetOSVersionString();
 

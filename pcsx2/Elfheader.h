@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ELF_H__
-#define __ELF_H__
+#pragma once
 
 #include "common/SafeArray.h"
 #include "common/SafeArray.inl"
@@ -164,5 +163,3 @@ extern u32 ElfEntry;
 extern std::pair<u32,u32> ElfTextRange;
 extern std::string LastELF;
 extern bool isPSXElf;
-
-#endif

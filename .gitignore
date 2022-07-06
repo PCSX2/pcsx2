@@ -68,6 +68,7 @@ oprofile_data/
 /.vscode*
 
 /bin/**/*.dll
+/bin/**/*.dmp
 /bin/**/*.exp
 /bin/**/*.ilk
 /bin/**/*.lib

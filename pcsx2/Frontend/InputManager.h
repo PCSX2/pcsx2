@@ -28,7 +28,7 @@
 enum class InputSourceType : u32
 {
 	Keyboard,
-	Mouse,
+	Pointer,
 #ifdef _WIN32
 	//DInput,
 	XInput,
@@ -44,9 +44,8 @@ enum class InputSubclass : u32
 {
 	None = 0,
 
-	MouseButton = 0,
-	MousePointer = 1,
-	MouseWheel = 2,
+	PointerButton = 0,
+	PointerAxis = 1,
 
 	ControllerButton = 0,
 	ControllerAxis = 1,
@@ -91,7 +90,7 @@ struct InputBindingKeyHash
 };
 
 /// Callback type for a binary event. Usually used for hotkeys.
-using InputButtonEventHandler = std::function<void(bool value)>;
+using InputButtonEventHandler = std::function<void(s32 value)>;
 
 /// Callback types for a normalized event. Usually used for pads.
 using InputAxisEventHandler = std::function<void(float value)>;
@@ -102,31 +101,41 @@ struct InputInterceptHook
 	enum class CallbackResult
 	{
 		StopProcessingEvent,
-		ContinueProcessingEvent
+		ContinueProcessingEvent,
+		RemoveHookAndStopProcessingEvent,
+		RemoveHookAndContinueProcessingEvent,
 	};
 
 	using Callback = std::function<CallbackResult(InputBindingKey key, float value)>;
 };
 
 /// Hotkeys are actions (e.g. toggle frame limit) which can be bound to keys or chords.
+/// The handler is called with an integer representing the key state, where 0 means that
+/// one or more keys were released, 1 means all the keys were pressed, and -1 means that
+/// the hotkey was cancelled due to a chord with more keys being activated.
 struct HotkeyInfo
 {
 	const char* name;
 	const char* category;
 	const char* display_name;
-	void(*handler)(bool pressed);
+	void (*handler)(s32 pressed);
 };
 #define DECLARE_HOTKEY_LIST(name) extern const HotkeyInfo name[]
 #define BEGIN_HOTKEY_LIST(name) const HotkeyInfo name[] = {
 #define DEFINE_HOTKEY(name, category, display_name, handler) {(name), (category), (display_name), (handler)},
-#define END_HOTKEY_LIST() {nullptr, nullptr, nullptr, nullptr} };
+#define END_HOTKEY_LIST() \
+	{ \
+		nullptr, nullptr, nullptr, nullptr \
+	} \
+	} \
+	;
 
 DECLARE_HOTKEY_LIST(g_vm_manager_hotkeys);
 DECLARE_HOTKEY_LIST(g_gs_hotkeys);
 DECLARE_HOTKEY_LIST(g_host_hotkeys);
 
 /// Generic input bindings. These roughly match a DualShock 4 or XBox One controller.
-/// They are used for automatic binding to PS2 controller types.
+/// They are used for automatic binding to PS2 controller types, and for big picture mode navigation.
 enum class GenericInputBinding : u8
 {
 	Unknown,
@@ -169,13 +178,26 @@ enum class GenericInputBinding : u8
 };
 using GenericInputBindingMapping = std::vector<std::pair<GenericInputBinding, std::string>>;
 
+/// Host mouse relative axes are X, Y, wheel horizontal, wheel vertical.
+enum class InputPointerAxis : u8
+{
+	X,
+	Y,
+	WheelX,
+	WheelY,
+	Count
+};
+
 /// External input source class.
 class InputSource;
 
 namespace InputManager
 {
 	/// Minimum interval between vibration updates when the effect is continuous.
-	static constexpr double VIBRATION_UPDATE_INTERVAL_SECONDS = 0.5;		// 500ms
+	static constexpr double VIBRATION_UPDATE_INTERVAL_SECONDS = 0.5; // 500ms
+
+	/// Maximum number of host mouse devices.
+	static constexpr u32 MAX_POINTER_DEVICES = 1;
 
 	/// Returns a pointer to the external input source class, if present.
 	InputSource* GetInputSourceInterface(InputSourceType type);
@@ -193,13 +215,14 @@ namespace InputManager
 	std::optional<std::string> ConvertHostKeyboardCodeToString(u32 code);
 
 	/// Creates a key for a host-specific key code.
-	InputBindingKey MakeHostKeyboardKey(s32 key_code);
+	InputBindingKey MakeHostKeyboardKey(u32 key_code);
 
 	/// Creates a key for a host-specific button.
-	InputBindingKey MakeHostMouseButtonKey(s32 button_index);
+	InputBindingKey MakePointerButtonKey(u32 index, u32 button_index);
 
-	/// Creates a key for a host-specific mouse wheel axis (0 = vertical, 1 = horizontal).
-	InputBindingKey MakeHostMouseWheelKey(s32 axis_index);
+	/// Creates a key for a host-specific mouse relative event
+	/// (axis 0 = horizontal, 1 = vertical, 2 = wheel horizontal, 3 = wheel vertical).
+	InputBindingKey MakePointerAxisKey(u32 index, InputPointerAxis axis);
 
 	/// Parses an input binding key string.
 	std::optional<InputBindingKey> ParseInputBindingKey(const std::string_view& binding);
@@ -235,12 +258,16 @@ namespace InputManager
 	void PollSources();
 
 	/// Returns true if any bindings exist for the specified key.
-	/// This is the only function which can be safely called on another thread.
+	/// Can be safely called on another thread.
 	bool HasAnyBindingsForKey(InputBindingKey key);
+
+	/// Returns true if any bindings exist for the specified source + index.
+	/// Can be safely called on another thread.
+	bool HasAnyBindingsForSource(InputBindingKey key);
 
 	/// Updates internal state for any binds for this key, and fires callbacks as needed.
 	/// Returns true if anything was bound to this key, otherwise false.
-	bool InvokeEvents(InputBindingKey key, float value);
+	bool InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key = GenericInputBinding::Unknown);
 
 	/// Sets a hook which can be used to intercept events before they're processed by the normal bindings.
 	/// This is typically used when binding new controls to detect what gets pressed.
@@ -259,6 +286,15 @@ namespace InputManager
 	/// Zeros all vibration intensities. Call when pausing.
 	/// The pad vibration state will internally remain, so that when emulation is unpaused, the effect resumes.
 	void PauseVibration();
+
+	/// Updates absolute pointer position. Can call from UI thread, use when the host only reports absolute coordinates.
+	void UpdatePointerAbsolutePosition(u32 index, float x, float y);
+
+	/// Updates relative pointer position. Can call from the UI thread, use when host supports relative coordinate reporting.
+	void UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input = false);
+
+	/// Returns true if any bindings are present which require relative mouse movement.
+	bool HasPointerAxisBinds();
 } // namespace InputManager
 
 namespace Host
@@ -268,4 +304,4 @@ namespace Host
 
 	/// Called when an input device is disconnected.
 	void OnInputDeviceDisconnected(const std::string_view& identifier);
-}
+} // namespace Host

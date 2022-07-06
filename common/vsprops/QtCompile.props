@@ -79,7 +79,7 @@
   <PropertyGroup>
     <MocDefines></MocDefines>
     <MocDefines Condition="!$(Configuration.Contains(Debug))">-DQT_NO_DEBUG -DNDEBUG $(MocDefines)</MocDefines>
-    <MocIncludes>"-I$(QtIncludeDir)" "-I$(SolutionDir)pcsx2" "-I$(SolutionDir)" -I.</MocIncludes>
+    <MocIncludes>-I"$(QtIncludeDir)." -I"$(SolutionDir)pcsx2" "-I$(SolutionDir)." -I.</MocIncludes>
   </PropertyGroup>
   <Target Name="QtMoc"
     BeforeTargets="ClCompile"

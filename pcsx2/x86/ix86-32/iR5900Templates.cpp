@@ -80,8 +80,6 @@ int eeProcessHILO(int reg, int mode, int mmx)
 // core of reg caching
 void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNPTR_INFO consttcode, R5900FNPTR_INFO noconstcode, int xmminfo)
 {
-	int mmreg1, mmreg2, mmreg3, mmtemp, moded;
-
 	if (!_Rd_ && (xmminfo & XMMINFO_WRITED))
 		return;
 
@@ -97,11 +95,12 @@ void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNP
 		return;
 	}
 
-	moded = MODE_WRITE | ((xmminfo & XMMINFO_READD) ? MODE_READ : 0);
+	const int moded = MODE_WRITE | ((xmminfo & XMMINFO_READD) ? MODE_READ : 0);
 
 	// test if should write xmm, mirror to mmx code
 	if (g_pCurInstInfo->info & EEINST_XMM)
 	{
+		int mmreg1, mmreg3, mmtemp;
 		pxAssert(0);
 
 		if (xmminfo & (XMMINFO_READLO | XMMINFO_WRITELO))
@@ -183,7 +182,7 @@ void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNP
 		{
 			// no const regs
 			mmreg1 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rs_, MODE_READ);
-			mmreg2 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rt_, MODE_READ);
+			int mmreg2 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rt_, MODE_READ);
 
 			if (mmreg1 >= 0 || mmreg2 >= 0)
 			{
@@ -294,7 +293,6 @@ void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNP
 // rt = rs op imm16
 void eeRecompileCode1(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 {
-	int mmreg1, mmreg2;
 	if (!_Rt_)
 		return;
 
@@ -312,7 +310,7 @@ void eeRecompileCode1(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 		pxAssert(0);
 
 		// no const regs
-		mmreg1 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rs_, MODE_READ);
+		const int mmreg1 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rs_, MODE_READ);
 
 		if (mmreg1 >= 0)
 		{
@@ -320,7 +318,7 @@ void eeRecompileCode1(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 
 			// check for last used, if so don't alloc a new XMM reg
 			_addNeededGPRtoXMMreg(_Rt_);
-			mmreg2 = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_WRITE);
+			int mmreg2 = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_WRITE);
 
 			if (mmreg2 < 0)
 			{
@@ -357,7 +355,6 @@ void eeRecompileCode1(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 // rd = rt op sa
 void eeRecompileCode2(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 {
-	int mmreg1, mmreg2;
 	if (!_Rd_)
 		return;
 
@@ -375,7 +372,7 @@ void eeRecompileCode2(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 		pxAssert(0);
 
 		// no const regs
-		mmreg1 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rt_, MODE_READ);
+		const int mmreg1 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rt_, MODE_READ);
 
 		if (mmreg1 >= 0)
 		{
@@ -383,7 +380,7 @@ void eeRecompileCode2(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 
 			// check for last used, if so don't alloc a new XMM reg
 			_addNeededGPRtoXMMreg(_Rd_);
-			mmreg2 = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_WRITE);
+			int mmreg2 = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_WRITE);
 
 			if (mmreg2 < 0)
 			{

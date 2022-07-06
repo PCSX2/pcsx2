@@ -86,6 +86,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 	m_ui.setupUi(this);
 
+	// start hidden, fixup in updateRendererDependentOptions()
+	m_ui.hardwareRendererGroup->setVisible(false);
+	m_ui.verticalLayout->removeWidget(m_ui.hardwareRendererGroup);
+	m_ui.softwareRendererGroup->setVisible(false);
+	m_ui.verticalLayout->removeWidget(m_ui.softwareRendererGroup);
+
 	//////////////////////////////////////////////////////////////////////////
 	// Global Settings
 	//////////////////////////////////////////////////////////////////////////
@@ -105,6 +111,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.integerScaling, "EmuCore/GS", "IntegerScaling", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.PCRTCOffsets, "EmuCore/GS", "pcrtc_offsets", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.PCRTCOverscan, "EmuCore/GS", "pcrtc_overscan", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.PCRTCAntiBlur, "EmuCore/GS", "pcrtc_antiblur", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.DisableInterlaceOffset, "EmuCore/GS", "disable_interlace_offset", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.internalResolutionScreenshots, "EmuCore/GS", "InternalResolutionScreenshots", false);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.zoom, "EmuCore/GS", "Zoom", 100.0f);
@@ -148,6 +155,20 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
 	dialog->registerWidgetHelp(m_ui.osdShowResolution, tr("Show Resolution"), tr("Unchecked"),
 		tr("Shows the resolution of the game in the top-right corner of the display."));
+	dialog->registerWidgetHelp(m_ui.osdShowCPU, tr("Show CPU Usage"), tr("Unchecked"),
+		tr("Shows host's CPU utilization."));
+	dialog->registerWidgetHelp(m_ui.osdShowGPU, tr("Show GPU Usage"), tr("Unchecked"),
+		tr("Shows host's GPU utilization."));
+	dialog->registerWidgetHelp(m_ui.osdShowGSStats, tr("Show Statistics"), tr("Unchecked"),
+		tr("Shows counters for internal graphical utilization, useful for debugging."));
+	dialog->registerWidgetHelp(m_ui.osdShowIndicators, tr("Show Indicators"), tr("Unchecked"),
+		tr("Shows OSD icon indicators for emulation states such as Pausing, Turbo, Fast Forward, and Slow Motion."));
+
+    dialog->registerWidgetHelp(m_ui.shadeBoost, tr("Shade Boost"), tr("Unchecked"),
+		tr("Enables saturation, contrast, and brightness to be adjusted. Values of brightness, saturation, and contrast are at default 50."));
+	dialog->registerWidgetHelp(m_ui.fxaa, tr("FXAA"), tr("Unchecked"),
+		tr("Applies the FXAA anti-aliasing algorithm to improve the visual quality of games."));
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Settings
@@ -177,6 +198,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	// HW Renderer Fixes
 	//////////////////////////////////////////////////////////////////////////
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.halfScreenFix, "EmuCore/GS", "UserHacks_Half_Bottom_Override", -1, -1);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cpuSpriteRenderBW, "EmuCore/GS", "UserHacks_CPUSpriteRenderBW", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.skipDrawStart, "EmuCore/GS", "UserHacks_SkipDraw_Start", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.skipDrawEnd, "EmuCore/GS", "UserHacks_SkipDraw_End", 0);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hwAutoFlush, "EmuCore/GS", "UserHacks_AutoFlush", false);
@@ -209,6 +231,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.loadTextureReplacements, "EmuCore/GS", "LoadTextureReplacements", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.loadTextureReplacementsAsync, "EmuCore/GS", "LoadTextureReplacementsAsync", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.precacheTextureReplacements, "EmuCore/GS", "PrecacheTextureReplacements", false);
+	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.texturesDirectory, m_ui.texturesBrowse, m_ui.texturesOpen, m_ui.texturesReset,
+		"Folders", "Textures", "textures");
 
 	//////////////////////////////////////////////////////////////////////////
 	// Advanced Settings
@@ -271,6 +295,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	{
 		dialog->registerWidgetHelp(m_ui.fmvAspectRatio, tr("FMV Aspect Ratio"), tr("Off (Default)"),
 			tr("Overrides the FMV aspect ratio."));
+	
+		dialog->registerWidgetHelp(m_ui.PCRTCAntiBlur, tr("Anti-Blur"), tr("Checked"),
+			tr("Enables internal Anti-Blur hacks. Less accurate to PS2 rendering but will make a lot of games look less blurry."));
 	}
 
 	// Rendering tab
@@ -538,7 +565,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	const int current_tab = m_hardware_renderer_visible ? m_ui.hardwareRendererGroup->currentIndex() : m_ui.softwareRendererGroup->currentIndex();
 
 	// move advanced tab to the correct parent
-	static constexpr std::array<const char*, 3> move_tab_names = {{"Display", "On-Screen Display", "Advanced"}};
+	static constexpr std::array<const char*, 3> move_tab_names = {{"Display", "OSD", "Advanced"}};
 	const std::array<QWidget*, 3> move_tab_pointers = {{m_ui.gameDisplayTab, m_ui.osdTab, m_ui.advancedTab}};
 	for (size_t i = 0; i < move_tab_pointers.size(); i++)
 	{
@@ -565,7 +592,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 		{
 			// map first two tabs over, skip hacks
 			m_ui.verticalLayout->insertWidget(1, m_ui.hardwareRendererGroup);
-			m_ui.hardwareRendererGroup->setCurrentIndex((current_tab < 2) ? current_tab : (current_tab + 2));
+			m_ui.hardwareRendererGroup->setCurrentIndex((current_tab < 2) ? current_tab : (current_tab + 3));
 		}
 
 		m_hardware_renderer_visible = is_hardware;
@@ -685,5 +712,6 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	}
 
 	m_ui.enableHWFixes->setEnabled(is_hardware);
-	onEnableHardwareFixesChanged();
+	if (is_hardware)
+		onEnableHardwareFixesChanged();
 }

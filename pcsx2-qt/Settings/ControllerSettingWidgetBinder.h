@@ -78,7 +78,7 @@ namespace ControllerSettingWidgetBinder
 		if (sif)
 		{
 			const float value = sif->GetFloatValue(section.c_str(), key.c_str(), default_value);
-			Accessor::setBoolValue(widget, value);
+			Accessor::setFloatValue(widget, value);
 
 			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key)]() {
 				const float new_value = Accessor::getFloatValue(widget);
@@ -90,7 +90,7 @@ namespace ControllerSettingWidgetBinder
 		else
 		{
 			const float value = Host::GetBaseFloatSettingValue(section.c_str(), key.c_str(), default_value);
-			Accessor::setBoolValue(widget, value);
+			Accessor::setFloatValue(widget, value);
 
 			Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
 				const float new_value = Accessor::getFloatValue(widget);

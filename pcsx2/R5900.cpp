@@ -365,14 +365,14 @@ static bool cpuIntsEnabled(int Interrupt)
 
 // if cpuRegs.cycle is greater than this cycle, should check cpuEventTest for updates
 u32 g_nextEventCycle = 0;
-
+u32 g_lastEventCycle = 0;
 // Shared portion of the branch test, called from both the Interpreter
 // and the recompiler.  (moved here to help alleviate redundant code)
 __fi void _cpuEventTest_Shared()
 {
 	eeEventTestIsActive = true;
 	g_nextEventCycle = cpuRegs.cycle + eeWaitCycles;
-
+	g_lastEventCycle = cpuRegs.cycle;
 	// ---- INTC / DMAC (CPU-level Exceptions) -----------------
 	// Done first because exceptions raised during event tests need to be postponed a few
 	// cycles (fixes Grandia II [PAL], which does a spin loop on a vsync and expects to
@@ -387,7 +387,7 @@ __fi void _cpuEventTest_Shared()
 	// escape/suspend hooks, and it's really a good idea to suspend/resume emulation before
 	// doing any actual meaningful branchtest logic.
 
-	if( cpuTestCycle( nextsCounter, nextCounter ) )
+	if ( cpuTestCycle( nextsCounter, nextCounter ) )
 	{
 		rcntUpdate();
 		_cpuTestPERF();

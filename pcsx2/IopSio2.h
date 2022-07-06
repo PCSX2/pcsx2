@@ -13,9 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PSXSIO2_H__
-#define __PSXSIO2_H__
-
+#pragma once
 
 #define BUFSIZE	8448
 
@@ -91,6 +89,3 @@ void psxDma12(u32 madr, u32 bcr, u32 chcr);
 
 void psxDMA11Interrupt();
 void psxDMA12Interrupt();
-
-#endif /* __PSXSIO2_H__ */
-

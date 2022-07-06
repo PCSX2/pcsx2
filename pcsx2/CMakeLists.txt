@@ -343,6 +343,7 @@ set(pcsx2SPU2Headers
 
 # DEV9 sources
 set(pcsx2DEV9Sources
+	DEV9/AdapterUtils.cpp
 	DEV9/ATA/Commands/ATA_Command.cpp
 	DEV9/ATA/Commands/ATA_CmdDMA.cpp
 	DEV9/ATA/Commands/ATA_CmdExecuteDeviceDiag.cpp
@@ -387,6 +388,7 @@ set(pcsx2DEV9Sources
 
 # DEV9 headers
 set(pcsx2DEV9Headers
+	DEV9/AdapterUtils.h
 	DEV9/ATA/ATA.h
 	DEV9/ATA/HddCreate.h
 	DEV9/DEV9.h
@@ -1067,6 +1069,7 @@ if(PCSX2_CORE)
 		Frontend/InputManager.cpp
 		Frontend/InputSource.cpp
 		Frontend/LayeredSettingsInterface.cpp
+		Frontend/LogSink.cpp
 		GSDumpReplayer.cpp
 		HostSettings.cpp
 		VMManager.cpp
@@ -1077,6 +1080,7 @@ if(PCSX2_CORE)
 		Frontend/InputManager.h
 		Frontend/InputSource.h
 		Frontend/LayeredSettingsInterface.h
+		Frontend/LogSink.h
 		GSDumpReplayer.h
 		HostSettings.h
 		VMManager.h)
@@ -1546,7 +1550,6 @@ if(Linux)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		PkgConfig::AIO
 		PkgConfig::LIBUDEV
-		ALSA::ALSA
 	)
 endif()
 
@@ -1645,7 +1648,11 @@ if(WIN32)
 		opengl32.lib
 		comsuppw.lib
 	)
-	if(NOT PCSX2_CORE)
+	if(PCSX2_CORE)
+		target_link_libraries(PCSX2_FLAGS INTERFACE
+			OneCore.lib
+		)
+	else()
 		target_link_libraries(PCSX2_FLAGS INTERFACE
 			pthreads4w
 		)

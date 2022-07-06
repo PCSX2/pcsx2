@@ -418,7 +418,6 @@ void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they a
 
 void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 {
-	u8* noHack;
 	u32* endMul = nullptr;
 
 	if (CHECK_FPUMULHACK)
@@ -427,7 +426,7 @@ void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 		xMOVD(arg2regd, xRegisterSSE(treg));
 		xFastCall((void*)(uptr)&FPU_MUL_HACK, arg1regd, arg2regd); //returns the hacked result or 0
 		xTEST(eax, eax);
-		noHack = JZ8(0);
+		u8* noHack = JZ8(0);
 			xMOVDZX(xRegisterSSE(regd), eax);
 			endMul = JMP32(0);
 		x86SetJ8(noHack);
@@ -951,10 +950,9 @@ FPURECOMPILE_CONSTCODE(SUBA_S, XMMINFO_WRITEACC | XMMINFO_READS | XMMINFO_READT)
 void recSQRT_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::SQRT_F);
-	u8* pjmp;
 	int roundmodeFlag = 0;
-	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
-	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+	const int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
+	const int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	//Console.WriteLn("FPU: SQRT");
 
 	if (g_sseMXCSR.GetRoundMode() != SSEround_Nearest)
@@ -976,7 +974,7 @@ void recSQRT_S_xmm(int info)
 		//--- Check for negative SQRT --- (sqrt(-0) = 0, unlike what the docs say)
 		xMOVMSKPS(xRegister32(tempReg), xRegisterSSE(EEREC_D));
 		xAND(xRegister32(tempReg), 1); //Check sign
-		pjmp = JZ8(0); //Skip if none are
+		u8* pjmp = JZ8(0); //Skip if none are
 			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI | FPUflagSI); // Set I and SI flags
 			xAND.PS(xRegisterSSE(EEREC_D), ptr[&s_const.pos[0]]); // Make EEREC_D Positive
 		x86SetJ8(pjmp);

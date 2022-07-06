@@ -67,6 +67,9 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/EmulationSettingsWidget.cpp
 	Settings/EmulationSettingsWidget.h
 	Settings/EmulationSettingsWidget.ui
+	Settings/FolderSettingsWidget.cpp
+	Settings/FolderSettingsWidget.h
+	Settings/FolderSettingsWidget.ui
 	Settings/GameFixSettingsWidget.cpp
 	Settings/GameFixSettingsWidget.h
 	Settings/GameFixSettingsWidget.ui

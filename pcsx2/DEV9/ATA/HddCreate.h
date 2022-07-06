@@ -17,15 +17,14 @@
 
 #include <atomic>
 #include <chrono>
+#include <string>
 
 #include "common/Path.h"
-
-#include "ghc/filesystem.h"
 
 class HddCreate
 {
 public:
-	ghc::filesystem::path filePath;
+	std::string filePath;
 	u64 neededSize;
 
 	std::atomic_bool errored{false};
@@ -50,5 +49,5 @@ protected:
 	void SetCanceled();
 
 private:
-	void WriteImage(ghc::filesystem::path hddPath, u64 reqSizeBytes);
+	void WriteImage(std::string hddPath, u64 reqSizeBytes);
 };

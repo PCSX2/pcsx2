@@ -17,8 +17,6 @@
 
 #include "common/Pcsx2Defs.h"
 
-static const u32 MAX_KEYS = 25;
-
 enum gamePadValues
 {
 	PAD_UP,       // Directional pad ↑
@@ -38,6 +36,7 @@ enum gamePadValues
 	PAD_L3,       // Left joystick button (L3)
 	PAD_R3,       // Right joystick button (R3)
 	PAD_ANALOG,   // Analog mode toggle
+	PAD_PRESSURE, // Pressure modifier
 	PAD_L_UP,     // Left joystick (Up) ↑
 	PAD_L_RIGHT,  // Left joystick (Right) →
 	PAD_L_DOWN,   // Left joystick (Down) ↓
@@ -45,7 +44,8 @@ enum gamePadValues
 	PAD_R_UP,     // Right joystick (Up) ↑
 	PAD_R_RIGHT,  // Right joystick (Right) →
 	PAD_R_DOWN,   // Right joystick (Down) ↓
-	PAD_R_LEFT    // Right joystick (Left) ←
+	PAD_R_LEFT,   // Right joystick (Left) ←
+	MAX_KEYS,
 };
 
 static inline bool IsAnalogKey(int index)
@@ -53,3 +53,7 @@ static inline bool IsAnalogKey(int index)
 	return ((index >= PAD_L_UP) && (index <= PAD_R_LEFT));
 }
 
+static inline bool IsTriggerKey(int index)
+{
+	return (index == PAD_L2 || index == PAD_R2);
+}

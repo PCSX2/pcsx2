@@ -39,6 +39,8 @@ namespace GameList
 	struct Entry;
 }
 
+enum class CDVD_SourceType : uint8_t;
+
 class MainWindow final : public QMainWindow
 {
 	Q_OBJECT
@@ -84,6 +86,13 @@ public:
 	/// Locks the VM by pausing it, while a popup dialog is displayed.
 	VMLock pauseAndLockVM();
 
+	/// Accessors for the status bar widgets, updated by the emulation thread.
+	__fi QLabel* getStatusVerboseWidget() const { return m_status_verbose_widget; }
+	__fi QLabel* getStatusRendererWidget() const { return m_status_renderer_widget; }
+	__fi QLabel* getStatusResolutionWidget() const { return m_status_resolution_widget; }
+	__fi QLabel* getStatusFPSWidget() const { return m_status_fps_widget; }
+	__fi QLabel* getStatusVPSWidget() const { return m_status_vps_widget; }
+
 public Q_SLOTS:
 	void checkForUpdates(bool display_message);
 	void refreshGameList(bool invalidate_cache);
@@ -93,6 +102,7 @@ public Q_SLOTS:
 	void runOnUIThread(const std::function<void()>& func);
 	bool requestShutdown(bool allow_confirm = true, bool allow_save_to_state = true, bool block_until_done = false);
 	void requestExit();
+	void checkForSettingChanges();
 
 private Q_SLOTS:
 	void onUpdateCheckComplete();
@@ -110,10 +120,12 @@ private Q_SLOTS:
 	void onGameListEntryContextMenuRequested(const QPoint& point);
 
 	void onStartFileActionTriggered();
+	void onStartDiscActionTriggered();
 	void onStartBIOSActionTriggered();
 	void onChangeDiscFromFileActionTriggered();
 	void onChangeDiscFromGameListActionTriggered();
 	void onChangeDiscFromDeviceActionTriggered();
+	void onRemoveDiscActionTriggered();
 	void onChangeDiscMenuAboutToShow();
 	void onChangeDiscMenuAboutToHide();
 	void onLoadStateMenuAboutToShow();
@@ -151,7 +163,6 @@ private Q_SLOTS:
 	void onVMStopped();
 
 	void onGameChanged(const QString& path, const QString& serial, const QString& name, quint32 crc);
-	void onPerformanceMetricsUpdated(const QString& fps_stat, const QString& gs_stat);
 
 	void recreate();
 
@@ -178,12 +189,14 @@ private:
 	void updateEmulationActions(bool starting, bool running);
 	void updateStatusBarWidgetVisibility();
 	void updateWindowTitle();
+	void updateWindowState(bool force_visible = false);
 	void setProgressBar(int current, int total);
 	void clearProgressBar();
 
 	bool isShowingGameList() const;
 	bool isRenderingFullscreen() const;
 	bool isRenderingToMain() const;
+	bool shouldHideMouseCursor() const;
 	void switchToGameListView();
 	void switchToEmulationView();
 
@@ -199,6 +212,8 @@ private:
 	ControllerSettingsDialog* getControllerSettingsDialog();
 	void doControllerSettings(ControllerSettingsDialog::Category category = ControllerSettingsDialog::Category::Count);
 
+	QString getDiscDevicePath(const QString& title);
+
 	void startGameListEntry(const GameList::Entry* entry, std::optional<s32> save_slot = std::nullopt,
 		std::optional<bool> fast_boot = std::nullopt);
 	void setGameListEntryCoverImage(const GameList::Entry* entry);
@@ -209,8 +224,8 @@ private:
 	void populateLoadStateMenu(QMenu* menu, const QString& filename, const QString& serial, quint32 crc);
 	void populateSaveStateMenu(QMenu* menu, const QString& serial, quint32 crc);
 	void updateSaveStateMenus(const QString& filename, const QString& serial, quint32 crc);
-	void doStartDisc(const QString& path);
-	void doDiscChange(const QString& path);
+	void doStartFile(std::optional<CDVD_SourceType> source, const QString& path);
+	void doDiscChange(CDVD_SourceType source, const QString& path);
 
 	Ui::MainWindow m_ui;
 
@@ -225,18 +240,21 @@ private:
 	AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
 
 	QProgressBar* m_status_progress_widget = nullptr;
-	QLabel* m_status_gs_widget = nullptr;
+	QLabel* m_status_verbose_widget = nullptr;
+	QLabel* m_status_renderer_widget = nullptr;
 	QLabel* m_status_fps_widget = nullptr;
+	QLabel* m_status_vps_widget = nullptr;
+	QLabel* m_status_resolution_widget = nullptr;
 
 	QString m_current_disc_path;
 	QString m_current_game_serial;
 	QString m_current_game_name;
 	quint32 m_current_game_crc;
-	bool m_vm_valid = false;
-	bool m_vm_paused = false;
+
 	bool m_save_states_invalidated = false;
 	bool m_was_paused_on_surface_loss = false;
 	bool m_was_disc_change_request = false;
+	bool m_is_closing = false;
 
 	QString m_last_fps_status;
 };

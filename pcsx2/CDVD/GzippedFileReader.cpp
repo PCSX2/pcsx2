@@ -27,6 +27,8 @@
 #include "gui/StringHelpers.h"
 #include "gui/wxDirName.h"
 #include <wx/stdpaths.h>
+#else
+#include "HostSettings.h"
 #endif
 
 #define CLAMP(val, minval, maxval) (std::min(maxval, std::max(minval, val)))
@@ -60,7 +62,7 @@ static Access* ReadIndexFromFile(const char* filename)
 	if (std::fread(index, sizeof(Access), 1, fp.get()) != 1 ||
 		datasize != static_cast<s64>(index->have) * static_cast<s64>(sizeof(Point)))
 	{
-		Console.Error("Error: unexpected size of gzip index, please delete it manually: '%s'.", filename);
+		Console.Error("Error: Unexpected size of gzip index, please delete it manually: '%s'.", filename);
 		free(index);
 		return 0;
 	}
@@ -134,7 +136,7 @@ static std::string ApplyTemplate(const std::string& name, const std::string& bas
 		|| !canEndWithKey && first == trimmedTemplate.length() - std::strlen(INDEX_TEMPLATE_KEY))
 	{
 		Console.Error("Invalid %s template '%s'.\n"
-					  "Template must contain exactly one '%s' and must not end with it. Abotring.",
+					  "Template must contain exactly one '%s' and must not end with it. Aborting.",
 					  name.c_str(), trimmedTemplate.c_str(), INDEX_TEMPLATE_KEY);
 		return {};
 	}
@@ -182,10 +184,11 @@ static std::string iso2indexname(const std::string& isoname)
 #ifndef PCSX2_CORE
 	std::string appRoot = // TODO: have only one of this in PCSX2. Right now have few...
 		StringUtil::wxStringToUTF8String(((wxDirName)(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath())).ToString());
+	return ApplyTemplate("gzip index", appRoot, EmuConfig.GzipIsoIndexTemplate, isoname, false);
 #else
 	const std::string& appRoot = EmuFolders::DataRoot;
+	return ApplyTemplate("gzip index", appRoot, Host::GetBaseStringSettingValue("EmuCore", "GzipIsoIndexTemplate", "$(f).pindex.tmp"), isoname, false);
 #endif
-	return ApplyTemplate("gzip index", appRoot, EmuConfig.GzipIsoIndexTemplate, isoname, false);
 }
 
 
@@ -288,7 +291,7 @@ void GzippedFileReader::AsyncPrefetchCancel()
 
 	if (!CancelIo(hOverlappedFile))
 	{
-		Console.Warning("canceling gz prefetch failed. following prefetching will not work.");
+		Console.Warning("Canceling gz prefetch failed. Following prefetching will not work.");
 		return;
 	}
 
@@ -342,7 +345,7 @@ bool GzippedFileReader::OkIndex()
 	}
 	else
 	{
-		Console.Error("ERROR (%d): index could not be generated for file '%s'", len, m_filename.c_str());
+		Console.Error("ERROR (%d): Index could not be generated for file '%s'", len, m_filename.c_str());
 		free_index(index);
 		InitZstates();
 		return false;

@@ -95,8 +95,9 @@ D3D11HostDisplay::D3D11HostDisplay() = default;
 
 D3D11HostDisplay::~D3D11HostDisplay()
 {
-	pxAssertMsg(!m_context, "Context should have been destroyed by now");
-	pxAssertMsg(!m_swap_chain, "Swap chain should have been destroyed by now");
+	D3D11HostDisplay::DestroyRenderSurface();
+	m_context.Reset();
+	m_device.Reset();
 }
 
 HostDisplay::RenderAPI D3D11HostDisplay::GetRenderAPI() const
@@ -330,13 +331,6 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 bool D3D11HostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
 {
 	return true;
-}
-
-void D3D11HostDisplay::DestroyRenderDevice()
-{
-	DestroyRenderSurface();
-	m_context.Reset();
-	m_device.Reset();
 }
 
 bool D3D11HostDisplay::MakeRenderContextCurrent()
@@ -757,7 +751,7 @@ void D3D11HostDisplay::EndPresent()
 		KickTimestampQuery();
 }
 
-void D3D11HostDisplay::CreateTimestampQueries()
+bool D3D11HostDisplay::CreateTimestampQueries()
 {
 	for (u32 i = 0; i < NUM_TIMESTAMP_QUERIES; i++)
 	{
@@ -768,12 +762,13 @@ void D3D11HostDisplay::CreateTimestampQueries()
 			if (FAILED(hr))
 			{
 				m_timestamp_queries = {};
-				return;
+				return false;
 			}
 		}
 	}
 
 	KickTimestampQuery();
+	return true;
 }
 
 void D3D11HostDisplay::DestroyTimestampQueries()
@@ -835,7 +830,7 @@ void D3D11HostDisplay::PopTimestampQuery()
 
 void D3D11HostDisplay::KickTimestampQuery()
 {
-	if (m_timestamp_query_started)
+	if (m_timestamp_query_started || !m_timestamp_queries[0][0])
 		return;
 
 	m_context->Begin(m_timestamp_queries[m_write_timestamp_query][0].Get());
@@ -843,16 +838,21 @@ void D3D11HostDisplay::KickTimestampQuery()
 	m_timestamp_query_started = true;
 }
 
-void D3D11HostDisplay::SetGPUTimingEnabled(bool enabled)
+bool D3D11HostDisplay::SetGPUTimingEnabled(bool enabled)
 {
 	if (m_gpu_timing_enabled == enabled)
-		return;
+		return true;
 
 	m_gpu_timing_enabled = enabled;
 	if (m_gpu_timing_enabled)
-		CreateTimestampQueries();
+	{
+		return CreateTimestampQueries();
+	}
 	else
+	{
 		DestroyTimestampQueries();
+		return true;
+	}
 }
 
 float D3D11HostDisplay::GetAndResetAccumulatedGPUTime()

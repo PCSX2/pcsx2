@@ -15,9 +15,14 @@
 
 #include "PrecompiledHeader.h"
 #include "common/Assertions.h"
+#include "Frontend/LayeredSettingsInterface.h"
+#include "GS.h"
+#include "GS/Renderers/HW/GSTextureReplacements.h"
 #include "Host.h"
 #include "HostSettings.h"
-#include "Frontend/LayeredSettingsInterface.h"
+#include "MemoryCardFile.h"
+#include "Sio.h"
+#include "VMManager.h"
 
 static std::mutex s_settings_mutex;
 static LayeredSettingsInterface s_layered_settings_interface;
@@ -201,4 +206,46 @@ void Host::Internal::SetInputSettingsLayer(SettingsInterface* sif)
 {
 	std::unique_lock lock(s_settings_mutex);
 	s_layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_INPUT, sif);
+}
+
+void Host::Internal::UpdateEmuFolders()
+{
+	const std::string old_cheats_directory(EmuFolders::Cheats);
+	const std::string old_cheats_ws_directory(EmuFolders::CheatsWS);
+	const std::string old_cheats_ni_directory(EmuFolders::CheatsNI);
+	const std::string old_memcards_directory(EmuFolders::MemoryCards);
+	const std::string old_textures_directory(EmuFolders::Textures);
+
+	EmuFolders::LoadConfig(*GetBaseSettingsLayer());
+	EmuFolders::EnsureFoldersExist();
+
+	if (VMManager::HasValidVM())
+	{
+		if (EmuFolders::Cheats != old_cheats_directory ||
+			EmuFolders::CheatsWS != old_cheats_ws_directory ||
+			EmuFolders::CheatsNI != old_cheats_ni_directory)
+		{
+			VMManager::ReloadPatches(true, true);
+		}
+
+		if (EmuFolders::MemoryCards != old_memcards_directory)
+		{
+			FileMcd_EmuClose();
+			FileMcd_EmuOpen();
+
+			for (u32 port = 0; port < 2; port++)
+			{
+				for (u32 slot = 0; slot < 4; slot++)
+					SetForceMcdEjectTimeoutNow(port, slot);
+			}
+		}
+
+		if (EmuFolders::Textures != old_textures_directory)
+		{
+			GetMTGS().RunOnGSThread([]() {
+				if (VMManager::HasValidVM())
+					GSTextureReplacements::ReloadReplacementMap();
+			});
+		}
+	}
 }

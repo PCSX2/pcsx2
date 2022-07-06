@@ -93,6 +93,7 @@
     <addaction name="actionAudioSettings"/>
     <addaction name="actionMemoryCardSettings"/>
     <addaction name="actionDEV9Settings"/>
+    <addaction name="actionFolderSettings"/>
     <addaction name="actionControllerSettings"/>
     <addaction name="actionHotkeySettings"/>
     <addaction name="separator"/>
@@ -568,6 +569,15 @@
    </property>
    <property name="text">
     <string>&amp;Network &amp;&amp; HDD</string>
+   </property>
+  </action>
+  <action name="actionFolderSettings">
+   <property name="icon">
+    <iconset theme="folder-open-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Folders</string>
    </property>
   </action>
   <action name="actionViewToolbar">

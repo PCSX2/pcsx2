@@ -51,8 +51,14 @@ VulkanHostDisplay::VulkanHostDisplay() = default;
 
 VulkanHostDisplay::~VulkanHostDisplay()
 {
-	pxAssertRel(!g_vulkan_context, "Context should have been destroyed by now");
-	pxAssertRel(!m_swap_chain, "Swap chain should have been destroyed by now");
+	if (g_vulkan_context)
+	{
+		g_vulkan_context->WaitForGPUIdle();
+		m_swap_chain.reset();
+
+		Vulkan::ShaderCache::Destroy();
+		Vulkan::Context::Destroy();
+	}
 }
 
 HostDisplay::RenderAPI VulkanHostDisplay::GetRenderAPI() const
@@ -122,7 +128,7 @@ bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
 
 void VulkanHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
 {
-	if (m_swap_chain->GetWidth() == new_window_width && m_swap_chain->GetHeight() == new_window_height)
+	if (m_swap_chain->GetWidth() == static_cast<u32>(new_window_width) && m_swap_chain->GetHeight() == static_cast<u32>(new_window_height))
 	{
 		// skip unnecessary resizes
 		m_window_info.surface_scale = new_window_scale;
@@ -163,7 +169,6 @@ HostDisplay::AdapterAndModeList VulkanHostDisplay::GetAdapterAndModeList()
 
 void VulkanHostDisplay::DestroyRenderSurface()
 {
-	m_window_info = {};
 	g_vulkan_context->WaitForGPUIdle();
 	m_swap_chain.reset();
 }
@@ -195,8 +200,8 @@ std::string VulkanHostDisplay::GetDriverInfo() const
 static bool UploadBufferToTexture(
 	Vulkan::Texture* texture, VkCommandBuffer cmdbuf, u32 width, u32 height, const void* data, u32 data_stride)
 {
-	const u32 upload_stride = Common::AlignUpPow2(Vulkan::Util::GetTexelSize(texture->GetFormat()) * width,
-		g_vulkan_context->GetBufferCopyRowPitchAlignment());
+	const u32 texel_size = Vulkan::Util::GetTexelSize(texture->GetFormat());
+	const u32 upload_stride = Common::AlignUpPow2(texel_size * width, g_vulkan_context->GetBufferCopyRowPitchAlignment());
 	const u32 upload_size = upload_stride * height;
 
 	Vulkan::StreamBuffer& buf = g_vulkan_context->GetTextureUploadBuffer();
@@ -216,7 +221,7 @@ static bool UploadBufferToTexture(
 	StringUtil::StrideMemCpy(buf.GetCurrentHostPointer(), upload_stride, data, data_stride, upload_stride, height);
 	buf.CommitMemory(upload_size);
 
-	texture->UpdateFromBuffer(cmdbuf, 0, 0, 0, 0, width, height, width, buf.GetBuffer(), buf_offset);
+	texture->UpdateFromBuffer(cmdbuf, 0, 0, 0, 0, width, height, upload_stride / texel_size, buf.GetBuffer(), buf_offset);
 	return true;
 }
 
@@ -320,18 +325,6 @@ bool VulkanHostDisplay::UpdateImGuiFontTexture()
 	return ImGui_ImplVulkan_CreateFontsTexture();
 }
 
-void VulkanHostDisplay::DestroyRenderDevice()
-{
-	if (!g_vulkan_context)
-		return;
-
-	g_vulkan_context->WaitForGPUIdle();
-
-	Vulkan::ShaderCache::Destroy();
-	DestroyRenderSurface();
-	Vulkan::Context::Destroy();
-}
-
 bool VulkanHostDisplay::MakeRenderContextCurrent()
 {
 	return true;
@@ -419,9 +412,9 @@ void VulkanHostDisplay::EndPresent()
 	g_vulkan_context->MoveToNextCommandBuffer();
 }
 
-void VulkanHostDisplay::SetGPUTimingEnabled(bool enabled)
+bool VulkanHostDisplay::SetGPUTimingEnabled(bool enabled)
 {
-	g_vulkan_context->SetEnableGPUTiming(enabled);
+	return g_vulkan_context->SetEnableGPUTiming(enabled);
 }
 
 float VulkanHostDisplay::GetAndResetAccumulatedGPUTime()

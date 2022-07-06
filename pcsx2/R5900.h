@@ -260,6 +260,7 @@ alignas(16) extern fpuRegisters fpuRegs;
 alignas(16) extern tlbs tlb[48];
 
 extern u32 g_nextEventCycle;
+extern u32 g_lastEventCycle;
 extern bool eeEventTestIsActive;
 extern u32 s_iLastCOP0Cycle;
 extern u32 s_iLastPERFCycle[2];

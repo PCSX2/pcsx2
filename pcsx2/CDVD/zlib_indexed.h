@@ -95,8 +95,7 @@ Comments) 1950 to 1952 in the files http://tools.ietf.org/html/rfc1950
    index in a file.
  */
 
-#ifndef __ZLIB_INDEXED_H__
-#define __ZLIB_INDEXED_H__
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -504,5 +503,3 @@ extract_ret:
 
 	return ret;
 }
-
-#endif /* __ZLIB_INDEXED_H__ */

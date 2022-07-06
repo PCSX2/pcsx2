@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __iCOP0_H__
-#define __iCOP0_H__
+#pragma once
 
 #include "COP0.h"
 
@@ -46,4 +45,3 @@ namespace COP0 {
 } // namespace OpcodeImpl
 } // namespace Dynarec
 } // namespace R5900
-#endif
