@@ -290,6 +290,14 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	// only allow disabling readbacks for per-game settings, it's too dangerous
 	m_ui.disableHardwareReadbacks->setEnabled(m_dialog->isPerGameSettings());
 
+	// allow Texture Offset for per-game settings only 
+	m_ui.textureOffsetX->setEnabled(m_dialog->isPerGameSettings());
+	m_ui.textureOffsetY->setEnabled(m_dialog->isPerGameSettings());
+
+	// allow Skipdraw Range for per-game settings only 
+	m_ui.skipDrawStart->setEnabled(m_dialog->isPerGameSettings());
+	m_ui.skipDrawEnd->setEnabled(m_dialog->isPerGameSettings());
+
 	// Display tab
 	{
 
