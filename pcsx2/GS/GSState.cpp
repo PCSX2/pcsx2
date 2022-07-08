@@ -710,8 +710,7 @@ __inline void GSState::CheckFlushes()
 			Flush();
 		}
 	}
-
-	if ((m_context->FRAME.FBMSK & GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk) != GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk)
+	if (m_index.tail > 0 && (m_context->FRAME.FBMSK & GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk) != GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk)
 		m_mem.m_clut.Invalidate(m_context->FRAME.Block());
 }
 
@@ -1952,7 +1951,7 @@ void GSState::Write(const u8* mem, int len)
 			FlushWrite();
 	}
 
-	m_mem.m_clut.Invalidate();
+	m_mem.m_clut.Invalidate(blit.DBP);
 }
 
 void GSState::InitReadFIFO(u8* mem, int len)
@@ -2196,6 +2195,8 @@ void GSState::Move()
 			(m_mem.*dpsm.wpa)(doff, (m_mem.*spsm.rpa)(soff));
 		});
 	}
+
+	m_mem.m_clut.Invalidate(m_env.BITBLTBUF.DBP);
 }
 
 void GSState::SoftReset(u32 mask)
