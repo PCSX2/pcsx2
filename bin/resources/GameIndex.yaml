@@ -1188,6 +1188,8 @@ SCAJ-20163:
 SCAJ-20164:
   name: "Kingdom Hearts II"
   region: "NTSC-Unk"
+  gsHWFixes:
+    autoFlush: 1 # Fixes effects.
 SCAJ-20165:
   name: "Bleach - Hanatareshi Yabou"
   region: "NTSC-Unk"
@@ -17556,6 +17558,8 @@ SLES-54113:
 SLES-54114:
   name: "Kingdom Hearts II"
   region: "PAL-E"
+  gsHWFixes:
+    autoFlush: 1 # Fixes effects.
   compat: 5
 SLES-54115:
   name: "Delta Force - Black Hawk Down - Team Sabre"
@@ -17902,15 +17906,23 @@ SLES-54231:
 SLES-54232:
   name: "Kingdom Hearts II"
   region: "PAL-F"
+  gsHWFixes:
+    autoFlush: 1 # Fixes effects.
 SLES-54233:
   name: "Kingdom Hearts II"
   region: "PAL-G"
+  gsHWFixes:
+    autoFlush: 1 # Fixes effects.
 SLES-54234:
   name: "Kingdom Hearts II"
   region: "PAL-I"
+  gsHWFixes:
+    autoFlush: 1 # Fixes effects.
 SLES-54235:
   name: "Kingdom Hearts II"
   region: "PAL-S"
+  gsHWFixes:
+    autoFlush: 1 # Fixes effects.
 SLES-54237:
   name: "Pirates of the Caribbean - The Legend of Jack Sparrow"
   region: "PAL-M5"
@@ -23899,7 +23911,7 @@ SLPM-62356:
   region: "NTSC-J"
   compat: 5
 SLPM-62362:
-  name: "Sega Ages 2500 Series Vol.01 - Phantasy Star"
+  name: "Sega Ages 2500 Series Vol.01 - Phantasy Star Generation 1"
   region: "NTSC-J"
   compat: 5
 SLPM-62364:
@@ -29220,6 +29232,8 @@ SLPM-66232:
 SLPM-66233:
   name: "Kingdom Hearts II"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes effects.
   compat: 5
 SLPM-66234:
   name: "Wizardry X - Zensen no Gakufu [Wonder Price]"
@@ -30782,6 +30796,8 @@ SLPM-66674:
 SLPM-66675:
   name: "Kingdom Hearts II - Final Mix +"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes effects.
   compat: 5
   memcardFilters: # Reads Re:Chain data and vice-versa.
     - "SLPM-66675"
@@ -41760,6 +41776,8 @@ SLUS-21004:
 SLUS-21005:
   name: "Kingdom Hearts II"
   region: "NTSC-U"
+  gsHWFixes:
+    autoFlush: 1 # Fixes effects.
   compat: 5
 SLUS-21006:
   name: "Ghost in the Shell - Stand Alone Complex"
