@@ -1,2 +1,0 @@
-C:\Users\jimmy\src\pcsx2\bin\x64_Release\liblz4_static.lib.lastcodeanalysissucceeded
-C:\Users\jimmy\src\pcsx2\bin\obj\liblz4_x64_Release\NativeCodeAnalysis.read.1.tlog
