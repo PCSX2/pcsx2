@@ -4880,6 +4880,7 @@ SCKA-20093:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
+    autoFlush: 1 # Fixes glows.
 SCKA-20096:
   name: "Barnyard"
   region: "NTSC-K"
@@ -19078,6 +19079,7 @@ SLES-54733:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
+    autoFlush: 1 # Fixes glows.
 SLES-54734:
   name: "Disney-Pixar Ratatouille"
   region: "PAL-F"
@@ -19086,6 +19088,7 @@ SLES-54734:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
+    autoFlush: 1 # Fixes glows.
 SLES-54735:
   name: "Disney-Pixar Ratatouille"
   region: "PAL-G"
@@ -19095,6 +19098,7 @@ SLES-54735:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
+    autoFlush: 1 # Fixes glows.
 SLES-54736:
   name: "Disney-Pixar Ratatouille"
   region: "PAL-S"
@@ -19104,6 +19108,7 @@ SLES-54736:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
+    autoFlush: 1 # Fixes glows.
 SLES-54737:
   name: "Disney-Pixar Ratatouille"
   region: "PAL-R"
@@ -19113,6 +19118,7 @@ SLES-54737:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
+    autoFlush: 1 # Fixes glows.
 SLES-54738:
   name: "Thunderbirds"
   region: "PAL-M11"
@@ -19125,6 +19131,7 @@ SLES-54744:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
+    autoFlush: 1 # Fixes glows.
 SLES-54745:
   name: "Disney-Pixar Ratatouille"
   region: "PAL-I"
@@ -19134,6 +19141,7 @@ SLES-54745:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
+    autoFlush: 1 # Fixes glows.
 SLES-54746:
   name: "Disney-Pixar Ratatouille"
   region: "PAL-G"
@@ -19143,6 +19151,7 @@ SLES-54746:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
+    autoFlush: 1 # Fixes glows.
 SLES-54747:
   name: "Disney-Pixar Ratatouille"
   region: "PAL-P-S"
@@ -19152,6 +19161,7 @@ SLES-54747:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
+    autoFlush: 1 # Fixes glows.
 SLES-54755:
   name: "Transformers - The Game"
   region: "PAL-E"
@@ -31275,6 +31285,7 @@ SLPM-66807:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
+    autoFlush: 1 # Fixes glows.
 SLPM-66808:
   name: "Tom Clancy's Ghost Recon - Advanced Warfighter [Ubisoft the Best]"
   region: "NTSC-J"
@@ -44433,6 +44444,7 @@ SLUS-21541:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
+    autoFlush: 1 # Fixes glows.
 SLUS-21542:
   name: "Sega Genesis Collection"
   region: "NTSC-U"
