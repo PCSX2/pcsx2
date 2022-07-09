@@ -85,6 +85,16 @@ const char* MainWindow::DEFAULT_THEME_NAME = "darkfusion";
 
 MainWindow* g_main_window = nullptr;
 
+#if defined(_WIN32) || defined(__APPLE__)
+static const bool s_use_central_widget = false;
+#else
+// Qt Wayland is broken. Any sort of stacked widget usage fails to update,
+// leading to broken window resizes, no display rendering, etc. So, we mess
+// with the central widget instead. Which we can't do on xorg, because it
+// breaks window resizing there...
+static bool s_use_central_widget = false;
+#endif
+
 // UI thread VM validity.
 static bool s_vm_valid = false;
 static bool s_vm_paused = false;
@@ -94,6 +104,10 @@ MainWindow::MainWindow(const QString& unthemed_style_name)
 {
 	pxAssert(!g_main_window);
 	g_main_window = this;
+
+#if !defined(_WIN32) && !defined(__APPLE__)
+	s_use_central_widget = DisplayContainer::isRunningOnWayland();
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -151,6 +165,11 @@ static void makeIconsMasks(QWidget* menu)
 	}
 }
 
+QWidget* MainWindow::getContentParent()
+{
+	return s_use_central_widget ? static_cast<QWidget*>(this) : static_cast<QWidget*>(m_ui.mainContainer);
+}
+
 void MainWindow::setupAdditionalUi()
 {
 	setWindowIcon(QIcon(QStringLiteral("%1/icons/AppIconLarge.png").arg(QtHost::GetResourcesBasePath())));
@@ -169,10 +188,18 @@ void MainWindow::setupAdditionalUi()
 	m_ui.actionViewStatusBar->setChecked(status_bar_visible);
 	m_ui.statusBar->setVisible(status_bar_visible);
 
-	m_game_list_widget = new GameListWidget(this);
+	m_game_list_widget = new GameListWidget(getContentParent());
 	m_game_list_widget->initialize();
 	m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
-	setCentralWidget(m_game_list_widget);
+	if (s_use_central_widget)
+	{
+		m_ui.mainContainer = nullptr; // setCentralWidget() will delete this
+		setCentralWidget(m_game_list_widget);
+	}
+	else
+	{
+		m_ui.mainContainer->addWidget(m_game_list_widget);
+	}
 
 	m_status_progress_widget = new QProgressBar(m_ui.statusBar);
 	m_status_progress_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
@@ -697,14 +724,12 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
 	m_ui.actionPause->setEnabled(running);
 	m_ui.actionChangeDisc->setEnabled(running);
 	m_ui.actionScreenshot->setEnabled(running);
-	m_ui.actionViewSystemDisplay->setEnabled(starting_or_running);
 	m_ui.menuChangeDisc->setEnabled(running);
 
 	m_ui.actionSaveState->setEnabled(running);
 	m_ui.menuSaveState->setEnabled(running);
 	m_ui.menuWindowSize->setEnabled(starting_or_running);
 
-	m_ui.actionFullscreen->setEnabled(starting_or_running);
 	m_ui.actionViewGameProperties->setEnabled(running);
 
 	m_game_list_widget->setDisabled(starting && !running);
@@ -810,7 +835,10 @@ void MainWindow::clearProgressBar()
 
 bool MainWindow::isShowingGameList() const
 {
-	return (centralWidget() == m_game_list_widget);
+	if (s_use_central_widget)
+		return (centralWidget() == m_game_list_widget);
+	else
+		return (m_ui.mainContainer->currentIndex() == 0);
 }
 
 bool MainWindow::isRenderingFullscreen() const
@@ -819,12 +847,15 @@ bool MainWindow::isRenderingFullscreen() const
 	if (!display || !m_display_widget)
 		return false;
 
-	return (m_display_widget->parent() != this && (m_display_widget->isFullScreen() || display->IsFullscreen()));
+	return getDisplayContainer()->isFullScreen() || display->IsFullscreen();
 }
 
 bool MainWindow::isRenderingToMain() const
 {
-	return (m_display_widget && m_display_widget->parent() == this);
+	if (s_use_central_widget)
+		return (m_display_widget && centralWidget() == m_display_widget);
+	else
+		return (m_display_widget && m_ui.mainContainer->indexOf(m_display_widget) == 1);
 }
 
 bool MainWindow::shouldHideMouseCursor() const
@@ -834,7 +865,7 @@ bool MainWindow::shouldHideMouseCursor() const
 
 void MainWindow::switchToGameListView()
 {
-	if (centralWidget() == m_game_list_widget)
+	if (isShowingGameList())
 	{
 		m_game_list_widget->setFocus();
 		return;
@@ -851,17 +882,11 @@ void MainWindow::switchToGameListView()
 		while (m_display_widget)
 			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 	}
-
-	pxAssertMsg(!centralWidget(), "Should not have a central widget at game list switch time");
-	takeCentralWidget();
-	setCentralWidget(m_game_list_widget);
-	m_game_list_widget->setVisible(true);
-	m_game_list_widget->setFocus();
 }
 
 void MainWindow::switchToEmulationView()
 {
-	if (!s_vm_valid || (m_display_widget && centralWidget() == m_display_widget))
+	if (!s_vm_valid || !isShowingGameList())
 		return;
 
 	// we're no longer surfaceless! this will call back to UpdateDisplay(), which will swap the widget out.
@@ -1615,44 +1640,7 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 	const std::string fullscreen_mode(Host::GetBaseStringSettingValue("EmuCore/GS", "FullscreenMode", ""));
 	const bool is_exclusive_fullscreen = (fullscreen && !fullscreen_mode.empty() && host_display->SupportsFullscreen());
 
-	QWidget* container;
-	if (DisplayContainer::IsNeeded(fullscreen, render_to_main))
-	{
-		m_display_container = new DisplayContainer();
-		m_display_widget = new DisplayWidget(m_display_container);
-		m_display_container->setDisplayWidget(m_display_widget);
-		container = m_display_container;
-	}
-	else
-	{
-		m_display_widget = new DisplayWidget((!fullscreen && render_to_main) ? this : nullptr);
-		container = m_display_widget;
-	}
-
-	if (fullscreen || !render_to_main)
-	{
-		container->setWindowTitle(windowTitle());
-		container->setWindowIcon(windowIcon());
-	}
-
-	if (fullscreen)
-	{
-		if (!is_exclusive_fullscreen)
-			container->showFullScreen();
-		else
-			container->showNormal();
-	}
-	else if (!render_to_main)
-	{
-		restoreDisplayWindowGeometryFromConfig();
-		container->showNormal();
-	}
-	else
-	{
-		m_game_list_widget->setVisible(false);
-		takeCentralWidget();
-		setCentralWidget(m_display_widget);
-	}
+	createDisplayWidget(fullscreen, render_to_main, is_exclusive_fullscreen);
 
 	// we need the surface visible.. this might be able to be replaced with something else
 	QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
@@ -1661,7 +1649,7 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 	if (!wi.has_value())
 	{
 		QMessageBox::critical(this, tr("Error"), tr("Failed to get window info from widget"));
-		destroyDisplayWidget();
+		destroyDisplayWidget(true);
 		return nullptr;
 	}
 
@@ -1671,7 +1659,7 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 			Host::GetBoolSettingValue("EmuCore/GS", "ThreadedPresentation", false), Host::GetBoolSettingValue("EmuCore/GS", "UseDebugDevice", false)))
 	{
 		QMessageBox::critical(this, tr("Error"), tr("Failed to create host display device context."));
-		destroyDisplayWidget();
+		destroyDisplayWidget(true);
 		return nullptr;
 	}
 
@@ -1681,10 +1669,13 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 	updateWindowTitle();
 	updateWindowState();
 
-	m_display_widget->setFocus();
+	m_ui.actionViewSystemDisplay->setEnabled(true);
+	m_ui.actionFullscreen->setEnabled(true);
+
 	m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
 	m_display_widget->updateRelativeMode(s_vm_valid && !s_vm_paused);
 	m_display_widget->updateCursor(s_vm_valid && !s_vm_paused);
+	m_display_widget->setFocus();
 
 	host_display->DoneRenderContextCurrent();
 	return m_display_widget;
@@ -1708,7 +1699,7 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 	// Skip recreating the surface if we're just transitioning between fullscreen and windowed with render-to-main off.
 	// .. except on Wayland, where everything tends to break if you don't recreate.
 	const bool has_container = (m_display_container != nullptr);
-	const bool needs_container = DisplayContainer::IsNeeded(fullscreen, render_to_main);
+	const bool needs_container = DisplayContainer::isNeeded(fullscreen, render_to_main);
 	if (!is_rendering_to_main && !render_to_main && !is_exclusive_fullscreen && has_container == needs_container && !needs_container && !changing_surfaceless)
 	{
 		DevCon.WriteLn("Toggling to %s without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
@@ -1740,66 +1731,19 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 
 	host_display->DestroyRenderSurface();
 
-	destroyDisplayWidget();
+	destroyDisplayWidget(surfaceless);
 
 	// if we're going to surfaceless, we're done here
 	if (surfaceless)
 		return nullptr;
 
-	if (DisplayContainer::IsNeeded(fullscreen, render_to_main))
-	{
-		m_display_container = new DisplayContainer();
-		m_display_widget = new DisplayWidget(m_display_container);
-		m_display_container->setDisplayWidget(m_display_widget);
-		container = m_display_container;
-	}
-	else
-	{
-		m_display_widget = new DisplayWidget((!fullscreen && render_to_main) ? this : nullptr);
-		container = m_display_widget;
-	}
-
-	if (fullscreen || !render_to_main)
-	{
-		container->setWindowTitle(windowTitle());
-		container->setWindowIcon(windowIcon());
-
-		// make sure the game list widget is still visible
-		if (centralWidget() != m_game_list_widget && !fullscreen)
-		{
-			setCentralWidget(m_game_list_widget);
-			m_game_list_widget->setVisible(true);
-		}
-	}
-
-	if (fullscreen)
-	{
-		if (!is_exclusive_fullscreen)
-			container->showFullScreen();
-		else
-			container->showNormal();
-	}
-	else if (!render_to_main)
-	{
-		restoreDisplayWindowGeometryFromConfig();
-		container->showNormal();
-	}
-	else
-	{
-		m_game_list_widget->setVisible(false);
-		takeCentralWidget();
-		setCentralWidget(m_display_widget);
-		m_display_widget->setFocus();
-	}
-
-	// we need the surface visible.. this might be able to be replaced with something else
-	QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+	createDisplayWidget(fullscreen, render_to_main, is_exclusive_fullscreen);
 
 	std::optional<WindowInfo> wi = m_display_widget->getWindowInfo();
 	if (!wi.has_value())
 	{
 		QMessageBox::critical(this, tr("Error"), tr("Failed to get new window info from widget"));
-		destroyDisplayWidget();
+		destroyDisplayWidget(true);
 		return nullptr;
 	}
 
@@ -1822,6 +1766,68 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 	QSignalBlocker blocker(m_ui.actionFullscreen);
 	m_ui.actionFullscreen->setChecked(fullscreen);
 	return m_display_widget;
+}
+
+void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main, bool is_exclusive_fullscreen)
+{
+	// If we're rendering to main and were hidden (e.g. coming back from fullscreen),
+	// make sure we're visible before trying to add ourselves. Otherwise Wayland breaks.
+	if (!fullscreen && render_to_main && !isVisible())
+	{
+		setVisible(true);
+		QGuiApplication::sync();
+	}
+
+	QWidget* container;
+	if (DisplayContainer::isNeeded(fullscreen, render_to_main))
+	{
+		m_display_container = new DisplayContainer();
+		m_display_widget = new DisplayWidget(m_display_container);
+		m_display_container->setDisplayWidget(m_display_widget);
+		container = m_display_container;
+	}
+	else
+	{
+		m_display_widget = new DisplayWidget((!fullscreen && render_to_main) ? getContentParent() : nullptr);
+		container = m_display_widget;
+	}
+
+	if (fullscreen || !render_to_main)
+	{
+		container->setWindowTitle(windowTitle());
+		container->setWindowIcon(windowIcon());
+	}
+
+	if (fullscreen)
+	{
+		if (!is_exclusive_fullscreen)
+			container->showFullScreen();
+		else
+			container->showNormal();
+	}
+	else if (!render_to_main)
+	{
+		restoreDisplayWindowGeometryFromConfig();
+		container->showNormal();
+	}
+	else if (s_use_central_widget)
+	{
+		m_game_list_widget->setVisible(false);
+		takeCentralWidget();
+		m_game_list_widget->setParent(this); // takeCentralWidget() removes parent
+		setCentralWidget(m_display_widget);
+		m_display_widget->setFocus();
+		update();
+	}
+	else
+	{
+		pxAssertRel(m_ui.mainContainer->count() == 1, "Has no display widget");
+		m_ui.mainContainer->addWidget(container);
+		m_ui.mainContainer->setCurrentIndex(1);
+	}
+
+	// We need the surface visible.
+	QGuiApplication::sync();
 }
 
 void MainWindow::displayResizeRequested(qint32 width, qint32 height)
@@ -1849,15 +1855,54 @@ void MainWindow::displayResizeRequested(qint32 width, qint32 height)
 void MainWindow::destroyDisplay()
 {
 	// Now we can safely destroy the display window.
-	destroyDisplayWidget();
+	destroyDisplayWidget(true);
 
-	// Switch back to game list view, we're not going back to display, so we can't use switchToGameListView().
-	if (centralWidget() != m_game_list_widget)
+	m_ui.actionViewSystemDisplay->setEnabled(false);
+	m_ui.actionFullscreen->setEnabled(false);
+}
+
+void MainWindow::destroyDisplayWidget(bool show_game_list)
+{
+	if (!m_display_widget)
+		return;
+
+	if (!isRenderingFullscreen() && !isRenderingToMain())
+		saveDisplayWindowGeometryToConfig();
+
+	if (m_display_container)
+		m_display_container->removeDisplayWidget();
+
+	if (isRenderingToMain())
 	{
-		takeCentralWidget();
-		setCentralWidget(m_game_list_widget);
-		m_game_list_widget->setVisible(true);
-		m_game_list_widget->setFocus();
+		if (s_use_central_widget)
+		{
+			pxAssertRel(centralWidget() == m_display_widget, "Display widget is currently central");
+			takeCentralWidget();
+			if (show_game_list)
+			{
+				m_game_list_widget->setVisible(true);
+				setCentralWidget(m_game_list_widget);
+			}
+		}
+		else
+		{
+			pxAssertRel(m_ui.mainContainer->indexOf(m_display_widget) == 1, "Display widget in stack");
+			m_ui.mainContainer->removeWidget(m_display_widget);
+			if (show_game_list)
+				m_ui.mainContainer->setCurrentIndex(0);
+		}
+	}
+
+	if (m_display_widget)
+	{
+		m_display_widget->deleteLater();
+		m_display_widget = nullptr;
+	}
+
+	if (m_display_container)
+	{
+		m_display_container->deleteLater();
+		m_display_container = nullptr;
 	}
 }
 
@@ -1906,33 +1951,6 @@ void MainWindow::restoreDisplayWindowGeometryFromConfig()
 	{
 		// default size
 		container->resize(640, 480);
-	}
-}
-
-void MainWindow::destroyDisplayWidget()
-{
-	if (!m_display_widget)
-		return;
-
-	if (!isRenderingFullscreen() && !isRenderingToMain())
-		saveDisplayWindowGeometryToConfig();
-
-	if (m_display_container)
-		m_display_container->removeDisplayWidget();
-
-	if (m_display_widget == centralWidget())
-		takeCentralWidget();
-
-	if (m_display_widget)
-	{
-		m_display_widget->deleteLater();
-		m_display_widget = nullptr;
-	}
-
-	if (m_display_container)
-	{
-		m_display_container->deleteLater();
-		m_display_container = nullptr;
 	}
 }
 

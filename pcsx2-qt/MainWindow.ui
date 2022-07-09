@@ -16,6 +16,7 @@
   <property name="windowTitle">
    <string>PCSX2</string>
   </property>
+  <widget class="QStackedWidget" name="mainContainer" />
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
