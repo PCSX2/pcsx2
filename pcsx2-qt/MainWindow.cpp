@@ -204,6 +204,8 @@ void MainWindow::setupAdditionalUi()
 	m_status_progress_widget = new QProgressBar(m_ui.statusBar);
 	m_status_progress_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 	m_status_progress_widget->setFixedSize(140, 16);
+	m_status_progress_widget->setMinimum(0);
+	m_status_progress_widget->setMaximum(100);
 	m_status_progress_widget->hide();
 
 	m_status_verbose_widget = new QLabel(m_ui.statusBar);
@@ -820,8 +822,9 @@ void MainWindow::updateWindowState(bool force_visible)
 
 void MainWindow::setProgressBar(int current, int total)
 {
-	m_status_progress_widget->setValue(current);
-	m_status_progress_widget->setMaximum(total);
+	const int value = (current * 100) / total;
+	if (m_status_progress_widget->value() != value)
+		m_status_progress_widget->setValue(value);
 
 	if (m_status_progress_widget->isVisible())
 		return;

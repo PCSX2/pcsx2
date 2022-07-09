@@ -547,11 +547,14 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
                     (FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES),
 		&files);
 
+	u32 files_scanned = 0;
 	progress->SetProgressRange(static_cast<u32>(files.size()));
 	progress->SetProgressValue(0);
 
 	for (FILESYSTEM_FIND_DATA& ffd : files)
 	{
+		files_scanned++;
+
 		if (progress->IsCancelled() || !GameList::IsScannableFilename(ffd.FileName) ||
 			IsPathExcluded(excluded_paths, ffd.FileName))
 		{
@@ -564,7 +567,6 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 				AddFileFromCache(ffd.FileName, ffd.ModificationTime) ||
 				only_cache)
 			{
-				progress->IncrementProgressValue();
 				continue;
 			}
 		}
@@ -572,10 +574,10 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 		// ownership of fp is transferred
 		progress->SetFormattedStatusText("Scanning '%s'...", FileSystem::GetDisplayNameFromPath(ffd.FileName).c_str());
 		ScanFile(std::move(ffd.FileName), ffd.ModificationTime);
-		progress->IncrementProgressValue();
+		progress->SetProgressValue(files_scanned);
 	}
 
-	progress->SetProgressValue(static_cast<u32>(files.size()));
+	progress->SetProgressValue(files_scanned);
 	progress->PopState();
 }
 
