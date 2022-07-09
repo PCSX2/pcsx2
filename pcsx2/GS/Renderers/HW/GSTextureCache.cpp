@@ -27,7 +27,7 @@
 
 #define XXH_STATIC_LINKING_ONLY 1
 #define XXH_INLINE_ALL 1
-#include "xxhash.h"
+#include "3rdparty/include/xxhash.h"
 
 u8* GSTextureCache::m_temp;
 

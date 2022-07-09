@@ -1,0 +1,215 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "results": [
+        {
+          "ruleId": "C6385",
+          "message": {
+            "text": "Reading invalid data from 'v'."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/jimmy/src/pcsx2/3rdparty/lz4/lib/lz4.c"
+                },
+                "region": {
+                  "startLine": 492,
+                  "startColumn": 9,
+                  "endLine": 492,
+                  "endColumn": 9
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "LZ4_memcpy_using_offset",
+                  "decoratedName": "LZ4_memcpy_using_offset",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/jimmy/src/pcsx2/3rdparty/lz4/lib/lz4.c"
+                          },
+                          "region": {
+                            "startLine": 481,
+                            "startColumn": 10
+                          }
+                        },
+                        "message": {
+                          "text": "'v' is a 8 byte array"
+                        }
+                      },
+                      "kinds": [
+                        "declaration"
+                      ],
+                      "importance": "essential"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/jimmy/src/pcsx2/3rdparty/lz4/lib/lz4.c"
+                          },
+                          "region": {
+                            "startLine": 485,
+                            "startColumn": 12
+                          }
+                        },
+                        "message": {
+                          "text": "Assume switch ( 'offset' ) resolves to case 2: "
+                        }
+                      },
+                      "kinds": [
+                        "branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/jimmy/src/pcsx2/3rdparty/lz4/lib/lz4.c"
+                          },
+                          "region": {
+                            "startLine": 489,
+                            "startColumn": 5
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/jimmy/src/pcsx2/3rdparty/lz4/lib/lz4.c"
+                          },
+                          "region": {
+                            "startLine": 490,
+                            "startColumn": 9
+                          }
+                        },
+                        "message": {
+                          "text": "'v' is an Output from 'memcpy' (declared at c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.32.31326\\include\\vcruntime_string.h:43)"
+                        }
+                      },
+                      "kinds": [
+                        "declaration"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/jimmy/src/pcsx2/3rdparty/lz4/lib/lz4.c"
+                          },
+                          "region": {
+                            "startLine": 491,
+                            "startColumn": 9
+                          }
+                        },
+                        "message": {
+                          "text": "'v' is an Output from 'memcpy' (declared at c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.32.31326\\include\\vcruntime_string.h:43)"
+                        }
+                      },
+                      "kinds": [
+                        "declaration"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/jimmy/src/pcsx2/3rdparty/lz4/lib/lz4.c"
+                          },
+                          "region": {
+                            "startLine": 492,
+                            "startColumn": 9
+                          }
+                        },
+                        "message": {
+                          "text": "Invalid read from 'v[3]', (readable range is 0 to 1)"
+                        }
+                      },
+                      "kinds": [
+                        "usage"
+                      ],
+                      "importance": "essential"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.32.31332.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///C:/Users/jimmy/src/pcsx2/3rdparty/lz4/lib/lz4.c"
+          },
+          "roles": [
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "e3e2d011e79295f9e0e557709857cbe4a9edafbfa5105d92fe43680b5a19012b"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/jimmy/src/pcsx2/3rdparty/lz4/lib/lz4hc.c"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "1a0a18f1e9c4b3717b0a7d5b3c5b4a0e7f977196ee4c08e1cb28979c9640d06c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/jimmy/src/pcsx2/3rdparty/lz4/lib/lz4hc.h"
+          },
+          "hashes": {
+            "sha-256": "566b57b831b312387db0f58bc974fd7479bb0bdd9432f1a7bc7564859fb157cd"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/jimmy/src/pcsx2/3rdparty/lz4/lib/lz4.h"
+          },
+          "hashes": {
+            "sha-256": "5f15e3ec9ba323d970f90e7147df62912bd0480fe3f4a7005bd441e41ca49f2e"
+          }
+        }
+      ]
+    }
+  ]
+}
