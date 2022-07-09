@@ -22,7 +22,6 @@ target_sources(pcsx2-qt PRIVATE
 	EarlyHardwareCheck.cpp
 	EmuThread.cpp
 	EmuThread.h
-	Main.cpp
 	MainWindow.cpp
 	MainWindow.h
 	MainWindow.ui
