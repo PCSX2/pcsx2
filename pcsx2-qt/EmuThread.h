@@ -46,6 +46,7 @@ public:
 	__fi QEventLoop* getEventLoop() const { return m_event_loop; }
 	__fi bool isFullscreen() const { return m_is_fullscreen; }
 	__fi bool isRenderingToMain() const { return m_is_rendering_to_main; }
+	__fi bool isSurfaceless() const { return m_is_surfaceless; }
 
 	bool isOnEmuThread() const;
 

@@ -134,7 +134,7 @@ static std::array<std::unique_ptr<InputSource>, static_cast<u32>(InputSourceType
 // ------------------------------------------------------------------------
 // Hotkeys
 // ------------------------------------------------------------------------
-static const HotkeyInfo* const s_hotkey_list[] = {g_vm_manager_hotkeys, g_gs_hotkeys, g_host_hotkeys};
+static const HotkeyInfo* const s_hotkey_list[] = {g_host_hotkeys, g_vm_manager_hotkeys, g_gs_hotkeys};
 
 // ------------------------------------------------------------------------
 // Tracking host mouse movement and turning into relative events
@@ -496,12 +496,6 @@ std::vector<const HotkeyInfo*> InputManager::GetHotkeyList()
 		for (const HotkeyInfo* hotkey = hotkey_list; hotkey->name != nullptr; hotkey++)
 			ret.push_back(hotkey);
 	}
-	std::sort(ret.begin(), ret.end(), [](const HotkeyInfo* left, const HotkeyInfo* right) {
-		// category -> display name
-		if (const int res = StringUtil::Strcasecmp(left->category, right->category); res != 0)
-			return (res < 0);
-		return (StringUtil::Strcasecmp(left->display_name, right->display_name) < 0);
-	});
 	return ret;
 }
 
