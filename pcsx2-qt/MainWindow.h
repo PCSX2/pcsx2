@@ -200,10 +200,12 @@ private:
 	void switchToGameListView();
 	void switchToEmulationView();
 
+	QWidget* getContentParent();
 	QWidget* getDisplayContainer() const;
 	void saveDisplayWindowGeometryToConfig();
 	void restoreDisplayWindowGeometryFromConfig();
-	void destroyDisplayWidget();
+	void createDisplayWidget(bool fullscreen, bool render_to_main, bool is_exclusive_fullscreen);
+	void destroyDisplayWidget(bool show_game_list);
 	void setDisplayFullscreen(const std::string& fullscreen_mode);
 
 	SettingsDialog* getSettingsDialog();
