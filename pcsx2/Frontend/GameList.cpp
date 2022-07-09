@@ -86,6 +86,12 @@ const char* GameList::EntryTypeToString(EntryType type)
 	return names[static_cast<int>(type)];
 }
 
+const char* GameList::EntryTypeToDisplayString(EntryType type)
+{
+	static std::array<const char*, static_cast<int>(EntryType::Count)> names = {{"PS2 Disc", "PS1 Disc", "ELF", "Playlist"}};
+	return names[static_cast<int>(type)];
+}
+
 const char* GameList::RegionToString(Region region)
 {
 	static std::array<const char*, static_cast<int>(Region::Count)> names = {

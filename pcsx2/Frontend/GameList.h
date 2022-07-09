@@ -96,6 +96,7 @@ namespace GameList
 	};
 
 	const char* EntryTypeToString(EntryType type);
+	const char* EntryTypeToDisplayString(EntryType type);
 	const char* RegionToString(Region region);
 	const char* EntryCompatibilityRatingToString(CompatibilityRating rating);
 

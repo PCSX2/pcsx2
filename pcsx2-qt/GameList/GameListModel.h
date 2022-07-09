@@ -45,6 +45,9 @@ public:
 	static std::optional<Column> getColumnIdForName(std::string_view name);
 	static const char* getColumnName(Column col);
 
+	static QIcon getIconForType(GameList::EntryType type);
+	static QIcon getIconForRegion(GameList::Region region);
+
 	GameListModel(QObject* parent = nullptr);
 	~GameListModel();
 
@@ -79,12 +82,8 @@ private:
 	bool m_show_titles_for_covers = false;
 
 	std::array<QString, Column_Count> m_column_display_names;
-
-	QPixmap m_type_disc_pixmap;
-	QPixmap m_type_disc_with_settings_pixmap;
-	QPixmap m_type_exe_pixmap;
-	QPixmap m_type_playlist_pixmap;
-	QPixmap m_region_pixmaps[static_cast<u32>(GameList::Region::Count)];
+	std::array<QPixmap, static_cast<u32>(GameList::EntryType::Count)> m_type_pixmaps;
+	std::array<QPixmap, static_cast<u32>(GameList::Region::Count)> m_region_pixmaps;
 	QPixmap m_placeholder_pixmap;
 
 	std::array<QPixmap, static_cast<int>(GameList::CompatibilityRatingCount)> m_compatibility_pixmaps;
