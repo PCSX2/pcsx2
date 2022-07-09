@@ -135,6 +135,7 @@ private:
 	void destroyVM();
 	void executeVM();
 	void checkForSettingChanges();
+	bool shouldRenderToMain() const;
 
 	void createBackgroundControllerPollTimer();
 	void destroyBackgroundControllerPollTimer();

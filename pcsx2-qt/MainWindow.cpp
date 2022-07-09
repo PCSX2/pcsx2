@@ -799,7 +799,7 @@ void MainWindow::updateWindowState(bool force_visible)
 	if (m_is_closing)
 		return;
 
-	const bool hide_window = !g_emu_thread->isRenderingToMain() && Host::GetBaseBoolSettingValue("UI", "HideMainWindowWhenRunning", false);
+	const bool hide_window = !g_emu_thread->isRenderingToMain() && shouldHideMainWindow();
 	const bool disable_resize = Host::GetBaseBoolSettingValue("UI", "DisableWindowResize", false);
 	const bool has_window = s_vm_valid || m_display_widget;
 
@@ -867,6 +867,11 @@ bool MainWindow::isRenderingToMain() const
 bool MainWindow::shouldHideMouseCursor() const
 {
 	return isRenderingFullscreen() && Host::GetBoolSettingValue("UI", "HideMouseCursor", false);
+}
+
+bool MainWindow::shouldHideMainWindow() const
+{
+	return Host::GetBaseBoolSettingValue("UI", "HideMainWindowWhenRunning", false) || QtHost::InNoGUIMode();
 }
 
 void MainWindow::switchToGameListView()
@@ -990,10 +995,10 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 
 	if (!m_is_closing && QtHost::InBatchMode())
 	{
-		// Closing the window should shut down everything. If we don't set the closing flag here,
-		// the VM shutdown may not complete by the time closeEvent() is called, leading to a confirm.
+		// If we don't set the closing flag here, the VM shutdown may not complete by the time closeEvent() is called,
+		// leading to a confirm.
 		m_is_closing = true;
-		close();
+		QGuiApplication::quit();
 	}
 
 	return true;
@@ -1005,7 +1010,9 @@ void MainWindow::requestExit()
 	if (!requestShutdown(true, true, true))
 		return;
 
-	close();
+	// We could use close here, but if we're not visible (e.g. quitting from fullscreen), closing the window
+	// doesn't quit the application.
+	QGuiApplication::quit();
 }
 
 void MainWindow::checkForSettingChanges()

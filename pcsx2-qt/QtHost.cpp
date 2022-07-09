@@ -79,6 +79,7 @@ const IConsoleWriter* PatchesCon = &Console;
 static std::unique_ptr<QTimer> s_settings_save_timer;
 static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
 static bool s_batch_mode = false;
+static bool s_nogui_mode = false;
 
 //////////////////////////////////////////////////////////////////////////
 // Initialization/Shutdown
@@ -341,6 +342,11 @@ bool QtHost::InBatchMode()
 	return s_batch_mode;
 }
 
+bool QtHost::InNoGUIMode()
+{
+	return s_nogui_mode;
+}
+
 void QtHost::RunOnUIThread(const std::function<void()>& func, bool block /*= false*/)
 {
 	// main window always exists, so it's fine to attach it to that.
@@ -489,6 +495,7 @@ void QtHost::PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "  -help: Displays this information and exits.\n");
 	std::fprintf(stderr, "  -version: Displays version information and exits.\n");
 	std::fprintf(stderr, "  -batch: Enables batch mode (exits after shutting down).\n");
+	std::fprintf(stderr, "  -nogui: Hides main window while running (implies batch mode).\n");
 	std::fprintf(stderr, "  -elf <file>: Overrides the boot ELF with the specified filename.\n");
 	std::fprintf(stderr, "  -disc <path>: Uses the specified host DVD drive as a source.\n");
 	std::fprintf(stderr, "  -bios: Starts the BIOS (System Menu/OSDSYS).\n");
@@ -537,6 +544,12 @@ bool QtHost::ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMB
 			else if (CHECK_ARG("-batch"))
 			{
 				s_batch_mode = true;
+				continue;
+			}
+			else if (CHECK_ARG("-nogui"))
+			{
+				s_batch_mode = true;
+				s_nogui_mode = true;
 				continue;
 			}
 			else if (CHECK_ARG("-fastboot"))
@@ -625,7 +638,9 @@ bool QtHost::ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMB
 	// scanning the game list).
 	if (s_batch_mode && !autoboot)
 	{
-		QMessageBox::critical(nullptr, QStringLiteral("Error"), QStringLiteral("Cannot use batch mode, because no boot filename was specified."));
+		QMessageBox::critical(nullptr, QStringLiteral("Error"), s_nogui_mode ?
+			QStringLiteral("Cannot use no-gui mode, because no boot filename was specified.") :
+			QStringLiteral("Cannot use batch mode, because no boot filename was specified."));
 		return false;
 	}
 
@@ -700,7 +715,8 @@ int main(int argc, char* argv[])
 	if (!s_batch_mode)
 		main_window->refreshGameList(false);
 
-	main_window->show();
+	if (!s_nogui_mode)
+		main_window->show();
 
 	if (autoboot)
 		g_emu_thread->startVM(std::move(autoboot));

@@ -197,6 +197,7 @@ private:
 	bool isRenderingFullscreen() const;
 	bool isRenderingToMain() const;
 	bool shouldHideMouseCursor() const;
+	bool shouldHideMainWindow() const;
 	void switchToGameListView();
 	void switchToEmulationView();
 
