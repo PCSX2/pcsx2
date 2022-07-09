@@ -269,30 +269,19 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 			{
 				case Column_Type:
 				{
-					switch (ge->type)
-					{
-						case GameList::EntryType::PS1Disc:
-						case GameList::EntryType::PS2Disc:
-							// return ((ge->settings.GetUserSettingsCount() > 0) ? m_type_disc_with_settings_pixmap : // m_type_disc_pixmap);
-							return m_type_disc_pixmap;
-						case GameList::EntryType::Playlist:
-							return m_type_playlist_pixmap;
-						case GameList::EntryType::ELF:
-						default:
-							return m_type_exe_pixmap;
-					}
+					return m_type_pixmaps[static_cast<u32>(ge->type)];
 				}
 
 				case Column_Region:
 				{
-					return m_region_pixmaps[static_cast<int>(ge->region)];
+					return m_region_pixmaps[static_cast<u32>(ge->region)];
 				}
 
 				case Column_Compatibility:
 				{
-					return m_compatibility_pixmaps[static_cast<int>(
+					return m_compatibility_pixmaps[static_cast<u32>(
 						(static_cast<u32>(ge->compatibility_rating) >= GameList::CompatibilityRatingCount) ?
-                            GameList::CompatibilityRating::Unknown :
+							GameList::CompatibilityRating::Unknown :
                             ge->compatibility_rating)];
 				}
 
@@ -451,22 +440,38 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
 	}
 }
 
+QIcon GameListModel::getIconForType(GameList::EntryType type)
+{
+	switch (type)
+	{
+		case GameList::EntryType::PS2Disc:
+		case GameList::EntryType::PS1Disc:
+			return QIcon(QStringLiteral(":/icons/media-optical-24.png"));
+
+		case GameList::EntryType::Playlist:
+			return QIcon(QStringLiteral(":/icons/address-book-new-22.png"));
+
+		case GameList::EntryType::ELF:
+		default:
+			return QIcon(QStringLiteral(":/icons/applications-system-24.png"));
+	}
+}
+
+QIcon GameListModel::getIconForRegion(GameList::Region region)
+{
+	return QIcon(
+		QStringLiteral("%1/icons/flags/%2.png").arg(QtHost::GetResourcesBasePath()).arg(GameList::RegionToString(region)));
+}
+
 void GameListModel::loadCommonImages()
 {
-	m_type_disc_pixmap = QIcon(QStringLiteral(":/icons/media-optical-24.png")).pixmap(QSize(24, 24));
-	m_type_disc_with_settings_pixmap = QIcon(QStringLiteral(":/icons/media-optical-gear-24.png")).pixmap(QSize(24, 24));
-	m_type_exe_pixmap = QIcon(QStringLiteral(":/icons/applications-system-24.png")).pixmap(QSize(24, 24));
-	m_type_playlist_pixmap = QIcon(QStringLiteral(":/icons/address-book-new-22.png")).pixmap(QSize(22, 22));
+	for (u32 type = 0; type < static_cast<u32>(GameList::EntryType::Count); type++)
+		m_type_pixmaps[type] = getIconForType(static_cast<GameList::EntryType>(type)).pixmap(QSize(24, 24));
+
+	for (u32 i = 0; i < static_cast<u32>(GameList::Region::Count); i++)
+		m_region_pixmaps[i] = getIconForRegion(static_cast<GameList::Region>(i)).pixmap(QSize(42, 30));
 
 	const QString base_path(QtHost::GetResourcesBasePath());
-
-	for (u32 i = 0; i < static_cast<u32>(GameList::Region::Count); i++) 
-	{
-		m_region_pixmaps[i] = QIcon(
-								QStringLiteral("%1/icons/flags/%2.png").arg(base_path).arg(GameList::RegionToString(static_cast<GameList::Region>(i))))
-								.pixmap(QSize(42, 30));
-	}
-
 	for (u32 i = 1; i < GameList::CompatibilityRatingCount; i++)
 		m_compatibility_pixmaps[i].load(QStringLiteral("%1/icons/star-%2.png").arg(base_path).arg(i - 1));
 

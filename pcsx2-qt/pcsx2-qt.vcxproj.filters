@@ -399,6 +399,9 @@
     <QtUi Include="GameList\EmptyGameListWidget.ui">
       <Filter>GameList</Filter>
     </QtUi>
+    <QtUi Include="GameList\GameListWidget.ui">
+      <Filter>GameList</Filter>
+    </QtUi>
     <QtUi Include="AutoUpdaterDialog.ui" />
     <QtUi Include="Tools\InputRecording\NewInputRecordingDlg.ui">
       <Filter>Tools\Input Recording</Filter>

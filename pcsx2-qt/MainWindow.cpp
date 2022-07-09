@@ -300,6 +300,10 @@ void MainWindow::connectSignals()
 			m_game_list_widget->gridZoomOut();
 	});
 	connect(m_ui.actionGridViewRefreshCovers, &QAction::triggered, m_game_list_widget, &GameListWidget::refreshGridCovers);
+	connect(m_game_list_widget, &GameListWidget::layoutChange, this, [this]() {
+		QSignalBlocker sb(m_ui.actionGridViewShowTitles);
+		m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
+	});
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionViewStatusBarVerbose, "UI", "VerboseStatusBar", false);
 
@@ -534,6 +538,7 @@ void MainWindow::setStyleFromSettings()
 		darkPalette.setColor(QPalette::Link, blue);
 		darkPalette.setColor(QPalette::Highlight, lighterGray);
 		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+		darkPalette.setColor(QPalette::PlaceholderText, QColor(Qt::white).darker());
 
 		darkPalette.setColor(QPalette::Active, QPalette::Button, gray.darker());
 		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
@@ -569,6 +574,7 @@ void MainWindow::setStyleFromSettings()
 		darkPalette.setColor(QPalette::Link, blue);
 		darkPalette.setColor(QPalette::Highlight, blue2);
 		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+		darkPalette.setColor(QPalette::PlaceholderText, QColor(Qt::white).darker());
 
 		darkPalette.setColor(QPalette::Active, QPalette::Button, gray.darker());
 		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);

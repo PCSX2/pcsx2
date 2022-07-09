@@ -265,6 +265,9 @@
     <QtUi Include="GameList\EmptyGameListWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="GameList\GameListWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="Settings\SettingsDialog.ui">
       <FileType>Document</FileType>
     </QtUi>

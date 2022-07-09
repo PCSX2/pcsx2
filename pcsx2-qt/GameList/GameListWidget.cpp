@@ -40,6 +40,9 @@ static const char* SUPPORTED_FORMATS_STRING = QT_TRANSLATE_NOOP(GameListWidget,
 	".cso (Compressed ISO)\n"
 	".gz (Gzip Compressed ISO)");
 
+static constexpr float MIN_SCALE = 0.1f;
+static constexpr float MAX_SCALE = 2.0f;
+
 class GameListSortModel final : public QSortFilterProxyModel
 {
 public:
@@ -49,9 +52,38 @@ public:
 	{
 	}
 
+	void setFilterType(GameList::EntryType type)
+	{
+		m_filter_type = type;
+		invalidateRowsFilter();
+	}
+	void setFilterRegion(GameList::Region region)
+	{
+		m_filter_region = region;
+		invalidateRowsFilter();
+	}
+	void setFilterName(const QString& name)
+	{
+		m_filter_name = name;
+		invalidateRowsFilter();
+	}
+
 	bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override
 	{
-		// TODO: Search
+		if (m_filter_type != GameList::EntryType::Count ||
+			m_filter_region != GameList::Region::Count ||
+			!m_filter_name.isEmpty())
+		{
+			const auto lock = GameList::GetLock();
+			const GameList::Entry* entry = GameList::GetEntryByIndex(source_row);
+			if (m_filter_type != GameList::EntryType::Count && entry->type != m_filter_type)
+				return false;
+			if (m_filter_region != GameList::Region::Count && entry->region != m_filter_region)
+				return false;
+			if (!m_filter_name.isEmpty() && !QString::fromStdString(entry->title).contains(m_filter_name, Qt::CaseInsensitive))
+				return false;
+		}
+
 		return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
 	}
 
@@ -62,10 +94,13 @@ public:
 
 private:
 	GameListModel* m_model;
+	GameList::EntryType m_filter_type = GameList::EntryType::Count;
+	GameList::Region m_filter_region = GameList::Region::Count;
+	QString m_filter_name;
 };
 
 GameListWidget::GameListWidget(QWidget* parent /* = nullptr */)
-	: QStackedWidget(parent)
+	: QWidget(parent)
 {
 }
 
@@ -79,7 +114,34 @@ void GameListWidget::initialize()
 
 	m_sort_model = new GameListSortModel(m_model);
 	m_sort_model->setSourceModel(m_model);
-	m_table_view = new QTableView(this);
+
+	m_ui.setupUi(this);
+	for (u32 type = 0; type < static_cast<u32>(GameList::EntryType::Count); type++)
+	{
+		m_ui.filterType->addItem(GameListModel::getIconForType(static_cast<GameList::EntryType>(type)),
+			qApp->translate("GameList", GameList::EntryTypeToDisplayString(static_cast<GameList::EntryType>(type))));
+	}
+	for (u32 region = 0; region < static_cast<u32>(GameList::Region::Count); region++)
+	{
+		m_ui.filterRegion->addItem(GameListModel::getIconForRegion(static_cast<GameList::Region>(region)),
+			qApp->translate("GameList", GameList::RegionToString(static_cast<GameList::Region>(region))));
+	}
+
+	connect(m_ui.viewGameList, &QPushButton::clicked, this, &GameListWidget::showGameList);
+	connect(m_ui.viewGameGrid, &QPushButton::clicked, this, &GameListWidget::showGameGrid);
+	connect(m_ui.gridScale, &QSlider::valueChanged, this, &GameListWidget::gridIntScale);
+	connect(m_ui.viewGridTitles, &QPushButton::toggled, this, &GameListWidget::setShowCoverTitles);
+	connect(m_ui.filterType, &QComboBox::currentIndexChanged, this, [this](int index) {
+		m_sort_model->setFilterType((index == 0) ? GameList::EntryType::Count : static_cast<GameList::EntryType>(index - 1));
+	});
+	connect(m_ui.filterRegion, &QComboBox::currentIndexChanged, this, [this](int index) {
+		m_sort_model->setFilterRegion((index == 0) ? GameList::Region::Count : static_cast<GameList::Region>(index - 1));
+	});
+	connect(m_ui.searchText, &QLineEdit::textChanged, this, [this](const QString& text) {
+		m_sort_model->setFilterName(text);
+	});
+
+	m_table_view = new QTableView(m_ui.stack);
 	m_table_view->setModel(m_sort_model);
 	m_table_view->setSortingEnabled(true);
 	m_table_view->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -107,9 +169,9 @@ void GameListWidget::initialize()
 	connect(m_table_view->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this,
 		&GameListWidget::onTableViewHeaderSortIndicatorChanged);
 
-	insertWidget(0, m_table_view);
+	m_ui.stack->insertWidget(0, m_table_view);
 
-	m_list_view = new GameListGridListView(this);
+	m_list_view = new GameListGridListView(m_ui.stack);
 	m_list_view->setModel(m_sort_model);
 	m_list_view->setModelColumn(GameListModel::Column_Cover);
 	m_list_view->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -131,31 +193,32 @@ void GameListWidget::initialize()
 	connect(m_list_view, &QListView::activated, this, &GameListWidget::onListViewItemActivated);
 	connect(m_list_view, &QListView::customContextMenuRequested, this, &GameListWidget::onListViewContextMenuRequested);
 
-	insertWidget(1, m_list_view);
+	m_ui.stack->insertWidget(1, m_list_view);
 
-	m_empty_widget = new QWidget(this);
+	m_empty_widget = new QWidget(m_ui.stack);
 	m_empty_ui.setupUi(m_empty_widget);
 	m_empty_ui.supportedFormats->setText(qApp->translate("GameListWidget", SUPPORTED_FORMATS_STRING));
 	connect(m_empty_ui.addGameDirectory, &QPushButton::clicked, this, [this]() { emit addGameDirectoryRequested(); });
 	connect(m_empty_ui.scanForNewGames, &QPushButton::clicked, this, [this]() { refresh(false); });
-	insertWidget(2, m_empty_widget);
+	m_ui.stack->insertWidget(2, m_empty_widget);
 
 	if (Host::GetBaseBoolSettingValue("UI", "GameListGridView", false))
-		setCurrentIndex(1);
+		m_ui.stack->setCurrentIndex(1);
 	else
-		setCurrentIndex(0);
+		m_ui.stack->setCurrentIndex(0);
 
+	updateToolbar();
 	resizeTableViewColumnsToFit();
 }
 
 bool GameListWidget::isShowingGameList() const
 {
-	return currentIndex() == 0;
+	return m_ui.stack->currentIndex() == 0;
 }
 
 bool GameListWidget::isShowingGameGrid() const
 {
-	return currentIndex() == 1;
+	return m_ui.stack->currentIndex() == 1;
 }
 
 bool GameListWidget::getShowGridCoverTitles() const
@@ -189,8 +252,8 @@ void GameListWidget::cancelRefresh()
 void GameListWidget::onRefreshProgress(const QString& status, int current, int total)
 {
 	// switch away from the placeholder while we scan, in case we find anything
-	if (currentIndex() == 2)
-		setCurrentIndex(Host::GetBaseBoolSettingValue("UI", "GameListGridView", false) ? 1 : 0);
+	if (m_ui.stack->currentIndex() == 2)
+		m_ui.stack->setCurrentIndex(Host::GetBaseBoolSettingValue("UI", "GameListGridView", false) ? 1 : 0);
 
 	m_model->refresh();
 	emit refreshProgress(status, current, total);
@@ -208,7 +271,7 @@ void GameListWidget::onRefreshComplete()
 
 	// if we still had no games, switch to the helper widget
 	if (m_model->rowCount() == 0)
-		setCurrentIndex(2);
+		m_ui.stack->setCurrentIndex(2);
 }
 
 void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
@@ -277,13 +340,11 @@ void GameListWidget::onTableViewHeaderSortIndicatorChanged(int, Qt::SortOrder)
 
 void GameListWidget::listZoom(float delta)
 {
-	static constexpr float MIN_SCALE = 0.1f;
-	static constexpr float MAX_SCALE = 2.0f;
-
 	const float new_scale = std::clamp(m_model->getCoverScale() + delta, MIN_SCALE, MAX_SCALE);
 	QtHost::SetBaseFloatSettingValue("UI", "GameListCoverArtScale", new_scale);
 	m_model->setCoverScale(new_scale);
 	updateListFont();
+	updateToolbar();
 
 	m_model->refresh();
 }
@@ -298,6 +359,18 @@ void GameListWidget::gridZoomOut()
 	listZoom(-0.05f);
 }
 
+void GameListWidget::gridIntScale(int int_scale)
+{
+	const float new_scale = std::clamp(static_cast<float>(int_scale) / 100.0f, MIN_SCALE, MAX_SCALE);
+
+	QtHost::SetBaseFloatSettingValue("UI", "GameListCoverArtScale", new_scale);
+	m_model->setCoverScale(new_scale);
+	updateListFont();
+	updateToolbar();
+
+	m_model->refresh();
+}
+
 void GameListWidget::refreshGridCovers()
 {
 	m_model->refreshCovers();
@@ -305,21 +378,33 @@ void GameListWidget::refreshGridCovers()
 
 void GameListWidget::showGameList()
 {
-	if (currentIndex() == 0 || m_model->rowCount() == 0)
+	if (m_ui.stack->currentIndex() == 0 || m_model->rowCount() == 0)
+	{
+		// We can click the toolbar multiple times, so keep it correct.
+		updateToolbar();
 		return;
+	}
 
 	QtHost::SetBaseBoolSettingValue("UI", "GameListGridView", false);
-	setCurrentIndex(0);
+	m_ui.stack->setCurrentIndex(0);
 	resizeTableViewColumnsToFit();
+	updateToolbar();
+	emit layoutChange();
 }
 
 void GameListWidget::showGameGrid()
 {
-	if (currentIndex() == 1 || m_model->rowCount() == 0)
+	if (m_ui.stack->currentIndex() == 1 || m_model->rowCount() == 0)
+	{
+		// We can click the toolbar multiple times, so keep it correct.
+		updateToolbar();
 		return;
+	}
 
 	QtHost::SetBaseBoolSettingValue("UI", "GameListGridView", true);
-	setCurrentIndex(1);
+	m_ui.stack->setCurrentIndex(1);
+	updateToolbar();
+	emit layoutChange();
 }
 
 void GameListWidget::setShowCoverTitles(bool enabled)
@@ -331,6 +416,8 @@ void GameListWidget::setShowCoverTitles(bool enabled)
 	m_model->setShowCoverTitles(enabled);
 	if (isShowingGameGrid())
 		m_model->refresh();
+	updateToolbar();
+	emit layoutChange();
 }
 
 void GameListWidget::updateListFont()
@@ -340,9 +427,33 @@ void GameListWidget::updateListFont()
 	m_list_view->setFont(font);
 }
 
+void GameListWidget::updateToolbar()
+{
+	const bool grid_view = isShowingGameGrid();
+	{
+		QSignalBlocker sb(m_ui.viewGameGrid);
+		m_ui.viewGameGrid->setChecked(grid_view);
+	}
+	{
+		QSignalBlocker sb(m_ui.viewGameList);
+		m_ui.viewGameList->setChecked(!grid_view);
+	}
+	{
+		QSignalBlocker sb(m_ui.viewGridTitles);
+		m_ui.viewGridTitles->setChecked(m_model->getShowCoverTitles());
+	}
+	{
+		QSignalBlocker sb(m_ui.gridScale);
+		m_ui.gridScale->setValue(static_cast<int>(m_model->getCoverScale() * 100.0f));
+	}
+
+	m_ui.viewGridTitles->setEnabled(grid_view);
+	m_ui.gridScale->setEnabled(grid_view);
+}
+
 void GameListWidget::resizeEvent(QResizeEvent* event)
 {
-	QStackedWidget::resizeEvent(event);
+	QWidget::resizeEvent(event);
 	resizeTableViewColumnsToFit();
 }
 
@@ -431,7 +542,7 @@ void GameListWidget::saveTableViewColumnSortSettings()
 
 const GameList::Entry* GameListWidget::getSelectedEntry() const
 {
-	if (currentIndex() == 0)
+	if (m_ui.stack->currentIndex() == 0)
 	{
 		const QItemSelectionModel* selection_model = m_table_view->selectionModel();
 		if (!selection_model->hasSelection())
