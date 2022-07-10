@@ -1923,8 +1923,10 @@ void GSState::Write(const u8* mem, int len)
 			 m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
 			 m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h);
 
-	if ((PRIM->TME && (blit.DBP == m_context->TEX0.TBP0 || blit.DBP == m_context->TEX0.CBP)) ||
-		(m_prev_env.PRIM.TME && (blit.DBP == m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0.TBP0 || blit.DBP == m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0.CBP))) // TODO: hmmmm
+	// TODO: Not really sufficient if a partial texture update is done outside the block.
+	// No need to check CLUT here, we can invalidate it below, no need to flush it since TEX0 needs to update, then we can flush.
+	if ((PRIM->TME && (blit.DBP == m_context->TEX0.TBP0)) ||
+		(m_prev_env.PRIM.TME && (blit.DBP == m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0.TBP0)))
 		Flush();
 
 	if (m_tr.end == 0 && len >= m_tr.total)
