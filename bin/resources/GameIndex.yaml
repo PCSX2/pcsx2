@@ -25450,11 +25450,17 @@ SLPM-65077:
   region: "NTSC-J"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
+  memcardFilters:
+    - "SLPM-65078"
+    - "SLPM-65077"
 SLPM-65078:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "NTSC-J"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
+  memcardFilters:
+    - "SLPM-65078"
+    - "SLPM-65077"
 SLPM-65080:
   name: "Tokimeki Memorial 3"
   region: "NTSC-J"
