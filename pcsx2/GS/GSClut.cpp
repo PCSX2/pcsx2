@@ -108,9 +108,11 @@ void GSClut::Invalidate()
 	m_write.dirty = true;
 }
 
+// This checks the whole page! Some games (like We Love Katamari) have the CLUT 1 block ahead of the DBP during a transfer.
+// Safer to check if the whole page is being written anyway since it could modify only part of the CLUT.
 void GSClut::Invalidate(u32 block)
 {
-	if (block == m_write.TEX0.CBP)
+	if (!((block ^ m_write.TEX0.CBP) & ~0x1F))
 	{
 		m_write.dirty = true;
 	}

@@ -710,8 +710,12 @@ __inline void GSState::CheckFlushes()
 			Flush();
 		}
 	}
-	if (m_index.tail > 0 && (m_context->FRAME.FBMSK & GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk) != GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk)
+	if ((m_context->FRAME.FBMSK & GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk) != GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk)
 		m_mem.m_clut.Invalidate(m_context->FRAME.Block());
+
+	// Hey, why not check? I mean devs have done crazier things..
+	if(!m_context->ZBUF.ZMSK)
+		m_mem.m_clut.Invalidate(m_context->ZBUF.Block());
 }
 
 void GSState::GIFPackedRegHandlerNull(const GIFPackedReg* RESTRICT r)
