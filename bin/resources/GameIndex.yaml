@@ -8366,6 +8366,7 @@ SLAJ-25053:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLAJ-25055:
   name: "Def Jam - Fight for N.Y."
   region: "NTSC-Unk"
@@ -8616,6 +8617,7 @@ SLED-52597:
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLED-52875:
   name: "Sega Superstars [Demo]"
   region: "PAL-E"
@@ -14007,6 +14009,7 @@ SLES-52584:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLES-52585:
   name: "Burnout 3 - Takedown"
   region: "PAL-F-G-I"
@@ -14014,6 +14017,7 @@ SLES-52585:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLES-52587:
   name: "Army Men - Sarge's War"
   region: "PAL-M5"
@@ -21925,6 +21929,7 @@ SLKA-25206:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLKA-25207:
   name: "Sakura Taisen V - Episode 0 - Samurai Girl of Wild"
   region: "NTSC-K"
@@ -22893,6 +22898,7 @@ SLPM-60246:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLPM-60251:
   name: "Devil May Cry 3 [Trial Version]"
   region: "NTSC-J"
@@ -27450,6 +27456,7 @@ SLPM-65719:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLPM-65720:
   name: "Shin Sangoku Musou 2 Mushoden [Koei the Best]"
   region: "NTSC-J"
@@ -28255,6 +28262,7 @@ SLPM-65958:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLPM-65959:
   name: "Standard Daisenryaku - Ushinawareta Shoeri"
   region: "NTSC-J"
@@ -31727,6 +31735,7 @@ SLPM-66962:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLPM-66963:
   name: "Medal of Honor - Frontline [EA-SY! 1980]"
   region: "NTSC-J"
@@ -35472,9 +35481,13 @@ SLPS-25549:
 SLPS-25550:
   name: "Cowboy Bebop - Tsuitou no Yakyoku [Limited Edition]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 0 # Fixes HUD going black.
 SLPS-25551:
   name: "Cowboy Bebop - Tsuitou no Yakyoku"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 0 # Fixes HUD going black.
   compat: 5
 SLPS-25552:
   name: "Inuyasha - Juuso no Kamen [Bandai the Best]"
@@ -42025,6 +42038,7 @@ SLUS-21050:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLUS-21051:
   name: "FIFA 2005"
   region: "NTSC-U"
@@ -46680,6 +46694,7 @@ SLUS-29113:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLUS-29116:
   name: "WWE SmackDown! vs. RAW [Public Beta Vol.1.0]"
   region: "NTSC-U"
