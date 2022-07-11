@@ -1046,12 +1046,6 @@ SCAJ-20136:
 SCAJ-20137:
   name: "Musashiden II - Blademaster"
   region: "NTSC-Unk"
-  roundModes:
-    vuRoundMode: 0 # Fixes Red SPS while ingame.
-    eeRoundMode: 0 # Partially fixes wrong enemies eye rendering.
-  clampModes:
-    vuClampMode: 3 # Fixes White SPS while ingame.
-    eeClampMode: 3 # Fixes White SPS while ingame.
   gameFixes:
     - EETimingHack # Fixes garbled character animation.
 SCAJ-20138:
@@ -16121,12 +16115,6 @@ SLES-53518:
 SLES-53521:
   name: "Musashi - Samurai Legend"
   region: "PAL-M4"
-  patches:
-    BC897AC9:
-      content: |-
-        author=Prafull, Kozarovv and Agrippa
-        // Fixes almost all problems apart from little translucent fog effect in some areas.
-        patch=1,EE,00147828,word,3c04000f
 SLES-53523:
   name: "Gun"
   region: "PAL-M4"
@@ -23020,12 +23008,6 @@ SLPM-61090:
 SLPM-61117:
   name: "Musashiden II - Blademaster [Trial]"
   region: "NTSC-J"
-  roundModes:
-    vuRoundMode: 0 # Fixes Red SPS while ingame.
-    eeRoundMode: 0 # Partially fixes wrong enemies eye rendering.
-  clampModes:
-    vuClampMode: 3 # Fixes White SPS while ingame.
-    eeClampMode: 3 # Fixes White SPS while ingame.
   gameFixes:
     - EETimingHack # Fixes garbled character animation.
 SLPM-61120:
@@ -28428,13 +28410,6 @@ SLPM-66007:
 SLPM-66008:
   name: "Musashiden II - Blademaster"
   region: "NTSC-J"
-  patches:
-    F0E90890:
-      content: |-
-        author=Prafull, Kozarovv and Agrippa
-        comment=patched by Prafull and Kozarovv
-        // Fixes almost all problems apart from little translucent fog effect in some areas.
-        patch=1,EE,00147c38,word,3c04000f
 SLPM-66009:
   name: "World Soccer Winning Eleven 9 - Bonus Pack"
   region: "NTSC-J"
@@ -41683,12 +41658,6 @@ SLUS-20983:
   name: "Musashi Samurai Legend"
   region: "NTSC-U"
   compat: 5
-  patches:
-    675CEB8F:
-      content: |-
-        author=Prafull and Kozarovv
-        // Fixes almost all problems apart from little translucent fog effect in some areas.
-        patch=1,EE,001473b0,word,3c04000f
 SLUS-20984:
   name: "Resident Evil Outbreak - File #2"
   region: "NTSC-U"
