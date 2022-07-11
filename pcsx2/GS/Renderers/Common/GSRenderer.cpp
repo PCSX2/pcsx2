@@ -211,10 +211,13 @@ bool GSRenderer::Merge(int field)
 			// When the displays are offset by 1 we need to adjust for upscale to handle it (reduces bounce in MGS2 when upscaling)
 			interlace_offset += (tex[i]->GetScale().y - 1.0f)  / 2;
 
-			if (!ignore_offset)
-				off.y &= ~1;
+			if (interlace_offset >= 1.0f)
+			{
+				if (!ignore_offset)
+					off.y -= 1;
 
-			display_diff.y &= ~1;
+				display_diff.y -= 1;
+			}
 		}
 
 		// Start of Anti-Blur code.
