@@ -1957,7 +1957,12 @@ void GSState::Write(const u8* mem, int len)
 			FlushWrite();
 	}
 
-	m_mem.m_clut.Invalidate(blit.DBP);
+	int page_width = std::max(1, (w / psm.pgs.x));
+	int page_height = std::max(1, (h / psm.pgs.y));
+	int pitch = (std::max(1U, blit.DBW) * 64) / psm.pgs.x;
+
+	// Try to avoid flushing draws if it doesn't cross paths
+	m_mem.m_clut.InvalidateRange(blit.DBP, blit.DBP + ((page_width << 5) + ((page_height * pitch) << 5)));
 }
 
 void GSState::InitReadFIFO(u8* mem, int len)
@@ -2202,7 +2207,12 @@ void GSState::Move()
 		});
 	}
 
-	m_mem.m_clut.Invalidate(m_env.BITBLTBUF.DBP);
+	int page_width = std::max(1, (w / dpsm.pgs.x));
+	int page_height = std::max(1, (h / dpsm.pgs.y));
+	int pitch = (std::max(1, dbw) * 64) / dpsm.pgs.x;
+
+	// Try to avoid flushing draws if it doesn't cross paths
+	m_mem.m_clut.InvalidateRange(dbp, dbp + ((page_width << 5) + ((page_height * pitch) << 5)));
 }
 
 void GSState::SoftReset(u32 mask)
