@@ -1260,7 +1260,6 @@ SCAJ-20179:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc1of2]"
   region: "NTSC-Unk"
   gsHWFixes:
-    textureInsideRT: 1
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
@@ -1268,7 +1267,6 @@ SCAJ-20180:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc2of2]"
   region: "NTSC-Unk"
   gsHWFixes:
-    textureInsideRT: 1
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
@@ -23066,7 +23064,6 @@ SLPM-61147:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Demo]"
   region: "NTSC-J"
   gsHWFixes:
-    textureInsideRT: 1
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
@@ -35825,7 +35822,6 @@ SLPS-25640:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    textureInsideRT: 1
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
@@ -35837,7 +35833,6 @@ SLPS-25641:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    textureInsideRT: 1
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
@@ -43822,7 +43817,6 @@ SLUS-21389:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    textureInsideRT: 1
     autoFlush: 1
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows.
     roundSprite: 2 # Fixes font artifacts.
@@ -43951,7 +43945,6 @@ SLUS-21417:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    textureInsideRT: 1
     autoFlush: 1
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows.
     roundSprite: 2 # Fixes font artifacts.
