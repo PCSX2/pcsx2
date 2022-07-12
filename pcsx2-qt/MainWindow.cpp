@@ -801,7 +801,7 @@ void MainWindow::updateWindowState(bool force_visible)
 	if (m_is_closing)
 		return;
 
-	const bool hide_window = !g_emu_thread->isRenderingToMain() && shouldHideMainWindow();
+	const bool hide_window = !isRenderingToMain() && shouldHideMainWindow();
 	const bool disable_resize = Host::GetBaseBoolSettingValue("UI", "DisableWindowResize", false);
 	const bool has_window = s_vm_valid || m_display_widget;
 
@@ -874,7 +874,7 @@ bool MainWindow::shouldHideMouseCursor() const
 
 bool MainWindow::shouldHideMainWindow() const
 {
-	return Host::GetBaseBoolSettingValue("UI", "HideMainWindowWhenRunning", false) || QtHost::InNoGUIMode();
+	return Host::GetBaseBoolSettingValue("UI", "HideMainWindowWhenRunning", false) || isRenderingFullscreen() || QtHost::InNoGUIMode();
 }
 
 void MainWindow::switchToGameListView()
