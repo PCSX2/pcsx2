@@ -722,9 +722,10 @@ __fi bool mpeg2sliceIDEC()
 		while (1)
 		{
 			// IPU0 isn't ready for data, so let's wait for it to be
-			if (!ipu0ch.chcr.STR || ipuRegs.ctrl.OFC || ipu0ch.qwc == 0)
+			if ((!ipu0ch.chcr.STR || ipuRegs.ctrl.OFC || ipu0ch.qwc == 0) && ipu_cmd.pos[1] <= 2)
+			{
 				return false;
-
+			}
 			macroblock_8& mb8 = decoder.mb8;
 			macroblock_rgb16& rgb16 = decoder.rgb16;
 			macroblock_rgb32& rgb32 = decoder.rgb32;
@@ -829,6 +830,7 @@ __fi bool mpeg2sliceIDEC()
 
 			case 2:
 			{
+
 				pxAssert(decoder.ipu0_data > 0);
 
 				uint read = ipu_fifo.out.write((u32*)decoder.GetIpuDataPtr(), decoder.ipu0_data);
@@ -840,7 +842,13 @@ __fi bool mpeg2sliceIDEC()
 					ipu_cmd.pos[1] = 2;
 					return false;
 				}
+
 				mbaCount = 0;
+				if (read)
+				{
+					ipu_cmd.pos[1] = 3;
+					return false;
+				}
 			}
 				[[fallthrough]];
 
@@ -999,6 +1007,12 @@ __fi bool mpeg2_slice()
 
 	case 2:
 		ipu_cmd.pos[0] = 2;
+
+		// IPU0 isn't ready for data, so let's wait for it to be
+		if ((!ipu0ch.chcr.STR || ipuRegs.ctrl.OFC || ipu0ch.qwc == 0) && ipu_cmd.pos[0] <= 3)
+		{
+			return false;
+		}
 
 		if (decoder.macroblock_modes & DCT_TYPE_INTERLACED)
 		{
@@ -1186,13 +1200,6 @@ __fi bool mpeg2_slice()
 
 	case 3:
 	{
-		// IPU0 isn't ready for data, so let's wait for it to be
-		if (!ipu0ch.chcr.STR || ipuRegs.ctrl.OFC || ipu0ch.qwc == 0)
-		{
-			ipu_cmd.pos[0] = 3;
-			return false;
-		}
-
 		pxAssert(decoder.ipu0_data > 0);
 
 		uint read = ipu_fifo.out.write((u32*)decoder.GetIpuDataPtr(), decoder.ipu0_data);
@@ -1206,6 +1213,11 @@ __fi bool mpeg2_slice()
 		}
 
 		mbaCount = 0;
+		if (read)
+		{
+			ipu_cmd.pos[0] = 4;
+			return false;
+		}
 	}
 		[[fallthrough]];
 
