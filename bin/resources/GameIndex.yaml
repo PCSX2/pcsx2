@@ -8398,6 +8398,7 @@ SLAJ-25066:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
   memcardFilters:
     - "SLAJ-25066"
     - "SLPM-66108"
@@ -8502,6 +8503,7 @@ SLAJ-25094:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLAJ-25095:
   name: "Medal of Honor - Vanguard"
   region: "NTSC-Unk"
@@ -16081,6 +16083,9 @@ SLES-53506:
   compat: 5
   clampModes:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
   memcardFilters:
     - "SLES-53506"
     - "SLES-53507"
@@ -16095,6 +16100,7 @@ SLES-53507:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
   memcardFilters:
     - "SLES-53506"
     - "SLES-53507"
@@ -18800,6 +18806,7 @@ SLES-54627:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLES-54628:
   name: "Skate Attack [Promo]"
   region: "PAL-E"
@@ -18958,6 +18965,7 @@ SLES-54681:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLES-54683:
   name: "Medal of Honor - Vanguard"
   region: "PAL-M9"
@@ -22176,6 +22184,7 @@ SLKA-25304:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLKA-25307:
   name: "Dragon Ball Z Sparking"
   region: "NTSC-K"
@@ -28770,6 +28779,7 @@ SLPM-66108:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
   memcardFilters:
     - "SLAJ-25066"
     - "SLPM-66108"
@@ -30697,6 +30707,7 @@ SLPM-66652:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
   memcardFilters:
     - "SLAJ-25066"
     - "SLPM-66108"
@@ -31048,6 +31059,7 @@ SLPM-66739:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLPM-66740:
   name: "Sentou Kokka Kai - Legend [DX Pack]"
   region: "NTSC-J"
@@ -42978,6 +42990,7 @@ SLUS-21242:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
   memcardFilters: # Reads Burnout 3 and NFL 06 saves for unlockables.
     - "SLUS-21242"
     - "SLUS-21050"
@@ -46807,6 +46820,7 @@ SLUS-29153:
     vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLUS-29154:
   name: "NHL '06 [Demo]"
   region: "NTSC-U"
