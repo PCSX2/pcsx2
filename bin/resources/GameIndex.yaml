@@ -14623,6 +14623,9 @@ SLES-52854:
   name: "Capcom Fighting Jam"
   region: "PAL-E"
   compat: 5
+SLES-52856:
+  name: "10 Most Wanted"
+  region: "PAL-F"
 SLES-52857:
   name: "Fairly OddParents, The - Shadow Showdown"
   region: "PAL-E"
@@ -22446,6 +22449,9 @@ SLPM-55008:
 SLPM-55013:
   name: "Sorayume"
   region: "NTSC-J"
+SLPM-55014:
+  name: "Aria - The Origination - Aoi Hoshi no El Cielo"
+  region: "NTSC-J"
 SLPM-55015:
   name: "Yotsunoha - A Journey of Sincerity [Limited Edition]"
   region: "NTSC-J"
@@ -22804,6 +22810,9 @@ SLPM-55276:
   region: "NTSC-J"
 SLPM-55280:
   name: "King of Fighters '98 Ultimate Match, The"
+  region: "NTSC-J"
+SLPM-55282:
+  name: "Armen Noir"
   region: "NTSC-J"
 SLPM-55283:
   name: "Hakuouki - Reimeiroku [Limited Edition]"
@@ -23820,11 +23829,17 @@ SLPM-62318:
 SLPM-62319:
   name: "Romance of the Three Kingdoms VIII"
   region: "NTSC-J"
+SLPM-62320:
+  name: "2003-nen Kaimaku - Ganbare Kyuukai-ou - Iwayuru Pro Yakyuu desu ne"
+  region: "NTSC-J"
 SLPM-62321:
   name: "Robocop"
   region: "NTSC-J"
 SLPM-62322:
   name: "Conveni 3, The"
+  region: "NTSC-J"
+SLPM-62323:
+  name: "AI Shougi 2003"
   region: "NTSC-J"
 SLPM-62324:
   name: "Simple 2000 Series Vol. 8 - Gekitou! Meiro King"
@@ -23840,6 +23855,12 @@ SLPM-62327:
   region: "NTSC-J"
 SLPM-62328:
   name: "Simple 2000 Series Vol. 27 - The Pro Yakyuu 2003 Pennant Race"
+  region: "NTSC-J"
+SLPM-62329:
+  name: "AI Igo 2003"
+  region: "NTSC-J"
+SLPM-62330:
+  name: "AI Mahjong 2003"
   region: "NTSC-J"
 SLPM-62334:
   name: "Simple 2000 Series Vol. 29 - The Renai Board Game"
@@ -25285,6 +25306,9 @@ SLPM-65033:
 SLPM-65034:
   name: "Sangokushi North Winds"
   region: "NTSC-J"
+SLPM-65037:
+  name: "Angelique Trois - Aizouban [Shokai Gentei Package]"
+  region: "NTSC-J"
 SLPM-65038:
   name: "Devil May Cry"
   region: "NTSC-J"
@@ -25647,6 +25671,9 @@ SLPM-65148:
   region: "NTSC-J"
 SLPM-65150:
   name: "Aero Dancing 4 - New Generation"
+  region: "NTSC-J"
+SLPM-65151:
+  name: "Akudaikan"
   region: "NTSC-J"
 SLPM-65152:
   name: "GunGrave [Limited Edition]"
