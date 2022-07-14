@@ -226,15 +226,14 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 	m_features.framebuffer_fetch = GLLoader::found_framebuffer_fetch;
 	m_features.dual_source_blend = GLLoader::has_dual_source_blend && !GSConfig.DisableDualSourceBlend;
 	m_features.stencil_buffer = true;
+	// Wide line support in GL is deprecated as of 3.1, so we will just do it in the Geometry Shader.
+	m_features.line_expand = false;
 
 	GLint point_range[2] = {};
-	GLint line_range[2] = {};
 	glGetIntegerv(GL_ALIASED_POINT_SIZE_RANGE, point_range);
-	glGetIntegerv(GL_ALIASED_LINE_WIDTH_RANGE, line_range);
 	m_features.point_expand = (point_range[0] <= static_cast<GLint>(GSConfig.UpscaleMultiplier) && point_range[1] >= static_cast<GLint>(GSConfig.UpscaleMultiplier));
-	m_features.line_expand = (line_range[0] <= static_cast<GLint>(GSConfig.UpscaleMultiplier) && line_range[1] >= static_cast<GLint>(GSConfig.UpscaleMultiplier));
-	Console.WriteLn("Using %s for point expansion and %s for line expansion.",
-		m_features.point_expand ? "hardware" : "geometry shaders", m_features.line_expand ? "hardware" : "geometry shaders");
+
+	Console.WriteLn("Using %s for point expansion.", m_features.point_expand ? "hardware" : "geometry shaders");
 
 	{
 		auto shader = Host::ReadResourceFileToString("shaders/opengl/common_header.glsl");
@@ -637,8 +636,6 @@ void GSDeviceOGL::ResetAPIState()
 {
 	if (GLState::point_size)
 		glDisable(GL_PROGRAM_POINT_SIZE);
-	if (GLState::line_width != 1.0f)
-		glLineWidth(1.0f);
 }
 
 void GSDeviceOGL::RestoreAPIState()
@@ -691,8 +688,6 @@ void GSDeviceOGL::RestoreAPIState()
 
 	if (GLState::point_size)
 		glEnable(GL_PROGRAM_POINT_SIZE);
-	if (GLState::line_width != 1.0f)
-		glLineWidth(GLState::line_width);
 }
 
 void GSDeviceOGL::DrawPrimitive()
@@ -1966,12 +1961,6 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		else
 			glDisable(GL_PROGRAM_POINT_SIZE);
 		GLState::point_size = point_size_enabled;
-	}
-	const float line_width = config.line_expand ? static_cast<float>(GSConfig.UpscaleMultiplier) : 1.0f;
-	if (GLState::line_width != line_width)
-	{
-		GLState::line_width = line_width;
-		glLineWidth(line_width);
 	}
 
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
