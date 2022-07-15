@@ -388,17 +388,23 @@ SCAJ-10001:
   name: "Makai Senki Disgaea"
   region: "NTSC-Unk"
 SCAJ-10003:
-  name: "Taiko no Tatsujin Doki"
+  name: "Taiko no Tatsujin - Doki! Shinkyoku Darake no Haru Matsuri"
   region: "NTSC-Unk"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SCAJ-10004:
   name: "Time Crisis 2 [PlayStation 2 The Best]"
   region: "NTSC-Unk"
 SCAJ-10006:
-  name: "Taiko no Tatsujin 3 - Appare Sandaime"
+  name: "Taiko no Tatsujin - Appare Sandaime"
   region: "NTSC-Unk"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SCAJ-10007:
   name: "Taiko no Tatsujin - Waku Waku Anime Matsuri"
   region: "NTSC-Unk"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SCAJ-10008:
   name: "Taiko no Tatsujin - Atsumare! Matsuri da!! Yondaime"
   region: "NTSC-Unk"
@@ -415,8 +421,11 @@ SCAJ-10010:
   region: "NTSC-Unk"
   compat: 5
 SCAJ-10011:
-  name: "Taiko no Tatsujin Go! Go! Godaime"
+  name: "Taiko no Tatsujin - Go! Go! Godaime"
   region: "NTSC-Unk"
+  gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
+    alignSprite: 1 # Fixes vertical lines.
 SCAJ-10012:
   name: "Taiko Drum Master"
   region: "NTSC-Unk"
@@ -426,9 +435,15 @@ SCAJ-10012:
 SCAJ-10013:
   name: "Taiko no Tatsujin - Tobikkiri! Anime Special"
   region: "NTSC-Unk"
+  gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
+    alignSprite: 1 # Fixes vertical lines.
 SCAJ-10014:
-  name: "Taiko no Tatsujin Wai Wai Happy Rokudaime"
+  name: "Taiko no Tatsujin - Wai Wai Happy! Rokudaime"
   region: "NTSC-Unk"
+  gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
+    alignSprite: 1 # Fixes vertical lines.
 SCAJ-10015:
   name: "Taiko no Tatsujin - Doka! to Oomori Nanadaime"
   region: "NTSC-Unk"
@@ -33025,9 +33040,11 @@ SLPS-20220:
   name: "Pachi-Slot Aruze Oukoku 7 (Disc 1) (Ekishou Disc)"
   region: "NTSC-J"
 SLPS-20221:
-  name: "Taiko no Tatsujin [with Tatacon Reproduction Controller]"
+  name: "Taiko no Tatsujin - Tatacon de Dodon ga Don [with Tatacon]"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SLPS-20222:
   name: "Inaka Kurasi - Nan no Shima no Monogatari"
   region: "NTSC-J"
@@ -33106,9 +33123,11 @@ SLPS-20268:
   name: "Jissen Pachi-Slot Hisshouhou! Salaryman Kintarou"
   region: "NTSC-J"
 SLPS-20272:
-  name: "Taiko no Tatsujin Doki"
+  name: "Taiko no Tatsujin - Doki! Shinkyoku Darake no Haru Matsuri"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SLPS-20273:
   name: "Netsu Chu! Pro Yakyuu 2003"
   region: "NTSC-J"
@@ -33130,8 +33149,10 @@ SLPS-20281:
   clampModes:
     vuClampMode: 0 # Fixes missing game board.
 SLPS-20282:
-  name: "Taiko no Tatsujin"
+  name: "Taiko no Tatsujin - Tatacon de Dodon ga Don"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SLPS-20284:
   name: "Marl de Jigsaw"
   region: "NTSC-J"
@@ -33192,12 +33213,16 @@ SLPS-20317:
   region: "NTSC-J"
   compat: 5
 SLPS-20320:
-  name: "Taiko no Tatsujin 3 [with Tatacon Drum Bundle]"
+  name: "Taiko no Tatsujin - Appare Sandaime [with Tatacon]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SLPS-20321:
   name: "Taiko no Tatsujin - Appare Sandaime"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SLPS-20322:
   name: "Netsu Chu! Pro Yakyuu 2003 - Aki no Night Matsuri"
   region: "NTSC-J"
@@ -33219,9 +33244,11 @@ SLPS-20329:
   region: "NTSC-J"
   compat: 5
 SLPS-20330:
-  name: "Taiko no Tatsujin 4 - Waku Waku Anime Maturi"
+  name: "Taiko no Tatsujin - Waku Waku Anime Matsuri"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SLPS-20331:
   name: "Fever 9 - Sankyo"
   region: "NTSC-J"
@@ -33345,9 +33372,11 @@ SLPS-20381:
   name: "Monkey Turn V"
   region: "NTSC-J"
 SLPS-20382:
-  name: "Taiko no Tatsujin 4th Generation - Gathering Festival [with Drum Controller]"
+  name: "Taiko no Tatsujin - Atsumare! Matsuri da!! Yondaime [with Tatacon]"
   region: "NTSC-J"
-  compat: 5
+  gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-20383:
   name: "Taiko no Tatsujin - Atsumare! Matsuri da!! Yondaime"
   region: "NTSC-J"
@@ -33393,9 +33422,15 @@ SLPS-20398:
 SLPS-20399:
   name: "Taiko no Tatsujin - Go! Go! Godaime [with Tatacon]"
   region: "NTSC-J"
+  gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-20400:
   name: "Taiko no Tatsujin - Go! Go! Godaime"
   region: "NTSC-J"
+  gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-20401:
   name: "Tecmo Hit Parade"
   region: "NTSC-J"
@@ -33432,7 +33467,7 @@ SLPS-20412:
   name: "Hissatsu Pachinko Station v10"
   region: "NTSC-J"
 SLPS-20413:
-  name: "Taiko no Tatsujin - Taiko Drum Master [with Tatacon Controller]"
+  name: "Taiko no Tatsujin - Taiko Drum Master [with Tatacon]"
   region: "NTSC-J"
   gsHWFixes:
     deinterlace: 4 # Game requires bob bff deinterlacing when auto.
@@ -33468,9 +33503,15 @@ SLPS-20423:
 SLPS-20424:
   name: "Taiko no Tatsujin - Tobikkiri! Anime Special [with Tatacon]"
   region: "NTSC-J"
+  gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-20425:
   name: "Taiko no Tatsujin - Tobikkiri! Anime Special"
   region: "NTSC-J"
+  gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-20426:
   name: "Madagascar"
   region: "NTSC-J"
@@ -33525,11 +33566,17 @@ SLPS-20448:
   name: "Kamen Rider Hibiki - Taiko no Tatsujin Special Version [Trial]"
   region: "NTSC-J"
 SLPS-20450:
-  name: "Taiko no Tatsujin - Wai Wai Happy Rokudaime [with Tatacon]"
+  name: "Taiko no Tatsujin - Wai Wai Happy! Rokudaime [with Tatacon]"
   region: "NTSC-J"
+  gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-20451:
-  name: "Taiko no Tatsujin - Wai Wai Happy Rokudaime"
+  name: "Taiko no Tatsujin - Wai Wai Happy! Rokudaime"
   region: "NTSC-J"
+  gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-20452:
   name: "Simple 2000 Series Ultimate Vol. 30 - Kourin! Zokusha Goddo!"
   region: "NTSC-J"
@@ -33643,7 +33690,7 @@ SLPS-20484:
   name: "Simple 2000 Series Ultimate Vol. 34 - Sakigake!! Otokojuku"
   region: "NTSC-J"
 SLPS-20485:
-  name: "Taiko no Tatsujin - Doka! to Oomori Nanadaime [with Tatacon Controller]"
+  name: "Taiko no Tatsujin - Doka! to Oomori Nanadaime [with Tatacon]"
   region: "NTSC-J"
   gsHWFixes:
     deinterlace: 4 # Game requires bob bff deinterlacing when auto.
@@ -37033,8 +37080,11 @@ SLPS-73106:
   name: "Pilot Nina Rou! 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPS-73107:
-  name: "Taiko no Tatsujin 5 [PlayStation 2 The Best]"
+  name: "Taiko no Tatsujin - Go! Go! Godaime [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    deinterlace: 4 # Game requires bob bff deinterlacing when auto.
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-73108:
   name: "Phantom Brave [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -37045,9 +37095,13 @@ SLPS-73109:
 SLPS-73110:
   name: "Taiko no Tatsujin - Appare Sandaime [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SLPS-73111:
   name: "Taiko no Tatsujin - Waku Waku Anime Matsuri [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SLPS-73201:
   name: "Fatal Frame II - Crimson Butterfly [PlayStation 2 The Best]"
   region: "NTSC-J"
