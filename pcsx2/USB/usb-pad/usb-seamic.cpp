@@ -255,10 +255,6 @@ namespace usb_pad
 		USBDevice* mic;
 		Pad* pad;
 		uint8_t port;
-		struct freeze
-		{
-			int nothing;
-		} f;
 	} SeamicState;
 
 	static void pad_handle_data(USBDevice* dev, USBPacket* p)
