@@ -11355,6 +11355,8 @@ SLES-51233:
   name: "DragonBall Z - Budokai"
   region: "PAL-M4"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lines when powering up.
 SLES-51235:
   name: "Raging Blades"
   region: "PAL-M5"
@@ -14839,8 +14841,6 @@ SLES-52941:
 SLES-52942:
   name: "Midnight Club 3 - DUB Edition"
   region: "PAL-M5"
-  gsHWFixes:
-    wildArmsHack: 1 # Fixes post-processing misalignment.
   patches:
     EBE1972D:
       content: |-
@@ -16731,8 +16731,6 @@ SLES-53716:
 SLES-53717:
   name: "Midnight Club 3 - DUB Edition Remix"
   region: "PAL-M5"
-  gsHWFixes:
-    wildArmsHack: 1 # Fixes post-processing misalignment.
   patches:
     208183AF:
       content: |-
@@ -21578,6 +21576,8 @@ SLKA-25045:
 SLKA-25046:
   name: "Dragon Ball Z"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lines when powering up.
 SLKA-25048:
   name: "Makai Senki Disgaea"
   region: "NTSC-K"
@@ -37141,6 +37141,8 @@ SLPS-73206:
 SLPS-73207:
   name: "Dragon Ball Z [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lines when powering up.
 SLPS-73208:
   name: "Dragon Ball Z 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -40029,6 +40031,8 @@ SLUS-20591:
   name: "Dragon Ball Z - Budokai"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lines when powering up.
 SLUS-20592:
   name: "HyperSonic Xtreme - HSX"
   region: "NTSC-U"
@@ -42085,8 +42089,6 @@ SLUS-21029:
   name: "Midnight Club 3 - DUB Edition"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    wildArmsHack: 1 # Fixes post-processing misalignment.
   patches:
     0DD3417A:
       content: |-
@@ -43755,8 +43757,6 @@ SLUS-21355:
   name: "Midnight Club 3 - DUB Edition Remix"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    wildArmsHack: 1 # Fixes post-processing misalignment.
   patches:
     60A42FF5:
       content: |-
@@ -44827,11 +44827,14 @@ SLUS-21595:
   region: "NTSC-U"
   compat: 5
 SLUS-21596:
-  name: "Burnout - Dominator"
+  name: "Burnout Dominator"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vuClampMode: 0 # Fixes buggy lighting on certain objects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
 SLUS-21597:
   name: "Medal of Honor - Vanguard"
   region: "NTSC-U"
