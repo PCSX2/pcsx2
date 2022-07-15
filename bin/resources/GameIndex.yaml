@@ -16745,6 +16745,8 @@ SLES-53718:
   name: "Sims 2, The"
   region: "PAL-M10"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned textures
 SLES-53722:
   name: "Call of Duty 2 - Big Red One [Collector's Edition]"
   region: "PAL-E"
