@@ -3430,6 +3430,9 @@ SCES-52762:
 SCES-52763:
   name: "DJ Decks & FX Vol.1"
   region: "PAL-G"
+SCES-52764:
+  name: "DJ - Decks & FX - Live Session"
+  region: "PAL-S"
 SCES-52826:
   name: "SingStar Party"
   region: "PAL-E"
@@ -4256,6 +4259,9 @@ SCES-55362:
 SCES-55385:
   name: "Buzz! Brain of the UK"
   region: "PAL-E"
+SCES-55386:
+  name: "Buzz! Le Plus Malin des Francais"
+  region: "PAL-F"
 SCES-55387:
   name: "Buzz! Deutschlands Superquiz"
   region: "PAL-G"
@@ -4422,6 +4428,9 @@ SCES-55662:
   region: "PAL-IN"
 SCES-55663:
   name: "Street Cricket Champions 2"
+  region: "PAL-IN"
+SCES-55670:
+  name: "Don 2 - The Game"
   region: "PAL-IN"
 SCES-82034:
   name: "Xenosaga II - Jenseits von Gut und Bose [Disc 1]"
@@ -14664,7 +14673,7 @@ SLES-52872:
   roundModes:
     eeRoundMode: 2 # Resolves dumpster not being able to be climbed from front in level 2.
 SLES-52874:
-  name: "Dark Wind (with Gametrak)"
+  name: "Dark Wind [with Gametrak]"
   region: "PAL-M5"
 SLES-52876:
   name: "King of Fighters 2000-2001"
@@ -17241,7 +17250,7 @@ SLES-53949:
   name: "Magna Carta - Lacrime di Sangue"
   region: "PAL-I"
 SLES-53952:
-  name: "Cue Academy, The (Snooker-Pool-Billiards)"
+  name: "Cue Academy - Snooker, Pool, Billiards"
   region: "PAL-M5"
 SLES-53955:
   name: "Friends - The One with All the Trivia"
@@ -22481,6 +22490,9 @@ SLPM-55047:
 SLPM-55051:
   name: "Will o' Wisp - Easter no Kiseki"
   region: "NTSC-J"
+SLPM-55060:
+  name: "D.Gray-man - Sousha no Shikaku"
+  region: "NTSC-J"
 SLPM-55061:
   name: "Need for Speed - Carbon [EA-SY! 1980]"
   region: "NTSC-J"
@@ -22698,6 +22710,9 @@ SLPM-55185:
 SLPM-55186:
   name: "Sweet Honey Coming"
   region: "NTSC-J"
+SLPM-55187:
+  name: "Canvas 3 - Tanshoku no Pastel"
+  region: "NTSC-J"
 SLPM-55188:
   name: "Rosario to Vampire Capu 2 - Koi to Yume no Rapsodia [Limited Edition]"
   region: "NTSC-J"
@@ -22742,13 +22757,16 @@ SLPM-55212:
   name: "Jigoku Shoujo Mioyosuga [Limited Edition]"
   region: "NTSC-J"
 SLPM-55221:
-  name: "beatmania IIDX 16 EMPRESS + PREMIUM BEST (EMPRESS DISC)"
+  name: "beatmania IIDX 16 EMPRESS + PREMIUM BEST [EMPRESS DISC]"
   region: "NTSC-J"
 SLPM-55222:
-  name: "beatmania IIDX 16 EMPRESS + PREMIUM BEST (PREMIUM BEST DISC)"
+  name: "beatmania IIDX 16 EMPRESS + PREMIUM BEST [PREMIUM BEST DISC]"
   region: "NTSC-J"
 SLPM-55226:
   name: "FIFA 10 - World Class Soccer"
+  region: "NTSC-J"
+SLPM-55239:
+  name: "Death Connection"
   region: "NTSC-J"
 SLPM-55243:
   name: "Suzunone Seven - Rebirth Knot"
@@ -22772,8 +22790,14 @@ SLPM-55251:
 SLPM-55252:
   name: "Pro Yakyuu Spirits 2010"
   region: "NTSC-J"
+SLPM-55255:
+  name: "Clover no Kuni no Alice - Wonderful Wonder World"
+  region: "NTSC-J"
 SLPM-55258:
   name: "World Soccer Winning Eleven 2010 - Aoki Samurai no Chousen"
+  region: "NTSC-J"
+SLPM-55259:
+  name: "Desert Kingdom"
   region: "NTSC-J"
 SLPM-55262:
   name: "J.League Winning Eleven 2010 - Club Championship"
@@ -22812,6 +22836,9 @@ SLPM-55276:
   region: "NTSC-J"
 SLPM-55280:
   name: "King of Fighters '98 Ultimate Match, The"
+  region: "NTSC-J"
+SLPM-55281:
+  name: "Clock Zero - Shuuen no Ichibyou"
   region: "NTSC-J"
 SLPM-55282:
   name: "Armen Noir"
@@ -23170,7 +23197,13 @@ SLPM-62035:
   name: "Got to Do! Hot Spring Table Tennis"
   region: "NTSC-J"
 SLPM-62036:
-  name: "Choukousoku Reversi"
+  name: "Chou Kousoku Reversi"
+  region: "NTSC-J"
+SLPM-62037:
+  name: "Chou Kousoku Igo"
+  region: "NTSC-J"
+SLPM-62039:
+  name: "Chou Kousoku Shougi"
   region: "NTSC-J"
 SLPM-62040:
   name: "Jikkyou World Soccer 2000 - Final Edition"
@@ -23407,6 +23440,9 @@ SLPM-62139:
   name: "Psyvariar Complete Edition"
   region: "NTSC-J"
   compat: 5
+SLPM-62140:
+  name: "Cyber Jansou - Toufuusou-hen"
+  region: "NTSC-J"
 SLPM-62142:
   name: "World Grand Prix"
   region: "NTSC-J"
@@ -23415,6 +23451,9 @@ SLPM-62143:
   region: "NTSC-J"
 SLPM-62144:
   name: "Super Bust-A-Move"
+  region: "NTSC-J"
+SLPM-62146:
+  name: "Chou Kousoku Mahjong Plus"
   region: "NTSC-J"
 SLPM-62147:
   name: "Bass Strike"
@@ -26888,6 +26927,9 @@ SLPM-65520:
   region: "NTSC-J"
 SLPM-65521:
   name: "Tentama 2 Wins"
+  region: "NTSC-J"
+SLPM-65522:
+  name: "Bakushou!! Jinsei Kaidou - Nova Usagi ga Miteru zo!!"
   region: "NTSC-J"
 SLPM-65523:
   name: "Hurrah! Sailor"
@@ -31663,10 +31705,13 @@ SLPM-66921:
   name: "H2O"
   region: "NTSC-J"
 SLPM-66922:
-  name: "D.C. II P.S. - Da Capo II Plus Situation [DX Pack]"
+  name: "D.C.II P.S. - Da Capo II - Plus Situation [DX Pack]"
+  region: "NTSC-J"
+SLPM-66923:
+  name: "D.C.II P.S. - Da Capo II - Plus Situation [Disc 2] [DX Pack]"
   region: "NTSC-J"
 SLPM-66924:
-  name: "D.C. II P.S. - Da Capo II Plus Situation"
+  name: "D.C.II P.S. - Da Capo II - Plus Situation"
   region: "NTSC-J"
 SLPM-66926:
   name: "NiGHTS into Dreams..."
@@ -32109,6 +32154,9 @@ SLPM-68516:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+SLPM-68521:
+  name: "Dot Hack Fraegment [Senkou Release-ban]"
+  region: "NTSC-J"
 SLPM-69001:
   name: "PictureParadise Club"
   region: "NTSC-J"
@@ -32732,6 +32780,9 @@ SLPS-20097:
 SLPS-20098:
   name: "Magical Sports - Hard Hitter"
   region: "NTSC-J"
+SLPS-20099:
+  name: "Dream Audition 3"
+  region: "NTSC-J"
 SLPS-20100:
   name: "Tetsu-One Train Battle"
   region: "NTSC-J"
@@ -33044,6 +33095,9 @@ SLPS-20263:
   region: "NTSC-J"
 SLPS-20265:
   name: "Fever 7"
+  region: "NTSC-J"
+SLPS-20266:
+  name: "Baskelian"
   region: "NTSC-J"
 SLPS-20267:
   name: "Jissen Pachi-Slot Hisshouhou! Salaryman Kintarou [Limited Edition]"
@@ -33648,6 +33702,9 @@ SLPS-20503:
 SLPS-20504:
   name: "Daito Giken Koushiki Pachi-Slot Simulator - Shin Yoshimune"
   region: "NTSC-J"
+SLPS-20506:
+  name: "Daito Giken Koushiki Pachi-Slot Simulator - 24 - Twenty Four"
+  region: "NTSC-J"
 SLPS-20509:
   name: "Hachi-One Diver"
   region: "NTSC-J"
@@ -33943,6 +34000,9 @@ SLPS-25072:
     - "SLPS-25072"
     - "SLPM-65086"
     - "SLPM-65087"
+SLPS-25073:
+  name: "Cinema Surfing - Youga Taizen"
+  region: "NTSC-J"
 SLPS-25074:
   name: "Project Zero"
   region: "NTSC-J"
@@ -36679,6 +36739,12 @@ SLPS-25868:
   region: "NTSC-J"
 SLPS-25869:
   name: "CR Shinseiki Evangelion - Shito, Futatabi"
+  region: "NTSC-J"
+SLPS-25871:
+  name: "Drastic Killer"
+  region: "NTSC-J"
+SLPS-25872:
+  name: "Daisenryaku - Daitoua Kouboushi - Tora Tora Tora Ware Kishuu ni Seikou Seri"
   region: "NTSC-J"
 SLPS-25879:
   name: "Bully"
@@ -46111,7 +46177,7 @@ SLUS-21915:
   region: "NTSC-U"
   compat: 5
 SLUS-21917:
-  name: "Dance Dance Revolution X2 (Bundle)"
+  name: "Dance Dance Revolution X2 [Bundle]"
   region: "NTSC-U"
 SLUS-21918:
   name: "Pro Evolution Soccer 2010"
