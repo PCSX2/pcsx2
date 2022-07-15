@@ -400,13 +400,21 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 	if (xmmreg == -1)
 		xmmreg = _getFreeXMMreg();
 
-	g_xmmtypes[xmmreg] = XMMT_INT;
-	xmmregs[xmmreg].inuse = 1;
-	xmmregs[xmmreg].type = XMMTYPE_GPRREG;
-	xmmregs[xmmreg].reg = gprreg;
-	xmmregs[xmmreg].mode = mode;
-	xmmregs[xmmreg].needed = 1;
-	xmmregs[xmmreg].counter = g_xmmAllocCounter++;
+	if (xmmreg == -1)
+	{
+		pxFailDev("*PCSX2*: XMM Reg Allocation Error in _allocGPRtoXMMreg()!");
+		throw Exception::FailedToAllocateRegister();
+	}
+	else
+	{
+		g_xmmtypes[xmmreg] = XMMT_INT;
+		xmmregs[xmmreg].inuse = 1;
+		xmmregs[xmmreg].type = XMMTYPE_GPRREG;
+		xmmregs[xmmreg].reg = gprreg;
+		xmmregs[xmmreg].mode = mode;
+		xmmregs[xmmreg].needed = 1;
+		xmmregs[xmmreg].counter = g_xmmAllocCounter++;
+	}
 
 	if (mode & MODE_READ)
 	{
