@@ -1263,6 +1263,7 @@ SCAJ-20179:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
+    texturePreloading: 0 # Performs much better with it off.
 SCAJ-20180:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc2of2]"
   region: "NTSC-Unk"
@@ -1270,6 +1271,7 @@ SCAJ-20180:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
+    texturePreloading: 0 # Performs much better with it off.
 SCAJ-20181:
   name: "Minna no Tennis"
   region: "NTSC-Unk"
@@ -23067,6 +23069,7 @@ SLPM-61147:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
+    texturePreloading: 0 # Performs much better with it off.
 SLPM-61157:
   name: "Naruto Shippuuden - Narutimate Accel [Trial]"
   region: "NTSC-J"
@@ -35825,6 +35828,7 @@ SLPS-25640:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
+    texturePreloading: 0 # Performs much better with it off.
   memcardFilters: # Allows import of Xenosaga II save data.
     - "SLPS-25640"
     - "SLPS-25368"
@@ -35836,6 +35840,7 @@ SLPS-25641:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
+    texturePreloading: 0 # Performs much better with it off.
   memcardFilters:
     - "SLPS-25640"
     - "SLPS-25368"
@@ -43820,6 +43825,7 @@ SLUS-21389:
     autoFlush: 1
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows.
     roundSprite: 2 # Fixes font artifacts.
+    texturePreloading: 0 # Performs much better with it off.
   memcardFilters: # Allows import of Xenosaga II save data.
     - "SLUS-21389"
     - "SLUS-20892"
@@ -43948,6 +43954,7 @@ SLUS-21417:
     autoFlush: 1
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows.
     roundSprite: 2 # Fixes font artifacts.
+    texturePreloading: 0 # Performs much better with it off.
   memcardFilters:
     - "SLUS-21389"
     - "SLUS-20892"
