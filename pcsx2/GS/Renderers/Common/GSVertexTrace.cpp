@@ -27,9 +27,7 @@ GSVertexTrace::GSVertexTrace(const GSState* state, bool provoking_vertex_first)
 	memset(&m_alpha, 0, sizeof(m_alpha));
 
 	#define InitUpdate3(P, IIP, TME, FST, COLOR) \
-	m_fmm[COLOR][FST][TME][IIP][P] = \
-		provoking_vertex_first ? &GSVertexTrace::FindMinMax<P, IIP, TME, FST, COLOR, true> : \
-                                 &GSVertexTrace::FindMinMax<P, IIP, TME, FST, COLOR, false>;
+		m_fmm[COLOR][FST][TME][IIP][P] = GetFMM<P, IIP, TME, FST, COLOR>(provoking_vertex_first);
 
 	#define InitUpdate2(P, IIP, TME) \
 		InitUpdate3(P, IIP, TME, 0, 0) \
@@ -151,6 +149,19 @@ void GSVertexTrace::Update(const void* vertex, const u32* index, int v_count, in
 				break;
 		}
 	}
+}
+
+template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color>
+GSVertexTrace::FindMinMaxPtr GSVertexTrace::GetFMM(bool provoking_vertex_first)
+{
+	constexpr bool real_fst = tme ? fst : false;
+	constexpr bool provoking_vertex_first_class = primclass == GS_LINE_CLASS || primclass == GS_TRIANGLE_CLASS;
+	const bool swap = provoking_vertex_first_class && !iip && provoking_vertex_first;
+
+	if (swap)
+		return &GSVertexTrace::FindMinMax<primclass, iip, tme, real_fst, color, true>;
+	else
+		return &GSVertexTrace::FindMinMax<primclass, iip, tme, real_fst, color, false>;
 }
 
 template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color, bool flat_swapped>
