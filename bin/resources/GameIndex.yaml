@@ -8690,6 +8690,11 @@ SLED-53732:
 SLED-53745:
   name: "Total Overdose [Demo]"
   region: "PAL-M5"
+SLED-53770:
+  name: "Sims 2, The [Demo]"
+  region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned textures
 SLED-53845:
   name: "Matrix, The - Path of Neo [Demo]"
   region: "PAL-E"
@@ -43273,6 +43278,8 @@ SLUS-21265:
   name: "Sims 2, The"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned textures
 SLUS-21266:
   name: "NASCAR '06 - Total Team Control"
   region: "NTSC-U"
@@ -47041,6 +47048,8 @@ SLUS-29172:
 SLUS-29173:
   name: "Sims 2, The [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned textures
 SLUS-29174:
   name: "Namco Transmission Demo Disc Vol. 3.1"
   region: "NTSC-U"
