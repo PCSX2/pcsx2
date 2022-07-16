@@ -337,6 +337,7 @@ void main()
 #define PS_BLEND_B 0
 #define PS_BLEND_C 0
 #define PS_BLEND_D 0
+#define PS_FIXED_ONE_A 0
 #define PS_PABE 0
 #define PS_DITHER 0
 #define PS_ZCLAMP 0
@@ -1162,6 +1163,12 @@ void main()
 	#endif
 
   // Must be done before alpha correction
+
+  // AA (Fixed one) will output a coverage of 1.0 as alpha
+#if PS_FIXED_ONE_A
+   C.a = 128.0f;
+#endif
+
 #if (PS_BLEND_C == 1 && PS_CLR_HW > 3)
   vec4 RT = trunc(subpassLoad(RtSampler) * 255.0f + 0.1f);
   float alpha_blend = (PS_DFMT == FMT_24) ? 1.0f : RT.a / 128.0f;

@@ -50,6 +50,7 @@
 #define PS_BLEND_C 0
 #define PS_BLEND_D 0
 #define PS_BLEND_MIX 0
+#define PS_FIXED_ONE_A 0
 #define PS_PABE 0
 #define PS_DITHER 0
 #define PS_ZCLAMP 0
@@ -847,6 +848,13 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	}
 
 	// Must be done before alpha correction
+
+	// AA (Fixed one) will output a coverage of 1.0 as alpha
+	if (PS_FIXED_ONE_A)
+	{
+		C.a = 128.0f;
+	}
+
 	float alpha_blend;
 	if (PS_BLEND_C == 1 && PS_CLR_HW > 3)
 	{

@@ -49,6 +49,7 @@ constant uint PS_CLR_HW             [[function_constant(GSMTLConstantIndex_PS_CL
 constant bool PS_HDR                [[function_constant(GSMTLConstantIndex_PS_HDR)]];
 constant bool PS_COLCLIP            [[function_constant(GSMTLConstantIndex_PS_COLCLIP)]];
 constant bool PS_BLEND_MIX          [[function_constant(GSMTLConstantIndex_PS_BLEND_MIX)]];
+constant bool PS_FIXED_ONE_A        [[function_constant(GSMTLConstantIndex_PS_FIXED_ONE_A)]];
 constant bool PS_PABE               [[function_constant(GSMTLConstantIndex_PS_PABE)]];
 constant bool PS_NO_COLOR           [[function_constant(GSMTLConstantIndex_PS_NO_COLOR)]];
 constant bool PS_NO_COLOR1          [[function_constant(GSMTLConstantIndex_PS_NO_COLOR1)]];
@@ -811,6 +812,13 @@ struct PSMain
 		}
 
 		// Must be done before alpha correction
+
+		// AA (Fixed one) will output a coverage of 1.0 as alpha
+		if (PS_FIXED_ONE_A)
+		{
+			C.a = 128.0f;
+		}
+
 		float alpha_blend = SW_AD_TO_HW ? (PS_DFMT == FMT_24 ? 1.f : trunc(current_color.a * 255.5f) / 128.f) : (C.a / 128.f);
 
 		if (PS_DFMT == FMT_16)
