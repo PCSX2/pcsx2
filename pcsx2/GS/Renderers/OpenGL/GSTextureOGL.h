@@ -19,40 +19,26 @@
 #include "GS/Renderers/OpenGL/GLLoader.h"
 #include "common/AlignedMalloc.h"
 
-namespace PboPool
-{
-	inline void BindPbo();
-	inline void UnbindPbo();
-	inline void Sync();
-
-	inline char* Map(u32 size);
-	inline void Unmap();
-	inline uptr Offset();
-	inline void EndTransfer();
-
-	void Init();
-	void Destroy();
-} // namespace PboPool
-
 class GSTextureOGL final : public GSTexture
 {
 private:
-	GLuint m_texture_id; // the texture id
-	GLuint m_fbo_read;
-	bool m_clean;
+	GLuint m_texture_id = 0; // the texture id
+	GLuint m_fbo_read = 0;
+	bool m_clean = false;
 
 	// Avoid alignment constrain
 	//GSVector4i m_r;
-	int m_r_x;
-	int m_r_y;
-	int m_r_w;
-	int m_r_h;
-	int m_layer;
+	int m_r_x = 0;
+	int m_r_y = 0;
+	int m_r_w = 0;
+	int m_r_h = 0;
+	int m_layer = 0;
+	u32 m_map_offset = 0;
 
 	// internal opengl format/type/alignment
-	GLenum m_int_format;
-	GLenum m_int_type;
-	u32 m_int_shift;
+	GLenum m_int_format = 0;
+	GLenum m_int_type = 0;
+	u32 m_int_shift = 0;
 
 public:
 	explicit GSTextureOGL(Type type, int width, int height, int levels, Format format, GLuint fbo_read);

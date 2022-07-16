@@ -22,15 +22,9 @@
 #include "common/HashCombine.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GSTextureOGL.h"
-#include "GSUniformBufferOGL.h"
 #include "GLState.h"
 #include "GLLoader.h"
 #include "GS/GS.h"
-
-#ifdef ENABLE_OGL_DEBUG_MEM_BW
-extern u64 g_real_texture_upload_byte;
-extern u64 g_vertex_upload_byte;
-#endif
 
 class GSDepthStencilOGL
 {
@@ -207,19 +201,15 @@ public:
 		}
 	};
 
-	static int m_shader_inst;
-	static int m_shader_reg;
-
 private:
-	static FILE* m_debug_gl_file;
-
 	// Place holder for the GLSL shader code (to avoid useless reload)
 	std::string m_shader_common_header;
 	std::string m_shader_tfx_vgs;
 	std::string m_shader_tfx_fs;
 
-	GLuint m_fbo; // frame buffer container
-	GLuint m_fbo_read; // frame buffer container only for reading
+	GLuint m_fbo = 0; // frame buffer container
+	GLuint m_fbo_read = 0; // frame buffer container only for reading
+	GLuint m_fbo_write = 0;	// frame buffer container only for writing
 
 	std::unique_ptr<GL::StreamBuffer> m_vertex_stream_buffer;
 	std::unique_ptr<GL::StreamBuffer> m_index_stream_buffer;
@@ -274,20 +264,12 @@ private:
 		GL::Program sharpen_ps;
 	} m_cas;
 
-	struct
-	{
-		u16 last_query = 0;
-		GLuint timer_query[1 << 16] = {};
-
-		GLuint timer() { return timer_query[last_query]; }
-	} m_profiler;
-
 	GLuint m_ps_ss[1 << 8];
 	GSDepthStencilOGL* m_om_dss[1 << 5] = {};
 	std::unordered_map<ProgramSelector, GL::Program, ProgramSelectorHash> m_programs;
 	GL::ShaderCache m_shader_cache;
 
-	GLuint m_palette_ss;
+	GLuint m_palette_ss = 0;
 
 	GSHWDrawConfig::VSConstantBuffer m_vs_cb_cache;
 	GSHWDrawConfig::PSConstantBuffer m_ps_cb_cache;
@@ -314,10 +296,10 @@ public:
 	GSDeviceOGL();
 	virtual ~GSDeviceOGL();
 
-	void GenerateProfilerData();
-
 	// Used by OpenGL, so the same calling convention is required.
 	static void APIENTRY DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar* gl_message, const void* userParam);
+
+	static GL::StreamBuffer* GetTextureUploadBuffer();
 
 	bool Create() override;
 

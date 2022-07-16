@@ -30,13 +30,6 @@
 
 //#define ONLY_LINES
 
-// TODO port those value into PerfMon API
-#ifdef ENABLE_OGL_DEBUG_MEM_BW
-u64 g_real_texture_upload_byte = 0;
-u64 g_vertex_upload_byte = 0;
-u64 g_uniform_upload_byte = 0;
-#endif
-
 static constexpr u32 g_vs_cb_index        = 1;
 static constexpr u32 g_ps_cb_index        = 0;
 
@@ -44,33 +37,15 @@ static constexpr u32 VERTEX_BUFFER_SIZE = 32 * 1024 * 1024;
 static constexpr u32 INDEX_BUFFER_SIZE = 16 * 1024 * 1024;
 static constexpr u32 VERTEX_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024;
 static constexpr u32 FRAGMENT_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024;
+static constexpr u32 TEXTURE_UPLOAD_BUFFER_SIZE = 128 * 1024 * 1024;
 
-int   GSDeviceOGL::m_shader_inst = 0;
-int   GSDeviceOGL::m_shader_reg  = 0;
-FILE* GSDeviceOGL::m_debug_gl_file = NULL;
+static std::unique_ptr<GL::StreamBuffer> s_texture_upload_buffer;
 
-GSDeviceOGL::GSDeviceOGL()
-	: m_fbo(0)
-	, m_fbo_read(0)
-	, m_palette_ss(0)
-{
-	// Reset the debug file
-#ifdef ENABLE_OGL_DEBUG
-	m_debug_gl_file = fopen("GS_opengl_debug.txt", "w");
-#endif
-}
+GSDeviceOGL::GSDeviceOGL() = default;
 
 GSDeviceOGL::~GSDeviceOGL()
 {
-#ifdef ENABLE_OGL_DEBUG
-	if (m_debug_gl_file)
-	{
-		fclose(m_debug_gl_file);
-		m_debug_gl_file = NULL;
-	}
-#endif
-
-	// Clean vertex buffer state
+	s_texture_upload_buffer.reset();
 	if (m_vertex_array_object)
 		glDeleteVertexArrays(1, &m_vertex_array_object);
 	m_vertex_stream_buffer.reset();
@@ -86,6 +61,7 @@ GSDeviceOGL::~GSDeviceOGL()
 	// Clean various opengl allocation
 	glDeleteFramebuffers(1, &m_fbo);
 	glDeleteFramebuffers(1, &m_fbo_read);
+	glDeleteFramebuffers(1, &m_fbo_write);
 
 	// Delete HW FX
 	m_vertex_uniform_stream_buffer.reset();
@@ -98,91 +74,6 @@ GSDeviceOGL::~GSDeviceOGL()
 
 	for (GSDepthStencilOGL* ds : m_om_dss)
 		delete ds;
-
-	PboPool::Destroy();
-}
-
-void GSDeviceOGL::GenerateProfilerData()
-{
-	if (m_profiler.last_query < 3)
-	{
-		glDeleteQueries(1 << 16, m_profiler.timer_query);
-		return;
-	}
-
-	// Wait latest quey to get valid result
-	GLuint available = 0;
-	while (!available)
-	{
-		glGetQueryObjectuiv(m_profiler.timer(), GL_QUERY_RESULT_AVAILABLE, &available);
-	}
-
-	GLuint64 time_start = 0;
-	GLuint64 time_end = 0;
-	std::vector<double> times;
-	constexpr double ms = 0.000001;
-
-	const int replay = theApp.GetConfigI("linux_replay");
-	const int first_query = replay > 1 ? m_profiler.last_query / replay : 0;
-
-	glGetQueryObjectui64v(m_profiler.timer_query[first_query], GL_QUERY_RESULT, &time_start);
-	for (u32 q = first_query + 1; q < m_profiler.last_query; q++)
-	{
-		glGetQueryObjectui64v(m_profiler.timer_query[q], GL_QUERY_RESULT, &time_end);
-		u64 t = time_end - time_start;
-		times.push_back((double)t * ms);
-
-		time_start = time_end;
-	}
-
-	// Latest value is often silly, just drop it
-	times.pop_back();
-
-	glDeleteQueries(1 << 16, m_profiler.timer_query);
-
-	const double frames = times.size();
-	double mean = 0.0;
-	double sd = 0.0;
-
-	auto minmax_time = std::minmax_element(times.begin(), times.end());
-
-	for (auto t : times)
-		mean += t;
-	mean = mean / frames;
-
-	for (auto t : times)
-		sd += pow(t - mean, 2);
-	sd = sqrt(sd / frames);
-
-	u32 time_repartition[16] = {0};
-	for (auto t : times)
-	{
-		size_t slot = std::min<size_t>(t / 2.0, std::size(time_repartition) - 1);
-		time_repartition[slot]++;
-	}
-
-	fprintf(stderr, "\nPerformance Profile for %.0f frames:\n", frames);
-	fprintf(stderr, "Min  %4.2f ms\t(%4.2f fps)\n", *minmax_time.first, 1000.0 / *minmax_time.first);
-	fprintf(stderr, "Mean %4.2f ms\t(%4.2f fps)\n", mean, 1000.0 / mean);
-	fprintf(stderr, "Max  %4.2f ms\t(%4.2f fps)\n", *minmax_time.second, 1000.0 / *minmax_time.second);
-	fprintf(stderr, "SD   %4.2f ms\n", sd);
-	fprintf(stderr, "\n");
-	fprintf(stderr, "Frame Repartition\n");
-	for (u32 i = 0; i < std::size(time_repartition); i++)
-	{
-		fprintf(stderr, "%3u ms => %3u ms\t%4u\n", 2 * i, 2 * (i + 1), time_repartition[i]);
-	}
-
-	FILE* csv = fopen("GS_profile.csv", "w");
-	if (csv)
-	{
-		for (size_t i = 0; i < times.size(); i++)
-		{
-			fprintf(csv, "%zu,%lf\n", i, times[i]);
-		}
-
-		fclose(csv);
-	}
 }
 
 GSTexture* GSDeviceOGL::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
@@ -196,11 +87,13 @@ bool GSDeviceOGL::Create()
 	if (!GSDevice::Create())
 		return false;
 
-	if (g_host_display->GetRenderAPI() != RenderAPI::OpenGL)
+	const RenderAPI render_api = g_host_display->GetRenderAPI();
+	if (render_api != RenderAPI::OpenGL && render_api != RenderAPI::OpenGLES)
 		return false;
 
 	// Check openGL requirement as soon as possible so we can switch to another
 	// renderer/device
+	GLLoader::is_gles = (render_api == RenderAPI::OpenGLES);
 	if (!GLLoader::check_gl_requirements())
 		return false;
 
@@ -227,18 +120,29 @@ bool GSDeviceOGL::Create()
 	m_features.provoking_vertex_last = true;
 	m_features.dxt_textures = GLAD_GL_EXT_texture_compression_s3tc;
 	m_features.bptc_textures = GLAD_GL_VERSION_4_2 || GLAD_GL_ARB_texture_compression_bptc || GLAD_GL_EXT_texture_compression_bptc;
-	m_features.prefer_new_textures = false;
+	m_features.prefer_new_textures = GLLoader::is_gles;
 	m_features.framebuffer_fetch = GLLoader::found_framebuffer_fetch;
 	m_features.dual_source_blend = GLLoader::has_dual_source_blend && !GSConfig.DisableDualSourceBlend;
+	m_features.clip_control = GLLoader::has_clip_control;
 	m_features.stencil_buffer = true;
-	// Wide line support in GL is deprecated as of 3.1, so we will just do it in the Geometry Shader.
-	m_features.line_expand = false;
 
 	GLint point_range[2] = {};
 	glGetIntegerv(GL_ALIASED_POINT_SIZE_RANGE, point_range);
 	m_features.point_expand = (point_range[0] <= GSConfig.UpscaleMultiplier && point_range[1] >= GSConfig.UpscaleMultiplier);
 
-	Console.WriteLn("Using %s for point expansion.", m_features.point_expand ? "hardware" : "geometry shaders");
+	if (GLLoader::is_gles)
+	{
+		GLint line_range[2] = {};
+		glGetIntegerv(GL_ALIASED_LINE_WIDTH_RANGE, line_range);
+		m_features.line_expand = (line_range[0] <= static_cast<GLint>(GSConfig.UpscaleMultiplier) && line_range[1] >= static_cast<GLint>(GSConfig.UpscaleMultiplier));
+	}
+	else
+	{
+		m_features.line_expand = false;
+	}
+
+	Console.WriteLn("Using %s for point expansion and %s for line expansion.",
+		m_features.point_expand ? "hardware" : "geometry shaders", m_features.line_expand ? "hardware" : "geometry shaders");
 
 	{
 		auto shader = Host::ReadResourceFileToString("shaders/opengl/common_header.glsl");
@@ -257,18 +161,27 @@ bool GSDeviceOGL::Create()
 	// ****************************************************************
 	// Debug helper
 	// ****************************************************************
-#ifdef ENABLE_OGL_DEBUG
 	if (GSConfig.UseDebugDevice)
 	{
-		glDebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+		if (!GLLoader::is_gles)
+		{
+			glDebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
 
-		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
-		// Useless info message on Nvidia driver
-		GLuint ids[] = {0x20004};
-		glDebugMessageControl(GL_DEBUG_SOURCE_API_ARB, GL_DEBUG_TYPE_OTHER_ARB, GL_DONT_CARE, std::size(ids), ids, false);
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
+			// Useless info message on Nvidia driver
+			GLuint ids[] = { 0x20004 };
+			glDebugMessageControl(GL_DEBUG_SOURCE_API_ARB, GL_DEBUG_TYPE_OTHER_ARB, GL_DONT_CARE, std::size(ids), ids, false);
+		}
+		else if (GLAD_GL_KHR_debug)
+		{
+			glDebugMessageCallbackKHR((GLDEBUGPROC)DebugOutputToFile, NULL);
+			glDebugMessageControlKHR(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
+		}
+
+		// Uncomment synchronous if you want callstacks which match where the error occurred.
+		glEnable(GL_DEBUG_OUTPUT);
+		//glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 	}
-#endif
 
 	// WARNING it must be done after the control setup (at least on MESA)
 	GL_PUSH("GSDeviceOGL::Create");
@@ -287,16 +200,11 @@ bool GSDeviceOGL::Create()
 		OMSetFBO(0);
 
 		glGenFramebuffers(1, &m_fbo_read);
+		glGenFramebuffers(1, &m_fbo_write);
 		// Always read from the first buffer
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-
-		// Some timers to help profiling
-		if (GLLoader::in_replayer)
-		{
-			glCreateQueries(GL_TIMESTAMP, 1 << 16, m_profiler.timer_query);
-		}
 	}
 
 	// ****************************************************************
@@ -379,7 +287,7 @@ bool GSDeviceOGL::Create()
 		{
 			const char* name = shaderName(static_cast<ShaderConvert>(i));
 			const std::string macro_sel = (static_cast<ShaderConvert>(i) == ShaderConvert::RGBA_TO_8I) ?
-                                              fmt::format("#define PS_SCALE_FACTOR {}\n", GSConfig.UpscaleMultiplier) :
+                                              fmt::format("#define PS_SCALE_FACTOR {:.8f}f\n", GSConfig.UpscaleMultiplier) :
                                               std::string();
 			const std::string ps(GetShaderSource(name, GL_FRAGMENT_SHADER, m_shader_common_header, *convert_glsl, macro_sel));
 			if (!m_shader_cache.GetProgram(&m_convert.ps[i], m_convert.vs, {}, ps))
@@ -518,15 +426,13 @@ bool GSDeviceOGL::Create()
 	{
 		GL_PUSH("GSDeviceOGL::Rasterization");
 
-#ifdef ONLY_LINES
-		glLineWidth(5.0);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-#else
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-#endif
+		if (!GLLoader::is_gles)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glDisable(GL_CULL_FACE);
 		glEnable(GL_SCISSOR_TEST);
-		glDisable(GL_MULTISAMPLE);
+		if (!GLLoader::is_gles)
+			glDisable(GL_MULTISAMPLE);
+
 		glDisable(GL_DITHER); // Honestly I don't know!
 	}
 
@@ -560,7 +466,7 @@ bool GSDeviceOGL::Create()
 	// This extension allow FS depth to range from -1 to 1. So
 	// gl_position.z could range from [0, 1]
 	// Change depth convention
-	if (GLExtension::Has("GL_ARB_clip_control"))
+	if (GLLoader::has_clip_control)
 		glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
 	// ****************************************************************
@@ -572,15 +478,19 @@ bool GSDeviceOGL::Create()
 	// ****************************************************************
 	// Pbo Pool allocation
 	// ****************************************************************
+	if (!GLLoader::buggy_pbo)
 	{
-		GL_PUSH("GSDeviceOGL::PBO");
-
 		// Mesa seems to use it to compute the row length. In our case, we are
 		// tightly packed so don't bother with this parameter and set it to the
 		// minimum alignment (1 byte)
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-		PboPool::Init();
+		s_texture_upload_buffer = GL::StreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, TEXTURE_UPLOAD_BUFFER_SIZE);
+		if (!s_texture_upload_buffer)
+		{
+			Console.Error("Failed to create texture upload buffer. Using slow path.");
+			GLLoader::buggy_pbo = true;
+		}
 	}
 
 	// ****************************************************************
@@ -592,7 +502,7 @@ bool GSDeviceOGL::Create()
 		// Full vram, remove a small margin for others buffer
 		glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, vram);
 	}
-	else if (GLExtension::Has("GL_NVX_gpu_memory_info"))
+	else if (GLAD_GL_NVX_gpu_memory_info)
 	{
 		// GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX <= give full memory
 		// Available vram
@@ -649,12 +559,6 @@ bool GSDeviceOGL::CreateTextureFX()
 		m_om_dss[key] = CreateDepthStencil(OMDepthStencilSelector(key));
 	}
 
-	if (GLLoader::in_replayer)
-	{
-		glQueryCounter(m_profiler.timer(), GL_TIMESTAMP);
-		m_profiler.last_query++;
-	}
-
 	return true;
 }
 
@@ -662,6 +566,12 @@ void GSDeviceOGL::ResetAPIState()
 {
 	if (GLState::point_size)
 		glDisable(GL_PROGRAM_POINT_SIZE);
+	if (GLState::line_width != 1.0f)
+		glLineWidth(1.0f);
+
+	// clear out DSB
+	glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
+	glDisable(GL_BLEND);
 }
 
 void GSDeviceOGL::RestoreAPIState()
@@ -714,6 +624,8 @@ void GSDeviceOGL::RestoreAPIState()
 
 	if (GLState::point_size)
 		glEnable(GL_PROGRAM_POINT_SIZE);
+	if (GLState::line_width != 1.0f)
+		glLineWidth(GLState::line_width);
 
 	// Force UBOs to be reuploaded, we don't know what else was bound there.
 	std::memset(&m_vs_cb_cache, 0xFF, sizeof(m_vs_cb_cache));
@@ -770,7 +682,17 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 	OMSetFBO(m_fbo);
 	OMAttachRt(T);
 
-	glClearBufferfv(GL_COLOR, 0, c.v);
+	if (T->IsIntegerFormat())
+	{
+		if (T->IsUnsignedFormat())
+			glClearBufferuiv(GL_COLOR, 0, c.U32);
+		else
+			glClearBufferiv(GL_COLOR, 0, c.I32);
+	}
+	else
+	{
+		glClearBufferfv(GL_COLOR, 0, c.v);
+	}
 
 	OMSetColorMaskState(OMColorMaskSelector(old_color_mask));
 
@@ -899,10 +821,10 @@ GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 	const int anisotropy = GSConfig.MaxAnisotropy;
 	if (anisotropy > 1 && sel.aniso)
 	{
-		if (GLExtension::Has("GL_ARB_texture_filter_anisotropic"))
-			glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY, (float)anisotropy);
-		else if (GLExtension::Has("GL_EXT_texture_filter_anisotropic"))
-			glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)anisotropy);
+		if (GLAD_GL_ARB_texture_filter_anisotropic)
+			glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY, static_cast<float>(anisotropy));
+		else if (GLAD_GL_EXT_texture_filter_anisotropic)
+			glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, static_cast<float>(anisotropy));
 	}
 
 	return sampler;
@@ -963,27 +885,63 @@ std::string GSDeviceOGL::GetShaderSource(const std::string_view& entry, GLenum t
 
 std::string GSDeviceOGL::GenGlslHeader(const std::string_view& entry, GLenum type, const std::string_view& macro)
 {
-	std::string header = "#version 330 core\n";
+	std::string header;
 
-	// Need GL version 420
-	header += "#extension GL_ARB_shading_language_420pack: require\n";
-	// Need GL version 410
-	header += "#extension GL_ARB_separate_shader_objects: require\n";
-	if (m_features.framebuffer_fetch)
+	if (GLLoader::is_gles)
 	{
-		if (GLAD_GL_EXT_shader_framebuffer_fetch)
-			header += "#extension GL_EXT_shader_framebuffer_fetch : require\n";
-		else if (GLAD_GL_ARM_shader_framebuffer_fetch)
-			header += "#extension GL_ARM_shader_framebuffer_fetch : require\n";
-	}
+		if (GLAD_GL_ES_VERSION_3_2)
+			header = "#version 320 es\n";
+		else if (GLAD_GL_ES_VERSION_3_1)
+			header = "#version 310 es\n";
 
-	if (GLLoader::found_GL_ARB_gpu_shader5)
-		header += "#extension GL_ARB_gpu_shader5 : enable\n";
+		if (GLAD_GL_EXT_blend_func_extended)
+			header += "#extension GL_EXT_blend_func_extended : require\n";
+		if (GLAD_GL_ARB_blend_func_extended)
+			header += "#extension GL_ARB_blend_func_extended : require\n";
+		if (m_features.framebuffer_fetch)
+		{
+			if (GLAD_GL_EXT_shader_framebuffer_fetch)
+				header += "#extension GL_EXT_shader_framebuffer_fetch : require\n";
+			else if (GLAD_GL_ARM_shader_framebuffer_fetch)
+				header += "#extension GL_ARM_shader_framebuffer_fetch : require\n";
+		}
+
+		header += "precision highp float;\n";
+		header += "precision highp int;\n";
+		header += "precision highp sampler2D;\n";
+		if (GLAD_GL_ES_VERSION_3_1)
+			header += "precision highp sampler2DMS;\n";
+		if (GLAD_GL_ES_VERSION_3_2)
+			header += "precision highp usamplerBuffer;\n";
+
+		if (!GLAD_GL_EXT_blend_func_extended && !GLAD_GL_ARB_blend_func_extended)
+			header += "#define DISABLE_DUAL_SOURCE\n";
+	}
+	else
+	{
+		header = "#version 330 core\n";
+
+		// Need GL version 420
+		header += "#extension GL_ARB_shading_language_420pack: require\n";
+		// Need GL version 410
+		header += "#extension GL_ARB_separate_shader_objects: require\n";
+
+		if (m_features.framebuffer_fetch && GLAD_GL_EXT_shader_framebuffer_fetch)
+			header += "#extension GL_EXT_shader_framebuffer_fetch : require\n";
+
+		if (GLLoader::found_GL_ARB_gpu_shader5)
+			header += "#extension GL_ARB_gpu_shader5 : enable\n";
+	}
 
 	if (m_features.framebuffer_fetch)
 		header += "#define HAS_FRAMEBUFFER_FETCH 1\n";
 	else
 		header += "#define HAS_FRAMEBUFFER_FETCH 0\n";
+
+	if (GLLoader::has_clip_control)
+		header += "#define HAS_CLIP_CONTROL 1\n";
+	else
+		header += "#define HAS_CLIP_CONTROL 0\n";
 
 	if (GLLoader::vendor_id_amd || GLLoader::vendor_id_intel)
 		header += "#define BROKEN_DRIVER as_usual\n";
@@ -992,7 +950,10 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view& entry, GLenum typ
 	// AMD/nvidia define it to 0
 	// intel window don't define it
 	// intel linux refuse to define it
-	header += "#define pGL_ES 0\n";
+	if (GLLoader::is_gles)
+		header += "#define pGL_ES 1\n";
+	else
+		header += "#define pGL_ES 0\n";
 
 	// Allow to puts several shader in 1 files
 	switch (type)
@@ -1030,7 +991,7 @@ std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 		+ fmt::format("#define VS_IIP {}\n", static_cast<u32>(sel.iip))
 		+ fmt::format("#define VS_POINT_SIZE {}\n", static_cast<u32>(sel.point_size));
 	if (sel.point_size)
-		macro += fmt::format("#define VS_POINT_SIZE_VALUE {}\n", GSConfig.UpscaleMultiplier);
+		macro += fmt::format("#define VS_POINT_SIZE_VALUE {:.8f}f\n", GSConfig.UpscaleMultiplier);
 
 	std::string src = GenGlslHeader("vs_main", GL_VERTEX_SHADER, macro);
 	src += m_shader_common_header;
@@ -1102,7 +1063,7 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_FIXED_ONE_A {}\n", sel.fixed_one_a)
 		+ fmt::format("#define PS_PABE {}\n", sel.pabe)
 		+ fmt::format("#define PS_SCANMSK {}\n", sel.scanmsk)
-		+ fmt::format("#define PS_SCALE_FACTOR {}\n", GSConfig.UpscaleMultiplier)
+		+ fmt::format("#define PS_SCALE_FACTOR {:.8f}f\n", GSConfig.UpscaleMultiplier)
 		+ fmt::format("#define PS_NO_COLOR {}\n", sel.no_color)
 		+ fmt::format("#define PS_NO_COLOR1 {}\n", sel.no_color1)
 		+ fmt::format("#define PS_NO_ABLEND {}\n", sel.no_ablend)
@@ -1169,12 +1130,36 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-	ASSERT(GLExtension::Has("GL_ARB_copy_image") && glCopyImageSubData);
-	glCopyImageSubData(sid, GL_TEXTURE_2D,
-		0, r.x, r.y, 0,
-		did, GL_TEXTURE_2D,
-		0, destX, destY, 0,
-		r.width(), r.height(), 1);
+	if (GLAD_GL_VERSION_4_3 || GLAD_GL_ARB_copy_image)
+	{
+		glCopyImageSubData(sid, GL_TEXTURE_2D, 0, r.x, r.y, 0, did, GL_TEXTURE_2D,
+			0, destX, destY, 0, r.width(), r.height(), 1);
+	}
+	else if (GLAD_GL_EXT_copy_image)
+	{
+		glCopyImageSubDataEXT(sid, GL_TEXTURE_2D, 0, r.x, r.y, 0, did, GL_TEXTURE_2D,
+			0, destX, destY, 0, r.width(), r.height(), 1);
+	}
+	else if (GLAD_GL_OES_copy_image)
+	{
+		glCopyImageSubDataOES(sid, GL_TEXTURE_2D, 0, r.x, r.y, 0, did, GL_TEXTURE_2D,
+			0, destX, destY, 0, r.width(), r.height(), 1);
+	}
+	else
+	{
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo_write);
+		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sid, 0);
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, did, 0);
+
+		const int w = r.width(), h = r.height();
+		glDisable(GL_SCISSOR_TEST);
+		glBlitFramebuffer(r.x, r.y, r.x + w, r.y + h, destX + r.x, destY + r.y, destX + r.x + w, destY + r.y + h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		glEnable(GL_SCISSOR_TEST);
+
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLState::fbo);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	}
 }
 
 void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
@@ -1407,7 +1392,7 @@ void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	if (!m_fxaa.ps.IsValid())
 	{
 		// Needs ARB_gpu_shader5 for gather.
-		if (!GLLoader::found_GL_ARB_gpu_shader5)
+		if (!GLLoader::is_gles && !GLLoader::found_GL_ARB_gpu_shader5)
 			return;
 
 		std::string fxaa_macro = "#define FXAA_GLSL_130 1\n";
@@ -1559,7 +1544,7 @@ void GSDeviceOGL::ClearSamplerCache()
 bool GSDeviceOGL::CreateCASPrograms()
 {
 	// Image load store and GLSL 420pack is core in GL4.2, no need to check.
-	m_features.cas_sharpening = GLAD_GL_VERSION_4_2 && GLAD_GL_ARB_compute_shader;
+	m_features.cas_sharpening = (GLAD_GL_VERSION_4_2 && GLAD_GL_ARB_compute_shader) || GLAD_GL_ES_VERSION_3_2;
 	if (!m_features.cas_sharpening)
 	{
 		Console.Warning("Compute shaders not supported, CAS is unavailable.");
@@ -1574,6 +1559,12 @@ bool GSDeviceOGL::CreateCASPrograms()
 	}
 
 	const char* header =
+		GLLoader::is_gles ?
+		"#version 320 es\n"
+		"precision highp float;\n"
+		"precision highp int;\n"
+		"precision highp sampler2D;\n"
+		"precision highp image2D;\n" :
 		"#version 420\n"
 		"#extension GL_ARB_compute_shader : require\n";
 	const char* sharpen_params[2] = {
@@ -1710,6 +1701,15 @@ void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_fac
 	{
 		if (GLState::blend)
 		{
+			// make sure we're not using dual source
+			if (GLState::f_sRGB == GL_SRC1_ALPHA || GLState::f_sRGB == GL_ONE_MINUS_SRC1_ALPHA ||
+				GLState::f_dRGB == GL_SRC1_ALPHA || GLState::f_dRGB == GL_ONE_MINUS_SRC1_ALPHA)
+			{
+				glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
+				GLState::f_sRGB = GL_ONE;
+				GLState::f_dRGB = GL_ZERO;
+			}
+
 			GLState::blend = false;
 			glDisable(GL_BLEND);
 		}
@@ -1798,12 +1798,13 @@ void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel)
 	OMSetDepthStencilState(m_om_dss[dssel.key]);
 }
 
-static GSDeviceOGL::VSSelector convertSel(const GSHWDrawConfig::VSSelector sel)
+static GSDeviceOGL::VSSelector convertSel(const GSHWDrawConfig::VSSelector sel, const GSHWDrawConfig::Topology topology)
 {
+	// Mali requires gl_PointSize written when rasterizing points. The spec seems to suggest this is okay.
 	GSDeviceOGL::VSSelector out;
 	out.int_fst = !sel.fst;
 	out.iip = sel.iip;
-	out.point_size = sel.point_size;
+	out.point_size = sel.point_size || (GLLoader::is_gles && topology == GSHWDrawConfig::Topology::Point);
 	return out;
 }
 
@@ -1916,7 +1917,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 
 	ProgramSelector psel;
-	psel.vs = convertSel(config.vs);
+	psel.vs = convertSel(config.vs, config.topology);
 	psel.ps.key_hi = config.ps.key_hi;
 	psel.ps.key_lo = config.ps.key_lo;
 	psel.gs.key = 0;
@@ -1936,7 +1937,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	SetupPipeline(psel);
 
 	// additional non-pipeline config stuff
-	const bool point_size_enabled = config.vs.point_size;
+	const bool point_size_enabled = config.vs.point_size && !GLLoader::is_gles;
 	if (GLState::point_size != point_size_enabled)
 	{
 		if (point_size_enabled)
@@ -1944,6 +1945,12 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		else
 			glDisable(GL_PROGRAM_POINT_SIZE);
 		GLState::point_size = point_size_enabled;
+	}
+	const float line_width = config.line_expand ? static_cast<float>(GSConfig.UpscaleMultiplier) : 1.0f;
+	if (GLState::line_width != line_width)
+	{
+		GLState::line_width = line_width;
+		glLineWidth(line_width);
 	}
 
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
@@ -2115,7 +2122,6 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 {
 	std::string message(gl_message, gl_length >= 0 ? gl_length : strlen(gl_message));
 	std::string type, severity, source;
-	static int sev_counter = 0;
 	switch (gl_type)
 	{
 		case GL_DEBUG_TYPE_ERROR_ARB               : type = "Error"; break;
@@ -2130,7 +2136,7 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 	}
 	switch (gl_severity)
 	{
-		case GL_DEBUG_SEVERITY_HIGH_ARB   : severity = "High"; sev_counter++; break;
+		case GL_DEBUG_SEVERITY_HIGH_ARB   : severity = "High"; break;
 		case GL_DEBUG_SEVERITY_MEDIUM_ARB : severity = "Mid"; break;
 		case GL_DEBUG_SEVERITY_LOW_ARB    : severity = "Low"; break;
 		default:
@@ -2153,43 +2159,16 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 		default                                  : source = "???"; break;
 	}
 
-#ifdef _DEBUG
 	// Don't spam noisy information on the terminal
-	if (gl_severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+	if (gl_severity != GL_DEBUG_SEVERITY_NOTIFICATION && gl_source != GL_DEBUG_SOURCE_APPLICATION)
 	{
 		Console.Error("T:%s\tID:%d\tS:%s\t=> %s", type.c_str(), GSState::s_n, severity.c_str(), message.c_str());
 	}
-#else
-	// Print nouveau shader compiler info
-	if (GSState::s_n == 0)
-	{
-		int t, local, gpr, inst, byte;
-		const int status = sscanf(message.c_str(), "type: %d, local: %d, gpr: %d, inst: %d, bytes: %d",
-			&t, &local, &gpr, &inst, &byte);
-		if (status == 5)
-		{
-			m_shader_inst += inst;
-			m_shader_reg += gpr;
-			fprintf(stderr, "T:%s\t\tS:%s\t=> %s\n", type.c_str(), severity.c_str(), message.c_str());
-		}
-	}
-#endif
+}
 
-#ifdef ENABLE_OGL_DEBUG
-	if (m_debug_gl_file)
-		fprintf(m_debug_gl_file, "T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), GSState::s_n, severity.c_str(), message.c_str());
-
-	if (sev_counter >= 5)
-	{
-		// Close the file to flush the content on disk before exiting.
-		if (m_debug_gl_file)
-		{
-			fclose(m_debug_gl_file);
-			m_debug_gl_file = NULL;
-		}
-		ASSERT(0);
-	}
-#endif
+GL::StreamBuffer* GSDeviceOGL::GetTextureUploadBuffer()
+{
+	return s_texture_upload_buffer.get();
 }
 
 void GSDeviceOGL::PushDebugGroup(const char* fmt, ...)
