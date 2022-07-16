@@ -16,27 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GLLoader.h"
 #include "GS/GS.h"
-#include <unordered_set>
 #include "Host.h"
-
-namespace GLExtension
-{
-
-	static std::unordered_set<std::string> s_extensions;
-
-	bool Has(const std::string& ext)
-	{
-		return !!s_extensions.count(ext);
-	}
-
-	void Set(const std::string& ext, bool v)
-	{
-		if (v)
-			s_extensions.insert(ext);
-		else
-			s_extensions.erase(ext);
-	}
-} // namespace GLExtension
 
 namespace ReplaceGL
 {
@@ -56,7 +36,6 @@ namespace ReplaceGL
 
 } // namespace ReplaceGL
 
-#ifdef _WIN32
 namespace Emulate_DSA
 {
 	// Texture entry point
@@ -108,12 +87,6 @@ namespace Emulate_DSA
 	}
 
 	// Misc entry point
-	// (only purpose is to have a consistent API otherwise it is useless)
-	void APIENTRY CreateProgramPipelines(GLsizei n, GLuint* pipelines)
-	{
-		glGenProgramPipelines(n, pipelines);
-	}
-
 	void APIENTRY CreateSamplers(GLsizei n, GLuint* samplers)
 	{
 		glGenSamplers(n, samplers);
@@ -130,12 +103,10 @@ namespace Emulate_DSA
 		glCompressedTextureSubImage2D = CompressedTextureSubImage;
 		glGetTextureImage = GetTexureImage;
 		glTextureParameteri = TextureParameteri;
-
-		glCreateProgramPipelines = CreateProgramPipelines;
+		glGenerateTextureMipmap = GenerateTextureMipmap;
 		glCreateSamplers = CreateSamplers;
 	}
 } // namespace Emulate_DSA
-#endif
 
 namespace GLLoader
 {
@@ -143,53 +114,18 @@ namespace GLLoader
 	bool vendor_id_nvidia = false;
 	bool vendor_id_intel = false;
 	bool mesa_driver = false;
-	bool in_replayer = false;
+	bool buggy_pbo = false;
 
+	bool is_gles = false;
 	bool has_dual_source_blend = false;
+	bool has_clip_control = true;
 	bool found_framebuffer_fetch = false;
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	// DX11 GPU
-	bool found_GL_ARB_gpu_shader5 = false;             // Require IvyBridge
+	bool found_GL_ARB_gpu_shader5 = false; // Require IvyBridge
 	bool found_GL_ARB_texture_barrier = false;
 
-	static bool mandatory(const std::string& ext)
-	{
-		if (!GLExtension::Has(ext))
-		{
-			Host::ReportFormattedErrorAsync("GS", "ERROR: %s is NOT SUPPORTED\n", ext.c_str());
-			return false;
-		}
-
-		return true;
-	}
-
-	static bool optional(const std::string& name)
-	{
-		bool found = GLExtension::Has(name);
-
-		if (!found)
-		{
-			DevCon.Warning("INFO: %s is NOT SUPPORTED", name.c_str());
-		}
-		else
-		{
-			DevCon.WriteLn("INFO: %s is available", name.c_str());
-		}
-
-		std::string opt("override_");
-		opt += name;
-
-		if (theApp.GetConfigI(opt.c_str()) != -1)
-		{
-			found = theApp.GetConfigB(opt.c_str());
-			fprintf(stderr, "Override %s detection (%s)\n", name.c_str(), found ? "Enabled" : "Disabled");
-			GLExtension::Set(name, found);
-		}
-
-		return found;
-	}
-
-	bool check_gl_version(int major, int minor)
+	static bool check_gl_version()
 	{
 		const char* vendor = (const char*)glGetString(GL_VENDOR);
 		if (strstr(vendor, "Advanced Micro Devices") || strstr(vendor, "ATI Technologies Inc.") || strstr(vendor, "ATI"))
@@ -209,103 +145,97 @@ namespace GLLoader
 		{
 			found_geometry_shader = GSConfig.OverrideGeometryShaders != 0 &&
 									(GLAD_GL_VERSION_3_2 || GL_ARB_geometry_shader4 || GSConfig.OverrideGeometryShaders == 1);
-			GLExtension::Set("GL_ARB_geometry_shader4", found_geometry_shader);
-			fprintf(stderr, "Overriding geometry shaders detection\n");
+			Console.Warning("Overriding geometry shaders detection to %s", found_geometry_shader ? "true" : "false");
 		}
 
 		GLint major_gl = 0;
 		GLint minor_gl = 0;
 		glGetIntegerv(GL_MAJOR_VERSION, &major_gl);
 		glGetIntegerv(GL_MINOR_VERSION, &minor_gl);
-		if ((major_gl < major) || (major_gl == major && minor_gl < minor))
+		if (!GLAD_GL_VERSION_3_3 && !GLAD_GL_ES_VERSION_3_1)
 		{
-			Host::ReportFormattedErrorAsync("GS", "OpenGL %d.%d is not supported. Only OpenGL %d.%d\n was found", major, minor, major_gl, minor_gl);
+			Host::ReportFormattedErrorAsync("GS", "OpenGL is not supported. Only OpenGL %d.%d\n was found", major_gl, minor_gl);
 			return false;
 		}
 
 		return true;
 	}
 
-	bool check_gl_supported_extension()
+	static bool check_gl_supported_extension()
 	{
-		int max_ext = 0;
-		glGetIntegerv(GL_NUM_EXTENSIONS, &max_ext);
-		for (GLint i = 0; i < max_ext; i++)
+		if (GLAD_GL_VERSION_3_3 && !GLAD_GL_ARB_shading_language_420pack)
 		{
-			std::string ext{(const char*)glGetStringi(GL_EXTENSIONS, i)};
-			GLExtension::Set(ext);
-			//fprintf(stderr, "DEBUG ext: %s\n", ext.c_str());
-		}
-
-		// Mandatory for both renderer
-		bool ok = true;
-		{
-			// GL4.1
-			ok = ok && mandatory("GL_ARB_separate_shader_objects");
-			// GL4.2
-			ok = ok && mandatory("GL_ARB_shading_language_420pack");
-			ok = ok && mandatory("GL_ARB_texture_storage");
-			// GL4.3
-			ok = ok && mandatory("GL_KHR_debug");
-			// GL4.4
-			ok = ok && mandatory("GL_ARB_buffer_storage");
-		}
-
-		// Only for HW renderer
-		if (GSConfig.UseHardwareRenderer())
-		{
-			ok = ok && mandatory("GL_ARB_copy_image");
-			ok = ok && mandatory("GL_ARB_clip_control");
-		}
-		if (!ok)
+			Host::ReportFormattedErrorAsync("GS",
+				"GL_ARB_shading_language_420pack is not supported, this is required for the OpenGL renderer.");
 			return false;
-
-		// Extra
-		{
-			// GL4.0
-			found_GL_ARB_gpu_shader5 = optional("GL_ARB_gpu_shader5");
-			// GL4.5
-			optional("GL_ARB_direct_state_access");
-			// Mandatory for the advance HW renderer effect. Unfortunately Mesa LLVMPIPE/SWR renderers doesn't support this extension.
-			// Rendering might be corrupted but it could be good enough for test/virtual machine.
-			found_GL_ARB_texture_barrier = optional("GL_ARB_texture_barrier");
-
-			has_dual_source_blend = GLAD_GL_VERSION_3_2 || GLAD_GL_ARB_blend_func_extended;
-			found_framebuffer_fetch = GLAD_GL_EXT_shader_framebuffer_fetch || GLAD_GL_ARM_shader_framebuffer_fetch;
-			if (found_framebuffer_fetch && GSConfig.DisableFramebufferFetch)
-			{
-				Console.Warning("Framebuffer fetch was found but is disabled. This will reduce performance.");
-				found_framebuffer_fetch = false;
-			}
 		}
 
-		if (!GLExtension::Has("GL_ARB_viewport_array"))
+		// GLES doesn't have ARB_clip_control.
+		has_clip_control = GLAD_GL_ARB_clip_control;
+		if (!has_clip_control && !is_gles)
+		{
+			Host::AddOSDMessage("GL_ARB_clip_control is not supported, this will cause rendering issues.",
+				Host::OSD_ERROR_DURATION);
+		}
+
+		found_GL_ARB_gpu_shader5 = GLAD_GL_ARB_gpu_shader5;
+		found_GL_ARB_texture_barrier = GLAD_GL_ARB_texture_barrier;
+
+		has_dual_source_blend = GLAD_GL_VERSION_3_2 || GLAD_GL_ARB_blend_func_extended;
+		found_framebuffer_fetch = GLAD_GL_EXT_shader_framebuffer_fetch || GLAD_GL_ARM_shader_framebuffer_fetch;
+		if (found_framebuffer_fetch && GSConfig.DisableFramebufferFetch)
+		{
+			Console.Warning("Framebuffer fetch was found but is disabled. This will reduce performance.");
+			found_framebuffer_fetch = false;
+		}
+
+		if (!GLAD_GL_ARB_viewport_array)
 		{
 			glScissorIndexed = ReplaceGL::ScissorIndexed;
 			glViewportIndexedf = ReplaceGL::ViewportIndexedf;
 			Console.Warning("GL_ARB_viewport_array is not supported! Function pointer will be replaced");
 		}
 
-		if (!GLExtension::Has("GL_ARB_texture_barrier"))
+		if (!GLAD_GL_ARB_texture_barrier)
 		{
 			glTextureBarrier = ReplaceGL::TextureBarrier;
-			Console.Warning("GL_ARB_texture_barrier is not supported! Blending emulation will not be supported");
+			Host::AddOSDMessage("GL_ARB_texture_barrier is not supported, blending will not be accurate.",
+				Host::OSD_ERROR_DURATION);
 		}
 
-#ifdef _WIN32
-		// Thank you Intel for not providing support of basic features on your IGPUs.
-		if (!GLExtension::Has("GL_ARB_direct_state_access"))
+		if (!GLAD_GL_ARB_direct_state_access)
 		{
+			Console.Warning("GL_ARB_direct_state_access is not supported, this will reduce performance.");
 			Emulate_DSA::Init();
 		}
-#endif
+
+		if (is_gles)
+		{
+			has_dual_source_blend = GLAD_GL_EXT_blend_func_extended || GLAD_GL_ARB_blend_func_extended;
+			if (!has_dual_source_blend && !found_framebuffer_fetch)
+			{
+				Host::AddOSDMessage("Both dual source blending and framebuffer fetch are missing, things will be broken.",
+					Host::OSD_ERROR_DURATION);
+			}
+		}
+		else
+		{
+			// Core in GL3.2, so everything supports it.
+			has_dual_source_blend = true;
+		}
+
+		// Don't use PBOs when we don't have ARB_buffer_storage, orphaning buffers probably ends up worse than just
+		// using the normal texture update routines and letting the driver take care of it.
+		GLLoader::buggy_pbo = !GLAD_GL_VERSION_4_4 && !GLAD_GL_ARB_buffer_storage && !GLAD_GL_EXT_buffer_storage;
+		if (GLLoader::buggy_pbo)
+			Console.Warning("Not using PBOs for texture uploads because buffer_storage is unavailable.");
 
 		return true;
 	}
 
 	bool check_gl_requirements()
 	{
-		if (!check_gl_version(3, 3))
+		if (!check_gl_version())
 			return false;
 
 		if (!check_gl_supported_extension())

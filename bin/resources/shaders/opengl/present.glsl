@@ -73,10 +73,11 @@ void ps_copy()
 #ifdef ps_filter_scanlines
 vec4 ps_scanlines(uint i)
 {
-	vec4 mask[2] =
-		{
-			vec4(1, 1, 1, 0),
-			vec4(0, 0, 0, 0)};
+	vec4 mask[2] = vec4[2]
+	(
+		vec4(1, 1, 1, 0),
+		vec4(0, 0, 0, 0)
+	);
 
 	return sample_c() * clamp((mask[i] + 0.5f), 0.0f, 1.0f);
 }
@@ -360,7 +361,7 @@ vec4 LottesCRTPass()
 	//flipped y axis in opengl
 	vec2 fragcoord = vec2(gl_FragCoord.x, u_target_resolution.y - gl_FragCoord.y) - u_target_rect.xy;
 	vec4 color;
-	vec2 inSize = u_target_resolution - (2 * u_target_rect.xy);
+	vec2 inSize = u_target_resolution - (2.0 * u_target_rect.xy);
 
 	vec2 pos = Warp(fragcoord.xy / inSize);
 

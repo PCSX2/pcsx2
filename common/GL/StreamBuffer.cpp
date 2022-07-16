@@ -65,6 +65,11 @@ namespace GL
 				glBufferSubData(m_target, 0, used_size, m_cpu_buffer.data());
 			}
 
+			u32 GetChunkSize() const override
+			{
+				return m_size;
+			}
+
 			static std::unique_ptr<StreamBuffer> Create(GLenum target, u32 size)
 			{
 				glGetError();
@@ -113,6 +118,11 @@ namespace GL
 
 				glBindBuffer(m_target, m_buffer_id);
 				glBufferData(m_target, used_size, m_cpu_buffer.data(), GL_STREAM_DRAW);
+			}
+
+			u32 GetChunkSize() const override
+			{
+				return m_size;
 			}
 
 			static std::unique_ptr<StreamBuffer> Create(GLenum target, u32 size)
@@ -224,6 +234,11 @@ namespace GL
 					EnsureSyncsWaitedForOffset(size);
 					m_used_block_index = 0;
 				}
+			}
+
+			u32 GetChunkSize() const override
+			{
+				return m_size / NUM_SYNC_POINTS;
 			}
 
 			u32 m_position = 0;

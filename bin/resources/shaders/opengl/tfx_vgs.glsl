@@ -9,7 +9,7 @@ layout(location = 5) in uint  i_z;
 layout(location = 6) in uvec2 i_uv;
 layout(location = 7) in vec4  i_f;
 
-#if !defined(BROKEN_DRIVER) && defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts
+#if !defined(BROKEN_DRIVER) && (pGL_ES || defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts)
 layout(location = 0)
 #endif
 out SHADER
@@ -59,7 +59,15 @@ void vs_main()
     p.xy = vec2(i_p) - vec2(0.05f, 0.05f);
     p.xy = p.xy * VertexScale - VertexOffset;
     p.w = 1.0f;
+
+#if HAS_CLIP_CONTROL
     p.z = float(z) * exp_min32;
+#else
+    // GLES doesn't support ARB_clip_control, so remap it to -1..1. We also reduce the range from 32 bits
+    // to 24 bits, which means some games with very large depth ranges will not render correctly. But,
+    // for most, it's okay, and really, the best we can do.
+    p.z = min(float(z) * exp2(-23.0f), 2.0f) - 1.0f;
+#endif
 
     gl_Position = p;
 
@@ -77,7 +85,7 @@ void vs_main()
 
 #ifdef GEOMETRY_SHADER
 
-#if !defined(BROKEN_DRIVER) && defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts
+#if !defined(BROKEN_DRIVER) && (pGL_ES || defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts)
 layout(location = 0)
 #endif
 in SHADER
@@ -91,7 +99,7 @@ in SHADER
     #endif
 } GSin[];
 
-#if !defined(BROKEN_DRIVER) && defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts
+#if !defined(BROKEN_DRIVER) && (pGL_ES || defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts)
 layout(location = 0)
 #endif
 out SHADER
@@ -173,7 +181,7 @@ void gs_main()
     // Potentially there is faster math
     vec2 line_vector = normalize(rt_p.xy - lt_p.xy);
     vec2 line_normal = vec2(line_vector.y, -line_vector.x);
-    vec2 line_width  = (line_normal * PointSize) / 2;
+    vec2 line_width  = (line_normal * PointSize) / 2.0f;
 
     lt_p.xy -= line_width;
     rt_p.xy -= line_width;

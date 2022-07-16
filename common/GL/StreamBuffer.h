@@ -46,6 +46,9 @@ namespace GL
 		virtual MappingResult Map(u32 alignment, u32 min_size) = 0;
 		virtual void Unmap(u32 used_size) = 0;
 
+		/// Returns the minimum granularity of blocks which sync objects will be created around.
+		virtual u32 GetChunkSize() const = 0;
+
 		static std::unique_ptr<StreamBuffer> Create(GLenum target, u32 size);
 
 	protected:

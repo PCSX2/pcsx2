@@ -1997,9 +1997,6 @@
     <ClInclude Include="GS\Renderers\HW\GSVertexHW.h">
       <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
     </ClInclude>
-    <ClInclude Include="GS\Renderers\OpenGL\GSUniformBufferOGL.h">
-      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
-    </ClInclude>
     <ClInclude Include="GS\Renderers\Common\GSRenderer.h">
       <Filter>System\Ps2\GS\Renderers\Common</Filter>
     </ClInclude>

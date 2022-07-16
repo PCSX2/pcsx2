@@ -868,7 +868,6 @@
     <ClInclude Include="GS\Renderers\SW\GSTextureSW.h" />
     <ClInclude Include="GS\GSThread.h" />
     <ClInclude Include="GS\GSThread_CXX11.h" />
-    <ClInclude Include="GS\Renderers\OpenGL\GSUniformBufferOGL.h" />
     <ClInclude Include="GS\GSUtil.h" />
     <ClInclude Include="GS\GSVector.h" />
     <ClInclude Include="GS\GSVector4i.h" />
