@@ -8554,6 +8554,8 @@ SLED-50117:
   region: "PAL-E"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
+  gsHWFixes:
+    texturePreloading: 1 # Fixes micro stuttering.
 SLED-50359:
   name: "Devil May Cry [Demo]"
   region: "PAL-E"
@@ -9597,16 +9599,22 @@ SLES-50383:
   compat: 5
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
+  gsHWFixes:
+    texturePreloading: 1 # Fixes micro stuttering.
 SLES-50384:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-I"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
+  gsHWFixes:
+    texturePreloading: 1 # Fixes micro stuttering.
 SLES-50385:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-S"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
+  gsHWFixes:
+    texturePreloading: 1 # Fixes micro stuttering.
 SLES-50386:
   name: "Crash Bandicoot - Wrath of Cortex"
   region: "PAL-M6"
@@ -21162,6 +21170,7 @@ SLES-82009:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
+    texturePreloading: 1 # Fixes micro stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLES-82010:
   name: "Metal Gear Solid 2, Document of"
@@ -22450,6 +22459,7 @@ SLKA-35001:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
+    texturePreloading: 1 # Fixes micro stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLKA-35003:
   name: "Sakura Taisen - Atsuki Chishioni"
@@ -25537,6 +25547,8 @@ SLPM-65077:
   region: "NTSC-J"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
+  gsHWFixes:
+    texturePreloading: 1 # Fixes micro stuttering.
   memcardFilters:
     - "SLPM-65078"
     - "SLPM-65077"
@@ -25545,6 +25557,8 @@ SLPM-65078:
   region: "NTSC-J"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
+  gsHWFixes:
+    texturePreloading: 1 # Fixes micro stuttering.
   memcardFilters:
     - "SLPM-65078"
     - "SLPM-65077"
@@ -30299,6 +30313,8 @@ SLPM-66503:
   region: "NTSC-J"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
+  gsHWFixes:
+    texturePreloading: 1 # Fixes micro stuttering.
 SLPM-66504:
   name: "Onimusha 2 [Mega Hits]"
   region: "NTSC-J"
@@ -31338,6 +31354,8 @@ SLPM-66792:
   region: "NTSC-J"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
+  gsHWFixes:
+    texturePreloading: 1 # Fixes micro stuttering.
 SLPM-66794:
   name: "Metal Gear Solid 3 - Snake Eater [20th Anniversary Edition]"
   region: "NTSC-J"
@@ -31955,6 +31973,7 @@ SLPM-67002:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
+    texturePreloading: 1 # Fixes micro stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLPM-67003:
   name: "Sakura Taisen - Atsuki Chishioni"
@@ -31978,6 +31997,7 @@ SLPM-67008:
   name: "Metal Gear Solid 2 - Substance [Konami Dendou Collection]"
   region: "NTSC-J"
   gsHWFixes:
+    texturePreloading: 1 # Fixes micro stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLPM-67009:
   name: "Sakura Taisen V - Saraba Itoshiki Hito Yo"
@@ -38054,6 +38074,8 @@ SLUS-20144:
   compat: 5
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
+  gsHWFixes:
+    texturePreloading: 1 # Fixes micro stuttering.
 SLUS-20145:
   name: "Ring of Red"
   region: "NTSC-U"
@@ -39853,6 +39875,7 @@ SLUS-20554:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
+    texturePreloading: 1 # Fixes micro stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLUS-20555:
   name: "Reel Fishing 3"
@@ -46571,6 +46594,8 @@ SLUS-29003:
   compat: 5
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
+  gsHWFixes:
+    texturePreloading: 1 # Fixes micro stuttering.
 SLUS-29004:
   name: "Unison & Dead or Alive 2 Hardcore [Demo]"
   region: "NTSC-U"
