@@ -2739,7 +2739,8 @@ void GSState::GrowVertexBuffer()
 	const size_t maxcount = std::max<size_t>(m_vertex.maxcount * 3 / 2, 10000);
 
 	GSVertex* vertex = (GSVertex*)_aligned_malloc(sizeof(GSVertex) * maxcount, 32);
-	u32* index = (u32*)_aligned_malloc(sizeof(u32) * maxcount * 3, 32); // worst case is slightly less than vertex number * 3
+	// Worst case index list is a list of points with vs expansion, 6 indices per point
+	u32* index = (u32*)_aligned_malloc(sizeof(u32) * maxcount * 6, 32);
 
 	if (vertex == NULL || index == NULL)
 	{

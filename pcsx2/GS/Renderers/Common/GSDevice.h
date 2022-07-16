@@ -246,6 +246,13 @@ struct alignas(16) GSHWDrawConfig
 		Triangle,
 		Sprite,
 	};
+	enum class VSExpand: u8
+	{
+		None,
+		Point,
+		Line,
+		Sprite,
+	};
 #pragma pack(push, 1)
 	struct GSSelector
 	{
@@ -272,7 +279,8 @@ struct alignas(16) GSHWDrawConfig
 				u8 tme : 1;
 				u8 iip : 1;
 				u8 point_size : 1;		///< Set when points need to be expanded without geometry shader.
-				u8 _free : 1;
+				VSExpand expand : 2;
+				u8 _free : 2;
 			};
 			u8 key;
 		};
@@ -690,6 +698,7 @@ public:
 	{
 		bool broken_point_sampler : 1; ///< Issue with AMD cards, see tfx shader for details
 		bool geometry_shader      : 1; ///< Supports geometry shader
+		bool vs_expand            : 1; ///< Supports expanding points/lines/sprites in the vertex shader
 		bool image_load_store     : 1; ///< Supports atomic min and max on images (for use with prim tracking destination alpha algorithm)
 		bool texture_barrier      : 1; ///< Supports sampling rt and hopefully texture barrier
 		bool provoking_vertex_last: 1; ///< Supports using the last vertex in a primitive as the value for flat shading.

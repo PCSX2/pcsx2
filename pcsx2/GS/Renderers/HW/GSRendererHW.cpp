@@ -382,6 +382,68 @@ void GSRendererHW::Lines2Sprites()
 	}
 }
 
+template <GSHWDrawConfig::VSExpand Expand>
+void GSRendererHW::ExpandIndices()
+{
+	size_t process_count = (m_index.tail + 3) / 4 * 4;
+	if (Expand == GSHWDrawConfig::VSExpand::Point)
+	{
+		// Make sure we have space for writing off the end slightly
+		while (process_count > m_vertex.maxcount)
+			GrowVertexBuffer();
+	}
+
+	u32 expansion_factor = Expand == GSHWDrawConfig::VSExpand::Point ? 6 : 3;
+	m_index.tail *= expansion_factor;
+	GSVector4i* end = reinterpret_cast<GSVector4i*>(m_index.buff);
+	GSVector4i* read = reinterpret_cast<GSVector4i*>(m_index.buff + process_count);
+	GSVector4i* write = reinterpret_cast<GSVector4i*>(m_index.buff + process_count * expansion_factor);
+	while (read > end)
+	{
+		read -= 1;
+		write -= expansion_factor;
+		switch (Expand)
+		{
+			case GSHWDrawConfig::VSExpand::None:
+				break;
+			case GSHWDrawConfig::VSExpand::Point:
+			{
+				constexpr GSVector4i low0 = GSVector4i::cxpr(0, 1, 2, 1);
+				constexpr GSVector4i low1 = GSVector4i::cxpr(2, 3, 0, 1);
+				constexpr GSVector4i low2 = GSVector4i::cxpr(2, 1, 2, 3);
+				GSVector4i in = read->sll32(2);
+				write[0] = in.xxxx() | low0;
+				write[1] = in.xxyy() | low1;
+				write[2] = in.yyyy() | low2;
+				write[3] = in.zzzz() | low0;
+				write[4] = in.zzww() | low1;
+				write[5] = in.wwww() | low2;
+				break;
+			}
+			case GSHWDrawConfig::VSExpand::Line:
+			{
+				constexpr GSVector4i low0 = GSVector4i::cxpr(0, 1, 2, 1);
+				constexpr GSVector4i low1 = GSVector4i::cxpr(2, 3, 0, 1);
+				constexpr GSVector4i low2 = GSVector4i::cxpr(2, 1, 2, 3);
+				GSVector4i in = read->sll32(2);
+				write[0] = in.xxyx() | low0;
+				write[1] = in.yyzz() | low1;
+				write[2] = in.wzww() | low2;
+				break;
+			}
+			case GSHWDrawConfig::VSExpand::Sprite:
+			{
+				constexpr GSVector4i low = GSVector4i::cxpr(0, 1, 0, 1);
+				GSVector4i in = read->sll32(1);
+				write[0] = in.xxyx() | low;
+				write[1] = in.yyzz() | low;
+				write[2] = in.wzww() | low;
+				break;
+			}
+		}
+	}
+}
+
 void GSRendererHW::EmulateAtst(GSVector4& FogColor_AREF, u8& ps_atst, const bool pass_2)
 {
 	static const u32 inverted_atst[] = {ATST_ALWAYS, ATST_NEVER, ATST_GEQUAL, ATST_GREATER, ATST_NOTEQUAL, ATST_LESS, ATST_LEQUAL, ATST_EQUAL};
@@ -1837,6 +1899,55 @@ void GSRendererHW::Draw()
 #endif
 }
 
+/// Verifies assumptions we expect to hold about indices
+bool GSRendererHW::VerifyIndices()
+{
+	switch (m_vt.m_primclass)
+	{
+		case GS_SPRITE_CLASS:
+			if (m_index.tail % 2 != 0)
+				return false;
+			[[fallthrough]];
+		case GS_POINT_CLASS:
+			// Expect indices to be flat increasing
+			for (size_t i = 0; i < m_index.tail; i++)
+			{
+				if (m_index.buff[i] != i)
+					return false;
+			}
+			break;
+		case GS_LINE_CLASS:
+			if (m_index.tail % 2 != 0)
+				return false;
+			// Expect each line to be a pair next to each other
+			// VS expand relies on this!
+			if (g_gs_device->Features().provoking_vertex_last)
+			{
+				for (size_t i = 0; i < m_index.tail; i += 2)
+				{
+					if (m_index.buff[i] + 1 != m_index.buff[i + 1])
+						return false;
+				}
+			}
+			else
+			{
+				for (size_t i = 0; i < m_index.tail; i += 2)
+				{
+					if (m_index.buff[i] != m_index.buff[i + 1] + 1)
+						return false;
+				}
+			}
+			break;
+		case GS_TRIANGLE_CLASS:
+			if (m_index.tail % 3 != 0)
+				return false;
+			break;
+		case GS_INVALID_CLASS:
+			break;
+	}
+	return true;
+}
+
 void GSRendererHW::SetupIA(const float& sx, const float& sy)
 {
 	GL_PUSH("IA");
@@ -1849,9 +1960,14 @@ void GSRendererHW::SetupIA(const float& sx, const float& sy)
 	const bool unscale_pt_ln = !GSConfig.UserHacks_DisableSafeFeatures && (GetUpscaleMultiplier() != 1);
 	const GSDevice::FeatureSupport features = g_gs_device->Features();
 
+	ASSERT(VerifyIndices());
+
 	switch (m_vt.m_primclass)
 	{
 		case GS_POINT_CLASS:
+			m_conf.gs.topology = GSHWDrawConfig::GSTopology::Point;
+			m_conf.topology = GSHWDrawConfig::Topology::Point;
+			m_conf.indices_per_prim = 1;
 			if (unscale_pt_ln)
 			{
 				if (features.point_expand)
@@ -1863,14 +1979,21 @@ void GSRendererHW::SetupIA(const float& sx, const float& sy)
 					m_conf.gs.expand = true;
 					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
 				}
+				else if (features.vs_expand)
+				{
+					m_conf.vs.expand = GSHWDrawConfig::VSExpand::Point;
+					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
+					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
+					m_conf.indices_per_prim = 6;
+					ExpandIndices<GSHWDrawConfig::VSExpand::Point>();
+				}
 			}
-
-			m_conf.gs.topology = GSHWDrawConfig::GSTopology::Point;
-			m_conf.topology = GSHWDrawConfig::Topology::Point;
-			m_conf.indices_per_prim = 1;
 			break;
 
 		case GS_LINE_CLASS:
+			m_conf.gs.topology = GSHWDrawConfig::GSTopology::Line;
+			m_conf.topology = GSHWDrawConfig::Topology::Line;
+			m_conf.indices_per_prim = 2;
 			if (unscale_pt_ln)
 			{
 				if (features.line_expand)
@@ -1882,11 +2005,15 @@ void GSRendererHW::SetupIA(const float& sx, const float& sy)
 					m_conf.gs.expand = true;
 					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
 				}
+				else if (features.vs_expand)
+				{
+					m_conf.vs.expand = GSHWDrawConfig::VSExpand::Line;
+					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
+					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
+					m_conf.indices_per_prim = 6;
+					ExpandIndices<GSHWDrawConfig::VSExpand::Line>();
+				}
 			}
-
-			m_conf.gs.topology = GSHWDrawConfig::GSTopology::Line;
-			m_conf.topology = GSHWDrawConfig::Topology::Line;
-			m_conf.indices_per_prim = 2;
 			break;
 
 		case GS_SPRITE_CLASS:
@@ -1914,6 +2041,13 @@ void GSRendererHW::SetupIA(const float& sx, const float& sy)
 
 				m_conf.topology = GSHWDrawConfig::Topology::Line;
 				m_conf.indices_per_prim = 2;
+			}
+			else if (features.vs_expand && !m_vt.m_accurate_stq)
+			{
+				m_conf.topology = GSHWDrawConfig::Topology::Triangle;
+				m_conf.vs.expand = GSHWDrawConfig::VSExpand::Sprite;
+				m_conf.indices_per_prim = 6;
+				ExpandIndices<GSHWDrawConfig::VSExpand::Sprite>();
 			}
 			else
 			{
