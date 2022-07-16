@@ -57,6 +57,17 @@ struct GSMTLInterlacePSUniform
 	vector_float2 ZrH;
 };
 
+struct GSMTLMainVertex
+{
+	vector_float2 st;
+	vector_uchar4 rgba;
+	float q;
+	vector_ushort2 xy;
+	uint z;
+	vector_ushort2 uv;
+	unsigned char fog;
+};
+
 struct GSMTLMainVSUniform
 {
 	vector_float2 vertex_scale;
@@ -111,6 +122,14 @@ enum GSMTLAttributes
 	GSMTLAttributeIndexF,
 };
 
+enum class GSMTLExpandType : unsigned char
+{
+	None = 0,
+	Point = 1,
+	Line = 2,
+	Sprite = 3,
+};
+
 enum GSMTLFnConstants
 {
 	GSMTLConstantIndex_SCALING_FACTOR,
@@ -118,6 +137,7 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_FST,
 	GSMTLConstantIndex_IIP,
 	GSMTLConstantIndex_VS_POINT_SIZE,
+	GSMTLConstantIndex_VS_EXPAND_TYPE,
 	GSMTLConstantIndex_PS_AEM_FMT,
 	GSMTLConstantIndex_PS_PAL_FMT,
 	GSMTLConstantIndex_PS_DFMT,
