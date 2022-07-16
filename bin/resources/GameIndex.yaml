@@ -8679,7 +8679,7 @@ SLED-53770:
   name: "Sims 2, The [Demo]"
   region: "PAL-E"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned textures
+    halfPixelOffset: 1 # Fixes misaligned textures.
 SLED-53845:
   name: "Matrix, The - Path of Neo [Demo]"
   region: "PAL-E"
@@ -16738,7 +16738,7 @@ SLES-53718:
   region: "PAL-M10"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned textures
+    halfPixelOffset: 1 # Fixes misaligned textures.
 SLES-53722:
   name: "Call of Duty 2 - Big Red One [Collector's Edition]"
   region: "PAL-E"
@@ -43223,7 +43223,7 @@ SLUS-21265:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned textures
+    halfPixelOffset: 1 # Fixes misaligned textures.
 SLUS-21266:
   name: "NASCAR '06 - Total Team Control"
   region: "NTSC-U"
@@ -46992,7 +46992,7 @@ SLUS-29173:
   name: "Sims 2, The [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned textures
+    halfPixelOffset: 1 # Fixes misaligned textures.
 SLUS-29174:
   name: "Namco Transmission Demo Disc Vol. 3.1"
   region: "NTSC-U"
