@@ -60,11 +60,8 @@ body:
       label: Operating System
       options:
       - Windows 11
-      - Windows 10 (32bit)
       - Windows 10 (64bit)
-      - Windows 8.1 (32bit)
       - Windows 8.1 (64bit)
-      - Linux (32bit) - Specify Distro Below
       - Linux (64bit) - Specify Distro Below
       - macOS (Monteray)
       - macOS (BigSur)
