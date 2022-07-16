@@ -144,6 +144,7 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_HDR,
 	GSMTLConstantIndex_PS_COLCLIP,
 	GSMTLConstantIndex_PS_BLEND_MIX,
+	GSMTLConstantIndex_PS_FIXED_ONE_A,
 	GSMTLConstantIndex_PS_PABE,
 	GSMTLConstantIndex_PS_NO_COLOR,
 	GSMTLConstantIndex_PS_NO_COLOR1,

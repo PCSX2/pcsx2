@@ -903,6 +903,12 @@ void ps_main()
 #endif
 
     // Must be done before alpha correction
+
+   // AA (Fixed one) will output a coverage of 1.0 as alpha
+#if PS_FIXED_ONE_A
+   C.a = 128.0f;
+#endif
+
 #if (PS_BLEND_C == 1 && PS_CLR_HW > 3)
 #if HAS_FRAMEBUFFER_FETCH
     vec4 RT = trunc(LAST_FRAG_COLOR * 255.0f + 0.1f);

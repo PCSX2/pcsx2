@@ -1978,6 +1978,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_BLEND_C", sel.blend_c);
 	AddMacro(ss, "PS_BLEND_D", sel.blend_d);
 	AddMacro(ss, "PS_BLEND_MIX", sel.blend_mix);
+	AddMacro(ss, "PS_FIXED_ONE_A", sel.fixed_one_a);
 	AddMacro(ss, "PS_IIP", sel.iip);
 	AddMacro(ss, "PS_SHUFFLE", sel.shuffle);
 	AddMacro(ss, "PS_READ_BA", sel.read_ba);

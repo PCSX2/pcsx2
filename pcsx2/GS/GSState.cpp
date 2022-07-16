@@ -1721,10 +1721,7 @@ inline bool GSState::TestDrawChanged()
 			prim_mask &= ~0x7;
 		else
 			return true;
-
-		if (GSConfig.UseHardwareRenderer() && GSUtil::GetPrimClass(m_env.PRIM.PRIM) == GS_TRIANGLE_CLASS)
-			prim_mask &= ~0x80; // Mask out AA1.
-
+			
 		if ((m_env.PRIM.U32[0] ^ m_prev_env.PRIM.U32[0]) & prim_mask)
 			return true;
 
