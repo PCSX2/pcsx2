@@ -24,6 +24,9 @@
 #include "fmt/format.h"
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
+#include <QtCore/QFuture>
+#include <QtCore/QFutureWatcher>
+#include <QtConcurrent/QtConcurrent>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QIcon>
 #include <QtGui/QPainter>
@@ -34,6 +37,7 @@ static constexpr std::array<const char*, GameListModel::Column_Count> s_column_n
 static constexpr int COVER_ART_WIDTH = 350;
 static constexpr int COVER_ART_HEIGHT = 512;
 static constexpr int COVER_ART_SPACING = 32;
+static constexpr int MIN_COVER_CACHE_SIZE = 256;
 
 static int DPRScale(int size, float dpr)
 {
@@ -125,31 +129,111 @@ const char* GameListModel::getColumnName(Column col)
 
 GameListModel::GameListModel(QObject* parent /* = nullptr */)
 	: QAbstractTableModel(parent)
+	, m_cover_pixmap_cache(MIN_COVER_CACHE_SIZE)
 {
 	loadCommonImages();
 	setColumnDisplayNames();
 }
 GameListModel::~GameListModel() = default;
 
+void GameListModel::refreshImages()
+{
+	loadCommonImages();
+	refresh();
+}
+
 void GameListModel::setCoverScale(float scale)
 {
 	if (m_cover_scale == scale)
 		return;
 
-	m_cover_pixmap_cache.clear();
+	m_cover_pixmap_cache.Clear();
 	m_cover_scale = scale;
+	m_cover_scale_counter.fetch_add(1, std::memory_order_release);
+	m_loading_pixmap = QPixmap(getCoverArtWidth(), getCoverArtHeight());
+	m_loading_pixmap.fill(QColor(0, 0, 0, 0));
 }
 
 void GameListModel::refreshCovers()
 {
-	m_cover_pixmap_cache.clear();
+	m_cover_pixmap_cache.Clear();
 	refresh();
 }
 
-void GameListModel::refreshImages()
+void GameListModel::updateCacheSize(int width, int height)
 {
-	loadCommonImages();
-	refresh();
+	// This is a bit conversative, since it doesn't consider padding, but better to be over than under.
+	const int cover_width = getCoverArtWidth();
+	const int cover_height = getCoverArtHeight();
+	const int num_columns = ((width + (cover_width - 1)) / cover_width);
+	const int num_rows = ((height + (cover_height - 1)) / cover_height);
+	m_cover_pixmap_cache.SetMaxCapacity(static_cast<int>(std::max(num_columns * num_rows, MIN_COVER_CACHE_SIZE)));
+}
+
+void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
+{
+	// Why this counter: Every time we change the cover scale, we increment the counter variable. This way if the scale is changed
+	// while there's outstanding jobs, the old jobs won't proceed (at the wrong size), or get added into the grid.
+	const u32 counter = m_cover_scale_counter.load(std::memory_order_acquire);
+
+	QFuture<QPixmap> future = QtConcurrent::run([this, path = ge->path, title = ge->title, serial = ge->serial, counter]()->QPixmap {
+		QPixmap image;
+		if (m_cover_scale_counter.load(std::memory_order_acquire) == counter)
+		{
+			const std::string cover_path(GameList::GetCoverImagePath(path, serial, title));
+			if (!cover_path.empty())
+			{
+				const float dpr = qApp->devicePixelRatio();
+				image = QPixmap(QString::fromStdString(cover_path));
+				if (!image.isNull())
+				{
+					image.setDevicePixelRatio(dpr);
+					resizeAndPadPixmap(&image, getCoverArtWidth(), getCoverArtHeight(), dpr);
+				}
+			}
+		}
+
+		if (image.isNull())
+			image = createPlaceholderImage(m_placeholder_pixmap, getCoverArtWidth(), getCoverArtHeight(), m_cover_scale, title);
+
+		if (m_cover_scale_counter.load(std::memory_order_acquire) != counter)
+			image = {};
+
+		return image;
+	});
+
+	// Context must be 'this' so we run on the UI thread.
+	future.then(this, [this, path = ge->path, counter](QPixmap pm) {
+		if (m_cover_scale_counter.load(std::memory_order_acquire) != counter)
+			return;
+
+		m_cover_pixmap_cache.Insert(std::move(path), std::move(pm));
+		invalidateCoverForPath(path);
+	});
+}
+
+void GameListModel::invalidateCoverForPath(const std::string& path)
+{
+	// This isn't ideal, but not sure how else we can get the row, when it might change while scanning...
+	auto lock = GameList::GetLock();
+	const u32 count = GameList::GetEntryCount();
+	std::optional<u32> row;
+	for (u32 i = 0; i < count; i++)
+	{
+		if (GameList::GetEntryByIndex(i)->path == path)
+		{
+			row = i;
+			break;
+		}
+	}
+	if (!row.has_value())
+	{
+		// Game removed?
+		return;
+	}
+
+	const QModelIndex mi(index(static_cast<int>(row.value()), Column_Cover));
+	emit dataChanged(mi, mi, {Qt::DecorationRole});
 }
 
 int GameListModel::getCoverArtWidth() const
@@ -289,31 +373,14 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 
 				case Column_Cover:
 				{
-					auto it = m_cover_pixmap_cache.find(ge->path);
-					if (it != m_cover_pixmap_cache.end())
-						return it->second;
+					QPixmap* pm = m_cover_pixmap_cache.Lookup(ge->path);
+					if (pm)
+						return *pm;
 
-					QPixmap image;
-					std::string path = GameList::GetCoverImagePathForEntry(ge);
-					if (!path.empty())
-					{
-						const float dpr = qApp->devicePixelRatio();
-						image = QPixmap(QString::fromStdString(path));
-						if (!image.isNull())
-						{
-							image.setDevicePixelRatio(dpr);
-							resizeAndPadPixmap(&image, getCoverArtWidth(), getCoverArtHeight(), dpr);
-						}
-					}
-
-					if (image.isNull())
-					{
-						image = createPlaceholderImage(m_placeholder_pixmap, getCoverArtWidth(), getCoverArtHeight(), m_cover_scale,
-							ge->title);
-					}
-
-					m_cover_pixmap_cache.emplace(ge->path, image);
-					return image;
+					// We insert the placeholder into the cache, so that we don't repeatedly
+					// queue loading jobs for this game.
+					const_cast<GameListModel*>(this)->loadOrGenerateCover(ge);
+					return *m_cover_pixmap_cache.Insert(ge->path, m_loading_pixmap);
 				}
 				break;
 
@@ -478,6 +545,7 @@ void GameListModel::loadCommonImages()
 		m_compatibility_pixmaps[i].load(QStringLiteral("%1/icons/star-%2.png").arg(base_path).arg(i - 1));
 
 	m_placeholder_pixmap.load(QStringLiteral("%1/cover-placeholder.png").arg(base_path));
+	setCoverScale(1.0f);
 }
 
 void GameListModel::setColumnDisplayNames()

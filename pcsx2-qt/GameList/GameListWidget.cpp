@@ -111,6 +111,7 @@ void GameListWidget::initialize()
 	m_model = new GameListModel(this);
 	m_model->setCoverScale(Host::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", 0.45f));
 	m_model->setShowCoverTitles(Host::GetBaseBoolSettingValue("UI", "GameListShowCoverTitles", true));
+	m_model->updateCacheSize(width(), height());
 
 	m_sort_model = new GameListSortModel(m_model);
 	m_sort_model->setSourceModel(m_model);
@@ -348,10 +349,9 @@ void GameListWidget::listZoom(float delta)
 	const float new_scale = std::clamp(m_model->getCoverScale() + delta, MIN_SCALE, MAX_SCALE);
 	QtHost::SetBaseFloatSettingValue("UI", "GameListCoverArtScale", new_scale);
 	m_model->setCoverScale(new_scale);
+	m_model->updateCacheSize(width(), height());
 	updateListFont();
 	updateToolbar();
-
-	m_model->refresh();
 }
 
 void GameListWidget::gridZoomIn()
@@ -370,10 +370,9 @@ void GameListWidget::gridIntScale(int int_scale)
 
 	QtHost::SetBaseFloatSettingValue("UI", "GameListCoverArtScale", new_scale);
 	m_model->setCoverScale(new_scale);
+	m_model->updateCacheSize(width(), height());
 	updateListFont();
 	updateToolbar();
-
-	m_model->refresh();
 }
 
 void GameListWidget::refreshGridCovers()
@@ -460,6 +459,7 @@ void GameListWidget::resizeEvent(QResizeEvent* event)
 {
 	QWidget::resizeEvent(event);
 	resizeTableViewColumnsToFit();
+	m_model->updateCacheSize(width(), height());
 }
 
 void GameListWidget::resizeTableViewColumnsToFit()
