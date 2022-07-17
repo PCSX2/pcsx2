@@ -1393,7 +1393,7 @@ void MainWindow::onThemeChangedFromSettings()
 
 void MainWindow::onLoggingOptionChanged()
 {
-	Host::UpdateLogging();
+	Host::UpdateLogging(QtHost::InNoGUIMode());
 }
 
 void MainWindow::onInputRecNewActionTriggered()

@@ -18,7 +18,7 @@
 namespace Host
 {
 	/// Updates the Console handler based on the current configuration.
-	void UpdateLogging();
+	void UpdateLogging(bool disable_system_console);
 
 	/// Initializes early console logging (for printing command line arguments).
 	void InitializeEarlyConsole();
