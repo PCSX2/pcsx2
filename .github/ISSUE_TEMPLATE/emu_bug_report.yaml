@@ -54,9 +54,6 @@ body:
         Please make sure your system meets our requirements for OS version, CPU and GPU
         - [System Requirements](https://github.com/PCSX2/pcsx2#system-requirements)
 
-        We **do not** accept bug reports for **unsupported operating systems**.
-        - [For macOS Support](https://forums.pcsx2.net/Thread-Native-Mac-Testing-Build)
-
         Performance issues as a result of not meeting our hardware requirements are not valid
 
         Please read our known issues pages for AMD and Intel drivers.
@@ -78,11 +75,8 @@ body:
       label: Operating System
       options:
       - Windows 11
-      - Windows 10 (32bit)
       - Windows 10 (64bit)
-      - Windows 8.1 (32bit)
       - Windows 8.1 (64bit)
-      - Linux (32bit) - Specify Distro Below
       - Linux (64bit) - Specify Distro Below
       - macOS (Monteray)
       - macOS (BigSur)
