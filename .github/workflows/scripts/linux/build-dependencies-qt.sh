@@ -5,18 +5,18 @@ set -e
 INSTALLDIR="$HOME/deps"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
 SDL=SDL2-2.0.22
-QT=6.3.0
+QT=6.3.1
 
 mkdir -p deps-build
 cd deps-build
 
 cat > SHASUMS <<EOF
 fe7cbf3127882e3fc7259a75a0cb585620272c51745d3852ab9dd87960697f2e  $SDL.tar.gz
-b865aae43357f792b3b0a162899d9bf6a1393a55c4e5e4ede5316b157b1a0f99  qtbase-everywhere-src-$QT.tar.xz
-3164504d7e3f640439308235739b112605ab5fc9cc517ca0b28f9fb93a8db0e3  qtsvg-everywhere-src-$QT.tar.xz
-fce94688ea925782a2879347584991f854630daadba6c52aed6d93e33cd0b19c  qttools-everywhere-src-$QT.tar.xz
-e4dd4ef892a34a9514a19238f189a33ed85c76f31dcad6599ced93b1e33440b3  qttranslations-everywhere-src-6.3.0.tar.xz
-e7b567f6e43ffc5918d4aa825ce1eced66a00cb0a87133b2912ba5c1b2a02190  qtwayland-everywhere-src-$QT.tar.xz
+0a64421d9c2469c2c48490a032ab91d547017c9cc171f3f8070bc31888f24e03  qtbase-everywhere-src-$QT.tar.xz
+7b19f418e6f7b8e23344082dd04440aacf5da23c5a73980ba22ae4eba4f87df7  qtsvg-everywhere-src-$QT.tar.xz
+c412750f2aa3beb93fce5f30517c607f55daaeb7d0407af206a8adf917e126c1  qttools-everywhere-src-$QT.tar.xz
+d7bdd55e2908ded901dcc262157100af2a490bf04d31e32995f6d91d78dfdb97  qttranslations-everywhere-src-$QT.tar.xz
+6f14fea2d172a5b4170be3efcb0e58535f6605b61bcd823f6d5c9d165bb8c0f0  qtwayland-everywhere-src-$QT.tar.xz
 EOF
 
 curl -L \
@@ -62,9 +62,22 @@ cmake --build . --parallel
 cmake --install .
 cd ../../
 
-echo "Buildiong Qt Wayland..."
+echo "Building Qt Wayland..."
 tar xf "qtwayland-everywhere-src-$QT.tar.xz"
 cd "qtwayland-everywhere-src-$QT"
+# qtwayland does not build without qml/qtdeclarative in 6.3.1. Work around it.
+patch -u src/compositor/CMakeLists.txt <<EOF
+--- src/compositor/CMakeLists.txt	2022-06-08 13:44:30.000000000 +1000
++++ src/compositor/CMakeLists.txt	2022-07-17 20:05:25.461881785 +1000
+@@ -46,7 +46,6 @@
+         global/qtwaylandcompositorglobal.h
+         global/qtwaylandqmlinclude.h
+         global/qwaylandcompositorextension.cpp global/qwaylandcompositorextension.h global/qwaylandcompositorextension_p.h
+-        global/qwaylandquickextension.cpp global/qwaylandquickextension.h
+         global/qwaylandutils_p.h
+         hardware_integration/qwlclientbufferintegration.cpp hardware_integration/qwlclientbufferintegration_p.h
+         wayland_wrapper/qwlbuffermanager.cpp wayland_wrapper/qwlbuffermanager_p.h
+EOF
 mkdir build
 cd build
 cmake -G Ninja -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release ..
