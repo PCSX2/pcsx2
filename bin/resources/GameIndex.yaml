@@ -3250,6 +3250,9 @@ SCES-52124:
 SCES-52154:
   name: "EyeToy - Chat"
   region: "PAL-M11"
+SCES-52155:
+  name: "Eredita, L'"
+  region: "PAL-I"
 SCES-52156:
   name: "Ghosthunter - Hunter on the spectres"
   region: "PAL-M3"
@@ -4046,7 +4049,7 @@ SCES-54625:
   region: "PAL-M7"
 SCES-54637:
   name: "Gaelic Games - Hurling"
-  region: "PAL-M2"
+  region: "PAL-E-GA"
 SCES-54638:
   name: "Gaelic Games - Football 2"
   region: "PAL-E-GA"
@@ -9881,7 +9884,7 @@ SLES-50538:
   name: "NBA Live 2002"
   region: "PAL-S"
 SLES-50539:
-  name: "James Bond 007 - Agent Under Fire"
+  name: "007 - Agent Under Fire"
   region: "PAL-M6"
   clampModes:
     vuClampMode: 2 # Fixes corrupt textures.
@@ -11436,12 +11439,12 @@ SLES-51257:
   speedHacks:
     MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-51258:
-  name: "James Bond 007 - Nightfire"
+  name: "007 - Nightfire"
   region: "PAL-M5"
   clampModes:
     vuClampMode: 2 # Fixes polygon clipping in driving missions.
 SLES-51260:
-  name: "James Bond 007 - Nightfire"
+  name: "007 - Nightfire"
   region: "PAL-G-S"
   compat: 5
   clampModes:
@@ -12924,7 +12927,7 @@ SLES-52002:
   name: "Rogue Ops"
   region: "PAL-M6"
 SLES-52005:
-  name: "James Bond 007 - Everything or Nothing"
+  name: "007 - Everything or Nothing"
   region: "PAL-M5"
   compat: 5
 SLES-52008:
@@ -13012,7 +13015,7 @@ SLES-52045:
   region: "PAL-E"
   compat: 5
 SLES-52046:
-  name: "James Bond 007 - Everything or Nothing (Alles oder Nichts)"
+  name: "007 - Alles oder Nichts"
   region: "PAL-G"
   compat: 5
 SLES-52047:
@@ -16323,7 +16326,7 @@ SLES-53552:
   name: "SSX On Tour"
   region: "PAL-M8"
 SLES-53553:
-  name: "James Bond 007 - From Russia with Love"
+  name: "007 - From Russia with Love"
   region: "PAL-M7"
 SLES-53556:
   name: "Driver - Parallel Lines"
@@ -17321,16 +17324,16 @@ SLES-53967:
   name: "Godfather, The"
   region: "PAL-M6"
 SLES-53968:
-  name: "Godfather, The (Le Parrain)"
+  name: "Parrain, Le"
   region: "PAL-F"
 SLES-53969:
-  name: "Godfather, The (Der Pate)"
+  name: "Pate, Der"
   region: "PAL-G"
 SLES-53970:
-  name: "Godfather, The"
+  name: "Padrino, Il"
   region: "PAL-I"
 SLES-53971:
-  name: "Godfather, The"
+  name: "Padrino, El"
   region: "PAL-S"
 SLES-53972:
   name: "Stock Car Crash"
@@ -20522,7 +20525,7 @@ SLES-55344:
   name: "Rock Band - Song Back 1"
   region: "PAL-M5"
 SLES-55345:
-  name: "James Bond - Quantum of Solace"
+  name: "007 - Quantum of Solace"
   region: "PAL-M5"
   compat: 5
 SLES-55346:
@@ -22626,7 +22629,10 @@ SLPM-55119:
   memcardFilters:
     - "SLPM-55118"
 SLPM-55120:
-  name: "Fukakutei Sekai no Tantei Shinshi - Akugyou Futaasa no Jiken File [Limited Edition]"
+  name: "Fukakutei Sekai no Tantei Shinshi - Akugyou Souma no Jiken File [Limited Edition]"
+  region: "NTSC-J"
+SLPM-55121:
+  name: "Fukakutei Sekai no Tantei Shinshi - Akugyou Souma no Jiken File"
   region: "NTSC-J"
 SLPM-55122:
   name: "Sengoku Musou 2"
@@ -22800,6 +22806,9 @@ SLPM-55226:
 SLPM-55239:
   name: "Death Connection"
   region: "NTSC-J"
+SLPM-55240:
+  name: "ef - A Fairy Tale of the Two. [Shokai Gentei Tokubetsu Doukonban]"
+  region: "NTSC-J"
 SLPM-55243:
   name: "Suzunone Seven - Rebirth Knot"
   region: "NTSC-J"
@@ -22888,6 +22897,9 @@ SLPM-55292:
     vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
     autoFlush: 1
+SLPM-55298:
+  name: "Final Fantasy XI - Adoulin no Makyou"
+  region: "NTSC-J"
 SLPM-60101:
   name: "0 Story [Demo]"
   region: "NTSC-J"
@@ -23189,6 +23201,9 @@ SLPM-62016:
   name: "Super Bust-A-Move"
   region: "NTSC-J"
   compat: 5
+SLPM-62020:
+  name: "GI Jockey 2"
+  region: "NTSC-J"
 SLPM-62021:
   name: "Angelique Trois [Premium Box]"
   region: "NTSC-J"
@@ -23377,6 +23392,9 @@ SLPM-62101:
 SLPM-62102:
   name: "Crazy Taxi"
   region: "NTSC-J"
+SLPM-62103:
+  name: "EX Okuman Chouja Game - The Money Battle"
+  region: "NTSC-J"
 SLPM-62104:
   name: "Choro-Q HG2"
   region: "NTSC-J"
@@ -23405,6 +23423,9 @@ SLPM-62114:
   gsHWFixes:
     preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
     cpuFramebufferConversion: 1 # Fixes fog wall.
+SLPM-62115:
+  name: "EX Jinsei Game [Doukonban]"
+  region: "NTSC-J"
 SLPM-62117:
   name: "Momotaro Train X"
   region: "NTSC-J"
@@ -23474,6 +23495,9 @@ SLPM-62139:
   compat: 5
 SLPM-62140:
   name: "Cyber Jansou - Toufuusou-hen"
+  region: "NTSC-J"
+SLPM-62141:
+  name: "Eisei Meijin VI - Tsuushin Shougi Club"
   region: "NTSC-J"
 SLPM-62142:
   name: "World Grand Prix"
@@ -23868,6 +23892,9 @@ SLPM-62300:
 SLPM-62301:
   name: "Aerobics Revolution"
   region: "NTSC-J"
+SLPM-62302:
+  name: "Eisei Meijin 7 - Tsuushin Shougi Club"
+  region: "NTSC-J"
 SLPM-62305:
   name: "Othello [SuperLite 2000]"
   region: "NTSC-J"
@@ -24082,6 +24109,9 @@ SLPM-62391:
   region: "NTSC-J"
 SLPM-62392:
   name: "G1 Jockey 3 2003"
+  region: "NTSC-J"
+SLPM-62393:
+  name: "GI Jockey 3 2003 [Premium Pack]"
   region: "NTSC-J"
 SLPM-62394:
   name: "Power Smash 2 [Sega The Best - 2800 Series]"
@@ -25431,6 +25461,9 @@ SLPM-65043:
 SLPM-65044:
   name: "Aizouban Angelique Trois [Koei The Best]"
   region: "NTSC-J"
+SLPM-65046:
+  name: "Gofungo no Sekai"
+  region: "NTSC-J"
 SLPM-65047:
   name: "Capcom vs. SNK 2"
   region: "NTSC-J"
@@ -26627,6 +26660,9 @@ SLPM-65413:
 SLPM-65414:
   name: "Simple 2000 Series Vol. 45 - The Koi to Namida to, Tsuioku to..."
   region: "NTSC-J"
+SLPM-65415:
+  name: "EX Jinsei Game II"
+  region: "NTSC-J"
 SLPM-65416:
   name: "Pride Grand Prix 2003"
   region: "NTSC-J"
@@ -26732,7 +26768,7 @@ SLPM-65445:
   name: "Jikkyou Powerful Pro Yakyuu 10 Chou Ketteiban - 2003 Memorial"
   region: "NTSC-J"
 SLPM-65446:
-  name: "James Bond 007 - Everything or Nothing"
+  name: "007 - Everything or Nothing"
   region: "NTSC-J"
 SLPM-65447:
   name: "Kunoichi"
@@ -27010,7 +27046,7 @@ SLPM-65537:
   name: "Chou Battle Houshin [Koei The Best]"
   region: "NTSC-J"
 SLPM-65538:
-  name: "James Bond 007 - Nightfire [EA Best Hits]"
+  name: "007 - Nightfire [EA Best Hits]"
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Fixes polygon clipping in driving missions.
@@ -27592,7 +27628,7 @@ SLPM-65724:
   name: "Choro Q Works"
   region: "NTSC-J"
 SLPM-65725:
-  name: "James Bond 007 - Everything or Nothing [EA Best Hits]"
+  name: "007 - Everything or Nothing [EA Best Hits]"
   region: "NTSC-J"
 SLPM-65726:
   name: "Star Wars - Jango Fett [EA Best Hits]"
@@ -29648,7 +29684,7 @@ SLPM-66321:
   name: "Kurogane no Houkou - Warship Gunner 2"
   region: "NTSC-J"
 SLPM-66322:
-  name: "James Bond 007 - From Russia With Love"
+  name: "007 - Russia yori Ai o Komete"
   region: "NTSC-J"
 SLPM-66323:
   name: "Princess Software Collection, The"
@@ -30693,7 +30729,7 @@ SLPM-66613:
   name: "Medal of Honor - Rising Sun & Frontline [EA Best Hits]"
   region: "NTSC-J"
 SLPM-66615:
-  name: "James Bond 007 - Everything or Nothing & Nightfire [EA Best Hits]"
+  name: "007 - Everything or Nothing & Nightfire [EA Best Hits]"
   region: "NTSC-J"
 SLPM-66617:
   name: "Need for Speed - Carbon"
@@ -31908,6 +31944,9 @@ SLPM-66973:
 SLPM-66974:
   name: "Slotter Up Core 10 - Mach GoGoGo"
   region: "NTSC-J"
+SLPM-66975:
+  name: "Edel Blume [Genteiban]"
+  region: "NTSC-J"
 SLPM-66977:
   name: "Shinkyoku Soukai Polyphonica 0-4 Hanashi Full Pack"
   region: "NTSC-J"
@@ -32051,7 +32090,7 @@ SLPM-67504:
   roundModes:
     eeRoundMode: 0 # Fixes riders vanish into the floor.
 SLPM-67505:
-  name: "James Bond 007 - Agent Under Fire"
+  name: "007 - Agent Under Fire"
   region: "NTSC-K"
   compat: 5
   clampModes:
@@ -32985,6 +33024,9 @@ SLPS-20178:
 SLPS-20183:
   name: "Motto Golful Golf"
   region: "NTSC-J"
+SLPS-20184:
+  name: "Eikan wa Kimi ni 2002 - Koushien no Kodou"
+  region: "NTSC-J"
 SLPS-20185:
   name: "Wangan Midnight"
   region: "NTSC-J"
@@ -33214,6 +33256,9 @@ SLPS-20294:
 SLPS-20296:
   name: "Dugout '03 - The Turning Point"
   region: "NTSC-J"
+SLPS-20298:
+  name: "Fever 8 - Sankyo Koushiki Pachinko Simulation"
+  region: "NTSC-J"
 SLPS-20299:
   name: "Black Matrix 2"
   region: "NTSC-J"
@@ -33222,6 +33267,9 @@ SLPS-20300:
   region: "NTSC-J"
 SLPS-20301:
   name: "Gachinko Professional Baseball"
+  region: "NTSC-J"
+SLPS-20302:
+  name: "Gokuraku-jong Premium"
   region: "NTSC-J"
 SLPS-20303:
   name: "Inaka Kurasi [Best Collection]"
@@ -33234,6 +33282,9 @@ SLPS-20311:
   region: "NTSC-J"
 SLPS-20312:
   name: "Primopuel - My Special Partner"
+  region: "NTSC-J"
+SLPS-20314:
+  name: "Gold X"
   region: "NTSC-J"
 SLPS-20316:
   name: "Hissatsu Pachinko Station v8"
@@ -33919,6 +33970,9 @@ SLPS-25026:
         patch=1,IOP,001D77E4,word,27C40010
         patch=1,IOP,001D77E8,word,0C0032B7
         patch=1,IOP,001D77EC,word,00000000
+SLPS-25027:
+  name: "Golf Paradise DX"
+  region: "NTSC-J"
 SLPS-25028:
   name: "Shutokou Battle 0"
   region: "NTSC-J"
@@ -34112,6 +34166,9 @@ SLPS-25080:
   region: "NTSC-J"
 SLPS-25081:
   name: "Saishuu Densha"
+  region: "NTSC-J"
+SLPS-25083:
+  name: "Exciting Pro Wres 3 [Genteiban]"
   region: "NTSC-J"
 SLPS-25084:
   name: "Thunder Strike - Operation Phoenix"
@@ -38584,7 +38641,7 @@ SLUS-20264:
   name: "F1 2001"
   region: "NTSC-U"
 SLUS-20265:
-  name: "James Bond 007 - Agent Under Fire"
+  name: "007 - Agent Under Fire"
   region: "NTSC-U"
   compat: 5
   clampModes:
@@ -40009,7 +40066,7 @@ SLUS-20578:
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLUS-20579:
-  name: "James Bond 007 - Nightfire"
+  name: "007 - Nightfire"
   region: "NTSC-U"
   compat: 5
   clampModes:
@@ -40773,7 +40830,7 @@ SLUS-20750:
     - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20750"
 SLUS-20751:
-  name: "James Bond 007 - Everything or Nothing"
+  name: "007 - Everything or Nothing"
   region: "NTSC-U"
   compat: 5
 SLUS-20752:
@@ -43397,7 +43454,7 @@ SLUS-21281:
   region: "NTSC-U"
   compat: 3
 SLUS-21282:
-  name: "James Bond 007 - From Russia with Love"
+  name: "007 - From Russia with Love"
   region: "NTSC-U"
   compat: 5
 SLUS-21283:
@@ -45866,7 +45923,7 @@ SLUS-21812:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes lighting misalignment, still missing vibrant colors compared to Software.
 SLUS-21813:
-  name: "James Bond 007 - Quantum of Solace"
+  name: "007 - Quantum of Solace"
   region: "NTSC-U"
   compat: 5
 SLUS-21814:
@@ -46859,7 +46916,7 @@ SLUS-29093:
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
 SLUS-29095:
-  name: "James Bond 007 - Everything or Nothing [Demo]"
+  name: "007 - Everything or Nothing [Demo]"
   region: "NTSC-U"
 SLUS-29096:
   name: "Final Night 2004 [Demo]"
@@ -47048,12 +47105,12 @@ SLUS-29164:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
 SLUS-29167:
-  name: "James Bond 007 - From Russia with Love, Need for Speed - Most Wanted, SSX World Tour [Demo]"
+  name: "007 - From Russia with Love, Need for Speed - Most Wanted, SSX World Tour [Demo]"
   region: "NTSC-U"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLUS-29168:
-  name: "James Bond 007 - From Russia with Love [Demo]"
+  name: "007 - From Russia with Love [Demo]"
   region: "NTSC-U"
 SLUS-29169:
   name: "Resident Evil 4 [Demo]"
