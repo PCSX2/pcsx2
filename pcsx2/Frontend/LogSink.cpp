@@ -36,7 +36,7 @@
 // Used on both Windows and Linux.
 #ifdef _WIN32
 static const wchar_t s_console_colors[][ConsoleColors_Count] = {
-#define CC(x) L ## x
+#define CC(x) L##x
 #else
 static const char s_console_colors[][ConsoleColors_Count] = {
 #define CC(x) x
@@ -167,10 +167,10 @@ static void ConsoleQt_DoWriteLn(const char* fmt)
 	std::unique_lock lock(s_log_mutex);
 
 	// find time since start of process, but save a syscall if we're not writing timestamps
-	float message_time = s_log_timestamps ?
-							 static_cast<float>(
-								 Common::Timer::ConvertValueToSeconds(Common::Timer::GetCurrentValue() - s_log_start_timestamp)) :
-                             0.0f;
+	float message_time =
+		s_log_timestamps ?
+			static_cast<float>(Common::Timer::ConvertValueToSeconds(Common::Timer::GetCurrentValue() - s_log_start_timestamp)) :
+            0.0f;
 
 	// split newlines up
 	const char* start = fmt;
@@ -253,15 +253,14 @@ static void ConsoleQt_Newline()
 	ConsoleQt_DoWriteLn("");
 }
 
-static const IConsoleWriter ConsoleWriter_WinQt =
-	{
-		ConsoleQt_DoWrite,
-		ConsoleQt_DoWriteLn,
-		ConsoleQt_DoSetColor,
+static const IConsoleWriter ConsoleWriter_WinQt = {
+	ConsoleQt_DoWrite,
+	ConsoleQt_DoWriteLn,
+	ConsoleQt_DoSetColor,
 
-		ConsoleQt_DoWrite,
-		ConsoleQt_Newline,
-		ConsoleQt_SetTitle,
+	ConsoleQt_DoWrite,
+	ConsoleQt_Newline,
+	ConsoleQt_SetTitle,
 };
 
 static void UpdateLoggingSinks(bool system_console, bool file_log)
@@ -370,9 +369,9 @@ void Host::InitializeEarlyConsole()
 	UpdateLoggingSinks(true, false);
 }
 
-void Host::UpdateLogging()
+void Host::UpdateLogging(bool disable_system_console)
 {
-	const bool system_console_enabled = Host::GetBaseBoolSettingValue("Logging", "EnableSystemConsole", false);
+	const bool system_console_enabled = !disable_system_console && Host::GetBaseBoolSettingValue("Logging", "EnableSystemConsole", false);
 	const bool file_logging_enabled = Host::GetBaseBoolSettingValue("Logging", "EnableFileLogging", false);
 
 	s_log_timestamps = Host::GetBaseBoolSettingValue("Logging", "EnableTimestamps", true);
@@ -381,7 +380,7 @@ void Host::UpdateLogging()
 	DevConWriterEnabled = any_logging_sinks && (IsDevBuild || Host::GetBaseBoolSettingValue("Logging", "EnableVerbose", false));
 	SysConsole.eeConsole.Enabled = any_logging_sinks && Host::GetBaseBoolSettingValue("Logging", "EnableEEConsole", false);
 	SysConsole.iopConsole.Enabled = any_logging_sinks && Host::GetBaseBoolSettingValue("Logging", "EnableIOPConsole", false);
-    
+
 	// Input Recording Logs
 	SysConsole.recordingConsole.Enabled = any_logging_sinks && Host::GetBaseBoolSettingValue("Logging", "EnableInputRecordingLogs", true);
 	SysConsole.controlInfo.Enabled = any_logging_sinks && Host::GetBaseBoolSettingValue("Logging", "EnableControllerLogs", false);

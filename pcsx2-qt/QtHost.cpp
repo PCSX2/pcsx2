@@ -227,7 +227,7 @@ bool QtHost::InitializeConfig()
 	// TODO: Handle reset to defaults if load fails.
 	EmuFolders::LoadConfig(*s_base_settings_interface.get());
 	EmuFolders::EnsureFoldersExist();
-	Host::UpdateLogging();
+	Host::UpdateLogging(QtHost::InNoGUIMode());
 	return true;
 }
 
