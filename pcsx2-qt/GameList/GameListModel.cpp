@@ -17,9 +17,11 @@
 
 #include "GameListModel.h"
 #include "QtHost.h"
+#include "QtUtils.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
+#include "fmt/format.h"
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
 #include <QtGui/QGuiApplication>
@@ -202,13 +204,10 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 					return QString::fromStdString(ge->title);
 
 				case Column_FileTitle:
-				{
-					const std::string_view file_title(Path::GetFileTitle(ge->path));
-					return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
-				}
+					return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
 
 				case Column_CRC:
-					return QStringLiteral("%1").arg(ge->crc, 8, 16, QChar('0'));
+					return QString::fromStdString(fmt::format("{:08X}", ge->crc));
 
 				case Column_Size:
 					return QString("%1 MB").arg(static_cast<double>(ge->total_size) / 1048576.0, 0, 'f', 2);
@@ -241,10 +240,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 					return QString::fromStdString(ge->title);
 
 				case Column_FileTitle:
-				{
-					const std::string_view file_title(Path::GetFileTitle(ge->path));
-					return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
-				}
+					return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
 
 				case Column_CRC:
 					return static_cast<int>(ge->crc);

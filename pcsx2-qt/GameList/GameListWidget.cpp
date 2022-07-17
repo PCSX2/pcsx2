@@ -464,7 +464,7 @@ void GameListWidget::resizeTableViewColumnsToFit()
 														 80, // code
 														 -1, // title
 														 -1, // file title
-														 60, // crc
+														 65, // crc
 														 80, // size
 														 60, // region
 														 100 // compatibility
