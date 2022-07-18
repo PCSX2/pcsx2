@@ -1194,6 +1194,12 @@ SCAJ-20163:
   region: "NTSC-Unk"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
+  patches:
+    default:
+      content: |-
+        author=sergx12
+        // fixes black grid
+        patch=1,EE,205E570C,extended,00000000
 SCAJ-20164:
   name: "Kingdom Hearts II"
   region: "NTSC-Unk"
@@ -31704,6 +31710,12 @@ SLPM-66897:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
+  patches:
+    default:
+      content: |-
+        author=sergx12
+        // fixes black grid
+        patch=1,EE,205E570C,extended,00000000
 SLPM-66898:
   name: "Spectral Gene [Limited Edition]"
   region: "NTSC-J"
@@ -35855,6 +35867,12 @@ SLPS-25586:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
+  patches:
+    default:
+      content: |-
+        author=sergx12
+        // fixes black grid
+        patch=1,EE,205E570C,extended,00000000
 SLPS-25587:
   name: "Sugar Sugar Rune - Koi mo Oshare mo Pick-Up"
   region: "NTSC-J"
@@ -37514,6 +37532,12 @@ SLPS-73252:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
+  patches:
+    default:
+      content: |-
+        author=sergx12
+        // fixes black grid
+        patch=1,EE,205E570C,extended,00000000
 SLPS-73253:
   name: "Rurouni Kenshin - Enjou! Kyoto Rinne [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -44046,6 +44070,12 @@ SLUS-21386:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
+  patches:
+    default:
+      content: |-
+        author=sergx12
+        // fixes black grid
+        patch=1,EE,205E570C,extended,00000000
 SLUS-21387:
   name: "Warship Gunner 2"
   region: "NTSC-U"
