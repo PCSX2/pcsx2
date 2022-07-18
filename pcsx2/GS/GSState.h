@@ -217,6 +217,7 @@ protected:
 	bool IsOpaque();
 	bool IsMipMapDraw();
 	bool IsMipMapActive();
+	bool IsCoverageAlpha();
 
 public:
 	GIFPath m_path[4];

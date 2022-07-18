@@ -3747,6 +3747,11 @@ bool GSState::IsMipMapActive()
 	return m_mipmap && IsMipMapDraw();
 }
 
+bool GSState::IsCoverageAlpha()
+{
+	return !PRIM->ABE && PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS);
+}
+
 GIFRegTEX0 GSState::GetTex0Layer(u32 lod)
 {
 	// Shortcut
