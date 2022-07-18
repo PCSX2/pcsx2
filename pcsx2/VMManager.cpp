@@ -1728,7 +1728,7 @@ DEFINE_HOTKEY("TogglePause", "System", "Toggle Pause", [](s32 pressed) {
 })
 DEFINE_HOTKEY("ToggleFullscreen", "System", "Toggle Fullscreen", [](s32 pressed) {
 	if (!pressed)
-		Host::SetFullscreen(Host::IsFullscreen());
+		Host::SetFullscreen(!Host::IsFullscreen());
 })
 DEFINE_HOTKEY("ToggleFrameLimit", "System", "Toggle Frame Limit", [](s32 pressed) {
 	if (!pressed)
