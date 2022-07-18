@@ -18,7 +18,7 @@
 #include "AppForwardDefs.h"
 #include "Config.h"
 #include "PathDefs.h"
-#include "CDVD/CDVDaccess.h"
+#include "CDVD/CDVDcommon.h"
 #include "common/General.h"
 #include "common/Path.h"
 

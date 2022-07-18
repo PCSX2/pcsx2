@@ -17,7 +17,7 @@
 
 #include "System.h"
 #include "SysThreads.h"
-#include "CDVD/CDVDaccess.h"
+#include "CDVD/CDVDcommon.h"
 
 // --------------------------------------------------------------------------------------
 //  SysThreadBase *External Thread* Implementations

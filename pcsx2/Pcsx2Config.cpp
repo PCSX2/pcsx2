@@ -23,7 +23,7 @@
 #include "Config.h"
 #include "GS.h"
 #include "HostDisplay.h"
-#include "CDVD/CDVDaccess.h"
+#include "CDVD/CDVDcommon.h"
 #include "MemoryCardFile.h"
 
 #ifndef PCSX2_CORE
