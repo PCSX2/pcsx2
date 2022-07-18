@@ -3284,6 +3284,8 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	// DATE: selection of the algorithm. Must be done before blending because GL42 is not compatible with blending
 	if (DATE)
 	{
+		// When Blending is disabled and Edge Anti Aliasing is enabled, the output alpha is Coverage (which we force to 128) so DATE will fail/pass guaranteed on second pass.
+		const bool force_a_one = !PRIM->ABE && PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS);
 		// It is way too complex to emulate texture shuffle with DATE, so use accurate path.
 		// No overlap should be triggered on gl/vk only as they support DATE_BARRIER.
 		if (features.framebuffer_fetch)
@@ -3301,7 +3303,7 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 				DATE_BARRIER = true;
 			}
 		}
-		else if (m_context->FBA.FBA)
+		else if (m_conf.colormask.wa && (m_context->FBA.FBA || force_a_one))
 		{
 			GL_PERF("DATE: Fast with FBA, all pixels will be >= 128");
 			DATE_one = !m_context->TEST.DATM;
