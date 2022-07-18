@@ -28,7 +28,7 @@
 #include "common/CocoaTools.h"
 #include "common/FileSystem.h"
 
-#include "pcsx2/CDVD/CDVDaccess.h"
+#include "pcsx2/CDVD/CDVDcommon.h"
 #include "pcsx2/CDVD/CDVDdiscReader.h"
 #include "pcsx2/Frontend/GameList.h"
 #include "pcsx2/Frontend/LogSink.h"

@@ -36,7 +36,7 @@
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
-#include "pcsx2/CDVD/CDVDaccess.h"
+#include "pcsx2/CDVD/CDVDcommon.h"
 #include "pcsx2/DebugTools/Debug.h"
 #include "pcsx2/Frontend/GameList.h"
 #include "pcsx2/Frontend/INISettingsInterface.h"

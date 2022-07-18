@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "CDVDaccess.h"
+#include "CDVDcommon.h"
 
 // Not used.
 typedef struct
