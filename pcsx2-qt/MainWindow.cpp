@@ -822,7 +822,7 @@ void MainWindow::updateWindowState(bool force_visible)
 
 void MainWindow::setProgressBar(int current, int total)
 {
-	const int value = (current * 100) / total;
+	const int value = (total != 0) ? ((current * 100) / total) : 0;
 	if (m_status_progress_widget->value() != value)
 		m_status_progress_widget->setValue(value);
 
