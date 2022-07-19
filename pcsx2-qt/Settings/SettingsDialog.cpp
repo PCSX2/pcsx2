@@ -43,6 +43,7 @@
 #include "InterfaceSettingsWidget.h"
 #include "MemoryCardSettingsWidget.h"
 #include "SystemSettingsWidget.h"
+#include "Python2SettingsWidget.h"
 
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextEdit>
@@ -128,7 +129,7 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 		addWidget(m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
 			QStringLiteral("sd-card-line"), tr("<strong>Memory Card Settings</strong><hr>Create and configure Memory Cards here.<br><br>Mouse over an option for additional information."));
 	}
-	
+
 	addWidget(m_dev9_settings = new DEV9SettingsWidget(this, m_ui.settingsContainer), tr("Network & HDD"), QStringLiteral("dashboard-line"),
 		tr("<strong>Network & HDD Settings</strong><hr>These options control the network connectivity and internal HDD storage of the console.<br><br>"
 		   "Mouse over an option for additional information."));
@@ -137,6 +138,11 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	{
 		addWidget(m_folder_settings = new FolderSettingsWidget(this, m_ui.settingsContainer), tr("Folders"), QStringLiteral("folder-open-line"),
 			tr("<strong>Folder Settings</strong><hr>These options control where PCSX2 will save runtime data files."));
+	}
+
+	if (isPerGameSettings() && game->type == GameList::EntryType::Python2) {
+		addWidget(m_python2_settings = new Python2SettingsWidget(game, this, m_ui.settingsContainer), tr("Python 2"), QStringLiteral("dashboard-line"),
+			tr("<strong>Python 2 Settings</strong><hr>These options control the settings specific to Python 2 games."));
 	}
 
 	m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);

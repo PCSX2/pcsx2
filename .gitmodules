@@ -39,3 +39,6 @@
 [submodule "3rdparty/zstd/zstd"]
 	path = 3rdparty/zstd/zstd
 	url = https://github.com/facebook/zstd.git
+[submodule "3rdparty/libusb/libusb"]
+	path = 3rdparty/libusb/libusb
+	url = https://github.com/libusb/libusb.git

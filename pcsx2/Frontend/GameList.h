@@ -37,6 +37,7 @@ namespace GameList
 		PS1Disc,
 		ELF,
 		Playlist,
+		Python2,
 		Count
 	};
 

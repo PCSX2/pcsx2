@@ -129,6 +129,9 @@
     <ProjectReference Include="..\3rdparty\lzma\lzma.vcxproj">
       <Project>{a4323327-3f2b-4271-83d9-7f9a3c66b6b2}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\3rdparty\libusb\libusb.vcxproj">
+      <Project>{349ee8f9-7d25-4909-aaf5-ff3fade72187}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest" />
@@ -160,6 +163,8 @@
     <ClCompile Include="Settings\DEV9UiCommon.cpp" />
     <ClCompile Include="Settings\HddCreateQt.cpp" />
     <ClCompile Include="Settings\GameSummaryWidget.cpp" />
+    <ClCompile Include="Settings\Python2BindingWidget.cpp" />
+    <ClCompile Include="Settings\Python2SettingsWidget.cpp" />
     <ClCompile Include="GameList\GameListModel.cpp" />
     <ClCompile Include="GameList\GameListRefreshThread.cpp" />
     <ClCompile Include="GameList\GameListWidget.cpp" />
@@ -199,6 +204,8 @@
     <ClInclude Include="Settings\HddCreateQt.h" />
     <QtMoc Include="Settings\GameSummaryWidget.h" />
     <QtMoc Include="Settings\CreateMemoryCardDialog.h" />
+    <QtMoc Include="Settings\Python2BindingWidget.h" />
+    <QtMoc Include="Settings\Python2SettingsWidget.h" />
     <QtMoc Include="GameList\GameListModel.h" />
     <QtMoc Include="GameList\GameListWidget.h" />
     <QtMoc Include="GameList\GameListRefreshThread.h" />
@@ -244,6 +251,8 @@
     <ClCompile Include="$(IntDir)Settings\moc_DEV9SettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_DEV9UiCommon.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_GameSummaryWidget.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_Python2BindingWidget.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_Python2SettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListModel.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListRefreshThread.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListWidget.cpp" />
@@ -325,6 +334,12 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\GameSummaryWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Settings\Python2BindingWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Settings\Python2SettingsWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="AutoUpdaterDialog.ui">

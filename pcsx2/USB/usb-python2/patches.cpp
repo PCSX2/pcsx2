@@ -11,21 +11,20 @@
 #include "IopMem.h"
 #include "Patch.h"
 
-#include <wx/ffile.h>
-#include <wx/fileconf.h>
-
 namespace usb_python2
 {
 	std::thread mPatchSpdifAudioThread;
 	std::atomic<bool> mPatchSpdifAudioThreadIsRunning;
 	uint32_t mTargetWriteCmd = 0;
 	uint32_t mTargetPatchAddr = 0;
+	uint32_t mTargetIgnoreAddr = 0;
 
 	void Python2Patch::PatchSpdifAudioThread(void* ptr)
 	{
 		mPatchSpdifAudioThreadIsRunning = true;
 		mTargetWriteCmd = 0;
 		mTargetPatchAddr = 0;
+		mTargetIgnoreAddr = 0;
 
 		ForgetLoadedPatches();
 
@@ -37,7 +36,7 @@ namespace usb_python2
 #ifndef PCSX2_CORE
 				!GetCoreThread().IsOpen() || GetCoreThread().IsPaused()
 #else
-				VMManager::GetState() != Running /* Untested */
+				VMManager::GetState() != VMState::Running
 #endif
 				|| psxMemRLUT == NULL || psxMemWLUT == NULL)
 				continue;
@@ -47,13 +46,14 @@ namespace usb_python2
 
 			// The GF games I looked all had the required code in this range, but it's possible there exists
 			// code in other places.
-			for (int i = 0x100000; i < 0x120000; i += 4)
+
+			for (uint32_t i = 0x100000; i < 0x120000; i += 4)
 			{
 				if (
 #ifndef PCSX2_CORE
 					!GetCoreThread().IsOpen() || GetCoreThread().IsPaused()
 #else
-					VMManager::GetState() != Running /* Untested */
+					VMManager::GetState() != VMState::Running
 #endif
 					|| psxMemRLUT == NULL || psxMemWLUT == NULL)
 					break;
@@ -64,17 +64,19 @@ namespace usb_python2
 				{
 					Console.WriteLn("Patching write @ %08x...", i);
 
-					// Patch write
-					IniPatch iPatch = {0};
-					iPatch.placetopatch = PPT_CONTINUOUSLY;
-					iPatch.cpu = CPU_IOP;
-					iPatch.addr = i;
-					iPatch.type = WORD_T;
-					iPatch.data = 0;
-					iPatch.oldData = iopMemRead32(iPatch.addr);
-					iPatch.hasOldData = true;
-					iPatch.enabled = 1;
-					LoadPatchFromMemory(iPatch);
+					if (i != mTargetIgnoreAddr) {
+						// Patch write
+						IniPatch iPatch = {0};
+						iPatch.placetopatch = PPT_CONTINUOUSLY;
+						iPatch.cpu = CPU_IOP;
+						iPatch.addr = i;
+						iPatch.type = WORD_T;
+						iPatch.data = 0;
+						iPatch.oldData = iopMemRead32(iPatch.addr);
+						iPatch.hasOldData = true;
+						iPatch.enabled = 1;
+						LoadPatchFromMemory(iPatch);
+					}
 				}
 				else if (
 					x == 0x00000000 &&
@@ -82,7 +84,7 @@ namespace usb_python2
 					iopMemRead32(i + 12) == 0x24020001 &&
 					(iopMemRead32(i + 16) & 0xffffff00) == 0x3c010000 &&
 					(iopMemRead32(i + 20) & 0xffff0000) == 0xac220000 &&
-					(iopMemRead32(i + 24) & 0xffff0000) == 0x08040000 &&
+					(iopMemRead32(i + 24) & 0xff000000) == 0x08000000 &&
 					iopMemRead32(i + 28) == 0x00000000 &&
 					(iopMemRead32(i + 32) & 0xffffff00) == 0x3c010000)
 				{
@@ -96,11 +98,9 @@ namespace usb_python2
 
 					mTargetWriteCmd = writeCmd;
 					mTargetPatchAddr = addr;
+					mTargetIgnoreAddr = i + 20;
 
-					// Find other writes along the way and patch those out
-					i += 28;
-
-					// Patch jump
+					// Patch jump so that we'll always write analog (1) into the variable at least once
 					IniPatch iPatch = {0};
 					iPatch.placetopatch = PPT_CONTINUOUSLY;
 					iPatch.cpu = CPU_IOP;
@@ -123,6 +123,9 @@ namespace usb_python2
 					iPatch.hasOldData = true;
 					iPatch.enabled = 1;
 					LoadPatchFromMemory(iPatch);
+
+					// Find other writes along the way and patch those out
+					i += 28;
 
 					lastLoop = true;
 				}

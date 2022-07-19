@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+  <class>Python2BindingWidget</class>
+  <widget class="QWidget" name="Python2BindingWidget">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>833</width>
+        <height>560</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Form</string>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
+      <property name="leftMargin">
+        <number>0</number>
+      </property>
+      <property name="topMargin">
+        <number>0</number>
+      </property>
+      <property name="rightMargin">
+        <number>0</number>
+      </property>
+      <property name="bottomMargin">
+        <number>0</number>
+      </property>
+
+      <item>
+        <widget class="QTabWidget" name="inputsTabWidget">
+          <property name="currentIndex">
+            <number>0</number>
+          </property>
+          <property name="documentMode">
+            <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="tabInputs">
+            <attribute name="title">
+              <string>Inputs</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout2">
+              <item>
+                <widget class="QGroupBox" name="groupBox3">
+                  <property name="title">
+                    <string>Game Type Filter</string>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout2">
+                    <item>
+                      <widget class="QComboBox" name="gameTypeFilter" />
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <layout class="QHBoxLayout" name="horizontalLayout">
+                  <item row="0" column="0" rowspan="6">
+                    <widget class="QGroupBox" name="groupBox">
+                      <property name="title">
+                        <string>Available Inputs</string>
+                      </property>
+                      <layout class="QGridLayout" name="gridLayout">
+                        <item row="0" column="0" colspan="2">
+                          <widget class="QListWidget" name="inputList" />
+                        </item>
+                        <item row="1" column="0" colspan="2">
+                          <widget class="QPushButton" name="bindKey">
+                            <property name="text">
+                              <string>Bind</string>
+                            </property>
+                          </widget>
+                        </item>
+                      </layout>
+                    </widget>
+                  </item>
+                  <item row="0" column="6" rowspan="6">
+                    <widget class="QGroupBox" name="groupBox2">
+                      <property name="title">
+                        <string>Existing Keybinds</string>
+                      </property>
+                      <layout class="QGridLayout" name="gridLayout2">
+                        <item row="0" column="0" colspan="2">
+                          <widget class="QTableWidget" name="keybindList">
+                            <column>
+                              <property name="text">
+                                <string>Keybind</string>
+                              </property>
+                            </column>
+                            <column>
+                              <property name="text">
+                                <string>Oneshot</string>
+                              </property>
+                            </column>
+                            <column>
+                              <property name="text">
+                                <string>Device</string>
+                              </property>
+                            </column>
+                          </widget>
+                        </item>
+                        <item row="1" column="0" colspan="2">
+                          <widget class="QPushButton" name="unbindKey">
+                            <property name="text">
+                              <string>Unbind</string>
+                            </property>
+                          </widget>
+                        </item>
+                      </layout>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+            </layout>
+          </widget>
+
+          <widget class="QWidget" name="tabAnalogInputs">
+            <attribute name="title">
+              <string>Analog Inputs</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout4">
+              <item>
+                <layout class="QHBoxLayout" name="horizontalLayout3">
+                  <item row="0" column="0" rowspan="6">
+                    <widget class="QGroupBox" name="groupBox4">
+                      <property name="title">
+                        <string>Available Analog Inputs</string>
+                      </property>
+                      <layout class="QGridLayout" name="gridLayout3">
+                        <item row="0" column="0" colspan="2">
+                          <widget class="QListWidget" name="inputListAnalogs" />
+                        </item>
+                        <item row="1" column="0" colspan="2">
+                          <widget class="QPushButton" name="bindKeyAnalog">
+                            <property name="text">
+                              <string>Bind</string>
+                            </property>
+                          </widget>
+                        </item>
+                      </layout>
+                    </widget>
+                  </item>
+                  <item row="0" column="6" rowspan="6">
+                    <widget class="QGroupBox" name="groupBox5">
+                      <property name="title">
+                        <string>Existing Keybinds</string>
+                      </property>
+                      <layout class="QGridLayout" name="gridLayout4">
+                        <item row="0" column="0" colspan="2">
+                          <widget class="QTableWidget" name="keybindListAnalogs">
+                            <column>
+                              <property name="text">
+                                <string>Keybind</string>
+                              </property>
+                            </column>
+                            <column>
+                              <property name="text">
+                                <string>Deadzone</string>
+                              </property>
+                            </column>
+                            <column>
+                              <property name="text">
+                                <string>Sensitivity</string>
+                              </property>
+                            </column>
+                            <column>
+                              <property name="text">
+                                <string>Device</string>
+                              </property>
+                            </column>
+                          </widget>
+                        </item>
+                        <item row="1" column="0" colspan="2">
+                          <widget class="QPushButton" name="unbindKeyAnalog">
+                            <property name="text">
+                              <string>Unbind</string>
+                            </property>
+                          </widget>
+                        </item>
+                      </layout>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+
+              <item>
+                <layout class="QHBoxLayout" name="horizontalLayout5">
+                  <item row="0" column="0" colspan="2">
+                    <widget class="QGroupBox" name="groupBox_33">
+                      <property name="title">
+                        <string>Analog Deadzone</string>
+                      </property>
+                      <layout class="QHBoxLayout" name="horizontalLayout_3">
+                        <item>
+                          <widget class="QSlider" name="Deadzone">
+                            <property name="maximum">
+                              <number>100</number>
+                            </property>
+                            <property name="orientation">
+                              <enum>Qt::Horizontal</enum>
+                            </property>
+                          </widget>
+                        </item>
+                        <item>
+                          <widget class="QLabel" name="DeadzoneLabel">
+                            <property name="text">
+                              <string>0%</string>
+                            </property>
+                          </widget>
+                        </item>
+                      </layout>
+                    </widget>
+                  </item>
+
+                  <item row="0" column="2" colspan="2">
+                    <widget class="QGroupBox" name="groupBox_30">
+                      <property name="title">
+                        <string>Analog Sensitivity</string>
+                      </property>
+                      <layout class="QHBoxLayout" name="horizontalLayout_2">
+                        <item>
+                          <widget class="QSlider" name="AxisScale">
+                            <property name="maximum">
+                              <number>200</number>
+                            </property>
+                            <property name="orientation">
+                              <enum>Qt::Horizontal</enum>
+                            </property>
+                          </widget>
+                        </item>
+                        <item>
+                          <widget class="QLabel" name="AxisScaleLabel">
+                            <property name="text">
+                              <string>100%</string>
+                            </property>
+                          </widget>
+                        </item>
+                      </layout>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+            </layout>
+          </widget>
+
+          <widget class="QWidget" name="tabMotors">
+            <attribute name="title">
+              <string>Motors</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout3">
+              <item>
+                <layout class="QHBoxLayout" name="horizontalLayout4">
+                  <item row="0" column="0" rowspan="6">
+                    <widget class="QGroupBox" name="groupBox6">
+                      <property name="title">
+                        <string>Available Motor Outputs</string>
+                      </property>
+                      <layout class="QGridLayout" name="gridLayout5">
+                        <item row="0" column="0" colspan="2">
+                          <widget class="QListWidget" name="motorList" />
+                        </item>
+                        <item row="1" column="0" colspan="2">
+                          <widget class="QPushButton" name="bindKeyMotor">
+                            <property name="text">
+                              <string>Bind</string>
+                            </property>
+                          </widget>
+                        </item>
+                      </layout>
+                    </widget>
+                  </item>
+                  <item row="0" column="6" rowspan="6">
+                    <widget class="QGroupBox" name="groupBox7">
+                      <property name="title">
+                        <string>Existing Keybinds</string>
+                      </property>
+                      <layout class="QGridLayout" name="gridLayout6">
+                        <item row="0" column="0" colspan="2">
+                          <widget class="QTableWidget" name="keybindListMotors">
+                            <column>
+                              <property name="text">
+                                <string>Keybind</string>
+                              </property>
+                            </column>
+                            <column>
+                              <property name="text">
+                                <string>Scale</string>
+                              </property>
+                            </column>
+                            <column>
+                              <property name="text">
+                                <string>Device</string>
+                              </property>
+                            </column>
+                          </widget>
+                        </item>
+                        <item row="1" column="0" colspan="2">
+                          <widget class="QPushButton" name="unbindKeyMotor">
+                            <property name="text">
+                              <string>Unbind</string>
+                            </property>
+                          </widget>
+                        </item>
+                      </layout>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+
+              <item>
+                <widget class="QGroupBox" name="groupBox_31">
+                  <property name="title">
+                    <string>Motor Scale</string>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_4">
+                    <item>
+                      <widget class="QSlider" name="MotorScale">
+                        <property name="maximum">
+                          <number>100</number>
+                        </property>
+                        <property name="orientation">
+                          <enum>Qt::Horizontal</enum>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QLabel" name="MotorScaleLabel">
+                        <property name="text">
+                          <string>100%</string>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+            </layout>
+          </widget>
+
+        </widget>
+      </item>
+    </layout>
+  </widget>
+  <resources>
+    <include location="../resources/resources.qrc" />
+  </resources>
+  <connections />
+</ui>

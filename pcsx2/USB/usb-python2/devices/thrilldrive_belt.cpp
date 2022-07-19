@@ -7,7 +7,7 @@ namespace usb_python2
 		const auto header = (ACIO_PACKET_HEADER*)packet.data();
 		const auto code = BigEndian16(header->code);
 
-		if (p2dev->GetKeyState(L"ThrillDriveSeatbelt") != 0)
+		if (p2dev->GetKeyState(P2TEXT("ThrillDriveSeatbelt")) != 0)
 		{
 			if (!seatBeltButtonPressed)
 				seatBeltStatus = !seatBeltStatus;

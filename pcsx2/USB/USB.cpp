@@ -26,7 +26,10 @@
 #include "qemu-usb/desc.h"
 #include "shared/shared_usb.h"
 #include "deviceproxy.h"
+
+#ifndef PCSX2_CORE
 #include "configuration.h"
+#endif
 
 #define PSXCLK 36864000 /* 36.864 Mhz */
 
@@ -70,11 +73,18 @@ s64 remaining = 0;
 #if defined(_WIN32)
 HWND gsWnd = nullptr;
 #elif defined(__linux__)
+
+#ifndef PCSX2_CORE
 #include "gtk.h"
 #include <gdk/gdkx.h>
+#endif
+
 #include <X11/X.h>
+
+#ifndef PCSX2_CORE
 Display* g_GSdsp = nullptr;
 Window g_GSwin;
+#endif
 #endif
 
 Config::Config()
@@ -198,17 +208,24 @@ void CreateDevices()
 
 s32 USBinit()
 {
+#ifndef PCSX2_CORE
 	USBsetSettingsDir();
+#endif
 
 	RegisterDevice::Register();
+
+#ifndef PCSX2_CORE
 	LoadConfig();
+#endif
 
 	if (conf.Log && !usbLog)
 	{
+#ifndef PCSX2_CORE
 #ifdef _WIN32
 		usbLog = wfopen(LogDir.c_str(), L"wb"); // L"wb,ccs=UNICODE");
 #else
 		usbLog = wfopen(LogDir.c_str(), "wb"); // L"wb,ccs=UNICODE");
+#endif
 #endif
 		//if(usbLog) setvbuf(usbLog, NULL,  _IONBF, 0);
 	}
@@ -245,6 +262,9 @@ void USBshutdown()
 
 s32 USBopen(const WindowInfo& wi)
 {
+#ifdef PCSX2_CORE
+	conf.Port[0] = "python2io";
+#endif
 
 	if (conf.Log && !usbLog)
 	{
@@ -262,9 +282,11 @@ s32 USBopen(const WindowInfo& wi)
 #elif defined(__linux__)
 	if (wi.type == WindowInfo::Type::X11)
 	{
+#ifndef PCSX2_CORE
 		g_GSdsp = static_cast<Display*>(wi.display_connection);
 		g_GSwin = reinterpret_cast<Window>(wi.window_handle);
 		window_handle_for_init = reinterpret_cast<void*>(g_GSwin);
+#endif
 	}
 #endif
 
@@ -297,8 +319,11 @@ void USBclose()
 #if defined(_WIN32)
 	gsWnd = {};
 #elif defined(__linux__)
-  g_GSdsp = nullptr;
+
+#ifndef PCSX2_CORE
+	g_GSdsp = nullptr;
 	g_GSwin = {};
+#endif
 #endif
 }
 

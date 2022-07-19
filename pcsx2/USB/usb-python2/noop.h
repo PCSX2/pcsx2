@@ -1,18 +1,3 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #include "usb-python2.h"
 #include "python2proxy.h"
 
@@ -40,12 +25,11 @@ namespace usb_python2
 			int Reset() { return 0; }
 			bool isPassthrough() { return false; }
 
-			void UpdateKeyStates(std::wstring keybind) {};
-			bool GetKeyState(std::wstring keybind) { return false; };
-			bool GetKeyStateOneShot(std::wstring keybind) { return false; };
-			double GetKeyStateAnalog(std::wstring keybind) { return 0; };
-			bool IsKeybindAvailable(std::wstring keybind) { return false; };
-			bool IsAnalogKeybindAvailable(std::wstring keybind) { return false; };
+			void UpdateKeyStates(std::string keybind) {};
+			bool GetKeyState(std::string keybind) { return false; };
+			bool GetKeyStateOneShot(std::string keybind) { return false; };
+			double GetKeyStateAnalog(std::string keybind) { return 0; };
+			bool IsAnalogKeybindAvailable(std::string keybind) { return false; };
 
 			static const TCHAR* Name()
 			{
@@ -59,4 +43,4 @@ namespace usb_python2
 		};
 
 	} // namespace noop
-} // namespace usb_hid
+} // namespace usb_python2

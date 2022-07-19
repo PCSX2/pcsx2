@@ -75,12 +75,9 @@ void ATA::SCE_IDENTIFY_DRIVE()
 	hddId[0x4f] = 0x01;
 	// 0x50 - 0x80 is a unique block of data
 
-	#ifndef PCSX2_CORE
-	// TODO: Rewrite this in a way to not use g_Conf for future Qt support
 	auto fp = FileSystem::OpenManagedCFile(EmuConfig.DEV9.HddIdFile.c_str(), "rb");
 	if (fp && FileSystem::FSize64(fp.get()) >= 128)
 		std::fread(hddId, 1, 128, fp.get());
-	#endif
 
 	pioDRQEndTransferFunc = nullptr;
 	DRQCmdPIODataToHost(hddId, 128, 0, 128, true);

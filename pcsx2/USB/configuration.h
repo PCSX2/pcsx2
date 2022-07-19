@@ -16,7 +16,11 @@
 #pragma once
 
 #include "platcompat.h"
+
+#ifndef PCSX2_CORE
 #include <wx/string.h>
+#endif
+
 #include <vector>
 #include <string>
 #include <map>

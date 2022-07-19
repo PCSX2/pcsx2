@@ -15,6 +15,13 @@
 
 #pragma once
 
+#if defined(_MSC_VER)
+#include <basetsd.h>
+#ifndef HAVE_SSIZE_T
+typedef SSIZE_T ssize_t;
+#endif
+#endif
+
 // Annoying defines
 // ---------------------------------------------------------------------
 // make sure __POSIX__ is defined for all systems where we assume POSIX
@@ -36,25 +43,39 @@
 #endif
 #endif
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
 #include <windows.h>
+
+#ifdef PCSX2_CORE
+#define wfopen _wfopen
+#define fseeko64 _fseeki64
+#define ftello64 _ftelli64
+#define TSTDSTRING std::string
+#define TSTDSTRINGSTREAM std::stringstream
+#define TSTDTOSTRING std::to_string
+#define P2TEXT(x) x
+
+void SysMessage(const char* fmt, ...);
+#else
 #define wfopen _wfopen
 #define fseeko64 _fseeki64
 #define ftello64 _ftelli64
 #define TSTDSTRING std::wstring
 #define TSTDSTRINGSTREAM std::wstringstream
 #define TSTDTOSTRING std::to_wstring
+#define P2TEXT(x) L##x
+
+void SysMessageW(const wchar_t* fmt, ...);
+#define SysMessage SysMessageW
+#endif
 
 //FIXME narrow string fmt
 #define SFMTs "S"
 
 #define __builtin_constant_p(p) false
-
-void SysMessageW(const wchar_t* fmt, ...);
-#define SysMessage SysMessageW
 
 #else //_WIN32
 
@@ -67,6 +88,7 @@ void SysMessageW(const wchar_t* fmt, ...);
 //FIXME narrow string fmt
 #define SFMTs "s"
 #define TEXT(val) val
+#define P2TEXT(val) val
 #define TCHAR char
 #define wfopen fopen
 #define TSTDSTRING std::string

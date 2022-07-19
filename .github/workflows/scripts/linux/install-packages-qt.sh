@@ -49,6 +49,7 @@ declare -a PCSX2_PACKAGES=(
 	"libsamplerate0-dev"
 	"libsoundtouch-dev"
 	"libudev-dev"
+	"libusb-1.0-0-dev"
 	"libx11-xcb-dev"
 	"pkg-config"
 	"zlib1g-dev"

@@ -15,6 +15,7 @@ JPG=9e
 SAMPLERATE=libsamplerate-0.1.9
 PORTAUDIO=pa_stable_v190700_20210406
 SOUNDTOUCH=soundtouch-2.3.1
+LIBUSB=1.0.26
 WXWIDGETS=3.1.6
 QT=6.3.1
 
@@ -38,6 +39,7 @@ fe7cbf3127882e3fc7259a75a0cb585620272c51745d3852ab9dd87960697f2e  $SDL.tar.gz
 7b19f418e6f7b8e23344082dd04440aacf5da23c5a73980ba22ae4eba4f87df7  qtsvg-everywhere-src-$QT.tar.xz
 c412750f2aa3beb93fce5f30517c607f55daaeb7d0407af206a8adf917e126c1  qttools-everywhere-src-$QT.tar.xz
 d7bdd55e2908ded901dcc262157100af2a490bf04d31e32995f6d91d78dfdb97  qttranslations-everywhere-src-$QT.tar.xz
+12ce7a61fc9854d1d2a1ffe095f7b5fac19ddba095c259e6067a46500381b5a5  libusb-$LIBUSB.tar.bz2
 EOF
 
 curl -L \
@@ -52,6 +54,7 @@ curl -L \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
+	-O "https://github.com/libusb/libusb/releases/download/v$LIBUSB/libusb-$LIBUSB.tar.bz2" \
 
 shasum -a 256 --check SHASUMS
 
@@ -102,6 +105,14 @@ cd "$SOUNDTOUCH"
 cmake -B build -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=MinSizeRel
 make -C build "-j$NPROCS"
 make -C build install
+cd ..
+
+echo "Installing libusb..."
+tar xf "libusb-$LIBUSB.tar.bz2"
+cd "libusb-$LIBUSB"
+./configure --prefix "$INSTALLDIR" --enable-mac-universal=no
+make "-j$NPROCS"
+make install
 cd ..
 
 if [ "$GUI" == "wxWidgets" ]; then

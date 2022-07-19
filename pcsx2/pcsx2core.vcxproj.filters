@@ -238,6 +238,15 @@
     <Filter Include="Tools\Input Recording">
       <UniqueIdentifier>{03ba2aa7-2cd9-48cb-93c6-fc93d5bdc938}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\USB\usb-python2">
+      <UniqueIdentifier>{95d253c7-cb70-49c4-b5ca-25817162d414}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-python2\devices">
+      <UniqueIdentifier>{32c6df0a-0683-4310-84e8-d2ced8721a0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-python2\inputs">
+      <UniqueIdentifier>{30f8041c-9171-4e12-bef0-2e2a6b5a4103}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Utilities\folderdesc.txt">
@@ -1202,9 +1211,6 @@
     <ClCompile Include="SPU2\Host\Config.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
-    <ClCompile Include="USB\USBNull.cpp">
-      <Filter>System\Ps2\USB</Filter>
-    </ClCompile>
     <ClCompile Include="HostSettings.cpp">
       <Filter>Host</Filter>
     </ClCompile>
@@ -1274,6 +1280,58 @@
     </ClCompile>
     <ClCompile Include="Frontend\LogSink.cpp">
       <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\USB.cpp" />
+    <ClCompile Include="USB\deviceproxy.cpp" />
+    <ClCompile Include="USB\device_init.cpp" />
+    <ClCompile Include="USB\qemu-usb\bus.cpp" />
+    <ClCompile Include="USB\qemu-usb\core.cpp" />
+    <ClCompile Include="USB\qemu-usb\desc.cpp" />
+    <ClCompile Include="USB\qemu-usb\glib.cpp" />
+    <ClCompile Include="USB\qemu-usb\hid.cpp" />
+    <ClCompile Include="USB\qemu-usb\input-keymap-qcode-to-qnum.cpp" />
+    <ClCompile Include="USB\qemu-usb\input-keymap-win32-to-qcode.cpp" />
+    <ClCompile Include="USB\qemu-usb\iov.cpp" />
+    <ClCompile Include="USB\qemu-usb\usb-ohci.cpp" />
+    <ClCompile Include="USB\qemu-usb\vl.cpp" />
+    <ClCompile Include="USB\shared\shared_usb.cpp" />
+    <ClCompile Include="USB\shared\inifile_usb.cpp" />
+    <ClCompile Include="USB\shared\ringbuffer.cpp" />
+    <ClCompile Include="USB\usb-python2\devices\ddr_extio.cpp">
+      <Filter>System\Ps2\USB\usb-python2\devices</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-python2\devices\acio.cpp">
+      <Filter>System\Ps2\USB\usb-python2\devices</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-python2\devices\thrilldrive_belt.cpp">
+      <Filter>System\Ps2\USB\usb-python2\devices</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-python2\devices\thrilldrive_handle.cpp">
+      <Filter>System\Ps2\USB\usb-python2\devices</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-python2\devices\toysmarch_drumpad.cpp">
+      <Filter>System\Ps2\USB\usb-python2\devices</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-python2\inputs\native\usb-python2-native.cpp">
+      <Filter>System\Ps2\USB\usb-python2\inputs</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-python2\inputs\passthrough\usb-python2-passthrough.cpp">
+      <Filter>System\Ps2\USB\usb-python2\inputs</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-python2\inputs\Python2QtInputManager.cpp">
+      <Filter>System\Ps2\USB\usb-python2\inputs</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-python2\devices\icca.cpp">
+      <Filter>System\Ps2\USB\usb-python2\devices</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-python2\patches.cpp">
+      <Filter>System\Ps2\USB\usb-python2</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-python2\usb-python2.cpp">
+      <Filter>System\Ps2\USB\usb-python2</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-python2\api_init_win32_hid.cpp">
+      <Filter>System\Ps2\USB\usb-python2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2118,6 +2176,66 @@
     </ClInclude>
     <ClInclude Include="Frontend\LogSink.h">
       <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\deviceproxy.h" />
+    <ClInclude Include="USB\helpers.h" />
+    <ClInclude Include="USB\platcompat.h" />
+    <ClInclude Include="USB\qemu-usb\desc.h" />
+    <ClInclude Include="USB\qemu-usb\glib.h" />
+    <ClInclude Include="USB\qemu-usb\hid.h" />
+    <ClInclude Include="USB\qemu-usb\input-keymap-win32-to-qcode.h" />
+    <ClInclude Include="USB\qemu-usb\input-keymap.h" />
+    <ClInclude Include="USB\qemu-usb\iov.h" />
+    <ClInclude Include="USB\qemu-usb\queue.h" />
+    <ClInclude Include="USB\qemu-usb\qusb.h" />
+    <ClInclude Include="USB\qemu-usb\USBinternal.h" />
+    <ClInclude Include="USB\qemu-usb\vl.h" />
+    <ClInclude Include="USB\readerwriterqueue\atomicops.h" />
+    <ClInclude Include="USB\readerwriterqueue\readerwriterqueue.h" />
+    <ClInclude Include="USB\shared\inifile_usb.h" />
+    <ClInclude Include="USB\shared\ringbuffer.h" />
+    <ClInclude Include="USB\shared\shared_usb.h" />
+    <ClInclude Include="USB\usb-python2\devices\ddr_extio.h">
+      <Filter>System\Ps2\USB\usb-python2\devices</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-python2\devices\acio.h">
+      <Filter>System\Ps2\USB\usb-python2\devices</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-python2\devices\thrilldrive_belt.h">
+      <Filter>System\Ps2\USB\usb-python2\devices</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-python2\devices\thrilldrive_handle.h">
+      <Filter>System\Ps2\USB\usb-python2\devices</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-python2\devices\toysmarch_drumpad.h">
+      <Filter>System\Ps2\USB\usb-python2\devices</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-python2\inputs\passthrough\usb-python2-passthrough.h">
+      <Filter>System\Ps2\USB\usb-python2\inputs</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-python2\inputs\native\usb-python2-native.h">
+      <Filter>System\Ps2\USB\usb-python2\inputs</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-python2\inputs\Python2QtInputManager.h">
+      <Filter>System\Ps2\USB\usb-python2\inputs</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-python2\devices\icca.h">
+      <Filter>System\Ps2\USB\usb-python2\devices</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-python2\patches.h">
+      <Filter>System\Ps2\USB\usb-python2</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\proxybase.h">
+      <Filter>System\Ps2\USB\usb-python2</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-python2\python2proxy.h">
+      <Filter>System\Ps2\USB\usb-python2</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-python2\usb-python2.h">
+      <Filter>System\Ps2\USB\usb-python2</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-python2\devices\input_device.h">
+      <Filter>System\Ps2\USB\usb-python2\devices</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

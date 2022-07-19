@@ -72,6 +72,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "d3d12memalloc", "3rdparty\d
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lzma", "3rdparty\lzma\lzma.vcxproj", "{A4323327-3F2B-4271-83D9-7F9A3C66B6B2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libusb", "3rdparty\libusb\libusb.vcxproj", "{349EE8F9-7D25-4909-AAF5-FF3FADE72187}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug AVX2|x64 = Debug AVX2|x64
@@ -430,6 +432,18 @@ Global
 		{A4323327-3F2B-4271-83D9-7F9A3C66B6B2}.Release AVX2|x64.Build.0 = Release|x64
 		{A4323327-3F2B-4271-83D9-7F9A3C66B6B2}.Release|x64.ActiveCfg = Release|x64
 		{A4323327-3F2B-4271-83D9-7F9A3C66B6B2}.Release|x64.Build.0 = Release|x64
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Debug AVX2|x64.ActiveCfg = Debug|x64
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Debug AVX2|x64.Build.0 = Debug|x64
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Debug|x64.ActiveCfg = Debug|x64
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Debug|x64.Build.0 = Debug|x64
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Devel AVX2|x64.ActiveCfg = Debug|x64
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Devel AVX2|x64.Build.0 = Debug|x64
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Devel|x64.ActiveCfg = Devel|x64
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Devel|x64.Build.0 = Devel|x64
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Release AVX2|x64.ActiveCfg = Release|x64
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Release AVX2|x64.Build.0 = Release|x64
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Release|x64.ActiveCfg = Release|x64
+		{349EE8F9-7D25-4909-AAF5-FF3FADE72187}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

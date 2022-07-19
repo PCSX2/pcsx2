@@ -205,6 +205,12 @@
     <ClCompile Include="Settings\HddCreateQt.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
+    <ClCompile Include="Settings\Python2SettingsWidget.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings\Python2BindingWidget.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
     <ClCompile Include="AutoUpdaterDialog.cpp" />
     <ClCompile Include="$(IntDir)moc_AutoUpdaterDialog.cpp">
       <Filter>moc</Filter>
@@ -234,6 +240,12 @@
     <ClInclude Include="QtUtils.h" />
     <ClInclude Include="SettingWidgetBinder.h" />
     <ClInclude Include="Settings\HddCreateQt.h">
+      <Filter>Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings\Python2SettingsWidget.h">
+      <Filter>Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings\Python2BindingWidget.h">
       <Filter>Settings</Filter>
     </ClInclude>
     <ClInclude Include="Settings\ControllerSettingWidgetBinder.h">
@@ -393,6 +405,12 @@
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\DEV9SettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\Python2SettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\Python2BindingWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="GameList\EmptyGameListWidget.ui">

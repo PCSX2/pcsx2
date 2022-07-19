@@ -36,6 +36,8 @@
 #include "Elfheader.h"
 #include "VMManager.h"
 
+#include "Frontend/INISettingsInterface.h"
+
 enum : u32
 {
 	GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
@@ -50,6 +52,7 @@ namespace GameList
 
 	static bool GetElfListEntry(const std::string& path, GameList::Entry* entry);
 	static bool GetIsoListEntry(const std::string& path, GameList::Entry* entry);
+	static bool GetPython2ListEntry(const std::string& path, GameList::Entry* entry);
 
 	static bool GetGameListEntryFromCache(const std::string& path, GameList::Entry* entry);
 	static void ScanDirectory(
@@ -81,13 +84,13 @@ bool GameList::IsGameListLoaded()
 
 const char* GameList::EntryTypeToString(EntryType type)
 {
-	static std::array<const char*, static_cast<int>(EntryType::Count)> names = {{"PS2Disc", "PS1Disc", "ELF", "Playlist"}};
+	static std::array<const char*, static_cast<int>(EntryType::Count)> names = {{"PS2Disc", "PS1Disc", "ELF", "Playlist", "Python 2"}};
 	return names[static_cast<int>(type)];
 }
 
 const char* GameList::EntryTypeToDisplayString(EntryType type)
 {
-	static std::array<const char*, static_cast<int>(EntryType::Count)> names = {{"PS2 Disc", "PS1 Disc", "ELF", "Playlist"}};
+	static std::array<const char*, static_cast<int>(EntryType::Count)> names = {{"PS2 Disc", "PS1 Disc", "ELF", "Playlist", "Python 2"}};
 	return names[static_cast<int>(type)];
 }
 
@@ -119,7 +122,7 @@ const char* GameList::EntryCompatibilityRatingToString(CompatibilityRating ratin
 
 bool GameList::IsScannableFilename(const std::string_view& path)
 {
-	static const char* extensions[] = {".iso", ".mdf", ".nrg", ".bin", ".img", ".gz", ".cso", ".chd", ".elf", ".irx"};
+	static const char* extensions[] = {".iso", ".mdf", ".nrg", ".bin", ".img", ".gz", ".cso", ".chd", ".elf", ".irx", ".py2"};
 
 	for (const char* test_extension : extensions)
 	{
@@ -143,6 +146,16 @@ void GameList::FillBootParametersForEntry(VMBootParameters* params, const Entry*
 		params->filename.clear();
 		params->source_type = CDVD_SourceType::NoDisc;
 		params->elf_override = entry->path;
+	}
+	else if (entry->type == GameList::EntryType::Python2)
+	{
+		params->filename.clear();
+		params->source_type = CDVD_SourceType::NoDisc;
+		params->elf_override.clear();
+
+		params->is_python2 = true;
+		params->python2_crc = entry->crc;
+		params->python2_serial = entry->serial;
 	}
 	else
 	{
@@ -303,10 +316,218 @@ bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 	return true;
 }
 // clang-format off
+bool GameList::GetPython2ListEntry(const std::string& path, GameList::Entry* entry)
+{
+	// TODO: Parse a .py2 entry file to read target image filename, HDD ID, ILINK ID, and other configurations
+	std::unique_ptr<INISettingsInterface> new_interface = std::make_unique<INISettingsInterface>(std::move(path));
+	if (!new_interface->Load())
+	{
+		Console.Error("Failed to parse Python 2 game entry ini '%s'", new_interface->GetFileName().c_str());
+		new_interface.reset();
+		return false;
+	}
+
+	std::string game_title;
+	new_interface->GetStringValue("Game", "Title", &game_title);
+
+	std::string hdd_id_path;
+	new_interface->GetStringValue("Game", "HddId", &hdd_id_path);
+
+	if (!hdd_id_path.empty() && !Path::IsAbsolute(hdd_id_path)) {
+		hdd_id_path = std::string(Path::Combine(Path::GetDirectory(path), hdd_id_path));
+	}
+
+	std::string ilink_id_path;
+	new_interface->GetStringValue("Game", "IlinkId", &ilink_id_path);
+
+	if (!ilink_id_path.empty() && !Path::IsAbsolute(ilink_id_path)) {
+		ilink_id_path = std::string(Path::Combine(Path::GetDirectory(path), ilink_id_path));
+	}
+
+	std::string hdd_image_path;
+	new_interface->GetStringValue("Game", "HddImage", &hdd_image_path);
+
+	if (!hdd_image_path.empty() && !Path::IsAbsolute(hdd_image_path)) {
+		hdd_image_path = std::string(Path::Combine(Path::GetDirectory(path), hdd_image_path));
+	}
+
+	std::string region;
+	new_interface->GetStringValue("Game", "Region", &region);
+
+	printf("game_title: %s\n", game_title.c_str());
+	printf("hdd_id_path: %s\n", hdd_id_path.c_str());
+	printf("ilink_id_path: %s\n", ilink_id_path.c_str());
+	printf("hdd_image_path: %s\n", hdd_image_path.c_str());
+	printf("region: %s\n", region.c_str());
+
+	entry->path = path;
+	entry->serial = "KNAC00001";
+	entry->crc = rand(); // There should be a better way to determine this but there's no reliable way without parsing the files on the HDD directly
+	entry->title = game_title;
+	entry->type = EntryType::Python2;
+	entry->compatibility_rating = CompatibilityRating::Unknown;
+
+						////// NTSC //////
+						//////////////////
+	if (StringUtil::StartsWith(region, "NTSC-B"))
+		entry->region = Region::NTSC_B;
+	else if (StringUtil::StartsWith(region, "NTSC-C"))
+		entry->region = Region::NTSC_C;
+	else if (StringUtil::StartsWith(region, "NTSC-HK"))
+		entry->region = Region::NTSC_HK;
+	else if (StringUtil::StartsWith(region, "NTSC-J"))
+		entry->region = Region::NTSC_J;
+	else if (StringUtil::StartsWith(region, "NTSC-K"))
+		entry->region = Region::NTSC_K;
+	else if (StringUtil::StartsWith(region, "NTSC-T"))
+		entry->region = Region::NTSC_T;
+	else if (StringUtil::StartsWith(region, "NTSC-U"))
+		entry->region = Region::NTSC_U;
+						////// PAL //////
+						//////////////////
+	else if (StringUtil::StartsWith(region, "PAL-AF"))
+		entry->region = Region::PAL_AF;
+	else if (StringUtil::StartsWith(region, "PAL-AU"))
+		entry->region = Region::PAL_AU;
+	else if (StringUtil::StartsWith(region, "PAL-A"))
+		entry->region = Region::PAL_A;
+	else if (StringUtil::StartsWith(region, "PAL-BE"))
+		entry->region = Region::PAL_BE;
+	else if (StringUtil::StartsWith(region, "PAL-E"))
+		entry->region = Region::PAL_E;
+	else if (StringUtil::StartsWith(region, "PAL-FI"))
+		entry->region = Region::PAL_FI;
+	else if (StringUtil::StartsWith(region, "PAL-F"))
+		entry->region = Region::PAL_F;
+	else if (StringUtil::StartsWith(region, "PAL-GR"))
+		entry->region = Region::PAL_GR;
+	else if (StringUtil::StartsWith(region, "PAL-G"))
+		entry->region = Region::PAL_G;
+	else if (StringUtil::StartsWith(region, "PAL-IN"))
+		entry->region = Region::PAL_IN;
+	else if (StringUtil::StartsWith(region, "PAL-I"))
+		entry->region = Region::PAL_I;
+	else if (StringUtil::StartsWith(region, "PAL-M"))
+		entry->region = Region::PAL_M;
+	else if (StringUtil::StartsWith(region, "PAL-NL"))
+		entry->region = Region::PAL_NL;
+	else if (StringUtil::StartsWith(region, "PAL-NO"))
+		entry->region = Region::PAL_NO;
+	else if (StringUtil::StartsWith(region, "PAL-P"))
+		entry->region = Region::PAL_P;
+	else if (StringUtil::StartsWith(region, "PAL-R"))
+		entry->region = Region::PAL_R;
+	else if (StringUtil::StartsWith(region, "PAL-SC"))
+		entry->region = Region::PAL_SC;
+	else if (StringUtil::StartsWith(region, "PAL-SWI"))
+		entry->region = Region::PAL_SWI;
+	else if (StringUtil::StartsWith(region, "PAL-SW"))
+		entry->region = Region::PAL_SW;
+	else if (StringUtil::StartsWith(region, "PAL-S"))
+		entry->region = Region::PAL_S;
+	else if (StringUtil::StartsWith(region, "PAL-UK"))
+		entry->region = Region::PAL_UK;
+	else
+		entry->region = Region::Other;
+
+	std::string filename(VMManager::GetGameSettingsPath(entry->serial, entry->crc));
+	std::unique_ptr<INISettingsInterface> sif = std::make_unique<INISettingsInterface>(std::move(filename));
+	if (FileSystem::FileExists(sif->GetFileName().c_str()))
+		sif->Load();
+
+	sif->SetBoolValue("DEV9/Hdd", "HddEnable", true);
+	sif->SetStringValue("DEV9/Hdd", "HddFile", hdd_image_path.c_str());
+	sif->SetStringValue("DEV9/Hdd", "HddIdFile", hdd_id_path.c_str());
+	sif->SetStringValue("DEV9/Hdd", "IlinkIdPath", ilink_id_path.c_str()); // TODO: Find better place
+	sif->SetBoolValue("DEV9/Eth", "EthEnable", true);
+	sif->SetBoolValue("EmuCore/Gamefixes", "OPHFlagHack", true);
+	
+	if (!sif->ContainsValue("Python2/Game", "DongleBlackFile")) {
+		std::string dongleBlackFile;
+		new_interface->GetStringValue("Game", "DongleBlackFile", &dongleBlackFile);
+
+		if (!dongleBlackFile.empty() && !Path::IsAbsolute(dongleBlackFile)) {
+			dongleBlackFile = std::string(Path::Combine(Path::GetDirectory(path), dongleBlackFile));
+		}
+
+		if (!dongleBlackFile.empty())
+			sif->SetStringValue("Python2/Game", "DongleBlackFile", dongleBlackFile.c_str());
+	}
+	
+	if (!sif->ContainsValue("Python2/Game", "DongleWhiteFile")) {
+		std::string dongleWhiteFile;
+		new_interface->GetStringValue("Game", "DongleWhiteFile", &dongleWhiteFile);
+
+		if (!dongleWhiteFile.empty() && !Path::IsAbsolute(dongleWhiteFile)) {
+			dongleWhiteFile = std::string(Path::Combine(Path::GetDirectory(path), dongleWhiteFile));
+		}
+
+		if (!dongleWhiteFile.empty())
+			sif->SetStringValue("Python2/Game", "DongleWhiteFile", dongleWhiteFile.c_str());
+	}
+		
+	if (!sif->ContainsValue("Python2/Game", "Player1CardFile")) {
+		std::string player1CardFile;
+		new_interface->GetStringValue("Game", "Player1CardFile", &player1CardFile);
+
+		if (!player1CardFile.empty() && !Path::IsAbsolute(player1CardFile)) {
+			player1CardFile = std::string(Path::Combine(Path::GetDirectory(path), player1CardFile));
+		}
+
+		if (!player1CardFile.empty())
+			sif->SetStringValue("Python2/Game", "Player1CardFile", player1CardFile.c_str());
+	}
+		
+	if (!sif->ContainsValue("Python2/Game", "Player2CardFile")) {
+		std::string player2CardFile;
+		new_interface->GetStringValue("Game", "Player2CardFile", &player2CardFile);
+
+		if (!player2CardFile.empty() && !Path::IsAbsolute(player2CardFile)) {
+			player2CardFile = std::string(Path::Combine(Path::GetDirectory(path), player2CardFile));
+		}
+
+		if (!player2CardFile.empty())
+			sif->SetStringValue("Python2/Game", "Player2CardFile", player2CardFile.c_str());
+	}
+
+		
+	if (!sif->ContainsValue("Python2/Game", "PatchFile")) {
+		std::string patchFile;
+		new_interface->GetStringValue("Game", "PatchFile", &patchFile);
+
+		if (!patchFile.empty() && !Path::IsAbsolute(patchFile)) {
+			patchFile = std::string(Path::Combine(Path::GetDirectory(path), patchFile));
+		}
+		if (!patchFile.empty())
+			sif->SetStringValue("Python2/Game", "PatchFile", patchFile.c_str());
+	}
+
+	if (!sif->ContainsValue("Python2/Game", "DIPSW1"))
+		sif->SetBoolValue("Python2/Game", "DIPSW1", new_interface->GetBoolValue("Game", "DIPSW1", false));
+
+	if (!sif->ContainsValue("Python2/Game", "DIPSW2"))
+		sif->SetBoolValue("Python2/Game", "DIPSW2", new_interface->GetBoolValue("Game", "DIPSW2", false));
+	
+	if (!sif->ContainsValue("Python2/Game", "DIPSW3"))
+		sif->SetBoolValue("Python2/Game", "DIPSW3", new_interface->GetBoolValue("Game", "DIPSW3", false));
+	
+	if (!sif->ContainsValue("Python2/Game", "DIPSW4"))
+		sif->SetBoolValue("Python2/Game", "DIPSW4", new_interface->GetBoolValue("Game", "DIPSW4", false));
+	
+	if (!sif->ContainsValue("Python2/Game", "Force31kHz"))
+		sif->SetBoolValue("Python2/Game", "Force31kHz", new_interface->GetBoolValue("Game", "Force31kHz", false));
+
+	sif->Save();
+
+	return true;
+}
+// clang-format off
 bool GameList::PopulateEntryFromPath(const std::string& path, GameList::Entry* entry)
 {
 	if (VMManager::IsElfFileName(path.c_str()))
 		return GetElfListEntry(path, entry);
+	else if (StringUtil::EndsWithNoCase(path.c_str(), ".py2"))
+		return GetPython2ListEntry(path, entry);
 	else
 		return GetIsoListEntry(path, entry);
 }

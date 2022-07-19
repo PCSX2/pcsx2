@@ -137,6 +137,10 @@ static u32 s_frame_advance_count = 0;
 static u32 s_mxcsr_saved;
 static std::optional<LimiterModeType> s_limiter_mode_prior_to_hold_interaction;
 
+static bool s_is_python2 = false;
+static u32 s_python2_crc = 0;
+static std::string s_python2_serial;
+
 bool VMManager::PerformEarlyHardwareChecks(const char** error)
 {
 #define COMMON_DOWNLOAD_MESSAGE \
@@ -630,6 +634,11 @@ void VMManager::UpdateRunningGame(bool resetting, bool game_starting)
 		new_serial = GSDumpReplayer::GetDumpSerial();
 	}
 
+	if (s_is_python2) {
+		new_crc = ElfCRC = s_python2_crc;
+		new_serial = s_python2_serial;
+	}
+
 	if (!resetting && s_game_crc == new_crc && s_game_serial == new_serial)
 		return;
 
@@ -791,6 +800,16 @@ bool VMManager::ApplyBootParameters(const VMBootParameters& params, std::string*
 		EmuConfig.UseBOOT2Injection = true;
 	}
 
+	s_is_python2 = params.is_python2.has_value() && params.is_python2.value();
+	if (s_is_python2) {
+		// Set parameters for Python 2
+		s_python2_crc = params.python2_crc.has_value() ? params.python2_crc.value() : 0;
+		s_python2_serial = params.python2_serial.has_value() ? params.python2_serial.value() : "";
+	} else {
+		s_python2_crc = 0;
+		s_python2_serial = "";
+	}
+
 	return true;
 }
 
@@ -838,6 +857,8 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	std::string state_to_load;
 	if (!ApplyBootParameters(boot_params, &state_to_load))
 		return false;
+
+	UpdateRunningGame(true, false); // Add this here so we can get the loaded settings in the Python 2 USB code
 
 	EmuConfig.LimiterMode = GetInitialLimiterMode();
 
@@ -889,17 +910,6 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 		PADshutdown();
 	};
 
-	Console.WriteLn("Opening DEV9...");
-	if (DEV9init() != 0 || DEV9open() != 0)
-	{
-		Host::ReportErrorAsync("Startup Error", "Failed to initialize DEV9.");
-		return false;
-	}
-	ScopedGuard close_dev9 = []() {
-		DEV9close();
-		DEV9shutdown();
-	};
-
 	Console.WriteLn("Opening USB...");
 	if (USBinit() != 0 || USBopen(Host::GetHostDisplay()->GetWindowInfo()) != 0)
 	{
@@ -909,6 +919,17 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	ScopedGuard close_usb = []() {
 		USBclose();
 		USBshutdown();
+	};
+
+	Console.WriteLn("Opening DEV9...");
+	if (DEV9init() != 0 || DEV9open() != 0)
+	{
+		Host::ReportErrorAsync("Startup Error", "Failed to initialize DEV9.");
+		return false;
+	}
+	ScopedGuard close_dev9 = []() {
+		DEV9close();
+		DEV9shutdown();
 	};
 
 	Console.WriteLn("Opening FW...");

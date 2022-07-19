@@ -46,6 +46,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\sdl2\include;$(SolutionDir)3rdparty\sdl2\SDL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\libzip;$(SolutionDir)3rdparty\libzip\libzip\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\d3d12memalloc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\libusb\libusb\libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\zstd\zstd\lib</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\cpuinfo\include</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -317,7 +318,6 @@
     <ClCompile Include="GS\Renderers\SW\GSVertexSW.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSVertexTrace.cpp" />
     <ClCompile Include="SPU2\Windows\SndOut_XAudio2.cpp" />
-    <ClCompile Include="USB\USBNull.cpp" />
     <ClCompile Include="Dump.cpp" />
     <ClCompile Include="VMManager.cpp" />
     <ClCompile Include="windows\Optimus.cpp" />
@@ -446,6 +446,34 @@
     <ClCompile Include="CDVD\IsoFS\IsoFile.cpp" />
     <ClCompile Include="CDVD\IsoFS\IsoFS.cpp" />
     <ClCompile Include="CDVD\IsoFS\IsoFSCDVD.cpp" />
+    <ClCompile Include="USB\USB.cpp" />
+    <ClCompile Include="USB\deviceproxy.cpp" />
+    <ClCompile Include="USB\device_init.cpp" />
+    <ClCompile Include="USB\qemu-usb\bus.cpp" />
+    <ClCompile Include="USB\qemu-usb\core.cpp" />
+    <ClCompile Include="USB\qemu-usb\desc.cpp" />
+    <ClCompile Include="USB\qemu-usb\glib.cpp" />
+    <ClCompile Include="USB\qemu-usb\hid.cpp" />
+    <ClCompile Include="USB\qemu-usb\input-keymap-qcode-to-qnum.cpp" />
+    <ClCompile Include="USB\qemu-usb\input-keymap-win32-to-qcode.cpp" />
+    <ClCompile Include="USB\qemu-usb\iov.cpp" />
+    <ClCompile Include="USB\qemu-usb\usb-ohci.cpp" />
+    <ClCompile Include="USB\qemu-usb\vl.cpp" />
+    <ClCompile Include="USB\shared\shared_usb.cpp" />
+    <ClCompile Include="USB\shared\inifile_usb.cpp" />
+    <ClCompile Include="USB\shared\ringbuffer.cpp" />
+    <ClCompile Include="USB\usb-python2\usb-python2.cpp" />
+    <ClCompile Include="USB\usb-python2\devices\acio.cpp" />
+    <ClCompile Include="USB\usb-python2\devices\ddr_extio.cpp" />
+    <ClCompile Include="USB\usb-python2\devices\icca.cpp" />
+    <ClCompile Include="USB\usb-python2\devices\thrilldrive_belt.cpp" />
+    <ClCompile Include="USB\usb-python2\devices\thrilldrive_handle.cpp" />
+    <ClCompile Include="USB\usb-python2\devices\toysmarch_drumpad.cpp" />
+    <ClCompile Include="USB\usb-python2\inputs\passthrough\usb-python2-passthrough.cpp" />
+    <ClCompile Include="USB\usb-python2\inputs\native\usb-python2-native.cpp" />
+    <ClCompile Include="USB\usb-python2\inputs\Python2QtInputManager.cpp" />
+    <ClCompile Include="USB\usb-python2\patches.cpp" />
+    <ClCompile Include="USB\usb-python2\api_init_win32_hid.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncFileReader.h" />
@@ -637,7 +665,6 @@
     <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="sio_internal.h" />
     <ClInclude Include="ps2\pgif.h" />
-    <ClInclude Include="USB\USB.h" />
     <ClInclude Include="Utilities\AsciiFile.h" />
     <ClInclude Include="Elfheader.h" />
     <ClInclude Include="CDVD\IsoFileFormats.h" />
@@ -751,6 +778,39 @@
     <ClInclude Include="CDVD\IsoFS\IsoFS.h" />
     <ClInclude Include="CDVD\IsoFS\IsoFSCDVD.h" />
     <ClInclude Include="CDVD\IsoFS\SectorSource.h" />
+    <ClInclude Include="USB\USB.h" />
+    <ClInclude Include="USB\deviceproxy.h" />
+    <ClInclude Include="USB\helpers.h" />
+    <ClInclude Include="USB\platcompat.h" />
+    <ClInclude Include="USB\proxybase.h" />
+    <ClInclude Include="USB\qemu-usb\desc.h" />
+    <ClInclude Include="USB\qemu-usb\glib.h" />
+    <ClInclude Include="USB\qemu-usb\hid.h" />
+    <ClInclude Include="USB\qemu-usb\input-keymap-win32-to-qcode.h" />
+    <ClInclude Include="USB\qemu-usb\input-keymap.h" />
+    <ClInclude Include="USB\qemu-usb\iov.h" />
+    <ClInclude Include="USB\qemu-usb\queue.h" />
+    <ClInclude Include="USB\qemu-usb\qusb.h" />
+    <ClInclude Include="USB\qemu-usb\USBinternal.h" />
+    <ClInclude Include="USB\qemu-usb\vl.h" />
+    <ClInclude Include="USB\readerwriterqueue\atomicops.h" />
+    <ClInclude Include="USB\readerwriterqueue\readerwriterqueue.h" />
+    <ClInclude Include="USB\shared\inifile_usb.h" />
+    <ClInclude Include="USB\shared\ringbuffer.h" />
+    <ClInclude Include="USB\shared\shared_usb.h" />
+    <ClInclude Include="USB\usb-python2\devices\acio.h" />
+    <ClInclude Include="USB\usb-python2\devices\icca.h" />
+    <ClInclude Include="USB\usb-python2\devices\thrilldrive_belt.h" />
+    <ClInclude Include="USB\usb-python2\devices\ddr_extio.h" />
+    <ClInclude Include="USB\usb-python2\devices\thrilldrive_handle.h" />
+    <ClInclude Include="USB\usb-python2\devices\input_device.h" />
+    <ClInclude Include="USB\usb-python2\devices\toysmarch_drumpad.h" />
+    <ClInclude Include="USB\usb-python2\inputs\passthrough\usb-python2-passthrough.h" />
+    <ClInclude Include="USB\usb-python2\inputs\native\usb-python2-native.h" />
+    <ClInclude Include="USB\usb-python2\inputs\Python2QtInputManager.h" />
+    <ClInclude Include="USB\usb-python2\patches.h" />
+    <ClInclude Include="USB\usb-python2\python2proxy.h" />
+    <ClInclude Include="USB\usb-python2\usb-python2.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(SolutionDir)3rdparty\baseclasses\baseclasses.vcxproj">
@@ -795,6 +855,9 @@
     </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\imgui\imgui.vcxproj">
       <Project>{88fb34ec-845e-4f21-a552-f1573b9ed167}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\libusb\libusb.vcxproj">
+      <Project>{349ee8f9-7d25-4909-aaf5-ff3fade72187}</Project>
     </ProjectReference>
     <ProjectReference Include="..\3rdparty\libzip\libzip.vcxproj">
       <Project>{20b2e9fe-f020-42a0-b324-956f5b06ea68}</Project>

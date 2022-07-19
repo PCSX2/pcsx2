@@ -1,18 +1,3 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #pragma once
 #include <thread>
 #include <atomic>
@@ -180,12 +165,11 @@ namespace usb_python2
 		virtual int Port() { return mPort; }
 		virtual void Port(int port) { mPort = port; }
 
-		virtual void UpdateKeyStates(std::wstring keybind) = 0;
-		virtual bool GetKeyState(std::wstring keybind) = 0;
-		virtual bool GetKeyStateOneShot(std::wstring keybind) = 0;
-		virtual double GetKeyStateAnalog(std::wstring keybind) = 0;
-		virtual bool IsKeybindAvailable(std::wstring keybind) = 0;
-		virtual bool IsAnalogKeybindAvailable(std::wstring keybind) = 0;
+		virtual void UpdateKeyStates(TSTDSTRING keybind) = 0;
+		virtual bool GetKeyState(TSTDSTRING keybind) = 0;
+		virtual bool GetKeyStateOneShot(TSTDSTRING keybind) = 0;
+		virtual double GetKeyStateAnalog(TSTDSTRING keybind) = 0;
+		virtual bool IsAnalogKeybindAvailable(TSTDSTRING keybind) = 0;
 
 	protected:
 		int mPort;

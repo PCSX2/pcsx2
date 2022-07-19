@@ -27,6 +27,7 @@
 class ControllerGlobalSettingsWidget;
 class ControllerBindingWidget;
 class HotkeySettingsWidget;
+class Python2BindingWidget;
 
 class SettingsInterface;
 
@@ -101,6 +102,7 @@ private:
 	ControllerGlobalSettingsWidget* m_global_settings = nullptr;
 	std::array<ControllerBindingWidget*, MAX_PORTS> m_port_bindings{};
 	HotkeySettingsWidget* m_hotkey_settings = nullptr;
+	Python2BindingWidget* m_python2_settings = nullptr;
 
 	QList<QPair<QString, QString>> m_device_list;
 	QStringList m_vibration_motors;

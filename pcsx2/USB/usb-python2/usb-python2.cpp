@@ -1,40 +1,22 @@
-/*
- * QEMU USB HID devices
- *
- * Copyright (c) 2005 Fabrice Bellard
- * Copyright (c) 2007 OpenMoko, Inc.  (andrew@openedhand.com)
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-
 #include "PrecompiledHeader.h"
 #include <algorithm>
 #include <numeric>
 #include <queue>
 
 #include "common/FileSystem.h"
+#include "common/Path.h"
 
 #include "Config.h"
 
 #ifndef PCSX2_CORE
-#include "gui/AppConfig.h"
 #include "gui/StringHelpers.h"
+#include "gui/AppConfig.h"
+#endif
+
+#ifdef PCSX2_CORE
+#include "pcsx2/HostSettings.h"
+#include "common/SettingsInterface.h"
+#include "Frontend/InputManager.h"
 #endif
 
 #include "USB/deviceproxy.h"
@@ -50,9 +32,7 @@
 #include "USB/usb-python2/devices/toysmarch_drumpad.h"
 #include "USB/usb-python2/devices/icca.h"
 
-#ifndef PCSX2_CORE
 #include "patches.h"
-#endif
 
 #ifdef INCLUDE_MINIMAID
 #include <mmmagic.h>
@@ -60,7 +40,7 @@
 
 #ifdef INCLUDE_BTOOLS
 #include <bemanitools/ddrio.h>
-#include <pcsx2/USB/usb-python2/btools/usb-python2-btools.h>
+#include "USB/usb-python2/inputs/btools/usb-python2-btools.h"
 
 HINSTANCE hDDRIO = nullptr;
 
@@ -324,9 +304,78 @@ namespace usb_python2
 
 	void load_configuration(USBDevice* dev)
 	{
-#ifndef PCSX2_CORE
 		auto s = reinterpret_cast<UsbPython2State*>(dev);
 
+#ifdef PCSX2_CORE
+		SettingsInterface* si = Host::GetSettingsInterface(); // TODO: Fix this to load the appropriate config file
+
+		s->f.dipSwitch[0] = si->GetBoolValue("Python2/Game", "DIPSW1", false) ? '1' : '0';
+		s->f.dipSwitch[1] = si->GetBoolValue("Python2/Game", "DIPSW2", false) ? '1' : '0';
+		s->f.dipSwitch[2] = si->GetBoolValue("Python2/Game", "DIPSW3", false) ? '1' : '0';
+		s->f.dipSwitch[3] = si->GetBoolValue("Python2/Game", "DIPSW4", false) ? '1' : '0';
+		s->f.force31khz = si->GetBoolValue("Python2/Game", "Force31kHz", false);
+
+		Console.WriteLn("dipswitches: %c %c %c %c\n", s->f.dipSwitch[0], s->f.dipSwitch[1], s->f.dipSwitch[2], s->f.dipSwitch[3]);
+		Console.WriteLn("force31khz: %d\n", s->f.force31khz);
+
+		IlinkIdPath = si->GetStringValue("Python2/System", "IlinkIdFile", "");
+		Console.WriteLn("IlinkIdPath: %s", IlinkIdPath.c_str());
+
+		// PatchFileOverridePath = si->GetStringValue("Python2/Game", "PatchFile", "");
+		// Console.WriteLn("PatchFileOverridePath: %s", PatchFileOverridePath.c_str());
+
+		s->f.cardFilenames[0] = si->GetStringValue("Python2/Game", "Player1CardFile", "card1.txt");
+		Console.WriteLn("Player 1 card filename: %s", s->f.cardFilenames[0].c_str());
+
+		s->f.cardFilenames[1] = si->GetStringValue("Python2/Game", "Player2CardFile", "card2.txt");
+		Console.WriteLn("Player 2 card filename: %s", s->f.cardFilenames[0].c_str());
+
+
+		s->f.gameType = si->GetIntValue("Python2/Game", "GameType", 0);
+		Console.WriteLn("GameType: %d", s->f.gameType);
+
+		const std::string hddIdPath = si->GetStringValue("DEV9/Hdd", "HddIdFile", "");
+		Console.WriteLn("HddIdPath: %s", hddIdPath.c_str());
+		if (!hddIdPath.empty())
+		{
+			if (FileSystem::FileExists(hddIdPath.c_str()))
+				EmuConfig.DEV9.HddIdFile = hddIdPath;
+		}
+
+		auto dongleBlackPath = si->GetStringValue("Python2/Game", "DongleBlackFile", "");
+		Console.WriteLn("DongleBlackPath: %s", dongleBlackPath.c_str());
+		if (!dongleBlackPath.empty())
+		{
+			auto dongleFile = FileSystem::OpenManagedCFile(dongleBlackPath.c_str(), "rb");
+			if (dongleFile && FileSystem::FSize64(dongleFile.get()) >= 40)
+			{
+				std::fread(&s->f.dongleSlotPayload[0][0], 1, 40, dongleFile.get());
+				s->f.isDongleSlotLoaded[0] = true;
+			}
+			else
+			{
+				std::fill(std::begin(s->f.dongleSlotPayload[0]), std::end(s->f.dongleSlotPayload[0]), 0);
+				s->f.isDongleSlotLoaded[0] = false;
+			}
+		}
+
+		auto dongleWhitePath = si->GetStringValue("Python2/Game", "DongleWhiteFile", "");
+		Console.WriteLn("DongleWhitePath: %s", dongleWhitePath.c_str());
+		if (!dongleWhitePath.empty())
+		{
+			auto dongleFile = FileSystem::OpenManagedCFile(dongleWhitePath.c_str(), "rb");
+			if (dongleFile && FileSystem::FSize64(dongleFile.get()) >= 40)
+			{
+				std::fread(&s->f.dongleSlotPayload[1][0], 1, 40, dongleFile.get());
+				s->f.isDongleSlotLoaded[1] = true;
+			}
+			else
+			{
+				std::fill(std::begin(s->f.dongleSlotPayload[1]), std::end(s->f.dongleSlotPayload[1]), 0);
+				s->f.isDongleSlotLoaded[1] = false;
+			}
+		}
+#else
 		// Called when the device is initialized so just load settings here
 		const wxString iniPath = StringUtil::UTF8StringToWxString(Path::Combine(EmuFolders::Settings, "Python2.ini"));
 		CIniFile ciniFile;
@@ -343,10 +392,10 @@ namespace usb_python2
 #endif
 
 		{
-			s->f.cardFilenames[0] = wstr_to_str(ciniFile.GetKeyValue(L"CardReader", L"Player1Card"));
+			s->f.cardFilenames[0] = wxString(ciniFile.GetKeyValue(L"CardReader", L"Player1Card")).ToStdString();
 			Console.WriteLn("Player 1 card filename: %s", s->f.cardFilenames[0].c_str());
 
-			s->f.cardFilenames[1] = wstr_to_str(ciniFile.GetKeyValue(L"CardReader", L"Player2Card"));
+			s->f.cardFilenames[1] = wxString(ciniFile.GetKeyValue(L"CardReader", L"Player2Card")).ToStdString();
 			Console.WriteLn("Player 2 card filename: %s", s->f.cardFilenames[1].c_str());
 		}
 
@@ -354,10 +403,10 @@ namespace usb_python2
 		auto section = ciniFile.GetSection(selectedDevice);
 		if (section)
 		{
-			auto gameName = wstr_to_str(section->GetKeyValue(L"Name"));
+			auto gameName = wxString(section->GetKeyValue(L"Name")).ToStdString();
 			Console.WriteLn("Game Name: %s", gameName.c_str());
 
-			auto dongleBlackPath = wstr_to_str(section->GetKeyValue(L"DongleBlackPath"));
+			auto dongleBlackPath = wxString(section->GetKeyValue(L"DongleBlackPath")).ToStdString();
 			Console.WriteLn("DongleBlackPath: %s", dongleBlackPath.c_str());
 			if (!dongleBlackPath.empty())
 			{
@@ -374,7 +423,7 @@ namespace usb_python2
 				}
 			}
 
-			auto dongleWhitePath = wstr_to_str(section->GetKeyValue(L"DongleWhitePath"));
+			auto dongleWhitePath = wxString(section->GetKeyValue(L"DongleWhitePath")).ToStdString();
 			Console.WriteLn("DongleWhitePath: %s", dongleWhitePath.c_str());
 			if (!dongleWhitePath.empty())
 			{
@@ -391,19 +440,19 @@ namespace usb_python2
 				}
 			}
 
-			auto inputType = wstr_to_str(section->GetKeyValue(L"InputType"));
+			auto inputType = wxString(section->GetKeyValue(L"InputType")).ToStdString();
 			Console.WriteLn("InputType: %s", inputType.c_str());
 			s->f.gameType = 0;
 			if (!inputType.empty())
 				s->f.gameType = atoi(inputType.c_str());
 
-			auto dipSwitch = wstr_to_str(section->GetKeyValue(L"DipSwitch"));
+			auto dipSwitch = wxString(section->GetKeyValue(L"DipSwitch")).ToStdString();
 			Console.WriteLn("DipSwitch: %s", dipSwitch.c_str());
 			std::fill(std::begin(s->f.dipSwitch), std::end(s->f.dipSwitch), 0);
 			for (size_t j = 0; j < 4 && j < dipSwitch.size(); j++)
 				s->f.dipSwitch[j] = dipSwitch[j];
 
-			auto hddImagePath = wstr_to_str(section->GetKeyValue(L"HddImagePath"));
+			auto hddImagePath = wxString(section->GetKeyValue(L"HddImagePath")).ToStdString();
 			Console.WriteLn("HddImagePath: %s", hddImagePath.c_str());
 			EmuConfig.DEV9.HddFile = "";
 			if (!hddImagePath.empty())
@@ -412,7 +461,7 @@ namespace usb_python2
 					EmuConfig.DEV9.HddFile = hddImagePath;
 			}
 
-			auto hddIdPath = wstr_to_str(section->GetKeyValue(L"HddIdPath"));
+			auto hddIdPath = wxString(section->GetKeyValue(L"HddIdPath")).ToStdString();
 			Console.WriteLn("HddIdPath: %s", hddIdPath.c_str());
 			EmuConfig.DEV9.HddIdFile = "";
 			if (!hddIdPath.empty())
@@ -421,15 +470,15 @@ namespace usb_python2
 					EmuConfig.DEV9.HddIdFile = hddIdPath;
 			}
 
-			auto ilinkIdPath = wstr_to_str(section->GetKeyValue(L"IlinkIdPath"));
+			auto ilinkIdPath = wxString(section->GetKeyValue(L"IlinkIdPath")).ToStdString();
 			Console.WriteLn("IlinkIdPath: %s", ilinkIdPath.c_str());
 			IlinkIdPath = ilinkIdPath;
 
-			auto force31kHz = wstr_to_str(section->GetKeyValue(L"Force31kHz"));
+			auto force31kHz = wxString(section->GetKeyValue(L"Force31kHz")).ToStdString();
 			Console.WriteLn("Force31kHz: %s", force31kHz.c_str());
 			s->f.force31khz = force31kHz == "1";
 
-			auto patchFile = wstr_to_str(section->GetKeyValue(L"PatchFile"));
+			auto patchFile = wxString(section->GetKeyValue(L"PatchFile")).ToStdString();
 			Console.WriteLn("PatchFile: %s", patchFile.c_str());
 			PatchFileOverridePath = patchFile;
 		}
@@ -471,7 +520,7 @@ namespace usb_python2
 				const uint8_t resp[] = {
 					'D', '4', '4', '\0', // product code
 					1, // major
-					6,  // minor
+					6, // minor
 					4 // revision
 				};
 				data.insert(data.end(), std::begin(resp), std::end(resp));
@@ -529,7 +578,7 @@ namespace usb_python2
 
 			else if (header->cmd == P2IO_CMD_COIN_STOCK)
 			{
-				Python2ConVerbose.WriteLn("P2IO_CMD_COIN_STOCK");
+				// Python2ConVerbose.WriteLn("P2IO_CMD_COIN_STOCK");
 
 				const uint8_t resp[] = {
 					0, // If this is non-zero then the following 4 bytes are not processed
@@ -823,7 +872,7 @@ namespace usb_python2
 
 #define CheckKeyState(key, val) \
 	{ \
-		if (s->p2dev->GetKeyState((key))) \
+		if (s->p2dev->GetKeyState(P2TEXT(key))) \
 			s->f.jammaIoStatus &= ~(val); \
 		else \
 			s->f.jammaIoStatus |= (val); \
@@ -831,7 +880,7 @@ namespace usb_python2
 
 #define CheckKeyStateOneShot(key, val) \
 	{ \
-		if (s->p2dev->GetKeyStateOneShot((key))) \
+		if (s->p2dev->GetKeyStateOneShot(P2TEXT(key))) \
 			s->f.jammaIoStatus &= ~(val); \
 		else \
 			s->f.jammaIoStatus |= (val); \
@@ -839,13 +888,13 @@ namespace usb_python2
 
 #define KnobStateInc(key, val, playerId) \
 	{ \
-		if (s->p2dev->GetKeyStateOneShot((key))) \
+		if (s->p2dev->GetKeyStateOneShot(P2TEXT(key))) \
 			s->f.knobs[(playerId)] = (s->f.knobs[(playerId)] + 1) % 4; \
 	}
 
 #define KnobStateDec(key, val, playerId) \
 	{ \
-		if (s->p2dev->GetKeyStateOneShot((key))) \
+		if (s->p2dev->GetKeyStateOneShot(P2TEXT(key))) \
 			s->f.knobs[(playerId)] = (s->f.knobs[(playerId)] - 1) < 0 ? 3 : (s->f.knobs[(playerId)] - 1); \
 	}
 
@@ -866,10 +915,10 @@ namespace usb_python2
 	}
 
 						// Handle inputs that shouldn't be oneshots typically on every update
-						CheckKeyState(L"Test", P2IO_JAMMA_IO_TEST);
-						CheckKeyState(L"Service", P2IO_JAMMA_IO_SERVICE);
-						CheckKeyState(L"Coin1", P2IO_JAMMA_IO_COIN1);
-						CheckKeyState(L"Coin2", P2IO_JAMMA_IO_COIN2);
+						CheckKeyState("Test", P2IO_JAMMA_IO_TEST);
+						CheckKeyState("Service", P2IO_JAMMA_IO_SERVICE);
+						CheckKeyState("Coin1", P2IO_JAMMA_IO_COIN1);
+						CheckKeyState("Coin2", P2IO_JAMMA_IO_COIN2);
 
 						// Python 2 games only accept coins via the P2IO directly, even though the game sees the JAMMA coin buttons returned here(?)
 						CoinInc(P2IO_JAMMA_IO_COIN1, 0);
@@ -877,52 +926,52 @@ namespace usb_python2
 
 						if (s->f.gameType == GAMETYPE_DDR)
 						{
-							CheckKeyState(L"DdrP1Start", P2IO_JAMMA_DDR_P1_START);
-							CheckKeyState(L"DdrP1SelectL", P2IO_JAMMA_DDR_P1_LEFT);
-							CheckKeyState(L"DdrP1SelectR", P2IO_JAMMA_DDR_P1_RIGHT);
-							CheckKeyState(L"DdrP1FootLeft", P2IO_JAMMA_DDR_P1_FOOT_LEFT);
-							CheckKeyState(L"DdrP1FootDown", P2IO_JAMMA_DDR_P1_FOOT_DOWN);
-							CheckKeyState(L"DdrP1FootUp", P2IO_JAMMA_DDR_P1_FOOT_UP);
-							CheckKeyState(L"DdrP1FootRight", P2IO_JAMMA_DDR_P1_FOOT_RIGHT);
+							CheckKeyState("DdrP1Start", P2IO_JAMMA_DDR_P1_START);
+							CheckKeyState("DdrP1SelectL", P2IO_JAMMA_DDR_P1_LEFT);
+							CheckKeyState("DdrP1SelectR", P2IO_JAMMA_DDR_P1_RIGHT);
+							CheckKeyState("DdrP1FootLeft", P2IO_JAMMA_DDR_P1_FOOT_LEFT);
+							CheckKeyState("DdrP1FootDown", P2IO_JAMMA_DDR_P1_FOOT_DOWN);
+							CheckKeyState("DdrP1FootUp", P2IO_JAMMA_DDR_P1_FOOT_UP);
+							CheckKeyState("DdrP1FootRight", P2IO_JAMMA_DDR_P1_FOOT_RIGHT);
 
-							CheckKeyState(L"DdrP2Start", P2IO_JAMMA_DDR_P2_START);
-							CheckKeyState(L"DdrP2SelectL", P2IO_JAMMA_DDR_P2_LEFT);
-							CheckKeyState(L"DdrP2SelectR", P2IO_JAMMA_DDR_P2_RIGHT);
-							CheckKeyState(L"DdrP2FootLeft", P2IO_JAMMA_DDR_P2_FOOT_LEFT);
-							CheckKeyState(L"DdrP2FootDown", P2IO_JAMMA_DDR_P2_FOOT_DOWN);
-							CheckKeyState(L"DdrP2FootUp", P2IO_JAMMA_DDR_P2_FOOT_UP);
-							CheckKeyState(L"DdrP2FootRight", P2IO_JAMMA_DDR_P2_FOOT_RIGHT);
+							CheckKeyState("DdrP2Start", P2IO_JAMMA_DDR_P2_START);
+							CheckKeyState("DdrP2SelectL", P2IO_JAMMA_DDR_P2_LEFT);
+							CheckKeyState("DdrP2SelectR", P2IO_JAMMA_DDR_P2_RIGHT);
+							CheckKeyState("DdrP2FootLeft", P2IO_JAMMA_DDR_P2_FOOT_LEFT);
+							CheckKeyState("DdrP2FootDown", P2IO_JAMMA_DDR_P2_FOOT_DOWN);
+							CheckKeyState("DdrP2FootUp", P2IO_JAMMA_DDR_P2_FOOT_UP);
+							CheckKeyState("DdrP2FootRight", P2IO_JAMMA_DDR_P2_FOOT_RIGHT);
 						}
 						else if (s->f.gameType == GAMETYPE_THRILLDRIVE)
 						{
-							CheckKeyState(L"ThrillDriveStart", P2IO_JAMMA_THRILLDRIVE_START);
+							CheckKeyState("ThrillDriveStart", P2IO_JAMMA_THRILLDRIVE_START);
 
-							CheckKeyState(L"ThrillDriveGearUp", P2IO_JAMMA_THRILLDRIVE_GEARSHIFT_UP);
-							CheckKeyState(L"ThrillDriveGearDown", P2IO_JAMMA_THRILLDRIVE_GEARSHIFT_DOWN);
+							CheckKeyState("ThrillDriveGearUp", P2IO_JAMMA_THRILLDRIVE_GEARSHIFT_UP);
+							CheckKeyState("ThrillDriveGearDown", P2IO_JAMMA_THRILLDRIVE_GEARSHIFT_DOWN);
 
-							const auto isBrakePressed = s->p2dev->GetKeyState(L"ThrillDriveBrake");
+							const auto isBrakePressed = s->p2dev->GetKeyState(P2TEXT("ThrillDriveBrake"));
 							if (isBrakePressed)
 								s->f.brake = 0xffff;
 							else
-								s->f.brake = s->p2dev->GetKeyStateAnalog(L"ThrillDriveBrakeAnalog");
+								s->f.brake = s->p2dev->GetKeyStateAnalog(P2TEXT("ThrillDriveBrakeAnalog"));
 
-							const auto isAccelerationPressed = s->p2dev->GetKeyState(L"ThrillDriveAccel");
+							const auto isAccelerationPressed = s->p2dev->GetKeyState(P2TEXT("ThrillDriveAccel"));
 							if (isAccelerationPressed)
 							{
 								if (!isBrakePressed)
 									s->f.accel = 0xffff;
 							}
 							else
-								s->f.accel = s->p2dev->GetKeyStateAnalog(L"ThrillDriveAccelAnalog");
+								s->f.accel = s->p2dev->GetKeyStateAnalog(P2TEXT("ThrillDriveAccelAnalog"));
 
-							const auto isLeftWheelTurned = s->p2dev->GetKeyState(L"ThrillDriveWheelLeft");
-							const auto isRightWheelTurned = s->p2dev->GetKeyState(L"ThrillDriveWheelRight");
+							const auto isLeftWheelTurned = s->p2dev->GetKeyState(P2TEXT("ThrillDriveWheelLeft"));
+							const auto isRightWheelTurned = s->p2dev->GetKeyState(P2TEXT("ThrillDriveWheelRight"));
 							if (isLeftWheelTurned)
 								s->f.wheel = 0xffff;
 							else if (isRightWheelTurned)
 								s->f.wheel = 0;
-							else if (s->p2dev->IsAnalogKeybindAvailable(L"ThrillDriveWheelAnalog"))
-								s->f.wheel = uint16_t(0xffff - (0xffff * s->p2dev->GetKeyStateAnalog(L"ThrillDriveWheelAnalog")));
+							else if (s->p2dev->IsAnalogKeybindAvailable(P2TEXT("ThrillDriveWheelAnalog")))
+								s->f.wheel = uint16_t(0xffff - (0xffff * s->p2dev->GetKeyStateAnalog(P2TEXT("ThrillDriveWheelAnalog"))));
 							else
 								s->f.wheel = s->wheelCenter;
 
@@ -944,51 +993,51 @@ namespace usb_python2
 						}
 						else if (s->f.gameType == GAMETYPE_DM)
 						{
-							CheckKeyState(L"DmSelectL", P2IO_JAMMA_DM_SELECT_L);
-							CheckKeyState(L"DmSelectR", P2IO_JAMMA_DM_SELECT_R);
-							CheckKeyState(L"DmStart", P2IO_JAMMA_DM_START);
+							CheckKeyState("DmSelectL", P2IO_JAMMA_DM_SELECT_L);
+							CheckKeyState("DmSelectR", P2IO_JAMMA_DM_SELECT_R);
+							CheckKeyState("DmStart", P2IO_JAMMA_DM_START);
 						}
 						else if (s->f.gameType == GAMETYPE_GF)
 						{
-							CheckKeyState(L"GfP1Start", P2IO_JAMMA_GF_P1_START);
-							CheckKeyState(L"GfP1NeckR", P2IO_JAMMA_GF_P1_R);
-							CheckKeyState(L"GfP1NeckG", P2IO_JAMMA_GF_P1_G);
-							CheckKeyState(L"GfP1NeckB", P2IO_JAMMA_GF_P1_B);
-							CheckKeyState(L"GfP1Wail", P2IO_JAMMA_GF_P1_WAILING);
+							CheckKeyState("GfP1Start", P2IO_JAMMA_GF_P1_START);
+							CheckKeyState("GfP1NeckR", P2IO_JAMMA_GF_P1_R);
+							CheckKeyState("GfP1NeckG", P2IO_JAMMA_GF_P1_G);
+							CheckKeyState("GfP1NeckB", P2IO_JAMMA_GF_P1_B);
+							CheckKeyState("GfP1Wail", P2IO_JAMMA_GF_P1_WAILING);
 
-							CheckKeyState(L"GfP2Start", P2IO_JAMMA_GF_P2_START);
-							CheckKeyState(L"GfP2NeckR", P2IO_JAMMA_GF_P2_R);
-							CheckKeyState(L"GfP2NeckG", P2IO_JAMMA_GF_P2_G);
-							CheckKeyState(L"GfP2NeckB", P2IO_JAMMA_GF_P2_B);
-							CheckKeyState(L"GfP2Wail", P2IO_JAMMA_GF_P2_WAILING);
+							CheckKeyState("GfP2Start", P2IO_JAMMA_GF_P2_START);
+							CheckKeyState("GfP2NeckR", P2IO_JAMMA_GF_P2_R);
+							CheckKeyState("GfP2NeckG", P2IO_JAMMA_GF_P2_G);
+							CheckKeyState("GfP2NeckB", P2IO_JAMMA_GF_P2_B);
+							CheckKeyState("GfP2Wail", P2IO_JAMMA_GF_P2_WAILING);
 						}
 						else if (s->f.gameType == GAMETYPE_TOYSMARCH)
 						{
-							CheckKeyState(L"ToysMarchP1Start", P2IO_JAMMA_TOYSMARCH_P1_START);
-							CheckKeyState(L"ToysMarchP1SelectL", P2IO_JAMMA_TOYSMARCH_P1_LEFT);
-							CheckKeyState(L"ToysMarchP1SelectR", P2IO_JAMMA_TOYSMARCH_P1_RIGHT);
-							CheckKeyState(L"ToysMarchP2Start", P2IO_JAMMA_TOYSMARCH_P2_START);
-							CheckKeyState(L"ToysMarchP2SelectL", P2IO_JAMMA_TOYSMARCH_P2_LEFT);
-							CheckKeyState(L"ToysMarchP2SelectR", P2IO_JAMMA_TOYSMARCH_P2_RIGHT);
+							CheckKeyState("ToysMarchP1Start", P2IO_JAMMA_TOYSMARCH_P1_START);
+							CheckKeyState("ToysMarchP1SelectL", P2IO_JAMMA_TOYSMARCH_P1_LEFT);
+							CheckKeyState("ToysMarchP1SelectR", P2IO_JAMMA_TOYSMARCH_P1_RIGHT);
+							CheckKeyState("ToysMarchP2Start", P2IO_JAMMA_TOYSMARCH_P2_START);
+							CheckKeyState("ToysMarchP2SelectL", P2IO_JAMMA_TOYSMARCH_P2_LEFT);
+							CheckKeyState("ToysMarchP2SelectR", P2IO_JAMMA_TOYSMARCH_P2_RIGHT);
 						}
 						else if (s->f.gameType == GAMETYPE_DANCE864)
 						{
-							CheckKeyState(L"Dance864P1Start", P2IO_JAMMA_DANCE864_P1_START);
-							CheckKeyState(L"Dance864P1Left", P2IO_JAMMA_DANCE864_P1_LEFT);
-							CheckKeyState(L"Dance864P1Right", P2IO_JAMMA_DANCE864_P1_RIGHT);
-							CheckKeyState(L"Dance864P2Start", P2IO_JAMMA_DANCE864_P2_START);
-							CheckKeyState(L"Dance864P2Left", P2IO_JAMMA_DANCE864_P2_LEFT);
-							CheckKeyState(L"Dance864P2Right", P2IO_JAMMA_DANCE864_P2_RIGHT);
+							CheckKeyState("Dance864P1Start", P2IO_JAMMA_DANCE864_P1_START);
+							CheckKeyState("Dance864P1Left", P2IO_JAMMA_DANCE864_P1_LEFT);
+							CheckKeyState("Dance864P1Right", P2IO_JAMMA_DANCE864_P1_RIGHT);
+							CheckKeyState("Dance864P2Start", P2IO_JAMMA_DANCE864_P2_START);
+							CheckKeyState("Dance864P2Left", P2IO_JAMMA_DANCE864_P2_LEFT);
+							CheckKeyState("Dance864P2Right", P2IO_JAMMA_DANCE864_P2_RIGHT);
 
 							if (s->f.footPanelIoCheckHack < 0)
 							{
-								CheckKeyState(L"Dance864P1PadLeft", P2IO_JAMMA_DANCE864_P1_PAD_LEFT);
-								CheckKeyState(L"Dance864P1PadCenter", P2IO_JAMMA_DANCE864_P1_PAD_CENTER);
-								CheckKeyState(L"Dance864P1PadRight", P2IO_JAMMA_DANCE864_P1_PAD_RIGHT);
+								CheckKeyState("Dance864P1PadLeft", P2IO_JAMMA_DANCE864_P1_PAD_LEFT);
+								CheckKeyState("Dance864P1PadCenter", P2IO_JAMMA_DANCE864_P1_PAD_CENTER);
+								CheckKeyState("Dance864P1PadRight", P2IO_JAMMA_DANCE864_P1_PAD_RIGHT);
 
-								CheckKeyState(L"Dance864P2PadLeft", P2IO_JAMMA_DANCE864_P2_PAD_LEFT);
-								CheckKeyState(L"Dance864P2PadCenter", P2IO_JAMMA_DANCE864_P2_PAD_CENTER);
-								CheckKeyState(L"Dance864P2PadRight", P2IO_JAMMA_DANCE864_P2_PAD_RIGHT);
+								CheckKeyState("Dance864P2PadLeft", P2IO_JAMMA_DANCE864_P2_PAD_LEFT);
+								CheckKeyState("Dance864P2PadCenter", P2IO_JAMMA_DANCE864_P2_PAD_CENTER);
+								CheckKeyState("Dance864P2PadRight", P2IO_JAMMA_DANCE864_P2_PAD_RIGHT);
 							}
 						}
 
@@ -1000,25 +1049,25 @@ namespace usb_python2
 						{
 							if (s->f.gameType == GAMETYPE_DM)
 							{
-								CheckKeyStateOneShot(L"DmHihat", P2IO_JAMMA_DM_HIHAT);
-								CheckKeyStateOneShot(L"DmSnare", P2IO_JAMMA_DM_SNARE);
-								CheckKeyStateOneShot(L"DmHighTom", P2IO_JAMMA_DM_HIGH_TOM);
-								CheckKeyStateOneShot(L"DmLowTom", P2IO_JAMMA_DM_LOW_TOM);
-								CheckKeyStateOneShot(L"DmCymbal", P2IO_JAMMA_DM_CYMBAL);
+								CheckKeyStateOneShot("DmHihat", P2IO_JAMMA_DM_HIHAT);
+								CheckKeyStateOneShot("DmSnare", P2IO_JAMMA_DM_SNARE);
+								CheckKeyStateOneShot("DmHighTom", P2IO_JAMMA_DM_HIGH_TOM);
+								CheckKeyStateOneShot("DmLowTom", P2IO_JAMMA_DM_LOW_TOM);
+								CheckKeyStateOneShot("DmCymbal", P2IO_JAMMA_DM_CYMBAL);
 
 								// Bass pedal is not a one shot and can be held techically
-								CheckKeyStateOneShot(L"DmBassDrum", P2IO_JAMMA_DM_BASS_DRUM);
+								CheckKeyStateOneShot("DmBassDrum", P2IO_JAMMA_DM_BASS_DRUM);
 							}
 							else if (s->f.gameType == GAMETYPE_GF)
 							{
-								CheckKeyState(L"GfP1Pick", P2IO_JAMMA_GF_P1_PICK);
-								CheckKeyState(L"GfP2Pick", P2IO_JAMMA_GF_P2_PICK);
+								CheckKeyState("GfP1Pick", P2IO_JAMMA_GF_P1_PICK);
+								CheckKeyState("GfP2Pick", P2IO_JAMMA_GF_P2_PICK);
 
-								KnobStateInc(L"GfP1EffectInc", P2IO_JAMMA_GF_P1_EFFECT1, 0);
-								KnobStateDec(L"GfP1EffectDec", P2IO_JAMMA_GF_P1_EFFECT2, 0);
+								KnobStateInc("GfP1EffectInc", P2IO_JAMMA_GF_P1_EFFECT1, 0);
+								KnobStateDec("GfP1EffectDec", P2IO_JAMMA_GF_P1_EFFECT2, 0);
 
-								KnobStateInc(L"GfP2EffectInc", P2IO_JAMMA_GF_P2_EFFECT1, 1);
-								KnobStateDec(L"GfP2EffectDec", P2IO_JAMMA_GF_P2_EFFECT2, 1);
+								KnobStateInc("GfP2EffectInc", P2IO_JAMMA_GF_P2_EFFECT1, 1);
+								KnobStateDec("GfP2EffectDec", P2IO_JAMMA_GF_P2_EFFECT2, 1);
 
 								s->f.jammaIoStatus |= P2IO_JAMMA_GF_P1_EFFECT3;
 								if (s->f.knobs[0] == 1)
@@ -1150,7 +1199,6 @@ namespace usb_python2
 
 		if (s)
 		{
-#ifndef PCSX2_CORE
 			// Load the configuration and start SPDIF patcher thread every time a game is started
 			load_configuration(dev);
 
@@ -1160,7 +1208,6 @@ namespace usb_python2
 					mPatchSpdifAudioThread.join();
 				mPatchSpdifAudioThread = std::thread(Python2Patch::PatchSpdifAudioThread, s->p2dev);
 			}
-#endif
 
 			initialize_device(dev);
 
@@ -1182,7 +1229,10 @@ namespace usb_python2
 		DevCon.WriteLn("%s\n", __func__);
 
 		std::string varApi;
-#ifndef PCSX2_CORE
+
+#ifdef PCSX2_CORE
+		varApi = "native";
+#else
 #ifdef _WIN32
 		std::wstring tmp;
 		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, tmp);
@@ -1190,8 +1240,6 @@ namespace usb_python2
 #else
 		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
 #endif
-#else
-		varApi = "noop";
 #endif
 
 		const UsbPython2ProxyBase* proxy = RegisterUsbPython2::instance().Proxy(varApi);
