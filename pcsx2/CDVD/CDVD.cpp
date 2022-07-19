@@ -611,6 +611,7 @@ s32 cdvdGetToc(void* toc)
 s32 cdvdReadSubQ(s32 lsn, cdvdSubQ* subq)
 {
 	s32 ret = CDVD->readSubQ(lsn, subq);
+	Console.Warning("SubQ pos: %d", lsn);
 	if (ret == -1)
 		ret = 0x80;
 	return ret;

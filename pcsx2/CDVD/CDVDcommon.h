@@ -16,12 +16,12 @@
 #pragma once
 #include <string>
 #include <optional>
+#include <filesystem>
 #include <array>
 
 #include "IsoFileFormats.h"
-#include "3rdparty/include/ghc/filesystem.h"
 
-namespace fs = ghc::filesystem;
+namespace fs = std::filesystem;
 
 typedef struct _cdvdTrack
 {
