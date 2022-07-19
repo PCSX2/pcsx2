@@ -1554,17 +1554,10 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="0" column="1">
           <widget class="QCheckBox" name="swMipmap">
            <property name="text">
             <string>Mipmapping</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="swAA1">
-           <property name="text">
-            <string>Edge Anti-Aliasing</string>
            </property>
           </widget>
          </item>
