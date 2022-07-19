@@ -902,11 +902,6 @@ void GSRenderer::KeyEvent(const HostKeyEvent& e)
 				theApp.SetConfig("deinterlace", static_cast<int>(GSConfig.InterlaceMode));
 				printf("GS: Set deinterlace mode to %d (%s).\n", static_cast<int>(GSConfig.InterlaceMode), theApp.m_gs_deinterlace.at(static_cast<int>(GSConfig.InterlaceMode)).name.c_str());
 				return;
-			case VK_DELETE:
-				GSConfig.AA1 = !GSConfig.AA1;
-				theApp.SetConfig("aa1", GSConfig.AA1);
-				printf("GS: (Software) Edge anti-aliasing is now %s.\n", GSConfig.AA1 ? "enabled" : "disabled");
-				return;
 			case VK_NEXT: // As requested by Prafull, to be removed later
 				char dither_msg[3][16] = {"disabled", "auto", "auto unscaled"};
 				GSConfig.Dithering = (GSConfig.Dithering + 1) % 3;
