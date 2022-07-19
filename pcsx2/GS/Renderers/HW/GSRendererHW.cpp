@@ -4042,7 +4042,7 @@ bool GSRendererHW::SwPrimRender()
 				gd.sel.pabe = 1;
 			}
 
-			if (GSConfig.AA1 && PRIM->AA1 && (primclass == GS_LINE_CLASS || primclass == GS_TRIANGLE_CLASS))
+			if (PRIM->AA1 && (primclass == GS_LINE_CLASS || primclass == GS_TRIANGLE_CLASS))
 			{
 				gd.sel.aa1 = 1;
 			}
