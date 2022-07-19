@@ -466,7 +466,6 @@ struct Pcsx2Config
 					PreloadFrameWithGSData : 1,
 					WrapGSMem : 1,
 					Mipmap : 1,
-					AA1 : 1,
 					PointListPalette : 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
