@@ -307,7 +307,6 @@ RendererTab::RendererTab(wxWindow* parent)
 
 	auto* sw_checks_box = new wxWrapSizer(wxHORIZONTAL);
 	m_ui.addCheckBox(sw_checks_box, "Auto Flush",              "autoflush_sw", IDC_AUTO_FLUSH_SW, sw_prereq);
-	m_ui.addCheckBox(sw_checks_box, "Edge Antialiasing (Del)", "aa1",          IDC_AA1,           sw_prereq);
 	m_ui.addCheckBox(sw_checks_box, "Mipmapping",              "mipmap",       IDC_MIPMAP_SW,     sw_prereq);
 
 	software_box->Add(sw_checks_box, wxSizerFlags().Centre());

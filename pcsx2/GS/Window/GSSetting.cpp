@@ -130,8 +130,6 @@ const char* dialog_message(int ID, bool* updateText)
 				"Note: This hack has an impact on performance.\n");
 		case IDC_AFCOMBO:
 			return cvtString("Reduces texture aliasing at extreme viewing angles.");
-		case IDC_AA1:
-			return cvtString("Internal GS feature. Reduces edge aliasing of lines and triangles when the game requests it.");
 		case IDC_SWTHREADS:
 		case IDC_SWTHREADS_EDIT:
 			return cvtString("Number of rendering threads: 0 for single thread, 2 or more for multithread (1 is for debugging)\n"
