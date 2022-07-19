@@ -1024,10 +1024,13 @@ SCAJ-20131:
   name: "namCollection - Namco 50th Anniversary"
   region: "NTSC-Unk"
 SCAJ-20132:
-  name: "Drag-On Dragon 2 - Fuuin no Kurenai"
+  name: "Drag-on Dragoon 2 - Fuuin no Aka, Haitoku no Kuro"
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Fixes wrong color on some characters and breakable objects.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting characters.
+    mergeSprite: 1 # Align sprite fixes FMVs but not garbage in-game, so needs merge sprite instead.
 SCAJ-20133:
   name: "Kagero 2 - Dark Illusion"
   region: "NTSC-Unk"
@@ -22565,10 +22568,13 @@ SLPM-55071:
   name: "Yumemi Hakusho - Second Dream"
   region: "NTSC-J"
 SLPM-55081:
-  name: "Drag-on Dragoon 2 - Fuuin no Kurenai [Ultimate Hits]"
+  name: "Drag-on Dragoon 2 - Fuuin no Aka, Haitoku no Kuro [Ultimate Hits]"
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Fixes wrong color on some characters and breakable objects.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting characters.
+    mergeSprite: 1 # Align sprite fixes FMVs but not garbage in-game, so needs merge sprite instead.
 SLPM-55086:
   name: "Ever17 The Out of Infinity [Renai Game Selection]"
   region: "NTSC-J"
@@ -23108,10 +23114,13 @@ SLPM-61117:
   gameFixes:
     - EETimingHack # Fixes garbled character animation.
 SLPM-61120:
-  name: "Drag-on Dragoon 2 - Fuuin no Kurenai [Trial Version]"
+  name: "Drag-on Dragoon 2 - Fuuin no Aka, Haitoku no Kuro [Trial Version]"
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Fixes wrong color on some characters and breakable objects.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting characters.
+    mergeSprite: 1 # Align sprite fixes FMVs but not garbage in-game, so needs merge sprite instead.
 SLPM-61127:
   name: "FlatOut [Trial]"
   region: "NTSC-J"
@@ -23711,7 +23720,7 @@ SLPM-62233:
   name: "Simple 2000 Series Ultimate Vol. 4 - Urawaza Ikasa Mahjong Machi"
   region: "NTSC-J"
 SLPM-62234:
-  name: "Simple2000 Vol.13 The Renai Adv Garasu No Mori"
+  name: "Simple 2000 Series Vol. 13 - Onna no Ko no Tame no - The Renai Adventure - Garasu no Mori"
   region: "NTSC-J"
 SLPM-62235:
   name: "GetBass Battle"
@@ -23841,7 +23850,10 @@ SLPM-62278:
   name: "Hunter x Hunter"
   region: "NTSC-J"
 SLPM-62279:
-  name: "Winning Post 5 - Maximum 2002"
+  name: "GI Jockey 3 [Premium Pack]"
+  region: "NTSC-J"
+SLPM-62280:
+  name: "Winning Post 5 Maximum 2002 [Premium Pack]"
   region: "NTSC-J"
 SLPM-62282:
   name: "Silent Scope 2 - Innocent Sweeper"
@@ -28552,10 +28564,13 @@ SLPM-65998:
   region: "NTSC-J"
   compat: 5
 SLPM-65999:
-  name: "Drag-on Dragoon 2 - Fuuin no Kurenai"
+  name: "Drag-on Dragoon 2 - Fuuin no Aka, Haitoku no Kuro"
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Fixes wrong color on some characters and breakable objects.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting characters.
+    mergeSprite: 1 # Align sprite fixes FMVs but not garbage in-game, so needs merge sprite instead.
 SLPM-66000:
   name: "Conflict Delta II - Gulf War 1991"
   region: "NTSC-J"
