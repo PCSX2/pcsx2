@@ -93,7 +93,8 @@ GSVector2i GSRendererHW::GetOutputSize(int real_h)
 	// Include negative display offsets in the height here.
 	crtc_size.y = std::max(crtc_size.y, real_h);
 
-	return crtc_size * GSVector2i(static_cast<int>(GSConfig.UpscaleMultiplier), static_cast<int>(GSConfig.UpscaleMultiplier));
+	return GSVector2i(static_cast<float>(crtc_size.x) * GSConfig.UpscaleMultiplier,
+		static_cast<float>(crtc_size.y) * GSConfig.UpscaleMultiplier);
 }
 
 void GSRendererHW::SetTCOffset()
@@ -171,10 +172,10 @@ void GSRendererHW::SetGameCRC(u32 crc, int options)
 
 bool GSRendererHW::CanUpscale()
 {
-	return GSConfig.UpscaleMultiplier != 1;
+	return GSConfig.UpscaleMultiplier != 1.0f;
 }
 
-int GSRendererHW::GetUpscaleMultiplier()
+float GSRendererHW::GetUpscaleMultiplier()
 {
 	return GSConfig.UpscaleMultiplier;
 }
@@ -661,7 +662,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 
 GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Source* tex)
 {
-	if (GSConfig.UserHacks_HalfPixelOffset <= 1 || GetUpscaleMultiplier() == 1)
+	if (GSConfig.UserHacks_HalfPixelOffset <= 1 || GetUpscaleMultiplier() == 1.0f)
 		return GSVector4(0.0f);
 
 	const GSVertex* v = &m_vertex.buff[0];
@@ -798,7 +799,7 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 
 GSVector2 GSRendererHW::GetTextureScaleFactor()
 {
-	const float f_upscale = static_cast<float>(GetUpscaleMultiplier());
+	const float f_upscale = GetUpscaleMultiplier();
 	return GSVector2(f_upscale, f_upscale);
 }
 
@@ -835,7 +836,8 @@ GSVector2i GSRendererHW::GetTargetSize(GSVector2i* unscaled_size)
 
 	GL_INS("Target size for %x %u %u: %ux%u", m_context->FRAME.FBP, m_context->FRAME.FBW, m_context->FRAME.PSM, width, height);
 
-	return GSVector2i(static_cast<int>(width * GSConfig.UpscaleMultiplier), static_cast<int>(height * GSConfig.UpscaleMultiplier));
+	return GSVector2i(static_cast<int>(static_cast<float>(width) * GSConfig.UpscaleMultiplier),
+		static_cast<int>(static_cast<float>(height) * GSConfig.UpscaleMultiplier));
 }
 
 void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
@@ -1963,7 +1965,7 @@ void GSRendererHW::SetupIA(const float& sx, const float& sy)
 		for (unsigned int i = 0; i < m_vertex.next; i++)
 			m_vertex.buff[i].UV &= 0x3FEF3FEF;
 	}
-	const bool unscale_pt_ln = !GSConfig.UserHacks_DisableSafeFeatures && (GetUpscaleMultiplier() != 1);
+	const bool unscale_pt_ln = !GSConfig.UserHacks_DisableSafeFeatures && (GetUpscaleMultiplier() != 1.0f);
 	const GSDevice::FeatureSupport features = g_gs_device->Features();
 
 	ASSERT(VerifyIndices());

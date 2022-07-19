@@ -59,7 +59,7 @@ public:
 
 	virtual void VSync(u32 field, bool registers_written);
 	virtual bool CanUpscale() { return false; }
-	virtual int GetUpscaleMultiplier() { return 1; }
+	virtual float GetUpscaleMultiplier() { return 1.0f; }
 	virtual GSVector2 GetTextureScaleFactor() { return { 1.0f, 1.0f }; }
 	GSVector2i GetInternalResolution();
 

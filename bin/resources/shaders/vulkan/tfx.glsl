@@ -333,7 +333,7 @@ void main()
 #define PS_TALES_OF_ABYSS_HLE 0
 #define PS_URBAN_CHAOS_HLE 0
 #define PS_INVALID_TEX0 0
-#define PS_SCALE_FACTOR 1
+#define PS_SCALE_FACTOR 1.0
 #define PS_HDR 0
 #define PS_COLCLIP 0
 #define PS_BLEND_A 0

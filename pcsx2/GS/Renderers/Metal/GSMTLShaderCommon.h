@@ -19,7 +19,7 @@
 
 using namespace metal;
 
-constant uchar2 SCALING_FACTOR [[function_constant(GSMTLConstantIndex_SCALING_FACTOR)]];
+constant float2 SCALING_FACTOR [[function_constant(GSMTLConstantIndex_SCALING_FACTOR)]];
 
 struct ConvertShaderData
 {

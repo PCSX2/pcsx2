@@ -268,9 +268,18 @@ fragment float4 ps_convert_rgba_8i(ConvertShaderData data [[stage_in]], ConvertP
 	uint txN = tb.x | (uint(data.p.x) & 7);
 	uint txH = tb.x | ((uint(data.p.x) + 4) & 7);
 
-	txN *= SCALING_FACTOR.x;
-	txH *= SCALING_FACTOR.x;
-	ty  *= SCALING_FACTOR.y;
+	if (floor(SCALING_FACTOR.x) != SCALING_FACTOR.x)
+	{
+		txN = (int)((float)txN * SCALING_FACTOR.x);
+		txH = (int)((float)txH * SCALING_FACTOR.x);
+		ty  = (int)((float)ty * SCALING_FACTOR.y);
+	}
+	else
+	{
+		txN *= SCALING_FACTOR.x;
+		txH *= SCALING_FACTOR.x;
+		ty  *= SCALING_FACTOR.y;
+	}
 
 	// TODO investigate texture gather
 	float4 cN = res.texture.read(uint2(txN, ty));

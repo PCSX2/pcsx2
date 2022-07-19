@@ -75,7 +75,12 @@ GSDevice12::ShaderMacro::ShaderMacro(D3D_FEATURE_LEVEL fl)
 
 void GSDevice12::ShaderMacro::AddMacro(const char* n, int d)
 {
-	mlist.emplace_back(n, std::to_string(d));
+	AddMacro(n, std::to_string(d));
+}
+
+void GSDevice12::ShaderMacro::AddMacro(const char* n, std::string d)
+{
+	mlist.emplace_back(n, std::move(d));
 }
 
 D3D_SHADER_MACRO* GSDevice12::ShaderMacro::GetPtr(void)
@@ -978,7 +983,7 @@ GSDevice12::ComPtr<ID3DBlob> GSDevice12::GetUtilityVertexShader(const std::strin
 GSDevice12::ComPtr<ID3DBlob> GSDevice12::GetUtilityPixelShader(const std::string& source, const char* entry_point)
 {
 	ShaderMacro sm_model(m_shader_cache.GetFeatureLevel());
-	sm_model.AddMacro("PS_SCALE_FACTOR", GSConfig.UpscaleMultiplier);
+	sm_model.AddMacro("PS_SCALE_FACTOR", StringUtil::ToChars(GSConfig.UpscaleMultiplier));
 	return m_shader_cache.GetPixelShader(source, sm_model.GetPtr(), entry_point);
 }
 
@@ -1519,7 +1524,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 		return it->second.get();
 
 	ShaderMacro sm(m_shader_cache.GetFeatureLevel());
-	sm.AddMacro("PS_SCALE_FACTOR", GSConfig.UpscaleMultiplier);
+	sm.AddMacro("PS_SCALE_FACTOR", StringUtil::ToChars(GSConfig.UpscaleMultiplier));
 	sm.AddMacro("PS_FST", sel.fst);
 	sm.AddMacro("PS_WMS", sel.wms);
 	sm.AddMacro("PS_WMT", sel.wmt);

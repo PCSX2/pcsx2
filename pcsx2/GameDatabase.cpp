@@ -458,13 +458,13 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 			return (static_cast<int>(config.UserHacks_TextureInsideRt) == value);
 
 		case GSHWFixId::AlignSprite:
-			return (config.UpscaleMultiplier == 1 || static_cast<int>(config.UserHacks_AlignSpriteX) == value);
+			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_AlignSpriteX) == value);
 
 		case GSHWFixId::MergeSprite:
-			return (config.UpscaleMultiplier == 1 || static_cast<int>(config.UserHacks_MergePPSprite) == value);
+			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_MergePPSprite) == value);
 
 		case GSHWFixId::WildArmsHack:
-			return (config.UpscaleMultiplier == 1 || static_cast<int>(config.UserHacks_WildHack) == value);
+			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_WildHack) == value);
 
 		case GSHWFixId::PointListPalette:
 			return (static_cast<int>(config.PointListPalette) == value);
@@ -485,10 +485,10 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 			return (config.UserHacks_HalfBottomOverride == value);
 
 		case GSHWFixId::HalfPixelOffset:
-			return (config.UpscaleMultiplier == 1 || config.UserHacks_HalfPixelOffset == value);
+			return (config.UpscaleMultiplier <= 1.0f || config.UserHacks_HalfPixelOffset == value);
 
 		case GSHWFixId::RoundSprite:
-			return (config.UpscaleMultiplier == 1 || config.UserHacks_RoundSprite == value);
+			return (config.UpscaleMultiplier <= 1.0f || config.UserHacks_RoundSprite == value);
 
 		case GSHWFixId::TexturePreloading:
 			return (static_cast<int>(config.TexturePreloading) <= value);

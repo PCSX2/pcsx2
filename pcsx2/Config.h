@@ -560,7 +560,7 @@ struct Pcsx2Config
 		float OsdScale{100.0};
 
 		GSRendererType Renderer{GSRendererType::Auto};
-		uint UpscaleMultiplier{1};
+		float UpscaleMultiplier{1.0f};
 
 		HWMipmapLevel HWMipmap{HWMipmapLevel::Automatic};
 		AccBlendLevel AccurateBlendingUnit{AccBlendLevel::Basic};

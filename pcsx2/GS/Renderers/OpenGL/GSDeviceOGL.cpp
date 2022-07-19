@@ -237,7 +237,7 @@ bool GSDeviceOGL::Create()
 
 	GLint point_range[2] = {};
 	glGetIntegerv(GL_ALIASED_POINT_SIZE_RANGE, point_range);
-	m_features.point_expand = (point_range[0] <= static_cast<GLint>(GSConfig.UpscaleMultiplier) && point_range[1] >= static_cast<GLint>(GSConfig.UpscaleMultiplier));
+	m_features.point_expand = (point_range[0] <= GSConfig.UpscaleMultiplier && point_range[1] >= GSConfig.UpscaleMultiplier);
 
 	Console.WriteLn("Using %s for point expansion.", m_features.point_expand ? "hardware" : "geometry shaders");
 
@@ -380,7 +380,7 @@ bool GSDeviceOGL::Create()
 		{
 			const char* name = shaderName(static_cast<ShaderConvert>(i));
 			const std::string macro_sel = (static_cast<ShaderConvert>(i) == ShaderConvert::RGBA_TO_8I) ?
-                                              StringUtil::StdStringFromFormat("#define PS_SCALE_FACTOR %d\n", GSConfig.UpscaleMultiplier) :
+                                              fmt::format("#define PS_SCALE_FACTOR {}\n", GSConfig.UpscaleMultiplier) :
                                               std::string();
 			const std::string ps(GetShaderSource(name, GL_FRAGMENT_SHADER, m_shader_common_header, *convert_glsl, macro_sel));
 			if (!m_shader_cache.GetProgram(&m_convert.ps[i], m_convert.vs, {}, ps))
@@ -456,7 +456,7 @@ bool GSDeviceOGL::Create()
 
 		for (size_t i = 0; i < std::size(m_merge_obj.ps); i++)
 		{
-			const std::string ps(GetShaderSource(StringUtil::StdStringFromFormat("ps_main%d", i), GL_FRAGMENT_SHADER, m_shader_common_header, *shader, {}));
+			const std::string ps(GetShaderSource(fmt::format("ps_main{}", i), GL_FRAGMENT_SHADER, m_shader_common_header, *shader, {}));
 			if (!m_shader_cache.GetProgram(&m_merge_obj.ps[i], m_convert.vs, {}, ps))
 				return false;
 			m_merge_obj.ps[i].SetFormattedName("Merge pipe %zu", i);
@@ -479,7 +479,7 @@ bool GSDeviceOGL::Create()
 
 		for (size_t i = 0; i < std::size(m_interlace.ps); i++)
 		{
-			const std::string ps(GetShaderSource(StringUtil::StdStringFromFormat("ps_main%d", i), GL_FRAGMENT_SHADER, m_shader_common_header, *shader, {}));
+			const std::string ps(GetShaderSource(fmt::format("ps_main{}", i), GL_FRAGMENT_SHADER, m_shader_common_header, *shader, {}));
 			if (!m_shader_cache.GetProgram(&m_interlace.ps[i], m_convert.vs, {}, ps))
 				return false;
 			m_interlace.ps[i].SetFormattedName("Merge pipe %zu", i);
@@ -538,7 +538,7 @@ bool GSDeviceOGL::Create()
 		for (size_t i = 0; i < std::size(m_date.primid_ps); i++)
 		{
 			const std::string ps(GetShaderSource(
-				StringUtil::StdStringFromFormat("ps_stencil_image_init_%d", i),
+				fmt::format("ps_stencil_image_init_{}", i),
 				GL_FRAGMENT_SHADER, m_shader_common_header, *convert_glsl, {}));
 			m_shader_cache.GetProgram(&m_date.primid_ps[i], m_convert.vs, {}, ps);
 			m_date.primid_ps[i].SetFormattedName("PrimID Destination Alpha Init %d", i);
@@ -1027,11 +1027,11 @@ std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 	Console.WriteLn("Compiling new vertex shader with selector 0x%" PRIX64, sel.key);
 #endif
 
-	std::string macro = StringUtil::StdStringFromFormat("#define VS_INT_FST %d\n", sel.int_fst)
-		+ StringUtil::StdStringFromFormat("#define VS_IIP %d\n", sel.iip)
-		+ StringUtil::StdStringFromFormat("#define VS_POINT_SIZE %d\n", sel.point_size);
+	std::string macro = fmt::format("#define VS_INT_FST {}\n", static_cast<u32>(sel.int_fst))
+		+ fmt::format("#define VS_IIP {}\n", static_cast<u32>(sel.iip))
+		+ fmt::format("#define VS_POINT_SIZE {}\n", static_cast<u32>(sel.point_size));
 	if (sel.point_size)
-		macro += StringUtil::StdStringFromFormat("#define VS_POINT_SIZE_VALUE %d\n", GSConfig.UpscaleMultiplier);
+		macro += fmt::format("#define VS_POINT_SIZE_VALUE {}\n", GSConfig.UpscaleMultiplier);
 
 	std::string src = GenGlslHeader("vs_main", GL_VERTEX_SHADER, macro);
 	src += m_shader_common_header;
@@ -1045,9 +1045,9 @@ std::string GSDeviceOGL::GetGSSource(GSSelector sel)
 	Console.WriteLn("Compiling new geometry shader with selector 0x%" PRIX64, sel.key);
 #endif
 
-	std::string macro = StringUtil::StdStringFromFormat("#define GS_POINT %d\n", sel.point)
-		+ StringUtil::StdStringFromFormat("#define GS_LINE %d\n", sel.line)
-		+ StringUtil::StdStringFromFormat("#define GS_IIP %d\n", sel.iip);
+	std::string macro = fmt::format("#define GS_POINT {}\n", static_cast<u32>(sel.point))
+		+ fmt::format("#define GS_LINE {}\n", static_cast<u32>(sel.line))
+		+ fmt::format("#define GS_IIP {}\n", static_cast<u32>(sel.iip));
 
 	std::string src = GenGlslHeader("gs_main", GL_GEOMETRY_SHADER, macro);
 	src += m_shader_common_header;
@@ -1061,53 +1061,53 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 	Console.WriteLn("Compiling new pixel shader with selector 0x%" PRIX64 "%08X", sel.key_hi, sel.key_lo);
 #endif
 
-	std::string macro = StringUtil::StdStringFromFormat("#define PS_FST %d\n", sel.fst)
-		+ StringUtil::StdStringFromFormat("#define PS_WMS %d\n", sel.wms)
-		+ StringUtil::StdStringFromFormat("#define PS_WMT %d\n", sel.wmt)
-		+ StringUtil::StdStringFromFormat("#define PS_AEM_FMT %d\n", sel.aem_fmt)
-		+ StringUtil::StdStringFromFormat("#define PS_PAL_FMT %d\n", sel.pal_fmt)
-		+ StringUtil::StdStringFromFormat("#define PS_DFMT %d\n", sel.dfmt)
-		+ StringUtil::StdStringFromFormat("#define PS_DEPTH_FMT %d\n", sel.depth_fmt)
-		+ StringUtil::StdStringFromFormat("#define PS_CHANNEL_FETCH %d\n", sel.channel)
-		+ StringUtil::StdStringFromFormat("#define PS_URBAN_CHAOS_HLE %d\n", sel.urban_chaos_hle)
-		+ StringUtil::StdStringFromFormat("#define PS_TALES_OF_ABYSS_HLE %d\n", sel.tales_of_abyss_hle)
-		+ StringUtil::StdStringFromFormat("#define PS_TEX_IS_FB %d\n", sel.tex_is_fb)
-		+ StringUtil::StdStringFromFormat("#define PS_INVALID_TEX0 %d\n", sel.invalid_tex0)
-		+ StringUtil::StdStringFromFormat("#define PS_AEM %d\n", sel.aem)
-		+ StringUtil::StdStringFromFormat("#define PS_TFX %d\n", sel.tfx)
-		+ StringUtil::StdStringFromFormat("#define PS_TCC %d\n", sel.tcc)
-		+ StringUtil::StdStringFromFormat("#define PS_ATST %d\n", sel.atst)
-		+ StringUtil::StdStringFromFormat("#define PS_FOG %d\n", sel.fog)
-		+ StringUtil::StdStringFromFormat("#define PS_CLR_HW %d\n", sel.clr_hw)
-		+ StringUtil::StdStringFromFormat("#define PS_FBA %d\n", sel.fba)
-		+ StringUtil::StdStringFromFormat("#define PS_LTF %d\n", sel.ltf)
-		+ StringUtil::StdStringFromFormat("#define PS_AUTOMATIC_LOD %d\n", sel.automatic_lod)
-		+ StringUtil::StdStringFromFormat("#define PS_MANUAL_LOD %d\n", sel.manual_lod)
-		+ StringUtil::StdStringFromFormat("#define PS_COLCLIP %d\n", sel.colclip)
-		+ StringUtil::StdStringFromFormat("#define PS_DATE %d\n", sel.date)
-		+ StringUtil::StdStringFromFormat("#define PS_TCOFFSETHACK %d\n", sel.tcoffsethack)
-		+ StringUtil::StdStringFromFormat("#define PS_POINT_SAMPLER %d\n", sel.point_sampler)
-		+ StringUtil::StdStringFromFormat("#define PS_BLEND_A %d\n", sel.blend_a)
-		+ StringUtil::StdStringFromFormat("#define PS_BLEND_B %d\n", sel.blend_b)
-		+ StringUtil::StdStringFromFormat("#define PS_BLEND_C %d\n", sel.blend_c)
-		+ StringUtil::StdStringFromFormat("#define PS_BLEND_D %d\n", sel.blend_d)
-		+ StringUtil::StdStringFromFormat("#define PS_IIP %d\n", sel.iip)
-		+ StringUtil::StdStringFromFormat("#define PS_SHUFFLE %d\n", sel.shuffle)
-		+ StringUtil::StdStringFromFormat("#define PS_READ_BA %d\n", sel.read_ba)
-		+ StringUtil::StdStringFromFormat("#define PS_WRITE_RG %d\n", sel.write_rg)
-		+ StringUtil::StdStringFromFormat("#define PS_FBMASK %d\n", sel.fbmask)
-		+ StringUtil::StdStringFromFormat("#define PS_HDR %d\n", sel.hdr)
-		+ StringUtil::StdStringFromFormat("#define PS_DITHER %d\n", sel.dither)
-		+ StringUtil::StdStringFromFormat("#define PS_ZCLAMP %d\n", sel.zclamp)
-		+ StringUtil::StdStringFromFormat("#define PS_BLEND_MIX %d\n", sel.blend_mix)
-		+ StringUtil::StdStringFromFormat("#define PS_FIXED_ONE_A %d\n", sel.fixed_one_a)
-		+ StringUtil::StdStringFromFormat("#define PS_PABE %d\n", sel.pabe)
-		+ StringUtil::StdStringFromFormat("#define PS_SCANMSK %d\n", sel.scanmsk)
-		+ StringUtil::StdStringFromFormat("#define PS_SCALE_FACTOR %d\n", GSConfig.UpscaleMultiplier)
-		+ StringUtil::StdStringFromFormat("#define PS_NO_COLOR %d\n", sel.no_color)
-		+ StringUtil::StdStringFromFormat("#define PS_NO_COLOR1 %d\n", sel.no_color1)
-		+ StringUtil::StdStringFromFormat("#define PS_NO_ABLEND %d\n", sel.no_ablend)
-		+ StringUtil::StdStringFromFormat("#define PS_ONLY_ALPHA %d\n", sel.only_alpha)
+	std::string macro = fmt::format("#define PS_FST {}\n", sel.fst)
+		+ fmt::format("#define PS_WMS {}\n", sel.wms)
+		+ fmt::format("#define PS_WMT {}\n", sel.wmt)
+		+ fmt::format("#define PS_AEM_FMT {}\n", sel.aem_fmt)
+		+ fmt::format("#define PS_PAL_FMT {}\n", sel.pal_fmt)
+		+ fmt::format("#define PS_DFMT {}\n", sel.dfmt)
+		+ fmt::format("#define PS_DEPTH_FMT {}\n", sel.depth_fmt)
+		+ fmt::format("#define PS_CHANNEL_FETCH {}\n", sel.channel)
+		+ fmt::format("#define PS_URBAN_CHAOS_HLE {}\n", sel.urban_chaos_hle)
+		+ fmt::format("#define PS_TALES_OF_ABYSS_HLE {}\n", sel.tales_of_abyss_hle)
+		+ fmt::format("#define PS_TEX_IS_FB {}\n", sel.tex_is_fb)
+		+ fmt::format("#define PS_INVALID_TEX0 {}\n", sel.invalid_tex0)
+		+ fmt::format("#define PS_AEM {}\n", sel.aem)
+		+ fmt::format("#define PS_TFX {}\n", sel.tfx)
+		+ fmt::format("#define PS_TCC {}\n", sel.tcc)
+		+ fmt::format("#define PS_ATST {}\n", sel.atst)
+		+ fmt::format("#define PS_FOG {}\n", sel.fog)
+		+ fmt::format("#define PS_CLR_HW {}\n", sel.clr_hw)
+		+ fmt::format("#define PS_FBA {}\n", sel.fba)
+		+ fmt::format("#define PS_LTF {}\n", sel.ltf)
+		+ fmt::format("#define PS_AUTOMATIC_LOD {}\n", sel.automatic_lod)
+		+ fmt::format("#define PS_MANUAL_LOD {}\n", sel.manual_lod)
+		+ fmt::format("#define PS_COLCLIP {}\n", sel.colclip)
+		+ fmt::format("#define PS_DATE {}\n", sel.date)
+		+ fmt::format("#define PS_TCOFFSETHACK {}\n", sel.tcoffsethack)
+		+ fmt::format("#define PS_POINT_SAMPLER {}\n", sel.point_sampler)
+		+ fmt::format("#define PS_BLEND_A {}\n", sel.blend_a)
+		+ fmt::format("#define PS_BLEND_B {}\n", sel.blend_b)
+		+ fmt::format("#define PS_BLEND_C {}\n", sel.blend_c)
+		+ fmt::format("#define PS_BLEND_D {}\n", sel.blend_d)
+		+ fmt::format("#define PS_IIP {}\n", sel.iip)
+		+ fmt::format("#define PS_SHUFFLE {}\n", sel.shuffle)
+		+ fmt::format("#define PS_READ_BA {}\n", sel.read_ba)
+		+ fmt::format("#define PS_WRITE_RG {}\n", sel.write_rg)
+		+ fmt::format("#define PS_FBMASK {}\n", sel.fbmask)
+		+ fmt::format("#define PS_HDR {}\n", sel.hdr)
+		+ fmt::format("#define PS_DITHER {}\n", sel.dither)
+		+ fmt::format("#define PS_ZCLAMP {}\n", sel.zclamp)
+		+ fmt::format("#define PS_BLEND_MIX {}\n", sel.blend_mix)
+		+ fmt::format("#define PS_FIXED_ONE_A {}\n", sel.fixed_one_a)
+		+ fmt::format("#define PS_PABE {}\n", sel.pabe)
+		+ fmt::format("#define PS_SCANMSK {}\n", sel.scanmsk)
+		+ fmt::format("#define PS_SCALE_FACTOR {}\n", GSConfig.UpscaleMultiplier)
+		+ fmt::format("#define PS_NO_COLOR {}\n", sel.no_color)
+		+ fmt::format("#define PS_NO_COLOR1 {}\n", sel.no_color1)
+		+ fmt::format("#define PS_NO_ABLEND {}\n", sel.no_ablend)
+		+ fmt::format("#define PS_ONLY_ALPHA {}\n", sel.only_alpha)
 	;
 
 	std::string src = GenGlslHeader("ps_main", GL_FRAGMENT_SHADER, macro);
@@ -1130,7 +1130,7 @@ bool GSDeviceOGL::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSText
 // Copy a sub part of texture (same as below but force a conversion)
 void GSDeviceOGL::BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2i& dsize, bool at_origin, bool linear)
 {
-	GL_PUSH(StringUtil::StdStringFromFormat("CopyRectConv from %d", static_cast<GSTextureOGL*>(sTex)->GetID()).c_str());
+	GL_PUSH(fmt::format("CopyRectConv from {}", static_cast<GSTextureOGL*>(sTex)->GetID()).c_str());
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 	// NOTE: This previously used glCopyTextureSubImage2D(), but this appears to leak memory in

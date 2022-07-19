@@ -326,7 +326,7 @@ bool GSRenderer::Merge(int field)
 		if (m_regs->SMODE2.FFMD && !is_bob && !GSConfig.DisableInterlaceOffset && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 		{
 			// We do half because FFMD is a half sized framebuffer, then we offset by 1 in the shader for the actual interlace
-			if(GetUpscaleMultiplier() > 1)
+			if(GetUpscaleMultiplier() > 1.0f)
 				interlace_offset += ((((tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) + 0.5f) * 0.5f) - 1.0f) * static_cast<float>(field ^ field2);
 			offset = 1.0f;
 		}
@@ -363,7 +363,8 @@ bool GSRenderer::Merge(int field)
 		resolution.y = std::min(max_resolution.y, resolution.y);
 	}
 
-	fs = resolution * GSVector2i(GetUpscaleMultiplier());
+	fs = GSVector2i(static_cast<int>(static_cast<float>(resolution.x) * GetUpscaleMultiplier()),
+		static_cast<int>(static_cast<float>(resolution.y) * GetUpscaleMultiplier()));
 	ds = fs;
 
 	// When interlace(FRAME) mode, the rect is half height, so it needs to be stretched.
@@ -545,12 +546,12 @@ static GSVector4i CalculateDrawSrcRect(const GSTexture* src)
 #ifndef PCSX2_CORE
 	return GSVector4i(0, 0, src->GetWidth(), src->GetHeight());
 #else
-	const int upscale = GSConfig.UpscaleMultiplier;
+	const float upscale = GSConfig.UpscaleMultiplier;
 	const GSVector2i size(src->GetSize());
-	const int left = GSConfig.Crop[0] * upscale;
-	const int top = GSConfig.Crop[1] * upscale;
-	const int right = size.x - (GSConfig.Crop[2] * upscale);
-	const int bottom = size.y - (GSConfig.Crop[3] * upscale);
+	const int left = static_cast<int>(static_cast<float>(GSConfig.Crop[0]) * upscale);
+	const int top = static_cast<int>(static_cast<float>(GSConfig.Crop[1]) * upscale);
+	const int right =  size.x - static_cast<int>(static_cast<float>(GSConfig.Crop[2]) * upscale);
+	const int bottom = size.y - static_cast<int>(static_cast<float>(GSConfig.Crop[3]) * upscale);
 	return GSVector4i(left, top, right, bottom);
 #endif
 }
