@@ -84,7 +84,7 @@ SystemSettingsWidget::SystemSettingsWidget(SettingsDialog* dialog, QWidget* pare
 		tr("Makes the emulated Emotion Engine skip cycles. "
 		   "Helps a small subset of games like SOTC. Most of the time it's harmful to performance."));
 
-	dialog->registerWidgetHelp(m_ui.MTVU, tr("MTVU (Multi-threaded VU1)"), tr("Unchecked"),
+	dialog->registerWidgetHelp(m_ui.MTVU, tr("MTVU (Multi-threaded VU1)"), tr("Checked"),
 		tr("Generally a speedup on CPUs with 3 or more threads. "
 		   "Safe for most games, but a few are incompatible and may hang."));
 
