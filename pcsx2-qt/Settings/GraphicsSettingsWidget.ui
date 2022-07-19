@@ -388,48 +388,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QComboBox" name="upscaleMultiplier">
-         <item>
-          <property name="text">
-           <string>Native (PS2)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>2x Native (~720p)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>3x Native (~1080p)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>4x Native (~1440p/2K)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>5x Native (~1620p)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>6x Native (~2160p/4K)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>7x Native (~2520p)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>8x Native (~2880p)</string>
-          </property>
-         </item>
-        </widget>
+        <widget class="QComboBox" name="upscaleMultiplier" />
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_6">

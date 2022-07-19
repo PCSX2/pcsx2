@@ -235,9 +235,18 @@ void ps_convert_rgba_8i()
     int txN  = tb.x | (int(gl_FragCoord.x) & 7);
     int txH  = tb.x | ((int(gl_FragCoord.x) + 4) & 7);
 
-    txN *= PS_SCALE_FACTOR;
-    txH *= PS_SCALE_FACTOR;
-    ty  *= PS_SCALE_FACTOR;
+    if (floor(PS_SCALE_FACTOR) != PS_SCALE_FACTOR)
+    {
+        txN = int(float(txN) * PS_SCALE_FACTOR);
+        txH = int(float(txH) * PS_SCALE_FACTOR);
+        ty  = int(float(ty) * PS_SCALE_FACTOR);
+    }
+    else
+    {
+        txN *= int(PS_SCALE_FACTOR);
+        txH *= int(PS_SCALE_FACTOR);
+        ty  *= int(PS_SCALE_FACTOR);
+    }
 
     // TODO investigate texture gather
     vec4 cN = texelFetch(TextureSampler, ivec2(txN, ty), 0);

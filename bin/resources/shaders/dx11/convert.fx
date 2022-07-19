@@ -288,9 +288,18 @@ PS_OUTPUT ps_convert_rgba_8i(PS_INPUT input)
 	int txN  = tb.x | (int(input.p.x) & 7);
 	int txH  = tb.x | ((int(input.p.x) + 4) & 7);
 
-	txN *= PS_SCALE_FACTOR;
-	txH *= PS_SCALE_FACTOR;
-	ty  *= PS_SCALE_FACTOR;
+	if (floor(PS_SCALE_FACTOR) != PS_SCALE_FACTOR)
+	{
+		txN = (int)((float)txN * PS_SCALE_FACTOR);
+		txH = (int)((float)txH * PS_SCALE_FACTOR);
+		ty  = (int)((float)ty * PS_SCALE_FACTOR);
+	}
+	else
+	{
+		txN *= PS_SCALE_FACTOR;
+		txH *= PS_SCALE_FACTOR;
+		ty  *= PS_SCALE_FACTOR;
+	}
 
 	// TODO investigate texture gather
 	float4 cN = Texture.Load(int3(txN, ty, 0));

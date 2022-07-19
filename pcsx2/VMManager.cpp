@@ -407,7 +407,7 @@ void VMManager::RequestDisplaySize(float scale /*= 0.0f*/)
 	if (scale != 0.0f)
 	{
 		// unapply the upscaling, then apply the scale
-		scale = (1.0f / static_cast<float>(GSConfig.UpscaleMultiplier)) * scale;
+		scale = (1.0f / GSConfig.UpscaleMultiplier) * scale;
 		width *= scale;
 		height *= scale;
 	}
@@ -1829,6 +1829,8 @@ void VMManager::WarnAboutUnsafeSettings()
 		messages += ICON_FA_TACHOMETER_ALT " Cycle rate/skip is not at default, this may crash or make games run too slow.\n";
 	if (EmuConfig.SPU2.SynchMode != Pcsx2Config::SPU2Options::SynchronizationMode::TimeStretch)
 		messages += ICON_FA_VOLUME_MUTE " Audio is not using time stretch synchronization, this may break FMVs.\n";
+	if (EmuConfig.GS.UpscaleMultiplier < 1.0f)
+		messages += ICON_FA_TV " Upscale multiplier is below native, this will break rendering.\n";
 	if (EmuConfig.GS.HWMipmap != HWMipmapLevel::Automatic)
 		messages += ICON_FA_IMAGES " Mipmapping is not set to automatic. This may break rendering in some games.\n";
 	if (EmuConfig.GS.TextureFiltering != BiFiltering::PS2)

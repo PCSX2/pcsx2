@@ -1864,8 +1864,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		if (GSConfig.UserHacks_HalfPixelOffset == 1 && hack)
 		{
-			modxy = static_cast<float>(g_gs_renderer->GetUpscaleMultiplier());
-			switch (g_gs_renderer->GetUpscaleMultiplier())
+			modxy = g_gs_renderer->GetUpscaleMultiplier();
+			switch (static_cast<int>(std::round(g_gs_renderer->GetUpscaleMultiplier())))
 			{
 				case 2: case 4: case 6: case 8: modxy += 0.2f; break;
 				case 3: case 7:                 modxy += 0.1f; break;

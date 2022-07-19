@@ -2534,15 +2534,39 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 	static constexpr const char* s_deinterlacing_options[] = {"None", "Weave (Top Field First, Sawtooth)",
 		"Weave (Bottom Field First, Sawtooth)", "Bob (Top Field First)", "Bob (Bottom Field First)", "Blend (Top Field First, Half FPS)",
 		"Blend (Bottom Field First, Half FPS)", "Automatic (Default)"};
-	static constexpr const char* s_resolution_options[] = {
+	static const char* s_resolution_options[] = {
 		"Native (PS2)",
+		"1.25x Native",
+		"1.5x Native",
+		"1.75x Native",
 		"2x Native (~720p)",
+		"2.25x Native",
+		"2.5x Native",
+		"2.75x Native",
 		"3x Native (~1080p)",
+		"3.5x Native",
 		"4x Native (~1440p/2K)",
 		"5x Native (~1620p)",
 		"6x Native (~2160p/4K)",
 		"7x Native (~2520p)",
 		"8x Native (~2880p)",
+	};
+	static const char* s_resolution_values[] = {
+		"1",
+		"1.25",
+		"1.5",
+		"1.75",
+		"2",
+		"2.25",
+		"2.5",
+		"2.75",
+		"3",
+		"3.5",
+		"4",
+		"5",
+		"6",
+		"7",
+		"8",
 	};
 	static constexpr const char* s_mipmapping_options[] = {"Automatic (Default)", "Off", "Basic (Generated Mipmaps)", "Full (PS2 Mipmaps)"};
 	static constexpr const char* s_bilinear_options[] = {
@@ -2612,8 +2636,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 	MenuHeading("Rendering");
 	if (is_hardware)
 	{
-		DrawIntListSetting(bsi, "Internal Resolution", "Multiplies the render resolution by the specified factor (upscaling).",
-			"EmuCore/GS", "upscale_multiplier", 1, s_resolution_options, std::size(s_resolution_options), 1);
+		DrawStringListSetting(bsi, "Internal Resolution", "Multiplies the render resolution by the specified factor (upscaling).",
+			"EmuCore/GS", "upscale_multiplier", "1.000000", s_resolution_options, s_resolution_values, std::size(s_resolution_options));
 		DrawIntListSetting(bsi, "Mipmapping", "Determines how mipmaps are used when rendering textures.", "EmuCore/GS", "mipmap_hw",
 			static_cast<int>(HWMipmapLevel::Automatic), s_mipmapping_options, std::size(s_mipmapping_options), -1);
 		DrawIntListSetting(bsi, "Bilinear Filtering", "Selects where bilinear filtering is utilized when rendering textures.", "EmuCore/GS",

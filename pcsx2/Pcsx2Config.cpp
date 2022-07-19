@@ -500,7 +500,8 @@ void Pcsx2Config::GSOptions::LoadSaveIniSettings(SettingsWrapper& wrap)
 #define GSSettingIntEx(var, name) SettingsWrapBitfieldEx(var, name)
 #define GSSettingBool(var) SettingsWrapBitBool(var)
 #define GSSettingBoolEx(var, name) SettingsWrapBitBoolEx(var, name)
-#define GSSettingFloat(var) SettingsWrapBitfield(var)
+#define GSSettingFloat(var) SettingsWrapEntry(var)
+#define GSSettingFloatEx(var, name) SettingsWrapEntryEx(var, name)
 #define GSSettingIntEnumEx(var, name) SettingsWrapIntEnumEx(var, name)
 #define GSSettingString(var) SettingsWrapEntry(var)
 #define GSSettingStringEx(var, name) SettingsWrapEntryEx(var, name)
@@ -515,6 +516,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 #define GSSettingBool(var) var = theApp.GetConfigB(#var)
 #define GSSettingBoolEx(var, name) var = theApp.GetConfigB(name)
 #define GSSettingFloat(var) var = static_cast<float>(theApp.GetConfigI(#var))
+#define GSSettingFloatEx(var, name) var = static_cast<float>(theApp.GetConfigI(name))
 #define GSSettingIntEnumEx(var, name) var = static_cast<decltype(var)>(theApp.GetConfigI(name))
 #define GSSettingString(var) var = theApp.GetConfigS(#var)
 #define GSSettingStringEx(var, name) var = theApp.GetConfigS(name)
@@ -583,8 +585,10 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingFloat(OsdScale);
 
 	GSSettingIntEnumEx(Renderer, "Renderer");
-	GSSettingIntEx(UpscaleMultiplier, "upscale_multiplier");
-	UpscaleMultiplier = std::clamp(UpscaleMultiplier, 1u, 8u);
+	GSSettingFloatEx(UpscaleMultiplier, "upscale_multiplier");
+
+	// ~51x would the upper bound here for 32768x32768 textures, but you'll run out VRAM long before then.
+	UpscaleMultiplier = std::clamp(UpscaleMultiplier, 0.5f, 50.0f);
 
 	GSSettingIntEnumEx(HWMipmap, "mipmap_hw");
 	GSSettingIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
@@ -661,7 +665,7 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 
 void Pcsx2Config::GSOptions::MaskUpscalingHacks()
 {
-	if (UpscaleMultiplier != 1 && ManualUserHacks)
+	if (UpscaleMultiplier > 1.0f && ManualUserHacks)
 		return;
 
 	UserHacks_AlignSpriteX = false;

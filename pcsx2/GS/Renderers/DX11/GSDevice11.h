@@ -104,6 +104,7 @@ public:
 	public:
 		ShaderMacro(D3D_FEATURE_LEVEL fl);
 		void AddMacro(const char* n, int d);
+		void AddMacro(const char* n, std::string d);
 		D3D_SHADER_MACRO* GetPtr(void);
 	};
 
