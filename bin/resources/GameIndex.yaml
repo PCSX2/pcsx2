@@ -13015,8 +13015,8 @@ SLES-52045:
   region: "PAL-E"
   compat: 5
 SLES-52046:
-  name: "007 - Alles oder Nichts"
-  region: "PAL-G"
+  name: "007 - Quitte ou Double/Alles oder Nichts"
+  region: "PAL-F-G"
   compat: 5
 SLES-52047:
   name: "Sims, The - Bustin' Out"
@@ -22519,11 +22519,17 @@ SLPM-55040:
 SLPM-55042:
   name: "Suika A.S Eternal Name  - Sweet So Sweet [Best Edition]"
   region: "NTSC-J"
+SLPM-55044:
+  name: "Heart no Kuni no Alice - Wonderful Wonder World"
+  region: "NTSC-J"
 SLPM-55047:
   name: "Sugar+Spice! - Anoko no Suteki na Nanimokamo"
   region: "NTSC-J"
 SLPM-55051:
   name: "Will o' Wisp - Easter no Kiseki"
+  region: "NTSC-J"
+SLPM-55057:
+  name: "Hakushaku to Yousei - Yume to Kizuna ni Omoi o Hasete"
   region: "NTSC-J"
 SLPM-55060:
   name: "D.Gray-man - Sousha no Shikaku"
@@ -22794,6 +22800,15 @@ SLPM-55211:
 SLPM-55212:
   name: "Jigoku Shoujo Mioyosuga [Limited Edition]"
   region: "NTSC-J"
+SLPM-55213:
+  name: "Jigoku Shoujo Mioyosuga"
+  region: "NTSC-J"
+SLPM-55215:
+  name: "Hiiro no Kakera - Shin Tamayori-hime Denshou"
+  region: "NTSC-J"
+SLPM-55216:
+  name: "Hiiro no Kakera - Tamayori-hime Kitan [Aizou-ban]"
+  region: "NTSC-J"
 SLPM-55221:
   name: "beatmania IIDX 16 EMPRESS + PREMIUM BEST [EMPRESS DISC]"
   region: "NTSC-J"
@@ -22819,6 +22834,9 @@ SLPM-55244:
     halfPixelOffset: 2 # Fixes blurriness.
     skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
     skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
+SLPM-55245:
+  name: "Himawari - Pebble in the Sky"
+  region: "NTSC-J"
 SLPM-55246:
   name: "Wand of Fortune - Mirai e no Prologue"
   region: "NTSC-J"
@@ -23559,6 +23577,9 @@ SLPM-62168:
 SLPM-62169:
   name: "Live World Soccer 2002"
   region: "NTSC-J"
+SLPM-62170:
+  name: "Internet Mahjong - Toufuusou de Asobou"
+  region: "NTSC-J"
 SLPM-62171:
   name: "Simple 2000 Series Vol. 5 - The Block Kuzushi Hyper"
   region: "NTSC-J"
@@ -24098,6 +24119,9 @@ SLPM-62385:
   name: "Sega Ages 2500 Series Vol.05 - Golden Axe"
   region: "NTSC-J"
   compat: 5
+SLPM-62386:
+  name: "Ishikura Noboru Kudan no Igo Kouza - Chuukyuu-hen - Jitsuryoku 5-kyuu o Mezasu Hito e"
+  region: "NTSC-J"
 SLPM-62389:
   name: "Big Bass - Bass Tsuri Kanzen Kouryaku [SuperLite 2000 Series]"
   region: "NTSC-J"
@@ -28068,6 +28092,9 @@ SLPM-65847:
 SLPM-65848:
   name: "Soriaro no Fuukin Remix"
   region: "NTSC-J"
+SLPM-65850:
+  name: "Harukanaru Toki no Naka de 3 [Triple Pack]"
+  region: "NTSC-J"
 SLPM-65853:
   name: "Let's Make a Baseball Team 3"
   region: "NTSC-J"
@@ -28879,6 +28906,9 @@ SLPM-66097:
   region: "NTSC-J"
 SLPM-66098:
   name: "True Crime - Streets of L.A. [CapKore]"
+  region: "NTSC-J"
+SLPM-66099:
+  name: "Harukanaru Toki no Naka de 3 - Izayoiki [Premium Box/Triple Pack]"
   region: "NTSC-J"
 SLPM-66100:
   name: "Harukanaru Jikuu no Kade 3"
@@ -29759,6 +29789,9 @@ SLPM-66342:
   region: "NTSC-J"
 SLPM-66343:
   name: "Shin Sangoku Musou 4 - Empires"
+  region: "NTSC-J"
+SLPM-66344:
+  name: "Harukanaru Toki no Naka de 3 - Unmei no Labyrinth [Triple Pack]"
   region: "NTSC-J"
 SLPM-66347:
   name: "Harukanaru Jikuu no Kade 3 - Unmei no Meikyuu [Premium Box]"
@@ -31360,6 +31393,9 @@ SLPM-66782:
 SLPM-66783:
   name: "Idol Janshi Suchie-Pai 4 [Limited Edition]"
   region: "NTSC-J"
+SLPM-66784:
+  name: "Idol Janshi Suchie-Pai III Remix "
+  region: "NTSC-J"
 SLPM-66785:
   name: "Idol Janshi Suchie-Pai 4"
   region: "NTSC-J"
@@ -32711,6 +32747,9 @@ SLPS-20038:
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Fixes hang at menu.
+SLPS-20039:
+  name: "Ide Yousuke no Mahjong Kazoku 2"
+  region: "NTSC-J"
 SLPS-20040:
   name: "MotoGP"
   region: "NTSC-J"
@@ -33081,6 +33120,9 @@ SLPS-20208:
 SLPS-20209:
   name: "Jissen Pachi-Slot Hisshouhou! Aladdin A [Limited Edition]"
   region: "NTSC-J"
+SLPS-20213:
+  name: "Hissatsu Pachinko Station V4 - Drumtic Mahjong"
+  region: "NTSC-J"
 SLPS-20214:
   name: "3-D Fighting School 2"
   region: "NTSC-J"
@@ -33276,6 +33318,9 @@ SLPS-20303:
   region: "NTSC-J"
 SLPS-20305:
   name: "Real Sports Professional Baseball"
+  region: "NTSC-J"
+SLPS-20308:
+  name: "Hanabi Hyakkei [Tokutenban]"
   region: "NTSC-J"
 SLPS-20311:
   name: "Primopuel - My Special Partner [Limited Edition]"
@@ -33944,6 +33989,9 @@ SLPS-25018:
 SLPS-25020:
   name: "Mobile Suit Gundam"
   region: "NTSC-J"
+SLPS-25021:
+  name: "Jitsumei Jikkyou Keiba - Dream Classic 2001 Spring"
+  region: "NTSC-J"
 SLPS-25022:
   name: "Cool Boarders - Code Alien"
   region: "NTSC-J"
@@ -34108,6 +34156,9 @@ SLPS-25062:
   region: "NTSC-J"
 SLPS-25064:
   name: "Sea-Man"
+  region: "NTSC-J"
+SLPS-25068:
+  name: "Jitsumei Jikkyou Keiba - Dream Classic - 2001 Autumn"
   region: "NTSC-J"
 SLPS-25069:
   name: "FIFA 2002 - Road to World Cup"
@@ -36956,6 +37007,9 @@ SLPS-25899:
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 2 # Reduces font artifacts but characters still have major artifacts.
+SLPS-25902:
+  name: "Junjou Romantica - Koi no Doki Doki Daisakusen"
+  region: "NTSC-J"
 SLPS-25905:
   name: "Dragon Ball Z - Infinite World"
   region: "NTSC-J"
@@ -36963,6 +37017,9 @@ SLPS-25906:
   name: "ADK Tamashii"
   region: "NTSC-J"
   compat: 5
+SLPS-25909:
+  name: "Hisshou Pachinko Pachi-Slot Kouryaku Series Vol. 13 - Shin Seiki Evangelion - Yakusoku no Toki"
+  region: "NTSC-J"
 SLPS-25912:
   name: "Soul Eater - Battle Resonance"
   region: "NTSC-J"
@@ -37009,6 +37066,12 @@ SLPS-25934:
   region: "NTSC-J"
 SLPS-25935:
   name: "King of Fighters '98 Ultimate Match, The [NeoGeo Online Collection the Best]"
+  region: "NTSC-J"
+SLPS-25939:
+  name: "Himehibi - New Princess Days!! Zoku! Nigakki"
+  region: "NTSC-J"
+SLPS-25943:
+  name: "Hisshou Pachinko Pachi-Slot Kouryaku Series Vol. 14 - CR Shin Seiki Evangelion - Saigo no Shisha [Gentei Special Box]"
   region: "NTSC-J"
 SLPS-25944:
   name: "Kamen Rider Climax Heroes"
