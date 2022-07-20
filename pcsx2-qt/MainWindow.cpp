@@ -622,7 +622,63 @@ void MainWindow::setStyleFromSettings()
 
 		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
 	}
-	else
+	else if (theme == "Ruby")
+	{
+		// Custom pallete by Daisouji, Black as main color andd Red as complimentary.
+		// Alternative dark theme.
+		qApp->setStyle(QStyleFactory::create("Fusion"));
+
+		const QColor lighterGray(75, 75, 75);
+		const QColor gray(128, 128, 128);
+		const QColor black(25, 25, 25);
+		const QColor slate(18, 18, 18);
+		const QColor rubyish(172,21,31);
+
+
+		QPalette darkPalette;
+		darkPalette.setColor(QPalette::Window, slate);
+		darkPalette.setColor(QPalette::WindowText, Qt::white);
+		darkPalette.setColor(QPalette::Base, slate.lighter());
+		darkPalette.setColor(QPalette::AlternateBase, slate.lighter());
+		darkPalette.setColor(QPalette::ToolTipBase, slate);
+		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
+		darkPalette.setColor(QPalette::Text, Qt::white);
+		darkPalette.setColor(QPalette::Button, slate);
+		darkPalette.setColor(QPalette::ButtonText, Qt::white);
+		darkPalette.setColor(QPalette::Link, Qt::white);
+		darkPalette.setColor(QPalette::Highlight, rubyish);
+		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+
+		darkPalette.setColor(QPalette::Active, QPalette::Button, slate.lighter());
+		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
+		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
+		darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
+		darkPalette.setColor(QPalette::Disabled, QPalette::Light, slate.lighter());
+
+		qApp->setPalette(darkPalette);
+
+		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
+	} 
+	else if (theme == "Custom")
+	{
+		
+		//Additional Theme option than loads .qss from main PCSX2 Directory
+		qApp->setStyle(QStyleFactory::create("Fusion"));
+		
+		QString sheet_content;
+		QFile sheets("./custom.qss");
+		
+		if(sheets.open(QFile::ReadOnly)){
+	        QString sheet_content = QString::fromUtf8(sheets.readAll().data());
+		qApp->setStyleSheet(sheet_content);
+		}
+		else
+		{
+		qApp->setStyle(QStyleFactory::create("Fusion"));
+		}
+	
+	}
+        else 
 	{
 		qApp->setPalette(QApplication::style()->standardPalette());
 		qApp->setStyleSheet(QString());
