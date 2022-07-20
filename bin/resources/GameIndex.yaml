@@ -13562,6 +13562,8 @@ SLES-52372:
   region: "PAL-M5"
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
+    halfPixelOffset: 1 # Fixes shadows.
 SLES-52373:
   name: "Champions of Norrath"
   region: "PAL-E-S"
@@ -13710,6 +13712,8 @@ SLES-52447:
   region: "PAL-I"
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
+    halfPixelOffset: 1 # Fixes shadows.
 SLES-52448:
   name: "Knights of the Temple"
   region: "PAL-M4"
@@ -13812,6 +13816,8 @@ SLES-52493:
   region: "PAL-E"
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
+    halfPixelOffset: 1 # Fixes shadows.
 SLES-52495:
   name: "Bujingai - Swordmaster"
   region: "PAL-M5"
@@ -41001,6 +41007,8 @@ SLUS-20776:
   compat: 5
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
+    halfPixelOffset: 1 # Fixes shadows.
 SLUS-20777:
   name: "Obscure"
   region: "NTSC-U"
