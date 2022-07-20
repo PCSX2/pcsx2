@@ -632,7 +632,7 @@ void MainWindow::setStyleFromSettings()
 		const QColor gray(128, 128, 128);
 		const QColor black(25, 25, 25);
 		const QColor slate(18, 18, 18);
-		const QColor rubyish(172,21,31);
+		const QColor rubyish(172, 21, 31);
 
 
 		QPalette darkPalette;
@@ -658,27 +658,27 @@ void MainWindow::setStyleFromSettings()
 		qApp->setPalette(darkPalette);
 
 		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
-	} 
+	}
 	else if (theme == "Custom")
 	{
-		
+
 		//Additional Theme option than loads .qss from main PCSX2 Directory
 		qApp->setStyle(QStyleFactory::create("Fusion"));
-		
+
 		QString sheet_content;
-		QFile sheets("./custom.qss");
-		
-		if(sheets.open(QFile::ReadOnly)){
-	        QString sheet_content = QString::fromUtf8(sheets.readAll().data());
-		qApp->setStyleSheet(sheet_content);
+		QFile sheets(QString::fromStdString(Path::Combine(EmuFolders::DataRoot, "custom.qss")));
+
+		if (sheets.open(QFile::ReadOnly))
+		{
+			QString sheet_content = QString::fromUtf8(sheets.readAll().data());
+			qApp->setStyleSheet(sheet_content);
 		}
 		else
 		{
-		qApp->setStyle(QStyleFactory::create("Fusion"));
+			qApp->setStyle(QStyleFactory::create("Fusion"));
 		}
-	
 	}
-        else 
+	else
 	{
 		qApp->setPalette(QApplication::style()->standardPalette());
 		qApp->setStyleSheet(QString());
