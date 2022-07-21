@@ -8638,7 +8638,7 @@ SLED-51901:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLED-52326:
-  name: "007: Everything or Nothing [Demo]"
+  name: "007 - Everything or Nothing [Demo]"
   region: "PAL-E"
 SLED-52375:
   name: "Fight Night 2004 [Demo]"
@@ -8706,7 +8706,7 @@ SLED-53109:
   name: "Juiced [Demo]"
   region: "PAL-M5"
 SLED-53537:
-  name: "187: Ride or Die [Demo]"
+  name: "187 - Ride or Die [Demo]"
   region: "PAL-E"
 SLED-53673:
   name: "007 - From Russia with Love [Demo]"
@@ -30818,10 +30818,10 @@ SLPM-66613:
   name: "Medal of Honor - Rising Sun & Frontline [EA Best Hits]"
   region: "NTSC-J"
 SLPM-66615:
-  name: "007 - Nightfire [EA Best Hits - 007: Nightfire & Everything or Nothing Dual Pack]"
+  name: "007 - Nightfire [EA Best Hits Dual Pack]"
   region: "NTSC-J"
 SLPM-66616:
-  name: "007 - Everything or Nothing [EA Best Hits - 007: Nightfire & Everything or Nothing Dual Pack]"
+  name: "007 - Everything or Nothing [EA Best Hits Dual Pack]"
   region: "NTSC-J"
 SLPM-66617:
   name: "Need for Speed - Carbon"
