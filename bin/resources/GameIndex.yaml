@@ -330,7 +330,7 @@ PBPX-95601:
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 PCPX-96303:
-  name: "6-gatsu Hatsubai Title Promotion Disc (Aconcagua / Boku no Natsuyasumi / TVDJ)"
+  name: "6-gatsu Hatsubai Title Promotion Disc (Aconcagua - Boku no Natsuyasumi - TVDJ)"
   region: "NTSC-J"
 PCPX-96311:
   name: "Gran Turismo 3 Trial Disk Volume 1"
@@ -355,7 +355,7 @@ PCPX-96322:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
 PCPX-96328:
-  name: "3 Title Special Disc (Saru! Get You! 2 / PoPoLoCrois: Hajimari no Bouken / Boku no Natsuyasumi 2)"
+  name: "3 Title Special Disc (Saru! Get You! 2 - PoPoLoCrois: Hajimari no Bouken - Boku no Natsuyasumi 2)"
   region: "NTSC-J"
 PCPX-96554:
   name: "Games of Our Style - Tokyo Game Show 2003 Disc"
@@ -9273,7 +9273,7 @@ SLES-50213:
   name: "NFL Quarterback Club 2002"
   region: "PAL-E"
 SLES-50214:
-  name: "18 Wheeler: American Pro Trucker"
+  name: "18 Wheeler - American Pro Trucker"
   region: "PAL-M4"
   compat: 5
 SLES-50215:
@@ -34061,7 +34061,7 @@ SLPS-25023:
   name: "Bouncer, The"
   region: "NTSC-J"
 SLPS-25025:
-  name: "7 (Seven): Molmorth no Kiheitai"
+  name: "7 (Seven) - Molmorth no Kiheitai"
   region: "NTSC-J"
   compat: 5
   gameFixes:
@@ -37721,7 +37721,7 @@ SLPS-73407:
   name: "Sidewinder MAX [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPS-73408:
-  name: "7 (Seven): Molmorth no Kiheitai [PlayStation 2 the Best]"
+  name: "7 (Seven) - Molmorth no Kiheitai [PlayStation 2 the Best]"
   region: "NTSC-J"
 SLPS-73410:
   name: "Ace Combat 04 - Shattered Skies [PlayStation 2 The Best]"
@@ -38120,7 +38120,7 @@ SLUS-20090:
   region: "NTSC-U"
   compat: 5
 SLUS-20091:
-  name: "4x4 Evolution"
+  name: "4x4 Evo"
   region: "NTSC-U"
   compat: 5
 SLUS-20092:
@@ -39386,7 +39386,7 @@ SLUS-20403:
   region: "NTSC-U"
   compat: 5
 SLUS-20404:
-  name: "FIFA World Cup 2002"
+  name: "2002 FIFA World Cup"
   region: "NTSC-U"
 SLUS-20405:
   name: "Downforce"
