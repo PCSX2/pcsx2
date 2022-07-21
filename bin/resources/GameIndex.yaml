@@ -137,6 +137,9 @@ PAPX-90231:
 PAPX-90504:
   name: "Gran Turismo Concept - Airtrek Turbo Special Edition [Demo]"
   region: "NTSC-J"
+PAPX-90505:
+  name: "2002 Natsu no Osusume Soft Otameshi Disc"
+  region: "NTSC-J"
 PAPX-90506:
   name: "Dark Chronicle [Demo, Taikenban]"
   region: "NTSC-J"
@@ -326,6 +329,9 @@ PBPX-95601:
     - "SCPS-55007"
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
+PCPX-96303:
+  name: "6-gatsu Hatsubai Title Promotion Disc (Aconcagua - Boku no Natsuyasumi - TVDJ)"
+  region: "NTSC-J"
 PCPX-96311:
   name: "Gran Turismo 3 Trial Disk Volume 1"
   region: "NTSC-J"
@@ -348,11 +354,17 @@ PCPX-96322:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
+PCPX-96328:
+  name: "3 Title Special Disc (Saru! Get You! 2 - PoPoLoCrois: Hajimari no Bouken - Boku no Natsuyasumi 2)"
+  region: "NTSC-J"
 PCPX-96554:
   name: "Games of Our Style - Tokyo Game Show 2003 Disc"
   region: "NTSC-J"
 PCPX-96616:
   name: "PurePure 2 Volume 2"
+  region: "NTSC-J"
+PCPX-96627:
+  name: "2002 Natsu no Osusume Soft Otameshi Disc"
   region: "NTSC-J"
 PCPX-96649:
   name: "Gran Turismo 4 [Demo]"
@@ -2384,7 +2396,7 @@ SCED-54024:
       content: |-
         comment=- Castlevania needs VU clamping none and EEclamping extra.
 SCED-54036:
-  name: "Official PlayStation 2 Magazine Demo 69/70"
+  name: "Official PlayStation 2 Magazine Demo 69-70"
   region: "PAL-M5"
 SCED-54037:
   name: "Official PlayStation 2 Magazine Demo 70"
@@ -6522,6 +6534,9 @@ SCUS-90174:
 SCUS-94346:
   name: "SingStar Latino"
   region: "NTSC-U"
+SCUS-94677:
+  name: "989 Sports 2003 Demo Disc"
+  region: "NTSC-U"
 SCUS-97097:
   name: "Network Adapter Start-Up Disc"
   region: "NTSC-U"
@@ -8622,6 +8637,9 @@ SLED-51901:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+SLED-52326:
+  name: "007 - Everything or Nothing [Demo]"
+  region: "PAL-E"
 SLED-52375:
   name: "Fight Night 2004 [Demo]"
   region: "PAL-E"
@@ -8687,6 +8705,9 @@ SLED-53083:
 SLED-53109:
   name: "Juiced [Demo]"
   region: "PAL-M5"
+SLED-53537:
+  name: "187 - Ride or Die [Demo]"
+  region: "PAL-E"
 SLED-53673:
   name: "007 - From Russia with Love [Demo]"
   region: "PAL-E"
@@ -9193,7 +9214,7 @@ SLES-50193:
   region: "PAL-E"
   compat: 5
 SLES-50194:
-  name: "4x4 Evolution"
+  name: "4x4 Evo"
   region: "PAL-M3"
 SLES-50195:
   name: "UEFA Challenge"
@@ -9252,7 +9273,7 @@ SLES-50213:
   name: "NFL Quarterback Club 2002"
   region: "PAL-E"
 SLES-50214:
-  name: "18 Wheeler"
+  name: "18 Wheeler - American Pro Trucker"
   region: "PAL-M4"
   compat: 5
 SLES-50215:
@@ -10371,22 +10392,22 @@ SLES-50795:
   name: "Superman - Shadow of Apokolips"
   region: "PAL-M5"
 SLES-50796:
-  name: "FIFA World Cup 2002"
+  name: "2002 FIFA World Cup"
   region: "PAL-E-SW"
 SLES-50797:
-  name: "FIFA World Cup 2002"
+  name: "Coupe du Monde FIFA 2002"
   region: "PAL-F"
 SLES-50798:
-  name: "FIFA World Cup 2002"
+  name: "FIFA Fussball Weltmeisterschaft 2002"
   region: "PAL-G"
   compat: 5
   gameFixes:
     - EETimingHack
 SLES-50799:
-  name: "FIFA World Cup 2002"
+  name: "Mondiali FIFA 2002"
   region: "PAL-I"
 SLES-50800:
-  name: "FIFA World Cup 2002"
+  name: "Mundial FIFA 2002"
   region: "PAL-S"
 SLES-50801:
   name: "FIFA World Cup 2002"
@@ -11264,7 +11285,7 @@ SLES-51198:
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
 SLES-51199:
-  name: "4x4 Evolution II"
+  name: "4x4 Evo 2"
   region: "PAL-M3"
 SLES-51200:
   name: "Kelly Slater's Pro Surfer"
@@ -13029,7 +13050,7 @@ SLES-52045:
   region: "PAL-E"
   compat: 5
 SLES-52046:
-  name: "007 - Quitte ou Double/Alles oder Nichts"
+  name: "007 - Quitte ou Double-Alles oder Nichts"
   region: "PAL-F-G"
   compat: 5
 SLES-52047:
@@ -14689,7 +14710,7 @@ SLES-52854:
   compat: 5
 SLES-52856:
   name: "10 Most Wanted"
-  region: "PAL-F"
+  region: "PAL-M5"
 SLES-52857:
   name: "Fairly OddParents, The - Shadow Showdown"
   region: "PAL-E"
@@ -15445,7 +15466,7 @@ SLES-53148:
   name: "Fruitfall"
   region: "PAL-E"
 SLES-53150:
-  name: "10 Pin - Champions' Alley"
+  name: "10 Pin - Champions Alley"
   region: "PAL-M6"
 SLES-53151:
   name: "Juiced"
@@ -16067,7 +16088,7 @@ SLES-53480:
   name: "Harvest Moon - A Wonderful Life [Special Edition]"
   region: "PAL-E"
 SLES-53481:
-  name: "10,000 Bullets"
+  name: "10.000 Bullets"
   region: "PAL-M5"
   compat: 5
 SLES-53483:
@@ -18808,7 +18829,7 @@ SLES-54596:
   name: "Heatseeker"
   region: "PAL-M3"
 SLES-54604:
-  name: "'Que pasa Neng! El Videojuego"
+  name: "¡Qué Pasa Neng! El Videojuego"
   region: "PAL-S"
 SLES-54606:
   name: "Harley-Davidson - Race to the Rally"
@@ -21507,6 +21528,9 @@ SLKA-15033:
 SLKA-15044:
   name: "Super Puzzle Bobble 2"
   region: "NTSC-K"
+SLKA-25004:
+  name: "007 - Nightfire"
+  region: "NTSC-K"
 SLKA-25006:
   name: "Twin Caliber"
   region: "NTSC-K"
@@ -22942,7 +22966,7 @@ SLPM-55298:
   name: "Final Fantasy XI - Adoulin no Makyou"
   region: "NTSC-J"
 SLPM-60101:
-  name: "0 Story [Demo]"
+  name: "0 Story [Taikenban]"
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes removed bloom in FMV.
@@ -23694,7 +23718,7 @@ SLPM-62209:
   name: "Gigantic Drive"
   region: "NTSC-J"
 SLPM-62211:
-  name: "18 Wheeler"
+  name: "18 Wheeler - American Pro Trucker"
   region: "NTSC-J"
 SLPM-62212:
   name: "Critical Bullet - Seventh Target"
@@ -25351,13 +25375,13 @@ SLPM-65001:
   region: "NTSC-J"
   compat: 5
 SLPM-65002:
-  name: "Love-0 Story [Disc1of2]"
+  name: "0 Story [Disc1of2]"
   region: "NTSC-J"
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Fixes removed bloom in FMV.
 SLPM-65003:
-  name: "Love-0 Story [Disc2of2]"
+  name: "0 Story [Disc2of2]"
   region: "NTSC-J"
   compat: 5
   gameFixes:
@@ -27299,10 +27323,10 @@ SLPM-65604:
   region: "NTSC-J"
   compat: 5
 SLPM-65607:
-  name: "3LDK - Shiawase ni Narouyo [Limited Edition]"
+  name: "3LDK - Shiawase ni Narou yo [Limited Edition]"
   region: "NTSC-J"
 SLPM-65608:
-  name: "3LDK - Shiawase ni Narouyo"
+  name: "3LDK - Shiawase ni Narou yo"
   region: "NTSC-J"
 SLPM-65609:
   name: "Memories Off... - Sorekara [Limited Edition]"
@@ -28912,7 +28936,7 @@ SLPM-66087:
   name: "Winning Post 7"
   region: "NTSC-J"
 SLPM-66089:
-  name: "3-Nen B-Gumi Kinpachi Sensei - Densetsu no Kyoudan ni Tate! [Best]"
+  name: "3-nen B-gumi Kinpachi Sensei - Densetsu no Kyoudan ni Tate! Kanzenban"
   region: "NTSC-J"
 SLPM-66090:
   name: "Crash Bandicoot - Gacchanko World"
@@ -28940,7 +28964,7 @@ SLPM-66098:
   name: "True Crime - Streets of L.A. [CapKore]"
   region: "NTSC-J"
 SLPM-66099:
-  name: "Harukanaru Toki no Naka de 3 - Izayoiki [Premium Box/Triple Pack]"
+  name: "Harukanaru Toki no Naka de 3 - Izayoiki [Premium Box-Triple Pack]"
   region: "NTSC-J"
 SLPM-66100:
   name: "Harukanaru Jikuu no Kade 3"
@@ -30234,7 +30258,7 @@ SLPM-66459:
   name: "Zero Pilot - Zero"
   region: "NTSC-J"
 SLPM-66460:
-  name: "Summer ##"
+  name: "_summer ##"
   region: "NTSC-J"
 SLPM-66461:
   name: "Tom Clancy's Ghost Recon - Advanced Warfighter"
@@ -30794,7 +30818,10 @@ SLPM-66613:
   name: "Medal of Honor - Rising Sun & Frontline [EA Best Hits]"
   region: "NTSC-J"
 SLPM-66615:
-  name: "007 - Everything or Nothing & Nightfire [EA Best Hits]"
+  name: "007 - Nightfire [EA Best Hits Dual Pack]"
+  region: "NTSC-J"
+SLPM-66616:
+  name: "007 - Everything or Nothing [EA Best Hits Dual Pack]"
   region: "NTSC-J"
 SLPM-66617:
   name: "Need for Speed - Carbon"
@@ -31704,7 +31731,7 @@ SLPM-66876:
   name: "Izumo 2 [GN Software Best]"
   region: "NTSC-J"
 SLPM-66877:
-  name: "Summer## [GN Software Best]"
+  name: "_summer ## [GNsoftware Best]"
   region: "NTSC-J"
 SLPM-66878:
   name: "Dokapon Kingdom"
@@ -32174,7 +32201,7 @@ SLPM-67508:
     eeRoundMode: 1
     vuRoundMode: 3
 SLPM-67512:
-  name: "FIFA World Cup 2002"
+  name: "2002 FIFA World Cup"
   region: "NTSC-K"
 SLPM-67513:
   name: "Final Fantasy X International"
@@ -33156,7 +33183,7 @@ SLPS-20213:
   name: "Hissatsu Pachinko Station V4 - Drumtic Mahjong"
   region: "NTSC-J"
 SLPS-20214:
-  name: "3-D Fighting School 2"
+  name: "3D Kakutou Tkool 2"
   region: "NTSC-J"
 SLPS-20215:
   name: "Jissen Pachi-Slot Hisshouhou! Aladdin A"
@@ -33370,6 +33397,9 @@ SLPS-20317:
   name: "Jissen Pachi-Slot Hisshouhou! King Camel"
   region: "NTSC-J"
   compat: 5
+SLPS-20318:
+  name: "3D Kakutou Tkool 2 [ebKore]"
+  region: "NTSC-J"
 SLPS-20320:
   name: "Taiko no Tatsujin - Appare Sandaime [with Tatacon]"
   region: "NTSC-J"
@@ -33839,7 +33869,7 @@ SLPS-20481:
   name: "Simple 2000 Series Vol. 112 - The Tousou Highway 2 - Road Warrior 2050"
   region: "NTSC-J"
 SLPS-20482:
-  name: "3-D Mahjong + Suzume Paitori"
+  name: "3D Mahjong + Janpai Tori"
   region: "NTSC-J"
 SLPS-20483:
   name: "Kamen Rider Kabuto"
@@ -34031,7 +34061,7 @@ SLPS-25023:
   name: "Bouncer, The"
   region: "NTSC-J"
 SLPS-25025:
-  name: "Seven Lance Moromos - Cavalryman Corps"
+  name: "7 (Seven) - Molmorth no Kiheitai"
   region: "NTSC-J"
   compat: 5
   gameFixes:
@@ -34344,7 +34374,7 @@ SLPS-25117:
   name: "Sankyo Fever 6"
   region: "NTSC-J"
 SLPS-25118:
-  name: "FIFA 2002"
+  name: "2002 FIFA World Cup"
   region: "NTSC-J"
 SLPS-25119:
   name: "Galerians 2"
@@ -34641,6 +34671,9 @@ SLPS-25202:
     - "SLPS-73231"
     - "SLPS-73232"
     - "SLPS-73233"
+SLPS-25203:
+  name: "007 - Nightfire"
+  region: "NTSC-J"
 SLPS-25204:
   name: "MotoGP3"
   region: "NTSC-J"
@@ -35123,7 +35156,7 @@ SLPS-25356:
   name: "Broken Sword - Nenereru Ryuu no Densetsu"
   region: "NTSC-J"
 SLPS-25357:
-  name: "3-Nen B-Gumi Kinpachi Sensei - Densetsu no Kyoudan ni Tate!"
+  name: "3-nen B-gumi Kinpachi Sensei - Densetsu no Kyoudan ni Tate!"
   region: "NTSC-J"
 SLPS-25358:
   name: "Gold Gasho Bell! - Friendship Tag Battle"
@@ -37687,6 +37720,9 @@ SLPS-73406:
 SLPS-73407:
   name: "Sidewinder MAX [PlayStation 2 The Best]"
   region: "NTSC-J"
+SLPS-73408:
+  name: "7 (Seven) - Molmorth no Kiheitai [PlayStation 2 the Best]"
+  region: "NTSC-J"
 SLPS-73410:
   name: "Ace Combat 04 - Shattered Skies [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -38084,7 +38120,7 @@ SLUS-20090:
   region: "NTSC-U"
   compat: 5
 SLUS-20091:
-  name: "4x4 Evolution"
+  name: "4x4 Evo"
   region: "NTSC-U"
   compat: 5
 SLUS-20092:
@@ -39350,7 +39386,7 @@ SLUS-20403:
   region: "NTSC-U"
   compat: 5
 SLUS-20404:
-  name: "FIFA World Cup 2002"
+  name: "2002 FIFA World Cup"
   region: "NTSC-U"
 SLUS-20405:
   name: "Downforce"
