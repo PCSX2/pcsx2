@@ -4919,7 +4919,7 @@ SCKA-20096:
   name: "Barnyard"
   region: "NTSC-K"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
 SCKA-20098:
   name: "Spongebob Squarepants - Creature from the Krusty Krab"
   region: "NTSC-K"
@@ -18284,17 +18284,17 @@ SLES-54376:
   name: "Barnyard"
   region: "PAL-E"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
 SLES-54377:
   name: "Barnyard"
   region: "PAL-G"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
 SLES-54378:
   name: "Barnyard"
   region: "PAL-M4"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
 SLES-54379:
   name: "NFL Street 3"
   region: "PAL-E"
@@ -19806,13 +19806,13 @@ SLES-54990:
   name: "Nicktoons - Attack of the Toybots"
   region: "PAL-A"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Fixes garbage textures in the distance.
     halfPixelOffset: 2 # Corrects most vertical lines.
 SLES-54991:
   name: "Nickelodeon SpongeBob and Friends - Attack of the Toybots"
   region: "PAL-M6"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Fixes garbage textures in the distance.
     halfPixelOffset: 2 # Corrects most vertical lines.
 SLES-54992:
   name: "PDC World Championship Darts 2008"
@@ -20146,7 +20146,7 @@ SLES-55138:
   name: "Nickelodeon El Tigre - The Adventures of Manny Rivera"
   region: "PAL-E"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Fixes garbage textures in the distance.
     halfPixelOffset: 2 # Corrects most vertical lines.
 SLES-55143:
   name: "Chronicles of Narnia, The - Prince Caspian"
@@ -43569,7 +43569,7 @@ SLUS-21277:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
 SLUS-21278:
   name: "SSX on Tour"
   region: "NTSC-U"
@@ -45119,7 +45119,7 @@ SLUS-21605:
   name: "Nicktoons - Attack of the Toybots"
   region: "NTSC-U"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Fixes garbage textures in the distance.
     halfPixelOffset: 2 # Corrects most vertical lines.
 SLUS-21606:
   name: "Metropolismania 2"
@@ -45699,7 +45699,7 @@ SLUS-21732:
   name: "El Tigre - The Adventures of Manny Rivera"
   region: "NTSC-U"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Fixes garbage textures in the distance.
     halfPixelOffset: 2 # Corrects most vertical lines.
 SLUS-21733:
   name: "Sega Superstars Tennis"
