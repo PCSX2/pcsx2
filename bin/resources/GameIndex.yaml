@@ -11645,7 +11645,7 @@ SLES-51354:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes effects.
+    autoFlush: 1 # Fixes glows.
     mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
 SLES-51355:
@@ -16405,7 +16405,7 @@ SLES-53563:
   name: "Nickelodeon SpongeBob SquarePants and Friends Unite!"
   region: "PAL-M6"
   gsHWFixes:
-    autoFlush: 1 # Fixes effects.
+    autoFlush: 1 # Fixes glows.
     mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
     textureInsideRT: 1 # Fixes rainbow lighting for lamps, computer and other areas.
 SLES-53564:
@@ -16553,7 +16553,7 @@ SLES-53634:
   name: "Nicktoons Unite!"
   region: "PAL-A"
   gsHWFixes:
-    autoFlush: 1 # Fixes effects.
+    autoFlush: 1 # Fixes glows.
     mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
     textureInsideRT: 1 # Fixes rainbow lighting for lamps, computer and other areas.
 SLES-53635:
@@ -24533,7 +24533,7 @@ SLPM-62512:
   name: "Keiei Simulation - Jurassic Park [Konami The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes effects.
+    autoFlush: 1 # Fixes glows.
     mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
 SLPM-62513:
@@ -39263,7 +39263,7 @@ SLUS-20380:
   name: "Jurassic Park - Operation Genesis"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Fixes effects.
+    autoFlush: 1 # Fixes glows.
     mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
 SLUS-20381:
@@ -43596,7 +43596,7 @@ SLUS-21284:
   name: "Nicktoons Unite!"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Fixes effects.
+    autoFlush: 1 # Fixes glows.
     mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
     textureInsideRT: 1 # Fixes rainbow lighting for lamps, computer and other areas.
 SLUS-21285:
