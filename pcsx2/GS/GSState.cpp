@@ -507,11 +507,11 @@ GSVector2i GSState::GetResolution()
 	return resolution;
 }
 
-GSVector4i GSState::GetFrameRect(int i)
+GSVector4i GSState::GetFrameRect(int i, bool ignore_off)
 {
 	// If no specific context is requested then pass the merged rectangle as return value
 	if (i == -1)
-		return GetFrameRect(0).runion(GetFrameRect(1));
+		return GetFrameRect(0, ignore_off).runion(GetFrameRect(1, ignore_off));
 
 	GSVector4i rectangle = { 0, 0, 0, 0 };
 
@@ -525,13 +525,19 @@ GSVector4i GSState::GetFrameRect(int i)
 	const GSVector2i magnification(DISP.MAGH+1, DISP.MAGV + 1);
 
 	const u32 DBX = m_regs->DISP[i].DISPFB.DBX;
-	const u32 DBY = m_regs->DISP[i].DISPFB.DBY;
+	int DBY = m_regs->DISP[i].DISPFB.DBY;
+
 
 	int w = DW / magnification.x;
 	int h = DH / magnification.y;
 
-	rectangle.left = DBX;
-	rectangle.top = DBY;
+	// If the combined height overflows 2048, it's likely adding a bit of extra data before the picture for offsetting the interlace
+	// only game known to do this is NASCAR '08
+	if (!ignore_off && (DBY + h) >= 2048)
+		DBY = DBY - 2048;
+
+	rectangle.left = (ignore_off) ? 0 : DBX;
+	rectangle.top = (ignore_off) ? 0 : DBY;
 
 	rectangle.right = rectangle.left + w;
 	rectangle.bottom = rectangle.top + h;
@@ -550,9 +556,8 @@ int GSState::GetFramebufferHeight()
 	// Framebuffer height is 11 bits max
 	constexpr int height_limit = (1 << 11);
 
-	const GSVector4i disp1_rect = GetFrameRect(0);
-	const GSVector4i disp2_rect = GetFrameRect(1);
-
+	const GSVector4i disp1_rect = GetFrameRect(0, true);
+	const GSVector4i disp2_rect = GetFrameRect(1, true);
 	const GSVector4i combined = disp1_rect.runion(disp2_rect);
 
 	// DBY isn't an offset to the frame memory but rather an offset to read output circuit inside
