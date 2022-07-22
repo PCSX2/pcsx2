@@ -112,8 +112,8 @@ bool GSRenderer::Merge(int field)
 
 			display_baseline.x = std::min(display_offsets[i].x, display_baseline.x);
 			display_baseline.y = std::min(display_offsets[i].y, display_baseline.y);
-			frame_baseline.x = std::min(fr[i].left, frame_baseline.x);
-			frame_baseline.y = std::min(fr[i].top, frame_baseline.y);
+			frame_baseline.x = std::min(std::max(fr[i].left, 0), frame_baseline.x);
+			frame_baseline.y = std::min(std::max(fr[i].top, 0), frame_baseline.y);
 
 			display_offset |= std::abs(display_baseline.y - display_offsets[i].y) == 1;
 			/*DevCon.Warning("Read offset was X %d(left %d) Y %d(top %d)", display_baseline.x, dr[i].left, display_baseline.y, dr[i].top);
@@ -147,7 +147,7 @@ bool GSRenderer::Merge(int field)
 
 	s_n++;
 
-	if (samesrc && fr[0].bottom == fr[1].bottom && !feedback_merge)
+	if (samesrc && fr[0].bottom == fr[1].bottom && !feedback_merge && fr[0].right == fr[1].right)
 	{
 		tex[0] = GetOutput(0, y_offset[0]);
 		tex[1] = tex[0]; // saves one texture fetch
@@ -200,6 +200,12 @@ bool GSRenderer::Merge(int field)
 		GSVector2i display_diff(display_offsets[i].x - display_baseline.x, display_offsets[i].y - display_baseline.y);
 		GSVector2i frame_diff(fr[i].left - frame_baseline.x, fr[i].top - frame_baseline.y);
 
+		// Clear any frame offsets, we don't need them now.
+		fr[i].right -= fr[i].left;
+		fr[i].left = 0;
+		fr[i].bottom -= fr[i].top;
+		fr[i].top = 0;
+
 		// If using scanmsk we have to keep the single line offset, regardless of upscale
 		// so we handle this separately after the rect calculations.
 		float interlace_offset = 0.0f;
@@ -234,10 +240,10 @@ bool GSRenderer::Merge(int field)
 						off.y -= display_diff.y;
 
 					// Offset by DISPFB setting
-					if (frame_diff.x == 1)
-						off.x += 1;
-					if (frame_diff.y == 1)
-						off.y += 1;
+					if (abs(frame_diff.x) < 4)
+						off.x += frame_diff.x;
+					if (abs(frame_diff.y) < 4)
+						off.y += frame_diff.y;
 				}
 			}
 		}
@@ -286,11 +292,10 @@ bool GSRenderer::Merge(int field)
 					if (GSConfig.PCRTCAntiBlur)
 					{
 						// Offset by DISPFB setting
-						if (frame_diff.x == 1)
-							off.x += 1;
-
-						if (frame_diff.y == 1)
-							off.y += 1;
+						if (abs(frame_diff.x) < 4)
+							off.x += frame_diff.x;
+						if (abs(frame_diff.y) < 4)
+							off.y += frame_diff.y;
 					}
 				}
 			}
