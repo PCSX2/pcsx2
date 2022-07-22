@@ -1151,6 +1151,7 @@ SCAJ-20152:
     - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes corruption.
 SCAJ-20153:
   name: "Code Age Commanders"
   region: "NTSC-J"
@@ -3745,6 +3746,7 @@ SCES-53688:
     - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes corruption.
 SCES-53795:
   name: "SingStar '80s"
   region: "PAL-Unk"
@@ -4825,6 +4827,7 @@ SCKA-20065:
     - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes corruption.
 SCKA-20066:
   name: "EyeToy - Play 3"
   region: "NTSC-K"
@@ -23117,6 +23120,7 @@ SLPM-60272:
     - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes corruption.
 SLPM-60273:
   name: "Zettai Zetsumei Toshi 2 - Itetsuita Kioku-tachi [Trial B]"
   region: "NTSC-J"
@@ -35887,6 +35891,7 @@ SLPS-25557:
     - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes corruption.
 SLPS-25558:
   name: "NeoGeo Battle Coliseum"
   region: "NTSC-J"
@@ -43207,6 +43212,7 @@ SLUS-21209:
     - EETimingHack # Mitigates bounciness of vertical shaking but better fix with EE cyclerate +1.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes corruption.
 SLUS-21212:
   name: "Spartan - Total Warrior"
   region: "NTSC-U"
