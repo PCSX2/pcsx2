@@ -924,6 +924,8 @@ SCAJ-20109:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 SCAJ-20110:
   name: "Dragon Quest VIII - Sora to Daichi to Norowareshi Himegimi"
   region: "NTSC-Unk"
@@ -1175,6 +1177,8 @@ SCAJ-20157:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 SCAJ-20158:
   name: "Ikusa Gami"
   region: "NTSC-Unk"
@@ -3407,6 +3411,8 @@ SCES-52456:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
   memcardFilters: # Reads Ratchet 1 & 2 data.
     - "SCES-52456"
     - "SCES-51607"
@@ -3586,6 +3592,8 @@ SCES-53285:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 SCES-53286:
   name: "Jak X - Combat Racing"
   region: "PAL-M7"
@@ -4679,6 +4687,8 @@ SCKA-20037:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
   memcardFilters:
     - "SCKA-20037"
     - "SCKA-20011"
@@ -4793,6 +4803,8 @@ SCKA-20060:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 SCKA-20061:
   name: "Wanda to Kyozou"
   region: "NTSC-K"
@@ -5558,6 +5570,8 @@ SCPS-15084:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
   memcardFilters:
     - "SCPS-15084"
     - "SCPS-15056"
@@ -5657,6 +5671,8 @@ SCPS-15099:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 SCPS-15100:
   name: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle"
   region: "NTSC-J"
@@ -5665,6 +5681,8 @@ SCPS-15100:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 SCPS-15101:
   name: "Bleach - Hanatareshi Yabou"
   region: "NTSC-J"
@@ -6006,6 +6024,8 @@ SCPS-19309:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 SCPS-19310:
   name: "Ratchet & Clank [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -6081,6 +6101,8 @@ SCPS-19321:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 SCPS-19322:
   name: "Wild ARMs - The 4th Detonator [PlayStation 2 The Best - Reprint]"
   region: "NTSC-J"
@@ -6142,6 +6164,8 @@ SCPS-19328:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 SCPS-19329:
   name: "Bleach - Blade Battlers [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -7759,6 +7783,8 @@ SCUS-97465:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 SCUS-97466:
   name: "Gretzky NHL '06"
   region: "NTSC-U"
@@ -7872,6 +7898,8 @@ SCUS-97485:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 SCUS-97486:
   name: "Jak X - Combat Racing [Regular Demo]"
   region: "NTSC-U"
@@ -7887,6 +7915,8 @@ SCUS-97487:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 SCUS-97488:
   name: "Jak X - Combat Racing [Public Beta v.1]"
   region: "NTSC-U"
