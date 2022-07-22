@@ -147,7 +147,8 @@ bool GSRenderer::Merge(int field)
 
 	s_n++;
 
-	if (samesrc && fr[0].bottom == fr[1].bottom && !feedback_merge && fr[0].right == fr[1].right)
+	// Only need to check the right/bottom on software renderer, hardware always gets the full texture then cuts a bit out later.
+	if (samesrc && !feedback_merge && (GSConfig.UseHardwareRenderer() || (fr[0].right == fr[1].right && fr[0].bottom == fr[1].bottom)))
 	{
 		tex[0] = GetOutput(0, y_offset[0]);
 		tex[1] = tex[0]; // saves one texture fetch
@@ -200,11 +201,14 @@ bool GSRenderer::Merge(int field)
 		GSVector2i display_diff(display_offsets[i].x - display_baseline.x, display_offsets[i].y - display_baseline.y);
 		GSVector2i frame_diff(fr[i].left - frame_baseline.x, fr[i].top - frame_baseline.y);
 
-		// Clear any frame offsets, we don't need them now.
-		fr[i].right -= fr[i].left;
-		fr[i].left = 0;
-		fr[i].bottom -= fr[i].top;
-		fr[i].top = 0;
+		if (!GSConfig.UseHardwareRenderer())
+		{
+			// Clear any frame offsets, we don't need them now.
+			fr[i].right -= fr[i].left;
+			fr[i].left = 0;
+			fr[i].bottom -= fr[i].top;
+			fr[i].top = 0;
+		}
 
 		// If using scanmsk we have to keep the single line offset, regardless of upscale
 		// so we handle this separately after the rect calculations.
@@ -239,11 +243,15 @@ bool GSRenderer::Merge(int field)
 					if (display_diff.y < 4)
 						off.y -= display_diff.y;
 
-					// Offset by DISPFB setting
-					if (abs(frame_diff.x) < 4)
-						off.x += frame_diff.x;
-					if (abs(frame_diff.y) < 4)
-						off.y += frame_diff.y;
+					// Only functional in HW mode, software clips/positions the framebuffer on read.
+					if (GSConfig.UseHardwareRenderer())
+					{
+						// Offset by DISPFB setting
+						if (abs(frame_diff.x) < 4)
+							off.x += frame_diff.x;
+						if (abs(frame_diff.y) < 4)
+							off.y += frame_diff.y;
+					}
 				}
 			}
 		}
@@ -289,7 +297,8 @@ bool GSRenderer::Merge(int field)
 						off.y += display_baseline.y;
 
 					// Anti-Blur stuff
-					if (GSConfig.PCRTCAntiBlur)
+					// Only functional in HW mode, software clips/positions the framebuffer on read.
+					if (GSConfig.PCRTCAntiBlur && GSConfig.UseHardwareRenderer())
 					{
 						// Offset by DISPFB setting
 						if (abs(frame_diff.x) < 4)
