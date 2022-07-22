@@ -36551,6 +36551,12 @@ SLPS-25718:
     eeRoundMode: 1 # Fix camera issue.
   gameFixes:
     - FpuNegDivHack # Fix target loss issue.
+  patches:
+    F616C207:
+      content: |-
+        comment=Swapping COP2 codes around
+        patch=0,EE,00252824,word,48488000
+        patch=0,EE,00252828,word,4B040183
 SLPS-25719:
   name: "Happiness! Deluxe [First Print Limited Edition]"
   region: "NTSC-J"
