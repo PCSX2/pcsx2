@@ -58,7 +58,7 @@
    <item>
     <widget class="QTabWidget" name="hardwareRendererGroup">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <property name="documentMode">
       <bool>true</bool>
@@ -642,38 +642,6 @@
          </item>
         </widget>
        </item>
-       <item row="9" column="0" colspan="2">
-        <layout class="QGridLayout" name="basicCheckboxGridLayout">
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="gpuPaletteConversion">
-           <property name="text">
-            <string>GPU Palette Conversion</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="conservativeBufferAllocation">
-           <property name="text">
-            <string>Conservative Buffer Allocation</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="accurateDATE">
-           <property name="text">
-            <string>Accurate Destination Alpha Test</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="enableHWFixes">
-           <property name="text">
-            <string>Manual Hardware Renderer Fixes</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
        <item row="8" column="0">
         <widget class="QLabel" name="label_20">
          <property name="text">
@@ -699,6 +667,31 @@
           </property>
          </item>
         </widget>
+       </item>
+       <item row="9" column="0" colspan="2">
+        <layout class="QGridLayout" name="basicCheckboxGridLayout">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="accurateDATE">
+           <property name="text">
+            <string>Accurate Destination Alpha Test</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="gpuPaletteConversion">
+           <property name="text">
+            <string>GPU Palette Conversion</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="enableHWFixes">
+           <property name="text">
+            <string>Manual Hardware Renderer Fixes</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>

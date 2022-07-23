@@ -829,7 +829,6 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	// reload texture cache when trilinear filtering or TC options change
 	if (
 		(GSConfig.UseHardwareRenderer() && GSConfig.HWMipmap != old_config.HWMipmap) ||
-		GSConfig.ConservativeFramebuffer != old_config.ConservativeFramebuffer ||
 		GSConfig.TexturePreloading != old_config.TexturePreloading ||
 		GSConfig.UserHacks_TriFilter != old_config.UserHacks_TriFilter ||
 		GSConfig.GPUPaletteConversion != old_config.GPUPaletteConversion ||
@@ -1456,7 +1455,6 @@ void GSApp::Init()
 	m_default_configuration["pcrtc_overscan"]                             = "0";
 	m_default_configuration["IntegerScaling"]                             = "0";
 	m_default_configuration["deinterlace"]                                = "7";
-	m_default_configuration["conservative_framebuffer"]                   = "1";
 	m_default_configuration["linear_present"]                             = "1";
 	m_default_configuration["LoadTextureReplacements"]                    = "0";
 	m_default_configuration["LoadTextureReplacementsAsync"]               = "1";

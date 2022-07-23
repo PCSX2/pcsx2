@@ -92,6 +92,9 @@ public:
 		void UpdateAge();
 		bool Inside(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
 		bool Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
+
+		void ResizeTexture(int new_width, int new_height);
+		void ResizeTexture(int new_width, int new_height, GSVector2 new_scale);
 	};
 
 	struct PaletteKey
@@ -243,6 +246,25 @@ public:
 		void RemoveAt(Source* s);
 	};
 
+	struct TargetHeightElem
+	{
+		union
+		{
+			u32 bits;
+
+			struct
+			{
+				u32 fbp : 9;
+				u32 fbw : 6;
+				u32 psm : 6;
+				u32 pad : 11;
+			};
+		};
+
+		u32 height;
+		u32 age;
+	};
+
 	struct SurfaceOffsetKeyElem
 	{
 		u32 psm;
@@ -278,6 +300,7 @@ protected:
 	std::unordered_map<HashCacheKey, HashCacheEntry, HashCacheKeyHash> m_hash_cache;
 	u64 m_hash_cache_memory_usage = 0;
 	FastList<Target*> m_dst[2];
+	FastList<TargetHeightElem> m_target_heights;
 	static u8* m_temp;
 	constexpr static size_t S_SURFACE_OFFSET_CACHE_MAX_SIZE = std::numeric_limits<u16>::max();
 	std::unordered_map<SurfaceOffsetKey, SurfaceOffset, SurfaceOffsetKeyHash, SurfaceOffsetKeyEqual> m_surface_offset_cache;
@@ -309,11 +332,13 @@ public:
 	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette = false);
 
 	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask = 0, const bool is_frame = false, const int real_h = 0);
-	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, const int real_h);
+	Target* LookupDisplayTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, const int real_h);
 
 	/// Looks up a target in the cache, and only returns it if the BP/BW/PSM match exactly.
 	Target* GetExactTarget(u32 BP, u32 BW, u32 PSM) const;
 	Target* GetTargetWithSharedBits(u32 BP, u32 PSM) const;
+
+	u32 GetTargetHeight(u32 fbp, u32 fbw, u32 psm, u32 min_height);
 
 	void InvalidateVideoMemType(int type, u32 bp);
 	void InvalidateVideoMemSubTarget(GSTextureCache::Target* rt);

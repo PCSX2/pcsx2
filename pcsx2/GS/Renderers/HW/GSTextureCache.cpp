@@ -83,6 +83,7 @@ void GSTextureCache::RemoveAll()
 	m_hash_cache_memory_usage = 0;
 
 	m_palette_map.Clear();
+	m_target_heights.clear();
 }
 
 GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette)
@@ -416,7 +417,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask, const bool is_frame, const int real_h)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
-	const GSVector2& new_s = g_gs_renderer->GetTextureScaleFactor();
+	const GSVector2& new_s = static_cast<GSRendererHW*>(g_gs_renderer.get())->GetTextureScaleFactor();
 	const u32 bp = TEX0.TBP0;
 	GSVector2 res_size{ 0, 0 };
 	GSVector2i new_size{ 0, 0 };
@@ -619,7 +620,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 	return dst;
 }
 
-GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, const int real_h)
+GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, const int real_h)
 {
 	return LookupTarget(TEX0, size, RenderTarget, true, 0, true, real_h);
 }
@@ -1187,6 +1188,20 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	const int scaled_w = static_cast<int>(w * scale.x);
 	const int scaled_h = static_cast<int>(h * scale.y);
 
+	// Expand the target when we used a more conservative size.
+	const int required_dh = scaled_dy + scaled_h;
+	if ((scaled_dx + scaled_w) <= dst->m_texture->GetWidth() && required_dh > dst->m_texture->GetHeight())
+	{
+		const int new_height = dy + h;
+		if (new_height > GSRendererHW::MAX_FRAMEBUFFER_HEIGHT)
+			return false;
+
+		const int scaled_new_height = static_cast<int>(static_cast<float>(new_height) * scale.y);
+		GL_INS("Resize %dx%d target to %dx%d for move", dst->m_texture->GetWidth(), dst->m_texture->GetHeight(), dst->m_texture->GetHeight(), scaled_new_height);
+		dst->ResizeTexture(dst->m_texture->GetWidth(), scaled_new_height);
+		GetTargetHeight(DBP, DBW, DPSM, new_height);
+	}
+
 	// Make sure the copy doesn't go out of bounds (it shouldn't).
 	if ((scaled_sx + scaled_w) > src->m_texture->GetWidth() || (scaled_sy + scaled_h) > src->m_texture->GetHeight() ||
 		(scaled_dx + scaled_w) > dst->m_texture->GetWidth() || (scaled_dy + scaled_h) > dst->m_texture->GetHeight())
@@ -1228,6 +1243,36 @@ GSTextureCache::Target* GSTextureCache::GetTargetWithSharedBits(u32 BP, u32 PSM)
 	}
 
 	return nullptr;
+}
+
+u32 GSTextureCache::GetTargetHeight(u32 fbp, u32 fbw, u32 psm, u32 min_height)
+{
+	TargetHeightElem search = {};
+	search.fbp = fbp;
+	search.fbw = fbw;
+	search.psm = psm;
+	search.height = min_height;
+
+	for (auto it = m_target_heights.begin(); it != m_target_heights.end(); ++it)
+	{
+		TargetHeightElem& elem = const_cast<TargetHeightElem&>(*it);
+		if (elem.bits == search.bits)
+		{
+			if (elem.height < min_height)
+			{
+				DbgCon.WriteLn("Expand height at %x %u %u from %u to %u", fbp, fbw, psm, elem.height, min_height);
+				elem.height = min_height;
+			}
+
+			m_target_heights.MoveFront(it.Index());
+			elem.age = 0;
+			return elem.height;
+		}
+	}
+
+	DbgCon.WriteLn("New height at %x %u %u: %u", fbp, fbw, psm, min_height);
+	m_target_heights.push_front(search);
+	return min_height;
 }
 
 // Hack: remove Target that are strictly included in current rt. Typically uses for FMV
@@ -1343,6 +1388,20 @@ void GSTextureCache::IncAge()
 			{
 				++i;
 			}
+		}
+	}
+
+	for (auto it = m_target_heights.begin(); it != m_target_heights.end();)
+	{
+		TargetHeightElem& elem = const_cast<TargetHeightElem&>(*it);
+		if (elem.age >= max_rt_age)
+		{
+			it = m_target_heights.erase(it);
+		}
+		else
+		{
+			elem.age++;
+			++it;
 		}
 	}
 }
@@ -1822,7 +1881,7 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int
 		t->m_texture = g_gs_device->CreateSparseDepthStencil(w, h, GSTexture::Format::DepthStencil, clear);
 	}
 
-	t->m_texture->SetScale(g_gs_renderer->GetTextureScaleFactor());
+	t->m_texture->SetScale(static_cast<GSRendererHW*>(g_gs_renderer.get())->GetTextureScaleFactor());
 
 	m_dst[type].push_front(t);
 
@@ -1997,6 +2056,47 @@ bool GSTextureCache::Surface::Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i
 	const u32 end_block = GSLocalMemory::m_psm[psm].info.bn(rect.z - 1, rect.w - 1, bp, bw);
 	const bool overlap = GSTextureCache::CheckOverlap(m_TEX0.TBP0, m_end_block, bp, end_block);
 	return overlap;
+}
+
+void GSTextureCache::Surface::ResizeTexture(int new_width, int new_height)
+{
+	ResizeTexture(new_width, new_height, m_texture->GetScale());
+}
+
+void GSTextureCache::Surface::ResizeTexture(int new_width, int new_height, GSVector2 new_scale)
+{
+	const int width = m_texture->GetWidth();
+	const int height = m_texture->GetHeight();
+	if (width == new_width && height == new_height)
+		return;
+
+	const bool clear = (new_width > width || new_height > height);
+	GSTexture* tex = m_texture->IsDepthStencil() ?
+						 g_gs_device->CreateSparseDepthStencil(new_width, new_height, m_texture->GetFormat(), clear) :
+                         g_gs_device->CreateSparseRenderTarget(new_width, new_height, m_texture->GetFormat(), clear);
+	if (!tex)
+	{
+		Console.Error("(GSTextureCache::Surface::ResizeTexture) Failed to allocate %dx%d texture", new_width, new_height);
+		return;
+	}
+
+	tex->SetScale(new_scale);
+
+	const GSVector4i rc(0, 0, std::min(width, new_width), std::min(height, new_height));
+	if (tex->IsDepthStencil())
+	{
+		// Can't do partial copies in DirectX for depth textures, and it's probably not ideal in other
+		// APIs either. So use a fullscreen quad setting depth instead.
+		g_gs_device->StretchRect(m_texture, tex, GSVector4(rc), ShaderConvert::DEPTH_COPY, false);
+	}
+	else
+	{
+		// Fast memcpy()-like path for color targets.
+		g_gs_device->CopyRect(m_texture, tex, rc, 0, 0);
+	}
+
+	g_gs_device->Recycle(m_texture);
+	m_texture = tex;
 }
 
 // GSTextureCache::Source
@@ -2410,7 +2510,10 @@ void GSTextureCache::Target::UpdateIfDirtyIntersects(const GSVector4i& rc)
 
 void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 {
-	m_valid = m_valid.runion(rect);
+	if (m_valid.eq(GSVector4i::zero()))
+		m_valid = rect;
+	else
+		m_valid = m_valid.runion(rect);
 
 	// Block of the bottom right texel of the validity rectangle, last valid block of the texture
 	m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].info.bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW); // Valid only for color formats

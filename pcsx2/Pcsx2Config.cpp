@@ -325,7 +325,6 @@ Pcsx2Config::GSOptions::GSOptions()
 	HWDisableReadbacks = false;
 	AccurateDATE = true;
 	GPUPaletteConversion = false;
-	ConservativeFramebuffer = true;
 	AutoFlushSW = true;
 	PreloadFrameWithGSData = false;
 	WrapGSMem = false;
@@ -546,7 +545,6 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBool(HWDisableReadbacks);
 	GSSettingBoolEx(AccurateDATE, "accurate_date");
 	GSSettingBoolEx(GPUPaletteConversion, "paltex");
-	GSSettingBoolEx(ConservativeFramebuffer, "conservative_framebuffer");
 	GSSettingBoolEx(AutoFlushSW, "autoflush_sw");
 	GSSettingBoolEx(PreloadFrameWithGSData, "preload_frame_with_gs_data");
 	GSSettingBoolEx(WrapGSMem, "wrap_gs_mem");

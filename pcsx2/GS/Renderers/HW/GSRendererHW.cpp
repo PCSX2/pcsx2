@@ -20,12 +20,11 @@
 #include "GS/Renderers/SW/GSTextureCacheSW.h"
 #include "GS/Renderers/SW/GSDrawScanline.h"
 #include "Host.h"
+#include "common/Align.h"
 #include "common/StringUtil.h"
 
 GSRendererHW::GSRendererHW()
 	: GSRenderer()
-	, m_width(default_rt_size.x)
-	, m_height(default_rt_size.y)
 	, m_tc(new GSTextureCache())
 	, m_src(nullptr)
 	, m_reset(false)
@@ -50,7 +49,7 @@ GSRendererHW::GSRendererHW()
 	ResetStates();
 }
 
-void GSRendererHW::SetScaling()
+GSVector2i GSRendererHW::GetOutputSize(int real_h)
 {
 	GSVector2i crtc_size(GetResolution());
 
@@ -90,63 +89,10 @@ void GSRendererHW::SetScaling()
 		}
 	}
 
-	// Details of (potential) perf impact of a big framebuffer
-	// 1/ extra memory
-	// 2/ texture cache framebuffer rescaling/copy
-	// 3/ upload of framebuffer (preload hack)
-	// 4/ framebuffer clear (color/depth/stencil)
-	// 5/ read back of the frambuffer
-	//
-	// With the solution
-	// 1/ Nothing to do.Except the texture cache bug (channel shuffle effect)
-	//    most of the market is 1GB of VRAM (and soon 2GB)
-	// 2/ limit rescaling/copy to the valid data of the framebuffer
-	// 3/ ??? no solution so far
-	// 4a/ stencil can be limited to valid data.
-	// 4b/ is it useful to clear color? depth? (in any case, it ought to be few operation)
-	// 5/ limit the read to the valid data
+	// Include negative display offsets in the height here.
+	crtc_size.y = std::max(crtc_size.y, real_h);
 
-	// Framebuffer width is always a multiple of 64 so at certain cases it can't cover some weird width values.
-	// 480P , 576P use width as 720 which is not referencable by FBW * 64. so it produces 704 ( the closest value multiple by 64).
-	// In such cases, let's just use the CRTC width.
-	const int fb_width = std::max({(int)m_context->FRAME.FBW * 64, crtc_size.x, 512});
-	// GS doesn't have a specific register for the FrameBuffer height. so we get the height
-	// from physical units of the display rectangle in case the game uses a heigher value of height.
-	//
-	// Gregory: the framebuffer must have enough room to draw
-	// * at least 2 frames such as FMV (see OI_BlitFMV)
-	// * high resolution game such as snowblind engine game
-	//
-	// Autodetection isn't a good idea because it will create flickering
-	// If memory consumption is an issue, there are 2 possibilities
-	// * 1/ Avoid to create hundreds of RT
-	// * 2/ Use sparse texture (requires recent HW)
-	//
-	// Avoid to alternate between 640x1280 and 1280x1024 on snow blind engine game
-	// int fb_height = (fb_width < 1024) ? 1280 : 1024;
-	//
-	// Until performance issue is properly fixed, let's keep an option to reduce the framebuffer size.
-	//
-	// m_large_framebuffer has been inverted to m_conservative_framebuffer, it isn't an option that benefits being enabled all the time for everyone.
-	int fb_height = MAX_FRAMEBUFFER_HEIGHT;
-	if (GSConfig.ConservativeFramebuffer)
-	{
-		fb_height = fb_width < 1024 ? std::max(512, crtc_size.y) : 1024;
-	}
-
-	const int upscaled_fb_w = fb_width * GSConfig.UpscaleMultiplier;
-	const int upscaled_fb_h = fb_height * GSConfig.UpscaleMultiplier;
-	const bool good_rt_size = m_width >= upscaled_fb_w && m_height >= upscaled_fb_h;
-
-	// No need to resize for native/custom resolutions as default size will be enough for native and we manually get RT Buffer size for custom.
-	// don't resize until the display rectangle and register states are stabilized.
-	if (good_rt_size)
-		return;
-
-	m_tc->RemovePartial();
-	m_width = upscaled_fb_w;
-	m_height = upscaled_fb_h;
-	printf("Frame buffer size set to  %dx%d (%dx%d)\n", fb_width, fb_height, m_width, m_height);
+	return crtc_size * GSVector2i(static_cast<int>(GSConfig.UpscaleMultiplier), static_cast<int>(GSConfig.UpscaleMultiplier));
 }
 
 void GSRendererHW::SetTCOffset()
@@ -192,11 +138,6 @@ void GSRendererHW::SetGameCRC(u32 crc, int options)
 
 bool GSRendererHW::CanUpscale()
 {
-	if (m_hacks.m_cu && !(this->*m_hacks.m_cu)())
-	{
-		return false;
-	}
-
 	return GSConfig.UpscaleMultiplier != 1;
 }
 
@@ -227,19 +168,11 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 	if (m_reset)
 	{
 		m_tc->RemoveAll();
-
-		// Reset RT size.
-		m_width = default_rt_size.x;
-		m_height =  default_rt_size.y;
-
 		m_reset = false;
 	}
 
 	if (GSConfig.LoadTextureReplacements)
 		GSTextureReplacements::ProcessAsyncLoadedTextures();
-
-	//Check if the frame buffer width or display width has changed
-	SetScaling();
 
 	GSRenderer::VSync(field, registers_written);
 
@@ -286,7 +219,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 
 	GSTexture* t = NULL;
 
-	if (GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, GetTargetSize(), fb_height))
+	if (GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, GetOutputSize(fb_height), fb_height))
 	{
 		t = rt->m_texture;
 
@@ -321,7 +254,8 @@ GSTexture* GSRendererHW::GetFeedbackOutput()
 	TEX0.TBW = m_regs->EXTBUF.EXBW;
 	TEX0.PSM = m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPFB.PSM;
 
-	GSTextureCache::Target* rt = m_tc->LookupTarget(TEX0, GetTargetSize(), /*GetFrameRect(i).bottom*/ m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPLAY.DH);
+	const int fb_height = /*GetFrameRect(i).bottom*/ m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPLAY.DH;
+	GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, GetOutputSize(fb_height), fb_height);
 
 	GSTexture* t = rt->m_texture;
 
@@ -763,35 +697,41 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 	}
 }
 
-GSVector2 GSRendererHW::GetTextureScaleFactor(const bool force_upscaling)
-{
-	GSVector2 scale_factor{ 1.0f, 1.0f };
-	if (force_upscaling || CanUpscale())
-	{
-		const int multiplier = GetUpscaleMultiplier();
-		scale_factor.x = multiplier;
-		scale_factor.y = multiplier;
-	}
-
-	return scale_factor;
-}
-
 GSVector2 GSRendererHW::GetTextureScaleFactor()
 {
-	return GetTextureScaleFactor(false);
+	const float f_upscale = static_cast<float>(GetUpscaleMultiplier());
+	return GSVector2(f_upscale, f_upscale);
 }
 
 GSVector2i GSRendererHW::GetTargetSize()
 {
-	const GSVector2i t_size = { m_width, m_height };
-	if (GetUpscaleMultiplier() == 1 || CanUpscale())
-		return t_size;
-	// Undo the upscaling for native resolution draws.
-	const GSVector2 up_s = GetTextureScaleFactor(true);
-	return {
-		static_cast<int>(std::ceil(static_cast<float>(t_size.x) / up_s.x)),
-		static_cast<int>(std::ceil(static_cast<float>(t_size.y) / up_s.y)),
-	};
+	// Don't blindly expand out to the scissor size if we're not drawing to it.
+	// e.g. Burnout 3, God of War II, etc.
+	u32 min_height = std::min<u32>(m_context->scissor.in.w, m_r.w);
+
+	// Another thing these games like to do, is draw a 512x896 shuffle, which would result in us
+	// expanding the target out to 896 height, but the extra area would all be black, with the
+	// draw effectively changing nothing for the new area. So, instead, lets try to detect these
+	// draws by double-checking we're not stretching the texture (gradient of <1).
+	if (PRIM->TME && m_vt.m_primclass == GS_SPRITE_CLASS && m_src && (m_src->m_target || m_src->m_from_target))
+	{
+		const float diff = std::abs((m_vt.m_max.p.y - m_vt.m_min.p.y) - (m_vt.m_max.t.y - m_vt.m_min.t.y));
+		if (diff <= 1.0f)
+		{
+			// Clamp to the texture size. We're working in unscaled coordinates here, so undo the upscaling.
+			min_height = std::min(min_height, static_cast<u32>(static_cast<float>(m_src->m_texture->GetHeight()) / m_src->m_texture->GetScale().y));
+		}
+	}
+
+	// Align to even lines, reduces the chance of tiny resizes.
+	min_height = Common::AlignUpPow2(min_height, 2);
+
+	const u32 width = m_context->FRAME.FBW * 64u;
+	const u32 height = m_tc->GetTargetHeight(m_context->FRAME.FBP, m_context->FRAME.FBW, m_context->FRAME.PSM, min_height);
+
+	GL_INS("Target size for %x %u %u: %ux%u", m_context->FRAME.FBP, m_context->FRAME.FBW, m_context->FRAME.PSM, width, height);
+
+	return GSVector2i(static_cast<int>(width * GSConfig.UpscaleMultiplier), static_cast<int>(height * GSConfig.UpscaleMultiplier));
 }
 
 void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
@@ -1605,6 +1545,8 @@ void GSRendererHW::Draw()
 		}
 	}
 
+	// The rectangle of the draw
+	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
 	const GSVector2i t_size = GetTargetSize();
 
 	TEX0.TBP0 = context->FRAME.Block();
@@ -1612,24 +1554,16 @@ void GSRendererHW::Draw()
 	TEX0.PSM = context->FRAME.PSM;
 
 	GSTextureCache::Target* rt = nullptr;
-	GSTexture* rt_tex = nullptr;
 	if (!no_rt)
-	{
 		rt = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::RenderTarget, true, fm);
-		rt_tex = rt->m_texture;
-	}
 
 	TEX0.TBP0 = context->ZBUF.Block();
 	TEX0.TBW = context->FRAME.FBW;
 	TEX0.PSM = context->ZBUF.PSM;
 
 	GSTextureCache::Target* ds = nullptr;
-	GSTexture* ds_tex = nullptr;
 	if (!no_ds)
-	{
 		ds = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::DepthStencil, context->DepthWrite());
-		ds_tex = ds->m_texture;
-	}
 
 	if (rt)
 	{
@@ -1639,38 +1573,24 @@ void GSRendererHW::Draw()
 		rt->m_32_bits_fmt = m_texture_shuffle || (GSLocalMemory::m_psm[context->FRAME.PSM].bpp != 16);
 	}
 
-	// The rectangle of the draw
-	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
-
 	{
-		const GSVector2 up_s = GetTextureScaleFactor();
-		const int up_w = static_cast<int>(std::ceil(static_cast<float>(m_r.z) * up_s.x));
-		const int up_h = static_cast<int>(std::ceil(static_cast<float>(m_r.w) * up_s.y));
-		const int new_w = std::max(up_w, std::max(rt_tex ? rt_tex->GetWidth() : 0, ds_tex ? ds_tex->GetWidth() : 0));
-		const int new_h = std::max(up_h, std::max(rt_tex ? rt_tex->GetHeight() : 0, ds_tex ? ds_tex->GetHeight() : 0));
-		std::array<GSTextureCache::Target*, 2> ts{ rt, ds };
-		for (GSTextureCache::Target* t : ts)
+		// We still need to make sure the dimensions of the targets match.
+		const GSVector2 up_s(GetTextureScaleFactor());
+		const int new_w = std::max(t_size.x, std::max(rt ? rt->m_texture->GetWidth() : 0, ds ? ds->m_texture->GetWidth() : 0));
+		const int new_h = std::max(t_size.y, std::max(rt ? rt->m_texture->GetHeight() : 0, ds ? ds->m_texture->GetHeight() : 0));
+
+		// Ensure draw rect is clamped to framebuffer size. Necessary for updating valid area.
+		m_r = m_r.rintersect(GSVector4i(0, 0, new_w, new_h));
+
+		if (rt)
 		{
-			if (t)
-			{
-				// Adjust texture size to fit current draw if necessary.
-				GSTexture* tex = t->m_texture;
-				assert(up_s == tex->GetScale());
-				const int w = tex->GetWidth();
-				const int h = tex->GetHeight();
-				if (w != new_w || h != new_h)
-				{
-					const bool is_rt = t == rt;
-					t->m_texture = is_rt ?
-						g_gs_device->CreateSparseRenderTarget(new_w, new_h, tex->GetFormat()) :
-						g_gs_device->CreateSparseDepthStencil(new_w, new_h, tex->GetFormat());
-					const GSVector4i r{ 0, 0, w, h };
-					g_gs_device->CopyRect(tex, t->m_texture, r, 0, 0);
-					g_gs_device->Recycle(tex);
-					t->m_texture->SetScale(up_s);
-					(is_rt ? rt_tex : ds_tex) = t->m_texture;
-				}
-			}
+			pxAssert(rt->m_texture->GetScale() == up_s);
+			rt->ResizeTexture(new_w, new_h, up_s);
+		}
+		if (ds)
+		{
+			pxAssert(ds->m_texture->GetScale() == up_s);
+			ds->ResizeTexture(new_w, new_h, up_s);
 		}
 	}
 
@@ -1708,20 +1628,20 @@ void GSRendererHW::Draw()
 		{
 			s = StringUtil::StdStringFromFormat("%05d_f%lld_rt0_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
 
-			if (rt_tex)
-				rt_tex->Save(m_dump_root + s);
+			if (rt->m_texture)
+				rt->m_texture->Save(m_dump_root + s);
 		}
 
 		if (s_savez && s_n >= s_saven)
 		{
 			s = StringUtil::StdStringFromFormat("%05d_f%lld_rz0_%05x_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
 
-			if (ds_tex)
-				ds_tex->Save(m_dump_root + s);
+			if (ds->m_texture)
+				ds->m_texture->Save(m_dump_root + s);
 		}
 	}
 
-	if (m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt_tex, ds_tex, m_src))
+	if (m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt ? rt->m_texture : nullptr, ds ? ds->m_texture : nullptr, m_src))
 	{
 		GL_INS("Warning skipping a draw call (%d)", s_n);
 		return;
@@ -1746,7 +1666,7 @@ void GSRendererHW::Draw()
 
 			OI_GsMemClear();
 
-			OI_DoubleHalfClear(rt_tex, ds_tex);
+			OI_DoubleHalfClear(rt, ds);
 		}
 	}
 
@@ -1801,7 +1721,7 @@ void GSRendererHW::Draw()
 
 	//
 
-	DrawPrims(rt_tex, ds_tex, m_src);
+	DrawPrims(rt ? rt->m_texture : nullptr, ds ? ds->m_texture : nullptr, m_src);
 
 	//
 
@@ -1853,16 +1773,16 @@ void GSRendererHW::Draw()
 		{
 			s = StringUtil::StdStringFromFormat("%05d_f%lld_rt1_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
 
-			if (rt_tex)
-				rt_tex->Save(m_dump_root + s);
+			if (rt)
+				rt->m_texture->Save(m_dump_root + s);
 		}
 
 		if (s_savez && s_n >= s_saven)
 		{
 			s = StringUtil::StdStringFromFormat("%05d_f%lld_rz1_%05x_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
 
-			if (ds_tex)
-				ds_tex->Save(m_dump_root + s);
+			if (ds)
+				rt->m_texture->Save(m_dump_root + s);
 		}
 
 		if (s_savel > 0 && (s_n - s_saven) > s_savel)
@@ -3217,10 +3137,6 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		area_out.x, area_out.y, area_out.z, area_out.w);
 #endif
 
-	const GSVector2i& rtsize = ds ? ds->GetSize()  : rt->GetSize();
-	const GSVector2& rtscale = ds ? ds->GetScale() : rt->GetScale();
-	const GSDevice::FeatureSupport features(g_gs_device->Features());
-
 	const bool DATE = m_context->TEST.DATE && m_context->FRAME.PSM != PSM_PSMCT24;
 	bool DATE_PRIMID = false;
 	bool DATE_BARRIER = false;
@@ -3250,6 +3166,7 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	// Upscaling hack to avoid various line/grid issues
 	MergeSprite(tex);
 
+	const GSDevice::FeatureSupport features(g_gs_device->Features());
 	if (!features.framebuffer_fetch)
 		m_prim_overlap = PrimitiveOverlap();
 	else
@@ -3418,6 +3335,8 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	m_conf.vs.fst = PRIM->FST;
 
 	// FIXME D3D11 and GL support half pixel center. Code could be easier!!!
+	const GSVector2i rtsize(m_conf.ds ? m_conf.ds->GetSize() : m_conf.rt->GetSize());
+	const GSVector2 rtscale(m_conf.ds ? m_conf.ds->GetScale() : m_conf.rt->GetScale());
 	const float sx = 2.0f * rtscale.x / (rtsize.x << 4);
 	const float sy = 2.0f * rtscale.y / (rtsize.y << 4);
 	const float ox = (float)(int)m_context->XYOFFSET.OFX;
@@ -4177,10 +4096,8 @@ bool GSRendererHW::SwPrimRender()
 GSRendererHW::Hacks::Hacks()
 	: m_oi_map(m_oi_list)
 	, m_oo_map(m_oo_list)
-	, m_cu_map(m_cu_list)
 	, m_oi(NULL)
 	, m_oo(NULL)
-	, m_cu(NULL)
 {
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BigMuthaTruckers, CRC::RegionCount, &GSRendererHW::OI_BigMuthaTruckers));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::OI_DBZBTGames));
@@ -4206,7 +4123,6 @@ void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 
 	m_oi = m_oi_map[hash];
 	m_oo = m_oo_map[hash];
-	m_cu = m_cu_map[hash];
 
 	if (GSConfig.PointListPalette)
 	{
@@ -4220,7 +4136,7 @@ void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 // Trick to do a fast clear on the GS
 // Set frame buffer pointer on the start of the buffer. Set depth buffer pointer on the half buffer
 // FB + depth write will fill the full buffer.
-void GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds)
+void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCache::Target*& ds)
 {
 	// Note gs mem clear must be tested before calling this function
 
@@ -4266,20 +4182,35 @@ void GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds)
 			GL_INS("OI_DoubleHalfClear:%s: base %x half %x. w_pages %d h_pages %d fbw %d. Color %x",
 				clear_depth ? "depth" : "target", base << 5, half << 5, w_pages, h_pages, m_context->FRAME.FBW, color);
 
-			// Commit texture with a factor 2 on the height
-			GSTexture* t = clear_depth ? ds : rt;
-			const GSVector4i commitRect = ComputeBoundingBox(t->GetScale(), t->GetSize());
-			t->CommitRegion(GSVector2i(commitRect.z, 2 * commitRect.w));
+			// Handle the case where the game stacks FBP and ZBP immediately after one another.
+			// We incorrectly compute the height here, because both the scissor and draw rectangle will only be half
+			// the height of what's effectively being cleared. Spider-Man 2's shadows are a good test case here: it
+			// draws the shadow map to a 128x128 texture, but relies on a 1 pixel border around the edge to "cut off"
+			// the shadows. We cap it to a 256 height, because having a >=512 height framebuffer is very rare, and it
+			// stops us doubling actual framebuffers unintentionally (very common).
+			GSTextureCache::Target* t = clear_depth ? ds : rt;
+			const u32 unscaled_height = static_cast<u32>(static_cast<float>(t->m_texture->GetHeight()) / t->m_texture->GetScale().y);
+			if (unscaled_height == m_context->scissor.in.w && unscaled_height <= 256)
+			{
+				t->ResizeTexture(t->m_texture->GetWidth(), t->m_texture->GetHeight() * 2, t->m_texture->GetScale());
+				if (clear_depth)
+					rt = nullptr;
+				else
+					ds = nullptr;
+
+				// Feed it back into the height cache.
+				m_tc->GetTargetHeight(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, unscaled_height * 2);
+			}
 
 			if (clear_depth)
 			{
 				// Only pure clear are supported for depth
 				ASSERT(color == 0);
-				g_gs_device->ClearDepth(t);
+				g_gs_device->ClearDepth(ds->m_texture);
 			}
 			else
 			{
-				g_gs_device->ClearRenderTarget(t, color);
+				g_gs_device->ClearRenderTarget(rt->m_texture, color);
 			}
 		}
 	}
@@ -4295,10 +4226,10 @@ void GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds)
 
 		// If both buffers are side by side we can expect a fast clear in on-going
 		const u32 color = v[1].RGBAQ.U32[0];
-		const GSVector4i commitRect = ComputeBoundingBox(rt->GetScale(), rt->GetSize());
-		rt->CommitRegion(GSVector2i(commitRect.z, commitRect.w));
+		const GSVector4i commitRect = ComputeBoundingBox(rt->m_texture->GetScale(), rt->m_texture->GetSize());
+		rt->m_texture->CommitRegion(GSVector2i(commitRect.z, commitRect.w));
 
-		g_gs_device->ClearRenderTarget(rt, color);
+		g_gs_device->ClearRenderTarget(rt->m_texture, color);
 	}
 }
 
@@ -4689,12 +4620,14 @@ bool GSRendererHW::OI_SonicUnleashed(GSTexture* rt, GSTexture* ds, GSTextureCach
 
 	GL_INS("OI_SonicUnleashed replace draw by a copy");
 
-	GSTextureCache::Target* src = m_tc->LookupTarget(Texture, GetTargetSize(), GSTextureCache::RenderTarget, true);
+	GSTextureCache::Target* src = m_tc->LookupTarget(Texture, GSVector2i(1, 1), GSTextureCache::RenderTarget, true);
 
-	const GSVector2i size = rt->GetSize();
+	const GSVector2i rt_size(rt->GetSize());
+	const GSVector2i src_size(src->m_texture->GetSize());
+	const GSVector2i copy_size(std::min(rt_size.x, src_size.x), std::min(rt_size.y, src_size.y));
 
-	const GSVector4 sRect(0, 0, 1, 1);
-	const GSVector4 dRect(0, 0, size.x, size.y);
+	const GSVector4 sRect(0.0f, 0.0f, static_cast<float>(copy_size.x) / static_cast<float>(src_size.x), static_cast<float>(copy_size.y) / static_cast<float>(src_size.y));
+	const GSVector4 dRect(0, 0, copy_size.x, copy_size.y);
 
 	g_gs_device->StretchRect(src->m_texture, sRect, rt, dRect, true, true, true, false);
 

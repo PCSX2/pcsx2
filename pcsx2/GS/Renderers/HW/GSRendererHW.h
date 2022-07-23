@@ -29,9 +29,6 @@ public:
 	static constexpr int MAX_FRAMEBUFFER_HEIGHT = 1280;
 
 private:
-	int m_width;
-	int m_height;
-
 	static constexpr float SSR_UV_TOLERANCE = 1.0f;
 
 #pragma region hacks
@@ -43,7 +40,7 @@ private:
 	// Require special argument
 	bool OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* t, const GSVector4i& r_draw);
 	void OI_GsMemClear(); // always on
-	void OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds); // always on
+	void OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCache::Target*& ds); // always on
 
 	bool OI_BigMuthaTruckers(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_DBZBTGames(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
@@ -108,16 +105,13 @@ private:
 
 		std::list<HackEntry<OI_Ptr>> m_oi_list;
 		std::list<HackEntry<OO_Ptr>> m_oo_list;
-		std::list<HackEntry<CU_Ptr>> m_cu_list;
 
 		FunctionMap<OI_Ptr> m_oi_map;
 		FunctionMap<OO_Ptr> m_oo_map;
-		FunctionMap<CU_Ptr> m_cu_map;
 
 	public:
 		OI_Ptr m_oi;
 		OO_Ptr m_oo;
-		CU_Ptr m_cu;
 
 		Hacks();
 
@@ -183,15 +177,14 @@ public:
 	void SetGameCRC(u32 crc, int options) override;
 	bool CanUpscale() override;
 	int GetUpscaleMultiplier() override;
-	void SetScaling();
 	void Lines2Sprites();
 	void EmulateAtst(GSVector4& FogColor_AREF, u8& atst, const bool pass_2);
 	void ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba);
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
 	GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
 	void MergeSprite(GSTextureCache::Source* tex);
-	GSVector2 GetTextureScaleFactor(const bool force_upscaling);
 	GSVector2 GetTextureScaleFactor() override;
+	GSVector2i GetOutputSize(int real_h);
 	GSVector2i GetTargetSize();
 
 	void Reset(bool hardware_reset) override;

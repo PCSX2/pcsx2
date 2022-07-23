@@ -270,7 +270,6 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 
 static const char* s_gs_hw_fix_names[] = {
 	"autoFlush",
-	"conservativeFramebuffer",
 	"cpuFramebufferConversion",
 	"disableDepthSupport",
 	"wrapGSMem",
@@ -317,7 +316,6 @@ bool GameDatabaseSchema::isUserHackHWFix(GSHWFixId id)
 		case GSHWFixId::Deinterlace:
 		case GSHWFixId::Mipmap:
 		case GSHWFixId::TexturePreloading:
-		case GSHWFixId::ConservativeFramebuffer:
 		case GSHWFixId::PointListPalette:
 			return false;
 
@@ -446,9 +444,6 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::AutoFlush:
 			return (static_cast<int>(config.UserHacks_AutoFlush) == value);
 
-		case GSHWFixId::ConservativeFramebuffer:
-			return (static_cast<int>(config.ConservativeFramebuffer) == value);
-
 		case GSHWFixId::CPUFramebufferConversion:
 			return (static_cast<int>(config.UserHacks_CPUFBConversion) == value);
 
@@ -540,10 +535,6 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 		{
 			case GSHWFixId::AutoFlush:
 				config.UserHacks_AutoFlush = (value > 0);
-				break;
-
-			case GSHWFixId::ConservativeFramebuffer:
-				config.ConservativeFramebuffer = (value > 0);
 				break;
 
 			case GSHWFixId::CPUFramebufferConversion:
