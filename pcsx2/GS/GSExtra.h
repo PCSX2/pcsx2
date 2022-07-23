@@ -76,12 +76,6 @@ __forceinline bool BitEqual(const T& a, const T& b)
 	return eqb;
 }
 
-#ifdef ENABLE_ACCURATE_BUFFER_EMULATION
-static const GSVector2i default_rt_size(2048, 2048);
-#else
-static const GSVector2i default_rt_size(0, 0);
-#endif
-
 extern Pcsx2Config::GSOptions GSConfig;
 
 // Maximum texture size to skip preload/hash path.
