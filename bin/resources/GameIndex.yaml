@@ -388,6 +388,8 @@ PCPX-98017:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 PDPX-99109:
   name: "DVD Player Version 3.04"
   region: "NTSC-J"
@@ -7400,6 +7402,8 @@ SCUS-97353:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
   memcardFilters:
     - "SCUS-97353"
     - "SCUS-97268"
@@ -7573,6 +7577,8 @@ SCUS-97411:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 SCUS-97412:
   name: "Jak 3 [Demo]"
   region: "NTSC-U"
@@ -7590,6 +7596,8 @@ SCUS-97413:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 SCUS-97414:
   name: "EyeToy - AntiGrav"
   region: "NTSC-U"
@@ -8065,6 +8073,8 @@ SCUS-97518:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 SCUS-97519:
   name: "Sly 2 - Band of Thieves [Greatest Hits]"
   region: "NTSC-U"
@@ -47482,6 +47492,8 @@ TCES-52456:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Helps fix misaligned bloom.
 TCES-52582:
   name: "Everybody's Golf 4 Beta Trial Code"
   region: "PAL-E"
