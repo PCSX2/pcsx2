@@ -17488,6 +17488,8 @@ SLES-53989:
 SLES-53991:
   name: "Urban Chaos - Riot Response"
   region: "PAL-M5"
+  gsHWFixes:
+    roundSprite: 1 # Fixes edge garbage and thin lines.
 SLES-53994:
   name: "50 Cent - Bulletproof"
   region: "PAL-E"
@@ -31455,6 +31457,8 @@ SLPM-66766:
 SLPM-66767:
   name: "Urban Chaos - Riot Response"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes edge garbage and thin lines.
 SLPM-66768:
   name: "Missing Parts - The Tantei Stories - Side A [Best Version]"
   region: "NTSC-J"
@@ -44287,6 +44291,8 @@ SLUS-21390:
   name: "Urban Chaos - Riot Response"
   region: "NTSC-U"
   compat: 4
+  gsHWFixes:
+    roundSprite: 1 # Fixes edge garbage and thin lines.
 SLUS-21391:
   name: "SpongeBob SquarePants - Creature from the Krusty Krab"
   region: "NTSC-U"
