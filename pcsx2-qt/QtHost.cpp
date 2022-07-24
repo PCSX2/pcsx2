@@ -703,8 +703,11 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	// Start up the CPU thread.
+	// Set theme before creating any windows.
+	MainWindow::updateApplicationTheme();
 	MainWindow* main_window = new MainWindow(QApplication::style()->objectName());
+
+	// Start up the CPU thread.
 	QtHost::HookSignals();
 	EmuThread::start();
 

@@ -79,6 +79,9 @@ public:
 	explicit MainWindow(const QString& unthemed_style_name);
 	~MainWindow();
 
+	/// Sets application theme according to settings.
+	static void updateApplicationTheme();
+
 	void initialize();
 	void connectVMThreadSignals(EmuThread* thread);
 	void startupUpdateCheck();
@@ -143,8 +146,7 @@ private Q_SLOTS:
 	void onAboutActionTriggered();
 	void onCheckForUpdatesActionTriggered();
 	void onToolsOpenDataDirectoryTriggered();
-	void onThemeChanged();
-	void onThemeChangedFromSettings();
+	void updateTheme();
 	void onLoggingOptionChanged();
 	void onScreenshotActionTriggered();
 	void onSaveGSDumpActionTriggered();
@@ -178,10 +180,11 @@ private:
 		NUM_SAVE_STATE_SLOTS = 10,
 	};
 
+	static void setStyleFromSettings();
+	static void setIconThemeFromStyle();
+
 	void setupAdditionalUi();
 	void connectSignals();
-	void setStyleFromSettings();
-	void setIconThemeFromStyle();
 
 	void saveStateToConfig();
 	void restoreStateFromConfig();
