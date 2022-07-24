@@ -15614,11 +15614,15 @@ SLES-53196:
   region: "PAL-M4"
   gsHWFixes:
     mipmap: 1
+    autoFlush: 1 # Fixes lens flare occlusion.
+    halfPixelOffset: 3 # Reduces bloom misalignment.
 SLES-53197:
   name: "Destroy All Humans!"
   region: "PAL-G"
   gsHWFixes:
     mipmap: 1
+    autoFlush: 1 # Fixes lens flare occlusion.
+    halfPixelOffset: 3 # Reduces bloom misalignment.
 SLES-53199:
   name: "25 to Life"
   region: "PAL-E"
@@ -16652,6 +16656,8 @@ SLES-53641:
   region: "PAL-R"
   gsHWFixes:
     mipmap: 1
+    autoFlush: 1 # Fixes lens flare occlusion.
+    halfPixelOffset: 3 # Reduces bloom misalignment.
 SLES-53644:
   name: "Gene Troopers"
   region: "PAL-M5"
@@ -18396,6 +18402,8 @@ SLES-54384:
   region: "PAL-M5"
   gsHWFixes:
     mipmap: 1
+    autoFlush: 1 # Fixes lens flare occlusion.
+    halfPixelOffset: 3 # Reduces bloom misalignment.
 SLES-54385:
   name: "Atelier Iris 2 - The Azoth of Destiny"
   region: "PAL-E"
@@ -30214,6 +30222,8 @@ SLPM-66430:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+    autoFlush: 1 # Fixes lens flare occlusion.
+    halfPixelOffset: 3 # Reduces bloom misalignment.
 SLPM-66431:
   name: "WinBack 2 - Project Poseidon"
   region: "NTSC-J"
@@ -41989,6 +41999,8 @@ SLUS-20945:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    autoFlush: 1 # Fixes lens flare occlusion.
+    halfPixelOffset: 3 # Reduces bloom misalignment.
 SLUS-20946:
   name: "Grand Theft Auto - San Andreas"
   region: "NTSC-U"
@@ -44577,6 +44589,8 @@ SLUS-21439:
     eeClampMode: 3 # Fixes material stretching across screen that appears for a split second.
   gsHWFixes:
     mipmap: 1
+    autoFlush: 1 # Fixes lens flare occlusion.
+    halfPixelOffset: 3 # Reduces bloom misalignment.
 SLUS-21440:
   name: "LarryBoy and the Bad Apple"
   region: "NTSC-U"
@@ -47317,6 +47331,8 @@ SLUS-29150:
   region: "NTSC-U"
   gsHWFixes:
     mipmap: 1
+    autoFlush: 1 # Fixes lens flare occlusion.
+    halfPixelOffset: 3 # Reduces bloom misalignment.
 SLUS-29152:
   name: "Battlefield 2 - Modern Combat [Regular Demo]"
   region: "NTSC-U"
@@ -47468,6 +47484,8 @@ SLUS-29196:
   region: "NTSC-U"
   gsHWFixes:
     mipmap: 1
+    autoFlush: 1 # Fixes lens flare occlusion.
+    halfPixelOffset: 3 # Reduces bloom misalignment.
 SLUS-29197:
   name: "Flushed Away [Demo]"
   region: "NTSC-U"
