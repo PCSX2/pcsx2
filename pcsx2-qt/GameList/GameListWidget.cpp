@@ -249,6 +249,11 @@ void GameListWidget::cancelRefresh()
 	pxAssertRel(!m_refresh_thread, "Game list thread should be unreferenced by now");
 }
 
+void GameListWidget::refreshImages()
+{
+	m_model->refreshImages();
+}
+
 void GameListWidget::onRefreshProgress(const QString& status, int current, int total)
 {
 	// switch away from the placeholder while we scan, in case we find anything

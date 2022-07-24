@@ -56,6 +56,7 @@ public:
 
 	void refresh(bool invalidate_cache);
 	void cancelRefresh();
+	void refreshImages();
 
 	bool isShowingGameList() const;
 	bool isShowingGameGrid() const;

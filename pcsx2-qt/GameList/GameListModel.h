@@ -73,6 +73,7 @@ public:
 	int getCoverArtHeight() const;
 	int getCoverArtSpacing() const;
 	void refreshCovers();
+	void refreshImages();
 
 private:
 	void loadCommonImages();

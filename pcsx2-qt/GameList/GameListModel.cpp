@@ -146,6 +146,12 @@ void GameListModel::refreshCovers()
 	refresh();
 }
 
+void GameListModel::refreshImages()
+{
+	loadCommonImages();
+	refresh();
+}
+
 int GameListModel::getCoverArtWidth() const
 {
 	return std::max(static_cast<int>(static_cast<float>(COVER_ART_WIDTH) * m_cover_scale), 1);
