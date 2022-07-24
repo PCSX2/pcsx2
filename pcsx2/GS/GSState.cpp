@@ -1959,9 +1959,9 @@ void GSState::Write(const u8* mem, int len)
 			FlushWrite();
 	}
 
-	int page_width = std::max(1, (w / psm.pgs.x));
-	int page_height = std::max(1, (h / psm.pgs.y));
-	int pitch = (std::max(1U, blit.DBW) * 64) / psm.pgs.x;
+	const int page_width = std::max(1, ((w + static_cast<int>(m_env.TRXPOS.DSAX)) / psm.pgs.x));
+	const int page_height = std::max(1, ((h + static_cast<int>(m_env.TRXPOS.DSAY)) / psm.pgs.y));
+	const int pitch = (std::max(1U, blit.DBW) * 64) / psm.pgs.x;
 
 	// Try to avoid flushing draws if it doesn't cross paths
 	m_mem.m_clut.InvalidateRange(blit.DBP, blit.DBP + ((page_width << 5) + ((page_height * pitch) << 5)));
@@ -2208,10 +2208,9 @@ void GSState::Move()
 			(m_mem.*dpsm.wpa)(doff, (m_mem.*spsm.rpa)(soff));
 		});
 	}
-
-	int page_width = std::max(1, (w / dpsm.pgs.x));
-	int page_height = std::max(1, (h / dpsm.pgs.y));
-	int pitch = (std::max(1, dbw) * 64) / dpsm.pgs.x;
+	const int page_width = std::max(1, ((w + static_cast<int>(m_env.TRXPOS.DSAX)) / dpsm.pgs.x));
+	const int page_height = std::max(1, ((h + static_cast<int>(m_env.TRXPOS.DSAY)) / dpsm.pgs.y));
+	const int pitch = (std::max(1, dbw) * 64) / dpsm.pgs.x;
 
 	// Try to avoid flushing draws if it doesn't cross paths
 	m_mem.m_clut.InvalidateRange(dbp, dbp + ((page_width << 5) + ((page_height * pitch) << 5)));
