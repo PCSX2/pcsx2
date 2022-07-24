@@ -16014,6 +16014,7 @@ SLES-53415:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
+    - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
     cpuSpriteRenderBW: 1 # Fixes textures.
@@ -16022,6 +16023,7 @@ SLES-53416:
   region: "PAL-M3"
   gameFixes:
     - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
+    - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
     cpuSpriteRenderBW: 1 # Fixes textures.
@@ -16030,6 +16032,7 @@ SLES-53417:
   region: "PAL-G"
   gameFixes:
     - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
+    - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
     cpuSpriteRenderBW: 1 # Fixes textures.
@@ -16871,6 +16874,7 @@ SLES-53722:
   region: "PAL-E"
   gameFixes:
     - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
+    - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
     cpuSpriteRenderBW: 1 # Fixes textures.
@@ -18698,13 +18702,13 @@ SLES-54510:
   name: "Disney's Meet the Robinsons"
   region: "PAL-M3"
 SLES-54511:
-  name: "UEFA Champions League"
+  name: "UEFA Champions League 2006-2007"
   region: "PAL-E"
 SLES-54512:
-  name: "UEFA Champions League"
+  name: "UEFA Champions League 2006-2007"
   region: "PAL-F-G"
 SLES-54513:
-  name: "UEFA Champions League"
+  name: "UEFA Champions League 2006-2007"
   region: "PAL-I-S"
 SLES-54516:
   name: "Thrillville"
@@ -29885,6 +29889,7 @@ SLPM-66328:
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
+    - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
     cpuSpriteRenderBW: 1 # Fixes textures.
@@ -43379,6 +43384,7 @@ SLUS-21228:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
+    - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
     cpuSpriteRenderBW: 1 # Fixes textures.
@@ -43895,6 +43901,7 @@ SLUS-21318:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
+    - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
     cpuSpriteRenderBW: 1 # Fixes textures.
