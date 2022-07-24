@@ -1510,6 +1510,7 @@ SCAJ-30010:
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
+    autoFlush: 1 # Fixes sun going through walls.
 SCAJ-30011:
   name: "God of War II"
   region: "NTSC-E"
@@ -3101,6 +3102,7 @@ SCES-51533:
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
+    autoFlush: 1 # Fixes sun going through walls.
 SCES-51578:
   name: "Network Access Disc [v1.03 - v6.00]"
   region: "PAL-M7"
@@ -3547,6 +3549,7 @@ SCES-53133:
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
+    autoFlush: 1 # Fixes sun going through walls.
 SCES-53178:
   name: "SingStar Pop"
   region: "PAL-E"
@@ -5014,6 +5017,7 @@ SCKA-30002:
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
+    autoFlush: 1 # Fixes sun going through walls.
 SCKA-30006:
   name: "God of War 2"
   region: "NTSC-K"
@@ -7524,6 +7528,7 @@ SCUS-97399:
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
+    autoFlush: 1 # Fixes sun going through walls.
 SCUS-97400:
   name: "EyeToy - Groove"
   region: "NTSC-U"
@@ -7805,6 +7810,7 @@ SCUS-97467:
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
+    autoFlush: 1 # Fixes sun going through walls.
 SCUS-97468:
   name: "EyeToy - Play 2"
   region: "NTSC-U"
@@ -29279,6 +29285,7 @@ SLPM-66167:
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
+    autoFlush: 1 # Fixes sun going through walls.
 SLPM-66168:
   name: "Ryu Ga Gotoku"
   region: "NTSC-J"
@@ -32208,6 +32215,7 @@ SLPM-67010:
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
+    autoFlush: 1 # Fixes sun going through walls.
 SLPM-67011:
   name: "God of War [CapKore]"
   region: "NTSC-J"
@@ -32216,6 +32224,7 @@ SLPM-67011:
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
+    autoFlush: 1 # Fixes sun going through walls.
 SLPM-67012:
   name: "God of War [Best Price]"
   region: "NTSC-J"
@@ -32224,6 +32233,7 @@ SLPM-67012:
     halfPixelOffset: 2 # Fixes depth lines and vertical lines and green fog bloom effect.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
     wrapGSMem: 1 # Fixes FMV when in progressive mode.
+    autoFlush: 1 # Fixes sun going through walls.
 SLPM-67013:
   name: "God of War II - The End Begins"
   region: "NTSC-J"
