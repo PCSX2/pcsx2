@@ -165,6 +165,8 @@ void ControllerSettingsDialog::onLoadProfileClicked()
 		QtHost::QueueSettingsSave();
 	}
 
+	g_emu_thread->applySettings();
+
 	// make it visible
 	switchProfile({});
 }
@@ -207,6 +209,8 @@ void ControllerSettingsDialog::onRestoreDefaultsClicked()
 		PAD::SetDefaultConfig(*Host::Internal::GetBaseSettingsLayer());
 		QtHost::QueueSettingsSave();
 	}
+
+	g_emu_thread->applySettings();
 
 	// reload all settings
 	switchProfile({});
