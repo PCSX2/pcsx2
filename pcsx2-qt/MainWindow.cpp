@@ -1959,6 +1959,7 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
 			{
 				m_game_list_widget->setVisible(true);
 				setCentralWidget(m_game_list_widget);
+				m_game_list_widget->resizeTableViewColumnsToFit();
 			}
 		}
 		else
@@ -1966,7 +1967,10 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
 			pxAssertRel(m_ui.mainContainer->indexOf(m_display_widget) == 1, "Display widget in stack");
 			m_ui.mainContainer->removeWidget(m_display_widget);
 			if (show_game_list)
+			{
 				m_ui.mainContainer->setCurrentIndex(0);
+				m_game_list_widget->resizeTableViewColumnsToFit();
+			}
 		}
 	}
 
