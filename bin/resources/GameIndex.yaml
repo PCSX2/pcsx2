@@ -45023,6 +45023,8 @@ SLUS-21567:
 SLUS-21568:
   name: "Arena Football - Road to Glory"
   region: "NTSC-U"
+  clampModes:
+    vuClampMode: 3 # Fixes missing crowds.
 SLUS-21569:
   name: "Shin Megami Tensei - Persona 3"
   region: "NTSC-U"
