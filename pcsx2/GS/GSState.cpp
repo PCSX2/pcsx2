@@ -149,6 +149,8 @@ GSState::~GSState()
 
 void GSState::Reset(bool hardware_reset)
 {
+	Flush();
+
 	// FIXME: bios logo not shown cut in half after reset, missing graphics in GoW after first FMV
 	if (hardware_reset)
 		memset(m_mem.m_vm8, 0, m_mem.m_vmsize);
