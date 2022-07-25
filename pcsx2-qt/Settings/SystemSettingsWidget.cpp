@@ -94,17 +94,9 @@ SystemSettingsWidget::SystemSettingsWidget(SettingsDialog* dialog, QWidget* pare
 
 	dialog->registerWidgetHelp(m_ui.fastCDVD, tr("Enable Fast CDVD"), tr("Unchecked"),
 		tr("Fast disc access, less loading times. Check HDLoader compatibility lists for known games that have issues with this."));
-
-	updateVU1InstantState();
-	connect(m_ui.MTVU, &QCheckBox::stateChanged, this, &SystemSettingsWidget::updateVU1InstantState);
 }
 
 SystemSettingsWidget::~SystemSettingsWidget() = default;
-
-void SystemSettingsWidget::updateVU1InstantState()
-{
-	//m_ui.instantVU1->setEnabled(!m_dialog->getEffectiveBoolValue("EmuCore/Speedhacks", "vuThread", false));
-}
 
 int SystemSettingsWidget::getGlobalClampingModeIndex(bool vu) const
 {

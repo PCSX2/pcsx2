@@ -228,8 +228,11 @@ __fi void vif1VUFinish()
 	if (VU0.VI[REG_VPU_STAT].UL & 0x500)
 	{
 		vu1Thread.Get_MTVUChanges();
-
-		CPU_INT(VIF_VU1_FINISH, 128);
+		
+		if (THREAD_VU1 && !INSTANT_VU1 && (VU0.VI[REG_VPU_STAT].UL & 0x100))
+			CPU_INT(VIF_VU1_FINISH, cpuGetCycles(VU_MTVU_BUSY));
+		else
+			CPU_INT(VIF_VU1_FINISH, 128);
 		return;
 	}
 	

@@ -528,7 +528,7 @@ __fi void CPU_INT( EE_EventType n, s32 ecycle)
 	// EE events happen 8 cycles in the future instead of whatever was requested.
 	// This can be used on games with PATH3 masking issues for example, or when
 	// some FMV look bad.
-	if(CHECK_EETIMINGHACK) ecycle = 8;
+	if(CHECK_EETIMINGHACK && n < VIF_VU0_FINISH) ecycle = 8;
 
 	cpuRegs.interrupt|= 1 << n;
 	cpuRegs.sCycle[n] = cpuRegs.cycle;

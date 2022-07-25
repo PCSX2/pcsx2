@@ -416,7 +416,7 @@ void VU_Thread::Get_MTVUChanges()
 	{
 		mtvuInterrupts.fetch_and(~InterruptFlagVUEBit, std::memory_order_relaxed);
 		
-		if(!INSTANT_VU1)
+		if(INSTANT_VU1)
 			VU0.VI[REG_VPU_STAT].UL &= ~0xFF00;
 		//DevCon.Warning("E-Bit registered %x", VU0.VI[REG_VPU_STAT].UL);
 	}
