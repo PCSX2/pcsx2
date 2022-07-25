@@ -2880,6 +2880,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 		case GSHWDrawConfig::DestinationAlphaMode::Stencil:
 			SetupDATE(config.rt, config.ds, config.datm, config.drawarea);
+			DATE_rp = DATE_RENDER_PASS_STENCIL;
 			break;
 	}
 
