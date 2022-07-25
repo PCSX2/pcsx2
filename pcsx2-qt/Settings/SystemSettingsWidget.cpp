@@ -89,7 +89,7 @@ SystemSettingsWidget::SystemSettingsWidget(SettingsDialog* dialog, QWidget* pare
 		   "Safe for most games, but a few are incompatible and may hang."));
 
 	dialog->registerWidgetHelp(m_ui.instantVU1, tr("Instant VU1"), tr("Checked"),
-		tr("Runs VU1 instantly (when MTVU is disabled). Provides a modest speed improvement. "
+		tr("Runs VU1 instantly. Provides a modest speed improvement in most games. "
 		   "Safe for most games, but a few games may exhibit graphical errors."));
 
 	dialog->registerWidgetHelp(m_ui.fastCDVD, tr("Enable Fast CDVD"), tr("Unchecked"),
@@ -103,7 +103,7 @@ SystemSettingsWidget::~SystemSettingsWidget() = default;
 
 void SystemSettingsWidget::updateVU1InstantState()
 {
-	m_ui.instantVU1->setEnabled(!m_dialog->getEffectiveBoolValue("EmuCore/Speedhacks", "vuThread", false));
+	//m_ui.instantVU1->setEnabled(!m_dialog->getEffectiveBoolValue("EmuCore/Speedhacks", "vuThread", false));
 }
 
 int SystemSettingsWidget::getGlobalClampingModeIndex(bool vu) const

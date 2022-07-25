@@ -167,7 +167,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	m_check_vuThread = new pxCheckBox( vuHacksPanel, _("MTVU (Multi-Threaded microVU1)"),
 		_("Good Speedup and High Compatibility; may cause hanging... [Recommended on 3+ cores]") );
 
-	m_check_vu1Instant = new pxCheckBox(vuHacksPanel, _("Instant VU1 (without MTVU only)"),
+	m_check_vu1Instant = new pxCheckBox(vuHacksPanel, _("Instant VU1"),
 		_("Good Speedup and High Compatibility; may cause some graphical errors"));
 
 	m_check_vuFlagHack->SetToolTip( pxEt( L"Updates Status Flags only on blocks which will read them, instead of all the time. This is safe most of the time."
@@ -176,7 +176,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	m_check_vuThread->SetToolTip( pxEt( L"Runs VU1 on its own thread (microVU1-only). Generally a speedup on CPUs with 3 or more cores. This is safe for most games, but a few games are incompatible and may hang. In the case of GS limited games, it may be a slowdown (especially on dual core CPUs)."
 	) );
 
-	m_check_vu1Instant->SetToolTip(pxEt(L"Runs VU1 instantly (when MTVU is disabled). Provides a modest speed improvement. This is safe for most games, but a few games may exhibit graphical errors."
+	m_check_vu1Instant->SetToolTip(pxEt(L"Runs VU1 instantly. Provides a modest speed improvement in most games. This is safe for most games, but a few games may exhibit graphical errors."
 	));
 
 	// ------------------------------------------------------------------------
@@ -270,7 +270,7 @@ void Panels::SpeedHacksPanel::EnableStuff( AppConfig* configToUse )
 	// Disables the Instant VU1 checkbox when MTVU is checked in the GUI as reflected in the code.
 	// Makes Instant VU1 toggleable when MTVU is unchecked in the GUI.
 	// Some may think that having MTVU + Instant VU1 checked, can have bad side-effects when it doesn't.
-	m_check_vu1Instant->Enable(hacksEnabled && !m_check_vuThread->GetValue());
+	//m_check_vu1Instant->Enable(hacksEnabled && !m_check_vuThread->GetValue());
 
 	// Layout necessary to ensure changed slider text gets re-aligned properly
 	// and to properly gray/ungray pxStaticText stuff (I suspect it causes a

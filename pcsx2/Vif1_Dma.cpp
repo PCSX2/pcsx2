@@ -238,7 +238,10 @@ __fi void vif1VUFinish()
 		u32 _cycles = VU1.cycle;
 		//DevCon.Warning("Finishing VU1");
 		vu1Finish(false);
-		CPU_INT(VIF_VU1_FINISH, VU1.cycle - _cycles);
+		if (THREAD_VU1 && !INSTANT_VU1 && (VU0.VI[REG_VPU_STAT].UL & 0x100))
+			CPU_INT(VIF_VU1_FINISH, cpuGetCycles(VU_MTVU_BUSY));
+		else
+			CPU_INT(VIF_VU1_FINISH, VU1.cycle - _cycles);
 		return;
 	}
 

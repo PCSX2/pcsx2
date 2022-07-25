@@ -70,7 +70,6 @@ void vu1ExecMicro(u32 addr)
 		//	VU0.VI[REG_VPU_STAT].UL |= 0x0100;
 		// }
 		// Update 25/06/2022: Disabled this for now, let games YOLO it, if it breaks MTVU, disable MTVU (it doesn't work properly anyway) - Refraction
-
 		vu1Thread.ExecuteVU(addr, vif1Regs.top, vif1Regs.itop, VU0.VI[REG_FBRST].UL);
 		return;
 	}
@@ -89,4 +88,9 @@ void vu1ExecMicro(u32 addr)
 		CpuVU1->ExecuteBlock(1);
 	else
 		CpuVU1->Execute(vu1RunCycles);
+}
+
+void MTVUInterrupt()
+{
+	VU0.VI[REG_VPU_STAT].UL &= ~0xFF00;
 }
