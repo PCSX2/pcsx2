@@ -256,6 +256,7 @@ extern void vu1ResetRegs();
 extern void vu1ExecMicro(u32 addr);
 extern void vu1Exec(VURegs* VU);
 extern void iDumpVU1Registers();
+extern void MTVUInterrupt();
 
 #ifdef VUM_LOG
 

@@ -415,7 +415,8 @@ enum EE_EventType
 	DMAC_GIF_UNIT,
 	VIF_VU0_FINISH,
 	VIF_VU1_FINISH,
-	IPU_PROCESS
+	IPU_PROCESS,
+	VU_MTVU_BUSY
 };
 
 extern void CPU_INT( EE_EventType n, s32 ecycle );
@@ -435,6 +436,7 @@ extern void cpuSetNextEvent( u32 startCycle, s32 delta );
 extern void cpuSetNextEventDelta( s32 delta );
 extern int  cpuTestCycle( u32 startCycle, s32 delta );
 extern void cpuSetEvent();
+extern int cpuGetCycles(int interrupt);
 
 extern void _cpuEventTest_Shared();		// for internal use by the Dynarecs and Ints inside R5900:
 
