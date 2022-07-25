@@ -10834,6 +10834,8 @@ SLES-50948:
 SLES-50953:
   name: "Air Rescue Ranger"
   region: "PAL-E"
+  gameFixes:
+    - VUSyncHack # Fixes graphics.
 SLES-50954:
   name: "Tokyo Road Race"
   region: "PAL-E"
@@ -33017,6 +33019,8 @@ SLPS-20082:
 SLPS-20083:
   name: "Air Ranger Rescue Helicopter"
   region: "NTSC-J"
+  gameFixes:
+    - VUSyncHack # Fixes graphics.
 SLPS-20084:
   name: "Basic Studio [Disc 1]"
   region: "NTSC-J"
@@ -33291,6 +33295,8 @@ SLPS-20215:
 SLPS-20216:
   name: "Air Ranger - Rescue Helicopter"
   region: "NTSC-J"
+  gameFixes:
+    - VUSyncHack # Fixes graphics.
 SLPS-20217:
   name: "Hokka Hoka Sentou"
   region: "NTSC-J"
