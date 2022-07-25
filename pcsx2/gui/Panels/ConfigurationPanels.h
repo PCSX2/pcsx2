@@ -341,7 +341,6 @@ namespace Panels
 		void Defaults_Click(wxCommandEvent& evt);
 		void EECycleRate_Scroll(wxScrollEvent& event);
 		void VUCycleRate_Scroll(wxScrollEvent& event);
-		void VUThread_Enable(wxCommandEvent& evt);
 	};
 
 	// --------------------------------------------------------------------------------------
