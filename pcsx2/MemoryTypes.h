@@ -20,9 +20,8 @@ namespace Ps2MemSize
 {
 	static const uint MainRam	= _32mb;			// 32 MB main memory!
 	static const uint Rom		= _1mb * 4;			// 4 MB main rom
-	static const uint Rom1		= 0x00040000;		// DVD player
-	static const uint Rom2		= 0x00080000;		// Chinese rom extension (?)
-	static const uint ERom		= 0x001C0000;		// DVD player extensions (?)
+	static const uint Rom1		= _1mb * 4;			// DVD player
+	static const uint Rom2		= 0x00080000;		// Chinese rom extension
 	static const uint Hardware	= _64kb;
 	static const uint Scratch	= _16kb;
 
@@ -43,9 +42,8 @@ struct EEVM_MemoryAllocMess
 	u8 Main[Ps2MemSize::MainRam];			// Main memory (hard-wired to 32MB)
 	u8 Scratch[Ps2MemSize::Scratch];		// Scratchpad!
 	u8 ROM[Ps2MemSize::Rom];				// Boot rom (4MB)
-	u8 ROM1[Ps2MemSize::Rom1];				// DVD player
+	u8 ROM1[Ps2MemSize::Rom1];				// DVD player (4MB)
 	u8 ROM2[Ps2MemSize::Rom2];				// Chinese extensions
-	u8 EROM[Ps2MemSize::ERom];				// DVD player extensions
 
 	// Two 1 megabyte (max DMA) buffers for reading and writing to high memory (>32MB).
 	// Such accesses are not documented as causing bus errors but as the memory does
