@@ -632,6 +632,8 @@ SCAJ-20040:
 SCAJ-20041:
   name: "Energy Airforce - Aim Strike!"
   region: "NTSC-Unk"
+  gsHWFixes:
+    autoFlush: 1 # Corrects post-processing effect on jet exhausts.
 SCAJ-20043:
   name: "ChainDive"
   region: "NTSC-Unk"
@@ -13406,12 +13408,18 @@ SLES-52259:
 SLES-52265:
   name: "Energy Airforce - Aim Strike!"
   region: "PAL-E"
+  gsHWFixes:
+    autoFlush: 1 # Corrects post-processing effect on jet exhausts.
 SLES-52266:
   name: "Energy Airforce - Aim Strike!"
   region: "PAL-F"
+  gsHWFixes:
+    autoFlush: 1 # Corrects post-processing effect on jet exhausts.
 SLES-52267:
   name: "Energy Airforce - Aim Strike!"
   region: "PAL-I"
+  gsHWFixes:
+    autoFlush: 1 # Corrects post-processing effect on jet exhausts.
 SLES-52275:
   name: "Way of the Samurai 2"
   region: "PAL-M3"
@@ -22058,6 +22066,8 @@ SLKA-25180:
 SLKA-25181:
   name: "Energy Airforce Aim Strike"
   region: "NTSC-K"
+  gsHWFixes:
+    autoFlush: 1 # Corrects post-processing effect on jet exhausts.
 SLKA-25182:
   name: "Hajime no Ippo2 Victorious Road"
   region: "NTSC-K"
@@ -26702,6 +26712,8 @@ SLPM-65374:
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes hanging while going ingame.
     MTVUSpeedHack: 0
+  gsHWFixes:
+    autoFlush: 1 # Corrects post-processing effect on jet exhausts.
 SLPM-65375:
   name: "Shin Sangoku Musou 3 - Mushoden [Premium Pack]"
   region: "NTSC-J"
