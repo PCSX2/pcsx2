@@ -11831,9 +11831,12 @@ SLES-51392:
   patches:
     C24C7FE3:
       content: |-
-        author=kozarovv
-        // Skip PSS movies, workaround for EE Cache requirement.
-        patch=1,EE,001233e0,word,100000d7
+        author=Goatman13
+        // Fix issues caused by PSS video playback.
+        // Extend stack to avoid sending bad data to VIF1.
+        // Required due to lack of data cache emulation.
+        patch=1,EE,00122E60,word,27BDFD00
+        patch=1,EE,001231C4,word,27BD0300
 SLES-51393:
   name: "Syberia"
   region: "PAL-M5"
@@ -26238,9 +26241,12 @@ SLPM-65231:
   patches:
     F96A2390:
       content: |-
-        author=kozarovv
-        // Skip PSS movies, workaround for EE Cache requirement.
-        patch=1,EE,00122d00,word,100000d9
+        author=Goatman13
+        // Fix issues caused by PSS video playback.
+        // Extend stack to avoid sending bad data to VIF1.
+        // Required due to lack of data cache emulation.
+        patch=1,EE,00122780,word,27BDFD00
+        patch=1,EE,00122AE8,word,27BD0300
 SLPM-65232:
   name: "Devil May Cry 2 [Dante Disc]"
   region: "NTSC-J"
@@ -40167,9 +40173,12 @@ SLUS-20546:
   patches:
     D3F68D3F:
       content: |-
-        author=kozarovv
-        // Skip PSS movies, workaround for EE Cache requirement.
-        patch=1,EE,00122d00,word,100000d9
+        author=Goatman13
+        // Fix issues caused by PSS video playback.
+        // Extend stack to avoid sending bad data to VIF1.
+        // Required due to lack of data cache emulation.
+        patch=1,EE,00122780,word,27BDFD00
+        patch=1,EE,00122AE8,word,27BD0300
 SLUS-20547:
   name: "Cubix Showdown"
   region: "NTSC-U"
