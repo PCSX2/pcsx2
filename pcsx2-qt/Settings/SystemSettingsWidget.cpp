@@ -80,7 +80,7 @@ SystemSettingsWidget::SystemSettingsWidget(SettingsDialog* dialog, QWidget* pare
 		tr("Higher values may increase internal framerate in games, but will increase CPU requirements substantially. "
 			"Lower values will reduce the CPU load allowing lightweight games to run full speed on weaker CPUs."));
 
-	dialog->registerWidgetHelp(m_ui.eeCycleSkipping, tr("Cycle Skip"), tr("Normal Speed"),
+	dialog->registerWidgetHelp(m_ui.eeCycleSkipping, tr("Cycle Skip"), tr("None"),
 		tr("Makes the emulated Emotion Engine skip cycles. "
 		   "Helps a small subset of games like SOTC. Most of the time it's harmful to performance."));
 
