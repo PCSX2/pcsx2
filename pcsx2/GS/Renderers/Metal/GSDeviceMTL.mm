@@ -402,7 +402,6 @@ GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Type type, int width, int heigh
 			[desc setUsage:MTLTextureUsageRenderTarget];
 			break;
 		case GSTexture::Type::RenderTarget:
-		case GSTexture::Type::SparseRenderTarget:
 			if (m_dev.features.slow_color_compression)
 				[desc setUsage:MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget | MTLTextureUsagePixelFormatView]; // Force color compression off by including PixelFormatView
 			else

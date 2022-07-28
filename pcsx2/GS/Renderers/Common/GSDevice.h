@@ -729,9 +729,6 @@ public:
 	virtual void BeginScene() {}
 	virtual void EndScene();
 
-	virtual bool HasDepthSparse() { return false; }
-	virtual bool HasColorSparse() { return false; }
-
 	virtual void ClearRenderTarget(GSTexture* t, const GSVector4& c) {}
 	virtual void ClearRenderTarget(GSTexture* t, u32 c) {}
 	virtual void InvalidateRenderTarget(GSTexture* t) {}
@@ -742,8 +739,6 @@ public:
 	virtual void PopDebugGroup() {}
 	virtual void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) {}
 
-	GSTexture* CreateSparseRenderTarget(int w, int h, GSTexture::Format format, bool clear = true);
-	GSTexture* CreateSparseDepthStencil(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateDepthStencil(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateTexture(int w, int h, bool mipmap, GSTexture::Format format, bool prefer_reuse = false);

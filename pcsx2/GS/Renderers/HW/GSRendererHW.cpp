@@ -3520,12 +3520,6 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	SetupIA(sx, sy);
 
-	if (rt)
-		rt->CommitRegion(GSVector2i(m_conf.drawarea.z, m_conf.drawarea.w));
-
-	if (ds)
-		ds->CommitRegion(GSVector2i(m_conf.drawarea.z, m_conf.drawarea.w));
-
 	m_conf.alpha_second_pass.enable = ate_second_pass;
 
 	if (ate_second_pass)
@@ -4226,9 +4220,6 @@ void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCach
 
 		// If both buffers are side by side we can expect a fast clear in on-going
 		const u32 color = v[1].RGBAQ.U32[0];
-		const GSVector4i commitRect = ComputeBoundingBox(rt->m_texture->GetScale(), rt->m_texture->GetSize());
-		rt->m_texture->CommitRegion(GSVector2i(commitRect.z, commitRect.w));
-
 		g_gs_device->ClearRenderTarget(rt->m_texture, color);
 	}
 }
@@ -4513,8 +4504,6 @@ bool GSRendererHW::OI_FFX(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* 
 	{
 		// random battle transition (z buffer written directly, clear it now)
 		GL_INS("OI_FFX ZB clear");
-		if (ds)
-			ds->Commit(); // Don't bother to save few MB for a single game
 		g_gs_device->ClearDepth(ds);
 	}
 
@@ -4566,7 +4555,6 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 			if (GSTextureCache::Target* tmp_rt = m_tc->LookupTarget(TEX0, GetTargetSize(), GSTextureCache::RenderTarget, true))
 			{
 				GL_INS("OI_RozenMaidenGebetGarden FB clear");
-				tmp_rt->m_texture->Commit(); // Don't bother to save few MB for a single game
 				g_gs_device->ClearRenderTarget(tmp_rt->m_texture, 0);
 			}
 
@@ -4585,7 +4573,6 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 			if (GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, GetTargetSize(), GSTextureCache::DepthStencil, true))
 			{
 				GL_INS("OI_RozenMaidenGebetGarden ZB clear");
-				tmp_ds->m_texture->Commit(); // Don't bother to save few MB for a single game
 				g_gs_device->ClearDepth(tmp_ds->m_texture);
 			}
 
@@ -4705,8 +4692,6 @@ bool GSRendererHW::OI_SuperManReturns(GSTexture* rt, GSTexture* ds, GSTextureCac
 	ASSERT((v->RGBAQ.A << 24 | v->RGBAQ.B << 16 | v->RGBAQ.G << 8 | v->RGBAQ.R) == (int)v->XYZ.Z);
 
 	// Do a direct write
-	if (rt)
-		rt->Commit(); // Don't bother to save few MB for a single game
 	g_gs_device->ClearRenderTarget(rt, GSVector4(m_vt.m_min.c));
 
 	m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, ctx->FRAME.Block());
@@ -4743,8 +4728,6 @@ bool GSRendererHW::OI_ArTonelico2(GSTexture* rt, GSTexture* ds, GSTextureCache::
 	if (m_vertex.next == 2 && !PRIM->TME && m_context->FRAME.FBW == 10 && v->XYZ.Z == 0 && m_context->TEST.ZTST == ZTST_ALWAYS)
 	{
 		GL_INS("OI_ArTonelico2");
-		if (ds)
-			ds->Commit(); // Don't bother to save few MB for a single game
 		g_gs_device->ClearDepth(ds);
 	}
 
