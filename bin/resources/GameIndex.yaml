@@ -2599,6 +2599,9 @@ SCES-50000:
   gsHWFixes:
     cpuFramebufferConversion: 1
     textureInsideRT: 1
+    halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
+    roundSprite: 1 # Fixes ui and hud alignment.
+    texturePreloading: 0 # Disabling for major speedup.
 SCES-50001:
   name: "Tekken Tag Tournament"
   region: "PAL-M5"
@@ -23093,6 +23096,9 @@ SLPM-60109:
   gsHWFixes:
     cpuFramebufferConversion: 1
     textureInsideRT: 1
+    halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
+    roundSprite: 1 # Fixes ui and hud alignment.
+    texturePreloading: 0 # Disabling for major speedup.
 SLPM-60123:
   name: "Gekikuukan Pro Baseball - The End of the Century 1999 [Trial]"
   region: "NTSC-J"
@@ -32804,6 +32810,9 @@ SLPS-20001:
   gsHWFixes:
     cpuFramebufferConversion: 1
     textureInsideRT: 1
+    halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
+    roundSprite: 1 # Fixes ui and hud alignment.
+    texturePreloading: 0 # Disabling for major speedup.
 SLPS-20002:
   name: "Doukyu Billiards"
   region: "NTSC-J"
@@ -37961,6 +37970,9 @@ SLUS-20002:
   gsHWFixes:
     cpuFramebufferConversion: 1
     textureInsideRT: 1
+    halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
+    roundSprite: 1 # Fixes ui and hud alignment.
+    texturePreloading: 0 # Disabling for major speedup.
 SLUS-20003:
   name: "Portal Runner"
   region: "NTSC-U"
