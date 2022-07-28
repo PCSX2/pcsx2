@@ -347,7 +347,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			   "The higher the setting, the more blending is emulated in the shader accurately, and the higher the speed penalty will be. "
 			   "Do note that Direct3D's blending is reduced in capability compared to OpenGL/Vulkan"));
 
-		dialog->registerWidgetHelp(m_ui.texturePreloading, tr("Texture Preloading"), tr(""),
+		dialog->registerWidgetHelp(m_ui.texturePreloading, tr("Texture Preloading"), tr("Full (Hash Cache)"),
 			tr("Uploads entire textures at once instead of small pieces, avoiding redundant uploads when possible. "
 			   "Improves performance in most games, but can make a small selection slower."));
 
