@@ -45,7 +45,4 @@ namespace GLLoader
 	extern bool found_GL_ARB_gpu_shader5;
 	extern bool found_GL_ARB_shader_image_load_store;
 	extern bool found_GL_ARB_clear_texture;
-
-	extern bool found_compatible_GL_ARB_sparse_texture2;
-	extern bool found_compatible_sparse_depth;
 } // namespace GLLoader

@@ -774,7 +774,7 @@ void GSDeviceOGL::InvalidateRenderTarget(GSTexture* t)
 	{
 		OMSetFBO(m_fbo);
 
-		if (T->GetType() == GSTexture::Type::DepthStencil || T->GetType() == GSTexture::Type::SparseDepthStencil)
+		if (T->GetType() == GSTexture::Type::DepthStencil)
 		{
 			OMAttachDs(T);
 			const GLenum attachments[] = {GL_DEPTH_STENCIL_ATTACHMENT};
@@ -1192,7 +1192,6 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 	PSSetShaderResource(6, sTex);
 #endif
 
-	dTex->CommitRegion(GSVector2i(r.z, r.w));
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 	ASSERT(GLExtension::Has("GL_ARB_copy_image") && glCopyImageSubData);
@@ -1242,7 +1241,6 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	BeginScene();
 
 	GL_PUSH("StretchRect from %d to %d", sTex->GetID(), dTex->GetID());
-	dTex->CommitRegion(GSVector2i((int)dRect.z + 1, (int)dRect.w + 1));
 	if (draw_in_depth)
 		OMSetRenderTargets(NULL, dTex);
 	else
@@ -1885,7 +1883,6 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	{
 		GSVector2i size = config.rt->GetSize();
 		hdr_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::FloatColor, false);
-		hdr_rt->CommitRegion(GSVector2i(config.drawarea.z, config.drawarea.w));
 		OMSetRenderTargets(hdr_rt, config.ds, &config.scissor);
 
 		// save blend state, since BlitRect destroys it

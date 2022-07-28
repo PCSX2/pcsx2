@@ -89,7 +89,6 @@ enum
 	// OpenGL Advanced Settings
 	IDC_GEOMETRY_SHADER_OVERRIDE,
 	IDC_IMAGE_LOAD_STORE,
-	IDC_SPARSE_TEXTURE,
 	// On-screen Display
 	IDC_OSD_LOG,
 	IDC_OSD_MONITOR,

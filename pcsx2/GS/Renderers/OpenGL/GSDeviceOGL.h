@@ -377,9 +377,6 @@ public:
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL);
 	void OMSetColorMaskState(OMColorMaskSelector sel = OMColorMaskSelector());
 
-	bool HasColorSparse() final { return GLLoader::found_compatible_GL_ARB_sparse_texture2; }
-	bool HasDepthSparse() final { return GLLoader::found_compatible_sparse_depth; }
-
 	bool CreateTextureFX();
 	std::string GetShaderSource(const std::string_view& entry, GLenum type, const std::string_view& common_header, const std::string_view& glsl_h_code, const std::string_view& macro_sel);
 	std::string GenGlslHeader(const std::string_view& entry, GLenum type, const std::string_view& macro);

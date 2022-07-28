@@ -172,9 +172,6 @@ const char* dialog_message(int ID, bool* updateText)
 			return cvtString("Allows advanced atomic operations to speed up Accurate DATE.\n"
 				"Only disable this if using Accurate DATE causes (GPU driver) issues.\n\n"
 				"Note: This option is only supported by GPUs which support at least Direct3D 11.");
-		case IDC_SPARSE_TEXTURE:
-			return cvtString("Allows to reduce VRAM usage on the GPU.\n\n"
-				"Note: Feature is currently experimental and works only on Nvidia GPUs.");
 		case IDC_LINEAR_PRESENT:
 			return cvtString("Use bilinear filtering when Upscaling/Downscaling the image to the screen. Disable it if you want a sharper/pixelated output.");
 		// Exclusive for Hardware Renderer

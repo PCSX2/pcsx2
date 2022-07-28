@@ -33,8 +33,6 @@ public:
 		DepthStencil,
 		Texture,
 		Offscreen,
-		SparseRenderTarget,
-		SparseDepthStencil,
 	};
 
 	enum class Format : u8
@@ -63,24 +61,15 @@ public:
 protected:
 	GSVector2 m_scale;
 	GSVector2i m_size;
-	GSVector2i m_committed_size;
-	GSVector2i m_gpu_page_size;
 	int m_mipmap_levels;
 	Type m_type;
 	Format m_format;
 	State m_state;
-	bool m_sparse;
 	bool m_needs_mipmaps_generated;
 
 public:
 	GSTexture();
 	virtual ~GSTexture() {}
-
-	virtual operator bool()
-	{
-		pxAssert(0);
-		return false;
-	}
 
 	// Returns the native handle of a texture.
 	virtual void* GetNativeHandle() const = 0;
@@ -113,16 +102,15 @@ public:
 
 	bool IsRenderTargetOrDepthStencil() const
 	{
-		return (m_type >= Type::RenderTarget && m_type <= Type::DepthStencil) ||
-			(m_type >= Type::SparseRenderTarget && m_type <= Type::SparseDepthStencil);
+		return (m_type >= Type::RenderTarget && m_type <= Type::DepthStencil);
 	}
 	bool IsRenderTarget() const
 	{
-		return (m_type == Type::RenderTarget || m_type == Type::SparseRenderTarget);
+		return (m_type == Type::RenderTarget);
 	}
 	bool IsDepthStencil() const
 	{
-		return (m_type == Type::DepthStencil || m_type == Type::SparseDepthStencil);
+		return (m_type == Type::DepthStencil);
 	}
 
 	State GetState() const { return m_state; }
@@ -131,14 +119,6 @@ public:
 	void GenerateMipmapsIfNeeded();
 	void ClearMipmapGenerationFlag() { m_needs_mipmaps_generated = false; }
 
-	virtual void CommitPages(const GSVector2i& region, bool commit) {}
-	void CommitRegion(const GSVector2i& region);
-	void Commit();
-	void Uncommit();
-	GSVector2i GetCommittedSize() const { return m_committed_size; }
-	void SetGpuPageSize(const GSVector2i& page_size);
-	GSVector2i RoundUpPage(GSVector2i v);
-
 	// frame number (arbitrary base) the texture was recycled on
 	// different purpose than texture cache ages, do not attempt to merge
 	unsigned last_frame_used;
@@ -146,7 +126,7 @@ public:
 	float OffsetHack_modxy;
 
 	// Typical size of a RGBA texture
-	virtual u32 GetMemUsage() { return m_size.x * m_size.y * (m_format == Format::UNorm8 ? 1 : 4); }
+	u32 GetMemUsage() const { return m_size.x * m_size.y * (m_format == Format::UNorm8 ? 1 : 4); }
 
 	// Helper routines for formats/types
 	static bool IsCompressedFormat(Format format) { return (format >= Format::BC1 && format <= Format::BC7); }

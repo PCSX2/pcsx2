@@ -161,12 +161,10 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 	}
 
 	t->SetScale(GSVector2(1, 1)); // Things seem to assume that all textures come out of here with scale 1...
-	t->Commit(); // Clear won't be done if the texture isn't committed.
 
 	switch (type)
 	{
 	case GSTexture::Type::RenderTarget:
-	case GSTexture::Type::SparseRenderTarget:
 		{
 			if (clear)
 				ClearRenderTarget(t, 0);
@@ -175,7 +173,6 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 		}
 		break;
 	case GSTexture::Type::DepthStencil:
-	case GSTexture::Type::SparseDepthStencil:
 		{
 			if (clear)
 				ClearDepth(t);
@@ -215,12 +212,6 @@ void GSDevice::Recycle(GSTexture* t)
 {
 	if (t)
 	{
-#ifdef _DEBUG
-		// Uncommit saves memory but it means a futur allocation when we want to reuse the texture.
-		// Which is slow and defeat the purpose of the m_pool cache.
-		// However, it can help to spot part of texture that we forgot to commit
-		t->Uncommit();
-#endif
 		t->last_frame_used = m_frame;
 
 		m_pool.push_front(t);
@@ -259,16 +250,6 @@ void GSDevice::ClearSamplerCache()
 {
 }
 
-GSTexture* GSDevice::CreateSparseRenderTarget(int w, int h, GSTexture::Format format, bool clear)
-{
-	return FetchSurface(HasColorSparse() ? GSTexture::Type::SparseRenderTarget : GSTexture::Type::RenderTarget, w, h, 1, format, clear, true);
-}
-
-GSTexture* GSDevice::CreateSparseDepthStencil(int w, int h, GSTexture::Format format, bool clear)
-{
-	return FetchSurface(HasDepthSparse() ? GSTexture::Type::SparseDepthStencil : GSTexture::Type::DepthStencil, w, h, 1, format, clear, true);
-}
-
 GSTexture* GSDevice::CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear)
 {
 	return FetchSurface(GSTexture::Type::RenderTarget, w, h, 1, format, clear, true);
@@ -292,7 +273,7 @@ GSTexture* GSDevice::CreateOffscreen(int w, int h, GSTexture::Format format)
 
 GSTexture::Format GSDevice::GetDefaultTextureFormat(GSTexture::Type type)
 {
-	if (type == GSTexture::Type::DepthStencil || type == GSTexture::Type::SparseDepthStencil)
+	if (type == GSTexture::Type::DepthStencil)
 		return GSTexture::Format::DepthStencil;
 	else
 		return GSTexture::Format::Color;
