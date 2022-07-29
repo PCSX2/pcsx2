@@ -226,10 +226,10 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 
 		// 4 channel float
 		case Format::FloatColor:
-			gl_fmt          = GL_RGBA32F;
+			gl_fmt          = GL_RGBA16F;
 			m_int_format    = GL_RGBA;
 			m_int_type      = GL_FLOAT;
-			m_int_shift     = 4;
+			m_int_shift     = 2;
 			break;
 
 		// Depth buffer
