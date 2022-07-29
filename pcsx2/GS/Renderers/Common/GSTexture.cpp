@@ -84,7 +84,7 @@ u32 GSTexture::GetCompressedBytesPerBlock() const
 	static constexpr u32 bytes_per_block[] = {
 		1, // Invalid
 		4, // Color/RGBA8
-		16, // FloatColor/RGBA32F
+		8, // FloatColor/RGBA16F
 		32, // DepthStencil
 		1, // UNorm8/R8
 		2, // UInt16/R16UI
