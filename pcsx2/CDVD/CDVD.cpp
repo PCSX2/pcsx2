@@ -129,19 +129,25 @@ static void cdvdGetMechaVer(u8* ver)
 	auto fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "rb");
 	if (!fp || FileSystem::FSize64(fp.get()) < 4)
 	{
-		Console.Warning("MEC File Not Found, creating substitute...");
-
+		mecfile = Path::ReplaceExtension(BiosPath, "MEC");
 		fp.reset();
-		fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "w+b");
-		if (!fp)
+		fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "rb");
+		if (!fp || FileSystem::FSize64(fp.get()) < 4)
 		{
-			Console.Error("Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings.");
-			return;
-		}
+			Console.Warning("MEC File Not Found, creating substitute...");
 
-		u8 version[4] = {0x3, 0x6, 0x2, 0x0};
-		std::fwrite(version, sizeof(version), 1, fp.get());
-		FileSystem::FSeek64(fp.get(), 0, SEEK_SET);
+			fp.reset();
+			fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "w+b");
+			if (!fp)
+			{
+				Console.Error("Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings.");
+				return;
+			}
+
+			u8 version[4] = {0x3, 0x6, 0x2, 0x0};
+			std::fwrite(version, sizeof(version), 1, fp.get());
+			FileSystem::FSeek64(fp.get(), 0, SEEK_SET);
+		}
 	}
 
 	auto ret = std::fread(ver, 1, 4, fp.get());
@@ -204,17 +210,22 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 	auto fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "r+b");
 	if (!fp || FileSystem::FSize64(fp.get()) < 1024)
 	{
+		nvmfile = Path::ReplaceExtension(BiosPath, "NVM");
 		fp.reset();
-		fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "w+b");
-		if (!fp)
+		fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "r+b");
+		if (!fp || FileSystem::FSize64(fp.get()) < 1024)
 		{
-			Console.Error("Failed to open NVM file '%s' for writing", nvmfile.c_str());
-			if (read)
-				std::memset(buffer, 0, bytes);
-			return;
+			fp.reset();
+			fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "w+b");
+			if (!fp)
+			{
+				Console.Error("Failed to open NVM file '%s' for writing", nvmfile.c_str());
+				if (read)
+					std::memset(buffer, 0, bytes);
+				return;
+			}
+			cdvdCreateNewNVM(fp.get());
 		}
-
-		cdvdCreateNewNVM(fp.get());
 	}
 	else
 	{

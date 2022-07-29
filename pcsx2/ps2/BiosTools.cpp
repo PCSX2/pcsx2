@@ -192,8 +192,13 @@ static void LoadExtraRom(const char* ext, u8 (&dest)[_size])
 		Bios1 = Path::ReplaceExtension(BiosPath, ext);
 		if ((filesize = FileSystem::GetPathFileSize(Bios1.c_str())) <= 0)
 		{
-			Console.WriteLn(Color_Gray, "BIOS %s module not found, skipping...", ext);
-			return;
+			// Try the name properly extensioned next (name.ROM1)
+			Bios1 = Path::ReplaceExtension(BiosPath, StringUtil::toUpper(ext));
+			if ((filesize = FileSystem::GetPathFileSize(Bios1.c_str())) <= 0)
+			{
+				Console.WriteLn(Color_Gray, "BIOS %s module not found, skipping...", ext);
+				return;
+			}
 		}
 	}
 
