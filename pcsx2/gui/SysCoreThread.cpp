@@ -143,8 +143,10 @@ void SysCoreThread::SetElfOverride(const wxString& elf)
 	//pxAssertDev( !m_hasValidMachine, "Thread synchronization error while assigning ELF override." );
 	m_elf_override = elf;
 
-
-	Hle_SetElfPath(elf.ToUTF8());
+	if (elf == wxEmptyString)
+		Hle_SetElfPath("host0/blank.elf");
+	else
+		Hle_SetElfPath(elf.ToUTF8());
 }
 
 // Performs a quicker reset that does not deallocate memory associated with PS2 virtual machines
@@ -328,8 +330,8 @@ void SysCoreThread::ExecuteTaskInThread()
 
 void SysCoreThread::TearDownSystems(SystemsMask systemsToTearDown)
 {
-	if (systemsToTearDown & System_DEV9) DEV9close();
 	if (systemsToTearDown & System_USB) USBclose();
+	if (systemsToTearDown & System_DEV9) DEV9close();
 	if (systemsToTearDown & System_CDVD) DoCDVDclose();
 	if (systemsToTearDown & System_FW) FWclose();
 	if (systemsToTearDown & System_PAD) PADclose();
@@ -353,8 +355,8 @@ void SysCoreThread::OnResumeInThread(SystemsMask systemsToReinstate)
 	else
 		GetMTGS().WaitForOpen();
 
-	if (systemsToReinstate & System_DEV9) DEV9open();
 	if (systemsToReinstate & System_USB) USBopen(g_gs_window_info);
+	if (systemsToReinstate & System_DEV9) DEV9open();
 	if (systemsToReinstate & System_FW) FWopen();
 	if (systemsToReinstate & System_SPU2) SPU2open();
 	if (systemsToReinstate & System_PAD) PADopen(g_gs_window_info);

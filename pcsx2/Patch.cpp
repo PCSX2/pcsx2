@@ -48,6 +48,7 @@ static const PatchTextTable commands_patch[] =
 		{1, "author", PatchFunc::author},
 		{2, "comment", PatchFunc::comment},
 		{3, "patch", PatchFunc::patch},
+		{4, "patchExtended", PatchFunc::patchExtended},
 		{0, nullptr, nullptr} // Array Terminator
 };
 
@@ -141,6 +142,16 @@ void ForgetLoadedPatches()
 	Patch.clear();
 }
 
+int LoadPatchesFromFile(std::string filename)
+{
+	const std::optional<std::string> pnach_data(FileSystem::ReadFileToString(filename.c_str()));
+	if (!pnach_data.has_value())
+		return 0;
+
+	PatchesCon->WriteLn(Color_Green, "Loading patch '%s' from file.", filename.c_str());
+	return LoadPatchesFromString(pnach_data.value());
+}
+
 // This routine loads patches from a zip file
 // Returns number of patches loaded
 // Note: does not reset previously loaded patches (use ForgetLoadedPatches() for that)
@@ -221,7 +232,7 @@ namespace PatchFunc
 		PatchesCon->WriteLn("Author: %.*s", static_cast<int>(text2.length()), text2.data());
 	}
 
-	void patch(const std::string_view& cmd, const std::string_view& param)
+	void patchHelper(const std::string_view& cmd, const std::string_view& param, bool isExtended)
 	{
 		// print the actual patch lines only in verbose mode (even in devel)
 		if (DevConWriterEnabled)
@@ -236,7 +247,7 @@ namespace PatchFunc
 
 		// [0]=PlaceToPatch,[1]=CpuType,[2]=MemAddr,[3]=OperandSize,[4]=WriteValue
 		const std::vector<std::string_view> pieces(StringUtil::SplitString(param, ',', false));
-		if (pieces.size() != 5)
+		if (pieces.size() < 5)
 		{
 			PATCH_ERROR("Expected 5 data parameters; only found %zu", pieces.size());
 			return;
@@ -270,11 +281,24 @@ namespace PatchFunc
 			return;
 		}
 
+		if (isExtended && pieces.size() == 6)
+		{
+			iPatch.hasOldData = true;
+			iPatch.oldData = StringUtil::FromChars<u64>(pieces[5], 16).value_or(0);
+		}
+		else
+		{
+			iPatch.hasOldData = false;
+		}
+
 		iPatch.enabled = 1;
 		Patch.push_back(iPatch);
 
 #undef PATCH_ERROR
 	}
+
+	void patch(const std::string_view& cmd, const std::string_view& param) { patchHelper(cmd, param, false); }
+	void patchExtended(const std::string_view& cmd, const std::string_view& param) { patchHelper(cmd, param, true); }
 } // namespace PatchFunc
 
 // This is for applying patches directly to memory
@@ -285,4 +309,9 @@ void ApplyLoadedPatches(patch_place_type place)
 		if (i.placetopatch == place)
 			_ApplyPatch(&i);
 	}
+}
+
+void LoadPatchFromMemory(IniPatch patch)
+{
+	Patch.push_back(patch);
 }

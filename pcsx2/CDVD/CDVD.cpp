@@ -58,6 +58,8 @@ cdvdStruct cdvd;
 
 s64 PSXCLK = 36864000;
 
+std::string IlinkIdPath;
+
 u8 monthmap[13] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 #pragma pack(push, 1)
@@ -283,6 +285,17 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 			FileSystem::FSeek64(fp.get(), 0, SEEK_SET);
 			cdvdCreateNewNVM(fp.get());
 		}
+	}
+
+	auto fpIlink = FileSystem::OpenManagedCFile(IlinkIdPath.c_str(), "rb");
+	if (fpIlink && FileSystem::FSize64(fpIlink.get()) >= 8)
+	{
+		u8 ILinkID_Data[8] = {0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86};
+		std::fread(ILinkID_Data, 1, 8, fpIlink.get());
+
+		NVMLayout* nvmLayout = getNvmLayout();
+		std::fseek(fp.get(), *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, ilinkId)), SEEK_SET);
+		std::fwrite(ILinkID_Data, sizeof(ILinkID_Data), 1, fp.get());
 	}
 
 	std::fseek(fp.get(), offset, SEEK_SET);
@@ -1341,7 +1354,7 @@ __fi void cdvdReadInterrupt()
 	cdvdUpdateReady(CDVD_DRIVE_BUSY);
 	cdvdUpdateStatus(CDVD_STATUS_READ);
 	cdvd.WaitingDMA = false;
-	
+
 	if (!cdvd.Readed)
 	{
 		// Seeking finished.  Process the track we requested before, and
@@ -1384,7 +1397,7 @@ __fi void cdvdReadInterrupt()
 		cdvdSetIrq();
 		return;
 	}
-	
+
 	if (cdvd.Reading)
 	{
 		if (cdvd.RErr == 0)
@@ -1506,7 +1519,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 	// So In the case where it's seeking to data it will be Spinning (0x2) not reading (0x8) and Seeking (0x10, but because seeking is also spinning 0x2 is also set))
 	// Update - Apparently all that was rubbish and some games don't like it. WRC was the one in this scenario which hated SEEK |ZPAUSE, so just putting it back to pause for now.
 	// We should really run some tests for this behaviour.
-	
+
 	cdvdUpdateStatus(CDVD_STATUS_SEEK);
 
 	if (!cdvd.Spinning)
@@ -1542,7 +1555,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 		// if delta > 0 it will read a new sector so the readInterrupt will account for this.
 		seektime = 0;
 		isSeeking = false;
-		
+
 		if (delta == 0)
 		{
 			//cdvd.Status = CDVD_STATUS_PAUSE;
@@ -1554,9 +1567,9 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 			// setting Readed to 0 skips the seek logic, which means the next call to
 			// cdvdReadInterrupt will load a block.  So make sure it's properly scheduled
 			// based on sector read speeds:
-			
+
 			//seektime = cdvd.ReadTime;
-			
+
 			if (!cdvd.nextSectorsBuffered)//Buffering time hasn't completed yet so cancel it and simulate the remaining time
 			{
 				if (psxRegs.interrupt & (1 << IopEvt_CdvdSectorReady))
@@ -3667,7 +3680,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				cdvd.SCMDResult[0] = 0x80;
 				if (cdvd.mecha_state == MECHA_STATE_UNK17 && cdvd.SCMDParamC == 2)
 				{
-					if (*(uint16_t*)cdvd.SCMDParam == cdvd.DataSize)
+					if (*(uint16_t*) cdvd.SCMDParam == cdvd.DataSize)
 					{
 						cdvd.data_out_offset = 0;
 						cdvd.data_out_ptr = cdvd.data_buffer;

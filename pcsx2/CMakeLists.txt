@@ -90,6 +90,10 @@ if(TARGET SDL2::SDL2 OR TARGET SDL2::SDL2-static)
 	endif()
 endif()
 
+find_package(LibUSB REQUIRED)
+include_directories(PCSX2_FLAGS INTERFACE ${LibUSB_INCLUDE_DIRS})
+target_link_libraries(PCSX2_FLAGS INTERFACE ${LibUSB_LIBRARIES})
+
 if(WIN32)
 	# Resources
 	target_sources(PCSX2 PRIVATE
@@ -442,7 +446,7 @@ endif()
 set(pcsx2USBNullSources USB/USBNull.cpp)
 set(pcsx2USBNullHeaders USB/USB.h)
 
-# USB sources 
+# USB sources
 set(pcsx2USBSources
 	USB/USB.cpp
 	USB/deviceproxy.cpp
@@ -473,6 +477,17 @@ set(pcsx2USBSources
 	USB/shared/shared_usb.cpp
 	USB/shared/inifile_usb.cpp
 	USB/shared/ringbuffer.cpp
+	USB/usb-python2/usb-python2.cpp
+	USB/usb-python2/devices/acio.cpp
+	USB/usb-python2/devices/ddr_extio.cpp
+	USB/usb-python2/devices/icca.cpp
+	USB/usb-python2/devices/thrilldrive_belt.cpp
+	USB/usb-python2/devices/thrilldrive_handle.cpp
+	USB/usb-python2/devices/toysmarch_drumpad.cpp
+	USB/usb-python2/passthrough/python2-config-passthrough.cpp
+	USB/usb-python2/passthrough/usb-python2-passthrough.cpp
+	USB/usb-python2/patches.cpp
+	USB/usb-python2/api_init_linux.cpp
 	USB/usb-printer/usb-printer.cpp
 	)
 
@@ -518,6 +533,16 @@ set(pcsx2USBHeaders
 	USB/shared/shared_usb.h
 	USB/shared/inifile_usb.h
 	USB/shared/ringbuffer.h
+	USB/usb-python2/noop.h
+	USB/usb-python2/devices/acio.h
+	USB/usb-python2/devices/ddr_extio.h
+	USB/usb-python2/devices/icca.h
+	USB/usb-python2/devices/input_device.h
+	USB/usb-python2/devices/thrilldrive_belt.h
+	USB/usb-python2/devices/thrilldrive_handle.h
+	USB/usb-python2/devices/toysmarch_drumpad.h
+	USB/usb-python2/passthrough/usb-python2-passthrough.h
+	USB/usb-python2/patches.h
 	USB/usb-printer/usb-printer.h
 	)
 
@@ -1615,6 +1640,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	PNG::PNG
 	LibLZMA::LibLZMA
 	Zstd::Zstd
+	PkgConfig::DES
 	${LIBC_LIBRARIES}
 )
 

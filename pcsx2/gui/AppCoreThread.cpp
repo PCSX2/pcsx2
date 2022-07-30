@@ -47,6 +47,8 @@ static bool s_widescreen_cheats_loaded = false;
 
 typedef void (AppCoreThread::*FnPtr_CoreThreadMethod)();
 
+std::string PatchFileOverridePath;
+
 SysCoreThread& GetCoreThread()
 {
 	return CoreThread;
@@ -453,6 +455,9 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 			}
 		}
 	}
+
+	if (fixup.EnableCheats && PatchFileOverridePath.size() > 0)
+		LoadPatchesFromFile(PatchFileOverridePath);
 
 	// When we're booting, the bios loader will set a a title which would be more interesting than this
 	// to most users - with region, version, etc, so don't overwrite it with patch info. That's OK. Those

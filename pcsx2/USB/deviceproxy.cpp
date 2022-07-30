@@ -19,6 +19,7 @@
 #include "usb-mic/audiodeviceproxy.h"
 #include "usb-hid/hidproxy.h"
 #include "usb-eyetoy/videodeviceproxy.h"
+#include "usb-python2/python2proxy.h"
 
 RegisterDevice* RegisterDevice::registerDevice = nullptr;
 
@@ -28,6 +29,7 @@ void RegisterAPIs()
 	usb_mic::RegisterAudioDevice::Register();
 	usb_hid::RegisterUsbHID::Register();
 	usb_eyetoy::RegisterVideoDevice::Register();
+	usb_python2::RegisterUsbPython2::Register();
 }
 
 void UnregisterAPIs()
@@ -36,4 +38,5 @@ void UnregisterAPIs()
 	usb_mic::RegisterAudioDevice::instance().Clear();
 	usb_hid::RegisterUsbHID::instance().Clear();
 	usb_eyetoy::RegisterVideoDevice::instance().Clear();
+	usb_python2::RegisterUsbPython2::instance().Clear();
 }

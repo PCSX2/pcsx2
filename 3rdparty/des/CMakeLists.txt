@@ -1,2 +1,6 @@
-add_library(des STATIC des.cpp des.h)
-target_link_libraries(des)
+add_library(des
+  des.cpp
+  des.h
+)
+target_include_directories(des PUBLIC .)
+add_library(PkgConfig::DES ALIAS des)

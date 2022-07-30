@@ -38,6 +38,8 @@
 #endif
 
 #ifndef PCSX2_CORE
+#include "gui/StringHelpers.h"
+
 #include <wx/gdicmn.h>
 #include <wx/gdiobj.h>
 #include <wx/string.h>

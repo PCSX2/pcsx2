@@ -124,7 +124,7 @@ void LinuxPipeThread::ExecuteTaskInThread()
 
 		{
 			ConsoleColorScope cs(m_color);
-			Console.WriteRaw(fromUTF8(buffer));
+			Console.WriteRaw(fromUTF8(buffer).c_str());
 		}
 	}
 }

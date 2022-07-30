@@ -26,6 +26,7 @@ declare -a PCSX2_PACKAGES=(
   "librsvg2-dev"
   "libsamplerate0-dev"
   "libsoundtouch-dev"
+  "libusb-1.0-0-dev"
   "libudev-dev"
   "libwxgtk3.0-gtk3-dev"
   "libx11-xcb-dev"

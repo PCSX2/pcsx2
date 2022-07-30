@@ -733,6 +733,7 @@ struct Pcsx2Config
 
 		bool HddEnable{false};
 		std::string HddFile;
+		std::string HddIdFile;
 
 		/* The PS2's HDD max size is 2TB
 		 * which is 2^32 * 512 byte sectors
@@ -1123,3 +1124,7 @@ namespace EmuFolders
 // Change to 1 for console logs of SIF, GPU (PS1 mode) and MDEC (PS1 mode).
 // These do spam a lot though!
 #define PSX_EXTRALOGS 0
+
+// Make it easier to switch HDD and ILINK ID files without copying data
+extern std::string IlinkIdPath;
+extern std::string PatchFileOverridePath;

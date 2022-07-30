@@ -61,6 +61,7 @@ void iopMemoryReserve::Reset()
 	if (!psxMemWLUT)
 	{
 		psxMemWLUT = (uptr*)_aligned_malloc(0x2000 * sizeof(uptr) * 2, 16);
+		memset((char*)psxMemWLUT, 0, 0x2000 * sizeof(uptr) * 2);
 		psxMemRLUT = psxMemWLUT + 0x2000; //(uptr*)_aligned_malloc(0x10000 * sizeof(uptr),16);
 	}
 

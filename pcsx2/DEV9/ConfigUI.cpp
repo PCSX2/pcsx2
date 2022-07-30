@@ -426,10 +426,13 @@ void DEV9configure()
 
 		if (g_Conf->EmuOptions.DEV9.HddEnable && !FileSystem::FileExists(hddPath.c_str()))
 		{
+			DevCon.WriteLn("DEV9: Could not open HDD path: %s\n", hddPath.c_str());
+			/*
 			HddCreateWx hddCreator;
 			hddCreator.filePath = hddPath;
 			hddCreator.neededSize = ((u64)g_Conf->EmuOptions.DEV9.HddSizeSectors) * 512;
 			hddCreator.Start();
+			*/
 		}
 
 		AppSaveSettings();

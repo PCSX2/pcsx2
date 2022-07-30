@@ -32,6 +32,54 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <TargetName>$(EXEString)</TargetName>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LibraryPath>$(SolutionDir)3rdparty\libmmmagic\lib\windows-64bit;$(SolutionDir)3rdparty\bemanitools;$(SolutionDir)3rdparty\libusb\MS64\dll;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>$(SolutionDir)3rdparty\libmmmagic\include;$(SolutionDir)3rdparty\libusb\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug AVX2|x64'">
+    <LibraryPath>$(SolutionDir)3rdparty\libmmmagic\lib\windows-64bit;$(SolutionDir)3rdparty\bemanitools;$(SolutionDir)3rdparty\libusb\MS64\dll;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>$(SolutionDir)3rdparty\libmmmagic\include;$(SolutionDir)3rdparty\libusb\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">
+    <LibraryPath>$(SolutionDir)3rdparty\libmmmagic\lib\windows-64bit;$(SolutionDir)3rdparty\bemanitools;$(SolutionDir)3rdparty\libusb\MS64\dll;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>$(SolutionDir)3rdparty\libmmmagic\include;$(SolutionDir)3rdparty\libusb\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Devel AVX2|x64'">
+    <LibraryPath>$(SolutionDir)3rdparty\libmmmagic\lib\windows-64bit;$(SolutionDir)3rdparty\bemanitools;$(SolutionDir)3rdparty\libusb\MS64\dll;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>$(SolutionDir)3rdparty\libmmmagic\include;$(SolutionDir)3rdparty\libusb\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LibraryPath>$(SolutionDir)3rdparty\libmmmagic\lib\windows-64bit;$(SolutionDir)3rdparty\bemanitools;$(SolutionDir)3rdparty\libusb\MS64\dll;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>$(SolutionDir)3rdparty\libmmmagic\include;$(SolutionDir)3rdparty\libusb\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release AVX2|x64'">
+    <LibraryPath>$(SolutionDir)3rdparty\libmmmagic\lib\windows-64bit;$(SolutionDir)3rdparty\bemanitools;$(SolutionDir)3rdparty\libusb\MS64\dll;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>$(SolutionDir)3rdparty\libmmmagic\include;$(SolutionDir)3rdparty\libusb\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LibraryPath>$(SolutionDir)3rdparty\libmmmagic\lib\windows-32bit;$(SolutionDir)3rdparty\bemanitools;$(SolutionDir)3rdparty\libusb\MS32\dll;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
+    <IncludePath>$(SolutionDir)3rdparty\libmmmagic\include;$(SolutionDir)3rdparty\libusb\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug AVX2|Win32'">
+    <LibraryPath>$(SolutionDir)3rdparty\libmmmagic\lib\windows-32bit;$(SolutionDir)3rdparty\bemanitools;$(SolutionDir)3rdparty\libusb\MS32\dll;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
+    <IncludePath>$(SolutionDir)3rdparty\libmmmagic\include;$(SolutionDir)3rdparty\libusb\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
+    <LibraryPath>$(SolutionDir)3rdparty\libmmmagic\lib\windows-32bit;$(SolutionDir)3rdparty\bemanitools;$(SolutionDir)3rdparty\libusb\MS32\dll;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
+    <IncludePath>$(SolutionDir)3rdparty\libmmmagic\include;$(SolutionDir)3rdparty\libusb\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Devel AVX2|Win32'">
+    <LibraryPath>$(SolutionDir)3rdparty\libmmmagic\lib\windows-32bit;$(SolutionDir)3rdparty\bemanitools;$(SolutionDir)3rdparty\libusb\MS32\dll;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
+    <IncludePath>$(SolutionDir)3rdparty\libmmmagic\include;$(SolutionDir)3rdparty\libusb\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LibraryPath>$(SolutionDir)3rdparty\libmmmagic\lib\windows-32bit;$(SolutionDir)3rdparty\bemanitools;$(SolutionDir)3rdparty\libusb\MS32\dll;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
+    <IncludePath>$(SolutionDir)3rdparty\libmmmagic\include;$(SolutionDir)3rdparty\libusb\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release AVX2|Win32'">
+    <LibraryPath>$(SolutionDir)3rdparty\libmmmagic\lib\windows-32bit;$(SolutionDir)3rdparty\bemanitools;$(SolutionDir)3rdparty\libusb\MS32\dll;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
+    <IncludePath>$(SolutionDir)3rdparty\libmmmagic\include;$(SolutionDir)3rdparty\libusb\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\wxWidgets3.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -52,7 +100,7 @@
       <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
       <AdditionalOptions>/Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;ZIP_STATIC;LZMA_API_STATIC;BUILD_DX=1;ENABLE_OPENGL;ENABLE_VULKAN;SPU2X_CUBEB;DIRECTINPUT_VERSION=0x0800;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>INCLUDE_MINIMAID;INCLUDE_BTOOLS;WIN32_LEAN_AND_MEAN;ZIP_STATIC;LZMA_API_STATIC;BUILD_DX=1;ENABLE_OPENGL;ENABLE_VULKAN;SPU2X_CUBEB;DIRECTINPUT_VERSION=0x0800;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Debug))">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Devel))">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Release))">NDEBUG;_SECURE_SCL_=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -72,8 +120,56 @@
     <Link>
       <LargeAddressAware>Yes</LargeAddressAware>
       <AdditionalDependencies>comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies>dxguid.lib;dinput8.lib;hid.lib;PowrProf.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libmmmagic.a;libusb-1.0.lib;dxguid.lib;dinput8.lib;hid.lib;PowrProf.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers Condition="'$(Configuration)|$(Platform)'=='Debug AVX2|x64'">false</ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">false</ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers Condition="'$(Configuration)|$(Platform)'=='Devel AVX2|x64'">false</ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers Condition="'$(Configuration)|$(Platform)'=='Release AVX2|x64'">false</ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers Condition="'$(Configuration)|$(Platform)'=='Debug AVX2|Win32'">false</ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">false</ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers Condition="'$(Configuration)|$(Platform)'=='Devel AVX2|Win32'">false</ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers Condition="'$(Configuration)|$(Platform)'=='Release AVX2|Win32'">false</ImageHasSafeExceptionHandlers>
     </Link>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">xcopy /y $(SolutionDir)3rdparty\libusb\MS64\dll\libusb-1.0.dll $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug AVX2|x64'">xcopy /y $(SolutionDir)3rdparty\libusb\MS64\dll\libusb-1.0.dll $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">xcopy /y $(SolutionDir)3rdparty\libusb\MS64\dll\libusb-1.0.dll $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Devel AVX2|x64'">xcopy /y $(SolutionDir)3rdparty\libusb\MS64\dll\libusb-1.0.dll $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">xcopy /y $(SolutionDir)3rdparty\libusb\MS64\dll\libusb-1.0.dll $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release AVX2|x64'">xcopy /y $(SolutionDir)3rdparty\libusb\MS64\dll\libusb-1.0.dll $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /y $(SolutionDir)3rdparty\libusb\MS32\dll\libusb-1.0.dll $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug AVX2|Win32'">xcopy /y $(SolutionDir)3rdparty\libusb\MS32\dll\libusb-1.0.dll $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">xcopy /y $(SolutionDir)3rdparty\libusb\MS32\dll\libusb-1.0.dll $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Devel AVX2|Win32'">xcopy /y $(SolutionDir)3rdparty\libusb\MS32\dll\libusb-1.0.dll $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /y $(SolutionDir)3rdparty\libusb\MS32\dll\libusb-1.0.dll $(OutDirFullPath)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release AVX2|Win32'">xcopy /y $(SolutionDir)3rdparty\libusb\MS32\dll\libusb-1.0.dll $(OutDirFullPath)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="..\bin\resources\shaders\vulkan\convert.glsl" />
@@ -498,6 +594,21 @@
     <ClCompile Include="USB\usb-pad\usb-pad-ff.cpp" />
     <ClCompile Include="USB\usb-pad\usb-pad.cpp" />
     <ClCompile Include="USB\usb-pad\usb-seamic.cpp" />
+    <ClCompile Include="USB\usb-python2\api_init_win32_hid.cpp" />
+    <ClCompile Include="USB\usb-python2\btools\python2-config-btools.cpp" />
+    <ClCompile Include="USB\usb-python2\btools\usb-python2-btools.cpp" />
+    <ClCompile Include="USB\usb-python2\devices\acio.cpp" />
+    <ClCompile Include="USB\usb-python2\devices\ddr_extio.cpp" />
+    <ClCompile Include="USB\usb-python2\devices\icca.cpp" />
+    <ClCompile Include="USB\usb-python2\devices\thrilldrive_belt.cpp" />
+    <ClCompile Include="USB\usb-python2\devices\thrilldrive_handle.cpp" />
+    <ClCompile Include="USB\usb-python2\devices\toysmarch_drumpad.cpp" />
+    <ClCompile Include="USB\usb-python2\passthrough\python2-config-passthrough.cpp" />
+    <ClCompile Include="USB\usb-python2\passthrough\usb-python2-passthrough.cpp" />
+    <ClCompile Include="USB\usb-python2\patches.cpp" />
+    <ClCompile Include="USB\usb-python2\raw\python2-config-raw.cpp" />
+    <ClCompile Include="USB\usb-python2\raw\usb-python2-raw.cpp" />
+    <ClCompile Include="USB\usb-python2\usb-python2.cpp" />
     <ClCompile Include="USB\usb-printer\usb-printer.cpp" />
     <ClCompile Include="USB\USB.cpp" />
     <ClCompile Include="USB\Win32\Config_usb.cpp" />
@@ -1014,6 +1125,20 @@
     <ClInclude Include="USB\usb-pad\raw\raw-config-res.h" />
     <ClInclude Include="USB\usb-pad\raw\usb-pad-raw.h" />
     <ClInclude Include="USB\usb-pad\usb-pad.h" />
+    <ClInclude Include="USB\usb-python2\btools\usb-python2-btools.h" />
+    <ClInclude Include="USB\usb-python2\devices\acio.h" />
+    <ClInclude Include="USB\usb-python2\devices\icca.h" />
+    <ClInclude Include="USB\usb-python2\devices\thrilldrive_belt.h" />
+    <ClInclude Include="USB\usb-python2\devices\ddr_extio.h" />
+    <ClInclude Include="USB\usb-python2\devices\thrilldrive_handle.h" />
+    <ClInclude Include="USB\usb-python2\devices\input_device.h" />
+    <ClInclude Include="USB\usb-python2\devices\toysmarch_drumpad.h" />
+    <ClInclude Include="USB\usb-python2\passthrough\usb-python2-passthrough.h" />
+    <ClInclude Include="USB\usb-python2\patches.h" />
+    <ClInclude Include="USB\usb-python2\python2proxy.h" />
+    <ClInclude Include="USB\usb-python2\raw\python2-config-raw-res.h" />
+    <ClInclude Include="USB\usb-python2\raw\usb-python2-raw.h" />
+    <ClInclude Include="USB\usb-python2\usb-python2.h" />
     <ClInclude Include="USB\usb-printer\usb-printer.h" />
     <ClInclude Include="USB\USB.h" />
     <ClInclude Include="USB\Win32\Config_usb.h" />
@@ -1166,6 +1291,7 @@
     <ResourceCompile Include="SPU2\Windows\SPU2.rc" />
     <ResourceCompile Include="USB\usb-pad\dx\versionproxy.rc" />
     <ResourceCompile Include="USB\usb-pad\raw\raw-config.rc" />
+    <ResourceCompile Include="USB\usb-python2\raw\python2-config-raw.rc" />
     <ResourceCompile Include="USB\Win32\USBDialog.rc" />
     <ResourceCompile Include="windows\wxResources.rc" />
   </ItemGroup>

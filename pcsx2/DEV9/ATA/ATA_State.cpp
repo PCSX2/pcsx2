@@ -48,6 +48,9 @@ int ATA::Open(const std::string& hddPath)
 	if (!FileSystem::FileExists(hddPath.c_str()))
 	{
 #ifndef PCSX2_CORE
+		DevCon.WriteLn("DEV9: Could not open HDD path: %s\n", hddPath.c_str());
+
+		/*
 		HddCreateWx hddCreator;
 		hddCreator.filePath = hddPath;
 		hddCreator.neededSize = ((u64)EmuConfig.DEV9.HddSizeSectors) * 512;
@@ -55,6 +58,9 @@ int ATA::Open(const std::string& hddPath)
 
 		if (hddCreator.errored)
 			return -1;
+		*/
+
+		return -1;
 #else
 		return -1;
 #endif

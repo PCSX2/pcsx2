@@ -399,23 +399,23 @@ void _ApplyPatch(IniPatch *p)
 		switch (p->type)
 		{
 		case BYTE_T:
-			if (memRead8(p->addr) != (u8)p->data)
+			if (memRead8(p->addr) != (u8)p->data && (!p->hasOldData || memRead8(p->addr) == (u8)p->oldData))
 				memWrite8(p->addr, (u8)p->data);
 			break;
 
 		case SHORT_T:
-			if (memRead16(p->addr) != (u16)p->data)
+			if (memRead16(p->addr) != (u16)p->data && (!p->hasOldData || memRead16(p->addr) == (u16)p->oldData))
 				memWrite16(p->addr, (u16)p->data);
 			break;
 
 		case WORD_T:
-			if (memRead32(p->addr) != (u32)p->data)
+			if (memRead32(p->addr) != (u32)p->data && (!p->hasOldData || memRead32(p->addr) == (u32)p->oldData))
 				memWrite32(p->addr, (u32)p->data);
 			break;
 
 		case DOUBLE_T:
 			memRead64(p->addr, &mem);
-			if (mem != p->data)
+			if (mem != p->data && (!p->hasOldData || mem == p->oldData))
 				memWrite64(p->addr, &p->data);
 			break;
 
@@ -425,20 +425,20 @@ void _ApplyPatch(IniPatch *p)
 
 		case SHORT_LE_T:
 			ledata = SwapEndian(p->data, 16);
-			if (memRead16(p->addr) != (u16)ledata)
+			if (memRead16(p->addr) != (u16)ledata && (!p->hasOldData || memRead16(p->addr) == (u16)SwapEndian(p->oldData, 16)))
 				memWrite16(p->addr, (u16)ledata);
 			break;
 
 		case WORD_LE_T:
 			ledata = SwapEndian(p->data, 32);
-			if (memRead32(p->addr) != (u32)ledata)
+			if (memRead32(p->addr) != (u32)ledata && (!p->hasOldData || memRead32(p->addr) == (u32)SwapEndian(p->oldData, 32)))
 				memWrite32(p->addr, (u32)ledata);
 			break;
 
 		case DOUBLE_LE_T:
 			ledata = SwapEndian(p->data, 64);
 			memRead64(p->addr, &mem);
-			if (mem != ledata)
+			if (mem != ledata && (!p->hasOldData || mem == SwapEndian(p->oldData, 64)))
 				memWrite64(p->addr, ledata);
 			break;
 
@@ -451,15 +451,15 @@ void _ApplyPatch(IniPatch *p)
 		switch (p->type)
 		{
 		case BYTE_T:
-			if (iopMemRead8(p->addr) != (u8)p->data)
+			if (iopMemRead8(p->addr) != (u8)p->data && (!p->hasOldData || iopMemRead8(p->addr) == (u8)p->oldData))
 				iopMemWrite8(p->addr, (u8)p->data);
 			break;
 		case SHORT_T:
-			if (iopMemRead16(p->addr) != (u16)p->data)
+			if (iopMemRead16(p->addr) != (u16)p->data && (!p->hasOldData || iopMemRead16(p->addr) == (u16)p->oldData))
 				iopMemWrite16(p->addr, (u16)p->data);
 			break;
 		case WORD_T:
-			if (iopMemRead32(p->addr) != (u32)p->data)
+			if (iopMemRead32(p->addr) != (u32)p->data && (!p->hasOldData || iopMemRead32(p->addr) == (u32)p->oldData))
 				iopMemWrite32(p->addr, (u32)p->data);
 			break;
 		default:
