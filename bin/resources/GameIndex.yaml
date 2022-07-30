@@ -3325,7 +3325,7 @@ SCES-52330:
 SCES-52389:
   name: "WRC 4"
   region: "PAL-M8"
-  compat: 1
+  compat: 5
   gameFixes:
     - XGKickHack # Fixes SPS.
   patches:
@@ -3346,6 +3346,9 @@ SCES-52389:
         patch=0,EE,005fffe4,double,279c000024840800
         patch=0,EE,005fffec,double,24e7100024c60080
         patch=0,EE,005ffff4,double,00c7e8200818000c
+  gsHWFixes:
+    autoFlush: 1 # Fixes car shadows.
+    roundSprite: 1 # Fixes misalgined text.
 SCES-52405:
   name: "DJ - Decks & FX - House Edition"
   region: "PAL-M9"
@@ -28674,6 +28677,9 @@ SLPM-65974:
 SLPM-65975:
   name: "WRC 4"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes car shadows.
+    roundSprite: 1 # Fixes misalgined text.
 SLPM-65976:
   name: "Grandia III [Disc1of2]"
   region: "NTSC-J"
@@ -29943,6 +29949,9 @@ SLPM-66333:
 SLPM-66334:
   name: "WRC 4 [Spike the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes car shadows.
+    roundSprite: 1 # Fixes misalgined text.
 SLPM-66336:
   name: "Shinseiki Evangelion - Koutetsu no Girlfriend [Special Edition]"
   region: "NTSC-J"
@@ -47584,6 +47593,9 @@ TCES-52042:
 TCES-52389:
   name: "World Rally Championship 4 Beta Trial Code"
   region: "PAL-E"
+  gsHWFixes:
+    autoFlush: 1 # Fixes car shadows.
+    roundSprite: 1 # Fixes misalgined text.
 TCES-52456:
   name: "Ratchet and Clank 3 Beta Trial Code"
   region: "PAL-E"
