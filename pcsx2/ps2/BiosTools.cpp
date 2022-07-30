@@ -59,7 +59,7 @@ std::string BiosPath;
 BiosDebugInformation CurrentBiosInformation;
 s64 BiosRegionOffset = 0;
 
-static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& description, u32& region, std::string& zone)
+static bool LoadBiosVersion(const char* filename, std::FILE* fp, u32& version, std::string& description, u32& region, std::string& zone)
 {
 	romdir rd;
 	for (u32 i = 0; i < 512 * 1024; i++)
@@ -116,13 +116,14 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 			char vermaj[3] = {romver[0], romver[1], 0};
 			char vermin[3] = {romver[2], romver[3], 0};
 
-			description = StringUtil::StdStringFromFormat("%-7s v%s.%s(%c%c/%c%c/%c%c%c%c)  %s",
+			description = StringUtil::StdStringFromFormat("%-7s v%s.%s(%c%c/%c%c/%c%c%c%c)  %s  %s",
 				zone.c_str(),
 				vermaj, vermin,
 				romver[12], romver[13], // day
 				romver[10], romver[11], // month
 				romver[6], romver[7], romver[8], romver[9], // year!
-				(romver[5] == 'C') ? "Console" : (romver[5] == 'D') ? "Devel" : "");
+				(romver[5] == 'C') ? "Console" : (romver[5] == 'D') ? "Devel" : "",
+				FileSystem::GetDisplayNameFromPath(filename).c_str());
 
 			version = strtol(vermaj, (char**)NULL, 0) << 8;
 			version |= strtol(vermin, (char**)NULL, 0);
@@ -281,7 +282,7 @@ bool LoadBIOS()
 	if (filesize <= 0)
 		return false;
 
-	LoadBiosVersion(fp.get(), BiosVersion, BiosDescription, BiosRegion, BiosZone);
+	LoadBiosVersion("", fp.get(), BiosVersion, BiosDescription, BiosRegion, BiosZone);
 
 	if (FileSystem::FSeek64(fp.get(), 0, SEEK_SET) ||
 		std::fread(eeMem->ROM, static_cast<size_t>(std::min<s64>(Ps2MemSize::Rom, filesize)), 1, fp.get()) != 1)
@@ -333,7 +334,7 @@ bool IsBIOS(const char* filename, u32& version, std::string& description, u32& r
 
 	// FPS2BIOS is smaller and of variable size
 	//if (inway.Length() < 512*1024) return false;
-	return LoadBiosVersion(fp.get(), version, description, region, zone);
+	return LoadBiosVersion(filename, fp.get(), version, description, region, zone);
 }
 
 bool IsBIOSAvailable(const std::string& full_path)

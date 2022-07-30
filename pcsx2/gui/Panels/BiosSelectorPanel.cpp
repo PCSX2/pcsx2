@@ -106,7 +106,7 @@ Panels::BiosSelectorPanel::BiosSelectorPanel(wxWindow* parent)
 	);
 
 	m_ComboBox->SetFont(pxGetFixedFont(m_ComboBox->GetFont().GetPointSize() + 1));
-	m_ComboBox->SetMinSize(wxSize(wxDefaultCoord, std::max(m_ComboBox->GetMinSize().GetHeight(), 96)));
+	m_ComboBox->SetMinSize(wxSize(wxDefaultCoord, std::max(m_ComboBox->GetMinSize().GetHeight(), 296)));
 
 	//if (InstallationMode != InstallMode_Portable)
 	m_FolderPicker->SetStaticDesc(_("Click the Browse button to select a different folder where PCSX2 will look for PS2 BIOS roms."));
