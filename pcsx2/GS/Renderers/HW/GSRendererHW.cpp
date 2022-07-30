@@ -142,8 +142,9 @@ bool GSRendererHW::UpdateTexIsFB(GSTextureCache::Target* dst, const GIFRegTEX0& 
 			if (!m_tex_is_fb && !m_vt.IsLinear())
 			{
 				// Make sure that we're not sampling away from the area we're rendering.
+				// We need to take the absolute here, because Beyond Good and Evil undithers itself using a -1,-1 offset.
 				const GSVector4 diff(m_vt.m_min.p.xyxy(m_vt.m_max.p) - m_vt.m_min.t.xyxy(m_vt.m_max.t));
-				if ((diff < GSVector4(1.0f)).alltrue())
+				if ((diff.abs() < GSVector4(1.0f)).alltrue())
 					m_tex_is_fb = true;
 			}
 		}

@@ -1642,13 +1642,55 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			}
 		}
 
-		// Don't be fooled by the name. 'dst' is the old target (hence the input)
-		// 'src' is the new texture cache entry (hence the output)
-		GSTexture* sTex = dst->m_texture;
-		GSTexture* dTex = use_texture ?
-			g_gs_device->CreateTexture(w, h, false, GSTexture::Format::Color, true) :
-			g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Color, false);
-		src->m_texture = dTex;
+		// Assuming everything matches up, instead of copying the target, we can just sample it directly.
+		// It's the same as doing the copy first, except we save GPU time.
+		if (!half_right && // not the size change from above
+			use_texture && // not reinterpreting the RT
+			w == dst->m_texture->GetWidth() && h == dst->m_texture->GetHeight() && // same dimensions
+			!m_temporary_source // not the shuffle case above
+			)
+		{
+			// sample the target directly
+			src->m_texture = dst->m_texture;
+			src->m_shared_texture = true;
+			src->m_target = true; // So renderer can check if a conversion is required
+			src->m_from_target = &dst->m_texture; // avoid complex condition on the renderer
+			src->m_from_target_TEX0 = dst->m_TEX0;
+			src->m_32_bits_fmt = dst->m_32_bits_fmt;
+			src->m_valid_rect = dst->m_valid;
+			src->m_end_block = dst->m_end_block;
+
+			// kill the source afterwards, since we don't want to have to track changes to the target
+			m_temporary_source = src;
+		}
+		else
+		{
+			// Don't be fooled by the name. 'dst' is the old target (hence the input)
+			// 'src' is the new texture cache entry (hence the output)
+			GSTexture* sTex = dst->m_texture;
+			GSTexture* dTex = use_texture ?
+				g_gs_device->CreateTexture(w, h, false, GSTexture::Format::Color, true) :
+				g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Color, false);
+			src->m_texture = dTex;
+
+			if (use_texture)
+			{
+				g_gs_device->CopyRect(sTex, dTex, sRect, destX, destY);
+			}
+			else
+			{
+				GSVector4 sRectF(sRect);
+				sRectF.z /= sTex->GetWidth();
+				sRectF.w /= sTex->GetHeight();
+
+				g_gs_device->StretchRect(sTex, sRectF, dTex, GSVector4(destX, destY, w, h), shader, false);
+			}
+
+			if (src->m_texture)
+				src->m_texture->SetScale(scale);
+			else
+				ASSERT(0);
+		}
 
 		// GH: by default (m_paltex == 0) GS converts texture to the 32 bit format
 		// However it is different here. We want to reuse a Render Target as a texture.
@@ -1657,24 +1699,6 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		{
 			AttachPaletteToSource(src, psm.pal, true);
 		}
-
-		if (use_texture)
-		{
-			g_gs_device->CopyRect(sTex, dTex, sRect, destX, destY);
-		}
-		else
-		{
-			GSVector4 sRectF(sRect);
-			sRectF.z /= sTex->GetWidth();
-			sRectF.w /= sTex->GetHeight();
-
-			g_gs_device->StretchRect(sTex, sRectF, dTex, GSVector4(destX, destY, w, h), shader, false);
-		}
-
-		if (src->m_texture)
-			src->m_texture->SetScale(scale);
-		else
-			ASSERT(0);
 
 		// Offset hack. Can be enabled via GS options.
 		// The offset will be used in Draw().
