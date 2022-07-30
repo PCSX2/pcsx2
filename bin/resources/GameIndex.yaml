@@ -1198,6 +1198,7 @@ SCAJ-20159:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
+    texturePreloading: 1 # Improves performance.
 SCAJ-20160:
   name: "Yoshitsuneki"
   region: "NTSC-Unk"
@@ -3646,6 +3647,7 @@ SCES-53312:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
+    texturePreloading: 1 # Improves performance.
 SCES-53315:
   name: "EyeToy - Play 3"
   region: "PAL-M12"
@@ -4805,6 +4807,7 @@ SCKA-20059:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
+    texturePreloading: 1 # Improves performance.
 SCKA-20060:
   name: "Ratchet - Deadlocked"
   region: "NTSC-K"
@@ -14978,6 +14981,8 @@ SLES-52942:
         // for VU1 to finish, which reduces the advantage of MTVU to basically zero.
         patch=1,EE,D0525A1C,extended,00000800
         patch=1,EE,20525A1C,extended,00000000
+  gsHWFixes:
+    texturePreloading: 1 # Improves performance and prevents it disabling itself regardless.
 SLES-52943:
   name: "ESPN NFL 2K5"
   region: "PAL-E"
@@ -16876,6 +16881,8 @@ SLES-53717:
         // for VU1 to finish, which reduces the advantage of MTVU to basically zero.
         patch=1,EE,D0529074,extended,00000800
         patch=1,EE,20529074,extended,00000000
+  gsHWFixes:
+    texturePreloading: 1 # Improves performance and prevents it disabling itself regardless.
 SLES-53718:
   name: "Sims 2, The"
   region: "PAL-M10"
@@ -23310,6 +23317,7 @@ SLPM-61133:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
+    texturePreloading: 1 # Improves performance.
 SLPM-61135:
   name: "Naruto - Narutimett Hero 3 [Trial Version]"
   region: "NTSC-J"
@@ -36067,6 +36075,7 @@ SLPS-25577:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
+    texturePreloading: 1 # Improves performance.
 SLPS-25578:
   name: "K-1 World Grand Prix 2005"
   region: "NTSC-J"
@@ -42482,6 +42491,8 @@ SLUS-21029:
         // for VU1 to finish, which reduces the advantage of MTVU to basically zero.
         patch=1,EE,D05257FC,extended,00000800
         patch=1,EE,205257FC,extended,00000000
+  gsHWFixes:
+    texturePreloading: 1 # Improves performance and prevents it disabling itself regardless.
 SLUS-21030:
   name: "Outlaw Golf 2"
   region: "NTSC-U"
@@ -43362,6 +43373,7 @@ SLUS-21216:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
+    texturePreloading: 1 # Improves performance.
 SLUS-21217:
   name: "Incredibles, The - Rise of the Underminers"
   region: "NTSC-U"
@@ -44148,6 +44160,8 @@ SLUS-21355:
         // for VU1 to finish, which reduces the advantage of MTVU to basically zero.
         patch=1,EE,D052907C,extended,00000800
         patch=1,EE,2052907C,extended,00000000
+  gsHWFixes:
+    texturePreloading: 1 # Improves performance and prevents it disabling itself regardless.
 SLUS-21356:
   name: "Tom Clancy's Splinter Cell - Double Agent"
   region: "NTSC-U"
