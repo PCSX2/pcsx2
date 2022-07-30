@@ -248,9 +248,14 @@ __fi void cpuSetNextEventDelta( s32 delta )
 
 __fi int cpuGetCycles(int interrupt)
 {
-	int cycles = (cpuRegs.sCycle[interrupt] + cpuRegs.eCycle[interrupt]) - cpuRegs.cycle;
-
-	return std::max(1, cycles);
+	if(interrupt == VU_MTVU_BUSY && (!THREAD_VU1 || INSTANT_VU1))
+		return 1;
+	else
+	{
+		const int cycles = (cpuRegs.sCycle[interrupt] + cpuRegs.eCycle[interrupt]) - cpuRegs.cycle;
+		return std::max(1, cycles);
+	}
+		
 }
 
 // tests the cpu cycle against the given start and delta values.
