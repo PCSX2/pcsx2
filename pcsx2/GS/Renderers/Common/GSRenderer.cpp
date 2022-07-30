@@ -762,6 +762,23 @@ void GSRenderer::QueueSnapshot(const std::string& path, u32 gsdump_frames)
 	}
 	else
 	{
+		m_snapshot = "";
+
+		// append the game serial and title
+		if (std::string name(GetDumpName()); !name.empty())
+		{
+			Path::SanitizeFileName(name);
+			if (name.length() > 219)
+				name.resize(219);
+			m_snapshot += name;
+		}
+		if (std::string serial(GetDumpSerial()); !serial.empty())
+		{
+			Path::SanitizeFileName(serial);
+			m_snapshot += '_';
+			m_snapshot += serial;
+		}
+
 		time_t cur_time = time(nullptr);
 		char local_time[16];
 
@@ -774,28 +791,16 @@ void GSRenderer::QueueSnapshot(const std::string& path, u32 gsdump_frames)
 			// the captured image is the 2nd image captured at this specific time.
 			static int n = 2;
 
+			m_snapshot += '_';
+
 			if (cur_time == prev_snap)
-				m_snapshot = fmt::format("gs_{0}_({1})", local_time, n++);
+				m_snapshot += fmt::format("{0}_({1})", local_time, n++);
 			else
 			{
 				n = 2;
-				m_snapshot = fmt::format("gs_{}", local_time);
+				m_snapshot += fmt::format("{}", local_time);
 			}
 			prev_snap = cur_time;
-		}
-
-		// append the game serial and title
-		if (std::string name(GetDumpName()); !name.empty())
-		{
-			Path::SanitizeFileName(name);
-			m_snapshot += '_';
-			m_snapshot += name;
-		}
-		if (std::string serial(GetDumpSerial()); !serial.empty())
-		{
-			Path::SanitizeFileName(serial);
-			m_snapshot += '_';
-			m_snapshot += serial;
 		}
 
 		// prepend snapshots directory
