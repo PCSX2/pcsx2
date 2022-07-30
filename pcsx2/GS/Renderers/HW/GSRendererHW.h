@@ -151,6 +151,7 @@ private:
 	GSTextureCache::Source* m_src;
 
 	bool m_reset;
+	bool m_tex_is_fb;
 	bool m_channel_shuffle;
 	bool m_userhacks_tcoffset;
 	float m_userhacks_tcoffset_x;
@@ -201,8 +202,8 @@ public:
 	void PurgeTextureCache() override;
 
 	// Called by the texture cache to know if current texture is useful
-	bool IsDummyTexture() const;
+	bool UpdateTexIsFB(GSTextureCache::Target* src, const GIFRegTEX0& TEX0);
 
 	// Called by the texture cache when optimizing the copy range for sources
-	bool IsPossibleTextureShuffle(GSTextureCache::Source* src) const;
+	bool IsPossibleTextureShuffle(GSTextureCache::Target* dst, const GIFRegTEX0& TEX0) const;
 };
