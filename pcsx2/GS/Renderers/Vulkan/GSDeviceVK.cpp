@@ -507,25 +507,38 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 
 				return;
 			}
-			else
+
+			if (dTexVK->GetState() == GSTexture::State::Cleared)
 			{
-				// otherwise we need to do an attachment clear
-				const bool depth = (dTexVK->GetType() == GSTexture::Type::DepthStencil);
-				OMSetRenderTargets(depth ? nullptr : dTexVK, depth ? dTexVK : nullptr, dtex_rc, false);
-				BeginRenderPassForStretchRect(dTexVK, dtex_rc, GSVector4i(destX, destY, destX + r.width(), destY + r.height()));
-
-				// so use an attachment clear
-				VkClearAttachment ca;
-				ca.aspectMask = depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-				GSVector4::store<false>(ca.clearValue.color.float32, sTexVK->GetClearColor());
-				ca.clearValue.depthStencil.depth = sTexVK->GetClearDepth();
-				ca.clearValue.depthStencil.stencil = 0;
-				ca.colorAttachment = 0;
-
-				const VkClearRect cr = { {{0, 0}, {static_cast<u32>(r.width()), static_cast<u32>(r.height())}}, 0u, 1u };
-				vkCmdClearAttachments(g_vulkan_context->GetCurrentCommandBuffer(), 1, &ca, 1, &cr);
-				return;
+				// destination is cleared, if it's the same colour and rect, we can just avoid this entirely
+				if (dTexVK->IsDepthStencil())
+				{
+					if (dTexVK->GetClearDepth() == sTexVK->GetClearDepth())
+						return;
+				}
+				else
+				{
+					if ((dTexVK->GetClearColor() == (sTexVK->GetClearColor())).alltrue())
+						return;
+				}
 			}
+
+			// otherwise we need to do an attachment clear
+			const bool depth = (dTexVK->GetType() == GSTexture::Type::DepthStencil);
+			OMSetRenderTargets(depth ? nullptr : dTexVK, depth ? dTexVK : nullptr, dtex_rc, false);
+			BeginRenderPassForStretchRect(dTexVK, dtex_rc, GSVector4i(destX, destY, destX + r.width(), destY + r.height()));
+
+			// so use an attachment clear
+			VkClearAttachment ca;
+			ca.aspectMask = depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+			GSVector4::store<false>(ca.clearValue.color.float32, sTexVK->GetClearColor());
+			ca.clearValue.depthStencil.depth = sTexVK->GetClearDepth();
+			ca.clearValue.depthStencil.stencil = 0;
+			ca.colorAttachment = 0;
+
+			const VkClearRect cr = { {{0, 0}, {static_cast<u32>(r.width()), static_cast<u32>(r.height())}}, 0u, 1u };
+			vkCmdClearAttachments(g_vulkan_context->GetCurrentCommandBuffer(), 1, &ca, 1, &cr);
+			return;
 		}
 
 		// commit the clear to the source first, then do normal copy
