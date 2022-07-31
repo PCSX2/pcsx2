@@ -2420,11 +2420,13 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 		// SW Blend is (nearly) free. Let's use it.
 		const bool no_prim_overlap = features.framebuffer_fetch ? (m_vt.m_primclass == GS_SPRITE_CLASS) : (m_prim_overlap == PRIM_OVERLAP_NO);
 		const bool impossible_or_free_blend = (blend_flag & BLEND_A_MAX) // Impossible blending
-			|| blend_non_recursive                 // Free sw blending, doesn't require barriers or reading fb
-			|| accumulation_blend                  // Mix of hw/sw blending
-			|| no_prim_overlap                     // Blend can be done in a single draw
-			|| (m_conf.require_full_barrier)       // Another effect (for example fbmask) already requires a full barrier
-			|| (one_barrier && features.framebuffer_fetch); // On fbfetch, one barrier is like full barrier
+			|| blend_non_recursive                         // Free sw blending, doesn't require barriers or reading fb
+			|| accumulation_blend                          // Mix of hw/sw blending
+			|| no_prim_overlap                             // Blend can be done in a single draw
+			|| (m_conf.require_full_barrier)               // Another effect (for example fbmask) already requires a full barrier
+			|| (one_barrier && features.framebuffer_fetch) // On fbfetch, one barrier is like full barrier
+			|| m_conf.ps.dither;                           // Enable sw blend on dithering draw
+
 
 		switch (GSConfig.AccurateBlendingUnit)
 		{
@@ -2457,8 +2459,6 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 				// Do not run BLEND MIX if sw blending is already present, it's less accurate
 				blend_mix &= !sw_blending;
 				sw_blending |= blend_mix;
-				// Disable dithering on blend mix.
-				m_conf.ps.dither &= !blend_mix;
 				[[fallthrough]];
 			case AccBlendLevel::Minimum:
 				break;
@@ -2496,7 +2496,10 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 				// Disable accumulation blend when there is fbmask with no overlap, will be faster.
 				color_dest_blend   &= !fbmask_no_overlap;
 				accumulation_blend &= !fbmask_no_overlap;
-				sw_blending |= accumulation_blend || blend_non_recursive || fbmask_no_overlap;
+				sw_blending |= accumulation_blend
+					|| blend_non_recursive
+					|| fbmask_no_overlap
+					|| (m_conf.ps.dither && m_prim_overlap == PRIM_OVERLAP_NO);
 				// Try to do hw blend for clr2 case.
 				sw_blending &= !clr_blend1_2;
 				// Do not run BLEND MIX if sw blending is already present, it's less accurate
