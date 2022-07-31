@@ -254,6 +254,13 @@ static void cdvdCreateNewNVM(std::FILE* fp)
 	// So let's ignore that and just write the PS2 mode stuff
 	std::fseek(fp, *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, config1)) + 0x10, SEEK_SET);
 	std::fwrite(biosLanguage, sizeof(biosLanguage), 1, fp);
+
+	if (BiosVersion >= 0x200)
+	{
+		char regs[] = {'J', 'J', 'J', 'A', 'E', 'J', 'J', 'C'};
+		std::fseek(fp, *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, regparams)) + 6, SEEK_SET);
+		std::fputc(regs[BiosRegion], fp);
+	}
 }
 
 static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
@@ -282,12 +289,17 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 	else
 	{
 		u8 LanguageParams[16];
+		u8 RegParams[12];
 		u8 zero[16] = {0};
 		NVMLayout* nvmLayout = getNvmLayout();
 
 		if (std::fseek(fp.get(), *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, config1)) + 0x10, SEEK_SET) != 0 ||
 			std::fread(LanguageParams, 16, 1, fp.get()) != 1 ||
-			std::memcmp(LanguageParams, zero, sizeof(LanguageParams)) == 0)
+			std::memcmp(LanguageParams, zero, sizeof(LanguageParams)) == 0 ||
+			(BiosVersion >= 0x200 &&
+				(std::fseek(fp.get(), *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, regparams)), SEEK_SET) != 0 ||
+				std::fread(RegParams, 12, 1, fp.get()) != 1 ||
+				std::memcmp(RegParams, zero, sizeof(RegParams)) == 0)))
 		{
 			Console.Warning("Language Parameters missing, filling in defaults");
 
