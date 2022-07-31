@@ -455,19 +455,25 @@ namespace usb_python2
 			auto hddImagePath = wxString(section->GetKeyValue(L"HddImagePath")).ToStdString();
 			Console.WriteLn("HddImagePath: %s", hddImagePath.c_str());
 			EmuConfig.DEV9.HddFile = "";
+			g_Conf->EmuOptions.DEV9.HddFile = "";
 			if (!hddImagePath.empty())
 			{
-				if (FileSystem::FileExists(hddImagePath.c_str()))
+				if (FileSystem::FileExists(hddImagePath.c_str())) {
 					EmuConfig.DEV9.HddFile = hddImagePath;
+					g_Conf->EmuOptions.DEV9.HddFile = hddImagePath;
+				}
 			}
 
 			auto hddIdPath = wxString(section->GetKeyValue(L"HddIdPath")).ToStdString();
 			Console.WriteLn("HddIdPath: %s", hddIdPath.c_str());
 			EmuConfig.DEV9.HddIdFile = "";
+			g_Conf->EmuOptions.DEV9.HddIdFile = "";
 			if (!hddIdPath.empty())
 			{
-				if (FileSystem::FileExists(hddIdPath.c_str()))
+				if (FileSystem::FileExists(hddIdPath.c_str())) {
 					EmuConfig.DEV9.HddIdFile = hddIdPath;
+					g_Conf->EmuOptions.DEV9.HddIdFile = hddIdPath;
+				}
 			}
 
 			auto ilinkIdPath = wxString(section->GetKeyValue(L"IlinkIdPath")).ToStdString();
@@ -1192,6 +1198,7 @@ namespace usb_python2
 		// Force OPHFlagHack enabled when running Python 2
 #ifndef PCSX2_CORE
 		g_Conf->EnableGameFixes = true;
+		g_Conf->EmuOptions.Gamefixes.Set(Fix_OPHFlag, true);
 #else
 		EmuConfig.EnableGameFixes = true;
 #endif
