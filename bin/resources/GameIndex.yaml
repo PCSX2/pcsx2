@@ -13239,19 +13239,29 @@ SLES-52125:
 SLES-52132:
   name: "Hitman - Contracts"
   region: "PAL-E"
+  gsHWFixes:
+    texturePreloading: 1 # Performs much better with partial preload.
 SLES-52133:
   name: "Hitman - Contracts"
   region: "PAL-F"
+  gsHWFixes:
+    texturePreloading: 1 # Performs much better with partial preload.
 SLES-52134:
   name: "Hitman - Contracts"
   region: "PAL-I"
   compat: 4
+  gsHWFixes:
+    texturePreloading: 1 # Performs much better with partial preload.
 SLES-52135:
   name: "Hitman - Contracts"
   region: "PAL-G"
+  gsHWFixes:
+    texturePreloading: 1 # Performs much better with partial preload.
 SLES-52136:
   name: "Hitman - Contracts"
   region: "PAL-S"
+  gsHWFixes:
+    texturePreloading: 1 # Performs much better with partial preload.
 SLES-52143:
   name: "Carmen Sandiego - The Secret of the Stolen Drums"
   region: "PAL-M4"
@@ -22191,6 +22201,8 @@ SLKA-25217:
 SLKA-25218:
   name: "Hitman - Contracts"
   region: "NTSC-K"
+  gsHWFixes:
+    texturePreloading: 1 # Performs much better with partial preload.
 SLKA-25219:
   name: "Monster Hunter G"
   region: "NTSC-K"
@@ -35516,6 +35528,8 @@ SLPS-25405:
 SLPS-25406:
   name: "Hitman - Contracts"
   region: "NTSC-J"
+  gsHWFixes:
+    texturePreloading: 1 # Performs much better with partial preload.
 SLPS-25407:
   name: "King of Fighters 2003, The"
   region: "NTSC-J"
@@ -41734,7 +41748,9 @@ SLUS-20881:
 SLUS-20882:
   name: "Hitman - Contracts"
   region: "NTSC-U"
-  compat: 3
+  compat: 4
+  gsHWFixes:
+    texturePreloading: 1 # Performs much better with partial preload.
 SLUS-20883:
   name: "Tom Clancy's Rainbow Six 3"
   region: "NTSC-U"
