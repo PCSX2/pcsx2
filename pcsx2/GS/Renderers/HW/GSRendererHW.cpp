@@ -1624,7 +1624,7 @@ void GSRendererHW::Draw()
 			}
 		}
 
-		if (s_save && s_n >= s_saven)
+		if (rt && s_save && s_n >= s_saven)
 		{
 			s = StringUtil::StdStringFromFormat("%05d_f%lld_rt0_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
 
@@ -1632,7 +1632,7 @@ void GSRendererHW::Draw()
 				rt->m_texture->Save(m_dump_root + s);
 		}
 
-		if (s_savez && s_n >= s_saven)
+		if (ds && s_savez && s_n >= s_saven)
 		{
 			s = StringUtil::StdStringFromFormat("%05d_f%lld_rz0_%05x_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
 
