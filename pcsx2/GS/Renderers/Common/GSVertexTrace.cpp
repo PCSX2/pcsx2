@@ -211,8 +211,9 @@ void GSVertexTrace::FindMinMax(const void* vertex, const u32* index, int count)
 			{
 				// For even n, we process v1 and v2 of the same prim
 				// (For odd n, we process one vertex from each of two prims)
-				cmin = cmin.min_u8(c1);
-				cmax = cmax.max_u8(c1);
+				GSVector4i c = flat_swapped ? c0 : c1;
+				cmin = cmin.min_u8(c);
+				cmax = cmax.max_u8(c);
 			}
 		}
 
@@ -302,10 +303,20 @@ void GSVertexTrace::FindMinMax(const void* vertex, const u32* index, int count)
 		}
 		if (count & 1)
 		{
-			processVertices(v[index[i + 0]], v[index[i + 1]], flat_swapped);
-			// Compiler optimizations go!
-			// (And if they don't, it's only one vertex out of many)
-			processVertices(v[index[i + 2]], v[index[i + 2]], !flat_swapped);
+			if (flat_swapped)
+			{
+				processVertices(v[index[i + 1]], v[index[i + 2]], false);
+				// Compiler optimizations go!
+				// (And if they don't, it's only one vertex out of many)
+				processVertices(v[index[i + 0]], v[index[i + 0]], true);
+			}
+			else
+			{
+				processVertices(v[index[i + 0]], v[index[i + 1]], false);
+				// Compiler optimizations go!
+				// (And if they don't, it's only one vertex out of many)
+				processVertices(v[index[i + 2]], v[index[i + 2]], true);
+			}
 		}
 	}
 	else
