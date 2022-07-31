@@ -154,14 +154,15 @@ void GSVertexTrace::Update(const void* vertex, const u32* index, int v_count, in
 template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color>
 GSVertexTrace::FindMinMaxPtr GSVertexTrace::GetFMM(bool provoking_vertex_first)
 {
+	constexpr bool real_iip = primclass == GS_SPRITE_CLASS ? false : iip;
 	constexpr bool real_fst = tme ? fst : false;
 	constexpr bool provoking_vertex_first_class = primclass == GS_LINE_CLASS || primclass == GS_TRIANGLE_CLASS;
 	const bool swap = provoking_vertex_first_class && !iip && provoking_vertex_first;
 
 	if (swap)
-		return &GSVertexTrace::FindMinMax<primclass, iip, tme, real_fst, color, true>;
+		return &GSVertexTrace::FindMinMax<primclass, real_iip, tme, real_fst, color, true>;
 	else
-		return &GSVertexTrace::FindMinMax<primclass, iip, tme, real_fst, color, false>;
+		return &GSVertexTrace::FindMinMax<primclass, real_iip, tme, real_fst, color, false>;
 }
 
 template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color, bool flat_swapped>
@@ -260,12 +261,12 @@ void GSVertexTrace::FindMinMax(const void* vertex, const u32* index, int count)
 		GSVector4i xyzf1(v1.m[1]);
 
 		GSVector4i xy0 = xyzf0.upl16();
-		GSVector4i z0 = xyzf0.yyyy();
+		GSVector4i zf0 = xyzf0.ywyw();
 		GSVector4i xy1 = xyzf1.upl16();
-		GSVector4i z1 = xyzf1.yyyy();
+		GSVector4i zf1 = xyzf1.ywyw();
 
-		GSVector4i p0 = xy0.blend16<0xf0>(z0.uph32(primclass == GS_SPRITE_CLASS ? xyzf1 : xyzf0));
-		GSVector4i p1 = xy1.blend16<0xf0>(z1.uph32(xyzf1));
+		GSVector4i p0 = xy0.blend32<0xc>(primclass == GS_SPRITE_CLASS ? zf1 : zf0);
+		GSVector4i p1 = xy1.blend32<0xc>(zf1);
 
 		pmin = pmin.min_u32(p0.min_u32(p1));
 		pmax = pmax.max_u32(p0.max_u32(p1));
