@@ -281,7 +281,7 @@ public:
 		memset(&writeop, 0, sizeof(writeop));
 		memset(&sendState, 0, sizeof(sendState));
 		sendState.id = 1;
-		int temp = (index & 4);
+		int temp = (index | 4);
 		sendState.lightFlags = (1 << (temp + 1));
 		sendState.lights[3 - temp].duration = 0xFF;
 		sendState.lights[3 - temp].dunno[0] = 1;
