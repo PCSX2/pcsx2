@@ -6375,6 +6375,8 @@ SCPS-55028:
 SCPS-55029:
   name: "dot hack - Infection Part 1"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Sharpens world in far distances.
   memcardFilters:
     - "SCPS-55029"
     - "SCPS-55042"
@@ -13376,6 +13378,8 @@ SLES-52230:
 SLES-52237:
   name: "dot hack - Infection Part 1"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 1 # Sharpens world in far distances.
   memcardFilters:
     - "SLES-52237"
     - "SLES-52467"
@@ -21849,6 +21853,8 @@ SLKA-25078:
 SLKA-25080:
   name: "dot hack - Infection"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 1 # Sharpens world in far distances.
 SLKA-25081:
   name: "SD Gundam G Generation Neo"
   region: "NTSC-K"
@@ -34549,6 +34555,8 @@ SLPS-25120:
 SLPS-25121:
   name: "dot hack - Infection Part 1"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Sharpens world in far distances.
   memcardFilters:
     - "SCPS-55029"
     - "SCPS-55042"
@@ -38972,6 +38980,8 @@ SLUS-20267:
   name: "dot hack - Infection Part 1"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Sharpens world in far distances.
   memcardFilters:
     - "SLUS-20267"
     - "SLUS-20562"
@@ -46886,6 +46896,8 @@ SLUS-28021:
 SLUS-28023:
   name: "dot hack - Infection Part 1 [Trade Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 1 # Sharpens world in far distances.
 SLUS-28025:
   name: "Disaster Report [Trade Demo]"
   region: "NTSC-U"
@@ -47116,6 +47128,8 @@ SLUS-29040:
 SLUS-29042:
   name: "dot hack - Infection Part 1 [Regular Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 1 # Sharpens world in far distances.
 SLUS-29044:
   name: "Pride FC - Fighting Championships [Demo]"
   region: "NTSC-U"
