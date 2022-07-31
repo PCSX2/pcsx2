@@ -469,6 +469,9 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 			{
 				dst = t;
 				GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x -> 0x%x %s)", size.x, size.y, dst->m_texture->GetID(), bp, t->m_end_block, psm_str(TEX0.PSM));
+				if (real_h > 0)
+					ScaleTargetForDisplay(dst, TEX0, real_h);
+
 				break;
 			}
 		}
@@ -676,6 +679,9 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 
 	// We unconditionally preload the frame here, because otherwise we'll end up with blackness for one frame (when the expand happens).
 	t->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, t->m_TEX0.TBW * 64, needed_height), t->m_TEX0.PSM, t->m_TEX0.TBW));
+
+	// Inject the new height back into the cache.
+	GetTargetHeight(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, static_cast<u32>(needed_height));
 }
 
 // Goal: Depth And Target at the same address is not possible. On GS it is
