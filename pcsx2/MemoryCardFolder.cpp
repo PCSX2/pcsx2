@@ -2238,7 +2238,6 @@ bool FileAccessHelper::CleanMemcardFilenameEndDotOrSpace(char* name, size_t leng
 
 bool MemoryCardFileMetadataReference::GetPath(std::string* fileName) const
 {
-
 	if (this == nullptr)
 	{
 		return false;
