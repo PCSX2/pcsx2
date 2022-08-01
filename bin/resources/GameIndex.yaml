@@ -39980,6 +39980,8 @@ SLUS-20474:
 SLUS-20475:
   name: "Dual Hearts"
   region: "NTSC-U"
+  gsHWFixes:
+    deinterlace: 5 # Game requires blend tff deinterlacing when auto.
   compat: 5
 SLUS-20476:
   name: "NBA 2K3 - Sega Sports"
