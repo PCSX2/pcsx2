@@ -12467,6 +12467,8 @@ SLES-51758:
 SLES-51759:
   name: "Maximo vs. Army of Zin"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes outlines around environmental objects.
 SLES-51761:
   name: "Italian Job, The - L.A. Heist"
   region: "PAL-M5"
@@ -21851,6 +21853,11 @@ SLKA-25071:
   name: "Tantei Jinguji Saburo 8 Innocent Black"
   region: "NTSC-K"
   compat: 5
+SLKA-25072:
+  name: "Maximo vs. Army of Zin"
+  region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes outlines around environmental objects.
 SLKA-25073:
   name: "Tomb Raider - The Angel of Darkness"
   region: "NTSC-K"
@@ -26752,6 +26759,8 @@ SLPM-65367:
   name: "Makai Eiyuuki Maximo - Machine Monster no Yabou"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes outlines around environmental objects.
 SLPM-65368:
   name: "D.N. Angel - TV Animation Series"
   region: "NTSC-J"
@@ -41067,6 +41076,8 @@ SLUS-20722:
   name: "Maximo vs. Army of Zin"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes outlines around environmental objects.
 SLUS-20723:
   name: "Robin Hood - Defender of the Crown"
   region: "NTSC-U"
@@ -47297,6 +47308,8 @@ SLUS-29082:
 SLUS-29083:
   name: "Maximo vs. The Army of Zin [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes outlines around environmental objects.
 SLUS-29084:
   name: "dot hack - Quarantine Part 4 [Demo]"
   region: "NTSC-U"
