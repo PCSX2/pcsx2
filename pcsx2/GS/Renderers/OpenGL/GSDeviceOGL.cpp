@@ -319,6 +319,10 @@ bool GSDeviceOGL::Create()
 			return false;
 		}
 
+		// Force UBOs to be uploaded on first use.
+		std::memset(&m_vs_cb_cache, 0xFF, sizeof(m_vs_cb_cache));
+		std::memset(&m_ps_cb_cache, 0xFF, sizeof(m_ps_cb_cache));
+
 		// rebind because of VAO state
 		m_vertex_stream_buffer->Bind();
 		m_index_stream_buffer->Bind();
@@ -704,6 +708,10 @@ void GSDeviceOGL::RestoreAPIState()
 
 	if (GLState::point_size)
 		glEnable(GL_PROGRAM_POINT_SIZE);
+
+	// Force UBOs to be reuploaded, we don't know what else was bound there.
+	std::memset(&m_vs_cb_cache, 0xFF, sizeof(m_vs_cb_cache));
+	std::memset(&m_ps_cb_cache, 0xFF, sizeof(m_ps_cb_cache));
 }
 
 void GSDeviceOGL::DrawPrimitive()
