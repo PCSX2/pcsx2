@@ -15323,6 +15323,7 @@ SLES-53038:
     eeRoundMode: 0
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
+    roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
 SLES-53039:
   name: "Champions - Return to Arms" # aka "Champions of Norrath 2"
   region: "PAL-M4"
@@ -18004,6 +18005,7 @@ SLES-54186:
     eeRoundMode: 0
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
+    roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
 SLES-54187:
   name: "Real World Golf 2007"
   region: "PAL-M3"
@@ -22350,6 +22352,7 @@ SLKA-25265:
     eeRoundMode: 0
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
+    roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
 SLKA-25266:
   name: "Sangokushi IX [PlayStation 2 - Big Hit Series]"
   region: "NTSC-K"
@@ -23227,6 +23230,7 @@ SLPM-60251:
     eeRoundMode: 0
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
+    roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
 SLPM-60254:
   name: "Zettai Zetsumei Toshi 2 - Itetsuita Kioku-tachi [Trial A]"
   region: "NTSC-J"
@@ -28413,6 +28417,7 @@ SLPM-65880:
     eeRoundMode: 0
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
+    roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
 SLPM-65881:
   name: "SmackDown vs. Raw - Exciting Professional Wrestling 6"
   region: "NTSC-J"
@@ -29368,6 +29373,7 @@ SLPM-66160:
     eeRoundMode: 0
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
+    roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
 SLPM-66163:
   name: "Fuuraiki 2"
   region: "NTSC-J"
@@ -32730,6 +32736,7 @@ SLPM-74242:
     eeRoundMode: 0
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
+    roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
 SLPM-74243:
   name: "True Crime - New York City [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -42222,6 +42229,7 @@ SLUS-20964:
     eeRoundMode: 0
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
+    roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
 SLUS-20965:
   name: "Tony Hawk's Underground 2"
   region: "NTSC-U"
@@ -44294,6 +44302,7 @@ SLUS-21361:
     eeRoundMode: 0
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
+    roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
 SLUS-21362:
   name: "Onimusha - Dawn of Dreams [Disc2of2]"
   region: "NTSC-U"
