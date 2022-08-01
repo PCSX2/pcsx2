@@ -76,7 +76,7 @@ head()
 
 tail()
 {
-    cat $INPUT >> $TEST
+    cat "$INPUT" >> $TEST
     # Some layout syntax (420) are not supported
     # so I remove them (a bit overkill)
     #sed -i -e 's/layout(.*)//' $TEST
@@ -89,7 +89,7 @@ vertex_test()
 {
     head
     echo "#define VERTEX_SHADER 1" >> $TEST
-    echo -e $MACRO >> $TEST
+    echo -e "$MACRO" >> $TEST
     tail
 
     echo "Vertex check with macro : $MACRO"
@@ -117,7 +117,7 @@ fragment_test()
 if [ "$TEST_GS" = '1' ] ; then
     echo "not yet implemented"
     # A very big shader example (124 instructions!)
-    ./validate_glsl.sh --input $INPUT --novert --entry ps_main --macro PS_TCC 0 --macro PS_TFX 0 --macro PS_IIP 1 --macro PS_ATST 4 --macro PS_FST 1 --macro PS_BLEND 4 --macro PS_COLCLIP 3 --macro PS_SHUFFLE 1 --macro PS_LTF 1 --macro PS_FMT 6 --macro PS_AEM 0 --macro PS_FBMASK 1 --macro PS_FOG 1 --macro PS_WMS 2 --macro PS_WMT 3
+    ./validate_glsl.sh --input "$INPUT" --novert --entry ps_main --macro PS_TCC 0 --macro PS_TFX 0 --macro PS_IIP 1 --macro PS_ATST 4 --macro PS_FST 1 --macro PS_BLEND 4 --macro PS_COLCLIP 3 --macro PS_SHUFFLE 1 --macro PS_LTF 1 --macro PS_FMT 6 --macro PS_AEM 0 --macro PS_FBMASK 1 --macro PS_FOG 1 --macro PS_WMS 2 --macro PS_WMT 3
 
     # TODO
     # Maybe it would be nice to make several loop to iterate on various option and to monitor the impact on the instruction number

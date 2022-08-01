@@ -63,16 +63,16 @@ TER_KEY3=pxEt
 
 echo "Generate $MAIN_POT"
 xgettext --keyword=$MAIN_KEY1 --keyword=$MAIN_KEY2 --keyword=$DEV_KEY1 --keyword=$DEV_KEY2 \
-	--keyword=$TER_KEY1 --keyword=$TER_KEY2 $GENERAL_OPTION --copyright-holder="$COPYRIGHT"  \
-	$input_files --output=$MAIN_POT
+	--keyword=$TER_KEY1 --keyword=$TER_KEY2 "$GENERAL_OPTION" --copyright-holder="$COPYRIGHT"  \
+	"$input_files" --output=$MAIN_POT
 sed --in-place $MAIN_POT --expression=s/charset=CHARSET/charset=UTF-8/
 
 ICO_POT=locales/templates/pcsx2_Iconized.pot
 ICO_KEY1=pxE
 
 echo "Generate $ICO_POT"
-xgettext --keyword=$ICO_KEY1 --keyword=$TER_KEY3 $GENERAL_OPTION --copyright-holder="$COPYRIGHT" \
-	$input_files --output=$ICO_POT
+xgettext --keyword=$ICO_KEY1 --keyword=$TER_KEY3 "$GENERAL_OPTION" --copyright-holder="$COPYRIGHT" \
+	"$input_files" --output=$ICO_POT
 sed --in-place $ICO_POT --expression=s/charset=CHARSET/charset=UTF-8/
 
 ######################################################################
@@ -97,14 +97,14 @@ echo "Update pcsx2_Main.po files"
 for po_file in `find ./locales -iname pcsx2_Main.po`
 do
     # Note: --previous corrupt po file
-    msgmerge --update $po_file $MAIN_POT
+    msgmerge --update "$po_file" $MAIN_POT
 done
 
 echo "Update pcsx2_Iconized.po files"
 for po_file in `find ./locales -iname pcsx2_Iconized.po`
 do
     # Note: --previous corrupt po file
-    msgmerge --update $po_file $ICO_POT
+    msgmerge --update "$po_file" $ICO_POT
 done
 
 ######################################################################
@@ -115,7 +115,7 @@ for po_file in `find ./locales -iname "pcsx2_*.po"`
 do
     mo_file=`echo $po_file | sed -e 's/locales/bin\/Langs/' | sed -e 's/\.po/.mo/'`
     mkdir -p `dirname $mo_file`
-    msgfmt -o $mo_file $po_file
+    msgfmt -o $mo_file "$po_file"
 done
 
 ######################################################################

@@ -39,13 +39,13 @@ set_make()
 set_compiler()
 {
     if [ "$useClang" -eq 1 ]; then
-        CC=clang CXX=clang++ cmake $flags "$root" 2>&1 | tee -a "$log"
+        CC=clang CXX=clang++ cmake "$flags" "$root" 2>&1 | tee -a "$log"
     else
         if [ "$useIcc" -eq 1 ]; then
-            CC="icc" CXX="icpc" cmake $flags "$root" 2>&1 | tee -a "$log"
+            CC="icc" CXX="icpc" cmake "$flags" "$root" 2>&1 | tee -a "$log"
         else
         # Default compiler AKA GCC
-        cmake $flags "$root" 2>&1 | tee -a "$log"
+        cmake "$flags" "$root" 2>&1 | tee -a "$log"
         fi
     fi
 }
@@ -174,7 +174,7 @@ for ARG in "$@"; do
         -D*                 ) flags="$flags $ARG" ;;
 
         *)
-            echo $ARG
+            echo "$ARG"
             # Unknown option
             echo "** User options **"
             echo "--dev / --devel   : Build PCSX2 as a Development build."

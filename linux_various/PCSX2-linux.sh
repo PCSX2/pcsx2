@@ -29,7 +29,7 @@ current_script=$0
 me=PCSX2-linux.sh
 
 # We are already in the good directory. Allow to use "bash PCSX2-linux.sh"
-if [ $current_script = $me ]
+if [ "$current_script" = $me ]
 then
     if [ -e "./$me" ]
     then
@@ -58,4 +58,4 @@ MY_LD_LIBRARY_PATH=${MY_LD_LIBRARY_PATH:+$MY_LD_LIBRARY_PATH:}$DIR/3rdPartyLibs
 MY_LD_LIBRARY_PATH=${MY_LD_LIBRARY_PATH:+$MY_LD_LIBRARY_PATH:}/usr/lib/wx-2.8-stl
 
 # And finally launch me
-GDK_BACKEND=x11 LD_LIBRARY_PATH="$MY_LD_LIBRARY_PATH" MESA_NO_ERROR=1 $DIR/pcsx2 "$@"
+GDK_BACKEND=x11 LD_LIBRARY_PATH="$MY_LD_LIBRARY_PATH" MESA_NO_ERROR=1 "$DIR"/pcsx2 "$@"

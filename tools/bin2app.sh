@@ -23,4 +23,4 @@
 #   SrcImage - Complete filename with extension.
 #
 
-$1/tools/bin/bin2cpp $2
+"$1"/tools/bin/bin2cpp "$2"

@@ -28,6 +28,6 @@ cmake                                       \
 -DOPENGL_opengl_LIBRARY=""                  \
 -DXDG_STD=TRUE                              \
 -DUSE_SYSTEM_ZSTD=FALSE                     \
-$ADDITIONAL_CMAKE_ARGS                      \
+"$ADDITIONAL_CMAKE_ARGS"                    \
 -GNinja                                     \
 -B build

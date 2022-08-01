@@ -172,7 +172,7 @@ rm -fr "$OUTDIR/usr/bin/resources/locale"
 
 # Patch RPATH so the binary goes hunting for shared libraries in the AppDir instead of system.
 echo "Patching RPATH in ${BINARY}..."
-patchelf --set-rpath '$ORIGIN/../lib' "$OUTDIR/usr/bin/$BINARY"
+patchelf --set-rpath "$ORIGIN/../lib" "$OUTDIR/usr/bin/$BINARY"
 
 # Currently we leave the main binary unstripped, uncomment if this is not desired.
 #$STRIP "$OUTDIR/usr/bin/$BINARY"
@@ -227,14 +227,14 @@ done
 for so in $(find "$OUTDIR/usr/lib/plugins" -iname '*.so'); do
 	# This is ../../ because it's usually plugins/group/name.so
 	echo "Patching RPATH in ${so}..."
-	patchelf --set-rpath '$ORIGIN/../..' "$so"
+	patchelf --set-rpath "$ORIGIN/../.." "$so"
 	$STRIP "$so"
 done
 
 for so in $(find "$OUTDIR/usr/lib" -maxdepth 1); do
 	if [ -f "$so" ]; then
 		echo "Patching RPATH in ${so}"
-		patchelf --set-rpath '$ORIGIN' "$so"
+		patchelf --set-rpath "$ORIGIN" "$so"
 	fi
 done
 

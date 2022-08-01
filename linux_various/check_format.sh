@@ -35,7 +35,7 @@ $clang_format -version
 # Picking more commits might hurt during the conversion. When everything will be ready, we
 # could get back to 20
 br_commit=`git log --oneline --decorate --graph -n 20 | grep "^\* [[:alnum:]]" -c`
-if [ $br_commit -lt 1 ]; then
+if [ "$br_commit" -lt 1 ]; then
     # Something got wrong
     diff_range=HEAD~20
 else
@@ -58,7 +58,7 @@ files=`git diff --name-only --diff-filter=ACMRT $diff_range  -- $PWD | \
 # Check remaining files are clang-format compliant
 for f in $files
 do
-    $clang_format -style=file -output-replacements-xml $f | grep "<replacement " >/dev/null
+    $clang_format -style=file -output-replacements-xml "$f" | grep "<replacement " >/dev/null
     if [ $? -ne 1 ]
     then
         echo "file $f did not match clang-format"
