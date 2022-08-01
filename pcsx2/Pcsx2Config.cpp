@@ -1034,6 +1034,8 @@ Pcsx2Config::Pcsx2Config()
 	McdCompressNTFS = true;
 #endif
 
+	WarnAboutUnsafeSettings = true;
+
 	// To be moved to FileMemoryCard pluign (someday)
 	for (uint slot = 0; slot < 8; ++slot)
 	{
@@ -1083,6 +1085,8 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(MultitapPort0_Enabled);
 	SettingsWrapBitBool(MultitapPort1_Enabled);
 #endif
+
+	SettingsWrapBitBool(WarnAboutUnsafeSettings);
 
 	// Process various sub-components:
 
