@@ -250,6 +250,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	//////////////////////////////////////////////////////////////////////////
 	// SW Settings
 	//////////////////////////////////////////////////////////////////////////
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.swTextureFiltering, "EmuCore/GS", "filter", static_cast<int>(BiFiltering::PS2));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.extraSWThreads, "EmuCore/GS", "extrathreads", 2);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.swAutoFlush, "EmuCore/GS", "autoflush_sw", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.swMipmap, "EmuCore/GS", "mipmap", true);
@@ -285,6 +286,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 	connect(m_ui.renderer, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GraphicsSettingsWidget::onRendererChanged);
 	connect(m_ui.enableHWFixes, &QCheckBox::stateChanged, this, &GraphicsSettingsWidget::onEnableHardwareFixesChanged);
+	connect(m_ui.textureFiltering, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onTextureFilteringChange);
+	connect(m_ui.swTextureFiltering, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onSWTextureFilteringChange);
 	updateRendererDependentOptions();
 
 	// only allow disabling readbacks for per-game settings, it's too dangerous
@@ -472,6 +475,20 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 }
 
 GraphicsSettingsWidget::~GraphicsSettingsWidget() = default;
+
+void GraphicsSettingsWidget::onTextureFilteringChange()
+{
+	const QSignalBlocker block(m_ui.swTextureFiltering);
+
+	m_ui.swTextureFiltering->setCurrentIndex(m_ui.textureFiltering->currentIndex());
+}
+
+void GraphicsSettingsWidget::onSWTextureFilteringChange()
+{
+	const QSignalBlocker block(m_ui.textureFiltering);
+
+	m_ui.textureFiltering->setCurrentIndex(m_ui.swTextureFiltering->currentIndex());
+}
 
 void GraphicsSettingsWidget::onRendererChanged(int index)
 {
