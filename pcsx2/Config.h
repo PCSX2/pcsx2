@@ -970,7 +970,9 @@ struct Pcsx2Config
 		MultitapPort1_Enabled : 1,
 
 		ConsoleToStdio : 1,
-		HostFs : 1;
+		HostFs : 1,
+
+		WarnAboutUnsafeSettings : 1;
 
 	// uses automatic ntfs compression when creating new memory cards (Win32 only)
 #ifdef _WIN32

@@ -2256,6 +2256,8 @@ void FullscreenUI::DrawEmulationSettingsPage()
 		"EmuCore", "EnablePerGameSettings", true);
 	DrawToggleSetting(bsi, "Enable Host Filesystem", "Enables access to files from the host: namespace in the virtual machine.", "EmuCore",
 		"HostFs", false);
+	DrawToggleSetting(bsi, "Warn About Unsafe Settings", "Displays warnings when settings are enabled which may break games.", "EmuCore",
+		"WarnAboutUnsafeSettings", true);
 
 	EndMenuButtons();
 }
