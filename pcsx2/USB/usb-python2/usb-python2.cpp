@@ -1206,8 +1206,40 @@ namespace usb_python2
 
 		if (s)
 		{
+			// Initialize all variables to try and keep a consistent state
+			if (s->devices[0] != nullptr)
+				s->devices[0].reset();
+
+			if (s->devices[1] != nullptr)
+				s->devices[1].reset();
+
+			s->buf.clear();
+			s->isMinimaidConnected = false;
+			s->isUsingBtoolLights = false;
+
+			s->f.gameType = s->f.prevGameType = -1;
+			s->devices[0] = nullptr;
+			s->devices[1] = nullptr;
+			s->f.jammaIoStatus = 0xf0ffff80;
+			s->f.force31khz = false;
+			s->f.coinsInserted[0] = s->f.coinsInserted[1] = 0;
+			s->f.coinButtonHeld[0] = s->f.coinButtonHeld[1] = false;
+			memset(s->f.dipSwitch, '0', sizeof(s->f.dipSwitch));
+			s->f.requestedDongle = -1;
+			s->f.isDongleSlotLoaded[0] = s->f.isDongleSlotLoaded[1] = false;
+			memset(s->f.dongleSlotPayload[0], 0, sizeof(s->f.dongleSlotPayload[0]));
+			memset(s->f.dongleSlotPayload[1], 0, sizeof(s->f.dongleSlotPayload[1]));
+			s->f.cardFilenames[0] = s->f.cardFilenames[1] = "";
+			s->f.jammaUpdateCounter = 0;
+			s->f.wheel = s->wheelCenter;
+			s->f.brake = s->f.accel = 0;
+			s->f.knobs[0] = s->f.knobs[1] = 0;
+			s->f.oldLightCabinet = 0;
+			s->f.footPanelIoCheckHack = 0;
+
 			// Load the configuration and start SPDIF patcher thread every time a game is started
 			load_configuration(dev);
+			initialize_device(dev);
 
 			if (!mPatchSpdifAudioThreadIsRunning)
 			{
@@ -1215,8 +1247,6 @@ namespace usb_python2
 					mPatchSpdifAudioThread.join();
 				mPatchSpdifAudioThread = std::thread(Python2Patch::PatchSpdifAudioThread, s->p2dev);
 			}
-
-			initialize_device(dev);
 
 			return s->p2dev->Open();
 		}
@@ -1287,12 +1317,6 @@ namespace usb_python2
 
 		s->p2dev = p2dev;
 		s->f.port = port;
-		s->f.gameType = -1;
-		s->devices[0] = nullptr;
-		s->devices[1] = nullptr;
-
-		s->f.jammaUpdateCounter = 0;
-		s->f.footPanelIoCheckHack = 0;
 
 		usb_desc_init(&s->dev);
 		usb_ep_init(&s->dev);
