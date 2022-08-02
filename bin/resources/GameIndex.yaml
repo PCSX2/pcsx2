@@ -3514,7 +3514,7 @@ SCES-52830:
 SCES-52883:
   name: "EyeToy - Kinetic"
   region: "PAL-M7"
-  compat: 2
+  compat: 5
 SCES-52892:
   name: "MotoGP 4"
   region: "PAL-M5"
@@ -3529,7 +3529,7 @@ SCES-52893:
 SCES-52930:
   name: "EyeToy - Monkey Mania"
   region: "PAL-M5"
-  compat: 2
+  compat: 5
 SCES-52948:
   name: "Getaway, The - Black Monday"
   region: "PAL-M4"
@@ -7299,7 +7299,7 @@ SCUS-97318:
 SCUS-97319:
   name: "EyeToy - Play"
   region: "NTSC-U"
-  compat: 2
+  compat: 5
 SCUS-97321:
   name: "Kiosk Demo Disc 2.10"
   region: "NTSC-U"
@@ -7403,7 +7403,7 @@ SCUS-97342:
 SCUS-97345:
   name: "EyeToy - Groove"
   region: "NTSC-U"
-  compat: 2
+  compat: 5
 SCUS-97347:
   name: "MLB 2006"
   region: "NTSC-U"
@@ -7619,7 +7619,7 @@ SCUS-97413:
 SCUS-97414:
   name: "EyeToy - AntiGrav"
   region: "NTSC-U"
-  compat: 2
+  compat: 5
 SCUS-97415:
   name: "Sly 2 - Band of Thieves [E3 Demo]"
   region: "NTSC-U"
@@ -14778,7 +14778,7 @@ SLES-52832:
 SLES-52834:
   name: "Sega Superstars Eyetoy Bundle"
   region: "PAL-M4"
-  compat: 1
+  compat: 5
 SLES-52835:
   name: "Mummy, The"
   region: "PAL-M6"
