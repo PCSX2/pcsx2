@@ -363,6 +363,8 @@ public:
 
 	void WriteToFile(const std::string& filename);
 
+	std::string GetFolderName();
+
 protected:
 	struct EnumeratedFileEntry
 	{
