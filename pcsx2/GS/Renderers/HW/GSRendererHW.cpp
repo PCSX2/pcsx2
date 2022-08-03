@@ -3390,7 +3390,7 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	if (m_conf.ps.dither)
 	{
-		GL_DBG("DITHERING mode ENABLED (%d)", m_dithering);
+		GL_DBG("DITHERING mode ENABLED (%d)", GSConfig.Dithering);
 
 		m_conf.ps.dither = GSConfig.Dithering;
 		m_conf.cb_ps.DitherMatrix[0] = GSVector4(m_env.DIMX.DM00, m_env.DIMX.DM01, m_env.DIMX.DM02, m_env.DIMX.DM03);
