@@ -681,41 +681,6 @@ bool GSC_GetawayGames(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_TriAceGames(const GSFrameInfo& fi, int& skip)
-{
-	// Tri Ace Games: ValkyrieProfile2, RadiataStories, StarOcean3
-	//
-	// The games emulate a stencil buffer with the alpha channel of the RT
-	// The operation of the stencil is selected with the palette
-	// For example -1 wrap will be [240, 16, 32, 48 ....]
-	// i.e. p[A>>4] = (A - 16) % 256
-	//
-	// The fastest and accurate solution will be to replace this pseudo stencil
-	// by a dedicated GPU draw call
-	// 1/ Use future GPU capabilities to do a "kind" of SW blending
-	// 2/ Use a real stencil/atomic image, and then compute the RT alpha value
-	//
-	// Both of those solutions will increase code complexity (and only avoid upscaling
-	// glitches)
-
-	if (skip == 0)
-	{
-		if (fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
-		{
-			skip = 1000;
-		}
-	}
-	else
-	{
-		if (!(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH))
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Aggressive only hack
 ////////////////////////////////////////////////////////////////////////////////
@@ -910,11 +875,6 @@ void GSState::SetupCrcHack()
 	{
 		// Accurate Blending
 		lut[CRC::GetawayGames] = GSC_GetawayGames; // Blending High
-
-		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to CRC_Aggressive)
-		// Needs at least Basic Blending,
-		// see https://github.com/PCSX2/pcsx2/pull/2921
-		lut[CRC::TriAceGames] = GSC_TriAceGames;
 	}
 
 	if (CRC_Aggressive)

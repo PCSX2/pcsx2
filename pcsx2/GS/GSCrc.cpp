@@ -174,18 +174,6 @@ const CRC::Game CRC::m_games[] =
 	{0xAA5EC3A3, TalesOfAbyss, JP, 0},
 	{0xFB236A46, SonicUnleashed, US, 0},
 	{0x8C913264, SonicUnleashed, EU, 0},
-	{0xE04EA200, TriAceGames, EU, 0}, // StarOcean3
-	{0x23A97857, TriAceGames, US, 0}, // StarOcean3
-	{0xBEC32D49, TriAceGames, JP, 0}, // StarOcean3
-	{0x8192A241, TriAceGames, JP, 0}, // StarOcean3 directors cut
-	{0xCC96CE93, TriAceGames, US, 0}, // ValkyrieProfile2
-	{0x774DE8E2, TriAceGames, JP, 0}, // ValkyrieProfile2
-	{0x04CCB600, TriAceGames, EU, 0}, // ValkyrieProfile2
-	{0xB65E141B, TriAceGames, DE, 0}, // ValkyrieProfile2
-	{0x8510854E, TriAceGames, FR, 0}, // ValkyrieProfile2
-	{0xC70FC973, TriAceGames, IT, 0}, // ValkyrieProfile2
-	{0x47B9B2FD, TriAceGames, US, 0}, // RadiataStories
-	{0xAC73005E, TriAceGames, JP, 0}, // RadiataStories
 	{0xE8FCF8EC, SMTNocturne, US, 0},
 	{0xF0A31EE3, SMTNocturne, EU, 0}, // SMTNocturne (Lucifers Call in EU)
 	{0xAE0DE7B7, SMTNocturne, EU, 0}, // SMTNocturne (Lucifers Call in EU)

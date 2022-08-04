@@ -75,7 +75,6 @@ public:
 		TombRaiderAnniversary,
 		TombRaiderLegend,
 		TombRaiderUnderworld,
-		TriAceGames,
 		UltramanFightingEvolution,
 		UrbanReign,
 		XenosagaE3,
