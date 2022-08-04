@@ -195,7 +195,15 @@ namespace usb_python2
 			uint8_t oldLightCabinet = 0;
 
 			// For Dance 86.4
-			int32_t footPanelIoCheckHack = 0;
+			uint8_t stageMask[2] = {0xff, 0xff};
+			struct
+			{
+				int DO = 0;
+				int clk = 0;
+				int shift = 0;
+				int state = 0;
+				int bit = 0;
+			} stageState[2];
 		} f;
 	} UsbPython2State;
 
@@ -235,12 +243,12 @@ namespace usb_python2
 		{
 			if (s->devices[0] == nullptr)
 			{
-				#ifdef INCLUDE_MINIMAID
+#ifdef INCLUDE_MINIMAID
 				s->isMinimaidConnected = mm_connect_minimaid() == MINIMAID_CONNECTED;
 				mm_setKB(true);
-				#endif
+#endif
 
-				#ifdef INCLUDE_BTOOLS
+#ifdef INCLUDE_BTOOLS
 				hDDRIO = LoadLibraryA("ddrio.dll");
 
 				if (hDDRIO != nullptr)
@@ -250,10 +258,7 @@ namespace usb_python2
 					m_ddr_io_set_lights_p3io = reinterpret_cast<ddr_io_set_lights_p3io_type*>(GetProcAddress(hDDRIO, "ddr_io_set_lights_p3io"));
 					m_ddr_io_fini = reinterpret_cast<ddr_io_fini_type*>(GetProcAddress(hDDRIO, "ddr_io_fini"));
 
-					s->isUsingBtoolLights = m_ddr_io_set_loggers
-						&& m_ddr_io_init
-						&& m_ddr_io_set_lights_p3io
-						&& m_ddr_io_fini;
+					s->isUsingBtoolLights = m_ddr_io_set_loggers && m_ddr_io_init && m_ddr_io_set_lights_p3io && m_ddr_io_fini;
 
 					if (s->isUsingBtoolLights)
 					{
@@ -272,7 +277,7 @@ namespace usb_python2
 				{
 					Console.Error("Error loading ddrio.dll error #%d, ignoring...", GetLastError());
 				}
-				#endif
+#endif
 
 				s->devices[0] = std::make_unique<extio_device>();
 			}
@@ -299,6 +304,11 @@ namespace usb_python2
 		{
 			if (s->devices[0] == nullptr)
 				s->devices[0] = std::make_unique<toysmarch_drumpad_device>(s->p2dev);
+		}
+		else if (s->f.gameType == GAMETYPE_DANCE864)
+		{
+			if (s->devices[1] == nullptr)
+				s->devices[1] = std::make_unique<extio_device>();
 		}
 	}
 
@@ -458,7 +468,8 @@ namespace usb_python2
 			g_Conf->EmuOptions.DEV9.HddFile = "";
 			if (!hddImagePath.empty())
 			{
-				if (FileSystem::FileExists(hddImagePath.c_str())) {
+				if (FileSystem::FileExists(hddImagePath.c_str()))
+				{
 					EmuConfig.DEV9.HddFile = hddImagePath;
 					g_Conf->EmuOptions.DEV9.HddFile = hddImagePath;
 				}
@@ -470,7 +481,8 @@ namespace usb_python2
 			g_Conf->EmuOptions.DEV9.HddIdFile = "";
 			if (!hddIdPath.empty())
 			{
-				if (FileSystem::FileExists(hddIdPath.c_str())) {
+				if (FileSystem::FileExists(hddIdPath.c_str()))
+				{
 					EmuConfig.DEV9.HddIdFile = hddIdPath;
 					g_Conf->EmuOptions.DEV9.HddIdFile = hddIdPath;
 				}
@@ -491,7 +503,67 @@ namespace usb_python2
 #endif
 	}
 
-	static void p2io_cmd_handler(USBDevice* dev, USBPacket* p, std::vector<uint8_t> &data)
+	static void gn845pwbb_do_w(UsbPython2State* s, int offset, int data)
+	{
+		s->f.stageState[offset].DO = !data;
+	}
+
+	static void gn845pwbb_clk_w(UsbPython2State* s, int offset, int data)
+	{
+		// Based on implementation from MAME's ksys573.cpp
+		int clk = !data;
+		if (clk != s->f.stageState[offset].clk)
+		{
+			s->f.stageState[offset].clk = clk;
+
+			if (clk)
+			{
+				s->f.stageState[offset].shift = (s->f.stageState[offset].shift >> 1) | (s->f.stageState[offset].DO << 12);
+
+				switch (s->f.stageState[offset].state)
+				{
+					case GN845PWBB_STAGE_IDLE:
+						if (s->f.stageState[offset].shift == 0xc90)
+						{
+							s->f.stageState[offset].state = GN845PWBB_STAGE_INIT;
+							s->f.stageState[offset].bit = 0;
+							s->f.stageMask[offset] = 0xf9;
+						}
+						break;
+
+					case GN845PWBB_STAGE_INIT:
+						s->f.stageState[offset].bit++;
+						if (s->f.stageState[offset].bit < 22)
+						{
+							s->f.stageMask[offset] = ~0x12;
+
+							if (s->f.stageState[offset].bit - 1 < 2)
+								s->f.stageMask[offset] |= 0x10;
+
+							s->f.stageMask[offset] |= 1 << (s->f.stageState[offset].bit & 1);
+						}
+						else
+						{
+							s->f.stageState[offset].bit = 0;
+							s->f.stageState[offset].state = GN845PWBB_STAGE_INIT_DONE;
+							s->f.stageMask[offset] = 0xff;
+						}
+						break;
+				}
+			}
+		}
+
+		if (s->f.stageState[offset].state != GN845PWBB_STAGE_INIT_DONE) {
+			s->f.jammaIoStatus = s->f.jammaIoStatus & 0xff0000ff;
+			s->f.jammaIoStatus |= s->f.stageMask[0] << 8;
+			s->f.jammaIoStatus |= s->f.stageMask[1] << 16;
+		}
+
+		// printf("stage: %dp data clk=%d state=%d d0=%d shift=%08x bit=%d stage_mask=%02x %02x\n", offset + 1, clk,
+		// 	s->f.stageState[offset].state, s->f.stageState[offset].DO, s->f.stageState[offset].shift, s->f.stageState[offset].bit, s->f.stageMask[0], s->f.stageMask[1]);
+	}
+
+	static void p2io_cmd_handler(USBDevice* dev, USBPacket* p, std::vector<uint8_t>& data)
 	{
 		auto s = reinterpret_cast<UsbPython2State*>(dev);
 
@@ -588,8 +660,10 @@ namespace usb_python2
 
 				const uint8_t resp[] = {
 					0, // If this is non-zero then the following 4 bytes are not processed
-					uint8_t((s->f.coinsInserted[0] >> 8)), uint8_t(s->f.coinsInserted[0]),
-					uint8_t((s->f.coinsInserted[1] >> 8)), uint8_t(s->f.coinsInserted[1]),
+					uint8_t((s->f.coinsInserted[0] >> 8)),
+					uint8_t(s->f.coinsInserted[0]),
+					uint8_t((s->f.coinsInserted[1] >> 8)),
+					uint8_t(s->f.coinsInserted[1]),
 				};
 				data.insert(data.end(), std::begin(resp), std::end(resp));
 			}
@@ -620,86 +694,92 @@ namespace usb_python2
 
 			else if (header->cmd == P2IO_CMD_LAMP_OUT && s->buf[4] == 0xff)
 			{
-				//Python2Con.WriteLn("p2io: P2IO_CMD_LAMP_OUT_ALL %08x", *(int*)&s->buf[5]);
+				Python2Con.WriteLn("p2io: P2IO_CMD_LAMP_OUT_ALL %08x", *(int*)&s->buf[5]);
 
-				#ifdef INCLUDE_MINIMAID
+#ifdef INCLUDE_MINIMAID
 				if (s->isMinimaidConnected)
 				{
 
 					mm_setDDRAllOn();
 					mm_sendDDRMiniMaidUpdate();
 				}
-				#endif
+#endif
 
-				#ifdef INCLUDE_BTOOLS
+#ifdef INCLUDE_BTOOLS
 				if (s->isUsingBtoolLights)
 				{
 					//this is just the cabinet lights,
 					m_ddr_io_set_lights_p3io(UINT_MAX);
 				}
-				#endif // INCLUDE_BTOOLS
+#endif // INCLUDE_BTOOLS
 
 
 				data.push_back(0);
 			}
 			else if (header->cmd == P2IO_CMD_LAMP_OUT)
 			{
-				if (s->f.gameType == GAMETYPE_DANCE864 && s->f.footPanelIoCheckHack >= 0)
+				// printf("LAMP_OUT: %02x %02x [%d %d] [%d %d] %08x %d\n", s->buf[4], s->buf[5], s->buf[5] & 8, s->buf[5] & 4, s->buf[5] & 2, s->buf[5] & 1, s->f.jammaIoStatus, s->f.gameType == GAMETYPE_DANCE864);
+
+				if (s->f.gameType == GAMETYPE_DANCE864 && s->buf[4] == 1)
 				{
-					// Seems to have something to do with lights???
-					s->f.footPanelIoCheckHack++;
+					gn845pwbb_do_w(s, 0, !!!(s->buf[5] & 1));
+					gn845pwbb_clk_w(s, 0, !!(s->buf[5] & 2));
+
+					gn845pwbb_do_w(s, 1, !!!(s->buf[5] & 4));
+					gn845pwbb_clk_w(s, 1, !!(s->buf[5] & 8));
 				}
-
-				// DDR
-				// 73 is 0111 0011 // p1 halogen up
-				// b3 is 1011 0011 // p1 halogen down
-				// d3 is 1101 0011 // p2 halogen up
-				// e3 is 1110 0011 // p2 halogen down
-				// f1 is 1111 0001 // p1
-				// f2 is 1111 0010 // p2
-				// f3 is 1111 0011 // p1 + p2
-				// 53 is 0101 0011 // p1 halogen up + p2 halogen up
-				// b0 is 1011 0000 // p1 halogen down + p1 + p2 start
-				// f0 is 1111 0000 // p1 + p2 seen from p2io. Mask ???
-				// f3 is 1111 0011 // dunno what this is. Maybe bass lights???
-				// 03 is 0000 0011 // halogen lights seen from P2io. Mask???
-				// 00 is 0000 0000 // all lights
-				//            XX   // don't care
-
-				#if defined(INCLUDE_MINIMAID) || defined(INCLUDE_BTOOLS)
-
-				auto curLightCabinet = 0;
-
-				if (s->isMinimaidConnected)
+				else if (s->f.gameType == GAMETYPE_DDR)
 				{
-					curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_UPPER_LEFT, (((s->buf[5] & 0xf3) | 0x73) == 0x73) ? 1 : 0);
-					curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_LOWER_LEFT, (((s->buf[5] & 0xf3) | 0xb3) == 0xb3) ? 1 : 0);
-					curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_UPPER_RIGHT, (((s->buf[5] & 0xf3) | 0xd3) == 0xd3) ? 1 : 0);
-					curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_LOWER_RIGHT, (((s->buf[5] & 0xf3) | 0xe3) == 0xe3) ? 1 : 0);
-					curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_PLAYER1_PANEL, (((s->buf[5] & 0xf3) | 0xf2) == 0xf2) ? 1 : 0);
-					curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_PLAYER2_PANEL, (((s->buf[5] & 0xf3) | 0xf1) == 0xf1) ? 1 : 0);
+					// 73 is 0111 0011 // p1 halogen up
+					// b3 is 1011 0011 // p1 halogen down
+					// d3 is 1101 0011 // p2 halogen up
+					// e3 is 1110 0011 // p2 halogen down
+					// f1 is 1111 0001 // p1
+					// f2 is 1111 0010 // p2
+					// f3 is 1111 0011 // p1 + p2
+					// 53 is 0101 0011 // p1 halogen up + p2 halogen up
+					// b0 is 1011 0000 // p1 halogen down + p1 + p2 start
+					// f0 is 1111 0000 // p1 + p2 seen from p2io. Mask ???
+					// f3 is 1111 0011 // dunno what this is. Maybe bass lights???
+					// 03 is 0000 0011 // halogen lights seen from P2io. Mask???
+					// 00 is 0000 0000 // all lights
+					//            XX   // don't care
 
-					// LAMP_OUT also gets spammed so only send updates when something changes
-					if (curLightCabinet != s->f.oldLightCabinet)
-						mm_sendDDRMiniMaidUpdate();
+#if defined(INCLUDE_MINIMAID) || defined(INCLUDE_BTOOLS)
+
+					auto curLightCabinet = 0;
+
+					if (s->isMinimaidConnected)
+					{
+						curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_UPPER_LEFT, (((s->buf[5] & 0xf3) | 0x73) == 0x73) ? 1 : 0);
+						curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_LOWER_LEFT, (((s->buf[5] & 0xf3) | 0xb3) == 0xb3) ? 1 : 0);
+						curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_UPPER_RIGHT, (((s->buf[5] & 0xf3) | 0xd3) == 0xd3) ? 1 : 0);
+						curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_LOWER_RIGHT, (((s->buf[5] & 0xf3) | 0xe3) == 0xe3) ? 1 : 0);
+						curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_PLAYER1_PANEL, (((s->buf[5] & 0xf3) | 0xf2) == 0xf2) ? 1 : 0);
+						curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_PLAYER2_PANEL, (((s->buf[5] & 0xf3) | 0xf1) == 0xf1) ? 1 : 0);
+
+						// LAMP_OUT also gets spammed so only send updates when something changes
+						if (curLightCabinet != s->f.oldLightCabinet)
+							mm_sendDDRMiniMaidUpdate();
+					}
+
+					if (s->isUsingBtoolLights)
+					{
+						//TODO: Set the player button lights using hdxs
+						curLightCabinet |= (((s->buf[5] & 0xf3) | 0x73) == 0x73) ? 1 << LIGHT_P1_UPPER_LAMP : 0;
+						curLightCabinet |= (((s->buf[5] & 0xf3) | 0xb3) == 0xb3) ? 1 << LIGHT_P1_LOWER_LAMP : 0;
+						curLightCabinet |= (((s->buf[5] & 0xf3) | 0xd3) == 0xd3) ? 1 << LIGHT_P2_UPPER_LAMP : 0;
+						curLightCabinet |= (((s->buf[5] & 0xf3) | 0xe3) == 0xe3) ? 1 << LIGHT_P2_LOWER_LAMP : 0;
+						curLightCabinet |= (((s->buf[5] & 0xf3) | 0xf2) == 0xf2) ? 1 << LIGHT_P1_MENU : 0;
+						curLightCabinet |= (((s->buf[5] & 0xf3) | 0xf1) == 0xf1) ? 1 << LIGHT_P2_MENU : 0;
+
+						if (curLightCabinet != s->f.oldLightCabinet)
+							m_ddr_io_set_lights_p3io(curLightCabinet);
+					}
+
+					s->f.oldLightCabinet = curLightCabinet;
+#endif
 				}
-
-				if (s->isUsingBtoolLights)
-				{
-					//TODO: Set the player button lights using hdxs
-					curLightCabinet |= (((s->buf[5] & 0xf3) | 0x73) == 0x73) ? 1 << LIGHT_P1_UPPER_LAMP : 0;
-					curLightCabinet |= (((s->buf[5] & 0xf3) | 0xb3) == 0xb3) ? 1 << LIGHT_P1_LOWER_LAMP : 0;
-					curLightCabinet |= (((s->buf[5] & 0xf3) | 0xd3) == 0xd3) ? 1 << LIGHT_P2_UPPER_LAMP : 0;
-					curLightCabinet |= (((s->buf[5] & 0xf3) | 0xe3) == 0xe3) ? 1 << LIGHT_P2_LOWER_LAMP : 0;
-					curLightCabinet |= (((s->buf[5] & 0xf3) | 0xf2) == 0xf2) ? 1 << LIGHT_P1_MENU : 0;
-					curLightCabinet |= (((s->buf[5] & 0xf3) | 0xf1) == 0xf1) ? 1 << LIGHT_P2_MENU : 0;
-
-					if (curLightCabinet != s->f.oldLightCabinet)
-						m_ddr_io_set_lights_p3io(curLightCabinet);
-				}
-
-				s->f.oldLightCabinet = curLightCabinet;
-				#endif
 
 				data.push_back(0);
 			}
@@ -770,14 +850,14 @@ namespace usb_python2
 				const auto port = s->buf[4];
 				const auto packetLen = s->buf[5];
 
-				#ifdef PCSX2_DEVBUILD
+#ifdef PCSX2_DEVBUILD
 				Python2Con.WriteLn("p2io: P2IO_CMD_SCI_WRITE: ");
 				for (size_t i = 0; i < s->buf.size(); i++)
 				{
 					printf("%02x ", s->buf[i]);
 				}
 				printf("\n");
-				#endif
+#endif
 
 				const auto device = s->devices[port].get();
 				if (device != nullptr)
@@ -811,14 +891,14 @@ namespace usb_python2
 
 			else
 			{
-				#ifdef PCSX2_DEVBUILD
+#ifdef PCSX2_DEVBUILD
 				printf("usb_python2_handle_data %02x\n", s->buf.size());
 				for (size_t i = 0; i < s->buf.size(); i++)
 				{
 					printf("%02x ", s->buf[i]);
 				}
 				printf("\n");
-				#endif
+#endif
 			}
 
 			data.insert(data.begin(), data.size());
@@ -1035,12 +1115,15 @@ namespace usb_python2
 							CheckKeyState("Dance864P2Left", P2IO_JAMMA_DANCE864_P2_LEFT);
 							CheckKeyState("Dance864P2Right", P2IO_JAMMA_DANCE864_P2_RIGHT);
 
-							if (s->f.footPanelIoCheckHack < 0)
+							if (s->f.stageState[0].state == GN845PWBB_STAGE_INIT_DONE)
 							{
 								CheckKeyState("Dance864P1PadLeft", P2IO_JAMMA_DANCE864_P1_PAD_LEFT);
 								CheckKeyState("Dance864P1PadCenter", P2IO_JAMMA_DANCE864_P1_PAD_CENTER);
 								CheckKeyState("Dance864P1PadRight", P2IO_JAMMA_DANCE864_P1_PAD_RIGHT);
+							}
 
+							if (s->f.stageState[1].state == GN845PWBB_STAGE_INIT_DONE)
+							{
 								CheckKeyState("Dance864P2PadLeft", P2IO_JAMMA_DANCE864_P2_PAD_LEFT);
 								CheckKeyState("Dance864P2PadCenter", P2IO_JAMMA_DANCE864_P2_PAD_CENTER);
 								CheckKeyState("Dance864P2PadRight", P2IO_JAMMA_DANCE864_P2_PAD_RIGHT);
@@ -1090,27 +1173,6 @@ namespace usb_python2
 									s->f.jammaIoStatus &= ~P2IO_JAMMA_GF_P2_EFFECT2;
 								else if (s->f.knobs[1] == 3)
 									s->f.jammaIoStatus &= ~P2IO_JAMMA_GF_P2_EFFECT3;
-							}
-						}
-
-						if (s->f.gameType == GAMETYPE_DANCE864 && s->f.footPanelIoCheckHack >= 0)
-						{
-							// NOTE: This is actually GN845-PWB(B) x2
-							// This shouldn't really work and shouldn't be necessary.
-							// I have no idea what the real input device is like or how it hooks up, but the game checks for a specific
-							// pattern on start up to verify that the foot panels are working.
-							if (s->f.footPanelIoCheckHack >= 400)
-							{
-								s->f.footPanelIoCheckHack = -1;
-							}
-							else
-							{
-								s->f.jammaIoStatus ^= 0x00020200;
-
-								if (s->f.footPanelIoCheckHack == 82)
-								{
-									s->f.jammaIoStatus &= ~0x00101000;
-								}
 							}
 						}
 
@@ -1235,7 +1297,15 @@ namespace usb_python2
 			s->f.brake = s->f.accel = 0;
 			s->f.knobs[0] = s->f.knobs[1] = 0;
 			s->f.oldLightCabinet = 0;
-			s->f.footPanelIoCheckHack = 0;
+
+			for (int i = 0; i < 2; i++) {
+				s->f.stageMask[i] = 0xff;
+				s->f.stageState[i].DO = 0;
+				s->f.stageState[i].clk = 0;
+				s->f.stageState[i].shift = 0;
+				s->f.stageState[i].state = GN845PWBB_STAGE_IDLE;
+				s->f.stageState[i].bit = 0;
+			}
 
 			// Load the configuration and start SPDIF patcher thread every time a game is started
 			load_configuration(dev);

@@ -63,6 +63,13 @@ namespace usb_python2
 		GAMETYPE_DANCE864
 	};
 
+	enum
+	{
+		GN845PWBB_STAGE_IDLE = 0,
+		GN845PWBB_STAGE_INIT,
+		GN845PWBB_STAGE_INIT_DONE,
+	};
+
 	constexpr uint8_t P2IO_HEADER_MAGIC = 0xaa;
 
 	constexpr uint8_t P2IO_STATUS_OK = 0;
