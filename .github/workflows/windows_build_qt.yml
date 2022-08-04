@@ -29,6 +29,10 @@ on:
         required: false
         type: string
         default: https://github.com/PCSX2/pcsx2-windows-dependencies/releases/download/2022-07-24/qt-6.3.1-x64.7z
+      cheats_url:
+        required: false
+        type: string
+        default: https://github.com/PCSX2/pcsx2_patches/releases/latest/download
 
 jobs:
   build_windows_qt:
@@ -76,6 +80,12 @@ jobs:
           aria2c ${{ inputs.qt_binary_url }}
           7z x qt-*-x64.7z
           del qt-*-x64.7z
+
+      - name: Download cheats
+        shell: cmd
+        run: |
+          cd bin/resources
+          aria2c -Z "${{ inputs.cheats_url }}/cheats_ni.zip" "${{ inputs.cheats_url }}/cheats_ws.zip"
 
       - name: Build PCSX2
         shell: cmd
