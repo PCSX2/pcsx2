@@ -312,7 +312,7 @@ namespace usb_python2
 		auto s = reinterpret_cast<UsbPython2State*>(dev);
 
 #ifdef PCSX2_CORE
-		SettingsInterface* si = Host::GetSettingsInterface(); // TODO: Fix this to load the appropriate config file
+		SettingsInterface* si = Host::GetSettingsInterface();
 
 		s->f.dipSwitch[0] = si->GetBoolValue("Python2/Game", "DIPSW1", false) ? '1' : '0';
 		s->f.dipSwitch[1] = si->GetBoolValue("Python2/Game", "DIPSW2", false) ? '1' : '0';
@@ -1334,7 +1334,9 @@ namespace usb_python2
 		std::string varApi;
 
 #ifdef PCSX2_CORE
-		varApi = "native";
+		SettingsInterface* si = Host::GetSettingsInterface();
+		varApi = si->GetStringValue("Python2/Game", "DeviceApi", "native");
+		printf("varApi: %s\n", varApi.c_str());
 #else
 #ifdef _WIN32
 		std::wstring tmp;

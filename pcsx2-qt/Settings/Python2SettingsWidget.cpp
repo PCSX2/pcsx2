@@ -84,11 +84,39 @@ Python2SettingsWidget::Python2SettingsWidget(const GameList::Entry* entry, Setti
 	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.patchFilePath, "Python2/Game", "PatchFile", "patches.pnach");
 	m_ui.patchFilePath->setEnabled(true);
 	connect(m_ui.patchFileBrowse, &QPushButton::clicked, this, &Python2SettingsWidget::onPatchFileBrowseClicked);
+
+	// I don't think there's not a very good way to get this directly from the PCSX2 backend
+	const std::string deviceApi = m_dialog->getStringValue("Python2/Game", "DeviceApi", "native").value();
+	std::vector<std::pair<std::string, std::string>> deviceApiList = {
+		std::pair("native", "Native"),
+		std::pair("passthrough", "Passthrough"),
+#if defined(INCLUDE_BTOOLS)
+		std::pair("btools", "BTools"),
+#endif
+		std::pair("noop", "NOOP"),
+	};
+
+	for (auto const& x : deviceApiList) {
+		int curIndex = m_ui.deviceApi->count();
+		m_ui.deviceApi->addItem(QString(x.second.c_str()), x.first.c_str());
+
+		if (x.first == deviceApi) {
+			m_ui.deviceApi->setCurrentIndex(curIndex);
+		}
+	}
+
+	connect(m_ui.deviceApi, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &Python2SettingsWidget::onDeviceApiChange);
 }
 
 void Python2SettingsWidget::onGameTypeChanged(int index)
 {
 	m_dialog->setIntSettingValue("Python2/Game", "GameType", index);
+}
+
+void Python2SettingsWidget::onDeviceApiChange(int index)
+{
+	auto deviceApi = m_ui.deviceApi->currentData().toString().toStdString();
+	m_dialog->setStringSettingValue("Python2/Game", "DeviceApi", deviceApi.c_str());
 }
 
 void Python2SettingsWidget::onHddIdBrowseClicked()

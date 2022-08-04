@@ -32,6 +32,7 @@ class Python2SettingsWidget : public QWidget
 
 private Q_SLOTS:
 	void onGameTypeChanged(int index);
+	void onDeviceApiChange(int index);
 	void onHddIdBrowseClicked();
 	void onIlinkIdBrowseClicked();
 	void onDongleBlackBrowseClicked();
