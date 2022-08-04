@@ -327,36 +327,32 @@ bool GameList::GetPython2ListEntry(const std::string& path, GameList::Entry* ent
 		return false;
 	}
 
-	std::string game_title;
-	new_interface->GetStringValue("Game", "Name", &game_title);
-
 	std::string hdd_id_path;
 	new_interface->GetStringValue("Game", "HddIdPath", &hdd_id_path);
-
 	if (!hdd_id_path.empty() && !Path::IsAbsolute(hdd_id_path)) {
 		hdd_id_path = std::string(Path::Combine(Path::GetDirectory(path), hdd_id_path));
 	}
 
 	std::string ilink_id_path;
 	new_interface->GetStringValue("Game", "IlinkIdPath", &ilink_id_path);
-
 	if (!ilink_id_path.empty() && !Path::IsAbsolute(ilink_id_path)) {
 		ilink_id_path = std::string(Path::Combine(Path::GetDirectory(path), ilink_id_path));
 	}
 
 	std::string hdd_image_path;
 	new_interface->GetStringValue("Game", "HddImagePath", &hdd_image_path);
-
 	if (!hdd_image_path.empty() && !Path::IsAbsolute(hdd_image_path)) {
 		hdd_image_path = std::string(Path::Combine(Path::GetDirectory(path), hdd_image_path));
 	}
 
-	std::string region;
-	new_interface->GetStringValue("Game", "Region", &region);
+	std::string game_title = new_interface->GetStringValue("Game", "Name", path);
+	uint32_t forced_crc = new_interface->GetUIntValue("Game", "UniqueId", rand());
+	std::string forced_serial = new_interface->GetStringValue("Game", "GameSerial", "KNAC00001");
+	std::string region = new_interface->GetStringValue("Game", "Region", "NTSC-J");
 
 	entry->path = path;
-	entry->serial = "KNAC00001";
-	entry->crc = rand(); // There should be a better way to determine this but there's no reliable way without parsing the files on the HDD directly
+	entry->serial = forced_serial;
+	entry->crc = forced_crc;
 	entry->title = game_title;
 	entry->type = EntryType::Python2;
 	entry->compatibility_rating = CompatibilityRating::Unknown;
@@ -496,17 +492,29 @@ bool GameList::GetPython2ListEntry(const std::string& path, GameList::Entry* ent
 			sif->SetStringValue("Python2/Game", "PatchFile", patchFile.c_str());
 	}
 
+	bool dipsw_values[4] = {false, false, false, false};
+
+	std::string dipsw = new_interface->GetStringValue("Python2/Game", "DipSwitch", "0000");
+	for (int i = 0; i < dipsw.size(); i++) {
+		dipsw_values[i] = dipsw[i] != '0';
+	}
+
+	dipsw_values[0] = new_interface->GetBoolValue("Game", "DIPSW1", dipsw_values[0]);
+	dipsw_values[1] = new_interface->GetBoolValue("Game", "DIPSW2", dipsw_values[1]);
+	dipsw_values[2] = new_interface->GetBoolValue("Game", "DIPSW3", dipsw_values[2]);
+	dipsw_values[3] = new_interface->GetBoolValue("Game", "DIPSW4", dipsw_values[3]);
+
 	if (!sif->ContainsValue("Python2/Game", "DIPSW1"))
-		sif->SetBoolValue("Python2/Game", "DIPSW1", new_interface->GetBoolValue("Game", "DIPSW1", false));
+		sif->SetBoolValue("Python2/Game", "DIPSW1", dipsw_values[0]);
 
 	if (!sif->ContainsValue("Python2/Game", "DIPSW2"))
-		sif->SetBoolValue("Python2/Game", "DIPSW2", new_interface->GetBoolValue("Game", "DIPSW2", false));
+		sif->SetBoolValue("Python2/Game", "DIPSW2", dipsw_values[1]);
 
 	if (!sif->ContainsValue("Python2/Game", "DIPSW3"))
-		sif->SetBoolValue("Python2/Game", "DIPSW3", new_interface->GetBoolValue("Game", "DIPSW3", false));
+		sif->SetBoolValue("Python2/Game", "DIPSW3", dipsw_values[2]);
 
 	if (!sif->ContainsValue("Python2/Game", "DIPSW4"))
-		sif->SetBoolValue("Python2/Game", "DIPSW4", new_interface->GetBoolValue("Game", "DIPSW4", false));
+		sif->SetBoolValue("Python2/Game", "DIPSW4", dipsw_values[3]);
 
 	if (!sif->ContainsValue("Python2/Game", "Force31kHz"))
 		sif->SetBoolValue("Python2/Game", "Force31kHz", new_interface->GetBoolValue("Game", "Force31kHz", false));
