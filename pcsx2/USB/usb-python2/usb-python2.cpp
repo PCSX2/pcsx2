@@ -305,11 +305,6 @@ namespace usb_python2
 			if (s->devices[0] == nullptr)
 				s->devices[0] = std::make_unique<toysmarch_drumpad_device>(s->p2dev);
 		}
-		else if (s->f.gameType == GAMETYPE_DANCE864)
-		{
-			if (s->devices[1] == nullptr)
-				s->devices[1] = std::make_unique<extio_device>();
-		}
 	}
 
 	void load_configuration(USBDevice* dev)
@@ -1235,25 +1230,8 @@ namespace usb_python2
 		}
 	}
 
-	static void usb_python2_handle_control(USBDevice* dev, USBPacket* p,
-		int request, int value, int index, int length, uint8_t* data)
-	{
-		const int ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
-		if (ret >= 0)
-			return;
 
-		DevCon.WriteLn("usb-python2: Unimplemented handle control request! %04x\n", request);
-		p->status = USB_RET_STALL;
-	}
-
-	static void usb_python2_unrealize(USBDevice* dev)
-	{
-		auto s = reinterpret_cast<UsbPython2State*>(dev);
-		if (s)
-			delete s;
-	}
-
-	int usb_python2_open(USBDevice* dev)
+	static void usb_python2_handle_reset(USBDevice* dev)
 	{
 		auto s = reinterpret_cast<UsbPython2State*>(dev);
 
@@ -1266,8 +1244,7 @@ namespace usb_python2
 #endif
 		EmuConfig.Gamefixes.Set(Fix_OPHFlag, true);
 
-		if (s)
-		{
+		if (s) {
 			// Initialize all variables to try and keep a consistent state
 			if (s->devices[0] != nullptr)
 				s->devices[0].reset();
@@ -1317,9 +1294,32 @@ namespace usb_python2
 					mPatchSpdifAudioThread.join();
 				mPatchSpdifAudioThread = std::thread(Python2Patch::PatchSpdifAudioThread, s->p2dev);
 			}
-
-			return s->p2dev->Open();
 		}
+	}
+
+	static void usb_python2_handle_control(USBDevice* dev, USBPacket* p,
+		int request, int value, int index, int length, uint8_t* data)
+	{
+		const int ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
+		if (ret >= 0)
+			return;
+
+		DevCon.WriteLn("usb-python2: Unimplemented handle control request! %04x\n", request);
+		p->status = USB_RET_STALL;
+	}
+
+	static void usb_python2_unrealize(USBDevice* dev)
+	{
+		auto s = reinterpret_cast<UsbPython2State*>(dev);
+		if (s)
+			delete s;
+	}
+
+	int usb_python2_open(USBDevice* dev)
+	{
+		auto s = reinterpret_cast<UsbPython2State*>(dev);
+		if (s)
+			return s->p2dev->Open();
 
 		return 0;
 	}
@@ -1377,6 +1377,7 @@ namespace usb_python2
 
 		s->dev.speed = USB_SPEED_FULL;
 		s->dev.klass.handle_attach = usb_desc_attach;
+		s->dev.klass.handle_reset = usb_python2_handle_reset;
 		s->dev.klass.handle_control = usb_python2_handle_control;
 		s->dev.klass.handle_data = usb_python2_handle_data;
 		s->dev.klass.unrealize = usb_python2_unrealize;
@@ -1390,6 +1391,7 @@ namespace usb_python2
 
 		usb_desc_init(&s->dev);
 		usb_ep_init(&s->dev);
+		usb_python2_handle_reset((USBDevice*)s);
 
 		return (USBDevice*)s;
 	}
