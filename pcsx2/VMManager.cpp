@@ -140,6 +140,7 @@ static std::optional<LimiterModeType> s_limiter_mode_prior_to_hold_interaction;
 static bool s_is_python2 = false;
 static u32 s_python2_crc = 0;
 static std::string s_python2_serial;
+static std::string s_python2_patch_file;
 
 bool VMManager::PerformEarlyHardwareChecks(const char** error)
 {
@@ -513,6 +514,15 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 			PatchesCon->WriteLn(Color_Green, "Cheats Loaded: %d", cheat_count);
 			fmt::format_to(std::back_inserter(message), "{}{} cheat patches", (patch_count > 0) ? " and " : "", cheat_count);
 		}
+
+		if (s_python2_patch_file.size() > 0) {
+			cheat_count += LoadPatchesFromFile(s_python2_patch_file);
+			if (cheat_count > 0)
+			{
+				PatchesCon->WriteLn(Color_Green, "Cheats Loaded: %d", cheat_count);
+				fmt::format_to(std::back_inserter(message), "{}{} cheat patches", (patch_count > 0) ? " and " : "", cheat_count);
+			}
+		}
 	}
 
 	// wide screen patches
@@ -805,9 +815,11 @@ bool VMManager::ApplyBootParameters(const VMBootParameters& params, std::string*
 		// Set parameters for Python 2
 		s_python2_crc = params.python2_crc.has_value() ? params.python2_crc.value() : 0;
 		s_python2_serial = params.python2_serial.has_value() ? params.python2_serial.value() : "";
+		s_python2_patch_file = params.python2_patch_file.has_value() ? params.python2_patch_file.value() : "";
 	} else {
 		s_python2_crc = 0;
 		s_python2_serial = "";
+		s_python2_patch_file = "";
 	}
 
 	return true;

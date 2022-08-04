@@ -135,6 +135,11 @@ bool GameList::IsScannableFilename(const std::string_view& path)
 
 void GameList::FillBootParametersForEntry(VMBootParameters* params, const Entry* entry)
 {
+	params->is_python2 = false;
+	params->python2_crc = 0;
+	params->python2_serial = "";
+	params->python2_patch_file = "";
+
 	if (entry->type == GameList::EntryType::PS1Disc || entry->type == GameList::EntryType::PS2Disc)
 	{
 		params->filename = entry->path;
@@ -156,6 +161,20 @@ void GameList::FillBootParametersForEntry(VMBootParameters* params, const Entry*
 		params->is_python2 = true;
 		params->python2_crc = entry->crc;
 		params->python2_serial = entry->serial;
+
+		std::string filename(VMManager::GetGameSettingsPath(entry->serial, entry->crc));
+		std::unique_ptr<INISettingsInterface> sif = std::make_unique<INISettingsInterface>(std::move(filename));
+
+		if (FileSystem::FileExists(sif->GetFileName().c_str())) {
+			sif->Load();
+
+			if (sif->ContainsValue("Python2/Game", "PatchFile")) {
+				params->python2_patch_file = sif->GetStringValue("Python2/Game", "PatchFile", "");
+				printf("Loading patch file! %s\n", params->python2_patch_file.value().c_str());
+			} else {
+				params->python2_patch_file = "";
+			}
+		}
 	}
 	else
 	{
@@ -345,7 +364,7 @@ bool GameList::GetPython2ListEntry(const std::string& path, GameList::Entry* ent
 		hdd_image_path = std::string(Path::Combine(Path::GetDirectory(path), hdd_image_path));
 	}
 
-	std::string game_title = new_interface->GetStringValue("Game", "Name", path);
+	std::string game_title = new_interface->GetStringValue("Game", "Name", path.c_str());
 	uint32_t forced_crc = new_interface->GetUIntValue("Game", "UniqueId", rand());
 	std::string forced_serial = new_interface->GetStringValue("Game", "GameSerial", "KNAC00001");
 	std::string region = new_interface->GetStringValue("Game", "Region", "NTSC-J");
@@ -495,7 +514,7 @@ bool GameList::GetPython2ListEntry(const std::string& path, GameList::Entry* ent
 	bool dipsw_values[4] = {false, false, false, false};
 
 	std::string dipsw = new_interface->GetStringValue("Python2/Game", "DipSwitch", "0000");
-	for (int i = 0; i < dipsw.size(); i++) {
+	for (size_t i = 0; i < dipsw.size(); i++) {
 		dipsw_values[i] = dipsw[i] != '0';
 	}
 

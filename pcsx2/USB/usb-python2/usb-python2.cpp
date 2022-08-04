@@ -326,15 +326,11 @@ namespace usb_python2
 		IlinkIdPath = si->GetStringValue("Python2/System", "IlinkIdFile", "");
 		Console.WriteLn("IlinkIdPath: %s", IlinkIdPath.c_str());
 
-		// PatchFileOverridePath = si->GetStringValue("Python2/Game", "PatchFile", "");
-		// Console.WriteLn("PatchFileOverridePath: %s", PatchFileOverridePath.c_str());
-
 		s->f.cardFilenames[0] = si->GetStringValue("Python2/Game", "Player1CardFile", "card1.txt");
 		Console.WriteLn("Player 1 card filename: %s", s->f.cardFilenames[0].c_str());
 
 		s->f.cardFilenames[1] = si->GetStringValue("Python2/Game", "Player2CardFile", "card2.txt");
 		Console.WriteLn("Player 2 card filename: %s", s->f.cardFilenames[0].c_str());
-
 
 		s->f.gameType = si->GetIntValue("Python2/Game", "GameType", 0);
 		Console.WriteLn("GameType: %d", s->f.gameType);

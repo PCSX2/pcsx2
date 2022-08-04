@@ -53,6 +53,7 @@ struct VMBootParameters
 	std::optional<bool> is_python2;
 	std::optional<u32> python2_crc;
 	std::optional<std::string> python2_serial;
+	std::optional<std::string> python2_patch_file;
 };
 
 namespace VMManager
