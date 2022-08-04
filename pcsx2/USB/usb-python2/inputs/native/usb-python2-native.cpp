@@ -26,7 +26,7 @@ namespace usb_python2
 
 			for (auto mappedKey : Python2QtInputManager::GetMappingsByInputKey(keyBindStr))
 			{
-				printf("\t%s %d\n", mappedKey.keybind.c_str(), mappedKey.isOneshot);
+				printf("\t%08x %s %d\n", mappedKey.uniqueId, mappedKey.keybind.c_str(), mappedKey.isOneshot);
 
 				if (key.source_type == InputSourceType::Keyboard)
 				{

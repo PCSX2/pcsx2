@@ -26,10 +26,20 @@ std::vector<Python2KeyMapping> Python2QtInputManager::GetMappingsByInputKey(std:
 bool Python2QtInputManager::AddNewBinding(std::string full_key, std::string new_binding, double analogDeadzone, double analogSensitivity, double motorScale)
 {
 	uint32_t nextUniqueId = 0;
-	for (auto mapping : s_python2_current_mappings)
-	{
-		if (mapping.uniqueId + 1 > nextUniqueId)
-			nextUniqueId = mapping.uniqueId + 1;
+	for (;;) {
+		bool updated = false;
+
+		for (auto mapping : s_python2_current_mappings)
+		{
+			if (nextUniqueId == mapping.uniqueId) {
+				nextUniqueId = nextUniqueId + 1;
+				updated = true;
+				break;
+			}
+		}
+
+		if (!updated)
+			break;
 	}
 
 	for (auto system_entry : s_python2_system_info)
@@ -68,6 +78,8 @@ bool Python2QtInputManager::AddNewBinding(std::string full_key, std::string new_
 
 void Python2QtInputManager::RemoveMappingByUniqueId(uint32_t uniqueId)
 {
+	printf("Remove unique ID: %08x\n", uniqueId);
+
 	s_python2_current_mappings.erase(
 		std::remove_if(
 			s_python2_current_mappings.begin(),
@@ -76,12 +88,12 @@ void Python2QtInputManager::RemoveMappingByUniqueId(uint32_t uniqueId)
 		s_python2_current_mappings.end());
 
 	for (auto x : mappingsByInputKey) {
-		x.second.erase(
+		mappingsByInputKey[x.first].erase(
 			std::remove_if(
-				x.second.begin(),
-				x.second.end(),
+				mappingsByInputKey[x.first].begin(),
+				mappingsByInputKey[x.first].end(),
 				[uniqueId](const Python2KeyMapping& x) { return x.uniqueId == uniqueId; }),
-			x.second.end());
+			mappingsByInputKey[x.first].end());
 	}
 }
 
@@ -92,6 +104,7 @@ void Python2QtInputManager::LoadMapping()
 	uint32_t uniqueKeybindIdx = 0;
 
 	s_python2_current_mappings.clear();
+	mappingsByInputKey.clear();
 
 	for (auto system_entry : s_python2_system_info)
 	{
