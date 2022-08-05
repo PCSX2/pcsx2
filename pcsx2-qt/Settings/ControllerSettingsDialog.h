@@ -64,8 +64,10 @@ public:
 
 	// Helper functions for updating setting values globally or in the profile.
 	bool getBoolValue(const char* section, const char* key, bool default_value) const;
+	s32 getIntValue(const char* section, const char* key, s32 default_value) const;
 	std::string getStringValue(const char* section, const char* key, const char* default_value) const;
 	void setBoolValue(const char* section, const char* key, bool value);
+	void setIntValue(const char* section, const char* key, s32 value);
 	void setStringValue(const char* section, const char* key, const char* value);
 	void clearSettingValue(const char* section, const char* key);
 
