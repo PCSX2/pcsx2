@@ -801,7 +801,6 @@ void Dialog::Update()
 		m_hacks_panel->m_is_native_res = !is_hw || !is_upscale;
 		m_hacks_panel->m_is_hardware = is_hw;
 		m_renderer_panel->m_is_hardware = is_hw;
-		m_renderer_panel->m_is_native_res = !is_hw || !is_upscale;
 		m_post_panel->m_is_vk_hw = renderer == GSRendererType::VK;
 		m_debug_panel->m_is_ogl_hw = renderer == GSRendererType::OGL;
 		m_debug_panel->m_is_vk_hw = renderer == GSRendererType::VK;
