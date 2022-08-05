@@ -10,10 +10,10 @@
     <height>562</height>
    </rect>
   </property>
-  <layout class="QFormLayout" name="formLayout">
-   <property name="fieldGrowthPolicy">
-    <enum>QFormLayout::ExpandingFieldsGrow</enum>
-   </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,1">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -26,276 +26,280 @@
    <property name="bottomMargin">
     <number>0</number>
    </property>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_1">
-     <property name="text">
-      <string>Game Type:</string>
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Game File Settings</string>
      </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QComboBox" name="gameType">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="editable">
-      <bool>true</bool>
-     </property>
-     <item>
-      <property name="text">
-       <string>Drummania</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Guitar Freaks</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Dance Dance Revolution</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Toy's March</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Thrill Drive 3</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Dance 86.4</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="1" column="0" colspan="3">
-    <layout class="QGridLayout" name="gridLayout_3_1">
+     <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
-        <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="label_1">
         <property name="text">
-          <string>HDD ID Path:</string>
+         <string>Game Type:</string>
         </property>
-        </widget>
-      </item>
-      <item row="0" column="1">
-        <widget class="QLineEdit" name="hddIdPath" />
-      </item>
-      <item row="0" column="2">
-        <widget class="QPushButton" name="hddIdBrowse">
-        <property name="text">
-          <string>Browse</string>
-        </property>
-        </widget>
-      </item>
-    </layout>
-   </item>
-   <item row="2" column="0" colspan="3">
-    <layout class="QGridLayout" name="gridLayout_3_2">
-      <item row="0" column="0">
-        <widget class="QLabel" name="label_3">
-        <property name="text">
-          <string>ILINK ID Path:</string>
-        </property>
-        </widget>
-      </item>
-      <item row="0" column="1">
-        <widget class="QLineEdit" name="ilinkIdPath" />
-      </item>
-      <item row="0" column="2">
-        <widget class="QPushButton" name="ilinkIdBrowse">
-        <property name="text">
-          <string>Browse</string>
-        </property>
-        </widget>
-      </item>
-    </layout>
-   </item>
-   <item row="3" column="0" colspan="3">
-    <layout class="QGridLayout" name="gridLayout_3_3">
-      <item row="0" column="0">
-        <widget class="QLabel" name="label_4">
-        <property name="text">
-          <string>Black Dongle Path:</string>
-        </property>
-        </widget>
-      </item>
-      <item row="0" column="1">
-        <widget class="QLineEdit" name="dongleBlackPath" />
-      </item>
-      <item row="0" column="2">
-        <widget class="QPushButton" name="dongleBlackBrowse">
-        <property name="text">
-          <string>Browse</string>
-        </property>
-        </widget>
-      </item>
-    </layout>
-   </item>
-   <item row="4" column="0" colspan="3">
-    <layout class="QGridLayout" name="gridLayout_3_4">
-      <item row="0" column="0">
-        <widget class="QLabel" name="label_5">
-        <property name="text">
-          <string>White Dongle Path:</string>
-        </property>
-        </widget>
-      </item>
-      <item row="0" column="1">
-        <widget class="QLineEdit" name="dongleWhitePath" />
-      </item>
-      <item row="0" column="2">
-        <widget class="QPushButton" name="dongleWhiteBrowse">
-        <property name="text">
-          <string>Browse</string>
-        </property>
-        </widget>
-      </item>
-    </layout>
-   </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="label_6">
-     <property name="text">
-      <string>Dipswitches:</string>
-     </property>
-    </widget>
-  </item>
-  <item row="5" column="1" colspan="4">
-    <layout class="QGridLayout" name="gridLayout_4">
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="dipsw1">
-         <property name="checked">
-          <bool>true</bool>
-         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QCheckBox" name="dipsw2">
-         <property name="checked">
-          <bool>true</bool>
+       <widget class="QComboBox" name="gameType">
+        <item>
+         <property name="text">
+          <string>Drummania</string>
          </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Guitar Freaks</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Dance Dance Revolution</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Toy's March</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Thrill Drive 3</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Dance 86.4</string>
+         </property>
+        </item>
        </widget>
       </item>
-      <item row="0" column="2">
-       <widget class="QCheckBox" name="dipsw3">
-         <property name="checked">
-          <bool>true</bool>
-         </property>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>Input method:</string>
+        </property>
        </widget>
       </item>
-      <item row="0" column="3">
-       <widget class="QCheckBox" name="dipsw4">
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-       </widget>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="deviceApi" />
       </item>
-    </layout>
-   </item>
-   <item row="6" column="0">
-     <widget class="QLabel" name="label_7">
-     <property name="text">
-       <string>Force 31kHz:</string>
-     </property>
-     </widget>
-   </item>
-   <item row="6" column="1">
-    <widget class="QCheckBox" name="force31khz" />
-   </item>
-   <item row="7" column="0" colspan="3">
-    <layout class="QGridLayout" name="gridLayout_3_5">
-      <item row="0" column="0">
-        <widget class="QLabel" name="label_8">
-        <property name="text">
-          <string>Patch File:</string>
-        </property>
-        </widget>
+      <item row="2" column="0" colspan="3">
+       <layout class="QGridLayout" name="gridLayout_3_1">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>HDD ID Path:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="hddIdPath" />
+        </item>
+        <item row="0" column="2">
+         <widget class="QPushButton" name="hddIdBrowse">
+          <property name="text">
+           <string>Browse</string>
+          </property>
+         </widget>
+        </item>
+
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>ILINK ID Path:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="ilinkIdPath" />
+        </item>
+        <item row="1" column="2">
+         <widget class="QPushButton" name="ilinkIdBrowse">
+          <property name="text">
+           <string>Browse</string>
+          </property>
+         </widget>
+        </item>
+
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Black Dongle Path:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLineEdit" name="dongleBlackPath" />
+        </item>
+        <item row="2" column="2">
+         <widget class="QPushButton" name="dongleBlackBrowse">
+          <property name="text">
+           <string>Browse</string>
+          </property>
+         </widget>
+        </item>
+
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>White Dongle Path:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLineEdit" name="dongleWhitePath" />
+        </item>
+        <item row="3" column="2">
+         <widget class="QPushButton" name="dongleWhiteBrowse">
+          <property name="text">
+           <string>Browse</string>
+          </property>
+         </widget>
+        </item>
+
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>Patch File:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLineEdit" name="patchFilePath" />
+        </item>
+        <item row="4" column="2">
+         <widget class="QPushButton" name="patchFileBrowse">
+          <property name="text">
+           <string>Browse</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
-      <item row="0" column="1">
-        <widget class="QLineEdit" name="patchFilePath" />
-      </item>
-      <item row="0" column="2">
-        <widget class="QPushButton" name="patchFileBrowse">
-        <property name="text">
-          <string>Browse</string>
-        </property>
-        </widget>
-      </item>
-    </layout>
-   </item>
-   <item row="8" column="0" colspan="3">
-    <layout class="QGridLayout" name="gridLayout_3_6">
-      <item row="0" column="0">
-        <widget class="QLabel" name="label_9">
-        <property name="text">
-          <string>P1 Card Path:</string>
-        </property>
-        </widget>
-      </item>
-      <item row="0" column="1">
-        <widget class="QLineEdit" name="player1CardPath" />
-      </item>
-      <item row="0" column="2">
-        <widget class="QPushButton" name="player1CardBrowse">
-        <property name="text">
-          <string>Browse</string>
-        </property>
-        </widget>
-      </item>
-    </layout>
-   </item>
-   <item row="9" column="0" colspan="3">
-    <layout class="QGridLayout" name="gridLayout_3_7">
-      <item row="0" column="0">
-        <widget class="QLabel" name="label_10">
-        <property name="text">
-          <string>P2 Card Path:</string>
-        </property>
-        </widget>
-      </item>
-      <item row="0" column="1">
-        <widget class="QLineEdit" name="player2CardPath" />
-      </item>
-      <item row="0" column="2">
-        <widget class="QPushButton" name="player2CardBrowse">
-        <property name="text">
-          <string>Browse</string>
-        </property>
-        </widget>
-      </item>
-    </layout>
-   </item>
-   <item row="10" column="0">
-    <widget class="QLabel" name="label_1">
-     <property name="text">
-      <string>Input method:</string>
-     </property>
+     </layout>
     </widget>
    </item>
-   <item row="10" column="1">
-    <widget class="QComboBox" name="deviceApi">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Hardware Settings</string>
      </property>
-     <property name="editable">
-      <bool>true</bool>
-     </property>
+     <layout class="QFormLayout" name="formLayout_2">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::ExpandingFieldsGrow</enum>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Dipswitches:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" colspan="4">
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="dipsw1">
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="dipsw2">
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QCheckBox" name="dipsw3">
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QCheckBox" name="dipsw4">
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Force 31kHz:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="force31khz" />
+      </item>
+     </layout>
     </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Card Reader Settings</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout_3">
+      <item row="0" column="0" colspan="3">
+       <layout class="QGridLayout" name="gridLayout_3_6">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_9">
+          <property name="text">
+           <string>P1 Card Path:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="player1CardPath" />
+        </item>
+        <item row="0" column="2">
+         <widget class="QPushButton" name="player1CardBrowse">
+          <property name="text">
+           <string>Browse</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_10">
+          <property name="text">
+           <string>P2 Card Path:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="player2CardPath" />
+        </item>
+        <item row="1" column="2">
+         <widget class="QPushButton" name="player2CardBrowse">
+          <property name="text">
+           <string>Browse</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>3</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../resources/resources.qrc"/>
- </resources>
- <connections/>
 </ui>
