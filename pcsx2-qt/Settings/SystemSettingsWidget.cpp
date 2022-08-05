@@ -80,7 +80,7 @@ SystemSettingsWidget::SystemSettingsWidget(SettingsDialog* dialog, QWidget* pare
 		tr("Higher values may increase internal framerate in games, but will increase CPU requirements substantially. "
 			"Lower values will reduce the CPU load allowing lightweight games to run full speed on weaker CPUs."));
 
-	dialog->registerWidgetHelp(m_ui.eeCycleSkipping, tr("Cycle Skip"), tr("Normal Speed"),
+	dialog->registerWidgetHelp(m_ui.eeCycleSkipping, tr("Cycle Skip"), tr("None"),
 		tr("Makes the emulated Emotion Engine skip cycles. "
 		   "Helps a small subset of games like SOTC. Most of the time it's harmful to performance."));
 
@@ -89,22 +89,14 @@ SystemSettingsWidget::SystemSettingsWidget(SettingsDialog* dialog, QWidget* pare
 		   "Safe for most games, but a few are incompatible and may hang."));
 
 	dialog->registerWidgetHelp(m_ui.instantVU1, tr("Instant VU1"), tr("Checked"),
-		tr("Runs VU1 instantly (when MTVU is disabled). Provides a modest speed improvement. "
+		tr("Runs VU1 instantly. Provides a modest speed improvement in most games. "
 		   "Safe for most games, but a few games may exhibit graphical errors."));
 
 	dialog->registerWidgetHelp(m_ui.fastCDVD, tr("Enable Fast CDVD"), tr("Unchecked"),
 		tr("Fast disc access, less loading times. Check HDLoader compatibility lists for known games that have issues with this."));
-
-	updateVU1InstantState();
-	connect(m_ui.MTVU, &QCheckBox::stateChanged, this, &SystemSettingsWidget::updateVU1InstantState);
 }
 
 SystemSettingsWidget::~SystemSettingsWidget() = default;
-
-void SystemSettingsWidget::updateVU1InstantState()
-{
-	m_ui.instantVU1->setEnabled(!m_dialog->getEffectiveBoolValue("EmuCore/Speedhacks", "vuThread", false));
-}
 
 int SystemSettingsWidget::getGlobalClampingModeIndex(bool vu) const
 {

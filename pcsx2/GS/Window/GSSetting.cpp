@@ -172,9 +172,6 @@ const char* dialog_message(int ID, bool* updateText)
 			return cvtString("Allows advanced atomic operations to speed up Accurate DATE.\n"
 				"Only disable this if using Accurate DATE causes (GPU driver) issues.\n\n"
 				"Note: This option is only supported by GPUs which support at least Direct3D 11.");
-		case IDC_SPARSE_TEXTURE:
-			return cvtString("Allows to reduce VRAM usage on the GPU.\n\n"
-				"Note: Feature is currently experimental and works only on Nvidia GPUs.");
 		case IDC_LINEAR_PRESENT:
 			return cvtString("Use bilinear filtering when Upscaling/Downscaling the image to the screen. Disable it if you want a sharper/pixelated output.");
 		// Exclusive for Hardware Renderer
@@ -191,12 +188,6 @@ const char* dialog_message(int ID, bool* updateText)
 		case IDC_DISABLE_PARTIAL_TC_INV:
 			return cvtString("By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise."
 				   "\n\nThis hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load.\n\nIt helps snowblind engine games.");
-		case IDC_CONSERVATIVE_FB:
-			return cvtString("Disabled: Reserves a larger framebuffer to prevent FMV flickers.\n"
-				   "Increases GPU/memory requirements.\n"
-				   "Disabling this can amplify stuttering due to low RAM/VRAM.\n\n"
-				   "Note: It should be enabled for Armored Core, Destroy All Humans, Gran Turismo and possibly others.\n"
-				   "This option does not improve the graphics or the FPS.");
 		case IDC_DITHERING:
 			return cvtString("In the PS2's case, it reduces banding between colors and improves the perceived color depth.\n"
 				   "In the PS1's case, it was used more aggressively due to 16-bit colour.\n"

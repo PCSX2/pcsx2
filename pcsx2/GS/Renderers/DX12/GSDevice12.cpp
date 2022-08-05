@@ -319,8 +319,7 @@ void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_f
 
 GSTexture* GSDevice12::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
-	pxAssert(type != GSTexture::Type::Offscreen && type != GSTexture::Type::SparseRenderTarget &&
-			 type != GSTexture::Type::SparseDepthStencil);
+	pxAssert(type != GSTexture::Type::Offscreen);
 
 	const u32 clamped_width = static_cast<u32>(std::clamp<int>(1, width, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION));
 	const u32 clamped_height = static_cast<u32>(std::clamp<int>(1, height, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION));

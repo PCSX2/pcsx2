@@ -405,8 +405,7 @@ VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format) const
 
 GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
-	pxAssert(type != GSTexture::Type::Offscreen && type != GSTexture::Type::SparseRenderTarget &&
-			 type != GSTexture::Type::SparseDepthStencil);
+	pxAssert(type != GSTexture::Type::Offscreen);
 
 	const u32 clamped_width = static_cast<u32>(std::clamp<int>(1, width, g_vulkan_context->GetMaxImageDimension2D()));
 	const u32 clamped_height = static_cast<u32>(std::clamp<int>(1, height, g_vulkan_context->GetMaxImageDimension2D()));
@@ -508,25 +507,38 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 
 				return;
 			}
-			else
+
+			if (dTexVK->GetState() == GSTexture::State::Cleared)
 			{
-				// otherwise we need to do an attachment clear
-				const bool depth = (dTexVK->GetType() == GSTexture::Type::DepthStencil);
-				OMSetRenderTargets(depth ? nullptr : dTexVK, depth ? dTexVK : nullptr, dtex_rc, false);
-				BeginRenderPassForStretchRect(dTexVK, dtex_rc, GSVector4i(destX, destY, destX + r.width(), destY + r.height()));
-
-				// so use an attachment clear
-				VkClearAttachment ca;
-				ca.aspectMask = depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-				GSVector4::store<false>(ca.clearValue.color.float32, sTexVK->GetClearColor());
-				ca.clearValue.depthStencil.depth = sTexVK->GetClearDepth();
-				ca.clearValue.depthStencil.stencil = 0;
-				ca.colorAttachment = 0;
-
-				const VkClearRect cr = { {{0, 0}, {static_cast<u32>(r.width()), static_cast<u32>(r.height())}}, 0u, 1u };
-				vkCmdClearAttachments(g_vulkan_context->GetCurrentCommandBuffer(), 1, &ca, 1, &cr);
-				return;
+				// destination is cleared, if it's the same colour and rect, we can just avoid this entirely
+				if (dTexVK->IsDepthStencil())
+				{
+					if (dTexVK->GetClearDepth() == sTexVK->GetClearDepth())
+						return;
+				}
+				else
+				{
+					if ((dTexVK->GetClearColor() == (sTexVK->GetClearColor())).alltrue())
+						return;
+				}
 			}
+
+			// otherwise we need to do an attachment clear
+			const bool depth = (dTexVK->GetType() == GSTexture::Type::DepthStencil);
+			OMSetRenderTargets(depth ? nullptr : dTexVK, depth ? dTexVK : nullptr, dtex_rc, false);
+			BeginRenderPassForStretchRect(dTexVK, dtex_rc, GSVector4i(destX, destY, destX + r.width(), destY + r.height()));
+
+			// so use an attachment clear
+			VkClearAttachment ca;
+			ca.aspectMask = depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+			GSVector4::store<false>(ca.clearValue.color.float32, sTexVK->GetClearColor());
+			ca.clearValue.depthStencil.depth = sTexVK->GetClearDepth();
+			ca.clearValue.depthStencil.stencil = 0;
+			ca.colorAttachment = 0;
+
+			const VkClearRect cr = { {{0, 0}, {static_cast<u32>(r.width()), static_cast<u32>(r.height())}}, 0u, 1u };
+			vkCmdClearAttachments(g_vulkan_context->GetCurrentCommandBuffer(), 1, &ca, 1, &cr);
+			return;
 		}
 
 		// commit the clear to the source first, then do normal copy
@@ -1957,7 +1969,6 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_CHANNEL_FETCH", sel.channel);
 	AddMacro(ss, "PS_URBAN_CHAOS_HLE", sel.urban_chaos_hle);
 	AddMacro(ss, "PS_TALES_OF_ABYSS_HLE", sel.tales_of_abyss_hle);
-	AddMacro(ss, "PS_TEX_IS_FB", sel.tex_is_fb);
 	AddMacro(ss, "PS_INVALID_TEX0", sel.invalid_tex0);
 	AddMacro(ss, "PS_AEM", sel.aem);
 	AddMacro(ss, "PS_TFX", sel.tfx);
@@ -2980,21 +2991,31 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (config.tex && config.tex == config.ds)
+	if (config.tex)
 	{
-		// requires a copy of the depth buffer. this is mainly for ico.
-		copy_ds = static_cast<GSTextureVK*>(CreateDepthStencil(rtsize.x, rtsize.y, GSTexture::Format::DepthStencil, false));
-		if (copy_ds)
+		if (config.tex == config.ds)
 		{
-			EndRenderPass();
+			// requires a copy of the depth buffer. this is mainly for ico.
+			copy_ds = static_cast<GSTextureVK*>(CreateDepthStencil(rtsize.x, rtsize.y, GSTexture::Format::DepthStencil, false));
+			if (copy_ds)
+			{
+				EndRenderPass();
 
-			GL_PUSH("Copy depth to temp texture for shuffle {%d,%d %dx%d}",
-				config.drawarea.left, config.drawarea.top,
-				config.drawarea.width(), config.drawarea.height());
+				GL_PUSH("Copy depth to temp texture for shuffle {%d,%d %dx%d}",
+					config.drawarea.left, config.drawarea.top,
+					config.drawarea.width(), config.drawarea.height());
 
-			CopyRect(config.ds, copy_ds, config.drawarea, config.drawarea.left, config.drawarea.top);
-			PSSetShaderResource(0, copy_ds, true);
+				CopyRect(config.ds, copy_ds, config.drawarea, config.drawarea.left, config.drawarea.top);
+				PSSetShaderResource(0, copy_ds, true);
+			}
 		}
+	}
+	// clear texture binding when it's bound to RT or DS
+	if (!config.tex && m_tfx_textures[0] &&
+		((!pipe.feedback_loop && config.rt && static_cast<GSTextureVK*>(config.rt)->GetView() == m_tfx_textures[0]) ||
+			(config.ds && static_cast<GSTextureVK*>(config.ds)->GetView() == m_tfx_textures[0])))
+	{
+		PSSetShaderResource(0, nullptr, false);
 	}
 
 	const bool render_area_okay =

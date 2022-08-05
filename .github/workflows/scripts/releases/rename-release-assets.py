@@ -15,12 +15,13 @@ for dir_name in os.listdir(scan_dir):
     asset_name += "-linux-AppImage-64bit"
   elif "windows" in dir_name.lower():
     asset_name += "-windows-64bit"
-    if "avx" in dir_name.lower():
-      asset_name += "-AVX2"
-    else:
-      asset_name += "-SSE4"
   else:
     continue;
+
+  if "avx2" in dir_name.lower():
+    asset_name += "-AVX2"
+  elif "sse4" in dir_name.lower():
+    asset_name += "-SSE4"
 
   if "wxwidgets" in dir_name.lower():
     asset_name += "-wxWidgets"

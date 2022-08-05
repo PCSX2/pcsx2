@@ -43,7 +43,7 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 
 	dialog->registerWidgetHelp(m_ui.patchRegion, tr("Patch Region"), tr("Unchecked"),
 		tr("Patches the BIOS region byte in ROM. Not recommended unless you really know what you're doing."));
-	dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Unchecked"),
+	dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Checked"),
 		tr("Patches the BIOS to skip the console's boot animation."));
 
 	refreshList();

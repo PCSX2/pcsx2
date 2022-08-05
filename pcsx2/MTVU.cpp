@@ -416,7 +416,8 @@ void VU_Thread::Get_MTVUChanges()
 	{
 		mtvuInterrupts.fetch_and(~InterruptFlagVUEBit, std::memory_order_relaxed);
 		
-		VU0.VI[REG_VPU_STAT].UL &= ~0xFF00;
+		if(INSTANT_VU1)
+			VU0.VI[REG_VPU_STAT].UL &= ~0xFF00;
 		//DevCon.Warning("E-Bit registered %x", VU0.VI[REG_VPU_STAT].UL);
 	}
 	if (interrupts & InterruptFlagVUTBit)
@@ -458,10 +459,17 @@ void VU_Thread::ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop, u32 fbrst)
 	CommitWritePos();
 	gifUnit.TransferGSPacketData(GIF_TRANS_MTVU, NULL, 0);
 	KickStart();
-	u32 cycles = std::min(Get_vuCycles(), 3000u);
-	cpuRegs.cycle += cycles * EmuConfig.Speedhacks.EECycleSkip;
-	VU0.cycle += cycles * EmuConfig.Speedhacks.EECycleSkip;
+	u32 cycles = std::max(Get_vuCycles(), 4u);
+	u32 skip_cycles = std::min(cycles, 3000u);
+	cpuRegs.cycle += skip_cycles * EmuConfig.Speedhacks.EECycleSkip;
+	VU0.cycle += skip_cycles * EmuConfig.Speedhacks.EECycleSkip;
 	Get_MTVUChanges();
+
+	if (!INSTANT_VU1)
+	{
+		VU0.VI[REG_VPU_STAT].UL |= 0x100;
+		CPU_INT(VU_MTVU_BUSY, cycles);
+	}
 }
 
 void VU_Thread::VifUnpack(vifStruct& _vif, VIFregisters& _vifRegs, u8* data, u32 size)

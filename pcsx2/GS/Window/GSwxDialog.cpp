@@ -275,7 +275,6 @@ RendererTab::RendererTab(wxWindow* parent)
 	const int space = wxSizerFlags().Border().GetBorderInPixels();
 	auto hw_prereq = [this]{ return m_is_hardware; };
 	auto sw_prereq = [this]{ return !m_is_hardware; };
-	auto upscale_prereq = [this]{ return !m_is_native_res; };
 
 	PaddedBoxSizer<wxBoxSizer> tab_box(wxVERTICAL);
 	PaddedBoxSizer<wxStaticBoxSizer> general_box(wxVERTICAL, this, "General GS Settings");
@@ -285,7 +284,6 @@ RendererTab::RendererTab(wxWindow* parent)
 	auto* hw_checks_box = new wxWrapSizer(wxHORIZONTAL);
 
 	m_ui.addCheckBox(hw_checks_box, "Accurate Destination Alpha Test", "accurate_date",            IDC_ACCURATE_DATE,   hw_prereq);
-	m_ui.addCheckBox(hw_checks_box, "Conservative Buffer Allocation",  "conservative_framebuffer", IDC_CONSERVATIVE_FB, upscale_prereq);
 
 	auto* paltex_prereq = m_ui.addCheckBox(hw_checks_box, "GPU Palette Conversion", "paltex", IDC_PALTEX, hw_prereq);
 	auto aniso_prereq = [this, paltex_prereq]{ return m_is_hardware && paltex_prereq->GetValue() == false; };
@@ -589,7 +587,6 @@ DebugTab::DebugTab(wxWindow* parent)
 	m_ui.addComboBoxAndLabel(ogl_grid, "Texture Barriers:", "OverrideTextureBarriers",                 &theApp.m_gs_generic_list, -1,                           vk_ogl_hw_prereq);
 	m_ui.addComboBoxAndLabel(ogl_grid, "Geometry Shader:",  "OverrideGeometryShaders",                 &theApp.m_gs_generic_list, IDC_GEOMETRY_SHADER_OVERRIDE, vk_ogl_hw_prereq);
 	m_ui.addComboBoxAndLabel(ogl_grid, "Image Load Store:", "override_GL_ARB_shader_image_load_store", &theApp.m_gs_generic_list, IDC_IMAGE_LOAD_STORE,         ogl_hw_prereq);
-	m_ui.addComboBoxAndLabel(ogl_grid, "Sparse Texture:",   "override_GL_ARB_sparse_texture",          &theApp.m_gs_generic_list, IDC_SPARSE_TEXTURE,           ogl_hw_prereq);
 	m_ui.addComboBoxAndLabel(ogl_grid, "Dump Compression:", "GSDumpCompression",                       &theApp.m_gs_dump_compression, -1);
 	ogl_box->Add(ogl_grid);
 
@@ -804,7 +801,6 @@ void Dialog::Update()
 		m_hacks_panel->m_is_native_res = !is_hw || !is_upscale;
 		m_hacks_panel->m_is_hardware = is_hw;
 		m_renderer_panel->m_is_hardware = is_hw;
-		m_renderer_panel->m_is_native_res = !is_hw || !is_upscale;
 		m_post_panel->m_is_vk_hw = renderer == GSRendererType::VK;
 		m_debug_panel->m_is_ogl_hw = renderer == GSRendererType::OGL;
 		m_debug_panel->m_is_vk_hw = renderer == GSRendererType::VK;
