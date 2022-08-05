@@ -291,15 +291,20 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	updateRendererDependentOptions();
 
 	// only allow disabling readbacks for per-game settings, it's too dangerous
+#ifndef PCSX2_DEVBUILD
 	m_ui.disableHardwareReadbacks->setEnabled(m_dialog->isPerGameSettings());
 
-	// allow Texture Offset for per-game settings only 
-	m_ui.textureOffsetX->setEnabled(m_dialog->isPerGameSettings());
-	m_ui.textureOffsetY->setEnabled(m_dialog->isPerGameSettings());
-
-	// allow Skipdraw Range for per-game settings only 
-	m_ui.skipDrawStart->setEnabled(m_dialog->isPerGameSettings());
-	m_ui.skipDrawEnd->setEnabled(m_dialog->isPerGameSettings());
+	// Remove texture offset and skipdraw range for global settings.
+	if (!m_dialog->isPerGameSettings())
+	{
+		m_ui.upscalingFixesLayout->removeRow(2);
+		m_ui.hardwareFixesLayout->removeRow(2);
+		m_ui.skipDrawStart = nullptr;
+		m_ui.skipDrawEnd = nullptr;
+		m_ui.textureOffsetX = nullptr;
+		m_ui.textureOffsetY = nullptr;
+	}
+#endif
 
 	// Display tab
 	{
