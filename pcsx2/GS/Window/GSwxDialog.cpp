@@ -275,7 +275,6 @@ RendererTab::RendererTab(wxWindow* parent)
 	const int space = wxSizerFlags().Border().GetBorderInPixels();
 	auto hw_prereq = [this]{ return m_is_hardware; };
 	auto sw_prereq = [this]{ return !m_is_hardware; };
-	auto upscale_prereq = [this]{ return !m_is_native_res; };
 
 	PaddedBoxSizer<wxBoxSizer> tab_box(wxVERTICAL);
 	PaddedBoxSizer<wxStaticBoxSizer> general_box(wxVERTICAL, this, "General GS Settings");
