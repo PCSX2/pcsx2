@@ -2494,10 +2494,6 @@ MECHA_RESULT verifyCardChallenge()
 
 static MECHA_RESULT DecryptKelfHeader()
 {
-	FILE *f = fopen("kelf_header.bin", "wb");
-	fwrite(cdvd.data_buffer, 1, cdvd.DataSize, f);
-	fclose(f);
-
 	KELFHeader *header = (KELFHeader *) cdvd.data_buffer;
 	uint32_t headerSize = sizeof(KELFHeader) + sizeof(ConsoleBan) * header->BanCount;
 
