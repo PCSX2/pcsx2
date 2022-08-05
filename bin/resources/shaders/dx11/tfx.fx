@@ -750,7 +750,7 @@ void ps_color_clamp_wrap(inout float3 C)
 	}
 }
 
-void ps_blend(inout float4 Color, float As, float2 pos_xy)
+void ps_blend(inout float4 Color, inout float As, float2 pos_xy)
 {
 	if (SW_BLEND)
 	{
@@ -775,10 +775,26 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 		float3 D = (PS_BLEND_D == 0) ? Cs : ((PS_BLEND_D == 1) ? Cd : (float3)0.0f);
 
 		// As/Af clamp alpha for Blend mix
-		if (PS_BLEND_MIX)
-			C = min(C, (float)1.0f);
+		// We shouldn't clamp blend mix with clr1 as we want alpha higher
+		if (PS_BLEND_MIX && PS_CLR_HW != 1)
+			C = min(C, 1.0f);
 
 		Color.rgb = (PS_BLEND_A == PS_BLEND_B) ? D : trunc(((A - B) * C) + D);
+
+		if (PS_CLR_HW == 1)
+		{
+			// Replace Af with As so we can do proper compensation for Alpha.
+			if (PS_BLEND_C == 2)
+				As = Af;
+			// Subtract 1 for alpha to compensate for the changed equation,
+			// if c.rgb > 255.0f then we further need to adjust alpha accordingly,
+			// we pick the lowest overflow from all colors because it's the safest,
+			// we divide by 255 the color because we don't know Cd value,
+			// changed alpha should only be done for hw blend.
+			float min_color = min(min(Color.r, Color.g), Color.b);
+			float alpha_compensate = max(1.0f, min_color / 255.0f);
+			As -= alpha_compensate;
+		}
 	}
 	else
 	{
