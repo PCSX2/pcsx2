@@ -725,6 +725,13 @@ struct PSMain
 	{
 		if (SW_BLEND)
 		{
+			// PABE
+			if (PS_PABE)
+			{
+				// No blending so early exit
+				if (As < 1.0f)
+					return;
+			}
 
 			float Ad = PS_DFMT == FMT_24 ? 1.f : trunc(current_color.a * 255.5f) / 128.f;
 
@@ -743,9 +750,6 @@ struct PSMain
 				Color.rgb = D;
 			else
 				Color.rgb = trunc((A - B) * C + D);
-
-			if (PS_PABE)
-				Color.rgb = (As >= 1.f) ? Color.rgb : Cs;
 		}
 		else
 		{
