@@ -10394,9 +10394,13 @@ SLES-50771:
   name: "Blood Omen 2 - Legend of Kain"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    mipmap: 1 # Fixes glitching textures.
 SLES-50772:
   name: "Blood Omen 2 - Legend of Kain"
   region: "PAL-M3"
+  gsHWFixes:
+    mipmap: 1 # Fixes glitching textures.
 SLES-50773:
   name: "Donald Duck Phantomias Platyrhynchos Kineticus"
   region: "PAL-M5"
@@ -10513,6 +10517,8 @@ SLES-50814:
 SLES-50815:
   name: "Blood Omen 2 - Legend of Kain"
   region: "PAL-G"
+  gsHWFixes:
+    mipmap: 1 # Fixes glitching textures.
 SLES-50816:
   name: "DTM Race Driver"
   region: "PAL-M3"
@@ -38137,6 +38143,8 @@ SLUS-20024:
   name: "Legacy of Kain - Blood Omen 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 1 # Fixes glitching textures.
 SLUS-20028:
   name: "No One Lives Forever"
   region: "NTSC-U"
