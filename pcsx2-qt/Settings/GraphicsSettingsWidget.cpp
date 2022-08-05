@@ -232,7 +232,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.loadTextureReplacementsAsync, "EmuCore/GS", "LoadTextureReplacementsAsync", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.precacheTextureReplacements, "EmuCore/GS", "PrecacheTextureReplacements", false);
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.texturesDirectory, m_ui.texturesBrowse, m_ui.texturesOpen, m_ui.texturesReset,
-		"Folders", "Textures", "textures");
+		"Folders", "Textures", Path::Combine(EmuFolders::DataRoot, "textures"));
 
 	//////////////////////////////////////////////////////////////////////////
 	// Advanced Settings

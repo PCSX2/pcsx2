@@ -39,7 +39,7 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.patchRegion, "EmuCore", "PatchBios", false);
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.regionComboBox, "EmuCore", "PatchRegion", BiosZoneStrings, BiosZoneBytes, BiosZoneBytes[0]);
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.searchDirectory, m_ui.browseSearchDirectory, m_ui.openSearchDirectory,
-		m_ui.resetSearchDirectory, "Folders", "Bios", "bios");
+		m_ui.resetSearchDirectory, "Folders", "Bios", Path::Combine(EmuFolders::DataRoot, "bios"));
 
 	dialog->registerWidgetHelp(m_ui.patchRegion, tr("Patch Region"), tr("Unchecked"),
 		tr("Patches the BIOS region byte in ROM. Not recommended unless you really know what you're doing."));
