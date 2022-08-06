@@ -23031,6 +23031,9 @@ SLPM-55215:
 SLPM-55216:
   name: "Hiiro no Kakera - Tamayori-hime Kitan [Aizou-ban]"
   region: "NTSC-J"
+SLPM-55220:
+  name: "Osouji Sentai Clean Keeper H"
+  region: "NTSC-J"
 SLPM-55221:
   name: "beatmania IIDX 16 EMPRESS + PREMIUM BEST [EMPRESS DISC]"
   region: "NTSC-J"
@@ -24119,6 +24122,9 @@ SLPM-62291:
   region: "NTSC-J"
 SLPM-62292:
   name: "Warrior Blade - Rastan vs. Barbarian"
+  region: "NTSC-J"
+SLPM-62293:
+  name: "Magical Pachinko Cotton - Pachinko Juuki Simulation"
   region: "NTSC-J"
 SLPM-62294:
   name: "Simple 2000 Series Vol. 21 - The Moonlight Tale RPG"
@@ -33222,6 +33228,9 @@ SLPS-20108:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+SLPS-20110:
+  name: "Mezase! Meimon Yakyuubu 2"
+  region: "NTSC-J"
 SLPS-20111:
   name: "Magical Sports - Pro Baseball 2001"
   region: "NTSC-J"
