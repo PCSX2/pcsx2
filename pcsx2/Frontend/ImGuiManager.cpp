@@ -453,6 +453,18 @@ void Host::AddKeyedOSDMessage(std::string key, std::string message, float durati
 	s_osd_posted_messages.push_back(std::move(msg));
 }
 
+void Host::AddIconOSDMessage(std::string key, const char* icon, const std::string_view& message, float duration /* = 2.0f */)
+{
+	OSDMessage msg;
+	msg.key = std::move(key);
+	msg.text = fmt::format("{}  {}",  icon, message);
+	msg.duration = duration;
+	msg.time = std::chrono::steady_clock::now();
+
+	std::unique_lock<std::mutex> lock(s_osd_messages_lock);
+	s_osd_posted_messages.push_back(std::move(msg));
+}
+
 void Host::AddFormattedOSDMessage(float duration, const char* format, ...)
 {
 	std::va_list ap;
