@@ -623,19 +623,6 @@ bool GSC_UrbanReign(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SkyGunner(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (!fi.TME && !(fi.FBP == 0x0 || fi.FBP == 0x00800 || fi.FBP == 0x008c0 || fi.FBP == 0x03e00) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x0 || fi.TBP0 == 0x01800) && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1; // Huge Vram usage
-		}
-	}
-
-	return true;
-}
-
 bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -896,7 +883,6 @@ void GSState::SetupCrcHack()
 		// Channel Effect
 		lut[CRC::CrashBandicootWoC] = GSC_CrashBandicootWoC;
 		lut[CRC::GiTS] = GSC_GiTS;
-		lut[CRC::SkyGunner] = GSC_SkyGunner; // Maybe not a channel effect
 		lut[CRC::Spartan] = GSC_Spartan;
 		lut[CRC::SteambotChronicles] = GSC_SteambotChronicles;
 

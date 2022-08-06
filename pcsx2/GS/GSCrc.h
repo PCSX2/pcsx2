@@ -62,7 +62,6 @@ public:
 		ShadowofRome,
 		ShinOnimusha,
 		Simple2000Vol114,
-		SkyGunner,
 		SMTNocturne,
 		SonicUnleashed,
 		Spartan,
