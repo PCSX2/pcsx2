@@ -736,7 +736,7 @@ GSVector2 GSRendererHW::GetTextureScaleFactor()
 	return GSVector2(f_upscale, f_upscale);
 }
 
-GSVector2i GSRendererHW::GetTargetSize()
+GSVector2i GSRendererHW::GetTargetSize(GSVector2i* unscaled_size)
 {
 	// Don't blindly expand out to the scissor size if we're not drawing to it.
 	// e.g. Burnout 3, God of War II, etc.
@@ -761,6 +761,11 @@ GSVector2i GSRendererHW::GetTargetSize()
 
 	const u32 width = m_context->FRAME.FBW * 64u;
 	const u32 height = m_tc->GetTargetHeight(m_context->FRAME.FBP, m_context->FRAME.FBW, m_context->FRAME.PSM, min_height);
+	if (unscaled_size)
+	{
+		unscaled_size->x = static_cast<int>(width);
+		unscaled_size->y = static_cast<int>(height);
+	}
 
 	GL_INS("Target size for %x %u %u: %ux%u", m_context->FRAME.FBP, m_context->FRAME.FBW, m_context->FRAME.PSM, width, height);
 
@@ -1581,7 +1586,11 @@ void GSRendererHW::Draw()
 
 	// The rectangle of the draw
 	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
-	const GSVector2i t_size = GetTargetSize();
+	GSVector2i unscaled_size;
+	const GSVector2i t_size = GetTargetSize(&unscaled_size);
+
+	// Ensure draw rect is clamped to framebuffer size. Necessary for updating valid area.
+	m_r = m_r.rintersect(GSVector4i(0, 0, unscaled_size.x, unscaled_size.y));
 
 	TEX0.TBP0 = context->FRAME.Block();
 	TEX0.TBW = context->FRAME.FBW;
@@ -1612,9 +1621,6 @@ void GSRendererHW::Draw()
 		const GSVector2 up_s(GetTextureScaleFactor());
 		const int new_w = std::max(t_size.x, std::max(rt ? rt->m_texture->GetWidth() : 0, ds ? ds->m_texture->GetWidth() : 0));
 		const int new_h = std::max(t_size.y, std::max(rt ? rt->m_texture->GetHeight() : 0, ds ? ds->m_texture->GetHeight() : 0));
-
-		// Ensure draw rect is clamped to framebuffer size. Necessary for updating valid area.
-		m_r = m_r.rintersect(GSVector4i(0, 0, new_w, new_h));
 
 		if (rt)
 		{

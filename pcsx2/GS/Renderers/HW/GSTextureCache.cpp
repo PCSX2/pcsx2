@@ -2548,6 +2548,9 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 		m_valid = m_valid.runion(rect);
 
 	// Block of the bottom right texel of the validity rectangle, last valid block of the texture
+	// TODO: This is not correct when the PSM changes. e.g. a 512x448 target being shuffled will become 512x896 temporarily, and
+	// at the moment, we blow the valid rect out to twice the size. The only thing stopping everything breaking is the fact
+	// that we clamp the draw rect to the target size in GSRendererHW::Draw().
 	m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].info.bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW); // Valid only for color formats
 
 	// GL_CACHE("UpdateValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
