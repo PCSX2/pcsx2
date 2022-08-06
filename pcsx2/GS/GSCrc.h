@@ -50,7 +50,6 @@ public:
 		Lamune,
 		Manhunt2,
 		MetalSlug6,
-		MidnightClub3,
 		Okami,
 		Oneechanbara2Special,
 		PolyphonyDigitalGames,
