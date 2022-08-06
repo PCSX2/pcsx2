@@ -2040,14 +2040,17 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask()
 		// Please bang my head against the wall!
 		// 1/ Reduce the frame mask to a 16 bit format
 		const u32 m = m_context->FRAME.FBMSK & GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
+
+		// fbmask is converted to a 16bit version to represent the 2 32bit channels it's writing to.
+		// The lower 8 bits represents the Red/Blue channels, the top 8 bits is Green/Alpha, depending on write_ba.
 		const u32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
 		// FIXME GSVector will be nice here
-		const u8 rg_mask = fbmask & 0xFF;
-		const u8 ba_mask = (fbmask >> 8) & 0xFF;
+		const u8 rb_mask = fbmask & 0xFF;
+		const u8 ga_mask = (fbmask >> 8) & 0xFF;
 		m_conf.colormask.wrgba = 0;
 
 		// 2 Select the new mask (Please someone put SSE here)
-		if (rg_mask != 0xFF)
+		if (rb_mask != 0xFF)
 		{
 			if (write_ba)
 			{
@@ -2059,11 +2062,11 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask()
 				GL_INS("Color shuffle %s => R", read_ba ? "B" : "R");
 				m_conf.colormask.wr = 1;
 			}
-			if (rg_mask)
+			if (rb_mask)
 				m_conf.ps.fbmask = 1;
 		}
 
-		if (ba_mask != 0xFF)
+		if (ga_mask != 0xFF)
 		{
 			if (write_ba)
 			{
@@ -2075,16 +2078,16 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask()
 				GL_INS("Color shuffle %s => G", read_ba ? "A" : "G");
 				m_conf.colormask.wg = 1;
 			}
-			if (ba_mask)
+			if (ga_mask)
 				m_conf.ps.fbmask = 1;
 		}
 
 		if (m_conf.ps.fbmask && enable_fbmask_emulation)
 		{
-			m_conf.cb_ps.FbMask.r = rg_mask;
-			m_conf.cb_ps.FbMask.g = rg_mask;
-			m_conf.cb_ps.FbMask.b = ba_mask;
-			m_conf.cb_ps.FbMask.a = ba_mask;
+			m_conf.cb_ps.FbMask.r = rb_mask;
+			m_conf.cb_ps.FbMask.g = ga_mask;
+			m_conf.cb_ps.FbMask.b = rb_mask;
+			m_conf.cb_ps.FbMask.a = ga_mask;
 
 			// No blending so hit unsafe path.
 			if (!PRIM->ABE || !features.texture_barrier)
