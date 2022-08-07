@@ -647,6 +647,10 @@ void VMManager::UpdateRunningGame(bool resetting, bool game_starting)
 	if (s_is_python2) {
 		new_crc = ElfCRC = s_python2_crc;
 		new_serial = s_python2_serial;
+
+		if (resetting) {
+			ReloadPatches(game_starting, false);
+		}
 	}
 
 	if (!resetting && s_game_crc == new_crc && s_game_serial == new_serial)

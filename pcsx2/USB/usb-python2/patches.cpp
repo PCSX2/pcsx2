@@ -26,8 +26,6 @@ namespace usb_python2
 		mTargetPatchAddr = 0;
 		mTargetIgnoreAddr = 0;
 
-		ForgetLoadedPatches();
-
 		bool lastLoop = false;
 		bool doLoop = true;
 		while (doLoop)
