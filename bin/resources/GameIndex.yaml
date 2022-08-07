@@ -17315,6 +17315,8 @@ SLES-53870:
   name: "Devil Kings"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom.
 SLES-53871:
   name: "Tengai"
   region: "PAL-E"
@@ -43987,6 +43989,8 @@ SLUS-21297:
   name: "Devil Kings"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom.
 SLUS-21298:
   name: "NCAA March Madness '06"
   region: "NTSC-U"
