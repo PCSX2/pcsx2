@@ -406,7 +406,6 @@ void ControllerSettingsDialog::updateListDescription(u32 global_slot, Controller
 		const QVariant data(item->data(Qt::UserRole));
 		if (data.type() == QVariant::UInt && data.toUInt() == global_slot)
 		{
-			const bool is_mtap_port = sioPadIsMultitapSlot(global_slot);
 			const auto [port, slot] = sioConvertPadToPortAndSlot(global_slot);
 			const bool mtap_enabled = getBoolValue("Pad", (port == 0) ? "MultitapPort1" : "MultitapPort2", false);
 
