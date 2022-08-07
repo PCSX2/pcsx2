@@ -736,7 +736,7 @@ GSVector2 GSRendererHW::GetTextureScaleFactor()
 	return GSVector2(f_upscale, f_upscale);
 }
 
-GSVector2i GSRendererHW::GetTargetSize()
+GSVector2i GSRendererHW::GetTargetSize(GSVector2i* unscaled_size)
 {
 	// Don't blindly expand out to the scissor size if we're not drawing to it.
 	// e.g. Burnout 3, God of War II, etc.
@@ -761,6 +761,11 @@ GSVector2i GSRendererHW::GetTargetSize()
 
 	const u32 width = m_context->FRAME.FBW * 64u;
 	const u32 height = m_tc->GetTargetHeight(m_context->FRAME.FBP, m_context->FRAME.FBW, m_context->FRAME.PSM, min_height);
+	if (unscaled_size)
+	{
+		unscaled_size->x = static_cast<int>(width);
+		unscaled_size->y = static_cast<int>(height);
+	}
 
 	GL_INS("Target size for %x %u %u: %ux%u", m_context->FRAME.FBP, m_context->FRAME.FBW, m_context->FRAME.PSM, width, height);
 
@@ -1581,7 +1586,11 @@ void GSRendererHW::Draw()
 
 	// The rectangle of the draw
 	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
-	const GSVector2i t_size = GetTargetSize();
+	GSVector2i unscaled_size;
+	const GSVector2i t_size = GetTargetSize(&unscaled_size);
+
+	// Ensure draw rect is clamped to framebuffer size. Necessary for updating valid area.
+	m_r = m_r.rintersect(GSVector4i(0, 0, unscaled_size.x, unscaled_size.y));
 
 	TEX0.TBP0 = context->FRAME.Block();
 	TEX0.TBW = context->FRAME.FBW;
@@ -1612,9 +1621,6 @@ void GSRendererHW::Draw()
 		const GSVector2 up_s(GetTextureScaleFactor());
 		const int new_w = std::max(t_size.x, std::max(rt ? rt->m_texture->GetWidth() : 0, ds ? ds->m_texture->GetWidth() : 0));
 		const int new_h = std::max(t_size.y, std::max(rt ? rt->m_texture->GetHeight() : 0, ds ? ds->m_texture->GetHeight() : 0));
-
-		// Ensure draw rect is clamped to framebuffer size. Necessary for updating valid area.
-		m_r = m_r.rintersect(GSVector4i(0, 0, new_w, new_h));
 
 		if (rt)
 		{
@@ -2034,14 +2040,17 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask()
 		// Please bang my head against the wall!
 		// 1/ Reduce the frame mask to a 16 bit format
 		const u32 m = m_context->FRAME.FBMSK & GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
+
+		// fbmask is converted to a 16bit version to represent the 2 32bit channels it's writing to.
+		// The lower 8 bits represents the Red/Blue channels, the top 8 bits is Green/Alpha, depending on write_ba.
 		const u32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
 		// FIXME GSVector will be nice here
-		const u8 rg_mask = fbmask & 0xFF;
-		const u8 ba_mask = (fbmask >> 8) & 0xFF;
+		const u8 rb_mask = fbmask & 0xFF;
+		const u8 ga_mask = (fbmask >> 8) & 0xFF;
 		m_conf.colormask.wrgba = 0;
 
 		// 2 Select the new mask (Please someone put SSE here)
-		if (rg_mask != 0xFF)
+		if (rb_mask != 0xFF)
 		{
 			if (write_ba)
 			{
@@ -2053,11 +2062,11 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask()
 				GL_INS("Color shuffle %s => R", read_ba ? "B" : "R");
 				m_conf.colormask.wr = 1;
 			}
-			if (rg_mask)
+			if (rb_mask)
 				m_conf.ps.fbmask = 1;
 		}
 
-		if (ba_mask != 0xFF)
+		if (ga_mask != 0xFF)
 		{
 			if (write_ba)
 			{
@@ -2069,16 +2078,16 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask()
 				GL_INS("Color shuffle %s => G", read_ba ? "A" : "G");
 				m_conf.colormask.wg = 1;
 			}
-			if (ba_mask)
+			if (ga_mask)
 				m_conf.ps.fbmask = 1;
 		}
 
 		if (m_conf.ps.fbmask && enable_fbmask_emulation)
 		{
-			m_conf.cb_ps.FbMask.r = rg_mask;
-			m_conf.cb_ps.FbMask.g = rg_mask;
-			m_conf.cb_ps.FbMask.b = ba_mask;
-			m_conf.cb_ps.FbMask.a = ba_mask;
+			m_conf.cb_ps.FbMask.r = rb_mask;
+			m_conf.cb_ps.FbMask.g = ga_mask;
+			m_conf.cb_ps.FbMask.b = rb_mask;
+			m_conf.cb_ps.FbMask.a = ga_mask;
 
 			// No blending so hit unsafe path.
 			if (!PRIM->ABE || !features.texture_barrier)

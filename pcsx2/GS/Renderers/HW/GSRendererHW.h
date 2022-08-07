@@ -186,7 +186,7 @@ public:
 	void MergeSprite(GSTextureCache::Source* tex);
 	GSVector2 GetTextureScaleFactor() override;
 	GSVector2i GetOutputSize(int real_h);
-	GSVector2i GetTargetSize();
+	GSVector2i GetTargetSize(GSVector2i* unscaled_size = nullptr);
 
 	void Reset(bool hardware_reset) override;
 	void UpdateSettings(const Pcsx2Config::GSOptions& old_config) override;

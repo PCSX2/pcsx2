@@ -639,12 +639,9 @@ void MainWindow::setStyleFromSettings()
 		// Alternative dark theme.
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
-		const QColor lighterGray(75, 75, 75);
 		const QColor gray(128, 128, 128);
-		const QColor black(25, 25, 25);
 		const QColor slate(18, 18, 18);
 		const QColor rubyish(172, 21, 31);
-
 
 		QPalette darkPalette;
 		darkPalette.setColor(QPalette::Window, slate);
