@@ -11555,12 +11555,16 @@ SLES-51258:
   region: "PAL-M5"
   clampModes:
     vuClampMode: 2 # Fixes polygon clipping in driving missions.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes fog lines in the distance.
 SLES-51260:
   name: "007 - Nightfire"
   region: "PAL-G-S"
   compat: 5
   clampModes:
     vuClampMode: 2 # Fixes polygon clipping in driving missions.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes fog lines in the distance.
 SLES-51265:
   name: "Dynasty Warriors Tactics"
   region: "PAL-E"
@@ -21692,6 +21696,8 @@ SLKA-15044:
 SLKA-25004:
   name: "007 - Nightfire"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes fog lines in the distance.
 SLKA-25006:
   name: "Twin Caliber"
   region: "NTSC-K"
@@ -23031,6 +23037,9 @@ SLPM-55215:
 SLPM-55216:
   name: "Hiiro no Kakera - Tamayori-hime Kitan [Aizou-ban]"
   region: "NTSC-J"
+SLPM-55220:
+  name: "Osouji Sentai Clean Keeper H"
+  region: "NTSC-J"
 SLPM-55221:
   name: "beatmania IIDX 16 EMPRESS + PREMIUM BEST [EMPRESS DISC]"
   region: "NTSC-J"
@@ -24119,6 +24128,9 @@ SLPM-62291:
   region: "NTSC-J"
 SLPM-62292:
   name: "Warrior Blade - Rastan vs. Barbarian"
+  region: "NTSC-J"
+SLPM-62293:
+  name: "Magical Pachinko Cotton - Pachinko Jikki Simulation"
   region: "NTSC-J"
 SLPM-62294:
   name: "Simple 2000 Series Vol. 21 - The Moonlight Tale RPG"
@@ -27317,6 +27329,8 @@ SLPM-65538:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Fixes polygon clipping in driving missions.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes fog lines in the distance.
 SLPM-65539:
   name: "V-Rally 3"
   region: "NTSC-J"
@@ -33222,6 +33236,9 @@ SLPS-20108:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+SLPS-20110:
+  name: "Mezase! Meimon Yakyuubu 2"
+  region: "NTSC-J"
 SLPS-20111:
   name: "Magical Sports - Pro Baseball 2001"
   region: "NTSC-J"
@@ -34904,6 +34921,8 @@ SLPS-25202:
 SLPS-25203:
   name: "007 - Nightfire"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes fog lines in the distance.
 SLPS-25204:
   name: "MotoGP3"
   region: "NTSC-J"
@@ -40468,6 +40487,8 @@ SLUS-20579:
   compat: 5
   clampModes:
     vuClampMode: 2 # Fixes polygon clipping in driving missions.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes fog lines in the distance.
 SLUS-20580:
   name: "FIFA Soccer 2003"
   region: "NTSC-U"

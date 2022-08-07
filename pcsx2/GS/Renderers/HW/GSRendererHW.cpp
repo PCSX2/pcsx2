@@ -2359,6 +2359,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 	// Get alpha value
 	const bool alpha_c0_zero = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().max == 0) && !IsCoverageAlpha();
 	const bool alpha_c0_one = (m_conf.ps.blend_c == 0 && (GetAlphaMinMax().min == 128) && (GetAlphaMinMax().max == 128)) || IsCoverageAlpha();
+	const bool alpha_c0_high_min_one = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().min > 128) && !IsCoverageAlpha();
 	const bool alpha_c0_high_max_one = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().max > 128) && !IsCoverageAlpha();
 	const bool alpha_c2_zero = (m_conf.ps.blend_c == 2 && ALPHA.FIX == 0u);
 	const bool alpha_c2_one = (m_conf.ps.blend_c == 2 && ALPHA.FIX == 128u);
@@ -2713,11 +2714,20 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			m_conf.blend = {true, GSDevice::CONST_ONE, blend.dst, blend.op, m_conf.ps.blend_c == 2, ALPHA.FIX};
 			m_conf.ps.blend_mix = 1;
 
-			// Elide DSB colour output if not used by dest.
-			m_conf.ps.no_color1 |= !GSDevice::IsDualSourceBlendFactor(blend.dst);
-
 			if (blend_mix1)
 			{
+				if (m_conf.ps.blend_b == m_conf.ps.blend_d && (alpha_c0_high_min_one || alpha_c2_high_one))
+				{
+					// Replace Cs*As + Cd*(1 - As) with Cs*As - Cd*(As - 1).
+					// Replace Cs*F + Cd*(1 - F) with Cs*F - Cd*(F - 1).
+					// As - 1 or F - 1 subtraction is only done for the dual source output (hw blending part) since we are changing the equation.
+					// Af will be replaced with As in shader and send it to dual source output.
+					m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::SRC1_ALPHA, GSDevice::OP_SUBTRACT, false, 0};
+					// clr_hw 1 will disable alpha clamp, we can reuse the old bits.
+					m_conf.ps.clr_hw = 1;
+					//m_conf.ps.blend_mix = 0;
+				}
+
 				m_conf.ps.blend_a = 0;
 				m_conf.ps.blend_b = 2;
 				m_conf.ps.blend_d = 2;
@@ -2742,6 +2752,9 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 				// Swap Ad with As for hw blend
 				m_conf.ps.clr_hw = 6;
 			}
+
+			// Elide DSB colour output if not used by dest.
+			m_conf.ps.no_color1 |= !GSDevice::IsDualSourceBlendFactor(blend.dst);
 		}
 		else
 		{
