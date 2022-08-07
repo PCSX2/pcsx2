@@ -6312,6 +6312,8 @@ SCPS-55014:
 SCPS-55015:
   name: "Zettai Zetsumei Toshi"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes incorrect blur effect.
 SCPS-55016:
   name: "Jet de Go! 2"
   region: "NTSC-J"
@@ -6543,6 +6545,8 @@ SCPS-56011:
 SCPS-56012:
   name: "Raw Danger"
   region: "NTSC-K"
+  gsHWFixes:
+    autoFlush: 1 # Fixes incorrect blur effect.
 SCPS-56014:
   name: "Gungrave"
   region: "NTSC-K"
@@ -11654,6 +11658,8 @@ SLES-51298:
 SLES-51301:
   name: "SOS - The Final Escape"
   region: "PAL-M3"
+  gsHWFixes:
+    autoFlush: 1 # Fixes incorrect blur effect.
 SLES-51302:
   name: "Bomberman Kart"
   region: "PAL-M3"
@@ -34609,6 +34615,8 @@ SLPS-25113:
   name: "Zettai Zetsumei Toshi"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes incorrect blur effect.
 SLPS-25114:
   name: "G-Breaker - Daisanshi Cloudia Taisen"
   region: "NTSC-J"
@@ -37606,6 +37614,8 @@ SLPS-73203:
 SLPS-73204:
   name: "Zettai Zetsumi Toshi [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes incorrect blur effect.
 SLPS-73205:
   name: "Ace Combat 04 - Shattered Skies [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -40387,6 +40397,8 @@ SLUS-20561:
   name: "Disaster Report"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes incorrect blur effect.
 SLUS-20562:
   name: "dot hack - Mutation Part 2"
   region: "NTSC-U"
@@ -47001,6 +47013,8 @@ SLUS-28023:
 SLUS-28025:
   name: "Disaster Report [Trade Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    autoFlush: 1 # Fixes incorrect blur effect.
 SLUS-28026:
   name: "Everquest Online Adventures [Beta Vol.3.0]"
   region: "NTSC-U"
