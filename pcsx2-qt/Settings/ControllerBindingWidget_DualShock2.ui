@@ -1192,28 +1192,6 @@
         <string>Pressure Modifier</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_34">
-        <item row="0" column="1">
-         <widget class="QDoubleSpinBox" name="PressureModifier">
-          <property name="minimumSize">
-           <size>
-            <width>80</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="suffix">
-           <string>x</string>
-          </property>
-          <property name="maximum">
-           <double>1.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.010000000000000</double>
-          </property>
-          <property name="value">
-           <double>0.500000000000000</double>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="0">
          <widget class="InputBindingWidget" name="Pressure">
           <property name="sizePolicy">
