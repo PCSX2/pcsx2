@@ -17936,7 +17936,7 @@ SLES-54164:
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
-    roundSprite: 2 # Fixes font artifacts.
+    halfPixelOffset: 1 # Fixes extreme ghosting.
 SLES-54165:
   name: "One Piece - Grand Adventure"
   region: "PAL-E"
@@ -22687,6 +22687,8 @@ SLKA-25397:
   name: "Dragon Ball Z Sparking NEO"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes extreme ghosting.
 SLKA-25401:
   name: "FlatOut 2"
   region: "NTSC-K"
@@ -36710,6 +36712,8 @@ SLPS-25689:
 SLPS-25690:
   name: "Dragon Ball Z - Sparking Neo"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes extreme ghosting.
 SLPS-25691:
   name: "Captain Tsubasa"
   region: "NTSC-J"
@@ -44841,7 +44845,7 @@ SLUS-21441:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    roundSprite: 2 # Fixes font artifacts.
+    halfPixelOffset: 1 # Fixes extreme ghosting.
 SLUS-21442:
   name: "Super Dragon Ball Z"
   region: "NTSC-U"
