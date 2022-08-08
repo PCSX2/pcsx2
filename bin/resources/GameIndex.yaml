@@ -4528,6 +4528,9 @@ SCKA-10006:
 SCKA-10007:
   name: "EyeToy - Tales"
   region: "NTSC-K"
+SCKA-20001:
+  name: "XI Go"
+  region: "NTSC-K"
 SCKA-20003:
   name: "War of the Monsters - Kaijuu Daigekisen"
   region: "NTSC-K"
@@ -6312,6 +6315,8 @@ SCPS-55014:
 SCPS-55015:
   name: "Zettai Zetsumei Toshi"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes incorrect blur effect.
 SCPS-55016:
   name: "Jet de Go! 2"
   region: "NTSC-J"
@@ -6542,6 +6547,11 @@ SCPS-56011:
   region: "NTSC-K"
 SCPS-56012:
   name: "Raw Danger"
+  region: "NTSC-K"
+  gsHWFixes:
+    autoFlush: 1 # Fixes incorrect blur effect.
+SCPS-56013:
+  name: "This is Football 2003"
   region: "NTSC-K"
 SCPS-56014:
   name: "Gungrave"
@@ -11654,6 +11664,8 @@ SLES-51298:
 SLES-51301:
   name: "SOS - The Final Escape"
   region: "PAL-M3"
+  gsHWFixes:
+    autoFlush: 1 # Fixes incorrect blur effect.
 SLES-51302:
   name: "Bomberman Kart"
   region: "PAL-M3"
@@ -17309,6 +17321,8 @@ SLES-53870:
   name: "Devil Kings"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom.
 SLES-53871:
   name: "Tengai"
   region: "PAL-E"
@@ -21661,6 +21675,9 @@ SLKA-15011:
 SLKA-15013:
   name: "Grand Slam 2003 Tennis" # Hard Hitter 2
   region: "NTSC-K"
+SLKA-15016:
+  name: "Harry Potter - Quidditch World Cup"
+  region: "NTSC-K"
 SLKA-15018:
   name: "Kidou Senshi Gundam Seed"
   region: "NTSC-K"
@@ -21674,6 +21691,9 @@ SLKA-15021:
   compat: 5
   gameFixes:
     - OPHFlagHack
+SLKA-15023:
+  name: "Assault Suits Valken"
+  region: "NTSC-K"
 SLKA-15028:
   name: "Simple 2000 Series Ultimate Vol. 6 - Love - Upper!"
   region: "NTSC-K"
@@ -21689,6 +21709,9 @@ SLKA-15032:
   compat: 5
 SLKA-15033:
   name: "Princess Maker 2"
+  region: "NTSC-K"
+SLKA-15043:
+  name: "Super Puzzle Bobble Collection Vol 1"
   region: "NTSC-K"
 SLKA-15044:
   name: "Super Puzzle Bobble 2"
@@ -21916,6 +21939,11 @@ SLKA-25084:
 SLKA-25085:
   name: "Shin Sangoku Musou 3 - Mushouden"
   region: "NTSC-K"
+SLKA-25086:
+  name: "NBA Live 2004"
+  region: "NTSC-K"
+  clampModes:
+    vuClampMode: 2 # Missing geometry with microVU.
 SLKA-25087:
   name: "FIFA Soccer 2004"
   region: "NTSC-J"
@@ -21964,6 +21992,9 @@ SLKA-25108:
   region: "NTSC-K"
 SLKA-25109:
   name: "Shirachuu Tankenbu"
+  region: "NTSC-K"
+SLKA-25110:
+  name: "NBA Live 2005"
   region: "NTSC-K"
 SLKA-25111:
   name: "King of Fighters 2001, The"
@@ -22378,9 +22409,17 @@ SLKA-25268:
 SLKA-25270:
   name: "Armored Core - Formula Front"
   region: "NTSC-K"
+SLKA-25274:
+  name: "Princess Maker 4"
+  region: "NTSC-K"
 SLKA-25275:
   name: "King of Fighters 2002-2003, The"
   region: "NTSC-K"
+SLKA-25277:
+  name: "Brothers In Arms - Road to Hill 30"
+  region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness, there are still ghosting issues for like lighting poles.
 SLKA-25279:
   name: "Hello Kitty - Rescue Mission"
   region: "NTSC-K"
@@ -22506,6 +22545,11 @@ SLKA-25323:
 SLKA-25325:
   name: "SSX On Tour"
   region: "NTSC-K"
+SLKA-25327:
+  name: "Harry Potter and the Goblet of Fire"
+  region: "NTSC-K"
+  gsHWFixes:
+    mipmap: 1
 SLKA-25328:
   name: "Castlevania - Curse of Darkness"
   region: "NTSC-K"
@@ -25510,6 +25554,9 @@ SLPM-64502:
     vuClampMode: 3 # Fixes missing 3D polygons when going ingame.
 SLPM-64504:
   name: "Maximo"
+  region: "NTSC-K"
+SLPM-64507:
+  name: "Wave Rally"
   region: "NTSC-K"
 SLPM-64509:
   name: "Crash Bandicoot - Return of the Demon King [English Dub Edition]" # Wrath of Cortex
@@ -32447,6 +32494,13 @@ SLPM-67513:
 SLPM-67514:
   name: "Kessen"
   region: "NTSC-K"
+SLPM-67515:
+  name: "Metal Gear Solid 2 - Sons of Liberty"
+  region: "NTSC-K"
+  gameFixes:
+    - DMABusyHack # Fixes broken half-bottom artifacts
+  gsHWFixes:
+    texturePreloading: 1 # Fixes micro stuttering.
 SLPM-67518:
   name: "Onimusha 2 Samurai's Destiny"
   region: "NTSC-K"
@@ -34609,6 +34663,8 @@ SLPS-25113:
   name: "Zettai Zetsumei Toshi"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes incorrect blur effect.
 SLPS-25114:
   name: "G-Breaker - Daisanshi Cloudia Taisen"
   region: "NTSC-J"
@@ -37205,6 +37261,8 @@ SLPS-25854:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 0 # In-game background visible.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness when upscaling.
 SLPS-25855:
   name: "Battle of Sunrise"
   region: "NTSC-J"
@@ -37606,6 +37664,8 @@ SLPS-73203:
 SLPS-73204:
   name: "Zettai Zetsumi Toshi [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes incorrect blur effect.
 SLPS-73205:
   name: "Ace Combat 04 - Shattered Skies [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -40387,6 +40447,8 @@ SLUS-20561:
   name: "Disaster Report"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes incorrect blur effect.
 SLUS-20562:
   name: "dot hack - Mutation Part 2"
   region: "NTSC-U"
@@ -43975,6 +44037,8 @@ SLUS-21297:
   name: "Devil Kings"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom.
 SLUS-21298:
   name: "NCAA March Madness '06"
   region: "NTSC-U"
@@ -46240,6 +46304,8 @@ SLUS-21779:
   compat: 5
   clampModes:
     eeClampMode: 0 # In-game background visible.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness when upscaling.
 SLUS-21780:
   name: "Ferrari Challenge"
   region: "NTSC-U"
@@ -47001,6 +47067,8 @@ SLUS-28023:
 SLUS-28025:
   name: "Disaster Report [Trade Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    autoFlush: 1 # Fixes incorrect blur effect.
 SLUS-28026:
   name: "Everquest Online Adventures [Beta Vol.3.0]"
   region: "NTSC-U"
