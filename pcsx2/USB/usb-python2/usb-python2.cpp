@@ -11,6 +11,7 @@
 #ifndef PCSX2_CORE
 #include "gui/StringHelpers.h"
 #include "gui/AppConfig.h"
+#include "GS/GS.h"
 #endif
 
 #ifdef PCSX2_CORE
@@ -1235,6 +1236,10 @@ namespace usb_python2
 #ifndef PCSX2_CORE
 		g_Conf->EnableGameFixes = true;
 		g_Conf->EmuOptions.Gamefixes.Set(Fix_OPHFlag, true);
+
+		// Fix bottom of screen being fixed (applies to both 31kHz and non-31kHz modes)
+		GSConfig.PCRTCOffsets = false;
+		GSConfig.PCRTCOverscan = true;
 #else
 		EmuConfig.EnableGameFixes = true;
 #endif

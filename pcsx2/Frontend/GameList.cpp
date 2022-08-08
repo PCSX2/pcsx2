@@ -450,6 +450,8 @@ bool GameList::GetPython2ListEntry(const std::string& path, GameList::Entry* ent
 	sif->SetStringValue("Python2/System", "IlinkIdFile", ilink_id_path.c_str());
 	sif->SetBoolValue("DEV9/Eth", "EthEnable", true);
 	sif->SetBoolValue("EmuCore/Gamefixes", "OPHFlagHack", true);
+	sif->SetBoolValue("EmuCore/GS", "pcrtc_offsets", false);
+	sif->SetBoolValue("EmuCore/GS", "pcrtc_overscan", true);
 
 	if (!sif->ContainsValue("Python2/Game", "DongleBlackFile")) {
 		std::string dongleBlackFile;
