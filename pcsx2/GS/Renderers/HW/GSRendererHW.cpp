@@ -2713,6 +2713,9 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			// For mixed blend, the source blend is done in the shader (so we use CONST_ONE as a factor).
 			m_conf.blend = {true, GSDevice::CONST_ONE, blend.dst, blend.op, m_conf.ps.blend_c == 2, ALPHA.FIX};
 			m_conf.ps.blend_mix = 1;
+			
+			// Elide DSB colour output if not used by dest.
+			m_conf.ps.no_color1 |= !GSDevice::IsDualSourceBlendFactor(blend.dst);
 
 			if (blend_mix1)
 			{
@@ -2726,6 +2729,8 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 					// clr_hw 1 will disable alpha clamp, we can reuse the old bits.
 					m_conf.ps.clr_hw = 1;
 					//m_conf.ps.blend_mix = 0;
+					// DSB output will always be used.
+					m_conf.ps.no_color1 = false;
 				}
 
 				m_conf.ps.blend_a = 0;
@@ -2752,9 +2757,6 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 				// Swap Ad with As for hw blend
 				m_conf.ps.clr_hw = 6;
 			}
-
-			// Elide DSB colour output if not used by dest.
-			m_conf.ps.no_color1 |= !GSDevice::IsDualSourceBlendFactor(blend.dst);
 		}
 		else
 		{
