@@ -37261,6 +37261,8 @@ SLPS-25854:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 0 # In-game background visible.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness when upscaling.
 SLPS-25855:
   name: "Battle of Sunrise"
   region: "NTSC-J"
@@ -46302,6 +46304,8 @@ SLUS-21779:
   compat: 5
   clampModes:
     eeClampMode: 0 # In-game background visible.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness when upscaling.
 SLUS-21780:
   name: "Ferrari Challenge"
   region: "NTSC-U"
