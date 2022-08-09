@@ -27,6 +27,9 @@
 #include "common/Assertions.h"
 #include "common/CocoaTools.h"
 #include "common/FileSystem.h"
+#include "common/Path.h"
+
+#include "Frontend/INISettingsInterface.h"
 
 #include "pcsx2/CDVD/CDVDcommon.h"
 #include "pcsx2/CDVD/CDVDdiscReader.h"
@@ -2155,6 +2158,10 @@ void MainWindow::startGameListEntry(const GameList::Entry* entry, std::optional<
 		params->save_state = std::move(state_filename);
 	}
 
+	if (params->is_python2 && !verifyPython2Configuration(entry)) {
+		return;
+	}
+
 	g_emu_thread->startVM(std::move(params));
 }
 
@@ -2478,4 +2485,81 @@ bool QtHost::IsVMValid()
 bool QtHost::IsVMPaused()
 {
 	return s_vm_paused;
+}
+
+bool MainWindow::verifyPython2Configuration(const GameList::Entry* entry)
+{
+	bool valid = true;
+	std::string filename(VMManager::GetGameSettingsPath(entry->serial, entry->crc));
+	std::unique_ptr<INISettingsInterface> si = std::make_unique<INISettingsInterface>(std::move(filename));
+
+	if (!FileSystem::FileExists(si->GetFileName().c_str())) {
+		QMessageBox::critical(nullptr, tr("Error"), tr("Could not find required file: '%1'").arg(QString::fromStdString(si->GetFileName())));
+		return false;
+	}
+
+	si->Load();
+
+	// Check for all files required for Python 2 to work
+	// MG
+	std::string civPath = Path::Combine(EmuFolders::Bios, "civ.bin");
+	std::string cksPath = Path::Combine(EmuFolders::Bios, "cks.bin");
+	std::string eksPath = Path::Combine(EmuFolders::Bios, "eks.bin");
+	std::string kekPath = Path::Combine(EmuFolders::Bios, "kek.bin");
+
+	if (!FileSystem::FileExists(civPath.c_str())) {
+		QMessageBox::critical(nullptr, tr("Error"), tr("Could not find required file: '%1'").arg(QString::fromStdString(civPath)));
+		Console.Error("Could not find required file: '%s'", civPath.c_str());
+		valid = false;
+	}
+
+	if (!FileSystem::FileExists(cksPath.c_str())) {
+		QMessageBox::critical(nullptr, tr("Error"), tr("Could not find required file: '%1'").arg(QString::fromStdString(cksPath)));
+		Console.Error("Could not find required file: '%s'", cksPath.c_str());
+		valid = false;
+	}
+
+	if (!FileSystem::FileExists(eksPath.c_str())) {
+		QMessageBox::critical(nullptr, tr("Error"), tr("Could not find required file: '%1'").arg(QString::fromStdString(eksPath)));
+		Console.Error("Could not find required file: '%s'", eksPath.c_str());
+		valid = false;
+	}
+
+	if (!FileSystem::FileExists(kekPath.c_str())) {
+		QMessageBox::critical(nullptr, tr("Error"), tr("Could not find required file: '%1'").arg(QString::fromStdString(kekPath)));
+		Console.Error("Could not find required file: '%s'", kekPath.c_str());
+		valid = false;
+	}
+
+	// HDD
+	const std::string hddPath = si->GetStringValue("DEV9/Hdd", "HddFile", "");
+	if (hddPath.empty() || !FileSystem::FileExists(hddPath.c_str())) {
+		QMessageBox::critical(nullptr, tr("Error"), tr("Could not find required HDD image file: '%1'").arg(QString::fromStdString(hddPath)));
+		Console.Error("Could not find required HDD image file: '%s'", hddPath.c_str());
+		valid = false;
+	}
+
+	// HDD ID + ILINK ID
+	const std::string hddIdPath = si->GetStringValue("DEV9/Hdd", "HddIdFile", "");
+	if (hddIdPath.empty() || !FileSystem::FileExists(hddIdPath.c_str())) {
+		Console.Error("Could not find HDD ID file: '%s'", hddIdPath.c_str());
+	}
+
+	const std::string ilinkIdPath = si->GetStringValue("Python2/System", "IlinkIdFile", "");
+	if (ilinkIdPath.empty() || !FileSystem::FileExists(ilinkIdPath.c_str())) {
+		Console.Error("Could not find ILINK ID file: '%s'", ilinkIdPath.c_str());
+	}
+
+	// Dongles
+	const std::string dongleBlackPath = si->GetStringValue("Python2/Game", "DongleBlackFile", "");
+	if (dongleBlackPath.empty() || !FileSystem::FileExists(dongleBlackPath.c_str())) {
+		Console.Error("Could not find black dongle file: '%s'", dongleBlackPath.c_str());
+	}
+
+	const std::string dongleWhitePath = si->GetStringValue("Python2/Game", "DongleWhiteFile", "");
+	if (dongleWhitePath.empty() || !FileSystem::FileExists(dongleWhitePath.c_str())) {
+		Console.Error("Could not find white dongle file: '%s'", dongleWhitePath.c_str());
+	}
+
+	return valid;
 }
