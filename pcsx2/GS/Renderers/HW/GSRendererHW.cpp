@@ -2914,6 +2914,12 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 					// DSB output will always be used.
 					m_conf.ps.no_color1 = false;
 				}
+				else if (m_conf.ps.blend_a == m_conf.ps.blend_d)
+				{
+					// Compensate slightly for Cd*(As + 1) - Cs*As.
+					// Try to compensate a bit with subtracting 1 (0.00392) * (Alpha + 1) from Cs.
+					m_conf.ps.clr_hw = 2;
+				}
 
 				m_conf.ps.blend_a = 0;
 				m_conf.ps.blend_b = 2;
