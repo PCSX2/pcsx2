@@ -349,19 +349,19 @@ bool GameList::GetPython2ListEntry(const std::string& path, GameList::Entry* ent
 	std::string hdd_id_path;
 	new_interface->GetStringValue("Game", "HddIdPath", &hdd_id_path);
 	if (!hdd_id_path.empty() && !Path::IsAbsolute(hdd_id_path)) {
-		hdd_id_path = std::string(Path::Combine(Path::GetDirectory(path), hdd_id_path));
+		hdd_id_path = std::string(Path::Canonicalize(Path::Combine(Path::GetDirectory(path), hdd_id_path)));
 	}
 
 	std::string ilink_id_path;
 	new_interface->GetStringValue("Game", "IlinkIdPath", &ilink_id_path);
 	if (!ilink_id_path.empty() && !Path::IsAbsolute(ilink_id_path)) {
-		ilink_id_path = std::string(Path::Combine(Path::GetDirectory(path), ilink_id_path));
+		ilink_id_path = std::string(Path::Canonicalize(Path::Combine(Path::GetDirectory(path), ilink_id_path)));
 	}
 
 	std::string hdd_image_path;
 	new_interface->GetStringValue("Game", "HddImagePath", &hdd_image_path);
 	if (!hdd_image_path.empty() && !Path::IsAbsolute(hdd_image_path)) {
-		hdd_image_path = std::string(Path::Combine(Path::GetDirectory(path), hdd_image_path));
+		hdd_image_path = std::string(Path::Canonicalize(Path::Combine(Path::GetDirectory(path), hdd_image_path)));
 	}
 
 	std::string game_title = new_interface->GetStringValue("Game", "Name", path.c_str());
@@ -458,7 +458,7 @@ bool GameList::GetPython2ListEntry(const std::string& path, GameList::Entry* ent
 		new_interface->GetStringValue("Game", "DongleBlackPath", &dongleBlackFile);
 
 		if (!dongleBlackFile.empty() && !Path::IsAbsolute(dongleBlackFile)) {
-			dongleBlackFile = std::string(Path::Combine(Path::GetDirectory(path), dongleBlackFile));
+			dongleBlackFile = std::string(Path::Canonicalize(Path::Combine(Path::GetDirectory(path), dongleBlackFile)));
 		}
 
 		if (!dongleBlackFile.empty())
@@ -470,7 +470,7 @@ bool GameList::GetPython2ListEntry(const std::string& path, GameList::Entry* ent
 		new_interface->GetStringValue("Game", "DongleWhitePath", &dongleWhiteFile);
 
 		if (!dongleWhiteFile.empty() && !Path::IsAbsolute(dongleWhiteFile)) {
-			dongleWhiteFile = std::string(Path::Combine(Path::GetDirectory(path), dongleWhiteFile));
+			dongleWhiteFile = std::string(Path::Canonicalize(Path::Combine(Path::GetDirectory(path), dongleWhiteFile)));
 		}
 
 		if (!dongleWhiteFile.empty())
@@ -482,7 +482,7 @@ bool GameList::GetPython2ListEntry(const std::string& path, GameList::Entry* ent
 		new_interface->GetStringValue("Game", "Player1Card", &player1CardFile);
 
 		if (!player1CardFile.empty() && !Path::IsAbsolute(player1CardFile)) {
-			player1CardFile = std::string(Path::Combine(Path::GetDirectory(path), player1CardFile));
+			player1CardFile = std::string(Path::Canonicalize(Path::Combine(Path::GetDirectory(path), player1CardFile)));
 		}
 
 		if (!player1CardFile.empty())
@@ -494,7 +494,7 @@ bool GameList::GetPython2ListEntry(const std::string& path, GameList::Entry* ent
 		new_interface->GetStringValue("Game", "Player2Card", &player2CardFile);
 
 		if (!player2CardFile.empty() && !Path::IsAbsolute(player2CardFile)) {
-			player2CardFile = std::string(Path::Combine(Path::GetDirectory(path), player2CardFile));
+			player2CardFile = std::string(Path::Canonicalize(Path::Combine(Path::GetDirectory(path), player2CardFile)));
 		}
 
 		if (!player2CardFile.empty())
@@ -507,7 +507,7 @@ bool GameList::GetPython2ListEntry(const std::string& path, GameList::Entry* ent
 		new_interface->GetStringValue("Game", "PatchFile", &patchFile);
 
 		if (!patchFile.empty() && !Path::IsAbsolute(patchFile)) {
-			patchFile = std::string(Path::Combine(Path::GetDirectory(path), patchFile));
+			patchFile = std::string(Path::Canonicalize(Path::Combine(Path::GetDirectory(path), patchFile)));
 		}
 		if (!patchFile.empty())
 			sif->SetStringValue("Python2/Game", "PatchFile", patchFile.c_str());
