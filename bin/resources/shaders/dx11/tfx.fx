@@ -778,8 +778,9 @@ void ps_blend(inout float4 Color, inout float As, float2 pos_xy)
 
 		// As/Af clamp alpha for Blend mix
 		// We shouldn't clamp blend mix with clr1 as we want alpha higher
+		float C_clamped = C;
 		if (PS_BLEND_MIX > 0 && PS_CLR_HW != 1)
-			C = min(C, 1.0f);
+			C_clamped = min(C_clamped, 1.0f);
 
 		if (PS_BLEND_A == PS_BLEND_B)
 			Color.rgb = D;
@@ -791,9 +792,9 @@ void ps_blend(inout float4 Color, inout float As, float2 pos_xy)
 		// Based on the scripts at the above link, the ideal choice for Intel GPUs is 126/256, AMD 120/256.  Nvidia is a lost cause.
 		// 124/256 seems like a reasonable compromise, providing the correct answer 99.3% of the time on Intel (vs 99.6% for 126/256), and 97% of the time on AMD (vs 97.4% for 120/256).
 		else if (PS_BLEND_MIX == 2)
-				Color.rgb = ((A - B) * C + D) + (124.0f/256.0f);
+			Color.rgb = ((A - B) * C_clamped + D) + (124.0f / 256.0f);
 		else if (PS_BLEND_MIX == 1)
-				Color.rgb = ((A - B) * C + D) - (124.0f/256.0f);
+			Color.rgb = ((A - B) * C_clamped + D) - (124.0f / 256.0f);
 		else
 			Color.rgb = trunc(((A - B) * C) + D);
 
@@ -810,6 +811,16 @@ void ps_blend(inout float4 Color, inout float As, float2 pos_xy)
 			float min_color = min(min(Color.r, Color.g), Color.b);
 			float alpha_compensate = max(1.0f, min_color / 255.0f);
 			As -= alpha_compensate;
+		}
+		else if (PS_CLR_HW == 2)
+		{
+			// Compensate slightly for Cd*(As + 1) - Cs*As.
+			// The initial factor we chose is 1 (0.00392)
+			// as that is the minimum color Cd can be,
+			// then we multiply by alpha to get the minimum
+			// blended value it can be.
+			float color_compensate = 1.0f * (C + 1.0f);
+			Color.rgb -= (float3)color_compensate;
 		}
 	}
 	else
