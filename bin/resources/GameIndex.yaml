@@ -911,6 +911,7 @@ SCAJ-20104:
     roundSprite: 2 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs better than full.
 SCAJ-20105:
   name: "Armored Core - Nine breaker"
   region: "NTSC-Unk"
@@ -1083,6 +1084,7 @@ SCAJ-20136:
     roundSprite: 2 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs better than full.
 SCAJ-20137:
   name: "Musashiden II - Blademaster"
   region: "NTSC-Unk"
@@ -3373,6 +3375,7 @@ SCES-52424:
     roundSprite: 2 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs better than full.
   patches:
     1D54FEA9:
       content: |-
@@ -15051,6 +15054,8 @@ SLES-52950:
   name: "Shadow of Rome"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Removes Blurriness.
 SLES-52951:
   name: "Phantom Brave"
   region: "PAL-E"
@@ -17936,7 +17941,7 @@ SLES-54164:
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
-    roundSprite: 2 # Fixes font artifacts.
+    halfPixelOffset: 1 # Fixes extreme ghosting.
 SLES-54165:
   name: "One Piece - Grand Adventure"
   region: "PAL-E"
@@ -22687,6 +22692,8 @@ SLKA-25397:
   name: "Dragon Ball Z Sparking NEO"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes extreme ghosting.
 SLKA-25401:
   name: "FlatOut 2"
   region: "NTSC-K"
@@ -28501,6 +28508,8 @@ SLPM-65882:
 SLPM-65883:
   name: "Shadow of Rome"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Removes Blurriness.
 SLPM-65884:
   name: "Remote Control Dandy SF"
   region: "NTSC-J"
@@ -31592,6 +31601,8 @@ SLPM-66744:
 SLPM-66745:
   name: "Shadow of Rome [CapKore]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Removes Blurriness.
 SLPM-66746:
   name: "Guilty Gear XX - Accent Core"
   region: "NTSC-J"
@@ -35719,6 +35730,7 @@ SLPS-25418:
     roundSprite: 2 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs better than full.
   patches:
     86089F31:
       content: |-
@@ -36710,6 +36722,8 @@ SLPS-25689:
 SLPS-25690:
   name: "Dragon Ball Z - Sparking Neo"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes extreme ghosting.
 SLPS-25691:
   name: "Captain Tsubasa"
   region: "NTSC-J"
@@ -37736,6 +37750,7 @@ SLPS-73218:
     roundSprite: 2 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs better than full.
 SLPS-73219:
   name: "Tales of Destiny 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -41759,6 +41774,7 @@ SLUS-20851:
     roundSprite: 2 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs better than full.
   patches:
     39B574F0:
       content: |-
@@ -42011,6 +42027,8 @@ SLUS-20902:
   name: "Shadow of Rome"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Removes Blurriness.
 SLUS-20903:
   name: "Mega Man X - Command Mission"
   region: "NTSC-U"
@@ -44841,7 +44859,7 @@ SLUS-21441:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    roundSprite: 2 # Fixes font artifacts.
+    halfPixelOffset: 1 # Fixes extreme ghosting.
 SLUS-21442:
   name: "Super Dragon Ball Z"
   region: "NTSC-U"
@@ -47567,6 +47585,8 @@ SLUS-29138:
 SLUS-29139:
   name: "Shadow of Rome [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 1 # Removes Blurriness.
 SLUS-29140:
   name: "MX vs. ATV Unleashed [Demo]"
   region: "NTSC-U"
