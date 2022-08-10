@@ -17,6 +17,7 @@
 
 #include "common/Pcsx2Defs.h"
 
+#include <ctime>
 #include <functional>
 #include <string>
 #include <string_view>
@@ -51,6 +52,9 @@ namespace Host
 
 	/// Reads a resource file file from the resources directory as a string.
 	std::optional<std::string> ReadResourceFileToString(const char* filename);
+
+	/// Returns the modified time of a resource.
+	std::optional<std::time_t> GetResourceFileTimestamp(const char* filename);
 
 	/// Adds OSD messages, duration is in seconds.
 	void AddOSDMessage(std::string message, float duration = 2.0f);

@@ -84,6 +84,16 @@ std::optional<std::string> Host::ReadResourceFileToString(const char* filename)
 	return ret;
 }
 
+std::optional<std::time_t> Host::GetResourceFileTimestamp(const char* filename)
+{
+	const std::string path(Path::Combine(EmuFolders::Resources, filename));
+	FILESYSTEM_STAT_DATA sd;
+	if (!FileSystem::StatFile(filename, &sd))
+		return std::nullopt;
+
+	return sd.ModificationTime;
+}
+
 bool Host::GetBoolSettingValue(const char* section, const char* key, bool default_value /* = false */)
 {
 	return default_value;
