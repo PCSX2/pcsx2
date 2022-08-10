@@ -911,6 +911,7 @@ SCAJ-20104:
     roundSprite: 2 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs better than full.
 SCAJ-20105:
   name: "Armored Core - Nine breaker"
   region: "NTSC-Unk"
@@ -1083,6 +1084,7 @@ SCAJ-20136:
     roundSprite: 2 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs better than full.
 SCAJ-20137:
   name: "Musashiden II - Blademaster"
   region: "NTSC-Unk"
@@ -3373,6 +3375,7 @@ SCES-52424:
     roundSprite: 2 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs better than full.
   patches:
     1D54FEA9:
       content: |-
@@ -35727,6 +35730,7 @@ SLPS-25418:
     roundSprite: 2 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs better than full.
   patches:
     86089F31:
       content: |-
@@ -37746,6 +37750,7 @@ SLPS-73218:
     roundSprite: 2 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs better than full.
 SLPS-73219:
   name: "Tales of Destiny 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -41769,6 +41774,7 @@ SLUS-20851:
     roundSprite: 2 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs better than full.
   patches:
     39B574F0:
       content: |-
