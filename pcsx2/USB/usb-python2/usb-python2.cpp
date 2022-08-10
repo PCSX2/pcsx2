@@ -574,7 +574,7 @@ namespace usb_python2
 		if (s->buf.size() < sizeof(P2IO_PACKET_HEADER))
 			return;
 
-		const P2IO_PACKET_HEADER* header = (P2IO_PACKET_HEADER*)s->buf.data();
+		const P2IO_PACKET_HEADER* header = reinterpret_cast<P2IO_PACKET_HEADER*>(s->buf.data());
 		const size_t totalPacketLen = header->len + 2; // header byte + sequence byte
 
 		if (s->buf.size() >= totalPacketLen && header->magic == P2IO_HEADER_MAGIC)
@@ -743,11 +743,11 @@ namespace usb_python2
 
 					if (s->isMinimaidConnected)
 					{
-						curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_UPPER_LEFT, (((s->buf[5] & 0xf3) | 0x73) == 0x73) ? 1 : 0);
-						curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_LOWER_LEFT, (((s->buf[5] & 0xf3) | 0xb3) == 0xb3) ? 1 : 0);
-						curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_UPPER_RIGHT, (((s->buf[5] & 0xf3) | 0xd3) == 0xd3) ? 1 : 0);
-						curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_LOWER_RIGHT, (((s->buf[5] & 0xf3) | 0xe3) == 0xe3) ? 1 : 0);
-						curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_PLAYER1_PANEL, (((s->buf[5] & 0xf3) | 0xf2) == 0xf2) ? 1 : 0);
+						mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_UPPER_LEFT, (((s->buf[5] & 0xf3) | 0x73) == 0x73) ? 1 : 0);
+						mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_LOWER_LEFT, (((s->buf[5] & 0xf3) | 0xb3) == 0xb3) ? 1 : 0);
+						mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_UPPER_RIGHT, (((s->buf[5] & 0xf3) | 0xd3) == 0xd3) ? 1 : 0);
+						mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_LOWER_RIGHT, (((s->buf[5] & 0xf3) | 0xe3) == 0xe3) ? 1 : 0);
+						mm_setDDRCabinetLight(DDR_DOUBLE_PLAYER1_PANEL, (((s->buf[5] & 0xf3) | 0xf2) == 0xf2) ? 1 : 0);
 						curLightCabinet = mm_setDDRCabinetLight(DDR_DOUBLE_PLAYER2_PANEL, (((s->buf[5] & 0xf3) | 0xf1) == 0xf1) ? 1 : 0);
 
 						// LAMP_OUT also gets spammed so only send updates when something changes
@@ -884,7 +884,7 @@ namespace usb_python2
 			else
 			{
 #ifdef PCSX2_DEVBUILD
-				printf("usb_python2_handle_data %02x\n", s->buf.size());
+				printf("usb_python2_handle_data %zx\n", s->buf.size());
 				for (size_t i = 0; i < s->buf.size(); i++)
 				{
 					printf("%02x ", s->buf[i]);
@@ -1188,7 +1188,7 @@ namespace usb_python2
 					}
 				}
 
-				if (data.size() <= 0)
+				if (data.size() == 0)
 					data.push_back(0);
 
 				if (data.size() > 0)

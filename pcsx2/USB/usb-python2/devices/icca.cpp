@@ -9,7 +9,7 @@ namespace usb_python2
 {
 	bool acio_icca_device::device_write(std::vector<uint8_t>& packet, std::vector<uint8_t>& outputResponse)
 	{
-		const auto header = (ACIO_PACKET_HEADER*)packet.data();
+		const auto header = reinterpret_cast<ACIO_PACKET_HEADER*>(packet.data());
 		const auto code = BigEndian16(header->code);
 
 		std::vector<uint8_t> response;
@@ -145,9 +145,10 @@ namespace usb_python2
 			if (inserted)
 				std::copy(std::begin(cardId), std::end(cardId), &resp[2]);
 
-			uint8_t ev = 0;
 			if (curkey & (keyLastActiveState ^ curkey))
 			{
+				uint8_t ev = 0;
+
 				if (keyLastActiveEvent[0])
 					ev = (keyLastActiveEvent[0] + 0x10) & 0xf0;
 

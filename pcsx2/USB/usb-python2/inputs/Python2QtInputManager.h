@@ -182,7 +182,7 @@ namespace Python2QtInputManager
     std::vector<Python2KeyMapping> GetCurrentMappings();
     std::vector<Python2KeyMapping> GetMappingsByInputKey(std::string keyBindStr);
 
-    bool AddNewBinding(std::string full_key, std::string new_binding, double analogDeadzone, double analogSensitivity, double motorScale);
+    bool AddNewBinding(const std::string& full_key, const std::string& new_binding, double analogDeadzone, double analogSensitivity, double motorScale);
 	void RemoveMappingByUniqueId(uint32_t uniqueId);
 
 	void LoadMapping();

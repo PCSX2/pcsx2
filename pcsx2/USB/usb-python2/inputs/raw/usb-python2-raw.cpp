@@ -14,7 +14,7 @@ namespace usb_python2
 {
 	namespace raw
 	{
-		TSTDSTRING getKeyLabel(const KeyMapping key);
+		std::wstring getKeyLabel(const KeyMapping& key);
 
 		uint32_t axisDiff2[32]; //previous axes values
 		bool axisPass22 = false;

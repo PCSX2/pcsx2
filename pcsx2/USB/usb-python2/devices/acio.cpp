@@ -88,7 +88,7 @@ namespace usb_python2
 			return;
 		}
 
-		const auto header = (ACIO_PACKET_HEADER*)packet.data();
+		const auto header = reinterpret_cast<ACIO_PACKET_HEADER*>(packet.data());
 		if (header->magic != ACIO_HEADER_MAGIC || packet.size() < header->len + sizeof(ACIO_PACKET_HEADER) + 1)
 			return;
 

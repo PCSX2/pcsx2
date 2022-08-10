@@ -25,7 +25,7 @@ namespace usb_python2
 		bool axisPass2 = false;
 		uint32_t uniqueKeybindIdx = 0;
 
-		std::wstring getKeyLabel(const KeyMapping key)
+		std::wstring getKeyLabel(const KeyMapping& key)
 		{
 			TCHAR tmp[256] = {0};
 
@@ -55,8 +55,7 @@ namespace usb_python2
 
 			uniqueKeybindIdx = 0;
 
-			WCHAR sec[1024] = {0}, bind[32] = {0};
-			int v = 0;
+			WCHAR bind[32] = {0};
 			for (int j = 0; j < 25; j++)
 			{
 				TSTDSTRING hid, tmp;
@@ -512,7 +511,7 @@ namespace usb_python2
 					dgHwnd2 = hW;
 					SetWindowLongPtr(hW, GWLP_USERDATA, lParam);
 
-					const Python2DlgConfig* cfg = (Python2DlgConfig*)lParam;
+					const Python2DlgConfig* cfg = reinterpret_cast<Python2DlgConfig*>(lParam);
 
 					LoadMappings(Python2Device::TypeName(), mapVector);
 
@@ -544,7 +543,7 @@ namespace usb_python2
 							{
 								INT_PTR res = RESULT_OK;
 
-								const Python2DlgConfig* cfg = (Python2DlgConfig*)GetWindowLongPtr(hW, GWLP_USERDATA);
+								const Python2DlgConfig* cfg = reinterpret_cast<Python2DlgConfig*>(GetWindowLongPtr(hW, GWLP_USERDATA));
 
 								// Save machine configuration selection
 								auto deviceIdx = ComboBox_GetCurSel(GetDlgItem(hW, IDC_COMBO1));

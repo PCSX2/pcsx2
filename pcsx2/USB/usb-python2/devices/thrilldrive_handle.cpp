@@ -4,11 +4,10 @@ namespace usb_python2
 {
 	bool thrilldrive_handle_device::device_write(std::vector<uint8_t>& packet, std::vector<uint8_t>& outputResponse)
 	{
-		const auto header = (ACIO_PACKET_HEADER*)packet.data();
+		const auto header = reinterpret_cast<ACIO_PACKET_HEADER*>(packet.data());
 		const auto code = BigEndian16(header->code);
 
 		std::vector<uint8_t> response;
-		bool isEmptyResponse = false;
 		if (code == 0x0002)
 		{
 			// Not the real information for this device
@@ -57,7 +56,7 @@ namespace usb_python2
 			response.push_back(0);
 		}
 
-		if (response.size() > 0 || isEmptyResponse)
+		if (response.size() > 0)
 		{
 			outputResponse.insert(outputResponse.end(), response.begin(), response.end());
 			return true;

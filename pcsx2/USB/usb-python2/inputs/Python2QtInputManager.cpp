@@ -23,7 +23,7 @@ std::vector<Python2KeyMapping> Python2QtInputManager::GetMappingsByInputKey(std:
     return std::vector<Python2KeyMapping>();
 }
 
-bool Python2QtInputManager::AddNewBinding(std::string full_key, std::string new_binding, double analogDeadzone, double analogSensitivity, double motorScale)
+bool Python2QtInputManager::AddNewBinding(const std::string& full_key, const std::string& new_binding, double analogDeadzone, double analogSensitivity, double motorScale)
 {
 	uint32_t nextUniqueId = 0;
 	for (;;) {
