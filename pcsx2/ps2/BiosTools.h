@@ -29,21 +29,24 @@ struct BiosDebugInformation
 };
 
 // The following two arrays are used for Qt
-[[maybe_unused]] static const char* BiosZoneStrings[] {
-	"T10K",
-	"Test",
+[[maybe_unused]] static const char* BiosZoneStrings[]{
 	"Japan",
 	"USA",
 	"Europe",
-	"HK",
-	"Free",
+	"Oceania", // cannot be detected from rom0:ROMVER, can be detected with rom1:DVDVER
+	"Asia", // it shares 3 regions: Korea (SCPH-xxx05), Hong Kong (SCPH-xxx06), Taiwan (SCPH-xxx07)
+	"Russia", // cannot be detected from rom0:ROMVER, can be detected with rom1:DVDVER
 	"China",
-	nullptr
+	"Mexico", // cannot be detected from rom0:ROMVER, can be detected with rom1:DVDVER
+	"T10K", // Japan region actually
+	"Test", // Japan region actually
+	"Free",
+	nullptr,
 };
 
 [[maybe_unused]] static const char* BiosZoneBytes[]
 {
-	"T", "X", "J", "A", "E", "H", "P", "C", nullptr
+	"J", "A", "E", "E", "H", "E", "C", "T", "A", "X", "P", nullptr
 };
 
 extern BiosDebugInformation CurrentBiosInformation;

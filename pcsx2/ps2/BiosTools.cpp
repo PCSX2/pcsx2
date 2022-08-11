@@ -92,18 +92,18 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 			switch (romver[4])
 			{
 				// clang-format off
-				case 'T': region = 0; break;
-				case 'X': region = 1; break;
-				case 'J': region = 2; break;
-				case 'A': region = 3; break;
-				case 'E': region = 4; break;
-				case 'H': region = 5; break;
-				case 'P': region = 6; break;
-				case 'C': region = 7; break;
+				case 'J': region = 0; break;
+				case 'A': region = 1; break;
+				case 'E': region = 2; break;
+				case 'H': region = 4; break;
+				case 'C': region = 6; break;
+				case 'T': region = 8; break;
+				case 'X': region = 9; break;
+				case 'P': region = 10; break;
 				// clang-format on
 			}
 
-			if (region <= 7)
+			if (region <= 10)
 			{
 				zone = BiosZoneStrings[region];
 			}

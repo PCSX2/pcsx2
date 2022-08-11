@@ -145,7 +145,16 @@ static void cdvdGetMechaVer(u8* ver)
 			return;
 		}
 
-		u8 version[4] = {0x3, 0x6, 0x2, 0x0};
+		u8 version[4];
+		// converts 1.70 to 7 and 2.30 to 13
+		int index = ((BiosVersion >> 8) - 1) * 10 + ((BiosVersion & 0xff) / 10);
+		if ((index > 13) || (index < 0))
+			index = 13;
+		memcpy(version, &RomverMecha[index], 4);
+		if (BiosRegion < 8)
+			version[0] = BiosRegion;
+		// TODO: Debug units (romver[5] == 'D') has odd minor version number so they need version[2]++
+
 		std::fwrite(version, sizeof(version), 1, fp.get());
 		FileSystem::FSeek64(fp.get(), 0, SEEK_SET);
 	}
