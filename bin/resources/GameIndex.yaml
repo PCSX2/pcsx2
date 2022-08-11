@@ -6545,6 +6545,9 @@ SCPS-56008:
 SCPS-56009:
   name: "Smash Court Pro Tournament"
   region: "NTSC-K"
+SCPS-56010:
+  name: "Downhill Racer"
+  region: "NTSC-K"
 SCPS-56011:
   name: "U - Underwater Unit"
   region: "NTSC-K"
@@ -33426,6 +33429,9 @@ SLPS-20177:
   region: "NTSC-J"
 SLPS-20178:
   name: "Samurai"
+  region: "NTSC-J"
+SLPS-20181:
+  name: "Alpine Racer 3"
   region: "NTSC-J"
 SLPS-20183:
   name: "Motto Golful Golf"
