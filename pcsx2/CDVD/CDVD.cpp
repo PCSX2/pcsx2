@@ -61,6 +61,8 @@ u8 monthmap[13] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 u8 cdvdParamLength[16] = { 0, 0, 0, 0, 0, 4, 11, 11, 11, 1, 255, 255, 7, 2, 11, 1 };
 
+u8 temp_mechaver[4] = {0, 0, 0, 0};
+
 static __fi void SetSCMDResultSize(u8 size)
 {
 	cdvd.SCMDResultC = size;
@@ -878,6 +880,7 @@ void cdvdReset()
 	g_SkipBiosHack = EmuConfig.UseBOOT2Injection;
 
 	cdvdCtrlTrayClose();
+	cdvdGetMechaVer(&temp_mechaver[0]);
 }
 
 struct Freeze_v10Compat
@@ -2228,7 +2231,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				{
 					case 0x00: // get mecha version (1:4)
 						SetSCMDResultSize(4);
-						cdvdGetMechaVer(&cdvd.SCMDResult[0]);
+						memcpy(cdvd.SCMDResult, &temp_mechaver[0], 4);
 						break;
 					case 0x30:
 						SetSCMDResultSize(2);
@@ -2247,21 +2250,67 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 						break;
 
 					case 0xFD: // _sceCdReadRenewalDate (1:6) BCD
-						SetSCMDResultSize(6);
-						cdvd.SCMDResult[0] = 0;
-						cdvd.SCMDResult[1] = 0x04; //year
-						cdvd.SCMDResult[2] = 0x12; //month
-						cdvd.SCMDResult[3] = 0x10; //day
-						cdvd.SCMDResult[4] = 0x01; //hour
-						cdvd.SCMDResult[5] = 0x30; //min
+						switch (temp_mechaver[1])
+						{
+							case 0x01:
+							case 0x02:
+							case 0x03:
+								// Mechacon version prior to v5 doesnt support SCMD 03:FD command
+								SetSCMDResultSize(1);
+								cdvd.SCMDResult[0] = 0x80;
+								break;
+
+							case 0x05:
+								if (temp_mechaver[2] < 0x10)
+								{
+									SetSCMDResultSize(6);
+									memcpy(cdvd.SCMDResult, &MRenewalDate[temp_mechaver[2] >> 1], 6);
+									// 5.6 Mexico differs from other regions 5.6
+									if (((temp_mechaver[2] >> 1) == 3) && (temp_mechaver[0] == 0x07))
+										memcpy(cdvd.SCMDResult, &MRenewalDate[15], 6);
+								}
+								else
+								{
+									SetSCMDResultSize(1);
+									cdvd.SCMDResult[0] = 0x80;
+								}
+								break;
+
+							case 0x06:
+								if (temp_mechaver[2] < 0x0E)
+								{
+									SetSCMDResultSize(6);
+									memcpy(cdvd.SCMDResult, &MRenewalDate[(temp_mechaver[2] >> 1) + 8], 6);
+								}
+								else
+								{
+									SetSCMDResultSize(1);
+									cdvd.SCMDResult[0] = 0x80;
+								}
+								break;
+
+							default:
+								SetSCMDResultSize(1);
+								cdvd.SCMDResult[0] = 0x80;
+								break;
+						}
 						break;
 
 					case 0xEF: // read console temperature (1:3)
-						// This returns a fixed value of 30.5 C
-						SetSCMDResultSize(3);
-						cdvd.SCMDResult[0] = 0; // returns 0 on success
-						cdvd.SCMDResult[1] = 0x0F; // last 8 bits for integer
-						cdvd.SCMDResult[2] = 0x05; // leftmost bit for integer, other 7 bits for decimal place
+						// Mechacon version prior to v5.4 doesnt support SCMD 03:EF command
+						if ((temp_mechaver[1] < 5) || ((temp_mechaver[1] == 5) && (temp_mechaver[2] < 4)))
+						{
+							SetSCMDResultSize(1);
+							cdvd.SCMDResult[0] = 0x80;
+						}
+						else
+						{
+							// This returns a fixed value of 30.5 C
+							SetSCMDResultSize(3);
+							cdvd.SCMDResult[0] = 0; // returns 0 on success
+							cdvd.SCMDResult[1] = 0x0F; // last 8 bits for integer
+							cdvd.SCMDResult[2] = 0x05; // leftmost bit for integer, other 7 bits for decimal place
+						}
 						break;
 
 					default:
@@ -2523,9 +2572,11 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				//			break;
 
 				//		case 0x2D: //sceCdXLEDCtl (2:2)
+				// mechacon >= 5.6
 				//			break;
 
 				//		case 0x2E: //sceCdBuzzerCtl (0:1)
+				// mechacon >= 5.6
 				//			break;
 
 				//		case 0x2F: //cdvdman_call167 (16:1)
@@ -2549,27 +2600,47 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				//			break;
 
 			case 0x36: //cdvdman_call189 [__sceCdReadRegionParams - made up name] (0:15) i think it is 16, not 15
-				SetSCMDResultSize(15);
+				// Mechacon version prior to v6.0 doesnt support SCMD 36 command
+				// except of 5.6 Mexico that has SCMD 36 command partially implemented
+				if (temp_mechaver[1] < 6)
+				{
+					if (!((temp_mechaver[0] == 0x07) && (temp_mechaver[1] == 5) && (temp_mechaver[2] == 6)))
+					{
+						SetSCMDResultSize(1);
+						cdvd.SCMDResult[0] = 0x80;
+					}
+					else
+					{
+						SetSCMDResultSize(3);
+						DevCon.WriteLn("REGION PARAMS = %s", mg_zones[temp_mechaver[0] & 7]);
+						cdvd.SCMDResult[1] = 1 << temp_mechaver[0]; //encryption zone; see offset 0x1C in encrypted headers
+						//////////////////////////////////////////
+						cdvd.SCMDResult[2] = 0; //??
+					}
+				}
+				else
+				{
+					SetSCMDResultSize(15);
 
-				cdvdGetMechaVer(&cdvd.SCMDResult[1]);
-				cdvdReadRegionParams(&cdvd.SCMDResult[3]); //size==8
-				DevCon.WriteLn("REGION PARAMS = %s %s", mg_zones[cdvd.SCMDResult[1] & 7], &cdvd.SCMDResult[3]);
-				cdvd.SCMDResult[1] = 1 << cdvd.SCMDResult[1]; //encryption zone; see offset 0x1C in encrypted headers
-				//////////////////////////////////////////
-				cdvd.SCMDResult[2] = 0; //??
-				//			cdvd.Result[3] == ROMVER[4] == *0xBFC7FF04
-				//			cdvd.Result[4] == OSDVER[4] == CAP			Jjpn, Aeng, Eeng, Heng, Reng, Csch, Kkor?
-				//			cdvd.Result[5] == OSDVER[5] == small
-				//			cdvd.Result[6] == OSDVER[6] == small
-				//			cdvd.Result[7] == OSDVER[7] == small
-				//			cdvd.Result[8] == VERSTR[0x22] == *0xBFC7FF52
-				//			cdvd.Result[9] == DVDID						J U O E A R C M
-				//			cdvd.Result[10]== 0;					//??
-				cdvd.SCMDResult[11] = 0; //??
-				cdvd.SCMDResult[12] = 0; //??
-				//////////////////////////////////////////
-				cdvd.SCMDResult[13] = 0; //0xFF - 77001
-				cdvd.SCMDResult[14] = 0; //??
+					cdvdReadRegionParams(&cdvd.SCMDResult[3]); //size==8
+					DevCon.WriteLn("REGION PARAMS = %s %s", mg_zones[temp_mechaver[0] & 7], &cdvd.SCMDResult[3]);
+					cdvd.SCMDResult[1] = 1 << temp_mechaver[0]; //encryption zone; see offset 0x1C in encrypted headers
+					//////////////////////////////////////////
+					cdvd.SCMDResult[2] = 0; //??
+					//			cdvd.Result[3] == ROMVER[4] == *0xBFC7FF04     J A E H C
+					//			cdvd.Result[4] == OSDVER[4] == CAP			   Jjpn, Aeng, Eeng, Heng, Reng, Csch, Kkor, Htch, Aspa
+					//			cdvd.Result[5] == OSDVER[5] == small
+					//			cdvd.Result[6] == OSDVER[6] == small
+					//			cdvd.Result[7] == OSDVER[7] == small
+					//			cdvd.Result[8] == VERSTR[0x22] == *0xBFC7FF52  J A E
+					//			cdvd.Result[9] == DVDID						   J U O E A R C M
+					//			cdvd.Result[10]== 0;					//??
+					cdvd.SCMDResult[11] = 0; //??
+					cdvd.SCMDResult[12] = 0; //??
+					//////////////////////////////////////////
+					cdvd.SCMDResult[13] = 0; //0xFF - 77001
+					cdvd.SCMDResult[14] = 0; //??
+				}
 				break;
 
 			case 0x37: //called from EECONF [sceCdReadMAC - made up name] (0:9)
@@ -2584,7 +2655,11 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 
 			case 0x3E: //[__sceCdWriteRegionParams - made up name] (15:1) [Florin: hum, i was expecting 14:1]
 				SetSCMDResultSize(1);
-				cdvdWriteRegionParams(&cdvd.SCMDParam[2]);
+				// Mechacon version prior to v6.6 doesnt support SCMD 3E command
+				if ((temp_mechaver[1] < 6) || ((temp_mechaver[1] == 6) && (temp_mechaver[2] < 6)))
+					cdvd.SCMDResult[0] = 0x80;
+				else
+					cdvdWriteRegionParams(&cdvd.SCMDParam[2]);
 				break;
 
 			case 0x40: // CdOpenConfig (3:1)
