@@ -185,14 +185,17 @@ PBGP-0065:
   gsHWFixes:
     roundSprite: 2 # Reduces sprite artifacts like in the menu.
 PBPX-95201:
-  name: "HDD Utility Disc [Version 1.00]"
+  name: "Utility Disc [Version 1.00]"
   region: "NTSC-J"
+  cdvdOffset: 0x07A08E02
 PBPX-95202:
-  name: "HDD Utility Disc [Version 1.01]"
+  name: "Utility Disc [Version 1.01]"
   region: "NTSC-J"
+  cdvdOffset: 0x07A08E02
 PBPX-95203:
-  name: "HDD Utility Disc [Version 1.01]"
+  name: "Utility Disc [Version 1.01]"
   region: "NTSC-J"
+  cdvdOffset: 0x07A08E02
 PBPX-95204:
   name: "Playstation 2 - Demo Disc 2000"
   region: "PAL-M5"
@@ -202,48 +205,63 @@ PBPX-95205:
 PBPX-95206:
   name: "DVD Player Version 2.01"
   region: "NTSC-J"
+  cdvdOffset: 0x07350502
 PBPX-95207:
   name: "DVD Player Version 2.10"
   region: "NTSC-J"
+  cdvdOffset: 0x07E5F501
 PBPX-95208:
   name: "DVD Player Version 2.10"
   region: "PAL-M8"
+  cdvdOffset: 0x07EBF401
 PBPX-95209:
   name: "DVD Player Version 2.10"
   region: "PAL-A"
+  cdvdOffset: 0x07F7F201
 PBPX-95210:
   name: "DVD Player Version 2.10"
   region: "NTSC-U"
+  cdvdOffset: 0x07F1F301
 PBPX-95211:
-  name: "HDD Utility Disc"
+  name: "HDD Utility Disc Version 1.00"
   region: "NTSC-U"
+  cdvdOffset: 0x0791AC01
 PBPX-95216:
-  name: "HDD Utility Disc [Beta]"
+  name: "HDD Utility Disc Version 1.00 [Beta]"
   region: "NTSC-U"
+  cdvdOffset: 0x078CBA01
 PBPX-95218:
   name: "DVD Player Version 2.12"
   region: "NTSC-U"
+  cdvdOffset: 0x059B9101
 PBPX-95219:
   name: "DVD Player Version 2.14"
   region: "PAL-E"
+  cdvdOffset: 0x07EECF01
 PBPX-95220:
   name: "DVD Player Version 2.14"
   region: "PAL-M7"
+  cdvdOffset: 0x07EECF01
 PBPX-95221:
   name: "DVD Player Version 2.12"
   region: "NTSC-J"
+  cdvdOffset: 0x06458F01
 PBPX-95222:
   name: "DVD Player Version 2.14"
   region: "NTSC-J"
+  cdvdOffset: 0x0798C701
 PBPX-95223:
   name: "DVD Player Version 2.14"
   region: "NTSC-U"
+  cdvdOffset: 0x071CCB01
 PBPX-95224:
   name: "DVD Player Version 2.16"
   region: "NTSC-J"
+  cdvdOffset: 0x07EECF01
 PBPX-95228:
   name: "DVD Player Version 3.00"
   region: "NTSC-J"
+  cdvdOffset: 0x07EECF01
 PBPX-95239:
   name: "Online Start-Up Disc v3.0"
   region: "NTSC-U"
@@ -393,6 +411,7 @@ PCPX-98017:
 PDPX-99109:
   name: "DVD Player Version 3.04"
   region: "NTSC-J"
+  cdvdOffset: 0x07269001
 PKP2-00702:
   name: "Pandora - Kimi no Namae o Boku wa Shiru [Limited Edition]"
   region: "NTSC-J"
@@ -5034,6 +5053,7 @@ SCPM-85301:
 SCPN-60101:
   name: "PlayStation BB Navigator - Version 0.10 [Prerelease] [Disc 1]"
   region: "NTSC-J"
+  cdvdOffset: 0x07224603
 SCPN-60103:
   name: "PlayStation BB Navigator - Version 0.10 [Prerelease] [Disc 2]"
   region: "NTSC-J"
@@ -5043,15 +5063,19 @@ SCPN-60111:
 SCPN-60130:
   name: "PlayStation BB Navigator - Version 0.20"
   region: "NTSC-J"
+  cdvdOffset: 0x07224603
 SCPN-60140:
   name: "PlayStation BB Navigator - Version 0.30"
   region: "NTSC-J"
+  cdvdOffset: 0x07224603
 SCPN-60150:
   name: "PlayStation BB Navigator - Version 0.31"
   region: "NTSC-J"
+  cdvdOffset: 0x05224603
 SCPN-60160:
   name: "PlayStation BB Navigator - Version 0.32"
   region: "NTSC-J"
+  cdvdOffset: 0x03224603
 SCPS-11001:
   name: "I.Q. Remix"
   region: "NTSC-J"
@@ -7522,8 +7546,9 @@ SCUS-97394:
   name: "Welcome to the World of Online Gaming for Your PlayStation 2 [Demo]"
   region: "NTSC-U"
 SCUS-97395:
-  name: "HDD Utility Disc Ver.1.10"
+  name: "HDD Utility Disc Version 1.10"
   region: "NTSC-U"
+  cdvdOffset: 0x07B2F903
 SCUS-97396:
   name: "World Tour Soccer 2005 [Demo]"
   region: "NTSC-U"

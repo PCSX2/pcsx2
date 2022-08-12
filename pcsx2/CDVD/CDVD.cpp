@@ -43,9 +43,18 @@
 #endif
 
 #ifndef PCSX2_CORE
+#include "gui/AppCoreThread.h"
 #include "gui/SysThreads.h"
+u32 getCdvdOffset()
+{
+	return GameInfo::cdvdOffset;
+}
 #else
 #include "VMManager.h"
+u32 getCdvdOffset()
+{
+	return VMManager::GetCdvdOffset();
+}
 #endif
 
 // This typically reflects the Sony-assigned serial code for the Disc, if one exists.
@@ -618,11 +627,12 @@ void cdvdReloadElfInfo(std::string elfoverride)
 	}
 }
 
-void cdvdReadKey(u8, u16, u32 arg2, u8* key)
+void cdvdReadKey(u8 arg0, u16 arg1, u32 arg2, u8* key)
 {
 	s32 numbers = 0, letters = 0;
 	u32 key_0_3;
 	u8 key_4, key_14;
+	u32 cdvdOffset;
 
 	cdvdReloadElfInfo();
 
@@ -631,6 +641,7 @@ void cdvdReadKey(u8, u16, u32 arg2, u8* key)
 
 	if (!DiscSerial.empty())
 	{
+		DevCon.WriteLn(Color_Green, "DiscSerial = %s, arg0=0x%x, arg1=0x%x, arg2=%d", DiscSerial, arg0, arg1, arg2);
 		// convert the number characters to a real 32 bit number
 		numbers = StringUtil::FromChars<s32>(std::string_view(DiscSerial).substr(5, 5)).value_or(0);
 
@@ -657,7 +668,11 @@ void cdvdReadKey(u8, u16, u32 arg2, u8* key)
 	switch (arg2)
 	{
 		case 75:
-			key[14] = key_14;
+			key[10] = 0x10;   // DNAS_ID[0]
+			key[11] = 0x11;   // DNAS_ID[1]
+			key[12] = 0x12;   // DNAS_ID[2]
+			key[13] = 0x13;   // DNAS_ID[3]
+			key[14] = key_14; // DNAS_ID[4]
 			key[15] = 0x05;
 			break;
 
@@ -666,11 +681,24 @@ void cdvdReadKey(u8, u16, u32 arg2, u8* key)
 			//          break;
 
 		case 4246:
-			// 0x0001F2F707 = sector 0x0001F2F7  dec 0x07
-			key[0] = 0x07;
-			key[1] = 0xF7;
-			key[2] = 0xF2;
-			key[3] = 0x01;
+			cdvdOffset = getCdvdOffset();
+			if (cdvdOffset)
+			{
+				key[0] = (cdvdOffset >> 24) & 0xff;
+				key[1] = (cdvdOffset >> 16) & 0xff;
+				key[2] = (cdvdOffset >>  8) & 0xff;
+				key[3] = (cdvdOffset >>  0) & 0xff;
+			}
+			else
+			{
+				Console.Warning("cdvdReadKey : Unknown cdvdOffset for %s", DiscSerial);
+				// DVD Player Version 2.10 (Australia) [PBPX-95209]
+				// 0x0001F2F707 = sector 0x0001F2F7  dec 0x07 / 127735
+				key[0] = 0x07; // SUB_ID[0]
+				key[1] = 0xF7; // SUB_ID[1] / LBA[2]
+				key[2] = 0xF2; // SUB_ID[2] / LBA[1]
+				key[3] = 0x01; // SUB_ID[3] / LBA[0]
+			}
 			key[4] = 0x00;
 			key[15] = 0x01;
 			break;

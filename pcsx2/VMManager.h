@@ -76,6 +76,9 @@ namespace VMManager
 	/// Returns the name of the disc/executable currently running.
 	std::string GetGameName();
 
+	/// Returns the CDVD offset of the disc currently running.
+	u32 GetCdvdOffset();
+
 	/// Initializes all system components.
 	bool Initialize(const VMBootParameters& boot_params);
 

@@ -63,6 +63,7 @@ namespace GameInfo
 	wxString gameSerial;
 	wxString gameCRC;
 	wxString gameVersion;
+	uint32_t cdvdOffset;
 }; // namespace GameInfo
 
 // --------------------------------------------------------------------------------------
@@ -381,6 +382,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 			GameInfo::gameName = StringUtil::UTF8StringToWxString(StringUtil::StdStringFromFormat("%s (%s)", game->name.c_str(), game->region.c_str()));
 			gameCompat.Printf(" [Status = %s]", game->compatAsString());
 			gameMemCardFilter = StringUtil::UTF8StringToWxString(game->memcardFiltersAsString());
+			GameInfo::cdvdOffset = game->cdvdOffset;
 
 			if (fixup.EnablePatches)
 			{
