@@ -303,7 +303,7 @@ static void cdvdWriteModelNumber(const u8* num, s32 part)
 
 static void cdvdReadRegionParams(u8* num)
 {
-	getNvmData(num, 0, 8, offsetof(NVMLayout, regparams));
+	getNvmData(num, 0, 12, offsetof(NVMLayout, regparams));
 }
 static void cdvdWriteRegionParams(const u8* num)
 {
@@ -1135,7 +1135,7 @@ __fi void cdvdReadInterrupt()
 	cdvdUpdateReady(CDVD_DRIVE_BUSY);
 	cdvdUpdateStatus(CDVD_STATUS_READ);
 	cdvd.WaitingDMA = false;
-	
+
 	if (!cdvd.Readed)
 	{
 		// Seeking finished.  Process the track we requested before, and
@@ -1178,7 +1178,7 @@ __fi void cdvdReadInterrupt()
 		cdvdSetIrq();
 		return;
 	}
-	
+
 	if (cdvd.Reading)
 	{
 		if (cdvd.RErr == 0)
@@ -1300,7 +1300,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 	// So In the case where it's seeking to data it will be Spinning (0x2) not reading (0x8) and Seeking (0x10, but because seeking is also spinning 0x2 is also set))
 	// Update - Apparently all that was rubbish and some games don't like it. WRC was the one in this scenario which hated SEEK |ZPAUSE, so just putting it back to pause for now.
 	// We should really run some tests for this behaviour.
-	
+
 	cdvdUpdateStatus(CDVD_STATUS_SEEK);
 
 	if (!cdvd.Spinning)
@@ -1336,7 +1336,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 		// if delta > 0 it will read a new sector so the readInterrupt will account for this.
 		seektime = 0;
 		isSeeking = false;
-		
+
 		if (delta == 0)
 		{
 			//cdvd.Status = CDVD_STATUS_PAUSE;
@@ -1348,9 +1348,9 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 			// setting Readed to 0 skips the seek logic, which means the next call to
 			// cdvdReadInterrupt will load a block.  So make sure it's properly scheduled
 			// based on sector read speeds:
-			
+
 			//seektime = cdvd.ReadTime;
-			
+
 			if (!cdvd.nextSectorsBuffered)//Buffering time hasn't completed yet so cancel it and simulate the remaining time
 			{
 				if (psxRegs.interrupt & (1 << IopEvt_CdvdSectorReady))
@@ -2242,12 +2242,14 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 						SetSCMDResultSize(4);
 						memcpy(cdvd.SCMDResult, &temp_mechaver[0], 4);
 						break;
+
 					case 0x30:
 						SetSCMDResultSize(2);
 						cdvd.SCMDResult[0] = cdvd.Status;
 						cdvd.SCMDResult[1] = (cdvd.Status & 0x1) ? 8 : 0;
 						//Console.Warning("Tray check param[1]=%02X", cdvd.Param[1]);
 						break;
+
 					case 0x44: // write console ID (9:1)
 						SetSCMDResultSize(1);
 						cdvdWriteConsoleID(&cdvd.SCMDParam[1]);
@@ -2275,7 +2277,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 									SetSCMDResultSize(6);
 									memcpy(cdvd.SCMDResult, &MRenewalDate[temp_mechaver[2] >> 1], 6);
 									// 5.6 Mexico differs from other regions 5.6
-									if (((temp_mechaver[2] >> 1) == 3) && (temp_mechaver[0] == 0x07))
+									if (((temp_mechaver[2] & 0xfe) == 6) && (temp_mechaver[0] == 7))
 										memcpy(cdvd.SCMDResult, &MRenewalDate[15], 6);
 								}
 								else
@@ -2503,23 +2505,42 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				//			break;
 
 			case 0x1E: // sceRemote2Read (0:5) - // 00 14 AA BB CC -> remote key code
-				SetSCMDResultSize(5);
-				cdvd.SCMDResult[0] = 0x00;
-				cdvd.SCMDResult[1] = 0x14;
-				cdvd.SCMDResult[2] = 0x00;
-				cdvd.SCMDResult[3] = 0x00;
-				cdvd.SCMDResult[4] = 0x00;
+				// mechacon prior to v5 doesnt support sircs control
+				if (temp_mechaver[1] < 5)
+				{
+					SetSCMDResultSize(1);
+					cdvd.SCMDResult[0] = 0x80;
+				}
+				else
+				{
+					SetSCMDResultSize(5);
+					cdvd.SCMDResult[0] = 0x00;
+					cdvd.SCMDResult[1] = 0x14;
+					cdvd.SCMDResult[2] = 0x00;
+					cdvd.SCMDResult[3] = 0x00;
+					cdvd.SCMDResult[4] = 0x00;
+				}
 				break;
 
 				//		case 0x1F: // sceRemote2_7 (2:1) - cdvdman_call117
+				// mechacon prior to v5 doesnt support sircs control
 				//			break;
 
 			case 0x20: // sceRemote2_6 (0:3)	// 00 01 00
-				SetSCMDResultSize(3);
-				cdvd.SCMDResult[0] = 0x00;
-				cdvd.SCMDResult[1] = 0x01;
-				cdvd.SCMDResult[2] = 0x00;
-				break;
+				// mechacon prior to v5 doesnt support sircs control
+				if (temp_mechaver[1] < 5)
+				{
+					SetSCMDResultSize(1);
+					cdvd.SCMDResult[0] = 0x80;
+				}
+				else
+				{
+					SetSCMDResultSize(3);
+					cdvd.SCMDResult[0] = 0x00;
+					cdvd.SCMDResult[1] = 0x01;
+					cdvd.SCMDResult[2] = 0x00;
+				}
+					break;
 
 				//		case 0x21: // sceCdWriteWakeUpTime (8:1)
 				//			break;
@@ -2539,9 +2560,18 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				break;
 
 			case 0x24: // sceCdRCBypassCtrl (1:1) - In V10 Bios
-				// FIXME: because PRId<0x23, the bit 0 of sio2 don't get updated 0xBF808284
-				SetSCMDResultSize(1);
-				cdvd.SCMDResult[0] = 0;
+				// mechacon prior to v5 doesnt support sircs control
+				if (temp_mechaver[1] < 5)
+				{
+					SetSCMDResultSize(1);
+					cdvd.SCMDResult[0] = 0x80;
+				}
+				else
+				{
+					// FIXME: because PRId<0x23, the bit 0 of sio2 don't get updated 0xBF808284
+					SetSCMDResultSize(1);
+					cdvd.SCMDResult[0] = 0;
+				}
 				break;
 
 				//		case 0x25: // cdvdman_call120 (1:1) - In V10 Bios
@@ -2613,7 +2643,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				// except of 5.6 Mexico that has SCMD 36 command partially implemented
 				if (temp_mechaver[1] < 6)
 				{
-					if (!((temp_mechaver[0] == 0x07) && (temp_mechaver[1] == 5) && (temp_mechaver[2] == 6)))
+					if (!((temp_mechaver[0] == 7) && (temp_mechaver[1] == 5) && ((temp_mechaver[2] & 0xfe) == 6)))
 					{
 						SetSCMDResultSize(1);
 						cdvd.SCMDResult[0] = 0x80;
@@ -2621,34 +2651,37 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 					else
 					{
 						SetSCMDResultSize(3);
-						DevCon.WriteLn("REGION PARAMS = %s", mg_zones[temp_mechaver[0] & 7]);
+
+						cdvd.SCMDResult[0] = 0;
 						cdvd.SCMDResult[1] = 1 << temp_mechaver[0]; //encryption zone; see offset 0x1C in encrypted headers
 						//////////////////////////////////////////
 						cdvd.SCMDResult[2] = 0; //??
+						DevCon.WriteLn("REGION PARAMS = %s", mg_zones[temp_mechaver[0] & 7]);
 					}
 				}
 				else
 				{
 					SetSCMDResultSize(15);
 
-					cdvdReadRegionParams(&cdvd.SCMDResult[3]); //size==8
-					DevCon.WriteLn("REGION PARAMS = %s %s", mg_zones[temp_mechaver[0] & 7], &cdvd.SCMDResult[3]);
+					cdvd.SCMDResult[0] = 0;
 					cdvd.SCMDResult[1] = 1 << temp_mechaver[0]; //encryption zone; see offset 0x1C in encrypted headers
 					//////////////////////////////////////////
 					cdvd.SCMDResult[2] = 0; //??
-					//			cdvd.Result[3] == ROMVER[4] == *0xBFC7FF04     J A E H C
-					//			cdvd.Result[4] == OSDVER[4] == CAP			   Jjpn, Aeng, Eeng, Heng, Reng, Csch, Kkor, Htch, Aspa
-					//			cdvd.Result[5] == OSDVER[5] == small
-					//			cdvd.Result[6] == OSDVER[6] == small
-					//			cdvd.Result[7] == OSDVER[7] == small
-					//			cdvd.Result[8] == VERSTR[0x22] == *0xBFC7FF52  J A E
-					//			cdvd.Result[9] == DVDID						   J U O E A R C M
-					//			cdvd.Result[10]== 0;					//??
-					cdvd.SCMDResult[11] = 0; //??
-					cdvd.SCMDResult[12] = 0; //??
+					cdvdReadRegionParams(&cdvd.SCMDResult[3]); //size==12
+					DevCon.WriteLn("REGION PARAMS = %s %s", mg_zones[temp_mechaver[0] & 7], &cdvd.SCMDResult[3]);
+					//			cdvd.SCMDResult[3] == ROMVER[4] == *0xBFC7FF04		J A E H C
+					//			cdvd.SCMDResult[4] == OSDVER[4] == CAP				Jjpn, Aeng, Eeng, Heng, Reng, Csch, Kkor, Htch, Aspa
+					//			cdvd.SCMDResult[5] == OSDVER[5] == small
+					//			cdvd.SCMDResult[6] == OSDVER[6] == small
+					//			cdvd.SCMDResult[7] == OSDVER[7] == small
+					//			cdvd.SCMDResult[8] == VERSTR[0x22] == *0xBFC7FF52	J A E
+					//			cdvd.SCMDResult[9] == DVDID							J U O E A R C M
+					//			cdvd.SCMDResult[10]== 0; //??
+					//			cdvd.SCMDResult[11] = 0; //??
+					//			cdvd.SCMDResult[12] = 0; //??
 					//////////////////////////////////////////
-					cdvd.SCMDResult[13] = 0; //0xFF - 77001
-					cdvd.SCMDResult[14] = 0; //??
+					cdvd.SCMDResult[13] = 0xFF; //0xFF - 77001, 70003
+					//			cdvd.SCMDResult[14] = 0; //??
 				}
 				break;
 
