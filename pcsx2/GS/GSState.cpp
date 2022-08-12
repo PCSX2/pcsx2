@@ -1879,6 +1879,20 @@ void GSState::FlushPrim()
 
 			m_vertex.tail = unused;
 			m_vertex.next = next > head ? next - head : 0;
+
+			// If it's a Triangle fan the XY buffer needs to be updated to point to the correct head vert
+			// Jak 3 shadows get spikey (with autoflush) if you don't.
+			if (PRIM->PRIM == GS_TRIANGLEFAN)
+			{
+				for (int i = 0; i < unused; i++)
+				{
+					GSVector4i* RESTRICT vert_ptr = (GSVector4i*)&m_vertex.buff[i];
+					GSVector4i v = vert_ptr[1];
+					v = v.xxxx().u16to32().sub32(m_ofxy);
+					GSVector4i::storel(&m_vertex.xy[i & 3], v.blend16<0xf0>(v.sra32(4)).ps32());
+					m_vertex.xy_tail = unused;
+				}
+			}
 		}
 		else
 		{
