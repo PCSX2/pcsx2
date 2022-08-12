@@ -23260,6 +23260,14 @@ SLPM-60167:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
     disablePartialInvalidation: 1 # Fixes ghost rendering.
+SLPM-60149:
+  name: "Ace Combat 04 - Shattered Skies [Trial]"
+  region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 1
+    roundSprite: 2 # Fixes font and HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
+    mergeSprite: 1 # Fixes vertical lines.
 SLPM-60172:
   name: "Itadaki Street 3 - Okuman Chouja ni Shiteageru"
   region: "NTSC-J"
