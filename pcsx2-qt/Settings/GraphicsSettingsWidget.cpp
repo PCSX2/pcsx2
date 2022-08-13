@@ -232,7 +232,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.loadTextureReplacementsAsync, "EmuCore/GS", "LoadTextureReplacementsAsync", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.precacheTextureReplacements, "EmuCore/GS", "PrecacheTextureReplacements", false);
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.texturesDirectory, m_ui.texturesBrowse, m_ui.texturesOpen, m_ui.texturesReset,
-		"Folders", "Textures", "textures");
+		"Folders", "Textures", Path::Combine(EmuFolders::DataRoot, "textures"));
 
 	//////////////////////////////////////////////////////////////////////////
 	// Advanced Settings
@@ -242,7 +242,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.skipPresentingDuplicateFrames, "EmuCore/GS", "SkipDuplicateFrames", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.overrideTextureBarriers, "EmuCore/GS", "OverrideTextureBarriers", -1, -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.overrideGeometryShader, "EmuCore/GS", "OverrideGeometryShaders", -1, -1);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.gsDumpCompression, "EmuCore/GS", "GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::Uncompressed));
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.gsDumpCompression, "EmuCore/GS", "GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::LZMA));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableFramebufferFetch, "EmuCore/GS", "DisableFramebufferFetch", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableDualSource, "EmuCore/GS", "DisableDualSourceBlend", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableHardwareReadbacks, "EmuCore/GS", "HWDisableReadbacks", false);
@@ -291,15 +291,20 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	updateRendererDependentOptions();
 
 	// only allow disabling readbacks for per-game settings, it's too dangerous
+#ifndef PCSX2_DEVBUILD
 	m_ui.disableHardwareReadbacks->setEnabled(m_dialog->isPerGameSettings());
 
-	// allow Texture Offset for per-game settings only 
-	m_ui.textureOffsetX->setEnabled(m_dialog->isPerGameSettings());
-	m_ui.textureOffsetY->setEnabled(m_dialog->isPerGameSettings());
-
-	// allow Skipdraw Range for per-game settings only 
-	m_ui.skipDrawStart->setEnabled(m_dialog->isPerGameSettings());
-	m_ui.skipDrawEnd->setEnabled(m_dialog->isPerGameSettings());
+	// Remove texture offset and skipdraw range for global settings.
+	if (!m_dialog->isPerGameSettings())
+	{
+		m_ui.upscalingFixesLayout->removeRow(2);
+		m_ui.hardwareFixesLayout->removeRow(2);
+		m_ui.skipDrawStart = nullptr;
+		m_ui.skipDrawEnd = nullptr;
+		m_ui.textureOffsetX = nullptr;
+		m_ui.textureOffsetY = nullptr;
+	}
+#endif
 
 	// Display tab
 	{

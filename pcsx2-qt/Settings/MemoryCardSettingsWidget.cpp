@@ -50,7 +50,7 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsDialog* dialog, QWidg
 	// since the group box hasn't been resized at that point.
 	m_ui.cardGroupBox->installEventFilter(this);
 	
-	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.directory, m_ui.browse, m_ui.open, m_ui.reset, "Folders", "MemoryCards", "memcards");
+	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.directory, m_ui.browse, m_ui.open, m_ui.reset, "Folders", "MemoryCards", Path::Combine(EmuFolders::DataRoot, "memcards"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoEject, "EmuCore", "McdEnableEjection", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.automaticManagement, "EmuCore", "McdFolderAutoManage", true);
 

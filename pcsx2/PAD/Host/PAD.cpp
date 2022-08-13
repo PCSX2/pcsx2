@@ -183,6 +183,62 @@ u8 PADpoll(u8 value)
 	return pad_poll(value);
 }
 
+const char* PAD::ControllerSettingInfo::StringDefaultValue() const
+{
+	return default_value ? default_value : "";
+}
+
+bool PAD::ControllerSettingInfo::BooleanDefaultValue() const
+{
+	return default_value ? StringUtil::FromChars<bool>(default_value).value_or(false) : false;
+}
+
+s32 PAD::ControllerSettingInfo::IntegerDefaultValue() const
+{
+	return default_value ? StringUtil::FromChars<s32>(default_value).value_or(0) : 0;
+}
+
+s32 PAD::ControllerSettingInfo::IntegerMinValue() const
+{
+	static constexpr s32 fallback_value = std::numeric_limits<s32>::min();
+	return min_value ? StringUtil::FromChars<s32>(min_value).value_or(fallback_value) : fallback_value;
+}
+
+s32 PAD::ControllerSettingInfo::IntegerMaxValue() const
+{
+	static constexpr s32 fallback_value = std::numeric_limits<s32>::max();
+	return max_value ? StringUtil::FromChars<s32>(max_value).value_or(fallback_value) : fallback_value;
+}
+
+s32 PAD::ControllerSettingInfo::IntegerStepValue() const
+{
+	static constexpr s32 fallback_value = 1;
+	return step_value ? StringUtil::FromChars<s32>(step_value).value_or(fallback_value) : fallback_value;
+}
+
+float PAD::ControllerSettingInfo::FloatDefaultValue() const
+{
+	return default_value ? StringUtil::FromChars<float>(default_value).value_or(0.0f) : 0.0f;
+}
+
+float PAD::ControllerSettingInfo::FloatMinValue() const
+{
+	static constexpr float fallback_value = std::numeric_limits<float>::min();
+	return min_value ? StringUtil::FromChars<float>(min_value).value_or(fallback_value) : fallback_value;
+}
+
+float PAD::ControllerSettingInfo::FloatMaxValue() const
+{
+	static constexpr float fallback_value = std::numeric_limits<float>::max();
+	return max_value ? StringUtil::FromChars<float>(max_value).value_or(fallback_value) : fallback_value;
+}
+
+float PAD::ControllerSettingInfo::FloatStepValue() const
+{
+	static constexpr float fallback_value = 0.1f;
+	return step_value ? StringUtil::FromChars<float>(step_value).value_or(fallback_value) : fallback_value;
+}
+
 std::string PAD::GetConfigSection(u32 pad_index)
 {
 	return fmt::format("Pad{}", pad_index + 1);
@@ -350,9 +406,31 @@ static const PAD::ControllerBindingInfo s_dualshock2_binds[] = {
 	{"SmallMotor", "Small (High Frequency) Motor", PAD::ControllerBindingType::Motor, GenericInputBinding::SmallMotor},
 };
 
+static const PAD::ControllerSettingInfo s_dualshock2_settings[] = {
+	{PAD::ControllerSettingInfo::Type::Float, "Deadzone", "Analog Deadzone",
+		"Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.",
+		"0.00", "0.00", "1.00", "0.01"},
+	{PAD::ControllerSettingInfo::Type::Float, "AxisScale", "Analog Sensitivity",
+		"Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
+		"controllers, e.g. DualShock 4, Xbox One Controller.",
+		"1.33", "0.01", "2.00", "0.01"},
+	{PAD::ControllerSettingInfo::Type::Float, "LargeMotorScale", "Large Motor Vibration Scale",
+		"Increases or decreases the intensity of low frequency vibration sent by the game.",
+		"1.00", "0.00", "2.00", "0.01"},
+	{PAD::ControllerSettingInfo::Type::Float, "SmallMotorScale", "Small Motor Vibration Scale",
+		"Increases or decreases the intensity of high frequency vibration sent by the game.",
+		"1.00", "0.00", "2.00", "0.01"},
+};
+
 static const PAD::ControllerInfo s_controller_info[] = {
-	{"None", "Not Connected", nullptr, 0, PAD::ControllerType::NotConnected, PAD::VibrationCapabilities::NoVibration},
-	{"DualShock2", "DualShock 2", s_dualshock2_binds, std::size(s_dualshock2_binds), PAD::ControllerType::DualShock2, PAD::VibrationCapabilities::LargeSmallMotors},
+	{PAD::ControllerType::NotConnected, "None", "Not Connected",
+		nullptr, 0,
+		nullptr, 0,
+		PAD::VibrationCapabilities::NoVibration},
+	{PAD::ControllerType::DualShock2, "DualShock2", "DualShock 2",
+		s_dualshock2_binds, std::size(s_dualshock2_binds),
+		s_dualshock2_settings, std::size(s_dualshock2_settings),
+		PAD::VibrationCapabilities::LargeSmallMotors},
 };
 
 const PAD::ControllerInfo* PAD::GetControllerInfo(ControllerType type)

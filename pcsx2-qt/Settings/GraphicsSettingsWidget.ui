@@ -58,7 +58,7 @@
    <item>
     <widget class="QTabWidget" name="hardwareRendererGroup">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <property name="documentMode">
       <bool>true</bool>
@@ -699,7 +699,7 @@
       <attribute name="title">
        <string>Hardware Fixes</string>
       </attribute>
-      <layout class="QFormLayout" name="formLayout_2">
+      <layout class="QFormLayout" name="hardwareFixesLayout">
        <item row="0" column="0">
         <widget class="QLabel" name="label_10">
          <property name="text">
@@ -883,7 +883,7 @@
       <attribute name="title">
        <string>Upscaling Fixes</string>
       </attribute>
-      <layout class="QFormLayout" name="formLayout_5">
+      <layout class="QFormLayout" name="upscalingFixesLayout">
        <item row="0" column="0">
         <widget class="QLabel" name="label_14">
          <property name="text">
@@ -942,16 +942,16 @@
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="label_16">
+        <widget class="QLabel" name="textureOffsetLabel">
          <property name="text">
           <string>Texture Offsets:</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,1">
+        <layout class="QHBoxLayout" name="textureOffsetLayout" stretch="0,1,0,1">
          <item>
-          <widget class="QLabel" name="label_17">
+          <widget class="QLabel" name="textureOffsetXLabel">
            <property name="text">
             <string>X:</string>
            </property>
@@ -965,7 +965,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_18">
+          <widget class="QLabel" name="textureOffsetYLabel">
            <property name="text">
             <string>Y:</string>
            </property>
