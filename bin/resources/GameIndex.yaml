@@ -22796,7 +22796,7 @@ SLPM-55040:
   name: "Soukoku no Kusabi - Hiiro no Kakera 3"
   region: "NTSC-J"
 SLPM-55042:
-  name: "Suika A.S Eternal Name  - Sweet So Sweet [Best Edition]"
+  name: "Suika A.S+ Eternal Name - Sweet So Sweet [Best Edition]"
   region: "NTSC-J"
 SLPM-55044:
   name: "Heart no Kuni no Alice - Wonderful Wonder World"
@@ -24066,7 +24066,7 @@ SLPM-62244:
   name: "Choro Q - High Grade 3"
   region: "NTSC-J"
 SLPM-62245:
-  name: "Yuusei Kara no Buutai - Episode 2"
+  name: "Yuusei kara no Buttai X - Episode II"
   region: "NTSC-J"
 SLPM-62247:
   name: "Shin Contra"
@@ -27180,7 +27180,7 @@ SLPM-65465:
   gameFixes:
     - EETimingHack
 SLPM-65466:
-  name: "Kousen Gaeri - Refrain"
+  name: "Yomigaeri - Refrain"
   region: "NTSC-J"
 SLPM-65468:
   name: "Roommate Asami - D-Collection"
@@ -31761,7 +31761,7 @@ SLPM-66786:
   name: "Gift - Prism [Broccoli Best Quality]"
   region: "NTSC-J"
 SLPM-66787:
-  name: "Tsuika AS+ Eternal Name"
+  name: "Suika A.S+ Eternal Name"
   region: "NTSC-J"
 SLPM-66788:
   name: "Grand Theft Auto - San Andreas [Best Price]"
@@ -37690,7 +37690,7 @@ SLPS-73203:
     - "SLPS-73202"
     - "SLPS-73203"
 SLPS-73204:
-  name: "Zettai Zetsumi Toshi [PlayStation 2 The Best]"
+  name: "Zettai Zetsumei Toshi [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Fixes incorrect blur effect.
