@@ -32959,6 +32959,10 @@ SLPM-74405:
 SLPM-74406:
   name: "World Rally Championship [PlayStation 2 The Best]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Fixes crash when using the Subaru.
+  gameFixes:
+    - XGKickHack # Fixes SPS while ingame.
 SLPM-74407:
   name: "Jet de Go! 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -34644,6 +34648,8 @@ SLPS-25099:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Fixes crash when using the Subaru.
+  gameFixes:
+    - XGKickHack # Fixes SPS while ingame.
 SLPS-25100:
   name: "Tekken 4"
   region: "NTSC-J"
