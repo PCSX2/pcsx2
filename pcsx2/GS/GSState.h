@@ -44,6 +44,11 @@ typedef bool (*GetSkipCount)(const GSFrameInfo& fi, int& skip);
 
 class GSState : public GSAlignedClass<32>
 {
+public:
+	GSState();
+	virtual ~GSState();
+
+private:
 	// RESTRICT prevents multiple loads of the same part of the register when accessing its bitfields (the compiler is happy to know that memory writes in-between will not go there)
 
 	typedef void (GSState::*GIFPackedRegHandler)(const GIFPackedReg* RESTRICT r);
@@ -331,9 +336,6 @@ public:
 	};
 
 public:
-	GSState();
-	virtual ~GSState();
-
 	/// Returns the appropriate directory for draw dumping.
 	static std::string GetDrawDumpPath(const char* format, ...);
 

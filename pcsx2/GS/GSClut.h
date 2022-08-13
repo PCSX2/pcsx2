@@ -22,7 +22,7 @@
 
 class GSLocalMemory;
 
-class alignas(32) GSClut : public GSAlignedClass<32>
+class alignas(32) GSClut final : public GSAlignedClass<32>
 {
 	static const GSVector4i m_bm;
 	static const GSVector4i m_gm;
@@ -99,7 +99,7 @@ private:
 
 public:
 	GSClut(GSLocalMemory* mem);
-	virtual ~GSClut();
+	~GSClut();
 
 	bool InvalidateRange(u32 start_block, u32 end_block, bool is_draw = false);
 	u8 IsInvalid();
