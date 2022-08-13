@@ -21,7 +21,7 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 endif()
 
 if(MSVC)
-	if (MSVC_VERSION GREATER_EQUAL 1930)
+	if (NOT USE_CLANG_CL AND MSVC_VERSION GREATER_EQUAL 1930)
 		target_compile_options(PCSX2_FLAGS INTERFACE /fp:contract)
 	endif()
 	target_compile_options(PCSX2_FLAGS INTERFACE /GS-)
