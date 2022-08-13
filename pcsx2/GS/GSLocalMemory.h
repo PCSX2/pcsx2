@@ -438,7 +438,7 @@ class GSLocalMemory;
 MULTI_ISA_DEF(class GSLocalMemoryFunctions;)
 MULTI_ISA_DEF(void GSLocalMemoryPopulateFunctions(GSLocalMemory& mem);)
 
-class GSLocalMemory : public GSAlignedClass<32>
+class GSLocalMemory final : public GSAlignedClass<32>
 {
 	MULTI_ISA_FRIEND(GSLocalMemoryFunctions)
 
@@ -523,7 +523,7 @@ protected:
 
 public:
 	GSLocalMemory();
-	virtual ~GSLocalMemory();
+	~GSLocalMemory();
 
 	__forceinline u16* vm16() const { return reinterpret_cast<u16*>(m_vm8); }
 	__forceinline u32* vm32() const { return reinterpret_cast<u32*>(m_vm8); }
