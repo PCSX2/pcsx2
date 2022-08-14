@@ -42,6 +42,7 @@ if(MSVC)
 	if (MSVC_VERSION GREATER_EQUAL 1930)
 		target_compile_options(PCSX2_FLAGS INTERFACE /fp:contract)
 	endif()
+	target_compile_options(PCSX2_FLAGS INTERFACE /GS-)
 else()
 	target_compile_options(PCSX2_FLAGS INTERFACE
 		-ffp-contract=fast
