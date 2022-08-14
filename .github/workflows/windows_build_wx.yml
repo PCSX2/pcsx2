@@ -86,19 +86,17 @@ jobs:
         id: cmake
         shell: cmd
         run: |
-          if "${{ github.event.inputs.retainDebugArtifacts }}"=="true" (SET type=RelWithDebInfo) else (SET type=Release)
           if "${{ inputs.platform }}"=="Win32" (SET vcvars=vcvarsamd64_x86.bat) else (SET vcvars=vcvars64.bat)
           call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\%vcvars%"
-          echo ::set-output name=buildtype::%type%
           echo ::set-output name=vcvars::%vcvars%
-          cmake . -B build -DCMAKE_BUILD_TYPE=%type% -DLTO_PCSX2_CORE=ON -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=..\buildcache\bin\buildcache.exe -DCMAKE_CXX_COMPILER_LAUNCHER=..\buildcache\bin\buildcache.exe -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+          cmake . -B build -DCMAKE_BUILD_TYPE=Release -DLTO_PCSX2_CORE=ON -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=..\buildcache\bin\buildcache.exe -DCMAKE_CXX_COMPILER_LAUNCHER=..\buildcache\bin\buildcache.exe -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
 
       - name: Build PCSX2
         shell: cmd
         run: |
           if "${{ inputs.configuration }}"=="CMake" (
             call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\${{ steps.cmake.outputs.vcvars }}"
-            cmake --build build --config ${{ steps.cmake.outputs.buildtype }}
+            cmake --build build --config Release
             cp build/pcsx2/pcsx2* bin/
           ) else (
             msbuild "PCSX2_suite.sln" /m /v:m /p:Configuration="${{ inputs.configuration }}" /p:Platform="${{ inputs.platform }}"
@@ -109,7 +107,7 @@ jobs:
         shell: cmd
         run: |
           call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\${{ steps.cmake.outputs.vcvars }}"
-          cmake --build build --config ${{ steps.cmake.outputs.buildtype }} --target unittests
+          cmake --build build --config Release --target unittests
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
