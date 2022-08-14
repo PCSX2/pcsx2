@@ -113,7 +113,6 @@ jobs:
             !./bin/**/*.lib
 
       - name: Upload artifact - with symbols
-        if: inputs.configuration != 'CMake'
         uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}-symbols
