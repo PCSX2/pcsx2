@@ -2119,7 +2119,7 @@ void GSTextureCache::Surface::ResizeTexture(int new_width, int new_height, GSVec
 	{
 		// Can't do partial copies in DirectX for depth textures, and it's probably not ideal in other
 		// APIs either. So use a fullscreen quad setting depth instead.
-		g_gs_device->StretchRect(m_texture, tex, GSVector4(rc) / GSVector4(tex->GetWidth(), tex->GetHeight(), tex->GetWidth(), tex->GetHeight()), ShaderConvert::DEPTH_COPY, false);
+		g_gs_device->StretchRect(m_texture, tex, GSVector4(rc), ShaderConvert::DEPTH_COPY, false);
 	}
 	else
 	{
