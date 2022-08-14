@@ -25717,10 +25717,10 @@ SLPM-65015:
       content: |-
         comment=COP2 flag instance patch by refraction
         // A mac flag check just after a vsub which gets in the way, rearranging.
-        patch=0,EE,00170F20,word,48438800
-        patch=0,EE,00170F24,word,4BE521AC
-        patch=0,EE,00170F28,word,30848000
-        patch=0,EE,00170F2C,word,4BE72B3C
+        patch=0,EE,0016ae90,word,48438800
+        patch=0,EE,0016ae94,word,4BE521AC
+        patch=0,EE,0016ae98,word,30848000
+        patch=0,EE,0016ae9c,word,4BE72B3C
 SLPM-65016:
   name: "Love Songs [Limited Edition]"
   region: "NTSC-J"
