@@ -12477,6 +12477,8 @@ SLES-51750:
   name: "Charlie's Angels"
   region: "PAL-M3"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Helps blur.
 SLES-51752:
   name: "Tony Hawks Underground"
   region: "PAL-Unk"
