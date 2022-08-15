@@ -15717,6 +15717,9 @@ SLES-53200:
   name: "DragonBall Z - Budokai Tenkaichi"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lines when powering up.
+    roundSprite: 2 # Fixes misaligned bloom.
 SLES-53201:
   name: "Saint Seiya Chapter Sanctuary"
   region: "PAL-M5"
@@ -22522,6 +22525,9 @@ SLKA-25307:
   name: "Dragon Ball Z Sparking"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lines when powering up.
+    roundSprite: 2 # Fixes misaligned bloom.
 SLKA-25311:
   name: "Marvel Nemesis - Rise of the Imperfects"
   region: "NTSC-K"
@@ -36243,6 +36249,9 @@ SLPS-25559:
 SLPS-25560:
   name: "Dragon Ball Z - Sparking!"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lines when powering up.
+    roundSprite: 2 # Fixes misaligned bloom.
 SLPS-25561:
   name: "MotoGP 4"
   region: "NTSC-J"
@@ -43680,6 +43689,9 @@ SLUS-21227:
   name: "Dragon Ball Z - Budokai Tenkaichi"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lines when powering up.
+    roundSprite: 2 # Fixes misaligned bloom.
 SLUS-21228:
   name: "Call of Duty 2 - Big Red One"
   region: "NTSC-U"
