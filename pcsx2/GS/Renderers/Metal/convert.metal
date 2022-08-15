@@ -152,7 +152,7 @@ fragment DepthOut ps_depth_copy(ConvertShaderData data [[stage_in]], ConvertPSDe
 
 static float pack_rgba8_depth(float4 unorm)
 {
-	return float(as_type<uint>(uchar4(unorm * 255.f + 0.5f))) * 0x1p-32f;
+	return float(as_type<uint>(uchar4(unorm * 255.f + 0.1f))) * 0x1p-32f;
 }
 
 fragment DepthOut ps_convert_rgba8_float32(ConvertShaderData data [[stage_in]], ConvertPSRes res)
@@ -168,12 +168,12 @@ fragment DepthOut ps_convert_rgba8_float24(ConvertShaderData data [[stage_in]], 
 
 fragment DepthOut ps_convert_rgba8_float16(ConvertShaderData data [[stage_in]], ConvertPSRes res)
 {
-	return float(as_type<ushort>(uchar2(res.sample(data.t).rg * 255.f + 0.5f))) * 0x1p-32;
+	return float(as_type<ushort>(uchar2(res.sample(data.t).rg * 255.f + 0.1f))) * 0x1p-32;
 }
 
 fragment DepthOut ps_convert_rgb5a1_float16(ConvertShaderData data [[stage_in]], ConvertPSRes res)
 {
-	uint4 cu = uint4(res.sample(data.t) * 255.f + 0.5f);
+	uint4 cu = uint4(res.sample(data.t) * 255.f + 0.1f);
 	uint out = (cu.x >> 3) | ((cu.y << 2) & 0x03e0) | ((cu.z << 7) & 0x7c00) | ((cu.w << 8) & 0x8000);
 	return float(out) * 0x1p-32;
 }
