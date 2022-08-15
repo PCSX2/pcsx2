@@ -21288,6 +21288,8 @@ SLES-55605:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects post processing position.
 SLES-55609:
   name: "Scooby-Doo! and the Spooky Swamp"
   region: "PAL-M5"
@@ -32657,6 +32659,8 @@ SLPM-68019:
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects post processing position.
 SLPM-68503:
   name: "Metal Gear Solid 2 - Sons of Liberty [Shareholder Edition]"
   region: "NTSC-J"
@@ -37260,6 +37264,8 @@ SLPS-25837:
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects post processing position.
 SLPS-25838:
   name: "Taiheiyou no Arashi - Senkan Yamato, Akatsuki ni Shutsugeki su"
   region: "NTSC-J"
