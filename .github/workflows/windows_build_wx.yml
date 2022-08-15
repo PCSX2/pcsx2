@@ -78,7 +78,7 @@ jobs:
           if "${{ inputs.platform }}"=="Win32" (SET vcvars=vcvarsamd64_x86.bat) else (SET vcvars=vcvars64.bat)
           call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\%vcvars%"
           echo ::set-output name=vcvars::%vcvars%
-          cmake . -B build -DCMAKE_BUILD_TYPE=Release -DLTO_PCSX2_CORE=ON -G Ninja
+          cmake . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -G Ninja
 
       - name: Build PCSX2
         shell: cmd
