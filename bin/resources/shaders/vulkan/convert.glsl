@@ -266,21 +266,21 @@ layout(push_constant) uniform cb10
 
 void ps_yuv()
 {
-  vec4 i = sample_c(v_tex);
-  vec4 o;
+	vec4 i = sample_c(v_tex);
+	vec4 o;
 
-  mat3 rgb2yuv;
-  rgb2yuv[0] = vec3(0.587, -0.311, -0.419);
-  rgb2yuv[1] = vec3(0.114, 0.500, -0.081);
-  rgb2yuv[2] = vec3(0.299, -0.169, 0.500);
+	mat3 rgb2yuv;
+	rgb2yuv[0] = vec3(0.587, -0.311, -0.419);
+	rgb2yuv[1] = vec3(0.114, 0.500, -0.081);
+	rgb2yuv[2] = vec3(0.299, -0.169, 0.500);
 
-  vec3 yuv = rgb2yuv * i.gbr;
+	vec3 yuv = rgb2yuv * i.gbr;
 
-  float Y = float(0xDB)/255.0f * yuv.x + float(0x10)/255.0f;
-  float Cr = float(0xE0)/255.0f * yuv.y + float(0x80)/255.0f;
-  float Cb = float(0xE0)/255.0f * yuv.z + float(0x80)/255.0f;
+	float Y = float(0xDB)/255.0f * yuv.x + float(0x10)/255.0f;
+	float Cr = float(0xE0)/255.0f * yuv.y + float(0x80)/255.0f;
+	float Cb = float(0xE0)/255.0f * yuv.z + float(0x80)/255.0f;
 
-  switch(EMODA) {
+	switch(EMODA) {
 		case 0:
 			o.a = i.a;
 			break;
@@ -293,22 +293,22 @@ void ps_yuv()
 		case 3:
 			o.a = 0.0f;
 			break;
-  }
+	}
 
-  switch(EMODC) {
-    case 0:
-      o.rgb = i.rgb;
-      break;
-    case 1:
-      o.rgb = vec3(Y);
-      break;
-    case 2:
-      o.rgb = vec3(Y, Cb, Cr);
-      break;
-    case 3:
-      o.rgb = vec3(i.a);
-      break;
-  }
+	switch(EMODC) {
+		case 0:
+			o.rgb = i.rgb;
+			break;
+		case 1:
+			o.rgb = vec3(Y);
+			break;
+		case 2:
+			o.rgb = vec3(Y, Cb, Cr);
+			break;
+		case 3:
+			o.rgb = vec3(i.a);
+			break;
+	}
 
 	o_col0 = o;
 }
