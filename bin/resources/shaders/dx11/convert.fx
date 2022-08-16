@@ -162,36 +162,98 @@ PS_OUTPUT ps_convert_float16_rgb5a1(PS_INPUT input)
 
 	return output;
 }
+
+float rgba8_to_depth32(float4 val)
+{
+	uint4 c = uint4(val * 255.5f);
+	return float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-32.0f);
+}
+
+float rgba8_to_depth24(float4 val)
+{
+	uint3 c = uint3(val.rgb * 255.5f);
+	return float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-32.0f);
+}
+
+float rgba8_to_depth16(float4 val)
+{
+	uint2 c = uint2(val.rg * 255.5f);
+	return float(c.r | (c.g << 8)) * exp2(-32.0f);
+}
+
+float rgb5a1_to_depth16(float4 val)
+{
+	uint4 c = uint4(val * 255.5f);
+	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
+}
+
 float ps_convert_rgba8_float32(PS_INPUT input) : SV_Depth
 {
-	// Convert a RRGBA texture into a float depth texture
-	uint4 c = uint4(sample_c(input.t) * 255.0f + 0.5f);
-	return float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-32.0f);
+	// Convert an RGBA texture into a float depth texture
+	return rgba8_to_depth32(sample_c(input.t));
 }
 
 float ps_convert_rgba8_float24(PS_INPUT input) : SV_Depth
 {
 	// Same as above but without the alpha channel (24 bits Z)
 
-	// Convert a RRGBA texture into a float depth texture
-	uint3 c = uint3(sample_c(input.t).rgb * 255.0f + 0.5f);
-	return float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-32.0f);
+	// Convert an RGBA texture into a float depth texture
+	return rgba8_to_depth24(sample_c(input.t));
 }
 
 float ps_convert_rgba8_float16(PS_INPUT input) : SV_Depth
 {
 	// Same as above but without the A/B channels (16 bits Z)
 
-	// Convert a RRGBA texture into a float depth texture
-	uint2 c = uint2(sample_c(input.t).rg * 255.0f + 0.5f);
-	return float(c.r | (c.g << 8)) * exp2(-32.0f);
+	// Convert an RGBA texture into a float depth texture
+	return rgba8_to_depth16(sample_c(input.t));
 }
 
 float ps_convert_rgb5a1_float16(PS_INPUT input) : SV_Depth
 {
-	// Convert a RGB5A1 (saved as RGBA8) color to a 16 bit Z
-	uint4 c = uint4(sample_c(input.t) * 255.0f + 0.5f);
-	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
+	// Convert an RGB5A1 (saved as RGBA8) color to a 16 bit Z
+	return rgb5a1_to_depth16(sample_c(input.t));
+}
+
+#define SAMPLE_RGBA_DEPTH_BILN(CONVERT_FN) \
+	uint width, height; \
+	Texture.GetDimensions(width, height); \
+	float2 top_left_f = input.t * float2(width, height) - 0.5f; \
+	int2 top_left = int2(floor(top_left_f)); \
+	int4 coords = clamp(int4(top_left, top_left + 1), int4(0, 0, 0, 0), int2(width - 1, height - 1).xyxy); \
+	float2 mix_vals = frac(top_left_f); \
+	float depthTL = CONVERT_FN(Texture.Load(int3(coords.xy, 0))); \
+	float depthTR = CONVERT_FN(Texture.Load(int3(coords.zy, 0))); \
+	float depthBL = CONVERT_FN(Texture.Load(int3(coords.xw, 0))); \
+	float depthBR = CONVERT_FN(Texture.Load(int3(coords.zw, 0))); \
+	return lerp(lerp(depthTL, depthTR, mix_vals.x), lerp(depthBL, depthBR, mix_vals.x), mix_vals.y);
+
+float ps_convert_rgba8_float32_biln(PS_INPUT input) : SV_Depth
+{
+	// Convert an RGBA texture into a float depth texture
+	SAMPLE_RGBA_DEPTH_BILN(rgba8_to_depth32);
+}
+
+float ps_convert_rgba8_float24_biln(PS_INPUT input) : SV_Depth
+{
+	// Same as above but without the alpha channel (24 bits Z)
+
+	// Convert an RGBA texture into a float depth texture
+	SAMPLE_RGBA_DEPTH_BILN(rgba8_to_depth24);
+}
+
+float ps_convert_rgba8_float16_biln(PS_INPUT input) : SV_Depth
+{
+	// Same as above but without the A/B channels (16 bits Z)
+
+	// Convert an RGBA texture into a float depth texture
+	SAMPLE_RGBA_DEPTH_BILN(rgba8_to_depth16);
+}
+
+float ps_convert_rgb5a1_float16_biln(PS_INPUT input) : SV_Depth
+{
+	// Convert an RGB5A1 (saved as RGBA8) color to a 16 bit Z
+	SAMPLE_RGBA_DEPTH_BILN(rgb5a1_to_depth16);
 }
 
 PS_OUTPUT ps_convert_rgba_8i(PS_INPUT input)

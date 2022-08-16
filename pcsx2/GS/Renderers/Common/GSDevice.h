@@ -45,11 +45,74 @@ enum class ShaderConvert
 	RGBA8_TO_FLOAT24,
 	RGBA8_TO_FLOAT16,
 	RGB5A1_TO_FLOAT16,
+	RGBA8_TO_FLOAT32_BILN,
+	RGBA8_TO_FLOAT24_BILN,
+	RGBA8_TO_FLOAT16_BILN,
+	RGB5A1_TO_FLOAT16_BILN,
 	DEPTH_COPY,
 	RGBA_TO_8I,
 	YUV,
 	Count
 };
+
+static inline bool HasDepthOutput(ShaderConvert shader)
+{
+	switch (shader)
+	{
+		case ShaderConvert::RGBA8_TO_FLOAT32:
+		case ShaderConvert::RGBA8_TO_FLOAT24:
+		case ShaderConvert::RGBA8_TO_FLOAT16:
+		case ShaderConvert::RGB5A1_TO_FLOAT16:
+		case ShaderConvert::RGBA8_TO_FLOAT32_BILN:
+		case ShaderConvert::RGBA8_TO_FLOAT24_BILN:
+		case ShaderConvert::RGBA8_TO_FLOAT16_BILN:
+		case ShaderConvert::RGB5A1_TO_FLOAT16_BILN:
+		case ShaderConvert::DEPTH_COPY:
+			return true;
+		default:
+			return false;
+	}
+}
+
+static inline bool HasStencilOutput(ShaderConvert shader)
+{
+	switch (shader)
+	{
+		case ShaderConvert::DATM_0:
+		case ShaderConvert::DATM_1:
+			return true;
+		default:
+			return false;
+	}
+}
+
+static inline bool SupportsNearest(ShaderConvert shader)
+{
+	switch (shader)
+	{
+		case ShaderConvert::RGBA8_TO_FLOAT32_BILN:
+		case ShaderConvert::RGBA8_TO_FLOAT24_BILN:
+		case ShaderConvert::RGBA8_TO_FLOAT16_BILN:
+		case ShaderConvert::RGB5A1_TO_FLOAT16_BILN:
+			return false;
+		default:
+			return true;
+	}
+}
+
+static inline bool SupportsBilinear(ShaderConvert shader)
+{
+	switch (shader)
+	{
+		case ShaderConvert::RGBA8_TO_FLOAT32:
+		case ShaderConvert::RGBA8_TO_FLOAT24:
+		case ShaderConvert::RGBA8_TO_FLOAT16:
+		case ShaderConvert::RGB5A1_TO_FLOAT16:
+			return false;
+		default:
+			return true;
+	}
+}
 
 enum class PresentShader
 {
