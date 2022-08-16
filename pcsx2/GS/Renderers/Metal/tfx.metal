@@ -708,7 +708,7 @@ struct PSMain
 		// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
 		// GS: Color = 1, Alpha = 255 => output 1
 		// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-		if (PS_DFMT == FMT_16 && (PS_HDR || PS_BLEND_MIX == 0))
+		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0)
 			// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 			C.rgb = float3(short3(C.rgb) & 0xF8);
 		else if (PS_COLCLIP && !PS_HDR)
