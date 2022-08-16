@@ -62,7 +62,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 	dialog->registerWidgetHelp(m_ui.slowMotionSpeed, tr("Slow Motion Speed"), tr("User Preference"),
 		tr("Sets the slow motion speed. This speed will be used when the slow motion hotkey is pressed/toggled."));	
 
-	dialog->registerWidgetHelp(m_ui.speedLimiter, tr("Speed Limiter"), tr("checked"),
+	dialog->registerWidgetHelp(m_ui.speedLimiter, tr("Speed Limiter"), tr("Checked"),
 		tr("Limits the emulation to the appropriate framerate for the currently running game."));
 
 	dialog->registerWidgetHelp(m_ui.syncToHostRefreshRate, tr("Sync To Host Refresh Rate"), tr("Unchecked"),
