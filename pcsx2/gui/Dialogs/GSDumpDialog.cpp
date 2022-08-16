@@ -787,7 +787,7 @@ void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSDumpFile::GSData& event, u8
 		case GSType::ReadFIFO2:
 		{
 			std::unique_ptr<u8[]> arr(new u8[*((int*)event.data) * 16]);
-			GetMTGS().InitAndReadFIFO(arr.get(), *((int*)event.data));
+			GSInitAndReadFIFO(arr.get(), *((int*)event.data));
 			break;
 		}
 		case GSType::Registers:
