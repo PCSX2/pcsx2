@@ -18887,6 +18887,9 @@ SLES-54547:
 SLES-54548:
   name: "Cocoto Fishing Master"
   region: "PAL-M4"
+  gsHWFixes:
+    deinterlace: 6 # Fixes blurriness.
+    halfPixelOffset: 1 # Fixes blur.
 SLES-54549:
   name: "Crazy Frog Racer 2"
   region: "PAL-M5"
@@ -45850,6 +45853,9 @@ SLUS-21663:
   name: "Cocoto - Fishing Master"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    deinterlace: 6 # Fixes blurriness.
+    halfPixelOffset: 1 # Fixes blur.
 SLUS-21664:
   name: "Sims 2, The - Castaway"
   region: "NTSC-U"
