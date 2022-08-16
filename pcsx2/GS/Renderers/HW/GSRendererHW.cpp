@@ -2612,6 +2612,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			// A fast algo that requires 2 passes
 			GL_INS("COLCLIP Fast HDR mode ENABLED");
 			m_conf.ps.hdr = 1;
+			blend_mix = false;
 			sw_blending   = true; // Enable sw blending for the HDR algo
 		}
 		else if (sw_blending)
