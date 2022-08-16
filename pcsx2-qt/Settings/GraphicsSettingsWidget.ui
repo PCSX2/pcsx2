@@ -315,7 +315,7 @@
          <item row="1" column="0">
           <widget class="QCheckBox" name="vsync">
            <property name="text">
-            <string>Sync To Host Refresh (VSync)</string>
+            <string>VSync</string>
            </property>
           </widget>
          </item>
