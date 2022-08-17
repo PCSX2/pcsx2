@@ -1884,7 +1884,7 @@ void GSState::FlushPrim()
 			// Jak 3 shadows get spikey (with autoflush) if you don't.
 			if (PRIM->PRIM == GS_TRIANGLEFAN)
 			{
-				for (int i = 0; i < unused; i++)
+				for (size_t i = 0; i < unused; i++)
 				{
 					GSVector4i* RESTRICT vert_ptr = (GSVector4i*)&m_vertex.buff[i];
 					GSVector4i v = vert_ptr[1];
