@@ -438,7 +438,7 @@ GSVector4i GSState::GetDisplayRect(int i)
 	const int width = DW / magnification.x;
 	const int height = DH / magnification.y;
 
-	GSVector2i offsets = GetResolutionOffset(i);
+	const GSVector2i offsets = GetResolutionOffset(i);
 
 	// Set up the display rectangle based on the values obtained from DISPLAY registers
 	rectangle.left = offsets.x;
@@ -530,8 +530,8 @@ GSVector4i GSState::GetFrameRect(int i, bool ignore_off)
 	int DBY = m_regs->DISP[i].DISPFB.DBY;
 
 
-	int w = DW / magnification.x;
-	int h = DH / magnification.y;
+	const int w = DW / magnification.x;
+	const int h = DH / magnification.y;
 
 	// If the combined height overflows 2048, it's likely adding a bit of extra data before the picture for offsetting the interlace
 	// only game known to do this is NASCAR '08
@@ -621,7 +621,7 @@ void GSState::DumpVertices(const std::string& filename)
 	if (!file.is_open())
 		return;
 
-	size_t count = m_index.tail;
+	const size_t count = m_index.tail;
 	GSVertex* buffer = &m_vertex.buff[0];
 
 	const char* DEL = ", ";
@@ -633,8 +633,8 @@ void GSState::DumpVertices(const std::string& filename)
 		file << "\t" << "v" << i << ": ";
 		GSVertex v = buffer[m_index.buff[i]];
 
-		float x = (v.XYZ.X - (int)m_context->XYOFFSET.OFX) / 16.0f;
-		float y = (v.XYZ.Y - (int)m_context->XYOFFSET.OFY) / 16.0f;
+		const float x = (v.XYZ.X - (int)m_context->XYOFFSET.OFX) / 16.0f;
+		const float y = (v.XYZ.Y - (int)m_context->XYOFFSET.OFY) / 16.0f;
 
 		file << x << DEL;
 		file << y << DEL;
@@ -660,14 +660,14 @@ void GSState::DumpVertices(const std::string& filename)
 
 	file << std::endl;
 
-	bool use_uv = PRIM->FST;
-	std::string qualifier = use_uv ? "UV" : "STQ";
+	const bool use_uv = PRIM->FST;
+	const std::string qualifier = use_uv ? "UV" : "STQ";
 
 	file << "TEXTURE COORDS (" << qualifier << ")" << std::endl;;
 	for (size_t i = 0; i < count; ++i)
 	{
 		file << "\t" << "v" << i << ": ";
-		GSVertex v = buffer[m_index.buff[i]];
+		const GSVertex v = buffer[m_index.buff[i]];
 
 		// note
 		// Yes, technically as far as the GS is concerned Q belongs
@@ -676,8 +676,8 @@ void GSState::DumpVertices(const std::string& filename)
 		// is associated with STQ.
 		if (use_uv)
 		{
-			float uv_U = v.U / 16.0f;
-			float uv_V = v.V / 16.0f;
+			const float uv_U = v.U / 16.0f;
+			const float uv_V = v.V / 16.0f;
 
 			file << uv_U << DEL << uv_V;
 		}
@@ -834,9 +834,9 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 
 	while (r < r_end)
 	{
-		GSVector4i st = GSVector4i::loadl(&r[0].U64[0]);
+		const GSVector4i st = GSVector4i::loadl(&r[0].U64[0]);
 		GSVector4i q = GSVector4i::loadl(&r[0].U64[1]);
-		GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & GSVector4i::x000000ff()).ps32().pu16();
+		const GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & GSVector4i::x000000ff()).ps32().pu16();
 
 		q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // see GIFPackedRegHandlerSTQ
 
@@ -868,17 +868,17 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32
 
 	while (r < r_end)
 	{
-		GSVector4i st = GSVector4i::loadl(&r[0].U64[0]);
+		const GSVector4i st = GSVector4i::loadl(&r[0].U64[0]);
 		GSVector4i q = GSVector4i::loadl(&r[0].U64[1]);
-		GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & GSVector4i::x000000ff()).ps32().pu16();
+		const GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & GSVector4i::x000000ff()).ps32().pu16();
 
 		q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // see GIFPackedRegHandlerSTQ
 
 		m_v.m[0] = st.upl64(rgba.upl32(q)); // TODO: only store the last one
 
-		GSVector4i xy = GSVector4i::loadl(&r[2].U64[0]);
-		GSVector4i z = GSVector4i::loadl(&r[2].U64[1]);
-		GSVector4i xyz = xy.upl16(xy.srl<4>()).upl32(z);
+		const GSVector4i xy = GSVector4i::loadl(&r[2].U64[0]);
+		const GSVector4i z = GSVector4i::loadl(&r[2].U64[1]);
+		const GSVector4i xyz = xy.upl16(xy.srl<4>()).upl32(z);
 
 		m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV)); // TODO: only store the last one
 
@@ -933,7 +933,7 @@ void GSState::GIFRegHandlerPRIM(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerRGBAQ(const GIFReg* RESTRICT r)
 {
-	GSVector4i rgbaq = (GSVector4i)r->RGBAQ;
+	const GSVector4i rgbaq = (GSVector4i)r->RGBAQ;
 
 	GSVector4i q = rgbaq.blend8(GSVector4i::cast(GSVector4::m_one), rgbaq == GSVector4i::zero()).yyyy(); // see GIFPackedRegHandlerSTQ
 
@@ -972,9 +972,9 @@ void GSState::GIFRegHandlerXYZF2(const GIFReg* RESTRICT r)
 {
 	CheckFlushes();
 
-	GSVector4i xyzf = GSVector4i::loadl(&r->XYZF);
-	GSVector4i xyz = xyzf & (GSVector4i::xffffffff().upl32(GSVector4i::x00ffffff()));
-	GSVector4i uvf = GSVector4i::load((int)m_v.UV).upl32(xyzf.srl32(24).srl<4>());
+	const GSVector4i xyzf = GSVector4i::loadl(&r->XYZF);
+	const GSVector4i xyz = xyzf & (GSVector4i::xffffffff().upl32(GSVector4i::x00ffffff()));
+	const GSVector4i uvf = GSVector4i::load((int)m_v.UV).upl32(xyzf.srl32(24).srl<4>());
 
 	m_v.m[1] = xyz.upl64(uvf);
 
@@ -1213,7 +1213,7 @@ void GSState::GIFRegHandlerTEX2(const GIFReg* RESTRICT r)
 
 	constexpr u64 mask = 0xFFFFFFE003F00000ull; // TEX2 bits
 
-	GIFRegTEX0 TEX0;
+	GIFRegTEX0 TEX0{};
 
 	TEX0.U64 = (m_env.CTXT[i].TEX0.U64 & ~mask) | (r->U64 & mask);
 
@@ -1796,9 +1796,9 @@ void GSState::FlushPrim()
 		GSVertex buff[2];
 		s_n++;
 
-		size_t head = m_vertex.head;
-		size_t tail = m_vertex.tail;
-		size_t next = m_vertex.next;
+		const size_t head = m_vertex.head;
+		const size_t tail = m_vertex.tail;
+		const size_t next = m_vertex.next;
 		size_t unused = 0;
 
 		if (tail > head)
@@ -1904,7 +1904,7 @@ void GSState::FlushPrim()
 
 void GSState::Write(const u8* mem, int len)
 {
-	int w = m_env.TRXREG.RRW;
+	const int w = m_env.TRXREG.RRW;
 	int h = m_env.TRXREG.RRH;
 
 	GIFRegBITBLTBUF& blit = m_tr.m_blit;
@@ -2076,12 +2076,12 @@ void GSState::Move()
 
 	// TODO: unroll inner loops (width has special size requirement, must be multiples of 1 << n, depending on the format)
 
-	int sbp = m_env.BITBLTBUF.SBP;
-	int sbw = m_env.BITBLTBUF.SBW;
-	int dbp = m_env.BITBLTBUF.DBP;
-	int dbw = m_env.BITBLTBUF.DBW;
-	GSOffset spo = m_mem.GetOffset(sbp, sbw, m_env.BITBLTBUF.SPSM);
-	GSOffset dpo = m_mem.GetOffset(dbp, dbw, m_env.BITBLTBUF.DPSM);
+	const int sbp = m_env.BITBLTBUF.SBP;
+	const int sbw = m_env.BITBLTBUF.SBW;
+	const int dbp = m_env.BITBLTBUF.DBP;
+	const int dbw = m_env.BITBLTBUF.DBW;
+	const GSOffset spo = m_mem.GetOffset(sbp, sbw, m_env.BITBLTBUF.SPSM);
+	const GSOffset dpo = m_mem.GetOffset(dbp, dbw, m_env.BITBLTBUF.DPSM);
 
 	auto genericCopy = [=](const GSOffset& dpo, const GSOffset& spo, auto&& getPAHelper, auto&& pxCopyFn)
 	{
@@ -2420,7 +2420,7 @@ void GSState::Transfer(const u8* mem, u32 size)
 					// and according to Pseudonym we shouldn't even land in this code. So hmm indeed. (rama)
 				case GIF_FLG_IMAGE:
 				{
-					int len = (int)std::min(size, path.nloop);
+					const int len = (int)std::min(size, path.nloop);
 
 					switch (m_env.TRXDIR.XDIR)
 					{
@@ -3111,34 +3111,34 @@ __forceinline void GSState::VertexKick(u32 skip)
 
 	// callers should write XYZUVF to m_v.m[1] in one piece to have this load store-forwarded, either by the cpu or the compiler when this function is inlined
 
-	GSVector4i v0(m_v.m[0]);
-	GSVector4i v1(m_v.m[1]);
+	const GSVector4i new_v0(m_v.m[0]);
+	const GSVector4i new_v1(m_v.m[1]);
 
 	GSVector4i* RESTRICT tailptr = (GSVector4i*)&m_vertex.buff[tail];
 
-	tailptr[0] = v0;
-	tailptr[1] = v1;
+	tailptr[0] = new_v0;
+	tailptr[1] = new_v1;
 
-	const GSVector4i xy = v1.xxxx().u16to32().sub32(m_ofxy);
+	const GSVector4i xy = new_v1.xxxx().u16to32().sub32(m_ofxy);
 
 	GSVector4i::storel(&m_vertex.xy[xy_tail & 3], xy.blend16<0xf0>(xy.sra32(4)).ps32());
 
 	m_vertex.tail = ++tail;
 	m_vertex.xy_tail = ++xy_tail;
 
-	size_t m = tail - head;
+	const size_t m = tail - head;
 
 	if (m < n)
 		return;
 
 	if (skip == 0 && (prim != GS_TRIANGLEFAN || m <= 4)) // m_vertex.xy only knows about the last 4 vertices, head could be far behind for fan
 	{
-		GSVector4i v0, v1, v2, v3, pmin, pmax;
+		GSVector4i pmin, pmax;
 
-		v0 = GSVector4i::loadl(&m_vertex.xy[(xy_tail + 1) & 3]); // T-3
-		v1 = GSVector4i::loadl(&m_vertex.xy[(xy_tail + 2) & 3]); // T-2
-		v2 = GSVector4i::loadl(&m_vertex.xy[(xy_tail + 3) & 3]); // T-1
-		v3 = GSVector4i::loadl(&m_vertex.xy[(xy_tail - m) & 3]); // H
+		const GSVector4i v0 = GSVector4i::loadl(&m_vertex.xy[(xy_tail + 1) & 3]); // T-3
+		const GSVector4i v1 = GSVector4i::loadl(&m_vertex.xy[(xy_tail + 2) & 3]); // T-2
+		const GSVector4i v2 = GSVector4i::loadl(&m_vertex.xy[(xy_tail + 3) & 3]); // T-1
+		const GSVector4i v3 = GSVector4i::loadl(&m_vertex.xy[(xy_tail - m) & 3]); // H
 
 		switch (prim)
 		{
@@ -3372,7 +3372,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 	const int tw_mask = w - 1;
 	const int th_mask = h - 1;
 
-	GSVector4i tr(0, 0, w, h);
+	const GSVector4i tr(0, 0, w, h);
 
 	const int wms = CLAMP.WMS;
 	const int wmt = CLAMP.WMT;
@@ -3506,7 +3506,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 			}
 		}
 
-		GSVector4i uv = GSVector4i(st.floor());
+		const GSVector4i uv = GSVector4i(st.floor());
 		uses_border = GSVector4::cast((uv < vr).blend32<0xc>(uv >= vr)).mask();
 
 		// Roughly cut out the min/max of the read (Clamp)
@@ -3580,13 +3580,14 @@ void GSState::CalcAlphaMinMax()
 	if (m_vt.m_alpha.valid)
 		return;
 
-	const GSDrawingEnvironment& env = m_env;
 	const GSDrawingContext* context = m_context;
 
 	GSVector4i a = m_vt.m_min.c.uph32(m_vt.m_max.c).zzww();
 
 	if (PRIM->TME && context->TEX0.TCC)
 	{
+		const GSDrawingEnvironment& env = m_env;
+
 		switch (GSLocalMemory::m_psm[context->TEX0.PSM].fmt)
 		{
 			case 0:
