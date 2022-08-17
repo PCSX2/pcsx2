@@ -153,7 +153,6 @@ static void ConsoleQt_DoWrite(const char* fmt)
 	}
 #else
 	std::fputs(fmt, stdout);
-	std::fputc('\n', stdout);
 #endif
 
 	if (emuLog)
