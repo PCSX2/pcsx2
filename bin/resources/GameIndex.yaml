@@ -13047,11 +13047,15 @@ SLES-51981:
   region: "PAL-E"
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gsHWFixes:
+    roundSprite: 1 # Fixes slight blur.
 SLES-51982:
   name: "ShellShock - Nam '67"
   region: "PAL-M3"
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gsHWFixes:
+    roundSprite: 1 # Fixes slight blur.
 SLES-51986:
   name: "Backyard Wrestling - Don't Try This At Home"
   region: "PAL-M5"
@@ -41744,6 +41748,8 @@ SLUS-20828:
   compat: 5
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+  gsHWFixes:
+    roundSprite: 1 # Fixes slight blur.
 SLUS-20830:
   name: "Intellivision Lives!"
   region: "NTSC-U"
