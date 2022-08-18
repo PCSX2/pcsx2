@@ -779,6 +779,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 						t->m_texture ? t->m_texture->GetID() : 0,
 						t->m_TEX0.TBP0);
 					g_gs_device->ClearRenderTarget(t->m_texture, 0);
+					t->m_dirty.clear();
 				}
 			}
 		}
