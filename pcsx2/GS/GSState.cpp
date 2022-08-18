@@ -3099,7 +3099,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 
 	ASSERT(m_vertex.tail < m_vertex.maxcount + 3);
 
-	if (auto_flush && m_index.tail >= 0 && ((m_vertex.tail + 1) - m_vertex.head) >= n)
+	if (auto_flush && m_index.tail > 0 && ((m_vertex.tail + 1) - m_vertex.head) >= n)
 	{
 		HandleAutoFlush();
 	}

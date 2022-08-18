@@ -900,7 +900,7 @@ void GSRendererHW::SwSpriteRender()
 
 	const bool alpha_blending_enabled = PRIM->ABE;
 
-	const GSVertex& v = m_vertex.buff[m_index.buff[m_index.tail - 1]]; // Last vertex.
+	const GSVertex& v = m_index.tail > 0 ? m_vertex.buff[m_index.buff[m_index.tail - 1]] : GSVertex(); // Last vertex if any.
 	const GSVector4i vc = GSVector4i(v.RGBAQ.R, v.RGBAQ.G, v.RGBAQ.B, v.RGBAQ.A) // 0x000000AA000000BB000000GG000000RR
 							  .ps32(); // 0x00AA00BB00GG00RR00AA00BB00GG00RR
 
