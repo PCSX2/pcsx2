@@ -11,7 +11,7 @@ This is a fork of [#03027453c8](https://github.com/PCSX2/pcsx2/tree/03027453c8fe
 - [**ztufs**](https://www.reddit.com/u/ztufs) - for drawing the background art
 
 ## Resources
-- [**Sly Cooper Modding Discord**](https://discord.gg/gh5xwfj) - quick help on any Sly related issue
+- [**Sly Cooper Modding Discord**](https://discord.gg/2GSXcEzPJA) - quick help on any Sly related issue
 - [**Weed Sheet**](https://docs.google.com/spreadsheets/d/12eUPni-GbMofoGcAvGEoB3BGuzlzkY7DaH_3v3yMG78/edit?usp=sharing) - the best place for downloading Sly mods
 - [**Sly Addresses**](https://docs.google.com/spreadsheets/u/0/d/1ISxw587iICRDdaLJfLaTvJUaYkjGBReH4NY-yKN-Ip0) - massive spreadsheet for memory addresses in all games, demos and prototypes
 # System Requirements
