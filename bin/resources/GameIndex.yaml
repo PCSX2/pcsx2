@@ -33066,8 +33066,11 @@ SLPS-20007:
   name: "Driving Emotion Type S"
   region: "NTSC-J"
   compat: 5
+  clampModes:
+    vuClampMode: 3 # Fixes missing geometry.
   gameFixes:
     - EETimingHack # Garbage in FMVs.
+    - VUSyncHack # Fixes missing geometry.
   gsHWFixes:
     textureInsideRT: 1
 SLPS-20009:
