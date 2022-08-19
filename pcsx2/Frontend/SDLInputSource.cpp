@@ -22,9 +22,6 @@
 #include "common/StringUtil.h"
 #include "common/Console.h"
 #include <cmath>
-#ifdef __APPLE__
-#include <dispatch/dispatch.h>
-#endif
 
 static const char* s_sdl_axis_names[] = {
 	"LeftX", // SDL_CONTROLLER_AXIS_LEFTX
@@ -150,17 +147,7 @@ void SDLInputSource::SetHints()
 
 bool SDLInputSource::InitializeSubsystem()
 {
-	int result;
-#ifdef __APPLE__
-	// On macOS, SDL_InitSubSystem runs a main-thread-only call to some GameController framework method
-	// So send this to be run on the main thread
-	dispatch_sync_f(dispatch_get_main_queue(), &result, [](void* ctx){
-		*static_cast<int*>(ctx) = SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
-	});
-#else
-	result = SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
-#endif
-	if (result < 0)
+	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) < 0)
 	{
 		Console.Error("SDL_InitSubSystem(SDL_INIT_JOYSTICK |SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) failed");
 		return false;
@@ -178,13 +165,7 @@ void SDLInputSource::ShutdownSubsystem()
 
 	if (m_sdl_subsystem_initialized)
 	{
-#ifdef __APPLE__
-		dispatch_sync_f(dispatch_get_main_queue(), nullptr, [](void*){
-			SDL_QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
-		});
-#else
 		SDL_QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
-#endif
 		m_sdl_subsystem_initialized = false;
 	}
 }
