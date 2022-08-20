@@ -17,6 +17,8 @@
 
 #include "common/Assertions.h"
 
+#include "pcsx2/Frontend/ImGuiManager.h"
+
 #include "DisplayWidget.h"
 #include "EmuThread.h"
 #include "MainWindow.h"
@@ -224,6 +226,15 @@ bool DisplayWidget::event(QEvent* event)
 		case QEvent::KeyRelease:
 		{
 			const QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
+			
+			// Forward text input to imgui.
+			if (ImGuiManager::WantsTextInput() && key_event->type() == QEvent::KeyPress)
+			{
+				const QString text(key_event->text());
+				if (!text.isEmpty())
+					ImGuiManager::AddTextInput(text.toStdString());
+			}
+
 			if (key_event->isAutoRepeat())
 				return true;
 
