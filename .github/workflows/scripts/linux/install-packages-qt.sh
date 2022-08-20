@@ -36,6 +36,7 @@ declare -a BUILD_PACKAGES=(
 declare -a PCSX2_PACKAGES=(
 	"libaio-dev"
 	"libbz2-dev"
+	"libcurl4-gnutls-dev"
 	"libegl1-mesa-dev"
 	"libgl1-mesa-dev"
 	"libgtk-3-dev"
