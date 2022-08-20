@@ -102,6 +102,11 @@ void Host::ReportErrorAsync(const std::string_view& title, const std::string_vie
 		MsgButtons().OK()));
 }
 
+bool Host::ConfirmMessage(const std::string_view& title, const std::string_view& message)
+{
+	return true;
+}
+
 static std::unique_ptr<HostDisplay> s_host_display;
 
 HostDisplay* Host::AcquireHostDisplay(HostDisplay::RenderAPI api)

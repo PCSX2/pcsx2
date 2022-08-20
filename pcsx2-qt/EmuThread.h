@@ -61,6 +61,7 @@ public:
 	void updatePerformanceMetrics(bool force);
 
 public Q_SLOTS:
+	bool confirmMessage(const QString& title, const QString& message);
 	void startVM(std::shared_ptr<VMBootParameters> boot_params);
 	void resetVM();
 	void setVMPaused(bool paused);
@@ -88,6 +89,8 @@ public Q_SLOTS:
 	void queueSnapshot(quint32 gsdump_frames);
 
 Q_SIGNALS:
+	bool messageConfirmed(const QString& title, const QString& message);
+
 	DisplayWidget* onCreateDisplayRequested(bool fullscreen, bool render_to_main);
 	DisplayWidget* onUpdateDisplayRequested(bool fullscreen, bool render_to_main, bool surfaceless);
 	void onResizeDisplayRequested(qint32 width, qint32 height);
