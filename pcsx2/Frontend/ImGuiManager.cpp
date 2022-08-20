@@ -778,6 +778,27 @@ ImFont* ImGuiManager::GetFixedFont()
 
 #ifdef PCSX2_CORE
 
+bool ImGuiManager::WantsTextInput()
+{
+	return s_imgui_wants_keyboard.load(std::memory_order_acquire);
+}
+
+void ImGuiManager::AddTextInput(std::string str)
+{
+	if (!s_imgui_wants_keyboard.load(std::memory_order_acquire))
+		return;
+
+	// Has to go through the CPU -> GS thread :(
+	Host::RunOnCPUThread([str = std::move(str)]() {
+		GetMTGS().RunOnGSThread([str = std::move(str)]() {
+			if (!ImGui::GetCurrentContext())
+				return;
+
+			ImGui::GetIO().AddInputCharactersUTF8(str.c_str());
+		});
+	});
+}
+
 void ImGuiManager::UpdateMousePosition(float x, float y)
 {
 	if (!ImGui::GetCurrentContext())
