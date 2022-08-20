@@ -20,6 +20,7 @@
 #include <QtCore/QTimer>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
+#include <QtGui/QClipboard>
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
@@ -48,6 +49,7 @@
 #include "GameList/GameListWidget.h"
 #include "MainWindow.h"
 #include "QtHost.h"
+#include "QtUtils.h"
 #include "svnrev.h"
 
 static constexpr u32 SETTINGS_VERSION = 1;
@@ -430,6 +432,30 @@ void Host::ReportErrorAsync(const std::string_view& title, const std::string_vie
 	QMetaObject::invokeMethod(g_main_window, "reportError", Qt::QueuedConnection,
 		Q_ARG(const QString&, title.empty() ? QString() : QString::fromUtf8(title.data(), title.size())),
 		Q_ARG(const QString&, message.empty() ? QString() : QString::fromUtf8(message.data(), message.size())));
+}
+
+bool Host::ConfirmMessage(const std::string_view& title, const std::string_view& message)
+{
+	const QString qtitle(QString::fromUtf8(title.data(), title.size()));
+	const QString qmessage(QString::fromUtf8(message.data(), message.size()));
+	return g_emu_thread->confirmMessage(qtitle, qmessage);
+}
+
+void Host::OpenURL(const std::string_view& url)
+{
+	QtHost::RunOnUIThread([url = QtUtils::StringViewToQString(url)]() {
+		QtUtils::OpenURL(g_main_window, QUrl(url));
+	});
+}
+
+bool Host::CopyTextToClipboard(const std::string_view& text)
+{
+	QtHost::RunOnUIThread([text = QtUtils::StringViewToQString(text)]() {
+		QClipboard* clipboard = QGuiApplication::clipboard();
+		if (clipboard)
+			clipboard->setText(text);
+	});
+	return true;
 }
 
 void Host::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)

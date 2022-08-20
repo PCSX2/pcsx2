@@ -62,4 +62,14 @@ namespace Host
 	/// Displays an asynchronous error on the UI thread, i.e. doesn't block the caller.
 	void ReportErrorAsync(const std::string_view& title, const std::string_view& message);
 	void ReportFormattedErrorAsync(const std::string_view& title, const char* format, ...);
+
+	/// Displays a synchronous confirmation on the UI thread, i.e. blocks the caller.
+	bool ConfirmMessage(const std::string_view& title, const std::string_view& message);
+	bool ConfirmFormattedMessage(const std::string_view& title, const char* format, ...);
+
+	/// Opens a URL, using the default application.
+	void OpenURL(const std::string_view& url);
+
+	/// Copies the provided text to the host's clipboard, if present.
+	bool CopyTextToClipboard(const std::string_view& text);
 } // namespace Host

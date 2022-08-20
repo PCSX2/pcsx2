@@ -354,6 +354,7 @@ void MainWindow::connectSignals()
 
 void MainWindow::connectVMThreadSignals(EmuThread* thread)
 {
+	connect(thread, &EmuThread::messageConfirmed, this, &MainWindow::confirmMessage, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onCreateDisplayRequested, this, &MainWindow::createDisplay, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onUpdateDisplayRequested, this, &MainWindow::updateDisplay, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onDestroyDisplayRequested, this, &MainWindow::destroyDisplay, Qt::BlockingQueuedConnection);
@@ -1000,6 +1001,12 @@ void MainWindow::invalidateSaveStateCache()
 void MainWindow::reportError(const QString& title, const QString& message)
 {
 	QMessageBox::critical(this, title, message);
+}
+
+bool MainWindow::confirmMessage(const QString& title, const QString& message)
+{
+	VMLock lock(pauseAndLockVM());
+	return (QMessageBox::question(this, title, message) == QMessageBox::Yes);
 }
 
 void MainWindow::runOnUIThread(const std::function<void()>& func)
