@@ -996,6 +996,12 @@ void VMManager::Shutdown(bool save_resume_state)
 	}
 
 	{
+		LastELF.clear();
+		DiscSerial.clear();
+		ElfCRC = 0;
+		ElfEntry = 0;
+		ElfTextRange = {};
+
 		std::unique_lock lock(s_info_mutex);
 		s_disc_path.clear();
 		s_game_crc = 0;
