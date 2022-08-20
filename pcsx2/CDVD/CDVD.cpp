@@ -291,7 +291,17 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 	if (fpIlink && FileSystem::FSize64(fpIlink.get()) >= 8)
 	{
 		u8 ILinkID_Data[8] = {0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86};
-		std::fread(ILinkID_Data, 1, 8, fpIlink.get());
+
+		if (FileSystem::FSize64(fpIlink.get()) == 0x400) {
+			// NVM dump given for ILINK ID
+			// MAME ROMs will only have the NVM dump available so this is required for compatibility.
+			std::fseek(fpIlink.get(), 0x1e0, SEEK_SET);
+			std::fread(ILinkID_Data, 1, 8, fpIlink.get());
+			Console.WriteLn("ILINK ID MAME type\n");
+		} else if (FileSystem::FSize64(fpIlink.get()) == 8) {
+			std::fread(ILinkID_Data, 1, 8, fpIlink.get());
+			Console.WriteLn("ILINK ID OLD type\n");
+		}
 
 		NVMLayout* nvmLayout = getNvmLayout();
 		std::fseek(fp.get(), *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, ilinkId)), SEEK_SET);

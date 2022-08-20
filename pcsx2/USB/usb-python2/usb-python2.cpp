@@ -308,6 +308,60 @@ namespace usb_python2
 		}
 	}
 
+	uint8_t calc_crc8(uint8_t *data, const uint8_t data_size, const uint8_t crc_init)
+	{
+		uint8_t crc = crc_init;
+
+		for (uint8_t index = 0; index < data_size; ++index)
+		{
+			uint8_t inByte = data[index];
+			for (uint8_t bitPosition = 0; bitPosition < 8; ++bitPosition)
+			{
+				const uint8_t mix = (crc ^ inByte) & 0x01;
+				crc >>= 1;
+				if (mix != 0) crc ^= 0x8C;
+				inByte >>= 1;
+			}
+		}
+		return crc;
+	}
+
+	bool read_dongle_data(FILE *infile, uint8_t *output)
+	{
+		bool is_valid = false;
+		uint8_t temp[40] = {};
+		uint8_t serial[8] = {};
+		uint8_t payload[32] = {};
+
+		std::fread(temp, 1, 40, infile);
+
+		// Check CRC of what should be the serial and payload in two different
+		// configurations and then reorder file data if required.
+		// MAME format is 0x20 bytes for payload followed by 0x08 for serial.
+		// The format used in other dumps for Python 2 games is the reverse of that.
+		if (((~calc_crc8(temp, 0x1f, 0xff)) & 0xff) == temp[0x1f] && calc_crc8(temp + 0x20, 7, 0) == temp[0x27]) {
+			memcpy(payload, temp, 0x20);
+			memcpy(serial, temp + 0x20, 8);
+			Console.WriteLn("Dongle type MAME\n");
+			is_valid = true;
+		} else if (calc_crc8(temp, 7, 0) == temp[7] && ((~calc_crc8(temp + 8, 0x1f, 0xff)) & 0xff) == temp[0x27]) {
+			memcpy(serial, temp, 8);
+			memcpy(payload, temp + 8, 0x20);
+			Console.WriteLn("Dongle type OLD\n");
+			is_valid = true;
+		}
+
+		if (is_valid) {
+			memcpy(output, serial, 8);
+			memcpy(output + 8, payload, 32);
+		} else {
+			memset(output, 0, 40);
+			Console.Error("Dongle BAD: invalid CRC values\n");
+		}
+
+		return is_valid;
+	}
+
 	void load_configuration(USBDevice* dev)
 	{
 		auto s = reinterpret_cast<UsbPython2State*>(dev);
@@ -351,8 +405,8 @@ namespace usb_python2
 			auto dongleFile = FileSystem::OpenManagedCFile(dongleBlackPath.c_str(), "rb");
 			if (dongleFile && FileSystem::FSize64(dongleFile.get()) >= 40)
 			{
-				std::fread(&s->f.dongleSlotPayload[0][0], 1, 40, dongleFile.get());
 				s->f.isDongleSlotLoaded[0] = true;
+				s->f.isDongleSlotLoaded[0] = read_dongle_data(dongleFile.get(), &s->f.dongleSlotPayload[0][0]);
 			}
 			else
 			{
@@ -368,8 +422,7 @@ namespace usb_python2
 			auto dongleFile = FileSystem::OpenManagedCFile(dongleWhitePath.c_str(), "rb");
 			if (dongleFile && FileSystem::FSize64(dongleFile.get()) >= 40)
 			{
-				std::fread(&s->f.dongleSlotPayload[1][0], 1, 40, dongleFile.get());
-				s->f.isDongleSlotLoaded[1] = true;
+				s->f.isDongleSlotLoaded[1] = read_dongle_data(dongleFile.get(), &s->f.dongleSlotPayload[1][0]);
 			}
 			else
 			{
@@ -415,8 +468,7 @@ namespace usb_python2
 				auto dongleFile = FileSystem::OpenManagedCFile(dongleBlackPath.c_str(), "rb");
 				if (dongleFile && FileSystem::FSize64(dongleFile.get()) >= 40)
 				{
-					std::fread(&s->f.dongleSlotPayload[0][0], 1, 40, dongleFile.get());
-					s->f.isDongleSlotLoaded[0] = true;
+					s->f.isDongleSlotLoaded[0] = read_dongle_data(dongleFile.get(), &s->f.dongleSlotPayload[0][0]);
 				}
 				else
 				{
@@ -432,8 +484,7 @@ namespace usb_python2
 				auto dongleFile = FileSystem::OpenManagedCFile(dongleWhitePath.c_str(), "rb");
 				if (dongleFile && FileSystem::FSize64(dongleFile.get()) >= 40)
 				{
-					std::fread(&s->f.dongleSlotPayload[1][0], 1, 40, dongleFile.get());
-					s->f.isDongleSlotLoaded[1] = true;
+					s->f.isDongleSlotLoaded[1] = read_dongle_data(dongleFile.get(), &s->f.dongleSlotPayload[1][0]);
 				}
 				else
 				{
