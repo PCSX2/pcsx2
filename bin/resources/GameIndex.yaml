@@ -23131,9 +23131,16 @@ SLPM-55215:
 SLPM-55216:
   name: "Hiiro no Kakera - Tamayori-hime Kitan [Aizou-ban]"
   region: "NTSC-J"
+SLPM-55219:
+  name: "Osouji Sentai Clean Keeper H [Limited Edition]"
+  region: "NTSC-J"
+  gsHWFixes:
+    texturePreloading: 1 # Fixes poor performance.
 SLPM-55220:
   name: "Osouji Sentai Clean Keeper H"
   region: "NTSC-J"
+  gsHWFixes:
+    texturePreloading: 1 # Fixes poor performance.
 SLPM-55221:
   name: "beatmania IIDX 16 EMPRESS + PREMIUM BEST [EMPRESS DISC]"
   region: "NTSC-J"
@@ -24109,6 +24116,8 @@ SLPM-62244:
 SLPM-62245:
   name: "Yuusei kara no Buttai X - Episode II"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flashing FMVs.
 SLPM-62247:
   name: "Shin Contra"
   region: "NTSC-J"
