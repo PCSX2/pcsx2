@@ -642,6 +642,8 @@ SCAJ-20044:
   region: "NTSC-Unk"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes garbage pixels.
+  gsHWFixes:
+    autoFlush: 1 # Fixes lava effect.
 SCAJ-20045:
   name: "Shadow Tower Abyss"
   region: "NTSC-Unk"
@@ -11495,6 +11497,8 @@ SLES-51227:
         patch=1,EE,001db3a4,word,4bc529ff
   gameFixes:
     - SoftwareRendererFMVHack # Fixes garbage pixels.
+  gsHWFixes:
+    autoFlush: 1 # Fixes lava effect.
 SLES-51229:
   name: "Virtua Cop - Elite Edition"
   region: "PAL-M5"
@@ -21941,6 +21945,8 @@ SLKA-25073:
   region: "NTSC-K"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes garbage pixels.
+  gsHWFixes:
+    autoFlush: 1 # Fixes lava effect.
 SLKA-25076:
   name: "Shin Megami Tensei 3"
   region: "NTSC-K"
@@ -35174,6 +35180,8 @@ SLPS-25246:
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes garbage pixels.
+  gsHWFixes:
+    autoFlush: 1 # Fixes lava effect.
 SLPS-25247:
   name: "R-Type Final"
   region: "NTSC-J"
@@ -40105,6 +40113,8 @@ SLUS-20467:
         patch=1,EE,001d90e4,word,4bc529ff
   gameFixes:
     - SoftwareRendererFMVHack # Fixes garbage pixels.
+  gsHWFixes:
+    autoFlush: 1 # Fixes lava effect.
 SLUS-20468:
   name: "Dynasty Tactics"
   region: "NTSC-U"
