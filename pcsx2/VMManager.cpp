@@ -84,7 +84,7 @@ namespace VMManager
 	static void CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config);
 
 	static bool AutoDetectSource(const std::string& filename);
-	static bool ApplyBootParameters(const VMBootParameters& params, std::string* state_to_load);
+	static bool ApplyBootParameters(VMBootParameters params, std::string* state_to_load);
 	static bool CheckBIOSAvailability();
 	static void LoadPatches(const std::string& serial, u32 crc,
 		bool show_messages, bool show_messages_when_disabled);
@@ -731,15 +731,15 @@ bool VMManager::AutoDetectSource(const std::string& filename)
 	}
 }
 
-bool VMManager::ApplyBootParameters(const VMBootParameters& params, std::string* state_to_load)
+bool VMManager::ApplyBootParameters(VMBootParameters params, std::string* state_to_load)
 {
 	const bool default_fast_boot = Host::GetBoolSettingValue("EmuCore", "EnableFastBoot", true);
 	EmuConfig.UseBOOT2Injection = params.fast_boot.value_or(default_fast_boot);
 
-	s_elf_override = params.elf_override;
+	s_elf_override = std::move(params.elf_override);
 	s_disc_path.clear();
 	if (!params.save_state.empty())
-		*state_to_load = params.save_state;
+		*state_to_load = std::move(params.save_state);
 
 	// if we're loading an indexed save state, we need to get the serial/crc from the disc.
 	if (params.state_index.has_value())
@@ -768,8 +768,8 @@ bool VMManager::ApplyBootParameters(const VMBootParameters& params, std::string*
 		}
 
 		// Use specified source type.
-		s_disc_path = params.filename;
-		CDVDsys_SetFile(params.source_type.value(), params.filename);
+		s_disc_path = std::move(params.filename);
+		CDVDsys_SetFile(params.source_type.value(), s_disc_path);
 		CDVDsys_ChangeSource(params.source_type.value());
 	}
 	else
@@ -802,15 +802,15 @@ bool VMManager::CheckBIOSAvailability()
 	// TODO: When we translate core strings, translate this.
 
 	const char* message = "PCSX2 requires a PS2 BIOS in order to run.\n\n"
-		"For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't count).\n\n"
-		"Once dumped, this BIOS image should be placed in the bios folder within the data directory (Tools Menu -> Open Data Directory).\n\n"
-		"Please consult the FAQs and Guides for further instructions.";
+						  "For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't count).\n\n"
+						  "Once dumped, this BIOS image should be placed in the bios folder within the data directory (Tools Menu -> Open Data Directory).\n\n"
+						  "Please consult the FAQs and Guides for further instructions.";
 
 	Host::ReportErrorAsync("Startup Error", message);
 	return false;
 }
 
-bool VMManager::Initialize(const VMBootParameters& boot_params)
+bool VMManager::Initialize(VMBootParameters boot_params)
 {
 	const Common::Timer init_timer;
 	pxAssertRel(s_state.load(std::memory_order_acquire) == VMState::Shutdown, "VM is shutdown");
@@ -836,7 +836,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	LoadSettings();
 
 	std::string state_to_load;
-	if (!ApplyBootParameters(boot_params, &state_to_load))
+	if (!ApplyBootParameters(std::move(boot_params), &state_to_load))
 		return false;
 
 	EmuConfig.LimiterMode = GetInitialLimiterMode();
@@ -1734,7 +1734,7 @@ DEFINE_HOTKEY("ToggleFrameLimit", "System", "Toggle Frame Limit", [](s32 pressed
 	if (!pressed)
 	{
 		VMManager::SetLimiterMode((EmuConfig.LimiterMode != LimiterModeType::Unlimited) ?
-                                      LimiterModeType::Unlimited :
+									  LimiterModeType::Unlimited :
                                       LimiterModeType::Nominal);
 	}
 })
@@ -1750,7 +1750,7 @@ DEFINE_HOTKEY("ToggleSlowMotion", "System", "Toggle Slow Motion", [](s32 pressed
 	if (!pressed)
 	{
 		VMManager::SetLimiterMode((EmuConfig.LimiterMode != LimiterModeType::Slomo) ?
-                                      LimiterModeType::Slomo :
+									  LimiterModeType::Slomo :
                                       LimiterModeType::Nominal);
 	}
 })

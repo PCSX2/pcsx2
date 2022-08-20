@@ -77,7 +77,7 @@ namespace VMManager
 	std::string GetGameName();
 
 	/// Initializes all system components.
-	bool Initialize(const VMBootParameters& boot_params);
+	bool Initialize(VMBootParameters boot_params);
 
 	/// Destroys all system components.
 	void Shutdown(bool save_resume_state);
