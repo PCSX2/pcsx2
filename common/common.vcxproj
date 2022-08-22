@@ -33,6 +33,8 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\d3d12memalloc\include;$(SolutionDir)3rdparty\glad\include;$(SolutionDir)3rdparty\glslang\glslang;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\libpng</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\jpgd</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <ForcedIncludeFiles>PrecompiledHeader.h</ForcedIncludeFiles>
@@ -64,6 +66,7 @@
     <ClCompile Include="GL\ShaderCache.cpp" />
     <ClCompile Include="GL\StreamBuffer.cpp" />
     <ClCompile Include="FileSystem.cpp" />
+    <ClCompile Include="Image.cpp" />
     <ClCompile Include="MD5Digest.cpp" />
     <ClCompile Include="ProgressCallback.cpp" />
     <ClCompile Include="StackWalker.cpp" />
@@ -126,6 +129,7 @@
     <ClInclude Include="D3D12\StreamBuffer.h" />
     <ClInclude Include="D3D12\Texture.h" />
     <ClInclude Include="D3D12\Util.h" />
+    <ClInclude Include="Easing.h" />
     <ClInclude Include="boost_spsc_queue.hpp" />
     <ClInclude Include="FastJmp.h" />
     <ClInclude Include="GL\Context.h" />
@@ -135,6 +139,7 @@
     <ClInclude Include="GL\StreamBuffer.h" />
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="HashCombine.h" />
+    <ClInclude Include="Image.h" />
     <ClInclude Include="LRUCache.h" />
     <ClInclude Include="MD5Digest.h" />
     <ClInclude Include="ProgressCallback.h" />
@@ -203,6 +208,9 @@
     </ProjectReference>
     <ProjectReference Include="..\3rdparty\glslang\glslang.vcxproj">
       <Project>{ef6834a9-11f3-4331-bc34-21b325abb180}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\jpgd\jpgd.vcxproj">
+      <Project>{ed2f21fd-0a36-4a8f-9b90-e7d92a2acb63}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
