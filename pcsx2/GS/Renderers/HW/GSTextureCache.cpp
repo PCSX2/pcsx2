@@ -414,7 +414,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	return src;
 }
 
-GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask, const bool is_frame, const int real_h)
+GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask, const bool is_frame, const int real_h, const int real_w)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 	const GSVector2& new_s = static_cast<GSRendererHW*>(g_gs_renderer.get())->GetTextureScaleFactor();
@@ -469,8 +469,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 			{
 				dst = t;
 				GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x -> 0x%x %s)", size.x, size.y, dst->m_texture->GetID(), bp, t->m_end_block, psm_str(TEX0.PSM));
-				if (real_h > 0)
-					ScaleTargetForDisplay(dst, TEX0, real_h);
+				if (real_h > 0 || real_w > 0)
+					ScaleTargetForDisplay(dst, TEX0, real_h, real_w);
 
 				break;
 			}
@@ -485,8 +485,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 				{
 					dst = t;
 					GL_CACHE("TC: Lookup Frame %dx%d, inclusive hit: %d (0x%x, took 0x%x -> 0x%x %s)", size.x, size.y, t->m_texture->GetID(), bp, t->m_TEX0.TBP0, t->m_end_block, psm_str(TEX0.PSM));
-					if (real_h > 0)
-						ScaleTargetForDisplay(dst, TEX0, real_h);
+					if (real_h > 0 || real_w > 0)
+						ScaleTargetForDisplay(dst, TEX0, real_h, real_w);
 
 					break;
 				}
@@ -623,12 +623,12 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 	return dst;
 }
 
-GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, const int real_h)
+GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, const int real_h, const int real_w)
 {
-	return LookupTarget(TEX0, size, RenderTarget, true, 0, true, real_h);
+	return LookupTarget(TEX0, size, RenderTarget, true, 0, true, real_h, real_w);
 }
 
-void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, int real_h)
+void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, int real_h, int real_w)
 {
 	// This handles a case where you have two images stacked on top of one another (usually FMVs), and
 	// the size of the top framebuffer is larger than the height of the image. Usually happens when
@@ -656,11 +656,13 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 	GSTexture* old_texture = t->m_texture;
 	const int needed_height = std::min(real_h + y_offset, GSRendererHW::MAX_FRAMEBUFFER_HEIGHT);
 	const int scaled_needed_height = static_cast<int>(static_cast<float>(needed_height) * old_texture->GetScale().y);
-	if (scaled_needed_height <= old_texture->GetHeight())
+	const int needed_width = std::min(real_w, static_cast<int>(dispfb.TBW * 64));
+	const int scaled_needed_width = static_cast<int>(static_cast<float>(needed_width) * old_texture->GetScale().x);
+	if (scaled_needed_height <= old_texture->GetHeight() && scaled_needed_width <= old_texture->GetWidth())
 		return;
 
 	// We're expanding, so create a new texture.
-	GSTexture* new_texture = g_gs_device->CreateRenderTarget(old_texture->GetWidth(), scaled_needed_height, GSTexture::Format::Color, false);
+	GSTexture* new_texture = g_gs_device->CreateRenderTarget(scaled_needed_width, scaled_needed_height, GSTexture::Format::Color, false);
 	if (!new_texture)
 	{
 		// Memory allocation failure, do our best to hobble along.
