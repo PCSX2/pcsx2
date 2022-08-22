@@ -23,23 +23,27 @@ const char* shaderName(ShaderConvert value)
 	switch (value)
 	{
 			// clang-format off
-		case ShaderConvert::COPY:                return "ps_copy";
-		case ShaderConvert::RGBA8_TO_16_BITS:    return "ps_convert_rgba8_16bits";
-		case ShaderConvert::DATM_1:              return "ps_datm1";
-		case ShaderConvert::DATM_0:              return "ps_datm0";
-		case ShaderConvert::MOD_256:             return "ps_mod256";
-		case ShaderConvert::TRANSPARENCY_FILTER: return "ps_filter_transparency";
-		case ShaderConvert::FLOAT32_TO_16_BITS:  return "ps_convert_float32_32bits";
-		case ShaderConvert::FLOAT32_TO_32_BITS:  return "ps_convert_float32_32bits";
-		case ShaderConvert::FLOAT32_TO_RGBA8:    return "ps_convert_float32_rgba8";
-		case ShaderConvert::FLOAT16_TO_RGB5A1:   return "ps_convert_float16_rgb5a1";
-		case ShaderConvert::RGBA8_TO_FLOAT32:    return "ps_convert_rgba8_float32";
-		case ShaderConvert::RGBA8_TO_FLOAT24:    return "ps_convert_rgba8_float24";
-		case ShaderConvert::RGBA8_TO_FLOAT16:    return "ps_convert_rgba8_float16";
-		case ShaderConvert::RGB5A1_TO_FLOAT16:   return "ps_convert_rgb5a1_float16";
-		case ShaderConvert::DEPTH_COPY:          return "ps_depth_copy";
-		case ShaderConvert::RGBA_TO_8I:          return "ps_convert_rgba_8i";
-		case ShaderConvert::YUV:                 return "ps_yuv";
+		case ShaderConvert::COPY:                   return "ps_copy";
+		case ShaderConvert::RGBA8_TO_16_BITS:       return "ps_convert_rgba8_16bits";
+		case ShaderConvert::DATM_1:                 return "ps_datm1";
+		case ShaderConvert::DATM_0:                 return "ps_datm0";
+		case ShaderConvert::MOD_256:                return "ps_mod256";
+		case ShaderConvert::TRANSPARENCY_FILTER:    return "ps_filter_transparency";
+		case ShaderConvert::FLOAT32_TO_16_BITS:     return "ps_convert_float32_32bits";
+		case ShaderConvert::FLOAT32_TO_32_BITS:     return "ps_convert_float32_32bits";
+		case ShaderConvert::FLOAT32_TO_RGBA8:       return "ps_convert_float32_rgba8";
+		case ShaderConvert::FLOAT16_TO_RGB5A1:      return "ps_convert_float16_rgb5a1";
+		case ShaderConvert::RGBA8_TO_FLOAT32:       return "ps_convert_rgba8_float32";
+		case ShaderConvert::RGBA8_TO_FLOAT24:       return "ps_convert_rgba8_float24";
+		case ShaderConvert::RGBA8_TO_FLOAT16:       return "ps_convert_rgba8_float16";
+		case ShaderConvert::RGB5A1_TO_FLOAT16:      return "ps_convert_rgb5a1_float16";
+		case ShaderConvert::RGBA8_TO_FLOAT32_BILN:  return "ps_convert_rgba8_float32_biln";
+		case ShaderConvert::RGBA8_TO_FLOAT24_BILN:  return "ps_convert_rgba8_float24_biln";
+		case ShaderConvert::RGBA8_TO_FLOAT16_BILN:  return "ps_convert_rgba8_float16_biln";
+		case ShaderConvert::RGB5A1_TO_FLOAT16_BILN: return "ps_convert_rgb5a1_float16_biln";
+		case ShaderConvert::DEPTH_COPY:             return "ps_depth_copy";
+		case ShaderConvert::RGBA_TO_8I:             return "ps_convert_rgba_8i";
+		case ShaderConvert::YUV:                    return "ps_yuv";
 			// clang-format on
 		default:
 			ASSERT(0);

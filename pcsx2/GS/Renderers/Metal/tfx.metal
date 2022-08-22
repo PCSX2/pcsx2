@@ -48,7 +48,7 @@ constant uint PS_BLEND_D            [[function_constant(GSMTLConstantIndex_PS_BL
 constant uint PS_CLR_HW             [[function_constant(GSMTLConstantIndex_PS_CLR_HW)]];
 constant bool PS_HDR                [[function_constant(GSMTLConstantIndex_PS_HDR)]];
 constant bool PS_COLCLIP            [[function_constant(GSMTLConstantIndex_PS_COLCLIP)]];
-constant bool PS_BLEND_MIX          [[function_constant(GSMTLConstantIndex_PS_BLEND_MIX)]];
+constant uint PS_BLEND_MIX          [[function_constant(GSMTLConstantIndex_PS_BLEND_MIX)]];
 constant bool PS_FIXED_ONE_A        [[function_constant(GSMTLConstantIndex_PS_FIXED_ONE_A)]];
 constant bool PS_PABE               [[function_constant(GSMTLConstantIndex_PS_PABE)]];
 constant bool PS_NO_COLOR           [[function_constant(GSMTLConstantIndex_PS_NO_COLOR)]];
@@ -708,7 +708,7 @@ struct PSMain
 		// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
 		// GS: Color = 1, Alpha = 255 => output 1
 		// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-		if (PS_DFMT == FMT_16 && (PS_HDR || !PS_BLEND_MIX))
+		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0)
 			// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 			C.rgb = float3(short3(C.rgb) & 0xF8);
 		else if (PS_COLCLIP && !PS_HDR)
@@ -745,19 +745,21 @@ struct PSMain
 
 			// As/Af clamp alpha for Blend mix
 			// We shouldn't clamp blend mix with clr1 as we want alpha higher
-			if (PS_BLEND_MIX && PS_CLR_HW != 1)
+			if (PS_BLEND_MIX > 0 && PS_CLR_HW != 1)
 				C = min(C, 1.f);
 
 			if (PS_BLEND_A == PS_BLEND_B)
 				Color.rgb = D;
-			else if (PS_BLEND_MIX)
-				// In blend_mix, HW adds on some alpha factor * dst.
-				// Truncating here wouldn't quite get the right result because it prevents the <1 bit here from combining with a <1 bit in dst to form a ≥1 amount that pushes over the truncation.
-				// Instead, apply an offset to convert HW's round to a floor.
-				// Since alpha is in 1/128 increments, subtracting (0.5 - 0.5/128 == 127/256) would get us what we want if GPUs blended in full precision.
-				// But they don't.  Details here: https://github.com/PCSX2/pcsx2/pull/6809#issuecomment-1211473399
-				// Based on the scripts at the above link, the ideal choice for Intel GPUs is 126/256, AMD 120/256.  Nvidia is a lost cause.
-				// 124/256 seems like a reasonable compromise, providing the correct answer 99.3% of the time on Intel (vs 99.6% for 126/256), and 97% of the time on AMD (vs 97.4% for 120/256).
+			// In blend_mix, HW adds on some alpha factor * dst.
+			// Truncating here wouldn't quite get the right result because it prevents the <1 bit here from combining with a <1 bit in dst to form a ≥1 amount that pushes over the truncation.
+			// Instead, apply an offset to convert HW's round to a floor.
+			// Since alpha is in 1/128 increments, subtracting (0.5 - 0.5/128 == 127/256) would get us what we want if GPUs blended in full precision.
+			// But they don't.  Details here: https://github.com/PCSX2/pcsx2/pull/6809#issuecomment-1211473399
+			// Based on the scripts at the above link, the ideal choice for Intel GPUs is 126/256, AMD 120/256.  Nvidia is a lost cause.
+			// 124/256 seems like a reasonable compromise, providing the correct answer 99.3% of the time on Intel (vs 99.6% for 126/256), and 97% of the time on AMD (vs 97.4% for 120/256).
+			else if (PS_BLEND_MIX == 2)
+				Color.rgb = ((A - B) * C + D) + (124.f/256.f);
+			else if (PS_BLEND_MIX == 1)
 				Color.rgb = ((A - B) * C + D) - (124.f/256.f);
 			else
 				Color.rgb = trunc((A - B) * C + D);

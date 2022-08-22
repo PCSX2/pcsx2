@@ -28,7 +28,6 @@ class GSCapture
 	std::recursive_mutex m_lock;
 	bool m_capturing;
 	GSVector2i m_size;
-	u64 m_frame;
 	std::string m_out_dir;
 	int m_threads;
 
@@ -39,6 +38,7 @@ class GSCapture
 
 #elif defined(__unix__)
 
+	u64 m_frame;
 	std::vector<std::unique_ptr<GSPng::Worker>> m_workers;
 	int m_compression_level;
 

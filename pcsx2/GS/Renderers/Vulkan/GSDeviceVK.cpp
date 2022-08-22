@@ -35,20 +35,6 @@
 static u32 s_debug_scope_depth = 0;
 #endif
 
-static bool IsDepthConvertShader(ShaderConvert i)
-{
-	return (i == ShaderConvert::DEPTH_COPY || i == ShaderConvert::RGBA8_TO_FLOAT32 ||
-			i == ShaderConvert::RGBA8_TO_FLOAT24 || i == ShaderConvert::RGBA8_TO_FLOAT16 ||
-			i == ShaderConvert::RGB5A1_TO_FLOAT16 || i == ShaderConvert::DATM_0 ||
-			i == ShaderConvert::DATM_1);
-}
-
-static bool IsIntConvertShader(ShaderConvert i)
-{
-	return (i == ShaderConvert::RGBA8_TO_16_BITS || i == ShaderConvert::FLOAT32_TO_16_BITS ||
-			i == ShaderConvert::FLOAT32_TO_32_BITS);
-}
-
 static bool IsDATMConvertShader(ShaderConvert i) { return (i == ShaderConvert::DATM_0 || i == ShaderConvert::DATM_1); }
 
 static VkAttachmentLoadOp GetLoadOpForTexture(GSTextureVK* tex)
@@ -572,7 +558,8 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 void GSDeviceVK::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 	ShaderConvert shader /* = ShaderConvert::COPY */, bool linear /* = true */)
 {
-	pxAssert(IsDepthConvertShader(shader) == (dTex && dTex->GetType() == GSTexture::Type::DepthStencil));
+	pxAssert(HasDepthOutput(shader) == (dTex && dTex->GetType() == GSTexture::Type::DepthStencil));
+	pxAssert(linear ? SupportsBilinear(shader) : SupportsNearest(shader));
 
 	GL_INS("StretchRect(%d) {%d,%d} %dx%d -> {%d,%d) %dx%d", shader, int(sRect.left), int(sRect.top),
 		int(sRect.right - sRect.left), int(sRect.bottom - sRect.top), int(dRect.left), int(dRect.top),
@@ -1351,7 +1338,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 	for (ShaderConvert i = ShaderConvert::COPY; static_cast<int>(i) < static_cast<int>(ShaderConvert::Count);
 		 i = static_cast<ShaderConvert>(static_cast<int>(i) + 1))
 	{
-		const bool depth = IsDepthConvertShader(i);
+		const bool depth = HasDepthOutput(i);
 		const int index = static_cast<int>(i);
 
 		VkRenderPass rp;

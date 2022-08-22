@@ -17,6 +17,10 @@ on:
       gui:
         required: true
         type: string
+      cheats_url:
+        required: false
+        type: string
+        default: https://github.com/PCSX2/pcsx2_patches/releases/latest/download
 
 jobs:
   build_macos:
@@ -78,6 +82,11 @@ jobs:
         env:
           GUI: ${{ inputs.gui }}
         run: .github/workflows/scripts/macos/build-dependencies.sh
+
+      - name: Download cheats
+        run: |
+          cd bin/resources
+          aria2c -Z "${{ inputs.cheats_url }}/cheats_ni.zip" "${{ inputs.cheats_url }}/cheats_ws.zip"
 
       - name: Generate CMake Files
         run: |

@@ -27,6 +27,7 @@
 static constexpr s32 DEFAULT_INTERPOLATION_MODE = 5;
 static constexpr s32 DEFAULT_SYNCHRONIZATION_MODE = 0;
 static constexpr s32 DEFAULT_EXPANSION_MODE = 0;
+static constexpr s32 DEFAULT_DPL_DECODING_LEVEL = 0;
 static const char* DEFAULT_OUTPUT_MODULE = "cubeb";
 static constexpr s32 DEFAULT_OUTPUT_LATENCY = 100;
 static constexpr s32 DEFAULT_VOLUME = 100;
@@ -53,6 +54,7 @@ static const char* s_output_module_values[] = {
 
 AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	: QWidget(parent)
+	, m_dialog(dialog)
 {
 	SettingsInterface* sif = dialog->getSettingsInterface();
 
@@ -61,6 +63,9 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.interpolation, "SPU2/Mixing", "Interpolation", DEFAULT_INTERPOLATION_MODE);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.syncMode, "SPU2/Output", "SynchMode", DEFAULT_SYNCHRONIZATION_MODE);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.expansionMode, "SPU2/Output", "SpeakerConfiguration", DEFAULT_EXPANSION_MODE);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.dplLevel, "SPU2/Output", "DplDecodingLevel", DEFAULT_DPL_DECODING_LEVEL);
+	connect(m_ui.expansionMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &AudioSettingsWidget::expansionModeChanged);
+	expansionModeChanged();
 
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.outputModule, "SPU2/Output", "OutputModule", s_output_module_entries, s_output_module_values, DEFAULT_OUTPUT_MODULE);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.latency, "SPU2/Output", "Latency", DEFAULT_OUTPUT_LATENCY);
@@ -84,6 +89,12 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 }
 
 AudioSettingsWidget::~AudioSettingsWidget() = default;
+
+void AudioSettingsWidget::expansionModeChanged()
+{
+	const bool expansion51 = m_dialog->getEffectiveIntValue("SPU2/Output", "SpeakerConfiguration", 0) == 2;
+	m_ui.dplLevel->setDisabled(!expansion51);
+}
 
 void AudioSettingsWidget::updateVolumeLabel()
 {

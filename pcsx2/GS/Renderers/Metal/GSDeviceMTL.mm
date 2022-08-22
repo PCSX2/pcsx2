@@ -809,6 +809,10 @@ bool GSDeviceMTL::Create(HostDisplay* display)
 				case ShaderConvert::RGBA8_TO_FLOAT24:
 				case ShaderConvert::RGBA8_TO_FLOAT16:
 				case ShaderConvert::RGB5A1_TO_FLOAT16:
+				case ShaderConvert::RGBA8_TO_FLOAT32_BILN:
+				case ShaderConvert::RGBA8_TO_FLOAT24_BILN:
+				case ShaderConvert::RGBA8_TO_FLOAT16_BILN:
+				case ShaderConvert::RGB5A1_TO_FLOAT16_BILN:
 					pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
 					pdesc.depthAttachmentPixelFormat = ConvertPixelFormat(GSTexture::Format::DepthStencil);
 					break;
@@ -1051,6 +1055,9 @@ void GSDeviceMTL::RenderCopy(GSTexture* sTex, id<MTLRenderPipelineState> pipelin
 void GSDeviceMTL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
 { @autoreleasepool {
 	id<MTLRenderPipelineState> pipeline;
+
+	pxAssert(linear ? SupportsBilinear(shader) : SupportsNearest(shader));
+
 	if (shader == ShaderConvert::COPY)
 		pipeline = m_convert_pipeline_copy[dTex->GetFormat() == GSTexture::Format::Color ? 0 : 1];
 	else
@@ -1210,7 +1217,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantI(m_fn_constants, pssel.clr_hw,             GSMTLConstantIndex_PS_CLR_HW);
 		setFnConstantB(m_fn_constants, pssel.hdr,                GSMTLConstantIndex_PS_HDR);
 		setFnConstantB(m_fn_constants, pssel.colclip,            GSMTLConstantIndex_PS_COLCLIP);
-		setFnConstantB(m_fn_constants, pssel.blend_mix,          GSMTLConstantIndex_PS_BLEND_MIX);
+		setFnConstantI(m_fn_constants, pssel.blend_mix,          GSMTLConstantIndex_PS_BLEND_MIX);
 		setFnConstantB(m_fn_constants, pssel.fixed_one_a,        GSMTLConstantIndex_PS_FIXED_ONE_A);
 		setFnConstantB(m_fn_constants, pssel.pabe,               GSMTLConstantIndex_PS_PABE);
 		setFnConstantB(m_fn_constants, pssel.no_color,           GSMTLConstantIndex_PS_NO_COLOR);

@@ -980,7 +980,7 @@ void ps_color_clamp_wrap(inout vec3 C)
     // Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
     // GS: Color = 1, Alpha = 255 => output 1
     // GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-#if PS_DFMT == FMT_16 && (PS_HDR == 1 || PS_BLEND_MIX == 0)
+#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0
     // In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
     C = vec3(ivec3(C) & ivec3(0xF8));
 #elif PS_COLCLIP == 1 && PS_HDR == 0
@@ -1054,21 +1054,23 @@ void ps_blend(inout vec4 Color, inout float As)
 
 		// As/Af clamp alpha for Blend mix
 		// We shouldn't clamp blend mix with clr1 as we want alpha higher
-		#if PS_BLEND_MIX && PS_CLR_HW != 1
+		#if PS_BLEND_MIX > 0 && PS_CLR_HW != 1
 				C = min(C, 1.0f);
 		#endif
 
 		#if PS_BLEND_A == PS_BLEND_B
 				Color.rgb = D;
-		#elif PS_BLEND_MIX
-				// In blend_mix, HW adds on some alpha factor * dst.
-				// Truncating here wouldn't quite get the right result because it prevents the <1 bit here from combining with a <1 bit in dst to form a ≥1 amount that pushes over the truncation.
-				// Instead, apply an offset to convert HW's round to a floor.
-				// Since alpha is in 1/128 increments, subtracting (0.5 - 0.5/128 == 127/256) would get us what we want if GPUs blended in full precision.
-				// But they don't.  Details here: https://github.com/PCSX2/pcsx2/pull/6809#issuecomment-1211473399
-				// Based on the scripts at the above link, the ideal choice for Intel GPUs is 126/256, AMD 120/256.  Nvidia is a lost cause.
-				// 124/256 seems like a reasonable compromise, providing the correct answer 99.3% of the time on Intel (vs 99.6% for 126/256), and 97% of the time on AMD (vs 97.4% for 120/256).
-				Color.rgb = ((A - B) * C + D) - (124.0f/256.0f);
+		// In blend_mix, HW adds on some alpha factor * dst.
+		// Truncating here wouldn't quite get the right result because it prevents the <1 bit here from combining with a <1 bit in dst to form a ≥1 amount that pushes over the truncation.
+		// Instead, apply an offset to convert HW's round to a floor.
+		// Since alpha is in 1/128 increments, subtracting (0.5 - 0.5/128 == 127/256) would get us what we want if GPUs blended in full precision.
+		// But they don't.  Details here: https://github.com/PCSX2/pcsx2/pull/6809#issuecomment-1211473399
+		// Based on the scripts at the above link, the ideal choice for Intel GPUs is 126/256, AMD 120/256.  Nvidia is a lost cause.
+		// 124/256 seems like a reasonable compromise, providing the correct answer 99.3% of the time on Intel (vs 99.6% for 126/256), and 97% of the time on AMD (vs 97.4% for 120/256).
+		#elif PS_BLEND_MIX == 2
+			Color.rgb = ((A - B) * C + D) + (124.0f/256.0f);
+		#elif PS_BLEND_MIX == 1
+			Color.rgb = ((A - B) * C + D) - (124.0f/256.0f);
 		#else
 				Color.rgb = trunc((A - B) * C + D);
 		#endif

@@ -97,12 +97,35 @@ void ps_convert_float16_rgb5a1()
 }
 #endif
 
+float rgba8_to_depth32(vec4 unorm)
+{
+    uvec4 c = uvec4(unorm * vec4(255.5f));
+    return float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-32.0f);
+}
+
+float rgba8_to_depth24(vec4 unorm)
+{
+    uvec3 c = uvec3(unorm.rgb * vec3(255.5f));
+    return float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-32.0f);
+}
+
+float rgba8_to_depth16(vec4 unorm)
+{
+    uvec2 c = uvec2(unorm.rg * vec2(255.5f));
+    return float(c.r | (c.g << 8)) * exp2(-32.0f);
+}
+
+float rgb5a1_to_depth16(vec4 unorm)
+{
+    uvec4 c = uvec4(unorm * vec4(255.5f));
+    return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
+}
+
 #ifdef ps_convert_rgba8_float32
 void ps_convert_rgba8_float32()
 {
-    // Convert a RRGBA texture into a float depth texture
-    uvec4 c = uvec4(sample_c() * vec4(255.0f) + vec4(0.5f));
-    gl_FragDepth = float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-32.0f);
+    // Convert an RGBA texture into a float depth texture
+    gl_FragDepth = rgba8_to_depth32(sample_c());
 }
 #endif
 
@@ -111,9 +134,8 @@ void ps_convert_rgba8_float24()
 {
     // Same as above but without the alpha channel (24 bits Z)
 
-    // Convert a RRGBA texture into a float depth texture
-    uvec3 c = uvec3(sample_c().rgb * vec3(255.0f) + vec3(0.5f));
-    gl_FragDepth = float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-32.0f);
+    // Convert an RGBA texture into a float depth texture
+    gl_FragDepth = rgba8_to_depth24(sample_c());
 }
 #endif
 
@@ -122,18 +144,64 @@ void ps_convert_rgba8_float16()
 {
     // Same as above but without the A/B channels (16 bits Z)
 
-    // Convert a RRGBA texture into a float depth texture
-    uvec2 c = uvec2(sample_c().rg * vec2(255.0f) + vec2(0.5f));
-    gl_FragDepth = float(c.r | (c.g << 8)) * exp2(-32.0f);
+    // Convert an RGBA texture into a float depth texture
+    gl_FragDepth = rgba8_to_depth16(sample_c());
 }
 #endif
 
 #ifdef ps_convert_rgb5a1_float16
 void ps_convert_rgb5a1_float16()
 {
-    // Convert a RGB5A1 (saved as RGBA8) color to a 16 bit Z
-    uvec4 c = uvec4(sample_c() * vec4(255.0f) + vec4(0.5f));
-    gl_FragDepth = float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
+    // Convert an RGB5A1 (saved as RGBA8) color to a 16 bit Z
+    gl_FragDepth = rgb5a1_to_depth16(sample_c());
+}
+#endif
+
+#define SAMPLE_RGBA_DEPTH_BILN(CONVERT_FN) \
+    ivec2 dims = textureSize(TextureSampler, 0); \
+    vec2 top_left_f = PSin_t * vec2(dims) - 0.5f; \
+    ivec2 top_left = ivec2(floor(top_left_f)); \
+    ivec4 coords = clamp(ivec4(top_left, top_left + 1), ivec4(0), dims.xyxy - 1); \
+    vec2 mix_vals = fract(top_left_f); \
+    float depthTL = CONVERT_FN(texelFetch(TextureSampler, coords.xy, 0)); \
+    float depthTR = CONVERT_FN(texelFetch(TextureSampler, coords.zy, 0)); \
+    float depthBL = CONVERT_FN(texelFetch(TextureSampler, coords.xw, 0)); \
+    float depthBR = CONVERT_FN(texelFetch(TextureSampler, coords.zw, 0)); \
+    gl_FragDepth = mix(mix(depthTL, depthTR, mix_vals.x), mix(depthBL, depthBR, mix_vals.x), mix_vals.y);
+
+#ifdef ps_convert_rgba8_float32_biln
+void ps_convert_rgba8_float32_biln()
+{
+    // Convert an RGBA texture into a float depth texture
+    SAMPLE_RGBA_DEPTH_BILN(rgba8_to_depth32);
+}
+#endif
+
+#ifdef ps_convert_rgba8_float24_biln
+void ps_convert_rgba8_float24_biln()
+{
+    // Same as above but without the alpha channel (24 bits Z)
+
+    // Convert an RGBA texture into a float depth texture
+    SAMPLE_RGBA_DEPTH_BILN(rgba8_to_depth24);
+}
+#endif
+
+#ifdef ps_convert_rgba8_float16_biln
+void ps_convert_rgba8_float16_biln()
+{
+    // Same as above but without the A/B channels (16 bits Z)
+
+    // Convert an RGBA texture into a float depth texture
+    SAMPLE_RGBA_DEPTH_BILN(rgba8_to_depth16);
+}
+#endif
+
+#ifdef ps_convert_rgb5a1_float16_biln
+void ps_convert_rgb5a1_float16_biln()
+{
+    // Convert an RGB5A1 (saved as RGBA8) color to a 16 bit Z
+    SAMPLE_RGBA_DEPTH_BILN(rgb5a1_to_depth16);
 }
 #endif
 

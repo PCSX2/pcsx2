@@ -128,12 +128,35 @@ void ps_convert_float16_rgb5a1()
 }
 #endif
 
+float rgba8_to_depth32(vec4 unorm)
+{
+	uvec4 c = uvec4(unorm * vec4(255.5f));
+	return float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-32.0f);
+}
+
+float rgba8_to_depth24(vec4 unorm)
+{
+	uvec3 c = uvec3(unorm.rgb * vec3(255.5f));
+	return float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-32.0f);
+}
+
+float rgba8_to_depth16(vec4 unorm)
+{
+	uvec2 c = uvec2(unorm.rg * vec2(255.5f));
+	return float(c.r | (c.g << 8)) * exp2(-32.0f);
+}
+
+float rgb5a1_to_depth16(vec4 unorm)
+{
+	uvec4 c = uvec4(unorm * vec4(255.5f));
+	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
+}
+
 #ifdef ps_convert_rgba8_float32
 void ps_convert_rgba8_float32()
 {
-	// Convert a RRGBA texture into a float depth texture
-	uvec4 c = uvec4(sample_c(v_tex) * vec4(255.0f) + vec4(0.5f));
-	gl_FragDepth = float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-32.0f);
+	// Convert an RGBA texture into a float depth texture
+	gl_FragDepth = rgba8_to_depth32(sample_c(v_tex));
 }
 #endif
 
@@ -142,9 +165,8 @@ void ps_convert_rgba8_float24()
 {
 	// Same as above but without the alpha channel (24 bits Z)
 
-	// Convert a RRGBA texture into a float depth texture
-	uvec3 c = uvec3(sample_c(v_tex).rgb * vec3(255.0f) + vec3(0.5f));
-	gl_FragDepth = float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-32.0f);
+	// Convert an RGBA texture into a float depth texture
+	gl_FragDepth = rgba8_to_depth24(sample_c(v_tex));
 }
 #endif
 
@@ -153,18 +175,64 @@ void ps_convert_rgba8_float16()
 {
 	// Same as above but without the A/B channels (16 bits Z)
 
-	// Convert a RRGBA texture into a float depth texture
-	uvec2 c = uvec2(sample_c(v_tex).rg * vec2(255.0f) + vec2(0.5f));
-	gl_FragDepth = float(c.r | (c.g << 8)) * exp2(-32.0f);
+	// Convert an RGBA texture into a float depth texture
+	gl_FragDepth = rgba8_to_depth16(sample_c(v_tex));
 }
 #endif
 
 #ifdef ps_convert_rgb5a1_float16
 void ps_convert_rgb5a1_float16()
 {
-	// Convert a RGB5A1 (saved as RGBA8) color to a 16 bit Z
-	uvec4 c = uvec4(sample_c(v_tex) * vec4(255.0f) + vec4(0.5f));
-	gl_FragDepth = float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
+	// Convert an RGB5A1 (saved as RGBA8) color to a 16 bit Z
+	gl_FragDepth = rgb5a1_to_depth16(sample_c(v_tex));
+}
+#endif
+
+#define SAMPLE_RGBA_DEPTH_BILN(CONVERT_FN) \
+	ivec2 dims = textureSize(samp0, 0); \
+	vec2 top_left_f = v_tex * vec2(dims) - 0.5f; \
+	ivec2 top_left = ivec2(floor(top_left_f)); \
+	ivec4 coords = clamp(ivec4(top_left, top_left + 1), ivec4(0), dims.xyxy - 1); \
+	vec2 mix_vals = fract(top_left_f); \
+	float depthTL = CONVERT_FN(texelFetch(samp0, coords.xy, 0)); \
+	float depthTR = CONVERT_FN(texelFetch(samp0, coords.zy, 0)); \
+	float depthBL = CONVERT_FN(texelFetch(samp0, coords.xw, 0)); \
+	float depthBR = CONVERT_FN(texelFetch(samp0, coords.zw, 0)); \
+	gl_FragDepth = mix(mix(depthTL, depthTR, mix_vals.x), mix(depthBL, depthBR, mix_vals.x), mix_vals.y);
+
+#ifdef ps_convert_rgba8_float32_biln
+void ps_convert_rgba8_float32_biln()
+{
+	// Convert an RGBA texture into a float depth texture
+	SAMPLE_RGBA_DEPTH_BILN(rgba8_to_depth32);
+}
+#endif
+
+#ifdef ps_convert_rgba8_float24_biln
+void ps_convert_rgba8_float24_biln()
+{
+	// Same as above but without the alpha channel (24 bits Z)
+
+	// Convert an RGBA texture into a float depth texture
+	SAMPLE_RGBA_DEPTH_BILN(rgba8_to_depth24);
+}
+#endif
+
+#ifdef ps_convert_rgba8_float16_biln
+void ps_convert_rgba8_float16_biln()
+{
+	// Same as above but without the A/B channels (16 bits Z)
+
+	// Convert an RGBA texture into a float depth texture
+	SAMPLE_RGBA_DEPTH_BILN(rgba8_to_depth16);
+}
+#endif
+
+#ifdef ps_convert_rgb5a1_float16_biln
+void ps_convert_rgb5a1_float16_biln()
+{
+	// Convert an RGB5A1 (saved as RGBA8) color to a 16 bit Z
+	SAMPLE_RGBA_DEPTH_BILN(rgb5a1_to_depth16);
 }
 #endif
 
@@ -266,21 +334,21 @@ layout(push_constant) uniform cb10
 
 void ps_yuv()
 {
-  vec4 i = sample_c(v_tex);
-  vec4 o;
+	vec4 i = sample_c(v_tex);
+	vec4 o;
 
-  mat3 rgb2yuv;
-  rgb2yuv[0] = vec3(0.587, -0.311, -0.419);
-  rgb2yuv[1] = vec3(0.114, 0.500, -0.081);
-  rgb2yuv[2] = vec3(0.299, -0.169, 0.500);
+	mat3 rgb2yuv;
+	rgb2yuv[0] = vec3(0.587, -0.311, -0.419);
+	rgb2yuv[1] = vec3(0.114, 0.500, -0.081);
+	rgb2yuv[2] = vec3(0.299, -0.169, 0.500);
 
-  vec3 yuv = rgb2yuv * i.gbr;
+	vec3 yuv = rgb2yuv * i.gbr;
 
-  float Y = float(0xDB)/255.0f * yuv.x + float(0x10)/255.0f;
-  float Cr = float(0xE0)/255.0f * yuv.y + float(0x80)/255.0f;
-  float Cb = float(0xE0)/255.0f * yuv.z + float(0x80)/255.0f;
+	float Y = float(0xDB)/255.0f * yuv.x + float(0x10)/255.0f;
+	float Cr = float(0xE0)/255.0f * yuv.y + float(0x80)/255.0f;
+	float Cb = float(0xE0)/255.0f * yuv.z + float(0x80)/255.0f;
 
-  switch(EMODA) {
+	switch(EMODA) {
 		case 0:
 			o.a = i.a;
 			break;
@@ -293,22 +361,22 @@ void ps_yuv()
 		case 3:
 			o.a = 0.0f;
 			break;
-  }
+	}
 
-  switch(EMODC) {
-    case 0:
-      o.rgb = i.rgb;
-      break;
-    case 1:
-      o.rgb = vec3(Y);
-      break;
-    case 2:
-      o.rgb = vec3(Y, Cb, Cr);
-      break;
-    case 3:
-      o.rgb = vec3(i.a);
-      break;
-  }
+	switch(EMODC) {
+		case 0:
+			o.rgb = i.rgb;
+			break;
+		case 1:
+			o.rgb = vec3(Y);
+			break;
+		case 2:
+			o.rgb = vec3(Y, Cb, Cr);
+			break;
+		case 3:
+			o.rgb = vec3(i.a);
+			break;
+	}
 
 	o_col0 = o;
 }
