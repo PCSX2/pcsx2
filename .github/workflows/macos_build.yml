@@ -30,11 +30,11 @@ jobs:
     timeout-minutes: 90
     env:
       POWERSHELL_TELEMETRY_OPTOUT: 1
-      BUILDCACHE_COMPRESS_FORMAT: ZSTD
-      BUILDCACHE_COMPRESS_LEVEL: 9
-      BUILDCACHE_MAX_CACHE_SIZE: 536870912 # 512MB
-      BUILDCACHE_DIRECT_MODE: true
-      BUILDCACHE_LOG_FILE: ${{ github.workspace }}\buildcache.log
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_COMPRESS: true
+      CCACHE_COMPRESSLEVEL: 9
+      CCACHE_MAXSIZE: 100M
 
     steps:
       - name: Checkout Repository
@@ -65,9 +65,9 @@ jobs:
           brew unlink libjpeg || true # Conflicts with our self-built dependencies
           brew unlink libpng || true
           # Unlike other packages, brew's MoltenVK build uses MoltenVK's minimum macOS version of 10.13 so we can use it
-          if ! brew install molten-vk; then
+          if ! brew install molten-vk ccache; then
             brew update
-            brew install molten-vk
+            brew install molten-vk ccache
           fi
 
       - name: Cache Dependencies
@@ -88,14 +88,45 @@ jobs:
           cd bin/resources
           aria2c -Z "${{ inputs.cheats_url }}/cheats_ni.zip" "${{ inputs.cheats_url }}/cheats_ws.zip"
 
+      # -- SETUP CCACHE - https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
+      - name: Prepare ccache timestamp
+        id: ccache_cache_timestamp
+        shell: cmake -P {0}
+        run: |
+          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+          message("::set-output name=timestamp::${current_date}")
+
+      - name: Cache ccache cache
+        uses: actions/cache@v3
+        with:
+          path: .ccache
+          key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.gui }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.gui }} ccache
+
       - name: Generate CMake Files
         run: |
           QT_BUILD=$([ "${{ inputs.gui }}" == "Qt" ] && echo "ON" || echo "OFF")
-          cmake -DCMAKE_PREFIX_PATH="$HOME/deps" -DCMAKE_BUILD_TYPE=Release -DQT_BUILD="$QT_BUILD" -DUSE_OPENGL=OFF -DDISABLE_ADVANCE_SIMD=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DUSE_SYSTEM_LIBS=OFF -DUSE_SYSTEM_SDL2=ON -B build .
+          cmake -DCMAKE_PREFIX_PATH="$HOME/deps" \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DQT_BUILD="$QT_BUILD" \
+                -DUSE_OPENGL=OFF \
+                -DDISABLE_ADVANCE_SIMD=ON \
+                -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+                -DUSE_SYSTEM_LIBS=OFF \
+                -DUSE_SYSTEM_SDL2=ON \
+                -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+                -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+                -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
+                -B build .
 
       - name: Build PCSX2
         working-directory: build
-        run: make -j$(getconf _NPROCESSORS_ONLN) # macOS doesn't use make install
+        run: |
+          ccache -p
+          ccache -s
+          ccache -z
+          make -j$(getconf _NPROCESSORS_ONLN) # macOS doesn't use make install
+          ccache -s
 
       - name: Run Tests
         working-directory: build
