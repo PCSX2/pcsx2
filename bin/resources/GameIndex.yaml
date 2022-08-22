@@ -43343,10 +43343,10 @@ SLUS-21143:
   name: "Star Wars - Episode III - Revenge of the Sith"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    halfPixelOffset: 1 # Fixes bloom misalignment.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLUS-21144:
   name: "Tom Clancy's Rainbow Six - Lockdown"
   region: "NTSC-U"
