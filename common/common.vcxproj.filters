@@ -199,6 +199,9 @@
     <ClCompile Include="HTTPDownloaderWinHTTP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MemorySettingsInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlignedMalloc.h">
@@ -466,6 +469,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ThreadPool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HeterogeneousContainers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MemorySettingsInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

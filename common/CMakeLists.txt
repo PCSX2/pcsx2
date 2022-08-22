@@ -21,6 +21,7 @@ target_sources(common PRIVATE
 	FileSystem.cpp
 	Image.cpp
 	HTTPDownloader.cpp
+	MemorySettingsInterface.cpp
 	Misc.cpp
 	MD5Digest.cpp
 	PrecompiledHeader.cpp
@@ -72,10 +73,12 @@ target_sources(common PRIVATE
 	FileSystem.h
 	General.h
 	HashCombine.h
+	HeterogeneousContainers.h
 	Image.h
 	LRUCache.h
 	HTTPDownloader.h
 	MemcpyFast.h
+	MemorySettingsInterface.h
 	MemsetFast.inl
 	MD5Digest.h
 	MRCHelpers.h
