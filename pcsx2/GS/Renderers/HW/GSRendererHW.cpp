@@ -239,10 +239,11 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 
 	const int videomode = static_cast<int>(GetVideoMode()) - 1;
 	const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
+
+	const int fb_width = std::min<int>(std::min<int>(GetFramebufferWidth(), DISPFB.FBW * 64) + (int)DISPFB.DBX, 2048);
 	const int display_height = offsets.y * ((isinterlaced() && !m_regs->SMODE2.FFMD) ? 2 : 1);
 	const int display_offset = GetResolutionOffset(i).y;
 	int fb_height = std::min<int>(std::min<int>(GetFramebufferHeight(), display_height) + (int)DISPFB.DBY, 2048);
-	
 	// If there is a negative vertical offset on the picture, we need to read more.
 	if (display_offset < 0)
 	{
@@ -253,11 +254,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 	GSTexture* t = nullptr;
 	GSVector2i size = GetOutputSize(fb_height);
 
-	// Expand read horizontally if offset in to the texture. (Causes visible stretching on FMVs otherwise)
-	if (DISPFB.DBX)
-		size.x += DISPFB.DBX;
-	
-	if (GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, size, fb_height))
+	if (GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, GetOutputSize(fb_height), fb_height, fb_width))
 	{
 		t = rt->m_texture;
 
@@ -293,7 +290,12 @@ GSTexture* GSRendererHW::GetFeedbackOutput()
 	TEX0.PSM = m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPFB.PSM;
 
 	const int fb_height = /*GetFrameRect(i).bottom*/ m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPLAY.DH;
-	GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, GetOutputSize(fb_height), fb_height);
+	GSVector2i size = GetOutputSize(fb_height);
+
+	if (m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPFB.DBX)
+		size.x += m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPFB.DBX * static_cast<int>(GSConfig.UpscaleMultiplier);
+
+	GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, GetOutputSize(fb_height), fb_height, size.x);
 
 	GSTexture* t = rt->m_texture;
 
