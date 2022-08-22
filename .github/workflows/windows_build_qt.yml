@@ -29,6 +29,10 @@ on:
         required: false
         type: string
         default: https://github.com/PCSX2/pcsx2-windows-dependencies/releases/download/2022-07-24/qt-6.3.1-x64.7z
+      qt_dir:
+        required: false
+        type: string
+        default: 3rdparty\qt\6.3.1\msvc2022_64
       cheats_url:
         required: false
         type: string
@@ -42,11 +46,6 @@ jobs:
     timeout-minutes: 60
     env:
       POWERSHELL_TELEMETRY_OPTOUT: 1
-      BUILDCACHE_COMPRESS_FORMAT: ZSTD
-      BUILDCACHE_COMPRESS_LEVEL: 9
-      BUILDCACHE_MAX_CACHE_SIZE: 536870912 # 512MB
-      BUILDCACHE_DIRECT_MODE: true
-      BUILDCACHE_LOG_FILE: ${{ github.workspace }}\buildcache.log
 
     steps:
       - name: Checkout Repository
@@ -87,12 +86,29 @@ jobs:
           cd bin/resources
           aria2c -Z "${{ inputs.cheats_url }}/cheats_ni.zip" "${{ inputs.cheats_url }}/cheats_ws.zip"
 
+      - name: Generate CMake
+        if: inputs.configuration == 'CMake'
+        id: cmake
+        shell: cmd
+        run: |
+          call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          cmake . -B build "-DCMAKE_PREFIX_PATH=%cd%\${{ inputs.qt_dir }}" -DQT_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -G Ninja
+
       - name: Build PCSX2
         shell: cmd
         run: |
           if "${{ inputs.configuration }}"=="CMake" (
-            call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\${{ steps.cmake.outputs.vcvars }}"
-            cmake --build build --config ${{ steps.cmake.outputs.buildtype }}
+            call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+            cmake --build build --config Release || exit /b
+            copy build\pcsx2-qt\pcsx2-qt.* bin
+            copy build\updater\updater.* bin
+            del bin\*.manifest
+            for %%F in (Qt6Core Qt6Gui Qt6Widgets Qt6Network Qt6Svg Qt6Concurrent) do copy "${{ inputs.qt_dir }}\bin\%%F.dll" bin
+            xcopy /s ${{ inputs.qt_dir }}\plugins\*.dll bin\QtPlugins\
+            for /r bin\QtPlugins\ %%F in (*.dll) do if exist "%%~dpnFd.dll" del "%%~dpnFd.dll"
+            xcopy /s /i ${{ inputs.qt_dir }}\translations bin\translations
+            echo [Paths]> bin\qt.conf
+            echo Plugins = ./QtPlugins>> bin\qt.conf
           ) else (
             msbuild "PCSX2_qt.sln" /m /v:m /p:Configuration="${{ inputs.configuration }}" /p:Platform="${{ inputs.platform }}"
           )
@@ -112,7 +128,6 @@ jobs:
             !./bin/**/*.lib
 
       - name: Upload artifact - with symbols
-        if: inputs.configuration != 'CMake'
         uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}-symbols
