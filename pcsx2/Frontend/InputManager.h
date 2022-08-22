@@ -16,6 +16,7 @@
 #pragma once
 
 #include <functional>
+#include <mutex>
 #include <optional>
 #include <string_view>
 #include <variant>

@@ -15,8 +15,9 @@
 
 #pragma once
 
-#include <QtWidgets/QDialog>
+#include <QtCore/QSortFilterProxyModel>
 #include <QtGui/QStandardItemModel>
+#include <QtWidgets/QDialog>
 
 #include "ui_DEV9DnsHostDialog.h"
 

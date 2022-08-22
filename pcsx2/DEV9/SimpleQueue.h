@@ -18,6 +18,7 @@
 #include <atomic>
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 
 //Designed to allow one thread to queue data to another thread
 template <class T>
