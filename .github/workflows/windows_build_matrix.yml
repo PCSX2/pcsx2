@@ -66,3 +66,12 @@ jobs:
       configuration: CMake
       buildSystem: cmake
     secrets: inherit
+
+  build_qt_sse4_cmake:
+    name: "CMake SSE4"
+    uses: ./.github/workflows/windows_build_qt.yml
+    with:
+      jobName: Qt
+      configuration: CMake
+      buildSystem: cmake
+    secrets: inherit
