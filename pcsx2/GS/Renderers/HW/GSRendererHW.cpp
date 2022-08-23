@@ -73,9 +73,9 @@ GSVector2i GSRendererHW::GetOutputSize(int real_h)
 			{
 				if (IsEnabled(i))
 				{
-					GSVector4i dr = GetDisplayRect(i);
+					const GSVector4i dr = GetDisplayRect(i);
 
-					GSVector2i display_diff(dr.left - display_baseline.x, dr.top - display_baseline.y);
+					const GSVector2i display_diff(dr.left - display_baseline.x, dr.top - display_baseline.y);
 
 					if (display_diff.x != 0 && abs(display_diff.x) < 4 && crtc_size.x < display_width)
 						crtc_size.x -= display_diff.x;
@@ -231,7 +231,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 {
 	const GSRegDISPFB& DISPFB = m_regs->DISP[i].DISPFB;
 
-	GIFRegTEX0 TEX0;
+	GIFRegTEX0 TEX0 = {};
 
 	TEX0.TBP0 = DISPFB.Block();
 	TEX0.TBW = DISPFB.FBW;
@@ -250,7 +250,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 	}
 	// TRACE(_T("[%d] GetOutput %d %05x (%d)\n"), (int)m_perfmon.GetFrame(), i, (int)TEX0.TBP0, (int)TEX0.PSM);
 
-	GSTexture* t = NULL;
+	GSTexture* t = nullptr;
 
 	if (GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, GetOutputSize(fb_height), fb_height))
 	{
@@ -281,7 +281,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 
 GSTexture* GSRendererHW::GetFeedbackOutput()
 {
-	GIFRegTEX0 TEX0;
+	GIFRegTEX0 TEX0 = {};
 
 	TEX0.TBP0 = m_regs->EXTBUF.EXBP;
 	TEX0.TBW = m_regs->EXTBUF.EXBW;
@@ -607,7 +607,6 @@ GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Sou
 
 	if (PRIM->FST)
 	{
-
 		if (GSConfig.UserHacks_HalfPixelOffset == 3)
 		{
 			if (!linear && t_position == 8)
@@ -680,7 +679,6 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 	{
 		if (PRIM->FST && GSLocalMemory::m_psm[tex->m_TEX0.PSM].fmt < 2 && ((m_vt.m_eq.value & 0xCFFFF) == 0xCFFFF))
 		{
-
 			// Ideally the hack ought to be enabled in a true paving mode only. I don't know how to do it accurately
 			// neither in a fast way. So instead let's just take the hypothesis that all sprites must have the same
 			// size.
@@ -935,7 +933,7 @@ void GSRendererHW::SwSpriteRender()
 			u32* di = dpa.value(x);
 			ASSERT(di + 1 == dpa.value(x + 1)); // Destination pixel pair is adjacent in memory
 
-			GSVector4i sc;
+			GSVector4i sc = {};
 			if (texture_mapping_enabled)
 			{
 				const u32* si = spa.value(x);
@@ -956,8 +954,8 @@ void GSRendererHW::SwSpriteRender()
 
 			// No FOG
 
-			GSVector4i dc0;
-			GSVector4i dc;
+			GSVector4i dc0 = {};
+			GSVector4i dc = {};
 
 			if (alpha_blending_enabled || fb_mask_enabled)
 			{
@@ -1289,6 +1287,8 @@ void GSRendererHW::Draw()
 				if (128.0f != aref)
 					context->TEST.ATE = false;
 				break;
+			default:
+				break;
 		}
 	}
 
@@ -1354,7 +1354,7 @@ void GSRendererHW::Draw()
 		m_channel_shuffle = false;
 	}
 
-	GIFRegTEX0 TEX0;
+	GIFRegTEX0 TEX0 = {};
 
 	m_src = nullptr;
 	m_texture_shuffle = false;
@@ -3232,7 +3232,7 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	m_conf.rt = rt;
 	m_conf.ds = ds;
 
-	ASSERT(g_gs_device != NULL);
+	ASSERT(g_gs_device != nullptr);
 
 	// Z setup has to come before channel shuffle
 	EmulateZbuffer();
@@ -3474,7 +3474,7 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	// pass to handle the depth based on the alpha test.
 	bool ate_RGBA_then_Z = false;
 	bool ate_RGB_then_ZA = false;
-	if (ate_first_pass & ate_second_pass)
+	if (ate_first_pass && ate_second_pass)
 	{
 		GL_DBG("Complex Alpha Test");
 		const bool commutative_depth = (m_conf.depth.ztst == ZTST_GEQUAL && m_vt.m_eq.z) || (m_conf.depth.ztst == ZTST_ALWAYS);
@@ -3589,7 +3589,7 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		memcpy(&m_conf.alpha_second_pass.colormask, &m_conf.colormask, sizeof(m_conf.colormask));
 		memcpy(&m_conf.alpha_second_pass.depth,     &m_conf.depth,     sizeof(m_conf.depth));
 
-		if (ate_RGBA_then_Z | ate_RGB_then_ZA)
+		if (ate_RGBA_then_Z || ate_RGB_then_ZA)
 		{
 			// Enable ATE as first pass to update the depth
 			// of pixels that passed the alpha test
@@ -3734,7 +3734,7 @@ bool GSRendererHW::SwPrimRender()
 	GSDrawScanline::SharedData data;
 	GSScanlineGlobalData& gd = data.global;
 
-	u32 clut_storage[256];
+	u32 clut_storage[256] = {0};
 	GSVector4i dimx_storage[8];
 
 	m_sw_vertex_buffer.resize(((m_vertex.next + 1) & ~1));
@@ -3838,11 +3838,11 @@ bool GSRendererHW::SwPrimRender()
 		}
 	}
 
-	bool fwrite = (fm & fm_mask) != fm_mask;
-	bool ftest = gd.sel.atst != ATST_ALWAYS || context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
+	const bool fwrite = (fm & fm_mask) != fm_mask;
+	const bool ftest = gd.sel.atst != ATST_ALWAYS || context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
 
-	bool zwrite = zm != 0xffffffff;
-	bool ztest = context->TEST.ZTE && context->TEST.ZTST > ZTST_ALWAYS;
+	const bool zwrite = zm != 0xffffffff;
+	const bool ztest = context->TEST.ZTE && context->TEST.ZTST > ZTST_ALWAYS;
 	if (!fwrite && !zwrite)
 		return false;
 
@@ -3886,7 +3886,7 @@ bool GSRendererHW::SwPrimRender()
 
 			GIFRegTEX0 TEX0 = m_context->GetSizeFixedTEX0(m_vt.m_min.t.xyxy(m_vt.m_max.t), m_vt.IsLinear(), false);
 
-			GSVector4i r = GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf).coverage;
+			const GSVector4i r = GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf).coverage;
 
 			if (!m_sw_texture)
 				m_sw_texture = std::make_unique<GSTextureCacheSW::Texture>(0, TEX0, env.TEXA);
@@ -3907,24 +3907,20 @@ bool GSRendererHW::SwPrimRender()
 				if (gd.sel.ltf && gd.sel.fst)
 				{
 					// if q is constant we can do the half pel shift for bilinear sampling on the vertices
-
 					// TODO: but not when mipmapping is used!!!
 
-					GSVector4 half(0x8000, 0x8000);
-
 					GSVertexSW* RESTRICT v = data.vertex;
-
+					const GSVector4 half(0x8000, 0x8000);
 					for (int i = 0, j = data.vertex_count; i < j; i++)
 					{
-						GSVector4 t = v[i].t;
-
+						const GSVector4 t = v[i].t;
 						v[i].t = (t - half).xyzw(t);
 					}
 				}
 			}
 
-			u16 tw = 1u << TEX0.TW;
-			u16 th = 1u << TEX0.TH;
+			const u16 tw = 1u << TEX0.TW;
+			const u16 th = 1u << TEX0.TH;
 
 			switch (context->CLAMP.WMS)
 			{
@@ -4045,7 +4041,7 @@ bool GSRendererHW::SwPrimRender()
 
 	if (zwrite || ztest)
 	{
-		u32 z_max = 0xffffffff >> (GSLocalMemory::m_psm[context->ZBUF.PSM].fmt * 8);
+		const u32 z_max = 0xffffffff >> (GSLocalMemory::m_psm[context->ZBUF.PSM].fmt * 8);
 
 		gd.sel.zpsm = GSLocalMemory::m_psm[context->ZBUF.PSM].fmt;
 		gd.sel.ztst = ztest ? context->TEST.ZTST : (int)ZTST_ALWAYS;
@@ -4112,7 +4108,7 @@ bool GSRendererHW::SwPrimRender()
 	{
 		gd.sel.notest = 1;
 
-		u32 ofx = context->XYOFFSET.OFX;
+		const u32 ofx = context->XYOFFSET.OFX;
 
 		for (int i = 0, j = m_vertex.tail; i < j; i++)
 		{
@@ -4143,8 +4139,8 @@ bool GSRendererHW::SwPrimRender()
 GSRendererHW::Hacks::Hacks()
 	: m_oi_map(m_oi_list)
 	, m_oo_map(m_oo_list)
-	, m_oi(NULL)
-	, m_oo(NULL)
+	, m_oi(nullptr)
+	, m_oo(nullptr)
 {
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BigMuthaTruckers, CRC::RegionCount, &GSRendererHW::OI_BigMuthaTruckers));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::OI_DBZBTGames));
@@ -4367,14 +4363,8 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		// Bottom of Texture (half height frame, will be the copy of Top texture after the draw)
 		// -----------------------------------------------------------------
 
-		// sRect is the top of texture
 		const int tw = (int)(1 << m_context->TEX0.TW);
 		const int th = (int)(1 << m_context->TEX0.TH);
-		GSVector4 sRect;
-		sRect.x = m_vt.m_min.t.x / tw;
-		sRect.y = m_vt.m_min.t.y / th;
-		sRect.z = m_vt.m_max.t.x / tw;
-		sRect.w = m_vt.m_max.t.y / th;
 
 		// Compute the Bottom of texture rectangle
 		ASSERT(m_context->TEX0.TBP0 > m_context->FRAME.Block());
@@ -4383,13 +4373,13 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		r_texture.y -= offset;
 		r_texture.w -= offset;
 
-		const GSVector4 dRect(r_texture);
-
-		// Do the blit. With a Copy mess to avoid issue with limited API (dx)
-		// m_dev->StretchRect(tex->m_texture, sRect, tex->m_texture, dRect);
-		const GSVector4i r_full(0, 0, tw, th);
 		if (GSTexture* rt = g_gs_device->CreateRenderTarget(tw, th, GSTexture::Format::Color))
 		{
+			// sRect is the top of texture
+			const GSVector4 sRect(m_vt.m_min.t.x / tw, m_vt.m_min.t.y / th, m_vt.m_max.t.x / tw, m_vt.m_max.t.y / th);
+			const GSVector4 dRect(r_texture);
+			const GSVector4i r_full(0, 0, tw, th);
+
 			g_gs_device->CopyRect(tex->m_texture, rt, r_full, 0, 0);
 
 			g_gs_device->StretchRect(tex->m_texture, sRect, rt, dRect);
@@ -4423,11 +4413,10 @@ bool GSRendererHW::OI_BigMuthaTruckers(GSTexture* rt, GSTexture* ds, GSTextureCa
 	// vertical resolution is half so only half is processed at once
 	// We, however, don't have this limitation so we'll replace the draw with a full-screen TS.
 
-	const GIFRegTEX0 Texture = m_context->TEX0;
+	const GIFRegTEX0& Texture = m_context->TEX0;
 
-	GIFRegTEX0 Frame;
+	GIFRegTEX0 Frame = {};
 	Frame.TBW = m_context->FRAME.FBW;
-	Frame.TBP0 = m_context->FRAME.FBP;
 	Frame.TBP0 = m_context->FRAME.Block();
 
 	if (PRIM->TME && Frame.TBW == 10 && Texture.TBW == 10 && Frame.TBP0 == 0x00a00 && Texture.PSM == PSM_PSMT8H && (m_r.y == 256 || m_r.y == 224))
@@ -4465,7 +4454,7 @@ bool GSRendererHW::OI_DBZBTGames(GSTexture* rt, GSTexture* ds, GSTextureCache::S
 
 bool GSRendererHW::OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	static u32* video = NULL;
+	static u32* video = nullptr;
 	static size_t lines = 0;
 
 	if (lines == 0)
@@ -4486,15 +4475,14 @@ bool GSRendererHW::OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source
 				if (!video)
 					video = new u32[512 * 512];
 
+				const GSVertex* RESTRICT v = m_vertex.buff;
 				const int ox = m_context->XYOFFSET.OFX - 8;
 				const int oy = m_context->XYOFFSET.OFY - 8;
 
-				const GSVertex* RESTRICT v = m_vertex.buff;
-
 				for (int i = (int)m_vertex.next; i > 0; i--, v++)
 				{
-					int x = (v->XYZ.X - ox) >> 4;
-					int y = (v->XYZ.Y - oy) >> 4;
+					const int x = (v->XYZ.X - ox) >> 4;
+					const int y = (v->XYZ.Y - oy) >> 4;
 
 					if (x < 0 || x >= 448 || y < 0 || y >= (int)lines)
 						return false; // le sigh
@@ -4569,7 +4557,7 @@ bool GSRendererHW::OI_MetalSlug6(GSTexture* rt, GSTexture* ds, GSTextureCache::S
 
 	GSVertex* RESTRICT v = m_vertex.buff;
 
-	for (int i = (int)m_vertex.next; i > 0; i--, v++)
+	for (size_t i = m_vertex.next; i > 0; i--, v++)
 	{
 		const u32 c = v->RGBAQ.U32[0];
 
@@ -4599,7 +4587,7 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 		{
 			//  frame buffer clear, atst = fail, afail = write z only, z buffer points to frame buffer
 
-			GIFRegTEX0 TEX0;
+			GIFRegTEX0 TEX0 = {};
 
 			TEX0.TBP0 = ZBP;
 			TEX0.TBW = m_context->FRAME.FBW;
@@ -4617,7 +4605,7 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 		{
 			// z buffer clear, frame buffer now points to the z buffer (how can they be so clever?)
 
-			GIFRegTEX0 TEX0;
+			GIFRegTEX0 TEX0 = {};
 
 			TEX0.TBP0 = FBP;
 			TEX0.TBW = m_context->FRAME.FBW;
@@ -4644,18 +4632,18 @@ bool GSRendererHW::OI_SonicUnleashed(GSTexture* rt, GSTexture* ds, GSTextureCach
 	// save result in alpha with a TS,
 	// Restore RG channel that we previously copied to render shadows.
 
-	const GIFRegTEX0 Texture = m_context->TEX0;
+	const GIFRegTEX0& Texture = m_context->TEX0;
 
-	GIFRegTEX0 Frame;
+	GIFRegTEX0 Frame = {};
 	Frame.TBW = m_context->FRAME.FBW;
-	Frame.TBP0 = m_context->FRAME.FBP;
 	Frame.TBP0 = m_context->FRAME.Block();
 	Frame.PSM = m_context->FRAME.PSM;
 
-	if ((!PRIM->TME) || (GSLocalMemory::m_psm[Texture.PSM].bpp != 16) || (GSLocalMemory::m_psm[Frame.PSM].bpp != 16))
-		return true;
-
-	if ((Texture.TBP0 == Frame.TBP0) || (Frame.TBW != 16 && Texture.TBW != 16))
+	if ((!PRIM->TME)
+		|| (GSLocalMemory::m_psm[Texture.PSM].bpp != 16)
+		|| (GSLocalMemory::m_psm[Frame.PSM].bpp != 16)
+		|| (Texture.TBP0 == Frame.TBP0)
+		|| (Frame.TBW != 16 && Texture.TBW != 16))
 		return true;
 
 	GL_INS("OI_SonicUnleashed replace draw by a copy");

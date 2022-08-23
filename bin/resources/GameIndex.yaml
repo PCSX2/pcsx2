@@ -8671,6 +8671,9 @@ SLED-50117:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     texturePreloading: 1 # Fixes micro stuttering.
+SLED-50286:
+  name: "Red Faction [Demo]"
+  region: "PAL-E"
 SLED-50359:
   name: "Devil May Cry [Demo]"
   region: "PAL-E"
@@ -8678,6 +8681,9 @@ SLED-50359:
     vuClampMode: 3 # Fixes out of place polys (COP2).
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
+SLED-50439:
+  name: "MX 2002 featuring Ricky Carmichael [Demo]"
+  region: "PAL-E"
 SLED-50478:
   name: "WWF Smackdown! - Just Bring It [Demo]"
   region: "PAL-E"
@@ -8689,11 +8695,28 @@ SLED-50488:
   region: "PAL-E"
   gameFixes:
     - VIF1StallHack # Fixes loading hang.
+SLED-50489:
+  name: "Stuntman [Demo]"
+  region: "PAL-E"
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes textures.
+SLED-50587:
+  name: "Top Gun - Combat Zones [Demo]"
+  region: "PAL-E"
+SLED-50617:
+  name: "Burnout [Demo]"
+  region: "PAL-E"
+SLED-50762:
+  name: "Maximo [Demo]"
+  region: "PAL-E"
 SLED-50884:
   name: "TimeSplitters 2 [Demo]"
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes texture slight misalignment.
+SLED-50895:
+  name: "Medal of Honor - Frontline [Demo]"
+  region: "PAL-E"
 SLED-51062:
   name: "Fireblade [Demo]"
   region: "PAL-E"
