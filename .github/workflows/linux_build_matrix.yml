@@ -46,7 +46,7 @@ jobs:
     with:
       jobName: "No PCH"
       compiler: clang
-      cmakeflags: ""
+      cmakeflags: "-DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON"
       detail: " nopch"
     secrets: inherit
 

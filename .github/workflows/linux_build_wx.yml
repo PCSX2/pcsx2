@@ -9,7 +9,7 @@ on:
       os:
         required: false
         type: string
-        default: ubuntu-18.04
+        default: ubuntu:18.04
       platform:
         required: false
         type: string
@@ -36,7 +36,11 @@ on:
 jobs:
   build_linux:
     name: ${{ inputs.jobName }}
-    runs-on: ${{ inputs.os }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ inputs.os }}
+      options: --privileged
+
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
     timeout-minutes: 60
     env:
@@ -49,6 +53,16 @@ jobs:
       PATCHELF_VERSION: 0.12
 
     steps:
+      - name: Install Essential Packages
+        run: |
+          apt-get update
+          apt-get install -y software-properties-common
+          apt-add-repository -y ppa:ubuntu-toolchain-r/test
+          apt-add-repository -y ppa:git-core/ppa
+          apt-get update
+          apt-get install -y cmake-mozilla curl fuse git sudo
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
@@ -99,7 +113,7 @@ jobs:
 
       - name: Build Dependencies
         run: |
-          if [[ ! -e 3rdparty/patchelf-${{ env.PATCHELF_VERSION }} ]]; then
+          if [ ! -e 3rdparty/patchelf-${{ env.PATCHELF_VERSION }} ]; then
             curl -sSfL https://github.com/NixOS/patchelf/releases/download/${{ env.PATCHELF_VERSION }}/patchelf-${{ env.PATCHELF_VERSION }}.tar.bz2 | tar -xjC 3rdparty
             mv 3rdparty/patchelf-${{ env.PATCHELF_VERSION }}* 3rdparty/patchelf-${{ env.PATCHELF_VERSION }}
             cd 3rdparty/patchelf-${{ env.PATCHELF_VERSION }}
@@ -107,7 +121,7 @@ jobs:
             make && cd ../../
           fi
           sudo make -C 3rdparty/patchelf-${{ env.PATCHELF_VERSION }} install
-          if [[ ! -e 3rdparty/${{ env.SDL }} ]]; then
+          if [ ! -e 3rdparty/${{ env.SDL }} ]; then
             curl -sL https://libsdl.org/release/${{ env.SDL }}.tar.gz | tar -xzC 3rdparty
             cd 3rdparty/${{ env.SDL }}
             if [ "${{ inputs.platform }}" == "x86" ]; then
@@ -122,7 +136,7 @@ jobs:
       - name: Download cheats
         run: |
           cd bin/resources
-          aria2c -Z "${{ inputs.cheats_url }}/cheats_ni.zip" "${{ inputs.cheats_url }}/cheats_ws.zip"
+          curl -L -O "${{ inputs.cheats_url }}/cheats_ni.zip" -O "${{ inputs.cheats_url }}/cheats_ws.zip"
 
       - name: Generate CMake
         env:

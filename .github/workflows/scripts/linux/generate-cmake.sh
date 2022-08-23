@@ -6,8 +6,8 @@ if [ "${COMPILER}" = "gcc" ]; then
   export CC=gcc-10
   export CXX=g++-10
 else
-  export CC=clang
-  export CXX=clang++
+  export CC=clang-9
+  export CXX=clang++-9
 fi
 
 if [ "${PLATFORM}" = x86 ]; then

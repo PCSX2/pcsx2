@@ -5,7 +5,6 @@ set -e
 # Packages - Build Environment
 declare -a BUILD_PACKAGES=(
   "ccache"
-  "cmake"
   "ninja-build"
 )
 
