@@ -44,7 +44,7 @@ const char* dialog_message(int ID, bool* updateText)
 		case IDC_TRI_FILTER:
 			return cvtString("Control the texture tri-filtering of the emulation.\n\n"
 				"None:\nNo extra trilinear filtering.\n\n"
-				"Trilinear:\nUse OpenGL/Vulkan trilinear interpolation when PS2 uses mipmaps.\n\n"
+				"Trilinear:\nUse trilinear interpolation when PS2 uses mipmaps.\n\n"
 				"Trilinear Forced:\nAlways enable full trilinear interpolation. Warning Slow!\n\n");
 		case IDC_CRC_LEVEL:
 			return cvtString("Control the number of Auto-CRC fixes and hacks applied to games.\n\n"
@@ -107,7 +107,7 @@ const char* dialog_message(int ID, bool* updateText)
 		case IDC_ACCURATE_DATE:
 			return cvtString("Implement a more accurate algorithm to compute GS destination alpha testing.\n"
 				"It improves shadow and transparency rendering.\n\n"
-				"Note: Direct3D 11 is less accurate.");
+				"Note: Direct3D is less accurate.");
 		case IDC_ACCURATE_BLEND_UNIT:
 			return cvtString("Control the accuracy level of the GS blending unit emulation.\n\n"
 				"Minimum:\nFast but introduces various rendering issues.\n"
@@ -119,7 +119,7 @@ const char* dialog_message(int ID, bool* updateText)
 				"A good CPU is required.\n\n"
 				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is slow!\n\n"
 				"Maximum:\nThe blending unit will be completely emulated by the shader. It is very slow!\n\n"
-				"Note: Direct3D11's blending is capped at High and is reduced in capability compared to OpenGL/Vulkan");
+				"Note: Direct3D's blending is capped at High and is reduced in capability compared to OpenGL/Vulkan");
 		case IDC_TC_DEPTH:
 			return cvtString("Disable the support of Depth buffer in the texture cache.\n"
 				"It can help to increase speed but it will likely create various glitches.");
