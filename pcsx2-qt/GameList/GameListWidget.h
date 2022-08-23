@@ -16,8 +16,8 @@
 #pragma once
 #include "pcsx2/Frontend/GameList.h"
 #include "ui_EmptyGameListWidget.h"
+#include "ui_GameListWidget.h"
 #include <QtWidgets/QListView>
-#include <QtWidgets/QStackedWidget>
 #include <QtWidgets/QTableView>
 
 Q_DECLARE_METATYPE(const GameList::Entry*);
@@ -41,7 +41,7 @@ protected:
 	void wheelEvent(QWheelEvent* e);
 };
 
-class GameListWidget : public QStackedWidget
+class GameListWidget : public QWidget
 {
 	Q_OBJECT
 
@@ -56,10 +56,10 @@ public:
 
 	void refresh(bool invalidate_cache);
 	void cancelRefresh();
+	void refreshImages();
 
 	bool isShowingGameList() const;
 	bool isShowingGameGrid() const;
-
 	bool getShowGridCoverTitles() const;
 
 	const GameList::Entry* getSelectedEntry() const;
@@ -73,6 +73,7 @@ Q_SIGNALS:
 	void entryContextMenuRequested(const QPoint& point);
 
 	void addGameDirectoryRequested();
+	void layoutChange();
 
 private Q_SLOTS:
 	void onRefreshProgress(const QString& status, int current, int total);
@@ -92,6 +93,7 @@ public Q_SLOTS:
 	void setShowCoverTitles(bool enabled);
 	void gridZoomIn();
 	void gridZoomOut();
+	void gridIntScale(int int_scale);
 	void refreshGridCovers();
 
 protected:
@@ -105,6 +107,9 @@ private:
 	void saveTableViewColumnSortSettings();
 	void listZoom(float delta);
 	void updateListFont();
+	void updateToolbar();
+
+	Ui::GameListWidget m_ui;
 
 	GameListModel* m_model = nullptr;
 	GameListSortModel* m_sort_model = nullptr;

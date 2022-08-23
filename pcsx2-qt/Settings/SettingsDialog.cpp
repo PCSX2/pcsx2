@@ -113,7 +113,7 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 		if (isPerGameSettings())
 		{
 			addWidget(m_game_fix_settings_widget = new GameFixSettingsWidget(this, m_ui.settingsContainer), tr("Game Fix"),
-				QStringLiteral("close-line"), tr("<strong>Game Fix Settings</strong><hr>"));
+				QStringLiteral("close-line"), tr("<strong>Game Fix Settings</strong><hr>Gamefixes can work around incorrect emulation in some titles<br>however they can also cause problems in games if used incorrectly.<br>It is best to leave them all disabled unless advised otherwise."));
 		}
 	}
 
@@ -214,6 +214,9 @@ void SettingsDialog::addWidget(QWidget* widget, QString title, QString icon, QSt
 
 void SettingsDialog::registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text)
 {
+	if (!object)
+		return;
+
 	// construct rich text with formatted description
 	QString full_text;
 	full_text += "<table width='100%' cellpadding='0' cellspacing='0'><tr><td><strong>";

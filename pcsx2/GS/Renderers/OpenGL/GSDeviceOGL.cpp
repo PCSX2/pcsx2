@@ -220,21 +220,20 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 	m_features.image_load_store = GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture;
 	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0 || GLLoader::found_framebuffer_fetch;
 	m_features.provoking_vertex_last = true;
-	m_features.dxt_textures = GL_EXT_texture_compression_s3tc;
-	m_features.bptc_textures = GL_VERSION_4_2 || GL_ARB_texture_compression_bptc || GL_EXT_texture_compression_bptc;
+	m_features.dxt_textures = GLAD_GL_EXT_texture_compression_s3tc;
+	m_features.bptc_textures = GLAD_GL_VERSION_4_2 || GLAD_GL_ARB_texture_compression_bptc || GLAD_GL_EXT_texture_compression_bptc;
 	m_features.prefer_new_textures = false;
 	m_features.framebuffer_fetch = GLLoader::found_framebuffer_fetch;
 	m_features.dual_source_blend = GLLoader::has_dual_source_blend && !GSConfig.DisableDualSourceBlend;
 	m_features.stencil_buffer = true;
+	// Wide line support in GL is deprecated as of 3.1, so we will just do it in the Geometry Shader.
+	m_features.line_expand = false;
 
 	GLint point_range[2] = {};
-	GLint line_range[2] = {};
 	glGetIntegerv(GL_ALIASED_POINT_SIZE_RANGE, point_range);
-	glGetIntegerv(GL_ALIASED_LINE_WIDTH_RANGE, line_range);
 	m_features.point_expand = (point_range[0] <= static_cast<GLint>(GSConfig.UpscaleMultiplier) && point_range[1] >= static_cast<GLint>(GSConfig.UpscaleMultiplier));
-	m_features.line_expand = (line_range[0] <= static_cast<GLint>(GSConfig.UpscaleMultiplier) && line_range[1] >= static_cast<GLint>(GSConfig.UpscaleMultiplier));
-	Console.WriteLn("Using %s for point expansion and %s for line expansion.",
-		m_features.point_expand ? "hardware" : "geometry shaders", m_features.line_expand ? "hardware" : "geometry shaders");
+
+	Console.WriteLn("Using %s for point expansion.", m_features.point_expand ? "hardware" : "geometry shaders");
 
 	{
 		auto shader = Host::ReadResourceFileToString("shaders/opengl/common_header.glsl");
@@ -637,8 +636,6 @@ void GSDeviceOGL::ResetAPIState()
 {
 	if (GLState::point_size)
 		glDisable(GL_PROGRAM_POINT_SIZE);
-	if (GLState::line_width != 1.0f)
-		glLineWidth(1.0f);
 }
 
 void GSDeviceOGL::RestoreAPIState()
@@ -691,8 +688,6 @@ void GSDeviceOGL::RestoreAPIState()
 
 	if (GLState::point_size)
 		glEnable(GL_PROGRAM_POINT_SIZE);
-	if (GLState::line_width != 1.0f)
-		glLineWidth(GLState::line_width);
 }
 
 void GSDeviceOGL::DrawPrimitive()
@@ -779,7 +774,7 @@ void GSDeviceOGL::InvalidateRenderTarget(GSTexture* t)
 	{
 		OMSetFBO(m_fbo);
 
-		if (T->GetType() == GSTexture::Type::DepthStencil || T->GetType() == GSTexture::Type::SparseDepthStencil)
+		if (T->GetType() == GSTexture::Type::DepthStencil)
 		{
 			OMAttachDs(T);
 			const GLenum attachments[] = {GL_DEPTH_STENCIL_ATTACHMENT};
@@ -1129,6 +1124,7 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ StringUtil::StdStringFromFormat("#define PS_DITHER %d\n", sel.dither)
 		+ StringUtil::StdStringFromFormat("#define PS_ZCLAMP %d\n", sel.zclamp)
 		+ StringUtil::StdStringFromFormat("#define PS_BLEND_MIX %d\n", sel.blend_mix)
+		+ StringUtil::StdStringFromFormat("#define PS_FIXED_ONE_A %d\n", sel.fixed_one_a)
 		+ StringUtil::StdStringFromFormat("#define PS_PABE %d\n", sel.pabe)
 		+ StringUtil::StdStringFromFormat("#define PS_SCANMSK %d\n", sel.scanmsk)
 		+ StringUtil::StdStringFromFormat("#define PS_SCALE_FACTOR %d\n", GSConfig.UpscaleMultiplier)
@@ -1196,7 +1192,6 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 	PSSetShaderResource(6, sTex);
 #endif
 
-	dTex->CommitRegion(GSVector2i(r.z, r.w));
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 	ASSERT(GLExtension::Has("GL_ARB_copy_image") && glCopyImageSubData);
@@ -1209,6 +1204,8 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 
 void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
 {
+	pxAssert(dTex->IsDepthStencil() == HasDepthOutput(shader));
+	pxAssert(linear ? SupportsBilinear(shader) : SupportsNearest(shader));
 	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[(int)shader], linear);
 }
 
@@ -1233,11 +1230,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 {
 	ASSERT(sTex);
 
-	const bool draw_in_depth = ps == m_convert.ps[static_cast<int>(ShaderConvert::DEPTH_COPY)]
-	                        || ps == m_convert.ps[static_cast<int>(ShaderConvert::RGBA8_TO_FLOAT32)]
-	                        || ps == m_convert.ps[static_cast<int>(ShaderConvert::RGBA8_TO_FLOAT24)]
-	                        || ps == m_convert.ps[static_cast<int>(ShaderConvert::RGBA8_TO_FLOAT16)]
-	                        || ps == m_convert.ps[static_cast<int>(ShaderConvert::RGB5A1_TO_FLOAT16)];
+	const bool draw_in_depth = dTex->IsDepthStencil();
 
 	// ************************************
 	// Init
@@ -1246,7 +1239,6 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	BeginScene();
 
 	GL_PUSH("StretchRect from %d to %d", sTex->GetID(), dTex->GetID());
-	dTex->CommitRegion(GSVector2i((int)dRect.z + 1, (int)dRect.w + 1));
 	if (draw_in_depth)
 		OMSetRenderTargets(NULL, dTex);
 	else
@@ -1889,7 +1881,6 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	{
 		GSVector2i size = config.rt->GetSize();
 		hdr_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::FloatColor, false);
-		hdr_rt->CommitRegion(GSVector2i(config.drawarea.z, config.drawarea.w));
 		OMSetRenderTargets(hdr_rt, config.ds, &config.scissor);
 
 		// save blend state, since BlitRect destroys it
@@ -1966,12 +1957,6 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		else
 			glDisable(GL_PROGRAM_POINT_SIZE);
 		GLState::point_size = point_size_enabled;
-	}
-	const float line_width = config.line_expand ? static_cast<float>(GSConfig.UpscaleMultiplier) : 1.0f;
-	if (GLState::line_width != line_width)
-	{
-		GLState::line_width = line_width;
-		glLineWidth(line_width);
 	}
 
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)

@@ -181,7 +181,6 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 	m_type   = type;
 	m_fbo_read = fbo_read;
 	m_texture_id = 0;
-	m_sparse = false;
 	m_mipmap_levels = 1;
 	int gl_fmt = 0;
 
@@ -287,56 +286,9 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 			ASSERT(0);
 	}
 
-	switch (m_type)
-	{
-		case Type::Texture:
-			// Only 32 bits input texture will be supported for mipmap
-			m_mipmap_levels = levels;
-			break;
-		case Type::SparseRenderTarget:
-		case Type::SparseDepthStencil:
-			m_sparse = true;
-			break;
-		default:
-			break;
-	}
-
-	switch (m_format)
-	{
-		case Format::UInt16:
-		case Format::UNorm8:
-			m_sparse &= GLLoader::found_compatible_GL_ARB_sparse_texture2;
-			SetGpuPageSize(GSVector2i(255, 255));
-			break;
-
-		case Format::Color:
-		case Format::UInt32:
-		case Format::PrimID:
-			m_sparse &= GLLoader::found_compatible_GL_ARB_sparse_texture2;
-			SetGpuPageSize(GSVector2i(127, 127));
-			break;
-
-		case Format::FloatColor:
-			m_sparse &= GLLoader::found_compatible_GL_ARB_sparse_texture2;
-			SetGpuPageSize(GSVector2i(63, 63));
-			break;
-
-		case Format::DepthStencil:
-			m_sparse &= GLLoader::found_compatible_sparse_depth;
-			SetGpuPageSize(GSVector2i(127, 127));
-			break;
-
-		case GSTexture::Format::BC1:
-		case GSTexture::Format::BC2:
-		case GSTexture::Format::BC3:
-		case GSTexture::Format::BC7:
-			m_sparse = false;
-			SetGpuPageSize(GSVector2i(127, 127));
-			break;
-
-		case Format::Invalid:
-			ASSERT(0);
-	}
+	// Only 32 bits input texture will be supported for mipmap
+	if (m_type == Type::Texture)
+		m_mipmap_levels = levels;
 
 	// Create a gl object (texture isn't allocated here)
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_texture_id);
@@ -347,26 +299,8 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 		glTextureParameteri(m_texture_id, GL_TEXTURE_SWIZZLE_A, GL_RED);
 	}
 
-	if (m_sparse)
-	{
-		GSVector2i old_size = m_size;
-		m_size = RoundUpPage(m_size);
-		if (m_size != old_size)
-		{
-			fprintf(stderr, "Sparse texture size (%dx%d) isn't a multiple of gpu page size (%dx%d)\n",
-					old_size.x, old_size.y, m_gpu_page_size.x, m_gpu_page_size.y);
-		}
-		glTextureParameteri(m_texture_id, GL_TEXTURE_SPARSE_ARB, true);
-	}
-	else
-	{
-		m_committed_size = m_size;
-	}
-
-	m_mem_usage = (m_committed_size.x * m_committed_size.y) << m_int_shift;
-
 	static int every_512 = 0;
-	GLState::available_vram -= m_mem_usage;
+	GLState::available_vram -= GetMemUsage();
 	if ((GLState::available_vram < 0) && (every_512 % 512 == 0))
 	{
 		fprintf(stderr, "Available VRAM is very low (%lld), a crash is expected! Enable conservative buffer allocation or reduce upscaling!\n", GLState::available_vram);
@@ -394,7 +328,7 @@ GSTextureOGL::~GSTextureOGL()
 
 	glDeleteTextures(1, &m_texture_id);
 
-	GLState::available_vram += m_mem_usage;
+	GLState::available_vram += GetMemUsage();
 }
 
 void* GSTextureOGL::GetNativeHandle() const
@@ -560,44 +494,6 @@ void GSTextureOGL::GenerateMipmap()
 	glGenerateTextureMipmap(m_texture_id);
 }
 
-void GSTextureOGL::CommitPages(const GSVector2i& region, bool commit)
-{
-	GLState::available_vram += m_mem_usage;
-
-	if (commit)
-	{
-		if (m_committed_size.x == 0)
-		{
-			// Nothing allocated so far
-			GL_INS("CommitPages initial %dx%d of %u", region.x, region.y, m_texture_id);
-			glTexturePageCommitmentEXT(m_texture_id, GL_TEX_LEVEL_0, 0, 0, 0, region.x, region.y, 1, commit);
-		}
-		else
-		{
-			GL_INS("CommitPages extend %dx%d to %dx%d of %u", m_committed_size.x, m_committed_size.y, region.x, region.y, m_texture_id);
-			int w = region.x - m_committed_size.x;
-			int h = region.y - m_committed_size.y;
-			// Extend width
-			glTexturePageCommitmentEXT(m_texture_id, GL_TEX_LEVEL_0, m_committed_size.x, 0, 0, w, m_committed_size.y, 1, commit);
-			// Extend height
-			glTexturePageCommitmentEXT(m_texture_id, GL_TEX_LEVEL_0, 0, m_committed_size.y, 0, region.x, h, 1, commit);
-		}
-		m_committed_size = region;
-	}
-	else
-	{
-		// Release everything
-		GL_INS("CommitPages release of %u", m_texture_id);
-
-		glTexturePageCommitmentEXT(m_texture_id, GL_TEX_LEVEL_0, 0, 0, 0, m_committed_size.x, m_committed_size.y, 1, commit);
-
-		m_committed_size = GSVector2i(0, 0);
-	}
-
-	m_mem_usage = (m_committed_size.x * m_committed_size.y) << m_int_shift;
-	GLState::available_vram -= m_mem_usage;
-}
-
 GSTexture::GSMap GSTextureOGL::Read(const GSVector4i& r, AlignedBuffer<u8, 32>& buffer)
 {
 	GSMap m;
@@ -625,8 +521,8 @@ GSTexture::GSMap GSTextureOGL::Read(const GSVector4i& r, AlignedBuffer<u8, 32>& 
 bool GSTextureOGL::Save(const std::string& fn)
 {
 	// Collect the texture data
-	u32 pitch = 4 * m_committed_size.x;
-	u32 buf_size = pitch * m_committed_size.y * 2; // Note *2 for security (depth/stencil)
+	u32 pitch = 4 * m_size.x;
+	u32 buf_size = pitch * m_size.y * 2; // Note *2 for security (depth/stencil)
 	std::unique_ptr<u8[]> image(new u8[buf_size]);
 #ifdef PCSX2_DEVBUILD
 	GSPng::Format fmt = GSPng::RGB_A_PNG;
@@ -634,12 +530,12 @@ bool GSTextureOGL::Save(const std::string& fn)
 	GSPng::Format fmt = GSPng::RGB_PNG;
 #endif
 
-	if (IsDepth())
+	if (IsDepthStencil())
 	{
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 
 		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_texture_id, 0);
-		glReadPixels(0, 0, m_committed_size.x, m_committed_size.y, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, image.get());
+		glReadPixels(0, 0, m_size.x, m_size.y, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, image.get());
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
@@ -648,7 +544,6 @@ bool GSTextureOGL::Save(const std::string& fn)
 	else if (m_format == Format::PrimID)
 	{
 		// Note: 4.5 function used for accurate DATE
-		// barely used outside of dev and not sparse anyway
 		glGetTextureImage(m_texture_id, 0, GL_RED_INTEGER, GL_INT, buf_size, image.get());
 
 		fmt = GSPng::R32I_PNG;
@@ -661,24 +556,24 @@ bool GSTextureOGL::Save(const std::string& fn)
 
 		if (m_format == Format::Color)
 		{
-			glReadPixels(0, 0, m_committed_size.x, m_committed_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image.get());
+			glReadPixels(0, 0, m_size.x, m_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image.get());
 		}
 		else if (m_format == Format::UInt16)
 		{
-			glReadPixels(0, 0, m_committed_size.x, m_committed_size.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, image.get());
+			glReadPixels(0, 0, m_size.x, m_size.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, image.get());
 			fmt = GSPng::R16I_PNG;
 		}
 		else if (m_format == Format::UNorm8)
 		{
 			fmt = GSPng::R8I_PNG;
-			glReadPixels(0, 0, m_committed_size.x, m_committed_size.y, GL_RED, GL_UNSIGNED_BYTE, image.get());
+			glReadPixels(0, 0, m_size.x, m_size.y, GL_RED, GL_UNSIGNED_BYTE, image.get());
 		}
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	}
 
 	int compression = theApp.GetConfigI("png_compression_level");
-	return GSPng::Save(fmt, fn, image.get(), m_committed_size.x, m_committed_size.y, pitch, compression);
+	return GSPng::Save(fmt, fn, image.get(), m_size.x, m_size.y, pitch, compression);
 }
 
 void GSTextureOGL::Swap(GSTexture* tex)
@@ -696,10 +591,4 @@ void GSTextureOGL::Swap(GSTexture* tex)
 	std::swap(m_int_format, static_cast<GSTextureOGL*>(tex)->m_int_format);
 	std::swap(m_int_type, static_cast<GSTextureOGL*>(tex)->m_int_type);
 	std::swap(m_int_shift, static_cast<GSTextureOGL*>(tex)->m_int_shift);
-	std::swap(m_mem_usage, static_cast<GSTextureOGL*>(tex)->m_mem_usage);
-}
-
-u32 GSTextureOGL::GetMemUsage()
-{
-	return m_mem_usage;
 }

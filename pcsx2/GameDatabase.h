@@ -60,7 +60,6 @@ namespace GameDatabaseSchema
 	{
 		// boolean settings
 		AutoFlush,
-		ConservativeFramebuffer,
 		CPUFramebufferConversion,
 		DisableDepthSupport,
 		WrapGSMem,

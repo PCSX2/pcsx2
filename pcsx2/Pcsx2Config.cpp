@@ -23,7 +23,7 @@
 #include "Config.h"
 #include "GS.h"
 #include "HostDisplay.h"
-#include "CDVD/CDVDaccess.h"
+#include "CDVD/CDVDcommon.h"
 #include "MemoryCardFile.h"
 
 #ifndef PCSX2_CORE
@@ -325,12 +325,10 @@ Pcsx2Config::GSOptions::GSOptions()
 	HWDisableReadbacks = false;
 	AccurateDATE = true;
 	GPUPaletteConversion = false;
-	ConservativeFramebuffer = true;
 	AutoFlushSW = true;
 	PreloadFrameWithGSData = false;
 	WrapGSMem = false;
 	Mipmap = true;
-	AA1 = true;
 	PointListPalette = false;
 
 	ManualUserHacks = false;
@@ -386,8 +384,16 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 
 		OpEqu(Zoom) &&
 		OpEqu(StretchY) &&
+#ifndef PCSX2_CORE
 		OpEqu(OffsetX) &&
 		OpEqu(OffsetY) &&
+#else
+		OpEqu(Crop[0]) &&
+		OpEqu(Crop[1]) &&
+		OpEqu(Crop[2]) &&
+		OpEqu(Crop[3]) &&
+#endif
+
 		OpEqu(OsdScale) &&
 
 		OpEqu(Renderer) &&
@@ -470,8 +476,10 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 
 	SettingsWrapEntry(Zoom);
 	SettingsWrapEntry(StretchY);
-	SettingsWrapEntry(OffsetX);
-	SettingsWrapEntry(OffsetY);
+	SettingsWrapEntryEx(Crop[0], "CropLeft");
+	SettingsWrapEntryEx(Crop[1], "CropTop");
+	SettingsWrapEntryEx(Crop[2], "CropRight");
+	SettingsWrapEntryEx(Crop[3], "CropBottom");
 #endif
 
 #ifndef PCSX2_CORE
@@ -538,12 +546,10 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBool(HWDisableReadbacks);
 	GSSettingBoolEx(AccurateDATE, "accurate_date");
 	GSSettingBoolEx(GPUPaletteConversion, "paltex");
-	GSSettingBoolEx(ConservativeFramebuffer, "conservative_framebuffer");
 	GSSettingBoolEx(AutoFlushSW, "autoflush_sw");
 	GSSettingBoolEx(PreloadFrameWithGSData, "preload_frame_with_gs_data");
 	GSSettingBoolEx(WrapGSMem, "wrap_gs_mem");
 	GSSettingBoolEx(Mipmap, "mipmap");
-	GSSettingBoolEx(AA1, "aa1");
 	GSSettingBoolEx(ManualUserHacks, "UserHacks");
 	GSSettingBoolEx(UserHacks_AlignSpriteX, "UserHacks_align_sprite_X");
 	GSSettingBoolEx(UserHacks_AutoFlush, "UserHacks_AutoFlush");
@@ -719,6 +725,7 @@ void Pcsx2Config::SPU2Options::LoadSave(SettingsWrapper& wrap)
 		SettingsWrapEntry(Latency);
 		SynchMode = static_cast<SynchronizationMode>(wrap.EntryBitfield(CURRENT_SETTINGS_SECTION, "SynchMode", static_cast<int>(SynchMode), static_cast<int>(SynchMode)));
 		SettingsWrapEntry(SpeakerConfiguration);
+		SettingsWrapEntry(DplDecodingLevel);
 	}
 }
 

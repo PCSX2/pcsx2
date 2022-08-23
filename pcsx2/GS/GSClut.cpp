@@ -108,9 +108,18 @@ void GSClut::Invalidate()
 	m_write.dirty = true;
 }
 
+void GSClut::InvalidateRange(u32 start_block, u32 end_block)
+{
+	if (m_write.TEX0.CBP >= start_block && m_write.TEX0.CBP <= end_block)
+	{
+		m_write.dirty = true;
+	}
+}
+
+// Check the whole page, if the CLUT is slightly offset from a page boundary it could miss it.
 void GSClut::Invalidate(u32 block)
 {
-	if (block == m_write.TEX0.CBP)
+	if (!((block ^ m_write.TEX0.CBP) & ~0x1F))
 	{
 		m_write.dirty = true;
 	}

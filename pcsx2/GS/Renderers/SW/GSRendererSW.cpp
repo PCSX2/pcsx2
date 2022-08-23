@@ -132,7 +132,7 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 	const int display_offset = GetResolutionOffset(i).y;
 	const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
 	const int display_height = offsets.y * ((isinterlaced() && !m_regs->SMODE2.FFMD) ? 2 : 1);
-	int h = std::min(GetFramebufferHeight(), display_height) + DISPFB.DBY;
+	int h = std::min(GetFramebufferHeight(), display_height);
 
 	// If there is a negative vertical offset on the picture, we need to read more.
 	if (display_offset < 0)
@@ -142,15 +142,60 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 
 	if (g_gs_device->ResizeTarget(&m_texture[i], w, h))
 	{
-		static int pitch = 1024 * 4;
+		constexpr int pitch = 1024 * 4;
+		const int off_x = DISPFB.DBX & 0x7ff;
+		const int off_y = DISPFB.DBY & 0x7ff;
+		const GSVector4i out_r(0, 0, w, h);
+		GSVector4i r(off_x, off_y, w + off_x, h + off_y);
+		GSVector4i rh(off_x, off_y, w + off_x, (h + off_y) & 0x7FF);
+		GSVector4i rw(off_x, off_y, (w + off_x) & 0x7FF, h + off_y);
+		bool h_wrap = false;
+		bool w_wrap = false;
 
-		GSVector4i r(0, 0, w, h);
+		// Need to read it in 2 parts, since you can't do a split rect.
+		if (r.bottom >= 2048)
+		{
+			r.bottom = 2048;
+			rw.bottom = 2048;
+			rh.top = 0;
+			h_wrap = true;
+		}
+
+		if (r.right >= 2048)
+		{
+			r.right = 2048;
+			rh.right = 2048;
+			rw.left = 0;
+			w_wrap = true;
+		}
 
 		const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[DISPFB.PSM];
 
+		// Top left rect
 		(m_mem.*psm.rtx)(m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), r.ralign<Align_Outside>(psm.bs), m_output, pitch, m_env.TEXA);
 
-		m_texture[i]->Update(r, m_output, pitch);
+		int top = (h_wrap) ? ((r.bottom - r.top) * pitch) : 0;
+		int left = (w_wrap) ? (r.right - r.left) * (GSLocalMemory::m_psm[DISPFB.PSM].bpp / 8) : 0;
+
+		// The following only happen if the DBX/DBY wrap around at 2048.
+
+		// Top right rect
+		if (w_wrap)
+			(m_mem.*psm.rtx)(m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rw.ralign<Align_Outside>(psm.bs), &m_output[left], pitch, m_env.TEXA);
+
+		// Bottom left rect
+		if (h_wrap)
+			(m_mem.*psm.rtx)(m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rh.ralign<Align_Outside>(psm.bs), &m_output[top], pitch, m_env.TEXA);
+
+		// Bottom right rect
+		if (h_wrap && w_wrap)
+		{
+			// Needs also rw with the start/end height of rh, fills in the bottom right rect which will be missing if both overflow.
+			const GSVector4i rwh(rw.left, rh.top, rw.right, rh.bottom);
+			(m_mem.*psm.rtx)(m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rwh.ralign<Align_Outside>(psm.bs), &m_output[top + left], pitch, m_env.TEXA);
+		}
+
+		m_texture[i]->Update(out_r, m_output, pitch);
 
 		if (s_dump)
 		{
@@ -1250,7 +1295,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 				gd.sel.pabe = 1;
 			}
 
-			if (GSConfig.AA1 && PRIM->AA1 && (primclass == GS_LINE_CLASS || primclass == GS_TRIANGLE_CLASS))
+			if (PRIM->AA1 && (primclass == GS_LINE_CLASS || primclass == GS_TRIANGLE_CLASS))
 			{
 				gd.sel.aa1 = 1;
 			}

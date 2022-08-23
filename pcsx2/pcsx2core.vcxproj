@@ -410,7 +410,7 @@
     <ClCompile Include="ps2\Iop\IopHwWrite.cpp" />
     <ClCompile Include="CDVD\Ps1CD.cpp" />
     <ClCompile Include="CDVD\CDVD.cpp" />
-    <ClCompile Include="CDVD\CDVDaccess.cpp" />
+    <ClCompile Include="CDVD\CDVDcommon.cpp" />
     <ClCompile Include="CDVD\CDVDisoReader.cpp" />
     <ClCompile Include="Ipu\IPU.cpp" />
     <ClCompile Include="Ipu\IPU_Fifo.cpp" />
@@ -709,7 +709,7 @@
     <ClInclude Include="CDVD\Ps1CD.h" />
     <ClInclude Include="CDVD\CDVD.h" />
     <ClInclude Include="CDVD\CDVD_internal.h" />
-    <ClInclude Include="CDVD\CDVDaccess.h" />
+    <ClInclude Include="CDVD\CDVDcommon.h" />
     <ClInclude Include="Ipu\IPU.h" />
     <ClInclude Include="Ipu\IPU_Fifo.h" />
     <ClInclude Include="Ipu\yuv2rgb.h" />

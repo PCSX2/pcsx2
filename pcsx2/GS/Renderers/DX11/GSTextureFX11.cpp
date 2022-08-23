@@ -188,6 +188,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_BLEND_C", sel.blend_c);
 		sm.AddMacro("PS_BLEND_D", sel.blend_d);
 		sm.AddMacro("PS_BLEND_MIX", sel.blend_mix);
+		sm.AddMacro("PS_FIXED_ONE_A", sel.fixed_one_a);
 		sm.AddMacro("PS_PABE", sel.pabe);
 		sm.AddMacro("PS_DITHER", sel.dither);
 		sm.AddMacro("PS_ZCLAMP", sel.zclamp);
@@ -349,7 +350,7 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 
 
 		memset(&bd, 0, sizeof(bd));
 
-		if (bsel.blend_enable)
+		if (bsel.blend_enable && (bsel.wrgba & 0x7))
 		{
 			bd.RenderTarget[0].BlendEnable = TRUE;
 			bd.RenderTarget[0].BlendOp = s_d3d11_blend_ops[bsel.blend_op];

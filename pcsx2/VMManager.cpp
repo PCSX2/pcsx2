@@ -51,6 +51,7 @@
 #include "PAD/Host/PAD.h"
 #include "Sio.h"
 #include "ps2/BiosTools.h"
+#include "Recording/InputRecordingControls.h"
 
 #include "DebugTools/MIPSAnalyst.h"
 #include "DebugTools/SymbolMap.h"
@@ -1721,6 +1722,14 @@ static void HotkeySaveStateSlot(s32 slot)
 }
 
 BEGIN_HOTKEY_LIST(g_vm_manager_hotkeys)
+DEFINE_HOTKEY("TogglePause", "System", "Toggle Pause", [](s32 pressed) {
+	if (!pressed && VMManager::HasValidVM())
+		VMManager::SetPaused(VMManager::GetState() != VMState::Paused);
+})
+DEFINE_HOTKEY("ToggleFullscreen", "System", "Toggle Fullscreen", [](s32 pressed) {
+	if (!pressed)
+		Host::SetFullscreen(!Host::IsFullscreen());
+})
 DEFINE_HOTKEY("ToggleFrameLimit", "System", "Toggle Frame Limit", [](s32 pressed) {
 	if (!pressed)
 	{
@@ -1737,26 +1746,26 @@ DEFINE_HOTKEY("ToggleTurbo", "System", "Toggle Turbo", [](s32 pressed) {
                                       LimiterModeType::Nominal);
 	}
 })
-DEFINE_HOTKEY("HoldTurbo", "System", "Turbo (Hold)", [](s32 pressed) {
-	if (pressed > 0 && !s_limiter_mode_prior_to_hold_interaction.has_value())
-	{
-		s_limiter_mode_prior_to_hold_interaction = VMManager::GetLimiterMode();
-		VMManager::SetLimiterMode((s_limiter_mode_prior_to_hold_interaction.value() != LimiterModeType::Turbo) ?
-                                      LimiterModeType::Turbo :
-                                      LimiterModeType::Nominal);
-	}
-	else if (pressed >= 0 && s_limiter_mode_prior_to_hold_interaction.has_value())
-	{
-		VMManager::SetLimiterMode(s_limiter_mode_prior_to_hold_interaction.value());
-		s_limiter_mode_prior_to_hold_interaction.reset();
-	}
-})
 DEFINE_HOTKEY("ToggleSlowMotion", "System", "Toggle Slow Motion", [](s32 pressed) {
 	if (!pressed)
 	{
 		VMManager::SetLimiterMode((EmuConfig.LimiterMode != LimiterModeType::Slomo) ?
                                       LimiterModeType::Slomo :
                                       LimiterModeType::Nominal);
+	}
+})
+DEFINE_HOTKEY("HoldTurbo", "System", "Turbo (Hold)", [](s32 pressed) {
+	if (pressed > 0 && !s_limiter_mode_prior_to_hold_interaction.has_value())
+	{
+		s_limiter_mode_prior_to_hold_interaction = VMManager::GetLimiterMode();
+		VMManager::SetLimiterMode((s_limiter_mode_prior_to_hold_interaction.value() != LimiterModeType::Turbo) ?
+									  LimiterModeType::Turbo :
+                                      LimiterModeType::Nominal);
+	}
+	else if (pressed >= 0 && s_limiter_mode_prior_to_hold_interaction.has_value())
+	{
+		VMManager::SetLimiterMode(s_limiter_mode_prior_to_hold_interaction.value());
+		s_limiter_mode_prior_to_hold_interaction.reset();
 	}
 })
 DEFINE_HOTKEY("IncreaseSpeed", "System", "Increase Target Speed", [](s32 pressed) {
@@ -1767,13 +1776,21 @@ DEFINE_HOTKEY("DecreaseSpeed", "System", "Decrease Target Speed", [](s32 pressed
 	if (!pressed)
 		HotkeyAdjustTargetSpeed(-0.1);
 })
+DEFINE_HOTKEY("FrameAdvance", "System", "Frame Advance", [](s32 pressed) {
+	if (!pressed)
+		VMManager::FrameAdvance(1);
+})
+DEFINE_HOTKEY("ShutdownVM", "System", "Shut Down Virtual Machine", [](s32 pressed) {
+	if (!pressed && VMManager::HasValidVM())
+		Host::RequestVMShutdown(true, true);
+})
 DEFINE_HOTKEY("ResetVM", "System", "Reset Virtual Machine", [](s32 pressed) {
 	if (!pressed && VMManager::HasValidVM())
 		VMManager::Reset();
 })
-DEFINE_HOTKEY("FrameAdvance", "System", "Frame Advance", [](s32 pressed) {
+DEFINE_HOTKEY("InputRecToggleMode", "System", "Toggle Input Recording Mode", [](s32 pressed) {
 	if (!pressed)
-		VMManager::FrameAdvance(1);
+		g_InputRecordingControls.RecordModeToggle();
 })
 
 DEFINE_HOTKEY("PreviousSaveStateSlot", "Save States", "Select Previous Save Slot", [](s32 pressed) {
@@ -1793,34 +1810,33 @@ DEFINE_HOTKEY("LoadStateFromSlot", "Save States", "Load State From Selected Slot
 		HotkeyLoadStateSlot(s_current_save_slot);
 })
 
-#define DEFINE_HOTKEY_SAVESTATE_X(slotnum, slotnumstr) DEFINE_HOTKEY("SaveStateToSlot" #slotnum, \
-	"Save States", "Save State To Slot " #slotnumstr, [](s32 pressed) { if (!pressed) HotkeySaveStateSlot(slotnum); })
-DEFINE_HOTKEY_SAVESTATE_X(1, 01)
-DEFINE_HOTKEY_SAVESTATE_X(2, 02)
-DEFINE_HOTKEY_SAVESTATE_X(3, 03)
-DEFINE_HOTKEY_SAVESTATE_X(4, 04)
-DEFINE_HOTKEY_SAVESTATE_X(5, 05)
-DEFINE_HOTKEY_SAVESTATE_X(6, 06)
-DEFINE_HOTKEY_SAVESTATE_X(7, 07)
-DEFINE_HOTKEY_SAVESTATE_X(8, 08)
-DEFINE_HOTKEY_SAVESTATE_X(9, 09)
-DEFINE_HOTKEY_SAVESTATE_X(10, 10)
-#define DEFINE_HOTKEY_LOADSTATE_X(slotnum, slotnumstr) DEFINE_HOTKEY("LoadStateFromSlot" #slotnum, \
-	"Save States", "Load State From Slot " #slotnumstr, [](s32 pressed) { \
+#define DEFINE_HOTKEY_SAVESTATE_X(slotnum) DEFINE_HOTKEY("SaveStateToSlot" #slotnum, \
+	"Save States", "Save State To Slot " #slotnum, [](s32 pressed) { if (!pressed) HotkeySaveStateSlot(slotnum); })
+#define DEFINE_HOTKEY_LOADSTATE_X(slotnum) DEFINE_HOTKEY("LoadStateFromSlot" #slotnum, \
+	"Save States", "Load State From Slot " #slotnum, [](s32 pressed) { \
 		if (!pressed) \
 			HotkeyLoadStateSlot(slotnum); \
 	})
-DEFINE_HOTKEY_LOADSTATE_X(1, 01)
-DEFINE_HOTKEY_LOADSTATE_X(2, 02)
-DEFINE_HOTKEY_LOADSTATE_X(3, 03)
-DEFINE_HOTKEY_LOADSTATE_X(4, 04)
-DEFINE_HOTKEY_LOADSTATE_X(5, 05)
-DEFINE_HOTKEY_LOADSTATE_X(6, 06)
-DEFINE_HOTKEY_LOADSTATE_X(7, 07)
-DEFINE_HOTKEY_LOADSTATE_X(8, 08)
-DEFINE_HOTKEY_LOADSTATE_X(9, 09)
-DEFINE_HOTKEY_LOADSTATE_X(10, 10)
-
+DEFINE_HOTKEY_SAVESTATE_X(1)
+DEFINE_HOTKEY_LOADSTATE_X(1)
+DEFINE_HOTKEY_SAVESTATE_X(2)
+DEFINE_HOTKEY_LOADSTATE_X(2)
+DEFINE_HOTKEY_SAVESTATE_X(3)
+DEFINE_HOTKEY_LOADSTATE_X(3)
+DEFINE_HOTKEY_SAVESTATE_X(4)
+DEFINE_HOTKEY_LOADSTATE_X(4)
+DEFINE_HOTKEY_SAVESTATE_X(5)
+DEFINE_HOTKEY_LOADSTATE_X(5)
+DEFINE_HOTKEY_SAVESTATE_X(6)
+DEFINE_HOTKEY_LOADSTATE_X(6)
+DEFINE_HOTKEY_SAVESTATE_X(7)
+DEFINE_HOTKEY_LOADSTATE_X(7)
+DEFINE_HOTKEY_SAVESTATE_X(8)
+DEFINE_HOTKEY_LOADSTATE_X(8)
+DEFINE_HOTKEY_SAVESTATE_X(9)
+DEFINE_HOTKEY_LOADSTATE_X(9)
+DEFINE_HOTKEY_SAVESTATE_X(10)
+DEFINE_HOTKEY_LOADSTATE_X(10)
 #undef DEFINE_HOTKEY_SAVESTATE_X
 #undef DEFINE_HOTKEY_LOADSTATE_X
 

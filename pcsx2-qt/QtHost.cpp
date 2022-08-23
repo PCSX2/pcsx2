@@ -18,6 +18,7 @@
 #include <csignal>
 
 #include <QtCore/QTimer>
+#include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
 
 #ifdef _WIN32
@@ -35,6 +36,7 @@
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
+#include "pcsx2/CDVD/CDVDcommon.h"
 #include "pcsx2/DebugTools/Debug.h"
 #include "pcsx2/Frontend/GameList.h"
 #include "pcsx2/Frontend/INISettingsInterface.h"
@@ -55,6 +57,10 @@ static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 // Local function declarations
 //////////////////////////////////////////////////////////////////////////
 namespace QtHost {
+static void PrintCommandLineVersion();
+static void PrintCommandLineHelp(const char* progname);
+static std::shared_ptr<VMBootParameters>& AutoBoot(std::shared_ptr<VMBootParameters>& autoboot);
+static bool ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMBootParameters>& autoboot);
 static bool InitializeConfig();
 static bool ShouldUsePortableMode();
 static void SetAppRoot();
@@ -73,48 +79,11 @@ const IConsoleWriter* PatchesCon = &Console;
 static std::unique_ptr<QTimer> s_settings_save_timer;
 static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
 static bool s_batch_mode = false;
+static bool s_nogui_mode = false;
 
 //////////////////////////////////////////////////////////////////////////
 // Initialization/Shutdown
 //////////////////////////////////////////////////////////////////////////
-
-bool QtHost::Initialize()
-{
-	qRegisterMetaType<std::optional<bool>>();
-	qRegisterMetaType<std::function<void()>>();
-	qRegisterMetaType<std::shared_ptr<VMBootParameters>>();
-	qRegisterMetaType<GSRendererType>();
-	qRegisterMetaType<InputBindingKey>();
-	qRegisterMetaType<CDVD_SourceType>();
-	qRegisterMetaType<const GameList::Entry*>();
-
-	if (!InitializeConfig())
-	{
-		// NOTE: No point translating this, because no config means the language won't be loaded anyway.
-		QMessageBox::critical(nullptr, QStringLiteral("Error"), QStringLiteral("Failed to initialize config."));
-		return false;
-	}
-
-	HookSignals();
-	EmuThread::start();
-	return true;
-}
-
-void QtHost::Shutdown()
-{
-	EmuThread::stop();
-	if (g_main_window)
-	{
-		g_main_window->close();
-		delete g_main_window;
-	}
-
-	if (emuLog)
-	{
-		std::fclose(emuLog);
-		emuLog = nullptr;
-	}
-}
 
 bool QtHost::SetCriticalFolders()
 {
@@ -258,7 +227,7 @@ bool QtHost::InitializeConfig()
 	// TODO: Handle reset to defaults if load fails.
 	EmuFolders::LoadConfig(*s_base_settings_interface.get());
 	EmuFolders::EnsureFoldersExist();
-	Host::UpdateLogging();
+	Host::UpdateLogging(QtHost::InNoGUIMode());
 	return true;
 }
 
@@ -373,9 +342,9 @@ bool QtHost::InBatchMode()
 	return s_batch_mode;
 }
 
-void QtHost::SetBatchMode(bool enabled)
+bool QtHost::InNoGUIMode()
 {
-	s_batch_mode = enabled;
+	return s_nogui_mode;
 }
 
 void QtHost::RunOnUIThread(const std::function<void()>& func, bool block /*= false*/)
@@ -508,4 +477,276 @@ void QtHost::HookSignals()
 {
 	std::signal(SIGINT, SignalHandler);
 	std::signal(SIGTERM, SignalHandler);
+}
+
+void QtHost::PrintCommandLineVersion()
+{
+	Host::InitializeEarlyConsole();
+	std::fprintf(stderr, "%s\n", (GetAppNameAndVersion() + GetAppConfigSuffix()).toUtf8().constData());
+	std::fprintf(stderr, "https://pcsx2.net/\n");
+	std::fprintf(stderr, "\n");
+}
+
+void QtHost::PrintCommandLineHelp(const char* progname)
+{
+	PrintCommandLineVersion();
+	std::fprintf(stderr, "Usage: %s [parameters] [--] [boot filename]\n", progname);
+	std::fprintf(stderr, "\n");
+	std::fprintf(stderr, "  -help: Displays this information and exits.\n");
+	std::fprintf(stderr, "  -version: Displays version information and exits.\n");
+	std::fprintf(stderr, "  -batch: Enables batch mode (exits after shutting down).\n");
+	std::fprintf(stderr, "  -nogui: Hides main window while running (implies batch mode).\n");
+	std::fprintf(stderr, "  -elf <file>: Overrides the boot ELF with the specified filename.\n");
+	std::fprintf(stderr, "  -disc <path>: Uses the specified host DVD drive as a source.\n");
+	std::fprintf(stderr, "  -bios: Starts the BIOS (System Menu/OSDSYS).\n");
+	std::fprintf(stderr, "  -fastboot: Force fast boot for provided filename.\n");
+	std::fprintf(stderr, "  -slowboot: Force slow boot for provided filename.\n");
+	std::fprintf(stderr, "  -state <index>: Loads specified save state by index.\n");
+	std::fprintf(stderr, "  -statefile <filename>: Loads state from the specified filename.\n");
+	std::fprintf(stderr, "  -fullscreen: Enters fullscreen mode immediately after starting.\n");
+	std::fprintf(stderr, "  -nofullscreen: Prevents fullscreen mode from triggering if enabled.\n");
+	std::fprintf(stderr, "  -earlyconsolelog: Forces logging of early console messages to console.\n");
+	std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
+						 "    parameters make up the filename. Use when the filename contains\n"
+						 "    spaces or starts with a dash.\n");
+	std::fprintf(stderr, "\n");
+}
+
+std::shared_ptr<VMBootParameters>& QtHost::AutoBoot(std::shared_ptr<VMBootParameters>& autoboot)
+{
+	if (!autoboot)
+		autoboot = std::make_shared<VMBootParameters>();
+
+	return autoboot;
+}
+
+bool QtHost::ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMBootParameters>& autoboot)
+{
+	bool no_more_args = false;
+
+	for (int i = 1; i < argc; i++)
+	{
+		if (!no_more_args)
+		{
+#define CHECK_ARG(str) !std::strcmp(argv[i], str)
+#define CHECK_ARG_PARAM(str) (!std::strcmp(argv[i], str) && ((i + 1) < argc))
+
+			if (CHECK_ARG("-help"))
+			{
+				PrintCommandLineHelp(argv[0]);
+				return false;
+			}
+			else if (CHECK_ARG("-version"))
+			{
+				PrintCommandLineVersion();
+				return false;
+			}
+			else if (CHECK_ARG("-batch"))
+			{
+				s_batch_mode = true;
+				continue;
+			}
+			else if (CHECK_ARG("-nogui"))
+			{
+				s_batch_mode = true;
+				s_nogui_mode = true;
+				continue;
+			}
+			else if (CHECK_ARG("-fastboot"))
+			{
+				AutoBoot(autoboot)->fast_boot = true;
+				continue;
+			}
+			else if (CHECK_ARG("-slowboot"))
+			{
+				AutoBoot(autoboot)->fast_boot = false;
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("-state"))
+			{
+				AutoBoot(autoboot)->state_index = std::atoi(argv[++i]);
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("-statefile"))
+			{
+				AutoBoot(autoboot)->save_state = argv[++i];
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("-elf"))
+			{
+				AutoBoot(autoboot)->elf_override = argv[++i];
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("-disc"))
+			{
+				AutoBoot(autoboot)->source_type = CDVD_SourceType::Disc;
+				AutoBoot(autoboot)->filename = argv[++i];
+				continue;
+			}
+			else if (CHECK_ARG("-bios"))
+			{
+				AutoBoot(autoboot)->source_type = CDVD_SourceType::NoDisc;
+				continue;
+			}
+			else if (CHECK_ARG("-fullscreen"))
+			{
+				AutoBoot(autoboot)->fullscreen = true;
+				continue;
+			}
+			else if (CHECK_ARG("-nofullscreen"))
+			{
+				AutoBoot(autoboot)->fullscreen = false;
+				continue;
+			}
+			else if (CHECK_ARG("-earlyconsolelog"))
+			{
+				Host::InitializeEarlyConsole();
+				continue;
+			}
+			else if (CHECK_ARG("--"))
+			{
+				no_more_args = true;
+				continue;
+			}
+			else if (argv[i][0] == '-')
+			{
+				Host::InitializeEarlyConsole();
+				std::fprintf(stderr, "Unknown parameter: '%s'", argv[i]);
+				return false;
+			}
+
+#undef CHECK_ARG
+#undef CHECK_ARG_PARAM
+		}
+
+		if (!AutoBoot(autoboot)->filename.empty())
+			AutoBoot(autoboot)->filename += ' ';
+
+		AutoBoot(autoboot)->filename += argv[i];
+	}
+
+	// check autoboot parameters, if we set something like fullscreen without a bios
+	// or disc, we don't want to actually start.
+	if (autoboot && !autoboot->source_type.has_value() && autoboot->filename.empty() && autoboot->elf_override.empty())
+	{
+		Host::InitializeEarlyConsole();
+		Console.Warning("Skipping autoboot due to no boot parameters.");
+		autoboot.reset();
+	}
+
+	// if we don't have autoboot, we definitely don't want batch mode (because that'll skip
+	// scanning the game list).
+	if (s_batch_mode && !autoboot)
+	{
+		QMessageBox::critical(nullptr, QStringLiteral("Error"), s_nogui_mode ?
+			QStringLiteral("Cannot use no-gui mode, because no boot filename was specified.") :
+			QStringLiteral("Cannot use batch mode, because no boot filename was specified."));
+		return false;
+	}
+
+	return true;
+}
+
+#ifndef _WIN32
+
+// See note in EarlyHardwareChecks.cpp as to why we don't do this on Windows.
+static bool PerformEarlyHardwareChecks()
+{
+	// NOTE: No point translating this message, because the configuration isn't loaded yet, so we
+	// won't know which language to use, and loading the configuration uses float instructions.
+	const char* error;
+	if (VMManager::PerformEarlyHardwareChecks(&error))
+		return true;
+
+	QMessageBox::critical(nullptr, QStringLiteral("Hardware Check Failed"), QString::fromUtf8(error));
+	return false;
+}
+
+#endif
+
+static void RegisterTypes()
+{
+	qRegisterMetaType<std::optional<bool>>();
+	qRegisterMetaType<std::function<void()>>();
+	qRegisterMetaType<std::shared_ptr<VMBootParameters>>();
+	qRegisterMetaType<GSRendererType>();
+	qRegisterMetaType<InputBindingKey>();
+	qRegisterMetaType<CDVD_SourceType>();
+	qRegisterMetaType<const GameList::Entry*>();
+}
+
+int main(int argc, char* argv[])
+{
+	CrashHandler::Install();
+
+	QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+	QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+	QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+	RegisterTypes();
+
+	QApplication app(argc, argv);
+
+#ifndef _WIN32
+	if (!PerformEarlyHardwareChecks())
+		return EXIT_FAILURE;
+#endif
+
+	std::shared_ptr<VMBootParameters> autoboot;
+	if (!QtHost::ParseCommandLineOptions(argc, argv, autoboot))
+		return EXIT_FAILURE;
+
+	// Bail out if we can't find any config.
+	if (!QtHost::InitializeConfig())
+	{
+		// NOTE: No point translating this, because no config means the language won't be loaded anyway.
+		QMessageBox::critical(nullptr, QStringLiteral("Error"), QStringLiteral("Failed to initialize config."));
+		return EXIT_FAILURE;
+	}
+
+	// Set theme before creating any windows.
+	MainWindow::updateApplicationTheme();
+	MainWindow* main_window = new MainWindow(QApplication::style()->objectName());
+
+	// Start up the CPU thread.
+	QtHost::HookSignals();
+	EmuThread::start();
+
+	// Create all window objects, the emuthread might still be starting up at this point.
+	main_window->initialize();
+
+	// When running in batch mode, ensure game list is loaded, but don't scan for any new files.
+	if (!s_batch_mode)
+		main_window->refreshGameList(false);
+	else
+		GameList::Refresh(false, true);
+
+	// Don't bother showing the window in no-gui mode.
+	if (!s_nogui_mode)
+		main_window->show();
+
+	// Skip the update check if we're booting a game directly.
+	if (autoboot)
+		g_emu_thread->startVM(std::move(autoboot));
+	else
+		main_window->startupUpdateCheck();
+
+	// This doesn't return until we exit.
+	const int result = app.exec();
+
+	// Shutting down.
+	EmuThread::stop();
+	if (g_main_window)
+	{
+		g_main_window->close();
+		delete g_main_window;
+	}
+
+	// Ensure emulog is flushed.
+	if (emuLog)
+	{
+		std::fclose(emuLog);
+		emuLog = nullptr;
+	}
+
+	return result;
 }

@@ -38,7 +38,10 @@ void vu1ResetRegs()
 void vu1Finish(bool add_cycles) {
 	if (THREAD_VU1) {
 		//if (VU0.VI[REG_VPU_STAT].UL & 0x100) DevCon.Error("MTVU: VU0.VI[REG_VPU_STAT].UL & 0x100");
-		vu1Thread.WaitVU();
+		if (INSTANT_VU1 || add_cycles)
+		{
+			vu1Thread.WaitVU();
+		}
 		vu1Thread.Get_MTVUChanges();
 		return;
 	}
@@ -70,7 +73,6 @@ void vu1ExecMicro(u32 addr)
 		//	VU0.VI[REG_VPU_STAT].UL |= 0x0100;
 		// }
 		// Update 25/06/2022: Disabled this for now, let games YOLO it, if it breaks MTVU, disable MTVU (it doesn't work properly anyway) - Refraction
-
 		vu1Thread.ExecuteVU(addr, vif1Regs.top, vif1Regs.itop, VU0.VI[REG_FBRST].UL);
 		return;
 	}
@@ -89,4 +91,9 @@ void vu1ExecMicro(u32 addr)
 		CpuVU1->ExecuteBlock(1);
 	else
 		CpuVU1->Execute(vu1RunCycles);
+}
+
+void MTVUInterrupt()
+{
+	VU0.VI[REG_VPU_STAT].UL &= ~0xFF00;
 }

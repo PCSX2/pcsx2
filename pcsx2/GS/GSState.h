@@ -217,6 +217,7 @@ protected:
 	bool IsOpaque();
 	bool IsMipMapDraw();
 	bool IsMipMapActive();
+	bool IsCoverageAlpha();
 
 public:
 	GIFPath m_path[4];
@@ -326,7 +327,7 @@ public:
 	GSVector4i GetFrameMagnifiedRect(int i = -1);
 	GSVector2i GetResolutionOffset(int i = -1);
 	GSVector2i GetResolution();
-	GSVector4i GetFrameRect(int i = -1);
+	GSVector4i GetFrameRect(int i = -1, bool ignore_off = false);
 	GSVideoMode GetVideoMode();
 
 	bool IsEnabled(int i);

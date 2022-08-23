@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>657</width>
+    <width>658</width>
     <height>890</height>
    </rect>
   </property>
@@ -234,14 +234,21 @@
        <item row="6" column="0">
         <widget class="QLabel" name="label_26">
          <property name="text">
-          <string>Offset:</string>
+          <string>Crop:</string>
          </property>
         </widget>
        </item>
        <item row="6" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0,1">
+        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1,0,1,0,1,0,1">
          <item>
-          <widget class="QSpinBox" name="offsetX">
+          <widget class="QLabel" name="label_39">
+           <property name="text">
+            <string>Left:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="cropLeft">
            <property name="suffix">
             <string>px</string>
            </property>
@@ -253,12 +260,46 @@
          <item>
           <widget class="QLabel" name="label_25">
            <property name="text">
-            <string>x</string>
+            <string>Top:</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="offsetY">
+          <widget class="QSpinBox" name="cropTop">
+           <property name="suffix">
+            <string>px</string>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_40">
+           <property name="text">
+            <string>Right:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="cropRight">
+           <property name="suffix">
+            <string>px</string>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_41">
+           <property name="text">
+            <string>Bottom:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="cropBottom">
            <property name="suffix">
             <string>px</string>
            </property>
@@ -274,7 +315,7 @@
          <item row="1" column="0">
           <widget class="QCheckBox" name="vsync">
            <property name="text">
-            <string>Sync To Host Refresh (VSync)</string>
+            <string>VSync</string>
            </property>
           </widget>
          </item>
@@ -315,9 +356,6 @@
          </item>
          <item row="4" column="0">
           <widget class="QCheckBox" name="DisableInterlaceOffset">
-           <property name="toolTip">
-            <string>Disables interlacing offset which may reduce blurring in some situations.</string>
-           </property>
            <property name="text">
             <string>Disable Interlace Offset</string>
            </property>
@@ -604,38 +642,6 @@
          </item>
         </widget>
        </item>
-       <item row="9" column="0" colspan="2">
-        <layout class="QGridLayout" name="basicCheckboxGridLayout">
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="gpuPaletteConversion">
-           <property name="text">
-            <string>GPU Palette Conversion</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="conservativeBufferAllocation">
-           <property name="text">
-            <string>Conservative Buffer Allocation</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="accurateDATE">
-           <property name="text">
-            <string>Accurate Destination Alpha Test</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="enableHWFixes">
-           <property name="text">
-            <string>Manual Hardware Renderer Fixes</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
        <item row="8" column="0">
         <widget class="QLabel" name="label_20">
          <property name="text">
@@ -662,13 +668,38 @@
          </item>
         </widget>
        </item>
+       <item row="9" column="0" colspan="2">
+        <layout class="QGridLayout" name="basicCheckboxGridLayout">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="accurateDATE">
+           <property name="text">
+            <string>Accurate Destination Alpha Test</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="gpuPaletteConversion">
+           <property name="text">
+            <string>GPU Palette Conversion</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="enableHWFixes">
+           <property name="text">
+            <string>Manual Hardware Renderer Fixes</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
       </layout>
      </widget>
      <widget class="QGroupBox" name="hardwareFixesTab">
       <attribute name="title">
        <string>Hardware Fixes</string>
       </attribute>
-      <layout class="QFormLayout" name="formLayout_2">
+      <layout class="QFormLayout" name="hardwareFixesLayout">
        <item row="0" column="0">
         <widget class="QLabel" name="label_10">
          <property name="text">
@@ -859,7 +890,7 @@
       <attribute name="title">
        <string>Upscaling Fixes</string>
       </attribute>
-      <layout class="QFormLayout" name="formLayout_5">
+      <layout class="QFormLayout" name="upscalingFixesLayout">
        <item row="0" column="0">
         <widget class="QLabel" name="label_14">
          <property name="text">
@@ -918,16 +949,16 @@
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="label_16">
+        <widget class="QLabel" name="textureOffsetLabel">
          <property name="text">
           <string>Texture Offsets:</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,1">
+        <layout class="QHBoxLayout" name="textureOffsetLayout" stretch="0,1,0,1">
          <item>
-          <widget class="QLabel" name="label_17">
+          <widget class="QLabel" name="textureOffsetXLabel">
            <property name="text">
             <string>X:</string>
            </property>
@@ -941,7 +972,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_18">
+          <widget class="QLabel" name="textureOffsetYLabel">
            <property name="text">
             <string>Y:</string>
            </property>
@@ -1492,6 +1523,15 @@
    </item>
    <item>
     <widget class="QTabWidget" name="softwareRendererGroup">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>203</height>
+      </size>
+     </property>
      <property name="documentMode">
       <bool>true</bool>
      </property>
@@ -1500,40 +1540,76 @@
        <string>Rendering</string>
       </attribute>
       <layout class="QFormLayout" name="formLayout_3">
+       <item row="0" column="1">
+        <widget class="QComboBox" name="swTextureFiltering">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <item>
+          <property name="text">
+           <string>Nearest</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Bilinear (Forced)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Bilinear (PS2)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Bilinear (Forced excluding sprite)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
        <item row="0" column="0">
-        <widget class="QLabel" name="label_9">
+        <widget class="QLabel" name="label_37">
          <property name="text">
-          <string>Extra Rendering Threads:</string>
+          <string>Texture Filtering:</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item row="1" column="1">
         <widget class="QSpinBox" name="extraSWThreads">
          <property name="suffix">
           <string> threads</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="0" colspan="2">
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Extra Rendering Threads:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout_2">
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="swAutoFlush">
-           <property name="text">
-            <string>Auto Flush</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
+         <item row="0" column="1">
           <widget class="QCheckBox" name="swMipmap">
            <property name="text">
             <string>Mipmapping</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="swAA1">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="swAutoFlush">
            <property name="text">
-            <string>Edge Anti-Aliasing</string>
+            <string>Auto Flush</string>
            </property>
           </widget>
          </item>

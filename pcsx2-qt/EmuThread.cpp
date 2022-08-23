@@ -37,7 +37,6 @@
 #include "pcsx2/HostSettings.h"
 #include "pcsx2/PAD/Host/PAD.h"
 #include "pcsx2/PerformanceMetrics.h"
-#include "pcsx2/Recording/InputRecordingControls.h"
 #include "pcsx2/VMManager.h"
 
 #include "DisplayWidget.h"
@@ -108,7 +107,7 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 
 	// create the display, this may take a while...
 	m_is_fullscreen = boot_params->fullscreen.value_or(Host::GetBaseBoolSettingValue("UI", "StartFullscreen", false));
-	m_is_rendering_to_main = !Host::GetBaseBoolSettingValue("UI", "RenderToSeparateWindow", false);
+	m_is_rendering_to_main = shouldRenderToMain();
 	m_is_surfaceless = false;
 	m_save_state_on_shutdown = false;
 	if (!VMManager::Initialize(*boot_params))
@@ -147,10 +146,6 @@ void EmuThread::setVMPaused(bool paused)
 		QMetaObject::invokeMethod(this, "setVMPaused", Qt::QueuedConnection, Q_ARG(bool, paused));
 		return;
 	}
-
-	// if we were surfaceless (view->game list, system->unpause), get our display widget back
-	if (!paused && m_is_surfaceless)
-		setSurfaceless(false);
 
 	VMManager::SetPaused(paused);
 }
@@ -452,7 +447,7 @@ void EmuThread::checkForSettingChanges()
 
 	if (VMManager::HasValidVM())
 	{
-		const bool render_to_main = !Host::GetBaseBoolSettingValue("UI", "RenderToSeparateWindow", false);
+		const bool render_to_main = shouldRenderToMain();
 		if (!m_is_fullscreen && m_is_rendering_to_main != render_to_main)
 		{
 			m_is_rendering_to_main = render_to_main;
@@ -467,6 +462,11 @@ void EmuThread::checkForSettingChanges()
 
 	if (m_verbose_status != last_verbose_status)
 		updatePerformanceMetrics(true);
+}
+
+bool EmuThread::shouldRenderToMain() const
+{
+	return !Host::GetBaseBoolSettingValue("UI", "RenderToSeparateWindow", false) && !QtHost::InNoGUIMode();
 }
 
 void EmuThread::toggleSoftwareRendering()
@@ -839,6 +839,11 @@ void Host::OnVMResumed()
 	// exit the event loop when we eventually return
 	g_emu_thread->getEventLoop()->quit();
 	g_emu_thread->stopBackgroundControllerPollTimer();
+
+	// if we were surfaceless (view->game list, system->unpause), get our display widget back
+	if (g_emu_thread->isSurfaceless())
+		g_emu_thread->setSurfaceless(false);
+
 	emit g_emu_thread->onVMResumed();
 }
 
@@ -996,10 +1001,14 @@ void Host::RequestExit(bool save_state_if_running)
 	QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection);
 }
 
-void Host::RequestVMShutdown(bool save_state)
+void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state)
 {
-	if (VMManager::HasValidVM())
-		g_emu_thread->shutdownVM(save_state);
+	if (!VMManager::HasValidVM())
+		return;
+
+	// Run it on the host thread, that way we get the confirm prompt (if enabled).
+	QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection,
+		Q_ARG(bool, allow_confirm), Q_ARG(bool, allow_save_state), Q_ARG(bool, false));
 }
 
 bool Host::IsFullscreen()
@@ -1024,27 +1033,4 @@ SysMtgsThread& GetMTGS()
 // ------------------------------------------------------------------------
 
 BEGIN_HOTKEY_LIST(g_host_hotkeys)
-DEFINE_HOTKEY("ShutdownVM", "System", "Shut Down Virtual Machine", [](s32 pressed) {
-	if (!pressed)
-	{
-		// run it on the host thread, that way we get the confirm prompt (if enabled)
-		QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection,
-			Q_ARG(bool, true), Q_ARG(bool, true), Q_ARG(bool, true));
-	}
-})
-DEFINE_HOTKEY("TogglePause", "System", "Toggle Pause", [](s32 pressed) {
-	if (!pressed)
-		g_emu_thread->setVMPaused(VMManager::GetState() != VMState::Paused);
-})
-DEFINE_HOTKEY("ToggleFullscreen", "General", "Toggle Fullscreen", [](s32 pressed) {
-	if (!pressed)
-		g_emu_thread->toggleFullscreen();
-})
-// Input Recording Hot Keys
-DEFINE_HOTKEY("InputRecToggleMode", "Input Recording", "Toggle Recording Mode", [](s32 pressed) {
-	if (!pressed) // ?? - not pressed so it is on key up?
-	{
-		g_InputRecordingControls.RecordModeToggle();
-	}
-})
 END_HOTKEY_LIST()

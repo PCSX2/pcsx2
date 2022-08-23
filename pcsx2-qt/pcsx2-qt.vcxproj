@@ -167,7 +167,6 @@
     <ClCompile Include="AutoUpdaterDialog.cpp" />
     <ClCompile Include="DisplayWidget.cpp" />
     <ClCompile Include="QtHost.cpp" />
-    <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="PrecompiledHeader.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -265,6 +264,9 @@
     <QtUi Include="GameList\EmptyGameListWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="GameList\GameListWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="Settings\SettingsDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
@@ -333,6 +335,12 @@
     </QtUi>
   </ItemGroup>
   <ItemGroup>
+    <QtUi Include="Settings\ControllerMacroEditWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Settings\ControllerMacroWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <None Include="Settings\FolderSettingsWidget.ui" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

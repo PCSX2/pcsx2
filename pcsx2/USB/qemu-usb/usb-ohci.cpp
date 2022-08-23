@@ -1177,14 +1177,12 @@ void ohci_frame_boundary(void* opaque)
 	/* Process all the lists at the end of the frame */
 	/* if reset bit was set, don't process possibly invalid descriptors */
 	/* TODO intr_status is interrupts that driver wants, so not quite right to us it here */
-	bool hack = false; // ohci->intr_status & ohci->intr & OHCI_INTR_RHSC;
+	// ohci->intr_status & ohci->intr & OHCI_INTR_RHSC;
 
 	/* Process all the lists at the end of the frame */
-	if ((ohci->ctl & OHCI_CTL_PLE) && !hack)
+	if (ohci->ctl & OHCI_CTL_PLE)
 	{
-		int n;
-
-		n = ohci->frame_number & 0x1f;
+		const int n = ohci->frame_number & 0x1f;
 		ohci_service_ed_list(ohci, le32_to_cpu(hcca.intr[n]), 0);
 	}
 

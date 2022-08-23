@@ -2,11 +2,11 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="UserMacros">
     <BinaryOutputDir>$(SolutionDir)bin\</BinaryOutputDir>
-    <PCSX2QTDIRDefault Condition="'$(Platform)'=='x64'">$(SolutionDir)3rdparty\qt\6.3.0\msvc2019_64\</PCSX2QTDIRDefault>
-    <PCSX2QTDIRDefault Condition="'$(Platform)'=='ARM64'">$(SolutionDir)3rdparty\qt\6.3.0\msvc2019_arm64\</PCSX2QTDIRDefault>
+    <PCSX2QTDIRDefault Condition="'$(Platform)'=='x64'">$(SolutionDir)3rdparty\qt\6.3.1\msvc2022_64\</PCSX2QTDIRDefault>
+    <PCSX2QTDIRDefault Condition="'$(Platform)'=='ARM64'">$(SolutionDir)3rdparty\qt\6.3.1\msvc2022_arm64\</PCSX2QTDIRDefault>
     <PCSX2QTDIR Condition="Exists('$(PCSX2QTDIRDefault)') And ('$(PCSX2QTDIR)'=='' Or !Exists('$(PCSX2QTDIR)'))">$(PCSX2QTDIRDefault)</PCSX2QTDIR>
     <PCSX2QTDIR Condition="Exists('$(PCSX2QTDIR)') And !HasTrailingSlash('$(PCSX2QTDIR)')">$(PCSX2QTDIR)\</PCSX2QTDIR>
-    <PCSX2QTDIRHost>$(SolutionDir)3rdparty\qt\6.3.0\msvc2019_64\</PCSX2QTDIRHost>
+    <PCSX2QTDIRHost>$(SolutionDir)3rdparty\qt\6.3.1\msvc2022_64\</PCSX2QTDIRHost>
     <QtDirValid>false</QtDirValid>
     <QtDirValid Condition="Exists('$(PCSX2QTDIR)')">true</QtDirValid>
     <QtIncludeDir>$(PCSX2QTDIR)include\</QtIncludeDir>
@@ -32,7 +32,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(QtLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Qt6Core$(QtLibSuffix).lib;Qt6Gui$(QtLibSuffix).lib;Qt6Widgets$(QtLibSuffix).lib;Qt6Network$(QtLibSuffix).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Qt6Core$(QtLibSuffix).lib;Qt6Gui$(QtLibSuffix).lib;Qt6Widgets$(QtLibSuffix).lib;Qt6Network$(QtLibSuffix).lib;Qt6Concurrent$(QtLibSuffix).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 
@@ -118,7 +118,7 @@
 
   <!--Copy the needed dlls-->
   <ItemGroup>
-    <QtLibNames Include="Qt6Core$(QtLibSuffix);Qt6Gui$(QtLibSuffix);Qt6Widgets$(QtLibSuffix);Qt6Network$(QtLibSuffix);Qt6Svg$(QtLibSuffix)" />
+    <QtLibNames Include="Qt6Core$(QtLibSuffix);Qt6Gui$(QtLibSuffix);Qt6Widgets$(QtLibSuffix);Qt6Network$(QtLibSuffix);Qt6Svg$(QtLibSuffix);Qt6Concurrent$(QtLibSuffix)" />
     <QtDlls Include="@(QtLibNames -> '$(QtBinDir)%(Identity).dll')" />
     <!--Filter plugins to copy based on the observation that all debug versions end in "d"-->
     <QtAllPlugins Include="$(QtPluginsDir)**\*$(QtLibSuffix).dll" />

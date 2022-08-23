@@ -375,7 +375,7 @@ bool DisplayWidget::event(QEvent* event)
 		{
 			// Closing the separate widget will either cancel the close, or trigger shutdown.
 			// In the latter case, it's going to destroy us, so don't let Qt do it first.
-			QMetaObject::invokeMethod(g_main_window, "requestShutdown", Q_ARG(bool, true), Q_ARG(bool, false), Q_ARG(bool, false));
+			QMetaObject::invokeMethod(g_main_window, "requestShutdown", Q_ARG(bool, true), Q_ARG(bool, true), Q_ARG(bool, false));
 			event->ignore();
 			return true;
 		}
@@ -402,15 +402,24 @@ DisplayContainer::DisplayContainer()
 
 DisplayContainer::~DisplayContainer() = default;
 
-bool DisplayContainer::IsNeeded(bool fullscreen, bool render_to_main)
+bool DisplayContainer::isNeeded(bool fullscreen, bool render_to_main)
 {
 #if defined(_WIN32) || defined(__APPLE__)
 	return false;
 #else
-	if (!fullscreen && render_to_main)
+	if (!isRunningOnWayland())
 		return false;
 
 	// We only need this on Wayland because of client-side decorations...
+	return (fullscreen || !render_to_main);
+#endif
+}
+
+bool DisplayContainer::isRunningOnWayland()
+{
+#if defined(_WIN32) || defined(__APPLE__)
+	return false;
+#else
 	const QString platform_name = QGuiApplication::platformName();
 	return (platform_name == QStringLiteral("wayland"));
 #endif
@@ -438,7 +447,7 @@ bool DisplayContainer::event(QEvent* event)
 	{
 		// Closing the separate widget will either cancel the close, or trigger shutdown.
 		// In the latter case, it's going to destroy us, so don't let Qt do it first.
-		QMetaObject::invokeMethod(g_main_window, "requestShutdown", Q_ARG(bool, true), Q_ARG(bool, false), Q_ARG(bool, false));
+		QMetaObject::invokeMethod(g_main_window, "requestShutdown", Q_ARG(bool, true), Q_ARG(bool, true), Q_ARG(bool, false));
 		event->ignore();
 		return true;
 	}

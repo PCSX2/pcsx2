@@ -96,6 +96,7 @@ namespace GameList
 	};
 
 	const char* EntryTypeToString(EntryType type);
+	const char* EntryTypeToDisplayString(EntryType type);
 	const char* RegionToString(Region region);
 	const char* EntryCompatibilityRatingToString(CompatibilityRating rating);
 
@@ -117,7 +118,11 @@ namespace GameList
 	u32 GetEntryCount();
 
 	bool IsGameListLoaded();
-	void Refresh(bool invalidate_cache, ProgressCallback* progress = nullptr);
+
+	/// Populates the game list with files in the configured directories.
+	/// If invalidate_cache is set, all files will be re-scanned.
+	/// If only_cache is set, no new files will be scanned, only those present in the cache.
+	void Refresh(bool invalidate_cache, bool only_cache = false, ProgressCallback* progress = nullptr);
 
 	std::string GetCoverImagePathForEntry(const Entry* entry);
 	std::string GetCoverImagePath(const std::string& path, const std::string& code, const std::string& title);

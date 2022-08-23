@@ -22,7 +22,6 @@ target_sources(pcsx2-qt PRIVATE
 	EarlyHardwareCheck.cpp
 	EmuThread.cpp
 	EmuThread.h
-	Main.cpp
 	MainWindow.cpp
 	MainWindow.h
 	MainWindow.ui
@@ -57,6 +56,8 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/ControllerGlobalSettingsWidget.cpp
 	Settings/ControllerGlobalSettingsWidget.h
 	Settings/ControllerGlobalSettingsWidget.ui
+	Settings/ControllerMacroEditWidget.ui
+	Settings/ControllerMacroWidget.ui
 	Settings/ControllerSettingsDialog.cpp
 	Settings/ControllerSettingsDialog.h
 	Settings/ControllerSettingsDialog.ui

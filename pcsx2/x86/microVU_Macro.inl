@@ -460,6 +460,7 @@ static void recCTC2()
 			break; // Read Only Regs
 		case REG_R:
 			xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+			xAND(eax, 0x7FFFFF);
 			xOR(eax, 0x3f800000);
 			xMOV(ptr32[&vu0Regs.VI[REG_R].UL], eax);
 			break;

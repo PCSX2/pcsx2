@@ -30,7 +30,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PrecompiledHeader.cpp" />
-    <ClCompile Include="Main.cpp" />
     <ClCompile Include="QtHost.cpp" />
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="$(IntDir)moc_MainWindow.cpp">
@@ -399,9 +398,18 @@
     <QtUi Include="GameList\EmptyGameListWidget.ui">
       <Filter>GameList</Filter>
     </QtUi>
+    <QtUi Include="GameList\GameListWidget.ui">
+      <Filter>GameList</Filter>
+    </QtUi>
     <QtUi Include="AutoUpdaterDialog.ui" />
     <QtUi Include="Tools\InputRecording\NewInputRecordingDlg.ui">
       <Filter>Tools\Input Recording</Filter>
+    </QtUi>
+    <QtUi Include="Settings\ControllerMacroWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\ControllerMacroEditWidget.ui">
+      <Filter>Settings</Filter>
     </QtUi>
   </ItemGroup>
   <ItemGroup>

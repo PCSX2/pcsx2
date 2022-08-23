@@ -67,6 +67,7 @@ target_sources(common PRIVATE
 	FileSystem.h
 	General.h
 	HashCombine.h
+	LRUCache.h
 	MemcpyFast.h
 	MemsetFast.inl
 	MD5Digest.h

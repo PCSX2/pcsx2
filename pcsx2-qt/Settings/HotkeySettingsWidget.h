@@ -20,8 +20,9 @@
 #include <array>
 #include <vector>
 
-class QTabWidget;
+class QScrollArea;
 class QGridLayout;
+class QVBoxLayout;
 
 class ControllerSettingsDialog;
 
@@ -38,12 +39,9 @@ private:
 	void createButtons();
 
 	ControllerSettingsDialog* m_dialog;
-	QTabWidget* m_tab_widget;
+	QScrollArea* m_scroll_area = nullptr;
+	QWidget* m_container = nullptr;
+	QVBoxLayout* m_layout = nullptr;
 
-	struct Category
-	{
-		QWidget* container;
-		QGridLayout* layout;
-	};
-	QMap<QString, Category> m_categories;
+	QMap<QString, QGridLayout*> m_categories;
 };

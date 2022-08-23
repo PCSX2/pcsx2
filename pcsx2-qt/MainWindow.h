@@ -79,6 +79,9 @@ public:
 	explicit MainWindow(const QString& unthemed_style_name);
 	~MainWindow();
 
+	/// Sets application theme according to settings.
+	static void updateApplicationTheme();
+
 	void initialize();
 	void connectVMThreadSignals(EmuThread* thread);
 	void startupUpdateCheck();
@@ -143,8 +146,7 @@ private Q_SLOTS:
 	void onAboutActionTriggered();
 	void onCheckForUpdatesActionTriggered();
 	void onToolsOpenDataDirectoryTriggered();
-	void onThemeChanged();
-	void onThemeChangedFromSettings();
+	void updateTheme();
 	void onLoggingOptionChanged();
 	void onScreenshotActionTriggered();
 	void onSaveGSDumpActionTriggered();
@@ -178,10 +180,11 @@ private:
 		NUM_SAVE_STATE_SLOTS = 10,
 	};
 
+	static void setStyleFromSettings();
+	static void setIconThemeFromStyle();
+
 	void setupAdditionalUi();
 	void connectSignals();
-	void setStyleFromSettings();
-	void setIconThemeFromStyle();
 
 	void saveStateToConfig();
 	void restoreStateFromConfig();
@@ -197,13 +200,16 @@ private:
 	bool isRenderingFullscreen() const;
 	bool isRenderingToMain() const;
 	bool shouldHideMouseCursor() const;
+	bool shouldHideMainWindow() const;
 	void switchToGameListView();
 	void switchToEmulationView();
 
+	QWidget* getContentParent();
 	QWidget* getDisplayContainer() const;
 	void saveDisplayWindowGeometryToConfig();
 	void restoreDisplayWindowGeometryFromConfig();
-	void destroyDisplayWidget();
+	void createDisplayWidget(bool fullscreen, bool render_to_main, bool is_exclusive_fullscreen);
+	void destroyDisplayWidget(bool show_game_list);
 	void setDisplayFullscreen(const std::string& fullscreen_mode);
 
 	SettingsDialog* getSettingsDialog();

@@ -679,7 +679,7 @@ void ps_color_clamp_wrap(inout vec3 C)
     // Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
     // GS: Color = 1, Alpha = 255 => output 1
     // GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-#if PS_DFMT == FMT_16 && (PS_HDR == 1 || PS_BLEND_MIX == 0)
+#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0
     // In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
     C = vec3(ivec3(C) & ivec3(0xF8));
 #elif PS_COLCLIP == 1 && PS_HDR == 0
@@ -689,7 +689,7 @@ void ps_color_clamp_wrap(inout vec3 C)
 #endif
 }
 
-void ps_blend(inout vec4 Color, float As)
+void ps_blend(inout vec4 Color, inout float As)
 {
 #if SW_BLEND
 
@@ -754,14 +754,41 @@ void ps_blend(inout vec4 Color, float As)
 #endif
 
     // As/Af clamp alpha for Blend mix
-#if PS_BLEND_MIX
-    C = min(C, float(1.0f));
+    // We shouldn't clamp blend mix with clr1 as we want alpha higher
+#if PS_BLEND_MIX > 0 && PS_CLR_HW != 1
+    C = min(C, 1.0f);
 #endif
 
 #if PS_BLEND_A == PS_BLEND_B
     Color.rgb = D;
+// In blend_mix, HW adds on some alpha factor * dst.
+// Truncating here wouldn't quite get the right result because it prevents the <1 bit here from combining with a <1 bit in dst to form a ≥1 amount that pushes over the truncation.
+// Instead, apply an offset to convert HW's round to a floor.
+// Since alpha is in 1/128 increments, subtracting (0.5 - 0.5/128 == 127/256) would get us what we want if GPUs blended in full precision.
+// But they don't.  Details here: https://github.com/PCSX2/pcsx2/pull/6809#issuecomment-1211473399
+// Based on the scripts at the above link, the ideal choice for Intel GPUs is 126/256, AMD 120/256.  Nvidia is a lost cause.
+// 124/256 seems like a reasonable compromise, providing the correct answer 99.3% of the time on Intel (vs 99.6% for 126/256), and 97% of the time on AMD (vs 97.4% for 120/256).
+#elif PS_BLEND_MIX == 2
+    Color.rgb = ((A - B) * C + D) + (124.0f/256.0f);
+#elif PS_BLEND_MIX == 1
+    Color.rgb = ((A - B) * C + D) - (124.0f/256.0f);
 #else
     Color.rgb = trunc((A - B) * C + D);
+#endif
+
+#if PS_CLR_HW == 1
+    // Replace Af with As so we can do proper compensation for Alpha.
+#if PS_BLEND_C == 2
+    As = Af;
+#endif
+    // Subtract 1 for alpha to compensate for the changed equation,
+    // if c.rgb > 255.0f then we further need to adjust alpha accordingly,
+    // we pick the lowest overflow from all colors because it's the safest,
+    // we divide by 255 the color because we don't know Cd value,
+    // changed alpha should only be done for hw blend.
+    float min_color = min(min(Color.r, Color.g), Color.b);
+    float alpha_compensate = max(1.0f, min_color / 255.0f);
+    As -= alpha_compensate;
 #endif
 
 #else
@@ -903,6 +930,12 @@ void ps_main()
 #endif
 
     // Must be done before alpha correction
+
+   // AA (Fixed one) will output a coverage of 1.0 as alpha
+#if PS_FIXED_ONE_A
+   C.a = 128.0f;
+#endif
+
 #if (PS_BLEND_C == 1 && PS_CLR_HW > 3)
 #if HAS_FRAMEBUFFER_FETCH
     vec4 RT = trunc(LAST_FRAG_COLOR * 255.0f + 0.1f);

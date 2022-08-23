@@ -40,12 +40,11 @@ Q_DECLARE_METATYPE(CDVD_SourceType);
 
 namespace QtHost
 {
-	bool Initialize();
-	void Shutdown();
-
 	/// Sets batch mode (exit after game shutdown).
 	bool InBatchMode();
-	void SetBatchMode(bool enabled);
+
+	/// Sets NoGUI mode (implys batch mode, does not display main window, exits on shutdown).
+	bool InNoGUIMode();
 
 	/// Executes a function on the UI thread.
 	void RunOnUIThread(const std::function<void()>& func, bool block = false);

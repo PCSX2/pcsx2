@@ -249,7 +249,7 @@ namespace Host
 	void RequestExit(bool save_state_if_running);
 
 	/// Requests shut down of the current virtual machine.
-	void RequestVMShutdown(bool save_state);
+	void RequestVMShutdown(bool allow_confirm, bool allow_save_state);
 
 	/// Returns true if the hosting application is currently fullscreen.
 	bool IsFullscreen();
