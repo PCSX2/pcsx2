@@ -42840,6 +42840,8 @@ SLUS-21034:
 SLUS-21035:
   name: "Major League Baseball 2K5"
   region: "NTSC-U"
+  clampModes:
+    eeClampMode: 2 # Fixes hang when the baseball hits the ground.
   patches:
     2243ce1d:
       content: |-
@@ -44307,6 +44309,8 @@ SLUS-21323:
 SLUS-21324:
   name: "Major League Baseball 2K5 [World Series Edition]"
   region: "NTSC-U"
+  clampModes:
+    eeClampMode: 2 # Fixes hang when the baseball hits the ground.
   patches:
     D592B291:
       content: |-
