@@ -50,9 +50,8 @@ static wxString i18n_GetBetterLanguageName( const wxLanguageInfo* info )
 }
 
 LangPackEnumeration::LangPackEnumeration( wxLanguage langId )
+	: wxLangId(langId)
 {
-	wxLangId = langId;
-
 	if (const wxLanguageInfo* info = wxLocale::GetLanguageInfo( wxLangId ))
 	{
 		canonicalName = info->CanonicalName;
@@ -61,12 +60,10 @@ LangPackEnumeration::LangPackEnumeration( wxLanguage langId )
 }
 
 LangPackEnumeration::LangPackEnumeration()
+	: wxLangId(wxLANGUAGE_DEFAULT)
+	, canonicalName(L"default")
+	, englishName(L"System Default" + _(" (default)"))
 {
-	wxLangId = wxLANGUAGE_DEFAULT;
-	englishName = L"System Default";
-	englishName += _(" (default)");
-	canonicalName = L"default";
-
 	int sysLang = wxLocale::GetSystemLanguage();
 
 	if (sysLang == wxLANGUAGE_UNKNOWN)

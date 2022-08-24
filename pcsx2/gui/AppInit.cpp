@@ -677,6 +677,10 @@ protected:
 
 Pcsx2App::Pcsx2App()
 	: SysExecutorThread(new SysEvtHandler())
+	, m_id_MainFrame(wxID_ANY)
+	, m_id_GsFrame(wxID_ANY)
+	, m_id_ProgramLogBox(wxID_ANY)
+	, m_id_Disassembler(wxID_ANY)
 {
 // Warning: Do not delete this comment block! Gettext will parse it to allow
 // the translation of some wxWidget internal strings. -- greg
@@ -717,10 +721,6 @@ Pcsx2App::Pcsx2App()
 	m_UseGUI = true;
 	m_NoGuiExitPrompt = true;
 
-	m_id_MainFrame = wxID_ANY;
-	m_id_GsFrame = wxID_ANY;
-	m_id_ProgramLogBox = wxID_ANY;
-	m_id_Disassembler = wxID_ANY;
 	m_ptr_ProgramLog = NULL;
 
 	SetAppName(L"PCSX2");
