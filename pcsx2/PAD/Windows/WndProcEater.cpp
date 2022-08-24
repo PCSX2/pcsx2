@@ -18,14 +18,12 @@
 #include "WndProcEater.h"
 
 WndProcEater::WndProcEater()
+	: hWndEaten(0)
+	, eatenWndProc(0)
+	, extraProcs(0)
+	, numExtraProcs(0)
+	, hMutex(CreateMutex(0, 0, L"PAD"))
 {
-	hWndEaten = 0;
-	eatenWndProc = 0;
-
-	extraProcs = 0;
-	numExtraProcs = 0;
-
-	hMutex = CreateMutex(0, 0, L"PAD");
 }
 
 WndProcEater::~WndProcEater() throw()
