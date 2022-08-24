@@ -123,13 +123,13 @@ time_t MemoryCardFileEntryDateTime::ToTime() const
 }
 
 FolderMemoryCard::FolderMemoryCard()
+	: m_framesUntilFlush(0)
+	, m_timeLastWritten(0)
+	, m_slot(0)
+	, m_isEnabled(false)
+	, m_performFileWrites(false)
+	, m_filteringEnabled(false)
 {
-	m_slot = 0;
-	m_isEnabled = false;
-	m_performFileWrites = false;
-	m_framesUntilFlush = 0;
-	m_timeLastWritten = 0;
-	m_filteringEnabled = false;
 }
 
 void FolderMemoryCard::InitializeInternalData()
