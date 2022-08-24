@@ -2423,13 +2423,12 @@ bool GSTextureCache::Source::ClutMatch(const PaletteKey& palette_key)
 GSTextureCache::Target::Target(const GIFRegTEX0& TEX0, const bool depth_supported, const int type)
 	: m_type(type)
 	, m_used(false)
+	, m_valid(GSVector4i::zero())
 	, m_depth_supported(depth_supported)
 {
 	m_TEX0 = TEX0;
 	m_32_bits_fmt |= (GSLocalMemory::m_psm[TEX0.PSM].trbpp != 16);
 	m_dirty_alpha = GSLocalMemory::m_psm[TEX0.PSM].trbpp != 24;
-
-	m_valid = GSVector4i::zero();
 }
 
 void GSTextureCache::Target::Update()
