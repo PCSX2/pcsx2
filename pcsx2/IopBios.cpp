@@ -69,7 +69,7 @@ static std::string hostRoot;
 void Hle_SetElfPath(const char* elfFileName)
 {
 	DevCon.WriteLn("HLE Host: Will load ELF: %s\n", elfFileName);
-	hostRoot = Path::ToNativePath(Path::GetDirectory(elfFileName)) + FS_OSPATH_SEPARATOR_STR;
+	hostRoot = Path::ToNativePath(Path::GetDirectory(elfFileName));
 	Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", hostRoot.c_str());
 }
 
@@ -98,26 +98,35 @@ namespace R3000A
 #define FIO_SO_IFREG 0x0010
 #define FIO_SO_IFDIR 0x0020
 
-	static std::string host_path(const std::string& path)
+	static std::string host_path(const std::string& path, bool allow_open_host_root)
 	{
 		// We are NOT allowing to use the root of the host unit.
 		// For now it just supports relative folders from the location of the elf
 		std::string native_path(Path::Canonicalize(path));
 		std::string new_path;
-		if (StringUtil::StartsWith(native_path, hostRoot))
+		if (!hostRoot.empty() && StringUtil::StartsWith(native_path, hostRoot))
 			new_path = std::move(native_path);
-		else // relative paths
+		else if (!hostRoot.empty()) // relative paths
 			new_path = Path::Combine(hostRoot, native_path);
 
 		// Double-check that it falls within the directory of the elf.
 		// Not a real sandbox, but emulators shouldn't be treated as such. Don't run untrusted code!
 		std::string canonicalized_path(Path::Canonicalize(new_path));
-		if (!StringUtil::StartsWith(canonicalized_path, hostRoot))
+
+		// Are we opening the root of host? (i.e. `host:.` or `host:`)
+		// We want to allow this as a directory open, but not as a file open.
+		if (!allow_open_host_root || canonicalized_path != hostRoot)
 		{
-			Console.Error(fmt::format(
-				"IopHLE: Denying access to path outside of ELF directory. Requested path: '{}', Resolved path: '{}', ELF directory: '{}'",
-				path, new_path, hostRoot));
-			new_path.clear();
+			// Only allow descendants of the hostfs directory.
+			if (canonicalized_path.length() <= hostRoot.length() || // Length has to be equal or longer,
+				!StringUtil::StartsWith(canonicalized_path, hostRoot) || // and start with the host root,
+				canonicalized_path[hostRoot.length()] != FS_OSPATH_SEPARATOR_CHARACTER) // and we can't access a sibling.
+			{
+				Console.Error(fmt::format(
+					"IopHLE: Denying access to path outside of ELF directory. Requested path: '{}', Resolved path: '{}', ELF directory: '{}'",
+					path, new_path, hostRoot));
+				new_path.clear();
+			}
 		}
 
 		return new_path;
@@ -136,7 +145,7 @@ namespace R3000A
 	static int host_stat(const std::string path, fio_stat_t* host_stats)
 	{
 		struct stat file_stats;
-		const std::string file_path(host_path(path));
+		const std::string file_path(host_path(path, true));
 
 		if (!FileSystem::StatFile(file_path.c_str(), &file_stats))
 			return -IOP_ENOENT;
@@ -227,7 +236,7 @@ namespace R3000A
 		static int open(IOManFile** file, const std::string& full_path, s32 flags, u16 mode)
 		{
 			const std::string path(full_path.substr(full_path.find(':') + 1));
-			const std::string file_path(host_path(path));
+			const std::string file_path(host_path(path, false));
 			int native_flags = O_BINARY; // necessary in Windows.
 
 			switch (flags & IOP_O_RDWR)
@@ -325,7 +334,7 @@ namespace R3000A
 		static int open(IOManDir** dir, const std::string& full_path)
 		{
 			std::string relativePath = full_path.substr(full_path.find(':') + 1);
-			std::string path = host_path(relativePath);
+			std::string path = host_path(relativePath, true);
 
 			FileSystem::FindResultsArray results;
 			if (!FileSystem::FindFiles(path.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_HIDDEN_FILES, &results))
@@ -345,7 +354,7 @@ namespace R3000A
 				return 0;
 
 			StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
-			host_stat(host_path(Path::Combine(basedir, dir->FileName)), &hostcontent->stat);
+			host_stat(host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
 
 			static_cast<void>(std::next(dir)); /* This is for avoid warning of non used return value */
 			return 1;
@@ -609,7 +618,7 @@ namespace R3000A
 
 			if (is_host(path))
 			{
-				const std::string full_path = host_path(path.substr(path.find(':') + 1));
+				const std::string full_path = host_path(path.substr(path.find(':') + 1), true);
 				char buf[sizeof(fio_stat_t)];
 				v0 = host_stat(full_path, (fio_stat_t*)&buf);
 
@@ -646,7 +655,7 @@ namespace R3000A
 			if (is_host(full_path))
 			{
 				const std::string path = full_path.substr(full_path.find(':') + 1);
-				const std::string file_path(host_path(path));
+				const std::string file_path(host_path(path, false));
 				const bool succeeded = FileSystem::DeleteFilePath(file_path.c_str());
 				if (!succeeded)
 					Console.Warning("IOPHLE remove_HLE failed for '%s'", file_path.c_str());
@@ -663,7 +672,7 @@ namespace R3000A
 			if (is_host(full_path))
 			{
 				const std::string path = full_path.substr(full_path.find(':') + 1);
-				const std::string folder_path(host_path(path));
+				const std::string folder_path(host_path(path, false)); // NOTE: Don't allow creating the ELF directory.
 				const bool succeeded = FileSystem::CreateDirectoryPath(folder_path.c_str(), false);
 				if (!succeeded)
 					Console.Warning("IOPHLE mkdir_HLE failed for '%s'", folder_path.c_str());
@@ -704,7 +713,7 @@ namespace R3000A
 			if (is_host(full_path))
 			{
 				const std::string path = full_path.substr(full_path.find(':') + 1);
-				const std::string folder_path(host_path(path));
+				const std::string folder_path(host_path(path, false)); // NOTE: Don't allow removing the elf directory itself.
 				const bool succeeded = FileSystem::DeleteDirectory(folder_path.c_str());
 				if (!succeeded)
 					Console.Warning("IOPHLE rmdir_HLE failed for '%s'", folder_path.c_str());
