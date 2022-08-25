@@ -81,6 +81,9 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.overlap, "Soundtouch", "OverlapMS", DEFAULT_SOUNDTOUCH_OVERLAP);
 	connect(m_ui.overlap, &QSlider::valueChanged, this, &AudioSettingsWidget::updateTimestretchOverlapLabel);
 
+	m_ui.label_3b->setVisible(false);
+	m_ui.dplLevel->setVisible(false);
+
 	updateVolumeLabel();
 	updateLatencyLabel();
 	updateTimestretchSequenceLengthLabel();
