@@ -390,6 +390,22 @@ bool GSC_BurnoutGames(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_MidnightClub3(const GSFrameInfo& fi, int& skip)
+{
+	if (skip == 0)
+	{
+		if (fi.TME && (fi.FBP > 0x01d00 && fi.FBP <= 0x02a00) && fi.FPSM == PSM_PSMCT32 && (fi.FBP >= 0x01600 && fi.FBP < 0x03260) && fi.TPSM == PSM_PSMT8H)
+		{
+			// Vram usage.
+			// Tested: tokyo default cruise.
+			// Move around a bit, stop car, wait as vram goes down, start moving again, vram spike.
+			skip = 1;
+		}
+	}
+
+	return true;
+}
+
 bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -831,6 +847,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::KnightsOfTheTemple2] = GSC_KnightsOfTheTemple2;
 		lut[CRC::Kunoichi] = GSC_Kunoichi;
 		lut[CRC::Manhunt2] = GSC_Manhunt2;
+		lut[CRC::MidnightClub3] = GSC_MidnightClub3;
 		lut[CRC::SacredBlaze] = GSC_SacredBlaze;
 		lut[CRC::SakuraTaisen] = GSC_SakuraTaisen;
 		lut[CRC::SakuraWarsSoLongMyLove] = GSC_SakuraWarsSoLongMyLove;

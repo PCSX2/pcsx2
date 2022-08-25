@@ -225,6 +225,9 @@ const CRC::Game CRC::m_games[] =
 	{0xDDF76A98, BurnoutGames, JP, 0}, // BurnoutDominator
 	{0x8C9576B4, BurnoutGames, EU, 0}, // BurnoutDominator
 	{0x8C9C76B4, BurnoutGames, EU, 0}, // BurnoutDominator
+	{0x4A0E5B3A, MidnightClub3, US, 0}, // dub
+	{0xEBE1972D, MidnightClub3, EU, 0}, // dub
+	{0x60A42FF5, MidnightClub3, US, 0}, // remix
 	{0x43AB7214, TalesOfLegendia, US, 0},
 	{0x1F8640E0, TalesOfLegendia, JP, 0},
 	{0xE4F5DA2B, TalesOfLegendia, KO, 0},
