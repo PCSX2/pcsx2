@@ -877,7 +877,7 @@ bool GSDevice12::GetSampler(D3D12::DescriptorHandle* cpu_handle, GSHWDrawConfig:
 
 	D3D12_SAMPLER_DESC sd = {};
 	const int anisotropy = GSConfig.MaxAnisotropy;
-	if (GSConfig.MaxAnisotropy > 1 && ss.aniso)
+	if (anisotropy > 1 && ss.aniso)
 	{
 		sd.Filter = D3D12_FILTER_ANISOTROPIC;
 	}
