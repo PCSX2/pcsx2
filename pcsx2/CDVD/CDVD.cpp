@@ -297,10 +297,10 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 			// MAME ROMs will only have the NVM dump available so this is required for compatibility.
 			std::fseek(fpIlink.get(), 0x1e0, SEEK_SET);
 			std::fread(ILinkID_Data, 1, 8, fpIlink.get());
-			Console.WriteLn("ILINK ID MAME type\n");
+			Console.WriteLn("ILINK ID MAME type");
 		} else if (FileSystem::FSize64(fpIlink.get()) == 8) {
 			std::fread(ILinkID_Data, 1, 8, fpIlink.get());
-			Console.WriteLn("ILINK ID OLD type\n");
+			Console.WriteLn("ILINK ID OLD type");
 		}
 
 		NVMLayout* nvmLayout = getNvmLayout();
@@ -832,7 +832,7 @@ static uint cdvdRotationalLatency(CDVD_MODE_TYPE mode)
 	{
 		const float rotationPerSecond = static_cast<float>(((mode == MODE_CDROM) ? CD_MIN_ROTATION_X1 : DVD_MIN_ROTATION_X1) * cdvd.Speed) / 60.0f;
 		const float msPerRotation = 1000.0f / rotationPerSecond;
-		
+
 		return ((PSXCLK / 1000) * msPerRotation);
 	}
 	else

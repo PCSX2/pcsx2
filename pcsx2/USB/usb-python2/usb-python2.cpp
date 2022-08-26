@@ -342,12 +342,12 @@ namespace usb_python2
 		if (((~calc_crc8(temp, 0x1f, 0xff)) & 0xff) == temp[0x1f] && calc_crc8(temp + 0x20, 7, 0) == temp[0x27]) {
 			memcpy(payload, temp, 0x20);
 			memcpy(serial, temp + 0x20, 8);
-			Console.WriteLn("Dongle type MAME\n");
+			Console.WriteLn("Dongle type MAME");
 			is_valid = true;
 		} else if (calc_crc8(temp, 7, 0) == temp[7] && ((~calc_crc8(temp + 8, 0x1f, 0xff)) & 0xff) == temp[0x27]) {
 			memcpy(serial, temp, 8);
 			memcpy(payload, temp + 8, 0x20);
-			Console.WriteLn("Dongle type OLD\n");
+			Console.WriteLn("Dongle type OLD");
 			is_valid = true;
 		}
 
@@ -356,7 +356,7 @@ namespace usb_python2
 			memcpy(output + 8, payload, 32);
 		} else {
 			memset(output, 0, 40);
-			Console.Error("Dongle BAD: invalid CRC values\n");
+			Console.Error("Dongle BAD: invalid CRC values");
 		}
 
 		return is_valid;
@@ -688,7 +688,7 @@ namespace usb_python2
 			}
 			else if (header->cmd == P2IO_CMD_READ_DIPSWITCH)
 			{
-				Python2ConVerbose.WriteLn("P2IO_CMD_READ_DIPSWITCH %02x\n", s->buf[4]);
+				Python2ConVerbose.WriteLn("P2IO_CMD_READ_DIPSWITCH %02x", s->buf[4]);
 
 				uint8_t val = 0;
 				for (size_t i = 0; i < 4; i++)
