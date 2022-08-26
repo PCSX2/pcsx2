@@ -265,9 +265,9 @@ std::string FileMcd_GetDefaultName(uint slot)
 }
 
 FileMemoryCard::FileMemoryCard()
+	: m_chkaddr(0)
 {
 	memset8<0xff>(m_effeffs);
-	m_chkaddr = 0;
 }
 
 void FileMemoryCard::Open()

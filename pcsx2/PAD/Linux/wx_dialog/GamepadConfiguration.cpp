@@ -18,9 +18,9 @@
 GamepadConfiguration::GamepadConfiguration(int pad, wxWindow* parent)
 	: wxDialog(parent, wxID_ANY, _T("Gamepad"), wxDefaultPosition, wxDefaultSize,
 			   wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN)
-{
-	m_pad_id = pad;
+	, m_pad_id(pad)
 
+{
 	wxBoxSizer* gamepad_box = new wxBoxSizer(wxVERTICAL);
 
 	wxArrayString choices;

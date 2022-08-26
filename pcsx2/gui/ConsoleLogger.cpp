@@ -387,13 +387,13 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	, m_timer_FlushUnlocker( this )
 	, m_ColorTable( options.FontSize )
 
+	, m_pendingFlushMsg(false)
+	, m_WaitingThreadsForFlush(0)
 	, m_QueueColorSection( "ConsoleLog::QueueColorSection" )
 	, m_QueueBuffer( "ConsoleLog::QueueBuffer" )
 	, m_threadlogger( EnableThreadedLoggingTest ? new ConsoleTestThread() : NULL )
 {
 	m_CurQueuePos				= 0;
-	m_WaitingThreadsForFlush	= 0;
-	m_pendingFlushMsg			= false;
 	m_FlushRefreshLocked		= false;
 
 	// create Log menu (contains most options)
