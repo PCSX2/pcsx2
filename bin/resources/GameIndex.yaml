@@ -552,6 +552,8 @@ SCAJ-20020:
 SCAJ-20021:
   name: "Metal Slug 3"
   region: "NTSC-Unk"
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Stops excessive VRAM usage with preloading on.
 SCAJ-20022:
   name: "Super Robot Wars - Alpha 2nd"
   region: "NTSC-Unk"
@@ -2591,7 +2593,7 @@ SCES-50000:
     textureInsideRT: 1
     halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
     roundSprite: 1 # Fixes ui and hud alignment.
-    texturePreloading: 0 # Disabling for major speedup.
+    gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
 SCES-50001:
   name: "Tekken Tag Tournament"
   region: "PAL-M5"
@@ -8661,7 +8663,7 @@ SLED-50117:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    texturePreloading: 1 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
 SLED-50286:
   name: "Red Faction [Demo]"
   region: "PAL-E"
@@ -9752,21 +9754,21 @@ SLES-50383:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    texturePreloading: 1 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
 SLES-50384:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-I"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    texturePreloading: 1 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
 SLES-50385:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-S"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    texturePreloading: 1 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
 SLES-50386:
   name: "Crash Bandicoot - Wrath of Cortex"
   region: "PAL-M6"
@@ -13789,6 +13791,7 @@ SLES-52372:
     cpuSpriteRenderBW: 1 # Fixes textures.
     autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 1 # Fixes shadows.
+    gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLES-52373:
   name: "Champions of Norrath"
   region: "PAL-E-S"
@@ -13939,6 +13942,7 @@ SLES-52447:
     cpuSpriteRenderBW: 1 # Fixes textures.
     autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 1 # Fixes shadows.
+    gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLES-52448:
   name: "Knights of the Temple"
   region: "PAL-M4"
@@ -14043,6 +14047,7 @@ SLES-52493:
     cpuSpriteRenderBW: 1 # Fixes textures.
     autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 1 # Fixes shadows.
+    gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLES-52495:
   name: "Bujingai - Swordmaster"
   region: "PAL-M5"
@@ -14336,6 +14341,8 @@ SLES-52598:
 SLES-52599:
   name: "Metal Slug 3"
   region: "PAL-M5"
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Stops excessive VRAM usage with preloading on.
 SLES-52600:
   name: "Harry Potter and the Prisoner of Azkaban"
   region: "PAL-PL"
@@ -21476,7 +21483,7 @@ SLES-82009:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    texturePreloading: 1 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLES-82010:
   name: "Metal Gear Solid 2, Document of"
@@ -21921,6 +21928,8 @@ SLKA-25048:
 SLKA-25049:
   name: "Metal Slug 3"
   region: "NTSC-K"
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Stops excessive VRAM usage with preloading on.
 SLKA-25050:
   name: "Shin Sangoku Musou 3"
   region: "NTSC-K"
@@ -22823,7 +22832,7 @@ SLKA-35001:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    texturePreloading: 1 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLKA-35003:
   name: "Sakura Taisen - Atsuki Chishioni"
@@ -23328,7 +23337,7 @@ SLPM-60109:
     textureInsideRT: 1
     halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
     roundSprite: 1 # Fixes ui and hud alignment.
-    texturePreloading: 0 # Disabling for major speedup.
+    gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
 SLPM-60123:
   name: "Gekikuukan Pro Baseball - The End of the Century 1999 [Trial]"
   region: "NTSC-J"
@@ -26030,7 +26039,7 @@ SLPM-65077:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    texturePreloading: 1 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
   memcardFilters:
     - "SLPM-65078"
     - "SLPM-65077"
@@ -26040,7 +26049,7 @@ SLPM-65078:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    texturePreloading: 1 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
   memcardFilters:
     - "SLPM-65078"
     - "SLPM-65077"
@@ -30851,7 +30860,7 @@ SLPM-66503:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    texturePreloading: 1 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
 SLPM-66504:
   name: "Onimusha 2 [Mega Hits]"
   region: "NTSC-J"
@@ -31910,7 +31919,7 @@ SLPM-66792:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    texturePreloading: 1 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
 SLPM-66794:
   name: "Metal Gear Solid 3 - Snake Eater [20th Anniversary Edition]"
   region: "NTSC-J"
@@ -32535,7 +32544,7 @@ SLPM-67002:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    texturePreloading: 1 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLPM-67003:
   name: "Sakura Taisen - Atsuki Chishioni"
@@ -32559,7 +32568,7 @@ SLPM-67008:
   name: "Metal Gear Solid 2 - Substance [Konami Dendou Collection]"
   region: "NTSC-J"
   gsHWFixes:
-    texturePreloading: 1 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLPM-67009:
   name: "Sakura Taisen V - Saraba Itoshiki Hito Yo"
@@ -32648,7 +32657,7 @@ SLPM-67515:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts
   gsHWFixes:
-    texturePreloading: 1 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
 SLPM-67518:
   name: "Onimusha 2 Samurai's Destiny"
   region: "NTSC-K"
@@ -33135,7 +33144,7 @@ SLPS-20001:
     textureInsideRT: 1
     halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
     roundSprite: 1 # Fixes ui and hud alignment.
-    texturePreloading: 0 # Disabling for major speedup.
+    gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
 SLPS-20002:
   name: "Doukyu Billiards"
   region: "NTSC-J"
@@ -35150,6 +35159,8 @@ SLPS-25209:
   name: "Metal Slug 3"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Stops excessive VRAM usage with preloading on.
 SLPS-25212:
   name: "Giren no Yabou - Zeon Dokuritsu Sensouden"
   region: "NTSC-J"
@@ -35931,6 +35942,8 @@ SLPS-25427:
 SLPS-25428:
   name: "Metal Slug 3 [SNK Best Collection]"
   region: "NTSC-J"
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Stops excessive VRAM usage with preloading on.
 SLPS-25429:
   name: "King of Fighters 2000, The [SNK Best Collection]"
   region: "NTSC-J"
@@ -38351,7 +38364,7 @@ SLUS-20002:
     textureInsideRT: 1
     halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
     roundSprite: 1 # Fixes ui and hud alignment.
-    texturePreloading: 0 # Disabling for major speedup.
+    gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
 SLUS-20003:
   name: "Portal Runner"
   region: "NTSC-U"
@@ -38794,7 +38807,7 @@ SLUS-20144:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    texturePreloading: 1 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
 SLUS-20145:
   name: "Ring of Red"
   region: "NTSC-U"
@@ -40610,7 +40623,7 @@ SLUS-20554:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    texturePreloading: 1 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLUS-20555:
   name: "Reel Fishing 3"
@@ -41677,6 +41690,7 @@ SLUS-20776:
     cpuSpriteRenderBW: 1 # Fixes textures.
     autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 1 # Fixes shadows.
+    gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLUS-20777:
   name: "Obscure"
   region: "NTSC-U"
@@ -47415,7 +47429,7 @@ SLUS-29003:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    texturePreloading: 1 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
 SLUS-29004:
   name: "Unison & Dead or Alive 2 Hardcore [Demo]"
   region: "NTSC-U"
