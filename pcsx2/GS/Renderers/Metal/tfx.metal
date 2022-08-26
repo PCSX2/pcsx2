@@ -823,7 +823,7 @@ struct PSMain
 					return;
 			}
 
-			float Ad = PS_DFMT == FMT_24 ? 1.f : trunc(current_color.a * 255.5f) / 128.f;
+			float Ad = trunc(current_color.a * 255.5f) / 128.f;
 
 			float3 Cd = trunc(current_color.rgb * 255.5f);
 			float3 Cs = Color.rgb;
