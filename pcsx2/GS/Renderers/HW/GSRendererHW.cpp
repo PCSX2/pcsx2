@@ -252,7 +252,6 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 	// TRACE(_T("[%d] GetOutput %d %05x (%d)\n"), (int)m_perfmon.GetFrame(), i, (int)TEX0.TBP0, (int)TEX0.PSM);
 
 	GSTexture* t = nullptr;
-	GSVector2i size = GetOutputSize(fb_height);
 
 	if (GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, GetOutputSize(fb_height), fb_width, fb_height))
 	{
