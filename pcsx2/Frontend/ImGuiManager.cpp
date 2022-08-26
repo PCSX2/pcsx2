@@ -655,8 +655,6 @@ void ImGuiManager::DrawPerformanceOverlay()
 				text += " (Max)";
 			else
 				fmt::format_to(std::back_inserter(text), " ({:.0f}%)", EmuConfig.GS.LimitScalar * 100.0);
-
-			first = false;
 		}
 		if (!text.empty())
 		{
