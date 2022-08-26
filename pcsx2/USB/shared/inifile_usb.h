@@ -203,9 +203,9 @@ public:
 		// Returns all keys in the section by KeyIndex only to be used for enumeration
 		const KeyIndexA& GetKeys() const;
 		// Returns a KeyValue at a certain section
-		std::string GetKeyValue(std::string sKey) const;
+		std::string GetKeyValue(const std::string& sKey) const;
 		// Sets a KeyValuePair at a certain section
-		void SetKeyValue(std::string sKey, const std::string& sValue);
+		void SetKeyValue(const std::string& sKey, const std::string& sValue);
 		// Sets the section name, returns true on success, fails if the section
 		// name sSectionName already exists
 		bool SetSectionName(std::string sSectionName);
@@ -439,9 +439,9 @@ public:
 		// Returns all keys in the section by KeyIndex only to be used for enumeration
 		const KeyIndexW& GetKeys() const;
 		// Returns a KeyValue at a certain section
-		std::wstring GetKeyValue(std::wstring sKey) const;
+		std::wstring GetKeyValue(const std::wstring& sKey) const;
 		// Sets a KeyValuePair at a certain section
-		void SetKeyValue(std::wstring sKey, const std::wstring& sValue);
+		void SetKeyValue(const std::wstring& sKey, const std::wstring& sValue);
 		// Sets the section name, returns true on success, fails if the section
 		// name sSectionName already exists
 		bool SetSectionName(std::wstring sSectionName);
