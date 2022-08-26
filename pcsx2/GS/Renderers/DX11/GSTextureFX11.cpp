@@ -230,7 +230,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 			D3D11_SAMPLER_DESC sd = {};
 
 			const int anisotropy = GSConfig.MaxAnisotropy;
-			if (anisotropy && ssel.aniso)
+			if (anisotropy > 1 && ssel.aniso)
 			{
 				sd.Filter = D3D11_FILTER_ANISOTROPIC;
 			}
