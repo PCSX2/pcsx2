@@ -1446,8 +1446,8 @@ SCAJ-30003:
   name: "Siren"
   region: "NTSC-Unk"
 SCAJ-30004:
-  name: "Waga Ryuu o Miyo - Pride of the Dragon Peace"
-  region: "NTSC-Unk"
+  name: "Kan Wo Long Xian Shen Wei"
+  region: "NTSC-CH"
 SCAJ-30005:
   name: "Gacha Mecha Stadium - Saru Battle"
   region: "NTSC-Unk"
@@ -2671,7 +2671,7 @@ SCES-50246:
   region: "PAL-M5"
   compat: 5
 SCES-50293:
-  name: "ATV Off-Road"
+  name: "ATV Offroad - All Terrain Vehicle"
   region: "PAL-M5"
 SCES-50294:
   name: "Gran Turismo 3 - A-Spec"
@@ -3232,7 +3232,7 @@ SCES-51904:
     - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
 SCES-51910:
-  name: "Arc the Lad - Twilight of the Spirits"
+  name: "Arc - Twilight of the Spirits"
   region: "PAL-M5"
   compat: 5
 SCES-51920:
@@ -6607,7 +6607,7 @@ SCUS-97102:
   region: "NTSC-U"
   compat: 5
 SCUS-97104:
-  name: "ATV Off-Road Fury"
+  name: "ATV Offroad Fury"
   region: "NTSC-U"
   compat: 5
 SCUS-97105:
@@ -6674,7 +6674,7 @@ SCUS-97121:
   name: "PlayStation Underground 4.4 [Disc2]"
   region: "NTSC-U"
 SCUS-97122:
-  name: "ATV Off-Road Fury [Demo]"
+  name: "ATV Offroad Fury [Demo]"
   region: "NTSC-U"
 SCUS-97123:
   name: "Disney's Monsters Inc."
@@ -7003,7 +7003,7 @@ SCUS-97210:
   name: "Sly Cooper and the Thievius Raccoonus [Demo]"
   region: "NTSC-U"
 SCUS-97211:
-  name: "ATV Off-Road Fury 2"
+  name: "ATV Offroad Fury 2"
   region: "NTSC-U"
   compat: 5
 SCUS-97212:
@@ -7104,7 +7104,7 @@ SCUS-97236:
   name: "World Tour Soccer 2003 [Demo]"
   region: "NTSC-U"
 SCUS-97238:
-  name: "ATV Off-Road Fury 2 [Demo]"
+  name: "ATV Offroad Fury 2 [Demo]"
   region: "NTSC-U"
 SCUS-97239:
   name: "Jet X2O [Demo]"
@@ -7475,7 +7475,7 @@ SCUS-97368:
     - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
 SCUS-97369:
-  name: "ATV Off-Road Fury 2"
+  name: "ATV Offroad Fury 2"
   region: "NTSC-U"
   compat: 5
 SCUS-97372:
@@ -7571,7 +7571,7 @@ SCUS-97403:
   name: "Athens 2004 [Demo]"
   region: "NTSC-U"
 SCUS-97405:
-  name: "ATV Off-Road Fury 3"
+  name: "ATV Offroad Fury 3"
   region: "NTSC-U"
   compat: 5
 SCUS-97406:
@@ -7719,7 +7719,7 @@ SCUS-97436:
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 SCUS-97437:
-  name: "ATV Off-Road Fury 3 [Demo]"
+  name: "ATV Offroad Fury 3 [Demo]"
   region: "NTSC-U"
 SCUS-97438:
   name: "EyeToy - Antigrav [Demo]"
@@ -7885,7 +7885,7 @@ SCUS-97478:
   name: "EyeToy - Kinetic"
   region: "NTSC-U"
 SCUS-97479:
-  name: "ATV Off-Road Fury 4"
+  name: "ATV Offroad Fury 4"
   region: "NTSC-U"
   compat: 5
 SCUS-97481:
@@ -8042,7 +8042,7 @@ SCUS-97509:
     autoFlush: 1
     preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97510:
-  name: "ATV Off-Road Fury 2 [Greatest Hits]"
+  name: "ATV Offroad Fury 2 [Greatest Hits]"
   region: "NTSC-U"
 SCUS-97511:
   name: "SOCOM II - U.S. Navy SEALs [Greatest Hits]"
@@ -8066,7 +8066,7 @@ SCUS-97513:
     mipmap: 1
     autoFlush: 1
 SCUS-97514:
-  name: "ATV Off-Road Fury 3 [Greatest Hits]"
+  name: "ATV Offroad Fury 3 [Greatest Hits]"
   region: "NTSC-U"
 SCUS-97515:
   name: "Hot Shots Golf FORE! [Greatest Hits]"
@@ -8228,7 +8228,7 @@ SCUS-97572:
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
 SCUS-97579:
-  name: "ATV Off-Road Fury 4 [Demo]"
+  name: "ATV Offroad Fury 4 [Demo]"
   region: "NTSC-U"
 SCUS-97580:
   name: "SingStar Pop"
@@ -8892,7 +8892,7 @@ SLES-50003:
   name: "Swap Magic DVD Disc v2.0"
   region: "PAL-Unk"
 SLES-50009:
-  name: "Action Replay MAX"
+  name: "Wild Wild Racing"
   region: "PAL-M5"
   compat: 5
 SLES-50010:
@@ -9308,7 +9308,7 @@ SLES-50183:
   region: "PAL-M5"
   compat: 5
 SLES-50185:
-  name: "Alone in the Dark 4"
+  name: "Alone in the Dark - The New Nightmare"
   region: "PAL-M5"
   compat: 5
 SLES-50186:
@@ -9322,7 +9322,7 @@ SLES-50191:
   name: "Army Men - Green Rogue"
   region: "PAL-M5"
 SLES-50192:
-  name: "Army Men - Sarges Heroes 2"
+  name: "Army Men - Sarge's Heroes 2"
   region: "PAL-M5"
   compat: 5
 SLES-50193:
@@ -9946,7 +9946,7 @@ SLES-50479:
   gsHWFixes:
     textureInsideRT: 1 # Fixes underwater levels.
 SLES-50480:
-  name: "Aggressive Inline Skating"
+  name: "Aggressive Inline"
   region: "PAL-M4"
   compat: 5
 SLES-50481:
@@ -10236,7 +10236,7 @@ SLES-50654:
   name: "Dune, Frank Herbert's"
   region: "PAL-M5"
 SLES-50661:
-  name: "Atlantis III"
+  name: "Atlantis III - The New World"
   region: "PAL-M3"
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
@@ -10292,7 +10292,7 @@ SLES-50705:
   name: "GoDai - Elemental Force"
   region: "PAL-I-S"
 SLES-50706:
-  name: "Army Men - Real Time Strategy"
+  name: "Army Men - RTS"
   region: "PAL-M4"
 SLES-50709:
   name: "Le Maillon Fable"
@@ -10720,7 +10720,7 @@ SLES-50849:
   name: "Urban Freestyle Soccer"
   region: "PAL-M5"
 SLES-50850:
-  name: "ATV Off-Road 2"
+  name: "ATV - Quad Power Racing 2"
   region: "PAL-M5"
 SLES-50852:
   name: "Sven-Goran Eriksson's World Challenge"
@@ -10899,7 +10899,7 @@ SLES-50948:
   name: "Britney's Dance Beat"
   region: "PAL-M3"
 SLES-50953:
-  name: "Air Rescue Ranger"
+  name: "Air Ranger - Rescue Helicopter"
   region: "PAL-E"
   gameFixes:
     - VUSyncHack # Fixes graphics.
@@ -11123,44 +11123,44 @@ SLES-51073:
   name: "RTX Red Rock"
   region: "PAL-S"
 SLES-51076:
-  name: "Liverpool FC - Club Football"
+  name: "Club Football - Liverpool FC"
   region: "PAL-E"
 SLES-51077:
-  name: "Club Football Real Madrid"
+  name: "Club Football - Real Madrid"
   region: "PAL-M6"
 SLES-51078:
-  name: "FC Barcelona - Club Football"
+  name: "Club Football - FC Barcelona"
   region: "PAL-M4"
   compat: 5
 SLES-51079:
-  name: "Ajax Club Football"
+  name: "Club Football - Ajax Amsterdam"
   region: "PAL-M4"
 SLES-51080:
-  name: "AC Milan Club Football"
+  name: "Club Football - AC Milan"
   region: "PAL-M3"
 SLES-51081:
-  name: "Club Football - Juventus 2003-2004 Season"
+  name: "Club Football - Juventus"
   region: "PAL-M3"
 SLES-51082:
-  name: "Hamburger SV Club Football - Saison 2003-2004"
+  name: "Club Football - Hamburger SV"
   region: "PAL-G"
 SLES-51083:
-  name: "Borussia Dortmund Club Football - Saison 2003-2004"
+  name: "Club Football - Borussia Dortmund"
   region: "PAL-G"
 SLES-51084:
-  name: "BDFL Manager 2004"
+  name: "Club Football - FC Bayern München"
   region: "PAL-M3"
 SLES-51085:
-  name: "Aston Villa - Club Football"
+  name: "Club Football - Aston Villa"
   region: "PAL-E"
 SLES-51086:
-  name: "Club Football - Chelsea"
+  name: "Club Football - Chelsea FC"
   region: "PAL-E"
 SLES-51087:
-  name: "Leeds United - Club Football"
+  name: "Club Football - Leeds United"
   region: "PAL-E"
 SLES-51088:
-  name: "Club Football - Rangers"
+  name: "Club Football - Rangers FC"
   region: "PAL-E"
 SLES-51089:
   name: "Club Football - Arsenal"
@@ -11173,7 +11173,7 @@ SLES-51093:
   region: "PAL-M4"
   compat: 5
 SLES-51094:
-  name: "FC Internazionale - Club Football"
+  name: "Club Football - FC Internazionale"
   region: "PAL-M3"
 SLES-51095:
   name: "Dino Stalker"
@@ -11182,7 +11182,7 @@ SLES-51096:
   name: "Dino Stalker"
   region: "PAL-G"
 SLES-51100:
-  name: "Club Football - Liverpool - 2003-2004 Season"
+  name: "Club Football - Liverpool FC"
   region: "PAL-M6"
 SLES-51101:
   name: "Eggo Mania"
@@ -11326,7 +11326,7 @@ SLES-51162:
   name: "Metropolismania"
   region: "PAL-E"
 SLES-51168:
-  name: "AFL Live 2004 - Aussie Rules Football"
+  name: "AFL Live 2003"
   region: "PAL-E"
   compat: 5
 SLES-51174:
@@ -11949,7 +11949,7 @@ SLES-51418:
   region: "PAL-M3"
   compat: 5
 SLES-51423:
-  name: "Celtic - Club Football"
+  name: "Club Football - Celtic FC"
   region: "PAL-E"
 SLES-51425:
   name: "Fatman & Slim" # Beta
@@ -12566,7 +12566,7 @@ SLES-51787:
   name: "Harry Potter - Quidditch World Cup"
   region: "PAL-M10"
 SLES-51792:
-  name: "Aliens vs. Predator - Extinction"
+  name: "Aliens Versus Predator - Extinction"
   region: "PAL-E"
 SLES-51794:
   name: "Looney Toons - Back in Action"
@@ -12601,7 +12601,7 @@ SLES-51813:
   name: "European Tennis Pro"
   region: "PAL-E"
 SLES-51814:
-  name: "ATV Off-Road Fury 2"
+  name: "ATV Offroad Fury 2"
   region: "PAL-E"
 SLES-51815:
   name: "Final Fantasy X-2"
@@ -12851,7 +12851,7 @@ SLES-51893:
   name: "Naval Ops - Warship Gunner"
   region: "PAL-E"
 SLES-51896:
-  name: "Gallop Racer"
+  name: "Attheraces Presents Gallop Racer"
   region: "PAL-E"
 SLES-51897:
   name: "Simpsons, The - Hit & Run"
@@ -13237,7 +13237,7 @@ SLES-52062:
   name: "Pop Star Academy"
   region: "PAL-M5"
 SLES-52063:
-  name: "Alarm for Cobra 11 Autobahn"
+  name: "Alarm for Cobra 11"
   region: "PAL-E-G"
 SLES-52065:
   name: "Flipnic"
@@ -14412,70 +14412,70 @@ SLES-52646:
   name: "Tom Clancy's Ghost Recon 2"
   region: "PAL-M5"
 SLES-52647:
-  name: "Club Football - Manchester United 2005"
+  name: "Club Football 2005 - Manchester United"
   region: "PAL-M6"
 SLES-52648:
-  name: "BVB 09 - Club Football 2005 - Borussia Dortmund"
+  name: "Club Football 2005 - Borussia Dortmund"
   region: "PAL-G"
 SLES-52649:
-  name: "Om Droit au Bit - Club Football 2005"
+  name: "Club Football 2005 - Olympique de Marseille"
   region: "PAL-E-F"
 SLES-52650:
-  name: "Juventus - Club Football 2005"
+  name: "Club Football 2005 - Juventus"
   region: "PAL-M3"
 SLES-52651:
-  name: "FC Barcelona - Club Football 2005"
+  name: "Club Football 2005 - FC Barcelona"
   region: "PAL-M4"
 SLES-52652:
-  name: "Liverpool FC - Club Football 2005"
+  name: "Club Football 2005 - Liverpool FC"
   region: "PAL-E"
 SLES-52653:
-  name: "Liverpool FC - Club Football 2005"
+  name: "Club Football 2005 - Liverpool FC"
   region: "PAL-M3"
 SLES-52654:
-  name: "Club Football - Real Madri 2005"
+  name: "Club Football 2005 - Real Madrid"
   region: "PAL-M5"
 SLES-52655:
-  name: "FC Bayern Munich - Club Football 2005"
+  name: "Club Football 2005 - FC Bayern München"
   region: "PAL-M3"
 SLES-52656:
-  name: "AC Milan Club Football 2005"
+  name: "Club Football 2005 - AC Milan"
   region: "PAL-M3"
 SLES-52657:
-  name: "Arsenal FC - Club Football 2005"
+  name: "Club Football 2005 - Arsenal"
   region: "PAL-E-F"
 SLES-52658:
-  name: "Hamburg SV - Club Football 2005"
+  name: "Club Football 2005 - Hamburger SV"
   region: "PAL-G"
 SLES-52659:
-  name: "Paris Saint-Germain Club Football 2005"
+  name: "Club Football 2005 - Paris Saint-Germain"
   region: "PAL-E-F"
 SLES-52660:
-  name: "Inter - Club Football 2005"
+  name: "Club Football 2005 - FC Internazionale"
   region: "PAL-M3"
 SLES-52661:
-  name: "Ajax Club Football 2005"
+  name: "Club Football 2005 - Ajax Amsterdam"
   region: "PAL-M4"
 SLES-52662:
-  name: "Newcastle United - Club Football 2005"
+  name: "Club Football 2005 - Newcastle United"
   region: "PAL-E"
 SLES-52663:
-  name: "Chelsea FC - Club Football 2005"
+  name: "Club Football 2005 - Chelsea FC"
   region: "PAL-E"
 SLES-52664:
-  name: "Rangers FC - Club Football 2005"
+  name: "Club Football 2005 - Rangers FC"
   region: "PAL-E"
 SLES-52665:
-  name: "Celtic FC - Club Football 2005"
+  name: "Club Football 2005 - Celtic FC"
   region: "PAL-E"
 SLES-52666:
-  name: "Tottenham Hotspur - Club Football 2005"
+  name: "Club Football 2005 - Tottenham Hotspur"
   region: "PAL-E"
 SLES-52667:
-  name: "Birmingham City - Club Football 2005"
+  name: "Club Football 2005 - Birmingham City"
   region: "PAL-E"
 SLES-52668:
-  name: "Aston Villa FC - Club Football 2005"
+  name: "Club Football 2005 - Aston Villa"
   region: "PAL-E"
 SLES-52669:
   name: "Forgotten Realms - Demon Stone"
@@ -14975,7 +14975,7 @@ SLES-52900:
   name: "Rapala Pro Fishing"
   region: "PAL-E"
 SLES-52902:
-  name: "Arcade Classics Vol.1"
+  name: "Arcade Classics Volume 1"
   region: "PAL-E"
 SLES-52906:
   name: "Nickelodeon SpongeBob SquarePants - Movin' with Friends"
@@ -17010,7 +17010,7 @@ SLES-53724:
   name: "World Series of Poker"
   region: "PAL-E"
 SLES-53725:
-  name: "Asterix & Obelix XXL2"
+  name: "Asterix & Obelix XXL 2"
   region: "PAL-M5"
 SLES-53726:
   name: "Harry Potter and the Goblet of Fire"
@@ -17101,7 +17101,7 @@ SLES-53753:
     halfPixelOffset: 1 # Fixes bloom misalignment.
     preloadFrameData: 1 # Fixes car reflections and brightness.
 SLES-53754:
-  name: "ATV Off-Road Fury 3"
+  name: "ATV Offroad Fury 3"
   region: "PAL-M6"
 SLES-53755:
   name: "Castlevania - Curse of Darkness"
@@ -18468,7 +18468,7 @@ SLES-54364:
   name: "Curious George"
   region: "PAL-M7"
 SLES-54365:
-  name: "AMF Xtreme bowling 2006"
+  name: "AMF Xtreme Bowling 2006"
   region: "PAL-M6"
 SLES-54366:
   name: "David Douillet Judo"
@@ -18574,7 +18574,7 @@ SLES-54402:
     halfPixelOffset: 2 # Fixes blurriness.
     roundSprite: 2 # Fixes blurriness.
 SLES-54420:
-  name: "Arthur & The Minimoys"
+  name: "Arthur and the Minimoys"
   region: "PAL-M7"
 SLES-54421:
   name: "Happy Feet"
@@ -18691,7 +18691,7 @@ SLES-54458:
   name: "Party Carnival"
   region: "PAL-E"
 SLES-54459:
-  name: "All Star Fighters"
+  name: "All-Star Fighters"
   region: "PAL-E"
 SLES-54460:
   name: "Dragon Sisters"
@@ -18963,7 +18963,7 @@ SLES-54559:
         patch=1,EE,001de5c8,word,4a0002ff
         patch=1,EE,001de5cc,word,4a0002ff
 SLES-54560:
-  name: "Alpine Ski Racing 2007"
+  name: "Alpine Ski Racing 2007 - Bode Miller vs. Hermann Maier"
   region: "PAL-M3"
   clampModes:
     vuClampMode: 3 # Fixes SPS.
@@ -19084,7 +19084,7 @@ SLES-54624:
   name: "Samurai Warriors 2 - Empires"
   region: "PAL-E"
 SLES-54626:
-  name: "An American Tail"
+  name: "American Tail, An"
   region: "PAL-M11"
 SLES-54627:
   name: "Burnout Dominator"
@@ -19986,7 +19986,7 @@ SLES-54972:
   gsHWFixes:
     cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
 SLES-54973:
-  name: "Le Avventure di Lupin III - Lupin la Morte, Zenigata l'Amore"
+  name: "Avventure di Lupin III, Le - Lupin la Morte, Zenigata l'Amore"
   region: "PAL-I"
 SLES-54974:
   name: "Guitar Hero III - Legends of Rock"
@@ -21047,7 +21047,7 @@ SLES-55453:
   name: "SingStar Queen"
   region: "PAL-Unk"
 SLES-55457:
-  name: "AC-DC LIVE - Rock Band Track Pack"
+  name: "AC-DC LIVE - Rock Band"
   region: "PAL-M5"
 SLES-55458:
   name: "Rock Band - Song Pack 2"
@@ -21566,13 +21566,13 @@ SLES-82035:
     - "SLES-82034"
     - "SCES-82034"
 SLES-82036:
-  name: "Armored Core - Nexus [Evolution Disc]"
+  name: "Armored Core - Nexus [Disc1of2 - Evolution Disc]"
   region: "PAL-M5"
   memcardFilters:
     - "SLES-82036"
     - "SLES-82037"
 SLES-82037:
-  name: "Armored Core - Nexus [Revolution Disc]"
+  name: "Armored Core - Nexus [Disc2of2 - Revolution Disc]"
   region: "PAL-M5"
   memcardFilters:
     - "SLES-82036"
@@ -24377,7 +24377,7 @@ SLPM-62340:
   name: "Apprentice Magician"
   region: "NTSC-J"
 SLPM-62341:
-  name: "Alice's Adventures in Wonderland"
+  name: "Fushigi no Kuni no Alice"
   region: "NTSC-J"
 SLPM-62342:
   name: "Fire Pro Wrestling Z"
@@ -24391,6 +24391,9 @@ SLPM-62344:
   region: "NTSC-J"
 SLPM-62345:
   name: "Simple 2000 Series Vol. 32 - The Sensha"
+  region: "NTSC-J"
+SLPM-62346:
+  name: "Keiei Simulation - Jurassic Park [Konami the Best]"
   region: "NTSC-J"
 SLPM-62348:
   name: "Mechsmith, The - Rum"
@@ -25910,7 +25913,7 @@ SLPM-65060:
   name: "BioHazard Gun Survivor 2 - CODE - Veronica"
   region: "NTSC-J"
 SLPM-65061:
-  name: "Adventure of Tokyo Disney Sea"
+  name: "Adventure of Tokyo Disney Sea - Ushinawareta Houseki no Himitsu"
   region: "NTSC-J"
 SLPM-65065:
   name: "Sorcerous Stabber Orphen [Kadokawa The Best]"
@@ -26575,7 +26578,7 @@ SLPM-65257:
     - "SLPM-65341"
     - "SLPM-65631"
 SLPM-65260:
-  name: "Air Land Force"
+  name: "Gaika no Gouhou - Air Land Force"
   region: "NTSC-J"
 SLPM-65261:
   name: "TBS All-Star Kansha-sai Vol .1 - Chou Gouka! Quiz Ketteiban"
@@ -27033,7 +27036,7 @@ SLPM-65408:
   name: "Growlanser IV - Wayfarer of the Time"
   region: "NTSC-J"
 SLPM-65409:
-  name: "Air Ranger 2 - Rescue Helicopter - Plus"
+  name: "Air Ranger 2 Plus - Rescue Helicopter"
   region: "NTSC-J"
 SLPM-65410:
   name: "Getaway, The"
@@ -27153,7 +27156,7 @@ SLPM-65439:
   memcardFilters:
     - "SLPM-65438"
 SLPM-65441:
-  name: "Ashita no Joe - Masshiro ni Moetsukuru"
+  name: "Ashita no Joe - Masshiro ni Moe Tsukiro!"
   region: "NTSC-J"
 SLPM-65442:
   name: "Terminator 3, The - Rise of the Machines"
@@ -27283,7 +27286,7 @@ SLPM-65480:
   name: "Michigan"
   region: "NTSC-J"
 SLPM-65481:
-  name: "After... [Limited Edition]"
+  name: "After... Wasureenu Kizuna [Shokai Genteiban]"
   region: "NTSC-J"
 SLPM-65482:
   name: "After..."
@@ -27570,7 +27573,7 @@ SLPM-65576:
   name: "Tantei Jinguuji Saburou - Kind of Blue"
   region: "NTSC-J"
 SLPM-65579:
-  name: "After School Love Beat"
+  name: "Houkago no Love Beat"
   region: "NTSC-J"
 SLPM-65580:
   name: "Crash Bandicoot - Bakuso! Nitro Kart"
@@ -27650,7 +27653,7 @@ SLPM-65603:
   name: "Run Like Hell"
   region: "NTSC-J"
 SLPM-65604:
-  name: "Animation Battle - Recca no Honou"
+  name: "Anime Battle - Rekka no Honoo - Flame of Recca - Final Burning"
   region: "NTSC-J"
   compat: 5
 SLPM-65607:
@@ -27995,7 +27998,7 @@ SLPM-65708:
   name: "Hagane no Renkinjutsushi - Akaki Elixir no Akuma"
   region: "NTSC-J"
 SLPM-65710:
-  name: "Apocripha Zero"
+  name: "Apocripha-0"
   region: "NTSC-J"
 SLPM-65714:
   name: "Angelique Etoile [Premium Box]"
@@ -28072,7 +28075,7 @@ SLPM-65731:
   name: "Tom Clancy's Rainbow Six 3"
   region: "NTSC-J"
 SLPM-65732:
-  name: "Akaiito"
+  name: "Akai Ito"
   region: "NTSC-J"
   compat: 5
 SLPM-65734:
@@ -28402,7 +28405,7 @@ SLPM-65826:
   region: "NTSC-J"
   compat: 5
 SLPM-65828:
-  name: "Angel Wish"
+  name: "Angel Wish - Kimi no Egao ni Chu!"
   region: "NTSC-J"
 SLPM-65829:
   name: "Ys - The Ark of Napishtim [Limited Edition]"
@@ -29436,7 +29439,7 @@ SLPM-66135:
   name: "World Tank Museum For Game - Toubu Sensen Success"
   region: "NTSC-J"
 SLPM-66136:
-  name: "SuperLite 2000 Series - Akaiito"
+  name: "SuperLite 2000 Vol. 34 - Akai Ito"
   region: "NTSC-J"
 SLPM-66137:
   name: "Clover Heart's Looking for Happiness [The Best]"
@@ -29450,7 +29453,7 @@ SLPM-66139:
   gsHWFixes:
     pointListPalette: 1
 SLPM-66140:
-  name: "Atelier Marie + Elie - Salburg no Renkinjutsushi 1&2"
+  name: "Atelier Marie + Elie - Salburg no Renkinjutsushi 1 & 2"
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 2 # Fixes the sprites on textbox and characters.
@@ -30586,10 +30589,10 @@ SLPM-66455:
   name: "Spectral Force - Radical Elements [IF Collection]"
   region: "NTSC-J"
 SLPM-66456:
-  name: "Asobi ni Iku Yo! [Limited Edition]"
+  name: "Asobi ni Iku yo! Chikyuu Pinch no Kon'yaku Sengen [Genteiban]"
   region: "NTSC-J"
 SLPM-66457:
-  name: "Asobi ni Iku Yo! Chikyuu Pinchi no Konyaku Sengen"
+  name: "Asobi ni Iku yo! Chikyuu Pinch no Kon'yaku Sengen"
   region: "NTSC-J"
   patches:
     87FFC318:
@@ -30732,7 +30735,7 @@ SLPM-66489:
   name: "Mabino x Style [2800 Collection]"
   region: "NTSC-J"
 SLPM-66491:
-  name: "Ayaka Shibito"
+  name: "Ayakashi-bito - Gen'you Ibunroku"
   region: "NTSC-J"
 SLPM-66492:
   name: "Commandos Strike Force"
@@ -32342,7 +32345,7 @@ SLPM-66957:
   name: "Neon Genesis Evangelion - Battle Orchestra [Broccoli Best Quality]"
   region: "NTSC-J"
 SLPM-66958:
-  name: "Aoishiro [Limited Edition]"
+  name: "Aoi Shiro [Genteiban]"
   region: "NTSC-J"
 SLPM-66959:
   name: "Aoishiro"
@@ -33548,7 +33551,7 @@ SLPS-20194:
   name: "Underwater Unit"
   region: "NTSC-J"
 SLPS-20196:
-  name: "Akagawa Jiro - Tsuki no Hikari - Shizumeru Kane no Satsujin"
+  name: "Akagawa Jirou - Tsuki no Hikari - Shizumeru Kane no Satsujin"
   region: "NTSC-J"
 SLPS-20197:
   name: "Surfing Air Show with RatBoy"
@@ -34425,7 +34428,7 @@ SLPS-25016:
   name: "Neo Atlas 3"
   region: "NTSC-J"
 SLPS-25017:
-  name: "A-Train 2001"
+  name: "A Ressha de Ikou 2001"
   region: "NTSC-J"
 SLPS-25018:
   name: "Sidewinder Max"
@@ -34723,7 +34726,7 @@ SLPS-25105:
   name: "Kingdom Hearts"
   region: "NTSC-J"
 SLPS-25106:
-  name: "America Oudan Ultra-Quiz"
+  name: "America Oudan Ultra Quiz"
   region: "NTSC-J"
 SLPS-25107:
   name: "Kengo 2"
@@ -35110,7 +35113,7 @@ SLPS-25223:
   name: "Canvas"
   region: "NTSC-J"
 SLPS-25224:
-  name: "Ai Yori Aoshi [Limited Edition]"
+  name: "Ai yori Aoshi [Shokai Genteiban]"
   region: "NTSC-J"
 SLPS-25225:
   name: "Ai Yori Aoshi"
@@ -35287,7 +35290,7 @@ SLPS-25278:
   name: "Memories Off - Mix"
   region: "NTSC-J"
 SLPS-25279:
-  name: "Adventure Boy Club Magazine"
+  name: "Bouken Shounen Club Gahou"
   region: "NTSC-J"
 SLPS-25281:
   name: "True Love Story 3 [Enterbrain collection]"
@@ -36125,10 +36128,10 @@ SLPS-25511:
   name: "Rasetsu Alternative"
   region: "NTSC-J"
 SLPS-25513:
-  name: "Aoi Umi no Tristia [Limited Edition]"
+  name: "Aoi Umi no Tristia - Nanoca Flanka Hatsumei Koubouki [Shokai Genteiban]"
   region: "NTSC-J"
 SLPS-25514:
-  name: "Aoi Umi no Tristia"
+  name: "Aoi Umi no Tristia - Nanoca Flanka Hatsumei Koubouki"
   region: "NTSC-J"
 SLPS-25515:
   name: "Futakoi Alternative [Limited Edition]"
@@ -36995,10 +36998,10 @@ SLPS-25747:
   name: "Garouden Break Blow - Fist or Twist"
   region: "NTSC-J"
 SLPS-25748:
-  name: "Aoi Sora no Neosphere - Nanoka Franka no Hatsumei Koubouki 2 [Limited Edition]"
+  name: "Aoi Sora no Neosphere - Nanoca Flanka Hatsumei Koubouki 2 [Shokai Genteiban]"
   region: "NTSC-J"
 SLPS-25749:
-  name: "Aoi Sora no Neosphere - Nanoka Franka no Hatsumei Koubouki 2"
+  name: "Aoi Sora no Neosphere - Nanoca Flanka Hatsumei Koubouki 2"
   region: "NTSC-J"
 SLPS-25750:
   name: "Super Robot Taisen - Scramble Commander The 2nd"
@@ -37266,7 +37269,7 @@ SLPS-25828:
   name: "Pachitte Chonmage Tatsujin 13 - Pachinko Hissatsu Shigotonin III"
   region: "NTSC-J"
 SLPS-25829:
-  name: "A.C.E. Another Century's Episode 2 [Special Vocal Version]"
+  name: "Another Century's Episode 2 [Special Vocal Version]"
   region: "NTSC-J"
 SLPS-25830:
   name: "Zero no Tsukaima - Muma ga Tsumugu Yokaze no Gensoukyoku [Limited Edition]"
@@ -46466,7 +46469,7 @@ SLUS-21787:
   gameFixes:
     - EETimingHack
 SLUS-21788:
-  name: "Ar tonelico II - Melody Of Metafalica"
+  name: "Ar tonelico II - Melody of Metafalica"
   region: "NTSC-U"
   compat: 5
   roundModes:
@@ -46634,7 +46637,7 @@ SLUS-21830:
   region: "NTSC-U"
   compat: 3
 SLUS-21831:
-  name: "Army Men - Soldiers Of Misfortune"
+  name: "Army Men - Soldiers of Misfortune"
   region: "NTSC-U"
   compat: 5
 SLUS-21834:
