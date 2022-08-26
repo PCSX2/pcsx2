@@ -575,6 +575,16 @@ int GSState::GetFramebufferHeight()
 	return frame_memory_height;
 }
 
+int GSState::GetFramebufferWidth()
+{
+	const GSVector4i disp1_rect = GetFrameRect(0, true);
+	const GSVector4i disp2_rect = GetFrameRect(1, true);
+
+	const int max_width = std::max(disp1_rect.width(), disp2_rect.width());
+
+	return max_width;
+}
+
 bool GSState::IsEnabled(int i)
 {
 	ASSERT(i >= 0 && i < 2);
@@ -2739,7 +2749,8 @@ void GSState::GrowVertexBuffer()
 	const size_t maxcount = std::max<size_t>(m_vertex.maxcount * 3 / 2, 10000);
 
 	GSVertex* vertex = (GSVertex*)_aligned_malloc(sizeof(GSVertex) * maxcount, 32);
-	u32* index = (u32*)_aligned_malloc(sizeof(u32) * maxcount * 3, 32); // worst case is slightly less than vertex number * 3
+	// Worst case index list is a list of points with vs expansion, 6 indices per point
+	u32* index = (u32*)_aligned_malloc(sizeof(u32) * maxcount * 6, 32);
 
 	if (vertex == NULL || index == NULL)
 	{

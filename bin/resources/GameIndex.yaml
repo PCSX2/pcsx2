@@ -404,21 +404,15 @@ SCAJ-10001:
 SCAJ-10003:
   name: "Taiko no Tatsujin - Doki! Shinkyoku Darake no Haru Matsuri"
   region: "NTSC-Unk"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SCAJ-10004:
   name: "Time Crisis 2 [PlayStation 2 The Best]"
   region: "NTSC-Unk"
 SCAJ-10006:
   name: "Taiko no Tatsujin - Appare Sandaime"
   region: "NTSC-Unk"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SCAJ-10007:
   name: "Taiko no Tatsujin - Waku Waku Anime Matsuri"
   region: "NTSC-Unk"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SCAJ-10008:
   name: "Taiko no Tatsujin - Atsumare! Matsuri da!! Yondaime"
   region: "NTSC-Unk"
@@ -2235,16 +2229,6 @@ SCED-53160:
 SCED-53161:
   name: "Official PlayStation 2 Magazine Demo 58"
   region: "PAL-M5"
-  patches:
-    38174DD2:
-      content: |-
-        comment=Patch by refraction. Fixes R&C 3 shadows, disable automatic fixes for other games
-        patch=1,EE,0047df64,word,48418800
-        patch=1,EE,0047df68,word,4A39D86C
-        patch=1,EE,0047df6c,word,48428800
-        patch=1,EE,0047df70,word,4A7503BC
-        patch=1,EE,0047df74,word,4A0002FF
-        patch=1,EE,0047df78,word,4A0002FF
 SCED-53162:
   name: "Official PlayStation 2 Magazine Demo 59"
   region: "PAL-M5"
@@ -24136,8 +24120,6 @@ SLPM-62244:
 SLPM-62245:
   name: "Yuusei kara no Buttai X - Episode II"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes flashing FMVs.
 SLPM-62247:
   name: "Shin Contra"
   region: "NTSC-J"
@@ -33622,8 +33604,6 @@ SLPS-20221:
   name: "Taiko no Tatsujin - Tatacon de Dodon ga Don [with Tatacon]"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SLPS-20222:
   name: "Inaka Kurasi - Nan no Shima no Monogatari"
   region: "NTSC-J"
@@ -33670,13 +33650,9 @@ SLPS-20256:
 SLPS-20257:
   name: "Yamasa Digi World 4DX"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fix flickering and bad textures in FMV.
 SLPS-20258:
   name: "Yamasa Digi World 4"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fix flickering and bad textures in FMV.
 SLPS-20259:
   name: "Kotoba no Puzzle - Mojipittan"
   region: "NTSC-J"
@@ -33705,8 +33681,6 @@ SLPS-20272:
   name: "Taiko no Tatsujin - Doki! Shinkyoku Darake no Haru Matsuri"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SLPS-20273:
   name: "Netsu Chu! Pro Yakyuu 2003"
   region: "NTSC-J"
@@ -33730,8 +33704,6 @@ SLPS-20281:
 SLPS-20282:
   name: "Taiko no Tatsujin - Tatacon de Dodon ga Don"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SLPS-20284:
   name: "Marl de Jigsaw"
   region: "NTSC-J"
@@ -33809,14 +33781,10 @@ SLPS-20318:
 SLPS-20320:
   name: "Taiko no Tatsujin - Appare Sandaime [with Tatacon]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SLPS-20321:
   name: "Taiko no Tatsujin - Appare Sandaime"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SLPS-20322:
   name: "Netsu Chu! Pro Yakyuu 2003 - Aki no Night Matsuri"
   region: "NTSC-J"
@@ -33841,8 +33809,6 @@ SLPS-20330:
   name: "Taiko no Tatsujin - Waku Waku Anime Matsuri"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SLPS-20331:
   name: "Fever 9 - Sankyo"
   region: "NTSC-J"
@@ -37758,13 +37724,9 @@ SLPS-73109:
 SLPS-73110:
   name: "Taiko no Tatsujin - Appare Sandaime [PlayStation 2 The Best]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SLPS-73111:
   name: "Taiko no Tatsujin - Waku Waku Anime Matsuri [PlayStation 2 The Best]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes errors on right side of screen in FMV.
 SLPS-73201:
   name: "Fatal Frame II - Crimson Butterfly [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -43357,10 +43319,10 @@ SLUS-21143:
   name: "Star Wars - Episode III - Revenge of the Sith"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    halfPixelOffset: 1 # Fixes bloom misalignment.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLUS-21144:
   name: "Tom Clancy's Rainbow Six - Lockdown"
   region: "NTSC-U"

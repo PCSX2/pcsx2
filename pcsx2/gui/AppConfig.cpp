@@ -558,8 +558,9 @@ AppConfig::AppConfig()
 	, AppSettingsTabName(L"none")
 	, GameDatabaseTabName(L"none")
 	, LanguageId(wxLANGUAGE_DEFAULT)
+	, LanguageCode(L"default")
+	, CdvdSource(CDVD_SourceType::Iso)
 {
-	LanguageCode = L"default";
 	RecentIsoCount = 20;
 	Listbook_ImageSize = 32;
 	Toolbar_ImageSize = 24;
@@ -573,8 +574,6 @@ AppConfig::AppConfig()
 
 	EnablePresets = true;
 	PresetIndex = 1;
-
-	CdvdSource = CDVD_SourceType::Iso;
 }
 
 // ------------------------------------------------------------------------

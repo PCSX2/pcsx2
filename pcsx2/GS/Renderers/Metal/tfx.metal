@@ -23,6 +23,7 @@ constant bool HAS_FBFETCH           [[function_constant(GSMTLConstantIndex_FRAME
 constant bool FST                   [[function_constant(GSMTLConstantIndex_FST)]];
 constant bool IIP                   [[function_constant(GSMTLConstantIndex_IIP)]];
 constant bool VS_POINT_SIZE         [[function_constant(GSMTLConstantIndex_VS_POINT_SIZE)]];
+constant uint VS_EXPAND_TYPE_RAW    [[function_constant(GSMTLConstantIndex_VS_EXPAND_TYPE)]];
 constant uint PS_AEM_FMT            [[function_constant(GSMTLConstantIndex_PS_AEM_FMT)]];
 constant uint PS_PAL_FMT            [[function_constant(GSMTLConstantIndex_PS_PAL_FMT)]];
 constant uint PS_DFMT               [[function_constant(GSMTLConstantIndex_PS_DFMT)]];
@@ -66,6 +67,8 @@ constant bool PS_MANUAL_LOD         [[function_constant(GSMTLConstantIndex_PS_MA
 constant bool PS_POINT_SAMPLER      [[function_constant(GSMTLConstantIndex_PS_POINT_SAMPLER)]];
 constant bool PS_INVALID_TEX0       [[function_constant(GSMTLConstantIndex_PS_INVALID_TEX0)]];
 constant uint PS_SCANMSK            [[function_constant(GSMTLConstantIndex_PS_SCANMSK)]];
+
+constant GSMTLExpandType VS_EXPAND_TYPE = static_cast<GSMTLExpandType>(VS_EXPAND_TYPE_RAW);
 
 #if defined(__METAL_MACOS__) && __METAL_VERSION__ >= 220
 	#define PRIMID_SUPPORT 1
@@ -189,6 +192,93 @@ static MainVSOut vs_main_run(thread const MainVSIn& v, constant GSMTLMainVSUnifo
 vertex MainVSOut vs_main(MainVSIn v [[stage_in]], constant GSMTLMainVSUniform& cb [[buffer(GSMTLBufferIndexHWUniforms)]])
 {
 	return vs_main_run(v, cb);
+}
+
+static MainVSIn load_vertex(GSMTLMainVertex base)
+{
+	MainVSIn out;
+	out.st = base.st;
+	out.c = float4(base.rgba);
+	out.q = base.q;
+	out.p = uint2(base.xy);
+	out.z = base.z;
+	out.uv = uint2(base.uv);
+	out.f = float4(static_cast<float>(base.fog) / 255.f);
+	return out;
+}
+
+vertex MainVSOut vs_main_expand(
+	uint vid [[vertex_id]],
+	device const GSMTLMainVertex* vertices [[buffer(GSMTLBufferIndexHWVertices)]],
+	constant GSMTLMainVSUniform& cb [[buffer(GSMTLBufferIndexHWUniforms)]])
+{
+	switch (VS_EXPAND_TYPE)
+	{
+		case GSMTLExpandType::None:
+			return vs_main_run(load_vertex(vertices[vid]), cb);
+		case GSMTLExpandType::Point:
+		{
+			MainVSOut point = vs_main_run(load_vertex(vertices[vid >> 2]), cb);
+			if (vid & 1)
+				point.p.x += cb.point_size.x;
+			if (vid & 2)
+				point.p.y += cb.point_size.y;
+			return point;
+		}
+		case GSMTLExpandType::Line:
+		{
+			uint vid_base = vid >> 2;
+			bool is_bottom = vid & 2;
+			bool is_right = vid & 1;
+			// All lines will be a pair of vertices next to each other
+			// Since Metal uses provoking vertex first, the bottom point will be the lower of the two
+			uint vid_other = is_bottom ? vid_base + 1 : vid_base - 1;
+			MainVSOut point = vs_main_run(load_vertex(vertices[vid_base]), cb);
+			MainVSOut other = vs_main_run(load_vertex(vertices[vid_other]), cb);
+
+			float2 line_vector = normalize(point.p.xy - other.p.xy);
+			float2 line_normal = float2(line_vector.y, -line_vector.x);
+			float2 line_width = (line_normal * cb.point_size) / 2;
+			// line_normal is inverted for bottom point
+			float2 offset = (is_bottom ^ is_right) ? line_width : -line_width;
+			point.p.xy += offset;
+
+			// Lines will be run as (0 1 2) (1 2 3)
+			// This means that both triangles will have a point based off the top line point as their first point
+			// So we don't have to do anything for !IIP
+
+			return point;
+		}
+		case GSMTLExpandType::Sprite:
+		{
+			uint vid_base = vid >> 1;
+			bool is_bottom = vid & 2;
+			bool is_right = vid & 1;
+			// Sprite points are always in pairs
+			uint vid_lt = vid_base & ~1;
+			uint vid_rb = vid_base | 1;
+
+			MainVSOut lt = vs_main_run(load_vertex(vertices[vid_lt]), cb);
+			MainVSOut rb = vs_main_run(load_vertex(vertices[vid_rb]), cb);
+			MainVSOut out = rb;
+
+			if (!is_right)
+			{
+				out.p.x = lt.p.x;
+				out.t.x = lt.t.x;
+				out.ti.xz = lt.ti.xz;
+			}
+
+			if (!is_bottom)
+			{
+				out.p.y = lt.p.y;
+				out.t.y = lt.t.y;
+				out.ti.yw = lt.ti.yw;
+			}
+
+			return out;
+		}
+	}
 }
 
 // MARK: - Fragment functions

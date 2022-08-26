@@ -159,7 +159,7 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 			if (StringUtil::EndsWith(fix, "Hack"))
 			{
 				fix.erase(fix.size() - 4);
-				for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; id++)
+				for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; ++id)
 				{
 					if (fix.compare(EnumToString(id)) == 0 &&
 						std::find(gameEntry.gameFixes.begin(), gameEntry.gameFixes.end(), id) == gameEntry.gameFixes.end())
@@ -190,7 +190,7 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 			if (StringUtil::EndsWith(speedHack, "SpeedHack"))
 			{
 				speedHack.erase(speedHack.size() - 9);
-				for (SpeedhackId id = SpeedhackId_FIRST; id < pxEnumEnd; id++)
+				for (SpeedhackId id = SpeedhackId_FIRST; id < pxEnumEnd; ++id)
 				{
 					if (speedHack.compare(EnumToString(id)) == 0 &&
 						std::none_of(gameEntry.speedHacks.begin(), gameEntry.speedHacks.end(), [id](const auto& it) { return it.first == id; }))

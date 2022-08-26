@@ -586,6 +586,7 @@ bool GSDeviceMTL::Create(HostDisplay* display)
 
 	m_features.broken_point_sampler = [[m_dev.dev name] containsString:@"AMD"];
 	m_features.geometry_shader = false;
+	m_features.vs_expand = true;
 	m_features.image_load_store = m_dev.features.primid;
 	m_features.texture_barrier = true;
 	m_features.provoking_vertex_last = false;
@@ -741,10 +742,18 @@ bool GSDeviceMTL::Create(HostDisplay* display)
 		{
 			VSSelector sel;
 			sel.key = i;
+			if (sel.point_size && sel.expand != GSMTLExpandType::None)
+				continue;
 			setFnConstantB(m_fn_constants, sel.fst,        GSMTLConstantIndex_FST);
 			setFnConstantB(m_fn_constants, sel.iip,        GSMTLConstantIndex_IIP);
 			setFnConstantB(m_fn_constants, sel.point_size, GSMTLConstantIndex_VS_POINT_SIZE);
-			m_hw_vs[i] = LoadShader(@"vs_main");
+			NSString* shader = @"vs_main";
+			if (sel.expand != GSMTLExpandType::None)
+			{
+				setFnConstantI(m_fn_constants, static_cast<u32>(sel.expand), GSMTLConstantIndex_VS_EXPAND_TYPE);
+				shader = @"vs_main_expand";
+			}
+			m_hw_vs[i] = LoadShader(shader);
 		}
 
 		// Init pipelines
@@ -1159,6 +1168,17 @@ static MTLBlendOperation ConvertBlendOp(GSDevice::BlendOp generic)
 
 static constexpr MTLColorWriteMask MTLColorWriteMaskRGB = MTLColorWriteMaskRed | MTLColorWriteMaskGreen | MTLColorWriteMaskBlue;
 
+static GSMTLExpandType ConvertVSExpand(GSHWDrawConfig::VSExpand generic)
+{
+	switch (generic)
+	{
+		case GSHWDrawConfig::VSExpand::None:   return GSMTLExpandType::None;
+		case GSHWDrawConfig::VSExpand::Point:  return GSMTLExpandType::Point;
+		case GSHWDrawConfig::VSExpand::Line:   return GSMTLExpandType::Line;
+		case GSHWDrawConfig::VSExpand::Sprite: return GSMTLExpandType::Sprite;
+	}
+}
+
 void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDrawConfig::PSSelector pssel, GSHWDrawConfig::BlendState blend, GSHWDrawConfig::ColorMaskSelector cms)
 {
 	PipelineSelectorExtrasMTL extras(blend, m_current_render.color_target, cms, m_current_render.depth_target, m_current_render.stencil_target);
@@ -1180,6 +1200,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 	vssel_mtl.fst = vssel.fst;
 	vssel_mtl.iip = vssel.iip;
 	vssel_mtl.point_size = vssel.point_size;
+	vssel_mtl.expand = ConvertVSExpand(vssel.expand);
 	id<MTLFunction> vs = m_hw_vs[vssel_mtl.key];
 
 	id<MTLFunction> ps;
@@ -1242,7 +1263,12 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 	}
 
 	MRCOwned<MTLRenderPipelineDescriptor*> pdesc = MRCTransfer([MTLRenderPipelineDescriptor new]);
-	[pdesc setVertexDescriptor:m_hw_vertex];
+	if (vssel_mtl.point_size)
+		[pdesc setInputPrimitiveTopology:MTLPrimitiveTopologyClassPoint];
+	if (vssel_mtl.expand == GSMTLExpandType::None)
+		[pdesc setVertexDescriptor:m_hw_vertex];
+	else
+		[pdesc setInputPrimitiveTopology:MTLPrimitiveTopologyClassTriangle];
 	MTLRenderPipelineColorAttachmentDescriptor* color = [[pdesc colorAttachments] objectAtIndexedSubscript:0];
 	color.pixelFormat = ConvertPixelFormat(extras.rt);
 	[pdesc setDepthAttachmentPixelFormat:extras.has_depth ? MTLPixelFormatDepth32Float_Stencil8 : MTLPixelFormatInvalid];
@@ -1396,6 +1422,15 @@ void GSDeviceMTL::MRESetPipeline(id<MTLRenderPipelineState> pipe)
 // MARK: - HW Render
 
 // Metal can't import GSDevice.h, but we should make sure the structs are at least compatible
+static_assert(sizeof(GSVertex) == sizeof(GSMTLMainVertex));
+static_assert(offsetof(GSVertex, ST)      == offsetof(GSMTLMainVertex, st));
+static_assert(offsetof(GSVertex, RGBAQ.R) == offsetof(GSMTLMainVertex, rgba));
+static_assert(offsetof(GSVertex, RGBAQ.Q) == offsetof(GSMTLMainVertex, q));
+static_assert(offsetof(GSVertex, XYZ.X)   == offsetof(GSMTLMainVertex, xy));
+static_assert(offsetof(GSVertex, XYZ.Z)   == offsetof(GSMTLMainVertex, z));
+static_assert(offsetof(GSVertex, UV)      == offsetof(GSMTLMainVertex, uv));
+static_assert(offsetof(GSVertex, FOG)     == offsetof(GSMTLMainVertex, fog));
+
 static_assert(sizeof(GSHWDrawConfig::VSConstantBuffer) == sizeof(GSMTLMainVSUniform));
 static_assert(sizeof(GSHWDrawConfig::PSConstantBuffer) == sizeof(GSMTLMainPSUniform));
 static_assert(offsetof(GSHWDrawConfig::VSConstantBuffer, vertex_scale)     == offsetof(GSMTLMainVSUniform, vertex_scale));
