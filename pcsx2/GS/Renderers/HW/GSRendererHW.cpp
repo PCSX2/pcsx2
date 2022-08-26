@@ -2481,6 +2481,8 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 	// Compute the blending equation to detect special case
 	const GSDevice::FeatureSupport features(g_gs_device->Features());
 	const GIFRegALPHA& ALPHA = m_context->ALPHA;
+	// AFIX: Afix factor.
+	u8 AFIX = ALPHA.FIX;
 
 	// Set blending to shader bits
 	m_conf.ps.blend_a = ALPHA.A;
@@ -2495,15 +2497,21 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 		m_conf.ps.fixed_one_a = 1;
 		m_conf.ps.blend_c = 0;
 	}
+	// 24 bits doesn't have an alpha channel so use 128 (1.0f) fix factor as equivalent.
+	else if (m_conf.ps.dfmt == 1 && m_conf.ps.blend_c == 1)
+	{
+		AFIX = 128;
+		m_conf.ps.blend_c = 2;
+	}
 
 	// Get alpha value
 	const bool alpha_c0_zero = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().max == 0) && !IsCoverageAlpha();
 	const bool alpha_c0_one = (m_conf.ps.blend_c == 0 && (GetAlphaMinMax().min == 128) && (GetAlphaMinMax().max == 128)) || IsCoverageAlpha();
 	const bool alpha_c0_high_min_one = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().min > 128) && !IsCoverageAlpha();
 	const bool alpha_c0_high_max_one = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().max > 128) && !IsCoverageAlpha();
-	const bool alpha_c2_zero = (m_conf.ps.blend_c == 2 && ALPHA.FIX == 0u);
-	const bool alpha_c2_one = (m_conf.ps.blend_c == 2 && ALPHA.FIX == 128u);
-	const bool alpha_c2_high_one = (m_conf.ps.blend_c == 2 && ALPHA.FIX > 128u);
+	const bool alpha_c2_zero = (m_conf.ps.blend_c == 2 && AFIX == 0u);
+	const bool alpha_c2_one = (m_conf.ps.blend_c == 2 && AFIX == 128u);
+	const bool alpha_c2_high_one = (m_conf.ps.blend_c == 2 && AFIX > 128u);
 	const bool alpha_one = alpha_c0_one || alpha_c2_one;
 
 	// Optimize blending equations, must be done before index calculation
@@ -2832,7 +2840,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 	{
 		// Require the fix alpha vlaue
 		if (m_conf.ps.blend_c == 2)
-			m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(ALPHA.FIX) / 128.0f;
+			m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(AFIX) / 128.0f;
 
 		const HWBlend blend = GSDevice::GetBlend(blend_index, replace_dual_src);
 		if (accumulation_blend)
@@ -2874,7 +2882,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 		else if (blend_mix)
 		{
 			// For mixed blend, the source blend is done in the shader (so we use CONST_ONE as a factor).
-			m_conf.blend = {true, GSDevice::CONST_ONE, blend.dst, blend.op, m_conf.ps.blend_c == 2, ALPHA.FIX};
+			m_conf.blend = {true, GSDevice::CONST_ONE, blend.dst, blend.op, m_conf.ps.blend_c == 2, AFIX};
 			m_conf.ps.blend_mix = (blend.op == GSDevice::OP_REV_SUBTRACT) ? 2 : 1;
 			
 			// Elide DSB colour output if not used by dest.
@@ -2970,7 +2978,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			else if (m_conf.ps.blend_c == 2)
 			{
 				m_conf.ps.blend_c = 2;
-				m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(ALPHA.FIX) / 128.0f;
+				m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(AFIX) / 128.0f;
 				m_conf.ps.clr_hw = 2;
 			}
 			else // m_conf.ps.blend_c == 0
@@ -2989,18 +2997,8 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			m_conf.ps.clr_hw = 6;
 			m_conf.require_one_barrier |= true;
 		}
-
-		if (m_conf.ps.dfmt == 1 && m_conf.ps.blend_c == 1)
-		{
-			// 24 bits doesn't have an alpha channel so use 1.0f fix factor as equivalent
-			const HWBlend blend(GSDevice::GetBlend(blend_index + 3, replace_dual_src)); // +3 <=> +1 on C
-			m_conf.blend = {true, blend.src, blend.dst, blend.op, true, 128};
-		}
-		else
-		{
-			const HWBlend blend(GSDevice::GetBlend(blend_index, replace_dual_src));
-			m_conf.blend = {true, blend.src, blend.dst, blend.op, m_conf.ps.blend_c == 2, ALPHA.FIX};
-		}
+		const HWBlend blend(GSDevice::GetBlend(blend_index, replace_dual_src));
+		m_conf.blend = {true, blend.src, blend.dst, blend.op, m_conf.ps.blend_c == 2, AFIX};
 
 		// Remove second color output when unused. Works around bugs in some drivers (e.g. Intel).
 		m_conf.ps.no_color1 |= !GSDevice::IsDualSourceBlendFactor(m_conf.blend.src_factor) &&

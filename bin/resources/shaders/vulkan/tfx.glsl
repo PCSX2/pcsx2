@@ -1008,13 +1008,9 @@ void ps_blend(inout vec4 Color, inout float As)
 				vec4 RT = vec4(0.0f);
 		#endif
 
-		#if PS_DFMT == FMT_24
-				float Ad = 1.0f;
-		#else
 				// FIXME FMT_16 case
 				// FIXME Ad or Ad * 2?
 				float Ad = RT.a / 128.0f;
-		#endif
 
 				// Let the compiler do its jobs !
 				vec3 Cd = RT.rgb;
