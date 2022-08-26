@@ -112,7 +112,7 @@ IsoDirectory::IsoDirectory(SectorSource& r)
 }
 
 // Used to load a specific directory from a file descriptor
-IsoDirectory::IsoDirectory(SectorSource& r, IsoFileDescriptor directoryEntry)
+IsoDirectory::IsoDirectory(SectorSource& r, const IsoFileDescriptor& directoryEntry)
 	: internalReader(r)
 {
 	m_fstype = FStype_ISO9660;

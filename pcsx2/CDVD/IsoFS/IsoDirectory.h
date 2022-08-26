@@ -34,7 +34,7 @@ public:
 
 public:
 	IsoDirectory(SectorSource& r);
-	IsoDirectory(SectorSource& r, IsoFileDescriptor directoryEntry);
+	IsoDirectory(SectorSource& r, const IsoFileDescriptor& directoryEntry);
 	virtual ~IsoDirectory() = default;
 
 	std::string FStype_ToString() const;
