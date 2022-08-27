@@ -3415,8 +3415,9 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 				DATE_BARRIER = true;
 			}
 		}
-		// When Blending is disabled and Edge Anti Aliasing is enabled, the output alpha is Coverage (which we force to 128) so DATE will fail/pass guaranteed on second pass.
-		else if (m_conf.colormask.wa && (m_context->FBA.FBA || IsCoverageAlpha()))
+		// When Blending is disabled and Edge Anti Aliasing is enabled,
+		// the output alpha is Coverage (which we force to 128) so DATE will fail/pass guaranteed on second pass.
+		else if (m_conf.colormask.wa && (m_context->FBA.FBA || IsCoverageAlpha()) && features.stencil_buffer)
 		{
 			GL_PERF("DATE: Fast with FBA, all pixels will be >= 128");
 			DATE_one = !m_context->TEST.DATM;
@@ -3426,7 +3427,13 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 			// Performance note: check alpha range with GetAlphaMinMax()
 			// Note: all my dump are already above 120fps, but it seems to reduce GPU load
 			// with big upscaling
-			if (m_context->TEST.DATM && GetAlphaMinMax().max < 128 && features.stencil_buffer)
+			if (m_context->FRAME.FBMSK & 0x80000000 && features.stencil_buffer)
+			{
+				// Alpha will always be below 128 because of the mask
+				GL_PERF("DATE: Fast with alpha mask, all pixels will be < 128");
+				DATE_one = m_context->TEST.DATM;
+			}
+			else if (m_context->TEST.DATM && GetAlphaMinMax().max < 128 && features.stencil_buffer)
 			{
 				// Only first pixel (write 0) will pass (alpha is 1)
 				GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
