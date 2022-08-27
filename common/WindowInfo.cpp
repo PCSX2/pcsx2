@@ -18,7 +18,7 @@
 #include "WindowInfo.h"
 #include "Console.h"
 
-#if defined(_WIN32) && !defined(_UWP)
+#if defined(_WIN32)
 
 #include "RedtapeWindows.h"
 #include <dwmapi.h>

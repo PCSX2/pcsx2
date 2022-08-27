@@ -31,8 +31,6 @@ std::unique_ptr<D3D12::Context> g_d3d12_context;
 
 using namespace D3D12;
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-
 // Private D3D12 state
 static HMODULE s_d3d12_library;
 static PFN_D3D12_CREATE_DEVICE s_d3d12_create_device;
@@ -73,21 +71,6 @@ static void UnloadD3D12Library()
 		s_d3d12_library = nullptr;
 	}
 }
-
-#else
-
-static const PFN_D3D12_CREATE_DEVICE s_d3d12_create_device = D3D12CreateDevice;
-static const PFN_D3D12_GET_DEBUG_INTERFACE s_d3d12_get_debug_interface = D3D12GetDebugInterface;
-static const PFN_D3D12_SERIALIZE_ROOT_SIGNATURE s_d3d12_serialize_root_signature = D3D12SerializeRootSignature;
-
-static bool LoadD3D12Library()
-{
-	return true;
-}
-
-static void UnloadD3D12Library() {}
-
-#endif
 
 Context::Context() = default;
 
