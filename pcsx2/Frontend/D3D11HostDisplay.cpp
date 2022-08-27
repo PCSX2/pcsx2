@@ -35,8 +35,8 @@
 class D3D11HostDisplayTexture : public HostDisplayTexture
 {
 public:
-	D3D11HostDisplayTexture(Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv, u32 width, u32 height, bool dynamic)
+	D3D11HostDisplayTexture(wil::com_ptr_nothrow<ID3D11Texture2D> texture,
+		wil::com_ptr_nothrow<ID3D11ShaderResourceView> srv, u32 width, u32 height, bool dynamic)
 		: m_texture(std::move(texture))
 		, m_srv(std::move(srv))
 		, m_width(width)
@@ -46,28 +46,28 @@ public:
 	}
 	~D3D11HostDisplayTexture() override = default;
 
-	void* GetHandle() const override { return m_srv.Get(); }
+	void* GetHandle() const override { return m_srv.get(); }
 	u32 GetWidth() const override { return m_width; }
 	u32 GetHeight() const override { return m_height; }
 
-	__fi ID3D11Texture2D* GetD3DTexture() const { return m_texture.Get(); }
-	__fi ID3D11ShaderResourceView* GetD3DSRV() const { return m_srv.Get(); }
-	__fi ID3D11ShaderResourceView* const* GetD3DSRVArray() const { return m_srv.GetAddressOf(); }
+	__fi ID3D11Texture2D* GetD3DTexture() const { return m_texture.get(); }
+	__fi ID3D11ShaderResourceView* GetD3DSRV() const { return m_srv.get(); }
+	__fi ID3D11ShaderResourceView* const* GetD3DSRVArray() const { return m_srv.addressof(); }
 	__fi bool IsDynamic() const { return m_dynamic; }
 
 private:
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_texture;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_srv;
+	wil::com_ptr_nothrow<ID3D11Texture2D> m_texture;
+	wil::com_ptr_nothrow<ID3D11ShaderResourceView> m_srv;
 	u32 m_width;
 	u32 m_height;
 	bool m_dynamic;
 };
 
-static Microsoft::WRL::ComPtr<ID3D11VertexShader> CreateVertexShader(ID3D11Device* device, const void* bytecode,
+static wil::com_ptr_nothrow<ID3D11VertexShader> CreateVertexShader(ID3D11Device* device, const void* bytecode,
 	size_t bytecode_length)
 {
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> shader;
-	const HRESULT hr = device->CreateVertexShader(bytecode, bytecode_length, nullptr, shader.GetAddressOf());
+	wil::com_ptr_nothrow<ID3D11VertexShader> shader;
+	const HRESULT hr = device->CreateVertexShader(bytecode, bytecode_length, nullptr, shader.put());
 	if (FAILED(hr))
 	{
 		Console.Error("Failed to create vertex shader: 0x%08X", hr);
@@ -77,11 +77,11 @@ static Microsoft::WRL::ComPtr<ID3D11VertexShader> CreateVertexShader(ID3D11Devic
 	return shader;
 }
 
-static Microsoft::WRL::ComPtr<ID3D11PixelShader> CreatePixelShader(ID3D11Device* device, const void* bytecode,
+static wil::com_ptr_nothrow<ID3D11PixelShader> CreatePixelShader(ID3D11Device* device, const void* bytecode,
 	size_t bytecode_length)
 {
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> shader;
-	const HRESULT hr = device->CreatePixelShader(bytecode, bytecode_length, nullptr, shader.GetAddressOf());
+	wil::com_ptr_nothrow<ID3D11PixelShader> shader;
+	const HRESULT hr = device->CreatePixelShader(bytecode, bytecode_length, nullptr, shader.put());
 	if (FAILED(hr))
 	{
 		Console.Error("Failed to create pixel shader: 0x%08X", hr);
@@ -96,8 +96,8 @@ D3D11HostDisplay::D3D11HostDisplay() = default;
 D3D11HostDisplay::~D3D11HostDisplay()
 {
 	D3D11HostDisplay::DestroyRenderSurface();
-	m_context.Reset();
-	m_device.Reset();
+	m_context.reset();
+	m_device.reset();
 }
 
 HostDisplay::RenderAPI D3D11HostDisplay::GetRenderAPI() const
@@ -107,17 +107,17 @@ HostDisplay::RenderAPI D3D11HostDisplay::GetRenderAPI() const
 
 void* D3D11HostDisplay::GetRenderDevice() const
 {
-	return m_device.Get();
+	return m_device.get();
 }
 
 void* D3D11HostDisplay::GetRenderContext() const
 {
-	return m_context.Get();
+	return m_context.get();
 }
 
 void* D3D11HostDisplay::GetRenderSurface() const
 {
-	return m_swap_chain.Get();
+	return m_swap_chain.get();
 }
 
 bool D3D11HostDisplay::HasRenderDevice() const
@@ -137,14 +137,14 @@ std::unique_ptr<HostDisplayTexture> D3D11HostDisplay::CreateTexture(u32 width, u
 		dynamic ? D3D11_CPU_ACCESS_WRITE : 0, 1, 0, 0);
 	const D3D11_SUBRESOURCE_DATA srd{data, data_stride, data_stride * height};
 	ComPtr<ID3D11Texture2D> texture;
-	HRESULT hr = m_device->CreateTexture2D(&desc, data ? &srd : nullptr, texture.GetAddressOf());
+	HRESULT hr = m_device->CreateTexture2D(&desc, data ? &srd : nullptr, texture.addressof());
 	if (FAILED(hr))
 		return {};
 
 	const CD3D11_SHADER_RESOURCE_VIEW_DESC srv_desc(D3D11_SRV_DIMENSION_TEXTURE2D, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 1, 0,
 		1);
 	ComPtr<ID3D11ShaderResourceView> srv;
-	hr = m_device->CreateShaderResourceView(texture.Get(), &srv_desc, srv.GetAddressOf());
+	hr = m_device->CreateShaderResourceView(texture.get(), &srv_desc, srv.addressof());
 	if (FAILED(hr))
 		return {};
 
@@ -217,7 +217,7 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 		create_flags |= D3D11_CREATE_DEVICE_DEBUG;
 
 	ComPtr<IDXGIFactory> temp_dxgi_factory;
-	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(temp_dxgi_factory.GetAddressOf()));
+	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(temp_dxgi_factory.put()));
 	if (FAILED(hr))
 	{
 		Console.Error("Failed to create DXGI factory: 0x%08X", hr);
@@ -227,7 +227,7 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 	u32 adapter_index;
 	if (!adapter_name.empty())
 	{
-		AdapterAndModeList adapter_info(GetAdapterAndModeList(temp_dxgi_factory.Get()));
+		AdapterAndModeList adapter_info(GetAdapterAndModeList(temp_dxgi_factory.get()));
 		for (adapter_index = 0; adapter_index < static_cast<u32>(adapter_info.adapter_names.size()); adapter_index++)
 		{
 			if (adapter_name == adapter_info.adapter_names[adapter_index])
@@ -247,7 +247,7 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 	}
 
 	ComPtr<IDXGIAdapter> dxgi_adapter;
-	hr = temp_dxgi_factory->EnumAdapters(adapter_index, dxgi_adapter.GetAddressOf());
+	hr = temp_dxgi_factory->EnumAdapters(adapter_index, dxgi_adapter.put());
 	if (FAILED(hr))
 		Console.Warning("Failed to enumerate adapter %u, using default", adapter_index);
 
@@ -255,13 +255,13 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 		{D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0}};
 
 	hr =
-		D3D11CreateDevice(dxgi_adapter.Get(), dxgi_adapter ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, nullptr,
+		D3D11CreateDevice(dxgi_adapter.get(), dxgi_adapter ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, nullptr,
 			create_flags, requested_feature_levels.data(), static_cast<UINT>(requested_feature_levels.size()),
-			D3D11_SDK_VERSION, m_device.GetAddressOf(), nullptr, m_context.GetAddressOf());
+			D3D11_SDK_VERSION, m_device.put(), nullptr, m_context.put());
 
 	// we re-grab these later, see below
-	dxgi_adapter.Reset();
-	temp_dxgi_factory.Reset();
+	dxgi_adapter.reset();
+	temp_dxgi_factory.reset();
 
 	if (FAILED(hr))
 	{
@@ -272,8 +272,7 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 	if (debug_device && IsDebuggerPresent())
 	{
 		ComPtr<ID3D11InfoQueue> info;
-		hr = m_device.As(&info);
-		if (SUCCEEDED(hr))
+		if (m_device.try_query_to(&info))
 		{
 			info->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, TRUE);
 			info->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, TRUE);
@@ -282,8 +281,8 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 
 	// we need the specific factory for the device, otherwise MakeWindowAssociation() is flaky.
 	ComPtr<IDXGIDevice> dxgi_device;
-	if (FAILED(m_device.As(&dxgi_device)) || FAILED(dxgi_device->GetParent(IID_PPV_ARGS(dxgi_adapter.GetAddressOf()))) ||
-		FAILED(dxgi_adapter->GetParent(IID_PPV_ARGS(m_dxgi_factory.GetAddressOf()))))
+	if (!m_device.try_query_to(&dxgi_device) || FAILED(dxgi_device->GetParent(IID_PPV_ARGS(dxgi_adapter.put()))) ||
+		FAILED(dxgi_adapter->GetParent(IID_PPV_ARGS(m_dxgi_factory.put()))))
 	{
 		Console.Warning("Failed to get parent adapter/device/factory");
 		return false;
@@ -305,8 +304,7 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 
 	m_allow_tearing_supported = false;
 	ComPtr<IDXGIFactory5> dxgi_factory5;
-	hr = m_dxgi_factory.As(&dxgi_factory5);
-	if (SUCCEEDED(hr))
+	if (m_dxgi_factory.try_query_to(&dxgi_factory5))
 	{
 		BOOL allow_tearing_supported = false;
 		hr = dxgi_factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported,
@@ -378,7 +376,7 @@ bool D3D11HostDisplay::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
 		swap_chain_desc.BufferDesc.Height, m_using_flip_model_swap_chain ? "flip-discard" : "discard",
 		swap_chain_desc.Windowed ? "windowed" : "full-screen");
 
-	HRESULT hr = m_dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
+	HRESULT hr = m_dxgi_factory->CreateSwapChain(m_device.get(), &swap_chain_desc, m_swap_chain.put());
 	if (FAILED(hr) && m_using_flip_model_swap_chain)
 	{
 		Console.Warning("Failed to create a flip-discard swap chain, trying discard.");
@@ -387,7 +385,7 @@ bool D3D11HostDisplay::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
 		m_using_flip_model_swap_chain = false;
 		m_using_allow_tearing = false;
 
-		hr = m_dxgi_factory->CreateSwapChain(m_device.Get(), &swap_chain_desc, m_swap_chain.GetAddressOf());
+		hr = m_dxgi_factory->CreateSwapChain(m_device.get(), &swap_chain_desc, m_swap_chain.put());
 		if (FAILED(hr))
 		{
 			Console.Error("CreateSwapChain failed: 0x%08X", hr);
@@ -396,7 +394,7 @@ bool D3D11HostDisplay::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
 	}
 
 	ComPtr<IDXGIFactory> dxgi_factory;
-	hr = m_swap_chain->GetParent(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
+	hr = m_swap_chain->GetParent(IID_PPV_ARGS(dxgi_factory.put()));
 	if (SUCCEEDED(hr))
 	{
 		hr = dxgi_factory->MakeWindowAssociation(swap_chain_desc.OutputWindow, DXGI_MWA_NO_WINDOW_CHANGES);
@@ -410,7 +408,7 @@ bool D3D11HostDisplay::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
 bool D3D11HostDisplay::CreateSwapChainRTV()
 {
 	ComPtr<ID3D11Texture2D> backbuffer;
-	HRESULT hr = m_swap_chain->GetBuffer(0, IID_PPV_ARGS(backbuffer.GetAddressOf()));
+	HRESULT hr = m_swap_chain->GetBuffer(0, IID_PPV_ARGS(backbuffer.put()));
 	if (FAILED(hr))
 	{
 		Console.Error("GetBuffer for RTV failed: 0x%08X", hr);
@@ -422,7 +420,7 @@ bool D3D11HostDisplay::CreateSwapChainRTV()
 
 	CD3D11_RENDER_TARGET_VIEW_DESC rtv_desc(D3D11_RTV_DIMENSION_TEXTURE2D, backbuffer_desc.Format, 0, 0,
 		backbuffer_desc.ArraySize);
-	hr = m_device->CreateRenderTargetView(backbuffer.Get(), &rtv_desc, m_swap_chain_rtv.GetAddressOf());
+	hr = m_device->CreateRenderTargetView(backbuffer.get(), &rtv_desc, m_swap_chain_rtv.put());
 	if (FAILED(hr))
 	{
 		Console.Error("CreateRenderTargetView for swap chain failed: 0x%08X", hr);
@@ -465,8 +463,8 @@ void D3D11HostDisplay::DestroyRenderSurface()
 	if (IsFullscreen())
 		SetFullscreen(false, 0, 0, 0.0f);
 
-	m_swap_chain_rtv.Reset();
-	m_swap_chain.Reset();
+	m_swap_chain_rtv.reset();
+	m_swap_chain.reset();
 }
 
 static std::string GetDriverVersionFromLUID(const LUID& luid)
@@ -536,10 +534,10 @@ std::string D3D11HostDisplay::GetDriverInfo() const
 	ret += "\n";
 
 	ComPtr<IDXGIDevice> dxgi_dev;
-	if (SUCCEEDED(m_device.As(&dxgi_dev)))
+	if (m_device.try_query_to(&dxgi_dev))
 	{
 		ComPtr<IDXGIAdapter> dxgi_adapter;
-		if (SUCCEEDED(dxgi_dev->GetAdapter(dxgi_adapter.ReleaseAndGetAddressOf())))
+		if (SUCCEEDED(dxgi_dev->GetAdapter(dxgi_adapter.put())))
 		{
 			DXGI_ADAPTER_DESC desc;
 			if (SUCCEEDED(dxgi_adapter->GetDesc(&desc)))
@@ -571,7 +569,7 @@ void D3D11HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_h
 	if (m_window_info.surface_width == new_window_width && m_window_info.surface_height == new_window_height)
 		return;
 
-	m_swap_chain_rtv.Reset();
+	m_swap_chain_rtv.reset();
 
 	HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
 		m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
@@ -640,8 +638,8 @@ bool D3D11HostDisplay::SetFullscreen(bool fullscreen, u32 width, u32 height, flo
 		return true;
 	}
 
-	m_swap_chain_rtv.Reset();
-	m_swap_chain.Reset();
+	m_swap_chain_rtv.reset();
+	m_swap_chain.reset();
 
 	if (!CreateSwapChain(&closest_mode))
 	{
@@ -657,7 +655,7 @@ bool D3D11HostDisplay::SetFullscreen(bool fullscreen, u32 width, u32 height, flo
 
 bool D3D11HostDisplay::CreateImGuiContext()
 {
-	return ImGui_ImplDX11_Init(m_device.Get(), m_context.Get());
+	return ImGui_ImplDX11_Init(m_device.get(), m_context.get());
 }
 
 void D3D11HostDisplay::DestroyImGuiContext()
@@ -680,8 +678,8 @@ bool D3D11HostDisplay::BeginPresent(bool frame_skip)
 	}
 
 	static constexpr std::array<float, 4> clear_color = {};
-	m_context->ClearRenderTargetView(m_swap_chain_rtv.Get(), clear_color.data());
-	m_context->OMSetRenderTargets(1, m_swap_chain_rtv.GetAddressOf(), nullptr);
+	m_context->ClearRenderTargetView(m_swap_chain_rtv.get(), clear_color.data());
+	m_context->OMSetRenderTargets(1, m_swap_chain_rtv.addressof(), nullptr);
 
 	const CD3D11_VIEWPORT vp(0.0f, 0.0f, static_cast<float>(m_window_info.surface_width), static_cast<float>(m_window_info.surface_height));
 	const CD3D11_RECT scissor(0, 0, m_window_info.surface_width, m_window_info.surface_height);
@@ -715,7 +713,7 @@ bool D3D11HostDisplay::CreateTimestampQueries()
 		for (u32 j = 0; j < 3; j++)
 		{
 			const CD3D11_QUERY_DESC qdesc((j == 0) ? D3D11_QUERY_TIMESTAMP_DISJOINT : D3D11_QUERY_TIMESTAMP);
-			const HRESULT hr = m_device->CreateQuery(&qdesc, m_timestamp_queries[i][j].ReleaseAndGetAddressOf());
+			const HRESULT hr = m_device->CreateQuery(&qdesc, m_timestamp_queries[i][j].put());
 			if (FAILED(hr))
 			{
 				m_timestamp_queries = {};
@@ -734,7 +732,7 @@ void D3D11HostDisplay::DestroyTimestampQueries()
 		return;
 
 	if (m_timestamp_query_started)
-		m_context->End(m_timestamp_queries[m_write_timestamp_query][1].Get());
+		m_context->End(m_timestamp_queries[m_write_timestamp_query][1].get());
 
 	m_timestamp_queries = {};
 	m_read_timestamp_query = 0;
@@ -748,7 +746,7 @@ void D3D11HostDisplay::PopTimestampQuery()
 	while (m_waiting_timestamp_queries > 0)
 	{
 		D3D11_QUERY_DATA_TIMESTAMP_DISJOINT disjoint;
-		const HRESULT disjoint_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][0].Get(), &disjoint, sizeof(disjoint), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+		const HRESULT disjoint_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][0].get(), &disjoint, sizeof(disjoint), D3D11_ASYNC_GETDATA_DONOTFLUSH);
 		if (disjoint_hr != S_OK)
 			break;
 
@@ -763,8 +761,8 @@ void D3D11HostDisplay::PopTimestampQuery()
 		else
 		{
 			u64 start = 0, end = 0;
-			const HRESULT start_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][1].Get(), &start, sizeof(start), D3D11_ASYNC_GETDATA_DONOTFLUSH);
-			const HRESULT end_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][2].Get(), &end, sizeof(end), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+			const HRESULT start_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][1].get(), &start, sizeof(start), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+			const HRESULT end_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][2].get(), &end, sizeof(end), D3D11_ASYNC_GETDATA_DONOTFLUSH);
 			if (start_hr == S_OK && end_hr == S_OK)
 			{
 				m_accumulated_gpu_time += static_cast<float>(static_cast<double>(end - start) / (static_cast<double>(disjoint.Frequency) / 1000.0));
@@ -777,8 +775,8 @@ void D3D11HostDisplay::PopTimestampQuery()
 	// delay ending the current query until we've read back some
 	if (m_timestamp_query_started && m_waiting_timestamp_queries < (NUM_TIMESTAMP_QUERIES - 1))
 	{
-		m_context->End(m_timestamp_queries[m_write_timestamp_query][2].Get());
-		m_context->End(m_timestamp_queries[m_write_timestamp_query][0].Get());
+		m_context->End(m_timestamp_queries[m_write_timestamp_query][2].get());
+		m_context->End(m_timestamp_queries[m_write_timestamp_query][0].get());
 		m_write_timestamp_query = (m_write_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
 		m_timestamp_query_started = false;
 		m_waiting_timestamp_queries++;
@@ -790,8 +788,8 @@ void D3D11HostDisplay::KickTimestampQuery()
 	if (m_timestamp_query_started || !m_timestamp_queries[0][0])
 		return;
 
-	m_context->Begin(m_timestamp_queries[m_write_timestamp_query][0].Get());
-	m_context->End(m_timestamp_queries[m_write_timestamp_query][1].Get());
+	m_context->Begin(m_timestamp_queries[m_write_timestamp_query][0].get());
+	m_context->End(m_timestamp_queries[m_write_timestamp_query][1].get());
 	m_timestamp_query_started = true;
 }
 
@@ -822,11 +820,11 @@ float D3D11HostDisplay::GetAndResetAccumulatedGPUTime()
 HostDisplay::AdapterAndModeList D3D11HostDisplay::StaticGetAdapterAndModeList()
 {
 	ComPtr<IDXGIFactory> dxgi_factory;
-	const HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
+	const HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(dxgi_factory.put()));
 	if (FAILED(hr))
 		return {};
 
-	return GetAdapterAndModeList(dxgi_factory.Get());
+	return GetAdapterAndModeList(dxgi_factory.get());
 }
 
 HostDisplay::AdapterAndModeList D3D11HostDisplay::GetAdapterAndModeList(IDXGIFactory* dxgi_factory)
@@ -834,7 +832,7 @@ HostDisplay::AdapterAndModeList D3D11HostDisplay::GetAdapterAndModeList(IDXGIFac
 	AdapterAndModeList adapter_info;
 	ComPtr<IDXGIAdapter> current_adapter;
 	while (SUCCEEDED(dxgi_factory->EnumAdapters(static_cast<UINT>(adapter_info.adapter_names.size()),
-		current_adapter.ReleaseAndGetAddressOf())))
+		current_adapter.put())))
 	{
 		DXGI_ADAPTER_DESC adapter_desc;
 		std::string adapter_name;
@@ -899,6 +897,6 @@ HostDisplay::AdapterAndModeList D3D11HostDisplay::GetAdapterAndModeList(IDXGIFac
 
 HostDisplay::AdapterAndModeList D3D11HostDisplay::GetAdapterAndModeList()
 {
-	return GetAdapterAndModeList(m_dxgi_factory.Get());
+	return GetAdapterAndModeList(m_dxgi_factory.get());
 }
 

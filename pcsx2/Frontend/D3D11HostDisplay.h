@@ -24,13 +24,13 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include <wrl/client.h>
+#include <wil/com.h>
 
 class D3D11HostDisplay final : public HostDisplay
 {
 public:
 	template <typename T>
-	using ComPtr = Microsoft::WRL::ComPtr<T>;
+	using ComPtr = wil::com_ptr_nothrow<T>;
 
 	D3D11HostDisplay();
 	~D3D11HostDisplay();
