@@ -139,12 +139,7 @@ void D3D12HostDisplay::SetVSync(VsyncMode mode)
 bool D3D12HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, VsyncMode vsync, bool threaded_presentation, bool debug_device)
 {
 	ComPtr<IDXGIFactory> temp_dxgi_factory;
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(temp_dxgi_factory.put()));
-#else
-	HRESULT hr = CreateDXGIFactory2(0, IID_PPV_ARGS(temp_dxgi_factory.put()));
-#endif
-
 	if (FAILED(hr))
 	{
 		Console.Error("Failed to create DXGI factory: 0x%08X", hr);
@@ -220,9 +215,6 @@ bool D3D12HostDisplay::DoneRenderContextCurrent()
 
 bool D3D12HostDisplay::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
 {
-	HRESULT hr;
-
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	if (m_window_info.type != WindowInfo::Type::Win32)
 		return false;
 
@@ -257,7 +249,7 @@ bool D3D12HostDisplay::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
 	DevCon.WriteLn("Creating a %dx%d %s swap chain", swap_chain_desc.BufferDesc.Width, swap_chain_desc.BufferDesc.Height,
 		swap_chain_desc.Windowed ? "windowed" : "full-screen");
 
-	hr =
+	HRESULT hr =
 		m_dxgi_factory->CreateSwapChain(g_d3d12_context->GetCommandQueue(), &swap_chain_desc, m_swap_chain.put());
 	if (FAILED(hr))
 	{
@@ -268,43 +260,6 @@ bool D3D12HostDisplay::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
 	hr = m_dxgi_factory->MakeWindowAssociation(swap_chain_desc.OutputWindow, DXGI_MWA_NO_WINDOW_CHANGES);
 	if (FAILED(hr))
 		Console.Warning("MakeWindowAssociation() to disable ALT+ENTER failed");
-#else
-	if (m_window_info.type != WindowInfo::Type::WinRT)
-		return false;
-
-	ComPtr<IDXGIFactory2> factory2;
-	hr = m_dxgi_factory.As(&factory2);
-	if (FAILED(hr))
-	{
-		Console.Error("Failed to get DXGI factory: %08X", hr);
-		return false;
-	}
-
-	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
-	swap_chain_desc.Width = m_window_info.surface_width;
-	swap_chain_desc.Height = m_window_info.surface_height;
-	swap_chain_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	swap_chain_desc.SampleDesc.Count = 1;
-	swap_chain_desc.BufferCount = 3;
-	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-
-	m_using_allow_tearing = (m_allow_tearing_supported && !fullscreen_mode);
-	if (m_using_allow_tearing)
-		swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-
-	ComPtr<IDXGISwapChain1> swap_chain1;
-	hr = factory2->CreateSwapChainForCoreWindow(g_d3d12_context->GetCommandQueue(),
-		static_cast<IUnknown*>(m_window_info.window_handle), &swap_chain_desc,
-		nullptr, swap_chain1.GetAddressOf());
-	if (FAILED(hr))
-	{
-		Console.Error("CreateSwapChainForCoreWindow failed: 0x%08X", hr);
-		return false;
-	}
-
-	m_swap_chain = swap_chain1;
-#endif
 
 	return CreateSwapChainRTV();
 }
@@ -654,11 +609,7 @@ float D3D12HostDisplay::GetAndResetAccumulatedGPUTime()
 HostDisplay::AdapterAndModeList D3D12HostDisplay::StaticGetAdapterAndModeList()
 {
 	ComPtr<IDXGIFactory> dxgi_factory;
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(dxgi_factory.put()));
-#else
-	HRESULT hr = CreateDXGIFactory2(0, IID_PPV_ARGS(dxgi_factory.put()));
-#endif
+	const HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(dxgi_factory.put()));
 	if (FAILED(hr))
 		return {};
 
