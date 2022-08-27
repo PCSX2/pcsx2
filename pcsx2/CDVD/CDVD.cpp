@@ -2255,6 +2255,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 					case 0x44: // write console ID (9:1)
 						SetSCMDResultSize(1);
 						cdvdWriteConsoleID(&cdvd.SCMDParam[1]);
+						cdvd.SCMDResult[0] = 0; // returns 0 on success
 						break;
 
 					case 0x45: // read console ID (1:9), blocked on PS3 CECH-A ps2emu
@@ -2267,6 +2268,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 						{
 							SetSCMDResultSize(9);
 							cdvdReadConsoleID(&cdvd.SCMDResult[1]);
+							cdvd.SCMDResult[0] = 0; // returns 0 on success
 						}
 						break;
 
@@ -2414,6 +2416,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 						tmp = cdvd.SCMDResult[1];
 						cdvd.SCMDResult[1] = cdvd.SCMDResult[2];
 						cdvd.SCMDResult[2] = tmp;
+						cdvd.SCMDResult[0] = 0; // returns 0 on success
 					}
 					else
 					{
@@ -2434,6 +2437,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 					cdvd.SCMDParam[2] = cdvd.SCMDParam[3];
 					cdvd.SCMDParam[3] = tmp;
 					cdvdWriteNVM(&cdvd.SCMDParam[2], address * 2, 2);
+					cdvd.SCMDResult[0] = 0; // returns 0 on success
 				}
 				else
 				{
@@ -2459,7 +2463,6 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				cdvdReadILinkID(&cdvd.SCMDResult[1]);
 				if ((!cdvd.SCMDResult[3]) && (!cdvd.SCMDResult[4])) // nvm file is missing correct iLinkId, return hardcoded one
 				{
-					cdvd.SCMDResult[0] = 0x00;
 					cdvd.SCMDResult[1] = 0x00;
 					cdvd.SCMDResult[2] = 0xAC;
 					cdvd.SCMDResult[3] = 0xFF;
@@ -2469,11 +2472,13 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 					cdvd.SCMDResult[7] = 0xB9;
 					cdvd.SCMDResult[8] = 0x86;
 				}
+				cdvd.SCMDResult[0] = 0; // returns 0 on success
 				break;
 
 			case 0x13: // sceCdWriteILinkID (8:1)
 				SetSCMDResultSize(1);
 				cdvdWriteILinkID(&cdvd.SCMDParam[1]);
+				cdvd.SCMDResult[0] = 0; // returns 0 on success
 				break;
 
 			case 0x14: // CdCtrlAudioDigitalOut (1:1)
@@ -2496,11 +2501,13 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 			case 0x17: // CdReadModelNumber (1:9) - from xcdvdman, supported by PS3 CECH-A ps2emu
 				SetSCMDResultSize(9);
 				cdvdReadModelNumber(&cdvd.SCMDResult[1], cdvd.SCMDParam[0]);
+				cdvd.SCMDResult[0] = 0; // returns 0 on success
 				break;
 
 			case 0x18: // CdWriteModelNumber (9:1) - from xcdvdman
 				SetSCMDResultSize(1);
 				cdvdWriteModelNumber(&cdvd.SCMDParam[1], cdvd.SCMDParam[0]);
+				cdvd.SCMDResult[0] = 0; // returns 0 on success
 				break;
 
 				//		case 0x19: // sceCdForbidRead (0:1) - from xcdvdman
@@ -2508,7 +2515,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 
 			case 0x1A: // sceCdBootCertify (4:1)//(4:16 in psx?)
 				SetSCMDResultSize(1); //on input there are 4 bytes: 1;?10;J;C for 18000; 1;60;E;C for 39002 from ROMVER
-				cdvd.SCMDResult[0] = 1; //i guess that means okay
+				cdvd.SCMDResult[0] = 1; // 0 complete ; 1 busy ; 0x80 error
 				break;
 
 			case 0x1B: // sceCdCancelPOffRdy (0:1) - Call73 from Xcdvdman (1:1)
@@ -2708,11 +2715,13 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 			case 0x37: //called from EECONF [sceCdReadMAC - made up name] (0:9)
 				SetSCMDResultSize(9);
 				cdvdReadMAC(&cdvd.SCMDResult[1]);
+				cdvd.SCMDResult[0] = 0; // returns 0 on success
 				break;
 
 			case 0x38: //used to fix the MAC back after accidentally trashed it :D [sceCdWriteMAC - made up name] (8:1)
 				SetSCMDResultSize(1);
 				cdvdWriteMAC(&cdvd.SCMDParam[0]);
+				cdvd.SCMDResult[0] = 0; // returns 0 on success
 				break;
 
 			case 0x3E: //[__sceCdWriteRegionParams - made up name] (15:1) [Florin: hum, i was expecting 14:1]
@@ -2721,7 +2730,10 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				if ((temp_mechaver[1] < 6) || ((temp_mechaver[1] == 6) && (temp_mechaver[2] < 6)))
 					cdvd.SCMDResult[0] = 0x80;
 				else
+				{
 					cdvdWriteRegionParams(&cdvd.SCMDParam[2]);
+					cdvd.SCMDResult[0] = 0; // returns 0 on success
+				}
 				break;
 
 			case 0x40: // CdOpenConfig (3:1)
@@ -2741,6 +2753,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 			case 0x42: // CdWriteConfig (16:1)
 				SetSCMDResultSize(1);
 				cdvdWriteConfig(&cdvd.SCMDParam[0]);
+				cdvd.SCMDResult[0] = 0; // returns 0 on success
 				break;
 
 			case 0x43: // CdCloseConfig (0:1)
@@ -2975,7 +2988,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 			default:
 				// fake a 'correct' command
 				SetSCMDResultSize(1); //in:0
-				cdvd.SCMDResult[0] = 0; // 0 complete ; 1 busy ; 0x80 error
+				cdvd.SCMDResult[0] = 0x80; // 0 complete ; 1 busy ; 0x80 error
 				Console.WriteLn("SCMD Unknown %x", rt);
 				break;
 		} // end switch
