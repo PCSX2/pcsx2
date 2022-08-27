@@ -2270,7 +2270,7 @@ void GSState::ReadFIFO(u8* mem, int size)
 	Read(mem, size);
 
 	if (m_dump)
-		m_dump->ReadFIFO(size);
+		m_dump->ReadFIFO(size / 16);
 }
 
 void GSState::ReadLocalMemoryUnsync(u8* mem, int qwc, GIFRegBITBLTBUF BITBLTBUF, GIFRegTRXPOS TRXPOS, GIFRegTRXREG TRXREG)
