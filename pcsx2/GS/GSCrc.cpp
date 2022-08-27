@@ -174,18 +174,6 @@ const CRC::Game CRC::m_games[] =
 	{0xAA5EC3A3, TalesOfAbyss, JP, 0},
 	{0xFB236A46, SonicUnleashed, US, 0},
 	{0x8C913264, SonicUnleashed, EU, 0},
-	{0xE04EA200, TriAceGames, EU, 0}, // StarOcean3
-	{0x23A97857, TriAceGames, US, 0}, // StarOcean3
-	{0xBEC32D49, TriAceGames, JP, 0}, // StarOcean3
-	{0x8192A241, TriAceGames, JP, 0}, // StarOcean3 directors cut
-	{0xCC96CE93, TriAceGames, US, 0}, // ValkyrieProfile2
-	{0x774DE8E2, TriAceGames, JP, 0}, // ValkyrieProfile2
-	{0x04CCB600, TriAceGames, EU, 0}, // ValkyrieProfile2
-	{0xB65E141B, TriAceGames, DE, 0}, // ValkyrieProfile2
-	{0x8510854E, TriAceGames, FR, 0}, // ValkyrieProfile2
-	{0xC70FC973, TriAceGames, IT, 0}, // ValkyrieProfile2
-	{0x47B9B2FD, TriAceGames, US, 0}, // RadiataStories
-	{0xAC73005E, TriAceGames, JP, 0}, // RadiataStories
 	{0xE8FCF8EC, SMTNocturne, US, 0},
 	{0xF0A31EE3, SMTNocturne, EU, 0}, // SMTNocturne (Lucifers Call in EU)
 	{0xAE0DE7B7, SMTNocturne, EU, 0}, // SMTNocturne (Lucifers Call in EU)
@@ -258,12 +246,6 @@ const CRC::Game CRC::m_games[] =
 	{0x97E9C87E, YakuzaGames, US, 0}, // Yakuza2
 	{0xB1EBD841, YakuzaGames, US, 0}, // Yakuza2
 	{0xC6B95C48, YakuzaGames, JP, 0}, // Yakuza2
-	{0x9000252A, SkyGunner, JP, 0},
-	{0x93092623, SkyGunner, JP, 0},
-	{0xA9461CB2, SkyGunner, US, 0},
-	{0xC71DE999, SkyGunner, US, 0}, // Regular Demo
-	{0xAADF3287, SkyGunner, US, 0}, // Trade Demo
-	{0xB799A60C, SkyGunner, NoRegion, 0},
 	{0x2905C5C6, ZettaiZetsumeiToshi2, US, 0}, // Raw Danger!
 	{0xC988ECBB, ZettaiZetsumeiToshi2, JP, 0},
 	{0x90F4B057, ZettaiZetsumeiToshi2, CH, 0},

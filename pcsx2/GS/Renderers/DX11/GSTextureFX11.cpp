@@ -230,7 +230,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 			D3D11_SAMPLER_DESC sd = {};
 
 			const int anisotropy = GSConfig.MaxAnisotropy;
-			if (anisotropy && ssel.aniso)
+			if (anisotropy > 1 && ssel.aniso)
 			{
 				sd.Filter = D3D11_FILTER_ANISOTROPIC;
 			}
@@ -350,7 +350,7 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 
 
 		memset(&bd, 0, sizeof(bd));
 
-		if (bsel.blend_enable)
+		if (bsel.blend_enable && (bsel.wrgba & 0x7))
 		{
 			bd.RenderTarget[0].BlendEnable = TRUE;
 			bd.RenderTarget[0].BlendOp = s_d3d11_blend_ops[bsel.blend_op];

@@ -133,7 +133,7 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 		if (index == PAD_PRESSURE)
 		{
 			const float adjust_pmod = ((m_button[pad] & (1u << PAD_PRESSURE)) == 0) ? m_pressure_modifier[pad] : (1.0f / m_pressure_modifier[pad]);
-			for (int i = 0; i < MAX_KEYS; i++)
+			for (u32 i = 0; i < MAX_KEYS; i++)
 			{
 				if (i == index || IsAnalogKey(i) || IsTriggerKey(i))
 					continue;

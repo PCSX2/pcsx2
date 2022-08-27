@@ -151,6 +151,7 @@ private:
 	GSTextureCache::Source* m_src;
 
 	bool m_reset;
+	bool m_tex_is_fb;
 	bool m_channel_shuffle;
 	bool m_userhacks_tcoffset;
 	float m_userhacks_tcoffset_x;
@@ -178,6 +179,8 @@ public:
 	bool CanUpscale() override;
 	int GetUpscaleMultiplier() override;
 	void Lines2Sprites();
+	bool VerifyIndices();
+	template <GSHWDrawConfig::VSExpand Expand> void ExpandIndices();
 	void EmulateAtst(GSVector4& FogColor_AREF, u8& atst, const bool pass_2);
 	void ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba);
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
@@ -185,7 +188,7 @@ public:
 	void MergeSprite(GSTextureCache::Source* tex);
 	GSVector2 GetTextureScaleFactor() override;
 	GSVector2i GetOutputSize(int real_h);
-	GSVector2i GetTargetSize();
+	GSVector2i GetTargetSize(GSVector2i* unscaled_size = nullptr);
 
 	void Reset(bool hardware_reset) override;
 	void UpdateSettings(const Pcsx2Config::GSOptions& old_config) override;
@@ -201,8 +204,8 @@ public:
 	void PurgeTextureCache() override;
 
 	// Called by the texture cache to know if current texture is useful
-	bool IsDummyTexture() const;
+	bool UpdateTexIsFB(GSTextureCache::Target* src, const GIFRegTEX0& TEX0);
 
 	// Called by the texture cache when optimizing the copy range for sources
-	bool IsPossibleTextureShuffle(GSTextureCache::Source* src) const;
+	bool IsPossibleTextureShuffle(GSTextureCache::Target* dst, const GIFRegTEX0& TEX0) const;
 };

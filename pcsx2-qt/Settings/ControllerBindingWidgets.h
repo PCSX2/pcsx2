@@ -15,13 +15,20 @@
 
 #pragma once
 
+#include "PAD/Host/PAD.h"
+
 #include <QtWidgets/QWidget>
 
 #include "ui_ControllerBindingWidget.h"
 #include "ui_ControllerBindingWidget_DualShock2.h"
+#include "ui_ControllerMacroWidget.h"
+#include "ui_ControllerMacroEditWidget.h"
 
 class InputBindingWidget;
 class ControllerSettingsDialog;
+class ControllerCustomSettingsWidget;
+class ControllerMacroWidget;
+class ControllerMacroEditWidget;
 class ControllerBindingWidget_Base;
 
 class ControllerBindingWidget final : public QWidget
@@ -41,11 +48,15 @@ public:
 
 private Q_SLOTS:
 	void onTypeChanged();
-	void doAutomaticBinding();
-	void doClearBindings();
+	void onAutomaticBindingClicked();
+	void onClearBindingsClicked();
+	void onBindingsClicked();
+	void onSettingsClicked();
+	void onMacrosClicked();
 
 private:
 	void populateControllerTypes();
+	void updateHeaderToolButtons();
 	void doDeviceAutomaticBinding(const QString& device);
 	void saveAndRefresh();
 
@@ -57,8 +68,86 @@ private:
 	std::string m_controller_type;
 	u32 m_port_number;
 
-	ControllerBindingWidget_Base* m_current_widget = nullptr;
+	ControllerBindingWidget_Base* m_bindings_widget = nullptr;
+	ControllerCustomSettingsWidget* m_settings_widget = nullptr;
+	ControllerMacroWidget* m_macros_widget = nullptr;
 };
+
+
+//////////////////////////////////////////////////////////////////////////
+
+class ControllerMacroWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	ControllerMacroWidget(ControllerBindingWidget* parent);
+	~ControllerMacroWidget();
+
+	void updateListItem(u32 index);
+
+private:
+	static constexpr u32 NUM_MACROS = PAD::NUM_MACRO_BUTTONS_PER_CONTROLLER;
+
+	void createWidgets(ControllerBindingWidget* parent);
+
+	Ui::ControllerMacroWidget m_ui;
+	ControllerSettingsDialog* m_dialog;
+	std::array<ControllerMacroEditWidget*, NUM_MACROS> m_macros;
+};
+
+//////////////////////////////////////////////////////////////////////////
+
+class ControllerMacroEditWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	ControllerMacroEditWidget(ControllerMacroWidget* parent, ControllerBindingWidget* bwidget, u32 index);
+	~ControllerMacroEditWidget();
+
+	QString getSummary() const;
+
+private Q_SLOTS:
+	void onSetFrequencyClicked();
+	void updateBinds();
+
+private:
+	void modFrequency(s32 delta);
+	void updateFrequency();
+	void updateFrequencyText();
+
+	Ui::ControllerMacroEditWidget m_ui;
+
+	ControllerMacroWidget* m_parent;
+	ControllerBindingWidget* m_bwidget;
+	u32 m_index;
+
+	std::vector<const PAD::ControllerBindingInfo*> m_binds;
+	u32 m_frequency = 0;
+};
+
+//////////////////////////////////////////////////////////////////////////
+
+class ControllerCustomSettingsWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	ControllerCustomSettingsWidget(ControllerBindingWidget* parent, QWidget* parent_widget);
+	~ControllerCustomSettingsWidget();
+
+	void createSettingWidgets(ControllerBindingWidget* parent, QWidget* widget_parent, QGridLayout* layout, const PAD::ControllerInfo* cinfo);
+
+private Q_SLOTS:
+	void restoreDefaults();
+
+private:
+	ControllerBindingWidget* m_parent;
+};
+
+//////////////////////////////////////////////////////////////////////////
+
 
 class ControllerBindingWidget_Base : public QWidget
 {

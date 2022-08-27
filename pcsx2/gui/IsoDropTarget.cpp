@@ -41,8 +41,8 @@ protected:
 public:
 	DroppedTooManyFiles( const wxWindow* window )
 		: pxActionEvent()
+		, m_ownerid(window->GetId())
 	{
-		m_ownerid = window->GetId();
 	}
 
 	virtual ~DroppedTooManyFiles() = default;
@@ -70,8 +70,8 @@ protected:
 public:
 	DroppedElf( const wxWindow* window )
 		: pxActionEvent()
+		, m_ownerid(window->GetId())
 	{
-		m_ownerid = window->GetId();
 	}
 
 	virtual ~DroppedElf() = default;
@@ -118,9 +118,9 @@ protected:
 public:
 	DroppedIso( const wxWindow* window, const wxString& filename )
 		: pxActionEvent()
-		, m_filename( filename )
+		, m_ownerid(window->GetId())
+		, m_filename(filename)
 	{
-		m_ownerid = window->GetId();
 	}
 
 	virtual ~DroppedIso() = default;

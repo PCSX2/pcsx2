@@ -137,9 +137,9 @@ public:
 	GUID guidInstance;
 	DirectInputDevice(DeviceType type, IDirectInputDevice8* did, wchar_t* displayName, wchar_t* instanceID, wchar_t* productID, GUID guid)
 		: Device(DI, type, displayName, instanceID, productID)
+		, guidInstance(guid)
 	{
 		diEffects = 0;
-		guidInstance = guid;
 		this->did = 0;
 		did->EnumEffects(EnumEffectsCallback, this, DIEFT_ALL);
 		did->EnumObjects(EnumDeviceObjectsCallback, this, DIDFT_ALL);

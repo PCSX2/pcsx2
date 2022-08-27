@@ -57,7 +57,6 @@ namespace InternalServers
 	void DHCP_Server::Init(ifaddrs* adapter, IP_Address ipOverride, IP_Address subnetOverride, IP_Address gatewayOverride)
 #endif
 	{
-		ps2IP = {0};
 		netmask = {0};
 		gateway = {0};
 		dns1 = {0};

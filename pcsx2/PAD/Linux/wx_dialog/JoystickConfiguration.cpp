@@ -23,8 +23,8 @@ static const s32 joy_check_id = wxID_HIGHEST + 100 + 3;
 JoystickConfiguration::JoystickConfiguration(int pad, bool left, wxWindow* parent)
 	: wxDialog(parent, wxID_ANY, _T("Joystick configuration"), wxDefaultPosition, wxDefaultSize,
 			   wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN)
+	, m_pad_id(pad)
 {
-	m_pad_id = pad;
 	m_isForLeftJoystick = left;
 
 	wxBoxSizer* joy_conf_box = new wxBoxSizer(wxVERTICAL);

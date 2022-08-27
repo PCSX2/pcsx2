@@ -322,6 +322,7 @@ public:
 	void ResetHandlers();
 
 	int GetFramebufferHeight();
+	int GetFramebufferWidth();
 	int GetDisplayHMagnification();
 	GSVector4i GetDisplayRect(int i = -1);
 	GSVector4i GetFrameMagnifiedRect(int i = -1);

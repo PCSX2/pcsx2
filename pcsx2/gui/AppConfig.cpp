@@ -557,9 +557,10 @@ AppConfig::AppConfig()
 	, McdSettingsTabName(L"none")
 	, AppSettingsTabName(L"none")
 	, GameDatabaseTabName(L"none")
+	, LanguageId(wxLANGUAGE_DEFAULT)
+	, LanguageCode(L"default")
+	, CdvdSource(CDVD_SourceType::Iso)
 {
-	LanguageId = wxLANGUAGE_DEFAULT;
-	LanguageCode = L"default";
 	RecentIsoCount = 20;
 	Listbook_ImageSize = 32;
 	Toolbar_ImageSize = 24;
@@ -573,8 +574,6 @@ AppConfig::AppConfig()
 
 	EnablePresets = true;
 	PresetIndex = 1;
-
-	CdvdSource = CDVD_SourceType::Iso;
 }
 
 // ------------------------------------------------------------------------
@@ -827,6 +826,8 @@ void AppSetEmuFolders()
 
 // ------------------------------------------------------------------------
 AppConfig::GSWindowOptions::GSWindowOptions()
+	: WindowSize(wxSize(640, 480))
+	, WindowPos(wxDefaultPosition)
 {
 	CloseOnEsc = true;
 	DefaultToFullscreen = false;
@@ -834,8 +835,6 @@ AppConfig::GSWindowOptions::GSWindowOptions()
 	DisableResizeBorders = false;
 	DisableScreenSaver = true;
 
-	WindowSize = wxSize(640, 480);
-	WindowPos = wxDefaultPosition;
 	IsMaximized = false;
 	IsFullscreen = false;
 	EnableVsyncWindowFlag = false;
@@ -934,18 +933,18 @@ void AppConfig::CaptureOptions::LoadSave(IniInterface& ini)
 }
 
 AppConfig::UiTemplateOptions::UiTemplateOptions()
+	: LimiterUnlimited(L"Max")
+	, LimiterTurbo(L"Turbo")
+	, LimiterSlowmo(L"Slowmo")
+	, LimiterNormal(L"Normal")
+	, OutputFrame(L"Frame")
+	, OutputField(L"Field")
+	, OutputProgressive(L"Progressive")
+	, OutputInterlaced(L"Interlaced")
+	, Paused(L"<PAUSED> ")
+	, TitleTemplate(L"Slot: ${slot} | Speed: ${speed} (${vfps}) | ${videomode} | Limiter: ${limiter} | ${gs} | ${omodei} | ${cpuusage}")
+	, RecordingTemplate(L"Slot: ${slot} | Frame: ${frame}/${maxFrame} | Rec. Mode: ${mode} | Speed: ${speed} (${vfps}) | Limiter: ${limiter}")
 {
-	LimiterUnlimited = L"Max";
-	LimiterTurbo = L"Turbo";
-	LimiterSlowmo = L"Slowmo";
-	LimiterNormal = L"Normal";
-	OutputFrame = L"Frame";
-	OutputField = L"Field";
-	OutputProgressive = L"Progressive";
-	OutputInterlaced = L"Interlaced";
-	Paused = L"<PAUSED> ";
-	TitleTemplate = L"Slot: ${slot} | Speed: ${speed} (${vfps}) | ${videomode} | Limiter: ${limiter} | ${gs} | ${omodei} | ${cpuusage}";
-	RecordingTemplate = L"Slot: ${slot} | Frame: ${frame}/${maxFrame} | Rec. Mode: ${mode} | Speed: ${speed} (${vfps}) | Limiter: ${limiter}";
 }
 
 void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)

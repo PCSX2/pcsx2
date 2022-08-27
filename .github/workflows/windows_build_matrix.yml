@@ -58,8 +58,8 @@ jobs:
     secrets: inherit
 
   # CMAKE
-  build_wx_avx2_cmake:
-    name: "CMake AVX2"
+  build_wx_sse4_cmake:
+    name: "CMake SSE4"
     uses: ./.github/workflows/windows_build_wx.yml
     with:
       jobName: wxWidgets

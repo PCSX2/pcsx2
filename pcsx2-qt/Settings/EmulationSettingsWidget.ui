@@ -110,7 +110,7 @@
         <item row="0" column="1">
          <widget class="QCheckBox" name="syncToHostRefreshRate">
           <property name="text">
-           <string>Adjust To Host Refresh Rate</string>
+           <string>Scale To Host Refresh Rate</string>
           </property>
          </widget>
         </item>

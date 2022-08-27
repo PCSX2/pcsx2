@@ -20,6 +20,6 @@ If you wish to donate monetarily to the project you can do so via the [GitHub Sp
 ## Thanks to the following monthly donators
 We thank everybody for their contributions to the project, but we would like to give a special shout out to:
 
-- noigeaR
-- xTVaser
-- And 1 anonymous donator!
+    - noigeaR
+    - xTVaser
+    - And 1 anonymous donator!

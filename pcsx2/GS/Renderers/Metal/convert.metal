@@ -150,32 +150,95 @@ fragment DepthOut ps_depth_copy(ConvertShaderData data [[stage_in]], ConvertPSDe
 	return res.sample(data.t);
 }
 
-static float pack_rgba8_depth(float4 unorm)
+static float rgba8_to_depth32(half4 unorm)
 {
-	return float(as_type<uint>(uchar4(unorm * 255.f + 0.5f))) * 0x1p-32f;
+	return float(as_type<uint>(uchar4(unorm * 255.5h))) * 0x1p-32f;
 }
 
-fragment DepthOut ps_convert_rgba8_float32(ConvertShaderData data [[stage_in]], ConvertPSRes res)
+static float rgba8_to_depth24(half4 unorm)
 {
-	return pack_rgba8_depth(res.sample(data.t));
+	return rgba8_to_depth32(half4(unorm.rgb, 0));
 }
 
-fragment DepthOut ps_convert_rgba8_float24(ConvertShaderData data [[stage_in]], ConvertPSRes res)
+static float rgba8_to_depth16(half4 unorm)
 {
-	// Same as above but without the alpha channel (24 bits Z)
-	return pack_rgba8_depth(float4(res.sample(data.t).rgb, 0));
+	return float(as_type<ushort>(uchar2(unorm.rg * 255.5h))) * 0x1p-32f;
 }
 
-fragment DepthOut ps_convert_rgba8_float16(ConvertShaderData data [[stage_in]], ConvertPSRes res)
+static float rgb5a1_to_depth16(half4 unorm)
 {
-	return float(as_type<ushort>(uchar2(res.sample(data.t).rg * 255.f + 0.5f))) * 0x1p-32;
-}
-
-fragment DepthOut ps_convert_rgb5a1_float16(ConvertShaderData data [[stage_in]], ConvertPSRes res)
-{
-	uint4 cu = uint4(res.sample(data.t) * 255.f + 0.5f);
+	uint4 cu = uint4(unorm * 255.5h);
 	uint out = (cu.x >> 3) | ((cu.y << 2) & 0x03e0) | ((cu.z << 7) & 0x7c00) | ((cu.w << 8) & 0x8000);
-	return float(out) * 0x1p-32;
+	return float(out) * 0x1p-32f;
+}
+
+struct ConvertToDepthRes
+{
+	texture2d<half> texture [[texture(GSMTLTextureIndexNonHW)]];
+	half4 sample(float2 coord)
+	{
+		// RGBA bilinear on a depth texture is a bad idea, and should never be used
+		// Might as well let the compiler optimize a bit by telling it exactly what sampler we'll be using here
+		constexpr sampler s(coord::normalized, filter::nearest, address::clamp_to_edge);
+		return texture.sample(s, coord);
+	}
+
+	/// Manual bilinear sampling where we do the bilinear *after* rgba → depth conversion
+	template <float (&convert)(half4)>
+	float sample_biln(float2 coord)
+	{
+		uint2 dimensions = uint2(texture.get_width(), texture.get_height());
+		float2 top_left_f = coord * float2(dimensions) - 0.5f;
+		int2 top_left = int2(floor(top_left_f));
+		uint4 coords = uint4(clamp(int4(top_left, top_left + 1), 0, int2(dimensions - 1).xyxy));
+		float2 mix_vals = fract(top_left_f);
+
+		float depthTL = convert(texture.read(coords.xy));
+		float depthTR = convert(texture.read(coords.zy));
+		float depthBL = convert(texture.read(coords.xw));
+		float depthBR = convert(texture.read(coords.zw));
+		return mix(mix(depthTL, depthTR, mix_vals.x), mix(depthBL, depthBR, mix_vals.x), mix_vals.y);
+	}
+};
+
+fragment DepthOut ps_convert_rgba8_float32(ConvertShaderData data [[stage_in]], ConvertToDepthRes res)
+{
+	return rgba8_to_depth32(res.sample(data.t));
+}
+
+fragment DepthOut ps_convert_rgba8_float24(ConvertShaderData data [[stage_in]], ConvertToDepthRes res)
+{
+	return rgba8_to_depth24(res.sample(data.t));
+}
+
+fragment DepthOut ps_convert_rgba8_float16(ConvertShaderData data [[stage_in]], ConvertToDepthRes res)
+{
+	return rgba8_to_depth16(res.sample(data.t));
+}
+
+fragment DepthOut ps_convert_rgb5a1_float16(ConvertShaderData data [[stage_in]], ConvertToDepthRes res)
+{
+	return rgb5a1_to_depth16(res.sample(data.t));
+}
+
+fragment DepthOut ps_convert_rgba8_float32_biln(ConvertShaderData data [[stage_in]], ConvertToDepthRes res)
+{
+	return res.sample_biln<rgba8_to_depth32>(data.t);
+}
+
+fragment DepthOut ps_convert_rgba8_float24_biln(ConvertShaderData data [[stage_in]], ConvertToDepthRes res)
+{
+	return res.sample_biln<rgba8_to_depth24>(data.t);
+}
+
+fragment DepthOut ps_convert_rgba8_float16_biln(ConvertShaderData data [[stage_in]], ConvertToDepthRes res)
+{
+	return res.sample_biln<rgba8_to_depth16>(data.t);
+}
+
+fragment DepthOut ps_convert_rgb5a1_float16_biln(ConvertShaderData data [[stage_in]], ConvertToDepthRes res)
+{
+	return res.sample_biln<rgb5a1_to_depth16>(data.t);
 }
 
 fragment float4 ps_convert_rgba_8i(ConvertShaderData data [[stage_in]], ConvertPSRes res,
