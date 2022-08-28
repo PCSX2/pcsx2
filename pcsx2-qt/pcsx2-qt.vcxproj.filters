@@ -156,6 +156,9 @@
     <ClCompile Include="Settings\ControllerGlobalSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
+    <ClCompile Include="$(IntDir)Settings\moc_MemoryCardConvertDialog.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
     <ClCompile Include="$(IntDir)Settings\moc_MemoryCardSettingsWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
@@ -178,6 +181,9 @@
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="Settings\GameSummaryWidget.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings\MemoryCardConvertDialog.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
     <ClCompile Include="Settings\MemoryCardSettingsWidget.cpp">
@@ -241,6 +247,9 @@
     <ClCompile Include="$(IntDir)Settings\moc_AchievementLoginDialog.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="Settings\MemoryCardConvertWorker.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -255,6 +264,9 @@
       <Filter>Settings</Filter>
     </ClInclude>
     <ClInclude Include="Settings\ControllerSettingWidgetBinder.h">
+      <Filter>Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings\MemoryCardConvertWorker.h">
       <Filter>Settings</Filter>
     </ClInclude>
   </ItemGroup>
@@ -317,6 +329,9 @@
       <Filter>Settings</Filter>
     </QtMoc>
     <QtMoc Include="Settings\GameSummaryWidget.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
+    <QtMoc Include="Settings\MemoryCardConvertDialog.h">
       <Filter>Settings</Filter>
     </QtMoc>
     <QtMoc Include="Settings\MemoryCardSettingsWidget.h">
@@ -404,6 +419,9 @@
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\GameSummaryWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\MemoryCardConvertDialog.ui">
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\MemoryCardSettingsWidget.ui">
