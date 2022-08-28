@@ -96,6 +96,11 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/InterfaceSettingsWidget.cpp
 	Settings/InterfaceSettingsWidget.h
 	Settings/InterfaceSettingsWidget.ui
+	Settings/MemoryCardConvertDialog.cpp
+	Settings/MemoryCardConvertDialog.h
+	Settings/MemoryCardConvertDialog.ui
+	Settings/MemoryCardConvertWorker.cpp
+	Settings/MemoryCardConvertWorker.h
 	Settings/MemoryCardSettingsWidget.cpp
 	Settings/MemoryCardSettingsWidget.h
 	Settings/MemoryCardSettingsWidget.ui

@@ -135,6 +135,7 @@
     <ClCompile Include="EarlyHardwareCheck.cpp" />
     <ClCompile Include="QtProgressCallback.cpp" />
     <ClCompile Include="Settings\FolderSettingsWidget.cpp" />
+    <ClCompile Include="Settings\MemoryCardConvertWorker.cpp" />
     <ClCompile Include="Tools\InputRecording\NewInputRecordingDlg.cpp" />
     <ClCompile Include="Settings\BIOSSettingsWidget.cpp" />
     <ClCompile Include="Settings\ControllerBindingWidgets.cpp" />
@@ -153,6 +154,7 @@
     <ClCompile Include="Settings\InputBindingWidget.cpp" />
     <ClCompile Include="Settings\ControllerSettingsDialog.cpp" />
     <ClCompile Include="Settings\AudioSettingsWidget.cpp" />
+    <ClCompile Include="Settings\MemoryCardConvertDialog.cpp" />
     <ClCompile Include="Settings\MemoryCardSettingsWidget.cpp" />
     <ClCompile Include="Settings\DEV9DnsHostDialog.cpp" />
     <ClCompile Include="Settings\DEV9SettingsWidget.cpp" />
@@ -191,6 +193,7 @@
     <QtMoc Include="Settings\InputBindingWidget.h" />
     <QtMoc Include="Settings\ControllerSettingsDialog.h" />
     <QtMoc Include="Settings\AudioSettingsWidget.h" />
+    <QtMoc Include="Settings\MemoryCardConvertDialog.h" />
     <QtMoc Include="Settings\MemoryCardSettingsWidget.h" />
     <QtMoc Include="Settings\DEV9DnsHostDialog.h" />
     <QtMoc Include="Settings\DEV9SettingsWidget.h" />
@@ -210,6 +213,7 @@
     <ClInclude Include="QtUtils.h" />
     <QtMoc Include="Settings\ControllerBindingWidgets.h" />
     <QtMoc Include="Settings\ControllerGlobalSettingsWidget.h" />
+    <ClInclude Include="Settings\MemoryCardConvertWorker.h" />
     <ClInclude Include="SettingWidgetBinder.h" />
     <QtMoc Include="QtHost.h" />
     <ClInclude Include="PrecompiledHeader.h" />
@@ -242,6 +246,7 @@
     <ClCompile Include="$(IntDir)Settings\moc_InputBindingDialog.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_InputBindingWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_AudioSettingsWidget.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_MemoryCardConvertDialog.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_MemoryCardSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_FolderSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_DEV9DnsHostDialog.cpp" />
@@ -321,6 +326,9 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\AudioSettingsWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Settings\MemoryCardConvertDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\MemoryCardSettingsWidget.ui">

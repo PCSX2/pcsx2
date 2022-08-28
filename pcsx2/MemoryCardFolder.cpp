@@ -290,6 +290,7 @@ void FolderMemoryCard::LoadMemoryCardData(const u32 sizeInClusters, const bool e
 		MemoryCardFileEntry* const rootDirEntry = &m_fileEntryDict[m_superBlock.data.rootdir_cluster].entries[0];
 		AddFolder(rootDirEntry, m_folderName, nullptr, enableFiltering, filter);
 
+
 #ifdef DEBUG_WRITE_FOLDER_CARD_IN_MEMORY_TO_FILE_ON_CHANGE
 		WriteToFile(m_folderName.GetFullPath().RemoveLast() + L"-debug_" + wxDateTime::Now().Format(L"%Y-%m-%d-%H-%M-%S") + L"_load.ps2");
 #endif
@@ -2281,6 +2282,12 @@ void MemoryCardFileMetadataReference::GetInternalPath(std::string* fileName) con
 
 FolderMemoryCardAggregator::FolderMemoryCardAggregator()
 {
+#ifdef _WIN32
+	// Override Windows' default allowance for open files. Folder memory cards with more than 32 MB of content are likely to contain more than 512 individual files.
+	// Unix platforms seem to use 1024 by default.
+	_setmaxstdio(1024);
+#endif
+
 	for (uint i = 0; i < TotalCardSlots; ++i)
 	{
 		m_cards[i].SetSlot(i);

@@ -27,6 +27,7 @@
 #include "MemoryCardSettingsWidget.h"
 #include "CreateMemoryCardDialog.h"
 #include "QtHost.h"
+#include "MemoryCardConvertDialog.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 #include "SettingsDialog.h"
@@ -183,9 +184,13 @@ QString MemoryCardSettingsWidget::getSelectedCard() const
 
 void MemoryCardSettingsWidget::updateCardActions()
 {
-	const bool hasSelection = !getSelectedCard().isEmpty();
+	QString selectedCard = getSelectedCard();
+	const bool hasSelection = !selectedCard.isEmpty();
+	
+	std::optional<AvailableMcdInfo> cardInfo = FileMcd_GetCardInfo(selectedCard.toStdString());
+	bool isPS1 = (cardInfo.has_value() ? cardInfo.value().file_type == MemoryCardFileType::PS1 : false);
 
-	m_ui.convertCard->setEnabled(hasSelection);
+	m_ui.convertCard->setEnabled(hasSelection && !isPS1);
 	m_ui.duplicateCard->setEnabled(hasSelection);
 	m_ui.renameCard->setEnabled(hasSelection);
 	m_ui.deleteCard->setEnabled(hasSelection);
@@ -263,10 +268,14 @@ void MemoryCardSettingsWidget::renameCard()
 void MemoryCardSettingsWidget::convertCard()
 {
 	const QString selectedCard(getSelectedCard());
+	
 	if (selectedCard.isEmpty())
 		return;
 
-	QMessageBox::critical(this, tr("Error"), tr("Not yet implemented."));
+	MemoryCardConvertDialog dialog(QtUtils::GetRootWidget(this), selectedCard);
+	
+	if (dialog.IsSetup() && dialog.exec() == QDialog::Accepted)
+		refresh();
 }
 
 void MemoryCardSettingsWidget::listContextMenuRequested(const QPoint& pos)
