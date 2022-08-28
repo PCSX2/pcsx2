@@ -48,7 +48,6 @@ namespace D3D12
 
 		__fi D3D_FEATURE_LEVEL GetFeatureLevel() const { return m_feature_level; }
 		__fi u32 GetDataVersion() const { return m_data_version; }
-		__fi bool UsingPipelineCache() const { return m_use_pipeline_cache; }
 		__fi bool UsingDebugShaders() const { return m_debug; }
 
 		bool Open(std::string_view base_path, D3D_FEATURE_LEVEL feature_level, u32 version, bool debug);
@@ -146,7 +145,6 @@ namespace D3D12
 
 		D3D_FEATURE_LEVEL m_feature_level = D3D_FEATURE_LEVEL_11_0;
 		u32 m_data_version = 0;
-		bool m_use_pipeline_cache = false;
 		bool m_debug = false;
 	};
 } // namespace D3D12
