@@ -100,15 +100,7 @@ jobs:
           if "${{ inputs.configuration }}"=="CMake" (
             call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
             cmake --build build --config Release || exit /b
-            copy build\pcsx2-qt\pcsx2-qt.* bin
-            copy build\updater\updater.* bin
-            del bin\*.manifest
-            for %%F in (Qt6Core Qt6Gui Qt6Widgets Qt6Network Qt6Svg Qt6Concurrent) do copy "${{ inputs.qt_dir }}\bin\%%F.dll" bin
-            xcopy /s ${{ inputs.qt_dir }}\plugins\*.dll bin\QtPlugins\
-            for /r bin\QtPlugins\ %%F in (*.dll) do if exist "%%~dpnFd.dll" del "%%~dpnFd.dll"
-            xcopy /s /i ${{ inputs.qt_dir }}\translations bin\translations
-            echo [Paths]> bin\qt.conf
-            echo Plugins = ./QtPlugins>> bin\qt.conf
+            cmake --install build --config Release || exit /b
           ) else (
             msbuild "PCSX2_qt.sln" /m /v:m /p:Configuration="${{ inputs.configuration }}" /p:Platform="${{ inputs.platform }}"
           )

@@ -76,8 +76,7 @@ if(PACKAGE_MODE)
 	if(NOT DISABLE_PCSX2_WRAPPER)
 		INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2-linux.sh"          DESTINATION "${CMAKE_INSTALL_BINDIR}")
 	endif()
-
-else()
+elseif(NOT WIN32)
 	if(NOT DISABLE_PCSX2_WRAPPER)
 		# special case to avoid having linux files in windows
 		INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2-linux.sh"          DESTINATION "${CMAKE_SOURCE_DIR}/bin")
