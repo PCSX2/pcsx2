@@ -1841,6 +1841,11 @@ function(setup_main_executable target)
 	get_property(PCSX2_SOURCE_DIR GLOBAL PROPERTY PCSX2_SOURCE_DIR)
 	get_property(PCSX2_METAL_SHADERS GLOBAL PROPERTY PCSX2_METAL_SHADERS)
 
+	if(QT_BUILD)
+		get_target_property(MOC_EXECUTABLE_LOCATION Qt6::moc IMPORTED_LOCATION)
+		get_filename_component(QT_BINARY_DIRECTORY "${MOC_EXECUTABLE_LOCATION}" DIRECTORY)
+	endif()
+
 	if(WIN32)
 		if(NOT PCSX2_CORE)
 			target_sources(${target} PRIVATE
@@ -1857,6 +1862,14 @@ function(setup_main_executable target)
 			${PCSX2_SOURCE_DIR}/windows/PCSX2.manifest
 		)
 		set_target_properties(${target} PROPERTIES WIN32_EXECUTABLE TRUE)
+		if(MSVC)
+			install(FILES $<TARGET_PDB_FILE:${target}> DESTINATION ${CMAKE_SOURCE_DIR}/bin)
+		endif()
+		if(QT_BUILD)
+			find_program(WINDEPLOYQT_EXE windeployqt HINTS "${QT_BINARY_DIRECTORY}")
+			install(CODE "execute_process(COMMAND \"${WINDEPLOYQT_EXE}\" \"${CMAKE_SOURCE_DIR}/bin/pcsx2-qt.exe\" --plugindir ${CMAKE_SOURCE_DIR}/bin/QtPlugins --no-compiler-runtime --no-system-d3d-compiler)")
+			install(CODE "file(WRITE \"${CMAKE_SOURCE_DIR}/bin/qt.conf\" \"[Paths]\\nPlugins = ./QtPlugins\")")
+		endif()
 	endif()
 
 	if(APPLE)
@@ -1917,8 +1930,6 @@ function(setup_main_executable target)
 		endif()
 
 		if(QT_BUILD)
-			get_target_property(MOC_EXECUTABLE_LOCATION Qt6::moc IMPORTED_LOCATION)
-			get_filename_component(QT_BINARY_DIRECTORY "${MOC_EXECUTABLE_LOCATION}" DIRECTORY)
 			find_program(MACDEPLOYQT_EXE macdeployqt HINTS "${QT_BINARY_DIRECTORY}")
 			add_custom_target(pcsx2-postprocess-bundle ${postprocessBundleType}
 				COMMAND "${MACDEPLOYQT_EXE}" "$<TARGET_FILE_DIR:${target}>/../.." -no-strip
@@ -1937,7 +1948,7 @@ if (NOT QT_BUILD)
 	setup_main_executable(PCSX2)
 endif()
 
-if(NOT DISABLE_SETCAP AND NOT PCSX2_CORE)
+if(NOT DISABLE_SETCAP AND NOT PCSX2_CORE AND NOT WIN32)
 	if(PACKAGE_MODE)
 		install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f '${CMAKE_INSTALL_FULL_BINDIR}/pcsx2' ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' '${CMAKE_INSTALL_FULL_BINDIR}/pcsx2'; set +x\")")
 	else()
