@@ -23826,6 +23826,9 @@ SLPM-62124:
 SLPM-62125:
   name: "Gauntlet - Dark Legacy"
   region: "NTSC-J"
+SLPM-62126:
+  name: "Hyper Sports 2002 Winter"
+  region: "NTSC-J"
 SLPM-62127:
   name: "Maximo"
   region: "NTSC-J"
