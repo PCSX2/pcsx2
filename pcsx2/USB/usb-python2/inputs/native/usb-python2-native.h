@@ -4,6 +4,7 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <deque>
 #include "Frontend/InputManager.h"
 #include "USB/usb-python2/python2proxy.h"
 #include "USB/usb-python2/usb-python2.h"
