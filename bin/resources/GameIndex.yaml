@@ -14232,6 +14232,11 @@ SLES-52573:
   region: "PAL-M5"
   roundModes:
     eeRoundMode: 2 # Fixes abnormal character behaviour.
+SLED-52574:
+  name: "Crash Twinsanity & Spyro - A Hero's Tail [Demo]"
+  region: "PAL-E"
+  gameFixes:
+    - XGKickHack # Fixes bad geometry.
 SLES-52576:
   name: "Yu-Gi-Oh! Capsule Monster Coliseum"
   region: "PAL-M5"
@@ -42029,6 +42034,8 @@ SLUS-20884:
   name: "Spyro - A Hero's Tail"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned bloom effects that streak on-screen, causes occasional trash shadows at places.
 SLUS-20885:
   name: "Red Star, The"
   region: "NTSC-U"
