@@ -5,7 +5,16 @@ PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to 
 <div align="left">
     <img src="/readmemd/emu_art.png" width="450px"</img> 
 </div>
-This is a fork of [#03027453c](https://github.com/PCSX2/pcsx2/tree/03027453c8fe8cd95164271211e529067bf5b91a), where Sly CRC hacks were still a thing, a PNACH pointer related bugfix was released and [performance & graphics](##Notes) were nicely balanced (even for older PCs like mine). This fork is set to enhance the trilogy with cheats and edits to optimize graphics and performance.
+This is a fork of https://github.com/PCSX2/pcsx2/tree/03027453c8fe8cd95164271211e529067bf5b91a, where Sly CRC hacks were still a thing, a PNACH pointer related bugfix was released and performance & graphics were nicely balanced (especially for older PCs like mine). This fork is set to enhance the trilogy with cheats and edits to optimize graphics and performance.
+
+# Status
+### Features
+- Custom pointer code-type
+- Customized icons and window art
+### Missing
+- Shadows on D3D11
+- Vsyncs in MTGS Queue option
+- Any other actually decent QOL tweaks from master
 
 ## Special thanks
 - [**Meos**](https://www.youtube.com/channel/UCBjGlnrNZmHVLnqePH6A8vQ) - made the legendary **No Motion Blur** cheat for all versions of Sly
@@ -31,7 +40,8 @@ This is a fork of [#03027453c](https://github.com/PCSX2/pcsx2/tree/03027453c8fe8
 * RAM: 4GB or more
 
 ## Best settings:
-- Emulation settings -> Speedhacks -> EE Cycle Rate: -3
+- Emulation settings -> Preset: Off
+- Emulation settings -> Speedhacks -> EE Cycle Rate: -3 [Note: causes audio glitch in FMVs]
 - Emulation settings -> Speedhacks -> Enable INTC Spin Detection: On
 - Emulation settings -> Speedhacks -> Enable Wait Loop Detection: On
 - Emulation settings -> Speedhacks -> mVU Flag Hack: On
