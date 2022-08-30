@@ -2,6 +2,9 @@
 PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a combination of MIPS CPU [Interpreters](https://en.wikipedia.org/wiki/Interpreter_\(computing\)), [Recompilers](https://en.wikipedia.org/wiki/Dynamic_recompilation) and a [Virtual Machine](https://en.wikipedia.org/wiki/Virtual_machine) which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.
 
 # Fork Details
+<div align="left">
+    <img src="/readmemd/emu_art.png" width="450px"</img> 
+</div>
 This is a fork of [#03027453c8](https://github.com/PCSX2/pcsx2/tree/03027453c8fe8cd95164271211e529067bf5b91a) where Sly CRC hacks were still a thing, a PNACH pointer related bugfix was released and [performance & graphics](##Notes) were nicely balanced (even for older PCs like mine). This fork is set to enhance the trilogy with cheats and edits to optimize graphics and performance.
 
 ## Special thanks
