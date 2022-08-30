@@ -8867,6 +8867,9 @@ SLED-53983:
   region: "PAL"
   gameFixes:
     - GIFFIFOHack # Fixes flag corruption.
+SLED-54032:
+  name: "Sonic Riders [Demo]"
+  region: "PAL-E"
 SLED-54035:
   name: "Play the Best Demos from Atari [Demo]"
   region: "PAL-M5"
