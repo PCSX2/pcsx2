@@ -5,7 +5,7 @@ PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to 
 <div align="left">
     <img src="/readmemd/emu_art.png" width="450px"</img> 
 </div>
-This is a fork of [#03027453c8](https://github.com/PCSX2/pcsx2/tree/03027453c8fe8cd95164271211e529067bf5b91a) where Sly CRC hacks were still a thing, a PNACH pointer related bugfix was released and [performance & graphics](##Notes) were nicely balanced (even for older PCs like mine). This fork is set to enhance the trilogy with cheats and edits to optimize graphics and performance.
+This is a fork of [#03027453c](https://github.com/PCSX2/pcsx2/tree/03027453c8fe8cd95164271211e529067bf5b91a), where Sly CRC hacks were still a thing, a PNACH pointer related bugfix was released and [performance & graphics](##Notes) were nicely balanced (even for older PCs like mine). This fork is set to enhance the trilogy with cheats and edits to optimize graphics and performance.
 
 ## Special thanks
 - [**Meos**](https://www.youtube.com/channel/UCBjGlnrNZmHVLnqePH6A8vQ) - made the legendary **No Motion Blur** cheat for all versions of Sly
