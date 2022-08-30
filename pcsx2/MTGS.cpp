@@ -31,6 +31,8 @@
 
 #ifndef PCSX2_CORE
 #include "gui/Dialogs/ModalPopups.h"
+#else
+#include "VMManager.h"
 #endif
 
 // Uncomment this to enable profiling of the GS RingBufferCopy function.
@@ -296,9 +298,23 @@ void SysMtgsThread::MainLoop()
 		// is very optimized (only 1 instruction test in most cases), so no point in trying
 		// to avoid it.
 
+#ifdef PCSX2_CORE
+		if (m_run_idle_flag.load(std::memory_order_acquire) && VMManager::GetState() != VMState::Running)
+		{
+			if (!m_sem_event.CheckForWork())
+				GSPresentCurrentFrame();
+		}
+		else
+		{
+			mtvu_lock.unlock();
+			m_sem_event.WaitForWork();
+			mtvu_lock.lock();
+		}
+#else
 		mtvu_lock.unlock();
 		m_sem_event.WaitForWork();
 		mtvu_lock.lock();
+#endif
 
 		if (!m_open_flag.load(std::memory_order_acquire))
 			break;
@@ -1004,4 +1020,10 @@ bool SysMtgsThread::SaveMemorySnapshot(u32 width, u32 height, std::vector<u32>* 
 void SysMtgsThread::PresentCurrentFrame()
 {
 	GSPresentCurrentFrame();
+}
+
+void SysMtgsThread::SetRunIdle(bool enabled)
+{
+	// NOTE: Should only be called on the GS thread.
+	m_run_idle_flag.store(enabled, std::memory_order_release);
 }

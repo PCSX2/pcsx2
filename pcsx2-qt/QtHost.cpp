@@ -20,6 +20,7 @@
 #include <QtCore/QTimer>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
+#include <QtGui/QClipboard>
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
@@ -48,6 +49,7 @@
 #include "GameList/GameListWidget.h"
 #include "MainWindow.h"
 #include "QtHost.h"
+#include "QtUtils.h"
 #include "svnrev.h"
 
 static constexpr u32 SETTINGS_VERSION = 1;
@@ -80,6 +82,8 @@ static std::unique_ptr<QTimer> s_settings_save_timer;
 static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
 static bool s_batch_mode = false;
 static bool s_nogui_mode = false;
+static bool s_start_fullscreen_ui = false;
+static bool s_start_fullscreen_ui_fullscreen = false;
 
 //////////////////////////////////////////////////////////////////////////
 // Initialization/Shutdown
@@ -432,6 +436,30 @@ void Host::ReportErrorAsync(const std::string_view& title, const std::string_vie
 		Q_ARG(const QString&, message.empty() ? QString() : QString::fromUtf8(message.data(), message.size())));
 }
 
+bool Host::ConfirmMessage(const std::string_view& title, const std::string_view& message)
+{
+	const QString qtitle(QString::fromUtf8(title.data(), title.size()));
+	const QString qmessage(QString::fromUtf8(message.data(), message.size()));
+	return g_emu_thread->confirmMessage(qtitle, qmessage);
+}
+
+void Host::OpenURL(const std::string_view& url)
+{
+	QtHost::RunOnUIThread([url = QtUtils::StringViewToQString(url)]() {
+		QtUtils::OpenURL(g_main_window, QUrl(url));
+	});
+}
+
+bool Host::CopyTextToClipboard(const std::string_view& text)
+{
+	QtHost::RunOnUIThread([text = QtUtils::StringViewToQString(text)]() {
+		QClipboard* clipboard = QGuiApplication::clipboard();
+		if (clipboard)
+			clipboard->setText(text);
+	});
+	return true;
+}
+
 void Host::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
 {
 	emit g_emu_thread->onInputDeviceConnected(
@@ -591,6 +619,7 @@ bool QtHost::ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMB
 			else if (CHECK_ARG("-fullscreen"))
 			{
 				AutoBoot(autoboot)->fullscreen = true;
+				s_start_fullscreen_ui_fullscreen = true;
 				continue;
 			}
 			else if (CHECK_ARG("-nofullscreen"))
@@ -601,6 +630,11 @@ bool QtHost::ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMB
 			else if (CHECK_ARG("-earlyconsolelog"))
 			{
 				Host::InitializeEarlyConsole();
+				continue;
+			}
+			else if (CHECK_ARG("-bigpicture"))
+			{
+				s_start_fullscreen_ui = true;
 				continue;
 			}
 			else if (CHECK_ARG("--"))
@@ -636,7 +670,7 @@ bool QtHost::ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMB
 
 	// if we don't have autoboot, we definitely don't want batch mode (because that'll skip
 	// scanning the game list).
-	if (s_batch_mode && !autoboot)
+	if (s_batch_mode && !s_start_fullscreen_ui && !autoboot)
 	{
 		QMessageBox::critical(nullptr, QStringLiteral("Error"), s_nogui_mode ?
 			QStringLiteral("Cannot use no-gui mode, because no boot filename was specified.") :
@@ -724,10 +758,14 @@ int main(int argc, char* argv[])
 	if (!s_nogui_mode)
 		main_window->show();
 
+	// Initialize big picture mode if requested.
+	if (s_start_fullscreen_ui)
+		g_emu_thread->startFullscreenUI(s_start_fullscreen_ui_fullscreen);
+
 	// Skip the update check if we're booting a game directly.
 	if (autoboot)
 		g_emu_thread->startVM(std::move(autoboot));
-	else
+	else if (!s_nogui_mode)
 		main_window->startupUpdateCheck();
 
 	// This doesn't return until we exit.

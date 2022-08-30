@@ -30,6 +30,7 @@
 #include "pcsx2/Counters.h"
 #include "pcsx2/Frontend/InputManager.h"
 #include "pcsx2/Frontend/ImGuiManager.h"
+#include "pcsx2/Frontend/FullscreenUI.h"
 #include "pcsx2/GS.h"
 #include "pcsx2/GS/GS.h"
 #include "pcsx2/GSDumpReplayer.h"
@@ -87,8 +88,93 @@ void EmuThread::stopInThread()
 	if (VMManager::HasValidVM())
 		destroyVM();
 
+	if (m_run_fullscreen_ui)
+		stopFullscreenUI();
+
 	m_event_loop->quit();
 	m_shutdown_flag.store(true);
+}
+
+bool EmuThread::confirmMessage(const QString& title, const QString& message)
+{
+	if (!isOnEmuThread())
+	{
+		// This is definitely deadlock risky, but unlikely to happen (why would GS be confirming?).
+		bool result = false;
+		QMetaObject::invokeMethod(g_emu_thread, "confirmMessage", Qt::BlockingQueuedConnection,
+			Q_RETURN_ARG(bool, result), Q_ARG(const QString&, title), Q_ARG(const QString&, message));
+		return result;
+	}
+
+	// Easy if there's no VM.
+	if (!VMManager::HasValidVM())
+		return emit messageConfirmed(title, message);
+
+	// Preemptively pause/set surfaceless on the emu thread, because it can't run while the popup is open.
+	const bool was_paused = (VMManager::GetState() == VMState::Paused);
+	const bool was_fullscreen = isFullscreen();
+	if (!was_paused)
+		VMManager::SetPaused(true);
+	if (was_fullscreen)
+		setSurfaceless(true);
+
+	// This won't return until the user confirms one way or another.
+	const bool result = emit messageConfirmed(title, message);
+
+	// Resume VM after confirming.
+	if (was_fullscreen)
+		setSurfaceless(false);
+	if (!was_paused)
+		VMManager::SetPaused(false);
+
+	return result;
+}
+
+void EmuThread::startFullscreenUI(bool fullscreen)
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, "startFullscreenUI", Qt::QueuedConnection, Q_ARG(bool, fullscreen));
+		return;
+	}
+
+	if (VMManager::HasValidVM())
+		return;
+
+	m_run_fullscreen_ui = true;
+	if (fullscreen)
+		m_is_fullscreen = true;
+
+	if (!GetMTGS().WaitForOpen())
+	{
+		m_run_fullscreen_ui = false;
+		return;
+	}
+
+	// poll more frequently so we don't lose events
+	stopBackgroundControllerPollTimer();
+	startBackgroundControllerPollTimer();
+}
+
+void EmuThread::stopFullscreenUI()
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, &EmuThread::stopFullscreenUI, Qt::QueuedConnection);
+
+		// wait until the host display is gone
+		while (s_host_display)
+			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+
+		return;
+	}
+
+	if (!s_host_display)
+		return;
+
+	pxAssertRel(!VMManager::HasValidVM(), "VM is not valid at FSUI shutdown time");
+	m_run_fullscreen_ui = false;
+	GetMTGS().WaitForClose();
 }
 
 void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
@@ -101,15 +187,16 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 	}
 
 	pxAssertRel(!VMManager::HasValidVM(), "VM is shut down");
-	loadOurSettings();
+
+	// Only initialize fullscreen/render-to-main when we're not running big picture.
+	if (!m_run_fullscreen_ui)
+		loadOurInitialSettings();
+
+	if (boot_params->fullscreen.has_value())
+		m_is_fullscreen = boot_params->fullscreen.value();
 
 	emit onVMStarting();
 
-	// create the display, this may take a while...
-	m_is_fullscreen = boot_params->fullscreen.value_or(Host::GetBaseBoolSettingValue("UI", "StartFullscreen", false));
-	m_is_rendering_to_main = shouldRenderToMain();
-	m_is_surfaceless = false;
-	m_save_state_on_shutdown = false;
 	if (!VMManager::Initialize(*boot_params))
 		return;
 
@@ -230,6 +317,7 @@ void EmuThread::saveStateToSlot(qint32 slot)
 
 void EmuThread::run()
 {
+	Threading::SetNameOfCurrentThread("EmuThread");
 	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle::GetForCallingThread());
 	m_event_loop = new QEventLoop();
 	m_started_semaphore.release();
@@ -238,8 +326,13 @@ void EmuThread::run()
 	if (!VMManager::Internal::InitializeGlobals() || !VMManager::Internal::InitializeMemory())
 		pxFailRel("Failed to allocate memory map");
 
-	// we need input sources ready for binding
-	reloadInputSources();
+	// We want settings loaded so we choose the correct renderer for big picture mode.
+	// This also sorts out input sources.
+	loadOurSettings();
+	loadOurInitialSettings();
+	VMManager::LoadSettings();
+
+	// Start background polling because the VM won't do it for us.
 	createBackgroundControllerPollTimer();
 	startBackgroundControllerPollTimer();
 	connectSignals();
@@ -327,7 +420,9 @@ void EmuThread::startBackgroundControllerPollTimer()
 	if (m_background_controller_polling_timer->isActive())
 		return;
 
-	m_background_controller_polling_timer->start(BACKGROUND_CONTROLLER_POLLING_INTERVAL);
+	m_background_controller_polling_timer->start(FullscreenUI::IsInitialized() ?
+													 FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL :
+                                                     BACKGROUND_CONTROLLER_POLLING_INTERVAL);
 }
 
 void EmuThread::stopBackgroundControllerPollTimer()
@@ -362,7 +457,7 @@ void EmuThread::setFullscreen(bool fullscreen)
 		return;
 	}
 
-	if (!VMManager::HasValidVM() || m_is_fullscreen == fullscreen)
+	if (!GetMTGS().IsOpen() || m_is_fullscreen == fullscreen)
 		return;
 
 	// This will call back to us on the MTGS thread.
@@ -382,8 +477,12 @@ void EmuThread::setSurfaceless(bool surfaceless)
 		return;
 	}
 
-	if (!VMManager::HasValidVM() || m_is_surfaceless == surfaceless)
+	if (!GetMTGS().IsOpen() || m_is_surfaceless == surfaceless)
 		return;
+
+	// If we went surfaceless and were running the fullscreen UI, stop MTGS running idle.
+	// Otherwise, we'll keep trying to present to nothing.
+	GetMTGS().SetRunIdle(!surfaceless && m_run_fullscreen_ui);
 
 	// This will call back to us on the MTGS thread.
 	m_is_surfaceless = surfaceless;
@@ -441,11 +540,19 @@ void EmuThread::connectSignals()
 	connect(qApp, &QGuiApplication::applicationStateChanged, this, &EmuThread::onApplicationStateChanged);
 }
 
+void EmuThread::loadOurInitialSettings()
+{
+	m_is_fullscreen = Host::GetBaseBoolSettingValue("UI", "StartFullscreen", false);
+	m_is_rendering_to_main = shouldRenderToMain();
+	m_is_surfaceless = false;
+	m_save_state_on_shutdown = false;
+}
+
 void EmuThread::checkForSettingChanges()
 {
 	QMetaObject::invokeMethod(g_main_window, &MainWindow::checkForSettingChanges, Qt::QueuedConnection);
 
-	if (VMManager::HasValidVM())
+	if (s_host_display)
 	{
 		const bool render_to_main = shouldRenderToMain();
 		if (!m_is_fullscreen && m_is_rendering_to_main != render_to_main)
@@ -737,6 +844,14 @@ HostDisplay* EmuThread::acquireHostDisplay(HostDisplay::RenderAPI api)
 	Console.WriteLn(Color_StrongGreen, "%s Graphics Driver Info:", HostDisplay::RenderAPIToString(s_host_display->GetRenderAPI()));
 	Console.Indent().WriteLn(s_host_display->GetDriverInfo());
 
+	if (m_run_fullscreen_ui && !FullscreenUI::Initialize())
+	{
+		Console.Error("Failed to initialize fullscreen UI");
+		releaseHostDisplay();
+		m_run_fullscreen_ui = false;
+		return nullptr;
+	}
+
 	return s_host_display.get();
 }
 
@@ -781,6 +896,7 @@ void Host::EndPresentFrame()
 	if (GSDumpReplayer::IsReplayingDump())
 		GSDumpReplayer::RenderUI();
 
+	FullscreenUI::Render();
 	ImGuiManager::RenderOSD();
 	s_host_display->EndPresent();
 	ImGuiManager::NewFrame();
@@ -1001,14 +1117,15 @@ void Host::RequestExit(bool save_state_if_running)
 	QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection);
 }
 
-void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state)
+void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool default_save_state)
 {
 	if (!VMManager::HasValidVM())
 		return;
 
 	// Run it on the host thread, that way we get the confirm prompt (if enabled).
 	QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection,
-		Q_ARG(bool, allow_confirm), Q_ARG(bool, allow_save_state), Q_ARG(bool, false));
+		Q_ARG(bool, allow_confirm), Q_ARG(bool, allow_save_state),
+		Q_ARG(bool, default_save_state), Q_ARG(bool, false));
 }
 
 bool Host::IsFullscreen()

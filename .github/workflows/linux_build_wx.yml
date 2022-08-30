@@ -9,7 +9,7 @@ on:
       os:
         required: false
         type: string
-        default: ubuntu-18.04
+        default: ubuntu-20.04
       platform:
         required: false
         type: string

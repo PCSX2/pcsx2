@@ -361,7 +361,8 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 	//  si.SetStringValue("Hotkeys", "FrameAdvance", "Keyboard"); TBD
 	//	si.SetStringValue("Hotkeys", "IncreaseSpeed", "Keyboard"); TBD
 	//  si.SetStringValue("Hotkeys", "ResetVM", "Keyboard"); TBD
-	si.SetStringValue("Hotkeys", "ShutdownVM", "Keyboard/Escape");
+	//  si.SetStringValue("Hotkeys", "ShutdownVM", "Keyboard"); TBD
+	si.SetStringValue("Hotkeys", "OpenPauseMenu", "Keyboard/Escape");
 	si.SetStringValue("Hotkeys", "ToggleFrameLimit", "Keyboard/F4");
 	si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Space");
 	si.SetStringValue("Hotkeys", "ToggleSlowMotion", "Keyboard/Shift & Keyboard/Backtab");
@@ -409,17 +410,23 @@ static const PAD::ControllerBindingInfo s_dualshock2_binds[] = {
 static const PAD::ControllerSettingInfo s_dualshock2_settings[] = {
 	{PAD::ControllerSettingInfo::Type::Float, "Deadzone", "Analog Deadzone",
 		"Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.",
-		"0.00", "0.00", "1.00", "0.01"},
+		"0.00", "0.00", "1.00", "0.01", "%.0f%%", 100.0f},
 	{PAD::ControllerSettingInfo::Type::Float, "AxisScale", "Analog Sensitivity",
 		"Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
 		"controllers, e.g. DualShock 4, Xbox One Controller.",
-		"1.33", "0.01", "2.00", "0.01"},
+		"1.33", "0.01", "2.00", "0.01", "%.0f%%", 100.0f},
 	{PAD::ControllerSettingInfo::Type::Float, "LargeMotorScale", "Large Motor Vibration Scale",
 		"Increases or decreases the intensity of low frequency vibration sent by the game.",
-		"1.00", "0.00", "2.00", "0.01"},
+		"1.00", "0.00", "2.00", "0.01", "%.0f%%", 100.0f},
 	{PAD::ControllerSettingInfo::Type::Float, "SmallMotorScale", "Small Motor Vibration Scale",
 		"Increases or decreases the intensity of high frequency vibration sent by the game.",
-		"1.00", "0.00", "2.00", "0.01"},
+		"1.00", "0.00", "2.00", "0.01", "%.0f%%", 100.0f},
+	/*{PAD::ControllerSettingInfo::Type::Float, "InitialPressure", "Initial Pressure",
+	"Sets the pressure when the modifier button isn't held.",
+	"1.00", "0.01", "1.00", "0.01", "%.0f%%", 100.0f},*/
+	{PAD::ControllerSettingInfo::Type::Float, "PressureModifier", "Modifier Pressure",
+	"Sets the pressure when the modifier button is held.",
+	"0.50", "0.01", "1.00", "0.01", "%.0f%%", 100.0f},
 };
 
 static const PAD::ControllerInfo s_controller_info[] = {

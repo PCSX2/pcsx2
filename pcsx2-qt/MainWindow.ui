@@ -66,6 +66,7 @@
     <addaction name="actionStartFile"/>
     <addaction name="actionStartDisc"/>
     <addaction name="actionStartBios"/>
+    <addaction name="actionStartFullscreenUI"/>
     <addaction name="separator"/>
     <addaction name="actionPowerOff"/>
     <addaction name="actionPowerOffWithoutSaving"/>
@@ -225,6 +226,7 @@
    <addaction name="actionStartFile"/>
    <addaction name="actionStartDisc"/>
    <addaction name="actionStartBios"/>
+   <addaction name="actionStartFullscreenUI2"/>
    <addaction name="separator"/>
    <addaction name="actionPowerOff"/>
    <addaction name="actionReset"/>
@@ -827,6 +829,24 @@
    </property>
    <property name="text">
     <string>Enable Log Timestamps</string>
+   </property>
+  </action>
+  <action name="actionStartFullscreenUI">
+   <property name="icon">
+    <iconset theme="tv-2-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Start Big Picture Mode</string>
+   </property>
+  </action>
+  <action name="actionStartFullscreenUI2">
+   <property name="icon">
+    <iconset theme="tv-2-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Big Picture</string>
    </property>
   </action>
  </widget>

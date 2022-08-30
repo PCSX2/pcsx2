@@ -137,7 +137,7 @@ CoverityBuild=0
 cppcheck=0
 clangTidy=0
 
-root=$PWD/$(dirname "$0")
+root=$PWD #/$(dirname "$0")
 log="$root/install_log.txt"
 build="$root/build"
 coverity_dir="cov-int"

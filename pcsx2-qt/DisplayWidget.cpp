@@ -17,6 +17,8 @@
 
 #include "common/Assertions.h"
 
+#include "pcsx2/Frontend/ImGuiManager.h"
+
 #include "DisplayWidget.h"
 #include "EmuThread.h"
 #include "MainWindow.h"
@@ -181,6 +183,24 @@ void DisplayWidget::updateCursor(bool master_enable)
 		unsetCursor();
 }
 
+void DisplayWidget::handleCloseEvent(QCloseEvent* event)
+{
+	// Closing the separate widget will either cancel the close, or trigger shutdown.
+	// In the latter case, it's going to destroy us, so don't let Qt do it first.
+	if (QtHost::IsVMValid())
+	{
+		QMetaObject::invokeMethod(g_main_window, "requestShutdown", Q_ARG(bool, true),
+			Q_ARG(bool, true), Q_ARG(bool, false));
+	}
+	else
+	{
+		QMetaObject::invokeMethod(g_main_window, &MainWindow::requestExit);
+	}
+
+	// Cancel the event from closing the window.
+	event->ignore();
+}
+
 void DisplayWidget::updateCenterPos()
 {
 #ifdef _WIN32
@@ -224,6 +244,15 @@ bool DisplayWidget::event(QEvent* event)
 		case QEvent::KeyRelease:
 		{
 			const QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
+			
+			// Forward text input to imgui.
+			if (ImGuiManager::WantsTextInput() && key_event->type() == QEvent::KeyPress)
+			{
+				const QString text(key_event->text());
+				if (!text.isEmpty())
+					ImGuiManager::AddTextInput(text.toStdString());
+			}
+
 			if (key_event->isAutoRepeat())
 				return true;
 
@@ -319,6 +348,7 @@ bool DisplayWidget::event(QEvent* event)
 			// don't toggle fullscreen when we're bound.. that wouldn't end well.
 			if (event->type() == QEvent::MouseButtonDblClick &&
 				static_cast<const QMouseEvent*>(event)->button() == Qt::LeftButton &&
+				QtHost::IsVMValid() && !QtHost::IsVMPaused() &&
 				!InputManager::HasAnyBindingsForKey(InputManager::MakePointerButtonKey(0, 0)) &&
 				Host::GetBoolSettingValue("UI", "DoubleClickTogglesFullscreen", true))
 			{
@@ -373,10 +403,7 @@ bool DisplayWidget::event(QEvent* event)
 
 		case QEvent::Close:
 		{
-			// Closing the separate widget will either cancel the close, or trigger shutdown.
-			// In the latter case, it's going to destroy us, so don't let Qt do it first.
-			QMetaObject::invokeMethod(g_main_window, "requestShutdown", Q_ARG(bool, true), Q_ARG(bool, true), Q_ARG(bool, false));
-			event->ignore();
+			handleCloseEvent(static_cast<QCloseEvent*>(event));
 			return true;
 		}
 
@@ -443,12 +470,9 @@ DisplayWidget* DisplayContainer::removeDisplayWidget()
 
 bool DisplayContainer::event(QEvent* event)
 {
-	if (event->type() == QEvent::Close)
+	if (event->type() == QEvent::Close && m_display_widget)
 	{
-		// Closing the separate widget will either cancel the close, or trigger shutdown.
-		// In the latter case, it's going to destroy us, so don't let Qt do it first.
-		QMetaObject::invokeMethod(g_main_window, "requestShutdown", Q_ARG(bool, true), Q_ARG(bool, true), Q_ARG(bool, false));
-		event->ignore();
+		m_display_widget->handleCloseEvent(static_cast<QCloseEvent*>(event));
 		return true;
 	}
 

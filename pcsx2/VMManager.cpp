@@ -56,9 +56,11 @@
 #include "DebugTools/MIPSAnalyst.h"
 #include "DebugTools/SymbolMap.h"
 
+#include "Frontend/FullscreenUI.h"
 #include "Frontend/INISettingsInterface.h"
 #include "Frontend/InputManager.h"
 #include "Frontend/GameList.h"
+#include "IconsFontAwesome5.h"
 
 #include "common/emitter/tools.h"
 #ifdef _M_X86
@@ -71,7 +73,6 @@
 
 namespace VMManager
 {
-	static void LoadSettings();
 	static void ApplyGameFixes();
 	static bool UpdateGameSettingsLayer();
 	static void CheckForConfigChanges(const Pcsx2Config& old_config);
@@ -84,7 +85,7 @@ namespace VMManager
 	static void CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config);
 
 	static bool AutoDetectSource(const std::string& filename);
-	static bool ApplyBootParameters(const VMBootParameters& params, std::string* state_to_load);
+	static bool ApplyBootParameters(VMBootParameters params, std::string* state_to_load);
 	static bool CheckBIOSAvailability();
 	static void LoadPatches(const std::string& serial, u32 crc,
 		bool show_messages, bool show_messages_when_disabled);
@@ -136,6 +137,7 @@ static s32 s_current_save_slot = 1;
 static u32 s_frame_advance_count = 0;
 static u32 s_mxcsr_saved;
 static std::optional<LimiterModeType> s_limiter_mode_prior_to_hold_interaction;
+static bool s_gs_open_on_initialize = false;
 
 static bool s_is_python2 = false;
 static u32 s_python2_crc = 0;
@@ -204,9 +206,15 @@ void VMManager::SetState(VMState state)
 
 		SPU2SetOutputPaused(state == VMState::Paused);
 		if (state == VMState::Paused)
+		{
 			Host::OnVMPaused();
+			FullscreenUI::OnVMPaused();
+		}
 		else
+		{
 			Host::OnVMResumed();
+			FullscreenUI::OnVMResumed();
+		}
 	}
 }
 
@@ -259,6 +267,12 @@ bool VMManager::Internal::InitializeGlobals()
 	x86caps.SIMD_EstablishMXCSRmask();
 	x86caps.CalculateMHz();
 	SysLogMachineCaps();
+
+	if (GSinit() != 0)
+	{
+		Host::ReportErrorAsync("Error", "Failed to initialize GS (GSinit()).");
+		return false;
+	}
 
 	return true;
 }
@@ -443,8 +457,13 @@ bool VMManager::UpdateGameSettingsLayer()
 	}
 
 	std::string input_profile_name;
+	bool use_game_settings_for_controller = false;
 	if (new_interface)
-		new_interface->GetStringValue("EmuCore", "InputProfileName", &input_profile_name);
+	{
+		new_interface->GetBoolValue("Pad", "UseGameSettingsForController", &use_game_settings_for_controller);
+		if (!use_game_settings_for_controller)
+			new_interface->GetStringValue("EmuCore", "InputProfileName", &input_profile_name);
+	}
 
 	if (!s_game_settings_interface && !new_interface && s_input_profile_name == input_profile_name)
 		return false;
@@ -453,32 +472,39 @@ bool VMManager::UpdateGameSettingsLayer()
 	s_game_settings_interface = std::move(new_interface);
 
 	std::unique_ptr<INISettingsInterface> input_interface;
-	if (!input_profile_name.empty())
+	if (!use_game_settings_for_controller)
 	{
-		const std::string filename(GetInputProfilePath(input_profile_name));
-		if (FileSystem::FileExists(filename.c_str()))
+		if (!input_profile_name.empty())
 		{
-			Console.WriteLn("Loading input profile from '%s'...", filename.c_str());
-			input_interface = std::make_unique<INISettingsInterface>(std::move(filename));
-			if (!input_interface->Load())
+			const std::string filename(GetInputProfilePath(input_profile_name));
+			if (FileSystem::FileExists(filename.c_str()))
 			{
-				Console.Error("Failed to parse input profile ini '%s'", input_interface->GetFileName().c_str());
-				input_interface.reset();
+				Console.WriteLn("Loading input profile from '%s'...", filename.c_str());
+				input_interface = std::make_unique<INISettingsInterface>(std::move(filename));
+				if (!input_interface->Load())
+				{
+					Console.Error("Failed to parse input profile ini '%s'", input_interface->GetFileName().c_str());
+					input_interface.reset();
+					input_profile_name = {};
+				}
+			}
+			else
+			{
+				DevCon.WriteLn("No game settings found (tried '%s')", filename.c_str());
 				input_profile_name = {};
 			}
 		}
-		else
-		{
-			DevCon.WriteLn("No game settings found (tried '%s')", filename.c_str());
-			input_profile_name = {};
-		}
+
+		Host::Internal::SetInputSettingsLayer(input_interface.get());
+	}
+	else
+	{
+		// using game settings for bindings too
+		Host::Internal::SetInputSettingsLayer(s_game_settings_interface.get());
 	}
 
-	Host::Internal::SetInputSettingsLayer(input_interface.get());
 	s_input_settings_interface = std::move(input_interface);
 	s_input_profile_name = std::move(input_profile_name);
-
-
 	return true;
 }
 
@@ -615,11 +641,11 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 		if (cheat_count > 0 || s_active_widescreen_patches > 0 || s_active_no_interlacing_patches > 0)
 		{
 			message += " are active.";
-			Host::AddKeyedOSDMessage("LoadPatches", std::move(message), 5.0f);
+			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE, message, 5.0f);
 		}
 		else if (show_messages_when_disabled)
 		{
-			Host::AddKeyedOSDMessage("LoadPatches", "No cheats or patches (widescreen, compatibility or others) are found / enabled.", 8.0f);
+			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE, "No cheats or patches (widescreen, compatibility or others) are found / enabled.", 8.0f);
 		}
 	}
 }
@@ -693,6 +719,12 @@ void VMManager::UpdateRunningGame(bool resetting, bool game_starting)
 	GetMTGS().SendGameCRC(new_crc);
 
 	Host::OnGameChanged(s_disc_path, s_game_serial, s_game_name, s_game_crc);
+	if (FullscreenUI::IsInitialized())
+	{
+		GetMTGS().RunOnGSThread([disc_path = s_disc_path, game_serial = s_game_serial, game_name = s_game_name, game_crc = s_game_crc]() {
+			FullscreenUI::OnRunningGameChanged(std::move(disc_path), std::move(game_serial), std::move(game_name), game_crc);
+		});
+	}
 
 #if 0
 	// TODO: Enable this when the debugger is added to Qt, and it's active. Otherwise, this is just a waste of time.
@@ -754,15 +786,15 @@ bool VMManager::AutoDetectSource(const std::string& filename)
 	}
 }
 
-bool VMManager::ApplyBootParameters(const VMBootParameters& params, std::string* state_to_load)
+bool VMManager::ApplyBootParameters(VMBootParameters params, std::string* state_to_load)
 {
 	const bool default_fast_boot = Host::GetBoolSettingValue("EmuCore", "EnableFastBoot", true);
 	EmuConfig.UseBOOT2Injection = params.fast_boot.value_or(default_fast_boot);
 
-	s_elf_override = params.elf_override;
+	s_elf_override = std::move(params.elf_override);
 	s_disc_path.clear();
 	if (!params.save_state.empty())
-		*state_to_load = params.save_state;
+		*state_to_load = std::move(params.save_state);
 
 	// if we're loading an indexed save state, we need to get the serial/crc from the disc.
 	if (params.state_index.has_value())
@@ -791,8 +823,8 @@ bool VMManager::ApplyBootParameters(const VMBootParameters& params, std::string*
 		}
 
 		// Use specified source type.
-		s_disc_path = params.filename;
-		CDVDsys_SetFile(params.source_type.value(), params.filename);
+		s_disc_path = std::move(params.filename);
+		CDVDsys_SetFile(params.source_type.value(), s_disc_path);
 		CDVDsys_ChangeSource(params.source_type.value());
 	}
 	else
@@ -837,15 +869,15 @@ bool VMManager::CheckBIOSAvailability()
 	// TODO: When we translate core strings, translate this.
 
 	const char* message = "PCSX2 requires a PS2 BIOS in order to run.\n\n"
-		"For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't count).\n\n"
-		"Once dumped, this BIOS image should be placed in the bios folder within the data directory (Tools Menu -> Open Data Directory).\n\n"
-		"Please consult the FAQs and Guides for further instructions.";
+						  "For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't count).\n\n"
+						  "Once dumped, this BIOS image should be placed in the bios folder within the data directory (Tools Menu -> Open Data Directory).\n\n"
+						  "Please consult the FAQs and Guides for further instructions.";
 
 	Host::ReportErrorAsync("Startup Error", message);
 	return false;
 }
 
-bool VMManager::Initialize(const VMBootParameters& boot_params)
+bool VMManager::Initialize(VMBootParameters boot_params)
 {
 	const Common::Timer init_timer;
 	pxAssertRel(s_state.load(std::memory_order_acquire) == VMState::Shutdown, "VM is shutdown");
@@ -868,10 +900,8 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 		Host::OnVMDestroyed();
 	};
 
-	LoadSettings();
-
 	std::string state_to_load;
-	if (!ApplyBootParameters(boot_params, &state_to_load))
+	if (!ApplyBootParameters(std::move(boot_params), &state_to_load))
 		return false;
 
 	UpdateRunningGame(true, false); // Add this here so we can get the loaded settings in the Python 2 USB code
@@ -894,14 +924,18 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	ScopedGuard close_cdvd = [] { DoCDVDclose(); };
 
 	Console.WriteLn("Opening GS...");
-	if (!GetMTGS().WaitForOpen())
+	s_gs_open_on_initialize = GetMTGS().IsOpen();
+	if (!s_gs_open_on_initialize && !GetMTGS().WaitForOpen())
 	{
 		// we assume GS is going to report its own error
 		Console.WriteLn("Failed to open GS.");
 		return false;
 	}
 
-	ScopedGuard close_gs = []() { GetMTGS().WaitForClose(); };
+	ScopedGuard close_gs = []() {
+		if (!s_gs_open_on_initialize)
+			GetMTGS().WaitForClose();
+	};
 
 	Console.WriteLn("Opening SPU2...");
 	if (SPU2init() != 0 || SPU2open() != 0)
@@ -988,6 +1022,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	Console.WriteLn("VM subsystems initialized in %.2f ms", init_timer.GetTimeMilliseconds());
 	s_state.store(VMState::Paused, std::memory_order_release);
 	Host::OnVMStarted();
+	FullscreenUI::OnVMStarted();
 
 	UpdateRunningGame(true, false);
 
@@ -1033,6 +1068,12 @@ void VMManager::Shutdown(bool save_resume_state)
 	}
 
 	{
+		LastELF.clear();
+		DiscSerial.clear();
+		ElfCRC = 0;
+		ElfEntry = 0;
+		ElfTextRange = {};
+
 		std::unique_lock lock(s_info_mutex);
 		s_disc_path.clear();
 		s_game_crc = 0;
@@ -1065,7 +1106,14 @@ void VMManager::Shutdown(bool save_resume_state)
 	DoCDVDclose();
 	FWclose();
 	FileMcd_EmuClose();
-	GetMTGS().WaitForClose();
+
+	// If the fullscreen UI is running, do a hardware reset on the GS
+	// so that the texture cache and targets are all cleared.
+	if (s_gs_open_on_initialize)
+		GetMTGS().ResetGS(true);
+	else
+		GetMTGS().WaitForClose();
+
 	USBshutdown();
 	SPU2shutdown();
 	PADshutdown();
@@ -1076,6 +1124,7 @@ void VMManager::Shutdown(bool save_resume_state)
 
 	s_state.store(VMState::Shutdown, std::memory_order_release);
 	Host::OnVMDestroyed();
+	FullscreenUI::OnVMDestroyed();
 }
 
 void VMManager::Reset()
@@ -1209,7 +1258,7 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 	}
 	catch (Exception::BaseException& e)
 	{
-		Host::AddKeyedOSDMessage(std::move(osd_key), fmt::format("Failed to save save state: {}.", e.DiagMsg()), 15.0f);
+		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE, fmt::format("Failed to save save state: {}.", e.DiagMsg()), 15.0f);
 		return false;
 	}
 }
@@ -1223,11 +1272,11 @@ void VMManager::ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
 	if (SaveState_ZipToDisk(std::move(elist), std::move(screenshot), filename))
 	{
 		if (slot_for_message >= 0 && VMManager::HasValidVM())
-			Host::AddKeyedOSDMessage(std::move(osd_key), fmt::format("State saved to slot {}.", slot_for_message), 10.0f);
+			Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_SAVE, fmt::format("State saved to slot {}.", slot_for_message), 10.0f);
 	}
 	else
 	{
-		Host::AddKeyedOSDMessage(std::move(osd_key), fmt::format("Failed to save save state to slot {}.", slot_for_message), 15.0f);
+		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE, fmt::format("Failed to save save state to slot {}.", slot_for_message), 15.0f);
 	}
 
 	DevCon.WriteLn("Zipping save state to '%s' took %.2f ms", filename, timer.GetTimeMilliseconds());
@@ -1284,11 +1333,11 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 	const std::string filename(GetCurrentSaveStateFileName(slot));
 	if (filename.empty())
 	{
-		Host::AddKeyedOSDMessage("LoadStateFromSlot", fmt::format("There is no save state in slot {}.", slot), 5.0f);
+		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE, fmt::format("There is no save state in slot {}.", slot), 5.0f);
 		return false;
 	}
 
-	Host::AddKeyedOSDMessage("LoadStateFromSlot", fmt::format("Loading state from slot {}...", slot), 5.0f);
+	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN, fmt::format("Loading state from slot {}...", slot), 5.0f);
 	return DoLoadState(filename.c_str());
 }
 
@@ -1304,7 +1353,7 @@ bool VMManager::SaveStateToSlot(s32 slot, bool zip_on_thread)
 		return false;
 
 	// if it takes more than a minute.. well.. wtf.
-	Host::AddKeyedOSDMessage(fmt::format("SaveStateSlot{}", slot), fmt::format("Saving state to slot {}...", slot), 60.0f);
+	Host::AddIconOSDMessage(fmt::format("SaveStateSlot{}", slot), ICON_FA_SAVE, fmt::format("Saving state to slot {}...", slot), 60.0f);
 	return DoSaveState(filename.c_str(), slot, zip_on_thread);
 }
 
@@ -1346,19 +1395,19 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 	if (result)
 	{
 		if (source == CDVD_SourceType::NoDisc)
-			Host::AddKeyedOSDMessage("ChangeDisc", "Disc removed.", 5.0f);
+			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, "Disc removed.", 5.0f);
 		else
-			Host::AddKeyedOSDMessage("ChangeDisc", fmt::format("Disc changed to '{}'.", display_name), 5.0f);
+			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, fmt::format("Disc changed to '{}'.", display_name), 5.0f);
 	}
 	else
 	{
-		Host::AddKeyedOSDMessage("ChangeDisc", fmt::format("Failed to open new disc image '{}'. Reverting to old image.", display_name), 20.0f);
+		Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, fmt::format("Failed to open new disc image '{}'. Reverting to old image.", display_name), 20.0f);
 		CDVDsys_ChangeSource(old_type);
 		if (!old_path.empty())
 			CDVDsys_SetFile(old_type, std::move(old_path));
 		if (!DoCDVDopen())
 		{
-			Host::AddKeyedOSDMessage("ChangeDisc", "Failed to switch back to old disc image. Removing disc.", 20.0f);
+			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, "Failed to switch back to old disc image. Removing disc.", 20.0f);
 			CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
 			DoCDVDopen();
 		}
@@ -1641,20 +1690,27 @@ void VMManager::CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config)
 
 void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)
 {
-	CheckForCPUConfigChanges(old_config);
-	CheckForGSConfigChanges(old_config);
-	CheckForFramerateConfigChanges(old_config);
-	CheckForPatchConfigChanges(old_config);
-	CheckForSPU2ConfigChanges(old_config);
-	CheckForDEV9ConfigChanges(old_config);
-	CheckForMemoryCardConfigChanges(old_config);
-
-	if (EmuConfig.EnableCheats != old_config.EnableCheats ||
-		EmuConfig.EnableWideScreenPatches != old_config.EnableWideScreenPatches ||
-		EmuConfig.EnableNoInterlacingPatches != old_config.EnableNoInterlacingPatches)
+	if (HasValidVM())
 	{
-		VMManager::ReloadPatches(true, true);
+		CheckForCPUConfigChanges(old_config);
+		CheckForFramerateConfigChanges(old_config);
+		CheckForPatchConfigChanges(old_config);
+		CheckForSPU2ConfigChanges(old_config);
+		CheckForDEV9ConfigChanges(old_config);
+		CheckForMemoryCardConfigChanges(old_config);
+
+		if (EmuConfig.EnableCheats != old_config.EnableCheats ||
+			EmuConfig.EnableWideScreenPatches != old_config.EnableWideScreenPatches ||
+			EmuConfig.EnableNoInterlacingPatches != old_config.EnableNoInterlacingPatches)
+		{
+			VMManager::ReloadPatches(true, true);
+		}
 	}
+
+	// For the big picture UI, we still need to update GS settings, since it's running,
+	// and we don't update its config when we start the VM.
+	if (HasValidVM() || GetMTGS().IsOpen())
+		CheckForGSConfigChanges(old_config);
 }
 
 void VMManager::ApplySettings()
@@ -1672,9 +1728,7 @@ void VMManager::ApplySettings()
 
 	const Pcsx2Config old_config(EmuConfig);
 	LoadSettings();
-
-	if (HasValidVM())
-		CheckForConfigChanges(old_config);
+	CheckForConfigChanges(old_config);
 }
 
 bool VMManager::ReloadGameSettings()
@@ -1692,7 +1746,7 @@ static void HotkeyAdjustTargetSpeed(double delta)
 	VMManager::SetLimiterMode(LimiterModeType::Nominal);
 	gsUpdateFrequency(EmuConfig);
 	GetMTGS().SetVSync(EmuConfig.GetEffectiveVsyncMode());
-	Host::AddKeyedOSDMessage("SpeedChanged", fmt::format("Target speed set to {:.0f}%.", std::round(EmuConfig.Framerate.NominalScalar * 100.0)), 5.0f);
+	Host::AddIconOSDMessage("SpeedChanged", ICON_FA_CLOCK, fmt::format("Target speed set to {:.0f}%.", std::round(EmuConfig.Framerate.NominalScalar * 100.0)), 5.0f);
 }
 
 static constexpr s32 CYCLE_SAVE_STATE_SLOTS = 10;
@@ -1722,11 +1776,11 @@ static void HotkeyCycleSaveSlot(s32 delta)
 		if (len > 0 && date_buf[len - 1] == '\n')
 			date_buf[len - 1] = 0;
 
-		Host::AddKeyedOSDMessage("CycleSaveSlot", fmt::format("Save slot {} selected (last save: {}).", s_current_save_slot, date_buf), 5.0f);
+		Host::AddIconOSDMessage("CycleSaveSlot", ICON_FA_SEARCH, fmt::format("Save slot {} selected (last save: {}).", s_current_save_slot, date_buf), 5.0f);
 	}
 	else
 	{
-		Host::AddKeyedOSDMessage("CycleSaveSlot", fmt::format("Save slot {} selected (no save yet).", s_current_save_slot), 5.0f);
+		Host::AddIconOSDMessage("CycleSaveSlot", ICON_FA_SEARCH, fmt::format("Save slot {} selected (no save yet).", s_current_save_slot), 5.0f);
 	}
 }
 
@@ -1734,13 +1788,13 @@ static void HotkeyLoadStateSlot(s32 slot)
 {
 	if (s_game_crc == 0)
 	{
-		Host::AddKeyedOSDMessage("LoadStateFromSlot", "Cannot load state from a slot without a game running.", 10.0f);
+		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE, "Cannot load state from a slot without a game running.", 10.0f);
 		return;
 	}
 
 	if (!VMManager::HasSaveStateInSlot(s_game_serial.c_str(), s_game_crc, slot))
 	{
-		Host::AddKeyedOSDMessage("LoadStateFromSlot", fmt::format("No save state found in slot {}.", slot));
+		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE, fmt::format("No save state found in slot {}.", slot));
 		return;
 	}
 
@@ -1751,7 +1805,7 @@ static void HotkeySaveStateSlot(s32 slot)
 {
 	if (s_game_crc == 0)
 	{
-		Host::AddKeyedOSDMessage("SaveStateToSlot", "Cannot save state to a slot without a game running.", 10.0f);
+		Host::AddIconOSDMessage("SaveStateToSlot", ICON_FA_EXCLAMATION_TRIANGLE, "Cannot save state to a slot without a game running.", 10.0f);
 		return;
 	}
 
@@ -1759,6 +1813,10 @@ static void HotkeySaveStateSlot(s32 slot)
 }
 
 BEGIN_HOTKEY_LIST(g_vm_manager_hotkeys)
+DEFINE_HOTKEY("OpenPauseMenu", "System", "Open Pause Menu", [](s32 pressed) {
+	if (!pressed)
+		FullscreenUI::OpenPauseMenu();
+})
 DEFINE_HOTKEY("TogglePause", "System", "Toggle Pause", [](s32 pressed) {
 	if (!pressed && VMManager::HasValidVM())
 		VMManager::SetPaused(VMManager::GetState() != VMState::Paused);
@@ -1771,7 +1829,7 @@ DEFINE_HOTKEY("ToggleFrameLimit", "System", "Toggle Frame Limit", [](s32 pressed
 	if (!pressed)
 	{
 		VMManager::SetLimiterMode((EmuConfig.LimiterMode != LimiterModeType::Unlimited) ?
-                                      LimiterModeType::Unlimited :
+									  LimiterModeType::Unlimited :
                                       LimiterModeType::Nominal);
 	}
 })
@@ -1787,7 +1845,7 @@ DEFINE_HOTKEY("ToggleSlowMotion", "System", "Toggle Slow Motion", [](s32 pressed
 	if (!pressed)
 	{
 		VMManager::SetLimiterMode((EmuConfig.LimiterMode != LimiterModeType::Slomo) ?
-                                      LimiterModeType::Slomo :
+									  LimiterModeType::Slomo :
                                       LimiterModeType::Nominal);
 	}
 })
@@ -1819,7 +1877,7 @@ DEFINE_HOTKEY("FrameAdvance", "System", "Frame Advance", [](s32 pressed) {
 })
 DEFINE_HOTKEY("ShutdownVM", "System", "Shut Down Virtual Machine", [](s32 pressed) {
 	if (!pressed && VMManager::HasValidVM())
-		Host::RequestVMShutdown(true, true);
+		Host::RequestVMShutdown(true, true, EmuConfig.SaveStateOnShutdown);
 })
 DEFINE_HOTKEY("ResetVM", "System", "Reset Virtual Machine", [](s32 pressed) {
 	if (!pressed && VMManager::HasValidVM())
@@ -1876,7 +1934,6 @@ DEFINE_HOTKEY_SAVESTATE_X(10)
 DEFINE_HOTKEY_LOADSTATE_X(10)
 #undef DEFINE_HOTKEY_SAVESTATE_X
 #undef DEFINE_HOTKEY_LOADSTATE_X
-
 END_HOTKEY_LIST()
 
 #ifdef _WIN32

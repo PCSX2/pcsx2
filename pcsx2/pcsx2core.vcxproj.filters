@@ -1333,6 +1333,12 @@
     <ClCompile Include="USB\usb-python2\api_init_win32_hid.cpp">
       <Filter>System\Ps2\USB\usb-python2</Filter>
     </ClCompile>
+    <ClCompile Include="Frontend\ImGuiFullscreen.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\FullscreenUI.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2236,6 +2242,12 @@
     </ClInclude>
     <ClInclude Include="USB\usb-python2\devices\input_device.h">
       <Filter>System\Ps2\USB\usb-python2\devices</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\ImGuiFullscreen.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\FullscreenUI.h">
+      <Filter>Host</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -34,7 +34,6 @@
 #include "Config.h"
 #include "Counters.h"
 #include "Frontend/ImGuiManager.h"
-#include "Frontend/InputManager.h"
 #include "GS.h"
 #include "GS/GS.h"
 #include "Host.h"
@@ -43,6 +42,10 @@
 #include "PerformanceMetrics.h"
 
 #ifdef PCSX2_CORE
+#include "Frontend/FullscreenUI.h"
+#include "Frontend/ImGuiManager.h"
+#include "Frontend/ImGuiFullscreen.h"
+#include "Frontend/InputManager.h"
 #include "VMManager.h"
 #endif
 
@@ -52,7 +55,7 @@ namespace ImGuiManager
 	static void SetKeyMap();
 	static bool LoadFontData();
 	static void UnloadFontData();
-	static bool AddImGuiFonts();
+	static bool AddImGuiFonts(bool fullscreen_fonts);
 	static ImFont* AddTextFont(float size);
 	static ImFont* AddFixedFont(float size);
 	static bool AddIconFonts(float size);
@@ -66,6 +69,8 @@ static float s_global_scale = 1.0f;
 
 static ImFont* s_standard_font;
 static ImFont* s_fixed_font;
+static ImFont* s_medium_font;
+static ImFont* s_large_font;
 
 static std::vector<u8> s_standard_font_data;
 static std::vector<u8> s_fixed_font_data;
@@ -111,6 +116,10 @@ bool ImGuiManager::Initialize()
 	SetKeyMap();
 	SetStyle();
 
+#ifdef PCSX2_CORE
+	pxAssertRel(!FullscreenUI::IsInitialized(), "Fullscreen UI is not initialized on ImGui init");
+#endif
+
 	if (!display->CreateImGuiContext())
 	{
 		pxFailRel("Failed to create ImGui device context");
@@ -120,7 +129,7 @@ bool ImGuiManager::Initialize()
 		return false;
 	}
 
-	if (!AddImGuiFonts() || !display->UpdateImGuiFontTexture())
+	if (!AddImGuiFonts(false) || !display->UpdateImGuiFontTexture())
 	{
 		pxFailRel("Failed to create ImGui font text");
 		display->DestroyImGuiContext();
@@ -138,6 +147,10 @@ bool ImGuiManager::Initialize()
 
 void ImGuiManager::Shutdown()
 {
+#ifdef PCSX2_CORE
+	FullscreenUI::Shutdown();
+#endif
+
 	HostDisplay* display = Host::GetHostDisplay();
 	if (display)
 		display->DestroyImGuiContext();
@@ -146,6 +159,11 @@ void ImGuiManager::Shutdown()
 
 	s_standard_font = nullptr;
 	s_fixed_font = nullptr;
+	s_medium_font = nullptr;
+	s_large_font = nullptr;
+#ifdef PCSX2_CORE
+	ImGuiFullscreen::SetFonts(nullptr, nullptr, nullptr);
+#endif
 
 	UnloadFontData();
 }
@@ -172,8 +190,13 @@ void ImGuiManager::UpdateScale()
 	const float window_scale = display ? display->GetWindowScale() : 1.0f;
 	const float scale = std::max(window_scale * static_cast<float>(EmuConfig.GS.OsdScale / 100.0), 1.0f);
 
+#ifdef PCSX2_CORE
+	if (scale == s_global_scale && (!HasFullscreenFonts() || !ImGuiFullscreen::UpdateLayoutScale()))
+		return;
+#else
 	if (scale == s_global_scale)
 		return;
+#endif
 
 	// This is assumed to be called mid-frame.
 	ImGui::EndFrame();
@@ -185,7 +208,7 @@ void ImGuiManager::UpdateScale()
 	SetStyle();
 	ImGui::GetStyle().ScaleAllSizes(scale);
 
-	if (!AddImGuiFonts())
+	if (!AddImGuiFonts(HasFullscreenFonts()))
 		pxFailRel("Failed to create ImGui font text");
 
 	if (!display->UpdateImGuiFontTexture())
@@ -393,7 +416,7 @@ ImFont* ImGuiManager::AddFixedFont(float size)
 
 bool ImGuiManager::AddIconFonts(float size)
 {
-	static const ImWchar range_fa[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+	static constexpr ImWchar range_fa[] = { 0xf001,0xf002,0xf005,0xf005,0xf00c,0xf00e,0xf011,0xf011,0xf013,0xf013,0xf017,0xf017,0xf019,0xf019,0xf021,0xf021,0xf025,0xf025,0xf028,0xf028,0xf030,0xf030,0xf03a,0xf03a,0xf03d,0xf03d,0xf04a,0xf04c,0xf04e,0xf04e,0xf050,0xf050,0xf052,0xf052,0xf059,0xf059,0xf05e,0xf05e,0xf065,0xf065,0xf067,0xf067,0xf071,0xf071,0xf07b,0xf07c,0xf085,0xf085,0xf091,0xf091,0xf0a0,0xf0a0,0xf0ac,0xf0ad,0xf0c5,0xf0c5,0xf0c7,0xf0c9,0xf0d0,0xf0d0,0xf0e2,0xf0e2,0xf0eb,0xf0eb,0xf0f3,0xf0f3,0xf0fe,0xf0fe,0xf110,0xf110,0xf11b,0xf11c,0xf121,0xf121,0xf140,0xf140,0xf144,0xf144,0xf14a,0xf14a,0xf15b,0xf15b,0xf188,0xf188,0xf192,0xf192,0xf1c9,0xf1c9,0xf1dd,0xf1de,0xf1e6,0xf1e6,0xf1ea,0xf1eb,0xf1f8,0xf1f8,0xf1fc,0xf1fc,0xf242,0xf242,0xf245,0xf245,0xf26c,0xf26c,0xf2d0,0xf2d0,0xf2db,0xf2db,0xf2f5,0xf2f5,0xf410,0xf410,0xf466,0xf466,0xf51f,0xf51f,0xf543,0xf543,0xf545,0xf545,0xf547,0xf548,0xf552,0xf552,0xf65d,0xf65e,0xf756,0xf756,0xf7c2,0xf7c2,0xf815,0xf815,0xf818,0xf818,0xf8cc,0xf8cc,0x0,0x0 };
 
 	ImFontConfig cfg;
 	cfg.MergeMode = true;
@@ -406,7 +429,7 @@ bool ImGuiManager::AddIconFonts(float size)
 				s_icon_font_data.data(), static_cast<int>(s_icon_font_data.size()), size * 0.75f, &cfg, range_fa) != nullptr);
 }
 
-bool ImGuiManager::AddImGuiFonts()
+bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
 {
 	const float standard_font_size = std::ceil(15.0f * s_global_scale);
 
@@ -421,7 +444,54 @@ bool ImGuiManager::AddImGuiFonts()
 	if (!s_fixed_font)
 		return false;
 
+#ifdef PCSX2_CORE
+	if (fullscreen_fonts)
+	{
+		const float medium_font_size = std::ceil(ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE));
+		s_medium_font = AddTextFont(medium_font_size);
+		if (!s_medium_font || !AddIconFonts(medium_font_size))
+			return false;
+
+		const float large_font_size = std::ceil(ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE));
+		s_large_font = AddTextFont(large_font_size);
+		if (!s_large_font || !AddIconFonts(large_font_size))
+			return false;
+	}
+	else
+	{
+		s_medium_font = nullptr;
+		s_large_font = nullptr;
+	}
+
+	ImGuiFullscreen::SetFonts(s_standard_font, s_medium_font, s_large_font);
+#endif
+
 	return io.Fonts->Build();
+}
+
+bool ImGuiManager::AddFullscreenFontsIfMissing()
+{
+	if (HasFullscreenFonts())
+		return true;
+
+	// can't do this in the middle of a frame
+	ImGui::EndFrame();
+
+	if (!AddImGuiFonts(true))
+	{
+		Console.Error("Failed to lazily allocate fullscreen fonts.");
+		AddImGuiFonts(false);
+	}
+
+	Host::GetHostDisplay()->UpdateImGuiFontTexture();
+	NewFrame();
+
+	return HasFullscreenFonts();
+}
+
+bool ImGuiManager::HasFullscreenFonts()
+{
+	return (s_medium_font && s_large_font);
 }
 
 struct OSDMessage
@@ -446,6 +516,18 @@ void Host::AddKeyedOSDMessage(std::string key, std::string message, float durati
 	OSDMessage msg;
 	msg.key = std::move(key);
 	msg.text = std::move(message);
+	msg.duration = duration;
+	msg.time = std::chrono::steady_clock::now();
+
+	std::unique_lock<std::mutex> lock(s_osd_messages_lock);
+	s_osd_posted_messages.push_back(std::move(msg));
+}
+
+void Host::AddIconOSDMessage(std::string key, const char* icon, const std::string_view& message, float duration /* = 2.0f */)
+{
+	OSDMessage msg;
+	msg.key = std::move(key);
+	msg.text = fmt::format("{}  {}",  icon, message);
 	msg.duration = duration;
 	msg.time = std::chrono::steady_clock::now();
 
@@ -755,7 +837,13 @@ void ImGuiManager::RenderOSD()
 	// acquire for IO.MousePos.
 	std::atomic_thread_fence(std::memory_order_acquire);
 
+#ifdef PCSX2_CORE
+	// Don't draw OSD when we're just running big picture.
+	if (VMManager::HasValidVM())
+		DrawPerformanceOverlay();
+#else
 	DrawPerformanceOverlay();
+#endif
 
 	AcquirePendingOSDMessages();
 	DrawOSDMessages();
@@ -776,7 +864,40 @@ ImFont* ImGuiManager::GetFixedFont()
 	return s_fixed_font;
 }
 
+ImFont* ImGuiManager::GetMediumFont()
+{
+	AddFullscreenFontsIfMissing();
+	return s_medium_font;
+}
+
+ImFont* ImGuiManager::GetLargeFont()
+{
+	AddFullscreenFontsIfMissing();
+	return s_large_font;
+}
+
 #ifdef PCSX2_CORE
+
+bool ImGuiManager::WantsTextInput()
+{
+	return s_imgui_wants_keyboard.load(std::memory_order_acquire);
+}
+
+void ImGuiManager::AddTextInput(std::string str)
+{
+	if (!s_imgui_wants_keyboard.load(std::memory_order_acquire))
+		return;
+
+	// Has to go through the CPU -> GS thread :(
+	Host::RunOnCPUThread([str = std::move(str)]() {
+		GetMTGS().RunOnGSThread([str = std::move(str)]() {
+			if (!ImGui::GetCurrentContext())
+				return;
+
+			ImGui::GetIO().AddInputCharactersUTF8(str.c_str());
+		});
+	});
+}
 
 void ImGuiManager::UpdateMousePosition(float x, float y)
 {
@@ -868,3 +989,4 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
 }
 
 #endif // PCSX2_CORE
+
