@@ -189,8 +189,8 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 	{
 		// 1 Channel integer
 		case Format::PrimID:
-			gl_fmt          = GL_R32I;
-			m_int_format    = GL_RED_INTEGER;
+			gl_fmt          = GL_R32F;
+			m_int_format    = GL_RED;
 			m_int_type      = GL_INT;
 			m_int_shift     = 2;
 			break;

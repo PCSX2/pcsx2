@@ -1477,12 +1477,10 @@ void GSApp::Init()
 	m_default_configuration["OsdShowIndicators"]                          = "1";
 	m_default_configuration["OsdScale"]                                   = "100";
 	m_default_configuration["override_GL_ARB_copy_image"]                 = "-1";
-	m_default_configuration["override_GL_ARB_clear_texture"]              = "-1";
 	m_default_configuration["override_GL_ARB_clip_control"]               = "-1";
 	m_default_configuration["override_GL_ARB_direct_state_access"]        = "-1";
 	m_default_configuration["override_GL_ARB_draw_buffers_blend"]         = "-1";
 	m_default_configuration["override_GL_ARB_gpu_shader5"]                = "-1";
-	m_default_configuration["override_GL_ARB_shader_image_load_store"]    = "-1";
 	m_default_configuration["override_GL_ARB_texture_barrier"]            = "-1";
 	m_default_configuration["OverrideTextureBarriers"]                    = "-1";
 	m_default_configuration["OverrideGeometryShaders"]                    = "-1";
