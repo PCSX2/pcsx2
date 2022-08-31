@@ -124,6 +124,13 @@ jobs:
           ccache -z
           make -j$(getconf _NPROCESSORS_ONLN) # macOS doesn't use make install
           ccache -s
+          # Ensure there's no global constructors in multi-isa files
+          for dir in */CMakeFiles/GS-{avx,avx2}.dir; do
+            if find "$dir" -name "*.o" | xargs nm | grep _GLOBAL_; then
+              echo "::error::Multi-isa files must not have global constructors!"
+              exit 1
+            fi
+          done
 
       - name: Run Tests
         working-directory: build
