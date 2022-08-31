@@ -3782,7 +3782,7 @@ SCES-53880:
   name: "Buzz! The Big Quiz"
   region: "PAL-E"
 SCES-53881:
-  name: "Buzz! The Big Quiz"
+  name: "Buzz! Le Grand Quiz"
   region: "PAL-F"
 SCES-53882:
   name: "Buzz! The Big Quiz"
@@ -3941,7 +3941,7 @@ SCES-54259:
   name: "Buzz! The Sports Quiz"
   region: "PAL-G"
 SCES-54260:
-  name: "Buzz! The Sports Quiz"
+  name: "Buzz! Le Quiz du Sport"
   region: "PAL-F"
 SCES-54261:
   name: "Buzz! The Sports Quiz"
@@ -5127,19 +5127,15 @@ SCPS-11018:
   name: "Yoake no Mariko"
   region: "NTSC-J"
 SCPS-11019:
-  name: "Bravo Music - Chou-Meikyokuban [Limited Edition] [Disc1of2]"
+  name: "Bravo Music - Chou-Meikyokuban [Genteiban]"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-11023"
     - "SCPS-11019"
     - "SCPS-11020"
 SCPS-11020:
-  name: "Bravo Music - Chou-Meikyokuban [Limited Edition] [Disc2of2]"
+  name: "Otostaz [Taikenban]"
   region: "NTSC-J"
-  memcardFilters:
-    - "SCPS-11023"
-    - "SCPS-11019"
-    - "SCPS-11020"
 SCPS-11021:
   name: "Yoake no Mariko 2nd Act"
   region: "NTSC-J"
@@ -5217,11 +5213,11 @@ SCPS-15006:
   name: "Popolocrois Story 3 [Limited Edition]"
   region: "NTSC-J"
 SCPS-15007:
-  name: "Blood - The Last Vampire - Vol.1 Joukan"
+  name: "Blood - The Last Vampire - Joukan [Volume 1]"
   region: "NTSC-J"
   compat: 5
 SCPS-15008:
-  name: "Blood - The Last Vampire - Vol.2 Gekan"
+  name: "Blood - The Last Vampire - Gekan [Volume 2]"
   region: "NTSC-J"
   compat: 5
 SCPS-15009:
@@ -5294,7 +5290,7 @@ SCPS-15025:
   region: "NTSC-J"
   compat: 5
 SCPS-15026:
-  name: "Boku no Natsuyasumi 2"
+  name: "Boku no Natsuyasumi 2 - Umi no Bouken-hen"
   region: "NTSC-J"
 SCPS-15027:
   name: "PoPoLoCrois - Hajimari no Bouken [Limited]"
@@ -5553,7 +5549,7 @@ SCPS-15078:
   name: "EyeToy - Uki Uki Panic [Game Only]"
   region: "NTSC-J"
 SCPS-15079:
-  name: "Bakufuu Slash! Kizna Arashi [with Camera]"
+  name: "Bakufuu Slash! Kizuna Arashi [EyeToy Camera Doukonban]"
   region: "NTSC-J"
 SCPS-15080:
   name: "Waga Ryuomiyo - Pride of the Dragon Peace"
@@ -5590,10 +5586,10 @@ SCPS-15086:
   name: "Bakufuu Slash! Kizna Arashi [Game Only]"
   region: "NTSC-J"
 SCPS-15087:
-  name: "Bleach - Erabareshi Tamashi"
+  name: "Bleach - Erabareshi Tamashii"
   region: "NTSC-J"
 SCPS-15088:
-  name: "Bokura no Kazoku"
+  name: "Bokura no Kazoku - My Family Growing Up in the 21st Century"
   region: "NTSC-J"
   compat: 5
 SCPS-15089:
@@ -5741,7 +5737,7 @@ SCPS-15111:
   name: "Brave Story - Wataru no Bouken"
   region: "NTSC-J"
 SCPS-15112:
-  name: "Blood+ Souyoku Battle Rinbukyoku"
+  name: "Blood+ - Souyoku no Battle Rondo"
   region: "NTSC-J"
   compat: 5
 SCPS-15113:
@@ -9681,7 +9677,7 @@ SLES-50351:
   region: "PAL-M3"
   compat: 5
 SLES-50355:
-  name: "Batman Vengeance"
+  name: "Batman - Vengeance"
   region: "PAL-M6"
   gameFixes:
     - EETimingHack # Fixes video speed.
@@ -11076,7 +11072,7 @@ SLES-51058:
   speedHacks:
     mvuFlagSpeedHack: 0
 SLES-51060:
-  name: "Butt Ugly Martians"
+  name: "Butt-Ugly Martians - Zoom or Doom!"
   region: "PAL-M5"
   clampModes:
     vuClampMode: 0 # Fixes SPS.
@@ -11781,7 +11777,7 @@ SLES-51349:
   name: "Evolution Skateboarding"
   region: "PAL-M3"
 SLES-51350:
-  name: "Ben Hur"
+  name: "Ben Hur - Blood of Braves"
   region: "PAL-M5"
 SLES-51354:
   name: "Jurassic Park - Operation Genesis"
@@ -12048,7 +12044,7 @@ SLES-51473:
     autoFlush: 1 # Fixes sun going through objects.
     preloadFrameData: 1 # Fixes missing sun and sky.
 SLES-51474:
-  name: "Blood Rayne"
+  name: "BloodRayne"
   region: "PAL-M4"
   compat: 5
 SLES-51476:
@@ -12398,7 +12394,7 @@ SLES-51699:
   name: "Virtua Fighter - 10th Anniversary Edition"
   region: "PAL-M5"
 SLES-51702:
-  name: "Battlestar Galactica - Apostasy"
+  name: "Battlestar Galactica"
   region: "PAL-M5"
 SLES-51704:
   name: "XII Stag"
@@ -12507,7 +12503,7 @@ SLES-51755:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLES-51756:
-  name: "Batman 2 - The Rise of Sin Tzu"
+  name: "Batman - Rise of Sin Tzu"
   region: "PAL-M5"
 SLES-51757:
   name: "Dancing Stage Fever"
@@ -12697,7 +12693,7 @@ SLES-51843:
       content: |-
         comment=You need to set the EE cycle speed to -1 to be able to load the game.
 SLES-51845:
-  name: "Barbie - Horse Adventure"
+  name: "Barbie Horse Adventures - Wild Horse Rescue"
   region: "PAL-M6"
 SLES-51846:
   name: "Deutschland sucht den Superstar"
@@ -12977,7 +12973,7 @@ SLES-51954:
     vuClampMode: 3 # Fixes rainbow coloured graphics.
     eeClampMode: 3 # Fixes bullet holes.
 SLES-51956:
-  name: "Bionicle - The Game"
+  name: "Bionicle"
   region: "PAL-M6"
 SLES-51957:
   name: "Terminator 3 - Rise of the Machines"
@@ -14582,7 +14578,7 @@ SLES-52716:
   name: "Energy Thieves, The"
   region: "PAL-E"
 SLES-52717:
-  name: "Brian Lara Cricket 2005"
+  name: "Brian Lara International Cricket 2005"
   region: "PAL-E"
   compat: 5
 SLES-52718:
@@ -14667,7 +14663,7 @@ SLES-52754:
   name: "FlatOut"
   region: "PAL-G"
 SLES-52755:
-  name: "Blood Will Tell"
+  name: "Blood Will Tell - Tezuka Osamu's Dororo"
   region: "PAL-M5"
 SLES-52760:
   name: "Pro Evolution Soccer 4"
@@ -15168,7 +15164,7 @@ SLES-52978:
   name: "La Pucelle Tactics"
   region: "PAL-E"
 SLES-52980:
-  name: "Big Mutha Truckers 2"
+  name: "Big Mutha Truckers 2 - Truck Me Harder"
   region: "PAL-M5"
 SLES-52982:
   name: "NFL Street 2"
@@ -19618,7 +19614,7 @@ SLES-54822:
   gsHWFixes:
     roundSprite: 1 # Fixes vertical lines in FMVs, character portraits and other sprites.
 SLES-54825:
-  name: "EyeToy - Bob the Builder"
+  name: "Bob the Builder"
   region: "PAL-M3"
 SLES-54826:
   name: "Surf's Up"
@@ -23146,10 +23142,10 @@ SLPM-55220:
   gsHWFixes:
     texturePreloading: 1 # Fixes poor performance.
 SLPM-55221:
-  name: "beatmania IIDX 16 EMPRESS + PREMIUM BEST [EMPRESS DISC]"
+  name: "beatmania IIDX 16 EMPRESS + PREMIUM BEST [Disc1of2 - EMPRESS DISC]"
   region: "NTSC-J"
 SLPM-55222:
-  name: "beatmania IIDX 16 EMPRESS + PREMIUM BEST [PREMIUM BEST DISC]"
+  name: "beatmania IIDX 16 EMPRESS + PREMIUM BEST [Disc2of2 - PREMIUM BEST DISC]"
   region: "NTSC-J"
 SLPM-55226:
   name: "FIFA 10 - World Class Soccer"
@@ -23600,7 +23596,7 @@ SLPM-62028:
   name: "Greatest Striker"
   region: "NTSC-J"
 SLPM-62029:
-  name: "Dance Summit 2001"
+  name: "Bust A Move - Dance Summit 2001"
   region: "NTSC-J"
   compat: 5
 SLPM-62031:
@@ -23903,7 +23899,7 @@ SLPM-62154:
   region: "NTSC-J"
   compat: 5
 SLPM-62155:
-  name: "Baseball 2002, The"
+  name: "Baseball 2002, The - Battle Ball Park Sengen"
   region: "NTSC-J"
 SLPM-62157:
   name: "Building Baku"
@@ -24241,7 +24237,7 @@ SLPM-62288:
   name: "pop'n music Best Hits!"
   region: "NTSC-J"
 SLPM-62291:
-  name: "Bomberman Land 2"
+  name: "Bomberman Land 2 - Game Shijou Saidai no Theme Park"
   region: "NTSC-J"
 SLPM-62292:
   name: "Warrior Blade - Rastan vs. Barbarian"
@@ -25018,7 +25014,7 @@ SLPM-62564:
   name: "Simple 2000 Series Vol. 68 - The Tousou Highway - Nagoya - Tokyo"
   region: "NTSC-J"
 SLPM-62565:
-  name: "Boboboubo Boubobo - Shuumare! Taikan Boubobo [with Camera]"
+  name: "Boboboubo Boubobo - Atsumare!! Taikan Boubobo [Doukonban]"
   region: "NTSC-J"
 SLPM-62566:
   name: "Typing of the Dead - Zombie Panic"
@@ -25042,7 +25038,7 @@ SLPM-62571:
   region: "NTSC-J"
   compat: 5
 SLPM-62572:
-  name: "Boboboubo Boubobo - Shuumare! Taikan Boubobo"
+  name: "Boboboubo Boubobo - Atsumare!! Taikan Boubobo"
   region: "NTSC-J"
 SLPM-62574:
   name: "Gambler Densetsu Tetsuya Digest [Athena Best Collection Vol.3]"
@@ -26257,7 +26253,7 @@ SLPM-65179:
   name: "Culdcept 2 - Expansion"
   region: "NTSC-J"
 SLPM-65180:
-  name: "Baseball 2003, The"
+  name: "Baseball 2003, The - Battle Ball Park Sengen - Perfect Play Pro Yakyuu"
   region: "NTSC-J"
 SLPM-65183:
   name: "Auto Modellista"
@@ -26577,7 +26573,7 @@ SLPM-65261:
   name: "TBS All-Star Kansha-sai Vol .1 - Chou Gouka! Quiz Ketteiban"
   region: "NTSC-J"
 SLPM-65262:
-  name: "Boboboubo Boubobo Hajike Matsuri"
+  name: "Boboboubo Boubobo - Hajike Matsuri"
   region: "NTSC-J"
 SLPM-65263:
   name: "Shin Sangoku Musou 2 & Shin Sangoku Musou 2 Mushoden [Koei Mega Pack] [Disc1of2]"
@@ -26861,7 +26857,7 @@ SLPM-65346:
   name: "Winning Post 6"
   region: "NTSC-J"
 SLPM-65347:
-  name: "Bistro Cupid 2 [Limited Edition]"
+  name: "Bistro Cupid 2 [Tokubetsu-ban]"
   region: "NTSC-J"
 SLPM-65348:
   name: "Bistro Cupid 2"
@@ -26944,7 +26940,7 @@ SLPM-65378:
   name: "Busin 0 - Wizardry Alternative Neo"
   region: "NTSC-J"
 SLPM-65379:
-  name: "Baseball 2003 - Akikigou"
+  name: "Baseball 2003, The - Battle Ball Park Sengen - Perfect Play Pro Yakyuu - Shuukigou"
   region: "NTSC-J"
 SLPM-65380:
   name: "Samurai Michi 2"
@@ -27898,7 +27894,7 @@ SLPM-65685:
   name: "Stella Deus"
   region: "NTSC-J"
 SLPM-65686:
-  name: "Berserk [Branded Box]"
+  name: "Berserk - Millennium Falcon-hen - Seima Senki no Shou [Branded Box]"
   region: "NTSC-J"
   gsHWFixes:
     preloadFrameData: 1 # Partially fixes HUD elements.
@@ -27906,7 +27902,7 @@ SLPM-65687:
   name: "Star Wars - Battlefront"
   region: "NTSC-J"
 SLPM-65688:
-  name: "Berserk"
+  name: "Berserk - Millennium Falcon-hen - Seima Senki no Shou"
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
@@ -28423,7 +28419,7 @@ SLPM-65834:
   name: "Harukanaru Jikuu no Naka De 3"
   region: "NTSC-J"
 SLPM-65835:
-  name: "Bakumatsu Koihana - Shinsengumi"
+  name: "Bakumatsu Renka - Shinsengumi"
   region: "NTSC-J"
 SLPM-65836:
   name: "Ys - The Ark of Napishtim"
@@ -29997,7 +29993,7 @@ SLPM-66288:
   name: "Full House Kiss 2"
   region: "NTSC-J"
 SLPM-66289:
-  name: "Black Cat"
+  name: "Black Cat - Kikai-jikake no Tenshi"
   region: "NTSC-J"
 SLPM-66290:
   name: "Galaxy Angel [The Best]"
@@ -30334,7 +30330,7 @@ SLPM-66388:
   name: "Fire Pro Wrestling Returns [Spike The Best]"
   region: "NTSC-J"
 SLPM-66390:
-  name: "Shoubi no Ki ni Shoubi no Hanasaku - Das Versprechen"
+  name: "Bara no Ki ni Bara no Hanasaku - Das Versprechen"
   region: "NTSC-J"
 SLPM-66391:
   name: "Prince of Persia - The Two Thrones"
@@ -33522,7 +33518,7 @@ SLPS-20185:
   region: "NTSC-J"
   compat: 5
 SLPS-20187:
-  name: "Black Matrix 2"
+  name: "Black-Matrix II"
   region: "NTSC-J"
   compat: 5
 SLPS-20190:
@@ -33565,7 +33561,7 @@ SLPS-20207:
   name: "Usagi - Yasei no Topai"
   region: "NTSC-J"
 SLPS-20208:
-  name: "I am Small!"
+  name: "Boku wa Chiisai"
   region: "NTSC-J"
   compat: 5
 SLPS-20209:
@@ -35999,7 +35995,7 @@ SLPS-25469:
   name: "Baseball Live 2005"
   region: "NTSC-J"
 SLPS-25470:
-  name: "Bouken-ou Beat - Dark Next Century"
+  name: "Bouken-ou Beet - Darkness Century"
   region: "NTSC-J"
 SLPS-25471:
   name: "Gakkou o Tsukurou - Happy Days!!"
@@ -36703,7 +36699,7 @@ SLPS-25657:
   region: "NTSC-J"
   compat: 5
 SLPS-25658:
-  name: "Binchou-Tan - Shiwase Koyomi [Limited Edition]"
+  name: "Binchou-Tan - Shiwase Goyomi [Shokai Genteiban]"
   region: "NTSC-J"
 SLPS-25659:
   name: "Binchou-Tan - Shiwase Koyomi"
@@ -36760,14 +36756,14 @@ SLPS-25674:
   region: "NTSC-J"
   compat: 5
 SLPS-25675:
-  name: "Battle Stadium D.O.N."
+  name: "Battle Stadium D.O.N"
   region: "NTSC-J"
   compat: 5
 SLPS-25676:
   name: "Kinnikuman Muscle Grand Prix Max"
   region: "NTSC-J"
 SLPS-25677:
-  name: "Blood+ One Night Kiss"
+  name: "Blood+ - One Night Kiss"
   region: "NTSC-J"
   compat: 5
 SLPS-25678:
@@ -36956,7 +36952,7 @@ SLPS-25733:
   name: "Super Robot Taisen OG - Original Generations"
   region: "NTSC-J"
 SLPS-25734:
-  name: "Battle of Yu Yu Hakushou - Shitou! Ankoku Bujutsukai 120%"
+  name: "Battle of Yuu Yuu Hakusho, The - Shitou! Ankoku Bujutsukai - 120% Full Power"
   region: "NTSC-J"
 SLPS-25735:
   name: "Dragon Shadow Spell"
@@ -37060,7 +37056,7 @@ SLPS-25763:
   region: "NTSC-J"
   compat: 5
 SLPS-25764:
-  name: "Busou Renkin"
+  name: "Busou Renkin - Youkoso Papillon Park e"
   region: "NTSC-J"
 SLPS-25765:
   name: "King of Fighters, The - Maximum Impact Regulation A"
@@ -37223,7 +37219,7 @@ SLPS-25816:
   name: "Yamasa Digi World - Collaboration SP Pachi-Slot Ridge Racer"
   region: "NTSC-J"
 SLPS-25817:
-  name: "Bakumatsu Renka - Karyuu Kenshiden [Limited Edition]"
+  name: "Bakumatsu Renka - Karyuu Kenshiden [Genteiban]"
   region: "NTSC-J"
 SLPS-25818:
   name: "Bakumatsu Renka - Karyuu Kenshiden"
@@ -42274,7 +42270,7 @@ SLUS-20928:
   region: "NTSC-U"
   compat: 5
 SLUS-20929:
-  name: "Gundam Battle Assault 3 featuring Gundam Seed"
+  name: "Battle Assault 3 featuring Gundam Seed"
   region: "NTSC-U"
   compat: 5
 SLUS-20930:
@@ -44958,7 +44954,7 @@ SLUS-21439:
   gsHWFixes:
     mipmap: 1
 SLUS-21440:
-  name: "LarryBoy and the Bad Apple"
+  name: "Big Idea's VeggieTales - LarryBoy and the Bad Apple"
   region: "NTSC-U"
 SLUS-21441:
   name: "Dragon Ball Z - Budokai Tenkaichi 2"
@@ -45180,7 +45176,7 @@ SLUS-21484:
   region: "NTSC-U"
   compat: 5
 SLUS-21485:
-  name: "Backyard Basketball '07"
+  name: "Backyard Sports - Basketball 2007"
   region: "NTSC-U"
 SLUS-21486:
   name: "Eagle Eye Golf"
@@ -45919,7 +45915,7 @@ SLUS-21669:
   name: "NBA 2K8"
   region: "NTSC-U"
 SLUS-21670:
-  name: "Backyard Football 2008"
+  name: "Backyard Football '08"
   region: "NTSC-U"
   compat: 5
 SLUS-21671:
@@ -46295,7 +46291,7 @@ SLUS-21750:
   name: "Hannah Montana - Spotlight World Tour"
   region: "NTSC-U"
 SLUS-21751:
-  name: "Backyard Football 2009"
+  name: "Backyard Football '09"
   region: "NTSC-U"
   compat: 5
 SLUS-21752:
@@ -46559,7 +46555,7 @@ SLUS-21808:
     mipmap: 1
     halfPixelOffset: 1 # Reduces ghosting and vertical lines.
 SLUS-21809:
-  name: "Backyard Football 2009"
+  name: "Backyard Football '09"
   region: "NTSC-U"
   compat: 5
 SLUS-21810:
@@ -46987,7 +46983,7 @@ SLUS-21918:
   region: "NTSC-U"
   compat: 5
 SLUS-21919:
-  name: "Backyard Football 2010"
+  name: "Backyard Football '10"
   region: "NTSC-U"
 SLUS-21920:
   name: "Disney Sing It - Pop Hits"
