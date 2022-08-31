@@ -938,7 +938,7 @@ void ps_main()
 #else
     vec4 RT = trunc(texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0) * 255.0f + 0.1f);
 #endif
-    float alpha_blend = (PS_DFMT == FMT_24) ? 1.0f : RT.a / 128.0f;
+    float alpha_blend = RT.a / 128.0f;
 #else
     float alpha_blend = C.a / 128.0f;
 #endif
