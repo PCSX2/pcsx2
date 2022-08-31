@@ -29,6 +29,7 @@ const CRC::Game CRC::m_games[] =
 	{0x2113EA2E, MetalSlug6, JP, 0},
 	{0xA6167B59, Lamune, JP, 0},
 	{0xA39517AB, FFX, EU, 0},
+	{0xA3C03435, FFX, EU, 0}, // Pbirdman mod
 	{0x78D83FD5, FFX, EU, 0}, // Demo
 	{0xA39517AE, FFX, FR, 0},
 	{0x941BB7D9, FFX, DE, 0},
