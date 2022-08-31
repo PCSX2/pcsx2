@@ -1285,7 +1285,7 @@ SCAJ-20175:
   region: "NTSC-J"
 SCAJ-20176:
   name: "Curious George"
-  region: "NTSC-Unk"
+  region: "NTSC-HK"
 SCAJ-20177:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "NTSC-Unk"
@@ -22001,7 +22001,7 @@ SLKA-25090:
   name: "Starsky & Hutch"
   region: "NTSC-K"
 SLKA-25091:
-  name: "Hanjuku Hero vs. 3D"
+  name: "Bansug Yeongung vs. 3D"
   region: "NTSC-K"
 SLKA-25092:
   name: "Onimusha Buraiden"
@@ -23641,7 +23641,7 @@ SLPM-62046:
   region: "NTSC-J"
   compat: 5
 SLPM-62047:
-  name: "Endnesia"
+  name: "Endonesia"
   region: "NTSC-J"
 SLPM-62048:
   name: "Battle Gear 2"
@@ -25618,7 +25618,7 @@ SLPM-62784:
   name: "Kao no nai Tsuki Select Story"
   region: "NTSC-J"
 SLPM-64501:
-  name: "Shin Sangoku Musou"
+  name: "Jin Samguk Mussang"
   region: "NTSC-K"
 SLPM-64502:
   name: "Winback"
@@ -25638,7 +25638,7 @@ SLPM-64509:
     preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
     cpuFramebufferConversion: 1 # Fixes fog wall.
 SLPM-64513:
-  name: "Crash Bandicoot - Return of the Demon King" # Wrath of Cortex
+  name: "Crash Bandicoot - Mawangui Buwhal" # Wrath of Cortex
   region: "NTSC-K"
   gsHWFixes:
     preloadFrameData: 1 # Fixes random texture corruptions such as horizontal lines.
