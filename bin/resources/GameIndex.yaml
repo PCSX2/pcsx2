@@ -842,8 +842,8 @@ SCAJ-20087:
     - "SLPS-25353"
     - "SLPS-73224"
 SCAJ-20088:
-  name: "UO Nanatsu no Mizu to Densetsu no Nushi"
-  region: "NTSC-Unk"
+  name: "Yu Zi - Qiang Jiu Shui Tang Da Zuo Zhan"
+  region: "NTSC-Ch"
 SCAJ-20089:
   name: "Athens 2004"
   region: "NTSC-Unk"
@@ -1119,7 +1119,7 @@ SCAJ-20145:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes garbage textures presumably from texture cache issue.
 SCAJ-20146:
-  name: "Shadow of the Colossus"
+  name: "Wang Da Yu Ju Xiang"
   region: "NTSC-Ch-E-J"
   compat: 5
   gsHWFixes:
@@ -1366,7 +1366,7 @@ SCAJ-20195:
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
 SCAJ-20196:
-  name: "Shadow of the Colossus [PlayStation 2 The Best]"
+  name: "Wang Da Yu Ju Xiang [PlayStation 2 The Best]"
   region: "NTSC-Ch"
   gsHWFixes:
     mipmap: 1
@@ -1546,7 +1546,7 @@ SCCS-40005:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
 SCCS-40006:
-  name: "Shin Sangoku Musou 2"
+  name: "Zhen Sanguo Wushuang 2"
   region: "NTSC-C"
 SCCS-40007:
   name: "Arc the Lad - Seirei no Tasogare"
@@ -4521,7 +4521,7 @@ SCKA-20001:
   name: "XI Go"
   region: "NTSC-K"
 SCKA-20003:
-  name: "War of the Monsters - Kaijuu Daigekisen"
+  name: "War of the Monsters"
   region: "NTSC-K"
 SCKA-20004:
   name: "Sly Cooper and the Thievius Raccoonus"
@@ -8459,7 +8459,7 @@ SLAJ-25042:
   name: "Virtua Fighter - Cyber Generation"
   region: "NTSC-Unk"
 SLAJ-25045:
-  name: "Sakura Taisen V - Episode 0"
+  name: "Yinghua Dazhan V Episode 0 - Huangye de Shaonu Wushi"
   region: "NTSC-Ch-J"
 SLAJ-25046:
   name: "NBA Live 2005"
@@ -25683,7 +25683,7 @@ SLPM-64540:
   speedHacks:
     MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLPM-64549:
-  name: "Shikigami no Shiro"
+  name: "Siksin-ui Seong"
   region: "NTSC-K"
 SLPM-65001:
   name: "Kessen"
@@ -26206,7 +26206,7 @@ SLPM-65161:
   name: "Aero Dancing 4"
   region: "NTSC-J"
 SLPM-65163:
-  name: "Dynasty Warriors 3"
+  name: "Zhen San Guo Wu Shuang 2"
   region: "NTSC-C"
   patches:
     397F3835:
@@ -33852,7 +33852,7 @@ SLPS-20349:
   name: "Mahjong Party - Duel with The Idol"
   region: "NTSC-J"
 SLPS-20350:
-  name: "Soccer Life"
+  name: "Soccer Life! We are Challengers to Europe"
   region: "NTSC-J"
 SLPS-20351:
   name: "Slotter UP - Mania 4"
@@ -35139,6 +35139,8 @@ SLPS-25235:
   name: "Yumeria"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes double image.
 SLPS-25236:
   name: "Fantastic Fortune 2"
   region: "NTSC-J"
@@ -35810,6 +35812,9 @@ SLPS-25418:
         patch=0,EE,001A3B80,word,4B0C682C
 SLPS-25419:
   name: "Mobile Suit Gundam - Gundam vs. Z-Gundam"
+  region: "NTSC-J"
+SLPS-25420:
+  name: "Sinbad Adventure wa Enomoto Kanako de Dou desu ka"
   region: "NTSC-J"
 SLPS-25421:
   name: "Bokujou Monogatari - Oh! Wonderful Life [First Print Limited Edition]"
