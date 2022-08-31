@@ -74,35 +74,11 @@ layout(binding = 1) uniform sampler2D PaletteSampler;
 layout(binding = 2) uniform sampler2D RtSampler; // note 2 already use by the image below
 #endif
 
-#ifndef DISABLE_GL42_image
-#if PS_DATE > 0
-// Performance note: images mustn't be declared if they are unused. Otherwise it will
-// require extra shader validation.
-
-// FIXME how to declare memory access
-layout(r32i, binding = 3) uniform iimage2D img_prim_min;
-// WARNING:
-// You can't enable it if you discard the fragment. The depth is still
-// updated (shadow in Shin Megami Tensei Nocturne)
-//
-// early_fragment_tests must still be enabled in the first pass of the 2 passes algo
-// First pass search the first primitive that will write the bad alpha value. Value
-// won't be written if the fragment fails the depth test.
-//
-// In theory the best solution will be do
-// 1/ copy the depth buffer
-// 2/ do the full depth (current depth writes are disabled)
-// 3/ restore the depth buffer for 2nd pass
-// Of course, it is likely too costly.
-#if PS_DATE == 1 || PS_DATE == 2
-layout(early_fragment_tests) in;
-#endif
+#if PS_DATE == 3
+layout(binding = 3) uniform sampler2D img_prim_min;
 
 // I don't remember why I set this parameter but it is surely useless
 //layout(pixel_center_integer) in vec4 gl_FragCoord;
-#endif
-#else
-// use basic stencil
 #endif
 
 vec4 fetch_rt()
@@ -814,8 +790,7 @@ void ps_main()
  	 	discard;
 #endif
 
-#if PS_DATE != 0
-#if ((PS_DATE & 3) == 1 || (PS_DATE & 3) == 2)
+#if PS_DATE >= 5
 
 #if PS_WRITE_RG == 1
     // Pseudo 16 bits access.
@@ -833,25 +808,19 @@ void ps_main()
 #endif
 
     if (bad) {
-#if PS_DATE >= 5 || defined(DISABLE_GL42_image)
         discard;
-#else
-        imageStore(img_prim_min, ivec2(gl_FragCoord.xy), ivec4(-1));
-        return;
-#endif
     }
 
 #endif
 
-#if PS_DATE == 3 && !defined(DISABLE_GL42_image)
-    int stencil_ceil = imageLoad(img_prim_min, ivec2(gl_FragCoord.xy)).r;
+#if PS_DATE == 3
+    int stencil_ceil = int(texelFetch(img_prim_min, ivec2(gl_FragCoord.xy), 0).r);
     // Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
     // the bad alpha value so we must keep it.
 
     if (gl_PrimitiveID > stencil_ceil) {
         discard;
     }
-#endif
 #endif
 
     vec4 C = ps_color();
@@ -934,19 +903,15 @@ void ps_main()
 #endif
 
     // Get first primitive that will write a failling alpha value
-#if PS_DATE == 1 && !defined(DISABLE_GL42_image)
+#if PS_DATE == 1
     // DATM == 0
     // Pixel with alpha equal to 1 will failed (128-255)
-    if (C.a > 127.5f) {
-        imageAtomicMin(img_prim_min, ivec2(gl_FragCoord.xy), gl_PrimitiveID);
-    }
+    SV_Target0 = (C.a > 127.5f) ? vec4(gl_PrimitiveID) : vec4(0x7FFFFFFF);
     return;
-#elif PS_DATE == 2 && !defined(DISABLE_GL42_image)
+#elif PS_DATE == 2
     // DATM == 1
     // Pixel with alpha equal to 0 will failed (0-127)
-    if (C.a < 127.5f) {
-        imageAtomicMin(img_prim_min, ivec2(gl_FragCoord.xy), gl_PrimitiveID);
-    }
+    SV_Target0 = (C.a < 127.5f) ? vec4(gl_PrimitiveID) : vec4(0x7FFFFFFF);
     return;
 #endif
 

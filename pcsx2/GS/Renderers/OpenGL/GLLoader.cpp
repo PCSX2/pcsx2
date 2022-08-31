@@ -148,10 +148,8 @@ namespace GLLoader
 	bool has_dual_source_blend = false;
 	bool found_framebuffer_fetch = false;
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
-	bool found_GL_ARB_clear_texture = false;
 	// DX11 GPU
 	bool found_GL_ARB_gpu_shader5 = false;             // Require IvyBridge
-	bool found_GL_ARB_shader_image_load_store = false; // Intel IB. Nvidia/AMD miss Mesa implementation.
 	bool found_GL_ARB_texture_barrier = false;
 
 	static bool mandatory(const std::string& ext)
@@ -266,10 +264,6 @@ namespace GLLoader
 		{
 			// GL4.0
 			found_GL_ARB_gpu_shader5 = optional("GL_ARB_gpu_shader5");
-			// GL4.2
-			found_GL_ARB_shader_image_load_store = optional("GL_ARB_shader_image_load_store");
-			// GL4.4
-			found_GL_ARB_clear_texture = optional("GL_ARB_clear_texture");
 			// GL4.5
 			optional("GL_ARB_direct_state_access");
 			// Mandatory for the advance HW renderer effect. Unfortunately Mesa LLVMPIPE/SWR renderers doesn't support this extension.
