@@ -890,7 +890,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	if (PS_BLEND_C == 1 && PS_CLR_HW > 3)
 	{
 		float4 RT = trunc(RtTexture.Load(int3(input.p.xy, 0)) * 255.0f + 0.1f);
-		alpha_blend = (PS_DFMT == FMT_24) ? 1.0f : RT.a / 128.0f;
+		alpha_blend = RT.a / 128.0f;
 	}
 	else
 	{

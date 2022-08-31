@@ -941,7 +941,7 @@ struct PSMain
 			C.a = 128.0f;
 		}
 
-		float alpha_blend = SW_AD_TO_HW ? (PS_DFMT == FMT_24 ? 1.f : trunc(current_color.a * 255.5f) / 128.f) : (C.a / 128.f);
+		float alpha_blend = SW_AD_TO_HW ? (trunc(current_color.a * 255.5f) / 128.f) : (C.a / 128.f);
 
 		if (PS_DFMT == FMT_16)
 		{
