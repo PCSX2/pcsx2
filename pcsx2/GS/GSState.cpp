@@ -1490,9 +1490,8 @@ void GSState::GIFRegHandlerFRAME(const GIFReg* RESTRICT r)
 	GL_REG("FRAME_%d = 0x%x_%x", i, r->U32[1], r->U32[0]);
 
 	GIFRegFRAME NewFrame = r->FRAME;
-	// FBW is clamped between 1 and 32, however this is wrong, FBW of 0 *should* work and does on Dobiestation
-	// However there is some issues so even software mode is incorrect on PCSX2, but this works better..
-	NewFrame.FBW = std::clamp(NewFrame.FBW, 1U, 32U);
+	// FBW is clamped to 32
+	NewFrame.FBW = std::min(NewFrame.FBW, 32U);
 
 	if ((NewFrame.PSM & 0x30) == 0x30)
 		m_env.CTXT[i].ZBUF.PSM &= ~0x30;
