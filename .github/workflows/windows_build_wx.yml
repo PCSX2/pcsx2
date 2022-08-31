@@ -78,7 +78,7 @@ jobs:
           if "${{ inputs.platform }}"=="Win32" (SET vcvars=vcvarsamd64_x86.bat) else (SET vcvars=vcvars64.bat)
           call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\%vcvars%"
           echo vcvars=%vcvars%>> %GITHUB_OUTPUT%
-          cmake . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -G Ninja
+          cmake . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DDISABLE_ADVANCE_SIMD=ON -G Ninja
 
       - name: Build PCSX2
         shell: cmd
