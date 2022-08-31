@@ -368,8 +368,6 @@ void GSRendererSW::Draw()
 
 	GSVector4i r = bbox.rintersect(scissor);
 
-	scissor.z = std::min<int>(scissor.z, (int)context->FRAME.FBW * 64); // TODO: find a game that overflows and check which one is the right behaviour
-
 	sd->scissor = scissor;
 	sd->bbox = bbox;
 	sd->frame = g_perfmon.GetFrame();

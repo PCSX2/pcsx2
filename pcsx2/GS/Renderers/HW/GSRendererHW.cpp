@@ -3926,8 +3926,6 @@ bool GSRendererHW::SwPrimRender()
 			bbox.w++;
 	}
 
-	scissor.z = std::min<int>(scissor.z, (int)context->FRAME.FBW * 64); // TODO: find a game that overflows and check which one is the right behaviour
-
 	data.scissor = scissor;
 	data.bbox = bbox;
 	data.frame = g_perfmon.GetFrame();
