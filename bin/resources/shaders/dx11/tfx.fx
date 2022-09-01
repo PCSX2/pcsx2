@@ -66,6 +66,7 @@
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
+#define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 
 struct VS_INPUT
 {
@@ -762,9 +763,9 @@ void ps_blend(inout float4 Color, inout float As, float2 pos_xy)
 				return;
 		}
 
-		float4 RT = trunc(RtTexture.Load(int3(pos_xy, 0)) * 255.0f + 0.1f);
+		float4 RT = SW_BLEND_NEEDS_RT ? trunc(RtTexture.Load(int3(pos_xy, 0)) * 255.0f + 0.1f) : (float4)0.0f;
 
-		float Ad = (PS_DFMT == FMT_24) ? 1.0f : RT.a / 128.0f;
+		float Ad = RT.a / 128.0f;
 
 		float3 Cd = RT.rgb;
 		float3 Cs = Color.rgb;
