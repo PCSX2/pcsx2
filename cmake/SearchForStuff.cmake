@@ -18,7 +18,7 @@ if (WIN32)
 		add_subdirectory(3rdparty/wxwidgets3.0 EXCLUDE_FROM_ALL)
 	endif()
 	add_subdirectory(3rdparty/xz EXCLUDE_FROM_ALL)
-	add_subdirectory(3rdparty/D3D12MemAlloc EXCLUDE_FROM_ALL)
+	add_subdirectory(3rdparty/d3d12memalloc EXCLUDE_FROM_ALL)
 else()
 	find_package(PCAP REQUIRED)
 	find_package(Gettext) # translation tool
