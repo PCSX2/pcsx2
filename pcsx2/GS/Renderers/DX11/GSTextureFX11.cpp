@@ -137,6 +137,7 @@ void GSDevice11::SetupGS(GSSelector sel)
 			sm.AddMacro("GS_IIP", sel.iip);
 			sm.AddMacro("GS_PRIM", static_cast<int>(sel.topology));
 			sm.AddMacro("GS_EXPAND", sel.expand);
+			sm.AddMacro("GS_FORWARD_PRIMID", sel.forward_primid);
 
 			gs = m_shader_cache.GetGeometryShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "gs_main");
 

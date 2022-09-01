@@ -113,6 +113,9 @@ layout(location = 0) out GSOutput
 
 void WriteVertex(vec4 pos, vec4 t, vec4 ti, vec4 c)
 {
+#if GS_FORWARD_PRIMID
+	gl_PrimitiveID = gl_PrimitiveIDIn;
+#endif
 	gl_Position = pos;
 	gsOut.t = t;
 	gsOut.ti = ti;

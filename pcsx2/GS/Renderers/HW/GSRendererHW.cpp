@@ -3589,12 +3589,14 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		m_conf.depth.date = 1;
 		m_conf.depth.date_one = 1;
 	}
+	else if (DATE_PRIMID)
+	{
+		m_conf.ps.date = 1 + m_context->TEST.DATM;
+		m_conf.gs.forward_primid = 1;
+	}
 	else if (DATE)
 	{
-		if (DATE_PRIMID)
-			m_conf.ps.date = 1 + m_context->TEST.DATM;
-		else
-			m_conf.depth.date = 1;
+		m_conf.depth.date = 1;
 	}
 
 	m_conf.ps.fba = m_context->FBA.FBA;

@@ -263,6 +263,7 @@ struct alignas(16) GSHWDrawConfig
 				GSTopology topology : 2;
 				bool expand : 1;
 				bool iip : 1;
+				bool forward_primid : 1;
 			};
 			u8 key;
 		};
