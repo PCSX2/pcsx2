@@ -36,6 +36,7 @@ static u32 s_debug_scope_depth = 0;
 #endif
 
 static bool IsDATMConvertShader(ShaderConvert i) { return (i == ShaderConvert::DATM_0 || i == ShaderConvert::DATM_1); }
+static bool IsDATEModePrimIDInit(u32 flag) { return flag == 1 || flag == 2; }
 
 static VkAttachmentLoadOp GetLoadOpForTexture(GSTextureVK* tex)
 {
@@ -2035,7 +2036,7 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 
 	// Common state
 	gpb.SetPipelineLayout(m_tfx_pipeline_layout);
-	if (p.ps.date >= 10)
+	if (IsDATEModePrimIDInit(p.ps.date))
 	{
 		// DATE image prepass
 		gpb.SetRenderPass(m_date_image_setup_render_passes[p.ds][0], 0);
@@ -2083,7 +2084,7 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	}
 
 	// Blending
-	if (p.ps.date >= 10)
+	if (IsDATEModePrimIDInit(p.ps.date))
 	{
 		// image DATE prepass
 		gpb.SetBlendAttachment(0, true, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_MIN, VK_BLEND_FACTOR_ONE,
@@ -2837,7 +2838,6 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 	pipe.feedback_loop = false;
 	pipe.rt = true;
 	pipe.ps.blend_a = pipe.ps.blend_b = pipe.ps.blend_c = pipe.ps.blend_d = false;
-	pipe.ps.date += 10;
 	pipe.ps.no_color = false;
 	pipe.ps.no_color1 = true;
 	if (BindDrawPipeline(pipe))
