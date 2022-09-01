@@ -14240,6 +14240,8 @@ SLED-52574:
   region: "PAL-E"
   gameFixes:
     - XGKickHack # Fixes bad geometry.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth lines.
 SLES-52576:
   name: "Yu-Gi-Oh! Capsule Monster Coliseum"
   region: "PAL-M5"
@@ -47601,6 +47603,8 @@ SLUS-29101:
   region: "NTSC-U"
   gameFixes:
     - XGKickHack # Fixes bad geometry.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth lines.
 SLUS-29104:
   name: "Galactic Wrestling - Featuring Ultimate Muscle [Demo]"
   region: "NTSC-U"
