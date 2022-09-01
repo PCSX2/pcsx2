@@ -192,7 +192,7 @@ bool GSDevice12::CheckFeatures()
 	m_features.texture_barrier = false;
 	m_features.broken_point_sampler = isAMD;
 	m_features.geometry_shader = true;
-	m_features.image_load_store = true;
+	m_features.primitive_id = true;
 	m_features.prefer_new_textures = true;
 	m_features.provoking_vertex_last = false;
 	m_features.point_expand = false;

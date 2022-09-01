@@ -217,7 +217,7 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 	// optional features based on context
 	m_features.broken_point_sampler = GLLoader::vendor_id_amd;
 	m_features.geometry_shader = GLLoader::found_geometry_shader;
-	m_features.image_load_store = true;
+	m_features.primitive_id = true;
 	if (GSConfig.OverrideTextureBarriers == 0)
 		m_features.texture_barrier = GLLoader::found_framebuffer_fetch; // Force Disabled
 	else if (GSConfig.OverrideTextureBarriers == 1)

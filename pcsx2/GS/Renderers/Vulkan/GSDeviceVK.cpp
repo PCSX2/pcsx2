@@ -230,7 +230,7 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
 	m_features.broken_point_sampler = isAMD;
 	m_features.geometry_shader = features.geometryShader && GSConfig.OverrideGeometryShaders != 0;
-	m_features.image_load_store = features.fragmentStoresAndAtomics;
+	m_features.primitive_id = features.fragmentStoresAndAtomics;
 	m_features.prefer_new_textures = true;
 	m_features.provoking_vertex_last = g_vulkan_context->GetOptionalExtensions().vk_ext_provoking_vertex;
 	m_features.dual_source_blend = features.dualSrcBlend && !GSConfig.DisableDualSourceBlend;
