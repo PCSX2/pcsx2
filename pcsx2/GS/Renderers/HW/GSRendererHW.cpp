@@ -1284,12 +1284,6 @@ void GSRendererHW::Draw()
 	GSDrawingContext* context = m_context;
 	const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
 
-	if (!context->FRAME.FBW)
-	{
-		GL_CACHE("Skipping draw with FRAME.FBW = 0.");
-		return;
-	}
-
 	// When the format is 24bit (Z or C), DATE ceases to function.
 	// It was believed that in 24bit mode all pixels pass because alpha doesn't exist
 	// however after testing this on a PS2 it turns out nothing passes, it ignores the draw.
@@ -3925,8 +3919,6 @@ bool GSRendererHW::SwPrimRender()
 		if (bbox.y == bbox.w)
 			bbox.w++;
 	}
-
-	scissor.z = std::min<int>(scissor.z, (int)context->FRAME.FBW * 64); // TODO: find a game that overflows and check which one is the right behaviour
 
 	data.scissor = scissor;
 	data.bbox = bbox;

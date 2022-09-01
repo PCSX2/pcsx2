@@ -1194,7 +1194,7 @@ void main()
 
 #if (PS_BLEND_C == 1 && PS_CLR_HW > 3)
   vec4 RT = trunc(subpassLoad(RtSampler) * 255.0f + 0.1f);
-  float alpha_blend = (PS_DFMT == FMT_24) ? 1.0f : RT.a / 128.0f;
+  float alpha_blend = RT.a / 128.0f;
 #else
   float alpha_blend = C.a / 128.0f;
 #endif
