@@ -10,7 +10,7 @@
 #ifndef __BASEREFCLOCK__
 #define __BASEREFCLOCK__
 
-#include <Schedule.h>
+#include <schedule.h>
 
 const UINT RESOLUTION = 1;                      /* High resolution timer */
 const INT ADVISE_CACHE = 4;                     /* Default cache size */
