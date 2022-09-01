@@ -102,7 +102,7 @@ struct PS_INPUT
 #else
 	nointerpolation float4 c : COLOR0;
 #endif
-#if PS_DATE > 10 || PS_DATE == 3
+#if PS_DATE >= 1 && PS_DATE <= 3
 	uint primid : SV_PrimitiveID;
 #endif
 };
@@ -110,7 +110,7 @@ struct PS_INPUT
 struct PS_OUTPUT
 {
 #if !PS_NO_COLOR
-#if PS_DATE > 10
+#if PS_DATE == 1 || PS_DATE == 2
 	float c : SV_Target;
 #else
 	float4 c0 : SV_Target0;
@@ -918,12 +918,12 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #endif
 
 	// Get first primitive that will write a failling alpha value
-#if PS_DATE == 11
+#if PS_DATE == 1
 	// DATM == 0
 	// Pixel with alpha equal to 1 will failed (128-255)
 	output.c = (C.a > 127.5f) ? float(input.primid) : float(0x7FFFFFFF);
 
-#elif PS_DATE == 12
+#elif PS_DATE == 2
 
 	// DATM == 1
 	// Pixel with alpha equal to 0 will failed (0-127)
