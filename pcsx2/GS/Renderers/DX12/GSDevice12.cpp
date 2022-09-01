@@ -1506,6 +1506,7 @@ const ID3DBlob* GSDevice12::GetTFXGeometryShader(GSHWDrawConfig::GSSelector sel)
 	sm.AddMacro("GS_IIP", sel.iip);
 	sm.AddMacro("GS_PRIM", static_cast<int>(sel.topology));
 	sm.AddMacro("GS_EXPAND", sel.expand);
+	sm.AddMacro("GS_FORWARD_PRIMID", sel.forward_primid);
 
 	ComPtr<ID3DBlob> gs(m_shader_cache.GetGeometryShader(m_tfx_source, sm.GetPtr(), "gs_main"));
 	it = m_tfx_geometry_shaders.emplace(sel.key, std::move(gs)).first;

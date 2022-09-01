@@ -1933,6 +1933,7 @@ VkShaderModule GSDeviceVK::GetTFXGeometryShader(GSHWDrawConfig::GSSelector sel)
 	AddMacro(ss, "GS_IIP", sel.iip);
 	AddMacro(ss, "GS_PRIM", static_cast<int>(sel.topology));
 	AddMacro(ss, "GS_EXPAND", sel.expand);
+	AddMacro(ss, "GS_FORWARD_PRIMID", sel.forward_primid);
 	ss << m_tfx_source;
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetGeometryShader(ss.str());
