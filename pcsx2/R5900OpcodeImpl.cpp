@@ -979,7 +979,7 @@ void SYSCALL()
 
 				cdvdReadLanguageParams(params);
 
-				u32 osdconf2 = (u32)((params[3] & 0x78) << 1);  // Daylight Savings, 24hr clock, Date format
+				u32 osdconf2 = (((u32)params[3] & 0x78) << 9);  // Daylight Savings, 24hr clock, Date format
 
 				memWrite32(memaddr, osdconf2);
 				return;
