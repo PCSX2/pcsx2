@@ -10,6 +10,6 @@ if(WIN32)
 		LZMA::LZMA
 	)
 	target_sources(updater PRIVATE
-		Win32Update.cpp
+		Windows/WindowsUpdater.cpp
 	)
 endif()
