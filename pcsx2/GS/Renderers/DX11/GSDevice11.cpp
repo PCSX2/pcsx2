@@ -45,7 +45,7 @@ GSDevice11::GSDevice11()
 	m_state.bf = -1;
 
 	m_features.geometry_shader = true;
-	m_features.image_load_store = false;
+	m_features.primitive_id = false;
 	m_features.texture_barrier = false;
 	m_features.provoking_vertex_last = false;
 	m_features.point_expand = false;

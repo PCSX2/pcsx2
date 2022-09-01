@@ -699,7 +699,7 @@ public:
 		bool broken_point_sampler : 1; ///< Issue with AMD cards, see tfx shader for details
 		bool geometry_shader      : 1; ///< Supports geometry shader
 		bool vs_expand            : 1; ///< Supports expanding points/lines/sprites in the vertex shader
-		bool image_load_store     : 1; ///< Supports atomic min and max on images (for use with prim tracking destination alpha algorithm)
+		bool primitive_id         : 1; ///< Supports primitive ID for use with prim tracking destination alpha algorithm
 		bool texture_barrier      : 1; ///< Supports sampling rt and hopefully texture barrier
 		bool provoking_vertex_last: 1; ///< Supports using the last vertex in a primitive as the value for flat shading.
 		bool point_expand         : 1; ///< Supports point expansion in hardware without using geometry shaders.

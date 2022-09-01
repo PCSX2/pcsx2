@@ -3464,7 +3464,7 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 			{
 				// Note: Fast level (DATE_one) was removed as it's less accurate.
 				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				if (features.image_load_store)
+				if (features.primitive_id)
 				{
 					DATE_PRIMID = true;
 				}
