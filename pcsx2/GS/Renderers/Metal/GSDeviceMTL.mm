@@ -1280,6 +1280,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		color.rgbBlendOperation = MTLBlendOperationMin;
 		color.sourceRGBBlendFactor = MTLBlendFactorOne;
 		color.destinationRGBBlendFactor = MTLBlendFactorOne;
+		color.writeMask = MTLColorWriteMaskRed;
 	}
 	else if (extras.blend_enable && (extras.writemask & MTLColorWriteMaskRGB))
 	{
