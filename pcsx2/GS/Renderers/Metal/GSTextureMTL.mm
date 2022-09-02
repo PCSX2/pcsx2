@@ -189,12 +189,6 @@ void GSTextureMTL::GenerateMipmap()
 	}
 }}
 
-bool GSTextureMTL::Save(const std::string& fn)
-{
-	// TODO: Implement
-	return false;
-}
-
 void GSTextureMTL::Swap(GSTexture* other)
 {
 	GSTexture::Swap(other);

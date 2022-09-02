@@ -74,7 +74,6 @@ public:
 	void* MapWithPitch(const GSVector4i& r, int pitch, int layer);
 	void Unmap() override;
 	void GenerateMipmap() override;
-	bool Save(const std::string& fn) override;
 	void Swap(GSTexture* tex) override;
 	id<MTLTexture> GetTexture() { return m_texture; }
 };
