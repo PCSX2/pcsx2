@@ -406,4 +406,47 @@ bool MetalHostDisplay::GetHostRefreshRate(float* refresh_rate)
 	return *refresh_rate != 0;
 }
 
+bool MetalHostDisplay::SetGPUTimingEnabled(bool enabled)
+{
+	if (enabled == m_gpu_timing_enabled)
+		return true;
+	if (@available(macOS 10.15, iOS 10.3, *))
+	{
+		std::lock_guard<std::mutex> l(m_mtx);
+		m_gpu_timing_enabled = enabled;
+		m_accumulated_gpu_time = 0;
+		m_last_gpu_time_end = 0;
+		return true;
+	}
+	return false;
+}
+
+float MetalHostDisplay::GetAndResetAccumulatedGPUTime()
+{
+	std::lock_guard<std::mutex> l(m_mtx);
+	float time = m_accumulated_gpu_time * 1000;
+	m_accumulated_gpu_time = 0;
+	return time;
+}
+
+void MetalHostDisplay::AccumulateCommandBufferTime(id<MTLCommandBuffer> buffer)
+{
+	std::lock_guard<std::mutex> l(m_mtx);
+	if (!m_gpu_timing_enabled)
+		return;
+	// We do the check before enabling m_gpu_timing_enabled
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability"
+	// It's unlikely, but command buffers can overlap or run out of order
+	// This doesn't handle every case (fully out of order), but it should at least handle overlapping
+	double begin = std::max(m_last_gpu_time_end, [buffer GPUStartTime]);
+	double end = [buffer GPUEndTime];
+	if (end > begin)
+	{
+		m_accumulated_gpu_time += end - begin;
+		m_last_gpu_time_end = end;
+	}
+#pragma clang diagnostic pop
+}
+
 #endif // __APPLE__

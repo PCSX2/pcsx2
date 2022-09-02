@@ -324,6 +324,8 @@ public:
 	id<MTLBlitCommandEncoder> GetVertexUploadEncoder();
 	/// Get the render command buffer, creating a new one if it doesn't exist
 	id<MTLCommandBuffer> GetRenderCmdBuf();
+	/// Called by command buffers when they finish
+	void DrawCommandBufferFinished(u64 draw, id<MTLCommandBuffer> buffer);
 	/// Flush pending operations from all encoders to the GPU
 	void FlushEncoders();
 	/// End current render pass without flushing
