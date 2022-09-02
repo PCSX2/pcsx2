@@ -16,6 +16,8 @@
 #include "PrecompiledHeader.h"
 #include "GSMetalCPPAccessible.h"
 #include "GSDeviceMTL.h"
+
+#include "Frontend/MetalHostDisplay.h"
 #include "GSTextureMTL.h"
 #include "GS/GSPerfMon.h"
 #include "HostDisplay.h"
@@ -219,6 +221,14 @@ id<MTLCommandBuffer> GSDeviceMTL::GetRenderCmdBuf()
 	return m_current_render_cmdbuf;
 }
 
+void GSDeviceMTL::DrawCommandBufferFinished(u64 draw, id<MTLCommandBuffer> buffer)
+{
+	// We can do the update non-atomically because we only ever update under the lock
+	u64 newval = std::max(draw, m_last_finished_draw.load(std::memory_order_relaxed));
+	m_last_finished_draw.store(newval, std::memory_order_release);
+	static_cast<MetalHostDisplay*>(m_display)->AccumulateCommandBufferTime(buffer);
+}
+
 void GSDeviceMTL::FlushEncoders()
 {
 	if (!m_current_render_cmdbuf)
@@ -252,11 +262,7 @@ void GSDeviceMTL::FlushEncoders()
 	{
 		std::lock_guard<std::mutex> guard(backref->first);
 		if (GSDeviceMTL* dev = backref->second)
-		{
-			// We can do the update non-atomically because we only ever update under the lock
-			u64 newval = std::max(draw, dev->m_last_finished_draw.load(std::memory_order_relaxed));
-			dev->m_last_finished_draw.store(newval, std::memory_order_release);
-		}
+			dev->DrawCommandBufferFinished(draw, buf);
 	}];
 	[m_current_render_cmdbuf commit];
 	m_current_render_cmdbuf = nil;
