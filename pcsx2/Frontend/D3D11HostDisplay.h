@@ -75,7 +75,7 @@ public:
 
 protected:
 	static constexpr u32 DISPLAY_CONSTANT_BUFFER_SIZE = 16;
-	static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
+	static constexpr u8 NUM_TIMESTAMP_QUERIES = 5;
 
 	static AdapterAndModeList GetAdapterAndModeList(IDXGIFactory* dxgi_factory);
 

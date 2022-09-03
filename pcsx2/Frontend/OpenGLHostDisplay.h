@@ -65,7 +65,7 @@ public:
 	float GetAndResetAccumulatedGPUTime() override;
 
 protected:
-	static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
+	static constexpr u8 NUM_TIMESTAMP_QUERIES = 5;
 
 	const char* GetGLSLVersionString() const;
 	std::string GetGLSLVersionHeader() const;
