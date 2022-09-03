@@ -45,6 +45,7 @@ namespace GameInfo
 	extern wxString gameSerial;
 	extern wxString gameCRC;
 	extern wxString gameVersion;
+	extern uint32_t cdvdOffset;
 }; // namespace GameInfo
 
 

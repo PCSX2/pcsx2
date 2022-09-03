@@ -43,9 +43,18 @@
 #endif
 
 #ifndef PCSX2_CORE
+#include "gui/AppCoreThread.h"
 #include "gui/SysThreads.h"
+u32 getCdvdOffset()
+{
+	return GameInfo::cdvdOffset;
+}
 #else
 #include "VMManager.h"
+u32 getCdvdOffset()
+{
+	return VMManager::GetCdvdOffset();
+}
 #endif
 
 // This typically reflects the Sony-assigned serial code for the Disc, if one exists.
@@ -198,19 +207,25 @@ static void cdvdGetMechaVer(u8* ver)
 	auto fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "rb");
 	if (!fp || FileSystem::FSize64(fp.get()) < 4)
 	{
-		Console.Warning("MEC File Not Found, creating substitute...");
-
+		mecfile = Path::ReplaceExtension(BiosPath, "MEC");
 		fp.reset();
-		fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "w+b");
-		if (!fp)
+		fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "rb");
+		if (!fp || FileSystem::FSize64(fp.get()) < 4)
 		{
-			Console.Error("Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings.");
-			return;
-		}
+			Console.Warning("MEC File Not Found, creating substitute...");
 
-		u8 version[4] = {0x3, 0x6, 0x2, 0x0};
-		std::fwrite(version, sizeof(version), 1, fp.get());
-		FileSystem::FSeek64(fp.get(), 0, SEEK_SET);
+			fp.reset();
+			fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "w+b");
+			if (!fp)
+			{
+				Console.Error("Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings.");
+				return;
+			}
+
+			u8 version[4] = {0x3, 0x6, 0x2, 0x0};
+			std::fwrite(version, sizeof(version), 1, fp.get());
+			FileSystem::FSeek64(fp.get(), 0, SEEK_SET);
+		}
 	}
 
 	auto ret = std::fread(ver, 1, 4, fp.get());
@@ -250,6 +265,13 @@ static void cdvdCreateNewNVM(std::FILE* fp)
 	// So let's ignore that and just write the PS2 mode stuff
 	std::fseek(fp, *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, config1)) + 0x10, SEEK_SET);
 	std::fwrite(biosLanguage, sizeof(biosLanguage), 1, fp);
+
+	if (BiosVersion >= 0x200)
+	{
+		char regs[] = {'J', 'J', 'J', 'A', 'E', 'J', 'J', 'C'};
+		std::fseek(fp, *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, regparams)) + 6, SEEK_SET);
+		std::fputc(regs[BiosRegion], fp);
+	}
 }
 
 static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
@@ -258,27 +280,37 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 	auto fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "r+b");
 	if (!fp || FileSystem::FSize64(fp.get()) < 1024)
 	{
+		nvmfile = Path::ReplaceExtension(BiosPath, "NVM");
 		fp.reset();
-		fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "w+b");
-		if (!fp)
+		fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "r+b");
+		if (!fp || FileSystem::FSize64(fp.get()) < 1024)
 		{
-			Console.Error("Failed to open NVM file '%s' for writing", nvmfile.c_str());
-			if (read)
-				std::memset(buffer, 0, bytes);
-			return;
+			fp.reset();
+			fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "w+b");
+			if (!fp)
+			{
+				Console.Error("Failed to open NVM file '%s' for writing", nvmfile.c_str());
+				if (read)
+					std::memset(buffer, 0, bytes);
+				return;
+			}
+			cdvdCreateNewNVM(fp.get());
 		}
-
-		cdvdCreateNewNVM(fp.get());
 	}
 	else
 	{
 		u8 LanguageParams[16];
+		u8 RegParams[12];
 		u8 zero[16] = {0};
 		NVMLayout* nvmLayout = getNvmLayout();
 
 		if (std::fseek(fp.get(), *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, config1)) + 0x10, SEEK_SET) != 0 ||
 			std::fread(LanguageParams, 16, 1, fp.get()) != 1 ||
-			std::memcmp(LanguageParams, zero, sizeof(LanguageParams)) == 0)
+			std::memcmp(LanguageParams, zero, sizeof(LanguageParams)) == 0 ||
+			(BiosVersion >= 0x200 &&
+				(std::fseek(fp.get(), *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, regparams)), SEEK_SET) != 0 ||
+				std::fread(RegParams, 12, 1, fp.get()) != 1 ||
+				std::memcmp(RegParams, zero, sizeof(RegParams)) == 0)))
 		{
 			Console.Warning("Language Parameters missing, filling in defaults");
 
@@ -618,11 +650,12 @@ void cdvdReloadElfInfo(std::string elfoverride)
 	}
 }
 
-void cdvdReadKey(u8, u16, u32 arg2, u8* key)
+void cdvdReadKey(u8 arg0, u16 arg1, u32 arg2, u8* key)
 {
 	s32 numbers = 0, letters = 0;
 	u32 key_0_3;
 	u8 key_4, key_14;
+	u32 cdvdOffset;
 
 	cdvdReloadElfInfo();
 
@@ -631,6 +664,7 @@ void cdvdReadKey(u8, u16, u32 arg2, u8* key)
 
 	if (!DiscSerial.empty())
 	{
+		DevCon.WriteLn(Color_Green, "DiscSerial = %s, arg0=0x%x, arg1=0x%x, arg2=%d", DiscSerial, arg0, arg1, arg2);
 		// convert the number characters to a real 32 bit number
 		numbers = StringUtil::FromChars<s32>(std::string_view(DiscSerial).substr(5, 5)).value_or(0);
 
@@ -657,7 +691,11 @@ void cdvdReadKey(u8, u16, u32 arg2, u8* key)
 	switch (arg2)
 	{
 		case 75:
-			key[14] = key_14;
+			key[10] = 0x10;   // DNAS_ID[0]
+			key[11] = 0x11;   // DNAS_ID[1]
+			key[12] = 0x12;   // DNAS_ID[2]
+			key[13] = 0x13;   // DNAS_ID[3]
+			key[14] = key_14; // DNAS_ID[4]
 			key[15] = 0x05;
 			break;
 
@@ -666,11 +704,24 @@ void cdvdReadKey(u8, u16, u32 arg2, u8* key)
 			//          break;
 
 		case 4246:
-			// 0x0001F2F707 = sector 0x0001F2F7  dec 0x07
-			key[0] = 0x07;
-			key[1] = 0xF7;
-			key[2] = 0xF2;
-			key[3] = 0x01;
+			cdvdOffset = getCdvdOffset();
+			if (cdvdOffset)
+			{
+				key[0] = (cdvdOffset >> 24) & 0xff;
+				key[1] = (cdvdOffset >> 16) & 0xff;
+				key[2] = (cdvdOffset >>  8) & 0xff;
+				key[3] = (cdvdOffset >>  0) & 0xff;
+			}
+			else
+			{
+				Console.Warning("cdvdReadKey : Unknown cdvdOffset for %s", DiscSerial);
+				// DVD Player Version 2.10 (Australia) [PBPX-95209]
+				// 0x0001F2F707 = sector 0x0001F2F7  dec 0x07 / 127735
+				key[0] = 0x07; // SUB_ID[0]
+				key[1] = 0xF7; // SUB_ID[1] / LBA[2]
+				key[2] = 0xF2; // SUB_ID[2] / LBA[1]
+				key[3] = 0x01; // SUB_ID[3] / LBA[0]
+			}
 			key[4] = 0x00;
 			key[15] = 0x01;
 			break;
@@ -3686,7 +3737,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				cdvd.SCMDResult[0] = 0x80;
 				if (cdvd.mecha_state == MECHA_STATE_UNK17 && cdvd.SCMDParamC == 2)
 				{
-					if (*(uint16_t*) cdvd.SCMDParam == cdvd.DataSize)
+					if (*(uint16_t*)cdvd.SCMDParam == cdvd.DataSize)
 					{
 						cdvd.data_out_offset = 0;
 						cdvd.data_out_ptr = cdvd.data_buffer;

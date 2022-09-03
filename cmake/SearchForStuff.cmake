@@ -236,6 +236,7 @@ if(QT_BUILD)
 	find_optional_system_library(SDL2 3rdparty/sdl2 2.0.22)
 endif()
 
+add_subdirectory(3rdparty/des)
 add_subdirectory(3rdparty/lzma EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/libchdr EXCLUDE_FROM_ALL)
 
@@ -270,4 +271,3 @@ endif()
 
 # For P2IO fork
 include(FindLibUSB)
-add_subdirectory(3rdparty/des EXCLUDE_FROM_ALL)

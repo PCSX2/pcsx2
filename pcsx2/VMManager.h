@@ -85,6 +85,9 @@ namespace VMManager
 	/// Loads global settings (i.e. EmuConfig).
 	void LoadSettings();
 
+	/// Returns the CDVD offset of the disc currently running.
+	u32 GetCdvdOffset();
+
 	/// Initializes all system components.
 	bool Initialize(VMBootParameters boot_params);
 
