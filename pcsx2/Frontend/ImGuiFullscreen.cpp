@@ -31,7 +31,7 @@
 #include "fmt/core.h"
 #include "HostDisplay.h"
 #include "imgui_internal.h"
-#include "misc/cpp/imgui_stdlib.h"
+#include "imgui_stdlib.h"
 #include <array>
 #include <cmath>
 #include <deque>
