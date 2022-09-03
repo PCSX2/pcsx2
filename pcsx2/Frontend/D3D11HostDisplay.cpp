@@ -677,6 +677,13 @@ bool D3D11HostDisplay::BeginPresent(bool frame_skip)
 		return false;
 	}
 
+	// When using vsync, the time here seems to include the time for the buffer to become available.
+	// This blows our our GPU usage number considerably, so read the timestamp before the final blit
+	// in this configuration. It does reduce accuracy a little, but better than seeing 100% all of
+	// the time, when it's more like a couple of percent.
+	if (m_vsync_mode != VsyncMode::Off && m_gpu_timing_enabled)
+		PopTimestampQuery();
+
 	static constexpr std::array<float, 4> clear_color = {};
 	m_context->ClearRenderTargetView(m_swap_chain_rtv.get(), clear_color.data());
 	m_context->OMSetRenderTargets(1, m_swap_chain_rtv.addressof(), nullptr);
@@ -693,14 +700,15 @@ void D3D11HostDisplay::EndPresent()
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
-	if (m_gpu_timing_enabled)
+	// See note in BeginPresent() for why it's conditional on vsync-off.
+	const bool vsync_on = m_vsync_mode != VsyncMode::Off;
+	if (!vsync_on && m_gpu_timing_enabled)
 		PopTimestampQuery();
 
-	const UINT vsync_rate = static_cast<UINT>(m_vsync_mode != VsyncMode::Off);
-	if (vsync_rate == 0 && m_using_allow_tearing)
+	if (!vsync_on && m_using_allow_tearing)
 		m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
 	else
-		m_swap_chain->Present(vsync_rate, 0);
+		m_swap_chain->Present(static_cast<UINT>(vsync_on), 0);
 
 	if (m_gpu_timing_enabled)
 		KickTimestampQuery();
@@ -772,8 +780,7 @@ void D3D11HostDisplay::PopTimestampQuery()
 		}
 	}
 
-	// delay ending the current query until we've read back some
-	if (m_timestamp_query_started && m_waiting_timestamp_queries < (NUM_TIMESTAMP_QUERIES - 1))
+	if (m_timestamp_query_started)
 	{
 		m_context->End(m_timestamp_queries[m_write_timestamp_query][2].get());
 		m_context->End(m_timestamp_queries[m_write_timestamp_query][0].get());
@@ -785,7 +792,7 @@ void D3D11HostDisplay::PopTimestampQuery()
 
 void D3D11HostDisplay::KickTimestampQuery()
 {
-	if (m_timestamp_query_started || !m_timestamp_queries[0][0])
+	if (m_timestamp_query_started || !m_timestamp_queries[0][0] || m_waiting_timestamp_queries == NUM_TIMESTAMP_QUERIES)
 		return;
 
 	m_context->Begin(m_timestamp_queries[m_write_timestamp_query][0].get());
