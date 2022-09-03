@@ -1792,7 +1792,7 @@ static void HotkeySaveStateSlot(s32 slot)
 
 BEGIN_HOTKEY_LIST(g_vm_manager_hotkeys)
 DEFINE_HOTKEY("OpenPauseMenu", "System", "Open Pause Menu", [](s32 pressed) {
-	if (!pressed)
+	if (!pressed && VMManager::HasValidVM())
 		FullscreenUI::OpenPauseMenu();
 })
 DEFINE_HOTKEY("TogglePause", "System", "Toggle Pause", [](s32 pressed) {
@@ -1804,7 +1804,7 @@ DEFINE_HOTKEY("ToggleFullscreen", "System", "Toggle Fullscreen", [](s32 pressed)
 		Host::SetFullscreen(!Host::IsFullscreen());
 })
 DEFINE_HOTKEY("ToggleFrameLimit", "System", "Toggle Frame Limit", [](s32 pressed) {
-	if (!pressed)
+	if (!pressed && VMManager::HasValidVM())
 	{
 		VMManager::SetLimiterMode((EmuConfig.LimiterMode != LimiterModeType::Unlimited) ?
 									  LimiterModeType::Unlimited :
@@ -1812,7 +1812,7 @@ DEFINE_HOTKEY("ToggleFrameLimit", "System", "Toggle Frame Limit", [](s32 pressed
 	}
 })
 DEFINE_HOTKEY("ToggleTurbo", "System", "Toggle Turbo", [](s32 pressed) {
-	if (!pressed)
+	if (!pressed && VMManager::HasValidVM())
 	{
 		VMManager::SetLimiterMode((EmuConfig.LimiterMode != LimiterModeType::Turbo) ?
 									  LimiterModeType::Turbo :
@@ -1820,7 +1820,7 @@ DEFINE_HOTKEY("ToggleTurbo", "System", "Toggle Turbo", [](s32 pressed) {
 	}
 })
 DEFINE_HOTKEY("ToggleSlowMotion", "System", "Toggle Slow Motion", [](s32 pressed) {
-	if (!pressed)
+	if (!pressed && VMManager::HasValidVM())
 	{
 		VMManager::SetLimiterMode((EmuConfig.LimiterMode != LimiterModeType::Slomo) ?
 									  LimiterModeType::Slomo :
@@ -1828,6 +1828,8 @@ DEFINE_HOTKEY("ToggleSlowMotion", "System", "Toggle Slow Motion", [](s32 pressed
 	}
 })
 DEFINE_HOTKEY("HoldTurbo", "System", "Turbo (Hold)", [](s32 pressed) {
+	if (!VMManager::HasValidVM())
+		return;
 	if (pressed > 0 && !s_limiter_mode_prior_to_hold_interaction.has_value())
 	{
 		s_limiter_mode_prior_to_hold_interaction = VMManager::GetLimiterMode();
@@ -1850,7 +1852,7 @@ DEFINE_HOTKEY("DecreaseSpeed", "System", "Decrease Target Speed", [](s32 pressed
 		HotkeyAdjustTargetSpeed(-0.1);
 })
 DEFINE_HOTKEY("FrameAdvance", "System", "Frame Advance", [](s32 pressed) {
-	if (!pressed)
+	if (!pressed && VMManager::HasValidVM())
 		VMManager::FrameAdvance(1);
 })
 DEFINE_HOTKEY("ShutdownVM", "System", "Shut Down Virtual Machine", [](s32 pressed) {
@@ -1862,24 +1864,24 @@ DEFINE_HOTKEY("ResetVM", "System", "Reset Virtual Machine", [](s32 pressed) {
 		VMManager::Reset();
 })
 DEFINE_HOTKEY("InputRecToggleMode", "System", "Toggle Input Recording Mode", [](s32 pressed) {
-	if (!pressed)
+	if (!pressed && VMManager::HasValidVM())
 		g_InputRecordingControls.RecordModeToggle();
 })
 
 DEFINE_HOTKEY("PreviousSaveStateSlot", "Save States", "Select Previous Save Slot", [](s32 pressed) {
-	if (!pressed)
+	if (!pressed && VMManager::HasValidVM())
 		HotkeyCycleSaveSlot(-1);
 })
 DEFINE_HOTKEY("NextSaveStateSlot", "Save States", "Select Next Save Slot", [](s32 pressed) {
-	if (!pressed)
+	if (!pressed && VMManager::HasValidVM())
 		HotkeyCycleSaveSlot(1);
 })
 DEFINE_HOTKEY("SaveStateToSlot", "Save States", "Save State To Selected Slot", [](s32 pressed) {
-	if (!pressed)
+	if (!pressed && VMManager::HasValidVM())
 		VMManager::SaveStateToSlot(s_current_save_slot);
 })
 DEFINE_HOTKEY("LoadStateFromSlot", "Save States", "Load State From Selected Slot", [](s32 pressed) {
-	if (!pressed)
+	if (!pressed && VMManager::HasValidVM())
 		HotkeyLoadStateSlot(s_current_save_slot);
 })
 
