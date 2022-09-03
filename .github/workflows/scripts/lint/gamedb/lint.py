@@ -17,6 +17,7 @@ allowed_game_options = [
     "speedHacks",
     "memcardFilters",
     "patches",
+    "cdvdOffset",
 ]
 allowed_round_modes = ["eeRoundMode", "vuRoundMode"]
 allowed_clamp_modes = ["eeClampMode", "vuClampMode"]
