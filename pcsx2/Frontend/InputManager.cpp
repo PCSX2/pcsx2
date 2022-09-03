@@ -405,6 +405,34 @@ const char* InputManager::InputSourceToString(InputSourceType clazz)
 	return s_input_class_names[static_cast<u32>(clazz)];
 }
 
+bool InputManager::GetInputSourceDefaultEnabled(InputSourceType type)
+{
+	switch (type)
+	{
+		case InputSourceType::Keyboard:
+		case InputSourceType::Pointer:
+			return true;
+
+#ifdef _WIN32
+		case InputSourceType::XInput:
+			// Disable xinput by default if we have SDL.
+#ifdef SDL_BUILD
+			return false;
+#else
+			return true;
+#endif
+#endif
+
+#ifdef SDL_BUILD
+		case InputSourceType::SDL:
+			return true;
+#endif
+
+		default:
+			return false;
+	}
+}
+
 std::optional<InputSourceType> InputManager::ParseInputSourceString(const std::string_view& str)
 {
 	for (u32 i = 0; i < static_cast<u32>(InputSourceType::Count); i++)
@@ -1114,10 +1142,10 @@ GenericInputBindingMapping InputManager::GetGenericBindingMapping(const std::str
 }
 
 template <typename T>
-static void UpdateInputSourceState(
-	SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock, InputSourceType type, bool default_state)
+static void UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock, InputSourceType type)
 {
-	const bool enabled = si.GetBoolValue("InputSources", InputManager::InputSourceToString(type), default_state);
+	const bool enabled =
+		si.GetBoolValue("InputSources", InputManager::InputSourceToString(type), InputManager::GetInputSourceDefaultEnabled(type));
 	if (enabled)
 	{
 		if (s_input_sources[static_cast<u32>(type)])
@@ -1157,9 +1185,9 @@ static void UpdateInputSourceState(
 void InputManager::ReloadSources(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
 #ifdef _WIN32
-	UpdateInputSourceState<XInputSource>(si, settings_lock, InputSourceType::XInput, false);
+	UpdateInputSourceState<XInputSource>(si, settings_lock, InputSourceType::XInput);
 #endif
 #ifdef SDL_BUILD
-	UpdateInputSourceState<SDLInputSource>(si, settings_lock, InputSourceType::SDL, true);
+	UpdateInputSourceState<SDLInputSource>(si, settings_lock, InputSourceType::SDL);
 #endif
 }
