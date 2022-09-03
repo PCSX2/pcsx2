@@ -247,7 +247,10 @@ bool DisplayWidget::event(QEvent* event)
 			// Forward text input to imgui.
 			if (ImGuiManager::WantsTextInput() && key_event->type() == QEvent::KeyPress)
 			{
-				const QString text(key_event->text());
+				// Don't forward backspace characters. We send the backspace as a normal key event,
+				// so if we send the character too, it double-deletes.
+				QString text(key_event->text());
+				text.remove(QChar('\b'));
 				if (!text.isEmpty())
 					ImGuiManager::AddTextInput(text.toStdString());
 			}

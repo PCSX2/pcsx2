@@ -20,6 +20,7 @@
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/FileSystem.h"
+#include "common/HTTPDownloader.h"
 #include "common/Path.h"
 #include "common/ProgressCallback.h"
 #include "common/StringUtil.h"
@@ -778,7 +779,7 @@ std::string GameList::GetCoverImagePath(const std::string& path, const std::stri
 	return cover_path;
 }
 
-std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const char* new_filename)
+std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const char* new_filename, bool use_serial)
 {
 	const char* extension = std::strrchr(new_filename, '.');
 	if (!extension)
@@ -792,7 +793,132 @@ std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const cha
 			return existing_filename;
 	}
 
-	std::string cover_filename(entry->title + extension);
+	std::string cover_filename(use_serial ? (entry->serial + extension) : (entry->title + extension));
 	Path::SanitizeFileName(&cover_filename);
 	return Path::Combine(EmuFolders::Covers, cover_filename);
+}
+
+bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, bool use_serial, ProgressCallback* progress,
+	std::function<void(const Entry*, std::string)> save_callback)
+{
+	if (!progress)
+		progress = ProgressCallback::NullProgressCallback;
+
+	bool has_title = false;
+	bool has_file_title = false;
+	bool has_serial = false;
+	for (const std::string& url_template : url_templates)
+	{
+		if (!has_title && url_template.find("${title}") != std::string::npos)
+			has_title = true;
+		if (!has_file_title && url_template.find("${filetitle}") != std::string::npos)
+			has_file_title = true;
+		if (!has_serial && url_template.find("${serial}") != std::string::npos)
+			has_serial = true;
+	}
+	if (!has_title && !has_file_title && !has_serial)
+	{
+		progress->DisplayError("URL template must contain at least one of ${title}, ${filetitle}, or ${serial}.");
+		return false;
+	}
+
+	std::vector<std::pair<std::string, std::string>> download_urls;
+	{
+		std::unique_lock lock(s_mutex);
+		for (const GameList::Entry& entry : m_entries)
+		{
+			const std::string existing_path(GetCoverImagePathForEntry(&entry));
+			if (!existing_path.empty())
+				continue;
+
+			for (const std::string& url_template : url_templates)
+			{
+				std::string url(url_template);
+				if (has_title)
+					StringUtil::ReplaceAll(&url, "${title}", Common::HTTPDownloader::URLEncode(entry.title));
+				if (has_file_title)
+				{
+					std::string display_name(FileSystem::GetDisplayNameFromPath(entry.path));
+					StringUtil::ReplaceAll(&url, "${filetitle}", Common::HTTPDownloader::URLEncode(Path::GetFileTitle(display_name)));
+				}
+				if (has_serial)
+					StringUtil::ReplaceAll(&url, "${serial}", Common::HTTPDownloader::URLEncode(entry.serial));
+
+				download_urls.emplace_back(entry.path, std::move(url));
+			}
+		}
+	}
+	if (download_urls.empty())
+	{
+		progress->DisplayError("No URLs to download enumerated.");
+		return false;
+	}
+
+	std::unique_ptr<Common::HTTPDownloader> downloader(Common::HTTPDownloader::Create());
+	if (!downloader)
+	{
+		progress->DisplayError("Failed to create HTTP downloader.");
+		return false;
+	}
+
+	progress->SetCancellable(true);
+	progress->SetProgressRange(static_cast<u32>(download_urls.size()));
+
+	for (auto& [entry_path, url] : download_urls)
+	{
+		if (progress->IsCancelled())
+			break;
+
+		// make sure it didn't get done already
+		{
+			std::unique_lock lock(s_mutex);
+			const GameList::Entry* entry = GetEntryForPath(entry_path.c_str());
+			if (!entry || !GetCoverImagePathForEntry(entry).empty())
+			{
+				progress->IncrementProgressValue();
+				continue;
+			}
+
+			progress->SetFormattedStatusText("Downloading cover for %s [%s]...", entry->title.c_str(), entry->serial.c_str());
+		}
+
+		// we could actually do a few in parallel here...
+		std::string filename(Common::HTTPDownloader::URLDecode(url));
+		downloader->CreateRequest(std::move(url), [use_serial, &save_callback, entry_path = std::move(entry_path),
+			filename = std::move(filename)](s32 status_code, std::string content_type, Common::HTTPDownloader::Request::Data data) {
+			if (status_code != Common::HTTPDownloader::HTTP_OK || data.empty())
+				return;
+
+			std::unique_lock lock(s_mutex);
+			const GameList::Entry* entry = GetEntryForPath(entry_path.c_str());
+			if (!entry || !GetCoverImagePathForEntry(entry).empty())
+				return;
+
+			// prefer the content type from the response for the extension
+			// otherwise, if it's missing, and the request didn't have an extension.. fall back to jpegs.
+			std::string template_filename;
+			std::string content_type_extension(Common::HTTPDownloader::GetExtensionForContentType(content_type));
+
+			// don't treat the domain name as an extension..
+			const std::string::size_type last_slash = filename.find('/');
+			const std::string::size_type last_dot = filename.find('.');
+			if (!content_type_extension.empty())
+				template_filename = fmt::format("cover.{}", content_type_extension);
+			else if (last_slash != std::string::npos && last_dot != std::string::npos && last_dot > last_slash)
+				template_filename = Path::GetFileName(filename);
+			else
+				template_filename = "cover.jpg";
+
+			std::string write_path(GetNewCoverImagePathForEntry(entry, template_filename.c_str(), use_serial));
+			if (write_path.empty())
+				return;
+
+			if (FileSystem::WriteBinaryFile(write_path.c_str(), data.data(), data.size()) && save_callback)
+				save_callback(entry, std::move(write_path));
+		});
+		downloader->WaitForAllRequests();
+		progress->IncrementProgressValue();
+	}
+
+	return true;
 }
