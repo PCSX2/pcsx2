@@ -17,6 +17,9 @@ target_sources(pcsx2-qt PRIVATE
 	AutoUpdaterDialog.cpp
 	AutoUpdaterDialog.h
 	AutoUpdaterDialog.ui
+	CoverDownloadDialog.cpp
+	CoverDownloadDialog.h
+	CoverDownloadDialog.ui
 	DisplayWidget.cpp
 	DisplayWidget.h
 	EarlyHardwareCheck.cpp
@@ -28,6 +31,8 @@ target_sources(pcsx2-qt PRIVATE
 	QtHost.cpp
 	QtHost.h
 	QtKeyCodes.cpp
+	QtProgressCallback.cpp
+	QtProgressCallback.h
 	QtUtils.cpp
 	QtUtils.h
 	SettingWidgetBinder.h

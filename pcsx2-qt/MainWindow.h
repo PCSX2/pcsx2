@@ -148,6 +148,7 @@ private Q_SLOTS:
 	void onAboutActionTriggered();
 	void onCheckForUpdatesActionTriggered();
 	void onToolsOpenDataDirectoryTriggered();
+	void onToolsCoverDownloaderTriggered();
 	void updateTheme();
 	void onScreenshotActionTriggered();
 	void onSaveGSDumpActionTriggered();

@@ -135,6 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EarlyHardwareCheck.cpp" />
+    <ClCompile Include="QtProgressCallback.cpp" />
     <ClCompile Include="Settings\FolderSettingsWidget.cpp" />
     <ClCompile Include="Tools\InputRecording\NewInputRecordingDlg.cpp" />
     <ClCompile Include="Settings\BIOSSettingsWidget.cpp" />
@@ -165,6 +166,7 @@
     <ClCompile Include="GameList\GameListWidget.cpp" />
     <ClCompile Include="AboutDialog.cpp" />
     <ClCompile Include="AutoUpdaterDialog.cpp" />
+    <ClCompile Include="CoverDownloadDialog.cpp" />
     <ClCompile Include="DisplayWidget.cpp" />
     <ClCompile Include="QtHost.cpp" />
     <ClCompile Include="MainWindow.cpp" />
@@ -193,6 +195,7 @@
     <QtMoc Include="Settings\DEV9DnsHostDialog.h" />
     <QtMoc Include="Settings\DEV9SettingsWidget.h" />
     <QtMoc Include="Settings\DEV9UiCommon.h" />
+    <QtMoc Include="QtProgressCallback.h" />
     <ClInclude Include="Settings\ControllerSettingWidgetBinder.h" />
     <QtMoc Include="Settings\FolderSettingsWidget.h" />
     <ClInclude Include="Settings\HddCreateQt.h" />
@@ -210,6 +213,7 @@
     <ClInclude Include="PrecompiledHeader.h" />
     <QtMoc Include="AboutDialog.h" />
     <QtMoc Include="AutoUpdaterDialog.h" />
+    <QtMoc Include="CoverDownloadDialog.h" />
     <QtMoc Include="MainWindow.h" />
     <QtMoc Include="DisplayWidget.h" />
   </ItemGroup>
@@ -247,9 +251,11 @@
     <ClCompile Include="$(IntDir)GameList\moc_GameListWidget.cpp" />
     <ClCompile Include="$(IntDir)moc_AboutDialog.cpp" />
     <ClCompile Include="$(IntDir)moc_AutoUpdaterDialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_CoverDownloadDialog.cpp" />
     <ClCompile Include="$(IntDir)moc_DisplayWidget.cpp" />
     <ClCompile Include="$(IntDir)moc_MainWindow.cpp" />
     <ClCompile Include="$(IntDir)moc_QtHost.cpp" />
+    <ClCompile Include="$(IntDir)moc_QtProgressCallback.cpp" />
     <ClCompile Include="$(IntDir)Tools\InputRecording\moc_NewInputRecordingDlg.cpp" />
     <ClCompile Include="$(IntDir)qrc_resources.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -326,6 +332,9 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="AutoUpdaterDialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="CoverDownloadDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Tools\InputRecording\NewInputRecordingDlg.ui">

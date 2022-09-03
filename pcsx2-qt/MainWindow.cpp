@@ -40,6 +40,7 @@
 
 #include "AboutDialog.h"
 #include "AutoUpdaterDialog.h"
+#include "CoverDownloadDialog.h"
 #include "DisplayWidget.h"
 #include "GameList/GameListRefreshThread.h"
 #include "GameList/GameListWidget.h"
@@ -291,6 +292,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
 	connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
 	connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
+	connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
 	connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
 	connect(m_ui.actionGridViewZoomIn, &QAction::triggered, m_game_list_widget, [this]() {
 		if (isShowingGameList())
@@ -1493,6 +1495,13 @@ void MainWindow::onToolsOpenDataDirectoryTriggered()
 {
 	const QString path(QString::fromStdString(EmuFolders::DataRoot));
 	QtUtils::OpenURL(this, QUrl::fromLocalFile(path));
+}
+
+void MainWindow::onToolsCoverDownloaderTriggered()
+{
+	CoverDownloadDialog dlg(this);
+	connect(&dlg, &CoverDownloadDialog::coverRefreshRequested, m_game_list_widget, &GameListWidget::refreshGridCovers);
+	dlg.exec();
 }
 
 void MainWindow::updateTheme()

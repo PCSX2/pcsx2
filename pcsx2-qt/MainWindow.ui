@@ -192,6 +192,7 @@
      <addaction name="actionInputRecControllerLogs"/>
     </widget>
     <addaction name="actionOpenDataDirectory"/>
+    <addaction name="actionCoverDownloader"/>
     <addaction name="menuInput_Recording"/>
    </widget>
    <addaction name="menuSystem"/>
@@ -847,6 +848,11 @@
    </property>
    <property name="text">
     <string>Big Picture</string>
+   </property>
+  </action>
+  <action name="actionCoverDownloader">
+   <property name="text">
+    <string>Cover Downloader...</string>
    </property>
   </action>
  </widget>

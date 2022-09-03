@@ -221,6 +221,14 @@
     <ClCompile Include="$(IntDir)Settings\moc_FolderSettingsWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="$(IntDir)moc_CoverDownloadDialog.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="CoverDownloadDialog.cpp" />
+    <ClCompile Include="QtProgressCallback.cpp" />
+    <ClCompile Include="$(IntDir)moc_QtProgressCallback.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -229,7 +237,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PrecompiledHeader.h" />
-    <ClInclude Include="QtHost.h" />
     <ClInclude Include="QtUtils.h" />
     <ClInclude Include="SettingWidgetBinder.h" />
     <ClInclude Include="Settings\HddCreateQt.h">
@@ -325,6 +332,9 @@
     <QtMoc Include="Settings\FolderSettingsWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>
+    <QtMoc Include="QtHost.h" />
+    <QtMoc Include="CoverDownloadDialog.h" />
+    <QtMoc Include="QtProgressCallback.h" />
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">
@@ -409,6 +419,7 @@
     <QtUi Include="Settings\ControllerMacroEditWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
+    <QtUi Include="CoverDownloadDialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Settings\FolderSettingsWidget.ui">

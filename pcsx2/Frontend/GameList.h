@@ -17,6 +17,7 @@
 #include "GameDatabase.h"
 #include "common/Pcsx2Defs.h"
 #include <ctime>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -124,5 +125,10 @@ namespace GameList
 
 	std::string GetCoverImagePathForEntry(const Entry* entry);
 	std::string GetCoverImagePath(const std::string& path, const std::string& code, const std::string& title);
-	std::string GetNewCoverImagePathForEntry(const Entry* entry, const char* new_filename);
+	std::string GetNewCoverImagePathForEntry(const Entry* entry, const char* new_filename, bool use_serial = false);
+
+	/// Downloads covers using the specified URL templates. By default, covers are saved by title, but this can be changed with
+	/// the use_serial parameter. save_callback optionall takes the entry and the path the new cover is saved to.
+	bool DownloadCovers(const std::vector<std::string>& url_templates, bool use_serial = false, ProgressCallback* progress = nullptr,
+		std::function<void(const Entry*, std::string)> save_callback = {});
 } // namespace GameList
