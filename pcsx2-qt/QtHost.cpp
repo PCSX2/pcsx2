@@ -52,6 +52,7 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QClipboard>
+#include <QtGui/QInputMethod>
 
 #include "DisplayWidget.h"
 #include "GameList/GameListWidget.h"
@@ -1403,6 +1404,20 @@ bool Host::CopyTextToClipboard(const std::string_view& text)
 			clipboard->setText(text);
 	});
 	return true;
+}
+
+void Host::BeginTextInput()
+{
+	QInputMethod* method = qApp->inputMethod();
+	if (method)
+		QMetaObject::invokeMethod(method, "show", Qt::QueuedConnection);
+}
+
+void Host::EndTextInput()
+{
+	QInputMethod* method = qApp->inputMethod();
+	if (method)
+		QMetaObject::invokeMethod(method, "hide", Qt::QueuedConnection);
 }
 
 void Host::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
