@@ -664,7 +664,7 @@ void cdvdReadKey(u8 arg0, u16 arg1, u32 arg2, u8* key)
 
 	if (!DiscSerial.empty())
 	{
-		DevCon.WriteLn(Color_Green, "DiscSerial = %s, arg0=0x%x, arg1=0x%x, arg2=%d", DiscSerial, arg0, arg1, arg2);
+		DevCon.WriteLn(Color_Green, "DiscSerial = %s, arg0=0x%x, arg1=0x%x, arg2=%d", DiscSerial.c_str(), arg0, arg1, arg2);
 		// convert the number characters to a real 32 bit number
 		numbers = StringUtil::FromChars<s32>(std::string_view(DiscSerial).substr(5, 5)).value_or(0);
 
@@ -714,7 +714,7 @@ void cdvdReadKey(u8 arg0, u16 arg1, u32 arg2, u8* key)
 			}
 			else
 			{
-				Console.Warning("cdvdReadKey : Unknown cdvdOffset for %s", DiscSerial);
+				Console.Warning("cdvdReadKey : Unknown cdvdOffset for %s", DiscSerial.c_str());
 				// DVD Player Version 2.10 (Australia) [PBPX-95209]
 				// 0x0001F2F707 = sector 0x0001F2F7  dec 0x07 / 127735
 				key[0] = 0x07; // SUB_ID[0]
