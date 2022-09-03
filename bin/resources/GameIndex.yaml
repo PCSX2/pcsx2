@@ -13435,6 +13435,11 @@ SLES-52219:
   name: "Corvette"
   region: "PAL-M3"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 1 # Increases FPS drastically.
+    MTVUSpeedHack: 0
+  gsHWFixes:
+    halfPixelOffset: 3 # Reduces ghosting.
 SLES-52230:
   name: "Muppets Party Cruise"
   region: "PAL-E-F"
@@ -41918,9 +41923,14 @@ SLUS-20857:
   region: "NTSC-U"
   compat: 5
 SLUS-20858:
-  name: "Corvette 50th Anniversary"
+  name: "Corvette"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 1 # Increases FPS drastically.
+    MTVUSpeedHack: 0
+  gsHWFixes:
+    halfPixelOffset: 3 # Reduces ghosting.
 SLUS-20859:
   name: "Future Tactics - The Uprising"
   region: "NTSC-U"
