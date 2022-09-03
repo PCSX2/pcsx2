@@ -82,6 +82,7 @@ static Common::Timer s_last_render_time;
 // cached copies of WantCaptureKeyboard/Mouse, used to know when to dispatch events
 static std::atomic_bool s_imgui_wants_keyboard{false};
 static std::atomic_bool s_imgui_wants_mouse{false};
+static std::atomic_bool s_imgui_wants_text{false};
 
 // mapping of host key -> imgui key
 static std::unordered_map<u32, ImGuiKey> s_imgui_key_map;
@@ -225,6 +226,16 @@ void ImGuiManager::NewFrame()
 	ImGui::GetCurrentWindowRead()->Flags |= ImGuiWindowFlags_NoNavInputs;
 	s_imgui_wants_keyboard.store(io.WantCaptureKeyboard, std::memory_order_relaxed);
 	s_imgui_wants_mouse.store(io.WantCaptureMouse, std::memory_order_release);
+
+	const bool want_text_input = io.WantTextInput;
+	if (s_imgui_wants_text.load(std::memory_order_relaxed) != want_text_input)
+	{
+		s_imgui_wants_text.store(want_text_input, std::memory_order_release);
+		if (want_text_input)
+			Host::BeginTextInput();
+		else
+			Host::EndTextInput();
+	}
 #endif
 }
 
@@ -875,12 +886,12 @@ ImFont* ImGuiManager::GetLargeFont()
 
 bool ImGuiManager::WantsTextInput()
 {
-	return s_imgui_wants_keyboard.load(std::memory_order_acquire);
+	return s_imgui_wants_text.load(std::memory_order_acquire);
 }
 
 void ImGuiManager::AddTextInput(std::string str)
 {
-	if (!s_imgui_wants_keyboard.load(std::memory_order_acquire))
+	if (!s_imgui_wants_text.load(std::memory_order_acquire))
 		return;
 
 	// Has to go through the CPU -> GS thread :(
