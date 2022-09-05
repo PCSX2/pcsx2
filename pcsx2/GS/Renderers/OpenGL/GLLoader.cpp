@@ -152,6 +152,7 @@ namespace GLLoader
 	// DX11 GPU
 	bool found_GL_ARB_gpu_shader5 = false;             // Require IvyBridge
 	bool found_GL_ARB_shader_image_load_store = false; // Intel IB. Nvidia/AMD miss Mesa implementation.
+	bool found_GL_ARB_texture_barrier = false;
 
 	static bool mandatory(const std::string& ext)
 	{
@@ -273,7 +274,7 @@ namespace GLLoader
 			optional("GL_ARB_direct_state_access");
 			// Mandatory for the advance HW renderer effect. Unfortunately Mesa LLVMPIPE/SWR renderers doesn't support this extension.
 			// Rendering might be corrupted but it could be good enough for test/virtual machine.
-			optional("GL_ARB_texture_barrier");
+			found_GL_ARB_texture_barrier = optional("GL_ARB_texture_barrier");
 
 			has_dual_source_blend = GLAD_GL_VERSION_3_2 || GLAD_GL_ARB_blend_func_extended;
 			found_framebuffer_fetch = GLAD_GL_EXT_shader_framebuffer_fetch || GLAD_GL_ARM_shader_framebuffer_fetch;

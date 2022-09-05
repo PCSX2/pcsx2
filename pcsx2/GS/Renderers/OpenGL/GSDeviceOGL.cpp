@@ -218,7 +218,12 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 	m_features.broken_point_sampler = GLLoader::vendor_id_amd;
 	m_features.geometry_shader = GLLoader::found_geometry_shader;
 	m_features.image_load_store = GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture;
-	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0 || GLLoader::found_framebuffer_fetch;
+	if (GSConfig.OverrideTextureBarriers == 0)
+		m_features.texture_barrier = GLLoader::found_framebuffer_fetch; // Force Disabled
+	else if (GSConfig.OverrideTextureBarriers == 1)
+		m_features.texture_barrier = true; // Force Enabled
+	else
+		m_features.texture_barrier = GLLoader::found_framebuffer_fetch || GLLoader::found_GL_ARB_texture_barrier;
 	m_features.provoking_vertex_last = true;
 	m_features.dxt_textures = GLAD_GL_EXT_texture_compression_s3tc;
 	m_features.bptc_textures = GLAD_GL_VERSION_4_2 || GLAD_GL_ARB_texture_compression_bptc || GLAD_GL_EXT_texture_compression_bptc;
@@ -1849,6 +1854,8 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		GLState::scissor = config.scissor;
 	}
 
+	GSVector2i rtsize = (config.rt ? config.rt : config.ds)->GetSize();
+
 	// Destination Alpha Setup
 	switch (config.destination_alpha)
 	{
@@ -1859,8 +1866,12 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			InitPrimDateTexture(config.rt, config.drawarea);
 			break;
 		case GSHWDrawConfig::DestinationAlphaMode::StencilOne:
-			ClearStencil(config.ds, 1);
-			break;
+			if (m_features.texture_barrier)
+			{
+				ClearStencil(config.ds, 1);
+				break;
+			}
+			[[fallthrough]];
 		case GSHWDrawConfig::DestinationAlphaMode::Stencil:
 		{
 			const GSVector4 src = GSVector4(config.drawarea) / GSVector4(config.ds->GetSize()).xyxy();
@@ -1877,10 +1888,10 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 
 	GSTexture* hdr_rt = nullptr;
+	GSTexture* draw_rt_clone = nullptr;
 	if (config.ps.hdr)
 	{
-		GSVector2i size = config.rt->GetSize();
-		hdr_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::FloatColor, false);
+		hdr_rt = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::FloatColor, false);
 		OMSetRenderTargets(hdr_rt, config.ds, &config.scissor);
 
 		// save blend state, since BlitRect destroys it
@@ -1891,6 +1902,15 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			GLState::blend = old_blend;
 			glEnable(GL_BLEND);
 		}
+	}
+	else if (config.require_one_barrier && !m_features.texture_barrier)
+	{
+		// Requires a copy of the RT
+		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, false, GSTexture::Format::Color, false);
+		GL_PUSH("Copy RT to temp texture for fbmask {%d,%d %dx%d}",
+			config.drawarea.left, config.drawarea.top,
+			config.drawarea.width(), config.drawarea.height());
+		CopyRect(config.rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
 	}
 
 	BeginScene();
@@ -1907,8 +1927,10 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	IASetPrimitiveTopology(topology);
 
 	PSSetShaderResources(config.tex, config.pal);
-	// Always bind the RT. This way special effect can use it.
-	PSSetShaderResource(2, config.rt);
+	if (draw_rt_clone)
+		PSSetShaderResource(2, draw_rt_clone);
+	else if (config.require_one_barrier || config.require_full_barrier)
+		PSSetShaderResource(2, config.rt);
 
 	SetupSampler(config.sampler);
 	OMSetBlendState(config.blend.enable, s_gl_blend_factors[config.blend.src_factor],
@@ -2043,6 +2065,8 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
 		RecycleDateTexture();
+	if (draw_rt_clone)
+		Recycle(draw_rt_clone);
 
 	EndScene();
 
@@ -2091,7 +2115,7 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool needs_barrier)
 	}
 
 	const bool tex_is_ds = config.tex && config.tex == config.ds;
-	if (needs_barrier || tex_is_ds)
+	if ((needs_barrier && m_features.texture_barrier) || tex_is_ds)
 	{
 		if (config.require_full_barrier)
 		{
