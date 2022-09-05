@@ -21,6 +21,10 @@
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
+#define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_CLR_HW > 3)
+#define PS_PRIMID_INIT (PS_DATE == 1 || PS_DATE == 2)
+#define NEEDS_RT_EARLY (PS_TEX_IS_FB == 1 || PS_DATE >= 5)
+#define NEEDS_RT (NEEDS_RT_EARLY || (!PS_PRIMID_INIT && (PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW)))
 
 #ifdef FRAGMENT_SHADER
 
@@ -42,7 +46,7 @@ in SHADER
 #define TARGET_0_QUALIFIER out
 
 // Only enable framebuffer fetch when we actually need it.
-#if HAS_FRAMEBUFFER_FETCH && (PS_TEX_IS_FB == 1 || PS_FBMASK || SW_BLEND_NEEDS_RT || PS_DATE != 0)
+#if HAS_FRAMEBUFFER_FETCH && NEEDS_RT
   // We need to force the colour to be defined here, to read from it.
   // Basically the only scenario where this'll happen is RGBA masked and DATE is active.
   #undef PS_NO_COLOR
@@ -66,7 +70,7 @@ in SHADER
 
 layout(binding = 1) uniform sampler2D PaletteSampler;
 
-#if !HAS_FRAMEBUFFER_FETCH
+#if !HAS_FRAMEBUFFER_FETCH && NEEDS_RT
 layout(binding = 2) uniform sampler2D RtSampler; // note 2 already use by the image below
 #endif
 
@@ -101,14 +105,21 @@ layout(early_fragment_tests) in;
 // use basic stencil
 #endif
 
-vec4 sample_c(vec2 uv)
+vec4 fetch_rt()
 {
-#if PS_TEX_IS_FB == 1
-#if HAS_FRAMEBUFFER_FETCH
+#if !NEEDS_RT
+    return vec4(0.0);
+#elif HAS_FRAMEBUFFER_FETCH
     return LAST_FRAG_COLOR;
 #else
     return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
 #endif
+}
+
+vec4 sample_c(vec2 uv)
+{
+#if PS_TEX_IS_FB == 1
+    return fetch_rt();
 #else
 
 #if PS_POINT_SAMPLER
@@ -263,11 +274,7 @@ mat4 sample_4p(vec4 u)
 int fetch_raw_depth()
 {
 #if PS_TEX_IS_FB == 1
-#if HAS_FRAMEBUFFER_FETCH
-    return int(LAST_FRAG_COLOR.r * exp2(32.0f));
-#else
-    return int(texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).r * exp2(32.0f));
-#endif
+    return int(fetch_rt().r * exp2(32.0f));
 #else
     return int(texelFetch(TextureSampler, ivec2(gl_FragCoord.xy), 0).r * exp2(32.0f));
 #endif
@@ -276,11 +283,7 @@ int fetch_raw_depth()
 vec4 fetch_raw_color()
 {
 #if PS_TEX_IS_FB == 1
-#if HAS_FRAMEBUFFER_FETCH
-    return LAST_FRAG_COLOR;
-#else
-    return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
-#endif
+    return fetch_rt();
 #else
     return texelFetch(TextureSampler, ivec2(gl_FragCoord.xy), 0);
 #endif
@@ -640,11 +643,7 @@ void ps_fbmask(inout vec4 C)
 {
     // FIXME do I need special case for 16 bits
 #if PS_FBMASK
-#if HAS_FRAMEBUFFER_FETCH
-    vec4 RT = trunc(LAST_FRAG_COLOR * 255.0f + 0.1f);
-#else
-    vec4 RT = trunc(texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0) * 255.0f + 0.1f);
-#endif
+    vec4 RT = trunc(fetch_rt() * 255.0f + 0.1f);
     C = vec4((uvec4(C) & ~FbMask) | (uvec4(RT) & FbMask));
 #endif
 }
@@ -703,12 +702,7 @@ void ps_blend(inout vec4 Color, inout float As)
     vec3 Cs = Color.rgb;
 
 #if SW_BLEND_NEEDS_RT
-#if HAS_FRAMEBUFFER_FETCH
-    vec4 RT = trunc(LAST_FRAG_COLOR * 255.0f + 0.1f);
-#else
-    vec4 RT = trunc(texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0) * 255.0f + 0.1f);
-#endif
-
+    vec4 RT = trunc(fetch_rt() * 255.0f + 0.1f);
     // FIXME FMT_16 case
     // FIXME Ad or Ad * 2?
     float Ad = RT.a / 128.0f;
@@ -825,17 +819,9 @@ void ps_main()
 
 #if PS_WRITE_RG == 1
     // Pseudo 16 bits access.
-#if HAS_FRAMEBUFFER_FETCH
-    float rt_a = LAST_FRAG_COLOR.g;
+    float rt_a = fetch_rt().g;
 #else
-    float rt_a = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).g;
-#endif
-#else
-#if HAS_FRAMEBUFFER_FETCH
-    float rt_a = LAST_FRAG_COLOR.a;
-#else
-    float rt_a = texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0).a;
-#endif
+    float rt_a = fetch_rt().a;
 #endif
 
 #if (PS_DATE & 3) == 1
@@ -932,12 +918,8 @@ void ps_main()
    C.a = 128.0f;
 #endif
 
-#if (PS_BLEND_C == 1 && PS_CLR_HW > 3)
-#if HAS_FRAMEBUFFER_FETCH
-    vec4 RT = trunc(LAST_FRAG_COLOR * 255.0f + 0.1f);
-#else
-    vec4 RT = trunc(texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0) * 255.0f + 0.1f);
-#endif
+#if SW_AD_TO_HW
+    vec4 RT = trunc(fetch_rt() * 255.0f + 0.1f);
     float alpha_blend = RT.a / 128.0f;
 #else
     float alpha_blend = C.a / 128.0f;
