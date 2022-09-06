@@ -33,6 +33,7 @@
 #include <limits>
 
 static bool IsDATMConvertShader(ShaderConvert i) { return (i == ShaderConvert::DATM_0 || i == ShaderConvert::DATM_1); }
+static bool IsDATEModePrimIDInit(u32 flag) { return flag == 1 || flag == 2; }
 
 static D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE GetLoadOpForTexture(GSTexture12* tex)
 {
@@ -192,7 +193,7 @@ bool GSDevice12::CheckFeatures()
 	m_features.texture_barrier = false;
 	m_features.broken_point_sampler = isAMD;
 	m_features.geometry_shader = true;
-	m_features.image_load_store = true;
+	m_features.primitive_id = true;
 	m_features.prefer_new_textures = true;
 	m_features.provoking_vertex_last = false;
 	m_features.point_expand = false;
@@ -1505,6 +1506,7 @@ const ID3DBlob* GSDevice12::GetTFXGeometryShader(GSHWDrawConfig::GSSelector sel)
 	sm.AddMacro("GS_IIP", sel.iip);
 	sm.AddMacro("GS_PRIM", static_cast<int>(sel.topology));
 	sm.AddMacro("GS_EXPAND", sel.expand);
+	sm.AddMacro("GS_FORWARD_PRIMID", sel.forward_primid);
 
 	ComPtr<ID3DBlob> gs(m_shader_cache.GetGeometryShader(m_tfx_source, sm.GetPtr(), "gs_main"));
 	it = m_tfx_geometry_shaders.emplace(sel.key, std::move(gs)).first;
@@ -1601,8 +1603,9 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	if (p.rt)
 	{
 		gpb.SetRenderTarget(0,
-			(p.ps.date >= 10) ? DXGI_FORMAT_R32_FLOAT :
-                                (p.ps.hdr ? DXGI_FORMAT_R32G32B32A32_FLOAT : DXGI_FORMAT_R8G8B8A8_UNORM));
+			IsDATEModePrimIDInit(p.ps.date) ? DXGI_FORMAT_R32_FLOAT :
+			p.ps.hdr                        ? DXGI_FORMAT_R32G32B32A32_FLOAT :
+			                                  DXGI_FORMAT_R8G8B8A8_UNORM);
 	}
 	if (p.ds)
 		gpb.SetDepthStencilFormat(DXGI_FORMAT_D32_FLOAT_S8X24_UINT);
@@ -1642,7 +1645,7 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	}
 
 	// Blending
-	if (p.ps.date >= 10)
+	if (IsDATEModePrimIDInit(p.ps.date))
 	{
 		// image DATE prepass
 		gpb.SetBlendState(0, true, D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_MIN, D3D12_BLEND_ONE,
@@ -2406,7 +2409,6 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 	init_pipe.bs = {};
 	init_pipe.rt = true;
 	init_pipe.ps.blend_a = init_pipe.ps.blend_b = init_pipe.ps.blend_c = init_pipe.ps.blend_d = false;
-	init_pipe.ps.date += 10;
 	init_pipe.ps.no_color = false;
 	init_pipe.ps.no_color1 = true;
 	if (BindDrawPipeline(init_pipe))

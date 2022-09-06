@@ -450,6 +450,8 @@ namespace Vulkan
 			SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
 		m_optional_extensions.vk_arm_rasterization_order_attachment_access =
 			SupportsExtension(VK_ARM_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
+		m_optional_extensions.vk_khr_fragment_shader_barycentric =
+			SupportsExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME, false);
 
 		return true;
 	}

@@ -217,7 +217,7 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 	// optional features based on context
 	m_features.broken_point_sampler = GLLoader::vendor_id_amd;
 	m_features.geometry_shader = GLLoader::found_geometry_shader;
-	m_features.image_load_store = GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture;
+	m_features.primitive_id = true;
 	if (GSConfig.OverrideTextureBarriers == 0)
 		m_features.texture_barrier = GLLoader::found_framebuffer_fetch; // Force Disabled
 	else if (GSConfig.OverrideTextureBarriers == 1)
@@ -353,21 +353,23 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 		}
 	}
 
+	// these all share the same vertex shader
+	const auto convert_glsl = Host::ReadResourceFileToString("shaders/opengl/convert.glsl");
+	if (!convert_glsl.has_value())
+	{
+		Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/convert.glsl.");
+		return false;
+	}
+
 	// ****************************************************************
 	// convert
 	// ****************************************************************
 	{
 		GL_PUSH("GSDeviceOGL::Convert");
 
-		// these all share the same vertex shader
-		const auto shader = Host::ReadResourceFileToString("shaders/opengl/convert.glsl");
-		if (!shader.has_value())
-		{
-			Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/convert.glsl.");
-			return false;
-		}
 
-		m_convert.vs = GetShaderSource("vs_main", GL_VERTEX_SHADER, m_shader_common_header, *shader, {});
+
+		m_convert.vs = GetShaderSource("vs_main", GL_VERTEX_SHADER, m_shader_common_header, *convert_glsl, {});
 
 		for (size_t i = 0; i < std::size(m_convert.ps); i++)
 		{
@@ -375,7 +377,7 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 			const std::string macro_sel = (static_cast<ShaderConvert>(i) == ShaderConvert::RGBA_TO_8I) ?
                                               StringUtil::StdStringFromFormat("#define PS_SCALE_FACTOR %d\n", GSConfig.UpscaleMultiplier) :
                                               std::string();
-			const std::string ps(GetShaderSource(name, GL_FRAGMENT_SHADER, m_shader_common_header, *shader, macro_sel));
+			const std::string ps(GetShaderSource(name, GL_FRAGMENT_SHADER, m_shader_common_header, *convert_glsl, macro_sel));
 			if (!m_shader_cache.GetProgram(&m_convert.ps[i], m_convert.vs, {}, ps))
 				return false;
 			m_convert.ps[i].SetFormattedName("Convert pipe %s", name);
@@ -527,6 +529,15 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 		m_date.dss = new GSDepthStencilOGL();
 		m_date.dss->EnableStencil();
 		m_date.dss->SetStencil(GL_ALWAYS, GL_REPLACE);
+
+		for (size_t i = 0; i < std::size(m_date.primid_ps); i++)
+		{
+			const std::string ps(GetShaderSource(
+				StringUtil::StdStringFromFormat("ps_stencil_image_init_%d", i),
+				GL_FRAGMENT_SHADER, m_shader_common_header, *convert_glsl, {}));
+			m_shader_cache.GetProgram(&m_date.primid_ps[i], m_convert.vs, {}, ps);
+			m_date.primid_ps[i].SetFormattedName("PrimID Destination Alpha Init %d", i);
+		}
 	}
 
 	// ****************************************************************
@@ -803,41 +814,26 @@ void GSDeviceOGL::ClearDepth(GSTexture* t)
 
 	GL_PUSH("Clear Depth %d", T->GetID());
 
-	if (0 && GLLoader::found_GL_ARB_clear_texture)
-	{
-		// I don't know what the driver does but it creates
-		// some slowdowns on Harry Potter PS
-		// Maybe it triggers some texture relocations, or maybe
-		// it clears also the stencil value (2 times slower)
-		//
-		// Let's disable this code for the moment.
+	OMSetFBO(m_fbo);
+	// RT must be detached, if RT is too small, depth won't be fully cleared
+	// AT tolenico 2 map clip bug
+	OMAttachRt(NULL);
+	OMAttachDs(T);
 
-		// Don't bother with Depth_Stencil insanity
-		T->Clear(NULL);
+	// TODO: check size of scissor before toggling it
+	glDisable(GL_SCISSOR_TEST);
+	const float c = 0.0f;
+	if (GLState::depth_mask)
+	{
+		glClearBufferfv(GL_DEPTH, 0, &c);
 	}
 	else
 	{
-		OMSetFBO(m_fbo);
-		// RT must be detached, if RT is too small, depth won't be fully cleared
-		// AT tolenico 2 map clip bug
-		OMAttachRt(NULL);
-		OMAttachDs(T);
-
-		// TODO: check size of scissor before toggling it
-		glDisable(GL_SCISSOR_TEST);
-		const float c = 0.0f;
-		if (GLState::depth_mask)
-		{
-			glClearBufferfv(GL_DEPTH, 0, &c);
-		}
-		else
-		{
-			glDepthMask(true);
-			glClearBufferfv(GL_DEPTH, 0, &c);
-			glDepthMask(false);
-		}
-		glEnable(GL_SCISSOR_TEST);
+		glDepthMask(true);
+		glClearBufferfv(GL_DEPTH, 0, &c);
+		glDepthMask(false);
 	}
+	glEnable(GL_SCISSOR_TEST);
 }
 
 void GSDeviceOGL::ClearStencil(GSTexture* t, u8 c)
@@ -938,39 +934,15 @@ GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
 	return dss;
 }
 
-void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area)
+GSTexture* GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area, bool datm)
 {
 	const GSVector2i& rtsize = rt->GetSize();
 
-	// Create a texture to avoid the useless clean@0
-	if (m_date.t == NULL)
-		m_date.t = CreateTexture(rtsize.x, rtsize.y, false, GSTexture::Format::PrimID);
+	GSTexture* tex = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::PrimID, false);
 
-	// Clean with the max signed value
-	const int max_int = 0x7FFFFFFF;
-	static_cast<GSTextureOGL*>(m_date.t)->Clear(&max_int, area);
-
-	glBindImageTexture(3, static_cast<GSTextureOGL*>(m_date.t)->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
-#ifdef ENABLE_OGL_DEBUG
-	// Help to see the texture in apitrace
-	PSSetShaderResource(3, m_date.t);
-#endif
-}
-
-void GSDeviceOGL::RecycleDateTexture()
-{
-	if (m_date.t)
-	{
-		//static_cast<GSTextureOGL*>(m_date.t)->Save(format("/tmp/date_adv_%04ld.csv", GSState::s_n));
-
-		Recycle(m_date.t);
-		m_date.t = NULL;
-	}
-}
-
-void GSDeviceOGL::Barrier(GLbitfield b)
-{
-	glMemoryBarrier(b);
+	GL_PUSH("PrimID Destination Alpha Clear");
+	StretchRect(rt, GSVector4(area) / GSVector4(rtsize).xyxy(), tex, GSVector4(area), m_date.primid_ps[datm], false);
+	return tex;
 }
 
 std::string GSDeviceOGL::GetShaderSource(const std::string_view& entry, GLenum type, const std::string_view& common_header, const std::string_view& glsl_h_code, const std::string_view& macro_sel)
@@ -999,16 +971,6 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view& entry, GLenum typ
 
 	if (GLLoader::found_GL_ARB_gpu_shader5)
 		header += "#extension GL_ARB_gpu_shader5 : enable\n";
-
-	if (GLLoader::found_GL_ARB_shader_image_load_store)
-	{
-		// Need GL version 420
-		header += "#extension GL_ARB_shader_image_load_store: require\n";
-	}
-	else
-	{
-		header += "#define DISABLE_GL42_image\n";
-	}
 
 	if (m_features.framebuffer_fetch)
 		header += "#define HAS_FRAMEBUFFER_FETCH 1\n";
@@ -1856,6 +1818,8 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	GSVector2i rtsize = (config.rt ? config.rt : config.ds)->GetSize();
 
+	GSTexture* primid_texture = nullptr;
+
 	// Destination Alpha Setup
 	switch (config.destination_alpha)
 	{
@@ -1863,7 +1827,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		case GSHWDrawConfig::DestinationAlphaMode::Full:
 			break; // No setup
 		case GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking:
-			InitPrimDateTexture(config.rt, config.drawarea);
+			primid_texture = InitPrimDateTexture(config.rt, config.drawarea, config.datm);
 			break;
 		case GSHWDrawConfig::DestinationAlphaMode::StencilOne:
 			if (m_features.texture_barrier)
@@ -1933,11 +1897,6 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		PSSetShaderResource(2, config.rt);
 
 	SetupSampler(config.sampler);
-	OMSetBlendState(config.blend.enable, s_gl_blend_factors[config.blend.src_factor],
-		s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
-		config.blend.constant_enable, config.blend.constant);
-	OMSetColorMaskState(config.colormask);
-	SetupOM(config.depth);
 
 	if (m_vs_cb_cache.Update(config.cb_vs))
 	{
@@ -1983,35 +1942,32 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
 	{
-		GL_PUSH("Date GL42");
-		// It could be good idea to use stencil in the same time.
-		// Early stencil test will reduce the number of atomic-load operation
+		GL_PUSH("Destination Alpha PrimID Init");
 
-		// Create an r32i image that will contain primitive ID
-		// Note: do it at the beginning because the clean will dirty the FBO state
-		//dev->InitPrimDateTexture(rtsize.x, rtsize.y);
+		OMSetRenderTargets(primid_texture, config.ds, &config.scissor);
+		OMColorMaskSelector mask;
+		mask.wrgba = 0;
+		mask.wr = true;
+		OMSetColorMaskState(mask);
+		OMSetBlendState(true, GL_ONE, GL_ONE, GL_MIN);
+		OMDepthStencilSelector dss = config.depth;
+		dss.zwe = 0; // Don't write depth
+		SetupOM(dss);
 
-		// I don't know how much is it legal to mount rt as Texture/RT. No write is done.
-		// In doubt let's detach RT.
-		OMSetRenderTargets(NULL, config.ds, &config.scissor);
-
-		// Don't write anything on the color buffer
-		// Neither in the depth buffer
-		glDepthMask(false);
 		// Compute primitiveID max that pass the date test (Draw without barrier)
 		DrawIndexedPrimitive();
-
-		// Ask PS to discard shader above the primitiveID max
-		glDepthMask(GLState::depth_mask);
 
 		psel.ps.date = 3;
 		config.alpha_second_pass.ps.date = 3;
 		SetupPipeline(psel);
-
-		// Be sure that first pass is finished !
-		Barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+		PSSetShaderResource(3, primid_texture);
 	}
 
+	OMSetBlendState(config.blend.enable, s_gl_blend_factors[config.blend.src_factor],
+		s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
+		config.blend.constant_enable, config.blend.constant);
+	OMSetColorMaskState(config.colormask);
+	SetupOM(config.depth);
 	OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
 
 	SendHWDraw(config, psel.ps.IsFeedbackLoop());
@@ -2063,8 +2019,8 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
-		RecycleDateTexture();
+	if (primid_texture)
+		Recycle(primid_texture);
 	if (draw_rt_clone)
 		Recycle(draw_rt_clone);
 

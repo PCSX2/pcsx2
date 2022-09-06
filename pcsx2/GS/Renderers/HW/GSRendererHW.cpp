@@ -3452,22 +3452,19 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 				GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
 				DATE_one = true;
 			}
-			else if ((m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 50) || (m_index.tail < 100))
+			else if (features.texture_barrier && ((m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 50) || (m_index.tail < 100)))
 			{
 				// texture barrier will split the draw call into n draw call. It is very efficient for
 				// few primitive draws. Otherwise it sucks.
 				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				if (features.texture_barrier)
-				{
-					m_conf.require_full_barrier = true;
-					DATE_BARRIER = true;
-				}
+				m_conf.require_full_barrier = true;
+				DATE_BARRIER = true;
 			}
 			else if (GSConfig.AccurateDATE)
 			{
 				// Note: Fast level (DATE_one) was removed as it's less accurate.
 				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				if (features.image_load_store)
+				if (features.primitive_id)
 				{
 					DATE_PRIMID = true;
 				}
@@ -3592,12 +3589,14 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		m_conf.depth.date = 1;
 		m_conf.depth.date_one = 1;
 	}
+	else if (DATE_PRIMID)
+	{
+		m_conf.ps.date = 1 + m_context->TEST.DATM;
+		m_conf.gs.forward_primid = 1;
+	}
 	else if (DATE)
 	{
-		if (DATE_PRIMID)
-			m_conf.ps.date = 1 + m_context->TEST.DATM;
-		else
-			m_conf.depth.date = 1;
+		m_conf.depth.date = 1;
 	}
 
 	m_conf.ps.fba = m_context->FBA.FBA;

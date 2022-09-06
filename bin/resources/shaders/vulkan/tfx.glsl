@@ -113,6 +113,9 @@ layout(location = 0) out GSOutput
 
 void WriteVertex(vec4 pos, vec4 t, vec4 ti, vec4 c)
 {
+#if GS_FORWARD_PRIMID
+	gl_PrimitiveID = gl_PrimitiveIDIn;
+#endif
 	gl_Position = pos;
 	gsOut.t = t;
 	gsOut.ti = ti;
@@ -348,7 +351,7 @@ void main()
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1)
 
-#define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || PS_FBMASK || SW_BLEND_NEEDS_RT || (PS_DATE < 10 && (((PS_DATE & 3) == 1 || (PS_DATE & 3) == 2))))
+#define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || PS_FBMASK || SW_BLEND_NEEDS_RT || (PS_DATE >= 5))
 
 layout(std140, set = 0, binding = 1) uniform cb1
 {
@@ -1110,10 +1113,6 @@ void ps_blend(inout vec4 Color, inout float As)
 	#endif
 }
 
-#if PS_DATE == 1 || PS_DATE == 2 || PS_DATE == 11 || PS_DATE == 12
-layout(early_fragment_tests) in;
-#endif
-
 void main()
 {
 #if PS_SCANMSK & 2
@@ -1121,7 +1120,7 @@ void main()
  	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))
 		discard;
 #endif
-#if PS_DATE < 10 && (((PS_DATE & 3) == 1 || (PS_DATE & 3) == 2))
+#if PS_DATE >= 5
 
 #if PS_WRITE_RG == 1
   // Pseudo 16 bits access.
@@ -1139,15 +1138,10 @@ void main()
 #endif
 
   if (bad) {
-#if PS_DATE >= 5
     discard;
-#else
-    // imageStore(img_prim_min, ivec2(gl_FragCoord.xy), ivec4(-1));
-    return;
-#endif
   }
 
-#endif		// PS_DATE < 10 && (((PS_DATE & 3) == 1 || (PS_DATE & 3) == 2))
+#endif		// PS_DATE >= 5
 
 #if PS_DATE == 3
   int stencil_ceil = int(texelFetch(PrimMinTexture, ivec2(gl_FragCoord.xy), 0).r);
@@ -1208,13 +1202,13 @@ void main()
 #endif
 
   // Get first primitive that will write a failling alpha value
-#if PS_DATE == 1 || PS_DATE == 11
+#if PS_DATE == 1
 
   // DATM == 0
   // Pixel with alpha equal to 1 will failed (128-255)
 	o_col0 = (C.a > 127.5f) ? vec4(gl_PrimitiveID) : vec4(0x7FFFFFFF);
 
-#elif PS_DATE == 2 || PS_DATE == 12
+#elif PS_DATE == 2
 
   // DATM == 1
   // Pixel with alpha equal to 0 will failed (0-127)
