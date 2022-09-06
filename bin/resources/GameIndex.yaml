@@ -5750,6 +5750,8 @@ SCPS-15113:
 SCPS-15114:
   name: "Soukou Kihei Armodyne"
   region: "NTSC-J"
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes bad graphics.
 SCPS-15115:
   name: "Saru Get You - Million Monkeys"
   region: "NTSC-J"
