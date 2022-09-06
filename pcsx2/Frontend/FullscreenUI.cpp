@@ -2918,7 +2918,8 @@ void FullscreenUI::ResetControllerSettings()
 {
 	SettingsInterface* dsi = GetEditingSettingsInterface();
 
-	PAD::SetDefaultConfig(*dsi);
+	PAD::SetDefaultControllerConfig(*dsi);
+	PAD::SetDefaultHotkeyConfig(*dsi);
 	ShowToast(std::string(), "Controller settings reset to default.");
 }
 
