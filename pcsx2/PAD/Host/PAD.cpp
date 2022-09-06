@@ -290,7 +290,7 @@ const char* PAD::GetDefaultPadType(u32 pad)
 	return (pad == 0) ? "DualShock2" : "None";
 }
 
-void PAD::SetDefaultConfig(SettingsInterface& si)
+void PAD::SetDefaultControllerConfig(SettingsInterface& si)
 {
 	si.ClearSection("InputSources");
 	si.ClearSection("Hotkeys");
@@ -324,7 +324,10 @@ void PAD::SetDefaultConfig(SettingsInterface& si)
 	// PCSX2 Controller Settings - Controller 1 / Controller 2 / ...
 	// Use the automapper to set this up.
 	MapController(si, 0, InputManager::GetGenericBindingMapping("Keyboard"));
+}
 
+void PAD::SetDefaultHotkeyConfig(SettingsInterface& si)
+{
 	// PCSX2 Controller Settings - Hotkeys
 
 	// PCSX2 Controller Settings - Hotkeys - General

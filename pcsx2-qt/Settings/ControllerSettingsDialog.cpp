@@ -206,7 +206,8 @@ void ControllerSettingsDialog::onRestoreDefaultsClicked()
 	// actually restore it
 	{
 		auto lock = Host::GetSettingsLock();
-		PAD::SetDefaultConfig(*Host::Internal::GetBaseSettingsLayer());
+		PAD::SetDefaultControllerConfig(*Host::Internal::GetBaseSettingsLayer());
+		PAD::SetDefaultHotkeyConfig(*Host::Internal::GetBaseSettingsLayer());
 		QtHost::QueueSettingsSave();
 	}
 

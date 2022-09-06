@@ -251,7 +251,8 @@ void QtHost::SetDefaultConfig()
 	}
 
 	EmuFolders::Save(si);
-	PAD::SetDefaultConfig(si);
+	PAD::SetDefaultControllerConfig(si);
+	PAD::SetDefaultHotkeyConfig(si);
 }
 
 void QtHost::SetBaseBoolSettingValue(const char* section, const char* key, bool value)
