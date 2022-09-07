@@ -29,9 +29,7 @@
 
 #include "pcsx2/HostSettings.h"
 
-#include "EmuThread.h"
 #include "QtHost.h"
-
 #include "SettingWidgetBinder.h"
 
 /// This nastyness is required because input profiles aren't overlaid settings like the rest of them, it's

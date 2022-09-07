@@ -15,7 +15,6 @@
 
 #include "PrecompiledHeader.h"
 
-#include "EmuThread.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "Settings/InputBindingDialog.h"

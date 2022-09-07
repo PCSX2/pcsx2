@@ -15,7 +15,6 @@
 
 #include "PrecompiledHeader.h"
 
-#include "EmuThread.h"
 #include "QtHost.h"
 #include "Settings/ControllerSettingsDialog.h"
 #include "Settings/ControllerGlobalSettingsWidget.h"

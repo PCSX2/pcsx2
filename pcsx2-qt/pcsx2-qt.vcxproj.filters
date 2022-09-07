@@ -42,9 +42,8 @@
     <ClCompile Include="$(IntDir)moc_DisplayWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="EmuThread.cpp" />
     <ClCompile Include="QtUtils.cpp" />
-    <ClCompile Include="$(IntDir)moc_EmuThread.cpp">
+    <ClCompile Include="$(IntDir)moc_QtHost.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="QtKeyCodes.cpp" />
@@ -243,7 +242,6 @@
   <ItemGroup>
     <QtMoc Include="MainWindow.h" />
     <QtMoc Include="DisplayWidget.h" />
-    <QtMoc Include="EmuThread.h" />
     <QtMoc Include="Settings\BIOSSettingsWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>

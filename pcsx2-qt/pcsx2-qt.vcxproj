@@ -171,7 +171,6 @@
     <ClCompile Include="PrecompiledHeader.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="EmuThread.cpp" />
     <ClCompile Include="QtKeyCodes.cpp" />
     <ClCompile Include="QtUtils.cpp" />
   </ItemGroup>
@@ -207,11 +206,10 @@
     <QtMoc Include="Settings\ControllerBindingWidgets.h" />
     <QtMoc Include="Settings\ControllerGlobalSettingsWidget.h" />
     <ClInclude Include="SettingWidgetBinder.h" />
-    <ClInclude Include="QtHost.h" />
+    <QtMoc Include="QtHost.h" />
     <ClInclude Include="PrecompiledHeader.h" />
     <QtMoc Include="AboutDialog.h" />
     <QtMoc Include="AutoUpdaterDialog.h" />
-    <QtMoc Include="EmuThread.h" />
     <QtMoc Include="MainWindow.h" />
     <QtMoc Include="DisplayWidget.h" />
   </ItemGroup>
@@ -250,8 +248,8 @@
     <ClCompile Include="$(IntDir)moc_AboutDialog.cpp" />
     <ClCompile Include="$(IntDir)moc_AutoUpdaterDialog.cpp" />
     <ClCompile Include="$(IntDir)moc_DisplayWidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_EmuThread.cpp" />
     <ClCompile Include="$(IntDir)moc_MainWindow.cpp" />
+    <ClCompile Include="$(IntDir)moc_QtHost.cpp" />
     <ClCompile Include="$(IntDir)Tools\InputRecording\moc_NewInputRecordingDlg.cpp" />
     <ClCompile Include="$(IntDir)qrc_resources.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
