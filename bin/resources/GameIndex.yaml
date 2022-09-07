@@ -5213,11 +5213,11 @@ SCPS-15006:
   name: "Popolocrois Story 3 [Limited Edition]"
   region: "NTSC-J"
 SCPS-15007:
-  name: "Blood - The Last Vampire - Joukan [Volume 1]"
+  name: "Blood - The Last Vampire - Vol.1 Joukan"
   region: "NTSC-J"
   compat: 5
 SCPS-15008:
-  name: "Blood - The Last Vampire - Gekan [Volume 2]"
+  name: "Blood - The Last Vampire - Vol.2 Gekan"
   region: "NTSC-J"
   compat: 5
 SCPS-15009:
@@ -5549,7 +5549,7 @@ SCPS-15078:
   name: "EyeToy - Uki Uki Panic [Game Only]"
   region: "NTSC-J"
 SCPS-15079:
-  name: "Bakufuu Slash! Kizuna Arashi [EyeToy Camera Doukonban]"
+  name: "Bakufuu Slash! Kizna Arashi [EyeToy Camera Doukonban]"
   region: "NTSC-J"
 SCPS-15080:
   name: "Waga Ryuomiyo - Pride of the Dragon Peace"
