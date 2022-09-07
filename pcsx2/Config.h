@@ -459,7 +459,6 @@ struct Pcsx2Config
 
 				bool
 					HWDisableReadbacks : 1,
-					AccurateDATE : 1,
 					GPUPaletteConversion : 1,
 					AutoFlushSW : 1,
 					PreloadFrameWithGSData : 1,
