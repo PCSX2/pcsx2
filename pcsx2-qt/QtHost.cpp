@@ -237,19 +237,12 @@ bool QtHost::InitializeConfig()
 
 void QtHost::SetDefaultConfig()
 {
-	EmuConfig = Pcsx2Config();
 	EmuFolders::SetDefaults();
 	EmuFolders::EnsureFoldersExist();
-	VMManager::SetHardwareDependentDefaultSettings(EmuConfig);
 
 	SettingsInterface& si = *s_base_settings_interface.get();
 	si.SetUIntValue("UI", "SettingsVersion", SETTINGS_VERSION);
-
-	{
-		SettingsSaveWrapper wrapper(si);
-		EmuConfig.LoadSave(wrapper);
-	}
-
+	VMManager::SetDefaultSettings(si);
 	EmuFolders::Save(si);
 	PAD::SetDefaultControllerConfig(si);
 	PAD::SetDefaultHotkeyConfig(si);
