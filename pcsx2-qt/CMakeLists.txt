@@ -20,8 +20,6 @@ target_sources(pcsx2-qt PRIVATE
 	DisplayWidget.cpp
 	DisplayWidget.h
 	EarlyHardwareCheck.cpp
-	EmuThread.cpp
-	EmuThread.h
 	MainWindow.cpp
 	MainWindow.h
 	MainWindow.ui

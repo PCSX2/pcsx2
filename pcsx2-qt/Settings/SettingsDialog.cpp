@@ -23,7 +23,6 @@
 #include "pcsx2/Frontend/GameList.h"
 #include "pcsx2/Frontend/INISettingsInterface.h"
 
-#include "EmuThread.h"
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"

@@ -35,7 +35,6 @@
 #include "pcsx2/Config.h"
 #include "pcsx2/HostSettings.h"
 
-#include "EmuThread.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "Settings/SettingsDialog.h"

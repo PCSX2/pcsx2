@@ -26,7 +26,7 @@
 
 #include "MemoryCardSettingsWidget.h"
 #include "CreateMemoryCardDialog.h"
-#include "EmuThread.h"
+#include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 #include "SettingsDialog.h"

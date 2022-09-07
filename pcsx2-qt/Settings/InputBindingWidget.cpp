@@ -28,7 +28,6 @@
 
 #include "pcsx2/GS/GSIntrin.h" // _BitScanForward
 
-#include "EmuThread.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "Settings/ControllerSettingsDialog.h"

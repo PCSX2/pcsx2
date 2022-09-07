@@ -20,7 +20,6 @@
 #include "pcsx2/Frontend/ImGuiManager.h"
 
 #include "DisplayWidget.h"
-#include "EmuThread.h"
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"

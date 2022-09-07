@@ -24,7 +24,7 @@
 #include "Settings/ControllerSettingsDialog.h"
 #include "Settings/ControllerSettingWidgetBinder.h"
 #include "Settings/SettingsDialog.h"
-#include "EmuThread.h"
+#include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 

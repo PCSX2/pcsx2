@@ -41,7 +41,6 @@
 #include "AboutDialog.h"
 #include "AutoUpdaterDialog.h"
 #include "DisplayWidget.h"
-#include "EmuThread.h"
 #include "GameList/GameListRefreshThread.h"
 #include "GameList/GameListWidget.h"
 #include "MainWindow.h"
