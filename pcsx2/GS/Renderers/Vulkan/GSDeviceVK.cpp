@@ -65,9 +65,9 @@ GSDeviceVK::GSDeviceVK()
 
 GSDeviceVK::~GSDeviceVK() {}
 
-bool GSDeviceVK::Create(HostDisplay* display)
+bool GSDeviceVK::Create()
 {
-	if (!GSDevice::Create(display) || !CheckFeatures())
+	if (!GSDevice::Create() || !CheckFeatures())
 		return false;
 
 	{
@@ -590,7 +590,7 @@ void GSDeviceVK::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 {
 	DisplayConstantBuffer cb;
 	cb.SetSource(sRect, sTex->GetSize());
-	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GSVector2i(m_display->GetWindowWidth(), m_display->GetWindowHeight()));
+	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GSVector2i(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight()));
 	cb.SetTime(shaderTime);
 	SetUtilityPushConstants(&cb, sizeof(cb));
 
@@ -655,7 +655,7 @@ void GSDeviceVK::DoStretchRect(GSTextureVK* sTex, const GSVector4& sRect, GSText
 	const bool is_present = (!dTex);
 	const bool depth = (dTex && dTex->GetType() == GSTexture::Type::DepthStencil);
 	const GSVector2i size(
-		is_present ? GSVector2i(m_display->GetWindowWidth(), m_display->GetWindowHeight()) : dTex->GetSize());
+		is_present ? GSVector2i(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight()) : dTex->GetSize());
 	const GSVector4i dtex_rc(0, 0, size.x, size.y);
 	const GSVector4i dst_rc(GSVector4i(dRect).rintersect(dtex_rc));
 
@@ -1307,7 +1307,7 @@ bool GSDeviceVK::CreateRenderPasses()
 bool GSDeviceVK::CompileConvertPipelines()
 {
 	// we may not have a swap chain if running in headless mode.
-	Vulkan::SwapChain* swapchain = static_cast<Vulkan::SwapChain*>(m_display->GetRenderSurface());
+	Vulkan::SwapChain* swapchain = static_cast<Vulkan::SwapChain*>(g_host_display->GetRenderSurface());
 	if (swapchain)
 	{
 		m_swap_chain_render_pass =
@@ -1523,7 +1523,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 bool GSDeviceVK::CompilePresentPipelines()
 {
 	// we may not have a swap chain if running in headless mode.
-	Vulkan::SwapChain* swapchain = static_cast<Vulkan::SwapChain*>(m_display->GetRenderSurface());
+	Vulkan::SwapChain* swapchain = static_cast<Vulkan::SwapChain*>(g_host_display->GetRenderSurface());
 	if (swapchain)
 	{
 		m_swap_chain_render_pass =

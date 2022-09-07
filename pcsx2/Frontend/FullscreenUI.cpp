@@ -465,7 +465,7 @@ void FullscreenUI::UpdateForcedVsync(bool should_force)
 	const VsyncMode mode = EmuConfig.GetEffectiveVsyncMode();
 
 	// toss it through regardless of the mode, because options can change it
-	Host::GetHostDisplay()->SetVSync((should_force && mode == VsyncMode::Off) ? VsyncMode::On : mode);
+	g_host_display->SetVSync((should_force && mode == VsyncMode::Off) ? VsyncMode::On : mode);
 }
 
 void FullscreenUI::OnVMStarted()
@@ -1707,8 +1707,7 @@ void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry)
 
 void FullscreenUI::PopulateGraphicsAdapterList()
 {
-	HostDisplay* display = Host::GetHostDisplay();
-	HostDisplay::AdapterAndModeList ml(display->GetAdapterAndModeList());
+	HostDisplay::AdapterAndModeList ml(g_host_display->GetAdapterAndModeList());
 	s_graphics_adapter_list_cache = std::move(ml.adapter_names);
 	s_fullscreen_mode_list_cache = std::move(ml.fullscreen_modes);
 	s_fullscreen_mode_list_cache.insert(s_fullscreen_mode_list_cache.begin(), "Borderless Fullscreen");
@@ -3600,7 +3599,7 @@ bool FullscreenUI::InitializeSaveStateListEntry(
 	std::vector<u32> screenshot_pixels;
 	if (SaveState_ReadScreenshot(li->path, &screenshot_width, &screenshot_height, &screenshot_pixels))
 	{
-		li->preview_texture = Host::GetHostDisplay()->CreateTexture(
+		li->preview_texture = g_host_display->CreateTexture(
 			screenshot_width, screenshot_height, screenshot_pixels.data(), sizeof(u32) * screenshot_width, false);
 		if (!li->preview_texture)
 			Console.Error("Failed to upload save state image to GPU");

@@ -966,7 +966,7 @@ void SysMtgsThread::SetVSync(VsyncMode mode)
 	pxAssertRel(IsOpen(), "MTGS is running");
 
 	RunOnGSThread([mode]() {
-		Host::GetHostDisplay()->SetVSync(mode);
+		g_host_display->SetVSync(mode);
 	});
 }
 

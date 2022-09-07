@@ -88,9 +88,8 @@ GSDevice::~GSDevice()
 	delete m_target_tmp;
 }
 
-bool GSDevice::Create(HostDisplay* display)
+bool GSDevice::Create()
 {
-	m_display = display;
 	return true;
 }
 

@@ -619,11 +619,10 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 		GSTexture* current = g_gs_device->GetCurrent();
 		if (current && !blank_frame)
 		{
-			HostDisplay* const display = g_gs_device->GetDisplay();
 			const GSVector4i src_rect(CalculateDrawSrcRect(current));
 			const GSVector4 src_uv(GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy());
-			const GSVector4 draw_rect(CalculateDrawDstRect(display->GetWindowWidth(), display->GetWindowHeight(),
-				src_rect, current->GetSize(), display->GetDisplayAlignment(), display->UsesLowerLeftOrigin(),
+			const GSVector4 draw_rect(CalculateDrawDstRect(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight(),
+				src_rect, current->GetSize(), g_host_display->GetDisplayAlignment(), g_host_display->UsesLowerLeftOrigin(),
 				GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)));
 
 			const u64 current_time = Common::Timer::GetCurrentValue();
@@ -636,7 +635,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 		Host::EndPresentFrame();
 
 		if (GSConfig.OsdShowGPU)
-			PerformanceMetrics::OnGPUPresent(Host::GetHostDisplay()->GetAndResetAccumulatedGPUTime());
+			PerformanceMetrics::OnGPUPresent(g_host_display->GetAndResetAccumulatedGPUTime());
 	}
 	g_gs_device->RestoreAPIState();
 	PerformanceMetrics::Update(registers_written, fb_sprite_frame);
@@ -827,11 +826,10 @@ void GSRenderer::PresentCurrentFrame()
 		GSTexture* current = g_gs_device->GetCurrent();
 		if (current)
 		{
-			HostDisplay* const display = g_gs_device->GetDisplay();
 			const GSVector4i src_rect(CalculateDrawSrcRect(current));
 			const GSVector4 src_uv(GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy());
-			const GSVector4 draw_rect(CalculateDrawDstRect(display->GetWindowWidth(), display->GetWindowHeight(),
-				src_rect, current->GetSize(), display->GetDisplayAlignment(), display->UsesLowerLeftOrigin(),
+			const GSVector4 draw_rect(CalculateDrawDstRect(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight(),
+				src_rect, current->GetSize(), g_host_display->GetDisplayAlignment(), g_host_display->UsesLowerLeftOrigin(),
 				GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)));
 
 			const u64 current_time = Common::Timer::GetCurrentValue();

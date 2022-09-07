@@ -201,7 +201,7 @@ public:
 	__fi VkSampler GetPointSampler() const { return m_point_sampler; }
 	__fi VkSampler GetLinearSampler() const { return m_linear_sampler; }
 
-	bool Create(HostDisplay* display) override;
+	bool Create() override;
 	void Destroy() override;
 
 	void ResetAPIState() override;

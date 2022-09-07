@@ -66,9 +66,9 @@ GSDevice11::~GSDevice11()
 		m_state.dsv->Release();
 }
 
-bool GSDevice11::Create(HostDisplay* display)
+bool GSDevice11::Create()
 {
-	if (!__super::Create(display))
+	if (!GSDevice::Create())
 		return false;
 
 	D3D11_BUFFER_DESC bd;
@@ -79,14 +79,14 @@ bool GSDevice11::Create(HostDisplay* display)
 
 	D3D_FEATURE_LEVEL level;
 
-	if (display->GetRenderAPI() != HostDisplay::RenderAPI::D3D11)
+	if (g_host_display->GetRenderAPI() != HostDisplay::RenderAPI::D3D11)
 	{
 		fprintf(stderr, "Render API is incompatible with D3D11\n");
 		return false;
 	}
 
-	m_dev = static_cast<ID3D11Device*>(display->GetRenderDevice());
-	m_ctx = static_cast<ID3D11DeviceContext*>(display->GetRenderContext());
+	m_dev = static_cast<ID3D11Device*>(g_host_display->GetRenderDevice());
+	m_ctx = static_cast<ID3D11DeviceContext*>(g_host_display->GetRenderContext());
 	level = m_dev->GetFeatureLevel();
 
 	if (!GSConfig.DisableShaderCache)
@@ -633,7 +633,7 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	}
 	else
 	{
-		ds = GSVector2i(m_display->GetWindowWidth(), m_display->GetWindowHeight());
+		ds = GSVector2i(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight());
 
 	}
 
@@ -709,7 +709,7 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	}
 	else
 	{
-		ds = GSVector2i(m_display->GetWindowWidth(), m_display->GetWindowHeight());
+		ds = GSVector2i(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight());
 	}
 
 	DisplayConstantBuffer cb;

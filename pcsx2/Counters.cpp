@@ -361,7 +361,7 @@ static double AdjustToHostRefreshRate(double vertical_frequency, double frame_li
 	}
 
 	float host_refresh_rate;
-	if (!Host::GetHostDisplay()->GetHostRefreshRate(&host_refresh_rate))
+	if (!g_host_display->GetHostRefreshRate(&host_refresh_rate))
 	{
 		Console.Warning("Cannot sync to host refresh since the query failed.");
 		SPU2SetDeviceSampleRateMultiplier(1.0);

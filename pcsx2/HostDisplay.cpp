@@ -26,6 +26,8 @@
 #include <thread>
 #include <vector>
 
+std::unique_ptr<HostDisplay> g_host_display;
+
 HostDisplayTexture::~HostDisplayTexture() = default;
 
 HostDisplay::~HostDisplay() = default;

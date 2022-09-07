@@ -740,8 +740,6 @@ private:
 protected:
 	static constexpr u32 MAX_POOLED_TEXTURES = 300;
 
-	HostDisplay* m_display = nullptr;
-
 	GSTexture* m_merge = nullptr;
 	GSTexture* m_weavebob = nullptr;
 	GSTexture* m_blend = nullptr;
@@ -772,7 +770,6 @@ public:
 	GSDevice();
 	virtual ~GSDevice();
 
-	__fi HostDisplay* GetDisplay() const { return m_display; }
 	__fi unsigned int GetFrameNumber() const { return m_frame; }
 
 	void Recycle(GSTexture* t);
@@ -793,7 +790,7 @@ public:
 		Performance
 	};
 
-	virtual bool Create(HostDisplay* display);
+	virtual bool Create();
 	virtual void Destroy();
 
 	virtual void ResetAPIState();

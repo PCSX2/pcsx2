@@ -95,9 +95,9 @@ GSDevice12::GSDevice12()
 
 GSDevice12::~GSDevice12() {}
 
-bool GSDevice12::Create(HostDisplay* display)
+bool GSDevice12::Create()
 {
-	if (!GSDevice::Create(display) || !CheckFeatures())
+	if (!GSDevice::Create() || !CheckFeatures())
 		return false;
 
 	{
@@ -491,7 +491,7 @@ void GSDevice12::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 {
 	DisplayConstantBuffer cb;
 	cb.SetSource(sRect, sTex->GetSize());
-	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GSVector2i(m_display->GetWindowWidth(), m_display->GetWindowHeight()));
+	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GSVector2i(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight()));
 	cb.SetTime(shaderTime);
 	SetUtilityRootSignature();
 	SetUtilityPushConstants(&cb, sizeof(cb));
@@ -540,7 +540,7 @@ void GSDevice12::DoStretchRect(GSTexture12* sTex, const GSVector4& sRect, GSText
 	const bool is_present = (!dTex);
 	const bool depth = (dTex && dTex->GetType() == GSTexture::Type::DepthStencil);
 	const GSVector2i size(
-		is_present ? GSVector2i(m_display->GetWindowWidth(), m_display->GetWindowHeight()) : dTex->GetSize());
+		is_present ? GSVector2i(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight()) : dTex->GetSize());
 	const GSVector4i dtex_rc(0, 0, size.x, size.y);
 	const GSVector4i dst_rc(GSVector4i(dRect).rintersect(dtex_rc));
 

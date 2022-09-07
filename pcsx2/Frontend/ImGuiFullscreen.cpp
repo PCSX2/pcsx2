@@ -278,7 +278,7 @@ std::optional<Common::RGBA8Image> ImGuiFullscreen::LoadTextureImage(const char* 
 std::shared_ptr<HostDisplayTexture> ImGuiFullscreen::UploadTexture(const char* path, const Common::RGBA8Image& image)
 {
 	std::unique_ptr<HostDisplayTexture> texture =
-		Host::GetHostDisplay()->CreateTexture(image.GetWidth(), image.GetHeight(), image.GetPixels(), image.GetByteStride());
+		g_host_display->CreateTexture(image.GetWidth(), image.GetHeight(), image.GetPixels(), image.GetByteStride());
 	if (!texture)
 	{
 		Console.Error("failed to create %ux%u texture for resource", image.GetWidth(), image.GetHeight());
