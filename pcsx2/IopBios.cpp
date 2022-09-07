@@ -964,6 +964,12 @@ namespace R3000A
 		using namespace n; \
 		switch (index)     \
 		{
+#define MODULE_2(n1, n2)          \
+	if (#n1 == libname || #n2 == libname)     \
+	{                      \
+		using namespace n1; \
+		switch (index)     \
+		{
 #define END_MODULE \
 	}              \
 	}
@@ -983,7 +989,7 @@ namespace R3000A
 			EXPORT_H( 14, Kprintf)
 		END_MODULE
 		
-		MODULE(ioman)
+		MODULE_2(ioman, iomanx)
 			EXPORT_H(  4, open)
 			EXPORT_H(  5, close)
 			EXPORT_H(  6, read)
