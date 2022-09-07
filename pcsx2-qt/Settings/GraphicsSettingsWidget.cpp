@@ -185,7 +185,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.mipmapping, "EmuCore/GS", "mipmap_hw", static_cast<int>(HWMipmapLevel::Automatic), -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.crcFixLevel, "EmuCore/GS", "crc_hack_level", static_cast<int>(CRCHackLevel::Automatic), -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.blending, "EmuCore/GS", "accurate_blending_unit", static_cast<int>(AccBlendLevel::Basic));
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.accurateDATE, "EmuCore/GS", "accurate_date", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuPaletteConversion, "EmuCore/GS", "paltex", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.texturePreloading, "EmuCore/GS", "texture_preloading",
 		static_cast<int>(TexturePreloadingLevel::Off));
@@ -366,10 +365,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.texturePreloading, tr("Texture Preloading"), tr("Full (Hash Cache)"),
 			tr("Uploads entire textures at once instead of small pieces, avoiding redundant uploads when possible. "
 			   "Improves performance in most games, but can make a small selection slower."));
-
-		dialog->registerWidgetHelp(m_ui.accurateDATE, tr("Accurate DestinationAlpha Test"), tr("Checked"),
-			tr("Implement a more accurate algorithm to compute GS destination alpha testing. "
-			   "It improves shadow and transparency rendering."));
 
 		dialog->registerWidgetHelp(m_ui.gpuPaletteConversion, tr("GPU Palette Conversion"), tr("Unchecked"),
 			tr("When enabled GPU converts colormap-textures, otherwise the CPU will. "
