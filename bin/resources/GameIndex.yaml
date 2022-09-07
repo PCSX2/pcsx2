@@ -13441,6 +13441,8 @@ SLES-52219:
 SLES-52230:
   name: "Muppets Party Cruise"
   region: "PAL-E-F"
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes bad graphics.
   gameFixes:
     - OPHFlagHack # Fixes some hanging throughout the game.
 SLES-52237:
@@ -40908,6 +40910,8 @@ SLUS-20635:
   name: "Muppets Party Cruise, Jim Henson's"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes bad graphics.
   gameFixes:
     - OPHFlagHack # Fixes some hanging throughout the game.
 SLUS-20636:
