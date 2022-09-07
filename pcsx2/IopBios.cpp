@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2022  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -138,7 +138,7 @@ namespace R3000A
 	static __fi std::string clean_path(const std::string path)
 	{
 		std::string ret = path;
-		std::replace(ret.begin(),ret.end(),'\\','/');
+		std::replace(ret.begin(), ret.end(), '\\', '/');
 		return ret;
 	}
 
@@ -906,13 +906,13 @@ namespace R3000A
 
 		void RegisterIntrHandler_DEBUG()
 		{
-			if(a0 < std::size(intrname) - 1)
+			if (a0 < std::size(intrname) - 1)
 			{
 				DevCon.WriteLn(Color_Gray, "RegisterIntrHandler: intr %s, handler %x", intrname[a0], a2);
 			}
 			else
 			{
-				DevCon.WriteLn(Color_Gray, "RegisterIntrHandler: intr UNKNOWN (%d), handler %x",a0,a2);
+				DevCon.WriteLn(Color_Gray, "RegisterIntrHandler: intr UNKNOWN (%d), handler %x", a0, a2);
 			}
 		}
 	} // namespace intrman
@@ -964,6 +964,12 @@ namespace R3000A
 		using namespace n; \
 		switch (index)     \
 		{
+#define MODULE_2(n1, n2)          \
+	if (#n1 == libname || #n2 == libname)     \
+	{                      \
+		using namespace n1; \
+		switch (index)     \
+		{
 #define END_MODULE \
 	}              \
 	}
@@ -982,8 +988,8 @@ namespace R3000A
 		MODULE(sysmem)
 			EXPORT_H( 14, Kprintf)
 		END_MODULE
-		
-		MODULE(ioman)
+
+		MODULE_2(ioman, iomanx)
 			EXPORT_H(  4, open)
 			EXPORT_H(  5, close)
 			EXPORT_H(  6, read)
