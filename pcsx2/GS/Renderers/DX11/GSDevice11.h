@@ -241,7 +241,7 @@ public:
 	__fi ID3D11Device* GetD3DDevice() const { return m_dev.get(); }
 	__fi ID3D11DeviceContext* GetD3DContext() const { return m_ctx.get(); }
 
-	bool Create(HostDisplay* display);
+	bool Create() override;
 
 	void ResetAPIState() override;
 	void RestoreAPIState() override;

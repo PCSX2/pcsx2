@@ -69,7 +69,7 @@ public:
 	bool isOnEmuThread() const;
 
 	/// Called back from the GS thread when the display state changes (e.g. fullscreen, render to main).
-	HostDisplay* acquireHostDisplay(HostDisplay::RenderAPI api);
+	bool acquireHostDisplay(HostDisplay::RenderAPI api);
 	void connectDisplaySignals(DisplayWidget* widget);
 	void releaseHostDisplay();
 	void updateDisplay();

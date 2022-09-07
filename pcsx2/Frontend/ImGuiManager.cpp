@@ -95,8 +95,7 @@ bool ImGuiManager::Initialize()
 		return false;
 	}
 
-	HostDisplay* display = Host::GetHostDisplay();
-	s_global_scale = std::max(1.0f, display->GetWindowScale() * static_cast<float>(EmuConfig.GS.OsdScale / 100.0));
+	s_global_scale = std::max(1.0f, g_host_display->GetWindowScale() * static_cast<float>(EmuConfig.GS.OsdScale / 100.0));
 
 	ImGui::CreateContext();
 
@@ -110,8 +109,8 @@ bool ImGuiManager::Initialize()
 #endif
 
 	io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
-	io.DisplaySize.x = static_cast<float>(display->GetWindowWidth());
-	io.DisplaySize.y = static_cast<float>(display->GetWindowHeight());
+	io.DisplaySize.x = static_cast<float>(g_host_display->GetWindowWidth());
+	io.DisplaySize.y = static_cast<float>(g_host_display->GetWindowHeight());
 
 	SetKeyMap();
 	SetStyle();
@@ -120,19 +119,19 @@ bool ImGuiManager::Initialize()
 	pxAssertRel(!FullscreenUI::IsInitialized(), "Fullscreen UI is not initialized on ImGui init");
 #endif
 
-	if (!display->CreateImGuiContext())
+	if (!g_host_display->CreateImGuiContext())
 	{
 		pxFailRel("Failed to create ImGui device context");
-		display->DestroyImGuiContext();
+		g_host_display->DestroyImGuiContext();
 		ImGui::DestroyContext();
 		UnloadFontData();
 		return false;
 	}
 
-	if (!AddImGuiFonts(false) || !display->UpdateImGuiFontTexture())
+	if (!AddImGuiFonts(false) || !g_host_display->UpdateImGuiFontTexture())
 	{
 		pxFailRel("Failed to create ImGui font text");
-		display->DestroyImGuiContext();
+		g_host_display->DestroyImGuiContext();
 		ImGui::DestroyContext();
 		UnloadFontData();
 		return false;
@@ -151,9 +150,8 @@ void ImGuiManager::Shutdown()
 	FullscreenUI::Shutdown();
 #endif
 
-	HostDisplay* display = Host::GetHostDisplay();
-	if (display)
-		display->DestroyImGuiContext();
+	if (g_host_display)
+		g_host_display->DestroyImGuiContext();
 	if (ImGui::GetCurrentContext())
 		ImGui::DestroyContext();
 
@@ -170,10 +168,8 @@ void ImGuiManager::Shutdown()
 
 void ImGuiManager::WindowResized()
 {
-	HostDisplay* display = Host::GetHostDisplay();
-
-	const u32 new_width = display ? display->GetWindowWidth() : 0;
-	const u32 new_height = display ? display->GetWindowHeight() : 0;
+	const u32 new_width = g_host_display ? g_host_display->GetWindowWidth() : 0;
+	const u32 new_height = g_host_display ? g_host_display->GetWindowHeight() : 0;
 
 	ImGui::GetIO().DisplaySize = ImVec2(static_cast<float>(new_width), static_cast<float>(new_height));
 
@@ -186,8 +182,7 @@ void ImGuiManager::WindowResized()
 
 void ImGuiManager::UpdateScale()
 {
-	HostDisplay* display = Host::GetHostDisplay();
-	const float window_scale = display ? display->GetWindowScale() : 1.0f;
+	const float window_scale = g_host_display ? g_host_display->GetWindowScale() : 1.0f;
 	const float scale = std::max(window_scale * static_cast<float>(EmuConfig.GS.OsdScale / 100.0), 1.0f);
 
 #ifdef PCSX2_CORE
@@ -211,7 +206,7 @@ void ImGuiManager::UpdateScale()
 	if (!AddImGuiFonts(HasFullscreenFonts()))
 		pxFailRel("Failed to create ImGui font text");
 
-	if (!display->UpdateImGuiFontTexture())
+	if (!g_host_display->UpdateImGuiFontTexture())
 		pxFailRel("Failed to recreate font texture after scale+resize");
 
 	NewFrame();
@@ -483,7 +478,7 @@ bool ImGuiManager::AddFullscreenFontsIfMissing()
 		AddImGuiFonts(false);
 	}
 
-	Host::GetHostDisplay()->UpdateImGuiFontTexture();
+	g_host_display->UpdateImGuiFontTexture();
 	NewFrame();
 
 	return HasFullscreenFonts();

@@ -914,7 +914,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	};
 
 	Console.WriteLn("Opening PAD...");
-	if (PADinit() != 0 || PADopen(Host::GetHostDisplay()->GetWindowInfo()) != 0)
+	if (PADinit() != 0 || PADopen(g_host_display->GetWindowInfo()) != 0)
 	{
 		Host::ReportErrorAsync("Startup Error", "Failed to initialize PAD.");
 		return false;
@@ -936,7 +936,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	};
 
 	Console.WriteLn("Opening USB...");
-	if (USBinit() != 0 || USBopen(Host::GetHostDisplay()->GetWindowInfo()) != 0)
+	if (USBinit() != 0 || USBopen(g_host_display->GetWindowInfo()) != 0)
 	{
 		Host::ReportErrorAsync("Startup Error", "Failed to initialize USB.");
 		return false;

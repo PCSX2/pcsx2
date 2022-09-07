@@ -223,7 +223,7 @@ public:
 
 	__fi static GSDevice12* GetInstance() { return static_cast<GSDevice12*>(g_gs_device.get()); }
 
-	bool Create(HostDisplay* display) override;
+	bool Create() override;
 	void Destroy() override;
 
 	void ResetAPIState() override;

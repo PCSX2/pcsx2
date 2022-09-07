@@ -83,7 +83,6 @@ static void HookSignals();
 const IConsoleWriter* PatchesCon = &Console;
 static std::unique_ptr<QTimer> s_settings_save_timer;
 static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
-static std::unique_ptr<HostDisplay> s_host_display;
 static bool s_batch_mode = false;
 static bool s_nogui_mode = false;
 static bool s_start_fullscreen_ui = false;
@@ -206,13 +205,13 @@ void EmuThread::stopFullscreenUI()
 		QMetaObject::invokeMethod(this, &EmuThread::stopFullscreenUI, Qt::QueuedConnection);
 
 		// wait until the host display is gone
-		while (s_host_display)
+		while (g_host_display)
 			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 
 		return;
 	}
 
-	if (!s_host_display)
+	if (!g_host_display)
 		return;
 
 	pxAssertRel(!VMManager::HasValidVM(), "VM is not valid at FSUI shutdown time");
@@ -595,7 +594,7 @@ void EmuThread::checkForSettingChanges()
 {
 	QMetaObject::invokeMethod(g_main_window, &MainWindow::checkForSettingChanges, Qt::QueuedConnection);
 
-	if (s_host_display)
+	if (g_host_display)
 	{
 		const bool render_to_main = shouldRenderToMain();
 		if (!m_is_fullscreen && m_is_rendering_to_main != render_to_main)
@@ -769,7 +768,7 @@ void EmuThread::connectDisplaySignals(DisplayWidget* widget)
 
 void EmuThread::onDisplayWindowResized(int width, int height, float scale)
 {
-	if (!s_host_display)
+	if (!g_host_display)
 		return;
 
 	GetMTGS().ResizeDisplayWindow(width, height, scale);
@@ -842,76 +841,72 @@ void EmuThread::updateDisplay()
 	pxAssertRel(!isOnEmuThread(), "Not on emu thread");
 
 	// finished with the display for now
-	HostDisplay* display = Host::GetHostDisplay();
-	display->DoneRenderContextCurrent();
+	g_host_display->DoneRenderContextCurrent();
 
 	// but we should get it back after this call
 	onUpdateDisplayRequested(m_is_fullscreen, !m_is_fullscreen && m_is_rendering_to_main, m_is_surfaceless);
-	if (!display->MakeRenderContextCurrent())
+	if (!g_host_display->MakeRenderContextCurrent())
 	{
 		pxFailRel("Failed to recreate context after updating");
 		return;
 	}
 }
 
-HostDisplay* EmuThread::acquireHostDisplay(HostDisplay::RenderAPI api)
+bool EmuThread::acquireHostDisplay(HostDisplay::RenderAPI api)
 {
-	s_host_display = HostDisplay::CreateDisplayForAPI(api);
-	if (!s_host_display)
-		return nullptr;
+	pxAssertRel(!g_host_display, "Host display does not exist on create");
+
+	g_host_display = HostDisplay::CreateDisplayForAPI(api);
+	if (!g_host_display)
+		return false;
 
 	DisplayWidget* widget = emit onCreateDisplayRequested(m_is_fullscreen, m_is_rendering_to_main);
 	if (!widget)
 	{
-		s_host_display.reset();
-		return nullptr;
+		g_host_display.reset();
+		return false;
 	}
 
 	connectDisplaySignals(widget);
 
-	if (!s_host_display->MakeRenderContextCurrent())
+	if (!g_host_display->MakeRenderContextCurrent())
 	{
 		Console.Error("Failed to make render context current");
 		releaseHostDisplay();
-		return nullptr;
+		return false;
 	}
 
-	if (!s_host_display->InitializeRenderDevice(EmuFolders::Cache, false) ||
+	if (!g_host_display->InitializeRenderDevice(EmuFolders::Cache, false) ||
 		!ImGuiManager::Initialize())
 	{
 		Console.Error("Failed to initialize device/imgui");
 		releaseHostDisplay();
-		return nullptr;
+		return false;
 	}
 
-	Console.WriteLn(Color_StrongGreen, "%s Graphics Driver Info:", HostDisplay::RenderAPIToString(s_host_display->GetRenderAPI()));
-	Console.Indent().WriteLn(s_host_display->GetDriverInfo());
+	Console.WriteLn(Color_StrongGreen, "%s Graphics Driver Info:", HostDisplay::RenderAPIToString(g_host_display->GetRenderAPI()));
+	Console.Indent().WriteLn(g_host_display->GetDriverInfo());
 
 	if (m_run_fullscreen_ui && !FullscreenUI::Initialize())
 	{
 		Console.Error("Failed to initialize fullscreen UI");
 		releaseHostDisplay();
 		m_run_fullscreen_ui = false;
-		return nullptr;
+		return false;
 	}
 
-	return s_host_display.get();
+	return true;
 }
 
 void EmuThread::releaseHostDisplay()
 {
 	ImGuiManager::Shutdown();
 
-	s_host_display.reset();
+	g_host_display.reset();
 	emit onDestroyDisplayRequested();
 }
 
-HostDisplay* Host::GetHostDisplay()
-{
-	return s_host_display.get();
-}
-
-HostDisplay* Host::AcquireHostDisplay(HostDisplay::RenderAPI api)
+bool Host::AcquireHostDisplay(HostDisplay::RenderAPI api)
 {
 	return g_emu_thread->acquireHostDisplay(api);
 }
@@ -923,7 +918,7 @@ void Host::ReleaseHostDisplay()
 
 bool Host::BeginPresentFrame(bool frame_skip)
 {
-	if (!s_host_display->BeginPresent(frame_skip))
+	if (!g_host_display->BeginPresent(frame_skip))
 	{
 		// if we're skipping a frame, we need to reset imgui's state, since
 		// we won't be calling EndPresentFrame().
@@ -941,13 +936,13 @@ void Host::EndPresentFrame()
 
 	FullscreenUI::Render();
 	ImGuiManager::RenderOSD();
-	s_host_display->EndPresent();
+	g_host_display->EndPresent();
 	ImGuiManager::NewFrame();
 }
 
 void Host::ResizeHostDisplay(u32 new_window_width, u32 new_window_height, float new_window_scale)
 {
-	s_host_display->ResizeRenderWindow(new_window_width, new_window_height, new_window_scale);
+	g_host_display->ResizeRenderWindow(new_window_width, new_window_height, new_window_scale);
 	ImGuiManager::WindowResized();
 
 	// if we're paused, re-present the current frame at the new window size.

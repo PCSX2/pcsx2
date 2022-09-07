@@ -343,7 +343,7 @@ public:
 
 	MRCOwned<id<MTLFunction>> LoadShader(NSString* name);
 	MRCOwned<id<MTLRenderPipelineState>> MakePipeline(MTLRenderPipelineDescriptor* desc, id<MTLFunction> vertex, id<MTLFunction> fragment, NSString* name);
-	bool Create(HostDisplay* display) override;
+	bool Create() override;
 
 	void ClearRenderTarget(GSTexture* t, const GSVector4& c) override;
 	void ClearRenderTarget(GSTexture* t, u32 c) override;

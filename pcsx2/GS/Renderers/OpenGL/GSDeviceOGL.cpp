@@ -191,12 +191,12 @@ GSTexture* GSDeviceOGL::CreateSurface(GSTexture::Type type, int width, int heigh
 	return new GSTextureOGL(type, width, height, levels, format, m_fbo_read);
 }
 
-bool GSDeviceOGL::Create(HostDisplay* display)
+bool GSDeviceOGL::Create()
 {
-	if (!GSDevice::Create(display))
+	if (!GSDevice::Create())
 		return false;
 
-	if (display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGL)
+	if (g_host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGL)
 		return false;
 
 	// Check openGL requirement as soon as possible so we can switch to another
@@ -1250,7 +1250,7 @@ void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 	BeginScene();
 
-	const GSVector2i ds(dTex ? dTex->GetSize() : GSVector2i(m_display->GetWindowWidth(), m_display->GetWindowHeight()));
+	const GSVector2i ds(dTex ? dTex->GetSize() : GSVector2i(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight()));
 	DisplayConstantBuffer cb;
 	cb.SetSource(sRect, sTex->GetSize());
 	cb.SetTarget(dRect, ds);
