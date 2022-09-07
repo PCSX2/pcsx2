@@ -23,6 +23,7 @@
 #include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
+#include "common/SettingsInterface.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
@@ -385,4 +386,16 @@ void Host::UpdateLogging(bool disable_system_console)
 	SysConsole.controlInfo.Enabled = any_logging_sinks && Host::GetBaseBoolSettingValue("Logging", "EnableControllerLogs", false);
 
 	UpdateLoggingSinks(system_console_enabled, file_logging_enabled);
+}
+
+void Host::SetDefaultLoggingSettings(SettingsInterface& si)
+{
+	si.SetBoolValue("Logging", "EnableSystemConsole", false);
+	si.SetBoolValue("Logging", "EnableFileLogging", false);
+	si.SetBoolValue("Logging", "EnableTimestamps", true);
+	si.SetBoolValue("Logging", "EnableVerbose", false);
+	si.SetBoolValue("Logging", "EnableEEConsole", false);
+	si.SetBoolValue("Logging", "EnableIOPConsole", false);
+	si.SetBoolValue("Logging", "EnableInputRecordingLogs", true);
+	si.SetBoolValue("Logging", "EnableControllerLogs", false);
 }

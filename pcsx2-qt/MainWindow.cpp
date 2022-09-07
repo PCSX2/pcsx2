@@ -401,6 +401,37 @@ void MainWindow::recreate()
 	deleteLater();
 }
 
+void MainWindow::recreateSettings()
+{
+	QString current_category;
+	if (m_settings_dialog)
+	{
+		current_category = m_settings_dialog->getCategory();
+		m_settings_dialog->hide();
+		m_settings_dialog->deleteLater();
+		m_settings_dialog = nullptr;
+	}
+
+	doSettings(current_category.toUtf8().constData());
+}
+
+void MainWindow::resetSettings(bool ui)
+{
+	Host::RequestResetSettings(false, true, false, false, ui);
+
+	if (ui)
+	{
+		// UI reset includes theme (and eventually language).
+		// Just updating the theme here, when there's no change, causes Qt to get very confused..
+		// So, we'll just tear down everything and recreate. We'll need to do that for language
+		// resets eventaully anyway.
+		recreate();
+	}
+
+	// g_main_window here for recreate() case above.
+	g_main_window->recreateSettings();
+}
+
 void MainWindow::updateApplicationTheme()
 {
 	if (!s_unthemed_style_name_set)
@@ -734,7 +765,8 @@ void MainWindow::onBlockDumpActionToggled(bool checked)
 		return;
 	}
 
-	QtHost::SetBaseStringSettingValue("EmuCore", "BlockDumpSaveDirectory", new_dir.toUtf8().constData());
+	Host::SetBaseStringSettingValue("EmuCore", "BlockDumpSaveDirectory", new_dir.toUtf8().constData());
+	Host::CommitBaseSettingChanges();
 }
 
 void MainWindow::saveStateToConfig()
@@ -747,7 +779,10 @@ void MainWindow::saveStateToConfig()
 		const QByteArray geometry_b64 = geometry.toBase64();
 		const std::string old_geometry_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowGeometry");
 		if (old_geometry_b64 != geometry_b64.constData())
-			QtHost::SetBaseStringSettingValue("UI", "MainWindowGeometry", geometry_b64.constData());
+		{
+			Host::SetBaseStringSettingValue("UI", "MainWindowGeometry", geometry_b64.constData());
+			Host::CommitBaseSettingChanges();
+		}
 	}
 
 	{
@@ -755,7 +790,10 @@ void MainWindow::saveStateToConfig()
 		const QByteArray state_b64 = state.toBase64();
 		const std::string old_state_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowState");
 		if (old_state_b64 != state_b64.constData())
-			QtHost::SetBaseStringSettingValue("UI", "MainWindowState", state_b64.constData());
+		{
+			Host::SetBaseStringSettingValue("UI", "MainWindowState", state_b64.constData());
+			Host::CommitBaseSettingChanges();
+		}
 	}
 }
 
@@ -1306,19 +1344,22 @@ void MainWindow::onSaveStateMenuAboutToShow()
 
 void MainWindow::onViewToolbarActionToggled(bool checked)
 {
-	QtHost::SetBaseBoolSettingValue("UI", "ShowToolbar", checked);
+	Host::SetBaseBoolSettingValue("UI", "ShowToolbar", checked);
+	Host::CommitBaseSettingChanges();
 	m_ui.toolBar->setVisible(checked);
 }
 
 void MainWindow::onViewLockToolbarActionToggled(bool checked)
 {
-	QtHost::SetBaseBoolSettingValue("UI", "LockToolbar", checked);
+	Host::SetBaseBoolSettingValue("UI", "LockToolbar", checked);
+	Host::CommitBaseSettingChanges();
 	m_ui.toolBar->setMovable(!checked);
 }
 
 void MainWindow::onViewStatusBarActionToggled(bool checked)
 {
-	QtHost::SetBaseBoolSettingValue("UI", "ShowStatusBar", checked);
+	Host::SetBaseBoolSettingValue("UI", "ShowStatusBar", checked);
+	Host::CommitBaseSettingChanges();
 	m_ui.statusBar->setVisible(checked);
 }
 
@@ -1386,7 +1427,8 @@ void MainWindow::onAboutActionTriggered()
 void MainWindow::onCheckForUpdatesActionTriggered()
 {
 	// Wipe out the last version, that way it displays the update if we've previously skipped it.
-	QtHost::RemoveBaseSettingValue("AutoUpdater", "LastVersion");
+	Host::RemoveBaseSettingValue("AutoUpdater", "LastVersion");
+	Host::CommitBaseSettingChanges();
 	checkForUpdates(true);
 }
 
@@ -2029,7 +2071,10 @@ void MainWindow::saveDisplayWindowGeometryToConfig()
 	const QByteArray geometry_b64 = geometry.toBase64();
 	const std::string old_geometry_b64 = Host::GetBaseStringSettingValue("UI", "DisplayWindowGeometry");
 	if (old_geometry_b64 != geometry_b64.constData())
-		QtHost::SetBaseStringSettingValue("UI", "DisplayWindowGeometry", geometry_b64.constData());
+	{
+		Host::SetBaseStringSettingValue("UI", "DisplayWindowGeometry", geometry_b64.constData());
+		Host::CommitBaseSettingChanges();
+	}
 }
 
 void MainWindow::restoreDisplayWindowGeometryFromConfig()

@@ -1048,10 +1048,9 @@ namespace EmuFolders
 	extern std::string InputProfiles;
 
 	// Assumes that AppRoot and DataRoot have been initialized.
-	void SetDefaults();
-	bool EnsureFoldersExist();
+	void SetDefaults(SettingsInterface& si);
 	void LoadConfig(SettingsInterface& si);
-	void Save(SettingsInterface& si);
+	bool EnsureFoldersExist();
 } // namespace EmuFolders
 
 /////////////////////////////////////////////////////////////////////////////////////////

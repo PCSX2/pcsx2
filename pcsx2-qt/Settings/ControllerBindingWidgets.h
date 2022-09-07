@@ -58,7 +58,6 @@ private:
 	void populateControllerTypes();
 	void updateHeaderToolButtons();
 	void doDeviceAutomaticBinding(const QString& device);
-	void saveAndRefresh();
 
 	Ui::ControllerBindingWidget m_ui;
 

@@ -1063,8 +1063,10 @@ endif()
 
 if(PCSX2_CORE)
 	list(APPEND pcsx2FrontendSources
+		Frontend/CommonHost.cpp
 		Frontend/FullscreenUI.cpp
 		Frontend/GameList.cpp
+		Frontend/HostSettings.cpp
 		Frontend/ImGuiFullscreen.cpp
 		Frontend/INISettingsInterface.cpp
 		Frontend/InputManager.cpp
@@ -1072,10 +1074,10 @@ if(PCSX2_CORE)
 		Frontend/LayeredSettingsInterface.cpp
 		Frontend/LogSink.cpp
 		GSDumpReplayer.cpp
-		HostSettings.cpp
 		VMManager.cpp
 	)
 	list(APPEND pcsx2FrontendHeaders
+		Frontend/CommonHost.h
 		Frontend/FullscreenUI.h
 		Frontend/GameList.h
 		Frontend/ImGuiFullscreen.h

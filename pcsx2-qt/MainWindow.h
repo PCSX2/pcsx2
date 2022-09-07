@@ -85,6 +85,7 @@ public:
 	void initialize();
 	void connectVMThreadSignals(EmuThread* thread);
 	void startupUpdateCheck();
+	void resetSettings(bool ui);
 
 	/// Locks the VM by pausing it, while a popup dialog is displayed.
 	VMLock pauseAndLockVM();
@@ -167,8 +168,6 @@ private Q_SLOTS:
 
 	void onGameChanged(const QString& path, const QString& serial, const QString& name, quint32 crc);
 
-	void recreate();
-
 protected:
 	void showEvent(QShowEvent* event) override;
 	void closeEvent(QCloseEvent* event) override;
@@ -186,6 +185,8 @@ private:
 
 	void setupAdditionalUi();
 	void connectSignals();
+	void recreate();
+	void recreateSettings();
 
 	void saveStateToConfig();
 	void restoreStateFromConfig();

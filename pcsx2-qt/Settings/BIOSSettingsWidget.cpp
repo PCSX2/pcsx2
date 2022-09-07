@@ -130,7 +130,8 @@ void BIOSSettingsWidget::listRefreshed(const QVector<BIOSInfo>& items)
 
 void BIOSSettingsWidget::listItemChanged(const QTreeWidgetItem* current, const QTreeWidgetItem* previous)
 {
-	QtHost::SetBaseStringSettingValue("Filenames", "BIOS", current->text(0).toUtf8().constData());
+	Host::SetBaseStringSettingValue("Filenames", "BIOS", current->text(0).toUtf8().constData());
+	Host::CommitBaseSettingChanges();
 }
 
 BIOSSettingsWidget::RefreshThread::RefreshThread(BIOSSettingsWidget* parent, const QString& directory)

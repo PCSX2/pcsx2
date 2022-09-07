@@ -15,6 +15,9 @@
 
 #include "PrecompiledHeader.h"
 #include "common/Assertions.h"
+#include "common/CrashHandler.h"
+#include "common/FileSystem.h"
+#include "common/Path.h"
 #include "Frontend/LayeredSettingsInterface.h"
 #include "GS.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
@@ -121,16 +124,22 @@ void Host::SetBaseStringListSettingValue(const char* section, const char* key, c
 	s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->SetStringList(section, key, values);
 }
 
-void Host::DeleteBaseSettingValue(const char* section, const char* key)
+bool Host::AddBaseValueToStringList(const char* section, const char* key, const char* value)
+{
+	std::unique_lock lock(s_settings_mutex);
+	return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->AddToStringList(section, key, value);
+}
+
+bool Host::RemoveBaseValueFromStringList(const char* section, const char* key, const char* value)
+{
+	std::unique_lock lock(s_settings_mutex);
+	return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->RemoveFromStringList(section, key, value);
+}
+
+void Host::RemoveBaseSettingValue(const char* section, const char* key)
 {
 	std::unique_lock lock(s_settings_mutex);
 	s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->DeleteValue(section, key);
-}
-
-void Host::CommitBaseSettingChanges()
-{
-	std::unique_lock lock(s_settings_mutex);
-	s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->Save();
 }
 
 std::string Host::GetStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
@@ -221,8 +230,7 @@ void Host::Internal::UpdateEmuFolders()
 
 	if (VMManager::HasValidVM())
 	{
-		if (EmuFolders::Cheats != old_cheats_directory ||
-			EmuFolders::CheatsWS != old_cheats_ws_directory ||
+		if (EmuFolders::Cheats != old_cheats_directory || EmuFolders::CheatsWS != old_cheats_ws_directory ||
 			EmuFolders::CheatsNI != old_cheats_ni_directory)
 		{
 			VMManager::ReloadPatches(true, true);
