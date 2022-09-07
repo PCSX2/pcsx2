@@ -1189,7 +1189,7 @@ bool GSDevice12::CompileConvertPipelines()
 		gpb.SetPixelShader(ps.get());
 		gpb.SetNoDepthTestState();
 		gpb.SetNoStencilState();
-		gpb.SetBlendState(0, true, D3D12_BLEND_ONE, D3D12_BLEND_ONE, D3D12_BLEND_OP_MIN,
+		gpb.SetBlendState(0, false, D3D12_BLEND_ONE, D3D12_BLEND_ONE, D3D12_BLEND_OP_ADD,
 			D3D12_BLEND_ZERO, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, D3D12_COLOR_WRITE_ENABLE_RED);
 
 		for (u32 ds = 0; ds < 2; ds++)
@@ -2378,11 +2378,11 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 
 	// if the depth target has been cleared, we need to preserve that clear
 	BeginRenderPass(
-		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 		GetLoadOpForTexture(static_cast<GSTexture12*>(config.ds)),
 		config.ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-		GSVector4(static_cast<float>(std::numeric_limits<s32>::max()), 0.0f, 0.0f, 0.0f),
+		GSVector4::zero(),
 		static_cast<GSTexture12*>(config.ds)->GetClearDepth());
 
 	// draw the quad to prefill the image
