@@ -266,7 +266,7 @@ void COP2MicroFinishPass::Run(u32 start, u32 end, EEINST* inst_cache)
 		}
 
 		// Except for VCALLMS/VCALLMSR, that can start a micro, so the next instruction needs to finish it.
-		if (_Funct_ == 070 || _Funct_ == 071)
+		if (_Funct_ == 056 || _Funct_ == 057)
 			needs_vu0_finish = true;
 
 		return true;
