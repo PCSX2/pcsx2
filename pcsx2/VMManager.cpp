@@ -102,6 +102,7 @@ namespace VMManager
 		std::string filename, s32 slot_for_message);
 
 	static void SetTimerResolutionIncreased(bool enabled);
+	static void SetHardwareDependentDefaultSettings(SettingsInterface& si);
 	static void EnsureCPUInfoInitialized();
 	static void SetEmuThreadAffinities();
 } // namespace VMManager
@@ -1703,6 +1704,20 @@ bool VMManager::ReloadGameSettings()
 	return true;
 }
 
+void VMManager::SetDefaultSettings(SettingsInterface& si)
+{
+	{
+		Pcsx2Config temp_config;
+		SettingsSaveWrapper ssw(si);
+		temp_config.LoadSave(ssw);
+	}
+
+	// Settings not part of the Pcsx2Config struct.
+	si.SetBoolValue("EmuCore", "EnableFastBoot", true);
+
+	SetHardwareDependentDefaultSettings(si);
+}
+
 static void HotkeyAdjustTargetSpeed(double delta)
 {
 	EmuConfig.Framerate.NominalScalar = EmuConfig.GS.LimitScalar + delta;
@@ -2003,7 +2018,7 @@ static void InitializeCPUInfo()
 	Console.WriteLn(ss.str());
 }
 
-static void SetMTVUAndAffinityControlDefault(Pcsx2Config& config)
+static void SetMTVUAndAffinityControlDefault(SettingsInterface& si)
 {
 	VMManager::EnsureCPUInfoInitialized();
 
@@ -2029,23 +2044,16 @@ static void SetMTVUAndAffinityControlDefault(Pcsx2Config& config)
 	const u32 big_cores = cpuinfo_get_cluster(0)->core_count + ((cluster_count > 2) ? cpuinfo_get_cluster(1)->core_count : 0u);
 	Console.WriteLn("Guessing we have %u big/medium cores...", big_cores);
 
-	bool mtvu_enable;
-	bool affinity_control;
-	if (big_cores >= 3 || big_cores == 1)
+	if (big_cores >= 3)
 	{
-		Console.WriteLn("  So enabling MTVU and disabling affinity control");
-		mtvu_enable = true;
-		affinity_control = false;
+		Console.WriteLn("  So enabling MTVU.");
+		si.SetBoolValue("EmuCore/Speedhacks", "vuThread", true);
 	}
 	else
 	{
-		Console.WriteLn("  So disabling MTVU and enabling affinity control");
-		mtvu_enable = false;
-		affinity_control = true;
+		Console.WriteLn("  So disabling MTVU.");
+		si.SetBoolValue("EmuCore/Speedhacks", "vuThread", false);
 	}
-
-	config.Speedhacks.vuThread = mtvu_enable;
-	config.Cpu.AffinityControlMode = affinity_control ? 1 : 0;
 }
 
 #else
@@ -2055,7 +2063,7 @@ static void InitializeCPUInfo()
 	DevCon.WriteLn("(VMManager) InitializeCPUInfo() not implemented.");
 }
 
-static void SetMTVUAndAffinityControlDefault(Pcsx2Config& config)
+static void SetMTVUAndAffinityControlDefault(SettingsInterface& si)
 {
 }
 
@@ -2127,9 +2135,9 @@ void VMManager::SetEmuThreadAffinities()
 	GetMTGS().GetThreadHandle().SetAffinity(gs_affinity);
 }
 
-void VMManager::SetHardwareDependentDefaultSettings(Pcsx2Config& config)
+void VMManager::SetHardwareDependentDefaultSettings(SettingsInterface& si)
 {
-	SetMTVUAndAffinityControlDefault(config);
+	SetMTVUAndAffinityControlDefault(si);
 }
 
 const std::vector<u32>& VMManager::GetSortedProcessorList()
