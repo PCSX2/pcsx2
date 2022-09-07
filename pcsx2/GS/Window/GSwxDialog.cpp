@@ -283,8 +283,6 @@ RendererTab::RendererTab(wxWindow* parent)
 
 	auto* hw_checks_box = new wxWrapSizer(wxHORIZONTAL);
 
-	m_ui.addCheckBox(hw_checks_box, "Accurate Destination Alpha Test", "accurate_date",            IDC_ACCURATE_DATE,   hw_prereq);
-
 	auto* paltex_prereq = m_ui.addCheckBox(hw_checks_box, "GPU Palette Conversion", "paltex", IDC_PALTEX, hw_prereq);
 	auto aniso_prereq = [this, paltex_prereq]{ return m_is_hardware && paltex_prereq->GetValue() == false; };
 
