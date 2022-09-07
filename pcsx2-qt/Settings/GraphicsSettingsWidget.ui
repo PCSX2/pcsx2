@@ -671,20 +671,13 @@
        <item row="9" column="0" colspan="2">
         <layout class="QGridLayout" name="basicCheckboxGridLayout">
          <item row="0" column="0">
-          <widget class="QCheckBox" name="accurateDATE">
-           <property name="text">
-            <string>Accurate Destination Alpha Test</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
           <widget class="QCheckBox" name="gpuPaletteConversion">
            <property name="text">
             <string>GPU Palette Conversion</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="0" column="1">
           <widget class="QCheckBox" name="enableHWFixes">
            <property name="text">
             <string>Manual Hardware Renderer Fixes</string>

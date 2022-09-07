@@ -3460,23 +3460,22 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 				m_conf.require_full_barrier = true;
 				DATE_BARRIER = true;
 			}
-			else if (GSConfig.AccurateDATE)
+			else if (features.primitive_id)
 			{
-				// Note: Fast level (DATE_one) was removed as it's less accurate.
 				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				if (features.primitive_id)
-				{
-					DATE_PRIMID = true;
-				}
-				else if (features.texture_barrier)
-				{
-					m_conf.require_full_barrier = true;
-					DATE_BARRIER = true;
-				}
-				else if (features.stencil_buffer)
-				{
-					DATE_one = true;
-				}
+				DATE_PRIMID = true;
+			}
+			else if (features.texture_barrier)
+			{
+				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
+				m_conf.require_full_barrier = true;
+				DATE_BARRIER = true;
+			}
+			else if (features.stencil_buffer)
+			{
+				// Might be inaccurate in some cases but we shouldn't hit this path.
+				GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
+				DATE_one = true;
 			}
 		}
 		else if (!m_conf.colormask.wa && !m_context->TEST.ATE)

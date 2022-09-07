@@ -323,7 +323,6 @@ Pcsx2Config::GSOptions::GSOptions()
 	OsdShowIndicators = true;
 
 	HWDisableReadbacks = false;
-	AccurateDATE = true;
 	GPUPaletteConversion = false;
 	AutoFlushSW = true;
 	PreloadFrameWithGSData = false;
@@ -543,7 +542,6 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBool(OsdShowIndicators);
 
 	GSSettingBool(HWDisableReadbacks);
-	GSSettingBoolEx(AccurateDATE, "accurate_date");
 	GSSettingBoolEx(GPUPaletteConversion, "paltex");
 	GSSettingBoolEx(AutoFlushSW, "autoflush_sw");
 	GSSettingBoolEx(PreloadFrameWithGSData, "preload_frame_with_gs_data");
