@@ -332,11 +332,11 @@ bool GzippedFileReader::OkIndex()
 	// No valid index file. Generate an index
 	Console.Warning("This may take a while (but only once). Scanning compressed file to generate a quick access index...");
 
+	const s64 prevoffset = FileSystem::FTell64(m_src);
 	Access* index;
-	FILE* infile = FileSystem::OpenCFile(m_filename.c_str(), "rb");
-	int len = build_index(infile, GZFILE_SPAN_DEFAULT, &index);
+	int len = build_index(m_src, GZFILE_SPAN_DEFAULT, &index);
 	printf("\n"); // build_index prints progress without \n's
-	fclose(infile);
+	FileSystem::FSeek64(m_src, prevoffset, SEEK_SET);
 
 	if (len >= 0)
 	{
