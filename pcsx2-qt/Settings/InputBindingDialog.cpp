@@ -259,9 +259,10 @@ void InputBindingDialog::saveListToSettings()
 	else
 	{
 		if (!m_bindings.empty())
-			QtHost::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
+			Host::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
 		else
-			QtHost::RemoveBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
+			Host::RemoveBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
+		Host::CommitBaseSettingChanges();
 		g_emu_thread->reloadInputBindings();
 	}
 }

@@ -24,8 +24,6 @@
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
-#include <KnownFolders.h>
-#include <ShlObj.h>
 #endif
 
 #include "common/Assertions.h"
@@ -39,6 +37,7 @@
 
 #include "pcsx2/CDVD/CDVDcommon.h"
 #include "pcsx2/DebugTools/Debug.h"
+#include "pcsx2/Frontend/CommonHost.h"
 #include "pcsx2/Frontend/GameList.h"
 #include "pcsx2/Frontend/INISettingsInterface.h"
 #include "pcsx2/Frontend/LogSink.h"
@@ -52,7 +51,6 @@
 #include "QtUtils.h"
 #include "svnrev.h"
 
-static constexpr u32 SETTINGS_VERSION = 1;
 static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 
 //////////////////////////////////////////////////////////////////////////
@@ -64,14 +62,8 @@ static void PrintCommandLineHelp(const char* progname);
 static std::shared_ptr<VMBootParameters>& AutoBoot(std::shared_ptr<VMBootParameters>& autoboot);
 static bool ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMBootParameters>& autoboot);
 static bool InitializeConfig();
-static bool ShouldUsePortableMode();
-static void SetAppRoot();
-static void SetResourcesDirectory();
-static void SetDataDirectory();
-static void HookSignals();
-static bool SetCriticalFolders();
-static void SetDefaultConfig();
 static void SaveSettings();
+static void HookSignals();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -89,225 +81,54 @@ static bool s_start_fullscreen_ui_fullscreen = false;
 // Initialization/Shutdown
 //////////////////////////////////////////////////////////////////////////
 
-bool QtHost::SetCriticalFolders()
-{
-	SetAppRoot();
-	SetResourcesDirectory();
-	SetDataDirectory();
-
-	// logging of directories in case something goes wrong super early
-	Console.WriteLn("AppRoot Directory: %s", EmuFolders::AppRoot.c_str());
-	Console.WriteLn("DataRoot Directory: %s", EmuFolders::DataRoot.c_str());
-	Console.WriteLn("Resources Directory: %s", EmuFolders::Resources.c_str());
-
-	// allow SetDataDirectory() to change settings directory (if we want to split config later on)
-	if (EmuFolders::Settings.empty())
-		EmuFolders::Settings = Path::Combine(EmuFolders::DataRoot, "inis");
-
-	// Write crash dumps to the data directory, since that'll be accessible for certain.
-	CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
-
-	// the resources directory should exist, bail out if not
-	if (!FileSystem::DirectoryExists(EmuFolders::Resources.c_str()))
-	{
-		QMessageBox::critical(nullptr, QStringLiteral("Error"),
-			QStringLiteral("Resources directory is missing, your installation is incomplete."));
-		return false;
-	}
-
-	return true;
-}
-
-bool QtHost::ShouldUsePortableMode()
-{
-	// Check whether portable.ini exists in the program directory.
-	return FileSystem::FileExists(Path::Combine(EmuFolders::AppRoot, "portable.ini").c_str());
-}
-
-void QtHost::SetAppRoot()
-{
-	std::string program_path(FileSystem::GetProgramPath());
-	Console.WriteLn("Program Path: %s", program_path.c_str());
-
-	EmuFolders::AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
-}
-
-void QtHost::SetResourcesDirectory()
-{
-#ifndef __APPLE__
-	// On Windows/Linux, these are in the binary directory.
-	EmuFolders::Resources = Path::Combine(EmuFolders::AppRoot, "resources");
-#else
-	// On macOS, this is in the bundle resources directory.
-	EmuFolders::Resources = Path::Canonicalize(Path::Combine(EmuFolders::AppRoot, "../Resources"));
-#endif
-}
-
-void QtHost::SetDataDirectory()
-{
-	if (ShouldUsePortableMode())
-	{
-		EmuFolders::DataRoot = EmuFolders::AppRoot;
-		return;
-	}
-
-#if defined(_WIN32)
-	// On Windows, use My Documents\PCSX2 to match old installs.
-	PWSTR documents_directory;
-	if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
-	{
-		if (std::wcslen(documents_directory) > 0)
-			EmuFolders::DataRoot = Path::Combine(StringUtil::WideStringToUTF8String(documents_directory), "PCSX2");
-		CoTaskMemFree(documents_directory);
-	}
-#elif defined(__linux__)
-	// Use $XDG_CONFIG_HOME/PCSX2 if it exists.
-	const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
-	if (xdg_config_home && Path::IsAbsolute(xdg_config_home))
-	{
-		EmuFolders::DataRoot = Path::Combine(xdg_config_home, "PCSX2");
-	}
-	else
-	{
-		// Use ~/PCSX2 for non-XDG, and ~/.config/PCSX2 for XDG.
-		// Maybe we should drop the former when Qt goes live.
-		const char* home_dir = getenv("HOME");
-		if (home_dir)
-		{
-#ifndef XDG_STD
-			EmuFolders::DataRoot = Path::Combine(home_dir, "PCSX2");
-#else
-			// ~/.config should exist, but just in case it doesn't and this is a fresh profile..
-			const std::string config_dir(Path::Combine(home_dir, ".config"));
-			if (!FileSystem::DirectoryExists(config_dir.c_str()))
-				FileSystem::CreateDirectoryPath(config_dir.c_str(), false);
-
-			EmuFolders::DataRoot = Path::Combine(config_dir, "PCSX2");
-#endif
-		}
-	}
-#elif defined(__APPLE__)
-	static constexpr char MAC_DATA_DIR[] = "Library/Application Support/PCSX2";
-	const char* home_dir = getenv("HOME");
-	if (home_dir)
-		EmuFolders::DataRoot = Path::Combine(home_dir, MAC_DATA_DIR);
-#endif
-
-	// make sure it exists
-	if (!EmuFolders::DataRoot.empty() && !FileSystem::DirectoryExists(EmuFolders::DataRoot.c_str()))
-	{
-		// we're in trouble if we fail to create this directory... but try to hobble on with portable
-		if (!FileSystem::CreateDirectoryPath(EmuFolders::DataRoot.c_str(), false))
-			EmuFolders::DataRoot.clear();
-	}
-
-	// couldn't determine the data directory? fallback to portable.
-	if (EmuFolders::DataRoot.empty())
-		EmuFolders::DataRoot = EmuFolders::AppRoot;
-}
-
 bool QtHost::InitializeConfig()
 {
-	if (!SetCriticalFolders())
+	if (!CommonHost::InitializeCriticalFolders())
+	{
+		QMessageBox::critical(nullptr, QStringLiteral("PCSX2"),
+			QStringLiteral("One or more critical directories are missing, your installation may be incomplete."));
 		return false;
+	}
 
 	const std::string path(Path::Combine(EmuFolders::Settings, "PCSX2.ini"));
 	Console.WriteLn("Loading config from %s.", path.c_str());
+
 	s_base_settings_interface = std::make_unique<INISettingsInterface>(std::move(path));
 	Host::Internal::SetBaseSettingsLayer(s_base_settings_interface.get());
-
-	uint settings_version;
-	if (!s_base_settings_interface->Load() ||
-		!s_base_settings_interface->GetUIntValue("UI", "SettingsVersion", &settings_version) ||
-		settings_version != SETTINGS_VERSION)
+	if (!s_base_settings_interface->Load() || !CommonHost::CheckSettingsVersion())
 	{
-		QMessageBox::critical(
-			g_main_window, qApp->translate("QtHost", "Settings Reset"),
-			qApp->translate("QtHost", "Settings do not exist or are the incorrect version, resetting to defaults."));
-		SetDefaultConfig();
-		s_base_settings_interface->Save();
+		// If the config file doesn't exist, assume this is a new install and don't prompt to overwrite.
+		if (FileSystem::FileExists(s_base_settings_interface->GetFileName().c_str()) &&
+			QMessageBox::question(nullptr, QStringLiteral("PCSX2"),
+				QStringLiteral("Settings failed to load, or are the incorrect version. Clicking Yes will reset all settings to defaults. Do you want to continue?")) != QMessageBox::Yes)
+		{
+			return false;
+		}
+
+		CommonHost::SetDefaultSettings(*s_base_settings_interface, true, true, true, true, true);
+		SaveSettings();
 	}
 
-	// TODO: Handle reset to defaults if load fails.
-	EmuFolders::LoadConfig(*s_base_settings_interface.get());
-	EmuFolders::EnsureFoldersExist();
+	CommonHost::LoadStartupSettings();
 	Host::UpdateLogging(QtHost::InNoGUIMode());
 	return true;
 }
 
-void QtHost::SetDefaultConfig()
+void Host::SetDefaultUISettings(SettingsInterface& si)
 {
-	EmuFolders::SetDefaults();
-	EmuFolders::EnsureFoldersExist();
+	Host::SetDefaultLoggingSettings(si);
 
-	SettingsInterface& si = *s_base_settings_interface.get();
-	si.SetUIntValue("UI", "SettingsVersion", SETTINGS_VERSION);
-	VMManager::SetDefaultSettings(si);
-	EmuFolders::Save(si);
-	PAD::SetDefaultControllerConfig(si);
-	PAD::SetDefaultHotkeyConfig(si);
-}
-
-void QtHost::SetBaseBoolSettingValue(const char* section, const char* key, bool value)
-{
-	auto lock = Host::GetSettingsLock();
-	s_base_settings_interface->SetBoolValue(section, key, value);
-	QueueSettingsSave();
-}
-
-void QtHost::SetBaseIntSettingValue(const char* section, const char* key, int value)
-{
-	auto lock = Host::GetSettingsLock();
-	s_base_settings_interface->SetIntValue(section, key, value);
-	QueueSettingsSave();
-}
-
-void QtHost::SetBaseFloatSettingValue(const char* section, const char* key, float value)
-{
-	auto lock = Host::GetSettingsLock();
-	s_base_settings_interface->SetFloatValue(section, key, value);
-	QueueSettingsSave();
-}
-
-void QtHost::SetBaseStringSettingValue(const char* section, const char* key, const char* value)
-{
-	auto lock = Host::GetSettingsLock();
-	s_base_settings_interface->SetStringValue(section, key, value);
-	QueueSettingsSave();
-}
-
-void QtHost::SetBaseStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values)
-{
-	auto lock = Host::GetSettingsLock();
-	s_base_settings_interface->SetStringList(section, key, values);
-	QueueSettingsSave();
-}
-
-bool QtHost::AddBaseValueToStringList(const char* section, const char* key, const char* value)
-{
-	auto lock = Host::GetSettingsLock();
-	if (!s_base_settings_interface->AddToStringList(section, key, value))
-		return false;
-
-	QueueSettingsSave();
-	return true;
-}
-
-bool QtHost::RemoveBaseValueFromStringList(const char* section, const char* key, const char* value)
-{
-	auto lock = Host::GetSettingsLock();
-	if (!s_base_settings_interface->RemoveFromStringList(section, key, value))
-		return false;
-
-	QueueSettingsSave();
-	return true;
-}
-
-void QtHost::RemoveBaseSettingValue(const char* section, const char* key)
-{
-	auto lock = Host::GetSettingsLock();
-	s_base_settings_interface->DeleteValue(section, key);
-	QueueSettingsSave();
+	si.SetBoolValue("UI", "InhibitScreensaver", true);
+	si.SetBoolValue("UI", "ConfirmShutdown", true);
+	si.SetBoolValue("UI", "StartPaused", false);
+	si.SetBoolValue("UI", "PauseOnFocusLoss", false);
+	si.SetBoolValue("UI", "StartFullscreen", false);
+	si.SetBoolValue("UI", "DoubleClickTogglesFullscreen", true);
+	si.SetBoolValue("UI", "HideMouseCursor", false);
+	si.SetBoolValue("UI", "RenderToSeparateWindow", false);
+	si.SetBoolValue("UI", "HideMainWindowWhenRunning", false);
+	si.SetBoolValue("UI", "DisableWindowResize", false);
+	si.SetStringValue("UI", "Theme", MainWindow::DEFAULT_THEME_NAME);
 }
 
 void QtHost::SaveSettings()
@@ -324,13 +145,20 @@ void QtHost::SaveSettings()
 	s_settings_save_timer.release();
 }
 
-void QtHost::QueueSettingsSave()
+void Host::CommitBaseSettingChanges()
 {
+	if (!QtHost::IsOnUIThread())
+	{
+		QtHost::RunOnUIThread(&Host::CommitBaseSettingChanges);
+		return;
+	}
+
+	auto lock = Host::GetSettingsLock();
 	if (s_settings_save_timer)
 		return;
 
 	s_settings_save_timer = std::make_unique<QTimer>();
-	s_settings_save_timer->connect(s_settings_save_timer.get(), &QTimer::timeout, SaveSettings);
+	s_settings_save_timer->connect(s_settings_save_timer.get(), &QTimer::timeout, &QtHost::SaveSettings);
 	s_settings_save_timer->setSingleShot(true);
 	s_settings_save_timer->start(SETTINGS_SAVE_DELAY);
 }
@@ -345,12 +173,33 @@ bool QtHost::InNoGUIMode()
 	return s_nogui_mode;
 }
 
+bool QtHost::IsOnUIThread()
+{
+	QThread* ui_thread = qApp->thread();
+	return (QThread::currentThread() == ui_thread);
+}
+
 void QtHost::RunOnUIThread(const std::function<void()>& func, bool block /*= false*/)
 {
 	// main window always exists, so it's fine to attach it to that.
 	QMetaObject::invokeMethod(g_main_window, "runOnUIThread",
 		block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
 		Q_ARG(const std::function<void()>&, func));
+}
+
+bool Host::RequestResetSettings(bool folders, bool core, bool controllers, bool hotkeys, bool ui)
+{
+	{
+		auto lock = Host::GetSettingsLock();
+		CommonHost::SetDefaultSettings(*s_base_settings_interface.get(), folders, core, controllers, hotkeys, ui);
+	}
+	Host::CommitBaseSettingChanges();
+
+	g_emu_thread->applySettings();
+	if (folders)
+		g_emu_thread->updateEmuFolders();
+
+	return true;
 }
 
 QString QtHost::GetAppNameAndVersion()
@@ -725,11 +574,7 @@ int main(int argc, char* argv[])
 
 	// Bail out if we can't find any config.
 	if (!QtHost::InitializeConfig())
-	{
-		// NOTE: No point translating this, because no config means the language won't be loaded anyway.
-		QMessageBox::critical(nullptr, QStringLiteral("Error"), QStringLiteral("Failed to initialize config."));
 		return EXIT_FAILURE;
-	}
 
 	// Set theme before creating any windows.
 	MainWindow::updateApplicationTheme();

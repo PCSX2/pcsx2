@@ -454,7 +454,8 @@ void AutoUpdaterDialog::checkIfUpdateNeeded()
 
 void AutoUpdaterDialog::skipThisUpdateClicked()
 {
-	QtHost::SetBaseStringSettingValue("AutoUpdater", "LastVersion", m_latest_version.toUtf8().constData());
+	Host::SetBaseStringSettingValue("AutoUpdater", "LastVersion", m_latest_version.toUtf8().constData());
+	Host::CommitBaseSettingChanges();
 	done(0);
 }
 

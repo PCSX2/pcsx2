@@ -146,9 +146,6 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this, &SettingsDialog::onCategoryCurrentRowChanged);
 	connect(m_ui.closeButton, &QPushButton::clicked, this, &SettingsDialog::accept);
 	connect(m_ui.restoreDefaultsButton, &QPushButton::clicked, this, &SettingsDialog::onRestoreDefaultsClicked);
-
-	// TODO: Remove this once they're implemented.
-	m_ui.restoreDefaultsButton->setVisible(false);
 }
 
 SettingsDialog::~SettingsDialog()
@@ -162,6 +159,11 @@ void SettingsDialog::closeEvent(QCloseEvent*)
 	// we need to clean up ourselves, since we're not modal
 	if (isPerGameSettings())
 		deleteLater();
+}
+
+QString SettingsDialog::getCategory() const
+{
+	return m_ui.settingsCategory->item(m_ui.settingsCategory->currentRow())->text();
 }
 
 void SettingsDialog::setCategory(const char* category)
@@ -188,14 +190,20 @@ void SettingsDialog::onCategoryCurrentRowChanged(int row)
 
 void SettingsDialog::onRestoreDefaultsClicked()
 {
-	if (QMessageBox::question(this, tr("Confirm Restore Defaults"),
-			tr("Are you sure you want to restore the default settings? Any preferences will be lost."), QMessageBox::Yes,
-			QMessageBox::No) != QMessageBox::Yes)
-	{
-		return;
-	}
+	QMessageBox msgbox(this);
+	msgbox.setIcon(QMessageBox::Question);
+	msgbox.setWindowTitle(tr("Confirm Restore Defaults"));
+	msgbox.setText(tr("Are you sure you want to restore the default settings? Any preferences will be lost."));
 
-	// TODO
+	QCheckBox* ui_cb = new QCheckBox(tr("Reset UI Settings"), &msgbox);
+	msgbox.setCheckBox(ui_cb);
+	msgbox.addButton(QMessageBox::Yes);
+	msgbox.addButton(QMessageBox::No);
+	msgbox.setDefaultButton(QMessageBox::Yes);
+	if (msgbox.exec() != QMessageBox::Yes)
+		return;
+
+	g_main_window->resetSettings(ui_cb->isChecked());
 }
 
 void SettingsDialog::addWidget(QWidget* widget, QString title, QString icon, QString help_text)
@@ -376,7 +384,8 @@ void SettingsDialog::setBoolSettingValue(const char* section, const char* key, s
 	}
 	else
 	{
-		value.has_value() ? QtHost::SetBaseBoolSettingValue(section, key, value.value()) : QtHost::RemoveBaseSettingValue(section, key);
+		value.has_value() ? Host::SetBaseBoolSettingValue(section, key, value.value()) : Host::RemoveBaseSettingValue(section, key);
+		Host::CommitBaseSettingChanges();
 		g_emu_thread->applySettings();
 	}
 }
@@ -391,7 +400,8 @@ void SettingsDialog::setIntSettingValue(const char* section, const char* key, st
 	}
 	else
 	{
-		value.has_value() ? QtHost::SetBaseIntSettingValue(section, key, value.value()) : QtHost::RemoveBaseSettingValue(section, key);
+		value.has_value() ? Host::SetBaseIntSettingValue(section, key, value.value()) : Host::RemoveBaseSettingValue(section, key);
+		Host::CommitBaseSettingChanges();
 		g_emu_thread->applySettings();
 	}
 }
@@ -406,7 +416,8 @@ void SettingsDialog::setFloatSettingValue(const char* section, const char* key, 
 	}
 	else
 	{
-		value.has_value() ? QtHost::SetBaseFloatSettingValue(section, key, value.value()) : QtHost::RemoveBaseSettingValue(section, key);
+		value.has_value() ? Host::SetBaseFloatSettingValue(section, key, value.value()) : Host::RemoveBaseSettingValue(section, key);
+		Host::CommitBaseSettingChanges();
 		g_emu_thread->applySettings();
 	}
 }
@@ -421,7 +432,8 @@ void SettingsDialog::setStringSettingValue(const char* section, const char* key,
 	}
 	else
 	{
-		value.has_value() ? QtHost::SetBaseStringSettingValue(section, key, value.value()) : QtHost::RemoveBaseSettingValue(section, key);
+		value.has_value() ? Host::SetBaseStringSettingValue(section, key, value.value()) : Host::RemoveBaseSettingValue(section, key);
+		Host::CommitBaseSettingChanges();
 		g_emu_thread->applySettings();
 	}
 }

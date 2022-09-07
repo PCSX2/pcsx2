@@ -347,7 +347,8 @@ void GameListWidget::onTableViewHeaderSortIndicatorChanged(int, Qt::SortOrder)
 void GameListWidget::listZoom(float delta)
 {
 	const float new_scale = std::clamp(m_model->getCoverScale() + delta, MIN_SCALE, MAX_SCALE);
-	QtHost::SetBaseFloatSettingValue("UI", "GameListCoverArtScale", new_scale);
+	Host::SetBaseFloatSettingValue("UI", "GameListCoverArtScale", new_scale);
+	Host::CommitBaseSettingChanges();
 	m_model->setCoverScale(new_scale);
 	m_model->updateCacheSize(width(), height());
 	updateListFont();
@@ -368,7 +369,8 @@ void GameListWidget::gridIntScale(int int_scale)
 {
 	const float new_scale = std::clamp(static_cast<float>(int_scale) / 100.0f, MIN_SCALE, MAX_SCALE);
 
-	QtHost::SetBaseFloatSettingValue("UI", "GameListCoverArtScale", new_scale);
+	Host::SetBaseFloatSettingValue("UI", "GameListCoverArtScale", new_scale);
+	Host::CommitBaseSettingChanges();
 	m_model->setCoverScale(new_scale);
 	m_model->updateCacheSize(width(), height());
 	updateListFont();
@@ -389,7 +391,8 @@ void GameListWidget::showGameList()
 		return;
 	}
 
-	QtHost::SetBaseBoolSettingValue("UI", "GameListGridView", false);
+	Host::SetBaseBoolSettingValue("UI", "GameListGridView", false);
+	Host::CommitBaseSettingChanges();
 	m_ui.stack->setCurrentIndex(0);
 	resizeTableViewColumnsToFit();
 	updateToolbar();
@@ -405,7 +408,8 @@ void GameListWidget::showGameGrid()
 		return;
 	}
 
-	QtHost::SetBaseBoolSettingValue("UI", "GameListGridView", true);
+	Host::SetBaseBoolSettingValue("UI", "GameListGridView", true);
+	Host::CommitBaseSettingChanges();
 	m_ui.stack->setCurrentIndex(1);
 	updateToolbar();
 	emit layoutChange();
@@ -416,7 +420,8 @@ void GameListWidget::setShowCoverTitles(bool enabled)
 	if (m_model->getShowCoverTitles() == enabled)
 		return;
 
-	QtHost::SetBaseBoolSettingValue("UI", "GameListShowCoverTitles", enabled);
+	Host::SetBaseBoolSettingValue("UI", "GameListShowCoverTitles", enabled);
+	Host::CommitBaseSettingChanges();
 	m_model->setShowCoverTitles(enabled);
 	if (isShowingGameGrid())
 		m_model->refresh();
@@ -508,14 +513,16 @@ void GameListWidget::saveTableViewColumnVisibilitySettings()
 	for (int column = 0; column < GameListModel::Column_Count; column++)
 	{
 		const bool visible = !m_table_view->isColumnHidden(column);
-		QtHost::SetBaseBoolSettingValue("GameListTableView", getColumnVisibilitySettingsKeyName(column).c_str(), visible);
+		Host::SetBaseBoolSettingValue("GameListTableView", getColumnVisibilitySettingsKeyName(column).c_str(), visible);
+		Host::CommitBaseSettingChanges();
 	}
 }
 
 void GameListWidget::saveTableViewColumnVisibilitySettings(int column)
 {
 	const bool visible = !m_table_view->isColumnHidden(column);
-	QtHost::SetBaseBoolSettingValue("GameListTableView", getColumnVisibilitySettingsKeyName(column).c_str(), visible);
+	Host::SetBaseBoolSettingValue("GameListTableView", getColumnVisibilitySettingsKeyName(column).c_str(), visible);
+	Host::CommitBaseSettingChanges();
 }
 
 void GameListWidget::loadTableViewColumnSortSettings()
@@ -538,11 +545,12 @@ void GameListWidget::saveTableViewColumnSortSettings()
 
 	if (sort_column >= 0 && sort_column < GameListModel::Column_Count)
 	{
-		QtHost::SetBaseStringSettingValue(
+		Host::SetBaseStringSettingValue(
 			"GameListTableView", "SortColumn", GameListModel::getColumnName(static_cast<GameListModel::Column>(sort_column)));
 	}
 
-	QtHost::SetBaseBoolSettingValue("GameListTableView", "SortDescending", sort_descending);
+	Host::SetBaseBoolSettingValue("GameListTableView", "SortDescending", sort_descending);
+	Host::CommitBaseSettingChanges();
 }
 
 const GameList::Entry* GameListWidget::getSelectedEntry() const

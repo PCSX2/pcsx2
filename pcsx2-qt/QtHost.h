@@ -46,6 +46,9 @@ namespace QtHost
 	/// Sets NoGUI mode (implys batch mode, does not display main window, exits on shutdown).
 	bool InNoGUIMode();
 
+	/// Returns true if the calling thread is the UI thread.
+	bool IsOnUIThread();
+
 	/// Executes a function on the UI thread.
 	void RunOnUIThread(const std::function<void()>& func, bool block = false);
 
@@ -57,17 +60,6 @@ namespace QtHost
 
 	/// Returns the base path for resources. This may be : prefixed, if we're using embedded resources.
 	QString GetResourcesBasePath();
-
-	/// Thread-safe settings access.
-	void SetBaseBoolSettingValue(const char* section, const char* key, bool value);
-	void SetBaseIntSettingValue(const char* section, const char* key, int value);
-	void SetBaseFloatSettingValue(const char* section, const char* key, float value);
-	void SetBaseStringSettingValue(const char* section, const char* key, const char* value);
-	void SetBaseStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
-	bool AddBaseValueToStringList(const char* section, const char* key, const char* value);
-	bool RemoveBaseValueFromStringList(const char* section, const char* key, const char* value);
-	void RemoveBaseSettingValue(const char* section, const char* key);
-	void QueueSettingsSave();
 
 	/// VM state, safe to access on UI thread.
 	bool IsVMValid();
