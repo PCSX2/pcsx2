@@ -246,8 +246,10 @@ void GameListWidget::cancelRefresh()
 
 	m_refresh_thread->cancel();
 	m_refresh_thread->wait();
-	QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-	pxAssertRel(!m_refresh_thread, "Game list thread should be unreferenced by now");
+
+	// Cancelling might not be instant if we're say, scanning a gzip dump. Wait until it's done.
+	while (m_refresh_thread)
+		QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 }
 
 void GameListWidget::refreshImages()
