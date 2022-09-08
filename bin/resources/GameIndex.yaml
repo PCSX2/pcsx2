@@ -10537,18 +10537,38 @@ SLES-50803:
 SLES-50804:
   name: "Deus Ex"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in HUD and text boxes.
+    texturePreloading: 1 # Performs much better with partial.
+    preloadFrameData: 1 # Fixes loading screen images being cut off two thirds.
 SLES-50805:
   name: "Deus Ex"
   region: "PAL-G"
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in HUD and text boxes.
+    texturePreloading: 1 # Performs much better with partial.
+    preloadFrameData: 1 # Fixes loading screen images being cut off two thirds.
 SLES-50806:
   name: "Deus Ex"
   region: "PAL-F"
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in HUD and text boxes.
+    texturePreloading: 1 # Performs much better with partial.
+    preloadFrameData: 1 # Fixes loading screen images being cut off two thirds.
 SLES-50807:
   name: "Deus Ex"
   region: "PAL-I"
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in HUD and text boxes.
+    texturePreloading: 1 # Performs much better with partial.
+    preloadFrameData: 1 # Fixes loading screen images being cut off two thirds.
 SLES-50808:
   name: "Deus Ex"
   region: "PAL-S"
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in HUD and text boxes.
+    texturePreloading: 1 # Performs much better with partial.
+    preloadFrameData: 1 # Fixes loading screen images being cut off two thirds.
 SLES-50809:
   name: "Next Generation Tennis"
   region: "PAL-M6"
@@ -38653,6 +38673,10 @@ SLUS-20111:
   name: "Deus Ex - The Conspiracy"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in HUD and text boxes.
+    texturePreloading: 1 # Performs much better with partial.
+    preloadFrameData: 1 # Fixes loading screen images being cut off two thirds.
 SLUS-20112:
   name: "Star Trek - Shattered Universe"
   region: "NTSC-U"
