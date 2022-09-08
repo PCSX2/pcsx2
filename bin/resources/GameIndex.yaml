@@ -955,6 +955,8 @@ SCAJ-20115:
 SCAJ-20116:
   name: "Death by Degrees - Tekken - Nina Williams"
   region: "NTSC-Ch-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes FMV lines.
 SCAJ-20117:
   name: "Fu-un Bakumatsu-den"
   region: "NTSC-Unk"
@@ -3453,6 +3455,8 @@ SCES-52586:
   name: "Death by Degrees"
   region: "PAL-E-S"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes FMV lines.
 SCES-52596:
   name: "This is Football 2005"
   region: "PAL-Unk"
@@ -3529,10 +3533,14 @@ SCES-53033:
 SCES-53053:
   name: "Death by Degrees"
   region: "PAL-F-I"
+  gsHWFixes:
+    alignSprite: 1 # Fixes FMV lines.
 SCES-53054:
   name: "Death by Degrees"
   region: "PAL-E-G"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes FMV lines.
 SCES-53055:
   name: "Eyetoy - Antigrav"
   region: "PAL-M5"
@@ -23375,6 +23383,11 @@ SLPM-60254:
 SLPM-60256:
   name: "Dengeki D73 demo"
   region: "NTSC-J"
+SLPM-60257:
+  name: "Death by Degrees"
+  region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes FMV lines.
 SLPM-60260:
   name: "D1 Professional Drift Grand Prix Series [Taikenban]"
   region: "NTSC-J"
@@ -35844,6 +35857,8 @@ SLPS-25421:
 SLPS-25422:
   name: "Death by Degrees - Tekken - Nina Williams"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes FMV lines.
 SLPS-25423:
   name: "Kaitou Apricot - Complete Edition [Limited Edition]"
   region: "NTSC-J"
@@ -42319,6 +42334,8 @@ SLUS-20934:
   name: "Death by Degrees"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes FMV lines.
 SLUS-20935:
   name: "IHRA Professional Drag Racing 2005"
   region: "NTSC-U"
