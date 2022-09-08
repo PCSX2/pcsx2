@@ -80,7 +80,10 @@ public:
 				return false;
 			if (m_filter_region != GameList::Region::Count && entry->region != m_filter_region)
 				return false;
-			if (!m_filter_name.isEmpty() && !QString::fromStdString(entry->title).contains(m_filter_name, Qt::CaseInsensitive))
+			if (!m_filter_name.isEmpty() &&
+				!QString::fromStdString(entry->path).contains(m_filter_name, Qt::CaseInsensitive) &&
+				!QString::fromStdString(entry->serial).contains(m_filter_name, Qt::CaseInsensitive) &&
+				!QString::fromStdString(entry->title).contains(m_filter_name, Qt::CaseInsensitive))
 				return false;
 		}
 
