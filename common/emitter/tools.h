@@ -185,6 +185,9 @@ union SSE_MXCSR
 			FlushToZero : 1;
 	};
 
+	static SSE_MXCSR GetCurrent();
+	static void SetCurrent(const SSE_MXCSR& value);
+
 	SSE_RoundMode GetRoundMode() const;
 	SSE_MXCSR& SetRoundMode(SSE_RoundMode mode);
 	SSE_MXCSR& ClearExceptionFlags();

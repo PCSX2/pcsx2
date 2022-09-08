@@ -353,7 +353,7 @@ double GetVerticalFrequency()
 
 static double AdjustToHostRefreshRate(double vertical_frequency, double frame_limit)
 {
-	if (!EmuConfig.GS.SyncToHostRefreshRate || EmuConfig.GS.LimitScalar != 1.0)
+	if (!EmuConfig.GS.SyncToHostRefreshRate || EmuConfig.GS.LimitScalar != 1.0f)
 	{
 		SPU2SetDeviceSampleRateMultiplier(1.0);
 		s_use_vsync_for_timing = false;
@@ -413,7 +413,7 @@ u32 UpdateVSyncRate()
 		break;
 	case GS_VideoMode::PAL:
 	case GS_VideoMode::DVD_PAL:
-		custom = (EmuConfig.GS.FrameratePAL != 50.0);
+		custom = (EmuConfig.GS.FrameratePAL != Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_PAL);
 		if (gsIsInterlaced)
 			total_scanlines = SCANLINES_TOTAL_PAL_I;
 		else
@@ -421,7 +421,7 @@ u32 UpdateVSyncRate()
 		break;
 	case GS_VideoMode::NTSC:
 	case GS_VideoMode::DVD_NTSC:
-		custom = (EmuConfig.GS.FramerateNTSC != 59.94);
+		custom = (EmuConfig.GS.FramerateNTSC != Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_NTSC);
 		if (gsIsInterlaced)
 			total_scanlines = SCANLINES_TOTAL_NTSC_I;
 		else
@@ -564,7 +564,7 @@ static __fi void frameLimitUpdateCore()
 static __fi void frameLimit()
 {
 	// Framelimiter off in settings? Framelimiter go brrr.
-	if (EmuConfig.GS.LimitScalar == 0.0 || s_use_vsync_for_timing)
+	if (EmuConfig.GS.LimitScalar == 0.0f || s_use_vsync_for_timing)
 	{
 		frameLimitUpdateCore();
 		return;

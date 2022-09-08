@@ -194,15 +194,17 @@ int IniLoader::EntryBitfield(const wxString& var, int value, const int defvalue)
 	return result;
 }
 
-void IniLoader::Entry(const wxString& var, double& value, const double defvalue)
+void IniLoader::Entry(const wxString& var, float& value, const float defvalue)
 {
-	auto readval = wxString::FromCDouble(value);
+	auto readval = wxString::FromCDouble(static_cast<double>(value));
 
 	if (m_Config)
 		m_Config->Read(var, &readval);
 
-	if (!readval.ToCDouble(&value))
-		value = 0.0;
+	double dvalue;
+	if (!readval.ToCDouble(&dvalue))
+		dvalue = 0.0;
+	value = static_cast<float>(dvalue);
 }
 
 void IniLoader::Entry(const wxString& var, wxPoint& value, const wxPoint defvalue)
@@ -380,12 +382,12 @@ int IniSaver::EntryBitfield(const wxString& var, int value, const int defvalue)
 	return value;
 }
 
-void IniSaver::Entry(const wxString& var, double& value, const double defvalue)
+void IniSaver::Entry(const wxString& var, float& value, const float defvalue)
 {
 	if (!m_Config)
 		return;
 
-	m_Config->Write(var, wxString::FromCDouble(value));
+	m_Config->Write(var, wxString::FromCDouble(static_cast<double>(value)));
 }
 
 void IniSaver::Entry(const wxString& var, wxPoint& value, const wxPoint defvalue)

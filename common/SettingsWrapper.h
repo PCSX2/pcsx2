@@ -29,7 +29,7 @@ public:
 	virtual void Entry(const char* section, const char* var, int& value, const int defvalue = 0) = 0;
 	virtual void Entry(const char* section, const char* var, uint& value, const uint defvalue = 0) = 0;
 	virtual void Entry(const char* section, const char* var, bool& value, const bool defvalue = false) = 0;
-	virtual void Entry(const char* section, const char* var, double& value, const double defvalue = 0.0) = 0;
+	virtual void Entry(const char* section, const char* var, float& value, const float defvalue = 0.0) = 0;
 	virtual void Entry(const char* section, const char* var, std::string& value, const std::string& default_value = std::string()) = 0;
 
 	// This special form of Entry is provided for bitfields, which cannot be passed by reference.
@@ -65,7 +65,7 @@ public:
 	void Entry(const char* section, const char* var, int& value, const int defvalue = 0) override;
 	void Entry(const char* section, const char* var, uint& value, const uint defvalue = 0) override;
 	void Entry(const char* section, const char* var, bool& value, const bool defvalue = false) override;
-	void Entry(const char* section, const char* var, double& value, const double defvalue = 0.0) override;
+	void Entry(const char* section, const char* var, float& value, const float defvalue = 0.0) override;
 
 	void Entry(const char* section, const char* var, std::string& value, const std::string& default_value = std::string()) override;
 	bool EntryBitBool(const char* section, const char* var, bool value, const bool defvalue = false) override;
@@ -86,7 +86,7 @@ public:
 	void Entry(const char* section, const char* var, int& value, const int defvalue = 0) override;
 	void Entry(const char* section, const char* var, uint& value, const uint defvalue = 0) override;
 	void Entry(const char* section, const char* var, bool& value, const bool defvalue = false) override;
-	void Entry(const char* section, const char* var, double& value, const double defvalue = 0.0) override;
+	void Entry(const char* section, const char* var, float& value, const float defvalue = 0.0) override;
 
 	void Entry(const char* section, const char* var, std::string& value, const std::string& default_value = std::string()) override;
 	bool EntryBitBool(const char* section, const char* var, bool value, const bool defvalue = false) override;

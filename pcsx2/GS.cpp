@@ -63,7 +63,7 @@ void gsUpdateFrequency(Pcsx2Config& config)
 			config.GS.LimitScalar = config.Framerate.TurboScalar;
 			break;
 		case LimiterModeType::Unlimited:
-			config.GS.LimitScalar = 0.0;
+			config.GS.LimitScalar = 0.0f;
 			break;
 		default:
 			pxAssert("Unknown framelimiter mode!");
@@ -71,7 +71,7 @@ void gsUpdateFrequency(Pcsx2Config& config)
 	}
 	else
 	{
-		config.GS.LimitScalar = 0.0;
+		config.GS.LimitScalar = 0.0f;
 	}
 
 	UpdateVSyncRate();
