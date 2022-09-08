@@ -511,7 +511,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 #define GSSettingIntEx(var, name) var = theApp.GetConfigI(name)
 #define GSSettingBool(var) var = theApp.GetConfigB(#var)
 #define GSSettingBoolEx(var, name) var = theApp.GetConfigB(name)
-#define GSSettingFloat(var) var = static_cast<double>(theApp.GetConfigI(#var))
+#define GSSettingFloat(var) var = static_cast<float>(theApp.GetConfigI(#var))
 #define GSSettingIntEnumEx(var, name) var = static_cast<decltype(var)>(theApp.GetConfigI(name))
 #define GSSettingString(var) var = theApp.GetConfigS(#var)
 #define GSSettingStringEx(var, name) var = theApp.GetConfigS(name)
@@ -680,7 +680,7 @@ bool Pcsx2Config::GSOptions::UseHardwareRenderer() const
 
 VsyncMode Pcsx2Config::GetEffectiveVsyncMode() const
 {
-	if (GS.LimitScalar != 1.0)
+	if (GS.LimitScalar != 1.0f)
 	{
 		Console.WriteLn("Vsync is OFF");
 		return VsyncMode::Off;
@@ -1002,9 +1002,9 @@ void Pcsx2Config::FramerateOptions::SanityCheck()
 {
 	// Ensure Conformation of various options...
 
-	NominalScalar = std::clamp(NominalScalar, 0.05, 10.0);
-	TurboScalar = std::clamp(TurboScalar, 0.05, 10.0);
-	SlomoScalar = std::clamp(SlomoScalar, 0.05, 10.0);
+	NominalScalar = std::clamp(NominalScalar, 0.05f, 10.0f);
+	TurboScalar = std::clamp(TurboScalar, 0.05f, 10.0f);
+	SlomoScalar = std::clamp(SlomoScalar, 0.05f, 10.0f);
 }
 
 void Pcsx2Config::FramerateOptions::LoadSave(SettingsWrapper& wrap)
@@ -1049,6 +1049,11 @@ Pcsx2Config::Pcsx2Config()
 
 void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 {
+	// Switch the rounding mode back to the system default for loading settings.
+	// That way, we'll get exactly the same values as what we loaded when we first started.
+	const SSE_MXCSR prev_mxcsr(SSE_MXCSR::GetCurrent());
+	SSE_MXCSR::SetCurrent(SSE_MXCSR{SYSTEM_sseMXCSR});
+
 	SettingsWrapSection("EmuCore");
 
 	SettingsWrapBitBool(CdvdVerboseReads);
@@ -1114,6 +1119,8 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	{
 		CurrentAspectRatio = GS.AspectRatio;
 	}
+
+	SSE_MXCSR::SetCurrent(prev_mxcsr);
 }
 
 void Pcsx2Config::LoadSaveMemcards(SettingsWrapper& wrap)

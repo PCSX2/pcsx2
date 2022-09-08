@@ -95,7 +95,7 @@ bool ImGuiManager::Initialize()
 		return false;
 	}
 
-	s_global_scale = std::max(1.0f, g_host_display->GetWindowScale() * static_cast<float>(EmuConfig.GS.OsdScale / 100.0));
+	s_global_scale = std::max(1.0f, g_host_display->GetWindowScale() * (EmuConfig.GS.OsdScale / 100.0f));
 
 	ImGui::CreateContext();
 
@@ -183,7 +183,7 @@ void ImGuiManager::WindowResized()
 void ImGuiManager::UpdateScale()
 {
 	const float window_scale = g_host_display ? g_host_display->GetWindowScale() : 1.0f;
-	const float scale = std::max(window_scale * static_cast<float>(EmuConfig.GS.OsdScale / 100.0), 1.0f);
+	const float scale = std::max(window_scale * (EmuConfig.GS.OsdScale / 100.0f), 1.0f);
 
 #ifdef PCSX2_CORE
 	if (scale == s_global_scale && (!HasFullscreenFonts() || !ImGuiFullscreen::UpdateLayoutScale()))
@@ -728,10 +728,10 @@ void ImGuiManager::DrawPerformanceOverlay()
 			fmt::format_to(std::back_inserter(text), "{}{}%", first ? "" : " | ", static_cast<u32>(std::round(speed)));
 
 			// We read the main config here, since MTGS doesn't get updated with speed toggles.
-			if (EmuConfig.GS.LimitScalar == 0.0)
+			if (EmuConfig.GS.LimitScalar == 0.0f)
 				text += " (Max)";
 			else
-				fmt::format_to(std::back_inserter(text), " ({:.0f}%)", EmuConfig.GS.LimitScalar * 100.0);
+				fmt::format_to(std::back_inserter(text), " ({:.0f}%)", EmuConfig.GS.LimitScalar * 100.0f);
 		}
 		if (!text.empty())
 		{
