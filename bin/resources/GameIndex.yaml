@@ -8485,6 +8485,8 @@ SLAJ-25051:
 SLAJ-25052:
   name: "Urbz, The - Sims in the City"
   region: "NTSC-Unk"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes upscaling lines.
 SLAJ-25053:
   name: "Burnout 3 - Takedown"
   region: "NTSC-Unk"
@@ -15010,6 +15012,8 @@ SLES-52908:
   name: "Urbz, The - Sims in the City"
   region: "PAL-M11"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes upscaling lines.
 SLES-52909:
   name: "UEFA Champions League 2004-2005"
   region: "PAL-E-G"
@@ -28383,6 +28387,8 @@ SLPM-65806:
 SLPM-65807:
   name: "Urbz, The - Sims in the City"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes upscaling lines.
 SLPM-65808:
   name: "Derby Tsuku 4 - Derby Uma o Tsukurou!"
   region: "NTSC-J"
@@ -30876,6 +30882,8 @@ SLPM-66515:
 SLPM-66516:
   name: "Sims, The & The Urbz - Sims in the City [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes upscaling lines.
 SLPM-66518:
   name: "Teikoku Sensenki [Best Version]"
   region: "NTSC-J"
@@ -43042,6 +43050,8 @@ SLUS-21066:
   name: "Urbz, The - Sims in the City"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes upscaling lines.
 SLUS-21067:
   name: "Digimon Rumble Arena 2"
   region: "NTSC-U"
