@@ -12930,6 +12930,7 @@ SLES-51917:
     textureInsideRT: 1 # Fixes the shape of shadows.
     autoFlush: 1 # Fixes water rendering.
     halfPixelOffset: 3 # Fixes bloom misalignment, needs this harsh offset for autoflush.
+    cpuFramebufferConversion: 1 # Fixes shield rendering.
 SLES-51918:
   name: "Prince of Persia - The Sands of Time"
   region: "PAL-M5"
@@ -41588,6 +41589,7 @@ SLUS-20763:
     textureInsideRT: 1 # Fixes the shape of shadows.
     autoFlush: 1 # Fixes water rendering.
     halfPixelOffset: 3 # Fixes bloom misalignment, needs this harsh offset for autoflush.
+    cpuFramebufferConversion: 1 # Fixes shield rendering.
 SLUS-20764:
   name: "Bombastic"
   region: "NTSC-U"
@@ -47623,6 +47625,7 @@ SLUS-29082:
     textureInsideRT: 1 # Fixes the shape of shadows.
     autoFlush: 1 # Fixes water rendering.
     halfPixelOffset: 3 # Fixes bloom misalignment, needs this harsh offset for autoflush.
+    cpuFramebufferConversion: 1 # Fixes shield rendering.
 SLUS-29083:
   name: "Maximo vs. The Army of Zin [Demo]"
   region: "NTSC-U"
