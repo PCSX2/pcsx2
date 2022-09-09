@@ -37591,6 +37591,9 @@ SLPS-25918:
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fixes character sprites.
+SLPS-25919:
+  name: "Sengoku Tenka Touitsu"
+  region: "NTSC-J"
 SLPS-25927:
   name: "Tomb Raider - Underworld"
   region: "NTSC-J"
@@ -37652,6 +37655,9 @@ SLPS-25961:
     eeRoundMode: 1 # Fixes camera issue.
   gameFixes:
     - FpuNegDivHack # Fixes target loss issue.
+SLPS-25978:
+  name: "Shin Master of Monsters Final EX"
+  region: "NTSC-J"
 SLPS-25983:
   name: "King of Fighters 2002, The - Unlimited Match"
   region: "NTSC-J"
