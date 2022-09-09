@@ -2500,8 +2500,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			"Uploads full textures to the GPU on use, rather than only the utilized regions. Can improve performance in some games.",
 			"EmuCore/GS", "texture_preloading", static_cast<int>(TexturePreloadingLevel::Off), s_preloading_options,
 			std::size(s_preloading_options));
-		DrawToggleSetting(bsi, "Accurate Destination Alpha Test",
-			"Implement a more accurate algorithm to compute GS destination alpha testing.", "EmuCore/GS", "accurate_date", true);
 		DrawToggleSetting(bsi, "GPU Palette Conversion",
 			"Applies palettes to textures on the GPU instead of the CPU. Can result in speed improvements in some games.", "EmuCore/GS",
 			"paltex", false);

@@ -974,6 +974,8 @@ SCAJ-20115:
 SCAJ-20116:
   name: "Death by Degrees - Tekken - Nina Williams"
   region: "NTSC-Ch-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes FMV lines.
 SCAJ-20117:
   name: "Fu-un Bakumatsu-den"
   region: "NTSC-Unk"
@@ -3472,6 +3474,8 @@ SCES-52586:
   name: "Death by Degrees"
   region: "PAL-E-S"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes FMV lines.
 SCES-52596:
   name: "This is Football 2005"
   region: "PAL-Unk"
@@ -3548,10 +3552,14 @@ SCES-53033:
 SCES-53053:
   name: "Death by Degrees"
   region: "PAL-F-I"
+  gsHWFixes:
+    alignSprite: 1 # Fixes FMV lines.
 SCES-53054:
   name: "Death by Degrees"
   region: "PAL-E-G"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes FMV lines.
 SCES-53055:
   name: "Eyetoy - Antigrav"
   region: "PAL-M5"
@@ -8502,6 +8510,8 @@ SLAJ-25051:
 SLAJ-25052:
   name: "Urbz, The - Sims in the City"
   region: "NTSC-Unk"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes upscaling lines.
 SLAJ-25053:
   name: "Burnout 3 - Takedown"
   region: "NTSC-Unk"
@@ -10554,18 +10564,38 @@ SLES-50803:
 SLES-50804:
   name: "Deus Ex"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in HUD and text boxes.
+    texturePreloading: 1 # Performs much better with partial.
+    preloadFrameData: 1 # Fixes loading screen images being cut off two thirds.
 SLES-50805:
   name: "Deus Ex"
   region: "PAL-G"
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in HUD and text boxes.
+    texturePreloading: 1 # Performs much better with partial.
+    preloadFrameData: 1 # Fixes loading screen images being cut off two thirds.
 SLES-50806:
   name: "Deus Ex"
   region: "PAL-F"
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in HUD and text boxes.
+    texturePreloading: 1 # Performs much better with partial.
+    preloadFrameData: 1 # Fixes loading screen images being cut off two thirds.
 SLES-50807:
   name: "Deus Ex"
   region: "PAL-I"
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in HUD and text boxes.
+    texturePreloading: 1 # Performs much better with partial.
+    preloadFrameData: 1 # Fixes loading screen images being cut off two thirds.
 SLES-50808:
   name: "Deus Ex"
   region: "PAL-S"
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in HUD and text boxes.
+    texturePreloading: 1 # Performs much better with partial.
+    preloadFrameData: 1 # Fixes loading screen images being cut off two thirds.
 SLES-50809:
   name: "Next Generation Tennis"
   region: "PAL-M6"
@@ -15007,6 +15037,8 @@ SLES-52908:
   name: "Urbz, The - Sims in the City"
   region: "PAL-M11"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes upscaling lines.
 SLES-52909:
   name: "UEFA Champions League 2004-2005"
   region: "PAL-E-G"
@@ -23400,6 +23432,11 @@ SLPM-60254:
 SLPM-60256:
   name: "Dengeki D73 demo"
   region: "NTSC-J"
+SLPM-60257:
+  name: "Death by Degrees"
+  region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes FMV lines.
 SLPM-60260:
   name: "D1 Professional Drift Grand Prix Series [Taikenban]"
   region: "NTSC-J"
@@ -28375,6 +28412,8 @@ SLPM-65806:
 SLPM-65807:
   name: "Urbz, The - Sims in the City"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes upscaling lines.
 SLPM-65808:
   name: "Derby Tsuku 4 - Derby Uma o Tsukurou!"
   region: "NTSC-J"
@@ -30868,6 +30907,8 @@ SLPM-66515:
 SLPM-66516:
   name: "Sims, The & The Urbz - Sims in the City [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes upscaling lines.
 SLPM-66518:
   name: "Teikoku Sensenki [Best Version]"
   region: "NTSC-J"
@@ -35869,6 +35910,8 @@ SLPS-25421:
 SLPS-25422:
   name: "Death by Degrees - Tekken - Nina Williams"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes FMV lines.
 SLPS-25423:
   name: "Kaitou Apricot - Complete Edition [Limited Edition]"
   region: "NTSC-J"
@@ -38663,6 +38706,10 @@ SLUS-20111:
   name: "Deus Ex - The Conspiracy"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in HUD and text boxes.
+    texturePreloading: 1 # Performs much better with partial.
+    preloadFrameData: 1 # Fixes loading screen images being cut off two thirds.
 SLUS-20112:
   name: "Star Trek - Shattered Universe"
   region: "NTSC-U"
@@ -42344,6 +42391,8 @@ SLUS-20934:
   name: "Death by Degrees"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes FMV lines.
 SLUS-20935:
   name: "IHRA Professional Drag Racing 2005"
   region: "NTSC-U"
@@ -43026,6 +43075,8 @@ SLUS-21066:
   name: "Urbz, The - Sims in the City"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes upscaling lines.
 SLUS-21067:
   name: "Digimon Rumble Arena 2"
   region: "NTSC-U"

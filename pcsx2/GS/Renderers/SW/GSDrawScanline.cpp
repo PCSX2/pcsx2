@@ -357,18 +357,14 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 
 		if (sel.zb)
 		{
-			VectorF zbase = VectorF::broadcast64(&scan.p.z);
 			if (sel.zequal)
 			{
-#if _M_SSE >= 0x501
-				z0 = GSVector8::cast(GSVector8i::broadcast32(zbase.extract<0>().f64toi32()));
-#else
-				z0 = GSVector4::cast(zbase.f64toi32());
-				z0 = z0.upld(z0);
-#endif
+				u32 z = static_cast<u32>(scan.p.F64[1]);
+				z0 = VectorF::cast(VectorI(z));
 			}
 			else
 			{
+				VectorF zbase = VectorF::broadcast64(&scan.p.z);
 				z0 = zbase.add64(VectorF::f32to64(&local.d[skip].z.F32[0]));
 				z1 = zbase.add64(VectorF::f32to64(&local.d[skip].z.F32[vlen/2]));
 			}

@@ -109,12 +109,12 @@ union GSScanlineSelector
 			"tfx:%d tcc:%d fst:%d ltf:%d tlu:%d wms:%d wmt:%d mmin:%d lcm:%d tw:%d "
 			"fba:%d cclamp:%d date:%d datm:%d "
 			"prim:%d abe:%d %d%d%d%d fge:%d dthe:%d notest:%d pabe:%d aa1:%d "
-			"fwrite:%d ftest:%d zoverflow:%d zclamp:%d edge:%d",
+			"fwrite:%d ftest:%d zoverflow:%d zequal:%d zclamp:%d edge:%d",
 			fpsm, zpsm, ztst, ztest, atst, afail, iip, rfb, fb, zb, zwrite,
 			tfx, tcc, fst, ltf, tlu, wms, wmt, mmin, lcm, tw,
 			fba, colclamp, date, datm,
 			prim, abe, aba, abb, abc, abd, fge, dthe, notest, pabe, aa1,
-			fwrite, ftest, zoverflow, zclamp, edge);
+			fwrite, ftest, zoverflow, zequal, zclamp, edge);
 		return str;
 	}
 

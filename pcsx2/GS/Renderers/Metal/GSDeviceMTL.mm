@@ -16,6 +16,8 @@
 #include "PrecompiledHeader.h"
 #include "GSMetalCPPAccessible.h"
 #include "GSDeviceMTL.h"
+
+#include "Frontend/MetalHostDisplay.h"
 #include "GSTextureMTL.h"
 #include "GS/GSPerfMon.h"
 #include "HostDisplay.h"
@@ -219,6 +221,14 @@ id<MTLCommandBuffer> GSDeviceMTL::GetRenderCmdBuf()
 	return m_current_render_cmdbuf;
 }
 
+void GSDeviceMTL::DrawCommandBufferFinished(u64 draw, id<MTLCommandBuffer> buffer)
+{
+	// We can do the update non-atomically because we only ever update under the lock
+	u64 newval = std::max(draw, m_last_finished_draw.load(std::memory_order_relaxed));
+	m_last_finished_draw.store(newval, std::memory_order_release);
+	static_cast<MetalHostDisplay*>(m_display)->AccumulateCommandBufferTime(buffer);
+}
+
 void GSDeviceMTL::FlushEncoders()
 {
 	if (!m_current_render_cmdbuf)
@@ -252,11 +262,7 @@ void GSDeviceMTL::FlushEncoders()
 	{
 		std::lock_guard<std::mutex> guard(backref->first);
 		if (GSDeviceMTL* dev = backref->second)
-		{
-			// We can do the update non-atomically because we only ever update under the lock
-			u64 newval = std::max(draw, dev->m_last_finished_draw.load(std::memory_order_relaxed));
-			dev->m_last_finished_draw.store(newval, std::memory_order_release);
-		}
+			dev->DrawCommandBufferFinished(draw, buf);
 	}];
 	[m_current_render_cmdbuf commit];
 	m_current_render_cmdbuf = nil;
@@ -1280,6 +1286,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		color.rgbBlendOperation = MTLBlendOperationMin;
 		color.sourceRGBBlendFactor = MTLBlendFactorOne;
 		color.destinationRGBBlendFactor = MTLBlendFactorOne;
+		color.writeMask = MTLColorWriteMaskRed;
 	}
 	else if (extras.blend_enable && (extras.writemask & MTLColorWriteMaskRGB))
 	{
@@ -1628,6 +1635,9 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 			config.nindices / config.indices_per_prim, config.drawlist->size(), message.c_str()]];
 #endif
 
+
+		g_perfmon.Put(GSPerfMon::DrawCalls, config.drawlist->size());
+		g_perfmon.Put(GSPerfMon::Barriers, config.drawlist->size());
 		for (size_t count = 0, p = 0, n = 0; n < config.drawlist->size(); p += count, ++n)
 		{
 			count = (*config.drawlist)[n] * config.indices_per_prim;
@@ -1637,13 +1647,15 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 			                 indexType:MTLIndexTypeUInt32
 			               indexBuffer:buffer
 			         indexBufferOffset:off + p * sizeof(*config.indices)];
-			g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 		}
 		[enc popDebugGroup];
 	}
 	else if (config.require_full_barrier)
 	{
-		[enc pushDebugGroup:[NSString stringWithFormat:@"Full barrier split draw (%d prims)", config.nindices / config.indices_per_prim]];
+		const u32 ndraws = config.nindices / config.indices_per_prim;
+		g_perfmon.Put(GSPerfMon::DrawCalls, ndraws);
+		g_perfmon.Put(GSPerfMon::Barriers, ndraws);
+		[enc pushDebugGroup:[NSString stringWithFormat:@"Full barrier split draw (%d prims)", ndraws]];
 		for (size_t p = 0; p < config.nindices; p += config.indices_per_prim)
 		{
 			textureBarrier(enc);
@@ -1652,7 +1664,6 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 			                 indexType:MTLIndexTypeUInt32
 			               indexBuffer:buffer
 			         indexBufferOffset:off + p * sizeof(*config.indices)];
-			g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 		}
 		[enc popDebugGroup];
 	}
@@ -1666,6 +1677,7 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 		               indexBuffer:buffer
 		         indexBufferOffset:off];
 		g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+		g_perfmon.Put(GSPerfMon::Barriers, 1);
 	}
 	else
 	{

@@ -24,6 +24,7 @@
 #ifdef __APPLE__
 
 #include "GS/Renderers/Metal/GSMTLDeviceInfo.h"
+#include <mutex>
 #include <AppKit/AppKit.h>
 #include <Metal/Metal.h>
 #include <QuartzCore/QuartzCore.h>
@@ -38,6 +39,10 @@ class MetalHostDisplay final : public HostDisplay
 	MRCOwned<id<CAMetalDrawable>> m_current_drawable;
 	MRCOwned<MTLRenderPassDescriptor*> m_pass_desc;
 	u32 m_capture_start_frame;
+	bool m_gpu_timing_enabled = false;
+	double m_accumulated_gpu_time = 0;
+	double m_last_gpu_time_end = 0;
+	std::mutex m_mtx;
 
 	void AttachSurfaceOnMainThread();
 	void DetachSurfaceOnMainThread();
@@ -78,6 +83,10 @@ public:
 	bool UpdateImGuiFontTexture() override;
 
 	bool GetHostRefreshRate(float* refresh_rate) override;
+
+	bool SetGPUTimingEnabled(bool enabled) override;
+	float GetAndResetAccumulatedGPUTime() override;
+	void AccumulateCommandBufferTime(id<MTLCommandBuffer> buffer);
 };
 
 #endif
