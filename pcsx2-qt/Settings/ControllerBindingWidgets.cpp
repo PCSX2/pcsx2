@@ -225,8 +225,10 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
 	bool result;
 	if (m_dialog->isEditingGlobalSettings())
 	{
-		auto lock = Host::GetSettingsLock();
-		result = PAD::MapController(*Host::Internal::GetBaseSettingsLayer(), m_port_number, mapping);
+		{
+			auto lock = Host::GetSettingsLock();
+			result = PAD::MapController(*Host::Internal::GetBaseSettingsLayer(), m_port_number, mapping);
+		}
 		if (result)
 			Host::CommitBaseSettingChanges();
 	}
