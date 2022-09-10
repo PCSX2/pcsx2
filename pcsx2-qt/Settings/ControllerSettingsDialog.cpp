@@ -162,8 +162,8 @@ void ControllerSettingsDialog::onLoadProfileClicked()
 	{
 		auto lock = Host::GetSettingsLock();
 		PAD::CopyConfiguration(Host::Internal::GetBaseSettingsLayer(), *m_profile_interface, true, true, false);
-		Host::CommitBaseSettingChanges();
 	}
+	Host::CommitBaseSettingChanges();
 
 	g_emu_thread->applySettings();
 
@@ -207,8 +207,8 @@ void ControllerSettingsDialog::onRestoreDefaultsClicked()
 	{
 		auto lock = Host::GetSettingsLock();
 		CommonHost::SetDefaultSettings(*Host::Internal::GetBaseSettingsLayer(), false, false, true, true, false);
-		Host::CommitBaseSettingChanges();
 	}
+	Host::CommitBaseSettingChanges();
 
 	g_emu_thread->applySettings();
 
