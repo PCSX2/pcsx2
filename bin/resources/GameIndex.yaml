@@ -26313,6 +26313,8 @@ SLPM-65183:
 SLPM-65184:
   name: "Document of Metal Gear Solid 2, The"
   region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Fixes corrupted or missing menu fonts.
 SLPM-65185:
   name: "Ferrari F355 Challenge"
   region: "NTSC-J"
@@ -40536,6 +40538,8 @@ SLUS-20543:
   name: "Document of Metal Gear Solid 2, The"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes corrupted or missing menu fonts.
 SLUS-20544:
   name: "Malice"
   region: "NTSC-U"
