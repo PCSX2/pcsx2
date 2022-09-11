@@ -166,7 +166,7 @@ SocketAdapter::SocketAdapter()
 
 	if (strcmp(EmuConfig.DEV9.EthDevice.c_str(), "Auto") != 0)
 	{
-		foundAdapter = AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
+		foundAdapter = AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice.c_str(), &adapter, &buffer);
 
 		if (!foundAdapter)
 		{
@@ -248,18 +248,9 @@ SocketAdapter::SocketAdapter()
 
 #ifdef _WIN32
 	memcpy(hostMAC, adapter.PhysicalAddress, 6);
-#elif defined(__linux__)
-	struct ifreq ifr;
-	int fd = socket(AF_INET, SOCK_DGRAM, 0);
-	strcpy(ifr.ifr_name, adapter.ifa_name);
-	if (0 == ioctl(fd, SIOCGIFHWADDR, &ifr))
-		memcpy(hostMAC, ifr.ifr_hwaddr.sa_data, 6);
-	else
-	{
-		memcpy(hostMAC, ps2MAC, 6);
-		Console.Error("Could not get MAC address for adapter: %s", adapter.ifa_name);
-	}
-	::close(fd);
+#elif defined(__POSIX__)
+	memcpy(hostMAC, ps2MAC, 6); // In case it fails
+	AdapterUtils::GetAdapterMAC(hostMAC, adapter.ifa_name);
 #else
 	memcpy(hostMAC, ps2MAC, 6);
 	Console.Error("Could not get MAC address for adapter, OS not supported");
@@ -436,7 +427,7 @@ void SocketAdapter::reloadSettings()
 	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
 
 	if (strcmp(EmuConfig.DEV9.EthDevice.c_str(), "Auto") != 0)
-		foundAdapter = AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
+		foundAdapter = AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice.c_str(), &adapter, &buffer);
 	else
 		foundAdapter = AdapterUtils::GetWin32AdapterAuto(&adapter, &buffer);
 

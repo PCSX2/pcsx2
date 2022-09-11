@@ -31,7 +31,7 @@
 namespace AdapterUtils
 {
 #ifdef _WIN32
-	bool GetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer);
+	bool GetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer);
 	bool GetWin32AdapterAuto(PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer);
 
 	std::optional<PacketReader::IP::IP_Address> GetAdapterIP(PIP_ADAPTER_ADDRESSES adapter);
@@ -47,4 +47,5 @@ namespace AdapterUtils
 	std::vector<PacketReader::IP::IP_Address> GetGateways(ifaddrs* adapter);
 	std::vector<PacketReader::IP::IP_Address> GetDNS(ifaddrs* adapter);
 #endif
+	bool GetAdapterMAC(u8 (&mac)[6], const char* adapter_name);
 }; // namespace AdapterUtils
