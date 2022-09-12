@@ -249,6 +249,17 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(
 	{
 		// likely an axis
 		const std::string_view axis_name(binding.substr(1));
+
+		if (StringUtil::StartsWith(axis_name, "Axis"))
+		{
+			if (auto value = StringUtil::FromChars<u32>(axis_name.substr(4)))
+			{
+				key.source_subtype = InputSubclass::ControllerAxis;
+				key.data = *value;
+				key.negative = (binding[0] == '-');
+				return key;
+			}
+		}
 		for (u32 i = 0; i < std::size(s_sdl_axis_names); i++)
 		{
 			if (axis_name == s_sdl_axis_names[i])
@@ -264,6 +275,15 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(
 	else
 	{
 		// must be a button
+		if (StringUtil::StartsWith(binding, "Button"))
+		{
+			if (auto value = StringUtil::FromChars<u32>(binding.substr(6)))
+			{
+				key.source_subtype = InputSubclass::ControllerButton;
+				key.data = *value;
+				return key;
+			}
+		}
 		for (u32 i = 0; i < std::size(s_sdl_button_names); i++)
 		{
 			if (binding == s_sdl_button_names[i])
@@ -285,14 +305,20 @@ std::string SDLInputSource::ConvertKeyToString(InputBindingKey key)
 
 	if (key.source_type == InputSourceType::SDL)
 	{
-		if (key.source_subtype == InputSubclass::ControllerAxis && key.data < std::size(s_sdl_axis_names))
+		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
-			ret = StringUtil::StdStringFromFormat(
-				"SDL-%u/%c%s", key.source_index, key.negative ? '-' : '+', s_sdl_axis_names[key.data]);
+			char modifier = key.negative ? '-' : '+';
+			if (key.data < std::size(s_sdl_axis_names))
+				ret = StringUtil::StdStringFromFormat("SDL-%u/%c%s", key.source_index, modifier, s_sdl_axis_names[key.data]);
+			else
+				ret = StringUtil::StdStringFromFormat("SDL-%u/%cAxis%u", key.source_index, modifier, key.data);
 		}
-		else if (key.source_subtype == InputSubclass::ControllerButton && key.data < std::size(s_sdl_button_names))
+		else if (key.source_subtype == InputSubclass::ControllerButton)
 		{
-			ret = StringUtil::StdStringFromFormat("SDL-%u/%s", key.source_index, s_sdl_button_names[key.data]);
+			if (key.data < std::size(s_sdl_button_names))
+				ret = StringUtil::StdStringFromFormat("SDL-%u/%s", key.source_index, s_sdl_button_names[key.data]);
+			else
+				ret = StringUtil::StdStringFromFormat("SDL-%u/Button%u", key.source_index, key.data);
 		}
 		else if (key.source_subtype == InputSubclass::ControllerMotor)
 		{
