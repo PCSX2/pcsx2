@@ -1028,6 +1028,9 @@ struct Pcsx2Config
 	// You shouldn't assign to this class, because it'll mess with the runtime variables (Current...).
 	// But you can still use this to copy config. Only needed until we drop wx.
 	void CopyConfig(const Pcsx2Config& cfg);
+
+	/// Copies runtime configuration settings (e.g. frame limiter state).
+	void CopyRuntimeConfig(Pcsx2Config& cfg);
 };
 
 extern Pcsx2Config EmuConfig;
