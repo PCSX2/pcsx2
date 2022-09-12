@@ -3101,6 +3101,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 	// we reorder things a little to make it look less silly for mtap
 	static constexpr const std::array<char, 4> mtap_slot_names = {{'A', 'B', 'C', 'D'}};
 	static constexpr const std::array<u32, PAD::NUM_CONTROLLER_PORTS> mtap_port_order = {{0, 2, 3, 4, 1, 5, 6, 7}};
+	static constexpr const std::array<const char*, PAD::NUM_CONTROLLER_PORTS> sections = {
+		{"Pad1", "Pad2", "Pad3", "Pad4", "Pad5", "Pad6", "Pad7", "Pad8"}};
 
 	// create the ports
 	for (u32 global_slot : mtap_port_order)
@@ -3115,8 +3117,8 @@ void FullscreenUI::DrawControllerSettingsPage()
                                        fmt::format(ICON_FA_PLUG "  Controller Port {}", mtap_port + 1))
 				.c_str());
 
-		const std::string section(fmt::format("Pad{}", global_slot + 1));
-		const std::string type(bsi->GetStringValue(section.c_str(), "Type", PAD::GetDefaultPadType(global_slot)));
+		const char* section = sections[global_slot];
+		const std::string type(bsi->GetStringValue(section, "Type", PAD::GetDefaultPadType(global_slot)));
 		const PAD::ControllerInfo* ci = PAD::GetControllerInfo(type);
 		if (MenuButton(fmt::format(ICON_FA_GAMEPAD "  Controller Type##type{}", global_slot).c_str(), ci ? ci->display_name : "Unknown"))
 		{
@@ -3135,7 +3137,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 					auto lock = Host::GetSettingsLock();
 					SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-					bsi->SetStringValue(section.c_str(), "Type", raw_options[index].first.c_str());
+					bsi->SetStringValue(section, "Type", raw_options[index].first.c_str());
 					SetSettingsChanged(bsi);
 					CloseChoiceDialog();
 				});
@@ -3150,7 +3152,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 		for (u32 i = 0; i < ci->num_bindings; i++)
 		{
 			const PAD::ControllerBindingInfo& bi = ci->bindings[i];
-			DrawInputBindingButton(bsi, bi.type, section.c_str(), bi.name, bi.display_name, true);
+			DrawInputBindingButton(bsi, bi.type, section, bi.name, bi.display_name, true);
 		}
 
 		MenuHeading((mtap_enabled[mtap_port] ?
@@ -3160,10 +3162,10 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 		for (u32 macro_index = 0; macro_index < PAD::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
 		{
-			DrawInputBindingButton(bsi, PAD::ControllerBindingType::Macro, section.c_str(), fmt::format("Macro{}", macro_index + 1).c_str(),
+			DrawInputBindingButton(bsi, PAD::ControllerBindingType::Macro, section, fmt::format("Macro{}", macro_index + 1).c_str(),
 				fmt::format("Macro {} Trigger", macro_index + 1).c_str());
 
-			std::string binds_string(bsi->GetStringValue(section.c_str(), fmt::format("Macro{}Binds", macro_index + 1).c_str()));
+			std::string binds_string(bsi->GetStringValue(section, fmt::format("Macro{}Binds", macro_index + 1).c_str()));
 			if (MenuButton(fmt::format(ICON_FA_KEYBOARD "  Macro {} Buttons", macro_index + 1).c_str(),
 					binds_string.empty() ? "No Buttons Selected" : binds_string.c_str()))
 			{
@@ -3204,7 +3206,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 						SettingsInterface* bsi = GetEditingSettingsInterface();
 						const std::string key(fmt::format("Macro{}Binds", macro_index + 1));
 
-						std::string binds_string(bsi->GetStringValue(section.c_str(), key.c_str()));
+						std::string binds_string(bsi->GetStringValue(section, key.c_str()));
 						std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
 						auto it = std::find(buttons_split.begin(), buttons_split.end(), to_modify);
 						if (checked)
@@ -3220,15 +3222,15 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 						binds_string = StringUtil::JoinString(buttons_split.begin(), buttons_split.end(), " & ");
 						if (binds_string.empty())
-							bsi->DeleteValue(section.c_str(), key.c_str());
+							bsi->DeleteValue(section, key.c_str());
 						else
-							bsi->SetStringValue(section.c_str(), key.c_str(), binds_string.c_str());
+							bsi->SetStringValue(section, key.c_str(), binds_string.c_str());
 					});
 			}
 
 			const std::string freq_key(fmt::format("Macro{}Frequency", macro_index + 1));
 			const std::string freq_title(fmt::format(ICON_FA_LIGHTBULB "  Macro {} Frequency", macro_index + 1));
-			s32 frequency = bsi->GetIntValue(section.c_str(), freq_key.c_str(), 0);
+			s32 frequency = bsi->GetIntValue(section, freq_key.c_str(), 0);
 			const std::string freq_summary((frequency == 0) ? std::string("Macro will not auto-toggle.") :
                                                               fmt::format("Macro will toggle every {} frames.", frequency));
 			if (MenuButton(freq_title.c_str(), freq_summary.c_str()))
@@ -3249,9 +3251,9 @@ void FullscreenUI::DrawControllerSettingsPage()
 				if (ImGui::SliderInt("##value", &frequency, 0, 60, "Toggle every %d frames", ImGuiSliderFlags_NoInput))
 				{
 					if (frequency == 0)
-						bsi->DeleteValue(section.c_str(), freq_key.c_str());
+						bsi->DeleteValue(section, freq_key.c_str());
 					else
-						bsi->SetIntValue(section.c_str(), freq_key.c_str(), frequency);
+						bsi->SetIntValue(section, freq_key.c_str(), frequency);
 				}
 
 				BeginMenuButtons();
@@ -3280,15 +3282,14 @@ void FullscreenUI::DrawControllerSettingsPage()
 				switch (si.type)
 				{
 					case PAD::ControllerSettingInfo::Type::Boolean:
-						DrawToggleSetting(
-							bsi, title.c_str(), si.description, section.c_str(), si.name, si.BooleanDefaultValue(), true, false);
+						DrawToggleSetting(bsi, title.c_str(), si.description, section, si.name, si.BooleanDefaultValue(), true, false);
 						break;
 					case PAD::ControllerSettingInfo::Type::Integer:
-						DrawIntRangeSetting(bsi, title.c_str(), si.description, section.c_str(), si.name, si.IntegerDefaultValue(),
+						DrawIntRangeSetting(bsi, title.c_str(), si.description, section, si.name, si.IntegerDefaultValue(),
 							si.IntegerMinValue(), si.IntegerMaxValue(), si.format, true);
 						break;
 					case PAD::ControllerSettingInfo::Type::Float:
-						DrawFloatRangeSetting(bsi, title.c_str(), si.description, section.c_str(), si.name, si.FloatDefaultValue(),
+						DrawFloatRangeSetting(bsi, title.c_str(), si.description, section, si.name, si.FloatDefaultValue(),
 							si.FloatMinValue(), si.FloatMaxValue(), si.format, si.multiplier, true);
 						break;
 					default:
