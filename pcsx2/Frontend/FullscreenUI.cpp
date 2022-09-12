@@ -2332,7 +2332,7 @@ void FullscreenUI::DrawSystemSettingsPage()
 	static constexpr const char* ee_cycle_rate_settings[] = {
 		"50% Speed", "60% Speed", "75% Speed", "100% Speed (Default)", "130% Speed", "180% Speed", "300% Speed"};
 	static constexpr const char* ee_cycle_skip_settings[] = {
-		"Normal (Default)", "Mild Underclock", "Moderate Overclock", "Maximum Overclock"};
+		"Normal (Default)", "Mild Underclock", "Moderate Underclock", "Maximum Underclock"};
 	static constexpr const char* ee_rounding_mode_settings[] = {"Nearest", "Negative", "Positive", "Chop/Zero (Default)"};
 	static constexpr const char* affinity_control_settings[] = {
 		"Disabled", "EE > VU > GS", "EE > GS > VU", "VU > EE > GS", "VU > GS > EE", "GS > EE > VU", "GS > VU > EE"};
