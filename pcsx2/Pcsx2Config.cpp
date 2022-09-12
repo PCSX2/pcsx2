@@ -1238,6 +1238,17 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	LimiterMode = cfg.LimiterMode;
 }
 
+void Pcsx2Config::CopyRuntimeConfig(Pcsx2Config& cfg)
+{
+	GS.LimitScalar = cfg.GS.LimitScalar;
+	UseBOOT2Injection = cfg.UseBOOT2Injection;
+	CurrentBlockdump = std::move(cfg.CurrentBlockdump);
+	CurrentIRX = std::move(cfg.CurrentIRX);
+	CurrentGameArgs = std::move(cfg.CurrentGameArgs);
+	CurrentAspectRatio = cfg.CurrentAspectRatio;
+	LimiterMode = cfg.LimiterMode;
+}
+
 void EmuFolders::SetDefaults(SettingsInterface& si)
 {
 	si.SetStringValue("Folders", "Bios", "bios");
