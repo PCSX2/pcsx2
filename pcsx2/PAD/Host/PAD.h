@@ -77,6 +77,7 @@ namespace PAD
 		{
 			Boolean,
 			Integer,
+			IntegerList,
 			Float,
 			String,
 			Path,
@@ -91,6 +92,7 @@ namespace PAD
 		const char* max_value;
 		const char* step_value;
 		const char* format;
+		const char** options;
 		float multiplier;
 
 		const char* StringDefaultValue() const;
@@ -129,6 +131,7 @@ namespace PAD
 	static constexpr float DEFAULT_STICK_SCALE = 1.33f;
 	static constexpr float DEFAULT_MOTOR_SCALE = 1.0f;
 	static constexpr float DEFAULT_PRESSURE_MODIFIER = 0.5f;
+	static constexpr float DEFAULT_BUTTON_DEADZONE = 0.0f;
 
 	/// Returns the default type for the specified port.
 	const char* GetDefaultPadType(u32 pad);

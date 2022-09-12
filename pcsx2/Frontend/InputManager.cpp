@@ -1006,10 +1006,8 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 	{
 		// From lilypad: 1 mouse pixel = 1/8th way down.
 		const float default_scale = (axis <= static_cast<u32>(InputPointerAxis::Y)) ? 8.0f : 1.0f;
-		const float invert =
-			si.GetBoolValue("Pad", fmt::format("Pointer{}Invert", s_pointer_axis_names[axis]).c_str(), false) ? -1.0f : 1.0f;
 		s_pointer_axis_scale[axis] =
-			invert /
+			1.0f /
 			std::max(si.GetFloatValue("Pad", fmt::format("Pointer{}Scale", s_pointer_axis_names[axis]).c_str(), default_scale), 1.0f);
 	}
 }
