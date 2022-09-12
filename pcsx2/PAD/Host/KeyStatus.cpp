@@ -24,7 +24,7 @@ using namespace PAD;
 
 KeyStatus::KeyStatus()
 {
-	Init();
+	std::memset(&m_analog, 0, sizeof(m_analog));
 
 	for (u32 pad = 0; pad < NUM_CONTROLLER_PORTS; pad++)
 	{
@@ -32,6 +32,8 @@ KeyStatus::KeyStatus()
 		m_axis_scale[pad][1] = 1.0f;
 		m_pressure_modifier[pad] = 0.5f;
 	}
+
+	Init();
 }
 
 void KeyStatus::Init()
@@ -70,22 +72,22 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 		{
 			case PAD_R_LEFT:
 			case PAD_R_RIGHT:
-				m_analog[pad].rx = MERGE(pad, PAD_R_RIGHT, PAD_R_LEFT);
+				m_analog[pad].rx = m_analog[pad].invert_rx ? MERGE(pad, PAD_R_LEFT, PAD_R_RIGHT) : MERGE(pad, PAD_R_RIGHT, PAD_R_LEFT);
 				break;
 
 			case PAD_R_DOWN:
 			case PAD_R_UP:
-				m_analog[pad].ry = MERGE(pad, PAD_R_DOWN, PAD_R_UP);
+				m_analog[pad].ry = m_analog[pad].invert_ry ? MERGE(pad, PAD_R_UP, PAD_R_DOWN) : MERGE(pad, PAD_R_DOWN, PAD_R_UP);
 				break;
 
 			case PAD_L_LEFT:
 			case PAD_L_RIGHT:
-				m_analog[pad].lx = MERGE(pad, PAD_L_RIGHT, PAD_L_LEFT);
+				m_analog[pad].lx = m_analog[pad].invert_lx ? MERGE(pad, PAD_L_LEFT, PAD_L_RIGHT) : MERGE(pad, PAD_L_RIGHT, PAD_L_LEFT);
 				break;
 
 			case PAD_L_DOWN:
 			case PAD_L_UP:
-				m_analog[pad].ly = MERGE(pad, PAD_L_DOWN, PAD_L_UP);
+				m_analog[pad].ly = m_analog[pad].invert_ly ? MERGE(pad, PAD_L_UP, PAD_L_DOWN) : MERGE(pad, PAD_L_DOWN, PAD_L_UP);
 				break;
 
 			default:
@@ -98,7 +100,8 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 	{
 		// Don't affect L2/R2, since they are analog on most pads.
 		const float pmod = ((m_button[pad] & (1u << PAD_PRESSURE)) == 0 && !IsTriggerKey(index)) ? m_pressure_modifier[pad] : 1.0f;
-		m_button_pressure[pad][index] = static_cast<u8>(std::clamp(value * pmod * 255.0f, 0.0f, 255.0f));
+		const float dz_value = (value < m_button_deadzone[pad]) ? 0.0f : value;
+		m_button_pressure[pad][index] = static_cast<u8>(std::clamp(dz_value * pmod * 255.0f, 0.0f, 255.0f));
 
 		// Since we reordered the buttons for better UI, we need to remap them here.
 		static constexpr std::array<u8, MAX_KEYS> bitmask_mapping = {{
@@ -123,8 +126,7 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 			// remainder are analogs and not used here
 		}};
 
-		// TODO: Deadzone here?
-		if (value > 0.0f)
+		if (dz_value > 0.0f)
 			m_button[pad] &= ~(1u << bitmask_mapping[index]);
 		else
 			m_button[pad] |= (1u << bitmask_mapping[index]);

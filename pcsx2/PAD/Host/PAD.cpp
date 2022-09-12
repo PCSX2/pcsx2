@@ -268,7 +268,9 @@ void PAD::LoadConfig(const SettingsInterface& si)
 
 		const float axis_deadzone = si.GetFloatValue(section.c_str(), "Deadzone", DEFAULT_STICK_DEADZONE);
 		const float axis_scale = si.GetFloatValue(section.c_str(), "AxisScale", DEFAULT_STICK_SCALE);
+		const float button_deadzone = si.GetFloatValue(section.c_str(), "ButtonDeadzone", DEFAULT_BUTTON_DEADZONE);
 		g_key_status.SetAxisScale(i, axis_deadzone, axis_scale);
+		g_key_status.SetButtonDeadzone(i, button_deadzone);
 
 		if (ci->vibration_caps != VibrationCapabilities::NoVibration)
 		{
@@ -280,6 +282,11 @@ void PAD::LoadConfig(const SettingsInterface& si)
 
 		const float pressure_modifier = si.GetFloatValue(section.c_str(), "PressureModifier", 1.0f);
 		g_key_status.SetPressureModifier(i, pressure_modifier);
+
+		const int invert_l = si.GetIntValue(section.c_str(), "InvertL", 0);
+		const int invert_r = si.GetIntValue(section.c_str(), "InvertR", 0);
+		g_key_status.SetAnalogInvertL(i, (invert_l & 1) != 0, (invert_l & 2) != 0);
+		g_key_status.SetAnalogInvertR(i, (invert_r & 1) != 0, (invert_r & 2) != 0);
 
 		LoadMacroButtonConfig(si, i, type, section);
 	}
@@ -310,20 +317,42 @@ void PAD::SetDefaultControllerConfig(SettingsInterface& si)
 	si.SetBoolValue("Pad", "MultitapPort2", false);
 	si.SetFloatValue("Pad", "PointerXScale", 8.0f);
 	si.SetFloatValue("Pad", "PointerYScale", 8.0f);
-	si.SetBoolValue("Pad", "PointerXInvert", false);
-	si.SetBoolValue("Pad", "PointerYInvert", false);
 
 	// PCSX2 Controller Settings - Default pad types and parameters.
 	for (u32 i = 0; i < NUM_CONTROLLER_PORTS; i++)
 	{
+		const char* type = GetDefaultPadType(i);
 		const std::string section(GetConfigSection(i));
 		si.ClearSection(section.c_str());
-		si.SetStringValue(section.c_str(), "Type", GetDefaultPadType(i));
-		si.SetFloatValue(section.c_str(), "Deadzone", DEFAULT_STICK_DEADZONE);
-		si.SetFloatValue(section.c_str(), "AxisScale", DEFAULT_STICK_SCALE);
-		si.SetFloatValue(section.c_str(), "LargeMotorScale", DEFAULT_MOTOR_SCALE);
-		si.SetFloatValue(section.c_str(), "SmallMotorScale", DEFAULT_MOTOR_SCALE);
-		si.SetFloatValue(section.c_str(), "PressureModifier", DEFAULT_PRESSURE_MODIFIER);
+		si.SetStringValue(section.c_str(), "Type", type);
+
+		const ControllerInfo* ci = GetControllerInfo(type);
+		if (ci)
+		{
+			for (u32 i = 0; i < ci->num_settings; i++)
+			{
+				const ControllerSettingInfo& csi = ci->settings[i];
+				switch (csi.type)
+				{
+					case ControllerSettingInfo::Type::Boolean:
+						si.SetBoolValue(section.c_str(), csi.name, csi.BooleanDefaultValue());
+						break;
+					case ControllerSettingInfo::Type::Integer:
+					case ControllerSettingInfo::Type::IntegerList:
+						si.SetIntValue(section.c_str(), csi.name, csi.IntegerDefaultValue());
+						break;
+					case ControllerSettingInfo::Type::Float:
+						si.SetFloatValue(section.c_str(), csi.name, csi.FloatDefaultValue());
+						break;
+					case ControllerSettingInfo::Type::String:
+					case ControllerSettingInfo::Type::Path:
+						si.SetStringValue(section.c_str(), csi.name, csi.StringDefaultValue());
+						break;
+					default:
+						break;
+				}
+			}
+		}
 	}
 
 	// PCSX2 Controller Settings - Controller 1 / Controller 2 / ...
@@ -415,26 +444,42 @@ static const PAD::ControllerBindingInfo s_dualshock2_binds[] = {
 	{"SmallMotor", "Small (High Frequency) Motor", PAD::ControllerBindingType::Motor, GenericInputBinding::SmallMotor},
 };
 
+static const char* s_dualshock2_invert_entries[] = {
+	"Not Inverted",
+	"Invert Left/Right",
+	"Invert Up/Down",
+	"Invert Left/Right + Up/Down",
+	nullptr};
+
 static const PAD::ControllerSettingInfo s_dualshock2_settings[] = {
+	{PAD::ControllerSettingInfo::Type::IntegerList, "InvertL", "Invert Left Stick",
+		"Inverts the direction of the left analog stick.",
+		"0", "0", "3", nullptr, nullptr, s_dualshock2_invert_entries, 0.0f},
+	{PAD::ControllerSettingInfo::Type::IntegerList, "InvertR", "Invert Right Stick",
+		"Inverts the direction of the right analog stick.",
+		"0", "0", "3", nullptr, nullptr, s_dualshock2_invert_entries, 0.0f},
 	{PAD::ControllerSettingInfo::Type::Float, "Deadzone", "Analog Deadzone",
 		"Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.",
-		"0.00", "0.00", "1.00", "0.01", "%.0f%%", 100.0f},
+		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
 	{PAD::ControllerSettingInfo::Type::Float, "AxisScale", "Analog Sensitivity",
 		"Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
 		"controllers, e.g. DualShock 4, Xbox One Controller.",
-		"1.33", "0.01", "2.00", "0.01", "%.0f%%", 100.0f},
+		"1.33", "0.01", "2.00", "0.01", "%.0f%%", nullptr, 100.0f},
 	{PAD::ControllerSettingInfo::Type::Float, "LargeMotorScale", "Large Motor Vibration Scale",
 		"Increases or decreases the intensity of low frequency vibration sent by the game.",
-		"1.00", "0.00", "2.00", "0.01", "%.0f%%", 100.0f},
+		"1.00", "0.00", "2.00", "0.01", "%.0f%%", nullptr, 100.0f},
 	{PAD::ControllerSettingInfo::Type::Float, "SmallMotorScale", "Small Motor Vibration Scale",
 		"Increases or decreases the intensity of high frequency vibration sent by the game.",
-		"1.00", "0.00", "2.00", "0.01", "%.0f%%", 100.0f},
+		"1.00", "0.00", "2.00", "0.01", "%.0f%%", nullptr, 100.0f},
+	{PAD::ControllerSettingInfo::Type::Float, "ButtonDeadzone", "Button/Trigger Deadzone",
+		"Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.",
+		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
 	/*{PAD::ControllerSettingInfo::Type::Float, "InitialPressure", "Initial Pressure",
 	"Sets the pressure when the modifier button isn't held.",
-	"1.00", "0.01", "1.00", "0.01", "%.0f%%", 100.0f},*/
+	"1.00", "0.01", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},*/
 	{PAD::ControllerSettingInfo::Type::Float, "PressureModifier", "Modifier Pressure",
 		"Sets the pressure when the modifier button is held.",
-		"0.50", "0.01", "1.00", "0.01", "%.0f%%", 100.0f},
+		"0.50", "0.01", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
 };
 
 static const PAD::ControllerInfo s_controller_info[] = {
@@ -523,8 +568,6 @@ void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort2");
 		dest_si->CopyFloatValue(src_si, "Pad", "PointerXScale");
 		dest_si->CopyFloatValue(src_si, "Pad", "PointerYScale");
-		dest_si->CopyBoolValue(src_si, "Pad", "PointerXInvert");
-		dest_si->CopyBoolValue(src_si, "Pad", "PointerYInvert");
 		for (u32 i = 0; i < static_cast<u32>(InputSourceType::Count); i++)
 		{
 			dest_si->CopyBoolValue(src_si, "InputSources",
@@ -570,6 +613,30 @@ void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 			{
 				dest_si->CopyFloatValue(src_si, section.c_str(), "LargeMotorScale");
 				dest_si->CopyFloatValue(src_si, section.c_str(), "SmallMotorScale");
+			}
+
+			for (u32 i = 0; i < info->num_settings; i++)
+			{
+				const ControllerSettingInfo& csi = info->settings[i];
+				switch (csi.type)
+				{
+					case ControllerSettingInfo::Type::Boolean:
+						dest_si->CopyBoolValue(src_si, section.c_str(), csi.name);
+						break;
+					case ControllerSettingInfo::Type::Integer:
+					case ControllerSettingInfo::Type::IntegerList:
+						dest_si->CopyIntValue(src_si, section.c_str(), csi.name);
+						break;
+					case ControllerSettingInfo::Type::Float:
+						dest_si->CopyFloatValue(src_si, section.c_str(), csi.name);
+						break;
+					case ControllerSettingInfo::Type::String:
+					case ControllerSettingInfo::Type::Path:
+						dest_si->CopyStringValue(src_si, section.c_str(), csi.name);
+						break;
+					default:
+						break;
+				}
 			}
 		}
 	}

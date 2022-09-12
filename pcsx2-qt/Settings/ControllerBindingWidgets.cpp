@@ -520,6 +520,19 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
 			}
 			break;
 
+			case PAD::ControllerSettingInfo::Type::IntegerList:
+			{
+				QComboBox* cb = new QComboBox(widget_parent);
+				cb->setObjectName(QString::fromUtf8(si.name));
+				for (u32 i = 0; si.options[i] != nullptr; i++)
+					cb->addItem(qApp->translate(cinfo->name, si.options[i]));
+				SettingWidgetBinder::BindWidgetToIntSetting(sif, cb, section, std::move(key_name), si.IntegerDefaultValue(), si.IntegerMinValue());
+				layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.display_name), widget_parent), current_row, 0);
+				layout->addWidget(cb, current_row, 1, 1, 3);
+				current_row++;
+			}
+			break;
+
 			case PAD::ControllerSettingInfo::Type::Float:
 			{
 				QDoubleSpinBox* sb = new QDoubleSpinBox(widget_parent);
@@ -602,6 +615,14 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 				QSpinBox* widget = findChild<QSpinBox*>(QString::fromStdString(si.name));
 				if (widget)
 					widget->setValue(si.IntegerDefaultValue());
+			}
+			break;
+
+			case PAD::ControllerSettingInfo::Type::IntegerList:
+			{
+				QComboBox* widget = findChild<QComboBox*>(QString::fromStdString(si.name));
+				if (widget)
+					widget->setCurrentIndex(si.IntegerDefaultValue() - si.IntegerMinValue());
 			}
 			break;
 
