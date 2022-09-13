@@ -23255,6 +23255,9 @@ SLPM-55269:
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Vertical and horizontal lines in FMV.
+SLPM-55270:
+  name: "Shinkyoku Soukai Polyphonica - After School"
+  region: "NTSC-J"
 SLPM-55271:
   name: "FIFA 10 - World Class Soccer [Ea -SY! 1980]"
   region: "NTSC-J"
@@ -23281,6 +23284,9 @@ SLPM-55283:
   region: "NTSC-J"
 SLPM-55285:
   name: "Crimson Empire"
+  region: "NTSC-J"
+SLPM-55288:
+  name: "Shin Koihime Musou - Otome Ryouran - Sangokushi Engi"
   region: "NTSC-J"
 SLPM-55292:
   name: "Grand Theft Auto - San Andreas [Rockstar Classics]"
@@ -26572,8 +26578,10 @@ SLPM-65245:
     roundSprite: 2 # Fixes font artifacts.
     mergeSprite: 1 # Fixes flame-like bleeding.
 SLPM-65246:
-  name: "Kaidou Battle"
+  name: "Kaidou Battle - Nikko, Haruna, Rokko, Hakone"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPM-65247:
   name: "Sangokushi Senki 2"
   region: "NTSC-J"
@@ -29413,6 +29421,9 @@ SLPM-66109:
   region: "NTSC-J"
 SLPM-66110:
   name: "Fushigi no Umi no Nadia - Inherit the Blue Water [Limited Edition]"
+  region: "NTSC-J"
+SLPM-66111:
+  name: "Fushigi no Umi no Nadia - Dennou Battle - Miss Nautilus Contest"
   region: "NTSC-J"
 SLPM-66112:
   name: "Fushigi no Umi no Nadia - Inherit the Blue Water"
