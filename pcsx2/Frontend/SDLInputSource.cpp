@@ -358,6 +358,13 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
 		case SDL_CONTROLLERBUTTONUP:
 			return HandleControllerButtonEvent(&event->cbutton);
 
+		case SDL_JOYAXISMOTION:
+			return HandleJoystickAxisEvent(&event->jaxis);
+
+		case SDL_JOYBUTTONDOWN:
+		case SDL_JOYBUTTONUP:
+			return HandleJoystickButtonEvent(&event->jbutton);
+
 		default:
 			return false;
 	}
@@ -424,6 +431,21 @@ bool SDLInputSource::OpenGameController(int index)
 	cd.joystick_id = joystick_id;
 	cd.haptic_left_right_effect = -1;
 	cd.game_controller = gcontroller;
+
+	const int num_axes = SDL_JoystickNumAxes(joystick);
+	const int num_buttons = SDL_JoystickNumButtons(joystick);
+	cd.joy_axis_used_in_gc.resize(num_axes, false);
+	cd.joy_button_used_in_gc.resize(num_buttons, false);
+	auto mark_bind = [&](SDL_GameControllerButtonBind bind){
+		if (bind.bindType == SDL_CONTROLLER_BINDTYPE_AXIS && bind.value.axis < num_axes)
+			cd.joy_axis_used_in_gc[bind.value.axis] = true;
+		if (bind.bindType == SDL_CONTROLLER_BINDTYPE_BUTTON && bind.value.button < num_buttons)
+			cd.joy_button_used_in_gc[bind.value.button] = true;
+	};
+	for (size_t i = 0; i < std::size(s_sdl_axis_names); i++)
+		mark_bind(SDL_GameControllerGetBindForAxis(gcontroller, static_cast<SDL_GameControllerAxis>(i)));
+	for (size_t i = 0; i < std::size(s_sdl_button_names); i++)
+		mark_bind(SDL_GameControllerGetBindForButton(gcontroller, static_cast<SDL_GameControllerButton>(i)));
 
 	cd.use_game_controller_rumble = (SDL_GameControllerRumble(gcontroller, 0, 0, 0) == 0);
 	if (cd.use_game_controller_rumble)
@@ -494,6 +516,11 @@ bool SDLInputSource::CloseGameController(int joystick_index)
 	return true;
 }
 
+static float NormalizeS16(s16 value)
+{
+	return static_cast<float>(value) / (value < 0 ? 32768.0f : 32767.0f);
+}
+
 bool SDLInputSource::HandleControllerAxisEvent(const SDL_ControllerAxisEvent* ev)
 {
 	auto it = GetControllerDataForJoystickId(ev->which);
@@ -501,8 +528,7 @@ bool SDLInputSource::HandleControllerAxisEvent(const SDL_ControllerAxisEvent* ev
 		return false;
 
 	const InputBindingKey key(MakeGenericControllerAxisKey(InputSourceType::SDL, it->player_id, ev->axis));
-	const float value = static_cast<float>(ev->value) / (ev->value < 0 ? 32768.0f : 32767.0f);
-	return InputManager::InvokeEvents(key, value);
+	return InputManager::InvokeEvents(key, NormalizeS16(ev->value));
 }
 
 bool SDLInputSource::HandleControllerButtonEvent(const SDL_ControllerButtonEvent* ev)
@@ -513,9 +539,33 @@ bool SDLInputSource::HandleControllerButtonEvent(const SDL_ControllerButtonEvent
 
 	const InputBindingKey key(MakeGenericControllerButtonKey(InputSourceType::SDL, it->player_id, ev->button));
 	const GenericInputBinding generic_key = (ev->button < std::size(s_sdl_generic_binding_button_mapping)) ?
-												s_sdl_generic_binding_button_mapping[ev->button] :
-                                                GenericInputBinding::Unknown;
+	                                            s_sdl_generic_binding_button_mapping[ev->button] :
+	                                            GenericInputBinding::Unknown;
 	return InputManager::InvokeEvents(key, (ev->state == SDL_PRESSED) ? 1.0f : 0.0f, generic_key);
+}
+
+bool SDLInputSource::HandleJoystickAxisEvent(const SDL_JoyAxisEvent* ev)
+{
+	auto it = GetControllerDataForJoystickId(ev->which);
+	if (it == m_controllers.end())
+		return false;
+	if (ev->axis < it->joy_axis_used_in_gc.size() && it->joy_axis_used_in_gc[ev->axis])
+		return false; // Will get handled by GC event
+	const u32 axis = ev->axis + std::size(s_sdl_axis_names); // Ensure we don't conflict with GC axes
+	const InputBindingKey key(MakeGenericControllerAxisKey(InputSourceType::SDL, it->player_id, axis));
+	return InputManager::InvokeEvents(key, NormalizeS16(ev->value));
+}
+
+bool SDLInputSource::HandleJoystickButtonEvent(const SDL_JoyButtonEvent* ev)
+{
+	auto it = GetControllerDataForJoystickId(ev->which);
+	if (it == m_controllers.end())
+		return false;
+	if (ev->button < it->joy_button_used_in_gc.size() && it->joy_button_used_in_gc[ev->button])
+		return false; // Will get handled by GC event
+	const u32 button = ev->button + std::size(s_sdl_button_names); // Ensure we don't conflict with GC buttons
+	const InputBindingKey key(MakeGenericControllerAxisKey(InputSourceType::SDL, it->player_id, button));
+	return InputManager::InvokeEvents(key, (ev->state == SDL_PRESSED) ? 1.0f : 0.0f);
 }
 
 std::vector<InputBindingKey> SDLInputSource::EnumerateMotors()

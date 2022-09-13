@@ -47,12 +47,6 @@ public:
   bool ProcessSDLEvent(const SDL_Event* event);
 
 private:
-  enum : int
-  {
-    MAX_NUM_AXES = 7,
-    MAX_NUM_BUTTONS = 16,
-  };
-
   struct ControllerData
   {
     SDL_Haptic* haptic;
@@ -62,6 +56,10 @@ private:
     int joystick_id;
     int player_id;
     bool use_game_controller_rumble;
+
+    // Used to disable Joystick controls that are used in GameController inputs so we don't get double events
+    std::vector<bool> joy_button_used_in_gc;
+    std::vector<bool> joy_axis_used_in_gc;
   };
 
   using ControllerDataVector = std::vector<ControllerData>;
@@ -79,6 +77,8 @@ private:
   bool CloseGameController(int joystick_index);
   bool HandleControllerAxisEvent(const SDL_ControllerAxisEvent* event);
   bool HandleControllerButtonEvent(const SDL_ControllerButtonEvent* event);
+  bool HandleJoystickAxisEvent(const SDL_JoyAxisEvent* event);
+  bool HandleJoystickButtonEvent(const SDL_JoyButtonEvent* event);
   void SendRumbleUpdate(ControllerData* cd);
 
   ControllerDataVector m_controllers;
