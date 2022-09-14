@@ -1172,7 +1172,7 @@
     <ClCompile Include="Frontend\GameList.cpp">
       <Filter>Host</Filter>
     </ClCompile>
-    <ClCompile Include="Frontend\INISettingsInterface.cpp">
+    <ClCompile Include="INISettingsInterface.cpp">
       <Filter>Host</Filter>
     </ClCompile>
     <ClCompile Include="Frontend\InputManager.cpp">
@@ -1282,6 +1282,9 @@
       <Filter>Host</Filter>
     </ClCompile>
     <ClCompile Include="Frontend\CommonHost.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\CommonHotkeys.cpp">
       <Filter>Host</Filter>
     </ClCompile>
   </ItemGroup>
@@ -2037,7 +2040,7 @@
     <ClInclude Include="Frontend\GameList.h">
       <Filter>Host</Filter>
     </ClInclude>
-    <ClInclude Include="Frontend\INISettingsInterface.h">
+    <ClInclude Include="INISettingsInterface.h">
       <Filter>Host</Filter>
     </ClInclude>
     <ClInclude Include="Frontend\InputManager.h">

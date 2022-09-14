@@ -39,6 +39,7 @@
 #include "GSDumpReplayer.h"
 #include "HostDisplay.h"
 #include "HostSettings.h"
+#include "INISettingsInterface.h"
 #include "IopBios.h"
 #include "MTVU.h"
 #include "MemoryCardFile.h"
@@ -56,10 +57,6 @@
 #include "DebugTools/MIPSAnalyst.h"
 #include "DebugTools/SymbolMap.h"
 
-#include "Frontend/FullscreenUI.h"
-#include "Frontend/INISettingsInterface.h"
-#include "Frontend/InputManager.h"
-#include "Frontend/GameList.h"
 #include "IconsFontAwesome5.h"
 
 #include "common/emitter/tools.h"
@@ -135,10 +132,8 @@ static std::vector<u8> s_no_interlacing_cheats_data;
 static bool s_no_interlacing_cheats_loaded = false;
 static s32 s_active_widescreen_patches = 0;
 static u32 s_active_no_interlacing_patches = 0;
-static s32 s_current_save_slot = 1;
 static u32 s_frame_advance_count = 0;
 static u32 s_mxcsr_saved;
-static std::optional<LimiterModeType> s_limiter_mode_prior_to_hold_interaction;
 static bool s_gs_open_on_initialize = false;
 
 bool VMManager::PerformEarlyHardwareChecks(const char** error)
@@ -193,7 +188,6 @@ void VMManager::SetState(VMState state)
 			if (THREAD_VU1)
 				vu1Thread.WaitVU();
 			GetMTGS().WaitGS(false);
-			InputManager::PauseVibration();
 		}
 		else
 		{
@@ -203,15 +197,9 @@ void VMManager::SetState(VMState state)
 
 		SPU2SetOutputPaused(state == VMState::Paused);
 		if (state == VMState::Paused)
-		{
 			Host::OnVMPaused();
-			FullscreenUI::OnVMPaused();
-		}
 		else
-		{
 			Host::OnVMResumed();
-			FullscreenUI::OnVMResumed();
-		}
 	}
 }
 
@@ -319,12 +307,10 @@ void VMManager::LoadSettings()
 {
 	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
 	SettingsInterface* si = Host::GetSettingsInterface();
-	SettingsInterface* binding_si = Host::GetSettingsInterfaceForBindings();
 	SettingsLoadWrapper slw(*si);
 	EmuConfig.LoadSave(slw);
-	PAD::LoadConfig(*binding_si);
-	InputManager::ReloadSources(*si, lock);
-	InputManager::ReloadBindings(*si, *binding_si);
+	PAD::LoadConfig(*si);
+	Host::LoadSettings(*si, lock);
 
 	// Remove any user-specified hacks in the config (we don't want stale/conflicting values when it's globally disabled).
 	EmuConfig.GS.MaskUserHacks();
@@ -703,12 +689,6 @@ void VMManager::UpdateRunningGame(bool resetting, bool game_starting)
 	GetMTGS().SendGameCRC(new_crc);
 
 	Host::OnGameChanged(s_disc_path, s_game_serial, s_game_name, s_game_crc);
-	if (FullscreenUI::IsInitialized())
-	{
-		GetMTGS().RunOnGSThread([disc_path = s_disc_path, game_serial = s_game_serial, game_name = s_game_name, game_crc = s_game_crc]() {
-			FullscreenUI::OnRunningGameChanged(std::move(disc_path), std::move(game_serial), std::move(game_name), game_crc);
-		});
-	}
 
 #if 0
 	// TODO: Enable this when the debugger is added to Qt, and it's active. Otherwise, this is just a waste of time.
@@ -992,7 +972,6 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	Console.WriteLn("VM subsystems initialized in %.2f ms", init_timer.GetTimeMilliseconds());
 	s_state.store(VMState::Paused, std::memory_order_release);
 	Host::OnVMStarted();
-	FullscreenUI::OnVMStarted();
 
 	UpdateRunningGame(true, false);
 
@@ -1055,7 +1034,6 @@ void VMManager::Shutdown(bool save_resume_state)
 	s_active_game_fixes = 0;
 	s_active_widescreen_patches = 0;
 	s_active_no_interlacing_patches = 0;
-	s_limiter_mode_prior_to_hold_interaction.reset();
 
 	UpdateGameSettingsLayer();
 
@@ -1094,7 +1072,6 @@ void VMManager::Shutdown(bool save_resume_state)
 
 	s_state.store(VMState::Shutdown, std::memory_order_release);
 	Host::OnVMDestroyed();
-	FullscreenUI::OnVMDestroyed();
 }
 
 void VMManager::Reset()
@@ -1104,7 +1081,6 @@ void VMManager::Reset()
 	s_active_game_fixes = 0;
 	s_active_widescreen_patches = 0;
 	s_active_no_interlacing_patches = 0;
-	s_limiter_mode_prior_to_hold_interaction.reset();
 
 	SysClearExecutionCache();
 	memBindConditionalHandlers();
@@ -1138,22 +1114,10 @@ std::string VMManager::GetSaveStateFileName(const char* filename, s32 slot)
 	pxAssertRel(!HasValidVM(), "Should not have a VM when calling the non-gamelist GetSaveStateFileName()");
 
 	std::string ret;
-
-	// try the game list first, but this won't work if we're in batch mode
-	auto lock = GameList::GetLock();
-	if (const GameList::Entry* entry = GameList::GetEntryForPath(filename); entry)
-	{
-		ret = GetSaveStateFileName(entry->serial.c_str(), entry->crc, slot);
-	}
-	else
-	{
-		// just scan it.. hopefully it'll come back okay
-		GameList::Entry temp_entry;
-		if (GameList::PopulateEntryFromPath(filename, &temp_entry))
-		{
-			ret = GetSaveStateFileName(temp_entry.serial.c_str(), temp_entry.crc, slot);
-		}
-	}
+	std::string serial;
+	u32 crc;
+	if (Host::GetSerialAndCRCForFilename(filename, &serial, &crc))
+		ret = GetSaveStateFileName(serial.c_str(), crc, slot);
 
 	return ret;
 }
@@ -1409,9 +1373,22 @@ bool VMManager::IsSaveStateFileName(const std::string_view& path)
 	return StringUtil::EndsWithNoCase(path, ".p2s");
 }
 
+bool VMManager::IsDiscFileName(const std::string_view& path)
+{
+	static const char* extensions[] = {".iso", ".bin", ".img", ".gz", ".cso", ".chd"};
+
+	for (const char* test_extension : extensions)
+	{
+		if (StringUtil::EndsWithNoCase(path, test_extension))
+			return true;
+	}
+
+	return false;
+}
+
 bool VMManager::IsLoadableFileName(const std::string_view& path)
 {
-	return IsElfFileName(path) || IsGSDumpFileName(path) || IsBlockDumpFileName(path) || GameList::IsScannableFilename(path);
+	return IsDiscFileName(path) || IsElfFileName(path) || IsGSDumpFileName(path) || IsBlockDumpFileName(path);
 }
 
 void VMManager::Execute()
@@ -1482,8 +1459,7 @@ void VMManager::Internal::VSyncOnCPUThread()
 		}
 	}
 
-	Host::PumpMessagesOnCPUThread();
-	InputManager::PollSources();
+	Host::CPUThreadVSync();
 }
 
 void VMManager::CheckForCPUConfigChanges(const Pcsx2Config& old_config)
@@ -1681,6 +1657,8 @@ void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)
 	// and we don't update its config when we start the VM.
 	if (HasValidVM() || GetMTGS().IsOpen())
 		CheckForGSConfigChanges(old_config);
+
+	Host::CheckForSettingsChanges(old_config);
 }
 
 void VMManager::ApplySettings()
@@ -1807,204 +1785,6 @@ void VMManager::WarnAboutUnsafeSettings()
 		Host::RemoveKeyedOSDMessage("performance_settings_warning");
 	}
 }
-
-static void HotkeyAdjustTargetSpeed(double delta)
-{
-	EmuConfig.Framerate.NominalScalar = EmuConfig.GS.LimitScalar + delta;
-	VMManager::SetLimiterMode(LimiterModeType::Nominal);
-	gsUpdateFrequency(EmuConfig);
-	GetMTGS().SetVSync(EmuConfig.GetEffectiveVsyncMode());
-	Host::AddIconOSDMessage("SpeedChanged", ICON_FA_CLOCK, fmt::format("Target speed set to {:.0f}%.", std::round(EmuConfig.Framerate.NominalScalar * 100.0)), 5.0f);
-}
-
-static constexpr s32 CYCLE_SAVE_STATE_SLOTS = 10;
-
-static void HotkeyCycleSaveSlot(s32 delta)
-{
-	// 1..10
-	s_current_save_slot = ((s_current_save_slot - 1) + delta);
-	if (s_current_save_slot < 0)
-		s_current_save_slot = CYCLE_SAVE_STATE_SLOTS;
-	else
-		s_current_save_slot = (s_current_save_slot % CYCLE_SAVE_STATE_SLOTS) + 1;
-
-	const std::string filename(VMManager::GetSaveStateFileName(s_game_serial.c_str(), s_game_crc, s_current_save_slot));
-	FILESYSTEM_STAT_DATA sd;
-	if (!filename.empty() && FileSystem::StatFile(filename.c_str(), &sd))
-	{
-		char date_buf[128] = {};
-#ifdef _WIN32
-		ctime_s(date_buf, std::size(date_buf), &sd.ModificationTime);
-#else
-		ctime_r(&sd.ModificationTime, date_buf);
-#endif
-
-		// remove terminating \n
-		size_t len = std::strlen(date_buf);
-		if (len > 0 && date_buf[len - 1] == '\n')
-			date_buf[len - 1] = 0;
-
-		Host::AddIconOSDMessage("CycleSaveSlot", ICON_FA_SEARCH, fmt::format("Save slot {} selected (last save: {}).", s_current_save_slot, date_buf), 5.0f);
-	}
-	else
-	{
-		Host::AddIconOSDMessage("CycleSaveSlot", ICON_FA_SEARCH, fmt::format("Save slot {} selected (no save yet).", s_current_save_slot), 5.0f);
-	}
-}
-
-static void HotkeyLoadStateSlot(s32 slot)
-{
-	if (s_game_crc == 0)
-	{
-		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE, "Cannot load state from a slot without a game running.", 10.0f);
-		return;
-	}
-
-	if (!VMManager::HasSaveStateInSlot(s_game_serial.c_str(), s_game_crc, slot))
-	{
-		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE, fmt::format("No save state found in slot {}.", slot));
-		return;
-	}
-
-	VMManager::LoadStateFromSlot(slot);
-}
-
-static void HotkeySaveStateSlot(s32 slot)
-{
-	if (s_game_crc == 0)
-	{
-		Host::AddIconOSDMessage("SaveStateToSlot", ICON_FA_EXCLAMATION_TRIANGLE, "Cannot save state to a slot without a game running.", 10.0f);
-		return;
-	}
-
-	VMManager::SaveStateToSlot(slot);
-}
-
-BEGIN_HOTKEY_LIST(g_vm_manager_hotkeys)
-DEFINE_HOTKEY("OpenPauseMenu", "System", "Open Pause Menu", [](s32 pressed) {
-	if (!pressed && VMManager::HasValidVM())
-		FullscreenUI::OpenPauseMenu();
-})
-DEFINE_HOTKEY("TogglePause", "System", "Toggle Pause", [](s32 pressed) {
-	if (!pressed && VMManager::HasValidVM())
-		VMManager::SetPaused(VMManager::GetState() != VMState::Paused);
-})
-DEFINE_HOTKEY("ToggleFullscreen", "System", "Toggle Fullscreen", [](s32 pressed) {
-	if (!pressed)
-		Host::SetFullscreen(!Host::IsFullscreen());
-})
-DEFINE_HOTKEY("ToggleFrameLimit", "System", "Toggle Frame Limit", [](s32 pressed) {
-	if (!pressed && VMManager::HasValidVM())
-	{
-		VMManager::SetLimiterMode((EmuConfig.LimiterMode != LimiterModeType::Unlimited) ?
-									  LimiterModeType::Unlimited :
-                                      LimiterModeType::Nominal);
-	}
-})
-DEFINE_HOTKEY("ToggleTurbo", "System", "Toggle Turbo", [](s32 pressed) {
-	if (!pressed && VMManager::HasValidVM())
-	{
-		VMManager::SetLimiterMode((EmuConfig.LimiterMode != LimiterModeType::Turbo) ?
-									  LimiterModeType::Turbo :
-                                      LimiterModeType::Nominal);
-	}
-})
-DEFINE_HOTKEY("ToggleSlowMotion", "System", "Toggle Slow Motion", [](s32 pressed) {
-	if (!pressed && VMManager::HasValidVM())
-	{
-		VMManager::SetLimiterMode((EmuConfig.LimiterMode != LimiterModeType::Slomo) ?
-									  LimiterModeType::Slomo :
-                                      LimiterModeType::Nominal);
-	}
-})
-DEFINE_HOTKEY("HoldTurbo", "System", "Turbo (Hold)", [](s32 pressed) {
-	if (!VMManager::HasValidVM())
-		return;
-	if (pressed > 0 && !s_limiter_mode_prior_to_hold_interaction.has_value())
-	{
-		s_limiter_mode_prior_to_hold_interaction = VMManager::GetLimiterMode();
-		VMManager::SetLimiterMode((s_limiter_mode_prior_to_hold_interaction.value() != LimiterModeType::Turbo) ?
-									  LimiterModeType::Turbo :
-                                      LimiterModeType::Nominal);
-	}
-	else if (pressed >= 0 && s_limiter_mode_prior_to_hold_interaction.has_value())
-	{
-		VMManager::SetLimiterMode(s_limiter_mode_prior_to_hold_interaction.value());
-		s_limiter_mode_prior_to_hold_interaction.reset();
-	}
-})
-DEFINE_HOTKEY("IncreaseSpeed", "System", "Increase Target Speed", [](s32 pressed) {
-	if (!pressed)
-		HotkeyAdjustTargetSpeed(0.1);
-})
-DEFINE_HOTKEY("DecreaseSpeed", "System", "Decrease Target Speed", [](s32 pressed) {
-	if (!pressed)
-		HotkeyAdjustTargetSpeed(-0.1);
-})
-DEFINE_HOTKEY("FrameAdvance", "System", "Frame Advance", [](s32 pressed) {
-	if (!pressed && VMManager::HasValidVM())
-		VMManager::FrameAdvance(1);
-})
-DEFINE_HOTKEY("ShutdownVM", "System", "Shut Down Virtual Machine", [](s32 pressed) {
-	if (!pressed && VMManager::HasValidVM())
-		Host::RequestVMShutdown(true, true, EmuConfig.SaveStateOnShutdown);
-})
-DEFINE_HOTKEY("ResetVM", "System", "Reset Virtual Machine", [](s32 pressed) {
-	if (!pressed && VMManager::HasValidVM())
-		VMManager::Reset();
-})
-DEFINE_HOTKEY("InputRecToggleMode", "System", "Toggle Input Recording Mode", [](s32 pressed) {
-	if (!pressed && VMManager::HasValidVM())
-		g_InputRecordingControls.RecordModeToggle();
-})
-
-DEFINE_HOTKEY("PreviousSaveStateSlot", "Save States", "Select Previous Save Slot", [](s32 pressed) {
-	if (!pressed && VMManager::HasValidVM())
-		HotkeyCycleSaveSlot(-1);
-})
-DEFINE_HOTKEY("NextSaveStateSlot", "Save States", "Select Next Save Slot", [](s32 pressed) {
-	if (!pressed && VMManager::HasValidVM())
-		HotkeyCycleSaveSlot(1);
-})
-DEFINE_HOTKEY("SaveStateToSlot", "Save States", "Save State To Selected Slot", [](s32 pressed) {
-	if (!pressed && VMManager::HasValidVM())
-		VMManager::SaveStateToSlot(s_current_save_slot);
-})
-DEFINE_HOTKEY("LoadStateFromSlot", "Save States", "Load State From Selected Slot", [](s32 pressed) {
-	if (!pressed && VMManager::HasValidVM())
-		HotkeyLoadStateSlot(s_current_save_slot);
-})
-
-#define DEFINE_HOTKEY_SAVESTATE_X(slotnum) DEFINE_HOTKEY("SaveStateToSlot" #slotnum, \
-	"Save States", "Save State To Slot " #slotnum, [](s32 pressed) { if (!pressed) HotkeySaveStateSlot(slotnum); })
-#define DEFINE_HOTKEY_LOADSTATE_X(slotnum) DEFINE_HOTKEY("LoadStateFromSlot" #slotnum, \
-	"Save States", "Load State From Slot " #slotnum, [](s32 pressed) { \
-		if (!pressed) \
-			HotkeyLoadStateSlot(slotnum); \
-	})
-DEFINE_HOTKEY_SAVESTATE_X(1)
-DEFINE_HOTKEY_LOADSTATE_X(1)
-DEFINE_HOTKEY_SAVESTATE_X(2)
-DEFINE_HOTKEY_LOADSTATE_X(2)
-DEFINE_HOTKEY_SAVESTATE_X(3)
-DEFINE_HOTKEY_LOADSTATE_X(3)
-DEFINE_HOTKEY_SAVESTATE_X(4)
-DEFINE_HOTKEY_LOADSTATE_X(4)
-DEFINE_HOTKEY_SAVESTATE_X(5)
-DEFINE_HOTKEY_LOADSTATE_X(5)
-DEFINE_HOTKEY_SAVESTATE_X(6)
-DEFINE_HOTKEY_LOADSTATE_X(6)
-DEFINE_HOTKEY_SAVESTATE_X(7)
-DEFINE_HOTKEY_LOADSTATE_X(7)
-DEFINE_HOTKEY_SAVESTATE_X(8)
-DEFINE_HOTKEY_LOADSTATE_X(8)
-DEFINE_HOTKEY_SAVESTATE_X(9)
-DEFINE_HOTKEY_LOADSTATE_X(9)
-DEFINE_HOTKEY_SAVESTATE_X(10)
-DEFINE_HOTKEY_LOADSTATE_X(10)
-#undef DEFINE_HOTKEY_SAVESTATE_X
-#undef DEFINE_HOTKEY_LOADSTATE_X
-END_HOTKEY_LIST()
 
 #ifdef _WIN32
 

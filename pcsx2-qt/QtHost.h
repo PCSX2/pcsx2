@@ -80,6 +80,8 @@ public:
 
 public Q_SLOTS:
 	bool confirmMessage(const QString& title, const QString& message);
+	void loadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock);
+	void checkForSettingChanges(const Pcsx2Config& old_config);
 	void startFullscreenUI(bool fullscreen);
 	void stopFullscreenUI();
 	void startVM(std::shared_ptr<VMBootParameters> boot_params);
@@ -161,14 +163,11 @@ private:
 
 	void destroyVM();
 	void executeVM();
-	void checkForSettingChanges();
 	bool shouldRenderToMain() const;
 
 	void createBackgroundControllerPollTimer();
 	void destroyBackgroundControllerPollTimer();
 	void connectSignals();
-	void loadOurSettings();
-	void loadOurInitialSettings();
 
 private Q_SLOTS:
 	void stopInThread();

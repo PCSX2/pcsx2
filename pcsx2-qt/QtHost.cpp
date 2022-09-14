@@ -37,13 +37,13 @@
 #include "pcsx2/Frontend/GameList.h"
 #include "pcsx2/Frontend/InputManager.h"
 #include "pcsx2/Frontend/ImGuiManager.h"
-#include "pcsx2/Frontend/INISettingsInterface.h"
 #include "pcsx2/Frontend/LogSink.h"
 #include "pcsx2/GS.h"
 #include "pcsx2/GS/GS.h"
 #include "pcsx2/GSDumpReplayer.h"
 #include "pcsx2/HostDisplay.h"
 #include "pcsx2/HostSettings.h"
+#include "pcsx2/INISettingsInterface.h"
 #include "pcsx2/PAD/Host/PAD.h"
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/VMManager.h"
@@ -230,14 +230,11 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 
 	pxAssertRel(!VMManager::HasValidVM(), "VM is shut down");
 
-	// Only initialize fullscreen/render-to-main when we're not running big picture.
-	if (!m_run_fullscreen_ui)
-		loadOurInitialSettings();
-
+	// Determine whether to start fullscreen or not.
 	if (boot_params->fullscreen.has_value())
 		m_is_fullscreen = boot_params->fullscreen.value();
-
-	emit onVMStarting();
+	else
+		m_is_fullscreen = Host::GetBaseBoolSettingValue("UI", "StartFullscreen", false);
 
 	if (!VMManager::Initialize(*boot_params))
 		return;
@@ -359,26 +356,19 @@ void EmuThread::saveStateToSlot(qint32 slot)
 
 void EmuThread::run()
 {
-	Threading::SetNameOfCurrentThread("EmuThread");
-	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle::GetForCallingThread());
+	// Qt-specific initialization.
 	m_event_loop = new QEventLoop();
 	m_started_semaphore.release();
+	connectSignals();
 
-	// neither of these should ever fail.
-	if (!VMManager::Internal::InitializeGlobals() || !VMManager::Internal::InitializeMemory())
-		pxFailRel("Failed to allocate memory map");
-
-	// We want settings loaded so we choose the correct renderer for big picture mode.
-	// This also sorts out input sources.
-	loadOurSettings();
-	loadOurInitialSettings();
-	VMManager::LoadSettings();
+	// Common host initialization (VM setup, etc).
+	CommonHost::CPUThreadInitialize();
 
 	// Start background polling because the VM won't do it for us.
 	createBackgroundControllerPollTimer();
 	startBackgroundControllerPollTimer();
-	connectSignals();
 
+	// Main CPU thread loop.
 	while (!m_shutdown_flag.load())
 	{
 		if (!VMManager::HasValidVM())
@@ -390,13 +380,12 @@ void EmuThread::run()
 		executeVM();
 	}
 
+	// Teardown in reverse order.
 	stopBackgroundControllerPollTimer();
 	destroyBackgroundControllerPollTimer();
-	InputManager::CloseSources();
-	VMManager::WaitForSaveStateFlush();
-	VMManager::Internal::ReleaseMemory();
-	VMManager::Internal::ReleaseGlobals();
-	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle());
+	CommonHost::CPUThreadShutdown();
+
+	// Move back to the UI thread, since we're no longer running.
 	moveToThread(m_ui_thread);
 	deleteLater();
 }
@@ -410,6 +399,7 @@ void EmuThread::destroyVM()
 	m_last_internal_height = 0;
 	m_was_paused_by_focus_loss = false;
 	VMManager::Shutdown(m_save_state_on_shutdown);
+	m_save_state_on_shutdown = false;
 }
 
 void EmuThread::executeVM()
@@ -540,7 +530,6 @@ void EmuThread::applySettings()
 		return;
 	}
 
-	checkForSettingChanges();
 	VMManager::ApplySettings();
 }
 
@@ -553,11 +542,7 @@ void EmuThread::reloadGameSettings()
 	}
 
 	// this will skip applying settings when they're not active
-	if (VMManager::ReloadGameSettings())
-	{
-		// none of these settings below are per-game.. for now. but in case they are in the future.
-		checkForSettingChanges();
-	}
+	VMManager::ReloadGameSettings();
 }
 
 void EmuThread::updateEmuFolders()
@@ -571,26 +556,24 @@ void EmuThread::updateEmuFolders()
 	Host::Internal::UpdateEmuFolders();
 }
 
-void EmuThread::loadOurSettings()
-{
-	m_verbose_status = Host::GetBaseBoolSettingValue("UI", "VerboseStatusBar", false);
-	m_pause_on_focus_loss = Host::GetBaseBoolSettingValue("UI", "PauseOnFocusLoss", false);
-}
-
 void EmuThread::connectSignals()
 {
 	connect(qApp, &QGuiApplication::applicationStateChanged, this, &EmuThread::onApplicationStateChanged);
 }
 
-void EmuThread::loadOurInitialSettings()
+void EmuThread::loadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
 {
-	m_is_fullscreen = Host::GetBaseBoolSettingValue("UI", "StartFullscreen", false);
-	m_is_rendering_to_main = shouldRenderToMain();
-	m_is_surfaceless = false;
-	m_save_state_on_shutdown = false;
+	m_verbose_status = si.GetBoolValue("UI", "VerboseStatusBar", false);
+	m_pause_on_focus_loss = si.GetBoolValue("UI", "PauseOnFocusLoss", false);
 }
 
-void EmuThread::checkForSettingChanges()
+void Host::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
+{
+	CommonHost::LoadSettings(si, lock);
+	g_emu_thread->loadSettings(si, lock);
+}
+
+void EmuThread::checkForSettingChanges(const Pcsx2Config& old_config)
 {
 	QMetaObject::invokeMethod(g_main_window, &MainWindow::checkForSettingChanges, Qt::QueuedConnection);
 
@@ -605,12 +588,13 @@ void EmuThread::checkForSettingChanges()
 		}
 	}
 
-	const bool last_verbose_status = m_verbose_status;
+	updatePerformanceMetrics(true);
+}
 
-	loadOurSettings();
-
-	if (m_verbose_status != last_verbose_status)
-		updatePerformanceMetrics(true);
+void Host::CheckForSettingsChanges(const Pcsx2Config& old_config)
+{
+	CommonHost::CheckForSettingsChanges(old_config);
+	g_emu_thread->checkForSettingChanges(old_config);
 }
 
 bool EmuThread::shouldRenderToMain() const
@@ -855,6 +839,8 @@ void EmuThread::updateDisplay()
 bool EmuThread::acquireHostDisplay(HostDisplay::RenderAPI api)
 {
 	pxAssertRel(!g_host_display, "Host display does not exist on create");
+	m_is_rendering_to_main = shouldRenderToMain();
+	m_is_surfaceless = false;
 
 	g_host_display = HostDisplay::CreateDisplayForAPI(api);
 	if (!g_host_display)
@@ -967,29 +953,35 @@ void Host::UpdateHostDisplay()
 
 void Host::OnVMStarting()
 {
+	CommonHost::OnVMStarting();
 	g_emu_thread->stopBackgroundControllerPollTimer();
 	emit g_emu_thread->onVMStarting();
 }
 
 void Host::OnVMStarted()
 {
+	CommonHost::OnVMStarted();
 	emit g_emu_thread->onVMStarted();
 }
 
 void Host::OnVMDestroyed()
 {
+	CommonHost::OnVMDestroyed();
 	emit g_emu_thread->onVMStopped();
 	g_emu_thread->startBackgroundControllerPollTimer();
 }
 
 void Host::OnVMPaused()
 {
+	CommonHost::OnVMPaused();
 	g_emu_thread->startBackgroundControllerPollTimer();
 	emit g_emu_thread->onVMPaused();
 }
 
 void Host::OnVMResumed()
 {
+	CommonHost::OnVMResumed();
+
 	// exit the event loop when we eventually return
 	g_emu_thread->getEventLoop()->quit();
 	g_emu_thread->stopBackgroundControllerPollTimer();
@@ -1001,11 +993,10 @@ void Host::OnVMResumed()
 	emit g_emu_thread->onVMResumed();
 }
 
-void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name,
-	u32 game_crc)
+void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name, u32 game_crc)
 {
-	emit g_emu_thread->onGameChanged(QString::fromStdString(disc_path), QString::fromStdString(game_serial),
-		QString::fromStdString(game_name), game_crc);
+	CommonHost::OnGameChanged(disc_path, game_serial, game_name, game_crc);
+	emit g_emu_thread->onGameChanged(QString::fromStdString(disc_path), QString::fromStdString(game_serial), QString::fromStdString(game_name), game_crc);
 }
 
 void EmuThread::updatePerformanceMetrics(bool force)
@@ -1117,9 +1108,10 @@ void Host::OnSaveStateSaved(const std::string_view& filename)
 	emit g_emu_thread->onSaveStateSaved(QtUtils::StringViewToQString(filename));
 }
 
-void Host::PumpMessagesOnCPUThread()
+void Host::CPUThreadVSync()
 {
 	g_emu_thread->getEventLoop()->processEvents(QEventLoop::AllEvents);
+	CommonHost::CPUThreadVSync();
 }
 
 void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false */)
@@ -1211,15 +1203,13 @@ bool QtHost::InitializeConfig()
 		SaveSettings();
 	}
 
+	CommonHost::SetBlockSystemConsole(QtHost::InNoGUIMode());
 	CommonHost::LoadStartupSettings();
-	Host::UpdateLogging(QtHost::InNoGUIMode());
 	return true;
 }
 
 void Host::SetDefaultUISettings(SettingsInterface& si)
 {
-	Host::SetDefaultLoggingSettings(si);
-
 	si.SetBoolValue("UI", "InhibitScreensaver", true);
 	si.SetBoolValue("UI", "ConfirmShutdown", true);
 	si.SetBoolValue("UI", "StartPaused", false);
@@ -1472,7 +1462,7 @@ void QtHost::HookSignals()
 
 void QtHost::PrintCommandLineVersion()
 {
-	Host::InitializeEarlyConsole();
+	CommonHost::InitializeEarlyConsole();
 	std::fprintf(stderr, "%s\n", (GetAppNameAndVersion() + GetAppConfigSuffix()).toUtf8().constData());
 	std::fprintf(stderr, "https://pcsx2.net/\n");
 	std::fprintf(stderr, "\n");
@@ -1592,7 +1582,7 @@ bool QtHost::ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMB
 			}
 			else if (CHECK_ARG("-earlyconsolelog"))
 			{
-				Host::InitializeEarlyConsole();
+				CommonHost::InitializeEarlyConsole();
 				continue;
 			}
 			else if (CHECK_ARG("-bigpicture"))
@@ -1607,7 +1597,7 @@ bool QtHost::ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMB
 			}
 			else if (argv[i][0] == '-')
 			{
-				Host::InitializeEarlyConsole();
+				CommonHost::InitializeEarlyConsole();
 				std::fprintf(stderr, "Unknown parameter: '%s'", argv[i]);
 				return false;
 			}
@@ -1626,7 +1616,7 @@ bool QtHost::ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMB
 	// or disc, we don't want to actually start.
 	if (autoboot && !autoboot->source_type.has_value() && autoboot->filename.empty() && autoboot->elf_override.empty())
 	{
-		Host::InitializeEarlyConsole();
+		CommonHost::InitializeEarlyConsole();
 		Console.Warning("Skipping autoboot due to no boot parameters.");
 		autoboot.reset();
 	}

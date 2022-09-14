@@ -46,6 +46,8 @@ namespace GameList
 {
 	using CacheMap = std::unordered_map<std::string, GameList::Entry>;
 
+	static bool IsScannableFilename(const std::string_view& path);
+
 	static Entry* GetMutableEntryForPath(const char* path);
 
 	static bool GetElfListEntry(const std::string& path, GameList::Entry* entry);
@@ -119,15 +121,7 @@ const char* GameList::EntryCompatibilityRatingToString(CompatibilityRating ratin
 
 bool GameList::IsScannableFilename(const std::string_view& path)
 {
-	static const char* extensions[] = {".iso", ".mdf", ".nrg", ".bin", ".img", ".gz", ".cso", ".chd", ".elf", ".irx"};
-
-	for (const char* test_extension : extensions)
-	{
-		if (StringUtil::EndsWithNoCase(path, test_extension))
-			return true;
-	}
-
-	return false;
+	return VMManager::IsDiscFileName(path) || VMManager::IsElfFileName(path);
 }
 
 void GameList::FillBootParametersForEntry(VMBootParameters* params, const Entry* entry)
