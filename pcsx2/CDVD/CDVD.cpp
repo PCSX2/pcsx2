@@ -746,7 +746,7 @@ static uint cdvdRotationalLatency(CDVD_MODE_TYPE mode)
 	{
 		const float rotationPerSecond = static_cast<float>(((mode == MODE_CDROM) ? CD_MIN_ROTATION_X1 : DVD_MIN_ROTATION_X1) * cdvd.Speed) / 60.0f;
 		const float msPerRotation = 1000.0f / rotationPerSecond;
-		
+
 		return ((PSXCLK / 1000) * msPerRotation);
 	}
 	else
@@ -1123,7 +1123,7 @@ __fi void cdvdReadInterrupt()
 	cdvdUpdateReady(CDVD_DRIVE_BUSY);
 	cdvdUpdateStatus(CDVD_STATUS_READ);
 	cdvd.WaitingDMA = false;
-	
+
 	if (!cdvd.Readed)
 	{
 		// Seeking finished.  Process the track we requested before, and
@@ -1166,7 +1166,7 @@ __fi void cdvdReadInterrupt()
 		cdvdSetIrq();
 		return;
 	}
-	
+
 	if (cdvd.Reading)
 	{
 		if (cdvd.RErr == 0)
@@ -1288,7 +1288,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 	// So In the case where it's seeking to data it will be Spinning (0x2) not reading (0x8) and Seeking (0x10, but because seeking is also spinning 0x2 is also set))
 	// Update - Apparently all that was rubbish and some games don't like it. WRC was the one in this scenario which hated SEEK |ZPAUSE, so just putting it back to pause for now.
 	// We should really run some tests for this behaviour.
-	
+
 	cdvdUpdateStatus(CDVD_STATUS_SEEK);
 
 	if (!cdvd.Spinning)
@@ -1324,7 +1324,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 		// if delta > 0 it will read a new sector so the readInterrupt will account for this.
 		seektime = 0;
 		isSeeking = false;
-		
+
 		if (delta == 0)
 		{
 			//cdvd.Status = CDVD_STATUS_PAUSE;
@@ -1336,9 +1336,9 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 			// setting Readed to 0 skips the seek logic, which means the next call to
 			// cdvdReadInterrupt will load a block.  So make sure it's properly scheduled
 			// based on sector read speeds:
-			
+
 			//seektime = cdvd.ReadTime;
-			
+
 			if (!cdvd.nextSectorsBuffered)//Buffering time hasn't completed yet so cancel it and simulate the remaining time
 			{
 				if (psxRegs.interrupt & (1 << IopEvt_CdvdSectorReady))

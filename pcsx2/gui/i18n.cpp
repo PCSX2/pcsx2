@@ -182,11 +182,11 @@ static wxLanguage i18n_FallbackToAnotherLang( wxLanguage wxLangId )
 		case wxLANGUAGE_ARABIC_UAE           :
 		case wxLANGUAGE_ARABIC_YEMEN         : return wxLANGUAGE_ARABIC_SAUDI_ARABIA;
 
-		case wxLANGUAGE_CHINESE_HONGKONG     : 
+		case wxLANGUAGE_CHINESE_HONGKONG     :
 		case wxLANGUAGE_CHINESE_MACAU        : return wxLANGUAGE_CHINESE_TRADITIONAL;
 		case wxLANGUAGE_CHINESE_SINGAPORE    : return wxLANGUAGE_CHINESE_SIMPLIFIED;
 
-		// case wxLANGUAGE_SAMI                 : 
+		// case wxLANGUAGE_SAMI                 :
 		// case wxLANGUAGE_DANISH               :
 		case wxLANGUAGE_NORWEGIAN_NYNORSK    : return wxLANGUAGE_NORWEGIAN_BOKMAL;
 
@@ -202,10 +202,10 @@ static wxLanguage i18n_FallbackToAnotherLang( wxLanguage wxLangId )
 		case wxLANGUAGE_PORTUGUESE           : return wxLANGUAGE_PORTUGUESE_BRAZILIAN;
 
 		// Overkill 9000?
-		case wxLANGUAGE_GERMAN_AUSTRIAN      : 
-		case wxLANGUAGE_GERMAN_BELGIUM       : 
-		case wxLANGUAGE_GERMAN_LIECHTENSTEIN : 
-		case wxLANGUAGE_GERMAN_LUXEMBOURG    : 
+		case wxLANGUAGE_GERMAN_AUSTRIAN      :
+		case wxLANGUAGE_GERMAN_BELGIUM       :
+		case wxLANGUAGE_GERMAN_LIECHTENSTEIN :
+		case wxLANGUAGE_GERMAN_LUXEMBOURG    :
 		// case wxLANGUAGE_LOWER_SORBIAN        :
 		// case wxLANGUAGE_UPPER_SORBIAN        :
 		// - Sorbian is not supported by wxWidgets (3.0.0).
@@ -280,7 +280,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 			info = wxLocale::GetLanguageInfo(LangId_fallback);
 	}
 
-	// note: language canonical name mismatch probably means wxWidgets version changed since 
+	// note: language canonical name mismatch probably means wxWidgets version changed since
 	// the user's ini file was provided.  Missing/invalid ID probably means the same thing.
 	// If either is true, and the caller provided a canonical name, then let wx do a best
 	// match based on the canonical name.
@@ -300,7 +300,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 
 	if (!info) return false;
 	if (wxGetLocale() && (info->Language == wxGetLocale()->GetLanguage())) return true;
-	
+
 	std::unique_ptr<wxLocale> locale(new wxLocale(info->Language));
 
 	if( !locale->IsOk() )
@@ -312,7 +312,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 	}
 
 	wxLangId = (wxLanguage)locale->GetLanguage();
-	
+
 	if (wxLangId == wxLANGUAGE_UNKNOWN)
 	{
 		Console.WriteLn("System-default language is unknown?  Defaulting back to English/US.");
@@ -325,7 +325,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 		locale.release();
 		return true;
 	}
-	
+
 	Console.WriteLn( "Loading language translation databases for '%ls' [%ls]",
 		WX_STR(i18n_GetBetterLanguageName(info)), WX_STR(locale->GetCanonicalName())
 	);
@@ -335,7 +335,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 		L"pcsx2_Main",
 		L"pcsx2_Iconized"
 	};
-	
+
 	bool foundone = false;
 	for (uint i=0; i<std::size(dictFiles); ++i)
 	{

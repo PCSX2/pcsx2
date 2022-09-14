@@ -390,7 +390,7 @@ u32 UpdateVSyncRate()
 	//  The PS2's vsync timer is an *independent* crystal that is fixed to either 59.94 (NTSC)
 	//  or 50.0 (PAL) Hz.  It has *nothing* to do with real TV timings or the real vsync of
 	//  the GS's output circuit.  It is the same regardless if the GS is outputting interlace
-	//  or progressive scan content. 
+	//  or progressive scan content.
 
 	const double vertical_frequency = GetVerticalFrequency();
 
@@ -457,7 +457,7 @@ u32 UpdateVSyncRate()
 
 		if (video_mode_initialized)
 			Console.WriteLn(Color_Green, "(UpdateVSyncRate) Mode Changed to %s.", ReportVideoMode());
-		
+
 		if (custom && video_mode_initialized)
 			Console.Indent().WriteLn(Color_StrongGreen, "... with user configured refresh rate: %.02f Hz", vertical_frequency);
 
@@ -543,7 +543,7 @@ static __fi void DoFMVSwitch()
 		RendererSwitched = false;
 }
 
-// Convenience function to update UI thread and set patches. 
+// Convenience function to update UI thread and set patches.
 static __fi void frameLimitUpdateCore()
 {
 	DoFMVSwitch();
@@ -585,15 +585,15 @@ static __fi void frameLimit()
 
 	// Conversion of delta from CPU ticks (microseconds) to milliseconds
 	s32 msec = (int) ((sDeltaTime * -1000) / (s64) GetTickFrequency());
-	
+
 	// If any integer value of milliseconds exists, sleep it off.
 	// Prior comments suggested that 1-2 ms sleeps were inaccurate on some OSes;
-	// further testing suggests instead that this was utter bullshit. 
+	// further testing suggests instead that this was utter bullshit.
 	if (msec > 1)
 	{
 		Threading::Sleep(msec - 1);
 	}
-	
+
 	// Conversion to milliseconds loses some precision; after sleeping off whole milliseconds,
 	// spin the thread without sleeping until we finally reach our expected end time.
 	while (GetCPUTicks() < uExpectedEnd)
@@ -628,7 +628,7 @@ static __fi void VSyncStart(u32 sCycle)
 
 	hwIntcIrq(INTC_VBLANK_S);
 	psxVBlankStart();
-	
+
 	if (gates) rcntStartGate(true, sCycle); // Counters Start Gate code
 
 	// INTC - VB Blank Start Hack --
@@ -746,7 +746,7 @@ __fi void rcntUpdate_vSync()
 	if (vsyncCounter.Mode == MODE_VSYNC)
 	{
 		VSyncEnd(vsyncCounter.sCycle);
-		
+
 		vsyncCounter.sCycle += vSyncInfo.Blank;
 		vsyncCounter.CycleT = vSyncInfo.Render;
 		vsyncCounter.Mode = MODE_VRENDER;
@@ -962,7 +962,7 @@ static __fi void rcntEndGate(bool isVblank , u32 sCycle)
 				// calls to rcntUpdate).
 				counters[i].mode.IsCounting = 1;
 				counters[i].sCycleT = cpuRegs.cycle;
-				
+
 				EECNT_LOG("EE Counter[%d] %s EndGate Type0, count = %x", i,
 					isVblank ? "vblank" : "hblank", counters[i].count );
 			break;
@@ -1131,7 +1131,7 @@ __fi u16 rcntRead32( u32 mem )
 	case(RCNT3_MODE):	return (u16)counters[3].modeval;
 	case(RCNT3_TARGET):	return (u16)counters[3].target;
 	}
-	
+
 	return psHu16(mem);
 }
 

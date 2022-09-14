@@ -35,7 +35,7 @@ public:
 protected:
 	void OnOk_Click( wxCommandEvent& evt );
 	void OnApply_Click( wxCommandEvent& evt );
-	
+
 	wxString& GetConfSettingsTabName() const
 	{
 		static wxString bleh = L"TraceLogs";

@@ -277,7 +277,7 @@ void CtrlMemSearch::Search(wxCommandEvent& evt)
 		else
 		{
 			// We're searching for either a BYTE, WORD, DWORD or QWORD
-			
+
 			const auto res = StringUtil::FromChars<u64>(txtSearch->GetValue().ToStdString());
 			if(!res.has_value())
 			{
@@ -300,7 +300,7 @@ void CtrlMemSearch::onSearchFinished(wxCommandEvent& evt)
 	m_searchResultsMutex.lock();
 
 	lblSearchHits->SetLabelText(wxString::Format(L"Hits: %zu", m_searchResults.size()));
-	
+
 	// Enable the buttons only if we have results
 	// -1 indicates we haven't jumped to a result yet
 	m_searchIter = -1;

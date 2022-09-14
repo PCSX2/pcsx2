@@ -50,7 +50,7 @@ int* front = q.peek();
 assert(*front == 18);
 succeeded = q.try_dequeue(number);
 assert(succeeded && number == 18);
-front = q.peek(); 
+front = q.peek();
 assert(front == nullptr);           // Returns nullptr if the queue was empty
 ```
 
@@ -82,7 +82,7 @@ reader.join();
 
 assert(q.size_approx() == 0);
 ```
-    
+
 Note that `wait_dequeue` will block indefinitely while the queue is empty; this
 means care must be taken to only call `wait_dequeue` if you're sure another element
 will come along eventually, or if the queue has a static lifetime. This is because

@@ -99,7 +99,7 @@ void RecentIsoManager::RemoveAllFromMenu()
 		m_Menu->Destroy( curitem.ItemPtr );
 		curitem.ItemPtr = NULL;
 	}
-	
+
 	if( m_Separator != nullptr )
 	{
 		m_Menu->Destroy( m_Separator );

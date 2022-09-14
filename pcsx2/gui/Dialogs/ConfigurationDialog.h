@@ -39,7 +39,7 @@ namespace Dialogs
 	class BaseConfigurationDialog : public BaseApplicableDialog
 	{
 		typedef BaseApplicableDialog _parent;
-	
+
 	protected:
 		wxListbook*			m_listbook;
 		wxArrayString		m_labels;
@@ -171,7 +171,7 @@ namespace Dialogs
 	public:
 		virtual ~CreateMemoryCardDialog()  = default;
 		CreateMemoryCardDialog( wxWindow* parent, const wxDirName& mcdpath, const wxString& suggested_mcdfileName);
-	
+
 		//duplicate of MemoryCardFile::Create. Don't know why the existing method isn't used. - avih
 		static bool CreateIt( const wxString& mcdFile, uint sizeInMB, bool isPSX );
 		wxString result_createdMcdFilename;
@@ -197,7 +197,7 @@ namespace Dialogs
 	public:
 		virtual ~ConvertMemoryCardDialog()  = default;
 		ConvertMemoryCardDialog( wxWindow* parent, const wxDirName& mcdPath, MemoryCardType type, const wxString& sourceFilename );
-	
+
 	protected:
 		void CreateControls( const MemoryCardType sourceType );
 		void OnOk_Click( wxCommandEvent& evt );

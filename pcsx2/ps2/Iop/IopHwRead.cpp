@@ -168,7 +168,7 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 			case 0x8:
 				ret = psxCounters[cntidx].target;
 			break;
-			
+
 			default:
 				DevCon.Warning("Unknown 16bit counter read %x", addr);
 				ret = psxHu32(addr);
@@ -316,11 +316,11 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 			mcase(HW_PS1_GPU_DATA) :
 				ret = psxGPUr(addr);
 			break;
-			
+
 			mcase(HW_PS1_GPU_STATUS) :
 				ret = psxGPUr(addr);
 			break;
-			
+
 			mcase (0x1f801820): // MDEC
 				// ret = psxHu32(addr); // old
 				ret = mdecRead0();
@@ -328,7 +328,7 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 				DevCon.Warning("MDEC 1820 Read %x", ret);
 #endif
 			break;
-			
+
 			mcase (0x1f801824): // MDEC
 				//ret = psxHu32(addr); // old
 				ret = mdecRead1();

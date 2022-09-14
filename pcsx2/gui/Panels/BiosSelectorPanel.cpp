@@ -214,7 +214,7 @@ void Panels::BiosSelectorPanel::OnEnumComplete(wxCommandEvent& evt)
 		if (currentBios == (*m_BiosList)[result.second])
 			m_ComboBox->SetSelection(sel);
 	}
-	// Select a bios if one isn't selected. 
+	// Select a bios if one isn't selected.
 	// This makes it so users don't _have_ to click on their bios,
 	// possibly reducing confusion.
 	if(m_ComboBox->GetSelection() == -1 && m_ComboBox->GetCount() > 0)

@@ -133,7 +133,7 @@ bool SymbolMap::GetSymbolInfo(SymbolInfo *info, u32 address, SymbolType symmask)
 
 			return true;
 		}
-		
+
 		if (dataAddress != INVALID_ADDRESS) {
 			if (info != NULL) {
 				info->type = ST_DATA;

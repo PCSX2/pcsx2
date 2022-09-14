@@ -305,7 +305,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 				while (true)
 				{
 					if (opcodeStack.empty())
-					{		
+					{
 						sprintf(expressionError,"Closing parenthesis without opening one");
 						return false;
 					}
@@ -319,7 +319,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 				while (true)
 				{
 					if (opcodeStack.empty())
-					{		
+					{
 						sprintf(expressionError,"Closing bracket without opening one");
 						return false;
 					}

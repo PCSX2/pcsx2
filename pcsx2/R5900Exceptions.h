@@ -138,7 +138,7 @@ namespace R5900Exception
 	class DebugBreakpoint : public BaseR5900Exception
 	{
 		DEFINE_EXCEPTION_COPYTORS(DebugBreakpoint, BaseR5900Exception)
-		
+
 	public:
 		explicit DebugBreakpoint()
 		{

@@ -66,7 +66,7 @@ namespace PacketReader::ARP
 		, senderProtocolAddress{std::make_unique<u8[]>(original.protocolAddressLength)}
 		, targetHardwareAddress{std::make_unique<u8[]>(original.hardwareAddressLength)}
 		, targetProtocolAddress{std::make_unique<u8[]>(original.protocolAddressLength)}
-	{	
+	{
 		memcpy(senderHardwareAddress.get(), original.senderHardwareAddress.get(), hardwareAddressLength);
 		memcpy(senderProtocolAddress.get(), original.senderProtocolAddress.get(), protocolAddressLength);
 		memcpy(targetHardwareAddress.get(), original.targetHardwareAddress.get(), hardwareAddressLength);

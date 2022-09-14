@@ -23,10 +23,10 @@
 /**
  * g_malloc:
  * @n_bytes: the number of bytes to allocate
- * 
+ *
  * Allocates @n_bytes bytes of memory.
  * If @n_bytes is 0 it returns %NULL.
- * 
+ *
  * Returns: a pointer to the allocated memory
  */
 void* my_g_malloc(size_t n_bytes)
@@ -51,10 +51,10 @@ void* my_g_malloc(size_t n_bytes)
 /**
  * g_malloc0:
  * @n_bytes: the number of bytes to allocate
- * 
+ *
  * Allocates @n_bytes bytes of memory, initialized to 0's.
  * If @n_bytes is 0 it returns %NULL.
- * 
+ *
  * Returns: a pointer to the allocated memory
  */
 void* my_g_malloc0(size_t n_bytes)
@@ -80,10 +80,10 @@ void* my_g_malloc0(size_t n_bytes)
  * g_malloc_n:
  * @n_blocks: the number of blocks to allocate
  * @n_block_bytes: the size of each block in bytes
- * 
+ *
  * This function is similar to g_malloc(), allocating (@n_blocks * @n_block_bytes) bytes,
  * but care is taken to detect possible overflow during multiplication.
- * 
+ *
  * Since: 2.24
  * Returns: a pointer to the allocated memory
  */
@@ -103,13 +103,13 @@ void* my_g_malloc_n(size_t n_blocks,
  * g_realloc:
  * @mem: (nullable): the memory to reallocate
  * @n_bytes: new size of the memory in bytes
- * 
+ *
  * Reallocates the memory pointed to by @mem, so that it now has space for
  * @n_bytes bytes of memory. It returns the new address of the memory, which may
  * have been moved. @mem may be %NULL, in which case it's considered to
  * have zero-length. @n_bytes may be 0, in which case %NULL will be returned
  * and @mem will be freed unless it is %NULL.
- * 
+ *
  * Returns: the new address of the allocated memory
  */
 void* my_g_realloc(void* mem,
@@ -139,10 +139,10 @@ void* my_g_realloc(void* mem,
  * @mem: (nullable): the memory to reallocate
  * @n_blocks: the number of blocks to allocate
  * @n_block_bytes: the size of each block in bytes
- * 
+ *
  * This function is similar to g_realloc(), allocating (@n_blocks * @n_block_bytes) bytes,
  * but care is taken to detect possible overflow during multiplication.
- * 
+ *
  * Since: 2.24
  * Returns: the new address of the allocated memory
  */

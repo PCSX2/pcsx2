@@ -82,7 +82,7 @@ __inline int CheckCache(u32 addr)
 {
 	u32 mask;
 
-	if(((cpuRegs.CP0.n.Config >> 16) & 0x1) == 0) 
+	if(((cpuRegs.CP0.n.Config >> 16) & 0x1) == 0)
 	{
 		//DevCon.Warning("Data Cache Disabled! %x", cpuRegs.CP0.n.Config);
 		return false;//
@@ -92,17 +92,17 @@ __inline int CheckCache(u32 addr)
 	{
 		if (((tlb[i].EntryLo1 & 0x38) >> 3) == 0x3) {
 			mask  = tlb[i].PageMask;
-			
+
 			if ((addr >= tlb[i].PFN1) && (addr <= tlb[i].PFN1 + mask)) {
-				//DevCon.Warning("Yay! Cache check cache addr=%x, mask=%x, addr+mask=%x, VPN2=%x PFN0=%x", addr, mask, (addr & mask), tlb[i].VPN2, tlb[i].PFN0); 
+				//DevCon.Warning("Yay! Cache check cache addr=%x, mask=%x, addr+mask=%x, VPN2=%x PFN0=%x", addr, mask, (addr & mask), tlb[i].VPN2, tlb[i].PFN0);
 				return true;
 			}
 		}
 		if (((tlb[i].EntryLo0 & 0x38) >> 3) == 0x3) {
 			mask  = tlb[i].PageMask;
-			
+
 			if ((addr >= tlb[i].PFN0) && (addr <= tlb[i].PFN0 + mask)) {
-				//DevCon.Warning("Yay! Cache check cache addr=%x, mask=%x, addr+mask=%x, VPN2=%x PFN0=%x", addr, mask, (addr & mask), tlb[i].VPN2, tlb[i].PFN0); 
+				//DevCon.Warning("Yay! Cache check cache addr=%x, mask=%x, addr+mask=%x, VPN2=%x PFN0=%x", addr, mask, (addr & mask), tlb[i].VPN2, tlb[i].PFN0);
 				return true;
 			}
 		}
@@ -122,19 +122,19 @@ DataType vtlb_memRead(u32 addr)
 
 	if (!vmv.isHandler(addr))
 	{
-		if (!CHECK_EEREC) 
+		if (!CHECK_EEREC)
 		{
-			if(CHECK_CACHE && CheckCache(addr)) 
+			if(CHECK_CACHE && CheckCache(addr))
 			{
 				switch( DataSize )
 				{
-					case 8: 
+					case 8:
 						return readCache8(addr);
 						break;
-					case 16: 
+					case 16:
 						return readCache16(addr);
 						break;
-					case 32: 
+					case 32:
 						return readCache32(addr);
 						break;
 
@@ -173,7 +173,7 @@ RETURNS_R64 vtlb_memRead64(u32 mem)
 	if (!vmv.isHandler(mem))
 	{
 		if (!CHECK_EEREC) {
-			if(CHECK_CACHE && CheckCache(mem)) 
+			if(CHECK_CACHE && CheckCache(mem))
 			{
 				return readCache64(mem);
 			}
@@ -196,9 +196,9 @@ RETURNS_R128 vtlb_memRead128(u32 mem)
 
 	if (!vmv.isHandler(mem))
 	{
-		if (!CHECK_EEREC) 
+		if (!CHECK_EEREC)
 		{
-			if(CHECK_CACHE && CheckCache(mem)) 
+			if(CHECK_CACHE && CheckCache(mem))
 			{
 				return readCache128(mem);
 			}
@@ -223,14 +223,14 @@ void vtlb_memWrite(u32 addr, DataType data)
 	auto vmv = vtlbdata.vmap[addr>>VTLB_PAGE_BITS];
 
 	if (!vmv.isHandler(addr))
-	{		
-		if (!CHECK_EEREC) 
+	{
+		if (!CHECK_EEREC)
 		{
-			if(CHECK_CACHE && CheckCache(addr)) 
+			if(CHECK_CACHE && CheckCache(addr))
 			{
 				switch( DataSize )
 				{
-				case 8: 
+				case 8:
 					writeCache8(addr, data);
 					return;
 				case 16:
@@ -259,10 +259,10 @@ void vtlb_memWrite64(u32 mem, const mem64_t* value)
 	auto vmv = vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
 
 	if (!vmv.isHandler(mem))
-	{		
-		if (!CHECK_EEREC) 
+	{
+		if (!CHECK_EEREC)
 		{
-			if(CHECK_CACHE && CheckCache(mem)) 
+			if(CHECK_CACHE && CheckCache(mem))
 			{
 				writeCache64(mem, *value);
 				return;
@@ -287,9 +287,9 @@ void vtlb_memWrite128(u32 mem, const mem128_t *value)
 
 	if (!vmv.isHandler(mem))
 	{
-		if (!CHECK_EEREC) 
+		if (!CHECK_EEREC)
 		{
-			if(CHECK_CACHE && CheckCache(mem)) 
+			if(CHECK_CACHE && CheckCache(mem))
 			{
 				writeCache128(mem, value);
 				return;
@@ -559,7 +559,7 @@ static void vtlbDefaultPhyWrite128(u32 addr,const mem128_t* data)
 }
 
 // ===========================================================================================
-//  VTLB Public API -- Init/Term/RegisterHandler stuff 
+//  VTLB Public API -- Init/Term/RegisterHandler stuff
 // ===========================================================================================
 //
 

@@ -236,7 +236,7 @@ int __fi get_dmv()
 int get_macroblock_address_increment()
 {
 	const MBAtab *mba;
-	
+
 	u16 code = UBITS(16);
 
 	if (code >= 4096)
@@ -287,7 +287,7 @@ static __fi int get_luma_dc_dct_diff()
 
 		// 9 bits max
 	}
-	
+
 	if (size==0)
 		dc_diff = 0;
 	else
@@ -347,7 +347,7 @@ static bool get_intra_block()
 	const u8 (&quant_matrix)[64] = decoder.iq;
 	int quantizer_scale = decoder.quantizer_scale;
 	s16 * dest = decoder.DCTblock;
-	u16 code; 
+	u16 code;
 
 	/* decode AC coefficients */
   for (int i=1 + ipu_cmd.pos[4]; ; i++)
@@ -428,7 +428,7 @@ static bool get_intra_block()
 			ipu_cmd.pos[4] = 0;
 			return true;
 		}
-		
+
 		i += (tab->run == 65) ? GETBITS(6) : tab->run;
 		if (i >= 64)
 		{
@@ -528,7 +528,7 @@ static bool get_non_intra_block(int * last)
 					tab = &DCT.first[(code >> 12) - 4];
 				}
 				else
-				{			
+				{
 					tab = &DCT.next[(code >> 12)- 4];
 				}
 			}
@@ -537,7 +537,7 @@ static bool get_non_intra_block(int * last)
 				tab = &DCT.tab0[(code >> 8) - 4];
 			}
 			else if (code >= 512)
-			{		
+			{
 				tab = &DCT.tab1[(code >> 6) - 8];
 			}
 
@@ -547,23 +547,23 @@ static bool get_non_intra_block(int * last)
 			// have lots of room to spare.
 
 			else if (code >= 256)
-			{		
+			{
 				tab = &DCT.tab2[(code >> 4) - 16];
 			}
 			else if (code >= 128)
-			{		
+			{
 				tab = &DCT.tab3[(code >> 3) - 16];
 			}
 			else if (code >= 64)
-			{		
+			{
 				tab = &DCT.tab4[(code >> 2) - 16];
 			}
 			else if (code >= 32)
-			{		
+			{
 				tab = &DCT.tab5[(code >> 1) - 16];
 			}
 			else if (code >= 16)
-			{		
+			{
 				tab = &DCT.tab6[code - 16];
 			}
 			else
@@ -884,7 +884,7 @@ __fi bool mpeg2sliceIDEC()
 
 						default:	/* end of slice/frame, or error? */
 						{
-							goto finish_idec;	
+							goto finish_idec;
 						}
 					}
 				}
@@ -990,7 +990,7 @@ __fi bool mpeg2_slice()
 			decoder.dc_dct_pred[1] =
 			decoder.dc_dct_pred[2] = 128 << decoder.intra_dc_precision;
 		}
-			
+
 		ipuRegs.ctrl.ECD = 0;
 		ipuRegs.top = 0;
 		memzero_sse_a(mb8);
@@ -1236,7 +1236,7 @@ __fi bool mpeg2_slice()
 			g_BP.Align();
 			do
 			{
-				if (!g_BP.FillBuffer(24)) 
+				if (!g_BP.FillBuffer(24))
 				{
 					ipu_cmd.pos[0] = 4;
 					return false;

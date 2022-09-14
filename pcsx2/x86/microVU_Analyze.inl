@@ -1,6 +1,6 @@
 /*  PCSX2 - PS2 Emulator for PCs
  *  Copyright (C) 2002-2010  PCSX2 Dev Team
- * 
+ *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
  *  ation, either version 3 of the License, or (at your option) any later version.
@@ -594,7 +594,7 @@ __ri int mVUbranchCheck(mV)
 		mVUregs.blockType = 2;
 		mVUregs.needExactMatch |= 7; // This might not be necessary, but w/e...
 		mVUregs.flagInfo = 0;
-		
+
 		if (mVUlow.branch == 2 || mVUlow.branch == 10)
 		{
 			Console.Error("microVU%d: %s in branch, branch delay slot requires link [%04x] - If game broken report to PCSX2 Team", mVU.index,

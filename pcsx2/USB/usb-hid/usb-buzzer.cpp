@@ -1,8 +1,8 @@
 /*
  * QEMU USB HID devices
- * 
+ *
  * Copyright (c) 2005 Fabrice Bellard
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -262,7 +262,7 @@ static const uint8_t vk_to_key_code[] = {
 0x00, //FAIL: Windows 2000/XP: Browser Forward
 0x00, //FAIL: Windows 2000/XP: Browser Refresh
 0x00, //FAIL: Windows 2000/XP: Browser Stop
-0x00, //FAIL: Windows 2000/XP: Browser Search 
+0x00, //FAIL: Windows 2000/XP: Browser Search
 0x00, //FAIL: Windows 2000/XP: Browser Favorites
 0x00, //FAIL: Windows 2000/XP: Browser Start and Home
 0x00, //FAIL: Windows 2000/XP: Volume Mute
@@ -278,13 +278,13 @@ static const uint8_t vk_to_key_code[] = {
 0x00, //FAIL: Windows 2000/XP: Start Application 2
 0x00, //FAIL: 0x00
 0x00, //FAIL: 0x00
-0x33, //FAIL: Windows 2000/XP: For the US standard keyboard, the ';:' key 
+0x33, //FAIL: Windows 2000/XP: For the US standard keyboard, the ';:' key
 0x2E, //FAIL: Windows 2000/XP: For any country/region, the '+'
 0x36, //FAIL: Windows 2000/XP: For any country/region, the ','
 0x2D, //FAIL: Windows 2000/XP: For any country/region, the '-'
 0x37, //FAIL: Windows 2000/XP: For any country/region, the '.'
-0x38, //FAIL: Windows 2000/XP: For the US standard keyboard, the '/?' key 
-0x35, //FAIL: Windows 2000/XP: For the US standard keyboard, the '`~' key 
+0x38, //FAIL: Windows 2000/XP: For the US standard keyboard, the '/?' key
+0x35, //FAIL: Windows 2000/XP: For the US standard keyboard, the '`~' key
 0x00, //FAIL: 0x00
 0x00, //FAIL: 0x00
 0x00, //FAIL: 0x00
@@ -344,7 +344,7 @@ static const uint8_t vk_to_key_code[] = {
 0x00, //FAIL: Erase EOF
 0x00, //FAIL: Play
 0x00, //FAIL: Zoom
-0x00, //FAIL: Reserved 
+0x00, //FAIL: Reserved
 0x00, //FAIL: PA1
 0x9C, //OK: Clear
 0x00, //FAIL: 0x00
@@ -486,13 +486,13 @@ static const uint8_t qemu_keyboard_config_descriptor[] = {
 	0x01,       /*  u8  bNumInterfaces; (1) */
 	0x01,       /*  u8  bConfigurationValue; */
 	0x04,       /*  u8  iConfiguration; */
-	0xa0,       /*  u8  bmAttributes; 
+	0xa0,       /*  u8  bmAttributes;
 				 Bit 7: must be set,
 				     6: Self-powered,
 				     5: Remote wakeup,
 				     4..0: resvd */
 	50,         /*  u8  MaxPower; */
-      
+
 	/* USB 1.1:
 	 * USB 2.0, single TT organization (mandatory):
 	 *	one interface, protocol 0
@@ -514,7 +514,7 @@ static const uint8_t qemu_keyboard_config_descriptor[] = {
 	0x01,       /*  u8  if_bInterfaceSubClass; */
 	0x01,       /*  u8  if_bInterfaceProtocol; [usb1.1 or single tt] */
 	0x05,       /*  u8  if_iInterface; */
-     
+
         /* HID descriptor */
         0x09,        /*  u8  bLength; */
         0x21,        /*  u8 bDescriptorType; */
@@ -541,13 +541,13 @@ static const uint8_t qemu_tablet_config_descriptor[] = {
 	0x01,       /*  u8  bNumInterfaces; (1) */
 	0x01,       /*  u8  bConfigurationValue; */
 	0x04,       /*  u8  iConfiguration; */
-	0xa0,       /*  u8  bmAttributes; 
+	0xa0,       /*  u8  bmAttributes;
 				 Bit 7: must be set,
 				     6: Self-powered,
 				     5: Remote wakeup,
 				     4..0: resvd */
 	50,         /*  u8  MaxPower; */
-      
+
 	/* USB 1.1:
 	 * USB 2.0, single TT organization (mandatory):
 	 *	one interface, protocol 0
@@ -701,12 +701,12 @@ static int usb_keyboard_handle_control(USBDevice *dev, int request, int value,
     case DeviceRequest | USB_REQ_GET_DESCRIPTOR:
         switch(value >> 8) {
         case USB_DT_DEVICE:
-            memcpy(data, qemu_keyboard_dev_descriptor, 
+            memcpy(data, qemu_keyboard_dev_descriptor,
                    sizeof(qemu_keyboard_dev_descriptor));
             ret = sizeof(qemu_keyboard_dev_descriptor);
             break;
         case USB_DT_CONFIG:
-			memcpy(data, qemu_keyboard_config_descriptor, 
+			memcpy(data, qemu_keyboard_config_descriptor,
 				   sizeof(qemu_keyboard_config_descriptor));
 			ret = sizeof(qemu_keyboard_config_descriptor);
             break;
@@ -764,7 +764,7 @@ static int usb_keyboard_handle_control(USBDevice *dev, int request, int value,
     case InterfaceRequest | USB_REQ_GET_DESCRIPTOR:
         switch(value >> 8) {
         case 0x22:
-			memcpy(data, qemu_keyboard_hid_report_descriptor, 
+			memcpy(data, qemu_keyboard_hid_report_descriptor,
 				   sizeof(qemu_keyboard_hid_report_descriptor));
 			ret = sizeof(qemu_keyboard_hid_report_descriptor);
 	    break;
@@ -796,7 +796,7 @@ static int usb_keyboard_handle_control(USBDevice *dev, int request, int value,
     return ret;
 }
 
-static int usb_keyboard_handle_data(USBDevice *dev, int pid, 
+static int usb_keyboard_handle_data(USBDevice *dev, int pid,
                                  uint8_t devep, uint8_t *data, int len)
 {
     USBKeyboardState *s = (USBKeyboardState *)dev;
@@ -872,10 +872,10 @@ USBDevice *usb_keyboard_init(void)
 	ovl.OffsetHigh=0;
 
 	HidD_GetHidGuid(&guid);
-	
+
 	devInfo=SetupDiGetClassDevs(&guid, 0, 0, DIGCF_DEVICEINTERFACE);
 	if(!devInfo)return 0;
-	
+
 	diData.cbSize=sizeof(diData);
 
 	while(SetupDiEnumDeviceInterfaces(devInfo, 0, &guid, i, &diData)){
@@ -903,7 +903,7 @@ USBDevice *usb_keyboard_init(void)
 		if((attr.VendorID==BUZZER_VID) && (attr.ProductID==BUZZER_PID || attr.ProductID==BUZZER_PID2)){
 			//We've found our buzzers !!!
 			free(didData);
-			
+
 			memset(buf, 0, 8);
 			buf[2]=0xFF;
 			WriteFile(usb_buzzer, buf, 8, 0, &ovl);

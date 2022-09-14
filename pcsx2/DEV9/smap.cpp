@@ -194,8 +194,8 @@ void tx_process()
 				if (dev9.txfifo_rd_ptr==16384)
 					dev9.txfifo_rd_ptr=0;
 			}
-			
-			
+
+
 
 			if (dev9.txfifo_rd_ptr&(~16383))
 			{
@@ -612,7 +612,7 @@ void smap_write16(u32 addr, u16 value)
 			value = (value >> 8) | (value << 8);
 		dev9Ru16(addr) = value;
 		/*
-		switch (addr & 0x7) 
+		switch (addr & 0x7)
 		{
 		case 0: // ctrl_stat
 			DevCon.WriteLn("DEV9: TX_CTRL_STAT[%d]: write %x", (addr - SMAP_BD_TX_BASE) / 8, value);
@@ -642,7 +642,7 @@ void smap_write16(u32 addr, u16 value)
 			value = (value >> 8) | (value << 8);
 		dev9Ru16(addr) = value;
 		/*
-		switch (addr & 0x7) 
+		switch (addr & 0x7)
 		{
 		case 0: // ctrl_stat
 			DevCon.WriteLn("DEV9: RX_CTRL_STAT[%d]: write %x", rx_index, value);
@@ -772,7 +772,7 @@ void smap_write16(u32 addr, u16 value)
 		emu_printf("SMAP: SMAP_R_EMAC3_TxMODE0_H 16bit write %x\n", value);
 		dev9Ru16(addr) = value;
 		return;
-	
+
 	case SMAP_R_EMAC3_TxMODE1_H:
 		emu_printf("SMAP: SMAP_R_EMAC3_TxMODE1_H 16bit write %x\n", value);
 		dev9Ru16(addr) = value;

@@ -22,7 +22,7 @@
  * 	Movie players *should* support it as the spec allows it, but ...
  *
  * 	MPEG-1/2 currently has no active patents as far as I am aware.
- * 	
+ *
  *	http://dvd.sourceforge.net/dvdinfo/mpeghdrs.html
  *	http://www.cs.cornell.edu/dali/api/mpegvideo-c.html
  * */

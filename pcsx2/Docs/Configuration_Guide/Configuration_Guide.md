@@ -41,7 +41,7 @@ Advanced users may wish to use a different folder for their BIOS, you can do so 
 ![PCSX2_First_Time_Configuration_bios.png](PCSX2_First_Time_Configuration_bios.png)
 
 ## Post-Setup Configuration
-A large number of games work out-of-the-box on default PCSX2 settings. However, a subset of games require special settings to run, and some games require special settings to be upscaled. This guide will briefly cover some frequent problems and configuration settings to address them. 
+A large number of games work out-of-the-box on default PCSX2 settings. However, a subset of games require special settings to run, and some games require special settings to be upscaled. This guide will briefly cover some frequent problems and configuration settings to address them.
 
 ### Multi-Threaded VU1 (MTVU)
 The MTVU option is a unique case of a recommended setting that is **not** enabled by default. MTVU boosts performance for PCs with at least 3 cores with almost no consequences for the overwhelming majority of games. However, a small number of high profile games are incompabible with MTVU and will break if it is enabled. For these reasons, we do not enable it by default, **but strongly recommend you do so yourself**. If your game fails to boot, crashes, stalls, or has other problems with it enabled, disable it and try again.
@@ -50,7 +50,7 @@ The MTVU option is a unique case of a recommended setting that is **not** enable
 Looking for information specific to a single game? Head to the [PCSX2 Wiki](https://wiki.pcsx2.net/Main_Page) and search for your game using the search bar in the top right. Known issues and solutions should be towards the bottom of a game's wiki page.
 
 ### General solutions
-Want some general ideas to try that are not specific to a game? Here are some more commonly known issues and solutions to try. 
+Want some general ideas to try that are not specific to a game? Here are some more commonly known issues and solutions to try.
 *Note: For some of these issues, multiple solutions are given one after the other. Before moving from one solution to the next, **undo the previous solution**. Stacking multiple fixes on top of each other is usually unnecessary and likely to introduce new issues.*
 
 #### Grid-like pattern on screen
@@ -74,7 +74,7 @@ Sometimes a game uses blending for lighting effects and needs more accuracy for 
 Increment Blending Accuracy until the problem goes away. Note, higher Blending Accuracy substantially increases performance requirements.
 
 #### Flickering or improperly shaped shadows
-This can either be a GS or VU problem so solutions will vary wildly by game. 
+This can either be a GS or VU problem so solutions will vary wildly by game.
 
 ##### GS
 Navigate to the GSdx Advanced Settings and Hacks:

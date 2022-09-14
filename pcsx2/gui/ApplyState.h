@@ -43,7 +43,7 @@ namespace Exception
 
 	protected:
 		BaseApplicableConfigPanel*	m_Panel;
-		
+
 	protected:
 		CannotApplySettings() { IsVerbose = true; }
 
@@ -237,7 +237,7 @@ public:
 	);
 
 	virtual ~ApplicableWizardPage() { m_ApplyState.DoCleanup(); }
-	
+
 	virtual bool PrepForApply();
 };
 

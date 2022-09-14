@@ -145,7 +145,7 @@ struct CDVD_API
 };
 
 // ----------------------------------------------------------------------------
-//   Multiple interface system for CDVD. 
+//   Multiple interface system for CDVD.
 // ----------------------------------------------------------------------------
 
 extern CDVD_API* CDVD; // currently active CDVD access mode api (either Iso, NoDisc, or Disc)

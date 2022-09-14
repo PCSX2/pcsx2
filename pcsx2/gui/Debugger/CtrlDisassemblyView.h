@@ -38,7 +38,7 @@ public:
 	void clearFunctions() { manager.clear(); };
 	void redraw();
 	void getOpcodeText(u32 address, char* dest);
-	
+
 	u32 getInstructionSizeAt(u32 address)
 	{
 		u32 start = manager.getStartAddress(address);

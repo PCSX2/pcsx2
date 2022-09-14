@@ -1,6 +1,6 @@
 /*  PCSX2 - PS2 Emulator for PCs
  *  Copyright (C) 2002-2010  PCSX2 Dev Team
- * 
+ *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
  *  ation, either version 3 of the License, or (at your option) any later version.
@@ -49,7 +49,7 @@ void setupMacroOp(int mode, const char* opName)
 	microVU0.prog.IRinfo.curPC = 0;
 	microVU0.code = cpuRegs.code;
 	memset(&microVU0.prog.IRinfo.info[0], 0, sizeof(microVU0.prog.IRinfo.info[0]));
-	
+
 	if (mode & 0x01) // Q-Reg will be Read
 	{
 		xMOVSSZX(xmmPQ, ptr32[&vu0Regs.VI[REG_Q].UL]);
@@ -531,7 +531,7 @@ static void recQMFC2()
 
 	if (!_Rt_)
 		return;
-	
+
 	if (!(cpuRegs.code & 1))
 	{
 		_freeX86reg(eax);
@@ -572,7 +572,7 @@ static void recQMTC2()
 
 	if (!_Rd_)
 		return;
-	
+
 	if (!(cpuRegs.code & 1))
 	{
 		_freeX86reg(eax);

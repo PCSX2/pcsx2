@@ -57,19 +57,19 @@ namespace MIPSAnalyst
 	{
 		u32 op = r5900Debug.read32(addr);
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
-		
+
 		int branchType = (opcode.flags & BRANCHTYPE_MASK);
 		if ((opcode.flags & IS_BRANCH) && (branchType == BRANCHTYPE_BRANCH || branchType == BRANCHTYPE_BC1))
 			return addr + 4 + ((signed short)(op&0xFFFF)<<2);
 		else
 			return INVALIDTARGET;
 	}
-	
+
 	u32 GetBranchTargetNoRA(u32 addr)
 	{
 		u32 op = r5900Debug.read32(addr);
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
-		
+
 		int branchType = (opcode.flags & BRANCHTYPE_MASK);
 		if ((opcode.flags & IS_BRANCH) && (branchType == BRANCHTYPE_BRANCH || branchType == BRANCHTYPE_BC1))
 		{
@@ -86,7 +86,7 @@ namespace MIPSAnalyst
 	{
 		u32 op = r5900Debug.read32(addr);
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
-		
+
 		if ((opcode.flags & IS_BRANCH) && (opcode.flags & BRANCHTYPE_MASK) == BRANCHTYPE_BRANCH)
 		{
 			bool sure = false;
@@ -290,7 +290,7 @@ namespace MIPSAnalyst
 					}
 				}
 			}
-			
+
 			if (end) {
 				// most functions are aligned to 8 or 16 bytes
 				// add the padding to this one
@@ -353,7 +353,7 @@ namespace MIPSAnalyst
 			case BRANCHTYPE_BRANCH:
 				info.isConditional = true;
 				info.branchTarget = info.opcodeAddress + 4 + ((s16)(op&0xFFFF)<<2);
-			
+
 				rs = info.cpu->getRegister(0,MIPS_GET_RS(op))._u64[0];
 				rt = info.cpu->getRegister(0,MIPS_GET_RT(op))._u64[0];
 				switch (opcode.flags & CONDTYPE_MASK)
@@ -381,7 +381,7 @@ namespace MIPSAnalyst
 					info.conditionMet = (((s64)rs) >= 0);
 					break;
 				}
-				
+
 				break;
 			case BRANCHTYPE_REGISTER:
 				info.isConditional = false;
@@ -430,7 +430,7 @@ namespace MIPSAnalyst
 				info.lrType = LOADSTORE_LEFT;
 			else if (opcode.flags & IS_RIGHT)
 				info.lrType = LOADSTORE_RIGHT;
-			
+
 			u32 rs = info.cpu->getRegister(0, (int)MIPS_GET_RS(op));
 			s16 imm16 = op & 0xFFFF;
 			info.dataAddress = rs + imm16;
@@ -457,7 +457,7 @@ namespace MIPSAnalyst
 				info.dataSize = 16;
 				break;
 			}
-			
+
 			info.hasRelevantAddress = true;
 			info.releventAddress = info.dataAddress;
 		}

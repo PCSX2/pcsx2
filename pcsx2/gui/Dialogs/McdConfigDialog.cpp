@@ -60,8 +60,8 @@ Panels::McdConfigPanel_Toggles::McdConfigPanel_Toggles(wxWindow *parent)
 	// ------------------------------
 
 	for( uint i=0; i<2; ++i )
-		*this += m_check_Multitap[i];	
-		
+		*this += m_check_Multitap[i];
+
 	// *this += 4;
 
 	// *this += m_check_SavestateBackup;
@@ -106,7 +106,7 @@ Dialogs::McdConfigDialog::McdConfigDialog( wxWindow* parent )
 	wxFlexGridSizer* s_flex=new wxFlexGridSizer(3,1, 0, 0);
 	s_flex->AddGrowableCol(0);
 	s_flex->AddGrowableRow(1);
-	
+
 	//set own sizer to s_flex (3-rows-1-col table with growable width and growable middle-row-height)
 	//  instead of the default vertical sizer which cannot expand vertically.
 	//  (vertical sizers can expand horizontally and consume the minimum vertical height possible)

@@ -137,7 +137,7 @@ void SysMtgsThread::ThreadEntryPoint()
 
 			m_sem_event.WaitForWork();
 		}
-		
+
 		// try initializing.. this could fail
 		const bool opened = TryOpenGS();
 		m_open_flag.store(opened, std::memory_order_release);
@@ -997,7 +997,7 @@ void SysMtgsThread::SetSoftwareRendering(bool software, bool display_message /* 
 		new_renderer = EmuConfig.GS.UseHardwareRenderer() ? EmuConfig.GS.Renderer : GSRendererType::Auto;
 	else
 		new_renderer = GSRendererType::SW;
-		
+
 	SwitchRenderer(new_renderer, display_message);
 }
 

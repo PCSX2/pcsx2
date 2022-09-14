@@ -87,7 +87,7 @@ private:
 
 	void Search(wxCommandEvent& evt);
 	const u8 SEARCHTYPEBITS[8] = {8,16,32,64,32,64,0};
-	
+
 	DebugInterface* cpu;
 	wxFont font, underlineFont;
 	wxTextCtrl* txtSearch;

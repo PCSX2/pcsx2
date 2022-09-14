@@ -462,28 +462,28 @@ template<int vunum> static __fi void ClearVuFunc(u32 addr, u32 size) {
 template<int vunum> static mem8_t vuMicroRead8(u32 addr) {
 	VURegs* vu = vunum ?  &VU1 :  &VU0;
 	addr      &= vunum ? 0x3fff: 0xfff;
-	
+
 	if (vunum && THREAD_VU1) vu1Thread.WaitVU();
 	return vu->Micro[addr];
 }
 template<int vunum> static mem16_t vuMicroRead16(u32 addr) {
 	VURegs* vu = vunum ?  &VU1 :  &VU0;
 	addr      &= vunum ? 0x3fff: 0xfff;
-	
+
 	if (vunum && THREAD_VU1) vu1Thread.WaitVU();
 	return *(u16*)&vu->Micro[addr];
 }
 template<int vunum> static mem32_t vuMicroRead32(u32 addr) {
 	VURegs* vu = vunum ?  &VU1 :  &VU0;
 	addr      &= vunum ? 0x3fff: 0xfff;
-	
+
 	if (vunum && THREAD_VU1) vu1Thread.WaitVU();
 	return *(u32*)&vu->Micro[addr];
 }
 template<int vunum> static RETURNS_R64 vuMicroRead64(u32 addr) {
 	VURegs* vu = vunum ?  &VU1 :  &VU0;
 	addr      &= vunum ? 0x3fff: 0xfff;
-	
+
 	if (vunum && THREAD_VU1) vu1Thread.WaitVU();
 	return r64_load(&vu->Micro[addr]);
 }
@@ -491,7 +491,7 @@ template<int vunum> static RETURNS_R128 vuMicroRead128(u32 addr) {
 	VURegs* vu = vunum ?  &VU1 :  &VU0;
 	addr      &= vunum ? 0x3fff: 0xfff;
 	if (vunum && THREAD_VU1) vu1Thread.WaitVU();
-	
+
 	return r128_load(&vu->Micro[addr]);
 }
 
@@ -500,7 +500,7 @@ template<int vunum> static RETURNS_R128 vuMicroRead128(u32 addr) {
 template<int vunum> static void vuMicroWrite8(u32 addr,mem8_t data) {
 	VURegs* vu = vunum ?  &VU1 :  &VU0;
 	addr      &= vunum ? 0x3fff: 0xfff;
-	
+
 	if (vunum && THREAD_VU1) {
 		vu1Thread.WriteMicroMem(addr, &data, sizeof(u8));
 		return;
@@ -513,7 +513,7 @@ template<int vunum> static void vuMicroWrite8(u32 addr,mem8_t data) {
 template<int vunum> static void vuMicroWrite16(u32 addr, mem16_t data) {
 	VURegs* vu = vunum ?  &VU1 :  &VU0;
 	addr      &= vunum ? 0x3fff: 0xfff;
-	
+
 	if (vunum && THREAD_VU1) {
 		vu1Thread.WriteMicroMem(addr, &data, sizeof(u16));
 		return;
@@ -526,7 +526,7 @@ template<int vunum> static void vuMicroWrite16(u32 addr, mem16_t data) {
 template<int vunum> static void vuMicroWrite32(u32 addr, mem32_t data) {
 	VURegs* vu = vunum ?  &VU1 :  &VU0;
 	addr      &= vunum ? 0x3fff: 0xfff;
-	
+
 	if (vunum && THREAD_VU1) {
 		vu1Thread.WriteMicroMem(addr, &data, sizeof(u32));
 		return;
@@ -544,7 +544,7 @@ template<int vunum> static void vuMicroWrite64(u32 addr, const mem64_t* data) {
 		vu1Thread.WriteMicroMem(addr, (void*)data, sizeof(u64));
 		return;
 	}
-	
+
 	if (*(u64*)&vu->Micro[addr]!=data[0]) {
 		ClearVuFunc<vunum>(addr, 8);
 		*(u64*)&vu->Micro[addr] =data[0];
@@ -735,7 +735,7 @@ void eeMemoryReserve::Reset()
 		pxAssert(Source_PageFault);
 		mmap_faultHandler = new mmap_PageFaultHandler();
 	}
-	
+
 	_parent::Reset();
 
 	// Note!!  Ideally the vtlb should only be initialized once, and then subsequent
@@ -765,7 +765,7 @@ void eeMemoryReserve::Reset()
 	vu0_micro_mem = vtlb_RegisterHandlerTempl1(vuMicro,0);
 	vu1_micro_mem = vtlb_RegisterHandlerTempl1(vuMicro,1);
 	vu1_data_mem  = (1||THREAD_VU1) ? vtlb_RegisterHandlerTempl1(vuData,1) : 0;
-	
+
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// IOP's "secret" Hardware Register mapping, accessible from the EE (and meant for use
 	// by debugging or BIOS only).  The IOP's hw regs are divided into three main pages in
@@ -797,7 +797,7 @@ void eeMemoryReserve::Reset()
 
 	// psHw Optimized Mappings
 	// The HW Registers have been split into pages to improve optimization.
-	
+
 #define hwHandlerTmpl(page) \
 	hwRead8<page>,	hwRead16<page>,	hwRead32<page>,	hwRead64<page>,	hwRead128<page>, \
 	hwWrite8<page>,	hwWrite16<page>,hwWrite32<page>,hwWrite64<page>,hwWrite128<page>
@@ -878,7 +878,7 @@ eeMemoryReserve::~eeMemoryReserve()
 
 
 // ===========================================================================================
-//  Memory Protection and Block Checking, vtlb Style! 
+//  Memory Protection and Block Checking, vtlb Style!
 // ===========================================================================================
 // For the first time code is recompiled (executed), the PS2 ram page for that code is
 // protected using Virtual Memory (mprotect).  If the game modifies its own code then this
@@ -943,7 +943,7 @@ vtlb_ProtectionMode mmap_GetRamPageInfo( u32 paddr )
 void mmap_MarkCountedRamPage( u32 paddr )
 {
 	pxAssert( eeMem );
-	
+
 	paddr &= ~0xfff;
 
 	uptr ptr = (uptr)PSM( paddr );

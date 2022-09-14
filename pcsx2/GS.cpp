@@ -96,7 +96,7 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		// Our emulated GS has no FIFO, but if it did, it would flush it here...
 		//Console.WriteLn("GS_CSR FLUSH GS fifo: %x (CSRr=%x)", value, GSCSRr);
 	}
-	
+
 	if(csr.SIGNAL)
 	{
 		// SIGNAL : What's not known here is whether or not the SIGID register should be updated
@@ -114,9 +114,9 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		gifUnit.gsSIGNAL.queued = false;
 		gifUnit.Execute(false, true); // Resume paused transfers
 	}
-	
+
 	if (csr.FINISH)	{
-		CSRreg.FINISH = false; 
+		CSRreg.FINISH = false;
 		gifUnit.gsFINISH.gsFINISHFired = false; //Clear the previously fired FINISH (YS, Indiecar 2005, MGS3)
 	}
 	if(csr.HSINT)	CSRreg.HSINT	= false;
@@ -140,7 +140,7 @@ __fi void gsWrite8(u32 mem, u8 value)
 	{
 		// CSR 8-bit write handlers.
 		// I'm quite sure these would just write the CSR portion with the other
-		// bits set to 0 (no action).  The previous implementation masked the 8-bit 
+		// bits set to 0 (no action).  The previous implementation masked the 8-bit
 		// write value against the previous CSR write value, but that really doesn't
 		// make any sense, given that the real hardware's CSR circuit probably has no
 		// real "memory" where it saves anything.  (for example, you can't write to
@@ -173,7 +173,7 @@ __fi void gsWrite16(u32 mem, u16 value)
 	{
 		// See note above about CSR 8 bit writes, and handling them as zero'd bits
 		// for all but the written parts.
-		
+
 		case GS_CSR:
 			gsCSRwrite( tGS_CSR((u32)value) );
 		return; // do not write to MTGS memory
@@ -364,7 +364,7 @@ void gsIrq() {
 void gsPostVsyncStart()
 {
 	//gifUnit.FlushToMTGS();  // Needed for some (broken?) homebrew game loaders
-	
+
 	const bool registers_written = s_GSRegistersWritten;
 	s_GSRegistersWritten = false;
 	GetMTGS().PostVsyncStart(registers_written);

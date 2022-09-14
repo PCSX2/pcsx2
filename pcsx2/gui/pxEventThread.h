@@ -105,7 +105,7 @@ public:
 	// system, since program crashes can occur if the program tries to exit while threads
 	// are running.
 	virtual bool IsCriticalEvent() const { return false; }
-	
+
 	// Tells the Event Handler whether or not this event can be canceled.  Typically events
 	// should not prohibit cancellation, since it expedites program termination and helps
 	// avoid permanent deadlock.  Some actions like saving states and shutdown procedures
@@ -118,7 +118,7 @@ public:
 
 	virtual wxString GetEventName() const;
 	virtual wxString GetEventMessage() const;
-	
+
 	virtual int GetResult()
 	{
 		if( !pxAssertDev( m_sync != NULL, "SysEvent: Expecting return value, but no sync object provided." ) ) return 0;
@@ -153,19 +153,19 @@ public:
 	bool AllowCancelOnExit() const { return !m_IsCritical; }
 	bool IsCriticalEvent() const { return m_IsCritical; }
 
-	explicit SysExecEvent_MethodVoid( FnType_Void* method = NULL, const wxChar* traceName=NULL )	
+	explicit SysExecEvent_MethodVoid( FnType_Void* method = NULL, const wxChar* traceName=NULL )
 		: m_TraceName( traceName ? traceName : L"VoidMethod" )
 	{
 		m_method = method;
 		m_IsCritical = false;
 	}
-	
+
 	SysExecEvent_MethodVoid& Critical()
 	{
 		m_IsCritical = true;
 		return *this;
 	}
-	
+
 protected:
 	void InvokeEvent()
 	{
@@ -279,7 +279,7 @@ public:
 
 	virtual void ShutdownQueue();
 	bool IsRunning() const;
-	
+
 	void PostEvent( SysExecEvent* evt );
 	void PostEvent( const SysExecEvent& evt );
 

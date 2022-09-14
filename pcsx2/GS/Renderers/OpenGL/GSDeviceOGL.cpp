@@ -669,7 +669,7 @@ void GSDeviceOGL::RestoreAPIState()
 
 	glBlendEquationSeparate(GLState::eq_RGB, GL_FUNC_ADD);
 	glBlendFuncSeparate(GLState::f_sRGB, GLState::f_dRGB, GL_ONE, GL_ZERO);
-	
+
 	const float bf = static_cast<float>(GLState::bf) / 128.0f;
 	glBlendColor(bf, bf, bf, bf);
 
@@ -702,7 +702,7 @@ void GSDeviceOGL::RestoreAPIState()
 	glStencilOp(GL_KEEP, GL_KEEP, GLState::stencil_pass);
 
 	glBindSampler(0, GLState::ps_ss);
-	
+
 	for (GLuint i = 0; i < sizeof(GLState::tex_unit) / sizeof(GLState::tex_unit[0]); i++)
 		glBindTextureUnit(i, GLState::tex_unit[i]);
 
@@ -1263,7 +1263,7 @@ void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	cb.SetSource(sRect, sTex->GetSize());
 	cb.SetTarget(dRect, ds);
 	cb.SetTime(shaderTime);
-	
+
 	GL::Program& prog = m_present[static_cast<int>(shader)];
 	prog.Bind();
 	prog.Uniform4fv(0, cb.SourceRect.F32);
@@ -2214,7 +2214,7 @@ void GSDeviceOGL::PopDebugGroup()
 #ifdef ENABLE_OGL_DEBUG
 	if (!glPopDebugGroup)
 		return;
-	
+
 	glPopDebugGroup();
 #endif
 }
@@ -2248,7 +2248,7 @@ void GSDeviceOGL::InsertDebugMessage(DebugMessageCategory category, const char* 
 		id = 0xDEAD;
 		severity = GL_DEBUG_SEVERITY_MEDIUM;
 		break;
-	case GSDevice::DebugMessageCategory::Performance:		
+	case GSDevice::DebugMessageCategory::Performance:
 	default:
 		type = GL_DEBUG_TYPE_PERFORMANCE;
 		id = 0xFEE1;

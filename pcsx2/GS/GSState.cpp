@@ -521,7 +521,7 @@ GSVector4i GSState::GetFrameRect(int i, bool ignore_off)
 		return rectangle;
 
 	const auto& DISP = m_regs->DISP[i].DISPLAY;
-	
+
 	const u32 DW = DISP.DW + 1;
 	const u32 DH = DISP.DH + 1;
 	const GSVector2i magnification(DISP.MAGH+1, DISP.MAGV + 1);
@@ -1737,7 +1737,7 @@ inline bool GSState::TestDrawChanged()
 			prim_mask &= ~0x7;
 		else
 			return true;
-			
+
 		if ((m_env.PRIM.U32[0] ^ m_prev_env.PRIM.U32[0]) & prim_mask)
 			return true;
 
@@ -2117,7 +2117,7 @@ void GSState::Move()
 					endy = -1;
 					y_inc = -y_inc;
 				}
-			
+
 				for (int y = starty; y != endy; y+= y_inc, _sy += y_inc, _dy += y_inc)
 				{
 					auto s = getPAHelper(spo, sx, _sy);
@@ -3455,7 +3455,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 		if (m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1 && m_index.tail < 3)
 		{
 			// When coordinates are fractional, GS appears to draw to the right/bottom (effectively
-			// taking the ceiling), not to the top/left (taking the floor). 
+			// taking the ceiling), not to the top/left (taking the floor).
 			const GSVector4i int_rc(m_vt.m_min.p.ceil().xyxy(m_vt.m_max.p.floor()));
 			const GSVector4i scissored_rc(int_rc.rintersect(GSVector4i(m_context->scissor.in)));
 			if (!int_rc.eq(scissored_rc))

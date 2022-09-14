@@ -25,7 +25,7 @@ There are a number of ways to help the project, whether it be bug reporting, gam
 *   Want to improve the PCSX2 wiki? [Here is how to contribute](https://wiki.pcsx2.net/Help!_How_to_contribute_guide)
 
 ### Question 4: Is PCSX2 ready to run out-of-the-box?
-No, first, you must dump your PlayStation 2 console's BIOS using the BIOS dumper. The BIOS dumper is [available on the PCSX2 website](https://pcsx2.net/download/releases/tools.html). 
+No, first, you must dump your PlayStation 2 console's BIOS using the BIOS dumper. The BIOS dumper is [available on the PCSX2 website](https://pcsx2.net/download/releases/tools.html).
 
 After dumping your PlayStation 2 console's BIOS and copying it to your computer, launch PCSX2, step through the first time setup wizard, and then you may begin playing.
 
@@ -44,7 +44,7 @@ After dumping your PlayStation 2 console's BIOS and copying it to your computer,
 
 *Note: Recommended Single Thread Performance is based on moderately complex games. Games that pushed the PS2 hardware to its limits will struggle on CPUs at this level. Some release titles and 2D games which underutilized the PS2 hardware may run on CPUs rated as low as 1200. A quick reference for CPU **intensive games**: [Wiki](https://wiki.pcsx2.net/Category:CPU_intensive_games), [Forum](https://forums.pcsx2.net/Thread-LIST-The-Most-CPU-Intensive-Games) and CPU **light** games: [Forum](https://forums.pcsx2.net/Thread-LIST-Games-that-don-t-need-a-strong-CPU-to-emulate)*
 
-#### Recommended 
+#### Recommended
 
 | Operating System | CPU | GPU | RAM |
 | --- | --- | --- | --- |
@@ -66,7 +66,7 @@ The CPU load as reported in software such as Windows' Task Manager is usually a 
 No. PCSX2 does not use or require SLI or Crossfire.
 
 ### Question 9: How do I check if a game is playable?
-The PCSX2 website has a [compatibility list](https://pcsx2.net/compat/) with every game that has been tested. 
+The PCSX2 website has a [compatibility list](https://pcsx2.net/compat/) with every game that has been tested.
 
 ### Question 10: Do PS1 (PSX) games work on PCSX2?
 
@@ -74,12 +74,12 @@ The PCSX2 website has a [compatibility list](https://pcsx2.net/compat/) with eve
 No, they will not work without issues. Please use a proper PS1 emulator, such as Duckstation or Mednafen.
 
 #### If you are a tinkerer and like to break things:
-PS1 games may work on PCSX2, but compatibility is very limited. Specific settings are often required to get a game to boot, and there are other universal problems including missing/pitch-shifted audio and severe FMV corruption. A [forum thread for PS1 compatibility](https://forums.pcsx2.net/Thread-PSX-Mode-Unofficial-Compatibility-List) is tracking some fixes and compatibility reports. 
+PS1 games may work on PCSX2, but compatibility is very limited. Specific settings are often required to get a game to boot, and there are other universal problems including missing/pitch-shifted audio and severe FMV corruption. A [forum thread for PS1 compatibility](https://forums.pcsx2.net/Thread-PSX-Mode-Unofficial-Compatibility-List) is tracking some fixes and compatibility reports.
 
 *While we encourage discussion about PS1 games and improving compatibility, bug reports are NOT being accepted for PS1 games. Any reports for PS1 games will be closed immediately as invalid.*
 
 ### Question 11: Why does my game not work like it did in an earlier PCSX2 version?
-Any change to the emulator may fix one game, but cause problems for another. If the issue is severe and not fixable with different settings, you can always revert back to the last known PCSX2 version to work, and report the build number that broke the game. [Development builds](https://pcsx2.net/download/development.html) are very helpful for finding the exact change that caused a regression. 
+Any change to the emulator may fix one game, but cause problems for another. If the issue is severe and not fixable with different settings, you can always revert back to the last known PCSX2 version to work, and report the build number that broke the game. [Development builds](https://pcsx2.net/download/development.html) are very helpful for finding the exact change that caused a regression.
 
 ### Question 12: Why is PCSX2 slow?
 The PlayStation 2 is a complex console, and this substantially raises the PC requirements to emulate it at full speed accurately. [This forum thread](https://forums.pcsx2.net/Thread-Why-is-PCSX2-slow) helps explain some of the technical reasons behind it, and our current guidelines for PC requirements are listed above.
@@ -142,12 +142,12 @@ Some settings are greyed out. These are advanced counters that should only be mo
 ### Question 22: What is the normal speed for a PlayStation 2 game?
 *   NTSC games will play at 59.94 FPS
 *   PAL games will play at 50 FPS
-*   Keep in mind that there is a difference between the internal framerate (iFPS) and what PCSX2 shows as virtual framerate (vFPS). 
+*   Keep in mind that there is a difference between the internal framerate (iFPS) and what PCSX2 shows as virtual framerate (vFPS).
 
-These framerates are what the PlayStation 2 console would push to a real TV through its video cable. A game itself, typically, internally generates only half of those frames, and repeats frames to fill the gaps. This is why a "full speed" game may not "feel like 60 FPS". The console's "speed" (meaning AI, sound, physics, *everything*) is tied to the playback framerate, which is what PCSX2 reports as its "FPS". 
+These framerates are what the PlayStation 2 console would push to a real TV through its video cable. A game itself, typically, internally generates only half of those frames, and repeats frames to fill the gaps. This is why a "full speed" game may not "feel like 60 FPS". The console's "speed" (meaning AI, sound, physics, *everything*) is tied to the playback framerate, which is what PCSX2 reports as its "FPS".
 
 ### Question 23: What are Gamefixes?
-Gamefixes are specialized fixes built into PCSX2 for specific games. Gamefixes mostly fix core emulation problems that would crash or soft lock a game, rather than graphical or performance issues. By default, the "System > Automatic Gamefixes" option is enabled, meaning any games that need gamefixes will have them automatically applied, regardless of what gamefix settings you have enabled. 
+Gamefixes are specialized fixes built into PCSX2 for specific games. Gamefixes mostly fix core emulation problems that would crash or soft lock a game, rather than graphical or performance issues. By default, the "System > Automatic Gamefixes" option is enabled, meaning any games that need gamefixes will have them automatically applied, regardless of what gamefix settings you have enabled.
 
 Most games will not need gamefixes, however if your game is having issues, you can try manually enabling them in Emulation Settings.
 
@@ -161,7 +161,7 @@ As the name says, speedhacks are hacks to make things faster. They will speed up
 *Bug reports of issues caused by speedhacks will NOT be accepted, and will be immediately closed as invalid.*
 
 ### Question 25: What are all these EE/IOP and VU options?
-The PS2 EE, IOP and VU processors are substantially different from a PC CPU and require different rounding and clamping modes to do math accurately. Most games work fine on the default options, but some games might need a different setting. You can check the [PCSX2 Wiki](https://wiki.pcsx2.net/Category:Games) to see if your game needs an alternate setting, or check the [PCSX2 Forums](https://forums.pcsx2.net/) to see if anyone else has posted about it there. 
+The PS2 EE, IOP and VU processors are substantially different from a PC CPU and require different rounding and clamping modes to do math accurately. Most games work fine on the default options, but some games might need a different setting. You can check the [PCSX2 Wiki](https://wiki.pcsx2.net/Category:Games) to see if your game needs an alternate setting, or check the [PCSX2 Forums](https://forums.pcsx2.net/) to see if anyone else has posted about it there.
 
 ### Question 26: What are PCSX2 plugins?
 Older versions of PCSX2 used a plugin framework for various sections of the emulator. A plugin is a small, incomplete piece of software that, when plugged in to another piece of software, provides some sort of additional function. PCSX2 used to use plugins for:
@@ -184,7 +184,7 @@ For Linux users, PCSX2 will automatically detect and bind controls to any recogn
 ---
 ## Useful Links
 
-### BIOS Dumping Guides 
+### BIOS Dumping Guides
 *   [pgert's guide to BIOS and memory card tools](https://forums.pcsx2.net/Thread-An-orientation-through-some-of-the-PCSX2-BIOS-memcard-tools-Windows?pid=183709#pid183709)
 *   [One of the original BIOS dumping guides, originally from ngemu](https://forums.pcsx2.net/Thread-Guide-to-Dumping-Your-PS2-Bios-over-LAN)
 

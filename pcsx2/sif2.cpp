@@ -39,7 +39,7 @@ __fi bool WriteFifoSingleWord()
 	// There's some data ready to transfer into the fifo..
 
 	SIF_LOG("Write Single word to SIF2 Fifo");
-	
+
 	sif2.fifo.write((u32*)&psxHu32(HW_PS1_GPU_DATA), 1);
 	if (sif2.fifo.size > 0) psxHu32(0x1000f300) &= ~0x4000000;
 	return true;
@@ -85,7 +85,7 @@ static __fi bool WriteFifoToEE()
 	sif2dma.madr += readSize << 4;
 	sif2.ee.cycles += readSize;	// fixme : BIAS is factored in above
 	sif2dma.qwc -= readSize;
-	
+
 	return true;
 }
 
@@ -96,7 +96,7 @@ static __fi bool WriteIOPtoFifo()
 	const int writeSize = std::min(sif2.iop.counter, sif2.fifo.sif_free());
 
 	SIF_LOG("Write IOP to Fifo: +++++++++++ %lX of %lX", writeSize, sif2.iop.counter);
-	
+
 	sif2.fifo.write((u32*)iopPhysMem(hw_dma2.madr), writeSize);
 	hw_dma2.madr += writeSize << 2;
 
@@ -150,14 +150,14 @@ static __fi bool ProcessIOPTag()
 	//sif2.iop.data = *(sifData *)iopPhysMem(hw_dma2.madr); //comment this out and replace words below
 	// Process DMA tag at hw_dma9.tadr
 	if (HW_DMA2_CHCR & 0x400) DevCon.Warning("First bit %x", sif2.iop.data.data);
-	
+
 	sif2.iop.data.words = sif2.iop.data.data >> 24; // Round up to nearest 4.
 
 	// send the EE's side of the DMAtag.  The tag is only 64 bits, with the upper 64 bits
 	// ignored by the EE.
-	
+
 	// We're only copying the first 24 bits.  Bits 30 and 31 (checked below) are Stop/IRQ bits.
-	
+
 	//psxHu32(HW_PS1_GPU_DATA) += 4;
 	sif2.iop.counter =  (HW_DMA2_BCR_H16 * HW_DMA2_BCR_L16); //makes it do more stuff?? //sif2words;
 	/*if (HW_DMA2_CHCR & 0x400)
@@ -217,7 +217,7 @@ static __fi void HandleEETransfer()
 		sif2.ee.busy = false;
 		return;
 	}
-	
+
 	/*if (sif2dma.qwc == 0)
 	if (sif2dma.chcr.MOD == NORMAL_MODE)
 	if (!sif2.ee.end){
@@ -357,7 +357,7 @@ __fi void  sif2Interrupt()
 		SIF2Dma();
 		return;
 	}
-	
+
 	SIF_LOG("SIF2 IOP Intr end");
 	HW_DMA2_CHCR &= ~0x01000000;
 	psxDmaInterrupt2(2);
@@ -383,18 +383,18 @@ __fi void dmaSIF2()
 	psHu32(SBUS_F240) |= 0x8000;
 	sif2.ee.busy = true;
 
-	// Okay, this here is needed currently (r3644). 
+	// Okay, this here is needed currently (r3644).
 	// FFX battles in the thunder plains map die otherwise, Phantasy Star 4 as well
 	// These 2 games could be made playable again by increasing the time the EE or the IOP run,
 	// showing that this is very timing sensible.
 	// Doing this DMA unfortunately brings back an old warning in Legend of Legaia though, but it still works.
 
-	//Updated 23/08/2011: The hangs are caused by the EE suspending SIF1 DMA and restarting it when in the middle 
+	//Updated 23/08/2011: The hangs are caused by the EE suspending SIF1 DMA and restarting it when in the middle
 	//of processing a "REFE" tag, so the hangs can be solved by forcing the ee.end to be false
 	// (as it should always be at the beginning of a DMA).  using "if iop is busy" flags breaks Tom Clancy Rainbow Six.
 	// Legend of Legaia doesn't throw a warning either :)
 	//sif2.ee.end = false;
-	
+
 	SIF2Dma();
 
 }

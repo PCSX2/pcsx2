@@ -85,7 +85,7 @@ static __fi bool WriteIOPtoFifo()
 	sif0.iop.cycles += writeSize; //1 word per cycle
 	sif0.iop.counter -= writeSize;
 
-	
+
 	return true;
 }
 
@@ -366,13 +366,13 @@ __fi void dmaSIF0()
 	psHu32(SBUS_F240) |= 0x2000;
 	sif0.ee.busy = true;
 
-	// Okay, this here is needed currently (r3644). 
+	// Okay, this here is needed currently (r3644).
 	// FFX battles in the thunder plains map die otherwise, Phantasy Star 4 as well
 	// These 2 games could be made playable again by increasing the time the EE or the IOP run,
 	// showing that this is very timing sensible.
 	// Doing this DMA unfortunately brings back an old warning in Legend of Legaia though, but it still works.
 
-	//Updated 23/08/2011: The hangs are caused by the EE suspending SIF1 DMA and restarting it when in the middle 
+	//Updated 23/08/2011: The hangs are caused by the EE suspending SIF1 DMA and restarting it when in the middle
 	//of processing a "REFE" tag, so the hangs can be solved by forcing the ee.end to be false
 	// (as it should always be at the beginning of a DMA).  using "if iop is busy" flags breaks Tom Clancy Rainbow Six.
 	// Legend of Legaia doesn't throw a warning either :)
