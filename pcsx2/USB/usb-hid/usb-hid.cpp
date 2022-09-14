@@ -153,7 +153,7 @@ namespace usb_hid
 		0x01,       /*  u8  bNumInterfaces; (1) */
 		0x01,       /*  u8  bConfigurationValue; */
 		0x04,       /*  u8  iConfiguration; */
-		0xa0,       /*  u8  bmAttributes; 
+		0xa0,       /*  u8  bmAttributes;
                  Bit 7: must be set,
                      6: Self-powered,
                      5: Remote wakeup,
@@ -229,7 +229,7 @@ namespace usb_hid
 		0x01,       /*  u8  bNumInterfaces; (1) */
 		0x01,       /*  u8  bConfigurationValue; */
 		0x04,       /*  u8  iConfiguration; */
-		0xa0,       /*  u8  bmAttributes; 
+		0xa0,       /*  u8  bmAttributes;
                  Bit 7: must be set,
                      6: Self-powered,
                      5: Remote wakeup,
@@ -284,7 +284,7 @@ namespace usb_hid
 		0x01,       /*  u8  bNumInterfaces; (1) */
 		0x01,       /*  u8  bConfigurationValue; */
 		0x04,       /*  u8  iConfiguration; */
-		0xa0,       /*  u8  bmAttributes; 
+		0xa0,       /*  u8  bmAttributes;
                  Bit 7: must be set,
                      6: Self-powered,
                      5: Remote wakeup,

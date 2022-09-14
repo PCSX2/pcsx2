@@ -93,7 +93,7 @@ VirtualPad::VirtualPad(wxWindow* parent, int controllerPort, AppConfig::InputRec
 	InitPressureButtonGuiElements(virtualPadData.cross, NewBitmap(EmbeddedImage<res_crossPressed>().Get(), wxPoint(938, 369)), this, wxPoint(1055, 645));
 
 	InitPressureButtonGuiElements(virtualPadData.left, NewBitmap(EmbeddedImage<res_leftPressed>().Get(), wxPoint(110, 303)), this, wxPoint(175, 525), true);
-	InitPressureButtonGuiElements(virtualPadData.up, NewBitmap(EmbeddedImage<res_upPressed>().Get(), wxPoint(186, 227)), this, wxPoint(175, 565), true);	
+	InitPressureButtonGuiElements(virtualPadData.up, NewBitmap(EmbeddedImage<res_upPressed>().Get(), wxPoint(186, 227)), this, wxPoint(175, 565), true);
 	InitPressureButtonGuiElements(virtualPadData.right, NewBitmap(EmbeddedImage<res_rightPressed>().Get(), wxPoint(248, 302)), this, wxPoint(175, 605), true);
 	InitPressureButtonGuiElements(virtualPadData.down, NewBitmap(EmbeddedImage<res_downPressed>().Get(), wxPoint(186, 359)), this, wxPoint(175, 645), true);
 

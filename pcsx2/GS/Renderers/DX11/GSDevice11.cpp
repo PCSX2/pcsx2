@@ -899,7 +899,7 @@ void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 			Console.Error("FXAA shader is missing");
 			return;
 		}
-		
+
 		ShaderMacro sm(m_shader_cache.GetFeatureLevel());
 		m_fxaa_ps = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm.GetPtr(), "ps_main");
 		if (!m_fxaa_ps)

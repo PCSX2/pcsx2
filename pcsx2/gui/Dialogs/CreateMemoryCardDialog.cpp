@@ -245,10 +245,10 @@ void Dialogs::CreateMemoryCardDialog::CreateControls()
 		.	SetInt(64),
 
 		RadioPanelItem(_("Folder [Recommended]"), _("Store memory card contents in the host filesystem instead of a file."))
-		.	SetToolTip(_t("Dynamically allocate and store memory card contents in a folder.\n" 
+		.	SetToolTip(_t("Dynamically allocate and store memory card contents in a folder.\n"
 						  "Only exposes the save files for the running game, rather than the whole memory card.\n"
 						  "You can see the structure and the saves with your File Explorer.\n"
-						  "Can be used to back-up individual saves instead of all saves on a memcard.\n" 
+						  "Can be used to back-up individual saves instead of all saves on a memcard.\n"
 						  "Incompatible with PS2 memory card editing tools or savegame managers (such as MyMC, MyMCPlus).\n"
 						  "You can always convert back between folder type and single memcard file.\n"))
 		.	SetInt(0),

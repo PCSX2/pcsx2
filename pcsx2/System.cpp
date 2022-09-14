@@ -148,7 +148,7 @@ void SysLogMachineCaps()
 		if (GIT_TAGGED_COMMIT) // Nightly builds
 		{
 			// tagged commit - more modern implementation of dev build versioning
-			// - there is no need to include the commit - that is associated with the tag, 
+			// - there is no need to include the commit - that is associated with the tag,
 			// - git is implied and the tag is timestamped
 			Console.WriteLn(Color_StrongGreen, "PCSX2 Nightly - %s Compiled on %s", GIT_TAG, __DATE__);
 		} else {

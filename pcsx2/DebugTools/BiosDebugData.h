@@ -49,7 +49,7 @@ enum {
 	THS_WAIT_SUSPEND = 0x0C,
 	THS_DORMANT      = 0x10,
 };
- 
+
 enum {
 	WAIT_NONE       = 0,
 	WAIT_WAKEUP_REQ = 1,

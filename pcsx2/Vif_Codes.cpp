@@ -221,7 +221,7 @@ vifOp(vifCode_Flush)
 
 		if (vif1.waitforvu || vif1Regs.stat.VGW)
 			return 0;
-		
+
 		vif1.cmd = 0;
 		vif1.pass = 0;
 	}
@@ -474,7 +474,7 @@ vifOp(vifCode_MSCNT)
 
 		if (vifX.waitforvu)
 			return 0;
-		
+
 		vuExecMicro(idx, -1, false);
 		vifX.cmd = 0;
 		vifX.pass = 0;

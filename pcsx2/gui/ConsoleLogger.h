@@ -115,7 +115,7 @@ protected:
 		{
 			return m_table[(int)coloridx];
 		}
-		
+
 		void SetColorScheme_Dark();
 		void SetColorScheme_Light();
 	};

@@ -9,7 +9,7 @@ PlayStation 2 Memory Card File System
 PlayStation 2 Memory Card File System
 </h1>
 <div style="clear: both">
-<h2>By 
+<h2>By
 <a href="https://plus.google.com/101505960668383360394/?rel=author">
 Ross Ridge
 </a>
@@ -27,7 +27,7 @@ missing, misleading or just plain wrong.  At lot of assumptions had to
 be made during my research, and it's hard know to what exactly Sony
 intended in every case.  All most all of the names for structures,
 fields and flags were made up by me.  Nothing in this document should
-be considered official. 
+be considered official.
 </p>
 <p>
 For brevity, unused fields and flag bits are omitted from the tables.
@@ -56,7 +56,7 @@ memory cards, so I've created short glossary.
 <dd>See "erase block".</dd>
 
 <dt>cluster</dt>
-<dd>The unit of allocation used in the file system.  A cluster 
+<dd>The unit of allocation used in the file system.  A cluster
 is one or more pages in size.</dd>
 
 <dt>ECC</dt>
@@ -140,7 +140,7 @@ about the structure of the file system is kept.</dd>
    data area a spare area.  The data area is used to store ordinary
    data, while the much smaller spare area is for software defined
    error-correcting codes (ECC), wear leveling, bad block remapping,
-   and other functions meant to deal with defects in the media.  
+   and other functions meant to deal with defects in the media.
 </p>
 
 <p>The flash devices used in PS2 memory cards have a 528 byte page
@@ -150,7 +150,7 @@ about the structure of the file system is kept.</dd>
    The are 16384 pages, for a total combined raw data area capacity
    8,388,608 bytes.
 </p>
- 
+
 </div>
 <div style="clear: both">
 <h2>File System Organization</h2>
@@ -327,7 +327,7 @@ in the FAT and directory entries are relative to this.
 <td nowrap="nowrap"><code>alloc_end</code></td>
 <td nowrap="nowrap"><code>word</code></td>
 <td nowrap="nowrap"><code>8135</code></td>
-<td>The cluster after the highest allocatable cluster.  Relative to 
+<td>The cluster after the highest allocatable cluster.  Relative to
 <code style="font-family: monospace">alloc_offset</code>.
 
 <br><em>Not used.</em></td>
@@ -337,7 +337,7 @@ in the FAT and directory entries are relative to this.
 <td nowrap="nowrap"><code>rootdir_cluster</code></td>
 <td nowrap="nowrap"><code>word</code></td>
 <td nowrap="nowrap"><code>0</code></td>
-<td>First cluster of the root directory.  Relative to 
+<td>First cluster of the root directory.  Relative to
 <code style="font-family: monospace">alloc_offset</code>.
 
 <br><em>Must be zero.</em></td>
@@ -476,9 +476,9 @@ if that block was found to be bad.</em></td>
    FAT might look something like this:
 </p>
 <p style="margin-left: 4em"><code style="font-family: monospace">
-fat_offset = fat_index % 256 
+fat_offset = fat_index % 256
 <br>
-indirect_index  = fat_index / 256 
+indirect_index  = fat_index / 256
 <br>
 indirect_offset = indirect_index  % 256
 <br>
@@ -616,28 +616,28 @@ If this flag is clear, then the file or directory has been deleted.
 <tr>
 <td nowrap="nowrap"><code>0x00</code></td>
 <td nowrap="nowrap"><code>mode</code></td>
-<td nowrap="nowrap"><code>half</code></td> 
+<td nowrap="nowrap"><code>half</code></td>
 <td>See directory mode table.
 <br></td>
 </tr>
 <tr>
 <td nowrap="nowrap"><code>0x04</code></td>
 <td nowrap="nowrap"><code>length</code></td>
-<td nowrap="nowrap"><code>word</code></td> 
+<td nowrap="nowrap"><code>word</code></td>
 <td>Length in bytes if a file, or entries if a directory.
 <br></td>
 </tr>
 <tr>
 <td nowrap="nowrap"><code>0x08</code></td>
 <td nowrap="nowrap"><code>created</code></td>
-<td nowrap="nowrap"><code>byte[8]</code></td> 
+<td nowrap="nowrap"><code>byte[8]</code></td>
 <td>Creation time.
 <br></td>
 </tr>
 <tr>
 <td nowrap="nowrap"><code>0x10</code></td>
 <td nowrap="nowrap"><code>cluster</code></td>
-<td nowrap="nowrap"><code>word</code></td> 
+<td nowrap="nowrap"><code>word</code></td>
 <td>First cluster of the file, or <code style="font-family: monospace">0xFFFFFFFF</code> for an empty file.
 In "." entries this the first cluster of this directory's parent
 directory instead.
@@ -647,7 +647,7 @@ Relative to <code style="font-family: monospace">alloc_offset</code>.
 <tr>
 <td nowrap="nowrap"><code>0x14</code></td>
 <td nowrap="nowrap"><code>dir_entry</code></td>
-<td nowrap="nowrap"><code>word</code></td> 
+<td nowrap="nowrap"><code>word</code></td>
 <td>Only in "." entries.  Entry of this directory
 in its parent's directory.
 <br></td>
@@ -655,21 +655,21 @@ in its parent's directory.
 <tr>
 <td nowrap="nowrap"><code>0x18</code></td>
 <td nowrap="nowrap"><code>modified</code></td>
-<td nowrap="nowrap"><code>byte[8]</code></td> 
+<td nowrap="nowrap"><code>byte[8]</code></td>
 <td>Modification time.
 <br></td>
 </tr>
 <tr>
 <td nowrap="nowrap"><code>0x20</code></td>
 <td nowrap="nowrap"><code>attr</code></td>
-<td nowrap="nowrap"><code>word</code></td> 
+<td nowrap="nowrap"><code>word</code></td>
 <td>User defined attribute
 <br></td>
 </tr>
 <tr>
 <td nowrap="nowrap"><code>0x40</code></td>
 <td nowrap="nowrap"><code>name</code></td>
-<td nowrap="nowrap"><code>byte[32]</code></td> 
+<td nowrap="nowrap"><code>byte[32]</code></td>
 <td>Zero terminated name for this directory entry.
 
 <br></td>
@@ -698,7 +698,7 @@ in its parent's directory.
    <code style="font-family: monospace">cluster</code> field which isn't used.
 </p>
 
-<div style="float: right; padding: 1em 0 1em 1em">    
+<div style="float: right; padding: 1em 0 1em 1em">
 <table rules="all">
 <caption>Time of Day (8 bytes)</caption>
 <colgroup span="3" valign="top"></colgroup>
@@ -754,7 +754,7 @@ in its parent's directory.
    like the PS2 browser.  The <code style="font-family: monospace">DF_PSX</code> flag indicates that file
    was copied from a PSX memory card.  If the <code style="font-family: monospace">DF_POCKETSTN</code> flag
    is set as well, the file is a PocketStation application file copied
-   from a PocketStation.  
+   from a PocketStation.
 </p>
 
 <p>Each directory entry is a massive 512 bytes long, so only two
@@ -772,7 +772,7 @@ in its parent's directory.
 <h2>Error Management</h2>
 
 <p>A number of strategies are employed in the file system to handle
-   errors are likely to occur when using memory cards.  
+   errors are likely to occur when using memory cards.
 </p>
 
 <div>
@@ -858,7 +858,7 @@ in its parent's directory.
 <div>
 <h3>NAND Flash Memory</h3>
 
-Micron: <a href="http://download.micron.com/pdf/technotes/nand/tn2919.pdf">NAND Flash 101: An Introduction to NAND Flash and How to Design It In 
+Micron: <a href="http://download.micron.com/pdf/technotes/nand/tn2919.pdf">NAND Flash 101: An Introduction to NAND Flash and How to Design It In
        to Your Next Product</a><br>
 
 Wikipedia: <a href="http://en.wikipedia.org/wiki/Flash_memory">Flash memory</a><br>

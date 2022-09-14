@@ -53,7 +53,7 @@ void BaseMcdListView::LoadSaveColumns( IniInterface& ini )
 		int width = GetColumnWidth(col);
 
 		ini.Entry( label, width, cinfo.width );
-		
+
 		if (ini.IsLoading())
 			SetColumnWidth(col, width);
 	}
@@ -134,7 +134,7 @@ wxString MemoryCardListView_Simple::OnGetItemText(long item, long column) const
 					return pxsFmt(wxString(L" ") + _("Port-%u / Multitap-%u--Port-1"), it.GetMtapPort()+1, it.GetMtapPort()+1);
 				return pxsFmt(wxString(L" ")+_("             Multitap-%u--Port-%u"), it.GetMtapPort()+1, it.GetMtapSlot()+1);
 			}
-			
+
 			return L"";
 /*
 		case McdColS_Status:
@@ -146,7 +146,7 @@ wxString MemoryCardListView_Simple::OnGetItemText(long item, long column) const
 				res= L"";
 			return prefix + res;
 		}
-*/		
+*/
 		case McdColS_Size:			return prefix + ( !it.IsPresent ? L"" : (it.IsPSX? pxsFmt( L"%u MBit", it.SizeInMB ) : ( it.SizeInMB > 0 ? pxsFmt( L"%u MiB", it.SizeInMB ) : L"Auto" ) ) );
 		case McdColS_Formatted:		return prefix + ( !it.IsPresent ? L"" : ( it.IsFormatted ? _("Yes") : _("No")) );
 		case McdColS_Type:			return prefix + ( !it.IsPresent ? L"" : ( it.IsPSX? _("PS1") : _("PS2")) );
@@ -168,7 +168,7 @@ wxString MemoryCardListView_Simple::OnGetItemText(long item, long column) const
 			}
 
 			wxDirName filepath( it.Filename.GetPath() );
-			
+
 			if (filepath.SameAs(g_Conf->Folders.MemoryCards))
 				return prefix + it.Filename.GetFullName();
 			else

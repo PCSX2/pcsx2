@@ -100,7 +100,7 @@ typedef void FnType_Void();
 typedef FnType_Void* Fnptr_Void;
 
 // --------------------------------------------------------------------------------------
-//  Compiler/OS specific macros and defines 
+//  Compiler/OS specific macros and defines
 // --------------------------------------------------------------------------------------
 
 #if defined(_MSC_VER)

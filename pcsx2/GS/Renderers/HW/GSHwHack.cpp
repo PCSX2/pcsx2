@@ -142,7 +142,7 @@ bool GSC_Manhunt2(const GSFrameInfo& fi, int& skip)
 bool GSC_CrashBandicootWoC(const GSFrameInfo& fi, int& skip)
 {
 	// Channel effect not properly supported - Removes fog to fix the fog wall issue on Direct3D at any resolution, and while upscaling on every Hardware renderer.
-	if (skip == 0) 
+	if (skip == 0)
 	{
 		if (fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x008c0 || fi.FBP == 0x00a00) && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x008c0 || fi.TBP0 == 0x00a00) && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.FPSM == fi.TPSM)
 		{

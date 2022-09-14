@@ -135,8 +135,8 @@ void Pcsx2App::OpenProgramLog()
 	for( int li=wxLANGUAGE_UNKNOWN+1; li<wxLANGUAGE_USER_DEFINED; ++li )
 	{
 		if (const wxLanguageInfo* info = wxLocale::GetLanguageInfo( li ))
-		{			
-			if (i18n_IsLegacyLanguageId((wxLanguage)info->Language)) continue;			
+		{
+			if (i18n_IsLegacyLanguageId((wxLanguage)info->Language)) continue;
 			Console.WriteLn( L"|| %-30s || %-8s ||", info->Description.c_str(), info->CanonicalName.c_str() );
 		}
 	}

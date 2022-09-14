@@ -34,7 +34,7 @@ enum DocsModeType
 	// friendly to modern computing security requirements; as it isolates all file modification
 	// to a zone of the hard drive that has granted write permissions to the user.
 	DocsFolder_User,
-	
+
 	// uses a custom location for program data. Typically the custom folder is either the
 	// absolute or relative location of the program -- absolute is preferred because it is
 	// considered more secure by MSW standards, due to DLL search rules.
@@ -57,7 +57,7 @@ namespace PathDefs
 	extern wxDirName GetDocuments( DocsModeType mode );
 }
 
-extern DocsModeType		DocsFolderMode;				// 
+extern DocsModeType		DocsFolderMode;				//
 extern bool				UseDefaultSettingsFolder;	// when TRUE, pcsx2 derives the settings folder from the DocsFolderMode
 
 extern wxDirName		CustomDocumentsFolder;		// allows the specification of a custom home folder for PCSX2 documents files.
@@ -91,7 +91,7 @@ extern InstallationModeType	InstallationMode;
 extern const wxChar* CDVD_SourceLabels[];
 
 // =====================================================================================================
-//  Pcsx2 Application Configuration. 
+//  Pcsx2 Application Configuration.
 // =====================================================================================================
 
 class AppConfig
@@ -286,7 +286,7 @@ public:
 	InputRecordingOptions   inputRecording;
 	UiTemplateOptions		Templates;
 	CaptureOptions			AudioCapture;
-	
+
 	// PCSX2-core emulation options, which are passed to the emu core prior to initiating
 	// an emulation session.  Note these are the options saved into the GUI ini file and
 	// which are shown as options in the gui preferences, but *not* necessarily the options
@@ -301,12 +301,12 @@ public:
 
 	static int  GetMaxPresetIndex();
     static bool isOkGetPresetTextAndColor(int n, wxString& label, wxColor& c);
-	
+
 	bool        IsOkApplyPreset(int n, bool ignoreMTVU);
 
 
 	//The next 2 flags are used with ApplyConfigToGui which the presets system use:
-	
+
 	//Indicates that the scope is only for preset-related items.
 	static const int APPLY_FLAG_FROM_PRESET			= 0x01;
 

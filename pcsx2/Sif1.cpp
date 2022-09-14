@@ -128,7 +128,7 @@ static __fi bool SIFIOPReadTag()
 	// Only use the first 24 bits.
 	hw_dma10.madr = sif1data & 0xffffff;
 
-	
+
 	if (sif1words > 0xFFFFC) DevCon.Warning("SIF1 Overrun %x", sif1words);
 	//Maximum transfer amount 1mb-16 also masking out top part which is a "Mode" cache stuff, we don't care :)
 	sif1.iop.counter = sif1words & 0xFFFFC;
@@ -342,13 +342,13 @@ __fi void dmaSIF1()
 	sif1.ee.busy = true;
 
 
-	// Okay, this here is needed currently (r3644). 
+	// Okay, this here is needed currently (r3644).
 	// FFX battles in the thunder plains map die otherwise, Phantasy Star 4 as well
 	// These 2 games could be made playable again by increasing the time the EE or the IOP run,
 	// showing that this is very timing sensible.
 	// Doing this DMA unfortunately brings back an old warning in Legend of Legaia though, but it still works.
 
-	//Updated 23/08/2011: The hangs are caused by the EE suspending SIF1 DMA and restarting it when in the middle 
+	//Updated 23/08/2011: The hangs are caused by the EE suspending SIF1 DMA and restarting it when in the middle
 	//of processing a "REFE" tag, so the hangs can be solved by forcing the ee.end to be false
 	// (as it should always be at the beginning of a DMA).  using "if iop is busy" flags breaks Tom Clancy Rainbow Six.
 	// Legend of Legaia doesn't throw a warning either :)
@@ -360,7 +360,7 @@ __fi void dmaSIF1()
 		{
 			sif1.ee.end = true;
 		}
-	}	
+	}
 
 	SIF1Dma();
 

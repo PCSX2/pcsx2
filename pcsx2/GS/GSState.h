@@ -185,7 +185,7 @@ protected:
 
 	void GrowVertexBuffer();
 	void HandleAutoFlush();
-	
+
 	template <u32 prim, bool auto_flush, bool index_swap>
 	void VertexKick(u32 skip);
 

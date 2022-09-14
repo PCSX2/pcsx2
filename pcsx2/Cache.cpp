@@ -341,7 +341,7 @@ void CACHE()
 	u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 	// CACHE_LOG("cpuRegs.GPR.r[_Rs_].UL[0] = %x, IMM = %x RT = %x", cpuRegs.GPR.r[_Rs_].UL[0], _Imm_, _Rt_);
 
-	switch (_Rt_) 
+	switch (_Rt_)
 	{
 		case 0x1a: //DHIN (Data Cache Hit Invalidate)
 			doCacheHitOp(addr, "DHIN", [](CacheLine line)

@@ -213,7 +213,7 @@ bool GSRenderer::Merge(int field)
 		// If using scanmsk we have to keep the single line offset, regardless of upscale
 		// so we handle this separately after the rect calculations.
 		float interlace_offset = 0.0f;
-		
+
 		if ((!GSConfig.PCRTCAntiBlur || m_scanmask_used) && display_offset)
 		{
 			interlace_offset = static_cast<float>(display_diff.y & 1);
@@ -266,7 +266,7 @@ bool GSRenderer::Merge(int field)
 				if (display_diff.y >= 4 || !GSConfig.PCRTCAntiBlur)
 					off.y = display_diff.y;
 
-				
+
 				if (samesrc)
 				{
 					// Adjusting the screen offset when using a negative offset.
@@ -353,7 +353,7 @@ bool GSRenderer::Merge(int field)
 		GSVector2i max_resolution = GetResolution();
 		resolution.x = display_combined.x - display_baseline.x;
 		resolution.y = display_combined.y - display_baseline.y;
-		
+
 		if (isinterlaced() && m_regs->SMODE2.FFMD)
 		{
 			resolution.y >>= 1;

@@ -120,7 +120,7 @@ void _hwWrite32( u32 mem, u32 value )
 						DevCon.Warning("GIF Mode cancelling P3 Disable");
 						CPU_INT(DMAC_GIF, 8);
 					}
-						
+
 
 					gifRegs.stat.M3R = gifRegs.mode.M3R;
 					gifRegs.stat.IMT = gifRegs.mode.IMT;
@@ -400,7 +400,7 @@ void _hwWrite64( u32 mem, const mem64_t* srcval )
 			hwWrite128<page>(mem & ~0x0f, &zerofill);
 		}
 		return;
-		
+
 		default:
 			// disregard everything except the lower 32 bits.
 			// ... and skip the 64 bit writeback since the 32-bit one will suffice.

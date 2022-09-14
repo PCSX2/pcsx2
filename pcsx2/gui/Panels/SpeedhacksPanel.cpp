@@ -136,7 +136,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	m_slider_eeRate = new wxSlider( m_eeRateSliderPanel, wxID_ANY, 0, -3, 3,
 		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS );
 
-	m_msg_eeRate = new pxStaticHeading( m_eeRateSliderPanel );	
+	m_msg_eeRate = new pxStaticHeading( m_eeRateSliderPanel );
 	const wxChar* eeRate_tooltip = pxEt( L"Modifies the emulated Emotion Engine CPU clock. Higher values may increase the internal framerate in games with variable framerates, but will increase CPU requirements substantially. Lower values will reduce the CPU load allowing lightweight games to run full speed on weaker CPUs." );
 	pxSetToolTip( m_slider_eeRate, eeRate_tooltip );
 	pxSetToolTip( m_msg_eeRate, eeRate_tooltip );

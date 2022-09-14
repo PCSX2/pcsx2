@@ -31,7 +31,7 @@ using namespace pxSizerFlags;
 Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 	: BaseApplicableConfigPanel_SpecificConfig( parent )
 {
-	//  Implement custom hotkeys (F4) with translatable string intact + not blank in GUI. 
+	//  Implement custom hotkeys (F4) with translatable string intact + not blank in GUI.
 	m_check_LimiterDisable	= new pxCheckBox( this, _("Disable Framelimiting") + wxString(" (") +  wxGetApp().GlobalAccels->findKeycodeWithCommandId("Framelimiter_MasterToggle").toTitleizedString()+ wxString(")"),
 		_("Uncaps FPS. Useful for running benchmarks.") );
 
@@ -63,7 +63,7 @@ Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 	s_spins += Label(L"%")							| StdExpand();
 	s_spins += 5;
 
-	//  Implement custom hotkeys (Shift + Tab) with translatable string intact + not blank in GUI. 
+	//  Implement custom hotkeys (Shift + Tab) with translatable string intact + not blank in GUI.
 
 	s_spins += Label(_("Slow Motion Adjust:") + wxString::Format(" (%s)", wxGetApp().GlobalAccels->findKeycodeWithCommandId("Framelimiter_SlomoToggle").toTitleizedString())) | StdExpand();
 	s_spins += 5;
@@ -71,7 +71,7 @@ Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 	s_spins += Label(L"%")							| StdExpand();
 	s_spins += 5;
 
-	//  Implement custom hotkeys (Tab) with translatable string intact + not blank in GUI. 
+	//  Implement custom hotkeys (Tab) with translatable string intact + not blank in GUI.
 
 	s_spins += Label(_("Turbo Adjust:") + wxString::Format(" (%s)", wxGetApp().GlobalAccels->findKeycodeWithCommandId("Framelimiter_TurboToggle").toTitleizedString())) | StdExpand();
 	s_spins += 5;
@@ -113,7 +113,7 @@ void Panels::FramelimiterPanel::ApplyConfigToGui( AppConfig& configToApply, int 
 
 	if( ! (flags & AppConfig::APPLY_FLAG_FROM_PRESET) )
 	{	//Presets don't control these: only change if config doesn't come from preset.
-	
+
 		m_check_LimiterDisable->SetValue(!gsconf.FrameLimitEnable);
 
 		m_spin_TurboPct->SetValue(appfps.TurboScalar * 100.0);
@@ -174,7 +174,7 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 	m_check_SynchronousGS = new pxCheckBox( left, _("Use Synchronized MTGS"),
 		_t("For troubleshooting potential bugs in the MTGS only, as it is potentially very slow.")
 	);
-#endif 
+#endif
 
 	m_spinner_VsyncQueue = new wxSpinCtrl(left);
 	m_spinner_VsyncQueue->SetRange(0, 3);
@@ -182,9 +182,9 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 	m_restore_defaults = new wxButton(this, wxID_DEFAULT, _("Restore Defaults"));
 
 	m_spinner_VsyncQueue->SetToolTip( pxEt(L"Setting this to a lower value improves input lag, a value around 2 or 3 will slightly improve framerates. (Default is 2)"));
-#ifdef  PCSX2_DEVBUILD 
+#ifdef  PCSX2_DEVBUILD
 	m_check_SynchronousGS->SetToolTip( pxEt( L"Enable this if you think MTGS thread sync is causing crashes or graphical errors. For debugging to see if GS is running at the correct speed."));
-#endif 
+#endif
 
 	//GSWindowSettingsPanel* winpan = new GSWindowSettingsPanel( left );
 	//winpan->AddFrame(_("Display/Window"));
@@ -199,14 +199,14 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 
 	*left		+= m_fpan		| pxExpand;
 	*left		+= 5;
-	
+
 	*s_vsyncs	+= left->Label(_("Vsyncs in MTGS Queue:")) | StdExpand();
 	*s_vsyncs	+= m_spinner_VsyncQueue | pxBorder(wxTOP, -2).Right();
 	*left		+= s_vsyncs | StdExpand();
-#ifdef  PCSX2_DEVBUILD 
+#ifdef  PCSX2_DEVBUILD
 	*left		+= 2;
 	*left		+= m_check_SynchronousGS | StdExpand();
-#endif 
+#endif
 
 	*s_table	+= left		| StdExpand();
 
@@ -238,9 +238,9 @@ void Panels::VideoPanel::OnOpenWindowSettings( wxCommandEvent& evt )
 
 void Panels::VideoPanel::Apply()
 {
-#ifdef  PCSX2_DEVBUILD 
+#ifdef  PCSX2_DEVBUILD
 	g_Conf->EmuOptions.GS.SynchronousMTGS	= m_check_SynchronousGS->GetValue();
-#endif 
+#endif
 	g_Conf->EmuOptions.GS.VsyncQueueSize = m_spinner_VsyncQueue->GetValue();
 }
 
@@ -251,10 +251,10 @@ void Panels::VideoPanel::AppStatusEvent_OnSettingsApplied()
 
 void Panels::VideoPanel::ApplyConfigToGui( AppConfig& configToApply, int flags ){
 
-#ifdef  PCSX2_DEVBUILD 
+#ifdef  PCSX2_DEVBUILD
 	m_check_SynchronousGS->SetValue( configToApply.EmuOptions.GS.SynchronousMTGS );
 	m_check_SynchronousGS->Enable(!configToApply.EnablePresets);
-#endif 
+#endif
 	m_spinner_VsyncQueue->SetValue( configToApply.EmuOptions.GS.VsyncQueueSize );
 
 	if( flags & AppConfig::APPLY_FLAG_MANUALLY_PROPAGATE )

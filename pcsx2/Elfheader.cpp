@@ -150,7 +150,7 @@ std::pair<u32,u32> ElfObject::getTextRange()
 		if (start <= header.e_entry && (start+size) > header.e_entry)
 			return std::make_pair(start,size);
 	}
-	
+
 	return std::make_pair(0,0);
 }
 

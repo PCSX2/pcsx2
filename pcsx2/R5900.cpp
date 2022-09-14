@@ -255,7 +255,7 @@ __fi int cpuGetCycles(int interrupt)
 		const int cycles = (cpuRegs.sCycle[interrupt] + cpuRegs.eCycle[interrupt]) - cpuRegs.cycle;
 		return std::max(1, cycles);
 	}
-		
+
 }
 
 // tests the cpu cycle against the given start and delta values.
@@ -768,7 +768,7 @@ void eeloadHook2()
 	Console.WriteLn("eeloadHook2: arg block is '%s'.", (char *)PSM(g_osdsys_str));
 #endif
 	int argc = ParseArgumentString(g_osdsys_str);
-	
+
 	// Back up 4 bytes from start of args block for every arg + 4 bytes for start of argv pointer block, write pointers
 	uptr block_start = g_osdsys_str - (argc * 4);
 	for (int a = 0; a < argc; a++)
@@ -791,12 +791,12 @@ inline bool isBranchOrJump(u32 addr)
 {
 	u32 op = memRead32(addr);
 	const OPCODE& opcode = GetInstruction(op);
-	
+
 	// Return false for eret & syscall as they are branch type in pcsx2 debugging tools,
 	// but shouldn't have delay slot in isBreakpointNeeded/isMemcheckNeeded.
 	if ((opcode.flags == (IS_BRANCH | BRANCHTYPE_SYSCALL)) || (opcode.flags == (IS_BRANCH | BRANCHTYPE_ERET)))
 		return false;
-		
+
 	return (opcode.flags & IS_BRANCH) != 0;
 }
 
@@ -821,7 +821,7 @@ int isMemcheckNeeded(u32 pc)
 {
 	if (CBreakPoints::GetNumMemchecks() == 0)
 		return 0;
-	
+
 	u32 addr = pc;
 	if (isBranchOrJump(addr))
 		addr += 4;

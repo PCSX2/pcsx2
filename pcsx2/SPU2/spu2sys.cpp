@@ -1232,7 +1232,7 @@ static void RegWrite_VoiceAddr(u16 value)
 					LoopReg = &thisvoice.LoopStartA;
 					thisvoice.LoopMode = 1;
 				}
-				
+
 				*LoopReg = (*LoopReg & 0x0F0000) | (value & 0xFFF8);
 			}
 			break;

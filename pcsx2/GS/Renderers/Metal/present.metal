@@ -68,7 +68,7 @@ fragment float4 ps_filter_complex(ConvertShaderData data [[stage_in]], ConvertPS
 	float2 texdim = float2(res.texture.get_width(), res.texture.get_height());
 	float factor = (0.9f - 0.4f * cos(2.f * M_PI_F * data.t.y * texdim.y));
 	float ycoord = (floor(data.t.y * texdim.y) + 0.5f) / texdim.y;
-	
+
 	return factor * res.sample(float2(data.t.x, ycoord));
 }
 

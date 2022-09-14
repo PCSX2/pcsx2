@@ -401,7 +401,7 @@ void GSTextureVK::CommitClear(VkCommandBuffer cmdbuf)
 		vkCmdClearColorImage(cmdbuf, m_texture.GetImage(), m_texture.GetLayout(), &cv, 1, &srr);
 	}
 
-	SetState(GSTexture::State::Dirty);	
+	SetState(GSTexture::State::Dirty);
 }
 
 VkFramebuffer GSTextureVK::GetFramebuffer(bool feedback_loop) { return GetLinkedFramebuffer(nullptr, feedback_loop); }

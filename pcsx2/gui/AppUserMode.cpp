@@ -59,7 +59,7 @@ bool Pcsx2App::TestUserPermissionsRights( const wxDirName& testFolder, wxString&
 	// If any of the folders are not writable, then the user should be informed asap via
 	// friendly and courteous dialog box!
 
-	const wxDirName PermissionFolders[] = 
+	const wxDirName PermissionFolders[] =
 	{
 		PathDefs::Base::Settings(),
 		PathDefs::Base::MemoryCards(),
@@ -89,7 +89,7 @@ bool Pcsx2App::TestUserPermissionsRights( const wxDirName& testFolder, wxString&
 	{
 		accessFailedStr = (wxString)_("The following folders exist, but are not writable:") + L"\n" + accessme;
 	}
-	
+
 	if (!createme.IsEmpty())
 	{
 		createFailedStr = (wxString)_("The following folders are missing and cannot be created:") + L"\n" + createme;
@@ -131,7 +131,7 @@ wxConfigBase* Pcsx2App::TestForPortableInstall()
 		{
 			wxString accessFailedStr, createFailedStr;
 			if (TestUserPermissionsRights( portableDocsFolder, createFailedStr, accessFailedStr )) break;
-		
+
 			wxDialogWithHelpers dialog( NULL, AddAppName(_("Portable mode error - %s")) );
 
 			wxTextCtrl* scrollText = new wxTextCtrl(
@@ -149,13 +149,13 @@ wxConfigBase* Pcsx2App::TestForPortableInstall()
 			dialog += scrollText | pxExpand.Border(wxALL, 16);
 			dialog += 6;
 			dialog += dialog.Text( GetMsg_PortableModeRights() );
-			
+
 			// [TODO] : Add url for platform-relevant user permissions tutorials?  (low priority)
 
 			wxWindowID result = pxIssueConfirmation( dialog,
 				MsgButtons().Retry().Cancel().Custom(_("Switch to User Documents Mode"), "switchmode")
 			);
-			
+
 			switch (result)
 			{
 				case wxID_CANCEL:
@@ -164,33 +164,33 @@ wxConfigBase* Pcsx2App::TestForPortableInstall()
 				case wxID_RETRY:
 					// do nothing (continues while loop)
 				break;
-				
+
 				case pxID_CUSTOM:
 					wxDialogWithHelpers dialog2( NULL, AddAppName(_("%s is switching to local install mode.")) );
 					dialog2 += dialog2.Heading( _("Try to remove the file called \"portable.ini\" from your installation directory manually." ) );
 					dialog2 += 6;
 					pxIssueConfirmation( dialog2, MsgButtons().OK() );
-					
+
 					return NULL;
 			}
 
 		}
-	
+
 		// Success -- all user-based folders have write access.  PCSX2 should be able to run error-free!
-		// Force-set the custom documents mode, and set the 
+		// Force-set the custom documents mode, and set the
 
 		InstallationMode = InstallMode_Portable;
 		DocsFolderMode = DocsFolder_Custom;
 		CustomDocumentsFolder = portableDocsFolder;
 		return conf_portable.release();
 	}
-	
+
 	return NULL;
 }
 
 // Reset RunWizard so the FTWizard is run again on next PCSX2 start.
 void Pcsx2App::WipeUserModeSettings()
-{	
+{
 	if (InstallationMode == InstallMode_Portable)
 	{
 		// Remove the portable.ini entry "RunWizard" conforming to this instance of PCSX2.
@@ -198,7 +198,7 @@ void Pcsx2App::WipeUserModeSettings()
 		std::unique_ptr<wxFileConfig> conf_portable( OpenFileConfig( portableIniFile.GetFullPath() ) );
 		conf_portable->DeleteEntry(L"RunWizard");
 	}
-	else 
+	else
 	{
 		// Remove the registry entry "RunWizard" conforming to this instance of PCSX2.
 		std::unique_ptr<wxConfigBase> conf_install( OpenInstallSettingsFile() );

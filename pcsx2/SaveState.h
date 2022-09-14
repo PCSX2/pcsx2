@@ -127,7 +127,7 @@ public:
 	{
 		return m_memory->GetPtr(m_idx);
 	}
-	
+
 	u8* GetPtrEnd() const
 	{
 		return m_memory->GetPtrEnd();

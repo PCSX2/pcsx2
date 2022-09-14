@@ -203,7 +203,7 @@ static const char eeOpcodeName[][16] = {
 
 	// "COP1"
 	"MFC1"   , /* , */     "CFC1"    , /* , */   "MTC1"   , /* , */    "CTC1"    , /* , */
-	
+
 	// "COP1 BC1"
 	"BC1F"   , "BC1T"    , "BC1FL"   , "BC1TL" , /* , */    /* , */    /* , */     /* , */
 

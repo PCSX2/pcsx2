@@ -36,7 +36,7 @@ private:
 	bool fetchDialogData();
 
 	DebugInterface* cpu;
-	
+
 	wxTextCtrl* editAddress;
 	wxTextCtrl* editSize;
 	wxRadioButton* radioMemory;

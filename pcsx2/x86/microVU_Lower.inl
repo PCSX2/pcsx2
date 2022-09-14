@@ -1686,7 +1686,7 @@ mVUop(mVU_XGKICK)
 			mVU_XGKICK_DELAY(mVU);
 			mVUinfo.doXGKICK = false;
 		}
-		
+
 		if (!CHECK_XGKICKHACK)
 		{
 			mVUallocVIa(mVU, gprT1, _Is_);

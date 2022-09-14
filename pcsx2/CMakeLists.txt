@@ -443,7 +443,7 @@ endif()
 set(pcsx2USBNullSources USB/USBNull.cpp)
 set(pcsx2USBNullHeaders USB/USB.h)
 
-# USB sources 
+# USB sources
 set(pcsx2USBSources
 	USB/USB.cpp
 	USB/deviceproxy.cpp

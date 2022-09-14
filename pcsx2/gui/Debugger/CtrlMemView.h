@@ -23,7 +23,7 @@ class CtrlMemView: public wxWindow
 {
 public:
 	CtrlMemView(wxWindow* parent, DebugInterface* _cpu);
-	
+
 	void paintEvent(wxPaintEvent & evt);
 	void mouseEvent(wxMouseEvent& evt);
 	void keydownEvent(wxKeyEvent& evt);

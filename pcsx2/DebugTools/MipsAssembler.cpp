@@ -27,7 +27,7 @@ public:
 	{
 		//
 	}
-	
+
 	static void queueError(ErrorType type, const wchar_t* text, ...)
 	{
 		//
@@ -177,7 +177,7 @@ void SplitLine(const char* Line, char* Name, char* Arguments)
 		*Name++ = *Line++;
 	}
 	*Name = 0;
-	
+
 	while (*Line == ' ' || *Line == '\t') Line++;
 
 	while (*Line != 0)
@@ -587,7 +587,7 @@ bool CMipsInstruction::LoadEncoding(const tMipsOpcode& SourceOpcode, const char*
 
 	while (*Line == ' ' || *Line == '\t') Line++;
 	if (*Line != 0)	return false;	// there's something else, bad
-	
+
 	// opcode is ok - now set all flags
 	Opcode = SourceOpcode;
 	immediate.value = immediate.originalValue;
@@ -601,13 +601,13 @@ void CMipsInstruction::setOmittedRegisters()
 	// copy over omitted registers
 	if (Opcode.flags & MO_RSD)
 		registers.grd = registers.grs;
-	
+
 	if (Opcode.flags & MO_RST)
 		registers.grt = registers.grs;
-	
+
 	if (Opcode.flags & MO_RDT)
 		registers.grt = registers.grd;
-	
+
 	if (Opcode.flags & MO_FRSD)
 		registers.frd = registers.frs;
 }
@@ -641,7 +641,7 @@ bool CMipsInstruction::Validate()
 	if (immediateType != MIPS_NOIMMEDIATE)
 	{
 		immediate.originalValue = immediate.value;
-		
+
 		if (Opcode.flags & MO_IMMALIGNED)	// immediate must be aligned
 		{
 			if (immediate.value % 4)
@@ -657,7 +657,7 @@ bool CMipsInstruction::Validate()
 		} else if (Opcode.flags & MO_IPCR)	// relative 16 bit value
 		{
 			int num = (immediate.value-RamPos-4);
-			
+
 			if (num > 0x20000 || num < (-0x20000))
 			{
 				Logger::queueError(Logger::Error,L"Branch target %08X out of range",immediate.value);
@@ -665,7 +665,7 @@ bool CMipsInstruction::Validate()
 			}
 			immediate.value = num >> 2;
 		}
-		
+
 		int immediateBits = getImmediateBits(immediateType);
 		unsigned int mask = (0xFFFFFFFF << (32-immediateBits)) >> (32-immediateBits);
 		int digits = (immediateBits+3) / 4;
@@ -678,7 +678,7 @@ bool CMipsInstruction::Validate()
 
 		immediate.value &= mask;
 	}
-	
+
 	return true;
 }
 
@@ -689,11 +689,11 @@ void CMipsInstruction::encodeNormal()
 	if (registers.grs.num != -1) encoding |= MIPS_RS(registers.grs.num);	// source reg
 	if (registers.grt.num != -1) encoding |= MIPS_RT(registers.grt.num);	// target reg
 	if (registers.grd.num != -1) encoding |= MIPS_RD(registers.grd.num);	// dest reg
-	
+
 	if (registers.frt.num != -1) encoding |= MIPS_FT(registers.frt.num);	// float target reg
 	if (registers.frs.num != -1) encoding |= MIPS_FS(registers.frs.num);	// float source reg
 	if (registers.frd.num != -1) encoding |= MIPS_FD(registers.frd.num);	// float dest reg
-	
+
 	if (registers.ps2vrt.num != -1) encoding |= (registers.ps2vrt.num << 16);	// ps2 vector target reg
 	if (registers.ps2vrs.num != -1) encoding |= (registers.ps2vrs.num << 21);	// ps2 vector source reg
 	if (registers.ps2vrd.num != -1) encoding |= (registers.ps2vrd.num << 6);	// ps2 vector dest reg
