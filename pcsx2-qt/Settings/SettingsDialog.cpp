@@ -19,9 +19,9 @@
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
-#include "pcsx2/HostSettings.h"
 #include "pcsx2/Frontend/GameList.h"
-#include "pcsx2/Frontend/INISettingsInterface.h"
+#include "pcsx2/HostSettings.h"
+#include "pcsx2/INISettingsInterface.h"
 
 #include "MainWindow.h"
 #include "QtHost.h"

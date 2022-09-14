@@ -17,10 +17,13 @@
 
 class SettingsInterface;
 
-namespace Host
+namespace CommonHost
 {
+	/// Prevents the system console from being displayed.
+	void SetBlockSystemConsole(bool block);
+
 	/// Updates the Console handler based on the current configuration.
-	void UpdateLogging(bool disable_system_console);
+	void UpdateLogging(SettingsInterface& si);
 
 	/// Initializes early console logging (for printing command line arguments).
 	void InitializeEarlyConsole();

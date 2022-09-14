@@ -20,7 +20,6 @@
 #include "Frontend/FullscreenUI.h"
 #include "Frontend/ImGuiManager.h"
 #include "Frontend/ImGuiFullscreen.h"
-#include "Frontend/INISettingsInterface.h"
 #include "Frontend/InputManager.h"
 #include "Frontend/GameList.h"
 #include "IconsFontAwesome5.h"
@@ -40,6 +39,7 @@
 #include "Host.h"
 #include "HostDisplay.h"
 #include "HostSettings.h"
+#include "INISettingsInterface.h"
 #include "MemoryCardFile.h"
 #include "PAD/Host/PAD.h"
 #include "ps2/BiosTools.h"
@@ -855,7 +855,7 @@ void FullscreenUI::DoChangeDiscFromFile()
 	auto callback = [](const std::string& path) {
 		if (!path.empty())
 		{
-			if (!GameList::IsScannableFilename(path))
+			if (!VMManager::IsDiscFileName(path))
 			{
 				ShowToast({}, fmt::format("{} is not a valid disc image.", FileSystem::GetDisplayNameFromPath(path)));
 			}

@@ -18,14 +18,21 @@
 #include "common/CrashHandler.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
+#include "common/Threading.h"
 #include "Frontend/CommonHost.h"
+#include "Frontend/FullscreenUI.h"
+#include "Frontend/GameList.h"
 #include "Frontend/LayeredSettingsInterface.h"
+#include "Frontend/InputManager.h"
+#include "Frontend/LogSink.h"
 #include "GS.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
 #include "Host.h"
 #include "HostSettings.h"
+#include "IconsFontAwesome5.h"
 #include "MemoryCardFile.h"
 #include "PAD/Host/PAD.h"
+#include "PerformanceMetrics.h"
 #include "Sio.h"
 #include "VMManager.h"
 
@@ -175,6 +182,7 @@ void CommonHost::LoadStartupSettings()
 	SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
 	EmuFolders::LoadConfig(*bsi);
 	EmuFolders::EnsureFoldersExist();
+	UpdateLogging(*bsi);
 }
 
 void CommonHost::SetDefaultSettings(SettingsInterface& si, bool folders, bool core, bool controllers, bool hotkeys, bool ui)
@@ -199,5 +207,106 @@ void CommonHost::SetDefaultSettings(SettingsInterface& si, bool folders, bool co
 
 void CommonHost::SetCommonDefaultSettings(SettingsInterface& si)
 {
-	// Nothing here yet.
+	SetDefaultLoggingSettings(si);
+}
+
+void CommonHost::CPUThreadInitialize()
+{
+	Threading::SetNameOfCurrentThread("CPU Thread");
+	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle::GetForCallingThread());
+
+	// neither of these should ever fail.
+	if (!VMManager::Internal::InitializeGlobals() || !VMManager::Internal::InitializeMemory())
+		pxFailRel("Failed to allocate memory map");
+
+	// We want settings loaded so we choose the correct renderer for big picture mode.
+	// This also sorts out input sources.
+	VMManager::LoadSettings();
+}
+
+void CommonHost::CPUThreadShutdown()
+{
+	InputManager::CloseSources();
+	VMManager::WaitForSaveStateFlush();
+	VMManager::Internal::ReleaseMemory();
+	VMManager::Internal::ReleaseGlobals();
+	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle());
+}
+
+void CommonHost::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
+{
+	SettingsInterface* binding_si = Host::GetSettingsInterfaceForBindings();
+	InputManager::ReloadSources(si, lock);
+	InputManager::ReloadBindings(si, *binding_si);
+	UpdateLogging(si);
+}
+
+void CommonHost::CheckForSettingsChanges(const Pcsx2Config& old_config)
+{
+	// Nothing yet.
+}
+
+void CommonHost::OnVMStarting()
+{
+	CommonHost::Internal::ResetVMHotkeyState();
+}
+
+void CommonHost::OnVMStarted()
+{
+	FullscreenUI::OnVMStarted();
+}
+
+void CommonHost::OnVMDestroyed()
+{
+	FullscreenUI::OnVMDestroyed();
+}
+
+void CommonHost::OnVMPaused()
+{
+	InputManager::PauseVibration();
+	FullscreenUI::OnVMPaused();
+}
+
+void CommonHost::OnVMResumed()
+{
+	FullscreenUI::OnVMResumed();
+}
+
+void CommonHost::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name, u32 game_crc)
+{
+	if (FullscreenUI::IsInitialized())
+	{
+		GetMTGS().RunOnGSThread([disc_path, game_serial, game_name, game_crc]() {
+			FullscreenUI::OnRunningGameChanged(std::move(disc_path), std::move(game_serial), std::move(game_name), game_crc);
+		});
+	}
+}
+
+void CommonHost::CPUThreadVSync()
+{
+	InputManager::PollSources();
+}
+
+bool Host::GetSerialAndCRCForFilename(const char* filename, std::string* serial, u32* crc)
+{
+	{
+		auto lock = GameList::GetLock();
+		if (const GameList::Entry* entry = GameList::GetEntryForPath(filename); entry)
+		{
+			*serial = entry->serial;
+			*crc = entry->crc;
+			return true;
+		}
+	}
+
+	// Just scan it.. hopefully it'll come back okay.
+	GameList::Entry temp_entry;
+	if (GameList::PopulateEntryFromPath(filename, &temp_entry))
+	{
+		*serial = std::move(temp_entry.serial);
+		*crc = temp_entry.crc;
+		return true;
+	}
+
+	return false;
 }

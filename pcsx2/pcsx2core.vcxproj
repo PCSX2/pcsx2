@@ -187,6 +187,7 @@
     <ClCompile Include="DEV9\net.cpp" />
     <ClCompile Include="DEV9\Win32\tap-win32.cpp" />
     <ClCompile Include="Frontend\CommonHost.cpp" />
+    <ClCompile Include="Frontend\CommonHotkeys.cpp" />
     <ClCompile Include="Frontend\D3D11HostDisplay.cpp" />
     <ClCompile Include="Frontend\D3D12HostDisplay.cpp" />
     <ClCompile Include="Frontend\FullscreenUI.cpp" />
@@ -197,7 +198,7 @@
     <ClCompile Include="Frontend\imgui_impl_dx12.cpp" />
     <ClCompile Include="Frontend\imgui_impl_opengl3.cpp" />
     <ClCompile Include="Frontend\imgui_impl_vulkan.cpp" />
-    <ClCompile Include="Frontend\INISettingsInterface.cpp" />
+    <ClCompile Include="INISettingsInterface.cpp" />
     <ClCompile Include="Frontend\InputManager.cpp" />
     <ClCompile Include="Frontend\InputSource.cpp" />
     <ClCompile Include="Frontend\LayeredSettingsInterface.cpp" />
@@ -520,7 +521,7 @@
     <ClInclude Include="Frontend\imgui_impl_dx12.h" />
     <ClInclude Include="Frontend\imgui_impl_opengl3.h" />
     <ClInclude Include="Frontend\imgui_impl_vulkan.h" />
-    <ClInclude Include="Frontend\INISettingsInterface.h" />
+    <ClInclude Include="INISettingsInterface.h" />
     <ClInclude Include="Frontend\InputManager.h" />
     <ClInclude Include="Frontend\InputSource.h" />
     <ClInclude Include="Frontend\LayeredSettingsInterface.h" />

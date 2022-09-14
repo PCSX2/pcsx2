@@ -134,7 +134,7 @@ static std::array<std::unique_ptr<InputSource>, static_cast<u32>(InputSourceType
 // ------------------------------------------------------------------------
 // Hotkeys
 // ------------------------------------------------------------------------
-static const HotkeyInfo* const s_hotkey_list[] = {g_host_hotkeys, g_vm_manager_hotkeys, g_gs_hotkeys};
+static const HotkeyInfo* const s_hotkey_list[] = {g_common_hotkeys, g_gs_hotkeys, g_host_hotkeys};
 
 // ------------------------------------------------------------------------
 // Tracking host mouse movement and turning into relative events

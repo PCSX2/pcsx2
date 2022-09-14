@@ -19,6 +19,8 @@
 #include <string>
 #include <mutex>
 
+#include "Config.h"
+
 class SettingsInterface;
 
 namespace Host
@@ -40,4 +42,43 @@ namespace CommonHost
 
 	/// Sets default settings for the specified categories.
 	void SetDefaultSettings(SettingsInterface& si, bool folders, bool core, bool controllers, bool hotkeys, bool ui);
+
+	/// Initializes common host state, called on the CPU thread.
+	void CPUThreadInitialize();
+
+	/// Cleans up common host state, called on the CPU thread.
+	void CPUThreadShutdown();
+
+	/// Loads common host settings (including input bindings).
+	void LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock);
+
+	/// Called after settings are updated.
+	void CheckForSettingsChanges(const Pcsx2Config& old_config);
+
+	/// Called when the VM is starting initialization, but has not been completed yet.
+	void OnVMStarting();
+
+	/// Called when the VM is created.
+	void OnVMStarted();
+
+	/// Called when the VM is shut down or destroyed.
+	void OnVMDestroyed();
+
+	/// Called when the VM is paused.
+	void OnVMPaused();
+
+	/// Called when the VM is resumed after being paused.
+	void OnVMResumed();
+
+	/// Called when the running executable changes.
+	void OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name, u32 game_crc);
+
+	/// Provided by the host; called once per frame at guest vsync.
+	void CPUThreadVSync();
+
+	namespace Internal
+	{
+		/// Resets any state for hotkey-related VMs, called on VM startup.
+		void ResetVMHotkeyState();
+	} // namespace Internal
 } // namespace CommonHost

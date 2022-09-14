@@ -24,13 +24,13 @@
 #include "common/StringUtil.h"
 
 #include "pcsx2/HostSettings.h"
+#include "pcsx2/INISettingsInterface.h"
 
 #include "DEV9SettingsWidget.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 #include "SettingsDialog.h"
-#include "Frontend/INISettingsInterface.h"
 
 #include "HddCreateQt.h"
 

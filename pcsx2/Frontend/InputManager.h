@@ -131,7 +131,7 @@ struct HotkeyInfo
 	} \
 	;
 
-DECLARE_HOTKEY_LIST(g_vm_manager_hotkeys);
+DECLARE_HOTKEY_LIST(g_common_hotkeys);
 DECLARE_HOTKEY_LIST(g_gs_hotkeys);
 DECLARE_HOTKEY_LIST(g_host_hotkeys);
 
