@@ -84,7 +84,7 @@ bool InputBindingDialog::eventFilter(QObject* watched, QEvent* event)
 		if (dx != 0.0f)
 		{
 			InputBindingKey key(InputManager::MakePointerAxisKey(0, InputPointerAxis::WheelX));
-			key.negative = (dx < 0.0f);
+			key.modifier = dx < 0.0f ? InputModifier::Negate : InputModifier::None;
 			m_new_bindings.push_back(key);
 		}
 
@@ -92,7 +92,7 @@ bool InputBindingDialog::eventFilter(QObject* watched, QEvent* event)
 		if (dy != 0.0f)
 		{
 			InputBindingKey key(InputManager::MakePointerAxisKey(0, InputPointerAxis::WheelY));
-			key.negative = (dy < 0.0f);
+			key.modifier = dy < 0.0f ? InputModifier::Negate : InputModifier::None;
 			m_new_bindings.push_back(key);
 		}
 
@@ -115,14 +115,14 @@ bool InputBindingDialog::eventFilter(QObject* watched, QEvent* event)
 		if (std::abs(diff.x()) >= THRESHOLD)
 		{
 			InputBindingKey key(InputManager::MakePointerAxisKey(0, InputPointerAxis::X));
-			key.negative = (diff.x() < 0);
+			key.modifier = diff.x() < 0 ? InputModifier::Negate : InputModifier::None;
 			m_new_bindings.push_back(key);
 			has_one = true;
 		}
 		if (std::abs(diff.y()) >= THRESHOLD)
 		{
 			InputBindingKey key(InputManager::MakePointerAxisKey(0, InputPointerAxis::Y));
-			key.negative = (diff.y() < 0);
+			key.modifier = diff.y() < 0 ? InputModifier::Negate : InputModifier::None;
 			m_new_bindings.push_back(key);
 			has_one = true;
 		}
@@ -291,7 +291,7 @@ void InputBindingDialog::inputManagerHookCallback(InputBindingKey key, float val
 	if (abs_value >= 0.5f)
 	{
 		InputBindingKey key_to_add = key;
-		key_to_add.negative = (value < 0.0f);
+		key_to_add.modifier = value < 0.0f ? InputModifier::Negate : InputModifier::None;
 		m_new_bindings.push_back(key_to_add);
 	}
 }

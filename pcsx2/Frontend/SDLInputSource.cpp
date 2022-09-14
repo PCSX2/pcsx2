@@ -256,7 +256,7 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(
 			{
 				key.source_subtype = InputSubclass::ControllerAxis;
 				key.data = *value;
-				key.negative = (binding[0] == '-');
+				key.modifier = (binding[0] == '-') ? InputModifier::Negate : InputModifier::None;
 				return key;
 			}
 		}
@@ -267,9 +267,19 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(
 				// found an axis!
 				key.source_subtype = InputSubclass::ControllerAxis;
 				key.data = i;
-				key.negative = (binding[0] == '-');
+				key.modifier = (binding[0] == '-') ? InputModifier::Negate : InputModifier::None;
 				return key;
 			}
+		}
+	}
+	else if (StringUtil::StartsWith(binding, "FullAxis"))
+	{
+		if (auto value = StringUtil::FromChars<u32>(binding.substr(8)))
+		{
+			key.source_subtype = InputSubclass::ControllerAxis;
+			key.data = *value;
+			key.modifier = InputModifier::FullAxis;
+			return key;
 		}
 	}
 	else
@@ -307,11 +317,17 @@ std::string SDLInputSource::ConvertKeyToString(InputBindingKey key)
 	{
 		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
-			char modifier = key.negative ? '-' : '+';
+			const char* modifier = key.modifier == InputModifier::Negate ? "-" : "+";
 			if (key.data < std::size(s_sdl_axis_names))
-				ret = StringUtil::StdStringFromFormat("SDL-%u/%c%s", key.source_index, modifier, s_sdl_axis_names[key.data]);
+			{
+				ret = StringUtil::StdStringFromFormat("SDL-%u/%s%s", key.source_index, modifier, s_sdl_axis_names[key.data]);
+			}
 			else
-				ret = StringUtil::StdStringFromFormat("SDL-%u/%cAxis%u", key.source_index, modifier, key.data);
+			{
+				if (key.modifier == InputModifier::FullAxis)
+					modifier = "Full";
+				ret = StringUtil::StdStringFromFormat("SDL-%u/%sAxis%u", key.source_index, modifier, key.data);
+			}
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton)
 		{

@@ -292,7 +292,7 @@ std::optional<InputBindingKey> XInputSource::ParseKeyString(
 				// found an axis!
 				key.source_subtype = InputSubclass::ControllerAxis;
 				key.data = i;
-				key.negative = (binding[0] == '-');
+				key.modifier = binding[0] == '-' ? InputModifier::Negate : InputModifier::None;
 				return key;
 			}
 		}
@@ -323,8 +323,9 @@ std::string XInputSource::ConvertKeyToString(InputBindingKey key)
 	{
 		if (key.source_subtype == InputSubclass::ControllerAxis && key.data < std::size(s_axis_names))
 		{
+			const char modifier = key.modifier == InputModifier::Negate ? '-' : '+';
 			ret = StringUtil::StdStringFromFormat(
-				"XInput-%u/%c%s", key.source_index, key.negative ? '-' : '+', s_axis_names[key.data]);
+				"XInput-%u/%c%s", key.source_index, modifier, s_axis_names[key.data]);
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton && key.data < std::size(s_button_names))
 		{
