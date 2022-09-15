@@ -197,8 +197,10 @@ void ControllerBindingWidget::onClearBindingsClicked()
 
 	if (m_dialog->isEditingGlobalSettings())
 	{
-		auto lock = Host::GetSettingsLock();
-		PAD::ClearPortBindings(*Host::Internal::GetBaseSettingsLayer(), m_port_number);
+		{
+			auto lock = Host::GetSettingsLock();
+			PAD::ClearPortBindings(*Host::Internal::GetBaseSettingsLayer(), m_port_number);
+		}
 		Host::CommitBaseSettingChanges();
 	}
 	else
