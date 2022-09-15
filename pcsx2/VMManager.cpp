@@ -1057,9 +1057,14 @@ void VMManager::Shutdown(bool save_resume_state)
 	// If the fullscreen UI is running, do a hardware reset on the GS
 	// so that the texture cache and targets are all cleared.
 	if (s_gs_open_on_initialize)
+	{
+		GetMTGS().WaitGS(false, false, false);
 		GetMTGS().ResetGS(true);
+	}
 	else
+	{
 		GetMTGS().WaitForClose();
+	}
 
 	USBshutdown();
 	SPU2shutdown();
