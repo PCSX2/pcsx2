@@ -33531,7 +33531,7 @@ SLPS-20150:
   name: "Akira Psycho Ball"
   region: "NTSC-J"
 SLPS-20158:
-  name: "Yamasa Digi World 2 LCD Edition - Time Cross Qlogos Trigger Zone"
+  name: "Yamasa Digi World 2 LCD Edition - Time Cross, Qlogos, Trigger Zone"
   region: "NTSC-J"
 SLPS-20161:
   name: "Saikyou Toudai Shogi Special"
@@ -33639,6 +33639,9 @@ SLPS-20208:
 SLPS-20209:
   name: "Jissen Pachi-Slot Hisshouhou! Aladdin A [Limited Edition]"
   region: "NTSC-J"
+SLPS-20211:
+  name: "Yamasa Digi World 3 - Time Park, King Pulsar, Cyber Dragon"
+  region: "NTSC-J"
 SLPS-20213:
   name: "Hissatsu Pachinko Station V4 - Drumtic Mahjong"
   region: "NTSC-J"
@@ -33682,7 +33685,10 @@ SLPS-20222:
   name: "Inaka Kurasi - Nan no Shima no Monogatari"
   region: "NTSC-J"
 SLPS-20226:
-  name: "Yamasa Digital Slot World SP DX"
+  name: "Yamasa Digi World SP DX - Neo Planett XX"
+  region: "NTSC-J"
+SLPS-20227:
+  name: "Yamasa Digi World SP - Neo Planett XX"
   region: "NTSC-J"
 SLPS-20230:
   name: "Chulip"
@@ -33722,10 +33728,10 @@ SLPS-20256:
   region: "NTSC-J"
   compat: 5
 SLPS-20257:
-  name: "Yamasa Digi World 4DX"
+  name: "Yamasa Digi World 4 DX - Penguin Paradise, Crazy Shaman R, Zakzak Senryoubako R, Destroyer XX, King Pulsar"
   region: "NTSC-J"
 SLPS-20258:
-  name: "Yamasa Digi World 4"
+  name: "Yamasa Digi World 4 - Penguin Paradise, Crazy Shaman R, Zakzak Senryoubako R, Destroyer XX, King Pulsar"
   region: "NTSC-J"
 SLPS-20259:
   name: "Kotoba no Puzzle - Mojipittan"
@@ -33842,6 +33848,9 @@ SLPS-20312:
 SLPS-20314:
   name: "Gold X"
   region: "NTSC-J"
+SLPS-20315:
+  name: "Yamasa Digi World SP - Neo Magic Pulsar XX"
+  region: "NTSC-J"
 SLPS-20316:
   name: "Hissatsu Pachinko Station v8"
   region: "NTSC-J"
@@ -33935,7 +33944,7 @@ SLPS-20354:
   name: "Yamasa Digi World 3 [Best of Best]"
   region: "NTSC-J"
 SLPS-20355:
-  name: "Yamasa Digi World SP - Neo Magic Pulsar XX [Best of Best]"
+  name: "Yamasa Digi World SP - Neo Planett XX [Best of Best]"
   region: "NTSC-J"
 SLPS-20356:
   name: "Yamasa Digi World 4 [Best of Best]"
@@ -34513,7 +34522,7 @@ SLPS-25025:
   gameFixes:
     - EETimingHack # Correct graphics after changing scene.
 SLPS-25026:
-  name: "Dead or Alive 2 - Hardcore"
+  name: "DOA 2 - Hardcore"
   region: "NTSC-J"
   compat: 5
   patches:
@@ -38218,7 +38227,7 @@ SLPS-73405:
     halfPixelOffset: 2 # Reduces blurriness.
     disablePartialInvalidation: 1 # Fixes ghost rendering.
 SLPS-73406:
-  name: "Dead or Alive 2 - Hardcore [PlayStation 2 The Best]"
+  name: "DOA 2 - Hardcore [PlayStation 2 The Best]"
   region: "NTSC-J"
   compat: 5
 SLPS-73407:
@@ -38551,7 +38560,7 @@ SLUS-20070:
   name: "Q-Ball Billiards Master"
   region: "NTSC-U"
 SLUS-20071:
-  name: "Dead or Alive 2"
+  name: "DOA 2 - Harcore"
   region: "NTSC-U"
   compat: 5
   patches:
