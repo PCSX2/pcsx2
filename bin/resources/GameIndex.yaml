@@ -5063,7 +5063,7 @@ SCPN-60160:
   name: "PlayStation BB Navigator - Version 0.32"
   region: "NTSC-J"
 SCPS-11001:
-  name: "I.Q. Remix"
+  name: "I.Q. Remix+ - Intelligent Qube"
   region: "NTSC-J"
   compat: 5
 SCPS-11002:
@@ -5754,7 +5754,7 @@ SCPS-15113:
   name: "Minna no Tennis"
   region: "NTSC-J"
 SCPS-15114:
-  name: "Soukou Kihei Armodyne"
+  name: "Kikou Souhei Armodyne"
   region: "NTSC-J"
   speedHacks:
     mvuFlagSpeedHack: 0 # Fixes bad graphics.
@@ -22886,6 +22886,9 @@ SLPM-55039:
 SLPM-55040:
   name: "Soukoku no Kusabi - Hiiro no Kakera 3"
   region: "NTSC-J"
+SLPM-55041:
+  name: "Kanokon Esuii"
+  region: "NTSC-J"
 SLPM-55042:
   name: "Suika A.S+ Eternal Name - Sweet So Sweet [Best Edition]"
   region: "NTSC-J"
@@ -23671,7 +23674,7 @@ SLPM-62034:
   name: "Jikkyou Powerful Pro Yakyuu 7 Ketteiban"
   region: "NTSC-J"
 SLPM-62035:
-  name: "Got to Do! Hot Spring Table Tennis"
+  name: "Iku ze! Onsen Takkyuu!!"
   region: "NTSC-J"
 SLPM-62036:
   name: "Chou Kousoku Reversi"
@@ -23964,7 +23967,7 @@ SLPM-62155:
   name: "Baseball 2002, The - Battle Ball Park Sengen"
   region: "NTSC-J"
 SLPM-62157:
-  name: "Building Baku"
+  name: "Buile Baku"
   region: "NTSC-J"
 SLPM-62158:
   name: "Virtua Fighter 4"
@@ -25669,6 +25672,9 @@ SLPM-62774:
   region: "NTSC-J"
 SLPM-62775:
   name: "Sega Ages 2500 Vol.32 - Phantasy Star Complete Collection"
+  region: "NTSC-J"
+SLPM-62777:
+  name: "Harukaze P. S. - Plus Situation"
   region: "NTSC-J"
 SLPM-62778:
   name: "Slotter Up Mania 10 - Pioneer Special 3"
@@ -29025,10 +29031,10 @@ SLPM-65995:
     preloadFrameData: 1 # Fixes bad textures on Jake.
     halfPixelOffset: 1 # Fixes double image.
 SLPM-65996:
-  name: "Mars of Destruction [Limited Edition]"
+  name: "Hametsu no Mars [Limited Edition]"
   region: "NTSC-J"
 SLPM-65997:
-  name: "Mars of Destruction"
+  name: "Hametsu no Mars"
   region: "NTSC-J"
 SLPM-65998:
   name: "Vampire Darkstalkers Collection"
@@ -31606,6 +31612,9 @@ SLPM-66708:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+SLPM-66707:
+  name: "Yukinko Daisenpuu - Sayuki to Koyuki no Hie Hie Daisoudou"
+  region: "NTSC-J"
 SLPM-66709:
   name: "Angel Profile"
   region: "NTSC-J"
@@ -33553,10 +33562,10 @@ SLPS-20163:
   name: "Typing Kengo 634"
   region: "NTSC-J"
 SLPS-20165:
-  name: "La Pucelle"
+  name: "La Pucelle - Hikari no Seijo Densetsu [Limited Edition]"
   region: "NTSC-J"
 SLPS-20167:
-  name: "La Pucelle"
+  name: "La Pucelle - Hikari no Seijo Densetsu"
   region: "NTSC-J"
 SLPS-20168:
   name: "NHL 2002"
@@ -34069,7 +34078,7 @@ SLPS-20397:
   name: "Pachitte Chonmage Tatsujin 7 - CR Pachinko Dokaben"
   region: "NTSC-J"
 SLPS-20398:
-  name: "La Pucelle - Hikari no Seijyo Densetsu Nijuu"
+  name: "La Pucelle - Hikari no Seijo Densetsu - 2-shuume Hajimemashita"
   region: "NTSC-J"
 SLPS-20399:
   name: "Taiko no Tatsujin - Go! Go! Godaime [with Tatacon]"
@@ -37291,7 +37300,7 @@ SLPS-25808:
   name: "Saint Beast - Rasen no Shou"
   region: "NTSC-J"
 SLPS-25809:
-  name: "Gintama Gin-San to Issho! Boku no Kabuki Machi Nikki"
+  name: "Gintama - Gin-san to Issho! Boku no Kabuki-chou Nikki"
   region: "NTSC-J"
 SLPS-25810:
   name: "Dear My Sun"
@@ -38573,7 +38582,7 @@ SLUS-20070:
   name: "Q-Ball Billiards Master"
   region: "NTSC-U"
 SLUS-20071:
-  name: "DOA 2 - Harcore"
+  name: "DOA 2 - Hardcore"
   region: "NTSC-U"
   compat: 5
   patches:
@@ -46029,7 +46038,7 @@ SLUS-21666:
   region: "NTSC-U"
   compat: 5
 SLUS-21668:
-  name: "George of the Jungle"
+  name: "George of the Jungle and the Search for the Secret"
   region: "NTSC-U"
   compat: 5
 SLUS-21669:
