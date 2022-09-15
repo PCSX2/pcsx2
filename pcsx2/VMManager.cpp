@@ -482,7 +482,7 @@ bool VMManager::UpdateGameSettingsLayer()
 			}
 		}
 
-		Host::Internal::SetInputSettingsLayer(input_interface.get());
+		Host::Internal::SetInputSettingsLayer(input_interface ? input_interface.get() : Host::Internal::GetBaseSettingsLayer());
 	}
 	else
 	{
