@@ -357,7 +357,6 @@ namespace usb_pad
 
 		void CreateFFB(int port, LPDIRECTINPUTDEVICE8 device, DWORD axis)
 		{
-			HRESULT hres;
 			ReleaseFFB(port);
 
 			if (!device)
@@ -399,26 +398,46 @@ namespace usb_pad
 
 			eff.cbTypeSpecificParams = sizeof(cfw);
 			eff.lpvTypeSpecificParams = &cfw;
-			hres = device->CreateEffect(GUID_ConstantForce, &eff, &g_pEffectConstant[port], NULL);
+			{
+				HRESULT hres = device->CreateEffect(GUID_ConstantForce, &eff, &g_pEffectConstant[port], NULL);
+				if (FAILED(hres))
+					Console.Warning("USB: CreateEffect GUID_ConstantForce error: %x", hres);
+			}
 
 			cSpring.lNegativeCoefficient = 0;
 			cSpring.lPositiveCoefficient = 0;
 
 			effSpring.cbTypeSpecificParams = sizeof(cSpring);
 			effSpring.lpvTypeSpecificParams = &cSpring;
-			hres = device->CreateEffect(GUID_Spring, &effSpring, &g_pEffectSpring[port], NULL);
+			{
+				HRESULT hres = device->CreateEffect(GUID_Spring, &effSpring, &g_pEffectSpring[port], NULL);
+				if (FAILED(hres))
+					Console.Warning("USB: CreateEffect GUID_Spring error: %x", hres);
+			}
 
 			effFriction.cbTypeSpecificParams = sizeof(cFriction);
 			effFriction.lpvTypeSpecificParams = &cFriction;
-			hres = device->CreateEffect(GUID_Friction, &effFriction, &g_pEffectFriction[port], NULL);
+			{
+				HRESULT hres = device->CreateEffect(GUID_Friction, &effFriction, &g_pEffectFriction[port], NULL);
+				if (FAILED(hres))
+					Console.Warning("USB: CreateEffect GUID_Friction error: %x", hres);
+			}
 
 			effRamp.cbTypeSpecificParams = sizeof(cRamp);
 			effRamp.lpvTypeSpecificParams = &cRamp;
-			hres = device->CreateEffect(GUID_RampForce, &effRamp, &g_pEffectRamp[port], NULL);
+			{
+				HRESULT hres = device->CreateEffect(GUID_RampForce, &effRamp, &g_pEffectRamp[port], NULL);
+				if (FAILED(hres))
+					Console.Warning("USB: CreateEffect GUID_RampForce error: %x", hres);
+			}
 
 			effDamper.cbTypeSpecificParams = sizeof(cDamper);
 			effDamper.lpvTypeSpecificParams = &cDamper;
-			hres = device->CreateEffect(GUID_Damper, &effDamper, &g_pEffectDamper[port], NULL);
+			{
+				HRESULT hres = device->CreateEffect(GUID_Damper, &effDamper, &g_pEffectDamper[port], NULL);
+				if (FAILED(hres))
+					Console.Warning("USB: CreateEffect GUID_Damper error: %x", hres);
+			}
 
 			FFB[port] = true;
 
