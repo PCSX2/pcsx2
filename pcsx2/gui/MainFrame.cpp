@@ -152,7 +152,7 @@ bool MainEmuFrame::Destroy()
 //
 void MainEmuFrame::OnCloseWindow(wxCloseEvent& evt)
 {
-	// the main thread is busy suspending everything, so let's not try to call it 
+	// the main thread is busy suspending everything, so let's not try to call it
 	// when closing the emulator
 	//init_gspanel = false;
 

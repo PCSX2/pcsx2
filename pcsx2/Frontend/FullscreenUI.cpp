@@ -20,7 +20,6 @@
 #include "Frontend/FullscreenUI.h"
 #include "Frontend/ImGuiManager.h"
 #include "Frontend/ImGuiFullscreen.h"
-#include "Frontend/INISettingsInterface.h"
 #include "Frontend/InputManager.h"
 #include "Frontend/GameList.h"
 #include "IconsFontAwesome5.h"
@@ -40,6 +39,7 @@
 #include "Host.h"
 #include "HostDisplay.h"
 #include "HostSettings.h"
+#include "INISettingsInterface.h"
 #include "MemoryCardFile.h"
 #include "PAD/Host/PAD.h"
 #include "ps2/BiosTools.h"
@@ -119,7 +119,9 @@ using ImGuiFullscreen::MenuImageButton;
 using ImGuiFullscreen::NavButton;
 using ImGuiFullscreen::NavTitle;
 using ImGuiFullscreen::OpenChoiceDialog;
+using ImGuiFullscreen::OpenConfirmMessageDialog;
 using ImGuiFullscreen::OpenFileSelector;
+using ImGuiFullscreen::OpenInfoMessageDialog;
 using ImGuiFullscreen::OpenInputStringDialog;
 using ImGuiFullscreen::PopPrimaryColor;
 using ImGuiFullscreen::PushPrimaryColor;
@@ -279,6 +281,7 @@ namespace FullscreenUI
 	static void DoLoadInputProfile();
 	static void DoSaveInputProfile();
 	static void DoSaveInputProfile(const std::string& name);
+	static void DoResetSettings();
 
 	static bool DrawToggleSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		bool default_value, bool enabled = true, bool allow_tristate = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
@@ -462,7 +465,7 @@ void FullscreenUI::UpdateForcedVsync(bool should_force)
 	const VsyncMode mode = EmuConfig.GetEffectiveVsyncMode();
 
 	// toss it through regardless of the mode, because options can change it
-	Host::GetHostDisplay()->SetVSync((should_force && mode == VsyncMode::Off) ? VsyncMode::On : mode);
+	g_host_display->SetVSync((should_force && mode == VsyncMode::Off) ? VsyncMode::On : mode);
 }
 
 void FullscreenUI::OnVMStarted()
@@ -852,7 +855,7 @@ void FullscreenUI::DoChangeDiscFromFile()
 	auto callback = [](const std::string& path) {
 		if (!path.empty())
 		{
-			if (!GameList::IsScannableFilename(path))
+			if (!VMManager::IsDiscFileName(path))
 			{
 				ShowToast({}, fmt::format("{} is not a valid disc image.", FileSystem::GetDisplayNameFromPath(path)));
 			}
@@ -1704,8 +1707,7 @@ void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry)
 
 void FullscreenUI::PopulateGraphicsAdapterList()
 {
-	HostDisplay* display = Host::GetHostDisplay();
-	HostDisplay::AdapterAndModeList ml(display->GetAdapterAndModeList());
+	HostDisplay::AdapterAndModeList ml(g_host_display->GetAdapterAndModeList());
 	s_graphics_adapter_list_cache = std::move(ml.adapter_names);
 	s_fullscreen_mode_list_cache = std::move(ml.fullscreen_modes);
 	s_fullscreen_mode_list_cache.insert(s_fullscreen_mode_list_cache.begin(), "Borderless Fullscreen");
@@ -2022,6 +2024,13 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	DrawToggleSetting(bsi, ICON_FA_PLAY "  Show Status Indicators",
 		"Shows indicators when fast forwarding, pausing, and other abnormal states are active.", "EmuCore/GS", "OsdShowIndicators", true);
 
+	MenuHeading("Operations");
+	if (MenuButton(ICON_FA_FOLDER_MINUS "  Reset Settings", "Resets configuration to defaults (excluding controller settings).",
+			!IsEditingGameSettings(bsi)))
+	{
+		DoResetSettings();
+	}
+
 	EndMenuButtons();
 }
 
@@ -2247,6 +2256,8 @@ void FullscreenUI::DrawEmulationSettingsPage()
 		"EmuCore", "EnablePerGameSettings", true);
 	DrawToggleSetting(bsi, "Enable Host Filesystem", "Enables access to files from the host: namespace in the virtual machine.", "EmuCore",
 		"HostFs", false);
+	DrawToggleSetting(bsi, "Warn About Unsafe Settings", "Displays warnings when settings are enabled which may break games.", "EmuCore",
+		"WarnAboutUnsafeSettings", true);
 
 	EndMenuButtons();
 }
@@ -2321,7 +2332,7 @@ void FullscreenUI::DrawSystemSettingsPage()
 	static constexpr const char* ee_cycle_rate_settings[] = {
 		"50% Speed", "60% Speed", "75% Speed", "100% Speed (Default)", "130% Speed", "180% Speed", "300% Speed"};
 	static constexpr const char* ee_cycle_skip_settings[] = {
-		"Normal (Default)", "Mild Underclock", "Moderate Overclock", "Maximum Overclock"};
+		"Normal (Default)", "Mild Underclock", "Moderate Underclock", "Maximum Underclock"};
 	static constexpr const char* ee_rounding_mode_settings[] = {"Nearest", "Negative", "Positive", "Chop/Zero (Default)"};
 	static constexpr const char* affinity_control_settings[] = {
 		"Disabled", "EE > VU > GS", "EE > GS > VU", "VU > EE > GS", "VU > GS > EE", "GS > EE > VU", "GS > VU > EE"};
@@ -2918,7 +2929,8 @@ void FullscreenUI::ResetControllerSettings()
 {
 	SettingsInterface* dsi = GetEditingSettingsInterface();
 
-	PAD::SetDefaultConfig(*dsi);
+	PAD::SetDefaultControllerConfig(*dsi);
+	PAD::SetDefaultHotkeyConfig(*dsi);
 	ShowToast(std::string(), "Controller settings reset to default.");
 }
 
@@ -3003,6 +3015,18 @@ void FullscreenUI::DoSaveInputProfile()
 					DoSaveInputProfile(title);
 			});
 	});
+}
+
+void FullscreenUI::DoResetSettings()
+{
+	OpenConfirmMessageDialog(ICON_FA_FOLDER_MINUS "  Reset Settings",
+		"Are you sure you want to restore the default settings? Any preferences will be lost.", [](bool result) {
+			if (result)
+			{
+				Host::RunOnCPUThread([]() { Host::RequestResetSettings(false, true, false, false, false); });
+				ShowToast(std::string(), "Settings reset to defaults.");
+			}
+		});
 }
 
 void FullscreenUI::DrawControllerSettingsPage()
@@ -3577,7 +3601,7 @@ bool FullscreenUI::InitializeSaveStateListEntry(
 	std::vector<u32> screenshot_pixels;
 	if (SaveState_ReadScreenshot(li->path, &screenshot_width, &screenshot_height, &screenshot_pixels))
 	{
-		li->preview_texture = Host::GetHostDisplay()->CreateTexture(
+		li->preview_texture = g_host_display->CreateTexture(
 			screenshot_width, screenshot_height, screenshot_pixels.data(), sizeof(u32) * screenshot_width, false);
 		if (!li->preview_texture)
 			Console.Error("Failed to upload save state image to GPU");
@@ -4174,98 +4198,6 @@ void FullscreenUI::DrawAboutWindow()
 
 	ImGui::PopStyleVar(2);
 	ImGui::PopFont();
-}
-
-bool FullscreenUI::DrawErrorWindow(const char* message)
-{
-	bool is_open = true;
-
-	ImGuiFullscreen::BeginLayout();
-
-	ImGui::SetNextWindowSize(LayoutScale(500.0f, 0.0f));
-	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-	ImGui::OpenPopup("ReportError");
-
-	ImGui::PushFont(g_large_font);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(10.0f, 10.0f));
-
-	if (ImGui::BeginPopupModal("ReportError", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
-	{
-		ImGui::SetCursorPos(LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
-		ImGui::TextWrapped("%s", message);
-		ImGui::GetCurrentWindow()->DC.CursorPos.y += LayoutScale(5.0f);
-
-		BeginMenuButtons();
-
-		if (ActiveButton(ICON_FA_WINDOW_CLOSE "  Close", false))
-		{
-			ImGui::CloseCurrentPopup();
-			is_open = false;
-		}
-		EndMenuButtons();
-
-		ImGui::EndPopup();
-	}
-
-	ImGui::PopStyleVar(2);
-	ImGui::PopFont();
-
-	ImGuiFullscreen::EndLayout();
-	return !is_open;
-}
-
-bool FullscreenUI::DrawConfirmWindow(const char* message, bool* result)
-{
-	bool is_open = true;
-
-	ImGuiFullscreen::BeginLayout();
-
-	ImGui::SetNextWindowSize(LayoutScale(500.0f, 0.0f));
-	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-	ImGui::OpenPopup("ConfirmMessage");
-
-	ImGui::PushFont(g_large_font);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(10.0f, 10.0f));
-
-	if (ImGui::BeginPopupModal("ConfirmMessage", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
-	{
-		ImGui::SetCursorPos(LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
-		ImGui::TextWrapped("%s", message);
-		ImGui::GetCurrentWindow()->DC.CursorPos.y += LayoutScale(5.0f);
-
-		BeginMenuButtons();
-
-		bool done = false;
-
-		if (ActiveButton(ICON_FA_CHECK "  Yes", false))
-		{
-			*result = true;
-			done = true;
-		}
-
-		if (ActiveButton(ICON_FA_TIMES "  No", false))
-		{
-			*result = false;
-			done = true;
-		}
-		if (done)
-		{
-			ImGui::CloseCurrentPopup();
-			is_open = false;
-		}
-
-		EndMenuButtons();
-
-		ImGui::EndPopup();
-	}
-
-	ImGui::PopStyleVar(2);
-	ImGui::PopFont();
-
-	ImGuiFullscreen::EndLayout();
-	return !is_open;
 }
 
 FullscreenUI::ProgressCallback::ProgressCallback(std::string name)

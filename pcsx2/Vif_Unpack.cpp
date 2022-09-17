@@ -192,7 +192,7 @@ _vifT void vifUnpackSetup(const u32 *data) {
 	vifStruct& vifX = GetVifX;
 
 	GetVifX.unpackcalls++;
-	
+
 	if (GetVifX.unpackcalls > 3)
 	{
 		vifExecQueue(idx);

@@ -85,6 +85,7 @@ public:
 	void initialize();
 	void connectVMThreadSignals(EmuThread* thread);
 	void startupUpdateCheck();
+	void resetSettings(bool ui);
 
 	/// Locks the VM by pausing it, while a popup dialog is displayed.
 	VMLock pauseAndLockVM();
@@ -148,7 +149,6 @@ private Q_SLOTS:
 	void onCheckForUpdatesActionTriggered();
 	void onToolsOpenDataDirectoryTriggered();
 	void updateTheme();
-	void onLoggingOptionChanged();
 	void onScreenshotActionTriggered();
 	void onSaveGSDumpActionTriggered();
 	void onBlockDumpActionToggled(bool checked);
@@ -167,8 +167,6 @@ private Q_SLOTS:
 
 	void onGameChanged(const QString& path, const QString& serial, const QString& name, quint32 crc);
 
-	void recreate();
-
 protected:
 	void showEvent(QShowEvent* event) override;
 	void closeEvent(QCloseEvent* event) override;
@@ -186,11 +184,14 @@ private:
 
 	void setupAdditionalUi();
 	void connectSignals();
+	void recreate();
+	void recreateSettings();
 
 	void saveStateToConfig();
 	void restoreStateFromConfig();
 
 	void updateEmulationActions(bool starting, bool running);
+	void updateDisplayRelatedActions(bool has_surface, bool render_to_main, bool fullscreen);
 	void updateStatusBarWidgetVisibility();
 	void updateWindowTitle();
 	void updateWindowState(bool force_visible = false);

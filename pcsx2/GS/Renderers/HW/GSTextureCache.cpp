@@ -458,7 +458,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 				break;
 			}
 		}
-	}	
+	}
 	else
 	{
 		assert(type == RenderTarget);
@@ -648,7 +648,7 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 
 	// So, for these cases, we simply expand the target to include both images, based on the read height.
 	// It won't affect normal rendering, since that doesn't go through this path.
-	
+
 	// Compute offset into the target that we'll start reading from.
 	const int delta = dispfb.TBP0 - t->m_TEX0.TBP0;
 	int y_offset = 0;
@@ -2717,7 +2717,7 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 	const auto it = m_surface_offset_cache.find(sok);
 	if (it != m_surface_offset_cache.end())
 		return it->second;  // Cache HIT.
-	
+
 	// Cache MISS.
 	// Search for a valid <x,y> offset from B to A in B coordinates.
 	SurfaceOffset so;
@@ -2810,7 +2810,7 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 	const GSVector4i& r2 = b_rect;
 	[[maybe_unused]] const GSVector4i ri = r1.rintersect(r2);
 	assert(!so.is_valid || (r1.eq(ri) && r1.x >= 0 && r1.y >= 0 && r1.z > 0 && r1.w > 0));
-	
+
 	// Clear cache if size too big.
 	if (m_surface_offset_cache.size() + 1 > S_SURFACE_OFFSET_CACHE_MAX_SIZE)
 	{

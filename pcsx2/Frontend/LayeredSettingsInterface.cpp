@@ -139,7 +139,7 @@ void LayeredSettingsInterface::SetDoubleValue(const char* section, const char* k
 
 void LayeredSettingsInterface::SetBoolValue(const char* section, const char* key, bool value)
 {
-	pxFailRel("Attempt to call SetBoolValue() on layered settings interface"); 
+	pxFailRel("Attempt to call SetBoolValue() on layered settings interface");
 }
 
 void LayeredSettingsInterface::SetStringValue(const char* section, const char* key, const char* value)

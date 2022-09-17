@@ -21,7 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
- 
+
 // WARNING!  This file should only be included into Mpeg.cpp AND NOWHERE ELSE.
 // All contents of this file are used only by Mpeg.cpp, and including it elsewhere will
 // just result in the linker having to remove a whole lot of redundant/unused decoder

@@ -558,6 +558,7 @@ DebugTab::DebugTab(wxWindow* parent)
 		m_ui.addCheckBox(debug_check_box, "Disable Dual-Source Blending", "DisableDualSourceBlend");
 		m_ui.addCheckBox(debug_check_box, "Use Debug Device",             "UseDebugDevice");
 		m_ui.addCheckBox(debug_check_box, "Dump GS data",                 "dump");
+		m_ui.addCheckBox(debug_check_box, "Disable Hardware Readbacks",   "HWDisableReadbacks");
 
 		auto* debug_save_check_box = new wxWrapSizer(wxHORIZONTAL);
 		m_ui.addCheckBox(debug_save_check_box, "Save RT",      "save");

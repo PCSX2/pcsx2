@@ -22,7 +22,7 @@
 
 #include "common/StringUtil.h"
 #include "DEV9DnsHostDialog.h"
-#include "EmuThread.h"
+#include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 #include "SettingsDialog.h"

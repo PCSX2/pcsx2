@@ -36,7 +36,7 @@
 #include "Elfheader.h"
 #include "VMManager.h"
 
-#include "Frontend/INISettingsInterface.h"
+#include "pcsx2/INISettingsInterface.h"
 
 enum : u32
 {
@@ -47,6 +47,8 @@ enum : u32
 namespace GameList
 {
 	using CacheMap = std::unordered_map<std::string, GameList::Entry>;
+
+	static bool IsScannableFilename(const std::string_view& path);
 
 	static Entry* GetMutableEntryForPath(const char* path);
 
@@ -122,15 +124,7 @@ const char* GameList::EntryCompatibilityRatingToString(CompatibilityRating ratin
 
 bool GameList::IsScannableFilename(const std::string_view& path)
 {
-	static const char* extensions[] = {".iso", ".mdf", ".nrg", ".bin", ".img", ".gz", ".cso", ".chd", ".elf", ".irx", ".py2"};
-
-	for (const char* test_extension : extensions)
-	{
-		if (StringUtil::EndsWithNoCase(path, test_extension))
-			return true;
-	}
-
-	return false;
+	return VMManager::IsDiscFileName(path) || VMManager::IsElfFileName(path);
 }
 
 void GameList::FillBootParametersForEntry(VMBootParameters* params, const Entry* entry)
@@ -204,7 +198,7 @@ bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 	const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
 	entry->path = path;
 	entry->serial.clear();
-	entry->title = Path::StripExtension(display_name);
+	entry->title = Path::GetFileTitle(display_name);
 	entry->region = Region::Other;
 	entry->total_size = static_cast<u64>(file_size);
 	entry->type = EntryType::ELF;

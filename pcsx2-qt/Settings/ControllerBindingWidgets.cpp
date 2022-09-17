@@ -24,7 +24,7 @@
 #include "Settings/ControllerSettingsDialog.h"
 #include "Settings/ControllerSettingWidgetBinder.h"
 #include "Settings/SettingsDialog.h"
-#include "EmuThread.h"
+#include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 
@@ -197,15 +197,21 @@ void ControllerBindingWidget::onClearBindingsClicked()
 
 	if (m_dialog->isEditingGlobalSettings())
 	{
-		auto lock = Host::GetSettingsLock();
-		PAD::ClearPortBindings(*Host::Internal::GetBaseSettingsLayer(), m_port_number);
+		{
+			auto lock = Host::GetSettingsLock();
+			PAD::ClearPortBindings(*Host::Internal::GetBaseSettingsLayer(), m_port_number);
+		}
+		Host::CommitBaseSettingChanges();
 	}
 	else
 	{
 		PAD::ClearPortBindings(*m_dialog->getProfileSettingsInterface(), m_port_number);
+		m_dialog->getProfileSettingsInterface()->Save();
 	}
 
-	saveAndRefresh();
+	// force a refresh after clearing
+	g_emu_thread->applySettings();
+	onTypeChanged();
 }
 
 void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
@@ -221,28 +227,30 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
 	bool result;
 	if (m_dialog->isEditingGlobalSettings())
 	{
-		auto lock = Host::GetSettingsLock();
-		result = PAD::MapController(*Host::Internal::GetBaseSettingsLayer(), m_port_number, mapping);
+		{
+			auto lock = Host::GetSettingsLock();
+			result = PAD::MapController(*Host::Internal::GetBaseSettingsLayer(), m_port_number, mapping);
+		}
+		if (result)
+			Host::CommitBaseSettingChanges();
 	}
 	else
 	{
 		result = PAD::MapController(*m_dialog->getProfileSettingsInterface(), m_port_number, mapping);
-		m_dialog->getProfileSettingsInterface()->Save();
-		g_emu_thread->reloadInputBindings();
+		if (result)
+		{
+			m_dialog->getProfileSettingsInterface()->Save();
+			g_emu_thread->reloadInputBindings();
+		}
 	}
 
 	// force a refresh after mapping
 	if (result)
-		saveAndRefresh();
+	{
+		g_emu_thread->applySettings();
+		onTypeChanged();
+	}
 }
-
-void ControllerBindingWidget::saveAndRefresh()
-{
-	onTypeChanged();
-	QtHost::QueueSettingsSave();
-	g_emu_thread->applySettings();
-}
-
 
 //////////////////////////////////////////////////////////////////////////
 

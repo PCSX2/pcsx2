@@ -95,7 +95,7 @@ Panels::FirstTimeIntroPanel::FirstTimeIntroPanel( wxWindow* parent )
 	*this	+= new wxHyperlinkCtrl( this, wxID_ANY,
 		_("Configuration Guide"), configFile.c_str()
 	) | pxCenter.Border( wxALL, 5 );
-		
+
 	*this	+= new wxHyperlinkCtrl( this, wxID_ANY,
 		_("Readme / FAQ"), faqFile.c_str()
 	) | pxCenter.Border( wxALL, 5 );

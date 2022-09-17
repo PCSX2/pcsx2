@@ -19,7 +19,7 @@ namespace PacketReader::IP
 {
 	struct IP_Address
 	{
-		union 
+		union
 		{
 			u8 bytes[4];
 			u32 integer;

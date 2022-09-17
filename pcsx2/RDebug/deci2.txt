@@ -1,4 +1,4 @@
-pcsx2 log->debugger tty mapping              
+pcsx2 log->debugger tty mapping
 ออออออออออออออออออออออออัออัอออฤฤฤยฤฤฤยฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฟ
 Bios                    ณEEณ  0   ณIOPณ  Bios           ณ
 CPU & MMI & COP0 & FPU  ณEEณ  1   ณIOPณ  IOP cpu        ณ

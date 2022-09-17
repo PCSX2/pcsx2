@@ -226,7 +226,7 @@ void GSDeviceMTL::DrawCommandBufferFinished(u64 draw, id<MTLCommandBuffer> buffe
 	// We can do the update non-atomically because we only ever update under the lock
 	u64 newval = std::max(draw, m_last_finished_draw.load(std::memory_order_relaxed));
 	m_last_finished_draw.store(newval, std::memory_order_release);
-	static_cast<MetalHostDisplay*>(m_display)->AccumulateCommandBufferTime(buffer);
+	static_cast<MetalHostDisplay*>(g_host_display.get())->AccumulateCommandBufferTime(buffer);
 }
 
 void GSDeviceMTL::FlushEncoders()
@@ -576,19 +576,19 @@ static void setFnConstantI(MTLFunctionConstantValues* fc, unsigned int value, GS
 	[fc setConstantValue:&value type:MTLDataTypeUInt atIndex:constant];
 }
 
-bool GSDeviceMTL::Create(HostDisplay* display)
+bool GSDeviceMTL::Create()
 { @autoreleasepool {
-	if (!GSDevice::Create(display))
+	if (!GSDevice::Create())
 		return false;
 
-	if (display->GetRenderAPI() != HostDisplay::RenderAPI::Metal)
+	if (g_host_display->GetRenderAPI() != HostDisplay::RenderAPI::Metal)
 		return false;
 
-	if (!m_display->HasRenderDevice() || !m_display->HasRenderSurface())
+	if (!g_host_display->HasRenderDevice() || !g_host_display->HasRenderSurface())
 		return false;
-	m_dev = *static_cast<const GSMTLDevice*>(m_display->GetRenderDevice());
-	m_queue = MRCRetain((__bridge id<MTLCommandQueue>)m_display->GetRenderContext());
-	MTLPixelFormat layer_px_fmt = [(__bridge CAMetalLayer*)m_display->GetRenderSurface() pixelFormat];
+	m_dev = *static_cast<const GSMTLDevice*>(g_host_display->GetRenderDevice());
+	m_queue = MRCRetain((__bridge id<MTLCommandQueue>)g_host_display->GetRenderContext());
+	MTLPixelFormat layer_px_fmt = [(__bridge CAMetalLayer*)g_host_display->GetRenderSurface() pixelFormat];
 
 	m_features.broken_point_sampler = [[m_dev.dev name] containsString:@"AMD"];
 	m_features.geometry_shader = false;
@@ -1109,7 +1109,7 @@ static_assert(offsetof(DisplayConstantBuffer, TimeAndPad.x)        == offsetof(G
 
 void GSDeviceMTL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
 { @autoreleasepool {
-	GSVector2i ds = dTex ? dTex->GetSize() : GSVector2i(m_display->GetWindowWidth(), m_display->GetWindowHeight());
+	GSVector2i ds = dTex ? dTex->GetSize() : GSVector2i(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight());
 	DisplayConstantBuffer cb;
 	cb.SetSource(sRect, sTex->GetSize());
 	cb.SetTarget(dRect, ds);
@@ -1806,7 +1806,7 @@ void GSDeviceMTL::RenderImGui(ImDrawData* data)
 	[enc setVertexBuffer:map.gpu_buffer offset:map.gpu_offset atIndex:GSMTLBufferIndexVertices];
 	[enc setVertexBytes:&transform length:sizeof(transform) atIndex:GSMTLBufferIndexUniforms];
 
-	simd::uint4 last_scissor = simd::make_uint4(0, 0, m_display->GetWindowWidth(), m_display->GetWindowHeight());
+	simd::uint4 last_scissor = simd::make_uint4(0, 0, g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight());
 	simd::float2 fb_size = simd_float(last_scissor.zw);
 	simd::float2 clip_off   = ToSimd(data->DisplayPos);       // (0,0) unless using multi-viewports
 	simd::float2 clip_scale = ToSimd(data->FramebufferScale); // (1,1) unless using retina display which are often (2,2)

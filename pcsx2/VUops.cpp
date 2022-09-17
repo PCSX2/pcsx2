@@ -1646,7 +1646,7 @@ static __fi void _vuFTOI4(VURegs*  VU) {
 	if (_Y) VU->VF[_Ft_].SL[1] = float_to_int(float_to_int4(vuDouble(VU->VF[_Fs_].i.y)));
 	if (_Z) VU->VF[_Ft_].SL[2] = float_to_int(float_to_int4(vuDouble(VU->VF[_Fs_].i.z)));
 	if (_W) VU->VF[_Ft_].SL[3] = float_to_int(float_to_int4(vuDouble(VU->VF[_Fs_].i.w)));
-}											    
+}
 
 static __fi void _vuFTOI12(VURegs* VU)
 {
@@ -2129,7 +2129,7 @@ static __ri void _vuRNEXT(VURegs* VU)
 {
 	if (_Ft_ == 0)
 		return;
-		
+
 	AdvanceLFSR(VU);
 	if (_X) VU->VF[_Ft_].UL[0] = VU->VI[REG_R].UL;
 	if (_Y) VU->VF[_Ft_].UL[1] = VU->VI[REG_R].UL;
@@ -2153,7 +2153,7 @@ static __ri void _vuFSAND(VURegs* VU)
 	imm = (((VU->code >> 21) & 0x1) << 11) | (VU->code & 0x7ff);
 	if (_It_ == 0)
 		return;
-		
+
 	VU->VI[_It_].US[0] = (VU->VI[REG_STATUS_FLAG].US[0] & 0xFFF) & imm;
 }
 
@@ -2164,7 +2164,7 @@ static __ri void _vuFSEQ(VURegs* VU)
 	imm = (((VU->code >> 21) & 0x1) << 11) | (VU->code & 0x7ff);
 	if (_It_ == 0)
 		return;
-		
+
 	if ((VU->VI[REG_STATUS_FLAG].US[0] & 0xFFF) == imm)
 		VU->VI[_It_].US[0] = 1;
 	else
@@ -2609,7 +2609,7 @@ static __ri void _vuXITOP(VURegs* VU)
 {
 	if (_It_ == 0)
 		return;
-		
+
 	if (VU == &VU1 && THREAD_VU1)
 		VU->VI[_It_].US[0] = vu1Thread.vifRegs.itop;
 	else
@@ -2730,7 +2730,7 @@ static __ri void _vuXTOP(VURegs* VU)
 {
 	if (_It_ == 0)
 		return;
-		
+
 	if (VU == &VU1 && THREAD_VU1)
 		VU->VI[_It_].US[0] = (u16)vu1Thread.vifRegs.top;
 	else

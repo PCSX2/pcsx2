@@ -463,7 +463,7 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 
 	menuSources.Append( MenuId_LogSource_Devel, _("Dev/&Verbose"), _("Shows PCSX2 developer logs."), wxITEM_CHECK );
 	menuSources.Append( MenuId_LogSource_CDVD_Info, _("&CDVD reads"), _("Shows disk read activity."), wxITEM_CHECK );
-	
+
 	menuSources.AppendSeparator();
 
 	uint srcnt = std::size(ConLogSources);

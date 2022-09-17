@@ -29,12 +29,12 @@ using namespace pxSizerFlags;
 static void CheckHacksOverrides()
 {
 	if( !wxGetApp().Overrides.HasCustomHacks() ) return;
-	
+
 	// The user has commandline overrides enabled, so the options they see here and/or apply won't match
 	// the commandline overrides.  Let them know!
 
 	wxDialogWithHelpers dialog( wxFindWindowByName( L"Dialog:" + Dialogs::SysConfigDialog::GetNameStatic() ), _("Config Overrides Warning") );
-	
+
 	dialog += dialog.Text( pxEt( L"Warning!  You are running PCSX2 with command line options that override your configured settings.  These command line options will not be reflected in the Settings dialog, and will be disabled if you apply any changes here."
 	));
 
@@ -60,7 +60,7 @@ void Dialogs::SysConfigDialog::UpdateGuiForPreset ( int presetIndex, bool preset
 	AppConfig preset = *g_Conf;
 	preset.IsOkApplyPreset( presetIndex, false );	//apply a preset to a copy of g_Conf.
 	preset.EnablePresets = presetsEnabled;	//override IsOkApplyPreset (which always applies/enabled) to actual required state
-	
+
 	//update the config panels of SysConfigDialog to reflect the preset.
 	size_t pages = m_labels.GetCount();
 	for( size_t i=0; i<pages; ++i )
@@ -91,15 +91,15 @@ void Dialogs::SysConfigDialog::UpdateGuiForPreset ( int presetIndex, bool preset
 	//			3. Unchecking presets, still without clicking apply  --> patches are visually still enabled (last preset values) and grayed out.
 	//			4. Clicking Apply (presets still unchecked) --> patches will be enabled and not grayed out, presets are disabled.
 	//			--> If clicking Cancel instead of Apply at 4., will revert everything to the state of 1 (preset disabled, patches disabled and not grayed out).
-	
+
 	bool origEnable=preset.EnablePresets;
 	preset.EnablePresets=true;	// will cause preset-related items to be grayed out at the menus regardless of their value.
 	if ( GetMainFramePtr() )
 		GetMainFramePtr()->ApplyConfigToGui( preset, AppConfig::APPLY_FLAG_FROM_PRESET | AppConfig::APPLY_FLAG_MANUALLY_PROPAGATE );
-	
+
 	// Not really needed as 'preset' is local and dumped anyway. For the sake of future modifications of more GUI elements.
-	preset.EnablePresets=origEnable;	
-	
+	preset.EnablePresets=origEnable;
+
 }
 
 void Dialogs::SysConfigDialog::AddPresetsControl()
@@ -131,7 +131,7 @@ void Dialogs::SysConfigDialog::AddPresetsControl()
 	m_msg_preset->Enable(g_Conf->EnablePresets);
 	m_msg_preset->SetForegroundColour( c );
 	m_msg_preset->Bold();
-	
+
 	//I'm unable to do without the next 2 rows.. what am I missing?
 	m_msg_preset->SetMinWidth(250);
 	m_msg_preset->Unwrapped();
@@ -161,7 +161,7 @@ void Dialogs::SysConfigDialog::Presets_Toggled(wxCommandEvent &event)
 
 
 void Dialogs::SysConfigDialog::Preset_Scroll(wxScrollEvent &event)
-{	
+{
 	wxString pl;
 	wxColor c;
 	AppConfig::isOkGetPresetTextAndColor(m_slider_presets->GetValue(), pl, c);
@@ -180,7 +180,7 @@ void Dialogs::SysConfigDialog::Apply()
 	//Console.WriteLn("Applying preset to to g_Conf: Preset index: %d, EnablePresets: %s", (int)m_slider_presets->GetValue(), m_check_presets->IsChecked()?"true":"false");
 	g_Conf->EnablePresets	= m_check_presets->IsChecked();
 	g_Conf->PresetIndex		= m_slider_presets->GetValue();
-	
+
 	if (GetMainFramePtr())
 		GetMainFramePtr()->CommitPreset_noTrigger();
 }

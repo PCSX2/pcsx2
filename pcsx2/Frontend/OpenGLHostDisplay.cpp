@@ -440,7 +440,6 @@ void OpenGLHostDisplay::PopTimestampQuery()
 
 		GLint available = 0;
 		GetQueryObjectiv(m_timestamp_queries[m_read_timestamp_query], GL_QUERY_RESULT_AVAILABLE, &available);
-		pxAssert(m_read_timestamp_query != m_write_timestamp_query);
 
 		if (!available)
 			break;
@@ -452,8 +451,7 @@ void OpenGLHostDisplay::PopTimestampQuery()
 		m_waiting_timestamp_queries--;
 	}
 
-	// delay ending the current query until we've read back some
-	if (m_timestamp_query_started && m_waiting_timestamp_queries < (NUM_TIMESTAMP_QUERIES - 1))
+	if (m_timestamp_query_started)
 	{
 		const auto EndQuery = gles ? glEndQueryEXT : glEndQuery;
 		EndQuery(GL_TIME_ELAPSED);
@@ -466,7 +464,7 @@ void OpenGLHostDisplay::PopTimestampQuery()
 
 void OpenGLHostDisplay::KickTimestampQuery()
 {
-	if (m_timestamp_query_started)
+	if (m_timestamp_query_started || m_waiting_timestamp_queries == NUM_TIMESTAMP_QUERIES)
 		return;
 
 	const bool gles = m_gl_context->IsGLES();

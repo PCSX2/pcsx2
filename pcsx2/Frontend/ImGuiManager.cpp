@@ -95,8 +95,7 @@ bool ImGuiManager::Initialize()
 		return false;
 	}
 
-	HostDisplay* display = Host::GetHostDisplay();
-	s_global_scale = std::max(1.0f, display->GetWindowScale() * static_cast<float>(EmuConfig.GS.OsdScale / 100.0));
+	s_global_scale = std::max(1.0f, g_host_display->GetWindowScale() * (EmuConfig.GS.OsdScale / 100.0f));
 
 	ImGui::CreateContext();
 
@@ -110,8 +109,8 @@ bool ImGuiManager::Initialize()
 #endif
 
 	io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
-	io.DisplaySize.x = static_cast<float>(display->GetWindowWidth());
-	io.DisplaySize.y = static_cast<float>(display->GetWindowHeight());
+	io.DisplaySize.x = static_cast<float>(g_host_display->GetWindowWidth());
+	io.DisplaySize.y = static_cast<float>(g_host_display->GetWindowHeight());
 
 	SetKeyMap();
 	SetStyle();
@@ -120,19 +119,19 @@ bool ImGuiManager::Initialize()
 	pxAssertRel(!FullscreenUI::IsInitialized(), "Fullscreen UI is not initialized on ImGui init");
 #endif
 
-	if (!display->CreateImGuiContext())
+	if (!g_host_display->CreateImGuiContext())
 	{
 		pxFailRel("Failed to create ImGui device context");
-		display->DestroyImGuiContext();
+		g_host_display->DestroyImGuiContext();
 		ImGui::DestroyContext();
 		UnloadFontData();
 		return false;
 	}
 
-	if (!AddImGuiFonts(false) || !display->UpdateImGuiFontTexture())
+	if (!AddImGuiFonts(false) || !g_host_display->UpdateImGuiFontTexture())
 	{
 		pxFailRel("Failed to create ImGui font text");
-		display->DestroyImGuiContext();
+		g_host_display->DestroyImGuiContext();
 		ImGui::DestroyContext();
 		UnloadFontData();
 		return false;
@@ -151,9 +150,8 @@ void ImGuiManager::Shutdown()
 	FullscreenUI::Shutdown();
 #endif
 
-	HostDisplay* display = Host::GetHostDisplay();
-	if (display)
-		display->DestroyImGuiContext();
+	if (g_host_display)
+		g_host_display->DestroyImGuiContext();
 	if (ImGui::GetCurrentContext())
 		ImGui::DestroyContext();
 
@@ -170,10 +168,8 @@ void ImGuiManager::Shutdown()
 
 void ImGuiManager::WindowResized()
 {
-	HostDisplay* display = Host::GetHostDisplay();
-
-	const u32 new_width = display ? display->GetWindowWidth() : 0;
-	const u32 new_height = display ? display->GetWindowHeight() : 0;
+	const u32 new_width = g_host_display ? g_host_display->GetWindowWidth() : 0;
+	const u32 new_height = g_host_display ? g_host_display->GetWindowHeight() : 0;
 
 	ImGui::GetIO().DisplaySize = ImVec2(static_cast<float>(new_width), static_cast<float>(new_height));
 
@@ -186,9 +182,8 @@ void ImGuiManager::WindowResized()
 
 void ImGuiManager::UpdateScale()
 {
-	HostDisplay* display = Host::GetHostDisplay();
-	const float window_scale = display ? display->GetWindowScale() : 1.0f;
-	const float scale = std::max(window_scale * static_cast<float>(EmuConfig.GS.OsdScale / 100.0), 1.0f);
+	const float window_scale = g_host_display ? g_host_display->GetWindowScale() : 1.0f;
+	const float scale = std::max(window_scale * (EmuConfig.GS.OsdScale / 100.0f), 1.0f);
 
 #ifdef PCSX2_CORE
 	if (scale == s_global_scale && (!HasFullscreenFonts() || !ImGuiFullscreen::UpdateLayoutScale()))
@@ -211,7 +206,7 @@ void ImGuiManager::UpdateScale()
 	if (!AddImGuiFonts(HasFullscreenFonts()))
 		pxFailRel("Failed to create ImGui font text");
 
-	if (!display->UpdateImGuiFontTexture())
+	if (!g_host_display->UpdateImGuiFontTexture())
 		pxFailRel("Failed to recreate font texture after scale+resize");
 
 	NewFrame();
@@ -416,7 +411,7 @@ ImFont* ImGuiManager::AddFixedFont(float size)
 
 bool ImGuiManager::AddIconFonts(float size)
 {
-	static constexpr ImWchar range_fa[] = { 0xf001,0xf002,0xf005,0xf005,0xf00c,0xf00e,0xf011,0xf011,0xf013,0xf013,0xf017,0xf017,0xf019,0xf019,0xf021,0xf021,0xf025,0xf025,0xf028,0xf028,0xf030,0xf030,0xf03a,0xf03a,0xf03d,0xf03d,0xf04a,0xf04c,0xf04e,0xf04e,0xf050,0xf050,0xf052,0xf052,0xf059,0xf059,0xf05e,0xf05e,0xf065,0xf065,0xf067,0xf067,0xf071,0xf071,0xf07b,0xf07c,0xf085,0xf085,0xf091,0xf091,0xf0a0,0xf0a0,0xf0ac,0xf0ad,0xf0c5,0xf0c5,0xf0c7,0xf0c9,0xf0d0,0xf0d0,0xf0e2,0xf0e2,0xf0eb,0xf0eb,0xf0f3,0xf0f3,0xf0fe,0xf0fe,0xf110,0xf110,0xf11b,0xf11c,0xf121,0xf121,0xf140,0xf140,0xf144,0xf144,0xf14a,0xf14a,0xf15b,0xf15b,0xf188,0xf188,0xf192,0xf192,0xf1c9,0xf1c9,0xf1dd,0xf1de,0xf1e6,0xf1e6,0xf1ea,0xf1eb,0xf1f8,0xf1f8,0xf1fc,0xf1fc,0xf242,0xf242,0xf245,0xf245,0xf26c,0xf26c,0xf2d0,0xf2d0,0xf2db,0xf2db,0xf2f5,0xf2f5,0xf410,0xf410,0xf466,0xf466,0xf51f,0xf51f,0xf543,0xf543,0xf545,0xf545,0xf547,0xf548,0xf552,0xf552,0xf65d,0xf65e,0xf756,0xf756,0xf7c2,0xf7c2,0xf815,0xf815,0xf818,0xf818,0xf8cc,0xf8cc,0x0,0x0 };
+	static constexpr ImWchar range_fa[] = { 0xf001,0xf002,0xf005,0xf005,0xf00c,0xf00e,0xf011,0xf011,0xf013,0xf013,0xf017,0xf017,0xf019,0xf019,0xf021,0xf021,0xf025,0xf025,0xf028,0xf028,0xf030,0xf030,0xf03a,0xf03a,0xf03d,0xf03d,0xf04a,0xf04c,0xf04e,0xf04e,0xf050,0xf050,0xf052,0xf052,0xf059,0xf059,0xf05e,0xf05e,0xf065,0xf065,0xf067,0xf067,0xf06a,0xf06a,0xf071,0xf071,0xf07b,0xf07c,0xf085,0xf085,0xf091,0xf091,0xf0a0,0xf0a0,0xf0ac,0xf0ad,0xf0b0,0xf0b0,0xf0c5,0xf0c5,0xf0c7,0xf0c9,0xf0d0,0xf0d0,0xf0e2,0xf0e2,0xf0eb,0xf0eb,0xf0f3,0xf0f3,0xf0fe,0xf0fe,0xf110,0xf110,0xf11b,0xf11c,0xf121,0xf121,0xf140,0xf140,0xf144,0xf144,0xf14a,0xf14a,0xf15b,0xf15b,0xf188,0xf188,0xf192,0xf192,0xf1c9,0xf1c9,0xf1dd,0xf1de,0xf1e6,0xf1e6,0xf1ea,0xf1eb,0xf1f8,0xf1f8,0xf1fc,0xf1fc,0xf242,0xf242,0xf245,0xf245,0xf26c,0xf26c,0xf2d0,0xf2d0,0xf2db,0xf2db,0xf2f5,0xf2f5,0xf302,0xf302,0xf3fd,0xf3fd,0xf410,0xf410,0xf466,0xf466,0xf479,0xf479,0xf517,0xf517,0xf51f,0xf51f,0xf543,0xf543,0xf545,0xf545,0xf547,0xf548,0xf552,0xf552,0xf65d,0xf65e,0xf6a9,0xf6a9,0xf756,0xf756,0xf7c2,0xf7c2,0xf815,0xf815,0xf818,0xf818,0xf8cc,0xf8cc,0x0,0x0 };
 
 	ImFontConfig cfg;
 	cfg.MergeMode = true;
@@ -483,7 +478,7 @@ bool ImGuiManager::AddFullscreenFontsIfMissing()
 		AddImGuiFonts(false);
 	}
 
-	Host::GetHostDisplay()->UpdateImGuiFontTexture();
+	g_host_display->UpdateImGuiFontTexture();
 	NewFrame();
 
 	return HasFullscreenFonts();
@@ -733,10 +728,10 @@ void ImGuiManager::DrawPerformanceOverlay()
 			fmt::format_to(std::back_inserter(text), "{}{}%", first ? "" : " | ", static_cast<u32>(std::round(speed)));
 
 			// We read the main config here, since MTGS doesn't get updated with speed toggles.
-			if (EmuConfig.GS.LimitScalar == 0.0)
+			if (EmuConfig.GS.LimitScalar == 0.0f)
 				text += " (Max)";
 			else
-				fmt::format_to(std::back_inserter(text), " ({:.0f}%)", EmuConfig.GS.LimitScalar * 100.0);
+				fmt::format_to(std::back_inserter(text), " ({:.0f}%)", EmuConfig.GS.LimitScalar * 100.0f);
 		}
 		if (!text.empty())
 		{

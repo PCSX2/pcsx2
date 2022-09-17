@@ -15,6 +15,7 @@
 
 #pragma once
 #include "common/Pcsx2Defs.h"
+#include "IconsFontAwesome5.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 #include <functional>
@@ -90,10 +91,7 @@ namespace ImGuiFullscreen
 		return ImVec2(g_layout_padding_left + x * g_layout_scale, g_layout_padding_top + y * g_layout_scale);
 	}
 
-	static __fi ImVec4 ModAlpha(const ImVec4& v, float a)
-	{
-		return ImVec4(v.x, v.y, v.z, a);
-	}
+	static __fi ImVec4 ModAlpha(const ImVec4& v, float a) { return ImVec4(v.x, v.y, v.z, a); }
 
 	/// Centers an image within the specified bounds, scaling up or down as needed.
 	ImRect CenterImage(const ImVec2& fit_size, const ImVec2& image_size);
@@ -222,6 +220,18 @@ namespace ImGuiFullscreen
 	void OpenInputStringDialog(
 		std::string title, std::string message, std::string caption, std::string ok_button_text, InputStringDialogCallback callback);
 	void CloseInputDialog();
+
+	using ConfirmMessageDialogCallback = std::function<void(bool)>;
+	using InfoMessageDialogCallback = std::function<void()>;
+	using MessageDialogCallback = std::function<void(s32)>;
+	bool IsMessageBoxDialogOpen();
+	void OpenConfirmMessageDialog(std::string title, std::string message, ConfirmMessageDialogCallback callback,
+		std::string yes_button_text = ICON_FA_CHECK "  Yes", std::string no_button_text = ICON_FA_TIMES "  No");
+	void OpenInfoMessageDialog(std::string title, std::string message, InfoMessageDialogCallback callback,
+		std::string button_text = ICON_FA_WINDOW_CLOSE "  Close");
+	void OpenMessageDialog(std::string title, std::string message, MessageDialogCallback callback, std::string first_button_text,
+		std::string second_button_text, std::string third_button_text);
+	void CloseMessageDialog();
 
 	float GetNotificationVerticalPosition();
 	float GetNotificationVerticalDirection();

@@ -136,7 +136,7 @@ void CFC2() {
 		_vu0FinishMicro();
 	}
 	if (_Rt_ == 0) return;
-	
+
 	cpuRegs.GPR.r[_Rt_].UL[0] = VU0.VI[_Fs_].UL;
 
 	if(VU0.VI[_Fs_].UL & 0x80000000)

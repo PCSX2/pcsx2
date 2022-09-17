@@ -1156,29 +1156,32 @@ endif()
 
 if(PCSX2_CORE)
 	list(APPEND pcsx2FrontendSources
+		Frontend/CommonHost.cpp
+		Frontend/CommonHotkeys.cpp
 		Frontend/FullscreenUI.cpp
 		Frontend/GameList.cpp
+		Frontend/HostSettings.cpp
 		Frontend/ImGuiFullscreen.cpp
-		Frontend/INISettingsInterface.cpp
 		Frontend/InputManager.cpp
 		Frontend/InputSource.cpp
 		Frontend/LayeredSettingsInterface.cpp
 		Frontend/LogSink.cpp
 		GSDumpReplayer.cpp
-		HostSettings.cpp
+		INISettingsInterface.cpp
 		VMManager.cpp
 	)
 	list(APPEND pcsx2FrontendHeaders
+		Frontend/CommonHost.h
 		Frontend/FullscreenUI.h
 		Frontend/GameList.h
 		Frontend/ImGuiFullscreen.h
-		Frontend/INISettingsInterface.h
 		Frontend/InputManager.h
 		Frontend/InputSource.h
 		Frontend/LayeredSettingsInterface.h
 		Frontend/LogSink.h
 		GSDumpReplayer.h
 		HostSettings.h
+		INISettingsInterface.h
 		VMManager.h)
 endif()
 
@@ -1500,7 +1503,6 @@ set(pcsx2WindowsSources
 	CDVD/Windows/IOCtlSrc.cpp
 	windows/FlatFileReaderWindows.cpp
 	windows/Optimus.cpp
-	windows/VCprojects/IopSif.cpp
 	windows/WinConsolePipe.cpp
 	windows/WinKeyCodes.cpp
 	windows/WinPowerProfile.cpp

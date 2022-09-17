@@ -541,7 +541,7 @@ void recLDL()
 
 		t2reg = vtlb_DynGenRead64(64, -1);
 	}
-	
+
 	int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ | MODE_WRITE);
 
 	if (GPR_IS_CONST1(_Rs_))
@@ -590,7 +590,7 @@ void recLDR()
 
 #ifdef LOADSTORE_RECOMPILE
 	int t2reg;
-	
+
 	if (GPR_IS_CONST1(_Rt_))
 	{
 		_flushConstReg(_Rt_);

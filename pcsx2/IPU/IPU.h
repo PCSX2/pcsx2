@@ -275,7 +275,7 @@ union tIPU_cmd
 			u32 current;
 		};
 	};
-	
+
 	u128 _u128[2];
 
 	void clear();

@@ -2878,7 +2878,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			// For mixed blend, the source blend is done in the shader (so we use CONST_ONE as a factor).
 			m_conf.blend = {true, GSDevice::CONST_ONE, blend.dst, blend.op, m_conf.ps.blend_c == 2, AFIX};
 			m_conf.ps.blend_mix = (blend.op == GSDevice::OP_REV_SUBTRACT) ? 2 : 1;
-			
+
 			// Elide DSB colour output if not used by dest.
 			m_conf.ps.no_color1 |= !GSDevice::IsDualSourceBlendFactor(blend.dst);
 
@@ -4412,7 +4412,7 @@ void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCach
 			&& (m_context->FRAME.PSM & 0xF) == (m_context->ZBUF.PSM & 0xF) && (u32)(GSVector4i(m_vt.m_max.p).z) == 0)
 	{
 		const GSVertex* v = &m_vertex.buff[0];
-		
+
 		// Z and color must be constant and the same
 		if (m_vt.m_eq.rgba != 0xFFFF || !m_vt.m_eq.z || v[1].XYZ.Z != v[1].RGBAQ.U32[0])
 			return;

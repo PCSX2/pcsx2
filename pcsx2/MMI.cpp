@@ -183,7 +183,7 @@ void PMFHL() {
 		case 0x02: // SLW
 			{
 				s64 TempS64 = ((u64)cpuRegs.HI.UL[0] << 32) | (u64)cpuRegs.LO.UL[0];
-											
+
 				if (TempS64 >= 0x000000007fffffffLL) {
 					cpuRegs.GPR.r[_Rd_].UD[0] = 0x000000007fffffffLL;
 				} else if (TempS64 <= -0x80000000LL) {

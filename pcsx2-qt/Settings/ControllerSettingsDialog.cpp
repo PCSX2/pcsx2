@@ -15,7 +15,6 @@
 
 #include "PrecompiledHeader.h"
 
-#include "EmuThread.h"
 #include "QtHost.h"
 #include "Settings/ControllerSettingsDialog.h"
 #include "Settings/ControllerGlobalSettingsWidget.h"
@@ -23,7 +22,8 @@
 #include "Settings/HotkeySettingsWidget.h"
 #include "Settings/Python2BindingWidget.h"
 
-#include "pcsx2/Frontend/INISettingsInterface.h"
+#include "pcsx2/Frontend/CommonHost.h"
+#include "pcsx2/INISettingsInterface.h"
 #include "pcsx2/PAD/Host/PAD.h"
 #include "pcsx2/Sio.h"
 #include "pcsx2/VMManager.h"
@@ -163,8 +163,8 @@ void ControllerSettingsDialog::onLoadProfileClicked()
 	{
 		auto lock = Host::GetSettingsLock();
 		PAD::CopyConfiguration(Host::Internal::GetBaseSettingsLayer(), *m_profile_interface, true, true, false);
-		QtHost::QueueSettingsSave();
 	}
+	Host::CommitBaseSettingChanges();
 
 	g_emu_thread->applySettings();
 
@@ -207,9 +207,9 @@ void ControllerSettingsDialog::onRestoreDefaultsClicked()
 	// actually restore it
 	{
 		auto lock = Host::GetSettingsLock();
-		PAD::SetDefaultConfig(*Host::Internal::GetBaseSettingsLayer());
-		QtHost::QueueSettingsSave();
+		CommonHost::SetDefaultSettings(*Host::Internal::GetBaseSettingsLayer(), false, false, true, true, false);
 	}
+	Host::CommitBaseSettingChanges();
 
 	g_emu_thread->applySettings();
 
@@ -295,7 +295,8 @@ void ControllerSettingsDialog::setBoolValue(const char* section, const char* key
 	}
 	else
 	{
-		QtHost::SetBaseBoolSettingValue(section, key, value);
+		Host::SetBaseBoolSettingValue(section, key, value);
+		Host::CommitBaseSettingChanges();
 		g_emu_thread->applySettings();
 	}
 }
@@ -310,7 +311,8 @@ void ControllerSettingsDialog::setIntValue(const char* section, const char* key,
 	}
 	else
 	{
-		QtHost::SetBaseIntSettingValue(section, key, value);
+		Host::SetBaseIntSettingValue(section, key, value);
+		Host::CommitBaseSettingChanges();
 		g_emu_thread->applySettings();
 	}
 }
@@ -325,7 +327,8 @@ void ControllerSettingsDialog::setStringValue(const char* section, const char* k
 	}
 	else
 	{
-		QtHost::SetBaseStringSettingValue(section, key, value);
+		Host::SetBaseStringSettingValue(section, key, value);
+		Host::CommitBaseSettingChanges();
 		g_emu_thread->applySettings();
 	}
 }
@@ -340,7 +343,8 @@ void ControllerSettingsDialog::clearSettingValue(const char* section, const char
 	}
 	else
 	{
-		QtHost::RemoveBaseSettingValue(section, key);
+		Host::RemoveBaseSettingValue(section, key);
+		Host::CommitBaseSettingChanges();
 		g_emu_thread->applySettings();
 	}
 }

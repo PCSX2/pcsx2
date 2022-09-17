@@ -137,7 +137,8 @@ namespace PAD
 	void LoadConfig(const SettingsInterface& si);
 
 	/// Restores default configuration.
-	void SetDefaultConfig(SettingsInterface& si);
+	void SetDefaultControllerConfig(SettingsInterface& si);
+	void SetDefaultHotkeyConfig(SettingsInterface& si);
 
 	/// Clears all bindings for a given port.
 	void ClearPortBindings(SettingsInterface& si, u32 port);

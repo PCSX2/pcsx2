@@ -151,8 +151,10 @@ void COP2FlagHackPass::Run(u32 start, u32 end, EEINST* inst_cache)
 				m_status_denormalized = true;
 			}
 
-			// if we're still behind the next CFC2 after the sticky bits got cleared, we need to update flags
-			if (apc < m_cfc2_pc)
+			// If we're still behind the next CFC2 after the sticky bits got cleared, we need to update flags.
+			// Also do this if we're a vsqrt/vrsqrt/vdiv, these update status unconditionally.
+			const u32 sub_opcode = (cpuRegs.code & 3) | ((cpuRegs.code >> 4) & 0x7c);
+			if (apc < m_cfc2_pc || (_Rs_ >= 020 && _Funct_ >= 074 && sub_opcode >= 070 && sub_opcode <= 072))
 				inst->info |= EEINST_COP2_STATUS_FLAG;
 
 			m_last_status_write = inst;

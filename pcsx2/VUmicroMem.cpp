@@ -47,7 +47,7 @@ vuMemoryReserve::~vuMemoryReserve()
 void vuMemoryReserve::Reset()
 {
 	_parent::Reset();
-	
+
 	pxAssert( VU0.Mem );
 	pxAssert( VU1.Mem );
 

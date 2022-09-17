@@ -69,7 +69,7 @@ protected:
 		}*/
 
 		m_stackTrace.Write(pxsFmt( L"[%02d]", frame.GetLevel()-m_skipped).c_str());
-		
+
 		if (!frame.GetName().IsEmpty())
 			m_stackTrace.Write(pxsFmt( L" %-44s", WX_STR(frame.GetName()) ).c_str());
 		else
@@ -85,7 +85,7 @@ protected:
 
 			m_stackTrace.Write( L" %s:%d", WX_STR(wxfn.GetFullPath()), frame.GetLine() );
 		}
-		
+
 		m_stackTrace.Write(L"\n");
 	}
 };

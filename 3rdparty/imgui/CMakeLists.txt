@@ -1,19 +1,21 @@
 add_library(imgui
-	imgui/imconfig.h
-	imgui/imgui.cpp
-	imgui/imgui.h
-	imgui/imgui_demo.cpp
-	imgui/imgui_draw.cpp
-	imgui/imgui_internal.h
-	imgui/imgui_tables.cpp
-	imgui/imgui_widgets.cpp
-	imgui/imstb_rectpack.h
-	imgui/imstb_textedit.h
-	imgui/imstb_truetype.h
-	imgui/misc/cpp/imgui_stdlib.cpp
+	include/imconfig.h
+	include/imgui.h
+	include/imgui_internal.h
+	include/imgui_stdlib.h
+	include/imstb_textedit.h
+	src/imgui.cpp
+	src/imgui_demo.cpp
+	src/imgui_draw.cpp
+	src/imgui_tables.cpp
+	src/imgui_widgets.cpp
+	src/imstb_rectpack.h
+	src/imstb_truetype.h
+	src/imgui_stdlib.cpp
 )
 
-target_include_directories(imgui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui" "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_include_directories(imgui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_include_directories(imgui PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # Needed for macOS compile.
 set_property(TARGET imgui PROPERTY CXX_STANDARD 17)

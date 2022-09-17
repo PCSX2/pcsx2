@@ -352,7 +352,7 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 
 			// ------------------------------------------------------------------------
 			//
-			
+
 			mcase(0x1f801088) :	// DMA0 CHCR -- MDEC IN
 				// psx mode
 				HW_DMA0_CHCR = val;
@@ -451,9 +451,9 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 				else {
 					psxDmaInterrupt(33);
 				}
-			}				
+			}
 			break;
-			
+
 			mcase(0x1f8010f6):		// ICR_hi (16 bit?) [dunno if it ever happens]
 			{
 				DevCon.Warning("High ICR Write!!");

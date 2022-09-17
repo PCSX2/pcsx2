@@ -296,6 +296,7 @@ static const char* s_gs_hw_fix_names[] = {
 	"texturePreloading",
 	"deinterlace",
 	"cpuSpriteRenderBW",
+	"gpuPaletteConversion",
 };
 static_assert(std::size(s_gs_hw_fix_names) == static_cast<u32>(GameDatabaseSchema::GSHWFixId::Count), "HW fix name lookup is correct size");
 
@@ -443,7 +444,7 @@ u32 GameDatabaseSchema::GameEntry::applyGameFixes(Pcsx2Config& config, bool appl
 	return num_applied_fixes;
 }
 
-bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOptions& config, GSHWFixId id, int value) const
+bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOptions& config, GSHWFixId id, int value)
 {
 	switch (id)
 	{
@@ -509,6 +510,9 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 
 		case GSHWFixId::CPUSpriteRenderBW:
 			return (config.UserHacks_CPUSpriteRenderBW == value);
+
+		case GSHWFixId::GPUPaletteConversion:
+			return (config.GPUPaletteConversion == ((value > 1) ? (config.TexturePreloading == TexturePreloadingLevel::Full) : (value != 0)));
 
 		default:
 			return false;
@@ -649,6 +653,17 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 			case GSHWFixId::CPUSpriteRenderBW:
 				config.UserHacks_CPUSpriteRenderBW = value;
 				break;
+
+
+			case GSHWFixId::GPUPaletteConversion:
+			{
+				// if 2, enable paltex when preloading is full, otherwise leave as-is
+				if (value > 1)
+					config.GPUPaletteConversion = (config.TexturePreloading == TexturePreloadingLevel::Full) ? true : config.GPUPaletteConversion;
+				else
+					config.GPUPaletteConversion = (value != 0);
+			}
+			break;
 
 			default:
 				break;

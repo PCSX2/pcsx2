@@ -404,7 +404,7 @@ namespace usb_pad
 #ifdef _WIN32
 		if (!LoadSetting(nullptr, port, usb_mic::SingstarDevice::TypeName(), N_DEVICE_API, tmp))
 			return nullptr;
-		api = wstr_to_str(tmp);	
+		api = wstr_to_str(tmp);
 #else
 		if (!LoadSetting(nullptr, port, usb_mic::SingstarDevice::TypeName(), N_DEVICE_API, api))
 			return nullptr;

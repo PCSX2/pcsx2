@@ -41,7 +41,7 @@ struct McdSlotItem
 	int			Slot;			//0-7: internal slot. -1: unrelated to an internal slot (the rest of the files at the folder).
 	bool		IsPresent;		//Whether or not a file is associated with this item (true/false when 0<=Slot<=7. Always true when Slot==-1)
 	MemoryCardType Type;		//The implementation used for this memory card
-	
+
 	//Only meaningful when IsPresent==true (a file exists for this item):
 	wxFileName	Filename;		// full pathname
 	bool		IsFormatted;
@@ -65,7 +65,7 @@ struct McdSlotItem
 		Slot = -1;
 		SizeInMB = 0;
 		Type = MemoryCardType::Empty;
-		
+
 		IsPSX = false;
 		IsPresent = false;
 		IsEnabled = false;
@@ -89,7 +89,7 @@ public:
 	virtual void RemoveCardFromSlot(const wxFileName cardFile) =0;
 	virtual bool IsNonEmptyFilesystemCards() const =0;
 	virtual bool UiDuplicateCard( McdSlotItem& src, McdSlotItem& dest ) =0;
-	
+
 };
 
 // --------------------------------------------------------------------------------------
@@ -162,7 +162,7 @@ namespace Panels
 		, public IMcdList		// derived classes need to implement this
 	{
 		typedef BaseSelectorPanel _parent;
-		
+
 	protected:
 		DirPickerPanel*		m_FolderPicker;
 		BaseMcdListView*	m_listview;
@@ -208,12 +208,12 @@ namespace Panels
 		McdSlotItem		m_Cards[8];
 
 		wxButton*		m_button_Rename;
-		
+
 		// Doubles as Create and Delete buttons
 		wxButton*		m_button_Create;
 
 		wxButton*		m_button_Convert;
-		
+
 		// Doubles as Mount and Unmount buttons ("Enable"/"Disable" port)
 //		wxButton*		m_button_Mount;
 
@@ -244,7 +244,7 @@ namespace Panels
 		void OnRenameFile(wxCommandEvent& evt);
 		void OnDuplicateFile(wxCommandEvent& evt);
 		void OnAssignUnassignFile(wxCommandEvent& evt);
-		
+
 		void OnListDrag(wxListEvent& evt);
 		void OnListSelectionChanged(wxListEvent& evt);
 		void OnOpenItemContextMenu(wxListEvent& evt);
@@ -275,7 +275,7 @@ namespace Panels
 		virtual void UiConvertCard( McdSlotItem& card );
 		virtual void UiDeleteCard( McdSlotItem& card );
 		virtual void UiAssignUnassignFile( McdSlotItem& card );
-		
+
 	};
 
 	// --------------------------------------------------------------------------------------

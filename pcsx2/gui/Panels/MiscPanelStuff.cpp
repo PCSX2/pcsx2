@@ -1,6 +1,6 @@
 /*  PCSX2 - PS2 Emulator for PCs
  *  Copyright (C) 2002-2010  PCSX2 Dev Team
- * 
+ *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
  *  ation, either version 3 of the License, or (at your option) any later version.
@@ -39,7 +39,7 @@ Panels::DocsFolderPickerPanel::DocsFolderPickerPanel( wxWindow* parent, bool isF
 	const wxString usermodeWarning( pxE( L"You can change the preferred default location for PCSX2 user-level documents here (includes memory cards, screenshots, settings, and savestates).  This option only affects Standard Paths which are set to use the installation default value."
 	) );
 
-	const RadioPanelItem UsermodeOptions[] = 
+	const RadioPanelItem UsermodeOptions[] =
 	{
 		RadioPanelItem(
 			_("User Documents (recommended)"),
@@ -57,7 +57,7 @@ Panels::DocsFolderPickerPanel::DocsFolderPickerPanel( wxWindow* parent, bool isF
 	m_radio_UserMode->SetPaddingHoriz( m_radio_UserMode->GetPaddingVert() + 4 );
 	m_radio_UserMode->Realize();
 	if( pxStaticText* woot = m_radio_UserMode->GetSubText(0) ) woot->Unwrapped();		// wrapping sucks for path names!
-	
+
 	m_dirpicker_custom = new DirPickerPanel( this, FolderId_Documents, AddAppName(_("Select a document root for %s")) );
 
 	*this	+= Heading( isFirstTime ? usermodeExplained : usermodeWarning );
@@ -150,7 +150,7 @@ void Panels::LanguageSelectionPanel::Apply()
 	wxString sel( m_picker->GetString( m_picker->GetSelection() ) );
 
 	g_Conf->LanguageCode = L"default";	// use this if no matches found
-	g_Conf->LanguageId = wxLANGUAGE_DEFAULT; 
+	g_Conf->LanguageId = wxLANGUAGE_DEFAULT;
 	int size = m_langs.size();
 	for( int i=0; i<size; ++i )
 	{

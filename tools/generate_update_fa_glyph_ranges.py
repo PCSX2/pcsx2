@@ -38,7 +38,7 @@ for filename in all_source_files:
             data = f.read()
         except:
             continue
-    
+
     tokens = tokens.union(set(re.findall("(ICON_FA_[a-zA-Z0-9_]+)", data)))
 
 print("{} tokens found.".format(len(tokens)))

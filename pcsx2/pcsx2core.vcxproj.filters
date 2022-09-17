@@ -1181,7 +1181,7 @@
     <ClCompile Include="Frontend\GameList.cpp">
       <Filter>Host</Filter>
     </ClCompile>
-    <ClCompile Include="Frontend\INISettingsInterface.cpp">
+    <ClCompile Include="INISettingsInterface.cpp">
       <Filter>Host</Filter>
     </ClCompile>
     <ClCompile Include="Frontend\InputManager.cpp">
@@ -1211,7 +1211,10 @@
     <ClCompile Include="SPU2\Host\Config.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
-    <ClCompile Include="HostSettings.cpp">
+    <ClCompile Include="USB\USBNull.cpp">
+      <Filter>System\Ps2\USB</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\HostSettings.cpp">
       <Filter>Host</Filter>
     </ClCompile>
     <ClCompile Include="VMManager.cpp">
@@ -1337,6 +1340,12 @@
       <Filter>Host</Filter>
     </ClCompile>
     <ClCompile Include="Frontend\FullscreenUI.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\CommonHost.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Frontend\CommonHotkeys.cpp">
       <Filter>Host</Filter>
     </ClCompile>
   </ItemGroup>
@@ -2092,7 +2101,7 @@
     <ClInclude Include="Frontend\GameList.h">
       <Filter>Host</Filter>
     </ClInclude>
-    <ClInclude Include="Frontend\INISettingsInterface.h">
+    <ClInclude Include="INISettingsInterface.h">
       <Filter>Host</Filter>
     </ClInclude>
     <ClInclude Include="Frontend\InputManager.h">
@@ -2247,6 +2256,9 @@
       <Filter>Host</Filter>
     </ClInclude>
     <ClInclude Include="Frontend\FullscreenUI.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\CommonHost.h">
       <Filter>Host</Filter>
     </ClInclude>
   </ItemGroup>

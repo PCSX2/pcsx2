@@ -2,7 +2,7 @@
  * QEMU USB HUB emulation
  *
  * Copyright (c) 2005 Fabrice Bellard
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -114,7 +114,7 @@ static const uint8_t qemu_hub_config_descriptor[] = {
 	0x01,       /*  u8  bNumInterfaces; (1) */
 	0x01,       /*  u8  bConfigurationValue; */
 	0x00,       /*  u8  iConfiguration; */
-	0xc0,       /*  u8  bmAttributes; 
+	0xc0,       /*  u8  bmAttributes;
 				 Bit 7: must be set,
 				     6: Self-powered,
 				     5: Remote wakeup,

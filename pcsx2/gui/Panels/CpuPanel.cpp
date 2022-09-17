@@ -157,10 +157,10 @@ Panels::CpuPanelEE::CpuPanelEE( wxWindow* parent )
 	s_recs	+= s_ee				| SubGroup();
 	s_recs	+= s_iop			| SubGroup();
 
-	
+
 	*this	+= &s_recs							| StdExpand();
-	
-	// move following line down so EE and VU panels look more uniform. 
+
+	// move following line down so EE and VU panels look more uniform.
 	// Use an empty Label (std expanded) so it work with custom font sizes, too.
 	//*this	+= Label(_(""))  | StdExpand();
 	*this	+= new wxStaticLine( this )			| pxExpand.Border(wxALL, 18);

@@ -38,6 +38,18 @@ const char* EnumToString(SSE_RoundMode sse)
 	}
 }
 
+SSE_MXCSR SSE_MXCSR::GetCurrent()
+{
+	SSE_MXCSR ret;
+	ret.bitmask = _mm_getcsr();
+	return ret;
+}
+
+void SSE_MXCSR::SetCurrent(const SSE_MXCSR& value)
+{
+	_mm_setcsr(value.bitmask);
+}
+
 SSE_RoundMode SSE_MXCSR::GetRoundMode() const
 {
 	return (SSE_RoundMode)RoundingControl;

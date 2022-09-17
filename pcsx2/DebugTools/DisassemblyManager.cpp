@@ -221,11 +221,11 @@ void DisassemblyManager::analyze(u32 address, u32 size = 1024)
 std::vector<BranchLine> DisassemblyManager::getBranchLines(u32 start, u32 size)
 {
 	std::vector<BranchLine> result;
-	
+
 	auto it = findDisassemblyEntry(entries,start,false);
 	if (it != entries.end())
 	{
-		do 
+		do
 		{
 			it->second->getBranchLines(start,size,result);
 			it++;
@@ -258,7 +258,7 @@ void DisassemblyManager::getLine(u32 address, bool insertSymbols, DisassemblyLin
 	DisassemblyEntry* entry = it->second;
 	if (entry->disassemble(address,dest,insertSymbols))
 		return;
-	
+
 	if (address % 4)
 		dest.totalSize = ((address+3) & ~3)-address;
 	else
@@ -277,7 +277,7 @@ u32 DisassemblyManager::getStartAddress(u32 address)
 		if (it == entries.end())
 			return address;
 	}
-	
+
 	DisassemblyEntry* entry = it->second;
 	int line = entry->getLineNum(address,true);
 	return entry->getLineAddress(line);
@@ -288,7 +288,7 @@ u32 DisassemblyManager::getNthPreviousAddress(u32 address, int n)
 	while (cpu->isValidAddress(address))
 	{
 		auto it = findDisassemblyEntry(entries,address,false);
-	
+
 		while (it != entries.end())
 		{
 			DisassemblyEntry* entry = it->second;
@@ -302,10 +302,10 @@ u32 DisassemblyManager::getNthPreviousAddress(u32 address, int n)
 			n -= oldLineNum+1;
 			it = findDisassemblyEntry(entries,address,false);
 		}
-	
+
 		analyze(address-127,128);
 	}
-	
+
 	return address-n*4;
 }
 
@@ -314,7 +314,7 @@ u32 DisassemblyManager::getNthNextAddress(u32 address, int n)
 	while (cpu->isValidAddress(address))
 	{
 		auto it = findDisassemblyEntry(entries,address,false);
-	
+
 		while (it != entries.end())
 		{
 			DisassemblyEntry* entry = it->second;
@@ -532,7 +532,7 @@ void DisassemblyFunction::load()
 			break;
 		}
 	}
-	
+
 	u32 funcPos = address;
 	u32 funcEnd = address+size;
 
@@ -563,7 +563,7 @@ void DisassemblyFunction::load()
 			DisassemblyComment* comment = new DisassemblyComment(cpu,funcPos,nextPos-funcPos,".align","4");
 			entries[funcPos] = comment;
 			lineAddresses.push_back(funcPos);
-			
+
 			funcPos = nextPos;
 			opcodeSequenceStart = funcPos;
 			continue;
@@ -572,14 +572,14 @@ void DisassemblyFunction::load()
 		MIPSAnalyst::MipsOpcodeInfo opInfo = MIPSAnalyst::GetOpcodeInfo(cpu,funcPos);
 		u32 opAddress = funcPos;
 		funcPos += 4;
-		
+
 		// skip branches and their delay slots
 		if (opInfo.isBranch)
 		{
 			if (funcPos < funcEnd) funcPos += 4; // only include delay slots within the function bounds
 			continue;
 		}
-		
+
 		// lui
 		if (MIPS_GET_OP(opInfo.encodedOpcode) == 0x0F && funcPos < funcEnd && funcPos != nextData)
 		{
@@ -692,7 +692,7 @@ void DisassemblyFunction::clear()
 bool DisassemblyOpcode::disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols)
 {
 	char opcode[64],arguments[256];
-	
+
 	std::string dis = cpu->disasm(address,insertSymbols);
 	parseDisasm(cpu->GetSymbolMap(),dis.c_str(),opcode,arguments,insertSymbols);
 	dest.type = DISTYPE_OPCODE;
@@ -770,7 +770,7 @@ bool DisassemblyMacro::disassemble(u32 address, DisassemblyLineInfo& dest, bool 
 	{
 	case MACRO_LI:
 		dest.name = name;
-		
+
 		addressSymbol = cpu->GetSymbolMap().GetLabelString(immediate);
 		if (!addressSymbol.empty() && insertSymbols)
 		{
@@ -780,7 +780,7 @@ bool DisassemblyMacro::disassemble(u32 address, DisassemblyLineInfo& dest, bool 
 		}
 
 		dest.params = buffer;
-		
+
 		dest.info.hasRelevantAddress = true;
 		dest.info.releventAddress = immediate;
 		break;
@@ -883,7 +883,7 @@ void DisassemblyData::createLines()
 	u32 pos = address;
 	u32 end = address+size;
 	u32 maxChars = DisassemblyManager::getMaxParamChars();
-	
+
 	std::string currentLine;
 	u32 currentLineStart = pos;
 
@@ -904,7 +904,7 @@ void DisassemblyData::createLines()
 					DataEntry entry = {currentLine,pos-1-currentLineStart,lineCount++};
 					lines[currentLineStart] = entry;
 					lineAddresses.push_back(currentLineStart);
-					
+
 					currentLine = "";
 					currentLineStart = pos-1;
 					inString = false;
@@ -925,11 +925,11 @@ void DisassemblyData::createLines()
 				{
 					if (inString)
 						currentLine += "\"";
-					
+
 					DataEntry entry = {currentLine,pos-1-currentLineStart,lineCount++};
 					lines[currentLineStart] = entry;
 					lineAddresses.push_back(currentLineStart);
-					
+
 					currentLine = "";
 					currentLineStart = pos-1;
 					inString = false;

@@ -31,13 +31,17 @@
 #include "fmt/core.h"
 #include "HostDisplay.h"
 #include "imgui_internal.h"
-#include "misc/cpp/imgui_stdlib.h"
+#include "imgui_stdlib.h"
+#include <array>
 #include <cmath>
 #include <deque>
 #include <mutex>
+#include <variant>
 
 namespace ImGuiFullscreen
 {
+	using MessageDialogCallbackVariant = std::variant<InfoMessageDialogCallback, ConfirmMessageDialogCallback>;
+
 	static std::optional<Common::RGBA8Image> LoadTextureImage(const char* path);
 	static std::shared_ptr<HostDisplayTexture> UploadTexture(const char* path, const Common::RGBA8Image& image);
 	static void TextureLoaderThread();
@@ -45,6 +49,7 @@ namespace ImGuiFullscreen
 	static void DrawFileSelector();
 	static void DrawChoiceDialog();
 	static void DrawInputDialog();
+	static void DrawMessageDialog();
 	static void DrawBackgroundProgressDialogs(ImVec2& position, float spacing);
 	static void DrawNotifications(ImVec2& position, float spacing);
 	static void DrawToast();
@@ -109,6 +114,12 @@ namespace ImGuiFullscreen
 	static std::string s_input_dialog_text;
 	static std::string s_input_dialog_ok_text;
 	static InputStringDialogCallback s_input_dialog_callback;
+
+	static bool s_message_dialog_open = false;
+	static std::string s_message_dialog_title;
+	static std::string s_message_dialog_message;
+	static std::array<std::string, 3> s_message_dialog_buttons;
+	static MessageDialogCallbackVariant s_message_dialog_callback;
 
 	struct FileSelectorItem
 	{
@@ -215,6 +226,7 @@ void ImGuiFullscreen::Shutdown()
 	s_notifications.clear();
 	s_background_progress_dialogs.clear();
 	CloseInputDialog();
+	CloseMessageDialog();
 	s_choice_dialog_open = false;
 	s_choice_dialog_checkable = false;
 	s_choice_dialog_title = {};
@@ -266,7 +278,7 @@ std::optional<Common::RGBA8Image> ImGuiFullscreen::LoadTextureImage(const char* 
 std::shared_ptr<HostDisplayTexture> ImGuiFullscreen::UploadTexture(const char* path, const Common::RGBA8Image& image)
 {
 	std::unique_ptr<HostDisplayTexture> texture =
-		Host::GetHostDisplay()->CreateTexture(image.GetWidth(), image.GetHeight(), image.GetPixels(), image.GetByteStride());
+		g_host_display->CreateTexture(image.GetWidth(), image.GetHeight(), image.GetPixels(), image.GetByteStride());
 	if (!texture)
 	{
 		Console.Error("failed to create %ux%u texture for resource", image.GetWidth(), image.GetHeight());
@@ -459,6 +471,7 @@ void ImGuiFullscreen::EndLayout()
 	DrawFileSelector();
 	DrawChoiceDialog();
 	DrawInputDialog();
+	DrawMessageDialog();
 
 	const float notification_margin = LayoutScale(10.0f);
 	const float spacing = LayoutScale(10.0f);
@@ -1839,9 +1852,13 @@ void ImGuiFullscreen::DrawInputDialog()
 	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 	ImGui::OpenPopup(s_input_dialog_title.c_str());
 
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 	ImGui::PushFont(g_large_font);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
+	ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
+	ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
+	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
+	ImGui::PushStyleColor(ImGuiCol_PopupBg, UIBackgroundColor);
 
 	bool is_open = true;
 	if (ImGui::BeginPopupModal(s_input_dialog_title.c_str(), &is_open,
@@ -1884,8 +1901,9 @@ void ImGuiFullscreen::DrawInputDialog()
 	if (!is_open)
 		CloseInputDialog();
 
-	ImGui::PopFont();
+	ImGui::PopStyleColor(4);
 	ImGui::PopStyleVar(2);
+	ImGui::PopFont();
 }
 
 void ImGuiFullscreen::CloseInputDialog()
@@ -1900,6 +1918,125 @@ void ImGuiFullscreen::CloseInputDialog()
 	s_input_dialog_ok_text = {};
 	s_input_dialog_text = {};
 	s_input_dialog_callback = {};
+}
+
+bool ImGuiFullscreen::IsMessageBoxDialogOpen()
+{
+	return s_message_dialog_open;
+}
+
+void ImGuiFullscreen::OpenConfirmMessageDialog(
+	std::string title, std::string message, ConfirmMessageDialogCallback callback, std::string yes_button_text, std::string no_button_text)
+{
+	CloseMessageDialog();
+
+	s_message_dialog_open = true;
+	s_message_dialog_title = std::move(title);
+	s_message_dialog_message = std::move(message);
+	s_message_dialog_callback = std::move(callback);
+	s_message_dialog_buttons[0] = std::move(yes_button_text);
+	s_message_dialog_buttons[1] = std::move(no_button_text);
+}
+
+void ImGuiFullscreen::OpenInfoMessageDialog(
+	std::string title, std::string message, InfoMessageDialogCallback callback, std::string button_text)
+{
+	CloseMessageDialog();
+
+	s_message_dialog_open = true;
+	s_message_dialog_title = std::move(title);
+	s_message_dialog_message = std::move(message);
+	s_message_dialog_callback = std::move(callback);
+	s_message_dialog_buttons[0] = std::move(button_text);
+}
+
+void ImGuiFullscreen::OpenMessageDialog(std::string title, std::string message, MessageDialogCallback callback,
+	std::string first_button_text, std::string second_button_text, std::string third_button_text)
+{
+	CloseMessageDialog();
+
+	s_message_dialog_open = true;
+	s_message_dialog_title = std::move(title);
+	s_message_dialog_message = std::move(message);
+	s_message_dialog_callback = std::move(callback);
+	s_message_dialog_buttons[0] = std::move(first_button_text);
+	s_message_dialog_buttons[1] = std::move(second_button_text);
+	s_message_dialog_buttons[2] = std::move(third_button_text);
+}
+
+void ImGuiFullscreen::CloseMessageDialog()
+{
+	if (!s_message_dialog_open)
+		return;
+
+	s_message_dialog_open = false;
+	s_message_dialog_title = {};
+	s_message_dialog_message = {};
+	s_message_dialog_buttons = {};
+	s_message_dialog_callback = {};
+}
+
+void ImGuiFullscreen::DrawMessageDialog()
+{
+	if (!s_message_dialog_open)
+		return;
+
+	const char* win_id = s_message_dialog_title.empty() ? "##messagedialog" : s_message_dialog_title.c_str();
+
+	ImGui::SetNextWindowSize(LayoutScale(700.0f, 0.0f));
+	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+	ImGui::OpenPopup(win_id);
+
+	ImGui::PushFont(g_large_font);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
+	ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
+	ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
+	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
+	ImGui::PushStyleColor(ImGuiCol_PopupBg, UIBackgroundColor);
+
+	bool is_open = true;
+	const u32 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+					  (s_message_dialog_title.empty() ? ImGuiWindowFlags_NoTitleBar : 0);
+	std::optional<s32> result;
+
+	if (ImGui::BeginPopupModal(win_id, &is_open, flags))
+	{
+		BeginMenuButtons();
+
+		ImGui::TextWrapped("%s", s_message_dialog_message.c_str());
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+
+		for (s32 button_index = 0; button_index < static_cast<s32>(s_message_dialog_buttons.size()); button_index++)
+		{
+			if (!s_message_dialog_buttons[button_index].empty() && ActiveButton(s_message_dialog_buttons[button_index].c_str(), false))
+			{
+				result = button_index;
+				ImGui::CloseCurrentPopup();
+			}
+		}
+
+		EndMenuButtons();
+
+		ImGui::EndPopup();
+	}
+
+	ImGui::PopStyleColor(4);
+	ImGui::PopStyleVar(3);
+	ImGui::PopFont();
+
+	if (!is_open || result.has_value())
+	{
+		// have to move out in case they open another dialog in the callback
+		auto cb = (std::move(s_message_dialog_callback));
+		CloseMessageDialog();
+
+		if (std::holds_alternative<InfoMessageDialogCallback>(cb))
+			std::get<InfoMessageDialogCallback>(cb)();
+		else if (std::holds_alternative<ConfirmMessageDialogCallback>(cb))
+			std::get<ConfirmMessageDialogCallback>(cb)(result.value_or(1) == 0);
+	}
 }
 
 static float s_notification_vertical_position = 0.3f;
