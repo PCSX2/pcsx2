@@ -766,7 +766,8 @@ std::string GameList::GetCoverImagePath(const std::string& path, const std::stri
 		// Last resort, check the game title
 		if (!title.empty())
 		{
-			const std::string cover_filename(title + extension);
+			std::string cover_filename(title + extension);
+			Path::SanitizeFileName(&cover_filename);
 			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
 				return cover_path;
@@ -791,6 +792,7 @@ std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const cha
 			return existing_filename;
 	}
 
-	const std::string cover_filename(entry->title + extension);
+	std::string cover_filename(entry->title + extension);
+	Path::SanitizeFileName(&cover_filename);
 	return Path::Combine(EmuFolders::Covers, cover_filename);
 }
