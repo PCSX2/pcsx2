@@ -38,8 +38,8 @@ namespace Path
 	void Canonicalize(std::string* path);
 
 	/// Sanitizes a filename for use in a filesystem.
-	void SanitizeFileName(char* Destination, u32 cbDestination, const char* FileName, bool StripSlashes /* = true */);
-	void SanitizeFileName(std::string& Destination, bool StripSlashes = true);
+	std::string SanitizeFileName(const std::string_view& str, bool strip_slashes = true);
+	void SanitizeFileName(std::string* str, bool strip_slashes = true);
 
 	/// Returns true if the specified path is an absolute path (C:\Path on Windows or /path on Unix).
 	bool IsAbsolute(const std::string_view& path);
