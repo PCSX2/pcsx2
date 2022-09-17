@@ -321,6 +321,8 @@ Pcsx2Config::GSOptions::GSOptions()
 	OsdShowResolution = false;
 	OsdShowGSStats = false;
 	OsdShowIndicators = true;
+	OsdShowSettings = false;
+	OsdShowInputs = false;
 
 	HWDisableReadbacks = false;
 	GPUPaletteConversion = false;
@@ -540,6 +542,8 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBool(OsdShowResolution);
 	GSSettingBool(OsdShowGSStats);
 	GSSettingBool(OsdShowIndicators);
+	GSSettingBool(OsdShowSettings);
+	GSSettingBool(OsdShowInputs);
 
 	GSSettingBool(HWDisableReadbacks);
 	GSSettingBoolEx(GPUPaletteConversion, "paltex");

@@ -998,11 +998,13 @@ set(pcsx2DebugToolsHeaders
 # Frontend sources
 set(pcsx2FrontendSources
 	Frontend/ImGuiManager.cpp
+	Frontend/ImGuiOverlays.cpp
 )
 
 # Frontend headers
 set(pcsx2FrontendHeaders
 	Frontend/ImGuiManager.h
+	Frontend/ImGuiOverlays.h
 )
 
 if(USE_OPENGL)

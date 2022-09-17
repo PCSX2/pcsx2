@@ -391,6 +391,30 @@ struct Pcsx2Config
 		{
 			return !OpEqu(bitset);
 		}
+
+		u32 GetEEClampMode() const
+		{
+			return fpuFullMode ? 3 : (fpuExtraOverflow ? 2 : (fpuOverflow ? 1 : 0));
+		}
+
+		void SetEEClampMode(u32 value)
+		{
+			fpuOverflow = (value >= 1);
+			fpuExtraOverflow = (value >= 2);
+			fpuFullMode = (value >= 3);
+		}
+
+		u32 GetVUClampMode() const
+		{
+			return vuSignOverflow ? 3 : (vuExtraOverflow ? 2 : (vuOverflow ? 1 : 0));
+		}
+
+		void SetVUClampMode(u32 value)
+		{
+			vuOverflow = (value >= 1);
+			vuExtraOverflow = (value >= 2);
+			vuSignOverflow = (value >= 3);
+		}
 	};
 
 	// ------------------------------------------------------------------------
@@ -459,7 +483,9 @@ struct Pcsx2Config
 					OsdShowGPU : 1,
 					OsdShowResolution : 1,
 					OsdShowGSStats : 1,
-					OsdShowIndicators : 1;
+					OsdShowIndicators : 1,
+					OsdShowSettings : 1,
+					OsdShowInputs : 1;
 
 				bool
 					HWDisableReadbacks : 1,
