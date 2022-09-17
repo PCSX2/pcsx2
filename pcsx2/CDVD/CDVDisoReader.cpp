@@ -89,14 +89,14 @@ s32 CALLBACK ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 	subq->trackNum = itob(1);
 	subq->trackIndex = itob(1);
 
-	lba_to_msf(lsn, &min, &sec, &frm);
+	lsn_to_msf(lsn, &min, &sec, &frm);
 	subq->trackM = itob(min);
 	subq->trackS = itob(sec);
 	subq->trackF = itob(frm);
 
 	subq->pad = 0;
 
-	lba_to_msf(lsn + (2 * 75), &min, &sec, &frm);
+	lsn_to_msf(lsn + (2 * 75), &min, &sec, &frm);
 	subq->discM = itob(min);
 	subq->discS = itob(sec);
 	subq->discF = itob(frm);
@@ -283,7 +283,7 @@ s32 CALLBACK ISOgetTOC(void* toc)
 		tocBuff[17] = itob(diskInfo.etrack);
 
 		//DiskLength
-		lba_to_msf(trackInfo.lsn, &min, &sec, &frm);
+		lsn_to_msf(trackInfo.lsn, &min, &sec, &frm);
 		tocBuff[22] = 0xA2;
 		tocBuff[27] = itob(min);
 		tocBuff[28] = itob(sec);
@@ -291,7 +291,7 @@ s32 CALLBACK ISOgetTOC(void* toc)
 		for (i = diskInfo.strack; i <= diskInfo.etrack; i++)
 		{
 			err = ISOgetTD(i, &trackInfo);
-			lba_to_msf(trackInfo.lsn, &min, &sec, &frm);
+			lsn_to_msf(trackInfo.lsn, &min, &sec, &frm);
 			tocBuff[i * 10 + 30] = trackInfo.type;
 			tocBuff[i * 10 + 32] = err == -1 ? 0 : itob(i); //number
 			tocBuff[i * 10 + 37] = itob(min);

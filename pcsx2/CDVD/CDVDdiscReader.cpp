@@ -65,7 +65,7 @@ inline void lsn_to_msf(u8* minute, u8* second, u8* frame, u32 lsn)
 // TocStuff
 void cdvdParseTOC()
 {
-	tracks[1].start_lba = 0;
+	tracks[1].start_lsn = 0;
 
 	if (!src->GetSectorCount())
 	{
@@ -93,7 +93,7 @@ void cdvdParseTOC()
 			continue;
 		strack = std::min(strack, entry.track);
 		etrack = std::max(etrack, entry.track);
-		tracks[entry.track].start_lba = entry.lba;
+		tracks[entry.track].start_lsn = entry.lba;
 		if ((entry.control & 0x0C) == 0x04)
 		{
 			std::array<u8, 2352> buffer;
@@ -284,10 +284,10 @@ s32 CALLBACK DISCreadSubQ(u32 lsn, cdvdSubQ* subq)
 	lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
 
 	u8 i = strack;
-	while (i < etrack && lsn >= tracks[i + 1].start_lba)
+	while (i < etrack && lsn >= tracks[i + 1].start_lsn)
 		++i;
 
-	lsn -= tracks[i].start_lba;
+	lsn -= tracks[i].start_lsn;
 
 	lsn_to_msf(&subq->trackM, &subq->trackS, &subq->trackF, lsn);
 
@@ -329,7 +329,7 @@ s32 CALLBACK DISCgetTD(u8 Track, cdvdTD* Buffer)
 	if (Track > etrack)
 		return -1;
 
-	Buffer->lsn = tracks[Track].start_lba;
+	Buffer->lsn = tracks[Track].start_lsn;
 	Buffer->type = tracks[Track].type;
 	return 0;
 }
@@ -442,7 +442,7 @@ s32 CALLBACK DISCgetTOC(void* toc)
 		tocBuff[17] = dec_to_bcd(diskInfo.etrack);
 
 		//DiskLength
-		lba_to_msf(trackInfo.lsn, &min, &sec, &frm);
+		lsn_to_msf(trackInfo.lsn, &min, &sec, &frm);
 		tocBuff[22] = 0xA2;
 		tocBuff[27] = dec_to_bcd(min);
 		tocBuff[28] = dec_to_bcd(sec);
@@ -453,7 +453,7 @@ s32 CALLBACK DISCgetTOC(void* toc)
 		for (i = diskInfo.strack; i <= diskInfo.etrack; i++)
 		{
 			err = DISCgetTD(i, &trackInfo);
-			lba_to_msf(trackInfo.lsn, &min, &sec, &frm);
+			lsn_to_msf(trackInfo.lsn, &min, &sec, &frm);
 			tocBuff[i * 10 + 30] = trackInfo.type;
 			tocBuff[i * 10 + 32] = err == -1 ? 0 : dec_to_bcd(i); //number
 			tocBuff[i * 10 + 37] = dec_to_bcd(min);

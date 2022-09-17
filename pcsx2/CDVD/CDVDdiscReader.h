@@ -25,7 +25,7 @@
 
 struct track
 {
-	u32 start_lba;
+	u32 start_lsn;
 	u8 type;
 };
 

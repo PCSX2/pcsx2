@@ -33,7 +33,7 @@ static __fi s32 msf_to_lsn(u8* Time)
 	return lsn;
 }
 
-static __fi s32 msf_to_lba(u8 m, u8 s, u8 f)
+static __fi s32 msf_to_lsn(u8 m, u8 s, u8 f)
 {
 	u32 lsn;
 	lsn = f;
@@ -56,7 +56,7 @@ static __fi void lsn_to_msf(u8* Time, s32 lsn)
 	Time[2] = itob(f);
 }
 
-static __fi void lba_to_msf(s32 lba, u8* m, u8* s, u8* f)
+static __fi void lsn_to_msf(s32 lba, u8* m, u8* s, u8* f)
 {
 	lba += 150;
 	*m = lba / (60 * 75);
