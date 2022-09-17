@@ -357,8 +357,7 @@ void VMManager::ApplyGameFixes()
 
 std::string VMManager::GetGameSettingsPath(const std::string_view& game_serial, u32 game_crc)
 {
-	std::string sanitized_serial(game_serial);
-	Path::SanitizeFileName(sanitized_serial);
+	std::string sanitized_serial(Path::SanitizeFileName(game_serial));
 
 	return game_serial.empty() ?
 			   Path::Combine(EmuFolders::GameSettings, fmt::format("{:08X}.ini", game_crc)) :

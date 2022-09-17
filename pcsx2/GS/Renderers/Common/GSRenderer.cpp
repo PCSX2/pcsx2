@@ -766,14 +766,14 @@ void GSRenderer::QueueSnapshot(const std::string& path, u32 gsdump_frames)
 		// append the game serial and title
 		if (std::string name(GetDumpName()); !name.empty())
 		{
-			Path::SanitizeFileName(name);
+			Path::SanitizeFileName(&name);
 			if (name.length() > 219)
 				name.resize(219);
 			m_snapshot += name;
 		}
 		if (std::string serial(GetDumpSerial()); !serial.empty())
 		{
-			Path::SanitizeFileName(serial);
+			Path::SanitizeFileName(&serial);
 			m_snapshot += '_';
 			m_snapshot += serial;
 		}
