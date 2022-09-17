@@ -63,7 +63,7 @@ public:
 
 	virtual void close() = 0;
 
-	virtual int read(void* buf) { return -IOP_EIO; } /* Flawfinder: ignore */
+	virtual int read(void* buf, bool iomanX = false) { return -IOP_EIO; } /* Flawfinder: ignore */
 };
 
 typedef int (*irxHLE)(); // return 1 if handled, otherwise 0
