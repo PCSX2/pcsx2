@@ -43,7 +43,6 @@ alignas(16) SysMtgsThread mtgsThread;
 alignas(16) AppCoreThread CoreThread;
 
 static std::vector<u8> s_widescreen_cheats_data;
-static bool s_widescreen_cheats_loaded = false;
 
 typedef void (AppCoreThread::*FnPtr_CoreThreadMethod)();
 
@@ -290,15 +289,14 @@ const IConsoleWriter* PatchesCon = &Console;
 
 static void SetupPatchesCon(bool verbose)
 {
-	bool devel = false;
 #ifdef PCSX2_DEVBUILD
-	devel = true;
-#endif
-
-	if (verbose || DevConWriterEnabled || devel)
+	PatchesCon = &Console;
+#else
+	if (verbose || DevConWriterEnabled)
 		PatchesCon = &Console;
 	else
 		PatchesCon = &ConsoleWriter_Null;
+#endif
 }
 
 // fixup = src + command line overrides + game overrides (according to elfCRC).
@@ -438,12 +436,9 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 		else
 		{
 			// No ws cheat files found at the cheats_ws folder, try the ws cheats zip file.
-			if (!s_widescreen_cheats_loaded)
-			{
-				std::optional<std::vector<u8>> data = Host::ReadResourceFile("cheats_ws.zip");
-				if (data.has_value())
-					s_widescreen_cheats_data = std::move(data.value());
-			}
+			std::optional<std::vector<u8>> data = Host::ReadResourceFile("cheats_ws.zip");
+			if (data.has_value())
+				s_widescreen_cheats_data = std::move(data.value());
 
 			if (!s_widescreen_cheats_data.empty())
 			{
