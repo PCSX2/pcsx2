@@ -30,6 +30,8 @@ namespace PAD
 		{
 			u8 lx, ly;
 			u8 rx, ry;
+			u8 invert_lx, invert_ly;
+			u8 invert_rx, invert_ry;
 		};
 
 		PAD::ControllerType m_type[NUM_CONTROLLER_PORTS] = {};
@@ -39,6 +41,7 @@ namespace PAD
 		float m_axis_scale[NUM_CONTROLLER_PORTS][2];
 		float m_vibration_scale[NUM_CONTROLLER_PORTS][2];
 		float m_pressure_modifier[NUM_CONTROLLER_PORTS];
+		float m_button_deadzone[NUM_CONTROLLER_PORTS];
 
 	public:
 		KeyStatus();
@@ -58,6 +61,17 @@ namespace PAD
 		__fi void SetVibrationScale(u32 pad, u32 motor, float scale) { m_vibration_scale[pad][motor] = scale; }
 		__fi float GetPressureModifier(u32 pad) const { return m_pressure_modifier[pad]; }
 		__fi void SetPressureModifier(u32 pad, float mod) { m_pressure_modifier[pad] = mod; }
+		__fi void SetButtonDeadzone(u32 pad, float deadzone) { m_button_deadzone[pad] = deadzone; }
+		__fi void SetAnalogInvertL(u32 pad, bool x, bool y)
+		{
+			m_analog[pad].invert_lx = x;
+			m_analog[pad].invert_ly = y;
+		}
+		__fi void SetAnalogInvertR(u32 pad, bool x, bool y)
+		{
+			m_analog[pad].invert_rx = x;
+			m_analog[pad].invert_ry = y;
+		}
 
 		u32 GetButtons(u32 pad);
 		u8 GetPressure(u32 pad, u32 index);

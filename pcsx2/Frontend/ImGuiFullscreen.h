@@ -92,6 +92,7 @@ namespace ImGuiFullscreen
 	}
 
 	static __fi ImVec4 ModAlpha(const ImVec4& v, float a) { return ImVec4(v.x, v.y, v.z, a); }
+	static __fi ImVec4 MulAlpha(const ImVec4& v, float a) { return ImVec4(v.x, v.y, v.z, v.w * a); }
 
 	/// Centers an image within the specified bounds, scaling up or down as needed.
 	ImRect CenterImage(const ImVec2& fit_size, const ImVec2& image_size);
@@ -100,7 +101,7 @@ namespace ImGuiFullscreen
 	/// Initializes, setting up any state.
 	bool Initialize(const char* placeholder_image_path);
 
-	void SetTheme();
+	void SetTheme(bool light);
 	void SetFonts(ImFont* standard_font, ImFont* medium_font, ImFont* large_font);
 	bool UpdateLayoutScale();
 
@@ -130,7 +131,7 @@ namespace ImGuiFullscreen
 
 	void DrawWindowTitle(const char* title);
 
-	bool BeginFullscreenColumns(const char* title = nullptr);
+	bool BeginFullscreenColumns(const char* title = nullptr, float pos_y = 0.0f, bool expand_to_screen_width = false);
 	void EndFullscreenColumns();
 
 	bool BeginFullscreenColumnWindow(float start, float end, const char* name, const ImVec4& background = UIBackgroundColor);
@@ -153,6 +154,8 @@ namespace ImGuiFullscreen
 		ImFont* font = g_large_font);
 	bool MenuButton(const char* title, const char* summary, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
 		ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+	bool MenuButtonWithoutSummary(const char* title, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
+		ImFont* font = g_large_font, const ImVec2& text_align = ImVec2(0.0f, 0.0f));
 	bool MenuButtonWithValue(const char* title, const char* summary, const char* value, bool enabled = true,
 		float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
 	bool MenuImageButton(const char* title, const char* summary, ImTextureID user_texture_id, const ImVec2& image_size, bool enabled = true,
@@ -226,9 +229,9 @@ namespace ImGuiFullscreen
 	using MessageDialogCallback = std::function<void(s32)>;
 	bool IsMessageBoxDialogOpen();
 	void OpenConfirmMessageDialog(std::string title, std::string message, ConfirmMessageDialogCallback callback,
-		std::string yes_button_text = ICON_FA_CHECK "  Yes", std::string no_button_text = ICON_FA_TIMES "  No");
-	void OpenInfoMessageDialog(std::string title, std::string message, InfoMessageDialogCallback callback,
-		std::string button_text = ICON_FA_WINDOW_CLOSE "  Close");
+		std::string yes_button_text = ICON_FA_CHECK " Yes", std::string no_button_text = ICON_FA_TIMES " No");
+	void OpenInfoMessageDialog(std::string title, std::string message, InfoMessageDialogCallback callback = {},
+		std::string button_text = ICON_FA_WINDOW_CLOSE " Close");
 	void OpenMessageDialog(std::string title, std::string message, MessageDialogCallback callback, std::string first_button_text,
 		std::string second_button_text, std::string third_button_text);
 	void CloseMessageDialog();

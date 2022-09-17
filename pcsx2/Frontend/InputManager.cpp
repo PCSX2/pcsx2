@@ -99,6 +99,7 @@ namespace InputManager
 
 	static std::vector<std::string_view> SplitChord(const std::string_view& binding);
 	static bool SplitBinding(const std::string_view& binding, std::string_view* source, std::string_view* sub_binding);
+	static void AddBinding(const std::string_view& binding, const InputEventHandler& handler);
 	static void AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler);
 	static bool ParseBindingAndGetSource(const std::string_view& binding, InputBindingKey* key, InputSource** source);
 
@@ -304,48 +305,51 @@ std::string InputManager::ConvertInputBindingKeysToString(const InputBindingKey*
 	return ss.str();
 }
 
-void InputManager::AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler)
+void InputManager::AddBinding(const std::string_view& binding, const InputEventHandler& handler)
 {
-	for (const std::string& binding : bindings)
+	std::shared_ptr<InputBinding> ibinding;
+	const std::vector<std::string_view> chord_bindings(SplitChord(binding));
+
+	for (const std::string_view& chord_binding : chord_bindings)
 	{
-		std::shared_ptr<InputBinding> ibinding;
-		const std::vector<std::string_view> chord_bindings(SplitChord(binding));
-
-		for (const std::string_view& chord_binding : chord_bindings)
+		std::optional<InputBindingKey> key = ParseInputBindingKey(chord_binding);
+		if (!key.has_value())
 		{
-			std::optional<InputBindingKey> key = ParseInputBindingKey(chord_binding);
-			if (!key.has_value())
-			{
-				Console.WriteLn("Invalid binding: '%s'", binding.c_str());
-				ibinding.reset();
-				break;
-			}
-
-			if (!ibinding)
-			{
-				ibinding = std::make_shared<InputBinding>();
-				ibinding->handler = handler;
-			}
-
-			if (ibinding->num_keys == MAX_KEYS_PER_BINDING)
-			{
-				Console.WriteLn("Too many chord parts, max is %u (%s)", MAX_KEYS_PER_BINDING, binding.c_str());
-				ibinding.reset();
-				break;
-			}
-
-			ibinding->keys[ibinding->num_keys] = key.value();
-			ibinding->full_mask |= (static_cast<u8>(1) << ibinding->num_keys);
-			ibinding->num_keys++;
+			Console.WriteLn(fmt::format("Invalid binding: '{}'", binding));
+			ibinding.reset();
+			break;
 		}
 
 		if (!ibinding)
-			continue;
+		{
+			ibinding = std::make_shared<InputBinding>();
+			ibinding->handler = handler;
+		}
 
-		// plop it in the input map for all the keys
-		for (u32 i = 0; i < ibinding->num_keys; i++)
-			s_binding_map.emplace(ibinding->keys[i].MaskDirection(), ibinding);
+		if (ibinding->num_keys == MAX_KEYS_PER_BINDING)
+		{
+			Console.WriteLn(fmt::format("Too many chord parts, max is {} ({})", MAX_KEYS_PER_BINDING, binding));
+			ibinding.reset();
+			break;
+		}
+
+		ibinding->keys[ibinding->num_keys] = key.value();
+		ibinding->full_mask |= (static_cast<u8>(1) << ibinding->num_keys);
+		ibinding->num_keys++;
 	}
+
+	if (!ibinding)
+		return;
+
+	// plop it in the input map for all the keys
+	for (u32 i = 0; i < ibinding->num_keys; i++)
+		s_binding_map.emplace(ibinding->keys[i].MaskDirection(), ibinding);
+}
+
+void InputManager::AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler)
+{
+	for (const std::string& binding : bindings)
+		AddBinding(binding, handler);
 }
 
 // ------------------------------------------------------------------------
@@ -559,7 +563,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 			if (!bindings.empty())
 			{
 				// we use axes for all pad bindings to simplify things, and because they are pressure sensitive
-				AddBindings(bindings, InputAxisEventHandler{[pad_index, bind_index, bind_names](
+				AddBindings(bindings, InputAxisEventHandler{[pad_index, bind_index](
 																float value) { PAD::SetControllerState(pad_index, bind_index, value); }});
 			}
 		}
@@ -1006,10 +1010,8 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 	{
 		// From lilypad: 1 mouse pixel = 1/8th way down.
 		const float default_scale = (axis <= static_cast<u32>(InputPointerAxis::Y)) ? 8.0f : 1.0f;
-		const float invert =
-			si.GetBoolValue("Pad", fmt::format("Pointer{}Invert", s_pointer_axis_names[axis]).c_str(), false) ? -1.0f : 1.0f;
 		s_pointer_axis_scale[axis] =
-			invert /
+			1.0f /
 			std::max(si.GetFloatValue("Pad", fmt::format("Pointer{}Scale", s_pointer_axis_names[axis]).c_str(), default_scale), 1.0f);
 	}
 }

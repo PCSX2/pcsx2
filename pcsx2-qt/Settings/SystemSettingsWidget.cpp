@@ -48,6 +48,9 @@ SystemSettingsWidget::SystemSettingsWidget(SettingsDialog* dialog, QWidget* pare
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.vuRoundingMode, "EmuCore/CPU", "VU.Roundmode", 3);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastCDVD, "EmuCore/Speedhacks", "fastCDVD", false);
 
+	// Allow for FastCDVD for per-game settings only 
+	m_ui.fastCDVD->setEnabled(m_dialog->isPerGameSettings());
+
 	if (m_dialog->isPerGameSettings())
 	{
 		m_ui.eeCycleRate->insertItem(

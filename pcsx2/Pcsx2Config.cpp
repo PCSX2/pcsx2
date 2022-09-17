@@ -1075,8 +1075,6 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 #endif
 	SettingsWrapBitBool(ConsoleToStdio);
 	SettingsWrapBitBool(HostFs);
-	SettingsWrapBitBool(PatchBios);
-	SettingsWrapEntry(PatchRegion);
 
 	SettingsWrapBitBool(BackupSavestate);
 	SettingsWrapBitBool(SavestateZstdCompression);
@@ -1227,8 +1225,6 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	EnableNoInterlacingPatches = cfg.EnableNoInterlacingPatches;
 	EnableRecordingTools = cfg.EnableRecordingTools;
 	UseBOOT2Injection = cfg.UseBOOT2Injection;
-	PatchBios = cfg.PatchBios;
-	PatchRegion = cfg.PatchRegion;
 	BackupSavestate = cfg.BackupSavestate;
 	SavestateZstdCompression = cfg.SavestateZstdCompression;
 	McdEnableEjection = cfg.McdEnableEjection;
@@ -1241,6 +1237,17 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	McdCompressNTFS = cfg.McdCompressNTFS;
 #endif
 
+	LimiterMode = cfg.LimiterMode;
+}
+
+void Pcsx2Config::CopyRuntimeConfig(Pcsx2Config& cfg)
+{
+	GS.LimitScalar = cfg.GS.LimitScalar;
+	UseBOOT2Injection = cfg.UseBOOT2Injection;
+	CurrentBlockdump = std::move(cfg.CurrentBlockdump);
+	CurrentIRX = std::move(cfg.CurrentIRX);
+	CurrentGameArgs = std::move(cfg.CurrentGameArgs);
+	CurrentAspectRatio = cfg.CurrentAspectRatio;
 	LimiterMode = cfg.LimiterMode;
 }
 

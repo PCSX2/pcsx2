@@ -369,8 +369,7 @@ void VMManager::ApplyGameFixes()
 
 std::string VMManager::GetGameSettingsPath(const std::string_view& game_serial, u32 game_crc)
 {
-	std::string sanitized_serial(game_serial);
-	Path::SanitizeFileName(sanitized_serial);
+	std::string sanitized_serial(Path::SanitizeFileName(game_serial));
 
 	return game_serial.empty() ?
 			   Path::Combine(EmuFolders::GameSettings, fmt::format("{:08X}.ini", game_crc)) :
@@ -495,7 +494,7 @@ bool VMManager::UpdateGameSettingsLayer()
 			}
 		}
 
-		Host::Internal::SetInputSettingsLayer(input_interface.get());
+		Host::Internal::SetInputSettingsLayer(input_interface ? input_interface.get() : Host::Internal::GetBaseSettingsLayer());
 	}
 	else
 	{
@@ -1102,9 +1101,14 @@ void VMManager::Shutdown(bool save_resume_state)
 	// If the fullscreen UI is running, do a hardware reset on the GS
 	// so that the texture cache and targets are all cleared.
 	if (s_gs_open_on_initialize)
+	{
+		GetMTGS().WaitGS(false, false, false);
 		GetMTGS().ResetGS(true);
+	}
 	else
+	{
 		GetMTGS().WaitForClose();
+	}
 
 	USBshutdown();
 	SPU2shutdown();
@@ -1718,7 +1722,11 @@ void VMManager::ApplySettings()
 		GetMTGS().WaitGS(false);
 	}
 
-	const Pcsx2Config old_config(EmuConfig);
+	// Reset to a clean Pcsx2Config. Otherwise things which are optional (e.g. gamefixes)
+	// do not use the correct default values when loading.
+	Pcsx2Config old_config(std::move(EmuConfig));
+	EmuConfig = Pcsx2Config();
+	EmuConfig.CopyRuntimeConfig(old_config);
 	LoadSettings();
 	CheckForConfigChanges(old_config);
 }
@@ -1751,37 +1759,37 @@ void VMManager::WarnAboutUnsafeSettings()
 	std::string messages;
 
 	if (EmuConfig.Speedhacks.fastCDVD)
-		messages += ICON_FA_COMPACT_DISC "  Fast CDVD is enabled, this may break games.\n";
+		messages += ICON_FA_COMPACT_DISC " Fast CDVD is enabled, this may break games.\n";
 	if (EmuConfig.Speedhacks.EECycleRate != 0 || EmuConfig.Speedhacks.EECycleSkip != 0)
-		messages += ICON_FA_TACHOMETER_ALT "  Cycle rate/skip is not at default, this may crash or make games run too slow.\n";
+		messages += ICON_FA_TACHOMETER_ALT " Cycle rate/skip is not at default, this may crash or make games run too slow.\n";
 	if (EmuConfig.SPU2.SynchMode != Pcsx2Config::SPU2Options::SynchronizationMode::TimeStretch)
-		messages += ICON_FA_VOLUME_MUTE "  Audio is not using time stretch synchronization, this may break FMVs.\n";
+		messages += ICON_FA_VOLUME_MUTE " Audio is not using time stretch synchronization, this may break FMVs.\n";
 	if (EmuConfig.GS.HWMipmap != HWMipmapLevel::Automatic)
-		messages += ICON_FA_IMAGES "  Mipmapping is not set to automatic. This may break rendering in some games.\n";
+		messages += ICON_FA_IMAGES " Mipmapping is not set to automatic. This may break rendering in some games.\n";
 	if (EmuConfig.GS.TextureFiltering != BiFiltering::PS2)
-		messages += ICON_FA_FILTER "  Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.\n";
+		messages += ICON_FA_FILTER " Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.\n";
 	if (EmuConfig.GS.UserHacks_TriFilter != TriFiltering::Automatic)
-		messages += ICON_FA_PAGER "  Trilinear filtering is not set to automatic. This may break rendering in some games.\n";
+		messages += ICON_FA_PAGER " Trilinear filtering is not set to automatic. This may break rendering in some games.\n";
 	if (EmuConfig.GS.AccurateBlendingUnit <= AccBlendLevel::Minimum)
-		messages += ICON_FA_BLENDER "  Blending is below basic, this may break effects in some games.\n";
+		messages += ICON_FA_BLENDER " Blending is below basic, this may break effects in some games.\n";
 	if (EmuConfig.GS.CRCHack != CRCHackLevel::Automatic)
-		messages += ICON_FA_FIRST_AID "  CRC Fix Level is not set to default, this may break effects in some games.\n";
+		messages += ICON_FA_FIRST_AID " CRC Fix Level is not set to default, this may break effects in some games.\n";
 	if (EmuConfig.Cpu.sseMXCSR.GetRoundMode() != SSEround_Chop || EmuConfig.Cpu.sseVUMXCSR.GetRoundMode() != SSEround_Chop)
-		messages += ICON_FA_MICROCHIP "  EE FPU Round Mode is not set to default, this may break some games.\n";
+		messages += ICON_FA_MICROCHIP " EE FPU Round Mode is not set to default, this may break some games.\n";
 	if (!EmuConfig.Cpu.Recompiler.fpuOverflow || EmuConfig.Cpu.Recompiler.fpuExtraOverflow || EmuConfig.Cpu.Recompiler.fpuFullMode)
-		messages += ICON_FA_MICROCHIP "  EE FPU Clamp Mode is not set to default, this may break some games.\n";
+		messages += ICON_FA_MICROCHIP " EE FPU Clamp Mode is not set to default, this may break some games.\n";
 	if (EmuConfig.Cpu.sseVUMXCSR.GetRoundMode() != SSEround_Chop)
-		messages += ICON_FA_MICROCHIP "  VU Round Mode is not set to default, this may break some games.\n";
+		messages += ICON_FA_MICROCHIP " VU Round Mode is not set to default, this may break some games.\n";
 	if (!EmuConfig.Cpu.Recompiler.vuOverflow || EmuConfig.Cpu.Recompiler.vuExtraOverflow || EmuConfig.Cpu.Recompiler.vuSignOverflow)
-		messages += ICON_FA_MICROCHIP "  VU Clamp Mode is not set to default, this may break some games.\n";
+		messages += ICON_FA_MICROCHIP " VU Clamp Mode is not set to default, this may break some games.\n";
 	if (!EmuConfig.EnableGameFixes)
-		messages += ICON_FA_GAMEPAD "  Game Fixes are not enabled. Compatibility with some games may be affected.\n";
+		messages += ICON_FA_GAMEPAD " Game Fixes are not enabled. Compatibility with some games may be affected.\n";
 	if (!EmuConfig.EnablePatches)
-		messages += ICON_FA_GAMEPAD "  Compatibility Patches are not enabled. Compatibility with some games may be affected.\n";
+		messages += ICON_FA_GAMEPAD " Compatibility Patches are not enabled. Compatibility with some games may be affected.\n";
 	if (EmuConfig.GS.FramerateNTSC != Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_NTSC)
-		messages += ICON_FA_TV "  Frame rate for NTSC is not default. This may break some games.\n";
+		messages += ICON_FA_TV " Frame rate for NTSC is not default. This may break some games.\n";
 	if (EmuConfig.GS.FrameratePAL != Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_PAL)
-		messages += ICON_FA_TV "  Frame rate for PAL is not default. This may break some games.\n";
+		messages += ICON_FA_TV " Frame rate for PAL is not default. This may break some games.\n";
 
 	if (!messages.empty())
 	{
@@ -1796,27 +1804,27 @@ void VMManager::WarnAboutUnsafeSettings()
 
 	messages.clear();
 	if (!EmuConfig.Cpu.Recompiler.EnableEE)
-		messages += ICON_FA_EXCLAMATION_CIRCLE "  EE Recompiler is not enabled, this will significantly reduce performance.\n";
+		messages += ICON_FA_EXCLAMATION_CIRCLE " EE Recompiler is not enabled, this will significantly reduce performance.\n";
 	if (!EmuConfig.Cpu.Recompiler.EnableVU0)
-		messages += ICON_FA_EXCLAMATION_CIRCLE "  VU0 Recompiler is not enabled, this will significantly reduce performance.\n";
+		messages += ICON_FA_EXCLAMATION_CIRCLE " VU0 Recompiler is not enabled, this will significantly reduce performance.\n";
 	if (!EmuConfig.Cpu.Recompiler.EnableVU1)
-		messages += ICON_FA_EXCLAMATION_CIRCLE "  VU1 Recompiler is not enabled, this will significantly reduce performance.\n";
+		messages += ICON_FA_EXCLAMATION_CIRCLE " VU1 Recompiler is not enabled, this will significantly reduce performance.\n";
 	if (!EmuConfig.Cpu.Recompiler.EnableIOP)
-		messages += ICON_FA_EXCLAMATION_CIRCLE "  IOP Recompiler is not enabled, this will significantly reduce performance.\n";
+		messages += ICON_FA_EXCLAMATION_CIRCLE " IOP Recompiler is not enabled, this will significantly reduce performance.\n";
 	if (EmuConfig.Cpu.Recompiler.EnableEECache)
-		messages += ICON_FA_EXCLAMATION_CIRCLE "  EE Cache is enabled, this will significantly reduce performance.\n";
+		messages += ICON_FA_EXCLAMATION_CIRCLE " EE Cache is enabled, this will significantly reduce performance.\n";
 	if (!EmuConfig.Speedhacks.WaitLoop)
-		messages += ICON_FA_EXCLAMATION_CIRCLE "  EE Wait Loop Detection is not enabled, this may reduce performance.\n";
+		messages += ICON_FA_EXCLAMATION_CIRCLE " EE Wait Loop Detection is not enabled, this may reduce performance.\n";
 	if (!EmuConfig.Speedhacks.IntcStat)
-		messages += ICON_FA_EXCLAMATION_CIRCLE "  INTC Spin Detection is not enabled, this may reduce performance.\n";
+		messages += ICON_FA_EXCLAMATION_CIRCLE " INTC Spin Detection is not enabled, this may reduce performance.\n";
 	if (!EmuConfig.Speedhacks.vu1Instant)
-		messages += ICON_FA_EXCLAMATION_CIRCLE "  Instant VU1 is disabled, this may reduce performance.\n";
+		messages += ICON_FA_EXCLAMATION_CIRCLE " Instant VU1 is disabled, this may reduce performance.\n";
 	if (!EmuConfig.Speedhacks.vuFlagHack)
-		messages += ICON_FA_EXCLAMATION_CIRCLE "  mVU Flag Hack is not enabled, this may reduce performance.\n";
+		messages += ICON_FA_EXCLAMATION_CIRCLE " mVU Flag Hack is not enabled, this may reduce performance.\n";
 	if (EmuConfig.GS.GPUPaletteConversion)
-		messages += ICON_FA_EXCLAMATION_CIRCLE "  GPU Palette Conversion is enabled, this may reduce performance.\n";
+		messages += ICON_FA_EXCLAMATION_CIRCLE " GPU Palette Conversion is enabled, this may reduce performance.\n";
 	if (EmuConfig.GS.TexturePreloading != TexturePreloadingLevel::Full)
-		messages += ICON_FA_EXCLAMATION_CIRCLE "  Texture Preloading is not Full, this may reduce performance.\n";
+		messages += ICON_FA_EXCLAMATION_CIRCLE " Texture Preloading is not Full, this may reduce performance.\n";
 
 	if (!messages.empty())
 	{

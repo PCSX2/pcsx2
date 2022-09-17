@@ -1086,29 +1086,29 @@ ImGuiStyle::ImGuiStyle()
 // Important: This operation is lossy because we round all sizes to integer. If you need to change your scale multiples, call this over a freshly initialized ImGuiStyle structure rather than scaling multiple times.
 void ImGuiStyle::ScaleAllSizes(float scale_factor)
 {
-    WindowPadding = ImFloor(WindowPadding * scale_factor);
-    WindowRounding = ImFloor(WindowRounding * scale_factor);
-    WindowMinSize = ImFloor(WindowMinSize * scale_factor);
-    ChildRounding = ImFloor(ChildRounding * scale_factor);
-    PopupRounding = ImFloor(PopupRounding * scale_factor);
-    FramePadding = ImFloor(FramePadding * scale_factor);
-    FrameRounding = ImFloor(FrameRounding * scale_factor);
-    ItemSpacing = ImFloor(ItemSpacing * scale_factor);
-    ItemInnerSpacing = ImFloor(ItemInnerSpacing * scale_factor);
-    CellPadding = ImFloor(CellPadding * scale_factor);
-    TouchExtraPadding = ImFloor(TouchExtraPadding * scale_factor);
-    IndentSpacing = ImFloor(IndentSpacing * scale_factor);
-    ColumnsMinSpacing = ImFloor(ColumnsMinSpacing * scale_factor);
-    ScrollbarSize = ImFloor(ScrollbarSize * scale_factor);
-    ScrollbarRounding = ImFloor(ScrollbarRounding * scale_factor);
-    GrabMinSize = ImFloor(GrabMinSize * scale_factor);
-    GrabRounding = ImFloor(GrabRounding * scale_factor);
-    LogSliderDeadzone = ImFloor(LogSliderDeadzone * scale_factor);
-    TabRounding = ImFloor(TabRounding * scale_factor);
-    TabMinWidthForCloseButton = (TabMinWidthForCloseButton != FLT_MAX) ? ImFloor(TabMinWidthForCloseButton * scale_factor) : FLT_MAX;
-    DisplayWindowPadding = ImFloor(DisplayWindowPadding * scale_factor);
-    DisplaySafeAreaPadding = ImFloor(DisplaySafeAreaPadding * scale_factor);
-    MouseCursorScale = ImFloor(MouseCursorScale * scale_factor);
+    WindowPadding = ImFloor(WindowPadding * scale_factor + ImVec2(0.5f, 0.5f));
+    WindowRounding = ImFloor(WindowRounding * scale_factor + 0.5f);
+    WindowMinSize = ImFloor(WindowMinSize * scale_factor + ImVec2(0.5f, 0.5f));
+    ChildRounding = ImFloor(ChildRounding * scale_factor + 0.5f);
+    PopupRounding = ImFloor(PopupRounding * scale_factor + 0.5f);
+    FramePadding = ImFloor(FramePadding * scale_factor + ImVec2(0.5f, 0.5f));
+    FrameRounding = ImFloor(FrameRounding * scale_factor + 0.5f);
+    ItemSpacing = ImFloor(ItemSpacing * scale_factor + ImVec2(0.5f, 0.5f));
+    ItemInnerSpacing = ImFloor(ItemInnerSpacing * scale_factor + ImVec2(0.5f, 0.5f));
+    CellPadding = ImFloor(CellPadding * scale_factor + ImVec2(0.5f, 0.5f));
+    TouchExtraPadding = ImFloor(TouchExtraPadding * scale_factor + ImVec2(0.5f, 0.5f));
+    IndentSpacing = ImFloor(IndentSpacing * scale_factor + 0.5f);
+    ColumnsMinSpacing = ImFloor(ColumnsMinSpacing * scale_factor + 0.5f);
+    ScrollbarSize = ImFloor(ScrollbarSize * scale_factor + 0.5f);
+    ScrollbarRounding = ImFloor(ScrollbarRounding * scale_factor + 0.5f);
+    GrabMinSize = ImFloor(GrabMinSize * scale_factor + 0.5f);
+    GrabRounding = ImFloor(GrabRounding * scale_factor + 0.5f);
+    LogSliderDeadzone = ImFloor(LogSliderDeadzone * scale_factor + 0.5f);
+    TabRounding = ImFloor(TabRounding * scale_factor + 0.5f);
+    TabMinWidthForCloseButton = (TabMinWidthForCloseButton != FLT_MAX) ? ImFloor(TabMinWidthForCloseButton * scale_factor + 0.5f) : FLT_MAX;
+    DisplayWindowPadding = ImFloor(DisplayWindowPadding * scale_factor + ImVec2(0.5f, 0.5f));
+    DisplaySafeAreaPadding = ImFloor(DisplaySafeAreaPadding * scale_factor + ImVec2(0.5f, 0.5f));
+    MouseCursorScale = ImFloor(MouseCursorScale * scale_factor + 0.5f);
 }
 
 ImGuiIO::ImGuiIO()

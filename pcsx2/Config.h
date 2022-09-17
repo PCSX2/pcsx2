@@ -960,7 +960,6 @@ struct Pcsx2Config
 #endif
 		// when enabled uses BOOT2 injection, skipping sony bios splashes
 		UseBOOT2Injection : 1,
-		PatchBios : 1,
 		BackupSavestate : 1,
 		SavestateZstdCompression : 1,
 		// enables simulated ejection of memory cards when loading savestates
@@ -995,8 +994,6 @@ struct Pcsx2Config
 
 	FilenameOptions BaseFilenames;
 
-	std::string PatchRegion;
-
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
 	// slots (3 each)
 	McdOptions Mcd[8];
@@ -1029,6 +1026,9 @@ struct Pcsx2Config
 	// You shouldn't assign to this class, because it'll mess with the runtime variables (Current...).
 	// But you can still use this to copy config. Only needed until we drop wx.
 	void CopyConfig(const Pcsx2Config& cfg);
+
+	/// Copies runtime configuration settings (e.g. frame limiter state).
+	void CopyRuntimeConfig(Pcsx2Config& cfg);
 };
 
 extern Pcsx2Config EmuConfig;

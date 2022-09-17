@@ -52,6 +52,9 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QClipboard>
+#include <QtGui/QInputMethod>
+
+#include "fmt/core.h"
 
 #include "DisplayWidget.h"
 #include "GameList/GameListWidget.h"
@@ -69,9 +72,9 @@ EmuThread* g_emu_thread = nullptr;
 //////////////////////////////////////////////////////////////////////////
 namespace QtHost {
 static void PrintCommandLineVersion();
-static void PrintCommandLineHelp(const char* progname);
+static void PrintCommandLineHelp(const std::string_view& progname);
 static std::shared_ptr<VMBootParameters>& AutoBoot(std::shared_ptr<VMBootParameters>& autoboot);
-static bool ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMBootParameters>& autoboot);
+static bool ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VMBootParameters>& autoboot);
 static bool InitializeConfig();
 static void SaveSettings();
 static void HookSignals();
@@ -1405,6 +1408,20 @@ bool Host::CopyTextToClipboard(const std::string_view& text)
 	return true;
 }
 
+void Host::BeginTextInput()
+{
+	QInputMethod* method = qApp->inputMethod();
+	if (method)
+		QMetaObject::invokeMethod(method, "show", Qt::QueuedConnection);
+}
+
+void Host::EndTextInput()
+{
+	QInputMethod* method = qApp->inputMethod();
+	if (method)
+		QMetaObject::invokeMethod(method, "hide", Qt::QueuedConnection);
+}
+
 void Host::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
 {
 	emit g_emu_thread->onInputDeviceConnected(
@@ -1468,10 +1485,10 @@ void QtHost::PrintCommandLineVersion()
 	std::fprintf(stderr, "\n");
 }
 
-void QtHost::PrintCommandLineHelp(const char* progname)
+void QtHost::PrintCommandLineHelp(const std::string_view& progname)
 {
 	PrintCommandLineVersion();
-	std::fprintf(stderr, "Usage: %s [parameters] [--] [boot filename]\n", progname);
+	fmt::print(stderr, "Usage: {} [parameters] [--] [boot filename]\n", progname);
 	std::fprintf(stderr, "\n");
 	std::fprintf(stderr, "  -help: Displays this information and exits.\n");
 	std::fprintf(stderr, "  -version: Displays version information and exits.\n");
@@ -1501,104 +1518,109 @@ std::shared_ptr<VMBootParameters>& QtHost::AutoBoot(std::shared_ptr<VMBootParame
 	return autoboot;
 }
 
-bool QtHost::ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMBootParameters>& autoboot)
+bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VMBootParameters>& autoboot)
 {
 	bool no_more_args = false;
 
-	for (int i = 1; i < argc; i++)
+	if (args.empty())
+	{
+		// Nothing to do here.
+		return true;
+	}
+
+	for (auto it = std::next(args.begin()); it != args.end(); ++it)
 	{
 		if (!no_more_args)
 		{
-#define CHECK_ARG(str) !std::strcmp(argv[i], str)
-#define CHECK_ARG_PARAM(str) (!std::strcmp(argv[i], str) && ((i + 1) < argc))
+#define CHECK_ARG(str) (*it == str)
+#define CHECK_ARG_PARAM(str) (*it == str && std::next(it) != args.end())
 
-			if (CHECK_ARG("-help"))
+			if (CHECK_ARG(QStringLiteral("-help")))
 			{
-				PrintCommandLineHelp(argv[0]);
+				PrintCommandLineHelp(args.front().toStdString());
 				return false;
 			}
-			else if (CHECK_ARG("-version"))
+			else if (CHECK_ARG(QStringLiteral("-version")))
 			{
 				PrintCommandLineVersion();
 				return false;
 			}
-			else if (CHECK_ARG("-batch"))
+			else if (CHECK_ARG(QStringLiteral("-batch")))
 			{
 				s_batch_mode = true;
 				continue;
 			}
-			else if (CHECK_ARG("-nogui"))
+			else if (CHECK_ARG(QStringLiteral("-nogui")))
 			{
 				s_batch_mode = true;
 				s_nogui_mode = true;
 				continue;
 			}
-			else if (CHECK_ARG("-fastboot"))
+			else if (CHECK_ARG(QStringLiteral("-fastboot")))
 			{
 				AutoBoot(autoboot)->fast_boot = true;
 				continue;
 			}
-			else if (CHECK_ARG("-slowboot"))
+			else if (CHECK_ARG(QStringLiteral("-slowboot")))
 			{
 				AutoBoot(autoboot)->fast_boot = false;
 				continue;
 			}
-			else if (CHECK_ARG_PARAM("-state"))
+			else if (CHECK_ARG_PARAM(QStringLiteral("-state")))
 			{
-				AutoBoot(autoboot)->state_index = std::atoi(argv[++i]);
+				AutoBoot(autoboot)->state_index = (++it)->toInt();
 				continue;
 			}
-			else if (CHECK_ARG_PARAM("-statefile"))
+			else if (CHECK_ARG_PARAM(QStringLiteral("-statefile")))
 			{
-				AutoBoot(autoboot)->save_state = argv[++i];
+				AutoBoot(autoboot)->save_state = (++it)->toStdString();
 				continue;
 			}
-			else if (CHECK_ARG_PARAM("-elf"))
+			else if (CHECK_ARG_PARAM(QStringLiteral("-elf")))
 			{
-				AutoBoot(autoboot)->elf_override = argv[++i];
+				AutoBoot(autoboot)->elf_override = (++it)->toStdString();
 				continue;
 			}
-			else if (CHECK_ARG_PARAM("-disc"))
+			else if (CHECK_ARG_PARAM(QStringLiteral("-disc")))
 			{
 				AutoBoot(autoboot)->source_type = CDVD_SourceType::Disc;
-				AutoBoot(autoboot)->filename = argv[++i];
+				AutoBoot(autoboot)->filename = (++it)->toStdString();
 				continue;
 			}
-			else if (CHECK_ARG("-bios"))
+			else if (CHECK_ARG(QStringLiteral("-bios")))
 			{
 				AutoBoot(autoboot)->source_type = CDVD_SourceType::NoDisc;
 				continue;
 			}
-			else if (CHECK_ARG("-fullscreen"))
+			else if (CHECK_ARG(QStringLiteral("-fullscreen")))
 			{
 				AutoBoot(autoboot)->fullscreen = true;
 				s_start_fullscreen_ui_fullscreen = true;
 				continue;
 			}
-			else if (CHECK_ARG("-nofullscreen"))
+			else if (CHECK_ARG(QStringLiteral("-nofullscreen")))
 			{
 				AutoBoot(autoboot)->fullscreen = false;
 				continue;
 			}
-			else if (CHECK_ARG("-earlyconsolelog"))
+			else if (CHECK_ARG(QStringLiteral("-earlyconsolelog")))
 			{
 				CommonHost::InitializeEarlyConsole();
 				continue;
 			}
-			else if (CHECK_ARG("-bigpicture"))
+			else if (CHECK_ARG(QStringLiteral("-bigpicture")))
 			{
 				s_start_fullscreen_ui = true;
 				continue;
 			}
-			else if (CHECK_ARG("--"))
+			else if (CHECK_ARG(QStringLiteral("--")))
 			{
 				no_more_args = true;
 				continue;
 			}
-			else if (argv[i][0] == '-')
+			else if ((*it)[0] == '-')
 			{
-				CommonHost::InitializeEarlyConsole();
-				std::fprintf(stderr, "Unknown parameter: '%s'", argv[i]);
+				QMessageBox::critical(nullptr, QStringLiteral("Error"), QStringLiteral("Unknown parameter: '%1'").arg(*it));
 				return false;
 			}
 
@@ -1609,7 +1631,7 @@ bool QtHost::ParseCommandLineOptions(int argc, char* argv[], std::shared_ptr<VMB
 		if (!AutoBoot(autoboot)->filename.empty())
 			AutoBoot(autoboot)->filename += ' ';
 
-		AutoBoot(autoboot)->filename += argv[i];
+		AutoBoot(autoboot)->filename += it->toStdString();
 	}
 
 	// check autoboot parameters, if we set something like fullscreen without a bios
@@ -1679,7 +1701,7 @@ int main(int argc, char* argv[])
 #endif
 
 	std::shared_ptr<VMBootParameters> autoboot;
-	if (!QtHost::ParseCommandLineOptions(argc, argv, autoboot))
+	if (!QtHost::ParseCommandLineOptions(app.arguments(), autoboot))
 		return EXIT_FAILURE;
 
 	// Bail out if we can't find any config.
