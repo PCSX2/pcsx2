@@ -1073,8 +1073,6 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 #endif
 	SettingsWrapBitBool(ConsoleToStdio);
 	SettingsWrapBitBool(HostFs);
-	SettingsWrapBitBool(PatchBios);
-	SettingsWrapEntry(PatchRegion);
 
 	SettingsWrapBitBool(BackupSavestate);
 	SettingsWrapBitBool(SavestateZstdCompression);
@@ -1225,8 +1223,6 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	EnableNoInterlacingPatches = cfg.EnableNoInterlacingPatches;
 	EnableRecordingTools = cfg.EnableRecordingTools;
 	UseBOOT2Injection = cfg.UseBOOT2Injection;
-	PatchBios = cfg.PatchBios;
-	PatchRegion = cfg.PatchRegion;
 	BackupSavestate = cfg.BackupSavestate;
 	SavestateZstdCompression = cfg.SavestateZstdCompression;
 	McdEnableEjection = cfg.McdEnableEjection;
