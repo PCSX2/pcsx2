@@ -73,6 +73,8 @@ namespace PAD
 			m_analog[pad].invert_ry = y;
 		}
 
+		__fi u8 GetRawPressure(u32 pad, u32 index) const { return m_button_pressure[pad][index]; }
+
 		u32 GetButtons(u32 pad);
 		u8 GetPressure(u32 pad, u32 index);
 	};

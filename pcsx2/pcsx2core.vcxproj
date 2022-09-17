@@ -197,6 +197,7 @@
     <ClCompile Include="Frontend\GameList.cpp" />
     <ClCompile Include="Frontend\ImGuiFullscreen.cpp" />
     <ClCompile Include="Frontend\ImGuiManager.cpp" />
+    <ClCompile Include="Frontend\ImGuiOverlays.cpp" />
     <ClCompile Include="Frontend\imgui_impl_dx11.cpp" />
     <ClCompile Include="Frontend\imgui_impl_dx12.cpp" />
     <ClCompile Include="Frontend\imgui_impl_opengl3.cpp" />
@@ -522,6 +523,7 @@
     <ClInclude Include="Frontend\GameList.h" />
     <ClInclude Include="Frontend\ImGuiFullscreen.h" />
     <ClInclude Include="Frontend\ImGuiManager.h" />
+    <ClInclude Include="Frontend\ImGuiOverlays.h" />
     <ClInclude Include="Frontend\imgui_impl_dx11.h" />
     <ClInclude Include="Frontend\imgui_impl_dx12.h" />
     <ClInclude Include="Frontend\imgui_impl_opengl3.h" />

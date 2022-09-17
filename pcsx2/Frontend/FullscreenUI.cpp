@@ -2245,6 +2245,10 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		false);
 	DrawToggleSetting(bsi, ICON_FA_PLAY " Show Status Indicators",
 		"Shows indicators when fast forwarding, pausing, and other abnormal states are active.", "EmuCore/GS", "OsdShowIndicators", true);
+	DrawToggleSetting(bsi, ICON_FA_SLIDERS_H " Show Settings",
+		"Shows the current configuration in the bottom-right corner of the display.", "EmuCore/GS", "OsdShowSettings", false);
+	DrawToggleSetting(bsi, ICON_FA_GAMEPAD " Show Inputs",
+		"Shows the current controller state of the system in the bottom-left corner of the display.", "EmuCore/GS", "OsdShowInputs", false);
 
 	MenuHeading("Operations");
 	if (MenuButton(ICON_FA_FOLDER_MINUS " Reset Settings", "Resets configuration to defaults (excluding controller settings).",
