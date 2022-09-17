@@ -356,7 +356,7 @@ namespace R3000A
 			StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
 			host_stat(host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
 
-			static_cast<void>(std::next(dir)); /* This is for avoid warning of non used return value */
+			dir = std::next(dir);
 			return 1;
 		}
 
