@@ -413,18 +413,32 @@ bool SocketAdapter::send(NetPacket* pkt)
 
 void SocketAdapter::reset()
 {
-	//Adapter Reset
+	//Force close all sessions
 	std::vector<ConnectionKey> keys = connections.GetKeys();
-	DevCon.WriteLn("DEV9: Socket: Reset %d Connections", keys.size());
+	DevCon.WriteLn("DEV9: Socket: Closing %d Connections", keys.size());
 	for (size_t i = 0; i < keys.size(); i++)
 	{
-		ConnectionKey key = keys[i];
-
+		const ConnectionKey key = keys[i];
 		BaseSession* session;
 		if (!connections.TryGetValue(key, &session))
 			continue;
+		delete session;
+	}
+	connections.Clear();
+	fixedUDPPorts.Clear(); //fixedUDP sessions already deleted via connections
 
-		session->Reset();
+	//Clear out vRecBuffer
+	while (!vRecBuffer.IsQueueEmpty())
+	{
+		EthernetFrame* retPay;
+		if (!vRecBuffer.Dequeue(&retPay))
+		{
+			using namespace std::chrono_literals;
+			std::this_thread::sleep_for(1ms);
+			continue;
+		}
+
+		delete retPay;
 	}
 }
 
@@ -678,31 +692,5 @@ void SocketAdapter::close()
 
 SocketAdapter::~SocketAdapter()
 {
-	//Force close all sessions
-	std::vector<ConnectionKey> keys = connections.GetKeys();
-	DevCon.WriteLn("DEV9: Socket: Closing %d Connections", keys.size());
-	for (size_t i = 0; i < keys.size(); i++)
-	{
-		const ConnectionKey key = keys[i];
-		BaseSession* session;
-		if (!connections.TryGetValue(key, &session))
-			continue;
-		delete session;
-	}
-	connections.Clear();
-	fixedUDPPorts.Clear(); //fixedUDP sessions already deleted via connections
-
-	//Clear out vRecBuffer
-	while (!vRecBuffer.IsQueueEmpty())
-	{
-		EthernetFrame* retPay;
-		if (!vRecBuffer.Dequeue(&retPay))
-		{
-			using namespace std::chrono_literals;
-			std::this_thread::sleep_for(1ms);
-			continue;
-		}
-
-		delete retPay;
-	}
+	reset();
 }
