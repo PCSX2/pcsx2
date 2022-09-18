@@ -56,6 +56,18 @@ typedef struct
 	unsigned char mtime[8];
 	unsigned int hisize;
 } fio_stat_t;
+typedef struct
+{
+	fio_stat_t _fioStat;
+	/** Number of subs (main) / subpart number (sub) */
+	unsigned int private_0;
+	unsigned int private_1;
+	unsigned int private_2;
+	unsigned int private_3;
+	unsigned int private_4;
+	/** Sector start.  */
+	unsigned int private_5;
+} fxio_stat_t;
 
 typedef struct
 {
@@ -63,6 +75,13 @@ typedef struct
 	char name[256];
 	unsigned int unknown;
 } fio_dirent_t;
+
+typedef struct
+{
+	fxio_stat_t stat;
+	char name[256];
+	unsigned int unknown;
+} fxio_dirent_t;
 
 static std::string hostRoot;
 
@@ -199,6 +218,11 @@ namespace R3000A
 		host_stats->mtime[1] = (unsigned char)loctime->tm_sec;
 
 		return 0;
+	}
+
+	static int host_stat(const std::string path, fxio_stat_t* host_stats)
+	{
+		return host_stat(path, &host_stats->_fioStat);
 	}
 
 	// TODO: sandbox option, other permissions
@@ -347,16 +371,25 @@ namespace R3000A
 			return 0;
 		}
 
-		virtual int read(void* buf) /* Flawfinder: ignore */
+		virtual int read(void* buf, bool iomanX) /* Flawfinder: ignore */
 		{
-			fio_dirent_t* hostcontent = (fio_dirent_t*)buf;
 			if (dir == results.end())
 				return 0;
 
-			StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
-			host_stat(host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
+			if (iomanX)
+			{
+				fxio_dirent_t* hostcontent = (fxio_dirent_t*)buf;
+				StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
+				host_stat(host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
+			}
+			else
+			{
+				fio_dirent_t* hostcontent = (fio_dirent_t*)buf;
+				StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
+				host_stat(host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
+			}
 
-			static_cast<void>(std::next(dir)); /* This is for avoid warning of non used return value */
+			dir = std::next(dir);
 			return 1;
 		}
 
@@ -591,19 +624,75 @@ namespace R3000A
 			return 0;
 		}
 
-		int dread_HLE()
+		int _dread_HLE(bool iomanX)
 		{
 			s32 fh = a0;
 			u32 data = a1;
-
-			if (IOManDir* dir = getfd<IOManDir>(fh))
+			if (iomanX)
 			{
-				char buf[sizeof(fio_dirent_t)];
-				v0 = dir->read(&buf); /* Flawfinder: ignore */
+				if (IOManDir* dir = getfd<IOManDir>(fh))
+				{
+					char buf[sizeof(fxio_dirent_t)];
+					v0 = dir->read(&buf, iomanX); /* Flawfinder: ignore */
 
-				for (s32 i = 0; i < (s32)sizeof(fio_dirent_t); i++)
-					iopMemWrite8(data + i, buf[i]);
+					for (s32 i = 0; i < (s32)sizeof(fxio_dirent_t); i++)
+						iopMemWrite8(data + i, buf[i]);
 
+					pc = ra;
+					return 1;
+				}
+			}
+			else
+			{
+				if (IOManDir* dir = getfd<IOManDir>(fh))
+				{
+					char buf[sizeof(fio_dirent_t)];
+					v0 = dir->read(&buf); /* Flawfinder: ignore */
+
+					for (s32 i = 0; i < (s32)sizeof(fio_dirent_t); i++)
+						iopMemWrite8(data + i, buf[i]);
+
+					pc = ra;
+					return 1;
+				}
+			}
+			return 0;
+		}
+
+		int dread_HLE()
+		{
+			return _dread_HLE(false);
+		}
+
+		int dreadx_HLE()
+		{
+			return _dread_HLE(true);
+		}
+
+		int _getStat_HLE(bool iomanx)
+		{
+			const std::string path = clean_path(Ra0);
+			u32 data = a1;
+
+			if (is_host(path))
+			{
+				const std::string full_path = host_path(path.substr(path.find(':') + 1), true);
+				if (iomanx)
+				{
+					char buf[sizeof(fxio_stat_t)];
+					v0 = host_stat(full_path, (fxio_stat_t*)&buf);
+
+					for (size_t i = 0; i < sizeof(fxio_stat_t); i++)
+						iopMemWrite8(data + i, buf[i]);
+				}
+				else
+				{
+					char buf[sizeof(fio_stat_t)];
+					v0 = host_stat(full_path, (fio_stat_t*)&buf);
+
+					for (size_t i = 0; i < sizeof(fio_stat_t); i++)
+						iopMemWrite8(data + i, buf[i]);
+				}
 				pc = ra;
 				return 1;
 			}
@@ -613,23 +702,12 @@ namespace R3000A
 
 		int getStat_HLE()
 		{
-			const std::string path = clean_path(Ra0);
-			u32 data = a1;
+			return _getStat_HLE(false);
+		}
 
-			if (is_host(path))
-			{
-				const std::string full_path = host_path(path.substr(path.find(':') + 1), true);
-				char buf[sizeof(fio_stat_t)];
-				v0 = host_stat(full_path, (fio_stat_t*)&buf);
-
-				for (s32 i = 0; i < (s32)sizeof(fio_stat_t); i++)
-					iopMemWrite8(data + i, buf[i]);
-
-				pc = ra;
-				return 1;
-			}
-
-			return 0;
+		int getStatx_HLE()
+		{
+			return _getStat_HLE(true);
 		}
 
 		int lseek_HLE()
@@ -964,12 +1042,6 @@ namespace R3000A
 		using namespace n; \
 		switch (index)     \
 		{
-#define MODULE_2(n1, n2)          \
-	if (#n1 == libname || #n2 == libname)     \
-	{                      \
-		using namespace n1; \
-		switch (index)     \
-		{
 #define END_MODULE \
 	}              \
 	}
@@ -989,22 +1061,37 @@ namespace R3000A
 			EXPORT_H( 14, Kprintf)
 		END_MODULE
 
-		MODULE_2(ioman, iomanx)
-			EXPORT_H(  4, open)
-			EXPORT_H(  5, close)
-			EXPORT_H(  6, read)
-			EXPORT_H(  7, write)
-			EXPORT_H(  8, lseek)
-			EXPORT_H( 10, remove)
-			EXPORT_H( 11, mkdir)
-			EXPORT_H( 12, rmdir)
-			EXPORT_H( 13, dopen)
-			EXPORT_H( 14, dclose)
-			EXPORT_H( 15, dread)
-			EXPORT_H( 16, getStat)
-		END_MODULE
+		// Special case with ioman and iomanX
+		// They are mostly compatible excluding stat structures
+		if(libname == "ioman" || libname == "iomanx")
+		{
+			const bool use_ioman = libname == "ioman";
+			using namespace ioman;
+				switch(index)
+				{
+					EXPORT_H(  4, open)
+					EXPORT_H(  5, close)
+					EXPORT_H(  6, read)
+					EXPORT_H(  7, write)
+					EXPORT_H(  8, lseek)
+					EXPORT_H( 10, remove)
+					EXPORT_H( 11, mkdir)
+					EXPORT_H( 12, rmdir)
+					EXPORT_H( 13, dopen)
+					EXPORT_H( 14, dclose)
+					case 15: // dread
+					if(use_ioman)
+						return dread_HLE;
+					else
+						return dreadx_HLE;
+					case 16: // getStat
+					if(use_ioman)
+						return getStat_HLE;
+					else
+						return getStatx_HLE;
+				}
+		}
 		// clang-format on
-
 		return 0;
 	}
 
