@@ -36,7 +36,7 @@ namespace Common
 		struct Request
 		{
 			using Data = std::vector<u8>;
-			using Callback = std::function<void(s32 status_code, std::string content_type, Data data)>;
+			using Callback = std::function<void(s32 status_code, const std::string& content_type, Data data)>;
 
 			enum class Type
 			{
