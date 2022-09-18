@@ -164,6 +164,9 @@ const char* dialog_message(int ID, bool* updateText)
 		case IDC_GEOMETRY_SHADER_OVERRIDE:
 			return cvtString("Allows the GPU instead of just the CPU to transform lines into sprites. This reduces CPU load and bandwidth requirement, but it is heavier on the GPU.\n"
 				"Automatic detection is recommended.");
+		case IDC_SPIN_GPU:
+			return cvtString("Submits useless work to the GPU during readbacks to prevent it from going into powersave modes.\n"
+				"May improve performance but with a significant increase in power usage.");
 		case IDC_LINEAR_PRESENT:
 			return cvtString("Use bilinear filtering when Upscaling/Downscaling the image to the screen. Disable it if you want a sharper/pixelated output.");
 		// Exclusive for Hardware Renderer

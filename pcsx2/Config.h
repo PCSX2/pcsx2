@@ -496,6 +496,7 @@ struct Pcsx2Config
 					OsdShowInputs : 1;
 
 				bool
+					HWSpinGPUForReadbacks : 1,
 					GPUPaletteConversion : 1,
 					AutoFlushSW : 1,
 					PreloadFrameWithGSData : 1,
