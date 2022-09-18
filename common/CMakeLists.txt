@@ -27,6 +27,7 @@ target_sources(common PRIVATE
 	PrecompiledHeader.cpp
 	Perf.cpp
 	ProgressCallback.cpp
+	ReadbackSpinManager.cpp
 	Semaphore.cpp
 	SettingsWrapper.cpp
 	StringUtil.cpp
@@ -86,6 +87,7 @@ target_sources(common PRIVATE
 	PageFaultSource.h
 	PrecompiledHeader.h
 	ProgressCallback.h
+	ReadbackSpinManager.h
 	RedtapeWindows.h
 	SafeArray.h
 	ScopedGuard.h

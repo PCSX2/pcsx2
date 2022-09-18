@@ -58,6 +58,9 @@
     <ClCompile Include="PrecompiledHeader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ReadbackSpinManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Semaphore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -277,6 +280,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PrecompiledHeader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ReadbackSpinManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RedtapeWindows.h">
