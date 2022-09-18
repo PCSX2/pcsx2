@@ -33,7 +33,7 @@ static std::thread s_keepalive_thread;
 
 u8 strack;
 u8 etrack;
-track tracks[100];
+cdvdTrack tracks[100];
 
 int curDiskType;
 int curTrayStatus;
@@ -65,7 +65,7 @@ inline void lsn_to_msf(u8* minute, u8* second, u8* frame, u32 lsn)
 // TocStuff
 void cdvdParseTOC()
 {
-	tracks[1].start_lba = 0;
+	tracks[1].startLba = 0;
 
 	if (!src->GetSectorCount())
 	{
@@ -93,7 +93,7 @@ void cdvdParseTOC()
 			continue;
 		strack = std::min(strack, entry.track);
 		etrack = std::max(etrack, entry.track);
-		tracks[entry.track].start_lba = entry.lba;
+		tracks[entry.track].startLba = entry.lba;
 		if ((entry.control & 0x0C) == 0x04)
 		{
 			std::array<u8, 2352> buffer;
@@ -284,10 +284,10 @@ s32 CALLBACK DISCreadSubQ(u32 lsn, cdvdSubQ* subq)
 	lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
 
 	u8 i = strack;
-	while (i < etrack && lsn >= tracks[i + 1].start_lba)
+	while (i < etrack && lsn >= tracks[i + 1].startLba)
 		++i;
 
-	lsn -= tracks[i].start_lba;
+	lsn -= tracks[i].startLba;
 
 	lsn_to_msf(&subq->trackM, &subq->trackS, &subq->trackF, lsn);
 
@@ -329,7 +329,7 @@ s32 CALLBACK DISCgetTD(u8 Track, cdvdTD* Buffer)
 	if (Track > etrack)
 		return -1;
 
-	Buffer->lsn = tracks[Track].start_lba;
+	Buffer->lsn = tracks[Track].startLba;
 	Buffer->type = tracks[Track].type;
 	return 0;
 }
