@@ -81,6 +81,7 @@
     <ClCompile Include="MD5Digest.cpp" />
     <ClCompile Include="MemorySettingsInterface.cpp" />
     <ClCompile Include="ProgressCallback.cpp" />
+    <ClCompile Include="ReadbackSpinManager.cpp" />
     <ClCompile Include="StackWalker.cpp" />
     <ClCompile Include="StringUtil.cpp" />
     <ClCompile Include="SettingsWrapper.cpp" />
@@ -177,6 +178,7 @@
     <ClInclude Include="MemcpyFast.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="PrecompiledHeader.h" />
+    <ClInclude Include="ReadbackSpinManager.h" />
     <ClInclude Include="RedtapeWindows.h" />
     <ClInclude Include="SafeArray.h" />
     <ClInclude Include="ThreadPool.h" />
