@@ -446,6 +446,8 @@ namespace Vulkan
 			SupportsExtension(VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME, false);
 		m_optional_extensions.vk_ext_memory_budget =
 			SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
+		m_optional_extensions.vk_ext_calibrated_timestamps =
+			SupportsExtension(VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME, false);
 		m_optional_extensions.vk_khr_driver_properties =
 			SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
 		m_optional_extensions.vk_arm_rasterization_order_attachment_access =
@@ -637,8 +639,8 @@ namespace Vulkan
 		}
 
 		m_gpu_timing_supported = (m_device_properties.limits.timestampComputeAndGraphics != 0 &&
-								  queue_family_properties[m_graphics_queue_family_index].timestampValidBits > 0 &&
-								  m_device_properties.limits.timestampPeriod > 0);
+		                          queue_family_properties[m_graphics_queue_family_index].timestampValidBits > 0 &&
+		                          m_device_properties.limits.timestampPeriod > 0);
 		DevCon.WriteLn("GPU timing is %s (TS=%u TS valid bits=%u, TS period=%f)",
 			m_gpu_timing_supported ? "supported" : "not supported",
 			static_cast<u32>(m_device_properties.limits.timestampComputeAndGraphics),
@@ -684,8 +686,44 @@ namespace Vulkan
 		// query
 		vkGetPhysicalDeviceProperties2(m_physical_device, &properties2);
 
+		// VK_EXT_calibrated_timestamps checking
+		if (m_optional_extensions.vk_ext_calibrated_timestamps)
+		{
+			u32 count = 0;
+			vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(m_physical_device, &count, nullptr);
+			std::unique_ptr<VkTimeDomainEXT[]> time_domains = std::make_unique<VkTimeDomainEXT[]>(count);
+			vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(m_physical_device, &count, time_domains.get());
+			const VkTimeDomainEXT* begin = &time_domains[0];
+			const VkTimeDomainEXT* end = &time_domains[count];
+			if (std::find(begin, end, VK_TIME_DOMAIN_DEVICE_EXT) == end)
+				m_optional_extensions.vk_ext_calibrated_timestamps = false;
+			VkTimeDomainEXT preferred_types[] = {
+#ifdef _WIN32
+				VK_TIME_DOMAIN_QUERY_PERFORMANCE_COUNTER_EXT,
+#else
+#ifdef CLOCK_MONOTONIC_RAW
+				VK_TIME_DOMAIN_CLOCK_MONOTONIC_RAW_EXT,
+#endif
+				VK_TIME_DOMAIN_CLOCK_MONOTONIC_EXT,
+#endif
+			};
+			m_calibrated_timestamp_type = VK_TIME_DOMAIN_DEVICE_EXT;
+			for (VkTimeDomainEXT type : preferred_types)
+			{
+				if (std::find(begin, end, type) != end)
+				{
+					m_calibrated_timestamp_type = type;
+					break;
+				}
+			}
+			if (m_calibrated_timestamp_type == VK_TIME_DOMAIN_DEVICE_EXT)
+				m_optional_extensions.vk_ext_calibrated_timestamps = false;
+		}
+
 		Console.WriteLn("VK_EXT_provoking_vertex is %s",
 			m_optional_extensions.vk_ext_provoking_vertex ? "supported" : "NOT supported");
+		Console.WriteLn("VK_EXT_calibrated_timestamps is %s",
+			m_optional_extensions.vk_ext_calibrated_timestamps ? "supported" : "NOT supported");
 		Console.WriteLn("VK_ARM_rasterization_order_attachment_access is %s",
 			m_optional_extensions.vk_arm_rasterization_order_attachment_access ? "supported" : "NOT supported");
 	}
