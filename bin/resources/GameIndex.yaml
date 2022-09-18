@@ -2179,6 +2179,9 @@ SCED-52796:
 SCED-52818:
   name: "EyeToy - Chat [Light]"
   region: "PAL-M11"
+SCED-52889:
+  name: "Killzone [Bonus Disc]"
+  region: "PAL-M5"
 SCED-52932:
   name: "Bonus Demo 8"
   region: "PAL-M5"
@@ -16740,6 +16743,17 @@ SLES-53614:
 SLES-53616:
   name: "True Crime - New York City"
   region: "PAL-E"
+  clampModes:
+    eeClampMode: 2 # Fixes SPS on highway.
+  roundModes:
+    eeRoundMode: 0 # Fixes scene switching in intro.
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
+    preloadFrameData: 1 # Fixes static text screens.
+    roundSprite: 1 # Fixes lines in some post-effects.
+SLES-53617:
+  name: "True Crime - New York City"
+  region: "PAL-G"
   clampModes:
     eeClampMode: 2 # Fixes SPS on highway.
   roundModes:
