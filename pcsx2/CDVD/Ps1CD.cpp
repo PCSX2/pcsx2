@@ -166,6 +166,33 @@ static __fi void StopCdda()
 	}
 }
 
+void UpdateStat(uint stat)
+{
+	if (stat & STATUS_SEEK)
+	{
+		cdr.StatP &= ~(STATUS_READ | STATUS_PLAY);
+		cdr.StatP |= STATUS_ROTATING | STATUS_SEEK;
+	}
+
+	if (stat & STATUS_PLAY)
+	{
+		cdr.StatP &= ~(STATUS_SEEK | STATUS_READ);
+		cdr.StatP |= STATUS_ROTATING | STATUS_PLAY;
+	}
+
+	if (stat & STATUS_READ)
+	{
+		cdr.StatP &= ~(STATUS_SEEK | STATUS_PLAY);
+		cdr.StatP |= STATUS_ROTATING | STATUS_READ;
+	}
+
+	if (stat & STATUS_ROTATING)
+	{
+		cdr.StatP &= ~(STATUS_SEEK | STATUS_PLAY | STATUS_READ);
+		cdr.StatP |= STATUS_ROTATING;
+	}
+}
+
 static __fi void SetResultSize(u8 size)
 {
 	cdr.ResultP = 0;
@@ -240,9 +267,9 @@ void cdrInterrupt()
 		case CdlPlay:
 			cdr.CmdProcess = 0;
 			SetResultSize(1);
+			UpdateStat(STATUS_PLAY);
 			cdr.Result[0] = cdr.StatP;
 			cdr.Stat = Acknowledge;
-			cdr.StatP |= STATUS_ROTATING | STATUS_PLAY;
 			break;
 
 		case CdlForward:
@@ -302,7 +329,7 @@ void cdrInterrupt()
 
 		case CdlInit:
 			SetResultSize(1);
-			cdr.StatP = STATUS_ROTATING;
+			UpdateStat(STATUS_ROTATING);
 			cdr.Mode |= MODE_INIT;
 			cdr.Result[0] = cdr.StatP;
 			cdr.Stat = Acknowledge;
@@ -365,14 +392,28 @@ void cdrInterrupt()
 
 		case CdlGetlocP:
 			SetResultSize(8);
-			cdr.Result[0] = 1;
-			cdr.Result[1] = 1;
-			cdr.Result[2] = cdr.Prev[0];
-			cdr.Result[3] = itob((btoi(cdr.Prev[1])) - 2);
-			cdr.Result[4] = cdr.Prev[2];
-			cdr.Result[5] = cdr.Prev[0];
-			cdr.Result[6] = cdr.Prev[1];
-			cdr.Result[7] = cdr.Prev[2];
+			if (CDVD->readSubQ(msf_to_lsn(cdr.SetSector), &cdr.subQ) >= 0)
+			{
+				cdr.Result[0] = cdr.subQ.trackNum;
+				cdr.Result[1] = cdr.subQ.trackIndex;
+				cdr.Result[2] = cdr.subQ.trackM;
+				cdr.Result[3] = cdr.subQ.trackS;
+				cdr.Result[4] = cdr.subQ.trackF;
+				cdr.Result[5] = cdr.subQ.discM;
+				cdr.Result[6] = cdr.subQ.discS;
+				cdr.Result[7] = cdr.subQ.discF;
+			}
+			else
+			{
+				cdr.Result[0] = 1;
+				cdr.Result[1] = 1;
+				cdr.Result[2] = cdr.Prev[0];
+				cdr.Result[3] = itob((btoi(cdr.Prev[1])) - 2);
+				cdr.Result[4] = cdr.Prev[2];
+				cdr.Result[5] = cdr.Prev[0];
+				cdr.Result[6] = cdr.Prev[1];
+				cdr.Result[7] = cdr.Prev[2];
+			}
 			cdr.Stat = Acknowledge;
 			break;
 
@@ -571,8 +612,6 @@ void cdrReadInterrupt()
 
 	cdr.OCUP = 1;
 	SetResultSize(1);
-	cdr.StatP &= ~STATUS_SEEK;
-	cdr.StatP |= STATUS_READ;
 	cdr.Result[0] = cdr.StatP;
 
 	if (cdr.RErr == 0)
@@ -780,6 +819,7 @@ void cdrWrite1(u8 rt)
 			cdr.Play = 1;
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
+			UpdateStat(STATUS_PLAY);
 			// Play is almost identical to CdlReadS, believe it or not. The main difference is that this does not trigger a completed read IRQ
 			StartReading(2);
 			AddIrqQueue(cdr.Cmd, 0x800);
@@ -806,6 +846,7 @@ void cdrWrite1(u8 rt)
 			StopReading();
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
+			UpdateStat(STATUS_READ);
 			StartReading(1);
 			break;
 
@@ -908,21 +949,12 @@ void cdrWrite1(u8 rt)
 			break;
 
 		case CdlSeekL:
-			((u32*)cdr.SetSectorSeek)[0] = ((u32*)cdr.SetSector)[0];
-			cdr.Ctrl |= 0x80;
-			cdr.Stat = NoIntr;
-
-			//DevCon.Warning("CdlSeekL delay: %d", sectorSeekReadDelay);
-			AddIrqQueue(cdr.Cmd, sectorSeekReadDelay);
-			sectorSeekReadDelay = shortSectorSeekReadDelay;
-			break;
-
 		case CdlSeekP:
 			((u32*)cdr.SetSectorSeek)[0] = ((u32*)cdr.SetSector)[0];
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
-
-			//DevCon.Warning("CdlSeekP delay: %d", sectorSeekReadDelay);
+			UpdateStat(STATUS_SEEK);
+			//DevCon.Warning("CdlSeekL delay: %d", sectorSeekReadDelay);
 			AddIrqQueue(cdr.Cmd, sectorSeekReadDelay);
 			sectorSeekReadDelay = shortSectorSeekReadDelay;
 			break;
@@ -944,6 +976,7 @@ void cdrWrite1(u8 rt)
 			StopReading();
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
+			UpdateStat(STATUS_READ);
 			StartReading(2);
 			break;
 
