@@ -267,7 +267,9 @@ namespace Vulkan
 		VkRenderPass CreateCachedRenderPass(RenderPassCacheKey key);
 		void DestroyRenderPassCache();
 
+		void CommandBufferCompleted(u32 index);
 		void ActivateCommandBuffer(u32 index);
+		void ScanForCommandBufferCompletion();
 		void WaitForCommandBufferCompletion(u32 index);
 
 		void DoSubmitCommandBuffer(u32 index, VkSemaphore wait_semaphore, VkSemaphore signal_semaphore);
