@@ -1152,13 +1152,6 @@ bool VMManager::DoLoadState(const char* filename)
 	{
 		Host::OnSaveStateLoading(filename);
 		SaveState_UnzipFromDisk(filename);
-
-		// HACK: LastELF isn't in the save state...
-		if (!s_elf_override.empty())
-			cdvdReloadElfInfo(fmt::format("host:{}", s_elf_override));
-		else
-			cdvdReloadElfInfo();
-
 		UpdateRunningGame(false, false);
 		Host::OnSaveStateLoaded(filename, true);
 		return true;
