@@ -231,3 +231,7 @@ extern "C" {
 #define vkAcquireFullScreenExclusiveModeEXT pcsx2_vkAcquireFullScreenExclusiveModeEXT
 #define vkReleaseFullScreenExclusiveModeEXT pcsx2_vkReleaseFullScreenExclusiveModeEXT
 #endif
+
+// VK_EXT_calibrated_timestamps
+#define vkGetCalibratedTimestampsEXT pcsx2_vkGetCalibratedTimestampsEXT
+#define vkGetPhysicalDeviceCalibrateableTimeDomainsEXT pcsx2_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT

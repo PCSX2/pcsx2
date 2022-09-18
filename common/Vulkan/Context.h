@@ -50,6 +50,7 @@ namespace Vulkan
 		{
 			bool vk_ext_provoking_vertex : 1;
 			bool vk_ext_memory_budget : 1;
+			bool vk_ext_calibrated_timestamps : 1;
 			bool vk_khr_driver_properties : 1;
 			bool vk_arm_rasterization_order_attachment_access : 1;
 			bool vk_khr_fragment_shader_barycentric : 1;
@@ -309,6 +310,7 @@ namespace Vulkan
 		float m_accumulated_gpu_time = 0.0f;
 		bool m_gpu_timing_enabled = false;
 		bool m_gpu_timing_supported = false;
+		VkTimeDomainEXT m_calibrated_timestamp_type = VK_TIME_DOMAIN_DEVICE_EXT;
 
 		std::array<FrameResources, NUM_COMMAND_BUFFERS> m_frame_resources;
 		u64 m_next_fence_counter = 1;
