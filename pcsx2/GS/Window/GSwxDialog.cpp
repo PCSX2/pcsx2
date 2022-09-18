@@ -284,6 +284,7 @@ RendererTab::RendererTab(wxWindow* parent)
 	auto* hw_checks_box = new wxWrapSizer(wxHORIZONTAL);
 
 	auto* paltex_prereq = m_ui.addCheckBox(hw_checks_box, "GPU Palette Conversion", "paltex", IDC_PALTEX, hw_prereq);
+	m_ui.addCheckBox(hw_checks_box, "Spin GPU During Readbacks", "HWSpinGPUForReadbacks", IDC_SPIN_GPU);
 	auto aniso_prereq = [this, paltex_prereq]{ return m_is_hardware && paltex_prereq->GetValue() == false; };
 
 	auto* hw_choice_grid = new wxFlexGridSizer(2, space, space);
@@ -473,10 +474,9 @@ PostTab::PostTab(wxWindow* parent)
 	auto* shader_boost_grid = new wxFlexGridSizer(2, space, space);
 	shader_boost_grid->AddGrowableCol(1);
 
-	auto shader_boost_prereq = [shade_boost_check, this] { return shade_boost_check.box->GetValue(); };
-	m_ui.addSliderAndLabel(shader_boost_grid, "Brightness:", "ShadeBoost_Brightness", 0, 100, 50, -1, shader_boost_prereq);
-	m_ui.addSliderAndLabel(shader_boost_grid, "Contrast:",   "ShadeBoost_Contrast",   0, 100, 50, -1, shader_boost_prereq);
-	m_ui.addSliderAndLabel(shader_boost_grid, "Saturation:", "ShadeBoost_Saturation", 0, 100, 50, -1, shader_boost_prereq);
+	m_ui.addSliderAndLabel(shader_boost_grid, "Brightness:", "ShadeBoost_Brightness", 0, 100, 50, -1, shade_boost_check);
+	m_ui.addSliderAndLabel(shader_boost_grid, "Contrast:",   "ShadeBoost_Contrast",   0, 100, 50, -1, shade_boost_check);
+	m_ui.addSliderAndLabel(shader_boost_grid, "Saturation:", "ShadeBoost_Saturation", 0, 100, 50, -1, shade_boost_check);
 
 	shade_boost_box->Add(shader_boost_grid, wxSizerFlags().Expand());
 	shader_box->Add(shade_boost_box.outer, wxSizerFlags().Expand());

@@ -796,6 +796,7 @@ set(pcsx2GSMetalShaders
 	GS/Renderers/Metal/convert.metal
 	GS/Renderers/Metal/present.metal
 	GS/Renderers/Metal/merge.metal
+	GS/Renderers/Metal/misc.metal
 	GS/Renderers/Metal/interlace.metal
 	GS/Renderers/Metal/tfx.metal
 	GS/Renderers/Metal/fxaa.metal

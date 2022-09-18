@@ -25,6 +25,7 @@
 
 #include "common/HashCombine.h"
 #include "common/MRCHelpers.h"
+#include "common/ReadbackSpinManager.h"
 #include "GS/GS.h"
 #include "GSMTLDeviceInfo.h"
 #include "GSMTLSharedHeader.h"
@@ -227,6 +228,14 @@ public:
 	u64 m_current_draw = 1;
 	std::atomic<u64> m_last_finished_draw{0};
 
+	// Spinning
+	ReadbackSpinManager m_spin_manager;
+	u32 m_encoders_in_current_cmdbuf;
+	u32 m_spin_timer;
+	MRCOwned<id<MTLComputePipelineState>> m_spin_pipeline;
+	MRCOwned<id<MTLBuffer>> m_spin_buffer;
+	MRCOwned<id<MTLFence>> m_spin_fence;
+
 	// Functions and Pipeline States
 	MRCOwned<id<MTLRenderPipelineState>> m_convert_pipeline[static_cast<int>(ShaderConvert::Count)];
 	MRCOwned<id<MTLRenderPipelineState>> m_present_pipeline[static_cast<int>(PresentShader::Count)];
@@ -332,6 +341,8 @@ public:
 	void EndRenderPass();
 	/// Begin a new render pass (may reuse existing)
 	void BeginRenderPass(NSString* name, GSTexture* color, MTLLoadAction color_load, GSTexture* depth, MTLLoadAction depth_load, GSTexture* stencil = nullptr, MTLLoadAction stencil_load = MTLLoadActionDontCare);
+	/// Call at the end of each frame
+	void FrameCompleted();
 
 	GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) override;
 
