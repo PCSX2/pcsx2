@@ -885,7 +885,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 		// we could actually do a few in parallel here...
 		std::string filename(Common::HTTPDownloader::URLDecode(url));
 		downloader->CreateRequest(std::move(url), [use_serial, &save_callback, entry_path = std::move(entry_path),
-			filename = std::move(filename)](s32 status_code, std::string content_type, Common::HTTPDownloader::Request::Data data) {
+			filename = std::move(filename)](s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data) {
 			if (status_code != Common::HTTPDownloader::HTTP_OK || data.empty())
 				return;
 
