@@ -22,15 +22,11 @@
 #include <mutex>
 #include <array>
 
-struct track
-{
-	u32 start_lba;
-	u8 type;
-};
+#include "CDVDcommon.h"
 
 extern u8 strack;
 extern u8 etrack;
-extern track tracks[100];
+extern cdvdTrack tracks[100];
 
 extern int curDiskType;
 extern int curTrayStatus;

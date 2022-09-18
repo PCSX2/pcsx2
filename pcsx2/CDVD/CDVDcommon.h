@@ -31,6 +31,16 @@ typedef struct _cdvdSubQ
 	u8 discF;      // current frame offset from first track (BCD encoded)
 } cdvdSubQ;
 
+typedef struct _cdvdTrack
+{
+	u32 startLba;
+	u8 trackNum;
+	u32 startDisc;
+	u32 startTrack;
+	u8 type;
+
+} cdvdTrack;
+
 typedef struct _cdvdTD
 { // NOT bcd coded
 	u32 lsn;
