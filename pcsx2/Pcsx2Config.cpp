@@ -1247,6 +1247,11 @@ void Pcsx2Config::CopyRuntimeConfig(Pcsx2Config& cfg)
 	CurrentGameArgs = std::move(cfg.CurrentGameArgs);
 	CurrentAspectRatio = cfg.CurrentAspectRatio;
 	LimiterMode = cfg.LimiterMode;
+
+	for (u32 i = 0; i < sizeof(Mcd) / sizeof(Mcd[0]); i++)
+	{
+		Mcd[i].Type = cfg.Mcd[i].Type;
+	}
 }
 
 void EmuFolders::SetDefaults(SettingsInterface& si)
