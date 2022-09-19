@@ -26,6 +26,7 @@ public:
 		AceCombat4,
 		ArTonelico2,
 		BigMuthaTruckers,
+		Black,
 		BurnoutGames,
 		CrashBandicootWoC,
 		DBZBT2,
