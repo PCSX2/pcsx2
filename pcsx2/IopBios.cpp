@@ -109,13 +109,45 @@ namespace R3000A
 #define Ra2 (iopMemReadString(a2))
 #define Ra3 (iopMemReadString(a3))
 
-#define FIO_SO_IXOTH 0x0001
-#define FIO_SO_IWOTH 0x0002
-#define FIO_SO_IROTH 0x0004
+	// Stat values differ between iomanX and ioman
+	// These values have been taken from the PS2SDK
+	// Specifically iox_stat.h
+	struct fio_stat_flags
+	{
+		// Access flags
+		// Execute
+		int IXOTH;
+		// Write
+		int IWOTH;
+		// Read
+		int IROTH;
 
-#define FIO_SO_IFLNK 0x0008
-#define FIO_SO_IFREG 0x0010
-#define FIO_SO_IFDIR 0x0020
+		// File mode flags
+		// Symlink
+		int IFLNK;
+		// Regular file
+		int IFREG;
+		// Directory
+		int IFDIR;
+	};
+
+	fio_stat_flags ioman_stat{
+		0x01,
+		0x02,
+		0x04,
+		0x08,
+		0x10,
+		0x20,
+	};
+
+	fio_stat_flags iomanx_stat{
+		0x01,
+		0x02,
+		0x04,
+		0x4000,
+		0x2000,
+		0x1000,
+	};
 
 	static std::string host_path(const std::string& path, bool allow_open_host_root)
 	{
@@ -161,7 +193,7 @@ namespace R3000A
 		return ret;
 	}
 
-	static int host_stat(const std::string path, fio_stat_t* host_stats)
+	static int host_stat(const std::string path, fio_stat_t* host_stats, fio_stat_flags& stat = ioman_stat)
 	{
 		struct stat file_stats;
 		const std::string file_path(host_path(path, true));
@@ -173,20 +205,20 @@ namespace R3000A
 		host_stats->hisize = 0;
 
 		// Convert the mode.
-		host_stats->mode = (file_stats.st_mode & (FIO_SO_IROTH | FIO_SO_IWOTH | FIO_SO_IXOTH));
+		host_stats->mode = (file_stats.st_mode & (stat.IROTH | stat.IWOTH | stat.IXOTH));
 #ifndef _WIN32
 		if (S_ISLNK(file_stats.st_mode))
 		{
-			host_stats->mode |= FIO_SO_IFLNK;
+			host_stats->mode |= stat.IFLNK;
 		}
 #endif
 		if (S_ISREG(file_stats.st_mode))
 		{
-			host_stats->mode |= FIO_SO_IFREG;
+			host_stats->mode |= stat.IFREG;
 		}
 		if (S_ISDIR(file_stats.st_mode))
 		{
-			host_stats->mode |= FIO_SO_IFDIR;
+			host_stats->mode |= stat.IFDIR;
 		}
 
 		// Convert the creation time.
@@ -222,7 +254,7 @@ namespace R3000A
 
 	static int host_stat(const std::string path, fxio_stat_t* host_stats)
 	{
-		return host_stat(path, &host_stats->_fioStat);
+		return host_stat(path, &host_stats->_fioStat, iomanx_stat);
 	}
 
 	// TODO: sandbox option, other permissions
