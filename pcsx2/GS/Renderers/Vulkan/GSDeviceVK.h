@@ -109,6 +109,7 @@ private:
 	VkBuffer m_readback_staging_buffer = VK_NULL_HANDLE;
 	void* m_readback_staging_buffer_map = nullptr;
 	u32 m_readback_staging_buffer_size = 0;
+	bool m_warned_slow_spin = false;
 
 	VkSampler m_point_sampler = VK_NULL_HANDLE;
 	VkSampler m_linear_sampler = VK_NULL_HANDLE;
