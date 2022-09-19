@@ -8880,6 +8880,9 @@ SLED-53983:
   region: "PAL"
   gameFixes:
     - GIFFIFOHack # Fixes flag corruption.
+SLED-54032:
+  name: "Sonic Riders [Demo]"
+  region: "PAL-E"
 SLED-54035:
   name: "Play the Best Demos from Atari [Demo]"
   region: "PAL-M5"
@@ -14276,6 +14279,13 @@ SLES-52573:
   region: "PAL-M5"
   roundModes:
     eeRoundMode: 2 # Fixes abnormal character behaviour.
+SLED-52574:
+  name: "Crash Twinsanity & Spyro - A Hero's Tail [Demo]"
+  region: "PAL-E"
+  gameFixes:
+    - XGKickHack # Fixes bad geometry.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth lines.
 SLES-52576:
   name: "Yu-Gi-Oh! Capsule Monster Coliseum"
   region: "PAL-M5"
@@ -42173,6 +42183,8 @@ SLUS-20884:
   name: "Spyro - A Hero's Tail"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned bloom effects that streak on-screen, causes occasional trash shadows at places.
 SLUS-20885:
   name: "Red Star, The"
   region: "NTSC-U"
@@ -47740,6 +47752,8 @@ SLUS-29101:
   region: "NTSC-U"
   gameFixes:
     - XGKickHack # Fixes bad geometry.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth lines.
 SLUS-29104:
   name: "Galactic Wrestling - Featuring Ultimate Muscle [Demo]"
   region: "NTSC-U"
