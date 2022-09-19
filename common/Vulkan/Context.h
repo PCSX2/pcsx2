@@ -17,6 +17,7 @@
 
 #include "common/Pcsx2Defs.h"
 
+#include "common/ReadbackSpinManager.h"
 #include "common/Vulkan/Loader.h"
 #include "common/Vulkan/StreamBuffer.h"
 
@@ -225,6 +226,9 @@ namespace Vulkan
 		float GetAndResetAccumulatedGPUTime();
 		bool SetEnableGPUTiming(bool enabled);
 
+		void CountRenderPass() { m_command_buffer_render_passes++; }
+		void NotifyOfReadback();
+
 	private:
 		Context(VkInstance instance, VkPhysicalDevice physical_device);
 
@@ -272,12 +276,20 @@ namespace Vulkan
 		void ScanForCommandBufferCompletion();
 		void WaitForCommandBufferCompletion(u32 index);
 
-		void DoSubmitCommandBuffer(u32 index, VkSemaphore wait_semaphore, VkSemaphore signal_semaphore);
+		void DoSubmitCommandBuffer(u32 index, VkSemaphore wait_semaphore, VkSemaphore signal_semaphore, u32 spin_cycles);
 		void DoPresent(VkSemaphore wait_semaphore, VkSwapchainKHR present_swap_chain, uint32_t present_image_index);
 		void WaitForPresentComplete(std::unique_lock<std::mutex>& lock);
 		void PresentThread();
 		void StartPresentThread();
 		void StopPresentThread();
+
+		bool InitSpinResources();
+		void DestroySpinResources();
+		void WaitForSpinCompletion(u32 index);
+		void SpinCommandCompleted(u32 index);
+		void SubmitSpinCommand(u32 index, u32 cycles);
+		void CalibrateSpinTimestamp();
+		u64 GetCPUTimestamp();
 
 		struct FrameResources
 		{
@@ -287,11 +299,23 @@ namespace Vulkan
 			VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
 			VkFence fence = VK_NULL_HANDLE;
 			u64 fence_counter = 0;
+			s32 spin_id = -1;
+			u32 submit_timestamp = 0;
 			bool init_buffer_used = false;
 			bool needs_fence_wait = false;
 			bool timestamp_written = false;
 
 			std::vector<std::function<void()>> cleanup_resources;
+		};
+
+		struct SpinResources
+		{
+			VkCommandPool command_pool = VK_NULL_HANDLE;
+			VkCommandBuffer command_buffer = VK_NULL_HANDLE;
+			VkSemaphore semaphore = VK_NULL_HANDLE;
+			VkFence fence = VK_NULL_HANDLE;
+			u32 cycles = 0;
+			bool in_progress = false;
 		};
 
 		VkInstance m_instance = VK_NULL_HANDLE;
@@ -308,10 +332,32 @@ namespace Vulkan
 		u32 m_graphics_queue_family_index = 0;
 		u32 m_present_queue_family_index = 0;
 
+		ReadbackSpinManager m_spin_manager;
+		VkQueue m_spin_queue = VK_NULL_HANDLE;
+		VkDescriptorSetLayout m_spin_descriptor_set_layout = VK_NULL_HANDLE;
+		VkPipelineLayout m_spin_pipeline_layout = VK_NULL_HANDLE;
+		VkPipeline m_spin_pipeline = VK_NULL_HANDLE;
+		VkBuffer m_spin_buffer = VK_NULL_HANDLE;
+		VmaAllocation m_spin_buffer_allocation = VK_NULL_HANDLE;
+		VkDescriptorSet m_spin_descriptor_set = VK_NULL_HANDLE;
+		std::array<SpinResources, NUM_COMMAND_BUFFERS> m_spin_resources;
+#ifdef _WIN32
+		double m_queryperfcounter_to_ns = 0;
+#endif
+		double m_spin_timestamp_scale = 0;
+		double m_spin_timestamp_offset = 0;
+		u32 m_spin_queue_family_index = 0;
+		u32 m_command_buffer_render_passes = 0;
+		u32 m_spin_timer = 0;
+		bool m_spinning_supported = false;
+		bool m_spin_queue_is_graphics_queue = false;
+		bool m_spin_buffer_initialized = false;
+
 		VkQueryPool m_timestamp_query_pool = VK_NULL_HANDLE;
 		float m_accumulated_gpu_time = 0.0f;
 		bool m_gpu_timing_enabled = false;
 		bool m_gpu_timing_supported = false;
+		bool m_wants_new_timestamp_calibration = false;
 		VkTimeDomainEXT m_calibrated_timestamp_type = VK_TIME_DOMAIN_DEVICE_EXT;
 
 		std::array<FrameResources, NUM_COMMAND_BUFFERS> m_frame_resources;
@@ -336,6 +382,7 @@ namespace Vulkan
 			VkSwapchainKHR present_swap_chain;
 			u32 command_buffer_index;
 			u32 present_image_index;
+			u32 spin_cycles;
 		};
 
 		QueuedPresent m_queued_present = {};

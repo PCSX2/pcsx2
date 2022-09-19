@@ -18,11 +18,18 @@
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/StringUtil.h"
+#include "common/Vulkan/ShaderCompiler.h"
 #include "common/Vulkan/SwapChain.h"
 #include "common/Vulkan/Util.h"
 #include <algorithm>
 #include <array>
 #include <cstring>
+
+#ifdef _WIN32
+#include "common/RedtapeWindows.h"
+#else
+#include <time.h>
+#endif
 
 std::unique_ptr<Vulkan::Context> g_vulkan_context;
 
@@ -351,6 +358,7 @@ namespace Vulkan
 		if (!g_vulkan_context->CreateDevice(surface, enable_validation_layer, nullptr, 0, nullptr, 0, nullptr) ||
 			!g_vulkan_context->CreateAllocator() || !g_vulkan_context->CreateGlobalDescriptorPool() ||
 			!g_vulkan_context->CreateCommandBuffers() || !g_vulkan_context->CreateTextureStreamBuffer() ||
+			!g_vulkan_context->InitSpinResources() ||
 			(enable_surface && (*out_swap_chain = SwapChain::Create(wi_copy, surface, preferred_present_mode)) == nullptr))
 		{
 			// Since we are destroying the instance, we're also responsible for destroying the surface.
@@ -378,6 +386,7 @@ namespace Vulkan
 
 		g_vulkan_context->m_texture_upload_buffer.Destroy(false);
 
+		g_vulkan_context->DestroySpinResources();
 		g_vulkan_context->DestroyRenderPassCache();
 		g_vulkan_context->DestroyGlobalDescriptorPool();
 		g_vulkan_context->DestroyCommandBuffers();
@@ -498,6 +507,8 @@ namespace Vulkan
 		// Find graphics and present queues.
 		m_graphics_queue_family_index = queue_family_count;
 		m_present_queue_family_index = queue_family_count;
+		m_spin_queue_family_index = queue_family_count;
+		u32 spin_queue_index = 0;
 		for (uint32_t i = 0; i < queue_family_count; i++)
 		{
 			VkBool32 graphics_supported = queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT;
@@ -533,6 +544,23 @@ namespace Vulkan
 				}
 			}
 		}
+		for (uint32_t i = 0; i < queue_family_count; i++)
+		{
+			// Pick a queue for spinning
+			if (!(queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT))
+				continue; // We need compute
+			if (queue_family_properties[i].timestampValidBits == 0)
+				continue; // We need timing
+			const bool queue_is_used = i == m_graphics_queue_family_index || i == m_present_queue_family_index;
+			if (queue_is_used && m_spin_queue_family_index != queue_family_count)
+				continue; // Found a non-graphics queue to use
+			spin_queue_index = 0;
+			m_spin_queue_family_index = i;
+			if (queue_is_used && queue_family_properties[i].queueCount > 1)
+				spin_queue_index = 1;
+			if (!(queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT))
+				break; // Async compute queue, definitely pick this one
+		}
 		if (m_graphics_queue_family_index == queue_family_count)
 		{
 			Console.Error("Vulkan: Failed to find an acceptable graphics queue.");
@@ -548,9 +576,11 @@ namespace Vulkan
 		device_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		device_info.pNext = nullptr;
 		device_info.flags = 0;
+		device_info.queueCreateInfoCount = 0;
 
-		static constexpr float queue_priorities[] = {1.0f};
-		VkDeviceQueueCreateInfo graphics_queue_info = {};
+		static constexpr float queue_priorities[] = {1.0f, 0.0f}; // Low priority for the spin queue
+		std::array<VkDeviceQueueCreateInfo, 3> queue_infos;
+		VkDeviceQueueCreateInfo& graphics_queue_info = queue_infos[device_info.queueCreateInfoCount++];
 		graphics_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		graphics_queue_info.pNext = nullptr;
 		graphics_queue_info.flags = 0;
@@ -558,24 +588,38 @@ namespace Vulkan
 		graphics_queue_info.queueCount = 1;
 		graphics_queue_info.pQueuePriorities = queue_priorities;
 
-		VkDeviceQueueCreateInfo present_queue_info = {};
-		present_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		present_queue_info.pNext = nullptr;
-		present_queue_info.flags = 0;
-		present_queue_info.queueFamilyIndex = m_present_queue_family_index;
-		present_queue_info.queueCount = 1;
-		present_queue_info.pQueuePriorities = queue_priorities;
-
-		std::array<VkDeviceQueueCreateInfo, 2> queue_infos = {{
-			graphics_queue_info,
-			present_queue_info,
-		}};
-
-		device_info.queueCreateInfoCount = 1;
 		if (surface != VK_NULL_HANDLE && m_graphics_queue_family_index != m_present_queue_family_index)
 		{
-			device_info.queueCreateInfoCount = 2;
+			VkDeviceQueueCreateInfo& present_queue_info = queue_infos[device_info.queueCreateInfoCount++];
+			present_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			present_queue_info.pNext = nullptr;
+			present_queue_info.flags = 0;
+			present_queue_info.queueFamilyIndex = m_present_queue_family_index;
+			present_queue_info.queueCount = 1;
+			present_queue_info.pQueuePriorities = queue_priorities;
 		}
+
+		if (m_spin_queue_family_index == m_graphics_queue_family_index)
+		{
+			if (spin_queue_index != 0)
+				graphics_queue_info.queueCount = 2;
+		}
+		else if (m_spin_queue_family_index == m_present_queue_family_index)
+		{
+			if (spin_queue_index != 0)
+				queue_infos[1].queueCount = 2; // present queue
+		}
+		else
+		{
+			VkDeviceQueueCreateInfo& spin_queue_info = queue_infos[device_info.queueCreateInfoCount++];
+			spin_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			spin_queue_info.pNext = nullptr;
+			spin_queue_info.flags = 0;
+			spin_queue_info.queueFamilyIndex = m_spin_queue_family_index;
+			spin_queue_info.queueCount = 1;
+			spin_queue_info.pQueuePriorities = queue_priorities + 1;
+		}
+
 		device_info.pQueueCreateInfos = queue_infos.data();
 
 		ExtensionList enabled_extensions;
@@ -637,6 +681,10 @@ namespace Vulkan
 		{
 			vkGetDeviceQueue(m_device, m_present_queue_family_index, 0, &m_present_queue);
 		}
+		m_spinning_supported = m_spin_queue_family_index != queue_family_count &&
+		                       queue_family_properties[m_graphics_queue_family_index].timestampValidBits > 0 &&
+		                       m_device_properties.limits.timestampPeriod > 0;
+		m_spin_queue_is_graphics_queue = m_spin_queue_family_index == m_graphics_queue_family_index && spin_queue_index == 0;
 
 		m_gpu_timing_supported = (m_device_properties.limits.timestampComputeAndGraphics != 0 &&
 		                          queue_family_properties[m_graphics_queue_family_index].timestampValidBits > 0 &&
@@ -648,6 +696,23 @@ namespace Vulkan
 			m_device_properties.limits.timestampPeriod);
 
 		ProcessDeviceExtensions();
+
+		if (m_spinning_supported)
+		{
+			vkGetDeviceQueue(m_device, m_spin_queue_family_index, spin_queue_index, &m_spin_queue);
+
+			m_spin_timestamp_scale = m_device_properties.limits.timestampPeriod;
+			if (m_optional_extensions.vk_ext_calibrated_timestamps)
+			{
+#ifdef _WIN32
+				LARGE_INTEGER Freq;
+				QueryPerformanceFrequency(&Freq);
+				m_queryperfcounter_to_ns = 1000000000.0 / static_cast < double > (Freq.QuadPart);
+#endif
+				CalibrateSpinTimestamp();
+			}
+		}
+
 		return true;
 	}
 
@@ -868,6 +933,7 @@ namespace Vulkan
 		VkDescriptorPoolSize pool_sizes[] = {
 			{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1024},
 			{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024},
+			{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1},
 		};
 
 		VkDescriptorPoolCreateInfo pool_create_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO, nullptr,
@@ -886,7 +952,7 @@ namespace Vulkan
 		if (m_gpu_timing_supported)
 		{
 			const VkQueryPoolCreateInfo query_create_info = {VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO, nullptr,
-				0, VK_QUERY_TYPE_TIMESTAMP, NUM_COMMAND_BUFFERS * 2, 0};
+				0, VK_QUERY_TYPE_TIMESTAMP, NUM_COMMAND_BUFFERS * 4, 0};
 			res = vkCreateQueryPool(m_device, &query_create_info, nullptr, &m_timestamp_query_pool);
 			if (res != VK_SUCCESS)
 			{
@@ -1024,6 +1090,14 @@ namespace Vulkan
 			CommandBufferCompleted(check_index);
 			m_completed_fence_counter = resources.fence_counter;
 		}
+		for (SpinResources& resources : m_spin_resources)
+		{
+			if (!resources.in_progress)
+				continue;
+			if (vkGetFenceStatus(m_device, resources.fence) != VK_SUCCESS)
+				continue;
+			SpinCommandCompleted(&resources - &m_spin_resources[0]);
+		}
 	}
 
 	void Context::WaitForCommandBufferCompletion(u32 index)
@@ -1070,7 +1144,8 @@ namespace Vulkan
 			}
 		}
 
-		if (m_gpu_timing_enabled && resources.timestamp_written)
+		bool wants_timestamp = m_gpu_timing_enabled || m_spin_timer;
+		if (wants_timestamp && resources.timestamp_written)
 		{
 			vkCmdWriteTimestamp(m_current_command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, m_timestamp_query_pool, m_current_frame * 2 + 1);
 		}
@@ -1085,12 +1160,48 @@ namespace Vulkan
 		// This command buffer now has commands, so can't be re-used without waiting.
 		resources.needs_fence_wait = true;
 
+		u32 spin_cycles = 0;
+		const bool spin_enabled = m_spin_timer;
+		if (spin_enabled)
+		{
+			ScanForCommandBufferCompletion();
+			auto draw = m_spin_manager.DrawSubmitted(m_command_buffer_render_passes);
+			u32 constant_offset = 400000 * m_spin_manager.SpinsPerUnitTime(); // 400µs, just to be safe since going over gets really bad
+			if (m_optional_extensions.vk_ext_calibrated_timestamps)
+				constant_offset /= 2; // Safety factor isn't as important here, going over just hurts this one submission a bit
+			u32 minimum_spin = 200000 * m_spin_manager.SpinsPerUnitTime();
+			u32 maximum_spin = std::max<u32>(1024, 16000000 * m_spin_manager.SpinsPerUnitTime()); // 16ms
+			if (draw.recommended_spin > minimum_spin + constant_offset)
+				spin_cycles = std::min(draw.recommended_spin - constant_offset, maximum_spin);
+			resources.spin_id = draw.id;
+		}
+		else
+		{
+			resources.spin_id = -1;
+		}
+		m_command_buffer_render_passes = 0;
+
+		if (present_swap_chain != VK_NULL_HANDLE && m_spinning_supported)
+		{
+			m_spin_manager.NextFrame();
+			if (m_spin_timer)
+				m_spin_timer--;
+			// Calibrate a max of once per frame
+			m_wants_new_timestamp_calibration = m_optional_extensions.vk_ext_calibrated_timestamps;
+		}
+
+		if (spin_cycles != 0)
+			WaitForSpinCompletion(m_current_frame);
+
 		std::unique_lock<std::mutex> lock(m_present_mutex);
 		WaitForPresentComplete(lock);
 
+		if (spin_enabled && m_optional_extensions.vk_ext_calibrated_timestamps)
+			resources.submit_timestamp = GetCPUTimestamp();
+
 		if (!submit_on_thread || !m_present_thread.joinable())
 		{
-			DoSubmitCommandBuffer(m_current_frame, wait_semaphore, signal_semaphore);
+			DoSubmitCommandBuffer(m_current_frame, wait_semaphore, signal_semaphore, spin_cycles);
 			if (present_swap_chain != VK_NULL_HANDLE)
 				DoPresent(signal_semaphore, present_swap_chain, present_image_index);
 			return;
@@ -1101,29 +1212,44 @@ namespace Vulkan
 		m_queued_present.present_image_index = present_image_index;
 		m_queued_present.wait_semaphore = wait_semaphore;
 		m_queued_present.signal_semaphore = signal_semaphore;
+		m_queued_present.spin_cycles = spin_cycles;
 		m_present_done.store(false);
 		m_present_queued_cv.notify_one();
 	}
 
-	void Context::DoSubmitCommandBuffer(u32 index, VkSemaphore wait_semaphore, VkSemaphore signal_semaphore)
+	void Context::DoSubmitCommandBuffer(u32 index, VkSemaphore wait_semaphore, VkSemaphore signal_semaphore, u32 spin_cycles)
 	{
 		FrameResources& resources = m_frame_resources[index];
 
 		uint32_t wait_bits = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO, nullptr, 0, nullptr, &wait_bits,
-			resources.init_buffer_used ? 2u : 1u,
-			resources.init_buffer_used ? resources.command_buffers.data() : &resources.command_buffers[1], 0, nullptr};
+		VkSemaphore semas[2];
+		VkSubmitInfo submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+		submit_info.commandBufferCount = resources.init_buffer_used ? 2u : 1u;
+		submit_info.pCommandBuffers = resources.init_buffer_used ? resources.command_buffers.data() : &resources.command_buffers[1];
 
 		if (wait_semaphore != VK_NULL_HANDLE)
 		{
 			submit_info.pWaitSemaphores = &wait_semaphore;
 			submit_info.waitSemaphoreCount = 1;
+			submit_info.pWaitDstStageMask = &wait_bits;
 		}
 
-		if (signal_semaphore != VK_NULL_HANDLE)
+		if (signal_semaphore != VK_NULL_HANDLE && spin_cycles != 0)
+		{
+			semas[0] = signal_semaphore;
+			semas[1] = m_spin_resources[index].semaphore;
+			submit_info.signalSemaphoreCount = 2;
+			submit_info.pSignalSemaphores = semas;
+		}
+		else if (signal_semaphore != VK_NULL_HANDLE)
 		{
 			submit_info.signalSemaphoreCount = 1;
 			submit_info.pSignalSemaphores = &signal_semaphore;
+		}
+		else if (spin_cycles != 0)
+		{
+			submit_info.signalSemaphoreCount = 1;
+			submit_info.pSignalSemaphores = &m_spin_resources[index].semaphore;
 		}
 
 		VkResult res = vkQueueSubmit(m_graphics_queue, 1, &submit_info, resources.fence);
@@ -1132,6 +1258,9 @@ namespace Vulkan
 			LOG_VULKAN_ERROR(res, "vkQueueSubmit failed: ");
 			pxFailRel("Failed to submit command buffer.");
 		}
+
+		if (spin_cycles != 0)
+			SubmitSpinCommand(index, spin_cycles);
 	}
 
 	void Context::DoPresent(VkSemaphore wait_semaphore, VkSwapchainKHR present_swap_chain, uint32_t present_image_index)
@@ -1180,7 +1309,7 @@ namespace Vulkan
 				continue;
 
 			DoSubmitCommandBuffer(m_queued_present.command_buffer_index, m_queued_present.wait_semaphore,
-				m_queued_present.signal_semaphore);
+				m_queued_present.signal_semaphore, m_queued_present.spin_cycles);
 			DoPresent(m_queued_present.signal_semaphore, m_queued_present.present_swap_chain,
 				m_queued_present.present_image_index);
 			m_present_done.store(true);
@@ -1218,7 +1347,9 @@ namespace Vulkan
 			it();
 		resources.cleanup_resources.clear();
 
-		if (m_gpu_timing_enabled && resources.timestamp_written)
+		bool wants_timestamps = m_gpu_timing_enabled || resources.spin_id >= 0;
+
+		if (wants_timestamps && resources.timestamp_written)
 		{
 			std::array<u64, 2> timestamps;
 			VkResult res = vkGetQueryPoolResults(m_device, m_timestamp_query_pool, index * 2, static_cast<u32>(timestamps.size()),
@@ -1226,10 +1357,24 @@ namespace Vulkan
 			if (res == VK_SUCCESS)
 			{
 				// if we didn't write the timestamp at the start of the cmdbuffer (just enabled timing), the first TS will be zero
-				if (timestamps[0] > 0)
+				if (timestamps[0] > 0 && m_gpu_timing_enabled)
 				{
 					const double ns_diff = (timestamps[1] - timestamps[0]) * static_cast<double>(m_device_properties.limits.timestampPeriod);
 					m_accumulated_gpu_time += ns_diff / 1000000.0;
+				}
+				if (resources.spin_id >= 0)
+				{
+					if (m_optional_extensions.vk_ext_calibrated_timestamps && timestamps[1] > 0)
+					{
+						u64 end = timestamps[1] * m_spin_timestamp_scale + m_spin_timestamp_offset;
+						m_spin_manager.DrawCompleted(resources.spin_id, resources.submit_timestamp, end);
+					}
+					else if (!m_optional_extensions.vk_ext_calibrated_timestamps && timestamps[0] > 0)
+					{
+						u64 begin = timestamps[0] * m_spin_timestamp_scale;
+						u64 end = timestamps[1] * m_spin_timestamp_scale;
+						m_spin_manager.DrawCompleted(resources.spin_id, begin, end);
+					}
 				}
 			}
 			else
@@ -1274,7 +1419,8 @@ namespace Vulkan
 		if (res != VK_SUCCESS)
 			LOG_VULKAN_ERROR(res, "vkResetDescriptorPool failed: ");
 
-		if (m_gpu_timing_enabled)
+		bool wants_timestamp = m_gpu_timing_enabled || m_spin_timer;
+		if (wants_timestamp)
 		{
 			vkCmdResetQueryPool(resources.command_buffers[1], m_timestamp_query_pool, index * 2, 2);
 			vkCmdWriteTimestamp(resources.command_buffers[1], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, m_timestamp_query_pool, index * 2);
@@ -1282,7 +1428,7 @@ namespace Vulkan
 
 		resources.fence_counter = m_next_fence_counter++;
 		resources.init_buffer_used = false;
-		resources.timestamp_written = m_gpu_timing_enabled;
+		resources.timestamp_written = wants_timestamp;
 
 		m_current_frame = index;
 		m_current_command_buffer = resources.command_buffers[1];
@@ -1299,7 +1445,12 @@ namespace Vulkan
 		MoveToNextCommandBuffer();
 
 		if (wait_for_completion)
+		{
+			// Calibrate while we wait
+			if (m_wants_new_timestamp_calibration)
+				CalibrateSpinTimestamp();
 			WaitForCommandBufferCompletion(current_frame);
+		}
 	}
 
 	bool Context::CheckLastPresentFail()
@@ -1528,5 +1679,351 @@ namespace Vulkan
 			vkDestroyRenderPass(m_device, it.second, nullptr);
 
 		m_render_pass_cache.clear();
+	}
+
+	static constexpr std::string_view SPIN_SHADER = R"(
+#version 460 core
+
+layout(std430, set=0, binding=0) buffer SpinBuffer { uint spin[]; };
+layout(push_constant) uniform constants { uint cycles; };
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+void main()
+{
+	uint value = spin[0];
+	// The compiler doesn't know, but spin[0] == 0, so this loop won't actually go anywhere
+	for (uint i = 0; i < cycles; i++)
+		value = spin[value];
+	// Store the result back to the buffer so the compiler can't optimize it away
+	spin[0] = value;
+}
+)";
+
+	bool Context::InitSpinResources()
+	{
+		if (!m_spinning_supported)
+			return true;
+		auto spirv = ShaderCompiler::CompileComputeShader(SPIN_SHADER);
+		if (!spirv.has_value())
+			return false;
+
+		VkResult res;
+#define CHECKED_CREATE(create_fn, create_struct, output_struct) \
+	do { \
+		if ((res = create_fn(m_device, create_struct, nullptr, output_struct)) != VK_SUCCESS) \
+		{ \
+			LOG_VULKAN_ERROR(res, #create_fn " failed: "); \
+			return false; \
+		} \
+	} while (0)
+
+		VkDescriptorSetLayoutBinding set_layout_binding = {};
+		set_layout_binding.binding = 0;
+		set_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		set_layout_binding.descriptorCount = 1;
+		set_layout_binding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+		VkDescriptorSetLayoutCreateInfo desc_set_layout_create = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
+		desc_set_layout_create.bindingCount = 1;
+		desc_set_layout_create.pBindings = &set_layout_binding;
+		CHECKED_CREATE(vkCreateDescriptorSetLayout, &desc_set_layout_create, &m_spin_descriptor_set_layout);
+
+		const VkPushConstantRange push_constant_range = { VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(u32) };
+		VkPipelineLayoutCreateInfo pl_layout_create = { VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
+		pl_layout_create.setLayoutCount = 1;
+		pl_layout_create.pSetLayouts = &m_spin_descriptor_set_layout;
+		pl_layout_create.pushConstantRangeCount = 1;
+		pl_layout_create.pPushConstantRanges = &push_constant_range;
+		CHECKED_CREATE(vkCreatePipelineLayout, &pl_layout_create, &m_spin_pipeline_layout);
+
+		VkShaderModuleCreateInfo module_create = { VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
+		module_create.codeSize = spirv->size() * sizeof(ShaderCompiler::SPIRVCodeType);
+		module_create.pCode = spirv->data();
+		VkShaderModule shader_module;
+		CHECKED_CREATE(vkCreateShaderModule, &module_create, &shader_module);
+		Util::SetObjectName(m_device, shader_module, "Spin Shader");
+
+		VkComputePipelineCreateInfo pl_create = { VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO };
+		pl_create.layout = m_spin_pipeline_layout;
+		pl_create.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		pl_create.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+		pl_create.stage.pName = "main";
+		pl_create.stage.module = shader_module;
+		res = vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &pl_create, nullptr, &m_spin_pipeline);
+		vkDestroyShaderModule(m_device, shader_module, nullptr);
+		if (res != VK_SUCCESS)
+		{
+			LOG_VULKAN_ERROR(res, "vkCreateComputePipelines failed: ");
+			return false;
+		}
+		Util::SetObjectName(m_device, m_spin_pipeline, "Spin Pipeline");
+
+		VmaAllocationCreateInfo buf_vma_create = {};
+		buf_vma_create.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+		VkBufferCreateInfo buf_create = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+		buf_create.size = 4;
+		buf_create.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		if ((res = vmaCreateBuffer(m_allocator, &buf_create, &buf_vma_create, &m_spin_buffer, &m_spin_buffer_allocation, nullptr)) != VK_SUCCESS)
+		{
+			LOG_VULKAN_ERROR(res, "vmaCreateBuffer failed: ");
+			return false;
+		}
+		Util::SetObjectName(m_device, m_spin_buffer, "Spin Buffer");
+
+		VkDescriptorSetAllocateInfo desc_set_allocate = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
+		desc_set_allocate.descriptorPool = m_global_descriptor_pool;
+		desc_set_allocate.descriptorSetCount = 1;
+		desc_set_allocate.pSetLayouts = &m_spin_descriptor_set_layout;
+		if ((res = vkAllocateDescriptorSets(m_device, &desc_set_allocate, &m_spin_descriptor_set)) != VK_SUCCESS)
+		{
+			LOG_VULKAN_ERROR(res, "vkAllocateDescriptorSets failed: ");
+			return false;
+		}
+		const VkDescriptorBufferInfo desc_buffer_info = { m_spin_buffer, 0, VK_WHOLE_SIZE };
+		VkWriteDescriptorSet desc_set_write = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
+		desc_set_write.dstSet = m_spin_descriptor_set;
+		desc_set_write.dstBinding = 0;
+		desc_set_write.descriptorCount = 1;
+		desc_set_write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		desc_set_write.pBufferInfo = &desc_buffer_info;
+		vkUpdateDescriptorSets(m_device, 1, &desc_set_write, 0, nullptr);
+
+		for (SpinResources& resources : m_spin_resources)
+		{
+			u32 index = &resources - &m_spin_resources[0];
+			VkCommandPoolCreateInfo pool_info = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
+			pool_info.queueFamilyIndex = m_spin_queue_family_index;
+			CHECKED_CREATE(vkCreateCommandPool, &pool_info, &resources.command_pool);
+			Vulkan::Util::SetObjectName(m_device, resources.command_pool, "Spin Command Pool %u", index);
+
+			VkCommandBufferAllocateInfo buffer_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
+			buffer_info.commandPool = resources.command_pool;
+			buffer_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+			buffer_info.commandBufferCount = 1;
+			res = vkAllocateCommandBuffers(m_device, &buffer_info, &resources.command_buffer);
+			if (res != VK_SUCCESS)
+			{
+				LOG_VULKAN_ERROR(res, "vkAllocateCommandBuffers failed: ");
+				return false;
+			}
+			Vulkan::Util::SetObjectName(m_device, resources.command_buffer, "Spin Command Buffer %u", index);
+
+			VkFenceCreateInfo fence_info = { VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
+			fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+			CHECKED_CREATE(vkCreateFence, &fence_info, &resources.fence);
+			Vulkan::Util::SetObjectName(m_device, resources.fence, "Spin Fence %u", index);
+
+			if (!m_spin_queue_is_graphics_queue)
+			{
+				VkSemaphoreCreateInfo sem_info = { VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
+				CHECKED_CREATE(vkCreateSemaphore, &sem_info, &resources.semaphore);
+				Vulkan::Util::SetObjectName(m_device, resources.semaphore, "Draw to Spin Semaphore %u", index);
+			}
+		}
+
+#undef CHECKED_CREATE
+		return true;
+	}
+
+	void Context::DestroySpinResources()
+	{
+#define CHECKED_DESTROY(destructor, obj) \
+		do { \
+			if (obj != VK_NULL_HANDLE) \
+			{ \
+				destructor(m_device, obj, nullptr); \
+				obj = VK_NULL_HANDLE; \
+			} \
+		} while (0)
+
+		if (m_spin_buffer)
+		{
+			vmaDestroyBuffer(m_allocator, m_spin_buffer, m_spin_buffer_allocation);
+			m_spin_buffer = VK_NULL_HANDLE;
+			m_spin_buffer_allocation = VK_NULL_HANDLE;
+		}
+		CHECKED_DESTROY(vkDestroyPipeline, m_spin_pipeline);
+		CHECKED_DESTROY(vkDestroyPipelineLayout, m_spin_pipeline_layout);
+		CHECKED_DESTROY(vkDestroyDescriptorSetLayout, m_spin_descriptor_set_layout);
+		if (m_spin_descriptor_set != VK_NULL_HANDLE)
+		{
+			vkFreeDescriptorSets(m_device, m_global_descriptor_pool, 1, &m_spin_descriptor_set);
+			m_spin_descriptor_set = VK_NULL_HANDLE;
+		}
+		for (SpinResources& resources : m_spin_resources)
+		{
+			CHECKED_DESTROY(vkDestroySemaphore, resources.semaphore);
+			CHECKED_DESTROY(vkDestroyFence, resources.fence);
+			if (resources.command_buffer != VK_NULL_HANDLE)
+			{
+				vkFreeCommandBuffers(m_device, resources.command_pool, 1, &resources.command_buffer);
+				resources.command_buffer = VK_NULL_HANDLE;
+			}
+			CHECKED_DESTROY(vkDestroyCommandPool, resources.command_pool);
+		}
+#undef CHECKED_DESTROY
+	}
+
+	void Context::WaitForSpinCompletion(u32 index)
+	{
+		SpinResources& resources = m_spin_resources[index];
+		if (!resources.in_progress)
+			return;
+		VkResult res = vkWaitForFences(m_device, 1, &resources.fence, VK_TRUE, UINT64_MAX);
+		if (res != VK_SUCCESS)
+			LOG_VULKAN_ERROR(res, "vkWaitForFences failed: ");
+		SpinCommandCompleted(index);
+	}
+
+	void Context::SpinCommandCompleted(u32 index)
+	{
+		SpinResources& resources = m_spin_resources[index];
+		resources.in_progress = false;
+		const u32 timestamp_base = (index + NUM_COMMAND_BUFFERS) * 2;
+		std::array<u64, 2> timestamps;
+		VkResult res = vkGetQueryPoolResults(m_device, m_timestamp_query_pool, timestamp_base, static_cast<u32>(timestamps.size()),
+			sizeof(timestamps), timestamps.data(), sizeof(u64), VK_QUERY_RESULT_64_BIT);
+		if (res == VK_SUCCESS)
+		{
+			u64 begin, end;
+			if (m_optional_extensions.vk_ext_calibrated_timestamps)
+			{
+				begin = timestamps[0] * m_spin_timestamp_scale + m_spin_timestamp_offset;
+				end = timestamps[1] * m_spin_timestamp_scale + m_spin_timestamp_offset;
+			}
+			else
+			{
+				begin = timestamps[0] * m_spin_timestamp_scale;
+				end = timestamps[1] * m_spin_timestamp_scale;
+			}
+			m_spin_manager.SpinCompleted(resources.cycles, begin, end);
+		}
+		else
+		{
+			LOG_VULKAN_ERROR(res, "vkGetQueryPoolResults failed: ");
+		}
+	}
+
+	void Context::SubmitSpinCommand(u32 index, u32 cycles)
+	{
+		SpinResources& resources = m_spin_resources[index];
+		VkResult res;
+
+		// Reset fence to unsignaled before starting.
+		if ((res = vkResetFences(m_device, 1, &resources.fence)) != VK_SUCCESS)
+			LOG_VULKAN_ERROR(res, "vkResetFences failed: ");
+
+		// Reset command pools to beginning since we can re-use the memory now
+		if ((res = vkResetCommandPool(m_device, resources.command_pool, 0)) != VK_SUCCESS)
+			LOG_VULKAN_ERROR(res, "vkResetCommandPool failed: ");
+
+		// Enable commands to be recorded to the two buffers again.
+		VkCommandBufferBeginInfo begin_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		if ((res = vkBeginCommandBuffer(resources.command_buffer, &begin_info)) != VK_SUCCESS)
+			LOG_VULKAN_ERROR(res, "vkBeginCommandBuffer failed: ");
+
+		if (!m_spin_buffer_initialized)
+		{
+			m_spin_buffer_initialized = true;
+			vkCmdFillBuffer(resources.command_buffer, m_spin_buffer, 0, VK_WHOLE_SIZE, 0);
+			VkBufferMemoryBarrier barrier = { VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER };
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			barrier.srcQueueFamilyIndex = m_spin_queue_family_index;
+			barrier.dstQueueFamilyIndex = m_spin_queue_family_index;
+			barrier.buffer = m_spin_buffer;
+			barrier.offset = 0;
+			barrier.size = VK_WHOLE_SIZE;
+			vkCmdPipelineBarrier(resources.command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 1, &barrier, 0, nullptr);
+		}
+
+		if (m_spin_queue_is_graphics_queue)
+			vkCmdPipelineBarrier(resources.command_buffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
+
+		const u32 timestamp_base = (index + NUM_COMMAND_BUFFERS) * 2;
+		vkCmdResetQueryPool(resources.command_buffer, m_timestamp_query_pool, timestamp_base, 2);
+		vkCmdWriteTimestamp(resources.command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, m_timestamp_query_pool, timestamp_base);
+		vkCmdPushConstants(resources.command_buffer, m_spin_pipeline_layout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(u32), &cycles);
+		vkCmdBindPipeline(resources.command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_spin_pipeline);
+		vkCmdBindDescriptorSets(resources.command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_spin_pipeline_layout, 0, 1, &m_spin_descriptor_set, 0, nullptr);
+		vkCmdDispatch(resources.command_buffer, 1, 1, 1);
+		vkCmdWriteTimestamp(resources.command_buffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, m_timestamp_query_pool, timestamp_base + 1);
+
+		if ((res = vkEndCommandBuffer(resources.command_buffer)) != VK_SUCCESS)
+			LOG_VULKAN_ERROR(res, "vkEndCommandBuffer failed: ");
+
+		VkSubmitInfo submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+		submit_info.commandBufferCount = 1;
+		submit_info.pCommandBuffers = &resources.command_buffer;
+		VkPipelineStageFlags sema_waits[] = { VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
+		if (!m_spin_queue_is_graphics_queue)
+		{
+			submit_info.waitSemaphoreCount = 1;
+			submit_info.pWaitSemaphores = &resources.semaphore;
+			submit_info.pWaitDstStageMask = sema_waits;
+		}
+		vkQueueSubmit(m_spin_queue, 1, &submit_info, resources.fence);
+		resources.in_progress = true;
+		resources.cycles = cycles;
+	}
+
+	void Context::NotifyOfReadback()
+	{
+		if (!m_spinning_supported)
+			return;
+		m_spin_timer = 30;
+		m_spin_manager.ReadbackRequested();
+	}
+
+	void Context::CalibrateSpinTimestamp()
+	{
+		if (!m_optional_extensions.vk_ext_calibrated_timestamps)
+			return;
+		VkCalibratedTimestampInfoEXT infos[2] = {
+			{ VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_EXT, nullptr, VK_TIME_DOMAIN_DEVICE_EXT },
+			{ VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_EXT, nullptr, m_calibrated_timestamp_type },
+		};
+		u64 timestamps[2];
+		u64 maxDeviation;
+		constexpr u64 MAX_MAX_DEVIATION = 100000; // 100µs
+		for (int i = 0; i < 4; i++) // 4 tries to get under MAX_MAX_DEVIATION
+		{
+			VkResult res = vkGetCalibratedTimestampsEXT(m_device, std::size(infos), infos, timestamps, &maxDeviation);
+			if (res != VK_SUCCESS)
+			{
+				LOG_VULKAN_ERROR(res, "vkGetCalibratedTimestampsEXT failed: ");
+				return;
+			}
+			if (maxDeviation < MAX_MAX_DEVIATION)
+				break;
+		}
+		if (maxDeviation >= MAX_MAX_DEVIATION)
+			Console.Warning("vkGetCalibratedTimestampsEXT returned high max deviation of %lluµs", maxDeviation / 1000);
+		const double gpu_time = timestamps[0] * m_spin_timestamp_scale;
+#ifdef _WIN32
+		const double cpu_time = timestamps[1] * m_queryperfcounter_to_ns;
+#else
+		const double cpu_time = timestamps[1];
+#endif
+		m_spin_timestamp_offset = cpu_time - gpu_time;
+	}
+
+	u64 Context::GetCPUTimestamp()
+	{
+#ifdef _WIN32
+		LARGE_INTEGER value = {};
+		QueryPerformanceCounter(&value);
+		return static_cast<u64>(static_cast<double>(value.QuadPart) * m_queryperfcounter_to_ns);
+#else
+#ifdef CLOCK_MONOTONIC_RAW
+		const bool use_raw = m_calibrated_timestamp_type == VK_TIME_DOMAIN_CLOCK_MONOTONIC_RAW_EXT;
+		const clockid_t clock = use_raw ? CLOCK_MONOTONIC_RAW : CLOCK_MONOTONIC;
+#else
+		const clockid_t clock = CLOCK_MONOTONIC;
+#endif
+		timespec ts = {};
+		clock_gettime(clock, &ts);
+		return static_cast<u64>(ts.tv_sec) * 1000000000 + ts.tv_nsec;
+#endif
 	}
 } // namespace Vulkan
