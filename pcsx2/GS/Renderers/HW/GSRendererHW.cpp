@@ -4346,8 +4346,10 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::Jak3, CRC::RegionCount, &GSRendererHW::OI_JakGames));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::JakX, CRC::RegionCount, &GSRendererHW::OI_JakGames));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BurnoutGames, CRC::RegionCount, &GSRendererHW::OI_BurnoutGames));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::Black, CRC::RegionCount, &GSRendererHW::OI_BurnoutGames));
 
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::BurnoutGames, CRC::RegionCount, &GSRendererHW::OO_BurnoutGames));
+	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::Black, CRC::RegionCount, &GSRendererHW::OO_BurnoutGames));
 }
 
 void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
