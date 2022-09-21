@@ -2198,6 +2198,9 @@ SCED-52796:
 SCED-52818:
   name: "EyeToy - Chat [Light]"
   region: "PAL-M11"
+SCED-52889:
+  name: "Killzone [Bonus Disc]"
+  region: "PAL-M5"
 SCED-52932:
   name: "Bonus Demo 8"
   region: "PAL-M5"
@@ -8902,6 +8905,9 @@ SLED-53983:
   region: "PAL"
   gameFixes:
     - GIFFIFOHack # Fixes flag corruption.
+SLED-54032:
+  name: "Sonic Riders [Demo]"
+  region: "PAL-E"
 SLED-54035:
   name: "Play the Best Demos from Atari [Demo]"
   region: "PAL-M5"
@@ -12191,6 +12197,8 @@ SLES-51526:
 SLES-51541:
   name: "Grand Theft Auto - San Andreas"
   region: "PAL-Unk"
+  clampModes:
+    eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
     autoFlush: 1
 SLES-51547:
@@ -14187,7 +14195,7 @@ SLES-52541:
   region: "PAL-M5"
   compat: 5
   clampModes:
-    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
+    eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
     autoFlush: 1
 SLES-52542:
@@ -14298,6 +14306,13 @@ SLES-52573:
   region: "PAL-M5"
   roundModes:
     eeRoundMode: 2 # Fixes abnormal character behaviour.
+SLED-52574:
+  name: "Crash Twinsanity & Spyro - A Hero's Tail [Demo]"
+  region: "PAL-E"
+  gameFixes:
+    - XGKickHack # Fixes bad geometry.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth lines.
 SLES-52576:
   name: "Yu-Gi-Oh! Capsule Monster Coliseum"
   region: "PAL-M5"
@@ -15098,7 +15113,7 @@ SLES-52927:
   name: "Grand Theft Auto - San Andreas"
   region: "PAL-G"
   clampModes:
-    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
+    eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
     autoFlush: 1
 SLES-52931:
@@ -16765,6 +16780,17 @@ SLES-53614:
 SLES-53616:
   name: "True Crime - New York City"
   region: "PAL-E"
+  clampModes:
+    eeClampMode: 2 # Fixes SPS on highway.
+  roundModes:
+    eeRoundMode: 0 # Fixes scene switching in intro.
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
+    preloadFrameData: 1 # Fixes static text screens.
+    roundSprite: 1 # Fixes lines in some post-effects.
+SLES-53617:
+  name: "True Crime - New York City"
+  region: "PAL-G"
   clampModes:
     eeClampMode: 2 # Fixes SPS on highway.
   roundModes:
@@ -22992,7 +23018,7 @@ SLPM-55092:
   name: "Grand Theft Auto - San Andreas [Best Price]"
   region: "NTSC-J"
   clampModes:
-    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
+    eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
     autoFlush: 1
 SLPM-55096:
@@ -23329,7 +23355,7 @@ SLPM-55292:
   name: "Grand Theft Auto - San Andreas [Rockstar Classics]"
   region: "NTSC-J"
   clampModes:
-    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
+    eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
     autoFlush: 1
 SLPM-55298:
@@ -29016,7 +29042,7 @@ SLPM-65984:
   name: "Grand Theft Auto - San Andreas"
   region: "NTSC-J"
   clampModes:
-    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
+    eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
     autoFlush: 1
 SLPM-65985:
@@ -31935,7 +31961,7 @@ SLPM-66788:
   name: "Grand Theft Auto - San Andreas [Best Price]"
   region: "NTSC-J"
   clampModes:
-    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
+    eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
     autoFlush: 1
 SLPM-66789:
@@ -42184,6 +42210,8 @@ SLUS-20884:
   name: "Spyro - A Hero's Tail"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned bloom effects that streak on-screen, causes occasional trash shadows at places.
 SLUS-20885:
   name: "Red Star, The"
   region: "NTSC-U"
@@ -42501,7 +42529,7 @@ SLUS-20946:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
+    eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
     autoFlush: 1
 SLUS-20947:
@@ -47751,6 +47779,8 @@ SLUS-29101:
   region: "NTSC-U"
   gameFixes:
     - XGKickHack # Fixes bad geometry.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth lines.
 SLUS-29104:
   name: "Galactic Wrestling - Featuring Ultimate Muscle [Demo]"
   region: "NTSC-U"
