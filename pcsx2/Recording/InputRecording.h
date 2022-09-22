@@ -185,9 +185,9 @@ public:
 
 private:
 	// - https://github.com/PCSX2/pcsx2/blob/7db9627ff6986c2d3faeecc58525a0e32da2f29f/pcsx2/PAD/Windows/PAD.cpp#L1141
-	static const u8 READ_DATA_AND_VIBRATE_QUERY_FIRST_BYTE = 0x42;
+	static constexpr u8 s_READ_DATA_AND_VIBRATE_QUERY_FIRST_BYTE = 0x42;
 	// - https://github.com/PCSX2/pcsx2/blob/7db9627ff6986c2d3faeecc58525a0e32da2f29f/pcsx2/PAD/Windows/PAD.cpp#L1142
-	static const u8 READ_DATA_AND_VIBRATE_QUERY_SECOND_BYTE = 0x5A;
+	static constexpr u8 s_READ_DATA_AND_VIBRATE_QUERY_SECOND_BYTE = 0x5A;
 
 	InputRecordingControls m_controls;
 	InputRecordingFile m_file;

@@ -584,9 +584,9 @@ bool InputRecording::play(const std::string_view& filename)
 	initializeState();
 	InputRec::log("Replaying input recording");
 	m_file.logRecordingMetadata();
-	if (resolveGameName() != m_file.getHeader().gameName)
+	if (resolveGameName() != m_file.getHeader().m_gameName)
 	{
-		InputRec::consoleLog(fmt::format("Input recording was possibly constructed for a different game. Expected: {}, Actual: {}", m_file.getHeader().gameName, resolveGameName()));
+		InputRec::consoleLog(fmt::format("Input recording was possibly constructed for a different game. Expected: {}, Actual: {}", m_file.getHeader().m_gameName, resolveGameName()));
 	}
 
 	return true;

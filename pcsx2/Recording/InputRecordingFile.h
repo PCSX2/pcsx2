@@ -121,10 +121,10 @@ private:
 
 struct InputRecordingFileHeader
 {
-	u8 version = 1;
-	char emu[50] = "";
-	char author[255] = "";
-	char gameName[255] = "";
+	u8 m_fileVersion = 1;
+	char m_emulatorVersion[50] = "";
+	char m_author[255] = "";
+	char m_gameName[255] = "";
 
 public:
 	void SetEmulatorVersion();
@@ -184,26 +184,26 @@ public:
 	std::vector<PadData> bulkReadPadData(long frameStart, long frameEnd, const uint port);
 
 private:
-	static const int controllerPortsSupported = 2;
-	static const int controllerInputBytes = 18;
-	static const int inputBytesPerFrame = controllerInputBytes * controllerPortsSupported;
+	static constexpr int s_controllerPortsSupported = 2;
+	static constexpr int s_controllerInputBytes = 18;
+	static constexpr int s_inputBytesPerFrame = s_controllerInputBytes * s_controllerPortsSupported;
 	// TODO - version 2, this could be greatly simplified if everything was in the header
 	// + 4 + 4 is the totalFrame and undoCount values
-	static const int headerSize = sizeof(InputRecordingFileHeader) + 4 + 4;
+	static constexpr int s_headerSize = sizeof(InputRecordingFileHeader) + 4 + 4;
 	// DEPRECATED / Slated for Removal
-	static const int recordingSavestateHeaderSize = sizeof(bool);
-	static const int seekpointTotalFrames = sizeof(InputRecordingFileHeader);
-	static const int seekpointUndoCount = sizeof(InputRecordingFileHeader) + 4;
-	static const int seekpointSaveStateHeader = seekpointUndoCount + 4;
+	static constexpr int s_recordingSavestateHeaderSize = sizeof(bool);
+	static constexpr int s_seekpointTotalFrames = sizeof(InputRecordingFileHeader);
+	static constexpr int s_seekpointUndoCount = sizeof(InputRecordingFileHeader) + 4;
+	static constexpr int s_seekpointSaveStateHeader = s_seekpointUndoCount + 4;
 
-	InputRecordingFileHeader header;
-	std::string filename = "";
-	FILE* recordingFile = nullptr;
-	InputRecordingSavestate savestate;
+	InputRecordingFileHeader m_header;
+	std::string m_filename = "";
+	FILE* m_recordingFile = nullptr;
+	InputRecordingSavestate m_savestate;
 
 	// An signed 32-bit frame limit is equivalent to 1.13 years of continuous 60fps footage
-	long totalFrames = 0;
-	unsigned long undoCount = 0;
+	long m_totalFrames = 0;
+	unsigned long m_undoCount = 0;
 
 	// Calculates the position of the current frame in the input recording
 	long getRecordingBlockSeekPoint(const long& frame);
