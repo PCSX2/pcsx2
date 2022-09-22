@@ -620,31 +620,11 @@ void InputRecording::ControllerInterrupt(u8 port, size_t fifoSize, u8 dataIn, u8
 		const u16 bufIndex = fifoSize - 3;
 		if (state == InputRecordingMode::Replaying)
 		{
-			if (!m_file.ReadKeyBuffer(bufVal, m_frame_counter, port, bufIndex))
+			if (!m_file.WriteKeyBuffer(m_frame_counter, port, bufIndex, bufVal))
 			{
-				InputRec::consoleLog(fmt::format("Failed to read input data at frame {}", m_frame_counter));
-			}
-			// Update controller data state for future VirtualPad / logging usage.
-			//pads[port].padData->UpdateControllerData(bufIndex, bufVal);
-		}
-		else
-		{
-			// Update controller data state for future VirtualPad / logging usage.
-			//pads[port].padData->UpdateControllerData(bufIndex, bufVal);
-
-			// Commit the byte to the movie file if we are recording
-			if (m_controls.isRecording())
-			{
-				if (!m_file.WriteKeyBuffer(m_frame_counter, port, bufIndex, bufVal))
-				{
-					InputRec::consoleLog(fmt::format("Failed to write input data at frame {}", m_frame_counter));
-				}
+				InputRec::consoleLog(fmt::format("Failed to write input data at frame {}", m_frame_counter));
 			}
 		}
-	}
-	if (bufCount > 20)
-	{
-		m_pad_data_available = false;
 	}
 }
 
