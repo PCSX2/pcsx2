@@ -166,7 +166,9 @@ public:
 	bool play(const std::string& path);
 	void stop();
 
-	void controllerInterrupt(u8& data, u8& port, u16& BufCount, u8 buf[]);
+	void queryFirstByte(const u8 data);
+	void querySecondByte(const u8 bufVal);
+	void controllerInterrupt(const u8 port, const u16 bufIndex, u8& bufVal);
 	void incFrameCounter();
 	u64 getFrameCounter() const;
 	bool isActive() const;
