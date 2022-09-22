@@ -225,9 +225,8 @@ void InputRecordingControls::StopCapture() const
 #include "InputRecordingControls.h"
 #include "Utilities/InputRecordingLogger.h"
 
+#include "GS/GS.h"
 #include "VMManager.h"
-
-// TODO - update ImGUI when controls are changed - `GetMTGS().PresentCurrentFrame()`, becareful about only running it on the emu/cpu thread
 
 void InputRecordingControls::toggleRecordMode()
 {
@@ -247,6 +246,7 @@ void InputRecordingControls::setRecordMode(bool waitForFrameToEnd)
 	{
 		m_state = Mode::Recording;
 		InputRec::log("Record mode ON");
+		GSPresentCurrentFrame();
 	}
 	else
 	{
@@ -263,6 +263,7 @@ void InputRecordingControls::setReplayMode(bool waitForFrameToEnd)
 	{
 		m_state = Mode::Replaying;
 		InputRec::log("Replay mode ON");
+		GSPresentCurrentFrame();
 	}
 	else
 	{
