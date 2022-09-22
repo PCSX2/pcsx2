@@ -207,7 +207,6 @@ private:
 
 	// Calculates the position of the current frame in the input recording
 	size_t getRecordingBlockSeekPoint(const long frame) const noexcept;
-	bool open(const std::string_view& path, bool newRecording);
 	bool verifyRecordingFileHeader();
 };
 
