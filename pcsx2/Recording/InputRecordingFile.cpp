@@ -288,7 +288,7 @@ InputRecordingFileHeader& InputRecordingFile::getHeader() noexcept
 	return m_header;
 }
 
-long InputRecordingFile::getTotalFrames() const noexcept
+unsigned long InputRecordingFile::getTotalFrames() const noexcept
 {
 	return m_totalFrames;
 }

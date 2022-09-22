@@ -177,7 +177,7 @@ public:
 	// Retrieve the input recording's filename (not the path)
 	const std::string& getFilename() const noexcept;
 	InputRecordingFileHeader& getHeader() noexcept;
-	long getTotalFrames() const noexcept;
+	unsigned long getTotalFrames() const noexcept;
 	unsigned long getUndoCount() const noexcept;
 
 	void logRecordingMetadata();
@@ -202,7 +202,7 @@ private:
 	InputRecordingSavestate m_savestate;
 
 	// An signed 32-bit frame limit is equivalent to 1.13 years of continuous 60fps footage
-	long m_totalFrames = 0;
+	unsigned long m_totalFrames = 0;
 	unsigned long m_undoCount = 0;
 
 	// Calculates the position of the current frame in the input recording
