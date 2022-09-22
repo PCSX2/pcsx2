@@ -741,7 +741,7 @@ bool InputRecording::isTypeSavestate() const
 	return m_type == Type::FROM_SAVESTATE;
 }
 
-void InputRecording::setStartingFrame(u64 startingFrame)
+void InputRecording::setStartingFrame(u32 startingFrame)
 {
 	if (m_type == Type::POWER_ON)
 	{
@@ -751,9 +751,9 @@ void InputRecording::setStartingFrame(u64 startingFrame)
 	m_starting_frame = startingFrame;
 }
 
-void InputRecording::adjustFrameCounterOnReRecord(u64 newFrameCounter)
+void InputRecording::adjustFrameCounterOnReRecord(u32 newFrameCounter)
 {
-	if (newFrameCounter > m_starting_frame + (u64)m_file.getTotalFrames())
+	if (newFrameCounter > m_starting_frame + m_file.getTotalFrames())
 	{
 		InputRec::consoleLog("Warning, you've loaded PCSX2 emulation to a point after the end of the original recording. This should be avoided.");
 		InputRec::consoleLog("Savestate's framecount has been ignored, using the max length of the recording instead.");

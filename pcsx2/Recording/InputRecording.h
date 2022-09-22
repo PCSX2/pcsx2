@@ -178,7 +178,7 @@ public:
 	void handleExceededFrameCounter();
 	void handleLoadingSavestate();
 	bool isTypeSavestate() const;
-	void adjustFrameCounterOnReRecord(u64 newFrameCounter);
+	void adjustFrameCounterOnReRecord(u32 newFrameCounter);
 
 	InputRecordingControls& getControls();
 	const InputRecordingFile& getData() const;
@@ -199,12 +199,12 @@ private:
 	bool m_pad_data_available = false;
 	bool m_watching_for_rerecords = false;
 
-	u64 m_frame_counter = 0;
+	u32 m_frame_counter = 0;
 	// Either 0 for a power-on movie, or the g_FrameCount that is stored on the starting frame
-	u64 m_starting_frame = 0;
+	u32 m_starting_frame = 0;
 
 	void initializeState();
-	void setStartingFrame(u64 startingFrame);
+	void setStartingFrame(u32 startingFrame);
 
 private:
 	// Resolve the name and region of the game currently loaded using the GameDB
