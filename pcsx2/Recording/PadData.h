@@ -43,6 +43,12 @@ public:
 		R2Pressure
 	};
 
+	/// Analog Sticks - 0-255 (127 center)
+	u8 m_leftAnalogX = ANALOG_VECTOR_NEUTRAL;
+	u8 m_leftAnalogY = ANALOG_VECTOR_NEUTRAL;
+	u8 m_rightAnalogX = ANALOG_VECTOR_NEUTRAL;
+	u8 m_rightAnalogY = ANALOG_VECTOR_NEUTRAL;
+
 	/// Pressure Buttons - 0-255
 	u8 m_circlePressure = 0;
 	u8 m_crossPressure = 0;
@@ -57,68 +63,74 @@ public:
 	u8 m_r1Pressure = 0;
 	u8 m_r2Pressure = 0;
 
+	u8* const m_allIntensities[16]{
+		&m_rightAnalogX,
+		&m_rightAnalogY,
+		&m_leftAnalogX,
+		&m_leftAnalogY,
+		&m_rightPressure,
+		&m_leftPressure,
+		&m_upPressure,
+		&m_downPressure,
+		&m_trianglePressure,
+		&m_circlePressure,
+		&m_crossPressure,
+		&m_squarePressure,
+		&m_l1Pressure,
+		&m_r1Pressure,
+		&m_l2Pressure,
+		&m_r2Pressure,
+	};
+
 	/// Pressure Button Flags
+	struct ButtonFlag
+	{
+		bool m_pressed = false;
+		const u8 m_BITMASK;
+		constexpr ButtonFlag(u8 maskValue)
+			: m_BITMASK(maskValue)
+		{
+		}
+
+		void setPressedState(u8 bufVal) noexcept
+		{
+			m_pressed = (~bufVal & m_BITMASK) > 0;
+		}
+
+		u8 getMaskIfPressed() const noexcept
+		{
+			return m_pressed ? m_BITMASK : 0;
+		}
+	};
 	/// NOTE - It shouldn't be possible to depress a button while also having no pressure
 	/// But for the sake of completeness, it should be tracked.
-	bool m_circlePressed = false;
-	bool m_crossPressed = false;
-	bool m_squarePressed = false;
-	bool m_trianglePressed = false;
-	bool m_downPressed = false;
-	bool m_leftPressed = false;
-	bool m_rightPressed = false;
-	bool m_upPressed = false;
-	bool m_l1Pressed = false;
-	bool m_l2Pressed = false;
-	bool m_r1Pressed = false;
-	bool m_r2Pressed = false;
+	ButtonFlag m_circlePressed   {0b00100000};
+	ButtonFlag m_crossPressed    {0b01000000};
+	ButtonFlag m_squarePressed   {0b10000000};
+	ButtonFlag m_trianglePressed {0b00010000};
+	ButtonFlag m_downPressed     {0b01000000};
+	ButtonFlag m_leftPressed     {0b10000000};
+	ButtonFlag m_rightPressed    {0b00100000};
+	ButtonFlag m_upPressed       {0b00010000};
+	ButtonFlag m_l1Pressed       {0b00000100};
+	ButtonFlag m_l2Pressed       {0b00000001};
+	ButtonFlag m_r1Pressed       {0b00001000};
+	ButtonFlag m_r2Pressed       {0b00000010};
 
 	/// Normal (un)pressed buttons
-	bool m_select = false;
-	bool m_start = false;
-	bool m_l3 = false;
-	bool m_r3 = false;
-
-	/// Analog Sticks - 0-255 (127 center)
-	u8 m_leftAnalogX = ANALOG_VECTOR_NEUTRAL;
-	u8 m_leftAnalogY = ANALOG_VECTOR_NEUTRAL;
-	u8 m_rightAnalogX = ANALOG_VECTOR_NEUTRAL;
-	u8 m_rightAnalogY = ANALOG_VECTOR_NEUTRAL;
+	ButtonFlag m_select {0b00000001};
+	ButtonFlag m_start  {0b00001000};
+	ButtonFlag m_l3     {0b00000010};
+	ButtonFlag m_r3     {0b00000100};
 
 	// Given the input buffer and the current index, updates the correct field(s)
-	void UpdateControllerData(u16 bufIndex, u8 const& bufVal);
-	u8 PollControllerData(u16 bufIndex);
+	void UpdateControllerData(u16 bufIndex, u8 const bufVal) noexcept;
+	u8 PollControllerData(u16 bufIndex) const noexcept;
 
 	// Prints current PadData to the Controller Log filter which disabled by default
 	void LogPadData(u8 const& port);
 
 private:
-	struct ButtonResolver
-	{
-		u8 buttonBitmask;
-	};
-
-	static const ButtonResolver s_LEFT;
-	static const ButtonResolver s_DOWN;
-	static const ButtonResolver s_RIGHT;
-	static const ButtonResolver s_UP;
-	static const ButtonResolver s_START;
-	static const ButtonResolver s_R3;
-	static const ButtonResolver s_L3;
-	static const ButtonResolver s_SELECT;
-
-	static const ButtonResolver s_SQUARE;
-	static const ButtonResolver s_CROSS;
-	static const ButtonResolver s_CIRCLE;
-	static const ButtonResolver s_TRIANGLE;
-	static const ButtonResolver s_R1;
-	static const ButtonResolver s_L1;
-	static const ButtonResolver s_R2;
-	static const ButtonResolver s_L2;
-
-	// Checks and returns if button a is pressed or not
-	bool IsButtonPressed(ButtonResolver buttonResolver, u8 const& bufVal);
-	u8 BitmaskOrZero(bool pressed, ButtonResolver buttonInfo);
 
 #ifndef PCSX2_CORE
 	wxString RawPadBytesToString(int start, int end);
