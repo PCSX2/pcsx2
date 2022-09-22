@@ -122,15 +122,15 @@ private:
 struct InputRecordingFileHeader
 {
 	u8 m_fileVersion = 1;
-	char m_emulatorVersion[50] = "";
-	char m_author[255] = "";
-	char m_gameName[255] = "";
+	char m_emulatorVersion[50]{};
+	char m_author[255]{};
+	char m_gameName[255]{};
 
 public:
 	void SetEmulatorVersion();
-	void Init();
-	void SetAuthor(const std::string_view& author);
-	void SetGameName(const std::string_view& cdrom);
+	void Init() noexcept;
+	void SetAuthor(const std::string& author);
+	void SetGameName(const std::string& cdrom);
 };
 
 
@@ -149,52 +149,52 @@ public:
 
 	// Closes the underlying input recording file, writing the header and
 	// prepares for a possible new recording to be started
-	bool Close();
+	bool Close() noexcept;
 	
 	// The number of times a save-state has been loaded while recording this movie
 	// this is also often referred to as a "re-record"
 	
 	// Whether or not this input recording starts by loading a save-state or by booting the game fresh
-	bool FromSaveState();
+	bool FromSaveState() const noexcept;
 	// Increment the number of undo actions and commit it to the recording file
 	void IncrementUndoCount();
 	// Open an existing recording file
-	bool OpenExisting(const std::string_view& path);
+	bool OpenExisting(const std::string& path);
 	// Create and open a brand new input recording, either starting from a save-state or from
 	// booting the game
-	bool OpenNew(const std::string_view& path, bool fromSaveState);
+	bool OpenNew(const std::string& path, bool fromSaveState);
 	// Reads the current frame's input data from the file in order to intercept and overwrite
 	// the current frame's value from the emulator
-	bool ReadKeyBuffer(u8& result, const uint& frame, const uint port, const uint bufIndex);
+	bool ReadKeyBuffer(u8& result, const uint frame, const uint port, const uint bufIndex);
 	// Updates the total frame counter and commit it to the recording file
 	void SetTotalFrames(long frames);
 	// Persist the input recording file header's current state to the file
-	bool WriteHeader();
+	bool WriteHeader() const;
 	// Writes the current frame's input data to the file so it can be replayed
-	bool WriteKeyBuffer(const uint& frame, const uint port, const uint bufIndex, const u8& buf);
+	bool WriteKeyBuffer(const uint frame, const uint port, const uint bufIndex, const u8 buf) const;
 
 
 	// Retrieve the input recording's filename (not the path)
-	const std::string& getFilename() const;
-	InputRecordingFileHeader& getHeader();
-	const long& getTotalFrames() const;
-	const unsigned long& getUndoCount() const;
+	const std::string& getFilename() const noexcept;
+	InputRecordingFileHeader& getHeader() noexcept;
+	long getTotalFrames() const noexcept;
+	unsigned long getUndoCount() const noexcept;
 
 	void logRecordingMetadata();
 	std::vector<PadData> bulkReadPadData(long frameStart, long frameEnd, const uint port);
 
 private:
-	static constexpr int s_controllerPortsSupported = 2;
-	static constexpr int s_controllerInputBytes = 18;
-	static constexpr int s_inputBytesPerFrame = s_controllerInputBytes * s_controllerPortsSupported;
+	static constexpr size_t s_controllerPortsSupported = 2;
+	static constexpr size_t s_controllerInputBytes = 18;
+	static constexpr size_t s_inputBytesPerFrame = s_controllerInputBytes * s_controllerPortsSupported;
 	// TODO - version 2, this could be greatly simplified if everything was in the header
 	// + 4 + 4 is the totalFrame and undoCount values
-	static constexpr int s_headerSize = sizeof(InputRecordingFileHeader) + 4 + 4;
+	static constexpr size_t s_headerSize = sizeof(InputRecordingFileHeader) + 4 + 4;
 	// DEPRECATED / Slated for Removal
-	static constexpr int s_recordingSavestateHeaderSize = sizeof(bool);
-	static constexpr int s_seekpointTotalFrames = sizeof(InputRecordingFileHeader);
-	static constexpr int s_seekpointUndoCount = sizeof(InputRecordingFileHeader) + 4;
-	static constexpr int s_seekpointSaveStateHeader = s_seekpointUndoCount + 4;
+	static constexpr size_t s_recordingSavestateHeaderSize = sizeof(bool);
+	static constexpr size_t s_seekpointTotalFrames = sizeof(InputRecordingFileHeader);
+	static constexpr size_t s_seekpointUndoCount = sizeof(InputRecordingFileHeader) + 4;
+	static constexpr size_t s_seekpointSaveStateHeader = s_seekpointUndoCount + 4;
 
 	InputRecordingFileHeader m_header;
 	std::string m_filename = "";
@@ -206,7 +206,7 @@ private:
 	unsigned long m_undoCount = 0;
 
 	// Calculates the position of the current frame in the input recording
-	long getRecordingBlockSeekPoint(const long& frame);
+	size_t getRecordingBlockSeekPoint(const long frame) const noexcept;
 	bool open(const std::string_view& path, bool newRecording);
 	bool verifyRecordingFileHeader();
 };
