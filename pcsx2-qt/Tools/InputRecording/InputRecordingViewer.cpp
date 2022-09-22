@@ -39,35 +39,46 @@ InputRecordingViewer::InputRecordingViewer(QWidget* parent)
 
 void InputRecordingViewer::loadTable()
 {
+	static const auto headers = QStringList({"Left Analog", "Right Analog", "Cross", "Square", "Triangle", "Circle", "L1", "R1", "L2", "R2", "⬇️", "➡️", "⬆️", "⬅️", "L3", "R3", "Select", "Start"});
+	m_ui.tableWidget->setColumnCount(headers.length());
+	m_ui.tableWidget->setHorizontalHeaderLabels(headers);
+
 	// TODO - only port 1 for now
 	auto data = m_file.bulkReadPadData(0, m_file.getTotalFrames(), 0);
 	m_ui.tableWidget->setRowCount(data.size());
-	auto headers = QStringList({"Left Analog", "Right Analog", "Cross", "Square", "Triangle", "Circle", "L1", "R1", "L2", "R2", "⬇️", "➡️", "⬆️", "⬅️", "L3", "R3", "Select", "Start"});
-	m_ui.tableWidget->setColumnCount(headers.length());
-	m_ui.tableWidget->setHorizontalHeaderLabels(headers);
+	
+	static constexpr auto constructItem_analog = [](u8 analogX, u8 analogY) {
+		return new QTableWidgetItem(tr("%1 %2").arg(analogX).arg(analogY));
+	};
+	static constexpr auto constructItem_pressed = [](bool pressed) {
+		return new QTableWidgetItem(tr("%1").arg(pressed));
+	};
+	static constexpr auto constructItem_pressured = [](bool pressed, u8 pressure) {
+		return new QTableWidgetItem(tr("%1 [%2]").arg(pressed).arg(pressure));
+	};
 
 	int frameNum = 0;
 	for (const auto& frame : data)
 	{
 		// TODO - disgusting, clean it up
-		m_ui.tableWidget->setItem(frameNum, 0,  new QTableWidgetItem(tr("%1 %2")  .arg(frame.m_leftAnalogX)              .arg(frame.m_leftAnalogY)));
-		m_ui.tableWidget->setItem(frameNum, 1,  new QTableWidgetItem(tr("%1 %2")  .arg(frame.m_rightAnalogX)             .arg(frame.m_rightAnalogY)));
-		m_ui.tableWidget->setItem(frameNum, 2,  new QTableWidgetItem(tr("%1 [%2]").arg(frame.m_crossPressed.m_pressed)   .arg(frame.m_crossPressure)));
-		m_ui.tableWidget->setItem(frameNum, 3,  new QTableWidgetItem(tr("%1 [%2]").arg(frame.m_squarePressed.m_pressed)  .arg(frame.m_squarePressure)));
-		m_ui.tableWidget->setItem(frameNum, 4,  new QTableWidgetItem(tr("%1 [%2]").arg(frame.m_trianglePressed.m_pressed).arg(frame.m_trianglePressure)));
-		m_ui.tableWidget->setItem(frameNum, 5,  new QTableWidgetItem(tr("%1 [%2]").arg(frame.m_circlePressed.m_pressed)  .arg(frame.m_circlePressure)));
-		m_ui.tableWidget->setItem(frameNum, 6,  new QTableWidgetItem(tr("%1 [%2]").arg(frame.m_l1Pressed.m_pressed)      .arg(frame.m_l1Pressure)));
-		m_ui.tableWidget->setItem(frameNum, 7,  new QTableWidgetItem(tr("%1 [%2]").arg(frame.m_l2Pressed.m_pressed)      .arg(frame.m_l2Pressure)));
-		m_ui.tableWidget->setItem(frameNum, 8,  new QTableWidgetItem(tr("%1 [%2]").arg(frame.m_r1Pressed.m_pressed)      .arg(frame.m_r1Pressure)));
-		m_ui.tableWidget->setItem(frameNum, 9,  new QTableWidgetItem(tr("%1 [%2]").arg(frame.m_r1Pressed.m_pressed)      .arg(frame.m_r2Pressure)));
-		m_ui.tableWidget->setItem(frameNum, 10, new QTableWidgetItem(tr("%1 [%2]").arg(frame.m_downPressed.m_pressed)    .arg(frame.m_downPressure)));
-		m_ui.tableWidget->setItem(frameNum, 11, new QTableWidgetItem(tr("%1 [%2]").arg(frame.m_rightPressed.m_pressed)   .arg(frame.m_rightPressure)));
-		m_ui.tableWidget->setItem(frameNum, 12, new QTableWidgetItem(tr("%1 [%2]").arg(frame.m_upPressed.m_pressed)      .arg(frame.m_upPressure)));
-		m_ui.tableWidget->setItem(frameNum, 13, new QTableWidgetItem(tr("%1 [%2]").arg(frame.m_leftPressed.m_pressed)    .arg(frame.m_leftPressure)));
-		m_ui.tableWidget->setItem(frameNum, 14, new QTableWidgetItem(tr("%1")     .arg(frame.m_l3.m_pressed)));
-		m_ui.tableWidget->setItem(frameNum, 15, new QTableWidgetItem(tr("%1")     .arg(frame.m_r3.m_pressed)));
-		m_ui.tableWidget->setItem(frameNum, 16, new QTableWidgetItem(tr("%1")     .arg(frame.m_select.m_pressed)));
-		m_ui.tableWidget->setItem(frameNum, 17, new QTableWidgetItem(tr("%1")     .arg(frame.m_start.m_pressed)));
+		m_ui.tableWidget->setItem(frameNum, 0,  constructItem_analog   (frame.m_leftAnalogX, frame.m_leftAnalogY));
+		m_ui.tableWidget->setItem(frameNum, 1,  constructItem_analog   (frame.m_rightAnalogX, frame.m_rightAnalogY));
+		m_ui.tableWidget->setItem(frameNum, 2,  constructItem_pressured(frame.m_crossPressed.m_pressed, frame.m_crossPressure));
+		m_ui.tableWidget->setItem(frameNum, 3,  constructItem_pressured(frame.m_squarePressed.m_pressed, frame.m_squarePressure));
+		m_ui.tableWidget->setItem(frameNum, 4,  constructItem_pressured(frame.m_trianglePressed.m_pressed, frame.m_trianglePressure));
+		m_ui.tableWidget->setItem(frameNum, 5,  constructItem_pressured(frame.m_circlePressed.m_pressed, frame.m_circlePressure));
+		m_ui.tableWidget->setItem(frameNum, 6,  constructItem_pressured(frame.m_l1Pressed.m_pressed, frame.m_l1Pressure));
+		m_ui.tableWidget->setItem(frameNum, 7,  constructItem_pressured(frame.m_l2Pressed.m_pressed, frame.m_l2Pressure));
+		m_ui.tableWidget->setItem(frameNum, 8,  constructItem_pressured(frame.m_r1Pressed.m_pressed, frame.m_r1Pressure));
+		m_ui.tableWidget->setItem(frameNum, 9,  constructItem_pressured(frame.m_r1Pressed.m_pressed, frame.m_r2Pressure));
+		m_ui.tableWidget->setItem(frameNum, 10, constructItem_pressured(frame.m_downPressed.m_pressed, frame.m_downPressure));
+		m_ui.tableWidget->setItem(frameNum, 11, constructItem_pressured(frame.m_rightPressed.m_pressed, frame.m_rightPressure));
+		m_ui.tableWidget->setItem(frameNum, 12, constructItem_pressured(frame.m_upPressed.m_pressed, frame.m_upPressure));
+		m_ui.tableWidget->setItem(frameNum, 13, constructItem_pressured(frame.m_leftPressed.m_pressed, frame.m_leftPressure));
+		m_ui.tableWidget->setItem(frameNum, 14, constructItem_pressed  (frame.m_l3.m_pressed));
+		m_ui.tableWidget->setItem(frameNum, 15, constructItem_pressed  (frame.m_r3.m_pressed));
+		m_ui.tableWidget->setItem(frameNum, 16, constructItem_pressed  (frame.m_select.m_pressed));
+		m_ui.tableWidget->setItem(frameNum, 17, constructItem_pressed  (frame.m_start.m_pressed));
 		frameNum++;
 	}
 }
