@@ -314,45 +314,39 @@ void InputRecordingFile::IncrementUndoCount()
 	fwrite(&m_undoCount, 4, 1, m_recordingFile);
 }
 
-bool InputRecordingFile::open(const std::string_view& path, bool newRecording)
-{
-	if (newRecording)
-	{
-		if ((m_recordingFile = FileSystem::OpenCFile(path.data(), "wb+")) != nullptr)
-		{
-			m_filename = path;
-			m_totalFrames = 0;
-			m_undoCount = 0;
-			m_header.Init();
-			return true;
-		}
-	}
-	else if ((m_recordingFile = FileSystem::OpenCFile(path.data(), "rb+")) != nullptr)
-	{
-		if (verifyRecordingFileHeader())
-		{
-			m_filename = path;
-			return true;
-		}
-		Close();
-		InputRec::consoleLog("Input recording file m_header is invalid");
-		return false;
-	}
-	InputRec::consoleLog(fmt::format("Input recording file opening failed. Error - {}", strerror(errno)));
-	return false;
-}
-
 bool InputRecordingFile::OpenNew(const std::string& path, bool fromSavestate)
 {
-	if (!open(path, true))
+	if ((m_recordingFile = FileSystem::OpenCFile(path.data(), "wb+")) == nullptr)
+	{
+		InputRec::consoleLog(fmt::format("Input recording file opening failed. Error - {}", strerror(errno)));
 		return false;
+	}
+
+	m_filename = path;
+	m_totalFrames = 0;
+	m_undoCount = 0;
+	m_header.Init();
 	m_savestate.fromSavestate = fromSavestate;
 	return true;
 }
 
 bool InputRecordingFile::OpenExisting(const std::string& path)
 {
-	return open(path, false);
+	if ((m_recordingFile = FileSystem::OpenCFile(path.data(), "rb+")) == nullptr)
+	{
+		InputRec::consoleLog(fmt::format("Input recording file opening failed. Error - {}", strerror(errno)));
+		return false;
+	}
+
+	if (!verifyRecordingFileHeader())
+	{
+		Close();
+		InputRec::consoleLog("Input recording file header is invalid");
+		return false;
+	}
+
+	m_filename = path;
+	return true;
 }
 
 bool InputRecordingFile::ReadKeyBuffer(u8& result, const uint frame, const uint port, const uint bufIndex)
