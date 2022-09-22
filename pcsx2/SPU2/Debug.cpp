@@ -102,7 +102,6 @@ void DoFullDump()
 #ifdef _MSC_VER
 #ifdef SPU2_LOG
 	FILE* dump;
-	u8 c = 0, v = 0;
 
 	if (MemDump())
 	{
@@ -128,7 +127,7 @@ void DoFullDump()
 	dump = FileSystem::OpenCFile(CoresDumpFileName.c_str(), "wt");
 	if (dump)
 	{
-		for (c = 0; c < 2; c++)
+		for (u8 c = 0; c < 2; c++)
 		{
 			fprintf(dump, "#### CORE %d DUMP.\n", c);
 
@@ -170,7 +169,7 @@ void DoFullDump()
 			fprintf(dump, "  - ENDX:   %x\n", Cores[c].Regs.VMIXER);
 			fprintf(dump, "  - STATX:  %x\n", Cores[c].Regs.VMIXEL);
 			fprintf(dump, "  - ATTR:   %x\n", Cores[c].Regs.VMIXER);
-			for (v = 0; v < 24; v++)
+			for (u8 v = 0; v < 24; v++)
 			{
 				fprintf(dump, "Voice %d:\n", v);
 				Cores[c].Voices[v].Volume.DebugDump(dump, "");
@@ -221,7 +220,7 @@ void DoFullDump()
 	dump = fopen("logs/effects.txt", "wt");
 	if (dump)
 	{
-		for (c = 0; c < 2; c++)
+		for (u8 c = 0; c < 2; c++)
 		{
 			fprintf(dump, "#### CORE %d EFFECTS PROCESSOR DUMP.\n", c);
 

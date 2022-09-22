@@ -99,7 +99,7 @@ public:
 	void WriteVIRegs(REG_VI* viRegs);
 
 	void WriteVFRegs(VECTOR* vfRegs);
-	
+
 	void WriteCol(vifStruct& _vif);
 
 	void WriteRow(vifStruct& _vif);

@@ -368,8 +368,6 @@ void GSRendererSW::Draw()
 
 	GSVector4i r = bbox.rintersect(scissor);
 
-	scissor.z = std::min<int>(scissor.z, (int)context->FRAME.FBW * 64); // TODO: find a game that overflows and check which one is the right behaviour
-
 	sd->scissor = scissor;
 	sd->bbox = bbox;
 	sd->frame = g_perfmon.GetFrame();
@@ -1016,7 +1014,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	bool zwrite = zm != 0xffffffff;
 	bool ztest = context->TEST.ZTE && context->TEST.ZTST > ZTST_ALWAYS;
 	/*
-	printf("%05x %d %05x %d %05x %d %dx%d\n", 
+	printf("%05x %d %05x %d %05x %d %dx%d\n",
 		fwrite || ftest ? m_context->FRAME.Block() : 0xfffff, m_context->FRAME.PSM,
 		zwrite || ztest ? m_context->ZBUF.Block() : 0xfffff, m_context->ZBUF.PSM,
 		PRIM->TME ? m_context->TEX0.TBP0 : 0xfffff, m_context->TEX0.PSM, (int)m_context->TEX0.TW, (int)m_context->TEX0.TH);

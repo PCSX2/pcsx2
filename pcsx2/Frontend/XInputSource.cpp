@@ -96,7 +96,6 @@ XInputSource::~XInputSource() = default;
 
 bool XInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	// xinput1_3.dll is flawed and obsolete, but it's also commonly used by wrappers.
 	// For this reason, try to load it *only* from the application directory, and not system32.
 	m_xinput_module = LoadLibraryExW(L"xinput1_3", nullptr, LOAD_LIBRARY_SEARCH_APPLICATION_DIR);
@@ -127,12 +126,6 @@ bool XInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 	// SCP extension, only exists when the bridge xinput1_3.dll is in use
 	m_xinput_get_extended =
 		reinterpret_cast<decltype(m_xinput_get_extended)>(GetProcAddress(m_xinput_module, "XInputGetExtended"));
-#else
-	m_xinput_get_state = XInputGetState;
-	m_xinput_set_state = XInputSetState;
-	m_xinput_get_capabilities = XInputGetCapabilities;
-	m_xinput_get_extended = nullptr;
-#endif
 	if (!m_xinput_get_state || !m_xinput_set_state || !m_xinput_get_capabilities)
 	{
 		Console.Error("Failed to get XInput function pointers.");
@@ -154,13 +147,11 @@ void XInputSource::Shutdown()
 			HandleControllerDisconnection(i);
 	}
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	if (m_xinput_module)
 	{
 		FreeLibrary(m_xinput_module);
 		m_xinput_module = nullptr;
 	}
-#endif
 
 	m_xinput_get_state = nullptr;
 	m_xinput_set_state = nullptr;

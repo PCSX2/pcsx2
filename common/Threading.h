@@ -211,6 +211,8 @@ namespace Threading
 				m_sema.Post();
 		}
 
+		/// Checks if there's any work in the queue
+		bool CheckForWork();
 		/// Wait for work to be added to the queue
 		void WaitForWork();
 		/// Wait for work to be added to the queue, spinning for a bit before sleeping the thread

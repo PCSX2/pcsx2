@@ -626,7 +626,7 @@ namespace R5900
 
 		const OPCODE& Class_SPECIAL(u32 op) { return tbl_Special[op & 0x3F]; }
 		const OPCODE& Class_REGIMM(u32 op)  { return tbl_RegImm[(op >> 16) & 0x1F]; }
-		
+
 		const OPCODE& Class_MMI(u32 op)  { return tbl_MMI[op & 0x3F]; }
 		const OPCODE& Class_MMI0(u32 op) { return tbl_MMI0[(op >> 6) & 0x1F]; }
 		const OPCODE& Class_MMI1(u32 op) { return tbl_MMI1[(op >> 6) & 0x1F]; }

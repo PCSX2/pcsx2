@@ -31,7 +31,7 @@ BreakpointWindow::BreakpointWindow( wxWindow* parent, DebugInterface* _cpu )
 	wxBoxSizer* upperPart = new wxBoxSizer(wxHORIZONTAL);
 
 	wxFlexGridSizer* leftSizer = new wxFlexGridSizer(2,2,7,7);
-	
+
 	// address
 	wxStaticText* addressText = new wxStaticText(this,wxID_ANY,L"Address");
 	editAddress = new wxTextCtrl(this,wxID_ANY,L"");
@@ -151,10 +151,10 @@ void BreakpointWindow::setDefaultValues()
 		swprintf(str,64,L"0x%08X",address);
 		editAddress->SetValue(str);
 	}
-	
+
 	swprintf(str,64,L"0x%08X",size);
 	editSize->SetValue(str);
-	editCondition->SetValue(wxString(condition,wxConvUTF8));	
+	editCondition->SetValue(wxString(condition,wxConvUTF8));
 }
 
 void BreakpointWindow::loadFromMemcheck(MemCheck& memcheck)
@@ -221,7 +221,7 @@ void BreakpointWindow::initBreakpoint(u32 _address)
 void BreakpointWindow::onRadioChange(wxCommandEvent& evt)
 {
 	memory = radioMemory->GetValue();
-	
+
 	checkRead->Enable(memory);
 	checkWrite->Enable(memory);
 	checkOnChange->Enable(memory);

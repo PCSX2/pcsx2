@@ -102,6 +102,7 @@ void ReadSettings()
 	SndOutLatencyMS = Host::GetIntSettingValue("SPU2/Output", "Latency", 100);
 	SynchMode = Host::GetIntSettingValue("SPU2/Output", "SynchMode", 0);
 	numSpeakers = Host::GetIntSettingValue("SPU2/Output", "SpeakerConfiguration", 0);
+	dplLevel = Host::GetIntSettingValue("SPU2/Output", "DplDecodingLevel", 0);
 
 	SoundtouchCfg::ReadSettings();
 	DebugConfig::ReadSettings();

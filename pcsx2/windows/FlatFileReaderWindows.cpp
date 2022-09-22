@@ -72,7 +72,7 @@ void FlatFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 {
 	LARGE_INTEGER offset;
 	offset.QuadPart = sector * (s64)m_blocksize + m_dataoffset;
-	
+
 	DWORD bytesToRead = count * m_blocksize;
 
 	ZeroMemory(&asyncOperationContext, sizeof(asyncOperationContext));
@@ -87,7 +87,7 @@ void FlatFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 int FlatFileReader::FinishRead(void)
 {
 	DWORD bytes;
-	
+
 	if(!GetOverlappedResult(hOverlappedFile, &asyncOperationContext, &bytes, TRUE))
 	{
 		asyncInProgress = false;

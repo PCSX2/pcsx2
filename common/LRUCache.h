@@ -84,7 +84,7 @@ public:
 
 	void Evict(std::size_t count = 1)
 	{
-		while (m_items.size() >= count)
+		while (!m_items.empty() && count > 0)
 		{
 			typename MapType::iterator lowest = m_items.end();
 			for (auto iter = m_items.begin(); iter != m_items.end(); ++iter)
@@ -93,6 +93,7 @@ public:
 					lowest = iter;
 			}
 			m_items.erase(lowest);
+			count--;
 		}
 	}
 
@@ -118,7 +119,7 @@ public:
 	{
 		// evict if we went over
 		while (m_items.size() > m_max_capacity)
-			Evict(m_items.size() - (m_max_capacity - 1));
+			Evict(m_items.size() - m_max_capacity);
 	}
 
 private:

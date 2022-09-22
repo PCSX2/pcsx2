@@ -34,7 +34,6 @@
 #include "Config.h"
 #include "Counters.h"
 #include "Frontend/ImGuiManager.h"
-#include "Frontend/InputManager.h"
 #include "GS.h"
 #include "GS/GS.h"
 #include "Host.h"
@@ -43,6 +42,10 @@
 #include "PerformanceMetrics.h"
 
 #ifdef PCSX2_CORE
+#include "Frontend/FullscreenUI.h"
+#include "Frontend/ImGuiManager.h"
+#include "Frontend/ImGuiFullscreen.h"
+#include "Frontend/InputManager.h"
 #include "VMManager.h"
 #endif
 
@@ -52,7 +55,7 @@ namespace ImGuiManager
 	static void SetKeyMap();
 	static bool LoadFontData();
 	static void UnloadFontData();
-	static bool AddImGuiFonts();
+	static bool AddImGuiFonts(bool fullscreen_fonts);
 	static ImFont* AddTextFont(float size);
 	static ImFont* AddFixedFont(float size);
 	static bool AddIconFonts(float size);
@@ -66,6 +69,8 @@ static float s_global_scale = 1.0f;
 
 static ImFont* s_standard_font;
 static ImFont* s_fixed_font;
+static ImFont* s_medium_font;
+static ImFont* s_large_font;
 
 static std::vector<u8> s_standard_font_data;
 static std::vector<u8> s_fixed_font_data;
@@ -77,6 +82,7 @@ static Common::Timer s_last_render_time;
 // cached copies of WantCaptureKeyboard/Mouse, used to know when to dispatch events
 static std::atomic_bool s_imgui_wants_keyboard{false};
 static std::atomic_bool s_imgui_wants_mouse{false};
+static std::atomic_bool s_imgui_wants_text{false};
 
 // mapping of host key -> imgui key
 static std::unordered_map<u32, ImGuiKey> s_imgui_key_map;
@@ -90,8 +96,7 @@ bool ImGuiManager::Initialize()
 		return false;
 	}
 
-	HostDisplay* display = Host::GetHostDisplay();
-	s_global_scale = std::max(1.0f, display->GetWindowScale() * static_cast<float>(EmuConfig.GS.OsdScale / 100.0));
+	s_global_scale = std::max(1.0f, g_host_display->GetWindowScale() * (EmuConfig.GS.OsdScale / 100.0f));
 
 	ImGui::CreateContext();
 
@@ -105,25 +110,29 @@ bool ImGuiManager::Initialize()
 #endif
 
 	io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
-	io.DisplaySize.x = static_cast<float>(display->GetWindowWidth());
-	io.DisplaySize.y = static_cast<float>(display->GetWindowHeight());
+	io.DisplaySize.x = static_cast<float>(g_host_display->GetWindowWidth());
+	io.DisplaySize.y = static_cast<float>(g_host_display->GetWindowHeight());
 
 	SetKeyMap();
 	SetStyle();
 
-	if (!display->CreateImGuiContext())
+#ifdef PCSX2_CORE
+	pxAssertRel(!FullscreenUI::IsInitialized(), "Fullscreen UI is not initialized on ImGui init");
+#endif
+
+	if (!g_host_display->CreateImGuiContext())
 	{
 		pxFailRel("Failed to create ImGui device context");
-		display->DestroyImGuiContext();
+		g_host_display->DestroyImGuiContext();
 		ImGui::DestroyContext();
 		UnloadFontData();
 		return false;
 	}
 
-	if (!AddImGuiFonts() || !display->UpdateImGuiFontTexture())
+	if (!AddImGuiFonts(false) || !g_host_display->UpdateImGuiFontTexture())
 	{
 		pxFailRel("Failed to create ImGui font text");
-		display->DestroyImGuiContext();
+		g_host_display->DestroyImGuiContext();
 		ImGui::DestroyContext();
 		UnloadFontData();
 		return false;
@@ -138,24 +147,30 @@ bool ImGuiManager::Initialize()
 
 void ImGuiManager::Shutdown()
 {
-	HostDisplay* display = Host::GetHostDisplay();
-	if (display)
-		display->DestroyImGuiContext();
+#ifdef PCSX2_CORE
+	FullscreenUI::Shutdown();
+#endif
+
+	if (g_host_display)
+		g_host_display->DestroyImGuiContext();
 	if (ImGui::GetCurrentContext())
 		ImGui::DestroyContext();
 
 	s_standard_font = nullptr;
 	s_fixed_font = nullptr;
+	s_medium_font = nullptr;
+	s_large_font = nullptr;
+#ifdef PCSX2_CORE
+	ImGuiFullscreen::SetFonts(nullptr, nullptr, nullptr);
+#endif
 
 	UnloadFontData();
 }
 
 void ImGuiManager::WindowResized()
 {
-	HostDisplay* display = Host::GetHostDisplay();
-
-	const u32 new_width = display ? display->GetWindowWidth() : 0;
-	const u32 new_height = display ? display->GetWindowHeight() : 0;
+	const u32 new_width = g_host_display ? g_host_display->GetWindowWidth() : 0;
+	const u32 new_height = g_host_display ? g_host_display->GetWindowHeight() : 0;
 
 	ImGui::GetIO().DisplaySize = ImVec2(static_cast<float>(new_width), static_cast<float>(new_height));
 
@@ -168,27 +183,27 @@ void ImGuiManager::WindowResized()
 
 void ImGuiManager::UpdateScale()
 {
-	HostDisplay* display = Host::GetHostDisplay();
-	const float window_scale = display ? display->GetWindowScale() : 1.0f;
-	const float scale = std::max(window_scale * static_cast<float>(EmuConfig.GS.OsdScale / 100.0), 1.0f);
+	const float window_scale = g_host_display ? g_host_display->GetWindowScale() : 1.0f;
+	const float scale = std::max(window_scale * (EmuConfig.GS.OsdScale / 100.0f), 1.0f);
 
+#ifdef PCSX2_CORE
+	if (scale == s_global_scale && (!HasFullscreenFonts() || !ImGuiFullscreen::UpdateLayoutScale()))
+		return;
+#else
 	if (scale == s_global_scale)
 		return;
+#endif
 
 	// This is assumed to be called mid-frame.
 	ImGui::EndFrame();
 
 	s_global_scale = scale;
-
-	ImGui::GetStyle() = ImGuiStyle();
-	ImGui::GetStyle().WindowMinSize = ImVec2(1.0f, 1.0f);
 	SetStyle();
-	ImGui::GetStyle().ScaleAllSizes(scale);
 
-	if (!AddImGuiFonts())
+	if (!AddImGuiFonts(HasFullscreenFonts()))
 		pxFailRel("Failed to create ImGui font text");
 
-	if (!display->UpdateImGuiFontTexture())
+	if (!g_host_display->UpdateImGuiFontTexture())
 		pxFailRel("Failed to recreate font texture after scale+resize");
 
 	NewFrame();
@@ -207,6 +222,16 @@ void ImGuiManager::NewFrame()
 	ImGui::GetCurrentWindowRead()->Flags |= ImGuiWindowFlags_NoNavInputs;
 	s_imgui_wants_keyboard.store(io.WantCaptureKeyboard, std::memory_order_relaxed);
 	s_imgui_wants_mouse.store(io.WantCaptureMouse, std::memory_order_release);
+
+	const bool want_text_input = io.WantTextInput;
+	if (s_imgui_wants_text.load(std::memory_order_relaxed) != want_text_input)
+	{
+		s_imgui_wants_text.store(want_text_input, std::memory_order_release);
+		if (want_text_input)
+			Host::BeginTextInput();
+		else
+			Host::EndTextInput();
+	}
 #endif
 }
 
@@ -393,20 +418,20 @@ ImFont* ImGuiManager::AddFixedFont(float size)
 
 bool ImGuiManager::AddIconFonts(float size)
 {
-	static const ImWchar range_fa[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+	static constexpr ImWchar range_fa[] = { 0xf001,0xf002,0xf005,0xf005,0xf00c,0xf00e,0xf011,0xf011,0xf013,0xf013,0xf017,0xf017,0xf019,0xf019,0xf021,0xf021,0xf025,0xf025,0xf028,0xf028,0xf030,0xf030,0xf03a,0xf03a,0xf03d,0xf03d,0xf04a,0xf04c,0xf04e,0xf04e,0xf050,0xf050,0xf052,0xf052,0xf059,0xf059,0xf05e,0xf05e,0xf065,0xf065,0xf067,0xf067,0xf06a,0xf06a,0xf071,0xf071,0xf07b,0xf07c,0xf085,0xf085,0xf091,0xf091,0xf0a0,0xf0a0,0xf0ac,0xf0ad,0xf0b0,0xf0b0,0xf0c5,0xf0c5,0xf0c7,0xf0c9,0xf0d0,0xf0d0,0xf0e2,0xf0e2,0xf0eb,0xf0eb,0xf0f3,0xf0f3,0xf0fe,0xf0fe,0xf110,0xf110,0xf119,0xf119,0xf11b,0xf11c,0xf121,0xf121,0xf133,0xf133,0xf140,0xf140,0xf144,0xf144,0xf14a,0xf14a,0xf15b,0xf15b,0xf188,0xf188,0xf192,0xf192,0xf1c9,0xf1c9,0xf1dd,0xf1de,0xf1e6,0xf1e6,0xf1ea,0xf1eb,0xf1f8,0xf1f8,0xf1fc,0xf1fc,0xf242,0xf242,0xf245,0xf245,0xf26c,0xf26c,0xf2d0,0xf2d0,0xf2db,0xf2db,0xf2f5,0xf2f5,0xf302,0xf302,0xf3fd,0xf3fd,0xf410,0xf410,0xf466,0xf466,0xf479,0xf479,0xf517,0xf517,0xf51f,0xf51f,0xf543,0xf543,0xf545,0xf545,0xf547,0xf548,0xf552,0xf552,0xf5aa,0xf5aa,0xf65d,0xf65e,0xf6a9,0xf6a9,0xf756,0xf756,0xf7c2,0xf7c2,0xf815,0xf815,0xf818,0xf818,0xf84c,0xf84c,0xf8cc,0xf8cc,0x0,0x0 };
 
 	ImFontConfig cfg;
 	cfg.MergeMode = true;
 	cfg.PixelSnapH = true;
-	cfg.GlyphMinAdvanceX = size * 0.75f;
-	cfg.GlyphMaxAdvanceX = size * 0.75f;
+	cfg.GlyphMinAdvanceX = size;
+	cfg.GlyphMaxAdvanceX = size;
 	cfg.FontDataOwnedByAtlas = false;
 
 	return (ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
 				s_icon_font_data.data(), static_cast<int>(s_icon_font_data.size()), size * 0.75f, &cfg, range_fa) != nullptr);
 }
 
-bool ImGuiManager::AddImGuiFonts()
+bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
 {
 	const float standard_font_size = std::ceil(15.0f * s_global_scale);
 
@@ -421,7 +446,54 @@ bool ImGuiManager::AddImGuiFonts()
 	if (!s_fixed_font)
 		return false;
 
+#ifdef PCSX2_CORE
+	if (fullscreen_fonts)
+	{
+		const float medium_font_size = std::ceil(ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE));
+		s_medium_font = AddTextFont(medium_font_size);
+		if (!s_medium_font || !AddIconFonts(medium_font_size))
+			return false;
+
+		const float large_font_size = std::ceil(ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE));
+		s_large_font = AddTextFont(large_font_size);
+		if (!s_large_font || !AddIconFonts(large_font_size))
+			return false;
+	}
+	else
+	{
+		s_medium_font = nullptr;
+		s_large_font = nullptr;
+	}
+
+	ImGuiFullscreen::SetFonts(s_standard_font, s_medium_font, s_large_font);
+#endif
+
 	return io.Fonts->Build();
+}
+
+bool ImGuiManager::AddFullscreenFontsIfMissing()
+{
+	if (HasFullscreenFonts())
+		return true;
+
+	// can't do this in the middle of a frame
+	ImGui::EndFrame();
+
+	if (!AddImGuiFonts(true))
+	{
+		Console.Error("Failed to lazily allocate fullscreen fonts.");
+		AddImGuiFonts(false);
+	}
+
+	g_host_display->UpdateImGuiFontTexture();
+	NewFrame();
+
+	return HasFullscreenFonts();
+}
+
+bool ImGuiManager::HasFullscreenFonts()
+{
+	return (s_medium_font && s_large_font);
 }
 
 struct OSDMessage
@@ -446,6 +518,18 @@ void Host::AddKeyedOSDMessage(std::string key, std::string message, float durati
 	OSDMessage msg;
 	msg.key = std::move(key);
 	msg.text = std::move(message);
+	msg.duration = duration;
+	msg.time = std::chrono::steady_clock::now();
+
+	std::unique_lock<std::mutex> lock(s_osd_messages_lock);
+	s_osd_posted_messages.push_back(std::move(msg));
+}
+
+void Host::AddIconOSDMessage(std::string key, const char* icon, const std::string_view& message, float duration /* = 2.0f */)
+{
+	OSDMessage msg;
+	msg.key = std::move(key);
+	msg.text = fmt::format("{}  {}",  icon, message);
 	msg.duration = duration;
 	msg.time = std::chrono::steady_clock::now();
 
@@ -651,12 +735,10 @@ void ImGuiManager::DrawPerformanceOverlay()
 			fmt::format_to(std::back_inserter(text), "{}{}%", first ? "" : " | ", static_cast<u32>(std::round(speed)));
 
 			// We read the main config here, since MTGS doesn't get updated with speed toggles.
-			if (EmuConfig.GS.LimitScalar == 0.0)
+			if (EmuConfig.GS.LimitScalar == 0.0f)
 				text += " (Max)";
 			else
-				fmt::format_to(std::back_inserter(text), " ({:.0f}%)", EmuConfig.GS.LimitScalar * 100.0);
-
-			first = false;
+				fmt::format_to(std::back_inserter(text), " ({:.0f}%)", EmuConfig.GS.LimitScalar * 100.0f);
 		}
 		if (!text.empty())
 		{
@@ -757,7 +839,13 @@ void ImGuiManager::RenderOSD()
 	// acquire for IO.MousePos.
 	std::atomic_thread_fence(std::memory_order_acquire);
 
+#ifdef PCSX2_CORE
+	// Don't draw OSD when we're just running big picture.
+	if (VMManager::HasValidVM())
+		DrawPerformanceOverlay();
+#else
 	DrawPerformanceOverlay();
+#endif
 
 	AcquirePendingOSDMessages();
 	DrawOSDMessages();
@@ -778,7 +866,40 @@ ImFont* ImGuiManager::GetFixedFont()
 	return s_fixed_font;
 }
 
+ImFont* ImGuiManager::GetMediumFont()
+{
+	AddFullscreenFontsIfMissing();
+	return s_medium_font;
+}
+
+ImFont* ImGuiManager::GetLargeFont()
+{
+	AddFullscreenFontsIfMissing();
+	return s_large_font;
+}
+
 #ifdef PCSX2_CORE
+
+bool ImGuiManager::WantsTextInput()
+{
+	return s_imgui_wants_text.load(std::memory_order_acquire);
+}
+
+void ImGuiManager::AddTextInput(std::string str)
+{
+	if (!s_imgui_wants_text.load(std::memory_order_acquire))
+		return;
+
+	// Has to go through the CPU -> GS thread :(
+	Host::RunOnCPUThread([str = std::move(str)]() {
+		GetMTGS().RunOnGSThread([str = std::move(str)]() {
+			if (!ImGui::GetCurrentContext())
+				return;
+
+			ImGui::GetIO().AddInputCharactersUTF8(str.c_str());
+		});
+	});
+}
 
 void ImGuiManager::UpdateMousePosition(float x, float y)
 {
@@ -870,3 +991,4 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
 }
 
 #endif // PCSX2_CORE
+

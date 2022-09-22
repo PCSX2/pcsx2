@@ -142,7 +142,7 @@ bool GSC_Manhunt2(const GSFrameInfo& fi, int& skip)
 bool GSC_CrashBandicootWoC(const GSFrameInfo& fi, int& skip)
 {
 	// Channel effect not properly supported - Removes fog to fix the fog wall issue on Direct3D at any resolution, and while upscaling on every Hardware renderer.
-	if (skip == 0) 
+	if (skip == 0)
 	{
 		if (fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x008c0 || fi.FBP == 0x00a00) && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x008c0 || fi.TBP0 == 0x00a00) && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.FPSM == fi.TPSM)
 		{
@@ -639,19 +639,6 @@ bool GSC_UrbanReign(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SkyGunner(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (!fi.TME && !(fi.FBP == 0x0 || fi.FBP == 0x00800 || fi.FBP == 0x008c0 || fi.FBP == 0x03e00) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x0 || fi.TBP0 == 0x01800) && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1; // Huge Vram usage
-		}
-	}
-
-	return true;
-}
-
 bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -704,41 +691,6 @@ bool GSC_GetawayGames(const GSFrameInfo& fi, int& skip)
 		if ((fi.FBP == 0 || fi.FBP == 0x1180 || fi.FBP == 0x1400) && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
 		{
 			skip = 1; // Removes fog wall.
-		}
-	}
-
-	return true;
-}
-
-bool GSC_TriAceGames(const GSFrameInfo& fi, int& skip)
-{
-	// Tri Ace Games: ValkyrieProfile2, RadiataStories, StarOcean3
-	//
-	// The games emulate a stencil buffer with the alpha channel of the RT
-	// The operation of the stencil is selected with the palette
-	// For example -1 wrap will be [240, 16, 32, 48 ....]
-	// i.e. p[A>>4] = (A - 16) % 256
-	//
-	// The fastest and accurate solution will be to replace this pseudo stencil
-	// by a dedicated GPU draw call
-	// 1/ Use future GPU capabilities to do a "kind" of SW blending
-	// 2/ Use a real stencil/atomic image, and then compute the RT alpha value
-	//
-	// Both of those solutions will increase code complexity (and only avoid upscaling
-	// glitches)
-
-	if (skip == 0)
-	{
-		if (fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
-		{
-			skip = 1000;
-		}
-	}
-	else
-	{
-		if (!(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH))
-		{
-			skip = 0;
 		}
 	}
 
@@ -913,7 +865,6 @@ void GSState::SetupCrcHack()
 		// Channel Effect
 		lut[CRC::CrashBandicootWoC] = GSC_CrashBandicootWoC;
 		lut[CRC::GiTS] = GSC_GiTS;
-		lut[CRC::SkyGunner] = GSC_SkyGunner; // Maybe not a channel effect
 		lut[CRC::Spartan] = GSC_Spartan;
 		lut[CRC::SteambotChronicles] = GSC_SteambotChronicles;
 
@@ -941,11 +892,6 @@ void GSState::SetupCrcHack()
 	{
 		// Accurate Blending
 		lut[CRC::GetawayGames] = GSC_GetawayGames; // Blending High
-
-		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to CRC_Aggressive)
-		// Needs at least Basic Blending,
-		// see https://github.com/PCSX2/pcsx2/pull/2921
-		lut[CRC::TriAceGames] = GSC_TriAceGames;
 	}
 
 	if (CRC_Aggressive)

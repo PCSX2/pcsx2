@@ -75,7 +75,7 @@ using namespace std::chrono_literals;
 	FreeBSD
 	Raw sockets restricted
 	No unprivilaged ICMP sockets
-	Timeouts reported as a normal packet?? 
+	Timeouts reported as a normal packet??
 
 	Ping cli
 	Present for all platforms, but command args differ

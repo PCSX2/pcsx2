@@ -39,8 +39,8 @@
 #include "gui/Resources/AppIcon64.h"
 
 RecentIsoList::RecentIsoList(int firstIdForMenuItems_or_wxID_ANY)
+	: Menu(std::unique_ptr<wxMenu>(new wxMenu()))
 {
-	Menu = std::unique_ptr<wxMenu>(new wxMenu());
 	Menu->Append(MenuId_IsoBrowse, _("Browse..."), _("Browse for an ISO that is not in your recent history."));
 	Menu->AppendSeparator();
 	Menu->AppendCheckItem(MenuId_Ask_On_Booting, _("Always ask when booting"), _("Manually select an ISO upon boot ignoring the selection from recent ISO list."));

@@ -29,9 +29,7 @@
 
 #include "pcsx2/HostSettings.h"
 
-#include "EmuThread.h"
 #include "QtHost.h"
-
 #include "SettingWidgetBinder.h"
 
 /// This nastyness is required because input profiles aren't overlaid settings like the rest of them, it's
@@ -63,7 +61,8 @@ namespace ControllerSettingWidgetBinder
 
 			Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
 				const bool new_value = Accessor::getBoolValue(widget);
-				QtHost::SetBaseBoolSettingValue(section.c_str(), key.c_str(), new_value);
+				Host::SetBaseBoolSettingValue(section.c_str(), key.c_str(), new_value);
+				Host::CommitBaseSettingChanges();
 				g_emu_thread->applySettings();
 			});
 		}
@@ -94,7 +93,8 @@ namespace ControllerSettingWidgetBinder
 
 			Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
 				const float new_value = Accessor::getFloatValue(widget);
-				QtHost::SetBaseFloatSettingValue(section.c_str(), key.c_str(), new_value);
+				Host::SetBaseFloatSettingValue(section.c_str(), key.c_str(), new_value);
+				Host::CommitBaseSettingChanges();
 				g_emu_thread->applySettings();
 			});
 		}
@@ -127,7 +127,8 @@ namespace ControllerSettingWidgetBinder
 
 			Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key), range]() {
 				const float new_value = (static_cast<float>(Accessor::getIntValue(widget)) / range);
-				QtHost::SetBaseFloatSettingValue(section.c_str(), key.c_str(), new_value);
+				Host::SetBaseFloatSettingValue(section.c_str(), key.c_str(), new_value);
+				Host::CommitBaseSettingChanges();
 				g_emu_thread->applySettings();
 			});
 		}
@@ -166,10 +167,11 @@ namespace ControllerSettingWidgetBinder
 			Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
 				const QString new_value = Accessor::getStringValue(widget);
 				if (!new_value.isEmpty())
-					QtHost::SetBaseStringSettingValue(section.c_str(), key.c_str(), new_value.toUtf8().constData());
+					Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), new_value.toUtf8().constData());
 				else
-					QtHost::RemoveBaseSettingValue(section.c_str(), key.c_str());
+					Host::RemoveBaseSettingValue(section.c_str(), key.c_str());
 
+				Host::CommitBaseSettingChanges();
 				g_emu_thread->applySettings();
 			});
 		}

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2022  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -56,6 +56,18 @@ typedef struct
 	unsigned char mtime[8];
 	unsigned int hisize;
 } fio_stat_t;
+typedef struct
+{
+	fio_stat_t _fioStat;
+	/** Number of subs (main) / subpart number (sub) */
+	unsigned int private_0;
+	unsigned int private_1;
+	unsigned int private_2;
+	unsigned int private_3;
+	unsigned int private_4;
+	/** Sector start.  */
+	unsigned int private_5;
+} fxio_stat_t;
 
 typedef struct
 {
@@ -64,12 +76,19 @@ typedef struct
 	unsigned int unknown;
 } fio_dirent_t;
 
+typedef struct
+{
+	fxio_stat_t stat;
+	char name[256];
+	unsigned int unknown;
+} fxio_dirent_t;
+
 static std::string hostRoot;
 
 void Hle_SetElfPath(const char* elfFileName)
 {
 	DevCon.WriteLn("HLE Host: Will load ELF: %s\n", elfFileName);
-	hostRoot = Path::ToNativePath(Path::GetDirectory(elfFileName)) + FS_OSPATH_SEPARATOR_STR;
+	hostRoot = Path::ToNativePath(Path::GetDirectory(elfFileName));
 	Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", hostRoot.c_str());
 }
 
@@ -90,34 +109,75 @@ namespace R3000A
 #define Ra2 (iopMemReadString(a2))
 #define Ra3 (iopMemReadString(a3))
 
-#define FIO_SO_IXOTH 0x0001
-#define FIO_SO_IWOTH 0x0002
-#define FIO_SO_IROTH 0x0004
+	// Stat values differ between iomanX and ioman
+	// These values have been taken from the PS2SDK
+	// Specifically iox_stat.h
+	struct fio_stat_flags
+	{
+		// Access flags
+		// Execute
+		int IXOTH;
+		// Write
+		int IWOTH;
+		// Read
+		int IROTH;
 
-#define FIO_SO_IFLNK 0x0008
-#define FIO_SO_IFREG 0x0010
-#define FIO_SO_IFDIR 0x0020
+		// File mode flags
+		// Symlink
+		int IFLNK;
+		// Regular file
+		int IFREG;
+		// Directory
+		int IFDIR;
+	};
 
-	static std::string host_path(const std::string& path)
+	fio_stat_flags ioman_stat{
+		0x01,
+		0x02,
+		0x04,
+		0x08,
+		0x10,
+		0x20,
+	};
+
+	fio_stat_flags iomanx_stat{
+		0x01,
+		0x02,
+		0x04,
+		0x4000,
+		0x2000,
+		0x1000,
+	};
+
+	static std::string host_path(const std::string& path, bool allow_open_host_root)
 	{
 		// We are NOT allowing to use the root of the host unit.
 		// For now it just supports relative folders from the location of the elf
 		std::string native_path(Path::Canonicalize(path));
 		std::string new_path;
-		if (StringUtil::StartsWith(native_path, hostRoot))
+		if (!hostRoot.empty() && StringUtil::StartsWith(native_path, hostRoot))
 			new_path = std::move(native_path);
-		else // relative paths
+		else if (!hostRoot.empty()) // relative paths
 			new_path = Path::Combine(hostRoot, native_path);
 
 		// Double-check that it falls within the directory of the elf.
 		// Not a real sandbox, but emulators shouldn't be treated as such. Don't run untrusted code!
 		std::string canonicalized_path(Path::Canonicalize(new_path));
-		if (!StringUtil::StartsWith(canonicalized_path, hostRoot))
+
+		// Are we opening the root of host? (i.e. `host:.` or `host:`)
+		// We want to allow this as a directory open, but not as a file open.
+		if (!allow_open_host_root || canonicalized_path != hostRoot)
 		{
-			Console.Error(fmt::format(
-				"IopHLE: Denying access to path outside of ELF directory. Requested path: '{}', Resolved path: '{}', ELF directory: '{}'",
-				path, new_path, hostRoot));
-			new_path.clear();
+			// Only allow descendants of the hostfs directory.
+			if (canonicalized_path.length() <= hostRoot.length() || // Length has to be equal or longer,
+				!StringUtil::StartsWith(canonicalized_path, hostRoot) || // and start with the host root,
+				canonicalized_path[hostRoot.length()] != FS_OSPATH_SEPARATOR_CHARACTER) // and we can't access a sibling.
+			{
+				Console.Error(fmt::format(
+					"IopHLE: Denying access to path outside of ELF directory. Requested path: '{}', Resolved path: '{}', ELF directory: '{}'",
+					path, new_path, hostRoot));
+				new_path.clear();
+			}
 		}
 
 		return new_path;
@@ -129,14 +189,14 @@ namespace R3000A
 	static __fi std::string clean_path(const std::string path)
 	{
 		std::string ret = path;
-		std::replace(ret.begin(),ret.end(),'\\','/');
+		std::replace(ret.begin(), ret.end(), '\\', '/');
 		return ret;
 	}
 
-	static int host_stat(const std::string path, fio_stat_t* host_stats)
+	static int host_stat(const std::string path, fio_stat_t* host_stats, fio_stat_flags& stat = ioman_stat)
 	{
 		struct stat file_stats;
-		const std::string file_path(host_path(path));
+		const std::string file_path(host_path(path, true));
 
 		if (!FileSystem::StatFile(file_path.c_str(), &file_stats))
 			return -IOP_ENOENT;
@@ -145,20 +205,20 @@ namespace R3000A
 		host_stats->hisize = 0;
 
 		// Convert the mode.
-		host_stats->mode = (file_stats.st_mode & (FIO_SO_IROTH | FIO_SO_IWOTH | FIO_SO_IXOTH));
+		host_stats->mode = (file_stats.st_mode & (stat.IROTH | stat.IWOTH | stat.IXOTH));
 #ifndef _WIN32
 		if (S_ISLNK(file_stats.st_mode))
 		{
-			host_stats->mode |= FIO_SO_IFLNK;
+			host_stats->mode |= stat.IFLNK;
 		}
 #endif
 		if (S_ISREG(file_stats.st_mode))
 		{
-			host_stats->mode |= FIO_SO_IFREG;
+			host_stats->mode |= stat.IFREG;
 		}
 		if (S_ISDIR(file_stats.st_mode))
 		{
-			host_stats->mode |= FIO_SO_IFDIR;
+			host_stats->mode |= stat.IFDIR;
 		}
 
 		// Convert the creation time.
@@ -190,6 +250,11 @@ namespace R3000A
 		host_stats->mtime[1] = (unsigned char)loctime->tm_sec;
 
 		return 0;
+	}
+
+	static int host_stat(const std::string path, fxio_stat_t* host_stats)
+	{
+		return host_stat(path, &host_stats->_fioStat, iomanx_stat);
 	}
 
 	// TODO: sandbox option, other permissions
@@ -227,7 +292,7 @@ namespace R3000A
 		static int open(IOManFile** file, const std::string& full_path, s32 flags, u16 mode)
 		{
 			const std::string path(full_path.substr(full_path.find(':') + 1));
-			const std::string file_path(host_path(path));
+			const std::string file_path(host_path(path, false));
 			int native_flags = O_BINARY; // necessary in Windows.
 
 			switch (flags & IOP_O_RDWR)
@@ -325,7 +390,7 @@ namespace R3000A
 		static int open(IOManDir** dir, const std::string& full_path)
 		{
 			std::string relativePath = full_path.substr(full_path.find(':') + 1);
-			std::string path = host_path(relativePath);
+			std::string path = host_path(relativePath, true);
 
 			FileSystem::FindResultsArray results;
 			if (!FileSystem::FindFiles(path.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_HIDDEN_FILES, &results))
@@ -338,16 +403,25 @@ namespace R3000A
 			return 0;
 		}
 
-		virtual int read(void* buf) /* Flawfinder: ignore */
+		virtual int read(void* buf, bool iomanX) /* Flawfinder: ignore */
 		{
-			fio_dirent_t* hostcontent = (fio_dirent_t*)buf;
 			if (dir == results.end())
 				return 0;
 
-			StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
-			host_stat(host_path(Path::Combine(basedir, dir->FileName)), &hostcontent->stat);
+			if (iomanX)
+			{
+				fxio_dirent_t* hostcontent = (fxio_dirent_t*)buf;
+				StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
+				host_stat(host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
+			}
+			else
+			{
+				fio_dirent_t* hostcontent = (fio_dirent_t*)buf;
+				StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
+				host_stat(host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
+			}
 
-			static_cast<void>(std::next(dir)); /* This is for avoid warning of non used return value */
+			dir = std::next(dir);
 			return 1;
 		}
 
@@ -582,19 +656,75 @@ namespace R3000A
 			return 0;
 		}
 
-		int dread_HLE()
+		int _dread_HLE(bool iomanX)
 		{
 			s32 fh = a0;
 			u32 data = a1;
-
-			if (IOManDir* dir = getfd<IOManDir>(fh))
+			if (iomanX)
 			{
-				char buf[sizeof(fio_dirent_t)];
-				v0 = dir->read(&buf); /* Flawfinder: ignore */
+				if (IOManDir* dir = getfd<IOManDir>(fh))
+				{
+					char buf[sizeof(fxio_dirent_t)];
+					v0 = dir->read(&buf, iomanX); /* Flawfinder: ignore */
 
-				for (s32 i = 0; i < (s32)sizeof(fio_dirent_t); i++)
-					iopMemWrite8(data + i, buf[i]);
+					for (s32 i = 0; i < (s32)sizeof(fxio_dirent_t); i++)
+						iopMemWrite8(data + i, buf[i]);
 
+					pc = ra;
+					return 1;
+				}
+			}
+			else
+			{
+				if (IOManDir* dir = getfd<IOManDir>(fh))
+				{
+					char buf[sizeof(fio_dirent_t)];
+					v0 = dir->read(&buf); /* Flawfinder: ignore */
+
+					for (s32 i = 0; i < (s32)sizeof(fio_dirent_t); i++)
+						iopMemWrite8(data + i, buf[i]);
+
+					pc = ra;
+					return 1;
+				}
+			}
+			return 0;
+		}
+
+		int dread_HLE()
+		{
+			return _dread_HLE(false);
+		}
+
+		int dreadx_HLE()
+		{
+			return _dread_HLE(true);
+		}
+
+		int _getStat_HLE(bool iomanx)
+		{
+			const std::string path = clean_path(Ra0);
+			u32 data = a1;
+
+			if (is_host(path))
+			{
+				const std::string full_path = host_path(path.substr(path.find(':') + 1), true);
+				if (iomanx)
+				{
+					char buf[sizeof(fxio_stat_t)];
+					v0 = host_stat(full_path, (fxio_stat_t*)&buf);
+
+					for (size_t i = 0; i < sizeof(fxio_stat_t); i++)
+						iopMemWrite8(data + i, buf[i]);
+				}
+				else
+				{
+					char buf[sizeof(fio_stat_t)];
+					v0 = host_stat(full_path, (fio_stat_t*)&buf);
+
+					for (size_t i = 0; i < sizeof(fio_stat_t); i++)
+						iopMemWrite8(data + i, buf[i]);
+				}
 				pc = ra;
 				return 1;
 			}
@@ -604,23 +734,12 @@ namespace R3000A
 
 		int getStat_HLE()
 		{
-			const std::string path = clean_path(Ra0);
-			u32 data = a1;
+			return _getStat_HLE(false);
+		}
 
-			if (is_host(path))
-			{
-				const std::string full_path = host_path(path.substr(path.find(':') + 1));
-				char buf[sizeof(fio_stat_t)];
-				v0 = host_stat(full_path, (fio_stat_t*)&buf);
-
-				for (s32 i = 0; i < (s32)sizeof(fio_stat_t); i++)
-					iopMemWrite8(data + i, buf[i]);
-
-				pc = ra;
-				return 1;
-			}
-
-			return 0;
+		int getStatx_HLE()
+		{
+			return _getStat_HLE(true);
 		}
 
 		int lseek_HLE()
@@ -646,7 +765,7 @@ namespace R3000A
 			if (is_host(full_path))
 			{
 				const std::string path = full_path.substr(full_path.find(':') + 1);
-				const std::string file_path(host_path(path));
+				const std::string file_path(host_path(path, false));
 				const bool succeeded = FileSystem::DeleteFilePath(file_path.c_str());
 				if (!succeeded)
 					Console.Warning("IOPHLE remove_HLE failed for '%s'", file_path.c_str());
@@ -663,7 +782,7 @@ namespace R3000A
 			if (is_host(full_path))
 			{
 				const std::string path = full_path.substr(full_path.find(':') + 1);
-				const std::string folder_path(host_path(path));
+				const std::string folder_path(host_path(path, false)); // NOTE: Don't allow creating the ELF directory.
 				const bool succeeded = FileSystem::CreateDirectoryPath(folder_path.c_str(), false);
 				if (!succeeded)
 					Console.Warning("IOPHLE mkdir_HLE failed for '%s'", folder_path.c_str());
@@ -704,7 +823,7 @@ namespace R3000A
 			if (is_host(full_path))
 			{
 				const std::string path = full_path.substr(full_path.find(':') + 1);
-				const std::string folder_path(host_path(path));
+				const std::string folder_path(host_path(path, false)); // NOTE: Don't allow removing the elf directory itself.
 				const bool succeeded = FileSystem::DeleteDirectory(folder_path.c_str());
 				if (!succeeded)
 					Console.Warning("IOPHLE rmdir_HLE failed for '%s'", folder_path.c_str());
@@ -897,13 +1016,13 @@ namespace R3000A
 
 		void RegisterIntrHandler_DEBUG()
 		{
-			if(a0 < std::size(intrname) - 1)
+			if (a0 < std::size(intrname) - 1)
 			{
 				DevCon.WriteLn(Color_Gray, "RegisterIntrHandler: intr %s, handler %x", intrname[a0], a2);
 			}
 			else
 			{
-				DevCon.WriteLn(Color_Gray, "RegisterIntrHandler: intr UNKNOWN (%d), handler %x",a0,a2);
+				DevCon.WriteLn(Color_Gray, "RegisterIntrHandler: intr UNKNOWN (%d), handler %x", a0, a2);
 			}
 		}
 	} // namespace intrman
@@ -973,23 +1092,38 @@ namespace R3000A
 		MODULE(sysmem)
 			EXPORT_H( 14, Kprintf)
 		END_MODULE
-		
-		MODULE(ioman)
-			EXPORT_H(  4, open)
-			EXPORT_H(  5, close)
-			EXPORT_H(  6, read)
-			EXPORT_H(  7, write)
-			EXPORT_H(  8, lseek)
-			EXPORT_H( 10, remove)
-			EXPORT_H( 11, mkdir)
-			EXPORT_H( 12, rmdir)
-			EXPORT_H( 13, dopen)
-			EXPORT_H( 14, dclose)
-			EXPORT_H( 15, dread)
-			EXPORT_H( 16, getStat)
-		END_MODULE
-		// clang-format on
 
+		// Special case with ioman and iomanX
+		// They are mostly compatible excluding stat structures
+		if(libname == "ioman" || libname == "iomanx")
+		{
+			const bool use_ioman = libname == "ioman";
+			using namespace ioman;
+				switch(index)
+				{
+					EXPORT_H(  4, open)
+					EXPORT_H(  5, close)
+					EXPORT_H(  6, read)
+					EXPORT_H(  7, write)
+					EXPORT_H(  8, lseek)
+					EXPORT_H( 10, remove)
+					EXPORT_H( 11, mkdir)
+					EXPORT_H( 12, rmdir)
+					EXPORT_H( 13, dopen)
+					EXPORT_H( 14, dclose)
+					case 15: // dread
+					if(use_ioman)
+						return dread_HLE;
+					else
+						return dreadx_HLE;
+					case 16: // getStat
+					if(use_ioman)
+						return getStat_HLE;
+					else
+						return getStatx_HLE;
+				}
+		}
+		// clang-format on
 		return 0;
 	}
 

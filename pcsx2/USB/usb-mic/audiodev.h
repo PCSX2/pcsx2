@@ -97,7 +97,7 @@ public:
 	virtual uint32_t GetBuffer(int16_t* buff, uint32_t len) = 0;
 	virtual uint32_t SetBuffer(int16_t* buff, uint32_t len) = 0;
 	/*
-		Get how many frames has been recorded so that caller knows 
+		Get how many frames has been recorded so that caller knows
 		how much to allocated for 16-bit buffer.
 	*/
 	virtual bool GetFrames(uint32_t* size) = 0;

@@ -185,7 +185,7 @@ protected:
 
 	void GrowVertexBuffer();
 	void HandleAutoFlush();
-	
+
 	template <u32 prim, bool auto_flush, bool index_swap>
 	void VertexKick(u32 skip);
 
@@ -322,6 +322,7 @@ public:
 	void ResetHandlers();
 
 	int GetFramebufferHeight();
+	int GetFramebufferWidth();
 	int GetDisplayHMagnification();
 	GSVector4i GetDisplayRect(int i = -1);
 	GSVector4i GetFrameMagnifiedRect(int i = -1);

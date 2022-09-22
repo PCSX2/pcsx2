@@ -14,29 +14,195 @@
  */
 
 #pragma once
+
+#include <atomic>
+#include <memory>
+#include <functional>
+#include <optional>
+
 #include "pcsx2/Host.h"
 #include "pcsx2/HostDisplay.h"
 #include "pcsx2/HostSettings.h"
 #include "pcsx2/Frontend/InputManager.h"
 #include "pcsx2/VMManager.h"
+
+#include <QtCore/QList>
+#include <QtCore/QEventLoop>
 #include <QtCore/QMetaType>
+#include <QtCore/QPair>
 #include <QtCore/QString>
-#include <functional>
-#include <memory>
-#include <optional>
+#include <QtCore/QSemaphore>
+#include <QtCore/QString>
+#include <QtCore/QTimer>
+#include <QtCore/QThread>
 
 class SettingsInterface;
 
-class EmuThread;
+class DisplayWidget;
+struct VMBootParameters;
 
 enum class CDVD_SourceType : uint8_t;
 
 Q_DECLARE_METATYPE(std::shared_ptr<VMBootParameters>);
 Q_DECLARE_METATYPE(std::optional<bool>);
-Q_DECLARE_METATYPE(std::function<void()>);
 Q_DECLARE_METATYPE(GSRendererType);
 Q_DECLARE_METATYPE(InputBindingKey);
 Q_DECLARE_METATYPE(CDVD_SourceType);
+
+class EmuThread : public QThread
+{
+	Q_OBJECT
+
+public:
+	explicit EmuThread(QThread* ui_thread);
+	~EmuThread();
+
+	static void start();
+	static void stop();
+
+	__fi QEventLoop* getEventLoop() const { return m_event_loop; }
+	__fi bool isFullscreen() const { return m_is_fullscreen; }
+	__fi bool isRenderingToMain() const { return m_is_rendering_to_main; }
+	__fi bool isSurfaceless() const { return m_is_surfaceless; }
+	__fi bool isRunningFullscreenUI() const { return m_run_fullscreen_ui; }
+
+	bool isOnEmuThread() const;
+
+	/// Called back from the GS thread when the display state changes (e.g. fullscreen, render to main).
+	bool acquireHostDisplay(HostDisplay::RenderAPI api);
+	void connectDisplaySignals(DisplayWidget* widget);
+	void releaseHostDisplay();
+	void updateDisplay();
+
+	void startBackgroundControllerPollTimer();
+	void stopBackgroundControllerPollTimer();
+	void updatePerformanceMetrics(bool force);
+
+public Q_SLOTS:
+	bool confirmMessage(const QString& title, const QString& message);
+	void loadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock);
+	void checkForSettingChanges(const Pcsx2Config& old_config);
+	void startFullscreenUI(bool fullscreen);
+	void stopFullscreenUI();
+	void startVM(std::shared_ptr<VMBootParameters> boot_params);
+	void resetVM();
+	void setVMPaused(bool paused);
+	void shutdownVM(bool save_state = true);
+	void loadState(const QString& filename);
+	void loadStateFromSlot(qint32 slot);
+	void saveState(const QString& filename);
+	void saveStateToSlot(qint32 slot);
+	void toggleFullscreen();
+	void setFullscreen(bool fullscreen);
+	void setSurfaceless(bool surfaceless);
+	void applySettings();
+	void reloadGameSettings();
+	void updateEmuFolders();
+	void toggleSoftwareRendering();
+	void switchRenderer(GSRendererType renderer);
+	void changeDisc(CDVD_SourceType source, const QString& path);
+	void reloadPatches();
+	void reloadInputSources();
+	void reloadInputBindings();
+	void requestDisplaySize(float scale);
+	void enumerateInputDevices();
+	void enumerateVibrationMotors();
+	void runOnCPUThread(const std::function<void()>& func);
+	void queueSnapshot(quint32 gsdump_frames);
+
+Q_SIGNALS:
+	bool messageConfirmed(const QString& title, const QString& message);
+
+	DisplayWidget* onCreateDisplayRequested(bool fullscreen, bool render_to_main);
+	DisplayWidget* onUpdateDisplayRequested(bool fullscreen, bool render_to_main, bool surfaceless);
+	void onResizeDisplayRequested(qint32 width, qint32 height);
+	void onDestroyDisplayRequested();
+
+	/// Called when the VM is starting initialization, but has not been completed yet.
+	void onVMStarting();
+
+	/// Called when the VM is created.
+	void onVMStarted();
+
+	/// Called when the VM is paused.
+	void onVMPaused();
+
+	/// Called when the VM is resumed after being paused.
+	void onVMResumed();
+
+	/// Called when the VM is shut down or destroyed.
+	void onVMStopped();
+
+	/// Provided by the host; called when the running executable changes.
+	void onGameChanged(const QString& path, const QString& serial, const QString& name, quint32 crc);
+
+	void onInputDevicesEnumerated(const QList<QPair<QString, QString>>& devices);
+	void onInputDeviceConnected(const QString& identifier, const QString& device_name);
+	void onInputDeviceDisconnected(const QString& identifier);
+	void onVibrationMotorsEnumerated(const QList<InputBindingKey>& motors);
+
+	/// Called when a save state is loading, before the file is processed.
+	void onSaveStateLoading(const QString& path);
+
+	/// Called after a save state is successfully loaded. If the save state was invalid, was_successful will be false.
+	void onSaveStateLoaded(const QString& path, bool was_successful);
+
+	/// Called when a save state is being created/saved. The compression/write to disk is asynchronous, so this callback
+	/// just signifies that the save has started, not necessarily completed.
+	void onSaveStateSaved(const QString& path);
+
+protected:
+	void run();
+
+private:
+	/// Interval at which the controllers are polled when the system is not active.
+	static constexpr u32 BACKGROUND_CONTROLLER_POLLING_INTERVAL = 100;
+
+	/// Poll at half the vsync rate for FSUI to reduce the chance of getting a press+release in the same frame.
+	static constexpr u32 FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL = 8;
+
+	void destroyVM();
+	void executeVM();
+	bool shouldRenderToMain() const;
+
+	void createBackgroundControllerPollTimer();
+	void destroyBackgroundControllerPollTimer();
+	void connectSignals();
+
+private Q_SLOTS:
+	void stopInThread();
+	void doBackgroundControllerPoll();
+	void onDisplayWindowResized(int width, int height, float scale);
+	void onApplicationStateChanged(Qt::ApplicationState state);
+	void redrawDisplayWindow();
+
+private:
+	QThread* m_ui_thread;
+	QSemaphore m_started_semaphore;
+	QEventLoop* m_event_loop = nullptr;
+	QTimer* m_background_controller_polling_timer = nullptr;
+
+	std::atomic_bool m_shutdown_flag{false};
+
+	bool m_verbose_status = false;
+	bool m_run_fullscreen_ui = false;
+	bool m_is_rendering_to_main = false;
+	bool m_is_fullscreen = false;
+	bool m_is_surfaceless = false;
+	bool m_save_state_on_shutdown = false;
+	bool m_pause_on_focus_loss = false;
+
+	bool m_was_paused_by_focus_loss = false;
+
+	float m_last_speed = 0.0f;
+	float m_last_game_fps = 0.0f;
+	float m_last_video_fps = 0.0f;
+	int m_last_internal_width = 0;
+	int m_last_internal_height = 0;
+	GSRendererType m_last_renderer = GSRendererType::Null;
+};
+
+extern EmuThread* g_emu_thread;
 
 namespace QtHost
 {
@@ -45,6 +211,9 @@ namespace QtHost
 
 	/// Sets NoGUI mode (implys batch mode, does not display main window, exits on shutdown).
 	bool InNoGUIMode();
+
+	/// Returns true if the calling thread is the UI thread.
+	bool IsOnUIThread();
 
 	/// Executes a function on the UI thread.
 	void RunOnUIThread(const std::function<void()>& func, bool block = false);
@@ -57,17 +226,6 @@ namespace QtHost
 
 	/// Returns the base path for resources. This may be : prefixed, if we're using embedded resources.
 	QString GetResourcesBasePath();
-
-	/// Thread-safe settings access.
-	void SetBaseBoolSettingValue(const char* section, const char* key, bool value);
-	void SetBaseIntSettingValue(const char* section, const char* key, int value);
-	void SetBaseFloatSettingValue(const char* section, const char* key, float value);
-	void SetBaseStringSettingValue(const char* section, const char* key, const char* value);
-	void SetBaseStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
-	bool AddBaseValueToStringList(const char* section, const char* key, const char* value);
-	bool RemoveBaseValueFromStringList(const char* section, const char* key, const char* value);
-	void RemoveBaseSettingValue(const char* section, const char* key);
-	void QueueSettingsSave();
 
 	/// VM state, safe to access on UI thread.
 	bool IsVMValid();

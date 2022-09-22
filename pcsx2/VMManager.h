@@ -76,8 +76,11 @@ namespace VMManager
 	/// Returns the name of the disc/executable currently running.
 	std::string GetGameName();
 
+	/// Loads global settings (i.e. EmuConfig).
+	void LoadSettings();
+
 	/// Initializes all system components.
-	bool Initialize(const VMBootParameters& boot_params);
+	bool Initialize(VMBootParameters boot_params);
 
 	/// Destroys all system components.
 	void Shutdown(bool save_resume_state);
@@ -149,6 +152,9 @@ namespace VMManager
 	/// Returns true if the specified path is a save state.
 	bool IsSaveStateFileName(const std::string_view& path);
 
+	/// Returns true if the specified path is a disc image.
+	bool IsDiscFileName(const std::string_view& path);
+
 	/// Returns true if the specified path is a disc/elf/etc.
 	bool IsLoadableFileName(const std::string_view& path);
 
@@ -162,8 +168,8 @@ namespace VMManager
 	/// If the scale is set to 0, the internal resolution will be used, otherwise it is treated as a multiplier to 1x.
 	void RequestDisplaySize(float scale = 0.0f);
 
-	/// Sets default settings based on hardware configuration.
-	void SetHardwareDependentDefaultSettings(Pcsx2Config& config);
+	/// Initializes default configuration in the specified file.
+	void SetDefaultSettings(SettingsInterface& si);
 
 	/// Returns a list of processors in the system, and their corresponding affinity mask.
 	/// This list is ordered by most performant to least performant for pinning threads to.
@@ -195,6 +201,12 @@ namespace VMManager
 
 namespace Host
 {
+	/// Called with the settings lock held, when system settings are being loaded (should load input sources, etc).
+	void LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock);
+
+	/// Called after settings are updated.
+	void CheckForSettingsChanges(const Pcsx2Config& old_config);
+
 	/// Called when the VM is starting initialization, but has not been completed yet.
 	void OnVMStarting();
 
@@ -213,6 +225,10 @@ namespace Host
 	/// Called when performance metrics are updated, approximately once a second.
 	void OnPerformanceMetricsUpdated();
 
+	/// Looks up the serial and CRC for a game in the most efficient manner possible.
+	/// Implemented in the host because it may have a game list cache.
+	bool GetSerialAndCRCForFilename(const char* filename, std::string* serial, u32* crc);
+
 	/// Called when a save state is loading, before the file is processed.
 	void OnSaveStateLoading(const std::string_view& filename);
 
@@ -227,33 +243,8 @@ namespace Host
 	void OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name, u32 game_crc);
 
 	/// Provided by the host; called once per frame at guest vsync.
-	void PumpMessagesOnCPUThread();
+	void CPUThreadVSync();
 
 	/// Provided by the host; called when a state is saved, and the frontend should invalidate its save state cache.
 	void InvalidateSaveStateCache();
-
-	/// Requests a specific display window size.
-	void RequestResizeHostDisplay(s32 width, s32 height);
-
-	/// Safely executes a function on the VM thread.
-	void RunOnCPUThread(std::function<void()> function, bool block = false);
-
-	/// Asynchronously starts refreshing the game list.
-	void RefreshGameListAsync(bool invalidate_cache);
-
-	/// Cancels game list refresh, if there is one in progress.
-	void CancelGameListRefresh();
-
-	/// Requests shut down and exit of the hosting application. This may not actually exit,
-	/// if the user cancels the shutdown confirmation.
-	void RequestExit(bool save_state_if_running);
-
-	/// Requests shut down of the current virtual machine.
-	void RequestVMShutdown(bool allow_confirm, bool allow_save_state);
-
-	/// Returns true if the hosting application is currently fullscreen.
-	bool IsFullscreen();
-
-	/// Alters fullscreen state of hosting application.
-	void SetFullscreen(bool enabled);
 }

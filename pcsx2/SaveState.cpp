@@ -189,12 +189,12 @@ SaveStateBase& SaveStateBase::FreezeBios()
 	// Check the BIOS, and issue a warning if the bios for this state
 	// doesn't match the bios currently being used (chances are it'll still
 	// work fine, but some games are very picky).
-	
+
 	u32 bioscheck = BiosChecksum;
 	char biosdesc[256];
 	memzero( biosdesc );
 	memcpy( biosdesc, BiosDescription.c_str(), std::min( sizeof(biosdesc), BiosDescription.length() ) );
-	
+
 	Freeze( bioscheck );
 	Freeze( biosdesc );
 
@@ -209,7 +209,7 @@ SaveStateBase& SaveStateBase::FreezeBios()
 			biosdesc, bioscheck
 		);
 	}
-	
+
 	return *this;
 }
 
@@ -217,7 +217,7 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 {
 	// Print this until the MTVU problem in gifPathFreeze is taken care of (rama)
 	if (THREAD_VU1) Console.Warning("MTVU speedhack is enabled, saved states may not be stable");
-	
+
 	// Second Block - Various CPU Registers and States
 	// -----------------------------------------------
 	FreezeTag( "cpuRegs" );

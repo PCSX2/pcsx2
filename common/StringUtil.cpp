@@ -370,6 +370,88 @@ namespace StringUtil
 		}
 	}
 
+	void EncodeAndAppendUTF8(std::string& s, char32_t ch)
+	{
+		if (ch <= 0x7F)
+		{
+			s.push_back(static_cast<char>(static_cast<u8>(ch)));
+		}
+		else if (ch <= 0x07FF)
+		{
+			s.push_back(static_cast<char>(static_cast<u8>(0xc0 | static_cast<u8>((ch >> 6) & 0x1f))));
+			s.push_back(static_cast<char>(static_cast<u8>(0x80 | static_cast<u8>((ch & 0x3f)))));
+		}
+		else if (ch <= 0xFFFF)
+		{
+			s.push_back(static_cast<char>(static_cast<u8>(0xe0 | static_cast<u8>(((ch >> 12) & 0x0f)))));
+			s.push_back(static_cast<char>(static_cast<u8>(0x80 | static_cast<u8>(((ch >> 6) & 0x3f)))));
+			s.push_back(static_cast<char>(static_cast<u8>(0x80 | static_cast<u8>((ch & 0x3f)))));
+		}
+		else if (ch <= 0x10FFFF)
+		{
+			s.push_back(static_cast<char>(static_cast<u8>(0xf0 | static_cast<u8>(((ch >> 18) & 0x07)))));
+			s.push_back(static_cast<char>(static_cast<u8>(0x80 | static_cast<u8>(((ch >> 12) & 0x3f)))));
+			s.push_back(static_cast<char>(static_cast<u8>(0x80 | static_cast<u8>(((ch >> 6) & 0x3f)))));
+			s.push_back(static_cast<char>(static_cast<u8>(0x80 | static_cast<u8>((ch & 0x3f)))));
+		}
+		else
+		{
+			s.push_back(static_cast<char>(0xefu));
+			s.push_back(static_cast<char>(0xbfu));
+			s.push_back(static_cast<char>(0xbdu));
+		}
+	}
+
+	size_t DecodeUTF8(const void* bytes, size_t length, char32_t* ch)
+	{
+		const u8* s = reinterpret_cast<const u8*>(bytes);
+		if (s[0] < 0x80)
+		{
+			*ch = s[0];
+			return 1;
+		}
+		else if ((s[0] & 0xe0) == 0xc0)
+		{
+			if (length < 2)
+				goto invalid;
+
+			*ch = static_cast<char32_t>((static_cast<u32>(s[0] & 0x1f) << 6) | (static_cast<u32>(s[1] & 0x3f) << 0));
+			return 2;
+		}
+		else if ((s[0] & 0xf0) == 0xe0)
+		{
+			if (length < 3)
+				goto invalid;
+
+			*ch = static_cast<char32_t>((static_cast<u32>(s[0] & 0x0f) << 12) | (static_cast<u32>(s[1] & 0x3f) << 6) |
+										(static_cast<u32>(s[2] & 0x3f) << 0));
+			return 3;
+		}
+		else if ((s[0] & 0xf8) == 0xf0 && (s[0] <= 0xf4))
+		{
+			if (length < 4)
+				goto invalid;
+
+			*ch = static_cast<char32_t>((static_cast<u32>(s[0] & 0x07) << 18) | (static_cast<u32>(s[1] & 0x3f) << 12) |
+										(static_cast<u32>(s[2] & 0x3f) << 6) | (static_cast<u32>(s[3] & 0x3f) << 0));
+			return 4;
+		}
+
+	invalid:
+		*ch = 0xFFFFFFFFu;
+		return 1;
+	}
+
+	size_t DecodeUTF8(const std::string_view& str, size_t offset, char32_t* ch)
+	{
+		return DecodeUTF8(str.data() + offset, str.length() - offset, ch);
+	}
+
+	size_t DecodeUTF8(const std::string& str, size_t offset, char32_t* ch)
+	{
+		return DecodeUTF8(str.data() + offset, str.length() - offset, ch);
+	}
+
 #ifdef _WIN32
 	std::wstring UTF8StringToWideString(const std::string_view& str)
 	{

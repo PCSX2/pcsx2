@@ -111,7 +111,7 @@ private:
 	// Increment this constant whenever shaders change, to invalidate user's shader cache.
 	static constexpr u32 SHADER_VERSION = 1;
 
-	static constexpr u32 MAX_TEXTURES = 3;
+	static constexpr u32 MAX_TEXTURES = 4;
 	static constexpr u32 MAX_SAMPLERS = 2;
 
 	int m_d3d_texsize;
@@ -209,6 +209,7 @@ private:
 	{
 		wil::com_ptr_nothrow<ID3D11DepthStencilState> dss;
 		wil::com_ptr_nothrow<ID3D11BlendState> bs;
+		wil::com_ptr_nothrow<ID3D11PixelShader> primid_init_ps[2];
 	} m_date;
 
 	// Shaders...
@@ -240,7 +241,7 @@ public:
 	__fi ID3D11Device* GetD3DDevice() const { return m_dev.get(); }
 	__fi ID3D11DeviceContext* GetD3DContext() const { return m_ctx.get(); }
 
-	bool Create(HostDisplay* display);
+	bool Create() override;
 
 	void ResetAPIState() override;
 	void RestoreAPIState() override;

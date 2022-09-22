@@ -13,6 +13,7 @@
 #ifndef GS_IIP
 #define GS_IIP 0
 #define GS_PRIM 3
+#define GS_FORWARD_PRIMID 0
 #endif
 
 #ifndef PS_FST
@@ -66,6 +67,7 @@
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
+#define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 
 struct VS_INPUT
 {
@@ -101,7 +103,7 @@ struct PS_INPUT
 #else
 	nointerpolation float4 c : COLOR0;
 #endif
-#if PS_DATE > 10 || PS_DATE == 3
+#if (PS_DATE >= 1 && PS_DATE <= 3) || GS_FORWARD_PRIMID
 	uint primid : SV_PrimitiveID;
 #endif
 };
@@ -109,7 +111,7 @@ struct PS_INPUT
 struct PS_OUTPUT
 {
 #if !PS_NO_COLOR
-#if PS_DATE > 10
+#if PS_DATE == 1 || PS_DATE == 2
 	float c : SV_Target;
 #else
 	float4 c0 : SV_Target0;
@@ -743,14 +745,14 @@ void ps_color_clamp_wrap(inout float3 C)
 			C = clamp(C, (float3)0.0f, (float3)255.0f);
 
 		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
-		if (PS_DFMT == FMT_16 && (PS_HDR == 1 || PS_BLEND_MIX == 0))
+		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0)
 			C = (float3)((int3)C & (int3)0xF8);
 		else if (PS_COLCLIP == 1 && PS_HDR == 0)
 			C = (float3)((int3)C & (int3)0xFF);
 	}
 }
 
-void ps_blend(inout float4 Color, float As, float2 pos_xy)
+void ps_blend(inout float4 Color, inout float As, float2 pos_xy)
 {
 	if (SW_BLEND)
 	{
@@ -762,9 +764,9 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 				return;
 		}
 
-		float4 RT = trunc(RtTexture.Load(int3(pos_xy, 0)) * 255.0f + 0.1f);
+		float4 RT = SW_BLEND_NEEDS_RT ? trunc(RtTexture.Load(int3(pos_xy, 0)) * 255.0f + 0.1f) : (float4)0.0f;
 
-		float Ad = (PS_DFMT == FMT_24) ? 1.0f : RT.a / 128.0f;
+		float Ad = RT.a / 128.0f;
 
 		float3 Cd = RT.rgb;
 		float3 Cs = Color.rgb;
@@ -775,10 +777,40 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 		float3 D = (PS_BLEND_D == 0) ? Cs : ((PS_BLEND_D == 1) ? Cd : (float3)0.0f);
 
 		// As/Af clamp alpha for Blend mix
-		if (PS_BLEND_MIX)
-			C = min(C, (float)1.0f);
+		// We shouldn't clamp blend mix with clr1 as we want alpha higher
+		if (PS_BLEND_MIX > 0 && PS_CLR_HW != 1)
+			C = min(C, 1.0f);
 
-		Color.rgb = (PS_BLEND_A == PS_BLEND_B) ? D : trunc(((A - B) * C) + D);
+		if (PS_BLEND_A == PS_BLEND_B)
+			Color.rgb = D;
+		// In blend_mix, HW adds on some alpha factor * dst.
+		// Truncating here wouldn't quite get the right result because it prevents the <1 bit here from combining with a <1 bit in dst to form a ≥1 amount that pushes over the truncation.
+		// Instead, apply an offset to convert HW's round to a floor.
+		// Since alpha is in 1/128 increments, subtracting (0.5 - 0.5/128 == 127/256) would get us what we want if GPUs blended in full precision.
+		// But they don't.  Details here: https://github.com/PCSX2/pcsx2/pull/6809#issuecomment-1211473399
+		// Based on the scripts at the above link, the ideal choice for Intel GPUs is 126/256, AMD 120/256.  Nvidia is a lost cause.
+		// 124/256 seems like a reasonable compromise, providing the correct answer 99.3% of the time on Intel (vs 99.6% for 126/256), and 97% of the time on AMD (vs 97.4% for 120/256).
+		else if (PS_BLEND_MIX == 2)
+				Color.rgb = ((A - B) * C + D) + (124.0f/256.0f);
+		else if (PS_BLEND_MIX == 1)
+				Color.rgb = ((A - B) * C + D) - (124.0f/256.0f);
+		else
+			Color.rgb = trunc(((A - B) * C) + D);
+
+		if (PS_CLR_HW == 1)
+		{
+			// Replace Af with As so we can do proper compensation for Alpha.
+			if (PS_BLEND_C == 2)
+				As = Af;
+			// Subtract 1 for alpha to compensate for the changed equation,
+			// if c.rgb > 255.0f then we further need to adjust alpha accordingly,
+			// we pick the lowest overflow from all colors because it's the safest,
+			// we divide by 255 the color because we don't know Cd value,
+			// changed alpha should only be done for hw blend.
+			float min_color = min(min(Color.r, Color.g), Color.b);
+			float alpha_compensate = max(1.0f, min_color / 255.0f);
+			As -= alpha_compensate;
+		}
 	}
 	else
 	{
@@ -859,7 +891,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	if (PS_BLEND_C == 1 && PS_CLR_HW > 3)
 	{
 		float4 RT = trunc(RtTexture.Load(int3(input.p.xy, 0)) * 255.0f + 0.1f);
-		alpha_blend = (PS_DFMT == FMT_24) ? 1.0f : RT.a / 128.0f;
+		alpha_blend = RT.a / 128.0f;
 	}
 	else
 	{
@@ -887,12 +919,12 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #endif
 
 	// Get first primitive that will write a failling alpha value
-#if PS_DATE == 11
+#if PS_DATE == 1
 	// DATM == 0
 	// Pixel with alpha equal to 1 will failed (128-255)
 	output.c = (C.a > 127.5f) ? float(input.primid) : float(0x7FFFFFFF);
 
-#elif PS_DATE == 12
+#elif PS_DATE == 2
 
 	// DATM == 1
 	// Pixel with alpha equal to 0 will failed (0-127)
@@ -995,13 +1027,40 @@ VS_OUTPUT vs_main(VS_INPUT input)
 // Geometry Shader
 //////////////////////////////////////////////////////////////////////
 
+#if GS_FORWARD_PRIMID
+#define PRIMID_IN , uint primid : SV_PrimitiveID
+#define VS2PS(x) vs2ps_impl(x, primid)
+PS_INPUT vs2ps_impl(VS_OUTPUT vs, uint primid)
+{
+	PS_INPUT o;
+	o.p = vs.p;
+	o.t = vs.t;
+	o.ti = vs.ti;
+	o.c = vs.c;
+	o.primid = primid;
+	return o;
+}
+#else
+#define PRIMID_IN
+#define VS2PS(x) vs2ps_impl(x)
+PS_INPUT vs2ps_impl(VS_OUTPUT vs)
+{
+	PS_INPUT o;
+	o.p = vs.p;
+	o.t = vs.t;
+	o.ti = vs.ti;
+	o.c = vs.c;
+	return o;
+}
+#endif
+
 #if GS_PRIM == 0
 
 [maxvertexcount(6)]
-void gs_main(point VS_OUTPUT input[1], inout TriangleStream<VS_OUTPUT> stream)
+void gs_main(point VS_OUTPUT input[1], inout TriangleStream<PS_INPUT> stream PRIMID_IN)
 {
 	// Transform a point to a NxN sprite
-	VS_OUTPUT Point = input[0];
+	PS_INPUT Point = VS2PS(input[0]);
 
 	// Get new position
 	float4 lt_p = input[0].p;
@@ -1035,11 +1094,11 @@ void gs_main(point VS_OUTPUT input[1], inout TriangleStream<VS_OUTPUT> stream)
 #elif GS_PRIM == 1
 
 [maxvertexcount(6)]
-void gs_main(line VS_OUTPUT input[2], inout TriangleStream<VS_OUTPUT> stream)
+void gs_main(line VS_OUTPUT input[2], inout TriangleStream<PS_INPUT> stream PRIMID_IN)
 {
 	// Transform a line to a thick line-sprite
-	VS_OUTPUT left = input[0];
-	VS_OUTPUT right = input[1];
+	PS_INPUT left = VS2PS(input[0]);
+	PS_INPUT right = VS2PS(input[1]);
 	float2 lt_p = input[0].p.xy;
 	float2 rt_p = input[1].p.xy;
 
@@ -1083,10 +1142,10 @@ void gs_main(line VS_OUTPUT input[2], inout TriangleStream<VS_OUTPUT> stream)
 #elif GS_PRIM == 3
 
 [maxvertexcount(4)]
-void gs_main(line VS_OUTPUT input[2], inout TriangleStream<VS_OUTPUT> stream)
+void gs_main(line VS_OUTPUT input[2], inout TriangleStream<PS_INPUT> stream PRIMID_IN)
 {
-	VS_OUTPUT lt = input[0];
-	VS_OUTPUT rb = input[1];
+	PS_INPUT lt = VS2PS(input[0]);
+	PS_INPUT rb = VS2PS(input[1]);
 
 	// flat depth
 	lt.p.z = rb.p.z;
@@ -1097,13 +1156,13 @@ void gs_main(line VS_OUTPUT input[2], inout TriangleStream<VS_OUTPUT> stream)
 	lt.c = rb.c;
 
 	// Swap texture and position coordinate
-	VS_OUTPUT lb = rb;
+	PS_INPUT lb = rb;
 	lb.p.x = lt.p.x;
 	lb.t.x = lt.t.x;
 	lb.ti.x = lt.ti.x;
 	lb.ti.z = lt.ti.z;
 
-	VS_OUTPUT rt = rb;
+	PS_INPUT rt = rb;
 	rt.p.y = lt.p.y;
 	rt.t.y = lt.t.y;
 	rt.ti.y = lt.ti.y;

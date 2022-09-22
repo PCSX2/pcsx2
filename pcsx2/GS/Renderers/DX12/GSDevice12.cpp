@@ -32,21 +32,11 @@
 #include <sstream>
 #include <limits>
 
-static bool IsDepthConvertShader(ShaderConvert i)
-{
-	return (i == ShaderConvert::DEPTH_COPY || i == ShaderConvert::RGBA8_TO_FLOAT32 ||
-			i == ShaderConvert::RGBA8_TO_FLOAT24 || i == ShaderConvert::RGBA8_TO_FLOAT16 ||
-			i == ShaderConvert::RGB5A1_TO_FLOAT16 || i == ShaderConvert::DATM_0 ||
-			i == ShaderConvert::DATM_1);
-}
-
-static bool IsIntConvertShader(ShaderConvert i)
-{
-	return (i == ShaderConvert::RGBA8_TO_16_BITS || i == ShaderConvert::FLOAT32_TO_16_BITS ||
-			i == ShaderConvert::FLOAT32_TO_32_BITS);
-}
-
 static bool IsDATMConvertShader(ShaderConvert i) { return (i == ShaderConvert::DATM_0 || i == ShaderConvert::DATM_1); }
+static bool IsDATEModePrimIDInit(u32 flag) { return flag == 1 || flag == 2; }
+
+static constexpr std::array<D3D12_PRIMITIVE_TOPOLOGY, 3> s_primitive_topology_mapping =
+	{{D3D_PRIMITIVE_TOPOLOGY_POINTLIST, D3D_PRIMITIVE_TOPOLOGY_LINELIST, D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST}};
 
 static D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE GetLoadOpForTexture(GSTexture12* tex)
 {
@@ -105,9 +95,9 @@ GSDevice12::GSDevice12()
 
 GSDevice12::~GSDevice12() {}
 
-bool GSDevice12::Create(HostDisplay* display)
+bool GSDevice12::Create()
 {
-	if (!GSDevice::Create(display) || !CheckFeatures())
+	if (!GSDevice::Create() || !CheckFeatures())
 		return false;
 
 	{
@@ -206,7 +196,7 @@ bool GSDevice12::CheckFeatures()
 	m_features.texture_barrier = false;
 	m_features.broken_point_sampler = isAMD;
 	m_features.geometry_shader = true;
-	m_features.image_load_store = true;
+	m_features.primitive_id = true;
 	m_features.prefer_new_textures = true;
 	m_features.provoking_vertex_last = false;
 	m_features.point_expand = false;
@@ -319,8 +309,7 @@ void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_f
 
 GSTexture* GSDevice12::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
-	pxAssert(type != GSTexture::Type::Offscreen && type != GSTexture::Type::SparseRenderTarget &&
-			 type != GSTexture::Type::SparseDepthStencil);
+	pxAssert(type != GSTexture::Type::Offscreen);
 
 	const u32 clamped_width = static_cast<u32>(std::clamp<int>(1, width, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION));
 	const u32 clamped_height = static_cast<u32>(std::clamp<int>(1, height, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION));
@@ -477,7 +466,7 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 void GSDevice12::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 	ShaderConvert shader /* = ShaderConvert::COPY */, bool linear /* = true */)
 {
-	pxAssert(IsDepthConvertShader(shader) == (dTex && dTex->GetType() == GSTexture::Type::DepthStencil));
+	pxAssert(HasDepthOutput(shader) == (dTex && dTex->GetType() == GSTexture::Type::DepthStencil));
 
 	GL_INS("StretchRect(%d) {%d,%d} %dx%d -> {%d,%d) %dx%d", shader, int(sRect.left), int(sRect.top),
 		int(sRect.right - sRect.left), int(sRect.bottom - sRect.top), int(dRect.left), int(dRect.top),
@@ -502,7 +491,7 @@ void GSDevice12::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 {
 	DisplayConstantBuffer cb;
 	cb.SetSource(sRect, sTex->GetSize());
-	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GSVector2i(m_display->GetWindowWidth(), m_display->GetWindowHeight()));
+	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GSVector2i(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight()));
 	cb.SetTime(shaderTime);
 	SetUtilityRootSignature();
 	SetUtilityPushConstants(&cb, sizeof(cb));
@@ -551,7 +540,7 @@ void GSDevice12::DoStretchRect(GSTexture12* sTex, const GSVector4& sRect, GSText
 	const bool is_present = (!dTex);
 	const bool depth = (dTex && dTex->GetType() == GSTexture::Type::DepthStencil);
 	const GSVector2i size(
-		is_present ? GSVector2i(m_display->GetWindowWidth(), m_display->GetWindowHeight()) : dTex->GetSize());
+		is_present ? GSVector2i(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight()) : dTex->GetSize());
 	const GSVector4i dtex_rc(0, 0, size.x, size.y);
 	const GSVector4i dst_rc(GSVector4i(dRect).rintersect(dtex_rc));
 
@@ -892,7 +881,7 @@ bool GSDevice12::GetSampler(D3D12::DescriptorHandle* cpu_handle, GSHWDrawConfig:
 
 	D3D12_SAMPLER_DESC sd = {};
 	const int anisotropy = GSConfig.MaxAnisotropy;
-	if (GSConfig.MaxAnisotropy > 1 && ss.aniso)
+	if (anisotropy > 1 && ss.aniso)
 	{
 		sd.Filter = D3D12_FILTER_ANISOTROPIC;
 	}
@@ -1084,7 +1073,7 @@ bool GSDevice12::CompileConvertPipelines()
 	for (ShaderConvert i = ShaderConvert::COPY; static_cast<int>(i) < static_cast<int>(ShaderConvert::Count);
 		 i = static_cast<ShaderConvert>(static_cast<int>(i) + 1))
 	{
-		const bool depth = IsDepthConvertShader(i);
+		const bool depth = HasDepthOutput(i);
 		const int index = static_cast<int>(i);
 
 		switch (i)
@@ -1200,7 +1189,7 @@ bool GSDevice12::CompileConvertPipelines()
 		gpb.SetPixelShader(ps.get());
 		gpb.SetNoDepthTestState();
 		gpb.SetNoStencilState();
-		gpb.SetBlendState(0, true, D3D12_BLEND_ONE, D3D12_BLEND_ONE, D3D12_BLEND_OP_MIN,
+		gpb.SetBlendState(0, false, D3D12_BLEND_ONE, D3D12_BLEND_ONE, D3D12_BLEND_OP_ADD,
 			D3D12_BLEND_ZERO, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, D3D12_COLOR_WRITE_ENABLE_RED);
 
 		for (u32 ds = 0; ds < 2; ds++)
@@ -1520,6 +1509,7 @@ const ID3DBlob* GSDevice12::GetTFXGeometryShader(GSHWDrawConfig::GSSelector sel)
 	sm.AddMacro("GS_IIP", sel.iip);
 	sm.AddMacro("GS_PRIM", static_cast<int>(sel.topology));
 	sm.AddMacro("GS_EXPAND", sel.expand);
+	sm.AddMacro("GS_FORWARD_PRIMID", sel.forward_primid);
 
 	ComPtr<ID3DBlob> gs(m_shader_cache.GetGeometryShader(m_tfx_source, sm.GetPtr(), "gs_main"));
 	it = m_tfx_geometry_shaders.emplace(sel.key, std::move(gs)).first;
@@ -1616,8 +1606,9 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	if (p.rt)
 	{
 		gpb.SetRenderTarget(0,
-			(p.ps.date >= 10) ? DXGI_FORMAT_R32_FLOAT :
-                                (p.ps.hdr ? DXGI_FORMAT_R32G32B32A32_FLOAT : DXGI_FORMAT_R8G8B8A8_UNORM));
+			IsDATEModePrimIDInit(p.ps.date) ? DXGI_FORMAT_R32_FLOAT :
+			p.ps.hdr                        ? DXGI_FORMAT_R32G32B32A32_FLOAT :
+			                                  DXGI_FORMAT_R8G8B8A8_UNORM);
 	}
 	if (p.ds)
 		gpb.SetDepthStencilFormat(DXGI_FORMAT_D32_FLOAT_S8X24_UINT);
@@ -1657,7 +1648,7 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	}
 
 	// Blending
-	if (p.ps.date >= 10)
+	if (IsDATEModePrimIDInit(p.ps.date))
 	{
 		// image DATE prepass
 		gpb.SetBlendState(0, true, D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_MIN, D3D12_BLEND_ONE,
@@ -2387,11 +2378,11 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 
 	// if the depth target has been cleared, we need to preserve that clear
 	BeginRenderPass(
-		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 		GetLoadOpForTexture(static_cast<GSTexture12*>(config.ds)),
 		config.ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-		GSVector4(static_cast<float>(std::numeric_limits<s32>::max()), 0.0f, 0.0f, 0.0f),
+		GSVector4::zero(),
 		static_cast<GSTexture12*>(config.ds)->GetClearDepth());
 
 	// draw the quad to prefill the image
@@ -2411,6 +2402,7 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 		DrawPrimitive();
 
 	// image is now filled with either -1 or INT_MAX, so now we can do the prepass
+	SetPrimitiveTopology(s_primitive_topology_mapping[static_cast<u8>(config.topology)]);
 	IASetVertexBuffer(config.verts, sizeof(GSVertex), config.nverts);
 	IASetIndexBuffer(config.indices, config.nindices);
 
@@ -2421,7 +2413,6 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 	init_pipe.bs = {};
 	init_pipe.rt = true;
 	init_pipe.ps.blend_a = init_pipe.ps.blend_b = init_pipe.ps.blend_c = init_pipe.ps.blend_d = false;
-	init_pipe.ps.date += 10;
 	init_pipe.ps.no_color = false;
 	init_pipe.ps.no_color1 = true;
 	if (BindDrawPipeline(init_pipe))
@@ -2442,9 +2433,6 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 
 void GSDevice12::RenderHW(GSHWDrawConfig& config)
 {
-	static constexpr std::array<D3D12_PRIMITIVE_TOPOLOGY, 3> primitive_topologies =
-		{{D3D_PRIMITIVE_TOPOLOGY_POINTLIST, D3D_PRIMITIVE_TOPOLOGY_LINELIST, D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST}};
-
 	// Destination Alpha Setup
 	const bool stencil_DATE =
 		(config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil ||
@@ -2605,7 +2593,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// VB/IB upload, if we did DATE setup and it's not HDR this has already been done
-	SetPrimitiveTopology(primitive_topologies[static_cast<u8>(config.topology)]);
+	SetPrimitiveTopology(s_primitive_topology_mapping[static_cast<u8>(config.topology)]);
 	if (!date_image || hdr_rt)
 	{
 		IASetVertexBuffer(config.verts, sizeof(GSVertex), config.nverts);

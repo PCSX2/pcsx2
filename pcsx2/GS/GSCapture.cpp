@@ -395,8 +395,11 @@ static wil::com_ptr_nothrow<IPin> GetFirstPin(IBaseFilter* pBF, PIN_DIRECTION di
 //
 
 GSCapture::GSCapture()
-	: m_capturing(false), m_frame(0)
+	: m_capturing(false)
 	, m_out_dir("/tmp/GS_Capture") // FIXME Later add an option
+#if defined(__unix__)
+	, m_frame(0)
+#endif
 {
 }
 
@@ -545,6 +548,9 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	m_capturing = true;
 	filename = m_out_dir + "/audio_recording.wav";
 	return true;
+#else
+	// FIXME: MACOS
+	return false;
 #endif
 }
 

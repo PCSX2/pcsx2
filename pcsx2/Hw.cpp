@@ -87,7 +87,7 @@ __fi uint intcInterrupt()
 		//DevCon.Warning("*PCSX2*: intcInterrupt already cleared");
 		return 0;
 	}
-	if ((psHu32(INTC_STAT) & psHu32(INTC_MASK)) == 0) 
+	if ((psHu32(INTC_STAT) & psHu32(INTC_MASK)) == 0)
 	{
 		//DevCon.Warning("*PCSX2*: No valid interrupt INTC_MASK: %x INTC_STAT: %x", psHu32(INTC_MASK), psHu32(INTC_STAT));
 		return 0;
@@ -106,13 +106,13 @@ __fi uint intcInterrupt()
 __fi uint dmacInterrupt()
 {
 	if( ((psHu16(DMAC_STAT + 2) & psHu16(DMAC_STAT)) == 0 ) &&
-		( psHu16(DMAC_STAT) & 0x8000) == 0 ) 
+		( psHu16(DMAC_STAT) & 0x8000) == 0 )
 	{
 		//DevCon.Warning("No valid DMAC interrupt MASK %x STAT %x", psHu16(DMAC_STAT+2), psHu16(DMAC_STAT));
 		return 0;
 	}
 
-	if (!dmacRegs.ctrl.DMAE || psHu8(DMAC_ENABLER+2) == 1) 
+	if (!dmacRegs.ctrl.DMAE || psHu8(DMAC_ENABLER+2) == 1)
 	{
 		//DevCon.Warning("DMAC Suspended or Disabled on interrupt");
 		return 0;
@@ -174,12 +174,12 @@ __ri bool hwMFIFOWrite(u32 addr, const u128* data, uint qwc)
 		pxFailDev( fmt::format( "Scratchpad/MFIFO: Invalid base physical address: 0x{:08x}", u32(dmacRegs.rbor.ADDR)).c_str() );
 		return false;
 	}
-	
+
 	return true;
 }
 
 __ri void hwMFIFOResume(u32 transferred) {
-	
+
 	if (transferred == 0)
 	{
 		return; //Nothing got put in the MFIFO, we don't care
@@ -203,7 +203,7 @@ __ri void hwMFIFOResume(u32 transferred) {
 
 				//Apparently this is bad, i guess so, the data is going to memory rather than the FIFO
 				//vif1Regs.stat.FQC = 0x10; // FQC=16
-			}			
+			}
 			break;
 		}
 		case MFD_GIF:
@@ -332,11 +332,11 @@ liked this.
 
 From what i've deduced, REFE does in fact increment, but END doesn't, after much testing, i've concluded this is how
 we can standardize DMA chains, so i've modified the code to work like this.   The below function controls the increment
-of the TADR along with the MADR on VIF, GIF and SPR1 when using the CNT tag, the others don't use it yet, but they 
+of the TADR along with the MADR on VIF, GIF and SPR1 when using the CNT tag, the others don't use it yet, but they
 can probably be modified to do so now.
 
-Reason for this:- Many games  (such as clock tower 3 and FFX Videos) watched the TADR to see when a transfer has finished, 
-so we need to simulate this wherever we can!  Even the FFX video gets corruption and tries to fire multiple DMA Kicks 
+Reason for this:- Many games  (such as clock tower 3 and FFX Videos) watched the TADR to see when a transfer has finished,
+so we need to simulate this wherever we can!  Even the FFX video gets corruption and tries to fire multiple DMA Kicks
 if this doesnt happen, which was the reasoning for the hacked up SPR timing we had, that is no longer required.
 
 -Refraction
@@ -347,7 +347,7 @@ void hwDmacSrcTadrInc(DMACh& dma)
 	//Don't touch it if in normal/interleave mode.
 	if (dma.chcr.STR == 0) return;
 	if (dma.chcr.MOD != 1) return;
-		
+
 	u16 tagid = (dma.chcr.TAG >> 12) & 0x7;
 
 	if (tagid == TAG_CNT)

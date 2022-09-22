@@ -23,10 +23,6 @@
 
 #include <d3dcompiler.h>
 
-#ifdef _UWP
-#include <winrt/Windows.System.Profile.h>
-#endif
-
 using namespace D3D12;
 
 #pragma pack(push, 1)
@@ -45,22 +41,7 @@ struct CacheIndexEntry
 };
 #pragma pack(pop)
 
-static bool CanUsePipelineCache()
-{
-#ifdef _UWP
-	// GetCachedBlob crashes on XBox UWP for some reason...
-	const auto version_info = winrt::Windows::System::Profile::AnalyticsInfo::VersionInfo();
-	const auto device_family = version_info.DeviceFamily();
-	return (device_family != L"Windows.Xbox");
-#else
-	return true;
-#endif
-}
-
-ShaderCache::ShaderCache()
-	: m_use_pipeline_cache(CanUsePipelineCache())
-{
-}
+ShaderCache::ShaderCache() = default;
 
 ShaderCache::~ShaderCache()
 {
@@ -111,7 +92,7 @@ bool ShaderCache::Open(std::string_view base_path, D3D_FEATURE_LEVEL feature_lev
 			result = CreateNew(shader_index_filename, shader_blob_filename, m_shader_index_file, m_shader_blob_file);
 		}
 
-		if (m_use_pipeline_cache && result)
+		if (result)
 		{
 			const std::string base_pipelines_filename = GetCacheBaseFileName(base_path, "pipelines", feature_level, debug);
 			const std::string pipelines_index_filename = base_pipelines_filename + ".idx";
@@ -143,14 +124,11 @@ void ShaderCache::InvalidatePipelineCache()
 		m_pipeline_index_file = nullptr;
 	}
 
-	if (m_use_pipeline_cache)
-	{
-		const std::string base_pipelines_filename =
-			GetCacheBaseFileName(m_base_path, "pipelines", m_feature_level, m_debug);
-		const std::string pipelines_index_filename = base_pipelines_filename + ".idx";
-		const std::string pipelines_blob_filename = base_pipelines_filename + ".bin";
-		CreateNew(pipelines_index_filename, pipelines_blob_filename, m_pipeline_index_file, m_pipeline_blob_file);
-	}
+	const std::string base_pipelines_filename =
+		GetCacheBaseFileName(m_base_path, "pipelines", m_feature_level, m_debug);
+	const std::string pipelines_index_filename = base_pipelines_filename + ".idx";
+	const std::string pipelines_blob_filename = base_pipelines_filename + ".bin";
+	CreateNew(pipelines_index_filename, pipelines_blob_filename, m_pipeline_index_file, m_pipeline_blob_file);
 }
 
 bool ShaderCache::CreateNew(const std::string& index_filename, const std::string& blob_filename, std::FILE*& index_file,

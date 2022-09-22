@@ -17,6 +17,8 @@
 
 #include "common/Pcsx2Defs.h"
 
+#include <ctime>
+#include <functional>
 #include <string>
 #include <string_view>
 #include <optional>
@@ -51,9 +53,13 @@ namespace Host
 	/// Reads a resource file file from the resources directory as a string.
 	std::optional<std::string> ReadResourceFileToString(const char* filename);
 
+	/// Returns the modified time of a resource.
+	std::optional<std::time_t> GetResourceFileTimestamp(const char* filename);
+
 	/// Adds OSD messages, duration is in seconds.
 	void AddOSDMessage(std::string message, float duration = 2.0f);
 	void AddKeyedOSDMessage(std::string key, std::string message, float duration = 2.0f);
+	void AddIconOSDMessage(std::string key, const char* icon, const std::string_view& message, float duration = 2.0f);
 	void AddFormattedOSDMessage(float duration, const char* format, ...);
 	void AddKeyedFormattedOSDMessage(std::string key, float duration, const char* format, ...);
 	void RemoveKeyedOSDMessage(std::string key);
@@ -62,4 +68,42 @@ namespace Host
 	/// Displays an asynchronous error on the UI thread, i.e. doesn't block the caller.
 	void ReportErrorAsync(const std::string_view& title, const std::string_view& message);
 	void ReportFormattedErrorAsync(const std::string_view& title, const char* format, ...);
+
+	/// Displays a synchronous confirmation on the UI thread, i.e. blocks the caller.
+	bool ConfirmMessage(const std::string_view& title, const std::string_view& message);
+	bool ConfirmFormattedMessage(const std::string_view& title, const char* format, ...);
+
+	/// Opens a URL, using the default application.
+	void OpenURL(const std::string_view& url);
+
+	/// Copies the provided text to the host's clipboard, if present.
+	bool CopyTextToClipboard(const std::string_view& text);
+
+	/// Requests settings reset. Can be called from any thread, will call back and apply on the CPU thread.
+	bool RequestResetSettings(bool folders, bool core, bool controllers, bool hotkeys, bool ui);
+
+	/// Requests a specific display window size.
+	void RequestResizeHostDisplay(s32 width, s32 height);
+
+	/// Safely executes a function on the VM thread.
+	void RunOnCPUThread(std::function<void()> function, bool block = false);
+
+	/// Asynchronously starts refreshing the game list.
+	void RefreshGameListAsync(bool invalidate_cache);
+
+	/// Cancels game list refresh, if there is one in progress.
+	void CancelGameListRefresh();
+
+	/// Requests shut down and exit of the hosting application. This may not actually exit,
+	/// if the user cancels the shutdown confirmation.
+	void RequestExit(bool save_state_if_running);
+
+	/// Requests shut down of the current virtual machine.
+	void RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool default_save_state);
+
+	/// Returns true if the hosting application is currently fullscreen.
+	bool IsFullscreen();
+
+	/// Alters fullscreen state of hosting application.
+	void SetFullscreen(bool enabled);
 } // namespace Host

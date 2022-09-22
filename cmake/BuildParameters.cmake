@@ -197,15 +197,28 @@ else()
 	add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-operator-names>)
 endif()
 
+set(CONFIG_REL_NO_DEB $<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>>)
+set(CONFIG_ANY_REL $<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>,$<CONFIG:RelWithDebInfo>>)
+
 if(WIN32)
 	add_compile_definitions(
 		$<$<CONFIG:Debug>:_ITERATOR_DEBUG_LEVEL=2>
 		$<$<CONFIG:Devel>:_ITERATOR_DEBUG_LEVEL=1>
-		$<$<CONFIG:RelWithDebInfo>:_ITERATOR_DEBUG_LEVEL=0>
-		$<$<CONFIG:MinSizeRel>:_ITERATOR_DEBUG_LEVEL=0>
-		$<$<CONFIG:Release>:_ITERATOR_DEBUG_LEVEL=0>
+		$<${CONFIG_ANY_REL}:_ITERATOR_DEBUG_LEVEL=0>
 	)
 	list(APPEND PCSX2_DEFS TIXML_USE_STL _SCL_SECURE_NO_WARNINGS _UNICODE UNICODE)
+endif()
+
+if(MSVC)
+	# Enable PDB generation in release builds
+	add_compile_options(
+		$<${CONFIG_REL_NO_DEB}:/Zi>
+	)
+	add_link_options(
+		$<${CONFIG_REL_NO_DEB}:/DEBUG>
+		$<${CONFIG_REL_NO_DEB}:/OPT:REF>
+		$<${CONFIG_REL_NO_DEB}:/OPT:ICF>
+	)
 endif()
 
 if(USE_VTUNE)

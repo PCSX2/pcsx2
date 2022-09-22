@@ -123,7 +123,7 @@ void GSPanel::InitRecordingAccelerators()
 	m_Accels->Map(AAC(wxKeyCode('r')).Shift(), "InputRecordingModeToggle");
 	m_Accels->Map(AAC(wxKeyCode('l')).Shift(), "GoToFirstFrame");
 #if defined(__unix__)
-	// Shift+P (80) and Shift+p (112) have two completely different codes 
+	// Shift+P (80) and Shift+p (112) have two completely different codes
 	// On Linux the former is sometimes fired so define bindings for both
 	m_Accels->Map(AAC(wxKeyCode('P')).Shift(), "TogglePause");
 	m_Accels->Map(AAC(wxKeyCode('R')).Shift(), "InputRecordingModeToggle");

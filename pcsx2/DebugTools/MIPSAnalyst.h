@@ -49,7 +49,7 @@ namespace MIPSAnalyst
 		DebugInterface* cpu;
 		u32 opcodeAddress;
 		u32 encodedOpcode;
-		
+
 		// shared between branches and conditional moves
 		bool isConditional;
 		bool conditionMet;
@@ -72,6 +72,6 @@ namespace MIPSAnalyst
 		bool hasRelevantAddress;
 		u32 releventAddress;
 	} MipsOpcodeInfo;
-	
+
 	MipsOpcodeInfo GetOpcodeInfo(DebugInterface* cpu, u32 address);
 };

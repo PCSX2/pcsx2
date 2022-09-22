@@ -16,6 +16,7 @@
 #pragma once
 
 #include <functional>
+#include <mutex>
 #include <optional>
 #include <string_view>
 #include <variant>
@@ -130,7 +131,7 @@ struct HotkeyInfo
 	} \
 	;
 
-DECLARE_HOTKEY_LIST(g_vm_manager_hotkeys);
+DECLARE_HOTKEY_LIST(g_common_hotkeys);
 DECLARE_HOTKEY_LIST(g_gs_hotkeys);
 DECLARE_HOTKEY_LIST(g_host_hotkeys);
 
@@ -204,6 +205,9 @@ namespace InputManager
 
 	/// Converts an input class to a string.
 	const char* InputSourceToString(InputSourceType clazz);
+
+	/// Returns the default state for an input source.
+	bool GetInputSourceDefaultEnabled(InputSourceType type);
 
 	/// Parses an input class string.
 	std::optional<InputSourceType> ParseInputSourceString(const std::string_view& str);

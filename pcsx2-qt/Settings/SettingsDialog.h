@@ -72,6 +72,7 @@ public:
 	void registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text);
 	bool eventFilter(QObject* object, QEvent* event) override;
 
+	QString getCategory() const;
 	void setCategory(const char* category);
 
 	// Helper functions for reading effective setting values (from game -> global settings).

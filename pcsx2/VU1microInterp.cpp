@@ -81,7 +81,7 @@ static void _vu1Exec(VURegs* VU)
 	VU1regs_UPPER_OPCODE[VU->code & 0x3f](&uregs);
 
 	u32 cyclesBeforeOp = VU1.cycle-1;
-	
+
 	_vuTestUpperStalls(VU, &uregs);
 
 	/* check upper flags */
@@ -217,7 +217,7 @@ static void _vu1Exec(VURegs* VU)
 				VU1.xgkicklastcycle = cpuRegs.cycle;
 		}
 	}
-	
+
 	// Progress the write position of the FMAC pipeline by one place
 	if (uregs.pipe == VUPIPE_FMAC || lregs.pipe == VUPIPE_FMAC)
 		VU->fmacwritepos = (VU->fmacwritepos + 1) & 3;

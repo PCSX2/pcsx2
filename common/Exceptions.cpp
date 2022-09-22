@@ -47,7 +47,7 @@ static std::mutex s_assertion_failed_mutex;
 
 static inline void FreezeThreads(void** handle)
 {
-#if defined(_WIN32) && !defined(_UWP)
+#if defined(_WIN32)
 	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
 	if (snapshot != INVALID_HANDLE_VALUE)
 	{
@@ -77,7 +77,7 @@ static inline void FreezeThreads(void** handle)
 
 static inline void ResumeThreads(void* handle)
 {
-#if defined(_WIN32) && !defined(_UWP)
+#if defined(_WIN32)
 	if (handle != INVALID_HANDLE_VALUE)
 	{
 		THREADENTRY32 threadEntry;
@@ -112,7 +112,7 @@ void pxOnAssertFail(const char* file, int line, const char* func, const char* ms
 	char full_msg[512];
 	std::snprintf(full_msg, sizeof(full_msg), "%s:%d: assertion failed in function %s: %s\n", file, line, func, msg);
 
-#if defined(_WIN32) && !defined(_UWP)
+#if defined(_WIN32)
 	HANDLE error_handle = GetStdHandle(STD_ERROR_HANDLE);
 	if (error_handle != INVALID_HANDLE_VALUE)
 		WriteConsoleA(GetStdHandle(STD_ERROR_HANDLE), full_msg, static_cast<DWORD>(std::strlen(full_msg)), NULL, NULL);

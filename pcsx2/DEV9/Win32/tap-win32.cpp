@@ -371,15 +371,15 @@ bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, 
 	 * but it doesn't tell you whether it's a bridge or an LBFO team or something more exotic.
 	 * The way to distinguish exactly which flavor of ms_implat you have is to look at which LWF driver is bound to the *virtual miniport* above the IM driver.
 	 * This is two steps then.
-	 * 
+	 *
 	 * 1. Given a physical NIC, you first want to determine which virtual NIC is layered over it.
 	 * 2. Given a virtual NIC, you want to determine whether ms_bridge is bound to it.
-	 * 
+	 *
 	 * To get the first part, look through the interface stack table (GetIfStackTable). Search the stack table for any entry where the lower is the IfIndex of the physical NIC.
 	 * For any such entry (there will probably be a few), check if that entry's upper IfIndex is the IfIndex for a virtual miniport with component ID "COMPOSITEBUS\MS_IMPLAT_MP".
 	 * If you find such a thing, that means the physical NIC is a member of a bridge/LBFO/something-else-fancy.
 	 * If you don't find it, then you know the NIC isn't part of the bridge that comes with Windows 8 / Windows 10.
-	 * 
+	 *
 	 * To get the second part, just use the same INetCfg code above on the *virtual* NIC's component. If the ms_bridge component is bound to the virtual NIC,
 	 * then that virtual NIC is doing bridging. Otherwise, it's doing something else (like LBFO).
 	 */

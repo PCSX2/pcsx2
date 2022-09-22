@@ -52,7 +52,7 @@ static const u8 memcard_psx[] = {0x5A, 0x5D, 0x5C, 0x5D, 0x04, 0x00, 0x00, 0x80}
 //(A 'try' in this context is the game accessing SIO)
 static const int   FORCED_MCD_EJECTION_MIN_TRIES =2;
 static const int   FORCED_MCD_EJECTION_MAX_TRIES =128;
-static const float FORCED_MCD_EJECTION_MAX_MS_AFTER_MIN_TRIES =2800; 
+static const float FORCED_MCD_EJECTION_MAX_MS_AFTER_MIN_TRIES =2800;
 
 //allow timeout also for the mcd manager panel
 void SetForceMcdEjectTimeoutNow( uint port, uint slot )
@@ -95,7 +95,7 @@ void sioInit()
 
 	sio.bufSize = 4;
 	siomode = SIO_START;
-	
+
 	for(int i = 0; i < 2; i++)
 	{
 		for(int j = 0; j < 4; j++)
@@ -155,7 +155,7 @@ SIO_WRITE sioWriteStart(u8 data)
 
 	//if(size1 != size2)
 	//	DevCon.Warning("SIO: Bad command length [%02X] (%02X|%02X)", data, size1, size2);
-	
+
 	// On mismatch, sio2.cmdlength (size1) is smaller than what it should (Persona 3)
 	// while size2 is the proper length. -KrossX
 	sio.bufSize = size2; //std::max(size1, size2);
@@ -325,7 +325,7 @@ SIO_WRITE memcardAuth(u8 data)
 	{
 		switch(data)
 		{
-		case 0x01: case 0x02: case 0x04: 
+		case 0x01: case 0x02: case 0x04:
 		case 0x0F: case 0x11: case 0x13:
 			doXorCheck = true;
 			xorResult = 0;
@@ -358,7 +358,7 @@ SIO_WRITE memcardErase(u8 data)
 		if(data != 0x81) sio.bufCount = -1;
 		break;
 
-	case 1: 
+	case 1:
 		{
 			u8 header[] = {0xFF, 0xFF, 0xFF, 0x2B, mcd->term};
 
@@ -407,7 +407,7 @@ SIO_WRITE memcardWrite(u8 data)
 		if(data != 0x81) sio.bufCount = -1;
 		break;
 
-	case 1: 
+	case 1:
 		{
 			u8 header[] = {0xFF, 0xFF, 0xFF, 0x2B, mcd->term};
 
@@ -464,7 +464,7 @@ SIO_WRITE memcardWrite(u8 data)
 		else if(sio.bufCount == checksum_pos)
 		{
 			u8 xor_check = mcd->DoXor(&sio.buf[4], checksum_pos - 4);
-				
+
 			if(xor_check != sio.buf[sio.bufCount])
 				Console.Warning("MemWrite: Checksum invalid! XOR: %02X, IN: %02X\n", xor_check, sio.buf[sio.bufCount]);
 
@@ -498,7 +498,7 @@ SIO_WRITE memcardRead(u8 data)
 		if(data != 0x81) sio.bufCount = -1;
 		break;
 
-	case 1: 
+	case 1:
 		{
 			u8 header[] = {0xFF, 0xFF, 0xFF, 0x2B, mcd->term};
 
@@ -563,7 +563,7 @@ SIO_WRITE memcardRead(u8 data)
 SIO_WRITE memcardSector(u8 data)
 {
 	static u8 xor_check = 0;
-	
+
 	switch(sio.bufCount)
 	{
 		case 2: mcd->sectorAddr  = data <<  0; xor_check  = data; break;
@@ -604,7 +604,7 @@ SIO_WRITE memcardInit()
 		forceEject = true;
 
 		u32 numTimesAccessed = FORCED_MCD_EJECTION_MAX_TRIES - mcd->ForceEjection_Timeout;
-		
+
 		//minimum tries reached. start counting millisec timeout.
 		if(numTimesAccessed == FORCED_MCD_EJECTION_MIN_TRIES)
 			mcd->ForceEjection_Timestamp = Common::Timer::GetCurrentValue();
@@ -621,7 +621,7 @@ SIO_WRITE memcardInit()
 		if(mcd->ForceEjection_Timeout == 0 && mcd->IsPresent())
 			Console.WriteLn( Color_Green,  "Re-inserting auto-ejected memcard [port:%d, slot:%d]", sio.GetPort(), sio.GetSlot());
 	}
-			
+
 	if(!forceEject && mcd->IsPresent())
 	{
 		DEVICE_PLUGGED();
@@ -633,7 +633,7 @@ SIO_WRITE memcardInit()
 		siomode = SIO_DUMMY;
 	}
 
-	
+
 }
 
 SIO_WRITE sioWriteMemcard(u8 data)

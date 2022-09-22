@@ -42,6 +42,7 @@ if(MSVC)
 	if (MSVC_VERSION GREATER_EQUAL 1930)
 		target_compile_options(PCSX2_FLAGS INTERFACE /fp:contract)
 	endif()
+	target_compile_options(PCSX2_FLAGS INTERFACE /GS-)
 else()
 	target_compile_options(PCSX2_FLAGS INTERFACE
 		-ffp-contract=fast
@@ -442,7 +443,7 @@ endif()
 set(pcsx2USBNullSources USB/USBNull.cpp)
 set(pcsx2USBNullHeaders USB/USB.h)
 
-# USB sources 
+# USB sources
 set(pcsx2USBSources
 	USB/USB.cpp
 	USB/deviceproxy.cpp
@@ -465,8 +466,6 @@ set(pcsx2USBSources
 	USB/usb-mic/usb-mic-singstar.cpp
 	USB/usb-mic/usb-mic-logitech.cpp
 	USB/usb-mic/usb-headset.cpp
-	../3rdparty/jpgd/jpgd.cpp
-	../3rdparty/jpgd/jpge.cpp
 	USB/usb-eyetoy/jo_mpeg.cpp
 	USB/usb-eyetoy/usb-eyetoy-webcam.cpp
 	USB/usb-hid/usb-hid.cpp
@@ -1064,25 +1063,32 @@ endif()
 
 if(PCSX2_CORE)
 	list(APPEND pcsx2FrontendSources
+		Frontend/CommonHost.cpp
+		Frontend/CommonHotkeys.cpp
+		Frontend/FullscreenUI.cpp
 		Frontend/GameList.cpp
-		Frontend/INISettingsInterface.cpp
+		Frontend/HostSettings.cpp
+		Frontend/ImGuiFullscreen.cpp
 		Frontend/InputManager.cpp
 		Frontend/InputSource.cpp
 		Frontend/LayeredSettingsInterface.cpp
 		Frontend/LogSink.cpp
 		GSDumpReplayer.cpp
-		HostSettings.cpp
+		INISettingsInterface.cpp
 		VMManager.cpp
 	)
 	list(APPEND pcsx2FrontendHeaders
+		Frontend/CommonHost.h
+		Frontend/FullscreenUI.h
 		Frontend/GameList.h
-		Frontend/INISettingsInterface.h
+		Frontend/ImGuiFullscreen.h
 		Frontend/InputManager.h
 		Frontend/InputSource.h
 		Frontend/LayeredSettingsInterface.h
 		Frontend/LogSink.h
 		GSDumpReplayer.h
 		HostSettings.h
+		INISettingsInterface.h
 		VMManager.h)
 endif()
 
@@ -1404,7 +1410,6 @@ set(pcsx2WindowsSources
 	CDVD/Windows/IOCtlSrc.cpp
 	windows/FlatFileReaderWindows.cpp
 	windows/Optimus.cpp
-	windows/VCprojects/IopSif.cpp
 	windows/WinConsolePipe.cpp
 	windows/WinKeyCodes.cpp
 	windows/WinPowerProfile.cpp
@@ -1495,6 +1500,10 @@ set(pcsx2LTOSources
 	${pcsx2IPUHeaders}
 	${pcsx2x86Sources}
 	${pcsx2x86Headers}
+	${pcsx2SPU2Sources}
+	${pcsx2SPU2Headers}
+	${pcsx2GSSources}
+	${pcsx2GSHeaders}
 )
 
 if(LTO_PCSX2_CORE)
@@ -1502,6 +1511,7 @@ if(LTO_PCSX2_CORE)
 	target_link_libraries(PCSX2_LTO PRIVATE PCSX2_FLAGS)
 	target_link_libraries(PCSX2 PRIVATE PCSX2_LTO)
 	set_target_properties(PCSX2_LTO PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
+	fixup_file_properties(PCSX2_LTO)
 else()
 	target_sources(PCSX2 PRIVATE ${pcsx2LTOSources})
 endif()
@@ -1510,14 +1520,10 @@ endif()
 target_sources(PCSX2 PRIVATE
 	${pcsx2CDVDSources}
 	${pcsx2CDVDHeaders}
-	${pcsx2SPU2Sources}
-	${pcsx2SPU2Headers}
 	${pcsx2DEV9Sources}
 	${pcsx2DEV9Headers}
 	${pcsx2PADHeaders}
 	${pcsx2PADSources}
-	${pcsx2GSHeaders}
-	${pcsx2GSSources}
 	${pcsx2RecordingSources}
 	${pcsx2DebugToolsSources}
 	${pcsx2DebugToolsHeaders}
@@ -1587,6 +1593,9 @@ else()
 		target_sources(PCSX2 PRIVATE
 			${pcsx2USBSources}
 			${pcsx2USBHeaders})
+		target_link_libraries(PCSX2_FLAGS INTERFACE
+			jpgd
+		)
 	else()
 		target_sources(PCSX2 PRIVATE
 			${pcsx2USBNullSources}
@@ -1855,7 +1864,7 @@ function(setup_main_executable target)
 			get_filename_component(QT_BINARY_DIRECTORY "${MOC_EXECUTABLE_LOCATION}" DIRECTORY)
 			find_program(MACDEPLOYQT_EXE macdeployqt HINTS "${QT_BINARY_DIRECTORY}")
 			add_custom_target(pcsx2-postprocess-bundle ${postprocessBundleType}
-				COMMAND "${MACDEPLOYQT_EXE}" "$<TARGET_FILE_DIR:${target}>/../.."
+				COMMAND "${MACDEPLOYQT_EXE}" "$<TARGET_FILE_DIR:${target}>/../.." -no-strip
 			)
 		else()
 			add_custom_target(pcsx2-postprocess-bundle ${postprocessBundleType}

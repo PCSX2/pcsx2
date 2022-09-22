@@ -104,7 +104,7 @@ public:
 
 	// Gets the current cache reserve allocated to this CPU (value returned in megabytes)
 	virtual uint GetCacheReserve() const=0;
-	
+
 	// Specifies the maximum cache reserve amount for this CPU (value in megabytes).
 	// CPU providers are allowed to reset their reserves (recompiler resets, etc) if such is
 	// needed to conform to the new amount requested.
@@ -256,6 +256,7 @@ extern void vu1ResetRegs();
 extern void vu1ExecMicro(u32 addr);
 extern void vu1Exec(VURegs* VU);
 extern void iDumpVU1Registers();
+extern void MTVUInterrupt();
 
 #ifdef VUM_LOG
 

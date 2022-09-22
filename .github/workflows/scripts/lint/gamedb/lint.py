@@ -62,6 +62,7 @@ allowed_gs_hw_fixes = [
     "texturePreloading",
     "deinterlace",
     "cpuSpriteRenderBW",
+    "gpuPaletteConversion",
 ]
 gs_hw_fix_ranges = {
     "mipmap": (0, 2),
@@ -72,6 +73,7 @@ gs_hw_fix_ranges = {
     "roundSprite": (0, 2),
     "deinterlace": (0, 7),
     "cpuSpriteRenderBW": (1, 10),
+    "gpuPaletteConversion": (0, 2),
 }
 allowed_speed_hacks = ["mvuFlagSpeedHack", "InstantVU1SpeedHack", "MTVUSpeedHack"]
 # Patches are allowed to have a 'default' key or a crc-32 key, followed by

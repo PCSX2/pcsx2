@@ -112,8 +112,8 @@ static void PostCoreStatus(CoreThreadStatus pevt)
 // --------------------------------------------------------------------------------------
 AppCoreThread::AppCoreThread()
 	: SysCoreThread()
+	, m_resetCdvd(false)
 {
-	m_resetCdvd = false;
 }
 
 AppCoreThread::~AppCoreThread()

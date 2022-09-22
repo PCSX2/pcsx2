@@ -39,19 +39,6 @@
 #include <winioctl.h>
 #include <share.h>
 #include <shlobj.h>
-
-#if defined(_UWP)
-#include <fcntl.h>
-#include <io.h>
-#include <winrt/Windows.ApplicationModel.h>
-#include <winrt/Windows.Devices.Enumeration.h>
-#include <winrt/Windows.Foundation.Collections.h>
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.Storage.FileProperties.h>
-#include <winrt/Windows.Storage.Search.h>
-#include <winrt/Windows.Storage.h>
-#endif
-
 #else
 #include <fcntl.h>
 #include <dirent.h>
@@ -74,16 +61,32 @@ static std::time_t ConvertFileTimeToUnixTime(const FILETIME& ft)
 }
 #endif
 
-static inline bool FileSystemCharacterIsSane(char c, bool StripSlashes)
+static inline bool FileSystemCharacterIsSane(char c, bool strip_slashes)
 {
-	if (!(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') && !(c >= '0' && c <= '9') && c != ' ' && c != ' ' &&
-		c != '_' && c != '-' && c != '.')
-	{
-		if (!StripSlashes && (c == '/' || c == '\\'))
-			return true;
+#ifdef _WIN32
+	// https://docs.microsoft.com/en-gb/windows/win32/fileio/naming-a-file?redirectedfrom=MSDN#naming-conventions
+	if ((c == U'/' || c == U'\\') && strip_slashes)
+		return false;
 
+	if (c == U'<' || c == U'>' || c == U':' || c == U'"' || c == U'|' || c == U'?' || c == U'*' || c == 0 ||
+		c <= static_cast<char32_t>(31))
+	{
 		return false;
 	}
+#else
+	if (c == '/' && strip_slashes)
+		return false;
+
+	// drop asterisks too, they make globbing annoying
+	if (c == '*')
+		return false;
+
+		// macos doesn't allow colons, apparently
+#ifdef __APPLE__
+	if (c == U':')
+		return false;
+#endif
+#endif
 
 	return true;
 }
@@ -131,39 +134,58 @@ static inline void PathAppendString(std::string& dst, const T& src)
 	}
 }
 
-void Path::SanitizeFileName(char* Destination, u32 cbDestination, const char* FileName, bool StripSlashes /* = true */)
+std::string Path::SanitizeFileName(const std::string_view& str, bool strip_slashes /* = true */)
 {
-	u32 i;
-	u32 fileNameLength = static_cast<u32>(std::strlen(FileName));
+	std::string ret;
+	ret.reserve(str.length());
 
-	if (FileName == Destination)
+	size_t pos = 0;
+	while (pos < str.length())
 	{
-		for (i = 0; i < fileNameLength; i++)
-		{
-			if (!FileSystemCharacterIsSane(FileName[i], StripSlashes))
-				Destination[i] = '_';
-		}
+		char32_t ch;
+		pos += StringUtil::DecodeUTF8(str, pos, &ch);
+		ch = FileSystemCharacterIsSane(ch, strip_slashes) ? ch : U'_';
+		StringUtil::EncodeAndAppendUTF8(ret, ch);
 	}
-	else
-	{
-		for (i = 0; i < fileNameLength && i < cbDestination; i++)
-		{
-			if (FileSystemCharacterIsSane(FileName[i], StripSlashes))
-				Destination[i] = FileName[i];
-			else
-				Destination[i] = '_';
-		}
-	}
+
+#ifdef _WIN32
+	// Windows: Can't end filename with a period.
+	if (ret.length() > 0 && ret.back() == '.')
+		ret.back() = '_';
+#endif
+
+	return ret;
 }
 
-void Path::SanitizeFileName(std::string& Destination, bool StripSlashes /* = true*/)
+void Path::SanitizeFileName(std::string* str, bool strip_slashes /* = true */)
 {
-	const std::size_t len = Destination.length();
-	for (std::size_t i = 0; i < len; i++)
+	const size_t len = str->length();
+
+	char small_buf[128];
+	std::unique_ptr<char[]> large_buf;
+	char* str_copy = small_buf;
+	if (len >= std::size(small_buf))
 	{
-		if (!FileSystemCharacterIsSane(Destination[i], StripSlashes))
-			Destination[i] = '_';
+		large_buf = std::make_unique<char[]>(len + 1);
+		str_copy = large_buf.get();
 	}
+	std::memcpy(str_copy, str->c_str(), sizeof(char) * (len + 1));
+	str->clear();
+
+	size_t pos = 0;
+	while (pos < len)
+	{
+		char32_t ch;
+		pos += StringUtil::DecodeUTF8(str_copy + pos, pos - len, &ch);
+		ch = FileSystemCharacterIsSane(ch, strip_slashes) ? ch : U'_';
+		StringUtil::EncodeAndAppendUTF8(*str, ch);
+	}
+
+#ifdef _WIN32
+	// Windows: Can't end filename with a period.
+	if (str->length() > 0 && str->back() == '.')
+		str->back() = '_';
+#endif
 }
 
 bool Path::IsAbsolute(const std::string_view& path)
@@ -521,7 +543,7 @@ std::vector<std::string> FileSystem::GetRootDirectoryList()
 {
 	std::vector<std::string> results;
 
-#if defined(_WIN32) && !defined(_UWP)
+#if defined(_WIN32)
 	char buf[256];
 	const DWORD size = GetLogicalDriveStringsA(sizeof(buf), buf);
 	if (size != 0 && size < (sizeof(buf) - 1))
@@ -533,28 +555,6 @@ std::vector<std::string> FileSystem::GetRootDirectoryList()
 			results.emplace_back(ptr, len);
 			ptr += len + 1u;
 		}
-	}
-#elif defined(_UWP)
-	if (const auto install_location = winrt::Windows::ApplicationModel::Package::Current().InstalledLocation();
-		install_location)
-	{
-		if (const auto path = install_location.Path(); !path.empty())
-			results.push_back(StringUtil::WideStringToUTF8String(path));
-	}
-
-	if (const auto local_location = winrt::Windows::Storage::ApplicationData::Current().LocalFolder(); local_location)
-	{
-		if (const auto path = local_location.Path(); !path.empty())
-			results.push_back(StringUtil::WideStringToUTF8String(path));
-	}
-
-	const auto devices = winrt::Windows::Storage::KnownFolders::RemovableDevices();
-	const auto folders_task(devices.GetFoldersAsync());
-	for (const auto& storage_folder : folders_task.get())
-	{
-		const auto path = storage_folder.Path();
-		if (!path.empty())
-			results.push_back(StringUtil::WideStringToUTF8String(path));
 	}
 #else
 	const char* home_path = std::getenv("HOME");
@@ -595,127 +595,6 @@ std::string Path::Combine(const std::string_view& base, const std::string_view& 
 	return ret;
 }
 
-#ifdef _UWP
-static std::FILE* OpenCFileUWP(const wchar_t* wfilename, const wchar_t* mode, FileSystem::FileShareMode share_mode)
-{
-	DWORD access = 0;
-	DWORD share = 0;
-	DWORD disposition = 0;
-
-	switch (share_mode)
-	{
-		case FileSystem::FileShareMode::DenyNone:
-			share = FILE_SHARE_READ | FILE_SHARE_WRITE;
-			break;
-		case FileSystem::FileShareMode::DenyRead:
-			share = FILE_SHARE_WRITE;
-			break;
-		case FileSystem::FileShareMode::DenyWrite:
-			share = FILE_SHARE_READ;
-			break;
-		case FileSystem::FileShareMode::DenyReadWrite:
-		default:
-			share = 0;
-			break;
-	}
-
-	int flags = 0;
-	const wchar_t* tmode = mode;
-	while (*tmode)
-	{
-		if (*tmode == L'r' && *(tmode + 1) == L'+')
-		{
-			access = GENERIC_READ | GENERIC_WRITE;
-			disposition = OPEN_EXISTING;
-			flags |= _O_RDWR;
-			tmode += 2;
-		}
-		else if (*tmode == L'w' && *(tmode + 1) == L'+')
-		{
-			access = GENERIC_READ | GENERIC_WRITE;
-			disposition = CREATE_ALWAYS;
-			flags |= _O_RDWR | _O_CREAT | _O_TRUNC;
-			tmode += 2;
-		}
-		else if (*tmode == L'a' && *(tmode + 1) == L'+')
-		{
-			access = GENERIC_READ | GENERIC_WRITE;
-			disposition = CREATE_ALWAYS;
-			flags |= _O_RDWR | _O_APPEND | _O_CREAT | _O_TRUNC;
-			tmode += 2;
-		}
-		else if (*tmode == L'r')
-		{
-			access = GENERIC_READ;
-			disposition = OPEN_EXISTING;
-			flags |= _O_RDONLY;
-			tmode++;
-		}
-		else if (*tmode == L'w')
-		{
-			access = GENERIC_WRITE;
-			disposition = CREATE_ALWAYS;
-			flags |= _O_WRONLY | _O_CREAT | _O_TRUNC;
-			tmode++;
-		}
-		else if (*tmode == L'a')
-		{
-			access = GENERIC_READ | GENERIC_WRITE;
-			disposition = CREATE_ALWAYS;
-			flags |= _O_WRONLY | _O_APPEND | _O_CREAT | _O_TRUNC;
-			tmode++;
-		}
-		else if (*tmode == L'b')
-		{
-			flags |= _O_BINARY;
-			tmode++;
-		}
-		else if (*tmode == L'S')
-		{
-			flags |= _O_SEQUENTIAL;
-			tmode++;
-		}
-		else if (*tmode == L'R')
-		{
-			flags |= _O_RANDOM;
-			tmode++;
-		}
-		else
-		{
-			Console.Error("Unknown mode flags: '%s'", StringUtil::WideStringToUTF8String(mode).c_str());
-			return nullptr;
-		}
-	}
-
-	HANDLE hFile = CreateFileFromAppW(wfilename, access, share, nullptr, disposition, 0, nullptr);
-	if (hFile == INVALID_HANDLE_VALUE)
-		return nullptr;
-
-	if (flags & _O_APPEND && !SetFilePointerEx(hFile, LARGE_INTEGER{}, nullptr, FILE_END))
-	{
-		Console.Error("SetFilePointerEx() failed: %08X", GetLastError());
-		CloseHandle(hFile);
-		return nullptr;
-	}
-
-	int fd = _open_osfhandle(reinterpret_cast<intptr_t>(hFile), flags);
-	if (fd < 0)
-	{
-		CloseHandle(hFile);
-		return nullptr;
-	}
-
-	std::FILE* fp = _wfdopen(fd, mode);
-	if (!fp)
-	{
-		_close(fd);
-		return nullptr;
-	}
-
-	return fp;
-}
-#endif // _UWP
-
 std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode)
 {
 #ifdef _WIN32
@@ -725,13 +604,7 @@ std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode)
 	{
 		std::FILE* fp;
 		if (_wfopen_s(&fp, wfilename.c_str(), wmode.c_str()) != 0)
-		{
-#ifdef _UWP
-			return OpenCFileUWP(wfilename.c_str(), wmode.c_str(), FileShareMode::DenyReadWrite);
-#else
 			return nullptr;
-#endif
-		}
 
 		return fp;
 	}
@@ -751,10 +624,7 @@ int FileSystem::OpenFDFile(const char* filename, int flags, int mode)
 #ifdef _WIN32
 	const std::wstring wfilename(StringUtil::UTF8StringToWideString(filename));
 	if (!wfilename.empty())
-	{
-		// TODO: UWP
 		return _wopen(wfilename.c_str(), flags, mode);
-	}
 
 	return -1;
 #else
@@ -797,11 +667,7 @@ std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, F
 	if (fp)
 		return fp;
 
-#ifdef _UWP
-	return OpenCFileUWP(wfilename.c_str(), wmode.c_str(), share_mode);
-#else
 	return nullptr;
-#endif
 #else
 	return std::fopen(filename, mode);
 #endif
@@ -1027,19 +893,6 @@ static u32 TranslateWin32Attributes(u32 Win32Attributes)
 	return r;
 }
 
-static DWORD WrapGetFileAttributes(const wchar_t* path)
-{
-#ifndef _UWP
-	return GetFileAttributesW(path);
-#else
-	WIN32_FILE_ATTRIBUTE_DATA fad;
-	if (!GetFileAttributesExFromAppW(path, GetFileExInfoStandard, &fad))
-		return INVALID_FILE_ATTRIBUTES;
-
-	return fad.dwFileAttributes;
-#endif
-}
-
 static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, const char* path, const char* pattern,
 	u32 flags, FileSystem::FindResultsArray* results)
 {
@@ -1061,13 +914,7 @@ static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, 
 	std::string utf8_filename;
 	utf8_filename.reserve((sizeof(wfd.cFileName) / sizeof(wfd.cFileName[0])) * 2);
 
-#ifndef _UWP
 	HANDLE hFind = FindFirstFileW(StringUtil::UTF8StringToWideString(tempStr).c_str(), &wfd);
-#else
-	HANDLE hFind = FindFirstFileExFromAppW(StringUtil::UTF8StringToWideString(tempStr).c_str(), FindExInfoBasic, &wfd,
-		FindExSearchNameMatch, nullptr, 0);
-#endif
-
 	if (hFind == INVALID_HANDLE_VALUE)
 		return 0;
 
@@ -1249,7 +1096,6 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
 	if (wpath.empty())
 		return false;
 
-#ifndef _UWP
 	// determine attributes for the path. if it's a directory, things have to be handled differently..
 	DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
 	if (fileAttributes == INVALID_FILE_ATTRIBUTES)
@@ -1289,17 +1135,6 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
 	sd->ModificationTime = ConvertFileTimeToUnixTime(bhfi.ftLastWriteTime);
 	sd->Size = static_cast<s64>(((u64)bhfi.nFileSizeHigh) << 32 | (u64)bhfi.nFileSizeLow);
 	return true;
-#else
-	WIN32_FILE_ATTRIBUTE_DATA fad;
-	if (!GetFileAttributesExFromAppW(wpath, GetFileExInfoStandard, &fad))
-		return false;
-
-	sd->Attributes = TranslateWin32Attributes(fad.dwFileAttributes);
-	sd->CreationTime = ConvertFileTimeToUnixTime(fad.ftCreationTime);
-	sd->ModificationTime = ConvertFileTimeToUnixTime(fad.ftLastWriteTime);
-	sd->Size = static_cast<s64>(((u64)fad.nFileSizeHigh) << 32 | (u64)fad.nFileSizeLow);
-	return true;
-#endif
 }
 
 bool FileSystem::StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* sd)
@@ -1340,7 +1175,7 @@ bool FileSystem::FileExists(const char* path)
 		return false;
 
 	// determine attributes for the path. if it's a directory, things have to be handled differently..
-	DWORD fileAttributes = WrapGetFileAttributes(wpath.c_str());
+	DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
 	if (fileAttributes == INVALID_FILE_ATTRIBUTES)
 		return false;
 
@@ -1362,7 +1197,7 @@ bool FileSystem::DirectoryExists(const char* path)
 		return false;
 
 	// determine attributes for the path. if it's a directory, things have to be handled differently..
-	DWORD fileAttributes = WrapGetFileAttributes(wpath.c_str());
+	DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
 	if (fileAttributes == INVALID_FILE_ATTRIBUTES)
 		return false;
 
@@ -1378,11 +1213,7 @@ bool FileSystem::DirectoryIsEmpty(const char* path)
 	wpath += L"\\*";
 
 	WIN32_FIND_DATAW wfd;
-#ifndef _UWP
 	HANDLE hFind = FindFirstFileW(wpath.c_str(), &wfd);
-#else
-	HANDLE hFind = FindFirstFileExFromAppW(wpath.c_str(), FindExInfoBasic, &wfd, FindExSearchNameMatch, nullptr, 0);
-#endif
 
 	if (hFind == INVALID_HANDLE_VALUE)
 		return true;
@@ -1411,14 +1242,9 @@ bool FileSystem::CreateDirectoryPath(const char* Path, bool Recursive)
 	if (wpath.empty())
 		return false;
 
-		// try just flat-out, might work if there's no other segments that have to be made
-#ifndef _UWP
+	// try just flat-out, might work if there's no other segments that have to be made
 	if (CreateDirectoryW(wpath.c_str(), nullptr))
 		return true;
-#else
-	if (CreateDirectoryFromAppW(wpath.c_str(), nullptr))
-		return true;
-#endif
 
 	if (!Recursive)
 		return false;
@@ -1428,7 +1254,7 @@ bool FileSystem::CreateDirectoryPath(const char* Path, bool Recursive)
 	if (lastError == ERROR_ALREADY_EXISTS)
 	{
 		// check the attributes
-		u32 Attributes = WrapGetFileAttributes(wpath.c_str());
+		u32 Attributes = GetFileAttributesW(wpath.c_str());
 		if (Attributes != INVALID_FILE_ATTRIBUTES && Attributes & FILE_ATTRIBUTE_DIRECTORY)
 			return true;
 		else
@@ -1447,11 +1273,7 @@ bool FileSystem::CreateDirectoryPath(const char* Path, bool Recursive)
 		{
 			if (wpath[i] == L'\\' || wpath[i] == L'/')
 			{
-#ifndef _UWP
 				const BOOL result = CreateDirectoryW(tempPath.c_str(), nullptr);
-#else
-				const BOOL result = CreateDirectoryFromAppW(tempPath.c_str(), nullptr);
-#endif
 				if (!result)
 				{
 					lastError = GetLastError();
@@ -1471,11 +1293,7 @@ bool FileSystem::CreateDirectoryPath(const char* Path, bool Recursive)
 		// re-create the end if it's not a separator, check / as well because windows can interpret them
 		if (wpath[pathLength - 1] != L'\\' && wpath[pathLength - 1] != L'/')
 		{
-#ifndef _UWP
 			const BOOL result = CreateDirectoryW(wpath.c_str(), nullptr);
-#else
-			const BOOL result = CreateDirectoryFromAppW(wpath.c_str(), nullptr);
-#endif
 			if (!result)
 			{
 				lastError = GetLastError();
@@ -1500,15 +1318,11 @@ bool FileSystem::DeleteFilePath(const char* path)
 		return false;
 
 	const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
-	const DWORD fileAttributes = WrapGetFileAttributes(wpath.c_str());
+	const DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
 	if (fileAttributes == INVALID_FILE_ATTRIBUTES || fileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		return false;
 
-#ifndef _UWP
 	return (DeleteFileW(wpath.c_str()) == TRUE);
-#else
-	return (DeleteFileFromAppW(wpath.c_str()) == TRUE);
-#endif
 }
 
 bool FileSystem::RenamePath(const char* old_path, const char* new_path)
@@ -1516,29 +1330,11 @@ bool FileSystem::RenamePath(const char* old_path, const char* new_path)
 	const std::wstring old_wpath(StringUtil::UTF8StringToWideString(old_path));
 	const std::wstring new_wpath(StringUtil::UTF8StringToWideString(new_path));
 
-#ifndef _UWP
 	if (!MoveFileExW(old_wpath.c_str(), new_wpath.c_str(), MOVEFILE_REPLACE_EXISTING))
 	{
 		Console.Error("MoveFileEx('%s', '%s') failed: %08X", old_path, new_path, GetLastError());
 		return false;
 	}
-#else
-	// try moving if it doesn't exist, since ReplaceFile fails on non-existing destinations
-	if (WrapGetFileAttributes(new_wpath.c_str()) != INVALID_FILE_ATTRIBUTES)
-	{
-		if (!DeleteFileFromAppW(new_wpath.c_str()))
-		{
-			Log_ErrorPrintf("DeleteFileFromAppW('%s') failed: %08X", new_wpath.c_str(), GetLastError());
-			return false;
-		}
-	}
-
-	if (!MoveFileFromAppW(old_wpath.c_str(), new_wpath.c_str()))
-	{
-		Log_ErrorPrintf("MoveFileFromAppW('%s', '%s') failed: %08X", old_path, new_path, GetLastError());
-		return false;
-	}
-#endif
 
 	return true;
 }
@@ -1556,10 +1352,8 @@ std::string FileSystem::GetProgramPath()
 
 	// Fall back to the main module if this fails.
 	HMODULE module = nullptr;
-#ifndef _UWP
 	GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
 		reinterpret_cast<LPCWSTR>(&GetProgramPath), &module);
-#endif
 
 	for (;;)
 	{

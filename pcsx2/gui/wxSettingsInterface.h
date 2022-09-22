@@ -25,7 +25,7 @@ class wxSettingsInterface : public SettingsInterface
 public:
   wxSettingsInterface(wxConfigBase* config);
   ~wxSettingsInterface();
- 
+
   bool Save() override;
   void Clear() override;
 

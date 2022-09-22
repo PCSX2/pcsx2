@@ -23,6 +23,7 @@ constant bool HAS_FBFETCH           [[function_constant(GSMTLConstantIndex_FRAME
 constant bool FST                   [[function_constant(GSMTLConstantIndex_FST)]];
 constant bool IIP                   [[function_constant(GSMTLConstantIndex_IIP)]];
 constant bool VS_POINT_SIZE         [[function_constant(GSMTLConstantIndex_VS_POINT_SIZE)]];
+constant uint VS_EXPAND_TYPE_RAW    [[function_constant(GSMTLConstantIndex_VS_EXPAND_TYPE)]];
 constant uint PS_AEM_FMT            [[function_constant(GSMTLConstantIndex_PS_AEM_FMT)]];
 constant uint PS_PAL_FMT            [[function_constant(GSMTLConstantIndex_PS_PAL_FMT)]];
 constant uint PS_DFMT               [[function_constant(GSMTLConstantIndex_PS_DFMT)]];
@@ -48,7 +49,7 @@ constant uint PS_BLEND_D            [[function_constant(GSMTLConstantIndex_PS_BL
 constant uint PS_CLR_HW             [[function_constant(GSMTLConstantIndex_PS_CLR_HW)]];
 constant bool PS_HDR                [[function_constant(GSMTLConstantIndex_PS_HDR)]];
 constant bool PS_COLCLIP            [[function_constant(GSMTLConstantIndex_PS_COLCLIP)]];
-constant bool PS_BLEND_MIX          [[function_constant(GSMTLConstantIndex_PS_BLEND_MIX)]];
+constant uint PS_BLEND_MIX          [[function_constant(GSMTLConstantIndex_PS_BLEND_MIX)]];
 constant bool PS_FIXED_ONE_A        [[function_constant(GSMTLConstantIndex_PS_FIXED_ONE_A)]];
 constant bool PS_PABE               [[function_constant(GSMTLConstantIndex_PS_PABE)]];
 constant bool PS_NO_COLOR           [[function_constant(GSMTLConstantIndex_PS_NO_COLOR)]];
@@ -66,6 +67,8 @@ constant bool PS_MANUAL_LOD         [[function_constant(GSMTLConstantIndex_PS_MA
 constant bool PS_POINT_SAMPLER      [[function_constant(GSMTLConstantIndex_PS_POINT_SAMPLER)]];
 constant bool PS_INVALID_TEX0       [[function_constant(GSMTLConstantIndex_PS_INVALID_TEX0)]];
 constant uint PS_SCANMSK            [[function_constant(GSMTLConstantIndex_PS_SCANMSK)]];
+
+constant GSMTLExpandType VS_EXPAND_TYPE = static_cast<GSMTLExpandType>(VS_EXPAND_TYPE_RAW);
 
 #if defined(__METAL_MACOS__) && __METAL_VERSION__ >= 220
 	#define PRIMID_SUPPORT 1
@@ -189,6 +192,93 @@ static MainVSOut vs_main_run(thread const MainVSIn& v, constant GSMTLMainVSUnifo
 vertex MainVSOut vs_main(MainVSIn v [[stage_in]], constant GSMTLMainVSUniform& cb [[buffer(GSMTLBufferIndexHWUniforms)]])
 {
 	return vs_main_run(v, cb);
+}
+
+static MainVSIn load_vertex(GSMTLMainVertex base)
+{
+	MainVSIn out;
+	out.st = base.st;
+	out.c = float4(base.rgba);
+	out.q = base.q;
+	out.p = uint2(base.xy);
+	out.z = base.z;
+	out.uv = uint2(base.uv);
+	out.f = float4(static_cast<float>(base.fog) / 255.f);
+	return out;
+}
+
+vertex MainVSOut vs_main_expand(
+	uint vid [[vertex_id]],
+	device const GSMTLMainVertex* vertices [[buffer(GSMTLBufferIndexHWVertices)]],
+	constant GSMTLMainVSUniform& cb [[buffer(GSMTLBufferIndexHWUniforms)]])
+{
+	switch (VS_EXPAND_TYPE)
+	{
+		case GSMTLExpandType::None:
+			return vs_main_run(load_vertex(vertices[vid]), cb);
+		case GSMTLExpandType::Point:
+		{
+			MainVSOut point = vs_main_run(load_vertex(vertices[vid >> 2]), cb);
+			if (vid & 1)
+				point.p.x += cb.point_size.x;
+			if (vid & 2)
+				point.p.y += cb.point_size.y;
+			return point;
+		}
+		case GSMTLExpandType::Line:
+		{
+			uint vid_base = vid >> 2;
+			bool is_bottom = vid & 2;
+			bool is_right = vid & 1;
+			// All lines will be a pair of vertices next to each other
+			// Since Metal uses provoking vertex first, the bottom point will be the lower of the two
+			uint vid_other = is_bottom ? vid_base + 1 : vid_base - 1;
+			MainVSOut point = vs_main_run(load_vertex(vertices[vid_base]), cb);
+			MainVSOut other = vs_main_run(load_vertex(vertices[vid_other]), cb);
+
+			float2 line_vector = normalize(point.p.xy - other.p.xy);
+			float2 line_normal = float2(line_vector.y, -line_vector.x);
+			float2 line_width = (line_normal * cb.point_size) / 2;
+			// line_normal is inverted for bottom point
+			float2 offset = (is_bottom ^ is_right) ? line_width : -line_width;
+			point.p.xy += offset;
+
+			// Lines will be run as (0 1 2) (1 2 3)
+			// This means that both triangles will have a point based off the top line point as their first point
+			// So we don't have to do anything for !IIP
+
+			return point;
+		}
+		case GSMTLExpandType::Sprite:
+		{
+			uint vid_base = vid >> 1;
+			bool is_bottom = vid & 2;
+			bool is_right = vid & 1;
+			// Sprite points are always in pairs
+			uint vid_lt = vid_base & ~1;
+			uint vid_rb = vid_base | 1;
+
+			MainVSOut lt = vs_main_run(load_vertex(vertices[vid_lt]), cb);
+			MainVSOut rb = vs_main_run(load_vertex(vertices[vid_rb]), cb);
+			MainVSOut out = rb;
+
+			if (!is_right)
+			{
+				out.p.x = lt.p.x;
+				out.t.x = lt.t.x;
+				out.ti.xz = lt.ti.xz;
+			}
+
+			if (!is_bottom)
+			{
+				out.p.y = lt.p.y;
+				out.t.y = lt.t.y;
+				out.ti.yw = lt.ti.yw;
+			}
+
+			return out;
+		}
+	}
 }
 
 // MARK: - Fragment functions
@@ -708,7 +798,7 @@ struct PSMain
 		// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
 		// GS: Color = 1, Alpha = 255 => output 1
 		// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-		if (PS_DFMT == FMT_16 && (PS_HDR || !PS_BLEND_MIX))
+		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0)
 			// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 			C.rgb = float3(short3(C.rgb) & 0xF8);
 		else if (PS_COLCLIP && !PS_HDR)
@@ -721,12 +811,19 @@ struct PSMain
 		return selector == 0 ? zero : selector == 1 ? one : two;
 	}
 
-	void ps_blend(thread float4& Color, float As)
+	void ps_blend(thread float4& Color, thread float& As)
 	{
 		if (SW_BLEND)
 		{
+			// PABE
+			if (PS_PABE)
+			{
+				// No blending so early exit
+				if (As < 1.f)
+					return;
+			}
 
-			float Ad = PS_DFMT == FMT_24 ? 1.f : trunc(current_color.a * 255.5f) / 128.f;
+			float Ad = trunc(current_color.a * 255.5f) / 128.f;
 
 			float3 Cd = trunc(current_color.rgb * 255.5f);
 			float3 Cs = Color.rgb;
@@ -736,16 +833,41 @@ struct PSMain
 			float  C = pick(PS_BLEND_C, As, Ad, cb.alpha_fix);
 			float3 D = pick(PS_BLEND_D, Cs, Cd, float3(0.f));
 
-			if (PS_BLEND_MIX)
+			// As/Af clamp alpha for Blend mix
+			// We shouldn't clamp blend mix with clr1 as we want alpha higher
+			if (PS_BLEND_MIX > 0 && PS_CLR_HW != 1)
 				C = min(C, 1.f);
 
 			if (PS_BLEND_A == PS_BLEND_B)
 				Color.rgb = D;
+			// In blend_mix, HW adds on some alpha factor * dst.
+			// Truncating here wouldn't quite get the right result because it prevents the <1 bit here from combining with a <1 bit in dst to form a ≥1 amount that pushes over the truncation.
+			// Instead, apply an offset to convert HW's round to a floor.
+			// Since alpha is in 1/128 increments, subtracting (0.5 - 0.5/128 == 127/256) would get us what we want if GPUs blended in full precision.
+			// But they don't.  Details here: https://github.com/PCSX2/pcsx2/pull/6809#issuecomment-1211473399
+			// Based on the scripts at the above link, the ideal choice for Intel GPUs is 126/256, AMD 120/256.  Nvidia is a lost cause.
+			// 124/256 seems like a reasonable compromise, providing the correct answer 99.3% of the time on Intel (vs 99.6% for 126/256), and 97% of the time on AMD (vs 97.4% for 120/256).
+			else if (PS_BLEND_MIX == 2)
+				Color.rgb = ((A - B) * C + D) + (124.f/256.f);
+			else if (PS_BLEND_MIX == 1)
+				Color.rgb = ((A - B) * C + D) - (124.f/256.f);
 			else
 				Color.rgb = trunc((A - B) * C + D);
 
-			if (PS_PABE)
-				Color.rgb = (As >= 1.f) ? Color.rgb : Cs;
+			if (PS_CLR_HW == 1)
+			{
+				// Replace Af with As so we can do proper compensation for Alpha.
+				if (PS_BLEND_C == 2)
+					As = cb.alpha_fix;
+				// Subtract 1 for alpha to compensate for the changed equation,
+				// if c.rgb > 255.0f then we further need to adjust alpha accordingly,
+				// we pick the lowest overflow from all colors because it's the safest,
+				// we divide by 255 the color because we don't know Cd value,
+				// changed alpha should only be done for hw blend.
+				float min_color = min(min(Color.r, Color.g), Color.b);
+				float alpha_compensate = max(1.f, min_color / 255.f);
+				As -= alpha_compensate;
+			}
 		}
 		else
 		{
@@ -819,7 +941,7 @@ struct PSMain
 			C.a = 128.0f;
 		}
 
-		float alpha_blend = SW_AD_TO_HW ? (PS_DFMT == FMT_24 ? 1.f : trunc(current_color.a * 255.5f) / 128.f) : (C.a / 128.f);
+		float alpha_blend = SW_AD_TO_HW ? (trunc(current_color.a * 255.5f) / 128.f) : (C.a / 128.f);
 
 		if (PS_DFMT == FMT_16)
 		{

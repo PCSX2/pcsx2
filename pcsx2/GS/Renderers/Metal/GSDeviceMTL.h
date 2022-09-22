@@ -201,6 +201,7 @@ public:
 				bool iip        : 1;
 				bool fst        : 1;
 				bool point_size : 1;
+				GSMTLExpandType expand : 2;
 			};
 			u8 key;
 		};
@@ -243,7 +244,7 @@ public:
 	MRCOwned<id<MTLRenderPipelineState>> m_imgui_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_imgui_pipeline_a8;
 
-	MRCOwned<id<MTLFunction>> m_hw_vs[1 << 3];
+	MRCOwned<id<MTLFunction>> m_hw_vs[1 << 5];
 	std::unordered_map<PSSelector, MRCOwned<id<MTLFunction>>> m_hw_ps;
 	std::unordered_map<PipelineSelectorMTL, MRCOwned<id<MTLRenderPipelineState>>> m_hw_pipeline;
 
@@ -323,6 +324,8 @@ public:
 	id<MTLBlitCommandEncoder> GetVertexUploadEncoder();
 	/// Get the render command buffer, creating a new one if it doesn't exist
 	id<MTLCommandBuffer> GetRenderCmdBuf();
+	/// Called by command buffers when they finish
+	void DrawCommandBufferFinished(u64 draw, id<MTLCommandBuffer> buffer);
 	/// Flush pending operations from all encoders to the GPU
 	void FlushEncoders();
 	/// End current render pass without flushing
@@ -340,7 +343,7 @@ public:
 
 	MRCOwned<id<MTLFunction>> LoadShader(NSString* name);
 	MRCOwned<id<MTLRenderPipelineState>> MakePipeline(MTLRenderPipelineDescriptor* desc, id<MTLFunction> vertex, id<MTLFunction> fragment, NSString* name);
-	bool Create(HostDisplay* display) override;
+	bool Create() override;
 
 	void ClearRenderTarget(GSTexture* t, const GSVector4& c) override;
 	void ClearRenderTarget(GSTexture* t, u32 c) override;

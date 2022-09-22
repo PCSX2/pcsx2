@@ -40,7 +40,9 @@ namespace Host
 	void SetBaseFloatSettingValue(const char* section, const char* key, float value);
 	void SetBaseStringSettingValue(const char* section, const char* key, const char* value);
 	void SetBaseStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
-	void DeleteBaseSettingValue(const char* section, const char* key);
+	bool AddBaseValueToStringList(const char* section, const char* key, const char* value);
+	bool RemoveBaseValueFromStringList(const char* section, const char* key, const char* value);
+	void RemoveBaseSettingValue(const char* section, const char* key);
 	void CommitBaseSettingChanges();
 
 	// Settings access, thread-safe.

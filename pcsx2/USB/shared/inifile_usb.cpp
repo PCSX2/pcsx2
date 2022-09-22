@@ -465,7 +465,7 @@ const KeyIndexA& CIniSectionA::GetKeys() const
 	return m_keys;
 }
 
-std::string CIniSectionA::GetKeyValue(std::string sKey) const
+std::string CIniSectionA::GetKeyValue(const std::string& sKey) const
 {
 	std::string sValue;
 	CIniKeyA* pKey = GetKey(sKey);
@@ -476,7 +476,7 @@ std::string CIniSectionA::GetKeyValue(std::string sKey) const
 	return sValue;
 }
 
-void CIniSectionA::SetKeyValue(std::string sKey, const std::string& sValue)
+void CIniSectionA::SetKeyValue(const std::string& sKey, const std::string& sValue)
 {
 	CIniKeyA* pKey = AddKey(sKey);
 	if (pKey)
@@ -965,7 +965,7 @@ const KeyIndexW& CIniSectionW::GetKeys() const
 	return m_keys;
 }
 
-std::wstring CIniSectionW::GetKeyValue(std::wstring sKey) const
+std::wstring CIniSectionW::GetKeyValue(const std::wstring& sKey) const
 {
 	std::wstring sValue;
 	CIniKeyW* pKey = GetKey(sKey);
@@ -976,7 +976,7 @@ std::wstring CIniSectionW::GetKeyValue(std::wstring sKey) const
 	return sValue;
 }
 
-void CIniSectionW::SetKeyValue(std::wstring sKey, const std::wstring& sValue)
+void CIniSectionW::SetKeyValue(const std::wstring& sKey, const std::wstring& sValue)
 {
 	CIniKeyW* pKey = AddKey(sKey);
 	if (pKey)

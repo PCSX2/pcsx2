@@ -212,6 +212,7 @@ ImplementEnumOperators(SpeedhackId);
 //------------ DEFAULT sseMXCSR VALUES ---------------
 #define DEFAULT_sseMXCSR 0xffc0 //FPU rounding > DaZ, FtZ, "chop"
 #define DEFAULT_sseVUMXCSR 0xffc0 //VU  rounding > DaZ, FtZ, "chop"
+#define SYSTEM_sseMXCSR 0x1f80
 
 // --------------------------------------------------------------------------------------
 //  TraceFiltersEE
@@ -427,6 +428,9 @@ struct Pcsx2Config
 
 		static const char* GetRendererName(GSRendererType type);
 
+		static constexpr float DEFAULT_FRAME_RATE_NTSC = 59.94f;
+		static constexpr float DEFAULT_FRAME_RATE_PAL = 50.00f;
+
 		union
 		{
 			u64 bitset;
@@ -459,7 +463,6 @@ struct Pcsx2Config
 
 				bool
 					HWDisableReadbacks : 1,
-					AccurateDATE : 1,
 					GPUPaletteConversion : 1,
 					AutoFlushSW : 1,
 					PreloadFrameWithGSData : 1,
@@ -504,24 +507,24 @@ struct Pcsx2Config
 
 		VsyncMode VsyncEnable{VsyncMode::Off};
 
-		double LimitScalar{1.0};
-		double FramerateNTSC{59.94};
-		double FrameratePAL{50.00};
+		float LimitScalar{1.0f};
+		float FramerateNTSC{DEFAULT_FRAME_RATE_NTSC};
+		float FrameratePAL{DEFAULT_FRAME_RATE_PAL};
 
 		AspectRatioType AspectRatio{AspectRatioType::RAuto4_3_3_2};
 		FMVAspectRatioSwitchType FMVAspectRatioSwitch{FMVAspectRatioSwitchType::Off};
 		GSInterlaceMode InterlaceMode{GSInterlaceMode::Automatic};
 
-		double Zoom{100.0};
-		double StretchY{100.0};
+		float Zoom{100.0f};
+		float StretchY{100.0f};
 #ifndef PCSX2_CORE
-		double OffsetX{0.0};
-		double OffsetY{0.0};
+		float OffsetX{0.0f};
+		float OffsetY{0.0f};
 #else
 		int Crop[4]{};
 #endif
 
-		double OsdScale{100.0};
+		float OsdScale{100.0};
 
 		GSRendererType Renderer{GSRendererType::Auto};
 		uint UpscaleMultiplier{1};
@@ -531,7 +534,7 @@ struct Pcsx2Config
 		CRCHackLevel CRCHack{CRCHackLevel::Automatic};
 		BiFiltering TextureFiltering{BiFiltering::PS2};
 		TexturePreloadingLevel TexturePreloading{TexturePreloadingLevel::Full};
-		GSDumpCompressionMethod GSDumpCompression{GSDumpCompressionMethod::Uncompressed};
+		GSDumpCompressionMethod GSDumpCompression{GSDumpCompressionMethod::LZMA};
 		int Dithering{2};
 		int MaxAnisotropy{0};
 		int SWExtraThreads{2};
@@ -622,15 +625,16 @@ struct Pcsx2Config
 		s32 FinalVolume = 100;
 		s32 Latency{100};
 		s32 SpeakerConfiguration{0};
+		s32 DplDecodingLevel{0};
 
-		double VolumeAdjustC{ 0.0f };
-		double VolumeAdjustFL{ 0.0f };
-		double VolumeAdjustFR{ 0.0f };
-		double VolumeAdjustBL{ 0.0f };
-		double VolumeAdjustBR{ 0.0f };
-		double VolumeAdjustSL{ 0.0f };
-		double VolumeAdjustSR{ 0.0f };
-		double VolumeAdjustLFE{ 0.0f };
+		float VolumeAdjustC{ 0.0f };
+		float VolumeAdjustFL{ 0.0f };
+		float VolumeAdjustFR{ 0.0f };
+		float VolumeAdjustBL{ 0.0f };
+		float VolumeAdjustBR{ 0.0f };
+		float VolumeAdjustSL{ 0.0f };
+		float VolumeAdjustSR{ 0.0f };
+		float VolumeAdjustLFE{ 0.0f };
 
 		std::string OutputModule;
 
@@ -648,6 +652,7 @@ struct Pcsx2Config
 				OpEqu(FinalVolume) &&
 				OpEqu(Latency) &&
 				OpEqu(SpeakerConfiguration) &&
+				OpEqu(DplDecodingLevel) &&
 
 				OpEqu(VolumeAdjustC) &&
 				OpEqu(VolumeAdjustFL) &&
@@ -889,9 +894,9 @@ struct Pcsx2Config
 	// ------------------------------------------------------------------------
 	struct FramerateOptions
 	{
-		double NominalScalar{1.0};
-		double TurboScalar{2.0};
-		double SlomoScalar{0.5};
+		float NominalScalar{1.0f};
+		float TurboScalar{2.0f};
+		float SlomoScalar{0.5f};
 
 		void LoadSave(SettingsWrapper& wrap);
 		void SanityCheck();
@@ -954,7 +959,6 @@ struct Pcsx2Config
 #endif
 		// when enabled uses BOOT2 injection, skipping sony bios splashes
 		UseBOOT2Injection : 1,
-		PatchBios : 1,
 		BackupSavestate : 1,
 		SavestateZstdCompression : 1,
 		// enables simulated ejection of memory cards when loading savestates
@@ -965,7 +969,9 @@ struct Pcsx2Config
 		MultitapPort1_Enabled : 1,
 
 		ConsoleToStdio : 1,
-		HostFs : 1;
+		HostFs : 1,
+
+		WarnAboutUnsafeSettings : 1;
 
 	// uses automatic ntfs compression when creating new memory cards (Win32 only)
 #ifdef _WIN32
@@ -986,8 +992,6 @@ struct Pcsx2Config
 	TraceLogFilters Trace;
 
 	FilenameOptions BaseFilenames;
-
-	std::string PatchRegion;
 
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
 	// slots (3 each)
@@ -1021,6 +1025,9 @@ struct Pcsx2Config
 	// You shouldn't assign to this class, because it'll mess with the runtime variables (Current...).
 	// But you can still use this to copy config. Only needed until we drop wx.
 	void CopyConfig(const Pcsx2Config& cfg);
+
+	/// Copies runtime configuration settings (e.g. frame limiter state).
+	void CopyRuntimeConfig(Pcsx2Config& cfg);
 };
 
 extern Pcsx2Config EmuConfig;
@@ -1047,10 +1054,9 @@ namespace EmuFolders
 	extern std::string InputProfiles;
 
 	// Assumes that AppRoot and DataRoot have been initialized.
-	void SetDefaults();
-	bool EnsureFoldersExist();
+	void SetDefaults(SettingsInterface& si);
 	void LoadConfig(SettingsInterface& si);
-	void Save(SettingsInterface& si);
+	bool EnsureFoldersExist();
 } // namespace EmuFolders
 
 /////////////////////////////////////////////////////////////////////////////////////////

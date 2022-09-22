@@ -142,7 +142,7 @@ void GSCaptureDlg::OnInit()
 		else if (wcsstr(str.get(), L"@device:sw:"))  prefix = L"(DS) ";
 		else if (wcsstr(str.get(), L"@device:cm:"))  prefix = L"(VfW) ";
 
-		
+
 		c.DisplayName = str.get();
 
 		wil::com_ptr_nothrow<IPropertyBag> pPB;

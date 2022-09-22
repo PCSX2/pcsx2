@@ -52,11 +52,11 @@ MemCheck::MemCheck()
 	, cond(MEMCHECK_READWRITE)
 	, result(MEMCHECK_BOTH)
 	, cpu(BREAKPOINT_EE)
+	, numHits(0)
 	, lastPC(0)
 	, lastAddr(0)
 	, lastSize(0)
 {
-	numHits = 0;
 }
 
 void MemCheck::Log(u32 addr, bool write, int size, u32 pc)

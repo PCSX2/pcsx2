@@ -115,7 +115,7 @@ public:
 
 	void Used()
 	{
-		// Update the saveslot cache with the new saveslot, and give it the current timestamp, 
+		// Update the saveslot cache with the new saveslot, and give it the current timestamp,
 		// Because we aren't going to be able to get the real timestamp from disk right now.
 		empty = false;
 		updated = wxDateTime::Now();

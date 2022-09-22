@@ -91,8 +91,8 @@ public:
 
 	__forceinline GSVector8i(__m128i m0, __m128i m1)
 	{
-#if 0 // _MSC_VER >= 1700 
-		
+#if 0 // _MSC_VER >= 1700
+
 		this->m = _mm256_permute2x128_si256(_mm256_castsi128_si256(m0), _mm256_castsi128_si256(m1), 0);
 
 #else

@@ -89,7 +89,7 @@ public:
 
 	static wxString GetNameStatic() { return L"DisassemblyDialog"; }
 	wxString GetDialogName() const { return GetNameStatic(); }
-	
+
 	void update();
 	void reset();
 	void populate();

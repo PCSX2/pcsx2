@@ -44,7 +44,7 @@ mem32_t _hwRead32(u32 mem)
 	{
 		case 0x00:	return rcntRead32<0x00>( mem );
 		case 0x01:	return rcntRead32<0x01>( mem );
-		
+
 		case 0x02:	return ipuRead32( mem );
 
 		case 0x03:
@@ -56,7 +56,7 @@ mem32_t _hwRead32(u32 mem)
 					return vifRead32<0>(mem);
 			}
 			return dmacRead32<0x03>( mem );
-		
+
 		case 0x04:
 		case 0x05:
 		case 0x06:
@@ -104,7 +104,7 @@ mem32_t _hwRead32(u32 mem)
 				case 0x00:
 					ret = psxHu32(0x1f801814);
 					break;
-				case 0x80:					
+				case 0x80:
 #if PSX_EXTRALOGS
 					DevCon.Warning("FIFO Size %x", sif2fifosize);
 #endif
@@ -130,7 +130,7 @@ mem32_t _hwRead32(u32 mem)
 #endif
 				return ret;
 
-				
+
 			}
 			/*if ((mem & 0x1000ff00) == 0x1000f200)
 			{
@@ -189,7 +189,7 @@ mem32_t _hwRead32(u32 mem)
 	//Hack for Transformers and Test Drive Unlimited to simulate filling the VIF FIFO
 	//It actually stalls VIF a few QW before the end of the transfer, so we need to pretend its all gone
 	//else itll take aaaaaaaaages to boot.
-	if(mem == (D1_CHCR + 0x10) && CHECK_VIFFIFOHACK) 
+	if(mem == (D1_CHCR + 0x10) && CHECK_VIFFIFOHACK)
 		return psHu32(mem) + (vif1ch.qwc * 16);
 
 	/*if((mem == GIF_CHCR) && !vif1ch.chcr.STR && gifRegs.stat.M3P && gifRegs.stat.APATH != 3)
@@ -284,7 +284,7 @@ static RETURNS_R64 _hwRead64(u32 mem)
 			// No game is known to attempt such a thing (yay!), so probably nothing for us to
 			// worry about.  Chances are, though, doing so is "legal" and yields some sort
 			// of reproducible behavior.  Candidate for real hardware testing.
-			
+
 			// Current assumption: Reads 128 bits and discards the unused portion.
 
 			uint wordpart = (mem >> 3) & 0x1;
@@ -364,7 +364,7 @@ RETURNS_R128 _hwRead128(u32 mem)
 				DevCon.Warning("128bit read from %x wibble", mem);
 				if (mem == 0x1000f3E0)
 				{
-					
+
 					ReadFifoSingleWord();
 					u32 part0 = psHu32(0x1000f3E0);
 					ReadFifoSingleWord();

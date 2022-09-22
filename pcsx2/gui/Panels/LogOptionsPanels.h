@@ -90,7 +90,7 @@ namespace Panels
 		void OnUpdateEnableAll();
 		void OnCheckBoxClicked(wxCommandEvent &event);
 		void Apply();
-		
+
 	protected:
 		BaseCpuLogOptionsPanel* GetCpuPanel( const wxString& token ) const;
 	};

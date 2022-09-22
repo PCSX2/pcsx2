@@ -163,11 +163,11 @@ __inline unsigned long MFC2(int reg) {
 		gteORGB = (((gteIR1 >> 7) & 0x1f)) |
 			(((gteIR2 >> 7) & 0x1f) << 5) |
 			(((gteIR3 >> 7) & 0x1f) << 10);
-		//			gteORGB = (gteIR1      ) | 
-		//					  (gteIR2 <<  5) | 
+		//			gteORGB = (gteIR1      ) |
+		//					  (gteIR2 <<  5) |
 		//					  (gteIR3 << 10);
-		//			gteORGB = ((gteIR1 & 0xf80)>>7) | 
-		//					  ((gteIR2 & 0xf80)>>2) | 
+		//			gteORGB = ((gteIR1 & 0xf80)>>7) |
+		//					  ((gteIR2 & 0xf80)>>2) |
 		//					  ((gteIR3 & 0xf80)<<3);
 		return gteORGB;
 
@@ -453,7 +453,7 @@ __inline double limG1(double x) {
 	if (x >       1023.0) { x = 1023.0; gteFLAG |= (1 << 14); }
 	else
 		if (x <      -1024.0) { x = -1024.0; gteFLAG |= (1 << 14); }
-	
+
 	return (x);
 }
 
@@ -494,10 +494,10 @@ __inline s32 FlimE(s32 x) { _LIMX(0, 65535, 12); }
 __inline s32 FlimG1(s64 x) {
 	if (x > 2147483647) { gteFLAG |= (1 << 16); }
 	else if (x < (s64)0xffffffff80000000) { gteFLAG |= (1 << 15); }
-	
+
 	if (x >       1023) { x = 1023; gteFLAG |= (1 << 14); }
-	else if (x <      -1024) { x = -1024; gteFLAG |= (1 << 14); } 
-	
+	else if (x <      -1024) { x = -1024; gteFLAG |= (1 << 14); }
+
 	return (x);
 }
 
@@ -508,8 +508,8 @@ __inline s32 FlimG2(s64 x) {
 
 	if (x >       1023) { x = 1023; gteFLAG |= (1 << 13); }
 	else
-		if (x < -1024) { x = -1024; gteFLAG |= (1 << 13); } 
-	
+		if (x < -1024) { x = -1024; gteFLAG |= (1 << 13); }
+
 	return (x);
 }
 
@@ -2475,7 +2475,7 @@ void gteDPCS() {
 }
 
 void gteDPCT() {
-	//	unsigned long C,R,G,B;	
+	//	unsigned long C,R,G,B;
 	//	double RR0,GG0,BB0;
 #ifdef GTE_DUMP
 	static int sample = 0; sample++;

@@ -7,6 +7,7 @@
 		<file>icons/black/svg/artboard-2-line.svg</file>
 		<file>icons/black/svg/book-open-line.svg</file>
 		<file>icons/black/svg/brush-line.svg</file>
+		<file>icons/black/svg/checkbox-multiple-blank-line.svg</file>
 		<file>icons/black/svg/close-line.svg</file>
 		<file>icons/black/svg/dashboard-line.svg</file>
 		<file>icons/black/svg/disc-line.svg</file>
@@ -21,6 +22,7 @@
 		<file>icons/black/svg/file-search-line.svg</file>
 		<file>icons/black/svg/file-settings-line.svg</file>
 		<file>icons/black/svg/filter-line.svg</file>
+		<file>icons/black/svg/flashlight-line.svg</file>
 		<file>icons/black/svg/flask-line.svg</file>
 		<file>icons/black/svg/folder-add-line.svg</file>
 		<file>icons/black/svg/folder-open-line.svg</file>
@@ -31,6 +33,7 @@
 		<file>icons/black/svg/gamepad-line.svg</file>
 		<file>icons/black/svg/global-line.svg</file>
 		<file>icons/black/svg/hard-drive-2-line.svg</file>
+		<file>icons/black/svg/image-fill.svg</file>
 		<file>icons/black/svg/keyboard-line.svg</file>
 		<file>icons/black/svg/layout-grid-line.svg</file>
 		<file>icons/black/svg/list-check.svg</file>
@@ -59,6 +62,7 @@
 		<file>icons/white/svg/artboard-2-line.svg</file>
 		<file>icons/white/svg/book-open-line.svg</file>
 		<file>icons/white/svg/brush-line.svg</file>
+		<file>icons/white/svg/checkbox-multiple-blank-line.svg</file>
 		<file>icons/white/svg/close-line.svg</file>
 		<file>icons/white/svg/dashboard-line.svg</file>
 		<file>icons/white/svg/disc-line.svg</file>
@@ -73,6 +77,7 @@
 		<file>icons/white/svg/file-search-line.svg</file>
 		<file>icons/white/svg/file-settings-line.svg</file>
 		<file>icons/white/svg/filter-line.svg</file>
+		<file>icons/white/svg/flashlight-line.svg</file>
 		<file>icons/white/svg/flask-line.svg</file>
 		<file>icons/white/svg/folder-add-line.svg</file>
 		<file>icons/white/svg/folder-open-line.svg</file>
@@ -83,6 +88,7 @@
 		<file>icons/white/svg/gamepad-line.svg</file>
 		<file>icons/white/svg/global-line.svg</file>
 		<file>icons/white/svg/hard-drive-2-line.svg</file>
+		<file>icons/white/svg/image-fill.svg</file>
 		<file>icons/white/svg/keyboard-line.svg</file>
 		<file>icons/white/svg/layout-grid-line.svg</file>
 		<file>icons/white/svg/list-check.svg</file>

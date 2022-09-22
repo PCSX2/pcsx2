@@ -51,6 +51,9 @@ protected:
 	template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color, bool provoking_vertex_first>
 	void FindMinMax(const void* vertex, const u32* index, int count);
 
+	template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color>
+	FindMinMaxPtr GetFMM(bool provoking_vertex_first);
+
 public:
 	GS_PRIM_CLASS m_primclass;
 

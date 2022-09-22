@@ -31,6 +31,8 @@
 
 #ifndef PCSX2_CORE
 #include "gui/Dialogs/ModalPopups.h"
+#else
+#include "VMManager.h"
 #endif
 
 // Uncomment this to enable profiling of the GS RingBufferCopy function.
@@ -135,7 +137,7 @@ void SysMtgsThread::ThreadEntryPoint()
 
 			m_sem_event.WaitForWork();
 		}
-		
+
 		// try initializing.. this could fail
 		const bool opened = TryOpenGS();
 		m_open_flag.store(opened, std::memory_order_release);
@@ -296,9 +298,23 @@ void SysMtgsThread::MainLoop()
 		// is very optimized (only 1 instruction test in most cases), so no point in trying
 		// to avoid it.
 
+#ifdef PCSX2_CORE
+		if (m_run_idle_flag.load(std::memory_order_acquire) && VMManager::GetState() != VMState::Running)
+		{
+			if (!m_sem_event.CheckForWork())
+				GSPresentCurrentFrame();
+		}
+		else
+		{
+			mtvu_lock.unlock();
+			m_sem_event.WaitForWork();
+			mtvu_lock.lock();
+		}
+#else
 		mtvu_lock.unlock();
 		m_sem_event.WaitForWork();
 		mtvu_lock.lock();
+#endif
 
 		if (!m_open_flag.load(std::memory_order_acquire))
 			break;
@@ -950,7 +966,7 @@ void SysMtgsThread::SetVSync(VsyncMode mode)
 	pxAssertRel(IsOpen(), "MTGS is running");
 
 	RunOnGSThread([mode]() {
-		Host::GetHostDisplay()->SetVSync(mode);
+		g_host_display->SetVSync(mode);
 	});
 }
 
@@ -981,7 +997,7 @@ void SysMtgsThread::SetSoftwareRendering(bool software, bool display_message /* 
 		new_renderer = EmuConfig.GS.UseHardwareRenderer() ? EmuConfig.GS.Renderer : GSRendererType::Auto;
 	else
 		new_renderer = GSRendererType::SW;
-		
+
 	SwitchRenderer(new_renderer, display_message);
 }
 
@@ -1004,4 +1020,10 @@ bool SysMtgsThread::SaveMemorySnapshot(u32 width, u32 height, std::vector<u32>* 
 void SysMtgsThread::PresentCurrentFrame()
 {
 	GSPresentCurrentFrame();
+}
+
+void SysMtgsThread::SetRunIdle(bool enabled)
+{
+	// NOTE: Should only be called on the GS thread.
+	m_run_idle_flag.store(enabled, std::memory_order_release);
 }

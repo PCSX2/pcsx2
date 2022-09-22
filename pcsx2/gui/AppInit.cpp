@@ -135,8 +135,8 @@ void Pcsx2App::OpenProgramLog()
 	for( int li=wxLANGUAGE_UNKNOWN+1; li<wxLANGUAGE_USER_DEFINED; ++li )
 	{
 		if (const wxLanguageInfo* info = wxLocale::GetLanguageInfo( li ))
-		{			
-			if (i18n_IsLegacyLanguageId((wxLanguage)info->Language)) continue;			
+		{
+			if (i18n_IsLegacyLanguageId((wxLanguage)info->Language)) continue;
 			Console.WriteLn( L"|| %-30s || %-8s ||", info->Description.c_str(), info->CanonicalName.c_str() );
 		}
 	}
@@ -677,6 +677,10 @@ protected:
 
 Pcsx2App::Pcsx2App()
 	: SysExecutorThread(new SysEvtHandler())
+	, m_id_MainFrame(wxID_ANY)
+	, m_id_GsFrame(wxID_ANY)
+	, m_id_ProgramLogBox(wxID_ANY)
+	, m_id_Disassembler(wxID_ANY)
 {
 // Warning: Do not delete this comment block! Gettext will parse it to allow
 // the translation of some wxWidget internal strings. -- greg
@@ -717,10 +721,6 @@ Pcsx2App::Pcsx2App()
 	m_UseGUI = true;
 	m_NoGuiExitPrompt = true;
 
-	m_id_MainFrame = wxID_ANY;
-	m_id_GsFrame = wxID_ANY;
-	m_id_ProgramLogBox = wxID_ANY;
-	m_id_Disassembler = wxID_ANY;
 	m_ptr_ProgramLog = NULL;
 
 	SetAppName(L"PCSX2");

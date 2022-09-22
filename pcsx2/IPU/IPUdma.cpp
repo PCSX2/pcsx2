@@ -182,7 +182,7 @@ void IPU0dma()
 
 	ipu0ch.madr += readsize << 4;
 	ipu0ch.qwc -= readsize;
-	
+
 	if (dmacRegs.ctrl.STS == STS_fromIPU)   // STS == fromIPU
 	{
 		//DevCon.Warning("fromIPU Stall Control");

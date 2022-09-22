@@ -19,7 +19,7 @@
 #include <algorithm>
 
 #include "GameFixSettingsWidget.h"
-#include "EmuThread.h"
+#include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 #include "SettingsDialog.h"

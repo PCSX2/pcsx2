@@ -123,7 +123,7 @@ else()
 		if(X11_API)
 			check_lib(X11_XCB X11-xcb X11/Xlib-xcb.h)
 			check_lib(XCB xcb xcb/xcb.h)
-			check_lib(XRANDR xrandr)
+			check_lib(XRANDR Xrandr X11/extensions/Xrandr.h)
 		endif()
 
 		if(Linux)
@@ -236,6 +236,10 @@ if(QT_BUILD)
 	find_optional_system_library(SDL2 3rdparty/sdl2 2.0.22)
 endif()
 
+if(NOT WIN32 AND QT_BUILD)
+	find_package(CURL REQUIRED)
+endif()
+
 add_subdirectory(3rdparty/lzma EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/libchdr EXCLUDE_FROM_ALL)
 
@@ -248,6 +252,7 @@ else()
 	set(BIN2CPPDEP ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl)
 endif()
 
+add_subdirectory(3rdparty/jpgd EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/simpleini EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/imgui EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/cpuinfo EXCLUDE_FROM_ALL)

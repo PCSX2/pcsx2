@@ -15,14 +15,14 @@
 
 #include "PrecompiledHeader.h"
 
-#include "EmuThread.h"
 #include "QtHost.h"
 #include "Settings/ControllerSettingsDialog.h"
 #include "Settings/ControllerGlobalSettingsWidget.h"
 #include "Settings/ControllerBindingWidgets.h"
 #include "Settings/HotkeySettingsWidget.h"
 
-#include "pcsx2/Frontend/INISettingsInterface.h"
+#include "pcsx2/Frontend/CommonHost.h"
+#include "pcsx2/INISettingsInterface.h"
 #include "pcsx2/PAD/Host/PAD.h"
 #include "pcsx2/Sio.h"
 #include "pcsx2/VMManager.h"
@@ -162,8 +162,8 @@ void ControllerSettingsDialog::onLoadProfileClicked()
 	{
 		auto lock = Host::GetSettingsLock();
 		PAD::CopyConfiguration(Host::Internal::GetBaseSettingsLayer(), *m_profile_interface, true, true, false);
-		QtHost::QueueSettingsSave();
 	}
+	Host::CommitBaseSettingChanges();
 
 	g_emu_thread->applySettings();
 
@@ -206,9 +206,9 @@ void ControllerSettingsDialog::onRestoreDefaultsClicked()
 	// actually restore it
 	{
 		auto lock = Host::GetSettingsLock();
-		PAD::SetDefaultConfig(*Host::Internal::GetBaseSettingsLayer());
-		QtHost::QueueSettingsSave();
+		CommonHost::SetDefaultSettings(*Host::Internal::GetBaseSettingsLayer(), false, false, true, true, false);
 	}
+	Host::CommitBaseSettingChanges();
 
 	g_emu_thread->applySettings();
 
@@ -266,6 +266,14 @@ bool ControllerSettingsDialog::getBoolValue(const char* section, const char* key
 		return Host::GetBaseBoolSettingValue(section, key, default_value);
 }
 
+s32 ControllerSettingsDialog::getIntValue(const char* section, const char* key, s32 default_value) const
+{
+	if (m_profile_interface)
+		return m_profile_interface->GetIntValue(section, key, default_value);
+	else
+		return Host::GetBaseIntSettingValue(section, key, default_value);
+}
+
 std::string ControllerSettingsDialog::getStringValue(const char* section, const char* key, const char* default_value) const
 {
 	std::string value;
@@ -286,7 +294,24 @@ void ControllerSettingsDialog::setBoolValue(const char* section, const char* key
 	}
 	else
 	{
-		QtHost::SetBaseBoolSettingValue(section, key, value);
+		Host::SetBaseBoolSettingValue(section, key, value);
+		Host::CommitBaseSettingChanges();
+		g_emu_thread->applySettings();
+	}
+}
+
+void ControllerSettingsDialog::setIntValue(const char* section, const char* key, s32 value)
+{
+	if (m_profile_interface)
+	{
+		m_profile_interface->SetIntValue(section, key, value);
+		m_profile_interface->Save();
+		g_emu_thread->reloadGameSettings();
+	}
+	else
+	{
+		Host::SetBaseIntSettingValue(section, key, value);
+		Host::CommitBaseSettingChanges();
 		g_emu_thread->applySettings();
 	}
 }
@@ -301,7 +326,8 @@ void ControllerSettingsDialog::setStringValue(const char* section, const char* k
 	}
 	else
 	{
-		QtHost::SetBaseStringSettingValue(key, section, value);
+		Host::SetBaseStringSettingValue(section, key, value);
+		Host::CommitBaseSettingChanges();
 		g_emu_thread->applySettings();
 	}
 }
@@ -316,7 +342,8 @@ void ControllerSettingsDialog::clearSettingValue(const char* section, const char
 	}
 	else
 	{
-		QtHost::RemoveBaseSettingValue(section, key);
+		Host::RemoveBaseSettingValue(section, key);
+		Host::CommitBaseSettingChanges();
 		g_emu_thread->applySettings();
 	}
 }
@@ -406,7 +433,6 @@ void ControllerSettingsDialog::updateListDescription(u32 global_slot, Controller
 		const QVariant data(item->data(Qt::UserRole));
 		if (data.type() == QVariant::UInt && data.toUInt() == global_slot)
 		{
-			const bool is_mtap_port = sioPadIsMultitapSlot(global_slot);
 			const auto [port, slot] = sioConvertPadToPortAndSlot(global_slot);
 			const bool mtap_enabled = getBoolValue("Pad", (port == 0) ? "MultitapPort1" : "MultitapPort2", false);
 

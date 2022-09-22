@@ -67,9 +67,9 @@ void SettingsLoadWrapper::Entry(const char* section, const char* var, bool& valu
 	value = m_si.GetBoolValue(section, var, defvalue);
 }
 
-void SettingsLoadWrapper::Entry(const char* section, const char* var, double& value, const double defvalue /*= 0.0*/)
+void SettingsLoadWrapper::Entry(const char* section, const char* var, float& value, const float defvalue /*= 0.0*/)
 {
-	value = m_si.GetDoubleValue(section, var, defvalue);
+	value = m_si.GetFloatValue(section, var, defvalue);
 }
 
 void SettingsLoadWrapper::Entry(const char* section, const char* var, std::string& value, const std::string& default_value /*= std::string()*/)
@@ -141,9 +141,9 @@ void SettingsSaveWrapper::Entry(const char* section, const char* var, bool& valu
 	m_si.SetBoolValue(section, var, value);
 }
 
-void SettingsSaveWrapper::Entry(const char* section, const char* var, double& value, const double defvalue /*= 0.0*/)
+void SettingsSaveWrapper::Entry(const char* section, const char* var, float& value, const float defvalue /*= 0.0*/)
 {
-	m_si.SetDoubleValue(section, var, value);
+	m_si.SetFloatValue(section, var, value);
 }
 
 void SettingsSaveWrapper::Entry(const char* section, const char* var, std::string& value, const std::string& default_value /*= std::string()*/)

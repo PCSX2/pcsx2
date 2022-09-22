@@ -71,13 +71,52 @@ namespace PAD
 		GenericInputBinding generic_mapping;
 	};
 
+	struct ControllerSettingInfo
+	{
+		enum class Type
+		{
+			Boolean,
+			Integer,
+			IntegerList,
+			Float,
+			String,
+			Path,
+		};
+
+		Type type;
+		const char* name;
+		const char* display_name;
+		const char* description;
+		const char* default_value;
+		const char* min_value;
+		const char* max_value;
+		const char* step_value;
+		const char* format;
+		const char** options;
+		float multiplier;
+
+		const char* StringDefaultValue() const;
+		bool BooleanDefaultValue() const;
+		s32 IntegerDefaultValue() const;
+		s32 IntegerMinValue() const;
+		s32 IntegerMaxValue() const;
+		s32 IntegerStepValue() const;
+		float FloatDefaultValue() const;
+		float FloatMinValue() const;
+		float FloatMaxValue() const;
+		float FloatStepValue() const;
+	};
+
+
 	struct ControllerInfo
 	{
+		ControllerType type;
 		const char* name;
 		const char* display_name;
 		const ControllerBindingInfo* bindings;
 		u32 num_bindings;
-		ControllerType type;
+		const ControllerSettingInfo* settings;
+		u32 num_settings;
 		PAD::VibrationCapabilities vibration_caps;
 	};
 
@@ -92,6 +131,7 @@ namespace PAD
 	static constexpr float DEFAULT_STICK_SCALE = 1.33f;
 	static constexpr float DEFAULT_MOTOR_SCALE = 1.0f;
 	static constexpr float DEFAULT_PRESSURE_MODIFIER = 0.5f;
+	static constexpr float DEFAULT_BUTTON_DEADZONE = 0.0f;
 
 	/// Returns the default type for the specified port.
 	const char* GetDefaultPadType(u32 pad);
@@ -100,7 +140,8 @@ namespace PAD
 	void LoadConfig(const SettingsInterface& si);
 
 	/// Restores default configuration.
-	void SetDefaultConfig(SettingsInterface& si);
+	void SetDefaultControllerConfig(SettingsInterface& si);
+	void SetDefaultHotkeyConfig(SettingsInterface& si);
 
 	/// Clears all bindings for a given port.
 	void ClearPortBindings(SettingsInterface& si, u32 port);

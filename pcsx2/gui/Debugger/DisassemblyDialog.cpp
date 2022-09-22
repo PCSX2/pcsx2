@@ -330,7 +330,7 @@ void DisassemblyDialog::onBreakRunClicked(wxCommandEvent& evt)
 		CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, r3000Debug.getPC());
 		r5900Debug.resumeCpu();
 	}
-	else 
+	else
 	{
 		r5900Debug.pauseCpu();
 		gotoPc();
@@ -401,13 +401,13 @@ void DisassemblyDialog::stepOver()
 				breakpointAddress += 4;
 			}
 			else						// j, ...
-			{					
+			{
 			 // in case of absolute branches, set the breakpoint at the branch target
 				breakpointAddress = info.branchTarget;
 			}
 		}
 		else 							// beq, ...
-		{						
+		{
 			if (info.conditionMet)
 			{
 				breakpointAddress = info.branchTarget;
@@ -419,7 +419,7 @@ void DisassemblyDialog::stepOver()
 			}
 		}
 	}
-	else 
+	else
 	{
 		disassembly->scrollStepping(breakpointAddress);
 	}
@@ -449,7 +449,7 @@ void DisassemblyDialog::stepInto()
 		{
 			breakpointAddress = info.branchTarget;
 		}
-		else 
+		else
 		{
 			if (info.conditionMet)
 			{
@@ -523,7 +523,7 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 		if (!executeExpressionWindow(this, cpu, addr))
 			return;
 
-		if (currentCpu != NULL) 
+		if (currentCpu != NULL)
 		{
 			// GetInt() is 0 when called by the disassembly view, 1 when called by the memory view
 			if (!evt.GetInt())
@@ -615,7 +615,7 @@ void DisassemblyDialog::update()
 		breakpointButton->Enable(true);
 		currentCpu->update();
 	}
-	else 
+	else
 	{
 		stepOverButton->Enable(false);
 		breakpointButton->Enable(false);
@@ -695,7 +695,7 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 			if (currentCpu != NULL)
 				currentCpu->loadCycles();
 		}
-		else 
+		else
 		{
 			breakRunButton->SetLabel(L"Break");
 

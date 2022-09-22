@@ -64,14 +64,13 @@ namespace PINESettings
 // --------------------------------------------------------------------------------------
 
 SysCoreThread::SysCoreThread()
+	: m_hasActiveMachine(false)
 {
 	m_name = L"EE Core";
 	m_resetRecompilers = true;
 	m_resetProfilers = true;
 	m_resetVsyncTimers = true;
 	m_resetVirtualMachine = true;
-
-	m_hasActiveMachine = false;
 }
 
 SysCoreThread::~SysCoreThread()

@@ -246,6 +246,18 @@ __fi void cpuSetNextEventDelta( s32 delta )
 	cpuSetNextEvent( cpuRegs.cycle, delta );
 }
 
+__fi int cpuGetCycles(int interrupt)
+{
+	if(interrupt == VU_MTVU_BUSY && (!THREAD_VU1 || INSTANT_VU1))
+		return 1;
+	else
+	{
+		const int cycles = (cpuRegs.sCycle[interrupt] + cpuRegs.eCycle[interrupt]) - cpuRegs.cycle;
+		return std::max(1, cycles);
+	}
+
+}
+
 // tests the cpu cycle against the given start and delta values.
 // Returns true if the delta time has passed.
 __fi int cpuTestCycle( u32 startCycle, s32 delta )
@@ -292,7 +304,7 @@ static __fi void _cpuTestInterrupts()
 	}
 	/* These are 'pcsx2 interrupts', they handle asynchronous stuff
 	   that depends on the cycle timings */
-
+	TESTINT(VU_MTVU_BUSY,	MTVUInterrupt);
 	TESTINT(DMAC_VIF1,		vif1Interrupt);
 	TESTINT(DMAC_GIF,		gifInterrupt);
 	TESTINT(DMAC_SIF0,		EEsif0Interrupt);
@@ -521,7 +533,7 @@ __fi void CPU_INT( EE_EventType n, s32 ecycle)
 	// EE events happen 8 cycles in the future instead of whatever was requested.
 	// This can be used on games with PATH3 masking issues for example, or when
 	// some FMV look bad.
-	if(CHECK_EETIMINGHACK) ecycle = 8;
+	if(CHECK_EETIMINGHACK && n < VIF_VU0_FINISH) ecycle = 8;
 
 	cpuRegs.interrupt|= 1 << n;
 	cpuRegs.sCycle[n] = cpuRegs.cycle;
@@ -756,7 +768,7 @@ void eeloadHook2()
 	Console.WriteLn("eeloadHook2: arg block is '%s'.", (char *)PSM(g_osdsys_str));
 #endif
 	int argc = ParseArgumentString(g_osdsys_str);
-	
+
 	// Back up 4 bytes from start of args block for every arg + 4 bytes for start of argv pointer block, write pointers
 	uptr block_start = g_osdsys_str - (argc * 4);
 	for (int a = 0; a < argc; a++)
@@ -779,12 +791,12 @@ inline bool isBranchOrJump(u32 addr)
 {
 	u32 op = memRead32(addr);
 	const OPCODE& opcode = GetInstruction(op);
-	
+
 	// Return false for eret & syscall as they are branch type in pcsx2 debugging tools,
 	// but shouldn't have delay slot in isBreakpointNeeded/isMemcheckNeeded.
 	if ((opcode.flags == (IS_BRANCH | BRANCHTYPE_SYSCALL)) || (opcode.flags == (IS_BRANCH | BRANCHTYPE_ERET)))
 		return false;
-		
+
 	return (opcode.flags & IS_BRANCH) != 0;
 }
 
@@ -809,7 +821,7 @@ int isMemcheckNeeded(u32 pc)
 {
 	if (CBreakPoints::GetNumMemchecks() == 0)
 		return 0;
-	
+
 	u32 addr = pc;
 	if (isBranchOrJump(addr))
 		addr += 4;

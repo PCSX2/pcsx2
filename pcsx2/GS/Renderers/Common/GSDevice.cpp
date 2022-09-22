@@ -23,23 +23,27 @@ const char* shaderName(ShaderConvert value)
 	switch (value)
 	{
 			// clang-format off
-		case ShaderConvert::COPY:                return "ps_copy";
-		case ShaderConvert::RGBA8_TO_16_BITS:    return "ps_convert_rgba8_16bits";
-		case ShaderConvert::DATM_1:              return "ps_datm1";
-		case ShaderConvert::DATM_0:              return "ps_datm0";
-		case ShaderConvert::MOD_256:             return "ps_mod256";
-		case ShaderConvert::TRANSPARENCY_FILTER: return "ps_filter_transparency";
-		case ShaderConvert::FLOAT32_TO_16_BITS:  return "ps_convert_float32_32bits";
-		case ShaderConvert::FLOAT32_TO_32_BITS:  return "ps_convert_float32_32bits";
-		case ShaderConvert::FLOAT32_TO_RGBA8:    return "ps_convert_float32_rgba8";
-		case ShaderConvert::FLOAT16_TO_RGB5A1:   return "ps_convert_float16_rgb5a1";
-		case ShaderConvert::RGBA8_TO_FLOAT32:    return "ps_convert_rgba8_float32";
-		case ShaderConvert::RGBA8_TO_FLOAT24:    return "ps_convert_rgba8_float24";
-		case ShaderConvert::RGBA8_TO_FLOAT16:    return "ps_convert_rgba8_float16";
-		case ShaderConvert::RGB5A1_TO_FLOAT16:   return "ps_convert_rgb5a1_float16";
-		case ShaderConvert::DEPTH_COPY:          return "ps_depth_copy";
-		case ShaderConvert::RGBA_TO_8I:          return "ps_convert_rgba_8i";
-		case ShaderConvert::YUV:                 return "ps_yuv";
+		case ShaderConvert::COPY:                   return "ps_copy";
+		case ShaderConvert::RGBA8_TO_16_BITS:       return "ps_convert_rgba8_16bits";
+		case ShaderConvert::DATM_1:                 return "ps_datm1";
+		case ShaderConvert::DATM_0:                 return "ps_datm0";
+		case ShaderConvert::MOD_256:                return "ps_mod256";
+		case ShaderConvert::TRANSPARENCY_FILTER:    return "ps_filter_transparency";
+		case ShaderConvert::FLOAT32_TO_16_BITS:     return "ps_convert_float32_32bits";
+		case ShaderConvert::FLOAT32_TO_32_BITS:     return "ps_convert_float32_32bits";
+		case ShaderConvert::FLOAT32_TO_RGBA8:       return "ps_convert_float32_rgba8";
+		case ShaderConvert::FLOAT16_TO_RGB5A1:      return "ps_convert_float16_rgb5a1";
+		case ShaderConvert::RGBA8_TO_FLOAT32:       return "ps_convert_rgba8_float32";
+		case ShaderConvert::RGBA8_TO_FLOAT24:       return "ps_convert_rgba8_float24";
+		case ShaderConvert::RGBA8_TO_FLOAT16:       return "ps_convert_rgba8_float16";
+		case ShaderConvert::RGB5A1_TO_FLOAT16:      return "ps_convert_rgb5a1_float16";
+		case ShaderConvert::RGBA8_TO_FLOAT32_BILN:  return "ps_convert_rgba8_float32_biln";
+		case ShaderConvert::RGBA8_TO_FLOAT24_BILN:  return "ps_convert_rgba8_float24_biln";
+		case ShaderConvert::RGBA8_TO_FLOAT16_BILN:  return "ps_convert_rgba8_float16_biln";
+		case ShaderConvert::RGB5A1_TO_FLOAT16_BILN: return "ps_convert_rgb5a1_float16_biln";
+		case ShaderConvert::DEPTH_COPY:             return "ps_depth_copy";
+		case ShaderConvert::RGBA_TO_8I:             return "ps_convert_rgba_8i";
+		case ShaderConvert::YUV:                    return "ps_yuv";
 			// clang-format on
 		default:
 			ASSERT(0);
@@ -84,9 +88,8 @@ GSDevice::~GSDevice()
 	delete m_target_tmp;
 }
 
-bool GSDevice::Create(HostDisplay* display)
+bool GSDevice::Create()
 {
-	m_display = display;
 	return true;
 }
 
@@ -161,12 +164,10 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 	}
 
 	t->SetScale(GSVector2(1, 1)); // Things seem to assume that all textures come out of here with scale 1...
-	t->Commit(); // Clear won't be done if the texture isn't committed.
 
 	switch (type)
 	{
 	case GSTexture::Type::RenderTarget:
-	case GSTexture::Type::SparseRenderTarget:
 		{
 			if (clear)
 				ClearRenderTarget(t, 0);
@@ -175,7 +176,6 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 		}
 		break;
 	case GSTexture::Type::DepthStencil:
-	case GSTexture::Type::SparseDepthStencil:
 		{
 			if (clear)
 				ClearDepth(t);
@@ -215,12 +215,6 @@ void GSDevice::Recycle(GSTexture* t)
 {
 	if (t)
 	{
-#ifdef _DEBUG
-		// Uncommit saves memory but it means a futur allocation when we want to reuse the texture.
-		// Which is slow and defeat the purpose of the m_pool cache.
-		// However, it can help to spot part of texture that we forgot to commit
-		t->Uncommit();
-#endif
 		t->last_frame_used = m_frame;
 
 		m_pool.push_front(t);
@@ -259,16 +253,6 @@ void GSDevice::ClearSamplerCache()
 {
 }
 
-GSTexture* GSDevice::CreateSparseRenderTarget(int w, int h, GSTexture::Format format, bool clear)
-{
-	return FetchSurface(HasColorSparse() ? GSTexture::Type::SparseRenderTarget : GSTexture::Type::RenderTarget, w, h, 1, format, clear, true);
-}
-
-GSTexture* GSDevice::CreateSparseDepthStencil(int w, int h, GSTexture::Format format, bool clear)
-{
-	return FetchSurface(HasDepthSparse() ? GSTexture::Type::SparseDepthStencil : GSTexture::Type::DepthStencil, w, h, 1, format, clear, true);
-}
-
 GSTexture* GSDevice::CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear)
 {
 	return FetchSurface(GSTexture::Type::RenderTarget, w, h, 1, format, clear, true);
@@ -292,7 +276,7 @@ GSTexture* GSDevice::CreateOffscreen(int w, int h, GSTexture::Format format)
 
 GSTexture::Format GSDevice::GetDefaultTextureFormat(GSTexture::Type type)
 {
-	if (type == GSTexture::Type::DepthStencil || type == GSTexture::Type::SparseDepthStencil)
+	if (type == GSTexture::Type::DepthStencil)
 		return GSTexture::Format::DepthStencil;
 	else
 		return GSTexture::Format::Color;

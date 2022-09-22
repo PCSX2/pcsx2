@@ -82,7 +82,7 @@ namespace PacketReader::IP
          * Not Defined (xxx000)
          * 6 = Internetwork Control	Class 6
          * 7 = Network Control		Class 7
-		 * 
+		 *
 		 * Lower 3 Bits
 		 * In TOS, defined as follows
 		 * bit 0: Reliability

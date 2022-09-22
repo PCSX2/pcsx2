@@ -44,7 +44,7 @@ const char* dialog_message(int ID, bool* updateText)
 		case IDC_TRI_FILTER:
 			return cvtString("Control the texture tri-filtering of the emulation.\n\n"
 				"None:\nNo extra trilinear filtering.\n\n"
-				"Trilinear:\nUse OpenGL/Vulkan trilinear interpolation when PS2 uses mipmaps.\n\n"
+				"Trilinear:\nUse trilinear interpolation when PS2 uses mipmaps.\n\n"
 				"Trilinear Forced:\nAlways enable full trilinear interpolation. Warning Slow!\n\n");
 		case IDC_CRC_LEVEL:
 			return cvtString("Control the number of Auto-CRC fixes and hacks applied to games.\n\n"
@@ -104,10 +104,6 @@ const char* dialog_message(int ID, bool* updateText)
 			return cvtString("Enable: Removes the offset for interlacing when upscaling.\n"
 				"Can reduce blurring in some games, where the opposite is true most of the time.\n"
 				"Used for ICO to reduce blur.");
-		case IDC_ACCURATE_DATE:
-			return cvtString("Implement a more accurate algorithm to compute GS destination alpha testing.\n"
-				"It improves shadow and transparency rendering.\n\n"
-				"Note: Direct3D 11 is less accurate.");
 		case IDC_ACCURATE_BLEND_UNIT:
 			return cvtString("Control the accuracy level of the GS blending unit emulation.\n\n"
 				"Minimum:\nFast but introduces various rendering issues.\n"
@@ -119,7 +115,7 @@ const char* dialog_message(int ID, bool* updateText)
 				"A good CPU is required.\n\n"
 				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is slow!\n\n"
 				"Maximum:\nThe blending unit will be completely emulated by the shader. It is very slow!\n\n"
-				"Note: Direct3D11's blending is capped at High and is reduced in capability compared to OpenGL/Vulkan");
+				"Note: Direct3D's blending is capped at High and is reduced in capability compared to OpenGL/Vulkan");
 		case IDC_TC_DEPTH:
 			return cvtString("Disable the support of Depth buffer in the texture cache.\n"
 				"It can help to increase speed but it will likely create various glitches.");
@@ -168,13 +164,6 @@ const char* dialog_message(int ID, bool* updateText)
 		case IDC_GEOMETRY_SHADER_OVERRIDE:
 			return cvtString("Allows the GPU instead of just the CPU to transform lines into sprites. This reduces CPU load and bandwidth requirement, but it is heavier on the GPU.\n"
 				"Automatic detection is recommended.");
-		case IDC_IMAGE_LOAD_STORE:
-			return cvtString("Allows advanced atomic operations to speed up Accurate DATE.\n"
-				"Only disable this if using Accurate DATE causes (GPU driver) issues.\n\n"
-				"Note: This option is only supported by GPUs which support at least Direct3D 11.");
-		case IDC_SPARSE_TEXTURE:
-			return cvtString("Allows to reduce VRAM usage on the GPU.\n\n"
-				"Note: Feature is currently experimental and works only on Nvidia GPUs.");
 		case IDC_LINEAR_PRESENT:
 			return cvtString("Use bilinear filtering when Upscaling/Downscaling the image to the screen. Disable it if you want a sharper/pixelated output.");
 		// Exclusive for Hardware Renderer

@@ -387,13 +387,13 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	, m_timer_FlushUnlocker( this )
 	, m_ColorTable( options.FontSize )
 
+	, m_pendingFlushMsg(false)
+	, m_WaitingThreadsForFlush(0)
 	, m_QueueColorSection( "ConsoleLog::QueueColorSection" )
 	, m_QueueBuffer( "ConsoleLog::QueueBuffer" )
 	, m_threadlogger( EnableThreadedLoggingTest ? new ConsoleTestThread() : NULL )
 {
 	m_CurQueuePos				= 0;
-	m_WaitingThreadsForFlush	= 0;
-	m_pendingFlushMsg			= false;
 	m_FlushRefreshLocked		= false;
 
 	// create Log menu (contains most options)
@@ -463,7 +463,7 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 
 	menuSources.Append( MenuId_LogSource_Devel, _("Dev/&Verbose"), _("Shows PCSX2 developer logs."), wxITEM_CHECK );
 	menuSources.Append( MenuId_LogSource_CDVD_Info, _("&CDVD reads"), _("Shows disk read activity."), wxITEM_CHECK );
-	
+
 	menuSources.AppendSeparator();
 
 	uint srcnt = std::size(ConLogSources);

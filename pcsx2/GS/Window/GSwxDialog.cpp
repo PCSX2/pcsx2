@@ -275,7 +275,6 @@ RendererTab::RendererTab(wxWindow* parent)
 	const int space = wxSizerFlags().Border().GetBorderInPixels();
 	auto hw_prereq = [this]{ return m_is_hardware; };
 	auto sw_prereq = [this]{ return !m_is_hardware; };
-	auto upscale_prereq = [this]{ return !m_is_native_res; };
 
 	PaddedBoxSizer<wxBoxSizer> tab_box(wxVERTICAL);
 	PaddedBoxSizer<wxStaticBoxSizer> general_box(wxVERTICAL, this, "General GS Settings");
@@ -283,8 +282,6 @@ RendererTab::RendererTab(wxWindow* parent)
 	PaddedBoxSizer<wxStaticBoxSizer> software_box(wxVERTICAL, this, "Software Mode");
 
 	auto* hw_checks_box = new wxWrapSizer(wxHORIZONTAL);
-
-	m_ui.addCheckBox(hw_checks_box, "Accurate Destination Alpha Test", "accurate_date",            IDC_ACCURATE_DATE,   hw_prereq);
 
 	auto* paltex_prereq = m_ui.addCheckBox(hw_checks_box, "GPU Palette Conversion", "paltex", IDC_PALTEX, hw_prereq);
 	auto aniso_prereq = [this, paltex_prereq]{ return m_is_hardware && paltex_prereq->GetValue() == false; };
@@ -549,19 +546,21 @@ DebugTab::DebugTab(wxWindow* parent)
 	const int space = wxSizerFlags().Border().GetBorderInPixels();
 	PaddedBoxSizer<wxBoxSizer> tab_box(wxVERTICAL);
 
-	auto ogl_hw_prereq = [this]{ return m_is_ogl_hw; };
 	auto vk_ogl_hw_prereq = [this] { return m_is_ogl_hw || m_is_vk_hw; };
 
 	if (g_Conf->DevMode || IsDevBuild)
 	{
 		PaddedBoxSizer<wxStaticBoxSizer> debug_box(wxVERTICAL, this, "Debug");
-		auto* debug_check_box = new wxWrapSizer(wxHORIZONTAL);
-		m_ui.addCheckBox(debug_check_box, "Use Blit Swap Chain",          "UseBlitSwapChain");
-		m_ui.addCheckBox(debug_check_box, "Disable Shader Cache",         "disable_shader_cache");
-		m_ui.addCheckBox(debug_check_box, "Disable Framebuffer Fetch",    "DisableFramebufferFetch");
+		auto* debug_check_box = new wxFlexGridSizer(2, space, space);
 		m_ui.addCheckBox(debug_check_box, "Disable Dual-Source Blending", "DisableDualSourceBlend");
+		m_ui.addCheckBox(debug_check_box, "Disable Framebuffer Fetch",    "DisableFramebufferFetch");
+		m_ui.addCheckBox(debug_check_box, "Disable Hardware Readbacks",   "HWDisableReadbacks");
+		m_ui.addCheckBox(debug_check_box, "Disable Shader Cache",         "disable_shader_cache");
+		m_ui.addCheckBox(debug_check_box, "Use Blit Swap Chain",          "UseBlitSwapChain");
 		m_ui.addCheckBox(debug_check_box, "Use Debug Device",             "UseDebugDevice");
-		m_ui.addCheckBox(debug_check_box, "Dump GS data",                 "dump");
+
+		auto* debug_save_check_box_main = new wxFlexGridSizer(1, space, space);
+		m_ui.addCheckBox(debug_save_check_box_main, "Dump GS data", "dump");
 
 		auto* debug_save_check_box = new wxWrapSizer(wxHORIZONTAL);
 		m_ui.addCheckBox(debug_save_check_box, "Save RT",      "save");
@@ -570,6 +569,9 @@ DebugTab::DebugTab(wxWindow* parent)
 		m_ui.addCheckBox(debug_save_check_box, "Save Depth",   "savez");
 
 		debug_box->Add(debug_check_box);
+		debug_box->AddSpacer(space);
+		debug_box->Add(debug_save_check_box_main);
+		debug_box->AddSpacer(space);
 		debug_box->Add(debug_save_check_box);
 
 		auto* dump_grid = new wxFlexGridSizer(2, space, space);
@@ -585,11 +587,9 @@ DebugTab::DebugTab(wxWindow* parent)
 
 	PaddedBoxSizer<wxStaticBoxSizer> ogl_box(wxVERTICAL, this, "Overrides");
 	auto* ogl_grid = new wxFlexGridSizer(2, space, space);
-	m_ui.addComboBoxAndLabel(ogl_grid, "Texture Barriers:", "OverrideTextureBarriers",                 &theApp.m_gs_generic_list, -1,                           vk_ogl_hw_prereq);
-	m_ui.addComboBoxAndLabel(ogl_grid, "Geometry Shader:",  "OverrideGeometryShaders",                 &theApp.m_gs_generic_list, IDC_GEOMETRY_SHADER_OVERRIDE, vk_ogl_hw_prereq);
-	m_ui.addComboBoxAndLabel(ogl_grid, "Image Load Store:", "override_GL_ARB_shader_image_load_store", &theApp.m_gs_generic_list, IDC_IMAGE_LOAD_STORE,         ogl_hw_prereq);
-	m_ui.addComboBoxAndLabel(ogl_grid, "Sparse Texture:",   "override_GL_ARB_sparse_texture",          &theApp.m_gs_generic_list, IDC_SPARSE_TEXTURE,           ogl_hw_prereq);
-	m_ui.addComboBoxAndLabel(ogl_grid, "Dump Compression:", "GSDumpCompression",                       &theApp.m_gs_dump_compression, -1);
+	m_ui.addComboBoxAndLabel(ogl_grid, "Texture Barriers:", "OverrideTextureBarriers", &theApp.m_gs_generic_list, -1,                           vk_ogl_hw_prereq);
+	m_ui.addComboBoxAndLabel(ogl_grid, "Geometry Shader:",  "OverrideGeometryShaders", &theApp.m_gs_generic_list, IDC_GEOMETRY_SHADER_OVERRIDE, vk_ogl_hw_prereq);
+	m_ui.addComboBoxAndLabel(ogl_grid, "Dump Compression:", "GSDumpCompression",       &theApp.m_gs_dump_compression, -1);
 	ogl_box->Add(ogl_grid);
 
 	tab_box->Add(ogl_box.outer, wxSizerFlags().Expand());
@@ -803,7 +803,6 @@ void Dialog::Update()
 		m_hacks_panel->m_is_native_res = !is_hw || !is_upscale;
 		m_hacks_panel->m_is_hardware = is_hw;
 		m_renderer_panel->m_is_hardware = is_hw;
-		m_renderer_panel->m_is_native_res = !is_hw || !is_upscale;
 		m_post_panel->m_is_vk_hw = renderer == GSRendererType::VK;
 		m_debug_panel->m_is_ogl_hw = renderer == GSRendererType::OGL;
 		m_debug_panel->m_is_vk_hw = renderer == GSRendererType::VK;

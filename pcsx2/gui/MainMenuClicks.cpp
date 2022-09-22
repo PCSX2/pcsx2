@@ -1117,7 +1117,7 @@ void MainEmuFrame::ApplyFirstFrameStatus()
 		cdvd_menu->SetHelp(L"Loads the savestate that accompanies the active input recording");
 	else
 		cdvd_menu->SetHelp(L"Reboots Emulation");
-		
+
 	UpdateStatusBar();
 }
 

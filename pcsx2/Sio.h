@@ -26,8 +26,8 @@ struct _mcd
 	u32 transferAddr; // Transfer address
 
 	u8 FLAG;  // for PSX;
-	
-	u8 port; // port 
+
+	u8 port; // port
 	u8 slot; // and slot for this memcard
 
 	// Auto Eject
@@ -50,13 +50,13 @@ struct _mcd
 	}
 
 	// Read from memorycard to dest
-	void Read(u8 *dest, int size) 
+	void Read(u8 *dest, int size)
 	{
 		FileMcd_Read(port, slot, dest, transferAddr, size);
 	}
 
 	// Write to memorycard from src
-	void Write(u8 *src, int size) 
+	void Write(u8 *src, int size)
 	{
 		FileMcd_Save(port, slot, src,transferAddr, size);
 	}

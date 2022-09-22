@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* A reference client implementation for interfacing with PINE is available 
+/* A reference client implementation for interfacing with PINE is available
  * here: https://code.govanify.com/govanify/pine/ */
 
 #pragma once
@@ -84,10 +84,10 @@ protected:
 	char* m_ipc_buffer;
 
 	/**
-	 * IPC Command messages opcodes.  
-	 * A list of possible operations possible by the IPC.  
+	 * IPC Command messages opcodes.
+	 * A list of possible operations possible by the IPC.
 	 * Each one of them is what we call an "opcode" and is the first
-	 * byte sent by the IPC to differentiate between commands.  
+	 * byte sent by the IPC to differentiate between commands.
 	 */
 	enum IPCCommand : unsigned char
 	{
@@ -122,7 +122,7 @@ protected:
 	};
 
 	/**
-	 * IPC message buffer. 
+	 * IPC message buffer.
 	 * A list of all needed fields to store an IPC message.
 	 */
 	struct IPCBuffer
@@ -154,14 +154,14 @@ protected:
 	 * buf: buffer containing the IPC command.
 	 * buf_size: size of the buffer announced.
 	 * ret_buffer: buffer that will be used to send the reply.
-	 * return value: IPCBuffer containing a buffer with the result 
-	 *               of the command and its size. 
+	 * return value: IPCBuffer containing a buffer with the result
+	 *               of the command and its size.
 	 */
 	IPCBuffer ParseCommand(char* buf, char* ret_buffer, u32 buf_size);
 
 	/**
 	 * Formats an IPC buffer
-	 * ret_buffer: return buffer to use. 
+	 * ret_buffer: return buffer to use.
 	 * size: size of the IPC buffer.
 	 * return value: buffer containing the status code allocated of size
 	 */
@@ -170,17 +170,17 @@ protected:
 
 	/**
 	 * Initializes an open socket for IPC communication.
-	 * return value: -1 if a fatal failure happened, 0 otherwise. 
+	 * return value: -1 if a fatal failure happened, 0 otherwise.
 	 */
 	int StartSocket();
 
 	/**
-	 * Converts an uint to an char* in little endian 
-	 * res_array: the array to modify 
+	 * Converts an uint to an char* in little endian
+	 * res_array: the array to modify
 	 * res: the value to convert
-	 * i: when to insert it into the array 
-	 * return value: res_array 
-	 * NB: implicitely inlined 
+	 * i: when to insert it into the array
+	 * return value: res_array
+	 * NB: implicitely inlined
 	 */
 	template <typename T>
 	static char* ToArray(char* res_array, T res, int i)
@@ -190,11 +190,11 @@ protected:
 	}
 
 	/**
-	 * Converts a char* to an uint in little endian 
+	 * Converts a char* to an uint in little endian
 	 * arr: the array to convert
-	 * i: when to load it from the array 
-	 * return value: the converted value 
-	 * NB: implicitely inlined 
+	 * i: when to load it from the array
+	 * return value: the converted value
+	 * NB: implicitely inlined
 	 */
 	template <typename T>
 	static T FromArray(char* arr, int i)

@@ -112,7 +112,7 @@ IsoDirectory::IsoDirectory(SectorSource& r)
 }
 
 // Used to load a specific directory from a file descriptor
-IsoDirectory::IsoDirectory(SectorSource& r, IsoFileDescriptor directoryEntry)
+IsoDirectory::IsoDirectory(SectorSource& r, const IsoFileDescriptor& directoryEntry)
 	: internalReader(r)
 {
 	m_fstype = FStype_ISO9660;
@@ -222,10 +222,10 @@ u32 IsoDirectory::GetFileSize(const std::string_view& filePath) const
 }
 
 IsoFileDescriptor::IsoFileDescriptor()
+	: lba(0)
+	, size(0)
+	, flags(0)
 {
-	lba = 0;
-	size = 0;
-	flags = 0;
 	memset(&date, 0, sizeof(date));
 }
 
