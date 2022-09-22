@@ -502,7 +502,7 @@ void SaveStateBase::InputRecordingFreeze()
 
 InputRecording g_InputRecording;
 
-bool InputRecording::create(const std::string_view& fileName, const bool fromSaveState, const std::string_view& authorName)
+bool InputRecording::create(const std::string& fileName, const bool fromSaveState, const std::string& authorName)
 {
 	if (!m_file.OpenNew(fileName, fromSaveState))
 	{
@@ -542,7 +542,7 @@ bool InputRecording::create(const std::string_view& fileName, const bool fromSav
 	return true;
 }
 
-bool InputRecording::play(const std::string_view& filename)
+bool InputRecording::play(const std::string& filename)
 {
 	if (!m_file.OpenExisting(filename))
 	{

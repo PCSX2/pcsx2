@@ -245,35 +245,28 @@ bool InputRecordingFile::verifyRecordingFileHeader()
 #include <vector>
 #include <array>
 
-void InputRecordingFileHeader::Init()
+void InputRecordingFileHeader::Init() noexcept
 {
-	memset(m_author, 0, std::size(m_author));
-	memset(m_gameName, 0, std::size(m_gameName));
+	m_fileVersion = 1;
 }
 
 void InputRecordingFileHeader::SetEmulatorVersion()
 {
-	std::string emuVersion = fmt::format("PCSX2-{}.{}.{}", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo);
-	int max = std::size(m_emulatorVersion) - 1;
-	strncpy(m_emulatorVersion, emuVersion.c_str(), max);
-	m_emulatorVersion[max] = 0;
+	static const std::string emuVersion = fmt::format("PCSX2-{}.{}.{}", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo);
+	strncpy(m_emulatorVersion, emuVersion.c_str(), sizeof(m_emulatorVersion) - 1);
 }
 
-void InputRecordingFileHeader::SetAuthor(const std::string_view& _author)
+void InputRecordingFileHeader::SetAuthor(const std::string& _author)
 {
-	int max = std::size(m_author) - 1;
-	strncpy(m_author, _author.data(), max);
-	m_author[max] = 0;
+	strncpy(m_author, _author.data(), sizeof(m_author) - 1);
 }
 
-void InputRecordingFileHeader::SetGameName(const std::string_view& _gameName)
+void InputRecordingFileHeader::SetGameName(const std::string& _gameName)
 {
-	int max = std::size(m_gameName) - 1;
-	strncpy(m_gameName, _gameName.data(), max);
-	m_gameName[max] = 0;
+	strncpy(m_gameName, _gameName.data(), sizeof(m_gameName) - 1);
 }
 
-bool InputRecordingFile::Close()
+bool InputRecordingFile::Close() noexcept
 {
 	if (m_recordingFile == nullptr)
 	{
@@ -281,31 +274,31 @@ bool InputRecordingFile::Close()
 	}
 	fclose(m_recordingFile);
 	m_recordingFile = nullptr;
-	m_filename = "";
+	m_filename.clear();
 	return true;
 }
 
-const std::string& InputRecordingFile::getFilename() const
+const std::string& InputRecordingFile::getFilename() const noexcept
 {
 	return m_filename;
 }
 
-InputRecordingFileHeader& InputRecordingFile::getHeader()
+InputRecordingFileHeader& InputRecordingFile::getHeader() noexcept
 {
 	return m_header;
 }
 
-const long& InputRecordingFile::getTotalFrames() const
+long InputRecordingFile::getTotalFrames() const noexcept
 {
 	return m_totalFrames;
 }
 
-const unsigned long& InputRecordingFile::getUndoCount() const
+unsigned long InputRecordingFile::getUndoCount() const noexcept
 {
 	return m_undoCount;
 }
 
-bool InputRecordingFile::FromSaveState()
+bool InputRecordingFile::FromSaveState() const noexcept
 {
 	return m_savestate.fromSavestate;
 }
@@ -349,7 +342,7 @@ bool InputRecordingFile::open(const std::string_view& path, bool newRecording)
 	return false;
 }
 
-bool InputRecordingFile::OpenNew(const std::string_view& path, bool fromSavestate)
+bool InputRecordingFile::OpenNew(const std::string& path, bool fromSavestate)
 {
 	if (!open(path, true))
 		return false;
@@ -357,19 +350,19 @@ bool InputRecordingFile::OpenNew(const std::string_view& path, bool fromSavestat
 	return true;
 }
 
-bool InputRecordingFile::OpenExisting(const std::string_view& path)
+bool InputRecordingFile::OpenExisting(const std::string& path)
 {
 	return open(path, false);
 }
 
-bool InputRecordingFile::ReadKeyBuffer(u8& result, const uint& frame, const uint port, const uint bufIndex)
+bool InputRecordingFile::ReadKeyBuffer(u8& result, const uint frame, const uint port, const uint bufIndex)
 {
 	if (m_recordingFile == nullptr)
 	{
 		return false;
 	}
 
-	long seek = getRecordingBlockSeekPoint(frame) + s_controllerInputBytes * port + bufIndex;
+	const size_t seek = getRecordingBlockSeekPoint(frame) + s_controllerInputBytes * port + bufIndex;
 	if (fseek(m_recordingFile, seek, SEEK_SET) != 0 || fread(&result, 1, 1, m_recordingFile) != 1)
 	{
 		return false;
@@ -389,30 +382,34 @@ void InputRecordingFile::SetTotalFrames(long frame)
 	fwrite(&m_totalFrames, 4, 1, m_recordingFile);
 }
 
-bool InputRecordingFile::WriteHeader()
+bool InputRecordingFile::WriteHeader() const
 {
 	if (m_recordingFile == nullptr)
 	{
 		return false;
 	}
 	rewind(m_recordingFile);
-	if (fwrite(&m_header, sizeof(InputRecordingFileHeader), 1, m_recordingFile) != 1 || fwrite(&m_totalFrames, 4, 1, m_recordingFile) != 1 || fwrite(&m_undoCount, 4, 1, m_recordingFile) != 1 || fwrite(&m_savestate, 1, 1, m_recordingFile) != 1)
+	if (fwrite(&m_header, sizeof(InputRecordingFileHeader), 1, m_recordingFile) != 1 ||
+		fwrite(&m_totalFrames, 4, 1, m_recordingFile) != 1 ||
+		fwrite(&m_undoCount, 4, 1, m_recordingFile) != 1 ||
+		fwrite(&m_savestate, 1, 1, m_recordingFile) != 1)
 	{
 		return false;
 	}
 	return true;
 }
 
-bool InputRecordingFile::WriteKeyBuffer(const uint& frame, const uint port, const uint bufIndex, const u8& buf)
+bool InputRecordingFile::WriteKeyBuffer(const uint frame, const uint port, const uint bufIndex, const u8 buf) const
 {
 	if (m_recordingFile == nullptr)
 	{
 		return false;
 	}
 
-	long seek = getRecordingBlockSeekPoint(frame) + 18 * port + bufIndex;
-
-	if (fseek(m_recordingFile, seek, SEEK_SET) != 0 || fwrite(&buf, 1, 1, m_recordingFile) != 1)
+	const size_t seek = getRecordingBlockSeekPoint(frame) + s_controllerInputBytes * port + bufIndex;
+	
+	if (fseek(m_recordingFile, seek, SEEK_SET) != 0 ||
+		fwrite(&buf, 1, 1, m_recordingFile) != 1)
 	{
 		return false;
 	}
@@ -424,9 +421,9 @@ bool InputRecordingFile::WriteKeyBuffer(const uint& frame, const uint port, cons
 void InputRecordingFile::logRecordingMetadata()
 {
 	InputRec::consoleMultiLog({fmt::format("File: {}", getFilename()),
-		fmt::format("PCSX2 Version Used: {}", std::string(getHeader().m_emulatorVersion)),
+		fmt::format("PCSX2 Version Used: {}", getHeader().m_emulatorVersion),
 		fmt::format("Recording File Version: {}", getHeader().m_fileVersion),
-		fmt::format("Associated Game Name or ISO Filename: {}", std::string(getHeader().m_gameName)),
+		fmt::format("Associated Game Name or ISO Filename: {}", getHeader().m_gameName),
 		fmt::format("Author: {}", getHeader().m_author),
 		fmt::format("Total Frames: {}", getTotalFrames()),
 		fmt::format("Undo Count: {}", getUndoCount())});
@@ -464,7 +461,7 @@ std::vector<PadData> InputRecordingFile::bulkReadPadData(long frameStart, long f
 	return data;
 }
 
-long InputRecordingFile::getRecordingBlockSeekPoint(const long& frame)
+size_t InputRecordingFile::getRecordingBlockSeekPoint(const long frame) const noexcept
 {
 	return s_headerSize + sizeof(bool) + frame * s_inputBytesPerFrame;
 }
@@ -475,9 +472,12 @@ bool InputRecordingFile::verifyRecordingFileHeader()
 	{
 		return false;
 	}
-	// Verify m_header contents
+	// Verify header contents
 	rewind(m_recordingFile);
-	if (fread(&m_header, sizeof(InputRecordingFileHeader), 1, m_recordingFile) != 1 || fread(&m_totalFrames, 4, 1, m_recordingFile) != 1 || fread(&m_undoCount, 4, 1, m_recordingFile) != 1 || fread(&m_savestate.fromSavestate, sizeof(bool), 1, m_recordingFile) != 1)
+	if (fread(&m_header, sizeof(InputRecordingFileHeader), 1, m_recordingFile) != 1 ||
+		fread(&m_totalFrames, 4, 1, m_recordingFile) != 1 ||
+		fread(&m_undoCount, 4, 1, m_recordingFile) != 1 ||
+		fread(&m_savestate.fromSavestate, sizeof(bool), 1, m_recordingFile) != 1)
 	{
 		return false;
 	}
@@ -485,7 +485,7 @@ bool InputRecordingFile::verifyRecordingFileHeader()
 	// Check for current verison
 	if (m_header.m_fileVersion != 1)
 	{
-		InputRec::consoleLog(fmt::format("Input recording file is not a supported m_fileVersion - {}", m_header.m_fileVersion));
+		InputRec::consoleLog(fmt::format("Input recording file is not a supported version - {}", m_header.m_fileVersion));
 		return false;
 	}
 	return true;

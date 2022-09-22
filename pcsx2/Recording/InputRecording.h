@@ -162,8 +162,8 @@ public:
 		FROM_SAVESTATE
 	};
 	
-	bool create(const std::string_view& filename, const bool fromSaveState, const std::string_view& authorName);
-	bool play(const std::string_view& path);
+	bool create(const std::string& filename, const bool fromSaveState, const std::string& authorName);
+	bool play(const std::string& path);
 	void stop();
 
 	void controllerInterrupt(u8& data, u8& port, u16& BufCount, u8 buf[]);
