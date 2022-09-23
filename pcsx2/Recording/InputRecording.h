@@ -178,6 +178,7 @@ public:
 	void ControllerInterrupt(u8 port, size_t fifoSize, u8 dataIn, u8 dataOut);
     
 	void handleExceededFrameCounter();
+	void handleReset();
 	void handleLoadingSavestate();
 	bool isTypeSavestate() const;
 	void adjustFrameCounterOnReRecord(u32 newFrameCounter);
@@ -196,7 +197,7 @@ private:
 
 	Type m_type;
 
-	bool m_initial_savestate_load_complete = false;
+	bool m_initial_load_complete = false;
 	bool m_is_active = false;
 	bool m_pad_data_available = false;
 	bool m_watching_for_rerecords = false;
