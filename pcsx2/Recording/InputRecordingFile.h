@@ -167,7 +167,7 @@ public:
 	// the current frame's value from the emulator
 	bool ReadKeyBuffer(u8& result, const uint frame, const uint port, const uint bufIndex);
 	// Updates the total frame counter and commit it to the recording file
-	void SetTotalFrames(long frames);
+	void SetTotalFrames(u32 frames);
 	// Persist the input recording file header's current state to the file
 	bool WriteHeader() const;
 	// Writes the current frame's input data to the file so it can be replayed
@@ -181,7 +181,7 @@ public:
 	unsigned long getUndoCount() const noexcept;
 
 	void logRecordingMetadata();
-	std::vector<PadData> bulkReadPadData(long frameStart, long frameEnd, const uint port);
+	std::vector<PadData> bulkReadPadData(u32 frameStart, u32 frameEnd, const uint port);
 
 private:
 	static constexpr size_t s_controllerPortsSupported = 2;
@@ -206,7 +206,7 @@ private:
 	unsigned long m_undoCount = 0;
 
 	// Calculates the position of the current frame in the input recording
-	size_t getRecordingBlockSeekPoint(const long frame) const noexcept;
+	size_t getRecordingBlockSeekPoint(const u32 frame) const noexcept;
 	bool verifyRecordingFileHeader();
 };
 
