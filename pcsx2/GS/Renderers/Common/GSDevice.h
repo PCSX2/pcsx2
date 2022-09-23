@@ -647,8 +647,8 @@ struct alignas(16) GSHWDrawConfig
 	GSTexture* ds;        ///< Depth stencil
 	GSTexture* tex;       ///< Source texture
 	GSTexture* pal;       ///< Palette texture
-	GSVertex* verts;      ///< Vertices to draw
-	u32* indices;         ///< Indices to draw
+	const GSVertex* verts;///< Vertices to draw
+	const u32* indices;   ///< Indices to draw
 	u32 nverts;           ///< Number of vertices
 	u32 nindices;         ///< Number of indices
 	u32 indices_per_prim; ///< Number of indices that make up one primitive
