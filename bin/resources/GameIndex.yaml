@@ -14037,6 +14037,8 @@ SLES-52482:
   name: "Steel Dragon EX"
   region: "PAL-M4"
   compat: 5
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Fixes hashcache exploding.
 SLES-52483:
   name: "World Championship Pool 2004"
   region: "PAL-UM3"
@@ -24600,6 +24602,8 @@ SLPM-62395:
   name: "Simple 2000 Series Vol. 37 - The Shooting - Double Shienryu"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Fixes hashcache from exploding.
 SLPM-62396:
   name: "Simple 2000 Honkaku Shikou Series Vol. 6 - The Card"
   region: "NTSC-J"
