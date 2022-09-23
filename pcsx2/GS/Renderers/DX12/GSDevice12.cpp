@@ -2180,7 +2180,7 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 		return true;
 
 	u32 flags = m_dirty_flags;
-	m_dirty_flags &= ~DIRTY_TFX_STATE | DIRTY_CONSTANT_BUFFER_STATE;
+	m_dirty_flags &= ~(DIRTY_TFX_STATE | DIRTY_CONSTANT_BUFFER_STATE);
 
 	// do cbuffer first, because it's the most likely to cause an exec
 	if (flags & DIRTY_FLAG_VS_CONSTANT_BUFFER)
