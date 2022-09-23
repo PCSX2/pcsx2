@@ -365,7 +365,7 @@ bool InputRecordingFile::ReadKeyBuffer(u8& result, const uint frame, const uint 
 	return true;
 }
 
-void InputRecordingFile::SetTotalFrames(long frame)
+void InputRecordingFile::SetTotalFrames(u32 frame)
 {
 	if (m_recordingFile == nullptr || m_totalFrames >= frame)
 	{
@@ -423,39 +423,45 @@ void InputRecordingFile::logRecordingMetadata()
 		fmt::format("Undo Count: {}", getUndoCount())});
 }
 
-std::vector<PadData> InputRecordingFile::bulkReadPadData(long frameStart, long frameEnd, const uint port)
+std::vector<PadData> InputRecordingFile::bulkReadPadData(u32 frameStart, u32 frameEnd, const uint port)
 {
-	std::vector<PadData> data = {};
+	std::vector<PadData> data;
 
-	if (m_recordingFile == nullptr)
+	if (m_recordingFile == nullptr || frameEnd < frameStart)
 	{
 		return data;
 	}
 
-	frameStart = frameStart < 0 ? 0 : frameStart;
+	const size_t size = static_cast<size_t>(frameEnd - frameStart);
+	data.reserve(size);
 
 	std::array<u8, s_controllerInputBytes> padBytes;
 
-	// TODO - there are probably issues here if the file is too small / the frame counters are invalid!
-	for (int frame = frameStart; frame < frameEnd; frame++)
+	const size_t seek = getRecordingBlockSeekPoint(frameStart) + s_controllerInputBytes * port;
+	const size_t skip = s_controllerInputBytes * (s_controllerPortsSupported - port - 1);
+	fseek(m_recordingFile, seek, SEEK_SET);
+	
+	for (int frame = 0; frame < size; frame++)
 	{
-		const long seek = getRecordingBlockSeekPoint(frame) + s_controllerInputBytes * port;
-		fseek(m_recordingFile, seek, SEEK_SET);
-		if (fread(&padBytes, 1, padBytes.size(), m_recordingFile))
+		if (fread(&padBytes, 1, s_controllerInputBytes, m_recordingFile) != s_controllerInputBytes)
 		{
-			PadData frameData;
-			for (int i = 0; i < padBytes.size(); i++)
-			{
-				frameData.UpdateControllerData(i, padBytes.at(i));
-			}
-			data.push_back(frameData);
+			data.shrink_to_fit();
+			break;
 		}
+
+		PadData frameData;
+		for (int i = 0; i < padBytes.size(); i++)
+		{
+			frameData.UpdateControllerData(i, padBytes.at(i));
+		}
+		data.push_back(std::move(frameData));
+		fseek(m_recordingFile, skip, SEEK_CUR);
 	}
 
 	return data;
 }
 
-size_t InputRecordingFile::getRecordingBlockSeekPoint(const long frame) const noexcept
+size_t InputRecordingFile::getRecordingBlockSeekPoint(const u32 frame) const noexcept
 {
 	return s_headerSize + sizeof(bool) + frame * s_inputBytesPerFrame;
 }
