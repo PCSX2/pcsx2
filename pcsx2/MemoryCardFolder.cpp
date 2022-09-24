@@ -488,7 +488,7 @@ bool FolderMemoryCard::AddFolder(MemoryCardFileEntry* const dirEntry, const std:
 			if (file.m_isFile)
 			{
 				// don't load files in the root dir if we're filtering; no official software stores files there
-				if ((enableFiltering && parent == nullptr) || parent == nullptr)
+				if (parent == nullptr)
 				{
 					continue;
 				}
