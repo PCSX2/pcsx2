@@ -381,10 +381,6 @@ struct Pcsx2Config
 			fpuFullMode : 1;
 
 		bool
-			StackFrameChecks : 1,
-			PreBlockCheckEE : 1,
-			PreBlockCheckIOP : 1;
-		bool
 			EnableEECache : 1;
 		BITFIELD_END
 

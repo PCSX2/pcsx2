@@ -220,10 +220,6 @@ void Pcsx2Config::RecompilerOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(fpuOverflow);
 	SettingsWrapBitBool(fpuExtraOverflow);
 	SettingsWrapBitBool(fpuFullMode);
-
-	SettingsWrapBitBool(StackFrameChecks);
-	SettingsWrapBitBool(PreBlockCheckEE);
-	SettingsWrapBitBool(PreBlockCheckIOP);
 }
 
 bool Pcsx2Config::CpuOptions::CpusChanged(const CpuOptions& right) const
