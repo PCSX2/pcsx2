@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src\Mnemonic.c" />
+    <ClCompile Include="src\Register.c" />
+    <ClCompile Include="src\SharedData.c" />
+    <ClCompile Include="src\String.c" />
+    <ClCompile Include="src\Utils.c" />
+    <ClCompile Include="src\Zydis.c" />
+    <ClCompile Include="src\Decoder.c" />
+    <ClCompile Include="src\DecoderData.c" />
+    <ClCompile Include="src\Formatter.c" />
+    <ClCompile Include="src\FormatterATT.c" />
+    <ClCompile Include="src\FormatterBase.c" />
+    <ClCompile Include="src\FormatterBuffer.c" />
+    <ClCompile Include="src\FormatterIntel.c" />
+    <ClCompile Include="src\MetaInfo.c" />
+    <ClCompile Include="dependencies\zycore\src\API\Synchronization.c" />
+    <ClCompile Include="dependencies\zycore\src\API\Terminal.c" />
+    <ClCompile Include="dependencies\zycore\src\API\Thread.c" />
+    <ClCompile Include="dependencies\zycore\src\API\Memory.c" />
+    <ClCompile Include="dependencies\zycore\src\API\Process.c" />
+    <ClCompile Include="dependencies\zycore\src\Allocator.c" />
+    <ClCompile Include="dependencies\zycore\src\ArgParse.c" />
+    <ClCompile Include="dependencies\zycore\src\Bitset.c" />
+    <ClCompile Include="dependencies\zycore\src\Format.c" />
+    <ClCompile Include="dependencies\zycore\src\List.c" />
+    <ClCompile Include="dependencies\zycore\src\String.c" />
+    <ClCompile Include="dependencies\zycore\src\Vector.c" />
+    <ClCompile Include="dependencies\zycore\src\Zycore.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\Generated\EnumISAExt.inc" />
+    <None Include="src\Generated\EnumISASet.inc" />
+    <None Include="src\Generated\EnumMnemonic.inc" />
+    <None Include="src\Generated\EnumRegister.inc" />
+    <None Include="src\Generated\FormatterStrings.inc" />
+    <None Include="src\Generated\InstructionDefinitions.inc" />
+    <None Include="src\Generated\InstructionEncodings.inc" />
+    <None Include="src\Generated\OperandDefinitions.inc" />
+    <None Include="src\Generated\AccessedFlags.inc" />
+    <None Include="src\Generated\DecoderTables.inc" />
+    <None Include="src\Generated\EnumInstructionCategory.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Zydis\Mnemonic.h" />
+    <ClInclude Include="include\Zydis\Register.h" />
+    <ClInclude Include="include\Zydis\SharedTypes.h" />
+    <ClInclude Include="include\Zydis\ShortString.h" />
+    <ClInclude Include="include\Zydis\Status.h" />
+    <ClInclude Include="include\Zydis\Utils.h" />
+    <ClInclude Include="include\Zydis\Zydis.h" />
+    <ClInclude Include="include\Zydis\Decoder.h" />
+    <ClInclude Include="include\Zydis\DecoderTypes.h" />
+    <ClInclude Include="include\Zydis\Formatter.h" />
+    <ClInclude Include="include\Zydis\FormatterBuffer.h" />
+    <ClInclude Include="include\Zydis\MetaInfo.h" />
+    <ClInclude Include="include\Zydis\Internal\FormatterIntel.h" />
+    <ClInclude Include="include\Zydis\Internal\SharedData.h" />
+    <ClInclude Include="include\Zydis\Internal\String.h" />
+    <ClInclude Include="include\Zydis\Internal\DecoderData.h" />
+    <ClInclude Include="include\Zydis\Internal\FormatterATT.h" />
+    <ClInclude Include="include\Zydis\Internal\FormatterBase.h" />
+    <ClInclude Include="include\Zydis\Generated\EnumISASet.h" />
+    <ClInclude Include="include\Zydis\Generated\EnumMnemonic.h" />
+    <ClInclude Include="include\Zydis\Generated\EnumRegister.h" />
+    <ClInclude Include="include\Zydis\Generated\EnumInstructionCategory.h" />
+    <ClInclude Include="include\Zydis\Generated\EnumISAExt.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Allocator.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\ArgParse.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Atomic.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Bitset.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Comparison.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Defines.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Format.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\LibC.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\List.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Object.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Status.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\String.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Types.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Vector.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Zycore.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Internal\AtomicMSVC.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Internal\AtomicGNU.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\API\Synchronization.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\API\Terminal.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\API\Thread.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\API\Memory.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\API\Process.h" />
+  </ItemGroup>
+</Project>
