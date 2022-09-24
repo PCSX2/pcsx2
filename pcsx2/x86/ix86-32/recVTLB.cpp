@@ -23,6 +23,8 @@
 #include "iR5900.h"
 #include "common/Perf.h"
 
+//#define LOG_STORES
+
 using namespace vtlb_private;
 using namespace x86Emitter;
 
@@ -75,6 +77,34 @@ using namespace x86Emitter;
 	........
 
 */
+
+#ifdef LOG_STORES
+static std::FILE* logfile;
+static bool CheckLogFile()
+{
+	if (!logfile)
+		logfile = std::fopen("C:\\Dumps\\comp\\memlog.bad.txt", "wb");
+	return (logfile != nullptr);
+}
+
+static void LogWrite(u32 addr, u64 val)
+{
+	if (!CheckLogFile())
+		return;
+
+	std::fprintf(logfile, "%08X @ %u: %llx\n", addr, cpuRegs.cycle, val);
+	std::fflush(logfile);
+}
+
+static void __vectorcall LogWriteQuad(u32 addr, __m128i val)
+{
+	if (!CheckLogFile())
+		return;
+
+	std::fprintf(logfile, "%08X @ %u: %llx %llx\n", addr, cpuRegs.cycle, val.m128i_u64[0], val.m128i_u64[1]);
+	std::fflush(logfile);
+}
+#endif
 
 namespace vtlb_private
 {
@@ -471,6 +501,38 @@ void vtlb_DynGenReadNonQuad_Const(u32 bits, bool sign, u32 addr_const)
 
 void vtlb_DynGenWrite(u32 sz)
 {
+#ifdef LOG_STORES
+	//if (sz != 128)
+	{
+		iFlushCall(FLUSH_FULLVTLB);
+
+		xPUSH(arg1reg);
+		xPUSH(arg2reg);
+		if (sz == 128)
+		{
+			xSUB(rsp, 32 + 32);
+			xMOVAPS(ptr[rsp + 32], xRegisterSSE::GetArgRegister(1, 0));
+			xFastCall((void*)LogWriteQuad);
+			xMOVAPS(xRegisterSSE::GetArgRegister(1, 0), ptr[rsp + 32]);
+			xADD(rsp, 32 + 32);
+		}
+		else
+		{
+			if (sz == 8)
+				xAND(arg2regd, 0xFF);
+			else if (sz == 16)
+				xAND(arg2regd, 0xFFFF);
+			else if (sz == 32)
+				xAND(arg2regd, -1);
+			xSUB(rsp, 32);
+			xFastCall((void*)LogWrite);
+			xADD(rsp, 32);
+		}
+		xPOP(arg2reg);
+		xPOP(arg1reg);
+	}
+#endif
+
 	u32* writeback = DynGen_PrepRegs();
 
 	DynGen_IndirectDispatch(1, sz);
@@ -487,6 +549,39 @@ void vtlb_DynGenWrite(u32 sz)
 void vtlb_DynGenWrite_Const(u32 bits, u32 addr_const)
 {
 	EE::Profiler.EmitConstMem(addr_const);
+
+#ifdef LOG_STORES
+	iFlushCall(FLUSH_FULLVTLB);
+
+	//if (bits != 128)
+	{
+		xPUSH(arg1reg);
+		xPUSH(arg2reg);
+		xMOV(arg1reg, addr_const);
+		if (bits == 128)
+		{
+			xSUB(rsp, 32 + 32);
+			xMOVAPS(ptr[rsp + 32], xRegisterSSE::GetArgRegister(1, 0));
+			xFastCall((void*)LogWriteQuad);
+			xMOVAPS(xRegisterSSE::GetArgRegister(1, 0), ptr[rsp + 32]);
+			xADD(rsp, 32 + 32);
+		}
+		else
+		{
+			if (bits == 8)
+				xAND(arg2regd, 0xFF);
+			else if (bits == 16)
+				xAND(arg2regd, 0xFFFF);
+			else if (bits == 32)
+				xAND(arg2regd, -1);
+			xSUB(rsp, 32);
+			xFastCall((void*)LogWrite);
+			xADD(rsp, 32);
+		}
+		xPOP(arg2reg);
+		xPOP(arg1reg);
+	}
+#endif
 
 	auto vmv = vtlbdata.vmap[addr_const >> VTLB_PAGE_BITS];
 	if (!vmv.isHandler(addr_const))

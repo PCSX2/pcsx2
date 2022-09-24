@@ -125,6 +125,9 @@
     <ProjectReference Include="..\3rdparty\lzma\lzma.vcxproj">
       <Project>{a4323327-3f2b-4271-83d9-7f9a3c66b6b2}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\3rdparty\zydis\zydis.vcxproj">
+      <Project>{67d0160c-0fe4-44b9-ac2e-82bbcf4104df}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest" />

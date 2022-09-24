@@ -52,6 +52,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rapidyaml\rapidyaml\ext\c4core\src\c4\ext\fast_float\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rcheevos\rcheevos\include;$(SolutionDir)3rdparty\rainterface</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\discord-rpc\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\zydis\include;$(SolutionDir)3rdparty\zydis\dependencies\zycore\include</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
@@ -65,6 +66,7 @@
       <PreprocessorDefinitions Condition="'$(CI)'=='true'">PCSX2_CI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="!$(Configuration.Contains(AVX2))">_M_SSE=0x401;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(AVX2))">_M_SSE=0x501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">ZYCORE_STATIC_DEFINE;ZYDIS_STATIC_DEFINE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet Condition="!$(Configuration.Contains(AVX2))">NotSet</EnableEnhancedInstructionSet>
       <EnableEnhancedInstructionSet Condition="$(Configuration.Contains(AVX2))">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <MinimalRebuild>false</MinimalRebuild>

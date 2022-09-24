@@ -50,6 +50,19 @@
 // Only for MOVQ workaround.
 #include "common/emitter/internal.h"
 
+//#define DUMP_BLOCKS 1
+//#define TRACE_BLOCKS 1
+
+#ifdef DUMP_BLOCKS
+#include "Zydis/Zydis.h"
+#include "Zycore/Format.h"
+#include "Zycore/Status.h"
+#endif
+
+#ifdef TRACE_BLOCKS
+#include <zlib.h>
+#endif
+
 using namespace x86Emitter;
 using namespace R5900;
 
@@ -127,6 +140,124 @@ static void iBranchTest(u32 newpc = 0xffffffff);
 static void ClearRecLUT(BASEBLOCK* base, int count);
 static u32 scaleblockcycles();
 static void recExitExecution();
+
+#ifdef TRACE_BLOCKS
+static void pauseAAA()
+{
+	fprintf(stderr, "\nPaused\n");
+	fflush(stdout);
+	fflush(stderr);
+#ifdef _MSC_VER
+	__debugbreak();
+#else
+	sleep(1);
+#endif
+}
+#endif
+
+#ifdef DUMP_BLOCKS
+static ZydisFormatterFunc s_old_print_address;
+
+static ZyanStatus ZydisFormatterPrintAddressAbsolute(const ZydisFormatter* formatter,
+	ZydisFormatterBuffer* buffer, ZydisFormatterContext* context)
+{
+	ZyanU64 address;
+	ZYAN_CHECK(ZydisCalcAbsoluteAddress(context->instruction, context->operand,
+		context->runtime_address, &address));
+
+	char buf[128];
+	u32 len = 0;
+
+#define A(x) ((u64)(x))
+
+	if (address >= A(eeMem->Main) && address < A(eeMem->Scratch))
+	{
+		len = snprintf(buf, sizeof(buf), "eeMem+0x%08X", static_cast<u32>(address - A(eeMem->Main)));
+	}
+	else if (address >= A(eeMem->Scratch) && address < A(eeMem->ROM))
+	{
+		len = snprintf(buf, sizeof(buf), "eeScratchpad+0x%08X", static_cast<u32>(address - A(eeMem->Scratch)));
+	}
+	else if (address >= A(&cpuRegs.GPR) && address < A(&cpuRegs.HI))
+	{
+		const u32 offset = static_cast<u32>(address - A(&cpuRegs)) % 16u;
+		if (offset != 0)
+			len = snprintf(buf, sizeof(buf), "cpuRegs.GPR.%s+%u", GPR_REG[static_cast<u32>(address - A(&cpuRegs)) / 16u], offset);
+		else
+			len = snprintf(buf, sizeof(buf), "cpuRegs.GPR.%s", GPR_REG[static_cast<u32>(address - A(&cpuRegs)) / 16u]);
+	}
+	else if (address >= A(&cpuRegs.HI) && address < A(&cpuRegs.CP0))
+	{
+		const u32 offset = static_cast<u32>(address - A(&cpuRegs.HI)) % 16u;
+		if (offset != 0)
+			len = snprintf(buf, sizeof(buf), "cpuRegs.%s+%u", (address >= A(&cpuRegs.LO) ? "LO" : "HI"), offset);
+		else
+			len = snprintf(buf, sizeof(buf), "cpuRegs.%s", (address >= A(&cpuRegs.LO) ? "LO" : "HI"));
+	}
+	else if (address == A(&cpuRegs.pc))
+	{
+		len = snprintf(buf, sizeof(buf), "cpuRegs.pc");
+	}
+	else if (address == A(&cpuRegs.cycle))
+	{
+		len = snprintf(buf, sizeof(buf), "cpuRegs.cycle");
+	}
+	else if (address == A(&g_nextEventCycle))
+	{
+		len = snprintf(buf, sizeof(buf), "g_nextEventCycle");
+	}
+	else if (address >= A(fpuRegs.fpr) && address < A(fpuRegs.fprc))
+	{
+		len = snprintf(buf, sizeof(buf), "fpuRegs.f%02u", static_cast<u32>(address - A(fpuRegs.fpr)) / 4u);
+	}
+	else if (address >= A(&VU0.VF[0]) && address < A(&VU0.VI[0]))
+	{
+		const u32 offset = static_cast<u32>(address - A(&VU0.VF[0])) % 16u;
+		if (offset != 0)
+			len = snprintf(buf, sizeof(buf), "VU0.VF[%02u]+%u", static_cast<u32>(address - A(&VU0.VF[0])) / 16u, offset);
+		else
+			len = snprintf(buf, sizeof(buf), "VU0.VF[%02u]", static_cast<u32>(address - A(&VU0.VF[0])) / 16u);
+	}
+	else if (address >= A(&VU0.VI[0]) && address < A(&VU0.ACC))
+	{
+		const u32 offset = static_cast<u32>(address - A(&VU0.VI[0])) % 16u;
+		const u32 vi = static_cast<u32>(address - A(&VU0.VI[0])) / 16u;
+		if (offset != 0)
+			len = snprintf(buf, sizeof(buf), "VU0.%s+%u", COP2_REG_CTL[vi], offset);
+		else
+			len = snprintf(buf, sizeof(buf), "VU0.%s", COP2_REG_CTL[vi]);
+	}
+	else if (address >= A(&VU0.ACC) && address < A(&VU0.q))
+	{
+		const u32 offset = static_cast<u32>(address - A(&VU0.ACC));
+		if (offset != 0)
+			len = snprintf(buf, sizeof(buf), "VU0.ACC+%u", offset);
+		else
+			len = snprintf(buf, sizeof(buf), "VU0.ACC");
+	}
+	else if (address >= A(&VU0.q) && address < A(&VU0.idx))
+	{
+		const u32 offset = static_cast<u32>(address - A(&VU0.q)) % 16u;
+		const char* reg = (address >= A(&VU0.p)) ? "p" : "q";
+		if (offset != 0)
+			len = snprintf(buf, sizeof(buf), "VU0.%s+%u", reg, offset);
+		else
+			len = snprintf(buf, sizeof(buf), "VU0.%s", reg);
+	}
+
+#undef A
+
+	if (len > 0)
+	{
+		ZYAN_CHECK(ZydisFormatterBufferAppend(buffer, ZYDIS_TOKEN_SYMBOL));
+		ZyanString* string;
+		ZYAN_CHECK(ZydisFormatterBufferGetString(buffer, &string));
+		return ZyanStringAppendFormat(string, "<%s>", buf);
+	}
+
+	return s_old_print_address(formatter, buffer, context);
+}
+#endif
 
 void _eeFlushAllUnused()
 {
@@ -1653,6 +1784,57 @@ static void PreBlockCheck(u32 blockpc)
 
 		lastrec = blockpc;
 	}*/
+
+#ifdef TRACE_BLOCKS
+#if 0
+	static FILE* fp = nullptr;
+	static bool fp_opened = false;
+	if (!fp_opened && cpuRegs.cycle >= 0)
+	{
+		fp = std::fopen("C:\\Dumps\\comp\\reglog.txt", "wb");
+		fp_opened = true;
+	}
+	if (fp)
+	{
+		u32 hash = crc32(0, (Bytef*)&cpuRegs, offsetof(cpuRegisters, pc));
+		u32 hashf = crc32(0, (Bytef*)&fpuRegs, sizeof(fpuRegisters));
+		u32 hashi = crc32(0, (Bytef*)&VU0, offsetof(VURegs, idx));
+
+#if 1
+		std::fprintf(fp, "%08X (%u; %08X; %08X; %08X):", cpuRegs.pc, cpuRegs.cycle, hash, hashf, hashi);
+		for (int i = 0; i < 34; i++)
+		{
+			std::fprintf(fp, " %s: %08X%08X%08X%08X", R3000A::disRNameGPR[i], cpuRegs.GPR.r[i].UL[3], cpuRegs.GPR.r[i].UL[2], cpuRegs.GPR.r[i].UL[1], cpuRegs.GPR.r[i].UL[0]);
+		}
+#if 1
+		std::fprintf(fp, "\nFPR: CR: %08X ACC: %08X", fpuRegs.fprc[31], fpuRegs.ACC.UL);
+		for (int i = 0; i < 32; i++)
+			std::fprintf(fp, " %08X", fpuRegs.fpr[i].UL);
+#endif
+#if 1
+		std::fprintf(fp, "\nVF: ");
+		for (int i = 0; i < 32; i++)
+			std::fprintf(fp, " %u: %08X %08X %08X %08X", i, VU0.VF[i].UL[0], VU0.VF[i].UL[1], VU0.VF[i].UL[2], VU0.VF[i].UL[3]);
+		std::fprintf(fp, "\nVI: ");
+		for (int i = 0; i < 32; i++)
+			std::fprintf(fp, " %u: %08X", i, VU0.VI[i].UL);
+		std::fprintf(fp, "\nACC: %08X %08X %08X %08X Q: %08X P: %08X", VU0.ACC.UL[0], VU0.ACC.UL[1], VU0.ACC.UL[2], VU0.ACC.UL[3], VU0.q.UL, VU0.p.UL);
+		std::fprintf(fp, " MAC %08X %08X %08X %08X", VU0.micro_macflags[3], VU0.micro_macflags[2], VU0.micro_macflags[1], VU0.micro_macflags[0]);
+		std::fprintf(fp, " CLIP %08X %08X %08X %08X", VU0.micro_clipflags[3], VU0.micro_clipflags[2], VU0.micro_clipflags[1], VU0.micro_clipflags[0]);
+		std::fprintf(fp, " STATUS %08X %08X %08X %08X", VU0.micro_statusflags[3], VU0.micro_statusflags[2], VU0.micro_statusflags[1], VU0.micro_statusflags[0]);
+#endif
+		std::fprintf(fp, "\n");
+#else
+		std::fprintf(fp, "%08X (%u): %08X %08X %08X\n", cpuRegs.pc, cpuRegs.cycle, hash, hashf, hashi);
+#endif
+		// std::fflush(fp);
+	}
+#endif
+#if 0
+	if (cpuRegs.cycle == 0)
+		pauseAAA();
+#endif
+#endif
 }
 
 #ifdef PCSX2_DEBUG
@@ -1917,14 +2099,9 @@ static void recRecompile(const u32 startpc)
 	_initX86regs();
 	_initXMMregs();
 
-	if (EmuConfig.Cpu.Recompiler.PreBlockCheckEE)
-	{
-		// per-block dump checks, for debugging purposes.
-		// [TODO] : These must be enabled from the GUI or INI to be used, otherwise the
-		// code that calls PreBlockCheck will not be generated.
-
-		xFastCall((void*)PreBlockCheck, pc);
-	}
+#ifdef TRACE_BLOCKS
+	xFastCall((void*)PreBlockCheck, pc);
+#endif
 
 	if (EmuConfig.Gamefixes.GoemonTlbHack)
 	{
@@ -2247,6 +2424,26 @@ StartRecomp:
 		iDumpBlock(startpc, recPtr);
 #endif
 
+#ifdef DUMP_BLOCKS
+	ZydisDecoder disas_decoder;
+	ZydisDecoderInit(&disas_decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_ADDRESS_WIDTH_64);
+
+	ZydisFormatter disas_formatter;
+	ZydisFormatterInit(&disas_formatter, ZYDIS_FORMATTER_STYLE_INTEL);
+
+	s_old_print_address = (ZydisFormatterFunc)&ZydisFormatterPrintAddressAbsolute;
+	ZydisFormatterSetHook(&disas_formatter, ZYDIS_FORMATTER_FUNC_PRINT_ADDRESS_ABS, (const void**)&s_old_print_address);
+
+	ZydisDecodedInstruction disas_instruction;
+#if 0
+	const bool dump_block = (startpc == 0x00000000);
+#elif 1
+	const bool dump_block = true;
+#else
+	const bool dump_block = false;
+#endif
+#endif
+
 	// Detect and handle self-modified code
 	memory_protect_recompiled_code(startpc, (s_nEndBlock - startpc) >> 2);
 
@@ -2259,7 +2456,35 @@ StartRecomp:
 		g_pCurInstInfo = s_pInstCache;
 		while (!g_branch && pc < s_nEndBlock)
 		{
+#ifdef DUMP_BLOCKS
+			if (dump_block)
+			{
+				std::string disasm;
+				disR5900Fasm(disasm, *(u32*)PSM(pc), pc, false);
+				fprintf(stderr, "Compiling %08X %s\n", pc, disasm.c_str());
+
+				const u8* instStart = x86Ptr;
+				recompileNextInstruction(0);
+
+				const u8* instPtr = instStart;
+				ZyanUSize instLength = static_cast<ZyanUSize>(x86Ptr - instStart);
+				while (ZYAN_SUCCESS(ZydisDecoderDecodeBuffer(&disas_decoder, instPtr, instLength, &disas_instruction)))
+				{
+					char buffer[256];
+					if (ZYAN_SUCCESS(ZydisFormatterFormatInstruction(&disas_formatter, &disas_instruction, buffer, sizeof(buffer), (ZyanU64)instPtr)))
+						std::fprintf(stderr, "    %016" PRIX64 "    %s\n", (u64)instPtr, buffer);
+
+					instPtr += disas_instruction.length;
+					instLength -= disas_instruction.length;
+				}
+			}
+			else
+			{
+				recompileNextInstruction(0);
+			}
+#else
 			recompileNextInstruction(0); // For the love of recursion, batman!
+#endif
 		}
 	}
 

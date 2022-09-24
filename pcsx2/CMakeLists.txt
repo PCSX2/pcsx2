@@ -1659,6 +1659,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	chdr-static
 	libzip::zip
 	cpuinfo
+	zydis
 	ZLIB::ZLIB
 	PkgConfig::SOUNDTOUCH
 	PNG::PNG

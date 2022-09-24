@@ -51,6 +51,19 @@
 
 #include "fmt/core.h"
 
+// #define DUMP_BLOCKS 1
+// #define TRACE_BLOCKS 1
+
+#ifdef DUMP_BLOCKS
+#include "Zydis/Zydis.h"
+#include "Zycore/Format.h"
+#include "Zycore/Status.h"
+#endif
+
+#ifdef TRACE_BLOCKS
+#include <zlib.h>
+#endif
+
 using namespace x86Emitter;
 
 extern void psxBREAK();
@@ -1266,7 +1279,7 @@ void psxRecompileNextInstruction(int delayslot)
 
 static void PreBlockCheck(u32 blockpc)
 {
-#ifdef PCSX2_DEBUG
+#if 0
 	extern void iDumpPsxRegisters(u32 startpc, u32 temp);
 
 	static u32 lastrec = 0;
@@ -1288,6 +1301,37 @@ static void PreBlockCheck(u32 blockpc)
 
 		lastrec = blockpc;
 	}
+#endif
+#ifdef TRACE_BLOCKS
+#if 1
+	static FILE* fp = nullptr;
+	static bool fp_opened = false;
+	if (!fp_opened && psxRegs.cycle >= 0)
+	{
+		fp = std::fopen("C:\\Dumps\\comp\\ioplog.txt", "wb");
+		fp_opened = true;
+	}
+	if (fp)
+	{
+		u32 hash = crc32(0, (Bytef*)&psxRegs, offsetof(psxRegisters, pc));
+
+#if 1
+		std::fprintf(fp, "%08X (%u; %08X):", psxRegs.pc, psxRegs.cycle, hash);
+		for (int i = 0; i < 34; i++)
+		{
+			std::fprintf(fp, " %s: %08X", R3000A::disRNameGPR[i], psxRegs.GPR.r[i]);
+		}
+		std::fprintf(fp, "\n");
+#else
+		std::fprintf(fp, "%08X (%u): %08X\n", psxRegs.pc, psxRegs.cycle, hash);
+#endif
+		// std::fflush(fp);
+	}
+#endif
+#if 0
+	if (psxRegs.cycle == 0)
+		__debugbreak();
+#endif
 #endif
 }
 
@@ -1352,10 +1396,9 @@ static void iopRecRecompile(const u32 startpc)
 		xJNZ(iopDispatcherReg);
 	}
 
-	if (IsDebugBuild)
-	{
-		xFastCall((void*)PreBlockCheck, psxpc);
-	}
+#ifdef TRACE_BLOCKS
+	xFastCall((void*)PreBlockCheck, psxpc);
+#endif
 
 	// go until the next branch
 	i = startpc;
