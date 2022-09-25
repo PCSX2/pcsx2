@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
+#include "R5900.h"
 #include "GameDatabase.h"
 #include "Host.h"
 #include "Patch.h"
@@ -750,6 +751,12 @@ void GameDatabase::ensureLoaded()
 const GameDatabaseSchema::GameEntry* GameDatabase::findGame(const std::string_view& serial)
 {
 	GameDatabase::ensureLoaded();
+
+	if ((!g_GameStarted) && (!g_GameLoading))
+	{
+		Console.WriteLn(fmt::format("[GameDB] ELF has not been loaded yet, skipping..."));
+		return nullptr;
+	}
 
 	std::string serialLower = StringUtil::toLower(serial);
 	Console.WriteLn(fmt::format("[GameDB] Searching for '{}' in GameDB", serialLower));
