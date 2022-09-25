@@ -504,7 +504,7 @@ InputRecording g_InputRecording;
 
 bool InputRecording::create(const std::string& fileName, const bool fromSaveState, const std::string& authorName)
 {
-	if (!m_file.OpenNew(fileName, fromSaveState))
+	if (!m_file.openNew(fileName, fromSaveState))
 	{
 		return false;
 	}
@@ -533,10 +533,10 @@ bool InputRecording::create(const std::string& fileName, const bool fromSaveStat
 		VMManager::Reset();
 	}
 
-	m_file.SetEmulatorVersion();
-	m_file.SetAuthor(authorName);
-	m_file.SetGameName(resolveGameName());
-	m_file.WriteHeader();
+	m_file.setEmulatorVersion();
+	m_file.setAuthor(authorName);
+	m_file.setGameName(resolveGameName());
+	m_file.writeHeader();
 	initializeState();
 	InputRec::log("Started new input recording");
 	InputRec::consoleLog(fmt::format("Filename {}", m_file.getFilename()));
@@ -545,20 +545,20 @@ bool InputRecording::create(const std::string& fileName, const bool fromSaveStat
 
 bool InputRecording::play(const std::string& filename)
 {
-	if (!m_file.OpenExisting(filename))
+	if (!m_file.openExisting(filename))
 	{
 		return false;
 	}
 
 	// Either load the savestate, or restart the game
-	if (m_file.FromSaveState())
+	if (m_file.fromSaveState())
 	{
 		std::string savestatePath = fmt::format("{}_SaveState.p2s", m_file.getFilename());
 		if (!FileSystem::FileExists(savestatePath.c_str()))
 		{
 			InputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}", savestatePath));
 			InputRec::log("Savestate load failed");
-			m_file.Close();
+			m_file.close();
 			return false;
 		}
 		m_type = Type::FROM_SAVESTATE;
@@ -568,7 +568,7 @@ bool InputRecording::play(const std::string& filename)
 		if (!loaded)
 		{
 			InputRec::log("Savestate load failed, unsupported version?");
-			m_file.Close();
+			m_file.close();
 			m_is_active = false;
 			return false;
 		}
@@ -597,7 +597,7 @@ bool InputRecording::play(const std::string& filename)
 void InputRecording::stop()
 {
 	m_is_active = false;
-	if (m_file.Close())
+	if (m_file.close())
 	{
 		InputRec::log("Input recording stopped");
 	}
@@ -622,7 +622,7 @@ void InputRecording::ControllerInterrupt(u8 port, size_t fifoSize, u8 dataIn, u8
 		const u16 bufIndex = fifoSize - 3;
 		if (state == InputRecordingMode::Replaying)
 		{
-			if (!m_file.WriteKeyBuffer(m_frame_counter, port, bufIndex, bufVal))
+			if (!m_file.writeKeyBuffer(m_frame_counter, port, bufIndex, bufVal))
 			{
 				InputRec::consoleLog(fmt::format("Failed to write input data at frame {}", m_frame_counter));
 			}
@@ -667,12 +667,12 @@ void InputRecording::incFrameCounter()
 	}
 	if (m_controls.isRecording())
 	{
-		m_file.SetTotalFrames(m_frame_counter);
+		m_file.setTotalFrames(m_frame_counter);
 		// If we've been in record mode and moved to the next frame, we've overrote something
 		// if this was following a save-state loading, this is considered a re-record, a.k.a an undo
 		if (m_watching_for_rerecords)
 		{
-			m_file.IncrementUndoCount();
+			m_file.incrementUndoCount();
 			m_watching_for_rerecords = false;
 		}
 	}

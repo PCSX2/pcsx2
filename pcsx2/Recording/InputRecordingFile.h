@@ -132,45 +132,45 @@ class InputRecordingFile
 		char m_gameName[255]{};
 
 	public:
-		void Init() noexcept;
+		void init() noexcept;
 	} m_header;
 
 
 public:
-	void SetEmulatorVersion();
-	void SetAuthor(const std::string& author);
-	void SetGameName(const std::string& cdrom);
+	void setEmulatorVersion();
+	void setAuthor(const std::string& author);
+	void setGameName(const std::string& cdrom);
 	const char* getEmulatorVersion() const noexcept;
 	const char* getAuthor() const noexcept;
 	const char* getGameName() const noexcept;
 
-	~InputRecordingFile() { Close(); }
+	~InputRecordingFile() { close(); }
 
 	// Closes the underlying input recording file, writing the header and
 	// prepares for a possible new recording to be started
-	bool Close() noexcept;
+	bool close() noexcept;
 	
 	// The number of times a save-state has been loaded while recording this movie
 	// this is also often referred to as a "re-record"
 	
 	// Whether or not this input recording starts by loading a save-state or by booting the game fresh
-	bool FromSaveState() const noexcept;
+	bool fromSaveState() const noexcept;
 	// Increment the number of undo actions and commit it to the recording file
-	void IncrementUndoCount();
+	void incrementUndoCount();
 	// Open an existing recording file
-	bool OpenExisting(const std::string& path);
+	bool openExisting(const std::string& path);
 	// Create and open a brand new input recording, either starting from a save-state or from
 	// booting the game
-	bool OpenNew(const std::string& path, bool fromSaveState);
+	bool openNew(const std::string& path, bool fromSaveState);
 	// Reads the current frame's input data from the file in order to intercept and overwrite
 	// the current frame's value from the emulator
-	bool ReadKeyBuffer(u8& result, const uint frame, const uint port, const uint bufIndex);
+	bool readKeyBuffer(u8& result, const uint frame, const uint port, const uint bufIndex);
 	// Updates the total frame counter and commit it to the recording file
-	void SetTotalFrames(u32 frames);
+	void setTotalFrames(u32 frames);
 	// Persist the input recording file header's current state to the file
-	bool WriteHeader() const;
+	bool writeHeader() const;
 	// Writes the current frame's input data to the file so it can be replayed
-	bool WriteKeyBuffer(const uint frame, const uint port, const uint bufIndex, const u8 buf) const;
+	bool writeKeyBuffer(const uint frame, const uint port, const uint bufIndex, const u8 buf) const;
 
 
 	// Retrieve the input recording's filename (not the path)
