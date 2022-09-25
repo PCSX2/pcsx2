@@ -252,6 +252,14 @@ else()
 	set(BIN2CPPDEP ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl)
 endif()
 
+# rapidyaml includes fast_float as a submodule, saves us pulling it in directly.
+# Normally, we'd just pull in the cmake project, and link to it, but... it seems to enable
+# permissive mode, which breaks other parts of PCSX2. So, we'll just create a target here
+# for now.
+#add_subdirectory(3rdparty/rapidyaml/rapidyaml/ext/c4core/src/c4/ext/fast_float EXCLUDE_FROM_ALL)
+add_library(fast_float INTERFACE)
+target_include_directories(fast_float INTERFACE 3rdparty/rapidyaml/rapidyaml/ext/c4core/src/c4/ext/fast_float/include)
+
 add_subdirectory(3rdparty/jpgd EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/simpleini EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/imgui EXCLUDE_FROM_ALL)
