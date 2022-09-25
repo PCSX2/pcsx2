@@ -96,7 +96,7 @@ void InputRecordingViewer::openFile() {
 	if (!fileNames.isEmpty())
 	{
 		const std::string fileName = fileNames.first().toStdString();
-		m_file.OpenExisting(fileName);
+		m_file.openExisting(fileName);
 		loadTable();
 	}
 }

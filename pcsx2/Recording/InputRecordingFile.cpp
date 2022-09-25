@@ -245,23 +245,23 @@ bool InputRecordingFile::verifyRecordingFileHeader()
 #include <vector>
 #include <array>
 
-void InputRecordingFile::InputRecordingFileHeader::Init() noexcept
+void InputRecordingFile::InputRecordingFileHeader::init() noexcept
 {
 	m_fileVersion = 1;
 }
 
-void InputRecordingFile::SetEmulatorVersion()
+void InputRecordingFile::setEmulatorVersion()
 {
 	static const std::string emuVersion = fmt::format("PCSX2-{}.{}.{}", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo);
 	strncpy(m_header.m_emulatorVersion, emuVersion.c_str(), sizeof(m_header.m_emulatorVersion) - 1);
 }
 
-void InputRecordingFile::SetAuthor(const std::string& _author)
+void InputRecordingFile::setAuthor(const std::string& _author)
 {
 	strncpy(m_header.m_author, _author.data(), sizeof(m_header.m_author) - 1);
 }
 
-void InputRecordingFile::SetGameName(const std::string& _gameName)
+void InputRecordingFile::setGameName(const std::string& _gameName)
 {
 	strncpy(m_header.m_gameName, _gameName.data(), sizeof(m_header.m_gameName) - 1);
 }
@@ -281,7 +281,7 @@ const char* InputRecordingFile::getGameName() const noexcept
 	return m_header.m_gameName;
 }
 
-bool InputRecordingFile::Close() noexcept
+bool InputRecordingFile::close() noexcept
 {
 	if (m_recordingFile == nullptr)
 	{
@@ -308,12 +308,12 @@ unsigned long InputRecordingFile::getUndoCount() const noexcept
 	return m_undoCount;
 }
 
-bool InputRecordingFile::FromSaveState() const noexcept
+bool InputRecordingFile::fromSaveState() const noexcept
 {
 	return m_savestate;
 }
 
-void InputRecordingFile::IncrementUndoCount()
+void InputRecordingFile::incrementUndoCount()
 {
 	m_undoCount++;
 	if (m_recordingFile == nullptr)
@@ -324,7 +324,7 @@ void InputRecordingFile::IncrementUndoCount()
 	fwrite(&m_undoCount, 4, 1, m_recordingFile);
 }
 
-bool InputRecordingFile::OpenNew(const std::string& path, bool fromSavestate)
+bool InputRecordingFile::openNew(const std::string& path, bool fromSavestate)
 {
 	if ((m_recordingFile = FileSystem::OpenCFile(path.data(), "wb+")) == nullptr)
 	{
@@ -335,12 +335,12 @@ bool InputRecordingFile::OpenNew(const std::string& path, bool fromSavestate)
 	m_filename = path;
 	m_totalFrames = 0;
 	m_undoCount = 0;
-	m_header.Init();
+	m_header.init();
 	m_savestate = fromSavestate;
 	return true;
 }
 
-bool InputRecordingFile::OpenExisting(const std::string& path)
+bool InputRecordingFile::openExisting(const std::string& path)
 {
 	if ((m_recordingFile = FileSystem::OpenCFile(path.data(), "rb+")) == nullptr)
 	{
@@ -350,7 +350,7 @@ bool InputRecordingFile::OpenExisting(const std::string& path)
 
 	if (!verifyRecordingFileHeader())
 	{
-		Close();
+		close();
 		InputRec::consoleLog("Input recording file header is invalid");
 		return false;
 	}
@@ -359,7 +359,7 @@ bool InputRecordingFile::OpenExisting(const std::string& path)
 	return true;
 }
 
-bool InputRecordingFile::ReadKeyBuffer(u8& result, const uint frame, const uint port, const uint bufIndex)
+bool InputRecordingFile::readKeyBuffer(u8& result, const uint frame, const uint port, const uint bufIndex)
 {
 	if (m_recordingFile == nullptr)
 	{
@@ -375,7 +375,7 @@ bool InputRecordingFile::ReadKeyBuffer(u8& result, const uint frame, const uint 
 	return true;
 }
 
-void InputRecordingFile::SetTotalFrames(u32 frame)
+void InputRecordingFile::setTotalFrames(u32 frame)
 {
 	if (m_recordingFile == nullptr || m_totalFrames >= frame)
 	{
@@ -386,7 +386,7 @@ void InputRecordingFile::SetTotalFrames(u32 frame)
 	fwrite(&m_totalFrames, 4, 1, m_recordingFile);
 }
 
-bool InputRecordingFile::WriteHeader() const
+bool InputRecordingFile::writeHeader() const
 {
 	if (m_recordingFile == nullptr)
 	{
@@ -403,7 +403,7 @@ bool InputRecordingFile::WriteHeader() const
 	return true;
 }
 
-bool InputRecordingFile::WriteKeyBuffer(const uint frame, const uint port, const uint bufIndex, const u8 buf) const
+bool InputRecordingFile::writeKeyBuffer(const uint frame, const uint port, const uint bufIndex, const u8 buf) const
 {
 	if (m_recordingFile == nullptr)
 	{
