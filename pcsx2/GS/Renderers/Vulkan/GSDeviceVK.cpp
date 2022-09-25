@@ -2527,7 +2527,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 	const VkDevice dev = g_vulkan_context->GetDevice();
 	const VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
 	u32 flags = m_dirty_flags;
-	m_dirty_flags &= ~DIRTY_TFX_STATE | DIRTY_CONSTANT_BUFFER_STATE;
+	m_dirty_flags &= ~(DIRTY_TFX_STATE | DIRTY_CONSTANT_BUFFER_STATE | DIRTY_FLAG_TFX_DYNAMIC_OFFSETS);
 
 	// do cbuffer first, because it's the most likely to cause an exec
 	if (flags & DIRTY_FLAG_VS_CONSTANT_BUFFER)
@@ -2548,6 +2548,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		std::memcpy(m_vertex_uniform_stream_buffer.GetCurrentHostPointer(), &m_vs_cb_cache, sizeof(m_vs_cb_cache));
 		m_tfx_dynamic_offsets[0] = m_vertex_uniform_stream_buffer.GetCurrentOffset();
 		m_vertex_uniform_stream_buffer.CommitMemory(sizeof(m_vs_cb_cache));
+		flags |= DIRTY_FLAG_TFX_DYNAMIC_OFFSETS;
 	}
 
 	if (flags & DIRTY_FLAG_PS_CONSTANT_BUFFER)
@@ -2568,6 +2569,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		std::memcpy(m_fragment_uniform_stream_buffer.GetCurrentHostPointer(), &m_ps_cb_cache, sizeof(m_ps_cb_cache));
 		m_tfx_dynamic_offsets[1] = m_fragment_uniform_stream_buffer.GetCurrentOffset();
 		m_fragment_uniform_stream_buffer.CommitMemory(sizeof(m_ps_cb_cache));
+		flags |= DIRTY_FLAG_TFX_DYNAMIC_OFFSETS;
 	}
 
 	Vulkan::DescriptorSetUpdateBuilder dsub;

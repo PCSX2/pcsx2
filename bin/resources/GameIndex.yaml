@@ -1145,6 +1145,8 @@ SCAJ-20146:
   name: "Wang Da Yu Ju Xiang"
   region: "NTSC-Ch"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Alleviates excessive VU load.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -1391,6 +1393,8 @@ SCAJ-20195:
 SCAJ-20196:
   name: "Wang Da Yu Ju Xiang [PlayStation 2 The Best]"
   region: "NTSC-Ch"
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Alleviates excessive VU load.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -2408,6 +2412,14 @@ SCED-53932:
 SCED-53939:
   name: "Official PlayStation 2 Magazine Demo 67" # Australian
   region: "PAL-E"
+SCED-53962:
+  name: "Shadow of the Colossus [Demo]"
+  region: "PAL-M5"
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Alleviates excessive VU load.
+  gsHWFixes:
+    mipmap: 1
+    halfPixelOffset: 1 # Fixes misalignments and borders on side.
 SCED-53978:
   name: "Official PlayStation 2 Magazine Demo 69"
   region: "PAL-M5"
@@ -3679,6 +3691,8 @@ SCES-53326:
   name: "Shadow of the Colossus"
   region: "PAL-E"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Alleviates excessive VU load.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -4846,6 +4860,8 @@ SCKA-20061:
   name: "Wanda to Kyozou"
   region: "NTSC-K"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Alleviates excessive VU load.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -5687,6 +5703,8 @@ SCPS-15097:
   name: "Wanda to Kyozou"
   region: "NTSC-J"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Alleviates excessive VU load.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -6122,6 +6140,8 @@ SCPS-19319:
 SCPS-19320:
   name: "Wanda to Kyozou [PlayStation 2 The Best]"
   region: "NTSC-J"
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Alleviates excessive VU load.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -6133,6 +6153,14 @@ SCPS-19320:
     - "SCPS-19103"
     - "SCPS-19151"
     - "SCPS-55001"
+SCPS-19335:
+  name: "Wanda to Kyozou [PlayStation 2 The Best Reprint]"
+  region: "NTSC-J"
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Alleviates excessive VU load.
+  gsHWFixes:
+    mipmap: 1
+    halfPixelOffset: 1 # Fixes misalignments and borders on side.
 SCPS-19321:
   name: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -7871,6 +7899,8 @@ SCUS-97472:
   name: "Shadow of the Colossus"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Alleviates excessive VU load.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -8049,6 +8079,8 @@ SCUS-97504:
 SCUS-97505:
   name: "Shadow of the Colossus [Demo]"
   region: "NTSC-U"
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Alleviates excessive VU load.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes misalignments and borders on side.

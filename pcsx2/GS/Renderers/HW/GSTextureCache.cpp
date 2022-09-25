@@ -1167,9 +1167,14 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 
 bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u32 DBW, u32 DPSM, int dx, int dy, int w, int h)
 {
+	if (SBP == DBP && SPSM == DPSM && !GSLocalMemory::m_psm[SPSM].depth && ShuffleMove(SBP, SBW, SPSM, sx, sy, dx, dy, w, h))
+	{
+		return true;
+	}
+
 	// TODO: In theory we could do channel swapping on the GPU, but we haven't found anything which needs it so far.
 	// Same with SBP == DBP, but this behavior could change based on direction?
-	if (SPSM != DPSM || SBP == DBP)
+	if (SPSM != DPSM || ((SBP == DBP) && !(GSVector4i(sx, sy, sx + w, sy + h).rintersect(GSVector4i(dx, dy, dx + w, dy + h))).rempty()))
 	{
 		GL_CACHE("Skipping HW move from 0x%X to 0x%X with SPSM=%u DPSM=%u", SBP, DBP, SPSM, DPSM);
 		return false;
@@ -1230,6 +1235,131 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 
 	// Invalidate any sources that overlap with the target (since they're now stale).
 	InvalidateVideoMem(g_gs_renderer->m_mem.GetOffset(DBP, DBW, DPSM), GSVector4i(dx, dy, dx + w, dy + h), false);
+	return true;
+}
+
+bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx, int dy, int w, int h)
+{
+	// What are we doing here? Final Fantasy XII uses moves to copy the contents of the RG channels to the BA channels,
+	// by rendering in PSMCT32, and doing a PSMCT16 move with an 8x0 offset on the destination. This effectively reads
+	// from the original red/green channels, and writes to the blue/alpha channels. Who knows why they did it this way,
+	// when they could've used sprites, but it means that they had to offset the block pointer for each move. So, we
+	// need to use tex-in-rt here to figure out what the offset into the original PSMCT32 texture was, and HLE the move.
+	if (PSM != PSM_PSMCT16)
+		return false;
+
+	GL_CACHE("Trying ShuffleMove: BP=%04X BW=%u PSM=%u SX=%d SY=%d DX=%d DY=%d W=%d H=%d", BP, BW, PSM, sx, sy, dx, dy, w, h);
+
+	GSTextureCache::Target* tgt = nullptr;
+	for (auto t : m_dst[RenderTarget])
+	{
+		if (t->m_TEX0.PSM == PSM_PSMCT32 && BP >= t->m_TEX0.TBP0 && BP <= t->m_end_block)
+		{
+			SurfaceOffset so(ComputeSurfaceOffset(BP, BW, PSM, GSVector4i(sx, sy, sx + w, sy + h), t));
+			if (so.is_valid)
+			{
+				tgt = t;
+				GL_CACHE("ShuffleMove: Surface offset %d,%d from BP %04X - %04X", so.b2a_offset.x, so.b2a_offset.y, BP, t->m_TEX0.TBP0);
+				sx += so.b2a_offset.x;
+				sy += so.b2a_offset.y;
+				dx += so.b2a_offset.x;
+				dy += so.b2a_offset.y;
+				break;
+			}
+		}
+	}
+	if (!tgt)
+	{
+		GL_CACHE("ShuffleMove: No target found");
+		return false;
+	}
+
+	// Since we're only concerned with 32->16 shuffles, the difference should be 8x8 for this to work.
+	const s32 diff_x = (dx - sx);
+	if (std::abs(diff_x) != 8 || sy != dy)
+	{
+		GL_CACHE("ShuffleMove: Difference is not 8 pixels");
+		return false;
+	}
+
+	const bool read_ba = (diff_x < 0);
+	const bool write_rg = (diff_x < 0);
+
+	const GSVector4i bbox(write_rg ? GSVector4i(dx, dy, dx + w, dy + h) : GSVector4i(sx, sy, sx + w, sy + h));
+
+	GSVertex vertices[4] = {};
+#define V(i, x, y, u, v) \
+	do \
+	{ \
+		vertices[i].XYZ.X = x; \
+		vertices[i].XYZ.Y = y; \
+		vertices[i].U = u; \
+		vertices[i].V = v; \
+	} while (0)
+
+	const GSVector4i bbox_fp(bbox.sll32(4));
+	V(0, bbox_fp.x, bbox_fp.y, bbox_fp.x, bbox_fp.y); // top-left
+	V(1, bbox_fp.z, bbox_fp.y, bbox_fp.z, bbox_fp.y); // top-right
+	V(2, bbox_fp.x, bbox_fp.w, bbox_fp.x, bbox_fp.w); // bottom-left
+	V(3, bbox_fp.z, bbox_fp.w, bbox_fp.z, bbox_fp.w); // bottom-right
+
+#undef V
+
+	static constexpr u32 indices[6] = { 0, 1, 2, 2, 1, 3 };
+
+	// If we ever do this sort of thing somewhere else, extract this to a helper function.
+	GSHWDrawConfig config;
+	config.rt = tgt->m_texture;
+	config.ds = nullptr;
+	config.tex = tgt->m_texture;
+	config.pal = nullptr;
+	config.indices = indices;
+	config.verts = vertices;
+	config.nverts = static_cast<u32>(std::size(vertices));
+	config.nindices = static_cast<u32>(std::size(indices));
+	config.indices_per_prim = 3;
+	config.drawlist = nullptr;
+	config.scissor = GSVector4i(0, 0, tgt->m_texture->GetWidth(), tgt->m_texture->GetHeight());
+	config.drawarea = GSVector4i(GSVector4(bbox) * GSVector4(tgt->m_texture->GetScale()).xxyy());
+	config.topology = GSHWDrawConfig::Topology::Triangle;
+	config.blend = GSHWDrawConfig::BlendState();
+	config.depth = GSHWDrawConfig::DepthStencilSelector::NoDepth();
+	config.colormask = GSHWDrawConfig::ColorMaskSelector();
+	config.colormask.wrgba = (write_rg ? (1 | 2) : (4 | 8));
+	config.require_one_barrier = true;
+	config.require_full_barrier = false;
+	config.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Off;
+	config.datm = false;
+	config.line_expand = false;
+	config.separate_alpha_pass = false;
+	config.second_separate_alpha_pass = false;
+	config.alpha_second_pass.enable = false;
+	config.vs.key = 0;
+	config.vs.tme = true;
+	config.vs.iip = true;
+	config.vs.fst = true;
+	config.gs.key = 0;
+	config.ps.key_lo = 0;
+	config.ps.key_hi = 0;
+	config.ps.read_ba = read_ba;
+	config.ps.write_rg = write_rg;
+	config.ps.shuffle = true;
+	config.ps.iip = true;
+	config.ps.fst = true;
+	config.ps.tex_is_fb = true;
+	config.ps.tfx = TFX_DECAL;
+
+	const GSVector2i rtsize(tgt->m_texture->GetSize());
+	const GSVector2 rtscale(tgt->m_texture->GetScale());
+	config.cb_ps.WH = GSVector4(static_cast<float>(rtsize.x) / rtscale.x, static_cast<float>(rtsize.y) / rtscale.y,
+		static_cast<float>(rtsize.x), static_cast<float>(rtsize.y));
+	config.cb_ps.STScale = rtscale;
+
+	config.cb_vs.vertex_scale = GSVector2(2.0f * rtscale.x / (rtsize.x << 4), 2.0f * rtscale.y / (rtsize.y << 4));
+	config.cb_vs.vertex_offset = GSVector2(-1.0f / rtsize.x + 1.0f, -1.0f / rtsize.y + 1.0f);
+	config.cb_vs.texture_scale = GSVector2((1.0f / 16.0f) / config.cb_ps.WH.x, (1.0f / 16.0f) / config.cb_ps.WH.y);
+
+	g_gs_device->RenderHW(config);
 	return true;
 }
 

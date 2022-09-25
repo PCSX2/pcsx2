@@ -23,6 +23,7 @@
 #include "System.h"
 #include "Config.h"
 #include "Host.h"
+#include "IconsFontAwesome5.h"
 
 #include "common/FileSystem.h"
 #include "common/Path.h"
@@ -2333,8 +2334,8 @@ s32 FolderMemoryCardAggregator::Save(uint slot, const u8* src, u32 adr, int size
 	if (saveResult)
 	{
 		const std::string_view filename = Path::GetFileName(m_cards[slot].GetFolderName());
-		Host::AddKeyedFormattedOSDMessage(StringUtil::StdStringFromFormat("MemoryCardSave%u", slot), 10.0f,
-			"Memory Card %.*s written.", static_cast<int>(filename.size()), static_cast<const char*>(filename.data()));
+		Host::AddIconOSDMessage(fmt::format("MemoryCardSave{}", slot), ICON_FA_SD_CARD,
+			fmt::format("Memory card '{}' was saved to storage.", filename), 10.0f);
 	}
 
 	return saveResult;
