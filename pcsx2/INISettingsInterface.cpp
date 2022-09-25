@@ -158,25 +158,25 @@ bool INISettingsInterface::GetStringValue(const char* section, const char* key, 
 void INISettingsInterface::SetIntValue(const char* section, const char* key, int value)
 {
 	m_dirty = true;
-	m_ini.SetLongValue(section, key, static_cast<long>(value), nullptr, false, true);
+	m_ini.SetValue(section, key, StringUtil::ToChars(value).c_str(), nullptr, true);
 }
 
 void INISettingsInterface::SetUIntValue(const char* section, const char* key, uint value)
 {
 	m_dirty = true;
-	m_ini.SetLongValue(section, key, static_cast<long>(value), nullptr, false, true);
+	m_ini.SetValue(section, key, StringUtil::ToChars(value).c_str(), nullptr, true);
 }
 
 void INISettingsInterface::SetFloatValue(const char* section, const char* key, float value)
 {
 	m_dirty = true;
-	m_ini.SetDoubleValue(section, key, static_cast<double>(value), nullptr, true);
+	m_ini.SetValue(section, key, StringUtil::ToChars(value).c_str(), nullptr, true);
 }
 
 void INISettingsInterface::SetDoubleValue(const char* section, const char* key, double value)
 {
 	m_dirty = true;
-	m_ini.SetDoubleValue(section, key, value, nullptr, true);
+	m_ini.SetValue(section, key, StringUtil::ToChars(value).c_str(), nullptr, true);
 }
 
 void INISettingsInterface::SetBoolValue(const char* section, const char* key, bool value)
