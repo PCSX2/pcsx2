@@ -245,25 +245,40 @@ bool InputRecordingFile::verifyRecordingFileHeader()
 #include <vector>
 #include <array>
 
-void InputRecordingFileHeader::Init() noexcept
+void InputRecordingFile::InputRecordingFileHeader::Init() noexcept
 {
 	m_fileVersion = 1;
 }
 
-void InputRecordingFileHeader::SetEmulatorVersion()
+void InputRecordingFile::SetEmulatorVersion()
 {
 	static const std::string emuVersion = fmt::format("PCSX2-{}.{}.{}", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo);
-	strncpy(m_emulatorVersion, emuVersion.c_str(), sizeof(m_emulatorVersion) - 1);
+	strncpy(m_header.m_emulatorVersion, emuVersion.c_str(), sizeof(m_header.m_emulatorVersion) - 1);
 }
 
-void InputRecordingFileHeader::SetAuthor(const std::string& _author)
+void InputRecordingFile::SetAuthor(const std::string& _author)
 {
-	strncpy(m_author, _author.data(), sizeof(m_author) - 1);
+	strncpy(m_header.m_author, _author.data(), sizeof(m_header.m_author) - 1);
 }
 
-void InputRecordingFileHeader::SetGameName(const std::string& _gameName)
+void InputRecordingFile::SetGameName(const std::string& _gameName)
 {
-	strncpy(m_gameName, _gameName.data(), sizeof(m_gameName) - 1);
+	strncpy(m_header.m_gameName, _gameName.data(), sizeof(m_header.m_gameName) - 1);
+}
+
+const char* InputRecordingFile::getEmulatorVersion() const noexcept
+{
+	return m_header.m_emulatorVersion;
+}
+
+const char* InputRecordingFile::getAuthor() const noexcept
+{
+	return m_header.m_author;
+}
+
+const char* InputRecordingFile::getGameName() const noexcept
+{
+	return m_header.m_gameName;
 }
 
 bool InputRecordingFile::Close() noexcept
@@ -283,11 +298,6 @@ const std::string& InputRecordingFile::getFilename() const noexcept
 	return m_filename;
 }
 
-InputRecordingFileHeader& InputRecordingFile::getHeader() noexcept
-{
-	return m_header;
-}
-
 unsigned long InputRecordingFile::getTotalFrames() const noexcept
 {
 	return m_totalFrames;
@@ -300,7 +310,7 @@ unsigned long InputRecordingFile::getUndoCount() const noexcept
 
 bool InputRecordingFile::FromSaveState() const noexcept
 {
-	return m_savestate.fromSavestate;
+	return m_savestate;
 }
 
 void InputRecordingFile::IncrementUndoCount()
@@ -326,7 +336,7 @@ bool InputRecordingFile::OpenNew(const std::string& path, bool fromSavestate)
 	m_totalFrames = 0;
 	m_undoCount = 0;
 	m_header.Init();
-	m_savestate.fromSavestate = fromSavestate;
+	m_savestate = fromSavestate;
 	return true;
 }
 
@@ -415,10 +425,10 @@ bool InputRecordingFile::WriteKeyBuffer(const uint frame, const uint port, const
 void InputRecordingFile::logRecordingMetadata()
 {
 	InputRec::consoleMultiLog({fmt::format("File: {}", getFilename()),
-		fmt::format("PCSX2 Version Used: {}", getHeader().m_emulatorVersion),
-		fmt::format("Recording File Version: {}", getHeader().m_fileVersion),
-		fmt::format("Associated Game Name or ISO Filename: {}", getHeader().m_gameName),
-		fmt::format("Author: {}", getHeader().m_author),
+		fmt::format("PCSX2 Version Used: {}",m_header.m_emulatorVersion),
+		fmt::format("Recording File Version: {}", m_header.m_fileVersion),
+		fmt::format("Associated Game Name or ISO Filename: {}", m_header.m_gameName),
+		fmt::format("Author: {}", m_header.m_author),
 		fmt::format("Total Frames: {}", getTotalFrames()),
 		fmt::format("Undo Count: {}", getUndoCount())});
 }
@@ -477,7 +487,7 @@ bool InputRecordingFile::verifyRecordingFileHeader()
 	if (fread(&m_header, sizeof(InputRecordingFileHeader), 1, m_recordingFile) != 1 ||
 		fread(&m_totalFrames, 4, 1, m_recordingFile) != 1 ||
 		fread(&m_undoCount, 4, 1, m_recordingFile) != 1 ||
-		fread(&m_savestate.fromSavestate, sizeof(bool), 1, m_recordingFile) != 1)
+		fread(&m_savestate, sizeof(bool), 1, m_recordingFile) != 1)
 	{
 		return false;
 	}

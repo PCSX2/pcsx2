@@ -119,32 +119,31 @@ private:
 // NOTE / TODOs for Version 2
 // - Move fromSavestate, undoCount, and total frames into the header
 
-struct InputRecordingFileHeader
-{
-	u8 m_fileVersion = 1;
-	char m_emulatorVersion[50]{};
-	char m_author[255]{};
-	char m_gameName[255]{};
 
-public:
-	void SetEmulatorVersion();
-	void Init() noexcept;
-	void SetAuthor(const std::string& author);
-	void SetGameName(const std::string& cdrom);
-};
-
-
-// DEPRECATED / Slated for Removal
-struct InputRecordingSavestate
-{
-	// Whether we start from the savestate or from power-on
-	bool fromSavestate = false;
-};
 
 // Handles all operations on the input recording file
 class InputRecordingFile
 {
+	struct InputRecordingFileHeader
+	{
+		u8 m_fileVersion = 1;
+		char m_emulatorVersion[50]{};
+		char m_author[255]{};
+		char m_gameName[255]{};
+
+	public:
+		void Init() noexcept;
+	} m_header;
+
+
 public:
+	void SetEmulatorVersion();
+	void SetAuthor(const std::string& author);
+	void SetGameName(const std::string& cdrom);
+	const char* getEmulatorVersion() const noexcept;
+	const char* getAuthor() const noexcept;
+	const char* getGameName() const noexcept;
+
 	~InputRecordingFile() { Close(); }
 
 	// Closes the underlying input recording file, writing the header and
@@ -176,7 +175,6 @@ public:
 
 	// Retrieve the input recording's filename (not the path)
 	const std::string& getFilename() const noexcept;
-	InputRecordingFileHeader& getHeader() noexcept;
 	unsigned long getTotalFrames() const noexcept;
 	unsigned long getUndoCount() const noexcept;
 
@@ -196,10 +194,9 @@ private:
 	static constexpr size_t s_seekpointUndoCount = sizeof(InputRecordingFileHeader) + 4;
 	static constexpr size_t s_seekpointSaveStateHeader = s_seekpointUndoCount + 4;
 
-	InputRecordingFileHeader m_header;
 	std::string m_filename = "";
 	FILE* m_recordingFile = nullptr;
-	InputRecordingSavestate m_savestate;
+	bool m_savestate = false;
 
 	// An signed 32-bit frame limit is equivalent to 1.13 years of continuous 60fps footage
 	unsigned long m_totalFrames = 0;
