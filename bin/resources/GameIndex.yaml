@@ -21825,6 +21825,9 @@ SLKA-15011:
 SLKA-15013:
   name: "Grand Slam 2003 Tennis" # Hard Hitter 2
   region: "NTSC-K"
+SLKA-15015:
+  name: "Ichigeki Sacchuu!! HoiHoi-San"
+  region: "NTSC-K"
 SLKA-15016:
   name: "Harry Potter - Quidditch World Cup"
   region: "NTSC-K"
@@ -21844,6 +21847,9 @@ SLKA-15021:
 SLKA-15023:
   name: "Assault Suits Valken"
   region: "NTSC-K"
+SLKA-15025:
+  name: "Space Invaders Anniversary"
+  region: "NTSC-K"
 SLKA-15028:
   name: "Simple 2000 Series Ultimate Vol. 6 - Love - Upper!"
   region: "NTSC-K"
@@ -21852,6 +21858,9 @@ SLKA-15029:
   region: "NTSC-K"
 SLKA-15030:
   name: "Simple 2000 Series Vol. 5 - The Block Kuzushi Hyper"
+  region: "NTSC-K"
+SLKA-15031:
+  name: "Princess Maker"
   region: "NTSC-K"
 SLKA-15032:
   name: "Gradius V"
@@ -22104,6 +22113,9 @@ SLKA-25087:
   compat: 5
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
+SLKA-25088:
+  name: "Sangokushi Senki 2"
+  region: "NTSC-K"
 SLKA-25090:
   name: "Starsky & Hutch"
   region: "NTSC-K"
@@ -22452,6 +22464,9 @@ SLKA-25222:
   gsHWFixes:
     autoFlush: 1 # Fixes bloom.
     roundSprite: 1 # Fixes misalliged bloom.
+SLKA-25223:
+  name: "K.League - Winning Eleven 8 - Asia Championship"
+  region: "NTSC-K"
 SLKA-25224:
   name: "Detective Saburo Jinguji 9 - Kind of Blue"
   region: "NTSC-K"
@@ -25816,6 +25831,9 @@ SLPM-64540:
   region: "NTSC-K"
   speedHacks:
     MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+SLPM-64544:
+  name: "Tetsu 1 - Densha de Battle! World Grand Prix"
+  region: "NTSC-K"
 SLPM-64549:
   name: "Siksin-ui Seong"
   region: "NTSC-K"
