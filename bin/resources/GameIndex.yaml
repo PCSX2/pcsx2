@@ -19298,6 +19298,8 @@ SLES-54663:
   name: "Jackass - The Game"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned textures.
 SLES-54664:
   name: "Top Gun"
   region: "PAL-M11"
@@ -20384,6 +20386,8 @@ SLES-55080:
 SLES-55081:
   name: "Jackass - The Game"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned textures.
 SLES-55082:
   name: "Urban Constructor"
   region: "PAL-E"
@@ -45950,6 +45954,8 @@ SLUS-21627:
   name: "Jackass - The Game"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned textures.
 SLUS-21628:
   name: "Hot Wheels - Beat That!"
   region: "NTSC-U"
