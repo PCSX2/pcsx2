@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -21,6 +21,7 @@
 #include "IconsFontAwesome5.h"
 #include "vtlb.h"
 
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
@@ -972,4 +973,242 @@ const GameDatabaseSchema::GameEntry* GameDatabase::findGame(const std::string_vi
 
 	auto iter = s_game_db.find(StringUtil::toLower(serial));
 	return (iter != s_game_db.end()) ? &iter->second : nullptr;
+}
+
+bool GameDatabase::TrackHash::parseHash(const std::string_view& str)
+{
+	constexpr u32 expected_length = SIZE * 2;
+	if (str.length() != expected_length)
+		return false;
+
+	std::memset(data, 0, sizeof(data));
+	for (u32 i = 0; i < SIZE * 2; i++)
+	{
+		const char ch = str[i];
+		u8 b;
+		if (ch >= '0' && ch <= '9')
+			b = static_cast<u8>(ch - '0');
+		else if (ch >= 'a' && ch <= 'f')
+			b = static_cast<u8>(ch - 'a') + 0xa;
+		else if (ch >= 'A' && ch <= 'F')
+			b = static_cast<u8>(ch - 'A') + 0xa;
+		else
+			return false;
+
+		data[i / 2] |= ((i % 2) == 0) ? (b << 4) : b;
+	}
+
+	return true;
+}
+
+std::string GameDatabase::TrackHash::toString() const
+{
+	return fmt::format(
+		"{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+		data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
+		data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
+}
+
+struct TrackHashHasher
+{
+	size_t operator()(const GameDatabase::TrackHash& hash) const
+	{
+		return std::hash<std::string_view>()(std::string_view(reinterpret_cast<const char*>(hash.data),
+			GameDatabase::TrackHash::SIZE));
+	}
+};
+
+static constexpr char HASHDB_YAML_FILE_NAME[] = "RedumpDatabase.yaml";
+std::unordered_map<GameDatabase::TrackHash, u32, TrackHashHasher> s_track_hash_to_entry_map;
+std::vector<GameDatabase::HashDatabaseEntry> s_hash_database;
+
+static bool parseHashDatabaseEntry(const c4::yml::NodeRef& node)
+{
+	if (!node.has_child("name") || !node.has_child("hashes"))
+	{
+		Console.Warning("[HashDatabase] Incomplete entry found.");
+		return false;
+	}
+
+	GameDatabase::HashDatabaseEntry entry;
+	node["name"] >> entry.name;
+	if (node.has_child("version"))
+		node["version"] >> entry.version;
+	if (node.has_child("serial"))
+		node["serial"] >> entry.serial;
+
+	const u32 index = static_cast<u32>(s_hash_database.size());
+	for (const ryml::NodeRef& n : node["hashes"].children())
+	{
+		if (!n.is_map() || !n.has_child("size") || !n.has_child("md5"))
+		{
+			Console.Error(fmt::format("[HashDatabase] Incomplete hash definition in {}", entry.name));
+			return false;
+		}
+
+		GameDatabase::TrackHash th;
+		std::string md5;
+		n["md5"] >> md5;
+		n["size"] >> th.size;
+
+		if (!th.parseHash(md5))
+		{
+			Console.Error(fmt::format("[HashDatabase] Failed to parse hash in {}: '{}'", entry.name, md5));
+			return false;
+		}
+
+		if (entry.tracks.empty() && s_track_hash_to_entry_map.find(th) != s_track_hash_to_entry_map.end())
+			Console.Warning(fmt::format("[HashDatabase] Duplicate first track hash in {}", entry.name));
+
+		entry.tracks.push_back(th);
+		s_track_hash_to_entry_map.emplace(th, index);
+	}
+
+	s_hash_database.push_back(std::move(entry));
+	return true;
+}
+
+bool GameDatabase::loadHashDatabase()
+{
+	if (!s_hash_database.empty())
+		return true;
+
+	ryml::Callbacks rymlCallbacks = ryml::get_callbacks();
+	rymlCallbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void*) {
+		Console.Error(fmt::format(
+			"[HashDatabase YAML] Parsing error at {}:{} (bufpos={}): {}", loc.line, loc.col, loc.offset, msg));
+	};
+	ryml::set_callbacks(rymlCallbacks);
+	c4::set_error_callback([](const char* msg, size_t msg_size) {
+		Console.Error(fmt::format("[HashDatabase YAML] Internal Parsing error: {}", std::string_view(msg, msg_size)));
+	});
+
+	Common::Timer load_timer;
+
+	auto buf = Host::ReadResourceFileToString(HASHDB_YAML_FILE_NAME);
+	if (!buf.has_value())
+	{
+		Console.Error("[GameDB] Unable to open hash database file, file does not exist.");
+		return false;
+	}
+
+	ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(buf.value()));
+	ryml::NodeRef root = tree.rootref();
+
+	bool okay = true;
+	for (const ryml::NodeRef& n : root.children())
+	{
+		if (!parseHashDatabaseEntry(n))
+		{
+			okay = false;
+			break;
+		}
+	}
+
+	ryml::reset_callbacks();
+	if (!okay)
+	{
+		s_track_hash_to_entry_map.clear();
+		s_hash_database.clear();
+		return false;
+	}
+
+	Console.WriteLn(Color_StrongGreen, "[HashDatabase] Loaded YAML in %.0f ms", load_timer.GetTimeMilliseconds());
+	return true;
+}
+
+void GameDatabase::unloadHashDatabase()
+{
+	s_track_hash_to_entry_map.clear();
+	s_hash_database.clear();
+}
+
+static size_t getTrackIndex(const GameDatabase::TrackHash* tracks, size_t num_tracks, const GameDatabase::TrackHash& track)
+{
+	for (size_t i = 0; i < num_tracks; i++)
+	{
+		if (tracks[i] == track)
+			return i;
+	}
+	return num_tracks;
+}
+
+const GameDatabase::HashDatabaseEntry* GameDatabase::lookupHash(
+	const TrackHash* tracks, size_t num_tracks, bool* tracks_matched, std::string* match_error)
+{
+	loadHashDatabase();
+
+	if (num_tracks == 0)
+	{
+		*match_error = TRANSLATE_STR("GameDatabase", "No tracks provided.");
+		std::memset(tracks_matched, 0, sizeof(bool) * num_tracks);
+		return nullptr;
+	}
+
+	// match the first track, for DVDs this will be all there is anyway
+	const auto data_iter = s_track_hash_to_entry_map.find(tracks[0]);
+	if (data_iter == s_track_hash_to_entry_map.end())
+	{
+		*match_error = fmt::format(TRANSLATE_FS("GameDatabase", "Hash {} is not in database."), tracks[0].toString());
+		std::memset(tracks_matched, 0, sizeof(bool) * num_tracks);
+		return nullptr;
+	}
+
+	// make sure they're not missing the data track
+	const GameDatabase::HashDatabaseEntry* candidate = &s_hash_database[data_iter->second];
+	if (getTrackIndex(candidate->tracks.data(), candidate->tracks.size(), tracks[0]) != 0)
+	{
+		*match_error = TRANSLATE_STR("GameDatabase", "Data track number does not match data track in database.");
+		std::memset(tracks_matched, 0, sizeof(bool) * num_tracks);
+		return nullptr;
+	}
+
+	// first track is okay!
+	tracks_matched[0] = true;
+	match_error->clear();
+
+	// now check any audio tracks...
+	bool all_okay = true;
+	for (size_t track = 1; track < num_tracks; track++)
+	{
+		const auto audio_iter = s_track_hash_to_entry_map.find(tracks[track]);
+		if (audio_iter != s_track_hash_to_entry_map.end())
+		{
+			fmt::format_to(std::back_inserter(*match_error),
+				TRANSLATE_FS("GameDatabase", "Track {} with hash {} is not found in database.\n"), track + 1,
+				tracks[track].toString());
+			tracks_matched[track] = false;
+			all_okay = false;
+			continue;
+		}
+
+		// same game?
+		if (audio_iter->second != data_iter->second)
+		{
+			fmt::format_to(std::back_inserter(*match_error),
+				TRANSLATE_FS("GameDatabase", "Track {} with hash {} is for a different game ({}).\n"), track + 1,
+				tracks[track].toString(), s_hash_database[audio_iter->second].name);
+			tracks_matched[track] = false;
+			all_okay = false;
+			continue;
+		}
+
+		// make sure it's the correct track number
+		if (getTrackIndex(candidate->tracks.data(), candidate->tracks.size(), tracks[track]) != track)
+		{
+			fmt::format_to(std::back_inserter(*match_error),
+				TRANSLATE_FS("GameDatabase", "Track {} with hash {} does not match database track..\n"), track + 1,
+				tracks[track].toString());
+			tracks_matched[track] = false;
+			all_okay = false;
+			continue;
+		}
+
+		tracks_matched[track] = true;
+	}
+
+	if (!match_error->empty() && match_error->back() == '\n')
+		match_error->pop_back();
+
+	return all_okay ? candidate : nullptr;
 }
