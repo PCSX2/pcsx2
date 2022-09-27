@@ -109,9 +109,6 @@
     <Filter Include="System\Ps2\iCore">
       <UniqueIdentifier>{5e741f2d-9e0b-4e43-b2a2-44a8370e1546}</UniqueIdentifier>
     </Filter>
-    <Filter Include="System\IsoFS">
-      <UniqueIdentifier>{c5237754-2509-4291-b869-c5dacc1a8aba}</UniqueIdentifier>
-    </Filter>
     <Filter Include="System\Ps2\Iop\CDVD\Windows">
       <UniqueIdentifier>{be861049-a142-4650-85a5-a2fdd4eef011}</UniqueIdentifier>
     </Filter>
@@ -1409,7 +1406,12 @@
     <ClCompile Include="ImGui\ImGuiFullscreen.cpp">
       <Filter>Misc\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="CDVD\IsoReader.cpp" />
+    <ClCompile Include="CDVD\IsoHasher.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\IsoReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2328,7 +2330,12 @@
     <ClInclude Include="ImGui\ImGuiFullscreen.h">
       <Filter>Misc\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="CDVD\IsoReader.h" />
+    <ClInclude Include="CDVD\IsoHasher.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\IsoReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="rdebug\deci2.h">

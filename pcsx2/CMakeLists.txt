@@ -247,6 +247,7 @@ set(pcsx2CDVDSources
 	CDVD/CDVDisoReader.cpp
 	CDVD/CDVDdiscThread.cpp
 	CDVD/InputIsoFile.cpp
+	CDVD/IsoHasher.cpp
 	CDVD/IsoReader.cpp
 	CDVD/OutputIsoFile.cpp
 	CDVD/ChunksCache.cpp
@@ -271,6 +272,7 @@ set(pcsx2CDVDHeaders
 	CDVD/GzippedFileReader.h
 	CDVD/ThreadedFileReader.h
 	CDVD/IsoFileFormats.h
+	CDVD/IsoHasher.h
 	CDVD/IsoReader.h
 	CDVD/zlib_indexed.h
 	)
