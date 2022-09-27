@@ -79,8 +79,10 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 
 	if (isPerGameSettings())
 	{
-		QString summary = tr("<strong>Summary</strong><hr>Eventually this will be where we can see patches and compute "
-							 "hashes/verify dumps/etc.");
+		QString summary = tr("<strong>Summary</strong><hr>This page shows details about the selected game. Changing the Input "
+			   "Profile will set the controller binding scheme for this game to whichever profile is chosen, instead "
+			   "of the default (Shared) configuration. The track list and dump verification can be used to determine "
+			   "if your disc image matches a known good dump. If it does not match, the game may be broken.");
 		if (game)
 		{
 			addWidget(new GameSummaryWidget(game, this, m_ui.settingsContainer), tr("Summary"),
