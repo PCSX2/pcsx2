@@ -293,7 +293,7 @@ ID3D12GraphicsCommandList* Texture::BeginStreamUpdate(ID3D12GraphicsCommandList*
 	{
 		DevCon.WriteLn("Executing command buffer while waiting for %u bytes (%ux%u) in upload buffer", upload_size, width,
 			height);
-		g_d3d12_context->ExecuteCommandList(false);
+		g_d3d12_context->ExecuteCommandList(Context::WaitType::None);
 		if (!g_d3d12_context->GetTextureStreamBuffer().ReserveMemory(upload_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
 		{
 			Console.Error("Failed to reserve %u bytes for %ux%u upload", upload_size, width, height);

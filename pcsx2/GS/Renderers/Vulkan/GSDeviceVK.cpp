@@ -1822,7 +1822,7 @@ void GSDeviceVK::DestroyStagingBuffer()
 
 void GSDeviceVK::DestroyResources()
 {
-	g_vulkan_context->ExecuteCommandBuffer(true);
+	g_vulkan_context->ExecuteCommandBuffer(Vulkan::Context::WaitType::Sleep);
 	if (m_tfx_descriptor_sets[0] != VK_NULL_HANDLE)
 		g_vulkan_context->FreeGlobalDescriptorSet(m_tfx_descriptor_sets[0]);
 
@@ -2202,10 +2202,20 @@ bool GSDeviceVK::CreatePersistentDescriptorSets()
 	return true;
 }
 
+static Vulkan::Context::WaitType GetWaitType(bool wait, bool spin)
+{
+	if (!wait)
+		return Vulkan::Context::WaitType::None;
+	if (spin)
+		return Vulkan::Context::WaitType::Spin;
+	else
+		return Vulkan::Context::WaitType::Sleep;
+}
+
 void GSDeviceVK::ExecuteCommandBuffer(bool wait_for_completion)
 {
 	EndRenderPass();
-	g_vulkan_context->ExecuteCommandBuffer(wait_for_completion);
+	g_vulkan_context->ExecuteCommandBuffer(GetWaitType(wait_for_completion, GSConfig.HWSpinCPUForReadbacks));
 	InvalidateCachedState();
 }
 
@@ -2227,7 +2237,7 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartRenderPass(const char* reason)
 	const VkRenderPass render_pass = m_current_render_pass;
 	const GSVector4i render_pass_area(m_current_render_pass_area);
 	EndRenderPass();
-	g_vulkan_context->ExecuteCommandBuffer(false);
+	g_vulkan_context->ExecuteCommandBuffer(Vulkan::Context::WaitType::None);
 	InvalidateCachedState();
 
 	if (render_pass != VK_NULL_HANDLE)

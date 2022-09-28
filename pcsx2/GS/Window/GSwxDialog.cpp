@@ -285,6 +285,7 @@ RendererTab::RendererTab(wxWindow* parent)
 
 	auto* paltex_prereq = m_ui.addCheckBox(hw_checks_box, "GPU Palette Conversion", "paltex", IDC_PALTEX, hw_prereq);
 	m_ui.addCheckBox(hw_checks_box, "Spin GPU During Readbacks", "HWSpinGPUForReadbacks", IDC_SPIN_GPU);
+	m_ui.addCheckBox(hw_checks_box, "Spin CPU During Readbacks", "HWSpinCPUForReadbacks", IDC_SPIN_CPU);
 	auto aniso_prereq = [this, paltex_prereq]{ return m_is_hardware && paltex_prereq->GetValue() == false; };
 
 	auto* hw_choice_grid = new wxFlexGridSizer(2, space, space);

@@ -650,6 +650,13 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="spinCPUDuringReadbacks">
+           <property name="text">
+            <string>Spin CPU During Readbacks</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       </layout>

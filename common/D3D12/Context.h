@@ -122,11 +122,18 @@ namespace D3D12
 		/// Test for support for the specified texture format.
 		bool SupportsTextureFormat(DXGI_FORMAT format);
 
+		enum class WaitType
+		{
+			None,  ///< Don't wait (async)
+			Sleep, ///< Wait normally
+			Spin,  ///< Wait by spinning
+		};
+
 		/// Executes the current command list.
-		void ExecuteCommandList(bool wait_for_completion);
+		void ExecuteCommandList(WaitType wait_for_completion);
 
 		/// Waits for a specific fence.
-		void WaitForFence(u64 fence);
+		void WaitForFence(u64 fence, bool spin);
 
 		/// Waits for any in-flight command buffers to complete.
 		void WaitForGPUIdle();

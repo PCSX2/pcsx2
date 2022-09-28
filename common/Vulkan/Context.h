@@ -198,7 +198,14 @@ namespace Vulkan
 			uint32_t present_image_index = 0xFFFFFFFF, bool submit_on_thread = false);
 		void MoveToNextCommandBuffer();
 
-		void ExecuteCommandBuffer(bool wait_for_completion);
+		enum class WaitType
+		{
+			None,
+			Sleep,
+			Spin,
+		};
+
+		void ExecuteCommandBuffer(WaitType wait_for_completion);
 		void WaitForPresentComplete();
 
 		// Was the last present submitted to the queue a failure? If so, we must recreate our swapchain.

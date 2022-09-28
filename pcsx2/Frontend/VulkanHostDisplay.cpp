@@ -86,7 +86,7 @@ bool VulkanHostDisplay::ChangeWindow(const WindowInfo& new_wi)
 
 	if (new_wi.type == WindowInfo::Type::Surfaceless)
 	{
-		g_vulkan_context->ExecuteCommandBuffer(true);
+		g_vulkan_context->ExecuteCommandBuffer(Vulkan::Context::WaitType::Sleep);
 		m_swap_chain.reset();
 		m_window_info = new_wi;
 		return true;
@@ -209,7 +209,7 @@ static bool UploadBufferToTexture(
 	if (!buf.ReserveMemory(upload_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
 	{
 		Console.WriteLn("Executing command buffer for UploadBufferToTexture()");
-		g_vulkan_context->ExecuteCommandBuffer(false);
+		g_vulkan_context->ExecuteCommandBuffer(Vulkan::Context::WaitType::None);
 		if (!buf.ReserveMemory(upload_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
 		{
 			Console.WriteLn("Failed to allocate %u bytes in stream buffer for UploadBufferToTexture()", upload_size);
@@ -365,7 +365,7 @@ bool VulkanHostDisplay::BeginPresent(bool frame_skip)
 			if (!m_swap_chain->RecreateSurface(m_window_info))
 			{
 				Console.Error("Failed to recreate surface after loss");
-				g_vulkan_context->ExecuteCommandBuffer(false);
+				g_vulkan_context->ExecuteCommandBuffer(Vulkan::Context::WaitType::None);
 				return false;
 			}
 
@@ -378,7 +378,7 @@ bool VulkanHostDisplay::BeginPresent(bool frame_skip)
 		{
 			// Still submit the command buffer, otherwise we'll end up with several frames waiting.
 			LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
-			g_vulkan_context->ExecuteCommandBuffer(false);
+			g_vulkan_context->ExecuteCommandBuffer(Vulkan::Context::WaitType::None);
 			return false;
 		}
 	}
