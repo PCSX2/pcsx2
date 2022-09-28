@@ -3031,25 +3031,29 @@ void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	bool bilinear = m_vt.IsLinear();
 	int trilinear = 0;
-	bool trilinear_auto = false;
+	bool trilinear_auto = false; // Generate mipmaps if needed (basic).
 	switch (GSConfig.UserHacks_TriFilter)
 	{
 		case TriFiltering::Forced:
-			{
-				// force bilinear otherwise we can end up with min/mag nearest and mip linear.
-				bilinear = true;
-				trilinear = static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Linear);
-				trilinear_auto = !need_mipmap || GSConfig.HWMipmap != HWMipmapLevel::Full;
-			}
-			break;
+		{
+			// Force bilinear otherwise we can end up with min/mag nearest and mip linear.
+			// We don't need to check for HWMipmapLevel::Off here, because forced trilinear implies forced mipmaps.
+			bilinear = true;
+			trilinear = static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Linear);
+			trilinear_auto = !need_mipmap || GSConfig.HWMipmap != HWMipmapLevel::Full;
+		}
+		break;
 
 		case TriFiltering::PS2:
-			if (need_mipmap && GSConfig.HWMipmap != HWMipmapLevel::Full)
+		{
+			// Can only use PS2 trilinear when mipmapping is enabled.
+			if (need_mipmap && GSConfig.HWMipmap != HWMipmapLevel::Off)
 			{
 				trilinear = m_context->TEX1.MMIN;
-				trilinear_auto = true;
+				trilinear_auto = GSConfig.HWMipmap != HWMipmapLevel::Full;
 			}
-			break;
+		}
+		break;
 
 		case TriFiltering::Automatic:
 		case TriFiltering::Off:
