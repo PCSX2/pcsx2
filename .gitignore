@@ -49,6 +49,7 @@ Debug.txt
 install_log.txt
 padLog.txt
 GS_opengl_debug.txt
+bad_shader_*
 
 Debug
 Release

@@ -1676,8 +1676,14 @@ endif()
 
 # MacOSX/BSD
 if(UNIX AND NOT Linux)
+	if(APPLE)
+		target_sources(PCSX2 PRIVATE
+			${pcsx2OSXSources})
+	else()
+		target_sources(PCSX2 PRIVATE
+			${pcsx2FreeBSDSources})
+	endif()
 	target_sources(PCSX2 PRIVATE
-		${pcsx2OSXSources}
 		${pcsx2LinuxHeaders}
 		${pcsx2USBSourcesQt}
 		${pcsx2USBHeadersQt})
@@ -1694,12 +1700,6 @@ else()
 			${pcsx2USBSourcesQt}
 			${pcsx2USBHeadersQt})
 	endif()
-endif()
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
-	target_sources(PCSX2 PRIVATE
-		${pcsx2FreeBSDSources}
-		${pcsx2LinuxHeaders})
 endif()
 
 target_link_libraries(PCSX2_FLAGS INTERFACE
