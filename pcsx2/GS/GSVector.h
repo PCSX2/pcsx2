@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSIntrin.h"
+#include <cstring>
 
 #pragma once
 
@@ -65,12 +66,12 @@ public:
 
 	constexpr bool operator==(const GSVector2T& v) const
 	{
-		return x == v.x && y == v.y;
+		return (std::memcmp(this, &v, sizeof(*this)) == 0);
 	}
 
 	constexpr bool operator!=(const GSVector2T& v) const
 	{
-		return x != v.x || y != v.y;
+		return (std::memcmp(this, &v, sizeof(*this)) != 0);
 	}
 
 	constexpr GSVector2T operator*(const GSVector2T& v) const
