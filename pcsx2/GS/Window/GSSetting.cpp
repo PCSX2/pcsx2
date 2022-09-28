@@ -167,6 +167,9 @@ const char* dialog_message(int ID, bool* updateText)
 		case IDC_SPIN_GPU:
 			return cvtString("Submits useless work to the GPU during readbacks to prevent it from going into powersave modes.\n"
 				"May improve performance but with a significant increase in power usage.");
+		case IDC_SPIN_CPU:
+			return cvtString("Does useless work on the CPU during readbacks to prevent it from going to into powersave modes.\n"
+				"May improve performance but with a significant increase in power usage.");
 		case IDC_LINEAR_PRESENT:
 			return cvtString("Use bilinear filtering when Upscaling/Downscaling the image to the screen. Disable it if you want a sharper/pixelated output.");
 		// Exclusive for Hardware Renderer

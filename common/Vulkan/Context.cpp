@@ -17,6 +17,7 @@
 #include "common/Align.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/General.h"
 #include "common/StringUtil.h"
 #include "common/Vulkan/ShaderCompiler.h"
 #include "common/Vulkan/SwapChain.h"
@@ -1437,18 +1438,23 @@ namespace Vulkan
 		vmaSetCurrentFrameIndex(m_allocator, static_cast<u32>(m_next_fence_counter));
 	}
 
-	void Context::ExecuteCommandBuffer(bool wait_for_completion)
+	void Context::ExecuteCommandBuffer(WaitType wait_for_completion)
 	{
 		// If we're waiting for completion, don't bother waking the worker thread.
 		const u32 current_frame = m_current_frame;
 		SubmitCommandBuffer();
 		MoveToNextCommandBuffer();
 
-		if (wait_for_completion)
+		if (wait_for_completion != WaitType::None)
 		{
 			// Calibrate while we wait
 			if (m_wants_new_timestamp_calibration)
 				CalibrateSpinTimestamp();
+			if (wait_for_completion == WaitType::Spin)
+			{
+				while (vkGetFenceStatus(m_device, m_frame_resources[current_frame].fence) == VK_NOT_READY)
+					ShortSpin();
+			}
 			WaitForCommandBufferCompletion(current_frame);
 		}
 	}

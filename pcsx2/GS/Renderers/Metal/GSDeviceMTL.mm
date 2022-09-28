@@ -26,6 +26,21 @@
 #ifdef __APPLE__
 #include "GSMTLSharedHeader.h"
 
+static constexpr bool IsCommandBufferCompleted(MTLCommandBufferStatus status)
+{
+	switch (status)
+	{
+		case MTLCommandBufferStatusNotEnqueued:
+		case MTLCommandBufferStatusEnqueued:
+		case MTLCommandBufferStatusCommitted:
+		case MTLCommandBufferStatusScheduled:
+			return false;
+		case MTLCommandBufferStatusCompleted:
+		case MTLCommandBufferStatusError:
+			return true;
+	}
+}
+
 GSDevice* MakeGSDeviceMTL()
 {
 	return new GSDeviceMTL();
@@ -1055,7 +1070,15 @@ bool GSDeviceMTL::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSText
 			m_spin_timer = 30;
 		}
 	}
-	[cmdbuf waitUntilCompleted];
+	if (GSConfig.HWSpinCPUForReadbacks)
+	{
+		while (!IsCommandBufferCompleted([cmdbuf status]))
+			ShortSpin();
+	}
+	else
+	{
+		[cmdbuf waitUntilCompleted];
+	}
 
 	out_map.bits = static_cast<u8*>([m_texture_download_buf contents]);
 	g_perfmon.Put(GSPerfMon::Readbacks, 1);

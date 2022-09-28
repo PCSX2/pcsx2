@@ -1445,7 +1445,7 @@ void GSDevice12::DestroyStagingBuffer()
 
 void GSDevice12::DestroyResources()
 {
-	g_d3d12_context->ExecuteCommandList(true);
+	g_d3d12_context->ExecuteCommandList(D3D12::Context::WaitType::Sleep);
 
 	for (auto& it : m_tfx_pipelines)
 		g_d3d12_context->DeferObjectDestruction(it.second.get());
@@ -1734,10 +1734,20 @@ void GSDevice12::InitializeSamplers()
 		pxFailRel("Failed to initialize samplers");
 }
 
+static D3D12::Context::WaitType GetWaitType(bool wait, bool spin)
+{
+	if (!wait)
+		return D3D12::Context::WaitType::None;
+	if (spin)
+		return D3D12::Context::WaitType::Spin;
+	else
+		return D3D12::Context::WaitType::Sleep;
+}
+
 void GSDevice12::ExecuteCommandList(bool wait_for_completion)
 {
 	EndRenderPass();
-	g_d3d12_context->ExecuteCommandList(wait_for_completion);
+	g_d3d12_context->ExecuteCommandList(GetWaitType(wait_for_completion, GSConfig.HWSpinCPUForReadbacks));
 	InvalidateCachedState();
 }
 
@@ -1758,7 +1768,7 @@ void GSDevice12::ExecuteCommandListAndRestartRenderPass(const char* reason)
 
 	const bool was_in_render_pass = m_in_render_pass;
 	EndRenderPass();
-	g_d3d12_context->ExecuteCommandList(false);
+	g_d3d12_context->ExecuteCommandList(D3D12::Context::WaitType::None);
 	InvalidateCachedState();
 
 	if (was_in_render_pass)

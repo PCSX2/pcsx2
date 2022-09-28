@@ -326,6 +326,7 @@ Pcsx2Config::GSOptions::GSOptions()
 
 	HWDownloadMode = GSHardwareDownloadMode::Enabled;
 	HWSpinGPUForReadbacks = false;
+	HWSpinCPUForReadbacks = false;
 	GPUPaletteConversion = false;
 	AutoFlushSW = true;
 	PreloadFrameWithGSData = false;
@@ -550,6 +551,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBool(OsdShowInputs);
 
 	GSSettingBool(HWSpinGPUForReadbacks);
+	GSSettingBool(HWSpinCPUForReadbacks);
 	GSSettingBoolEx(GPUPaletteConversion, "paltex");
 	GSSettingBoolEx(AutoFlushSW, "autoflush_sw");
 	GSSettingBoolEx(PreloadFrameWithGSData, "preload_frame_with_gs_data");
