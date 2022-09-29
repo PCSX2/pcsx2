@@ -1099,7 +1099,9 @@ void GSState::GIFRegHandlerTEX0(const GIFReg* RESTRICT r)
 	// Max allowed MTBA size for 32bit swizzled textures (including 8H 4HL etc) is 512, 16bit and normal 8/4bit formats can be 1024
 	const u32 maxTex = (GSLocalMemory::m_psm[TEX0.PSM].bpp < 32) ? 10 : 9;
 
-	// Spec max is 10
+	// Spec max is 10, but bitfield allows for up to 15
+	// However STQ calculations expect the written size to be used for denormalization (Simple 2000 Series Vol 105 The Maid)
+	// This is clamped to 10 in the FixedTEX0 functions so texture sizes don't exceed 1024x1024, but STQ can calculate properly (with invalid_tex0)
 	//
 	// Yakuza (minimap)
 	// Sets TW/TH to 0
@@ -1110,8 +1112,8 @@ void GSState::GIFRegHandlerTEX0(const GIFReg* RESTRICT r)
 	// Sets TW/TH to 0
 	// there used to be a case to force this to 10
 	// but GetSizeFixedTEX0 sorts this now
-	TEX0.TW = std::clamp<u32>(TEX0.TW, 0, 10);
-	TEX0.TH = std::clamp<u32>(TEX0.TH, 0, 10);
+	TEX0.TW = std::clamp<u32>(TEX0.TW, 0, 15);
+	TEX0.TH = std::clamp<u32>(TEX0.TH, 0, 15);
 
 	// MTBA loads are triggered by writes to TEX0 (but not TEX2!)
 	// Textures MUST be a minimum width of 32 pixels
