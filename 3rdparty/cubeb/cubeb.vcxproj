@@ -33,44 +33,44 @@
     <ClCompile>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <PreprocessorDefinitions>USE_WASAPI;USE_WINMM;OUTSIDE_SPEEX;FLOATING_POINT;RANDOM_PREFIX=speex;EXPORT=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)cubeb\include;$(ProjectDir)cubeb\src;$(ProjectDir)cubeb\subprojects;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;$(ProjectDir)subprojects;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="cubeb\include\cubeb\cubeb.h" />
-    <ClInclude Include="cubeb\subprojects\speex\arch.h" />
-    <ClInclude Include="cubeb\subprojects\speex\fixed_generic.h" />
-    <ClInclude Include="cubeb\subprojects\speex\resample_neon.h" />
-    <ClInclude Include="cubeb\subprojects\speex\resample_sse.h" />
-    <ClInclude Include="cubeb\subprojects\speex\speex_config_types.h" />
-    <ClInclude Include="cubeb\subprojects\speex\speex_resampler.h" />
-    <ClInclude Include="cubeb\subprojects\speex\stack_alloc.h" />
-    <ClInclude Include="cubeb\src\cubeb-internal.h" />
-    <ClInclude Include="cubeb\src\cubeb-speex-resampler.h" />
-    <ClInclude Include="cubeb\src\cubeb_array_queue.h" />
-    <ClInclude Include="cubeb\src\cubeb_assert.h" />
-    <ClInclude Include="cubeb\src\cubeb_log.h" />
-    <ClInclude Include="cubeb\src\cubeb_mixer.h" />
-    <ClInclude Include="cubeb\src\cubeb_resampler.h" />
-    <ClInclude Include="cubeb\src\cubeb_resampler_internal.h" />
-    <ClInclude Include="cubeb\src\cubeb_ringbuffer.h" />
-    <ClInclude Include="cubeb\src\cubeb_ring_array.h" />
-    <ClInclude Include="cubeb\src\cubeb_strings.h" />
-    <ClInclude Include="cubeb\src\cubeb_utils.h" />
-    <ClInclude Include="cubeb\src\cubeb_utils_win.h" />
+    <ClInclude Include="include\cubeb\cubeb.h" />
+    <ClInclude Include="subprojects\speex\arch.h" />
+    <ClInclude Include="subprojects\speex\fixed_generic.h" />
+    <ClInclude Include="subprojects\speex\resample_neon.h" />
+    <ClInclude Include="subprojects\speex\resample_sse.h" />
+    <ClInclude Include="subprojects\speex\speex_config_types.h" />
+    <ClInclude Include="subprojects\speex\speex_resampler.h" />
+    <ClInclude Include="subprojects\speex\stack_alloc.h" />
+    <ClInclude Include="src\cubeb-internal.h" />
+    <ClInclude Include="src\cubeb-speex-resampler.h" />
+    <ClInclude Include="src\cubeb_array_queue.h" />
+    <ClInclude Include="src\cubeb_assert.h" />
+    <ClInclude Include="src\cubeb_log.h" />
+    <ClInclude Include="src\cubeb_mixer.h" />
+    <ClInclude Include="src\cubeb_resampler.h" />
+    <ClInclude Include="src\cubeb_resampler_internal.h" />
+    <ClInclude Include="src\cubeb_ringbuffer.h" />
+    <ClInclude Include="src\cubeb_ring_array.h" />
+    <ClInclude Include="src\cubeb_strings.h" />
+    <ClInclude Include="src\cubeb_utils.h" />
+    <ClInclude Include="src\cubeb_utils_win.h" />
     <ClInclude Include="include\cubeb_export.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cubeb\src\cubeb.c" />
-    <ClCompile Include="cubeb\src\cubeb_log.cpp" />
-    <ClCompile Include="cubeb\src\cubeb_mixer.cpp" />
-    <ClCompile Include="cubeb\src\cubeb_resampler.cpp" />
-    <ClCompile Include="cubeb\src\cubeb_strings.c" />
-    <ClCompile Include="cubeb\src\cubeb_utils.cpp" />
-    <ClCompile Include="cubeb\src\cubeb_wasapi.cpp" />
-    <ClCompile Include="cubeb\src\cubeb_winmm.c" />
-    <ClCompile Include="cubeb\subprojects\speex\resample.c" />
+    <ClCompile Include="src\cubeb.c" />
+    <ClCompile Include="src\cubeb_log.cpp" />
+    <ClCompile Include="src\cubeb_mixer.cpp" />
+    <ClCompile Include="src\cubeb_resampler.cpp" />
+    <ClCompile Include="src\cubeb_strings.c" />
+    <ClCompile Include="src\cubeb_utils.cpp" />
+    <ClCompile Include="src\cubeb_wasapi.cpp" />
+    <ClCompile Include="src\cubeb_winmm.c" />
+    <ClCompile Include="subprojects\speex\resample.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
