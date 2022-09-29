@@ -1095,6 +1095,8 @@ SCAJ-20138:
   region: "NTSC-Unk"
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCAJ-20139:
   name: "Zero - Shisei no Koe" # Fatal Frame - Rei - Irezumi no Sei
   region: "NTSC-Unk"
@@ -1371,6 +1373,8 @@ SCAJ-20195:
   region: "NTSC-Ch"
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCAJ-20196:
   name: "Wang Da Yu Ju Xiang [PlayStation 2 The Best]"
   region: "NTSC-Ch"
@@ -1531,7 +1535,8 @@ SCCS-40001:
   name: "Ape Escape 2"
   region: "NTSC-C"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCCS-40002:
   name: "Devil May Cry 2 - Disc 1"
   region: "NTSC-C"
@@ -2908,7 +2913,8 @@ SCES-50885:
   name: "Ape Escape 2"
   region: "PAL-E"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCES-50887:
   name: "Alpine Racer 3"
   region: "PAL-M5"
@@ -3010,22 +3016,26 @@ SCES-51102:
   name: "Ape Escape 2"
   region: "PAL-F"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCES-51103:
   name: "Ape Escape 2"
   region: "PAL-I"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCES-51104:
   name: "Ape Escape 2"
   region: "PAL-G"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCES-51105:
   name: "Ape Escape 2"
   region: "PAL-S"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCES-51135:
   name: "Primal"
   region: "PAL-M5"
@@ -3756,6 +3766,8 @@ SCES-53642:
   compat: 5
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCES-53663:
   name: "Buzz! The Music Quiz"
   region: "PAL-M3"
@@ -4857,6 +4869,8 @@ SCKA-20062:
   region: "NTSC-K"
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCKA-20063:
   name: "Sly Cooper 3 Honor Among Thieves"
   region: "NTSC-K"
@@ -5931,7 +5945,8 @@ SCPS-19206:
   name: "Ape Escape 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCPS-19207:
   name: "Popolocrois Story - Hajime no Bouken [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -6200,6 +6215,8 @@ SCPS-19327:
   region: "NTSC-J"
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCPS-19328:
   name: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
@@ -6432,7 +6449,8 @@ SCPS-55035:
   name: "Ape Escape 2"
   region: "NTSC-J"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCPS-55038:
   name: "Pac-Man World 2"
   region: "NTSC-J"
@@ -8039,6 +8057,8 @@ SCUS-97501:
   compat: 5
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCUS-97502:
   name: "Tourist Trophy"
   region: "NTSC-U"
@@ -8212,6 +8232,8 @@ SCUS-97548:
   region: "NTSC-U"
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCUS-97554:
   name: "NBA '07 featuring The Life Vol.2 [Demo]"
   region: "NTSC-U"
@@ -41334,7 +41356,8 @@ SLUS-20685:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SLUS-20686:
   name: "Splashdown - Rides Gone Wild"
   region: "NTSC-U"
