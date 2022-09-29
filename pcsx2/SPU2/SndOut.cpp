@@ -64,6 +64,11 @@ public:
 	{
 		return "No Sound (Emulate SPU2 only)";
 	}
+
+	const char* const* GetBackendNames() const override
+	{
+		return nullptr;
+	}
 };
 
 static NullOutModule s_NullOut;
@@ -91,6 +96,19 @@ int FindOutputModuleById(const char* omodid)
 		++modcnt;
 	}
 	return modcnt;
+}
+
+const char* const* GetOutputModuleBackends(const char* omodid)
+{
+	for (SndOutModule* mod : mods)
+	{
+		if (mod && std::strcmp(mod->GetIdent(), omodid) == 0)
+		{
+			return mod->GetBackendNames();
+		}
+	}
+
+	return nullptr;
 }
 
 StereoOut32* SndBuffer::m_buffer;
