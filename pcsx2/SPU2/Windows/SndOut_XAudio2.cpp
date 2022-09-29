@@ -380,6 +380,11 @@ public:
 		return "XAudio 2 (Recommended)";
 	}
 
+	const char* const* GetBackendNames() const override
+	{
+		return nullptr;
+	}
+
 } static XA2;
 
 SndOutModule* XAudio2Out = &XA2;

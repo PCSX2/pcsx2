@@ -34,6 +34,10 @@ extern int SampleRate;
 
 extern int FindOutputModuleById(const char* omodid);
 
+// Returns a null-terminated list of backends for the specified module.
+// nullptr is returned if the specified module does not have multiple backends.
+extern const char* const* GetOutputModuleBackends(const char* omodid);
+
 // Implemented in Config.cpp
 extern float VolumeAdjustFL;
 extern float VolumeAdjustC;
@@ -640,6 +644,9 @@ public:
 	// Returns the long name / description for this driver.
 	// (for use in configuration screen)
 	virtual const char* GetLongName() const = 0;
+
+	// Returns a null-terminated list of backends, or nullptr.
+	virtual const char* const* GetBackendNames() const = 0;
 
 	virtual bool Init() = 0;
 	virtual void Close() = 0;

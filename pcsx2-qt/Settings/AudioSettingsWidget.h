@@ -31,6 +31,8 @@ public:
 
 private Q_SLOTS:
 	void expansionModeChanged();
+	void outputModuleChanged();
+	void outputBackendChanged();
 	void updateVolumeLabel();
 	void updateLatencyLabel();
 	void updateTimestretchSequenceLengthLabel();
