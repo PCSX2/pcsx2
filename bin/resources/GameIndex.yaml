@@ -8555,6 +8555,7 @@ SLAJ-25053:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLAJ-25055:
   name: "Def Jam - Fight for N.Y."
   region: "NTSC-Unk"
@@ -8588,6 +8589,7 @@ SLAJ-25066:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
   memcardFilters:
     - "SLAJ-25066"
     - "SLPM-66108"
@@ -8693,6 +8695,8 @@ SLAJ-25094:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
+    mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLAJ-25095:
   name: "Medal of Honor - Vanguard"
   region: "NTSC-Unk"
@@ -8837,6 +8841,8 @@ SLED-52597:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
+    mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLED-52875:
   name: "Sega Superstars [Demo]"
   region: "PAL-E"
@@ -8878,6 +8884,7 @@ SLED-53512:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLED-53537:
   name: "187 - Ride or Die [Demo]"
   region: "PAL-E"
@@ -14365,6 +14372,7 @@ SLES-52584:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-52585:
   name: "Burnout 3 - Takedown"
   region: "PAL-F-G-I"
@@ -14374,6 +14382,7 @@ SLES-52585:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-52587:
   name: "Army Men - Sarge's War"
   region: "PAL-M5"
@@ -16459,6 +16468,7 @@ SLES-53506:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
   memcardFilters:
     - "SLES-53506"
     - "SLES-53507"
@@ -16475,6 +16485,7 @@ SLES-53507:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
   memcardFilters:
     - "SLES-53506"
     - "SLES-53507"
@@ -19212,6 +19223,8 @@ SLES-54627:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
+    mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-54628:
   name: "Skate Attack [Promo]"
   region: "PAL-E"
@@ -19373,6 +19386,8 @@ SLES-54681:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
+    mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-54683:
   name: "Medal of Honor - Vanguard"
   region: "PAL-M9"
@@ -22428,6 +22443,7 @@ SLKA-25206:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLKA-25207:
   name: "Sakura Taisen V - Episode 0 - Samurai Girl of Wild"
   region: "NTSC-K"
@@ -22690,6 +22706,7 @@ SLKA-25304:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLKA-25307:
   name: "Dragon Ball Z Sparking"
   region: "NTSC-K"
@@ -22954,6 +22971,14 @@ SLPM-20436:
   name: "Sakigake!! Otokojuku"
   region: "NTSC-J"
   compat: 5
+SLPM-55004:
+  name: "Burnout Revenge (EASY 1980)"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
+    mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLPM-55005:
   name: "Mana Khemia 2 - Ochita Gakuen to Renkinjutsushi Tachi"
   region: "NTSC-J"
@@ -22981,6 +23006,14 @@ SLPM-55024:
 SLPM-55033:
   name: "J. League Winning Eleven 2008 - Club Championship"
   region: "NTSC-J"
+SLPM-55036:
+  name: "Burnout Dominator (EASY 1980)"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 1 # Fixes blur.
+    mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLPM-55039:
   name: "Soukoku no Kusabi - Hiiro no Kakera 3 [Limited Edition]"
   region: "NTSC-J"
@@ -23513,6 +23546,7 @@ SLPM-60246:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLPM-60251:
   name: "Devil May Cry 3 [Trial Version]"
   region: "NTSC-J"
@@ -28196,6 +28230,7 @@ SLPM-65719:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLPM-65720:
   name: "Shin Sangoku Musou 2 Mushoden [Koei the Best]"
   region: "NTSC-J"
@@ -29014,6 +29049,7 @@ SLPM-65958:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLPM-65959:
   name: "Standard Daisenryaku - Ushinawareta Shouri"
   region: "NTSC-J"
@@ -29528,6 +29564,7 @@ SLPM-66108:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
   memcardFilters:
     - "SLAJ-25066"
     - "SLPM-66108"
@@ -31482,6 +31519,7 @@ SLPM-66652:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
   memcardFilters:
     - "SLAJ-25066"
     - "SLPM-66108"
@@ -31842,6 +31880,8 @@ SLPM-66739:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
+    mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLPM-66740:
   name: "Sentou Kokka Kai - Legend [DX Pack]"
   region: "NTSC-J"
@@ -32554,6 +32594,7 @@ SLPM-66962:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLPM-66963:
   name: "Medal of Honor - Frontline [EA-SY! 1980]"
   region: "NTSC-J"
@@ -43148,6 +43189,7 @@ SLUS-21050:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLUS-21051:
   name: "FIFA 2005"
   region: "NTSC-U"
@@ -44085,6 +44127,7 @@ SLUS-21242:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
   memcardFilters: # Reads Burnout 3 and NFL 06 saves for unlockables.
     - "SLUS-21242"
     - "SLUS-21050"
@@ -45801,6 +45844,8 @@ SLUS-21596:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
+    mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLUS-21597:
   name: "Medal of Honor - Vanguard"
   region: "NTSC-U"
@@ -47869,6 +47914,7 @@ SLUS-29113:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLUS-29116:
   name: "WWE SmackDown! vs. RAW [Public Beta Vol.1.0]"
   region: "NTSC-U"
@@ -47973,6 +48019,7 @@ SLUS-29153:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur.
     mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLUS-29154:
   name: "NHL '06 [Demo]"
   region: "NTSC-U"
