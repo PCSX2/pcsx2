@@ -1804,6 +1804,7 @@ bool GSDeviceVK::CheckStagingBufferSize(u32 required_size)
 	}
 
 	m_readback_staging_buffer_map = ai.pMappedData;
+	m_readback_staging_buffer_size = required_size;
 	return true;
 }
 
