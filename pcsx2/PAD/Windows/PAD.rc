@@ -451,7 +451,7 @@ BEGIN
     GROUPBOX        "Game Device APIs",IDC_STATIC,16,59,191,62
     CONTROL         "DirectInput (Legacy)",IDC_G_DI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,71,100,10
     CONTROL         "XInput (Modern)",IDC_G_XI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,82,100,10
-    CONTROL         "DualShock 3 native mode (Requires libusb)",IDC_G_DS3,
+    CONTROL         "DualShock 3 native mode (Requires sixaxis)",IDC_G_DS3,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,94,155,10
     CONTROL         "Monitor when in background",IDC_BACKGROUND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,105,107,10
     GROUPBOX        "Mouse API",IDC_STATIC,216,16,192,61
