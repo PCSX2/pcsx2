@@ -18,180 +18,38 @@
 #include "InputManager.h"
 #include "PADConfig.h"
 
-#include "usb.h"
 #include "HidDevice.h"
-
 
 #define VID 0x054c
 #define PID 0x0268
 
-// Unresponsive period required before calling DS3Check().
-#define DEVICE_CHECK_DELAY 2000
-// Unresponsive period required before calling DS3Enum().  Note that enum is always called on first check.
-#define DEVICE_ENUM_DELAY 10000
+//Sixaxis driver commands.
+//All commands must be sent via WriteFile with 49-byte buffer containing output report.
+//Byte 0 indicates reportId and must always be 0.
+//Byte 1 indicates some command, supported values are specified below.
 
-// Delay between when DS3Check() and DS3Enum() actually do stuff.
-#define DOUBLE_CHECK_DELAY 1000
-#define DOUBLE_ENUM_DELAY 20000
-
-// Send at least one message every 3 seconds - basically just makes sure the right light(s) are on.
-// Not really necessary.
-#define UPDATE_INTERVAL 3000
-
-unsigned int lastDS3Check = 0;
-unsigned int lastDS3Enum = 0;
-
-typedef void(__cdecl* _usb_init)(void);
-typedef int(__cdecl* _usb_close)(usb_dev_handle* dev);
-typedef int(__cdecl* _usb_get_string_simple)(usb_dev_handle* dev, int index, char* buf, size_t buflen);
-typedef usb_dev_handle*(__cdecl* _usb_open)(struct usb_device* dev);
-typedef int(__cdecl* _usb_find_busses)(void);
-typedef int(__cdecl* _usb_find_devices)(void);
-typedef struct usb_bus*(__cdecl* _usb_get_busses)(void);
-typedef usb_dev_handle*(__cdecl* _usb_open)(struct usb_device* dev);
-typedef int(__cdecl* _usb_control_msg)(usb_dev_handle* dev, int requesttype, int request, int value, int index, char* bytes, int size, int timeout);
-
-_usb_init pusb_init;
-_usb_close pusb_close;
-_usb_get_string_simple pusb_get_string_simple;
-_usb_open pusb_open;
-_usb_find_busses pusb_find_busses;
-_usb_find_devices pusb_find_devices;
-_usb_get_busses pusb_get_busses;
-_usb_control_msg pusb_control_msg;
-
-HMODULE hModLibusb = 0;
-
-void UninitLibUsb()
-{
-	if (hModLibusb)
-	{
-		FreeLibrary(hModLibusb);
-		hModLibusb = 0;
-	}
-}
-
-void TryInitDS3(usb_device* dev)
-{
-	while (dev)
-	{
-		if (dev->descriptor.idVendor == VID && dev->descriptor.idProduct == PID)
-		{
-			usb_dev_handle* handle = pusb_open(dev);
-			if (handle)
-			{
-				char junk[20];
-				// This looks like HidD_GetFeature with a feature report id of 0xF2 to me and a length of 17.
-				// That doesn't work, however, and 17 is shorter than the report length.
-				pusb_control_msg(handle, 0xa1, 1, 0x03f2, dev->config->interface->altsetting->bInterfaceNumber, junk, 17, 1000);
-				pusb_close(handle);
-			}
-		}
-		if (dev->num_children)
-		{
-			for (int i = 0; i < dev->num_children; i++)
-			{
-				TryInitDS3(dev->children[i]);
-			}
-		}
-		dev = dev->next;
-	}
-}
-
-void DS3Enum(unsigned int time)
-{
-	if (time - lastDS3Enum < DOUBLE_ENUM_DELAY)
-	{
-		return;
-	}
-	lastDS3Enum = time;
-	pusb_find_busses();
-	pusb_find_devices();
-}
-
-void DS3Check(unsigned int time)
-{
-	if (time - lastDS3Check < DOUBLE_CHECK_DELAY)
-	{
-		return;
-	}
-	if (!lastDS3Check)
-	{
-		DS3Enum(time);
-	}
-	lastDS3Check = time;
-
-	usb_bus* bus = pusb_get_busses();
-	while (bus)
-	{
-		TryInitDS3(bus->devices);
-		bus = bus->next;
-	}
-}
-
-int InitLibUsb()
-{
-	if (hModLibusb)
-	{
-		return 1;
-	}
-	hModLibusb = LoadLibraryA("C:\\windows\\system32\\libusb0.dll");
-	if (hModLibusb)
-	{
-		if ((pusb_init = (_usb_init)GetProcAddress(hModLibusb, "usb_init")) &&
-			(pusb_close = (_usb_close)GetProcAddress(hModLibusb, "usb_close")) &&
-			(pusb_get_string_simple = (_usb_get_string_simple)GetProcAddress(hModLibusb, "usb_get_string_simple")) &&
-			(pusb_open = (_usb_open)GetProcAddress(hModLibusb, "usb_open")) &&
-			(pusb_find_busses = (_usb_find_busses)GetProcAddress(hModLibusb, "usb_find_busses")) &&
-			(pusb_find_devices = (_usb_find_devices)GetProcAddress(hModLibusb, "usb_find_devices")) &&
-			(pusb_get_busses = (_usb_get_busses)GetProcAddress(hModLibusb, "usb_get_busses")) &&
-			(pusb_control_msg = (_usb_control_msg)GetProcAddress(hModLibusb, "usb_control_msg")))
-		{
-			pusb_init();
-			return 1;
-		}
-		UninitLibUsb();
-	}
-	return 0;
-}
+//This command allows to set user LEDs.
+//Bytes 5,6.7.8 contain mode for corresponding LED: 0 value means LED is OFF, 1 means LEDs in ON and 2 means LEDs is flashing.
+//Bytes 9-16 specify 64-bit LED flash period in 100 ns units if some LED is flashing, otherwise not used.
+#define SIXAXIS_COMMAND_SET_LEDS 1
+//This command allows to set left and right motors.
+//Byte 5 is right motor duration (0-255) and byte 6, if not zero, activates right motor. Zero value disables right motor.
+//Byte 7 is left motor duration (0-255) and byte 8 is left motor amplitude (0-255).
+#define SIXAXIS_COMMAND_SET_MOTORS 2
+//This command allows to block/unblock setting device LEDs by applications.
+//Byte 5 is used as parameter - any non-zero value blocks LEDs, zero value will unblock LEDs.
+#define SIXAXIS_COMMAND_BLOCK_LEDS 3
+//This command refreshes driver settings. No parameters used.
+//When sixaxis driver loads it reads 'CurrentDriverSetting' binary value from 'HKLM\System\CurrentControlSet\Services\sixaxis\Parameters' registry key.
+//If the key is not present then default values are used. Sending this command forces sixaxis driver to re-read the registry and update driver settings.
+#define SIXAXIS_COMMAND_REFRESH_DRIVER_SETTING 9
+//This command clears current bluetooth pairing. No parameters used.
+#define SIXAXIS_COMMAND_CLEAR_PAIRING 10
 
 int DualShock3Possible()
 {
-	return InitLibUsb();
+	return 1;
 }
-
-#include <pshpack1.h>
-
-struct MotorState
-{
-	unsigned char duration;
-	unsigned char force;
-};
-
-struct LightState
-{
-	// 0xFF makes it stay on.
-	unsigned char duration;
-	// Have to make one or the other non-zero to turn on light.
-	unsigned char dunno[2];
-	// Have to make non-zero to turn on light.
-	unsigned char on;
-};
-
-// Data sent to DS3 to set state.
-struct DS3Command
-{
-	unsigned char id;
-	// Small is first, then big.
-	MotorState motors[2];
-	// 2 is pad 1 light, 4 is pad 2, 8 is pad 3, 16 is pad 4.  No clue about the others.
-	unsigned char lightFlags;
-	// Lights are in reverse order.  pad 1 is last.
-	LightState lights[4];
-	unsigned char dunno[18];
-};
-
-#include <poppack.h>
 
 int CharToAxis(unsigned char c)
 {
@@ -214,78 +72,11 @@ class DualShock3Device : public Device
 public:
 	int index;
 	HANDLE hFile;
-	DS3Command sendState;
 	unsigned char getState[49];
-	OVERLAPPED readop;
-	OVERLAPPED writeop;
-	int writeCount;
-	int lastWrite;
-
-	unsigned int dataLastReceived;
-
-	int writeQueued;
-	int writing;
-
-	int StartRead()
-	{
-		int res = ReadFile(hFile, &getState, sizeof(getState), 0, &readop);
-		return (res || GetLastError() == ERROR_IO_PENDING);
-	}
-
-	void QueueWrite()
-	{
-		// max of 2 queued writes allowed, one for either motor.
-		if (writeQueued < 2)
-		{
-			writeQueued++;
-			StartWrite();
-		}
-	}
-
-	int StartWrite()
-	{
-		if (!writing && writeQueued)
-		{
-			lastWrite = GetTickCount();
-			writing++;
-			writeQueued--;
-			sendState.motors[0].duration = 0x50;
-			sendState.motors[1].duration = 0x50;
-
-			int bigForce = vibration[0] * 256 / FULLY_DOWN;
-			if (bigForce > 255)
-				bigForce = 255;
-			sendState.motors[1].force = (unsigned char)bigForce;
-			sendState.motors[0].force = (unsigned char)(vibration[1] >= FULLY_DOWN / 2);
-			// Can't seem to have them both non-zero at once.
-			if (sendState.motors[writeCount & 1].force)
-			{
-				sendState.motors[(writeCount & 1) ^ 1].force = 0;
-				sendState.motors[(writeCount & 1) ^ 1].duration = 0;
-			}
-
-			writeCount++;
-			int res = WriteFile(hFile, &sendState, sizeof(sendState), 0, &writeop);
-			return (res || GetLastError() == ERROR_IO_PENDING);
-		}
-		return 1;
-	}
 
 	DualShock3Device(int index, wchar_t* name, wchar_t* path)
 		: Device(DS3, OTHER, name, path, L"DualShock 3")
 	{
-		writeCount = 0;
-		writing = 0;
-		writeQueued = 0;
-		memset(&readop, 0, sizeof(readop));
-		memset(&writeop, 0, sizeof(writeop));
-		memset(&sendState, 0, sizeof(sendState));
-		sendState.id = 1;
-		int temp = (index & 4);
-		sendState.lightFlags = (1 << (temp + 1));
-		sendState.lights[3 - temp].duration = 0xFF;
-		sendState.lights[3 - temp].dunno[0] = 1;
-		sendState.lights[3 - temp].on = 1;
 		memset(ps2Vibration, 0, sizeof(ps2Vibration));
 		vibration[0] = vibration[1] = 0;
 		this->index = index;
@@ -350,13 +141,8 @@ public:
 	{
 		if (active)
 			Deactivate();
-		// Give grace period before get mad.
-		lastWrite = dataLastReceived = GetTickCount();
-		readop.hEvent = CreateEvent(0, 0, 0, 0);
-		writeop.hEvent = CreateEvent(0, 0, 0, 0);
-		hFile = CreateFileW(instanceID, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
-		if (!readop.hEvent || !writeop.hEvent || hFile == INVALID_HANDLE_VALUE ||
-			!StartRead())
+		hFile = CreateFileW(instanceID, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+		if (hFile == INVALID_HANDLE_VALUE)
 		{
 			Deactivate();
 			return 0;
@@ -370,78 +156,46 @@ public:
 	{
 		if (!active)
 			return 0;
-		HANDLE h[2] = {
-			readop.hEvent,
-			writeop.hEvent};
-		unsigned int time = GetTickCount();
-		if (time - lastWrite > UPDATE_INTERVAL)
-		{
-			QueueWrite();
-		}
-		while (1)
-		{
-			DWORD res = WaitForMultipleObjects(2, h, 0, 0);
-			if (res == WAIT_OBJECT_0)
-			{
-				dataLastReceived = time;
-				if (!StartRead())
-				{
-					Deactivate();
-					return 0;
-				}
 
-				physicalControlState[0] = CharToButton(getState[25]);
-				physicalControlState[1] = CharToButton(getState[24]);
-				physicalControlState[2] = CharToButton(getState[23]);
-				physicalControlState[3] = CharToButton(getState[22]);
-				physicalControlState[4] = CharToButton(getState[21]);
-				physicalControlState[5] = CharToButton(getState[20]);
-				physicalControlState[6] = CharToButton(getState[19]);
-				physicalControlState[7] = CharToButton(getState[18]);
-				physicalControlState[10] = CharToButton(getState[17]);
-				physicalControlState[11] = CharToButton(getState[16]);
-				physicalControlState[12] = CharToButton(getState[15]);
-				physicalControlState[13] = CharToButton(getState[14]);
-				physicalControlState[8] = ((getState[2] & 4) / 4) * FULLY_DOWN;
-				physicalControlState[9] = ((getState[2] & 2) / 2) * FULLY_DOWN;
-				physicalControlState[15] = ((getState[2] & 1) / 1) * FULLY_DOWN;
-				physicalControlState[14] = ((getState[2] & 8) / 8) * FULLY_DOWN;
-				physicalControlState[16] = CharToAxis(getState[6]);
-				physicalControlState[17] = CharToAxis(getState[7]);
-				physicalControlState[18] = CharToAxis(getState[8]);
-				physicalControlState[19] = CharToAxis(getState[9]);
-				physicalControlState[20] = CharToAxis(getState[42] + 128);
-				physicalControlState[21] = CharToAxis(getState[44] + 128);
-				physicalControlState[22] = CharToAxis(getState[46] + 128);
-				continue;
-			}
-			else if (res == WAIT_OBJECT_0 + 1)
-			{
-				writing = 0;
-				if (!writeQueued && (vibration[0] | vibration[1]))
-				{
-					QueueWrite();
-				}
-				if (!StartWrite())
-				{
-					Deactivate();
-					return 0;
-				}
-			}
-			else
-			{
-				if (time - dataLastReceived >= DEVICE_CHECK_DELAY)
-				{
-					if (time - dataLastReceived >= DEVICE_ENUM_DELAY)
-					{
-						DS3Enum(time);
-					}
-					DS3Check(time);
-					QueueWrite();
-				}
-			}
-			break;
+		unsigned char Buffer[50];
+
+		Buffer[0] = 0; //reportId
+
+		if (!HidD_GetFeature(hFile,
+				Buffer,
+				sizeof(Buffer)))
+		{
+			Deactivate();
+			return 0;
 		}
+
+		unsigned char* getState = &Buffer[1];
+
+		physicalControlState[0] = CharToButton(getState[25]); //Square
+		physicalControlState[1] = CharToButton(getState[24]); //Cross
+		physicalControlState[2] = CharToButton(getState[23]); //Circle
+		physicalControlState[3] = CharToButton(getState[22]); //Triangle
+		physicalControlState[4] = CharToButton(getState[21]); //R1
+		physicalControlState[5] = CharToButton(getState[20]); //L1
+		physicalControlState[6] = CharToButton(getState[19]); //R2
+		physicalControlState[7] = CharToButton(getState[18]); //L2
+		physicalControlState[10] = CharToButton(getState[17]); //Dpad Left
+		physicalControlState[11] = CharToButton(getState[16]); //Dpad Down
+		physicalControlState[12] = CharToButton(getState[15]); //Dpad Right
+		physicalControlState[13] = CharToButton(getState[14]); //Dpad Up
+		physicalControlState[8] = ((getState[2] & 4) / 4) * FULLY_DOWN; //R3
+		physicalControlState[9] = ((getState[2] & 2) / 2) * FULLY_DOWN; //L3
+		physicalControlState[15] = ((getState[2] & 1) / 1) * FULLY_DOWN; //SELECT
+		physicalControlState[14] = ((getState[2] & 8) / 8) * FULLY_DOWN; //START
+		physicalControlState[16] = CharToAxis(getState[6]); //Left Stick X
+		physicalControlState[17] = CharToAxis(getState[7]); //Left Stick Y
+		physicalControlState[18] = CharToAxis(getState[8]); //Right Stick X
+		physicalControlState[19] = CharToAxis(getState[9]); //Right Stick Y
+		//Compared to libusb all sensor values on sixaxis driver are little-endian and X axis is inversed
+		physicalControlState[20] = CharToAxis(128 - getState[41]); //Accel X (Left/Right Tilt)
+		physicalControlState[21] = CharToAxis(getState[43] + 128); //Accel Y (Forward/Back Tilt)
+		physicalControlState[22] = CharToAxis(getState[45] + 128); //Accel Z
+
 		return 1;
 	}
 
@@ -463,9 +217,30 @@ public:
 				}
 			}
 		}
-		// Make sure at least 2 writes are queued, to update both motors.
-		QueueWrite();
-		QueueWrite();
+
+		unsigned char outputReport[49];
+
+		//Clear all data and set reportId to 0
+		memset(outputReport, 0, sizeof(outputReport));
+
+		//This is command for sixaxis driver to set motors
+		outputReport[1] = SIXAXIS_COMMAND_SET_MOTORS;
+
+		outputReport[5] = 0x50; //right_duration
+
+		outputReport[6] = (unsigned char)(vibration[1] >= FULLY_DOWN / 2); //right_motor_on
+
+		outputReport[7] = 0x50; //left_duration
+
+		int bigForce = vibration[0] * 256 / FULLY_DOWN;
+		if (bigForce > 255)
+			bigForce = 255;
+
+		outputReport[8] = (unsigned char)bigForce; //left_motor_force
+
+		DWORD lpNumberOfBytesWritten = 0;
+
+		WriteFile(hFile, outputReport, sizeof(outputReport), &lpNumberOfBytesWritten, NULL);
 	}
 
 	void SetEffect(ForceFeedbackBinding* binding, unsigned char force)
@@ -485,16 +260,7 @@ public:
 			CloseHandle(hFile);
 			hFile = INVALID_HANDLE_VALUE;
 		}
-		if (readop.hEvent)
-		{
-			CloseHandle(readop.hEvent);
-		}
-		if (writeop.hEvent)
-		{
-			CloseHandle(writeop.hEvent);
-		}
-		writing = 0;
-		writeQueued = 0;
+
 		memset(ps2Vibration, 0, sizeof(ps2Vibration));
 		vibration[0] = vibration[1] = 0;
 
@@ -509,9 +275,6 @@ public:
 
 void EnumDualShock3s()
 {
-	if (!InitLibUsb())
-		return;
-
 	HidDeviceInfo* foundDevs = 0;
 
 	int numDevs = FindHids(&foundDevs, VID, PID);
@@ -520,14 +283,33 @@ void EnumDualShock3s()
 	int index = 0;
 	for (int i = 0; i < numDevs; i++)
 	{
-		if (foundDevs[i].caps.FeatureReportByteLength == 49 &&
-			foundDevs[i].caps.InputReportByteLength == 49 &&
+		if (foundDevs[i].caps.FeatureReportByteLength == 50 &&
 			foundDevs[i].caps.OutputReportByteLength == 49)
 		{
-			wchar_t temp[100];
-			wsprintfW(temp, L"DualShock 3 #%i", index + 1);
-			dm->AddDevice(new DualShock3Device(index, temp, foundDevs[i].path));
-			index++;
+			HANDLE hDevice = CreateFileW(foundDevs[i].path,
+				GENERIC_READ | GENERIC_WRITE,
+				FILE_SHARE_READ | FILE_SHARE_WRITE,
+				NULL,
+				OPEN_EXISTING,
+				0, NULL);
+			if (hDevice != INVALID_HANDLE_VALUE)
+			{
+				unsigned char Buffer[50];
+
+				Buffer[0] = 0; //reportId
+
+				if (HidD_GetFeature(hDevice,
+						Buffer,
+						sizeof(Buffer)))
+				{
+					wchar_t temp[100];
+					wsprintfW(temp, L"DualShock 3 #%i", index + 1);
+					dm->AddDevice(new DualShock3Device(index, temp, foundDevs[i].path));
+					index++;
+				}
+
+				CloseHandle(hDevice);
+			}
 		}
 		free(foundDevs[i].path);
 	}
