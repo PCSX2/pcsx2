@@ -259,7 +259,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 			sd.AddressV = ssel.tav ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
 			sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 			sd.MinLOD = 0.0f;
-			sd.MaxLOD = ssel.lodclamp ? 0.0f : FLT_MAX;
+			sd.MaxLOD = (ssel.lodclamp || !ssel.UseMipmapFiltering()) ? 0.25f : FLT_MAX;
 			sd.MaxAnisotropy = std::clamp(anisotropy, 1, 16);
 			sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
 

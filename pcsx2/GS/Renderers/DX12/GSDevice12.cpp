@@ -908,7 +908,7 @@ bool GSDevice12::GetSampler(D3D12::DescriptorHandle* cpu_handle, GSHWDrawConfig:
 	sd.AddressV = ss.tav ? D3D12_TEXTURE_ADDRESS_MODE_WRAP : D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 	sd.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 	sd.MinLOD = 0.0f;
-	sd.MaxLOD = ss.lodclamp ? 0.0f : FLT_MAX;
+	sd.MaxLOD = (ss.lodclamp || !ss.UseMipmapFiltering()) ? 0.25f : FLT_MAX;
 	sd.MaxAnisotropy = std::clamp(GSConfig.MaxAnisotropy, 1, 16);
 	sd.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
 

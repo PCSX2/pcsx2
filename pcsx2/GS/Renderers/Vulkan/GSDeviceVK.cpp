@@ -1029,7 +1029,7 @@ VkSampler GSDeviceVK::GetSampler(GSHWDrawConfig::SamplerSelector ss)
 		VK_FALSE, // compare enable
 		VK_COMPARE_OP_ALWAYS, // compare op
 		0.0f, // min lod
-		ss.lodclamp ? 0.25f : VK_LOD_CLAMP_NONE, // max lod
+		(ss.lodclamp || !ss.UseMipmapFiltering()) ? 0.25f : VK_LOD_CLAMP_NONE, // max lod
 		VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK, // border
 		VK_FALSE // unnormalized coordinates
 	};
