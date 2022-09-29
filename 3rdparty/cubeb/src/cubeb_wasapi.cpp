@@ -1310,8 +1310,10 @@ refill_callback_output(cubeb_stream * stm)
 
   long got = refill(stm, nullptr, 0, output_buffer, output_frames);
 
-  ALOGV("Output callback: output frames requested: %Iu, got %ld", output_frames,
-        got);
+  if (got != output_frames) {
+    ALOGV("Output callback: output frames requested: %Iu, got %ld", output_frames,
+          got);
+  }
   if (got < 0) {
     return false;
   }
