@@ -35,6 +35,7 @@ declare -a BUILD_PACKAGES=(
 # Packages - PCSX2
 declare -a PCSX2_PACKAGES=(
 	"libaio-dev"
+	"libasound2-dev"
 	"libbz2-dev"
 	"libcurl4-gnutls-dev"
 	"libegl1-mesa-dev"

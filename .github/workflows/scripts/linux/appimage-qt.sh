@@ -90,6 +90,7 @@ declare -a SYSLIBS=(
 	"libxkbcommon.so.0"
 	"libxkbcommon-x11.so.0"
 	"pulseaudio/libpulsecommon-13.99.so"
+	"libasound.so.2"
 	"libfreetype.so.6"
 	"libpcre2-16.so.0"
 	"libexpat.so.1"
