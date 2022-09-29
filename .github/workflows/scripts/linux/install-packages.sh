@@ -12,6 +12,7 @@ declare -a BUILD_PACKAGES=(
 # Packages - PCSX2
 declare -a PCSX2_PACKAGES=(
   "libaio-dev"
+  "libasound2-dev"
   "libbz2-dev"
   "libegl1-mesa-dev"
   "libgdk-pixbuf2.0-dev"
