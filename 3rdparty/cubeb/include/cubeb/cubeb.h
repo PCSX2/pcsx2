@@ -473,6 +473,11 @@ CUBEB_EXPORT int
 cubeb_init(cubeb ** context, char const * context_name,
            char const * backend_name);
 
+/** Returns a list of backend names which can be supplid to cubeb_init().
+    Array is null-terminated. */
+CUBEB_EXPORT const char* const*
+cubeb_get_backend_names();
+
 /** Get a read-only string identifying this context's current backend.
     @param context A pointer to the cubeb context.
     @retval Read-only string identifying current backend. */
