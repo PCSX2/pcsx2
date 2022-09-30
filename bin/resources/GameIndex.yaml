@@ -20994,6 +20994,10 @@ SLES-55354:
 SLES-55355:
   name: "Guitar Hero - World Tour"
   region: "PAL-M5"
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Corrects note board position.
+  roundModes:
+    vuRoundMode: 0 # Fixes graphical issues ingame.
 SLES-55356:
   name: "Bratz - Girlz Really Rock"
   region: "PAL-M3"
@@ -46723,6 +46727,10 @@ SLUS-21781:
   name: "Guitar Hero - World Tour"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Corrects note board position.
+  roundModes:
+    vuRoundMode: 0 # Fixes graphical issues ingame.
 SLUS-21782:
   name: "Shin Megami Tensei - Persona 4"
   region: "NTSC-U"
