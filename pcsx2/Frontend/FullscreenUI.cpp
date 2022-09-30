@@ -3488,7 +3488,7 @@ void FullscreenUI::DrawFoldersSettingsPage()
 void FullscreenUI::DrawAchievementsSettingsPage()
 {
 	BeginMenuButtons();
-	ActiveButton(ICON_FA_BAN " This build was not compiled with Achivements support.", false, false,
+	ActiveButton(ICON_FA_BAN " This build was not compiled with Achievements support.", false, false,
 		ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 	EndMenuButtons();
 }
@@ -5877,7 +5877,7 @@ bool FullscreenUI::OpenLeaderboardsWindow()
 void FullscreenUI::DrawAchievementsSettingsPage()
 {
 	BeginMenuButtons();
-	ActiveButton(ICON_FA_BAN "  This build was not compiled with RetroAchivements support.", false, false,
+	ActiveButton(ICON_FA_BAN "  This build was not compiled with RetroAchievements support.", false, false,
 		ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 	EndMenuButtons();
 }
