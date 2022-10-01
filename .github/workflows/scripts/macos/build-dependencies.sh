@@ -126,6 +126,8 @@ if [ "$GUI" == "wxWidgets" ]; then
 fi
 
 if [ "$GUI" == "Qt" ]; then
+	unset VCPKG_ROOT
+
 	echo "Installing Qt Base..."
 	tar xf "qtbase-everywhere-src-$QT.tar.xz"
 	cd "qtbase-everywhere-src-$QT"
