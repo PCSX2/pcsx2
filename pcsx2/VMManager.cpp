@@ -1275,6 +1275,28 @@ void VMManager::WaitForSaveStateFlush()
 	}
 }
 
+u32 VMManager::DeleteSaveStates(const char* game_serial, u32 game_crc, bool also_backups /* = true */)
+{
+	WaitForSaveStateFlush();
+
+	u32 deleted = 0;
+	for (s32 i = -1; i <= NUM_SAVE_STATE_SLOTS; i++)
+	{
+		std::string filename(GetSaveStateFileName(game_serial, game_crc, i));
+		if (FileSystem::FileExists(filename.c_str()) && FileSystem::DeleteFilePath(filename.c_str()))
+			deleted++;
+
+		if (also_backups)
+		{
+			filename += ".backup";
+			if (FileSystem::FileExists(filename.c_str()) && FileSystem::DeleteFilePath(filename.c_str()))
+				deleted++;
+		}
+	}
+
+	return deleted;
+}
+
 bool VMManager::LoadState(const char* filename)
 {
 #ifdef ENABLE_ACHIEVEMENTS

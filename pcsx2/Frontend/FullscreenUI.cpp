@@ -61,8 +61,6 @@
 #include "Frontend/Achievements.h"
 #endif
 
-static constexpr s32 MAX_SAVE_STATE_SLOTS = 10;
-
 using ImGuiFullscreen::g_large_font;
 using ImGuiFullscreen::g_layout_padding_left;
 using ImGuiFullscreen::g_layout_padding_top;
@@ -3841,7 +3839,7 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& title, const s
 {
 	ClearSaveStateEntryList();
 
-	for (s32 i = 0; i <= MAX_SAVE_STATE_SLOTS; i++)
+	for (s32 i = 0; i <= VMManager::NUM_SAVE_STATE_SLOTS; i++)
 	{
 		SaveStateListEntry li;
 		if (InitializeSaveStateListEntry(&li, title, serial, crc, i) || !s_save_state_selector_loading)
