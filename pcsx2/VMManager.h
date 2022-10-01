@@ -52,6 +52,9 @@ struct VMBootParameters
 
 namespace VMManager
 {
+	/// The number of usable save state slots.
+	static constexpr s32 NUM_SAVE_STATE_SLOTS = 10;
+
 	/// Makes sure that AVX2 is available if we were compiled with it.
 	bool PerformEarlyHardwareChecks(const char** error);
 
@@ -126,6 +129,9 @@ namespace VMManager
 
 	/// Waits until all compressing save states have finished saving to disk.
 	void WaitForSaveStateFlush();
+
+	/// Removes all save states for the specified serial and crc. Returns the number of files deleted.
+	u32 DeleteSaveStates(const char* game_serial, u32 game_crc, bool also_backups = true);
 
 	/// Returns the current limiter mode.
 	LimiterModeType GetLimiterMode();

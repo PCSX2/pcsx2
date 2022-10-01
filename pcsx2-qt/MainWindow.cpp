@@ -2395,6 +2395,7 @@ void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, con
 		return;
 
 	const bool is_right_click_menu = (menu != m_ui.menuLoadState);
+	bool has_any_states = false;
 
 	QAction* action = menu->addAction(is_right_click_menu ? tr("Load State File...") : tr("Load From File..."));
 	connect(action, &QAction::triggered, [this, filename]() {
@@ -2404,6 +2405,8 @@ void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, con
 
 		loadSaveStateFile(filename, path);
 	});
+
+	QAction* delete_save_states_action = menu->addAction(tr("Delete Save States..."));
 
 	// don't include undo in the right click menu
 	if (!is_right_click_menu)
@@ -2427,10 +2430,11 @@ void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, con
 
 			// Make bold to indicate it's the default choice when double-clicking
 			QtUtils::MarkActionAsDefault(action);
+			has_any_states = true;
 		}
 	}
 
-	for (s32 i = 1; i <= NUM_SAVE_STATE_SLOTS; i++)
+	for (s32 i = 1; i <= VMManager::NUM_SAVE_STATE_SLOTS; i++)
 	{
 		FILESYSTEM_STAT_DATA sd;
 		state_filename = VMManager::GetSaveStateFileName(game_serial_utf8.constData(), crc, i);
@@ -2439,6 +2443,25 @@ void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, con
 
 		action = menu->addAction(tr("Load Slot %1 (%2)").arg(i).arg(formatTimestampForSaveStateMenu(sd.ModificationTime)));
 		connect(action, &QAction::triggered, [this, i]() { loadSaveStateSlot(i); });
+		has_any_states = true;
+	}
+
+	delete_save_states_action->setEnabled(has_any_states);
+	if (has_any_states)
+	{
+		connect(delete_save_states_action, &QAction::triggered, this, [this, serial, crc] {
+			if (QMessageBox::warning(
+					this, tr("Delete Save States"),
+					tr("Are you sure you want to delete all save states for %1?\n\nThe saves will not be recoverable.")
+						.arg(serial),
+					QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+			{
+				return;
+			}
+
+			const u32 deleted = VMManager::DeleteSaveStates(serial.toUtf8().constData(), crc, true);
+			QMessageBox::information(this, tr("Delete Save States"), tr("%1 save states deleted.").arg(deleted));
+		});
 	}
 }
 
@@ -2458,7 +2481,7 @@ void MainWindow::populateSaveStateMenu(QMenu* menu, const QString& serial, quint
 	menu->addSeparator();
 
 	const QByteArray game_serial_utf8(serial.toUtf8());
-	for (s32 i = 1; i <= NUM_SAVE_STATE_SLOTS; i++)
+	for (s32 i = 1; i <= VMManager::NUM_SAVE_STATE_SLOTS; i++)
 	{
 		std::string filename(VMManager::GetSaveStateFileName(game_serial_utf8.constData(), crc, i));
 		FILESYSTEM_STAT_DATA sd;

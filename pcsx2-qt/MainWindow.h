@@ -175,11 +175,6 @@ protected:
 	void dropEvent(QDropEvent* event) override;
 
 private:
-	enum : s32
-	{
-		NUM_SAVE_STATE_SLOTS = 10,
-	};
-
 	static void setStyleFromSettings();
 	static void setIconThemeFromStyle();
 
