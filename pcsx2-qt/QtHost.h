@@ -67,6 +67,7 @@ public:
 	__fi bool isRunningFullscreenUI() const { return m_run_fullscreen_ui; }
 
 	bool isOnEmuThread() const;
+	bool shouldRenderToMain() const;
 
 	/// Called back from the GS thread when the display state changes (e.g. fullscreen, render to main).
 	bool acquireHostDisplay(HostDisplay::RenderAPI api);
@@ -166,7 +167,6 @@ private:
 
 	void destroyVM();
 	void executeVM();
-	bool shouldRenderToMain() const;
 
 	void createBackgroundControllerPollTimer();
 	void destroyBackgroundControllerPollTimer();
