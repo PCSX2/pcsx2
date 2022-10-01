@@ -613,7 +613,6 @@ struct Pcsx2Config
 			NoSync,
 		};
 
-
 		BITFIELD32()
 		bool
 			AdvancedVolumeControl : 1;
@@ -637,6 +636,7 @@ struct Pcsx2Config
 		float VolumeAdjustLFE{ 0.0f };
 
 		std::string OutputModule;
+		std::string BackendName;
 
 		SPU2Options();
 
@@ -663,7 +663,8 @@ struct Pcsx2Config
 				OpEqu(VolumeAdjustSR) &&
 				OpEqu(VolumeAdjustLFE) &&
 
-				OpEqu(OutputModule);
+				OpEqu(OutputModule) &&
+				OpEqu(BackendName);
 		}
 
 		bool operator!=(const SPU2Options& right) const
