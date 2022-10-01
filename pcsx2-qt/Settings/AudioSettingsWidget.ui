@@ -361,7 +361,7 @@
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton">
+         <widget class="QPushButton" name="resetTimestretchDefaults">
           <property name="minimumSize">
            <size>
             <width>120</width>
