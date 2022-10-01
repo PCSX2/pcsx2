@@ -318,14 +318,8 @@ bool GameDatabaseSchema::isUserHackHWFix(GSHWFixId id)
 		case GSHWFixId::Mipmap:
 		case GSHWFixId::TexturePreloading:
 		case GSHWFixId::PointListPalette:
-			return false;
-
-#ifdef PCSX2_CORE
-			// Trifiltering isn't a hack in Qt.
 		case GSHWFixId::TrilinearFiltering:
 			return false;
-#endif
-
 		default:
 			return true;
 	}
@@ -479,7 +473,7 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 			return (config.HWMipmap == HWMipmapLevel::Automatic || static_cast<int>(config.HWMipmap) == value);
 
 		case GSHWFixId::TrilinearFiltering:
-			return (config.UserHacks_TriFilter == TriFiltering::Automatic || static_cast<int>(config.UserHacks_TriFilter) == value);
+			return (config.TriFilter == TriFiltering::Automatic || static_cast<int>(config.TriFilter) == value);
 
 		case GSHWFixId::SkipDrawStart:
 			return (config.SkipDrawStart == value);
@@ -597,9 +591,9 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 			{
 				if (value >= 0 && value <= static_cast<int>(TriFiltering::Forced))
 				{
-					if (config.UserHacks_TriFilter == TriFiltering::Automatic)
-						config.UserHacks_TriFilter = static_cast<TriFiltering>(value);
-					else if (config.UserHacks_TriFilter == TriFiltering::Off)
+					if (config.TriFilter == TriFiltering::Automatic)
+						config.TriFilter = static_cast<TriFiltering>(value);
+					else if (config.TriFilter == TriFiltering::Off)
 						Console.Warning("[GameDB] Game requires trilinear filtering but it has been force disabled.");
 				}
 			}

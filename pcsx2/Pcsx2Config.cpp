@@ -407,6 +407,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(MaxAnisotropy) &&
 		OpEqu(SWExtraThreads) &&
 		OpEqu(SWExtraThreadsHeight) &&
+		OpEqu(TriFilter) &&
 		OpEqu(TVShader) &&
 		OpEqu(SkipDrawEnd) &&
 		OpEqu(SkipDrawStart) &&
@@ -417,7 +418,6 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(UserHacks_TCOffsetX) &&
 		OpEqu(UserHacks_TCOffsetY) &&
 		OpEqu(UserHacks_CPUSpriteRenderBW) &&
-		OpEqu(UserHacks_TriFilter) &&
 		OpEqu(OverrideTextureBarriers) &&
 		OpEqu(OverrideGeometryShaders) &&
 
@@ -603,7 +603,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingIntEx(UserHacks_TCOffsetX, "UserHacks_TCOffsetX");
 	GSSettingIntEx(UserHacks_TCOffsetY, "UserHacks_TCOffsetY");
 	GSSettingIntEx(UserHacks_CPUSpriteRenderBW, "UserHacks_CPUSpriteRenderBW");
-	GSSettingIntEnumEx(UserHacks_TriFilter, "UserHacks_TriFilter");
+	GSSettingIntEnumEx(TriFilter, "TriFilter");
 	GSSettingIntEx(OverrideTextureBarriers, "OverrideTextureBarriers");
 	GSSettingIntEx(OverrideGeometryShaders, "OverrideGeometryShaders");
 
@@ -652,11 +652,6 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 	UserHacks_CPUSpriteRenderBW = 0;
 	SkipDrawStart = 0;
 	SkipDrawEnd = 0;
-
-	// in wx, we put trilinear filtering behind user hacks, but not in qt.
-#ifndef PCSX2_CORE
-	UserHacks_TriFilter = TriFiltering::Automatic;
-#endif
 }
 
 void Pcsx2Config::GSOptions::MaskUpscalingHacks()
