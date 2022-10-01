@@ -1332,7 +1332,7 @@ bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx
 	config.depth = GSHWDrawConfig::DepthStencilSelector::NoDepth();
 	config.colormask = GSHWDrawConfig::ColorMaskSelector();
 	config.colormask.wrgba = (write_rg ? (1 | 2) : (4 | 8));
-	config.require_one_barrier = true;
+	config.require_one_barrier = !g_gs_device->Features().framebuffer_fetch;
 	config.require_full_barrier = false;
 	config.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Off;
 	config.datm = false;
