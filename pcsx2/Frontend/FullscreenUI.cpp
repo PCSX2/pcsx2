@@ -4541,15 +4541,16 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 		{ICON_FA_WINDOW_CLOSE " Close Menu", false},
 	};
 
+	const bool has_resume_state = VMManager::HasSaveStateInSlot(entry->serial.c_str(), entry->crc, -1);
 	OpenChoiceDialog(
-		entry->title.c_str(), false, std::move(options), [entry_path = entry->path](s32 index, const std::string& title, bool checked) {
+		entry->title.c_str(), false, std::move(options), [has_resume_state, entry_path = entry->path](s32 index, const std::string& title, bool checked) {
 			switch (index)
 			{
 				case 0: // Open Game Properties
 					SwitchToGameSettings(entry_path);
 					break;
 				case 1: // Resume Game
-					DoStartPath(entry_path, -1);
+					DoStartPath(entry_path, has_resume_state ? std::optional<s32>(-1) : std::optional<s32>());
 					break;
 				case 2: // Load State
 					OpenLoadStateSelectorForGame(entry_path);
