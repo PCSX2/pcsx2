@@ -44,6 +44,11 @@
 #include "SystemSettingsWidget.h"
 #include "Python2SettingsWidget.h"
 
+#ifdef ENABLE_ACHIEVEMENTS
+#include "AchievementSettingsWidget.h"
+#include "pcsx2/Frontend/Achievements.h"
+#endif
+
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextEdit>
 
@@ -142,6 +147,34 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	if (isPerGameSettings() && game->type == GameList::EntryType::Python2) {
 		addWidget(m_python2_settings = new Python2SettingsWidget(game, this, m_ui.settingsContainer), tr("Python 2"), QStringLiteral("dashboard-line"),
 			tr("<strong>Python 2 Settings</strong><hr>These options control the settings specific to Python 2 games."));
+	}
+
+	{
+		QString title = tr("Achievements");
+		QString icon_text(QStringLiteral("trophy-line"));
+		QString help_text = tr(
+			"<strong>Achievements Settings</strong><hr>"
+			"These options control the RetroAchievements implementation in PCSX2, allowing you to earn achievements in your games.");
+#ifdef ENABLE_ACHIEVEMENTS
+		if (Achievements::IsUsingRAIntegration())
+		{
+			QLabel* placeholder_label =
+				new QLabel(tr("RAIntegration is being used, built-in RetroAchievements support is disabled."),
+					m_ui.settingsContainer);
+			placeholder_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+			addWidget(placeholder_label, std::move(title), std::move(icon_text), std::move(help_text));
+		}
+		else
+		{
+			addWidget((m_achievement_settings = new AchievementSettingsWidget(this, m_ui.settingsContainer)),
+				std::move(title), std::move(icon_text), std::move(help_text));
+		}
+#else
+		QLabel* placeholder_label =
+			new QLabel(tr("This PCSX2 build was not compiled with RetroAchievements support."), m_ui.settingsContainer);
+		placeholder_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+		addWidget(placeholder_label, std::move(title), std::move(icon_text), std::move(help_text));
+#endif
 	}
 
 	m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);

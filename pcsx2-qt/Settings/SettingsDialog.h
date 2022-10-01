@@ -42,6 +42,7 @@ class MemoryCardSettingsWidget;
 class FolderSettingsWidget;
 class DEV9SettingsWidget;
 class Python2SettingsWidget;
+class AchievementSettingsWidget;
 
 class SettingsDialog final : public QDialog
 {
@@ -70,6 +71,7 @@ public:
 	__fi FolderSettingsWidget* getFolderSettingsWidget() const { return m_folder_settings; }
 	__fi DEV9SettingsWidget* getDEV9SettingsWidget() const { return m_dev9_settings; }
 	__fi Python2SettingsWidget* getPython2SettingsWidget() const { return m_python2_settings; }
+	__fi AchievementSettingsWidget* getAchievementSettingsWidget() const { return m_achievement_settings; }
 
 	void registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text);
 	bool eventFilter(QObject* object, QEvent* event) override;
@@ -106,7 +108,7 @@ protected:
 private:
 	enum : u32
 	{
-		MAX_SETTINGS_WIDGETS = 11
+		MAX_SETTINGS_WIDGETS = 12
 	};
 
 	void setupUi(const GameList::Entry* game);
@@ -130,6 +132,7 @@ private:
 	FolderSettingsWidget* m_folder_settings = nullptr;
 	DEV9SettingsWidget* m_dev9_settings = nullptr;
 	Python2SettingsWidget* m_python2_settings = nullptr;
+	AchievementSettingsWidget* m_achievement_settings = nullptr;
 
 	std::array<QString, MAX_SETTINGS_WIDGETS> m_category_help_text;
 

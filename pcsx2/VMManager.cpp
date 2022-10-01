@@ -30,6 +30,7 @@
 #include "common/Threading.h"
 #include "fmt/core.h"
 
+#include "Achievements.h"
 #include "Counters.h"
 #include "CDVD/CDVD.h"
 #include "DEV9/DEV9.h"
@@ -80,6 +81,7 @@ namespace VMManager
 	static void CheckForSPU2ConfigChanges(const Pcsx2Config& old_config);
 	static void CheckForDEV9ConfigChanges(const Pcsx2Config& old_config);
 	static void CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config);
+	static void EnforceAchievementsChallengeModeSettings();
 	static void WarnAboutUnsafeSettings();
 
 	static bool AutoDetectSource(const std::string& filename);
@@ -189,7 +191,8 @@ void VMManager::SetState(VMState state)
 
 	if (state != VMState::Stopping && (state == VMState::Paused || old_state == VMState::Paused))
 	{
-		if (state == VMState::Paused)
+		const bool paused = (state == VMState::Paused);
+		if (paused)
 		{
 			if (THREAD_VU1)
 				vu1Thread.WaitVU();
@@ -323,6 +326,9 @@ void VMManager::LoadSettings()
 	EmuConfig.LoadSave(slw);
 	PAD::LoadConfig(*si);
 	Host::LoadSettings(*si, lock);
+
+	// Achievements hardcore mode disallows setting some configuration options.
+	EnforceAchievementsChallengeModeSettings();
 
 	// Remove any user-specified hacks in the config (we don't want stale/conflicting values when it's globally disabled).
 	EmuConfig.GS.MaskUserHacks();
@@ -553,7 +559,7 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 	// wide screen patches
 	if (EmuConfig.EnableWideScreenPatches && crc != 0)
 	{
-		if (s_active_widescreen_patches = LoadPatchesFromDir(crc_string, EmuFolders::CheatsWS, "Widescreen hacks", false))
+		if (!Achievements::ChallengeModeActive() && (s_active_widescreen_patches = LoadPatchesFromDir(crc_string, EmuFolders::CheatsWS, "Widescreen hacks", false) > 0))
 		{
 			Console.WriteLn(Color_Gray, "Found widescreen patches in the cheats_ws folder --> skipping cheats_ws.zip");
 		}
@@ -595,7 +601,7 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 	// no-interlacing patches
 	if (EmuConfig.EnableNoInterlacingPatches && crc != 0)
 	{
-		if (s_active_no_interlacing_patches = LoadPatchesFromDir(crc_string, EmuFolders::CheatsNI, "No-interlacing patches", false))
+		if (!Achievements::ChallengeModeActive() && (s_active_no_interlacing_patches = LoadPatchesFromDir(crc_string, EmuFolders::CheatsNI, "No-interlacing patches", false)) > 0)
 		{
 			Console.WriteLn(Color_Gray, "Found no-interlacing patches in the cheats_ni folder --> skipping cheats_ni.zip");
 		}
@@ -810,6 +816,16 @@ bool VMManager::ApplyBootParameters(VMBootParameters params, std::string* state_
 			return false;
 		}
 	}
+
+#ifdef ENABLE_ACHIEVEMENTS
+	// Check for resuming with hardcore mode.
+	Achievements::ResetChallengeMode();
+	if (!state_to_load->empty() && Achievements::ChallengeModeActive() &&
+		!Achievements::ConfirmChallengeModeDisable("Resuming state"))
+	{
+		return false;
+	}
+#endif
 
 	// resolve source type
 	if (params.source_type.has_value())
@@ -1129,6 +1145,11 @@ void VMManager::Shutdown(bool save_resume_state)
 
 void VMManager::Reset()
 {
+#ifdef ENABLE_ACHIEVEMENTS
+	if (!Achievements::OnReset())
+		return;
+#endif
+
 	const bool game_was_started = g_GameStarted;
 
 	s_active_game_fixes = 0;
@@ -1196,13 +1217,6 @@ bool VMManager::DoLoadState(const char* filename)
 	{
 		Host::OnSaveStateLoading(filename);
 		SaveState_UnzipFromDisk(filename);
-
-		// HACK: LastELF isn't in the save state...
-		if (!s_elf_override.empty())
-			cdvdReloadElfInfo(fmt::format("host:{}", s_elf_override));
-		else
-			cdvdReloadElfInfo();
-
 		UpdateRunningGame(false, false);
 		Host::OnSaveStateLoaded(filename, true);
 		return true;
@@ -1307,6 +1321,14 @@ void VMManager::WaitForSaveStateFlush()
 
 bool VMManager::LoadState(const char* filename)
 {
+#ifdef ENABLE_ACHIEVEMENTS
+	if (Achievements::ChallengeModeActive() &&
+		!Achievements::ConfirmChallengeModeDisable("Loading state"))
+	{
+		return false;
+	}
+#endif
+
 	// TODO: Save the current state so we don't need to reset.
 	if (DoLoadState(filename))
 		return true;
@@ -1323,6 +1345,14 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE, fmt::format("There is no save state in slot {}.", slot), 5.0f);
 		return false;
 	}
+
+#ifdef ENABLE_ACHIEVEMENTS
+	if (Achievements::ChallengeModeActive() &&
+		!Achievements::ConfirmChallengeModeDisable("Loading state"))
+	{
+		return false;
+	}
+#endif
 
 	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN, fmt::format("Loading state from slot {}...", slot), 5.0f);
 	return DoLoadState(filename.c_str());
@@ -1363,6 +1393,11 @@ void VMManager::FrameAdvance(u32 num_frames /*= 1*/)
 {
 	if (!HasValidVM())
 		return;
+
+#ifdef ENABLE_ACHIEVEMENTS
+	if (Achievements::ChallengeModeActive() && !Achievements::ConfirmChallengeModeDisable("Frame advancing"))
+		return;
+#endif
 
 	s_frame_advance_count = num_frames;
 	SetState(VMState::Running);
@@ -1757,6 +1792,41 @@ void VMManager::SetDefaultSettings(SettingsInterface& si)
 	si.SetBoolValue("EmuCore", "EnableFastBoot", true);
 
 	SetHardwareDependentDefaultSettings(si);
+}
+
+void VMManager::EnforceAchievementsChallengeModeSettings()
+{
+	if (!Achievements::ChallengeModeActive())
+		return;
+
+	static constexpr auto ClampSpeed = [](float& rate) {
+		if (rate > 0.0f && rate < 1.0f)
+			rate = 1.0f;
+	};
+
+	// Can't use slow motion.
+	ClampSpeed(EmuConfig.Framerate.NominalScalar);
+	ClampSpeed(EmuConfig.Framerate.TurboScalar);
+	ClampSpeed(EmuConfig.Framerate.SlomoScalar);
+
+	// Can't use cheats.
+	if (EmuConfig.EnableCheats)
+	{
+		Host::AddKeyedOSDMessage("ChallengeDisableCheats", "Cheats have been disabled due to achievements hardcore mode.", 10.0f);
+		EmuConfig.EnableCheats = false;
+	}
+
+	// Input recording/playback is probably an issue.
+	EmuConfig.EnableRecordingTools = false;
+	EmuConfig.EnablePINE = false;
+
+	// Framerates should be at default.
+	EmuConfig.GS.FramerateNTSC = Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_NTSC;
+	EmuConfig.GS.FrameratePAL = Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_PAL;
+
+	// You can overclock, but not underclock (since that might slow down the game and make it easier).
+	EmuConfig.Speedhacks.EECycleRate = std::max<decltype(EmuConfig.Speedhacks.EECycleRate)>(EmuConfig.Speedhacks.EECycleRate, 0);
+	EmuConfig.Speedhacks.EECycleSkip = 0;
 }
 
 void VMManager::WarnAboutUnsafeSettings()

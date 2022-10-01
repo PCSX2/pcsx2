@@ -1401,6 +1401,7 @@ bool GSDevice12::CheckStagingBufferSize(u32 required_size)
 		return false;
 	}
 
+	m_readback_staging_buffer_size = required_size;
 	return true;
 }
 

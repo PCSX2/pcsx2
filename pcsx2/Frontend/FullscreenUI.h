@@ -21,17 +21,22 @@
 
 class HostDisplayTexture;
 
+struct Pcsx2Config;
+
 namespace FullscreenUI
 {
 	bool Initialize();
 	bool IsInitialized();
 	bool HasActiveWindow();
+	void CheckForConfigChanges(const Pcsx2Config& old_config);
 	void OnVMStarted();
 	void OnVMPaused();
 	void OnVMResumed();
 	void OnVMDestroyed();
 	void OnRunningGameChanged(std::string path, std::string serial, std::string title, u32 crc);
 	void OpenPauseMenu();
+	bool OpenAchievementsWindow();
+	bool OpenLeaderboardsWindow();
 
 	void Shutdown();
 	void Render();

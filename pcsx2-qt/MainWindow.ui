@@ -98,6 +98,7 @@
     <addaction name="actionFolderSettings"/>
     <addaction name="actionControllerSettings"/>
     <addaction name="actionHotkeySettings"/>
+    <addaction name="actionAchievementSettings"/>
     <addaction name="separator"/>
     <addaction name="actionAddGameDirectory"/>
     <addaction name="actionScanForNewGames"/>
@@ -407,6 +408,15 @@
    </property>
    <property name="text">
     <string>&amp;Graphics</string>
+   </property>
+  </action>
+  <action name="actionAchievementSettings">
+   <property name="icon">
+    <iconset theme="trophy-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>A&amp;chievements</string>
    </property>
   </action>
   <action name="actionPostProcessingSettings">

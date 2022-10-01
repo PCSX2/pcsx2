@@ -39,3 +39,6 @@
 [submodule "3rdparty/libusb/libusb"]
 	path = 3rdparty/libusb/libusb
 	url = https://github.com/libusb/libusb.git
+[submodule "3rdparty/rcheevos/rcheevos"]
+	path = 3rdparty/rcheevos/rcheevos
+	url = https://github.com/RetroAchievements/rcheevos.git

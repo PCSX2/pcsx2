@@ -63,6 +63,10 @@
 #include "QtUtils.h"
 #include "svnrev.h"
 
+#ifdef ENABLE_ACHIEVEMENTS
+#include "Frontend/Achievements.h"
+#endif
+
 static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 
 EmuThread* g_emu_thread = nullptr;
@@ -1111,6 +1115,45 @@ void Host::OnSaveStateSaved(const std::string_view& filename)
 	emit g_emu_thread->onSaveStateSaved(QtUtils::StringViewToQString(filename));
 }
 
+#ifdef ENABLE_ACHIEVEMENTS
+void Host::OnAchievementsRefreshed()
+{
+	u32 game_id = 0;
+	u32 achievement_count = 0;
+	u32 max_points = 0;
+
+	QString game_info;
+
+	if (Achievements::HasActiveGame())
+	{
+		game_id = Achievements::GetGameID();
+		achievement_count = Achievements::GetAchievementCount();
+		max_points = Achievements::GetMaximumPointsForGame();
+
+		game_info = qApp->translate("EmuThread",
+							"Game ID: %1\n"
+							"Game Title: %2\n"
+							"Achievements: %5 (%6)\n\n")
+						.arg(game_id)
+						.arg(QString::fromStdString(Achievements::GetGameTitle()))
+						.arg(achievement_count)
+						.arg(qApp->translate("EmuThread", "%n points", "", max_points));
+
+		const std::string rich_presence_string(Achievements::GetRichPresenceString());
+		if (!rich_presence_string.empty())
+			game_info.append(QString::fromStdString(rich_presence_string));
+		else
+			game_info.append(qApp->translate("EmuThread", "Rich presence inactive or unsupported."));
+	}
+	else
+	{
+		game_info = qApp->translate("EmuThread", "Game not loaded or no RetroAchievements available.");
+	}
+
+	emit g_emu_thread->onAchievementsRefreshed(game_id, game_info, achievement_count, max_points);
+}
+#endif
+
 void Host::CPUThreadVSync()
 {
 	g_emu_thread->getEventLoop()->processEvents(QEventLoop::AllEvents);
@@ -1475,6 +1518,14 @@ void QtHost::HookSignals()
 {
 	std::signal(SIGINT, SignalHandler);
 	std::signal(SIGTERM, SignalHandler);
+
+#ifdef __linux__
+	// Ignore SIGCHLD by default on Linux, since we kick off aplay asynchronously.
+	struct sigaction sa_chld = {};
+	sigemptyset(&sa_chld.sa_mask);
+	sa_chld.sa_flags = SA_SIGINFO | SA_RESTART | SA_NOCLDSTOP | SA_NOCLDWAIT;
+	sigaction(SIGCHLD, &sa_chld, nullptr);
+#endif
 }
 
 void QtHost::PrintCommandLineVersion()
@@ -1504,6 +1555,9 @@ void QtHost::PrintCommandLineHelp(const std::string_view& progname)
 	std::fprintf(stderr, "  -fullscreen: Enters fullscreen mode immediately after starting.\n");
 	std::fprintf(stderr, "  -nofullscreen: Prevents fullscreen mode from triggering if enabled.\n");
 	std::fprintf(stderr, "  -earlyconsolelog: Forces logging of early console messages to console.\n");
+#ifdef ENABLE_RAINTEGRATION
+	std::fprintf(stderr, "  -raintegration: Use RAIntegration instead of built-in achievement support.\n");
+#endif
 	std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
 						 "    parameters make up the filename. Use when the filename contains\n"
 						 "    spaces or starts with a dash.\n");
@@ -1613,6 +1667,13 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 				s_start_fullscreen_ui = true;
 				continue;
 			}
+#ifdef ENABLE_RAINTEGRATION
+			else if (CHECK_ARG(QStringLiteral("-raintegration")))
+			{
+				Achievements::SwitchToRAIntegration();
+				continue;
+			}
+#endif
 			else if (CHECK_ARG(QStringLiteral("--")))
 			{
 				no_more_args = true;

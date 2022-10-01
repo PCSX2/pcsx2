@@ -104,12 +104,51 @@ static inline std::optional<T> ReadFileInZipToContainer(zip_t* zip, const char* 
 	return ret;
 }
 
+
+template <typename T>
+static inline std::optional<T> ReadFileInZipToContainer(zip_file_t* file, u32 chunk_size = 4096)
+{
+	std::optional<T> ret = T();
+	for (;;)
+	{
+		const size_t pos = ret->size();
+		ret->resize(pos + chunk_size);
+		const s64 read = zip_fread(file, ret->data() + pos, chunk_size);
+		if (read < 0)
+		{
+			// read error
+			ret.reset();
+			break;
+		}
+
+		// if less than chunk size, we're EOF
+		if (read != static_cast<s64>(chunk_size))
+		{
+			ret->resize(pos + static_cast<size_t>(read));
+			break;
+		}
+	}
+
+	return ret;
+}
+
+
 static inline std::optional<std::string> ReadFileInZipToString(zip_t* zip, const char* name)
 {
 	return ReadFileInZipToContainer<std::string>(zip, name);
 }
 
+static inline std::optional<std::string> ReadFileInZipToString(zip_file_t* file, u32 chunk_size = 4096)
+{
+	return ReadFileInZipToContainer<std::string>(file, chunk_size);
+}
+
 static inline std::optional<std::vector<u8>> ReadBinaryFileInZip(zip_t* zip, const char* name)
 {
 	return ReadFileInZipToContainer<std::vector<u8>>(zip, name);
+}
+
+static inline std::optional<std::vector<u8>> ReadBinaryFileInZip(zip_file_t* file, u32 chunk_size = 4096)
+{
+	return ReadFileInZipToContainer<std::vector<u8>>(file, chunk_size);
 }

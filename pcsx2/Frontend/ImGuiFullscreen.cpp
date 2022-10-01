@@ -2219,16 +2219,29 @@ void ImGuiFullscreen::DrawBackgroundProgressDialogs(ImVec2& position, float spac
 		dl->AddText(g_medium_font, g_medium_font->FontSize, pos, IM_COL32(255, 255, 255, 255), data.message.c_str(), nullptr, 0.0f);
 		pos.y += g_medium_font->FontSize + LayoutScale(10.0f);
 
-		ImVec2 bar_end(pos.x + window_width - LayoutScale(10.0f * 2.0f), pos.y + LayoutScale(25.0f));
-		float fraction = static_cast<float>(data.value - data.min) / static_cast<float>(data.max - data.min);
-		dl->AddRectFilled(pos, bar_end, ImGui::GetColorU32(UIPrimaryDarkColor));
-		dl->AddRectFilled(pos, ImVec2(pos.x + fraction * (bar_end.x - pos.x), bar_end.y), ImGui::GetColorU32(UISecondaryColor));
+		const ImVec2 box_end(pos.x + window_width - LayoutScale(10.0f * 2.0f), pos.y + LayoutScale(25.0f));
+		dl->AddRectFilled(pos, box_end, ImGui::GetColorU32(UIPrimaryDarkColor));
 
-		const std::string text(fmt::format("{}%", static_cast<int>(std::round(fraction * 100.0f))));
-		const ImVec2 text_size(ImGui::CalcTextSize(text.c_str()));
-		const ImVec2 text_pos(
-			pos.x + ((bar_end.x - pos.x) / 2.0f) - (text_size.x / 2.0f), pos.y + ((bar_end.y - pos.y) / 2.0f) - (text_size.y / 2.0f));
-		dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos, ImGui::GetColorU32(UIPrimaryTextColor), text.c_str());
+		if (data.min != data.max)
+		{
+			const float fraction = static_cast<float>(data.value - data.min) / static_cast<float>(data.max - data.min);
+			dl->AddRectFilled(pos, ImVec2(pos.x + fraction * (box_end.x - pos.x), box_end.y), ImGui::GetColorU32(UISecondaryColor));
+
+			const std::string text(fmt::format("{}%", static_cast<int>(std::round(fraction * 100.0f))));
+			const ImVec2 text_size(ImGui::CalcTextSize(text.c_str()));
+			const ImVec2 text_pos(
+				pos.x + ((box_end.x - pos.x) / 2.0f) - (text_size.x / 2.0f), pos.y + ((box_end.y - pos.y) / 2.0f) - (text_size.y / 2.0f));
+			dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos, ImGui::GetColorU32(UIPrimaryTextColor), text.c_str());
+		}
+		else
+		{
+			// indeterminate, so draw a scrolling bar
+			const float bar_width = LayoutScale(30.0f);
+			const float fraction = std::fmod(ImGui::GetTime(), 2.0f) * 0.5f;
+			const ImVec2 bar_start(pos.x + ImLerp(0.0f, box_end.x, fraction) - bar_width, pos.y);
+			const ImVec2 bar_end(std::min(bar_start.x + bar_width, box_end.x), pos.y + LayoutScale(25.0f));
+			dl->AddRectFilled(ImClamp(bar_start, pos, box_end), ImClamp(bar_end, pos, box_end), ImGui::GetColorU32(UISecondaryColor));
+		}
 
 		position.y += s_notification_vertical_direction * (window_height + spacing);
 	}
