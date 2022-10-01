@@ -363,6 +363,11 @@ public:
 		return "Cubeb (Cross-platform)";
 	}
 
+	const char* const* GetBackendNames() const override
+	{
+		return cubeb_get_backend_names();
+	}
+
 	void ReadSettings()
 	{
 #ifndef PCSX2_CORE
@@ -371,12 +376,12 @@ public:
 
 		// TODO: Once the config stuff gets merged, drop the wxString here.
 		wxString backend;
-		CfgReadStr(L"Cubeb", L"BackendName", backend, L"");
+		CfgReadStr(L"SPU2/Output", L"BackendName", backend, L"");
 		m_Backend = StringUtil::wxStringToUTF8String(backend);
 #else
 		m_SuggestedLatencyMinimal = Host::GetBoolSettingValue("Cubeb", "MinimalSuggestedLatency", false);
 		m_SuggestedLatencyMS = std::clamp(Host::GetIntSettingValue("Cubeb", "ManualSuggestedLatencyMS", MINIMUM_LATENCY_MS), MINIMUM_LATENCY_MS, MAXIMUM_LATENCY_MS);
-		m_Backend = Host::GetStringSettingValue("Cubeb", "BackendName", "");
+		m_Backend = Host::GetStringSettingValue("SPU2/Output", "BackendName", "");
 #endif
 	}
 };

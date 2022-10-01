@@ -948,15 +948,17 @@ static uint cdvdBlockReadTime(CDVD_MODE_TYPE mode)
 				break;
 		}
 
+		// 0.40f is the "base" inner track speed.
 		const float sectorSpeed = ((static_cast<float>(cdvd.SeekToSector - offset) / static_cast<float>(numSectors)) * 0.60f) + 0.40f;
+		float cycles = static_cast<float>(PSXCLK) / (static_cast<float>(((mode == MODE_CDROM) ? CD_SECTORS_PERSECOND : DVD_SECTORS_PERSECOND) * cdvd.Speed) * sectorSpeed);
 
-		return (PSXCLK / (static_cast<float>(((mode == MODE_CDROM) ? CD_SECTORS_PERSECOND : DVD_SECTORS_PERSECOND) * cdvd.Speed) * sectorSpeed));
-		//return ((PSXCLK * cdvd.BlockSize) / ((float)(((mode == MODE_CDROM) ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.Speed) * sectorSpeed));
+		return static_cast<int>(cycles);
 	}
 
 	// CLV Read Speed is constant
-	//return ((PSXCLK * cdvd.BlockSize) / (float)(((mode == MODE_CDROM) ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.Speed));
-	return (PSXCLK / (((mode == MODE_CDROM) ? CD_SECTORS_PERSECOND : DVD_SECTORS_PERSECOND) * cdvd.Speed));
+	float cycles = static_cast<float>(PSXCLK) / static_cast<float>(((mode == MODE_CDROM) ? CD_SECTORS_PERSECOND : DVD_SECTORS_PERSECOND) * cdvd.Speed);
+
+	return static_cast<int>(cycles);
 }
 
 void readKeyStore(int idx_set)
@@ -2074,6 +2076,7 @@ static void cdvdWrite04(u8 rt)
 				DevCon.Warning("CDVD: CD Read using Nominal switch from CAV to CLV, unhandled");
 
 			bool ParamError = false;
+			const int oldSpeed = cdvd.Speed;
 
 			switch (cdvd.SpindlCtrl & CDVD_SPINDLE_SPEED)
 			{
@@ -2108,6 +2111,12 @@ static void cdvdWrite04(u8 rt)
 					Console.Error("Unknown CDVD Read Speed SpindleCtrl=%x", cdvd.SpindlCtrl);
 					ParamError = true;
 					break;
+			}
+
+			if ((cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) != (oldSpindleCtrl & CDVD_SPINDLE_CAV) || oldSpeed != cdvd.Speed)
+			{
+				CDVD_LOG("CdRead > Speed change, adding delay");
+				cdvd.Spinning = false;
 			}
 
 			if (cdvdIsDVD() && cdvd.NCMDParam[10] != 0)
@@ -2205,6 +2214,7 @@ static void cdvdWrite04(u8 rt)
 				DevCon.Warning("CDVD: CDDA Read using Nominal switch from CAV to CLV, unhandled");
 
 			bool ParamError = false;
+			const int oldSpeed = cdvd.Speed;
 
 			switch (cdvd.SpindlCtrl & CDVD_SPINDLE_SPEED)
 			{
@@ -2227,6 +2237,12 @@ static void cdvdWrite04(u8 rt)
 					Console.Error("Unknown CDVD Read Speed SpindleCtrl=%x", cdvd.SpindlCtrl);
 					ParamError = true;
 					break;
+			}
+
+			if ((cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) != (oldSpindleCtrl & CDVD_SPINDLE_CAV) || oldSpeed != cdvd.Speed)
+			{
+				CDVD_LOG("CdRead > Speed change, adding delay");
+				cdvd.Spinning = false;
 			}
 
 			switch (cdvd.NCMDParam[10])
@@ -2307,6 +2323,7 @@ static void cdvdWrite04(u8 rt)
 				DevCon.Warning("CDVD: DVD Read using Nominal switch from CAV to CLV, unhandled");
 
 			bool ParamError = false;
+			const int oldSpeed = cdvd.Speed;
 
 			switch (cdvd.SpindlCtrl & CDVD_SPINDLE_SPEED)
 			{
@@ -2323,6 +2340,12 @@ static void cdvdWrite04(u8 rt)
 					Console.Error("Unknown CDVD Read Speed SpindleCtrl=%x", cdvd.SpindlCtrl);
 					ParamError = true;
 					break;
+			}
+
+			if ((cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) != (oldSpindleCtrl & CDVD_SPINDLE_CAV) || oldSpeed != cdvd.Speed)
+			{
+				CDVD_LOG("DvdRead > Speed change, adding delay");
+				cdvd.Spinning = false;
 			}
 
 			if (cdvd.NCMDParam[10] != 0)

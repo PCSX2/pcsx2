@@ -1,0 +1,36 @@
+{
+  snd_config_update-malloc
+  Memcheck:Leak
+  fun:malloc
+  ...
+  fun:snd_config_update_r
+}
+{
+  snd1_dlobj_cache_get-malloc
+  Memcheck:Leak
+  fun:malloc
+  ...
+  fun:snd1_dlobj_cache_get
+}
+{
+  parse_defs-malloc
+  Memcheck:Leak
+  fun:malloc
+  ...
+  fun:parse_defs
+}
+{
+  parse_defs-calloc
+  Memcheck:Leak
+  fun:calloc
+  ...
+  fun:parse_defs
+}
+{
+  pa_client_conf_from_x11-malloc
+  Memcheck:Leak
+  fun:malloc
+  ...
+  fun:pa_client_conf_from_x11
+}
+

@@ -130,7 +130,7 @@
         </item>
        </widget>
       </item>
-	  <item row="3" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="label_3b">
         <property name="text">
          <string>ProLogic Level:</string>
@@ -173,16 +173,16 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QComboBox" name="outputModule" />
+       <widget class="QComboBox" name="outputModule"/>
       </item>
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="label_5">
         <property name="text">
          <string>Latency:</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="2" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QSlider" name="latency">
@@ -214,6 +214,16 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Output Backend:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="backend"/>
       </item>
      </layout>
     </widget>
@@ -351,7 +361,7 @@
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton">
+         <widget class="QPushButton" name="resetTimestretchDefaults">
           <property name="minimumSize">
            <size>
             <width>120</width>
