@@ -119,7 +119,7 @@ static Threading::ThreadHandle s_vm_thread_handle;
 static std::deque<std::thread> s_save_state_threads;
 static std::mutex s_save_state_threads_mutex;
 
-static std::mutex s_info_mutex;
+static std::recursive_mutex s_info_mutex;
 static std::string s_disc_path;
 static u32 s_game_crc;
 static u32 s_patches_crc;

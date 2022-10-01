@@ -76,6 +76,11 @@ namespace CommonHost
 	/// Provided by the host; called once per frame at guest vsync.
 	void CPUThreadVSync();
 
+#ifdef ENABLE_DISCORD_PRESENCE
+	/// Called when the rich presence string, provided by RetroAchievements, changes.
+	void UpdateDiscordPresence(const std::string& rich_presence);
+#endif
+
 	namespace Internal
 	{
 		/// Resets any state for hotkey-related VMs, called on VM startup.

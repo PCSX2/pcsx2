@@ -1100,6 +1100,7 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 #ifdef PCSX2_CORE
 	SettingsWrapBitBool(EnableGameFixes);
 	SettingsWrapBitBool(SaveStateOnShutdown);
+	SettingsWrapBitBool(EnableDiscordPresence);
 #endif
 	SettingsWrapBitBool(ConsoleToStdio);
 	SettingsWrapBitBool(HostFs);

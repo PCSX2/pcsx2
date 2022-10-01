@@ -39,6 +39,7 @@ endif()
 
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
 option(USE_ACHIEVEMENTS "Build with RetroAchievements support" ON)
+option(USE_DISCORD_PRESENCE "Enable support for Discord Rich Presence" ON)
 
 #-------------------------------------------------------------------------------
 # Graphical option

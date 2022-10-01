@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "Frontend/Achievements.h"
+#include "Frontend/CommonHost.h"
 #include "Frontend/FullscreenUI.h"
 #include "Frontend/ImGuiFullscreen.h"
 
@@ -394,6 +395,11 @@ void Achievements::ClearGameInfo(bool clear_achievements, bool clear_leaderboard
 		s_rich_presence_string = {};
 		s_has_rich_presence = false;
 		s_game_id = 0;
+
+#ifdef ENABLE_DISCORD_PRESENCE
+		if (EmuConfig.EnableDiscordPresence)
+			CommonHost::UpdateDiscordPresence(s_rich_presence_string);
+#endif
 	}
 
 	if (had_game)
@@ -1499,22 +1505,30 @@ void Achievements::UpdateRichPresence()
 
 	char buffer[512];
 	const int res = rc_runtime_get_richpresence(&s_rcheevos_runtime, buffer, sizeof(buffer), PeekMemory, nullptr, nullptr);
-	if (res <= 0)
-	{
-		const bool had_rich_presence = !s_rich_presence_string.empty();
-		s_rich_presence_string.clear();
-		if (had_rich_presence)
-			Host::OnAchievementsRefreshed();
-
-		return;
-	}
 
 	std::unique_lock lock(s_achievements_mutex);
-	if (s_rich_presence_string == buffer)
-		return;
+	const bool had_rich_presence = !s_rich_presence_string.empty();
+	if (res <= 0)
+	{
+		if (!had_rich_presence)
+			return;
 
-	s_rich_presence_string.assign(buffer);
+		s_rich_presence_string.clear();
+	}
+	else
+	{
+		if (s_rich_presence_string == buffer)
+			return;
+
+		s_rich_presence_string.assign(buffer);
+	}
+
 	Host::OnAchievementsRefreshed();
+
+#ifdef ENABLE_DISCORD_PRESENCE
+	if (EmuConfig.EnableDiscordPresence)
+		CommonHost::UpdateDiscordPresence(s_rich_presence_string);
+#endif
 }
 
 void Achievements::SendPingCallback(s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data)

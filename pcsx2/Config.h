@@ -990,6 +990,7 @@ struct Pcsx2Config
 #ifdef PCSX2_CORE
 		EnableGameFixes : 1, // enables automatic game fixes
 		SaveStateOnShutdown : 1, // default value for saving state on shutdown
+		EnableDiscordPresence : 1, // enables discord rich presence integration
 #endif
 		// when enabled uses BOOT2 injection, skipping sony bios splashes
 		UseBOOT2Injection : 1,

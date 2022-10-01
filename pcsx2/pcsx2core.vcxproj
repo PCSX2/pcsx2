@@ -51,13 +51,14 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\cpuinfo\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rapidyaml\rapidyaml\ext\c4core\src\c4\ext\fast_float\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rcheevos\rcheevos\include;$(SolutionDir)3rdparty\rainterface</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\discord-rpc\include</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
       <AdditionalOptions>/Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;ZIP_STATIC;LZMA_API_STATIC;BUILD_DX=1;ENABLE_RAINTEGRATION;ENABLE_ACHIEVEMENTS;ENABLE_OPENGL;ENABLE_VULKAN;SPU2X_CUBEB;SDL_BUILD;PCSX2_CORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;ZIP_STATIC;LZMA_API_STATIC;BUILD_DX=1;ENABLE_DISCORD_PRESENCE;ENABLE_RAINTEGRATION;ENABLE_ACHIEVEMENTS;ENABLE_OPENGL;ENABLE_VULKAN;SPU2X_CUBEB;SDL_BUILD;PCSX2_CORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Debug))">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Devel))">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Release))">NDEBUG;_SECURE_SCL_=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -804,6 +805,9 @@
     </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\imgui\imgui.vcxproj">
       <Project>{88fb34ec-845e-4f21-a552-f1573b9ed167}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\discord-rpc\discord-rpc.vcxproj">
+      <Project>{e960dfdf-1bd3-4c29-b251-d1a0919c9b09}</Project>
     </ProjectReference>
     <ProjectReference Include="..\3rdparty\libzip\libzip.vcxproj">
       <Project>{20b2e9fe-f020-42a0-b324-956f5b06ea68}</Project>
