@@ -1975,7 +1975,7 @@ unsigned Achievements::PeekMemory(unsigned address, unsigned num_bytes, void* ud
 {
 	if ((static_cast<u64>(address) + num_bytes) >= EXPOSED_EE_MEMORY_SIZE)
 	{
-		Console.Warning("[Achievements] Ignoring out of bounds memory peek of %u bytes at %08X.", num_bytes, address);
+		DevCon.Warning("[Achievements] Ignoring out of bounds memory peek of %u bytes at %08X.", num_bytes, address);
 		return 0u;
 	}
 
@@ -2011,7 +2011,7 @@ unsigned Achievements::PeekMemoryBlock(unsigned address, unsigned char* buffer, 
 {
 	if ((address >= EXPOSED_EE_MEMORY_SIZE))
 	{
-		Console.Warning("[Achievements] Ignoring out of bounds block memory read for %u bytes at %08X.", num_bytes, address);
+		DevCon.Warning("[Achievements] Ignoring out of bounds block memory read for %u bytes at %08X.", num_bytes, address);
 		return 0u;
 	}
 
@@ -2024,7 +2024,7 @@ void Achievements::PokeMemory(unsigned address, unsigned num_bytes, void* ud, un
 {
 	if ((static_cast<u64>(address) + num_bytes) >= EXPOSED_EE_MEMORY_SIZE)
 	{
-		Console.Warning("[Achievements] Ignoring out of bounds memory poke of %u bytes at %08X (value %08X).", num_bytes, address, value);
+		DevCon.Warning("[Achievements] Ignoring out of bounds memory poke of %u bytes at %08X (value %08X).", num_bytes, address, value);
 		return;
 	}
 
