@@ -1516,7 +1516,7 @@ void GSRendererHW::Draw()
 
 		m_src = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, tmm.coverage) :
 			m_tc->LookupSource(TEX0, env.TEXA, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic ||
-				GSConfig.UserHacks_TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr);
+				GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr);
 
 		const int tw = 1 << TEX0.TW;
 		const int th = 1 << TEX0.TH;
@@ -3032,7 +3032,7 @@ void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	bool bilinear = m_vt.IsLinear();
 	int trilinear = 0;
 	bool trilinear_auto = false; // Generate mipmaps if needed (basic).
-	switch (GSConfig.UserHacks_TriFilter)
+	switch (GSConfig.TriFilter)
 	{
 		case TriFiltering::Forced:
 		{

@@ -1799,7 +1799,7 @@ void VMManager::WarnAboutUnsafeSettings()
 		messages += ICON_FA_IMAGES " Mipmapping is not set to automatic. This may break rendering in some games.\n";
 	if (EmuConfig.GS.TextureFiltering != BiFiltering::PS2)
 		messages += ICON_FA_FILTER " Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.\n";
-	if (EmuConfig.GS.UserHacks_TriFilter != TriFiltering::Automatic)
+	if (EmuConfig.GS.TriFilter != TriFiltering::Automatic)
 		messages += ICON_FA_PAGER " Trilinear filtering is not set to automatic. This may break rendering in some games.\n";
 	if (EmuConfig.GS.AccurateBlendingUnit <= AccBlendLevel::Minimum)
 		messages += ICON_FA_BLENDER " Blending is below basic, this may break effects in some games.\n";

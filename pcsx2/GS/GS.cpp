@@ -833,7 +833,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	if (
 		(GSConfig.UseHardwareRenderer() && GSConfig.HWMipmap != old_config.HWMipmap) ||
 		GSConfig.TexturePreloading != old_config.TexturePreloading ||
-		GSConfig.UserHacks_TriFilter != old_config.UserHacks_TriFilter ||
+		GSConfig.TriFilter != old_config.TriFilter ||
 		GSConfig.GPUPaletteConversion != old_config.GPUPaletteConversion ||
 		GSConfig.PreloadFrameWithGSData != old_config.PreloadFrameWithGSData ||
 		GSConfig.WrapGSMem != old_config.WrapGSMem ||
@@ -1498,6 +1498,7 @@ void GSApp::Init()
 	m_default_configuration["SkipDuplicateFrames"]                        = "0";
 	m_default_configuration["texture_preloading"]                         = "2";
 	m_default_configuration["ThreadedPresentation"]                       = "0";
+	m_default_configuration["TriFilter"]                                  = std::to_string(static_cast<s8>(TriFiltering::Automatic));
 	m_default_configuration["TVShader"]                                   = "0";
 	m_default_configuration["upscale_multiplier"]                         = "1";
 	m_default_configuration["UseBlitSwapChain"]                           = "0";
@@ -1519,7 +1520,6 @@ void GSApp::Init()
 	m_default_configuration["UserHacks_TCOffsetX"]                        = "0";
 	m_default_configuration["UserHacks_TCOffsetY"]                        = "0";
 	m_default_configuration["UserHacks_TextureInsideRt"]                  = "0";
-	m_default_configuration["UserHacks_TriFilter"]                        = std::to_string(static_cast<s8>(TriFiltering::Automatic));
 	m_default_configuration["UserHacks_WildHack"]                         = "0";
 	m_default_configuration["wrap_gs_mem"]                                = "0";
 	m_default_configuration["vsync"]                                      = "0";
