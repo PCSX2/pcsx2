@@ -239,6 +239,12 @@ if(QT_BUILD)
 	if(USE_ACHIEVEMENTS)
 		add_subdirectory(3rdparty/rcheevos EXCLUDE_FROM_ALL)
 	endif()
+
+	# Discord-RPC library for rich presence.
+	if(USE_DISCORD_PRESENCE)
+		add_subdirectory(3rdparty/rapidjson EXCLUDE_FROM_ALL)
+		add_subdirectory(3rdparty/discord-rpc EXCLUDE_FROM_ALL)
+	endif()
 endif()
 
 if(NOT WIN32 AND QT_BUILD)

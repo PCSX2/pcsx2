@@ -97,6 +97,12 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 		m_ui.automaticUpdaterGroup->hide();
 	}
 
+#ifdef ENABLE_DISCORD_PRESENCE
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.discordPresence, "EmuCore", "EnableDiscordPresence", false);
+#else
+	m_ui.discordPresence->setEnabled(false);
+#endif
+
 	dialog->registerWidgetHelp(
 		m_ui.confirmShutdown, tr("Confirm Shutdown"), tr("Checked"),
 		tr("Determines whether a prompt will be displayed to confirm shutting down the virtual machine "
@@ -119,6 +125,9 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 	dialog->registerWidgetHelp(
 		m_ui.hideMainWindow, tr("Hide Main Window When Running"), tr("Unchecked"),
 		tr("Hides the main window (with the game list) when a game is running, requires Render To Separate Window to be enabled."));
+	dialog->registerWidgetHelp(
+		m_ui.discordPresence, tr("Enable Discord Presence"), tr("Unchecked"),
+		tr("Shows the game you are currently playing as part of your profile in Discord."));
 
 	// Not yet used, disable the options
 	m_ui.language->setDisabled(true);

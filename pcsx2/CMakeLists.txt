@@ -1106,6 +1106,14 @@ if(PCSX2_CORE)
 			rcheevos
 		)
 	endif()
+	if(USE_DISCORD_PRESENCE)
+		target_compile_definitions(PCSX2_FLAGS INTERFACE
+			ENABLE_DISCORD_PRESENCE
+		)
+		target_link_libraries(PCSX2_FLAGS INTERFACE
+			discord-rpc
+		)
+	endif()
 endif()
 
 # gui sources

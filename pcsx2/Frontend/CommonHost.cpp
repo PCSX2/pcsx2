@@ -40,6 +40,10 @@
 #include "Frontend/Achievements.h"
 #endif
 
+#ifdef ENABLE_DISCORD_PRESENCE
+#include "discord_rpc.h"
+#endif
+
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
 #include <KnownFolders.h>
@@ -55,7 +59,18 @@ namespace CommonHost
 	static bool ShouldUsePortableMode();
 	static void SetDataDirectory();
 	static void SetCommonDefaultSettings(SettingsInterface& si);
+
+#ifdef ENABLE_DISCORD_PRESENCE
+	static void InitializeDiscordPresence();
+	static void ShutdownDiscordPresence();
+	static void PollDiscordPresence();
+	static std::string GetRichPresenceString();
+#endif
 } // namespace CommonHost
+
+#ifdef ENABLE_DISCORD_PRESENCE
+static bool s_discord_presence_active = false;
+#endif
 
 bool CommonHost::InitializeCriticalFolders()
 {
@@ -237,10 +252,19 @@ void CommonHost::CPUThreadInitialize()
 	if (EmuConfig.Achievements.Enabled)
 		Achievements::Initialize();
 #endif
+
+#ifdef ENABLE_DISCORD_PRESENCE
+	if (EmuConfig.EnableDiscordPresence)
+		InitializeDiscordPresence();
+#endif
 }
 
 void CommonHost::CPUThreadShutdown()
 {
+#ifdef ENABLE_DISCORD_PRESENCE
+	ShutdownDiscordPresence();
+#endif
+
 #ifdef ENABLE_ACHIEVEMENTS
 	Achievements::Shutdown();
 #endif
@@ -269,6 +293,16 @@ void CommonHost::CheckForSettingsChanges(const Pcsx2Config& old_config)
 #endif
 
 	FullscreenUI::CheckForConfigChanges(old_config);
+
+#ifdef ENABLE_DISCORD_PRESENCE
+	if (EmuConfig.EnableDiscordPresence != old_config.EnableDiscordPresence)
+	{
+		if (EmuConfig.EnableDiscordPresence)
+			InitializeDiscordPresence();
+		else
+			ShutdownDiscordPresence();
+	}
+#endif
 }
 
 void CommonHost::OnVMStarting()
@@ -317,6 +351,10 @@ void CommonHost::OnGameChanged(const std::string& disc_path, const std::string& 
 #ifdef ENABLE_ACHIEVEMENTS
 	Achievements::GameChanged(game_crc);
 #endif
+
+#ifdef ENABLE_DISCORD_PRESENCE
+	UpdateDiscordPresence(GetRichPresenceString());
+#endif
 }
 
 void CommonHost::CPUThreadVSync()
@@ -324,6 +362,10 @@ void CommonHost::CPUThreadVSync()
 #ifdef ENABLE_ACHIEVEMENTS
 	if (Achievements::IsActive())
 		Achievements::VSyncUpdate();
+#endif
+
+#ifdef ENABLE_DISCORD_PRESENCE
+	PollDiscordPresence();
 #endif
 
 	InputManager::PollSources();
@@ -352,3 +394,86 @@ bool Host::GetSerialAndCRCForFilename(const char* filename, std::string* serial,
 
 	return false;
 }
+
+#ifdef ENABLE_DISCORD_PRESENCE
+
+void CommonHost::InitializeDiscordPresence()
+{
+	if (s_discord_presence_active)
+		return;
+
+	DiscordEventHandlers handlers = {};
+	Discord_Initialize("1025789002055430154", &handlers, 0, nullptr);
+	s_discord_presence_active = true;
+
+	UpdateDiscordPresence(GetRichPresenceString());
+}
+
+void CommonHost::ShutdownDiscordPresence()
+{
+	if (!s_discord_presence_active)
+		return;
+
+	Discord_ClearPresence();
+	Discord_RunCallbacks();
+	Discord_Shutdown();
+	s_discord_presence_active = false;
+}
+
+void CommonHost::UpdateDiscordPresence(const std::string& rich_presence)
+{
+	if (!s_discord_presence_active)
+		return;
+
+	// https://discord.com/developers/docs/rich-presence/how-to#updating-presence-update-presence-payload-fields
+	DiscordRichPresence rp = {};
+	rp.largeImageKey = "4k-pcsx2";
+	rp.largeImageText = "PCSX2 Emulator";
+	rp.startTimestamp = std::time(nullptr);
+
+	std::string details_string;
+	if (VMManager::HasValidVM())
+		details_string = VMManager::GetGameName();
+	else
+		details_string = "No Game Running";
+	rp.details = details_string.c_str();
+
+	// Trim to 128 bytes as per Discord-RPC requirements
+	std::string state_string;
+	if (rich_presence.length() >= 128)
+	{
+		// 124 characters + 3 dots + null terminator
+		state_string = fmt::format("{}...", std::string_view(rich_presence).substr(0, 124));
+	}
+	else
+	{
+		state_string = rich_presence;
+	}
+	rp.state = state_string.c_str();
+
+	Discord_UpdatePresence(&rp);
+	Discord_RunCallbacks();
+}
+
+void CommonHost::PollDiscordPresence()
+{
+	if (!s_discord_presence_active)
+		return;
+
+	Discord_RunCallbacks();
+}
+
+std::string CommonHost::GetRichPresenceString()
+{
+	std::string rich_presence_string;
+#ifdef ENABLE_ACHIEVEMENTS
+	if (Achievements::IsActive() && EmuConfig.Achievements.RichPresence)
+	{
+		auto lock = Achievements::GetLock();
+		rich_presence_string = Achievements::GetRichPresenceString();
+	}
+#endif
+	return rich_presence_string;
+}
+
+#endif
