@@ -692,6 +692,7 @@ VsyncMode Pcsx2Config::GetEffectiveVsyncMode() const
 
 Pcsx2Config::SPU2Options::SPU2Options()
 {
+	bitset = 0;
 	OutputModule = "cubeb";
 }
 
@@ -717,6 +718,7 @@ void Pcsx2Config::SPU2Options::LoadSave(SettingsWrapper& wrap)
 		SettingsWrapSection("SPU2/Output");
 
 		SettingsWrapEntry(OutputModule);
+		SettingsWrapEntry(BackendName);
 		SettingsWrapEntry(Latency);
 		SynchMode = static_cast<SynchronizationMode>(wrap.EntryBitfield(CURRENT_SETTINGS_SECTION, "SynchMode", static_cast<int>(SynchMode), static_cast<int>(SynchMode)));
 		SettingsWrapEntry(SpeakerConfiguration);
