@@ -1021,7 +1021,10 @@ bool MainWindow::shouldHideMouseCursor() const
 
 bool MainWindow::shouldHideMainWindow() const
 {
-	return Host::GetBaseBoolSettingValue("UI", "HideMainWindowWhenRunning", false) || isRenderingFullscreen() || QtHost::InNoGUIMode();
+	// NOTE: We can't use isRenderingToMain() here, because this happens post-fullscreen-switch.
+	return Host::GetBaseBoolSettingValue("UI", "HideMainWindowWhenRunning", false) ||
+		   (g_emu_thread->shouldRenderToMain() && isRenderingFullscreen()) ||
+		   QtHost::InNoGUIMode();
 }
 
 void MainWindow::switchToGameListView()
@@ -1896,6 +1899,7 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 		m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
 		m_display_widget->updateRelativeMode(s_vm_valid && !s_vm_paused);
 		m_display_widget->updateCursor(s_vm_valid && !s_vm_paused);
+		updateWindowState();
 
 		QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 		return m_display_widget;
