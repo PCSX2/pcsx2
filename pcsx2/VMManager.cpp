@@ -93,7 +93,7 @@ namespace VMManager
 
 	static std::string GetCurrentSaveStateFileName(s32 slot);
 	static bool DoLoadState(const char* filename);
-	static bool DoSaveState(const char* filename, s32 slot_for_message, bool zip_on_thread);
+	static bool DoSaveState(const char* filename, s32 slot_for_message, bool zip_on_thread, bool backup_old_state);
 	static void ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
 		std::unique_ptr<SaveStateScreenshotData> screenshot, std::string osd_key,
 		const char* filename, s32 slot_for_message);
@@ -1028,7 +1028,7 @@ void VMManager::Shutdown(bool save_resume_state)
 	if (!GSDumpReplayer::IsReplayingDump() && save_resume_state)
 	{
 		std::string resume_file_name(GetCurrentSaveStateFileName(-1));
-		if (!resume_file_name.empty() && !DoSaveState(resume_file_name.c_str(), -1, true))
+		if (!resume_file_name.empty() && !DoSaveState(resume_file_name.c_str(), -1, true, false))
 			Console.Error("Failed to save resume state");
 	}
 	else if (GSDumpReplayer::IsReplayingDump())
@@ -1185,7 +1185,7 @@ bool VMManager::DoLoadState(const char* filename)
 	}
 }
 
-bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip_on_thread)
+bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip_on_thread, bool backup_old_state)
 {
 	if (GSDumpReplayer::IsReplayingDump())
 		return false;
@@ -1196,6 +1196,17 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 	{
 		std::unique_ptr<ArchiveEntryList> elist(SaveState_DownloadState());
 		std::unique_ptr<SaveStateScreenshotData> screenshot(SaveState_SaveScreenshot());
+
+		if (FileSystem::FileExists(filename) && backup_old_state)
+		{
+			const std::string backup_filename(fmt::format("{}.backup", filename));
+			Console.WriteLn(fmt::format("Creating save state backup {}...", backup_filename));
+			if (!FileSystem::RenamePath(filename, backup_filename.c_str()))
+			{
+				Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
+					fmt::format("Failed to back up old save state {}.", Path::GetFileName(filename)));
+			}
+		}
 
 		if (zip_on_thread)
 		{
@@ -1336,9 +1347,9 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 	return DoLoadState(filename.c_str());
 }
 
-bool VMManager::SaveState(const char* filename, bool zip_on_thread)
+bool VMManager::SaveState(const char* filename, bool zip_on_thread, bool backup_old_state)
 {
-	return DoSaveState(filename, -1, zip_on_thread);
+	return DoSaveState(filename, -1, zip_on_thread, backup_old_state);
 }
 
 bool VMManager::SaveStateToSlot(s32 slot, bool zip_on_thread)
@@ -1349,7 +1360,7 @@ bool VMManager::SaveStateToSlot(s32 slot, bool zip_on_thread)
 
 	// if it takes more than a minute.. well.. wtf.
 	Host::AddIconOSDMessage(fmt::format("SaveStateSlot{}", slot), ICON_FA_SAVE, fmt::format("Saving state to slot {}...", slot), 60.0f);
-	return DoSaveState(filename.c_str(), slot, zip_on_thread);
+	return DoSaveState(filename.c_str(), slot, zip_on_thread, EmuConfig.BackupSavestate);
 }
 
 LimiterModeType VMManager::GetLimiterMode()

@@ -122,7 +122,7 @@ namespace VMManager
 	bool LoadStateFromSlot(s32 slot);
 
 	/// Saves state to the specified filename.
-	bool SaveState(const char* filename, bool zip_on_thread = true);
+	bool SaveState(const char* filename, bool zip_on_thread = true, bool backup_old_state = false);
 
 	/// Saves state to the specified slot.
 	bool SaveStateToSlot(s32 slot, bool zip_on_thread = true);
