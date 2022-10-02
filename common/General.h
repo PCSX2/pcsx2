@@ -165,8 +165,6 @@ extern const u32 SPIN_TIME_NS;
 
 extern std::string GetOSVersionString();
 
-void ScreensaverAllow(bool allow);
-
 namespace Common
 {
 	/// Abstracts platform-specific code for asynchronously playing a sound.

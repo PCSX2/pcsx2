@@ -20,6 +20,7 @@
 #include "common/Exceptions.h"
 #include "common/StringUtil.h"
 #include "common/General.h"
+#include "common/WindowInfo.h"
 
 #include "fmt/core.h"
 
@@ -112,12 +113,13 @@ std::string Exception::WinApiError::FormatDiagnosticMessage() const
 	return m_message_diag + "\n\t" + GetMsgFromWindows();
 }
 
-void ScreensaverAllow(bool allow)
+bool WindowInfo::InhibitScreensaver(const WindowInfo& wi, bool inhibit)
 {
 	EXECUTION_STATE flags = ES_CONTINUOUS;
-	if (!allow)
+	if (inhibit)
 		flags |= ES_DISPLAY_REQUIRED;
 	SetThreadExecutionState(flags);
+	return true;
 }
 
 bool Common::PlaySoundAsync(const char* path)

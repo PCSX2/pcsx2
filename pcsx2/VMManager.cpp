@@ -137,6 +137,7 @@ static u32 s_active_no_interlacing_patches = 0;
 static u32 s_frame_advance_count = 0;
 static u32 s_mxcsr_saved;
 static bool s_gs_open_on_initialize = false;
+static bool s_screensaver_inhibited = false;
 
 bool VMManager::PerformEarlyHardwareChecks(const char** error)
 {

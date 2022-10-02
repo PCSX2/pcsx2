@@ -23,6 +23,7 @@
 
 #include "common/Pcsx2Types.h"
 #include "common/General.h"
+#include "common/WindowInfo.h"
 
 // Returns 0 on failure (not supported by the operating system).
 u64 GetPhysicalMemory()
@@ -62,9 +63,10 @@ std::string GetOSVersionString()
 #endif
 }
 
-void ScreensaverAllow(bool allow)
+bool WindowInfo::InhibitScreensaver(const WindowInfo& wi, bool inhibit)
 {
 	// no-op
+	return false;
 }
 
 bool Common::PlaySoundAsync(const char* path)

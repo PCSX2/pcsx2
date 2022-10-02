@@ -2185,7 +2185,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	MenuHeading("Behaviour");
 
 	DrawToggleSetting(bsi, ICON_FA_MAGIC " Inhibit Screensaver",
-		"Prevents the screen saver from activating and the host from sleeping while emulation is running.", "UI", "InhibitScreensaver",
+		"Prevents the screen saver from activating and the host from sleeping while emulation is running.", "EmuCore", "InhibitScreensaver",
 		true);
 #ifdef WITH_DISCORD_PRESENCE
 	DrawToggleSetting(bsi, "Enable Discord Presence", "Shows the game you are currently playing as part of your profile on Discord.", "UI",
