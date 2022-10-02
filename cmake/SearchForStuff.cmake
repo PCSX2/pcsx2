@@ -188,10 +188,6 @@ endif()
 #----------------------------------------
 include(ApiValidation)
 
-if(NOT PCSX2_CORE)
-	WX_vs_SDL()
-endif()
-
 # Blacklist bad GCC
 if(GCC_VERSION VERSION_EQUAL "7.0" OR GCC_VERSION VERSION_EQUAL "7.1")
 	GCC7_BUG()
