@@ -1051,6 +1051,7 @@ Pcsx2Config::Pcsx2Config()
 	EnableRecordingTools = true;
 #ifdef PCSX2_CORE
 	EnableGameFixes = true;
+	InhibitScreensaver = true;
 #endif
 	BackupSavestate = true;
 	SavestateZstdCompression = true;
@@ -1096,6 +1097,7 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EnableGameFixes);
 	SettingsWrapBitBool(SaveStateOnShutdown);
 	SettingsWrapBitBool(EnableDiscordPresence);
+	SettingsWrapBitBool(InhibitScreensaver);
 #endif
 	SettingsWrapBitBool(ConsoleToStdio);
 	SettingsWrapBitBool(HostFs);

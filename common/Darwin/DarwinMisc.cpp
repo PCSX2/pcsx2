@@ -24,6 +24,7 @@
 
 #include "common/Pcsx2Types.h"
 #include "common/General.h"
+#include "common/WindowInfo.h"
 
 // Darwin (OSX) is a bit different from Linux when requesting properties of
 // the OS because of its BSD/Mach heritage. Helpfully, most of this code
@@ -96,7 +97,7 @@ std::string GetOSVersionString()
 
 static IOPMAssertionID s_pm_assertion;
 
-void ScreensaverAllow(bool allow)
+bool WindowInfo::InhibitScreensaver(const WindowInfo& wi, bool inhibit)
 {
 	if (s_pm_assertion)
 	{
@@ -104,7 +105,9 @@ void ScreensaverAllow(bool allow)
 		s_pm_assertion = 0;
 	}
 
-	if (!allow)
+	if (inhibit)
 		IOPMAssertionCreateWithName(kIOPMAssertionTypePreventUserIdleDisplaySleep, kIOPMAssertionLevelOn, CFSTR("Playing a game"), &s_pm_assertion);
+
+	return true;
 }
 #endif

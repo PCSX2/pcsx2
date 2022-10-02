@@ -527,8 +527,8 @@ void GSPanel::DirectKeyCommand( wxKeyEvent& evt )
 
 void GSPanel::UpdateScreensaver()
 {
-    bool prevent = g_Conf->GSWindow.DisableScreenSaver && m_HasFocus && m_coreRunning;
-	ScreensaverAllow(!prevent);
+	const bool prevent = g_Conf->GSWindow.DisableScreenSaver && m_HasFocus && m_coreRunning;
+	WindowInfo::InhibitScreensaver(g_gs_window_info, prevent);
 }
 
 void GSPanel::OnFocus( wxFocusEvent& evt )

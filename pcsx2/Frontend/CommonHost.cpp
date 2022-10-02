@@ -28,6 +28,7 @@
 #include "GS.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
 #include "Host.h"
+#include "HostDisplay.h"
 #include "HostSettings.h"
 #include "IconsFontAwesome5.h"
 #include "MemoryCardFile.h"
@@ -60,6 +61,8 @@ namespace CommonHost
 	static void SetDataDirectory();
 	static void SetCommonDefaultSettings(SettingsInterface& si);
 
+	static void UpdateInhibitScreensaver(bool allow);
+
 #ifdef ENABLE_DISCORD_PRESENCE
 	static void InitializeDiscordPresence();
 	static void ShutdownDiscordPresence();
@@ -67,6 +70,8 @@ namespace CommonHost
 	static std::string GetRichPresenceString();
 #endif
 } // namespace CommonHost
+
+static bool s_screensaver_inhibited = false;
 
 #ifdef ENABLE_DISCORD_PRESENCE
 static bool s_discord_presence_active = false;
@@ -294,6 +299,9 @@ void CommonHost::CheckForSettingsChanges(const Pcsx2Config& old_config)
 
 	FullscreenUI::CheckForConfigChanges(old_config);
 
+	if (EmuConfig.InhibitScreensaver != old_config.InhibitScreensaver)
+		UpdateInhibitScreensaver(EmuConfig.InhibitScreensaver && VMManager::GetState() == VMState::Running);
+
 #ifdef ENABLE_DISCORD_PRESENCE
 	if (EmuConfig.EnableDiscordPresence != old_config.EnableDiscordPresence)
 	{
@@ -313,11 +321,13 @@ void CommonHost::OnVMStarting()
 void CommonHost::OnVMStarted()
 {
 	FullscreenUI::OnVMStarted();
+	UpdateInhibitScreensaver(EmuConfig.InhibitScreensaver);
 }
 
 void CommonHost::OnVMDestroyed()
 {
 	FullscreenUI::OnVMDestroyed();
+	UpdateInhibitScreensaver(false);
 }
 
 void CommonHost::OnVMPaused()
@@ -328,6 +338,8 @@ void CommonHost::OnVMPaused()
 #ifdef ENABLE_ACHIEVEMENTS
 	Achievements::OnPaused(true);
 #endif
+
+	UpdateInhibitScreensaver(false);
 }
 
 void CommonHost::OnVMResumed()
@@ -337,6 +349,8 @@ void CommonHost::OnVMResumed()
 #ifdef ENABLE_ACHIEVEMENTS
 	Achievements::OnPaused(false);
 #endif
+
+	UpdateInhibitScreensaver(EmuConfig.InhibitScreensaver);
 }
 
 void CommonHost::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name, u32 game_crc)
@@ -393,6 +407,20 @@ bool Host::GetSerialAndCRCForFilename(const char* filename, std::string* serial,
 	}
 
 	return false;
+}
+
+void CommonHost::UpdateInhibitScreensaver(bool inhibit)
+{
+	if (s_screensaver_inhibited == inhibit)
+		return;
+
+	WindowInfo wi;
+	if (g_host_display)
+		wi = g_host_display->GetWindowInfo();
+
+	s_screensaver_inhibited = inhibit;
+	if (!WindowInfo::InhibitScreensaver(wi, inhibit) && inhibit)
+		Console.Warning("Failed to inhibit screen saver.");
 }
 
 #ifdef ENABLE_DISCORD_PRESENCE
