@@ -2939,7 +2939,7 @@ SCES-50916:
   gsHWFixes:
     mipmap: 1
 SCES-50917:
-  name: "Sly Racoon"
+  name: "Sly Raccoon"
   region: "PAL-M5"
 SCES-50928:
   name: "SOCOM - U.S. Navy SEALs [Beta & Full Release]"
@@ -3457,9 +3457,11 @@ SCES-52460:
     autoFlush: 1
     preloadFrameData: 1 # Fixes Sony splash at boot.
 SCES-52529:
-  name: "Sly Racoon 2 - Band of Thieves"
+  name: "Sly 2 - Band of Thieves"
   region: "PAL-M11"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes chromatic effect.
 SCES-52530:
   name: "Crisis Zone"
   region: "PAL-M5"
@@ -3715,7 +3717,7 @@ SCES-53397:
   name: "SingStar Pop - World Events Code"
   region: "PAL-Unk"
 SCES-53409:
-  name: "Sly 3"
+  name: "Sly 3 - Honour Among Thieves"
   region: "PAL-M11"
   compat: 5
   roundModes:
@@ -4759,9 +4761,11 @@ SCKA-20043:
   name: "Magna Carta"
   region: "NTSC-K"
 SCKA-20044:
-  name: "Sly Cooper 2 Band of Thieves"
+  name: "Sly 2 - Band of Thieves"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes chromatic effect.
 SCKA-20047:
   name: "Armored Core Nine Breaker"
   region: "NTSC-K"
@@ -4872,9 +4876,15 @@ SCKA-20062:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCKA-20063:
-  name: "Sly Cooper 3 Honor Among Thieves"
+  name: "Sly 3 - Honor Among Thieves"
   region: "NTSC-K"
   compat: 5
+  roundModes:
+    vuRoundMode: 0 # Fixes game engine issue with bombs and ladders.
+  clampModes:
+    vuClampMode: 2 # Fixes bugged camera.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes chromatic effect.
 SCKA-20064:
   name: "SOCOM 3 - U.S. Navy SEALs"
   region: "NTSC-K"
@@ -5639,8 +5649,11 @@ SCPS-15089:
   name: "EyeToy - Play 2 [With Camera]"
   region: "NTSC-J"
 SCPS-15090:
-  name: "Sly Racoon 2"
+  name: "Kaitou Sly Cooper 2"
   region: "NTSC-J"
+  compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes chromatic effect.
 SCPS-15091:
   name: "Wild ARMs - The 4th Detonator"
   region: "NTSC-J"
@@ -38663,7 +38676,7 @@ SLUS-20043:
   region: "NTSC-U"
   compat: 5
 SLUS-20044:
-  name: "Star Wars - StarFighter"
+  name: "Star Wars - Starfighter"
   region: "NTSC-U"
   compat: 5
 SLUS-20045:
