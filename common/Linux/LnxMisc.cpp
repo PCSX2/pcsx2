@@ -17,12 +17,17 @@
 #include <ctype.h>
 #include <time.h>
 #include <unistd.h>
+#include <optional>
 #include <spawn.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+#include <unistd.h>
+
+#include "fmt/core.h"
 
 #include "common/Pcsx2Types.h"
 #include "common/General.h"
+#include "common/StringUtil.h"
 #include "common/WindowInfo.h"
 
 // Returns 0 on failure (not supported by the operating system).
@@ -44,7 +49,7 @@ void InitCPUTicks()
 
 u64 GetTickFrequency()
 {
-	return 1000000000;// unix measures in nanoseconds
+	return 1000000000; // unix measures in nanoseconds
 }
 
 u64 GetCPUTicks()
@@ -63,10 +68,67 @@ std::string GetOSVersionString()
 #endif
 }
 
+#ifdef X11_API
+
+static bool SetScreensaverInhibitX11(const WindowInfo& wi, bool inhibit)
+{
+	const char* command = "xdg-screensaver";
+	const char* operation = inhibit ? "suspend" : "resume";
+	std::string id = fmt::format("0x{:X}", static_cast<u64>(reinterpret_cast<uintptr_t>(wi.window_handle)));
+
+	char* argv[4] = {const_cast<char*>(command), const_cast<char*>(operation), const_cast<char*>(id.c_str()),
+		nullptr};
+
+	// Since we set SA_NOCLDWAIT in Qt, we don't need to wait here.
+	pid_t pid;
+	int res = posix_spawnp(&pid, "xdg-screensaver", nullptr, nullptr, argv, environ);
+	return (res == 0);
+}
+
+#endif
+
+static bool SetScreensaverInhibit(const WindowInfo& wi, bool inhibit)
+{
+	switch (wi.type)
+	{
+#ifdef X11_API
+		case WindowInfo::Type::X11:
+			return SetScreensaverInhibitX11(wi, inhibit);
+#endif
+
+		default:
+			return false;
+	}
+}
+
+static std::optional<WindowInfo> s_inhibit_window_info;
+
 bool WindowInfo::InhibitScreensaver(const WindowInfo& wi, bool inhibit)
 {
-	// no-op
-	return false;
+	if (s_inhibit_window_info.has_value())
+	{
+		// Bit of extra logic here, because wx spams it and we don't want to
+		// spawn processes unnecessarily.
+		if (s_inhibit_window_info->type == wi.type &&
+			s_inhibit_window_info->window_handle == wi.window_handle &&
+			s_inhibit_window_info->surface_handle == wi.surface_handle)
+		{
+			return true;
+		}
+		// Clear the old.
+		SetScreensaverInhibit(s_inhibit_window_info.value(), false);
+		s_inhibit_window_info.reset();
+	}
+
+	if (!inhibit)
+		return true;
+
+	// New window.
+	if (!SetScreensaverInhibit(wi, true))
+		return false;
+
+	s_inhibit_window_info = wi;
+	return true;
 }
 
 bool Common::PlaySoundAsync(const char* path)
