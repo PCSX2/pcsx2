@@ -43167,6 +43167,8 @@ SLUS-21041:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
     disablePartialInvalidation: 1 # Fixes shadows when upscaling.
+    texturePreloading: 2 # Fixes Blackscreen in battles
+    preloadFrameData: 1 # Fixes Blackscreen in battles
 SLUS-21042:
   name: "Darkwatch"
   region: "NTSC-U"
@@ -43182,6 +43184,8 @@ SLUS-21044:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
     disablePartialInvalidation: 1 # Fixes shadows when upscaling.
+    texturePreloading: 2 # Fixes Blackscreen in battles
+    preloadFrameData: 1 # Fixes Blackscreen in battles
   memcardFilters:
     - "SLUS-21041"
 SLUS-21045:
