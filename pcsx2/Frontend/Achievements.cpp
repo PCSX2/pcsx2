@@ -287,7 +287,7 @@ namespace Achievements
 			data.push_back(0);
 
 			const int error = ParseFunc(this, reinterpret_cast<const char*>(data.data()));
-			initialized = true;
+			initialized = (error == RC_OK);
 
 			const rc_api_response_t& response = static_cast<T*>(this)->response;
 			if (error != RC_OK)
