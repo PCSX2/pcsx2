@@ -1211,6 +1211,11 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 			u16 tw = 1u << TEX0.TW;
 			u16 th = 1u << TEX0.TH;
 
+			if (tw > 1024)
+				tw = 1;
+			if (th > 1024)
+				th = 1;
+
 			switch (context->CLAMP.WMS)
 			{
 				case CLAMP_REPEAT:
@@ -1224,13 +1229,15 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 					gd.t.mask.U32[0] = 0;
 					break;
 				case CLAMP_REGION_CLAMP:
-					gd.t.min.U16[0] = gd.t.minmax.U16[0] = std::min<u16>(context->CLAMP.MINU, tw - 1);
-					gd.t.max.U16[0] = gd.t.minmax.U16[2] = std::min<u16>(context->CLAMP.MAXU, tw - 1);
+					// REGION_CLAMP ignores the actual texture size
+					gd.t.min.U16[0] = gd.t.minmax.U16[0] = context->CLAMP.MINU;
+					gd.t.max.U16[0] = gd.t.minmax.U16[2] = context->CLAMP.MAXU;
 					gd.t.mask.U32[0] = 0;
 					break;
 				case CLAMP_REGION_REPEAT:
+					// MINU is restricted to MINU or texture size, whichever is smaller, MAXU is an offset in the texture (Can be bigger than the texture).
 					gd.t.min.U16[0] = gd.t.minmax.U16[0] = context->CLAMP.MINU & (tw - 1);
-					gd.t.max.U16[0] = gd.t.minmax.U16[2] = context->CLAMP.MAXU & (tw - 1);
+					gd.t.max.U16[0] = gd.t.minmax.U16[2] = context->CLAMP.MAXU;
 					gd.t.mask.U32[0] = 0xffffffff;
 					break;
 				default:
@@ -1250,13 +1257,15 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 					gd.t.mask.U32[2] = 0;
 					break;
 				case CLAMP_REGION_CLAMP:
-					gd.t.min.U16[4] = gd.t.minmax.U16[1] = std::min<u16>(context->CLAMP.MINV, th - 1);
-					gd.t.max.U16[4] = gd.t.minmax.U16[3] = std::min<u16>(context->CLAMP.MAXV, th - 1); // ffx anima summon scene, when the anchor appears (th = 256, maxv > 256)
+					// REGION_CLAMP ignores the actual texture size
+					gd.t.min.U16[4] = gd.t.minmax.U16[1] = context->CLAMP.MINV;
+					gd.t.max.U16[4] = gd.t.minmax.U16[3] = context->CLAMP.MAXV; // ffx anima summon scene, when the anchor appears (th = 256, maxv > 256)
 					gd.t.mask.U32[2] = 0;
 					break;
 				case CLAMP_REGION_REPEAT:
+					// MINV is restricted to MINV or texture size, whichever is smaller, MAXV is an offset in the texture (Can be bigger than the texture).
 					gd.t.min.U16[4] = gd.t.minmax.U16[1] = context->CLAMP.MINV & (th - 1); // skygunner main menu water texture 64x64, MINV = 127
-					gd.t.max.U16[4] = gd.t.minmax.U16[3] = context->CLAMP.MAXV & (th - 1);
+					gd.t.max.U16[4] = gd.t.minmax.U16[3] = context->CLAMP.MAXV;
 					gd.t.mask.U32[2] = 0xffffffff;
 					break;
 				default:

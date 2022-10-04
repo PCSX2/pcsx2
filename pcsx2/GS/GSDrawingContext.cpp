@@ -20,9 +20,16 @@
 
 static int findmax(int tl, int br, int limit, int wm, int minuv, int maxuv)
 {
-	// return max possible texcoord
-
+	// return max possible texcoord.
 	int uv = br;
+
+	// Confirmed on hardware if the size exceeds 1024, it basically gets masked so you end up with a 1x1 pixel (Except Region Clamp).
+	if (limit > 1024)
+	{
+		if (wm != CLAMP_REGION_CLAMP) // TEMPLOG
+			Console.Warning("Masking TEX0 to 1x1 was %d", limit + 1);
+		limit = 0;
+	}
 
 	if (wm == CLAMP_CLAMP)
 	{
@@ -45,10 +52,14 @@ static int findmax(int tl, int br, int limit, int wm, int minuv, int maxuv)
 	}
 	else if (wm == CLAMP_REGION_REPEAT)
 	{
+		// REGION_REPEAT adhears to the original texture size, even if offset outside the texture (with MAXUV).
+		if (limit < minuv) // TEMPLOG
+			Console.Warning("Limiting minuv, limit %x minuv from %x to %x", limit, minuv, minuv & limit);
+		minuv &= limit;
 		if (tl < 0)
-			uv = minuv | maxuv; // wrap around, just use (any & mask) | fix
+			uv = minuv | maxuv; // wrap around, just use (any & mask) | fix.
 		else
-			uv = std::min(uv, minuv) | maxuv; // (any & mask) cannot be larger than mask, select br if that is smaller (not br & mask because there might be a larger value between tl and br when &'ed with the mask)
+			uv = std::min(uv, minuv) | maxuv; // (any & mask) cannot be larger than mask, select br if that is smaller (not br & mask because there might be a larger value between tl and br when &'ed with the mask).
 	}
 
 	return uv;
@@ -122,8 +133,13 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, 
 
 	GIFRegTEX0 res = TEX0;
 
-	res.TW = std::clamp(tw, 0, 10);
-	res.TH = std::clamp(th, 0, 10);
+	if (tw > 10) // TEMPLOG
+		Console.Warning("Limiting Width to 1");
+	if (th > 10) // TEMPLOG
+		Console.Warning("Limiting Height to 1");
+
+	res.TW = tw > 10 ? 0 : tw;
+	res.TH = th > 10 ? 0 : th;
 
 	if (GSConfig.Renderer == GSRendererType::SW && (TEX0.TW != res.TW || TEX0.TH != res.TH))
 	{
@@ -152,6 +168,12 @@ void GSDrawingContext::ComputeFixedTEX0(const GSVector4& st)
 	int minv = (int)CLAMP.MINV;
 	int maxu = (int)CLAMP.MAXU;
 	int maxv = (int)CLAMP.MAXV;
+
+	if (wms != CLAMP_REGION_CLAMP)
+		tw = tw > 10 ? 0 : tw;
+
+	if (wmt != CLAMP_REGION_CLAMP)
+		th = th > 10 ? 0 : th;
 
 	GSVector4i uv = GSVector4i(st.floor().xyzw(st.ceil()));
 
