@@ -736,9 +736,18 @@ void ps_dither(inout float3 C, float2 pos_xy)
 
 void ps_color_clamp_wrap(inout float3 C)
 {
+	if (PS_HDR && PS_COLCLIP) // COLCLIP flag indicates accumulation blend under HDR
+	{
+		int3 color = int3(C);
+		if (PS_DFMT == FMT_16)
+			color &= (int3)0xF8;
+		// -128 to 127 gives us longer before we run out of float precision
+		// Especially for games that mainly use 1 and 255 (sly), since that maps to 1 and -1
+		C = float3((color << 24) >> 24);
+	}
 	// When dithering the bottom 3 bits become meaningless and cause lines in the picture
 	// so we need to limit the color depth on dithered items
-	if (SW_BLEND || PS_DITHER || PS_FBMASK)
+	else if (SW_BLEND || PS_DITHER || PS_FBMASK)
 	{
 		// Standard Clamp
 		if (PS_COLCLIP == 0 && PS_HDR == 0)
@@ -943,7 +952,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	ps_fbmask(C, input.p.xy);
 
 #if !PS_NO_COLOR
-	output.c0 = C / 255.0f;
+	output.c0 = PS_HDR ? float4(C.rgb, C.a / 255.0f) : C / 255.0f;
 #if !PS_NO_COLOR1
 	output.c1 = (float4)(alpha_blend);
 #endif

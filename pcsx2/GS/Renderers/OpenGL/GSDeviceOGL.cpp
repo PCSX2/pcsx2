@@ -1866,14 +1866,9 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		hdr_rt = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::FloatColor, false);
 		OMSetRenderTargets(hdr_rt, config.ds, &config.scissor);
 
-		// save blend state, since BlitRect destroys it
-		const bool old_blend = GLState::blend;
-		BlitRect(config.rt, config.drawarea, config.rt->GetSize(), false, false);
-		if (old_blend)
-		{
-			GLState::blend = old_blend;
-			glEnable(GL_BLEND);
-		}
+		GSVector4 dRect(config.drawarea);
+		const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
+		StretchRect(config.rt, sRect, hdr_rt, dRect, ShaderConvert::HDR_INIT, false);
 	}
 	else if (config.require_one_barrier && !m_features.texture_barrier)
 	{
@@ -2041,7 +2036,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		GSVector2i size = config.rt->GetSize();
 		GSVector4 dRect(config.drawarea);
 		const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
-		StretchRect(hdr_rt, sRect, config.rt, dRect, ShaderConvert::MOD_256, false);
+		StretchRect(hdr_rt, sRect, config.rt, dRect, ShaderConvert::HDR_RESOLVE, false);
 
 		Recycle(hdr_rt);
 	}

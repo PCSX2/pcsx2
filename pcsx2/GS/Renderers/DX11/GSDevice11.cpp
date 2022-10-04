@@ -1385,7 +1385,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		hdr_rt = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::FloatColor);
 		// Warning: StretchRect must be called before BeginScene otherwise
 		// vertices will be overwritten. Trust me you don't want to do that.
-		StretchRect(config.rt, sRect, hdr_rt, dRect, ShaderConvert::COPY, false);
+		StretchRect(config.rt, sRect, hdr_rt, dRect, ShaderConvert::HDR_INIT, false);
 	}
 
 	BeginScene();
@@ -1519,7 +1519,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		const GSVector2i size = config.rt->GetSize();
 		const GSVector4 dRect(config.drawarea);
 		const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
-		StretchRect(hdr_rt, sRect, config.rt, dRect, ShaderConvert::MOD_256, false);
+		StretchRect(hdr_rt, sRect, config.rt, dRect, ShaderConvert::HDR_RESOLVE, false);
 		Recycle(hdr_rt);
 	}
 }

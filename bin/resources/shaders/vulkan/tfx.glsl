@@ -967,9 +967,18 @@ void ps_dither(inout vec3 C)
 
 void ps_color_clamp_wrap(inout vec3 C)
 {
+#if PS_HDR && PS_COLCLIP // COLCLIP flag indicates accumulation blend under HDR
+    ivec3 color = ivec3(C);
+#if PS_DFMT == FMT_16
+    color &= 0xF8;
+#endif
+    // -128 to 127 gives us longer before we run out of float precision
+    // Especially for games that mainly use 1 and 255 (sly), since that maps to 1 and -1
+    C = vec3((color << 24) >> 24);
+
     // When dithering the bottom 3 bits become meaningless and cause lines in the picture
     // so we need to limit the color depth on dithered items
-#if SW_BLEND || PS_DITHER || PS_FBMASK
+#elif SW_BLEND || PS_DITHER || PS_FBMASK
 
     // Correct the Color value based on the output format
 #if PS_COLCLIP == 0 && PS_HDR == 0
@@ -1226,7 +1235,11 @@ void main()
   ps_fbmask(C);
 
 #if !PS_NO_COLOR
+#if PS_HDR
+	o_col0 = vec4(C.rgb, C.a / 255.0f);
+#else
 	o_col0 = C / 255.0f;
+#endif
 #if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
 	o_col1 = vec4(alpha_blend);
 #endif

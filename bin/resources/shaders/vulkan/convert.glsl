@@ -90,15 +90,19 @@ void ps_datm0()
 }
 #endif
 
-#ifdef ps_mod256
-void ps_mod256()
+#ifdef ps_hdr_init
+void ps_hdr_init()
 {
-	vec4 c = roundEven(sample_c(v_tex) * 255);
-	// We use 2 fmod to avoid negative value.
-	vec4 fmod1 = mod(c, 256) + 256;
-	vec4 fmod2 = mod(fmod1, 256);
+	vec4 value = sample_c(v_tex);
+	o_col0 = vec4(roundEven(value.rgb * 255.0f), value.a);
+}
+#endif
 
-	o_col0 = fmod2 / 255.0f;
+#ifdef ps_hdr_resolve
+void ps_hdr_resolve()
+{
+	vec4 value = sample_c(v_tex);
+	o_col0 = vec4(vec3(ivec3(value.rgb) & 255) / 255.0f, value.a);
 }
 #endif
 
