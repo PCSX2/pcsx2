@@ -3631,6 +3631,13 @@ SCES-53247:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes SPS.
+  patches:
+    CBBC2E7F:
+      content: |-
+        // https://forums.pcsx2.net/Thread-WRC-Rally-Evolved-run-problem?pid=617145#pid617145
+        // Fix "Branch 19e00047 in delay slot" which causes extreme slowdowns
+        // when you crash your car or interact with physics objects
+        patch=1,EE,003CC894,word,00000000
 SCES-53285:
   name: "Ratchet - Gladiator"
   region: "PAL-M5"
