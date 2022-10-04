@@ -90,7 +90,13 @@ bool CommonHost::InitializeCriticalFolders()
 
 	// allow SetDataDirectory() to change settings directory (if we want to split config later on)
 	if (EmuFolders::Settings.empty())
+	{
 		EmuFolders::Settings = Path::Combine(EmuFolders::DataRoot, "inis");
+
+		// Create settings directory if it doesn't exist. If we're not using portable mode, it won't.
+		if (!FileSystem::DirectoryExists(EmuFolders::Settings.c_str()))
+			FileSystem::CreateDirectoryPath(EmuFolders::Settings.c_str(), false);
+	}
 
 	// Write crash dumps to the data directory, since that'll be accessible for certain.
 	CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
