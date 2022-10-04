@@ -318,10 +318,19 @@ void ps_datm0()
 }
 #endif
 
-#ifdef ps_mod256
-void ps_mod256()
+#ifdef ps_hdr_init
+void ps_hdr_init()
 {
-    SV_Target0 = mod(round(sample_c() * 255.0f), 256.0f) / 255.0f;
+    vec4 value = sample_c();
+    SV_Target0 = vec4(round(value.rgb * 255.0f), value.a);
+}
+#endif
+
+#ifdef ps_hdr_resolve
+void ps_hdr_resolve()
+{
+    vec4 value = sample_c();
+    SV_Target0 = vec4(vec3(ivec3(value.rgb) & 255) / 255.0f, value.a);
 }
 #endif
 

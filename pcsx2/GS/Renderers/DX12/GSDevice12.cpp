@@ -1133,18 +1133,6 @@ bool GSDevice12::CompileConvertPipelines()
 
 		if (i == ShaderConvert::COPY)
 		{
-			// compile the variant for setting up hdr rendering
-			for (u32 ds = 0; ds < 2; ds++)
-			{
-				gpb.SetRenderTarget(0, DXGI_FORMAT_R32G32B32A32_FLOAT);
-				gpb.SetDepthStencilFormat(ds ? DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS : DXGI_FORMAT_UNKNOWN);
-				m_hdr_setup_pipelines[ds] = gpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
-				if (!m_hdr_setup_pipelines[ds])
-					return false;
-
-				D3D12::SetObjectNameFormatted(m_hdr_setup_pipelines[ds].get(), "HDR setup/copy pipeline (ds=%u)", i, ds);
-			}
-
 			// compile color copy pipelines
 			gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
 			gpb.SetDepthStencilFormat(DXGI_FORMAT_UNKNOWN);
@@ -1162,18 +1150,21 @@ bool GSDevice12::CompileConvertPipelines()
 					(i >> 3) & 1u);
 			}
 		}
-		else if (i == ShaderConvert::MOD_256)
+		else if (i == ShaderConvert::HDR_INIT || i == ShaderConvert::HDR_RESOLVE)
 		{
+			const bool is_setup = i == ShaderConvert::HDR_INIT;
+			std::array<ComPtr<ID3D12PipelineState>, 2>& arr = is_setup ? m_hdr_setup_pipelines : m_hdr_finish_pipelines;
 			for (u32 ds = 0; ds < 2; ds++)
 			{
-				pxAssert(!m_hdr_finish_pipelines[ds]);
+				pxAssert(!arr[ds]);
 
+				gpb.SetRenderTarget(0, is_setup ? DXGI_FORMAT_R32G32B32A32_FLOAT : DXGI_FORMAT_R8G8B8A8_UNORM);
 				gpb.SetDepthStencilFormat(ds ? DXGI_FORMAT_D32_FLOAT_S8X24_UINT : DXGI_FORMAT_UNKNOWN);
-				m_hdr_finish_pipelines[ds] = gpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
-				if (!m_hdr_finish_pipelines[ds])
+				arr[ds] = gpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
+				if (!arr[ds])
 					return false;
 
-				D3D12::SetObjectNameFormatted(m_hdr_setup_pipelines[ds].get(), "HDR finish/copy pipeline (ds=%u)", ds);
+				D3D12::SetObjectNameFormatted(arr[ds].get(), "HDR %s/copy pipeline (ds=%u)", is_setup ? "setup" : "finish", ds);
 			}
 		}
 	}

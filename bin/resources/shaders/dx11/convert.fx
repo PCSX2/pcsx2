@@ -121,17 +121,19 @@ PS_OUTPUT ps_datm0(PS_INPUT input)
 	return output;
 }
 
-PS_OUTPUT ps_mod256(PS_INPUT input)
+PS_OUTPUT ps_hdr_init(PS_INPUT input)
 {
 	PS_OUTPUT output;
+	float4 value = sample_c(input.t);
+	output.c = float4(round(value.rgb * 255), value.a);
+	return output;
+}
 
-	float4 c = round(sample_c(input.t) * 255);
-	// We use 2 fmod to avoid negative value.
-	float4 fmod1 = fmod(c, 256) + 256;
-	float4 fmod2 = fmod(fmod1, 256);
-
-	output.c = fmod2 / 255.0f;
-
+PS_OUTPUT ps_hdr_resolve(PS_INPUT input)
+{
+	PS_OUTPUT output;
+	float4 value = sample_c(input.t);
+	output.c = float4(float3(int3(value.rgb) & 255) / 255, value.a);
 	return output;
 }
 

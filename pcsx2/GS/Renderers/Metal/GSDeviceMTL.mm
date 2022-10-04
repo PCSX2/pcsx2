@@ -769,11 +769,11 @@ bool GSDeviceMTL::Create()
 		auto pdesc = [[MTLRenderPipelineDescriptor new] autorelease];
 		// FS Triangle Pipelines
 		pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
-		m_hdr_resolve_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_mod256"), @"HDR Resolve");
+		m_hdr_resolve_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_hdr_resolve"), @"HDR Resolve");
 		m_fxaa_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_fxaa"), @"fxaa");
 		m_shadeboost_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_shadeboost"), @"shadeboost");
 		pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::FloatColor);
-		m_hdr_init_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_copy_fs"), @"HDR Init");
+		m_hdr_init_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_hdr_init"), @"HDR Init");
 		pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
 		pdesc.stencilAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
 		m_datm_pipeline[0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_datm0"), @"datm0");
@@ -808,7 +808,8 @@ bool GSDeviceMTL::Create()
 				case ShaderConvert::Count:
 				case ShaderConvert::DATM_0:
 				case ShaderConvert::DATM_1:
-				case ShaderConvert::MOD_256:
+				case ShaderConvert::HDR_INIT:
+				case ShaderConvert::HDR_RESOLVE:
 					continue;
 				case ShaderConvert::FLOAT32_TO_32_BITS:
 					pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::UInt32);
