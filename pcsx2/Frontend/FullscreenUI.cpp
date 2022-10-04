@@ -2843,7 +2843,7 @@ void FullscreenUI::DrawAudioSettingsPage()
 
 	MenuHeading("Runtime Settings");
 	DrawIntRangeSetting(bsi, ICON_FA_VOLUME_UP " Output Volume", "Applies a global volume modifier to all sound produced by the game.",
-		"SPU2/Mixing", "FinalVolume", 100, 0, 100, "%d%%");
+		"SPU2/Mixing", "FinalVolume", 100, 0, 200, "%d%%");
 
 	MenuHeading("Mixing Settings");
 	DrawIntListSetting(bsi, ICON_FA_MUSIC " Interpolation Mode", "Determines how ADPCM samples are interpolated to the target pitch.",
