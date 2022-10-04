@@ -75,8 +75,8 @@ void ReadSettings()
 {
 	Interpolation = Host::GetIntSettingValue("SPU2/Mixing", "Interpolation", 5);
 	FinalVolume = ((float)Host::GetIntSettingValue("SPU2/Mixing", "FinalVolume", 100)) / 100;
-	if (FinalVolume > 1.0f)
-		FinalVolume = 1.0f;
+	if (FinalVolume > 2.0f)
+		FinalVolume = 2.0f;
 
 	AdvancedVolumeControl = Host::GetBoolSettingValue("SPU2/Mixing", "AdvancedVolumeControl", false);
 	VolumeAdjustCdb = Host::GetFloatSettingValue("SPU2/Mixing", "VolumeAdjustC", 0);

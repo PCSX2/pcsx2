@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>752</width>
-    <height>430</height>
+    <height>448</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -402,7 +402,7 @@
         <item row="0" column="0">
          <widget class="QSlider" name="volume">
           <property name="maximum">
-           <number>100</number>
+           <number>200</number>
           </property>
           <property name="orientation">
            <enum>Qt::Vertical</enum>

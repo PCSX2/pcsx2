@@ -81,8 +81,8 @@ void ReadSettings()
 
 	Interpolation = CfgReadInt(L"MIXING", L"Interpolation", 5);
 	FinalVolume = ((float)CfgReadInt(L"MIXING", L"FinalVolume", 100)) / 100;
-	if (FinalVolume > 1.0f)
-		FinalVolume = 1.0f;
+	if (FinalVolume > 2.0f)
+		FinalVolume = 2.0f;
 
 	AdvancedVolumeControl = CfgReadBool(L"MIXING", L"AdvancedVolumeControl", false);
 	VolumeAdjustCdb = CfgReadFloat(L"MIXING", L"VolumeAdjustC(dB)", 0);

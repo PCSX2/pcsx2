@@ -60,7 +60,7 @@ MixerTab::MixerTab(wxWindow* parent)
 
 	// Volume Slider
 	m_volume_box = new wxStaticBoxSizer(wxVERTICAL, this, "Volume");
-	m_volume_slider = new wxSlider(this, wxID_ANY, FinalVolume * 100, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_LABELS);
+	m_volume_slider = new wxSlider(this, wxID_ANY, FinalVolume * 100, 0, 200, wxDefaultPosition, wxDefaultSize, wxSL_LABELS);
 	m_volume_box->Add(m_volume_slider, wxSizerFlags().Expand());
 
 	m_audio_box = new wxBoxSizer(wxVERTICAL);

@@ -81,8 +81,8 @@ void ReadSettings()
 	Interpolation = CfgReadInt(L"MIXING", L"Interpolation", 5);
 
 	FinalVolume = ((float)CfgReadInt(L"MIXING", L"FinalVolume", 100)) / 100;
-	if (FinalVolume > 1.0f)
-		FinalVolume = 1.0f;
+	if (FinalVolume > 2.0f)
+		FinalVolume = 2.0f;
 
 	AdvancedVolumeControl = CfgReadBool(L"MIXING", L"AdvancedVolumeControl", false);
 	VolumeAdjustCdb = CfgReadFloat(L"MIXING", L"VolumeAdjustC(dB)", 0);
@@ -359,7 +359,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SetWindowText(GetDlgItem(hWnd, IDC_LATENCY_LABEL), temp);
 
 			int configvol = (int)(FinalVolume * 100);
-			INIT_SLIDER(IDC_VOLUME_SLIDER, 0, 100, 10, 5, 1);
+			INIT_SLIDER(IDC_VOLUME_SLIDER, 0, 200, 10, 5, 1);
 
 			SendDialogMsg(hWnd, IDC_VOLUME_SLIDER, TBM_SETPOS, TRUE, configvol);
 			swprintf_s(temp, L"%d%%", configvol);
