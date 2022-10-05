@@ -21078,6 +21078,8 @@ SLES-55372:
   name: "Spiderman - Web of Shadows"
   region: "PAL-M5"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Connect hits, able to summon... etc...
 SLES-55373:
   name: "King of Fighters Collection, The - The Orochi Saga"
   region: "PAL-E"
