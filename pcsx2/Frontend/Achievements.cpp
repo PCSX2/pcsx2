@@ -1915,15 +1915,16 @@ std::string Achievements::GetAchievementProgressText(const Achievement& achievem
 	return buf;
 }
 
-const std::string& Achievements::GetAchievementBadgePath(const Achievement& achievement, bool download_if_missing)
+const std::string& Achievements::GetAchievementBadgePath(const Achievement& achievement, bool download_if_missing, bool force_unlocked_icon)
 {
-	std::string& badge_path = achievement.locked ? achievement.locked_badge_path : achievement.unlocked_badge_path;
+	const bool use_locked = (achievement.locked && !force_unlocked_icon);
+	std::string& badge_path = use_locked ? achievement.locked_badge_path : achievement.unlocked_badge_path;
 	if (!badge_path.empty() || achievement.badge_name.empty())
 		return badge_path;
 
 	// well, this comes from the internet.... :)
 	std::string clean_name(Path::SanitizeFileName(achievement.badge_name));
-	badge_path = Path::Combine(s_achievement_icon_cache_directory, fmt::format("{}{}.png", clean_name, achievement.locked ? "_lock" : ""));
+	badge_path = Path::Combine(s_achievement_icon_cache_directory, fmt::format("{}{}.png", clean_name, use_locked ? "_lock" : ""));
 	if (FileSystem::FileExists(badge_path.c_str()))
 		return badge_path;
 
@@ -1932,7 +1933,7 @@ const std::string& Achievements::GetAchievementBadgePath(const Achievement& achi
 	{
 		RAPIRequest<rc_api_fetch_image_request_t, rc_api_init_fetch_image_request> request;
 		request.image_name = achievement.badge_name.c_str();
-		request.image_type = achievement.locked ? RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED : RC_IMAGE_TYPE_ACHIEVEMENT;
+		request.image_type = use_locked ? RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED : RC_IMAGE_TYPE_ACHIEVEMENT;
 		request.DownloadImage(badge_path);
 	}
 

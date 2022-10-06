@@ -428,7 +428,8 @@ namespace FullscreenUI
 	//////////////////////////////////////////////////////////////////////////
 	static void DrawAchievementsWindow();
 	static void DrawAchievement(const Achievements::Achievement& cheevo);
-	static void DrawPrimedAchievements();
+	static void DrawPrimedAchievementsIcons();
+	static void DrawPrimedAchievementsList();
 	static void DrawLeaderboardsWindow();
 	static void DrawLeaderboardListEntry(const Achievements::Leaderboard& lboard);
 	static void DrawLeaderboardEntry(
@@ -785,8 +786,11 @@ void FullscreenUI::Render()
 
 #ifdef ENABLE_ACHIEVEMENTS
 	// Primed achievements must come first, because we don't want the pause screen to be behind them.
-	if (EmuConfig.Achievements.PrimedIndicators && Achievements::GetPrimedAchievementCount() > 0)
-		DrawPrimedAchievements();
+	if (EmuConfig.Achievements.PrimedIndicators && s_current_main_window == MainWindowType::None &&
+		Achievements::GetPrimedAchievementCount() > 0)
+	{
+		DrawPrimedAchievementsIcons();
+	}
 #endif
 
 	switch (s_current_main_window)
@@ -2631,8 +2635,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		DrawIntListSetting(bsi, "Bilinear Filtering", "Selects where bilinear filtering is utilized when rendering textures.", "EmuCore/GS",
 			"filter", static_cast<int>(BiFiltering::PS2), s_bilinear_options, std::size(s_bilinear_options));
 		DrawIntListSetting(bsi, "Trilinear Filtering", "Selects where trilinear filtering is utilized when rendering textures.",
-			"EmuCore/GS", "TriFilter", static_cast<int>(TriFiltering::Automatic), s_trilinear_options,
-			std::size(s_trilinear_options), -1);
+			"EmuCore/GS", "TriFilter", static_cast<int>(TriFiltering::Automatic), s_trilinear_options, std::size(s_trilinear_options), -1);
 		DrawStringListSetting(bsi, "Anisotropic Filtering", "Selects where anistropic filtering is utilized when rendering textures.",
 			"EmuCore/GS", "MaxAnisotropy", "0", s_anisotropic_filtering_entries, s_anisotropic_filtering_values,
 			std::size(s_anisotropic_filtering_entries));
@@ -3780,6 +3783,12 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 
 		EndFullscreenWindow();
 	}
+
+#ifdef ENABLE_ACHIEVEMENTS
+	// Primed achievements must come first, because we don't want the pause screen to be behind them.
+	if (Achievements::GetPrimedAchievementCount() > 0)
+		DrawPrimedAchievementsList();
+#endif
 }
 
 void FullscreenUI::InitializePlaceholderSaveStateListEntry(
@@ -4540,8 +4549,8 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 	};
 
 	const bool has_resume_state = VMManager::HasSaveStateInSlot(entry->serial.c_str(), entry->crc, -1);
-	OpenChoiceDialog(
-		entry->title.c_str(), false, std::move(options), [has_resume_state, entry_path = entry->path](s32 index, const std::string& title, bool checked) {
+	OpenChoiceDialog(entry->title.c_str(), false, std::move(options),
+		[has_resume_state, entry_path = entry->path](s32 index, const std::string& title, bool checked) {
 			switch (index)
 			{
 				case 0: // Open Game Properties
@@ -5311,7 +5320,7 @@ void FullscreenUI::DrawAchievementsWindow()
 	EndFullscreenWindow();
 }
 
-void FullscreenUI::DrawPrimedAchievements()
+void FullscreenUI::DrawPrimedAchievementsIcons()
 {
 	const ImVec2 image_size(LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT, LAYOUT_MENU_BUTTON_HEIGHT));
 	const float spacing = LayoutScale(10.0f);
@@ -5326,7 +5335,7 @@ void FullscreenUI::DrawPrimedAchievements()
 		if (!achievement.primed)
 			return true;
 
-		const std::string& badge_path = Achievements::GetAchievementBadgePath(achievement);
+		const std::string& badge_path = Achievements::GetAchievementBadgePath(achievement, true, true);
 		if (badge_path.empty())
 			return true;
 
@@ -5337,6 +5346,77 @@ void FullscreenUI::DrawPrimedAchievements()
 		ImDrawList* dl = ImGui::GetBackgroundDrawList();
 		dl->AddImage(badge->GetHandle(), position, position + image_size);
 		position.x -= x_advance;
+		return true;
+	});
+}
+
+void FullscreenUI::DrawPrimedAchievementsList()
+{
+	auto lock = Achievements::GetLock();
+	const u32 primed_count = Achievements::GetPrimedAchievementCount();
+
+	const ImGuiIO& io = ImGui::GetIO();
+	ImFont* font = g_medium_font;
+
+	const ImVec2 image_size(LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY));
+	const float margin = LayoutScale(10.0f);
+	const float spacing = LayoutScale(10.0f);
+	const float padding = LayoutScale(10.0f);
+
+	const float max_text_width = LayoutScale(300.0f);
+	const float row_width = max_text_width + padding + padding + image_size.x + spacing;
+	const float title_height = padding + font->FontSize + padding;
+	const ImVec2 box_min(io.DisplaySize.x - row_width - margin, margin);
+	const ImVec2 box_max(box_min.x + row_width, box_min.y + title_height + (static_cast<float>(primed_count) * (image_size.y + padding)));
+
+	ImDrawList* dl = ImGui::GetBackgroundDrawList();
+	dl->AddRectFilled(box_min, box_max, IM_COL32(0x21, 0x21, 0x21, 200), LayoutScale(10.0f));
+	dl->AddText(font, font->FontSize, ImVec2(box_min.x + padding, box_min.y + padding), IM_COL32(255, 255, 255, 255),
+		"Active Challenge Achievements");
+
+	const float y_advance = image_size.y + spacing;
+	const float acheivement_name_offset = (image_size.y - font->FontSize) / 2.0f;
+	const float max_non_ellipised_text_width = max_text_width - LayoutScale(10.0f);
+	ImVec2 position(box_min.x + padding, box_min.y + title_height);
+
+	Achievements::EnumerateAchievements([font, &image_size, max_text_width, spacing, y_advance, acheivement_name_offset,
+											max_non_ellipised_text_width, &position](const Achievements::Achievement& achievement) {
+		if (!achievement.primed)
+			return true;
+
+		const std::string& badge_path = Achievements::GetAchievementBadgePath(achievement, true, true);
+		if (badge_path.empty())
+			return true;
+
+		HostDisplayTexture* badge = GetCachedTextureAsync(badge_path.c_str());
+		if (!badge)
+			return true;
+
+		ImDrawList* dl = ImGui::GetBackgroundDrawList();
+		dl->AddImage(badge->GetHandle(), position, position + image_size);
+
+		const char* achievement_title = achievement.title.c_str();
+		const char* achievement_tile_end = achievement_title + achievement.title.length();
+		const char* remaining_text = nullptr;
+		const ImVec2 text_width(font->CalcTextSizeA(
+			font->FontSize, max_non_ellipised_text_width, 0.0f, achievement_title, achievement_tile_end, &remaining_text));
+		const ImVec2 text_position(position.x + image_size.x + spacing, position.y + acheivement_name_offset);
+		const ImVec4 text_bbox(text_position.x, text_position.y, text_position.x + max_text_width, text_position.y + image_size.y);
+		const u32 text_color = IM_COL32(255, 255, 255, 255);
+
+		if (remaining_text < achievement_tile_end)
+		{
+			dl->AddText(font, font->FontSize, text_position, text_color, achievement_title, remaining_text, 0.0f, &text_bbox);
+			dl->AddText(font, font->FontSize, ImVec2(text_position.x + text_width.x, text_position.y), text_color, "...", nullptr, 0.0f,
+				&text_bbox);
+		}
+		else
+		{
+			dl->AddText(font, font->FontSize, text_position, text_color, achievement_title, achievement_title + achievement.title.length(),
+				0.0f, &text_bbox);
+		}
+
+		position.y += y_advance;
 		return true;
 	});
 }
