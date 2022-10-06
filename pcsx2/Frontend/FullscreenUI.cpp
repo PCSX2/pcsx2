@@ -785,7 +785,7 @@ void FullscreenUI::Render()
 
 #ifdef ENABLE_ACHIEVEMENTS
 	// Primed achievements must come first, because we don't want the pause screen to be behind them.
-	if (Achievements::GetPrimedAchievementCount() > 0)
+	if (EmuConfig.Achievements.PrimedIndicators && Achievements::GetPrimedAchievementCount() > 0)
 		DrawPrimedAchievements();
 #endif
 
@@ -5729,6 +5729,9 @@ void FullscreenUI::DrawAchievementsSettingsPage()
 	DrawToggleSetting(bsi, ICON_FA_HEADPHONES " Sound Effects",
 		"Plays sound effects for events such as achievement unlocks and leaderboard submissions.", "Achievements", "SoundEffects", true,
 		enabled);
+	DrawToggleSetting(bsi, ICON_FA_MAGIC " Show Challenge Indicators",
+		"Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.", "Achievements",
+		"PrimedIndicators", true, enabled);
 	DrawToggleSetting(bsi, ICON_FA_MEDAL " Test Unofficial Achievements",
 		"When enabled, PCSX2 will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.",
 		"Achievements", "UnofficialTestMode", false, enabled);

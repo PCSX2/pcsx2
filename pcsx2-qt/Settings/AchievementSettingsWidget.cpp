@@ -47,6 +47,8 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
 		"UnofficialTestMode", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.soundEffects, "Achievements",
 		"SoundEffects", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.primedIndicators, "Achievements",
+		"PrimedIndicators", true);
 
 	dialog->registerWidgetHelp(m_ui.enable, tr("Enable Achievements"), tr("Unchecked"),
 		tr("When enabled and logged in, PCSX2 will scan for achievements on game load."));
@@ -68,6 +70,9 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
 	dialog->registerWidgetHelp(
 		m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"),
 		tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
+	dialog->registerWidgetHelp(
+		m_ui.primedIndicators, tr("Show Challenge Indicators"), tr("Checked"),
+		tr("Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active."));
 
 	connect(m_ui.enable, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
 	connect(m_ui.challengeMode, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
