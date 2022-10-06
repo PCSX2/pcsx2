@@ -517,9 +517,6 @@ QIcon GameListModel::getIconForType(GameList::EntryType type)
 		case GameList::EntryType::PS1Disc:
 			return QIcon(QStringLiteral(":/icons/media-optical-24.png"));
 
-		case GameList::EntryType::Playlist:
-			return QIcon(QStringLiteral(":/icons/address-book-new-22.png"));
-
 		case GameList::EntryType::ELF:
 		default:
 			return QIcon(QStringLiteral(":/icons/applications-system-24.png"));

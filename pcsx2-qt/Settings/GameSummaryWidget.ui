@@ -130,15 +130,6 @@
         <normaloff>:/icons/applications-system-24.png</normaloff>:/icons/applications-system-24.png</iconset>
       </property>
      </item>
-     <item>
-      <property name="text">
-       <string>Playlist</string>
-      </property>
-      <property name="icon">
-       <iconset resource="../resources/resources.qrc">
-        <normaloff>:/icons/address-book-new-22.png</normaloff>:/icons/address-book-new-22.png</iconset>
-      </property>
-     </item>
     </widget>
    </item>
    <item row="5" column="0">
