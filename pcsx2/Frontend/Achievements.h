@@ -65,6 +65,7 @@ namespace Achievements
 	{
 		std::string user;
 		std::string formatted_score;
+		time_t submitted;
 		u32 rank;
 		bool is_self;
 	};

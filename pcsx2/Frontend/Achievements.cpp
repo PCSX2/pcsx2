@@ -1301,6 +1301,7 @@ void Achievements::GetLbInfoCallback(s32 status_code, const std::string& content
 		lbe.user = entry.username;
 		lbe.rank = entry.rank;
 		lbe.formatted_score = score;
+		lbe.submitted = entry.submitted;
 		lbe.is_self = lbe.user == s_username;
 
 		s_lboard_entries->push_back(std::move(lbe));
