@@ -16938,6 +16938,8 @@ SLES-53635:
 SLES-53636:
   name: "TY the Tasmanian Tiger 3 - Night of the Quinkan"
   region: "PAL-A"
+  roundModes:
+    eeRoundMode: 0 # Fixes story mission to make it completable.
 SLES-53638:
   name: "Ski Racing 2006"
   region: "PAL-M5"
@@ -44257,6 +44259,8 @@ SLUS-21253:
   name: "Ty the Tasmanian Tiger 3"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes story mission to make it completable.
 SLUS-21254:
   name: "Zatch Bell! Mamodo Battles"
   region: "NTSC-U"
