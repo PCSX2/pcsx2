@@ -201,8 +201,10 @@ static bool UploadBufferToTexture(
 	Vulkan::Texture* texture, VkCommandBuffer cmdbuf, u32 width, u32 height, const void* data, u32 data_stride)
 {
 	const u32 texel_size = Vulkan::Util::GetTexelSize(texture->GetFormat());
-	const u32 upload_stride = Common::AlignUpPow2(texel_size * width, g_vulkan_context->GetBufferCopyRowPitchAlignment());
+	const u32 row_size = texel_size * width;
+	const u32 upload_stride = Common::AlignUpPow2(row_size, g_vulkan_context->GetBufferCopyRowPitchAlignment());
 	const u32 upload_size = upload_stride * height;
+	pxAssert(row_size <= data_stride);
 
 	Vulkan::StreamBuffer& buf = g_vulkan_context->GetTextureUploadBuffer();
 	if (!buf.ReserveMemory(upload_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
@@ -218,7 +220,7 @@ static bool UploadBufferToTexture(
 	}
 
 	const u32 buf_offset = buf.GetCurrentOffset();
-	StringUtil::StrideMemCpy(buf.GetCurrentHostPointer(), upload_stride, data, data_stride, upload_stride, height);
+	StringUtil::StrideMemCpy(buf.GetCurrentHostPointer(), upload_stride, data, data_stride, row_size, height);
 	buf.CommitMemory(upload_size);
 
 	texture->UpdateFromBuffer(cmdbuf, 0, 0, 0, 0, width, height, upload_stride / texel_size, buf.GetBuffer(), buf_offset);
