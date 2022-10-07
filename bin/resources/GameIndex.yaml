@@ -5031,8 +5031,11 @@ SCKA-20096:
   gsHWFixes:
     mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
 SCKA-20098:
-  name: "Spongebob Squarepants - Creature from the Krusty Krab"
+  name: "Nickelodeon SpongeBob SquarePants - Creature from the Krusty Krab"
   region: "NTSC-K"
+  compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
 SCKA-20099:
   name: "Persona 3"
   region: "NTSC-K"
@@ -17341,6 +17344,8 @@ SLES-53775:
   region: "PAL-M4"
   gameFixes:
     - EETimingHack
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
 SLES-53777:
   name: "Prince of Persia - The Two Thrones"
   region: "PAL-M5"
@@ -18736,8 +18741,11 @@ SLES-54396:
   region: "PAL-E"
   compat: 5
 SLES-54400:
-  name: "SpongeBob SquarePants - Creature from the Krusty Krab"
+  name: "Nickelodeon SpongeBob SquarePants - Creature from the Krusty Krab"
   region: "PAL-M7"
+  compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
 SLES-54402:
   name: "Need for Speed - Carbon [Collector's Edition]"
   region: "PAL-F"
@@ -20349,6 +20357,9 @@ SLES-55023:
 SLES-55024:
   name: "Nickelodeon SpongeBob's Atlantis SquarePantis"
   region: "PAL-M4"
+  compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
 SLES-55025:
   name: "Disney-Pixar Cars - Mater-National Championship"
   region: "PAL-E-A"
@@ -20365,7 +20376,7 @@ SLES-55029:
   name: "Disney-Pixar Cars - La Copa Internacional de Mate"
   region: "PAL-S"
 SLES-55030:
-  name: "Nickelodeon SpongeBob's Atlantis SquarePantis"
+  name: "Disney-Pixar Cars - Mater-National Championship"
   region: "PAL-M4"
 SLES-55031:
   name: "Kung Fu Panda"
@@ -20465,6 +20476,9 @@ SLES-55079:
 SLES-55080:
   name: "Nickelodeon SpongeBob's Atlantis SquarePantis"
   region: "PAL-A"
+  compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
 SLES-55081:
   name: "Jackass - The Game"
   region: "PAL-E"
@@ -31779,8 +31793,10 @@ SLPM-66693:
   name: "Princess Maker 4 [Best Version]"
   region: "NTSC-J"
 SLPM-66694:
-  name: "Spongebob"
+  name: "Nickelodeon SpongeBob SquarePants"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
 SLPM-66695:
   name: "Kono Aozora ni Yakusoku o - Melody of the Sun and Sea"
   region: "NTSC-J"
@@ -45052,9 +45068,11 @@ SLUS-21390:
   gsHWFixes:
     roundSprite: 1 # Fixes edge garbage and thin lines.
 SLUS-21391:
-  name: "SpongeBob SquarePants - Creature from the Krusty Krab"
+  name: "Nickelodeon SpongeBob SquarePants - Creature from the Krusty Krab"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
 SLUS-21392:
   name: "Shrek Smash and Crash"
   region: "NTSC-U"
@@ -45492,6 +45510,8 @@ SLUS-21479:
   compat: 5
   gameFixes:
     - EETimingHack
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
 SLUS-21480:
   name: "dot hack GU Volume 1 - Rebirth - Terminal Disc"
   region: "NTSC-U"
@@ -46168,9 +46188,11 @@ SLUS-21643:
   name: "Bratz - The Movie"
   region: "NTSC-U"
 SLUS-21644:
-  name: "SpongeBob's Atlantis SquarePantis"
+  name: "Nickelodeon SpongeBob's Atlantis SquarePantis"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
 SLUS-21645:
   name: "WWE SmackDown! vs. Raw 2008"
   region: "NTSC-U"
@@ -46854,7 +46876,7 @@ SLUS-21796:
   name: "Dora the Explorer - Dora Saves the Snow Princess"
   region: "NTSC-U"
 SLUS-21797:
-  name: "Tak - Guardians Of Gross"
+  name: "Nickelodeon Tak and the Guardians of Gross"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
