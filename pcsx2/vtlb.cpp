@@ -340,6 +340,28 @@ bool vtlb_ramWrite(u32 addr, const DataType& data)
 	return true;
 }
 
+bool vtlb_ramRead(u32 addr, mem8_t* value, size_t count)
+{
+	const auto vmv = vtlbdata.vmap[addr >> VTLB_PAGE_BITS];
+	if (vmv.isHandler(addr))
+	{
+		std::memset(value, 0, count);
+		return false;
+	}
+
+	std::memcpy(value, reinterpret_cast<mem8_t*>(vmv.assumePtr(addr)), count);
+	return true;
+}
+
+bool vtlb_ramWrite(u32 addr, const mem8_t* data, size_t count)
+{
+	const auto vmv = vtlbdata.vmap[addr >> VTLB_PAGE_BITS];
+	if (vmv.isHandler(addr))
+		return false;
+
+	std::memcpy(reinterpret_cast<mem8_t*>(vmv.assumePtr(addr)), data, count);
+	return true;
+}
 
 template bool vtlb_ramRead<mem8_t>(u32 mem, mem8_t* value);
 template bool vtlb_ramRead<mem16_t>(u32 mem, mem16_t* value);

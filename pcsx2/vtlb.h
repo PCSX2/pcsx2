@@ -104,6 +104,9 @@ extern DataType vtlb_ramRead(u32 mem);
 template <typename DataType>
 extern bool vtlb_ramWrite(u32 mem, const DataType& value);
 
+extern bool vtlb_ramRead(u32 addr, mem8_t* value, size_t count);
+extern bool vtlb_ramWrite(u32 addr, const mem8_t* data, size_t count);
+
 extern void vtlb_DynGenWrite(u32 sz);
 extern void vtlb_DynGenRead32(u32 bits, bool sign);
 extern int  vtlb_DynGenRead64(u32 sz, int gpr);

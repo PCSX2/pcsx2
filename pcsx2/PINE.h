@@ -13,17 +13,17 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* A reference client implementation for interfacing with PINE is available
- * here: https://code.govanify.com/govanify/pine/ */
+ /* A reference client implementation for interfacing with PINE is available
+  * here: https://code.govanify.com/govanify/pine/ */
 
 #pragma once
 
 #ifndef PCSX2_CORE
 
-// PINE uses a concept of "slot" to be able to communicate with multiple
-// emulators at the same time, each slot should be unique to each emulator to
-// allow PnP and configurable by the end user so that several runs don't
-// conflict with each others
+  // PINE uses a concept of "slot" to be able to communicate with multiple
+  // emulators at the same time, each slot should be unique to each emulator to
+  // allow PnP and configurable by the end user so that several runs don't
+  // conflict with each others
 #define PINE_DEFAULT_SLOT 28011
 #define PINE_EMULATOR_NAME "pcsx2"
 
@@ -64,17 +64,17 @@ protected:
 	 */
 #define MAX_IPC_SIZE 650000
 
-	/**
-	 * Maximum memory used by an IPC message reply.
-	 * Equivalent to 50,000 Read64 replies.
-	 */
+	 /**
+	  * Maximum memory used by an IPC message reply.
+	  * Equivalent to 50,000 Read64 replies.
+	  */
 #define MAX_IPC_RETURN_SIZE 450000
 
-	/**
-	 * IPC return buffer.
-	 * A preallocated buffer used to store all IPC replies.
-	 * to the size of 50.000 MsgWrite64 IPC calls.
-	 */
+	  /**
+	   * IPC return buffer.
+	   * A preallocated buffer used to store all IPC replies.
+	   * to the size of 50.000 MsgWrite64 IPC calls.
+	   */
 	char* m_ret_buffer;
 
 	/**
@@ -107,6 +107,13 @@ protected:
 		MsgUUID = 0xD, /**< Returns the game UUID. */
 		MsgGameVersion = 0xE, /**< Returns the game verion. */
 		MsgStatus = 0xF, /**< Returns the emulator status. */
+
+		MsgReadN = 0x64, /** */
+		MsgWriteN = 0x65, /** */
+		MsgFrameAdvance = 0x66, /** */
+		MsgResume = 0x67, /** */
+		MsgPause = 0x68, /** */
+		MsgRestart = 0x69, /** */
 		MsgUnimplemented = 0xFF /**< Unimplemented IPC message. */
 	};
 
@@ -209,7 +216,7 @@ protected:
 	static inline bool SafetyChecks(u32 command_len, int command_size, u32 reply_len, int reply_size = 0, u32 buf_size = MAX_IPC_SIZE - 1)
 	{
 		bool res = ((command_len + command_size) > buf_size ||
-					(reply_len + reply_size) >= MAX_IPC_RETURN_SIZE);
+			(reply_len + reply_size) >= MAX_IPC_RETURN_SIZE);
 		if (unlikely(res))
 			return false;
 		return true;

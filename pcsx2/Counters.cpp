@@ -42,6 +42,7 @@
 #endif
 
 #include "Recording/InputRecordingControls.h"
+#include "pcsx2/FrameStep.h"
 
 using namespace Threading;
 
@@ -615,6 +616,8 @@ static __fi void VSyncStart(u32 sCycle)
 		g_InputRecordingControls.HandlePausingAndLocking();
 	}
 
+	g_FrameStep.HandlePausing();
+
 #ifdef PCSX2_CORE
 	// Update vibration at the end of a frame.
 	PAD::Update();
@@ -678,6 +681,8 @@ static __fi void VSyncEnd(u32 sCycle)
 	{
 		g_InputRecordingControls.CheckPauseStatus();
 	}
+
+	g_FrameStep.CheckPauseStatus();
 
 	if(EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
 		SysTrace.EE.Counters.Write( "    ================  EE COUNTER VSYNC END (frame: %d)  ================", g_FrameCount );

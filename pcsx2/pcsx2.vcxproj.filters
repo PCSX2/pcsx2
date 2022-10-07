@@ -1796,6 +1796,9 @@
     <ClCompile Include="gui\PathUtils.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
+    <ClCompile Include="FrameStep.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2989,6 +2992,9 @@
     </ClInclude>
     <ClInclude Include="gui\StringHelpers.h">
       <Filter>AppHost</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameStep.h">
+      <Filter>System\Include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -41,8 +41,11 @@
 #include "gui/AppSaveStates.h"
 #include "gui/AppCoreThread.h"
 #include "gui/SysThreads.h"
+#include "pcsx2/Counters.h"
+#include "pcsx2/Recording/InputRecordingControls.h"
 #include "svnrev.h"
 #include "PINE.h"
+#include "pcsx2/FrameStep.h"
 
 PINEServer::PINEServer(SysCoreThread* vm, unsigned int slot)
 	: pxThread("PINE_Server")
@@ -50,7 +53,6 @@ PINEServer::PINEServer(SysCoreThread* vm, unsigned int slot)
 #ifdef _WIN32
 	WSADATA wsa;
 	struct sockaddr_in server;
-
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 	{
@@ -166,9 +168,9 @@ int PINEServer::StartSocket()
 			m_end = true;
 			return -1;
 		}
-	}
+		}
 	return 0;
-}
+	}
 
 void PINEServer::ExecuteTaskInThread()
 {
@@ -268,7 +270,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 	while (buf_cnt < buf_size)
 	{
 		if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
-			return IPCBuffer{5, MakeFailIPC(ret_buffer)};
+			return IPCBuffer{ 5, MakeFailIPC(ret_buffer) };
 		buf_cnt++;
 		// example IPC messages: MsgRead/Write
 		// refer to the client doc for more info on the format
@@ -283,244 +285,335 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 		// reply: XX ZZ ZZ ZZ ZZ
 		switch ((IPCCommand)buf[buf_cnt - 1])
 		{
-			case MsgRead8:
+		case MsgRead8:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 4, ret_cnt, 1, buf_size))
+				goto error;
+			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+			const u8 res = memRead8(a);
+			ToArray(ret_buffer, res, ret_cnt);
+			ret_cnt += 1;
+			buf_cnt += 4;
+			break;
+		}
+		case MsgRead16:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 4, ret_cnt, 2, buf_size))
+				goto error;
+			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+			const u16 res = memRead16(a);
+			ToArray(ret_buffer, res, ret_cnt);
+			ret_cnt += 2;
+			buf_cnt += 4;
+			break;
+		}
+		case MsgRead32:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 4, ret_cnt, 4, buf_size))
+				goto error;
+			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+			const u32 res = memRead32(a);
+			ToArray(ret_buffer, res, ret_cnt);
+			ret_cnt += 4;
+			buf_cnt += 4;
+			break;
+		}
+		case MsgRead64:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 4, ret_cnt, 8, buf_size))
+				goto error;
+			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+			u64 res = 0;
+			memRead64(a, &res);
+			ToArray(ret_buffer, res, ret_cnt);
+			ret_cnt += 8;
+			buf_cnt += 4;
+			break;
+		}
+		case MsgWrite8:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 1 + 4, ret_cnt, 0, buf_size))
+				goto error;
+			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+			memWrite8(a, FromArray<u8>(&buf[buf_cnt], 4));
+			buf_cnt += 5;
+			break;
+		}
+		case MsgWrite16:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 2 + 4, ret_cnt, 0, buf_size))
+				goto error;
+			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+			memWrite16(a, FromArray<u16>(&buf[buf_cnt], 4));
+			buf_cnt += 6;
+			break;
+		}
+		case MsgWrite32:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 4 + 4, ret_cnt, 0, buf_size))
+				goto error;
+			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+			memWrite32(a, FromArray<u32>(&buf[buf_cnt], 4));
+			buf_cnt += 8;
+			break;
+		}
+		case MsgWrite64:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 8 + 4, ret_cnt, 0, buf_size))
+				goto error;
+			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+			memWrite64(a, FromArray<u64>(&buf[buf_cnt], 4));
+			buf_cnt += 12;
+			break;
+		}
+		case MsgVersion:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			char version[256] = {};
+			if (GIT_TAGGED_COMMIT) // Nightly builds
 			{
-				if (!m_vm->HasActiveMachine())
-					goto error;
-				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 1, buf_size))
-					goto error;
-				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-				const u8 res = memRead8(a);
-				ToArray(ret_buffer, res, ret_cnt);
-				ret_cnt += 1;
-				buf_cnt += 4;
-				break;
+				// tagged commit - more modern implementation of dev build versioning
+				// - there is no need to include the commit - that is associated with the tag, git is implied
+				sprintf(version, "PCSX2 Nightly - %s", GIT_TAG);
 			}
-			case MsgRead16:
+			else
 			{
-				if (!m_vm->HasActiveMachine())
-					goto error;
-				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 2, buf_size))
-					goto error;
-				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-				const u16 res = memRead16(a);
-				ToArray(ret_buffer, res, ret_cnt);
-				ret_cnt += 2;
-				buf_cnt += 4;
-				break;
+				sprintf(version, "PCSX2 %u.%u.%u-%lld", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo, SVN_REV);
 			}
-			case MsgRead32:
+			const u32 size = strlen(version) + 1;
+			version[size] = 0x00;
+			if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
+				goto error;
+			ToArray(ret_buffer, size, ret_cnt);
+			ret_cnt += 4;
+			memcpy(&ret_buffer[ret_cnt], version, size);
+			ret_cnt += size;
+			break;
+		}
+		case MsgSaveState:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
+				goto error;
+			StateCopy_SaveToSlot(FromArray<u8>(&buf[buf_cnt], 0));
+			buf_cnt += 1;
+			break;
+		}
+		case MsgLoadState:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
+				goto error;
+			StateCopy_LoadFromSlot(FromArray<u8>(&buf[buf_cnt], 0), false);
+			buf_cnt += 1;
+			break;
+		}
+		case MsgTitle:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			char* title = new char[GameInfo::gameName.size() + 1];
+			sprintf(title, "%s", GameInfo::gameName.ToUTF8().data());
+			const u32 size = strlen(title) + 1;
+			title[size] = 0x00;
+			if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
+				goto error;
+			ToArray(ret_buffer, size, ret_cnt);
+			ret_cnt += 4;
+			memcpy(&ret_buffer[ret_cnt], title, size);
+			ret_cnt += size;
+			delete[] title;
+			break;
+		}
+		case MsgID:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			char* title = new char[GameInfo::gameSerial.size() + 1];
+			sprintf(title, "%s", GameInfo::gameSerial.ToUTF8().data());
+			const u32 size = strlen(title) + 1;
+			title[size] = 0x00;
+			if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
+				goto error;
+			ToArray(ret_buffer, size, ret_cnt);
+			ret_cnt += 4;
+			memcpy(&ret_buffer[ret_cnt], title, size);
+			ret_cnt += size;
+			delete[] title;
+			break;
+		}
+		case MsgUUID:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			char* title = new char[GameInfo::gameCRC.size() + 1];
+			sprintf(title, "%s", GameInfo::gameCRC.ToUTF8().data());
+			const u32 size = strlen(title) + 1;
+			title[size] = 0x00;
+			if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
+				goto error;
+			ToArray(ret_buffer, size, ret_cnt);
+			ret_cnt += 4;
+			memcpy(&ret_buffer[ret_cnt], title, size);
+			ret_cnt += size;
+			delete[] title;
+			break;
+		}
+		case MsgGameVersion:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			char* title = new char[GameInfo::gameVersion.size() + 1];
+			sprintf(title, "%s", GameInfo::gameVersion.ToUTF8().data());
+			const u32 size = strlen(title) + 1;
+			title[size] = 0x00;
+			if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
+				goto error;
+			ToArray(ret_buffer, size, ret_cnt);
+			ret_cnt += 4;
+			memcpy(&ret_buffer[ret_cnt], title, size);
+			ret_cnt += size;
+			delete[] title;
+			break;
+		}
+		case MsgStatus:
+		{
+			if (!SafetyChecks(buf_cnt, 0, ret_cnt, 8, buf_size))
+				goto error;
+			EmuStatus status;
+			if (m_vm->HasActiveMachine())
 			{
-				if (!m_vm->HasActiveMachine())
-					goto error;
-				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 4, buf_size))
-					goto error;
-				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-				const u32 res = memRead32(a);
-				ToArray(ret_buffer, res, ret_cnt);
-				ret_cnt += 4;
-				buf_cnt += 4;
-				break;
-			}
-			case MsgRead64:
-			{
-				if (!m_vm->HasActiveMachine())
-					goto error;
-				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 8, buf_size))
-					goto error;
-				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-				u64 res = 0;
-				memRead64(a, &res);
-				ToArray(ret_buffer, res, ret_cnt);
-				ret_cnt += 8;
-				buf_cnt += 4;
-				break;
-			}
-			case MsgWrite8:
-			{
-				if (!m_vm->HasActiveMachine())
-					goto error;
-				if (!SafetyChecks(buf_cnt, 1 + 4, ret_cnt, 0, buf_size))
-					goto error;
-				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-				memWrite8(a, FromArray<u8>(&buf[buf_cnt], 4));
-				buf_cnt += 5;
-				break;
-			}
-			case MsgWrite16:
-			{
-				if (!m_vm->HasActiveMachine())
-					goto error;
-				if (!SafetyChecks(buf_cnt, 2 + 4, ret_cnt, 0, buf_size))
-					goto error;
-				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-				memWrite16(a, FromArray<u16>(&buf[buf_cnt], 4));
-				buf_cnt += 6;
-				break;
-			}
-			case MsgWrite32:
-			{
-				if (!m_vm->HasActiveMachine())
-					goto error;
-				if (!SafetyChecks(buf_cnt, 4 + 4, ret_cnt, 0, buf_size))
-					goto error;
-				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-				memWrite32(a, FromArray<u32>(&buf[buf_cnt], 4));
-				buf_cnt += 8;
-				break;
-			}
-			case MsgWrite64:
-			{
-				if (!m_vm->HasActiveMachine())
-					goto error;
-				if (!SafetyChecks(buf_cnt, 8 + 4, ret_cnt, 0, buf_size))
-					goto error;
-				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-				memWrite64(a, FromArray<u64>(&buf[buf_cnt], 4));
-				buf_cnt += 12;
-				break;
-			}
-			case MsgVersion:
-			{
-				if (!m_vm->HasActiveMachine())
-					goto error;
-				char version[256] = {};
-				if (GIT_TAGGED_COMMIT) // Nightly builds
-				{
-					// tagged commit - more modern implementation of dev build versioning
-					// - there is no need to include the commit - that is associated with the tag, git is implied
-					sprintf(version, "PCSX2 Nightly - %s", GIT_TAG);
-				}
+				if (GetCoreThread().IsClosing() || g_InputRecordingControls.IsPaused() || g_FrameStep.IsPaused())
+					status = Paused;
 				else
-				{
-					sprintf(version, "PCSX2 %u.%u.%u-%lld", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo, SVN_REV);
-				}
-				const u32 size = strlen(version) + 1;
-				version[size] = 0x00;
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
-					goto error;
-				ToArray(ret_buffer, size, ret_cnt);
-				ret_cnt += 4;
-				memcpy(&ret_buffer[ret_cnt], version, size);
-				ret_cnt += size;
-				break;
+					status = Running;
 			}
-			case MsgSaveState:
+			else
 			{
-				if (!m_vm->HasActiveMachine())
-					goto error;
-				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
-					goto error;
-				StateCopy_SaveToSlot(FromArray<u8>(&buf[buf_cnt], 0));
-				buf_cnt += 1;
-				break;
+				status = Shutdown;
 			}
-			case MsgLoadState:
-			{
-				if (!m_vm->HasActiveMachine())
-					goto error;
-				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
-					goto error;
-				StateCopy_LoadFromSlot(FromArray<u8>(&buf[buf_cnt], 0), false);
-				buf_cnt += 1;
-				break;
-			}
-			case MsgTitle:
-			{
-				if (!m_vm->HasActiveMachine())
-					goto error;
-				char* title = new char[GameInfo::gameName.size() + 1];
-				sprintf(title, "%s", GameInfo::gameName.ToUTF8().data());
-				const u32 size = strlen(title) + 1;
-				title[size] = 0x00;
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
-					goto error;
-				ToArray(ret_buffer, size, ret_cnt);
-				ret_cnt += 4;
-				memcpy(&ret_buffer[ret_cnt], title, size);
-				ret_cnt += size;
-				delete[] title;
-				break;
-			}
-			case MsgID:
-			{
-				if (!m_vm->HasActiveMachine())
-					goto error;
-				char* title = new char[GameInfo::gameSerial.size() + 1];
-				sprintf(title, "%s", GameInfo::gameSerial.ToUTF8().data());
-				const u32 size = strlen(title) + 1;
-				title[size] = 0x00;
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
-					goto error;
-				ToArray(ret_buffer, size, ret_cnt);
-				ret_cnt += 4;
-				memcpy(&ret_buffer[ret_cnt], title, size);
-				ret_cnt += size;
-				delete[] title;
-				break;
-			}
-			case MsgUUID:
-			{
-				if (!m_vm->HasActiveMachine())
-					goto error;
-				char* title = new char[GameInfo::gameCRC.size() + 1];
-				sprintf(title, "%s", GameInfo::gameCRC.ToUTF8().data());
-				const u32 size = strlen(title) + 1;
-				title[size] = 0x00;
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
-					goto error;
-				ToArray(ret_buffer, size, ret_cnt);
-				ret_cnt += 4;
-				memcpy(&ret_buffer[ret_cnt], title, size);
-				ret_cnt += size;
-				delete[] title;
-				break;
-			}
-			case MsgGameVersion:
-			{
-				if (!m_vm->HasActiveMachine())
-					goto error;
-				char* title = new char[GameInfo::gameVersion.size() + 1];
-				sprintf(title, "%s", GameInfo::gameVersion.ToUTF8().data());
-				const u32 size = strlen(title) + 1;
-				title[size] = 0x00;
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
-					goto error;
-				ToArray(ret_buffer, size, ret_cnt);
-				ret_cnt += 4;
-				memcpy(&ret_buffer[ret_cnt], title, size);
-				ret_cnt += size;
-				delete[] title;
-				break;
-			}
-			case MsgStatus:
-			{
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 4, buf_size))
-					goto error;
-				EmuStatus status;
-				if (m_vm->HasActiveMachine())
-				{
-					if (GetCoreThread().IsClosing())
-						status = Paused;
-					else
-						status = Running;
-				}
-				else
-				{
-					status = Shutdown;
-				}
-				ToArray(ret_buffer, status, ret_cnt);
-				ret_cnt += 4;
-				break;
-			}
-			default:
-			{
-			error:
-				return IPCBuffer{5, MakeFailIPC(ret_buffer)};
-			}
+			ToArray(ret_buffer, status, ret_cnt);
+			ToArray(ret_buffer, g_FrameCount, ret_cnt + 4);
+			ret_cnt += 8;
+			break;
+		}
+
+		case MsgReadN:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 6, ret_cnt, 1, buf_size))
+				goto error;
+
+
+
+			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+			const u16 l = FromArray<u16>(&buf[buf_cnt], 4);
+			if (!SafetyChecks(buf_cnt, 6, ret_cnt, l, buf_size))
+				goto error;
+			if (!vtlb_ramRead(a, reinterpret_cast<mem8_t*>(&ret_buffer[ret_cnt]), (u32)l))
+				goto error;
+			ret_cnt += l;
+			buf_cnt += 6;
+			break;
+		}
+		case MsgWriteN:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 6, ret_cnt, 1, buf_size))
+				goto error;
+			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+			const u16 c = FromArray<u16>(&buf[buf_cnt], 4);
+			if (!SafetyChecks(buf_cnt, c + 6, ret_cnt, 0, buf_size))
+				goto error;
+			buf_cnt += 6;
+			if (!vtlb_ramWrite(a, reinterpret_cast<mem8_t*>(&buf[buf_cnt]), (u32)c))
+				goto error;
+			buf_cnt += c;
+			u8 res = 1;
+			ToArray(ret_buffer, res, ret_cnt);
+			ret_cnt += 1;
+			break;
+		}
+		case MsgFrameAdvance:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 0, ret_cnt, 1, buf_size))
+				goto error;
+			g_FrameStep.FrameAdvance();
+			u8 res = 1;
+			ToArray(ret_buffer, res, ret_cnt);
+			ret_cnt += 1;
+			break;
+		}
+		case MsgResume:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 0, ret_cnt, 1, buf_size))
+				goto error;
+			g_FrameStep.Resume();
+			u8 res = 1;
+			ToArray(ret_buffer, res, ret_cnt);
+			ret_cnt += 1;
+			break;
+		}
+		case MsgPause:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 0, ret_cnt, 1, buf_size))
+				goto error;
+			g_FrameStep.Pause();
+			u8 res = 1;
+			ToArray(ret_buffer, res, ret_cnt);
+			ret_cnt += 1;
+			break;
+		}
+		case MsgRestart:
+		{
+			if (!SafetyChecks(buf_cnt, 0, ret_cnt, 1, buf_size))
+				goto error;
+			g_Conf->EmuOptions.UseBOOT2Injection = true;
+			CoreThread.ResetQuick();
+			CoreThread.Resume();
+			g_FrameStep.Resume();
+
+			u8 res = 1;
+			ToArray(ret_buffer, res, ret_cnt);
+			ret_cnt += 1;
+			break;
+		}
+
+		default:
+		{
+		error:
+			return IPCBuffer{ 5, MakeFailIPC(ret_buffer) };
+		}
 		}
 	}
-	return IPCBuffer{(int)ret_cnt, MakeOkIPC(ret_buffer, ret_cnt)};
+	return IPCBuffer{ (int)ret_cnt, MakeOkIPC(ret_buffer, ret_cnt) };
 }
 
 #endif
