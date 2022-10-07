@@ -900,8 +900,9 @@ void Achievements::LoginCallback(s32 status_code, const std::string& content_typ
 {
 	std::unique_lock lock(s_achievements_mutex);
 
+	// NOTE: The strings here can be null if the server returns literal "null" (see rc_json_get_string()), hence the double-check.
 	RAPIResponse<rc_api_login_response_t, rc_api_process_login_response, rc_api_destroy_login_response> response(status_code, data);
-	if (!response)
+	if (!response || !response.username || !response.api_token)
 	{
 		FormattedError("Login failed. Please check your user name and password, and try again.");
 		return;
@@ -1126,7 +1127,7 @@ void Achievements::GetPatchesCallback(s32 status_code, const std::string& conten
 
 	std::unique_lock lock(s_achievements_mutex);
 	ClearGameInfo();
-	if (!response)
+	if (!response || !response.title)
 		return;
 
 	// ensure fullscreen UI is ready
@@ -1136,7 +1137,7 @@ void Achievements::GetPatchesCallback(s32 status_code, const std::string& conten
 	s_game_title = response.title;
 
 	// try for a icon
-	if (std::strlen(response.image_name) > 0)
+	if (response.image_name && std::strlen(response.image_name) > 0)
 	{
 		s_game_icon = Path::Combine(s_game_icon_cache_directory, fmt::format("{}.png", s_game_id));
 		if (!FileSystem::FileExists(s_game_icon.c_str()))
@@ -1174,6 +1175,12 @@ void Achievements::GetPatchesCallback(s32 status_code, const std::string& conten
 			continue;
 		}
 
+		if (!defn.definition || !defn.title || !defn.description || !defn.badge_name)
+		{
+			Console.Error("Incomplete achievement %u", defn.id);
+			continue;
+		}
+
 		Achievement cheevo;
 		cheevo.id = defn.id;
 		cheevo.memaddr = defn.definition;
@@ -1191,6 +1198,11 @@ void Achievements::GetPatchesCallback(s32 status_code, const std::string& conten
 	for (u32 i = 0; i < response.num_leaderboards; i++)
 	{
 		const rc_api_leaderboard_definition_t& defn = response.leaderboards[i];
+		if (!defn.title || !defn.description || !defn.definition)
+		{
+			Console.Error("Incomplete leaderboard %u", defn.id);
+			continue;
+		}
 
 		Leaderboard lboard;
 		lboard.id = defn.id;
@@ -1209,7 +1221,7 @@ void Achievements::GetPatchesCallback(s32 status_code, const std::string& conten
 	}
 
 	// Parse rich presence.
-	if (std::strlen(response.rich_presence_script) > 0)
+	if (response.rich_presence_script && std::strlen(response.rich_presence_script) > 0)
 	{
 		const int res = rc_runtime_activate_richpresence(&s_rcheevos_runtime, response.rich_presence_script, nullptr, 0);
 		if (res == RC_OK)
@@ -1279,6 +1291,8 @@ void Achievements::GetLbInfoCallback(s32 status_code, const std::string& content
 	for (u32 i = 0; i < response.num_entries; i++)
 	{
 		const rc_api_lboard_info_entry_t& entry = response.entries[i];
+		if (!entry.username)
+			continue;
 
 		char score[128];
 		rc_runtime_format_lboard_value(score, sizeof(score), entry.score, leaderboard->format);
