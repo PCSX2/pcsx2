@@ -4661,7 +4661,7 @@ bool GSRendererHW::OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source
 
 				g_gs_device->Recycle(t->m_texture);
 
-				t->m_texture = g_gs_device->CreateTexture(512, 512, false, GSTexture::Format::Color);
+				t->m_texture = g_gs_device->CreateTexture(512, 512, 1, GSTexture::Format::Color);
 
 				t->m_texture->Update(GSVector4i(0, 0, 448, lines), video, 448 * 4);
 

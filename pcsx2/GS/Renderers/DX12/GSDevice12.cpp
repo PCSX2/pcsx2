@@ -440,9 +440,12 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 		dTexVK->CommitClear();
 
 	EndRenderPass();
+
 	sTexVK->TransitionToState(D3D12_RESOURCE_STATE_COPY_SOURCE);
-	dTexVK->SetState(GSTexture::State::Dirty);
+	sTexVK->SetUsedThisCommandBuffer();
+
 	dTexVK->TransitionToState(D3D12_RESOURCE_STATE_COPY_DEST);
+	dTexVK->SetUsedThisCommandBuffer();
 
 	D3D12_TEXTURE_COPY_LOCATION srcloc;
 	srcloc.pResource = sTexVK->GetResource();
@@ -2514,7 +2517,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	else if (config.require_one_barrier)
 	{
 		// requires a copy of the RT
-		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, false, GSTexture::Format::Color, false));
+		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, GSTexture::Format::Color, false));
 		if (draw_rt_clone)
 		{
 			EndRenderPass();

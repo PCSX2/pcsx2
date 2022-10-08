@@ -264,9 +264,9 @@ GSTexture* GSDevice::CreateDepthStencil(int w, int h, GSTexture::Format format, 
 	return FetchSurface(GSTexture::Type::DepthStencil, w, h, 1, format, clear, true);
 }
 
-GSTexture* GSDevice::CreateTexture(int w, int h, bool mipmap, GSTexture::Format format, bool prefer_reuse /* = false */)
+GSTexture* GSDevice::CreateTexture(int w, int h, int mipmap_levels, GSTexture::Format format, bool prefer_reuse /* = false */)
 {
-	const int levels = mipmap ? MipmapLevelsForSize(w, h) : 1;
+	const int levels = mipmap_levels < 0 ? MipmapLevelsForSize(w, h) : mipmap_levels;
 	return FetchSurface(GSTexture::Type::Texture, w, h, levels, format, false, prefer_reuse);
 }
 
