@@ -1625,6 +1625,7 @@ else()
 			${pcsx2USBHeaders})
 		target_link_libraries(PCSX2_FLAGS INTERFACE
 			jpgd
+			PkgConfig::SAMPLERATE
 		)
 	else()
 		target_sources(PCSX2 PRIVATE
@@ -1643,7 +1644,6 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	cpuinfo
 	ZLIB::ZLIB
 	PkgConfig::SOUNDTOUCH
-	PkgConfig::SAMPLERATE
 	PNG::PNG
 	LibLZMA::LibLZMA
 	Zstd::Zstd
