@@ -1102,8 +1102,17 @@ void VMManager::Shutdown(bool save_resume_state)
 void VMManager::Reset()
 {
 #ifdef ENABLE_ACHIEVEMENTS
+	const bool previous_challenge_mode = Achievements::ChallengeModeActive();
 	if (!Achievements::OnReset())
 		return;
+
+	if (Achievements::ChallengeModeActive() && !previous_challenge_mode)
+	{
+		// Hardcore mode enabled, so reload settings. This only covers the BIOS
+		// portion of the boot, once the game loads we'll reset anyway, but better
+		// to change things like the speed now rather than later.
+		ApplySettings();
+	}
 #endif
 
 	const bool game_was_started = g_GameStarted;

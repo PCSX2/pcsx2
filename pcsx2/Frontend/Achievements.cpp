@@ -548,7 +548,7 @@ void Achievements::UpdateSettings(const Pcsx2Config::AchievementsOptions& old_co
 		}
 		else if (!s_challenge_mode && EmuConfig.Achievements.ChallengeMode)
 		{
-			Host::AddKeyedOSDMessage("challenge_mode_reset", "Hardcore mode will be enabled on system reset.", 10.0f);
+			ImGuiFullscreen::ShowToast(std::string(), "Hardcore mode will be enabled on system reset.", 10.0f);
 		}
 	}
 
