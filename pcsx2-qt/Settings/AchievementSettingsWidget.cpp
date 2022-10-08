@@ -114,6 +114,7 @@ void AchievementSettingsWidget::updateEnableState()
 	m_ui.challengeMode->setEnabled(enabled);
 	m_ui.leaderboards->setEnabled(enabled && challenge);
 	m_ui.soundEffects->setEnabled(enabled);
+	m_ui.primedIndicators->setEnabled(enabled);
 }
 
 void AchievementSettingsWidget::onChallengeModeStateChanged()
