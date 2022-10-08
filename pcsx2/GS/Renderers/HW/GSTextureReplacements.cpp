@@ -536,7 +536,7 @@ GSTexture* GSTextureReplacements::CreateReplacementTexture(const ReplacementText
 		mipmap = false;
 	}
 
-	GSTexture* tex = g_gs_device->CreateTexture(rtex.width, rtex.height, mipmap, rtex.format);
+	GSTexture* tex = g_gs_device->CreateTexture(rtex.width, rtex.height, static_cast<int>(rtex.mips.size()) + 1, rtex.format);
 	if (!tex)
 		return nullptr;
 

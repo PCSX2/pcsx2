@@ -1562,12 +1562,18 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 	Source* src = new Source(TEX0, TEXA, false);
-	if (lod)
-		src->m_lod = *lod;
 
 	int tw = 1 << TEX0.TW;
 	int th = 1 << TEX0.TH;
 	//int tp = TEX0.TBW << 6;
+	int tlevels = 1;
+	if (lod)
+	{
+		// lod won't contain the full range when using basic mipmapping, only that
+		// which is hashed, so we just allocate the full thing.
+		tlevels = (GSConfig.HWMipmap != HWMipmapLevel::Full) ? -1 : (lod->y - lod->x + 1);
+		src->m_lod = *lod;
+	}
 
 	bool hack = false;
 
@@ -1584,7 +1590,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		GSTexture* sTex = dst->m_texture;
 		GSTexture* dTex = outside_target ?
 			g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Color, true) :
-			g_gs_device->CreateTexture(w, h, false, GSTexture::Format::Color, true);
+			g_gs_device->CreateTexture(w, h, tlevels, GSTexture::Format::Color, true);
 
 		// copy the rt in
 		const GSVector4i area(GSVector4i(x, y, x + w, y + h).rintersect(GSVector4i(sTex->GetSize()).zwxy()));
@@ -1816,7 +1822,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			// 'src' is the new texture cache entry (hence the output)
 			GSTexture* sTex = dst->m_texture;
 			GSTexture* dTex = use_texture ?
-				g_gs_device->CreateTexture(w, h, false, GSTexture::Format::Color, true) :
+				g_gs_device->CreateTexture(w, h, 1, GSTexture::Format::Color, true) :
 				g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Color, false);
 			src->m_texture = dTex;
 
@@ -1880,12 +1886,12 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		}
 		else if (paltex)
 		{
-			src->m_texture = g_gs_device->CreateTexture(tw, th, false, GSTexture::Format::UNorm8);
+			src->m_texture = g_gs_device->CreateTexture(tw, th, tlevels, GSTexture::Format::UNorm8);
 			AttachPaletteToSource(src, psm.pal, true);
 		}
 		else
 		{
-			src->m_texture = g_gs_device->CreateTexture(tw, th, (lod != nullptr), GSTexture::Format::Color);
+			src->m_texture = g_gs_device->CreateTexture(tw, th, tlevels, GSTexture::Format::Color);
 			if (psm.pal > 0)
 			{
 				AttachPaletteToSource(src, psm.pal, false);
@@ -2009,7 +2015,8 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 	// expand/upload texture
 	const int tw = 1 << TEX0.TW;
 	const int th = 1 << TEX0.TH;
-	GSTexture* tex = g_gs_device->CreateTexture(tw, th, paltex ? false : (lod != nullptr), paltex ? GSTexture::Format::UNorm8 : GSTexture::Format::Color);
+	const int tlevels = lod ? ((GSConfig.HWMipmap != HWMipmapLevel::Full) ? -1 : (lod->y - lod->x + 1)) : 1;
+	GSTexture* tex = g_gs_device->CreateTexture(tw, th, tlevels, paltex ? GSTexture::Format::UNorm8 : GSTexture::Format::Color);
 	if (!tex)
 	{
 		// out of video memory if we hit here
@@ -2627,7 +2634,7 @@ void GSTextureCache::Target::Update()
 	TEXA.TA0 = 0;
 	TEXA.TA1 = 0x80;
 
-	GSTexture* t = g_gs_device->CreateTexture(w, h, false, GSTexture::Format::Color);
+	GSTexture* t = g_gs_device->CreateTexture(w, h, 1, GSTexture::Format::Color);
 
 	GSOffset off = g_gs_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
 
@@ -3047,7 +3054,7 @@ void GSTextureCache::Palette::InitializeTexture()
 		// sampling such texture are always normalized by 255.
 		// This is because indexes are stored as normalized values of an RGBA texture (e.g. index 15 will be read as (15/255),
 		// and therefore will read texel 15/255 * texture size).
-		m_tex_palette = g_gs_device->CreateTexture(256, 1, false, GSTexture::Format::Color);
+		m_tex_palette = g_gs_device->CreateTexture(256, 1, 1, GSTexture::Format::Color);
 		m_tex_palette->Update(GSVector4i(0, 0, m_pal, 1), m_clut, m_pal * sizeof(m_clut[0]));
 	}
 }
