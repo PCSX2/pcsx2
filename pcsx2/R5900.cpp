@@ -561,6 +561,9 @@ void eeGameStarting()
 		//Console.WriteLn( Color_Green, "(R5900) ELF Entry point! [addr=0x%08X]", ElfEntry );
 		g_GameStarted = true;
 		g_GameLoading = false;
+		
+		// map extra 96mb
+		vtlb_VMap(0x02000000, 0x02000000, 0x06000000);
 
 		// GameStartingInThread may issue a reset of the cpu and/or recompilers.  Check for and
 		// handle such things here:
