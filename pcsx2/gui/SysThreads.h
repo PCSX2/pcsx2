@@ -186,6 +186,7 @@ protected:
 
 	// Stores the state of the PINE thread.
 	std::unique_ptr<PINEServer> m_pineServer;
+	std::unique_ptr<PINEServer> m_pineServer2;
 
 	// Current state of the PINE thread
 	enum StatePINE

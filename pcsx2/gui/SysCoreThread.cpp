@@ -287,9 +287,12 @@ void SysCoreThread::GameStartingInThread()
 	{
 		m_PineState = ON;
 		m_pineServer = std::make_unique<PINEServer>(this, PINESettings::slot);
+		m_pineServer2 = std::make_unique<PINEServer>(this, PINESettings::slot+1);
 	}
 	if (m_PineState == ON && m_pineServer->m_end)
 		m_pineServer->Start();
+	if (m_PineState == ON && m_pineServer2->m_end)
+		m_pineServer2->Start();
 }
 
 bool SysCoreThread::StateCheckInThread()
