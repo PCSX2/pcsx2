@@ -268,20 +268,10 @@ bool GSC_ShadowofRome(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
 	{
-		if (fi.FBP && fi.TPSM == PSM_PSMT8H && (fi.FBMSK == 0x00FFFFFF))
+		if (!s_nativeres && fi.TME == 0x0001 && (fi.TBP0 == 0x1300 || fi.TBP0 == 0x0f00) && fi.FBMSK >= 0xFFFFFF)
 		{
-			// Depth issues on all renders, white wall and white duplicate characters.
+			// Misaligned effect when upscaling.
 			skip = 1;
-		}
-		else if (fi.TME == 0x0001 && (fi.TBP0 == 0x1300 || fi.TBP0 == 0x0f00) && fi.FBMSK >= 0xFFFFFF)
-		{
-			// Cause a grey transparent wall (D3D) and a transparent vertical grey line (all renders) on the left side of the screen.
-			// Blur effect maybe ?
-			skip = 1;
-		}
-		else if (fi.TME && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x0160 || fi.TBP0 == 0x01e0 || fi.TBP0 <= 0x0800) && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 1; // Speedhack ?
 		}
 	}
 
