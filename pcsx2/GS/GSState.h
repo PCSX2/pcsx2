@@ -148,7 +148,7 @@ private:
 
 protected:
 	bool IsBadFrame();
-	void SetupCrcHack();
+	void SetupCrcHack() noexcept;
 
 	bool m_isPackedUV_HackFlag;
 	CRCHackLevel m_crc_hack_level;
