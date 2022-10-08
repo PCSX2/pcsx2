@@ -2499,10 +2499,10 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 	}
 
 	// Get alpha value
-	const bool alpha_c0_zero = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().max == 0) && !IsCoverageAlpha();
-	const bool alpha_c0_one = (m_conf.ps.blend_c == 0 && (GetAlphaMinMax().min == 128) && (GetAlphaMinMax().max == 128)) || IsCoverageAlpha();
-	const bool alpha_c0_high_min_one = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().min > 128) && !IsCoverageAlpha();
-	const bool alpha_c0_high_max_one = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().max > 128) && !IsCoverageAlpha();
+	const bool alpha_c0_zero = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().max == 0);
+	const bool alpha_c0_one = (m_conf.ps.blend_c == 0 && (GetAlphaMinMax().min == 128) && (GetAlphaMinMax().max == 128));
+	const bool alpha_c0_high_min_one = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().min > 128);
+	const bool alpha_c0_high_max_one = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().max > 128);
 	const bool alpha_c2_zero = (m_conf.ps.blend_c == 2 && AFIX == 0u);
 	const bool alpha_c2_one = (m_conf.ps.blend_c == 2 && AFIX == 128u);
 	const bool alpha_c2_high_one = (m_conf.ps.blend_c == 2 && AFIX > 128u);
