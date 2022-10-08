@@ -2105,8 +2105,8 @@ void ImGuiFullscreen::DrawMessageDialog()
 	}
 }
 
-static float s_notification_vertical_position = 0.3f;
-static float s_notification_vertical_direction = -1.0f;
+static float s_notification_vertical_position = 0.15f;
+static float s_notification_vertical_direction = 1.0f;
 
 float ImGuiFullscreen::GetNotificationVerticalPosition()
 {
