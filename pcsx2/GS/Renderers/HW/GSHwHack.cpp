@@ -29,7 +29,7 @@ CRC::Region g_crc_region = CRC::NoRegion;
 // Partial level, broken on all renderers.
 ////////////////////////////////////////////////////////////////////////////////
 
-bool GSC_BigMuthaTruckers(const GSFrameInfo& fi, int& skip)
+bool GSC_BigMuthaTruckers(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -47,7 +47,7 @@ bool GSC_BigMuthaTruckers(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
+bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -63,7 +63,7 @@ bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_DeathByDegreesTekkenNinaWilliams(const GSFrameInfo& fi, int& skip)
+bool GSC_DeathByDegreesTekkenNinaWilliams(const GSFrameInfo& fi, int& skip) noexcept
 {
 	// Note: Game also has issues with texture shuffle not supported on strange clamp mode.
 	// See https://forums.pcsx2.net/Thread-GSDX-Texture-Cache-Bug-Report-Death-By-Degrees-SLUS-20934-NTSC
@@ -93,7 +93,7 @@ bool GSC_DeathByDegreesTekkenNinaWilliams(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_GiTS(const GSFrameInfo& fi, int& skip)
+bool GSC_GiTS(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -108,7 +108,7 @@ bool GSC_GiTS(const GSFrameInfo& fi, int& skip)
 }
 
 // Channel effect not properly supported yet
-bool GSC_Manhunt2(const GSFrameInfo& fi, int& skip)
+bool GSC_Manhunt2(const GSFrameInfo& fi, int& skip) noexcept
 {
 	/*
 	 * The game readback RT as 8 bits index texture to apply a non-linear brightness/gamma correction on all channel
@@ -139,7 +139,7 @@ bool GSC_Manhunt2(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_CrashBandicootWoC(const GSFrameInfo& fi, int& skip)
+bool GSC_CrashBandicootWoC(const GSFrameInfo& fi, int& skip) noexcept
 {
 	// Channel effect not properly supported - Removes fog to fix the fog wall issue on Direct3D at any resolution, and while upscaling on every Hardware renderer.
 	if (skip == 0)
@@ -169,7 +169,7 @@ bool GSC_CrashBandicootWoC(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SacredBlaze(const GSFrameInfo& fi, int& skip)
+bool GSC_SacredBlaze(const GSFrameInfo& fi, int& skip) noexcept
 {
 	//Fix Sacred Blaze rendering glitches
 	if (skip == 0)
@@ -183,7 +183,7 @@ bool GSC_SacredBlaze(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Spartan(const GSFrameInfo& fi, int& skip)
+bool GSC_Spartan(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -202,7 +202,7 @@ bool GSC_Spartan(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_IkkiTousen(const GSFrameInfo& fi, int& skip)
+bool GSC_IkkiTousen(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -217,7 +217,7 @@ bool GSC_IkkiTousen(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Oneechanbara2Special(const GSFrameInfo& fi, int& skip)
+bool GSC_Oneechanbara2Special(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -232,7 +232,7 @@ bool GSC_Oneechanbara2Special(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SakuraTaisen(const GSFrameInfo& fi, int& skip)
+bool GSC_SakuraTaisen(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -264,7 +264,7 @@ bool GSC_SakuraTaisen(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_ShadowofRome(const GSFrameInfo& fi, int& skip)
+bool GSC_ShadowofRome(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -278,7 +278,7 @@ bool GSC_ShadowofRome(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SFEX3(const GSFrameInfo& fi, int& skip)
+bool GSC_SFEX3(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -293,7 +293,7 @@ bool GSC_SFEX3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Tekken5(const GSFrameInfo& fi, int& skip)
+bool GSC_Tekken5(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -316,7 +316,7 @@ bool GSC_Tekken5(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_TombRaiderAnniversary(const GSFrameInfo& fi, int& skip)
+bool GSC_TombRaiderAnniversary(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -329,7 +329,7 @@ bool GSC_TombRaiderAnniversary(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_TombRaiderLegend(const GSFrameInfo& fi, int& skip)
+bool GSC_TombRaiderLegend(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -347,7 +347,7 @@ bool GSC_TombRaiderLegend(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_TombRaiderUnderWorld(const GSFrameInfo& fi, int& skip)
+bool GSC_TombRaiderUnderWorld(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -364,7 +364,7 @@ bool GSC_TombRaiderUnderWorld(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_BurnoutGames(const GSFrameInfo& fi, int& skip)
+bool GSC_BurnoutGames(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -380,7 +380,7 @@ bool GSC_BurnoutGames(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_MidnightClub3(const GSFrameInfo& fi, int& skip)
+bool GSC_MidnightClub3(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -396,7 +396,7 @@ bool GSC_MidnightClub3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip)
+bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -425,7 +425,7 @@ bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
+bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -450,7 +450,7 @@ bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_ZettaiZetsumeiToshi2(const GSFrameInfo& fi, int& skip)
+bool GSC_ZettaiZetsumeiToshi2(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -499,7 +499,7 @@ bool GSC_ZettaiZetsumeiToshi2(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SakuraWarsSoLongMyLove(const GSFrameInfo& fi, int& skip)
+bool GSC_SakuraWarsSoLongMyLove(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -520,7 +520,7 @@ bool GSC_SakuraWarsSoLongMyLove(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_FightingBeautyWulong(const GSFrameInfo& fi, int& skip)
+bool GSC_FightingBeautyWulong(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -535,7 +535,7 @@ bool GSC_FightingBeautyWulong(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_GodHand(const GSFrameInfo& fi, int& skip)
+bool GSC_GodHand(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -548,7 +548,7 @@ bool GSC_GodHand(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_KnightsOfTheTemple2(const GSFrameInfo& fi, int& skip)
+bool GSC_KnightsOfTheTemple2(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -565,7 +565,7 @@ bool GSC_KnightsOfTheTemple2(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_UltramanFightingEvolution(const GSFrameInfo& fi, int& skip)
+bool GSC_UltramanFightingEvolution(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -579,7 +579,7 @@ bool GSC_UltramanFightingEvolution(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_TalesofSymphonia(const GSFrameInfo& fi, int& skip)
+bool GSC_TalesofSymphonia(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -596,7 +596,7 @@ bool GSC_TalesofSymphonia(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Simple2000Vol114(const GSFrameInfo& fi, int& skip)
+bool GSC_Simple2000Vol114(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -616,7 +616,7 @@ bool GSC_Simple2000Vol114(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_UrbanReign(const GSFrameInfo& fi, int& skip)
+bool GSC_UrbanReign(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -629,7 +629,7 @@ bool GSC_UrbanReign(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip)
+bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -654,7 +654,7 @@ bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_YakuzaGames(const GSFrameInfo& fi, int& skip)
+bool GSC_YakuzaGames(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -674,7 +674,7 @@ bool GSC_YakuzaGames(const GSFrameInfo& fi, int& skip)
 // Full level, correctly emulated on OpenGL/Vulkan but can be used as potential speed hack
 ////////////////////////////////////////////////////////////////////////////////
 
-bool GSC_GetawayGames(const GSFrameInfo& fi, int& skip)
+bool GSC_GetawayGames(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -691,7 +691,7 @@ bool GSC_GetawayGames(const GSFrameInfo& fi, int& skip)
 // Aggressive only hack
 ////////////////////////////////////////////////////////////////////////////////
 
-bool GSC_AceCombat4(const GSFrameInfo& fi, int& skip)
+bool GSC_AceCombat4(const GSFrameInfo& fi, int& skip) noexcept
 {
 	// Removes clouds for a good speed boost, removes both 3D clouds(invisible with Hardware renderers, but cause slowdown) and 2D background clouds.
 	// Removes blur from player airplane.
@@ -709,7 +709,7 @@ bool GSC_AceCombat4(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_FFXGames(const GSFrameInfo& fi, int& skip)
+bool GSC_FFXGames(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -728,7 +728,7 @@ bool GSC_FFXGames(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Okami(const GSFrameInfo& fi, int& skip)
+bool GSC_Okami(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -748,7 +748,7 @@ bool GSC_Okami(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_RedDeadRevolver(const GSFrameInfo& fi, int& skip)
+bool GSC_RedDeadRevolver(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -761,7 +761,7 @@ bool GSC_RedDeadRevolver(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
+bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -790,7 +790,7 @@ bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_XenosagaE3(const GSFrameInfo& fi, int& skip)
+bool GSC_XenosagaE3(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
@@ -822,7 +822,7 @@ bool GSC_XenosagaE3(const GSFrameInfo& fi, int& skip)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void GSState::SetupCrcHack()
+void GSState::SetupCrcHack() noexcept
 {
 	GetSkipCount lut[CRC::TitleCount];
 
@@ -908,7 +908,7 @@ void GSState::SetupCrcHack()
 
 bool GSState::IsBadFrame()
 {
-	GSFrameInfo fi;
+	GSFrameInfo fi = {0};
 
 	fi.FBP = m_context->FRAME.Block();
 	fi.FPSM = m_context->FRAME.PSM;
