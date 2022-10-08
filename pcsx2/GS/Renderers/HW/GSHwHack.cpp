@@ -51,7 +51,7 @@ bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
 	{
-		if ((CRC_Aggressive || !s_nativeres) && fi.TME && (fi.FBP == 0x03400 || fi.FBP == 0x02e00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
+		if (!s_nativeres && fi.TME && (fi.FBP == 0x03400 || fi.FBP == 0x02e00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
 		{
 			// Ghosting/Blur effect. Upscaling issue.
 			// Can be fixed with TC X,Y offsets.
@@ -69,7 +69,7 @@ bool GSC_DeathByDegreesTekkenNinaWilliams(const GSFrameInfo& fi, int& skip)
 	// See https://forums.pcsx2.net/Thread-GSDX-Texture-Cache-Bug-Report-Death-By-Degrees-SLUS-20934-NTSC
 	if (skip == 0)
 	{
-		if ((CRC_Aggressive || !s_nativeres) && fi.TME && fi.FBP == 0 && fi.TBP0 == 0x34a0 && fi.TPSM == PSM_PSMCT32)
+		if (!s_nativeres && fi.TME && fi.FBP == 0 && fi.TBP0 == 0x34a0 && fi.TPSM == PSM_PSMCT32)
 		{
 			// Don't enable hack on native res if crc is below aggressive.
 			// Upscaling issue similar to Tekken 5.
@@ -83,7 +83,7 @@ bool GSC_DeathByDegreesTekkenNinaWilliams(const GSFrameInfo& fi, int& skip)
 	}
 	else
 	{
-		if ((CRC_Aggressive || !s_nativeres) && fi.TME && (fi.FBP | fi.TBP0 | fi.FPSM | fi.TPSM) && fi.FBMSK == 0x00FFFFFF)
+		if (!s_nativeres && fi.TME && (fi.FBP | fi.TBP0 | fi.FPSM | fi.TPSM) && fi.FBMSK == 0x00FFFFFF)
 		{
 			// Needs to be further tested so assume it's related with the upscaling hack.
 			skip = 1; // Animation speed
@@ -206,7 +206,7 @@ bool GSC_IkkiTousen(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
 	{
-		if ((CRC_Aggressive || !s_nativeres) && fi.TME && fi.FBP == 0x00700 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01180 && fi.TPSM == PSM_PSMZ24)
+		if (!s_nativeres && fi.TME && fi.FBP == 0x00700 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01180 && fi.TPSM == PSM_PSMZ24)
 		{
 			// Might not be needed if any of the upscaling hacks fix the issues, needs to be further tested.
 			// Don't enable hack on native res if crc is below aggressive.
@@ -221,7 +221,7 @@ bool GSC_Oneechanbara2Special(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
 	{
-		if ((CRC_Aggressive || !s_nativeres) && fi.TPSM == PSM_PSMCT24 && fi.TME && fi.FBP == 0x01180)
+		if (!s_nativeres && fi.TPSM == PSM_PSMCT24 && fi.TME && fi.FBP == 0x01180)
 		{
 			// Don't enable hack on native res if crc is below aggressive.
 			// Ghosting upscaling issue, bottom and right red lines also by upscaling.
@@ -297,7 +297,7 @@ bool GSC_Tekken5(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
 	{
-		if ((CRC_Aggressive || !s_nativeres) && fi.TME && (fi.FBP == 0x02d60 || fi.FBP == 0x02d80 || fi.FBP == 0x02ea0 || fi.FBP == 0x03620 || fi.FBP == 0x03640) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
+		if (!s_nativeres && fi.TME && (fi.FBP == 0x02d60 || fi.FBP == 0x02d80 || fi.FBP == 0x02ea0 || fi.FBP == 0x03620 || fi.FBP == 0x03640) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
 		{
 			// Don't enable hack on native res if crc is below aggressive.
 			// Fixes/removes ghosting/blur effect and white lines appearing in stages: Moonfit Wilderness, Acid Rain - caused by upscaling.
@@ -524,7 +524,7 @@ bool GSC_FightingBeautyWulong(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
 	{
-		if ((CRC_Aggressive || !s_nativeres) && fi.TME && (fi.TBP0 == 0x0700 || fi.TBP0 == 0x0a80) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
+		if (!s_nativeres && fi.TME && (fi.TBP0 == 0x0700 || fi.TBP0 == 0x0a80) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
 		{
 			// Don't enable hack on native res if crc is below aggressive.
 			// removes glow/blur which cause ghosting and other sprite issues similar to Tekken 5
@@ -569,7 +569,7 @@ bool GSC_UltramanFightingEvolution(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
 	{
-		if ((CRC_Aggressive || !s_nativeres) && fi.TME && fi.FBP == 0x2a00 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x1c00 && fi.TPSM == PSM_PSMZ24)
+		if (!s_nativeres && fi.TME && fi.FBP == 0x2a00 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x1c00 && fi.TPSM == PSM_PSMZ24)
 		{
 			// Don't enable hack on native res if crc is below aggressive.
 			skip = 5; // blur
@@ -600,7 +600,7 @@ bool GSC_Simple2000Vol114(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
 	{
-		if ((CRC_Aggressive || !s_nativeres) && fi.TME == 0 && (fi.FBP == 0x1500) && (fi.TBP0 == 0x2c97 || fi.TBP0 == 0x2ace || fi.TBP0 == 0x03d0 || fi.TBP0 == 0x2448) && (fi.FBMSK == 0x0000))
+		if (!s_nativeres && fi.TME == 0 && (fi.FBP == 0x1500) && (fi.TBP0 == 0x2c97 || fi.TBP0 == 0x2ace || fi.TBP0 == 0x03d0 || fi.TBP0 == 0x2448) && (fi.FBMSK == 0x0000))
 		{
 			// Don't enable hack on native res if crc is below aggressive.
 			// Upscaling issues, removes glow/blur effect which fixes ghosting.
@@ -658,7 +658,7 @@ bool GSC_YakuzaGames(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
 	{
-		if ((CRC_Aggressive || !s_nativeres) && !fi.TME && (fi.FBP == 0x1c20 || fi.FBP == 0x1e20 || fi.FBP == 0x1620) && (fi.TBP0 == 0xe00 || fi.TBP0 == 0x1000 || fi.TBP0 == 0x800) && fi.TPSM == PSM_PSMZ24 && fi.FPSM == PSM_PSMCT32
+		if (!s_nativeres && !fi.TME && (fi.FBP == 0x1c20 || fi.FBP == 0x1e20 || fi.FBP == 0x1620) && (fi.TBP0 == 0xe00 || fi.TBP0 == 0x1000 || fi.TBP0 == 0x800) && fi.TPSM == PSM_PSMZ24 && fi.FPSM == PSM_PSMCT32
 			/*&& fi.FBMSK == 0xffffff && fi.TZTST && !GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)*/)
 		{
 			// Don't enable hack on native res if crc is below aggressive.
