@@ -4055,9 +4055,6 @@ void FullscreenUI::DrawResumeStateSelector()
 	bool is_open = true;
 	if (ImGui::BeginPopupModal("Load Resume State", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
 	{
-		static constexpr float max_image_width = 96.0f;
-		static constexpr float max_image_height = 96.0f;
-
 		const SaveStateListEntry& entry = s_save_state_selector_slots.front();
 		ImGui::TextWrapped("A resume save state created at %s was found.\n\nDo you want to load this save and continue?",
 			TimeToPrintableString(entry.timestamp).c_str());
@@ -5601,7 +5598,6 @@ void FullscreenUI::DrawLeaderboardsWindow()
 			float left = bb.Min.x + padding + image_height + spacing;
 			float right = bb.Max.x - padding;
 			float top = bb.Min.y + padding;
-			ImVec2 text_size;
 
 			const u32 leaderboard_count = Achievements::GetLeaderboardCount();
 
