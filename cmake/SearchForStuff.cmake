@@ -31,7 +31,12 @@ else()
 		set(OpenGL_GL_PREFERENCE GLVND)
 		find_package(OpenGL REQUIRED)
 	endif()
+	# On macOS, Mono.framework contains an ancient version of libpng.  We don't want that.
+	# Avoid it by telling cmake to avoid finding frameworks while we search for libpng.
+	set(FIND_FRAMEWORK_BACKUP ${CMAKE_FIND_FRAMEWORK})
+	set(CMAKE_FIND_FRAMEWORK NEVER)
 	find_package(PNG REQUIRED)
+	set(CMAKE_FIND_FRAMEWORK ${FIND_FRAMEWORK_BACKUP})
 	find_package(Vtune)
 
 	if(NOT PCSX2_CORE)
