@@ -3594,68 +3594,78 @@ void GSState::CalcAlphaMinMax()
 	if (m_vt.m_alpha.valid)
 		return;
 
-	const GSDrawingContext* context = m_context;
+	int min = 0, max = 0;
 
-	GSVector4i a = m_vt.m_min.c.uph32(m_vt.m_max.c).zzww();
-
-	if (PRIM->TME && context->TEX0.TCC)
+	if (IsCoverageAlpha())
 	{
-		const GSDrawingEnvironment& env = m_env;
-
-		switch (GSLocalMemory::m_psm[context->TEX0.PSM].fmt)
+		min = 128;
+		max = 128;
+	}
+	else
+	{
+		const GSDrawingContext* context = m_context;
+		GSVector4i a = m_vt.m_min.c.uph32(m_vt.m_max.c).zzww();
+		if (PRIM->TME && context->TEX0.TCC)
 		{
-			case 0:
-				a.y = 0;
-				a.w = 0xff;
-				break;
-			case 1:
-				a.y = env.TEXA.AEM ? 0 : env.TEXA.TA0;
-				a.w = env.TEXA.TA0;
-				break;
-			case 2:
-				a.y = env.TEXA.AEM ? 0 : std::min(env.TEXA.TA0, env.TEXA.TA1);
-				a.w = std::max(env.TEXA.TA0, env.TEXA.TA1);
-				break;
-			case 3:
-				m_mem.m_clut.GetAlphaMinMax32(a.y, a.w);
-				break;
-			default:
-				__assume(0);
-		}
+			const GSDrawingEnvironment& env = m_env;
 
-		switch (context->TEX0.TFX)
-		{
-			case TFX_MODULATE:
-				a.x = (a.x * a.y) >> 7;
-				a.z = (a.z * a.w) >> 7;
-				if (a.x > 0xff)
-					a.x = 0xff;
-				if (a.z > 0xff)
-					a.z = 0xff;
-				break;
-			case TFX_DECAL:
-				a.x = a.y;
-				a.z = a.w;
-				break;
-			case TFX_HIGHLIGHT:
-				a.x = a.x + a.y;
-				a.z = a.z + a.w;
-				if (a.x > 0xff)
-					a.x = 0xff;
-				if (a.z > 0xff)
-					a.z = 0xff;
-				break;
-			case TFX_HIGHLIGHT2:
-				a.x = a.y;
-				a.z = a.w;
-				break;
-			default:
-				__assume(0);
+			switch (GSLocalMemory::m_psm[context->TEX0.PSM].fmt)
+			{
+				case 0:
+					a.y = 0;
+					a.w = 0xff;
+					break;
+				case 1:
+					a.y = env.TEXA.AEM ? 0 : env.TEXA.TA0;
+					a.w = env.TEXA.TA0;
+					break;
+				case 2:
+					a.y = env.TEXA.AEM ? 0 : std::min(env.TEXA.TA0, env.TEXA.TA1);
+					a.w = std::max(env.TEXA.TA0, env.TEXA.TA1);
+					break;
+				case 3:
+					m_mem.m_clut.GetAlphaMinMax32(a.y, a.w);
+					break;
+				default:
+					__assume(0);
+			}
+
+			switch (context->TEX0.TFX)
+			{
+				case TFX_MODULATE:
+					a.x = (a.x * a.y) >> 7;
+					a.z = (a.z * a.w) >> 7;
+					if (a.x > 0xff)
+						a.x = 0xff;
+					if (a.z > 0xff)
+						a.z = 0xff;
+					break;
+				case TFX_DECAL:
+					a.x = a.y;
+					a.z = a.w;
+					break;
+				case TFX_HIGHLIGHT:
+					a.x = a.x + a.y;
+					a.z = a.z + a.w;
+					if (a.x > 0xff)
+						a.x = 0xff;
+					if (a.z > 0xff)
+						a.z = 0xff;
+					break;
+				case TFX_HIGHLIGHT2:
+					a.x = a.y;
+					a.z = a.w;
+					break;
+				default:
+					__assume(0);
+			}
 		}
+		min = a.x;
+		max = a.z;
 	}
 
-	m_vt.m_alpha.min = a.x;
-	m_vt.m_alpha.max = a.z;
+	m_vt.m_alpha.min = min;
+	m_vt.m_alpha.max = max;
 	m_vt.m_alpha.valid = true;
 }
 
