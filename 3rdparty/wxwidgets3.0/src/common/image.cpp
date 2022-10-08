@@ -627,7 +627,8 @@ wxImage wxImage::ResampleBox(int width, int height) const
             const BoxPrecalc& hPrecalc = hPrecalcs[x];
 
             // Box of pixels to average
-            averaged_pixels = 0;
+            averaged_pixels = (vPrecalc.boxEnd - vPrecalc.boxStart + 1)
+                             *(hPrecalc.boxEnd - hPrecalc.boxStart + 1);
             sum_r = sum_g = sum_b = sum_a = 0.0;
 
             for ( int j = vPrecalc.boxStart; j <= vPrecalc.boxEnd; ++j )
@@ -642,8 +643,6 @@ wxImage wxImage::ResampleBox(int width, int height) const
                     sum_b += src_data[src_pixel_index * 3 + 2];
                     if ( src_alpha )
                         sum_a += src_alpha[src_pixel_index];
-
-                    averaged_pixels++;
                 }
             }
 
