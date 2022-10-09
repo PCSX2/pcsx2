@@ -946,7 +946,7 @@ void ps_fbmask(inout vec4 C)
 {
 	#if PS_FBMASK
 		vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
-		C = vec4((uvec4(C) & ~FbMask) | (uvec4(RT) & FbMask));
+		C = vec4((uvec4(ivec4(C)) & (FbMask ^ 0xFFu)) | (uvec4(RT) & FbMask));
 	#endif
 }
 
