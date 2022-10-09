@@ -12996,6 +12996,8 @@ SLES-51897:
   compat: 5
   gameFixes:
     - FpuNegDivHack # Lens flare appears even when behind objects.
+  gsHWFixes:
+    autoFlush: 1 # Fixes missing lens flare.
 SLES-51903:
   name: "AFL Live 2004 - Aussie Rules Football"
   region: "PAL-E"
@@ -41246,6 +41248,8 @@ SLUS-20624:
   compat: 5
   gameFixes:
     - FpuNegDivHack # Lens flare appears even when behind objects.
+  gsHWFixes:
+    autoFlush: 1 # Fixes missing lens flare.
 SLUS-20625:
   name: "MotoGP 3"
   region: "NTSC-U"
