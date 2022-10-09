@@ -1000,6 +1000,12 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 						continue;
 					}
 				}
+				else if (GSConfig.UserHacks_TextureInsideRt && t->Overlaps(bp, bw, psm, rect) && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
+				{
+					const SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
+					if (so.is_valid)
+						t->m_dirty.push_back(GSDirtyRect(so.b2a_offset, psm, bw));
+				}
 #endif
 			}
 		}
