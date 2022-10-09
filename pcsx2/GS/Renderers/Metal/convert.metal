@@ -111,16 +111,16 @@ fragment float4 ps_primid_init_datm1(float4 p [[position]], DirectReadTextureIn<
 	return tex.read(p).a < (127.5f / 255.f) ? -1 : FLT_MAX;
 }
 
-fragment half4 ps_hdr_init(float4 p [[position]], DirectReadTextureIn<half> tex)
+fragment float4 ps_hdr_init(float4 p [[position]], DirectReadTextureIn<float> tex)
 {
-	half4 in = tex.read(p);
-	return half4(round(in.rgb * 255.h), in.a);
+	float4 in = tex.read(p);
+	return float4(round(in.rgb * 255.f) / 65535.f, in.a);
 }
 
 fragment float4 ps_hdr_resolve(float4 p [[position]], DirectReadTextureIn<float> tex)
 {
 	float4 in = tex.read(p);
-	return float4(float3(int3(in.rgb) & 255) / 255.f, in.a);
+	return float4(float3(uint3(in.rgb * 65535.5f) & 255) / 255.f, in.a);
 }
 
 fragment float4 ps_filter_transparency(ConvertShaderData data [[stage_in]], ConvertPSRes res)

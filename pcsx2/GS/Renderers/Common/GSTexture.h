@@ -39,7 +39,7 @@ public:
 	{
 		Invalid = 0,  ///< Used for initialization
 		Color,        ///< Standard (RGBA8) color texture
-		HDRColor,     ///< Float-based color texture for colclip emulation (RGBA32F)
+		HDRColor,     ///< Color texture with more bits for colclip emulation (RGBA16Unorm)
 		DepthStencil, ///< Depth stencil texture
 		UNorm8,       ///< A8UNorm texture for paletted textures and the OSD font
 		UInt16,       ///< UInt16 texture for reading back 16-bit depth
