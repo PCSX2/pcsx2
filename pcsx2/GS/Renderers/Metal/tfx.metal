@@ -767,7 +767,7 @@ struct PSMain
 	void ps_fbmask(thread float4& C)
 	{
 		if (PS_FBMASK)
-			C = float4((uint4(C) & ~cb.fbmask) | (uint4(current_color * 255.5) & cb.fbmask));
+			C = float4((uint4(int4(C)) & (cb.fbmask ^ 0xff)) | (uint4(current_color * 255.5) & cb.fbmask));
 	}
 
 	void ps_dither(thread float4& C)
