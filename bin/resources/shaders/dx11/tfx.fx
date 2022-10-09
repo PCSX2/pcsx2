@@ -715,7 +715,7 @@ void ps_fbmask(inout float4 C, float2 pos_xy)
 	if (PS_FBMASK)
 	{
 		float4 RT = trunc(RtTexture.Load(int3(pos_xy, 0)) * 255.0f + 0.1f);
-		C = (float4)(((uint4)(int4)C & (FbMask ^ 0xFF) | ((uint4)RT & FbMask));
+		C = (float4)(((uint4)(int4)C & (FbMask ^ 0xFF)) | ((uint4)RT & FbMask));
 	}
 }
 
