@@ -25,11 +25,7 @@ static int findmax(int tl, int br, int limit, int wm, int minuv, int maxuv)
 
 	// Confirmed on hardware if the size exceeds 1024, it basically gets masked so you end up with a 1x1 pixel (Except Region Clamp).
 	if (limit > 1024)
-	{
-		if (wm != CLAMP_REGION_CLAMP) // TEMPLOG
-			Console.Warning("Masking TEX0 to 1x1 was %d", limit + 1);
 		limit = 0;
-	}
 
 	if (wm == CLAMP_CLAMP)
 	{
@@ -53,8 +49,6 @@ static int findmax(int tl, int br, int limit, int wm, int minuv, int maxuv)
 	else if (wm == CLAMP_REGION_REPEAT)
 	{
 		// REGION_REPEAT adhears to the original texture size, even if offset outside the texture (with MAXUV).
-		if (limit < minuv) // TEMPLOG
-			Console.Warning("Limiting minuv, limit %x minuv from %x to %x", limit, minuv, minuv & limit);
 		minuv &= limit;
 		if (tl < 0)
 			uv = minuv | maxuv; // wrap around, just use (any & mask) | fix.
@@ -132,11 +126,6 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, 
 	}
 
 	GIFRegTEX0 res = TEX0;
-
-	if (tw > 10) // TEMPLOG
-		Console.Warning("Limiting Width to 1");
-	if (th > 10) // TEMPLOG
-		Console.Warning("Limiting Height to 1");
 
 	res.TW = tw > 10 ? 0 : tw;
 	res.TH = th > 10 ? 0 : th;
