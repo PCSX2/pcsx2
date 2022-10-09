@@ -1863,7 +1863,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	GSTexture* draw_rt_clone = nullptr;
 	if (config.ps.hdr)
 	{
-		hdr_rt = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::FloatColor, false);
+		hdr_rt = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::HDRColor, false);
 		OMSetRenderTargets(hdr_rt, config.ds, &config.scissor);
 
 		GSVector4 dRect(config.drawarea);
