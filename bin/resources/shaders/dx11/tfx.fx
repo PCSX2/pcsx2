@@ -715,7 +715,7 @@ void ps_fbmask(inout float4 C, float2 pos_xy)
 	if (PS_FBMASK)
 	{
 		float4 RT = trunc(RtTexture.Load(int3(pos_xy, 0)) * 255.0f + 0.1f);
-		C = (float4)(((uint4)(int4)C & (FbMask ^ 0xFF)) | ((uint4)RT & FbMask));
+		C = (float4)(((uint4)C & ~FbMask) | ((uint4)RT & FbMask));
 	}
 }
 
@@ -736,18 +736,9 @@ void ps_dither(inout float3 C, float2 pos_xy)
 
 void ps_color_clamp_wrap(inout float3 C)
 {
-	if (PS_HDR && PS_COLCLIP) // COLCLIP flag indicates accumulation blend under HDR
-	{
-		int3 color = int3(C);
-		if (PS_DFMT == FMT_16)
-			color &= (int3)0xF8;
-		// -128 to 127 gives us longer before we run out of float precision
-		// Especially for games that mainly use 1 and 255 (sly), since that maps to 1 and -1
-		C = float3((color << 24) >> 24);
-	}
 	// When dithering the bottom 3 bits become meaningless and cause lines in the picture
 	// so we need to limit the color depth on dithered items
-	else if (SW_BLEND || PS_DITHER || PS_FBMASK)
+	if (SW_BLEND || PS_DITHER || PS_FBMASK)
 	{
 		// Standard Clamp
 		if (PS_COLCLIP == 0 && PS_HDR == 0)
@@ -756,7 +747,7 @@ void ps_color_clamp_wrap(inout float3 C)
 		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
 		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0)
 			C = (float3)((int3)C & (int3)0xF8);
-		else if (PS_COLCLIP == 1 && PS_HDR == 0)
+		else if (PS_COLCLIP == 1 || PS_HDR == 1)
 			C = (float3)((int3)C & (int3)0xFF);
 	}
 }
@@ -952,7 +943,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	ps_fbmask(C, input.p.xy);
 
 #if !PS_NO_COLOR
-	output.c0 = PS_HDR ? float4(C.rgb, C.a / 255.0f) : C / 255.0f;
+	output.c0 = PS_HDR ? float4(C.rgb / 65535.0f, C.a / 255.0f) : C / 255.0f;
 #if !PS_NO_COLOR1
 	output.c1 = (float4)(alpha_blend);
 #endif

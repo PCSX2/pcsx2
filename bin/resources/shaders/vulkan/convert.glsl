@@ -94,7 +94,7 @@ void ps_datm0()
 void ps_hdr_init()
 {
 	vec4 value = sample_c(v_tex);
-	o_col0 = vec4(roundEven(value.rgb * 255.0f), value.a);
+	o_col0 = vec4(roundEven(value.rgb * 255.0f) / 65535.0f, value.a);
 }
 #endif
 
@@ -102,7 +102,7 @@ void ps_hdr_init()
 void ps_hdr_resolve()
 {
 	vec4 value = sample_c(v_tex);
-	o_col0 = vec4(vec3(ivec3(value.rgb) & 255) / 255.0f, value.a);
+	o_col0 = vec4(vec3(uvec3(value.rgb * 65535.5f) & 255u) / 255.0f, value.a);
 }
 #endif
 

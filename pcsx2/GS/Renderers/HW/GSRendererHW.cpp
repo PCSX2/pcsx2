@@ -2767,7 +2767,6 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			// A fast algo that requires 2 passes
 			GL_INS("COLCLIP Fast HDR mode ENABLED");
 			m_conf.ps.hdr = 1;
-			m_conf.ps.colclip = accumulation_blend; // reuse as a flag for accumulation blend
 			blend_mix = false;
 			sw_blending = true; // Enable sw blending for the HDR algo
 		}
@@ -2865,13 +2864,23 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 				m_conf.ps.blend_d = 2;
 			}
 
-			if (m_conf.ps.blend_a == 2)
+			if (blend.op == GSDevice::OP_REV_SUBTRACT)
 			{
-				// The blend unit does a reverse subtraction so it means
-				// the shader must output a positive value.
-				// Replace 0 - Cs by Cs - 0
-				m_conf.ps.blend_a = m_conf.ps.blend_b;
-				m_conf.ps.blend_b = 2;
+				ASSERT(m_conf.ps.blend_a == 2);
+				if (m_conf.ps.hdr)
+				{
+					// HDR uses unorm, which is always positive
+					// Have the shader do the inversion, then clip to remove the negative
+					m_conf.blend.op = GSDevice::OP_ADD;
+				}
+				else
+				{
+					// The blend unit does a reverse subtraction so it means
+					// the shader must output a positive value.
+					// Replace 0 - Cs by Cs - 0
+					m_conf.ps.blend_a = m_conf.ps.blend_b;
+					m_conf.ps.blend_b = 2;
+				}
 			}
 
 			// Dual source output not needed (accumulation blend replaces it with ONE).

@@ -125,7 +125,7 @@ PS_OUTPUT ps_hdr_init(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	float4 value = sample_c(input.t);
-	output.c = float4(round(value.rgb * 255), value.a);
+	output.c = float4(round(value.rgb * 255) / 65535, value.a);
 	return output;
 }
 
@@ -133,7 +133,7 @@ PS_OUTPUT ps_hdr_resolve(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	float4 value = sample_c(input.t);
-	output.c = float4(float3(int3(value.rgb) & 255) / 255, value.a);
+	output.c = float4(float3(uint3(value.rgb * 65535.5) & 255) / 255, value.a);
 	return output;
 }
 

@@ -946,7 +946,7 @@ void ps_fbmask(inout vec4 C)
 {
 	#if PS_FBMASK
 		vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
-		C = vec4((uvec4(ivec4(C)) & (FbMask ^ 0xFFu)) | (uvec4(RT) & FbMask));
+		C = vec4((uvec4(C) & ~FbMask) | (uvec4(RT) & FbMask));
 	#endif
 }
 
@@ -967,18 +967,9 @@ void ps_dither(inout vec3 C)
 
 void ps_color_clamp_wrap(inout vec3 C)
 {
-#if PS_HDR && PS_COLCLIP // COLCLIP flag indicates accumulation blend under HDR
-    ivec3 color = ivec3(C);
-#if PS_DFMT == FMT_16
-    color &= 0xF8;
-#endif
-    // -128 to 127 gives us longer before we run out of float precision
-    // Especially for games that mainly use 1 and 255 (sly), since that maps to 1 and -1
-    C = vec3((color << 24) >> 24);
-
     // When dithering the bottom 3 bits become meaningless and cause lines in the picture
     // so we need to limit the color depth on dithered items
-#elif SW_BLEND || PS_DITHER || PS_FBMASK
+#if SW_BLEND || PS_DITHER || PS_FBMASK
 
     // Correct the Color value based on the output format
 #if PS_COLCLIP == 0 && PS_HDR == 0
@@ -995,7 +986,7 @@ void ps_color_clamp_wrap(inout vec3 C)
 #if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0
     // In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
     C = vec3(ivec3(C) & ivec3(0xF8));
-#elif PS_COLCLIP == 1 && PS_HDR == 0
+#elif PS_COLCLIP == 1 || PS_HDR == 1
     C = vec3(ivec3(C) & ivec3(0xFF));
 #endif
 
@@ -1235,8 +1226,8 @@ void main()
   ps_fbmask(C);
 
 #if !PS_NO_COLOR
-#if PS_HDR
-	o_col0 = vec4(C.rgb, C.a / 255.0f);
+#if PS_HDR == 1
+	o_col0 = vec4(C.rgb / 65535.0f, C.a / 255.0f);
 #else
 	o_col0 = C / 255.0f;
 #endif
