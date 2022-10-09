@@ -465,7 +465,7 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 	switch (format)
 	{
 		case GSTexture::Format::Color:        dxformat = DXGI_FORMAT_R8G8B8A8_UNORM;     break;
-		case GSTexture::Format::FloatColor:   dxformat = DXGI_FORMAT_R32G32B32A32_FLOAT; break;
+		case GSTexture::Format::HDRColor:     dxformat = DXGI_FORMAT_R32G32B32A32_FLOAT; break;
 		case GSTexture::Format::DepthStencil: dxformat = DXGI_FORMAT_R32G8X24_TYPELESS;  break;
 		case GSTexture::Format::UNorm8:       dxformat = DXGI_FORMAT_A8_UNORM;           break;
 		case GSTexture::Format::UInt16:       dxformat = DXGI_FORMAT_R16_UINT;           break;
@@ -1382,7 +1382,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	{
 		const GSVector4 dRect(config.drawarea);
 		const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
-		hdr_rt = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::FloatColor);
+		hdr_rt = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::HDRColor);
 		// Warning: StretchRect must be called before BeginScene otherwise
 		// vertices will be overwritten. Trust me you don't want to do that.
 		StretchRect(config.rt, sRect, hdr_rt, dRect, ShaderConvert::HDR_INIT, false);
