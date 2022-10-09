@@ -150,7 +150,7 @@ DEFINE_HOTKEY("ToggleFrameLimit", "System", "Toggle Frame Limit", [](s32 pressed
 			(EmuConfig.LimiterMode != LimiterModeType::Unlimited) ? LimiterModeType::Unlimited : LimiterModeType::Nominal);
 	}
 })
-DEFINE_HOTKEY("ToggleTurbo", "System", "Toggle Turbo", [](s32 pressed) {
+DEFINE_HOTKEY("ToggleTurbo", "System", "Toggle Turbo / Fast Forward", [](s32 pressed) {
 	if (!pressed && VMManager::HasValidVM())
 	{
 		VMManager::SetLimiterMode((EmuConfig.LimiterMode != LimiterModeType::Turbo) ? LimiterModeType::Turbo : LimiterModeType::Nominal);
@@ -162,7 +162,7 @@ DEFINE_HOTKEY("ToggleSlowMotion", "System", "Toggle Slow Motion", [](s32 pressed
 		VMManager::SetLimiterMode((EmuConfig.LimiterMode != LimiterModeType::Slomo) ? LimiterModeType::Slomo : LimiterModeType::Nominal);
 	}
 })
-DEFINE_HOTKEY("HoldTurbo", "System", "Turbo (Hold)", [](s32 pressed) {
+DEFINE_HOTKEY("HoldTurbo", "System", "Turbo / Fast Forward (Hold)", [](s32 pressed) {
 	if (!VMManager::HasValidVM())
 		return;
 	if (pressed > 0 && !s_limiter_mode_prior_to_hold_interaction.has_value())
