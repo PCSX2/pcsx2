@@ -871,7 +871,7 @@
        <item row="2" column="0">
         <widget class="QLabel" name="label_16">
          <property name="text">
-          <string>Software CLUT Render</string>
+          <string>Software CLUT Render:</string>
          </property>
         </widget>
        </item>

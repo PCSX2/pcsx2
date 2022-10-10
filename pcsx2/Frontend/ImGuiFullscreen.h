@@ -22,6 +22,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 class HostDisplayTexture;
@@ -94,6 +95,12 @@ namespace ImGuiFullscreen
 	static __fi ImVec4 ModAlpha(const ImVec4& v, float a) { return ImVec4(v.x, v.y, v.z, a); }
 	static __fi ImVec4 MulAlpha(const ImVec4& v, float a) { return ImVec4(v.x, v.y, v.z, v.w * a); }
 
+	static __fi std::string_view RemoveHash(const std::string_view& s)
+	{
+		const std::string_view::size_type pos = s.find('#');
+		return (pos != std::string_view::npos) ? s.substr(0, pos) : s;
+	}
+
 	/// Centers an image within the specified bounds, scaling up or down as needed.
 	ImRect CenterImage(const ImVec2& fit_size, const ImVec2& image_size);
 	ImRect CenterImage(const ImRect& fit_rect, const ImVec2& image_size);
@@ -118,6 +125,9 @@ namespace ImGuiFullscreen
 
 	void BeginLayout();
 	void EndLayout();
+
+	void PushResetLayout();
+	void PopResetLayout();
 
 	void QueueResetFocus();
 	bool ResetFocusHere();
@@ -162,7 +172,8 @@ namespace ImGuiFullscreen
 		float height = LAYOUT_MENU_BUTTON_HEIGHT, const ImVec2& uv0 = ImVec2(0.0f, 0.0f), const ImVec2& uv1 = ImVec2(1.0f, 1.0f),
 		ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
 	bool FloatingButton(const char* text, float x, float y, float width = -1.0f, float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-		float anchor_x = 0.0f, float anchor_y = 0.0f, bool enabled = true, ImFont* font = g_large_font, ImVec2* out_position = nullptr);
+		float anchor_x = 0.0f, float anchor_y = 0.0f, bool enabled = true, ImFont* font = g_large_font, ImVec2* out_position = nullptr,
+		bool repeat_button = false);
 	bool ToggleButton(const char* title, const char* summary, bool* v, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
 		ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
 	bool ThreeWayToggleButton(const char* title, const char* summary, std::optional<bool>* v, bool enabled = true,
