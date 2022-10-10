@@ -16914,11 +16914,12 @@ SLES-53618:
     preloadFrameData: 1 # Fixes static text screens.
     roundSprite: 1 # Fixes lines in some post-effects.
 SLES-53621:
-  name: "Wallace & Grommit - The Curse of the Were Rabbit"
+  name: "Wallace & Gromit - The Curse of the Were-Rabbit"
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
     deinterlace: 3 # Game requires bob deinterlacing when auto.
+    halfPixelOffset: 1 # Fixes misalignment/bloom when upscaling.
 SLES-53623:
   name: "SpongeBob SquarePants - Battle for Bikini Bottom"
   region: "PAL-F"
@@ -30475,10 +30476,11 @@ SLPM-66325:
   clampModes:
     eeClampMode: 3 # Fixes cutscene freezes.
 SLPM-66327:
-  name: "Wallace and Gromit - The Curse of the Were-Rabbit"
+  name: "Wallace & Gromit - The Curse of the Were-Rabbit"
   region: "NTSC-J"
   gsHWFixes:
     deinterlace: 3 # Game requires bob deinterlacing when auto.
+    halfPixelOffset: 1 # Fixes misalignment/bloom when upscaling.
 SLPM-66328:
   name: "Call of Duty 2 - Big Red One"
   region: "NTSC-J"
