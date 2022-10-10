@@ -21,6 +21,38 @@
 #include "common/StringUtil.h"
 #include <algorithm>
 #include <iterator>
+#include <mutex>
+
+#ifdef _WIN32
+#include <io.h> // _mktemp_s
+#else
+#include <stdlib.h> // mktemp
+#endif
+
+// To prevent races between saving and loading settings, particularly with game settings,
+// we only allow one ini to be parsed at any point in time.
+static std::mutex s_ini_load_save_mutex;
+
+static std::string GetTemporaryFileName(const std::string& original_filename)
+{
+	std::string temporary_filename;
+	temporary_filename.reserve(original_filename.length() + 8);
+	temporary_filename.append(original_filename);
+
+#ifdef _WIN32
+	temporary_filename.append(".XXXXXXX");
+	_mktemp_s(temporary_filename.data(), temporary_filename.length() + 1);
+#else
+	temporary_filename.append(".XXXXXX");
+#if defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+	mkstemp(temporary_filename.data());
+#else
+	mktemp(temporary_filename.data());
+#endif
+#endif
+
+	return temporary_filename;
+}
 
 INISettingsInterface::INISettingsInterface(std::string filename)
 	: m_filename(std::move(filename))
@@ -39,6 +71,7 @@ bool INISettingsInterface::Load()
 	if (m_filename.empty())
 		return false;
 
+	std::unique_lock lock(s_ini_load_save_mutex);
 	SI_Error err = SI_FAIL;
 	auto fp = FileSystem::OpenManagedCFile(m_filename.c_str(), "rb");
 	if (fp)
@@ -52,12 +85,26 @@ bool INISettingsInterface::Save()
 	if (m_filename.empty())
 		return false;
 
+	std::unique_lock lock(s_ini_load_save_mutex);
+	std::string temp_filename(GetTemporaryFileName(m_filename));
 	SI_Error err = SI_FAIL;
-	std::FILE* fp = FileSystem::OpenCFile(m_filename.c_str(), "wb");
+	std::FILE* fp = FileSystem::OpenCFile(temp_filename.c_str(), "wb");
 	if (fp)
 	{
 		err = m_ini.SaveFile(fp, false);
 		std::fclose(fp);
+
+		if (err != SI_OK)
+		{
+			// remove temporary file
+			FileSystem::DeleteFilePath(temp_filename.c_str());
+		}
+		else if (!FileSystem::RenamePath(temp_filename.c_str(), m_filename.c_str()))
+		{
+			Console.Error("Failed to rename '%s' to '%s'", temp_filename.c_str(), m_filename.c_str());
+			FileSystem::DeleteFilePath(temp_filename.c_str());
+			return false;
+		}
 	}
 
 	if (err != SI_OK)
