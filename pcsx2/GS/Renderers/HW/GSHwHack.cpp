@@ -264,20 +264,6 @@ bool GSC_SakuraTaisen(const GSFrameInfo& fi, int& skip) noexcept
 	return true;
 }
 
-bool GSC_ShadowofRome(const GSFrameInfo& fi, int& skip) noexcept
-{
-	if (skip == 0)
-	{
-		if (!s_nativeres && fi.TME == 0x0001 && (fi.TBP0 == 0x1300 || fi.TBP0 == 0x0f00) && fi.FBMSK >= 0xFFFFFF)
-		{
-			// Misaligned effect when upscaling.
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_SFEX3(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
@@ -841,7 +827,6 @@ void GSState::SetupCrcHack() noexcept
 		lut[CRC::SacredBlaze] = GSC_SacredBlaze;
 		lut[CRC::SakuraTaisen] = GSC_SakuraTaisen;
 		lut[CRC::SakuraWarsSoLongMyLove] = GSC_SakuraWarsSoLongMyLove;
-		lut[CRC::ShadowofRome] = GSC_ShadowofRome;
 		lut[CRC::Simple2000Vol114] = GSC_Simple2000Vol114;
 		lut[CRC::SFEX3] = GSC_SFEX3;
 		lut[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;

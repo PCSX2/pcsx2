@@ -196,11 +196,6 @@ const CRC::Game CRC::m_games[] =
 	{0xA707236E, XenosagaE3, JP, 0}, // Demo
 	{0xA4E88698, XenosagaE3, CH, 0},
 	{0x2088950A, XenosagaE3, US, 0},
-	{0xB1995E29, ShadowofRome, EU, 0},
-	{0x958DCA28, ShadowofRome, EU, 0},
-	{0x57818AF6, ShadowofRome, US, 0},
-	{0x1E210E60, ShadowofRome, US, 0}, // Demo
-	{0x36393CD3, ShadowofRome, JP, 0},
 	{0x694A998E, TombRaiderUnderworld, JP, 0},
 	{0x8E214549, TombRaiderUnderworld, EU, 0},
 	{0x618769D6, TombRaiderUnderworld, US, 0},

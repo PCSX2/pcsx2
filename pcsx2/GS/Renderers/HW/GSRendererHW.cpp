@@ -1520,7 +1520,7 @@ void GSRendererHW::Draw()
 
 		const int tw = 1 << TEX0.TW;
 		const int th = 1 << TEX0.TH;
-# if 0
+#if 0
 		// FIXME: We currently crop off the rightmost and bottommost pixel when upscaling clamps,
 		// until the issue is properly solved we should keep this disabled as it breaks many games when upscaling.
 		// See #5387, #5853, #5851 on GH for more details.

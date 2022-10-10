@@ -60,7 +60,6 @@ public:
 		SakuraTaisen,
 		SakuraWarsSoLongMyLove,
 		SFEX3,
-		ShadowofRome,
 		ShinOnimusha,
 		Simple2000Vol114,
 		SMTNocturne,
