@@ -1520,6 +1520,11 @@ void GSRendererHW::Draw()
 
 		const int tw = 1 << TEX0.TW;
 		const int th = 1 << TEX0.TH;
+# if 0
+		// FIXME: We currently crop off the rightmost and bottommost pixel when upscaling clamps,
+		// until the issue is properly solved we should keep this disabled as it breaks many games when upscaling.
+		// See #5387, #5853, #5851 on GH for more details.
+		// 
 		// Texture clamp optimizations (try to move everything to sampler hardware)
 		if (m_context->CLAMP.WMS == CLAMP_REGION_CLAMP && MIP_CLAMP.MINU == 0 && MIP_CLAMP.MAXU == tw - 1)
 			m_context->CLAMP.WMS = CLAMP_CLAMP;
@@ -1533,6 +1538,7 @@ void GSRendererHW::Draw()
 			m_context->CLAMP.WMT = CLAMP_REPEAT;
 		else if ((m_context->CLAMP.WMT & 2) && !(tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_V))
 			m_context->CLAMP.WMT = CLAMP_CLAMP;
+#endif
 
 		// If m_src is from a target that isn't the same size as the texture, texture sample edge modes won't work quite the same way
 		// If the game actually tries to access stuff outside of the rendered target, it was going to get garbage anyways so whatever
