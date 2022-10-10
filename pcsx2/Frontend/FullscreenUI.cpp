@@ -3848,7 +3848,7 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& title, const s
 {
 	ClearSaveStateEntryList();
 
-	for (s32 i = 0; i <= VMManager::NUM_SAVE_STATE_SLOTS; i++)
+	for (s32 i = 1; i <= VMManager::NUM_SAVE_STATE_SLOTS; i++)
 	{
 		SaveStateListEntry li;
 		if (InitializeSaveStateListEntry(&li, title, serial, crc, i) || !s_save_state_selector_loading)
