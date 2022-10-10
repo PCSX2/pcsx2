@@ -294,7 +294,7 @@ namespace FullscreenUI
 	static void DrawCreateMemoryCardWindow();
 	static void DrawControllerSettingsPage();
 	static void DrawHotkeySettingsPage();
-	static void DrawAchievementsSettingsPage();
+	static void DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& settings_lock);
 	static void DrawFoldersSettingsPage();
 	static void DrawAchievementsLoginWindow();
 	static void DrawAdvancedSettingsPage();
@@ -2115,7 +2115,7 @@ void FullscreenUI::DrawSettingsWindow()
 				break;
 
 			case SettingsPage::Achievements:
-				DrawAchievementsSettingsPage();
+				DrawAchievementsSettingsPage(lock);
 				break;
 
 			case SettingsPage::Folders:
@@ -3486,7 +3486,7 @@ void FullscreenUI::DrawFoldersSettingsPage()
 
 #ifndef ENABLE_ACHIEVEMENTS
 
-void FullscreenUI::DrawAchievementsSettingsPage()
+void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& settings_lock)
 {
 	BeginMenuButtons();
 	ActiveButton(ICON_FA_BAN " This build was not compiled with Achievements support.", false, false,
@@ -5762,7 +5762,7 @@ void FullscreenUI::DrawLeaderboardsWindow()
 		s_open_leaderboard_id.reset();
 }
 
-void FullscreenUI::DrawAchievementsSettingsPage()
+void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& settings_lock)
 {
 #ifdef ENABLE_RAINTEGRATION
 	if (Achievements::IsUsingRAIntegration())
@@ -5775,16 +5775,14 @@ void FullscreenUI::DrawAchievementsSettingsPage()
 	}
 #endif
 
-	const auto lock = Achievements::GetLock();
-	if (Achievements::IsActive())
-		Achievements::ProcessPendingHTTPRequestsFromGSThread();
-
 	SettingsInterface* bsi = GetEditingSettingsInterface();
+	bool check_challenge_state = false;
+	bool challenge_state_just_enabled = false;
 
 	BeginMenuButtons();
 
 	MenuHeading("Settings");
-	DrawToggleSetting(bsi, ICON_FA_TROPHY "  Enable Achievements",
+	check_challenge_state = DrawToggleSetting(bsi, ICON_FA_TROPHY "  Enable Achievements",
 		"When enabled and logged in, PCSX2 will scan for achievements on startup.", "Achievements", "Enabled", false);
 
 	const bool enabled = bsi->GetBoolValue("Achievements", "Enabled", false);
@@ -5793,13 +5791,9 @@ void FullscreenUI::DrawAchievementsSettingsPage()
 	DrawToggleSetting(bsi, ICON_FA_USER_FRIENDS " Rich Presence",
 		"When enabled, rich presence information will be collected and sent to the server where supported.", "Achievements", "RichPresence",
 		true, enabled);
-	if (DrawToggleSetting(bsi, ICON_FA_HARD_HAT " Hardcore Mode",
-			"\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.",
-			"Achievements", "ChallengeMode", false, enabled))
-	{
-		if (VMManager::HasValidVM() && bsi->GetBoolValue("Achievements", "ChallengeMode", false))
-			ShowToast(std::string(), "Hardcore mode will be enabled on next game restart.");
-	}
+	check_challenge_state |= DrawToggleSetting(bsi, ICON_FA_HARD_HAT " Hardcore Mode",
+		"\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.",
+		"Achievements", "ChallengeMode", false, enabled);
 	DrawToggleSetting(bsi, ICON_FA_LIST_OL " Leaderboards", "Enables tracking and submission of leaderboards in supported games.",
 		"Achievements", "Leaderboards", true, enabled && challenge);
 	DrawToggleSetting(bsi, ICON_FA_HEADPHONES " Sound Effects",
@@ -5815,35 +5809,58 @@ void FullscreenUI::DrawAchievementsSettingsPage()
 		"When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server.", "Achievements",
 		"TestMode", false, enabled);
 
-	MenuHeading("Account");
-	if (Achievements::IsLoggedIn())
+	// Check for challenge mode just being enabled.
+	if (check_challenge_state && enabled && bsi->GetBoolValue("Achievements", "ChallengeMode", false) && VMManager::HasValidVM())
 	{
-		ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
-		ActiveButton(fmt::format(ICON_FA_USER "  Username: {}", Achievements::GetUsername()).c_str(), false, false,
-			LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+		ImGuiFullscreen::OpenConfirmMessageDialog("Reset System",
+			"Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?", [](bool reset) {
+				if (!VMManager::HasValidVM())
+					return;
 
-		const u64 ts = StringUtil::FromChars<u64>(bsi->GetStringValue("Achievements", "LoginTimestamp", "0")).value_or(0);
-		ActiveButton(fmt::format(ICON_FA_CLOCK "  Login token generated on {}", TimeToPrintableString(static_cast<time_t>(ts))).c_str(),
-			false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-		ImGui::PopStyleColor();
+				if (reset)
+					DoReset();
+			});
+	}
 
-		if (MenuButton(ICON_FA_KEY "  Logout", "Logs out of RetroAchievements."))
+	// Potential deadlock here: when we enable achievements, CPU thread reads settings, releases lock, then there's a brief
+	// time when we can progress here and get the setting lock, by the time it goes to read the username out of settings,
+	// we've got it here, but can't get the achievements lock. So only hold one at once.
+	const u64 ts = StringUtil::FromChars<u64>(bsi->GetStringValue("Achievements", "LoginTimestamp", "0")).value_or(0);
+	settings_lock.unlock();
+	{
+		const auto achievements_lock = Achievements::GetLock();
+		if (Achievements::IsActive())
+			Achievements::ProcessPendingHTTPRequestsFromGSThread();
+
+		MenuHeading("Account");
+		if (Achievements::IsLoggedIn())
 		{
-			Host::RunOnCPUThread([]() { Achievements::Logout(); });
+			ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
+			ActiveButton(fmt::format(ICON_FA_USER "  Username: {}", Achievements::GetUsername()).c_str(), false, false,
+				LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+
+			ActiveButton(fmt::format(ICON_FA_CLOCK "  Login token generated on {}", TimeToPrintableString(static_cast<time_t>(ts))).c_str(),
+				false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+			ImGui::PopStyleColor();
+
+			if (MenuButton(ICON_FA_KEY "  Logout", "Logs out of RetroAchievements."))
+			{
+				Host::RunOnCPUThread([]() { Achievements::Logout(); });
+			}
 		}
-	}
-	else if (Achievements::IsActive())
-	{
-		ActiveButton(ICON_FA_USER "  Not Logged In", false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+		else if (Achievements::IsActive())
+		{
+			ActiveButton(ICON_FA_USER "  Not Logged In", false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
-		if (MenuButton(ICON_FA_KEY "  Login", "Logs in to RetroAchievements."))
-			ImGui::OpenPopup("Achievements Login");
+			if (MenuButton(ICON_FA_KEY "  Login", "Logs in to RetroAchievements."))
+				ImGui::OpenPopup("Achievements Login");
 
-		DrawAchievementsLoginWindow();
-	}
-	else
-	{
-		ActiveButton(ICON_FA_USER "  Achievements are disabled.", false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+			DrawAchievementsLoginWindow();
+		}
+		else
+		{
+			ActiveButton(ICON_FA_USER "  Achievements are disabled.", false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+		}
 	}
 
 	MenuHeading("Current Game");
@@ -5878,6 +5895,8 @@ void FullscreenUI::DrawAchievementsSettingsPage()
 	}
 
 	EndMenuButtons();
+
+	settings_lock.lock();
 }
 
 void FullscreenUI::DrawAchievementsLoginWindow()
