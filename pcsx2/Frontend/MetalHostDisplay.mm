@@ -49,7 +49,7 @@ MetalHostDisplay::MetalHostDisplay()
 
 MetalHostDisplay::~MetalHostDisplay()
 {
-	MetalHostDisplay::DestroyRenderSurface();
+	MetalHostDisplay::DestroySurface();
 	m_queue = nullptr;
 	m_dev.Reset();
 }
@@ -72,16 +72,16 @@ static void OnMainThread(Fn&& fn)
 		dispatch_sync(dispatch_get_main_queue(), fn);
 }
 
-HostDisplay::RenderAPI MetalHostDisplay::GetRenderAPI() const
+RenderAPI MetalHostDisplay::GetRenderAPI() const
 {
 	return RenderAPI::Metal;
 }
 
-void* MetalHostDisplay::GetRenderDevice()  const { return const_cast<void*>(static_cast<const void*>(&m_dev)); }
-void* MetalHostDisplay::GetRenderContext() const { return (__bridge void*)m_queue; }
-void* MetalHostDisplay::GetRenderSurface() const { return (__bridge void*)m_layer; }
-bool MetalHostDisplay::HasRenderDevice()   const { return m_dev.IsOk(); }
-bool MetalHostDisplay::HasRenderSurface()  const { return static_cast<bool>(m_layer);}
+void* MetalHostDisplay::GetDevice()  const { return const_cast<void*>(static_cast<const void*>(&m_dev)); }
+void* MetalHostDisplay::GetContext() const { return (__bridge void*)m_queue; }
+void* MetalHostDisplay::GetSurface() const { return (__bridge void*)m_layer; }
+bool MetalHostDisplay::HasDevice()   const { return m_dev.IsOk(); }
+bool MetalHostDisplay::HasSurface()  const { return static_cast<bool>(m_layer);}
 
 void MetalHostDisplay::AttachSurfaceOnMainThread()
 {
@@ -103,12 +103,11 @@ void MetalHostDisplay::DetachSurfaceOnMainThread()
 	m_layer = nullptr;
 }
 
-bool MetalHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, VsyncMode vsync, bool threaded_presentation, bool debug_device)
+bool MetalHostDisplay::CreateDevice(const WindowInfo& wi)
 { @autoreleasepool {
 	m_window_info = wi;
 	pxAssertRel(!m_dev.dev, "Device already created!");
-	std::string null_terminated_adapter_name(adapter_name);
-	NSString* ns_adapter_name = [NSString stringWithUTF8String:null_terminated_adapter_name.c_str()];
+	NSString* ns_adapter_name = [NSString stringWithUTF8String:EmuConfig.GS.Adapter.c_str()];
 	auto devs = MRCTransfer(MTLCopyAllDevices());
 	for (id<MTLDevice> dev in devs.Get())
 	{
@@ -117,8 +116,8 @@ bool MetalHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 	}
 	if (!m_dev.dev)
 	{
-		if (!adapter_name.empty())
-			Console.Warning("Metal: Couldn't find adapter %s, using default", null_terminated_adapter_name.c_str());
+		if (!EmuConfig.GS.Adapter.empty())
+			Console.Warning("Metal: Couldn't find adapter %s, using default", EmuConfig.GS.Adapter.c_str());
 		m_dev = GSMTLDevice(MRCTransfer(MTLCreateSystemDefaultDevice()));
 		if (!m_dev.dev)
 			Host::ReportErrorAsync("No Metal Devices Available", "No Metal-supporting GPUs were found.  PCSX2 requires a Metal GPU (available on all macs from 2012 onwards).");
@@ -146,22 +145,22 @@ bool MetalHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 		{
 			AttachSurfaceOnMainThread();
 		});
-		SetVSync(vsync);
+		SetVSync(Host::GetEffectiveVSyncMode());
 		return true;
 	}
 	else
 		return false;
 }}
 
-bool MetalHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
+bool MetalHostDisplay::SetupDevice()
 {
 	return true;
 }
 
-bool MetalHostDisplay::MakeRenderContextCurrent() { return true; }
-bool MetalHostDisplay::DoneRenderContextCurrent() { return true; }
+bool MetalHostDisplay::MakeCurrent() { return true; }
+bool MetalHostDisplay::DoneCurrent() { return true; }
 
-void MetalHostDisplay::DestroyRenderSurface()
+void MetalHostDisplay::DestroySurface()
 {
 	if (!m_layer)
 		return;
@@ -169,7 +168,7 @@ void MetalHostDisplay::DestroyRenderSurface()
 	m_layer = nullptr;
 }
 
-bool MetalHostDisplay::ChangeRenderWindow(const WindowInfo& wi)
+bool MetalHostDisplay::ChangeWindow(const WindowInfo& wi)
 {
 	OnMainThread([this, &wi]
 	{
@@ -201,7 +200,7 @@ std::string MetalHostDisplay::GetDriverInfo() const
 	return desc;
 }}
 
-void MetalHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
+void MetalHostDisplay::ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
 {
 	m_window_info.surface_scale = new_window_scale;
 	if (m_window_info.surface_width == static_cast<u32>(new_window_width) && m_window_info.surface_height == static_cast<u32>(new_window_height))

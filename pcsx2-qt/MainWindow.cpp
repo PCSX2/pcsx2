@@ -1828,8 +1828,7 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 
 	g_emu_thread->connectDisplaySignals(m_display_widget);
 
-	if (!g_host_display->CreateRenderDevice(wi.value(), Host::GetStringSettingValue("EmuCore/GS", "Adapter", ""), EmuConfig.GetEffectiveVsyncMode(),
-			Host::GetBoolSettingValue("EmuCore/GS", "ThreadedPresentation", false), Host::GetBoolSettingValue("EmuCore/GS", "UseDebugDevice", false)))
+	if (!g_host_display->CreateDevice(wi.value()))
 	{
 		QMessageBox::critical(this, tr("Error"), tr("Failed to create host display device context."));
 		destroyDisplayWidget(true);
@@ -1852,7 +1851,7 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 	m_display_widget->updateCursor(s_vm_valid && !s_vm_paused);
 	m_display_widget->setFocus();
 
-	g_host_display->DoneRenderContextCurrent();
+	g_host_display->DoneCurrent();
 	return m_display_widget;
 }
 
@@ -1904,7 +1903,7 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 		return m_display_widget;
 	}
 
-	g_host_display->DestroyRenderSurface();
+	g_host_display->DestroySurface();
 
 	destroyDisplayWidget(surfaceless);
 
@@ -1924,7 +1923,7 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 
 	g_emu_thread->connectDisplaySignals(m_display_widget);
 
-	if (!g_host_display->ChangeRenderWindow(wi.value()))
+	if (!g_host_display->ChangeWindow(wi.value()))
 		pxFailRel("Failed to recreate surface on new widget.");
 
 	if (is_exclusive_fullscreen)

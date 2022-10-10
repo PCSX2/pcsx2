@@ -79,14 +79,14 @@ bool GSDevice11::Create()
 
 	D3D_FEATURE_LEVEL level;
 
-	if (g_host_display->GetRenderAPI() != HostDisplay::RenderAPI::D3D11)
+	if (g_host_display->GetRenderAPI() != RenderAPI::D3D11)
 	{
-		fprintf(stderr, "Render API is incompatible with D3D11\n");
+		Console.Error("Render API is incompatible with D3D11");
 		return false;
 	}
 
-	m_dev = static_cast<ID3D11Device*>(g_host_display->GetRenderDevice());
-	m_ctx = static_cast<ID3D11DeviceContext*>(g_host_display->GetRenderContext());
+	m_dev = static_cast<ID3D11Device*>(g_host_display->GetDevice());
+	m_ctx = static_cast<ID3D11DeviceContext*>(g_host_display->GetContext());
 	level = m_dev->GetFeatureLevel();
 
 	if (!GSConfig.DisableShaderCache)

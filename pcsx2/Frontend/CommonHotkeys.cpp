@@ -22,6 +22,7 @@
 #include "Frontend/InputManager.h"
 #include "GS.h"
 #include "Host.h"
+#include "HostDisplay.h"
 #include "IconsFontAwesome5.h"
 #include "Recording/InputRecordingControls.h"
 #include "VMManager.h"
@@ -45,7 +46,7 @@ static void HotkeyAdjustTargetSpeed(double delta)
 	EmuConfig.Framerate.NominalScalar = std::max(min_speed, EmuConfig.GS.LimitScalar + delta);
 	VMManager::SetLimiterMode(LimiterModeType::Nominal);
 	gsUpdateFrequency(EmuConfig);
-	GetMTGS().SetVSync(EmuConfig.GetEffectiveVsyncMode());
+	GetMTGS().UpdateVSyncMode();
 	Host::AddIconOSDMessage("SpeedChanged", ICON_FA_CLOCK,
 		fmt::format("Target speed set to {:.0f}%.", std::round(EmuConfig.Framerate.NominalScalar * 100.0)), 5.0f);
 }

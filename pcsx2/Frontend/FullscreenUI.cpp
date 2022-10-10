@@ -202,7 +202,6 @@ namespace FullscreenUI
 	//////////////////////////////////////////////////////////////////////////
 	// Main
 	//////////////////////////////////////////////////////////////////////////
-	static void UpdateForcedVsync(bool should_force);
 	static void UpdateGameDetails(std::string path, std::string serial, std::string title, u32 crc);
 	static void ToggleTheme();
 	static void PauseForMenuOpen();
@@ -567,10 +566,6 @@ bool FullscreenUI::Initialize()
 		SwitchToLanding();
 	}
 
-	// force vsync on so we don't run at thousands of fps
-	// Initialize is called on the GS thread, so we can access the display directly.
-	UpdateForcedVsync(VMManager::GetState() != VMState::Running);
-
 	return true;
 }
 
@@ -583,15 +578,6 @@ bool FullscreenUI::HasActiveWindow()
 {
 	return s_current_main_window != MainWindowType::None || s_save_state_selector_open || ImGuiFullscreen::IsChoiceDialogOpen() ||
 		   ImGuiFullscreen::IsFileSelectorOpen();
-}
-
-void FullscreenUI::UpdateForcedVsync(bool should_force)
-{
-	// force vsync on so we don't run at thousands of fps
-	const VsyncMode mode = EmuConfig.GetEffectiveVsyncMode();
-
-	// toss it through regardless of the mode, because options can change it
-	g_host_display->SetVSync((should_force && mode == VsyncMode::Off) ? VsyncMode::On : mode);
 }
 
 void FullscreenUI::CheckForConfigChanges(const Pcsx2Config& old_config)
@@ -635,12 +621,8 @@ void FullscreenUI::OnVMPaused()
 	if (!IsInitialized())
 		return;
 
-	GetMTGS().RunOnGSThread([]() {
-		if (!IsInitialized())
-			return;
-
-		UpdateForcedVsync(true);
-	});
+	// Force vsync on.
+	GetMTGS().UpdateVSyncMode();
 }
 
 void FullscreenUI::OnVMResumed()
@@ -648,12 +630,8 @@ void FullscreenUI::OnVMResumed()
 	if (!IsInitialized())
 		return;
 
-	GetMTGS().RunOnGSThread([]() {
-		if (!IsInitialized())
-			return;
-
-		UpdateForcedVsync(false);
-	});
+	// Restore game vsync.
+	GetMTGS().UpdateVSyncMode();
 }
 
 void FullscreenUI::OnVMDestroyed()
@@ -667,7 +645,7 @@ void FullscreenUI::OnVMDestroyed()
 
 		s_pause_menu_was_open = false;
 		SwitchToLanding();
-		UpdateForcedVsync(true);
+		GetMTGS().UpdateVSyncMode();
 	});
 }
 

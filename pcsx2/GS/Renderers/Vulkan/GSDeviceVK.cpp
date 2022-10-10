@@ -1308,7 +1308,7 @@ bool GSDeviceVK::CreateRenderPasses()
 bool GSDeviceVK::CompileConvertPipelines()
 {
 	// we may not have a swap chain if running in headless mode.
-	Vulkan::SwapChain* swapchain = static_cast<Vulkan::SwapChain*>(g_host_display->GetRenderSurface());
+	Vulkan::SwapChain* swapchain = static_cast<Vulkan::SwapChain*>(g_host_display->GetSurface());
 	if (swapchain)
 	{
 		m_swap_chain_render_pass =
@@ -1506,7 +1506,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 bool GSDeviceVK::CompilePresentPipelines()
 {
 	// we may not have a swap chain if running in headless mode.
-	Vulkan::SwapChain* swapchain = static_cast<Vulkan::SwapChain*>(g_host_display->GetRenderSurface());
+	Vulkan::SwapChain* swapchain = static_cast<Vulkan::SwapChain*>(g_host_display->GetSurface());
 	if (swapchain)
 	{
 		m_swap_chain_render_pass =

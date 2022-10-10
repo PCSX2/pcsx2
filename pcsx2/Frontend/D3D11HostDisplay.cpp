@@ -95,37 +95,37 @@ D3D11HostDisplay::D3D11HostDisplay() = default;
 
 D3D11HostDisplay::~D3D11HostDisplay()
 {
-	D3D11HostDisplay::DestroyRenderSurface();
+	D3D11HostDisplay::DestroySurface();
 	m_context.reset();
 	m_device.reset();
 }
 
-HostDisplay::RenderAPI D3D11HostDisplay::GetRenderAPI() const
+RenderAPI D3D11HostDisplay::GetRenderAPI() const
 {
-	return HostDisplay::RenderAPI::D3D11;
+	return RenderAPI::D3D11;
 }
 
-void* D3D11HostDisplay::GetRenderDevice() const
+void* D3D11HostDisplay::GetDevice() const
 {
 	return m_device.get();
 }
 
-void* D3D11HostDisplay::GetRenderContext() const
+void* D3D11HostDisplay::GetContext() const
 {
 	return m_context.get();
 }
 
-void* D3D11HostDisplay::GetRenderSurface() const
+void* D3D11HostDisplay::GetSurface() const
 {
 	return m_swap_chain.get();
 }
 
-bool D3D11HostDisplay::HasRenderDevice() const
+bool D3D11HostDisplay::HasDevice() const
 {
 	return static_cast<bool>(m_device);
 }
 
-bool D3D11HostDisplay::HasRenderSurface() const
+bool D3D11HostDisplay::HasSurface() const
 {
 	return static_cast<bool>(m_swap_chain);
 }
@@ -210,10 +210,10 @@ void D3D11HostDisplay::SetVSync(VsyncMode mode)
 	m_vsync_mode = mode;
 }
 
-bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, VsyncMode vsync, bool threaded_presentation, bool debug_device)
+bool D3D11HostDisplay::CreateDevice(const WindowInfo& wi)
 {
 	UINT create_flags = 0;
-	if (debug_device)
+	if (EmuConfig.GS.UseDebugDevice)
 		create_flags |= D3D11_CREATE_DEVICE_DEBUG;
 
 	ComPtr<IDXGIFactory> temp_dxgi_factory;
@@ -225,17 +225,17 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 	}
 
 	u32 adapter_index;
-	if (!adapter_name.empty())
+	if (!EmuConfig.GS.Adapter.empty())
 	{
 		AdapterAndModeList adapter_info(GetAdapterAndModeList(temp_dxgi_factory.get()));
 		for (adapter_index = 0; adapter_index < static_cast<u32>(adapter_info.adapter_names.size()); adapter_index++)
 		{
-			if (adapter_name == adapter_info.adapter_names[adapter_index])
+			if (EmuConfig.GS.Adapter == adapter_info.adapter_names[adapter_index])
 				break;
 		}
 		if (adapter_index == static_cast<u32>(adapter_info.adapter_names.size()))
 		{
-			Console.Warning("Could not find adapter '%s', using first (%s)", std::string(adapter_name).c_str(),
+			Console.Warning("Could not find adapter '%s', using first (%s)", EmuConfig.GS.Adapter.c_str(),
 				adapter_info.adapter_names[0].c_str());
 			adapter_index = 0;
 		}
@@ -269,7 +269,7 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 		return false;
 	}
 
-	if (debug_device && IsDebuggerPresent())
+	if (EmuConfig.GS.UseDebugDevice && IsDebuggerPresent())
 	{
 		ComPtr<ID3D11InfoQueue> info;
 		if (m_device.try_query_to(&info))
@@ -314,7 +314,7 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 	}
 
 	m_window_info = wi;
-	m_vsync_mode = vsync;
+	m_vsync_mode = Host::GetEffectiveVSyncMode();
 
 	if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain(nullptr))
 		return false;
@@ -322,17 +322,17 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 	return true;
 }
 
-bool D3D11HostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
+bool D3D11HostDisplay::SetupDevice()
 {
 	return true;
 }
 
-bool D3D11HostDisplay::MakeRenderContextCurrent()
+bool D3D11HostDisplay::MakeCurrent()
 {
 	return true;
 }
 
-bool D3D11HostDisplay::DoneRenderContextCurrent()
+bool D3D11HostDisplay::DoneCurrent()
 {
 	return true;
 }
@@ -450,15 +450,15 @@ bool D3D11HostDisplay::CreateSwapChainRTV()
 	return true;
 }
 
-bool D3D11HostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
+bool D3D11HostDisplay::ChangeWindow(const WindowInfo& new_wi)
 {
-	DestroyRenderSurface();
+	DestroySurface();
 
 	m_window_info = new_wi;
 	return CreateSwapChain(nullptr);
 }
 
-void D3D11HostDisplay::DestroyRenderSurface()
+void D3D11HostDisplay::DestroySurface()
 {
 	if (IsFullscreen())
 		SetFullscreen(false, 0, 0, 0.0f);
@@ -559,7 +559,7 @@ std::string D3D11HostDisplay::GetDriverInfo() const
 	return ret;
 }
 
-void D3D11HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
+void D3D11HostDisplay::ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
 {
 	if (!m_swap_chain)
 		return;

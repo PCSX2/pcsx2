@@ -413,7 +413,8 @@ public:
 	void ApplySettings();
 	void ResizeDisplayWindow(int width, int height, float scale);
 	void UpdateDisplayWindow();
-	void SetVSync(VsyncMode mode);
+	void SetVSyncMode(VsyncMode mode);
+	void UpdateVSyncMode();
 	void SwitchRenderer(GSRendererType renderer, bool display_message = true);
 	void SetSoftwareRendering(bool software, bool display_message = true);
 	void ToggleSoftwareRendering();

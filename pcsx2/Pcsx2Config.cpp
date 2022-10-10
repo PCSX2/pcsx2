@@ -678,18 +678,6 @@ bool Pcsx2Config::GSOptions::UseHardwareRenderer() const
 	return (Renderer != GSRendererType::Null && Renderer != GSRendererType::SW);
 }
 
-VsyncMode Pcsx2Config::GetEffectiveVsyncMode() const
-{
-	if (GS.LimitScalar != 1.0f)
-	{
-		Console.WriteLn("Vsync is OFF");
-		return VsyncMode::Off;
-	}
-
-	Console.WriteLn("Vsync is %s", GS.VsyncEnable == VsyncMode::Off ? "OFF" : (GS.VsyncEnable == VsyncMode::Adaptive ? "ADAPTIVE" : "ON"));
-	return GS.VsyncEnable;
-}
-
 Pcsx2Config::SPU2Options::SPU2Options()
 {
 	bitset = 0;
