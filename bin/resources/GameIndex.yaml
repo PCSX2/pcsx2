@@ -44670,6 +44670,7 @@ SLUS-21312:
   compat: 5
   gsHWFixes:
     deinterlace: 3 # Game requires bob deinterlacing when auto.
+    halfPixelOffset: 1 # Fixes misalignment/bloom when upscaling.
 SLUS-21313:
   name: "Friends - The One with all the Trivia"
   region: "NTSC-U"
