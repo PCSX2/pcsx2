@@ -61,27 +61,27 @@ VulkanHostDisplay::~VulkanHostDisplay()
 	}
 }
 
-HostDisplay::RenderAPI VulkanHostDisplay::GetRenderAPI() const
+RenderAPI VulkanHostDisplay::GetRenderAPI() const
 {
-	return HostDisplay::RenderAPI::Vulkan;
+	return RenderAPI::Vulkan;
 }
 
-void* VulkanHostDisplay::GetRenderDevice() const
-{
-	return nullptr;
-}
-
-void* VulkanHostDisplay::GetRenderContext() const
+void* VulkanHostDisplay::GetDevice() const
 {
 	return nullptr;
 }
 
-void* VulkanHostDisplay::GetRenderSurface() const
+void* VulkanHostDisplay::GetContext() const
+{
+	return nullptr;
+}
+
+void* VulkanHostDisplay::GetSurface() const
 {
 	return m_swap_chain.get();
 }
 
-bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
+bool VulkanHostDisplay::ChangeWindow(const WindowInfo& new_wi)
 {
 	g_vulkan_context->WaitForGPUIdle();
 
@@ -126,7 +126,7 @@ bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
 	return true;
 }
 
-void VulkanHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
+void VulkanHostDisplay::ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
 {
 	if (m_swap_chain->GetWidth() == static_cast<u32>(new_window_width) && m_swap_chain->GetHeight() == static_cast<u32>(new_window_height))
 	{
@@ -167,7 +167,7 @@ HostDisplay::AdapterAndModeList VulkanHostDisplay::GetAdapterAndModeList()
 	return StaticGetAdapterAndModeList(m_window_info.type != WindowInfo::Type::Surfaceless ? &m_window_info : nullptr);
 }
 
-void VulkanHostDisplay::DestroyRenderSurface()
+void VulkanHostDisplay::DestroySurface()
 {
 	g_vulkan_context->WaitForGPUIdle();
 	m_swap_chain.reset();
@@ -275,14 +275,13 @@ void VulkanHostDisplay::SetVSync(VsyncMode mode)
 	m_vsync_mode = mode;
 }
 
-bool VulkanHostDisplay::CreateRenderDevice(
-	const WindowInfo& wi, std::string_view adapter_name, VsyncMode vsync, bool threaded_presentation, bool debug_device)
+bool VulkanHostDisplay::CreateDevice(const WindowInfo& wi)
 {
-	// debug_device = true;
-
 	WindowInfo local_wi(wi);
-	if (!Vulkan::Context::Create(adapter_name, &local_wi, &m_swap_chain, GetPreferredPresentModeForVsyncMode(vsync), threaded_presentation,
-			debug_device, debug_device))
+	const VsyncMode vsync = Host::GetEffectiveVSyncMode();
+	const bool debug_device = EmuConfig.GS.UseDebugDevice;
+	if (!Vulkan::Context::Create(EmuConfig.GS.Adapter, &local_wi, &m_swap_chain, GetPreferredPresentModeForVsyncMode(vsync),
+			EmuConfig.GS.ThreadedPresentation, debug_device, debug_device))
 	{
 		Console.Error("Failed to create Vulkan context");
 		m_window_info = {};
@@ -295,18 +294,18 @@ bool VulkanHostDisplay::CreateRenderDevice(
 	return true;
 }
 
-bool VulkanHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
+bool VulkanHostDisplay::SetupDevice()
 {
-	Vulkan::ShaderCache::Create(shader_cache_directory, SHADER_CACHE_VERSION, debug_device);
+	Vulkan::ShaderCache::Create(EmuFolders::Cache, SHADER_CACHE_VERSION, EmuConfig.GS.UseDebugDevice);
 	return true;
 }
 
-bool VulkanHostDisplay::HasRenderDevice() const
+bool VulkanHostDisplay::HasDevice() const
 {
 	return static_cast<bool>(g_vulkan_context);
 }
 
-bool VulkanHostDisplay::HasRenderSurface() const
+bool VulkanHostDisplay::HasSurface() const
 {
 	return static_cast<bool>(m_swap_chain);
 }
@@ -327,12 +326,12 @@ bool VulkanHostDisplay::UpdateImGuiFontTexture()
 	return ImGui_ImplVulkan_CreateFontsTexture();
 }
 
-bool VulkanHostDisplay::MakeRenderContextCurrent()
+bool VulkanHostDisplay::MakeCurrent()
 {
 	return true;
 }
 
-bool VulkanHostDisplay::DoneRenderContextCurrent()
+bool VulkanHostDisplay::DoneCurrent()
 {
 	return true;
 }
@@ -353,7 +352,7 @@ bool VulkanHostDisplay::BeginPresent(bool frame_skip)
 	{
 		if (res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_OUT_OF_DATE_KHR)
 		{
-			ResizeRenderWindow(0, 0, m_window_info.surface_scale);
+			ResizeWindow(0, 0, m_window_info.surface_scale);
 			res = m_swap_chain->AcquireNextImage();
 		}
 		else if (res == VK_ERROR_SURFACE_LOST_KHR)

@@ -20,26 +20,26 @@ public:
 	~VulkanHostDisplay();
 
 	RenderAPI GetRenderAPI() const override;
-	void* GetRenderDevice() const override;
-	void* GetRenderContext() const override;
-	void* GetRenderSurface() const override;
+	void* GetDevice() const override;
+	void* GetContext() const override;
+	void* GetSurface() const override;
 
-	bool HasRenderDevice() const override;
-	bool HasRenderSurface() const override;
+	bool HasDevice() const override;
+	bool HasSurface() const override;
 
-	bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, VsyncMode vsync, bool threaded_presentation, bool debug_device) override;
-	bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device) override;
+	bool CreateDevice(const WindowInfo& wi) override;
+	bool SetupDevice() override;
 
-	bool MakeRenderContextCurrent() override;
-	bool DoneRenderContextCurrent() override;
+	bool MakeCurrent() override;
+	bool DoneCurrent() override;
 
-	bool ChangeRenderWindow(const WindowInfo& new_wi) override;
-	void ResizeRenderWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
+	bool ChangeWindow(const WindowInfo& new_wi) override;
+	void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
 	bool SupportsFullscreen() const override;
 	bool IsFullscreen() override;
 	bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
 	AdapterAndModeList GetAdapterAndModeList() override;
-	void DestroyRenderSurface() override;
+	void DestroySurface() override;
 	std::string GetDriverInfo() const override;
 
 	std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* data, u32 data_stride, bool dynamic = false) override;

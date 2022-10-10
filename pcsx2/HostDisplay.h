@@ -27,6 +27,17 @@
 #include "Host.h"
 #include "Config.h"
 
+enum class RenderAPI
+{
+	None,
+	D3D11,
+	Metal,
+	D3D12,
+	Vulkan,
+	OpenGL,
+	OpenGLES
+};
+
 /// An abstracted RGBA8 texture.
 class HostDisplayTexture
 {
@@ -42,17 +53,6 @@ public:
 class HostDisplay
 {
 public:
-	enum class RenderAPI
-	{
-		None,
-		D3D11,
-		Metal,
-		D3D12,
-		Vulkan,
-		OpenGL,
-		OpenGLES
-	};
-
 	enum class Alignment
 	{
 		LeftOrTop,
@@ -72,7 +72,7 @@ public:
 	static const char* RenderAPIToString(RenderAPI api);
 
 	/// Creates a display for the specified API.
-	static std::unique_ptr<HostDisplay> CreateDisplayForAPI(RenderAPI api);
+	static std::unique_ptr<HostDisplay> CreateForAPI(RenderAPI api);
 
 	/// Parses a fullscreen mode into its components (width * height @ refresh hz)
 	static bool ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height, float* refresh_rate);
@@ -90,27 +90,45 @@ public:
 	__fi void SetDisplayAlignment(Alignment alignment) { m_display_alignment = alignment; }
 
 	virtual RenderAPI GetRenderAPI() const = 0;
-	virtual void* GetRenderDevice() const = 0;
-	virtual void* GetRenderContext() const = 0;
-	virtual void* GetRenderSurface() const = 0;
+	virtual void* GetDevice() const = 0;
+	virtual void* GetContext() const = 0;
+	virtual void* GetSurface() const = 0;
 
-	virtual bool HasRenderDevice() const = 0;
-	virtual bool HasRenderSurface() const = 0;
+	virtual bool HasDevice() const = 0;
+	virtual bool HasSurface() const = 0;
 
-	virtual bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, VsyncMode vsync, bool threaded_presentation, bool debug_device) = 0;
-	virtual bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device) = 0;
-	virtual bool MakeRenderContextCurrent() = 0;
-	virtual bool DoneRenderContextCurrent() = 0;
-	virtual void DestroyRenderSurface() = 0;
-	virtual bool ChangeRenderWindow(const WindowInfo& wi) = 0;
-	virtual bool SupportsFullscreen() const = 0;
-	virtual bool IsFullscreen() = 0;
-	virtual bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) = 0;
-	virtual AdapterAndModeList GetAdapterAndModeList() = 0;
-	virtual std::string GetDriverInfo() const = 0;
+	/// Creates the rendering/GPU device. This should be called on the thread which owns the window.
+	virtual bool CreateDevice(const WindowInfo& wi) = 0;
+
+	/// Fully initializes the rendering device. This should be called on the GS thread.
+	virtual bool SetupDevice() = 0;
+
+	/// Sets the device for the current thread. Only needed for OpenGL.
+	virtual bool MakeCurrent() = 0;
+
+	/// Clears the device for the current thread. Only needed for OpenGL.
+	virtual bool DoneCurrent() = 0;
+
+	/// Destroys the surface we're currently drawing to.
+	virtual void DestroySurface() = 0;
+
+	/// Switches to a new window/surface.
+	virtual bool ChangeWindow(const WindowInfo& wi) = 0;
 
 	/// Call when the window size changes externally to recreate any resources.
-	virtual void ResizeRenderWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) = 0;
+	virtual void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) = 0;
+
+	/// Returns true if exclusive fullscreen is supported.
+	virtual bool SupportsFullscreen() const = 0;
+
+	/// Returns true if exclusive fullscreen is active.
+	virtual bool IsFullscreen() = 0;
+
+	/// Attempts to switch to the specified mode in exclusive fullscreen.
+	virtual bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) = 0;
+
+	virtual AdapterAndModeList GetAdapterAndModeList() = 0;
+	virtual std::string GetDriverInfo() const = 0;
 
 	/// Creates an abstracted RGBA8 texture. If dynamic, the texture can be updated with UpdateTexture() below.
 	virtual std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* data, u32 data_stride, bool dynamic = false) = 0;
@@ -155,10 +173,13 @@ extern std::unique_ptr<HostDisplay> g_host_display;
 namespace Host
 {
 	/// Creates the host display. This may create a new window. The API used depends on the current configuration.
-	bool AcquireHostDisplay(HostDisplay::RenderAPI api);
+	bool AcquireHostDisplay(RenderAPI api);
 
 	/// Destroys the host display. This may close the display window.
 	void ReleaseHostDisplay();
+
+	/// Returns the desired vsync mode, depending on the runtime environment.
+	VsyncMode GetEffectiveVSyncMode();
 
 	/// Returns false if the window was completely occluded. If frame_skip is set, the frame won't be
 	/// displayed, but the GPU command queue will still be flushed.

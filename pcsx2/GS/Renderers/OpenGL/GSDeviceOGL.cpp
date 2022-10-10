@@ -196,7 +196,7 @@ bool GSDeviceOGL::Create()
 	if (!GSDevice::Create())
 		return false;
 
-	if (g_host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGL)
+	if (g_host_display->GetRenderAPI() != RenderAPI::OpenGL)
 		return false;
 
 	// Check openGL requirement as soon as possible so we can switch to another

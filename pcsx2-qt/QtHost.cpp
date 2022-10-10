@@ -832,24 +832,24 @@ void EmuThread::updateDisplay()
 	pxAssertRel(!isOnEmuThread(), "Not on emu thread");
 
 	// finished with the display for now
-	g_host_display->DoneRenderContextCurrent();
+	g_host_display->DoneCurrent();
 
 	// but we should get it back after this call
 	onUpdateDisplayRequested(m_is_fullscreen, !m_is_fullscreen && m_is_rendering_to_main, m_is_surfaceless);
-	if (!g_host_display->MakeRenderContextCurrent())
+	if (!g_host_display->MakeCurrent())
 	{
 		pxFailRel("Failed to recreate context after updating");
 		return;
 	}
 }
 
-bool EmuThread::acquireHostDisplay(HostDisplay::RenderAPI api)
+bool EmuThread::acquireHostDisplay(RenderAPI api)
 {
 	pxAssertRel(!g_host_display, "Host display does not exist on create");
 	m_is_rendering_to_main = shouldRenderToMain();
 	m_is_surfaceless = false;
 
-	g_host_display = HostDisplay::CreateDisplayForAPI(api);
+	g_host_display = HostDisplay::CreateForAPI(api);
 	if (!g_host_display)
 		return false;
 
@@ -862,15 +862,14 @@ bool EmuThread::acquireHostDisplay(HostDisplay::RenderAPI api)
 
 	connectDisplaySignals(widget);
 
-	if (!g_host_display->MakeRenderContextCurrent())
+	if (!g_host_display->MakeCurrent())
 	{
 		Console.Error("Failed to make render context current");
 		releaseHostDisplay();
 		return false;
 	}
 
-	if (!g_host_display->InitializeRenderDevice(EmuFolders::Cache, false) ||
-		!ImGuiManager::Initialize())
+	if (!g_host_display->SetupDevice() || !ImGuiManager::Initialize())
 	{
 		Console.Error("Failed to initialize device/imgui");
 		releaseHostDisplay();
@@ -899,7 +898,7 @@ void EmuThread::releaseHostDisplay()
 	emit onDestroyDisplayRequested();
 }
 
-bool Host::AcquireHostDisplay(HostDisplay::RenderAPI api)
+bool Host::AcquireHostDisplay(RenderAPI api)
 {
 	return g_emu_thread->acquireHostDisplay(api);
 }
@@ -907,6 +906,24 @@ bool Host::AcquireHostDisplay(HostDisplay::RenderAPI api)
 void Host::ReleaseHostDisplay()
 {
 	g_emu_thread->releaseHostDisplay();
+}
+
+VsyncMode Host::GetEffectiveVSyncMode()
+{
+	// Force vsync on when running big picture UI, and paused or no VM.
+	if (g_emu_thread->isRunningFullscreenUI())
+	{
+		const VMState state = VMManager::GetState();
+		if (state == VMState::Shutdown || state == VMState::Paused)
+			return VsyncMode::On;
+	}
+
+	// Force vsync off when not running at 100% speed.
+	if (EmuConfig.GS.LimitScalar != 1.0f)
+		return VsyncMode::Off;
+
+	// Otherwise use the config setting.
+	return EmuConfig.GS.VsyncEnable;
 }
 
 bool Host::BeginPresentFrame(bool frame_skip)
@@ -935,7 +952,7 @@ void Host::EndPresentFrame()
 
 void Host::ResizeHostDisplay(u32 new_window_width, u32 new_window_height, float new_window_scale)
 {
-	g_host_display->ResizeRenderWindow(new_window_width, new_window_height, new_window_scale);
+	g_host_display->ResizeWindow(new_window_width, new_window_height, new_window_scale);
 	ImGuiManager::WindowResized();
 
 	// if we're paused, re-present the current frame at the new window size.

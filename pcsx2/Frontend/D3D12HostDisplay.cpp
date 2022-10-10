@@ -54,37 +54,37 @@ D3D12HostDisplay::~D3D12HostDisplay()
 	if (g_d3d12_context)
 	{
 		g_d3d12_context->WaitForGPUIdle();
-		D3D12HostDisplay::DestroyRenderSurface();
+		D3D12HostDisplay::DestroySurface();
 		g_d3d12_context->Destroy();
 	}
 }
 
-HostDisplay::RenderAPI D3D12HostDisplay::GetRenderAPI() const
+RenderAPI D3D12HostDisplay::GetRenderAPI() const
 {
-	return HostDisplay::RenderAPI::D3D12;
+	return RenderAPI::D3D12;
 }
 
-void* D3D12HostDisplay::GetRenderDevice() const
+void* D3D12HostDisplay::GetDevice() const
 {
 	return g_d3d12_context->GetDevice();
 }
 
-void* D3D12HostDisplay::GetRenderContext() const
+void* D3D12HostDisplay::GetContext() const
 {
 	return g_d3d12_context.get();
 }
 
-void* D3D12HostDisplay::GetRenderSurface() const
+void* D3D12HostDisplay::GetSurface() const
 {
 	return m_swap_chain.get();
 }
 
-bool D3D12HostDisplay::HasRenderDevice() const
+bool D3D12HostDisplay::HasDevice() const
 {
 	return static_cast<bool>(g_d3d12_context);
 }
 
-bool D3D12HostDisplay::HasRenderSurface() const
+bool D3D12HostDisplay::HasSurface() const
 {
 	return static_cast<bool>(m_swap_chain);
 }
@@ -136,7 +136,7 @@ void D3D12HostDisplay::SetVSync(VsyncMode mode)
 	m_vsync_mode = mode;
 }
 
-bool D3D12HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, VsyncMode vsync, bool threaded_presentation, bool debug_device)
+bool D3D12HostDisplay::CreateDevice(const WindowInfo& wi)
 {
 	ComPtr<IDXGIFactory> temp_dxgi_factory;
 	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(temp_dxgi_factory.put()));
@@ -147,18 +147,17 @@ bool D3D12HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 	}
 
 	u32 adapter_index;
-	if (!adapter_name.empty())
+	if (!EmuConfig.GS.Adapter.empty())
 	{
 		AdapterAndModeList adapter_info(GetAdapterAndModeList(temp_dxgi_factory.get()));
 		for (adapter_index = 0; adapter_index < static_cast<u32>(adapter_info.adapter_names.size()); adapter_index++)
 		{
-			if (adapter_name == adapter_info.adapter_names[adapter_index])
+			if (EmuConfig.GS.Adapter == adapter_info.adapter_names[adapter_index])
 				break;
 		}
 		if (adapter_index == static_cast<u32>(adapter_info.adapter_names.size()))
 		{
-			Console.Warning("Could not find adapter '%*s', using first (%s)", static_cast<int>(adapter_name.size()),
-				adapter_name.data(), adapter_info.adapter_names[0].c_str());
+			Console.Warning("Could not find adapter '%s', using first (%s)", EmuConfig.GS.Adapter.c_str(), adapter_info.adapter_names[0].c_str());
 			adapter_index = 0;
 		}
 	}
@@ -168,7 +167,7 @@ bool D3D12HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 		adapter_index = 0;
 	}
 
-	if (!D3D12::Context::Create(temp_dxgi_factory.get(), adapter_index, debug_device))
+	if (!D3D12::Context::Create(temp_dxgi_factory.get(), adapter_index, EmuConfig.GS.UseDebugDevice))
 		return false;
 
 	if (FAILED(hr))
@@ -198,17 +197,17 @@ bool D3D12HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
 	return true;
 }
 
-bool D3D12HostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
+bool D3D12HostDisplay::SetupDevice()
 {
 	return true;
 }
 
-bool D3D12HostDisplay::MakeRenderContextCurrent()
+bool D3D12HostDisplay::MakeCurrent()
 {
 	return true;
 }
 
-bool D3D12HostDisplay::DoneRenderContextCurrent()
+bool D3D12HostDisplay::DoneCurrent()
 {
 	return true;
 }
@@ -323,15 +322,15 @@ void D3D12HostDisplay::DestroySwapChainRTVs()
 	m_current_swap_chain_buffer = 0;
 }
 
-bool D3D12HostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
+bool D3D12HostDisplay::ChangeWindow(const WindowInfo& new_wi)
 {
-	DestroyRenderSurface();
+	DestroySurface();
 
 	m_window_info = new_wi;
 	return CreateSwapChain(nullptr);
 }
 
-void D3D12HostDisplay::DestroyRenderSurface()
+void D3D12HostDisplay::DestroySurface()
 {
 	// For some reason if we don't execute the command list here, the swap chain is in use.. not sure where.
 	g_d3d12_context->ExecuteCommandList(true);
@@ -428,7 +427,7 @@ std::string D3D12HostDisplay::GetDriverInfo() const
 	return ret;
 }
 
-void D3D12HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
+void D3D12HostDisplay::ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
 {
 	if (!m_swap_chain)
 		return;

@@ -1089,8 +1089,6 @@ struct Pcsx2Config
 
 	bool MultitapEnabled(uint port) const;
 
-	VsyncMode GetEffectiveVsyncMode() const;
-
 	bool operator==(const Pcsx2Config& right) const;
 	bool operator!=(const Pcsx2Config& right) const
 	{
