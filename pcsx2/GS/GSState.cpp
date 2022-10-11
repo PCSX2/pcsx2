@@ -1415,7 +1415,7 @@ void GSState::GIFRegHandlerTEXFLUSH(const GIFReg* RESTRICT r)
 	// Some games do a single sprite draw to itself, then flush the texture cache, then use that texture again.
 	// This won't get picked up by the new autoflush logic (which checks for page crossings for the PS2 Texture Cache flush)
 	// so we need to do it here.
-	if (IsAutoFlushEnabled())
+	if (IsAutoFlushEnabled() && IsAutoFlushDraw())
 		Flush(GSFlushReason::TEXFLUSH);
 }
 
@@ -2944,12 +2944,8 @@ GSState::PRIM_OVERLAP GSState::PrimitiveOverlap()
 	return overlap;
 }
 
-__forceinline void GSState::HandleAutoFlush()
+__forceinline bool GSState::IsAutoFlushDraw()
 {
-	// Kind of a cheat, making the assumption that 2 consecutive fan/strip triangles won't overlap each other (*should* be safe)
-	if ((m_index.tail & 1) && (PRIM->PRIM == GS_TRIANGLESTRIP || PRIM->PRIM == GS_TRIANGLEFAN))
-		return;
-
 	const u32 frame_mask = GSLocalMemory::m_psm[m_context->TEX0.PSM].fmsk;
 	const bool frame_hit = (m_context->FRAME.Block() == m_context->TEX0.TBP0) && !(m_context->TEST.ATE && m_context->TEST.ATST == 0 && m_context->TEST.AFAIL == 2) && ((m_context->FRAME.FBMSK & frame_mask) != frame_mask);
 	// There's a strange behaviour we need to test on a PS2 here, if the FRAME is a Z format, like Powerdrome something swaps over, and it seems Alpha Fail of "FB Only" writes to the Z.. it's odd.
@@ -2957,10 +2953,22 @@ __forceinline void GSState::HandleAutoFlush()
 	const u32 frame_z_psm = frame_hit ? m_context->FRAME.PSM : m_context->ZBUF.PSM;
 	const u32 frame_z_bp = frame_hit ? m_context->FRAME.Block() : m_context->ZBUF.Block();
 
+	if (PRIM->TME && (frame_hit || zbuf_hit) && GSUtil::HasSharedBits(frame_z_bp, frame_z_psm, m_context->TEX0.TBP0, m_context->TEX0.PSM))
+		return true;
+	
+	return false;
+}
+
+__forceinline void GSState::HandleAutoFlush()
+{
+	// Kind of a cheat, making the assumption that 2 consecutive fan/strip triangles won't overlap each other (*should* be safe)
+	if ((m_index.tail & 1) && (PRIM->PRIM == GS_TRIANGLESTRIP || PRIM->PRIM == GS_TRIANGLEFAN))
+		return;
+
 	// To briefly explain what's going on here, what we are checking for is draws over a texture when the source and destination are themselves.
 	// Because one page of the texture gets buffered in the Texture Cache (the PS2's one) if any of those pixels are overwritten, you still read the old data.
 	// So we need to calculate if a page boundary is being crossed for the format it is in and if the same part of the texture being written and read inside the draw.
-	if (PRIM->TME && (frame_hit || zbuf_hit) && GSUtil::HasSharedBits(frame_z_bp, frame_z_psm, m_context->TEX0.TBP0, m_context->TEX0.PSM))
+	if (IsAutoFlushDraw())
 	{
 		int  n = 1;
 		size_t buff[3];
@@ -3064,6 +3072,9 @@ __forceinline void GSState::HandleAutoFlush()
 		// Crossed page since last draw end
 		if(!tex_page.eq(last_tex_page))
 		{
+			const u32 frame_mask = GSLocalMemory::m_psm[m_context->TEX0.PSM].fmsk;
+			const bool frame_hit = (m_context->FRAME.Block() == m_context->TEX0.TBP0) && !(m_context->TEST.ATE && m_context->TEST.ATST == 0 && m_context->TEST.AFAIL == 2) && ((m_context->FRAME.FBMSK & frame_mask) != frame_mask);
+			const u32 frame_z_psm = frame_hit ? m_context->FRAME.PSM : m_context->ZBUF.PSM;
 			// Make sure the format matches, otherwise the coordinates aren't gonna match, so the draws won't intersect.
 			if (GSUtil::HasCompatibleBits(m_context->TEX0.PSM, frame_z_psm) && (m_context->FRAME.FBW == m_context->TEX0.TBW))
 			{
