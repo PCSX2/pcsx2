@@ -273,6 +273,25 @@ public:
 		DIRTY_REG_ZBUF
 	};
 
+	enum GSFlushReason
+	{
+		UNKNOWN = 1 << 0,
+		RESET = 1 << 1,
+		CONTEXTCHANGE = 1 << 2,
+		CLUTCHANGE = 1 << 3,
+		TEXFLUSH = 1 << 4,
+		GSTRANSFER = 1 << 5,
+		UPLOADDIRTYTEX = 1 << 6,
+		DOWNLOADFIFO = 1 << 7,
+		SAVESTATE = 1 << 8,
+		LOADSTATE = 1 << 9,
+		AUTOFLUSH = 1 << 10,
+		VSYNC  = 1 << 11,
+		GSREOPEN = 1 << 12,
+	};
+
+	GSFlushReason m_state_flush_reason;
+
 	enum PRIM_OVERLAP
 	{
 		PRIM_OVERLAP_UNKNOW,
@@ -342,7 +361,7 @@ public:
 	virtual void UpdateSettings(const Pcsx2Config::GSOptions& old_config);
 
 	void CopyEnv(GSDrawingEnvironment* dest, GSDrawingEnvironment* src, int ctx);
-	void Flush();
+	void Flush(GSFlushReason reason);
 	void FlushPrim();
 	bool TestDrawChanged();
 	void FlushWrite();
