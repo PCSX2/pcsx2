@@ -557,7 +557,7 @@ static GSVector4i CalculateDrawSrcRect(const GSTexture* src)
 
 void GSRenderer::VSync(u32 field, bool registers_written)
 {
-	Flush();
+	Flush(GSFlushReason::VSYNC);
 
 	if (s_dump && s_n >= s_saven)
 	{

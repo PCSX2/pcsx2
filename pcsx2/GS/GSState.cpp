@@ -149,7 +149,7 @@ GSState::~GSState()
 
 void GSState::Reset(bool hardware_reset)
 {
-	Flush();
+	Flush(GSFlushReason::RESET);
 
 	// FIXME: bios logo not shown cut in half after reset, missing graphics in GoW after first FMV
 	if (hardware_reset)
@@ -631,6 +631,57 @@ void GSState::DumpVertices(const std::string& filename)
 	if (!file.is_open())
 		return;
 
+	file << "FLUSH REASON: ";
+
+	switch (m_state_flush_reason)
+	{
+		case GSFlushReason::RESET:
+			file << "RESET";
+			break;
+		case GSFlushReason::CONTEXTCHANGE:
+			file << "CONTEXT CHANGE";
+			break;
+		case GSFlushReason::CLUTCHANGE:
+			file << "CLUT CHANGE (RELOAD REQ)";
+			break;
+		case GSFlushReason::TEXFLUSH:
+			file << "TEXFLUSH CALL";
+			break;
+		case GSFlushReason::GSTRANSFER:
+			file << "GS TRANSFER";
+			break;
+		case GSFlushReason::UPLOADDIRTYTEX:
+			file << "GS UPLOAD OVERWRITES CURRENT TEXTURE OR CLUT";
+			break;
+		case GSFlushReason::DOWNLOADFIFO:
+			file << "DOWNLOAD FIFO";
+			break;
+		case GSFlushReason::SAVESTATE:
+			file << "SAVESTATE";
+			break;
+		case GSFlushReason::LOADSTATE:
+			file << "LOAD SAVESTATE";
+			break;
+		case GSFlushReason::AUTOFLUSH:
+			file << "AUTOFLUSH OVERLAP DETECTED";
+			break;
+		case GSFlushReason::VSYNC:
+			file << "VSYNC";
+			break;
+		case GSFlushReason::GSREOPEN:
+			file << "GS REOPEN";
+			break;
+		case GSFlushReason::UNKNOWN:
+		default:
+			file << "UNKNOWN";
+			break;
+	}
+
+	if (m_state_flush_reason != GSFlushReason::CONTEXTCHANGE && m_dirty_gs_regs)
+		file << " AND POSSIBLE CONTEXT CHANGE";
+
+	file << std::endl << std::endl;
+
 	const size_t count = m_index.tail;
 	GSVertex* buffer = &m_vertex.buff[0];
 
@@ -724,7 +775,7 @@ __inline void GSState::CheckFlushes()
 	{
 		if (TestDrawChanged())
 		{
-			Flush();
+			Flush(GSFlushReason::CONTEXTCHANGE);
 		}
 	}
 	if ((m_context->FRAME.FBMSK & GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk) != GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk)
@@ -1025,7 +1076,7 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 	// clut loading already covered with WriteTest, for drawing only have to check CPSM and CSA (MGS3 intro skybox would be drawn piece by piece without this)
 
 	if (wt)
-		Flush();
+		Flush(GSFlushReason::CLUTCHANGE);
 
 	TEX0.CPSM &= 0xa; // 1010b
 
@@ -1365,7 +1416,7 @@ void GSState::GIFRegHandlerTEXFLUSH(const GIFReg* RESTRICT r)
 	// This won't get picked up by the new autoflush logic (which checks for page crossings for the PS2 Texture Cache flush)
 	// so we need to do it here.
 	if (IsAutoFlushEnabled())
-		Flush();
+		Flush(GSFlushReason::TEXFLUSH);
 }
 
 template <int i>
@@ -1620,7 +1671,7 @@ void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
 {
 	GL_REG("TRXDIR = 0x%x_%x", r->U32[1], r->U32[0]);
 
-	Flush();
+	Flush(GSFlushReason::GSTRANSFER);
 
 	m_env.TRXDIR = (GSVector4i)r->TRXDIR;
 
@@ -1659,12 +1710,14 @@ inline void GSState::CopyEnv(GSDrawingEnvironment* dest, GSDrawingEnvironment* s
 	dest->CTXT[ctx].m_fixed_tex0 = src->CTXT[ctx].m_fixed_tex0;
 }
 
-void GSState::Flush()
+void GSState::Flush(GSFlushReason reason)
 {
 	FlushWrite();
 
 	if (m_index.tail > 0)
 	{
+		m_state_flush_reason = reason;
+
 		if (m_dirty_gs_regs)
 		{
 			const int ctx = m_prev_env.PRIM.CTXT;
@@ -1700,6 +1753,8 @@ void GSState::Flush()
 
 		m_dirty_gs_regs = 0;
 	}
+
+	m_state_flush_reason = GSFlushReason::UNKNOWN;
 }
 
 void GSState::FlushWrite()
@@ -1953,7 +2008,7 @@ void GSState::Write(const u8* mem, int len)
 	// Check Fast & Furious (Hardare mode) and Assault Suits Valken (either renderer).
 	if (m_tr.end == 0 && m_index.tail > 0 && m_prev_env.PRIM.TME &&
 		(blit.DBP == m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0.TBP0 || blit.DBP == m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0.CBP))
-		Flush();
+		Flush(GSFlushReason::UPLOADDIRTYTEX);
 
 	GL_CACHE("Write! ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d)",
 			 blit.DBP, blit.DBW, psm_str(blit.DPSM),
@@ -2266,7 +2321,7 @@ void GSState::SoftReset(u32 mask)
 
 void GSState::ReadFIFO(u8* mem, int size)
 {
-	Flush();
+	Flush(GSFlushReason::DOWNLOADFIFO);
 
 	size *= 16;
 
@@ -2510,7 +2565,7 @@ int GSState::Freeze(freezeData* fd, bool sizeonly)
 	if (!fd->data || fd->size < m_sssize)
 		return -1;
 
-	Flush();
+	Flush(GSFlushReason::SAVESTATE);
 
 	u8* data = fd->data;
 
@@ -2597,7 +2652,7 @@ int GSState::Defrost(const freezeData* fd)
 		return -1;
 	}
 
-	Flush();
+	Flush(GSFlushReason::LOADSTATE);
 
 	Reset(false);
 
@@ -3053,7 +3108,7 @@ __forceinline void GSState::HandleAutoFlush()
 					old_tex_rect = tex_rect.rintersect(old_tex_rect);
 					if (!old_tex_rect.rintersect(scissor).rempty())
 					{
-						Flush();
+						Flush(GSFlushReason::AUTOFLUSH);
 						return;
 					}
 
@@ -3079,10 +3134,10 @@ __forceinline void GSState::HandleAutoFlush()
 					area_out.w += GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.y;
 
 					if (!area_out.rintersect(tex_rect).rempty())
-						Flush();
+						Flush(GSFlushReason::AUTOFLUSH);
 				}
 				else // Page width is different, so it's much more difficult to calculate where it's modifying.
-					Flush();
+					Flush(GSFlushReason::AUTOFLUSH);
 			}
 		}
 	}

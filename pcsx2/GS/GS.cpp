@@ -297,7 +297,7 @@ bool GSreopen(bool recreate_display, const Pcsx2Config::GSOptions& old_config)
 {
 	Console.WriteLn("Reopening GS with %s display", recreate_display ? "new" : "existing");
 
-	g_gs_renderer->Flush();
+	g_gs_renderer->Flush(GSState::GSFlushReason::GSREOPEN);
 
 	freezeData fd = {};
 	if (g_gs_renderer->Freeze(&fd, true) != 0)
