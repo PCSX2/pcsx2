@@ -43,11 +43,18 @@ struct microBlockLink
 	microBlockLink* next;
 };
 
+struct microBlockLinkRef
+{
+	microBlock* pBlock;
+	u64 quick;
+};
+
 class microBlockManager
 {
 private:
 	microBlockLink *qBlockList, *qBlockEnd; // Quick Search
 	microBlockLink *fBlockList, *fBlockEnd; // Full  Search
+	std::vector<microBlockLinkRef> quickLookup;
 	int qListI, fListI;
 
 public:
@@ -55,20 +62,20 @@ public:
 	microBlockManager()
 	{
 		qListI = fListI = 0;
-		qBlockEnd = qBlockList = NULL;
-		fBlockEnd = fBlockList = NULL;
+		qBlockEnd = qBlockList = nullptr;
+		fBlockEnd = fBlockList = nullptr;
 	}
 	~microBlockManager() { reset(); }
 	void reset()
 	{
-		for (microBlockLink* linkI = qBlockList; linkI != NULL;)
+		for (microBlockLink* linkI = qBlockList; linkI != nullptr;)
 		{
 			microBlockLink* freeI = linkI;
 			safe_delete_array(linkI->block.jumpCache);
 			linkI = linkI->next;
 			_aligned_free(freeI);
 		}
-		for (microBlockLink* linkI = fBlockList; linkI != NULL;)
+		for (microBlockLink* linkI = fBlockList; linkI != nullptr;)
 		{
 			microBlockLink* freeI = linkI;
 			safe_delete_array(linkI->block.jumpCache);
@@ -76,8 +83,9 @@ public:
 			_aligned_free(freeI);
 		}
 		qListI = fListI = 0;
-		qBlockEnd = qBlockList = NULL;
-		fBlockEnd = fBlockList = NULL;
+		qBlockEnd = qBlockList = nullptr;
+		fBlockEnd = fBlockList = nullptr;
+		quickLookup.clear();
 	};
 	microBlock* add(microBlock* pBlock)
 	{
@@ -93,8 +101,8 @@ public:
 			microBlockLink*& blockList = fullCmp ? fBlockList : qBlockList;
 			microBlockLink*& blockEnd  = fullCmp ? fBlockEnd  : qBlockEnd;
 			microBlockLink*  newBlock  = (microBlockLink*)_aligned_malloc(sizeof(microBlockLink), SSE_ALIGN_N);
-			newBlock->block.jumpCache  = NULL;
-			newBlock->next = NULL;
+			newBlock->block.jumpCache  = nullptr;
+			newBlock->next             = nullptr;
 
 			if (blockEnd)
 			{
@@ -106,8 +114,10 @@ public:
 				blockEnd = blockList = newBlock;
 			}
 
-			memcpy(&newBlock->block, pBlock, sizeof(microBlock));
+			std::memcpy(&newBlock->block, pBlock, sizeof(microBlock));
 			thisBlock = &newBlock->block;
+
+			quickLookup.push_back({&newBlock->block, pBlock->pState.quick64[0]});
 		}
 		return thisBlock;
 	}
@@ -115,23 +125,34 @@ public:
 	{
 		if (pState->needExactMatch) // Needs Detailed Search (Exact Match of Pipeline State)
 		{
-			for (microBlockLink* linkI = fBlockList; linkI != NULL; linkI = linkI->next)
+			microBlockLink* prevI = nullptr;
+			for (microBlockLink* linkI = fBlockList; linkI != nullptr; prevI = linkI, linkI = linkI->next)
 			{
-				if (mVUquickSearch((void*)pState, (void*)&linkI->block.pState, sizeof(microRegInfo)))
+				if (mVUquickSearch(pState, &linkI->block.pState, sizeof(microRegInfo)))
+				{
+					if (linkI != fBlockList)
+					{
+						prevI->next = linkI->next;
+						linkI->next = fBlockList;
+						fBlockList = linkI;
+					}
+
 					return &linkI->block;
+				}
 			}
 		}
 		else // Can do Simple Search (Only Matches the Important Pipeline Stuff)
 		{
-			for (microBlockLink* linkI = qBlockList; linkI != NULL; linkI = linkI->next)
+			const u64 quick64 = pState->quick64[0];
+			for (const microBlockLinkRef& ref : quickLookup)
 			{
-				if (linkI->block.pState.quick64[0] != pState->quick64[0]) continue;
-				if (doConstProp && (linkI->block.pState.vi15  != pState->vi15))  continue;
-				if (doConstProp && (linkI->block.pState.vi15v != pState->vi15v)) continue;
-				return &linkI->block;
+				if (ref.quick != quick64) continue;
+				if (doConstProp && (ref.pBlock->pState.vi15 != pState->vi15))  continue;
+				if (doConstProp && (ref.pBlock->pState.vi15v != pState->vi15v)) continue;
+				return ref.pBlock;
 			}
 		}
-		return NULL;
+		return nullptr;
 	}
 	void printInfo(int pc, bool printQuick)
 	{
