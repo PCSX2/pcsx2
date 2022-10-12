@@ -88,13 +88,13 @@ public:
 
 	void ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop, u32 fbrst);
 
-	void VifUnpack(vifStruct& _vif, VIFregisters& _vifRegs, u8* data, u32 size);
+	void VifUnpack(vifStruct& _vif, VIFregisters& _vifRegs, const u8* data, u32 size);
 
 	// Writes to VU's Micro Memory (size in bytes)
-	void WriteMicroMem(u32 vu_micro_addr, void* data, u32 size);
+	void WriteMicroMem(u32 vu_micro_addr, const void* data, u32 size);
 
 	// Writes to VU's Data Memory (size in bytes)
-	void WriteDataMem(u32 vu_data_addr, void* data, u32 size);
+	void WriteDataMem(u32 vu_data_addr, const void* data, u32 size);
 
 	void WriteVIRegs(REG_VI* viRegs);
 
@@ -123,7 +123,7 @@ private:
 	void ReadRegs(VIFregisters* dest);
 
 	void Write(u32 val);
-	void Write(void* src, u32 size);
+	void Write(const void* src, u32 size);
 	void WriteRegs(VIFregisters* src);
 
 	u32 Get_vuCycles();

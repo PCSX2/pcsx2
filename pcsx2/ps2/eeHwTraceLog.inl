@@ -288,11 +288,11 @@ static __ri void eeHwTraceLog( u32 addr, T val, bool mode )
 	}
 	else if constexpr (sizeof(T) == 8)
 	{
-		valStr = fmt::format("0x{:08x}.{:08x}", ((u32*)&val)[1], ((u32*)&val)[0]);
+		valStr = fmt::format("0x{:08x}.{:08x}", static_cast<u32>(val >> 32), static_cast<u32>(val));
 	}
 	else if constexpr (sizeof(T) == 16)
 	{
-		valStr = StringUtil::U128ToString((u128&)val);
+		valStr = StringUtil::U128ToString(r128_to_u128(val));
 	}
 
 	static const char* temp = "%-12s @ 0x%08X/%-16s %s %s";

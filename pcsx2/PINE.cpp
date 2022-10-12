@@ -329,8 +329,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 8, buf_size))
 					goto error;
 				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-				u64 res = 0;
-				memRead64(a, &res);
+				const u64 res = memRead64(a);
 				ToArray(ret_buffer, res, ret_cnt);
 				ret_cnt += 8;
 				buf_cnt += 4;

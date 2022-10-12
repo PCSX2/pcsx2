@@ -28,29 +28,23 @@ class RecompiledCodeReserve : public VirtualMemoryReserve
 	typedef VirtualMemoryReserve _parent;
 
 protected:
-	std::string	m_profiler_name;
+	std::string m_profiler_name;
 
 public:
-	RecompiledCodeReserve( std::string name, uint defCommit = 0 );
-	virtual ~RecompiledCodeReserve();
+	RecompiledCodeReserve(std::string name);
+	~RecompiledCodeReserve();
 
-	virtual void* Assign( VirtualMemoryManagerPtr allocator, void *baseptr, size_t size ) override;
-	virtual void Reset() override;
-	virtual bool Commit() override;
+	void Assign(VirtualMemoryManagerPtr allocator, size_t offset, size_t size);
+	void Reset();
 
-	virtual RecompiledCodeReserve& SetProfilerName( std::string shortname );
+	RecompiledCodeReserve& SetProfilerName(std::string name);
 
-	void ThrowIfNotOk() const;
+	void ForbidModification();
+	void AllowModification();
 
-	operator void*()				{ return m_baseptr; }
-	operator const void*() const	{ return m_baseptr; }
-
-	operator u8*()				{ return (u8*)m_baseptr; }
-	operator const u8*() const	{ return (u8*)m_baseptr; }
+	operator u8*() { return m_baseptr; }
+	operator const u8*() const { return m_baseptr; }
 
 protected:
-	void ResetProcessReserves() const;
-
 	void _registerProfiler();
-	void _termProfiler();
 };

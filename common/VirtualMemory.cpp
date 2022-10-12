@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "common/Align.h"
 #include "common/PageFaultSource.h"
 #include "common/EventSource.inl"
 #include "common/MemsetFast.inl"
@@ -68,17 +69,13 @@ void SrcType_PageFault::_DispatchRaw(ListenerIterator iter, const ListenerIterat
 	} while ((++iter != iend) && !m_handled);
 }
 
-static size_t pageAlign(size_t size)
-{
-	return (size + __pagesize - 1) / __pagesize * __pagesize;
-}
-
 // --------------------------------------------------------------------------------------
 //  VirtualMemoryManager  (implementations)
 // --------------------------------------------------------------------------------------
 
-VirtualMemoryManager::VirtualMemoryManager(std::string name, uptr base, size_t size, uptr upper_bounds, bool strict)
+VirtualMemoryManager::VirtualMemoryManager(std::string name, const char* file_mapping_name, uptr base, size_t size, uptr upper_bounds, bool strict)
 	: m_name(std::move(name))
+	, m_file_handle(nullptr)
 	, m_baseptr(0)
 	, m_pageuse(nullptr)
 	, m_pages_reserved(0)
@@ -86,34 +83,72 @@ VirtualMemoryManager::VirtualMemoryManager(std::string name, uptr base, size_t s
 	if (!size)
 		return;
 
-	uptr reserved_bytes = pageAlign(size);
+	size_t reserved_bytes = Common::PageAlign(size);
 	m_pages_reserved = reserved_bytes / __pagesize;
 
-	m_baseptr = (uptr)HostSys::MmapReserve(base, reserved_bytes);
-
-	if (!m_baseptr || (upper_bounds != 0 && (((uptr)m_baseptr + reserved_bytes) > upper_bounds)))
+	if (file_mapping_name && file_mapping_name[0])
 	{
-		DevCon.Warning("%s: host memory @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " is unavailable; attempting to map elsewhere...",
-			m_name.c_str(), base, base + size);
+		std::string real_file_mapping_name(HostSys::GetFileMappingName(file_mapping_name));
+		m_file_handle = HostSys::CreateSharedMemory(real_file_mapping_name.c_str(), reserved_bytes);
+		if (!m_file_handle)
+			return;
 
-		SafeSysMunmap(m_baseptr, reserved_bytes);
-
-		if (base)
+		m_baseptr = static_cast<u8*>(HostSys::MapSharedMemory(m_file_handle, 0, (void*)base, reserved_bytes, PageAccess_ReadWrite()));
+		if (!m_baseptr || (upper_bounds != 0 && (((uptr)m_baseptr + reserved_bytes) > upper_bounds)))
 		{
-			// Let's try again at an OS-picked memory area, and then hope it meets needed
-			// boundschecking criteria below.
-			m_baseptr = (uptr)HostSys::MmapReserve(0, reserved_bytes);
+			DevCon.Warning("%s: host memory @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " is unavailable; attempting to map elsewhere...",
+				m_name.c_str(), base, base + size);
+
+			SafeSysMunmap(m_baseptr, reserved_bytes);
+
+			if (base)
+			{
+				// Let's try again at an OS-picked memory area, and then hope it meets needed
+				// boundschecking criteria below.
+				m_baseptr = static_cast<u8*>(HostSys::MapSharedMemory(m_file_handle, 0, nullptr, reserved_bytes, PageAccess_ReadWrite()));
+			}
+		}
+	}
+	else
+	{
+		m_baseptr = static_cast<u8*>(HostSys::Mmap((void*)base, reserved_bytes, PageAccess_Any()));
+
+		if (!m_baseptr || (upper_bounds != 0 && (((uptr)m_baseptr + reserved_bytes) > upper_bounds)))
+		{
+			DevCon.Warning("%s: host memory @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " is unavailable; attempting to map elsewhere...",
+				m_name.c_str(), base, base + size);
+
+			SafeSysMunmap(m_baseptr, reserved_bytes);
+
+			if (base)
+			{
+				// Let's try again at an OS-picked memory area, and then hope it meets needed
+				// boundschecking criteria below.
+				m_baseptr = static_cast<u8*>(HostSys::Mmap(0, reserved_bytes, PageAccess_Any()));
+			}
 		}
 	}
 
 	bool fulfillsRequirements = true;
-	if (strict && m_baseptr != base)
+	if (strict && (uptr)m_baseptr != base)
 		fulfillsRequirements = false;
-	if ((upper_bounds != 0) && ((m_baseptr + reserved_bytes) > upper_bounds))
+	if ((upper_bounds != 0) && ((uptr)(m_baseptr + reserved_bytes) > upper_bounds))
 		fulfillsRequirements = false;
 	if (!fulfillsRequirements)
 	{
-		SafeSysMunmap(m_baseptr, reserved_bytes);
+		if (m_file_handle)
+		{
+			if (m_baseptr)
+				HostSys::UnmapSharedMemory(m_baseptr, reserved_bytes);
+			m_baseptr = 0;
+
+			HostSys::DestroySharedMemory(m_file_handle);
+			m_file_handle = nullptr;
+		}
+		else
+		{
+			SafeSysMunmap(m_baseptr, reserved_bytes);
+		}
 	}
 
 	if (!m_baseptr)
@@ -137,7 +172,14 @@ VirtualMemoryManager::~VirtualMemoryManager()
 	if (m_pageuse)
 		delete[] m_pageuse;
 	if (m_baseptr)
-		HostSys::Munmap(m_baseptr, m_pages_reserved * __pagesize);
+	{
+		if (m_file_handle)
+			HostSys::UnmapSharedMemory((void*)m_baseptr, m_pages_reserved * __pagesize);
+		else
+			HostSys::Munmap(m_baseptr, m_pages_reserved * __pagesize);
+	}
+	if (m_file_handle)
+		HostSys::DestroySharedMemory(m_file_handle);
 }
 
 static bool VMMMarkPagesAsInUse(std::atomic<bool>* begin, std::atomic<bool>* end)
@@ -164,9 +206,9 @@ static bool VMMMarkPagesAsInUse(std::atomic<bool>* begin, std::atomic<bool>* end
 	return true;
 }
 
-void* VirtualMemoryManager::Alloc(uptr offsetLocation, size_t size) const
+u8* VirtualMemoryManager::Alloc(uptr offsetLocation, size_t size) const
 {
-	size = pageAlign(size);
+	size = Common::PageAlign(size);
 	if (!pxAssertDev(offsetLocation % __pagesize == 0, "(VirtualMemoryManager) alloc at unaligned offsetLocation"))
 		return nullptr;
 	if (!pxAssertDev(size + offsetLocation <= m_pages_reserved * __pagesize, "(VirtualMemoryManager) alloc outside reserved area"))
@@ -177,15 +219,15 @@ void* VirtualMemoryManager::Alloc(uptr offsetLocation, size_t size) const
 	auto puEnd = &m_pageuse[(offsetLocation + size) / __pagesize];
 	if (!pxAssertDev(VMMMarkPagesAsInUse(puStart, puEnd), "(VirtualMemoryManager) allocation requests overlapped"))
 		return nullptr;
-	return (void*)(m_baseptr + offsetLocation);
+	return m_baseptr + offsetLocation;
 }
 
 void VirtualMemoryManager::Free(void* address, size_t size) const
 {
-	uptr offsetLocation = (uptr)address - m_baseptr;
+	uptr offsetLocation = (uptr)address - (uptr)m_baseptr;
 	if (!pxAssertDev(offsetLocation % __pagesize == 0, "(VirtualMemoryManager) free at unaligned address"))
 	{
-		uptr newLoc = pageAlign(offsetLocation);
+		uptr newLoc = Common::PageAlign(offsetLocation);
 		size -= (offsetLocation - newLoc);
 		offsetLocation = newLoc;
 	}
@@ -210,55 +252,39 @@ void VirtualMemoryManager::Free(void* address, size_t size) const
 // --------------------------------------------------------------------------------------
 VirtualMemoryBumpAllocator::VirtualMemoryBumpAllocator(VirtualMemoryManagerPtr allocator, uptr offsetLocation, size_t size)
 	: m_allocator(std::move(allocator))
-	, m_baseptr((uptr)m_allocator->Alloc(offsetLocation, size))
+	, m_baseptr(m_allocator->Alloc(offsetLocation, size))
 	, m_endptr(m_baseptr + size)
 {
 	if (m_baseptr.load() == 0)
 		pxAssertDev(0, "(VirtualMemoryBumpAllocator) tried to construct from bad VirtualMemoryManager");
 }
 
-void* VirtualMemoryBumpAllocator::Alloc(size_t size)
+u8* VirtualMemoryBumpAllocator::Alloc(size_t size)
 {
 	if (m_baseptr.load() == 0) // True if constructed from bad VirtualMemoryManager (assertion was on initialization)
 		return nullptr;
 
-	size_t reservedSize = pageAlign(size);
+	size_t reservedSize = Common::PageAlign(size);
 
-	uptr out = m_baseptr.fetch_add(reservedSize, std::memory_order_relaxed);
+	u8* out = m_baseptr.fetch_add(reservedSize, std::memory_order_relaxed);
 
 	if (!pxAssertDev(out - reservedSize + size <= m_endptr, "(VirtualMemoryBumpAllocator) ran out of memory"))
 		return nullptr;
 
-	return (void*)out;
+	return out;
 }
 
 // --------------------------------------------------------------------------------------
 //  VirtualMemoryReserve  (implementations)
 // --------------------------------------------------------------------------------------
-VirtualMemoryReserve::VirtualMemoryReserve(std::string name, size_t size)
+VirtualMemoryReserve::VirtualMemoryReserve(std::string name)
 	: m_name(std::move(name))
 {
-	m_defsize = size;
-
-	m_allocator = nullptr;
-	m_pages_commited = 0;
-	m_pages_reserved = 0;
-	m_baseptr = nullptr;
-	m_prot_mode = PageAccess_None();
-	m_allow_writes = true;
 }
 
-VirtualMemoryReserve& VirtualMemoryReserve::SetPageAccessOnCommit(const PageProtectionMode& mode)
+VirtualMemoryReserve::~VirtualMemoryReserve()
 {
-	m_prot_mode = mode;
-	return *this;
-}
-
-size_t VirtualMemoryReserve::GetSize(size_t requestedSize)
-{
-	if (!requestedSize)
-		return pageAlign(m_defsize);
-	return pageAlign(requestedSize);
+	pxAssertRel(!m_baseptr, "VirtualMemoryReserve has not been released.");
 }
 
 // Notes:
@@ -269,136 +295,43 @@ size_t VirtualMemoryReserve::GetSize(size_t requestedSize)
 //   baseptr - the new base pointer that's about to be assigned
 //   size - size of the region pointed to by baseptr
 //
-void* VirtualMemoryReserve::Assign(VirtualMemoryManagerPtr allocator, void* baseptr, size_t size)
+void VirtualMemoryReserve::Assign(VirtualMemoryManagerPtr allocator, u8* baseptr, size_t size)
 {
-	if (!pxAssertDev(m_baseptr == NULL, "(VirtualMemoryReserve) Invalid object state; object has already been reserved."))
-		return m_baseptr;
-
-	if (!size)
-		return nullptr;
+	pxAssertRel(size > 0 && Common::IsAlignedPow2(size, __pagesize), "VM allocation is not page aligned");
+	pxAssertRel(!m_baseptr, "Virtual memory reserve has already been assigned");
 
 	m_allocator = std::move(allocator);
-
 	m_baseptr = baseptr;
-
-	uptr reserved_bytes = pageAlign(size);
-	m_pages_reserved = reserved_bytes / __pagesize;
-
-	if (!m_baseptr)
-		return nullptr;
+	m_size = size;
 
 	std::string mbkb;
-	uint mbytes = reserved_bytes / _1mb;
+	uint mbytes = size / _1mb;
 	if (mbytes)
 		mbkb = fmt::format("[{}mb]", mbytes);
 	else
-		mbkb = fmt::format("[{}kb]", reserved_bytes / 1024);
+		mbkb = fmt::format("[{}kb]", size / 1024);
 
 	DevCon.WriteLn(Color_Gray, "%-32s @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " %s", m_name.c_str(),
-		m_baseptr, (uptr)m_baseptr + reserved_bytes, mbkb.c_str());
-
-	return m_baseptr;
+		m_baseptr, (uptr)m_baseptr + size, mbkb.c_str());
 }
 
-void VirtualMemoryReserve::ReprotectCommittedBlocks(const PageProtectionMode& newmode)
+u8* VirtualMemoryReserve::BumpAllocate(VirtualMemoryBumpAllocator& allocator, size_t size)
 {
-	if (!m_pages_commited)
-		return;
-	HostSys::MemProtect(m_baseptr, m_pages_commited * __pagesize, newmode);
-}
+	u8* base = allocator.Alloc(size);
+	if (base)
+		Assign(allocator.GetAllocator(), base, size);
 
-// Clears all committed blocks, restoring the allocation to a reserve only.
-void VirtualMemoryReserve::Reset()
-{
-	if (!m_pages_commited)
-		return;
-
-	ReprotectCommittedBlocks(PageAccess_None());
-	HostSys::MmapResetPtr(m_baseptr, m_pages_commited * __pagesize);
-	m_pages_commited = 0;
+	return base;
 }
 
 void VirtualMemoryReserve::Release()
 {
 	if (!m_baseptr)
 		return;
-	Reset();
-	m_allocator->Free(m_baseptr, m_pages_reserved * __pagesize);
+
+	m_allocator->Free(m_baseptr, m_size);
 	m_baseptr = nullptr;
-}
-
-bool VirtualMemoryReserve::Commit()
-{
-	if (!m_pages_reserved)
-		return false;
-	if (!pxAssert(!m_pages_commited))
-		return true;
-
-	m_pages_commited = m_pages_reserved;
-	return HostSys::MmapCommitPtr(m_baseptr, m_pages_reserved * __pagesize, m_prot_mode);
-}
-
-void VirtualMemoryReserve::AllowModification()
-{
-	m_allow_writes = true;
-	HostSys::MemProtect(m_baseptr, m_pages_commited * __pagesize, m_prot_mode);
-}
-
-void VirtualMemoryReserve::ForbidModification()
-{
-	m_allow_writes = false;
-	HostSys::MemProtect(m_baseptr, m_pages_commited * __pagesize, PageProtectionMode(m_prot_mode).Write(false));
-}
-
-
-// If growing the array, or if shrinking the array to some point that's still *greater* than the
-// committed memory range, then attempt a passive "on-the-fly" resize that maps/unmaps some portion
-// of the reserve.
-//
-// If the above conditions are not met, or if the map/unmap fails, this method returns false.
-// The caller will be responsible for manually resetting the reserve.
-//
-// Parameters:
-//  newsize - new size of the reserved buffer, in bytes.
-bool VirtualMemoryReserve::TryResize(uint newsize)
-{
-	uint newPages = pageAlign(newsize) / __pagesize;
-
-	if (newPages > m_pages_reserved)
-	{
-		uint toReservePages = newPages - m_pages_reserved;
-		uint toReserveBytes = toReservePages * __pagesize;
-
-		DevCon.WriteLn("%-32s is being expanded by %u pages.", m_name.c_str(), toReservePages);
-
-		if (!m_allocator->AllocAtAddress(GetPtrEnd(), toReserveBytes))
-		{
-			Console.Warning("%-32s could not be passively resized due to virtual memory conflict!", m_name.c_str());
-			Console.Indent().Warning("(attempted to map memory @ %08p -> %08p)", m_baseptr, (uptr)m_baseptr + toReserveBytes);
-			return false;
-		}
-
-		DevCon.WriteLn(Color_Gray, "%-32s @ %08p -> %08p [%umb]", m_name.c_str(),
-			m_baseptr, (uptr)m_baseptr + toReserveBytes, toReserveBytes / _1mb);
-	}
-	else if (newPages < m_pages_reserved)
-	{
-		if (m_pages_commited > newsize)
-			return false;
-
-		uint toRemovePages = m_pages_reserved - newPages;
-		uint toRemoveBytes = toRemovePages * __pagesize;
-
-		DevCon.WriteLn("%-32s is being shrunk by %u pages.", m_name.c_str(), toRemovePages);
-
-		m_allocator->Free(GetPtrEnd() - toRemoveBytes, toRemoveBytes);
-
-		DevCon.WriteLn(Color_Gray, "%-32s @ %08p -> %08p [%umb]", m_name.c_str(),
-			m_baseptr, GetPtrEnd(), GetReserveSizeInBytes() / _1mb);
-	}
-
-	m_pages_reserved = newPages;
-	return true;
+	m_size = 0;
 }
 
 // --------------------------------------------------------------------------------------
@@ -421,12 +354,4 @@ std::string PageProtectionMode::ToString() const
 		modeStr += "Only";
 
 	return modeStr;
-}
-
-// --------------------------------------------------------------------------------------
-//  Common HostSys implementation
-// --------------------------------------------------------------------------------------
-void HostSys::Munmap(void* base, size_t size)
-{
-	Munmap((uptr)base, size);
 }

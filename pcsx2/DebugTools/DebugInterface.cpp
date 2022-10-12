@@ -294,9 +294,7 @@ u64 R5900DebugInterface::read64(u32 address)
 	if (!isValidAddress(address) || address % 8)
 		return -1;
 
-	u64 result;
-	memRead64(address, result);
-	return result;
+	return memRead64(address);
 }
 
 u128 R5900DebugInterface::read128(u32 address)

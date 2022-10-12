@@ -26,15 +26,15 @@ static const uptr VTLB_AllocUpperBounds = _1gb * 2;
 typedef  mem8_t vtlbMemR8FP(u32 addr);
 typedef  mem16_t vtlbMemR16FP(u32 addr);
 typedef  mem32_t vtlbMemR32FP(u32 addr);
-typedef  RETURNS_R64 vtlbMemR64FP(u32 addr);
+typedef  mem64_t vtlbMemR64FP(u32 addr);
 typedef  RETURNS_R128 vtlbMemR128FP(u32 addr);
 
 // Specialized function pointers for each write type
 typedef  void vtlbMemW8FP(u32 addr,mem8_t data);
 typedef  void vtlbMemW16FP(u32 addr,mem16_t data);
 typedef  void vtlbMemW32FP(u32 addr,mem32_t data);
-typedef  void vtlbMemW64FP(u32 addr,const mem64_t* data);
-typedef  void vtlbMemW128FP(u32 addr,const mem128_t* data);
+typedef  void vtlbMemW64FP(u32 addr,mem64_t data);
+typedef  void TAKES_R128 vtlbMemW128FP(u32 addr,r128 data);
 
 template <size_t Width, bool Write> struct vtlbMemFP;
 
@@ -55,9 +55,8 @@ extern void vtlb_Core_Alloc();
 extern void vtlb_Core_Free();
 extern void vtlb_Alloc_Ppmap();
 extern void vtlb_Init();
+extern void vtlb_Shutdown();
 extern void vtlb_Reset();
-extern void vtlb_Term();
-
 
 extern vtlbHandler vtlb_NewHandler();
 
@@ -88,13 +87,11 @@ extern void vtlb_VMapUnmap(u32 vaddr,u32 sz);
 
 template< typename DataType >
 extern DataType vtlb_memRead(u32 mem);
-extern RETURNS_R64 vtlb_memRead64(u32 mem);
 extern RETURNS_R128 vtlb_memRead128(u32 mem);
 
 template< typename DataType >
 extern void vtlb_memWrite(u32 mem, DataType value);
-extern void vtlb_memWrite64(u32 mem, const mem64_t* value);
-extern void vtlb_memWrite128(u32 mem, const mem128_t* value);
+extern void TAKES_R128 vtlb_memWrite128(u32 mem, r128 value);
 
 // "Safe" variants of vtlb, designed for external tools.
 // These routines only access the various RAM, and will not call handlers
@@ -105,37 +102,30 @@ template <typename DataType>
 extern bool vtlb_ramWrite(u32 mem, const DataType& value);
 
 extern void vtlb_DynGenWrite(u32 sz);
-extern void vtlb_DynGenRead32(u32 bits, bool sign);
-extern int  vtlb_DynGenRead64(u32 sz, int gpr);
+extern void vtlb_DynGenReadNonQuad(u32 bits, bool sign);
+extern int  vtlb_DynGenReadQuad(u32 sz, int gpr);
 
 extern void vtlb_DynGenWrite_Const( u32 bits, u32 addr_const );
-extern int  vtlb_DynGenRead64_Const( u32 bits, u32 addr_const, int gpr );
-extern void vtlb_DynGenRead32_Const( u32 bits, bool sign, u32 addr_const );
+extern int  vtlb_DynGenReadQuad_Const( u32 bits, u32 addr_const, int gpr );
+extern void vtlb_DynGenReadNonQuad_Const( u32 bits, bool sign, u32 addr_const );
 
 // --------------------------------------------------------------------------------------
 //  VtlbMemoryReserve
 // --------------------------------------------------------------------------------------
-class VtlbMemoryReserve
+class VtlbMemoryReserve : public VirtualMemoryReserve
 {
-protected:
-	VirtualMemoryReserve	m_reserve;
-
 public:
-	VtlbMemoryReserve( std::string name, size_t size );
+	VtlbMemoryReserve(std::string name);
 
-	void Reserve( VirtualMemoryManagerPtr allocator, sptr offset );
+	void Assign(VirtualMemoryManagerPtr allocator, size_t offset, size_t size);
 
-	virtual void Commit();
 	virtual void Reset();
-	virtual void Decommit();
-
-	bool IsCommitted() const;
 };
 
 // --------------------------------------------------------------------------------------
 //  eeMemoryReserve
 // --------------------------------------------------------------------------------------
-class eeMemoryReserve : public VtlbMemoryReserve
+class eeMemoryReserve : private VtlbMemoryReserve
 {
 	typedef VtlbMemoryReserve _parent;
 
@@ -143,32 +133,33 @@ public:
 	eeMemoryReserve();
 	~eeMemoryReserve();
 
-	void Reserve(VirtualMemoryManagerPtr allocator);
-	void Commit() override;
-	void Decommit() override;
+	void Assign(VirtualMemoryManagerPtr allocator);
+	void Release();
+
 	void Reset() override;
 };
 
 // --------------------------------------------------------------------------------------
 //  iopMemoryReserve
 // --------------------------------------------------------------------------------------
-class iopMemoryReserve : public VtlbMemoryReserve
+class iopMemoryReserve : private VtlbMemoryReserve
 {
 	typedef VtlbMemoryReserve _parent;
 
 public:
 	iopMemoryReserve();
+	~iopMemoryReserve();
 
-	void Reserve(VirtualMemoryManagerPtr allocator);
-	void Commit() override;
-	void Decommit() override;
+	void Assign(VirtualMemoryManagerPtr allocator);
+	void Release();
+
 	void Reset() override;
 };
 
 // --------------------------------------------------------------------------------------
 //  vuMemoryReserve
 // --------------------------------------------------------------------------------------
-class vuMemoryReserve : public VtlbMemoryReserve
+class vuMemoryReserve : private VtlbMemoryReserve
 {
 	typedef VtlbMemoryReserve _parent;
 
@@ -176,7 +167,8 @@ public:
 	vuMemoryReserve();
 	~vuMemoryReserve();
 
-	void Reserve(VirtualMemoryManagerPtr allocator);
+	void Assign(VirtualMemoryManagerPtr allocator);
+	void Release();
 
 	void Reset() override;
 };

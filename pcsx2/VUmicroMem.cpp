@@ -21,27 +21,36 @@
 
 alignas(16) VURegs vuRegs[2];
 
+
 vuMemoryReserve::vuMemoryReserve()
-	: _parent( "VU0/1 on-chip memory", VU1_PROGSIZE + VU1_MEMSIZE + VU0_PROGSIZE + VU0_MEMSIZE )
+	: _parent("VU0/1 on-chip memory")
 {
 }
 
-void vuMemoryReserve::Reserve(VirtualMemoryManagerPtr allocator)
+vuMemoryReserve::~vuMemoryReserve()
 {
-	_parent::Reserve(std::move(allocator), HostMemoryMap::VUmemOffset);
-	//_parent::Reserve(EmuConfig.HostMemMap.VUmem);
+	Release();
+}
 
-	u8* curpos = m_reserve.GetPtr();
+void vuMemoryReserve::Assign(VirtualMemoryManagerPtr allocator)
+{
+	static constexpr u32 VU_MEMORY_RESERVE_SIZE = VU1_PROGSIZE + VU1_MEMSIZE + VU0_PROGSIZE + VU0_MEMSIZE;
+
+	_parent::Assign(std::move(allocator), HostMemoryMap::VUmemOffset, VU_MEMORY_RESERVE_SIZE);
+
+	u8* curpos = GetPtr();
 	VU0.Micro	= curpos; curpos += VU0_PROGSIZE;
 	VU0.Mem		= curpos; curpos += VU0_MEMSIZE;
 	VU1.Micro	= curpos; curpos += VU1_PROGSIZE;
 	VU1.Mem		= curpos; curpos += VU1_MEMSIZE;
 }
 
-vuMemoryReserve::~vuMemoryReserve()
+void vuMemoryReserve::Release()
 {
-	VU0.Micro	= VU0.Mem	= NULL;
-	VU1.Micro	= VU1.Mem	= NULL;
+	_parent::Release();
+
+	VU0.Micro = VU0.Mem = nullptr;
+	VU1.Micro = VU1.Mem = nullptr;
 }
 
 void vuMemoryReserve::Reset()

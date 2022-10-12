@@ -81,10 +81,11 @@ extern SysMainMemory& GetVmMemory();
 void cpuReset()
 {
 	vu1Thread.WaitVU();
+	vu1Thread.Reset();
 	if (GetMTGS().IsOpen())
 		GetMTGS().WaitGS();		// GS better be done processing before we reset the EE, just in case.
 
-	GetVmMemory().ResetAll();
+	GetVmMemory().Reset();
 
 	memzero(cpuRegs);
 	memzero(fpuRegs);
@@ -116,6 +117,8 @@ void cpuReset()
 	ElfCRC = 0;
 	DiscSerial.clear();
 	ElfEntry = -1;
+	g_GameStarted = false;
+	g_GameLoading = false;
 
 	// Probably not the right place, but it has to be done when the ram is actually initialized
 	USBsetRAM(iopMem->Main);

@@ -295,7 +295,7 @@ extern bool CommandExecuteQueued;
 extern void ipuReset();
 
 extern u32 ipuRead32(u32 mem);
-extern RETURNS_R64 ipuRead64(u32 mem);
+extern u64 ipuRead64(u32 mem);
 extern bool ipuWrite32(u32 mem,u32 value);
 extern bool ipuWrite64(u32 mem,u64 value);
 

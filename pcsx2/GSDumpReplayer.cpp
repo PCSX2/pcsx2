@@ -50,8 +50,6 @@ static void GSDumpReplayerCpuCheckExecutionState();
 static void GSDumpReplayerCpuThrowException(const BaseException& ex);
 static void GSDumpReplayerCpuThrowCpuException(const BaseR5900Exception& ex);
 static void GSDumpReplayerCpuClear(u32 addr, u32 size);
-static uint GSDumpReplayerCpuGetCacheReserve();
-static void GSDumpReplayerCpuSetCacheReserve(uint reserveInMegs);
 
 static std::unique_ptr<GSDumpFile> s_dump_file;
 static u32 s_current_packet = 0;
@@ -70,9 +68,7 @@ R5900cpu GSDumpReplayerCpu = {
 	GSDumpReplayerCpuCheckExecutionState,
 	GSDumpReplayerCpuThrowException,
 	GSDumpReplayerCpuThrowCpuException,
-	GSDumpReplayerCpuClear,
-	GSDumpReplayerCpuGetCacheReserve,
-	GSDumpReplayerCpuSetCacheReserve};
+	GSDumpReplayerCpuClear};
 
 static InterpVU0 gsDumpVU0;
 static InterpVU1 gsDumpVU1;
@@ -317,15 +313,6 @@ void GSDumpReplayerCpuThrowCpuException(const BaseR5900Exception& ex)
 }
 
 void GSDumpReplayerCpuClear(u32 addr, u32 size)
-{
-}
-
-uint GSDumpReplayerCpuGetCacheReserve()
-{
-	return 0;
-}
-
-void GSDumpReplayerCpuSetCacheReserve(uint reserveInMegs)
 {
 }
 

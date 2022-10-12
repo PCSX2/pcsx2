@@ -279,8 +279,7 @@ bool VMManager::Internal::InitializeMemory()
 	s_vm_memory = std::make_unique<SysMainMemory>();
 	s_cpu_provider_pack = std::make_unique<SysCpuProviderPack>();
 
-	s_vm_memory->ReserveAll();
-	return true;
+	return s_vm_memory->Allocate();
 }
 
 void VMManager::Internal::ReleaseMemory()
@@ -290,8 +289,6 @@ void VMManager::Internal::ReleaseMemory()
 	std::vector<u8>().swap(s_no_interlacing_cheats_data);
 	s_no_interlacing_cheats_loaded = false;
 
-	s_vm_memory->DecommitAll();
-	s_vm_memory->ReleaseAll();
 	s_vm_memory.reset();
 	s_cpu_provider_pack.reset();
 }
@@ -882,9 +879,6 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	if (!GSDumpReplayer::IsReplayingDump() && !CheckBIOSAvailability())
 		return false;
 
-	Console.WriteLn("Allocating memory map...");
-	s_vm_memory->CommitAll();
-
 	Console.WriteLn("Opening CDVD...");
 	if (!DoCDVDopen())
 	{
@@ -1067,6 +1061,7 @@ void VMManager::Shutdown(bool save_resume_state)
 
 	ForgetLoadedPatches();
 	R3000A::ioman::reset();
+	vtlb_Shutdown();
 	USBclose();
 	SPU2close();
 	PADclose();
@@ -1092,8 +1087,6 @@ void VMManager::Shutdown(bool save_resume_state)
 	PADshutdown();
 	DEV9shutdown();
 	GSshutdown();
-
-	s_vm_memory->DecommitAll();
 
 	s_state.store(VMState::Shutdown, std::memory_order_release);
 	Host::OnVMDestroyed();

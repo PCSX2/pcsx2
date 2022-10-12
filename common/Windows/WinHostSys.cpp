@@ -15,12 +15,14 @@
 
 #if defined(_WIN32)
 
+#include "common/Align.h"
 #include "common/RedtapeWindows.h"
 #include "common/PageFaultSource.h"
 #include "common/Console.h"
 #include "common/Exceptions.h"
 #include "common/StringUtil.h"
 #include "common/AlignedMalloc.h"
+#include "fmt/core.h"
 
 static long DoSysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 {
@@ -81,64 +83,19 @@ static DWORD ConvertToWinApi(const PageProtectionMode& mode)
 	return winmode;
 }
 
-void* HostSys::MmapReservePtr(void* base, size_t size)
+void* HostSys::Mmap(void* base, size_t size, const PageProtectionMode& mode)
 {
-	return VirtualAlloc(base, size, MEM_RESERVE, PAGE_NOACCESS);
+	if (mode.IsNone())
+		return nullptr;
+
+	return VirtualAlloc(base, size, MEM_RESERVE | MEM_COMMIT, ConvertToWinApi(mode));
 }
 
-bool HostSys::MmapCommitPtr(void* base, size_t size, const PageProtectionMode& mode)
-{
-	void* result = VirtualAlloc(base, size, MEM_COMMIT, ConvertToWinApi(mode));
-	if (result)
-		return true;
-
-	const DWORD errcode = GetLastError();
-	if (errcode == ERROR_COMMITMENT_MINIMUM)
-	{
-		Console.Warning("(MmapCommit) Received windows error %u {Virtual Memory Minimum Too Low}.", ERROR_COMMITMENT_MINIMUM);
-		Sleep(1000); // Cut windows some time to rework its memory...
-	}
-	else if (errcode != ERROR_NOT_ENOUGH_MEMORY && errcode != ERROR_OUTOFMEMORY)
-	{
-		pxFailDev(("VirtualAlloc COMMIT failed: " + Exception::WinApiError().GetMsgFromWindows()).c_str());
-		return false;
-	}
-
-	return false;
-}
-
-void HostSys::MmapResetPtr(void* base, size_t size)
-{
-	VirtualFree(base, size, MEM_DECOMMIT);
-}
-
-
-void* HostSys::MmapReserve(uptr base, size_t size)
-{
-	return MmapReservePtr((void*)base, size);
-}
-
-bool HostSys::MmapCommit(uptr base, size_t size, const PageProtectionMode& mode)
-{
-	return MmapCommitPtr((void*)base, size, mode);
-}
-
-void HostSys::MmapReset(uptr base, size_t size)
-{
-	MmapResetPtr((void*)base, size);
-}
-
-
-void* HostSys::Mmap(uptr base, size_t size)
-{
-	return VirtualAlloc((void*)base, size, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-}
-
-void HostSys::Munmap(uptr base, size_t size)
+void HostSys::Munmap(void* base, size_t size)
 {
 	if (!base)
 		return;
-	//VirtualFree((void*)base, size, MEM_DECOMMIT);
+
 	VirtualFree((void*)base, 0, MEM_RELEASE);
 }
 
@@ -148,14 +105,47 @@ void HostSys::MemProtect(void* baseaddr, size_t size, const PageProtectionMode& 
 
 	DWORD OldProtect; // enjoy my uselessness, yo!
 	if (!VirtualProtect(baseaddr, size, ConvertToWinApi(mode), &OldProtect))
-	{
-		Exception::WinApiError apiError;
-
-		apiError.SetDiagMsg(
-			StringUtil::StdStringFromFormat("VirtualProtect failed @ 0x%08X -> 0x%08X  (mode=%s)",
-				baseaddr, (uptr)baseaddr + size, mode.ToString().c_str()));
-
-		pxFailDev(apiError.FormatDiagnosticMessage().c_str());
-	}
+		pxFail("VirtualProtect() failed");
 }
+
+std::string HostSys::GetFileMappingName(const char* prefix)
+{
+	const unsigned pid = GetCurrentProcessId();
+	return fmt::format("{}_{}", prefix, pid);
+}
+
+void* HostSys::CreateSharedMemory(const char* name, size_t size)
+{
+	return static_cast<void*>(CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE,
+		static_cast<DWORD>(size >> 32), static_cast<DWORD>(size), StringUtil::UTF8StringToWideString(name).c_str()));
+}
+
+void HostSys::DestroySharedMemory(void* ptr)
+{
+	CloseHandle(static_cast<HANDLE>(ptr));
+}
+
+void* HostSys::MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, const PageProtectionMode& mode)
+{
+	void* ret = MapViewOfFileEx(static_cast<HANDLE>(handle), FILE_MAP_READ | FILE_MAP_WRITE,
+		static_cast<DWORD>(offset >> 32), static_cast<DWORD>(offset), size, baseaddr);
+	if (!ret)
+		return nullptr;
+
+	const DWORD prot = ConvertToWinApi(mode);
+	if (prot != PAGE_READWRITE)
+	{
+		DWORD old_prot;
+		if (!VirtualProtect(ret, size, prot, &old_prot))
+			pxFail("Failed to protect memory mapping");
+	}
+	return ret;
+}
+
+void HostSys::UnmapSharedMemory(void* baseaddr, size_t size)
+{
+	if (!UnmapViewOfFile(baseaddr))
+		pxFail("Failed to unmap shared memory");
+}
+
 #endif

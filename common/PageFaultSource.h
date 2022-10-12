@@ -138,7 +138,8 @@ class VirtualMemoryManager
 
 	std::string m_name;
 
-	uptr m_baseptr;
+	void* m_file_handle;
+	u8* m_baseptr;
 
 	// An array to track page usage (to trigger asserts if things try to overlap)
 	std::atomic<bool>* m_pageuse;
@@ -150,18 +151,21 @@ public:
 	// If upper_bounds is nonzero and the OS fails to allocate memory that is below it,
 	// calls to IsOk() will return false and Alloc() will always return null pointers
 	// strict indicates that the allocation should quietly fail if the memory can't be mapped at `base`
-	VirtualMemoryManager(std::string name, uptr base, size_t size, uptr upper_bounds = 0, bool strict = false);
+	VirtualMemoryManager(std::string name, const char* file_mapping_name, uptr base, size_t size, uptr upper_bounds = 0, bool strict = false);
 	~VirtualMemoryManager();
 
-	void* GetBase() const { return (void*)m_baseptr; }
+	bool IsSharedMemory() const { return (m_file_handle != nullptr); }
+	void* GetFileHandle() const { return m_file_handle; }
+	u8* GetBase() const { return m_baseptr; }
+	u8* GetEnd() const { return (m_baseptr + m_pages_reserved * __pagesize); }
 
 	// Request the use of the memory at offsetLocation bytes from the start of the reserved memory area
 	// offsetLocation must be page-aligned
-	void* Alloc(uptr offsetLocation, size_t size) const;
+	u8* Alloc(uptr offsetLocation, size_t size) const;
 
-	void* AllocAtAddress(void* address, size_t size) const
+	u8* AllocAtAddress(void* address, size_t size) const
 	{
-		return Alloc(size, (uptr)address - m_baseptr);
+		return Alloc(size, static_cast<const u8*>(address) - m_baseptr);
 	}
 
 	void Free(void* address, size_t size) const;
@@ -179,12 +183,12 @@ typedef std::shared_ptr<const VirtualMemoryManager> VirtualMemoryManagerPtr;
 class VirtualMemoryBumpAllocator
 {
 	const VirtualMemoryManagerPtr m_allocator;
-	std::atomic<uptr> m_baseptr{0};
-	const uptr m_endptr = 0;
+	std::atomic<u8*> m_baseptr{0};
+	const u8* m_endptr = 0;
 
 public:
 	VirtualMemoryBumpAllocator(VirtualMemoryManagerPtr allocator, size_t size, uptr offsetLocation);
-	void* Alloc(size_t size);
+	u8* Alloc(size_t size);
 	const VirtualMemoryManagerPtr& GetAllocator() { return m_allocator; }
 };
 
@@ -201,79 +205,31 @@ protected:
 	// Where the memory came from (so we can return it)
 	VirtualMemoryManagerPtr m_allocator;
 
-	// Default size of the reserve, in bytes.  Can be specified when the object is constructed.
-	// Is used as the reserve size when Reserve() is called, unless an override is specified
-	// in the Reserve parameters.
-	size_t m_defsize;
-
-	void* m_baseptr;
-
-	// reserved memory (in pages).
-	uptr m_pages_reserved;
-
-	// Records the number of pages committed to memory.
-	// (metric for analysis of buffer usage)
-	uptr m_pages_commited;
-
-	// Protection mode to be applied to committed blocks.
-	PageProtectionMode m_prot_mode;
-
-	// Controls write access to the entire reserve.  When true (the default), the reserve
-	// operates normally.  When set to false, all committed blocks are re-protected with
-	// write disabled, and accesses to uncommitted blocks (read or write) will cause a GPF
-	// as well.
-	bool m_allow_writes;
-
-	// Allows the implementation to decide how much memory it needs to allocate if someone requests the given size
-	// Should translate requests of size 0 to m_defsize
-	virtual size_t GetSize(size_t requestedSize);
+	u8* m_baseptr = nullptr;
+	size_t m_size = 0;
 
 public:
-	VirtualMemoryReserve(std::string name, size_t size = 0);
-	virtual ~VirtualMemoryReserve()
-	{
-		Release();
-	}
+	VirtualMemoryReserve(std::string name);
+	virtual ~VirtualMemoryReserve();
 
 	// Initialize with the given piece of memory
 	// Note: The memory is already allocated, the allocator is for future use to free the region
 	// It may be null in which case there is no way to free the memory in a way it will be usable again
-	virtual void* Assign(VirtualMemoryManagerPtr allocator, void* baseptr, size_t size);
+	void Assign(VirtualMemoryManagerPtr allocator, u8* baseptr, size_t size);
 
-	void* Reserve(VirtualMemoryManagerPtr allocator, uptr baseOffset, size_t size = 0)
-	{
-		size = GetSize(size);
-		void* allocation = allocator->Alloc(baseOffset, size);
-		return Assign(std::move(allocator), allocation, size);
-	}
-	void* Reserve(VirtualMemoryBumpAllocator& allocator, size_t size = 0)
-	{
-		size = GetSize(size);
-		return Assign(allocator.GetAllocator(), allocator.Alloc(size), size);
-	}
+	u8* BumpAllocate(VirtualMemoryBumpAllocator& allocator, size_t size);
 
-	virtual void Reset();
-	virtual void Release();
-	virtual bool TryResize(uint newsize);
-	virtual bool Commit();
-
-	virtual void ForbidModification();
-	virtual void AllowModification();
+	void Release();
 
 	bool IsOk() const { return m_baseptr != NULL; }
 	const std::string& GetName() const { return m_name; }
 
-	uptr GetReserveSizeInBytes() const { return m_pages_reserved * __pagesize; }
-	uptr GetReserveSizeInPages() const { return m_pages_reserved; }
-	uint GetCommittedPageCount() const { return m_pages_commited; }
-	uint GetCommittedBytes() const { return m_pages_commited * __pagesize; }
+	u8* GetPtr() { return m_baseptr; }
+	const u8* GetPtr() const { return m_baseptr; }
+	u8* GetPtrEnd() { return m_baseptr + m_size; }
+	const u8* GetPtrEnd() const { return m_baseptr + m_size; }
 
-	u8* GetPtr() { return (u8*)m_baseptr; }
-	const u8* GetPtr() const { return (u8*)m_baseptr; }
-	u8* GetPtrEnd() { return (u8*)m_baseptr + (m_pages_reserved * __pagesize); }
-	const u8* GetPtrEnd() const { return (u8*)m_baseptr + (m_pages_reserved * __pagesize); }
-
-	VirtualMemoryReserve& SetPageAccessOnCommit(const PageProtectionMode& mode);
+	size_t GetSize() const { return m_size; }
 
 	operator void*() { return m_baseptr; }
 	operator const void*() const { return m_baseptr; }
@@ -283,18 +239,15 @@ public:
 
 	u8& operator[](uint idx)
 	{
-		pxAssert(idx < (m_pages_reserved * __pagesize));
+		pxAssert(idx < m_size);
 		return *((u8*)m_baseptr + idx);
 	}
 
 	const u8& operator[](uint idx) const
 	{
-		pxAssert(idx < (m_pages_reserved * __pagesize));
+		pxAssert(idx < m_size);
 		return *((u8*)m_baseptr + idx);
 	}
-
-protected:
-	virtual void ReprotectCommittedBlocks(const PageProtectionMode& newmode);
 };
 
 #ifdef __POSIX__
