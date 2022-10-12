@@ -537,6 +537,7 @@ void mVUcustomSearch()
 	memset(mVUsearchXMM, 0xcc, __pagesize);
 	xSetPtr(mVUsearchXMM);
 
+#if _M_SSE < 0x501
 	xMOVAPS  (xmm0, ptr32[arg1reg]);
 	xPCMP.EQD(xmm0, ptr32[arg2reg]);
 	xMOVAPS  (xmm1, ptr32[arg1reg + 0x10]);
@@ -576,7 +577,34 @@ void mVUcustomSearch()
 	xPAND (xmm0, xmm4);
 	xMOVMSKPS(eax, xmm0);
 
+#else
+	// We have to use unaligned loads here, because the blocks are only 16 byte aligned.
+	xVMOVUPS(ymm0, ptr[arg1reg]);
+	xVPCMP.EQD(ymm0, ymm0, ptr[arg2reg]);
+	xVMOVMSKPS(eax, ymm0);
+	xCMP(eax, 0xff);
+	xForwardJB8 exitPoint;
+
+	xVMOVUPS(ymm0, ptr[arg1reg + 0x20]);
+	xVPCMP.EQD(ymm0, ymm0, ptr[arg2reg + 0x20]);
+
+	xVMOVUPS(ymm1, ptr[arg1reg + 0x40]);
+	xVPCMP.EQD(ymm1, ymm1, ptr[arg2reg + 0x40]);
+
+	xVMOVUPS(ymm2, ptr[arg1reg + 0x60]);
+	xVPCMP.EQD(ymm2, ymm2, ptr[arg2reg + 0x60]);
+	xVPAND(ymm0, ymm0, ymm1);
+
+	xVMOVUPS(ymm2, ptr[arg1reg + 0x80]);
+	xVPCMP.EQD(ymm2, ymm2, ptr[arg2reg + 0x80]);
+	xVPAND(ymm0, ymm0, ymm2);
+
+	xVMOVMSKPS(eax, ymm0);
+	xVZEROUPPER();
+#endif
+
 	exitPoint.SetTarget();
+
 	xRET();
 	HostSys::MemProtectStatic(mVUsearchXMM, PageAccess_ExecOnly());
 }
