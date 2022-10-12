@@ -105,6 +105,7 @@
     <ClCompile Include="Windows\WinThreads.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="Semaphore.cpp" />
+    <ClCompile Include="emitter\avx.cpp" />
     <ClCompile Include="emitter\bmi.cpp" />
     <ClCompile Include="emitter\cpudetect.cpp" />
     <ClCompile Include="emitter\fpu.cpp" />
@@ -188,6 +189,7 @@
     <ClInclude Include="Vulkan\Util.h" />
     <ClInclude Include="WindowInfo.h" />
     <ClInclude Include="Threading.h" />
+    <ClInclude Include="emitter\implement\avx.h" />
     <ClInclude Include="emitter\implement\bmi.h" />
     <ClInclude Include="emitter\cpudetect_internal.h" />
     <ClInclude Include="emitter\instructions.h" />

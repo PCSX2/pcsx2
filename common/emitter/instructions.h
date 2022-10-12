@@ -622,4 +622,24 @@ namespace x86Emitter
 	extern const SimdImpl_Pack xPACK;
 	extern const xImplSimd_PInsert xPINSR;
 	extern const SimdImpl_PExtract xPEXTR;
+
+	// ------------------------------------------------------------------------
+
+	extern const xImplAVX_Move xVMOVAPS;
+	extern const xImplAVX_Move xVMOVUPS;
+	extern const xImplAVX_ArithFloat xVADD;
+	extern const xImplAVX_ArithFloat xVSUB;
+	extern const xImplAVX_ArithFloat xVMUL;
+	extern const xImplAVX_ArithFloat xVDIV;
+	extern const xImplAVX_CmpFloat xVCMP;
+	extern const xImplAVX_ThreeArgYMM xVPAND;
+	extern const xImplAVX_ThreeArgYMM xVPANDN;
+	extern const xImplAVX_ThreeArgYMM xVPOR;
+	extern const xImplAVX_ThreeArgYMM xVPXOR;
+	extern const xImplAVX_CmpInt xVPCMP;
+
+	extern void xVMOVMSKPS(const xRegister32& to, const xRegisterSSE& from);
+	extern void xVMOVMSKPD(const xRegister32& to, const xRegisterSSE& from);
+	extern void xVZEROUPPER();
+
 } // namespace x86Emitter

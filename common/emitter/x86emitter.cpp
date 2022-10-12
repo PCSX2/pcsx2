@@ -120,6 +120,16 @@ const xRegisterSSE
     xmm12(12), xmm13(13),
     xmm14(14), xmm15(15);
 
+const xRegisterSSE
+    ymm0(0, xRegisterYMMTag()), ymm1(1, xRegisterYMMTag()),
+    ymm2(2, xRegisterYMMTag()), ymm3(3, xRegisterYMMTag()),
+    ymm4(4, xRegisterYMMTag()), ymm5(5, xRegisterYMMTag()),
+    ymm6(6, xRegisterYMMTag()), ymm7(7, xRegisterYMMTag()),
+    ymm8(8, xRegisterYMMTag()), ymm9(9, xRegisterYMMTag()),
+    ymm10(10, xRegisterYMMTag()), ymm11(11, xRegisterYMMTag()),
+    ymm12(12, xRegisterYMMTag()), ymm13(13, xRegisterYMMTag()),
+    ymm14(14, xRegisterYMMTag()), ymm15(15, xRegisterYMMTag());
+
 const xAddressReg
     rax(0), rbx(3),
     rcx(1), rdx(2),

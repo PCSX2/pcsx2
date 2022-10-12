@@ -34,6 +34,9 @@
     <ClCompile Include="emitter\LnxCpuDetect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="emitter\avx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Linux\LnxHostSys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -295,6 +298,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="emitter\implement\movs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="emitter\implement\avx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Threading.h">

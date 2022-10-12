@@ -32,6 +32,7 @@ target_sources(common PRIVATE
 	Timer.cpp
 	ThreadPool.cpp
 	WindowInfo.cpp
+	emitter/avx.cpp
 	emitter/bmi.cpp
 	emitter/cpudetect.cpp
 	emitter/fpu.cpp
