@@ -43,7 +43,3 @@
 #define PCSX2_DISCORD_URL "https://discord.com/invite/TCz3t9k"
 
 static const bool PCSX2_isReleaseVersion = 0;
-
-class SysCoreThread;
-
-class CpuInitializerSet;

@@ -37,6 +37,8 @@
 
 using namespace Threading;
 
+class SysCoreThread;
+
 class PINEServer : public pxThread
 {
 	// parent thread

@@ -58,8 +58,7 @@ void OutputIsoFile::Create(std::string filename, int version)
 	if (!m_outstream)
 	{
 		Console.Error("(OutputIsoFile::Create) Unable to open the file '%s' for writing: %d", m_filename.c_str(), errno);
-		ScopedExcept ex(Exception::FromErrno(filename, errno));
-		ex->Rethrow();
+		Exception::FromErrno(filename, errno)->Rethrow();
 	}
 
 	Console.WriteLn("isoFile create ok: %s ", m_filename.c_str());
@@ -130,7 +129,7 @@ void OutputIsoFile::WriteBuffer(const void* src, size_t size)
 				.SetDiagMsg(fmt::format("An error occurred while writing {} bytes to file", size));
 		}
 
-		ScopedExcept ex(Exception::FromErrno(m_filename, err));
+		std::unique_ptr<BaseException> ex(Exception::FromErrno(m_filename, err));
 		ex->SetDiagMsg(fmt::format("An error occurred while writing {} bytes to file: {}", size, ex->DiagMsg()));
 		ex->Rethrow();
 	}

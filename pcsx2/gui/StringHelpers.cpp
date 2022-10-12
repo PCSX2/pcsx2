@@ -17,6 +17,7 @@
 #include "common/Exceptions.h"
 #include "common/StringUtil.h"
 #include "common/Pcsx2Defs.h"
+#include "PersistentThread.h"
 #include "StringHelpers.h"
 
 __fi wxString fromUTF8(const char* src)

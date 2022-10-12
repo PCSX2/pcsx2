@@ -33,45 +33,30 @@ static const uint VU1_PROGMASK	= VU1_PROGSIZE-1;
 
 #define vu1RunCycles (3000000) // mVU1 uses this for inf loop detection on dev builds
 
-// --------------------------------------------------------------------------------------
-//  BaseCpuProvider
-// --------------------------------------------------------------------------------------
-//
-// Design Note: This class is only partial C++ style.  It still relies on Alloc and Shutdown
-// calls for memory and resource management.  This is because the underlying implementations
-// of our CPU emulators don't have properly encapsulated objects yet -- if we allocate ram
-// in a constructor, it won't get free'd if an exception occurs during object construction.
-// Once we've resolved all the 'dangling pointers' and stuff in the recompilers, Alloc
-// and Shutdown can be removed in favor of constructor/destructor syntax.
-//
-class BaseCpuProvider
-{
-protected:
-	// allocation counter for multiple calls to Reserve.  Most implementations should utilize
-	// this variable for sake of robustness.
-	std::atomic<int>		m_Reserved;
 
+// --------------------------------------------------------------------------------------
+//  BaseVUmicroCPU
+// --------------------------------------------------------------------------------------
+// Layer class for possible future implementation (currently is nothing more than a type-safe
+// type define).
+//
+class BaseVUmicroCPU
+{
 public:
+	int m_Idx = 0;
+
 	// this boolean indicates to some generic logging facilities if the VU's registers
 	// are valid for logging or not. (see DisVU1Micro.cpp, etc)  [kinda hacky, might
 	// be removed in the future]
 	bool	IsInterpreter;
 
 public:
-	BaseCpuProvider()
+	BaseVUmicroCPU()
 	{
-		m_Reserved = 0;
 		IsInterpreter = false;
 	}
 
-	virtual ~BaseCpuProvider()
-	{
-		try {
-			if( m_Reserved != 0 )
-				Console.Warning( "Cleanup miscount detected on CPU provider.  Count=%d", m_Reserved.load() );
-		}
-		DESTRUCTOR_CATCHALL
-	}
+	virtual ~BaseVUmicroCPU() = default;
 
 	virtual const char* GetShortName() const=0;
 	virtual const char* GetLongName() const=0;
@@ -84,58 +69,20 @@ public:
 		return 0;
 	}
 
-	virtual void Reserve()=0;
 	virtual void Shutdown()=0;
 	virtual void Reset()=0;
 	virtual void SetStartPC(u32 startPC)=0;
 	virtual void Execute(u32 cycles)=0;
-	virtual void ExecuteBlock(bool startUp)=0;
 
 	virtual void Step()=0;
 	virtual void Clear(u32 Addr, u32 Size)=0;
 
+	// Executes a Block based on EE delta time (see VUmicro.cpp)
+	void ExecuteBlock(bool startUp = 0);
+
 	// C++ Calling Conventions are unstable, and some compilers don't even allow us to take the
 	// address of C++ methods.  We need to use a wrapper function to invoke the ExecuteBlock from
 	// recompiled code.
-	static void ExecuteBlockJIT( BaseCpuProvider* cpu )
-	{
-		cpu->Execute(1024);
-	}
-
-	// Gets the current cache reserve allocated to this CPU (value returned in megabytes)
-	virtual uint GetCacheReserve() const=0;
-
-	// Specifies the maximum cache reserve amount for this CPU (value in megabytes).
-	// CPU providers are allowed to reset their reserves (recompiler resets, etc) if such is
-	// needed to conform to the new amount requested.
-	virtual void SetCacheReserve( uint reserveInMegs ) const=0;
-
-};
-
-// --------------------------------------------------------------------------------------
-//  BaseVUmicroCPU
-// --------------------------------------------------------------------------------------
-// Layer class for possible future implementation (currently is nothing more than a type-safe
-// type define).
-//
-class BaseVUmicroCPU : public BaseCpuProvider {
-public:
-	int m_Idx;
-
-	BaseVUmicroCPU() {
-		m_Idx		   = 0;
-	}
-	virtual ~BaseVUmicroCPU() = default;
-
-	virtual void Step() {
-		// Ideally this would fall back on interpretation for executing single instructions
-		// for all CPU types, but due to VU complexities and large discrepancies between
-		// clamping in recs and ints, it's not really worth bothering with yet.
-	}
-
-	// Executes a Block based on EE delta time (see VUmicro.cpp)
-	virtual void ExecuteBlock(bool startUp=0);
-
 	static void ExecuteBlockJIT(BaseVUmicroCPU* cpu, bool interlocked);
 
 	// VU1 sometimes needs to break execution on XGkick Path1 transfers if
@@ -144,99 +91,92 @@ public:
 	virtual void ResumeXGkick() {}
 };
 
-
 // --------------------------------------------------------------------------------------
 //  InterpVU0 / InterpVU1
 // --------------------------------------------------------------------------------------
-class InterpVU0 : public BaseVUmicroCPU
+class InterpVU0 final : public BaseVUmicroCPU
 {
 public:
 	InterpVU0();
-	virtual ~InterpVU0() { Shutdown(); }
+	~InterpVU0() override { Shutdown(); }
 
-	const char* GetShortName() const	{ return "intVU0"; }
-	const char* GetLongName() const		{ return "VU0 Interpreter"; }
+	const char* GetShortName() const override { return "intVU0"; }
+	const char* GetLongName() const override { return "VU0 Interpreter"; }
 
-	void Reserve() { }
-	void Shutdown() noexcept { }
-	void Reset();
+	void Shutdown() override {}
+	void Reset() override;
 
-	void Step();
-	void SetStartPC(u32 startPC);
-	void Execute(u32 cycles);
-	void Clear(u32 addr, u32 size) {}
-
-	uint GetCacheReserve() const { return 0; }
-	void SetCacheReserve( uint reserveInMegs ) const {}
+	void Step() override;
+	void SetStartPC(u32 startPC) override;
+	void Execute(u32 cycles) override;
+	void Clear(u32 addr, u32 size) override {}
 };
 
-class InterpVU1 : public BaseVUmicroCPU
+class InterpVU1 final : public BaseVUmicroCPU
 {
 public:
 	InterpVU1();
-	virtual ~InterpVU1() { Shutdown(); }
+	~InterpVU1() override { Shutdown(); }
 
-	const char* GetShortName() const	{ return "intVU1"; }
-	const char* GetLongName() const		{ return "VU1 Interpreter"; }
+	const char* GetShortName() const override { return "intVU1"; }
+	const char* GetLongName() const	override { return "VU1 Interpreter"; }
 
-	void Reserve() { }
-	void Shutdown() noexcept;
-	void Reset();
+	void Shutdown() override {}
+	void Reset() override;
 
-	void SetStartPC(u32 startPC);
-	void Step();
-	void Execute(u32 cycles);
-	void Clear(u32 addr, u32 size) {}
-	void ResumeXGkick() {}
-
-	uint GetCacheReserve() const { return 0; }
-	void SetCacheReserve( uint reserveInMegs ) const {}
+	void SetStartPC(u32 startPC) override;
+	void Step() override;
+	void Execute(u32 cycles) override;
+	void Clear(u32 addr, u32 size) override {}
+	void ResumeXGkick() override {}
 };
 
 // --------------------------------------------------------------------------------------
 //  recMicroVU0 / recMicroVU1
 // --------------------------------------------------------------------------------------
-class recMicroVU0 : public BaseVUmicroCPU
+class recMicroVU0 final : public BaseVUmicroCPU
 {
 public:
 	recMicroVU0();
-	virtual ~recMicroVU0() { Shutdown(); }
+	~recMicroVU0() override { Shutdown(); }
 
-	const char* GetShortName() const	{ return "mVU0"; }
-	const char* GetLongName() const		{ return "microVU0 Recompiler"; }
+	const char* GetShortName() const override { return "mVU0"; }
+	const char* GetLongName() const override { return "microVU0 Recompiler"; }
 
 	void Reserve();
-	void Shutdown() noexcept;
+	void Shutdown() override;
 
-	void Reset();
-	void SetStartPC(u32 startPC);
-	void Execute(u32 cycles);
-	void Clear(u32 addr, u32 size);
-
-	uint GetCacheReserve() const;
-	void SetCacheReserve( uint reserveInMegs ) const;
+	void Reset() override;
+	void Step() override;
+	void SetStartPC(u32 startPC) override;
+	void Execute(u32 cycles) override;
+	void Clear(u32 addr, u32 size) override;
 };
 
-class recMicroVU1 : public BaseVUmicroCPU
+class recMicroVU1 final : public BaseVUmicroCPU
 {
 public:
 	recMicroVU1();
 	virtual ~recMicroVU1() { Shutdown(); }
 
-	const char* GetShortName() const	{ return "mVU1"; }
-	const char* GetLongName() const		{ return "microVU1 Recompiler"; }
+	const char* GetShortName() const override { return "mVU1"; }
+	const char* GetLongName() const override { return "microVU1 Recompiler"; }
 
 	void Reserve();
-	void Shutdown() noexcept;
-	void Reset();
-	void SetStartPC(u32 startPC);
-	void Execute(u32 cycles);
-	void Clear(u32 addr, u32 size);
-	void ResumeXGkick();
-
-	uint GetCacheReserve() const;
-	void SetCacheReserve( uint reserveInMegs ) const;
+	void Shutdown() override;
+	void Reset() override;
+	void Step() override;
+	void SetStartPC(u32 startPC) override;
+	void Execute(u32 cycles) override;
+	void Clear(u32 addr, u32 size) override;
+	void ResumeXGkick() override;
 };
+
+extern InterpVU0 CpuIntVU0;
+extern InterpVU1 CpuIntVU1;
+
+extern recMicroVU0 CpuMicroVU0;
+extern recMicroVU1 CpuMicroVU1;
 
 extern BaseVUmicroCPU* CpuVU0;
 extern BaseVUmicroCPU* CpuVU1;

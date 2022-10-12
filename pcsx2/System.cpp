@@ -220,81 +220,6 @@ void SysLogMachineCaps()
 #endif
 }
 
-template< typename CpuType >
-class CpuInitializer
-{
-public:
-	std::unique_ptr<CpuType> MyCpu;
-	ScopedExcept ExThrown;
-
-	CpuInitializer();
-	virtual ~CpuInitializer();
-
-	bool IsAvailable() const
-	{
-		return !!MyCpu;
-	}
-
-	CpuType* GetPtr() { return MyCpu.get(); }
-	const CpuType* GetPtr() const { return MyCpu.get(); }
-
-	operator CpuType*() { return GetPtr(); }
-	operator const CpuType*() const { return GetPtr(); }
-};
-
-// --------------------------------------------------------------------------------------
-//  CpuInitializer Template
-// --------------------------------------------------------------------------------------
-// Helper for initializing various PCSX2 CPU providers, and handing errors and cleanup.
-//
-template< typename CpuType >
-CpuInitializer< CpuType >::CpuInitializer()
-{
-	try {
-		MyCpu = std::make_unique<CpuType>();
-		MyCpu->Reserve();
-	}
-	catch( Exception::RuntimeError& ex )
-	{
-		Console.Error( "CPU provider error:\n\t%s", ex.FormatDiagnosticMessage().c_str() );
-		MyCpu = nullptr;
-		ExThrown = ScopedExcept(ex.Clone());
-	}
-	catch( std::runtime_error& ex )
-	{
-		Console.Error( "CPU provider error (STL Exception)\n\tDetails:%s", ex.what() );
-		MyCpu = nullptr;
-		ExThrown = ScopedExcept(new Exception::RuntimeError(ex));
-	}
-}
-
-template< typename CpuType >
-CpuInitializer< CpuType >::~CpuInitializer()
-{
-	try {
-		if (MyCpu)
-			MyCpu->Shutdown();
-	}
-	DESTRUCTOR_CATCHALL
-}
-
-// --------------------------------------------------------------------------------------
-//  CpuInitializerSet
-// --------------------------------------------------------------------------------------
-class CpuInitializerSet
-{
-public:
-	CpuInitializer<recMicroVU0>		microVU0;
-	CpuInitializer<recMicroVU1>		microVU1;
-
-	CpuInitializer<InterpVU0>		interpVU0;
-	CpuInitializer<InterpVU1>		interpVU1;
-
-public:
-	CpuInitializerSet() {}
-	virtual ~CpuInitializerSet() = default;
-};
-
 namespace HostMemoryMap {
 	// For debuggers
 	extern "C" {
@@ -419,90 +344,50 @@ SysCpuProviderPack::SysCpuProviderPack()
 	Console.WriteLn( Color_StrongBlue, "Reserving memory for recompilers..." );
 	ConsoleIndentScope indent(1);
 
-	CpuProviders = std::make_unique<CpuInitializerSet>();
+	recCpu.Reserve();
+	psxRec.Reserve();
 
-	try {
-		recCpu.Reserve();
-	}
-	catch( Exception::RuntimeError& ex )
-	{
-		m_RecExceptionEE = ScopedExcept(ex.Clone());
-		Console.Error( "EE Recompiler Reservation Failed:\n%s", ex.FormatDiagnosticMessage().c_str() );
-		recCpu.Shutdown();
-	}
+	CpuMicroVU0.Reserve();
+	CpuMicroVU1.Reserve();
 
-	try {
-		psxRec.Reserve();
-	}
-	catch( Exception::RuntimeError& ex )
-	{
-		m_RecExceptionIOP = ScopedExcept(ex.Clone());
-		Console.Error( "IOP Recompiler Reservation Failed:\n%s", ex.FormatDiagnosticMessage().c_str() );
-		psxRec.Shutdown();
-	}
-
-	// hmm! : VU0 and VU1 pre-allocations should do sVU and mVU separately?  Sounds complicated. :(
-	// TODO(Stenzek): error handling in this whole function...
-
-	if (newVifDynaRec)
+	if constexpr (newVifDynaRec)
 	{
 		dVifReserve(0);
 		dVifReserve(1);
 	}
 }
 
-bool SysCpuProviderPack::IsRecAvailable_MicroVU0() const { return CpuProviders->microVU0.IsAvailable(); }
-bool SysCpuProviderPack::IsRecAvailable_MicroVU1() const { return CpuProviders->microVU1.IsAvailable(); }
-BaseException* SysCpuProviderPack::GetException_MicroVU0() const { return CpuProviders->microVU0.ExThrown.get(); }
-BaseException* SysCpuProviderPack::GetException_MicroVU1() const { return CpuProviders->microVU1.ExThrown.get(); }
-
-void SysCpuProviderPack::CleanupMess() noexcept
-{
-	try
-	{
-		psxRec.Shutdown();
-		recCpu.Shutdown();
-
-		if (newVifDynaRec)
-		{
-			dVifRelease(0);
-			dVifRelease(1);
-		}
-	}
-	DESTRUCTOR_CATCHALL
-}
-
 SysCpuProviderPack::~SysCpuProviderPack()
 {
-	CleanupMess();
+	if (newVifDynaRec)
+	{
+		dVifRelease(1);
+		dVifRelease(0);
+	}
+
+	CpuMicroVU1.Shutdown();
+	CpuMicroVU0.Shutdown();
+
+	psxRec.Shutdown();
+	recCpu.Shutdown();
 }
 
-bool SysCpuProviderPack::HadSomeFailures( const Pcsx2Config::RecompilerOptions& recOpts ) const
-{
-	return	(recOpts.EnableEE && !IsRecAvailable_EE()) ||
-			(recOpts.EnableIOP && !IsRecAvailable_IOP()) ||
-			(recOpts.EnableVU0 && !IsRecAvailable_MicroVU0()) ||
-			(recOpts.EnableVU1 && !IsRecAvailable_MicroVU1())
-			;
-
-}
-
-BaseVUmicroCPU* CpuVU0 = NULL;
-BaseVUmicroCPU* CpuVU1 = NULL;
+BaseVUmicroCPU* CpuVU0 = nullptr;
+BaseVUmicroCPU* CpuVU1 = nullptr;
 
 void SysCpuProviderPack::ApplyConfig() const
 {
 	Cpu		= CHECK_EEREC	? &recCpu : &intCpu;
 	psxCpu	= CHECK_IOPREC	? &psxRec : &psxInt;
 
-	CpuVU0 = CpuProviders->interpVU0;
-	CpuVU1 = CpuProviders->interpVU1;
+	CpuVU0 = &CpuIntVU0;
+	CpuVU1 = &CpuIntVU1;
 
 	if( EmuConfig.Cpu.Recompiler.EnableVU0 )
-		CpuVU0 = (BaseVUmicroCPU*)CpuProviders->microVU0;
+		CpuVU0 = &CpuMicroVU0;
 
 	if( EmuConfig.Cpu.Recompiler.EnableVU1 )
-		CpuVU1 = (BaseVUmicroCPU*)CpuProviders->microVU1;
+		CpuVU1 = &CpuMicroVU1;
 
 #ifdef PCSX2_CORE
 	if (GSDumpReplayer::IsReplayingDump())
@@ -526,8 +411,8 @@ void SysClearExecutionCache()
 	psxCpu->Reset();
 
 	// mVU's VU0 needs to be properly initialized for macro mode even if it's not used for micro mode!
-	if (CHECK_EEREC)
-		((BaseVUmicroCPU*)GetCpuProviders().CpuProviders->microVU0)->Reset();
+	if (CHECK_EEREC && !EmuConfig.Cpu.Recompiler.EnableVU0)
+		CpuMicroVU0.Reset();
 
 	CpuVU0->Reset();
 	CpuVU1->Reset();
