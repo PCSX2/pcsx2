@@ -88,10 +88,6 @@ void resetNewVif(int idx)
 		dVifReset(idx);
 }
 
-void closeNewVif(int idx)
-{
-}
-
 void releaseNewVif(int idx)
 {
 }

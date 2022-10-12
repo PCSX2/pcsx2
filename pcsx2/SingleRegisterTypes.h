@@ -21,47 +21,31 @@
 
 #pragma once
 
+#include <cstring>
 #include <immintrin.h>
+#include <emmintrin.h>
+
 // Can't stick them in structs because it breaks calling convention things, yay
-using r64  = __m128i;
 using r128 = __m128i;
 
 // Calling convention setting, yay
-#define RETURNS_R64  r64  __vectorcall
 #define RETURNS_R128 r128 __vectorcall
-#define TAKES_R64  __vectorcall
 #define TAKES_R128 __vectorcall
 
 // And since we can't stick them in structs, we get lots of static methods, yay!
-
-__forceinline static r64 r64_load(const void* ptr)
-{
-	return _mm_loadl_epi64(reinterpret_cast<const r64*>(ptr));
-}
-
-__forceinline static r64 r64_zero()
-{
-	return _mm_setzero_si128();
-}
-
-__forceinline static r64 r64_from_u32(u32 val)
-{
-	return _mm_cvtsi32_si128(val);
-}
-
-__forceinline static r64 r64_from_u32x2(u32 lo, u32 hi)
-{
-	return _mm_unpacklo_epi32(_mm_cvtsi32_si128(lo), _mm_cvtsi32_si128(hi));
-}
-
-__forceinline static r64 r64_from_u64(u64 val)
-{
-	return _mm_cvtsi64_si128(val);
-}
-
 __forceinline static r128 r128_load(const void* ptr)
 {
 	return _mm_load_si128(reinterpret_cast<const r128*>(ptr));
+}
+
+__forceinline static void r128_store(void* ptr, r128 val)
+{
+	return _mm_store_si128(reinterpret_cast<r128*>(ptr), val);
+}
+
+__forceinline static void r128_store_unaligned(void* ptr, r128 val)
+{
+	return _mm_storeu_si128(reinterpret_cast<r128*>(ptr), val);
 }
 
 __forceinline static r128 r128_zero()
@@ -70,9 +54,13 @@ __forceinline static r128 r128_zero()
 }
 
 /// Expects that r64 came from r64-handling code, and not from a recompiler or something
-__forceinline static r128 r128_from_r64_clean(r64 val)
+__forceinline static r128 r128_from_u64_dup(u64 val)
 {
-	return val;
+	return _mm_set1_epi64x(val);
+}
+__forceinline static r128 r128_from_u64_zext(u64 val)
+{
+	return _mm_set_epi64x(0, val);
 }
 
 __forceinline static r128 r128_from_u32x4(u32 lo0, u32 lo1, u32 hi0, u32 hi1)
@@ -80,16 +68,30 @@ __forceinline static r128 r128_from_u32x4(u32 lo0, u32 lo1, u32 hi0, u32 hi1)
 	return _mm_setr_epi32(lo0, lo1, hi0, hi1);
 }
 
+__forceinline static r128 r128_from_u128(const u128& u)
+{
+	return _mm_loadu_si128(reinterpret_cast<const __m128i*>(&u));
+}
+
+__forceinline static u32 r128_to_u32(r128 val)
+{
+	return _mm_cvtsi128_si32(val);
+}
+
+__forceinline static u64 r128_to_u64(r128 val)
+{
+	return _mm_cvtsi128_si64(val);
+}
+
+__forceinline static u128 r128_to_u128(r128 val)
+{
+	alignas(16) u128 ret;
+	_mm_store_si128(reinterpret_cast<r128*>(&ret), val);
+	return ret;
+}
+
 template <typename u>
 struct rhelper;
-
-template <>
-struct rhelper<u64>
-{
-	using r = r64;
-	__forceinline static r load(void* ptr) { return r64_load(ptr); }
-	__forceinline static r zero() { return r64_zero(); }
-};
 
 template <>
 struct rhelper<u128>

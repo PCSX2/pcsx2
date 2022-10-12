@@ -18,6 +18,7 @@
 #include <sys/mman.h>
 #include <signal.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 #include "fmt/core.h"
@@ -96,14 +97,9 @@ void _platform_InstallSignalHandler()
 #endif
 }
 
-// returns FALSE if the mprotect call fails with an ENOMEM.
-// Raises assertions on other types of POSIX errors (since those typically reflect invalid object
-// or memory states).
-static bool _memprotect(void* baseaddr, size_t size, const PageProtectionMode& mode)
+static __ri uint LinuxProt(const PageProtectionMode& mode)
 {
-	pxAssertDev((size & (__pagesize - 1)) == 0, "Size is page aligned");
-
-	uint lnxmode = 0;
+	u32 lnxmode = 0;
 
 	if (mode.CanWrite())
 		lnxmode |= PROT_WRITE;
@@ -112,109 +108,101 @@ static bool _memprotect(void* baseaddr, size_t size, const PageProtectionMode& m
 	if (mode.CanExecute())
 		lnxmode |= PROT_EXEC | PROT_READ;
 
-	const int result = mprotect(baseaddr, size, lnxmode);
-
-	if (result == 0)
-		return true;
-
-	switch (errno)
-	{
-		case EINVAL:
-			pxFailDev(fmt::format("mprotect returned EINVAL @ 0x{:X} -> 0x{:X}  (mode={})",
-				baseaddr, (uptr)baseaddr + size, mode.ToString()).c_str());
-			break;
-
-		case EACCES:
-			pxFailDev(fmt::format("mprotect returned EACCES @ 0x{:X} -> 0x{:X}  (mode={})",
-				baseaddr, (uptr)baseaddr + size, mode.ToString()).c_str());
-			break;
-
-		case ENOMEM:
-			// caller handles assertion or exception, or whatever.
-			break;
-	}
-	return false;
+	return lnxmode;
 }
 
-void* HostSys::MmapReservePtr(void* base, size_t size)
+void* HostSys::Mmap(void* base, size_t size, const PageProtectionMode& mode)
 {
 	pxAssertDev((size & (__pagesize - 1)) == 0, "Size is page aligned");
-
-	// On linux a reserve-without-commit is performed by using mmap on a read-only
-	// or anonymous source, with PROT_NONE (no-access) permission.  Since the mapping
-	// is completely inaccessible, the OS will simply reserve it and will not put it
-	// against the commit table.
-	void* result = mmap(base, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
-
-	if (result == MAP_FAILED)
-		result = nullptr;
-
-	return result;
-}
-
-bool HostSys::MmapCommitPtr(void* base, size_t size, const PageProtectionMode& mode)
-{
-	// In linux, reserved memory is automatically committed when its permissions are
-	// changed to something other than PROT_NONE.  If the user is committing memory
-	// as PROT_NONE, then just ignore this call (memory will be committed automatically
-	// later when the user changes permissions to something useful via calls to MemProtect).
 
 	if (mode.IsNone())
-		return false;
+		return nullptr;
 
-	if (_memprotect(base, size, mode))
-		return true;
+	const u32 prot = LinuxProt(mode);
 
-	return false;
+	u32 flags = MAP_PRIVATE | MAP_ANONYMOUS;
+	if (base)
+		flags |= MAP_FIXED;
+
+	void* res = mmap(base, size, prot, flags, -1, 0);
+	if (res == MAP_FAILED)
+		return nullptr;
+
+	return res;
 }
 
-void HostSys::MmapResetPtr(void* base, size_t size)
-{
-	pxAssertDev((size & (__pagesize - 1)) == 0, "Size is page aligned");
-
-	void* result = mmap(base, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
-
-	pxAssertRel((uptr)result == (uptr)base, "Virtual memory decommit failed");
-}
-
-void* HostSys::MmapReserve(uptr base, size_t size)
-{
-	return MmapReservePtr((void*)base, size);
-}
-
-bool HostSys::MmapCommit(uptr base, size_t size, const PageProtectionMode& mode)
-{
-	return MmapCommitPtr((void*)base, size, mode);
-}
-
-void HostSys::MmapReset(uptr base, size_t size)
-{
-	MmapResetPtr((void*)base, size);
-}
-
-void* HostSys::Mmap(uptr base, size_t size)
-{
-	pxAssertDev((size & (__pagesize - 1)) == 0, "Size is page aligned");
-
-	// MAP_ANONYMOUS - means we have no associated file handle (or device).
-
-	return mmap((void*)base, size, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-}
-
-void HostSys::Munmap(uptr base, size_t size)
+void HostSys::Munmap(void* base, size_t size)
 {
 	if (!base)
 		return;
+
 	munmap((void*)base, size);
 }
 
 void HostSys::MemProtect(void* baseaddr, size_t size, const PageProtectionMode& mode)
 {
-	if (!_memprotect(baseaddr, size, mode))
-	{
-		throw Exception::OutOfMemory("MemProtect")
-			.SetDiagMsg(fmt::format("mprotect failed @ 0x{:X} -> 0x{:X}  (mode={})",
-				baseaddr, (uptr)baseaddr + size, mode.ToString()));
-	}
+	pxAssertDev((size & (__pagesize - 1)) == 0, "Size is page aligned");
+
+	const u32 lnxmode = LinuxProt(mode);
+
+	const int result = mprotect(baseaddr, size, lnxmode);
+	if (result != 0)
+		pxFail("mprotect() failed");
 }
+
+std::string HostSys::GetFileMappingName(const char* prefix)
+{
+	const unsigned pid = static_cast<unsigned>(getpid());
+	return fmt::format("{}_{}", prefix, pid);
+}
+
+void* HostSys::CreateSharedMemory(const char* name, size_t size)
+{
+	const int fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0600);
+	if (fd < 0)
+	{
+		std::fprintf(stderr, "shm_open failed: %d\n", errno);
+		return nullptr;
+	}
+
+	// we're not going to be opening this mapping in other processes, so remove the file
+	shm_unlink(name);
+
+	// ensure it's the correct size
+#ifndef __APPLE__
+	if (ftruncate64(fd, static_cast<off64_t>(size)) < 0)
+#else
+	if (ftruncate(fd, static_cast<off_t>(size)) < 0)
+#endif
+	{
+		std::fprintf(stderr, "ftruncate64(%zu) failed: %d\n", size, errno);
+		return nullptr;
+	}
+
+	return reinterpret_cast<void*>(static_cast<intptr_t>(fd));
+}
+
+void HostSys::DestroySharedMemory(void* ptr)
+{
+	close(static_cast<int>(reinterpret_cast<intptr_t>(ptr)));
+}
+
+void* HostSys::MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, const PageProtectionMode& mode)
+{
+	const uint lnxmode = LinuxProt(mode);
+
+	const int flags = (baseaddr != nullptr) ? (MAP_SHARED | MAP_FIXED) : MAP_SHARED;
+	void* ptr = mmap(baseaddr, size, lnxmode, flags, static_cast<int>(reinterpret_cast<intptr_t>(handle)), static_cast<off_t>(offset));
+	if (ptr == MAP_FAILED)
+		return nullptr;
+
+	return ptr;
+}
+
+void HostSys::UnmapSharedMemory(void* baseaddr, size_t size)
+{
+	if (mmap(baseaddr, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == MAP_FAILED)
+		pxFailRel("Failed to unmap shared memory");
+}
+
 #endif

@@ -47,6 +47,8 @@
 #include "common/MemsetFast.inl"
 #include "common/Perf.h"
 
+// Only for MOVQ workaround.
+#include "common/emitter/internal.h"
 
 using namespace x86Emitter;
 using namespace R5900;
@@ -89,8 +91,6 @@ static RecompiledCodeReserve* recMem = NULL;
 static u8* recRAMCopy = NULL;
 static u8* recLutReserve_RAM = NULL;
 static const size_t recLutSize = (Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) * wordsize / 4;
-
-static uptr m_ConfiguredCacheReserve = 64;
 
 alignas(16) static u32 recConstBuf[RECCONSTBUF_SIZE]; // 64-bit pseudo-immediates
 static BASEBLOCK* recRAM  = NULL; // and the ptr to the blocks here
@@ -187,6 +187,27 @@ void _eeMoveGPRtoR(const xRegister32& to, int fromgpr)
 		else
 		{
 			xMOV(to, ptr[&cpuRegs.GPR.r[fromgpr].UL[0]]);
+		}
+	}
+}
+
+void _eeMoveGPRtoR(const xRegister64& to, int fromgpr)
+{
+	if (fromgpr == 0)
+		xXOR(to, to);
+	else if (GPR_IS_CONST1(fromgpr))
+		xMOV64(to, g_cpuConstRegs[fromgpr].UD[0]);
+	else
+	{
+		int mmreg;
+
+		if ((mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 && (xmmregs[mmreg].mode & MODE_WRITE))
+		{
+			xMOVD(to, xRegisterSSE(mmreg));
+		}
+		else
+		{
+			xMOV(to, ptr[&cpuRegs.GPR.r[fromgpr].UD[0]]);
 		}
 	}
 }
@@ -532,22 +553,12 @@ static void recThrowHardwareDeficiency(const char* extFail)
 
 static void recReserveCache()
 {
-	if (!recMem)
-		recMem = new RecompiledCodeReserve("R5900-32 Recompiler Cache", _16mb);
+	if (recMem)
+		return;
+
+	recMem = new RecompiledCodeReserve("R5900 Recompiler Cache");
 	recMem->SetProfilerName("EErec");
-
-	while (!recMem->IsOk())
-	{
-		if (recMem->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::EErecOffset, m_ConfiguredCacheReserve * _1mb) != NULL)
-			break;
-
-		// If it failed, then try again (if possible):
-		if (m_ConfiguredCacheReserve < 16)
-			break;
-		m_ConfiguredCacheReserve /= 2;
-	}
-
-	recMem->ThrowIfNotOk();
+	recMem->Assign(GetVmMemory().CodeMemory(), HostMemoryMap::EErecOffset, 64 * _1mb);
 }
 
 static void recReserve()
@@ -2398,16 +2409,6 @@ static void recThrowException(const BaseException& ex)
 	recExitExecution();
 }
 
-static void recSetCacheReserve(uint reserveInMegs)
-{
-	m_ConfiguredCacheReserve = reserveInMegs;
-}
-
-static uint recGetCacheReserve()
-{
-	return m_ConfiguredCacheReserve;
-}
-
 R5900cpu recCpu =
 {
 	recReserve,
@@ -2420,8 +2421,5 @@ R5900cpu recCpu =
 	recSafeExitExecution,
 	recThrowException,
 	recThrowException,
-	recClear,
-
-	recGetCacheReserve,
-	recSetCacheReserve,
+	recClear
 };

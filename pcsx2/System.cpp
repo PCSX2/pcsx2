@@ -24,6 +24,7 @@
 
 #include "System/RecTypes.h"
 
+#include "common/Align.h"
 #include "common/MemsetFast.inl"
 #include "common/Perf.h"
 #include "common/StringUtil.h"
@@ -59,80 +60,71 @@ void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVUMXCSR)
 // Constructor!
 // Parameters:
 //   name - a nice long name that accurately describes the contents of this reserve.
-RecompiledCodeReserve::RecompiledCodeReserve( std::string name, uint defCommit )
-	: VirtualMemoryReserve( std::move(name), defCommit )
+RecompiledCodeReserve::RecompiledCodeReserve(std::string name)
+	: VirtualMemoryReserve(std::move(name))
 {
-	m_prot_mode		= PageAccess_Any();
 }
 
 RecompiledCodeReserve::~RecompiledCodeReserve()
 {
-	_termProfiler();
+	Release();
 }
 
 void RecompiledCodeReserve::_registerProfiler()
 {
-	if (m_profiler_name.empty() || !IsOk()) return;
+	if (m_profiler_name.empty() || !IsOk())
+		return;
 
-	Perf::any.map((uptr)m_baseptr, GetReserveSizeInBytes(), m_profiler_name.c_str());
+	Perf::any.map((uptr)m_baseptr, m_size, m_profiler_name.c_str());
 }
 
-void RecompiledCodeReserve::_termProfiler()
+void RecompiledCodeReserve::Assign(VirtualMemoryManagerPtr allocator, size_t offset, size_t size)
 {
-}
+	// Anything passed to the memory allocator must be page aligned.
+	size = Common::PageAlign(size);
 
-void* RecompiledCodeReserve::Assign( VirtualMemoryManagerPtr allocator, void *baseptr, size_t size )
-{
-	if (!_parent::Assign(std::move(allocator), baseptr, size)) return NULL;
+	// Since the memory has already been allocated as part of the main memory map, this should never fail.
+	u8* base = allocator->Alloc(offset, size);
+	if (!base)
+	{
+		Console.WriteLn("(RecompiledCodeReserve) Failed to allocate %zu bytes for %s at offset %zu", size, m_name.c_str(), offset);
+		pxFailRel("RecompiledCodeReserve allocation failed.");
+	}
 
-	Commit();
-
+	VirtualMemoryReserve::Assign(std::move(allocator), base, size);
 	_registerProfiler();
-
-	return m_baseptr;
 }
 
 void RecompiledCodeReserve::Reset()
 {
-	_parent::Reset();
-
-	Commit();
-}
-
-bool RecompiledCodeReserve::Commit()
-{
-	bool status = _parent::Commit();
-
 	if (IsDevBuild && m_baseptr)
 	{
 		// Clear the recompiled code block to 0xcc (INT3) -- this helps disasm tools show
 		// the assembly dump more cleanly.  We don't clear the block on Release builds since
 		// it can add a noticeable amount of overhead to large block recompilations.
 
-		memset(m_baseptr, 0xCC, m_pages_commited * __pagesize);
+		std::memset(m_baseptr, 0xCC, m_size);
 	}
+}
 
-	return status;
+void RecompiledCodeReserve::AllowModification()
+{
+	HostSys::MemProtect(m_baseptr, m_size, PageAccess_Any());
+}
+
+void RecompiledCodeReserve::ForbidModification()
+{
+	HostSys::MemProtect(m_baseptr, m_size, PageProtectionMode().Read().Execute());
 }
 
 // Sets the abbreviated name used by the profiler.  Name should be under 10 characters long.
 // After a name has been set, a profiler source will be automatically registered and cleared
 // in accordance with changes in the reserve area.
-RecompiledCodeReserve& RecompiledCodeReserve::SetProfilerName( std::string shortname )
+RecompiledCodeReserve& RecompiledCodeReserve::SetProfilerName(std::string name)
 {
-	m_profiler_name = std::move(shortname);
+	m_profiler_name = std::move(name);
 	_registerProfiler();
 	return *this;
-}
-
-// This error message is shared by R5900, R3000, and microVU recompilers.
-void RecompiledCodeReserve::ThrowIfNotOk() const
-{
-	if (IsOk()) return;
-
-	throw Exception::OutOfMemory(m_name)
-		.SetDiagMsg("Recompiled code cache could not be mapped.")
-		.SetUserMsg("This recompiler was unable to reserve contiguous memory required for internal caches.  This error can be caused by low virtual memory resources, such as a small or disabled swapfile, or by another program that is hogging a lot of memory.");
 }
 
 #include "svnrev.h"
@@ -315,23 +307,24 @@ namespace HostMemoryMap {
 }
 
 /// Attempts to find a spot near static variables for the main memory
-static VirtualMemoryManagerPtr makeMainMemoryManager() {
+static VirtualMemoryManagerPtr makeMemoryManager(const char* name, const char* file_mapping_name, size_t size, size_t offset_from_base)
+{
 	// Everything looks nicer when the start of all the sections is a nice round looking number.
 	// Also reduces the variation in the address due to small changes in code.
 	// Breaks ASLR but so does anything else that tries to make addresses constant for our debugging pleasure
-	uptr codeBase = (uptr)(void*)makeMainMemoryManager / (1 << 28) * (1 << 28);
+	uptr codeBase = (uptr)(void*)makeMemoryManager / (1 << 28) * (1 << 28);
 
 	// The allocation is ~640mb in size, slighly under 3*2^28.
 	// We'll hope that the code generated for the PCSX2 executable stays under 512mb (which is likely)
 	// On x86-64, code can reach 8*2^28 from its address [-6*2^28, 4*2^28] is the region that allows for code in the 640mb allocation to reach 512mb of code that either starts at codeBase or 256mb before it.
 	// We start high and count down because on macOS code starts at the beginning of useable address space, so starting as far ahead as possible reduces address variations due to code size.  Not sure about other platforms.  Obviously this only actually affects what shows up in a debugger and won't affect performance or correctness of anything.
 	for (int offset = 4; offset >= -6; offset--) {
-		uptr base = codeBase + (offset << 28);
-		if ((sptr)base < 0 || (sptr)(base + HostMemoryMap::Size - 1) < 0) {
+		uptr base = codeBase + (offset << 28) + offset_from_base;
+		if ((sptr)base < 0 || (sptr)(base + size - 1) < 0) {
 			// VTLB will throw a fit if we try to put EE main memory here
 			continue;
 		}
-		auto mgr = std::make_shared<VirtualMemoryManager>("Main Memory Manager", base, HostMemoryMap::Size, /*upper_bounds=*/0, /*strict=*/true);
+		auto mgr = std::make_shared<VirtualMemoryManager>(name, file_mapping_name, base, size, /*upper_bounds=*/0, /*strict=*/true);
 		if (mgr->IsOk()) {
 			return mgr;
 		}
@@ -340,69 +333,54 @@ static VirtualMemoryManagerPtr makeMainMemoryManager() {
 	// If the above failed and it's x86-64, recompiled code is going to break!
 	// If it's i386 anything can reach anything so it doesn't matter
 	if (sizeof(void*) == 8) {
-		pxAssertRel(0, "Failed to find a good place for the main memory allocation, recompilers may fail");
+		pxAssertRel(0, "Failed to find a good place for the memory allocation, recompilers may fail");
 	}
-	return std::make_shared<VirtualMemoryManager>("Main Memory Manager", 0, HostMemoryMap::Size);
+	return std::make_shared<VirtualMemoryManager>(name, file_mapping_name, 0, size);
 }
 
 // --------------------------------------------------------------------------------------
 //  SysReserveVM  (implementations)
 // --------------------------------------------------------------------------------------
 SysMainMemory::SysMainMemory()
-	: m_mainMemory(makeMainMemoryManager())
-	, m_bumpAllocator(m_mainMemory, HostMemoryMap::bumpAllocatorOffset, HostMemoryMap::Size - HostMemoryMap::bumpAllocatorOffset)
+	: m_mainMemory(makeMemoryManager("Main Memory Manager", "pcsx2", HostMemoryMap::MainSize, 0))
+	, m_codeMemory(makeMemoryManager("Code Memory Manager", nullptr, HostMemoryMap::CodeSize, HostMemoryMap::MainSize))
+	, m_bumpAllocator(m_mainMemory, HostMemoryMap::bumpAllocatorOffset, HostMemoryMap::MainSize - HostMemoryMap::bumpAllocatorOffset)
 {
-	uptr base = (uptr)MainMemory()->GetBase();
-	HostMemoryMap::EEmem   = base + HostMemoryMap::EEmemOffset;
-	HostMemoryMap::IOPmem  = base + HostMemoryMap::IOPmemOffset;
-	HostMemoryMap::VUmem   = base + HostMemoryMap::VUmemOffset;
-	HostMemoryMap::EErec   = base + HostMemoryMap::EErecOffset;
-	HostMemoryMap::IOPrec  = base + HostMemoryMap::IOPrecOffset;
-	HostMemoryMap::VIF0rec = base + HostMemoryMap::VIF0recOffset;
-	HostMemoryMap::VIF1rec = base + HostMemoryMap::VIF1recOffset;
-	HostMemoryMap::mVU0rec = base + HostMemoryMap::mVU0recOffset;
-	HostMemoryMap::mVU1rec = base + HostMemoryMap::mVU1recOffset;
-	HostMemoryMap::bumpAllocator = base + HostMemoryMap::bumpAllocatorOffset;
+	uptr main_base = (uptr)MainMemory()->GetBase();
+	uptr code_base = (uptr)MainMemory()->GetBase();
+	HostMemoryMap::EEmem   = main_base + HostMemoryMap::EEmemOffset;
+	HostMemoryMap::IOPmem  = main_base + HostMemoryMap::IOPmemOffset;
+	HostMemoryMap::VUmem   = main_base + HostMemoryMap::VUmemOffset;
+	HostMemoryMap::EErec   = code_base + HostMemoryMap::EErecOffset;
+	HostMemoryMap::IOPrec  = code_base + HostMemoryMap::IOPrecOffset;
+	HostMemoryMap::VIF0rec = code_base + HostMemoryMap::VIF0recOffset;
+	HostMemoryMap::VIF1rec = code_base + HostMemoryMap::VIF1recOffset;
+	HostMemoryMap::mVU0rec = code_base + HostMemoryMap::mVU0recOffset;
+	HostMemoryMap::mVU1rec = code_base + HostMemoryMap::mVU1recOffset;
+	HostMemoryMap::bumpAllocator = main_base + HostMemoryMap::bumpAllocatorOffset;
 }
 
 SysMainMemory::~SysMainMemory()
 {
-	try {
-		ReleaseAll();
-	}
-	DESTRUCTOR_CATCHALL
+	Release();
 }
 
-void SysMainMemory::ReserveAll()
+bool SysMainMemory::Allocate()
 {
+	DevCon.WriteLn(Color_StrongBlue, "Allocating host memory for virtual systems...");
 	pxInstallSignalHandler();
 
-	DevCon.WriteLn( Color_StrongBlue, "Mapping host memory for virtual systems..." );
 	ConsoleIndentScope indent(1);
 
-	m_ee.Reserve(MainMemory());
-	m_iop.Reserve(MainMemory());
-	m_vu.Reserve(MainMemory());
-}
-
-void SysMainMemory::CommitAll()
-{
+	m_ee.Assign(MainMemory());
+	m_iop.Assign(MainMemory());
+	m_vu.Assign(MainMemory());
 	vtlb_Core_Alloc();
-	if (m_ee.IsCommitted() && m_iop.IsCommitted() && m_vu.IsCommitted()) return;
-
-	DevCon.WriteLn( Color_StrongBlue, "Allocating host memory for virtual systems..." );
-	ConsoleIndentScope indent(1);
-
-	m_ee.Commit();
-	m_iop.Commit();
-	m_vu.Commit();
+	return true;
 }
 
-
-void SysMainMemory::ResetAll()
+void SysMainMemory::Reset()
 {
-	CommitAll();
-
 	DevCon.WriteLn( Color_StrongBlue, "Resetting host memory for virtual systems..." );
 	ConsoleIndentScope indent(1);
 
@@ -413,49 +391,21 @@ void SysMainMemory::ResetAll()
 	// Note: newVif is reset as part of other VIF structures.
 }
 
-void SysMainMemory::DecommitAll()
+void SysMainMemory::Release()
 {
-	if (!m_ee.IsCommitted() && !m_iop.IsCommitted() && !m_vu.IsCommitted()) return;
-
-	Console.WriteLn( Color_Blue, "Decommitting host memory for virtual systems..." );
+	Console.WriteLn( Color_Blue, "Releasing host memory for virtual systems..." );
 	ConsoleIndentScope indent(1);
-
-	// On linux, the MTVU isn't empty and the thread still uses the m_ee/m_vu memory
-	vu1Thread.WaitVU();
-	// The EE thread must be stopped here command mustn't be send
-	// to the ring. Let's call it an extra safety valve :)
-	vu1Thread.Reset();
 
 	hwShutdown();
-
-	m_ee.Decommit();
-	m_iop.Decommit();
-	m_vu.Decommit();
-
-	closeNewVif(0);
-	closeNewVif(1);
-
-	g_GameStarted = false;
-	g_GameLoading = false;
-
-	vtlb_Core_Free();
-}
-
-void SysMainMemory::ReleaseAll()
-{
-	DecommitAll();
-
-	Console.WriteLn( Color_Blue, "Releasing host memory maps for virtual systems..." );
-	ConsoleIndentScope indent(1);
 
 	vtlb_Core_Free();		// Just to be sure... (calling order could result in it getting missed during Decommit).
 
 	releaseNewVif(0);
 	releaseNewVif(1);
 
-	m_ee.Decommit();
-	m_iop.Decommit();
-	m_vu.Decommit();
+	m_ee.Release();
+	m_iop.Release();
+	m_vu.Release();
 
 	safe_delete(Source_PageFault);
 }
@@ -492,6 +442,7 @@ SysCpuProviderPack::SysCpuProviderPack()
 	}
 
 	// hmm! : VU0 and VU1 pre-allocations should do sVU and mVU separately?  Sounds complicated. :(
+	// TODO(Stenzek): error handling in this whole function...
 
 	if (newVifDynaRec)
 	{
@@ -586,37 +537,6 @@ void SysClearExecutionCache()
 		dVifReset(0);
 		dVifReset(1);
 	}
-}
-
-// Maps a block of memory for use as a recompiled code buffer, and ensures that the
-// allocation is below a certain memory address (specified in "bounds" parameter).
-// The allocated block has code execution privileges.
-// Returns NULL on allocation failure.
-u8* SysMmapEx(uptr base, u32 size, uptr bounds, const char *caller)
-{
-	u8* Mem = (u8*)HostSys::Mmap( base, size );
-
-	if( (Mem == NULL) || (bounds != 0 && (((uptr)Mem + size) > bounds)) )
-	{
-		if( base )
-		{
-			DbgCon.Warning( "First try failed allocating %s at address 0x%x", caller, base );
-
-			// Let's try again at an OS-picked memory area, and then hope it meets needed
-			// boundschecking criteria below.
-			SafeSysMunmap( Mem, size );
-			Mem = (u8*)HostSys::Mmap( 0, size );
-		}
-
-		if( (bounds != 0) && (((uptr)Mem + size) > bounds) )
-		{
-			DevCon.Warning( "Second try failed allocating %s, block ptr 0x%x does not meet required criteria.", caller, Mem );
-			SafeSysMunmap( Mem, size );
-
-			// returns NULL, caller should throw an exception.
-		}
-	}
-	return Mem;
 }
 
 std::string SysGetBiosDiscID()

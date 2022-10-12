@@ -18,6 +18,7 @@
 #include "Common.h"
 #include "Gif.h"
 #include "GS/GS.h"
+#include "SingleRegisterTypes.h"
 #include <atomic>
 #include <functional>
 #include <mutex>
@@ -451,13 +452,13 @@ extern void gsWrite8(u32 mem, u8 value);
 extern void gsWrite16(u32 mem, u16 value);
 extern void gsWrite32(u32 mem, u32 value);
 
-extern void gsWrite64_page_00(u32 mem, const mem64_t* value);
-extern void gsWrite64_page_01(u32 mem, const mem64_t* value);
-extern void gsWrite64_generic(u32 mem, const mem64_t* value);
+extern void gsWrite64_page_00(u32 mem, u64 value);
+extern void gsWrite64_page_01(u32 mem, u64 value);
+extern void gsWrite64_generic(u32 mem, u64 value);
 
-extern void gsWrite128_page_00(u32 mem, const mem128_t* value);
-extern void gsWrite128_page_01(u32 mem, const mem128_t* value);
-extern void gsWrite128_generic(u32 mem, const mem128_t* value);
+extern void TAKES_R128 gsWrite128_page_00(u32 mem, r128 value);
+extern void TAKES_R128 gsWrite128_page_01(u32 mem, r128 value);
+extern void TAKES_R128 gsWrite128_generic(u32 mem, r128 value);
 
 extern u8 gsRead8(u32 mem);
 extern u16 gsRead16(u32 mem);

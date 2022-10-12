@@ -40,7 +40,7 @@ using namespace R5900;
 
 template< uint page > void _hwWrite8(u32 mem, u8 value);
 template< uint page > void _hwWrite16(u32 mem, u8 value);
-template< uint page > void _hwWrite128(u32 mem, u8 value);
+template< uint page > void TAKES_R128 _hwWrite128(u32 mem, r128 value);
 
 
 template<uint page>
@@ -80,7 +80,7 @@ void _hwWrite32( u32 mem, u32 value )
 			u128 zerofill = u128::From32(0);
 			zerofill._u32[(mem >> 2) & 0x03] = value;
 
-			_hwWrite128<page>(mem & ~0x0f, &zerofill);
+			_hwWrite128<page>(mem & ~0x0f, r128_from_u128(zerofill));
 		}
 		return;
 
@@ -373,7 +373,7 @@ void hwWrite16(u32 mem, u16 value)
 }
 
 template<uint page>
-void _hwWrite64( u32 mem, const mem64_t* srcval )
+void _hwWrite64( u32 mem, u64 value )
 {
 	pxAssume( (mem & 0x07) == 0 );
 
@@ -387,7 +387,7 @@ void _hwWrite64( u32 mem, const mem64_t* srcval )
 	switch (page)
 	{
 		case 0x02:
-			if (!ipuWrite64(mem, *srcval)) return;
+			if (!ipuWrite64(mem, value)) return;
 		break;
 
 		case 0x04:
@@ -396,30 +396,30 @@ void _hwWrite64( u32 mem, const mem64_t* srcval )
 		case 0x07:
 		{
 			u128 zerofill = u128::From32(0);
-			zerofill._u64[(mem >> 3) & 0x01] = *srcval;
-			hwWrite128<page>(mem & ~0x0f, &zerofill);
+			zerofill._u64[(mem >> 3) & 0x01] = value;
+			hwWrite128<page>(mem & ~0x0f, r128_from_u128(zerofill));
 		}
 		return;
 
 		default:
 			// disregard everything except the lower 32 bits.
 			// ... and skip the 64 bit writeback since the 32-bit one will suffice.
-			hwWrite32<page>( mem, ((u32*)srcval)[0] );
+			hwWrite32<page>( mem, value );
 		return;
 	}
 
-	psHu64(mem) = *srcval;
+	std::memcpy(&eeHw[(mem) & 0xffff], &value, sizeof(value));
 }
 
 template<uint page>
-void hwWrite64( u32 mem, const mem64_t* srcval )
+void hwWrite64( u32 mem, mem64_t value )
 {
-	eeHwTraceLog( mem, *srcval, false );
-	_hwWrite64<page>(mem, srcval);
+	eeHwTraceLog( mem, value, false );
+	_hwWrite64<page>(mem, value);
 }
 
 template< uint page >
-void _hwWrite128(u32 mem, const mem128_t* srcval)
+void TAKES_R128 _hwWrite128(u32 mem, r128 srcval)
 {
 	pxAssume( (mem & 0x0f) == 0 );
 
@@ -429,24 +429,35 @@ void _hwWrite128(u32 mem, const mem128_t* srcval)
 #if PSX_EXTRALOGS
 	if ((mem & 0x1000ff00) == 0x1000f300) DevCon.Warning("128bit Write to SIF Register %x wibble", mem);
 #endif
+
 	switch (page)
 	{
 		case 0x04:
-			WriteFIFO_VIF0(srcval);
+			{
+				alignas(16) const u128 usrcval = r128_to_u128(srcval);
+				WriteFIFO_VIF0(&usrcval);
+			}
 		return;
 
 		case 0x05:
-			WriteFIFO_VIF1(srcval);
+			{
+				alignas(16) const u128 usrcval = r128_to_u128(srcval);
+				WriteFIFO_VIF1(&usrcval);
+			}
 		return;
 
 		case 0x06:
-			WriteFIFO_GIF(srcval);
+			{
+				alignas(16) const u128 usrcval = r128_to_u128(srcval);
+				WriteFIFO_GIF(&usrcval);
+			}
 		return;
 
 		case 0x07:
 			if (mem & 0x10)
 			{
-				WriteFIFO_IPUin(srcval);
+				alignas(16) const u128 usrcval = r128_to_u128(srcval);
+				WriteFIFO_IPUin(&usrcval);
 			}
 			else
 			{
@@ -462,7 +473,8 @@ void _hwWrite128(u32 mem, const mem128_t* srcval)
 		case 0x0F:
 			// todo: psx mode: this is new
 			if (((mem & 0x1FFFFFFF) >= EEMemoryMap::SBUS_PS1_Start) && ((mem & 0x1FFFFFFF) < EEMemoryMap::SBUS_PS1_End)) {
-				PGIFwQword((mem & 0x1FFFFFFF), (void*)srcval);
+				alignas(16) const u128 usrcval = r128_to_u128(srcval);
+				PGIFwQword((mem & 0x1FFFFFFF), (void*)&usrcval);
 				return;
 			}
 
@@ -470,15 +482,15 @@ void _hwWrite128(u32 mem, const mem128_t* srcval)
 	}
 
 	// All upper bits of all non-FIFO 128-bit HW writes are almost certainly disregarded. --air
-	hwWrite64<page>(mem, (mem64_t*)srcval);
+	hwWrite64<page>(mem, r128_to_u64(srcval));
 
 	//CopyQWC(&psHu128(mem), srcval);
 }
 
 template< uint page >
-void hwWrite128(u32 mem, const mem128_t* srcval)
+void TAKES_R128 hwWrite128(u32 mem, r128 srcval)
 {
-	eeHwTraceLog( mem, *srcval, false );
+	eeHwTraceLog( mem, srcval, false );
 	_hwWrite128<page>(mem, srcval);
 }
 
@@ -486,8 +498,8 @@ void hwWrite128(u32 mem, const mem128_t* srcval)
 	template void hwWrite8<pageidx>(u32 mem, mem8_t value); \
 	template void hwWrite16<pageidx>(u32 mem, mem16_t value); \
 	template void hwWrite32<pageidx>(u32 mem, mem32_t value); \
-	template void hwWrite64<pageidx>(u32 mem, const mem64_t* srcval); \
-	template void hwWrite128<pageidx>(u32 mem, const mem128_t* srcval);
+	template void hwWrite64<pageidx>(u32 mem, mem64_t value); \
+	template void TAKES_R128 hwWrite128<pageidx>(u32 mem, r128 srcval);
 
 InstantizeHwWrite(0x00);	InstantizeHwWrite(0x08);
 InstantizeHwWrite(0x01);	InstantizeHwWrite(0x09);

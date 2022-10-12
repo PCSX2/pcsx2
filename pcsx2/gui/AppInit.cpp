@@ -162,7 +162,8 @@ void Pcsx2App::AllocateCoreStuffs()
 	SysLogMachineCaps();
 	AppApplySettings();
 
-	GetVmReserve().ReserveAll();
+	if (!GetVmReserve().Allocate())
+		pxFailRel("Failed to allocate memory.");
 
 	if (!m_CpuProviders)
 	{

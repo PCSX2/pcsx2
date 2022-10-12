@@ -667,7 +667,7 @@ void LD()
 	if( addr & 7 )
 		throw R5900Exception::AddressError( addr, false );
 
-	memRead64(addr, (u64*)gpr_GetWritePtr(_Rt_));
+	cpuRegs.GPR.r[_Rt_].UD[0] = memRead64(addr);
 }
 
 static const u64 LDL_MASK[8] =
@@ -688,8 +688,7 @@ void LDL()
 	u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 	u32 shift = addr & 7;
 
-	u64 mem;
-	memRead64(addr & ~7, &mem);
+	u64 mem = memRead64(addr & ~7);
 
 	if( !_Rt_ ) return;
 	cpuRegs.GPR.r[_Rt_].UD[0] =	(cpuRegs.GPR.r[_Rt_].UD[0] & LDL_MASK[shift]) |
@@ -701,8 +700,7 @@ void LDR()
 	u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 	u32 shift = addr & 7;
 
-	u64 mem;
-	memRead64(addr & ~7, &mem);
+	u64 mem = memRead64(addr & ~7);
 
 	if (!_Rt_) return;
 	cpuRegs.GPR.r[_Rt_].UD[0] =	(cpuRegs.GPR.r[_Rt_].UD[0] & LDR_MASK[shift]) |
@@ -798,7 +796,7 @@ void SD()
 	if( addr & 7 )
 		throw R5900Exception::AddressError( addr, true );
 
-    memWrite64(addr,&cpuRegs.GPR.r[_Rt_].UD[0]);
+    memWrite64(addr,cpuRegs.GPR.r[_Rt_].UD[0]);
 }
 
 static const u64 SDL_MASK[8] =
@@ -817,12 +815,10 @@ void SDL()
 {
 	u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 	u32 shift = addr & 7;
-	u64 mem;
-
-	memRead64(addr & ~7, &mem);
+	u64 mem = memRead64(addr & ~7);
 	mem = (cpuRegs.GPR.r[_Rt_].UD[0] >> SDL_SHIFT[shift]) |
 		  (mem & SDL_MASK[shift]);
-	memWrite64(addr & ~7, &mem);
+	memWrite64(addr & ~7, mem);
 }
 
 
@@ -830,12 +826,10 @@ void SDR()
 {
 	u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 	u32 shift = addr & 7;
-	u64 mem;
-
-	memRead64(addr & ~7, &mem);
+	u64 mem = memRead64(addr & ~7);
 	mem = (cpuRegs.GPR.r[_Rt_].UD[0] << SDR_SHIFT[shift]) |
 		  (mem & SDR_MASK[shift]);
-	memWrite64(addr & ~7, &mem );
+	memWrite64(addr & ~7, mem );
 }
 
 void SQ()

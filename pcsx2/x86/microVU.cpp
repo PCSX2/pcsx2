@@ -20,6 +20,7 @@
 
 #include "common/AlignedMalloc.h"
 #include "common/Perf.h"
+#include "common/StringUtil.h"
 
 //------------------------------------------------------------------
 // Micro VU - Main Functions
@@ -36,15 +37,12 @@ static __fi void mVUthrowHardwareDeficiency(const char* extFail, int vuIndex)
 
 void mVUreserveCache(microVU& mVU)
 {
+	mVU.cache_reserve = new RecompiledCodeReserve(StringUtil::StdStringFromFormat("Micro VU%u Recompiler Cache", mVU.index));
+	mVU.cache_reserve->SetProfilerName(StringUtil::StdStringFromFormat("mVU%urec", mVU.index));
 
-	mVU.cache_reserve = new RecompiledCodeReserve(fmt::format("Micro VU{} Recompiler Cache", mVU.index), _16mb);
-	mVU.cache_reserve->SetProfilerName(fmt::format("mVU{}rec", mVU.index));
-
-	mVU.cache = mVU.index
-		? (u8*)mVU.cache_reserve->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::mVU1recOffset, mVU.cacheSize * _1mb)
-		: (u8*)mVU.cache_reserve->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::mVU0recOffset, mVU.cacheSize * _1mb);
-
-	mVU.cache_reserve->ThrowIfNotOk();
+	const size_t alloc_offset = mVU.index ? HostMemoryMap::mVU0recOffset : HostMemoryMap::mVU1recOffset;
+	mVU.cache_reserve->Assign(GetVmMemory().CodeMemory(), alloc_offset, mVU.cacheSize * _1mb);
+	mVU.cache = mVU.cache_reserve->GetPtr();
 }
 
 // Only run this once per VU! ;)

@@ -266,7 +266,7 @@ mem16_t hwRead16_page_0F_INTC_HACK(u32 mem)
 }
 
 template< uint page >
-static RETURNS_R64 _hwRead64(u32 mem)
+static u64 _hwRead64(u32 mem)
 {
 	pxAssume( (mem & 0x07) == 0 );
 
@@ -289,7 +289,7 @@ static RETURNS_R64 _hwRead64(u32 mem)
 
 			uint wordpart = (mem >> 3) & 0x1;
 			r128 full = _hwRead128<page>(mem & ~0x0f);
-			return r64_load(reinterpret_cast<u64*>(&full) + wordpart);
+			return *(reinterpret_cast<u64*>(&full) + wordpart);
 		}
 		case 0x0F:
 			if ((mem & 0xffffff00) == 0x1000f300)
@@ -302,20 +302,20 @@ static RETURNS_R64 _hwRead64(u32 mem)
 					u32 lo = psHu32(0x1000f3E0);
 					ReadFifoSingleWord();
 					u32 hi = psHu32(0x1000f3E0);
-					return r64_from_u32x2(lo, hi);
+					return static_cast<u64>(lo) | (static_cast<u64>(hi) << 32);
 				}
 			}
 		default: break;
 	}
 
-	return r64_from_u32(_hwRead32<page, false>(mem));
+	return static_cast<u64>(_hwRead32<page, false>(mem));
 }
 
 template< uint page >
-RETURNS_R64 hwRead64(u32 mem)
+mem64_t hwRead64(u32 mem)
 {
-	r64 res = _hwRead64<page>(mem);
-	eeHwTraceLog(mem, *(u64*)&res, true);
+	u64 res = _hwRead64<page>(mem);
+	eeHwTraceLog(mem, res, true);
 	return res;
 }
 
@@ -379,7 +379,7 @@ RETURNS_R128 _hwRead128(u32 mem)
 			break;
 
 		default:
-			return r128_from_r64_clean(_hwRead64<page>(mem));
+			return r128_from_u64_dup(_hwRead64<page>(mem));
 	}
 	return r128_load(&result);
 }
@@ -388,7 +388,7 @@ template< uint page >
 RETURNS_R128 hwRead128(u32 mem)
 {
 	r128 res = _hwRead128<page>(mem);
-	eeHwTraceLog(mem, *(mem128_t*)&res, true);
+	eeHwTraceLog(mem, res, true);
 	return res;
 }
 
@@ -396,7 +396,7 @@ RETURNS_R128 hwRead128(u32 mem)
 	template mem8_t hwRead8<pageidx>(u32 mem); \
 	template mem16_t hwRead16<pageidx>(u32 mem); \
 	template mem32_t hwRead32<pageidx>(u32 mem); \
-	template RETURNS_R64 hwRead64<pageidx>(u32 mem); \
+	template mem64_t hwRead64<pageidx>(u32 mem); \
 	template RETURNS_R128 hwRead128<pageidx>(u32 mem); \
 	template mem32_t _hwRead32<pageidx, false>(u32 mem);
 

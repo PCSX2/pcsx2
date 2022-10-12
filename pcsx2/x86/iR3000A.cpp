@@ -688,7 +688,6 @@ void psxRecompileCodeConst3(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 	noconstcode(0);
 }
 
-static uptr m_ConfiguredCacheReserve = 32;
 static u8* m_recBlockAlloc = NULL;
 
 static const uint m_recBlockAllocSize =
@@ -696,22 +695,12 @@ static const uint m_recBlockAllocSize =
 
 static void recReserveCache()
 {
-	if (!recMem)
-		recMem = new RecompiledCodeReserve("R3000A Recompiler Cache", _8mb);
+	if (recMem)
+		return;
+
+	recMem = new RecompiledCodeReserve("R3000A Recompiler Cache");
 	recMem->SetProfilerName("IOPrec");
-
-	while (!recMem->IsOk())
-	{
-		if (recMem->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::IOPrecOffset, m_ConfiguredCacheReserve * _1mb) != NULL)
-			break;
-
-		// If it failed, then try again (if possible):
-		if (m_ConfiguredCacheReserve < 4)
-			break;
-		m_ConfiguredCacheReserve /= 2;
-	}
-
-	recMem->ThrowIfNotOk();
+	recMem->Assign(GetVmMemory().CodeMemory(), HostMemoryMap::IOPrecOffset, 32 * _1mb);
 }
 
 static void recReserve()
@@ -1561,23 +1550,10 @@ StartRecomp:
 	s_pCurBlockEx = NULL;
 }
 
-static void recSetCacheReserve(uint reserveInMegs)
-{
-	m_ConfiguredCacheReserve = reserveInMegs;
-}
-
-static uint recGetCacheReserve()
-{
-	return m_ConfiguredCacheReserve;
-}
-
 R3000Acpu psxRec = {
 	recReserve,
 	recResetIOP,
 	recExecuteBlock,
 	recClearIOP,
 	recShutdown,
-
-	recGetCacheReserve,
-	recSetCacheReserve
 };

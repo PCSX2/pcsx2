@@ -35,7 +35,9 @@
 #include "COP0.h"
 #include "Cache.h"
 #include "R5900Exceptions.h"
+#include "IopMem.h"
 
+#include "common/Align.h"
 #include "common/MemsetFast.inl"
 
 #include "fmt/core.h"
@@ -137,6 +139,9 @@ DataType vtlb_memRead(u32 addr)
 					case 32:
 						return readCache32(addr);
 						break;
+					case 64:
+						return readCache64(addr);
+						break;
 
 					jNO_DEFAULT;
 				}
@@ -159,35 +164,13 @@ DataType vtlb_memRead(u32 addr)
 			return vmv.assumeHandler<16, false>()(paddr);
 		case 32:
 			return vmv.assumeHandler<32, false>()(paddr);
+		case 64:
+			return vmv.assumeHandler<64, false>()(paddr);
 
 		jNO_DEFAULT;
 	}
 
 	return 0;		// technically unreachable, but suppresses warnings.
-}
-
-RETURNS_R64 vtlb_memRead64(u32 mem)
-{
-	auto vmv = vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
-
-	if (!vmv.isHandler(mem))
-	{
-		if (!CHECK_EEREC) {
-			if(CHECK_CACHE && CheckCache(mem))
-			{
-				return readCache64(mem);
-			}
-		}
-
-		return r64_load(reinterpret_cast<const void*>(vmv.assumePtr(mem)));
-	}
-	else
-	{
-		//has to: translate, find function, call function
-		u32 paddr = vmv.assumeHandlerGetPAddr(mem);
-		//Console.WriteLn("Translated 0x%08X to 0x%08X", addr,paddr);
-		return vmv.assumeHandler<64, false>()(paddr);
-	}
 }
 
 RETURNS_R128 vtlb_memRead128(u32 mem)
@@ -239,6 +222,9 @@ void vtlb_memWrite(u32 addr, DataType data)
 				case 32:
 					writeCache32(addr, data);
 					return;
+				case 64:
+					writeCache64(addr, data);
+					return;
 				}
 			}
 		}
@@ -254,7 +240,7 @@ void vtlb_memWrite(u32 addr, DataType data)
 	}
 }
 
-void vtlb_memWrite64(u32 mem, const mem64_t* value)
+void TAKES_R128 vtlb_memWrite128(u32 mem, r128 value)
 {
 	auto vmv = vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
 
@@ -264,39 +250,13 @@ void vtlb_memWrite64(u32 mem, const mem64_t* value)
 		{
 			if(CHECK_CACHE && CheckCache(mem))
 			{
-				writeCache64(mem, *value);
+				alignas(16) const u128 r = r128_to_u128(value);
+				writeCache128(mem, &r);
 				return;
 			}
 		}
 
-		*(mem64_t*)vmv.assumePtr(mem) = *value;
-	}
-	else
-	{
-		//has to: translate, find function, call function
-		u32 paddr = vmv.assumeHandlerGetPAddr(mem);
-		//Console.WriteLn("Translated 0x%08X to 0x%08X", addr,paddr);
-
-		vmv.assumeHandler<64, true>()(paddr, value);
-	}
-}
-
-void vtlb_memWrite128(u32 mem, const mem128_t *value)
-{
-	auto vmv = vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
-
-	if (!vmv.isHandler(mem))
-	{
-		if (!CHECK_EEREC)
-		{
-			if(CHECK_CACHE && CheckCache(mem))
-			{
-				writeCache128(mem, value);
-				return;
-			}
-		}
-
-		CopyQWC((void*)vmv.assumePtr(mem), value);
+		r128_store_unaligned((void*)vmv.assumePtr(mem), value);
 	}
 	else
 	{
@@ -311,9 +271,11 @@ void vtlb_memWrite128(u32 mem, const mem128_t *value)
 template mem8_t vtlb_memRead<mem8_t>(u32 mem);
 template mem16_t vtlb_memRead<mem16_t>(u32 mem);
 template mem32_t vtlb_memRead<mem32_t>(u32 mem);
+template mem64_t vtlb_memRead<mem64_t>(u32 mem);
 template void vtlb_memWrite<mem8_t>(u32 mem, mem8_t data);
 template void vtlb_memWrite<mem16_t>(u32 mem, mem16_t data);
 template void vtlb_memWrite<mem32_t>(u32 mem, mem32_t data);
+template void vtlb_memWrite<mem64_t>(u32 mem, mem64_t data);
 
 template <typename DataType>
 bool vtlb_ramRead(u32 addr, DataType* value)
@@ -482,7 +444,7 @@ template<typename OperandType, u32 saddr>
 void vtlbUnmappedVWriteSm(u32 addr,OperandType data)        { vtlb_Miss(addr|saddr,1); }
 
 template<typename OperandType, u32 saddr>
-void vtlbUnmappedVWriteLg(u32 addr,const OperandType* data) { vtlb_Miss(addr|saddr,1); }
+void __vectorcall vtlbUnmappedVWriteLg(u32 addr,u_to_r<OperandType> data)      { vtlb_Miss(addr|saddr,1); }
 
 template<typename OperandType, u32 saddr>
 OperandType vtlbUnmappedPReadSm(u32 addr)                   { vtlb_BusError(addr|saddr,0); return 0; }
@@ -494,7 +456,7 @@ template<typename OperandType, u32 saddr>
 void vtlbUnmappedPWriteSm(u32 addr,OperandType data)        { vtlb_BusError(addr|saddr,1); }
 
 template<typename OperandType, u32 saddr>
-void vtlbUnmappedPWriteLg(u32 addr,const OperandType* data) { vtlb_BusError(addr|saddr,1); }
+void __vectorcall vtlbUnmappedPWriteLg(u32 addr,u_to_r<OperandType> data)      { vtlb_BusError(addr|saddr,1); }
 
 // --------------------------------------------------------------------------------------
 //  VTLB mapping errors
@@ -521,13 +483,13 @@ static mem32_t vtlbDefaultPhyRead32(u32 addr)
 	return 0;
 }
 
-static __m128i __vectorcall vtlbDefaultPhyRead64(u32 addr)
+static mem64_t vtlbDefaultPhyRead64(u32 addr)
 {
 	pxFailDev(fmt::format("(VTLB) Attempted read64 from unmapped physical address @ 0x{:08X}.", addr).c_str());
-	return r64_zero();
+	return 0;
 }
 
-static __m128i __vectorcall vtlbDefaultPhyRead128(u32 addr)
+static RETURNS_R128 vtlbDefaultPhyRead128(u32 addr)
 {
 	pxFailDev(fmt::format("(VTLB) Attempted read128 from unmapped physical address @ 0x{:08X}.", addr).c_str());
 	return r128_zero();
@@ -548,12 +510,12 @@ static void vtlbDefaultPhyWrite32(u32 addr, mem32_t data)
 	pxFailDev(fmt::format("(VTLB) Attempted write32 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
-static void vtlbDefaultPhyWrite64(u32 addr,const mem64_t* data)
+static void vtlbDefaultPhyWrite64(u32 addr,mem64_t data)
 {
 	pxFailDev(fmt::format("(VTLB) Attempted write64 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
-static void vtlbDefaultPhyWrite128(u32 addr,const mem128_t* data)
+static void TAKES_R128 vtlbDefaultPhyWrite128(u32 addr,r128 data)
 {
 	pxFailDev(fmt::format("(VTLB) Attempted write128 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
@@ -773,9 +735,9 @@ void vtlb_Init()
 
 #define VTLB_BuildUnmappedHandler(baseName, highBit) \
 	baseName##ReadSm<mem8_t,0>,		baseName##ReadSm<mem16_t,0>,	baseName##ReadSm<mem32_t,0>, \
-	baseName##ReadLg<mem64_t,0>,	baseName##ReadLg<mem128_t,0>, \
+	baseName##ReadSm<mem64_t,0>,	baseName##ReadLg<mem128_t,0>, \
 	baseName##WriteSm<mem8_t,0>,	baseName##WriteSm<mem16_t,0>,	baseName##WriteSm<mem32_t,0>, \
-	baseName##WriteLg<mem64_t,0>,	baseName##WriteLg<mem128_t,0>
+	baseName##WriteSm<mem64_t,0>,	baseName##WriteLg<mem128_t,0>
 
 	//Register default handlers
 	//Unmapped Virt handlers _MUST_ be registered first.
@@ -816,9 +778,8 @@ void vtlb_Reset()
 	for(int i=0; i<48; i++) UnmapTLB(i);
 }
 
-void vtlb_Term()
+void vtlb_Shutdown()
 {
-	//nothing to do for now
 }
 
 static constexpr size_t VMAP_SIZE = sizeof(VTLBVirtual) * VTLB_VMAP_ITEMS;
@@ -832,17 +793,16 @@ void vtlb_Core_Alloc()
 	// Can't return regions to the bump allocator
 	static VTLBVirtual* vmap = nullptr;
 	if (!vmap)
+	{
 		vmap = (VTLBVirtual*)GetVmMemory().BumpAllocator().Alloc(VMAP_SIZE);
+		if (!vmap)
+			pxFailRel("Failed to allocate vtlb vmap");
+	}
+
 	if (!vtlbdata.vmap)
 	{
-		bool okay = HostSys::MmapCommitPtr(vmap, VMAP_SIZE, PageProtectionMode().Read().Write());
-		if (okay) {
-			vtlbdata.vmap = vmap;
-		} else {
-			throw Exception::OutOfMemory( "VTLB Virtual Address Translation LUT" )
-				.SetDiagMsg(fmt::format("({} megs)", VTLB_VMAP_ITEMS * sizeof(*vtlbdata.vmap) / _1mb)
-			);
-		}
+		HostSys::MemProtect(vmap, VMAP_SIZE, PageProtectionMode().Read().Write());
+		vtlbdata.vmap = vmap;
 	}
 }
 
@@ -860,12 +820,8 @@ void vtlb_Alloc_Ppmap()
 	if (!ppmap)
 		ppmap = (u32*)GetVmMemory().BumpAllocator().Alloc(PPMAP_SIZE);
 
-	bool okay = HostSys::MmapCommitPtr(ppmap, PPMAP_SIZE, PageProtectionMode().Read().Write());
-	if (okay)
-		vtlbdata.ppmap = ppmap;
-	else
-		throw Exception::OutOfMemory("VTLB PS2 Virtual Address Translation LUT")
-			.SetDiagMsg(fmt::format("({} megs)", PPMAP_SIZE / _1mb));
+	HostSys::MemProtect(ppmap, PPMAP_SIZE, PageProtectionMode().Read().Write());
+	vtlbdata.ppmap = ppmap;
 
 	// By default a 1:1 virtual to physical mapping
 	for (u32 i = 0; i < VTLB_VMAP_ITEMS; i++)
@@ -876,12 +832,12 @@ void vtlb_Core_Free()
 {
 	if (vtlbdata.vmap)
 	{
-		HostSys::MmapResetPtr(vtlbdata.vmap, VMAP_SIZE);
+		HostSys::MemProtect(vtlbdata.vmap, VMAP_SIZE, PageProtectionMode());
 		vtlbdata.vmap = nullptr;
 	}
 	if (vtlbdata.ppmap)
 	{
-		HostSys::MmapResetPtr(vtlbdata.ppmap, PPMAP_SIZE);
+		HostSys::MemProtect(vtlbdata.ppmap, PPMAP_SIZE, PageProtectionMode());
 		vtlbdata.ppmap = nullptr;
 	}
 }
@@ -893,45 +849,28 @@ static std::string GetHostVmErrorMsg()
 // --------------------------------------------------------------------------------------
 //  VtlbMemoryReserve  (implementations)
 // --------------------------------------------------------------------------------------
-VtlbMemoryReserve::VtlbMemoryReserve( std::string name, size_t size )
-	: m_reserve( std::move(name), size )
+VtlbMemoryReserve::VtlbMemoryReserve(std::string name)
+	: VirtualMemoryReserve(std::move(name))
 {
-	m_reserve.SetPageAccessOnCommit( PageAccess_ReadWrite() );
 }
 
-void VtlbMemoryReserve::Reserve( VirtualMemoryManagerPtr allocator, sptr offset )
+void VtlbMemoryReserve::Assign(VirtualMemoryManagerPtr allocator, size_t offset, size_t size)
 {
-	if (!m_reserve.Reserve( std::move(allocator), offset ))
-	{
-		throw Exception::OutOfMemory( m_reserve.GetName() )
-			.SetDiagMsg("Vtlb memory could not be reserved.")
-			.SetUserMsg(GetHostVmErrorMsg());
-	}
-}
+	// Anything passed to the memory allocator must be page aligned.
+	size = Common::PageAlign(size);
 
-void VtlbMemoryReserve::Commit()
-{
-	if (IsCommitted()) return;
-	if (!m_reserve.Commit())
+	// Since the memory has already been allocated as part of the main memory map, this should never fail.
+	u8* base = allocator->Alloc(offset, size);
+	if (!base)
 	{
-		throw Exception::OutOfMemory( m_reserve.GetName() )
-			.SetDiagMsg("Vtlb memory could not be committed.")
-			.SetUserMsg(GetHostVmErrorMsg());
+		Console.WriteLn("(VtlbMemoryReserve) Failed to allocate %zu bytes for %s at offset %zu", size, m_name.c_str(), offset);
+		pxFailRel("VtlbMemoryReserve allocation failed.");
 	}
+
+	VirtualMemoryReserve::Assign(std::move(allocator), base, size);
 }
 
 void VtlbMemoryReserve::Reset()
 {
-	Commit();
-	memzero_sse_a(m_reserve.GetPtr(), m_reserve.GetCommittedBytes());
-}
-
-void VtlbMemoryReserve::Decommit()
-{
-	m_reserve.Reset();
-}
-
-bool VtlbMemoryReserve::IsCommitted() const
-{
-	return !!m_reserve.GetCommittedPageCount();
+	memzero_sse_a(GetPtr(), GetSize());
 }

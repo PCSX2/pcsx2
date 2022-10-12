@@ -38,50 +38,6 @@ typedef u32 mem32_t;
 typedef u64 mem64_t;
 typedef u128 mem128_t;
 
-
-// --------------------------------------------------------------------------------------
-//  Future-Planned VTLB pagefault scheme!
-// --------------------------------------------------------------------------------------
-// When enabled, the VTLB will use a large-area reserved memory range of 512megs for EE
-// physical ram/rom access.  The base ram will be committed at 0x00000000, and ROMs will be
-// at 0x1fc00000, etc.  All memory ranges in between will be uncommitted memory -- which
-// means that the memory will *not* count against the operating system's physical memory
-// pool.
-//
-// When the VTLB generates memory operations (loads/stores), it will assume that the op
-// is addressing either RAM or ROM, and by assuming that it can generate a completely efficient
-// direct memory access (one AND and one MOV instruction).  If the access is to another area of
-// memory, such as hardware registers or scratchpad, the access will generate a page fault, the
-// compiled block will be cleared and re-compiled using "full" VTLB translation logic.
-//
-// Note that support for this feature may not be doable under x86/32 platforms, due to the
-// 2gb/3gb limit of Windows XP (the 3gb feature will make it slightly more feasible at least).
-//
-#define VTLB_UsePageFaulting 0
-
-#if VTLB_UsePageFaulting
-
-// The order of the components in this struct *matter* -- it has been laid out so that the
-// full breadth of PS2 RAM and ROM mappings are directly supported.
-struct EEVM_MemoryAllocMess
-{
-	u8 (&Main)[Ps2MemSize::MainRam];				// Main memory (hard-wired to 32MB)
-
-	u8 _padding1[0x1e000000-Ps2MemSize::MainRam]
-	u8 (&ROM1)[Ps2MemSize::Rom1];				// DVD player
-
-	u8 _padding2[0x1e040000-(0x1e000000+Ps2MemSize::Rom1)]
-	u8 (&EROM)[Ps2MemSize::ERom];				// DVD player extensions
-
-	u8 _padding3[0x1e400000-(0x1e040000+Ps2MemSize::EROM)]
-	u8 (&ROM2)[Ps2MemSize::Rom2];				// Chinese extensions
-
-	u8 _padding4[0x1fc00000-(0x1e040000+Ps2MemSize::Rom2)];
-	u8 (&ROM)[Ps2MemSize::Rom];				// Boot rom (4MB)
-};
-
-#else
-
 struct EEVM_MemoryAllocMess
 {
 	u8 Main[Ps2MemSize::MainRam];			// Main memory (hard-wired to 32MB)
@@ -99,8 +55,6 @@ struct EEVM_MemoryAllocMess
 	u8 ZeroRead[_1mb];
 	u8 ZeroWrite[_1mb];
 };
-
-#endif
 
 struct IopVM_MemoryAllocMess
 {

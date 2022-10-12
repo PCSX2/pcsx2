@@ -72,7 +72,6 @@ struct nVifStruct
 	nVifStruct() = default;
 };
 
-extern void closeNewVif(int idx);
 extern void resetNewVif(int idx);
 extern void releaseNewVif(int idx);
 

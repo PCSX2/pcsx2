@@ -388,7 +388,6 @@ void handle_extended_t(IniPatch *p)
 // Patch.cpp itself declares this prototype, so make sure to keep in sync.
 void _ApplyPatch(IniPatch *p)
 {
-	u64 mem = 0;
 	u64 ledata = 0;
 
 	if (p->enabled == 0) return;
@@ -414,9 +413,8 @@ void _ApplyPatch(IniPatch *p)
 			break;
 
 		case DOUBLE_T:
-			memRead64(p->addr, &mem);
-			if (mem != p->data)
-				memWrite64(p->addr, &p->data);
+			if (memRead64(p->addr) != (u64)p->data)
+				memWrite64(p->addr, (u64)p->data);
 			break;
 
 		case EXTENDED_T:
@@ -437,9 +435,8 @@ void _ApplyPatch(IniPatch *p)
 
 		case DOUBLE_LE_T:
 			ledata = SwapEndian(p->data, 64);
-			memRead64(p->addr, &mem);
-			if (mem != ledata)
-				memWrite64(p->addr, ledata);
+			if (memRead64(p->addr) != (u64)ledata)
+				memWrite64(p->addr, (u64)ledata);
 			break;
 
 		default:

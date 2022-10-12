@@ -111,6 +111,7 @@ u32* _eeGetConstReg(int reg);
 
 // finds where the GPR is stored and moves lower 32 bits to EAX
 void _eeMoveGPRtoR(const x86Emitter::xRegister32& to, int fromgpr);
+void _eeMoveGPRtoR(const x86Emitter::xRegister64& to, int fromgpr);
 void _eeMoveGPRtoM(uptr to, int fromgpr);
 void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr);
 void _signExtendToMem(void* mem);

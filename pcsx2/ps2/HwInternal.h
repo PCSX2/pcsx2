@@ -16,13 +16,14 @@
 #pragma once
 
 #include "Hw.h"
+#include "SingleRegisterTypes.h"
 
 
 // hw read functions
 template< uint page > extern mem8_t  hwRead8  (u32 mem);
 template< uint page > extern mem16_t hwRead16 (u32 mem);
 template< uint page > extern mem32_t hwRead32 (u32 mem);
-template< uint page > extern RETURNS_R64        hwRead64 (u32 mem);
+template< uint page > extern mem64_t hwRead64 (u32 mem);
 template< uint page > extern RETURNS_R128       hwRead128(u32 mem);
 
 // Internal hwRead32 which does not log reads, used by hwWrite8/16 to perform
@@ -39,8 +40,8 @@ template<uint page> extern void hwWrite8  (u32 mem, u8  value);
 template<uint page> extern void hwWrite16 (u32 mem, u16 value);
 
 template<uint page> extern void hwWrite32 (u32 mem, mem32_t value);
-template<uint page> extern void hwWrite64 (u32 mem, const mem64_t* srcval);
-template<uint page> extern void hwWrite128(u32 mem, const mem128_t* srcval);
+template<uint page> extern void hwWrite64 (u32 mem, mem64_t srcval);
+template<uint page> extern void TAKES_R128 hwWrite128(u32 mem, r128 srcval);
 
 // --------------------------------------------------------------------------------------
 //  Hardware FIFOs (128 bit access only!)
