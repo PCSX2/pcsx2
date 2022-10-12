@@ -202,84 +202,6 @@ Exception::RuntimeError::RuntimeError(const std::exception& ex, const char* pref
 }
 
 // --------------------------------------------------------------------------------------
-//  Exception::OutOfMemory   (implementations)
-// --------------------------------------------------------------------------------------
-Exception::OutOfMemory::OutOfMemory(std::string allocdesc)
-  : AllocDescription(std::move(allocdesc))
-{
-}
-
-std::string Exception::OutOfMemory::FormatDiagnosticMessage() const
-{
-	std::string retmsg;
-	retmsg = "Out of memory";
-	if (!AllocDescription.empty())
-		fmt::format_to(std::back_inserter(retmsg), " while allocating '{}'", AllocDescription);
-
-	if (!m_message_diag.empty())
-		fmt::format_to(std::back_inserter(retmsg), ":\n{}", m_message_diag);
-
-	return retmsg;
-}
-
-std::string Exception::OutOfMemory::FormatDisplayMessage() const
-{
-	std::string retmsg;
-	retmsg = "Oh noes! Out of memory!";
-
-	if (!m_message_user.empty())
-		fmt::format_to(std::back_inserter(retmsg), "\n\n{}", m_message_user);
-
-	return retmsg;
-}
-
-
-// --------------------------------------------------------------------------------------
-//  Exception::VirtualMemoryMapConflict   (implementations)
-// --------------------------------------------------------------------------------------
-Exception::VirtualMemoryMapConflict::VirtualMemoryMapConflict(std::string allocdesc)
-{
-	AllocDescription = std::move(allocdesc);
-	m_message_user = "Virtual memory mapping failure!  Your system may have conflicting device drivers, services, or may simply have insufficient memory or resources to meet PCSX2's lofty needs.";
-}
-
-std::string Exception::VirtualMemoryMapConflict::FormatDiagnosticMessage() const
-{
-	std::string retmsg;
-	retmsg = "Virtual memory map failed";
-	if (!AllocDescription.empty())
-		fmt::format_to(std::back_inserter(retmsg), " while reserving '{}'", AllocDescription);
-
-	if (!m_message_diag.empty())
-		fmt::format_to(std::back_inserter(retmsg), ":\n{}", m_message_diag);
-
-	return retmsg;
-}
-
-std::string Exception::VirtualMemoryMapConflict::FormatDisplayMessage() const
-{
-	std::string retmsg;
-	retmsg = "There is not enough virtual memory available, or necessary virtual memory mappings have already been reserved by other processes, services, or DLLs.";
-
-	if (!m_message_diag.empty())
-		fmt::format_to(std::back_inserter(retmsg), "\n\n{}", m_message_diag);
-
-	return retmsg;
-}
-
-
-// ------------------------------------------------------------------------
-std::string Exception::CancelEvent::FormatDiagnosticMessage() const
-{
-	return "Action canceled: " + m_message_diag;
-}
-
-std::string Exception::CancelEvent::FormatDisplayMessage() const
-{
-	return "Action canceled: " + m_message_diag;
-}
-
-// --------------------------------------------------------------------------------------
 //  Exception::BadStream  (implementations)
 // --------------------------------------------------------------------------------------
 std::string Exception::BadStream::FormatDiagnosticMessage() const
@@ -402,7 +324,7 @@ std::string Exception::EndOfStream::FormatDisplayMessage() const
 
 // Translates an Errno code into an exception.
 // Throws an exception based on the given error code (usually taken from ANSI C's errno)
-BaseException* Exception::FromErrno(std::string streamname, int errcode)
+std::unique_ptr<BaseException> Exception::FromErrno(std::string streamname, int errcode)
 {
 	pxAssumeDev(errcode != 0, "Invalid NULL error code?  (errno)");
 
@@ -410,27 +332,27 @@ BaseException* Exception::FromErrno(std::string streamname, int errcode)
 	{
 		case EINVAL:
 			pxFailDev("Invalid argument");
-			return &(new Exception::BadStream(streamname))->SetDiagMsg("Invalid argument? (likely caused by an unforgivable programmer error!)");
+			return std::unique_ptr<BaseException>(&(new Exception::BadStream(streamname))->SetDiagMsg("Invalid argument? (likely caused by an unforgivable programmer error!)"));
 
 		case EACCES: // Access denied!
-			return new Exception::AccessDenied(streamname);
+			return std::unique_ptr<BaseException>(new Exception::AccessDenied(streamname));
 
 		case EMFILE: // Too many open files!
-			return &(new Exception::CannotCreateStream(streamname))->SetDiagMsg("Too many open files"); // File handle allocation failure
+			return std::unique_ptr<BaseException>(&(new Exception::CannotCreateStream(streamname))->SetDiagMsg("Too many open files")); // File handle allocation failure
 
 		case EEXIST:
-			return &(new Exception::CannotCreateStream(streamname))->SetDiagMsg("File already exists");
+			return std::unique_ptr<BaseException>(&(new Exception::CannotCreateStream(streamname))->SetDiagMsg("File already exists"));
 
 		case ENOENT: // File not found!
-			return new Exception::FileNotFound(streamname);
+			return std::unique_ptr<BaseException>(new Exception::FileNotFound(streamname));
 
 		case EPIPE:
-			return &(new Exception::BadStream(streamname))->SetDiagMsg("Broken pipe");
+			return std::unique_ptr<BaseException>(&(new Exception::BadStream(streamname))->SetDiagMsg("Broken pipe"));
 
 		case EBADF:
-			return &(new Exception::BadStream(streamname))->SetDiagMsg("Bad file number");
+			return std::unique_ptr<BaseException>(&(new Exception::BadStream(streamname))->SetDiagMsg("Bad file number"));
 
 		default:
-			return &(new Exception::BadStream(streamname))->SetDiagMsg(fmt::format("General file/stream error [errno: {}]", errcode));
+			return std::unique_ptr<BaseException>(&(new Exception::BadStream(streamname))->SetDiagMsg(fmt::format("General file/stream error [errno: {}]", errcode)));
 	}
 }

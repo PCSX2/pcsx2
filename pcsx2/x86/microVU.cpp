@@ -28,13 +28,6 @@
 alignas(__pagesize) static u8 vu0_RecDispatchers[mVUdispCacheSize];
 alignas(__pagesize) static u8 vu1_RecDispatchers[mVUdispCacheSize];
 
-static __fi void mVUthrowHardwareDeficiency(const char* extFail, int vuIndex)
-{
-	throw Exception::HardwareDeficiency()
-		.SetDiagMsg(fmt::format("microVU{} recompiler init failed: %s is not available.", vuIndex, extFail))
-		.SetUserMsg(fmt::format("{} Extensions not found.  microVU requires a host CPU with SSE4 extensions.", extFail));
-}
-
 void mVUreserveCache(microVU& mVU)
 {
 	mVU.cache_reserve = new RecompiledCodeReserve(StringUtil::StdStringFromFormat("Micro VU%u Recompiler Cache", mVU.index));
@@ -48,10 +41,6 @@ void mVUreserveCache(microVU& mVU)
 // Only run this once per VU! ;)
 void mVUinit(microVU& mVU, uint vuIndex)
 {
-
-	if (!x86caps.hasStreamingSIMD4Extensions)
-		mVUthrowHardwareDeficiency("SSE4", vuIndex);
-
 	memzero(mVU.prog);
 
 	mVU.index        =  vuIndex;
@@ -357,47 +346,44 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState)
 //------------------------------------------------------------------
 // recMicroVU0 / recMicroVU1
 //------------------------------------------------------------------
+
+recMicroVU0 CpuMicroVU0;
+recMicroVU1 CpuMicroVU1;
+
 recMicroVU0::recMicroVU0() { m_Idx = 0; IsInterpreter = false; }
 recMicroVU1::recMicroVU1() { m_Idx = 1; IsInterpreter = false; }
 
 void recMicroVU0::Reserve()
 {
-	if (m_Reserved.exchange(1) == 0)
-		mVUinit(microVU0, 0);
+	mVUinit(microVU0, 0);
 }
 void recMicroVU1::Reserve()
 {
-	if (m_Reserved.exchange(1) == 0)
-	{
-		mVUinit(microVU1, 1);
-		vu1Thread.Open();
-	}
+	mVUinit(microVU1, 1);
+	vu1Thread.Open();
 }
 
-void recMicroVU0::Shutdown() noexcept
+void recMicroVU0::Shutdown()
 {
-	if (m_Reserved.exchange(0) == 1)
-		mVUclose(microVU0);
+	mVUclose(microVU0);
 }
-void recMicroVU1::Shutdown() noexcept
+void recMicroVU1::Shutdown()
 {
-	if (m_Reserved.exchange(0) == 1)
-	{
-		vu1Thread.WaitVU();
-		mVUclose(microVU1);
-	}
+	vu1Thread.WaitVU();
+	mVUclose(microVU1);
 }
 
 void recMicroVU0::Reset()
 {
-	if (!pxAssertDev(m_Reserved, "MicroVU0 CPU Provider has not been reserved prior to reset!"))
-		return;
 	mVUreset(microVU0, true);
 }
+
+void recMicroVU0::Step()
+{
+}
+
 void recMicroVU1::Reset()
 {
-	if (!pxAssertDev(m_Reserved, "MicroVU1 CPU Provider has not been reserved prior to reset!"))
-		return;
 	vu1Thread.WaitVU();
 	vu1Thread.Get_MTVUChanges();
 	mVUreset(microVU1, true);
@@ -410,8 +396,6 @@ void recMicroVU0::SetStartPC(u32 startPC)
 
 void recMicroVU0::Execute(u32 cycles)
 {
-	pxAssert(m_Reserved); // please allocate me first! :|
-
 	VU0.flags &= ~VUFLAG_MFLAGSET;
 
 	if (!(VU0.VI[REG_VPU_STAT].UL & 1))
@@ -432,10 +416,12 @@ void recMicroVU1::SetStartPC(u32 startPC)
 	VU1.start_pc = startPC;
 }
 
+void recMicroVU1::Step()
+{
+}
+
 void recMicroVU1::Execute(u32 cycles)
 {
-	pxAssert(m_Reserved); // please allocate me first! :|
-
 	if (!THREAD_VU1)
 	{
 		if (!(VU0.VI[REG_VPU_STAT].UL & 0x100))
@@ -453,43 +439,15 @@ void recMicroVU1::Execute(u32 cycles)
 
 void recMicroVU0::Clear(u32 addr, u32 size)
 {
-	pxAssert(m_Reserved); // please allocate me first! :|
 	mVUclear(microVU0, addr, size);
 }
 void recMicroVU1::Clear(u32 addr, u32 size)
 {
-	pxAssert(m_Reserved); // please allocate me first! :|
 	mVUclear(microVU1, addr, size);
-}
-
-uint recMicroVU0::GetCacheReserve() const
-{
-	return microVU0.cacheSize;
-}
-uint recMicroVU1::GetCacheReserve() const
-{
-	return microVU1.cacheSize;
-}
-
-void recMicroVU0::SetCacheReserve(uint reserveInMegs) const
-{
-	DevCon.WriteLn("microVU0: Changing cache size [%dmb]", reserveInMegs);
-	microVU0.cacheSize = std::min(reserveInMegs, mVUcacheReserve);
-	safe_delete(microVU0.cache_reserve); // I assume this unmaps the memory
-	mVUreserveCache(microVU0); // Need rec-reset after this
-}
-void recMicroVU1::SetCacheReserve(uint reserveInMegs) const
-{
-	DevCon.WriteLn("microVU1: Changing cache size [%dmb]", reserveInMegs);
-	microVU1.cacheSize = std::min(reserveInMegs, mVUcacheReserve);
-	safe_delete(microVU1.cache_reserve); // I assume this unmaps the memory
-	mVUreserveCache(microVU1); // Need rec-reset after this
 }
 
 void recMicroVU1::ResumeXGkick()
 {
-	pxAssert(m_Reserved); // please allocate me first! :|
-
 	if (!(VU0.VI[REG_VPU_STAT].UL & 0x100))
 		return;
 	((mVUrecCallXG)microVU1.startFunctXG)();

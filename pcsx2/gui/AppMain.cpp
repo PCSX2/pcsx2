@@ -98,6 +98,43 @@ void Pcsx2App::PostMenuAction( MenuIdentifiers menu_id ) const
 		mainFrame->GetEventHandler()->AddPendingEvent( joe );
 }
 
+#ifdef _WIN32
+
+// --------------------------------------------------------------------------------------
+//  Exception::WinApiError   (implementations)
+// --------------------------------------------------------------------------------------
+Exception::WinApiError::WinApiError()
+{
+	ErrorId = GetLastError();
+	m_message_diag = "Unspecified Windows API error.";
+}
+
+std::string Exception::WinApiError::GetMsgFromWindows() const
+{
+	if (!ErrorId)
+		return "No valid error number was assigned to this exception!";
+
+	const DWORD BUF_LEN = 2048;
+	wchar_t t_Msg[BUF_LEN];
+	if (FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, 0, ErrorId, 0, t_Msg, BUF_LEN, 0))
+		return fmt::format("Win32 Error #{}: {}", ErrorId, StringUtil::WideStringToUTF8String(t_Msg));
+
+	return fmt::format("Win32 Error #{} (no text msg available)", ErrorId);
+}
+
+std::string Exception::WinApiError::FormatDisplayMessage() const
+{
+	return m_message_user + "\n\n" + GetMsgFromWindows();
+}
+
+std::string Exception::WinApiError::FormatDiagnosticMessage() const
+{
+	return m_message_diag + "\n\t" + GetMsgFromWindows();
+}
+
+#endif
+
+
 // --------------------------------------------------------------------------------------
 //  Pcsx2AppMethodEvent
 // --------------------------------------------------------------------------------------

@@ -201,25 +201,6 @@ enum MenuIdentifiers
 
 };
 
-namespace Exception
-{
-	// --------------------------------------------------------------------------
-	// Exception used to perform an "errorless" termination of the app during OnInit
-	// procedures.  This happens when a user cancels out of startup prompts/wizards.
-	//
-	class StartupAborted : public CancelEvent
-	{
-		DEFINE_RUNTIME_EXCEPTION(StartupAborted, CancelEvent, "Startup initialization was aborted by the user.")
-
-	public:
-		StartupAborted(std::string reason)
-		{
-			m_message_diag = "Startup aborted: " + reason;
-		}
-	};
-
-} // namespace Exception
-
 // --------------------------------------------------------------------------------------
 //  AppImageIds  - Config and Toolbar Images and Icons
 // --------------------------------------------------------------------------------------

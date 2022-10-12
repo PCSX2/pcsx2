@@ -95,9 +95,82 @@ extern ConsoleLogSource_Threading pxConLog_Thread;
 
 #define pxThreadLog pxConLog_Thread.IsActive() && pxConLog_Thread
 
+using ScopedExcept = std::unique_ptr<Exception::BaseException>;
 
 namespace Exception
 {
+	// --------------------------------------------------------------------------------------
+	//  CancelAppEvent  -  Exception for canceling an event in a non-verbose fashion
+	// --------------------------------------------------------------------------------------
+	// Typically the PCSX2 interface issues popup dialogs for runtime errors.  This exception
+	// instead issues a "silent" cancelation that is handled by the app gracefully (generates
+	// log, and resumes messages queue processing).
+	//
+	// I chose to have this exception derive from RuntimeError, since if one is thrown from outside
+	// an App message loop we'll still want it to be handled in a reasonably graceful manner.
+	class CancelEvent : public RuntimeError
+	{
+		DEFINE_RUNTIME_EXCEPTION(CancelEvent, RuntimeError, "No reason given.")
+
+	public:
+		explicit CancelEvent(std::string logmsg)
+		{
+			m_message_diag = std::move(logmsg);
+			// overridden message formatters only use the diagnostic version...
+		}
+
+		virtual std::string FormatDisplayMessage() const override
+		{
+			return "Action canceled: " + m_message_diag;
+		}
+		
+		virtual std::string FormatDiagnosticMessage() const override
+		{
+			return "Action canceled: " + m_message_diag;
+		}		
+	};
+
+	class ParseError : public RuntimeError
+	{
+		DEFINE_RUNTIME_EXCEPTION(ParseError, RuntimeError, "Parse error");
+	};
+
+#ifdef _WIN32
+	// --------------------------------------------------------------------------------------
+	//  Exception::WinApiError
+	// --------------------------------------------------------------------------------------
+	class WinApiError : public RuntimeError
+	{
+		DEFINE_EXCEPTION_COPYTORS(WinApiError, RuntimeError)
+		DEFINE_EXCEPTION_MESSAGES(WinApiError)
+
+	public:
+		int ErrorId;
+
+	public:
+		WinApiError();
+
+		std::string GetMsgFromWindows() const;
+		virtual std::string FormatDisplayMessage() const override;
+		virtual std::string FormatDiagnosticMessage() const override;
+	};
+#endif
+
+	// --------------------------------------------------------------------------
+	// Exception used to perform an "errorless" termination of the app during OnInit
+	// procedures.  This happens when a user cancels out of startup prompts/wizards.
+	//
+	class StartupAborted : public CancelEvent
+	{
+		DEFINE_RUNTIME_EXCEPTION(StartupAborted, CancelEvent, "Startup initialization was aborted by the user.")
+
+	public:
+		StartupAborted(std::string reason)
+		{
+			m_message_diag = "Startup aborted: " + reason;
+		}
+	};
+
 	class BaseThreadError : public RuntimeError
 	{
 		DEFINE_EXCEPTION_COPYTORS(BaseThreadError, RuntimeError)
@@ -125,8 +198,8 @@ namespace Exception
 			m_message_diag = "An unspecified thread-related error occurred (thread=%s)";
 		}
 
-		virtual std::string FormatDiagnosticMessage() const;
-		virtual std::string FormatDisplayMessage() const;
+		virtual std::string FormatDiagnosticMessage() const override;
+		virtual std::string FormatDisplayMessage() const override;
 
 		Threading::pxThread& Thread();
 		const Threading::pxThread& Thread() const;
@@ -150,6 +223,47 @@ namespace Exception
 		}
 	};
 } // namespace Exception
+
+// --------------------------------------------------------------------------------------
+//  DESTRUCTOR_CATCHALL - safe destructor helper
+// --------------------------------------------------------------------------------------
+// In C++ destructors *really* need to be "nothrow" garaunteed, otherwise you can have
+// disasterous nested exception throws during the unwinding process of an originating
+// exception.  Use this macro to dispose of these dangerous exceptions, and generate a
+// friendly error log in their wake.
+//
+// Note: Console can also fire an Exception::OutOfMemory
+#define __DESTRUCTOR_CATCHALL(funcname) \
+	catch (BaseException & ex) \
+	{ \
+		try \
+		{ \
+			Console.Error("Unhandled BaseException in %s (ignored!):", funcname); \
+			Console.Error(ex.FormatDiagnosticMessage()); \
+		} \
+		catch (...) \
+		{ \
+			fprintf(stderr, "ERROR: (out of memory?)\n"); \
+		} \
+	} \
+	catch (std::exception & ex) \
+	{ \
+		try \
+		{ \
+			Console.Error("Unhandled std::exception in %s (ignored!):", funcname); \
+			Console.Error(ex.what()); \
+		} \
+		catch (...) \
+		{ \
+			fprintf(stderr, "ERROR: (out of memory?)\n"); \
+		} \
+	} \
+	catch (...) \
+	{ \
+		/* Unreachable code */ \
+	}
+
+#define DESTRUCTOR_CATCHALL __DESTRUCTOR_CATCHALL(__pxFUNCTION__)
 
 namespace Threading
 {

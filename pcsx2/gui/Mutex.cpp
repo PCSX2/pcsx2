@@ -126,7 +126,7 @@ Threading::MutexRecursive::MutexRecursive()
 	if (++_attr_refcount == 1)
 	{
 		if (0 != pthread_mutexattr_init(&_attr_recursive))
-			throw Exception::OutOfMemory("Recursive mutexing attributes");
+			pxFailRel("pthread_mutexattr_init() failed");
 
 		pthread_mutexattr_settype(&_attr_recursive, PTHREAD_MUTEX_RECURSIVE);
 	}

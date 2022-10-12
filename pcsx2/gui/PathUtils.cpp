@@ -16,6 +16,7 @@
 #include "common/Path.h"
 #include "common/Assertions.h"
 #include "common/Exceptions.h"
+#include "gui/PersistentThread.h"
 #include "wxDirName.h"
 
 #include <wx/file.h>

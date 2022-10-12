@@ -35,8 +35,7 @@ SafeArray<T>::SafeArray(std::string name, T* allocated_mem, int initSize)
 	m_size = initSize;
 
 	if (m_ptr == NULL)
-		throw Exception::OutOfMemory(name)
-			.SetDiagMsg(fmt::format("Called from 'SafeArray::ctor' [size={}]", initSize));
+		pxFailRel("SafeArray memory assignment failed");
 }
 
 template <typename T>
@@ -84,8 +83,7 @@ SafeArray<T>::SafeArray(int initialSize, std::string name)
 	m_size = initialSize;
 
 	if ((initialSize != 0) && (m_ptr == NULL))
-		throw Exception::OutOfMemory(name)
-			.SetDiagMsg(fmt::format("Called from 'SafeArray::ctor' [size={}]", initialSize));
+		pxFailRel("SafeArray memory allocation failed");
 }
 
 // Clears the contents of the array to zero, and frees all memory allocations.
@@ -113,8 +111,7 @@ void SafeArray<T>::ExactAlloc(int newsize)
 
 	m_ptr = _virtual_realloc(newsize);
 	if (m_ptr == NULL)
-		throw Exception::OutOfMemory(Name)
-			.SetDiagMsg(fmt::format("Called from 'SafeArray::ExactAlloc' [oldsize={}] [newsize={}]", m_size, newsize));
+		pxFailRel("SafeArray exact alloc failed");
 
 	m_size = newsize;
 }
@@ -203,8 +200,7 @@ SafeList<T>::SafeList(int initialSize, const char* name)
 	m_ptr = (T*)malloc(initialSize * sizeof(T));
 
 	if (m_ptr == NULL)
-		throw Exception::OutOfMemory(Name)
-			.SetDiagMsg(fmt::format("called from 'SafeList::ctor' [length={}]", m_length));
+		pxFailRel("SafeList exact alloc failed");
 
 	for (int i = 0; i < m_allocsize; ++i)
 	{
@@ -229,8 +225,7 @@ void SafeList<T>::MakeRoomFor(int blockSize)
 		const int newalloc = blockSize + ChunkSize;
 		m_ptr = _virtual_realloc(newalloc);
 		if (m_ptr == NULL)
-			throw Exception::OutOfMemory(Name)
-				.SetDiagMsg(fmt::format("Called from 'SafeList::MakeRoomFor' [oldlen={}] [newlen={}]", m_length, blockSize));
+			pxFailRel("SafeList MakeRoomFor failed");
 
 		for (; m_allocsize < newalloc; ++m_allocsize)
 		{

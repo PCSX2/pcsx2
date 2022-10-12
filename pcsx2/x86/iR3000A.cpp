@@ -693,7 +693,7 @@ static u8* m_recBlockAlloc = NULL;
 static const uint m_recBlockAllocSize =
 	(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4) * sizeof(BASEBLOCK));
 
-static void recReserveCache()
+static void recReserve()
 {
 	if (recMem)
 		return;
@@ -703,24 +703,19 @@ static void recReserveCache()
 	recMem->Assign(GetVmMemory().CodeMemory(), HostMemoryMap::IOPrecOffset, 32 * _1mb);
 }
 
-static void recReserve()
-{
-	// IOP has no hardware requirements!
-
-	recReserveCache();
-}
-
 static void recAlloc()
 {
 	// Goal: Allocate BASEBLOCKs for every possible branch target in IOP memory.
 	// Any 4-byte aligned address makes a valid branch target as per MIPS design (all instructions are
 	// always 4 bytes long).
 
-	if (m_recBlockAlloc == NULL)
+	if (!m_recBlockAlloc)
+	{
+		// We're on 64-bit, if these memory allocations fail, we're in real trouble.
 		m_recBlockAlloc = (u8*)_aligned_malloc(m_recBlockAllocSize, 4096);
-
-	if (m_recBlockAlloc == NULL)
-		throw Exception::OutOfMemory("R3000A BASEBLOCK lookup tables");
+		if (!m_recBlockAlloc)
+			pxFailRel("Failed to allocate R3000A BASEBLOCK lookup tables");
+	}
 
 	u8* curpos = m_recBlockAlloc;
 	recRAM  = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::IopRam / 4) * sizeof(BASEBLOCK);
@@ -729,14 +724,13 @@ static void recAlloc()
 	recROM2 = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::Rom2   / 4) * sizeof(BASEBLOCK);
 
 
-	if (s_pInstCache == NULL)
+	if (!s_pInstCache)
 	{
 		s_nInstCacheSize = 128;
 		s_pInstCache = (EEINST*)malloc(sizeof(EEINST) * s_nInstCacheSize);
+		if (!s_pInstCache)
+			pxFailRel("Failed to allocate R3000 InstCache array.");
 	}
-
-	if (s_pInstCache == NULL)
-		throw Exception::OutOfMemory("R3000 InstCache.");
 
 	_DynGen_Dispatchers();
 }

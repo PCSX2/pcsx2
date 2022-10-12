@@ -240,6 +240,8 @@ void vu1Exec(VURegs* VU)
 		DbgCon.Error("VF[0].w != 1.0!!!!\n");
 }
 
+InterpVU1 CpuIntVU1;
+
 InterpVU1::InterpVU1()
 {
 	m_Idx = 1;
@@ -255,12 +257,6 @@ void InterpVU1::Reset()
 	VU1.ialuwritepos = 0;
 	VU1.ialureadpos = 0;
 	VU1.ialucount = 0;
-	vu1Thread.WaitVU();
-}
-
-void InterpVU1::Shutdown() noexcept
-{
-	vu1Thread.WaitVU();
 }
 
 void InterpVU1::SetStartPC(u32 startPC)

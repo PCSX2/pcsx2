@@ -543,15 +543,7 @@ static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 		base[i].SetFnptr((uptr)JITCompile);
 }
 
-
-static void recThrowHardwareDeficiency(const char* extFail)
-{
-	throw Exception::HardwareDeficiency()
-		.SetDiagMsg(fmt::format("R5900-32 recompiler init failed: {} is not available.", extFail))
-		.SetUserMsg(fmt::format("{} Extensions not found.  The R5900-32 recompiler requires a host CPU with SSE2 extensions.", extFail));
-}
-
-static void recReserveCache()
+static void recReserve()
 {
 	if (recMem)
 		return;
@@ -559,16 +551,6 @@ static void recReserveCache()
 	recMem = new RecompiledCodeReserve("R5900 Recompiler Cache");
 	recMem->SetProfilerName("EErec");
 	recMem->Assign(GetVmMemory().CodeMemory(), HostMemoryMap::EErecOffset, 64 * _1mb);
-}
-
-static void recReserve()
-{
-	// Hardware Requirements Check...
-
-	if (!x86caps.hasStreamingSIMD4Extensions)
-		recThrowHardwareDeficiency("SSE4");
-
-	recReserveCache();
 }
 
 static void recAlloc()
@@ -629,10 +611,9 @@ static void recAlloc()
 	{
 		s_nInstCacheSize = 128;
 		s_pInstCache = (EEINST*)malloc(sizeof(EEINST) * s_nInstCacheSize);
+		if (!s_pInstCache)
+			pxFailRel("Failed to allocate R5900-32 InstCache array");
 	}
-
-	if (s_pInstCache == NULL)
-		throw Exception::OutOfMemory("R5900-32 InstCache");
 
 	// No errors.. Proceed with initialization:
 
@@ -719,7 +700,7 @@ void recStep()
 
 static fastjmp_buf m_SetJmp_StateCheck;
 static std::unique_ptr<BaseR5900Exception> m_cpuException;
-static ScopedExcept m_Exception;
+static std::unique_ptr<BaseException> m_Exception;
 
 static void recExitExecution()
 {
@@ -2405,7 +2386,7 @@ static void recThrowException(const BaseException& ex)
 {
 	if (!eeCpuExecuting)
 		ex.Rethrow();
-	m_Exception = ScopedExcept(ex.Clone());
+	m_Exception = std::unique_ptr<BaseException>(ex.Clone());
 	recExitExecution();
 }
 
