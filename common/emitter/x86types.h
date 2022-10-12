@@ -420,6 +420,8 @@ namespace x86Emitter
 	// This register type is provided to allow legal syntax for instructions that accept
 	// an XMM register as a parameter, but do not allow for a GPR.
 
+	struct xRegisterYMMTag {};
+
 	class xRegisterSSE : public xRegisterBase
 	{
 		typedef xRegisterBase _parent;
@@ -430,11 +432,16 @@ namespace x86Emitter
 			: _parent(16, regId)
 		{
 		}
+		xRegisterSSE(int regId, xRegisterYMMTag)
+			: _parent(32, regId)
+		{
+		}
 
 		bool operator==(const xRegisterSSE& src) const { return this->Id == src.Id; }
 		bool operator!=(const xRegisterSSE& src) const { return this->Id != src.Id; }
 
 		static const inline xRegisterSSE& GetInstance(uint id);
+		static const inline xRegisterSSE& GetYMMInstance(uint id);
 	};
 
 	class xRegisterCL : public xRegister8
@@ -570,12 +577,18 @@ namespace x86Emitter
 	extern const xRegisterEmpty xEmptyReg;
 
 	// clang-format off
-
-extern const xRegisterSSE
+	extern const xRegisterSSE
     xmm0, xmm1, xmm2, xmm3,
     xmm4, xmm5, xmm6, xmm7,
     xmm8, xmm9, xmm10, xmm11,
     xmm12, xmm13, xmm14, xmm15;
+
+	// TODO: This needs to be _M_SSE >= 0x500'ed, but we can't do it atm because common doesn't have variants.
+	extern const xRegisterSSE
+	  ymm0, ymm1, ymm2, ymm3,
+	  ymm4, ymm5, ymm6, ymm7,
+	  ymm8, ymm9, ymm10, ymm11,
+	  ymm12, ymm13, ymm14, ymm15;
 
 extern const xAddressReg
     rax, rbx, rcx, rdx,
@@ -625,6 +638,19 @@ extern const xRegister32
 
 		pxAssert(id < iREGCNT_XMM);
 		return *m_tbl_xmmRegs[id];
+	}
+
+	const xRegisterSSE& xRegisterSSE::GetYMMInstance(uint id)
+	{
+		static const xRegisterSSE* const m_tbl_ymmRegs[] =
+			{
+				&ymm0, &ymm1, &ymm2, &ymm3,
+				&ymm4, &ymm5, &ymm6, &ymm7,
+				&ymm8, &ymm9, &ymm10, &ymm11,
+				&ymm12, &ymm13, &ymm14, &ymm15};
+
+		pxAssert(id < iREGCNT_XMM);
+		return *m_tbl_ymmRegs[id];
 	}
 
 	// --------------------------------------------------------------------------------------
@@ -949,3 +975,4 @@ extern const xRegister32
 #include "implement/jmpcall.h"
 
 #include "implement/bmi.h"
+#include "implement/avx.h"

@@ -123,12 +123,18 @@ namespace x86Emitter
 	{
 		pxAssert(prefix == 0 || prefix == 0x66 || prefix == 0xF3 || prefix == 0xF2);
 
-		const xRegisterInt& reg = param1.IsReg() ? param1 : param2;
+		const xRegisterBase& reg = param1.IsReg() ? param1 : param2;
 
 		u8 nR = reg.IsExtended() ? 0x00 : 0x80;
-		u8 L = reg.IsWideSIMD() ? 4 : 0;
+		u8 L;
 
-		u8 nv = (~param2.GetId() & 0xF) << 3;
+		// Needed for 256-bit movemask.
+		if constexpr (std::is_same_v<T3, xRegisterSSE>)
+			L = param3.IsWideSIMD() ? 4 : 0;
+		else
+			L = reg.IsWideSIMD() ? 4 : 0;
+
+		u8 nv = (param2.IsEmpty() ? 0xF : ((~param2.GetId() & 0xF))) << 3;
 
 		u8 p =
 			prefix == 0xF2 ? 3 :
