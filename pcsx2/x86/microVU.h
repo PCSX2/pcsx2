@@ -125,8 +125,7 @@ public:
 		{
 			for (microBlockLink* linkI = qBlockList; linkI != NULL; linkI = linkI->next)
 			{
-				if (linkI->block.pState.quick32[0] != pState->quick32[0]) continue;
-				if (linkI->block.pState.quick32[1] != pState->quick32[1]) continue;
+				if (linkI->block.pState.quick64[0] != pState->quick64[0]) continue;
 				if (doConstProp && (linkI->block.pState.vi15  != pState->vi15))  continue;
 				if (doConstProp && (linkI->block.pState.vi15v != pState->vi15v)) continue;
 				return &linkI->block;

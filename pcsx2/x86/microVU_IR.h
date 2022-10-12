@@ -51,6 +51,7 @@ union alignas(16) microRegInfo
 				u8 blockType;      // 0 = Normal; 1,2 = Compile one instruction (E-bit/Branch Ending)
 				u8 r;
 			};
+			u64 quick64[2];
 			u32 quick32[4];
 		};
 
