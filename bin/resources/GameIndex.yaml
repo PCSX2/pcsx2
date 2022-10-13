@@ -10296,9 +10296,6 @@ SLES-50631:
 SLES-50632:
   name: "Dragon Rage"
   region: "PAL-I-S"
-SLES-50633:
-  name: "Gitaroo Man"
-  region: "PAL-Unk"
 SLES-50636:
   name: "Centre Court - Hard Hitter"
   region: "PAL-M3"
@@ -10346,6 +10343,16 @@ SLES-50652:
 SLES-50653:
   name: "Gitaroo Man"
   region: "PAL-M3"
+  compat: 5
+  roundModes:
+    eeRoundMode: 1
+    vuRoundMode: 3
+  patches:
+    default:
+      content: |-
+        author=boringhexi
+        // fix stage 4 flashing triangles
+        patch=0,EE,00102dd0,word,00000000
 SLES-50654:
   name: "Dune, Frank Herbert's"
   region: "PAL-M5"
@@ -22589,8 +22596,8 @@ SLKA-25215:
   region: "NTSC-K"
   gameFixes:
     - DMABusyHack
-SLKA-25216:
-  name: "Gitaroo-Man [PlayStation 2 - Big Hit Series]"
+SLKA-25216: #serial used on printed labels only, internal serial is always SLPM-67508
+  name: "Gitaroo-Man [BigHit Series]"
   region: "NTSC-K"
 SLKA-25217:
   name: "Shining Tears"
@@ -26075,6 +26082,15 @@ SLPM-65012:
   roundModes:
     eeRoundMode: 1
     vuRoundMode: 3
+  memcardFilters:
+    - "SLPM-65012"
+    - "SLPM-62062" #Gitaroo Man One bonus save data
+  patches:
+    default:
+      content: |-
+        author=boringhexi
+        // fix stage 4 flashing triangles
+        patch=0,EE,00104140,word,00000000
 SLPM-65013:
   name: "Shadow of Memories"
   region: "NTSC-J"
@@ -26538,8 +26554,8 @@ SLPM-65156:
 SLPM-65158:
   name: "Riding Spirits"
   region: "NTSC-J"
-SLPM-65160:
-  name: "Gitaroo Man [The Best]"
+SLPM-65160: #serial used on printed labels only, internal serial is always SLPM-65012
+  name: "Gitaroo Man [Koei Summer Chance 2002]"
   region: "NTSC-J"
 SLPM-65161:
   name: "Aero Dancing 4"
@@ -32926,6 +32942,12 @@ SLPM-67508:
   roundModes:
     eeRoundMode: 1
     vuRoundMode: 3
+  patches:
+    default:
+      content: |-
+        author=boringhexi
+        // fix stage 4 flashing triangles
+        patch=0,EE,00102d40,word,00000000
 SLPM-67512:
   name: "2002 FIFA World Cup"
   region: "NTSC-K"
@@ -39757,6 +39779,12 @@ SLUS-20294:
   roundModes:
     eeRoundMode: 1
     vuRoundMode: 3
+  patches:
+    default:
+      content: |-
+        author=boringhexi
+        // fix stage 4 flashing triangles
+        patch=0,EE,00102db0,word,00000000
 SLUS-20296:
   name: "Kao the Kangaroo - Round 2"
   region: "NTSC-U"
