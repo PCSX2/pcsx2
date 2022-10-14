@@ -18202,6 +18202,7 @@ SLES-54166:
     eeClampMode: 3
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    halfPixelOffset: 2 # Fixes fog misplacement.
 SLES-54167:
   name: "Call of Duty 3"
   region: "PAL-M3"
@@ -18209,6 +18210,7 @@ SLES-54167:
     eeClampMode: 3
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    halfPixelOffset: 2 # Fixes fog misplacement.
 SLES-54168:
   name: "Call of Duty 3"
   region: "PAL-G"
@@ -18216,6 +18218,7 @@ SLES-54168:
     eeClampMode: 3
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    halfPixelOffset: 2 # Fixes fog misplacement.
 SLES-54169:
   name: "Aeon Flux"
   region: "PAL-M4"
@@ -45379,6 +45382,7 @@ SLUS-21426:
     eeClampMode: 3
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    halfPixelOffset: 2 # Fixes fog misplacement.
 SLUS-21427:
   name: "WWE SmackDown! vs. RAW 2007"
   region: "NTSC-U"
