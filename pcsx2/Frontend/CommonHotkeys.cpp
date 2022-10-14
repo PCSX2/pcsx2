@@ -41,7 +41,8 @@ void CommonHost::Internal::ResetVMHotkeyState()
 
 static void HotkeyAdjustTargetSpeed(double delta)
 {
-	EmuConfig.Framerate.NominalScalar = EmuConfig.GS.LimitScalar + delta;
+	const double min_speed = Achievements::ChallengeModeActive() ? 1.0 : 0.1;
+	EmuConfig.Framerate.NominalScalar = std::max(min_speed, EmuConfig.GS.LimitScalar + delta);
 	VMManager::SetLimiterMode(LimiterModeType::Nominal);
 	gsUpdateFrequency(EmuConfig);
 	GetMTGS().SetVSync(EmuConfig.GetEffectiveVsyncMode());
