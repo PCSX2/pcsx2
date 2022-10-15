@@ -132,11 +132,44 @@ bool XInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 		return false;
 	}
 
+	ReloadDevices();
 	return true;
 }
 
 void XInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
+}
+
+bool XInputSource::ReloadDevices()
+{
+	bool changed = false;
+	for (u32 i = 0; i < NUM_CONTROLLERS; i++)
+	{
+		XINPUT_STATE new_state;
+		SCP_EXTN new_state_scp;
+		DWORD result = m_xinput_get_extended ? m_xinput_get_extended(i, &new_state_scp) : ERROR_NOT_SUPPORTED;
+		if (result != ERROR_SUCCESS)
+			result = m_xinput_get_state(i, &new_state);
+
+		if (result == ERROR_SUCCESS)
+		{
+			if (m_controllers[i].connected)
+				continue;
+
+			HandleControllerConnection(i);
+			changed = true;
+		}
+		else if (result == ERROR_DEVICE_NOT_CONNECTED)
+		{
+			if (!m_controllers[i].connected)
+				continue;
+
+			HandleControllerDisconnection(i);
+			changed = true;
+		}
+	}
+
+	return changed;
 }
 
 void XInputSource::Shutdown()
@@ -164,6 +197,8 @@ void XInputSource::PollEvents()
 	for (u32 i = 0; i < NUM_CONTROLLERS; i++)
 	{
 		const bool was_connected = m_controllers[i].connected;
+		if (!was_connected)
+			continue;
 
 		SCP_EXTN new_state_scp;
 		DWORD result = m_xinput_get_extended ? m_xinput_get_extended(i, &new_state_scp) : ERROR_NOT_SUPPORTED;

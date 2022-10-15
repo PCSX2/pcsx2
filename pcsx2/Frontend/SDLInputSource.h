@@ -31,6 +31,7 @@ public:
 
   bool Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) override;
   void UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) override;
+  bool ReloadDevices() override;
   void Shutdown() override;
 
   void PollEvents() override;

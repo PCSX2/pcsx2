@@ -54,6 +54,11 @@
 #include "svnrev.h"
 #include "Tools/InputRecording/NewInputRecordingDlg.h"
 
+#ifdef _WIN32
+#include "common/RedtapeWindows.h"
+#include <Dbt.h>
+#endif
+
 #ifdef ENABLE_RAINTEGRATION
 #include "pcsx2/Frontend/Achievements.h"
 #endif
@@ -120,6 +125,9 @@ MainWindow::~MainWindow()
 	// we compare here, since recreate destroys the window later
 	if (g_main_window == this)
 		g_main_window = nullptr;
+#ifdef _WIN32
+	unregisterForDeviceNotifications();
+#endif
 #ifdef __APPLE__
 	CocoaTools::RemoveThemeChangeHandler(this);
 #endif
@@ -145,6 +153,10 @@ void MainWindow::initialize()
 	switchToGameListView();
 	updateWindowTitle();
 	updateSaveStateMenus(QString(), QString(), 0);
+
+#ifdef _WIN32
+	registerForDeviceNotifications();
+#endif
 }
 
 // TODO: Figure out how to set this in the .ui file
@@ -421,6 +433,9 @@ void MainWindow::recreate()
 	if (s_vm_valid)
 		requestShutdown(false, true, EmuConfig.SaveStateOnShutdown);
 
+	// We need to close input sources, because e.g. DInput uses our window handle.
+	g_emu_thread->closeInputSources();
+
 	close();
 	g_main_window = nullptr;
 
@@ -429,6 +444,9 @@ void MainWindow::recreate()
 	new_main_window->refreshGameList(false);
 	new_main_window->show();
 	deleteLater();
+
+	// Reload the sources we just closed.
+	g_emu_thread->reloadInputSources();
 }
 
 void MainWindow::recreateSettings()
@@ -1807,6 +1825,48 @@ void MainWindow::dropEvent(QDropEvent* event)
 			doStartFile(std::nullopt, filename);
 	}
 }
+
+void MainWindow::registerForDeviceNotifications()
+{
+#ifdef _WIN32
+	// We use these notifications to detect when a controller is connected or disconnected.
+	DEV_BROADCAST_DEVICEINTERFACE_W filter = {sizeof(DEV_BROADCAST_DEVICEINTERFACE_W), DBT_DEVTYP_DEVICEINTERFACE};
+	m_device_notification_handle = RegisterDeviceNotificationW((HANDLE)winId(), &filter,
+		DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES);
+#endif
+}
+
+void MainWindow::unregisterForDeviceNotifications()
+{
+#ifdef _WIN32
+	if (!m_device_notification_handle)
+		return;
+
+	UnregisterDeviceNotification(static_cast<HDEVNOTIFY>(m_device_notification_handle));
+	m_device_notification_handle = nullptr;
+#endif
+}
+
+#ifdef _WIN32
+
+bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr* result)
+{
+	static constexpr const char win_type[] = "windows_generic_MSG";
+	if (eventType == QByteArray(win_type, sizeof(win_type) - 1))
+	{
+		const MSG* msg = static_cast<const MSG*>(message);
+		if (msg->message == WM_DEVICECHANGE && msg->wParam == DBT_DEVNODES_CHANGED)
+		{
+			g_emu_thread->reloadInputDevices();
+			*result = 1;
+			return true;
+		}
+	}
+
+	return QMainWindow::nativeEvent(eventType, message, result);
+}
+
+#endif
 
 DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 {

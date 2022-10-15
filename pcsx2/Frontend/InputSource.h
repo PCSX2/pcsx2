@@ -33,6 +33,7 @@ public:
 
 	virtual bool Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) = 0;
 	virtual void UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) = 0;
+	virtual bool ReloadDevices() = 0;
 	virtual void Shutdown() = 0;
 
 	virtual void PollEvents() = 0;

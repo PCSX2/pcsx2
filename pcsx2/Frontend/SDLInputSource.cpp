@@ -129,6 +129,13 @@ void SDLInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std:
 	}
 }
 
+bool SDLInputSource::ReloadDevices()
+{
+	// We'll get a GC added/removed event here.
+	PollEvents();
+	return false;
+}
+
 void SDLInputSource::Shutdown()
 {
 	ShutdownSubsystem();

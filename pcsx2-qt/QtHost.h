@@ -105,6 +105,8 @@ public Q_SLOTS:
 	void reloadPatches();
 	void reloadInputSources();
 	void reloadInputBindings();
+	void reloadInputDevices();
+	void closeInputSources();
 	void requestDisplaySize(float scale);
 	void enumerateInputDevices();
 	void enumerateVibrationMotors();
