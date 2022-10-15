@@ -444,6 +444,8 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 
 	sTexVK->TransitionToState(D3D12_RESOURCE_STATE_COPY_SOURCE);
 	sTexVK->SetUsedThisCommandBuffer();
+	if (m_tfx_textures[0] && sTexVK->GetSRVDescriptor() == m_tfx_textures[0])
+		PSSetShaderResource(0, nullptr, false);
 
 	dTexVK->TransitionToState(D3D12_RESOURCE_STATE_COPY_DEST);
 	dTexVK->SetUsedThisCommandBuffer();
@@ -2452,6 +2454,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	}
 	if (config.pal)
 		PSSetShaderResource(1, config.pal, true);
+
 	if (config.blend.constant_enable)
 		SetBlendConstants(config.blend.constant);
 
@@ -2533,22 +2536,32 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (config.tex && config.tex == config.ds)
+	if (config.tex)
 	{
-		// requires a copy of the depth buffer. this is mainly for ico.
-		copy_ds = static_cast<GSTexture12*>(CreateDepthStencil(rtsize.x, rtsize.y, GSTexture::Format::DepthStencil, false));
-		if (copy_ds)
+		if (config.tex == config.ds)
 		{
-			EndRenderPass();
+			// requires a copy of the depth buffer. this is mainly for ico.
+			copy_ds = static_cast<GSTexture12*>(CreateDepthStencil(rtsize.x, rtsize.y, GSTexture::Format::DepthStencil, false));
+			if (copy_ds)
+			{
+				EndRenderPass();
 
-			GL_PUSH("Copy depth to temp texture for shuffle {%d,%d %dx%d}",
-				config.drawarea.left, config.drawarea.top,
-				config.drawarea.width(), config.drawarea.height());
+				GL_PUSH("Copy depth to temp texture for shuffle {%d,%d %dx%d}",
+					config.drawarea.left, config.drawarea.top,
+					config.drawarea.width(), config.drawarea.height());
 
-			copy_ds->SetState(GSTexture::State::Invalidated);
-			CopyRect(config.ds, copy_ds, config.drawarea, config.drawarea.left, config.drawarea.top);
-			PSSetShaderResource(0, copy_ds, true);
+				copy_ds->SetState(GSTexture::State::Invalidated);
+				CopyRect(config.ds, copy_ds, config.drawarea, config.drawarea.left, config.drawarea.top);
+				PSSetShaderResource(0, copy_ds, true);
+			}
 		}
+	}
+	// clear texture binding when it's bound to RT or DS
+	else if (m_tfx_textures[0] &&
+			 ((config.rt && static_cast<GSTexture12*>(config.rt)->GetSRVDescriptor() == m_tfx_textures[0]) ||
+				 (config.ds && static_cast<GSTexture12*>(config.ds)->GetSRVDescriptor() == m_tfx_textures[0])))
+	{
+		PSSetShaderResource(0, nullptr, false);
 	}
 
 	// avoid restarting the render pass just to switch from rt+depth to rt and vice versa
