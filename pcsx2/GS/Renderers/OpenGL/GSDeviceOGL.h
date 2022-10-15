@@ -211,9 +211,6 @@ public:
 	static int m_shader_reg;
 
 private:
-	// Increment this constant whenever shaders change, to invalidate user's program binary cache.
-	static constexpr u32 SHADER_VERSION = 3;
-
 	static FILE* m_debug_gl_file;
 
 	bool m_disable_hw_gl_draw;

@@ -1,6 +1,7 @@
 ﻿#include "PrecompiledHeader.h"
 
 #include "VulkanHostDisplay.h"
+#include "ShaderCacheVersion.h"
 #include "common/Align.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
@@ -14,8 +15,6 @@
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
 #include <array>
-
-static constexpr u32 SHADER_CACHE_VERSION = 4;
 
 class VulkanHostDisplayTexture : public HostDisplayTexture
 {

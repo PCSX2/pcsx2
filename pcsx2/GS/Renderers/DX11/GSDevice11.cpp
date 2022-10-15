@@ -22,6 +22,7 @@
 #include "GS/GSUtil.h"
 #include "Host.h"
 #include "HostDisplay.h"
+#include "ShaderCacheVersion.h"
 #include "common/StringUtil.h"
 #include <fstream>
 #include <sstream>
@@ -91,14 +92,14 @@ bool GSDevice11::Create()
 
 	if (!GSConfig.DisableShaderCache)
 	{
-		if (!m_shader_cache.Open(EmuFolders::Cache, m_dev->GetFeatureLevel(), SHADER_VERSION, GSConfig.UseDebugDevice))
+		if (!m_shader_cache.Open(EmuFolders::Cache, m_dev->GetFeatureLevel(), SHADER_CACHE_VERSION, GSConfig.UseDebugDevice))
 		{
 			Console.Warning("Shader cache failed to open.");
 		}
 	}
 	else
 	{
-		m_shader_cache.Open({}, m_dev->GetFeatureLevel(), SHADER_VERSION, GSConfig.UseDebugDevice);
+		m_shader_cache.Open({}, m_dev->GetFeatureLevel(), SHADER_CACHE_VERSION, GSConfig.UseDebugDevice);
 		Console.WriteLn("Not using shader cache.");
 	}
 
