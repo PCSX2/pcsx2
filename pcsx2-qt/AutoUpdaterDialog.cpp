@@ -47,17 +47,20 @@
 
 // Logic to detect whether we can use the auto updater.
 // We use tagged commit, because this gets set on nightly builds.
-#if (defined(_WIN32)) && (defined(GIT_TAGGED_COMMIT) && GIT_TAGGED_COMMIT)
+#if (defined(_WIN32) || defined(__linux__)) && (defined(GIT_TAGGED_COMMIT) && GIT_TAGGED_COMMIT)
 
 #define AUTO_UPDATER_SUPPORTED 1
 
 #if defined(_WIN32)
 #define UPDATE_PLATFORM_STR "Windows"
+#elif defined(__linux__)
+#define UPDATE_PLATFORM_STR "Linux"
+#endif
+
 #if _M_SSE >= 0x500
 #define UPDATE_ADDITIONAL_TAGS "AVX2"
 #else
 #define UPDATE_ADDITIONAL_TAGS "SSE4"
-#endif
 #endif
 
 #endif
@@ -94,7 +97,19 @@ AutoUpdaterDialog::~AutoUpdaterDialog() = default;
 bool AutoUpdaterDialog::isSupported()
 {
 #ifdef AUTO_UPDATER_SUPPORTED
+#ifdef __linux__
+	// For Linux, we need to check whether we're running from the appimage.
+	if (!std::getenv("APPIMAGE"))
+	{
+		Console.Warning("We're a tagged commit, but not running from an AppImage. Disabling automatic updater.");
+		return false;
+	}
+
 	return true;
+#else
+	// Windows - always supported.
+	return true;
+#endif
 #else
 	return false;
 #endif
@@ -147,6 +162,7 @@ void AutoUpdaterDialog::reportError(const char* msg, ...)
 	va_end(ap);
 
 	// don't display errors when we're doing an automatic background check, it's just annoying
+	Console.Error("Updater Error: %s", full_msg.c_str());
 	if (m_display_messages)
 		QMessageBox::critical(this, tr("Updater Error"), QString::fromStdString(full_msg));
 }
@@ -464,7 +480,7 @@ void AutoUpdaterDialog::remindMeLaterClicked()
 	done(0);
 }
 
-#ifdef _WIN32
+#if defined(_WIN32)
 
 bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
 {
@@ -532,6 +548,84 @@ bool AutoUpdaterDialog::doUpdate(const QString& zip_path, const QString& updater
 		return false;
 	}
 
+	return true;
+}
+
+#elif defined(__linux__)
+
+bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
+{
+	const char* appimage_path = std::getenv("APPIMAGE");
+	if (!appimage_path || !FileSystem::FileExists(appimage_path))
+	{
+		reportError("Missing APPIMAGE.");
+		return false;
+	}
+
+	const QString qappimage_path(QString::fromUtf8(appimage_path));
+	if (!QFile::exists(qappimage_path))
+	{
+		reportError("Current AppImage does not exist: %s", appimage_path);
+		return false;
+	}
+
+	const QString new_appimage_path(qappimage_path + QStringLiteral(".new"));
+	const QString backup_appimage_path(qappimage_path + QStringLiteral(".backup"));
+	Console.WriteLn("APPIMAGE = %s", appimage_path);
+	Console.WriteLn("Backup AppImage path = %s", backup_appimage_path.toUtf8().constData());
+	Console.WriteLn("New AppImage path = %s", new_appimage_path.toUtf8().constData());
+
+	// Remove old "new" appimage and existing backup appimage.
+	if (QFile::exists(new_appimage_path) && !QFile::remove(new_appimage_path))
+	{
+		reportError("Failed to remove old destination AppImage: %s", new_appimage_path.toUtf8().constData());
+		return false;
+	}
+	if (QFile::exists(backup_appimage_path) && !QFile::remove(backup_appimage_path))
+	{
+		reportError("Failed to remove old backup AppImage: %s", new_appimage_path.toUtf8().constData());
+		return false;
+	}
+
+	// Write "new" appimage.
+	{
+		// We want to copy the permissions from the old appimage to the new one.
+		QFile old_file(qappimage_path);
+		const QFileDevice::Permissions old_permissions = old_file.permissions();
+		QFile new_file(new_appimage_path);
+		if (!new_file.open(QIODevice::WriteOnly) || new_file.write(update_data) != update_data.size() || !new_file.setPermissions(old_permissions))
+		{
+			QFile::remove(new_appimage_path);
+			reportError("Failed to write new destination AppImage: %s", new_appimage_path.toUtf8().constData());
+			return false;
+		}
+	}
+
+	// Rename "old" appimage.
+	if (!QFile::rename(qappimage_path, backup_appimage_path))
+	{
+		reportError("Failed to rename old AppImage to %s", backup_appimage_path.toUtf8().constData());
+		QFile::remove(new_appimage_path);
+		return false;
+	}
+
+	// Rename "new" appimage.
+	if (!QFile::rename(new_appimage_path, qappimage_path))
+	{
+		reportError("Failed to rename new AppImage to %s", qappimage_path.toUtf8().constData());
+		return false;
+	}
+
+	// Execute new appimage.
+	QProcess* new_process = new QProcess();
+	new_process->setProgram(qappimage_path);
+	if (!new_process->startDetached())
+	{
+		reportError("Failed to execute new AppImage.");
+		return false;
+	}
+
+	// We exit once we return.
 	return true;
 }
 
