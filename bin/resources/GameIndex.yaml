@@ -154,6 +154,8 @@ PAPX-90512:
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
@@ -304,6 +306,8 @@ PBPX-95524:
   region: "NTSC-Unk"
   compat: 5
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
@@ -315,6 +319,8 @@ PBPX-95601:
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters:
     - "SCAJ-20066"
@@ -373,6 +379,8 @@ PCPX-96649:
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
@@ -700,6 +708,8 @@ SCAJ-20066:
   region: "NTSC-Unk"
   compat: 5
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters: #vuClampMode = 2  Text in GT mode works.
     - "SCAJ-20066"
@@ -1471,6 +1481,8 @@ SCAJ-30006:
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters:
     - "SCAJ-20066"
@@ -1492,6 +1504,8 @@ SCAJ-30007:
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
@@ -1501,6 +1515,8 @@ SCAJ-30008:
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters:
     - "SCAJ-20066"
@@ -1603,6 +1619,8 @@ SCCS-60002:
   name: "Gran Turismo 4 [Review Copy]"
   region: "NTSC-C"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
 SCED-50041:
   name: "Tekken Tag Tournament [Demo]"
@@ -2161,6 +2179,8 @@ SCED-52578:
   name: "Gran Turismo 4 BMW 1 Series Virtual Drive Dealership [Demo]"
   region: "PAL-M5"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
 SCED-52619:
   name: "Official PlayStation 2 Magazine Demo 48"
@@ -2169,6 +2189,8 @@ SCED-52681:
   name: "Gran Turismo 4 BMW 1 Series Virtual Drive [Demo]"
   region: "PAL-M11"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
 SCED-52687:
   name: "Formula One 04 [Demo]"
@@ -3240,6 +3262,8 @@ SCES-51719:
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters:
     - "SCES-51719"
@@ -3438,6 +3462,8 @@ SCES-52438:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters: #vuClampMode = 2  Text in GT mode works.
     - "SCES-51719"
@@ -4670,6 +4696,8 @@ SCKA-20022:
   name: "Gran Turismo 4 Prologue"
   region: "NTSC-K"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
@@ -5082,6 +5110,8 @@ SCKA-30001:
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
@@ -5481,6 +5511,8 @@ SCPS-15055:
   name: "Gran Turismo 4 - Prologue"
   region: "NTSC-J"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters: #vuClampMode = 2  Text in GT mode works.
     - "SCAJ-20066"
@@ -5866,6 +5898,8 @@ SCPS-17001:
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters:
     - "SCAJ-20066"
@@ -6035,6 +6069,8 @@ SCPS-19252:
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters:
     - "SCAJ-20066"
@@ -6071,6 +6107,8 @@ SCPS-19304:
   name: "Gran Turismo 4 - Prologue [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters:
     - "SCAJ-20066"
@@ -7434,6 +7472,8 @@ SCUS-97328:
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters: # Allows car imports from GT3 or something.
     - "SCUS-97328"
@@ -7793,6 +7833,8 @@ SCUS-97436:
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   memcardFilters:
     - "SCUS-97328"
@@ -7997,6 +8039,8 @@ SCUS-97483:
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
