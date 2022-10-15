@@ -26,33 +26,8 @@
    <property name="bottomMargin">
     <number>0</number>
    </property>
-   <item row="0" column="1" rowspan="6">
-    <widget class="QGroupBox" name="groupBox_3">
-     <property name="title">
-      <string>Detected Devices</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0" colspan="2">
-       <widget class="QListWidget" name="deviceList">
-        <property name="minimumSize">
-         <size>
-          <width>200</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>200</width>
-          <height>16777215</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item row="0" column="0">
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="sdlGroup">
      <property name="title">
       <string>SDL Input Source</string>
      </property>
@@ -85,7 +60,7 @@
     </widget>
    </item>
    <item row="1" column="0">
-    <widget class="QGroupBox" name="groupBox_2">
+    <widget class="QGroupBox" name="xinputGroup">
      <property name="title">
       <string>XInput Source</string>
      </property>
@@ -110,7 +85,33 @@
      </layout>
     </widget>
    </item>
-   <item row="5" column="0">
+   <item row="2" column="0">
+    <widget class="QGroupBox" name="dinputGroup">
+     <property name="title">
+      <string>DInput Source</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_6">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>The DInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL instead is recommended, but DirectInput can be used if they are not compatible with SDL.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="enableDInputSource">
+        <property name="text">
+         <string>Enable DInput Input Source</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="6" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -123,7 +124,7 @@
      </property>
     </spacer>
    </item>
-   <item row="4" column="0">
+   <item row="5" column="0">
     <widget class="QGroupBox" name="profileSettings">
      <property name="title">
       <string>Profile Settings</string>
@@ -149,8 +150,8 @@
      </layout>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QGroupBox" name="groupBox_4">
+   <item row="4" column="0">
+    <widget class="QGroupBox" name="multitapGroup">
      <property name="title">
       <string>Controller Multitap</string>
      </property>
@@ -182,8 +183,8 @@
      </layout>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QGroupBox" name="groupBox_5">
+   <item row="3" column="0">
+    <widget class="QGroupBox" name="mouseGroup">
      <property name="title">
       <string>Mouse/Pointer Source</string>
      </property>
@@ -318,6 +319,31 @@
          </widget>
         </item>
        </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="1" rowspan="7">
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Detected Devices</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0" colspan="2">
+       <widget class="QListWidget" name="deviceList">
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

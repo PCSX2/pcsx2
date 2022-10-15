@@ -1293,6 +1293,9 @@
     <ClCompile Include="Frontend\ImGuiOverlays.cpp">
       <Filter>Host</Filter>
     </ClCompile>
+    <ClCompile Include="Frontend\DInputSource.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2154,6 +2157,9 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="Frontend\ImGuiOverlays.h">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Frontend\DInputSource.h">
       <Filter>Host</Filter>
     </ClInclude>
   </ItemGroup>
