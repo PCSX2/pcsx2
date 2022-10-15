@@ -58,9 +58,11 @@ private:
 	void checkIfUpdateNeeded();
 	QString getCurrentUpdateTag() const;
 
-#ifdef _WIN32
+#if defined(_WIN32)
 	bool processUpdate(const QByteArray& update_data);
 	bool doUpdate(const QString& zip_path, const QString& updater_path, const QString& destination_path);
+#elif defined(__linux__)
+	bool processUpdate(const QByteArray& update_data);
 #else
 	bool processUpdate(const QByteArray& update_data);
 #endif

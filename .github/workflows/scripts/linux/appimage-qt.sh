@@ -180,6 +180,7 @@ declare -a QTPLUGINS=(
 	"plugins/imageformats"
 	"plugins/platforms"
 	#"plugins/platformthemes" # Enable this if we want to ship GTK+ themes at any point.
+	"plugins/tls"
 	"plugins/wayland-decoration-client"
 	"plugins/wayland-graphics-integration-client"
 	"plugins/wayland-graphics-integration-server"
