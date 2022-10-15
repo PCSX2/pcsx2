@@ -133,8 +133,6 @@ public:
 	};
 
 private:
-	static constexpr u32 SHADER_VERSION = 1;
-
 	ComPtr<ID3D12RootSignature> m_tfx_root_signature;
 	ComPtr<ID3D12RootSignature> m_utility_root_signature;
 

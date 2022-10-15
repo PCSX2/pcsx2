@@ -108,9 +108,6 @@ public:
 	};
 
 private:
-	// Increment this constant whenever shaders change, to invalidate user's shader cache.
-	static constexpr u32 SHADER_VERSION = 1;
-
 	static constexpr u32 MAX_TEXTURES = 4;
 	static constexpr u32 MAX_SAMPLERS = 2;
 

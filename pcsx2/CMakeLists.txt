@@ -241,6 +241,7 @@ set(pcsx2Headers
 	R5900.h
 	R5900OpcodeTables.h
 	SaveState.h
+	ShaderCacheVersion.h
 	Sifcmd.h
 	Sif.h
 	SingleRegisterTypes.h

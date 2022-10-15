@@ -2996,6 +2996,9 @@
     <ClInclude Include="Frontend\ImGuiOverlays.h">
       <Filter>Host</Filter>
     </ClInclude>
+    <ClInclude Include="ShaderCacheVersion.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="windows\wxResources.rc">

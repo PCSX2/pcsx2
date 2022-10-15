@@ -869,6 +869,7 @@
     <ClInclude Include="PAD\Windows\WndProcEater.h" />
     <ClInclude Include="PAD\Windows\XInputEnum.h" />
     <ClInclude Include="PerformanceMetrics.h" />
+    <ClInclude Include="ShaderCacheVersion.h" />
     <ClInclude Include="SPU2\Config.h" />
     <ClInclude Include="SPU2\Global.h" />
     <ClInclude Include="SPU2\interpolate_table.h" />

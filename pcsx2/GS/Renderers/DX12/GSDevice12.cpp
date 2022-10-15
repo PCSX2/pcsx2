@@ -29,6 +29,7 @@
 #include "GS/GSUtil.h"
 #include "Host.h"
 #include "HostDisplay.h"
+#include "ShaderCacheVersion.h"
 #include <sstream>
 #include <limits>
 
@@ -113,14 +114,14 @@ bool GSDevice12::Create()
 
 	if (!GSConfig.DisableShaderCache)
 	{
-		if (!m_shader_cache.Open(EmuFolders::Cache, g_d3d12_context->GetFeatureLevel(), SHADER_VERSION, GSConfig.UseDebugDevice))
+		if (!m_shader_cache.Open(EmuFolders::Cache, g_d3d12_context->GetFeatureLevel(), SHADER_CACHE_VERSION, GSConfig.UseDebugDevice))
 		{
 			Console.Warning("Shader cache failed to open.");
 		}
 	}
 	else
 	{
-		m_shader_cache.Open({}, g_d3d12_context->GetFeatureLevel(), SHADER_VERSION, GSConfig.UseDebugDevice);
+		m_shader_cache.Open({}, g_d3d12_context->GetFeatureLevel(), SHADER_CACHE_VERSION, GSConfig.UseDebugDevice);
 		Console.WriteLn("Not using shader cache.");
 	}
 

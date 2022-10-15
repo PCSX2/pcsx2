@@ -566,6 +566,7 @@
     <ClInclude Include="Recording\InputRecordingFile.h" />
     <ClInclude Include="Recording\PadData.h" />
     <ClInclude Include="Recording\Utilities\InputRecordingLogger.h" />
+    <ClInclude Include="ShaderCacheVersion.h" />
     <ClInclude Include="SPU2\Config.h" />
     <ClInclude Include="SPU2\Global.h" />
     <ClInclude Include="SPU2\Host\Config.h" />

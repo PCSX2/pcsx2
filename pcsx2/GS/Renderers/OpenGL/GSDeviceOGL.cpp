@@ -22,6 +22,7 @@
 #include "GS/GSUtil.h"
 #include "Host.h"
 #include "HostDisplay.h"
+#include "ShaderCacheVersion.h"
 #include <cinttypes>
 #include <fstream>
 #include <sstream>
@@ -206,7 +207,7 @@ bool GSDeviceOGL::Create()
 
 	if (!theApp.GetConfigB("disable_shader_cache"))
 	{
-		if (!m_shader_cache.Open(false, EmuFolders::Cache, SHADER_VERSION))
+		if (!m_shader_cache.Open(false, EmuFolders::Cache, SHADER_CACHE_VERSION))
 			Console.Warning("Shader cache failed to open.");
 	}
 	else
