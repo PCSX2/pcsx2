@@ -19,6 +19,7 @@
 #include "PAD/Host/Global.h"
 
 #include <array>
+#include <cmath>
 
 using namespace PAD;
 
@@ -56,7 +57,7 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 {
 	if (IsAnalogKey(index))
 	{
-		m_button_pressure[pad][index] = static_cast<u8>(std::clamp(((value < m_axis_scale[pad][0]) ? 0.0f : value) * m_axis_scale[pad][1] * 255.0f, 0.0f, 255.0f));
+		m_button_pressure[pad][index] = static_cast<u8>(std::clamp(value * m_axis_scale[pad][1] * 255.0f, 0.0f, 255.0f));
 
 		//                          Left -> -- -> Right
 		// Value range :        FFFF8002 -> 0  -> 7FFE
@@ -67,34 +68,62 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 		// merge left/right or up/down into rx or ry
 
 #define MERGE(pad, pos, neg) ((m_button_pressure[pad][pos] != 0) ? (127u + ((m_button_pressure[pad][pos] + 1u) / 2u)) : (127u - (m_button_pressure[pad][neg] / 2u)))
-
-		switch (index)
+		if (index <= PAD_L_LEFT)
 		{
-			case PAD_R_LEFT:
-			case PAD_R_RIGHT:
-				m_analog[pad].rx = m_analog[pad].invert_rx ? MERGE(pad, PAD_R_LEFT, PAD_R_RIGHT) : MERGE(pad, PAD_R_RIGHT, PAD_R_LEFT);
-				break;
+			// Left Stick
+			m_analog[pad].lx = m_analog[pad].invert_lx ? MERGE(pad, PAD_L_LEFT, PAD_L_RIGHT) : MERGE(pad, PAD_L_RIGHT, PAD_L_LEFT);
+			m_analog[pad].ly = m_analog[pad].invert_ly ? MERGE(pad, PAD_L_UP, PAD_L_DOWN) : MERGE(pad, PAD_L_DOWN, PAD_L_UP);
+		}
+		else
+		{
+			// Right Stick
+			m_analog[pad].rx = m_analog[pad].invert_rx ? MERGE(pad, PAD_R_LEFT, PAD_R_RIGHT) : MERGE(pad, PAD_R_RIGHT, PAD_R_LEFT);
+			m_analog[pad].ry = m_analog[pad].invert_ry ? MERGE(pad, PAD_R_UP, PAD_R_DOWN) : MERGE(pad, PAD_R_DOWN, PAD_R_UP);
+		}
+#undef MERGE
 
-			case PAD_R_DOWN:
-			case PAD_R_UP:
-				m_analog[pad].ry = m_analog[pad].invert_ry ? MERGE(pad, PAD_R_UP, PAD_R_DOWN) : MERGE(pad, PAD_R_DOWN, PAD_R_UP);
-				break;
+		// Deadzone computation.
+		const float dz = m_axis_scale[pad][0];
+		if (dz > 0.0f)
+		{
+#define MERGE_F(pad, pos, neg) ((m_button_pressure[pad][pos] != 0) ? (static_cast<float>(m_button_pressure[pad][pos]) / 255.0f) : (static_cast<float>(m_button_pressure[pad][neg]) / -255.0f))
+			float pos_x, pos_y;
+			if (index <= PAD_L_LEFT)
+			{
+				pos_x = m_analog[pad].invert_lx ? MERGE_F(pad, PAD_L_LEFT, PAD_L_RIGHT) : MERGE_F(pad, PAD_L_RIGHT, PAD_L_LEFT);
+				pos_y = m_analog[pad].invert_ly ? MERGE_F(pad, PAD_L_UP, PAD_L_DOWN) : MERGE_F(pad, PAD_L_DOWN, PAD_L_UP);
+			}
+			else
+			{
+				pos_x = m_analog[pad].invert_lx ? MERGE_F(pad, PAD_R_LEFT, PAD_R_RIGHT) : MERGE_F(pad, PAD_R_RIGHT, PAD_R_LEFT);
+				pos_y = m_analog[pad].invert_ly ? MERGE_F(pad, PAD_R_UP, PAD_R_DOWN) : MERGE_F(pad, PAD_R_DOWN, PAD_R_UP);
+			}
 
-			case PAD_L_LEFT:
-			case PAD_L_RIGHT:
-				m_analog[pad].lx = m_analog[pad].invert_lx ? MERGE(pad, PAD_L_LEFT, PAD_L_RIGHT) : MERGE(pad, PAD_L_RIGHT, PAD_L_LEFT);
-				break;
+			// No point checking if we're at dead center (usually keyboard with no buttons pressed).
+			if (pos_x != 0.0f || pos_y != 0.0f)
+			{
+				// Compute the angle at the given position in the stick's square bounding box.
+				const float theta = std::atan2(pos_y, pos_x);
 
-			case PAD_L_DOWN:
-			case PAD_L_UP:
-				m_analog[pad].ly = m_analog[pad].invert_ly ? MERGE(pad, PAD_L_UP, PAD_L_DOWN) : MERGE(pad, PAD_L_DOWN, PAD_L_UP);
-				break;
+				// Compute the position that the edge of the circle would be at, given the angle.
+				const float dz_x = std::cos(theta) * dz;
+				const float dz_y = std::sin(theta) * dz;
 
-			default:
-				break;
+				// We're in the deadzone if our position is less than the circle edge.
+				const bool in_x = (pos_x < 0.0f) ? (pos_x > dz_x) : (pos_x <= dz_x);
+				const bool in_y = (pos_y < 0.0f) ? (pos_y > dz_y) : (pos_y <= dz_y);
+				if (in_x && in_y)
+				{
+					// In deadzone. Set to 127 (center).
+					if (index <= PAD_L_LEFT)
+						m_analog[pad].lx = m_analog[pad].ly = 127;
+					else
+						m_analog[pad].rx = m_analog[pad].ry = 127;
+				}
+			}
+#undef MERGE_F
 		}
 
-#undef MERGE
 	}
 	else
 	{
