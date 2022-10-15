@@ -62,62 +62,26 @@ DisplayWidget::~DisplayWidget()
 #endif
 }
 
-qreal DisplayWidget::devicePixelRatioFromScreen() const
-{
-	const QScreen* screen_for_ratio = screen();
-	if (!screen_for_ratio)
-		screen_for_ratio = QGuiApplication::primaryScreen();
-
-	return screen_for_ratio ? screen_for_ratio->devicePixelRatio() : static_cast<qreal>(1);
-}
-
 int DisplayWidget::scaledWindowWidth() const
 {
-	return std::max(static_cast<int>(std::ceil(static_cast<qreal>(width()) * devicePixelRatioFromScreen())), 1);
+	return std::max(static_cast<int>(std::ceil(static_cast<qreal>(width()) * QtUtils::GetDevicePixelRatioForWidget(this))), 1);
 }
 
 int DisplayWidget::scaledWindowHeight() const
 {
-	return std::max(static_cast<int>(std::ceil(static_cast<qreal>(height()) * devicePixelRatioFromScreen())), 1);
+	return std::max(static_cast<int>(std::ceil(static_cast<qreal>(height()) * QtUtils::GetDevicePixelRatioForWidget(this))), 1);
 }
 
 std::optional<WindowInfo> DisplayWidget::getWindowInfo()
 {
-	WindowInfo wi;
-
-	// Windows and Apple are easy here since there's no display connection.
-#if defined(_WIN32)
-	wi.type = WindowInfo::Type::Win32;
-	wi.window_handle = reinterpret_cast<void*>(winId());
-#elif defined(__APPLE__)
-	wi.type = WindowInfo::Type::MacOS;
-	wi.window_handle = reinterpret_cast<void*>(winId());
-#else
-	QPlatformNativeInterface* pni = QGuiApplication::platformNativeInterface();
-	const QString platform_name = QGuiApplication::platformName();
-	if (platform_name == QStringLiteral("xcb"))
+	std::optional<WindowInfo> ret(QtUtils::GetWindowInfoForWidget(this));
+	if (ret.has_value())
 	{
-		wi.type = WindowInfo::Type::X11;
-		wi.display_connection = pni->nativeResourceForWindow("display", windowHandle());
-		wi.window_handle = reinterpret_cast<void*>(winId());
+		m_last_window_width = ret->surface_width;
+		m_last_window_height = ret->surface_height;
+		m_last_window_scale = ret->surface_scale;
 	}
-	else if (platform_name == QStringLiteral("wayland"))
-	{
-		wi.type = WindowInfo::Type::Wayland;
-		wi.display_connection = pni->nativeResourceForWindow("display", windowHandle());
-		wi.window_handle = pni->nativeResourceForWindow("surface", windowHandle());
-	}
-	else
-	{
-		qCritical() << "Unknown PNI platform " << platform_name;
-		return std::nullopt;
-	}
-#endif
-
-	m_last_window_width = wi.surface_width = static_cast<u32>(scaledWindowWidth());
-	m_last_window_height = wi.surface_height = static_cast<u32>(scaledWindowHeight());
-	m_last_window_scale = wi.surface_scale = static_cast<float>(devicePixelRatioFromScreen());
-	return wi;
+	return ret;
 }
 
 void DisplayWidget::updateRelativeMode(bool master_enable)
@@ -295,7 +259,7 @@ bool DisplayWidget::event(QEvent* event)
 
 			if (!m_relative_mouse_enabled)
 			{
-				const qreal dpr = devicePixelRatioFromScreen();
+				const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
 				const QPoint mouse_pos = mouse_event->pos();
 
 				const float scaled_x = static_cast<float>(static_cast<qreal>(mouse_pos.x()) * dpr);
@@ -380,7 +344,7 @@ bool DisplayWidget::event(QEvent* event)
 		{
 			QWidget::event(event);
 
-			const float dpr = devicePixelRatioFromScreen();
+			const float dpr = QtUtils::GetDevicePixelRatioForWidget(this);
 			const u32 scaled_width = static_cast<u32>(std::max(static_cast<int>(std::ceil(static_cast<qreal>(width()) * dpr)), 1));
 			const u32 scaled_height = static_cast<u32>(std::max(static_cast<int>(std::ceil(static_cast<qreal>(height()) * dpr)), 1));
 

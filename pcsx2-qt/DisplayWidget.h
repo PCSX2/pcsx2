@@ -36,7 +36,6 @@ public:
 
 	int scaledWindowWidth() const;
 	int scaledWindowHeight() const;
-	qreal devicePixelRatioFromScreen() const;
 
 	std::optional<WindowInfo> getWindowInfo();
 

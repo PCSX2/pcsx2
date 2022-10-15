@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "common/WindowInfo.h"
+
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <functional>
@@ -108,6 +110,7 @@ public Q_SLOTS:
 	bool requestShutdown(bool allow_confirm = true, bool allow_save_to_state = true, bool default_save_to_state = true, bool block_until_done = false);
 	void requestExit();
 	void checkForSettingChanges();
+	std::optional<WindowInfo> getWindowInfo();
 
 private Q_SLOTS:
 	void onUpdateCheckComplete();
