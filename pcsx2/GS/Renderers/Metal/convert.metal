@@ -247,7 +247,7 @@ fragment DepthOut ps_convert_rgb5a1_float16_biln(ConvertShaderData data [[stage_
 	return res.sample_biln<rgb5a1_to_depth16>(data.t);
 }
 
-fragment float4 ps_convert_rgba_8i(ConvertShaderData data [[stage_in]], ConvertPSRes res,
+fragment float4 ps_convert_rgba_8i(ConvertShaderData data [[stage_in]], DirectReadTextureIn<float> res,
 	constant GSMTLConvertPSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
 {
 	// Convert a RGBA texture into a 8 bits packed texture
@@ -259,69 +259,28 @@ fragment float4 ps_convert_rgba_8i(ConvertShaderData data [[stage_in]], ConvertP
 	// 1: 8 R | 8 B
 	// 2: 8 G | 8 A
 	// 3: 8 G | 8 A
-	float c;
+	uint2 pos = uint2(data.p.xy);
 
-	uint2 sel = uint2(data.p.xy) % uint2(16, 16);
-	uint2 tb  = (uint2(data.p.xy) & ~uint2(15, 3)) >> 1;
+	// Collapse separate R G B A areas into their base pixel
+	uint2 block = (pos & ~uint2(15, 3)) >> 1;
+	uint2 subblock = pos & uint2(7, 1);
+	uint2 coord = block | subblock;
 
-	uint ty  = tb.y | (uint(data.p.y) & 1);
-	uint txN = tb.x | (uint(data.p.x) & 7);
-	uint txH = tb.x | ((uint(data.p.x) + 4) & 7);
+	// Apply offset to cols 1 and 2
+	uint is_col23 = pos.y & 4;
+	uint is_col13 = pos.y & 2;
+	uint is_col12 = is_col23 ^ (is_col13 << 1);
+	coord.x ^= is_col12; // If cols 1 or 2, flip bit 3 of x
 
-	if (floor(SCALING_FACTOR.x) != SCALING_FACTOR.x)
-	{
-		txN = (int)((float)txN * SCALING_FACTOR.x);
-		txH = (int)((float)txH * SCALING_FACTOR.x);
-		ty  = (int)((float)ty * SCALING_FACTOR.y);
-	}
+	if (any(floor(SCALING_FACTOR) != SCALING_FACTOR))
+		coord = uint2(float2(coord) * SCALING_FACTOR);
 	else
-	{
-		txN *= SCALING_FACTOR.x;
-		txH *= SCALING_FACTOR.x;
-		ty  *= SCALING_FACTOR.y;
-	}
+		coord = mul24(coord, uint2(SCALING_FACTOR));
 
-	// TODO investigate texture gather
-	float4 cN = res.texture.read(uint2(txN, ty));
-	float4 cH = res.texture.read(uint2(txH, ty));
-
-	if ((sel.y & 4) == 0)
-	{
-		// Column 0 and 2
-		if ((sel.y & 2) == 0)
-		{
-			if ((sel.x & 8) == 0)
-				c = cN.r;
-			else
-				c = cN.b;
-		}
-		else
-		{
-			if ((sel.x & 8) == 0)
-				c = cH.g;
-			else
-				c = cH.a;
-		}
-	}
-	else
-	{
-		// Column 1 and 3
-		if ((sel.y & 2) == 0)
-		{
-			if ((sel.x & 8) == 0)
-				c = cH.r;
-			else
-				c = cH.b;
-		}
-		else
-		{
-			if ((sel.x & 8) == 0)
-				c = cN.g;
-			else
-				c = cN.a;
-		}
-	}
-	return float4(c);
+	float4 pixel = res.tex.read(coord);
+	float2 sel0 = (pos.y & 2) == 0 ? pixel.rb : pixel.ga;
+	float  sel1 = (pos.x & 8) == 0 ? sel0.x : sel0.y;
+	return float4(sel1);
 }
 
 fragment float4 ps_yuv(ConvertShaderData data [[stage_in]], ConvertPSRes res,
