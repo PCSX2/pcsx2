@@ -14,6 +14,9 @@
  */
 
 #pragma once
+
+#include "common/WindowInfo.h"
+
 #include <QtCore/QByteArray>
 #include <QtCore/QMetaType>
 #include <QtCore/QString>
@@ -77,4 +80,10 @@ namespace QtUtils
 
 	/// Adjusts the fixed size for a window if it's not resizeable.
 	void ResizePotentiallyFixedSizeWindow(QWidget* widget, int width, int height);
+
+	/// Returns the pixel ratio/scaling factor for a widget.
+	qreal GetDevicePixelRatioForWidget(const QWidget* widget);
+
+	/// Returns the common window info structure for a Qt widget.
+	std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget);
 } // namespace QtUtils

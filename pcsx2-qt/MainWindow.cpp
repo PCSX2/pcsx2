@@ -1181,6 +1181,11 @@ void MainWindow::checkForSettingChanges()
 	updateWindowState();
 }
 
+std::optional<WindowInfo> MainWindow::getWindowInfo()
+{
+	return QtUtils::GetWindowInfoForWidget(this);
+}
+
 void Host::InvalidateSaveStateCache()
 {
 	QMetaObject::invokeMethod(g_main_window, &MainWindow::invalidateSaveStateCache, Qt::QueuedConnection);
