@@ -35,7 +35,7 @@ DInputSource::DInputSource() = default;
 DInputSource::~DInputSource()
 {
 	m_controllers.clear();
-	m_dinput.Reset();
+	m_dinput.reset();
 	if (m_dinput_module)
 		FreeLibrary(m_dinput_module);
 }
@@ -85,7 +85,7 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 	}
 
 	HRESULT hr = create(
-		GetModuleHandleA(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8W, reinterpret_cast<LPVOID*>(m_dinput.GetAddressOf()), nullptr);
+		GetModuleHandleA(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8W, reinterpret_cast<LPVOID*>(m_dinput.put()), nullptr);
 	m_joystick_data_format = get_joystick_data_format();
 	if (FAILED(hr) || !m_joystick_data_format)
 	{
@@ -96,18 +96,71 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 	// need to release the lock while we're enumerating, because we call winId().
 	settings_lock.unlock();
 	const std::optional<WindowInfo> toplevel_wi(Host::GetTopLevelWindowInfo());
-	if (toplevel_wi.has_value() && toplevel_wi->type == WindowInfo::Type::Win32)
-		AddDevices(static_cast<HWND>(toplevel_wi->window_handle));
-	else
+	if (!toplevel_wi.has_value() || toplevel_wi->type != WindowInfo::Type::Win32)
+	{
 		Console.Error("Missing top level window, cannot add DInput devices.");
+		return false;
+	}
 	settings_lock.lock();
 
+	m_toplevel_window = static_cast<HWND>(toplevel_wi->window_handle);
+	ReloadDevices();
 	return true;
 }
 
 void DInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
 	// noop
+}
+
+static BOOL CALLBACK EnumCallback(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef)
+{
+	static_cast<std::vector<DIDEVICEINSTANCEW>*>(pvRef)->push_back(*lpddi);
+	return DIENUM_CONTINUE;
+}
+
+bool DInputSource::ReloadDevices()
+{
+	// detect any removals
+	PollEvents();
+
+	// look for new devices
+	std::vector<DIDEVICEINSTANCEW> devices;
+	m_dinput->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumCallback, &devices, DIEDFL_ATTACHEDONLY);
+
+	DevCon.WriteLn("Enumerated %zu devices", devices.size());
+
+	bool changed = false;
+	for (DIDEVICEINSTANCEW inst : devices)
+	{
+		// do we already have this one?
+		if (std::any_of(
+				m_controllers.begin(), m_controllers.end(), [&inst](const ControllerData& cd) { return inst.guidInstance == cd.guid; }))
+		{
+			// yup, so skip it
+			continue;
+		}
+
+		ControllerData cd;
+		cd.guid = inst.guidInstance;
+		HRESULT hr = m_dinput->CreateDevice(inst.guidInstance, cd.device.put(), nullptr);
+		if (FAILED(hr))
+		{
+			Console.Warning("Failed to create instance of device [%s, %s]", inst.tszProductName, inst.tszInstanceName);
+			continue;
+		}
+
+		const std::string name(StringUtil::WideStringToUTF8String(inst.tszProductName));
+		if (AddDevice(cd, name))
+		{
+			const u32 index = static_cast<u32>(m_controllers.size());
+			m_controllers.push_back(std::move(cd));
+			Host::OnInputDeviceConnected(GetDeviceIdentifier(index), name);
+			changed = true;
+		}
+	}
+
+	return changed;
 }
 
 void DInputSource::Shutdown()
@@ -119,45 +172,12 @@ void DInputSource::Shutdown()
 	}
 }
 
-static BOOL CALLBACK EnumCallback(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef)
+bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
 {
-	static_cast<std::vector<DIDEVICEINSTANCEW>*>(pvRef)->push_back(*lpddi);
-	return DIENUM_CONTINUE;
-}
-
-void DInputSource::AddDevices(HWND toplevel_window)
-{
-	std::vector<DIDEVICEINSTANCEW> devices;
-	m_dinput->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumCallback, &devices, DIEDFL_ATTACHEDONLY);
-
-	DevCon.WriteLn("Enumerated %zu devices", devices.size());
-
-	for (DIDEVICEINSTANCEW inst : devices)
-	{
-		ControllerData cd;
-		HRESULT hr = m_dinput->CreateDevice(inst.guidInstance, cd.device.GetAddressOf(), nullptr);
-		if (FAILED(hr))
-		{
-			Console.Warning("Failed to create instance of device [%s, %s]", inst.tszProductName, inst.tszInstanceName);
-			continue;
-		}
-
-		const std::string name(StringUtil::WideStringToUTF8String(inst.tszProductName));
-		if (AddDevice(cd, toplevel_window, name))
-		{
-			const u32 index = static_cast<u32>(m_controllers.size());
-			m_controllers.push_back(std::move(cd));
-			Host::OnInputDeviceConnected(GetDeviceIdentifier(index), name);
-		}
-	}
-}
-
-bool DInputSource::AddDevice(ControllerData& cd, HWND toplevel_window, const std::string& name)
-{
-	HRESULT hr = cd.device->SetCooperativeLevel(toplevel_window, DISCL_BACKGROUND | DISCL_EXCLUSIVE);
+	HRESULT hr = cd.device->SetCooperativeLevel(m_toplevel_window, DISCL_BACKGROUND | DISCL_EXCLUSIVE);
 	if (FAILED(hr))
 	{
-		hr = cd.device->SetCooperativeLevel(toplevel_window, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
+		hr = cd.device->SetCooperativeLevel(m_toplevel_window, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
 		if (FAILED(hr))
 		{
 			Console.Error("Failed to set cooperative level for '%s'", name.c_str());

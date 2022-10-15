@@ -701,6 +701,28 @@ void EmuThread::reloadInputBindings()
 	InputManager::ReloadBindings(*si, *bindings_si);
 }
 
+void EmuThread::reloadInputDevices()
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, &EmuThread::reloadInputDevices, Qt::QueuedConnection);
+		return;
+	}
+
+	InputManager::ReloadDevices();
+}
+
+void EmuThread::closeInputSources()
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, &EmuThread::reloadInputDevices, Qt::BlockingQueuedConnection);
+		return;
+	}
+
+	InputManager::CloseSources();
+}
+
 void EmuThread::requestDisplaySize(float scale)
 {
 	if (!isOnEmuThread())

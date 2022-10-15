@@ -22,7 +22,7 @@
 #include <functional>
 #include <mutex>
 #include <vector>
-#include <wrl/client.h>
+#include <wil/com.h>
 
 class DInputSource final : public InputSource
 {
@@ -46,6 +46,7 @@ public:
 
 	bool Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) override;
 	void UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) override;
+	bool ReloadDevices() override;
 	void Shutdown() override;
 
 	void PollEvents() override;
@@ -59,13 +60,11 @@ public:
 	std::string ConvertKeyToString(InputBindingKey key) override;
 
 private:
-	template <typename T>
-	using ComPtr = Microsoft::WRL::ComPtr<T>;
-
 	struct ControllerData
 	{
-		ComPtr<IDirectInputDevice8W> device;
+		wil::com_ptr_nothrow<IDirectInputDevice8W> device;
 		DIJOYSTATE last_state = {};
+		GUID guid = {};
 		std::vector<u32> axis_offsets;
 		u32 num_buttons = 0;
 
@@ -80,14 +79,14 @@ private:
 	static std::array<bool, NUM_HAT_DIRECTIONS> GetHatButtons(DWORD hat);
 	static std::string GetDeviceIdentifier(u32 index);
 
-	void AddDevices(HWND toplevel_window);
-	bool AddDevice(ControllerData& cd, HWND toplevel_window, const std::string& name);
+	bool AddDevice(ControllerData& cd, const std::string& name);
 
 	void CheckForStateChanges(size_t index, const DIJOYSTATE& new_state);
 
 	ControllerDataArray m_controllers;
 
 	HMODULE m_dinput_module{};
+	wil::com_ptr_nothrow<IDirectInput8W> m_dinput;
 	LPCDIDATAFORMAT m_joystick_data_format{};
-	ComPtr<IDirectInput8W> m_dinput;
+	HWND m_toplevel_window = NULL;
 };

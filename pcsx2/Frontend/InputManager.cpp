@@ -1024,6 +1024,19 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 // Source Management
 // ------------------------------------------------------------------------
 
+bool InputManager::ReloadDevices()
+{
+	bool changed = false;
+
+	for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
+	{
+		if (s_input_sources[i])
+			changed |= s_input_sources[i]->ReloadDevices();
+	}
+
+	return changed;
+}
+
 void InputManager::CloseSources()
 {
 	for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
