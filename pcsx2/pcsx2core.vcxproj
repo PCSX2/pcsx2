@@ -193,6 +193,7 @@
     <ClCompile Include="Frontend\CommonHotkeys.cpp" />
     <ClCompile Include="Frontend\D3D11HostDisplay.cpp" />
     <ClCompile Include="Frontend\D3D12HostDisplay.cpp" />
+    <ClCompile Include="Frontend\DInputSource.cpp" />
     <ClCompile Include="Frontend\FullscreenUI.cpp" />
     <ClCompile Include="Frontend\GameList.cpp" />
     <ClCompile Include="Frontend\ImGuiFullscreen.cpp" />
@@ -519,6 +520,7 @@
     <ClInclude Include="Frontend\CommonHost.h" />
     <ClInclude Include="Frontend\D3D11HostDisplay.h" />
     <ClInclude Include="Frontend\D3D12HostDisplay.h" />
+    <ClInclude Include="Frontend\DInputSource.h" />
     <ClInclude Include="Frontend\FullscreenUI.h" />
     <ClInclude Include="Frontend\GameList.h" />
     <ClInclude Include="Frontend\ImGuiFullscreen.h" />

@@ -392,6 +392,7 @@ static std::array<const char*, static_cast<u32>(InputSourceType::Count)> s_input
 	"Keyboard",
 	"Mouse",
 #ifdef _WIN32
+	"DInput",
 	"XInput",
 #endif
 #ifdef SDL_BUILD
@@ -418,6 +419,9 @@ bool InputManager::GetInputSourceDefaultEnabled(InputSourceType type)
 			return true;
 
 #ifdef _WIN32
+		case InputSourceType::DInput:
+			return false;
+
 		case InputSourceType::XInput:
 			// Disable xinput by default if we have SDL.
 #ifdef SDL_BUILD
@@ -1177,6 +1181,7 @@ static void UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::
 }
 
 #ifdef _WIN32
+#include "Frontend/DInputSource.h"
 #include "Frontend/XInputSource.h"
 #endif
 
@@ -1187,6 +1192,7 @@ static void UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::
 void InputManager::ReloadSources(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
 #ifdef _WIN32
+	UpdateInputSourceState<DInputSource>(si, settings_lock, InputSourceType::DInput);
 	UpdateInputSourceState<XInputSource>(si, settings_lock, InputSourceType::XInput);
 #endif
 #ifdef SDL_BUILD
