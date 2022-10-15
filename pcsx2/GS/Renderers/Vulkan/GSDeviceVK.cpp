@@ -553,8 +553,13 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 
 	dTexVK->TransitionToLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	dTexVK->SetUsedThisCommandBuffer();
+
 	sTexVK->TransitionToLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 	sTexVK->SetUsedThisCommandBuffer();
+
+	// ensure we don't leave this bound later on
+	if (m_tfx_textures[0] == sTexVK->GetView())
+		PSSetShaderResource(0, nullptr, false);
 
 	vkCmdCopyImage(g_vulkan_context->GetCurrentCommandBuffer(), sTexVK->GetImage(),
 		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dTexVK->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &ic);
@@ -712,13 +717,14 @@ void GSDeviceVK::BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, 
 	GSTextureVK* sTexVK = static_cast<GSTextureVK*>(sTex);
 	GSTextureVK* dTexVK = static_cast<GSTextureVK*>(dTex);
 
-	//const VkImageLayout old_src_layout = sTexVK->GetTexture().GetLayout();
-	//const VkImageLayout old_dst_layout = dTexVK->GetTexture().GetLayout();
-
 	EndRenderPass();
 
 	sTexVK->TransitionToLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 	dTexVK->TransitionToLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+	// ensure we don't leave this bound later on
+	if (m_tfx_textures[0] == sTexVK->GetView())
+		PSSetShaderResource(0, nullptr, false);
 
 	pxAssert(
 		(sTexVK->GetType() == GSTexture::Type::DepthStencil) == (dTexVK->GetType() == GSTexture::Type::DepthStencil));
@@ -2885,6 +2891,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	}
 	if (config.pal)
 		PSSetShaderResource(1, config.pal, true);
+
 	if (config.blend.constant_enable)
 		SetBlendConstants(config.blend.constant);
 
