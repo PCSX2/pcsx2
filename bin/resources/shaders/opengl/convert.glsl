@@ -208,15 +208,6 @@ void ps_convert_rgb5a1_float16_biln()
 #ifdef ps_convert_rgba_8i
 void ps_convert_rgba_8i()
 {
-
-    // Potential speed optimization. There is a high probability that
-    // game only want to extract a single channel (blue). It will allow
-    // to remove most of the conditional operation and yield a +2/3 fps
-    // boost on MGS3
-    //
-    // Hypothesis wrong in Prince of Persia ... Seriously WTF !
-    //#define ONLY_BLUE;
-
     // Convert a RGBA texture into a 8 bits packed texture
     // Input column: 8x2 RGBA pixels
     // 0: 8 RGBA
@@ -245,13 +236,9 @@ void ps_convert_rgba_8i()
         coord *= PS_SCALE_FACTOR;
 
     vec4 pixel = texelFetch(TextureSampler, ivec2(coord), 0);
-#ifdef ONLY_BLUE
-    SV_Target0 = vec4(pixel.b);
-#else
     vec2  sel0 = (pos.y & 2u) == 0u ? pixel.rb : pixel.ga;
     float sel1 = (pos.x & 8u) == 0u ? sel0.x : sel0.y;
     SV_Target0 = vec4(sel1);
-#endif
 }
 #endif
 
