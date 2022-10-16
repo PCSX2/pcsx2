@@ -200,9 +200,10 @@ static void recStore(u32 bits)
 	else
 	{
 		_flushEEreg(_Rt_); // flush register to mem
-		int rpreg = _allocTempXMMreg(XMMT_INT, 1);
-		xMOVAPS(xRegisterSSE(rpreg), ptr128[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-		_freeXMMreg(rpreg);
+
+		const xRegisterSSE& dreg = xRegisterSSE::GetArgRegister(1, 0);
+		_freeXMMreg(dreg.GetId());
+		xMOVAPS(dreg, ptr128[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
 
 	// Load ECX with the destination address, or issue a direct optimized write
@@ -981,9 +982,9 @@ void recSQC2()
 	skip.SetTarget();
 	skipvuidle.SetTarget();
 
-	int rpreg = _allocTempXMMreg(XMMT_INT, 1);
-	xMOVAPS(xRegisterSSE(rpreg), ptr128[&VU0.VF[_Ft_].UD[0]]);
-	_freeXMMreg(rpreg);
+	const xRegisterSSE& dreg = xRegisterSSE::GetArgRegister(1, 0);
+	_freeXMMreg(dreg.GetId());
+	xMOVAPS(dreg, ptr128[&VU0.VF[_Ft_].UD[0]]);
 
 	if (GPR_IS_CONST1(_Rs_))
 	{
