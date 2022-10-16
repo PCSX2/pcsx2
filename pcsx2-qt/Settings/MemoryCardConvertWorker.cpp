@@ -103,7 +103,6 @@ bool MemoryCardConvertWorker::ConvertToFolder(const std::string& srcFileName, co
 	const std::string srcPath(Path::Combine(EmuFolders::MemoryCards, srcFileName));
 	const std::string destPath(Path::Combine(EmuFolders::MemoryCards, destFolderName));
 
-	u8 buffer[FolderMemoryCard::PageSizeRaw];
 	FolderMemoryCard targetFolderMemoryCard;
 	Pcsx2Config::McdOptions config;
 	config.Enabled = true;
