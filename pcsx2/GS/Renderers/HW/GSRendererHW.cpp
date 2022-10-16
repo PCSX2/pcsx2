@@ -2582,7 +2582,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 	const bool blend_mix1 = !!(blend_flag & BLEND_MIX1);
 	const bool blend_mix2 = !!(blend_flag & BLEND_MIX2);
 	const bool blend_mix3 = !!(blend_flag & BLEND_MIX3);
-	bool blend_mix = (blend_mix1 || blend_mix2 || blend_mix3);
+	bool blend_mix = (blend_mix1 || blend_mix2 || blend_mix3) && m_env.COLCLAMP.CLAMP;
 
 	const bool one_barrier = m_conf.require_one_barrier || blend_ad_alpha_masked;
 
@@ -2769,7 +2769,6 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			// A fast algo that requires 2 passes
 			GL_INS("COLCLIP Fast HDR mode ENABLED");
 			m_conf.ps.hdr = 1;
-			blend_mix = false;
 			sw_blending = true; // Enable sw blending for the HDR algo
 		}
 		else if (sw_blending)
