@@ -161,7 +161,7 @@ namespace vtlb_private
 				break;
 
 			case 128:
-				xMOVAPS(ptr[arg1reg], xmm1);
+				xMOVAPS(ptr[arg1reg], xRegisterSSE::GetArgRegister(1, 0));
 				break;
 		}
 	}
@@ -514,7 +514,7 @@ void vtlb_DynGenWrite_Const(u32 bits, u32 addr_const)
 				break;
 
 			case 128:
-				xMOVAPS(ptr128[(void*)ppf], xmm1);
+				xMOVAPS(ptr128[(void*)ppf], xRegisterSSE::GetArgRegister(1, 0));
 				break;
 		}
 	}
@@ -534,7 +534,7 @@ void vtlb_DynGenWrite_Const(u32 bits, u32 addr_const)
 		}
 
 		iFlushCall(FLUSH_FULLVTLB);
-		xFastCall(vmv.assumeHandlerGetRaw(szidx, true), paddr, arg2reg);
+		xFastCall(vmv.assumeHandlerGetRaw(szidx, true), paddr);
 	}
 }
 
