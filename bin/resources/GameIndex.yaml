@@ -9189,6 +9189,8 @@ SLES-50051:
   region: "PAL-E"
   roundModes:
     eeRoundMode: 0 # Fixes FPU errors causing instant death in Limestone Cave.
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes graphics issues.
 SLES-50052:
   name: "Pool Master"
   region: "PAL-M3"
@@ -20989,9 +20991,13 @@ SLES-55266:
 SLES-55271:
   name: "Spongebob SquarePants Featuring Nicktoons - Globs of Doom"
   region: "PAL-E-F"
+  gsHWFixes:
+    mipmap: 2 # Fixes graphical errors video.
 SLES-55272:
   name: "Spongebob SquarePants Featuring Nicktoons - Globs of Doom"
   region: "PAL-M3"
+  gsHWFixes:
+    mipmap: 2 # Fixes graphical errors.
 SLES-55274:
   name: "Diabolik - The Original Sin"
   region: "PAL-M6"
@@ -34770,6 +34776,8 @@ SLPS-25001:
   compat: 5
   roundModes:
     eeRoundMode: 0 # Fixes FPU errors causing instant death in Limestone Cave.
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes raphics issues.
 SLPS-25002:
   name: "Dead or Alive 2"
   region: "NTSC-J"
@@ -38780,6 +38788,8 @@ SLUS-20015:
   compat: 5
   roundModes:
     eeRoundMode: 0 # Fixes FPU errors causing instant death in Limestone Cave.
+  gsHWFixes:
+    disablePartialInvalidation: 1 # Fixes graphics issues.
 SLUS-20016:
   name: "Evergrace"
   region: "NTSC-U"
@@ -47139,6 +47149,8 @@ SLUS-21818:
   name: "Spongebob SquarePants Featuring Nicktoons - Globs of Doom"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Fixes graphical errors.
 SLUS-21819:
   name: "High School Musical 3 - Senior Year Dance!"
   region: "NTSC-U"
