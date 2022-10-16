@@ -2764,7 +2764,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			accumulation_blend = false;
 			blend_mix          = false;
 		}
-		else if (accumulation_blend || blend_mix)
+		else if (accumulation_blend)
 		{
 			// A fast algo that requires 2 passes
 			GL_INS("COLCLIP Fast HDR mode ENABLED");
@@ -3738,6 +3738,8 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		m_conf.require_one_barrier = false;
 		m_conf.require_full_barrier = false;
 	}
+	// Multi-pass algorithms shouldn't be needed with full barrier and backends may not handle this correctly
+	ASSERT(!m_conf.require_full_barrier || !m_conf.ps.hdr);
 
 	// Swap full barrier for one barrier when there's no overlap.
 	if (m_conf.require_full_barrier && m_prim_overlap == PRIM_OVERLAP_NO)
