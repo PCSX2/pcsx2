@@ -262,14 +262,6 @@ PS_OUTPUT ps_convert_rgba_8i(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
-	// Potential speed optimization. There is a high probability that
-	// game only want to extract a single channel (blue). It will allow
-	// to remove most of the conditional operation and yield a +2/3 fps
-	// boost on MGS3
-	//
-	// Hypothesis wrong in Prince of Persia ... Seriously WTF !
-	//#define ONLY_BLUE;
-
 	// Convert a RGBA texture into a 8 bits packed texture
 	// Input column: 8x2 RGBA pixels
 	// 0: 8 RGBA
@@ -298,13 +290,9 @@ PS_OUTPUT ps_convert_rgba_8i(PS_INPUT input)
 		coord *= PS_SCALE_FACTOR;
 
 	float4 pixel = Texture.Load(int3(int2(coord), 0));
-#ifdef ONLY_BLUE
-	output.c = (float4)(pixel.b); // Divide by something here?
-#else
 	float2 sel0 = (pos.y & 2u) == 0u ? pixel.rb : pixel.ga;
 	float  sel1 = (pos.x & 8u) == 0u ? sel0.x : sel0.y;
 	output.c = (float4)(sel1); // Divide by something here?
-#endif
 	return output;
 }
 
