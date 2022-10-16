@@ -109,8 +109,7 @@ namespace D3D
 		D3D_FEATURE_LEVEL feature_level;
 
 		static const D3D_FEATURE_LEVEL check[] = {
-			D3D_FEATURE_LEVEL_12_1,
-			D3D_FEATURE_LEVEL_11_1,
+			D3D_FEATURE_LEVEL_12_0,
 			D3D_FEATURE_LEVEL_11_0,
 		};
 
@@ -122,15 +121,25 @@ namespace D3D
 		if (FAILED(hr))
 			return Renderer::Default;
 
-		if (Vendor() == VendorID::Nvidia)
+		switch (Vendor())
 		{
-			if (feature_level == D3D_FEATURE_LEVEL_12_1)
-				return Renderer::Vulkan;
-			else if (feature_level == D3D_FEATURE_LEVEL_11_0)
-				return Renderer::OpenGL;
+			case VendorID::Nvidia:
+				if (feature_level == D3D_FEATURE_LEVEL_12_0)
+					return Renderer::Vulkan;
+				else if (feature_level == D3D_FEATURE_LEVEL_11_0)
+					return Renderer::OpenGL;
+				[[fallthrough]];
+			case VendorID::AMD:
+				if (feature_level == D3D_FEATURE_LEVEL_12_0)
+					return Renderer::Vulkan;
+				[[fallthrough]];
+			case VendorID::Intel:
+				if (feature_level == D3D_FEATURE_LEVEL_12_0)
+					return Renderer::OpenGL;
+				[[fallthrough]];
+			default:
+				// Default is D3D11
+				return Renderer::Default;
 		}
-
-		// Default is D3D11
-		return Renderer::Default;
 	}
 }
