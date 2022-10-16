@@ -5784,7 +5784,6 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 
 	SettingsInterface* bsi = GetEditingSettingsInterface();
 	bool check_challenge_state = false;
-	bool challenge_state_just_enabled = false;
 
 	BeginMenuButtons();
 
