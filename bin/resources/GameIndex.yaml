@@ -9305,6 +9305,8 @@ SLES-50110:
 SLES-50111:
   name: "Zone of the Enders"
   region: "PAL-M4"
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
 SLES-50112:
   name: "Shadow of Memories"
   region: "PAL-M5"
@@ -26175,10 +26177,14 @@ SLPM-65017:
 SLPM-65018:
   name: "Z.O.E. - Zone of the Enders [Limited Edition]"
   region: "NTSC-J"
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
 SLPM-65019:
   name: "Z.O.E. - Zone of the Enders"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
 SLPM-65020:
   name: "ParaParaParadise"
   region: "NTSC-J"
@@ -26894,6 +26900,8 @@ SLPM-65236:
 SLPM-65237:
   name: "Z.O.E. - Zone of the Enders [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
 SLPM-65238:
   name: "Angelic Concert [Limited Edition]"
   region: "NTSC-J"
@@ -39200,6 +39208,8 @@ SLUS-20148:
   name: "Zone of the Enders"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
 SLUS-20149:
   name: "Tribes - Aerial Assault"
   region: "NTSC-U"
