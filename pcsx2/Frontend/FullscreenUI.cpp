@@ -425,10 +425,12 @@ namespace FullscreenUI
 	//////////////////////////////////////////////////////////////////////////
 	// Achievements
 	//////////////////////////////////////////////////////////////////////////
+	static void SwitchToAchievementsWindow();
 	static void DrawAchievementsWindow();
 	static void DrawAchievement(const Achievements::Achievement& cheevo);
 	static void DrawPrimedAchievementsIcons();
 	static void DrawPrimedAchievementsList();
+	static void SwitchToLeaderboardsWindow();
 	static void DrawLeaderboardsWindow();
 	static void DrawLeaderboardListEntry(const Achievements::Leaderboard& lboard);
 	static void DrawLeaderboardEntry(
@@ -2223,8 +2225,8 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		false);
 	DrawToggleSetting(bsi, ICON_FA_PLAY " Show Status Indicators",
 		"Shows indicators when fast forwarding, pausing, and other abnormal states are active.", "EmuCore/GS", "OsdShowIndicators", true);
-	DrawToggleSetting(bsi, ICON_FA_SLIDERS_H " Show Settings",
-		"Shows the current configuration in the bottom-right corner of the display.", "EmuCore/GS", "OsdShowSettings", false);
+	DrawToggleSetting(bsi, ICON_FA_SLIDERS_H " Show Settings", "Shows the current configuration in the bottom-right corner of the display.",
+		"EmuCore/GS", "OsdShowSettings", false);
 	DrawToggleSetting(bsi, ICON_FA_GAMEPAD " Show Inputs",
 		"Shows the current controller state of the system in the bottom-left corner of the display.", "EmuCore/GS", "OsdShowInputs", false);
 
@@ -2658,8 +2660,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			"Uploads full textures to the GPU on use, rather than only the utilized regions. Can improve performance in some games.",
 			"EmuCore/GS", "texture_preloading", static_cast<int>(TexturePreloadingLevel::Off), s_preloading_options,
 			std::size(s_preloading_options));
-		DrawIntListSetting(bsi, "Hardware Download Mode", "Changes synchronization behavior for GS downloads.", "EmuCore/GS", "HWDownloadMode",
-			static_cast<int>(GSHardwareDownloadMode::Enabled), s_hw_download, std::size(s_hw_download));
+		DrawIntListSetting(bsi, "Hardware Download Mode", "Changes synchronization behavior for GS downloads.", "EmuCore/GS",
+			"HWDownloadMode", static_cast<int>(GSHardwareDownloadMode::Enabled), s_hw_download, std::size(s_hw_download));
 		DrawToggleSetting(bsi, "GPU Palette Conversion",
 			"Applies palettes to textures on the GPU instead of the CPU. Can result in speed improvements in some games.", "EmuCore/GS",
 			"paltex", false);
@@ -3704,7 +3706,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 
 					// skip second menu and go straight to cheevos if there's no lbs
 					if (Achievements::GetLeaderboardCount() == 0)
-						OpenAchievementsWindow();
+						SwitchToAchievementsWindow();
 					else
 						OpenPauseSubMenu(PauseSubMenu::Achievements);
 				}
@@ -3777,10 +3779,10 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 					OpenPauseSubMenu(PauseSubMenu::None);
 
 				if (ActiveButton(ICON_FA_TROPHY "  Achievements", false))
-					OpenAchievementsWindow();
+					SwitchToAchievementsWindow();
 
 				if (ActiveButton(ICON_FA_STOPWATCH "  Leaderboards", false))
-					OpenLeaderboardsWindow();
+					SwitchToLeaderboardsWindow();
 			}
 			break;
 #endif
@@ -5047,15 +5049,28 @@ void FullscreenUI::ProgressCallback::SetCancelled()
 
 #ifdef ENABLE_ACHIEVEMENTS
 
-bool FullscreenUI::OpenAchievementsWindow()
+void FullscreenUI::OpenAchievementsWindow()
 {
-	if (!VMManager::HasValidVM() || !Initialize())
-		return false;
+	if (!VMManager::HasValidVM() || !Achievements::IsActive())
+		return;
+
+	GetMTGS().RunOnGSThread([]() {
+		if (!Initialize())
+			return;
+
+		SwitchToAchievementsWindow();
+	});
+}
+
+void FullscreenUI::SwitchToAchievementsWindow()
+{
+	if (!VMManager::HasValidVM())
+		return;
 
 	if (!Achievements::HasActiveGame() || Achievements::GetAchievementCount() == 0)
 	{
 		ShowToast(std::string(), "This game has no achievements.");
-		return false;
+		return;
 	}
 
 	if (s_current_main_window != MainWindowType::PauseMenu)
@@ -5063,7 +5078,6 @@ bool FullscreenUI::OpenAchievementsWindow()
 
 	s_current_main_window = MainWindowType::Achievements;
 	QueueResetFocus();
-	return true;
 }
 
 void FullscreenUI::DrawAchievement(const Achievements::Achievement& cheevo)
@@ -5425,15 +5439,28 @@ void FullscreenUI::DrawPrimedAchievementsList()
 	});
 }
 
-bool FullscreenUI::OpenLeaderboardsWindow()
+void FullscreenUI::OpenLeaderboardsWindow()
 {
-	if (!VMManager::HasValidVM() || !Initialize())
-		return false;
+	if (!VMManager::HasValidVM() || !Achievements::IsActive())
+		return;
+
+	GetMTGS().RunOnGSThread([]() {
+		if (!Initialize())
+			return;
+
+		SwitchToLeaderboardsWindow();
+	});
+}
+
+void FullscreenUI::SwitchToLeaderboardsWindow()
+{
+	if (!VMManager::HasValidVM())
+		return;
 
 	if (!Achievements::HasActiveGame() || Achievements::GetLeaderboardCount() == 0)
 	{
 		ShowToast(std::string(), "This game has no leaderboards.");
-		return false;
+		return;
 	}
 
 	if (s_current_main_window != MainWindowType::PauseMenu)
@@ -5442,9 +5469,7 @@ bool FullscreenUI::OpenLeaderboardsWindow()
 	s_current_main_window = MainWindowType::Leaderboards;
 	s_open_leaderboard_id.reset();
 	QueueResetFocus();
-	return true;
 }
-
 
 void FullscreenUI::DrawLeaderboardListEntry(const Achievements::Leaderboard& lboard)
 {

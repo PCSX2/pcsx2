@@ -35,8 +35,8 @@ namespace FullscreenUI
 	void OnVMDestroyed();
 	void OnRunningGameChanged(std::string path, std::string serial, std::string title, u32 crc);
 	void OpenPauseMenu();
-	bool OpenAchievementsWindow();
-	bool OpenLeaderboardsWindow();
+	void OpenAchievementsWindow();
+	void OpenLeaderboardsWindow();
 
 	void Shutdown();
 	void Render();
