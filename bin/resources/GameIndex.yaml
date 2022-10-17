@@ -31020,6 +31020,13 @@ SLPM-66455:
 SLPM-66456:
   name: "Asobi ni Iku yo! Chikyuu Pinch no Kon'yaku Sengen [Genteiban]"
   region: "NTSC-J"
+  patches:
+    87FFC318:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,001579D8,word,10000003
 SLPM-66457:
   name: "Asobi ni Iku yo! Chikyuu Pinch no Kon'yaku Sengen"
   region: "NTSC-J"
