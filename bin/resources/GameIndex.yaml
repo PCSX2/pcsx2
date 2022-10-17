@@ -15939,6 +15939,8 @@ SLES-53190:
 SLES-53191:
   name: "Kaido Racer"
   region: "PAL-M5"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLES-53192:
   name: "Nightmare Before Christmas, The - Tim Burton's"
   region: "PAL-M5"
@@ -22240,6 +22242,8 @@ SLKA-25062:
 SLKA-25063:
   name: "Kaido Battle"
   region: "NTSC-K"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLKA-25064:
   name: "Tenchu 3 Wrath of Heaven"
   region: "NTSC-K"
@@ -22468,6 +22472,8 @@ SLKA-25145:
 SLKA-25146:
   name: "Kaido Battle 2 - Chain Reaction"
   region: "NTSC-K"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLKA-25149:
   name: "Silent Hill 4 The Room"
   region: "NTSC-K"
@@ -27804,6 +27810,8 @@ SLPM-65513:
 SLPM-65514:
   name: "Kaido Battle 2 - Chain Reaction"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPM-65515:
   name: "Sakura Taisen - Mysterious Paris"
   region: "NTSC-J"
@@ -35164,7 +35172,7 @@ SLPS-25100:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    alignSprite: 1
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-25102:
   name: "Project Arms"
   region: "NTSC-J"
@@ -36590,7 +36598,7 @@ SLPS-25510:
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
   gsHWFixes:
-    alignSprite: 1
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-25511:
   name: "Rasetsu Alternative"
   region: "NTSC-J"
@@ -38190,7 +38198,7 @@ SLPS-73104:
   name: "Tekken Tag Tournament [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    alignSprite: 1
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-73105:
   name: "Kinnikuman Generations [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -38267,7 +38275,7 @@ SLPS-73209:
   name: "Tekken 4 [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    alignSprite: 1
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-73210:
   name: "Katamari Damacy [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -38335,7 +38343,7 @@ SLPS-73223:
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
   gsHWFixes:
-    alignSprite: 1
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-73224:
   name: "Xenosaga Episode II - Jenseits von Gut und Bose [PlayStation 2 The Best] [Disc1of2]"
   region: "NTSC-J"
@@ -38734,7 +38742,7 @@ SLUS-20001:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    alignSprite: 1
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-20002:
   name: "Ridge Racer V"
   region: "NTSC-U"
@@ -39992,7 +40000,7 @@ SLUS-20328:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    alignSprite: 1
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-20329:
   name: "Pro Race Driver"
   region: "NTSC-U"
@@ -43479,7 +43487,7 @@ SLUS-21059:
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
   gsHWFixes:
-    alignSprite: 1
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-21060:
   name: "WWE SmackDown! vs. RAW"
   region: "NTSC-U"
@@ -43946,7 +43954,7 @@ SLUS-21160:
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
   gsHWFixes:
-    alignSprite: 1
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-21161:
   name: "Fight Night - Round 2"
   region: "NTSC-U"
@@ -44351,6 +44359,8 @@ SLUS-21236:
   name: "Tokyo Xtreme Racer Drift"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-21237:
   name: "AND 1 Streetball"
   region: "NTSC-U"
@@ -47728,7 +47738,7 @@ SLUS-28012:
   name: "Tekken 4 [Trade Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    alignSprite: 1
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-28013:
   name: "Dual Hearts [Trade Demo]"
   region: "NTSC-U"
@@ -47970,7 +47980,7 @@ SLUS-29034:
   name: "Tekken 4 [Regular Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    alignSprite: 1
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-29035:
   name: "Eidos Demo Disc"
   region: "NTSC-U"
