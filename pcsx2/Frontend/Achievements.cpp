@@ -548,7 +548,8 @@ void Achievements::UpdateSettings(const Pcsx2Config::AchievementsOptions& old_co
 		}
 		else if (!s_challenge_mode && EmuConfig.Achievements.ChallengeMode)
 		{
-			ImGuiFullscreen::ShowToast(std::string(), "Hardcore mode will be enabled on system reset.", 10.0f);
+			if (HasActiveGame())
+				ImGuiFullscreen::ShowToast(std::string(), "Hardcore mode will be enabled on system reset.", 10.0f);
 		}
 	}
 
@@ -610,15 +611,18 @@ void Achievements::DisableChallengeMode()
 		SetChallengeMode(false);
 }
 
-void Achievements::ResetChallengeMode()
+bool Achievements::ResetChallengeMode()
 {
 	if (!s_active)
-		return;
+		return false;
 
 	Host::RemoveKeyedOSDMessage("challenge_mode_reset");
 
-	if (s_challenge_mode != EmuConfig.Achievements.ChallengeMode)
-		SetChallengeMode(EmuConfig.Achievements.ChallengeMode);
+	if (s_challenge_mode == EmuConfig.Achievements.ChallengeMode)
+		return false;
+
+	SetChallengeMode(EmuConfig.Achievements.ChallengeMode);
+	return true;
 }
 
 void Achievements::SetChallengeMode(bool enabled)
@@ -701,19 +705,14 @@ bool Achievements::OnReset()
 		return true;
 
 	std::unique_lock lock(s_achievements_mutex);
+
+	// Clear the game out, we'll re-query it once the ELF is loaded.
+	ClearGameInfo(true, true);
+	ClearGameHash();
+
+	// Reset runtime, there shouldn't be anything left in it though.
 	DevCon.WriteLn("Resetting rcheevos state...");
 	rc_runtime_reset(&s_rcheevos_runtime);
-
-	// we can re-enable hardcore mode, since we're rebooting the system
-	if (EmuConfig.Achievements.ChallengeMode && !s_challenge_mode)
-	{
-		// but, clear the game first. otherwise, we re-query the current game in hardcore mode,
-		// reset to nothing (booting), then back to the game again and spam the user.
-		ClearGameInfo(true, true);
-		ClearGameHash();
-		ResetChallengeMode();
-	}
-
 	return true;
 }
 
