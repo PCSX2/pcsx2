@@ -1,7 +1,3 @@
-#ifndef PS_SCALE_FACTOR
-#define PS_SCALE_FACTOR 1
-#endif
-
 #ifdef VERTEX_SHADER
 
 layout(location = 0) in vec4 a_pos;

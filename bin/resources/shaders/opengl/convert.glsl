@@ -233,7 +233,7 @@ void ps_convert_rgba_8i()
     if (floor(PS_SCALE_FACTOR) != PS_SCALE_FACTOR)
         coord = uvec2(vec2(coord) * PS_SCALE_FACTOR);
     else
-        coord *= PS_SCALE_FACTOR;
+        coord *= uvec2(PS_SCALE_FACTOR);
 
     vec4 pixel = texelFetch(TextureSampler, ivec2(coord), 0);
     vec2  sel0 = (pos.y & 2u) == 0u ? pixel.rb : pixel.ga;
