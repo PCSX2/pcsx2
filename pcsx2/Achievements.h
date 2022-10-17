@@ -28,7 +28,7 @@ namespace Achievements
 	extern void GameChanged(u32 crc);
 
 	/// Re-enables hardcode mode if it is enabled in the settings.
-	extern void ResetChallengeMode();
+	extern bool ResetChallengeMode();
 
 	/// Forces hardcore mode off until next reset.
 	extern void DisableChallengeMode();
@@ -62,7 +62,10 @@ namespace Achievements
 		return false;
 	}
 
-	static inline void ResetChallengeMode() {}
+	static inline bool ResetChallengeMode()
+	{
+		return false;
+	}
 
 	static inline void DisableChallengeMode() {}
 
