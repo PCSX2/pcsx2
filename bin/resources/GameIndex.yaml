@@ -11038,6 +11038,9 @@ SLES-50920:
   name: "King's Field IV"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
+    halfPixelOffset: 2 # Fixes font rendering.
   patches:
     401F4726:
       content: |-
@@ -35063,6 +35066,9 @@ SLPS-25055:
 SLPS-25057:
   name: "King's Field IV"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
+    halfPixelOffset: 2 # Fixes font rendering.
   patches:
     04C3765E:
       content: |-
@@ -39969,6 +39975,7 @@ SLUS-20318:
   compat: 5
   gsHWFixes:
     preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
+    halfPixelOffset: 2 # Fixes font rendering.
   patches:
     36E02E91:
       content: |-
@@ -40116,6 +40123,7 @@ SLUS-20353:
   region: "NTSC-U"
   gsHWFixes:
     preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
+    halfPixelOffset: 2 # Fixes font rendering.
 SLUS-20354:
   name: "Red Card Soccer 2003"
   region: "NTSC-U"
