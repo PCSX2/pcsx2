@@ -23636,6 +23636,9 @@ SLPM-55292:
     eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
     autoFlush: 1
+SLPM-55294:
+  name: "World Soccer Winning Eleven 2012"
+  region: "NTSC-J"
 SLPM-55298:
   name: "Final Fantasy XI - Adoulin no Makyou"
   region: "NTSC-J"
