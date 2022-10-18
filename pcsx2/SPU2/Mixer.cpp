@@ -808,20 +808,23 @@ __forceinline
 		Out.Left = MulShr32(Out.Left << SndOutVolumeShift, Cores[1].MasterVol.Left.Value);
 		Out.Right = MulShr32(Out.Right << SndOutVolumeShift, Cores[1].MasterVol.Right.Value);
 
-		// Final Clamp!
-		// Like any good audio system, the PS2 pumps the volume and incurs some distortion in its
-		// output, giving us a nice thumpy sound at times.  So we add 1 above (2x volume pump) and
-		// then clamp it all here.
-
-		// Edit: I'm sorry Jake, but I know of no good audio system that arbitrary distorts and clips
-		// output by design.
-		// Good thing though that this code gets the volume exactly right, as per tests :)
-		Out = clamp_mix(Out, SndOutVolumeShift);
+		
+		
 	}
 
 	// Configurable output volume
 	Out.Left *= FinalVolume;
 	Out.Right *= FinalVolume;
+
+	// Final Clamp!
+	// Like any good audio system, the PS2 pumps the volume and incurs some distortion in its
+	// output, giving us a nice thumpy sound at times.  So we add 1 above (2x volume pump) and
+	// then clamp it all here.
+
+	// Edit: I'm sorry Jake, but I know of no good audio system that arbitrary distorts and clips
+	// output by design.
+	// Good thing though that this code gets the volume exactly right, as per tests :)
+	Out = clamp_mix(Out, SndOutVolumeShift);
 
 	SndBuffer::Write(Out);
 
