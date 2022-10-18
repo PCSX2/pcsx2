@@ -54,14 +54,14 @@ cubeb_async_log_reset_threads(void);
 
 #define LOG_INTERNAL(level, fmt, ...)                                          \
   do {                                                                         \
-    if (cubeb_log_get_level() <= level && cubeb_log_get_callback()) {          \
+    if (cubeb_log_get_level() >= level && cubeb_log_get_callback()) {          \
       cubeb_log_internal(__FILENAME__, __LINE__, fmt, ##__VA_ARGS__);          \
     }                                                                          \
   } while (0)
 
 #define ALOG_INTERNAL(level, fmt, ...)                                         \
   do {                                                                         \
-    if (cubeb_log_get_level() <= level && cubeb_log_get_callback()) {          \
+    if (cubeb_log_get_level() >= level && cubeb_log_get_callback()) {          \
       cubeb_async_log(fmt, ##__VA_ARGS__);                                     \
     }                                                                          \
   } while (0)
