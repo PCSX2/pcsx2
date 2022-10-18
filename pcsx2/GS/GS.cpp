@@ -1460,6 +1460,8 @@ void GSApp::Init()
 	m_default_configuration["OsdShowResolution"]                          = "0";
 	m_default_configuration["OsdShowGSStats"]                             = "0";
 	m_default_configuration["OsdShowIndicators"]                          = "1";
+	m_default_configuration["OsdShowSettings"]                            = "0";
+	m_default_configuration["OsdShowInputs"]                              = "0";
 	m_default_configuration["OsdScale"]                                   = "100";
 	m_default_configuration["override_GL_ARB_copy_image"]                 = "-1";
 	m_default_configuration["override_GL_ARB_clip_control"]               = "-1";
