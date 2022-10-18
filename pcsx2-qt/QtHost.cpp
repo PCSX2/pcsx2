@@ -933,7 +933,9 @@ void Host::ReleaseHostDisplay()
 VsyncMode Host::GetEffectiveVSyncMode()
 {
 	// Force vsync on when running big picture UI, and paused or no VM.
-	if (g_emu_thread->isRunningFullscreenUI())
+	// We check the "running FSUI" flag here, because that way we set the initial vsync
+	// state when initalizing to on, avoiding an unnecessary switch.
+	if (FullscreenUI::HasActiveWindow() || (!FullscreenUI::IsInitialized() && g_emu_thread->isRunningFullscreenUI()))
 	{
 		const VMState state = VMManager::GetState();
 		if (state == VMState::Shutdown || state == VMState::Paused)
