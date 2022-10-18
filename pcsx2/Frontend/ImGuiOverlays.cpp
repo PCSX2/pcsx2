@@ -309,6 +309,8 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("CSBW={} ", GSConfig.UserHacks_CPUSpriteRenderBW);
 		if (GSConfig.SkipDrawStart != 0 || GSConfig.SkipDrawEnd != 0)
 			APPEND("SD={}/{} ", GSConfig.SkipDrawStart, GSConfig.SkipDrawEnd);
+		if (GSConfig.UserHacks_TextureInsideRt)
+			APPEND("TexRT ");
 	}
 
 #undef APPEND
