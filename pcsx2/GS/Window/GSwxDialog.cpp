@@ -556,13 +556,10 @@ DebugTab::DebugTab(wxWindow* parent)
 		auto* debug_check_box = new wxFlexGridSizer(2, space, space);
 		m_ui.addCheckBox(debug_check_box, "Disable Dual-Source Blending", "DisableDualSourceBlend");
 		m_ui.addCheckBox(debug_check_box, "Disable Framebuffer Fetch",    "DisableFramebufferFetch");
-		m_ui.addCheckBox(debug_check_box, "Disable Hardware Readbacks",   "HWDisableReadbacks");
 		m_ui.addCheckBox(debug_check_box, "Disable Shader Cache",         "disable_shader_cache");
 		m_ui.addCheckBox(debug_check_box, "Use Blit Swap Chain",          "UseBlitSwapChain");
+		m_ui.addCheckBox(debug_check_box, "Dump GS data",                 "dump");
 		m_ui.addCheckBox(debug_check_box, "Use Debug Device",             "UseDebugDevice");
-
-		auto* debug_save_check_box_main = new wxFlexGridSizer(1, space, space);
-		m_ui.addCheckBox(debug_save_check_box_main, "Dump GS data", "dump");
 
 		auto* debug_save_check_box = new wxWrapSizer(wxHORIZONTAL);
 		m_ui.addCheckBox(debug_save_check_box, "Save RT",      "save");
@@ -571,8 +568,6 @@ DebugTab::DebugTab(wxWindow* parent)
 		m_ui.addCheckBox(debug_save_check_box, "Save Depth",   "savez");
 
 		debug_box->Add(debug_check_box);
-		debug_box->AddSpacer(space);
-		debug_box->Add(debug_save_check_box_main);
 		debug_box->AddSpacer(space);
 		debug_box->Add(debug_save_check_box);
 
@@ -589,9 +584,10 @@ DebugTab::DebugTab(wxWindow* parent)
 
 	PaddedBoxSizer<wxStaticBoxSizer> ogl_box(wxVERTICAL, this, "Overrides");
 	auto* ogl_grid = new wxFlexGridSizer(2, space, space);
-	m_ui.addComboBoxAndLabel(ogl_grid, "Texture Barriers:", "OverrideTextureBarriers", &theApp.m_gs_generic_list, -1,                           vk_ogl_hw_prereq);
-	m_ui.addComboBoxAndLabel(ogl_grid, "Geometry Shader:",  "OverrideGeometryShaders", &theApp.m_gs_generic_list, IDC_GEOMETRY_SHADER_OVERRIDE, vk_ogl_hw_prereq);
-	m_ui.addComboBoxAndLabel(ogl_grid, "Dump Compression:", "GSDumpCompression",       &theApp.m_gs_dump_compression, -1);
+	m_ui.addComboBoxAndLabel(ogl_grid, "Texture Barriers:",       "OverrideTextureBarriers", &theApp.m_gs_generic_list, -1,                           vk_ogl_hw_prereq);
+	m_ui.addComboBoxAndLabel(ogl_grid, "Geometry Shader:",        "OverrideGeometryShaders", &theApp.m_gs_generic_list, IDC_GEOMETRY_SHADER_OVERRIDE, vk_ogl_hw_prereq);
+	m_ui.addComboBoxAndLabel(ogl_grid, "Hardware Download Mode:", "HWDownloadMode",          &theApp.m_gs_hw_download_mode, -1);
+	m_ui.addComboBoxAndLabel(ogl_grid, "Dump Compression:",       "GSDumpCompression",       &theApp.m_gs_dump_compression, -1);
 	ogl_box->Add(ogl_grid);
 
 	tab_box->Add(ogl_box.outer, wxSizerFlags().Expand());
