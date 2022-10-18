@@ -1396,6 +1396,11 @@ void GSApp::Init()
 	m_gs_tv_shaders.push_back(GSSetting(4, "Wave filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(5, "Lottes CRT filter", ""));
 
+	m_gs_hw_download_mode.push_back(GSSetting(static_cast<u32>(GSHardwareDownloadMode::Enabled), "Accurate", "Recommended"));
+	m_gs_hw_download_mode.push_back(GSSetting(static_cast<u32>(GSHardwareDownloadMode::NoReadbacks), "Disable Readbacks", "Synchronize GS Thread"));
+	m_gs_hw_download_mode.push_back(GSSetting(static_cast<u32>(GSHardwareDownloadMode::Unsynchronized), "Unsynchronized", "Non-Deterministic"));
+	m_gs_hw_download_mode.push_back(GSSetting(static_cast<u32>(GSHardwareDownloadMode::Disabled), "Disabled", "Ignore Transfers"));
+
 	m_gs_dump_compression.push_back(GSSetting(static_cast<u32>(GSDumpCompressionMethod::Uncompressed), "Uncompressed", ""));
 	m_gs_dump_compression.push_back(GSSetting(static_cast<u32>(GSDumpCompressionMethod::LZMA), "LZMA (xz)", ""));
 	m_gs_dump_compression.push_back(GSSetting(static_cast<u32>(GSDumpCompressionMethod::Zstandard), "Zstandard (zst)", ""));
@@ -1412,7 +1417,7 @@ void GSApp::Init()
 #else
 	m_default_configuration["linux_replay"]                               = "1";
 #endif
-	m_default_configuration["accurate_blending_unit"]                     = "1";
+	m_default_configuration["accurate_blending_unit"]                     = std::to_string(static_cast<u8>(AccBlendLevel::Basic));
 	m_default_configuration["AspectRatio"]                                = "1";
 	m_default_configuration["autoflush_sw"]                               = "1";
 	m_default_configuration["capture_enabled"]                            = "0";
@@ -1438,8 +1443,8 @@ void GSApp::Init()
 	m_default_configuration["filter"]                                     = std::to_string(static_cast<s8>(BiFiltering::PS2));
 	m_default_configuration["FullscreenMode"]                             = "";
 	m_default_configuration["fxaa"]                                       = "0";
-	m_default_configuration["GSDumpCompression"]                          = "0";
-	m_default_configuration["HWDisableReadbacks"]                         = "0";
+	m_default_configuration["HWDownloadMode"]                             = std::to_string(static_cast<u8>(GSHardwareDownloadMode::Enabled));
+	m_default_configuration["GSDumpCompression"]                          = std::to_string(static_cast<u8>(GSDumpCompressionMethod::LZMA));
 	m_default_configuration["pcrtc_antiblur"]                             = "1";
 	m_default_configuration["disable_interlace_offset"]                   = "0";
 	m_default_configuration["pcrtc_offsets"]                              = "0";
