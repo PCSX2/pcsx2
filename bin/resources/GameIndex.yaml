@@ -30052,10 +30052,17 @@ SLPM-66184:
   gameFixes:
     - VIF1StallHack # Fixes black screen on boot.
 SLPM-66185:
-  name: "Game ni Nattayo! Dokura-chan [Limited Edition]"
+  name: "Game ni Nattayo! Dokuro-chan [Limited Edition]"
   region: "NTSC-J"
+  patches:
+    169099FC:
+      content: |-
+        author=PSI, kozarovv
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,00156608,word,10000003
 SLPM-66186:
-  name: "Game ni Nattayo! Dokura-chan"
+  name: "Game ni Nattayo! Dokuro-chan"
   region: "NTSC-J"
   patches:
     169099FC:
