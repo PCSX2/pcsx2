@@ -3032,6 +3032,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// Begin render pass if new target or out of the area.
+	bool skip_first_barrier = false;
 	if (!render_area_okay || !InRenderPass())
 	{
 		const VkAttachmentLoadOp rt_op = GetLoadOpForTexture(draw_rt);
@@ -3059,6 +3060,10 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		{
 			BeginRenderPass(rp, render_area);
 		}
+
+		// We don't need the very first barrier if this is the first draw in the render pass, because we have
+		// pipeline barriers inbetween them anyway.
+		skip_first_barrier = true;
 	}
 
 	// rt -> hdr blit if enabled
@@ -3084,12 +3089,12 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	// now we can do the actual draw
 	if (BindDrawPipeline(pipe))
 	{
-		SendHWDraw(config, draw_rt);
+		SendHWDraw(config, draw_rt, skip_first_barrier);
 		if (config.separate_alpha_pass)
 		{
 			SetHWDrawConfigForAlphaPass(&pipe.ps, &pipe.cms, &pipe.bs, &pipe.dss);
 			if (BindDrawPipeline(pipe))
-				SendHWDraw(config, draw_rt);
+				SendHWDraw(config, draw_rt, false);
 		}
 	}
 
@@ -3109,12 +3114,12 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		pipe.bs = config.blend;
 		if (BindDrawPipeline(pipe))
 		{
-			SendHWDraw(config, draw_rt);
+			SendHWDraw(config, draw_rt, false);
 			if (config.second_separate_alpha_pass)
 			{
 				SetHWDrawConfigForAlphaPass(&pipe.ps, &pipe.cms, &pipe.bs, &pipe.dss);
 				if (BindDrawPipeline(pipe))
-					SendHWDraw(config, draw_rt);
+					SendHWDraw(config, draw_rt, false);
 			}
 		}
 	}
@@ -3196,14 +3201,26 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelect
 	pipe.vs.point_size |= (config.topology == GSHWDrawConfig::Topology::Point);
 }
 
-void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt)
+void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, bool skip_first_barrier)
 {
 	if (config.drawlist)
 	{
 		GL_PUSH("Split the draw (SPRITE)");
-		g_perfmon.Put(GSPerfMon::Barriers, static_cast<u32>(config.drawlist->size()));
+		g_perfmon.Put(GSPerfMon::Barriers, static_cast<u32>(config.drawlist->size()) - static_cast<u32>(skip_first_barrier));
 
-		for (u32 count = 0, p = 0, n = 0; n < static_cast<u32>(config.drawlist->size()); p += count, ++n)
+		u32 count = 0;
+		u32 p = 0;
+		u32 n = 0;
+
+		if (skip_first_barrier)
+		{
+			count = (*config.drawlist)[n] * config.indices_per_prim;
+			DrawIndexedPrimitive(p, count);
+			p += count;
+			++n;
+		}
+
+		for (; n < static_cast<u32>(config.drawlist->size()); p += count, ++n)
 		{
 			count = (*config.drawlist)[n] * config.indices_per_prim;
 			ColorBufferBarrier(draw_rt);
@@ -3218,18 +3235,26 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt)
 		if (config.require_full_barrier)
 		{
 			GL_PUSH("Split single draw in %d draw", config.nindices / config.indices_per_prim);
-			g_perfmon.Put(GSPerfMon::Barriers, config.nindices / config.indices_per_prim);
+			g_perfmon.Put(GSPerfMon::Barriers, (config.nindices / config.indices_per_prim) - static_cast<u32>(skip_first_barrier));
 
-			for (u32 p = 0; p < config.nindices; p += config.indices_per_prim)
+			const u32 ipp = config.indices_per_prim;
+			u32 p = 0;
+			if (skip_first_barrier)
+			{
+				DrawIndexedPrimitive(p, ipp);
+				p += ipp;
+			}
+
+			for (; p < config.nindices; p += ipp)
 			{
 				ColorBufferBarrier(draw_rt);
-				DrawIndexedPrimitive(p, config.indices_per_prim);
+				DrawIndexedPrimitive(p, ipp);
 			}
 
 			return;
 		}
 
-		if (config.require_one_barrier)
+		if (config.require_one_barrier && !skip_first_barrier)
 		{
 			g_perfmon.Put(GSPerfMon::Barriers, 1);
 			ColorBufferBarrier(draw_rt);

@@ -260,7 +260,7 @@ public:
 
 	void RenderHW(GSHWDrawConfig& config) override;
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe);
-	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt);
+	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, bool skip_first_barrier);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Vulkan State
