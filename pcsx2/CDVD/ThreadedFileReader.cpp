@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "ThreadedFileReader.h"
+#include "CDVDcommon.h"
 
 #include "common/Threading.h"
 
@@ -259,6 +260,7 @@ bool ThreadedFileReader::TryCachedRead(void*& buffer, u64& offset, u32& size, co
 bool ThreadedFileReader::Open(std::string fileName)
 {
 	CancelAndWaitUntilStopped();
+	cdvdCacheReset();
 	return Open2(std::move(fileName));
 }
 

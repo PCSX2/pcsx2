@@ -608,10 +608,12 @@ s32 cdvdGetToc(void* toc)
 
 s32 cdvdReadSubQ(s32 lsn, cdvdSubQ* subq)
 {
-	s32 ret = CDVD->readSubQ(lsn, subq);
-	if (ret == -1)
-		ret = 0x80;
-	return ret;
+	if (cdvd.subq.trackNum > 0)
+	{
+		memcpy(subq, &cdvd.subq, sizeof(cdvdSubQ));
+		return 0; 
+	}
+	return 0x80;
 }
 
 static void cdvdDetectDisk()
@@ -2017,6 +2019,8 @@ static void cdvdWrite04(u8 rt)
 
 			cdvd.ReadTime = cdvdBlockReadTime(MODE_CDROM);
 			CDVDREAD_INT(cdvdStartSeek(cdvd.SeekToSector, MODE_CDROM));
+
+			CDVD->getSubQ(cdvd.SeekToSector, &cdvd.subq);
 
 			// Read-ahead by telling CDVD about the track now.
 			// This helps improve performance on actual from-cd emulation

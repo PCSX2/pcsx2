@@ -44,24 +44,6 @@ int cmode;
 int lastReadInNewDiskCB = 0;
 u8 directReadSectorBuffer[2448];
 
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-// Utility Functions                                                         //
-
-inline u8 dec_to_bcd(u8 dec)
-{
-	return ((dec / 10) << 4) | (dec % 10);
-}
-
-inline void lsn_to_msf(u8* minute, u8* second, u8* frame, u32 lsn)
-{
-	*frame = dec_to_bcd(lsn % 75);
-	lsn /= 75;
-	*second = dec_to_bcd(lsn % 60);
-	lsn /= 60;
-	*minute = dec_to_bcd(lsn % 100);
-}
-
 // TocStuff
 void cdvdParseTOC()
 {
@@ -272,31 +254,14 @@ s32 CALLBACK DISCgetBuffer(u8* dest)
 	return 0;
 }
 
-s32 CALLBACK DISCreadSubQ(u32 lsn, cdvdSubQ* subq)
+s32 CALLBACK DISCgetSubQ(u32 lsn, cdvdSubQ* subq)
 {
-	// the formatted subq command returns:  control/adr, track, index, trk min, trk sec, trk frm, 0x00, abs min, abs sec, abs frm
-
-	if (lsn >= src->GetSectorCount())
-		return -1;
-
-	memset(subq, 0, sizeof(cdvdSubQ));
-
-	lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
-
-	u8 i = strack;
-	while (i < etrack && lsn >= tracks[i + 1].startLba)
-		++i;
-
-	lsn -= tracks[i].startLba;
-
-	lsn_to_msf(&subq->trackM, &subq->trackS, &subq->trackF, lsn);
-
-	subq->mode = 1;
-	subq->ctrl = tracks[i].type;
-	subq->trackNum = i;
-	subq->trackIndex = 1;
-
-	return 0;
+	cdvdCacheFetch(lsn, nullptr, subq);
+	if (subq->trackNum > 0)
+	{
+		return 0;
+	}
+	return -1;
 }
 
 s32 CALLBACK DISCgetTN(cdvdTN* Buffer)
@@ -334,11 +299,18 @@ s32 CALLBACK DISCgetTD(u8 Track, cdvdTD* Buffer)
 	return 0;
 }
 
+s32 CALLBACK DISCgetDiskType()
+{
+	return curDiskType;
+}
+
 s32 CALLBACK DISCgetTOC(void* toc)
 {
 	u8* tocBuff = static_cast<u8*>(toc);
 	if (curDiskType == CDVD_TYPE_NODISC)
 		return -1;
+
+	curDiskType = DISCgetDiskType();
 
 	if (curDiskType == CDVD_TYPE_DETCTDVDS || curDiskType == CDVD_TYPE_DETCTDVDD)
 	{
@@ -468,11 +440,6 @@ s32 CALLBACK DISCgetTOC(void* toc)
 	return 0;
 }
 
-s32 CALLBACK DISCgetDiskType()
-{
-	return curDiskType;
-}
-
 s32 CALLBACK DISCgetTrayStatus()
 {
 	return curTrayStatus;
@@ -528,7 +495,7 @@ CDVD_API CDVDapi_Disc =
 		DISCopen,
 		DISCreadTrack,
 		DISCgetBuffer,
-		DISCreadSubQ,
+		DISCgetSubQ,
 		DISCgetTN,
 		DISCgetTD,
 		DISCgetTOC,

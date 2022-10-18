@@ -77,10 +77,12 @@ s32 CALLBACK ISOopen(const char* pTitle)
 	layer1start = -1;
 	layer1searched = false;
 
+	cdvdCacheReset();
+
 	return 0;
 }
 
-s32 CALLBACK ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
+s32 CALLBACK ISOgetSubQ(u32 lsn, cdvdSubQ* subq)
 {
 	// fake it
 	u8 min, sec, frm;
@@ -411,7 +413,7 @@ CDVD_API CDVDapi_Iso =
 		ISOopen,
 		ISOreadTrack,
 		ISOgetBuffer,
-		ISOreadSubQ,
+		ISOgetSubQ,
 		ISOgetTN,
 		ISOgetTD,
 		ISOgetTOC,

@@ -90,6 +90,38 @@ const std::vector<toc_entry>& IOCtlSrc::ReadTOC() const
 	return m_toc;
 }
 
+bool IOCtlSrc::ReadSubChannelQ(u32 sector, cdvdSubQ* subQ) const
+{
+	#ifdef __linux__
+	cdrom_subchnl sub;
+	int err = 0;
+
+	sub.cdsc_format = CDROM_MSF;
+	err = ioctl(m_device, CDROMSUBCHNL, &sub);
+
+	if (err < 0)
+	{
+		Console.Error("Error reading SubQ");
+		return err;
+	}
+
+	subQ->mode = sub.cdsc_adr;
+	subQ->ctrl = sub.cdsc_ctrl;
+	subQ->trackNum = sub.cdsc_trk;
+	subQ->trackIndex = sub.cdsc_ind;
+	subQ->trackM = itob(sub.cdsc_reladdr.msf.minute);
+	subQ->trackS = itob(sub.cdsc_reladdr.msf.second);
+	subQ->trackF = itob(sub.cdsc_reladdr.msf.frame);
+	subQ->discM = itob(sub.cdsc_absaddr.msf.minute);
+	subQ->discS = itob(sub.cdsc_absaddr.msf.second);
+	subQ->discF = itob(sub.cdsc_absaddr.msf.frame);
+	return true;
+
+	#else
+	return false;
+	#endif
+}
+
 bool IOCtlSrc::ReadSectors2048(u32 sector, u32 count, u8* buffer) const
 {
 	const ssize_t bytes_to_read = 2048 * count;
@@ -118,6 +150,7 @@ bool IOCtlSrc::ReadSectors2352(u32 sector, u32 count, u8* buffer) const
 	for (u32 n = 0; n < count; ++n)
 	{
 		u32 lba = sector + n;
+		Console.Warning("Lba, %d", lba);
 		lba_to_msf(lba, &data.msf.cdmsf_min0, &data.msf.cdmsf_sec0, &data.msf.cdmsf_frame0);
 		if (ioctl(m_device, CDROMREADRAW, &data) == -1)
 		{

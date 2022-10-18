@@ -136,6 +136,16 @@ static __fi int GetCDSpeed()
 	return 1 + ((cdr.Mode >> 7) & 0x1);
 }
 
+static __fi bool GetIsSeeking()
+{
+	return cdr.StatP & (STATUS_ROTATING | STATUS_SEEK);
+}
+
+static __fi bool GetIsReading()
+{
+	return cdr.StatP & (STATUS_ROTATING | STATUS_READ);
+}
+
 static __fi void StartReading(u32 type)
 {
 	cdr.Reading = type;
@@ -205,6 +215,12 @@ static void ReadTrack()
 	cdr.Prev[0] = itob(cdr.SetSector[0]);
 	cdr.Prev[1] = itob(cdr.SetSector[1]);
 	cdr.Prev[2] = itob(cdr.SetSector[2]);
+
+	cdvdSubQ subQ;
+	if (CDVD->getSubQ(msf_to_lsn(cdr.SetSector), &subQ))
+	{
+		cdr.subQ = subQ;
+	}
 
 	CDVD_LOG("KEY *** %x:%x:%x", cdr.Prev[0], cdr.Prev[1], cdr.Prev[2]);
 	if (EmuConfig.CdvdVerboseReads)
@@ -383,6 +399,7 @@ void cdrInterrupt()
 			cdr.Stat = Acknowledge;
 			break;
 
+		// the "last" data sector read should cache the sector header for GetlocL
 		case CdlGetlocL:
 			SetResultSize(8);
 			for (i = 0; i < 8; i++)
@@ -392,28 +409,14 @@ void cdrInterrupt()
 
 		case CdlGetlocP:
 			SetResultSize(8);
-			if (CDVD->readSubQ(msf_to_lsn(cdr.SetSector), &cdr.subQ) >= 0)
-			{
-				cdr.Result[0] = cdr.subQ.trackNum;
-				cdr.Result[1] = cdr.subQ.trackIndex;
-				cdr.Result[2] = cdr.subQ.trackM;
-				cdr.Result[3] = cdr.subQ.trackS;
-				cdr.Result[4] = cdr.subQ.trackF;
-				cdr.Result[5] = cdr.subQ.discM;
-				cdr.Result[6] = cdr.subQ.discS;
-				cdr.Result[7] = cdr.subQ.discF;
-			}
-			else
-			{
-				cdr.Result[0] = 1;
-				cdr.Result[1] = 1;
-				cdr.Result[2] = cdr.Prev[0];
-				cdr.Result[3] = itob((btoi(cdr.Prev[1])) - 2);
-				cdr.Result[4] = cdr.Prev[2];
-				cdr.Result[5] = cdr.Prev[0];
-				cdr.Result[6] = cdr.Prev[1];
-				cdr.Result[7] = cdr.Prev[2];
-			}
+			cdr.Result[0] = cdr.subQ.trackNum;
+			cdr.Result[1] = cdr.subQ.trackIndex;
+			cdr.Result[2] = cdr.subQ.trackM;
+			cdr.Result[3] = cdr.subQ.trackS;
+			cdr.Result[4] = cdr.subQ.trackF;
+			cdr.Result[5] = cdr.subQ.discM;
+			cdr.Result[6] = cdr.subQ.discS;
+			cdr.Result[7] = cdr.subQ.discF;
 			cdr.Stat = Acknowledge;
 			break;
 
@@ -908,12 +911,6 @@ void cdrWrite1(u8 rt)
 			cdr.Mode = cdr.Param[0];
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
-			if (cdr.Mode & MODE_CDDA)
-			{
-				StopCdda();
-				cdvd.Type = CDVD_TYPE_PSCDDA;
-			}
-
 			setPs1CDVDSpeed(cdvd.Speed);
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;

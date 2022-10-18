@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
 #include "common/StringUtil.h"
+#include "CDVD/CDVDcommon.h"
 
 FlatFileReader::FlatFileReader(bool shareWrite) : shareWrite(shareWrite)
 {
@@ -35,6 +36,8 @@ bool FlatFileReader::Open(std::string fileName)
 	m_filename = std::move(fileName);
 
 	hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+	cdvdCacheReset();
 
 	DWORD shareMode = FILE_SHARE_READ;
 	if (shareWrite)

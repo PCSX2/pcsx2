@@ -95,6 +95,33 @@ void IOCtlSrc::SetSpindleSpeed(bool restore_defaults) const
 	}
 }
 
+bool IOCtlSrc::ReadSubChannelQ(u32 sector, cdvdSubQ* subQ) const
+{
+	CDROM_SUB_Q_DATA_FORMAT format;
+	SUB_Q_CHANNEL_DATA data;
+
+	format.Format = IOCTL_CDROM_CURRENT_POSITION;
+
+	if (!DeviceIoControl(m_device, IOCTL_CDROM_READ_Q_CHANNEL, &format,
+		sizeof(format), &data, sizeof(SUB_Q_CHANNEL_DATA), NULL, NULL))
+	{
+		Console.Error("SubQ Read Failed");
+		return false;
+	}
+
+	subQ->mode = data.CurrentPosition.ADR;
+	subQ->ctrl = data.CurrentPosition.Control;
+	subQ->trackNum = data.CurrentPosition.TrackNumber;
+	subQ->trackIndex = data.CurrentPosition.IndexNumber;
+	subQ->discM = data.CurrentPosition.AbsoluteAddress[1];
+	subQ->discS = data.CurrentPosition.AbsoluteAddress[2];
+	subQ->discF = data.CurrentPosition.AbsoluteAddress[3];
+	subQ->trackM = data.CurrentPosition.TrackRelativeAddress[1];
+	subQ->trackS = data.CurrentPosition.TrackRelativeAddress[2];
+	subQ->trackF = data.CurrentPosition.TrackRelativeAddress[3];
+	return true;
+}
+
 u32 IOCtlSrc::GetSectorCount() const
 {
 	return m_sectors;

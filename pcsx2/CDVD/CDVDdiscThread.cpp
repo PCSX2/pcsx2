@@ -23,17 +23,6 @@
 #include <queue>
 #include <thread>
 
-const u32 sectors_per_read = 16;
-
-static_assert(sectors_per_read > 1 && !(sectors_per_read & (sectors_per_read - 1)),
-			  "sectors_per_read must by a power of 2");
-
-struct SectorInfo
-{
-	u32 lsn;
-	// Sectors are read in blocks, not individually
-	u8 data[2352 * sectors_per_read];
-};
 
 u32 g_last_sector_block_lsn;
 
@@ -43,72 +32,7 @@ static std::mutex s_notify_lock;
 static std::condition_variable s_notify_cv;
 static std::mutex s_request_lock;
 static std::queue<u32> s_request_queue;
-static std::mutex s_cache_lock;
-
 static std::atomic<bool> cdvd_is_open;
-
-//bits: 12 would use 1<<12 entries, or 4096*16 sectors ~ 128MB
-#define CACHE_SIZE 12
-
-const u32 CacheSize = 1U << CACHE_SIZE;
-SectorInfo Cache[CacheSize];
-
-u32 cdvdSectorHash(u32 lsn)
-{
-	u32 t = 0;
-
-	int i = 32;
-	u32 m = CacheSize - 1;
-
-	while (i >= 0)
-	{
-		t ^= lsn & m;
-		lsn >>= CACHE_SIZE;
-		i -= CACHE_SIZE;
-	}
-
-	return t & m;
-}
-
-void cdvdCacheUpdate(u32 lsn, u8* data)
-{
-	std::lock_guard<std::mutex> guard(s_cache_lock);
-	u32 entry = cdvdSectorHash(lsn);
-
-	memcpy(Cache[entry].data, data, 2352 * sectors_per_read);
-	Cache[entry].lsn = lsn;
-}
-
-bool cdvdCacheCheck(u32 lsn)
-{
-	std::lock_guard<std::mutex> guard(s_cache_lock);
-	u32 entry = cdvdSectorHash(lsn);
-
-	return Cache[entry].lsn == lsn;
-}
-
-bool cdvdCacheFetch(u32 lsn, u8* data)
-{
-	std::lock_guard<std::mutex> guard(s_cache_lock);
-	u32 entry = cdvdSectorHash(lsn);
-
-	if (Cache[entry].lsn == lsn)
-	{
-		memcpy(data, Cache[entry].data, 2352 * sectors_per_read);
-		return true;
-	}
-	//printf("NOT IN CACHE\n");
-	return false;
-}
-
-void cdvdCacheReset()
-{
-	std::lock_guard<std::mutex> guard(s_cache_lock);
-	for (u32 i = 0; i < CacheSize; i++)
-	{
-		Cache[i].lsn = std::numeric_limits<u32>::max();
-	}
-}
 
 bool cdvdReadBlockOfSectors(u32 sector, u8* data)
 {
@@ -175,6 +99,44 @@ bool cdvdUpdateDiscStatus()
 	return !ready;
 }
 
+cdvdSubQ *cdvdReadSubQ(u32 lsn)
+{
+	cdvdSubQ subq;
+
+	if (curDiskType == CDVD_TYPE_PSCD || curDiskType == CDVD_TYPE_PSCDDA
+	|| curDiskType == CDVD_TYPE_PS2CD || curDiskType == CDVD_TYPE_PS2CDDA
+	|| curDiskType == CDVD_TYPE_DETCTCD || curDiskType == CDVD_TYPE_CDDA)
+	{
+		cdvdCacheFetch(lsn, nullptr, &subq);
+		if (subq.trackNum <= 0)
+		{
+			Console.WriteLn("Read SubQ");
+			if (!src->ReadSubChannelQ(lsn, &subq))
+			{
+				// If real subQ read fails. Let's fake till we make it!
+				if (lsn >= src->GetSectorCount())
+					return nullptr;
+
+				lsn_to_msf(&subq.discM, &subq.discS, &subq.discF, lsn + 150);
+
+				u8 i = strack;
+				while (i < etrack && lsn >= tracks[i + 1].startLba)
+					++i;
+
+				lsn -= tracks[i].startLba;
+
+				lsn_to_msf(&subq.trackM, &subq.trackS, &subq.trackF, lsn + 150);
+
+				subq.mode = 1;
+				subq.ctrl = tracks[i].type;
+				subq.trackNum = i;
+				subq.trackIndex = 1;
+			}
+		}
+	}
+	return &subq;
+}
+
 void cdvdThread()
 {
 	u8 buffer[2352 * sectors_per_read];
@@ -224,13 +186,12 @@ void cdvdThread()
 			u32 next_prefetch_lsn = g_last_sector_block_lsn + sectors_per_read;
 			request_lsn = next_prefetch_lsn;
 		}
-
 		// Handle request
 		if (!cdvdCacheCheck(request_lsn))
 		{
 			if (cdvdReadBlockOfSectors(request_lsn, buffer))
 			{
-				cdvdCacheUpdate(request_lsn, buffer);
+				cdvdCacheUpdate(request_lsn, buffer, cdvdReadSubQ(request_lsn));
 			}
 			else
 			{
@@ -239,7 +200,6 @@ void cdvdThread()
 				continue;
 			}
 		}
-
 		g_last_sector_block_lsn = request_lsn;
 
 		if (!handling_request)
@@ -317,9 +277,12 @@ u8* cdvdGetSector(u32 sector, s32 mode)
 	u32 sector_block = sector & ~(sectors_per_read - 1);
 
 	if (!cdvdCacheFetch(sector_block, buffer))
+	{
 		if (cdvdReadBlockOfSectors(sector_block, buffer))
-			cdvdCacheUpdate(sector_block, buffer);
-
+		{
+			cdvdCacheUpdate(sector_block, buffer, cdvdReadSubQ(sector_block));
+		}
+	}
 	if (src->GetMediaType() >= 0)
 	{
 		u32 offset = 2048 * (sector - sector_block);
@@ -365,7 +328,9 @@ s32 cdvdDirectReadSector(u32 sector, s32 mode, u8* buffer)
 	if (!cdvdCacheFetch(sector_block, data))
 	{
 		if (cdvdReadBlockOfSectors(sector_block, data))
+		{
 			cdvdCacheUpdate(sector_block, data);
+		}
 	}
 
 	if (src->GetMediaType() >= 0)

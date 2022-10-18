@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
 #include "common/FileSystem.h"
+#include "CDVD/CDVDcommon.h"
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -45,7 +46,8 @@ bool FlatFileReader::Open(std::string fileName)
 
     m_fd = FileSystem::OpenFDFile(m_filename.c_str(), O_RDONLY, 0);
 
-	return (m_fd != -1);
+    cdvdCacheReset();
+    return (m_fd != -1);
 }
 
 int FlatFileReader::ReadSync(void* pBuffer, uint sector, uint count)

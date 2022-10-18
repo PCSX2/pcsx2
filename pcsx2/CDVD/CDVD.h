@@ -20,50 +20,6 @@
 #include <string>
 #include <string_view>
 
-#define btoi(b) ((b) / 16 * 10 + (b) % 16) /* BCD to u_char */
-#define itob(i) ((i) / 10 * 16 + (i) % 10) /* u_char to BCD */
-
-static __fi s32 msf_to_lsn(u8* Time)
-{
-	u32 lsn;
-
-	lsn = Time[2];
-	lsn += (Time[1] - 2) * 75;
-	lsn += Time[0] * 75 * 60;
-	return lsn;
-}
-
-static __fi s32 msf_to_lba(u8 m, u8 s, u8 f)
-{
-	u32 lsn;
-	lsn = f;
-	lsn += (s - 2) * 75;
-	lsn += m * 75 * 60;
-	return lsn;
-}
-
-static __fi void lsn_to_msf(u8* Time, s32 lsn)
-{
-	u8 m, s, f;
-
-	lsn += 150;
-	m = lsn / 4500;       // minuten
-	lsn = lsn - m * 4500; // minuten rest
-	s = lsn / 75;         // sekunden
-	f = lsn - (s * 75);   // sekunden rest
-	Time[0] = itob(m);
-	Time[1] = itob(s);
-	Time[2] = itob(f);
-}
-
-static __fi void lba_to_msf(s32 lba, u8* m, u8* s, u8* f)
-{
-	lba += 150;
-	*m = lba / (60 * 75);
-	*s = (lba / 75) % 60;
-	*f = lba % 75;
-}
-
 struct cdvdRTC
 {
 	u8 status;
@@ -124,6 +80,8 @@ struct cdvdStruct
 	// the videomode's vertical frequency, it updates the real time clock.
 	int RTCcount;
 	cdvdRTC RTC;
+
+	cdvdSubQ subq;
 
 	u32 Sector;
 	int nSectors;

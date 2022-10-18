@@ -16,6 +16,66 @@
 #pragma once
 #include <string>
 
+static const u32 sectors_per_read = 16;
+
+#define btoi(b) ((b) / 16 * 10 + (b) % 16) /* BCD to u_char */
+#define itob(i) ((i) / 10 * 16 + (i) % 10) /* u_char to BCD */
+
+static __fi s32 msf_to_lsn(u8* Time)
+{
+	u32 lsn;
+
+	lsn = Time[2];
+	lsn += (Time[1] - 2) * 75;
+	lsn += Time[0] * 75 * 60;
+	return lsn;
+}
+
+static __fi s32 msf_to_lba(u8 m, u8 s, u8 f)
+{
+	u32 lsn;
+	lsn = f;
+	lsn += (s - 2) * 75;
+	lsn += m * 75 * 60;
+	return lsn;
+}
+
+static __fi void lsn_to_msf(u8* Time, s32 lsn)
+{
+	u8 m, s, f;
+
+	lsn += 150;
+	m = lsn / 4500;       // minuten
+	lsn = lsn - m * 4500; // minuten rest
+	s = lsn / 75;         // sekunden
+	f = lsn - (s * 75);   // sekunden rest
+	Time[0] = itob(m);
+	Time[1] = itob(s);
+	Time[2] = itob(f);
+}
+
+static __fi void lba_to_msf(s32 lba, u8* m, u8* s, u8* f)
+{
+	lba += 150;
+	*m = lba / (60 * 75);
+	*s = (lba / 75) % 60;
+	*f = lba % 75;
+}
+
+static __fi u8 dec_to_bcd(u8 dec)
+{
+	return ((dec / 10) << 4) | (dec % 10);
+}
+
+static __fi void lsn_to_msf(u8* minute, u8* second, u8* frame, u32 lsn)
+{
+	*frame = dec_to_bcd(lsn % 75);
+	lsn /= 75;
+	*second = dec_to_bcd(lsn % 60);
+	lsn /= 60;
+	*minute = dec_to_bcd(lsn % 100);
+}
+
 typedef struct _cdvdSubQ
 {
 	u8 ctrl : 4;   // control and mode bits
@@ -52,6 +112,14 @@ typedef struct _cdvdTN
 	u8 strack; //number of the first track (usually 1)
 	u8 etrack; //number of the last track
 } cdvdTN;
+
+typedef struct _sectorInfo
+{
+	u32 lsn;
+	// Sectors are read in blocks, not individually
+	u8 data[2352 * sectors_per_read];
+	cdvdSubQ subchannelQ;
+} SectorInfo;
 
 // SpindleCtrl Masks
 #define CDVD_SPINDLE_SPEED 0x7  // Speed ranges from 0-3 (1, 2, 3, 4x for DVD) and 0-5 (1, 2, 4, 12, 24x for CD)
@@ -110,7 +178,7 @@ typedef s32(CALLBACK* _CDVDreadTrack)(u32 lsn, int mode);
 // Returns 0 on success.
 typedef s32(CALLBACK* _CDVDgetBuffer)(u8* buffer);
 
-typedef s32(CALLBACK* _CDVDreadSubQ)(u32 lsn, cdvdSubQ* subq);
+typedef s32(CALLBACK* _CDVDgetSubQ)(u32 lsn, cdvdSubQ* subq);
 typedef s32(CALLBACK* _CDVDgetTN)(cdvdTN* Buffer);
 typedef s32(CALLBACK* _CDVDgetTD)(u8 Track, cdvdTD* Buffer);
 typedef s32(CALLBACK* _CDVDgetTOC)(void* toc);
@@ -139,7 +207,7 @@ struct CDVD_API
 	_CDVDopen open;
 	_CDVDreadTrack readTrack;
 	_CDVDgetBuffer getBuffer;
-	_CDVDreadSubQ readSubQ;
+	_CDVDgetSubQ getSubQ;
 	_CDVDgetTN getTN;
 	_CDVDgetTD getTD;
 	_CDVDgetTOC getTOC;
@@ -164,6 +232,14 @@ extern CDVD_API CDVDapi_Iso;
 extern CDVD_API CDVDapi_Disc;
 extern CDVD_API CDVDapi_NoDisc;
 
+//bits: 12 would use 1<<12 entries, or 4096*16 sectors ~ 128MB
+#define CACHE_SIZE 12
+
+static const u32 CacheSize = 1U << CACHE_SIZE;
+static SectorInfo Cache[CacheSize];
+
+static std::mutex s_cache_lock;
+
 extern void CDVDsys_ChangeSource(CDVD_SourceType type);
 extern void CDVDsys_SetFile(CDVD_SourceType srctype, std::string newfile);
 extern const std::string& CDVDsys_GetFile(CDVD_SourceType srctype);
@@ -176,3 +252,8 @@ extern s32 DoCDVDreadTrack(u32 lsn, int mode);
 extern s32 DoCDVDgetBuffer(u8* buffer);
 extern s32 DoCDVDdetectDiskType();
 extern void DoCDVDresetDiskTypeCache();
+extern u32 cdvdSectorHash(u32 lsn);
+extern void cdvdCacheUpdate(u32 lsn, u8* data, cdvdSubQ* subQ = nullptr);
+extern bool cdvdCacheCheck(u32 lsn);
+extern bool cdvdCacheFetch(u32 lsn, u8* data, cdvdSubQ *subQ = nullptr);
+extern void cdvdCacheReset();

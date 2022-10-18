@@ -66,6 +66,77 @@ static void CheckNullCDVD()
 	pxAssertDev(CDVD != NULL, "Invalid CDVD object state (null pointer exception)");
 }
 
+u32 cdvdSectorHash(u32 lsn)
+{
+	u32 t = 0;
+
+	int i = 32;
+	u32 m = CacheSize - 1;
+
+	while (i >= 0)
+	{
+		t ^= lsn & m;
+		lsn >>= CACHE_SIZE;
+		i -= CACHE_SIZE;
+	}
+	return t & m;
+}
+
+void cdvdCacheUpdate(u32 lsn, u8* data, cdvdSubQ* subQ)
+{
+	std::lock_guard<std::mutex> guard(s_cache_lock);
+	u32 entry = cdvdSectorHash(lsn);
+
+	if (subQ != nullptr)
+	{
+		memcpy(&Cache[entry].subchannelQ, subQ, sizeof(cdvdSubQ));
+	}
+
+	if (data != nullptr)
+	{
+		memcpy(Cache[entry].data, data, 2352 * sectors_per_read);
+	}
+	Cache[entry].lsn = lsn;
+}
+
+bool cdvdCacheCheck(u32 lsn)
+{
+	std::lock_guard<std::mutex> guard(s_cache_lock);
+	u32 entry = cdvdSectorHash(lsn);
+
+	return Cache[entry].lsn == lsn;
+}
+
+bool cdvdCacheFetch(u32 lsn, u8* data, cdvdSubQ *subQ)
+{
+	std::lock_guard<std::mutex> guard(s_cache_lock);
+	u32 entry = cdvdSectorHash(lsn);
+
+	if (Cache[entry].lsn == lsn)
+	{
+		if (subQ != nullptr)
+		{
+			memcpy(subQ, &Cache[entry].subchannelQ, sizeof(cdvdSubQ));
+		}
+		if (data != nullptr)
+		{
+			memcpy(data, Cache[entry].data, 2352 * sectors_per_read);
+		}
+		return true;
+	}
+	//printf("NOT IN CACHE\n");
+	return false;
+}
+
+void cdvdCacheReset()
+{
+	std::lock_guard<std::mutex> guard(s_cache_lock);
+	for (u32 i = 0; i < CacheSize; i++)
+	{
+		Cache[i].lsn = std::numeric_limits<u32>::max();
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////
 // Disk Type detection stuff (from cdvdGigaherz)
 //
@@ -574,7 +645,7 @@ s32 CALLBACK NODISCgetBuffer(u8* buffer)
 	return -1;
 }
 
-s32 CALLBACK NODISCreadSubQ(u32 lsn, cdvdSubQ* subq)
+s32 CALLBACK NODISCgetSubQ(u32 lsn, cdvdSubQ* subq)
 {
 	return -1;
 }
@@ -629,7 +700,7 @@ CDVD_API CDVDapi_NoDisc =
 		NODISCopen,
 		NODISCreadTrack,
 		NODISCgetBuffer,
-		NODISCreadSubQ,
+		NODISCgetSubQ,
 		NODISCgetTN,
 		NODISCgetTD,
 		NODISCgetTOC,
