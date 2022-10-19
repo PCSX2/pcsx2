@@ -54,4 +54,4 @@ fi
 # Trim the Name
 NAME=$(printf "%.199s]" "$NAME")
 echo "${NAME}"
-echo "##[set-output name=artifact-name;]${NAME}"
+echo "artifact-name=${NAME}" >> "$GITHUB_OUTPUT"
