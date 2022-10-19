@@ -555,27 +555,27 @@ void mVUcustomSearch()
 		xPCMP.EQD(xmm1, ptr32[arg2reg + 0x30]);
 		xPAND    (xmm0, xmm1);
 
-		xMOVAPS  (xmm2, ptr32[arg1reg + 0x40]);
-		xPCMP.EQD(xmm2, ptr32[arg2reg + 0x40]);
-		xMOVAPS  (xmm3, ptr32[arg1reg + 0x50]);
-		xPCMP.EQD(xmm3, ptr32[arg2reg + 0x50]);
+		xMOVAPS  (xmm1, ptr32[arg1reg + 0x40]);
+		xPCMP.EQD(xmm1, ptr32[arg2reg + 0x40]);
+		xMOVAPS  (xmm2, ptr32[arg1reg + 0x50]);
+		xPCMP.EQD(xmm2, ptr32[arg2reg + 0x50]);
+		xPAND    (xmm1, xmm2);
+
+		xMOVAPS  (xmm2, ptr32[arg1reg + 0x60]);
+		xPCMP.EQD(xmm2, ptr32[arg2reg + 0x60]);
+		xMOVAPS  (xmm3, ptr32[arg1reg + 0x70]);
+		xPCMP.EQD(xmm3, ptr32[arg2reg + 0x70]);
 		xPAND    (xmm2, xmm3);
 
-		xMOVAPS  (xmm4, ptr32[arg1reg + 0x60]);
-		xPCMP.EQD(xmm4, ptr32[arg2reg + 0x60]);
-		xMOVAPS  (xmm5, ptr32[arg1reg + 0x70]);
-		xPCMP.EQD(xmm5, ptr32[arg2reg + 0x70]);
-		xPAND    (xmm4, xmm5);
+		xMOVAPS  (xmm3, ptr32[arg1reg + 0x80]);
+		xPCMP.EQD(xmm3, ptr32[arg2reg + 0x80]);
+		xMOVAPS  (xmm4, ptr32[arg1reg + 0x90]);
+		xPCMP.EQD(xmm4, ptr32[arg2reg + 0x90]);
+		xPAND    (xmm3, xmm4);
 
-		xMOVAPS  (xmm6, ptr32[arg1reg + 0x80]);
-		xPCMP.EQD(xmm6, ptr32[arg2reg + 0x80]);
-		xMOVAPS  (xmm7, ptr32[arg1reg + 0x90]);
-		xPCMP.EQD(xmm7, ptr32[arg2reg + 0x90]);
-		xPAND    (xmm6, xmm7);
-
+		xPAND (xmm0, xmm1);
+		xPAND (xmm2, xmm3);
 		xPAND (xmm0, xmm2);
-		xPAND (xmm4, xmm6);
-		xPAND (xmm0, xmm4);
 		xMOVMSKPS(eax, xmm0);
 		xXOR(eax, 0xf);
 
@@ -600,10 +600,10 @@ void mVUcustomSearch()
 		xVPCMP.EQD(ymm2, ymm2, ptr[arg2reg + 0x60]);
 		xVPAND(ymm0, ymm0, ymm1);
 
-		xVMOVUPS(ymm1, ptr[arg1reg + 0x80]);
+		xVMOVUPS(ymm3, ptr[arg1reg + 0x80]);
+		xVPCMP.EQD(ymm3, ymm3, ptr[arg2reg + 0x80]);
+		xVPAND(ymm2, ymm2, ymm3);
 		xVPAND(ymm0, ymm0, ymm2);
-		xVPCMP.EQD(ymm1, ymm1, ptr[arg2reg + 0x80]);
-		xVPAND(ymm0, ymm0, ymm1);
 
 		xVPMOVMSKB(eax, ymm0);
 		xNOT(eax);
