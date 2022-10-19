@@ -537,74 +537,80 @@ void mVUcustomSearch()
 	memset(mVUsearchXMM, 0xcc, __pagesize);
 	xSetPtr(mVUsearchXMM);
 
-#if _M_SSE < 0x501
-	xMOVAPS  (xmm0, ptr32[arg1reg]);
-	xPCMP.EQD(xmm0, ptr32[arg2reg]);
-	xMOVAPS  (xmm1, ptr32[arg1reg + 0x10]);
-	xPCMP.EQD(xmm1, ptr32[arg2reg + 0x10]);
-	xPAND    (xmm0, xmm1);
+	if (!x86caps.hasAVX2)
+	{
+		xMOVAPS  (xmm0, ptr32[arg1reg]);
+		xPCMP.EQD(xmm0, ptr32[arg2reg]);
+		xMOVAPS  (xmm1, ptr32[arg1reg + 0x10]);
+		xPCMP.EQD(xmm1, ptr32[arg2reg + 0x10]);
+		xPAND    (xmm0, xmm1);
 
-	xMOVMSKPS(eax, xmm0);
-	xCMP     (eax, 0xf);
-	xForwardJL8 exitPoint;
+		xMOVMSKPS(eax, xmm0);
+		xXOR     (eax, 0xf);
+		xForwardJNZ8 exitPoint;
 
-	xMOVAPS  (xmm0, ptr32[arg1reg + 0x20]);
-	xPCMP.EQD(xmm0, ptr32[arg2reg + 0x20]);
-	xMOVAPS	 (xmm1, ptr32[arg1reg + 0x30]);
-	xPCMP.EQD(xmm1, ptr32[arg2reg + 0x30]);
-	xPAND    (xmm0, xmm1);
+		xMOVAPS  (xmm0, ptr32[arg1reg + 0x20]);
+		xPCMP.EQD(xmm0, ptr32[arg2reg + 0x20]);
+		xMOVAPS  (xmm1, ptr32[arg1reg + 0x30]);
+		xPCMP.EQD(xmm1, ptr32[arg2reg + 0x30]);
+		xPAND    (xmm0, xmm1);
 
-	xMOVAPS  (xmm2, ptr32[arg1reg + 0x40]);
-	xPCMP.EQD(xmm2, ptr32[arg2reg + 0x40]);
-	xMOVAPS  (xmm3, ptr32[arg1reg + 0x50]);
-	xPCMP.EQD(xmm3, ptr32[arg2reg + 0x50]);
-	xPAND    (xmm2, xmm3);
+		xMOVAPS  (xmm2, ptr32[arg1reg + 0x40]);
+		xPCMP.EQD(xmm2, ptr32[arg2reg + 0x40]);
+		xMOVAPS  (xmm3, ptr32[arg1reg + 0x50]);
+		xPCMP.EQD(xmm3, ptr32[arg2reg + 0x50]);
+		xPAND    (xmm2, xmm3);
 
-	xMOVAPS  (xmm4, ptr32[arg1reg + 0x60]);
-	xPCMP.EQD(xmm4, ptr32[arg2reg + 0x60]);
-	xMOVAPS  (xmm5, ptr32[arg1reg + 0x70]);
-	xPCMP.EQD(xmm5, ptr32[arg2reg + 0x70]);
-	xPAND    (xmm4, xmm5);
+		xMOVAPS  (xmm4, ptr32[arg1reg + 0x60]);
+		xPCMP.EQD(xmm4, ptr32[arg2reg + 0x60]);
+		xMOVAPS  (xmm5, ptr32[arg1reg + 0x70]);
+		xPCMP.EQD(xmm5, ptr32[arg2reg + 0x70]);
+		xPAND    (xmm4, xmm5);
 
-	xMOVAPS  (xmm6, ptr32[arg1reg + 0x80]);
-	xPCMP.EQD(xmm6, ptr32[arg2reg + 0x80]);
-	xMOVAPS  (xmm7, ptr32[arg1reg + 0x90]);
-	xPCMP.EQD(xmm7, ptr32[arg2reg + 0x90]);
-	xPAND    (xmm6, xmm7);
+		xMOVAPS  (xmm6, ptr32[arg1reg + 0x80]);
+		xPCMP.EQD(xmm6, ptr32[arg2reg + 0x80]);
+		xMOVAPS  (xmm7, ptr32[arg1reg + 0x90]);
+		xPCMP.EQD(xmm7, ptr32[arg2reg + 0x90]);
+		xPAND    (xmm6, xmm7);
 
-	xPAND (xmm0, xmm2);
-	xPAND (xmm4, xmm6);
-	xPAND (xmm0, xmm4);
-	xMOVMSKPS(eax, xmm0);
+		xPAND (xmm0, xmm2);
+		xPAND (xmm4, xmm6);
+		xPAND (xmm0, xmm4);
+		xMOVMSKPS(eax, xmm0);
+		xXOR(eax, 0xf);
 
-#else
-	// We have to use unaligned loads here, because the blocks are only 16 byte aligned.
-	xVMOVUPS(ymm0, ptr[arg1reg]);
-	xVPCMP.EQD(ymm0, ymm0, ptr[arg2reg]);
-	xVMOVMSKPS(eax, ymm0);
-	xCMP(eax, 0xff);
-	xForwardJB8 exitPoint;
+		exitPoint.SetTarget();
+	}
+	else
+	{
+		// We have to use unaligned loads here, because the blocks are only 16 byte aligned.
+		xVMOVUPS(ymm0, ptr[arg1reg]);
+		xVPCMP.EQD(ymm0, ymm0, ptr[arg2reg]);
+		xVPMOVMSKB(eax, ymm0);
+		xNOT(eax);
+		xForwardJNZ8 exitPoint;
 
-	xVMOVUPS(ymm0, ptr[arg1reg + 0x20]);
-	xVPCMP.EQD(ymm0, ymm0, ptr[arg2reg + 0x20]);
+		xVMOVUPS(ymm0, ptr[arg1reg + 0x20]);
+		xVPCMP.EQD(ymm0, ymm0, ptr[arg2reg + 0x20]);
 
-	xVMOVUPS(ymm1, ptr[arg1reg + 0x40]);
-	xVPCMP.EQD(ymm1, ymm1, ptr[arg2reg + 0x40]);
+		xVMOVUPS(ymm1, ptr[arg1reg + 0x40]);
+		xVPCMP.EQD(ymm1, ymm1, ptr[arg2reg + 0x40]);
 
-	xVMOVUPS(ymm2, ptr[arg1reg + 0x60]);
-	xVPCMP.EQD(ymm2, ymm2, ptr[arg2reg + 0x60]);
-	xVPAND(ymm0, ymm0, ymm1);
+		xVMOVUPS(ymm2, ptr[arg1reg + 0x60]);
+		xVPCMP.EQD(ymm2, ymm2, ptr[arg2reg + 0x60]);
+		xVPAND(ymm0, ymm0, ymm1);
 
-	xVMOVUPS(ymm1, ptr[arg1reg + 0x80]);
-	xVPAND(ymm0, ymm0, ymm2);
-	xVPCMP.EQD(ymm1, ymm1, ptr[arg2reg + 0x80]);
-	xVPAND(ymm0, ymm0, ymm1);
+		xVMOVUPS(ymm1, ptr[arg1reg + 0x80]);
+		xVPAND(ymm0, ymm0, ymm2);
+		xVPCMP.EQD(ymm1, ymm1, ptr[arg2reg + 0x80]);
+		xVPAND(ymm0, ymm0, ymm1);
 
-	xVMOVMSKPS(eax, ymm0);
-	xVZEROUPPER();
-#endif
+		xVPMOVMSKB(eax, ymm0);
+		xNOT(eax);
 
-	exitPoint.SetTarget();
+		exitPoint.SetTarget();
+		xVZEROUPPER();
+	}
 
 	xRET();
 	HostSys::MemProtectStatic(mVUsearchXMM, PageAccess_ExecOnly());

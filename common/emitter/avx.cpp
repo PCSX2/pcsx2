@@ -68,6 +68,11 @@ namespace x86Emitter
 		{0x66, 0x66}, // VPCMPGTD
 	};
 
+	void xVPMOVMSKB(const xRegister32& to, const xRegisterSSE& from)
+	{
+		xOpWriteC5(0x66, 0xd7, to, xRegister32(), from);
+	}
+
 	void xVMOVMSKPS(const xRegister32& to, const xRegisterSSE& from)
 	{
 		xOpWriteC5(0x00, 0x50, to, xRegister32(), from);

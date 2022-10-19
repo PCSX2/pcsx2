@@ -638,6 +638,7 @@ namespace x86Emitter
 	extern const xImplAVX_ThreeArgYMM xVPXOR;
 	extern const xImplAVX_CmpInt xVPCMP;
 
+	extern void xVPMOVMSKB(const xRegister32& to, const xRegisterSSE& from);
 	extern void xVMOVMSKPS(const xRegister32& to, const xRegisterSSE& from);
 	extern void xVMOVMSKPD(const xRegister32& to, const xRegisterSSE& from);
 	extern void xVZEROUPPER();
