@@ -815,6 +815,8 @@ void MainWindow::onBlockDumpActionToggled(bool checked)
 
 	Host::SetBaseStringSettingValue("EmuCore", "BlockDumpSaveDirectory", new_dir.toUtf8().constData());
 	Host::CommitBaseSettingChanges();
+
+	g_emu_thread->applySettings();
 }
 
 void MainWindow::saveStateToConfig()
