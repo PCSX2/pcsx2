@@ -37666,10 +37666,14 @@ SLPS-25796:
 SLPS-25797:
   name: "Ikki Tousen - Shining Dragon [Limited Edition]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Aligns bloom effect.
 SLPS-25798:
   name: "Ikki Tousen - Shining Dragon"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Aligns bloom effect.
 SLPS-25799:
   name: "Ultraman Fighting Evolution 3 [Banpresto Best]"
   region: "NTSC-J"
@@ -37939,6 +37943,8 @@ SLPS-25881:
 SLPS-25882:
   name: "Ikki Tousen - Shining Dragon [Best Collection]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Aligns bloom effect.
 SLPS-25883:
   name: "Katekyoo Hitman Reborn! Nerae! Ring x Vongola Trainers"
   region: "NTSC-J"
