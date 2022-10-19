@@ -3024,6 +3024,10 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 							  CurrentFramebufferHasFeedbackLoop();
 	}
 
+	// We don't need the very first barrier if this is the first draw after switching to feedback loop,
+	// because the layout change in itself enforces the execution dependency.
+	const bool skip_first_barrier = (draw_rt && draw_rt->GetLayout() != VK_IMAGE_LAYOUT_GENERAL);
+
 	OMSetRenderTargets(draw_rt, draw_ds, config.scissor, pipe.feedback_loop);
 	if (pipe.feedback_loop)
 	{
@@ -3032,7 +3036,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// Begin render pass if new target or out of the area.
-	bool skip_first_barrier = false;
 	if (!render_area_okay || !InRenderPass())
 	{
 		const VkAttachmentLoadOp rt_op = GetLoadOpForTexture(draw_rt);
@@ -3060,10 +3063,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		{
 			BeginRenderPass(rp, render_area);
 		}
-
-		// We don't need the very first barrier if this is the first draw in the render pass, because we have
-		// pipeline barriers inbetween them anyway.
-		skip_first_barrier = true;
 	}
 
 	// rt -> hdr blit if enabled
