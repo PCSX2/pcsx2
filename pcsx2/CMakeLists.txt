@@ -98,7 +98,7 @@ if(WIN32)
 		set(MIN_WIN32 0x0603)
 	endif()
 	target_compile_definitions(PCSX2_FLAGS INTERFACE
-		_M_SSE=0x401 # TODO: Multiple ISA
+		__SSE4_1__ # TODO: Multiple ISA
 		DIRECTINPUT_VERSION=0x0800
 		WINVER=${MIN_WIN32}
 		_WIN32_WINNT=${MIN_WIN32}
