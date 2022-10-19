@@ -1760,9 +1760,6 @@ void recompileNextInstruction(int delayslot)
 		}
 	}
 	cpuRegs.code = *s_pCode;
-
-	if (!delayslot && (xGetPtr() - recPtr > 0x1000))
-		s_nEndBlock = pc;
 }
 
 // (Called from recompiled code)]
