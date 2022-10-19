@@ -198,11 +198,7 @@ typedef Fntype_mVUrecInst* Fnptr_mVUrecInst;
 //------------------------------------------------------------------
 alignas(__pagesize) extern u8 mVUsearchXMM[__pagesize];
 typedef u32 (*mVUCall)(void*, void*);
-#if _M_SSE >= 0x501
-#define mVUquickSearch(dest, src, size) ((((mVUCall)((void*)mVUsearchXMM))(dest, src)) == 0xff)
-#else
-#define mVUquickSearch(dest, src, size) ((((mVUCall)((void*)mVUsearchXMM))(dest, src)) == 0xf)
-#endif
+#define mVUquickSearch(dest, src, size) ((((mVUCall)((void*)mVUsearchXMM))(dest, src)) == 0)
 #define mVUemitSearch() \
 	{ \
 		mVUcustomSearch(); \
