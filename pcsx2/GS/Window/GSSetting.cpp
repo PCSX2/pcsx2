@@ -54,7 +54,7 @@ const char* dialog_message(int ID, bool* updateText)
 				"Minimum:\nEnables CRC lookup for special post processing effects.\n\n"
 				"Aggressive:\nUse more aggressive CRC hacks.\n"
 				"Removes effects in some games which make the image appear sharper/clearer.\n"
-				"Affected games: AC4, BleachBB, Bully, DBZBT 2 & 3, DeathByDegrees, Evangelion, FF games, FightingBeautyWulong, GOW 1 & 2, Kunoichi, IkkiTousen, Okami, Oneechanbara2, OnimushaDoD, RDRevolver, Simple2000Vol114, SoTC, SteambotChronicles, Tekken5, Ultraman, XenosagaE3, Yakuza 1 & 2.\n");
+				"Affected games: AC4, DBZBT 2 & 3, DeathByDegrees, Evangelion, FF games, FightingBeautyWulong, Kunoichi, Okami, Oneechanbara2, OnimushaDoD, RDRevolver, Simple2000Vol114, SteambotChronicles, Tekken5, Ultraman, XenosagaE3, Yakuza 1 & 2.\n");
 		case IDC_SKIPDRAWEND:
 		case IDC_SKIPDRAWHACKEDIT:
 		case IDC_SKIPDRAWSTART:

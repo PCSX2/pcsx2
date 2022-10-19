@@ -40,7 +40,6 @@ public:
 		GodHand,
 		HauntingGround,
 		ICO,
-		IkkiTousen,
 		Jak2,
 		Jak3,
 		JakX,

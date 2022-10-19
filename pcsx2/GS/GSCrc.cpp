@@ -162,7 +162,6 @@ const CRC::Game CRC::m_games[] =
 	{0x1F88BECD, Tekken5, EU, 0}, // language selector...
 	{0x652050D2, Tekken5, US, 0},
 	{0xEA64EF39, Tekken5, KO, 0},
-	{0x9E98B8AE, IkkiTousen, JP, 0},
 	{0x95CC86EF, GiTS, US, 0}, // same CRC also reported as EU
 	{0x2C5BF134, GiTS, US, 0}, // Demo
 	{0xA5768F53, GiTS, JP, 0},
