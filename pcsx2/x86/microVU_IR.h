@@ -51,8 +51,8 @@ union alignas(16) microRegInfo
 				u8 blockType;      // 0 = Normal; 1,2 = Compile one instruction (E-bit/Branch Ending)
 				u8 r;
 			};
-			u64 quick64[2];
-			u32 quick32[4];
+			u64 quick64[1];
+			u32 quick32[2];
 		};
 
 		u32 xgkickcycles;
@@ -67,12 +67,13 @@ union alignas(16) microRegInfo
 		};
 	};
 
-	u128 full128[176 / sizeof(u128)];
-	u64  full64[176 / sizeof(u64)];
-	u32  full32[176 / sizeof(u32)];
+	u128 full128[160 / sizeof(u128)];
+	u64  full64[160 / sizeof(u64)];
+	u32  full32[160 / sizeof(u32)];
 };
 
-static_assert(sizeof(microRegInfo) == 176, "microRegInfo was not 176 bytes");
+// Note: mVUcustomSearch needs to be updated if this is changed
+static_assert(sizeof(microRegInfo) == 160, "microRegInfo was not 160 bytes");
 
 struct microProgram;
 struct microJumpCache
