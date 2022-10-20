@@ -6409,8 +6409,6 @@ SCPS-55008:
 SCPS-55010:
   name: "Grandia Xtreme"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SCPS-55011:
   name: "Dual Hearts"
   region: "NTSC-J"
@@ -20110,18 +20108,21 @@ SLES-54904:
   region: "PAL-M4"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces misaligned cel shading but still an issue compared to native.
+    halfPixelOffset: 2 # Corrects misaligned cel shading.
+    roundSprite: 1 # Further corrects misaligned cel shading.
 SLES-54905:
   name: "Simpsons Game, The"
   region: "PAL-F"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces misaligned cel shading but still an issue compared to native.
+    halfPixelOffset: 2 # Corrects misaligned cel shading.
+    roundSprite: 1 # Further corrects misaligned cel shading.
 SLES-54906:
   name: "Simpsons Game, The"
   region: "PAL-I-S"
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces misaligned cel shading but still an issue compared to native.
+    halfPixelOffset: 2 # Corrects misaligned cel shading.
+    roundSprite: 1 # Further corrects misaligned cel shading.
 SLES-54913:
   name: "Pro Evolution Soccer 2008"
   region: "PAL-E-S"
@@ -20446,7 +20447,8 @@ SLES-55020:
   name: "Die Simpsons - Das Spiel"
   region: "PAL-G"
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces misaligned cel shading but still an issue compared to native.
+    halfPixelOffset: 2 # Corrects misaligned cel shading.
+    roundSprite: 1 # Further corrects misaligned cel shading.
 SLES-55021:
   name: "Pro Evolution Soccer 2008"
   region: "PAL-F-G"
@@ -26426,8 +26428,6 @@ SLPM-65080:
 SLPM-65082:
   name: "Grandia Xtreme [Limited Edition]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLPM-65083:
   name: "Houshin Engi 2"
   region: "NTSC-J"
@@ -26455,8 +26455,6 @@ SLPM-65087:
 SLPM-65089:
   name: "Grandia Xtreme"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLPM-65090:
   name: "Spy Hunter"
   region: "NTSC-J"
@@ -40418,8 +40416,6 @@ SLUS-20417:
   name: "Grandia Xtreme"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLUS-20418:
   name: "Wakeboarding Unleashed featuring Shaun Murray"
   region: "NTSC-U"
@@ -46501,7 +46497,8 @@ SLUS-21665:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces misaligned cel shading but still an issue compared to native.
+    halfPixelOffset: 2 # Corrects misaligned cel shading.
+    roundSprite: 1 # Further corrects misaligned cel shading.
 SLUS-21666:
   name: "Mountain Bike Adrenaline"
   region: "NTSC-U"
