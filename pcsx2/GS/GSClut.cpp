@@ -110,7 +110,15 @@ void GSClut::Invalidate()
 
 void GSClut::InvalidateRange(u32 start_block, u32 end_block)
 {
-	if (m_write.TEX0.CBP >= start_block && m_write.TEX0.CBP <= end_block)
+	int blocks = 4;
+
+	if (GSLocalMemory::m_psm[m_write.TEX0.CPSM].bpp == 16)
+		blocks >>= 1;
+
+	if (GSLocalMemory::m_psm[m_write.TEX0.PSM].bpp == 4)
+		blocks >>= 1;
+
+	if ((m_write.TEX0.CBP + blocks) >= start_block && m_write.TEX0.CBP <= end_block)
 	{
 		m_write.dirty = true;
 	}

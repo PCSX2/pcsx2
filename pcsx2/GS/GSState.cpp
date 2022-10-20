@@ -653,6 +653,9 @@ void GSState::DumpVertices(const std::string& filename)
 		case GSFlushReason::UPLOADDIRTYTEX:
 			file << "GS UPLOAD OVERWRITES CURRENT TEXTURE OR CLUT";
 			break;
+		case GSFlushReason::LOCALTOLOCALMOVE:
+			file << "GS LOCAL TO LOCAL OVERWRITES CURRENT TEXTURE OR CLUT";
+			break;
 		case GSFlushReason::DOWNLOADFIFO:
 			file << "DOWNLOAD FIFO";
 			break;
@@ -2002,13 +2005,20 @@ void GSState::Write(const u8* mem, int len)
 	if (!m_tr.Update(w, h, psm.trbpp, len))
 		return;
 
-	// TODO: Not really sufficient if a partial texture update is done outside the block.
-	// No need to check CLUT here, we can invalidate it below, no need to flush it since TEX0 needs to update, then we can flush.
-	// Only flush on a NEW transfer if a pending one is using the same address.
-	// Check Fast & Furious (Hardare mode) and Assault Suits Valken (either renderer).
-	if (m_tr.end == 0 && m_index.tail > 0 && m_prev_env.PRIM.TME &&
-		(blit.DBP == m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0.TBP0 || blit.DBP == m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0.CBP))
+	
+
+	GIFRegTEX0& prev_tex0 = m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0;
+
+	const u32 write_end_bp = GSLocalMemory::GetEndBlock(blit.DBP, blit.DBW, w + static_cast<int>(m_env.TRXPOS.DSAX), h + static_cast<int>(m_env.TRXPOS.DSAY), blit.DPSM);
+	const u32 tex_end_bp = GSLocalMemory::GetEndBlock(prev_tex0.TBP0, prev_tex0.TBW, 1 << prev_tex0.TW, 1 << prev_tex0.TH, prev_tex0.PSM);
+	// Only flush on a NEW transfer if a pending one is using the same address or overlap.
+	// Check Fast & Furious (Hardare mode) and Assault Suits Valken (either renderer) and Tomb Raider - Angel of Darkness menu (TBP != DBP but overlaps).
+	if (m_tr.end == 0 && m_index.tail > 0 && m_prev_env.PRIM.TME && write_end_bp >= prev_tex0.TBP0 && blit.DBP <= tex_end_bp)
+	{
 		Flush(GSFlushReason::UPLOADDIRTYTEX);
+	}
+	// Invalid the CLUT if it crosses paths.
+	m_mem.m_clut.InvalidateRange(blit.DBP, write_end_bp);
 
 	GL_CACHE("Write! ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d)",
 			 blit.DBP, blit.DBW, psm_str(blit.DPSM),
@@ -2042,13 +2052,6 @@ void GSState::Write(const u8* mem, int len)
 		if (m_tr.end >= m_tr.total)
 			FlushWrite();
 	}
-
-	const int page_width = std::max(1, ((w + static_cast<int>(m_env.TRXPOS.DSAX)) / psm.pgs.x));
-	const int page_height = std::max(1, ((h + static_cast<int>(m_env.TRXPOS.DSAY)) / psm.pgs.y));
-	const int pitch = (std::max(1U, blit.DBW) * 64) / psm.pgs.x;
-	const u32 end_bp = blit.DBP + ((((page_height % psm.pgs.y) != 0) ? (page_width << 5) : 0) + ((page_height * pitch) << 5));
-	// Try to avoid flushing draws if it doesn't cross paths
-	m_mem.m_clut.InvalidateRange(blit.DBP, end_bp);
 }
 
 void GSState::InitReadFIFO(u8* mem, int len)
@@ -2150,6 +2153,20 @@ void GSState::Move()
 	const int dbw = m_env.BITBLTBUF.DBW;
 	const GSOffset spo = m_mem.GetOffset(sbp, sbw, m_env.BITBLTBUF.SPSM);
 	const GSOffset dpo = m_mem.GetOffset(dbp, dbw, m_env.BITBLTBUF.DPSM);
+
+	GIFRegTEX0& prev_tex0 = m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0;
+
+	const u32 end_bp = GSLocalMemory::GetEndBlock(dbp, dbw, w + static_cast<int>(m_env.TRXPOS.DSAX), h + static_cast<int>(m_env.TRXPOS.DSAY), m_env.BITBLTBUF.DPSM);
+	const u32 tex_end_bp = GSLocalMemory::GetEndBlock(prev_tex0.TBP0, prev_tex0.TBW, 1 << prev_tex0.TW, 1 << prev_tex0.TH, prev_tex0.PSM);
+
+	// Only flush on a NEW transfer if a pending one is using the same address or overlap.
+	// Unknown if games use this one, but best to be safe.
+	if (m_index.tail > 0 && m_prev_env.PRIM.TME && end_bp >= prev_tex0.TBP0 && dbp <= static_cast<int>(tex_end_bp))
+	{
+		Flush(GSFlushReason::LOCALTOLOCALMOVE);
+	}
+	// Invalid the CLUT if it crosses paths.
+	m_mem.m_clut.InvalidateRange(dbp, end_bp);
 
 	auto genericCopy = [=](const GSOffset& dpo, const GSOffset& spo, auto&& getPAHelper, auto&& pxCopyFn)
 	{
@@ -2292,12 +2309,6 @@ void GSState::Move()
 			(m_mem.*dpsm.wpa)(doff, (m_mem.*spsm.rpa)(soff));
 		});
 	}
-	const int page_width = std::max(1, ((w + static_cast<int>(m_env.TRXPOS.DSAX)) / dpsm.pgs.x));
-	const int page_height = std::max(1, ((h + static_cast<int>(m_env.TRXPOS.DSAY)) / dpsm.pgs.y));
-	const int pitch = (std::max(1, dbw) * 64) / dpsm.pgs.x;
-	const u32 end_bp = dbp + ((((page_height % dpsm.pgs.y) != 0) ? (page_width << 5) : 0) + ((page_height * pitch) << 5));
-	// Try to avoid flushing draws if it doesn't cross paths
-	m_mem.m_clut.InvalidateRange(dbp, end_bp);
 }
 
 void GSState::SoftReset(u32 mask)
