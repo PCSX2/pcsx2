@@ -28725,15 +28725,6 @@ SLPM-65797:
   name: "Dragon Quest & Final Fantasy in Itadaki Street"
   region: "NTSC-J"
   compat: 5
-  patches:
-    4CE7FB04:
-      content: |-
-        author=refraction
-        // Game seems to have problems with alpha values being zero in some instances
-        // this patches the results from FPU to be an alpha of 2
-        // Fixes missing board
-        patch=1,EE,00143CBC,word,3C030200
-        patch=1,EE,00143CC0,word,00831825
 SLPM-65798:
   name: "Madden NFL Superbowl 2005"
   region: "NTSC-J"
