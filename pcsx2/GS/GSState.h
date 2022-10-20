@@ -283,12 +283,13 @@ public:
 		TEXFLUSH = 1 << 4,
 		GSTRANSFER = 1 << 5,
 		UPLOADDIRTYTEX = 1 << 6,
-		DOWNLOADFIFO = 1 << 7,
-		SAVESTATE = 1 << 8,
-		LOADSTATE = 1 << 9,
-		AUTOFLUSH = 1 << 10,
-		VSYNC  = 1 << 11,
-		GSREOPEN = 1 << 12,
+		LOCALTOLOCALMOVE = 1 << 7,
+		DOWNLOADFIFO = 1 << 8,
+		SAVESTATE = 1 << 9,
+		LOADSTATE = 1 << 10,
+		AUTOFLUSH = 1 << 11,
+		VSYNC  = 1 << 12,
+		GSREOPEN = 1 << 13,
 	};
 
 	GSFlushReason m_state_flush_reason;
