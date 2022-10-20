@@ -471,8 +471,14 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 		// Let's try to find a perfect frame that contains valid data
 		for (auto t : list)
 		{
+			// Only checks that the texure starts at the requested bp, size isn't considered.
 			if (bp == t->m_TEX0.TBP0 && t->m_end_block >= bp)
 			{
+				// If the frame is older than 4 frames (to be safe) then it hasn't been updated for ages, so it's probably not a valid output frame.
+				// The rest of the checks will get better equality, so suffer less from misdetection.
+				if (t->m_age > 4)
+					continue;
+
 				dst = t;
 				GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x -> 0x%x %s)", size.x, size.y, dst->m_texture->GetID(), bp, t->m_end_block, psm_str(TEX0.PSM));
 				if (real_h > 0 || real_w > 0)
@@ -482,7 +488,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 			}
 		}
 
-		// 2nd try ! Try to find a frame that include the bp
+		// 2nd try ! Try to find a frame at the requested bp -> bp + size is inside of (or equal to)
 		if (!dst)
 		{
 			for (auto t : list)
