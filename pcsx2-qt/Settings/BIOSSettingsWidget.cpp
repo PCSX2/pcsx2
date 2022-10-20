@@ -125,6 +125,8 @@ void BIOSSettingsWidget::listItemChanged(const QTreeWidgetItem* current, const Q
 {
 	Host::SetBaseStringSettingValue("Filenames", "BIOS", current->text(0).toUtf8().constData());
 	Host::CommitBaseSettingChanges();
+
+	g_emu_thread->applySettings();
 }
 
 BIOSSettingsWidget::RefreshThread::RefreshThread(BIOSSettingsWidget* parent, const QString& directory)
