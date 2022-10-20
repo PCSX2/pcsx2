@@ -2046,9 +2046,9 @@ void GSState::Write(const u8* mem, int len)
 	const int page_width = std::max(1, ((w + static_cast<int>(m_env.TRXPOS.DSAX)) / psm.pgs.x));
 	const int page_height = std::max(1, ((h + static_cast<int>(m_env.TRXPOS.DSAY)) / psm.pgs.y));
 	const int pitch = (std::max(1U, blit.DBW) * 64) / psm.pgs.x;
-
+	const u32 end_bp = blit.DBP + ((((page_height % psm.pgs.y) != 0) ? (page_width << 5) : 0) + ((page_height * pitch) << 5));
 	// Try to avoid flushing draws if it doesn't cross paths
-	m_mem.m_clut.InvalidateRange(blit.DBP, blit.DBP + ((page_width << 5) + ((page_height * pitch) << 5)));
+	m_mem.m_clut.InvalidateRange(blit.DBP, end_bp);
 }
 
 void GSState::InitReadFIFO(u8* mem, int len)
@@ -2295,9 +2295,9 @@ void GSState::Move()
 	const int page_width = std::max(1, ((w + static_cast<int>(m_env.TRXPOS.DSAX)) / dpsm.pgs.x));
 	const int page_height = std::max(1, ((h + static_cast<int>(m_env.TRXPOS.DSAY)) / dpsm.pgs.y));
 	const int pitch = (std::max(1, dbw) * 64) / dpsm.pgs.x;
-
+	const u32 end_bp = dbp + ((((page_height % dpsm.pgs.y) != 0) ? (page_width << 5) : 0) + ((page_height * pitch) << 5));
 	// Try to avoid flushing draws if it doesn't cross paths
-	m_mem.m_clut.InvalidateRange(dbp, dbp + ((page_width << 5) + ((page_height * pitch) << 5)));
+	m_mem.m_clut.InvalidateRange(dbp, end_bp);
 }
 
 void GSState::SoftReset(u32 mask)
