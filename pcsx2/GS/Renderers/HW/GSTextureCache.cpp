@@ -485,18 +485,13 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 		// 2nd try ! Try to find a frame that include the bp
 		if (!dst)
 		{
-			const int page_width = std::max(1, (real_w / psm_s.pgs.x));
-			const int page_height = std::max(1, (real_h / psm_s.pgs.y));
-			const int pitch = (std::max(1U, TEX0.TBW) * 64) / psm_s.pgs.x;
-			const u32 end_bp = bp + ((page_width << 5) + ((page_height * pitch) << 5));
-
 			for (auto t : list)
 			{
 				// Make sure the target is inside the texture
-				if (t->m_TEX0.TBP0 < bp && bp <= t->m_end_block && end_bp > t->m_TEX0.TBP0 && end_bp <= t->m_end_block)
+				if (t->m_TEX0.TBP0 <= bp && bp <= t->m_end_block && t->Inside(bp, TEX0.TBW, TEX0.PSM, GSVector4i(0, 0, real_w, real_h)))
 				{
 					dst = t;
-					GL_CACHE("TC: Lookup Frame %dx%d, inclusive hit: %d (0x%x, took 0x%x -> 0x%x %s endbp 0x%x)", size.x, size.y, t->m_texture->GetID(), bp, t->m_TEX0.TBP0, t->m_end_block, psm_str(TEX0.PSM), end_bp);
+					GL_CACHE("TC: Lookup Frame %dx%d, inclusive hit: %d (0x%x, took 0x%x -> 0x%x %s)", size.x, size.y, t->m_texture->GetID(), bp, t->m_TEX0.TBP0, t->m_end_block, psm_str(TEX0.PSM));
 
 					if (real_h > 0 || real_w > 0)
 						ScaleTargetForDisplay(dst, TEX0, real_w, real_h);
