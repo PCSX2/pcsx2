@@ -500,17 +500,19 @@ void recLDL()
 		return;
 
 #ifdef REC_LOADS
+
 	if (GPR_IS_CONST1(_Rt_))
 	{
 		_flushConstReg(_Rt_);
 		_eeOnWriteReg(_Rt_, 0);
 	}
+	_deleteEEreg(_Rt_, 1);
 
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
 
-		// If _Rs_ is equal to _Rt_ we need to put the shift in to eax since it won't take the CONST path
+		// If _Rs_ is equal to _Rt_ we need to put the shift in to eax since it won't take the CONST path.
 		if (_Rs_ == _Rt_)
 			xMOV(calleeSavedReg1d, srcadr);
 
@@ -552,7 +554,7 @@ void recLDL()
 		xAND(calleeSavedReg1d, 0x7);
 		xCMP(calleeSavedReg1d, 7);
 		xForwardJE8 skip;
-			// Calculate the shift from top bit to lowest
+			// Calculate the shift from top bit to lowest.
 			xADD(calleeSavedReg1d, 1);
 			xMOV(edx, 64);
 			xSHL(calleeSavedReg1d, 3);
@@ -585,12 +587,13 @@ void recLDR()
 		_flushConstReg(_Rt_);
 		_eeOnWriteReg(_Rt_, 0);
 	}
+	_deleteEEreg(_Rt_, 1);
 
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
 
-		// If _Rs_ is equal to _Rt_ we need to put the shift in to eax since it won't take the CONST path
+		// If _Rs_ is equal to _Rt_ we need to put the shift in to eax since it won't take the CONST path.
 		if(_Rs_ == _Rt_)
 			xMOV(calleeSavedReg1d, srcadr);
 
@@ -631,7 +634,7 @@ void recLDR()
 
 		xAND(calleeSavedReg1d, 0x7);
 		xForwardJE8 skip;
-			// Calculate the shift from top bit to lowest
+			// Calculate the shift from top bit to lowest.
 			xMOV(edx, 64);
 			xSHL(calleeSavedReg1d, 3);
 			xSUB(edx, calleeSavedReg1d);
