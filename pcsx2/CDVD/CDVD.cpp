@@ -1115,6 +1115,8 @@ __fi void cdvdSectorReady()
 
 	if (cdvd.nextSectorsBuffered < 16)
 		CDVDSECTORREADY_INT(cdvd.ReadTime);
+	else
+		cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 }
 
 // inlined due to being referenced in only one place.
@@ -1238,7 +1240,10 @@ __fi void cdvdReadInterrupt()
 			cdvdSetIrq();
 			cdvdUpdateReady(CDVD_DRIVE_READY);
 
-			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
+			if (cdvd.nextSectorsBuffered < 16)
+				cdvdUpdateStatus(CDVD_STATUS_READ);
+			else
+				cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			//DevCon.Warning("Scheduling interrupt in %d cycles", cdvd.ReadTime - ((cdvd.BlockSize / 4) * 12));
 			// Timing issues on command end
 			// Star Ocean (1.1 Japan) expects the DMA to end and interrupt at least 128 or more cycles before the CDVD command ends.
