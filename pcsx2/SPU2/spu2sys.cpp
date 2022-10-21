@@ -1559,6 +1559,16 @@ static void RegWrite_Core(u16 value)
 				thiscore.InputDataLeft = 0;
 				thiscore.DMAICounter = 0;
 				thiscore.InputDataTransferred = 0;
+
+				// Not accurate behaviour but shouldn't hurt for now, need to run some tests
+				// to see why Prince of Persia Warrior Within buzzes when going in to the map
+				// since it starts an ADMA of music, then kills ADMA and input DMA
+				// without disabling ADMA read mode or clearing the buffer.
+				for (int i = 0; i < 0x200; i++)
+				{
+					GetMemPtr(0x2000 + (thiscore.Index << 10))[i] = 0;
+					GetMemPtr(0x2200 + (thiscore.Index << 10))[i] = 0;
+				}
 			}
 			break;
 

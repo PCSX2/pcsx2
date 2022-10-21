@@ -116,12 +116,6 @@ StereoOut32 V_Core::ReadInput()
 		retval = StereoOut32(
 			(s32)(*GetMemPtr(0x2000 + (Index << 10) + ReadIndex)),
 			(s32)(*GetMemPtr(0x2200 + (Index << 10) + ReadIndex)));
-
-		// Not accurate behaviour but shouldn't hurt for now, need to run some tests
-		// to see why Prince of Persia Warrior Within buzzes when going in to the map
-		// since it starts an ADMA of music, then kills ADMA, so it loops on a few ms of data.
-		GetMemPtr(0x2000 + (Index << 10) + ReadIndex)[0] = 0;
-		GetMemPtr(0x2200 + (Index << 10) + ReadIndex)[0] = 0;
 	}
 
 #ifdef PCSX2_DEVBUILD
