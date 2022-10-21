@@ -16648,6 +16648,8 @@ SLES-53525:
 SLES-53526:
   name: "Suffering, The - Ties that Bind"
   region: "PAL-E-F"
+  gsHWFixes:
+    autoFlush: 1 # Fixes debris and blending on lower part of screen during monster transformation.
   memcardFilters:
     - "SLES-53526"
     - "SLES-53527"
@@ -16659,6 +16661,8 @@ SLES-53526:
 SLES-53527:
   name: "Suffering, The - Ties that Bind"
   region: "PAL-E-I-S"
+  gsHWFixes:
+    autoFlush: 1 # Fixes debris and blending on lower part of screen during monster transformation.
   memcardFilters:
     - "SLES-53526"
     - "SLES-53527"
@@ -16670,6 +16674,8 @@ SLES-53527:
 SLES-53528:
   name: "Suffering, The - Ties that Bind"
   region: "PAL-G"
+  gsHWFixes:
+    autoFlush: 1 # Fixes debris and blending on lower part of screen during monster transformation.
   memcardFilters:
     - "SLES-53526"
     - "SLES-53527"
@@ -44117,6 +44123,8 @@ SLUS-21189:
   compat: 5
   speedHacks:
     InstantVU1SpeedHack: 1 # Fixes SPS.
+  gsHWFixes:
+    autoFlush: 1 # Fixes debris and blending on lower part of screen during monster transformation.
   memcardFilters:
     - "SLUS-21189"
     - "SLUS-20636"
