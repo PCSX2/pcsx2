@@ -21,6 +21,10 @@
 #include "yuv2rgb.h"
 #include "mpeg2lib/Mpeg.h"
 
+#include "GS/MultiISA.h"
+
+MULTI_ISA_UNSHARED_START
+
 void ipu_dither_reference(const macroblock_rgb32 &rgb32, macroblock_rgb16 &rgb16, int dte);
 void ipu_dither_sse2(const macroblock_rgb32 &rgb32, macroblock_rgb16 &rgb16, int dte);
 
@@ -120,3 +124,5 @@ __ri void ipu_dither_sse2(const macroblock_rgb32 &rgb32, macroblock_rgb16 &rgb16
         }
     }
 }
+
+MULTI_ISA_UNSHARED_END

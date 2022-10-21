@@ -18,6 +18,7 @@
 #include "common/emitter/tools.h"
 #include "common/General.h"
 #include <string>
+#include <vector>
 
 class SettingsInterface;
 class SettingsWrapper;

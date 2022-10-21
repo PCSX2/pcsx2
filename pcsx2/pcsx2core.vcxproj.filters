@@ -617,6 +617,9 @@
     <ClCompile Include="IPU\IPU_Fifo.cpp">
       <Filter>System\Ps2\IPU</Filter>
     </ClCompile>
+    <ClCompile Include="IPU\IPU_MultiISA.cpp">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClCompile>
     <ClCompile Include="IPU\yuv2rgb.cpp">
       <Filter>System\Ps2\IPU</Filter>
     </ClCompile>
@@ -1530,6 +1533,9 @@
       <Filter>System\Ps2\IPU</Filter>
     </ClInclude>
     <ClInclude Include="IPU\IPU_Fifo.h">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClInclude>
+    <ClInclude Include="IPU\IPU_MultiISA.h">
       <Filter>System\Ps2\IPU</Filter>
     </ClInclude>
     <ClInclude Include="IPU\yuv2rgb.h">

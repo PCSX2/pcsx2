@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2016  PCSX2 Dev Team
+ *  Copyright (C) 2002-2022  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -16,8 +16,12 @@
 #pragma once
 
 #include "GS/MultiISA.h"
+#include "mpeg2lib/Mpeg.h"
 
-MULTI_ISA_DEF(extern void yuv2rgb_reference();)
+MULTI_ISA_DEF(void IPUWorker();)
 
-#define yuv2rgb yuv2rgb_sse2
-MULTI_ISA_DEF(extern void yuv2rgb_sse2();)
+// Quantization matrix
+extern rgb16_t g_ipu_vqclut[16]; //clut conversion table
+extern u16 g_ipu_thresh[2]; //thresholds for color conversions
+
+alignas(16) extern u8 g_ipu_indx4[16*16/2];

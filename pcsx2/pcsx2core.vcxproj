@@ -430,6 +430,7 @@
     <ClCompile Include="CDVD\CDVDisoReader.cpp" />
     <ClCompile Include="Ipu\IPU.cpp" />
     <ClCompile Include="Ipu\IPU_Fifo.cpp" />
+    <ClCompile Include="Ipu\IPU_MultiISA.cpp" />
     <ClCompile Include="Ipu\yuv2rgb.cpp" />
     <ClCompile Include="Ipu\mpeg2lib\Idct.cpp" />
     <ClCompile Include="Ipu\mpeg2lib\Mpeg.cpp" />
@@ -739,6 +740,7 @@
     <ClInclude Include="CDVD\CDVDcommon.h" />
     <ClInclude Include="Ipu\IPU.h" />
     <ClInclude Include="Ipu\IPU_Fifo.h" />
+    <ClInclude Include="Ipu\IPU_MultiISA.h" />
     <ClInclude Include="Ipu\yuv2rgb.h" />
     <ClInclude Include="Ipu\mpeg2lib\Mpeg.h" />
     <ClInclude Include="Ipu\mpeg2lib\Vlc.h" />
