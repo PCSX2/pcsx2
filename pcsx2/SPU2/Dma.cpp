@@ -108,7 +108,7 @@ void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not spl
 
 	int size = std::min(InputDataLeft, (u32)0x200);
 	if (!leftbuffer)
-		size = 0x100;
+		size = std::min(size, 0x100);
 	LogAutoDMA(Index ? ADMA7LogFile : ADMA4LogFile);
 	//ConLog("Refilling ADMA buffer at %x OutPos %x with %x\n", spos, OutPos, size);
 	// HACKFIX!! DMAPtr can be invalid after a savestate load, so the savestate just forces it
