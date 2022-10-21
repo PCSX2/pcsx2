@@ -33,7 +33,11 @@
 #include "Mpeg.h"
 #include "Vlc.h"
 
+#include "GS/MultiISA.h"
+
 #include "common/MemsetFast.inl"
+
+#if MULTI_ISA_COMPILE_ONCE
 
 const int non_linear_quantizer_scale [] =
 {
@@ -42,6 +46,10 @@ const int non_linear_quantizer_scale [] =
 	24, 28, 32, 36, 40, 44,  48,  52,
 	56, 64, 72, 80, 88, 96, 104, 112
 };
+
+#endif
+
+MULTI_ISA_UNSHARED_START
 
 /* Bitstream and buffer needs to be reallocated in order for successful
 	reading of the old data. Here the old data stored in the 2nd slot
@@ -1273,3 +1281,5 @@ __fi bool mpeg2_slice()
 
 	return true;
 }
+
+MULTI_ISA_UNSHARED_END

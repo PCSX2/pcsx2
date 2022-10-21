@@ -36,6 +36,8 @@
 #define IPU_RCR_COEFF 0xcc	//  1.59375
 #define IPU_BCB_COEFF 0x102	//  2.015625
 
+MULTI_ISA_UNSHARED_START
+
 // conforming implementation for reference, do not optimise
 void yuv2rgb_reference(void)
 {
@@ -149,3 +151,5 @@ __ri void yuv2rgb_sse2()
 		}
 	}
 }
+
+MULTI_ISA_UNSHARED_END

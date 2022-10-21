@@ -971,6 +971,31 @@ else()
 	)
 endif()
 
+# IPU sources
+set(pcsx2IPUSources
+	IPU/IPU.cpp
+	IPU/IPU_Fifo.cpp
+	IPU/IPUdma.cpp
+)
+
+set(pcsx2IPUSourcesUnshared
+	IPU/IPU_MultiISA.cpp
+	IPU/IPUdither.cpp
+	IPU/mpeg2lib/Idct.cpp
+	IPU/mpeg2lib/Mpeg.cpp
+	IPU/yuv2rgb.cpp
+)
+
+# IPU headers
+set(pcsx2IPUHeaders
+	IPU/IPU.h
+	IPU/IPU_Fifo.h
+	IPU/IPU_MultiISA.h
+	IPU/IPUdma.h
+	IPU/mpeg2lib/Mpeg.h
+	IPU/mpeg2lib/Vlc.h
+	IPU/yuv2rgb.h
+)
 
 if(DISABLE_ADVANCE_SIMD)
 	target_compile_definitions(PCSX2 PRIVATE MULTI_ISA_SHARED_COMPILATION)
@@ -997,7 +1022,7 @@ if(DISABLE_ADVANCE_SIMD)
 	# Note: ld64 (macOS's linker) does not act the same way when presented with .a files, unless linked with `-force_load` (cmake WHOLE_ARCHIVE).
 	set(is_first_isa "1")
 	foreach(isa "sse4" "avx" "avx2")
-		add_library(GS-${isa} STATIC ${pcsx2GSSourcesUnshared})
+		add_library(GS-${isa} STATIC ${pcsx2GSSourcesUnshared} ${pcsx2IPUSourcesUnshared})
 		target_link_libraries(GS-${isa} PRIVATE PCSX2_FLAGS)
 		target_compile_definitions(GS-${isa} PRIVATE MULTI_ISA_UNSHARED_COMPILATION=isa_${isa} MULTI_ISA_IS_FIRST=${is_first_isa} ${pcsx2_defs_${isa}})
 		target_compile_options(GS-${isa} PRIVATE ${compile_options_${isa}})
@@ -1012,6 +1037,7 @@ if(DISABLE_ADVANCE_SIMD)
 	endforeach()
 else()
 	list(APPEND pcsx2GSSources ${pcsx2GSSourcesUnshared})
+	list(APPEND pcsx2IPUSources ${pcsx2IPUSourcesUnshared})
 endif()
 
 # DebugTools sources
@@ -1339,26 +1365,6 @@ set(pcsx2GuiResources
 	${res_bin}/NoIcon.h
 	${res_bin}/Breakpoint_Active.h
 	${res_bin}/Breakpoint_Inactive.h
-	)
-
-# IPU sources
-set(pcsx2IPUSources
-	IPU/IPU.cpp
-	IPU/IPU_Fifo.cpp
-	IPU/IPUdither.cpp
-	IPU/IPUdma.cpp
-	IPU/mpeg2lib/Idct.cpp
-	IPU/mpeg2lib/Mpeg.cpp
-	IPU/yuv2rgb.cpp)
-
-# IPU headers
-set(pcsx2IPUHeaders
-	IPU/IPUdma.h
-	IPU/IPU_Fifo.h
-	IPU/IPU.h
-	IPU/mpeg2lib/Mpeg.h
-	IPU/mpeg2lib/Vlc.h
-	IPU/yuv2rgb.h
 	)
 
 # Linux sources

@@ -24,6 +24,12 @@
 
 #pragma once
 
+#include "IPU/IPU.h"
+
+#include "GS/MultiISA.h"
+
+#include "common/Assertions.h"
+
 // the IPU is fixed to 16 byte strides (128-bit / QWC resolution):
 static const uint decoder_stride = 16;
 
@@ -184,30 +190,31 @@ struct mpeg2_scan_pack
 {
 	u8 norm[64];
 	u8 alt[64];
-
-	mpeg2_scan_pack();
 };
 
-extern int bitstream_init ();
 extern u32 UBITS(uint bits);
 extern s32 SBITS(uint bits);
 
-extern void mpeg2_idct_copy(s16 * block, u8* dest, int stride);
-extern void mpeg2_idct_add(int last, s16 * block, s16* dest, int stride);
+MULTI_ISA_DEF(
+	extern int bitstream_init();
 
-extern bool mpeg2sliceIDEC();
-extern bool mpeg2_slice();
-extern int get_macroblock_address_increment();
-extern int get_macroblock_modes();
+	extern void mpeg2_idct_copy(s16 * block, u8* dest, int stride);
+	extern void mpeg2_idct_add(int last, s16 * block, s16* dest, int stride);
 
-extern int get_motion_delta(const int f_code);
-extern int get_dmv();
+	extern bool mpeg2sliceIDEC();
+	extern bool mpeg2_slice();
+	extern int get_macroblock_address_increment();
+	extern int get_macroblock_modes();
 
-extern void ipu_csc(macroblock_8& mb8, macroblock_rgb32& rgb32, int sgn);
-extern void ipu_dither(const macroblock_rgb32& rgb32, macroblock_rgb16& rgb16, int dte);
-extern void ipu_vq(macroblock_rgb16& rgb16, u8* indx4);
+	extern int get_motion_delta(const int f_code);
+	extern int get_dmv();
 
-extern int slice (u8 * buffer);
+	extern void ipu_csc(macroblock_8& mb8, macroblock_rgb32& rgb32, int sgn);
+	extern void ipu_dither(const macroblock_rgb32& rgb32, macroblock_rgb16& rgb16, int dte);
+	extern void ipu_vq(macroblock_rgb16& rgb16, u8* indx4);
+
+	extern int slice (u8 * buffer);
+)
 
 #ifdef _MSC_VER
 #define BigEndian(in) _byteswap_ulong(in)
