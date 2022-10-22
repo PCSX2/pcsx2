@@ -1158,7 +1158,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 	// reshow the main window during display updates, because otherwise fullscreen transitions and renderer switches
 	// would briefly show and then hide the main window. So instead, we do it on shutdown, here. Except if we're in
 	// batch mode, when we're going to exit anyway.
-	if (!isRenderingToMain() && isHidden() && !QtHost::InBatchMode())
+	if (!isRenderingToMain() && isHidden() && !QtHost::InBatchMode() && !g_emu_thread->isRunningFullscreenUI())
 		updateWindowState(true);
 
 	// Now we can actually shut down the VM.
