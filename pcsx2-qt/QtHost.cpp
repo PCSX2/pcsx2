@@ -1595,6 +1595,7 @@ void QtHost::PrintCommandLineHelp(const std::string_view& progname)
 	std::fprintf(stderr, "  -nogui: Hides main window while running (implies batch mode).\n");
 	std::fprintf(stderr, "  -elf <file>: Overrides the boot ELF with the specified filename.\n");
 	std::fprintf(stderr, "  -disc <path>: Uses the specified host DVD drive as a source.\n");
+	std::fprintf(stderr, "  -logfile <path>: Writes the application log to path instead of emulog.txt.\n");
 	std::fprintf(stderr, "  -bios: Starts the BIOS (System Menu/OSDSYS).\n");
 	std::fprintf(stderr, "  -fastboot: Force fast boot for provided filename.\n");
 	std::fprintf(stderr, "  -slowboot: Force slow boot for provided filename.\n");
@@ -1687,6 +1688,11 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 			{
 				AutoBoot(autoboot)->source_type = CDVD_SourceType::Disc;
 				AutoBoot(autoboot)->filename = (++it)->toStdString();
+				continue;
+			}
+			else if (CHECK_ARG_PARAM(QStringLiteral("-logfile")))
+			{
+				CommonHost::SetFileLogPath((++it)->toStdString());
 				continue;
 			}
 			else if (CHECK_ARG(QStringLiteral("-bios")))
