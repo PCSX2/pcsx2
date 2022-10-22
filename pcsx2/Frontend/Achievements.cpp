@@ -681,6 +681,7 @@ bool Achievements::Shutdown()
 	s_logged_in = false;
 	Host::OnAchievementsRefreshed();
 
+	s_challenge_mode = false;
 	s_active = false;
 	rc_runtime_destroy(&s_rcheevos_runtime);
 
