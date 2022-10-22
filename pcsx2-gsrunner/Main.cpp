@@ -461,7 +461,7 @@ static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& param
 			}
 			else if (CHECK_ARG_PARAM("-dumpdir"))
 			{
-				s_output_prefix = argv[++i];
+				s_output_prefix = StringUtil::StripWhitespace(argv[++i]);
 				if (s_output_prefix.empty())
 				{
 					Console.Error("Invalid dump directory specified.");
@@ -559,7 +559,7 @@ static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& param
 		if (StringUtil::EndsWithNoCase(title, ".gs"))
 			title = Path::GetFileTitle(title);
 
-		s_output_prefix = Path::Combine(s_output_prefix, title);
+		s_output_prefix = Path::Combine(s_output_prefix, StringUtil::StripWhitespace(title));
 		Console.WriteLn(fmt::format("Saving dumps as {}_frameN.png", s_output_prefix));
 	}
 
