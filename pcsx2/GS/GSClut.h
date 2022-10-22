@@ -39,7 +39,8 @@ class alignas(32) GSClut : public GSAlignedClass<32>
 	{
 		GIFRegTEX0 TEX0;
 		GIFRegTEXCLUT TEXCLUT;
-		bool dirty;
+		u8 dirty;
+		u64 next_tex0;
 		bool IsDirty(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	} m_write;
 
@@ -100,9 +101,10 @@ public:
 	GSClut(GSLocalMemory* mem);
 	virtual ~GSClut();
 
-	void Invalidate();
-	void Invalidate(u32 block);
-	void InvalidateRange(u32 start_block, u32 end_block);
+	bool InvalidateRange(u32 start_block, u32 end_block, bool is_draw = false);
+	u8 IsInvalid();
+	u32 GetCLUTCBP();
+	void SetNextCLUTTEX0(u64 CBP);
 	bool WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	void Write(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	//void Read(const GIFRegTEX0& TEX0);

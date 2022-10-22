@@ -186,6 +186,7 @@ protected:
 	void GrowVertexBuffer();
 	bool IsAutoFlushDraw();
 	void HandleAutoFlush();
+	void CLUTAutoFlush();
 
 	template <u32 prim, bool auto_flush, bool index_swap>
 	void VertexKick(u32 skip);
@@ -228,6 +229,7 @@ public:
 	GSDrawingEnvironment m_env;
 	GSDrawingEnvironment m_backup_env;
 	GSDrawingEnvironment m_prev_env;
+	GSVector4i temp_draw_rect;
 	GSDrawingContext* m_context;
 	u32 m_crc;
 	CRC::Game m_game;

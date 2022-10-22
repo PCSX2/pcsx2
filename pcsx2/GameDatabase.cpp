@@ -290,6 +290,7 @@ static const char* s_gs_hw_fix_names[] = {
 	"texturePreloading",
 	"deinterlace",
 	"cpuSpriteRenderBW",
+	"cpuCLUTRender",
 	"gpuPaletteConversion",
 };
 static_assert(std::size(s_gs_hw_fix_names) == static_cast<u32>(GameDatabaseSchema::GSHWFixId::Count), "HW fix name lookup is correct size");
@@ -499,6 +500,9 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::CPUSpriteRenderBW:
 			return (config.UserHacks_CPUSpriteRenderBW == value);
 
+		case GSHWFixId::CPUCLUTRender:
+			return (config.UserHacks_CPUCLUTRender == value);
+
 		case GSHWFixId::GPUPaletteConversion:
 			return (config.GPUPaletteConversion == ((value > 1) ? (config.TexturePreloading == TexturePreloadingLevel::Full) : (value != 0)));
 
@@ -642,6 +646,9 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 				config.UserHacks_CPUSpriteRenderBW = value;
 				break;
 
+			case GSHWFixId::CPUCLUTRender:
+				config.UserHacks_CPUCLUTRender = value;
+				break;
 
 			case GSHWFixId::GPUPaletteConversion:
 			{

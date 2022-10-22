@@ -28,7 +28,7 @@ GSClut::GSClut(GSLocalMemory* mem)
 	m_clut = (u16*)&p[0];      // 1k + 1k for mirrored area simulating wrapping memory
 	m_buff32 = (u32*)&p[2048]; // 1k
 	m_buff64 = (u64*)&p[4096]; // 2k
-	m_write.dirty = true;
+	m_write.dirty = 1;
 	m_read.dirty = true;
 
 	for (int i = 0; i < 16; i++)
@@ -103,34 +103,35 @@ GSClut::~GSClut()
 	vmfree(m_clut, CLUT_ALLOC_SIZE);
 }
 
-void GSClut::Invalidate()
+u8 GSClut::IsInvalid()
 {
-	m_write.dirty = true;
+	return m_write.dirty;
 }
 
-void GSClut::InvalidateRange(u32 start_block, u32 end_block)
+u32 GSClut::GetCLUTCBP()
 {
-	u32 blocks = 4;
-
-	if (GSLocalMemory::m_psm[m_write.TEX0.CPSM].bpp == 16)
-		blocks >>= 1;
-
-	if (GSLocalMemory::m_psm[m_write.TEX0.PSM].bpp == 4)
-		blocks >>= 1;
-
-	if ((m_write.TEX0.CBP + blocks) >= start_block && m_write.TEX0.CBP <= end_block)
-	{
-		m_write.dirty = true;
-	}
+	return m_write.TEX0.CBP;
 }
 
-// Check the whole page, if the CLUT is slightly offset from a page boundary it could miss it.
-void GSClut::Invalidate(u32 block)
+void GSClut::SetNextCLUTTEX0(u64 TEX0)
 {
-	if (!((block ^ m_write.TEX0.CBP) & ~0x1F))
+	m_write.next_tex0 = TEX0;
+}
+
+bool GSClut::InvalidateRange(u32 start_block, u32 end_block, bool is_draw)
+{
+	if (m_write.dirty)
+		return m_write.dirty;
+
+	GIFRegTEX0 next_cbp;
+	next_cbp.U64 = m_write.next_tex0;
+
+	if ((next_cbp.CBP + 3) >= start_block && end_block >= next_cbp.CBP)
 	{
-		m_write.dirty = true;
+		m_write.dirty |= is_draw ? 2 : 1;
 	}
+
+	return m_write.dirty;
 }
 
 bool GSClut::WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
@@ -163,14 +164,14 @@ bool GSClut::WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 			m_CBP[1] = TEX0.CBP;
 			break;
 		case 6:
-			return false; // ffx2 menu
+			return false; // ffx2 menu.
 		case 7:
-			return false; // ford mustang racing // Bouken Jidai Katsugeki Goemon
+			return false; // ford mustang racing // Bouken Jidai Katsugeki Goemon.
 		default:
 			__assume(0);
 	}
 
-	// CLUT only reloads if PSM is a valid index type, avoid unnecessary flushes
+	// CLUT only reloads if PSM is a valid index type, avoid unnecessary flushes.
 	return m_write.IsDirty(TEX0, TEXCLUT);
 }
 
@@ -179,7 +180,7 @@ void GSClut::Write(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 	m_write.TEX0 = TEX0;
 	m_write.TEXCLUT = TEXCLUT;
 	m_read.dirty = true;
-	m_write.dirty = false;
+	m_write.dirty = 0;
 
 	(this->*m_wc[TEX0.CSM][TEX0.CPSM][TEX0.PSM])(TEX0, TEXCLUT);
 }
@@ -775,7 +776,7 @@ bool GSClut::WriteState::IsDirty(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TE
 
 	bool is_dirty = dirty;
 
-	if (((this->TEX0.U64 ^ TEX0.U64) & mask) || (GSLocalMemory::m_psm[this->TEX0.PSM].bpp != GSLocalMemory::m_psm[TEX0.PSM].bpp))
+	if (((this->TEX0.U64 ^ TEX0.U64) & mask) || (GSLocalMemory::m_psm[this->TEX0.PSM].pal != GSLocalMemory::m_psm[TEX0.PSM].pal))
 		is_dirty |= true;
 	else if (TEX0.CSM == 1 && (TEXCLUT.U32[0] ^ this->TEXCLUT.U32[0]))
 		is_dirty |= true;
@@ -795,7 +796,7 @@ bool GSClut::ReadState::IsDirty(const GIFRegTEX0& TEX0)
 
 	bool is_dirty = dirty;
 
-	if (((this->TEX0.U64 ^ TEX0.U64) & mask) || (GSLocalMemory::m_psm[this->TEX0.PSM].bpp != GSLocalMemory::m_psm[TEX0.PSM].bpp))
+	if (((this->TEX0.U64 ^ TEX0.U64) & mask) || (GSLocalMemory::m_psm[this->TEX0.PSM].pal != GSLocalMemory::m_psm[TEX0.PSM].pal))
 		is_dirty |= true;
 
 	if (!is_dirty)
@@ -814,7 +815,7 @@ bool GSClut::ReadState::IsDirty(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 
 	bool is_dirty = dirty;
 
-	if (((this->TEX0.U64 ^ TEX0.U64) & tex0_mask) || (GSLocalMemory::m_psm[this->TEX0.PSM].bpp != GSLocalMemory::m_psm[TEX0.PSM].bpp))
+	if (((this->TEX0.U64 ^ TEX0.U64) & tex0_mask) || (GSLocalMemory::m_psm[this->TEX0.PSM].pal != GSLocalMemory::m_psm[TEX0.PSM].pal))
 		is_dirty |= true;
 	else // Just to optimise the checks.
 	{

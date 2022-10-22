@@ -1275,6 +1275,7 @@ void GSRendererHW::Draw()
 		s = StringUtil::StdStringFromFormat("%05d_vertex.txt", s_n);
 		DumpVertices(m_dump_root + s);
 	}
+
 	if (IsBadFrame())
 	{
 		GL_INS("Warning skipping a draw call (%d)", s_n);
@@ -1388,6 +1389,20 @@ void GSRendererHW::Draw()
 	{
 		GL_CACHE("Possible texture decompression, drawn with SwPrimRender()");
 		return;
+	}
+
+	// SW CLUT Render enable.
+	if (GSConfig.UserHacks_CPUCLUTRender > 0)
+	{
+		bool result = (GSConfig.UserHacks_CPUCLUTRender == 1) ? PossibleCLUTDraw() : PossibleCLUTDrawAggressive();
+		if (result)
+		{
+			if (SwPrimRender())
+			{
+				GL_CACHE("Possible clut draw, drawn with SwPrimRender()");
+				return;
+			}
+		}
 	}
 
 	if (m_channel_shuffle)
@@ -3877,6 +3892,113 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	m_conf.drawlist = (m_conf.require_full_barrier && m_vt.m_primclass == GS_SPRITE_CLASS) ? &m_drawlist : nullptr;
 
 	g_gs_device->RenderHW(m_conf);
+}
+
+bool GSRendererHW::PossibleCLUTDraw()
+{
+	if (m_channel_shuffle || m_texture_shuffle)
+		return false;
+
+	// Keep the draws simple, no alpha testing, blending, mipmapping, Z writes, and make sure it's flat.
+	const bool fb_only = m_context->TEST.ATE && m_context->TEST.AFAIL == 1 && m_context->TEST.ATST == ATST_NEVER;
+
+	if (!m_context->ZBUF.ZMSK && !fb_only)
+		return false;
+
+	if (m_vt.m_eq.z != 0x1)
+		return false;
+
+	if (m_context->TEX1.MXL)
+		return false;
+
+	if (m_vt.m_min.p.x < 0 || m_vt.m_min.p.y < 0)
+		return false;
+
+	// Writing to the framebuffer for output. We're not interested. - Note: This stops NFS HP2 Busted screens working, but they're glitchy anyway
+	// what NFS HP2 really needs is a kind of shuffle with mask, 32bit target is interpreted as 16bit and masked.
+	if ((m_regs->DISP[0].DISPFB.Block() == m_context->FRAME.Block()) || (m_regs->DISP[1].DISPFB.Block() == m_context->FRAME.Block()))
+		return false;
+
+	// Hopefully no games draw a CLUT with a CLUT, that would be evil, most likely a channel shuffle.
+	if (PRIM->TME && GSLocalMemory::m_psm[m_context->TEX0.PSM].pal > 0)
+		return false;
+
+	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
+
+	// Max size for a CLUT/Current page size.
+	constexpr float clut_width = 16.0f;
+	constexpr float clut_height = 16.0f;
+	constexpr float min_clut_width = 7.0f;
+	constexpr float min_clut_height = 1.0f;
+	const float page_width = static_cast<float>(psm.pgs.x);
+	const float page_height = static_cast<float>(psm.pgs.y);
+
+	// Make sure it's kinda CLUT sized, at least. Be wary, it can draw a line at a time (Guitar Hero - Metallica)
+	const float draw_width = (m_vt.m_max.p.x - m_vt.m_min.p.x);
+	const float draw_height = (m_vt.m_max.p.y - m_vt.m_min.p.y);
+	const bool valid_size =((draw_width >= min_clut_width || draw_height >= min_clut_height) &&
+							m_vt.m_max.p.x <= page_width && m_vt.m_max.p.y <= page_height);
+
+	// Klonoa draws a clut with a full page of triangles instead of a sprite, but we need to make sure it doesn't intefere with normal triangle draws.
+	if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+	{
+		if (draw_width != page_width || draw_height != page_height)
+			return false;
+	}
+
+	// Make sure the draw hits the next CLUT and it's marked as invalid (kind of a sanity check).
+	// We can also allow draws which are of a sensible size within the page, as they could also be CLUT draws (or gradients for the CLUT).
+	if (!(valid_size || (m_mem.m_clut.IsInvalid() & 2)))
+		return false;
+
+	if (PRIM->TME)
+	{
+		// If we're using a texture to draw our CLUT/whatever, we need the GPU to write back dirty data we need.
+		const GSVector4i r = GetTextureMinMax(m_context->TEX0, m_context->CLAMP, m_vt.IsLinear()).coverage;
+
+		GIFRegBITBLTBUF BITBLTBUF;
+		BITBLTBUF.SBP = m_context->TEX0.TBP0;
+		BITBLTBUF.SBW = m_context->TEX0.TBW;
+		BITBLTBUF.SPSM = m_context->TEX0.PSM;
+		
+		InvalidateLocalMem(BITBLTBUF, r);
+	}
+
+	return true;
+}
+
+// Slight more aggressive version that kinda YOLO's it if the draw is anywhere near the CLUT or is point/line (providing it's not too wide of a draw and a few other parameters.
+// This is pretty much tuned for the Sega Model 2 games, which draw a huge gradient, then pick lines out of it to make up CLUT's for about 4000 draws...
+bool GSRendererHW::PossibleCLUTDrawAggressive()
+{
+	// Avoid any shuffles.
+	if (m_channel_shuffle || m_texture_shuffle)
+		return false;
+
+	// Keep the draws simple, no alpha testing, blending, mipmapping, Z writes, and make sure it's flat.
+	if (m_context->TEST.ATE)
+		return false;
+
+	if (PRIM->ABE)
+		return false;
+
+	if (m_context->TEX1.MXL)
+		return false;
+
+	if (m_context->FRAME.FBW != 1)
+		return false;
+
+	if (!m_context->ZBUF.ZMSK)
+		return false;
+
+	if (m_vt.m_eq.z != 0x1)
+		return false;
+
+	if (!((m_vt.m_primclass == GS_POINT_CLASS || m_vt.m_primclass == GS_LINE_CLASS) || ((m_mem.m_clut.GetCLUTCBP() >> 5) >= m_context->FRAME.FBP && (m_context->FRAME.FBP + 1) >= (m_mem.m_clut.GetCLUTCBP() >> 5) && m_vt.m_primclass == GS_SPRITE_CLASS)))
+		return false;
+
+	// Avoid invalidating anything here, we just want to avoid the thing being drawn on the GPU.
+	return true;
 }
 
 bool GSRendererHW::CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_tex)

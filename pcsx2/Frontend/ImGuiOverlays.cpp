@@ -309,6 +309,8 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("TCO={}/{} ", GSConfig.UserHacks_TCOffsetX, GSConfig.UserHacks_TCOffsetY);
 		if (GSConfig.UserHacks_CPUSpriteRenderBW != 0)
 			APPEND("CSBW={} ", GSConfig.UserHacks_CPUSpriteRenderBW);
+		if (GSConfig.UserHacks_CPUCLUTRender != 0)
+			APPEND("CCD={} ", GSConfig.UserHacks_CPUCLUTRender);
 		if (GSConfig.SkipDrawStart != 0 || GSConfig.SkipDrawEnd != 0)
 			APPEND("SD={}/{} ", GSConfig.SkipDrawStart, GSConfig.SkipDrawEnd);
 		if (GSConfig.UserHacks_TextureInsideRt)

@@ -444,6 +444,7 @@ public:
 	typedef u32 (GSLocalMemory::*readTexel)(int x, int y, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA) const;
 	typedef void (GSLocalMemory::*writePixelAddr)(u32 addr, u32 c);
 	typedef void (GSLocalMemory::*writeFrameAddr)(u32 addr, u32 c);
+	typedef u32(GSLocalMemory::*PixelAddr)(int x, int y, u32 bp, u32 bw) const;
 	typedef u32 (GSLocalMemory::*readPixelAddr)(u32 addr) const;
 	typedef u32 (GSLocalMemory::*readTexelAddr)(u32 addr, const GIFRegTEXA& TEXA) const;
 	typedef void (GSLocalMemory::*writeImage)(int& tx, int& ty, const u8* src, int len, GIFRegBITBLTBUF& BITBLTBUF, GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG);
@@ -530,17 +531,6 @@ public:
 	GSPixelOffset* GetPixelOffset(const GIFRegFRAME& FRAME, const GIFRegZBUF& ZBUF);
 	GSPixelOffset4* GetPixelOffset4(const GIFRegFRAME& FRAME, const GIFRegZBUF& ZBUF);
 	std::vector<GSVector2i>* GetPage2TileMap(const GIFRegTEX0& TEX0);
-
-	static u32 GetEndBlock(int bp, int bw, int w, int h, int psm)
-	{
-		const GSLocalMemory::psm_t& dpsm = GSLocalMemory::m_psm[psm];
-		const int page_width = std::max(1, w / dpsm.pgs.x);
-		const int page_height = std::max(1, h / dpsm.pgs.y);
-		const int pitch = (std::max(1, bw) * 64) / dpsm.pgs.x;
-		const u32 end_bp = bp + ((((page_height % dpsm.pgs.y) != 0) ? (page_width << 5) : 0) + ((page_height * pitch) << 5));
-
-		return end_bp;
-	}
 
 	// address
 
