@@ -595,9 +595,10 @@ void mVUcustomSearch()
 	xVPCMP.EQD(ymm2, ymm2, ptr[arg2reg + 0x60]);
 	xVPAND(ymm0, ymm0, ymm1);
 
-	xVMOVUPS(ymm2, ptr[arg1reg + 0x80]);
-	xVPCMP.EQD(ymm2, ymm2, ptr[arg2reg + 0x80]);
+	xVMOVUPS(ymm1, ptr[arg1reg + 0x80]);
 	xVPAND(ymm0, ymm0, ymm2);
+	xVPCMP.EQD(ymm1, ymm1, ptr[arg2reg + 0x80]);
+	xVPAND(ymm0, ymm0, ymm1);
 
 	xVMOVMSKPS(eax, ymm0);
 	xVZEROUPPER();
