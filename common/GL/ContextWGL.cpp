@@ -28,6 +28,17 @@ static void* GetProcAddressCallback(const char* name)
 	return ::GetProcAddress(GetModuleHandleA("opengl32.dll"), name);
 }
 
+static bool ReloadWGL(HDC dc)
+{
+	if (!gladLoadWGLLoader([](const char* name) -> void* { return wglGetProcAddress(name); }, dc))
+	{
+		Console.Error("Loading GLAD WGL functions failed");
+		return false;
+	}
+
+	return true;
+}
+
 namespace GL
 {
 	ContextWGL::ContextWGL(const WindowInfo& wi)
@@ -64,8 +75,8 @@ namespace GL
 		}
 		else
 		{
-			Console.Error("ContextWGL must always start with a valid surface.");
-			return false;
+			if (!CreatePBuffer())
+				return false;
 		}
 
 		// Everything including core/ES requires a dummy profile to load the WGL extensions.
@@ -161,8 +172,8 @@ namespace GL
 		}
 		else
 		{
-			Console.Error("PBuffer not implemented");
-			return nullptr;
+			if (!context->CreatePBuffer())
+				return nullptr;
 		}
 
 		if (m_version.profile == Profile::NoProfile)
@@ -317,6 +328,29 @@ namespace GL
 
 		static constexpr const int pb_attribs[] = {0, 0};
 
+		HGLRC temp_rc = nullptr;
+		ScopedGuard temp_rc_guard([&temp_rc, hdc]() { if (temp_rc) {
+			wglMakeCurrent(hdc, nullptr);
+			wglDeleteContext(temp_rc);
+		} });
+
+		if (!GLAD_WGL_ARB_pbuffer)
+		{
+			// we're probably running completely surfaceless... need a temporary context.
+			temp_rc = wglCreateContext(hdc);
+			if (!temp_rc || !wglMakeCurrent(hdc, temp_rc))
+			{
+				Console.Error("Failed to create temporary context to load WGL for pbuffer.");
+				return false;
+			}
+
+			if (!ReloadWGL(hdc) || !GLAD_WGL_ARB_pbuffer)
+			{
+				Console.Error("Missing WGL_ARB_pbuffer");
+				return false;
+			}
+		}
+
 		pxAssertRel(m_pixel_format.has_value(), "Has pixel format for pbuffer");
 		HPBUFFERARB pbuffer = wglCreatePbufferARB(hdc, m_pixel_format.value(), 1, 1, pb_attribs);
 		if (!pbuffer)
@@ -338,6 +372,7 @@ namespace GL
 		m_dummy_dc = hdc;
 		m_pbuffer = pbuffer;
 
+		temp_rc_guard.Run();
 		pbuffer_guard.Cancel();
 		hdc_guard.Cancel();
 		hwnd_guard.Cancel();
@@ -440,11 +475,8 @@ namespace GL
 			}
 
 			// re-init glad-wgl
-			if (make_current && !gladLoadWGLLoader([](const char* name) -> void* { return wglGetProcAddress(name); }, m_dc))
-			{
-				Console.Error("Loading GLAD WGL functions failed");
+			if (make_current && !ReloadWGL(m_dc))
 				return false;
-			}
 
 			wglDeleteContext(m_rc);
 		}

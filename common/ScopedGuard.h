@@ -37,15 +37,21 @@ public:
 
 	__fi ~ScopedGuard()
 	{
+		Run();
+	}
+
+	ScopedGuard(const ScopedGuard&) = delete;
+	void operator=(const ScopedGuard&) = delete;
+
+	/// Runs the destructor function now instead of when we go out of scope.
+	__fi void Run()
+	{
 		if (!m_func.has_value())
 			return;
 
 		m_func.value()();
 		m_func.reset();
 	}
-
-	ScopedGuard(const ScopedGuard&) = delete;
-	void operator=(const ScopedGuard&) = delete;
 
 	/// Prevents the function from being invoked when we go out of scope.
 	__fi void Cancel()
