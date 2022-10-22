@@ -87,6 +87,8 @@ namespace GameList
 		std::string title;
 		u64 total_size = 0;
 		std::time_t last_modified_time = 0;
+		std::time_t last_played_time = 0;
+		std::time_t total_played_time = 0;
 
 		u32 crc = 0;
 
@@ -115,12 +117,22 @@ namespace GameList
 	const Entry* GetEntryBySerialAndCRC(const std::string_view& serial, u32 crc);
 	u32 GetEntryCount();
 
-	bool IsGameListLoaded();
-
 	/// Populates the game list with files in the configured directories.
 	/// If invalidate_cache is set, all files will be re-scanned.
 	/// If only_cache is set, no new files will be scanned, only those present in the cache.
 	void Refresh(bool invalidate_cache, bool only_cache = false, ProgressCallback* progress = nullptr);
+
+	/// Add played time for the specified serial.
+	void AddPlayedTimeForSerial(const std::string& serial, std::time_t last_time, std::time_t add_time);
+
+	/// Returns the total time played for a game. Requires the game to be scanned in the list.
+	std::time_t GetCachedPlayedTimeForSerial(const std::string& serial);
+
+	/// Formats a timestamp to something human readable (e.g. Today, Yesterday, 10/11/12).
+	std::string FormatTimestamp(std::time_t timestamp);
+
+	/// Formats a timespan to something human readable (e.g. 1h2m3s or 1 hour).
+	std::string FormatTimespan(std::time_t timespan, bool long_format = false);
 
 	std::string GetCoverImagePathForEntry(const Entry* entry);
 	std::string GetCoverImagePath(const std::string& path, const std::string& code, const std::string& title);

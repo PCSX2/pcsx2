@@ -32,7 +32,7 @@
 #include <QtGui/QPainter>
 
 static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {
-	{"Type", "Code", "Title", "File Title", "CRC", "Size", "Region", "Compatibility", "Cover"}};
+	{"Type", "Code", "Title", "File Title", "CRC", "Time Played", "Last Played", "Size", "Region", "Compatibility", "Cover"}};
 
 static constexpr int COVER_ART_WIDTH = 350;
 static constexpr int COVER_ART_HEIGHT = 512;
@@ -176,7 +176,7 @@ void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
 	// while there's outstanding jobs, the old jobs won't proceed (at the wrong size), or get added into the grid.
 	const u32 counter = m_cover_scale_counter.load(std::memory_order_acquire);
 
-	QFuture<QPixmap> future = QtConcurrent::run([this, path = ge->path, title = ge->title, serial = ge->serial, counter]()->QPixmap {
+	QFuture<QPixmap> future = QtConcurrent::run([this, path = ge->path, title = ge->title, serial = ge->serial, counter]() -> QPixmap {
 		QPixmap image;
 		if (m_cover_scale_counter.load(std::memory_order_acquire) == counter)
 		{
@@ -299,6 +299,17 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 				case Column_CRC:
 					return QString::fromStdString(fmt::format("{:08X}", ge->crc));
 
+				case Column_TimePlayed:
+				{
+					if (ge->total_played_time == 0)
+						return {};
+					else
+						return QString::fromStdString(GameList::FormatTimespan(ge->total_played_time, true));
+				}
+
+				case Column_LastPlayed:
+					return QString::fromStdString(GameList::FormatTimestamp(ge->last_played_time));
+
 				case Column_Size:
 					return QString("%1 MB").arg(static_cast<double>(ge->total_size) / 1048576.0, 0, 'f', 2);
 
@@ -334,6 +345,12 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 
 				case Column_CRC:
 					return static_cast<int>(ge->crc);
+
+				case Column_TimePlayed:
+					return static_cast<qlonglong>(ge->total_played_time);
+
+				case Column_LastPlayed:
+					return static_cast<qlonglong>(ge->last_played_time);
 
 				case Column_Region:
 					return static_cast<int>(ge->region);
@@ -504,6 +521,22 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
 			return (left->crc < right->crc);
 		}
 
+		case Column_TimePlayed:
+		{
+			if (left->total_played_time == right->total_played_time)
+				return titlesLessThan(left_row, right_row);
+
+			return (left->total_played_time < right->total_played_time);
+		}
+
+		case Column_LastPlayed:
+		{
+			if (left->last_played_time == right->last_played_time)
+				return titlesLessThan(left_row, right_row);
+
+			return (left->last_played_time < right->last_played_time);
+		}
+
 		default:
 			return false;
 	}
@@ -552,6 +585,8 @@ void GameListModel::setColumnDisplayNames()
 	m_column_display_names[Column_Title] = tr("Title");
 	m_column_display_names[Column_FileTitle] = tr("File Title");
 	m_column_display_names[Column_CRC] = tr("CRC");
+	m_column_display_names[Column_TimePlayed] = tr("Time Played");
+	m_column_display_names[Column_LastPlayed] = tr("Last Played");
 	m_column_display_names[Column_Size] = tr("Size");
 	m_column_display_names[Column_Region] = tr("Region");
 	m_column_display_names[Column_Compatibility] = tr("Compatibility");

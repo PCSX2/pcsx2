@@ -164,4 +164,17 @@ namespace FileSystem
 	/// Does nothing and returns false on non-Windows platforms.
 	bool SetPathCompression(const char* path, bool enable);
 
+	/// Abstracts a POSIX file lock.
+#ifndef _WIN32
+	class POSIXLock
+	{
+	public:
+		POSIXLock(int fd);
+		POSIXLock(std::FILE* fp);
+		~POSIXLock();
+
+	private:
+		int m_fd;
+	};
+#endif
 }; // namespace FileSystem

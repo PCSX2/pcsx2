@@ -36,6 +36,8 @@ public:
 		Column_Title,
 		Column_FileTitle,
 		Column_CRC,
+		Column_TimePlayed,
+		Column_LastPlayed,
 		Column_Size,
 		Column_Region,
 		Column_Compatibility,

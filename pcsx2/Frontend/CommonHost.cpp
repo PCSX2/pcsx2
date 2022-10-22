@@ -18,6 +18,7 @@
 #include "common/CrashHandler.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
+#include "common/Timer.h"
 #include "common/Threading.h"
 #include "Frontend/CommonHost.h"
 #include "Frontend/FullscreenUI.h"
@@ -63,6 +64,8 @@ namespace CommonHost
 
 	static void UpdateInhibitScreensaver(bool allow);
 
+	static void UpdateSessionTime(const std::string& new_serial);
+
 #ifdef ENABLE_DISCORD_PRESENCE
 	static void InitializeDiscordPresence();
 	static void ShutdownDiscordPresence();
@@ -70,6 +73,10 @@ namespace CommonHost
 	static std::string GetRichPresenceString();
 #endif
 } // namespace CommonHost
+
+// Used to track play time. We use a monotonic timer here, in case of clock changes.
+static u64 s_session_start_time = 0;
+static std::string s_session_serial;
 
 static bool s_screensaver_inhibited = false;
 
@@ -361,6 +368,8 @@ void CommonHost::OnVMResumed()
 
 void CommonHost::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name, u32 game_crc)
 {
+	UpdateSessionTime(game_serial);
+
 	if (FullscreenUI::IsInitialized())
 	{
 		GetMTGS().RunOnGSThread([disc_path, game_serial, game_name, game_crc]() {
@@ -427,6 +436,30 @@ void CommonHost::UpdateInhibitScreensaver(bool inhibit)
 	s_screensaver_inhibited = inhibit;
 	if (!WindowInfo::InhibitScreensaver(wi, inhibit) && inhibit)
 		Console.Warning("Failed to inhibit screen saver.");
+}
+
+void CommonHost::UpdateSessionTime(const std::string& new_serial)
+{
+	if (s_session_serial == new_serial)
+		return;
+
+	const u64 ctime = Common::Timer::GetCurrentValue();
+	if (!s_session_serial.empty())
+	{
+		// round up to seconds
+		const std::time_t etime = static_cast<std::time_t>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
+		const std::time_t wtime = std::time(nullptr);
+		GameList::AddPlayedTimeForSerial(s_session_serial, wtime, etime);
+	}
+
+	s_session_serial = new_serial;
+	s_session_start_time = ctime;
+}
+
+u64 CommonHost::GetSessionPlayedTime()
+{
+	const u64 ctime = Common::Timer::GetCurrentValue();
+	return static_cast<u64>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
 }
 
 #ifdef ENABLE_DISCORD_PRESENCE

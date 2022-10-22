@@ -76,6 +76,9 @@ namespace CommonHost
 	/// Provided by the host; called once per frame at guest vsync.
 	void CPUThreadVSync();
 
+	/// Returns the time elapsed in the current play session.
+	u64 GetSessionPlayedTime();
+
 #ifdef ENABLE_DISCORD_PRESENCE
 	/// Called when the rich presence string, provided by RetroAchievements, changes.
 	void UpdateDiscordPresence(const std::string& rich_presence);

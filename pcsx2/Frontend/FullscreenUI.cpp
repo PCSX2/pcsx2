@@ -17,6 +17,7 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
+#include "Frontend/CommonHost.h"
 #include "Frontend/FullscreenUI.h"
 #include "Frontend/ImGuiManager.h"
 #include "Frontend/ImGuiFullscreen.h"
@@ -3600,6 +3601,12 @@ void FullscreenUI::DrawGameFixesSettingsPage()
 	EndMenuButtons();
 }
 
+static void DrawShadowedText(ImDrawList* dl, ImFont* font, const ImVec2& pos, u32 col, const char* text, const char* text_end = nullptr)
+{
+	dl->AddText(font, font->FontSize, pos + LayoutScale(1.0f, 1.0f), IM_COL32(0, 0, 0, 100), text, text_end);
+	dl->AddText(font, font->FontSize, pos, col, text, text_end);
+}
+
 void FullscreenUI::DrawPauseMenu(MainWindowType type)
 {
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
@@ -3629,13 +3636,13 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 
 		float rp_height = 0.0f;
 
-		dl->AddText(g_large_font, g_large_font->FontSize, title_pos, IM_COL32(255, 255, 255, 255), s_current_game_title.c_str());
+		DrawShadowedText(dl, g_large_font, title_pos, IM_COL32(255, 255, 255, 255), s_current_game_title.c_str());
 		if (!path_string.empty())
 		{
-			dl->AddText(g_medium_font, g_medium_font->FontSize, path_pos, IM_COL32(255, 255, 255, 255), path_string.data(),
+			DrawShadowedText(dl, g_medium_font, path_pos, IM_COL32(255, 255, 255, 255), path_string.data(),
 				path_string.data() + path_string.length());
 		}
-		dl->AddText(g_medium_font, g_medium_font->FontSize, subtitle_pos, IM_COL32(255, 255, 255, 255), s_current_game_subtitle.c_str());
+		DrawShadowedText(dl, g_medium_font, subtitle_pos, IM_COL32(255, 255, 255, 255), s_current_game_subtitle.c_str());
 
 
 		HostDisplayTexture* const cover = GetCoverForCurrentGame();
@@ -3645,6 +3652,41 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		const ImRect image_rect(CenterImage(
 			ImRect(image_min, image_max), ImVec2(static_cast<float>(cover->GetWidth()), static_cast<float>(cover->GetHeight()))));
 		dl->AddImage(cover->GetHandle(), image_rect.Min, image_rect.Max);
+	}
+
+	// current time / play time
+	{
+		char buf[256];
+		struct tm ltime;
+		const std::time_t ctime(std::time(nullptr));
+#ifdef _MSC_VER
+		localtime_s(&ltime, &ctime);
+#else
+		localtime_r(&ctime, &ltime);
+#endif
+		std::strftime(buf, sizeof(buf), "%X", &ltime);
+
+		const ImVec2 time_size(g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buf));
+		const ImVec2 time_pos(display_size.x - LayoutScale(10.0f) - time_size.x, LayoutScale(10.0f));
+		DrawShadowedText(dl, g_large_font, time_pos, IM_COL32(255, 255, 255, 255), buf);
+
+		if (!s_current_game_serial.empty())
+		{
+			const std::time_t cached_played_time = GameList::GetCachedPlayedTimeForSerial(s_current_game_serial);
+			const std::time_t session_time = static_cast<std::time_t>(CommonHost::GetSessionPlayedTime());
+			const std::string played_time_str(GameList::FormatTimespan(cached_played_time + session_time, true));
+			const std::string session_time_str(GameList::FormatTimespan(session_time, true));
+
+			std::snprintf(buf, std::size(buf), "This Session: %s", session_time_str.c_str());
+			const ImVec2 session_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buf));
+			const ImVec2 session_pos(display_size.x - LayoutScale(10.0f) - session_size.x, time_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
+			DrawShadowedText(dl, g_medium_font, session_pos, IM_COL32(255, 255, 255, 255), buf);
+
+			std::snprintf(buf, std::size(buf), "All Time: %s", played_time_str.c_str());
+			const ImVec2 total_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buf));
+			const ImVec2 total_pos(display_size.x - LayoutScale(10.0f) - total_size.x, session_pos.y + g_medium_font->FontSize + LayoutScale(4.0f));
+			DrawShadowedText(dl, g_medium_font, total_pos, IM_COL32(255, 255, 255, 255), buf);
+		}
 	}
 
 	const ImVec2 window_size(LayoutScale(500.0f, LAYOUT_SCREEN_HEIGHT));
@@ -4394,6 +4436,10 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 				ImGui::SameLine();
 			}
 			ImGui::Text(" (%s)", GameList::EntryCompatibilityRatingToString(selected_entry->compatibility_rating));
+
+			// play time
+			ImGui::Text("Time Played: %s", GameList::FormatTimespan(selected_entry->total_played_time).c_str());
+			ImGui::Text("Last Played: %s", GameList::FormatTimestamp(selected_entry->last_played_time).c_str());
 
 			// size
 			ImGui::Text("Size: %.2f MB", static_cast<float>(selected_entry->total_size) / 1048576.0f);
