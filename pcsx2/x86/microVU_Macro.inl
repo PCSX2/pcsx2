@@ -555,14 +555,11 @@ static void recQMFC2()
 	}
 
 	int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_WRITE);
-	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	// Update Refraction 20/09/2021: This is needed because Const Prop is broken
 	// the Flushed flag isn't being cleared when it's not flushed. TODO I guess
 	_eeOnWriteReg(_Rt_, 0); // This is needed because Const Prop is broken
 
-	xMOVAPS(xRegisterSSE(t0reg), ptr128[&vu0Regs.VF[_Rd_]]);
-	xMOVAPS(xRegisterSSE(rtreg), xRegisterSSE(t0reg));
-	_freeXMMreg(t0reg);
+	xMOVAPS(xRegisterSSE(rtreg), ptr128[&vu0Regs.VF[_Rd_]]);
 }
 
 static void recQMTC2()
@@ -596,11 +593,8 @@ static void recQMTC2()
 	}
 
 	int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
-	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 
-	xMOVAPS(xRegisterSSE(t0reg), xRegisterSSE(rtreg));
-	xMOVAPS(ptr128[&vu0Regs.VF[_Rd_]], xRegisterSSE(t0reg));
-	_freeXMMreg(t0reg);
+	xMOVAPS(ptr128[&vu0Regs.VF[_Rd_]], xRegisterSSE(rtreg));
 }
 
 //------------------------------------------------------------------
