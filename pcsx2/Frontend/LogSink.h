@@ -19,6 +19,9 @@ class SettingsInterface;
 
 namespace CommonHost
 {
+	/// Overrides the filename used for the file log.
+	void SetFileLogPath(std::string path);
+
 	/// Prevents the system console from being displayed.
 	void SetBlockSystemConsole(bool block);
 
