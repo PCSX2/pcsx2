@@ -91,7 +91,7 @@ static inline bool FileSystemCharacterIsSane(char c, bool strip_slashes)
 	return true;
 }
 
-template<typename T>
+template <typename T>
 static inline void PathAppendString(std::string& dst, const T& src)
 {
 	if (dst.capacity() < (dst.length() + src.length()))
@@ -100,7 +100,7 @@ static inline void PathAppendString(std::string& dst, const T& src)
 	bool last_separator = (!dst.empty() && dst.back() == FS_OSPATH_SEPARATOR_CHARACTER);
 
 	size_t index = 0;
-	
+
 #ifdef _WIN32
 	// special case for UNC paths here
 	if (dst.empty() && src.length() >= 3 && src[0] == '\\' && src[1] == '\\' && src[2] != '\\')
@@ -192,7 +192,8 @@ bool Path::IsAbsolute(const std::string_view& path)
 {
 #ifdef _WIN32
 	return (path.length() >= 3 && ((path[0] >= 'A' && path[0] <= 'Z') || (path[0] >= 'a' && path[0] <= 'z')) &&
-			path[1] == ':' && (path[2] == '/' || path[2] == '\\')) || (path.length() >= 3 && path[0] == '\\' && path[1] == '\\');
+			   path[1] == ':' && (path[2] == '/' || path[2] == '\\')) ||
+		   (path.length() >= 3 && path[0] == '\\' && path[1] == '\\');
 #else
 	return (path.length() >= 1 && path[0] == '/');
 #endif
@@ -202,7 +203,7 @@ std::string Path::ToNativePath(const std::string_view& path)
 {
 	std::string ret;
 	PathAppendString(ret, path);
-	
+
 	// remove trailing slashes
 	if (ret.length() > 1)
 	{
@@ -1928,6 +1929,38 @@ bool FileSystem::SetWorkingDirectory(const char* path)
 bool FileSystem::SetPathCompression(const char* path, bool enable)
 {
 	return false;
+}
+
+FileSystem::POSIXLock::POSIXLock(int fd)
+{
+	if (lockf(fd, F_LOCK, 0) == 0)
+	{
+		m_fd = fd;
+	}
+	else
+	{
+		Console.Error("lockf() failed: %d", errno);
+		m_fd = -1;
+	}
+}
+
+FileSystem::POSIXLock::POSIXLock(std::FILE* fp)
+{
+	m_fd = fileno(fp);
+	if (m_fd >= 0)
+	{
+		if (lockf(m_fd, F_LOCK, 0) != 0)
+		{
+			Console.Error("lockf() failed: %d", errno);
+			m_fd = -1;
+		}
+	}
+}
+
+FileSystem::POSIXLock::~POSIXLock()
+{
+	if (m_fd >= 0)
+		lockf(m_fd, F_ULOCK, m_fd);
 }
 
 #endif

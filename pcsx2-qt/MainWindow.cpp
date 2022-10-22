@@ -1733,6 +1733,10 @@ void MainWindow::onVMStopped()
 	{
 		switchToGameListView();
 	}
+
+	// reload played time
+	if (m_game_list_widget->isShowingGameList())
+		m_game_list_widget->refresh(false);
 }
 
 void MainWindow::onGameChanged(const QString& path, const QString& serial, const QString& name, quint32 crc)

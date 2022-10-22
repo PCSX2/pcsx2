@@ -482,6 +482,8 @@ void GameListWidget::resizeTableViewColumnsToFit()
 														 -1, // title
 														 -1, // file title
 														 65, // crc
+														 80, // time played
+														 80, // last played
 														 80, // size
 														 60, // region
 														 100 // compatibility
@@ -502,6 +504,8 @@ void GameListWidget::loadTableViewColumnVisibilitySettings()
 		true, // title
 		false, // file title
 		false, // crc
+		true, // time played
+		true, // last played
 		true, // size
 		true, // region
 		true // compatibility
