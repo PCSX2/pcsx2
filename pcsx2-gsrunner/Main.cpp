@@ -75,6 +75,7 @@ alignas(16) static SysMtgsThread s_mtgs_thread;
 
 static std::string s_output_prefix;
 static s32 s_loop_count = 1;
+static std::optional<bool> s_use_window;
 
 bool GSRunner::SetCriticalFolders()
 {
@@ -433,6 +434,8 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "  -dumpdir <dir>: Frame dump directory (will be dumped as filename_frameN.png).\n");
 	std::fprintf(stderr, "  -loop <count>: Loops dump playback N times. Defaults to 1. 0 will loop infinitely.\n");
 	std::fprintf(stderr, "  -renderer <renderer>: Sets the graphics renderer. Defaults to Auto.\n");
+	std::fprintf(stderr, "  -window: Forces a window to be displayed.\n");
+	std::fprintf(stderr, "  -surfaceless: Disables showing a window.\n");
 	std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
 						 "    parameters make up the filename. Use when the filename contains\n"
 						 "    spaces or starts with a dash.\n");
@@ -519,6 +522,18 @@ static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& param
 				s_settings_interface.SetIntValue("EmuCore/GS", "Renderer", static_cast<int>(type));
 				continue;
 			}
+			else if (CHECK_ARG("-window"))
+			{
+				Console.WriteLn("Creating window");
+				s_use_window = true;
+				continue;
+			}
+			else if (CHECK_ARG("-surfaceless"))
+			{
+				Console.WriteLn("Running surfaceless");
+				s_use_window = false;
+				continue;
+			}
 			else if (CHECK_ARG("--"))
 			{
 				no_more_args = true;
@@ -587,11 +602,13 @@ int main(int argc, char* argv[])
 		return false;
 	}
 
-	if (!GSRunner::CreatePlatformWindow())
+	if (s_use_window.value_or(false) && !GSRunner::CreatePlatformWindow())
 	{
 		Console.Error("Failed to create window.");
 		return false;
 	}
+
+	VMManager::ApplySettings();
 
 	if (VMManager::Initialize(params))
 	{
@@ -689,15 +706,23 @@ void GSRunner::DestroyPlatformWindow()
 
 std::optional<WindowInfo> GSRunner::GetPlatformWindowInfo()
 {
-	RECT rc = {};
-	GetWindowRect(s_hwnd, &rc);
-
 	WindowInfo wi;
-	wi.surface_width = static_cast<u32>(rc.right - rc.left);
-	wi.surface_height = static_cast<u32>(rc.bottom - rc.top);
-	wi.surface_scale = 1.0f;
-	wi.type = WindowInfo::Type::Win32;
-	wi.window_handle = s_hwnd;
+
+	if (s_hwnd)
+	{
+		RECT rc = {};
+		GetWindowRect(s_hwnd, &rc);
+		wi.surface_width = static_cast<u32>(rc.right - rc.left);
+		wi.surface_height = static_cast<u32>(rc.bottom - rc.top);
+		wi.surface_scale = 1.0f;
+		wi.type = WindowInfo::Type::Win32;
+		wi.window_handle = s_hwnd;
+	}
+	else
+	{
+		wi.type = WindowInfo::Type::Surfaceless;
+	}
+
 	return wi;
 }
 
