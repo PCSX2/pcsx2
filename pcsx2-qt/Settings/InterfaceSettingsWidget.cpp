@@ -78,7 +78,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 		m_ui.inhibitScreensaver, tr("Inhibit Screensaver"), tr("Checked"),
 		tr("Prevents the screen saver from activating and the host from sleeping while emulation is running."));
 
-	if (AutoUpdaterDialog::isSupported())
+	if (!dialog->isPerGameSettings() && AutoUpdaterDialog::isSupported())
 	{
 		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
 		dialog->registerWidgetHelp(m_ui.autoUpdateEnabled, tr("Enable Automatic Update Check"), tr("Checked"),
@@ -103,6 +103,16 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 #else
 	m_ui.discordPresence->setEnabled(false);
 #endif
+
+	if (dialog->isPerGameSettings())
+	{
+		// language/theme doesn't make sense to have in per-game settings
+		m_ui.verticalLayout->removeWidget(m_ui.preferencesGroup);
+		m_ui.preferencesGroup->hide();
+
+		// start paused doesn't make sense, because settings are applied after ELF load.
+		m_ui.pauseOnStart->setEnabled(false);
+	}
 
 	dialog->registerWidgetHelp(
 		m_ui.confirmShutdown, tr("Confirm Shutdown"), tr("Checked"),

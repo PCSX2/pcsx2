@@ -77,21 +77,7 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	m_ui.setupUi(this);
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-	// We don't include interface/game list/bios settings from per-game settings.
-	if (!isPerGameSettings())
-	{
-		addWidget(m_interface_settings = new InterfaceSettingsWidget(this, m_ui.settingsContainer), tr("Interface"),
-			QStringLiteral("settings-3-line"),
-			tr("<strong>Interface Settings</strong><hr>These options control how the software looks and behaves.<br><br>Mouse over an option for "
-			   "additional information."));
-		addWidget(m_game_list_settings = new GameListSettingsWidget(this, m_ui.settingsContainer), tr("Game List"),
-			QStringLiteral("folder-settings-line"),
-			tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by PCSX2 to populate the game "
-			   "list. Search directories can be added, removed, and switched to recursive/non-recursive."));
-		addWidget(m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"), QStringLiteral("hard-drive-2-line"),
-			tr("<strong>BIOS Settings</strong><hr>Configure your BIOS here.<br><br>Mouse over an option for additional information."));
-	}
-	else
+	if (isPerGameSettings())
 	{
 		if (game)
 		{
@@ -100,6 +86,22 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 		}
 
 		m_ui.restoreDefaultsButton->setVisible(false);
+	}
+
+	addWidget(m_interface_settings = new InterfaceSettingsWidget(this, m_ui.settingsContainer), tr("Interface"),
+		QStringLiteral("settings-3-line"),
+		tr("<strong>Interface Settings</strong><hr>These options control how the software looks and behaves.<br><br>Mouse over an option for "
+		   "additional information."));
+
+	// We don't include game list/bios settings in per-game settings.
+	if (!isPerGameSettings())
+	{
+		addWidget(m_game_list_settings = new GameListSettingsWidget(this, m_ui.settingsContainer), tr("Game List"),
+			QStringLiteral("folder-settings-line"),
+			tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by PCSX2 to populate the game "
+			   "list. Search directories can be added, removed, and switched to recursive/non-recursive."));
+		addWidget(m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"), QStringLiteral("hard-drive-2-line"),
+			tr("<strong>BIOS Settings</strong><hr>Configure your BIOS here.<br><br>Mouse over an option for additional information."));
 	}
 
 	// Common to both per-game and global settings.

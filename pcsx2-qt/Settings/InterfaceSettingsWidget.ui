@@ -140,7 +140,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="preferencesGroup">
      <property name="title">
       <string>Preferences</string>
      </property>
