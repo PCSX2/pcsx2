@@ -16,23 +16,28 @@ def is_gs_path(path):
     return False
 
 
-def run_regression_test(runner, dumpdir, renderer, gspath):
+def run_regression_test(runner, dumpdir, renderer, parallel, gspath):
     args = [runner]
     gsname = Path(gspath).name
     while gsname.rfind('.') >= 0:
         gsname = gsname[:gsname.rfind('.')]
 
-    real_dumpdir = os.path.join(dumpdir, gsname)
+    real_dumpdir = os.path.join(dumpdir, gsname).strip()
     if not os.path.exists(real_dumpdir):
         os.mkdir(real_dumpdir)
 
     if renderer is not None:
         args.extend(["-renderer", renderer])
     args.extend(["-dumpdir", real_dumpdir])
+    args.extend(["-logfile", os.path.join(real_dumpdir, "emulog.txt")])
 
     # loop a couple of times for those stubborn merge/interlace dumps that don't render anything
     # the first time around
     args.extend(["-loop", "2"])
+
+    # disable shader cache for parallel runs, otherwise it'll have sharing violations
+    if parallel > 1:
+        args.append("-noshadercache")
 
     args.append("--")
     args.append(gspath)
@@ -52,10 +57,10 @@ def run_regression_tests(runner, gsdir, dumpdir, renderer, parallel=1):
 
     if parallel <= 1:
         for game in gamepaths:
-            run_regression_test(runner, dumpdir, renderer, game)
+            run_regression_test(runner, dumpdir, renderer, parallel, game)
     else:
         print("Processing %u games on %u processors" % (len(gamepaths), parallel))
-        func = partial(run_regression_test, runner, dumpdir, renderer)
+        func = partial(run_regression_test, runner, dumpdir, renderer, parallel)
         pool = multiprocessing.Pool(parallel)
         pool.map(func, gamepaths)
         pool.close()

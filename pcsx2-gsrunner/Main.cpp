@@ -129,6 +129,13 @@ bool GSRunner::InitializeConfig()
 	si.SetBoolValue("EmuCore/GS", "OsdShowResolution", true);
 	si.SetBoolValue("EmuCore/GS", "OsdShowGSStats", true);
 
+	// remove memory cards, so we don't have sharing violations
+	for (u32 i = 0; i < 2; i++)
+	{
+		si.SetBoolValue("MemoryCards", fmt::format("Slot{}_Enable", i + 1).c_str(), false);
+		si.SetStringValue("MemoryCards", fmt::format("Slot{}_Filename", i + 1).c_str(), "");
+	}
+
 	CommonHost::LoadStartupSettings();
 	return true;
 }
@@ -436,6 +443,8 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "  -renderer <renderer>: Sets the graphics renderer. Defaults to Auto.\n");
 	std::fprintf(stderr, "  -window: Forces a window to be displayed.\n");
 	std::fprintf(stderr, "  -surfaceless: Disables showing a window.\n");
+	std::fprintf(stderr, "  -logfile <filename>: Writes emu log to filename.\n");
+	std::fprintf(stderr, "  -noshadercache: Disables the shader cache (useful for parallel runs).\n");
 	std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
 						 "    parameters make up the filename. Use when the filename contains\n"
 						 "    spaces or starts with a dash.\n");
@@ -520,6 +529,26 @@ static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& param
 
 				Console.WriteLn("Using %s renderer.", Pcsx2Config::GSOptions::GetRendererName(type));
 				s_settings_interface.SetIntValue("EmuCore/GS", "Renderer", static_cast<int>(type));
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("-logfile"))
+			{
+				const char* logfile = argv[++i];
+				if (std::strlen(logfile) > 0)
+				{
+					// disable timestamps, since we want to be able to diff the logs
+					Console.WriteLn("Logging to %s...", logfile);
+					CommonHost::SetFileLogPath(logfile);
+					s_settings_interface.SetBoolValue("Logging", "EnableFileLogging", true);
+					s_settings_interface.SetBoolValue("Logging", "EnableTimestamps", false);
+				}
+
+				continue;
+			}
+			else if (CHECK_ARG("-noshadercache"))
+			{
+				Console.WriteLn("Disabling shader cache");
+				s_settings_interface.SetBoolValue("EmuCore/GS", "disable_shader_cache", false);
 				continue;
 			}
 			else if (CHECK_ARG("-window"))
@@ -608,6 +637,7 @@ int main(int argc, char* argv[])
 		return false;
 	}
 
+	// apply new settings (e.g. pick up renderer change)
 	VMManager::ApplySettings();
 
 	if (VMManager::Initialize(params))
