@@ -82,6 +82,7 @@ namespace GameDatabaseSchema
 		TexturePreloading,
 		Deinterlace,
 		CPUSpriteRenderBW,
+		CPUCLUTRender,
 		GPUPaletteConversion,
 
 		Count

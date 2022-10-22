@@ -2683,6 +2683,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			static constexpr const char* s_cpu_sprite_render_bw_options[] = {"0 (Disabled)", "1 (64 Max Width)", "2 (128 Max Width)",
 				"3 (192 Max Width)", "4 (256 Max Width)", "5 (320 Max Width)", "6 (384 Max Width)", "7 (448 Max Width)",
 				"8 (512 Max Width)", "9 (576 Max Width)", "10 (640 Max Width)"};
+			static constexpr const char* s_cpu_clut_render_options[] = { "0 (Disabled)", "1 (Normal)", "2 (Aggressive)" };
 			static constexpr const char* s_half_pixel_offset_options[] = {
 				"Off (Default)", "Normal (Vertex)", "Special (Texture)", "Special (Texture - Aggressive)"};
 			static constexpr const char* s_round_sprite_options[] = {"Off (Default)", "Half", "Full"};
@@ -2691,6 +2692,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 				"UserHacks_Half_Bottom_Override", -1, s_generic_options, std::size(s_generic_options), -1);
 			DrawIntListSetting(bsi, "CPU Sprite Render Size", "Uses sofware renderer to draw texture decompression-like sprites.",
 				"EmuCore/GS", "UserHacks_CPUSpriteRenderBW", 0, s_cpu_sprite_render_bw_options, std::size(s_cpu_sprite_render_bw_options));
+			DrawIntListSetting(bsi, "CPU Sprite Render Size", "Uses sofware renderer to draw texture decompression-like sprites.",
+				"EmuCore/GS", "UserHacks_CPUSpriteRenderBW", 0, s_cpu_clut_render_options, std::size(s_cpu_clut_render_options));
 			DrawIntRangeSetting(
 				bsi, "Skip Draw Start", "Object range to skip drawing.", "EmuCore/GS", "UserHacks_SkipDraw_Start", 0, 0, 5000);
 			DrawIntRangeSetting(bsi, "Skip Draw End", "Object range to skip drawing.", "EmuCore/GS", "UserHacks_SkipDraw_End", 0, 0, 5000);

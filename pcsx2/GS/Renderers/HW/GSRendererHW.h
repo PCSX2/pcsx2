@@ -127,6 +127,8 @@ private:
 	void SwSpriteRender();
 	bool CanUseSwSpriteRender();
 
+	bool PossibleCLUTDraw();
+	bool PossibleCLUTDrawAggressive();
 	bool CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_tex);
 	bool SwPrimRender();
 

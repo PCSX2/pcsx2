@@ -834,7 +834,8 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.UserHacks_DisableDepthSupport != old_config.UserHacks_DisableDepthSupport ||
 		GSConfig.UserHacks_DisablePartialInvalidation != old_config.UserHacks_DisablePartialInvalidation ||
 		GSConfig.UserHacks_TextureInsideRt != old_config.UserHacks_TextureInsideRt ||
-		GSConfig.UserHacks_CPUSpriteRenderBW != old_config.UserHacks_CPUSpriteRenderBW)
+		GSConfig.UserHacks_CPUSpriteRenderBW != old_config.UserHacks_CPUSpriteRenderBW ||
+		GSConfig.UserHacks_CPUSpriteRenderBW != old_config.UserHacks_CPUCLUTRender)
 	{
 		g_gs_renderer->PurgeTextureCache();
 		g_gs_renderer->PurgePool();
@@ -1512,6 +1513,7 @@ void GSApp::Init()
 	m_default_configuration["UserHacks_Disable_Safe_Features"]            = "0";
 	m_default_configuration["UserHacks_DisablePartialInvalidation"]       = "0";
 	m_default_configuration["UserHacks_CPUSpriteRenderBW"]                = "0";
+	m_default_configuration["UserHacks_CPUCLUTRender"]                    = "0";
 	m_default_configuration["UserHacks_CPU_FB_Conversion"]                = "0";
 	m_default_configuration["UserHacks_Half_Bottom_Override"]             = "-1";
 	m_default_configuration["UserHacks_HalfPixelOffset"]                  = "0";

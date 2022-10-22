@@ -16837,6 +16837,8 @@ SLES-53556:
   region: "PAL-M3"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes some bad textures.
 SLES-53557:
   name: "Need for Speed - Most Wanted"
   region: "PAL-E"
@@ -18021,6 +18023,8 @@ SLES-54027:
   region: "PAL-M3"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes some bad textures.
 SLES-54030:
   name: "Black"
   region: "PAL-E"
@@ -23037,6 +23041,8 @@ SLKA-25341:
   region: "NTSC-K"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes some bad textures.
 SLKA-25342:
   name: "Ryu ga Gotoku"
   region: "NTSC-K"
@@ -31495,6 +31501,8 @@ SLPM-66567:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes some bad textures.
 SLPM-66568:
   name: "Brothers In Arms - Road to Hill 30 [Ubisoft Best]"
   region: "NTSC-J"
@@ -44655,6 +44663,8 @@ SLUS-21271:
   compat: 5
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes some bad textures.
 SLUS-21272:
   name: "Super Monkey Ball Adventure"
   region: "NTSC-U"
@@ -45379,6 +45389,8 @@ SLUS-21399:
   region: "NTSC-U"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes some bad textures.
 SLUS-21400:
   name: "Monster House"
   region: "NTSC-U"
@@ -48497,6 +48509,8 @@ SLUS-29185:
   region: "NTSC-U"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes some bad textures.
 SLUS-29188:
   name: "Steambot Chronicles [Regular Demo]"
   region: "NTSC-U"
