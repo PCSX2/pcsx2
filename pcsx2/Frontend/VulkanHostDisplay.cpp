@@ -311,7 +311,12 @@ bool VulkanHostDisplay::HasSurface() const
 
 bool VulkanHostDisplay::CreateImGuiContext()
 {
-	return ImGui_ImplVulkan_Init(m_swap_chain->GetClearRenderPass());
+	const VkRenderPass render_pass =
+		m_swap_chain ? m_swap_chain->GetClearRenderPass() : g_vulkan_context->GetRenderPass(VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_UNDEFINED);
+	if (render_pass == VK_NULL_HANDLE)
+		return false;
+
+	return ImGui_ImplVulkan_Init(render_pass);
 }
 
 void VulkanHostDisplay::DestroyImGuiContext()

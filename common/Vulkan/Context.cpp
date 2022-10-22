@@ -536,7 +536,7 @@ namespace Vulkan
 			Console.Error("Vulkan: Failed to find an acceptable graphics queue.");
 			return false;
 		}
-		if (surface && m_present_queue_family_index == queue_family_count)
+		if (surface != VK_NULL_HANDLE && m_present_queue_family_index == queue_family_count)
 		{
 			Console.Error("Vulkan: Failed to find an acceptable present queue.");
 			return false;
@@ -570,7 +570,7 @@ namespace Vulkan
 		}};
 
 		device_info.queueCreateInfoCount = 1;
-		if (m_graphics_queue_family_index != m_present_queue_family_index)
+		if (surface != VK_NULL_HANDLE && m_graphics_queue_family_index != m_present_queue_family_index)
 		{
 			device_info.queueCreateInfoCount = 2;
 		}
@@ -1445,8 +1445,7 @@ namespace Vulkan
 		}
 
 		const VkSubpassDescriptionFlags subpass_flags =
-			(key.color_feedback_loop && g_vulkan_context->GetOptionalExtensions().vk_arm_rasterization_order_attachment_access)
-			? VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_COLOR_ACCESS_BIT_ARM : 0;
+			(key.color_feedback_loop && g_vulkan_context->GetOptionalExtensions().vk_arm_rasterization_order_attachment_access) ? VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_COLOR_ACCESS_BIT_ARM : 0;
 		const VkSubpassDescription subpass = {subpass_flags, VK_PIPELINE_BIND_POINT_GRAPHICS, input_reference_ptr ? 1u : 0u,
 			input_reference_ptr ? input_reference_ptr : nullptr, color_reference_ptr ? 1u : 0u,
 			color_reference_ptr ? color_reference_ptr : nullptr, nullptr, depth_reference_ptr, 0, nullptr};

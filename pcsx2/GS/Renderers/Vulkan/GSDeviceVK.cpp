@@ -1513,13 +1513,11 @@ bool GSDeviceVK::CompilePresentPipelines()
 {
 	// we may not have a swap chain if running in headless mode.
 	Vulkan::SwapChain* swapchain = static_cast<Vulkan::SwapChain*>(g_host_display->GetSurface());
-	if (swapchain)
-	{
-		m_swap_chain_render_pass =
-			g_vulkan_context->GetRenderPass(swapchain->GetSurfaceFormat().format, VK_FORMAT_UNDEFINED);
-		if (!m_swap_chain_render_pass)
-			return false;
-	}
+	m_swap_chain_render_pass = swapchain ?
+								   swapchain->GetClearRenderPass() :
+                                   g_vulkan_context->GetRenderPass(VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_UNDEFINED);
+	if (!m_swap_chain_render_pass)
+		return false;
 
 	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/vulkan/present.glsl");
 	if (!shader)
