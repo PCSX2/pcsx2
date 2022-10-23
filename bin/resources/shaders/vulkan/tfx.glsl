@@ -906,7 +906,7 @@ vec4 ps_color()
 #if PS_FST == 0 && PS_INVALID_TEX0 == 1
 	// Re-normalize coordinate from invalid GS to corrected texture size
 	vec2 st = (vsIn.t.xy * WH.xy) / (vsIn.t.w * WH.zw);
-	// no st_int yet
+	vec2 st_int = (vsIn.ti.zw * WH.xy) / (vsIn.t.w * WH.zw);
 #elif PS_FST == 0
 	vec2 st = vsIn.t.xy / vsIn.t.w;
 	vec2 st_int = vsIn.ti.zw / vsIn.t.w;

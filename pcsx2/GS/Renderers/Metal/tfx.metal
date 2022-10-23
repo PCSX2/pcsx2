@@ -725,6 +725,7 @@ struct PSMain
 		if (!FST && PS_INVALID_TEX0)
 		{
 			st = (in.t.xy * cb.wh.xy) / (in.t.w * cb.wh.zw);
+			st_int = (in.ti.zw * cb.wh.xy) / (in.t.w * cb.wh.zw);
 		}
 		else if (!FST)
 		{

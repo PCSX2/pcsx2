@@ -674,7 +674,7 @@ float4 ps_color(PS_INPUT input)
 #if PS_FST == 0 && PS_INVALID_TEX0 == 1
 	// Re-normalize coordinate from invalid GS to corrected texture size
 	float2 st = (input.t.xy * WH.xy) / (input.t.w * WH.zw);
-	// no st_int yet
+	float2 st_int = (input.ti.zw * WH.xy) / (input.t.w * WH.zw);
 #elif PS_FST == 0
 	float2 st = input.t.xy / input.t.w;
 	float2 st_int = input.ti.zw / input.t.w;
