@@ -79,6 +79,21 @@ namespace Sessions
 #elif defined(__POSIX__)
 				errno);
 #endif
+
+		sockaddr_in endpoint{0};
+		endpoint.sin_family = AF_INET;
+		*(IP_Address*)&endpoint.sin_addr = adapterIP;
+		endpoint.sin_port = htons(parPort);
+
+		ret = bind(client, (const sockaddr*)&endpoint, sizeof(endpoint));
+
+		if (ret == SOCKET_ERROR)
+			Console.Error("DEV9: UDP: Failed to bind socket. Error: %d",
+#ifdef _WIN32
+				WSAGetLastError());
+#elif defined(__POSIX__)
+				errno);
+#endif
 	}
 
 	IP_Payload* UDP_FixedPort::Recv()
