@@ -473,21 +473,29 @@ namespace x86Emitter
 		xOpWrite0F(0x66, 0xc6, to, from, selector & 0x3);
 	}
 
-	void xImplSimd_InsertExtractHelper::operator()(const xRegisterSSE& to, const xRegister32& from, u8 imm8) const
-	{
-		xOpWrite0F(0x66, Opcode, to, from, imm8);
-	}
-
-	void xImplSimd_InsertExtractHelper::operator()(const xRegisterSSE& to, const xIndirectVoid& from, u8 imm8) const
-	{
-		xOpWrite0F(0x66, Opcode, to, from, imm8);
-	}
+	void xImplSimd_PInsert::B(const xRegisterSSE& to, const xRegister32& from, u8 imm8) const { xOpWrite0F(0x66, 0x203a, to, from, imm8); }
+	void xImplSimd_PInsert::B(const xRegisterSSE& to, const xIndirectVoid& from, u8 imm8) const { xOpWrite0F(0x66, 0x203a, to, from, imm8); }
 
 	void xImplSimd_PInsert::W(const xRegisterSSE& to, const xRegister32& from, u8 imm8) const { xOpWrite0F(0x66, 0xc4, to, from, imm8); }
 	void xImplSimd_PInsert::W(const xRegisterSSE& to, const xIndirectVoid& from, u8 imm8) const { xOpWrite0F(0x66, 0xc4, to, from, imm8); }
 
+	void xImplSimd_PInsert::D(const xRegisterSSE& to, const xRegister32& from, u8 imm8) const { xOpWrite0F(0x66, 0x223a, to, from, imm8); }
+	void xImplSimd_PInsert::D(const xRegisterSSE& to, const xIndirectVoid& from, u8 imm8) const { xOpWrite0F(0x66, 0x223a, to, from, imm8); }
+
+	void xImplSimd_PInsert::Q(const xRegisterSSE& to, const xRegister64& from, u8 imm8) const { xOpWrite0F(0x66, 0x223a, to, from, imm8); }
+	void xImplSimd_PInsert::Q(const xRegisterSSE& to, const xIndirectVoid& from, u8 imm8) const { xOpWrite0F(0x66, 0x223a, to, from, imm8); }
+
+	void SimdImpl_PExtract::B(const xRegister32& to, const xRegisterSSE& from, u8 imm8) const { xOpWrite0F(0x66, 0x143a, to, from, imm8); }
+	void SimdImpl_PExtract::B(const xIndirectVoid& dest, const xRegisterSSE& from, u8 imm8) const { xOpWrite0F(0x66, 0x143a, from, dest, imm8); }
+
 	void SimdImpl_PExtract::W(const xRegister32& to, const xRegisterSSE& from, u8 imm8) const { xOpWrite0F(0x66, 0xc5, to, from, imm8); }
 	void SimdImpl_PExtract::W(const xIndirectVoid& dest, const xRegisterSSE& from, u8 imm8) const { xOpWrite0F(0x66, 0x153a, from, dest, imm8); }
+
+	void SimdImpl_PExtract::D(const xRegister32& to, const xRegisterSSE& from, u8 imm8) const { xOpWrite0F(0x66, 0x163a, to, from, imm8); }
+	void SimdImpl_PExtract::D(const xIndirectVoid& dest, const xRegisterSSE& from, u8 imm8) const { xOpWrite0F(0x66, 0x163a, from, dest, imm8); }
+
+	void SimdImpl_PExtract::Q(const xRegister64& to, const xRegisterSSE& from, u8 imm8) const { xOpWrite0F(0x66, 0x163a, to, from, imm8); }
+	void SimdImpl_PExtract::Q(const xIndirectVoid& dest, const xRegisterSSE& from, u8 imm8) const { xOpWrite0F(0x66, 0x163a, from, dest, imm8); }
 
 	const xImplSimd_Shuffle xSHUF = {};
 
@@ -529,17 +537,8 @@ namespace x86Emitter
 			{0x66, 0x14}, // LPD
 	};
 
-	const xImplSimd_PInsert xPINSR =
-		{
-			{0x203a}, // B
-			{0x223a}, // D
-	};
-
-	const SimdImpl_PExtract xPEXTR =
-		{
-			{0x143a}, // B
-			{0x163a}, // D
-	};
+	const xImplSimd_PInsert xPINSR;
+	const SimdImpl_PExtract xPEXTR;
 
 	// =====================================================================================================
 	//  SIMD Move And Blend Instructions

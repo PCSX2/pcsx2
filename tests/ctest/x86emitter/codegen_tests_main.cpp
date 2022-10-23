@@ -172,6 +172,14 @@ TEST(CodegenTests, SSETest)
 	CODEGEN_TEST_64(xMOVD(r10, xmm1), "66 49 0f 7e ca");
 	CODEGEN_TEST_64(xMOVD(rax, xmm10), "66 4c 0f 7e d0");
 	CODEGEN_TEST_64(xMOVD(r10, xmm10), "66 4d 0f 7e d2");
+	CODEGEN_TEST_64(xPINSR.B(xmm0, eax, 1), "66 0f 3a 20 c0 01");
+	CODEGEN_TEST_64(xPINSR.W(xmm0, eax, 1), "66 0f c4 c0 01");
+	CODEGEN_TEST_64(xPINSR.D(xmm0, eax, 1), "66 0f 3a 22 c0 01");
+	CODEGEN_TEST_64(xPINSR.Q(xmm0, rax, 1), "66 48 0f 3a 22 c0 01");
+	CODEGEN_TEST_64(xPEXTR.B(eax, xmm0, 1), "66 0f 3a 14 c0 01");
+	CODEGEN_TEST_64(xPEXTR.W(eax, xmm0, 1), "66 0f c5 c0 01");
+	CODEGEN_TEST_64(xPEXTR.D(eax, xmm0, 1), "66 0f 3a 16 c0 01");
+	CODEGEN_TEST_64(xPEXTR.Q(rax, xmm0, 1), "66 48 0f 3a 16 c0 01");
 }
 
 TEST(CodegenTests, AVXTest)
@@ -263,4 +271,24 @@ TEST(CodegenTests, AVX256Test)
 
 	CODEGEN_TEST_64(xVMOVMSKPS(eax, ymm1), "c5 fc 50 c1");
 	CODEGEN_TEST_64(xVMOVMSKPD(eax, ymm1), "c5 fd 50 c1");
+}
+
+TEST(CodegenTests, Extended8BitTest)
+{
+	CODEGEN_TEST_64(xSETL(al), "0f 9c c0");
+	CODEGEN_TEST_64(xSETL(cl), "0f 9c c1");
+	CODEGEN_TEST_64(xSETL(dl), "0f 9c c2");
+	CODEGEN_TEST_64(xSETL(bl), "0f 9c c3");
+	CODEGEN_TEST_64(xSETL(spl), "40 0f 9c c4");
+	CODEGEN_TEST_64(xSETL(bpl), "40 0f 9c c5");
+	CODEGEN_TEST_64(xSETL(sil), "40 0f 9c c6");
+	CODEGEN_TEST_64(xSETL(dil), "40 0f 9c c7");
+	CODEGEN_TEST_64(xSETL(r8b), "41 0f 9c c0");
+	CODEGEN_TEST_64(xSETL(r9b), "41 0f 9c c1");
+	CODEGEN_TEST_64(xSETL(r10b), "41 0f 9c c2");
+	CODEGEN_TEST_64(xSETL(r11b), "41 0f 9c c3");
+	CODEGEN_TEST_64(xSETL(r12b), "41 0f 9c c4");
+	CODEGEN_TEST_64(xSETL(r13b), "41 0f 9c c5");
+	CODEGEN_TEST_64(xSETL(r14b), "41 0f 9c c6");
+	CODEGEN_TEST_64(xSETL(r15b), "41 0f 9c c7");
 }
