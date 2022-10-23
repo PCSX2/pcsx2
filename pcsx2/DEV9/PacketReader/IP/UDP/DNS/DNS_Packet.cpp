@@ -107,7 +107,7 @@ namespace PacketReader::IP::UDP::DNS
 	}
 	void DNS_Packet::SetRCode(u8 value)
 	{
-		flags2 = (flags2 & ~(0xF << 3)) | ((value & 0xF) << 3);
+		flags2 = (flags2 & ~(0xF)) | ((value & 0xF));
 	}
 
 	DNS_Packet::DNS_Packet(u8* buffer, int bufferSize)
