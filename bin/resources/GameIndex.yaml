@@ -8443,6 +8443,8 @@ SCUS-97621:
   name: "Twisted Metal - Head-On [Extra Twisted Edition]"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - VUSyncHack # Fixes black doors on vehicles.
   patches:
     3DC2FE45:
       content: |-
