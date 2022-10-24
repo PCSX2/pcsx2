@@ -47,22 +47,6 @@ bool GSC_BigMuthaTruckers(const GSFrameInfo& fi, int& skip) noexcept
 	return true;
 }
 
-bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip) noexcept
-{
-	if (skip == 0)
-	{
-		if (!s_nativeres && fi.TME && (fi.FBP == 0x03400 || fi.FBP == 0x02e00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
-		{
-			// Ghosting/Blur effect. Upscaling issue.
-			// Can be fixed with TC X,Y offsets.
-			// Don't enable hack on native res if crc is below aggressive.
-			skip = 3;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_DeathByDegreesTekkenNinaWilliams(const GSFrameInfo& fi, int& skip) noexcept
 {
 	// Note: Game also has issues with texture shuffle not supported on strange clamp mode.
@@ -839,7 +823,6 @@ void GSState::SetupCrcHack() noexcept
 		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams; // + Upscaling issues
 
 		// Upscaling hacks
-		lut[CRC::DBZBT3] = GSC_DBZBT3;
 		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
 		lut[CRC::Oneechanbara2Special] = GSC_Oneechanbara2Special;
 		lut[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
