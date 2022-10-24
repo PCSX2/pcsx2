@@ -412,12 +412,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			   "to your games. However IF you have ENABLED this, you WILL DISABLE AUTOMATIC "
 			   "SETTINGS and you can re-enable automatic settings by unchecking this option."));
 
-		dialog->registerWidgetHelp(m_ui.spinGPUDuringReadbacks, tr("Spin GPU During Readbacks"), tr("Unchecked"),
-			tr("Submits useless work to the GPU during readbacks to prevent it from going into powersave modes. "
+		dialog->registerWidgetHelp(m_ui.spinCPUDuringReadbacks, tr("Spin CPU During Readbacks"), tr("Unchecked"),
+			tr("Does useless work on the CPU during readbacks to prevent it from going to into powersave modes. "
 			   "May improve performance but with a significant increase in power usage."));
 
-		dialog->registerWidgetHelp(m_ui.spinGPUDuringReadbacks, tr("Spin CPU During Readbacks"), tr("Unchecked"),
-			tr("Does useless work on the CPU during readbacks to prevent it from going to into powersave modes. "
+		dialog->registerWidgetHelp(m_ui.spinGPUDuringReadbacks, tr("Spin GPU During Readbacks"), tr("Unchecked"),
+			tr("Submits useless work to the GPU during readbacks to prevent it from going into powersave modes. "
 			   "May improve performance but with a significant increase in power usage."));
 
 		// Software
