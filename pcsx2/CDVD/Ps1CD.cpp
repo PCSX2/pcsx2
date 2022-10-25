@@ -216,12 +216,6 @@ static void ReadTrack()
 	cdr.Prev[1] = itob(cdr.SetSector[1]);
 	cdr.Prev[2] = itob(cdr.SetSector[2]);
 
-	cdvdSubQ subQ;
-	if (CDVD->getSubQ(msf_to_lsn(cdr.SetSector), &subQ))
-	{
-		cdr.subQ = subQ;
-	}
-
 	CDVD_LOG("KEY *** %x:%x:%x", cdr.Prev[0], cdr.Prev[1], cdr.Prev[2]);
 	if (EmuConfig.CdvdVerboseReads)
 		DevCon.WriteLn("CD Read Sector %x", msf_to_lsn(cdr.SetSector));
@@ -670,6 +664,7 @@ void cdrReadInterrupt()
 		CDREAD_INT((cdr.Mode & 0x80) ? (cdReadTime / 2) : cdReadTime);
 	}
 
+	CDVD->getSubQ(msf_to_lsn(cdr.SetSector), &cdr.subQ);
 	psxHu32(0x1070) |= 0x4;
 	return;
 }
