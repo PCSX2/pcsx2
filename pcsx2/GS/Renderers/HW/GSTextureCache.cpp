@@ -1067,8 +1067,16 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 		Target* t = *it;
 		if (t->m_TEX0.PSM != PSM_PSMZ32 && t->m_TEX0.PSM != PSM_PSMZ24 && t->m_TEX0.PSM != PSM_PSMZ16 && t->m_TEX0.PSM != PSM_PSMZ16S)
 		{
-			if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+			// Some games like to offset their GS download memory addresses by
+			// using overly big source Y position values.
+			// Checking for targets that overlap with the requested memory region
+			// instead of just comparing TBPs should fix that.
+			// For example, this fixes Judgement ring rendering in Shadow Hearts 2.
+			if (t->Overlaps(bp, bw, psm, r) && t->m_TEX0.TBP0 >= bp && t->m_TEX0.TBW == bw && GSUtil::HasSharedBits(psm, t->m_TEX0.PSM))
 			{
+				// Enforce full invalidation if BP's don't match.
+				const GSVector4i targetr = (bp == t->m_TEX0.TBP0) ? r : t->m_valid;
+				
 				// GH Note: Read will do a StretchRect and then will sizzle data to the GS memory
 				// t->m_valid will do the full target texture whereas r.intersect(t->m_valid) will be limited
 				// to the useful part for the transfer.
@@ -1092,19 +1100,19 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 
 				if (GSConfig.HWDownloadMode != GSHardwareDownloadMode::Enabled)
 				{
-					const GSVector4i rb_rc((!GSConfig.UserHacks_DisablePartialInvalidation && r.x == 0 && r.y == 0) ? t->m_valid : r.rintersect(t->m_valid));
+					const GSVector4i rb_rc((!GSConfig.UserHacks_DisablePartialInvalidation && targetr.x == 0 && targetr.y == 0) ? t->m_valid : targetr.rintersect(t->m_valid));
 					DevCon.Error("Skipping depth readback of %ux%u @ %u,%u", rb_rc.width(), rb_rc.height(), rb_rc.left, rb_rc.top);
 				}
 				else if (GSConfig.UserHacks_DisablePartialInvalidation)
 				{
-					Read(t, r.rintersect(t->m_valid));
+					Read(t, targetr.rintersect(t->m_valid));
 				}
 				else
 				{
-					if (r.x == 0 && r.y == 0) // Full screen read?
+					if (targetr.x == 0 && targetr.y == 0) // Full screen read?
 						Read(t, t->m_valid);
 					else // Block level read?
-						Read(t, r.rintersect(t->m_valid));
+						Read(t, targetr.rintersect(t->m_valid));
 				}
 			}
 		}
