@@ -492,7 +492,7 @@ bool FolderMemoryCard::AddFolder(MemoryCardFileEntry* const dirEntry, const std:
 			if (file.m_isFile)
 			{
 				// don't load files in the root dir if we're filtering; no official software stores files there
-				if (enableFiltering && parent == nullptr)
+				if (parent == nullptr)
 				{
 					continue;
 				}
@@ -2072,7 +2072,15 @@ void FileAccessHelper::WriteIndex(const std::string& baseFolderName, MemoryCardF
 	pxAssert(entry->IsFile());
 
 	std::string folderName(baseFolderName);
-	parent->GetPath(&folderName);
+	if (parent != nullptr)
+	{
+		parent->GetPath(&folderName);
+	}
+	else
+	{
+		Console.Warning(fmt::format("(FileAccesHelper::WriteIndex()) '{}' has null parent",Path::Combine(baseFolderName,(const char*)entry->entry.data.name)));
+	}
+
 	char cleanName[sizeof(entry->entry.data.name)];
 	memcpy(cleanName, (const char*)entry->entry.data.name, sizeof(cleanName));
 	FileAccessHelper::CleanMemcardFilename(cleanName);
