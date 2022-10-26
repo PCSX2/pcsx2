@@ -110,7 +110,7 @@ void GSClut::Invalidate()
 
 void GSClut::InvalidateRange(u32 start_block, u32 end_block)
 {
-	int blocks = 4;
+	u32 blocks = 4;
 
 	if (GSLocalMemory::m_psm[m_write.TEX0.CPSM].bpp == 16)
 		blocks >>= 1;
