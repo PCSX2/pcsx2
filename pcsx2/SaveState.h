@@ -33,7 +33,7 @@ enum class FreezeAction
 // [SAVEVERSION+]
 // This informs the auto updater that the users savestates will be invalidated.
 
-static const u32 g_SaveVersion = (0x9A2F << 16) | 0x0000;
+static const u32 g_SaveVersion = (0x9A30 << 16) | 0x0000;
 
 
 // the freezing data between submodules and core

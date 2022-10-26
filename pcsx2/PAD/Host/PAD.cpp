@@ -173,9 +173,9 @@ s32 PADfreeze(FreezeAction mode, freezeData* data)
 	return 0;
 }
 
-u8 PADstartPoll(int pad)
+u8 PADstartPoll(int _port, int _slot)
 {
-	return pad_start_poll(pad);
+	return pad_start_poll(_port, _slot);
 }
 
 u8 PADpoll(u8 value)
@@ -242,6 +242,11 @@ float PAD::ControllerSettingInfo::FloatStepValue() const
 std::string PAD::GetConfigSection(u32 pad_index)
 {
 	return fmt::format("Pad{}", pad_index + 1);
+}
+
+bool PADcomplete()
+{
+	return pad_complete();
 }
 
 void PAD::LoadConfig(const SettingsInterface& si)

@@ -20,6 +20,7 @@
 #include "IopCounters.h"
 #include "IopHw.h"
 #include "IopDma.h"
+#include "Sio.h"
 
 #include "Sif.h"
 #include "DEV9/DEV9.h"
@@ -224,4 +225,72 @@ void psxDma10(u32 madr, u32 bcr, u32 chcr)
 	SIF1Dma();
 }
 
-/* psxDma11 & psxDma 12 are in IopSio2.cpp, along with the appropriate interrupt functions. */
+void psxDma11(u32 madr, u32 bcr, u32 chcr)
+{
+	unsigned int i, j;
+	int size = (bcr >> 16) * (bcr & 0xffff);
+	PSXDMA_LOG("*** DMA 11 - SIO2 in *** %lx addr = %lx size = %lx", chcr, madr, bcr);
+	// Set dmaBlockSize, so SIO2 knows to count based on the DMA block rather than SEND3 length.
+	// When SEND3 is written, SIO2 will automatically reset this to zero.
+	sio2.dmaBlockSize = (bcr & 0xffff) * 4;
+
+	if (chcr != 0x01000201)
+	{
+		return;
+	}
+
+	for (i = 0; i < (bcr >> 16); i++)
+	{
+		for (j = 0; j < ((bcr & 0xFFFF) * 4); j++)
+		{
+			const u8 data = iopMemRead8(madr);
+			sio2.Write(data);
+			madr++;
+		}
+	}
+
+	HW_DMA11_MADR = madr;
+	PSX_INT(IopEvt_Dma11, (size >> 2));
+}
+
+void psxDMA11Interrupt()
+{
+	if (HW_DMA11_CHCR & 0x01000000)
+	{
+		HW_DMA11_CHCR &= ~0x01000000;
+		psxDmaInterrupt2(4);
+	}
+}
+
+void psxDma12(u32 madr, u32 bcr, u32 chcr)
+{
+	int size = ((bcr >> 16) * (bcr & 0xFFFF)) * 4;
+	PSXDMA_LOG("*** DMA 12 - SIO2 out *** %lx addr = %lx size = %lx", chcr, madr, size);
+
+	if (chcr != 0x41000200)
+	{
+		return;
+	}
+
+	bcr = size;
+
+	while (bcr > 0)
+	{
+		const u8 data = sio2.Read();
+		iopMemWrite8(madr, data);
+		bcr--;
+		madr++;
+	}
+
+	HW_DMA12_MADR = madr;
+	PSX_INT(IopEvt_Dma12, (size >> 2));
+}
+
+void psxDMA12Interrupt()
+{
+	if (HW_DMA12_CHCR & 0x01000000)
+	{
+		HW_DMA12_CHCR &= ~0x01000000;
+		psxDmaInterrupt2(5);
+	}
+}

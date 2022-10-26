@@ -563,7 +563,7 @@ void Panels::MemoryCardListPanel_Simple::Apply()
 	if (!used)
 		Console.WriteLn("No active slots.");
 
-	SetForceMcdEjectTimeoutNow();
+	AutoEject::SetAll();
 }
 
 void Panels::MemoryCardListPanel_Simple::AppStatusEvent_OnSettingsApplied()

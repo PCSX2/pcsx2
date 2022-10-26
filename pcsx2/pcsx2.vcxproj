@@ -378,6 +378,8 @@
     <ClCompile Include="Host.cpp" />
     <ClCompile Include="HostDisplay.cpp" />
     <ClCompile Include="IopGte.cpp" />
+    <ClCompile Include="MemoryCardProtocol.cpp" />
+    <ClCompile Include="MultitapProtocol.cpp" />
     <ClCompile Include="PINE.cpp" />
     <ClCompile Include="FW.cpp" />
     <ClCompile Include="MemoryCardFile.cpp" />
@@ -634,7 +636,6 @@
     <ClCompile Include="IopIrq.cpp" />
     <ClCompile Include="IopMem.cpp" />
     <ClCompile Include="windows\WinKeyCodes.cpp" />
-    <ClCompile Include="IopSio2.cpp" />
     <ClCompile Include="R3000A.cpp" />
     <ClCompile Include="R3000AInterpreter.cpp" />
     <ClCompile Include="R3000AOpcodeTables.cpp" />
@@ -842,6 +843,8 @@
     <ClInclude Include="Host.h" />
     <ClInclude Include="HostDisplay.h" />
     <ClInclude Include="IopGte.h" />
+    <ClInclude Include="MemoryCardProtocol.h" />
+    <ClInclude Include="MultitapProtocol.h" />
     <ClInclude Include="PINE.h" />
     <ClInclude Include="FW.h" />
     <ClInclude Include="MemoryCardFile.h" />
@@ -957,7 +960,6 @@
     <ClInclude Include="Patch.h" />
     <ClInclude Include="PCSX2Base.h" />
     <ClInclude Include="PrecompiledHeader.h" />
-    <ClInclude Include="sio_internal.h" />
     <ClInclude Include="ps2\pgif.h" />
     <ClInclude Include="Recording\InputRecording.h" />
     <ClInclude Include="Recording\InputRecordingControls.h" />
@@ -1080,7 +1082,6 @@
     <ClInclude Include="IopCounters.h" />
     <ClInclude Include="IopDma.h" />
     <ClInclude Include="IopMem.h" />
-    <ClInclude Include="IopSio2.h" />
     <ClInclude Include="R3000A.h" />
     <ClInclude Include="Sio.h" />
     <ClInclude Include="x86\iR3000A.h" />

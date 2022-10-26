@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2022  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,23 +15,29 @@
 
 #pragma once
 
-#include "common/WindowInfo.h"
-#include "SaveState.h"
-#include "Host.h"
+enum class MultitapMode
+{
+	NOT_SET = 0xff,
+	PAD_SUPPORT_CHECK = 0x12,
+	MEMCARD_SUPPORT_CHECK = 0x13,
+	SELECT_PAD = 0x21,
+	SELECT_MEMCARD = 0x22,
+};
 
-s32 PADinit();
-void PADshutdown();
-s32 PADopen(const WindowInfo& wi);
-void PADupdate(int pad);
-void PADclose();
-u8 PADstartPoll(int port, int slot);
-u8 PADpoll(u8 value);
-bool PADcomplete();
-HostKeyEvent* PADkeyEvent();
-void PADconfigure();
-s32 PADfreeze(FreezeAction mode, freezeData* data);
-s32 PADsetSlot(u8 port, u8 slot);
+class MultitapProtocol
+{
+private:
+	void SupportCheck();
+	void Select();
 
-#if defined(__unix__) || defined(__APPLE__)
-void PADWriteEvent(HostKeyEvent& evt);
-#endif
+public:
+	MultitapProtocol();
+	~MultitapProtocol();
+
+	void SoftReset();
+	void FullReset();
+
+	void SendToMultitap();
+};
+
+extern MultitapProtocol g_MultitapProtocol;

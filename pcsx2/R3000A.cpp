@@ -22,7 +22,6 @@
 #include "Sif.h"
 #include "DebugTools/Breakpoints.h"
 #include "R5900OpcodeTables.h"
-#include "IopSio2.h"
 #include "IopCounters.h"
 #include "IopBios.h"
 #include "IopHw.h"
@@ -177,13 +176,30 @@ static __fi void IopTestEvent( IopEventId n, void (*callback)() )
 		psxSetNextBranch( psxRegs.sCycle[n], psxRegs.eCycle[n] );
 }
 
+static __fi void Sio0TestEvent(IopEventId n)
+{
+	if (!(psxRegs.interrupt & (1 << n)))
+	{
+		return;
+	}
+
+	if (psxTestCycle(psxRegs.sCycle[n], psxRegs.eCycle[n]))
+	{
+		psxRegs.interrupt &= ~(1 << n);
+		sio0.Interrupt(Sio0Interrupt::TEST_EVENT);
+	}
+	else
+	{
+		psxSetNextBranch(psxRegs.sCycle[n], psxRegs.eCycle[n]);
+	}
+}
+
 static __fi void _psxTestInterrupts()
 {
 	IopTestEvent(IopEvt_SIF0,		sif0Interrupt);	// SIF0
 	IopTestEvent(IopEvt_SIF1,		sif1Interrupt);	// SIF1
 	IopTestEvent(IopEvt_SIF2,		sif2Interrupt);	// SIF2
-	// Originally controlled by a preprocessor define, now PSX dependent.
-	if (psxHu32(HW_ICFG) & (1 << 3)) IopTestEvent(IopEvt_SIO, sioInterruptR);
+	Sio0TestEvent(IopEvt_SIO);
 	IopTestEvent(IopEvt_CdvdRead,	cdvdReadInterrupt);
 	IopTestEvent(IopEvt_CdvdSectorReady, cdvdSectorReady);
 

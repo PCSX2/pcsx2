@@ -23,12 +23,17 @@
 #include "DEV9/DEV9.h"
 #include "USB/USB.h"
 #include "IopCounters.h"
-#include "IopSio2.h"
 #include "IopDma.h"
 #include "R3000A.h"
 
 #include "ps2/pgif.h"
 #include "Mdec.h"
+
+#define SIO0LOG_ENABLE 0
+#define SIO2LOG_ENABLE 0
+
+#define Sio0Log if (SIO0LOG_ENABLE) DevCon
+#define Sio2Log if (SIO2LOG_ENABLE) DevCon
 
 namespace IopMemory {
 
@@ -80,8 +85,21 @@ void iopHwWrite8_Page1( u32 addr, mem8_t val )
 
 	switch( masked_addr )
 	{
-		mcase(HW_SIO_DATA): sioWrite8( val ); break;
-
+		case (HW_SIO_DATA & 0x0fff):
+			sio0.SetTxData(val);
+			break;
+		case (HW_SIO_STAT & 0x0fff):
+			Sio0Log.Error("%s(%08X, %08X) Unexpected SIO0 STAT 8 bit write", __FUNCTION__, addr, val);
+			break;
+		case (HW_SIO_MODE & 0x0fff):
+			Sio0Log.Error("%s(%08X, %08X) Unexpected SIO0 MODE 8 bit write", __FUNCTION__, addr, val);
+			break;
+		case (HW_SIO_CTRL & 0x0fff):
+			Sio0Log.Error("%s(%08X, %08X) Unexpected SIO0 CTRL 8 bit write", __FUNCTION__, addr, val);
+			break;
+		case (HW_SIO_BAUD & 0x0fff):
+			Sio0Log.Error("%s(%08X, %08X) Unexpected SIO0 BAUD 8 bit write", __FUNCTION__, addr, val);
+			break;
 		// for use of serial port ignore for now
 		//case 0x50: serial_write8( val ); break;
 
@@ -156,10 +174,14 @@ void iopHwWrite8_Page8( u32 addr, mem8_t val )
 	// all addresses are assumed to be prefixed with 0x1f808xxx:
 	pxAssert( (addr >> 12) == 0x1f808 );
 
-	if( addr == HW_SIO2_DATAIN )	// sio2 serial data feed input
-		sio2_serialIn( val );
+	if (addr == HW_SIO2_DATAIN)
+	{
+		sio2.Write(val);
+	}
 	else
-		psxHu8( addr ) = val;
+	{
+		psxHu8(addr) = val;
+	}
 
 	IopHwTraceLog<mem8_t>( addr, val, false );
 }
@@ -277,39 +299,39 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 		switch( masked_addr )
 		{
 			// ------------------------------------------------------------------------
-			mcase(HW_SIO_DATA):
-				sioWrite8( val & 0xFF );
-				sioWrite8( (val >> 8) & 0xFF );
-				if( sizeof(T) == 4 )
+			case (HW_SIO_DATA & 0x0fff):
+				Console.Error("%s(%08X, %08X) Unexpected 16 or 32 bit write to SIO0 DATA!", __FUNCTION__, addr, val);
+/*
+				sio0.SetTxData(val & 0xFF);
+				sio0.SetTxData((val >> 8) & 0xFF);
+				
+				if (sizeof(T) == 4)
 				{
-					// u32 gets rid of compiler warnings when using the u16 version of this template
-					sioWrite8( ((u32)val >> 16) & 0xFF );
-					sioWrite8( ((u32)val >> 24) & 0xFF );
+					sio0.SetTxData((static_cast<u32>(val) >> 16) & 0xFF);
+					sio0.SetTxData((static_cast<u32>(val) >> 24) & 0xFF);
 				}
-			break;
+*/				
+				break;
+			case (HW_SIO_STAT & 0x0fff):
+				Console.Error("%s(%08X, %08X) Write issued to read-only SIO0 STAT!", __FUNCTION__, addr, val);
+				break;
+			case (HW_SIO_MODE & 0x0fff):
+				sio0.SetMode(static_cast<u16>(val));
 
-			mcase(HW_SIO_STAT):		// read-only?
-				//regname = "SIO_STAT (read-only?)";
-				//sio.StatReg;
-			break;
-
-			mcase(HW_SIO_MODE):
-				sio.ModeReg = (u16)val;
-				if( sizeof(T) == 4 )
+				if (sizeof(T) == 4)
 				{
-					// My guess on 32-bit accesses.  Dunno yet what the real hardware does. --air
-					sio.CtrlReg = (u16)((u32)val >> 16);
+					Console.Error("%s(%08X, %08X) 32 bit write to 16 bit SIO0 MODE register!", __FUNCTION__, addr, val);
 				}
-			break;
+				
+				break;
 
-			mcase(HW_SIO_CTRL):
-				//sio.CtrlReg = (u16)val;
-				sioWriteCtrl16((u16)val);
-			break;
-
-			mcase(HW_SIO_BAUD):
-				sio.BaudReg = (u16)val;
-			break;
+			case (HW_SIO_CTRL & 0x0fff):
+				sio0.SetCtrl(static_cast<u16>(val));
+				break;
+			
+			case (HW_SIO_BAUD & 0x0fff):
+				sio0.SetBaud(static_cast<u16>(val));
+				break;
 
 			// ------------------------------------------------------------------------
 			//Serial port stuff not support now ;P
@@ -588,26 +610,66 @@ void iopHwWrite32_Page8( u32 addr, mem32_t val )
 	{
 		if( masked_addr < 0x240 )
 		{
-			const int parm = (masked_addr-0x200) / 4;
-			sio2_setSend3( parm, val );
+			Sio2Log.WriteLn("%s(%08X, %08X) SIO2 SEND3 Write (len = %d / %d) (port = %d)", __FUNCTION__, addr, val, (val >> 8) & Send3::COMMAND_LENGTH_MASK, (val >> 18) & Send3::COMMAND_LENGTH_MASK, val & 0x01);
+			const int parm = (masked_addr - 0x200) / 4;
+			sio2.SetSend3(parm, val);
 		}
 		else if( masked_addr < 0x260 )
 		{
 			// SIO2 Send commands alternate registers.  First reg maps to Send1, second
 			// to Send2, third to Send1, etc.  And the following clever code does this:
 
-			const int parm = (masked_addr-0x240) / 8;
-			if(masked_addr & 4) sio2_setSend2( parm, val ); else sio2_setSend1( parm, val );
+			const int parm = (masked_addr - 0x240) / 8;
+
+			if (masked_addr & 4)
+			{
+				Sio2Log.WriteLn("%s(%08X, %08X) SIO2 SEND2 Write", __FUNCTION__, addr, val);
+				sio2.send2.at(parm) = val;
+			}
+			else
+			{
+				Sio2Log.WriteLn("%s(%08X, %08X) SIO2 SEND1 Write", __FUNCTION__, addr, val);
+				sio2.send1.at(parm) = val;
+			}
 		}
 		else if( masked_addr <= 0x280 )
 		{
 			switch( masked_addr )
 			{
-				mcase(HW_SIO2_CTRL):	sio2_setCtrl( val );	break;
-				mcase(0x1f808278):		sio2_set8278( val );	break;
-				mcase(0x1f80827C):		sio2_set827C( val );	break;
-				mcase(HW_SIO2_INTR):	sio2_setIntr( val );	break;
-
+				case (HW_SIO2_DATAIN & 0x0fff):
+					Sio2Log.Warning("%s(%08X, %08X) Unexpected 32 bit write to HW_SIO2_DATAIN", __FUNCTION__, addr, val);
+					break;
+				case (HW_SIO2_FIFO & 0x0fff):
+					Sio2Log.Warning("%s(%08X, %08X) Unexpected 32 bit write to HW_SIO2_FIFO", __FUNCTION__, addr, val);
+					break;
+				case (HW_SIO2_CTRL & 0x0fff):
+					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 CTRL Write", __FUNCTION__, addr, val);
+					sio2.SetCtrl(val);
+					break;
+				case (HW_SIO2_RECV1 & 0x0fff):
+					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 RECV1 Write", __FUNCTION__, addr, val);
+					sio2.recv1 = val;
+					break;
+				case (HW_SIO2_RECV2 & 0x0fff):
+					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 RECV2 Write", __FUNCTION__, addr, val);
+					sio2.recv2 = val;
+					break;
+				case (HW_SIO2_RECV3 & 0x0fff):
+					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 RECV3 Write", __FUNCTION__, addr, val);
+					sio2.recv3 = val;
+					break;
+				case (HW_SIO2_8278 & 0x0fff):
+					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 UNK1 Write", __FUNCTION__, addr, val);
+					sio2.unknown1 = val;
+					break;
+				case (HW_SIO2_827C & 0x0fff):
+					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 UNK2 Write", __FUNCTION__, addr, val);
+					sio2.unknown2 = val;
+					break;
+				case (HW_SIO2_INTR & 0x0fff):
+					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 ISTAT Write", __FUNCTION__, addr, val);
+					sio2.iStat = val;
+					break;
 				// Other SIO2 registers are read-only, no-ops on write.
 				default:
 					psxHu32(addr) = val;

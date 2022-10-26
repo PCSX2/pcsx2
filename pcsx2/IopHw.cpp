@@ -21,7 +21,6 @@
 #include "iR5900.h"
 #include "Sio.h"
 #include "Mdec.h"
-#include "IopSio2.h"
 #include "IopCounters.h"
 #include "IopHw.h"
 #include "IopDma.h"
@@ -42,8 +41,8 @@ void psxHwReset() {
 	cdrReset();
 	cdvdReset();
 	psxRcntInit();
-	sioInit();
-	//sio2Reset();
+	sio0.FullReset();
+	sio2.FullReset();
 }
 
 __fi u8 psxHw4Read8(u32 add)

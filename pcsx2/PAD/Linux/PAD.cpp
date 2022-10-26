@@ -199,14 +199,19 @@ s32 PADfreeze(FreezeAction mode, freezeData* data)
 	return 0;
 }
 
-u8 PADstartPoll(int pad)
+u8 PADstartPoll(int port, int slot)
 {
-	return pad_start_poll(pad);
+	return pad_start_poll(port, slot);
 }
 
 u8 PADpoll(u8 value)
 {
 	return pad_poll(value);
+}
+
+bool PADcomplete()
+{
+	return pad_complete();
 }
 
 // PADkeyEvent is called every vsync (return NULL if no event)

@@ -51,7 +51,7 @@ void QueryInfo::reset()
 	memset(response, 0xF3, sizeof(response));
 }
 
-u8 QueryInfo::start_poll(int _port)
+u8 QueryInfo::start_poll(int _port, int _slot)
 {
 	if (port > 1)
 	{
@@ -61,7 +61,7 @@ u8 QueryInfo::start_poll(int _port)
 
 	queryDone = 0;
 	port = _port;
-	slot = slots[port];
+	slot = _slot;
 	numBytes = 2;
 	lastByte = 0;
 
@@ -160,9 +160,14 @@ inline bool IsDualshock2()
 #endif
 }
 
-u8 pad_start_poll(u8 pad)
+u8 pad_start_poll(u8 port, u8 slot)
 {
-	return query.start_poll(pad - 1);
+	return query.start_poll(port, slot);
+}
+
+bool pad_complete()
+{
+	return query.queryDone;
 }
 
 u8 pad_poll(u8 value)
