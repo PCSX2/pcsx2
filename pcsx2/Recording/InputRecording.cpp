@@ -93,21 +93,21 @@ void InputRecording::RecordingReset()
 		g_InputRecordingControls.Resume();
 }
 
-void InputRecording::ControllerInterrupt(u8& data, u8& port, u16& bufCount, u8 buf[])
+void InputRecording::ControllerInterrupt(u8 port, size_t fifoSize, u8 dataIn, u8 dataOut)
 {
 	// TODO - Multi-Tap Support
 
-	if (bufCount == 1)
-		fInterruptFrame = data == READ_DATA_AND_VIBRATE_FIRST_BYTE;
-	else if (bufCount == 2)
+	if (fifoSize == 1)
+		fInterruptFrame = dataIn == READ_DATA_AND_VIBRATE_FIRST_BYTE;
+	else if (fifoSize == 2)
 	{
-		if (buf[bufCount] != READ_DATA_AND_VIBRATE_SECOND_BYTE)
+		if (dataOut != READ_DATA_AND_VIBRATE_SECOND_BYTE)
 			fInterruptFrame = false;
 	}
 	else if (fInterruptFrame)
 	{
-		u8& bufVal = buf[bufCount];
-		const u16 bufIndex = bufCount - 3;
+		u8& bufVal = dataOut;
+		const u16 bufIndex = fifoSize - 3;
 		if (state == InputRecordingMode::Replaying)
 		{
 			if (frameCounter >= 0 && frameCounter < INT_MAX)
@@ -480,6 +480,7 @@ wxString InputRecording::resolveGameName()
 #include "InputRecordingControls.h"
 #include "Utilities/InputRecordingLogger.h"
 
+#include <queue>
 #include <fmt/format.h>
 
 void SaveStateBase::InputRecordingFreeze()
@@ -526,21 +527,21 @@ void InputRecording::RecordingReset()
 		g_InputRecordingControls.Resume();
 }
 
-void InputRecording::ControllerInterrupt(u8& data, u8& port, u16& bufCount, u8 buf[])
+// TODO: Refactor this
+void InputRecording::ControllerInterrupt(u8 port, size_t fifoSize, u8 dataIn, u8 dataOut)
 {
 	// TODO - Multi-Tap Support
-
-	if (bufCount == 1)
-		fInterruptFrame = data == READ_DATA_AND_VIBRATE_FIRST_BYTE;
-	else if (bufCount == 2)
+	if (fifoSize == 1)
+		fInterruptFrame = dataIn == READ_DATA_AND_VIBRATE_FIRST_BYTE;
+	else if (fifoSize == 2)
 	{
-		if (buf[bufCount] != READ_DATA_AND_VIBRATE_SECOND_BYTE)
+		if (dataOut != READ_DATA_AND_VIBRATE_SECOND_BYTE)
 			fInterruptFrame = false;
 	}
 	else if (fInterruptFrame)
 	{
-		u8& bufVal = buf[bufCount];
-		const u16 bufIndex = bufCount - 3;
+		u8& bufVal = dataOut;
+		const u16 bufIndex = fifoSize - 3;
 		if (state == InputRecordingMode::Replaying)
 		{
 			if (frameCounter >= 0 && frameCounter < INT_MAX)

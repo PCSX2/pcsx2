@@ -240,12 +240,7 @@ void Host::Internal::UpdateEmuFolders()
 		{
 			FileMcd_EmuClose();
 			FileMcd_EmuOpen();
-
-			for (u32 port = 0; port < 2; port++)
-			{
-				for (u32 slot = 0; slot < 4; slot++)
-					SetForceMcdEjectTimeoutNow(port, slot);
-			}
+			AutoEject::SetAll();
 		}
 
 		if (EmuFolders::Textures != old_textures_directory)

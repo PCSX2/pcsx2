@@ -62,7 +62,7 @@ void QueryInfo::reset()
 	memset(response, 0xF3, sizeof(response));
 }
 
-u8 QueryInfo::start_poll(int _port)
+u8 QueryInfo::start_poll(int _port, int _slot)
 {
 	if (_port >= 2)
 	{
@@ -71,7 +71,7 @@ u8 QueryInfo::start_poll(int _port)
 	}
 
 	port = _port;
-	slot = slots[port];
+	slot = _slot;
 
 	const u32 ext_port = sioConvertPortAndSlotToPad(port, slot);
 
@@ -184,9 +184,9 @@ inline bool IsDualshock2()
 #endif
 }
 
-u8 pad_start_poll(u8 pad)
+u8 pad_start_poll(u8 _port, u8 _slot)
 {
-	return query.start_poll(pad - 1);
+	return query.start_poll(_port, _slot);
 }
 
 u8 pad_poll(u8 value)
@@ -515,4 +515,9 @@ u8 pad_poll(u8 value)
 
 		return query.response[query.lastByte];
 	}
+}
+
+bool pad_complete()
+{
+	return query.queryDone;
 }

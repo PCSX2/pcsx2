@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <queue>
+
 #ifndef PCSX2_CORE
 // TODO - Vaser - kill with wxWidgets
 
@@ -36,7 +38,7 @@ public:
 
 	// Main handler for ingesting input data and either saving it to the recording file (recording)
 	// or mutating it to the contents of the recording file (replaying)
-	void ControllerInterrupt(u8& data, u8& port, u16& BufCount, u8 buf[]);
+	void ControllerInterrupt(u8 port, size_t fifoSize, u8 dataIn, u8 dataOut);
 
 	// The running frame counter for the input recording
 	s32 GetFrameCounter();
@@ -168,7 +170,7 @@ public:
 
 	// Main handler for ingesting input data and either saving it to the recording file (recording)
 	// or mutating it to the contents of the recording file (replaying)
-	void ControllerInterrupt(u8& data, u8& port, u16& BufCount, u8 buf[]);
+	void ControllerInterrupt(u8 port, size_t fifoSize, u8 dataIn, u8 dataOut);
 
 	// The running frame counter for the input recording
 	s32 GetFrameCounter();

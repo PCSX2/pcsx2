@@ -569,9 +569,6 @@
     <ClCompile Include="IopMem.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
-    <ClCompile Include="IopSio2.cpp">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClCompile>
     <ClCompile Include="R3000A.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
@@ -1296,6 +1293,12 @@
     <ClCompile Include="Frontend\DInputSource.cpp">
       <Filter>Host</Filter>
     </ClCompile>
+    <ClCompile Include="MemoryCardProtocol.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
+    <ClCompile Include="MultitapProtocol.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -1478,9 +1481,6 @@
     <ClInclude Include="IopMem.h">
       <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
-    <ClInclude Include="IopSio2.h">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClInclude>
     <ClInclude Include="R3000A.h">
       <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
@@ -1638,9 +1638,6 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="IopGte.h">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClInclude>
-    <ClInclude Include="sio_internal.h">
       <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
     <ClInclude Include="ps2\pgif.h">
@@ -2161,6 +2158,15 @@
     </ClInclude>
     <ClInclude Include="Frontend\DInputSource.h">
       <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="SioTypes.h">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryCardProtocol.h">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="MultitapProtocol.h">
+      <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

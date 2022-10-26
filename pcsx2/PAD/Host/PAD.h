@@ -33,8 +33,9 @@ s32 PADopen(const WindowInfo& wi);
 void PADclose();
 s32 PADsetSlot(u8 port, u8 slot);
 s32 PADfreeze(FreezeAction mode, freezeData* data);
-u8 PADstartPoll(int pad);
+u8 PADstartPoll(int _port, int _slot);
 u8 PADpoll(u8 value);
+bool PADcomplete();
 
 namespace PAD
 {

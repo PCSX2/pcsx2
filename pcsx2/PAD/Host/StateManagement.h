@@ -49,7 +49,7 @@ struct QueryInfo
 	u8 response[42];
 
 	void reset();
-	u8 start_poll(int port);
+	u8 start_poll(int _port, int _slot);
 
 	template <size_t S>
 	void set_result(const u8 (&rsp)[S])
@@ -127,5 +127,6 @@ extern QueryInfo query;
 extern Pad pads[2][4];
 extern int slots[2];
 
-extern u8 pad_start_poll(u8 pad);
+extern u8 pad_start_poll(u8 _port, u8 _slot);
 extern u8 pad_poll(u8 value);
+extern bool pad_complete();
