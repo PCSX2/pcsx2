@@ -153,7 +153,12 @@ void HostSys::MemProtect(void* baseaddr, size_t size, const PageProtectionMode& 
 std::string HostSys::GetFileMappingName(const char* prefix)
 {
 	const unsigned pid = static_cast<unsigned>(getpid());
+#if defined(__FreeBSD__)
+	// FreeBSD's shm_open(3) requires name to be absolute
+	return fmt::format("/tmp/{}_{}", prefix, pid);
+#else
 	return fmt::format("{}_{}", prefix, pid);
+#endif
 }
 
 void* HostSys::CreateSharedMemory(const char* name, size_t size)
