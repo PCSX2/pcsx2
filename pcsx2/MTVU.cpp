@@ -100,7 +100,7 @@ VU_Thread::~VU_Thread()
 
 void VU_Thread::Open()
 {
-	if (m_thread.Joinable())
+	if (IsOpen())
 		return;
 
 	Reset();
@@ -111,7 +111,7 @@ void VU_Thread::Open()
 
 void VU_Thread::Close()
 {
-	if (!m_thread.Joinable())
+	if (!IsOpen())
 		return;
 
 	m_shutdown_flag.store(true, std::memory_order_release);

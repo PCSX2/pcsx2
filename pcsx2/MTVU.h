@@ -66,6 +66,8 @@ public:
 	~VU_Thread();
 
 	__fi const Threading::ThreadHandle& GetThreadHandle() const { return m_thread; }
+
+	/// Returns true if the VU thread has been started.
 	__fi bool IsOpen() const { return m_thread.Joinable(); }
 
 	/// Ensures the VU thread is started.
