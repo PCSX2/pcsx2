@@ -1183,7 +1183,7 @@ void vtlb_Init()
 void vtlb_Reset()
 {
 	vtlb_RemoveFastmemMappings();
-	for(int i=0; i<48; i++) UnmapTLB(i);
+	for(int i=0; i<48; i++) UnmapTLB(tlb[i], i);
 }
 
 void vtlb_Shutdown()
