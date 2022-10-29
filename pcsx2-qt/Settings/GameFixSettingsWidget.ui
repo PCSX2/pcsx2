@@ -114,6 +114,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="FullVU0SyncHack">
+        <property name="text">
+         <string>Full VU0 Synchronization (Correct But Slower)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QCheckBox" name="IbitHack">
         <property name="text">
          <string>VU I Bit Hack (For Scarface The World is Yours/Crash Tag Team Racing)</string>

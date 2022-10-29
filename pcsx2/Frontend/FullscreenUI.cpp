@@ -3801,6 +3801,8 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 		"EmuCore/Speedhacks", "IntcStat", true);
 	DrawToggleSetting(bsi, "Enable Wait Loop Detection", "Moderate speedup for some games, with no known side effects.",
 		"EmuCore/Speedhacks", "WaitLoop", true);
+	DrawToggleSetting(bsi, "Enable Fast Memory Access", "Uses backpatching to avoid register flushing on every memory access.",
+		"EmuCore/CPU/Recompiler", "EnableFastmem", true);
 	DrawToggleSetting(bsi, "Enable VU0 Recompiler (Micro Mode)",
 		"New Vector Unit recompiler with much improved compatibility. Recommended.", "EmuCore/CPU/Recompiler", "EnableVU0", true);
 	DrawToggleSetting(bsi, "Enable VU1 Recompiler", "New Vector Unit recompiler with much improved compatibility. Recommended.",
@@ -3857,6 +3859,8 @@ void FullscreenUI::DrawGameFixesSettingsPage()
 		"EmuCore/Gamefixes", "VuAddSubHack", false);
 	DrawToggleSetting(bsi, "VU I bit Hack avoid constant recompilation in some games",
 		"Scarface The World Is Yours, Crash Tag Team Racing.", "EmuCore/Gamefixes", "IbitHack", false);
+	DrawToggleSetting(
+		bsi, "Full VU0 Synchronization", "Forces tight VU0 sync on every COP2 instruction.", "EmuCore/Gamefixes", "FullVU0SyncHack", false);
 	DrawToggleSetting(bsi, "VU Sync (Run behind)", "To avoid sync problems when reading or writing VU registers.", "EmuCore/Gamefixes",
 		"VUSyncHack", false);
 	DrawToggleSetting(

@@ -23,6 +23,7 @@
 
 #include "fmt/core.h"
 
+#include "common/Align.h"
 #include "common/PageFaultSource.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
@@ -34,12 +35,26 @@
 #define MAP_ANONYMOUS MAP_ANON
 #endif
 
+#include <cerrno>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
+#ifndef __APPLE__
+#include <ucontext.h>
+#endif
+
 extern void SignalExit(int sig);
 
 static const uptr m_pagemask = getpagesize() - 1;
 
+static struct sigaction s_old_sigsegv_action;
+#if defined(__APPLE__)
+static struct sigaction s_old_sigbus_action;
+#endif
+
 // Linux implementation of SIGSEGV handler.  Bind it using sigaction().
-static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void*)
+static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
 {
 	// [TODO] : Add a thread ID filter to the Linux Signal handler here.
 	// Rationale: On windows, the __try/__except model allows per-thread specific behavior
@@ -57,13 +72,20 @@ static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void*)
 	// Note: Use of stdio functions isn't safe here.  Avoid console logs,
 	// assertions, file logs, or just about anything else useful.
 
+#if defined(__APPLE__) && defined(__x86_64__)
+	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__rip);
+#elif defined(__x86_64__)
+	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_RIP]);
+#else
+	void* const exception_pc = nullptr;
+#endif
 
 	// Note: This signal can be accessed by the EE or MTVU thread
 	// Source_PageFault is a global variable with its own state information
 	// so for now we lock this exception code unless someone can fix this better...
 	std::unique_lock lock(PageFault_Mutex);
 
-	Source_PageFault->Dispatch(PageFaultInfo((uptr)siginfo->si_addr & ~m_pagemask));
+	Source_PageFault->Dispatch(PageFaultInfo((uptr)exception_pc, (uptr)siginfo->si_addr & ~m_pagemask));
 
 	// resumes execution right where we left off (re-executes instruction that
 	// caused the SIGSEGV).
@@ -89,11 +111,11 @@ void _platform_InstallSignalHandler()
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = SA_SIGINFO;
 	sa.sa_sigaction = SysPageFaultSignalFilter;
-#ifdef __APPLE__
+#if defined(__APPLE__)
 	// MacOS uses SIGBUS for memory permission violations
-	sigaction(SIGBUS, &sa, NULL);
+	sigaction(SIGBUS, &sa, &s_old_sigbus_action);
 #else
-	sigaction(SIGSEGV, &sa, NULL);
+	sigaction(SIGSEGV, &sa, &s_old_sigsegv_action);
 #endif
 }
 
@@ -208,6 +230,58 @@ void HostSys::UnmapSharedMemory(void* baseaddr, size_t size)
 {
 	if (mmap(baseaddr, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == MAP_FAILED)
 		pxFailRel("Failed to unmap shared memory");
+}
+
+SharedMemoryMappingArea::SharedMemoryMappingArea(u8* base_ptr, size_t size, size_t num_pages)
+	: m_base_ptr(base_ptr)
+	, m_size(size)
+	, m_num_pages(num_pages)
+{
+}
+
+SharedMemoryMappingArea::~SharedMemoryMappingArea()
+{
+	pxAssertRel(m_num_mappings == 0, "No mappings left");
+
+	if (munmap(m_base_ptr, m_size) != 0)
+		pxFailRel("Failed to release shared memory area");
+}
+
+
+std::unique_ptr<SharedMemoryMappingArea> SharedMemoryMappingArea::Create(size_t size)
+{
+	pxAssertRel(Common::IsAlignedPow2(size, __pagesize), "Size is page aligned");
+
+	void* alloc = mmap(nullptr, size, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+	if (alloc == MAP_FAILED)
+		return nullptr;
+
+	return std::unique_ptr<SharedMemoryMappingArea>(new SharedMemoryMappingArea(static_cast<u8*>(alloc), size, size / __pagesize));
+}
+
+u8* SharedMemoryMappingArea::Map(void* file_handle, size_t file_offset, void* map_base, size_t map_size, const PageProtectionMode& mode)
+{
+	pxAssert(static_cast<u8*>(map_base) >= m_base_ptr && static_cast<u8*>(map_base) < (m_base_ptr + m_size));
+
+	const uint lnxmode = LinuxProt(mode);
+	void* const ptr = mmap(map_base, map_size, lnxmode, MAP_SHARED | MAP_FIXED,
+		static_cast<int>(reinterpret_cast<intptr_t>(file_handle)), static_cast<off_t>(file_offset));
+	if (ptr == MAP_FAILED)
+		return nullptr;
+
+	m_num_mappings++;
+	return static_cast<u8*>(ptr);
+}
+
+bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
+{
+	pxAssert(static_cast<u8*>(map_base) >= m_base_ptr && static_cast<u8*>(map_base) < (m_base_ptr + m_size));
+
+	if (mmap(map_base, map_size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == MAP_FAILED)
+		return false;
+
+	m_num_mappings--;
+	return true;
 }
 
 #endif

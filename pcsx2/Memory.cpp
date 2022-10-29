@@ -963,6 +963,7 @@ void mmap_MarkCountedRamPage( u32 paddr )
 
 	m_PageProtectInfo[rampage].Mode = ProtMode_Write;
 	HostSys::MemProtect( &eeMem->Main[rampage<<__pageshift], __pagesize, PageAccess_ReadOnly() );
+	vtlb_UpdateFastmemProtection(rampage << __pageshift, __pagesize, PageAccess_ReadOnly());
 }
 
 // offset - offset of address relative to psM.
@@ -980,6 +981,7 @@ static __fi void mmap_ClearCpuBlock( uint offset )
 		"Attempted to clear a block that is already under manual protection." );
 
 	HostSys::MemProtect( &eeMem->Main[rampage<<__pageshift], __pagesize, PageAccess_ReadWrite() );
+	vtlb_UpdateFastmemProtection(rampage << __pageshift, __pagesize, PageAccess_ReadWrite());
 	m_PageProtectInfo[rampage].Mode = ProtMode_Manual;
 	Cpu->Clear( m_PageProtectInfo[rampage].ReverseRamMap, __pagesize );
 }
@@ -988,12 +990,37 @@ void mmap_PageFaultHandler::OnPageFaultEvent( const PageFaultInfo& info, bool& h
 {
 	pxAssert( eeMem );
 
-	// get bad virtual address
-	uptr offset = info.addr - (uptr)eeMem->Main;
-	if( offset >= Ps2MemSize::MainRam ) return;
+	u32 vaddr;
+	if (CHECK_FASTMEM && vtlb_GetGuestAddress(info.addr, &vaddr))
+	{
+		// this was inside the fastmem area. check if it's a code page
+		// fprintf(stderr, "Fault on fastmem %p vaddr %08X\n", info.addr, vaddr);
 
-	mmap_ClearCpuBlock( offset );
-	handled = true;
+		uptr ptr = (uptr)PSM(vaddr);
+		uptr offset = (ptr - (uptr)eeMem->Main);
+		if (ptr && m_PageProtectInfo[offset >> __pageshift].Mode == ProtMode_Write)
+		{
+			// fprintf(stderr, "Not backpatching code write at %08X\n", vaddr);
+			mmap_ClearCpuBlock(offset);
+			handled = true;
+		}
+		else
+		{
+			// fprintf(stderr, "Trying backpatching vaddr %08X\n", vaddr);
+			if (vtlb_BackpatchLoadStore(info.pc, info.addr))
+				handled = true;
+		}
+	}
+	else
+	{
+		// get bad virtual address
+		uptr offset = info.addr - (uptr)eeMem->Main;
+		if (offset >= Ps2MemSize::MainRam)
+			return;
+
+		mmap_ClearCpuBlock(offset);
+		handled = true;
+	}
 }
 
 // Clears all block tracking statuses, manual protection flags, and write protection.
@@ -1005,4 +1032,5 @@ void mmap_ResetBlockTracking()
 	//DbgCon.WriteLn( "vtlb/mmap: Block Tracking reset..." );
 	memzero( m_PageProtectInfo );
 	if (eeMem) HostSys::MemProtect( eeMem->Main, Ps2MemSize::MainRam, PageAccess_ReadWrite() );
+	vtlb_UpdateFastmemProtection(0, Ps2MemSize::MainRam, PageAccess_ReadWrite());
 }

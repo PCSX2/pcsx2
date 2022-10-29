@@ -32,17 +32,24 @@
       <string>EmotionEngine (MIPS-IV)</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="eeRecompiler">
-        <property name="text">
-         <string>Enable Recompiler</string>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="0">
        <widget class="QCheckBox" name="eeWaitLoopDetection">
         <property name="text">
          <string>Wait Loop Detection</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="eeINTCSpinDetection">
+        <property name="text">
+         <string>INTC Spin Detection</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="eeRecompiler">
+        <property name="text">
+         <string>Enable Recompiler</string>
         </property>
        </widget>
       </item>
@@ -53,10 +60,10 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QCheckBox" name="eeINTCSpinDetection">
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="eeFastmem">
         <property name="text">
-         <string>INTC Spin Detection</string>
+         <string>Enable Fast Memory Access</string>
         </property>
        </widget>
       </item>

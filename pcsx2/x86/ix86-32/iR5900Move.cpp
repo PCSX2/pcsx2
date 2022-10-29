@@ -22,9 +22,8 @@
 
 using namespace x86Emitter;
 
-namespace R5900 {
-namespace Dynarec {
-namespace OpcodeImpl {
+namespace R5900::Dynarec::OpcodeImpl
+{
 
 /*********************************************************
 * Shift arithmetic with constant shift                   *
@@ -34,7 +33,7 @@ namespace OpcodeImpl {
 
 namespace Interp = R5900::Interpreter::OpcodeImpl;
 
-REC_FUNC_DEL(LUI,  _Rt_);
+REC_FUNC_DEL(LUI, _Rt_);
 REC_FUNC_DEL(MFLO, _Rd_);
 REC_FUNC_DEL(MFHI, _Rd_);
 REC_FUNC(MTLO);
@@ -56,11 +55,6 @@ static void xCopy64(u64* dst, u64* src)
 	xMOV(ptr64[dst], rax);
 }
 
-static void xCMPToZero64(u64* mem)
-{
-	xCMP(ptr64[mem], 0);
-}
-
 /*********************************************************
 * Load higher 16 bits of the first word in GPR with imm  *
 * Format:  OP rt, immediate                              *
@@ -69,22 +63,13 @@ static void xCMPToZero64(u64* mem)
 //// LUI
 void recLUI()
 {
-	int mmreg;
 	if (!_Rt_)
 		return;
 
-	_eeOnWriteReg(_Rt_, 1);
-
-	if ((mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_WRITE)) >= 0)
-	{
-		if (xmmregs[mmreg].mode & MODE_WRITE)
-		{
-			xMOVH.PS(ptr[&cpuRegs.GPR.r[_Rt_].UL[2]], xRegisterSSE(mmreg));
-		}
-		xmmregs[mmreg].inuse = 0;
-	}
-
-	_deleteEEreg(_Rt_, 0);
+	// need to flush the upper 64 bits for xmm
+	GPR_DEL_CONST(_Rt_);
+	_deleteGPRtoX86reg(_Rt_, DELETE_REG_FREE_NO_WRITEBACK);
+	_deleteGPRtoXMMreg(_Rt_, DELETE_REG_FLUSH_AND_FREE);
 
 	if (EE_CONST_PROP)
 	{
@@ -93,363 +78,300 @@ void recLUI()
 	}
 	else
 	{
-		xMOV(eax, (s32)(cpuRegs.code << 16));
-		eeSignExtendTo(_Rt_);
+		const int regt = _allocX86reg(X86TYPE_GPR, _Rt_, MODE_WRITE);
+		xMOV64(xRegister64(regt), (s64)(s32)(cpuRegs.code << 16));
 	}
 
 	EE::Profiler.EmitOp(eeOpcode::LUI);
 }
 
 ////////////////////////////////////////////////////
-void recMFHILO(int hi)
+static void recMFHILO(bool hi, bool upper)
 {
-	int reghi, regd, xmmhilo;
 	if (!_Rd_)
 		return;
 
-	xmmhilo = hi ? XMMGPR_HI : XMMGPR_LO;
-	reghi = _checkXMMreg(XMMTYPE_GPRREG, xmmhilo, MODE_READ);
-
+	// kill any constants on rd, lower 64 bits get written regardless of upper
 	_eeOnWriteReg(_Rd_, 0);
 
-	regd = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_READ | MODE_WRITE);
-
-	if (reghi >= 0)
+	const int reg = hi ? XMMGPR_HI : XMMGPR_LO;
+	const int xmmd = EEINST_XMMUSEDTEST(_Rd_) ? _allocGPRtoXMMreg(_Rd_, MODE_READ | MODE_WRITE) : _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_READ | MODE_WRITE);
+	const int xmmhilo = EEINST_XMMUSEDTEST(reg) ? _allocGPRtoXMMreg(reg, MODE_READ) : _checkXMMreg(XMMTYPE_GPRREG, reg, MODE_READ);
+	if (xmmd >= 0)
 	{
-		if (regd >= 0)
+		if (xmmhilo >= 0)
 		{
-			pxAssert(regd != reghi);
-
-			xmmregs[regd].inuse = 0;
-
-			xMOVQ(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], xRegisterSSE(reghi));
-
-			if (xmmregs[regd].mode & MODE_WRITE)
-			{
-				xMOVH.PS(ptr[&cpuRegs.GPR.r[_Rd_].UL[2]], xRegisterSSE(regd));
-			}
+			if (upper)
+				xMOVHL.PS(xRegisterSSE(xmmd), xRegisterSSE(xmmhilo));
+			else
+				xMOVSD(xRegisterSSE(xmmd), xRegisterSSE(xmmhilo));
 		}
 		else
 		{
-			_deleteEEreg(_Rd_, 0);
-			xMOVQ(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(reghi));
+			const int gprhilo = upper ? -1 : _allocIfUsedGPRtoX86(reg, MODE_READ);
+			if (gprhilo >= 0)
+				xPINSR.Q(xRegisterSSE(xmmd), xRegister64(gprhilo), 0);
+			else
+				xPINSR.Q(xRegisterSSE(xmmd), ptr64[hi ? &cpuRegs.HI.UD[static_cast<u8>(upper)] : &cpuRegs.LO.UD[static_cast<u8>(upper)]], 0);
 		}
 	}
 	else
 	{
-		if (regd >= 0)
+		// try rename {hi,lo} -> rd
+		const int gprreg = upper ? -1 : _checkX86reg(X86TYPE_GPR, reg, MODE_READ);
+		if (gprreg >= 0 && _eeTryRenameReg(_Rd_, reg, gprreg, -1, 0) >= 0)
+			return;
+
+		const int gprd = _allocIfUsedGPRtoX86(_Rd_, MODE_WRITE);
+		if (gprd >= 0 && xmmhilo >= 0)
 		{
-			if (EEINST_ISLIVE2(_Rd_))
-				xMOVL.PS(xRegisterSSE(regd), ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UD[0] : (uptr)&cpuRegs.LO.UD[0])]);
+			pxAssert(gprreg < 0);
+			if (upper)
+				xPEXTR.Q(xRegister64(gprd), xRegisterSSE(xmmhilo), 1);
 			else
-				xMOVQZX(xRegisterSSE(regd), ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UD[0] : (uptr)&cpuRegs.LO.UD[0])]);
+				xMOVD(xRegister64(gprd), xRegisterSSE(xmmhilo));
+		}
+		else if (gprd < 0 && xmmhilo >= 0)
+		{
+			pxAssert(gprreg < 0);
+			if (upper)
+				xPEXTR.Q(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(xmmhilo), 1);
+			else
+				xMOVQ(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(xmmhilo));
+		}
+		else if (gprd >= 0)
+		{
+			if (gprreg >= 0)
+				xMOV(xRegister64(gprd), xRegister64(gprreg));
+			else
+				xMOV(xRegister64(gprd), ptr64[hi ? &cpuRegs.HI.UD[static_cast<u8>(upper)] : &cpuRegs.LO.UD[static_cast<u8>(upper)]]);
+		}
+		else if (gprreg >= 0)
+		{
+			xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegister64(gprreg));
 		}
 		else
 		{
-			_deleteEEreg(_Rd_, 0);
-			xCopy64(&cpuRegs.GPR.r[_Rd_].UD[0], hi ? &cpuRegs.HI.UD[0] : &cpuRegs.LO.UD[0]);
+			xMOV(rax, ptr64[hi ? &cpuRegs.HI.UD[static_cast<u8>(upper)] : &cpuRegs.LO.UD[static_cast<u8>(upper)]]);
+			xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
 		}
 	}
 }
 
-void recMTHILO(int hi)
+static void recMTHILO(bool hi, bool upper)
 {
-	int reghi, regs, xmmhilo;
-	uptr addrhilo;
+	const int reg = hi ? XMMGPR_HI : XMMGPR_LO;
+	_eeOnWriteReg(reg, 0);
 
-	xmmhilo = hi ? XMMGPR_HI : XMMGPR_LO;
-	addrhilo = hi ? (uptr)&cpuRegs.HI.UD[0] : (uptr)&cpuRegs.LO.UD[0];
-
-	regs = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ);
-	reghi = _checkXMMreg(XMMTYPE_GPRREG, xmmhilo, MODE_READ | MODE_WRITE);
-
-	if (reghi >= 0)
+	const int xmms = EEINST_XMMUSEDTEST(_Rs_) ? _allocGPRtoXMMreg(_Rs_, MODE_READ) : _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ);
+	const int xmmhilo = EEINST_XMMUSEDTEST(reg) ? _allocGPRtoXMMreg(reg, MODE_READ | MODE_WRITE) : _checkXMMreg(XMMTYPE_GPRREG, reg, MODE_READ | MODE_WRITE);
+	if (xmms >= 0)
 	{
-		if (regs >= 0)
+		if (xmmhilo >= 0)
 		{
-			pxAssert(reghi != regs);
-
-			_deleteGPRtoXMMreg(_Rs_, 0);
-			xPUNPCK.HQDQ(xRegisterSSE(reghi), xRegisterSSE(reghi));
-			xPUNPCK.LQDQ(xRegisterSSE(regs), xRegisterSSE(reghi));
-
-			// swap regs
-			xmmregs[regs] = xmmregs[reghi];
-			xmmregs[reghi].inuse = 0;
-			xmmregs[regs].mode |= MODE_WRITE;
+			if (upper)
+				xMOVLH.PS(xRegisterSSE(xmmhilo), xRegisterSSE(xmms));
+			else
+				xMOVSD(xRegisterSSE(xmmhilo), xRegisterSSE(xmms));
 		}
 		else
 		{
-			_flushConstReg(_Rs_);
-			xMOVL.PS(xRegisterSSE(reghi), ptr[&cpuRegs.GPR.r[_Rs_].UD[0]]);
-			xmmregs[reghi].mode |= MODE_WRITE;
+			const int gprhilo = upper ? -1 : _allocIfUsedGPRtoX86(reg, MODE_WRITE);
+			if (gprhilo >= 0)
+				xMOVD(xRegister64(gprhilo), xRegisterSSE(xmms)); // actually movq
+			else
+				xMOVQ(ptr64[hi ? &cpuRegs.HI.UD[static_cast<u8>(upper)] : &cpuRegs.LO.UD[static_cast<u8>(upper)]], xRegisterSSE(xmms));
 		}
 	}
 	else
 	{
-		if (regs >= 0)
+		// try rename rs -> {hi,lo}
+		const int gprs = _checkX86reg(X86TYPE_GPR, _Rs_, MODE_READ);
+		if (gprs >= 0 && !upper && _eeTryRenameReg(reg, _Rs_, gprs, -1, 0) >= 0)
+			return;
+
+		if (xmmhilo >= 0)
 		{
-			xMOVQ(ptr[(void*)(addrhilo)], xRegisterSSE(regs));
-		}
-		else
-		{
-			if (GPR_IS_CONST1(_Rs_))
+			if (gprs >= 0)
 			{
-				xWriteImm64ToMem((u64*)addrhilo, rax, g_cpuConstRegs[_Rs_].UD[0]);
+				xPINSR.Q(xRegisterSSE(xmmhilo), xRegister64(gprs), static_cast<u8>(upper));
+			}
+			else if (GPR_IS_CONST1(_Rs_))
+			{
+				_eeMoveGPRtoR(rax, _Rs_);
+				xPINSR.Q(xRegisterSSE(xmmhilo), rax, static_cast<u8>(upper));
 			}
 			else
 			{
-				_eeMoveGPRtoR(ecx, _Rs_);
-				_flushEEreg(_Rs_);
-				xCopy64((u64*)addrhilo, &cpuRegs.GPR.r[_Rs_].UD[0]);
+				xPINSR.Q(xRegisterSSE(xmmhilo), ptr64[&cpuRegs.GPR.r[_Rs_].UD[0]], static_cast<u8>(upper));
 			}
+		}
+		else
+		{
+			const int gprreg = upper ? -1 : _allocIfUsedGPRtoX86(reg, MODE_WRITE);
+			if (gprreg >= 0)
+				_eeMoveGPRtoR(xRegister64(gprreg), _Rs_);
+			else
+				_eeMoveGPRtoM((uptr)(hi ? &cpuRegs.HI.UD[static_cast<u8>(upper)] : &cpuRegs.LO.UD[static_cast<u8>(upper)]), _Rs_);
 		}
 	}
 }
+
 
 void recMFHI()
 {
-	recMFHILO(1);
+	recMFHILO(true, false);
 	EE::Profiler.EmitOp(eeOpcode::MFHI);
 }
 
 void recMFLO()
 {
-	recMFHILO(0);
+	recMFHILO(false, false);
 	EE::Profiler.EmitOp(eeOpcode::MFLO);
 }
 
 void recMTHI()
 {
-	recMTHILO(1);
+	recMTHILO(true, false);
 	EE::Profiler.EmitOp(eeOpcode::MTHI);
 }
 
 void recMTLO()
 {
-	recMTHILO(0);
+	recMTHILO(false, false);
 	EE::Profiler.EmitOp(eeOpcode::MTLO);
-}
-
-////////////////////////////////////////////////////
-void recMFHILO1(int hi)
-{
-	int reghi, regd, xmmhilo;
-	if (!_Rd_)
-		return;
-
-	xmmhilo = hi ? XMMGPR_HI : XMMGPR_LO;
-	reghi = _checkXMMreg(XMMTYPE_GPRREG, xmmhilo, MODE_READ);
-
-	_eeOnWriteReg(_Rd_, 0);
-
-	regd = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_READ | MODE_WRITE);
-
-	if (reghi >= 0)
-	{
-		if (regd >= 0)
-		{
-			xMOVHL.PS(xRegisterSSE(regd), xRegisterSSE(reghi));
-			xmmregs[regd].mode |= MODE_WRITE;
-		}
-		else
-		{
-			_deleteEEreg(_Rd_, 0);
-			xMOVH.PS(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(reghi));
-		}
-	}
-	else
-	{
-		if (regd >= 0)
-		{
-			if (EEINST_ISLIVE2(_Rd_))
-			{
-				xPUNPCK.HQDQ(xRegisterSSE(regd), ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UD[0] : (uptr)&cpuRegs.LO.UD[0])]);
-				xPSHUF.D(xRegisterSSE(regd), xRegisterSSE(regd), 0x4e);
-			}
-			else
-			{
-				xMOVQZX(xRegisterSSE(regd), ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UD[1] : (uptr)&cpuRegs.LO.UD[1])]);
-			}
-
-			xmmregs[regd].mode |= MODE_WRITE;
-		}
-		else
-		{
-			_deleteEEreg(_Rd_, 0);
-			xCopy64(&cpuRegs.GPR.r[_Rd_].UD[0], hi ? &cpuRegs.HI.UD[1] : &cpuRegs.LO.UD[1]);
-		}
-	}
-}
-
-void recMTHILO1(int hi)
-{
-	int reghi, regs, xmmhilo;
-	uptr addrhilo;
-
-	xmmhilo = hi ? XMMGPR_HI : XMMGPR_LO;
-	addrhilo = hi ? (uptr)&cpuRegs.HI.UD[0] : (uptr)&cpuRegs.LO.UD[0];
-
-	regs = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ);
-	reghi = _allocCheckGPRtoXMM(g_pCurInstInfo, xmmhilo, MODE_WRITE | MODE_READ);
-
-	if (reghi >= 0)
-	{
-		if (regs >= 0)
-		{
-			xPUNPCK.LQDQ(xRegisterSSE(reghi), xRegisterSSE(regs));
-		}
-		else
-		{
-			_flushEEreg(_Rs_);
-			xPUNPCK.LQDQ(xRegisterSSE(reghi), ptr[&cpuRegs.GPR.r[_Rs_].UD[0]]);
-		}
-	}
-	else
-	{
-		if (regs >= 0)
-		{
-			xMOVQ(ptr[(void*)(addrhilo + 8)], xRegisterSSE(regs));
-		}
-		else
-		{
-			if (GPR_IS_CONST1(_Rs_))
-			{
-				xWriteImm64ToMem((u64*)(addrhilo + 8), rax, g_cpuConstRegs[_Rs_].UD[0]);
-			}
-			else
-			{
-				_flushEEreg(_Rs_);
-				xCopy64((u64*)(addrhilo + 8), &cpuRegs.GPR.r[_Rs_].UD[0]);
-			}
-		}
-	}
 }
 
 void recMFHI1()
 {
-	recMFHILO1(1);
+	recMFHILO(true, true);
 	EE::Profiler.EmitOp(eeOpcode::MFHI1);
 }
 
 void recMFLO1()
 {
-	recMFHILO1(0);
+	recMFHILO(false, true);
 	EE::Profiler.EmitOp(eeOpcode::MFLO1);
 }
 
 void recMTHI1()
 {
-	recMTHILO1(1);
+	recMTHILO(true, true);
 	EE::Profiler.EmitOp(eeOpcode::MTHI1);
 }
 
 void recMTLO1()
 {
-	recMTHILO1(0);
+	recMTHILO(false, true);
 	EE::Profiler.EmitOp(eeOpcode::MTLO1);
 }
 
 //// MOVZ
-void recMOVZtemp_const()
+// if (rt == 0) then rd <- rs
+static void recMOVZtemp_const()
 {
 	g_cpuConstRegs[_Rd_].UD[0] = g_cpuConstRegs[_Rs_].UD[0];
 }
 
-void recMOVZtemp_consts(int info)
+static void recMOVZtemp_consts(int info)
 {
-	xCMPToZero64(&cpuRegs.GPR.r[_Rt_].UD[0]);
-	j8Ptr[0] = JNZ8(0);
+	// we need the constant anyway, so just force it into a register
+	const int regs = (info & PROCESS_EE_S) ? EEREC_S : _allocX86reg(X86TYPE_GPR, _Rs_, MODE_READ);
+	if (info & PROCESS_EE_T)
+		xTEST(xRegister64(EEREC_T), xRegister64(EEREC_T));
+	else
+		xCMP(ptr64[&cpuRegs.GPR.r[_Rt_].UD[0]], 0);
 
-	xWriteImm64ToMem(&cpuRegs.GPR.r[_Rd_].UD[0], rax, g_cpuConstRegs[_Rs_].UD[0]);
-
-	x86SetJ8(j8Ptr[0]);
+	xCMOVE(xRegister64(EEREC_D), xRegister64(regs));
 }
 
-void recMOVZtemp_constt(int info)
+static void recMOVZtemp_constt(int info)
 {
-	xCopy64(&cpuRegs.GPR.r[_Rd_].UD[0], &cpuRegs.GPR.r[_Rs_].UD[0]);
+	if (info & PROCESS_EE_S)
+		xMOV(xRegister64(EEREC_D), xRegister64(EEREC_S));
+	else
+		xMOV(xRegister64(EEREC_D), ptr64[&cpuRegs.GPR.r[_Rs_].UD[0]]);
 }
 
-void recMOVZtemp_(int info)
+static void recMOVZtemp_(int info)
 {
-	xCMPToZero64(&cpuRegs.GPR.r[_Rt_].UD[0]);
-	j8Ptr[0] = JNZ8(0);
+	if (info & PROCESS_EE_T)
+		xTEST(xRegister64(EEREC_T), xRegister64(EEREC_T));
+	else
+		xCMP(ptr64[&cpuRegs.GPR.r[_Rt_].UD[0]], 0);
 
-	xCopy64(&cpuRegs.GPR.r[_Rd_].UD[0], &cpuRegs.GPR.r[_Rs_].UD[0]);
-
-	x86SetJ8(j8Ptr[0]);
+	if (info & PROCESS_EE_S)
+		xCMOVE(xRegister64(EEREC_D), xRegister64(EEREC_S));
+	else
+		xCMOVE(xRegister64(EEREC_D), ptr64[&cpuRegs.GPR.r[_Rs_].UD[0]]);
 }
 
-EERECOMPILE_CODE0(MOVZtemp, XMMINFO_READS | XMMINFO_READD | XMMINFO_READD | XMMINFO_WRITED);
+// Specify READD here, because we might not write to it, and want to preserve the value.
+static EERECOMPILE_CODERC0(MOVZtemp, XMMINFO_READS | XMMINFO_READT | XMMINFO_READD | XMMINFO_WRITED | XMMINFO_NORENAME);
 
 void recMOVZ()
 {
 	if (_Rs_ == _Rd_)
 		return;
 
-	if (GPR_IS_CONST1(_Rt_))
-	{
-		if (g_cpuConstRegs[_Rt_].UD[0] != 0)
-			return;
-	}
-	else
-		_deleteEEreg(_Rd_, 1);
+	if (GPR_IS_CONST1(_Rt_) && g_cpuConstRegs[_Rt_].UD[0] != 0)
+		return;
 
 	recMOVZtemp();
 }
 
 //// MOVN
-void recMOVNtemp_const()
+static void recMOVNtemp_const()
 {
 	g_cpuConstRegs[_Rd_].UD[0] = g_cpuConstRegs[_Rs_].UD[0];
 }
 
-void recMOVNtemp_consts(int info)
+static void recMOVNtemp_consts(int info)
 {
-	xCMPToZero64(&cpuRegs.GPR.r[_Rt_].UD[0]);
-	j8Ptr[0] = JZ8(0);
+	// we need the constant anyway, so just force it into a register
+	const int regs = (info & PROCESS_EE_S) ? EEREC_S : _allocX86reg(X86TYPE_GPR, _Rs_, MODE_READ);
+	if (info & PROCESS_EE_T)
+		xTEST(xRegister64(EEREC_T), xRegister64(EEREC_T));
+	else
+		xCMP(ptr64[&cpuRegs.GPR.r[_Rt_].UD[0]], 0);
 
-	xWriteImm64ToMem(&cpuRegs.GPR.r[_Rd_].UD[0], rax, g_cpuConstRegs[_Rs_].UD[0]);
-
-	x86SetJ8(j8Ptr[0]);
+	xCMOVNE(xRegister64(EEREC_D), xRegister64(regs));
 }
 
-void recMOVNtemp_constt(int info)
+static void recMOVNtemp_constt(int info)
 {
-	xCopy64(&cpuRegs.GPR.r[_Rd_].UD[0], &cpuRegs.GPR.r[_Rs_].UD[0]);
+	if (info & PROCESS_EE_S)
+		xMOV(xRegister64(EEREC_D), xRegister64(EEREC_S));
+	else
+		xMOV(xRegister64(EEREC_D), ptr64[&cpuRegs.GPR.r[_Rs_].UD[0]]);
 }
 
-void recMOVNtemp_(int info)
+static void recMOVNtemp_(int info)
 {
-	xCMPToZero64(&cpuRegs.GPR.r[_Rt_].UD[0]);
-	j8Ptr[0] = JZ8(0);
+	if (info & PROCESS_EE_T)
+		xTEST(xRegister64(EEREC_T), xRegister64(EEREC_T));
+	else
+		xCMP(ptr64[&cpuRegs.GPR.r[_Rt_].UD[0]], 0);
 
-	xCopy64(&cpuRegs.GPR.r[_Rd_].UD[0], &cpuRegs.GPR.r[_Rs_].UD[0]);
-
-	x86SetJ8(j8Ptr[0]);
+	if (info & PROCESS_EE_S)
+		xCMOVNE(xRegister64(EEREC_D), xRegister64(EEREC_S));
+	else
+		xCMOVNE(xRegister64(EEREC_D), ptr64[&cpuRegs.GPR.r[_Rs_].UD[0]]);
 }
 
-EERECOMPILE_CODE0(MOVNtemp, XMMINFO_READS | XMMINFO_READD | XMMINFO_READD | XMMINFO_WRITED);
+static EERECOMPILE_CODERC0(MOVNtemp, XMMINFO_READS | XMMINFO_READT | XMMINFO_READD | XMMINFO_WRITED | XMMINFO_NORENAME);
 
 void recMOVN()
 {
 	if (_Rs_ == _Rd_)
 		return;
 
-	if (GPR_IS_CONST1(_Rt_))
-	{
-		if (g_cpuConstRegs[_Rt_].UD[0] == 0)
-			return;
-	}
-	else
-		_deleteEEreg(_Rd_, 1);
+	if (GPR_IS_CONST1(_Rt_) && g_cpuConstRegs[_Rt_].UD[0] == 0)
+		return;
 
 	recMOVNtemp();
 }
 
 #endif
 
-} // namespace OpcodeImpl
-} // namespace Dynarec
-} // namespace R5900
+} // namespace R5900::Dynarec::OpcodeImpl

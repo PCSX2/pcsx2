@@ -109,12 +109,18 @@ void RecompiledCodeReserve::Reset()
 
 void RecompiledCodeReserve::AllowModification()
 {
+	// Apple Silicon enforces write protection in hardware.
+#if !defined(__APPLE__) || !defined(_M_ARM64)
 	HostSys::MemProtect(m_baseptr, m_size, PageAccess_Any());
+#endif
 }
 
 void RecompiledCodeReserve::ForbidModification()
 {
+	// Apple Silicon enforces write protection in hardware.
+#if !defined(__APPLE__) || !defined(_M_ARM64)
 	HostSys::MemProtect(m_baseptr, m_size, PageProtectionMode().Read().Execute());
+#endif
 }
 
 // Sets the abbreviated name used by the profiler.  Name should be under 10 characters long.

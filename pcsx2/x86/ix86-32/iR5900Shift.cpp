@@ -22,9 +22,8 @@
 
 using namespace x86Emitter;
 
-namespace R5900 {
-namespace Dynarec {
-namespace OpcodeImpl {
+namespace R5900::Dynarec::OpcodeImpl
+{
 
 /*********************************************************
 * Shift arithmetic with constant shift                   *
@@ -34,431 +33,406 @@ namespace OpcodeImpl {
 
 namespace Interp = R5900::Interpreter::OpcodeImpl;
 
-REC_FUNC_DEL(SLL,    _Rd_);
-REC_FUNC_DEL(SRL,    _Rd_);
-REC_FUNC_DEL(SRA,    _Rd_);
-REC_FUNC_DEL(DSLL,   _Rd_);
-REC_FUNC_DEL(DSRL,   _Rd_);
-REC_FUNC_DEL(DSRA,   _Rd_);
+REC_FUNC_DEL(SLL, _Rd_);
+REC_FUNC_DEL(SRL, _Rd_);
+REC_FUNC_DEL(SRA, _Rd_);
+REC_FUNC_DEL(DSLL, _Rd_);
+REC_FUNC_DEL(DSRL, _Rd_);
+REC_FUNC_DEL(DSRA, _Rd_);
 REC_FUNC_DEL(DSLL32, _Rd_);
 REC_FUNC_DEL(DSRL32, _Rd_);
 REC_FUNC_DEL(DSRA32, _Rd_);
 
-REC_FUNC_DEL(SLLV,   _Rd_);
-REC_FUNC_DEL(SRLV,   _Rd_);
-REC_FUNC_DEL(SRAV,   _Rd_);
-REC_FUNC_DEL(DSLLV,  _Rd_);
-REC_FUNC_DEL(DSRLV,  _Rd_);
-REC_FUNC_DEL(DSRAV,  _Rd_);
+REC_FUNC_DEL(SLLV, _Rd_);
+REC_FUNC_DEL(SRLV, _Rd_);
+REC_FUNC_DEL(SRAV, _Rd_);
+REC_FUNC_DEL(DSLLV, _Rd_);
+REC_FUNC_DEL(DSRLV, _Rd_);
+REC_FUNC_DEL(DSRAV, _Rd_);
 
 #else
 
+static void recMoveTtoD(int info)
+{
+	if (info & PROCESS_EE_T)
+		xMOV(xRegister32(EEREC_D), xRegister32(EEREC_T));
+	else
+		xMOV(xRegister32(EEREC_D), ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+}
+
+static void recMoveTtoD64(int info)
+{
+	if (info & PROCESS_EE_T)
+		xMOV(xRegister64(EEREC_D), xRegister64(EEREC_T));
+	else
+		xMOV(xRegister64(EEREC_D), ptr64[&cpuRegs.GPR.r[_Rt_].UD[0]]);
+}
+
+static void recMoveSToRCX(int info)
+{
+	// load full 64-bits for store->load forwarding, since we always store >=64.
+	if (info & PROCESS_EE_S)
+		xMOV(rcx, xRegister64(EEREC_S));
+	else
+		xMOV(rcx, ptr64[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+}
+
 //// SLL
-void recSLL_const()
+static void recSLL_const()
 {
 	g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].UL[0] << _Sa_);
 }
 
-void recSLLs_(int info, int sa)
+static void recSLLs_(int info, int sa)
 {
+	// TODO: Use BMI
 	pxAssert(!(info & PROCESS_EE_XMM));
 
-	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+	recMoveTtoD(info);
 	if (sa != 0)
-	{
-		xSHL(eax, sa);
-	}
-
-	eeSignExtendTo(_Rd_);
+		xSHL(xRegister32(EEREC_D), sa);
+	xMOVSX(xRegister64(EEREC_D), xRegister32(EEREC_D));
 }
 
-void recSLL_(int info)
+static void recSLL_(int info)
 {
 	recSLLs_(info, _Sa_);
 }
 
-EERECOMPILE_CODEX(eeRecompileCode2, SLL);
+EERECOMPILE_CODEX(eeRecompileCodeRC2, SLL, XMMINFO_WRITED | XMMINFO_READT);
 
 //// SRL
-void recSRL_const()
+static void recSRL_const()
 {
 	g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].UL[0] >> _Sa_);
 }
 
-void recSRLs_(int info, int sa)
+static void recSRLs_(int info, int sa)
 {
 	pxAssert(!(info & PROCESS_EE_XMM));
 
-	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+	recMoveTtoD(info);
 	if (sa != 0)
-		xSHR(eax, sa);
-
-	eeSignExtendTo(_Rd_);
+		xSHR(xRegister32(EEREC_D), sa);
+	xMOVSX(xRegister64(EEREC_D), xRegister32(EEREC_D));
 }
 
-void recSRL_(int info)
+static void recSRL_(int info)
 {
 	recSRLs_(info, _Sa_);
 }
 
-EERECOMPILE_CODEX(eeRecompileCode2, SRL);
+EERECOMPILE_CODEX(eeRecompileCodeRC2, SRL, XMMINFO_WRITED | XMMINFO_READT);
 
 //// SRA
-void recSRA_const()
+static void recSRA_const()
 {
 	g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].SL[0] >> _Sa_);
 }
 
-void recSRAs_(int info, int sa)
+static void recSRAs_(int info, int sa)
 {
 	pxAssert(!(info & PROCESS_EE_XMM));
 
-	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+	recMoveTtoD(info);
 	if (sa != 0)
-		xSAR(eax, sa);
-
-	eeSignExtendTo(_Rd_);
+		xSAR(xRegister32(EEREC_D), sa);
+	xMOVSX(xRegister64(EEREC_D), xRegister32(EEREC_D));
 }
 
-void recSRA_(int info)
+static void recSRA_(int info)
 {
 	recSRAs_(info, _Sa_);
 }
 
-EERECOMPILE_CODEX(eeRecompileCode2, SRA);
+EERECOMPILE_CODEX(eeRecompileCodeRC2, SRA, XMMINFO_WRITED | XMMINFO_READT);
 
 ////////////////////////////////////////////////////
-void recDSLL_const()
+static void recDSLL_const()
 {
 	g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] << _Sa_);
 }
 
-void recDSLLs_(int info, int sa)
+static void recDSLLs_(int info, int sa)
 {
 	pxAssert(!(info & PROCESS_EE_XMM));
 
-	xMOV(rax, ptr[&cpuRegs.GPR.r[_Rt_].UD[0]]);
+	recMoveTtoD64(info);
 	if (sa != 0)
-		xSHL(rax, sa);
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
+		xSHL(xRegister64(EEREC_D), sa);
 }
 
-void recDSLL_(int info)
+static void recDSLL_(int info)
 {
 	recDSLLs_(info, _Sa_);
 }
 
-EERECOMPILE_CODEX(eeRecompileCode2, DSLL);
+EERECOMPILE_CODEX(eeRecompileCodeRC2, DSLL, XMMINFO_WRITED | XMMINFO_READT | XMMINFO_64BITOP);
 
 ////////////////////////////////////////////////////
-void recDSRL_const()
+static void recDSRL_const()
 {
 	g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] >> _Sa_);
 }
 
-void recDSRLs_(int info, int sa)
+static void recDSRLs_(int info, int sa)
 {
 	pxAssert(!(info & PROCESS_EE_XMM));
 
-	xMOV(rax, ptr[&cpuRegs.GPR.r[_Rt_].UD[0]]);
+	recMoveTtoD64(info);
 	if (sa != 0)
-		xSHR(rax, sa);
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
+		xSHR(xRegister64(EEREC_D), sa);
 }
 
-void recDSRL_(int info)
+static void recDSRL_(int info)
 {
 	recDSRLs_(info, _Sa_);
 }
 
-EERECOMPILE_CODEX(eeRecompileCode2, DSRL);
+EERECOMPILE_CODEX(eeRecompileCodeRC2, DSRL, XMMINFO_WRITED | XMMINFO_READT | XMMINFO_64BITOP);
 
 //// DSRA
-void recDSRA_const()
+static void recDSRA_const()
 {
 	g_cpuConstRegs[_Rd_].SD[0] = (u64)(g_cpuConstRegs[_Rt_].SD[0] >> _Sa_);
 }
 
-void recDSRAs_(int info, int sa)
+static void recDSRAs_(int info, int sa)
 {
 	pxAssert(!(info & PROCESS_EE_XMM));
 
-	xMOV(rax, ptr[&cpuRegs.GPR.r[_Rt_].UD[0]]);
+	recMoveTtoD64(info);
 	if (sa != 0)
-		xSAR(rax, sa);
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
+		xSAR(xRegister64(EEREC_D), sa);
 }
 
-void recDSRA_(int info)
+static void recDSRA_(int info)
 {
 	recDSRAs_(info, _Sa_);
 }
 
-EERECOMPILE_CODEX(eeRecompileCode2, DSRA);
+EERECOMPILE_CODEX(eeRecompileCodeRC2, DSRA, XMMINFO_WRITED | XMMINFO_READT | XMMINFO_64BITOP);
 
 ///// DSLL32
-void recDSLL32_const()
+static void recDSLL32_const()
 {
 	g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] << (_Sa_ + 32));
 }
 
-void recDSLL32s_(int info, int sa)
+static void recDSLL32_(int info)
 {
-	pxAssert(!(info & PROCESS_EE_XMM));
-
-	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-	xSHL(rax, sa + 32);
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
+	recDSLLs_(info, _Sa_ + 32);
 }
 
-void recDSLL32_(int info)
-{
-	recDSLL32s_(info, _Sa_);
-}
-
-EERECOMPILE_CODEX(eeRecompileCode2, DSLL32);
+EERECOMPILE_CODEX(eeRecompileCodeRC2, DSLL32, XMMINFO_WRITED | XMMINFO_READT | XMMINFO_64BITOP);
 
 //// DSRL32
-void recDSRL32_const()
+static void recDSRL32_const()
 {
 	g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] >> (_Sa_ + 32));
 }
 
-void recDSRL32s_(int info, int sa)
+static void recDSRL32_(int info)
 {
-	pxAssert(!(info & PROCESS_EE_XMM));
-
-	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[1]]);
-	if (sa != 0)
-		xSHR(eax, sa);
-
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
+	recDSRLs_(info, _Sa_ + 32);
 }
 
-void recDSRL32_(int info)
-{
-	recDSRL32s_(info, _Sa_);
-}
-
-EERECOMPILE_CODEX(eeRecompileCode2, DSRL32);
+EERECOMPILE_CODEX(eeRecompileCodeRC2, DSRL32, XMMINFO_WRITED | XMMINFO_READT);
 
 //// DSRA32
-void recDSRA32_const()
+static void recDSRA32_const()
 {
 	g_cpuConstRegs[_Rd_].SD[0] = (u64)(g_cpuConstRegs[_Rt_].SD[0] >> (_Sa_ + 32));
 }
 
-void recDSRA32s_(int info, int sa)
+static void recDSRA32_(int info)
 {
-	recDSRAs_(info, sa + 32);
+	recDSRAs_(info, _Sa_ + 32);
 }
 
-void recDSRA32_(int info)
-{
-	recDSRA32s_(info, _Sa_);
-}
-
-EERECOMPILE_CODEX(eeRecompileCode2, DSRA32);
+EERECOMPILE_CODEX(eeRecompileCodeRC2, DSRA32, XMMINFO_WRITED | XMMINFO_READT | XMMINFO_64BITOP);
 
 /*********************************************************
 * Shift arithmetic with variant register shift           *
 * Format:  OP rd, rt, rs                                 *
 *********************************************************/
 
-static void recShiftV_constt(const xImpl_Group2& shift)
+static void recShiftV_constt(int info, const xImpl_Group2& shift)
 {
-	xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-
-	xMOV(eax, g_cpuConstRegs[_Rt_].UL[0]);
-	shift(eax, cl);
-
-	eeSignExtendTo(_Rd_);
+	pxAssert(_Rs_ != 0);
+	recMoveSToRCX(info);
+	xMOV(xRegister32(EEREC_D), g_cpuConstRegs[_Rt_].UL[0]);
+	shift(xRegister32(EEREC_D), cl);
+	xMOVSX(xRegister64(EEREC_D), xRegister32(EEREC_D));
 }
 
-static void recShiftV(const xImpl_Group2& shift)
+static void recShiftV(int info, const xImpl_Group2& shift)
 {
-	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-	if (_Rs_ != 0)
-	{
-		xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-		shift(eax, cl);
-	}
-	eeSignExtendTo(_Rd_);
+	pxAssert(_Rs_ != 0);
+
+	recMoveSToRCX(info);
+	recMoveTtoD(info);
+	shift(xRegister32(EEREC_D), cl);
+	xMOVSX(xRegister64(EEREC_D), xRegister32(EEREC_D));
 }
 
-static void recDShiftV_constt(const xImpl_Group2& shift)
+static void recDShiftV_constt(int info, const xImpl_Group2& shift)
 {
-	xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-
-	xMOV64(rax, g_cpuConstRegs[_Rt_].UD[0]);
-	shift(rax, cl);
-
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
+	pxAssert(_Rs_ != 0);
+	recMoveSToRCX(info);
+	xMOV64(xRegister64(EEREC_D), g_cpuConstRegs[_Rt_].SD[0]);
+	shift(xRegister64(EEREC_D), cl);
 }
 
-static void recDShiftV(const xImpl_Group2& shift)
+static void recDShiftV(int info, const xImpl_Group2& shift)
 {
-	xMOV(rax, ptr[&cpuRegs.GPR.r[_Rt_].UD[0]]);
-	if (_Rs_ != 0)
-	{
-		xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-		shift(rax, cl);
-	}
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
+	pxAssert(_Rs_ != 0);
+	recMoveSToRCX(info);
+	recMoveTtoD64(info);
+	shift(xRegister64(EEREC_D), cl);
 }
 
 //// SLLV
-void recSLLV_const()
+static void recSLLV_const()
 {
 	g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].UL[0] << (g_cpuConstRegs[_Rs_].UL[0] & 0x1f));
 }
 
-void recSLLV_consts(int info)
+static void recSLLV_consts(int info)
 {
 	recSLLs_(info, g_cpuConstRegs[_Rs_].UL[0] & 0x1f);
 }
 
-void recSLLV_constt(int info)
+static void recSLLV_constt(int info)
 {
-	recShiftV_constt(xSHL);
+	recShiftV_constt(info, xSHL);
 }
 
-void recSLLV_(int info)
+static void recSLLV_(int info)
 {
-	recShiftV(xSHL);
+	recShiftV(info, xSHL);
 }
 
-EERECOMPILE_CODE0(SLLV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+EERECOMPILE_CODERC0(SLLV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
 
 //// SRLV
-void recSRLV_const()
+static void recSRLV_const()
 {
 	g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].UL[0] >> (g_cpuConstRegs[_Rs_].UL[0] & 0x1f));
 }
 
-void recSRLV_consts(int info)
+static void recSRLV_consts(int info)
 {
 	recSRLs_(info, g_cpuConstRegs[_Rs_].UL[0] & 0x1f);
 }
 
-void recSRLV_constt(int info)
+static void recSRLV_constt(int info)
 {
-	recShiftV_constt(xSHR);
+	recShiftV_constt(info, xSHR);
 }
 
-void recSRLV_(int info)
+static void recSRLV_(int info)
 {
-	recShiftV(xSHR);
+	recShiftV(info, xSHR);
 }
 
-EERECOMPILE_CODE0(SRLV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+EERECOMPILE_CODERC0(SRLV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
 
 //// SRAV
-void recSRAV_const()
+static void recSRAV_const()
 {
 	g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].SL[0] >> (g_cpuConstRegs[_Rs_].UL[0] & 0x1f));
 }
 
-void recSRAV_consts(int info)
+static void recSRAV_consts(int info)
 {
 	recSRAs_(info, g_cpuConstRegs[_Rs_].UL[0] & 0x1f);
 }
 
-void recSRAV_constt(int info)
+static void recSRAV_constt(int info)
 {
-	recShiftV_constt(xSAR);
+	recShiftV_constt(info, xSAR);
 }
 
-void recSRAV_(int info)
+static void recSRAV_(int info)
 {
-	recShiftV(xSAR);
+	recShiftV(info, xSAR);
 }
 
-EERECOMPILE_CODE0(SRAV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+EERECOMPILE_CODERC0(SRAV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
 
 //// DSLLV
-void recDSLLV_const()
+static void recDSLLV_const()
 {
 	g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] << (g_cpuConstRegs[_Rs_].UL[0] & 0x3f));
 }
 
-void recDSLLV_consts(int info)
+static void recDSLLV_consts(int info)
 {
 	int sa = g_cpuConstRegs[_Rs_].UL[0] & 0x3f;
-	if (sa < 32)
-		recDSLLs_(info, sa);
-	else
-		recDSLL32s_(info, sa - 32);
+	recDSLLs_(info, sa);
 }
 
-void recDSLLV_constt(int info)
+static void recDSLLV_constt(int info)
 {
-	recDShiftV_constt(xSHL);
+	recDShiftV_constt(info, xSHL);
 }
 
-void recDSLLV_(int info)
+static void recDSLLV_(int info)
 {
-	recDShiftV(xSHL);
+	recDShiftV(info, xSHL);
 }
 
-EERECOMPILE_CODE0(DSLLV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+EERECOMPILE_CODERC0(DSLLV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED | XMMINFO_64BITOP);
 
 //// DSRLV
-void recDSRLV_const()
+static void recDSRLV_const()
 {
 	g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] >> (g_cpuConstRegs[_Rs_].UL[0] & 0x3f));
 }
 
-void recDSRLV_consts(int info)
+static void recDSRLV_consts(int info)
 {
 	int sa = g_cpuConstRegs[_Rs_].UL[0] & 0x3f;
-	if (sa < 32)
-		recDSRLs_(info, sa);
-	else
-		recDSRL32s_(info, sa - 32);
+	recDSRLs_(info, sa);
 }
 
-void recDSRLV_constt(int info)
+static void recDSRLV_constt(int info)
 {
-	recDShiftV_constt(xSHR);
+	recDShiftV_constt(info, xSHR);
 }
 
-void recDSRLV_(int info)
+static void recDSRLV_(int info)
 {
-	recDShiftV(xSHR);
+	recDShiftV(info, xSHR);
 }
 
-EERECOMPILE_CODE0(DSRLV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+EERECOMPILE_CODERC0(DSRLV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED | XMMINFO_64BITOP);
 
 //// DSRAV
-void recDSRAV_const()
+static void recDSRAV_const()
 {
 	g_cpuConstRegs[_Rd_].SD[0] = (s64)(g_cpuConstRegs[_Rt_].SD[0] >> (g_cpuConstRegs[_Rs_].UL[0] & 0x3f));
 }
 
-void recDSRAV_consts(int info)
+static void recDSRAV_consts(int info)
 {
 	int sa = g_cpuConstRegs[_Rs_].UL[0] & 0x3f;
-	if (sa < 32)
-		recDSRAs_(info, sa);
-	else
-		recDSRA32s_(info, sa - 32);
+	recDSRAs_(info, sa);
 }
 
-void recDSRAV_constt(int info)
+static void recDSRAV_constt(int info)
 {
-	recDShiftV_constt(xSAR);
+	recDShiftV_constt(info, xSAR);
 }
 
-void recDSRAV_(int info)
+static void recDSRAV_(int info)
 {
-	recDShiftV(xSAR);
+	recDShiftV(info, xSAR);
 }
 
-EERECOMPILE_CODE0(DSRAV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+EERECOMPILE_CODERC0(DSRAV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED | XMMINFO_64BITOP);
 
 #endif
 
-} // namespace OpcodeImpl
-} // namespace Dynarec
-} // namespace R5900
+} // namespace R5900::Dynarec::OpcodeImpl

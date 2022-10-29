@@ -484,7 +484,9 @@ void mVUtestCycles(microVU& mVU, microFlagCycles& mFC)
 	xForwardJGE32 skip;
 
 	mVUsavePipelineState(mVU);
-	xMOV(ptr32[&mVU.regs().nextBlockCycles], mVUcycles);
+	if (EmuConfig.Gamefixes.VUSyncHack || EmuConfig.Gamefixes.FullVU0SyncHack)
+		xMOV(ptr32[&mVU.regs().nextBlockCycles], mVUcycles);
+
 	mVUendProgram(mVU, &mFC, 0);
 
 	skip.SetTarget();
@@ -801,7 +803,8 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 				}
 				incPC(2);
 				mVUsetupRange(mVU, xPC, false);
-				xMOV(ptr32[&mVU.regs().nextBlockCycles], 0);
+				if (EmuConfig.Gamefixes.VUSyncHack || EmuConfig.Gamefixes.FullVU0SyncHack)
+					xMOV(ptr32[&mVU.regs().nextBlockCycles], 0);
 				mVUendProgram(mVU, &mFC, 0);
 				normBranchCompile(mVU, xPC);
 				incPC(-2);
