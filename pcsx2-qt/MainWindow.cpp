@@ -1135,7 +1135,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 		QMessageBox msgbox(lock.getDialogParent());
 		msgbox.setIcon(QMessageBox::Question);
 		msgbox.setWindowTitle(tr("Confirm Shutdown"));
-		msgbox.setText("Are you sure you want to shut down the virtual machine?");
+		msgbox.setText(tr("Are you sure you want to shut down the virtual machine?)");
 
 		QCheckBox* save_cb = new QCheckBox(tr("Save State For Resume"), &msgbox);
 		save_cb->setChecked(save_state);
