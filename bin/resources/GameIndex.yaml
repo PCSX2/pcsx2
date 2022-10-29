@@ -1107,6 +1107,8 @@ SCAJ-20138:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
+    halfPixelOffset: 2 # Fixes misaligned blur.
+    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
 SCAJ-20139:
   name: "Zero - Shisei no Koe" # Fatal Frame - Rei - Irezumi no Sei
   region: "NTSC-Unk"
@@ -1129,6 +1131,10 @@ SCAJ-20144:
   region: "NTSC-Ch"
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
+    halfPixelOffset: 2 # Fixes misaligned blur.
+    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
 SCAJ-20145:
   name: "Tales of Legendia"
   region: "NTSC-J"
@@ -1386,6 +1392,8 @@ SCAJ-20195:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
+    halfPixelOffset: 2 # Fixes misaligned blur.
+    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
 SCAJ-20196:
   name: "Wang Da Yu Ju Xiang [PlayStation 2 The Best]"
   region: "NTSC-Ch"
@@ -3818,6 +3826,8 @@ SCES-53642:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
+    halfPixelOffset: 2 # Fixes misaligned blur.
+    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
 SCES-53663:
   name: "Buzz! The Music Quiz"
   region: "PAL-M3"
@@ -4925,6 +4935,8 @@ SCKA-20062:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
+    halfPixelOffset: 2 # Fixes misaligned blur.
+    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
 SCKA-20063:
   name: "Sly 3 - Honor Among Thieves"
   region: "NTSC-K"
@@ -5759,6 +5771,12 @@ SCPS-15096:
   name: "Saru Get You! 3"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black background in the pause menu.
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
+    halfPixelOffset: 2 # Fixes misaligned blur.
+    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
 SCPS-15097:
   name: "Wanda to Kyozou"
   region: "NTSC-J"
@@ -6161,6 +6179,12 @@ SCPS-19310:
 SCPS-19311:
   name: "Saru Get You 3 [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black background in the pause menu.
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
+    halfPixelOffset: 2 # Fixes misaligned blur.
+    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
 SCPS-19312:
   name: "Siren [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -8139,6 +8163,8 @@ SCUS-97501:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
+    halfPixelOffset: 2 # Fixes misaligned blur.
+    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
 SCUS-97502:
   name: "Tourist Trophy"
   region: "NTSC-U"
@@ -8314,6 +8340,8 @@ SCUS-97548:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
+    halfPixelOffset: 2 # Fixes misaligned blur.
+    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
 SCUS-97554:
   name: "NBA '07 featuring The Life Vol.2 [Demo]"
   region: "NTSC-U"
