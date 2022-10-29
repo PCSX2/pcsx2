@@ -31,17 +31,18 @@ namespace Dynarec {
 // Parameters:
 //   jmpSkip - This parameter is the result of the appropriate J32 instruction
 //   (usually JZ32 or JNZ32).
-void recDoBranchImm(u32* jmpSkip, bool isLikely)
+void recDoBranchImm(u32 branchTo, u32* jmpSkip, bool isLikely, bool swappedDelaySlot)
 {
-	// All R5900 branches use this format:
-	const u32 branchTo = ((s32)_Imm_ * 4) + pc;
-
 	// First up is the Branch Taken Path : Save the recompiler's state, compile the
 	// DelaySlot, and issue a BranchTest insertion.  The state is reloaded below for
 	// the "did not branch" path (maintains consts, register allocations, and other optimizations).
 
-	SaveBranchState();
-	recompileNextInstruction(1);
+	if (!swappedDelaySlot)
+	{
+		SaveBranchState();
+		recompileNextInstruction(true, false);
+	}
+
 	SetBranchImm(branchTo);
 
 	// Jump target when the branch is *not* taken, skips the branchtest code
@@ -50,18 +51,17 @@ void recDoBranchImm(u32* jmpSkip, bool isLikely)
 
 	// if it's a likely branch then we'll need to skip the delay slot here, since
 	// MIPS cancels the delay slot instruction when branches aren't taken.
-	LoadBranchState();
-	if (!isLikely)
+	if (!swappedDelaySlot)
 	{
-		pc -= 4; // instruction rewinder for delay slot, if non-likely.
-		recompileNextInstruction(1);
+		LoadBranchState();
+		if (!isLikely)
+		{
+			pc -= 4; // instruction rewinder for delay slot, if non-likely.
+			recompileNextInstruction(true, false);
+		}
 	}
-	SetBranchImm(pc); // start a new recompiled block.
-}
 
-void recDoBranchImm_Likely(u32* jmpSkip)
-{
-	recDoBranchImm(jmpSkip, true);
+	SetBranchImm(pc); // start a new recompiled block.
 }
 
 namespace OpcodeImpl {
@@ -95,6 +95,7 @@ void recMFSA()
 	if (!_Rd_)
 		return;
 
+	// TODO(Stenzek): Make these less rubbish
 	mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_WRITE);
 	if (mmreg >= 0)
 	{
@@ -102,10 +103,9 @@ void recMFSA()
 	}
 	else
 	{
-		xMOV(eax, ptr[&cpuRegs.sa]);
+		xMOV(rax, ptr32[&cpuRegs.sa]);
 		_deleteEEreg(_Rd_, 0);
-		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[1]], 0);
+		xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
 	}
 }
 
@@ -123,6 +123,10 @@ void recMTSA()
 		if ((mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0)
 		{
 			xMOVSS(ptr[&cpuRegs.sa], xRegisterSSE(mmreg));
+		}
+		else if ((mmreg = _checkX86reg(X86TYPE_GPR, _Rs_, MODE_READ)) >= 0)
+		{
+			xMOV(ptr[&cpuRegs.sa], xRegister32(mmreg));
 		}
 		else
 		{

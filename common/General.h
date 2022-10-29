@@ -145,6 +145,41 @@ namespace HostSys
 	extern void UnmapSharedMemory(void* baseaddr, size_t size);
 }
 
+class SharedMemoryMappingArea
+{
+public:
+	static std::unique_ptr<SharedMemoryMappingArea> Create(size_t size);
+
+	~SharedMemoryMappingArea();
+
+	__fi size_t GetSize() const { return m_size; }
+	__fi size_t GetNumPages() const { return m_num_pages; }
+
+	__fi u8* BasePointer() const { return m_base_ptr; }
+	__fi u8* OffsetPointer(size_t offset) const { return m_base_ptr + offset; }
+	__fi u8* PagePointer(size_t page) const { return m_base_ptr + __pagesize * page; }
+
+	u8* Map(void* file_handle, size_t file_offset, void* map_base, size_t map_size, const PageProtectionMode& mode);
+	bool Unmap(void* map_base, size_t map_size);
+
+private:
+	SharedMemoryMappingArea(u8* base_ptr, size_t size, size_t num_pages);
+
+	u8* m_base_ptr;
+	size_t m_size;
+	size_t m_num_pages;
+	size_t m_num_mappings = 0;
+
+#ifdef _WIN32
+	using PlaceholderMap = std::map<size_t, size_t>;
+
+	PlaceholderMap::iterator FindPlaceholder(size_t page);
+
+	PlaceholderMap m_placeholder_ranges;
+#endif
+};
+
+
 // Safe version of Munmap -- NULLs the pointer variable immediately after free'ing it.
 #define SafeSysMunmap(ptr, size) \
 	((void)(HostSys::Munmap(ptr, size), (ptr) = 0))

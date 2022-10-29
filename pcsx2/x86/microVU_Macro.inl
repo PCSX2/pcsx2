@@ -28,6 +28,10 @@ using namespace R5900::Dynarec;
 #define printCOP2(...) (void)0
 //#define printCOP2 DevCon.Status
 
+// For now, we need to free all XMMs. Because we're not saving the nonvolatile registers when
+// we enter micro mode, they will get overriden otherwise...
+#define FLUSH_FOR_POSSIBLE_MICRO_EXEC (FLUSH_FREE_XMM | FLUSH_FREE_VU0)
+
 void setupMacroOp(int mode, const char* opName)
 {
 	// Set up reg allocation
@@ -96,8 +100,7 @@ void endMacroOp(int mode)
 		xMOVSS(ptr32[&vu0Regs.VI[REG_Q].UL], xmmPQ);
 	}
 
-	microVU0.regAlloc->flushAll();
-	_clearNeededCOP2Regs();
+	microVU0.regAlloc->flushPartialForCOP2();
 
 	if (mode & 0x10)
 	{
@@ -117,6 +120,11 @@ void endMacroOp(int mode)
 
 	microVU0.cop2 = 0;
 	microVU0.regAlloc->reset(false);
+}
+
+void mVUFreeCOP2XMMreg(int hostreg)
+{
+	microVU0.regAlloc->clearRegCOP2(hostreg);
 }
 
 #define REC_COP2_mVU0(f, opName, mode) \
@@ -142,13 +150,9 @@ void endMacroOp(int mode)
 #define INTERPRETATE_COP2_FUNC(f) \
 	void recV##f() \
 	{ \
-		_freeX86reg(eax); \
-		xMOV(eax, ptr32[&cpuRegs.cycle]); \
-		xADD(eax, scaleblockcycles_clear()); \
-		xMOV(ptr32[&cpuRegs.cycle], eax); \
-		_cop2BackupRegs(); \
+		iFlushCall(FLUSH_FOR_POSSIBLE_MICRO_EXEC); \
+		xADD(ptr32[&cpuRegs.cycle], scaleblockcycles_clear()); \
 		recCall(V##f); \
-		_cop2RestoreRegs(); \
 	}
 
 //------------------------------------------------------------------
@@ -303,13 +307,15 @@ INTERPRETATE_COP2_FUNC(CALLMSR);
 // Macro VU - Branches
 //------------------------------------------------------------------
 
-void _setupBranchTest(u32*(jmpType)(u32), bool isLikely)
+static void _setupBranchTest(u32*(jmpType)(u32), bool isLikely)
 {
 	printCOP2("COP2 Branch");
-	_eeFlushAllUnused();
+	const u32 branchTo = ((s32)_Imm_ * 4) + pc;
+	const bool swap = isLikely ? false : TrySwapDelaySlot(0, 0, 0);
+	_eeFlushAllDirty();
 	//xTEST(ptr32[&vif1Regs.stat._u32], 0x4);
 	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x100);
-	recDoBranchImm(jmpType(0), isLikely);
+	recDoBranchImm(branchTo, jmpType(0), isLikely, swap);
 }
 
 void recBC2F()  { _setupBranchTest(JNZ32, false); }
@@ -321,7 +327,7 @@ void recBC2TL() { _setupBranchTest(JZ32,  true);  }
 // Macro VU - COP2 Transfer Instructions
 //------------------------------------------------------------------
 
-void COP2_Interlock(bool mBitSync)
+static void COP2_Interlock(bool mBitSync)
 {
 	if (cpuRegs.code & 1)
 	{
@@ -329,8 +335,9 @@ void COP2_Interlock(bool mBitSync)
 
 		// We can safely skip the _vu0FinishMicro() call, when there's nothing
 		// that can trigger a VU0 program between CFC2/CTC2/COP2 instructions.
-		if ((g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0_MICRO) || mBitSync)
+		if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
 		{
+			iFlushCall(FLUSH_FOR_POSSIBLE_MICRO_EXEC);
 			_freeX86reg(eax);
 			xMOV(eax, ptr32[&cpuRegs.cycle]);
 			xADD(eax, scaleblockcycles_clear());
@@ -338,11 +345,15 @@ void COP2_Interlock(bool mBitSync)
 
 			xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
 			xForwardJZ32 skipvuidle;
-			_cop2BackupRegs();
 			if (mBitSync)
 			{
 				xSUB(eax, ptr32[&VU0.cycle]);
-				xSUB(eax, ptr32[&VU0.nextBlockCycles]);
+
+				// Why do we check this here? Ratchet games, maybe others end up with flickering polygons
+				// when we use lazy COP2 sync, otherwise. The micro resumption getting deferred an extra
+				// EE block is apparently enough to cause issues.
+				if (EmuConfig.Gamefixes.VUSyncHack || EmuConfig.Gamefixes.FullVU0SyncHack)
+					xSUB(eax, ptr32[&VU0.nextBlockCycles]);
 				xCMP(eax, 4);
 				xForwardJL32 skip;
 				xLoadFarAddr(arg1reg, CpuVU0);
@@ -354,18 +365,47 @@ void COP2_Interlock(bool mBitSync)
 			}
 			else
 				xFastCall((void*)_vu0FinishMicro);
-			_cop2RestoreRegs();
 			skipvuidle.SetTarget();
 		}
 	}
 }
 
-void TEST_FBRST_RESET(FnType_Void* resetFunct, int vuIndex)
+static void mVUSyncVU0()
 {
-	xTEST(eax, (vuIndex) ? 0x200 : 0x002);
+	iFlushCall(FLUSH_FOR_POSSIBLE_MICRO_EXEC);
+	_freeX86reg(eax);
+	xMOV(eax, ptr32[&cpuRegs.cycle]);
+	xADD(eax, scaleblockcycles_clear());
+	xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+
+	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+	xForwardJZ32 skipvuidle;
+	xSUB(eax, ptr32[&VU0.cycle]);
+	if (EmuConfig.Gamefixes.VUSyncHack || EmuConfig.Gamefixes.FullVU0SyncHack)
+		xSUB(eax, ptr32[&VU0.nextBlockCycles]);
+	xCMP(eax, 4);
+	xForwardJL32 skip;
+	xLoadFarAddr(arg1reg, CpuVU0);
+	xMOV(arg2reg, s_nBlockInterlocked);
+	xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg, arg2reg);
+	skip.SetTarget();
+	skipvuidle.SetTarget();
+}
+
+static void mVUFinishVU0()
+{
+	iFlushCall(FLUSH_FOR_POSSIBLE_MICRO_EXEC);
+	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+	xForwardJZ32 skipvuidle;
+	xFastCall((void*)_vu0FinishMicro);
+	skipvuidle.SetTarget();
+}
+
+static void TEST_FBRST_RESET(int flagreg, FnType_Void* resetFunct, int vuIndex)
+{
+	xTEST(xRegister32(flagreg), (vuIndex) ? 0x200 : 0x002);
 	xForwardJZ8 skip;
 		xFastCall((void*)resetFunct);
-		xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	skip.SetTarget();
 }
 
@@ -380,43 +420,20 @@ static void recCFC2()
 
 	if (!(cpuRegs.code & 1))
 	{
-		_freeX86reg(eax);
-		xMOV(eax, ptr32[&cpuRegs.cycle]);
-		xADD(eax, scaleblockcycles_clear());
-		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
-
-		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
-		xForwardJZ32 skipvuidle;
-		xSUB(eax, ptr32[&VU0.cycle]);
-		xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-		xCMP(eax, 4);
-		xForwardJL32 skip;
-		_cop2BackupRegs();
-		xLoadFarAddr(arg1reg, CpuVU0);
-		xMOV(arg2reg, s_nBlockInterlocked);
-		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg, arg2reg);
-		_cop2RestoreRegs();
-		skip.SetTarget();
-		skipvuidle.SetTarget();
+		if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
+			mVUSyncVU0();
+		else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
+			mVUFinishVU0();
 	}
 
-	_flushEEreg(_Rt_, true);
-
-	if (_Rd_ == REG_STATUS_FLAG) // Normalize Status Flag
-		xMOV(eax, ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL]);
-	else
-		xMOV(eax, ptr32[&vu0Regs.VI[_Rd_].UL]);
+	const int regt = _allocX86reg(X86TYPE_GPR, _Rt_, MODE_WRITE);
+	pxAssert(!GPR_IS_CONST1(_Rt_));
 
 	// FixMe: Should R-Reg have upper 9 bits 0?
-	if (_Rd_ >= 16)
-		xCDQE(); // Sign Extend
-
-	xMOV(ptr64[&cpuRegs.GPR.r[_Rt_].UD[0]], rax);
-
-	// FixMe: I think this is needed, but not sure how it works
-	// Update Refraction 20/09/2021: This is needed because Const Prop is broken
-	// the Flushed flag isn't being cleared when it's not flushed. TODO I guess
-	_eeOnWriteReg(_Rt_, 0);
+	if (_Rd_ >= REG_STATUS_FLAG)
+		xMOVSX(xRegister64(regt), ptr32[&vu0Regs.VI[_Rd_].UL]);
+	else
+		xMOV(xRegister64(regt), ptr32[&vu0Regs.VI[_Rd_].UL]);
 }
 
 static void recCTC2()
@@ -430,27 +447,11 @@ static void recCTC2()
 
 	if (!(cpuRegs.code & 1))
 	{
-		_freeX86reg(eax);
-		xMOV(eax, ptr32[&cpuRegs.cycle]);
-		xADD(eax, scaleblockcycles_clear());
-		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
-
-		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
-		xForwardJZ32 skipvuidle;
-		xSUB(eax, ptr32[&VU0.cycle]);
-		xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-		xCMP(eax, 4);
-		xForwardJL32 skip;
-		_cop2BackupRegs();
-		xLoadFarAddr(arg1reg, CpuVU0);
-		xMOV(arg2reg, s_nBlockInterlocked);
-		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg, arg2reg);
-		_cop2RestoreRegs();
-		skip.SetTarget();
-		skipvuidle.SetTarget();
+		if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
+			mVUSyncVU0();
+		else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
+			mVUFinishVU0();
 	}
-
-	_flushEEreg(_Rt_);
 
 	switch (_Rd_)
 	{
@@ -459,7 +460,7 @@ static void recCTC2()
 		case REG_VPU_STAT:
 			break; // Read Only Regs
 		case REG_R:
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+			_eeMoveGPRtoR(eax, _Rt_);
 			xAND(eax, 0x7FFFFF);
 			xOR(eax, 0x3f800000);
 			xMOV(ptr32[&vu0Regs.VI[REG_R].UL], eax);
@@ -468,7 +469,7 @@ static void recCTC2()
 		{
 			if (_Rt_)
 			{
-				xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+				_eeMoveGPRtoR(eax, _Rt_);
 				xAND(eax, 0xFC0);
 				xAND(ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL], 0x3F);
 				xOR(ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL], eax);
@@ -476,42 +477,44 @@ static void recCTC2()
 			else
 				xAND(ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL], 0x3F);
 
-			_freeXMMreg(xmmT1.Id);
+			const int xmmtemp = _allocTempXMMreg(XMMT_INT);
+
 			//Need to update the sticky flags for microVU
 			mVUallocSFLAGd(&vu0Regs.VI[REG_STATUS_FLAG].UL);
-			xMOVDZX(xmmT1, eax);
-			xSHUF.PS(xmmT1, xmmT1, 0);
+			xMOVDZX(xRegisterSSE(xmmtemp), eax); // TODO(Stenzek): This can be a broadcast.
+			xSHUF.PS(xRegisterSSE(xmmtemp), xRegisterSSE(xmmtemp), 0);
 			// Make sure the values are everywhere the need to be
-			xMOVAPS(ptr128[&vu0Regs.micro_statusflags], xmmT1);
+			xMOVAPS(ptr128[&vu0Regs.micro_statusflags], xRegisterSSE(xmmtemp));
+			_freeXMMreg(xmmtemp);
 			break;
 		}
 		case REG_CMSAR1: // Execute VU1 Micro SubRoutine
-			_cop2BackupRegs();
-			xMOV(ecx, 1);
-			xFastCall((void*)vu1Finish, ecx);
-			if (_Rt_)
-			{
-				xMOV(ecx, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-			}
-			else
-				xXOR(ecx, ecx);
-			xFastCall((void*)vu1ExecMicro, ecx);
-			_cop2RestoreRegs();
+			iFlushCall(FLUSH_NONE);
+			xMOV(arg1regd, 1);
+			xFastCall((void*)vu1Finish);
+			_eeMoveGPRtoR(arg1regd, _Rt_);
+			iFlushCall(FLUSH_NONE);
+			xFastCall((void*)vu1ExecMicro);
 			break;
 		case REG_FBRST:
-			if (!_Rt_)
 			{
-				xMOV(ptr32[&vu0Regs.VI[REG_FBRST].UL], 0);
-				return;
+				if (!_Rt_)
+				{
+					xMOV(ptr32[&vu0Regs.VI[REG_FBRST].UL], 0);
+					return;
+				}
+
+				const int flagreg = _allocX86reg(X86TYPE_TEMP, 0, MODE_CALLEESAVED);
+				_eeMoveGPRtoR(xRegister32(flagreg), _Rt_);
+
+				iFlushCall(FLUSH_FREE_VU0);
+				TEST_FBRST_RESET(flagreg, vu0ResetRegs, 0);
+				TEST_FBRST_RESET(flagreg, vu1ResetRegs, 1);
+
+				xAND(xRegister32(flagreg), 0x0C0C);
+				xMOV(ptr32[&vu0Regs.VI[REG_FBRST].UL], xRegister32(flagreg));
+				_freeX86reg(flagreg);
 			}
-			else
-				xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-			_cop2BackupRegs();
-			TEST_FBRST_RESET(vu0ResetRegs, 0);
-			TEST_FBRST_RESET(vu1ResetRegs, 1);
-			_cop2RestoreRegs();
-			xAND(eax, 0x0C0C);
-			xMOV(ptr32[&vu0Regs.VI[REG_FBRST].UL], eax);
 			break;
 		case 0:
 			// Ignore writes to vi00.
@@ -521,6 +524,14 @@ static void recCTC2()
 			// sVU's COP2 has a comment that "Donald Duck" needs this too...
 			if (_Rd_ < REG_STATUS_FLAG)
 			{
+				// I isn't invalidated correctly yet, ideally we would move this to the XMM directly.
+				if (_Rd_ == REG_I)
+				{
+					const int xmmreg = _checkXMMreg(XMMTYPE_VFREG, 33, 0);
+					if (xmmreg >= 0)
+						_freeXMMregWithoutWriteback(xmmreg);
+				}
+
 				// Need to expand this out, because we want to write as 16 bits.
 				_eeMoveGPRtoR(eax, _Rt_);
 				xMOV(ptr16[&vu0Regs.VI[_Rd_].US[0]], ax);
@@ -542,35 +553,39 @@ static void recQMFC2()
 
 	if (!_Rt_)
 		return;
-
+	
 	if (!(cpuRegs.code & 1))
 	{
-		_freeX86reg(eax);
-		xMOV(eax, ptr32[&cpuRegs.cycle]);
-		xADD(eax, scaleblockcycles_clear());
-		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
-
-		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
-		xForwardJZ32 skipvuidle;
-		xSUB(eax, ptr32[&VU0.cycle]);
-		xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-		xCMP(eax, 4);
-		xForwardJL32 skip;
-		_cop2BackupRegs();
-		xLoadFarAddr(arg1reg, CpuVU0);
-		xMOV(arg2reg, s_nBlockInterlocked);
-		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg, arg2reg);
-		_cop2RestoreRegs();
-		skip.SetTarget();
-		skipvuidle.SetTarget();
+		if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
+			mVUSyncVU0();
+		else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
+			mVUFinishVU0();
 	}
 
-	int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_WRITE);
-	// Update Refraction 20/09/2021: This is needed because Const Prop is broken
-	// the Flushed flag isn't being cleared when it's not flushed. TODO I guess
-	_eeOnWriteReg(_Rt_, 0); // This is needed because Const Prop is broken
+	const bool vf_used = COP2INST_USEDTEST(_Rd_);
+	const int ftreg = _allocVFtoXMMreg(_Rd_, MODE_READ);
+	_deleteEEreg128(_Rt_);
 
-	xMOVAPS(xRegisterSSE(rtreg), ptr128[&vu0Regs.VF[_Rd_]]);
+	// const flag should've been cleared, but sanity check..
+	pxAssert(!GPR_IS_CONST1(_Rt_));
+
+	if (vf_used)
+	{
+		// store direct to state if rt is not used
+		const int rtreg = _allocIfUsedGPRtoXMM(_Rt_, MODE_WRITE);
+		if (rtreg >= 0)
+			xMOVAPS(xRegisterSSE(rtreg), xRegisterSSE(ftreg));
+		else
+			xMOVAPS(ptr128[&cpuRegs.GPR.r[_Rt_].UQ], xRegisterSSE(ftreg));
+
+		// don't cache vf00, microvu doesn't like it
+		if (_Rd_ == 0)
+			_freeXMMreg(ftreg);
+	}
+	else
+	{
+		_reallocateXMMreg(ftreg, XMMTYPE_GPRREG, _Rt_, MODE_WRITE, true);
+	}
 }
 
 static void recQMTC2()
@@ -580,32 +595,49 @@ static void recQMTC2()
 
 	if (!_Rd_)
 		return;
-
+	
 	if (!(cpuRegs.code & 1))
 	{
-		_freeX86reg(eax);
-		xMOV(eax, ptr32[&cpuRegs.cycle]);
-		xADD(eax, scaleblockcycles_clear());
-		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
-
-		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
-		xForwardJZ32 skipvuidle;
-		xSUB(eax, ptr32[&VU0.cycle]);
-		xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-		xCMP(eax, 4);
-		xForwardJL32 skip;
-		_cop2BackupRegs();
-		xLoadFarAddr(arg1reg, CpuVU0);
-		xMOV(arg2reg, s_nBlockInterlocked);
-		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg, arg2reg);
-		_cop2RestoreRegs();
-		skip.SetTarget();
-		skipvuidle.SetTarget();
+		if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
+			mVUSyncVU0();
+		else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
+			mVUFinishVU0();
 	}
 
-	int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
-
-	xMOVAPS(ptr128[&vu0Regs.VF[_Rd_]], xRegisterSSE(rtreg));
+	if (_Rt_)
+	{
+		// if we have to flush to memory anyway (has a constant or is x86), force load.
+		const bool vf_used = COP2INST_USEDTEST(_Rd_);
+		const bool can_rename = EEINST_RENAMETEST(_Rt_);
+		const int rtreg = (GPR_IS_DIRTY_CONST(_Rt_) || _hasX86reg(X86TYPE_GPR, _Rt_, MODE_WRITE)) ?
+							  _allocGPRtoXMMreg(_Rt_, MODE_READ) :
+                              _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
+		
+		// NOTE: can't transfer xmm15 to VF, it's reserved for PQ.
+		int vfreg = _checkXMMreg(XMMTYPE_VFREG, _Rd_, MODE_WRITE);
+		if (can_rename && rtreg >= 0 && rtreg != xmmPQ.GetId())
+		{
+			// rt is no longer needed, so transfer to VF.
+			if (vfreg >= 0)
+				_freeXMMregWithoutWriteback(vfreg);
+			_reallocateXMMreg(rtreg, XMMTYPE_VFREG, _Rd_, MODE_WRITE, true);
+		}
+		else
+		{
+			// copy to VF.
+			if (vfreg < 0)
+				vfreg = _allocVFtoXMMreg(_Rd_, MODE_WRITE);
+			if (rtreg >= 0)
+				xMOVAPS(xRegisterSSE(vfreg), xRegisterSSE(rtreg));
+			else
+				xMOVAPS(xRegisterSSE(vfreg), ptr128[&cpuRegs.GPR.r[_Rt_].UQ]);
+		}
+	}
+	else
+	{
+		const int vfreg = _allocVFtoXMMreg(_Rd_, MODE_WRITE);
+		xPXOR(xRegisterSSE(vfreg), xRegisterSSE(vfreg));
+	}
 }
 
 //------------------------------------------------------------------
@@ -669,22 +701,102 @@ void (*recCOP2SPECIAL2t[128])() = {
 namespace R5900 {
 namespace Dynarec {
 namespace OpcodeImpl {
-	void recCOP2() { recCOP2t[_Rs_](); }
+void recCOP2() { recCOP2t[_Rs_](); }
+
+#if defined(LOADSTORE_RECOMPILE) && defined(CP2_RECOMPILE)
+
+/*********************************************************
+* Load and store for COP2 (VU0 unit)                     *
+* Format:  OP rt, offset(base)                           *
+*********************************************************/
+
+void recLQC2()
+{
+	if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
+		mVUSyncVU0();
+	else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
+		mVUFinishVU0();
+
+	vtlb_ReadRegAllocCallback alloc_cb = nullptr;
+	if (_Rt_)
+	{
+		// init regalloc after flush
+		alloc_cb = []() { return _allocVFtoXMMreg(_Rt_, MODE_WRITE); };
+	}
+
+	int xmmreg;
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		const u32 addr = (g_cpuConstRegs[_Rs_].UL[0] + _Imm_) & ~0xFu;
+		xmmreg = vtlb_DynGenReadQuad_Const(128, addr, alloc_cb);
+	}
+	else
+	{
+		_eeMoveGPRtoR(arg1regd, _Rs_);
+		if (_Imm_ != 0)
+			xADD(arg1regd, _Imm_);
+		xAND(arg1regd, ~0xF);
+
+		xmmreg = vtlb_DynGenReadQuad(128, arg1regd.GetId(), alloc_cb);
+	}
+
+	// toss away if loading to vf00
+	if (!_Rt_)
+		_freeXMMreg(xmmreg);
+
+	EE::Profiler.EmitOp(eeOpcode::LQC2);
+}
+
+////////////////////////////////////////////////////
+
+void recSQC2()
+{
+	if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
+		mVUSyncVU0();
+	else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
+		mVUFinishVU0();
+
+	// vf00 has to be special cased here, because of the microvu temps...
+	const int ftreg = _Rt_ ? _allocVFtoXMMreg(_Rt_, MODE_READ) : _allocTempXMMreg(XMMT_FPS);
+	if (!_Rt_)
+		xMOVAPS(xRegisterSSE(ftreg), ptr128[&vu0Regs.VF[0].F]);
+
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		const u32 addr = (g_cpuConstRegs[_Rs_].UL[0] + _Imm_) & ~0xFu;
+		vtlb_DynGenWrite_Const(128, true, addr, ftreg);
+	}
+	else
+	{
+		_eeMoveGPRtoR(arg1regd, _Rs_);
+		if (_Imm_ != 0)
+			xADD(arg1regd, _Imm_);
+		xAND(arg1regd, ~0xF);
+
+		vtlb_DynGenWrite(128, true, arg1regd.GetId(), ftreg);
+	}
+
+	if (!_Rt_)
+		_freeXMMreg(ftreg);
+
+	EE::Profiler.EmitOp(eeOpcode::SQC2);
+}
+
+#else
+
+REC_FUNC(LQC2);
+REC_FUNC(SQC2);
+
+#endif
+
 } // namespace OpcodeImpl
 } // namespace Dynarec
 } // namespace R5900
 void recCOP2_BC2() { recCOP2_BC2t[_Rt_](); }
 void recCOP2_SPEC1()
 {
-	if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0_MICRO)
-	{
-		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
-		xForwardJZ32 skipvuidle;
-		_cop2BackupRegs();
-		xFastCall((void*)_vu0FinishMicro);
-		_cop2RestoreRegs();
-		skipvuidle.SetTarget();
-	}
+	if (g_pCurInstInfo->info & (EEINST_COP2_SYNC_VU0 | EEINST_COP2_FINISH_VU0))
+		mVUFinishVU0();
 
 	recCOP2SPECIAL1t[_Funct_]();
 

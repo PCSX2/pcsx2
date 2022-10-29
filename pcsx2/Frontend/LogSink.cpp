@@ -404,6 +404,10 @@ void CommonHost::UpdateLogging(SettingsInterface& si)
 	DevConWriterEnabled = any_logging_sinks && (IsDevBuild || si.GetBoolValue("Logging", "EnableVerbose", false));
 	SysConsole.eeConsole.Enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableEEConsole", false);
 	SysConsole.iopConsole.Enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableIOPConsole", false);
+	SysTrace.IOP.R3000A.Enabled = true;
+	SysTrace.IOP.COP2.Enabled = true;
+	SysTrace.IOP.Memory.Enabled = true;
+	SysTrace.SIF.Enabled = true;
 
 	// Input Recording Logs
 	SysConsole.recordingConsole.Enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableInputRecordingLogs", true);

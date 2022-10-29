@@ -298,8 +298,8 @@ void iDumpBlock( int startpc, u8 * ptr )
 
 	// write the instruction info
 
-	std::fprintf(eff, "\n\nlive0 - %x, live2 - %x, lastuse - %x\nxmm - %x, used - %x\n",
-		EEINST_LIVE0, EEINST_LIVE2, EEINST_LASTUSE, EEINST_XMM, EEINST_USED
+	std::fprintf(eff, "\n\nlive0 - %x, lastuse - %x\nxmm - %x, used - %x\n",
+		EEINST_LIVE, EEINST_LASTUSE, EEINST_XMM, EEINST_USED
 	);
 
 	memzero(used);

@@ -21,6 +21,9 @@
 #include "iCore.h"
 #include "R5900_Profiler.h"
 
+// Register containing a pointer to our fastmem (4GB) area
+#define RFASTMEMBASE x86Emitter::rbp
+
 extern u32 maxrecmem;
 extern u32 pc;             // recompiler pc
 extern int g_branch;       // set for branch
@@ -61,11 +64,16 @@ extern bool s_nBlockInterlocked; // Current block has VU0 interlocking
 
 extern bool g_recompilingDelaySlot;
 
+// Used for generating backpatch thunks for fastmem.
+u8* recBeginThunk();
+u8* recEndThunk();
+
 // used when processing branches
+bool TrySwapDelaySlot(u32 rs, u32 rt, u32 rd);
 void SaveBranchState();
 void LoadBranchState();
 
-void recompileNextInstruction(int delayslot);
+void recompileNextInstruction(bool delayslot, bool swapped_delay_slot);
 void SetBranchReg(u32 reg);
 void SetBranchImm(u32 imm);
 
@@ -78,8 +86,7 @@ namespace R5900
 {
 	namespace Dynarec
 	{
-		extern void recDoBranchImm(u32* jmpSkip, bool isLikely = false);
-		extern void recDoBranchImm_Likely(u32* jmpSkip);
+		extern void recDoBranchImm(u32 branchTo, u32* jmpSkip, bool isLikely = false, bool swappedDelaySlot = false);
 	} // namespace Dynarec
 } // namespace R5900
 
@@ -88,6 +95,7 @@ namespace R5900
 
 #define GPR_IS_CONST1(reg) (EE_CONST_PROP && (reg) < 32 && (g_cpuHasConstReg & (1 << (reg))))
 #define GPR_IS_CONST2(reg1, reg2) (EE_CONST_PROP && (g_cpuHasConstReg & (1 << (reg1))) && (g_cpuHasConstReg & (1 << (reg2))))
+#define GPR_IS_DIRTY_CONST(reg) (EE_CONST_PROP && (reg) < 32 && (g_cpuHasConstReg & (1 << (reg))) && (!(g_cpuFlushedConstReg & (1 << (reg)))))
 #define GPR_SET_CONST(reg) \
 	{ \
 		if ((reg) < 32) \
@@ -106,29 +114,23 @@ namespace R5900
 alignas(16) extern GPR_reg64 g_cpuConstRegs[32];
 extern u32 g_cpuHasConstReg, g_cpuFlushedConstReg;
 
-// gets a memory pointer to the constant reg
-u32* _eeGetConstReg(int reg);
-
 // finds where the GPR is stored and moves lower 32 bits to EAX
-void _eeMoveGPRtoR(const x86Emitter::xRegister32& to, int fromgpr);
-void _eeMoveGPRtoR(const x86Emitter::xRegister64& to, int fromgpr);
-void _eeMoveGPRtoM(uptr to, int fromgpr);
-void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr);
-void _signExtendToMem(void* mem);
-void eeSignExtendTo(int gpr, bool onlyupper = false);
+void _eeMoveGPRtoR(const x86Emitter::xRegister32& to, int fromgpr, bool allow_preload = true);
+void _eeMoveGPRtoR(const x86Emitter::xRegister64& to, int fromgpr, bool allow_preload = true);
+void _eeMoveGPRtoM(uptr to, int fromgpr); // 32-bit only
 
-void _eeFlushAllUnused();
+void _eeFlushAllDirty();
 void _eeOnWriteReg(int reg, int signext);
 
 // totally deletes from const, xmm, and mmx entries
 // if flush is 1, also flushes to memory
 // if 0, only flushes if not an xmm reg (used when overwriting lower 64bits of reg)
 void _deleteEEreg(int reg, int flush);
+void _deleteEEreg128(int reg);
 
 void _flushEEreg(int reg, bool clear = false);
 
-// allocates memory on the instruction size and returns the pointer
-u32* recGetImm64(u32 hi, u32 lo);
+int _eeTryRenameReg(int to, int from, int fromx86, int other, int xmminfo);
 
 //////////////////////////////////////
 // Templates for code recompilation //
@@ -141,14 +143,27 @@ typedef void (*R5900FNPTR_INFO)(int info);
 	void rec##fn(void) \
 	{ \
 		EE::Profiler.EmitOp(eeOpcode::fn); \
-		eeRecompileCode0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_, xmminfo); \
+		eeRecompileCode0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_, (xmminfo)); \
 	}
-
-#define EERECOMPILE_CODEX(codename, fn) \
+#define EERECOMPILE_CODERC0(fn, xmminfo) \
 	void rec##fn(void) \
 	{ \
 		EE::Profiler.EmitOp(eeOpcode::fn); \
-		codename(rec##fn##_const, rec##fn##_); \
+		eeRecompileCodeRC0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_, (xmminfo)); \
+	}
+
+#define EERECOMPILE_CODEX(codename, fn, xmminfo) \
+	void rec##fn(void) \
+	{ \
+		EE::Profiler.EmitOp(eeOpcode::fn); \
+		codename(rec##fn##_const, rec##fn##_, (xmminfo)); \
+	}
+
+#define EERECOMPILE_CODEI(codename, fn, xmminfo) \
+	void rec##fn(void) \
+	{ \
+		EE::Profiler.EmitOp(eeOpcode::fn); \
+		codename(rec##fn##_const, rec##fn##_, (xmminfo)); \
 	}
 
 //
@@ -156,66 +171,11 @@ typedef void (*R5900FNPTR_INFO)(int info);
 //
 
 // rd = rs op rt
-void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNPTR_INFO consttcode, R5900FNPTR_INFO noconstcode, int xmminfo);
+void eeRecompileCodeRC0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNPTR_INFO consttcode, R5900FNPTR_INFO noconstcode, int xmminfo);
 // rt = rs op imm16
-void eeRecompileCode1(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode);
+void eeRecompileCodeRC1(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode, int xmminfo);
 // rd = rt op sa
-void eeRecompileCode2(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode);
-// rt op rs  (SPECIAL)
-void eeRecompileCode3(R5900FNPTR constcode, R5900FNPTR_INFO multicode);
-
-//
-// non mmx/xmm version, slower
-//
-// rd = rs op rt
-#define EERECOMPILE_CONSTCODE0(fn) \
-	void rec##fn(void) \
-	{ \
-		eeRecompileCodeConst0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_); \
-	}
-
-// rt = rs op imm16
-#define EERECOMPILE_CONSTCODE1(fn) \
-	void rec##fn(void) \
-	{ \
-		eeRecompileCodeConst1(rec##fn##_const, rec##fn##_); \
-	}
-
-// rd = rt op sa
-#define EERECOMPILE_CONSTCODE2(fn) \
-	void rec##fn(void) \
-	{ \
-		eeRecompileCodeConst2(rec##fn##_const, rec##fn##_); \
-	}
-
-// rd = rt op rs
-#define EERECOMPILE_CONSTCODESPECIAL(fn, mult) \
-	void rec##fn(void) \
-	{ \
-		eeRecompileCodeConstSPECIAL(rec##fn##_const, rec##fn##_, mult); \
-	}
-
-// rd = rs op rt
-void eeRecompileCodeConst0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNPTR_INFO consttcode, R5900FNPTR_INFO noconstcode);
-// rt = rs op imm16
-void eeRecompileCodeConst1(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode);
-// rd = rt op sa
-void eeRecompileCodeConst2(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode);
-// rd = rt MULT rs  (SPECIAL)
-void eeRecompileCodeConstSPECIAL(R5900FNPTR constcode, R5900FNPTR_INFO multicode, int MULT);
-
-// XMM caching helpers
-#define XMMINFO_READLO   0x001
-#define XMMINFO_READHI   0x002
-#define XMMINFO_WRITELO  0x004
-#define XMMINFO_WRITEHI  0x008
-#define XMMINFO_WRITED   0x010
-#define XMMINFO_READD    0x020
-#define XMMINFO_READS    0x040
-#define XMMINFO_READT    0x080
-#define XMMINFO_READD_LO 0x100 // if set and XMMINFO_READD is set, reads only low 64 bits of D
-#define XMMINFO_READACC  0x200
-#define XMMINFO_WRITEACC 0x400
+void eeRecompileCodeRC2(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode, int xmminfo);
 
 #define FPURECOMPILE_CONSTCODE(fn, xmminfo) \
 	void rec##fn(void) \

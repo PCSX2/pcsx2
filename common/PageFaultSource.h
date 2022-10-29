@@ -34,10 +34,12 @@
 
 struct PageFaultInfo
 {
+	uptr pc;
 	uptr addr;
 
-	PageFaultInfo(uptr address)
+	PageFaultInfo(uptr pc_, uptr address)
 	{
+		pc = pc_;
 		addr = address;
 	}
 };

@@ -46,6 +46,7 @@ enum GamefixId
 	Fix_VUOverflow,
 	Fix_XGKick,
 	Fix_BlitInternalFPS,
+	Fix_FullVU0Sync,
 
 	GamefixId_COUNT
 };
@@ -382,6 +383,8 @@ struct Pcsx2Config
 
 		bool
 			EnableEECache : 1;
+		bool
+			EnableFastmem : 1;
 		BITFIELD_END
 
 		RecompilerOptions();
@@ -845,7 +848,8 @@ struct Pcsx2Config
 			VUSyncHack : 1, // Makes microVU run behind the EE to avoid VU register reading/writing sync issues. Useful for M-Bit games
 			VUOverflowHack : 1, // Tries to simulate overflow flag checks (not really possible on x86 without soft floats)
 			XgKickHack : 1, // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
-			BlitInternalFPSHack : 1; // Disables privileged register write-based FPS detection.
+			BlitInternalFPSHack : 1, // Disables privileged register write-based FPS detection.
+			FullVU0SyncHack : 1; // Forces tight VU0 sync on every COP2 instruction.
 		BITFIELD_END
 
 		GamefixOptions();
@@ -1146,6 +1150,7 @@ namespace EmuFolders
 #define CHECK_EEREC (EmuConfig.Cpu.Recompiler.EnableEE)
 #define CHECK_CACHE (EmuConfig.Cpu.Recompiler.EnableEECache)
 #define CHECK_IOPREC (EmuConfig.Cpu.Recompiler.EnableIOP)
+#define CHECK_FASTMEM (EmuConfig.Cpu.Recompiler.EnableEE && EmuConfig.Cpu.Recompiler.EnableFastmem)
 
 //------------ SPECIAL GAME FIXES!!! ---------------
 #define CHECK_VUADDSUBHACK (EmuConfig.Gamefixes.VuAddSubHack) // Special Fix for Tri-ace games, they use an encryption algorithm that requires VU addi opcode to be bit-accurate.
@@ -1161,6 +1166,7 @@ namespace EmuFolders
 #define CHECK_VIF1STALLHACK (EmuConfig.Gamefixes.VIF1StallHack) // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
 #define CHECK_GIFFIFOHACK (EmuConfig.Gamefixes.GIFFIFOHack) // Enabled the GIF FIFO (more correct but slower)
 #define CHECK_VUOVERFLOWHACK (EmuConfig.Gamefixes.VUOverflowHack) // Special Fix for Superman Returns, they check for overflows on PS2 floats which we can't do without soft floats.
+#define CHECK_FULLVU0SYNCHACK (EmuConfig.Gamefixes.FullVU0SyncHack)
 
 //------------ Advanced Options!!! ---------------
 #define CHECK_VU_OVERFLOW (EmuConfig.Cpu.Recompiler.vuOverflow)

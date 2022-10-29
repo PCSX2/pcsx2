@@ -72,3 +72,5 @@ namespace R5900
 		void Run(u32 start, u32 end, EEINST* inst_cache) override;
 	};
 } // namespace R5900
+
+void recBackpropBSC(u32 code, EEINST* prev, EEINST* pinst);

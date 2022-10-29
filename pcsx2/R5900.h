@@ -46,12 +46,6 @@ namespace Exception
 	public:
 		explicit CancelInstruction() { }
 	};
-
-	class FailedToAllocateRegister
-	{
-	public:
-		explicit FailedToAllocateRegister() { }
-	};
 }
 
 // --------------------------------------------------------------------------------------

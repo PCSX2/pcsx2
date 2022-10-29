@@ -113,6 +113,10 @@ public:
 
 	VirtualMemoryBumpAllocator& BumpAllocator() { return m_bumpAllocator; }
 
+	const eeMemoryReserve& EEMemory() const { return m_ee; }
+	const iopMemoryReserve& IOPMemory() const { return m_iop; }
+	const vuMemoryReserve& VUMemory() const { return m_vu; }
+
 	bool Allocate();
 	void Reset();
 	void Release();

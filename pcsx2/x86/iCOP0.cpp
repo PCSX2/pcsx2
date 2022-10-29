@@ -44,7 +44,7 @@ namespace COP0 {
 // this should be a conditional Jump -- JZ or JNZ normally.
 static void _setupBranchTest()
 {
-	_eeFlushAllUnused();
+	_eeFlushAllDirty();
 
 	// COP0 branch conditionals are based on the following equation:
 	//  (((psHu16(DMAC_STAT) | ~psHu16(DMAC_PCR)) & 0x3ff) == 0x3ff)
@@ -64,26 +64,32 @@ static void _setupBranchTest()
 
 void recBC0F()
 {
+	const u32 branchTo = ((s32)_Imm_ * 4) + pc;
+	const bool swap = TrySwapDelaySlot(0, 0, 0);
 	_setupBranchTest();
-	recDoBranchImm(JE32(0));
+	recDoBranchImm(branchTo, JE32(0), false, swap);
 }
 
 void recBC0T()
 {
+	const u32 branchTo = ((s32)_Imm_ * 4) + pc;
+	const bool swap = TrySwapDelaySlot(0, 0, 0);
 	_setupBranchTest();
-	recDoBranchImm(JNE32(0));
+	recDoBranchImm(branchTo, JNE32(0), false, swap);
 }
 
 void recBC0FL()
 {
+	const u32 branchTo = ((s32)_Imm_ * 4) + pc;
 	_setupBranchTest();
-	recDoBranchImm_Likely(JE32(0));
+	recDoBranchImm(branchTo, JE32(0), true, false);
 }
 
 void recBC0TL()
 {
+	const u32 branchTo = ((s32)_Imm_ * 4) + pc;
 	_setupBranchTest();
-	recDoBranchImm_Likely(JNE32(0));
+	recDoBranchImm(branchTo, JNE32(0), true, false);
 }
 
 void recTLBR() { recCall(Interp::TLBR); }
@@ -118,7 +124,7 @@ void recDI()
 	// Jak X, Namco 50th anniversary, Spongebob the Movie, Spongebob Battle for Bikini Bottom,
 	// The Incredibles, The Incredibles rize of the underminer, Soukou kihei armodyne, Garfield Saving Arlene, Tales of Fandom Vol. 2.
 	if (!g_recompilingDelaySlot)
-		recompileNextInstruction(0); // DI execution is delayed by one instruction
+		recompileNextInstruction(false, false); // DI execution is delayed by one instruction
 
 	xMOV(eax, ptr[&cpuRegs.CP0.n.Status]);
 	xTEST(eax, 0x20006); // EXL | ERL | EDI
@@ -152,13 +158,12 @@ void recMFC0()
 		x86SetJ8(skipInc);
 		xADD(ptr[&cpuRegs.CP0.n.Count], eax);
 		xMOV(ptr[&cpuRegs.lastCOP0Cycle], ecx);
-		xMOV(eax, ptr[&cpuRegs.CP0.r[_Rd_]]);
 
 		if (!_Rt_)
 			return;
 
-		_deleteEEreg(_Rt_, 0);
-		eeSignExtendTo(_Rt_);
+		const int regt = _Rt_ ? _allocX86reg(X86TYPE_GPR, _Rt_, MODE_WRITE) : -1;
+		xMOVSX(xRegister64(regt), ptr32[&cpuRegs.CP0.r[_Rd_]]);
 		return;
 	}
 
@@ -169,22 +174,25 @@ void recMFC0()
 	{
 		if (0 == (_Imm_ & 1)) // MFPS, register value ignored
 		{
-			xMOV(eax, ptr[&cpuRegs.PERF.n.pccr]);
+			const int regt = _allocX86reg(X86TYPE_GPR, _Rt_, MODE_WRITE);
+			xMOVSX(xRegister64(regt), ptr32[&cpuRegs.PERF.n.pccr]);
 		}
 		else if (0 == (_Imm_ & 2)) // MFPC 0, only LSB of register matters
 		{
 			iFlushCall(FLUSH_INTERPRETER);
 			xFastCall((void*)COP0_UpdatePCCR);
-			xMOV(eax, ptr[&cpuRegs.PERF.n.pcr0]);
+
+			const int regt = _allocX86reg(X86TYPE_GPR, _Rt_, MODE_WRITE);
+			xMOVSX(xRegister64(regt), ptr32[&cpuRegs.PERF.n.pcr0]);
 		}
 		else // MFPC 1
 		{
 			iFlushCall(FLUSH_INTERPRETER);
 			xFastCall((void*)COP0_UpdatePCCR);
-			xMOV(eax, ptr[&cpuRegs.PERF.n.pcr1]);
+
+			const int regt = _allocX86reg(X86TYPE_GPR, _Rt_, MODE_WRITE);
+			xMOVSX(xRegister64(regt), ptr32[&cpuRegs.PERF.n.pcr1]);
 		}
-		_deleteEEreg(_Rt_, 0);
-		eeSignExtendTo(_Rt_);
 
 		return;
 	}
@@ -193,10 +201,9 @@ void recMFC0()
 		COP0_LOG("MFC0 Breakpoint debug Registers code = %x\n", cpuRegs.code & 0x3FF);
 		return;
 	}
-	_eeOnWriteReg(_Rt_, 1);
-	_deleteEEreg(_Rt_, 0);
-	xMOV(eax, ptr[&cpuRegs.CP0.r[_Rd_]]);
-	eeSignExtendTo(_Rt_);
+
+	const int regt = _allocX86reg(X86TYPE_GPR, _Rt_, MODE_WRITE);
+	xMOVSX(xRegister64(regt), ptr32[&cpuRegs.CP0.r[_Rd_]]);
 }
 
 void recMTC0()
@@ -260,15 +267,15 @@ void recMTC0()
 		switch (_Rd_)
 		{
 			case 12:
+				_eeMoveGPRtoR(arg1reg, _Rt_);
 				iFlushCall(FLUSH_INTERPRETER);
-				_eeMoveGPRtoR(ecx, _Rt_);
-				xFastCall((void*)WriteCP0Status, ecx);
+				xFastCall((void*)WriteCP0Status);
 				break;
 
 			case 16:
+				_eeMoveGPRtoR(arg1reg, _Rt_);
 				iFlushCall(FLUSH_INTERPRETER);
-				_eeMoveGPRtoR(ecx, _Rt_);
-				xFastCall((void*)WriteCP0Config, ecx);
+				xFastCall((void*)WriteCP0Config);
 				break;
 
 			case 9:
