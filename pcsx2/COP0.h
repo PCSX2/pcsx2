@@ -15,12 +15,14 @@
 
 #pragma once
 
+struct tlbs;
+
 extern void WriteCP0Status(u32 value);
 extern void WriteCP0Config(u32 value);
 extern void cpuUpdateOperationMode();
 extern void WriteTLB(int i);
-extern void UnmapTLB(int i);
-extern void MapTLB(int i);
+extern void UnmapTLB(const tlbs& t, int i);
+extern void MapTLB(const tlbs& t, int i);
 
 extern void COP0_UpdatePCCR();
 extern void COP0_DiagnosticPCCR();
