@@ -69,8 +69,8 @@ Panels::FirstTimeIntroPanel::FirstTimeIntroPanel( wxWindow* parent )
 {
 	SetMinWidth( MSW_GetDPIScale() * 600 );
 
-	FastFormatUnicode configFile, faqFile;
-	configFile.Write(L"file:///%s/Configuration_Guide.pdf", WX_STR(PathDefs::GetDocs().ToString()));
+	FastFormatUnicode faqFile;
+	// configFile.Write(L"file:///%s/Configuration_Guide.pdf", WX_STR(PathDefs::GetDocs().ToString()));
 	faqFile.Write(L"file:///%s/PCSX2_FAQ.pdf", WX_STR(PathDefs::GetDocs().ToString()));
 
 	wxStaticBoxSizer& langSel	= *new wxStaticBoxSizer( wxVERTICAL, this, _("Language selector") );
@@ -91,11 +91,11 @@ Panels::FirstTimeIntroPanel::FirstTimeIntroPanel( wxWindow* parent )
 	);
 
 	*this += GetCharHeight() * 2;
-
+	/*
 	*this	+= new wxHyperlinkCtrl( this, wxID_ANY,
 		_("Configuration Guide"), configFile.c_str()
 	) | pxCenter.Border( wxALL, 5 );
-
+	*/
 	*this	+= new wxHyperlinkCtrl( this, wxID_ANY,
 		_("Readme / FAQ"), faqFile.c_str()
 	) | pxCenter.Border( wxALL, 5 );
