@@ -108,9 +108,22 @@ u8 GSClut::IsInvalid()
 	return m_write.dirty;
 }
 
+void GSClut::ClearDrawInvalidity()
+{
+	if (m_write.dirty & 2)
+	{
+		m_write.dirty = 1;
+	}
+}
+
 u32 GSClut::GetCLUTCBP()
 {
 	return m_write.TEX0.CBP;
+}
+
+u32 GSClut::GetCLUTCPSM()
+{
+	return m_write.TEX0.CPSM;
 }
 
 void GSClut::SetNextCLUTTEX0(u64 TEX0)
@@ -120,7 +133,7 @@ void GSClut::SetNextCLUTTEX0(u64 TEX0)
 
 bool GSClut::InvalidateRange(u32 start_block, u32 end_block, bool is_draw)
 {
-	if (m_write.dirty)
+	if (m_write.dirty & 2)
 		return m_write.dirty;
 
 	GIFRegTEX0 next_cbp;

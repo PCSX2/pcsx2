@@ -1071,6 +1071,11 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 	if (wt)
 	{
 		m_mem.m_clut.SetNextCLUTTEX0(TEX0.U64);
+		if (TEX0.CBP != m_mem.m_clut.GetCLUTCBP())
+		{
+			m_mem.m_clut.ClearDrawInvalidity();
+			CLUTAutoFlush();
+		}
 		Flush(GSFlushReason::CLUTCHANGE);
 	}
 
@@ -2998,7 +3003,7 @@ __forceinline void GSState::CLUTAutoFlush()
 	{
 		const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
 
-		if ((m_context->FRAME.FBMSK & psm.fmsk) != psm.fmsk)
+		if ((m_context->FRAME.FBMSK & psm.fmsk) != psm.fmsk && GSLocalMemory::m_psm[m_mem.m_clut.GetCLUTCPSM()].bpp == psm.bpp)
 		{
 			const u32 startbp = psm.info.bn(temp_draw_rect.x, temp_draw_rect.y, m_context->FRAME.Block(), m_context->FRAME.FBW);
 
@@ -3008,7 +3013,7 @@ __forceinline void GSState::CLUTAutoFlush()
 			if (PRIM->PRIM != GS_POINTLIST || (m_index.tail > 1))
 				endbp = psm.info.bn(temp_draw_rect.z - 1, temp_draw_rect.w - 1, m_context->FRAME.Block(), m_context->FRAME.FBW);
 
-			m_mem.m_clut.InvalidateRange(startbp, endbp);
+			m_mem.m_clut.InvalidateRange(startbp, endbp, true);
 		}
 	}
 }

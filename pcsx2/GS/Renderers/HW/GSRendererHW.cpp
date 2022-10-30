@@ -1395,6 +1395,7 @@ void GSRendererHW::Draw()
 	if (GSConfig.UserHacks_CPUCLUTRender > 0)
 	{
 		bool result = (GSConfig.UserHacks_CPUCLUTRender == 1) ? PossibleCLUTDraw() : PossibleCLUTDrawAggressive();
+		m_mem.m_clut.ClearDrawInvalidity();
 		if (result)
 		{
 			if (SwPrimRender())
@@ -3896,22 +3897,23 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 bool GSRendererHW::PossibleCLUTDraw()
 {
+	// No shuffles.
 	if (m_channel_shuffle || m_texture_shuffle)
 		return false;
 
 	// Keep the draws simple, no alpha testing, blending, mipmapping, Z writes, and make sure it's flat.
 	const bool fb_only = m_context->TEST.ATE && m_context->TEST.AFAIL == 1 && m_context->TEST.ATST == ATST_NEVER;
 
+	// No Z writes.
 	if (!m_context->ZBUF.ZMSK && !fb_only)
 		return false;
 
+	// Make sure it's flat.
 	if (m_vt.m_eq.z != 0x1)
 		return false;
 
+	// No mipmapping, please never be any mipmapping...
 	if (m_context->TEX1.MXL)
-		return false;
-
-	if (m_vt.m_min.p.x < 0 || m_vt.m_min.p.y < 0)
 		return false;
 
 	// Writing to the framebuffer for output. We're not interested. - Note: This stops NFS HP2 Busted screens working, but they're glitchy anyway
@@ -3919,8 +3921,8 @@ bool GSRendererHW::PossibleCLUTDraw()
 	if ((m_regs->DISP[0].DISPFB.Block() == m_context->FRAME.Block()) || (m_regs->DISP[1].DISPFB.Block() == m_context->FRAME.Block()))
 		return false;
 
-	// Ignore recursive/shuffle effects.
-	if (PRIM->TME && m_context->TEX0.TBP0 == m_context->FRAME.Block())
+	// Ignore recursive/shuffle effects, but possible it will recursively draw, but make sure it's staying in page width
+	if (PRIM->TME && m_context->TEX0.TBP0 == m_context->FRAME.Block() && (m_context->FRAME.FBW != 1 && m_context->TEX0.TBW == m_context->FRAME.FBW))
 		return false;
 
 	// Hopefully no games draw a CLUT with a CLUT, that would be evil, most likely a channel shuffle.
@@ -3928,6 +3930,10 @@ bool GSRendererHW::PossibleCLUTDraw()
 		return false;
 
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
+
+	// Make sure the CLUT formats are matching.
+	if (GSLocalMemory::m_psm[m_mem.m_clut.GetCLUTCPSM()].bpp != psm.bpp)
+		return false;
 
 	// Max size for a CLUT/Current page size.
 	constexpr float clut_width = 16.0f;
@@ -3937,23 +3943,23 @@ bool GSRendererHW::PossibleCLUTDraw()
 	const float page_width = static_cast<float>(psm.pgs.x);
 	const float page_height = static_cast<float>(psm.pgs.y);
 
+	// If the coordinates aren't starting within the page, it's likely not a CLUT draw.
+	if (floor(m_vt.m_min.p.x) < 0 || floor(m_vt.m_min.p.y) < 0 || floor(m_vt.m_min.p.x) > page_width || floor(m_vt.m_min.p.y) > page_height)
+		return false;
+
 	// Make sure it's kinda CLUT sized, at least. Be wary, it can draw a line at a time (Guitar Hero - Metallica)
+	// Driver Parallel Lines draws a bunch of CLUT's at once, ending up as a 64x256 draw, very annoying.
 	const float draw_width = (m_vt.m_max.p.x - m_vt.m_min.p.x);
 	const float draw_height = (m_vt.m_max.p.y - m_vt.m_min.p.y);
 	const bool valid_size =((draw_width >= min_clut_width || draw_height >= min_clut_height) &&
-							m_vt.m_max.p.x <= page_width && m_vt.m_max.p.y <= page_height);
-
-	// Klonoa draws a clut with a full page of triangles instead of a sprite, but we need to make sure it doesn't intefere with normal triangle draws.
-	if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
-	{
-		if (draw_width != page_width || draw_height != page_height)
-			return false;
-	}
+							(m_vt.m_max.p.x <= page_width));
 
 	// Make sure the draw hits the next CLUT and it's marked as invalid (kind of a sanity check).
 	// We can also allow draws which are of a sensible size within the page, as they could also be CLUT draws (or gradients for the CLUT).
-	if (!(valid_size || (m_mem.m_clut.IsInvalid() & 2)))
+	if (!valid_size)
+	{
 		return false;
+	}
 
 	if (PRIM->TME)
 	{
@@ -3967,7 +3973,11 @@ bool GSRendererHW::PossibleCLUTDraw()
 		
 		InvalidateLocalMem(BITBLTBUF, r);
 	}
-	//DevCon.Warning("Draw width %f height %f page width %f height %f TPSM %x TBP0 %x FPSM %x FBP %x valid size %d Invalid %d DISPFB0 %x DISPFB1 %x", draw_width, draw_height, page_width, page_height, m_context->TEX0.PSM, m_context->TEX0.TBP0, m_context->FRAME.PSM, m_context->FRAME.Block(), valid_size, m_mem.m_clut.IsInvalid(), m_regs->DISP[0].DISPFB.Block(), m_regs->DISP[1].DISPFB.Block());
+	// Debugging stuff..
+	//const u32 startbp = psm.info.bn(m_vt.m_min.p.x, m_vt.m_min.p.y, m_context->FRAME.Block(), m_context->FRAME.FBW);
+	//const u32 endbp = psm.info.bn(m_vt.m_max.p.x, m_vt.m_max.p.y, m_context->FRAME.Block(), m_context->FRAME.FBW);
+	//DevCon.Warning("Draw width %f height %f page width %f height %f TPSM %x TBP0 %x FPSM %x FBP %x CBP %x valid size %d Invalid %d DISPFB0 %x DISPFB1 %x start %x end %x draw %d", draw_width, draw_height, page_width, page_height, m_context->TEX0.PSM, m_context->TEX0.TBP0, m_context->FRAME.PSM, m_context->FRAME.Block(), m_mem.m_clut.GetCLUTCBP(), valid_size, m_mem.m_clut.IsInvalid(), m_regs->DISP[0].DISPFB.Block(), m_regs->DISP[1].DISPFB.Block(), startbp, endbp, s_n);
+
 	return true;
 }
 

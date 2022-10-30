@@ -103,7 +103,9 @@ public:
 
 	bool InvalidateRange(u32 start_block, u32 end_block, bool is_draw = false);
 	u8 IsInvalid();
+	void ClearDrawInvalidity();
 	u32 GetCLUTCBP();
+	u32 GetCLUTCPSM();
 	void SetNextCLUTTEX0(u64 CBP);
 	bool WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	void Write(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
