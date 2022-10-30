@@ -3919,6 +3919,10 @@ bool GSRendererHW::PossibleCLUTDraw()
 	if ((m_regs->DISP[0].DISPFB.Block() == m_context->FRAME.Block()) || (m_regs->DISP[1].DISPFB.Block() == m_context->FRAME.Block()))
 		return false;
 
+	// Ignore recursive/shuffle effects.
+	if (PRIM->TME && m_context->TEX0.TBP0 == m_context->FRAME.Block())
+		return false;
+
 	// Hopefully no games draw a CLUT with a CLUT, that would be evil, most likely a channel shuffle.
 	if (PRIM->TME && GSLocalMemory::m_psm[m_context->TEX0.PSM].pal > 0)
 		return false;
@@ -3963,7 +3967,7 @@ bool GSRendererHW::PossibleCLUTDraw()
 		
 		InvalidateLocalMem(BITBLTBUF, r);
 	}
-
+	//DevCon.Warning("Draw width %f height %f page width %f height %f TPSM %x TBP0 %x FPSM %x FBP %x valid size %d Invalid %d DISPFB0 %x DISPFB1 %x", draw_width, draw_height, page_width, page_height, m_context->TEX0.PSM, m_context->TEX0.TBP0, m_context->FRAME.PSM, m_context->FRAME.Block(), valid_size, m_mem.m_clut.IsInvalid(), m_regs->DISP[0].DISPFB.Block(), m_regs->DISP[1].DISPFB.Block());
 	return true;
 }
 
