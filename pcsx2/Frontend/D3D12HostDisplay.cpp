@@ -190,6 +190,7 @@ bool D3D12HostDisplay::CreateDevice(const WindowInfo& wi)
 	}
 
 	m_window_info = wi;
+	m_vsync_mode = Host::GetEffectiveVSyncMode();
 
 	if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain(nullptr))
 		return false;
