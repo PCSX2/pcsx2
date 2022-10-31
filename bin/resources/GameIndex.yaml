@@ -2664,6 +2664,7 @@ SCES-50000:
     halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
     roundSprite: 1 # Fixes ui and hud alignment.
     gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
+    cpuCLUTRender: 1 # Fixes car textures.
 SCES-50001:
   name: "Tekken Tag Tournament"
   region: "PAL-M5"
@@ -23809,6 +23810,7 @@ SLPM-60109:
     halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
     roundSprite: 1 # Fixes ui and hud alignment.
     gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
+    cpuCLUTRender: 1 # Fixes car textures.
 SLPM-60123:
   name: "Gekikuukan Pro Baseball - The End of the Century 1999 [Trial]"
   region: "NTSC-J"
@@ -33761,6 +33763,7 @@ SLPS-20001:
     halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
     roundSprite: 1 # Fixes ui and hud alignment.
     gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
+    cpuCLUTRender: 1 # Fixes car textures.
 SLPS-20002:
   name: "Doukyu Billiards"
   region: "NTSC-J"
@@ -39011,6 +39014,7 @@ SLUS-20002:
     halfPixelOffset: 2 # Fixes title screen and some intro post processing alignment.
     roundSprite: 1 # Fixes ui and hud alignment.
     gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
+    cpuCLUTRender: 1 # Fixes car textures.
 SLUS-20003:
   name: "Portal Runner"
   region: "NTSC-U"
