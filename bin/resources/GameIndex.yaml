@@ -2238,6 +2238,42 @@ SCED-52846:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+SCED-52869:
+  name: "WRC 4 [Demo]"
+  region: "PAL-M5"
+  gameFixes:
+    - XGKickHack # Fixes SPS.
+  patches:
+    default:
+      content: |-
+        author=kozarovv
+        // Proper patch for WRC 4. CRC independent.
+        // I wrote a small runtime that moves unpacker higher right after emulator boot.
+        // Seems little bit extensive, but there is no way to make it smaller.
+        // Solves TLB miss errors which prevented the game from booting.
+        patch=0,EE,0040000C,double,3c0500603cc70054
+        patch=0,EE,00400014,double,24a5001024840010
+        patch=0,EE,0040001C,double,7ca6000078860000
+        patch=0,EE,00400024,double,000000001487fffb
+        patch=0,EE,0040002c,double,000000000817fff5
+        patch=0,EE,005fffd4,double,3c1c70003c040060
+        patch=0,EE,005fffdc,double,3c0700003c067000
+        patch=0,EE,005fffe4,double,279c000024840800
+        patch=0,EE,005fffec,double,24e7100024c60080
+        patch=0,EE,005ffff4,double,00c7e8200818000c
+  gsHWFixes:
+    autoFlush: 1 # Fixes car shadows.
+    roundSprite: 1 # Fixes misalgined text.
+    halfPixelOffset: 1 # Fixes minor ghosting on objects.
+SCED-52880:
+  name: "WRC 4 - The Official Game of the FIA World Rally Championship [Demo]"
+  region: "PAL-E"
+  gameFixes:
+    - XGKickHack # Fixes SPS.
+  gsHWFixes:
+    autoFlush: 1 # Fixes car shadows.
+    roundSprite: 1 # Fixes misalgined text.
+    halfPixelOffset: 1 # Fixes minor ghosting on objects.
 SCED-52932:
   name: "Bonus Demo 8"
   region: "PAL-M5"
@@ -3420,6 +3456,7 @@ SCES-52389:
   gsHWFixes:
     autoFlush: 1 # Fixes car shadows.
     roundSprite: 1 # Fixes misalgined text.
+    halfPixelOffset: 1 # Fixes minor ghosting on objects.
 SCES-52405:
   name: "DJ - Decks & FX - House Edition"
   region: "PAL-M9"
@@ -21626,6 +21663,8 @@ SLES-55532:
 SLES-55533:
   name: "Guitar Hero 5"
   region: "PAL-M5"
+  roundModes:
+    vuRoundMode: 0 # Fixes SPS and VU size spam.
 SLES-55536:
   name: "Disney-Pixar Cars - Race-O-Rama"
   region: "PAL-M5"
@@ -29492,6 +29531,7 @@ SLPM-65975:
   gsHWFixes:
     autoFlush: 1 # Fixes car shadows.
     roundSprite: 1 # Fixes misalgined text.
+    halfPixelOffset: 1 # Fixes minor ghosting on objects.
 SLPM-65976:
   name: "Grandia III [Disc1of2]"
   region: "NTSC-J"
@@ -30812,6 +30852,7 @@ SLPM-66334:
   gsHWFixes:
     autoFlush: 1 # Fixes car shadows.
     roundSprite: 1 # Fixes misalgined text.
+    halfPixelOffset: 1 # Fixes minor ghosting on objects.
 SLPM-66336:
   name: "Shinseiki Evangelion - Koutetsu no Girlfriend [Special Edition]"
   region: "NTSC-J"
@@ -47631,6 +47672,8 @@ SLUS-21865:
   name: "Guitar Hero 5"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    vuRoundMode: 0 # Fixes SPS and VU size spam.
 SLUS-21866:
   name: "Guitar Hero - Smash Hits"
   region: "NTSC-U"
