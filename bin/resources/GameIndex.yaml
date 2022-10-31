@@ -21497,6 +21497,8 @@ SLES-55444:
 SLES-55448:
   name: "Indiana Jones and the Staff of Kings"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting.
 SLES-55451:
   name: "Rock Band 2"
   region: "PAL-M5"
@@ -47768,6 +47770,8 @@ SLUS-21885:
   name: "Indiana Jones and the Staff of Kings"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting.
 SLUS-21886:
   name: "G.I. Joe - The Rise of Cobra"
   region: "NTSC-U"
