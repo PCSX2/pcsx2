@@ -2456,6 +2456,9 @@ SCED-53622:
   gsHWFixes:
     autoFlush: 1 # Fixes pause menu backgrounds.
     roundSprite: 1 # Corrects proportions of fonts and pause-screen lines, adjusts display closer to software.
+SCED-53660:
+  name: "Jak X & Ratchet Gladiator [Demo]"
+  region: "PAL"
 SCED-53679:
   name: "Fire It Up Lads [Demo]"
   region: "PAL-E"
