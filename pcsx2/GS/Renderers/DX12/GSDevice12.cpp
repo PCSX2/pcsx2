@@ -2565,8 +2565,8 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 					config.drawarea.left, config.drawarea.top,
 					config.drawarea.width(), config.drawarea.height());
 
-				copy_ds->SetState(GSTexture::State::Invalidated);
-				CopyRect(config.ds, copy_ds, config.drawarea, config.drawarea.left, config.drawarea.top);
+				pxAssert(copy_ds->GetState() == GSTexture::State::Invalidated);
+				CopyRect(config.ds, copy_ds, GSVector4i(config.ds->GetSize()).zwxy(), 0, 0);
 				PSSetShaderResource(0, copy_ds, true);
 			}
 		}
