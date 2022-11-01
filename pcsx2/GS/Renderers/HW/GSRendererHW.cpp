@@ -3947,19 +3947,19 @@ bool GSRendererHW::PossibleCLUTDraw()
 	if (floor(m_vt.m_min.p.x) < 0 || floor(m_vt.m_min.p.y) < 0 || floor(m_vt.m_min.p.x) > page_width || floor(m_vt.m_min.p.y) > page_height)
 		return false;
 
+	// Make sure it's a division of 8 in width to avoid bad draws. Points will go from 0-7 inclusive, but sprites etc will do 0-16 exclusive.
+	const int draw_divder_match = ((m_vt.m_primclass == GS_POINT_CLASS) ? ((static_cast<int>(m_vt.m_max.p.x + 1) & ~1) % 8) : (static_cast<int>(m_vt.m_max.p.x) % 8)) <= 1;
 	// Make sure it's kinda CLUT sized, at least. Be wary, it can draw a line at a time (Guitar Hero - Metallica)
 	// Driver Parallel Lines draws a bunch of CLUT's at once, ending up as a 64x256 draw, very annoying.
 	const float draw_width = (m_vt.m_max.p.x - m_vt.m_min.p.x);
 	const float draw_height = (m_vt.m_max.p.y - m_vt.m_min.p.y);
-	const bool valid_size =((draw_width >= min_clut_width || draw_height >= min_clut_height) &&
-							(m_vt.m_max.p.x <= page_width));
-
+	const bool valid_size = ((draw_width >= min_clut_width || draw_height >= min_clut_height))
+							&& ((m_vt.m_max.p.x <= page_width) && draw_divder_match); // Make sure draw is multiples of 8 wide (AC5 midetection).
+	
 	// Make sure the draw hits the next CLUT and it's marked as invalid (kind of a sanity check).
 	// We can also allow draws which are of a sensible size within the page, as they could also be CLUT draws (or gradients for the CLUT).
 	if (!valid_size)
-	{
 		return false;
-	}
 
 	if (PRIM->TME)
 	{
