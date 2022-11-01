@@ -2761,7 +2761,7 @@ SCES-50240:
   name: "Extermination"
   region: "PAL-M5"
 SCES-50241:
-  name: "Bouncer, The"
+  name: "The Bouncer"
   region: "PAL-M6"
   compat: 5
 SCES-50244:
@@ -35186,7 +35186,7 @@ SLPS-25022:
   name: "Cool Boarders - Code Alien"
   region: "NTSC-J"
 SLPS-25023:
-  name: "Bouncer, The"
+  name: "The Bouncer"
   region: "NTSC-J"
 SLPS-25025:
   name: "7 (Seven) - Molmorth no Kiheitai"
@@ -39261,7 +39261,7 @@ SLUS-20066:
   region: "NTSC-U"
   compat: 5
 SLUS-20069:
-  name: "Bouncer, The"
+  name: "The Bouncer"
   region: "NTSC-U"
   compat: 5
 SLUS-20070:
