@@ -5096,8 +5096,6 @@ SCKA-20089:
   region: "NTSC-K"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-  speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SCKA-20090:
@@ -8785,8 +8783,6 @@ SLAJ-25073:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-  speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLAJ-25075:
@@ -14230,6 +14226,8 @@ SLES-52445:
   name: "Silent Hill 4 - The Room"
   region: "PAL-M5"
   compat: 5
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes dark sides.
 SLES-52446:
@@ -17323,8 +17321,6 @@ SLES-53702:
   compat: 5
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-  speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLES-53703:
@@ -17523,8 +17519,6 @@ SLES-53756:
   region: "PAL-M5"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-  speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLES-53758:
@@ -22663,9 +22657,11 @@ SLKA-25146:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLKA-25149:
-  name: "Silent Hill 4 The Room"
+  name: "Silent Hill 4 - The Room"
   region: "NTSC-K"
   compat: 5
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes dark sides.
 SLKA-25150:
@@ -23299,8 +23295,6 @@ SLKA-25410:
   region: "NTSC-K"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-  speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLKA-25413:
@@ -23580,6 +23574,13 @@ SLPM-55131:
 SLPM-55138:
   name: "Harukanaru Toki no Naka de - Yume no Ukihashi Special"
   region: "NTSC-J"
+SLPM-55140:
+  name: "Silent Hill 4 - The Room [Konami Dendou Selection]"
+  region: "NTSC-J"
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes dark sides.
 SLPM-55146:
   name: "Jikkyou Powerful Pro Yakyuu 2009"
   region: "NTSC-J"
@@ -28210,6 +28211,8 @@ SLPM-65574:
   name: "Silent Hill 4 - The Room"
   region: "NTSC-J"
   compat: 5
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes dark sides.
 SLPM-65575:
@@ -29765,6 +29768,8 @@ SLPM-66031:
 SLPM-66032:
   name: "Silent Hill 4 [Konami The Best]"
   region: "NTSC-J"
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes dark sides.
 SLPM-66033:
@@ -30406,8 +30411,6 @@ SLPM-66213:
   compat: 5
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-  speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLPM-66214:
@@ -33609,8 +33612,6 @@ SLPM-74229:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-  speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLPM-74230:
@@ -33777,8 +33778,6 @@ SLPM-74288:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-  speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLPM-74301:
@@ -42870,6 +42869,8 @@ SLUS-20873:
   name: "Silent Hill 4 - The Room"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes dark sides.
 SLUS-20874:
@@ -44195,8 +44196,6 @@ SLUS-21134:
   compat: 5
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-  speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLUS-21135:
@@ -48772,8 +48771,6 @@ SLUS-29169:
   region: "NTSC-U"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-  speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLUS-29170:
