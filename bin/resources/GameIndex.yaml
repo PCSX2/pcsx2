@@ -17655,6 +17655,9 @@ SLES-53809:
   region: "PAL-E"
   gameFixes:
     - XGKickHack # Fixes black and white fighters.
+  speedHacks:
+    MTVUSpeedHack: 0 # Fixes game from crashing.
+    InstantVU1SpeedHack: 0 # Fixes graphical issues.
   patches:
     B6F9C8D3:
       content: |-
@@ -25721,6 +25724,9 @@ SLPM-62581:
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes black and white fighters.
+  speedHacks:
+    MTVUSpeedHack: 0 # Fixes game from crashing.
+    InstantVU1SpeedHack: 0 # Fixes graphical issues.
   patches:
     0A1042EE:
       content: |-
@@ -27513,6 +27519,8 @@ SLPM-65335:
 SLPM-65336:
   name: "K-1 World Grand Prix - The Beast Attack!"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes upscaling lines.
 SLPM-65337:
   name: "Gegege no Kitaro - Ibun Youkaitan"
   region: "NTSC-J"
@@ -27807,6 +27815,8 @@ SLPM-65432:
 SLPM-65433:
   name: "K-1 World Grand Prix 2003"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes upscaling lines.
 SLPM-65434:
   name: "Battle Gear 3"
   region: "NTSC-J"
@@ -34990,6 +35000,9 @@ SLPS-20453:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes black and white fighters.
+  speedHacks:
+    MTVUSpeedHack: 0 # Fixes game from crashing.
+    InstantVU1SpeedHack: 0 # Fixes graphical issues.
   patches:
     602B7A48:
       content: |-
@@ -37209,6 +37222,9 @@ SLPS-25578:
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes black and white fighters.
+  speedHacks:
+    MTVUSpeedHack: 0 # Fixes game from crashing.
+    InstantVU1SpeedHack: 0 # Fixes graphical issues.
   patches:
     F8664E20:
       content: |-
