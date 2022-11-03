@@ -1825,6 +1825,8 @@ SCED-50750:
 SCED-50781:
   name: "Destruction Derby Arenas [Beta]"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects shadow position.
 SCED-50825:
   name: "Official PlayStation 2 Magazine Demo 18"
   region: "PAL-M5"
@@ -2975,9 +2977,11 @@ SCES-50760:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
 SCES-50781:
-  name: "Destruction Derby Arena [Beta, Promo, & Full Retail]"
+  name: "Destruction Derby Arenas [Beta, Promo, & Full Retail]"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects shadow position.
 SCES-50791:
   name: "Frequency"
   region: "PAL-M5"
@@ -3362,6 +3366,8 @@ SCES-51977:
 SCES-51979:
   name: "Destruction Derby Arenas"
   region: "PAL-M6"
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects shadow position.
 SCES-52004:
   name: "Killzone"
   region: "PAL-M6"
@@ -42811,6 +42817,8 @@ SLUS-20855:
   name: "Destruction Derby Arenas"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects shadow position.
 SLUS-20856:
   name: "Spy Fiction"
   region: "NTSC-U"
