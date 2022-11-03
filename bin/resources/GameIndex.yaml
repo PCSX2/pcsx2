@@ -11118,6 +11118,9 @@ SLES-50897:
   name: "Super Trucks"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Gets rid of fog line.
+    roundSprite: 1 # Fixes lines in FMVs.
 SLES-50898:
   name: "X-Men - The Next Dimension"
   region: "PAL-E"
@@ -24793,6 +24796,9 @@ SLPM-62255:
 SLPM-62256:
   name: "Super Trucks"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Gets rid of fog line.
+    roundSprite: 1 # Fixes lines in FMVs.
 SLPM-62257:
   name: "Rally Championship"
   region: "NTSC-J"
@@ -42325,6 +42331,9 @@ SLUS-20748:
   name: "Super Trucks Racing"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Gets rid of fog line.
+    roundSprite: 1 # Fixes lines in FMVs.
 SLUS-20749:
   name: "Rugby 2004"
   region: "NTSC-U"
