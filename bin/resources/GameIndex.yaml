@@ -2276,6 +2276,9 @@ SCED-52880:
     autoFlush: 1 # Fixes car shadows.
     roundSprite: 1 # Fixes misalgined text.
     halfPixelOffset: 1 # Fixes minor ghosting on objects.
+SCED-52899:
+  name: "Killzone [Bonus Disc]"
+  region: "PAL-M5"
 SCED-52932:
   name: "Bonus Demo 8"
   region: "PAL-M5"
@@ -12483,8 +12486,8 @@ SLES-51547:
   gameFixes:
     - VUSyncHack # Fixes SPS in game.
 SLES-51548:
-  name: "This is Football"
-  region: "PAL-M3"
+  name: "X-Men 2 - Wolverine's Revenge"
+  region: "PAL"
 SLES-51553:
   name: "Chaos Legion"
   region: "PAL-M5"
