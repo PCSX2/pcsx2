@@ -1072,7 +1072,8 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 			// Checking for targets that overlap with the requested memory region
 			// instead of just comparing TBPs should fix that.
 			// For example, this fixes Judgement ring rendering in Shadow Hearts 2.
-			if (t->Overlaps(bp, bw, psm, r) && t->m_TEX0.TBP0 >= bp && GSUtil::HasSharedBits(psm, t->m_TEX0.PSM))
+			// Be wary of old targets being misdetected, set a sensible range of 30 frames (like Display source lookups).
+			if (t->Overlaps(bp, bw, psm, r) && t->m_TEX0.TBP0 >= bp && GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) && t->m_age <= 30)
 			{
 				// Enforce full invalidation if BP's don't match.
 				const GSVector4i targetr = (bp == t->m_TEX0.TBP0) ? r : t->m_valid;
