@@ -10095,6 +10095,8 @@ SLES-50423:
   name: "F1 2001"
   region: "PAL-M4"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes black void when upscaling.
 SLES-50424:
   name: "Cricket 2002"
   region: "PAL-E"
@@ -10120,6 +10122,8 @@ SLES-50430:
 SLES-50431:
   name: "F1 2001"
   region: "PAL-S"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes black void when upscaling.
 SLES-50432:
   name: "Tony Hawk Pro Skater 3"
   region: "PAL-Unk"
@@ -11059,9 +11063,13 @@ SLES-50874:
   name: "F1 2002"
   region: "PAL-M4"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes black void when upscaling.
 SLES-50875:
   name: "F1 2002"
   region: "PAL-I"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes black void when upscaling.
 SLES-50876:
   name: "Driv3r"
   region: "PAL-M5"
@@ -12510,6 +12518,8 @@ SLES-51584:
   name: "F1 Career Challenge"
   region: "PAL-M4"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes black void when upscaling.
 SLES-51588:
   name: "Evil Dead - A Fistful of Boomstick [with Bonus DVD Movie]"
   region: "PAL-E"
@@ -22229,6 +22239,11 @@ SLKA-15018:
     eeRoundMode: 1 # Fixes camera issue.
   gameFixes:
     - FpuNegDivHack # Fixes target loss issue.
+SLKA-15019:
+  name: "F1 Career Challenge"
+  region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes black void when upscaling.
 SLKA-15021:
   name: "GrowLanser3"
   region: "NTSC-K"
@@ -26312,6 +26327,11 @@ SLPM-64528:
 SLPM-64532:
   name: "Digital Holmes"
   region: "NTSC-K"
+SLPM-64533:
+  name: "F1 2002"
+  region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes black void when upscaling.
 SLPM-64534:
   name: "Psyvariar - Complete Edition"
   region: "NTSC-K"
@@ -34185,10 +34205,10 @@ SLPS-20115:
   name: "Gendai Yougo no Kiso Chishiki 2001"
   region: "NTSC-J"
 SLPS-20120:
-  name: "Formula One 2001"
+  name: "F1 2001"
   region: "NTSC-J"
-  gameFixes:
-    - XGKickHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes black void when upscaling.
 SLPS-20121:
   name: "Kanon"
   region: "NTSC-J"
@@ -34348,6 +34368,8 @@ SLPS-20198:
 SLPS-20199:
   name: "F1 2002"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes black void when upscaling.
 SLPS-20202:
   name: "Coloball 2002"
   region: "NTSC-J"
@@ -34534,6 +34556,11 @@ SLPS-20293:
 SLPS-20294:
   name: "Hanabi Shokunin Ninarou 2"
   region: "NTSC-J"
+SLPS-20295:
+  name: "F1 Career Challenge"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes black void when upscaling.
 SLPS-20296:
   name: "Dugout '03 - The Turning Point"
   region: "NTSC-J"
@@ -40066,6 +40093,8 @@ SLUS-20263:
 SLUS-20264:
   name: "F1 2001"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes black void when upscaling.
 SLUS-20265:
   name: "007 - Agent Under Fire"
   region: "NTSC-U"
@@ -40929,6 +40958,8 @@ SLUS-20454:
 SLUS-20455:
   name: "F1 2002"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes black void when upscaling.
 SLUS-20456:
   name: "Soccer Mania"
   region: "NTSC-U"
@@ -42037,6 +42068,8 @@ SLUS-20691:
 SLUS-20693:
   name: "F1 Career Challenge"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes black void when upscaling.
 SLUS-20694:
   name: "Onimusha 3 - Demon Siege"
   region: "NTSC-U"
