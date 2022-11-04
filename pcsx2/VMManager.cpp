@@ -908,7 +908,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	};
 
 	Console.WriteLn("Opening SPU2...");
-	if (SPU2init() != 0 || SPU2open() != 0)
+	if (SPU2init(false) != 0 || SPU2open() != 0)
 	{
 		Host::ReportErrorAsync("Startup Error", "Failed to initialize SPU2.");
 		SPU2shutdown();
@@ -1636,7 +1636,7 @@ void VMManager::CheckForSPU2ConfigChanges(const Pcsx2Config& old_config)
 
 	SPU2close();
 	SPU2shutdown();
-	if (SPU2init() != 0 || SPU2open() != 0)
+	if (SPU2init(true) != 0 || SPU2open() != 0)
 	{
 		Console.Error("(CheckForSPU2ConfigChanges) Failed to reopen SPU2, we'll probably crash :(");
 		return;

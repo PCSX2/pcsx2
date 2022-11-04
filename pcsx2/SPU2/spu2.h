@@ -27,7 +27,7 @@ enum class PS2Modes
 	PSX,
 };
 
-s32 SPU2init();
+s32 SPU2init(bool KeepMode);
 s32 SPU2reset(PS2Modes isRunningPSXMode);
 s32 SPU2open();
 void SPU2close();

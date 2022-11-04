@@ -23,7 +23,7 @@
 //Uncomment the next line to use the old time stretcher
 //#define SPU2X_USE_OLD_STRETCHER
 
-static soundtouch::SoundTouch* pSoundTouch = nullptr;
+static std::unique_ptr<soundtouch::SoundTouch> pSoundTouch = nullptr;
 
 // data prediction amount, used to "commit" data that hasn't
 // finished timestretch processing.
@@ -518,7 +518,7 @@ void SndBuffer::timeStretchWrite()
 
 void SndBuffer::soundtouchInit()
 {
-	pSoundTouch = new soundtouch::SoundTouch();
+	pSoundTouch = std::make_unique<soundtouch::SoundTouch>();
 	pSoundTouch->setSampleRate(SampleRate);
 	pSoundTouch->setChannels(2);
 
@@ -558,5 +558,5 @@ void SndBuffer::soundtouchClearContents()
 
 void SndBuffer::soundtouchCleanup()
 {
-	safe_delete(pSoundTouch);
+	pSoundTouch.reset();
 }
