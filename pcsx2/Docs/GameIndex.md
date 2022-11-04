@@ -254,11 +254,11 @@ Patches should be defined as multi-line string blocks, where each line would cor
 
 For more information on how to write a patch, see the following [forum post](https://forums.pcsx2.net/Thread-How-PNACH-files-work-2-0)
 
-# Editor Tooling
+## Editor Tooling
 
 We provide a [JSON Schema](https://json-schema.org/) for the GameDB's format.  You can use this to validate the file, and assist in writing it properly.
 
-## VSCode Integration
+### VSCode Integration
 
 If you use VSCode and you want it to properly lint the GameIndex.yaml file you should:
 
