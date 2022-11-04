@@ -739,7 +739,7 @@ static int cdvdTrayStateDetecting()
 	else
 		return CDVD_TYPE_DETCT; //Detecting any kind of disc existing
 }
-static uint cdvdRotationalLatency(CDVD_MODE_TYPE mode)
+static u32 cdvdRotationalLatency(CDVD_MODE_TYPE mode)
 {
 	// CAV rotation is constant (minimum speed to maintain exact speed on outer dge
 	if (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV)
@@ -1100,8 +1100,9 @@ __fi void cdvdActionInterrupt()
 			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			break;
 	}
-	cdvd.Action = cdvdAction_None;
-
+	
+	if(cdvd.Action != cdvdAction_Seek)
+		cdvd.Action = cdvdAction_None;
 	cdvdSetIrq();
 }
 
@@ -1369,9 +1370,9 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 	}
 
 	// Only do this on reads, the seek kind of accounts for this and then it reads the sectors after
-	if (delta && !isSeeking)
+	if ((delta || cdvd.Action == cdvdAction_Seek) && !isSeeking)
 	{
-		int rotationalLatency = cdvdRotationalLatency((CDVD_MODE_TYPE)cdvdIsDVD());
+		const u32 rotationalLatency = cdvdRotationalLatency((CDVD_MODE_TYPE)cdvdIsDVD());
 		//DevCon.Warning("%s rotational latency at sector %d is %d cycles", (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? "CAV" : "CLV", cdvd.SeekToSector, rotationalLatency);
 		seektime += rotationalLatency + cdvd.ReadTime;
 		CDVDSECTORREADY_INT(seektime);
@@ -1379,6 +1380,10 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 	}
 	else
 		CDVDSECTORREADY_INT(seektime);
+
+	// Clear the action on the following command, so we can rotate after seek.
+	if (cdvd.nCommand != N_CD_SEEK)
+		cdvd.Action = cdvdAction_None;
 
 	return seektime;
 }
@@ -1734,22 +1739,22 @@ static void cdvdWrite04(u8 rt)
 			// spinup times if needed.
 			cdvdUpdateReady(CDVD_DRIVE_BUSY);
 			DevCon.Warning("CdStandby : %d", rt);
-			cdvd.Action = cdvdAction_Standby;
 			cdvd.ReadTime = cdvdBlockReadTime((CDVD_MODE_TYPE)cdvdIsDVD());
 			CDVD_INT(cdvdStartSeek(0, MODE_DVDROM));
 			// Might not seek, but makes sense since it does move to the inner most track
 			// It's only temporary until the interrupt anyway when it sets itself ready
 			cdvdUpdateStatus(CDVD_STATUS_SEEK);
+			cdvd.Action = cdvdAction_Standby;
 			break;
 
 		case N_CD_STOP: // CdStop
 			DevCon.Warning("CdStop : %d", rt);
-			cdvd.Action = cdvdAction_Stop;
 			cdvdUpdateReady(CDVD_DRIVE_BUSY);
 			cdvd.nextSectorsBuffered = 0;
 			psxRegs.interrupt &= ~(1 << IopEvt_CdvdSectorReady);
 			cdvdUpdateStatus(CDVD_STATUS_SPIN);
 			CDVD_INT(PSXCLK / 6); // 166ms delay?
+			cdvd.Action = cdvdAction_Stop;
 			break;
 
 		case N_CD_PAUSE: // CdPause
@@ -1765,11 +1770,11 @@ static void cdvdWrite04(u8 rt)
 			break;
 
 		case N_CD_SEEK: // CdSeek
-			cdvd.Action = cdvdAction_Seek;
 			cdvdUpdateReady(CDVD_DRIVE_BUSY);
 			cdvd.ReadTime = cdvdBlockReadTime((CDVD_MODE_TYPE)cdvdIsDVD());
 			CDVD_INT(cdvdStartSeek(*(uint*)(cdvd.NCMDParam + 0), (CDVD_MODE_TYPE)cdvdIsDVD()));
 			cdvdUpdateStatus(CDVD_STATUS_SEEK);
+			cdvd.Action = cdvdAction_Seek;
 			break;
 
 		case N_CD_READ: // CdRead
