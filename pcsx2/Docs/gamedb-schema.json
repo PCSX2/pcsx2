@@ -1,0 +1,266 @@
+{
+  "$id": "PCSX2 GameDB",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PCSX2 GameDB",
+  "description": "JSON Schema for PCSX2's GameDB",
+  "type": "object",
+  "patternProperties": {
+    "^[A-Z\\d]+-[A-Z\\d]+$": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the game, an arbitrary string"
+        },
+        "region": {
+          "type": "string",
+          "description": "The region code for the game, for example NTSC-U",
+          "pattern": "^(?:NTSC-(?:B|C|E|HK|J|K|M|T|U).*|PAL-?(?:A|B|E|F|G|I|M|N|P|R|S|U)?.*|Other)$"
+        },
+        "compat": {
+          "type": "integer",
+          "description": "A number indicating the compatibility of the game. 0 (Nothing) to 6 (Perfect)",
+          "minimum": 0,
+          "maximum": 6
+        },
+        "roundModes": {
+          "type": "object",
+          "description": "Specify the rounding modes for the EE or VU. 0 (Nearest), 1 (Negative Infinity), 2 (Positive Infinity), 3 (Chop (Zero))",
+          "properties": {
+            "eeRoundMode": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "vuRoundMode": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            }
+          },
+          "additionalProperties": false
+        },
+        "clampModes": {
+          "type": "object",
+          "description": "Specify the clamp modes for the EE or VU.",
+          "properties": {
+            "eeClampMode": {
+              "type": "integer",
+              "description": "0 (Disables), 1 (Normally), 2 (Extra+Preserve Sign), 3 (Full Clamping)",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "vuClampMode": {
+              "type": "integer",
+              "description": "0 (Disables), 1 (Normally), 2 (Extra), 3 (Extra+Preserve Sign)",
+              "minimum": 0,
+              "maximum": 3
+            }
+          },
+          "additionalProperties": false
+        },
+        "gameFixes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "FpuMulHack",
+              "FpuNegDivHack",
+              "GoemonTlbHack",
+              "SoftwareRendererFMVHack",
+              "SkipMPEGHack",
+              "OPHFlagHack",
+              "EETimingHack",
+              "DMABusyHack",
+              "GIFFIFOHack",
+              "VIFFIFOHack",
+              "VIF1StallHack",
+              "VuAddSubHack",
+              "IbitHack",
+              "VUSyncHack",
+              "VUOverflowHack",
+              "XGKickHack",
+              "BlitInternalFPSHack"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "gsHWFixes": {
+          "type": "object",
+          "properties": {
+            "autoFlush": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "conservativeFramebuffer": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "cpuFramebufferConversion": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "disableDepthSupport": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "wrapGSMem": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "preloadFrameData": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "disablePartialInvalidation": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "textureInsideRT": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "alignSprite": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "mergeSprite": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "wildArmsHack": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "pointListPalette": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "mipmap": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "trilinearFiltering": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "skipDrawStart": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "skipDrawEnd": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "halfBottomOverride": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "halfPixelOffset": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "roundSprite": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "texturePreloading": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "deinterlace": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 7
+            },
+            "cpuSpriteRenderBW": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            },
+            "cpuCLUTRender": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2
+            },
+            "gpuPaletteConversion": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            }
+          },
+          "additionalProperties": false
+        },
+        "memcardFilters": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z\\d]+-?[A-Z\\d]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "speedHacks": {
+          "type": "object",
+          "properties": {
+            "mvuFlagSpeedHack": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "InstantVU1SpeedHack": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "MTVUSpeedHack": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "patches": {
+          "type": "object",
+          "patternProperties": {
+            "^default|[A-Z0-9]{8}$": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "type": "string"
+                }
+              },
+              "required": ["content"],
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["name", "region"],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
