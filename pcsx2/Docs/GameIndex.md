@@ -56,12 +56,10 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
   # You can define multiple patches, but they are identified by the CRC.
   patches:
     default: # Default CRC!
-      author: "Some Person"
       content: |- # !required! This allows for multi-line strings in YAML, this type preserves new-line characters
         comment=Sample Patch
         patch=1,EE,00000002,word,00000000
     crc123: # Specific CRC Patch!
-      author: "Some Person"
       content: |-
         comment=Another Sample
         patch=1,EE,00000001,word,00000000
@@ -240,9 +238,9 @@ These values are in a key-value format, where the value is assumed to be an inte
 
 ## Memory Card Filter Override
 
-By default, the FolderMemoryCard filters save games based on thegame's serial, which means that only saves whose folder names containthe game's serial are loaded.
+By default, the FolderMemoryCard filters save games based on the game's serial, which means that only saves whose folder names containthe game's serial are loaded.
 
-This works fine for the vast majority of games, but fails in some cases, for which this override is for.Examples include multi-disc games, where later games often reuse theserial of the previous disc(s), and games that allow transfer of savedata between different games, such as importing data from a prequel.
+This works fine for the vast majority of games, but fails in some cases, for which this override is for. Examples include multi-disc games, where later games often reuse the serial of the previous disc(s), and games that allow transfer of savedata between different games, such as importing data from a prequel.
 
 > Values should be specified as a list of strings, example shown above.
 
@@ -255,3 +253,20 @@ The patch that corresponds to the running game's CRC will take precedence over t
 Patches should be defined as multi-line string blocks, where each line would correspond with a line in a conventional `*.pnach` file
 
 For more information on how to write a patch, see the following [forum post](https://forums.pcsx2.net/Thread-How-PNACH-files-work-2-0)
+
+# Editor Tooling
+
+We provide a [JSON Schema](https://json-schema.org/) for the GameDB's format.  You can use this to validate the file, and assist in writing it properly.
+
+## VSCode Integration
+
+If you use VSCode and you want it to properly lint the GameIndex.yaml file you should:
+
+1. Download the YAML extension - https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml
+2. Add the following to your settings:
+
+```json
+"yaml.schemas": {
+  "https://raw.githubusercontent.com/PCSX2/pcsx2/master/pcsx2/Docs/gamedb-schema.json": "**/bin/**GameIndex.yaml",
+},
+```
