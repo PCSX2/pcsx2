@@ -26,7 +26,7 @@
 
 static WavOutFile* _new_WavOutFile(const char* destfile)
 {
-	return new WavOutFile(destfile, 48000, 16, 2);
+	return new WavOutFile(destfile, SampleRate, 16, 2);
 }
 
 namespace WaveDump
@@ -121,12 +121,12 @@ bool RecordStart(const std::string* filename)
 		safe_delete(m_wavrecord);
 		if (filename)
 #ifdef _WIN32
-			m_wavrecord = new WavOutFile(_wfopen(StringUtil::UTF8StringToWideString(*filename).c_str(), L"wb"), 48000, 16, 2);
+			m_wavrecord = new WavOutFile(_wfopen(StringUtil::UTF8StringToWideString(*filename).c_str(), L"wb"), SampleRate, 16, 2);
 #else
-			m_wavrecord = new WavOutFile(filename->c_str(), 48000, 16, 2);
+			m_wavrecord = new WavOutFile(filename->c_str(), SampleRate, 16, 2);
 #endif
 		else
-			m_wavrecord = new WavOutFile("audio_recording.wav", 48000, 16, 2);
+			m_wavrecord = new WavOutFile("audio_recording.wav", SampleRate, 16, 2);
 		WavRecordEnabled = true;
 		return true;
 	}

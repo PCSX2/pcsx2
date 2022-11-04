@@ -192,7 +192,7 @@ void SPU2SetDeviceSampleRateMultiplier(double multiplier)
 	SPU2UpdateSampleRate();
 }
 
-s32 SPU2init()
+s32 SPU2init(bool KeepMode)
 {
 	assert(regtable[0x400] == nullptr);
 
@@ -244,7 +244,7 @@ s32 SPU2init()
 		}
 	}
 
-	SPU2InternalReset(PS2Modes::PS2);
+	SPU2InternalReset((ConsoleSampleRate == 44100 && KeepMode) ? PS2Modes::PSX : PS2Modes::PS2);
 
 	DMALogOpen();
 	InitADSR();
