@@ -19,7 +19,12 @@ const embed = new MessageEmbed()
     { name: 'Included Changes', value: releaseInfo.body, inline: false }
   );
 
-const webhookClient = new WebhookClient({ url: process.env.DISCORD_BUILD_WEBHOOK });
-await webhookClient.send({
-  embeds: [embed],
-});
+// Get all webhooks, simple comma-sep string
+const webhookUrls = process.env.DISCORD_BUILD_WEBHOOK.split(",");
+
+for (const url of webhookUrls) {
+  const webhookClient = new WebhookClient({ url: url });
+  await webhookClient.send({
+    embeds: [embed],
+  });
+}
