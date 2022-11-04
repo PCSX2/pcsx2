@@ -9287,6 +9287,27 @@ SLES-50048:
   name: "Donald Duck - Quack Attack"
   region: "PAL-M5"
   compat: 5
+  patches:
+    F34ECBDC:
+      content: |-
+        author=refraction
+        comment=fixes lighting problems due to COP2 instruction order.
+        patch=1,EE,0032FD44,word,4BE09DDC
+        patch=1,EE,0032FD48,word,4A0303BD
+        patch=1,EE,0032FD60,word,4B000120
+        patch=1,EE,0032FD64,word,4A0903BD
+        patch=1,EE,0032FD7C,word,4B0002A0
+        patch=1,EE,0032FD80,word,4A6403BC
+        patch=1,EE,0032FD98,word,4BE0095C
+        patch=1,EE,0032FD9C,word,4A6A03BC
+        patch=1,EE,0032FDB4,word,4BE03ADC
+        patch=1,EE,0032FDB8,word,4A0F03BD
+        patch=1,EE,0032FDD0,word,4B000420
+        patch=1,EE,0032FDD4,word,4A1503BD
+        patch=1,EE,0032FDEC,word,4B0005A0
+        patch=1,EE,0032FDF0,word,4A7003BC
+        patch=1,EE,0032FE08,word,4BE06C5C
+        patch=1,EE,0032FE0C,word,4A7603BC
 SLES-50050:
   name: "Evergrace"
   region: "PAL-M5"
