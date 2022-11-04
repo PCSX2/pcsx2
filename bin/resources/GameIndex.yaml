@@ -12488,7 +12488,7 @@ SLES-51547:
     - VUSyncHack # Fixes SPS in game.
 SLES-51548:
   name: "X-Men 2 - Wolverine's Revenge"
-  region: "PAL"
+  region: "PAL-M3"
 SLES-51553:
   name: "Chaos Legion"
   region: "PAL-M5"
