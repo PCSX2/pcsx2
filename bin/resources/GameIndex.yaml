@@ -39441,6 +39441,27 @@ SLUS-20077:
   name: "Donald Duck Goin' Quackers"
   region: "NTSC-U"
   compat: 5
+  patches:
+    C573F3A2:
+      content: |-
+        author=refraction
+        comment=fixes lighting problems due to COP2 instruction order.
+        patch=1,EE,0032F5A4,word,4BE09DDC
+        patch=1,EE,0032F5A8,word,4A0303BD
+        patch=1,EE,0032F5C0,word,4B000120
+        patch=1,EE,0032F5C4,word,4A0903BD
+        patch=1,EE,0032F5DC,word,4B0002A0
+        patch=1,EE,0032F5E0,word,4A6403BC
+        patch=1,EE,0032F5F8,word,4BE0095C
+        patch=1,EE,0032F5FC,word,4A6A03BC
+        patch=1,EE,0032F614,word,4BE03ADC
+        patch=1,EE,0032F618,word,4A0F03BD
+        patch=1,EE,0032F630,word,4B000420
+        patch=1,EE,0032F634,word,4A1503BD
+        patch=1,EE,0032F64C,word,4B0005A0
+        patch=1,EE,0032F650,word,4A7003BC
+        patch=1,EE,0032F668,word,4BE06C5C
+        patch=1,EE,0032F66C,word,4A7603BC
 SLUS-20078:
   name: "Silent Scope"
   region: "NTSC-U"
