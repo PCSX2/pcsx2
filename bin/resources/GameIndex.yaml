@@ -3242,7 +3242,7 @@ SCES-51593:
   name: "Hardware Online Arena [Beta, Promo & Full Release]"
   region: "PAL-M4"
   patches:
-    81797E77:
+    "81797E77":
       content: |-
         comment=Reduces chance of game hanging going in-game
         comment=caused by VU0 integer register being set twice causing bad COP2 timing
@@ -12055,7 +12055,7 @@ SLES-51292:
   region: "PAL-M5"
   compat: 4
   patches:
-    9fccacb5:
+    9FCCACB5:
       content: |-
         author=PSI
         // The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end.
@@ -15027,7 +15027,7 @@ SLES-52711:
   gameFixes:
     - GIFFIFOHack # Fixes corrupted textures.
   patches:
-    958e5086:
+    "958E5086":
       content: |-
         comment=Patch by refraction
         // Game has a bug in it, where it's supposed to wait for the GS transfers/drawing to finish
@@ -17411,7 +17411,7 @@ SLES-53686:
   name: "NHL 2K6"
   region: "PAL-M3"
   patches:
-    98ec4d86:
+    98EC4D86:
       content: |-
         author=Prafull
         comment=Patched by Prafull
@@ -18265,7 +18265,7 @@ SLES-54021:
   gameFixes:
     - EETimingHack # Fixes game engine errors when going ingame.
   patches:
-    b02c81e5:
+    B02C81E5:
       content: |-
         // Fixes random hangs when going ingame.
         patch=1,EE,001128e0,word,00000000
@@ -18702,7 +18702,7 @@ SLES-54211:
   name: "NHL 2K7"
   region: "PAL-M5"
   patches:
-    1ad6efd1:
+    1AD6EFD1:
       content: |-
         author=Prafull
         comment=Patched by Prafull
@@ -19529,7 +19529,7 @@ SLES-54559:
     autoFlush: 1 # Reduces post-processing misalignment.
     halfPixelOffset: 1 # Reduces lighting misalignment but doesn't fully fix it.
   patches:
-    d6a0a3ef:
+    D6A0A3EF:
       content: |-
         author=Prafull
         // Fix character falling through floor.
@@ -21300,7 +21300,7 @@ SLES-55252:
   name: "NHL 2K9"
   region: "PAL-M5"
   patches:
-    5d981df2:
+    5D981DF2:
       content: |-
         author=Prafull
         comment=Patched by Prafull
@@ -26755,7 +26755,7 @@ SLPM-65071:
   name: "Zero 4 Champ Series - Drift Champ"
   region: "NTSC-J"
   patches:
-    8449ffe1:
+    8449FFE1:
       content: |-
         comment=Patch by Prafull
         // Fixes the hang at start of chapter 2.
@@ -32408,7 +32408,7 @@ SLPM-66687:
   name: "Hiiro no Kakera - Ano Sora no Shita de"
   region: "NTSC-J"
   patches:
-    8365E603:
+    "8365E603":
       content: |-
         author=PSI, Jelta
         // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
@@ -34704,7 +34704,7 @@ SLPS-20273:
   name: "Netsu Chu! Pro Yakyuu 2003"
   region: "NTSC-J"
   patches:
-    34fb1fb7:
+    34FB1FB7:
       content: |-
         author=Prafull
         // Fixes game hanging before going ingame.
@@ -40430,7 +40430,7 @@ SLUS-20284:
   roundModes:
     vuRoundMode: 1 # Fixes some bad effects.
   patches:
-    9d1ba44d:
+    9D1BA44D:
       content: |-
         author=Prafull
         // Fix hanging problem & SPS.
@@ -40824,7 +40824,7 @@ SLUS-20378:
   name: "Salt Lake 2002"
   region: "NTSC-U"
   patches:
-    466d1c13:
+    466D1C13:
       content: |-
         author=Prafull
         // Fix ingame texture problems.
@@ -41075,7 +41075,7 @@ SLUS-20430:
   region: "NTSC-U"
   compat: 5
   patches:
-    d195b670:
+    D195B670:
       content: |-
         author=PSI
         // The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end.
@@ -41176,7 +41176,7 @@ SLUS-20452:
   region: "NTSC-U"
   compat: 5
   patches:
-    Ba056DDD:
+    BA056DDD:
       content: |-
         author=kr_ps2
         //SFX/Background Music Fix.
@@ -41250,7 +41250,7 @@ SLUS-20467:
   region: "NTSC-U"
   compat: 5
   patches:
-    3baebcc3:
+    3BAEBCC3:
       content: |-
         author=Prafull
         // Fix ingame SPS by interchanging vclipw.xyz vf5, vf5w with cfc2.
@@ -43410,7 +43410,7 @@ SLUS-20922:
   region: "NTSC-U"
   compat: 2
   patches:
-    2b54d3e5:
+    2B54D3E5:
       content: |-
         comment=Patch by Prafull
         // Avoids hang at loading.
@@ -44017,7 +44017,7 @@ SLUS-21035:
   clampModes:
     eeClampMode: 2 # Fixes hang when the baseball hits the ground.
   patches:
-    2243ce1d:
+    2243CE1D:
       content: |-
         author=Prafull
         comment=Patched by Prafull
@@ -44663,7 +44663,7 @@ SLUS-21171:
   region: "NTSC-U"
   compat: 5
   patches:
-    304c115c:
+    304C115C:
       content: |-
         comment=Patch by Prafull
         // Fix hang at shipping shed.
@@ -45467,7 +45467,7 @@ SLUS-21314:
   gameFixes:
     - EETimingHack # Needed to go ingame.
   patches:
-    f73488d5:
+    F73488D5:
       content: |-
         comment=Patch by Prafull
         // Fixes random hangs when going ingame.
@@ -47444,7 +47444,7 @@ SLUS-21729:
   name: "Major League Baseball 2K8"
   region: "NTSC-U"
   patches:
-    0be24520:
+    0BE24520:
       content: |-
         author=Prafull
         // Fixes hanging at start.
@@ -47618,7 +47618,7 @@ SLUS-21763:
   region: "NTSC-U"
   compat: 2
   patches:
-    29fdcbf7:
+    29FDCBF7:
       content: |-
         author=Prafull
         // Avoid hang at start.
