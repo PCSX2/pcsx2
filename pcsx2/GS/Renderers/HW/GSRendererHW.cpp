@@ -93,8 +93,8 @@ GSVector2i GSRendererHW::GetOutputSize(int real_h)
 	// Include negative display offsets in the height here.
 	crtc_size.y = std::max(crtc_size.y, real_h);
 
-	return GSVector2i(static_cast<float>(crtc_size.x) * GSConfig.UpscaleMultiplier,
-		static_cast<float>(crtc_size.y) * GSConfig.UpscaleMultiplier);
+	return GSVector2i(static_cast<float>(crtc_size.x),
+		static_cast<float>(crtc_size.y));
 }
 
 void GSRendererHW::SetTCOffset()
@@ -254,7 +254,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 
 	GSTexture* t = nullptr;
 
-	if (GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, GetOutputSize(fb_height), fb_width, fb_height))
+	if (GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, GetOutputSize(fb_height) * GSConfig.UpscaleMultiplier, fb_width, fb_height))
 	{
 		t = rt->m_texture;
 
@@ -293,9 +293,9 @@ GSTexture* GSRendererHW::GetFeedbackOutput()
 	GSVector2i size = GetOutputSize(fb_height);
 
 	if (m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPFB.DBX)
-		size.x += m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPFB.DBX * static_cast<int>(GSConfig.UpscaleMultiplier);
+		size.x += m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPFB.DBX;
 
-	GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, GetOutputSize(fb_height), fb_height, size.x);
+	GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, GetOutputSize(fb_height) * GSConfig.UpscaleMultiplier, size.x, fb_height);
 
 	GSTexture* t = rt->m_texture;
 
