@@ -2769,6 +2769,8 @@ SCES-50139:
 SCES-50240:
   name: "Extermination"
   region: "PAL-M5"
+  gameFixes:
+    - SoftwareRendererFMVHack # Black FMV.
 SCES-50241:
   name: "Bouncer, The"
   region: "PAL-M6"
@@ -3065,6 +3067,8 @@ SCES-50956:
   name: "Ferrari F355 Challenge"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes text alignment.
 SCES-50960:
   name: "Disney's Stitch - Experiment 626"
   region: "PAL-F-G"
@@ -5418,6 +5422,8 @@ SCPS-15010:
 SCPS-15011:
   name: "Extermination"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Black FMV.
 SCPS-15012:
   name: "Surveillance"
   region: "NTSC-J"
@@ -6085,6 +6091,8 @@ SCPS-19201:
 SCPS-19202:
   name: "Extermination [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Black FMV.
 SCPS-19203:
   name: "Dark Cloud [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -6855,6 +6863,8 @@ SCUS-97112:
   name: "Extermination"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Black FMV.
 SCUS-97113:
   name: "ICO"
   region: "NTSC-U"
@@ -7047,6 +7057,8 @@ SCUS-97159:
 SCUS-97160:
   name: "Extermination [Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - SoftwareRendererFMVHack # Black FMV.
 SCUS-97161:
   name: "Kinetica [Demo]"
   region: "NTSC-U"
@@ -8718,8 +8730,10 @@ SLAJ-25049:
   name: "Kengo 3"
   region: "NTSC-Unk"
 SLAJ-25051:
-  name: "Lord of the Rings - The Third Age"
+  name: "Lord of the Rings, The - The Third Age"
   region: "NTSC-Unk"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting in cutscenes.
 SLAJ-25052:
   name: "Urbz, The - Sims in the City"
   region: "NTSC-Unk"
@@ -9398,6 +9412,7 @@ SLES-50073:
   region: "PAL-M5"
   gsHWFixes:
     textureInsideRT: 1
+    roundSprite: 1 # Fixes font misalignment when upscaling.
 SLES-50074:
   name: "Unreal Tournament"
   region: "PAL-M5"
@@ -9603,6 +9618,8 @@ SLES-50179:
 SLES-50182:
   name: "MTV Music Generator 2"
   region: "PAL-M5"
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLES-50183:
   name: "Wacky Races"
   region: "PAL-M5"
@@ -9739,6 +9756,8 @@ SLES-50230:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes SPS.
+  gsHWFixes:
+    roundSprite: 1 # Fixes gaps in menu.
 SLES-50231:
   name: "International League Soccer"
   region: "PAL-M5"
@@ -11109,6 +11128,7 @@ SLES-50876:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
+    halfPixelOffset: 2 # Fixes misaligned lighting.
 SLES-50877:
   name: "TimeSplitters 2"
   region: "PAL-M5"
@@ -11293,10 +11313,14 @@ SLES-50984:
   name: "Gumball 3000"
   region: "PAL-E"
   compat: 5
+  speedHacks:
+    MTVUSpeedHack: 0 # Stops crashing and terrible speeds.
 SLES-50985:
   name: "Gumball 3000"
   region: "PAL-M5"
   compat: 5
+  speedHacks:
+    MTVUSpeedHack: 0 # Stops crashing and terrible speeds.
 SLES-50986:
   name: "Twin Caliber"
   region: "PAL-M4"
@@ -11439,6 +11463,8 @@ SLES-51061:
 SLES-51063:
   name: "Hot Wheels - Velocity X - Maximum Justice"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes the fog line.
 SLES-51064:
   name: "Gladius"
   region: "PAL-M3"
@@ -12898,6 +12924,9 @@ SLES-51765:
 SLES-51766:
   name: "Gladiator - Sword of Vengeance"
   region: "PAL-M5"
+  gsHWFixes:
+    roundSprite: 2 # Helps glow misalignment.
+    halfPixelOffset: 1 # Helps glow misalignment.
 SLES-51772:
   name: "Bad Boys II"
   region: "PAL-E"
@@ -13028,9 +13057,15 @@ SLES-51826:
 SLES-51827:
   name: "Gladiator - Sword of Vengeance"
   region: "PAL-E-FR"
+  gsHWFixes:
+    roundSprite: 2 # Helps glow misalignment.
+    halfPixelOffset: 1 # Helps glow misalignment.
 SLES-51828:
   name: "Gladiator - Sword of Vengeance"
   region: "PAL-G"
+  gsHWFixes:
+    roundSprite: 2 # Helps glow misalignment.
+    halfPixelOffset: 1 # Helps glow misalignment.
 SLES-51831:
   name: "Sphinx and The Cursed Mummy"
   region: "PAL-M5"
@@ -13561,6 +13596,8 @@ SLES-52045:
   name: "GTR 400"
   region: "PAL-E"
   compat: 5
+  gameFixes:
+    - XGKickHack # Fixes bad Geometry.
 SLES-52046:
   name: "007 - Everything or Nothing"
   region: "PAL-F-G"
@@ -13728,6 +13765,7 @@ SLES-52153:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
+    halfPixelOffset: 2 # Fixes misaligned lighting.
 SLES-52155:
   name: "EyeToy - L'Eredita"
   region: "PAL-I"
@@ -14667,20 +14705,26 @@ SLES-52587:
   region: "PAL-M5"
   compat: 5
 SLES-52588:
-  name: "Mercenaries"
+  name: "Mercenaries - Playground of Destruction"
   region: "PAL-E"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
+    halfPixelOffset: 1 # Fixes lighting misalignment.
+    autoFlush: 1 # Fixes missing lighting.
 SLES-52589:
-  name: "Mercenaries"
+  name: "Mercenaries - Playground of Destruction"
   region: "PAL-F"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
+    halfPixelOffset: 1 # Fixes lighting misalignment.
+    autoFlush: 1 # Fixes missing lighting.
 SLES-52590:
-  name: "Mercenaries"
+  name: "Mercenaries - Playground of Destruction"
   region: "PAL-G"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
+    halfPixelOffset: 1 # Fixes lighting misalignment.
+    autoFlush: 1 # Fixes missing lighting.
 SLES-52591:
   name: "Dynasty Warriors 4 - Empires"
   region: "PAL-E"
@@ -15149,18 +15193,26 @@ SLES-52800:
 SLES-52801:
   name: "Lord of the Rings, The - The Third Age"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting in cutscenes.
 SLES-52802:
   name: "Lord of the Rings, The - The Third Age"
   region: "PAL-F"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting in cutscenes.
 SLES-52803:
   name: "Der Herr der Ringe - Das dritte Zeitalter"
   region: "PAL-G"
 SLES-52804:
   name: "Lord of the Rings, The - The Third Age"
   region: "PAL-I"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting in cutscenes.
 SLES-52805:
   name: "Lord of the Rings, The - The Third Age"
   region: "PAL-S"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting in cutscenes.
 SLES-52807:
   name: "Lemony Snicket's A Series of Unfortunate Events"
   region: "PAL-E"
@@ -15651,10 +15703,12 @@ SLES-53007:
   region: "PAL-M5"
   compat: 5
 SLES-53008:
-  name: "Mercenaries"
+  name: "Mercenaries - Playground of Destruction"
   region: "PAL-I-S"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
+    halfPixelOffset: 1 # Fixes lighting misalignment.
+    autoFlush: 1 # Fixes missing lighting.
 SLES-53009:
   name: "Dance Factory"
   region: "PAL-M5"
@@ -15914,6 +15968,8 @@ SLES-53091:
 SLES-53092:
   name: "Motocross Mania 3"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLES-53093:
   name: "Cold Winter"
   region: "PAL-G"
@@ -16177,15 +16233,24 @@ SLES-53224:
   name: "Championship Manager 5"
   region: "PAL-S"
 SLES-53225:
-  name: "Dreamworks' Madagascar"
+  name: "Dreamworks Madagascar"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Improves bloom alignment and clarity.
+    halfPixelOffset: 2 # Improves bloom alignment and clarity.
 SLES-53226:
-  name: "Dreamworks' Madagascar"
+  name: "Dreamworks Madagascar"
   region: "PAL-F-G"
   compat: 5
+  gsHWFixes:
+    roundSprite: 2 # Improves bloom alignment and clarity.
+    halfPixelOffset: 2 # Improves bloom alignment and clarity.
 SLES-53227:
-  name: "Dreamworks' Madagascar"
+  name: "Dreamworks Madagascar"
   region: "PAL-M3"
+  gsHWFixes:
+    roundSprite: 2 # Improves bloom alignment and clarity.
+    halfPixelOffset: 2 # Improves bloom alignment and clarity.
 SLES-53231:
   name: "Le Avventure di Lupin III - Il Tesoro del Re Stregone"
   region: "PAL-I"
@@ -16210,11 +16275,17 @@ SLES-53238:
   name: "Premier Manager 2005-2006"
   region: "PAL-M4"
 SLES-53242:
-  name: "Madagascar"
+  name: "Dreamworks Madagascar"
   region: "PAL-P"
+  gsHWFixes:
+    roundSprite: 2 # Improves bloom alignment and clarity.
+    halfPixelOffset: 2 # Improves bloom alignment and clarity.
 SLES-53246:
-  name: "Madagascar"
+  name: "Dreamworks Madagascar"
   region: "PAL-S"
+  gsHWFixes:
+    roundSprite: 2 # Improves bloom alignment and clarity.
+    halfPixelOffset: 2 # Improves bloom alignment and clarity.
 SLES-53280:
   name: "7 Sins"
   region: "PAL-M3"
@@ -16414,8 +16485,11 @@ SLES-53371:
   name: "Real World Golf [with Gametrak]"
   region: "PAL-E"
 SLES-53373:
-  name: "Madagascar"
+  name: "Dreamworks Madagascar"
   region: "PAL-NL"
+  gsHWFixes:
+    roundSprite: 2 # Improves bloom alignment and clarity.
+    halfPixelOffset: 2 # Improves bloom alignment and clarity.
 SLES-53374:
   name: "X-Men Legends II - Rise of Apocalypse"
   region: "PAL-M3"
@@ -16892,6 +16966,8 @@ SLES-53539:
   name: "Fahrenheit"
   region: "PAL-M4"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Slight lighting misalignment.
   patches:
     default:
       content: |-
@@ -16917,6 +16993,8 @@ SLES-53540:
   name: "Fahrenheit"
   region: "PAL-M4"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Slight lighting misalignment.
   patches:
     default:
       content: |-
@@ -17287,6 +17365,8 @@ SLES-53667:
 SLES-53668:
   name: "Micro Machines V4"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLES-53672:
   name: "Ultimate Spider-Man [Limited]"
   region: "PAL-E"
@@ -18365,6 +18445,8 @@ SLES-54136:
 SLES-54137:
   name: "Just Cause"
   region: "PAL-M3"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting.
 SLES-54138:
   name: "Steambot Chronicles"
   region: "PAL-E"
@@ -18573,6 +18655,8 @@ SLES-54199:
 SLES-54200:
   name: "Just Cause"
   region: "PAL-F-G"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting.
 SLES-54203:
   name: "Pro Evolution Soccer 6"
   region: "PAL-E"
@@ -20373,6 +20457,8 @@ SLES-54930:
 SLES-54931:
   name: "Looney Tunes - ACME Arsenal"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes bloom positioning.
 SLES-54933:
   name: "NBA Live 08"
   region: "PAL-S"
@@ -20634,6 +20720,8 @@ SLES-55013:
   region: "PAL-M5"
   gameFixes:
     - EETimingHack # Fixes game engine errors when going ingame.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes light/bloom positioning.
   patches:
     304497e5:
       content: |-
@@ -21235,6 +21323,8 @@ SLES-55274:
 SLES-55275:
   name: "Jeep Thrills"
   region: "PAL-M5"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLES-55276:
   name: "Jello"
   region: "PAL-E"
@@ -22808,12 +22898,13 @@ SLKA-25187:
   name: "Shin Sangoku Musou 3 - Empires"
   region: "NTSC-K"
 SLKA-25196:
-  name: "DRIV3R"
+  name: "Driv3r"
   region: "NTSC-K"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
+    halfPixelOffset: 2 # Fixes misaligned lighting.
 SLKA-25198:
   name: "Tenchu Kurenai"
   region: "NTSC-K"
@@ -22951,6 +23042,8 @@ SLKA-25233:
 SLKA-25237:
   name: "Lord of the Rings, The - The Third Age"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting in cutscenes.
 SLKA-25241:
   name: "Need for Speed - Underground 2"
   region: "NTSC-K"
@@ -26963,6 +27056,8 @@ SLPM-65177:
 SLPM-65178:
   name: "Ferrari F355 Challenge"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes text alignment.
 SLPM-65179:
   name: "Culdcept 2 - Expansion"
   region: "NTSC-J"
@@ -26980,6 +27075,8 @@ SLPM-65184:
 SLPM-65185:
   name: "Ferrari F355 Challenge"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes text alignment.
 SLPM-65186:
   name: "Thread Colors [Limited Edition]"
   region: "NTSC-J"
@@ -27736,6 +27833,8 @@ SLPM-65405:
   name: "Chou Jikuu Yousai Macross"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    texturePreloading: 1 # Performs much better with partial preload.
 SLPM-65406:
   name: "Castlevania - Lament of Innocence [Limited Edition]"
   region: "NTSC-J"
@@ -28834,6 +28933,7 @@ SLPM-65741:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
+    halfPixelOffset: 2 # Fixes misaligned lighting.
 SLPM-65742:
   name: "Cool Girl [Konami the Best]"
   region: "NTSC-J"
@@ -29495,10 +29595,12 @@ SLPM-65941:
   name: "Mabino x Style"
   region: "NTSC-J"
 SLPM-65942:
-  name: "Mercenaries"
+  name: "Mercenaries - Playground of Destruction"
   region: "NTSC-J"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
+    halfPixelOffset: 1 # Fixes lighting misalignment.
+    autoFlush: 1 # Fixes missing lighting.
 SLPM-65943:
   name: "Angel's Feather"
   region: "NTSC-J"
@@ -30417,6 +30519,8 @@ SLPM-66192:
 SLPM-66193:
   name: "Fahrenheit"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Slight lighting misalignment.
 SLPM-66194:
   name: "Otona no Gal Jan 2"
   region: "NTSC-J"
@@ -31424,10 +31528,12 @@ SLPM-66464:
   name: "MVP Baseball 2005 [EA Best Hits]"
   region: "NTSC-J"
 SLPM-66465:
-  name: "Mercenaries [EA Best Hits]"
+  name: "Mercenaries - Playground of Destruction [EA Best Hits]"
   region: "NTSC-J"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
+    halfPixelOffset: 1 # Fixes lighting misalignment.
+    autoFlush: 1 # Fixes missing lighting.
 SLPM-66467:
   name: "Midway Arcade Treasures - The Game Center of USA"
   region: "NTSC-J"
@@ -32541,6 +32647,8 @@ SLPM-66754:
 SLPM-66755:
   name: "Majo-musume - A La Mode II"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes bad colour rendering.
 SLPM-66756:
   name: "Que - Ancient Leaf no Yousei [Limited Edition]"
   region: "NTSC-J"
@@ -33950,6 +34058,7 @@ SLPS-20007:
     - VUSyncHack # Fixes missing geometry.
   gsHWFixes:
     textureInsideRT: 1
+    roundSprite: 1 # Fixes font misalignment when upscaling.
 SLPS-20009:
   name: "Golf Paradise"
   region: "NTSC-J"
@@ -34953,8 +35062,11 @@ SLPS-20425:
     deinterlace: 4 # Game requires bob bff deinterlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20426:
-  name: "Madagascar"
+  name: "Dreamworks Madagascar"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Improves bloom alignment and clarity.
+    halfPixelOffset: 2 # Improves bloom alignment and clarity.
 SLPS-20428:
   name: "Monkey Turn V [Bandai the Best]"
   region: "NTSC-J"
@@ -39587,6 +39699,7 @@ SLUS-20113:
   compat: 4
   gsHWFixes:
     textureInsideRT: 1
+    roundSprite: 1 # Fixes font misalignment when upscaling.
 SLUS-20114:
   name: "Simpsons, The - Skateboarding"
   region: "NTSC-U"
@@ -39998,6 +40111,8 @@ SLUS-20222:
   name: "MTV - Music Generator 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLUS-20223:
   name: "Splashdown"
   region: "NTSC-U"
@@ -40822,6 +40937,8 @@ SLUS-20412:
   name: "Hot Wheels - Velocity X"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes the fog line.
   patches:
     E7273BFA:
       content: |-
@@ -41502,6 +41619,8 @@ SLUS-20556:
 SLUS-20558:
   name: "Ferrari F355 Challenge"
   region: "NTSC-U"
+  gsHWFixes:
+    roundSprite: 1 # Fixes text alignment.
 SLUS-20559:
   name: "Rocky"
   region: "NTSC-U"
@@ -41673,6 +41792,7 @@ SLUS-20587:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
+    halfPixelOffset: 2 # Fixes misaligned lighting.
 SLUS-20588:
   name: "Activision Anthology"
   region: "NTSC-U"
@@ -42633,6 +42753,9 @@ SLUS-20793:
   name: "Gladiator - Sword of Vengeance"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 2 # Helps glow misalignment.
+    halfPixelOffset: 1 # Helps glow misalignment.
 SLUS-20794:
   name: "ESPN - Major League Baseball"
   region: "NTSC-U"
@@ -43281,6 +43404,8 @@ SLUS-20929:
   name: "Battle Assault 3 featuring Gundam Seed"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Improves clarity of the UI when upscaling.
 SLUS-20930:
   name: "Choro Q"
   region: "NTSC-U"
@@ -43295,6 +43420,8 @@ SLUS-20932:
   compat: 5
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
+    halfPixelOffset: 1 # Fixes lighting misalignment.
+    autoFlush: 1 # Fixes missing lighting.
 SLUS-20933:
   name: "Smash Court Pro Tournament Tennis 2"
   region: "NTSC-U"
@@ -43734,9 +43861,12 @@ SLUS-21014:
   region: "NTSC-U"
   compat: 5
 SLUS-21015:
-  name: "Madagascar"
+  name: "Dreamworks Madagascar"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 2 # Improves bloom alignment and clarity.
+    halfPixelOffset: 2 # Improves bloom alignment and clarity.
 SLUS-21016:
   name: "25 to Life"
   region: "NTSC-U"
@@ -43788,6 +43918,8 @@ SLUS-21027:
   name: "Lord of the Rings, The - The Third Age"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting in cutscenes.
 SLUS-21028:
   name: "World Championship Poker"
   region: "NTSC-U"
@@ -44782,6 +44914,8 @@ SLUS-21229:
   name: "Motocross Mania 3"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLUS-21230:
   name: "We Love Katamari"
   region: "NTSC-U"
@@ -45811,6 +45945,8 @@ SLUS-21402:
   name: "Micro Machines V4"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment.
 SLUS-21403:
   name: "Backyard Sports - Baseball 2007"
   region: "NTSC-U"
@@ -45997,6 +46133,8 @@ SLUS-21436:
   name: "Just Cause"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting.
 SLUS-21437:
   name: "Disney's Kim Possible - What's the Switch"
   region: "NTSC-U"
@@ -46859,6 +46997,8 @@ SLUS-21636:
   name: "Looney Tunes - Acme Arsenal"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes bloom positioning.
 SLUS-21637:
   name: "Disney-Pixar's Cars - Mater-National Championship"
   region: "NTSC-U"
@@ -47110,6 +47250,8 @@ SLUS-21697:
   compat: 3
   gameFixes:
     - EETimingHack # Fixes game engine errors when going ingame.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes light/bloom positioning.
   patches:
     304497e5:
       content: |-
@@ -47415,6 +47557,8 @@ SLUS-21760:
   name: "Jeep Thrills"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLUS-21761:
   name: "B-Boy"
   region: "NTSC-U"
@@ -47742,7 +47886,7 @@ SLUS-21839:
   name: "Ski and Shoot"
   region: "NTSC-U"
 SLUS-21840:
-  name: "Madagascar - Escape 2 Africa"
+  name: "DreamWorks Madagascar 2 - Escape 2 Africa"
   region: "NTSC-U"
   compat: 5
 SLUS-21841:
@@ -48784,8 +48928,12 @@ SLUS-29135:
   name: "NCAA March Madness 2005 [Demo]"
   region: "NTSC-U"
 SLUS-29137:
-  name: "Mercenaries [Demo]"
+  name: "Mercenaries - Playground of Destruction [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfBottomOverride: 1 # Bottom screen has wrong colors.
+    halfPixelOffset: 1 # Fixes lighting misalignment.
+    autoFlush: 1 # Fixes missing lighting.
 SLUS-29138:
   name: "Punisher, The [Demo]"
   region: "NTSC-U"
