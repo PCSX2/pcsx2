@@ -86,6 +86,7 @@ GSDevice::~GSDevice()
 	delete m_merge;
 	delete m_weavebob;
 	delete m_blend;
+	delete m_mad;
 	delete m_target_tmp;
 }
 
@@ -101,11 +102,13 @@ void GSDevice::Destroy()
 	delete m_merge;
 	delete m_weavebob;
 	delete m_blend;
+	delete m_mad;
 	delete m_target_tmp;
 
 	m_merge = nullptr;
 	m_weavebob = nullptr;
 	m_blend = nullptr;
+	m_mad = nullptr;
 	m_target_tmp = nullptr;
 
 	m_current = nullptr; // current is special, points to other textures, no need to delete
@@ -312,11 +315,13 @@ void GSDevice::ClearCurrent()
 	delete m_merge;
 	delete m_weavebob;
 	delete m_blend;
+	delete m_mad;
 	delete m_target_tmp;
 
 	m_merge = nullptr;
 	m_weavebob = nullptr;
 	m_blend = nullptr;
+	m_mad = nullptr;
 	m_target_tmp = nullptr;
 }
 
@@ -358,36 +363,39 @@ void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, con
 
 void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffset)
 {
-	ResizeTarget(&m_weavebob, ds.x, ds.y);
+	static int bufIdx = 0;
 
-	if (mode == 0 || mode == 2) // weave or blend
+	if (mode == 0) // weave
 	{
-		// weave first
 		const float offset = yoffset * static_cast<float>(field);
-
-		DoInterlace(m_merge, m_weavebob, field, false, GSConfig.DisableInterlaceOffset ? 0.0f : offset);
-
-		if (mode == 2)
-		{
-			// blend
-
-			ResizeTarget(&m_blend, ds.x, ds.y);
-
-			DoInterlace(m_weavebob, m_blend, 2, false, 0);
-
-			m_current = m_blend;
-		}
-		else
-		{
-			m_current = m_weavebob;
-		}
+		ResizeTarget(&m_weavebob, ds.x, ds.y);
+		DoInterlace(m_merge, m_weavebob, field, false, GSConfig.DisableInterlaceOffset ? 0.0f : offset, 0);
+		m_current = m_weavebob;
 	}
 	else if (mode == 1) // bob
 	{
 		// Field is reversed here as we are countering the bounce.
-		DoInterlace(m_merge, m_weavebob, 3, true, yoffset * (1-field));
-
+		ResizeTarget(&m_weavebob, ds.x, ds.y);
+		DoInterlace(m_merge, m_weavebob, 3, true, yoffset * (1-field), 0);
 		m_current = m_weavebob;
+	}
+	else if  (mode == 2) // FastMAD Motion Adaptive Deinterlacing
+	{
+		bufIdx++;
+		bufIdx &= ~(field ^ 1);
+		bufIdx |= (field);
+		bufIdx &= 3;
+
+		float offset = (yoffset * field);
+		offset = GSConfig.DisableInterlaceOffset ? 0.0f : offset;
+
+		ResizeTarget(&m_mad, ds.x, ds.y * 2.0f);
+		DoInterlace(m_merge, m_mad, 4, false, offset, bufIdx);
+		ResizeTarget(&m_blend, ds.x, ds.y);
+		DoInterlace(m_mad, m_blend, 5, false, 0, bufIdx);
+
+
+		m_current = m_blend;
 	}
 	else
 	{

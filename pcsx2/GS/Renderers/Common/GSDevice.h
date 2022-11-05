@@ -191,9 +191,7 @@ public:
 class InterlaceConstantBuffer
 {
 public:
-	GSVector2 ZrH;
-	float _pad[2];
-
+	GSVector4 ZrH; // data passed to the shader
 	InterlaceConstantBuffer() { memset(this, 0, sizeof(*this)); }
 };
 
@@ -739,11 +737,14 @@ private:
 	static const std::array<u8, 16> m_replaceDualSrcBlendMap;
 
 protected:
-	static constexpr u32 MAX_POOLED_TEXTURES = 300;
+	static constexpr int   NUM_INTERLACE_SHADERS = 6;
+	static constexpr float MAD_SENSITIVITY = 0.08f;
+	static constexpr u32   MAX_POOLED_TEXTURES = 300;
 
 	GSTexture* m_merge = nullptr;
 	GSTexture* m_weavebob = nullptr;
 	GSTexture* m_blend = nullptr;
+	GSTexture* m_mad = nullptr;
 	GSTexture* m_target_tmp = nullptr;
 	GSTexture* m_current = nullptr;
 	struct
@@ -762,7 +763,7 @@ protected:
 	GSTexture* FetchSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_reuse);
 
 	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) = 0;
-	virtual void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset) = 0;
+	virtual void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset, int bufIdx) = 0;
 	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) {}
 	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) {}
 	virtual void DoExternalFX(GSTexture* sTex, GSTexture* dTex) {}
