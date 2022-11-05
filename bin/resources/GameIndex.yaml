@@ -14709,22 +14709,22 @@ SLES-52588:
   region: "PAL-E"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
-    halfPixelOffset: 1 # Fixes lighting misalignment.
     autoFlush: 1 # Fixes missing lighting.
+    # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLES-52589:
   name: "Mercenaries - Playground of Destruction"
   region: "PAL-F"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
-    halfPixelOffset: 1 # Fixes lighting misalignment.
     autoFlush: 1 # Fixes missing lighting.
+    # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLES-52590:
   name: "Mercenaries - Playground of Destruction"
   region: "PAL-G"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
-    halfPixelOffset: 1 # Fixes lighting misalignment.
     autoFlush: 1 # Fixes missing lighting.
+    # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLES-52591:
   name: "Dynasty Warriors 4 - Empires"
   region: "PAL-E"
@@ -15707,8 +15707,8 @@ SLES-53008:
   region: "PAL-I-S"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
-    halfPixelOffset: 1 # Fixes lighting misalignment.
     autoFlush: 1 # Fixes missing lighting.
+    # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLES-53009:
   name: "Dance Factory"
   region: "PAL-M5"
@@ -29599,8 +29599,8 @@ SLPM-65942:
   region: "NTSC-J"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
-    halfPixelOffset: 1 # Fixes lighting misalignment.
     autoFlush: 1 # Fixes missing lighting.
+    # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLPM-65943:
   name: "Angel's Feather"
   region: "NTSC-J"
@@ -31532,8 +31532,8 @@ SLPM-66465:
   region: "NTSC-J"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
-    halfPixelOffset: 1 # Fixes lighting misalignment.
     autoFlush: 1 # Fixes missing lighting.
+    # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLPM-66467:
   name: "Midway Arcade Treasures - The Game Center of USA"
   region: "NTSC-J"
@@ -43420,8 +43420,8 @@ SLUS-20932:
   compat: 5
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
-    halfPixelOffset: 1 # Fixes lighting misalignment.
     autoFlush: 1 # Fixes missing lighting.
+    # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLUS-20933:
   name: "Smash Court Pro Tournament Tennis 2"
   region: "NTSC-U"
@@ -48932,8 +48932,8 @@ SLUS-29137:
   region: "NTSC-U"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
-    halfPixelOffset: 1 # Fixes lighting misalignment.
     autoFlush: 1 # Fixes missing lighting.
+    # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLUS-29138:
   name: "Punisher, The [Demo]"
   region: "NTSC-U"
