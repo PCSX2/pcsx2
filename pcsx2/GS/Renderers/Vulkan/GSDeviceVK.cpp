@@ -855,22 +855,24 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
-void GSDeviceVK::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset)
+void GSDeviceVK::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset, int bufIdx)
 {
-	const GSVector2i size(dTex->GetSize());
-	const GSVector4 s = GSVector4(size);
+	const GSVector4 ss = GSVector4(sTex->GetSize());
+	const GSVector4 ds = GSVector4(dTex->GetSize());
+	const GSVector2i ds_i(dTex->GetSize());
 
 	const GSVector4 sRect(0, 0, 1, 1);
-	const GSVector4 dRect(0.0f, yoffset, s.x, s.y + yoffset);
+	const GSVector4 dRect(0.0f, yoffset, ds.x, ds.y + yoffset);
 
 	InterlaceConstantBuffer cb;
-	cb.ZrH = GSVector2(0, 1.0f / s.y);
+
+	cb.ZrH = GSVector4(static_cast<float>(bufIdx), 1.0f / ss.y, ss.y, MAD_SENSITIVITY);
 
 	GL_PUSH("DoInterlace %dx%d Shader:%d Linear:%d", size.x, size.y, shader, linear);
 
 	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-	const GSVector4i rc(0, 0, size.x, size.y);
+	const GSVector4i rc(0, 0, ds_i.x, ds_i.y);
 	EndRenderPass();
 	OMSetRenderTargets(dTex, nullptr, rc, false);
 	SetUtilityTexture(sTex, linear ? m_linear_sampler : m_point_sampler);
