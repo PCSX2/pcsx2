@@ -281,13 +281,14 @@ __fi void cpuClearInt( uint i )
 {
 	pxAssume( i < 32 );
 	cpuRegs.interrupt &= ~(1 << i);
+	cpuRegs.dmastall &= ~(1 << i);
 }
 
 static __fi void TESTINT( u8 n, void (*callback)() )
 {
 	if( !(cpuRegs.interrupt & (1 << n)) ) return;
 
-	if(!g_GameStarted || cpuTestCycle( cpuRegs.sCycle[n], cpuRegs.eCycle[n] ) )
+	if(!g_GameStarted || CHECK_INSTANTDMAHACK || cpuTestCycle( cpuRegs.sCycle[n], cpuRegs.eCycle[n] ) )
 	{
 		cpuClearInt( n );
 		callback();
@@ -298,12 +299,13 @@ static __fi void TESTINT( u8 n, void (*callback)() )
 
 // [TODO] move this function to Dmac.cpp, and remove most of the DMAC-related headers from
 // being included into R5900.cpp.
-static __fi void _cpuTestInterrupts()
+static __fi bool _cpuTestInterrupts()
 {
+
 	if (!dmacRegs.ctrl.DMAE || (psHu8(DMAC_ENABLER+2) & 1))
 	{
 		//Console.Write("DMAC Disabled or suspended");
-		return;
+		return false;
 	}
 	/* These are 'pcsx2 interrupts', they handle asynchronous stuff
 	   that depends on the cycle timings */
@@ -335,6 +337,11 @@ static __fi void _cpuTestInterrupts()
 		TESTINT(VIF_VU0_FINISH, vif0VUFinish);
 		TESTINT(VIF_VU1_FINISH, vif1VUFinish);
 	}
+
+	if ((cpuRegs.interrupt & 0x1FFFF) & ~cpuRegs.dmastall)
+		return true;
+	else
+		return false;
 }
 
 static __fi void _cpuTestTIMR()
@@ -420,10 +427,10 @@ __fi void _cpuEventTest_Shared()
 	// where a DMA buffer is overwritten without waiting for the transfer to end, which causes the fonts to get all messed up
 	// so to fix it, we run all the DMA's instantly when in the BIOS.
 	// Only use the lower 17 bits of the cpuRegs.interrupt as the upper bits are for VU0/1 sync which can't be done in a tight loop
-	if (!g_GameStarted && dmacRegs.ctrl.DMAE && !(psHu8(DMAC_ENABLER + 2) & 1) && (cpuRegs.interrupt & 0x1FFFF))
+	if ((!g_GameStarted || CHECK_INSTANTDMAHACK) && dmacRegs.ctrl.DMAE && !(psHu8(DMAC_ENABLER + 2) & 1) && (cpuRegs.interrupt & 0x1FFFF))
 	{
-		while(cpuRegs.interrupt & 0x1FFFF)
-			_cpuTestInterrupts();
+		while((cpuRegs.interrupt & 0x1FFFF) && _cpuTestInterrupts())
+			;
 	}
 	else
 		_cpuTestInterrupts();
@@ -529,6 +536,14 @@ __fi void cpuTestHwInts() {
 	cpuTestINTCInts();
 	cpuTestDMACInts();
 	cpuTestTIMRInts();
+}
+
+__fi void CPU_SET_DMASTALL(EE_EventType n, bool set)
+{
+	if (set)
+		cpuRegs.dmastall |= 1 << n;
+	else
+		cpuRegs.dmastall &= ~(1 << n);
 }
 
 __fi void CPU_INT( EE_EventType n, s32 ecycle)

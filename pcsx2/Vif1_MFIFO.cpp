@@ -300,6 +300,7 @@ void vifMFIFOInterrupt()
 		{
 			GUNIT_WARN("vifMFIFOInterrupt() - Waiting for Path 2 to be ready");
 			CPU_INT(DMAC_MFIFO_VIF, 128);
+			CPU_SET_DMASTALL(DMAC_VIF1, true);
 			return;
 		}
 	}
@@ -307,6 +308,7 @@ void vifMFIFOInterrupt()
 	{
 		//DevCon.Warning("Waiting on VU1 MFIFO");
 		CPU_INT(VIF_VU1_FINISH, std::max(16, cpuGetCycles(VU_MTVU_BUSY)));
+		CPU_SET_DMASTALL(DMAC_VIF1, true);
 		return;
 	}
 
@@ -339,6 +341,7 @@ void vifMFIFOInterrupt()
 			{
 				vif1Regs.stat.VPS = VPS_DECODING; //If there's more data you need to say it's decoding the next VIF CMD (Onimusha - Blade Warriors)
 				VIF_LOG("VIF1 MFIFO Stalled");
+				CPU_SET_DMASTALL(DMAC_VIF1, true);
 				return;
 			}
 		}
@@ -358,6 +361,7 @@ void vifMFIFOInterrupt()
 	if (vif1.inprogress & 0x10)
 	{
 		FireMFIFOEmpty();
+		CPU_SET_DMASTALL(DMAC_VIF1, true);
 		return;
 	}
 
@@ -408,6 +412,6 @@ void vifMFIFOInterrupt()
 	vif1ch.chcr.STR = false;
 	hwDmacIrq(DMAC_VIF1);
 	DMA_LOG("VIF1 MFIFO DMA End");
-
+	CPU_SET_DMASTALL(DMAC_VIF1, false);
 	vif1Regs.stat.FQC = 0;
 }

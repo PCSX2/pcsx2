@@ -67,6 +67,11 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			)
 		},
 		{
+			_("Instant DMA hack. Try if all else fails."),
+			pxEt(L"Known to affect following games:\n * Fire Pro Wrestling Z (Bad ring graphics)"
+			)
+		},
+		{
 			_("Handle DMAC writes when it is busy."),
 			pxEt( L"Known to affect following games:\n * Mana Khemia 1 (Going \"off campus\"), Metal Saga (Intro FMV), Pilot Down Behind Enemy Lines\n"
 			)

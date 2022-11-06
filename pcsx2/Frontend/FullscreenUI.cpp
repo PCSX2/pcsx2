@@ -3844,6 +3844,9 @@ void FullscreenUI::DrawGameFixesSettingsPage()
 	DrawToggleSetting(bsi, "EE Timing Hack",
 		"Known to affect following games: Digital Devil Saga (Fixes FMV and crashes), SSX (Fixes bad graphics and crashes).",
 		"EmuCore/Gamefixes", "EETimingHack", false);
+	DrawToggleSetting(bsi, "Instant DMA Hack",
+		"Known to affect following games: Fire Pro Wrestling Z (Bad ring graphics).",
+		"EmuCore/Gamefixes", "InstantDMAHack", false);
 	DrawToggleSetting(bsi, "Handle DMAC writes when it is busy.",
 		"Known to affect following games: Mana Khemia 1 (Going \"off campus\"), Metal Saga (Intro FMV), Pilot Down Behind Enemy Lines.",
 		"EmuCore/Gamefixes", "DMABusyHack", false);

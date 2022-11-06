@@ -154,7 +154,7 @@ static __fi void EndEE()
 		sif1.ee.cycles = 1;
 	}
 
-
+	CPU_SET_DMASTALL(DMAC_SIF1, false);
 	CPU_INT(DMAC_SIF1, /*std::min((int)(*/sif1.ee.cycles*BIAS/*), 384)*/);
 }
 
@@ -225,6 +225,7 @@ static __fi void HandleEETransfer()
 				{
 					hwDmacIrq(DMAC_STALL_SIS);
 					sif1_dma_stall = true;
+					CPU_SET_DMASTALL(DMAC_SIF1, true);
 					return;
 				}
 			}
@@ -341,7 +342,7 @@ __fi void dmaSIF1()
 	psHu32(SBUS_F240) |= 0x4000;
 	sif1.ee.busy = true;
 
-
+	CPU_SET_DMASTALL(DMAC_SIF1, false);
 	// Okay, this here is needed currently (r3644).
 	// FFX battles in the thunder plains map die otherwise, Phantasy Star 4 as well
 	// These 2 games could be made playable again by increasing the time the EE or the IOP run,
