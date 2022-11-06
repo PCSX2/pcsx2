@@ -17,7 +17,4 @@
 
 void runCodegenTest(void (*exec)(void *base), const char* description, const char* expected);
 
-// Use null to skip, empty string to expect no output
-#define CODEGEN_TEST(command, expected32, expected64) runCodegenTest([](void *base){ command; }, #command, expected64)
-#define CODEGEN_TEST_64(command, expected) CODEGEN_TEST(command, nullptr, expected)
-#define CODEGEN_TEST_BOTH(command, expected) CODEGEN_TEST(command, expected, expected)
+#define CODEGEN_TEST(command, expected) runCodegenTest([](void *base){ command; }, #command, expected)

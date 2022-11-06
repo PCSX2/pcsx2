@@ -845,7 +845,7 @@ extern const xRegister32
 		bool IsMem() const { return true; }
 		bool IsReg() const { return false; }
 		bool IsExtended() const { return false; } // Non sense but ease template
-		bool IsWide() const { return GetOperandSize() == 8; }
+		bool IsWide() const { return _operandSize == 8; }
 
 		operator xAddressVoid()
 		{

@@ -88,7 +88,7 @@ namespace x86Emitter
 		}
 		else
 		{
-			xMOV(rax, ptrNative[f]);
+			xLEA(rax, ptr64[f]);
 			xCALL(rax);
 		}
 	}
@@ -103,7 +103,7 @@ namespace x86Emitter
 		}
 		else
 		{
-			xMOV(rax, ptrNative[f]);
+			xLEA(rax, ptr64[f]);
 			xCALL(rax);
 		}
 	}
