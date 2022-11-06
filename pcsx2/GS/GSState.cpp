@@ -2193,21 +2193,21 @@ void GSState::Move()
 
 				for (int y = starty; y != endy; y+= y_inc, _sy += y_inc, _dy += y_inc)
 				{
-					auto s = getPAHelper(spo, sx, _sy);
-					auto d = getPAHelper(dpo, dx, _dy);
+					auto s = getPAHelper(spo, 0, _sy);
+					auto d = getPAHelper(dpo, 0, _dy);
 
 					if (((sx < dx) && ((xpage + page_width) > dx)))
 					{
 						for (int x = w - 1; x >= 0; x--)
 						{
-							pxCopyFn(d, s, x);
+							pxCopyFn(d, s, (dx + x) & 2047, (sx + x) & 2047);
 						}
 					}
 					else
 					{
 						for (int x = 0; x < w; x++)
 						{
-							pxCopyFn(d, s, x);
+							pxCopyFn(d, s, (dx + x) & 2047, (sx + x) & 2047);
 						}
 					}
 				}
@@ -2216,12 +2216,12 @@ void GSState::Move()
 			{
 				for (int y = 0; y < h; y++, _sy += yinc, _dy += yinc)
 				{
-					auto s = getPAHelper(spo, sx, _sy);
-					auto d = getPAHelper(dpo, dx, _dy);
+					auto s = getPAHelper(spo, 0, _sy);
+					auto d = getPAHelper(dpo, 0, _dy);
 
 					for (int x = 0; x < w; x++)
 					{
-						pxCopyFn(d, s, x);
+						pxCopyFn(d, s, (dx + x) & 2047, (sx + x) & 2047);
 					}
 				}
 			}
@@ -2230,12 +2230,12 @@ void GSState::Move()
 		{
 			for (int y = 0; y < h; y++, _sy += yinc, _dy += yinc)
 			{
-				auto s = getPAHelper(spo, sx, _sy);
-				auto d = getPAHelper(dpo, dx, _dy);
+				auto s = getPAHelper(spo, 0, _sy);
+				auto d = getPAHelper(dpo, 0, _dy);
 
 				for (int x = 0; x < w; x++)
 				{
-					pxCopyFn(d, s, -x);
+					pxCopyFn(d, s, (dx - x) & 2047, (sx - x) & 2047);
 				}
 			}
 		}
@@ -2245,9 +2245,9 @@ void GSState::Move()
 	{
 		genericCopy(dpo, spo,
 			[](const GSOffset& o, int x, int y) { return o.paMulti(x, y); },
-			[=](const GSOffset::PAHelper& d, const GSOffset::PAHelper& s, int x)
+			[=](const GSOffset::PAHelper& d, const GSOffset::PAHelper& s, int dx, int sx)
 			{
-				return pxCopyFn(d.value(x), s.value(x));
+				return pxCopyFn(d.value(dx), s.value(sx));
 			});
 	};
 
@@ -2255,9 +2255,9 @@ void GSState::Move()
 	{
 		genericCopy(dpo, spo,
 			[=](const GSOffset& o, int x, int y) { return o.paMulti(vm, x, y); },
-			[=](const auto& d, const auto& s, int x)
+			[=](const auto& d, const auto& s, int dx, int sx)
 			{
-				return pxCopyFn(d.value(x), s.value(x));
+				return pxCopyFn(d.value(dx), s.value(sx));
 			});
 	};
 
