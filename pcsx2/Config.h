@@ -35,6 +35,7 @@ enum GamefixId
 	Fix_SkipMpeg,
 	Fix_OPHFlag,
 	Fix_EETiming,
+	Fix_InstantDMA,
 	Fix_DMABusy,
 	Fix_GIFFIFO,
 	Fix_VIFFIFO,
@@ -836,6 +837,7 @@ struct Pcsx2Config
 			SkipMPEGHack : 1, // Skips MPEG videos (Katamari and other games need this)
 			OPHFlagHack : 1, // Bleach Blade Battlers
 			EETimingHack : 1, // General purpose timing hack.
+			InstantDMAHack : 1, // Instantly complete DMA's if possible, good for cache emulation problems.
 			DMABusyHack : 1, // Denies writes to the DMAC when it's busy. This is correct behaviour but bad timing can cause problems.
 			GIFFIFOHack : 1, // Enabled the GIF FIFO (more correct but slower)
 			VIFFIFOHack : 1, // Pretends to fill the non-existant VIF FIFO Buffer.
@@ -1153,6 +1155,7 @@ namespace EmuFolders
 #define CHECK_FPUNEGDIVHACK (EmuConfig.Gamefixes.FpuNegDivHack) // Special Fix for Gundam games messed up camera-view.
 #define CHECK_XGKICKHACK (EmuConfig.Gamefixes.XgKickHack) // Special Fix for Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics.
 #define CHECK_EETIMINGHACK (EmuConfig.Gamefixes.EETimingHack) // Fix all scheduled events to happen in 1 cycle.
+#define CHECK_INSTANTDMAHACK (EmuConfig.Gamefixes.InstantDMAHack) // Attempt to finish DMA's instantly, useful for games which rely on cache emulation.
 #define CHECK_SKIPMPEGHACK (EmuConfig.Gamefixes.SkipMPEGHack) // Finds sceMpegIsEnd pattern to tell the game the mpeg is finished (Katamari and a lot of games need this)
 #define CHECK_OPHFLAGHACK (EmuConfig.Gamefixes.OPHFlagHack) // Bleach Blade Battlers
 #define CHECK_DMABUSYHACK (EmuConfig.Gamefixes.DMABusyHack) // Denies writes to the DMAC when it's busy. This is correct behaviour but bad timing can cause problems.

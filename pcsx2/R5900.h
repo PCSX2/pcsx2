@@ -174,6 +174,7 @@ struct cpuRegisters {
 	int branch;
 	int opmode;			// operating mode
 	u32 tempcycles;
+	u32 dmastall;
 };
 
 // used for optimization
@@ -417,6 +418,7 @@ enum EE_EventType
 };
 
 extern void CPU_INT( EE_EventType n, s32 ecycle );
+extern void CPU_SET_DMASTALL(EE_EventType n, bool set);
 extern uint intcInterrupt();
 extern uint dmacInterrupt();
 

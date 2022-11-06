@@ -858,6 +858,7 @@ static const char* const tbl_GamefixNames[] =
 	"SkipMPEG",
 	"OPHFlag",
 	"EETiming",
+	"InstantDMA",
 	"DMABusy",
 	"GIFFIFO",
 	"VIFFIFO",
@@ -897,6 +898,7 @@ void Pcsx2Config::GamefixOptions::Set(GamefixId id, bool enabled)
 		case Fix_FpuNegDiv:           FpuNegDivHack           = enabled; break;
 		case Fix_XGKick:              XgKickHack              = enabled; break;
 		case Fix_EETiming:            EETimingHack            = enabled; break;
+		case Fix_InstantDMA:          InstantDMAHack          = enabled; break;
 		case Fix_SoftwareRendererFMV: SoftwareRendererFMVHack = enabled; break;
 		case Fix_SkipMpeg:            SkipMPEGHack            = enabled; break;
 		case Fix_OPHFlag:             OPHFlagHack             = enabled; break;
@@ -923,6 +925,7 @@ bool Pcsx2Config::GamefixOptions::Get(GamefixId id) const
 		case Fix_FpuNegDiv:           return FpuNegDivHack;
 		case Fix_XGKick:              return XgKickHack;
 		case Fix_EETiming:            return EETimingHack;
+		case Fix_InstantDMA:          return InstantDMAHack;
 		case Fix_SoftwareRendererFMV: return SoftwareRendererFMVHack;
 		case Fix_SkipMpeg:            return SkipMPEGHack;
 		case Fix_OPHFlag:             return OPHFlagHack;
@@ -949,6 +952,7 @@ void Pcsx2Config::GamefixOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(FpuNegDivHack);
 	SettingsWrapBitBool(XgKickHack);
 	SettingsWrapBitBool(EETimingHack);
+	SettingsWrapBitBool(InstantDMAHack);
 	SettingsWrapBitBool(SoftwareRendererFMVHack);
 	SettingsWrapBitBool(SkipMPEGHack);
 	SettingsWrapBitBool(OPHFlagHack);

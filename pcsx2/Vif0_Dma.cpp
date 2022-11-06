@@ -139,6 +139,7 @@ __fi void vif0VUFinish()
 	if (VU0.VI[REG_VPU_STAT].UL & 0x5)
 	{
 		CPU_INT(VIF_VU0_FINISH, 128);
+		CPU_SET_DMASTALL(VIF_VU0_FINISH, true);
 		return;
 	}
 
@@ -150,6 +151,7 @@ __fi void vif0VUFinish()
 		_cycles = VU0.cycle - _cycles;
 		//DevCon.Warning("Finishing VU0 %d cycles", _cycles);
 		CPU_INT(VIF_VU0_FINISH, _cycles * BIAS);
+		CPU_SET_DMASTALL(VIF_VU0_FINISH, true);
 		return;
 	}
 	vif0Regs.stat.VEW = false;
@@ -177,6 +179,7 @@ __fi void vif0Interrupt()
 	if(vif0.waitforvu)
 	{
 		CPU_INT(VIF_VU0_FINISH, 16);
+		CPU_SET_DMASTALL(DMAC_VIF0, true);
 		return;
 	}
 	if (vif0Regs.stat.VGW)
@@ -208,6 +211,7 @@ __fi void vif0Interrupt()
 			{
 				vif0Regs.stat.VPS = VPS_DECODING; //If there's more data you need to say it's decoding the next VIF CMD (Onimusha - Blade Warriors)
 				VIF_LOG("VIF0 Stalled");
+				CPU_SET_DMASTALL(DMAC_VIF0, true);
 				return;
 			}
 		}
@@ -266,6 +270,7 @@ __fi void vif0Interrupt()
 	if(vif0.queued_program) vifExecQueue(0);
 	g_vif0Cycles = 0;
 	hwDmacIrq(DMAC_VIF0);
+	CPU_SET_DMASTALL(DMAC_VIF0, false);
 	vif0Regs.stat.FQC = 0;
 	DMA_LOG("VIF0 DMA End");
 }
@@ -278,6 +283,7 @@ void dmaVIF0()
 	        vif0ch.tadr, vif0ch.asr0, vif0ch.asr1);
 
 	g_vif0Cycles = 0;
+	CPU_SET_DMASTALL(DMAC_VIF0, false);
 
 	if (vif0ch.qwc > 0)   // Normal Mode
 	{

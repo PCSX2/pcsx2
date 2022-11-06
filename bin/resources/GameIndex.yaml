@@ -10650,6 +10650,8 @@ SLES-50713:
 SLES-50714:
   name: "Defender"
   region: "PAL-M5"
+  gameFixes:
+    - InstantDMAHack # Fixes bad UI positioning.
 SLES-50715:
   name: "Gravity Games Bike Street - Vertical Dirt"
   region: "PAL-M5"
@@ -25002,6 +25004,8 @@ SLPM-62285:
 SLPM-62287:
   name: "Fire Pro Wrestling Z [Limited Edition]"
   region: "NTSC-J"
+  gameFixes:
+    - InstantDMAHack # Fixes bad ring/UI textures.
 SLPM-62288:
   name: "pop'n music Best Hits!"
   region: "NTSC-J"
@@ -25144,6 +25148,8 @@ SLPM-62342:
   name: "Fire Pro Wrestling Z"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - InstantDMAHack # Fixes bad ring/UI textures.
 SLPM-62343:
   name: "Simple 2000 Series Vol. 34 - The Renai Horror Adventure - Hyouryuu Shoujo"
   region: "NTSC-J"
@@ -39965,6 +39971,8 @@ SLUS-20191:
   name: "Defender"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - InstantDMAHack # Fixes bad UI positioning.
 SLUS-20194:
   name: "Grandia II"
   region: "NTSC-U"

@@ -74,6 +74,7 @@ void IPU1dma()
 		//if we don't, we risk causing the data to go out of sync with the fifo and we end up losing some!
 		//This is true for Dragons Quest 8 and probably others which suspend the DMA.
 		DevCon.Warning("IPU1 running when IPU1 DMA disabled! CHCR %x QWC %x", ipu1ch.chcr._u32, ipu1ch.qwc);
+		CPU_SET_DMASTALL(DMAC_TO_IPU, true);
 		return;
 	}
 
@@ -81,6 +82,7 @@ void IPU1dma()
 	{
 		// IPU isn't expecting any data, so put it in to wait mode.
 		cpuRegs.eCycle[4] = 0x9999;
+		CPU_SET_DMASTALL(DMAC_TO_IPU, true);
 		return;
 	}
 
@@ -133,6 +135,7 @@ void IPU1dma()
 		if (!(IPU1Status.DMAFinished && !IPU1Status.InProgress))
 		{
 			cpuRegs.eCycle[4] = 0x9999;//IPU_INT_TO(2048);
+			CPU_SET_DMASTALL(DMAC_TO_IPU, true);
 		}
 		else
 		{
@@ -156,6 +159,7 @@ void IPU0dma()
 	{
 		if(!CommandExecuteQueued)
 			IPUProcessInterrupt();
+		CPU_SET_DMASTALL(DMAC_FROM_IPU, true);
 		return;
 	}
 
@@ -194,6 +198,7 @@ void IPU0dma()
 	if (ipuRegs.ctrl.BUSY && !CommandExecuteQueued)
 	{
 		CommandExecuteQueued = true;
+		CPU_SET_DMASTALL(DMAC_FROM_IPU, true);
 		CPU_INT(IPU_PROCESS, 4);
 	}
 }
@@ -205,6 +210,7 @@ __fi void dmaIPU0() // fromIPU
 	if (dmacRegs.ctrl.STS == STS_fromIPU)   // STS == fromIPU - Initial settings
 		dmacRegs.stadr.ADDR = ipu0ch.madr;
 
+	CPU_SET_DMASTALL(DMAC_FROM_IPU, false);
 	// Note: This should probably be a very small value, however anything lower than this will break Mana Khemia
 	// This is because the game sends bad DMA information, starts an IDEC, then sets it to the correct values
 	// but because our IPU is too quick, it messes up the sync between the DMA and IPU.
@@ -230,6 +236,7 @@ __fi void dmaIPU0() // fromIPU
 __fi void dmaIPU1() // toIPU
 {
 	IPU_LOG("IPU1DMAStart QWC %x, MADR %x, CHCR %x, TADR %x", ipu1ch.qwc, ipu1ch.madr, ipu1ch.chcr._u32, ipu1ch.tadr);
+	CPU_SET_DMASTALL(DMAC_TO_IPU, false);
 
 	if (ipu1ch.chcr.MOD == CHAIN_MODE)  //Chain Mode
 	{
@@ -289,6 +296,7 @@ void ipu0Interrupt()
 
 	ipu0ch.chcr.STR = false;
 	hwDmacIrq(DMAC_FROM_IPU);
+	CPU_SET_DMASTALL(DMAC_FROM_IPU, false);
 	DMA_LOG("IPU0 DMA End");
 }
 
@@ -305,4 +313,5 @@ __fi void ipu1Interrupt()
 	DMA_LOG("IPU1 DMA End");
 	ipu1ch.chcr.STR = false;
 	hwDmacIrq(DMAC_TO_IPU);
+	CPU_SET_DMASTALL(DMAC_TO_IPU, false);
 }
