@@ -503,7 +503,7 @@ const xRegister32
 
 	void EmitRex(const xRegisterBase& reg1, const xIndirectVoid& sib)
 	{
-		bool w = reg1.IsWide();
+		bool w = reg1.IsWide() || sib.IsWide();
 		bool r = reg1.IsExtended();
 		bool x = sib.Index.IsExtended();
 		bool b = sib.Base.IsExtended();

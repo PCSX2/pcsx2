@@ -192,16 +192,16 @@ namespace x86Emitter
 	struct xImplSimd_PInsert
 	{
 		void B(const xRegisterSSE& to, const xRegister32& from, u8 imm8) const;
-		void B(const xRegisterSSE& to, const xIndirectVoid& from, u8 imm8) const;
+		void B(const xRegisterSSE& to, const xIndirect32& from, u8 imm8) const;
 
 		void W(const xRegisterSSE& to, const xRegister32& from, u8 imm8) const;
-		void W(const xRegisterSSE& to, const xIndirectVoid& from, u8 imm8) const;
+		void W(const xRegisterSSE& to, const xIndirect32& from, u8 imm8) const;
 
 		void D(const xRegisterSSE& to, const xRegister32& from, u8 imm8) const;
-		void D(const xRegisterSSE& to, const xIndirectVoid& from, u8 imm8) const;
+		void D(const xRegisterSSE& to, const xIndirect32& from, u8 imm8) const;
 
 		void Q(const xRegisterSSE& to, const xRegister64& from, u8 imm8) const;
-		void Q(const xRegisterSSE& to, const xIndirectVoid& from, u8 imm8) const;
+		void Q(const xRegisterSSE& to, const xIndirect64& from, u8 imm8) const;
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -215,7 +215,7 @@ namespace x86Emitter
 		// of dest are zero-extended (cleared).  This can be used to extract any single packed
 		// byte value from src into an x86 32 bit register.
 		void B(const xRegister32& to, const xRegisterSSE& from, u8 imm8) const;
-		void B(const xIndirectVoid& dest, const xRegisterSSE& from, u8 imm8) const;
+		void B(const xIndirect32& dest, const xRegisterSSE& from, u8 imm8) const;
 
 		// Copies the word element specified by imm8 from src to dest.  The upper bits
 		// of dest are zero-extended (cleared).  This can be used to extract any single packed
@@ -224,15 +224,15 @@ namespace x86Emitter
 		// [SSE-4.1] Note: Indirect memory forms of this instruction are an SSE-4.1 extension!
 		//
 		void W(const xRegister32& to, const xRegisterSSE& from, u8 imm8) const;
-		void W(const xIndirectVoid& dest, const xRegisterSSE& from, u8 imm8) const;
+		void W(const xIndirect32& dest, const xRegisterSSE& from, u8 imm8) const;
 
 		// [SSE-4.1] Copies the dword element specified by imm8 from src to dest.  This can be
 		// used to extract any single packed dword value from src into an x86 32 bit register.
 		void D(const xRegister32& to, const xRegisterSSE& from, u8 imm8) const;
-		void D(const xIndirectVoid& dest, const xRegisterSSE& from, u8 imm8) const;
+		void D(const xIndirect32& dest, const xRegisterSSE& from, u8 imm8) const;
 
 		// Insert a qword integer value from r/m64 into the xmm1 at the destination element specified by imm8.
 		void Q(const xRegister64& to, const xRegisterSSE& from, u8 imm8) const;
-		void Q(const xIndirectVoid& dest, const xRegisterSSE& from, u8 imm8) const;
+		void Q(const xIndirect64& dest, const xRegisterSSE& from, u8 imm8) const;
 	};
 } // namespace x86Emitter
