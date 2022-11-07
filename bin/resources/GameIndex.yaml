@@ -16168,6 +16168,7 @@ SLES-53191:
   region: "PAL-M5"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # De-blurs the 3d image.
 SLES-53192:
   name: "Nightmare Before Christmas, The - Tim Burton's"
   region: "PAL-M5"
@@ -17958,6 +17959,7 @@ SLES-53900:
   region: "PAL-M3"
   gsHWFixes:
     alignSprite: 1 # Fixes black lines when upscaling.
+    wildArmsHack: 1 # De-blurs the 3d image.
 SLES-53901:
   name: "Torino 2006"
   region: "PAL-M5"
@@ -22570,6 +22572,7 @@ SLKA-25063:
   region: "NTSC-K"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # De-blurs the 3d image.
 SLKA-25064:
   name: "Tenchu 3 Wrath of Heaven"
   region: "NTSC-K"
@@ -22800,6 +22803,7 @@ SLKA-25146:
   region: "NTSC-K"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # De-blurs the 3d image.
 SLKA-25149:
   name: "Silent Hill 4 - The Room"
   region: "NTSC-K"
@@ -27333,10 +27337,11 @@ SLPM-65245:
     roundSprite: 2 # Fixes font artifacts.
     mergeSprite: 1 # Fixes flame-like bleeding.
 SLPM-65246:
-  name: "Kaidou Battle - Nikko, Haruna, Rokko, Hakone"
+  name: "Kaido Battle - Nikko, Haruna, Rokko, Hakone"
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # De-blurs the 3d image.
 SLPM-65247:
   name: "Sangokushi Senki 2"
   region: "NTSC-J"
@@ -28210,6 +28215,7 @@ SLPM-65514:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # De-blurs the 3d image.
 SLPM-65515:
   name: "Sakura Taisen - Mysterious Paris"
   region: "NTSC-J"
@@ -29453,6 +29459,7 @@ SLPM-65897:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes black lines when upscaling.
+    wildArmsHack: 1 # De-blurs the 3d image.
 SLPM-65898:
   name: "Castle Fantasia [Deluxe Pack]"
   region: "NTSC-J"
@@ -29905,6 +29912,7 @@ SLPM-66022:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes black lines when upscaling.
+    wildArmsHack: 1 # De-blurs the 3d image.
 SLPM-66023:
   name: "Fushigi Yuugi - ShigiYuugi Kurotake Kaiden Gaiden - Kagami no Fujo [Limited Edition]"
   region: "NTSC-J"
