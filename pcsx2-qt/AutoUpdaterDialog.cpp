@@ -331,6 +331,13 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 
 				QString message = commit_obj["message"].toString();
 				QString author = commit_obj["author"].toObject()["name"].toString();
+
+				if (message.contains(QStringLiteral("[SAVEVERSION+]")))
+					update_will_break_save_states = true;
+
+				if (message.contains(QStringLiteral("[SETTINGSVERSION+]")))
+					update_increases_settings_version = true;
+
 				const int first_line_terminator = message.indexOf('\n');
 				if (first_line_terminator >= 0)
 					message.remove(first_line_terminator, message.size() - first_line_terminator);
@@ -339,12 +346,6 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 					changes_html +=
 						QStringLiteral("<li>%1 <i>(%2)</i></li>").arg(message.toHtmlEscaped()).arg(author.toHtmlEscaped());
 				}
-
-				if (message.contains(QStringLiteral("[SAVEVERSION+]")))
-					update_will_break_save_states = true;
-
-				if (message.contains(QStringLiteral("[SETTINGSVERSION+]")))
-					update_increases_settings_version = true;
 			}
 
 			changes_html += "</ul>";
