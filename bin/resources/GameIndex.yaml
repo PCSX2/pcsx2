@@ -21165,8 +21165,9 @@ SLES-55214:
 SLES-55215:
   name: "Growlanser - Heritage of War"
   region: "PAL-E"
-  gsHWFixes:
-    preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
+  compat: 5
+  # gsHWFixes: Disabled because of GitHub Issue #6797
+  #   preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
 SLES-55216:
   name: "Baroque"
   region: "PAL-E"
@@ -30740,8 +30741,9 @@ SLPM-66248:
 SLPM-66249:
   name: "Growlanser V - Generations [Limited Edition]"
   region: "NTSC-J"
-  gsHWFixes:
-    preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
+  compat: 5
+  # gsHWFixes: Disabled because of GitHub Issue #6797
+  #   preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
 SLPM-66250:
   name: "Choro Q HG 4 [Takara Best]"
   region: "NTSC-J"
@@ -31338,8 +31340,9 @@ SLPM-66417:
 SLPM-66418:
   name: "Growlanser V - Generations"
   region: "NTSC-J"
-  gsHWFixes:
-    preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
+  compat: 5
+  # gsHWFixes: Disabled because of GitHub Issue #6797
+  #   preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
 SLPM-66419:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "NTSC-J"
@@ -32491,8 +32494,9 @@ SLPM-66715:
 SLPM-66716:
   name: "Growlanser VI"
   region: "NTSC-J"
-  gsHWFixes:
-    preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
+  compat: 5
+  # gsHWFixes: Disabled because of GitHub Issue #6797
+  #   preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
 SLPM-66717:
   name: "Standard Daisenryaku - Dengekisen [Sega the Best]"
   region: "NTSC-J"
@@ -46661,8 +46665,8 @@ SLUS-21571:
   name: "Growlanser - Heritage of War"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
+  # gsHWFixes: Disabled because of GitHub Issue #6797
+  #   preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
 SLUS-21572:
   name: "Surf's Up"
   region: "NTSC-U"
