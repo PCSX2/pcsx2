@@ -3904,8 +3904,8 @@ bool GSRendererHW::PossibleCLUTDraw()
 	// Keep the draws simple, no alpha testing, blending, mipmapping, Z writes, and make sure it's flat.
 	const bool fb_only = m_context->TEST.ATE && m_context->TEST.AFAIL == 1 && m_context->TEST.ATST == ATST_NEVER;
 
-	// No Z writes.
-	if (!m_context->ZBUF.ZMSK && !fb_only)
+	// No Z writes, unless it's points, then it's quite likely to be a palette and they left it on.
+	if (!m_context->ZBUF.ZMSK && !fb_only && !(m_vt.m_primclass == GS_POINT_CLASS))
 		return false;
 
 	// Make sure it's flat.
