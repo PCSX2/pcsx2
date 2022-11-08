@@ -5502,6 +5502,8 @@ SCPS-15030:
 SCPS-15031:
   name: "Train Simulator Real, The"
   region: "NTSC-J"
+  gsHWFixes:
+    texturePreloading: 1 # Increases performance due to massive hash cache size.
 SCPS-15032:
   name: "Formula One 2002"
   region: "NTSC-J"
@@ -5520,6 +5522,8 @@ SCPS-15034:
 SCPS-15035:
   name: "Train Simulator Real, The - Keihin Keikyu"
   region: "NTSC-J"
+  gsHWFixes:
+    texturePreloading: 1 # Increases performance due to massive hash cache size.
 SCPS-15036:
   name: "Kaitou Sly Cooper"
   region: "NTSC-J"
