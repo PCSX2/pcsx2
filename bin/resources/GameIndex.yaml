@@ -30954,7 +30954,7 @@ SLPM-66302:
   name: "Clannad"
   region: "NTSC-J"
   gsHWFixes:
-    pointListPalette: 1
+    cpuCLUTRender: 1 # Fixes colours.
 SLPM-66307:
   name: "Sengoku Musou 2"
   region: "NTSC-J"
@@ -32100,7 +32100,7 @@ SLPM-66611:
   name: "Tomoyo After - It's Wonderful Life [CS Edition]"
   region: "NTSC-J"
   gsHWFixes:
-    pointListPalette: 1
+    cpuCLUTRender: 1 # Fixes Colours.
 SLPM-66612:
   name: "School Love [Limited Edition]"
   region: "NTSC-J"
