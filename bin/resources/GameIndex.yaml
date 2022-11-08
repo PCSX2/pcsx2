@@ -12742,6 +12742,8 @@ SLES-51681:
 SLES-51682:
   name: "Headhunter - Redemption"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting.
 SLES-51686:
   name: "Pitfall - The Lost Expedition"
   region: "PAL-E"
@@ -14466,9 +14468,13 @@ SLES-52510:
 SLES-52511:
   name: "Headhunter - Redemption"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting.
 SLES-52512:
   name: "Headhunter - Redemption"
   region: "PAL-M4"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting.
 SLES-52515:
   name: "Ultimate Casino"
   region: "PAL-E"
@@ -42869,6 +42875,8 @@ SLUS-20817:
   name: "Headhunter - Redemption"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes ghosting.
 SLUS-20818:
   name: "Bionicle"
   region: "NTSC-U"
