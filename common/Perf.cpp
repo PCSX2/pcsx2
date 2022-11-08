@@ -20,6 +20,10 @@
 #endif
 #ifdef ENABLE_VTUNE
 #include "jitprofiling.h"
+
+#include <string> // std::string
+#include <cstring> // strncpy
+#include <algorithm> // std::remove_if
 #endif
 
 //#define ProfileWithPerf

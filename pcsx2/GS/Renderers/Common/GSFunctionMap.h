@@ -219,7 +219,7 @@ public:
 
 			// if(iJIT_IsProfilingActive()) // always > 0
 			{
-				std::string name = format("%s<%016llx>()", m_name.c_str(), (u64)key);
+				std::string name = fmt::format("%s<%016llx>()", m_name.c_str(), (u64)key);
 
 				iJIT_Method_Load ml;
 
