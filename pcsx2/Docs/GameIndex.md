@@ -267,6 +267,6 @@ If you use VSCode and you want it to properly lint the GameIndex.yaml file you s
 
 ```json
 "yaml.schemas": {
-  "https://raw.githubusercontent.com/PCSX2/pcsx2/master/pcsx2/Docs/gamedb-schema.json": "**/bin/**GameIndex.yaml",
+  "https://raw.githubusercontent.com/PCSX2/pcsx2/master/pcsx2/Docs/gamedb-schema.json": "**/GameIndex.yaml",
 },
 ```
