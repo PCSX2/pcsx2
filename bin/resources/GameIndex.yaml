@@ -18493,6 +18493,8 @@ SLES-54147:
 SLES-54150:
   name: "Bionicle Heroes"
   region: "PAL-M6"
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes ghosting on objects and people.
 SLES-54151:
   name: "Let's Make a Soccer Team!"
   region: "PAL-M5"
@@ -32220,6 +32222,8 @@ SLPM-66644:
 SLPM-66645:
   name: "Bionicle Heroes"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes ghosting on objects and people.
 SLPM-66646:
   name: "Shining Force EXA"
   region: "NTSC-J"
@@ -46142,6 +46146,8 @@ SLUS-21428:
   name: "Bionicle Heroes"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes ghosting on objects and people.
 SLUS-21430:
   name: "IGPX - Immortal Grand Prix"
   region: "NTSC-U"
