@@ -708,6 +708,10 @@ void GSTextureCache::InvalidateVideoMemType(int type, u32 bp)
 	if (GSConfig.UserHacks_DisableDepthSupport)
 		return;
 
+	// The Getaway games need this function disabled for player shadows to work correctly.
+	if (g_gs_renderer->m_game.title == CRC::GetawayGames)
+		return;
+
 	auto& list = m_dst[type];
 	for (auto i = list.begin(); i != list.end(); ++i)
 	{
