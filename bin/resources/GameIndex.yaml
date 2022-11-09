@@ -16193,6 +16193,8 @@ SLES-53193:
 SLES-53194:
   name: "LEGO Star Wars"
   region: "PAL-M7"
+  clampModes:
+    vuClampMode: 3 # Fixes bad coordinate spam.
 SLES-53195:
   name: "Punisher, The"
   region: "PAL-E"
@@ -35085,6 +35087,8 @@ SLPS-20422:
 SLPS-20423:
   name: "LEGO Star Wars - The Video Game"
   region: "NTSC-J"
+  clampModes:
+    vuClampMode: 3 # Fixes bad coordinate spam.
 SLPS-20424:
   name: "Taiko no Tatsujin - Tobikkiri! Anime Special [with Tatacon]"
   region: "NTSC-J"
@@ -44249,6 +44253,8 @@ SLUS-21083:
   name: "LEGO Star Wars - The Video Game"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vuClampMode: 3 # Fixes bad coordinate spam.
 SLUS-21084:
   name: "Winnie the Pooh's Rumbly Tumbly Adventure"
   region: "NTSC-U"
