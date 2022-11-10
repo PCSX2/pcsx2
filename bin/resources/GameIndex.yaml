@@ -507,6 +507,8 @@ SCAJ-20007:
 SCAJ-20008:
   name: "V-Rally 3"
   region: "NTSC-Unk"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes fog and make lights on cars work again.
 SCAJ-20009:
   name: "Herdy Gerdy"
   region: "NTSC-Unk"
@@ -983,10 +985,11 @@ SCAJ-20118:
     halfPixelOffset: 2 # Fixes misalignment bloom effects.
 SCAJ-20119:
   name: "Gladiator - Road to Freedom"
-  region: "NTSC-Unk"
+  region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
+    cpuCLUTRender: 1 # Fixes sun background on the windows when selecting your 'race'.
 SCAJ-20120:
   name: "Digital Devil Saga - Avatar Tuner 2"
   region: "NTSC-Unk"
@@ -5138,6 +5141,11 @@ SCKA-20093:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
     autoFlush: 1 # Fixes glows.
+SCKA-20095:
+  name: "Okami"
+  region: "NTSC-K"
+  gsHWFixes:
+    roundSprite: 2 # Reduces misalignment issues but the game is just bad for upscaling.
 SCKA-20096:
   name: "Barnyard"
   region: "NTSC-K"
@@ -8333,7 +8341,7 @@ SCUS-97517:
   clampModes:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes blurriness..
+    halfPixelOffset: 2 # Fixes blurriness.
 SCUS-97518:
   name: "Ratchet & Clank - Up Your Arsenal [Greatest Hits]"
   region: "NTSC-U"
@@ -8987,6 +8995,11 @@ SLED-51211:
   region: "PAL-Unk"
   roundModes:
     vuRoundMode: 1 # Bright lights in cars.
+SLED-51212:
+  name: "V-Rally 3"
+  region: "PAL-E"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes fog and make lights on cars work again.
 SLED-51225:
   name: "Rayman 3 [Demo]"
   region: "PAL-E"
@@ -10687,6 +10700,8 @@ SLES-50725:
   name: "V-Rally 3"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes fog and make lights on cars work again.
 SLES-50726:
   name: "Myst III - Exile"
   region: "PAL-M6"
@@ -11146,7 +11161,7 @@ SLES-50879:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - FpuNegDivHack # Fixes sky being shown over the 3d.
+    - FpuNegDivHack # Fixes sky being shown over the 3D.
 SLES-50880:
   name: "BMX XXX"
   region: "PAL-M4"
@@ -11907,7 +11922,7 @@ SLES-51232:
   gameFixes:
     - XGKickHack # Fixes black models on certain games in World Tour.
 SLES-51233:
-  name: "DragonBall Z - Budokai"
+  name: "Dragon Ball Z - Budokai"
   region: "PAL-M4"
   compat: 5
   gsHWFixes:
@@ -13087,7 +13102,7 @@ SLES-51838:
   name: "Astérix & Obélix XXL"
   region: "PAL-M5"
 SLES-51839:
-  name: "DragonBall Z - Budokai 2"
+  name: "Dragon Ball Z - Budokai 2"
   region: "PAL-M5"
   compat: 5
 SLES-51840:
@@ -15077,7 +15092,7 @@ SLES-52729:
   region: "PAL-M5"
   compat: 5
 SLES-52730:
-  name: "DragonBall Z - Budokai 3"
+  name: "Dragon Ball Z - Budokai 3"
   region: "PAL-M5"
   compat: 5
 SLES-52731:
@@ -16180,7 +16195,7 @@ SLES-53191:
   region: "PAL-M5"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3d image.
+    wildArmsHack: 1 # De-blurs the 3D image.
 SLES-53192:
   name: "Nightmare Before Christmas, The - Tim Burton's"
   region: "PAL-M5"
@@ -16214,12 +16229,12 @@ SLES-53199:
   name: "25 to Life"
   region: "PAL-E"
 SLES-53200:
-  name: "DragonBall Z - Budokai Tenkaichi"
+  name: "Dragon Ball Z - Budokai Tenkaichi"
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes lines when powering up.
-    roundSprite: 2 # Fixes misaligned bloom.
+    cpuCLUTRender: 1 # Reduces the bloomy blur of characters.
 SLES-53201:
   name: "Saint Seiya Chapter Sanctuary"
   region: "PAL-M5"
@@ -16421,7 +16436,7 @@ SLES-53345:
   name: "Shadow of Ganymede"
   region: "PAL-E"
 SLES-53346:
-  name: "DragonBall Z - Budokai 3 [Collector's Edition]"
+  name: "Dragon Ball Z - Budokai 3 [Collector's Edition]"
   region: "PAL-M5"
   compat: 5
 SLES-53350:
@@ -16455,6 +16470,7 @@ SLES-53356:
   gsHWFixes:
     halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
+    cpuCLUTRender: 1 # Fixes sun background on the windows when selecting your 'race'.
 SLES-53357:
   name: "21 Card Games"
   region: "PAL-E"
@@ -17973,7 +17989,7 @@ SLES-53900:
   region: "PAL-M3"
   gsHWFixes:
     alignSprite: 1 # Fixes black lines when upscaling.
-    wildArmsHack: 1 # De-blurs the 3d image.
+    wildArmsHack: 1 # De-blurs the 3D image.
 SLES-53901:
   name: "Torino 2006"
   region: "PAL-M5"
@@ -18537,7 +18553,7 @@ SLES-54160:
   name: "Eragon"
   region: "PAL-R"
 SLES-54161:
-  name: "Super DragonBall Z"
+  name: "Super Dragon Ball Z"
   region: "PAL-E"
 SLES-54162:
   name: "Saint Seiya - The Hades"
@@ -18547,7 +18563,7 @@ SLES-54163:
   name: "Naruto - Ultimate Ninja"
   region: "PAL-F"
 SLES-54164:
-  name: "DragonBall Z Budokai - Tenkaichi 2"
+  name: "Dragon Ball Z Budokai - Tenkaichi 2"
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
@@ -19212,6 +19228,8 @@ SLES-54437:
 SLES-54439:
   name: "Okami"
   region: "PAL-M3"
+  gsHWFixes:
+    roundSprite: 2 # Reduces misalignment issues but the game is just bad for upscaling.
 SLES-54440:
   name: "GT-R Touring"
   region: "PAL-E"
@@ -20512,9 +20530,11 @@ SLES-54944:
   name: "Disney Princess - Enchanted Journey"
   region: "PAL-FI-SW"
 SLES-54945:
-  name: "Dragonball Z Budokai Tenkaichi 3"
+  name: "Dragon Ball Z Budokai Tenkaichi 3"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    cpuCLUTRender: 1 # Reduces the bloomy blur of characters.
 SLES-54946:
   name: "Sega Superstars Tennis"
   region: "PAL-M5"
@@ -21008,21 +21028,25 @@ SLES-55143:
   region: "PAL-G-I"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but on normal vertex is less ghosting but causes corruption at the sides.
+    cpuCLUTRender: 1 # Fixes title-screen bloom and church windows on new game and other locations.
 SLES-55144:
   name: "Chronicles of Narnia, The - Prince Caspian"
   region: "PAL-M6"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but on normal vertex is less ghosting but causes corruption at the sides.
+    cpuCLUTRender: 1 # Fixes title-screen bloom and church windows on new game and other locations.
 SLES-55145:
   name: "Chronicles of Narnia, The - Prince Caspian"
   region: "PAL-F-DU"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but on normal vertex is less ghosting but causes corruption at the sides.
+    cpuCLUTRender: 1 # Fixes title-screen bloom and church windows on new game and other locations.
 SLES-55146:
   name: "Chronicles of Narnia, The - Prince Caspian"
   region: "PAL-UK"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but on normal vertex is less ghosting but causes corruption at the sides.
+    cpuCLUTRender: 1 # Fixes title-screen bloom and church windows on new game and other locations.
 SLES-55147:
   name: "Silent Hill - Origins"
   region: "PAL-M5"
@@ -21064,6 +21088,7 @@ SLES-55169:
   region: "PAL-M5"
   gsHWFixes:
     cpuFramebufferConversion: 1 # Fixes black with rainbow screen.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
 SLES-55170:
   name: "Margot's Word Brain"
   region: "PAL-M5"
@@ -21739,11 +21764,15 @@ SLES-55481:
   region: "PAL-E-F"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
+  gsHWFixes:
+    cpuCLUTRender: 1 # Reduces the bloomy blur of characters.
 SLES-55482:
   name: "Naruto Shippuden - Ultimate Ninja 4"
   region: "PAL-G-I-S"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
+  gsHWFixes:
+    cpuCLUTRender: 1 # Reduces the bloomy blur of characters.
 SLES-55483:
   name: "Guilty Gear XX Accent Core Plus"
   region: "PAL-E"
@@ -22591,7 +22620,7 @@ SLKA-25063:
   region: "NTSC-K"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3d image.
+    wildArmsHack: 1 # De-blurs the 3D image.
 SLKA-25064:
   name: "Tenchu 3 Wrath of Heaven"
   region: "NTSC-K"
@@ -22822,7 +22851,7 @@ SLKA-25146:
   region: "NTSC-K"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3d image.
+    wildArmsHack: 1 # De-blurs the 3D image.
 SLKA-25149:
   name: "Silent Hill 4 - The Room"
   region: "NTSC-K"
@@ -27116,6 +27145,8 @@ SLPM-65190:
 SLPM-65191:
   name: "V-Rally 3"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes fog and make lights on cars work again.
 SLPM-65192:
   name: "NBA Live 2003"
   region: "NTSC-J"
@@ -27364,7 +27395,7 @@ SLPM-65246:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3d image.
+    wildArmsHack: 1 # De-blurs the 3D image.
 SLPM-65247:
   name: "Sangokushi Senki 2"
   region: "NTSC-J"
@@ -28238,7 +28269,7 @@ SLPM-65514:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3d image.
+    wildArmsHack: 1 # De-blurs the 3D image.
 SLPM-65515:
   name: "Sakura Taisen - Mysterious Paris"
   region: "NTSC-J"
@@ -28309,6 +28340,8 @@ SLPM-65538:
 SLPM-65539:
   name: "V-Rally 3"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes fog and make lights on cars work again.
 SLPM-65540:
   name: "Galaxy Angel - Moonlit Lovers [First Limited Edition]"
   region: "NTSC-J"
@@ -29482,7 +29515,7 @@ SLPM-65897:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes black lines when upscaling.
-    wildArmsHack: 1 # De-blurs the 3d image.
+    wildArmsHack: 1 # De-blurs the 3D image.
 SLPM-65898:
   name: "Castle Fantasia [Deluxe Pack]"
   region: "NTSC-J"
@@ -29935,7 +29968,7 @@ SLPM-66022:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes black lines when upscaling.
-    wildArmsHack: 1 # De-blurs the 3d image.
+    wildArmsHack: 1 # De-blurs the 3D image.
 SLPM-66023:
   name: "Fushigi Yuugi - ShigiYuugi Kurotake Kaiden Gaiden - Kagami no Fujo [Limited Edition]"
   region: "NTSC-J"
@@ -30314,6 +30347,7 @@ SLPM-66132:
   gsHWFixes:
     halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
+    cpuCLUTRender: 1 # Fixes sun background on the windows when selecting your 'race'.
 SLPM-66133:
   name: "Shuffle! On the Stage [Deluxe Pack]"
   region: "NTSC-J"
@@ -30917,6 +30951,8 @@ SLPM-66292:
 SLPM-66293:
   name: "Gakuen Alice - KiraKira Memory Kiss"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Reduces vertical line issue in textbox.
 SLPM-66294:
   name: "Sotsugyou 2nd Generation"
   region: "NTSC-J"
@@ -31217,6 +31253,8 @@ SLPM-66375:
   name: "Ookami"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    roundSprite: 2 # Reduces misalignment issues but the game is just bad for upscaling.
 SLPM-66376:
   name: "KimiStar - Kimi to Study [BGM Collection Package]"
   region: "NTSC-J"
@@ -31985,6 +32023,7 @@ SLPM-66577:
   gsHWFixes:
     halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
+    cpuCLUTRender: 1 # Fixes sun background on the windows when selecting your 'race'.
 SLPM-66582:
   name: "Kohitsuji Hokaku Keikaku! Sweet Boys Life [Limited Edition]"
   region: "NTSC-J"
@@ -33872,6 +33911,8 @@ SLPM-74238:
 SLPM-74239:
   name: "Okami [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Reduces misalignment issues but the game is just bad for upscaling.
 SLPM-74240:
   name: "Tengai Makyou III - Namida [Best Version]"
   region: "NTSC-J"
@@ -36980,6 +37021,7 @@ SLPS-25456:
   gsHWFixes:
     halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
+    cpuCLUTRender: 1 # Fixes sun background on the windows when selecting your 'race'.
 SLPS-25457:
   name: "Ponkotsu Roeman Daikatsugeki Bumpy Trot"
   region: "NTSC-J"
@@ -41404,6 +41446,8 @@ SLUS-20496:
   name: "V-Rally 3"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes fog and make lights on cars work again.
 SLUS-20497:
   name: "Burnout 2 - Point of Impact"
   region: "NTSC-U"
@@ -44405,6 +44449,8 @@ SLUS-21115:
   name: "Okami"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 2 # Reduces misalignment issues but the game is just bad for upscaling.
 SLUS-21116:
   name: "187 - Ride or Die"
   region: "NTSC-U"
@@ -44703,6 +44749,7 @@ SLUS-21179:
   gsHWFixes:
     halfPixelOffset: 3 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned.
+    cpuCLUTRender: 1 # Fixes sun background on the windows when selecting your 'race'.
 SLUS-21180:
   name: "Onimusha - Dawn of Dreams [Disc1of2]"
   region: "NTSC-U"
@@ -44945,7 +44992,7 @@ SLUS-21227:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes lines when powering up.
-    roundSprite: 2 # Fixes misaligned bloom.
+    cpuCLUTRender: 1 # Reduces the bloomy blur of characters.
 SLUS-21228:
   name: "Call of Duty 2 - Big Red One"
   region: "NTSC-U"
@@ -47219,6 +47266,8 @@ SLUS-21678:
   name: "Dragon Ball Z - Budokai Tenkaichi 3"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    cpuCLUTRender: 1 # Reduces the bloomy blur of characters.
 SLUS-21679:
   name: "Power Rangers - Super Legends"
   region: "NTSC-U"
@@ -47587,6 +47636,7 @@ SLUS-21756:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but on normal vertex is less ghosting but causes corruption at the sides.
+    cpuCLUTRender: 1 # Fixes title-screen bloom and church windows on new game and other locations.
 SLUS-21757:
   name: "Kung Fu Panda"
   region: "NTSC-U"
@@ -47932,6 +47982,7 @@ SLUS-21838:
   compat: 5
   gsHWFixes:
     cpuFramebufferConversion: 1 # Fixes black with rainbow screen.
+    gpuPaletteConversion: 2 # Fixes micro stuttering.
 SLUS-21839:
   name: "Ski and Shoot"
   region: "NTSC-U"
@@ -48026,6 +48077,8 @@ SLUS-21862:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
+  gsHWFixes:
+    cpuCLUTRender: 1 # Reduces the bloomy blur of characters.
 SLUS-21863:
   name: "Suzuki TT Superbikes - Real Road Racing Championship"
   region: "NTSC-U"
@@ -49392,7 +49445,7 @@ TLES-52149:
   name: "Splinter Cell - Pandora Tomorrow Beta Trial Code"
   region: "PAL-E"
 TLES-52339:
-  name: "Crash ‘N’ Burn Beta Trial Code"
+  name: "Crash 'N' Burn Beta Trial Code"
   region: "PAL-E"
 TLES-52707:
   name: "Monster Hunter Beta Trial Code"
