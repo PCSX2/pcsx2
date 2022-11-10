@@ -101,23 +101,24 @@ bool cdvdUpdateDiscStatus()
 
 cdvdSubQ *cdvdReadSubQ(u32 lsn)
 {
-	cdvdSubQ subq;
+	cdvdSubQ *subq = new cdvdSubQ();
 
 	if (curDiskType == CDVD_TYPE_PSCD || curDiskType == CDVD_TYPE_PSCDDA
 	|| curDiskType == CDVD_TYPE_PS2CD || curDiskType == CDVD_TYPE_PS2CDDA
 	|| curDiskType == CDVD_TYPE_DETCTCD || curDiskType == CDVD_TYPE_CDDA)
 	{
-		cdvdCacheFetch(lsn, nullptr, &subq);
-		if (subq.trackNum <= 0)
+		cdvdCacheFetch(lsn, nullptr, subq);
+		if (subq->trackNum <= 0)
 		{
 			Console.WriteLn("Read SubQ");
-			if (!src->ReadSubChannelQ(lsn, &subq))
+			if (!src->ReadSubChannelQ(lsn, subq))
 			{
+				Console.WriteLn("Fake ass");
 				// If real subQ read fails. Let's fake till we make it!
 				if (lsn >= src->GetSectorCount())
 					return nullptr;
 
-				lsn_to_msf(&subq.discM, &subq.discS, &subq.discF, lsn + 150);
+				lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
 
 				u8 i = strack;
 				while (i < etrack && lsn >= tracks[i + 1].startLba)
@@ -125,16 +126,17 @@ cdvdSubQ *cdvdReadSubQ(u32 lsn)
 
 				lsn -= tracks[i].startLba;
 
-				lsn_to_msf(&subq.trackM, &subq.trackS, &subq.trackF, lsn + 150);
+				lsn_to_msf(&subq->trackM, &subq->trackS, &subq->trackF, lsn + 150);
 
-				subq.mode = 1;
-				subq.ctrl = tracks[i].type;
-				subq.trackNum = i;
-				subq.trackIndex = 1;
+				subq->mode = 1;
+				subq->ctrl = tracks[i].type;
+				subq->trackNum = i;
+				subq->trackIndex = 1;
 			}
+			Console.WriteLn("Local Track Num: %d", subq->trackNum);
 		}
 	}
-	return &subq;
+	return subq;
 }
 
 void cdvdThread()
@@ -280,7 +282,7 @@ u8* cdvdGetSector(u32 sector, s32 mode)
 	{
 		if (cdvdReadBlockOfSectors(sector_block, buffer))
 		{
-			cdvdCacheUpdate(sector_block, buffer, cdvdReadSubQ(sector_block));
+			cdvdCacheUpdate(sector_block, buffer, cdvdReadSubQ(sector));
 		}
 	}
 	if (src->GetMediaType() >= 0)
@@ -329,7 +331,7 @@ s32 cdvdDirectReadSector(u32 sector, s32 mode, u8* buffer)
 	{
 		if (cdvdReadBlockOfSectors(sector_block, data))
 		{
-			cdvdCacheUpdate(sector_block, data);
+			cdvdCacheUpdate(sector_block, data, cdvdReadSubQ(sector));
 		}
 	}
 

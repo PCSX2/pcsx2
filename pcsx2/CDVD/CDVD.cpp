@@ -611,7 +611,8 @@ s32 cdvdReadSubQ(s32 lsn, cdvdSubQ* subq)
 	if (cdvd.subq.trackNum > 0)
 	{
 		memcpy(subq, &cdvd.subq, sizeof(cdvdSubQ));
-		return 0; 
+		Console.WriteLn("subQ READ: %d", subq->trackNum);
+		return 0;
 	}
 	return 0x80;
 }
@@ -2020,8 +2021,6 @@ static void cdvdWrite04(u8 rt)
 			cdvd.ReadTime = cdvdBlockReadTime(MODE_CDROM);
 			CDVDREAD_INT(cdvdStartSeek(cdvd.SeekToSector, MODE_CDROM));
 
-			CDVD->getSubQ(cdvd.SeekToSector, &cdvd.subq);
-
 			// Read-ahead by telling CDVD about the track now.
 			// This helps improve performance on actual from-cd emulation
 			// (ie, not using the hard drive)
@@ -2031,6 +2030,7 @@ static void cdvdWrite04(u8 rt)
 			// take priority in the handler anyway.  If the read is contiguous then
 			// this'll skip the seek delay.
 			cdvd.Reading = 1;
+			CDVD->getSubQ(cdvd.SeekToSector, &cdvd.subq);
 			break;
 		}
 		case N_DVD_READ: // DvdRead

@@ -117,6 +117,7 @@ bool cdvdCacheFetch(u32 lsn, u8* data, cdvdSubQ *subQ)
 		if (subQ != nullptr)
 		{
 			memcpy(subQ, &Cache[entry].subchannelQ, sizeof(cdvdSubQ));
+			Console.WriteLn("TRACK NUMBER: %d", Cache[entry].subchannelQ.trackNum);
 		}
 		if (data != nullptr)
 		{
