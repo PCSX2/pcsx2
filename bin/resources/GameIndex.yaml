@@ -3159,6 +3159,7 @@ SCES-51159:
   gsHWFixes:
     textureInsideRT: 1
     texturePreloading: 1 # Performs much better with partial preload.
+    halfPixelOffset: 2 # Fixes outlines around characters.
 SCES-51164:
   name: "Mark of Kri, The"
   region: "PAL-M5"
@@ -3208,6 +3209,7 @@ SCES-51426:
   gsHWFixes:
     textureInsideRT: 1
     texturePreloading: 1 # Performs much better with partial preload.
+    halfPixelOffset: 2 # Fixes outlines around characters.
 SCES-51428:
   name: "Shinobi"
   region: "PAL-M5"
@@ -3622,6 +3624,7 @@ SCES-52758:
   region: "PAL-M6"
   gsHWFixes:
     textureInsideRT: 1
+    halfPixelOffset: 2 # Fixes outlines on screen edges.
 SCES-52762:
   name: "DJ Decks & FX"
   region: "PAL-F"
@@ -3670,6 +3673,7 @@ SCES-52948:
   region: "PAL-M4"
   gsHWFixes:
     textureInsideRT: 1
+    halfPixelOffset: 2 # Fixes outlines on screen edges.
 SCES-53033:
   name: "Formula One 2005"
   region: "PAL-M7"
@@ -4761,6 +4765,7 @@ SCKA-20018:
   gsHWFixes:
     textureInsideRT: 1
     texturePreloading: 1 # Performs much better with partial preload.
+    halfPixelOffset: 2 # Fixes outlines around characters.
 SCKA-20019:
   name: "Siren"
   region: "NTSC-K"
@@ -6963,6 +6968,7 @@ SCUS-97133:
   gsHWFixes:
     textureInsideRT: 1
     texturePreloading: 1 # Performs much better with partial preload.
+    halfPixelOffset: 2 # Fixes outlines around characters.
 SCUS-97134:
   name: "SOCOM - U.S. Navy SEALs"
   region: "NTSC-U"
@@ -7329,6 +7335,7 @@ SCUS-97232:
   region: "NTSC-U"
   gsHWFixes:
     textureInsideRT: 1
+    halfPixelOffset: 2 # Fixes outlines around characters.
 SCUS-97233:
   name: "World Tour Soccer 2003"
   region: "NTSC-U"
@@ -7826,6 +7833,7 @@ SCUS-97408:
   compat: 5
   gsHWFixes:
     textureInsideRT: 1
+    halfPixelOffset: 2 # Fixes outlines on screen edges.
 SCUS-97409:
   name: "Gretzky NHL 2005"
   region: "NTSC-U"
@@ -7979,6 +7987,7 @@ SCUS-97441:
   region: "NTSC-U"
   gsHWFixes:
     textureInsideRT: 1
+    halfPixelOffset: 2 # Fixes outlines on screen edges.
 SCUS-97442:
   name: "Official U.S. PlayStation Magazine Demo Disc 090"
   region: "NTSC-U"
@@ -27915,6 +27924,7 @@ SLPM-65410:
   gsHWFixes:
     textureInsideRT: 1
     texturePreloading: 1 # Performs much better with partial preload.
+    halfPixelOffset: 2 # Fixes outlines around characters.
 SLPM-65411:
   name: "Onimusha Buraiden"
   region: "NTSC-J"
@@ -30537,6 +30547,7 @@ SLPM-66183:
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1
+    halfPixelOffset: 2 # Fixes outlines on screen edges.
 SLPM-66184:
   name: "Ikusa Gami"
   region: "NTSC-J"
@@ -49258,6 +49269,7 @@ SLUS-97133:
   gsHWFixes:
     textureInsideRT: 1
     texturePreloading: 1 # Performs much better with partial preload.
+    halfPixelOffset: 2 # Fixes outlines around characters.
 SLUS-97405:
   name: "ATV Offroad Fury 3 [Greatest Hits]"
   region: "NTSC-U"
