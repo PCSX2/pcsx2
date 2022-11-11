@@ -430,8 +430,9 @@ void CommonHost::UpdateInhibitScreensaver(bool inhibit)
 		return;
 
 	WindowInfo wi;
-	if (g_host_display)
-		wi = g_host_display->GetWindowInfo();
+	auto top_level_wi = Host::GetTopLevelWindowInfo();
+	if (top_level_wi.has_value())
+		wi = top_level_wi.value();
 
 	s_screensaver_inhibited = inhibit;
 	if (!WindowInfo::InhibitScreensaver(wi, inhibit) && inhibit)
