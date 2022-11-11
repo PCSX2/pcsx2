@@ -52,7 +52,7 @@
 #include <ShlObj.h>
 #endif
 
-static constexpr u32 SETTINGS_VERSION = 1;
+static constexpr u32 SETTINGS_VERSION = 2;
 
 namespace CommonHost
 {

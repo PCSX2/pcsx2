@@ -364,42 +364,42 @@ void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, con
 void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffset)
 {
 	static int bufIdx = 0;
+	float offset = yoffset * static_cast<float>(field);
+	offset = GSConfig.DisableInterlaceOffset ? 0.0f : offset;
 
-	if (mode == 0) // weave
+	switch (mode)
 	{
-		const float offset = yoffset * static_cast<float>(field);
-		ResizeTarget(&m_weavebob, ds.x, ds.y);
-		DoInterlace(m_merge, m_weavebob, field, false, GSConfig.DisableInterlaceOffset ? 0.0f : offset, 0);
-		m_current = m_weavebob;
-	}
-	else if (mode == 1) // bob
-	{
-		// Field is reversed here as we are countering the bounce.
-		ResizeTarget(&m_weavebob, ds.x, ds.y);
-		DoInterlace(m_merge, m_weavebob, 3, true, yoffset * (1-field), 0);
-		m_current = m_weavebob;
-	}
-	else if  (mode == 2) // FastMAD Motion Adaptive Deinterlacing
-	{
-		bufIdx++;
-		bufIdx &= ~(field ^ 1);
-		bufIdx |= (field);
-		bufIdx &= 3;
-
-		float offset = (yoffset * field);
-		offset = GSConfig.DisableInterlaceOffset ? 0.0f : offset;
-
-		ResizeTarget(&m_mad, ds.x, ds.y * 2.0f);
-		DoInterlace(m_merge, m_mad, 4, false, offset, bufIdx);
-		ResizeTarget(&m_blend, ds.x, ds.y);
-		DoInterlace(m_mad, m_blend, 5, false, 0, bufIdx);
-
-
-		m_current = m_blend;
-	}
-	else
-	{
-		m_current = m_merge;
+		case 0: // weave
+			ResizeTarget(&m_weavebob, ds.x, ds.y);
+			DoInterlace(m_merge, m_weavebob, field, false, offset, 0);
+			m_current = m_weavebob;
+			break;
+		case 1: // bob
+			// Field is reversed here as we are countering the bounce.
+			ResizeTarget(&m_weavebob, ds.x, ds.y);
+			DoInterlace(m_merge, m_weavebob, 3, true, yoffset * (1 - field), 0);
+			m_current = m_weavebob;
+			break;
+		case 2: //Blend
+			ResizeTarget(&m_weavebob, ds.x, ds.y);
+			DoInterlace(m_merge, m_weavebob, field, false, offset, 0);
+			ResizeTarget(&m_blend, ds.x, ds.y);
+			DoInterlace(m_weavebob, m_blend, 2, false, 0, 0);
+			m_current = m_blend;
+			break;
+		case 3: // FastMAD Motion Adaptive Deinterlacing
+			bufIdx++;
+			bufIdx &= ~1;
+			bufIdx |= field;
+			bufIdx &= 3;
+			ResizeTarget(&m_mad, ds.x, ds.y * 2.0f);
+			DoInterlace(m_merge, m_mad, 4, false, offset, bufIdx);
+			ResizeTarget(&m_weavebob, ds.x, ds.y);
+			DoInterlace(m_mad, m_weavebob, 5, false, 0, bufIdx);
+			m_current = m_weavebob;
+			break;
+		default:
+			m_current = m_merge;
 	}
 }
 

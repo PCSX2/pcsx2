@@ -75,7 +75,7 @@ static const char* s_anisotropic_filtering_entries[] = {QT_TRANSLATE_NOOP("Graph
 	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "8x"), QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "16x"), nullptr};
 static const char* s_anisotropic_filtering_values[] = {"0", "2", "4", "8", "16", nullptr};
 
-static constexpr int DEFAULT_INTERLACE_MODE = 7;
+static constexpr int DEFAULT_INTERLACE_MODE = 0;
 static constexpr int DEFAULT_TV_SHADER_MODE = 0;
 
 GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* parent)
