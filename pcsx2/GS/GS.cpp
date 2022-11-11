@@ -1310,14 +1310,16 @@ void GSApp::Init()
 	// The null renderer goes last, it has use for benchmarking purposes in a release build
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::Null), "Null", ""));
 
-	m_gs_deinterlace.push_back(GSSetting(0, "None", ""));
-	m_gs_deinterlace.push_back(GSSetting(1, "Weave tff", "saw-tooth"));
-	m_gs_deinterlace.push_back(GSSetting(2, "Weave bff", "saw-tooth"));
-	m_gs_deinterlace.push_back(GSSetting(3, "Bob tff", "use blend if shaking"));
-	m_gs_deinterlace.push_back(GSSetting(4, "Bob bff", "use blend if shaking"));
-	m_gs_deinterlace.push_back(GSSetting(5, "Blend tff", "slight blur, 1/2 fps"));
-	m_gs_deinterlace.push_back(GSSetting(6, "Blend bff", "slight blur, 1/2 fps"));
-	m_gs_deinterlace.push_back(GSSetting(7, "Automatic", "Default"));
+	m_gs_deinterlace.push_back(GSSetting(0, "Automatic", "Default"));
+	m_gs_deinterlace.push_back(GSSetting(1, "None", ""));
+	m_gs_deinterlace.push_back(GSSetting(2, "Weave tff", "saw-tooth"));
+	m_gs_deinterlace.push_back(GSSetting(3, "Weave bff", "saw-tooth"));
+	m_gs_deinterlace.push_back(GSSetting(4, "Bob tff", "use adaptive or blend if shaking"));
+	m_gs_deinterlace.push_back(GSSetting(5, "Bob bff", "use adaptive or blend if shaking"));
+	m_gs_deinterlace.push_back(GSSetting(6, "Blend tff", "slight blur, 1/2 fps"));
+	m_gs_deinterlace.push_back(GSSetting(7, "Blend bff", "slight blur, 1/2 fps"));
+	m_gs_deinterlace.push_back(GSSetting(8, "Adaptive tff", "minor artifacts"));
+	m_gs_deinterlace.push_back(GSSetting(9, "Adaptive bff", "minor artifacts"));
 
 	m_gs_upscale_multiplier.push_back(GSSetting(1, "Native", "PS2"));
 	m_gs_upscale_multiplier.push_back(GSSetting(2, "2x Native", "~720p"));

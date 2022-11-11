@@ -130,6 +130,7 @@ enum class GSRendererType : s8
 
 enum class GSInterlaceMode : u8
 {
+	Automatic,
 	Off,
 	WeaveTFF,
 	WeaveBFF,
@@ -137,7 +138,8 @@ enum class GSInterlaceMode : u8
 	BobBFF,
 	BlendTFF,
 	BlendBFF,
-	Automatic,
+	AdaptiveTFF,
+	AdaptiveBFF,
 	Count
 };
 

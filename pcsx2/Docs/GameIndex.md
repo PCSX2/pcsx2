@@ -140,9 +140,18 @@ The clamp modes are also numerically based.
 
 ### GS Hardware General Fixes
 
-*   conservativeFramebuffer   [`0` or `1`]                 {Off or On}                                                                 Default: On (`1`)
-*   texturePreloading         [`0` or `1` or `2`]          {None, Partial or Full Hash Cache}                                          Default: None (`0`)
-*   deinterlace               [Value between `0` to `7`]   {Off, WeaveTFF, WeaveBFF, BobTFF, BobBFF, BlendTFF, BlendBFF, Automatic}    Default: Automatic (No value, looks up GameDB)
+*   conservativeFramebuffer
+        [`0` or `1`] 
+        {Off or On}
+        Default: On (`1`)
+*   texturePreloading
+        [`0` or `1` or `2`]
+        {None, Partial or Full Hash Cache}
+        Default: None (`0`)
+*   deinterlace
+        [Value between `0` to `9`]
+        {Automatic Off, WeaveTFF, WeaveBFF, BobTFF, BobBFF, BlendTFF, BlendBFF, AdaptiveTFF, AdaptiveBFF}
+        Default: Automatic (No value, looks up GameDB)
 
 ### GS Hardware Renderer Fixes
 

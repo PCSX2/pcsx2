@@ -58,7 +58,7 @@
    <item>
     <widget class="QTabWidget" name="hardwareRendererGroup">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <property name="documentMode">
       <bool>true</bool>
@@ -151,6 +151,11 @@
         <widget class="QComboBox" name="interlacing">
          <item>
           <property name="text">
+           <string>Automatic (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>None</string>
           </property>
          </item>
@@ -186,7 +191,12 @@
          </item>
          <item>
           <property name="text">
-           <string>Automatic (Default)</string>
+           <string>Adaptive (Top Field First)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Adaptive (Bottom Field First)</string>
           </property>
          </item>
         </widget>
