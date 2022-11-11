@@ -903,6 +903,10 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 				else
 				{
 					// YOLO skipping t->m_TEX0.TBW = bw; It would change the surface offset results...
+					// This code exists because Destruction Derby Arenas uploads a 16x16 CLUT to the same BP as the depth buffer and invalidating the depth is bad (because it's not invalid).
+					// Possibly because the block layout is opposite for the 32bit colour and depth, it never actually overwrites the depth, so this is kind of a miss detection.
+					// The new code rightfully calculates that the depth does not become dirty, but in other cases, like bigger draws of the same format
+					// it might become invalid, so we check below and erase as before if so.
 					const SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
 					if (so.is_valid)
 					{
@@ -928,7 +932,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 							r.w
 						);
 					}
-					else
+					if (!ComputeSurfaceOffset(off, r, t).is_valid)
 					{
 						list.erase(j);
 						GL_CACHE("TC: Remove Target(%s) %d (0x%x)", to_string(type),
