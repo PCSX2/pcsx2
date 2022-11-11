@@ -585,7 +585,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBool(LoadTextureReplacementsAsync);
 	GSSettingBool(PrecacheTextureReplacements);
 
-	GSSettingIntEnumEx(InterlaceMode, "deinterlace");
+	GSSettingIntEnumEx(InterlaceMode, "deinterlace_mode");
 
 	GSSettingFloat(OsdScale);
 
