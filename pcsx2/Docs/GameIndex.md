@@ -150,7 +150,7 @@ The clamp modes are also numerically based.
         Default: None (`0`)
 *   deinterlace
         [Value between `0` to `9`]
-        {Automatic Off, WeaveTFF, WeaveBFF, BobTFF, BobBFF, BlendTFF, BlendBFF, AdaptiveTFF, AdaptiveBFF}
+        {Automatic, Off, WeaveTFF, WeaveBFF, BobTFF, BobBFF, BlendTFF, BlendBFF, AdaptiveTFF, AdaptiveBFF}
         Default: Automatic (No value, looks up GameDB)
 
 ### GS Hardware Renderer Fixes
