@@ -898,6 +898,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 						t->m_texture ? t->m_texture->GetID() : 0,
 						t->m_TEX0.TBP0, r.x, r.y, r.z, r.w);
 					t->m_TEX0.TBW = bw;
+					t->m_age = 0;
 					t->m_dirty.push_back(GSDirtyRect(r, psm, bw));
 				}
 				else
@@ -974,6 +975,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 								t->m_TEX0.TBP0);
 							// TODO: do not add this rect above too
 							t->m_TEX0.TBW = bw;
+							t->m_age = 0;
 							t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top - y, r.right, r.bottom - y), psm, bw));
 							continue;
 						}
@@ -1000,7 +1002,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 							t->m_texture ? t->m_texture->GetID() : 0,
 							t->m_TEX0.TBP0, t->m_end_block,
 							r.left, r.top + y, r.right, r.bottom + y, bw);
-
+						t->m_age = 0;
 						t->m_TEX0.TBW = bw;
 						t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top + y, r.right, r.bottom + y), psm, bw));
 						continue;
@@ -1010,7 +1012,10 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 				{
 					const SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
 					if (so.is_valid)
+					{
+						t->m_age = 0;
 						t->m_dirty.push_back(GSDirtyRect(so.b2a_offset, psm, bw));
+					}
 				}
 #endif
 			}
