@@ -1455,7 +1455,7 @@ void GSApp::Init()
 	m_default_configuration["pcrtc_offsets"]                              = "0";
 	m_default_configuration["pcrtc_overscan"]                             = "0";
 	m_default_configuration["IntegerScaling"]                             = "0";
-	m_default_configuration["deinterlace"]                                = "7";
+	m_default_configuration["deinterlace_mode"]                           = "0";
 	m_default_configuration["linear_present"]                             = "1";
 	m_default_configuration["LoadTextureReplacements"]                    = "0";
 	m_default_configuration["LoadTextureReplacementsAsync"]               = "1";
@@ -1765,6 +1765,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys)
 			 return;
 
 		 static constexpr std::array<const char*, static_cast<int>(GSInterlaceMode::Count)> option_names = {{
+			 "Automatic",
 			 "Off",
 			 "Weave (Top Field First)",
 			 "Weave (Bottom Field First)",
@@ -1772,7 +1773,8 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys)
 			 "Bob (Bottom Field First)",
 			 "Blend (Top Field First)",
 			 "Blend (Bottom Field First)",
-			 "Automatic",
+			 "Adaptive (Top Field First)",
+			 "Adaptive (Bottom Field First)",
 		 }};
 
 		 const GSInterlaceMode new_mode = static_cast<GSInterlaceMode>((static_cast<s32>(EmuConfig.GS.InterlaceMode) + 1) % static_cast<s32>(GSInterlaceMode::Count));
