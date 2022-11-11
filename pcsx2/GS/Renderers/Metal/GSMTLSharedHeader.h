@@ -54,7 +54,7 @@ struct GSMTLPresentPSUniform
 
 struct GSMTLInterlacePSUniform
 {
-	vector_float2 ZrH;
+	vector_float4 ZrH;
 };
 
 struct GSMTLMainVertex

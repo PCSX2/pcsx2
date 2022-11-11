@@ -583,18 +583,19 @@ void GSDeviceMTL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 		StretchRect(dTex, full_r, sTex[2], dRect[0], ShaderConvert::YUV);
 }}
 
-void GSDeviceMTL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset)
+void GSDeviceMTL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset, int bufIdx)
 { @autoreleasepool {
 	id<MTLCommandBuffer> cmdbuf = GetRenderCmdBuf();
 	GSScopedDebugGroupMTL dbg(cmdbuf, @"DoInterlace");
 
-	GSVector4 s = GSVector4(dTex->GetSize());
+	GSVector4 ss = GSVector4(sTex->GetSize());
+	GSVector4 ds = GSVector4(dTex->GetSize());
 
 	GSVector4 sRect(0, 0, 1, 1);
-	GSVector4 dRect(0.f, yoffset, s.x, s.y + yoffset);
+	GSVector4 dRect(0.f, yoffset, ds.x, ds.y + yoffset);
 
 	GSMTLInterlacePSUniform cb = {};
-	cb.ZrH = {0, 1.f / s.y};
+	cb.ZrH = {static_cast<float>(bufIdx), 1.0f / ss.y, ss.y, MAD_SENSITIVITY};
 
 	DoStretchRect(sTex, sRect, dTex, dRect, m_interlace_pipeline[shader], linear, shader > 1 ? LoadAction::DontCareIfFull : LoadAction::Load, &cb, sizeof(cb));
 }}
