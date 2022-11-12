@@ -1226,11 +1226,6 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	if (!src || !dst || src->m_texture->GetScale() != dst->m_texture->GetScale())
 		return false;
 
-	// We don't want to copy "old" data that the game has overwritten with writes,
-	// so flush any overlapping dirty area.
-	src->UpdateIfDirtyIntersects(GSVector4i(sx, sy, sx + w, sy + h));;
-	dst->UpdateIfDirtyIntersects(GSVector4i(dx, dy, dx + w, dy + h));
-
 	// Scale coordinates.
 	const GSVector2 scale(src->m_texture->GetScale());
 	const int scaled_sx = static_cast<int>(sx * scale.x);
@@ -1239,6 +1234,15 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	const int scaled_dy = static_cast<int>(dy * scale.y);
 	const int scaled_w = static_cast<int>(w * scale.x);
 	const int scaled_h = static_cast<int>(h * scale.y);
+
+	// The source isn't in our texture, otherwise it could falsely expand the texture causing a misdetection later, which then renders black.
+	if ((scaled_sx + scaled_w) > src->m_texture->GetWidth() || (scaled_sy + scaled_h) > src->m_texture->GetHeight())
+		return false;
+
+	// We don't want to copy "old" data that the game has overwritten with writes,
+	// so flush any overlapping dirty area.
+	src->UpdateIfDirtyIntersects(GSVector4i(sx, sy, sx + w, sy + h));
+	dst->UpdateIfDirtyIntersects(GSVector4i(dx, dy, dx + w, dy + h));
 
 	// Expand the target when we used a more conservative size.
 	const int required_dh = scaled_dy + scaled_h;
@@ -1255,11 +1259,8 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	}
 
 	// Make sure the copy doesn't go out of bounds (it shouldn't).
-	if ((scaled_sx + scaled_w) > src->m_texture->GetWidth() || (scaled_sy + scaled_h) > src->m_texture->GetHeight() ||
-		(scaled_dx + scaled_w) > dst->m_texture->GetWidth() || (scaled_dy + scaled_h) > dst->m_texture->GetHeight())
-	{
+	if ((scaled_dx + scaled_w) > dst->m_texture->GetWidth() || (scaled_dy + scaled_h) > dst->m_texture->GetHeight())
 		return false;
-	}
 
 	g_gs_device->CopyRect(src->m_texture, dst->m_texture,
 		GSVector4i(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h),
