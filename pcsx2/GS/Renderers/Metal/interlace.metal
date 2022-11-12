@@ -58,10 +58,10 @@ fragment float4 ps_interlace4(ConvertShaderData data [[stage_in]], ConvertPSRes 
 	// causing the wrong lines to be discarded, so a vertical offset (lofs) is added to the vertical
 	// position of the destination texture to force the proper field alignment
 
-	const int    idx      = int(round(uniform.ZrH.x));                // buffer index passed from CPU
+	const int    idx      = int(uniform.ZrH.x);                       // buffer index passed from CPU
 	const int    bank     = idx >> 1;                                 // current bank
 	const int    field    = idx & 1;                                  // current field
-	const int    vres     = int(round(uniform.ZrH.z));                // vertical resolution of source texture
+	const int    vres     = int(uniform.ZrH.z) >> 1;                  // vertical resolution of source texture
 	const int    lofs     = ((((vres + 1) >> 1) << 1) - vres) & bank; // line alignment offset for bank 1
 	const int    vpos     = int(data.p.y) + lofs;                     // vertical position of destination texture
 	const float2 bofs     = float2(0.0f, 0.5f * bank);                // vertical offset of the current bank relative to source texture size
@@ -71,7 +71,7 @@ fragment float4 ps_interlace4(ConvertShaderData data [[stage_in]], ConvertPSRes 
 
 	// if the index of current destination line belongs to the current fiels we update it, otherwise
 	// we leave the old line in the destination buffer
-	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) == field))
+	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) != field))
 		return res.sample(iptr);
 	else
 		discard_fragment();
@@ -82,16 +82,16 @@ fragment float4 ps_interlace4(ConvertShaderData data [[stage_in]], ConvertPSRes 
 fragment float4 ps_interlace5(ConvertShaderData data [[stage_in]], ConvertPSRes res,
 	constant GSMTLInterlacePSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
 {
-	const int    idx         = int(round(uniform.ZrH.x));           // buffer index passed from CPU
-	const int    bank        = idx >> 1;                            // current bank
-	const int    field       = idx & 1;                             // current field
-	const int    vpos        = int(data.p.y);                       // vertical position of destination texture
-	const float  sensitivity = uniform.ZrH.w;                       // passed from CPU, higher values mean more likely to use weave
-	const float3 motion_thr  = float3(1.0, 1.0, 1.0) * sensitivity; //
-	const float2 bofs        = float2(0.0f, 0.5f);                  // position of the bank 1 relative to source texture size
-	const float2 vscale      = float2(1.0f, 0.5f);                  // scaling factor from source to destination texture
-	const float2 lofs        = float2(0.0f, uniform.ZrH.y);         // distance between two adjacent lines relative to source texture size
-	const float2 iptr        = data.t * vscale;                     // pointer to the current pixel in the source texture
+	const int    idx         = int(uniform.ZrH.x);                   // buffer index passed from CPU
+	const int    bank        = idx >> 1;                             // current bank
+	const int    field       = idx & 1;                              // current field
+	const int    vpos        = int(data.p.y);                        // vertical position of destination texture
+	const float  sensitivity = uniform.ZrH.w;                        // passed from CPU, higher values mean more likely to use weave
+	const float3 motion_thr  = float3(1.0, 1.0, 1.0) * sensitivity;  //
+	const float2 bofs        = float2(0.0f, 0.5f);                   // position of the bank 1 relative to source texture size
+	const float2 vscale      = float2(1.0f, 0.5f);                   // scaling factor from source to destination texture
+	const float2 lofs        = float2(0.0f, uniform.ZrH.y) * vscale; // distance between two adjacent lines relative to source texture size
+	const float2 iptr        = data.t * vscale;                      // pointer to the current pixel in the source texture
 
 
 	float2 p_t0; // pointer to current pixel (missing or not) from most recent frame
@@ -160,7 +160,7 @@ fragment float4 ps_interlace5(ConvertShaderData data [[stage_in]], ConvertPSRes 
 
 	// selecting deinterlacing output
 
-	if ((vpos & 1) == field)
+	if ((vpos & 1) != field)
 	{
 		// output coordinate present on current field
 		return res.sample(p_t0);

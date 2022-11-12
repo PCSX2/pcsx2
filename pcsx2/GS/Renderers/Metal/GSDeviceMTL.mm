@@ -588,14 +588,13 @@ void GSDeviceMTL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool
 	id<MTLCommandBuffer> cmdbuf = GetRenderCmdBuf();
 	GSScopedDebugGroupMTL dbg(cmdbuf, @"DoInterlace");
 
-	GSVector4 ss = GSVector4(sTex->GetSize());
 	GSVector4 ds = GSVector4(dTex->GetSize());
 
 	GSVector4 sRect(0, 0, 1, 1);
 	GSVector4 dRect(0.f, yoffset, ds.x, ds.y + yoffset);
 
 	GSMTLInterlacePSUniform cb = {};
-	cb.ZrH = {static_cast<float>(bufIdx), 1.0f / ss.y, ss.y, MAD_SENSITIVITY};
+	cb.ZrH = {static_cast<float>(bufIdx), 1.0f / ds.y, ds.y, MAD_SENSITIVITY};
 
 	DoStretchRect(sTex, sRect, dTex, dRect, m_interlace_pipeline[shader], linear, shader > 1 ? LoadAction::DontCareIfFull : LoadAction::Load, &cb, sizeof(cb));
 }}
