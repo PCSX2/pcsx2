@@ -2176,7 +2176,10 @@ void GSState::Move()
 			const int ypage = _sy & ~(page_height - 1);
 			// Copying from itself to itself (rotating textures) used in Gitaroo Man stage 8
 			// What probably happens is because the copy is buffered, the source stays just ahead of the destination.
-			if (sbp == dbp && (((_sy < _dy) && ((ypage + page_height) > _dy)) || ((sx < dx) && ((xpage + page_width) > dx))))
+			// No need to do all this if the copy source/destination don't intersect, however.
+			const bool intersect = !(GSVector4i(sx, sy, sx + w, sy + h).rintersect(GSVector4i(dx, dy, dx + w, dy + h)).rempty());
+
+			if (intersect && sbp == dbp && (((_sy < _dy) && ((ypage + page_height) > _dy)) || ((sx < dx) && ((xpage + page_width) > dx))))
 			{
 				int starty = (yinc > 0) ? 0 : h-1;
 				int endy = (yinc > 0) ? h : -1;
@@ -2184,8 +2187,8 @@ void GSState::Move()
 
 				if (((_sy < _dy) && ((ypage + page_height) > _dy)) && yinc > 0)
 				{
-					_sy += h;
-					_dy += h;
+					_sy += h-1;
+					_dy += h-1;
 					starty = h-1;
 					endy = -1;
 					y_inc = -y_inc;
