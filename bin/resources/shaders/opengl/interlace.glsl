@@ -13,157 +13,179 @@ layout(location = 0) out vec4 SV_Target0;
 // TODO ensure that clip (discard) is < 0 and not <= 0 ???
 void ps_main0()
 {
-    if ((int(gl_FragCoord.y) & 1) == 0)
-        discard;
-    // I'm not sure it impact us but be safe to lookup texture before conditional if
-    // see: http://www.opengl.org/wiki/GLSL_Sampler#Non-uniform_flow_control
-    vec4 c = texture(TextureSampler, PSin_t);
+	if ((int(gl_FragCoord.y) & 1) == 0)
+		discard;
+	// I'm not sure it impact us but be safe to lookup texture before conditional if
+	// see: http://www.opengl.org/wiki/GLSL_Sampler#Non-uniform_flow_control
+	vec4 c = texture(TextureSampler, PSin_t);
 
-    SV_Target0 = c;
+	SV_Target0 = c;
 }
 
 void ps_main1()
 {
-    if ((int(gl_FragCoord.y) & 1) != 0)
-        discard;
-    // I'm not sure it impact us but be safe to lookup texture before conditional if
-    // see: http://www.opengl.org/wiki/GLSL_Sampler#Non-uniform_flow_control
-    vec4 c = texture(TextureSampler, PSin_t);
+	if ((int(gl_FragCoord.y) & 1) != 0)
+		discard;
+	// I'm not sure it impact us but be safe to lookup texture before conditional if
+	// see: http://www.opengl.org/wiki/GLSL_Sampler#Non-uniform_flow_control
+	vec4 c = texture(TextureSampler, PSin_t);
 
-    SV_Target0 = c;
+	SV_Target0 = c;
 }
 
 void ps_main2()
 {
-    vec2 vstep = vec2(0.0f, ZrH.y);
-    vec4 c0 = texture(TextureSampler, PSin_t - vstep);
-    vec4 c1 = texture(TextureSampler, PSin_t);
-    vec4 c2 = texture(TextureSampler, PSin_t + vstep);
+	vec2 vstep = vec2(0.0f, ZrH.y);
+	vec4 c0 = texture(TextureSampler, PSin_t - vstep);
+	vec4 c1 = texture(TextureSampler, PSin_t);
+	vec4 c2 = texture(TextureSampler, PSin_t + vstep);
 
-    SV_Target0 = (c0 + c1 * 2.0f + c2) / 4.0f;
+	SV_Target0 = (c0 + c1 * 2.0f + c2) / 4.0f;
 }
 
 void ps_main3()
 {
-    SV_Target0 = texture(TextureSampler, PSin_t);
+	SV_Target0 = texture(TextureSampler, PSin_t);
 }
 
 
 void ps_main4()
 {
-    const int  vres   = int(round(ZrH.z));
-    const int  idx    = int(round(ZrH.x));
-    const int  bank   = idx >> 1;
-    const int  field  = idx & 1;
-    const int  vpos   = int(gl_FragCoord.y) + (((((vres + 1) >> 1) << 1) - vres) & bank);
-    const vec2 bofs   = vec2(0.0f, 0.5f * bank);
-    const vec2 vscale = vec2(1.0f, 2.0f); 
-    const vec2 optr   = PSin_t - bofs;
-    const vec2 iptr   = optr * vscale;
+	// We take half the lines from the current frame and stores them in the MAD frame buffer.
+	// the MAD frame buffer is split in 2 consecutive banks of 2 fields each, the fields in each bank
+	// are interleaved (top field at even lines and bottom field at odd lines). 
+	// When the source texture has an odd vres, the first line of bank 1 would be an odd index
+	// causing the wrong lines to be discarded, so a vertical offset (lofs) is added to the vertical
+	// position of the destination texture to force the proper field alignment
 
-    if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) == field))
-    //if ((optr.y >= 0.0f) && (optr.y < 0.5f) && (int(iptr.y * vres) & 1) == field)
-        SV_Target0 = texture(TextureSampler, iptr);
-    else
-        discard;
+	const int  idx    = int(ZrH.x);                                // buffer index passed from CPU
+	const int  bank   = idx >> 1;                                  // current bank
+	const int  field  = idx & 1;                                   // current field
+	const int  vres   = int(ZrH.z);                                // vertical resolution of source texture
+	const int  lofs   = ((((vres + 1) >> 1) << 1) - vres) & bank;  // line alignment offset for bank 1
+	const int  vpos   = int(gl_FragCoord.y) + lofs;                // vertical position of destination texture
+	const vec2 bofs   = vec2(0.0f, 0.5f * bank);                   // vertical offset of the current bank relative to source texture size
+	const vec2 vscale = vec2(1.0f, 2.0f);                          // scaling factor from source to destination texture
+	const vec2 optr   = PSin_t - bofs;                             // used to check if the current destination line is within the current bank
+	const vec2 iptr   = optr * vscale;                             // pointer to the current pixel in the source texture
+
+	// if the index of current destination line belongs to the current fiels we update it, otherwise
+	// we leave the old line in the destination buffer
+	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) == field))
+		SV_Target0 = texture(TextureSampler, iptr);
+	else
+		discard;
 }
 
 
 void ps_main5()
 {
-    const float sensitivity  = ZrH.w;
-    const vec3  motion_thr   = vec3(1.0, 1.0, 1.0) * sensitivity;
-    const vec2  vofs         = vec2(0.0f, 0.5f);
-    const vec2  vscale       = vec2(1.0f, 0.5f);
-    const int   idx          = int(round(ZrH.x));
-    const int   bank         = idx >> 1;
-    const int   field        = idx & 1;
-    const vec2  line_ofs     = vec2(0.0f, ZrH.y);
-    const vec2  iptr         = PSin_t * vscale;
+	// we use the contents of the MAD frame buffer to reconstruct the missing lines from the current
+	// field.
 
-    vec2 p_new_cf;
-    vec2 p_old_cf;
-    vec2 p_new_af;
-    vec2 p_old_af;
+	const int   idx          = int(round(ZrH.x));                  // buffer index passed from CPU
+	const int   bank         = idx >> 1;                           // current bank
+	const int   field        = idx & 1;                            // current field
+	const int   vpos         = int(gl_FragCoord.y);                // vertical position of destination texture
+	const float sensitivity  = ZrH.w;                              // passed from CPU, higher values mean more likely to use weave
+	const vec3  motion_thr   = vec3(1.0, 1.0, 1.0) * sensitivity;  //
+	const vec2  bofs         = vec2(0.0f, 0.5f);                   // position of the bank 1 relative to source texture size
+	const vec2  vscale       = vec2(1.0f, 0.5f);                   // scaling factor from source to destination texture
+	const vec2  lofs         = vec2(0.0f, ZrH.y);                  // distance between two adjacent lines relative to source texture size
+	const vec2  iptr         = PSin_t * vscale;                    // pointer to the current pixel in the source texture
 
-    switch (idx)
-    {
-        case 0:
-            p_new_cf = iptr;
-            p_new_af = iptr + vofs;
-            p_old_cf = iptr + vofs;
-            p_old_af = iptr;
-            break;
-        case 1:
-            p_new_cf = iptr;
-            p_new_af = iptr;
-            p_old_cf = iptr + vofs;
-            p_old_af = iptr + vofs;
-            break;
-        case 2:
-            p_new_cf = iptr + vofs;
-            p_new_af = iptr;
-            p_old_cf = iptr;
-            p_old_af = iptr + vofs;
-            break;
-        case 3:
-            p_new_cf = iptr + vofs;
-            p_new_af = iptr + vofs;
-            p_old_cf = iptr;
-            p_old_af = iptr;
-            break;
-        default:
-            break;
-    }
+	vec2 p_t0; // pointer to current pixel (missing or not) from most recent frame
+	vec2 p_t1; // pointer to current pixel (missing or not) from one frame back
+	vec2 p_t2; // pointer to current pixel (missing or not) from two frames back
+	vec2 p_t3; // pointer to current pixel (missing or not) from three frames back
 
-    // calculating motion
+	switch (idx)
+	{
+		case 0:
+			p_t0 = iptr;
+			p_t1 = iptr + bofs;
+			p_t2 = iptr + bofs;
+			p_t3 = iptr;
+			break;
+		case 1:
+			p_t0 = iptr;
+			p_t1 = iptr;
+			p_t2 = iptr + bofs;
+			p_t3 = iptr + bofs;
+			break;
+		case 2:
+			p_t0 = iptr + bofs;
+			p_t1 = iptr;
+			p_t2 = iptr;
+			p_t3 = iptr + bofs;
+			break;
+		case 3:
+			p_t0 = iptr + bofs;
+			p_t1 = iptr + bofs;
+			p_t2 = iptr;
+			p_t3 = iptr;
+			break;
+		default:
+			break;
+	}
 
-    vec4 hn = texture(TextureSampler, p_new_cf - line_ofs); // high
-    vec4 cn = texture(TextureSampler, p_new_af);            // center
-    vec4 ln = texture(TextureSampler, p_new_cf + line_ofs); // low
 
-    vec4 ho = texture(TextureSampler, p_old_cf - line_ofs); // high
-    vec4 co = texture(TextureSampler, p_old_af);            // center
-    vec4 lo = texture(TextureSampler, p_old_cf + line_ofs); // low
+	// calculating motion, only relevant for missing lines where the "center line" is pointed
+	// by p_t1
 
-    vec3 mh = hn.rgb - ho.rgb;
-    vec3 mc = cn.rgb - co.rgb;
-    vec3 ml = ln.rgb - lo.rgb;
+	vec4 hn = texture(TextureSampler, p_t0 - lofs); // new high pixel
+	vec4 cn = texture(TextureSampler, p_t1);        // new center pixel
+	vec4 ln = texture(TextureSampler, p_t0 + lofs); // new low pixel
 
-    mh = max(mh, -mh) - motion_thr;
-    mc = max(mc, -mc) - motion_thr;
-    ml = max(ml, -ml) - motion_thr;
+	vec4 ho = texture(TextureSampler, p_t2 - lofs); // old high pixel
+	vec4 co = texture(TextureSampler, p_t3);        // old center pixel
+	vec4 lo = texture(TextureSampler, p_t2 + lofs); // old low pixel
 
-//    float mh_max = max(max(mh.x, mh.y), mh.z);
-//    float mc_max = max(max(mc.x, mc.y), mc.z);
-//    float ml_max = max(max(ml.x, ml.y), ml.z);
+	vec3 mh = hn.rgb - ho.rgb; // high pixel motion
+	vec3 mc = cn.rgb - co.rgb; // center pixel motion
+	vec3 ml = ln.rgb - lo.rgb; // low pixel motion
 
-    float mh_max = mh.x + mh.y + mh.z;
-    float mc_max = mc.x + mc.y + mc.z;
-    float ml_max = ml.x + ml.y + ml.z;
+	mh = max(mh, -mh) - motion_thr;
+	mc = max(mc, -mc) - motion_thr;
+	ml = max(ml, -ml) - motion_thr;
 
-    // selecting deinterlacing output
+	#if 1 // use this code to evaluate each color motion separately
+		float mh_max = max(max(mh.x, mh.y), mh.z);
+		float mc_max = max(max(mc.x, mc.y), mc.z);
+		float ml_max = max(max(ml.x, ml.y), ml.z);
+	#else // use this code to evaluate average color motion
+		float mh_max = mh.x + mh.y + mh.z;
+		float mc_max = mc.x + mc.y + mc.z;
+		float ml_max = ml.x + ml.y + ml.z;
+	#endif
 
-    if (((int(gl_FragCoord.y) & 1) == field)) // output coordinate present on current field
-    {
-        SV_Target0 = texture(TextureSampler, p_new_cf);
-        
-    }
-    else if ((iptr.y > 0.5f - line_ofs.y) || (iptr.y < 0.0 + line_ofs.y))
-    {
-        SV_Target0 = texture(TextureSampler, p_new_af);
-    }
-    else
-    {
-        if(((mh_max > 0.0f) || (ml_max > 0.0f)) || (mc_max > 0.0f))
-        {
-            SV_Target0 = (hn + ln) / 2.0f;
-        }
-        else
-        {
-            SV_Target0 = texture(TextureSampler, p_new_af);
-        }
-    }
+
+	// selecting deinterlacing output
+		
+	if ((vpos & 1) == field)
+	{
+		// output coordinate present on current field
+		SV_Target0 = texture(TextureSampler, p_t0);
+	}
+	else if ((iptr.y > 0.5f - lofs.y) || (iptr.y < 0.0 + lofs.y))
+	{
+		// top and bottom lines are always weaved
+		SV_Target0 = cn;
+	}
+	else
+	{
+		// missing line needs to be reconstructed
+		if(((mh_max > 0.0f) || (ml_max > 0.0f)) || (mc_max > 0.0f))
+		{
+			// high motion -> interpolate pixels above and below
+			SV_Target0 = (hn + ln) / 2.0f;
+		}
+		else
+		{
+			// low motion -> weave
+			SV_Target0 = cn;
+		}
+	}
 }
 
 #endif
