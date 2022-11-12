@@ -48,124 +48,143 @@ float4 ps_main3(PS_INPUT input) : SV_Target0
 
 float4 ps_main4(PS_INPUT input) : SV_Target0
 {
-    const int    vres     = int(round(ZrH.z));
-	const int    idx      = int(round(ZrH.x));
-	const int    bank     = idx >> 1;
-	const int    field    = idx & 1;
-	const int    vpos     = int(input.p.y) + (((((vres + 1) >> 1) << 1) - vres) & bank);
-	const float2 bofs     = float2(0.0f, 0.5f * bank);
-	const float2 vscale   = float2(1.0f, 2.0f);
-	const float2 optr     = input.t - bofs;
-	const float2 iptr     = optr * vscale;
+	// We take half the lines from the current frame and stores them in the MAD frame buffer.
+	// the MAD frame buffer is split in 2 consecutive banks of 2 fields each, the fields in each bank
+	// are interleaved (top field at even lines and bottom field at odd lines). 
+	// When the source texture has an odd vres, the first line of bank 1 would be an odd index
+	// causing the wrong lines to be discarded, so a vertical offset (lofs) is added to the vertical
+	// position of the destination texture to force the proper field alignment
 
-    if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) == field))
+	const int    idx    = int(ZrH.x);                                // buffer index passed from CPU
+	const int    bank   = idx >> 1;                                  // current bank
+	const int    field  = idx & 1;                                   // current field
+	const int    vres   = int(ZrH.z);                                // vertical resolution of source texture
+	const int    lofs   = ((((vres + 1) >> 1) << 1) - vres) & bank;  // line alignment offset for bank 1
+	const int    vpos   = int(input.p.y) + lofs;                     // vertical position of destination texture
+	const float2 bofs   = float2(0.0f, 0.5f * bank);                 // vertical offset of the current bank relative to source texture size
+	const float2 vscale = float2(1.0f, 2.0f);                        // scaling factor from source to destination texture
+	const float2 optr   = input.t - bofs;                            // used to check if the current destination line is within the current bank
+	const float2 iptr   = optr * vscale;                             // pointer to the current pixel in the source texture
+
+	// if the index of current destination line belongs to the current fiels we update it, otherwise
+	// we leave the old line in the destination buffer
+	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) == field))
 		return Texture.Sample(Sampler, iptr);
 	else
 		discard;
 
 	return float4(0.0f, 0.0f, 0.0f, 0.0f);
-	
 }
 
 
 float4 ps_main5(PS_INPUT input) : SV_Target0
 {
-	const float  sensitivity = ZrH.w;
-	const float3 motion_thr = float3(1.0, 1.0, 1.0) * sensitivity;
-	const float2 vofs = float2(0.0f, 0.5f);
-	const float2 vscale = float2(1.0f, 0.5f);
-	const int    idx = int(round(ZrH.x));
-	const int    bank = idx >> 1;
-	const int    field = idx & 1;
-	const float2 line_ofs = float2(0.0f, ZrH.y);
-	const float2 iptr = input.t * vscale;
+	// we use the contents of the MAD frame buffer to reconstruct the missing lines from the current
+	// field.
 
-	float2 p_new_cf;
-	float2 p_old_cf;
-	float2 p_new_af;
-	float2 p_old_af;
+	const int    idx         = int(round(ZrH.x));                   // buffer index passed from CPU
+	const int    bank        = idx >> 1;                            // current bank
+	const int    field       = idx & 1;                             // current field
+	const int    vpos        = int(input.p.y);                      // vertical position of destination texture
+	const float  sensitivity = ZrH.w;                               // passed from CPU, higher values mean more likely to use weave
+	const float3 motion_thr  = float3(1.0, 1.0, 1.0) * sensitivity; //
+	const float2 bofs        = float2(0.0f, 0.5f);                  // position of the bank 1 relative to source texture size
+	const float2 vscale      = float2(1.0f, 0.5f);                  // scaling factor from source to destination texture
+	const float2 lofs        = float2(0.0f, ZrH.y);                 // distance between two adjacent lines relative to source texture size
+	const float2 iptr        = input.t * vscale;                    // pointer to the current pixel in the source texture
+
+	float2 p_t0; // pointer to current pixel (missing or not) from most recent frame
+	float2 p_t1; // pointer to current pixel (missing or not) from one frame back
+	float2 p_t2; // pointer to current pixel (missing or not) from two frames back
+	float2 p_t3; // pointer to current pixel (missing or not) from three frames back
 
 	switch (idx)
 	{
 		case 0:
-			p_new_cf = iptr;
-			p_new_af = iptr + vofs;
-			p_old_cf = iptr + vofs;
-			p_old_af = iptr;
+			p_t0 = iptr;
+			p_t1 = iptr + bofs;
+			p_t2 = iptr + bofs;
+			p_t3 = iptr;
 			break;
 		case 1:
-			p_new_cf = iptr;
-			p_new_af = iptr;
-			p_old_cf = iptr + vofs;
-			p_old_af = iptr + vofs;
+			p_t0 = iptr;
+			p_t1 = iptr;
+			p_t2 = iptr + bofs;
+			p_t3 = iptr + bofs;
 			break;
 		case 2:
-			p_new_cf = iptr + vofs;
-			p_new_af = iptr;
-			p_old_cf = iptr;
-			p_old_af = iptr + vofs;
+			p_t0 = iptr + bofs;
+			p_t1 = iptr;
+			p_t2 = iptr;
+			p_t3 = iptr + bofs;
 			break;
 		case 3:
-			p_new_cf = iptr + vofs;
-			p_new_af = iptr + vofs;
-			p_old_cf = iptr;
-			p_old_af = iptr;
+			p_t0 = iptr + bofs;
+			p_t1 = iptr + bofs;
+			p_t2 = iptr;
+			p_t3 = iptr;
 			break;
 		default:
 			break;
 	}
 
-	// calculating motion
+	// calculating motion, only relevant for missing lines where the "center line" is pointed
+	// by p_t1
 
-	float4 hn = Texture.Sample(Sampler, p_new_cf - line_ofs); // high
-	float4 cn = Texture.Sample(Sampler, p_new_af); // center
-	float4 ln = Texture.Sample(Sampler, p_new_cf + line_ofs); // low
+	float4 hn = Texture.Sample(Sampler, p_t0 - lofs); // new high pixel
+	float4 cn = Texture.Sample(Sampler, p_t1);        // new center pixel
+	float4 ln = Texture.Sample(Sampler, p_t0 + lofs); // new low pixel
 
-	float4 ho = Texture.Sample(Sampler, p_old_cf - line_ofs); // high
-	float4 co = Texture.Sample(Sampler, p_old_af); // center
-	float4 lo = Texture.Sample(Sampler, p_old_cf + line_ofs); // low
+	float4 ho = Texture.Sample(Sampler, p_t2 - lofs); // old high pixel
+	float4 co = Texture.Sample(Sampler, p_t3);        // old center pixel
+	float4 lo = Texture.Sample(Sampler, p_t2 + lofs); // old low pixel
 
-	float3 mh = hn.rgb - ho.rgb;
-	float3 mc = cn.rgb - co.rgb;
-	float3 ml = ln.rgb - lo.rgb;
+	float3 mh = hn.rgb - ho.rgb; // high pixel motion
+	float3 mc = cn.rgb - co.rgb; // center pixel motion
+	float3 ml = ln.rgb - lo.rgb; // low pixel motion
 
 	mh = max(mh, -mh) - motion_thr;
 	mc = max(mc, -mc) - motion_thr;
 	ml = max(ml, -ml) - motion_thr;
 
-
-//    float mh_max = max(max(mh.x, mh.y), mh.z);
-//    float mc_max = max(max(mc.x, mc.y), mc.z);
-//    float ml_max = max(max(ml.x, ml.y), ml.z);
-
-	float mh_max = mh.x + mh.y + mh.z;
-	float mc_max = mc.x + mc.y + mc.z;
-	float ml_max = ml.x + ml.y + ml.z;
+	#if 1 // use this code to evaluate each color motion separately
+		float mh_max = max(max(mh.x, mh.y), mh.z);
+		float mc_max = max(max(mc.x, mc.y), mc.z);
+		float ml_max = max(max(ml.x, ml.y), ml.z);
+	#else // use this code to evaluate average color motion
+		float mh_max = mh.x + mh.y + mh.z;
+		float mc_max = mc.x + mc.y + mc.z;
+		float ml_max = ml.x + ml.y + ml.z;
+	#endif
 
 	// selecting deinterlacing output
 
-	if (((int(input.p.y) & 1) == field)) // output coordinate present on current field
+	if ((vpos & 1) == field)
 	{
-		return Texture.Sample(Sampler, p_new_cf);
+		// output coordinate present on current field
+		return Texture.Sample(Sampler, p_t0);
 	}
-	else if ((iptr.y > 0.5f - line_ofs.y) || (iptr.y < 0.0 + line_ofs.y))
+	else if ((iptr.y > 0.5f - lofs.y) || (iptr.y < 0.0 + lofs.y))
 	{
-		return Texture.Sample(Sampler, p_new_af);
+		// top and bottom lines are always weaved
+		return cn;
 	}
 	else
 	{
+		// missing line needs to be reconstructed
 		if (((mh_max > 0.0f) || (ml_max > 0.0f)) || (mc_max > 0.0f))
 		{
+			// high motion -> interpolate pixels above and below
 			return (hn + ln) / 2.0f;
 		}
 		else
 		{
-			return Texture.Sample(Sampler, p_new_af);
+			// low motion -> weave
+			return cn;
 		}
 	}
 
 	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 }
-
 
 #endif
