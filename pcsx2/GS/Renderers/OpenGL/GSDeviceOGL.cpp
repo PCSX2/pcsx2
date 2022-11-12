@@ -1391,14 +1391,13 @@ void GSDeviceOGL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool
 
 	OMSetColorMaskState();
 
-	const GSVector4 ss = GSVector4(sTex->GetSize());
 	const GSVector4 ds = GSVector4(dTex->GetSize());
 
 	const GSVector4 sRect(0, 0, 1, 1);
 	const GSVector4 dRect(0.0f, yoffset, ds.x, ds.y + yoffset);
 
 	m_interlace.ps[shader].Bind();
-	m_interlace.ps[shader].Uniform4f(0, bufIdx, 1.0f / ss.y, ss.y, MAD_SENSITIVITY);
+	m_interlace.ps[shader].Uniform4f(0, bufIdx, 1.0f / ds.y, ds.y, MAD_SENSITIVITY);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[shader], linear);
 }

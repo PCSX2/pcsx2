@@ -73,10 +73,10 @@ void ps_main4()
 	// causing the wrong lines to be discarded, so a vertical offset (lofs) is added to the vertical
 	// position of the destination texture to force the proper field alignment
 
-	const int  idx    = int(round(ZrH.x));                        // buffer index passed from CPU
+	const int  idx    = int(ZrH.x);                               // buffer index passed from CPU
 	const int  bank   = idx >> 1;                                 // current bank
 	const int  field  = idx & 1;                                  // current field
-	const int  vres   = int(round(ZrH.z));                        // vertical resolution of source texture
+	const int  vres   = int(ZrH.z) >> 1;                          // vertical resolution of source texture
 	const int  lofs   = ((((vres + 1) >> 1) << 1) - vres) & bank; // line alignment offset for bank 1
 	const int  vpos   = int(gl_FragCoord.y) + lofs;               // vertical position of destination texture
 	const vec2 bofs   = vec2(0.0f, 0.5f * bank);                  // vertical offset of the current bank relative to source texture size
@@ -86,7 +86,7 @@ void ps_main4()
 
 	// if the index of current destination line belongs to the current fiels we update it, otherwise
 	// we leave the old line in the destination buffer
-	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) == field))
+	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) != field))
 		o_col0 = texture(samp0, iptr);
 	else
 		discard;
@@ -100,7 +100,7 @@ void ps_main5()
 	// we use the contents of the MAD frame buffer to reconstruct the missing lines from the current
 	// field.
 
-	const int   idx          = int(round(ZrH.x));                  // buffer index passed from CPU
+	const int   idx          = int(ZrH.x);                         // buffer index passed from CPU
 	const int   bank         = idx >> 1;                           // current bank
 	const int   field        = idx & 1;                            // current field
 	const int   vpos         = int(gl_FragCoord.y);                // vertical position of destination texture
@@ -108,7 +108,7 @@ void ps_main5()
 	const vec3  motion_thr   = vec3(1.0, 1.0, 1.0) * sensitivity;  //
 	const vec2  bofs         = vec2(0.0f, 0.5f);                   // position of the bank 1 relative to source texture size
 	const vec2  vscale       = vec2(1.0f, 0.5f);                   // scaling factor from source to destination texture
-	const vec2  lofs         = vec2(0.0f, ZrH.y);                  // distance between two adjacent lines relative to source texture size
+	const vec2  lofs         = vec2(0.0f, ZrH.y) * vscale;         // distance between two adjacent lines relative to source texture size
 	const vec2  iptr         = v_tex * vscale;                     // pointer to the current pixel in the source texture
 
 	vec2 p_t0; // pointer to current pixel (missing or not) from most recent frame
@@ -177,7 +177,7 @@ void ps_main5()
 
 	// selecting deinterlacing output
 
-	if ((vpos & 1) == field) // output coordinate present on current field
+	if ((vpos & 1) != field) // output coordinate present on current field
 	{
 		// output coordinate present on current field
 		o_col0 = texture(samp0, p_t0);

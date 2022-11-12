@@ -722,7 +722,6 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 
 void GSDevice12::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset, int bufIdx)
 {
-	const GSVector4  ss   = GSVector4(sTex->GetSize());
 	const GSVector2i ds_i = dTex->GetSize();
 	const GSVector4  ds   = GSVector4(ds_i);
 	
@@ -732,7 +731,7 @@ void GSDevice12::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool 
 
 	InterlaceConstantBuffer cb;
 
-	cb.ZrH = GSVector4(static_cast<float>(bufIdx), 1.0f / ss.y, ss.y, MAD_SENSITIVITY);
+	cb.ZrH = GSVector4(static_cast<float>(bufIdx), 1.0f / ds.y, ds.y, MAD_SENSITIVITY);
 
 	GL_PUSH("DoInterlace %dx%d Shader:%d Linear:%d", ds_i.x, ds_i.y, shader, linear);
 
