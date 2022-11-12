@@ -632,7 +632,7 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 
 			case GSHWFixId::Deinterlace:
 			{
-				if (value >= 0 && value <= static_cast<int>(GSInterlaceMode::Automatic))
+				if (value >= static_cast<int>(GSInterlaceMode::Automatic) && value < static_cast<int>(GSInterlaceMode::Count))
 				{
 					if (config.InterlaceMode == GSInterlaceMode::Automatic)
 						config.InterlaceMode = static_cast<GSInterlaceMode>(value);
