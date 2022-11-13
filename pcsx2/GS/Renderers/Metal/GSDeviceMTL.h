@@ -231,7 +231,7 @@ public:
 	// Spinning
 	ReadbackSpinManager m_spin_manager;
 	u32 m_encoders_in_current_cmdbuf;
-	u32 m_spin_timer;
+	u32 m_spin_timer = 0;
 	MRCOwned<id<MTLComputePipelineState>> m_spin_pipeline;
 	MRCOwned<id<MTLBuffer>> m_spin_buffer;
 	MRCOwned<id<MTLFence>> m_spin_fence;
