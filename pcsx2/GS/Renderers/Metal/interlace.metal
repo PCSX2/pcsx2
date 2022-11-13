@@ -17,22 +17,30 @@
 
 using namespace metal;
 
+
+// Weave shader
 fragment float4 ps_interlace0(ConvertShaderData data [[stage_in]], ConvertPSRes res,
 	constant GSMTLInterlacePSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
 {
-	if ((int(data.p.y) & 1) == 0)
+	const int idx   = int(uniform.ZrH.x); // buffer index passed from CPU
+	const int field = idx & 1;            // current field
+	const int vpos  = int(data.p.y);      // vertical position of destination texture
+
+	if ((vpos & 1) == field)
+		return res.sample(data.t);
+	else
 		discard_fragment();
-	return res.sample(data.t);
 }
 
-fragment float4 ps_interlace1(ConvertShaderData data [[stage_in]], ConvertPSRes res,
-	constant GSMTLInterlacePSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
+
+// Bob shader
+fragment float4 ps_interlace1(ConvertShaderData data [[stage_in]], ConvertPSRes res)
 {
-	if ((int(data.p.y) & 1) != 0)
-		discard_fragment();
 	return res.sample(data.t);
 }
 
+
+// Blend shader
 fragment float4 ps_interlace2(ConvertShaderData data [[stage_in]], ConvertPSRes res,
 	constant GSMTLInterlacePSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
 {
@@ -43,12 +51,9 @@ fragment float4 ps_interlace2(ConvertShaderData data [[stage_in]], ConvertPSRes 
 	return (c0 + c1 * 2.f + c2) / 4.f;
 }
 
-fragment float4 ps_interlace3(ConvertShaderData data [[stage_in]], ConvertPSRes res)
-{
-	return res.sample(data.t);
-}
 
-fragment float4 ps_interlace4(ConvertShaderData data [[stage_in]], ConvertPSRes res,
+// MAD shader - buffering
+fragment float4 ps_interlace3(ConvertShaderData data [[stage_in]], ConvertPSRes res,
 	constant GSMTLInterlacePSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
 {
 	// We take half the lines from the current frame and stores them in the MAD frame buffer.
@@ -71,7 +76,7 @@ fragment float4 ps_interlace4(ConvertShaderData data [[stage_in]], ConvertPSRes 
 
 	// if the index of current destination line belongs to the current fiels we update it, otherwise
 	// we leave the old line in the destination buffer
-	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) != field))
+	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) == field))
 		return res.sample(iptr);
 	else
 		discard_fragment();
@@ -79,7 +84,9 @@ fragment float4 ps_interlace4(ConvertShaderData data [[stage_in]], ConvertPSRes 
 	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-fragment float4 ps_interlace5(ConvertShaderData data [[stage_in]], ConvertPSRes res,
+
+// MAD shader - reconstruction
+fragment float4 ps_interlace4(ConvertShaderData data [[stage_in]], ConvertPSRes res,
 	constant GSMTLInterlacePSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
 {
 	const int    idx         = int(uniform.ZrH.x);                   // buffer index passed from CPU
@@ -129,8 +136,7 @@ fragment float4 ps_interlace5(ConvertShaderData data [[stage_in]], ConvertPSRes 
 			break;
 	}
 
-	// calculating motion, only relevant for missing lines where the "center line" is pointed
-	// by p_t1
+	// calculating motion, only relevant for missing lines where the "center line" is pointed by p_t1
 
 	float4 hn = res.sample(p_t0 - lofs); // new high pixel
 	float4 cn = res.sample(p_t1);        // new center pixel
@@ -160,7 +166,7 @@ fragment float4 ps_interlace5(ConvertShaderData data [[stage_in]], ConvertPSRes 
 
 	// selecting deinterlacing output
 
-	if ((vpos & 1) != field)
+	if ((vpos & 1) == field)
 	{
 		// output coordinate present on current field
 		return res.sample(p_t0);
@@ -174,15 +180,11 @@ fragment float4 ps_interlace5(ConvertShaderData data [[stage_in]], ConvertPSRes 
 	{
 		// missing line needs to be reconstructed
 		if (((mh_max > 0.0f) || (ml_max > 0.0f)) || (mc_max > 0.0f))
-		{
 			// high motion -> interpolate pixels above and below
 			return (hn + ln) / 2.0f;
-		}
 		else
-		{
 			// low motion -> weave
 			return cn;
-		}
 	}
 
 	return float4(0.0f, 0.0f, 0.0f, 0.0f);

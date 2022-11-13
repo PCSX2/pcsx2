@@ -737,7 +737,7 @@ private:
 	static const std::array<u8, 16> m_replaceDualSrcBlendMap;
 
 protected:
-	static constexpr int   NUM_INTERLACE_SHADERS = 6;
+	static constexpr int   NUM_INTERLACE_SHADERS = 5;
 	static constexpr float MAD_SENSITIVITY = 0.08f;
 	static constexpr u32   MAX_POOLED_TEXTURES = 300;
 
