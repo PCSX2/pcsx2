@@ -191,7 +191,8 @@ __ri microProgram* mVUcreateProg(microVU& mVU, int startPC)
 	prog->idx = mVU.prog.total++;
 	prog->ranges = new std::deque<microRange>();
 	prog->startPC = startPC;
-	mVUcacheProg(mVU, *prog); // Cache Micro Program
+	if(doWholeProgCompare)
+		mVUcacheProg(mVU, *prog); // Cache Micro Program
 	double cacheSize = (double)((uptr)mVU.prog.x86end - (uptr)mVU.prog.x86start);
 	double cacheUsed = ((double)((uptr)mVU.prog.x86ptr - (uptr)mVU.prog.x86start)) / (double)_1mb;
 	double cachePerc = ((double)((uptr)mVU.prog.x86ptr - (uptr)mVU.prog.x86start)) / cacheSize * 100;
@@ -204,10 +205,18 @@ __ri microProgram* mVUcreateProg(microVU& mVU, int startPC)
 // Caches Micro Program
 __ri void mVUcacheProg(microVU& mVU, microProgram& prog)
 {
-	if (!mVU.index)
-		memcpy(prog.data, mVU.regs().Micro, 0x1000);
+	if (!doWholeProgCompare)
+	{
+		auto cmpOffset = [&](void* x) { return (u8*)x + mVUrange.start; };
+		memcpy(cmpOffset(prog.data), cmpOffset(mVU.regs().Micro), (mVUrange.end - mVUrange.start));
+	}
 	else
-		memcpy(prog.data, mVU.regs().Micro, 0x4000);
+	{
+		if (!mVU.index)
+			memcpy(prog.data, mVU.regs().Micro, 0x1000);
+		else
+			memcpy(prog.data, mVU.regs().Micro, 0x4000);
+	}
 	mVUdumpProg(mVU, prog);
 }
 
@@ -260,9 +269,9 @@ void mVUprintUniqueRatio(microVU& mVU)
 }
 
 // Compare Cached microProgram to mVU.regs().Micro
-__fi bool mVUcmpProg(microVU& mVU, microProgram& prog, const bool cmpWholeProg)
+__fi bool mVUcmpProg(microVU& mVU, microProgram& prog)
 {
-	if (cmpWholeProg)
+	if (doWholeProgCompare)
 	{
 		if (memcmp((u8*)prog.data, mVU.regs().Micro, mVU.microMemSize))
 			return false;
@@ -271,16 +280,19 @@ __fi bool mVUcmpProg(microVU& mVU, microProgram& prog, const bool cmpWholeProg)
 	{
 		for (const auto& range : *prog.ranges)
 		{
-			auto cmpOffset = [&](void* x) { return (u8*)x + range.start; };
+#if defined(PCSX2_DEVBUILD) || defined(_DEBUG)
 			if ((range.start < 0) || (range.end < 0))
 				DevCon.Error("microVU%d: Negative Range![%d][%d]", mVU.index, range.start, range.end);
+#endif
+			auto cmpOffset = [&](void* x) { return (u8*)x + range.start; };
+
 			if (memcmp(cmpOffset(prog.data), cmpOffset(mVU.regs().Micro), (range.end - range.start)))
 				return false;
 		}
 	}
 	mVU.prog.cleared = 0;
 	mVU.prog.cur = &prog;
-	mVU.prog.isSame = cmpWholeProg ? 1 : -1;
+	mVU.prog.isSame = doWholeProgCompare ? 1 : -1;
 	return true;
 }
 
@@ -296,7 +308,7 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState)
 		std::deque<microProgram*>::iterator it(list->begin());
 		for (; it != list->end(); ++it)
 		{
-			bool b = mVUcmpProg(mVU, *it[0], 0);
+			bool b = mVUcmpProg(mVU, *it[0]);
 
 			if (b)
 			{
