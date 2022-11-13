@@ -83,7 +83,7 @@ void GSRenderer::Destroy()
 {
 }
 
-bool GSRenderer::Merge(int field)
+bool GSRenderer::Merge(int field, bool unique)
 {
 	bool en[2];
 
@@ -323,12 +323,21 @@ bool GSRenderer::Merge(int field)
 		// src_out_rect is the resized rect for output. (Not really used)
 		src_out_rect[i] = (GSVector4(r) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
 
-		if (m_regs->SMODE2.FFMD && !is_bob && !GSConfig.DisableInterlaceOffset && GSConfig.InterlaceMode != GSInterlaceMode::Off)
+		if (m_regs->SMODE2.FFMD && isReallyInterlaced() && !is_bob && !GSConfig.DisableInterlaceOffset && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 		{
 			// We do half because FFMD is a half sized framebuffer, then we offset by 1 in the shader for the actual interlace
-			if(GetUpscaleMultiplier() > 1.0f)
-				interlace_offset += ((((tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) + 0.5f) * 0.5f) - 1.0f) * static_cast<float>(field ^ field2);
-			offset = 1.0f;
+			if (GetUpscaleMultiplier() > 1.0f)
+			{
+				if (unique)
+				{
+					interlace_offset = static_cast<float>(field ^ field2) * (GetUpscaleMultiplier());
+					offset = 0.0f;
+				}
+				else
+					offset = 1.0f;
+			}
+			else
+				offset = 1.0f;
 		}
 		// Restore manually offset "interlace" lines
 		dst[i] += GSVector4(0.0f, interlace_offset, 0.0f, interlace_offset);
@@ -569,22 +578,23 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 	const bool fb_sprite_frame = (fb_sprite_blits > 0);
 
 	bool skip_frame = false;
+	bool is_unique_frame = false;
+
+	switch (PerformanceMetrics::GetInternalFPSMethod())
+	{
+	case PerformanceMetrics::InternalFPSMethod::GSPrivilegedRegister:
+		is_unique_frame = registers_written;
+		break;
+	case PerformanceMetrics::InternalFPSMethod::DISPFBBlit:
+		is_unique_frame = fb_sprite_frame;
+		break;
+	default:
+		is_unique_frame = true;
+		break;
+	}
+
 	if (GSConfig.SkipDuplicateFrames)
 	{
-		bool is_unique_frame;
-		switch (PerformanceMetrics::GetInternalFPSMethod())
-		{
-		case PerformanceMetrics::InternalFPSMethod::GSPrivilegedRegister:
-			is_unique_frame = registers_written;
-			break;
-		case PerformanceMetrics::InternalFPSMethod::DISPFBBlit:
-			is_unique_frame = fb_sprite_frame;
-			break;
-		default:
-			is_unique_frame = true;
-			break;
-		}
-
 		if (!is_unique_frame && m_skipped_duplicate_frames < MAX_SKIPPED_DUPLICATE_FRAMES)
 		{
 			m_skipped_duplicate_frames++;
@@ -596,7 +606,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 		}
 	}
 
-	const bool blank_frame = !Merge(field);
+	const bool blank_frame = !Merge(field, is_unique_frame);
 
 	if (skip_frame)
 	{

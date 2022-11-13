@@ -28,7 +28,7 @@ struct HostKeyEvent;
 class GSRenderer : public GSState
 {
 private:
-	bool Merge(int field);
+	bool Merge(int field, bool unique);
 
 	u64 m_shader_time_start = 0;
 
