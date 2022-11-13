@@ -54,12 +54,15 @@ void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC)
 		pxFailDev("microVU: PC out of VU memory");
 	}
 
+	// The PC handling will prewrap the PC so we need to set the end PC to the end of the micro memory, but only if it wraps, no more.
+	const s32 cur_pc = (!isStartPC && mVUrange.start > pc && pc == 0) ? mVU.microMemSize : pc;
+
 	if (isStartPC) // Check if startPC is already within a block we've recompiled
 	{
 		std::deque<microRange>::const_iterator it(ranges->begin());
 		for (; it != ranges->end(); ++it)
 		{
-			if ((pc >= it[0].start) && (pc <= it[0].end))
+			if ((cur_pc >= it[0].start) && (cur_pc <= it[0].end))
 			{
 				if (it[0].start != it[0].end)
 				{
@@ -71,53 +74,51 @@ void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC)
 			}
 		}
 	}
-	else if (mVUrange.end >= pc)
+	else if (mVUrange.end >= cur_pc)
 	{
 		// existing range covers more area than current PC so no need to process it
 		return;
 	}
-
-	mVUcheckIsSame(mVU);
+	
+	if (doWholeProgCompare)
+		mVUcheckIsSame(mVU);
 
 	if (isStartPC)
 	{
-		microRange mRange = {pc, -1};
+		microRange mRange = {cur_pc, -1};
 		ranges->push_front(mRange);
 		return;
 	}
-	if (mVUrange.start <= pc)
+
+	if (mVUrange.start <= cur_pc)
 	{
-		mVUrange.end = pc;
-		bool mergedRange = false;
-		s32 rStart = mVUrange.start;
-		s32 rEnd = mVUrange.end;
+		mVUrange.end = cur_pc;
+		s32& rStart = mVUrange.start;
+		s32& rEnd = mVUrange.end;
 		std::deque<microRange>::iterator it(ranges->begin());
-		for (++it; it != ranges->end(); ++it)
+		it++;
+		for (;it != ranges->end();)
 		{
-			if ((it[0].start >= rStart) && (it[0].start <= rEnd)) // Starts after this prog but starts before the end of current prog
+			if (((it->start >= rStart) && (it->start <= rEnd)) || ((it->end >= rStart) && (it->end <= rEnd))) // Starts after this prog but starts before the end of current prog
 			{
-				it[0].start = std::min(it[0].start, rStart); // Choose the earlier start
-				mergedRange = true;
+				rStart = std::min(it->start, rStart); // Choose the earlier start
+				rEnd = std::max(it->end, rEnd);
+				it = ranges->erase(it);
 			}
-			// Make sure we check both as the start on the other one may be later, we don't want to delete that
-			if ((it[0].end >= rStart) && (it[0].end <= rEnd)) // Ends after this prog starts but ends before this one ends
-			{
-				it[0].end = std::max(it[0].end, rEnd); // Extend the end of this prog to match this program
-				mergedRange = true;
-			}
-		}
-		if (mergedRange)
-		{
-			ranges->erase(ranges->begin());
+			else
+				it++;
 		}
 	}
 	else
 	{
 		mVUrange.end = mVU.microMemSize;
-		DevCon.WriteLn(Color_Green, "microVU%d: Prog Range Wrap [%04x] [%d]", mVU.index, mVUrange.start, mVUrange.end);
-		microRange mRange = {0, pc};
+		DevCon.WriteLn(Color_Green, "microVU%d: Prog Range Wrap [%04x] [%04x] PC %x", mVU.index, mVUrange.start, mVUrange.end, cur_pc);
+		microRange mRange = {0, cur_pc };
 		ranges->push_front(mRange);
 	}
+
+	if(!doWholeProgCompare)
+		mVUcacheProg(mVU, *mVU.prog.cur);
 }
 
 //------------------------------------------------------------------
