@@ -31,6 +31,12 @@
 
 class MetalHostDisplay final : public HostDisplay
 {
+	enum class UsePresentDrawable : u8
+	{
+		Never = 0,
+		Always = 1,
+		IfVsync = 2,
+	};
 	MRCOwned<NSView*> m_view;
 	MRCOwned<CAMetalLayer*> m_layer;
 	GSMTLDevice m_dev;
@@ -39,6 +45,7 @@ class MetalHostDisplay final : public HostDisplay
 	MRCOwned<id<CAMetalDrawable>> m_current_drawable;
 	MRCOwned<MTLRenderPassDescriptor*> m_pass_desc;
 	u32 m_capture_start_frame;
+	UsePresentDrawable m_use_present_drawable;
 	bool m_gpu_timing_enabled = false;
 	double m_accumulated_gpu_time = 0;
 	double m_last_gpu_time_end = 0;

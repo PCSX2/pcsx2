@@ -129,6 +129,13 @@ bool MetalHostDisplay::CreateDevice(const WindowInfo& wi)
 	[m_pass_desc colorAttachments][0].clearColor = MTLClearColorMake(0, 0, 0, 0);
 	[m_pass_desc colorAttachments][0].storeAction = MTLStoreActionStore;
 
+	if (char* env = getenv("MTL_USE_PRESENT_DRAWABLE"))
+		m_use_present_drawable = static_cast<UsePresentDrawable>(atoi(env));
+	else if (@available(macOS 13.0, *))
+		m_use_present_drawable = UsePresentDrawable::Always;
+	else // Before Ventura, presentDrawable acts like vsync is on when windowed
+		m_use_present_drawable = UsePresentDrawable::IfVsync;
+
 	m_capture_start_frame = 0;
 	if (char* env = getenv("MTL_CAPTURE"))
 	{
@@ -294,9 +301,17 @@ void MetalHostDisplay::EndPresent()
 	dev->RenderImGui(ImGui::GetDrawData());
 	dev->EndRenderPass();
 	if (m_current_drawable)
-		[dev->m_current_render_cmdbuf addScheduledHandler:[drawable = std::move(m_current_drawable)](id<MTLCommandBuffer>){
-			[drawable present];
-		}];
+	{
+		const bool use_present_drawable = m_use_present_drawable == UsePresentDrawable::Always ||
+			(m_use_present_drawable == UsePresentDrawable::IfVsync && m_vsync_mode != VsyncMode::Off);
+
+		if (use_present_drawable)
+			[dev->m_current_render_cmdbuf presentDrawable:m_current_drawable];
+		else
+			[dev->m_current_render_cmdbuf addScheduledHandler:[drawable = std::move(m_current_drawable)](id<MTLCommandBuffer>){
+				[drawable present];
+			}];
+	}
 	dev->FlushEncoders();
 	dev->FrameCompleted();
 	m_current_drawable = nullptr;
