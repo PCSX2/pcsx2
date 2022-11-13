@@ -513,11 +513,22 @@ static void recCTC2()
 			xAND(eax, 0x0C0C);
 			xMOV(ptr32[&vu0Regs.VI[REG_FBRST].UL], eax);
 			break;
+		case 0:
+			// Ignore writes to vi00.
+			break;
 		default:
 			// Executing vu0 block here fixes the intro of Ratchet and Clank
 			// sVU's COP2 has a comment that "Donald Duck" needs this too...
-			if (_Rd_)
+			if (_Rd_ < REG_STATUS_FLAG)
+			{
+				// Need to expand this out, because we want to write as 16 bits.
+				_eeMoveGPRtoR(eax, _Rt_);
+				xMOV(ptr16[&vu0Regs.VI[_Rd_].US[0]], ax);
+			}
+			else
+			{
 				_eeMoveGPRtoM((uptr)&vu0Regs.VI[_Rd_].UL, _Rt_);
+			}
 			break;
 	}
 }
