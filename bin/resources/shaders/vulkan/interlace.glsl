@@ -25,24 +25,33 @@ layout(push_constant) uniform cb0
 
 layout(set = 0, binding = 0) uniform sampler2D samp0;
 
+
+// Weave shader
 #ifdef ps_main0
 void ps_main0()
 {
-	o_col0 = texture(samp0, v_tex);
-	if ((int(gl_FragCoord.y) & 1) == 0)
+	const int idx   = int(ZrH.x);          // buffer index passed from CPU
+	const int field = idx & 1;             // current field
+	const int vpos  = int(gl_FragCoord.y); // vertical position of destination texture
+
+	if ((vpos & 1) == field)
+		o_col0 = texture(samp0, v_tex);
+	else
 		discard;
 }
 #endif
 
+
+// Bob shader
 #ifdef ps_main1
 void ps_main1()
 {
 	o_col0 = texture(samp0, v_tex);
-	if ((int(gl_FragCoord.y) & 1) != 0)
-		discard;
 }
 #endif
 
+
+// Blend shader
 #ifdef ps_main2
 void ps_main2()
 {
@@ -55,16 +64,10 @@ void ps_main2()
 }
 #endif
 
+
+// MAD shader - buffering
 #ifdef ps_main3
 void ps_main3()
-{
-	o_col0 = texture(samp0, v_tex);
-}
-#endif
-
-
-#ifdef ps_main4
-void ps_main4()
 {
 	// We take half the lines from the current frame and stores them in the MAD frame buffer.
 	// the MAD frame buffer is split in 2 consecutive banks of 2 fields each, the fields in each bank
@@ -86,7 +89,7 @@ void ps_main4()
 
 	// if the index of current destination line belongs to the current fiels we update it, otherwise
 	// we leave the old line in the destination buffer
-	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) != field))
+	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) == field))
 		o_col0 = texture(samp0, iptr);
 	else
 		discard;
@@ -94,8 +97,9 @@ void ps_main4()
 #endif
 
 
-#ifdef ps_main5
-void ps_main5()
+// MAD shader - reconstruction
+#ifdef ps_main4
+void ps_main4()
 {
 	// we use the contents of the MAD frame buffer to reconstruct the missing lines from the current
 	// field.
@@ -146,8 +150,7 @@ void ps_main5()
 			break;
 	}
 
-	// calculating motion, only relevant for missing lines where the "center line" is pointed
-	// by p_t1
+	// calculating motion, only relevant for missing lines where the "center line" is pointed by p_t1
 
 	vec4 hn = texture(samp0, p_t0 - lofs); // new high pixel
 	vec4 cn = texture(samp0, p_t1);        // new center pixel
@@ -177,7 +180,7 @@ void ps_main5()
 
 	// selecting deinterlacing output
 
-	if ((vpos & 1) != field) // output coordinate present on current field
+	if ((vpos & 1) == field) // output coordinate present on current field
 	{
 		// output coordinate present on current field
 		o_col0 = texture(samp0, p_t0);
@@ -191,15 +194,11 @@ void ps_main5()
 	{
 		// missing line needs to be reconstructed
 		if(((mh_max > 0.0f) || (ml_max > 0.0f)) || (mc_max > 0.0f))
-		{
 			// high motion -> interpolate pixels above and below
 			o_col0 = (hn + ln) / 2.0f;
-		}
 		else
-		{
 			// low motion -> weave
 			o_col0 = cn;
-		}
 	}
 }
 #endif

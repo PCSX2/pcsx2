@@ -371,18 +371,18 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	{
 		case 0: // weave
 			ResizeTarget(&m_weavebob, ds.x, ds.y);
-			DoInterlace(m_merge, m_weavebob, field, false, offset, 0);
+			DoInterlace(m_merge, m_weavebob, 0, false, offset, field);
 			m_current = m_weavebob;
 			break;
 		case 1: // bob
 			// Field is reversed here as we are countering the bounce.
 			ResizeTarget(&m_weavebob, ds.x, ds.y);
-			DoInterlace(m_merge, m_weavebob, 3, true, yoffset * (1 - field), 0);
+			DoInterlace(m_merge, m_weavebob, 1, true, yoffset * (1 - field), 0);
 			m_current = m_weavebob;
 			break;
 		case 2: //Blend
 			ResizeTarget(&m_weavebob, ds.x, ds.y);
-			DoInterlace(m_merge, m_weavebob, field, false, offset, 0);
+			DoInterlace(m_merge, m_weavebob, 0, false, offset, field);
 			ResizeTarget(&m_blend, ds.x, ds.y);
 			DoInterlace(m_weavebob, m_blend, 2, false, 0, 0);
 			m_current = m_blend;
@@ -393,9 +393,9 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 			bufIdx |= field;
 			bufIdx &= 3;
 			ResizeTarget(&m_mad, ds.x, ds.y * 2.0f);
-			DoInterlace(m_merge, m_mad, 4, false, offset, bufIdx);
+			DoInterlace(m_merge, m_mad, 3, false, offset, bufIdx);
 			ResizeTarget(&m_weavebob, ds.x, ds.y);
-			DoInterlace(m_mad, m_weavebob, 5, false, 0, bufIdx);
+			DoInterlace(m_mad, m_weavebob, 4, false, 0, bufIdx);
 			m_current = m_weavebob;
 			break;
 		default:

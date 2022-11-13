@@ -14,22 +14,31 @@ struct PS_INPUT
 	float2 t : TEXCOORD0;
 };
 
+
+// Weave shader
 float4 ps_main0(PS_INPUT input) : SV_Target0
 {
-	if ((int(input.p.y) & 1) == 0)
+	const int idx   = int(ZrH.x);     // buffer index passed from CPU
+	const int field = idx & 1;        // current field
+	const int vpos  = int(input.p.y); // vertical position of destination texture
+
+	if ((vpos & 1) == field)
+		return Texture.Sample(Sampler, input.t);
+	else
 		discard;
 
-	return Texture.Sample(Sampler, input.t);
+	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
+
+// Bob shader
 float4 ps_main1(PS_INPUT input) : SV_Target0
 {
-	if ((int(input.p.y) & 1) != 0)
-		discard;
-
 	return Texture.Sample(Sampler, input.t);
 }
 
+
+// Blend shader
 float4 ps_main2(PS_INPUT input) : SV_Target0
 {
 	float2 vstep = float2(0.0f, ZrH.y);
@@ -40,13 +49,9 @@ float4 ps_main2(PS_INPUT input) : SV_Target0
 	return (c0 + c1 * 2 + c2) / 4;
 }
 
+
+// MAD shader - buffering
 float4 ps_main3(PS_INPUT input) : SV_Target0
-{
-	return Texture.Sample(Sampler, input.t);
-}
-
-
-float4 ps_main4(PS_INPUT input) : SV_Target0
 {
 	// We take half the lines from the current frame and stores them in the MAD frame buffer.
 	// the MAD frame buffer is split in 2 consecutive banks of 2 fields each, the fields in each bank
@@ -68,7 +73,7 @@ float4 ps_main4(PS_INPUT input) : SV_Target0
 
 	// if the index of current destination line belongs to the current fiels we update it, otherwise
 	// we leave the old line in the destination buffer
-	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) != field))
+	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) == field))
 		return Texture.Sample(Sampler, iptr);
 	else
 		discard;
@@ -77,7 +82,8 @@ float4 ps_main4(PS_INPUT input) : SV_Target0
 }
 
 
-float4 ps_main5(PS_INPUT input) : SV_Target0
+// MAD shader - reconstruction
+float4 ps_main4(PS_INPUT input) : SV_Target0
 {
 	// we use the contents of the MAD frame buffer to reconstruct the missing lines from the current
 	// field.
@@ -128,8 +134,7 @@ float4 ps_main5(PS_INPUT input) : SV_Target0
 			break;
 	}
 
-	// calculating motion, only relevant for missing lines where the "center line" is pointed
-	// by p_t1
+	// calculating motion, only relevant for missing lines where the "center line" is pointed by p_t1
 
 	float4 hn = Texture.Sample(Sampler, p_t0 - lofs); // new high pixel
 	float4 cn = Texture.Sample(Sampler, p_t1);        // new center pixel
@@ -159,7 +164,7 @@ float4 ps_main5(PS_INPUT input) : SV_Target0
 
 	// selecting deinterlacing output
 
-	if ((vpos & 1) != field)
+	if ((vpos & 1) == field)
 	{
 		// output coordinate present on current field
 		return Texture.Sample(Sampler, p_t0);
@@ -173,15 +178,11 @@ float4 ps_main5(PS_INPUT input) : SV_Target0
 	{
 		// missing line needs to be reconstructed
 		if (((mh_max > 0.0f) || (ml_max > 0.0f)) || (mc_max > 0.0f))
-		{
 			// high motion -> interpolate pixels above and below
 			return (hn + ln) / 2.0f;
-		}
 		else
-		{
 			// low motion -> weave
 			return cn;
-		}
 	}
 
 	return float4(0.0f, 0.0f, 0.0f, 0.0f);

@@ -10,29 +10,29 @@ uniform vec4 ZrH;
 
 layout(location = 0) out vec4 SV_Target0;
 
-// TODO ensure that clip (discard) is < 0 and not <= 0 ???
+
+// Weave shader
 void ps_main0()
 {
-	if ((int(gl_FragCoord.y) & 1) == 0)
-		discard;
-	// I'm not sure it impact us but be safe to lookup texture before conditional if
-	// see: http://www.opengl.org/wiki/GLSL_Sampler#Non-uniform_flow_control
-	vec4 c = texture(TextureSampler, PSin_t);
+	const int idx   = int(ZrH.x);          // buffer index passed from CPU
+	const int field = idx & 1;             // current field
+	const int vpos  = int(gl_FragCoord.y); // vertical position of destination texture
 
-	SV_Target0 = c;
+	if ((vpos & 1) == field)
+		SV_Target0 = texture(TextureSampler, PSin_t);
+	else
+		discard;
 }
 
+
+// Bob shader
 void ps_main1()
 {
-	if ((int(gl_FragCoord.y) & 1) != 0)
-		discard;
-	// I'm not sure it impact us but be safe to lookup texture before conditional if
-	// see: http://www.opengl.org/wiki/GLSL_Sampler#Non-uniform_flow_control
-	vec4 c = texture(TextureSampler, PSin_t);
-
-	SV_Target0 = c;
+	SV_Target0 = texture(TextureSampler, PSin_t);
 }
 
+
+// Blend shader
 void ps_main2()
 {
 	vec2 vstep = vec2(0.0f, ZrH.y);
@@ -43,13 +43,9 @@ void ps_main2()
 	SV_Target0 = (c0 + c1 * 2.0f + c2) / 4.0f;
 }
 
+
+// MAD shader - buffering
 void ps_main3()
-{
-	SV_Target0 = texture(TextureSampler, PSin_t);
-}
-
-
-void ps_main4()
 {
 	// We take half the lines from the current frame and stores them in the MAD frame buffer.
 	// the MAD frame buffer is split in 2 consecutive banks of 2 fields each, the fields in each bank
@@ -71,17 +67,17 @@ void ps_main4()
 
 	// if the index of current destination line belongs to the current fiels we update it, otherwise
 	// we leave the old line in the destination buffer
-	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) != field))
+	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) == field))
 		SV_Target0 = texture(TextureSampler, iptr);
 	else
 		discard;
 }
 
 
-void ps_main5()
+// MAD shader - reconstruction
+void ps_main4()
 {
-	// we use the contents of the MAD frame buffer to reconstruct the missing lines from the current
-	// field.
+	// we use the contents of the MAD frame buffer to reconstruct the missing lines from the current field.
 
 	const int   idx          = int(ZrH.x);                         // buffer index passed from CPU
 	const int   bank         = idx >> 1;                           // current bank
@@ -161,8 +157,8 @@ void ps_main5()
 
 
 	// selecting deinterlacing output
-		
-	if ((vpos & 1) != field)
+	
+	if ((vpos & 1) == field)
 	{
 		// output coordinate present on current field
 		SV_Target0 = texture(TextureSampler, p_t0);
@@ -176,15 +172,11 @@ void ps_main5()
 	{
 		// missing line needs to be reconstructed
 		if(((mh_max > 0.0f) || (ml_max > 0.0f)) || (mc_max > 0.0f))
-		{
 			// high motion -> interpolate pixels above and below
 			SV_Target0 = (hn + ln) / 2.0f;
-		}
 		else
-		{
 			// low motion -> weave
 			SV_Target0 = cn;
-		}
 	}
 }
 
