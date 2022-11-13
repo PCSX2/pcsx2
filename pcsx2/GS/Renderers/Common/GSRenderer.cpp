@@ -368,10 +368,12 @@ bool GSRenderer::Merge(int field)
 	ds = fs;
 
 	// When interlace(FRAME) mode, the rect is half height, so it needs to be stretched.
-	if (m_regs->SMODE2.INT && m_regs->SMODE2.FFMD)
+	const bool is_interlaced_resolution = m_regs->SMODE2.INT || (isReallyInterlaced() && IsAnalogue() && GSConfig.InterlaceMode != GSInterlaceMode::Off);
+
+	if (is_interlaced_resolution && m_regs->SMODE2.FFMD)
 		ds.y *= 2;
 
-	m_real_size = ds;
+	m_real_size = GSVector2i(fs.x, is_interlaced_resolution ? ds.y : fs.y);
 
 	if (tex[0] || tex[1])
 	{
