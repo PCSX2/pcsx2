@@ -880,7 +880,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 		auto& list = m_dst[type];
 		for (auto i = list.begin(); i != list.end();)
 		{
-			auto j = i++;
+			auto j = i;
 			Target* t = *j;
 
 			// GH: (I think) this code is completely broken. Typical issue:
@@ -935,12 +935,14 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					}
 					if (!ComputeSurfaceOffset(off, r, t).is_valid)
 					{
-						list.erase(j);
+						i = list.erase(j);
 						GL_CACHE("TC: Remove Target(%s) %d (0x%x)", to_string(type),
 							t->m_texture ? t->m_texture->GetID() : 0,
 							t->m_TEX0.TBP0);
 						delete t;
 					}
+					else
+						i++;
 					continue;
 				}
 			}
@@ -952,6 +954,8 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 				// Game: Conflict - Desert Storm (flickering)
 				t->m_dirty_alpha = false;
 			}
+
+			i++;
 
 			// GH: Try to detect texture write that will overlap with a target buffer
 			// TODO Use ComputeSurfaceOffset below.
