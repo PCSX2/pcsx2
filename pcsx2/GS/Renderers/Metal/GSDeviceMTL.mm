@@ -305,7 +305,7 @@ void GSDeviceMTL::FlushEncoders()
 			if (GSDeviceMTL* dev = backref->second)
 			{
 				dev->DrawCommandBufferFinished(draw, buf);
-				dev->m_spin_manager.DrawCompleted(spin_id, begin, end);
+				dev->m_spin_manager.DrawCompleted(spin_id, static_cast<u32>(begin), static_cast<u32>(end));
 			}
 		}];
 	}
@@ -342,7 +342,7 @@ void GSDeviceMTL::FlushEncoders()
 #pragma clang diagnostic pop
 			std::lock_guard<std::mutex> guard(backref->first);
 			if (GSDeviceMTL* dev = backref->second)
-				dev->m_spin_manager.SpinCompleted(spin_cycles, begin, end);
+				dev->m_spin_manager.SpinCompleted(spin_cycles, static_cast<u32>(begin), static_cast<u32>(end));
 		}];
 		[spinCmdBuf commit];
 	}
