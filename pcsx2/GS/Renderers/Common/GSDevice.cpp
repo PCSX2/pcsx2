@@ -369,18 +369,18 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 
 	switch (mode)
 	{
-		case 0: // weave
+		case 0: // Weave
 			ResizeTarget(&m_weavebob, ds.x, ds.y);
 			DoInterlace(m_merge, m_weavebob, 0, false, offset, field);
 			m_current = m_weavebob;
 			break;
-		case 1: // bob
+		case 1: // Bob
 			// Field is reversed here as we are countering the bounce.
 			ResizeTarget(&m_weavebob, ds.x, ds.y);
 			DoInterlace(m_merge, m_weavebob, 1, true, yoffset * (1 - field), 0);
 			m_current = m_weavebob;
 			break;
-		case 2: //Blend
+		case 2: // Blend
 			ResizeTarget(&m_weavebob, ds.x, ds.y);
 			DoInterlace(m_merge, m_weavebob, 0, false, offset, field);
 			ResizeTarget(&m_blend, ds.x, ds.y);
