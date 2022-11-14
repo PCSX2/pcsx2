@@ -34,7 +34,7 @@ namespace inputRec
 		recordingConLog(fmt::format("[REC]: {}\n", log));
 
 		// NOTE - Color is not currently used for OSD logs
-		Host::AddOSDMessage(log, 15.0f);
+		Host::AddOSDMessage(log, 5.0f);
 	}
 
 	void consoleLog(const std::string& log)

@@ -549,7 +549,7 @@ void Achievements::UpdateSettings(const Pcsx2Config::AchievementsOptions& old_co
 		else if (!s_challenge_mode && EmuConfig.Achievements.ChallengeMode)
 		{
 			if (HasActiveGame())
-				ImGuiFullscreen::ShowToast(std::string(), "Hardcore mode will be enabled on system reset.", 10.0f);
+				ImGuiFullscreen::ShowToast(std::string(), "Hardcore mode will be enabled on system reset.", 5.0f);
 		}
 	}
 
@@ -634,7 +634,7 @@ void Achievements::SetChallengeMode(bool enabled)
 	s_challenge_mode = enabled;
 
 	if (HasActiveGame())
-		ImGuiFullscreen::ShowToast(std::string(), enabled ? "Hardcore mode is now enabled." : "Hardcore mode is now disabled.", 10.0f);
+		ImGuiFullscreen::ShowToast(std::string(), enabled ? "Hardcore mode is now enabled." : "Hardcore mode is now disabled.", 5.0f);
 
 	if (HasActiveGame() && !IsTestModeActive())
 	{
@@ -1053,7 +1053,7 @@ void Achievements::DisplayAchievementSummary()
 			summary.append("Leaderboard submission is enabled.");
 	}
 
-	ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), s_game_icon);
+	ImGuiFullscreen::AddNotification(5.0f, std::move(title), std::move(summary), s_game_icon);
 
 	// Technically not going through the resource API, but since we're passing this to something else, we can't.
 	if (EmuConfig.Achievements.SoundEffects)
@@ -1069,7 +1069,7 @@ void Achievements::DisplayMasteredNotification()
 	std::string message(fmt::format(
 		"{} achievements, {} points{}", GetAchievementCount(), GetCurrentPointsForGame(), s_challenge_mode ? " (Hardcore Mode)" : ""));
 
-	ImGuiFullscreen::AddNotification(20.0f, std::move(title), std::move(message), s_game_icon);
+	ImGuiFullscreen::AddNotification(5.0f, std::move(title), std::move(message), s_game_icon);
 }
 
 void Achievements::GetUserUnlocksCallback(s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data)

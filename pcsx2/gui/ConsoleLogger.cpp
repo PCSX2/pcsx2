@@ -1274,7 +1274,7 @@ void Pcsx2App::DisableWindowLogging() const
 
 void OSDlog(ConsoleColors color, bool console, const std::string& str)
 {
-	Host::AddOSDMessage(str, 15.0f);
+	Host::AddOSDMessage(str, 5.0f);
 
 	if (console)
 		Console.WriteLn(color, str.c_str());

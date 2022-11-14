@@ -372,7 +372,7 @@ void memLoadingState::FreezeMem( void* data, int size )
 std::string Exception::SaveStateLoadError::FormatDiagnosticMessage() const
 {
 	std::string retval = "Savestate is corrupt or incomplete!\n";
-	Host::AddOSDMessage("Error: Savestate is corrupt or incomplete!", 15.0f);
+	Host::AddOSDMessage("Error: Savestate is corrupt or incomplete!", 5.0f);
 	_formatDiagMsg(retval);
 	return retval;
 }
@@ -380,7 +380,7 @@ std::string Exception::SaveStateLoadError::FormatDiagnosticMessage() const
 std::string Exception::SaveStateLoadError::FormatDisplayMessage() const
 {
 	std::string retval = "The savestate cannot be loaded, as it appears to be corrupt or incomplete.\n";
-	Host::AddOSDMessage("Error: The savestate cannot be loaded, as it appears to be corrupt or incomplete.", 15.0f);
+	Host::AddOSDMessage("Error: The savestate cannot be loaded, as it appears to be corrupt or incomplete.", 5.0f);
 	_formatUserMsg(retval);
 	return retval;
 }
