@@ -465,7 +465,7 @@ void MFC0()
 			[[fallthrough]];
 
 		default:
-			cpuRegs.GPR.r[_Rt_].UD[0] = (s64)cpuRegs.CP0.r[_Rd_];
+			cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.CP0.r[_Rd_];
 	}
 }
 
