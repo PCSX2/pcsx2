@@ -139,7 +139,7 @@ bool GSClut::InvalidateRange(u32 start_block, u32 end_block, bool is_draw)
 	GIFRegTEX0 next_cbp;
 	next_cbp.U64 = m_write.next_tex0;
 
-	if ((next_cbp.CBP + 3) >= start_block && end_block >= next_cbp.CBP)
+	if ((next_cbp.CBP + 3U) >= start_block && end_block >= next_cbp.CBP)
 	{
 		m_write.dirty |= is_draw ? 2 : 1;
 	}
