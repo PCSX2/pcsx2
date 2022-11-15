@@ -164,9 +164,9 @@ PAPX-90516:
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fix line in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
+    mipmap: 1 # Fixes broken textures.
+    textureInsideRT: 1 # Fixes broken character models.
+    autoFlush: 1 # Fixes lighting.
 PAPX-90517:
   name: "Prince of Persia - Jikan no Suna [Trial]"
   region: "NTSC-J"
@@ -758,9 +758,9 @@ SCAJ-20073:
   region: "NTSC-Unk"
   gsHWFixes:
     roundSprite: 1 # Fix line in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
+    mipmap: 1 # Fixes broken textures.
+    textureInsideRT: 1 # Fixes broken character models.
+    autoFlush: 1 # Fixes lighting.
 SCAJ-20074:
   name: "King of Fighters 2002, The"
   region: "NTSC-Unk"
@@ -2011,9 +2011,9 @@ SCED-51700:
   region: "PAL-M5"
   gsHWFixes:
     roundSprite: 1 # Fix line in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
+    mipmap: 1 # Fixes broken textures.
+    textureInsideRT: 1 # Fixes broken character models.
+    autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
 SCED-51922:
   name: "Ghosthunter [Demo]"
@@ -3272,9 +3272,9 @@ SCES-51608:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fix line in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
+    mipmap: 1 # Fixes broken textures.
+    textureInsideRT: 1 # Fixes broken character models.
+    autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
 SCES-51610:
   name: "This is Football 2004 [Red Devils 2004]"
@@ -3764,7 +3764,8 @@ SCES-53286:
   region: "PAL-M7"
   gsHWFixes:
     roundSprite: 1 # Fix line in the sky.
-    textureInsideRT: 1
+    textureInsideRT: 1 # Fixes broken character models.
+    autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
   memcardFilters: # Reads Ratchet Gladiator data.
     - "SCES-53286"
@@ -4722,9 +4723,9 @@ SCKA-20010:
   region: "NTSC-K"
   gsHWFixes:
     roundSprite: 1 # Fix line in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
+    mipmap: 1 # Fixes broken textures.
+    textureInsideRT: 1 # Fixes broken character models.
+    autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
 SCKA-20011:
   name: "Ratchet & Clank 2"
@@ -7448,9 +7449,9 @@ SCUS-97265:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fix line in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
+    mipmap: 1 # Fixes broken textures.
+    textureInsideRT: 1 # Fixes broken character models.
+    autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97266:
   name: "Final Fantasy XI [Disc1of2]"
@@ -7486,9 +7487,9 @@ SCUS-97273:
   region: "NTSC-U"
   gsHWFixes:
     roundSprite: 1 # Fix line in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
+    mipmap: 1 # Fixes broken textures.
+    textureInsideRT: 1 # Fixes broken character models.
+    autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97274:
   name: "Jak II [Video Demo]"
@@ -7738,9 +7739,9 @@ SCUS-97374:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     roundSprite: 1 # Fix line in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
+    mipmap: 1 # Fixes broken textures.
+    textureInsideRT: 1 # Fixes broken character models.
+    autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97377:
   name: "Syphon Filter - The Omega Strain [Regular Demo]"
@@ -7926,7 +7927,8 @@ SCUS-97429:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fix line in the sky.
-    textureInsideRT: 1
+    textureInsideRT: 1 # Fixes broken character models.
+    autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
   memcardFilters:
     - "SCUS-97429"
@@ -8193,7 +8195,8 @@ SCUS-97486:
   region: "NTSC-U"
   gsHWFixes:
     roundSprite: 1 # Fix line in the sky.
-    textureInsideRT: 1
+    textureInsideRT: 1 # Fixes broken character models.
+    autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97487:
   name: "Ratchet - Deadlocked [Public Beta v.1]"
@@ -8211,7 +8214,8 @@ SCUS-97488:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fix line in the sky.
-    textureInsideRT: 1
+    textureInsideRT: 1 # Fixes broken character models.
+    autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97489:
   name: "SOCOM 3 - U.S. Navy SEALs [Public Beta v.1]"
@@ -8298,9 +8302,9 @@ SCUS-97509:
   region: "NTSC-U"
   gsHWFixes:
     roundSprite: 1 # Fix line in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
+    mipmap: 1 # Fixes broken textures.
+    textureInsideRT: 1 # Fixes broken character models.
+    autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
 SCUS-97510:
   name: "ATV Offroad Fury 2 [Greatest Hits]"
@@ -49338,7 +49342,8 @@ TCES-53286:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fix line in the sky.
-    textureInsideRT: 1
+    textureInsideRT: 1 # Fixes broken character models.
+    autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
 TCPS-10058:
   name: "Densha de Go! Shinkansen [with Controller]"
