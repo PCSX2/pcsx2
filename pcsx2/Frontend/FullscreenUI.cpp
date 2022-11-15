@@ -1510,7 +1510,6 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
 		value.has_value() ? StringUtil::StdStringFromFormat(format, value.value()) : std::string("Use Global Setting"));
 
 	static bool manual_input = false;
-	static u32 repeat_count = 0;
 
 	if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
 	{
@@ -1686,7 +1685,6 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
 		value.has_value() ? StringUtil::StdStringFromFormat(format, value.value() * multiplier) : std::string("Use Global Setting"));
 
 	static bool manual_input = false;
-	static u32 repeat_count = 0;
 
 	if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
 	{
@@ -5280,9 +5278,6 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 
 	MenuHeading("List Settings");
 	{
-		const int sort_type = bsi->GetIntValue("UI", "FullscreenUIGameSort", 0);
-		const bool sort_reversed = bsi->GetBoolValue("UI", "FullscreenUIGameSortReverse", false);
-
 		DrawIntListSetting(bsi, ICON_FA_BORDER_ALL " Default View", "Sets which view the game list will open to.", "UI",
 			"DefaultFullscreenUIGameView", 0, view_types, std::size(view_types));
 		DrawIntListSetting(bsi, ICON_FA_SORT " Sort By", "Determines which field the game list will be sorted by.", "UI",
