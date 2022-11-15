@@ -2978,7 +2978,7 @@ __forceinline void GSState::CLUTAutoFlush()
 	if (m_mem.m_clut.IsInvalid() & 2)
 		return;
 
-	int  n = 1;
+	size_t  n = 1;
 
 	switch (PRIM->PRIM)
 	{
@@ -3002,7 +3002,7 @@ __forceinline void GSState::CLUTAutoFlush()
 			break;
 	}
 
-	if ((m_index.tail > 0 || (m_vertex.tail == n-1)) && (GSLocalMemory::m_psm[m_context->TEX0.PSM].pal == 0 || !PRIM->TME))
+	if ((m_index.tail > 0 || (m_vertex.tail == n - 1)) && (GSLocalMemory::m_psm[m_context->TEX0.PSM].pal == 0 || !PRIM->TME))
 	{
 		const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
 
@@ -3460,7 +3460,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 	GSVector4i draw_coord;
 	const GSVector2i offset = GSVector2i(m_context->XYOFFSET.OFX, m_context->XYOFFSET.OFY);
 
-	for (int i = 0; i < n; i++)
+	for (size_t i = 0; i < n; i++)
 	{
 		const GSVertex* v = &m_vertex.buff[m_index.buff[(m_index.tail - n) + i]];
 		draw_coord.x = (static_cast<int>(v->XYZ.X) - offset.x) >> 4;

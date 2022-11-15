@@ -3937,8 +3937,6 @@ bool GSRendererHW::PossibleCLUTDraw()
 		return false;
 
 	// Max size for a CLUT/Current page size.
-	constexpr float clut_width = 16.0f;
-	constexpr float clut_height = 16.0f;
 	constexpr float min_clut_width = 7.0f;
 	constexpr float min_clut_height = 1.0f;
 	const float page_width = static_cast<float>(psm.pgs.x);
@@ -4017,7 +4015,7 @@ bool GSRendererHW::PossibleCLUTDrawAggressive()
 	if (m_vt.m_eq.z != 0x1)
 		return false;
 
-	if (!((m_vt.m_primclass == GS_POINT_CLASS || m_vt.m_primclass == GS_LINE_CLASS) || ((m_mem.m_clut.GetCLUTCBP() >> 5) >= m_context->FRAME.FBP && (m_context->FRAME.FBP + 1) >= (m_mem.m_clut.GetCLUTCBP() >> 5) && m_vt.m_primclass == GS_SPRITE_CLASS)))
+	if (!((m_vt.m_primclass == GS_POINT_CLASS || m_vt.m_primclass == GS_LINE_CLASS) || ((m_mem.m_clut.GetCLUTCBP() >> 5) >= m_context->FRAME.FBP && (m_context->FRAME.FBP + 1U) >= (m_mem.m_clut.GetCLUTCBP() >> 5) && m_vt.m_primclass == GS_SPRITE_CLASS)))
 		return false;
 
 	// Avoid invalidating anything here, we just want to avoid the thing being drawn on the GPU.
