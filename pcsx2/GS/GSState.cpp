@@ -1764,7 +1764,7 @@ void GSState::FlushWrite()
 	r.top = m_env.TRXPOS.DSAY;
 	r.right = r.left + m_env.TRXREG.RRW;
 	r.bottom = r.top + m_env.TRXREG.RRH;
-
+	ExpandTarget(m_env.BITBLTBUF, r);
 	InvalidateVideoMem(m_env.BITBLTBUF, r);
 
 	const GSLocalMemory::writeImage wi = GSLocalMemory::m_psm[m_env.BITBLTBUF.DPSM].wi;
@@ -2026,7 +2026,7 @@ void GSState::Write(const u8* mem, int len)
 		r.top = m_env.TRXPOS.DSAY;
 		r.right = r.left + m_env.TRXREG.RRW;
 		r.bottom = r.top + m_env.TRXREG.RRH;
-
+		ExpandTarget(m_env.BITBLTBUF, r);
 		InvalidateVideoMem(blit, r);
 
 		(m_mem.*psm.wi)(m_tr.x, m_tr.y, mem, m_tr.total, blit, m_env.TRXPOS, m_env.TRXREG);

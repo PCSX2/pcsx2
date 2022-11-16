@@ -700,6 +700,43 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 	GetTargetHeight(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, static_cast<u32>(needed_height));
 }
 
+// Expands targets where the write from the EE overlaps the edge of a render target and uses the same base pointer.
+void GSTextureCache::ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
+{
+	GIFRegTEX0 TEX0;
+	TEX0.TBP0 = BITBLTBUF.DBP;
+	TEX0.TBW = BITBLTBUF.DBW;
+	TEX0.PSM = BITBLTBUF.DPSM;
+	Target* dst = nullptr;
+	auto& list = m_dst[RenderTarget];
+
+	for (auto i = list.begin(); i != list.end(); ++i)
+	{
+		Target* t = *i;
+
+		if (TEX0.TBP0 == t->m_TEX0.TBP0 && t->Overlaps(TEX0.TBP0, TEX0.TBW, TEX0.PSM, r))
+		{
+			list.MoveFront(i.Index());
+
+			dst = t;
+			break;
+		}
+	}
+	
+	if (dst)
+	{
+		const GSVector2i rect_scaled = GSVector2i(r.z * g_gs_renderer->GetUpscaleMultiplier(), r.w * g_gs_renderer->GetUpscaleMultiplier());
+		const int upsc_width = std::max(rect_scaled.x, dst->m_texture->GetWidth());
+		const int upsc_height = std::max(rect_scaled.y, dst->m_texture->GetHeight());
+		if (dst->m_texture->GetWidth() < upsc_width || dst->m_texture->GetHeight() < upsc_height)
+		{
+			dst->ResizeTexture(upsc_width, upsc_height);
+			dst->m_dirty.push_back(GSDirtyRect(r, TEX0.PSM, TEX0.TBW));
+			GetTargetHeight(TEX0.TBP0, TEX0.TBW, TEX0.PSM, r.w);
+			dst->Update();
+		}
+	}
+}
 // Goal: Depth And Target at the same address is not possible. On GS it is
 // the same memory but not on the Dx/GL. Therefore a write to the Depth/Target
 // must invalidate the Target/Depth respectively
@@ -2283,7 +2320,8 @@ bool GSTextureCache::Surface::Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i
 {
 	// Valid only for color formats.
 	const u32 end_block = GSLocalMemory::m_psm[psm].info.bn(rect.z - 1, rect.w - 1, bp, bw);
-	const bool overlap = GSTextureCache::CheckOverlap(m_TEX0.TBP0, m_end_block, bp, end_block);
+	const u32 start_block = GSLocalMemory::m_psm[psm].info.bn(rect.x, rect.y, bp, bw);
+	const bool overlap = GSTextureCache::CheckOverlap(m_TEX0.TBP0, m_end_block, start_block, end_block);
 	return overlap;
 }
 
