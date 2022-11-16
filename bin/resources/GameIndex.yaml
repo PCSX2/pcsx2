@@ -7083,7 +7083,6 @@ SCUS-97160:
 SCUS-97161:
   name: "Kinetica [Demo]"
   region: "NTSC-U"
-  compat: 5
   gsHWFixes:
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
 SCUS-97163:
@@ -9024,7 +9023,6 @@ SLED-51225:
 SLED-51281:
   name: "Haven - Call of the King [Demo]"
   region: "PAL-E"
-  compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
@@ -12942,7 +12940,6 @@ SLES-51754:
 SLES-51755:
   name: "Disney-Pixar's Finding Nemo"
   region: "PAL-E"
-  compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
@@ -13228,7 +13225,6 @@ SLES-51869:
 SLES-51870:
   name: "Disney-Pixar's Finding Nemo"
   region: "PAL-FI-S"
-  compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
@@ -13242,7 +13238,6 @@ SLES-51871:
 SLES-51872:
   name: "Disney-Pixar's Finding Nemo"
   region: "PAL-M3"
-  compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
@@ -13318,7 +13313,6 @@ SLES-51906:
 SLES-51907:
   name: "Disney-Pixar Alla Ricerca di Nemo"
   region: "PAL-I"
-  compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
@@ -13461,7 +13455,6 @@ SLES-51959:
 SLES-51960:
   name: "Disney-Pixar À Procura de Nemo"
   region: "PAL-P"
-  compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
@@ -22643,7 +22636,6 @@ SLKA-25055:
 SLKA-25056:
   name: "Finding Nemo"
   region: "NTSC-K"
-  compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
@@ -28749,7 +28741,6 @@ SLPM-65654:
 SLPM-65655:
   name: "Finding Nemo [Yuke's The Best]"
   region: "NTSC-J"
-  compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
@@ -36498,7 +36489,6 @@ SLPS-25309:
 SLPS-25310:
   name: "Disney-Pixar's Finding Nemo"
   region: "NTSC-J"
-  compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
@@ -42099,7 +42089,6 @@ SLUS-20627:
 SLUS-20628:
   name: "Disney's Finding Nemo"
   region: "NTSC-U"
-  compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
@@ -48570,7 +48559,6 @@ SLUS-28016:
 SLUS-28019:
   name: "Haven - Call of the King [Trade Demo]"
   region: "NTSC-U"
-  compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
@@ -48813,7 +48801,6 @@ SLUS-29037:
 SLUS-29038:
   name: "Haven - Call of the King [Regular Demo]"
   region: "NTSC-U"
-  compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
