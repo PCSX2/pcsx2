@@ -266,8 +266,8 @@ void handle_extended_t(IniPatch *p)
 				data = data | ((u32)p->data & 0xF0000000) >> 8;
 			}
 
-			u8 type = (data & 0x000F0000) >> 16;
-			u8 cond = (data & 0x00F00000) >> 20;
+			const u8 type = (data & 0x000F0000) >> 16;
+			const u8 cond = (data & 0x00F00000) >> 20;
 
 			if (cond == 0)										// Daaaaaaa yy0zvvvv
 			{
