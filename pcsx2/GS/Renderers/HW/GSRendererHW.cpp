@@ -853,6 +853,11 @@ GSVector2i GSRendererHW::GetTargetSize(GSVector2i* unscaled_size)
 		static_cast<int>(static_cast<float>(height) * GSConfig.UpscaleMultiplier));
 }
 
+void GSRendererHW::ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
+{
+	m_tc->ExpandTarget(BITBLTBUF, r);
+}
+
 void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
 {
 	// printf("[%d] InvalidateVideoMem %d,%d - %d,%d %05x (%d)\n", (int)m_perfmon.GetFrame(), r.left, r.top, r.right, r.bottom, (int)BITBLTBUF.DBP, (int)BITBLTBUF.DPSM);

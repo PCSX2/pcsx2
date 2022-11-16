@@ -198,6 +198,7 @@ public:
 
 	GSTexture* GetOutput(int i, int& y_offset) override;
 	GSTexture* GetFeedbackOutput() override;
+	void ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r);
 	void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r) override;
 	void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false) override;
 	void Move() override;

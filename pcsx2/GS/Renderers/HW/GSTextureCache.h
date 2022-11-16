@@ -345,6 +345,7 @@ public:
 
 	u32 GetTargetHeight(u32 fbp, u32 fbw, u32 psm, u32 min_height);
 
+	void ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r);
 	void InvalidateVideoMemType(int type, u32 bp);
 	void InvalidateVideoMemSubTarget(GSTextureCache::Target* rt);
 	void InvalidateVideoMem(const GSOffset& off, const GSVector4i& r, bool target = true);
