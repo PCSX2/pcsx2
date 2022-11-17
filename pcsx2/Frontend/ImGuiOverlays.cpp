@@ -315,6 +315,26 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("SD={}/{} ", GSConfig.SkipDrawStart, GSConfig.SkipDrawEnd);
 		if (GSConfig.UserHacks_TextureInsideRt)
 			APPEND("TexRT ");
+		if (GSConfig.UserHacks_WildHack)
+			APPEND("WA ");
+		if (GSConfig.UserHacks_MergePPSprite)
+			APPEND("MS ");
+		if (GSConfig.UserHacks_AlignSpriteX)
+			APPEND("AS ");
+		if (GSConfig.UserHacks_AutoFlush)
+			APPEND("AF ");
+		if (GSConfig.UserHacks_CPUFBConversion)
+			APPEND("FBC ");
+		if(GSConfig.UserHacks_DisableDepthSupport)
+			APPEND("DDE ");
+		if (GSConfig.UserHacks_DisablePartialInvalidation)
+			APPEND("DPIV ");
+		if (GSConfig.UserHacks_DisableSafeFeatures)
+			APPEND("DSF ");
+		if (GSConfig.WrapGSMem)
+			APPEND("WGSM ");
+		if (GSConfig.PreloadFrameWithGSData)
+			APPEND("PLFD ");
 	}
 
 #undef APPEND
