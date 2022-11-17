@@ -41512,7 +41512,7 @@ SLUS-20480:
     - XGKickHack # Fixes black models on certain games in World Tour.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
-    trilinearFiltering: 1   
+    trilinearFiltering: 1
 SLUS-20482:
   name: "Sphinx and the Cursed Mummy"
   region: "NTSC-U"
