@@ -11951,6 +11951,9 @@ SLES-51232:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes black models on certain games in World Tour.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51233:
   name: "Dragon Ball Z - Budokai"
   region: "PAL-M4"
@@ -24997,6 +25000,9 @@ SLPM-62236:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes black models on certain games in World Tour.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-62237:
   name: "Gakuen Toshi Vara Noir [Limited Edition]"
   region: "NTSC-J"
@@ -25079,6 +25085,11 @@ SLPM-62264:
 SLPM-62265:
   name: "Power Smash 2"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes black models on certain games in World Tour.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-62266:
   name: "Momotaro Densetsu XI"
   region: "NTSC-J"
@@ -25413,6 +25424,11 @@ SLPM-62393:
 SLPM-62394:
   name: "Power Smash 2 [Sega The Best - 2800 Series]"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes black models on certain games in World Tour.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-62395:
   name: "Simple 2000 Series Vol. 37 - The Shooting - Double Shienryu"
   region: "NTSC-J"
@@ -41494,6 +41510,9 @@ SLUS-20480:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes black models on certain games in World Tour.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1   
 SLUS-20482:
   name: "Sphinx and the Cursed Mummy"
   region: "NTSC-U"
