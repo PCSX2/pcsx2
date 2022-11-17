@@ -27212,7 +27212,7 @@ SLPM-65176:
   name: "King of Colosseum - Red"
   region: "NTSC-J"
   gameFixes:
-    - EETimingHack # Fixes hang on opening also needs 75% cycle rate to boot.
+    - InstantDMAHack # Fixes hang on opening.
 SLPM-65177:
   name: "Energy Airforce"
   region: "NTSC-J"
@@ -27298,7 +27298,7 @@ SLPM-65206:
   name: "King of Colosseum - Green"
   region: "NTSC-J"
   gameFixes:
-    - EETimingHack # Fixes hang on opening needs also 75% cycle rate to boot.
+    - InstantDMAHack # Fixes hang on opening.
 SLPM-65207:
   name: "Chou Battle Houshin"
   region: "NTSC-J"
