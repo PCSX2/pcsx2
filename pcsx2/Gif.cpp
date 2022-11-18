@@ -423,8 +423,9 @@ void GIFdma()
 
 		if (gifRegs.ctrl.PSE)
 		{ // Temporarily stop
-			Console.WriteLn("Gif dma temp paused? (non MFIFO GIF)");
+			DevCon.WriteLn("Gif dma paused by PSE bit.");
 			GifDMAInt(16);
+			CPU_SET_DMASTALL(DMAC_GIF, true);
 			return;
 		}
 
@@ -434,6 +435,7 @@ void GIFdma()
 			if ((gifch.madr + (gifch.qwc * 16)) > dmacRegs.stadr.ADDR)
 			{
 				GifDMAInt(4);
+				CPU_SET_DMASTALL(DMAC_GIF, true);
 				gif.gscycles = 0;
 				return;
 			}
@@ -668,8 +670,9 @@ void mfifoGIFtransfer()
 
 	if (gifRegs.ctrl.PSE)
 	{ // Temporarily stop
-		Console.WriteLn("Gif dma temp paused?");
+		DevCon.WriteLn("Gif MFIFO dma paused by PSE bit.");
 		CPU_INT(DMAC_MFIFO_GIF, 16);
+		CPU_SET_DMASTALL(DMAC_MFIFO_GIF, true);
 		return;
 	}
 
@@ -682,6 +685,7 @@ void mfifoGIFtransfer()
 			SPR_LOG("GIF FIFO EMPTY before tag read");
 			gif.gifstate = GIF_STATE_EMPTY;
 			GifDMAInt(4);
+			CPU_SET_DMASTALL(DMAC_MFIFO_GIF, true);
 			return;
 		}
 
@@ -730,7 +734,7 @@ void gifMFIFOInterrupt()
 	{ // GIF not in MFIFO anymore, come out.
 		DevCon.WriteLn("GIF Leaving MFIFO - Report if any errors");
 		gifInterrupt();
-		CPU_SET_DMASTALL(DMAC_GIF, true);
+		CPU_SET_DMASTALL(DMAC_MFIFO_GIF, true);
 		return;
 	}
 
@@ -751,7 +755,7 @@ void gifMFIFOInterrupt()
 			{
 				GifDMAInt(16);
 			}
-			CPU_SET_DMASTALL(DMAC_GIF, gifUnit.Path3Masked() || !gifUnit.CanDoPath3());
+			CPU_SET_DMASTALL(DMAC_MFIFO_GIF, gifUnit.Path3Masked() || !gifUnit.CanDoPath3());
 			return;
 		}
 	}
@@ -759,7 +763,7 @@ void gifMFIFOInterrupt()
 	if (gifUnit.gsSIGNAL.queued)
 	{
 		GifDMAInt(128);
-		CPU_SET_DMASTALL(DMAC_GIF, true);
+		CPU_SET_DMASTALL(DMAC_MFIFO_GIF, true);
 		return;
 	}
 
@@ -777,7 +781,7 @@ void gifMFIFOInterrupt()
 		// If there is no DMA data waiting and the DMA is active, let the DMA progress until there is
 		if ((!CheckPaths() && gif_fifo.fifoSize == 16) || readSize)
 		{
-			CPU_SET_DMASTALL(DMAC_GIF, gifUnit.Path3Masked() || !gifUnit.CanDoPath3());
+			CPU_SET_DMASTALL(DMAC_MFIFO_GIF, gifUnit.Path3Masked() || !gifUnit.CanDoPath3());
 			return;
 		}
 	}
@@ -792,7 +796,7 @@ void gifMFIFOInterrupt()
 
 		if (gifch.qwc > 0 || !gif.gspath3done)
 		{
-			CPU_SET_DMASTALL(DMAC_GIF, true);
+			CPU_SET_DMASTALL(DMAC_MFIFO_GIF, true);
 			return;
 		}
 	}
@@ -800,7 +804,7 @@ void gifMFIFOInterrupt()
 	if (gifch.qwc > 0 || !gif.gspath3done)
 	{
 		mfifoGIFtransfer();
-		CPU_SET_DMASTALL(DMAC_GIF, gifUnit.Path3Masked() || !gifUnit.CanDoPath3());
+		CPU_SET_DMASTALL(DMAC_MFIFO_GIF, gifUnit.Path3Masked() || !gifUnit.CanDoPath3());
 		return;
 	}
 
@@ -811,7 +815,7 @@ void gifMFIFOInterrupt()
 	gifRegs.stat.FQC = gif_fifo.fifoSize;
 	CalculateFIFOCSR();
 	hwDmacIrq(DMAC_GIF);
-	CPU_SET_DMASTALL(DMAC_GIF, false);
+	CPU_SET_DMASTALL(DMAC_MFIFO_GIF, false);
 	if (gif_fifo.fifoSize)
 		GifDMAInt(8 * BIAS);
 	DMA_LOG("GIF MFIFO DMA End");
