@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # PCSX2 - PS2 Emulator for PCs
-# Copyright (C) 2002-2014  PCSX2 Dev Team
+# Copyright (C) 2002-2022  PCSX2 Dev Team
 #
 # PCSX2 is free software: you can redistribute it and/or modify it under the terms
 # of the GNU Lesser General Public License as published by the Free Software Found-
@@ -118,13 +118,6 @@ run_clangtidy()
     exit 0
 }
 
-run_coverity()
-{
-    cov-build --dir "$coverity_dir" $make 2>&1 | tee -a "$log"
-    # Warning: $coverity_dir must be the root directory
-    (cd "$build"; tar caf $coverity_result "$coverity_dir")
-    exit 0
-}
 
 # Main script
 flags="-DCMAKE_BUILD_PO=FALSE"
@@ -133,15 +126,12 @@ cleanBuild=0
 useClang=0
 useIcc=0
 
-CoverityBuild=0
 cppcheck=0
 clangTidy=0
 
 root=$PWD/$(dirname "$0")
 log="$root/install_log.txt"
 build="$root/build"
-coverity_dir="cov-int"
-coverity_result=pcsx2-coverity.xz
 
 set_make
 
@@ -169,7 +159,6 @@ for ARG in "$@"; do
         --no-portaudio      ) flags="$flags -DPORTAUDIO_API=FALSE" ;;
         --no-simd           ) flags="$flags -DDISABLE_ADVANCE_SIMD=TRUE" ;;
         --no-trans          ) flags="$flags -DNO_TRANSLATION=TRUE" ;;
-        --coverity          ) CoverityBuild=1; cleanBuild=1; ;;
         --vtune             ) flags="$flags -DUSE_VTUNE=TRUE" ;;
         -D*                 ) flags="$flags $ARG" ;;
 
@@ -206,7 +195,6 @@ for ARG in "$@"; do
             echo "--asan            : Enable Address sanitizer."
             echo "--clang-tidy      : Do a clang-tidy analysis. Results can be found in build directory."
             echo "--cppcheck        : Do a cppcheck analysis. Results can be found in build directory."
-            echo "--coverity        : Do a build for coverity."
             echo "--vtune           : Plug GS with VTUNE."
             echo "--ftime-trace     : Analyse build time. Clang only."
 
@@ -243,10 +231,6 @@ fi
 
 if [ "$clangTidy" -eq 1 ] && command -v clang-tidy >/dev/null ; then
     run_clangtidy
-fi
-
-if [ "$CoverityBuild" -eq 1 ] && command -v cov-build >/dev/null ; then
-    run_coverity
 fi
 
 $make 2>&1 | tee -a "$log"
