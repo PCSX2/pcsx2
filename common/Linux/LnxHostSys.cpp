@@ -48,9 +48,10 @@ extern void SignalExit(int sig);
 
 static const uptr m_pagemask = getpagesize() - 1;
 
-static struct sigaction s_old_sigsegv_action;
 #if defined(__APPLE__)
 static struct sigaction s_old_sigbus_action;
+#else
+static struct sigaction s_old_sigsegv_action;
 #endif
 
 // Linux implementation of SIGSEGV handler.  Bind it using sigaction().
