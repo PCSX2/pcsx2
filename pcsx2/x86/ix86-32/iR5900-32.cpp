@@ -199,9 +199,9 @@ static ZyanStatus ZydisFormatterPrintAddressAbsolute(const ZydisFormatter* forma
 	{
 		len = snprintf(buf, sizeof(buf), "cpuRegs.cycle");
 	}
-	else if (address == A(&g_nextEventCycle))
+	else if (address == A(&cpuRegs.nextEventCycle))
 	{
-		len = snprintf(buf, sizeof(buf), "g_nextEventCycle");
+		len = snprintf(buf, sizeof(buf), "cpuRegs.nextEventCycle");
 	}
 	else if (address >= A(fpuRegs.fpr) && address < A(fpuRegs.fprc))
 	{
