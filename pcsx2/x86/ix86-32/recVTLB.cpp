@@ -957,9 +957,15 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 	// save regs
 	u32 num_gprs = 0;
 	u32 num_fprs = 0;
+
+	const u32 rbxid = static_cast<u32>(rbx.GetId());
+	const u32 arg1id = static_cast<u32>(arg1reg.GetId());
+	const u32 arg2id = static_cast<u32>(arg2reg.GetId());
+	const u32 arg3id = static_cast<u32>(arg3reg.GetId());
+
 	for (u32 i = 0; i < iREGCNT_GPR; i++)
 	{
-		if ((gpr_bitmask & (1u << i)) && (i == rbx.GetId() || i == arg1reg.GetId() || i == arg2reg.GetId() || xRegisterBase::IsCallerSaved(i)) && (!is_load || is_xmm || data_register != i))
+		if ((gpr_bitmask & (1u << i)) && (i == rbxid || i == arg1id || i == arg2id || xRegisterBase::IsCallerSaved(i)) && (!is_load || is_xmm || data_register != i))
 			num_gprs++;
 	}
 	for (u32 i = 0; i < iREGCNT_XMM; i++)
@@ -969,9 +975,6 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 	}
 
 	const u32 stack_size = (((num_gprs + 1) & ~1u) * GPR_SIZE) + (num_fprs * XMM_SIZE) + SHADOW_SIZE;
-	const u32 arg1id = static_cast<u32>(arg1reg.GetId());
-	const u32 arg2id = static_cast<u32>(arg2reg.GetId());
-	const u32 arg3id = static_cast<u32>(arg3reg.GetId());
 
 	if (stack_size > 0)
 	{
