@@ -12214,13 +12214,15 @@ SLES-51347:
   region: "PAL-M4"
   compat: 5
   gsHWFixes:
-    mipmap: 1 # Reduces noisey textures.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51348:
   name: "Die Hard - Vendetta"
   region: "PAL-E-G"
   compat: 5
   gsHWFixes:
-    mipmap: 1 # Reduces noisey textures.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51349:
   name: "Evolution Skateboarding"
   region: "PAL-M3"
