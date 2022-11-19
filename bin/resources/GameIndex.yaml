@@ -2509,7 +2509,8 @@ SCED-53962:
   speedHacks:
     InstantVU1SpeedHack: 0 # Alleviates excessive VU load.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes Water with Trilinear.
+    trilinearFiltering: 1 # Fixes Water with Mipmap (Full).
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
 SCED-53978:
   name: "Official PlayStation 2 Magazine Demo 69"
@@ -3828,7 +3829,8 @@ SCES-53326:
   speedHacks:
     InstantVU1SpeedHack: 0 # Alleviates excessive VU load.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes Water with Trilinear.
+    trilinearFiltering: 1 # Fixes Water with Mipmap (Full).
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
   memcardFilters:
     - "SCES-53326"
@@ -8117,7 +8119,8 @@ SCUS-97472:
   speedHacks:
     InstantVU1SpeedHack: 0 # Alleviates excessive VU load.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes Water with Trilinear.
+    trilinearFiltering: 1 # Fixes Water with Mipmap (Full).
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
   memcardFilters:
     - "SCUS-97472"
@@ -8305,7 +8308,8 @@ SCUS-97505:
   speedHacks:
     InstantVU1SpeedHack: 0 # Alleviates excessive VU load.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes Water with Trilinear.
+    trilinearFiltering: 1 # Fixes Water with Mipmap (Full).
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
 SCUS-97506:
   name: "Gretzky NHL '06 [Demo]"
