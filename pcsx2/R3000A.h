@@ -108,6 +108,21 @@ struct psxRegisters {
 	u32 code;			/* The instruction */
 	u32 cycle;
 	u32 interrupt;
+	u32 pcWriteback;
+
+	// Controls when branch tests are performed.
+	u32 iopNextEventCycle;
+
+	// This value is used when the IOP execution is broken to return control to the EE.
+	// (which happens when the IOP throws EE-bound interrupts).  It holds the value of
+	// iopCycleEE (which is set to zero to facilitate the code break), so that the unrun
+	// cycles can be accounted for later.
+	s32 iopBreak;
+
+	// tracks the IOP's current sync status with the EE.  When it dips below zero,
+	// control is returned to the EE.
+	s32 iopCycleEE;
+
 	u32 sCycle[32];		// start cycle for signaled ints
 	s32 eCycle[32];		// cycle delta for signaled ints (sCycle + eCycle == branch cycle)
 	//u32 _msflag[32];
@@ -115,10 +130,6 @@ struct psxRegisters {
 };
 
 alignas(16) extern psxRegisters psxRegs;
-
-extern u32 g_iopNextEventCycle;
-extern s32 iopBreak;		// used when the IOP execution is broken and control returned to the EE
-extern s32 iopCycleEE;		// tracks IOP's current sych status with the EE
 
 #ifndef _PC_
 

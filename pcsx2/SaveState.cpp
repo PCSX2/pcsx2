@@ -266,12 +266,6 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	FreezeTag( "Cycles" );
 	Freeze(EEsCycle);
 	Freeze(EEoCycle);
-	Freeze(iopCycleEE);
-	Freeze(iopBreak);
-	Freeze(g_nextEventCycle);
-	Freeze(g_iopNextEventCycle);
-	Freeze(s_iLastCOP0Cycle);
-	Freeze(s_iLastPERFCycle);
 	Freeze(nextCounter);
 	Freeze(nextsCounter);
 	Freeze(psxNextsCounter);

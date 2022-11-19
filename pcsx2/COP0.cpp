@@ -18,9 +18,6 @@
 #include "Common.h"
 #include "COP0.h"
 
-u32 s_iLastCOP0Cycle = 0;
-u32 s_iLastPERFCycle[2] = { 0, 0 };
-
 // Updates the CPU's mode of operation (either, Kernel, Supervisor, or User modes).
 // Currently the different modes are not implemented.
 // Given this function is called so much, it's commented out for now. (rama)
@@ -127,8 +124,8 @@ __fi void COP0_UpdatePCCR()
 	// or the counting function is not enabled (CTE)
 	if (cpuRegs.CP0.n.Status.b.ERL || !cpuRegs.PERF.n.pccr.b.CTE)
 	{
-		s_iLastPERFCycle[0] = cpuRegs.cycle;
-		s_iLastPERFCycle[1] = s_iLastPERFCycle[0];
+		cpuRegs.lastPERFCycle[0] = cpuRegs.cycle;
+		cpuRegs.lastPERFCycle[1] = cpuRegs.lastPERFCycle[0];
 		return;
 	}
 
@@ -142,13 +139,13 @@ __fi void COP0_UpdatePCCR()
 
 		if( PERF_ShouldCountEvent( cpuRegs.PERF.n.pccr.b.Event0 ) )
 		{
-			u32 incr = cpuRegs.cycle - s_iLastPERFCycle[0];
+			u32 incr = cpuRegs.cycle - cpuRegs.lastPERFCycle[0];
 			if( incr == 0 ) incr++;
 
 			// use prev/XOR method for one-time exceptions (but likely less correct)
 			//u32 prev = cpuRegs.PERF.n.pcr0;
 			cpuRegs.PERF.n.pcr0 += incr;
-			s_iLastPERFCycle[0] = cpuRegs.cycle;
+			cpuRegs.lastPERFCycle[0] = cpuRegs.cycle;
 
 			//prev ^= (1UL<<31);		// XOR is fun!
 			//if( (prev & cpuRegs.PERF.n.pcr0) & (1UL<<31) )
@@ -193,11 +190,11 @@ __fi void COP0_UpdatePCCR()
 
 		if( PERF_ShouldCountEvent( cpuRegs.PERF.n.pccr.b.Event1 ) )
 		{
-			u32 incr = cpuRegs.cycle - s_iLastPERFCycle[1];
+			u32 incr = cpuRegs.cycle - cpuRegs.lastPERFCycle[1];
 			if( incr == 0 ) incr++;
 
 			cpuRegs.PERF.n.pcr1 += incr;
-			s_iLastPERFCycle[1] = cpuRegs.cycle;
+			cpuRegs.lastPERFCycle[1] = cpuRegs.cycle;
 
 			if( (cpuRegs.PERF.n.pcr1 & 0x80000000))
 			{
@@ -456,10 +453,10 @@ void MFC0()
 
 		case 9:
 		{
-			u32 incr = cpuRegs.cycle-s_iLastCOP0Cycle;
+			u32 incr = cpuRegs.cycle - cpuRegs.lastCOP0Cycle;
 			if( incr == 0 ) incr++;
 			cpuRegs.CP0.n.Count += incr;
-			s_iLastCOP0Cycle = cpuRegs.cycle;
+			cpuRegs.lastCOP0Cycle = cpuRegs.cycle;
 			if( !_Rt_ ) break;
 		}
 			[[fallthrough]];
@@ -475,7 +472,7 @@ void MTC0()
 	switch (_Rd_)
 	{
 		case 9:
-			s_iLastCOP0Cycle = cpuRegs.cycle;
+			cpuRegs.lastCOP0Cycle = cpuRegs.cycle;
 			cpuRegs.CP0.r[9] = cpuRegs.GPR.r[_Rt_].UL[0];
 		break;
 
@@ -506,12 +503,12 @@ void MTC0()
 			else if (0 == (_Imm_ & 2)) // MTPC 0, only LSB of register matters
 			{
 				cpuRegs.PERF.n.pcr0 = cpuRegs.GPR.r[_Rt_].UL[0];
-				s_iLastPERFCycle[0] = cpuRegs.cycle;
+				cpuRegs.lastPERFCycle[0] = cpuRegs.cycle;
 			}
 			else // MTPC 1
 			{
 				cpuRegs.PERF.n.pcr1 = cpuRegs.GPR.r[_Rt_].UL[0];
-				s_iLastPERFCycle[1] = cpuRegs.cycle;
+				cpuRegs.lastPERFCycle[1] = cpuRegs.cycle;
 			}
 		break;
 

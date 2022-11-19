@@ -53,7 +53,6 @@
 
 using namespace x86Emitter;
 
-extern u32 g_iopNextEventCycle;
 extern void psxBREAK();
 
 u32 g_psxMaxRecMem = 0;
@@ -817,8 +816,8 @@ static void iopClearRecLUT(BASEBLOCK* base, int count)
 
 static __noinline s32 recExecuteBlock(s32 eeCycles)
 {
-	iopBreak = 0;
-	iopCycleEE = eeCycles;
+	psxRegs.iopBreak = 0;
+	psxRegs.iopCycleEE = eeCycles;
 
 #ifdef PCSX2_DEVBUILD
 	//if (SysTrace.SIF.IsActive())
@@ -843,7 +842,7 @@ static __noinline s32 recExecuteBlock(s32 eeCycles)
 
 	iopEnterRecompiledCode();
 
-	return iopBreak + iopCycleEE;
+	return psxRegs.iopBreak + psxRegs.iopCycleEE;
 }
 
 // Returns the offset to the next instruction after any cleared memory
@@ -917,14 +916,14 @@ void psxSetBranchReg(u32 reg)
 
 	if (reg != 0xffffffff)
 	{
-		_allocX86reg(calleeSavedReg2d, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+		_allocX86reg(calleeSavedReg2d, X86TYPE_PSX_PCWRITEBACK, 0, MODE_WRITE);
 		_psxMoveGPRtoR(calleeSavedReg2d, reg);
 
 		psxRecompileNextInstruction(1);
 
 		if (x86regs[calleeSavedReg2d.GetId()].inuse)
 		{
-			pxAssert(x86regs[calleeSavedReg2d.GetId()].type == X86TYPE_PCWRITEBACK);
+			pxAssert(x86regs[calleeSavedReg2d.GetId()].type == X86TYPE_PSX_PCWRITEBACK);
 			xMOV(ptr32[&psxRegs.pc], calleeSavedReg2d);
 			x86regs[calleeSavedReg2d.GetId()].inuse = 0;
 #ifdef PCSX2_DEBUG
@@ -933,7 +932,7 @@ void psxSetBranchReg(u32 reg)
 		}
 		else
 		{
-			xMOV(eax, ptr32[&g_recWriteback]);
+			xMOV(eax, ptr32[&psxRegs.pcWriteback]);
 			xMOV(ptr32[&psxRegs.pc], eax);
 
 #ifdef PCSX2_DEBUG
@@ -980,16 +979,16 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 	{
 		xMOV(eax, ptr32[&psxRegs.cycle]);
 		xMOV(ecx, eax);
-		xMOV(edx, ptr32[&iopCycleEE]);
+		xMOV(edx, ptr32[&psxRegs.iopCycleEE]);
 		xADD(edx, 7);
 		xSHR(edx, 3);
 		xADD(eax, edx);
-		xCMP(eax, ptr32[&g_iopNextEventCycle]);
-		xCMOVNS(eax, ptr32[&g_iopNextEventCycle]);
+		xCMP(eax, ptr32[&psxRegs.iopNextEventCycle]);
+		xCMOVNS(eax, ptr32[&psxRegs.iopNextEventCycle]);
 		xMOV(ptr32[&psxRegs.cycle], eax);
 		xSUB(eax, ecx);
 		xSHL(eax, 3);
-		xSUB(ptr32[&iopCycleEE], eax);
+		xSUB(ptr32[&psxRegs.iopCycleEE], eax);
 		xJLE(iopExitRecompiledCode);
 
 		xFastCall((void*)iopEventTest);
@@ -1007,11 +1006,11 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 		xMOV(ptr32[&psxRegs.cycle], eax); // update cycles
 
 		// jump if iopCycleEE <= 0  (iop's timeslice timed out, so time to return control to the EE)
-		xSUB(ptr32[&iopCycleEE], blockCycles * 8);
+		xSUB(ptr32[&psxRegs.iopCycleEE], blockCycles * 8);
 		xJLE(iopExitRecompiledCode);
 
 		// check if an event is pending
-		xSUB(eax, ptr32[&g_iopNextEventCycle]);
+		xSUB(eax, ptr32[&psxRegs.iopNextEventCycle]);
 		xForwardJS<u8> nointerruptpending;
 
 		xFastCall((void*)iopEventTest);
@@ -1058,7 +1057,7 @@ void rpsxSYSCALL()
 	j8Ptr[0] = JE8(0);
 
 	xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles());
-	xSUB(ptr32[&iopCycleEE], psxScaleBlockCycles() * 8);
+	xSUB(ptr32[&psxRegs.iopCycleEE], psxScaleBlockCycles() * 8);
 	JMP32((uptr)iopDispatcherReg - ((uptr)x86Ptr + 5));
 
 	// jump target for skipping blockCycle updates
@@ -1080,7 +1079,7 @@ void rpsxBREAK()
 	xCMP(ptr32[&psxRegs.pc], psxpc - 4);
 	j8Ptr[0] = JE8(0);
 	xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles());
-	xSUB(ptr32[&iopCycleEE], psxScaleBlockCycles() * 8);
+	xSUB(ptr32[&psxRegs.iopCycleEE], psxScaleBlockCycles() * 8);
 	JMP32((uptr)iopDispatcherReg - ((uptr)x86Ptr + 5));
 	x86SetJ8(j8Ptr[0]);
 
@@ -1516,7 +1515,7 @@ StartRecomp:
 		else
 		{
 			xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles());
-			xSUB(ptr32[&iopCycleEE], psxScaleBlockCycles() * 8);
+			xSUB(ptr32[&psxRegs.iopCycleEE], psxScaleBlockCycles() * 8);
 		}
 
 		if (willbranch3 || !psxbranch)

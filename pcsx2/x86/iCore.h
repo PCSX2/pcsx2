@@ -91,7 +91,7 @@
 #define X86TYPE_VUPWRITE 8
 #define X86TYPE_PSX 9
 #define X86TYPE_PCWRITEBACK 10
-#define X86TYPE_VUJUMP 12 // jump from random mem (g_recWriteback)
+#define X86TYPE_PSX_PCWRITEBACK 12
 #define X86TYPE_VITEMP 13
 #define X86TYPE_FNARG 14 // function parameter, max is 4
 
@@ -252,8 +252,6 @@ static __fi bool EEINST_ISLIVE2(u32 reg)   { return !!(g_pCurInstInfo->regs[reg]
 
 static __fi bool FPUINST_ISLIVE(u32 reg)   { return !!(g_pCurInstInfo->fpuregs[reg] & EEINST_LIVE0); }
 static __fi bool FPUINST_LASTUSE(u32 reg)  { return !!(g_pCurInstInfo->fpuregs[reg] & EEINST_LASTUSE); }
-
-extern u32 g_recWriteback; // used for jumps (VUrec mess!)
 
 extern _xmmregs xmmregs[iREGCNT_XMM], s_saveXMMregs[iREGCNT_XMM];
 

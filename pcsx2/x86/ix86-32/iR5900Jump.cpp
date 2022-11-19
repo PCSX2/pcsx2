@@ -157,7 +157,7 @@ void recJALR()
 	}
 	else
 	{
-		xMOV(eax, ptr[&g_recWriteback]);
+		xMOV(eax, ptr[&cpuRegs.pcWriteback]);
 		xMOV(ptr[&cpuRegs.pc], eax);
 	}
 

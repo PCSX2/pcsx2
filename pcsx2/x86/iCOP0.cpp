@@ -146,12 +146,12 @@ void recMFC0()
 		// This case needs to be handled even if the write-back is ignored (_Rt_ == 0 )
 		xMOV(ecx, ptr[&cpuRegs.cycle]);
 		xMOV(eax, ecx);
-		xSUB(eax, ptr[&s_iLastCOP0Cycle]);
+		xSUB(eax, ptr[&cpuRegs.lastCOP0Cycle]);
 		u8* skipInc = JNZ8(0);
 		xINC(eax);
 		x86SetJ8(skipInc);
 		xADD(ptr[&cpuRegs.CP0.n.Count], eax);
-		xMOV(ptr[&s_iLastCOP0Cycle], ecx);
+		xMOV(ptr[&cpuRegs.lastCOP0Cycle], ecx);
 		xMOV(eax, ptr[&cpuRegs.CP0.r[_Rd_]]);
 
 		if (!_Rt_)
@@ -217,7 +217,7 @@ void recMTC0()
 
 			case 9:
 				xMOV(ecx, ptr[&cpuRegs.cycle]);
-				xMOV(ptr[&s_iLastCOP0Cycle], ecx);
+				xMOV(ptr[&cpuRegs.lastCOP0Cycle], ecx);
 				xMOV(ptr32[&cpuRegs.CP0.r[9]], g_cpuConstRegs[_Rt_].UL[0]);
 				break;
 
@@ -236,13 +236,13 @@ void recMTC0()
 				{
 					xMOV(eax, ptr[&cpuRegs.cycle]);
 					xMOV(ptr32[&cpuRegs.PERF.n.pcr0], g_cpuConstRegs[_Rt_].UL[0]);
-					xMOV(ptr[&s_iLastPERFCycle[0]], eax);
+					xMOV(ptr[&cpuRegs.lastPERFCycle[0]], eax);
 				}
 				else // MTPC 1
 				{
 					xMOV(eax, ptr[&cpuRegs.cycle]);
 					xMOV(ptr32[&cpuRegs.PERF.n.pcr1], g_cpuConstRegs[_Rt_].UL[0]);
-					xMOV(ptr[&s_iLastPERFCycle[1]], eax);
+					xMOV(ptr[&cpuRegs.lastPERFCycle[1]], eax);
 				}
 				break;
 
@@ -274,7 +274,7 @@ void recMTC0()
 			case 9:
 				xMOV(ecx, ptr[&cpuRegs.cycle]);
 				_eeMoveGPRtoM((uptr)&cpuRegs.CP0.r[9], _Rt_);
-				xMOV(ptr[&s_iLastCOP0Cycle], ecx);
+				xMOV(ptr[&cpuRegs.lastCOP0Cycle], ecx);
 				break;
 
 			case 25:
@@ -291,13 +291,13 @@ void recMTC0()
 				{
 					xMOV(ecx, ptr[&cpuRegs.cycle]);
 					_eeMoveGPRtoM((uptr)&cpuRegs.PERF.n.pcr0, _Rt_);
-					xMOV(ptr[&s_iLastPERFCycle[0]], ecx);
+					xMOV(ptr[&cpuRegs.lastPERFCycle[0]], ecx);
 				}
 				else // MTPC 1
 				{
 					xMOV(ecx, ptr[&cpuRegs.cycle]);
 					_eeMoveGPRtoM((uptr)&cpuRegs.PERF.n.pcr1, _Rt_);
-					xMOV(ptr[&s_iLastPERFCycle[1]], ecx);
+					xMOV(ptr[&cpuRegs.lastPERFCycle[1]], ecx);
 				}
 				break;
 
