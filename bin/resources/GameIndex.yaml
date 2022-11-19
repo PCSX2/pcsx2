@@ -24579,6 +24579,8 @@ SLPM-62056:
 SLPM-62060:
   name: "Winning Post 4 Maximum 2001"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 1 # Improves ground textures to match sw renderer.
 SLPM-62062:
   name: "Gitaroo Man One"
   region: "NTSC-J"
@@ -24910,6 +24912,8 @@ SLPM-62201:
 SLPM-62202:
   name: "Winning Post 4 Maximum 2001"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 1 # Improves ground textures to match sw renderer.
 SLPM-62203:
   name: "Dog of Bay"
   region: "NTSC-J"
@@ -24964,6 +24968,8 @@ SLPM-62219:
 SLPM-62221:
   name: "Winning Post 5 - Max 2002"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 1 # Improves ground textures to match sw renderer.
 SLPM-62223:
   name: "Simple 2000 Series Vol. 11 - The Off-Road Buggy"
   region: "NTSC-J"
