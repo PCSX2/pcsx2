@@ -168,7 +168,7 @@ public:
 
 	void queryFirstByte(const u8 data);
 	void querySecondByte(const u8 bufVal);
-	void controllerInterrupt(const u8 port, const u16 bufIndex, u8& bufVal);
+	void controllerInterrupt(const u8 port, const size_t fifoSize, u8& dataIn, u8& dataOut);
 	void incFrameCounter();
 	u64 getFrameCounter() const;
 	bool isActive() const;
@@ -188,7 +188,7 @@ public:
 
 private:
 	// - https://github.com/PCSX2/pcsx2/blob/7db9627ff6986c2d3faeecc58525a0e32da2f29f/pcsx2/PAD/Windows/PAD.cpp#L1141
-	static constexpr u8 s_READ_DATA_AND_VIBRATE_QUERY_FIRST_BYTE = 0x42;
+	static constexpr u8 s_READ_DATA_AND_VIBRATE_QUERY_FIRST_BYTE = 0x79;
 	// - https://github.com/PCSX2/pcsx2/blob/7db9627ff6986c2d3faeecc58525a0e32da2f29f/pcsx2/PAD/Windows/PAD.cpp#L1142
 	static constexpr u8 s_READ_DATA_AND_VIBRATE_QUERY_SECOND_BYTE = 0x5A;
 
