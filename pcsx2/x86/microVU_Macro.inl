@@ -607,7 +607,7 @@ static void recQMTC2()
 	if (_Rt_)
 	{
 		// if we have to flush to memory anyway (has a constant or is x86), force load.
-		const bool vf_used = COP2INST_USEDTEST(_Rd_);
+		[[maybe_unused]] const bool vf_used = COP2INST_USEDTEST(_Rd_);
 		const bool can_rename = EEINST_RENAMETEST(_Rt_);
 		const int rtreg = (GPR_IS_DIRTY_CONST(_Rt_) || _hasX86reg(X86TYPE_GPR, _Rt_, MODE_WRITE)) ?
 							  _allocGPRtoXMMreg(_Rt_, MODE_READ) :
