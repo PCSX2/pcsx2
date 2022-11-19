@@ -1008,7 +1008,9 @@ s32 FolderMemoryCard::Read(u8* dest, u32 adr, int size)
 			FolderMemoryCard::CalculateECC(ecc + (i * 3), &data[i * 0x80]);
 		}
 
-		memcpy(dest + eccOffset, ecc, eccLength);
+		pxAssert(size >= eccOffset);
+		const u32 copySize = std::min((u32)size - eccOffset, eccLength);
+		memcpy(dest + eccOffset, ecc, copySize);
 	}
 
 	SetTimeLastReadToNow();
