@@ -89,7 +89,6 @@ float4 ps_main4(PS_INPUT input) : SV_Target0
 	// field.
 
 	const int    idx         = int(ZrH.x);                          // buffer index passed from CPU
-	const int    bank        = idx >> 1;                            // current bank
 	const int    field       = idx & 1;                             // current field
 	const int    vpos        = int(input.p.y);                      // vertical position of destination texture
 	const float  sensitivity = ZrH.w;                               // passed from CPU, higher values mean more likely to use weave
@@ -106,12 +105,6 @@ float4 ps_main4(PS_INPUT input) : SV_Target0
 
 	switch (idx)
 	{
-		case 0:
-			p_t0 = iptr;
-			p_t1 = iptr + bofs;
-			p_t2 = iptr + bofs;
-			p_t3 = iptr;
-			break;
 		case 1:
 			p_t0 = iptr;
 			p_t1 = iptr;
@@ -131,6 +124,10 @@ float4 ps_main4(PS_INPUT input) : SV_Target0
 			p_t3 = iptr;
 			break;
 		default:
+			p_t0 = iptr;
+			p_t1 = iptr + bofs;
+			p_t2 = iptr + bofs;
+			p_t3 = iptr;
 			break;
 	}
 

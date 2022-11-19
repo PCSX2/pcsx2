@@ -122,12 +122,6 @@ void ps_main4()
 
 	switch (idx)
 	{
-		case 0:
-			p_t0 = iptr;
-			p_t1 = iptr + bofs;
-			p_t2 = iptr + bofs;
-			p_t3 = iptr;
-			break;
 		case 1:
 			p_t0 = iptr;
 			p_t1 = iptr;
@@ -147,6 +141,10 @@ void ps_main4()
 			p_t3 = iptr;
 			break;
 		default:
+			p_t0 = iptr;
+			p_t1 = iptr + bofs;
+			p_t2 = iptr + bofs;
+			p_t3 = iptr;
 			break;
 	}
 
