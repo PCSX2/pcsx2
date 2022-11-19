@@ -162,7 +162,7 @@ public:
 class Sio2
 {
 private:
-	void UpdateInputRecording(u8 dataIn, u8 dataOut);
+	void UpdateInputRecording(u8& dataIn, u8& dataOut);
 
 public:
 	std::array<u32, 16> send3;	// 0x1f808200 - 0x1f80823f

@@ -606,13 +606,43 @@ void InputRecording::stop()
 // TODO: Refactor this
 void InputRecording::ControllerInterrupt(u8 port, size_t fifoSize, u8 dataIn, u8 dataOut)
 {
-	// TODO - Multi-Tap Support
+	m_pad_data_available = data == s_READ_DATA_AND_VIBRATE_QUERY_FIRST_BYTE;
+}
+
+void InputRecording::querySecondByte(const u8 data)
+{
+	m_pad_data_available &= data == s_READ_DATA_AND_VIBRATE_QUERY_SECOND_BYTE;
+}
+
+void InputRecording::controllerInterrupt(u8 port, size_t fifoSize, u8& dataIn, u8& dataOut)
+{
+	// TODO - Multi-Tap Support (Qt doesn't support it yet anyway!)
+	// Keep these safe-guard checks in here, they are input recording only concerns
 	if (fifoSize == 1)
-		fInterruptFrame = dataIn == READ_DATA_AND_VIBRATE_FIRST_BYTE;
+	{
+		queryFirstByte(dataOut);
+		return;
+	}
 	else if (fifoSize == 2)
 	{
-		if (dataOut != READ_DATA_AND_VIBRATE_SECOND_BYTE)
-			fInterruptFrame = false;
+		querySecondByte(dataOut);
+		return;
+	}
+
+	if (!m_pad_data_available)
+	{
+		// bad data / first and second byte checks failed
+		return;
+	}
+
+	if (m_controls.isReplaying())
+	{
+		if (!m_file.readKeyBuffer(dataOut, m_frame_counter, port, fifoSize))
+		{
+			InputRec::consoleLog(fmt::format("Failed to read input data at frame {}", m_frame_counter));
+		}
+		// Update controller data state for future VirtualPad / logging usage.
+		//pads[port].padData->UpdateControllerData(bufIndex, bufVal);
 	}
 
 	// If there is data to read (previous two bytes looked correct)
@@ -622,7 +652,7 @@ void InputRecording::ControllerInterrupt(u8 port, size_t fifoSize, u8 dataIn, u8
 		const u16 bufIndex = fifoSize - 3;
 		if (state == InputRecordingMode::Replaying)
 		{
-			if (!m_file.writeKeyBuffer(m_frame_counter, port, bufIndex, bufVal))
+			if (!m_file.writeKeyBuffer(m_frame_counter, port, fifoSize, dataOut))
 			{
 				InputRec::consoleLog(fmt::format("Failed to write input data at frame {}", m_frame_counter));
 			}
