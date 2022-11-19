@@ -37,7 +37,7 @@ void MultitapProtocol::Select()
 	MT_LOG.WriteLn("%s", __FUNCTION__);
 	const u8 newSlot = fifoIn.front();
 	fifoIn.pop_front();
-	const bool isInBounds = (newSlot >= 0 && newSlot < SIO::SLOTS);
+	const bool isInBounds = (newSlot < SIO::SLOTS);
 
 	if (isInBounds)
 	{
