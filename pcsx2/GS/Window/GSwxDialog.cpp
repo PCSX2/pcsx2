@@ -631,7 +631,7 @@ Dialog::Dialog()
 	m_adapter_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, {});
 	top_grid->Add(m_adapter_select, wxSizerFlags().Expand());
 
-	m_ui.addComboBoxAndLabel(top_grid, "Deinterlacing (F5):", "deinterlace", &theApp.m_gs_deinterlace);
+	m_ui.addComboBoxAndLabel(top_grid, "Deinterlacing (F5):", "deinterlace_mode", &theApp.m_gs_deinterlace);
 
 	m_bifilter_select = m_ui.addComboBoxAndLabel(top_grid, "Texture Filtering:", "filter", &theApp.m_gs_bifilter, IDC_FILTER).first;
 
