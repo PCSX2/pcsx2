@@ -30,6 +30,8 @@ fragment float4 ps_interlace0(ConvertShaderData data [[stage_in]], ConvertPSRes 
 		return res.sample(data.t);
 	else
 		discard_fragment();
+
+	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 
@@ -90,7 +92,6 @@ fragment float4 ps_interlace4(ConvertShaderData data [[stage_in]], ConvertPSRes 
 	constant GSMTLInterlacePSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
 {
 	const int    idx         = int(uniform.ZrH.x);                   // buffer index passed from CPU
-	const int    bank        = idx >> 1;                             // current bank
 	const int    field       = idx & 1;                              // current field
 	const int    vpos        = int(data.p.y);                        // vertical position of destination texture
 	const float  sensitivity = uniform.ZrH.w;                        // passed from CPU, higher values mean more likely to use weave
@@ -108,12 +109,6 @@ fragment float4 ps_interlace4(ConvertShaderData data [[stage_in]], ConvertPSRes 
 
 	switch (idx)
 	{
-		case 0:
-			p_t0 = iptr;
-			p_t1 = iptr + bofs;
-			p_t2 = iptr + bofs;
-			p_t3 = iptr;
-			break;
 		case 1:
 			p_t0 = iptr;
 			p_t1 = iptr;
@@ -133,6 +128,10 @@ fragment float4 ps_interlace4(ConvertShaderData data [[stage_in]], ConvertPSRes 
 			p_t3 = iptr;
 			break;
 		default:
+			p_t0 = iptr;
+			p_t1 = iptr + bofs;
+			p_t2 = iptr + bofs;
+			p_t3 = iptr;
 			break;
 	}
 
