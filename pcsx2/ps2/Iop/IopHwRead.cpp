@@ -46,9 +46,9 @@ mem8_t iopHwRead8_Page1( u32 addr )
 	// all addresses are assumed to be prefixed with 0x1f801xxx:
 	pxAssume( (addr >> 12) == 0x1f801 );
 
-	u32 masked_addr = addr & 0x0fff;
+	const u32 masked_addr = addr & 0x0fff;
 
-	mem8_t ret;		// using a return var can be helpful in debugging.
+	mem8_t ret = 0; // using a return var can be helpful in debugging.
 	switch( masked_addr )
 	{
 		case (HW_SIO_DATA & 0x0fff):
