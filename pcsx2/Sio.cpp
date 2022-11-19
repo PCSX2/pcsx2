@@ -581,7 +581,6 @@ void Sio2::Infrared()
 {
 	SetRecv1(Recv1::DISCONNECTED);
 
-	const u8 commandByte = fifoIn.front();
 	fifoIn.pop_front();
 	const u8 responseByte = 0xff;
 	
