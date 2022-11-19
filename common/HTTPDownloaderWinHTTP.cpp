@@ -52,9 +52,7 @@ std::unique_ptr<HTTPDownloader> HTTPDownloader::Create(const char* user_agent)
 
 bool HTTPDownloaderWinHttp::Initialize(const char* user_agent)
 {
-	// WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY is not supported before Win8.1.
-	const DWORD dwAccessType =
-		IsWindows8Point1OrGreater() ? WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY : WINHTTP_ACCESS_TYPE_DEFAULT_PROXY;
+	const DWORD dwAccessType = WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY;
 
 	m_hSession = WinHttpOpen(StringUtil::UTF8StringToWideString(user_agent).c_str(), dwAccessType, nullptr, nullptr,
 		WINHTTP_FLAG_ASYNC);

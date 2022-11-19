@@ -64,19 +64,14 @@ std::string GetOSVersionString()
 	SYSTEM_INFO si;
 	GetNativeSystemInfo(&si);
 
-	if (!IsWindows8Point1OrGreater())
-	{
-		retval = "Unsupported Operating System!";
-	}
-	else
+	if (IsWindows10OrGreater())
 	{
 		retval = "Microsoft ";
-
-		if (IsWindows10OrGreater())
-			retval += IsWindowsServer() ? "Windows Server 2016" : "Windows 10";
-		else // IsWindows8Point1OrGreater()
-			retval += IsWindowsServer() ? "Windows Server 2012 R2" : "Windows 8.1";
+		retval += IsWindowsServer() ? "Windows Server 2016" : "Windows 10";
+		
 	}
+	else
+		retval = "Unsupported Operating System!";
 
 	return retval;
 }
