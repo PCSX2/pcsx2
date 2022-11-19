@@ -124,8 +124,6 @@ void eeRecompileCodeRC0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900F
 		return;
 	}
 
-	const int moded = MODE_WRITE | ((xmminfo & XMMINFO_READD) ? MODE_READ : 0);
-
 	// this function should not be used for lo/hi.
 	pxAssert(!(xmminfo & (XMMINFO_READLO | XMMINFO_READHI | XMMINFO_WRITELO | XMMINFO_WRITEHI)));
 
@@ -149,7 +147,7 @@ void eeRecompileCodeRC0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900F
 
 	// when it doesn't fit in an immediate, we'll flush it to a reg early to save code
 	u32 info = 0;
-	int regs = -1, regt = -1, regd = -1;
+	int regs = -1, regt = -1;
 	if (xmminfo & XMMINFO_READS)
 	{
 		regs = _checkX86reg(X86TYPE_GPR, _Rs_, MODE_READ);
