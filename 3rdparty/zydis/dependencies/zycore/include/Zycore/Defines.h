@@ -201,7 +201,8 @@
 // backward compatibility for users that don't use CMake and previously manually defined these, we
 // translate the old defines here and print a warning.
 #if defined(ZYCORE_STATIC_DEFINE)
-#   pragma message("ZYCORE_STATIC_DEFINE was renamed to ZYCORE_STATIC_BUILD.")
+// Warning disabled for PCSX2 since we define this on the command line.
+//#   pragma message("ZYCORE_STATIC_DEFINE was renamed to ZYCORE_STATIC_BUILD.")
 #   define ZYCORE_STATIC_BUILD
 #endif
 #if defined(Zycore_EXPORTS)
