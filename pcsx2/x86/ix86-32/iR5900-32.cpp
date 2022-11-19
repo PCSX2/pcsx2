@@ -363,7 +363,7 @@ void recBranchCall(void (*func)())
 	// to the current cpu cycle.
 
 	xMOV(eax, ptr[&cpuRegs.cycle]);
-	xMOV(ptr[&g_nextEventCycle], eax);
+	xMOV(ptr[&cpuRegs.nextEventCycle], eax);
 
 	recCall(func);
 	g_branch = 2;
@@ -930,7 +930,7 @@ void SetBranchReg(u32 reg)
 		}
 		else
 		{
-			xMOV(eax, ptr[&g_recWriteback]);
+			xMOV(eax, ptr[&cpuRegs.pcWriteback]);
 			xMOV(ptr[&cpuRegs.pc], eax);
 		}
 	}
@@ -1125,7 +1125,7 @@ static void iBranchTest(u32 newpc)
 
 	if (EmuConfig.Speedhacks.WaitLoop && s_nBlockFF && newpc == s_branchTo)
 	{
-		xMOV(eax, ptr32[&g_nextEventCycle]);
+		xMOV(eax, ptr32[&cpuRegs.nextEventCycle]);
 		xADD(ptr32[&cpuRegs.cycle], scaleblockcycles());
 		xCMP(eax, ptr32[&cpuRegs.cycle]);
 		xCMOVS(eax, ptr32[&cpuRegs.cycle]);
@@ -1138,7 +1138,7 @@ static void iBranchTest(u32 newpc)
 		xMOV(eax, ptr[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles());
 		xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
-		xSUB(eax, ptr[&g_nextEventCycle]);
+		xSUB(eax, ptr[&cpuRegs.nextEventCycle]);
 
 		if (newpc == 0xffffffff)
 			xJS(DispatcherReg);

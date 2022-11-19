@@ -1057,7 +1057,7 @@ void rpsxJR()
 void rpsxJALR()
 {
 	// jalr Rs
-	_allocX86reg(calleeSavedReg2d, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+	_allocX86reg(calleeSavedReg2d, X86TYPE_PSX_PCWRITEBACK, 0, MODE_WRITE);
 	_psxMoveGPRtoR(calleeSavedReg2d, _Rs_);
 
 	if (_Rd_)
@@ -1071,7 +1071,7 @@ void rpsxJALR()
 
 	if (x86regs[calleeSavedReg2d.GetId()].inuse)
 	{
-		pxAssert(x86regs[calleeSavedReg2d.GetId()].type == X86TYPE_PCWRITEBACK);
+		pxAssert(x86regs[calleeSavedReg2d.GetId()].type == X86TYPE_PSX_PCWRITEBACK);
 		xMOV(ptr32[&psxRegs.pc], calleeSavedReg2d);
 		x86regs[calleeSavedReg2d.GetId()].inuse = 0;
 #ifdef PCSX2_DEBUG
@@ -1080,7 +1080,7 @@ void rpsxJALR()
 	}
 	else
 	{
-		xMOV(eax, ptr32[&g_recWriteback]);
+		xMOV(eax, ptr32[&psxRegs.pcWriteback]);
 		xMOV(ptr32[&psxRegs.pc], eax);
 #ifdef PCSX2_DEBUG
 		xOR(eax, eax);

@@ -98,11 +98,11 @@ uptr _x86GetAddr(int type, int reg)
 			break;
 
 		case X86TYPE_PCWRITEBACK:
-			ret = (uptr)&g_recWriteback;
+			ret = (uptr)&cpuRegs.pcWriteback;
 			break;
 
-		case X86TYPE_VUJUMP:
-			ret = (uptr)&g_recWriteback;
+		case X86TYPE_PSX_PCWRITEBACK:
+			ret = (uptr)&psxRegs.pcWriteback;
 			break;
 
 		jNO_DEFAULT;
