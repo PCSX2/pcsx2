@@ -917,9 +917,34 @@ void SaveStateBase::sio2Freeze()
 
 	Freeze(sio2);
 
+	// CRCs for memory cards.
+	// If the memory card hasn't changed when loading state, we can safely skip ejecting it.
+	u64 mcdCrcs[SIO::PORTS][SIO::SLOTS];
+	if (IsSaving())
+	{
+		for (u32 port = 0; port < SIO::PORTS; port++)
+		{
+			for (u32 slot = 0; slot < SIO::SLOTS; slot++)
+				mcdCrcs[port][slot] = mcds[port][slot].GetChecksum();
+		}
+	}
+	Freeze(mcdCrcs);
+
 	if (IsLoading())
 	{
-		AutoEject::SetAll();
+		bool ejected = false;
+		for (u32 port = 0; port < SIO::PORTS && !ejected; port++)
+		{
+			for (u32 slot = 0; slot < SIO::SLOTS; slot++)
+			{
+				if (mcdCrcs[port][slot] != mcds[port][slot].GetChecksum())
+				{
+					AutoEject::SetAll();
+					ejected = true;
+					break;
+				}
+			}
+		}
 		
 		// Restore fifoIn
 		fifoIn.clear();
