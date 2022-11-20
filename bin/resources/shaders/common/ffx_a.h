@@ -1352,20 +1352,443 @@
 //==============================================================================================================================
 //
 //
+//                                                            MSL
+//
+//
+//==============================================================================================================================
+#if defined(A_MSL) && defined(A_GPU)
+ #include <metal_stdlib>
+ using namespace metal;
+ // Older metal versions are missing a few functions, fill them in here
+ #ifndef __HAVE_MEDIAN3__
+  #define median3(x,y,z) max(min(x,y),min(max(x,y),z))
+ #endif
+ #ifndef __HAVE_MIN3__
+  #define min3(x,y,z) min(x,min(y,z))
+ #endif
+ #ifndef __HAVE_MAX3__
+  #define max3(x,y,z) max(x,max(y,z))
+ #endif
+ #define A_STATIC static inline
+ #define A_MAYBE_UNUSED [[maybe_unused]]
+//------------------------------------------------------------------------------------------------------------------------------
+ #define AP1 bool
+ #define AP2 bool2
+ #define AP3 bool3
+ #define AP4 bool4
+//------------------------------------------------------------------------------------------------------------------------------
+ #define AF1 float
+ #define AF2 float2
+ #define AF3 float3
+ #define AF4 float4
+//------------------------------------------------------------------------------------------------------------------------------
+ #define AU1 uint
+ #define AU2 uint2
+ #define AU3 uint3
+ #define AU4 uint4
+//------------------------------------------------------------------------------------------------------------------------------
+ #define ASU1 int
+ #define ASU2 int2
+ #define ASU3 int3
+ #define ASU4 int4
+//==============================================================================================================================
+ #define AF1_AU1(x) as_type<AF1>(AU1(x))
+ #define AF2_AU2(x) as_type<AF2>(AU2(x))
+ #define AF3_AU3(x) as_type<AF3>(AU3(x))
+ #define AF4_AU4(x) as_type<AF4>(AU4(x))
+//------------------------------------------------------------------------------------------------------------------------------
+ #define AU1_AF1(x) as_type<AU1>(AF1(x))
+ #define AU2_AF2(x) as_type<AU2>(AF2(x))
+ #define AU3_AF3(x) as_type<AU3>(AF3(x))
+ #define AU4_AF4(x) as_type<AU4>(AF4(x))
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AU1 AU1_AH2_AF2_x(AF2 a){return as_type<uint>(half2(a));}
+ #define AU1_AH2_AF2(a) AU1_AH2_AF2_x(AF2(a))
+ #define AU1_AB4Unorm_AF4(x) pack_float_to_unorm4x8(AF4(x))
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AF2 AF2_AH2_AU1_x(AU1 x){return float2(as_type<half2>(x));}
+ #define AF2_AH2_AU1(x) AF2_AH2_AU1_x(AU1(x))
+//==============================================================================================================================
+ #define AF1_(a) AF1(AF1(a))
+ #define AF2_(a) AF2(AF1(a))
+ #define AF3_(a) AF3(AF1(a))
+ #define AF4_(a) AF4(AF1(a))
+//------------------------------------------------------------------------------------------------------------------------------
+ #define AU1_(a) AU1(AU1(a))
+ #define AU2_(a) AU2(AU1(a))
+ #define AU3_(a) AU3(AU1(a))
+ #define AU4_(a) AU4(AU1(a))
+//==============================================================================================================================
+ A_STATIC AU1 AAbsSU1(AU1 a){return AU1(abs(ASU1(a)));}
+ A_STATIC AU2 AAbsSU2(AU2 a){return AU2(abs(ASU2(a)));}
+ A_STATIC AU3 AAbsSU3(AU3 a){return AU3(abs(ASU3(a)));}
+ A_STATIC AU4 AAbsSU4(AU4 a){return AU4(abs(ASU4(a)));}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AU1 ABfe(AU1 src,AU1 off,AU1 bits){return extract_bits(src, off, bits);}
+ A_STATIC AU1 ABfi(AU1 src,AU1 ins,AU1 mask){return (ins&mask)|(src&(~mask));}
+ A_STATIC AU1 ABfiM(AU1 src,AU1 ins,AU1 bits){return insert_bits(src,ins,0,bits);}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AF1 AFractF1(AF1 x){return fract(x);}
+ A_STATIC AF2 AFractF2(AF2 x){return fract(x);}
+ A_STATIC AF3 AFractF3(AF3 x){return fract(x);}
+ A_STATIC AF4 AFractF4(AF4 x){return fract(x);}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AF1 ALerpF1(AF1 x,AF1 y,AF1 a){return mix(x,y,a);}
+ A_STATIC AF2 ALerpF2(AF2 x,AF2 y,AF2 a){return mix(x,y,a);}
+ A_STATIC AF3 ALerpF3(AF3 x,AF3 y,AF3 a){return mix(x,y,a);}
+ A_STATIC AF4 ALerpF4(AF4 x,AF4 y,AF4 a){return mix(x,y,a);}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AF1 AMax3F1(AF1 x,AF1 y,AF1 z){return max(x,max(y,z));}
+ A_STATIC AF2 AMax3F2(AF2 x,AF2 y,AF2 z){return max(x,max(y,z));}
+ A_STATIC AF3 AMax3F3(AF3 x,AF3 y,AF3 z){return max(x,max(y,z));}
+ A_STATIC AF4 AMax3F4(AF4 x,AF4 y,AF4 z){return max(x,max(y,z));}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AU1 AMax3SU1(AU1 x,AU1 y,AU1 z){return AU1(max3(ASU1(x),ASU1(y),ASU1(z)));}
+ A_STATIC AU2 AMax3SU2(AU2 x,AU2 y,AU2 z){return AU2(max3(ASU2(x),ASU2(y),ASU2(z)));}
+ A_STATIC AU3 AMax3SU3(AU3 x,AU3 y,AU3 z){return AU3(max3(ASU3(x),ASU3(y),ASU3(z)));}
+ A_STATIC AU4 AMax3SU4(AU4 x,AU4 y,AU4 z){return AU4(max3(ASU4(x),ASU4(y),ASU4(z)));}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AU1 AMax3U1(AU1 x,AU1 y,AU1 z){return max3(x,y,z);}
+ A_STATIC AU2 AMax3U2(AU2 x,AU2 y,AU2 z){return max3(x,y,z);}
+ A_STATIC AU3 AMax3U3(AU3 x,AU3 y,AU3 z){return max3(x,y,z);}
+ A_STATIC AU4 AMax3U4(AU4 x,AU4 y,AU4 z){return max3(x,y,z);}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AU1 AMaxSU1(AU1 a,AU1 b){return AU1(max(ASU1(a),ASU1(b)));}
+ A_STATIC AU2 AMaxSU2(AU2 a,AU2 b){return AU2(max(ASU2(a),ASU2(b)));}
+ A_STATIC AU3 AMaxSU3(AU3 a,AU3 b){return AU3(max(ASU3(a),ASU3(b)));}
+ A_STATIC AU4 AMaxSU4(AU4 a,AU4 b){return AU4(max(ASU4(a),ASU4(b)));}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AF1 AMed3F1(AF1 x,AF1 y,AF1 z){return median3(x,y,z);}
+ A_STATIC AF2 AMed3F2(AF2 x,AF2 y,AF2 z){return median3(x,y,z);}
+ A_STATIC AF3 AMed3F3(AF3 x,AF3 y,AF3 z){return median3(x,y,z);}
+ A_STATIC AF4 AMed3F4(AF4 x,AF4 y,AF4 z){return median3(x,y,z);}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AF1 AMin3F1(AF1 x,AF1 y,AF1 z){return min3(x,y,z);}
+ A_STATIC AF2 AMin3F2(AF2 x,AF2 y,AF2 z){return min3(x,y,z);}
+ A_STATIC AF3 AMin3F3(AF3 x,AF3 y,AF3 z){return min3(x,y,z);}
+ A_STATIC AF4 AMin3F4(AF4 x,AF4 y,AF4 z){return min3(x,y,z);}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AU1 AMin3SU1(AU1 x,AU1 y,AU1 z){return AU1(min3(ASU1(x),ASU1(y),ASU1(z)));}
+ A_STATIC AU2 AMin3SU2(AU2 x,AU2 y,AU2 z){return AU2(min3(ASU2(x),ASU2(y),ASU2(z)));}
+ A_STATIC AU3 AMin3SU3(AU3 x,AU3 y,AU3 z){return AU3(min3(ASU3(x),ASU3(y),ASU3(z)));}
+ A_STATIC AU4 AMin3SU4(AU4 x,AU4 y,AU4 z){return AU4(min3(ASU4(x),ASU4(y),ASU4(z)));}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AU1 AMin3U1(AU1 x,AU1 y,AU1 z){return min3(x,y,z);}
+ A_STATIC AU2 AMin3U2(AU2 x,AU2 y,AU2 z){return min3(x,y,z);}
+ A_STATIC AU3 AMin3U3(AU3 x,AU3 y,AU3 z){return min3(x,y,z);}
+ A_STATIC AU4 AMin3U4(AU4 x,AU4 y,AU4 z){return min3(x,y,z);}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AU1 AMinSU1(AU1 a,AU1 b){return AU1(min(ASU1(a),ASU1(b)));}
+ A_STATIC AU2 AMinSU2(AU2 a,AU2 b){return AU2(min(ASU2(a),ASU2(b)));}
+ A_STATIC AU3 AMinSU3(AU3 a,AU3 b){return AU3(min(ASU3(a),ASU3(b)));}
+ A_STATIC AU4 AMinSU4(AU4 a,AU4 b){return AU4(min(ASU4(a),ASU4(b)));}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AF1 ANCosF1(AF1 x){return cos(x*A_2PI);}
+ A_STATIC AF2 ANCosF2(AF2 x){return cos(x*A_2PI);}
+ A_STATIC AF3 ANCosF3(AF3 x){return cos(x*A_2PI);}
+ A_STATIC AF4 ANCosF4(AF4 x){return cos(x*A_2PI);}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AF1 ANSinF1(AF1 x){return sin(x*A_2PI);}
+ A_STATIC AF2 ANSinF2(AF2 x){return sin(x*A_2PI);}
+ A_STATIC AF3 ANSinF3(AF3 x){return sin(x*A_2PI);}
+ A_STATIC AF4 ANSinF4(AF4 x){return sin(x*A_2PI);}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AF1 ARcpF1(AF1 x){return 1.f/x;}
+ A_STATIC AF2 ARcpF2(AF2 x){return 1.f/x;}
+ A_STATIC AF3 ARcpF3(AF3 x){return 1.f/x;}
+ A_STATIC AF4 ARcpF4(AF4 x){return 1.f/x;}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AF1 ARsqF1(AF1 x){return rsqrt(x);}
+ A_STATIC AF2 ARsqF2(AF2 x){return rsqrt(x);}
+ A_STATIC AF3 ARsqF3(AF3 x){return rsqrt(x);}
+ A_STATIC AF4 ARsqF4(AF4 x){return rsqrt(x);}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AF1 ASatF1(AF1 x){return saturate(x);}
+ A_STATIC AF2 ASatF2(AF2 x){return saturate(x);}
+ A_STATIC AF3 ASatF3(AF3 x){return saturate(x);}
+ A_STATIC AF4 ASatF4(AF4 x){return saturate(x);}
+//------------------------------------------------------------------------------------------------------------------------------
+ A_STATIC AU1 AShrSU1(AU1 a,AU1 b){return AU1(ASU1(a)>>ASU1(b));}
+ A_STATIC AU2 AShrSU2(AU2 a,AU2 b){return AU2(ASU2(a)>>ASU2(b));}
+ A_STATIC AU3 AShrSU3(AU3 a,AU3 b){return AU3(ASU3(a)>>ASU3(b));}
+ A_STATIC AU4 AShrSU4(AU4 a,AU4 b){return AU4(ASU4(a)>>ASU4(b));}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//_____________________________________________________________/\_______________________________________________________________
+//==============================================================================================================================
+//                                                          MSL BYTE
+//==============================================================================================================================
+ #ifdef A_BYTE
+  #define AB1 uchar
+  #define AB2 uchar2
+  #define AB3 uchar3
+  #define AB4 uchar4
+//------------------------------------------------------------------------------------------------------------------------------
+  #define ASB1 char
+  #define ASB2 char2
+  #define ASB3 char3
+  #define ASB4 char4
+//------------------------------------------------------------------------------------------------------------------------------
+  #define AB1_(a) AB1(AB1(a))
+  #define AB2_(a) AB2(AB1(a))
+  #define AB3_(a) AB3(AB1(a))
+  #define AB4_(a) AB4(AB1(a))
+ #endif
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//_____________________________________________________________/\_______________________________________________________________
+//==============================================================================================================================
+//                                                          MSL HALF
+//==============================================================================================================================
+ #ifdef A_HALF
+  #define AH1 half
+  #define AH2 half2
+  #define AH3 half3
+  #define AH4 half4
+//------------------------------------------------------------------------------------------------------------------------------
+  #define AW1 ushort
+  #define AW2 ushort2
+  #define AW3 ushort3
+  #define AW4 ushort4
+//------------------------------------------------------------------------------------------------------------------------------
+  #define ASW1 short
+  #define ASW2 short2
+  #define ASW3 short3
+  #define ASW4 short4
+//==============================================================================================================================
+  A_STATIC AH2 AH2_AU1_x(AU1 x){return as_type<AH2>(x);}
+  A_STATIC AH4 AH4_AU2_x(AU2 x){return as_type<AH4>(x);}
+  A_STATIC AW2 AW2_AU1_x(AU1 x){return as_type<AW2>(x);}
+  A_STATIC AW4 AW4_AU2_x(AU2 x){return as_type<AW4>(x);}
+  #define AH2_AU1(x) AH2_AU1_x(AU1(x))
+  #define AH4_AU2(x) AH4_AU2_x(AU2(x))
+  #define AW2_AU1(x) AW2_AU1_x(AU1(x))
+  #define AW4_AU2(x) AW4_AU2_x(AU2(x))
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AU1 AU1_AH2_x(AH2 x){return as_type<AU1>(x);}
+  A_STATIC AU2 AU2_AH4_x(AH4 x){return as_type<AU2>(x);}
+  A_STATIC AU1 AU1_AW2_x(AW2 x){return as_type<AU1>(x);}
+  A_STATIC AU2 AU2_AW4_x(AW4 x){return as_type<AU2>(x);}
+  #define AU1_AH2(x) AU1_AH2_x(AH2(x))
+  #define AU2_AH4(x) AU2_AH4_x(AH4(x))
+  #define AU1_AW2(x) AU1_AW2_x(AW2(x))
+  #define AU2_AW4(x) AU2_AW4_x(AW4(x))
+//==============================================================================================================================
+  #define AW1_AH1(x) as_type<AW1>(AH1(x))
+  #define AW2_AH2(x) as_type<AW2>(AH2(x))
+  #define AW3_AH3(x) as_type<AW3>(AH3(x))
+  #define AW4_AH4(x) as_type<AW4>(AH4(x))
+//------------------------------------------------------------------------------------------------------------------------------
+  #define AH1_AW1(x) as_type<AH1>(AW1(x))
+  #define AH2_AW2(x) as_type<AH2>(AW2(x))
+  #define AH3_AW3(x) as_type<AH3>(AW3(x))
+  #define AH4_AW4(x) as_type<AH4>(AW4(x))
+//==============================================================================================================================
+  #define AH1_(a) AH1(AH1(a))
+  #define AH2_(a) AH2(AH1(a))
+  #define AH3_(a) AH3(AH1(a))
+  #define AH4_(a) AH4(AH1(a))
+//------------------------------------------------------------------------------------------------------------------------------
+  #define AW1_(a) AW1(AW1(a))
+  #define AW2_(a) AW2(AW1(a))
+  #define AW3_(a) AW3(AW1(a))
+  #define AW4_(a) AW4(AW1(a))
+//==============================================================================================================================
+  A_STATIC AW1 AAbsSW1(AW1 a){return AW1(abs(ASW1(a)));}
+  A_STATIC AW2 AAbsSW2(AW2 a){return AW2(abs(ASW2(a)));}
+  A_STATIC AW3 AAbsSW3(AW3 a){return AW3(abs(ASW3(a)));}
+  A_STATIC AW4 AAbsSW4(AW4 a){return AW4(abs(ASW4(a)));}
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AH1 AFractH1(AH1 x){return fract(x);}
+  A_STATIC AH2 AFractH2(AH2 x){return fract(x);}
+  A_STATIC AH3 AFractH3(AH3 x){return fract(x);}
+  A_STATIC AH4 AFractH4(AH4 x){return fract(x);}
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AH1 ALerpH1(AH1 x,AH1 y,AH1 a){return mix(x,y,a);}
+  A_STATIC AH2 ALerpH2(AH2 x,AH2 y,AH2 a){return mix(x,y,a);}
+  A_STATIC AH3 ALerpH3(AH3 x,AH3 y,AH3 a){return mix(x,y,a);}
+  A_STATIC AH4 ALerpH4(AH4 x,AH4 y,AH4 a){return mix(x,y,a);}
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AH1 AMax3H1(AH1 x,AH1 y,AH1 z){return max3(x,y,z);}
+  A_STATIC AH2 AMax3H2(AH2 x,AH2 y,AH2 z){return max3(x,y,z);}
+  A_STATIC AH3 AMax3H3(AH3 x,AH3 y,AH3 z){return max3(x,y,z);}
+  A_STATIC AH4 AMax3H4(AH4 x,AH4 y,AH4 z){return max3(x,y,z);}
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AW1 AMaxSW1(AW1 a,AW1 b){return AW1(max(ASU1(a),ASU1(b)));}
+  A_STATIC AW2 AMaxSW2(AW2 a,AW2 b){return AW2(max(ASU2(a),ASU2(b)));}
+  A_STATIC AW3 AMaxSW3(AW3 a,AW3 b){return AW3(max(ASU3(a),ASU3(b)));}
+  A_STATIC AW4 AMaxSW4(AW4 a,AW4 b){return AW4(max(ASU4(a),ASU4(b)));}
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AH1 AMin3H1(AH1 x,AH1 y,AH1 z){return min3(x,y,z);}
+  A_STATIC AH2 AMin3H2(AH2 x,AH2 y,AH2 z){return min3(x,y,z);}
+  A_STATIC AH3 AMin3H3(AH3 x,AH3 y,AH3 z){return min3(x,y,z);}
+  A_STATIC AH4 AMin3H4(AH4 x,AH4 y,AH4 z){return min3(x,y,z);}
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AW1 AMinSW1(AW1 a,AW1 b){return AW1(min(ASU1(a),ASU1(b)));}
+  A_STATIC AW2 AMinSW2(AW2 a,AW2 b){return AW2(min(ASU2(a),ASU2(b)));}
+  A_STATIC AW3 AMinSW3(AW3 a,AW3 b){return AW3(min(ASU3(a),ASU3(b)));}
+  A_STATIC AW4 AMinSW4(AW4 a,AW4 b){return AW4(min(ASU4(a),ASU4(b)));}
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AH1 ARcpH1(AH1 x){return 1.h/x;}
+  A_STATIC AH2 ARcpH2(AH2 x){return 1.h/x;}
+  A_STATIC AH3 ARcpH3(AH3 x){return 1.h/x;}
+  A_STATIC AH4 ARcpH4(AH4 x){return 1.h/x;}
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AH1 ARsqH1(AH1 x){return rsqrt(x);}
+  A_STATIC AH2 ARsqH2(AH2 x){return rsqrt(x);}
+  A_STATIC AH3 ARsqH3(AH3 x){return rsqrt(x);}
+  A_STATIC AH4 ARsqH4(AH4 x){return rsqrt(x);}
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AH1 ASatH1(AH1 x){return saturate(x);}
+  A_STATIC AH2 ASatH2(AH2 x){return saturate(x);}
+  A_STATIC AH3 ASatH3(AH3 x){return saturate(x);}
+  A_STATIC AH4 ASatH4(AH4 x){return saturate(x);}
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AW1 AShrSW1(AW1 a,AW1 b){return AW1(ASW1(a)>>ASW1(b));}
+  A_STATIC AW2 AShrSW2(AW2 a,AW2 b){return AW2(ASW2(a)>>ASW2(b));}
+  A_STATIC AW3 AShrSW3(AW3 a,AW3 b){return AW3(ASW3(a)>>ASW3(b));}
+  A_STATIC AW4 AShrSW4(AW4 a,AW4 b){return AW4(ASW4(a)>>ASW4(b));}
+ #endif
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//_____________________________________________________________/\_______________________________________________________________
+//==============================================================================================================================
+//                                                         MSL DOUBLE
+//==============================================================================================================================
+ #if defined(A_DUBL) && defined(__HAVE_NATIVE_DOUBLE__) // Not currently supported in MSL
+  #define AD1 double
+  #define AD2 double2
+  #define AD3 double3
+  #define AD4 double4
+//------------------------------------------------------------------------------------------------------------------------------
+  #define AD1_(a) AD1(AD1(a))
+  #define AD2_(a) AD2(AD1(a))
+  #define AD3_(a) AD3(AD1(a))
+  #define AD4_(a) AD4(AD1(a))
+//==============================================================================================================================
+  A_STATIC AD1 AFractD1(AD1 a){return fract(a);}
+  A_STATIC AD2 AFractD2(AD2 a){return fract(a);}
+  A_STATIC AD3 AFractD3(AD3 a){return fract(a);}
+  A_STATIC AD4 AFractD4(AD4 a){return fract(a);}
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AD1 ALerpD1(AD1 x,AD1 y,AD1 a){return mix(x,y,a);}
+  A_STATIC AD2 ALerpD2(AD2 x,AD2 y,AD2 a){return mix(x,y,a);}
+  A_STATIC AD3 ALerpD3(AD3 x,AD3 y,AD3 a){return mix(x,y,a);}
+  A_STATIC AD4 ALerpD4(AD4 x,AD4 y,AD4 a){return mix(x,y,a);}
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AD1 ARcpD1(AD1 x){return 1.0/x;}
+  A_STATIC AD2 ARcpD2(AD2 x){return 1.0/x;}
+  A_STATIC AD3 ARcpD3(AD3 x){return 1.0/x;}
+  A_STATIC AD4 ARcpD4(AD4 x){return 1.0/x;}
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AD1 ARsqD1(AD1 x){return rsqrt(x);}
+  A_STATIC AD2 ARsqD2(AD2 x){return rsqrt(x);}
+  A_STATIC AD3 ARsqD3(AD3 x){return rsqrt(x);}
+  A_STATIC AD4 ARsqD4(AD4 x){return rsqrt(x);}
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AD1 ASatD1(AD1 x){return saturate(x);}
+  A_STATIC AD2 ASatD2(AD2 x){return saturate(x);}
+  A_STATIC AD3 ASatD3(AD3 x){return saturate(x);}
+  A_STATIC AD4 ASatD4(AD4 x){return saturate(x);}
+ #endif
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//_____________________________________________________________/\_______________________________________________________________
+//==============================================================================================================================
+//                                                         MSL LONG
+//==============================================================================================================================
+ #ifdef A_LONG
+  #define AL1 ulong
+  #define AL2 ulong2
+  #define AL3 ulong3
+  #define AL4 ulong4
+//------------------------------------------------------------------------------------------------------------------------------
+  #define ASL1 long
+  #define ASL2 long2
+  #define ASL3 long3
+  #define ASL4 long4
+//------------------------------------------------------------------------------------------------------------------------------
+  #define AL1_AU2(x) as_type<AL1>(AU2(x))
+  #define AU2_AL1(x) as_type<AU2>(AL1(x))
+//------------------------------------------------------------------------------------------------------------------------------
+  #define AL1_(a) AL1(AL1(a))
+  #define AL2_(a) AL2(AL1(a))
+  #define AL3_(a) AL3(AL1(a))
+  #define AL4_(a) AL4(AL1(a))
+//==============================================================================================================================
+  A_STATIC AL1 AAbsSL1(AL1 a){return AL1(abs(ASL1(a)));}
+  A_STATIC AL2 AAbsSL2(AL2 a){return AL2(abs(ASL2(a)));}
+  A_STATIC AL3 AAbsSL3(AL3 a){return AL3(abs(ASL3(a)));}
+  A_STATIC AL4 AAbsSL4(AL4 a){return AL4(abs(ASL4(a)));}
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AL1 AMaxSL1(AL1 a,AL1 b){return AL1(max(ASU1(a),ASU1(b)));}
+  A_STATIC AL2 AMaxSL2(AL2 a,AL2 b){return AL2(max(ASU2(a),ASU2(b)));}
+  A_STATIC AL3 AMaxSL3(AL3 a,AL3 b){return AL3(max(ASU3(a),ASU3(b)));}
+  A_STATIC AL4 AMaxSL4(AL4 a,AL4 b){return AL4(max(ASU4(a),ASU4(b)));}
+//------------------------------------------------------------------------------------------------------------------------------
+  A_STATIC AL1 AMinSL1(AL1 a,AL1 b){return AL1(min(ASU1(a),ASU1(b)));}
+  A_STATIC AL2 AMinSL2(AL2 a,AL2 b){return AL2(min(ASU2(a),ASU2(b)));}
+  A_STATIC AL3 AMinSL3(AL3 a,AL3 b){return AL3(min(ASU3(a),ASU3(b)));}
+  A_STATIC AL4 AMinSL4(AL4 a,AL4 b){return AL4(min(ASU4(a),ASU4(b)));}
+ #endif
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//_____________________________________________________________/\_______________________________________________________________
+//==============================================================================================================================
+//                                                      WAVE OPERATIONS
+//==============================================================================================================================
+ #ifdef A_WAVE
+  A_STATIC AF1 AWaveAdd(AF1 v){return simd_sum(v);}
+  A_STATIC AF2 AWaveAdd(AF2 v){return simd_sum(v);}
+  A_STATIC AF3 AWaveAdd(AF3 v){return simd_sum(v);}
+  A_STATIC AF4 AWaveAdd(AF4 v){return simd_sum(v);}
+ #endif
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//_____________________________________________________________/\_______________________________________________________________
+//==============================================================================================================================
+//                                                          MSL END
+//==============================================================================================================================
+ // Clear the replacement macros we defined earlier
+ #ifndef __HAVE_MEDIAN3__
+  #define median3(x,y,z) max(min(x,y),min(max(x,y),z))
+ #endif
+ #ifndef __HAVE_MIN3__
+  #define min3(x,y,z) min(x,min(y,z))
+ #endif
+ #ifndef __HAVE_MAX3__
+  #define max3(x,y,z) max(x,max(y,z))
+ #endif
+//==============================================================================================================================
+#endif
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//_____________________________________________________________/\_______________________________________________________________
+//==============================================================================================================================
+//
+//
 //                                                          GPU COMMON
 //
 //
 //==============================================================================================================================
 #ifdef A_GPU
+ #ifndef A_MSL
+  #define A_STATIC
+  #define A_MAYBE_UNUSED
+ #endif
  // Negative and positive infinity.
  #define A_INFN_F AF1_AU1(0x7f800000u)
  #define A_INFP_F AF1_AU1(0xff800000u)
 //------------------------------------------------------------------------------------------------------------------------------
  // Copy sign from 's' to positive 'd'.
- AF1 ACpySgnF1(AF1 d,AF1 s){return AF1_AU1(AU1_AF1(d)|(AU1_AF1(s)&AU1_(0x80000000u)));}
- AF2 ACpySgnF2(AF2 d,AF2 s){return AF2_AU2(AU2_AF2(d)|(AU2_AF2(s)&AU2_(0x80000000u)));}
- AF3 ACpySgnF3(AF3 d,AF3 s){return AF3_AU3(AU3_AF3(d)|(AU3_AF3(s)&AU3_(0x80000000u)));}
- AF4 ACpySgnF4(AF4 d,AF4 s){return AF4_AU4(AU4_AF4(d)|(AU4_AF4(s)&AU4_(0x80000000u)));}
+ A_STATIC AF1 ACpySgnF1(AF1 d,AF1 s){return AF1_AU1(AU1_AF1(d)|(AU1_AF1(s)&AU1_(0x80000000u)));}
+ A_STATIC AF2 ACpySgnF2(AF2 d,AF2 s){return AF2_AU2(AU2_AF2(d)|(AU2_AF2(s)&AU2_(0x80000000u)));}
+ A_STATIC AF3 ACpySgnF3(AF3 d,AF3 s){return AF3_AU3(AU3_AF3(d)|(AU3_AF3(s)&AU3_(0x80000000u)));}
+ A_STATIC AF4 ACpySgnF4(AF4 d,AF4 s){return AF4_AU4(AU4_AF4(d)|(AU4_AF4(s)&AU4_(0x80000000u)));}
 //------------------------------------------------------------------------------------------------------------------------------
  // Single operation to return (useful to create a mask to use in lerp for branch free logic),
  //  m=NaN := 0
@@ -1375,24 +1798,24 @@
  //  saturate(+a*(-INF)==-INF) := 0
  //  saturate( 0*(-INF)== NaN) := 0
  //  saturate(-a*(-INF)==+INF) := 1
- AF1 ASignedF1(AF1 m){return ASatF1(m*AF1_(A_INFN_F));}
- AF2 ASignedF2(AF2 m){return ASatF2(m*AF2_(A_INFN_F));}
- AF3 ASignedF3(AF3 m){return ASatF3(m*AF3_(A_INFN_F));}
- AF4 ASignedF4(AF4 m){return ASatF4(m*AF4_(A_INFN_F));}
+ A_STATIC AF1 ASignedF1(AF1 m){return ASatF1(m*AF1_(A_INFN_F));}
+ A_STATIC AF2 ASignedF2(AF2 m){return ASatF2(m*AF2_(A_INFN_F));}
+ A_STATIC AF3 ASignedF3(AF3 m){return ASatF3(m*AF3_(A_INFN_F));}
+ A_STATIC AF4 ASignedF4(AF4 m){return ASatF4(m*AF4_(A_INFN_F));}
 //==============================================================================================================================
  #ifdef A_HALF
   #define A_INFN_H AH1_AW1(0x7c00u)
   #define A_INFP_H AH1_AW1(0xfc00u)
 //------------------------------------------------------------------------------------------------------------------------------
-  AH1 ACpySgnH1(AH1 d,AH1 s){return AH1_AW1(AW1_AH1(d)|(AW1_AH1(s)&AW1_(0x8000u)));}
-  AH2 ACpySgnH2(AH2 d,AH2 s){return AH2_AW2(AW2_AH2(d)|(AW2_AH2(s)&AW2_(0x8000u)));}
-  AH3 ACpySgnH3(AH3 d,AH3 s){return AH3_AW3(AW3_AH3(d)|(AW3_AH3(s)&AW3_(0x8000u)));}
-  AH4 ACpySgnH4(AH4 d,AH4 s){return AH4_AW4(AW4_AH4(d)|(AW4_AH4(s)&AW4_(0x8000u)));}
+  A_STATIC AH1 ACpySgnH1(AH1 d,AH1 s){return AH1_AW1(AW1_AH1(d)|(AW1_AH1(s)&AW1_(0x8000u)));}
+  A_STATIC AH2 ACpySgnH2(AH2 d,AH2 s){return AH2_AW2(AW2_AH2(d)|(AW2_AH2(s)&AW2_(0x8000u)));}
+  A_STATIC AH3 ACpySgnH3(AH3 d,AH3 s){return AH3_AW3(AW3_AH3(d)|(AW3_AH3(s)&AW3_(0x8000u)));}
+  A_STATIC AH4 ACpySgnH4(AH4 d,AH4 s){return AH4_AW4(AW4_AH4(d)|(AW4_AH4(s)&AW4_(0x8000u)));}
 //------------------------------------------------------------------------------------------------------------------------------
-  AH1 ASignedH1(AH1 m){return ASatH1(m*AH1_(A_INFN_H));}
-  AH2 ASignedH2(AH2 m){return ASatH2(m*AH2_(A_INFN_H));}
-  AH3 ASignedH3(AH3 m){return ASatH3(m*AH3_(A_INFN_H));}
-  AH4 ASignedH4(AH4 m){return ASatH4(m*AH4_(A_INFN_H));}
+  A_STATIC AH1 ASignedH1(AH1 m){return ASatH1(m*AH1_(A_INFN_H));}
+  A_STATIC AH2 ASignedH2(AH2 m){return ASatH2(m*AH2_(A_INFN_H));}
+  A_STATIC AH3 ASignedH3(AH3 m){return ASatH3(m*AH3_(A_INFN_H));}
+  A_STATIC AH4 ASignedH4(AH4 m){return ASatH4(m*AH4_(A_INFN_H));}
  #endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1419,21 +1842,21 @@
  #ifdef A_HALF
   // Minimize squared error across full positive range, 2 ops.
   // The 0x1de2 based approximation maps {0 to 1} input maps to < 1 output.
-  AH1 APrxLoSqrtH1(AH1 a){return AH1_AW1((AW1_AH1(a)>>AW1_(1))+AW1_(0x1de2));}
-  AH2 APrxLoSqrtH2(AH2 a){return AH2_AW2((AW2_AH2(a)>>AW2_(1))+AW2_(0x1de2));}
+  A_STATIC AH1 APrxLoSqrtH1(AH1 a){return AH1_AW1((AW1_AH1(a)>>AW1_(1))+AW1_(0x1de2));}
+  A_STATIC AH2 APrxLoSqrtH2(AH2 a){return AH2_AW2((AW2_AH2(a)>>AW2_(1))+AW2_(0x1de2));}
 //------------------------------------------------------------------------------------------------------------------------------
   // Lower precision estimation, 1 op.
   // Minimize squared error across {smallest normal to 16384.0}.
-  AH1 APrxLoRcpH1(AH1 a){return AH1_AW1(AW1_(0x7784)-AW1_AH1(a));}
-  AH2 APrxLoRcpH2(AH2 a){return AH2_AW2(AW2_(0x7784)-AW2_AH2(a));}
+  A_STATIC AH1 APrxLoRcpH1(AH1 a){return AH1_AW1(AW1_(0x7784)-AW1_AH1(a));}
+  A_STATIC AH2 APrxLoRcpH2(AH2 a){return AH2_AW2(AW2_(0x7784)-AW2_AH2(a));}
 //------------------------------------------------------------------------------------------------------------------------------
   // Medium precision estimation, one Newton Raphson iteration, 3 ops.
-  AH1 APrxMedRcpH1(AH1 a){AH1 b=AH1_AW1(AW1_(0x778d)-AW1_AH1(a));return b*(-b*a+AH1_(2.0));}
-  AH2 APrxMedRcpH2(AH2 a){AH2 b=AH2_AW2(AW2_(0x778d)-AW2_AH2(a));return b*(-b*a+AH2_(2.0));}
+  A_STATIC AH1 APrxMedRcpH1(AH1 a){AH1 b=AH1_AW1(AW1_(0x778d)-AW1_AH1(a));return b*(-b*a+AH1_(2.0));}
+  A_STATIC AH2 APrxMedRcpH2(AH2 a){AH2 b=AH2_AW2(AW2_(0x778d)-AW2_AH2(a));return b*(-b*a+AH2_(2.0));}
 //------------------------------------------------------------------------------------------------------------------------------
   // Minimize squared error across {smallest normal to 16384.0}, 2 ops.
-  AH1 APrxLoRsqH1(AH1 a){return AH1_AW1(AW1_(0x59a3)-(AW1_AH1(a)>>AW1_(1)));}
-  AH2 APrxLoRsqH2(AH2 a){return AH2_AW2(AW2_(0x59a3)-(AW2_AH2(a)>>AW2_(1)));}
+  A_STATIC AH1 APrxLoRsqH1(AH1 a){return AH1_AW1(AW1_(0x59a3)-(AW1_AH1(a)>>AW1_(1)));}
+  A_STATIC AH2 APrxLoRsqH2(AH2 a){return AH2_AW2(AW2_(0x59a3)-(AW2_AH2(a)>>AW2_(1)));}
  #endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1452,10 +1875,10 @@
 // Used FP16 normal range for testing with +4096 32-bit step size for sampling error.
 // So these match up well with the half approximations.
 //==============================================================================================================================
- AF1 APrxLoSqrtF1(AF1 a){return AF1_AU1((AU1_AF1(a)>>AU1_(1))+AU1_(0x1fbc4639));}
- AF1 APrxLoRcpF1(AF1 a){return AF1_AU1(AU1_(0x7ef07ebb)-AU1_AF1(a));}
- AF1 APrxMedRcpF1(AF1 a){AF1 b=AF1_AU1(AU1_(0x7ef19fff)-AU1_AF1(a));return b*(-b*a+AF1_(2.0));}
- AF1 APrxLoRsqF1(AF1 a){return AF1_AU1(AU1_(0x5f347d74)-(AU1_AF1(a)>>AU1_(1)));}
+ A_STATIC AF1 APrxLoSqrtF1(AF1 a){return AF1_AU1((AU1_AF1(a)>>AU1_(1))+AU1_(0x1fbc4639));}
+ A_STATIC AF1 APrxLoRcpF1(AF1 a){return AF1_AU1(AU1_(0x7ef07ebb)-AU1_AF1(a));}
+ A_STATIC AF1 APrxMedRcpF1(AF1 a){AF1 b=AF1_AU1(AU1_(0x7ef19fff)-AU1_AF1(a));return b*(-b*a+AF1_(2.0));}
+ A_STATIC AF1 APrxLoRsqF1(AF1 a){return AF1_AU1(AU1_(0x5f347d74)-(AU1_AF1(a)>>AU1_(1)));}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //_____________________________________________________________/\_______________________________________________________________
@@ -1470,15 +1893,15 @@
 //==============================================================================================================================
  // Valid input range is {-1 to 1} representing {0 to 2 pi}.
  // Output range is {-1/4 to -1/4} representing {-1 to 1}.
- AF1 APSinF1(AF1 x){return x*abs(x)-x;} // MAD.
- AF1 APCosF1(AF1 x){x=AFractF1(x*AF1_(0.5)+AF1_(0.75));x=x*AF1_(2.0)-AF1_(1.0);return APSinF1(x);} // 3x MAD, FRACT 
+ A_STATIC AF1 APSinF1(AF1 x){return x*abs(x)-x;} // MAD.
+ A_STATIC AF1 APCosF1(AF1 x){x=AFractF1(x*AF1_(0.5)+AF1_(0.75));x=x*AF1_(2.0)-AF1_(1.0);return APSinF1(x);} // 3x MAD, FRACT
 //------------------------------------------------------------------------------------------------------------------------------
  #ifdef A_HALF
   // For a packed {sin,cos} pair,
   //  - Native takes 16 clocks and 4 issue slots (no packed transcendentals).
   //  - Parabolic takes 8 clocks and 8 issue slots (only fract is non-packed).
-  AH2 APSinH2(AH2 x){return x*abs(x)-x;} // AND,FMA
-  AH2 APCosH2(AH2 x){x=AFractH2(x*AH2_(0.5)+AH2_(0.75));x=x*AH2_(2.0)-AH2_(1.0);return APSinH2(x);} // 3x FMA, 2xFRACT, AND 
+  A_STATIC AH2 APSinH2(AH2 x){return x*abs(x)-x;} // AND,FMA
+  A_STATIC AH2 APCosH2(AH2 x){x=AFractH2(x*AH2_(0.5)+AH2_(0.75));x=x*AH2_(2.0)-AH2_(1.0);return APSinH2(x);} // 3x FMA, 2xFRACT, AND
  #endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1517,51 +1940,51 @@
 // =====
 // Could be faster for PQ conversions to be in ALU or a texture lookup depending on usage case.
 //==============================================================================================================================
- AF1 ATo709F1(AF1 c){return max(min(c*AF1_(4.5),AF1_(0.018)),AF1_(1.099)*pow(c,AF1_(0.45))-AF1_(0.099));}
+ A_STATIC AF1 ATo709F1(AF1 c){return max(min(c*AF1_(4.5),AF1_(0.018)),AF1_(1.099)*pow(c,AF1_(0.45))-AF1_(0.099));}
 //------------------------------------------------------------------------------------------------------------------------------
  // Note 'rcpX' is '1/x', where the 'x' is what would be used in AFromGamma().
- AF1 AToGammaF1(AF1 c,AF1 rcpX){return pow(c,rcpX);} 
+ A_STATIC AF1 AToGammaF1(AF1 c,AF1 rcpX){return pow(c,rcpX);}
 //------------------------------------------------------------------------------------------------------------------------------
- AF1 AToPqF1(AF1 x){AF1 p=pow(x,AF1_(0.159302));
+ A_STATIC AF1 AToPqF1(AF1 x){AF1 p=pow(x,AF1_(0.159302));
   return pow((AF1_(0.835938)+AF1_(18.8516)*p)/(AF1_(1.0)+AF1_(18.6875)*p),AF1_(78.8438));}
 //------------------------------------------------------------------------------------------------------------------------------
- AF1 AToSrgbF1(AF1 c){return max(min(c*AF1_(12.92),AF1_(0.0031308)),AF1_(1.055)*pow(c,AF1_(0.41666))-AF1_(0.055));}
+ A_STATIC AF1 AToSrgbF1(AF1 c){return max(min(c*AF1_(12.92),AF1_(0.0031308)),AF1_(1.055)*pow(c,AF1_(0.41666))-AF1_(0.055));}
 //------------------------------------------------------------------------------------------------------------------------------
- AF1 AToTwoF1(AF1 c){return sqrt(c);}
+ A_STATIC AF1 AToTwoF1(AF1 c){return sqrt(c);}
 //==============================================================================================================================
- AF1 AFrom709F1(AF1 c){return max(min(c*AF1_(1.0/4.5),AF1_(0.081)),
+ A_STATIC AF1 AFrom709F1(AF1 c){return max(min(c*AF1_(1.0/4.5),AF1_(0.081)),
   pow((c+AF1_(0.099))*(AF1_(1.0)/(AF1_(1.099))),AF1_(1.0/0.45)));}
 //------------------------------------------------------------------------------------------------------------------------------
- AF1 AFromGammaF1(AF1 c,AF1 x){return pow(c,x);} 
+ A_STATIC AF1 AFromGammaF1(AF1 c,AF1 x){return pow(c,x);}
 //------------------------------------------------------------------------------------------------------------------------------
- AF1 AFromPqF1(AF1 x){AF1 p=pow(x,AF1_(0.0126833));
+ A_STATIC AF1 AFromPqF1(AF1 x){AF1 p=pow(x,AF1_(0.0126833));
   return pow(ASatF1(p-AF1_(0.835938))/(AF1_(18.8516)-AF1_(18.6875)*p),AF1_(6.27739));}
 //------------------------------------------------------------------------------------------------------------------------------
- AF1 AFromSrgbF1(AF1 c){return max(min(c*AF1_(1.0/12.92),AF1_(0.04045)),
+ A_STATIC AF1 AFromSrgbF1(AF1 c){return max(min(c*AF1_(1.0/12.92),AF1_(0.04045)),
   pow((c+AF1_(0.055))*(AF1_(1.0)/AF1_(1.055)),AF1_(2.4)));}
 //------------------------------------------------------------------------------------------------------------------------------
- AF1 AFromTwoF1(AF1 c){return c*c;}
+ A_STATIC AF1 AFromTwoF1(AF1 c){return c*c;}
 //==============================================================================================================================
  #ifdef A_HALF
-  AH2 ATo709H2(AH2 c){return max(min(c*AH2_(4.5),AH2_(0.018)),AH2_(1.099)*pow(c,AH2_(0.45))-AH2_(0.099));}
+  A_STATIC AH2 ATo709H2(AH2 c){return max(min(c*AH2_(4.5),AH2_(0.018)),AH2_(1.099)*pow(c,AH2_(0.45))-AH2_(0.099));}
 //------------------------------------------------------------------------------------------------------------------------------
-  AH2 AToGammaH2(AH2 c,AH1 rcpX){return pow(c,AH2_(rcpX));} 
+  A_STATIC AH2 AToGammaH2(AH2 c,AH1 rcpX){return pow(c,AH2_(rcpX));}
 //------------------------------------------------------------------------------------------------------------------------------
-  AH2 AToSrgbH2(AH2 c){return max(min(c*AH2_(12.92),AH2_(0.0031308)),AH2_(1.055)*pow(c,AH2_(0.41666))-AH2_(0.055));}
+  A_STATIC AH2 AToSrgbH2(AH2 c){return max(min(c*AH2_(12.92),AH2_(0.0031308)),AH2_(1.055)*pow(c,AH2_(0.41666))-AH2_(0.055));}
 //------------------------------------------------------------------------------------------------------------------------------
-  AH2 AToTwoH2(AH2 c){return sqrt(c);}
+  A_STATIC AH2 AToTwoH2(AH2 c){return sqrt(c);}
  #endif
 //==============================================================================================================================
  #ifdef A_HALF
-  AH2 AFrom709H2(AH2 c){return max(min(c*AH2_(1.0/4.5),AH2_(0.081)),
+  A_STATIC AH2 AFrom709H2(AH2 c){return max(min(c*AH2_(1.0/4.5),AH2_(0.081)),
    pow((c+AH2_(0.099))*(AH2_(1.0)/(AH2_(1.099))),AH2_(1.0/0.45)));}
 //------------------------------------------------------------------------------------------------------------------------------
-  AH2 AFromGammaH2(AH2 c,AH1 x){return pow(c,AH2_(x));}
+  A_STATIC AH2 AFromGammaH2(AH2 c,AH1 x){return pow(c,AH2_(x));}
 //------------------------------------------------------------------------------------------------------------------------------
-  AH2 AFromSrgbH2(AH2 c){return max(min(c*AH2_(1.0/12.92),AH2_(0.04045)),
+  A_STATIC AH2 AFromSrgbH2(AH2 c){return max(min(c*AH2_(1.0/12.92),AH2_(0.04045)),
    pow((c+AH2_(0.055))*(AH2_(1.0)/AH2_(1.055)),AH2_(2.4)));}
 //------------------------------------------------------------------------------------------------------------------------------
-  AH2 AFromTwoH2(AH2 c){return c*c;}
+  A_STATIC AH2 AFromTwoH2(AH2 c){return c*c;}
  #endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1574,7 +1997,7 @@
  //  ======
  //  ..xxx.
  //  yy...y
- AU2 ARmp8x8(AU1 a){return AU2(ABfe(a,1u,3u),ABfiM(ABfe(a,3u,3u),a,1u));}
+ A_STATIC AU2 ARmp8x8(AU1 a){return AU2(ABfe(a,1u,3u),ABfiM(ABfe(a,3u,3u),a,1u));}
 //==============================================================================================================================
  // More complex remap 64x1 to 8x8 which is necessary for 2D wave reductions.
  //  543210
@@ -1592,7 +2015,7 @@
  //  22 23 2a 2b 32 33 3a 3b
  //  24 25 2c 2d 34 35 3c 3d
  //  26 27 2e 2f 36 37 3e 3f 
- AU2 ARmpRed8x8(AU1 a){return AU2(ABfiM(ABfe(a,2u,3u),a,1u),ABfiM(ABfe(a,3u,3u),ABfe(a,1u,2u),2u));}
+ A_STATIC AU2 ARmpRed8x8(AU1 a){return AU2(ABfiM(ABfe(a,2u,3u),a,1u),ABfiM(ABfe(a,3u,3u),ABfe(a,1u,2u),2u));}
 #endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1671,7 +2094,6 @@
 #ifdef A_GPU
  #define A_TRUE true
  #define A_FALSE false
- #define A_STATIC
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //_____________________________________________________________/\_______________________________________________________________
@@ -1690,45 +2112,128 @@
  #define retAU2 AU2
  #define retAU3 AU3
  #define retAU4 AU4
+
+ #ifdef A_MSL
 //------------------------------------------------------------------------------------------------------------------------------
- #define inAD2 in AD2
- #define inAD3 in AD3
- #define inAD4 in AD4
- #define inAF2 in AF2
- #define inAF3 in AF3
- #define inAF4 in AF4
- #define inAL2 in AL2
- #define inAL3 in AL3
- #define inAL4 in AL4
- #define inAU2 in AU2
- #define inAU3 in AU3
- #define inAU4 in AU4
+  #define inAD1 AD2
+  #define inAD2 AD2
+  #define inAD3 AD3
+  #define inAD4 AD4
+  #define inAF1 AF1
+  #define inAF2 AF2
+  #define inAF3 AF3
+  #define inAF4 AF4
+  #define inAL1 AL1
+  #define inAL2 AL2
+  #define inAL3 AL3
+  #define inAL4 AL4
+  #define inAU1 AU1
+  #define inAU2 AU2
+  #define inAU3 AU3
+  #define inAU4 AU4
 //------------------------------------------------------------------------------------------------------------------------------
- #define inoutAD2 inout AD2
- #define inoutAD3 inout AD3
- #define inoutAD4 inout AD4
- #define inoutAF2 inout AF2
- #define inoutAF3 inout AF3
- #define inoutAF4 inout AF4
- #define inoutAL2 inout AL2
- #define inoutAL3 inout AL3
- #define inoutAL4 inout AL4
- #define inoutAU2 inout AU2
- #define inoutAU3 inout AU3
- #define inoutAU4 inout AU4
+  #define inoutAD1 thread AD1&
+  #define inoutAD2 thread AD2&
+  #define inoutAD3 thread AD3&
+  #define inoutAD4 thread AD4&
+  #define inoutAF1 thread AF1&
+  #define inoutAF2 thread AF2&
+  #define inoutAF3 thread AF3&
+  #define inoutAF4 thread AF4&
+  #define inoutAH1 thread AH1&
+  #define inoutAH2 thread AH2&
+  #define inoutAH3 thread AH3&
+  #define inoutAH4 thread AH4&
+  #define inoutAL1 thread AL1&
+  #define inoutAL2 thread AL2&
+  #define inoutAL3 thread AL3&
+  #define inoutAL4 thread AL4&
+  #define inoutAU1 thread AU1&
+  #define inoutAU2 thread AU2&
+  #define inoutAU3 thread AU3&
+  #define inoutAU4 thread AU4&
 //------------------------------------------------------------------------------------------------------------------------------
- #define outAD2 out AD2
- #define outAD3 out AD3
- #define outAD4 out AD4
- #define outAF2 out AF2
- #define outAF3 out AF3
- #define outAF4 out AF4
- #define outAL2 out AL2
- #define outAL3 out AL3
- #define outAL4 out AL4
- #define outAU2 out AU2
- #define outAU3 out AU3
- #define outAU4 out AU4
+  #define outAD1 thread AD1&
+  #define outAD2 thread AD2&
+  #define outAD3 thread AD3&
+  #define outAD4 thread AD4&
+  #define outAF1 thread AF1&
+  #define outAF2 thread AF2&
+  #define outAF3 thread AF3&
+  #define outAF4 thread AF4&
+  #define outAH1 thread AH1&
+  #define outAH2 thread AH2&
+  #define outAH3 thread AH3&
+  #define outAH4 thread AH4&
+  #define outAL1 thread AL1&
+  #define outAL2 thread AL2&
+  #define outAL3 thread AL3&
+  #define outAL4 thread AL4&
+  #define outAU1 thread AU1&
+  #define outAU2 thread AU2&
+  #define outAU3 thread AU3&
+  #define outAU4 thread AU4&
+ #else
+//------------------------------------------------------------------------------------------------------------------------------
+  #define inAD1 in AD2
+  #define inAD2 in AD2
+  #define inAD3 in AD3
+  #define inAD4 in AD4
+  #define inAF1 in AF1
+  #define inAF2 in AF2
+  #define inAF3 in AF3
+  #define inAF4 in AF4
+  #define inAL1 in AL1
+  #define inAL2 in AL2
+  #define inAL3 in AL3
+  #define inAL4 in AL4
+  #define inAU1 in AU1
+  #define inAU2 in AU2
+  #define inAU3 in AU3
+  #define inAU4 in AU4
+//------------------------------------------------------------------------------------------------------------------------------
+  #define inoutAD1 inout AD1
+  #define inoutAD2 inout AD2
+  #define inoutAD3 inout AD3
+  #define inoutAD4 inout AD4
+  #define inoutAF1 inout AF1
+  #define inoutAF2 inout AF2
+  #define inoutAF3 inout AF3
+  #define inoutAF4 inout AF4
+  #define inoutAH1 inout AH1
+  #define inoutAH2 inout AH2
+  #define inoutAH3 inout AH3
+  #define inoutAH4 inout AH4
+  #define inoutAL1 inout AL1
+  #define inoutAL2 inout AL2
+  #define inoutAL3 inout AL3
+  #define inoutAL4 inout AL4
+  #define inoutAU1 inout AU1
+  #define inoutAU2 inout AU2
+  #define inoutAU3 inout AU3
+  #define inoutAU4 inout AU4
+//------------------------------------------------------------------------------------------------------------------------------
+  #define outAD1 out AD1
+  #define outAD2 out AD2
+  #define outAD3 out AD3
+  #define outAD4 out AD4
+  #define outAF1 out AF1
+  #define outAF2 out AF2
+  #define outAF3 out AF3
+  #define outAF4 out AF4
+  #define outAH1 out AH1
+  #define outAH2 out AH2
+  #define outAH3 out AH3
+  #define outAH4 out AH4
+  #define outAL1 out AL1
+  #define outAL2 out AL2
+  #define outAL3 out AL3
+  #define outAL4 out AL4
+  #define outAU1 out AU1
+  #define outAU2 out AU2
+  #define outAU3 out AU3
+  #define outAU4 out AU4
+ #endif
 //------------------------------------------------------------------------------------------------------------------------------
  #define varAD2(x) AD2 x
  #define varAD3(x) AD3 x
@@ -1816,92 +2321,92 @@
 // They follow a convention of taking in a destination and also returning the destination value to increase utility.
 //==============================================================================================================================
  #ifdef A_DUBL
-  AD2 opAAbsD2(outAD2 d,inAD2 a){d=abs(a);return d;}
-  AD3 opAAbsD3(outAD3 d,inAD3 a){d=abs(a);return d;}
-  AD4 opAAbsD4(outAD4 d,inAD4 a){d=abs(a);return d;}
+  A_STATIC AD2 opAAbsD2(outAD2 d,inAD2 a){d=abs(a);return d;}
+  A_STATIC AD3 opAAbsD3(outAD3 d,inAD3 a){d=abs(a);return d;}
+  A_STATIC AD4 opAAbsD4(outAD4 d,inAD4 a){d=abs(a);return d;}
 //------------------------------------------------------------------------------------------------------------------------------
-  AD2 opAAddD2(outAD2 d,inAD2 a,inAD2 b){d=a+b;return d;}
-  AD3 opAAddD3(outAD3 d,inAD3 a,inAD3 b){d=a+b;return d;}
-  AD4 opAAddD4(outAD4 d,inAD4 a,inAD4 b){d=a+b;return d;}
+  A_STATIC AD2 opAAddD2(outAD2 d,inAD2 a,inAD2 b){d=a+b;return d;}
+  A_STATIC AD3 opAAddD3(outAD3 d,inAD3 a,inAD3 b){d=a+b;return d;}
+  A_STATIC AD4 opAAddD4(outAD4 d,inAD4 a,inAD4 b){d=a+b;return d;}
 //------------------------------------------------------------------------------------------------------------------------------
-  AD2 opACpyD2(outAD2 d,inAD2 a){d=a;return d;}
-  AD3 opACpyD3(outAD3 d,inAD3 a){d=a;return d;}
-  AD4 opACpyD4(outAD4 d,inAD4 a){d=a;return d;}
+  A_STATIC AD2 opACpyD2(outAD2 d,inAD2 a){d=a;return d;}
+  A_STATIC AD3 opACpyD3(outAD3 d,inAD3 a){d=a;return d;}
+  A_STATIC AD4 opACpyD4(outAD4 d,inAD4 a){d=a;return d;}
 //------------------------------------------------------------------------------------------------------------------------------
-  AD2 opALerpD2(outAD2 d,inAD2 a,inAD2 b,inAD2 c){d=ALerpD2(a,b,c);return d;}
-  AD3 opALerpD3(outAD3 d,inAD3 a,inAD3 b,inAD3 c){d=ALerpD3(a,b,c);return d;}
-  AD4 opALerpD4(outAD4 d,inAD4 a,inAD4 b,inAD4 c){d=ALerpD4(a,b,c);return d;}
+  A_STATIC AD2 opALerpD2(outAD2 d,inAD2 a,inAD2 b,inAD2 c){d=ALerpD2(a,b,c);return d;}
+  A_STATIC AD3 opALerpD3(outAD3 d,inAD3 a,inAD3 b,inAD3 c){d=ALerpD3(a,b,c);return d;}
+  A_STATIC AD4 opALerpD4(outAD4 d,inAD4 a,inAD4 b,inAD4 c){d=ALerpD4(a,b,c);return d;}
 //------------------------------------------------------------------------------------------------------------------------------
-  AD2 opALerpOneD2(outAD2 d,inAD2 a,inAD2 b,AD1 c){d=ALerpD2(a,b,AD2_(c));return d;}
-  AD3 opALerpOneD3(outAD3 d,inAD3 a,inAD3 b,AD1 c){d=ALerpD3(a,b,AD3_(c));return d;}
-  AD4 opALerpOneD4(outAD4 d,inAD4 a,inAD4 b,AD1 c){d=ALerpD4(a,b,AD4_(c));return d;}
+  A_STATIC AD2 opALerpOneD2(outAD2 d,inAD2 a,inAD2 b,AD1 c){d=ALerpD2(a,b,AD2_(c));return d;}
+  A_STATIC AD3 opALerpOneD3(outAD3 d,inAD3 a,inAD3 b,AD1 c){d=ALerpD3(a,b,AD3_(c));return d;}
+  A_STATIC AD4 opALerpOneD4(outAD4 d,inAD4 a,inAD4 b,AD1 c){d=ALerpD4(a,b,AD4_(c));return d;}
 //------------------------------------------------------------------------------------------------------------------------------
-  AD2 opAMaxD2(outAD2 d,inAD2 a,inAD2 b){d=max(a,b);return d;}
-  AD3 opAMaxD3(outAD3 d,inAD3 a,inAD3 b){d=max(a,b);return d;}
-  AD4 opAMaxD4(outAD4 d,inAD4 a,inAD4 b){d=max(a,b);return d;}
+  A_STATIC AD2 opAMaxD2(outAD2 d,inAD2 a,inAD2 b){d=max(a,b);return d;}
+  A_STATIC AD3 opAMaxD3(outAD3 d,inAD3 a,inAD3 b){d=max(a,b);return d;}
+  A_STATIC AD4 opAMaxD4(outAD4 d,inAD4 a,inAD4 b){d=max(a,b);return d;}
 //------------------------------------------------------------------------------------------------------------------------------
-  AD2 opAMinD2(outAD2 d,inAD2 a,inAD2 b){d=min(a,b);return d;}
-  AD3 opAMinD3(outAD3 d,inAD3 a,inAD3 b){d=min(a,b);return d;}
-  AD4 opAMinD4(outAD4 d,inAD4 a,inAD4 b){d=min(a,b);return d;}
+  A_STATIC AD2 opAMinD2(outAD2 d,inAD2 a,inAD2 b){d=min(a,b);return d;}
+  A_STATIC AD3 opAMinD3(outAD3 d,inAD3 a,inAD3 b){d=min(a,b);return d;}
+  A_STATIC AD4 opAMinD4(outAD4 d,inAD4 a,inAD4 b){d=min(a,b);return d;}
 //------------------------------------------------------------------------------------------------------------------------------
-  AD2 opAMulD2(outAD2 d,inAD2 a,inAD2 b){d=a*b;return d;}
-  AD3 opAMulD3(outAD3 d,inAD3 a,inAD3 b){d=a*b;return d;}
-  AD4 opAMulD4(outAD4 d,inAD4 a,inAD4 b){d=a*b;return d;}
+  A_STATIC AD2 opAMulD2(outAD2 d,inAD2 a,inAD2 b){d=a*b;return d;}
+  A_STATIC AD3 opAMulD3(outAD3 d,inAD3 a,inAD3 b){d=a*b;return d;}
+  A_STATIC AD4 opAMulD4(outAD4 d,inAD4 a,inAD4 b){d=a*b;return d;}
 //------------------------------------------------------------------------------------------------------------------------------
-  AD2 opAMulOneD2(outAD2 d,inAD2 a,AD1 b){d=a*AD2_(b);return d;}
-  AD3 opAMulOneD3(outAD3 d,inAD3 a,AD1 b){d=a*AD3_(b);return d;}
-  AD4 opAMulOneD4(outAD4 d,inAD4 a,AD1 b){d=a*AD4_(b);return d;}
+  A_STATIC AD2 opAMulOneD2(outAD2 d,inAD2 a,AD1 b){d=a*AD2_(b);return d;}
+  A_STATIC AD3 opAMulOneD3(outAD3 d,inAD3 a,AD1 b){d=a*AD3_(b);return d;}
+  A_STATIC AD4 opAMulOneD4(outAD4 d,inAD4 a,AD1 b){d=a*AD4_(b);return d;}
 //------------------------------------------------------------------------------------------------------------------------------
-  AD2 opANegD2(outAD2 d,inAD2 a){d=-a;return d;}
-  AD3 opANegD3(outAD3 d,inAD3 a){d=-a;return d;}
-  AD4 opANegD4(outAD4 d,inAD4 a){d=-a;return d;}
+  A_STATIC AD2 opANegD2(outAD2 d,inAD2 a){d=-a;return d;}
+  A_STATIC AD3 opANegD3(outAD3 d,inAD3 a){d=-a;return d;}
+  A_STATIC AD4 opANegD4(outAD4 d,inAD4 a){d=-a;return d;}
 //------------------------------------------------------------------------------------------------------------------------------
-  AD2 opARcpD2(outAD2 d,inAD2 a){d=ARcpD2(a);return d;}
-  AD3 opARcpD3(outAD3 d,inAD3 a){d=ARcpD3(a);return d;}
-  AD4 opARcpD4(outAD4 d,inAD4 a){d=ARcpD4(a);return d;}
+  A_STATIC AD2 opARcpD2(outAD2 d,inAD2 a){d=ARcpD2(a);return d;}
+  A_STATIC AD3 opARcpD3(outAD3 d,inAD3 a){d=ARcpD3(a);return d;}
+  A_STATIC AD4 opARcpD4(outAD4 d,inAD4 a){d=ARcpD4(a);return d;}
  #endif
 //==============================================================================================================================
- AF2 opAAbsF2(outAF2 d,inAF2 a){d=abs(a);return d;}
- AF3 opAAbsF3(outAF3 d,inAF3 a){d=abs(a);return d;}
- AF4 opAAbsF4(outAF4 d,inAF4 a){d=abs(a);return d;}
+ A_STATIC AF2 opAAbsF2(outAF2 d,inAF2 a){d=abs(a);return d;}
+ A_STATIC AF3 opAAbsF3(outAF3 d,inAF3 a){d=abs(a);return d;}
+ A_STATIC AF4 opAAbsF4(outAF4 d,inAF4 a){d=abs(a);return d;}
 //------------------------------------------------------------------------------------------------------------------------------
- AF2 opAAddF2(outAF2 d,inAF2 a,inAF2 b){d=a+b;return d;}
- AF3 opAAddF3(outAF3 d,inAF3 a,inAF3 b){d=a+b;return d;}
- AF4 opAAddF4(outAF4 d,inAF4 a,inAF4 b){d=a+b;return d;}
+ A_STATIC AF2 opAAddF2(outAF2 d,inAF2 a,inAF2 b){d=a+b;return d;}
+ A_STATIC AF3 opAAddF3(outAF3 d,inAF3 a,inAF3 b){d=a+b;return d;}
+ A_STATIC AF4 opAAddF4(outAF4 d,inAF4 a,inAF4 b){d=a+b;return d;}
 //------------------------------------------------------------------------------------------------------------------------------
- AF2 opACpyF2(outAF2 d,inAF2 a){d=a;return d;}
- AF3 opACpyF3(outAF3 d,inAF3 a){d=a;return d;}
- AF4 opACpyF4(outAF4 d,inAF4 a){d=a;return d;}
+ A_STATIC AF2 opACpyF2(outAF2 d,inAF2 a){d=a;return d;}
+ A_STATIC AF3 opACpyF3(outAF3 d,inAF3 a){d=a;return d;}
+ A_STATIC AF4 opACpyF4(outAF4 d,inAF4 a){d=a;return d;}
 //------------------------------------------------------------------------------------------------------------------------------
- AF2 opALerpF2(outAF2 d,inAF2 a,inAF2 b,inAF2 c){d=ALerpF2(a,b,c);return d;}
- AF3 opALerpF3(outAF3 d,inAF3 a,inAF3 b,inAF3 c){d=ALerpF3(a,b,c);return d;}
- AF4 opALerpF4(outAF4 d,inAF4 a,inAF4 b,inAF4 c){d=ALerpF4(a,b,c);return d;}
+ A_STATIC AF2 opALerpF2(outAF2 d,inAF2 a,inAF2 b,inAF2 c){d=ALerpF2(a,b,c);return d;}
+ A_STATIC AF3 opALerpF3(outAF3 d,inAF3 a,inAF3 b,inAF3 c){d=ALerpF3(a,b,c);return d;}
+ A_STATIC AF4 opALerpF4(outAF4 d,inAF4 a,inAF4 b,inAF4 c){d=ALerpF4(a,b,c);return d;}
 //------------------------------------------------------------------------------------------------------------------------------
- AF2 opALerpOneF2(outAF2 d,inAF2 a,inAF2 b,AF1 c){d=ALerpF2(a,b,AF2_(c));return d;}
- AF3 opALerpOneF3(outAF3 d,inAF3 a,inAF3 b,AF1 c){d=ALerpF3(a,b,AF3_(c));return d;}
- AF4 opALerpOneF4(outAF4 d,inAF4 a,inAF4 b,AF1 c){d=ALerpF4(a,b,AF4_(c));return d;}
+ A_STATIC AF2 opALerpOneF2(outAF2 d,inAF2 a,inAF2 b,AF1 c){d=ALerpF2(a,b,AF2_(c));return d;}
+ A_STATIC AF3 opALerpOneF3(outAF3 d,inAF3 a,inAF3 b,AF1 c){d=ALerpF3(a,b,AF3_(c));return d;}
+ A_STATIC AF4 opALerpOneF4(outAF4 d,inAF4 a,inAF4 b,AF1 c){d=ALerpF4(a,b,AF4_(c));return d;}
 //------------------------------------------------------------------------------------------------------------------------------
- AF2 opAMaxF2(outAF2 d,inAF2 a,inAF2 b){d=max(a,b);return d;}
- AF3 opAMaxF3(outAF3 d,inAF3 a,inAF3 b){d=max(a,b);return d;}
- AF4 opAMaxF4(outAF4 d,inAF4 a,inAF4 b){d=max(a,b);return d;}
+ A_STATIC AF2 opAMaxF2(outAF2 d,inAF2 a,inAF2 b){d=max(a,b);return d;}
+ A_STATIC AF3 opAMaxF3(outAF3 d,inAF3 a,inAF3 b){d=max(a,b);return d;}
+ A_STATIC AF4 opAMaxF4(outAF4 d,inAF4 a,inAF4 b){d=max(a,b);return d;}
 //------------------------------------------------------------------------------------------------------------------------------
- AF2 opAMinF2(outAF2 d,inAF2 a,inAF2 b){d=min(a,b);return d;}
- AF3 opAMinF3(outAF3 d,inAF3 a,inAF3 b){d=min(a,b);return d;}
- AF4 opAMinF4(outAF4 d,inAF4 a,inAF4 b){d=min(a,b);return d;}
+ A_STATIC AF2 opAMinF2(outAF2 d,inAF2 a,inAF2 b){d=min(a,b);return d;}
+ A_STATIC AF3 opAMinF3(outAF3 d,inAF3 a,inAF3 b){d=min(a,b);return d;}
+ A_STATIC AF4 opAMinF4(outAF4 d,inAF4 a,inAF4 b){d=min(a,b);return d;}
 //------------------------------------------------------------------------------------------------------------------------------
- AF2 opAMulF2(outAF2 d,inAF2 a,inAF2 b){d=a*b;return d;}
- AF3 opAMulF3(outAF3 d,inAF3 a,inAF3 b){d=a*b;return d;}
- AF4 opAMulF4(outAF4 d,inAF4 a,inAF4 b){d=a*b;return d;}
+ A_STATIC AF2 opAMulF2(outAF2 d,inAF2 a,inAF2 b){d=a*b;return d;}
+ A_STATIC AF3 opAMulF3(outAF3 d,inAF3 a,inAF3 b){d=a*b;return d;}
+ A_STATIC AF4 opAMulF4(outAF4 d,inAF4 a,inAF4 b){d=a*b;return d;}
 //------------------------------------------------------------------------------------------------------------------------------
- AF2 opAMulOneF2(outAF2 d,inAF2 a,AF1 b){d=a*AF2_(b);return d;}
- AF3 opAMulOneF3(outAF3 d,inAF3 a,AF1 b){d=a*AF3_(b);return d;}
- AF4 opAMulOneF4(outAF4 d,inAF4 a,AF1 b){d=a*AF4_(b);return d;}
+ A_STATIC AF2 opAMulOneF2(outAF2 d,inAF2 a,AF1 b){d=a*AF2_(b);return d;}
+ A_STATIC AF3 opAMulOneF3(outAF3 d,inAF3 a,AF1 b){d=a*AF3_(b);return d;}
+ A_STATIC AF4 opAMulOneF4(outAF4 d,inAF4 a,AF1 b){d=a*AF4_(b);return d;}
 //------------------------------------------------------------------------------------------------------------------------------
- AF2 opANegF2(outAF2 d,inAF2 a){d=-a;return d;}
- AF3 opANegF3(outAF3 d,inAF3 a){d=-a;return d;}
- AF4 opANegF4(outAF4 d,inAF4 a){d=-a;return d;}
+ A_STATIC AF2 opANegF2(outAF2 d,inAF2 a){d=-a;return d;}
+ A_STATIC AF3 opANegF3(outAF3 d,inAF3 a){d=-a;return d;}
+ A_STATIC AF4 opANegF4(outAF4 d,inAF4 a){d=-a;return d;}
 //------------------------------------------------------------------------------------------------------------------------------
- AF2 opARcpF2(outAF2 d,inAF2 a){d=ARcpF2(a);return d;}
- AF3 opARcpF3(outAF3 d,inAF3 a){d=ARcpF3(a);return d;}
- AF4 opARcpF4(outAF4 d,inAF4 a){d=ARcpF4(a);return d;}
+ A_STATIC AF2 opARcpF2(outAF2 d,inAF2 a){d=ARcpF2(a);return d;}
+ A_STATIC AF3 opARcpF3(outAF3 d,inAF3 a){d=ARcpF3(a);return d;}
+ A_STATIC AF4 opARcpF4(outAF4 d,inAF4 a){d=ARcpF4(a);return d;}
 #endif
