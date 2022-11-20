@@ -155,7 +155,7 @@ static void recBEQ_process(int process)
 	}
 	else
 	{
-		const bool swap = TrySwapDelaySlot(_Rs_, _Rt_, 0);
+		const bool swap = TrySwapDelaySlot(_Rs_, _Rt_, 0, true);
 
 		recSetBranchEQ(0, process);
 
@@ -219,7 +219,7 @@ static void recBNE_process(int process)
 		return;
 	}
 
-	const bool swap = TrySwapDelaySlot(_Rs_, _Rt_, 0);
+	const bool swap = TrySwapDelaySlot(_Rs_, _Rt_, 0, true);
 
 	recSetBranchEQ(1, process);
 
@@ -383,7 +383,7 @@ void recBLTZAL()
 		return;
 	}
 
-	const bool swap = TrySwapDelaySlot(_Rs_, 0, 0);
+	const bool swap = TrySwapDelaySlot(_Rs_, 0, 0, true);
 
 	recSetBranchL(1);
 
@@ -432,7 +432,7 @@ void recBGEZAL()
 		return;
 	}
 
-	const bool swap = TrySwapDelaySlot(_Rs_, 0, 0);
+	const bool swap = TrySwapDelaySlot(_Rs_, 0, 0, true);
 
 	recSetBranchL(0);
 
@@ -551,7 +551,7 @@ void recBLEZ()
 		return;
 	}
 
-	const bool swap = TrySwapDelaySlot(_Rs_, 0, 0);
+	const bool swap = TrySwapDelaySlot(_Rs_, 0, 0, true);
 	const int regs = _checkX86reg(X86TYPE_GPR, _Rs_, MODE_READ);
 	_eeFlushAllDirty();
 
@@ -600,7 +600,7 @@ void recBGTZ()
 		return;
 	}
 
-	const bool swap = TrySwapDelaySlot(_Rs_, 0, 0);
+	const bool swap = TrySwapDelaySlot(_Rs_, 0, 0, true);
 	const int regs = _checkX86reg(X86TYPE_GPR, _Rs_, MODE_READ);
 	_eeFlushAllDirty();
 
@@ -649,7 +649,7 @@ void recBLTZ()
 		return;
 	}
 
-	const bool swap = TrySwapDelaySlot(_Rs_, 0, 0);
+	const bool swap = TrySwapDelaySlot(_Rs_, 0, 0, true);
 	_eeFlushAllDirty();
 	recSetBranchL(1);
 
@@ -691,7 +691,7 @@ void recBGEZ()
 		return;
 	}
 
-	const bool swap = TrySwapDelaySlot(_Rs_, 0, 0);
+	const bool swap = TrySwapDelaySlot(_Rs_, 0, 0, true);
 	_eeFlushAllDirty();
 
 	recSetBranchL(0);

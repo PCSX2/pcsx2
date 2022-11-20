@@ -704,7 +704,7 @@ void recBC1F()
 {
 	EE::Profiler.EmitOp(eeOpcode::BC1F);
 	const u32 branchTo = ((s32)_Imm_ * 4) + pc;
-	const bool swap = TrySwapDelaySlot(0, 0, 0);
+	const bool swap = TrySwapDelaySlot(0, 0, 0, true);
 	_setupBranchTest();
 	recDoBranchImm(branchTo, JNZ32(0), false, swap);
 }
@@ -713,7 +713,7 @@ void recBC1T()
 {
 	EE::Profiler.EmitOp(eeOpcode::BC1T);
 	const u32 branchTo = ((s32)_Imm_ * 4) + pc;
-	const bool swap = TrySwapDelaySlot(0, 0, 0);
+	const bool swap = TrySwapDelaySlot(0, 0, 0, true);
 	_setupBranchTest();
 	recDoBranchImm(branchTo, JZ32(0), false, swap);
 }

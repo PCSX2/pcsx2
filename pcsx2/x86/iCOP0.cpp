@@ -65,7 +65,7 @@ static void _setupBranchTest()
 void recBC0F()
 {
 	const u32 branchTo = ((s32)_Imm_ * 4) + pc;
-	const bool swap = TrySwapDelaySlot(0, 0, 0);
+	const bool swap = TrySwapDelaySlot(0, 0, 0, false);
 	_setupBranchTest();
 	recDoBranchImm(branchTo, JE32(0), false, swap);
 }
@@ -73,7 +73,7 @@ void recBC0F()
 void recBC0T()
 {
 	const u32 branchTo = ((s32)_Imm_ * 4) + pc;
-	const bool swap = TrySwapDelaySlot(0, 0, 0);
+	const bool swap = TrySwapDelaySlot(0, 0, 0, false);
 	_setupBranchTest();
 	recDoBranchImm(branchTo, JNE32(0), false, swap);
 }

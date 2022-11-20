@@ -913,7 +913,7 @@ void SetBranchReg(u32 reg)
 		//				xMOV(ptr[&cpuRegs.pc], eax);
 		//			}
 		//		}
-		const bool swap = EmuConfig.Gamefixes.GoemonTlbHack ? false : TrySwapDelaySlot(reg, 0, 0);
+		const bool swap = EmuConfig.Gamefixes.GoemonTlbHack ? false : TrySwapDelaySlot(reg, 0, 0, true);
 		if (!swap)
 		{
 			const int wbreg = _allocX86reg(X86TYPE_PCWRITEBACK, 0, MODE_WRITE | MODE_CALLEESAVED);
@@ -998,7 +998,7 @@ u8* recEndThunk()
 	return block_end;
 }
 
-bool TrySwapDelaySlot(u32 rs, u32 rt, u32 rd)
+bool TrySwapDelaySlot(u32 rs, u32 rt, u32 rd, bool allow_loadstore)
 {
 #if 1
 	if (g_recompilingDelaySlot)
@@ -1029,6 +1029,12 @@ bool TrySwapDelaySlot(u32 rs, u32 rt, u32 rd)
 		case 14: // XORI
 		case 24: // DADDI
 		case 25: // DADDIU
+		{
+			if ((rs != 0 && rs == opcode_rt) || (rt != 0 && rt == opcode_rt) || (rd != 0 && (rd == opcode_rs || rd == opcode_rt)))
+				goto is_unsafe;
+		}
+		break;
+
 		case 26: // LDL
 		case 27: // LDR
 		case 30: // LQ
@@ -1051,7 +1057,8 @@ bool TrySwapDelaySlot(u32 rs, u32 rt, u32 rd)
 		case 55: // LD
 		case 63: // SD
 		{
-			if ((rs != 0 && rs == opcode_rt) || (rt != 0 && rt == opcode_rt) || (rd != 0 && (rd == opcode_rs || rd == opcode_rt)))
+			// We can't allow loadstore swaps for BC0x/BC2x, since they could affect the condition.
+			if (!allow_loadstore || (rs != 0 && rs == opcode_rt) || (rt != 0 && rt == opcode_rt) || (rd != 0 && (rd == opcode_rs || rd == opcode_rt)))
 				goto is_unsafe;
 		}
 		break;
