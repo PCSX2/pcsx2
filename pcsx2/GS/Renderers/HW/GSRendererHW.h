@@ -39,7 +39,7 @@ private:
 
 	// Require special argument
 	bool OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* t, const GSVector4i& r_draw);
-	void OI_GsMemClear(); // always on
+	bool OI_GsMemClear(); // always on
 	void OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCache::Target*& ds); // always on
 
 	bool OI_BigMuthaTruckers(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
