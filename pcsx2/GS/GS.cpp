@@ -1310,16 +1310,16 @@ void GSApp::Init()
 	// The null renderer goes last, it has use for benchmarking purposes in a release build
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::Null), "Null", ""));
 
-	m_gs_deinterlace.push_back(GSSetting(0, "Automatic", "Default"));
-	m_gs_deinterlace.push_back(GSSetting(1, "None", ""));
-	m_gs_deinterlace.push_back(GSSetting(2, "Weave tff", "saw-tooth"));
-	m_gs_deinterlace.push_back(GSSetting(3, "Weave bff", "saw-tooth"));
-	m_gs_deinterlace.push_back(GSSetting(4, "Bob tff", "use adaptive or blend if shaking"));
-	m_gs_deinterlace.push_back(GSSetting(5, "Bob bff", "use adaptive or blend if shaking"));
-	m_gs_deinterlace.push_back(GSSetting(6, "Blend tff", "slight blur, 1/2 fps"));
-	m_gs_deinterlace.push_back(GSSetting(7, "Blend bff", "slight blur, 1/2 fps"));
-	m_gs_deinterlace.push_back(GSSetting(8, "Adaptive tff", "minor artifacts"));
-	m_gs_deinterlace.push_back(GSSetting(9, "Adaptive bff", "minor artifacts"));
+	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::Automatic), "Automatic", "Default"));
+	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::Off), "None", ""));
+	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::WeaveTFF), "Weave tff", "saw-tooth"));
+	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::WeaveBFF), "Weave bff", "saw-tooth"));
+	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::BobTFF), "Bob tff", "use adaptive or blend if shaking"));
+	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::BobBFF), "Bob bff", "use adaptive or blend if shaking"));
+	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::BlendTFF), "Blend tff", "slight blur, 1/2 fps"));
+	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::BlendBFF), "Blend bff", "slight blur, 1/2 fps"));
+	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::AdaptiveTFF), "Adaptive tff", "minor artifacts"));
+	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::AdaptiveBFF), "Adaptive bff", "minor artifacts"));
 
 	m_gs_upscale_multiplier.push_back(GSSetting(1, "Native", "PS2"));
 	m_gs_upscale_multiplier.push_back(GSSetting(2, "2x Native", "~720p"));
@@ -1455,7 +1455,7 @@ void GSApp::Init()
 	m_default_configuration["pcrtc_offsets"]                              = "0";
 	m_default_configuration["pcrtc_overscan"]                             = "0";
 	m_default_configuration["IntegerScaling"]                             = "0";
-	m_default_configuration["deinterlace_mode"]                           = "0";
+	m_default_configuration["deinterlace_mode"]                           = std::to_string(static_cast<s8>(GSInterlaceMode::Automatic));
 	m_default_configuration["linear_present"]                             = "1";
 	m_default_configuration["LoadTextureReplacements"]                    = "0";
 	m_default_configuration["LoadTextureReplacementsAsync"]               = "1";
