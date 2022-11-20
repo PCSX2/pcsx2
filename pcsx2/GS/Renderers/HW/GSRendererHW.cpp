@@ -1690,6 +1690,40 @@ void GSRendererHW::Draw()
 
 	// The rectangle of the draw
 	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
+
+
+	if (!GSConfig.UserHacks_DisableSafeFeatures)
+	{
+		// Constant Direct Write without texture/test/blending (aka a GS mem clear)
+		if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME // Direct write
+			&& (!PRIM->ABE || m_context->ALPHA.IsOpaque()) // No transparency
+			&& (m_context->FRAME.FBMSK == 0) // no color mask
+			&& !m_context->TEST.ATE // no alpha test
+			&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
+			&& (m_vt.m_eq.rgba == 0xFFFF) // constant color write
+			&& m_r.x == 0 && m_r.y == 0) { // Likely full buffer write
+
+			if (OI_GsMemClear() && m_r.w > 1024)
+			{
+				if ((fm & fm_mask) != fm_mask)
+				{
+
+					m_tc->InvalidateVideoMem(context->offset.fb, m_r, true);
+
+					m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, context->FRAME.Block());
+				}
+
+				if (zm != 0xffffffff)
+				{
+					m_tc->InvalidateVideoMem(context->offset.zb, m_r, false);
+
+					m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, context->ZBUF.Block());
+				}
+				return;
+			}
+		}
+	}
+
 	GSVector2i unscaled_size;
 	const GSVector2i t_size = GetTargetSize(&unscaled_size);
 
@@ -1807,9 +1841,6 @@ void GSRendererHW::Draw()
 				&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
 				&& (m_vt.m_eq.rgba == 0xFFFF) // constant color write
 				&& m_r.x == 0 && m_r.y == 0) { // Likely full buffer write
-
-			OI_GsMemClear();
-
 			OI_DoubleHalfClear(rt, ds);
 		}
 	}
@@ -4629,7 +4660,7 @@ void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCach
 }
 
 // Note: hack is safe, but it could impact the perf a little (normally games do only a couple of clear by frame)
-void GSRendererHW::OI_GsMemClear()
+bool GSRendererHW::OI_GsMemClear()
 {
 	// Note gs mem clear must be tested before calling this function
 
@@ -4645,7 +4676,7 @@ void GSRendererHW::OI_GsMemClear()
 		// Limit the hack to a single fullscreen clear. Some games might use severals column to clear a screen
 		// but hopefully it will be enough.
 		if (r.width() <= 128 || r.height() <= 128)
-			return;
+			return false;
 
 		GL_INS("OI_GsMemClear (%d,%d => %d,%d)", r.x, r.y, r.z, r.w);
 		const int format = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
@@ -4695,7 +4726,9 @@ void GSRendererHW::OI_GsMemClear()
 			}
 #endif
 		}
+		return true;
 	}
+	return false;
 }
 
 bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* tex, const GSVector4i& r_draw)
