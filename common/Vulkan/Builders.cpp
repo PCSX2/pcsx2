@@ -436,6 +436,65 @@ namespace Vulkan
 		m_provoking_vertex.provokingVertexMode = mode;
 	}
 
+	ComputePipelineBuilder::ComputePipelineBuilder() { Clear(); }
+
+	void ComputePipelineBuilder::Clear()
+	{
+		m_ci = {};
+		m_ci.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+		m_si = {};
+		m_smap_entries = {};
+		m_smap_constants = {};
+	}
+
+	VkPipeline ComputePipelineBuilder::Create(VkDevice device, VkPipelineCache pipeline_cache /*= VK_NULL_HANDLE*/, bool clear /*= true*/)
+	{
+		VkPipeline pipeline;
+		VkResult res = vkCreateComputePipelines(device, pipeline_cache, 1, &m_ci, nullptr, &pipeline);
+		if (res != VK_SUCCESS)
+		{
+			LOG_VULKAN_ERROR(res, "vkCreateComputePipelines() failed: ");
+			return VK_NULL_HANDLE;
+		}
+
+		if (clear)
+			Clear();
+
+		return pipeline;
+	}
+
+	void ComputePipelineBuilder::SetShader(VkShaderModule module, const char* entry_point)
+	{
+		m_ci.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		m_ci.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+		m_ci.stage.module = module;
+		m_ci.stage.pName = entry_point;
+	}
+
+	void ComputePipelineBuilder::SetPipelineLayout(VkPipelineLayout layout)
+	{
+		m_ci.layout = layout;
+	}
+
+	void ComputePipelineBuilder::SetSpecializationBool(u32 index, bool value)
+	{
+		const u32 u32_value = static_cast<u32>(value);
+		SetSpecializationValue(index, u32_value);
+	}
+
+	void ComputePipelineBuilder::SetSpecializationValue(u32 index, u32 value)
+	{
+		if (m_si.mapEntryCount == 0)
+		{
+			m_si.pMapEntries = m_smap_entries.data();
+			m_si.pData = m_smap_constants.data();
+			m_ci.stage.pSpecializationInfo = &m_si;
+		}
+
+		m_smap_entries[m_si.mapEntryCount++] = {index, index * SPECIALIZATION_CONSTANT_SIZE, SPECIALIZATION_CONSTANT_SIZE};
+		m_si.dataSize += SPECIALIZATION_CONSTANT_SIZE;
+	}
+
 	SamplerBuilder::SamplerBuilder() { Clear(); }
 
 	void SamplerBuilder::Clear()

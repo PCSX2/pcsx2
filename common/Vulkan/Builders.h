@@ -159,6 +159,37 @@ namespace Vulkan
 		VkPipelineRasterizationProvokingVertexStateCreateInfoEXT m_provoking_vertex;
 	};
 
+	class ComputePipelineBuilder
+	{
+	public:
+		enum : u32
+		{
+			SPECIALIZATION_CONSTANT_SIZE = 4,
+			MAX_SPECIALIZATION_CONSTANTS = 4,
+		};
+
+		ComputePipelineBuilder();
+
+		void Clear();
+
+		VkPipeline Create(VkDevice device, VkPipelineCache pipeline_cache = VK_NULL_HANDLE, bool clear = true);
+
+		void SetShader(VkShaderModule module, const char* entry_point);
+
+		void SetPipelineLayout(VkPipelineLayout layout);
+
+		void SetSpecializationBool(u32 index, bool value);
+
+	private:
+		void SetSpecializationValue(u32 index, u32 value);
+
+		VkComputePipelineCreateInfo m_ci;
+
+		VkSpecializationInfo m_si;
+		std::array<VkSpecializationMapEntry, MAX_SPECIALIZATION_CONSTANTS> m_smap_entries;
+		std::array<u8, SPECIALIZATION_CONSTANT_SIZE* MAX_SPECIALIZATION_CONSTANTS> m_smap_constants;
+	};
+
 	class SamplerBuilder
 	{
 	public:
