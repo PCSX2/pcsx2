@@ -78,7 +78,7 @@ public:
 	static const char* DEFAULT_THEME_NAME;
 
 public:
-	explicit MainWindow(const QString& unthemed_style_name);
+	MainWindow();
 	~MainWindow();
 
 	/// Sets application theme according to settings.
@@ -242,8 +242,6 @@ private:
 	void doDiscChange(CDVD_SourceType source, const QString& path);
 
 	Ui::MainWindow m_ui;
-
-	QString m_unthemed_style_name;
 
 	GameListWidget* m_game_list_widget = nullptr;
 	DisplayWidget* m_display_widget = nullptr;
