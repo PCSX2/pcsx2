@@ -93,6 +93,7 @@ const char* MainWindow::DEFAULT_THEME_NAME = "darkfusion";
 
 MainWindow* g_main_window = nullptr;
 static QString s_unthemed_style_name;
+static QPalette s_unthemed_palette;
 static bool s_unthemed_style_name_set;
 
 #if defined(_WIN32) || defined(__APPLE__)
@@ -109,8 +110,7 @@ static bool s_use_central_widget = false;
 static bool s_vm_valid = false;
 static bool s_vm_paused = false;
 
-MainWindow::MainWindow(const QString& unthemed_style_name)
-	: m_unthemed_style_name(unthemed_style_name)
+MainWindow::MainWindow()
 {
 	pxAssert(!g_main_window);
 	g_main_window = this;
@@ -439,7 +439,7 @@ void MainWindow::recreate()
 	close();
 	g_main_window = nullptr;
 
-	MainWindow* new_main_window = new MainWindow(m_unthemed_style_name);
+	MainWindow* new_main_window = new MainWindow();
 	new_main_window->initialize();
 	new_main_window->refreshGameList(false);
 	new_main_window->show();
@@ -486,6 +486,7 @@ void MainWindow::updateApplicationTheme()
 	{
 		s_unthemed_style_name_set = true;
 		s_unthemed_style_name = QApplication::style()->objectName();
+		s_unthemed_palette = QApplication::style()->standardPalette();
 	}
 
 	setStyleFromSettings();
@@ -498,7 +499,7 @@ void MainWindow::setStyleFromSettings()
 
 	if (theme == "fusion")
 	{
-		qApp->setPalette(QApplication::style()->standardPalette());
+		qApp->setPalette(s_unthemed_palette);
 		qApp->setStyleSheet(QString());
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 	}
@@ -770,7 +771,7 @@ void MainWindow::setStyleFromSettings()
 	}
 	else
 	{
-		qApp->setPalette(QApplication::style()->standardPalette());
+		qApp->setPalette(s_unthemed_palette);
 		qApp->setStyleSheet(QString());
 		qApp->setStyle(s_unthemed_style_name);
 	}

@@ -1833,7 +1833,7 @@ int main(int argc, char* argv[])
 
 	// Set theme before creating any windows.
 	MainWindow::updateApplicationTheme();
-	MainWindow* main_window = new MainWindow(QApplication::style()->objectName());
+	MainWindow* main_window = new MainWindow();
 
 	// Start up the CPU thread.
 	QtHost::HookSignals();
