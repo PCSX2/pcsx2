@@ -137,6 +137,17 @@ namespace GL
 		return true;
 	}
 
+	bool Program::CompileCompute(const std::string_view glsl)
+	{
+		GLuint id = CompileShader(GL_COMPUTE_SHADER, glsl);
+		if (id == 0)
+			return false;
+
+		m_program_id = glCreateProgram();
+		glAttachShader(m_program_id, id);
+		return true;
+	}
+
 	bool Program::CreateFromBinary(const void* data, u32 data_length, u32 data_format)
 	{
 		GLuint prog = glCreateProgram();

@@ -37,6 +37,8 @@ namespace GL
 		bool Compile(const std::string_view vertex_shader, const std::string_view geometry_shader,
 			const std::string_view fragment_shader);
 
+		bool CompileCompute(const std::string_view glsl);
+
 		bool CreateFromBinary(const void* data, u32 data_length, u32 data_format);
 
 		bool GetBinary(std::vector<u8>* out_data, u32* out_data_format);

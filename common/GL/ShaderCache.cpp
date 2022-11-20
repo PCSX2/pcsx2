@@ -352,6 +352,42 @@ namespace GL
 		return true;
 	}
 
+	bool ShaderCache::WriteToBlobFile(const CacheIndexKey& key, const std::vector<u8>& prog_data, u32 prog_format)
+	{
+		if (!m_blob_file || std::fseek(m_blob_file, 0, SEEK_END) != 0)
+			return false;
+
+		CacheIndexData data;
+		data.file_offset = static_cast<u32>(std::ftell(m_blob_file));
+		data.blob_size = static_cast<u32>(prog_data.size());
+		data.blob_format = prog_format;
+
+		CacheIndexEntry entry = {};
+		entry.vertex_source_hash_low = key.vertex_source_hash_low;
+		entry.vertex_source_hash_high = key.vertex_source_hash_high;
+		entry.vertex_source_length = key.vertex_source_length;
+		entry.geometry_source_hash_low = key.geometry_source_hash_low;
+		entry.geometry_source_hash_high = key.geometry_source_hash_high;
+		entry.geometry_source_length = key.geometry_source_length;
+		entry.fragment_source_hash_low = key.fragment_source_hash_low;
+		entry.fragment_source_hash_high = key.fragment_source_hash_high;
+		entry.fragment_source_length = key.fragment_source_length;
+		entry.file_offset = data.file_offset;
+		entry.blob_size = data.blob_size;
+		entry.blob_format = data.blob_format;
+
+		if (std::fwrite(prog_data.data(), 1, entry.blob_size, m_blob_file) != entry.blob_size ||
+			std::fflush(m_blob_file) != 0 || std::fwrite(&entry, sizeof(entry), 1, m_index_file) != 1 ||
+			std::fflush(m_index_file) != 0)
+		{
+			Console.Error("Failed to write shader blob to file");
+			return false;
+		}
+
+		m_index.emplace(key, data);
+		return true;
+	}
+
 	std::optional<Program> ShaderCache::CompileProgram(const std::string_view& vertex_shader,
 		const std::string_view& geometry_shader,
 		const std::string_view& fragment_shader,
@@ -359,6 +395,25 @@ namespace GL
 	{
 		Program prog;
 		if (!prog.Compile(vertex_shader, geometry_shader, fragment_shader))
+			return std::nullopt;
+
+		if (callback)
+			callback(prog);
+
+		if (set_retrievable)
+			prog.SetBinaryRetrievableHint();
+
+		if (!prog.Link())
+			return std::nullopt;
+
+		return std::optional<Program>(std::move(prog));
+	}
+
+	std::optional<Program> ShaderCache::CompileComputeProgram(const std::string_view& glsl,
+		const PreLinkCallback& callback, bool set_retrievable)
+	{
+		Program prog;
+		if (!prog.CompileCompute(glsl))
 			return std::nullopt;
 
 		if (callback)
@@ -401,43 +456,111 @@ namespace GL
 		const float binary_time = timer.GetTimeMilliseconds();
 		timer.Reset();
 #endif
-
-		if (!m_blob_file || std::fseek(m_blob_file, 0, SEEK_END) != 0)
-			return prog;
-
-		CacheIndexData data;
-		data.file_offset = static_cast<u32>(std::ftell(m_blob_file));
-		data.blob_size = static_cast<u32>(prog_data.size());
-		data.blob_format = prog_format;
-
-		CacheIndexEntry entry = {};
-		entry.vertex_source_hash_low = key.vertex_source_hash_low;
-		entry.vertex_source_hash_high = key.vertex_source_hash_high;
-		entry.vertex_source_length = key.vertex_source_length;
-		entry.geometry_source_hash_low = key.geometry_source_hash_low;
-		entry.geometry_source_hash_high = key.geometry_source_hash_high;
-		entry.geometry_source_length = key.geometry_source_length;
-		entry.fragment_source_hash_low = key.fragment_source_hash_low;
-		entry.fragment_source_hash_high = key.fragment_source_hash_high;
-		entry.fragment_source_length = key.fragment_source_length;
-		entry.file_offset = data.file_offset;
-		entry.blob_size = data.blob_size;
-		entry.blob_format = data.blob_format;
-
-		if (std::fwrite(prog_data.data(), 1, entry.blob_size, m_blob_file) != entry.blob_size ||
-			std::fflush(m_blob_file) != 0 || std::fwrite(&entry, sizeof(entry), 1, m_index_file) != 1 ||
-			std::fflush(m_index_file) != 0)
-		{
-			Console.Error("Failed to write shader blob to file");
-			return prog;
-		}
+		
+		WriteToBlobFile(key, prog_data, prog_format);
 
 #ifdef PCSX2_DEVBUILD
 		const float write_time = timer.GetTimeMilliseconds();
 		Console.WriteLn("Compiled and cached shader: Compile: %.2fms, Binary: %.2fms, Write: %.2fms", compile_time, binary_time, write_time);
 #endif
 
-		m_index.emplace(key, data);
+		return prog;
+	}
+
+	std::optional<Program> ShaderCache::GetComputeProgram(const std::string_view glsl, const PreLinkCallback& callback)
+	{
+		if (!m_program_binary_supported || !m_blob_file)
+		{
+#ifdef PCSX2_DEVBUILD
+			Common::Timer timer;
+#endif
+
+			std::optional<Program> res = CompileComputeProgram(glsl, callback, false);
+
+#ifdef PCSX2_DEVBUILD
+			Console.WriteLn("Time to compile shader without caching: %.2fms", timer.GetTimeMilliseconds());
+#endif
+			return res;
+		}
+
+		const auto key = GetCacheKey(glsl, std::string_view(), std::string_view());
+		auto iter = m_index.find(key);
+		if (iter == m_index.end())
+			return CompileAndAddComputeProgram(key, glsl, callback);
+
+		std::vector<u8> data(iter->second.blob_size);
+		if (std::fseek(m_blob_file, iter->second.file_offset, SEEK_SET) != 0 ||
+			std::fread(data.data(), 1, iter->second.blob_size, m_blob_file) != iter->second.blob_size)
+		{
+			Console.Error("Read blob from file failed");
+			return {};
+		}
+
+#ifdef PCSX2_DEVBUILD
+		Common::Timer timer;
+#endif
+
+		Program prog;
+		if (prog.CreateFromBinary(data.data(), static_cast<u32>(data.size()), iter->second.blob_format))
+		{
+#ifdef PCSX2_DEVBUILD
+			Console.WriteLn("Time to create program from binary: %.2fms", timer.GetTimeMilliseconds());
+#endif
+
+			return std::optional<Program>(std::move(prog));
+		}
+
+		Console.Warning(
+			"Failed to create program from binary, this may be due to a driver or GPU Change. Recreating cache.");
+		if (!Recreate())
+			return CompileComputeProgram(glsl, callback, false);
+		else
+			return CompileAndAddComputeProgram(key, glsl, callback);
+	}
+
+	bool ShaderCache::GetComputeProgram(Program* out_program, const std::string_view glsl, const PreLinkCallback& callback)
+	{
+		auto prog = GetComputeProgram(glsl, callback);
+		if (!prog)
+			return false;
+
+		*out_program = std::move(*prog);
+		return true;
+	}
+
+	std::optional<Program> ShaderCache::CompileAndAddComputeProgram(
+		const CacheIndexKey& key, const std::string_view& glsl, const PreLinkCallback& callback)
+	{
+#ifdef PCSX2_DEVBUILD
+		Common::Timer timer;
+#endif
+
+		std::optional<Program> prog = CompileComputeProgram(glsl, callback, true);
+		if (!prog)
+			return std::nullopt;
+
+#ifdef PCSX2_DEVBUILD
+		const float compile_time = timer.GetTimeMilliseconds();
+		timer.Reset();
+#endif
+
+		std::vector<u8> prog_data;
+		u32 prog_format = 0;
+		if (!prog->GetBinary(&prog_data, &prog_format))
+			return std::nullopt;
+
+#ifdef PCSX2_DEVBUILD
+		const float binary_time = timer.GetTimeMilliseconds();
+		timer.Reset();
+#endif
+
+		WriteToBlobFile(key, prog_data, prog_format);
+
+#ifdef PCSX2_DEVBUILD
+		const float write_time = timer.GetTimeMilliseconds();
+		Console.WriteLn("Compiled and cached compute shader: Compile: %.2fms, Binary: %.2fms, Write: %.2fms", compile_time, binary_time, write_time);
+#endif
+
 		return prog;
 	}
 } // namespace GL

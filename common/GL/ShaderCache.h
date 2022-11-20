@@ -42,6 +42,9 @@ namespace GL
 		bool GetProgram(Program* out_program, const std::string_view vertex_shader, const std::string_view geometry_shader,
 			const std::string_view fragment_shader, const PreLinkCallback& callback = {});
 
+		std::optional<Program> GetComputeProgram(const std::string_view glsl, const PreLinkCallback& callback = {});
+		bool GetComputeProgram(Program* out_program, const std::string_view glsl, const PreLinkCallback& callback = {});
+
 	private:
 		static constexpr u32 FILE_VERSION = 1;
 
@@ -94,12 +97,17 @@ namespace GL
 		void Close();
 		bool Recreate();
 
+		bool WriteToBlobFile(const CacheIndexKey& key, const std::vector<u8>& prog_data, u32 prog_format);
+
 		std::optional<Program> CompileProgram(const std::string_view& vertex_shader, const std::string_view& geometry_shader,
 			const std::string_view& fragment_shader, const PreLinkCallback& callback,
 			bool set_retrievable);
 		std::optional<Program> CompileAndAddProgram(const CacheIndexKey& key, const std::string_view& vertex_shader,
 			const std::string_view& geometry_shader,
 			const std::string_view& fragment_shader, const PreLinkCallback& callback);
+
+		std::optional<Program> CompileComputeProgram(const std::string_view& glsl, const PreLinkCallback& callback, bool set_retrievable);
+		std::optional<Program> CompileAndAddComputeProgram(const CacheIndexKey& key, const std::string_view& glsl, const PreLinkCallback& callback);
 
 		std::string m_base_path;
 		std::FILE* m_index_file = nullptr;
