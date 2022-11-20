@@ -345,7 +345,7 @@ std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_vi
 
 		key.source_subtype = InputSubclass::ControllerAxis;
 		key.data = axis_index.value();
-		key.negative = (binding[0] == '-');
+		key.modifier = (binding[0] == '-') ? InputModifier::Negate : InputModifier::None;
 		return key;
 	}
 	else if (StringUtil::StartsWith(binding, "Hat"))
@@ -391,7 +391,7 @@ std::string DInputSource::ConvertKeyToString(InputBindingKey key)
 	{
 		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
-			ret = fmt::format("DInput-{}/{}Axis{}", u32(key.source_index), key.negative ? '-' : '+', u32(key.data));
+			ret = fmt::format("DInput-{}/{}Axis{}", u32(key.source_index), key.modifier == InputModifier::Negate ? '-' : '+', u32(key.data));
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton && key.data >= MAX_NUM_BUTTONS)
 		{
