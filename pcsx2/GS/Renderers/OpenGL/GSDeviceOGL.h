@@ -277,6 +277,12 @@ private:
 
 	struct
 	{
+		GL::Program upscale_ps;
+		GL::Program sharpen_ps;
+	} m_cas;
+
+	struct
+	{
 		u16 last_query = 0;
 		GLuint timer_query[1 << 16] = {};
 
@@ -301,7 +307,12 @@ private:
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0, int bufIdx = 0) final;
 	void DoFXAA(GSTexture* sTex, GSTexture* dTex) final;
 	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) final;
+#ifndef PCSX2_CORE
 	void DoExternalFX(GSTexture* sTex, GSTexture* dTex) final;
+#endif
+
+	bool CreateCASPrograms();
+	bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) final;
 
 	void OMAttachRt(GSTextureOGL* rt = NULL);
 	void OMAttachDs(GSTextureOGL* ds = NULL);

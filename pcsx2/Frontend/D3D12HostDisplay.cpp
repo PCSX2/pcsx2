@@ -567,8 +567,8 @@ bool D3D12HostDisplay::BeginPresent(bool frame_skip)
 
 	ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
 	swap_chain_buf.TransitionToState(cmdlist, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	cmdlist->ClearRenderTargetView(swap_chain_buf.GetRTVOrDSVDescriptor(), clear_color.data(), 0, nullptr);
-	cmdlist->OMSetRenderTargets(1, &swap_chain_buf.GetRTVOrDSVDescriptor().cpu_handle, FALSE, nullptr);
+	cmdlist->ClearRenderTargetView(swap_chain_buf.GetWriteDescriptor(), clear_color.data(), 0, nullptr);
+	cmdlist->OMSetRenderTargets(1, &swap_chain_buf.GetWriteDescriptor().cpu_handle, FALSE, nullptr);
 
 	const D3D12_VIEWPORT vp{0.0f, 0.0f, static_cast<float>(m_window_info.surface_width), static_cast<float>(m_window_info.surface_height), 0.0f, 1.0f};
 	const D3D12_RECT scissor{0, 0, static_cast<LONG>(m_window_info.surface_width), static_cast<LONG>(m_window_info.surface_height)};

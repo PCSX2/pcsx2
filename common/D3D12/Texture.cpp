@@ -47,22 +47,22 @@ Texture::Texture(Texture&& texture)
 	: m_resource(std::move(texture.m_resource))
 	, m_allocation(std::move(texture.m_allocation))
 	, m_srv_descriptor(texture.m_srv_descriptor)
-	, m_rtv_or_dsv_descriptor(texture.m_rtv_or_dsv_descriptor)
+	, m_write_descriptor(texture.m_write_descriptor)
 	, m_width(texture.m_width)
 	, m_height(texture.m_height)
 	, m_levels(texture.m_levels)
 	, m_format(texture.m_format)
 	, m_state(texture.m_state)
-	, m_is_depth_view(texture.m_is_depth_view)
+	, m_write_descriptor_type(texture.m_write_descriptor_type)
 {
 	texture.m_srv_descriptor = {};
-	texture.m_rtv_or_dsv_descriptor = {};
+	texture.m_write_descriptor = {};
 	texture.m_width = 0;
 	texture.m_height = 0;
 	texture.m_levels = 0;
 	texture.m_format = DXGI_FORMAT_UNKNOWN;
 	texture.m_state = D3D12_RESOURCE_STATE_COMMON;
-	texture.m_is_depth_view = false;
+	texture.m_write_descriptor_type = WriteDescriptorType::None;
 }
 
 Texture::~Texture()
@@ -76,21 +76,21 @@ Texture& Texture::operator=(Texture&& texture)
 	m_resource = std::move(texture.m_resource);
 	m_allocation = std::move(texture.m_allocation);
 	m_srv_descriptor = texture.m_srv_descriptor;
-	m_rtv_or_dsv_descriptor = texture.m_rtv_or_dsv_descriptor;
+	m_write_descriptor = texture.m_write_descriptor;
 	m_width = texture.m_width;
 	m_height = texture.m_height;
 	m_levels = texture.m_levels;
 	m_format = texture.m_format;
 	m_state = texture.m_state;
-	m_is_depth_view = texture.m_is_depth_view;
+	m_write_descriptor_type = texture.m_write_descriptor_type;
 	texture.m_srv_descriptor = {};
-	texture.m_rtv_or_dsv_descriptor = {};
+	texture.m_write_descriptor = {};
 	texture.m_width = 0;
 	texture.m_height = 0;
 	texture.m_levels = 0;
 	texture.m_format = DXGI_FORMAT_UNKNOWN;
 	texture.m_state = D3D12_RESOURCE_STATE_COMMON;
-	texture.m_is_depth_view = false;
+	texture.m_write_descriptor_type = WriteDescriptorType::None;
 	return *this;
 }
 
@@ -149,8 +149,8 @@ bool Texture::Create(u32 width, u32 height, u32 levels, DXGI_FORMAT format, DXGI
 		return false;
 	}
 
-	DescriptorHandle srv_descriptor, rtv_descriptor;
-	bool is_depth_view = false;
+	DescriptorHandle srv_descriptor, write_descriptor;
+	WriteDescriptorType write_descriptor_type = WriteDescriptorType::None;
 	if (srv_format != DXGI_FORMAT_UNKNOWN)
 	{
 		if (!CreateSRVDescriptor(resource.get(), levels, srv_format, &srv_descriptor))
@@ -159,22 +159,32 @@ bool Texture::Create(u32 width, u32 height, u32 levels, DXGI_FORMAT format, DXGI
 
 	if (rtv_format != DXGI_FORMAT_UNKNOWN)
 	{
-		pxAssert(dsv_format == DXGI_FORMAT_UNKNOWN);
-		if (!CreateRTVDescriptor(resource.get(), rtv_format, &rtv_descriptor))
+		pxAssert(dsv_format == DXGI_FORMAT_UNKNOWN && !(flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS));
+		write_descriptor_type = Texture::WriteDescriptorType::RTV;
+		if (!CreateRTVDescriptor(resource.get(), rtv_format, &write_descriptor))
 		{
-			g_d3d12_context->GetDescriptorHeapManager().Free(&srv_descriptor);
-			return false;
-		}
-	}
-	else if (dsv_format != DXGI_FORMAT_UNKNOWN)
-	{
-		if (!CreateDSVDescriptor(resource.get(), dsv_format, &rtv_descriptor))
-		{
-			g_d3d12_context->GetDescriptorHeapManager().Free(&srv_descriptor);
+			g_d3d12_context->GetRTVHeapManager().Free(&srv_descriptor);
 			return false;
 		}
 
-		is_depth_view = true;
+	}
+	else if (dsv_format != DXGI_FORMAT_UNKNOWN && !(flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS))
+	{
+		write_descriptor_type = Texture::WriteDescriptorType::DSV;
+		if (!CreateDSVDescriptor(resource.get(), dsv_format, &write_descriptor))
+		{
+			g_d3d12_context->GetDSVHeapManager().Free(&srv_descriptor);
+			return false;
+		}
+	}
+	else if (flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
+	{
+		write_descriptor_type = Texture::WriteDescriptorType::UAV;
+		if (!CreateUAVDescriptor(resource.get(), dsv_format, &write_descriptor))
+		{
+			g_d3d12_context->GetDescriptorHeapManager().Free(&srv_descriptor);
+			return false;
+		}
 	}
 
 	Destroy(true);
@@ -182,13 +192,13 @@ bool Texture::Create(u32 width, u32 height, u32 levels, DXGI_FORMAT format, DXGI
 	m_resource = std::move(resource);
 	m_allocation = std::move(allocation);
 	m_srv_descriptor = std::move(srv_descriptor);
-	m_rtv_or_dsv_descriptor = std::move(rtv_descriptor);
+	m_write_descriptor = std::move(write_descriptor);
 	m_width = width;
 	m_height = height;
 	m_levels = levels;
 	m_format = format;
 	m_state = state;
-	m_is_depth_view = is_depth_view;
+	m_write_descriptor_type = write_descriptor_type;
 	return true;
 }
 
@@ -197,7 +207,8 @@ bool Texture::Adopt(ComPtr<ID3D12Resource> texture, DXGI_FORMAT srv_format, DXGI
 {
 	const D3D12_RESOURCE_DESC desc(texture->GetDesc());
 
-	DescriptorHandle srv_descriptor, rtv_descriptor;
+	DescriptorHandle srv_descriptor, write_descriptor;
+	WriteDescriptorType write_descriptor_type = WriteDescriptorType::None;
 	if (srv_format != DXGI_FORMAT_UNKNOWN)
 	{
 		if (!CreateSRVDescriptor(texture.get(), desc.MipLevels, srv_format, &srv_descriptor))
@@ -207,15 +218,26 @@ bool Texture::Adopt(ComPtr<ID3D12Resource> texture, DXGI_FORMAT srv_format, DXGI
 	if (rtv_format != DXGI_FORMAT_UNKNOWN)
 	{
 		pxAssert(dsv_format == DXGI_FORMAT_UNKNOWN);
-		if (!CreateRTVDescriptor(texture.get(), rtv_format, &rtv_descriptor))
+		write_descriptor_type = Texture::WriteDescriptorType::RTV;
+		if (!CreateRTVDescriptor(texture.get(), rtv_format, &write_descriptor))
 		{
-			g_d3d12_context->GetDescriptorHeapManager().Free(&srv_descriptor);
+			g_d3d12_context->GetRTVHeapManager().Free(&srv_descriptor);
 			return false;
 		}
 	}
 	else if (dsv_format != DXGI_FORMAT_UNKNOWN)
 	{
-		if (!CreateDSVDescriptor(texture.get(), dsv_format, &rtv_descriptor))
+		write_descriptor_type = Texture::WriteDescriptorType::DSV;
+		if (!CreateDSVDescriptor(texture.get(), dsv_format, &write_descriptor))
+		{
+			g_d3d12_context->GetDSVHeapManager().Free(&srv_descriptor);
+			return false;
+		}
+	}
+	else if (desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
+	{
+		write_descriptor_type = Texture::WriteDescriptorType::UAV;
+		if (!CreateUAVDescriptor(texture.get(), srv_format, &write_descriptor))
 		{
 			g_d3d12_context->GetDescriptorHeapManager().Free(&srv_descriptor);
 			return false;
@@ -225,7 +247,8 @@ bool Texture::Adopt(ComPtr<ID3D12Resource> texture, DXGI_FORMAT srv_format, DXGI
 	m_resource = std::move(texture);
 	m_allocation.reset();
 	m_srv_descriptor = std::move(srv_descriptor);
-	m_rtv_or_dsv_descriptor = std::move(rtv_descriptor);
+	m_write_descriptor = std::move(write_descriptor);
+	m_write_descriptor_type = write_descriptor_type;
 	m_width = static_cast<u32>(desc.Width);
 	m_height = desc.Height;
 	m_levels = desc.MipLevels;
@@ -239,10 +262,23 @@ void Texture::Destroy(bool defer /* = true */)
 	if (defer)
 	{
 		g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetDescriptorHeapManager(), &m_srv_descriptor);
-		if (m_is_depth_view)
-			g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetDSVHeapManager(), &m_rtv_or_dsv_descriptor);
-		else
-			g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetRTVHeapManager(), &m_rtv_or_dsv_descriptor);
+
+		switch (m_write_descriptor_type)
+		{
+			case Texture::WriteDescriptorType::RTV:
+				g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetRTVHeapManager(), &m_write_descriptor);
+				break;
+			case Texture::WriteDescriptorType::DSV:
+				g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetDSVHeapManager(), &m_write_descriptor);
+				break;
+			case Texture::WriteDescriptorType::UAV:
+				g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetDescriptorHeapManager(), &m_write_descriptor);
+				break;
+			case Texture::WriteDescriptorType::None:
+			default:
+				break;
+		}
+
 		g_d3d12_context->DeferResourceDestruction(m_allocation.get(), m_resource.get());
 		m_resource.reset();
 		m_allocation.reset();
@@ -250,10 +286,22 @@ void Texture::Destroy(bool defer /* = true */)
 	else
 	{
 		g_d3d12_context->GetDescriptorHeapManager().Free(&m_srv_descriptor);
-		if (m_is_depth_view)
-			g_d3d12_context->GetDSVHeapManager().Free(&m_rtv_or_dsv_descriptor);
-		else
-			g_d3d12_context->GetRTVHeapManager().Free(&m_rtv_or_dsv_descriptor);
+
+		switch (m_write_descriptor_type)
+		{
+			case Texture::WriteDescriptorType::RTV:
+				g_d3d12_context->GetRTVHeapManager().Free(&m_write_descriptor);
+				break;
+			case Texture::WriteDescriptorType::DSV:
+				g_d3d12_context->GetDSVHeapManager().Free(&m_write_descriptor);
+				break;
+			case Texture::WriteDescriptorType::UAV:
+				g_d3d12_context->GetDescriptorHeapManager().Free(&m_write_descriptor);
+				break;
+			case Texture::WriteDescriptorType::None:
+			default:
+				break;
+		}
 
 		m_resource.reset();
 		m_allocation.reset();
@@ -263,7 +311,7 @@ void Texture::Destroy(bool defer /* = true */)
 	m_height = 0;
 	m_levels = 0;
 	m_format = DXGI_FORMAT_UNKNOWN;
-	m_is_depth_view = false;
+	m_write_descriptor_type = WriteDescriptorType::None;
 }
 
 void Texture::TransitionToState(ID3D12GraphicsCommandList* cmdlist, D3D12_RESOURCE_STATES state)
@@ -446,5 +494,18 @@ bool Texture::CreateDSVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, 
 
 	const D3D12_DEPTH_STENCIL_VIEW_DESC desc = {format, D3D12_DSV_DIMENSION_TEXTURE2D, D3D12_DSV_FLAG_NONE};
 	g_d3d12_context->GetDevice()->CreateDepthStencilView(resource, &desc, dh->cpu_handle);
+	return true;
+}
+
+bool Texture::CreateUAVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, DescriptorHandle* dh)
+{
+	if (!g_d3d12_context->GetDescriptorHeapManager().Allocate(dh))
+	{
+		Console.Error("Failed to allocate UAV descriptor");
+		return false;
+	}
+
+	const D3D12_UNORDERED_ACCESS_VIEW_DESC desc = {format, D3D12_UAV_DIMENSION_TEXTURE2D};
+	g_d3d12_context->GetDevice()->CreateUnorderedAccessView(resource, nullptr, &desc, dh->cpu_handle);
 	return true;
 }

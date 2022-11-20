@@ -1239,15 +1239,69 @@
          <property name="title">
           <string>Post-Processing</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_9">
+         <layout class="QFormLayout" name="formLayout_2">
           <item row="0" column="0">
+           <widget class="QLabel" name="label_17">
+            <property name="text">
+             <string>CAS Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <widget class="QComboBox" name="casMode">
+              <item>
+               <property name="text">
+                <string>Disabled</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Sharpen Only (Internal Resolution)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Sharpen and Upscale (Display Resolution)</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <item>
+               <widget class="QLabel" name="label_43">
+                <property name="text">
+                 <string>Sharpness:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="casSharpness">
+                <property name="suffix">
+                 <string>%</string>
+                </property>
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+                <property name="value">
+                 <number>50</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item row="2" column="0">
            <widget class="QCheckBox" name="shadeBoost">
             <property name="text">
              <string>Shade Boost</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
+          <item row="2" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
              <spacer name="horizontalSpacer">
@@ -1315,21 +1369,21 @@
             </item>
            </layout>
           </item>
-          <item row="1" column="0">
+          <item row="3" column="0">
            <widget class="QCheckBox" name="fxaa">
             <property name="text">
              <string>FXAA</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="1" column="0">
            <widget class="QLabel" name="label_35">
             <property name="text">
              <string>TV Shader</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="1" column="1">
            <widget class="QComboBox" name="tvShader">
             <item>
              <property name="text">

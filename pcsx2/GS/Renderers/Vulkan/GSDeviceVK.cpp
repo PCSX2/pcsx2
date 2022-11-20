@@ -20,6 +20,7 @@
 #include "common/Vulkan/SwapChain.h"
 #include "common/Vulkan/Util.h"
 #include "common/Align.h"
+#include "common/Path.h"
 #include "common/ScopedGuard.h"
 #include "GS.h"
 #include "GSDeviceVK.h"
@@ -115,6 +116,8 @@ bool GSDeviceVK::Create()
 		Host::ReportErrorAsync("GS", "Failed to create persistent descriptor sets");
 		return false;
 	}
+
+	CompileCASPipelines();
 
 	InitializeState();
 	return true;
@@ -1780,6 +1783,117 @@ bool GSDeviceVK::CompilePostProcessingPipelines()
 	return true;
 }
 
+bool GSDeviceVK::CompileCASPipelines()
+{
+	VkDevice dev = g_vulkan_context->GetDevice();
+	Vulkan::DescriptorSetLayoutBuilder dslb;
+	Vulkan::PipelineLayoutBuilder plb;
+
+	dslb.AddBinding(0, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
+	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
+	if ((m_cas_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
+		return false;
+	Vulkan::Util::SetObjectName(dev, m_cas_pipeline_layout, "CAS descriptor layout");
+
+	plb.AddPushConstants(VK_SHADER_STAGE_COMPUTE_BIT, 0, NUM_CAS_CONSTANTS * sizeof(u32));
+	plb.AddDescriptorSet(m_cas_ds_layout);
+	if ((m_cas_pipeline_layout = plb.Create(dev)) == VK_NULL_HANDLE)
+		return false;
+	Vulkan::Util::SetObjectName(dev, m_cas_pipeline_layout, "CAS pipeline layout");
+
+	// we use specialization constants to avoid compiling it twice
+	std::optional<std::string> cas_source(Host::ReadResourceFileToString("shaders/vulkan/cas.glsl"));
+	if (!cas_source.has_value() || !GetCASShaderSource(&cas_source.value()))
+		return false;
+
+	VkShaderModule mod = g_vulkan_shader_cache->GetComputeShader(cas_source->c_str());
+	ScopedGuard mod_guard = [&mod]() { Vulkan::Util::SafeDestroyShaderModule(mod); };
+	if (mod == VK_NULL_HANDLE)
+		return false;
+
+	for (u8 sharpen_only = 0; sharpen_only < 2; sharpen_only++)
+	{
+		Vulkan::ComputePipelineBuilder cpb;
+		cpb.SetPipelineLayout(m_cas_pipeline_layout);
+		cpb.SetShader(mod, "main");
+		cpb.SetSpecializationBool(0, sharpen_only != 0);
+		m_cas_pipelines[sharpen_only] = cpb.Create(dev, g_vulkan_shader_cache->GetPipelineCache(true), false);
+		if (!m_cas_pipelines[sharpen_only])
+			return false;
+	}
+
+	m_features.cas_sharpening = true;
+	return true;
+}
+
+bool GSDeviceVK::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants)
+{
+	EndRenderPass();
+
+	VkDescriptorSet ds = g_vulkan_context->AllocateDescriptorSet(m_cas_ds_layout);
+	if (ds == VK_NULL_HANDLE)
+		return false;
+
+	GSTextureVK* const sTexVK = static_cast<GSTextureVK*>(sTex);
+	GSTextureVK* const dTexVK = static_cast<GSTextureVK*>(dTex);
+	VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
+
+	sTexVK->GetTexture().TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+	// we have to make the barrier explicit here, because there's no free enums for us to use (general already hijacked)
+	const VkImageMemoryBarrier barrier_to_cs = {
+		VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+		nullptr,
+		VK_ACCESS_SHADER_READ_BIT,
+		VK_ACCESS_SHADER_WRITE_BIT,
+		dTexVK->GetLayout(),
+		VK_IMAGE_LAYOUT_GENERAL,
+		VK_QUEUE_FAMILY_IGNORED,
+		VK_QUEUE_FAMILY_IGNORED,
+		dTexVK->GetImage(),
+		{VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u},
+	};
+	vkCmdPipelineBarrier(cmdbuf, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+		0, 0, nullptr, 0, nullptr, 1, &barrier_to_cs);
+	dTexVK->GetTexture().OverrideImageLayout(VK_IMAGE_LAYOUT_GENERAL);
+
+	// only happening once a frame, so the update isn't a huge deal.
+	Vulkan::DescriptorSetUpdateBuilder dsub;
+	dsub.AddImageDescriptorWrite(ds, 0, sTexVK->GetView(), sTexVK->GetLayout());
+	dsub.AddStorageImageDescriptorWrite(ds, 1, dTexVK->GetView(), dTexVK->GetLayout());
+	dsub.Update(g_vulkan_context->GetDevice(), false);
+
+	// the actual meat and potatoes! only four commands.
+	static const int threadGroupWorkRegionDim = 16;
+	const int dispatchX = (dTex->GetWidth() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
+	const int dispatchY = (dTex->GetHeight() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
+
+	vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_COMPUTE, m_cas_pipeline_layout, 0, 1, &ds, 0, nullptr);
+	vkCmdPushConstants(cmdbuf, m_cas_pipeline_layout, VK_SHADER_STAGE_COMPUTE_BIT, 0, NUM_CAS_CONSTANTS * sizeof(u32), constants.data());
+	vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_COMPUTE, m_cas_pipelines[static_cast<u8>(sharpen_only)]);
+	vkCmdDispatch(cmdbuf, dispatchX, dispatchY, 1);
+
+	// and same deal here :(
+	const VkImageMemoryBarrier barrier_to_fs = {
+		VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+		nullptr,
+		VK_ACCESS_SHADER_WRITE_BIT,
+		VK_ACCESS_SHADER_READ_BIT,
+		VK_IMAGE_LAYOUT_GENERAL,
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		VK_QUEUE_FAMILY_IGNORED,
+		VK_QUEUE_FAMILY_IGNORED,
+		dTexVK->GetImage(),
+		{VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u},
+	};
+	vkCmdPipelineBarrier(cmdbuf, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		0, 0, nullptr, 0, nullptr, 1, &barrier_to_fs);
+	dTexVK->GetTexture().OverrideImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+	// all done!
+	return true;
+}
+
 bool GSDeviceVK::CheckStagingBufferSize(u32 required_size)
 {
 	if (m_readback_staging_buffer_size >= required_size)
@@ -1865,6 +1979,11 @@ void GSDeviceVK::DestroyResources()
 	}
 	Vulkan::Util::SafeDestroyPipeline(m_fxaa_pipeline);
 	Vulkan::Util::SafeDestroyPipeline(m_shadeboost_pipeline);
+
+	for (VkPipeline& it : m_cas_pipelines)
+		Vulkan::Util::SafeDestroyPipeline(it);
+	Vulkan::Util::SafeDestroyPipelineLayout(m_cas_pipeline_layout);
+	Vulkan::Util::SafeDestroyDescriptorSetLayout(m_cas_ds_layout);
 
 	for (auto& it : m_samplers)
 		Vulkan::Util::SafeDestroySampler(it.second);

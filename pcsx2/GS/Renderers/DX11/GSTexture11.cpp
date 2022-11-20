@@ -258,6 +258,14 @@ GSTexture11::operator ID3D11DepthStencilView*()
 	return m_dsv.get();
 }
 
+GSTexture11::operator ID3D11UnorderedAccessView*()
+{
+	if (!m_uav)
+		GSDevice11::GetInstance()->GetD3DDevice()->CreateUnorderedAccessView(m_texture.get(), nullptr, m_uav.put());
+
+	return m_uav.get();
+}
+
 bool GSTexture11::Equal(GSTexture11* tex)
 {
 	return tex && m_texture == tex->m_texture;

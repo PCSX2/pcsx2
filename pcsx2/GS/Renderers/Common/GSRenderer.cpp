@@ -375,37 +375,33 @@ bool GSRenderer::Merge(int field)
 
 	m_real_size = GSVector2i(fs.x, is_interlaced_resolution ? ds.y : fs.y);
 
-	if (tex[0] || tex[1])
+	if (!tex[0] && !tex[1])
+		return false;
+
+	if ((tex[0] == tex[1]) && (src_out_rect[0] == src_out_rect[1]).alltrue() && (dst[0] == dst[1]).alltrue() && !feedback_merge && !slbg)
 	{
-		if ((tex[0] == tex[1]) && (src_out_rect[0] == src_out_rect[1]).alltrue() && (dst[0] == dst[1]).alltrue() && !feedback_merge && !slbg)
-		{
-			// the two outputs are identical, skip drawing one of them (the one that is alpha blended)
+		// the two outputs are identical, skip drawing one of them (the one that is alpha blended)
 
-			tex[0] = NULL;
-		}
-
-		GSVector4 c = GSVector4((int)m_regs->BGCOLOR.R, (int)m_regs->BGCOLOR.G, (int)m_regs->BGCOLOR.B, (int)m_regs->PMODE.ALP) / 255;
-
-		g_gs_device->Merge(tex, src_gs_read, dst, fs, m_regs->PMODE, m_regs->EXTBUF, c);
-
-		if (isReallyInterlaced() && GSConfig.InterlaceMode != GSInterlaceMode::Off)
-			g_gs_device->Interlace(ds, field ^ field2, mode, offset);
-
-		if (GSConfig.ShadeBoost)
-		{
-			g_gs_device->ShadeBoost();
-		}
-
-		if (GSConfig.ShaderFX)
-		{
-			g_gs_device->ExternalFX();
-		}
-
-		if (GSConfig.FXAA)
-		{
-			g_gs_device->FXAA();
-		}
+		tex[0] = NULL;
 	}
+
+	GSVector4 c = GSVector4((int)m_regs->BGCOLOR.R, (int)m_regs->BGCOLOR.G, (int)m_regs->BGCOLOR.B, (int)m_regs->PMODE.ALP) / 255;
+
+	g_gs_device->Merge(tex, src_gs_read, dst, fs, m_regs->PMODE, m_regs->EXTBUF, c);
+
+	if (isReallyInterlaced() && GSConfig.InterlaceMode != GSInterlaceMode::Off)
+		g_gs_device->Interlace(ds, field ^ field2, mode, offset);
+
+	if (GSConfig.ShadeBoost)
+		g_gs_device->ShadeBoost();
+
+#ifndef PCSX2_CORE
+	if (GSConfig.ShaderFX)
+		g_gs_device->ExternalFX();
+#endif
+
+	if (GSConfig.FXAA)
+		g_gs_device->FXAA();
 
 	if (m_scanmask_used)
 		m_scanmask_used--;
@@ -616,18 +612,33 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 	if ((g_perfmon.GetFrame() & 0x1f) == 0)
 		g_perfmon.Update();
 
+	// Little bit ugly, but we can't do CAS inside the render pass.
+	GSVector4i src_rect;
+	GSVector4 src_uv, draw_rect;
+	GSTexture* current = g_gs_device->GetCurrent();
+	if (current && !blank_frame)
+	{
+		src_rect = CalculateDrawSrcRect(current);
+		src_uv = GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy();
+		draw_rect = CalculateDrawDstRect(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight(),
+			src_rect, current->GetSize(), g_host_display->GetDisplayAlignment(), g_host_display->UsesLowerLeftOrigin(),
+			GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets));
+
+		if (GSConfig.CASMode != GSCASMode::Disabled && g_gs_device->Features().cas_sharpening)
+		{
+			// sharpen only if the IR is higher than the display resolution
+			const bool sharpen_only = (GSConfig.CASMode == GSCASMode::SharpenOnly ||
+									   (current->GetWidth() > g_host_display->GetWindowWidth() &&
+										   current->GetHeight() > g_host_display->GetWindowHeight()));
+			g_gs_device->CAS(current, src_rect, src_uv, draw_rect, sharpen_only);
+		}
+	}
+
 	g_gs_device->ResetAPIState();
 	if (Host::BeginPresentFrame(false))
 	{
-		GSTexture* current = g_gs_device->GetCurrent();
 		if (current && !blank_frame)
 		{
-			const GSVector4i src_rect(CalculateDrawSrcRect(current));
-			const GSVector4 src_uv(GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy());
-			const GSVector4 draw_rect(CalculateDrawDstRect(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight(),
-				src_rect, current->GetSize(), g_host_display->GetDisplayAlignment(), g_host_display->UsesLowerLeftOrigin(),
-				GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)));
-
 			const u64 current_time = Common::Timer::GetCurrentValue();
 			const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
 

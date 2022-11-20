@@ -211,6 +211,13 @@ enum class GSHardwareDownloadMode : u8
 	Disabled
 };
 
+enum class GSCASMode : u8
+{
+	Disabled,
+	SharpenOnly,
+	SharpenAndResize,
+};
+
 // Template function for casting enumerations to their underlying type
 template <typename Enumeration>
 typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
@@ -518,7 +525,9 @@ struct Pcsx2Config
 					UserHacks_TextureInsideRt : 1,
 					FXAA : 1,
 					ShadeBoost : 1,
+#ifndef PCSX2_CORE
 					ShaderFX : 1,
+#endif
 					DumpGSData : 1,
 					SaveRT : 1,
 					SaveFrame : 1,
@@ -573,6 +582,7 @@ struct Pcsx2Config
 		TexturePreloadingLevel TexturePreloading{TexturePreloadingLevel::Full};
 		GSDumpCompressionMethod GSDumpCompression{GSDumpCompressionMethod::Zstandard};
 		GSHardwareDownloadMode HWDownloadMode{GSHardwareDownloadMode::Enabled};
+		GSCASMode CASMode{GSCASMode::Disabled};
 		int Dithering{2};
 		int MaxAnisotropy{0};
 		int SWExtraThreads{2};
@@ -592,6 +602,7 @@ struct Pcsx2Config
 		int OverrideTextureBarriers{-1};
 		int OverrideGeometryShaders{-1};
 
+		int CAS_Sharpness{50};
 		int ShadeBoost_Brightness{50};
 		int ShadeBoost_Contrast{50};
 		int ShadeBoost_Saturation{50};

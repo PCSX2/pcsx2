@@ -33,6 +33,7 @@ public:
 		DepthStencil,
 		Texture,
 		Offscreen,
+		RWTexture,
 	};
 
 	enum class Format : u8
