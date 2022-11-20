@@ -9,7 +9,7 @@ on:
       os:
         required: false
         type: string
-        default: windows-2019
+        default: windows-2022
       platform:
         required: false
         type: string
@@ -76,7 +76,7 @@ jobs:
         shell: cmd
         run: |
           if "${{ inputs.platform }}"=="Win32" (SET vcvars=vcvarsamd64_x86.bat) else (SET vcvars=vcvars64.bat)
-          call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\%vcvars%"
+          call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\%vcvars%"
           echo vcvars=%vcvars%>> %GITHUB_OUTPUT%
           cmake . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -G Ninja
 
@@ -84,7 +84,7 @@ jobs:
         shell: cmd
         run: |
           if "${{ inputs.configuration }}"=="CMake" (
-            call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\${{ steps.cmake.outputs.vcvars }}"
+            call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\${{ steps.cmake.outputs.vcvars }}"
             cmake --build build --config Release || exit /b
             cp build/pcsx2/pcsx2* bin/
           ) else (
@@ -95,7 +95,7 @@ jobs:
         if: inputs.configuration == 'CMake'
         shell: cmd
         run: |
-          call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\${{ steps.cmake.outputs.vcvars }}"
+          call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\${{ steps.cmake.outputs.vcvars }}"
           cmake --build build --config Release --target unittests
 
       - name: Upload artifact
