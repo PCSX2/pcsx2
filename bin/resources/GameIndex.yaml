@@ -16872,6 +16872,8 @@ SLES-53484:
 SLES-53485:
   name: "Car Racing Challenge"
   region: "PAL-E"
+  gameFixes:
+    - XGKickHack # Fixes distant car textures.
 SLES-53487:
   name: "Forty 4 Party"
   region: "PAL-E"
@@ -25983,6 +25985,8 @@ SLPM-62563:
 SLPM-62564:
   name: "Simple 2000 Series Vol. 68 - The Tousou Highway - Nagoya - Tokyo"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes distant car textures.
 SLPM-62565:
   name: "Boboboubo Boubobo - Atsumare!! Taikan Boubobo [Doukonban]"
   region: "NTSC-J"
