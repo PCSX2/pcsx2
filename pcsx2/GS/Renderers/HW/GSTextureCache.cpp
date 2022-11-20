@@ -1021,7 +1021,10 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					const SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
 					if (so.is_valid)
 					{
-						t->m_age = 0;
+						// Don't reset the age on old targets, possibly misdetection, it upsets Urban Reign.
+						if (t->m_age < 30)
+							t->m_age = 0;
+
 						t->m_dirty.push_back(GSDirtyRect(so.b2a_offset, psm, bw));
 					}
 				}
