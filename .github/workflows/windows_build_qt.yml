@@ -9,7 +9,7 @@ on:
       os:
         required: false
         type: string
-        default: windows-2019
+        default: windows-2022
       platform:
         required: false
         type: string
@@ -91,14 +91,14 @@ jobs:
         id: cmake
         shell: cmd
         run: |
-          call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           cmake . -B build "-DCMAKE_PREFIX_PATH=%cd%\${{ inputs.qt_dir }}" -DQT_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -G Ninja
 
       - name: Build PCSX2
         shell: cmd
         run: |
           if "${{ inputs.configuration }}"=="CMake" (
-            call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+            call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
             cmake --build build --config Release || exit /b
             cmake --install build --config Release || exit /b
           ) else (
