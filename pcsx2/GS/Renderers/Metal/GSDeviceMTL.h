@@ -242,7 +242,7 @@ public:
 	MRCOwned<id<MTLRenderPipelineState>> m_convert_pipeline_copy[2];
 	MRCOwned<id<MTLRenderPipelineState>> m_convert_pipeline_copy_mask[1 << 4];
 	MRCOwned<id<MTLRenderPipelineState>> m_merge_pipeline[4];
-	MRCOwned<id<MTLRenderPipelineState>> m_interlace_pipeline[4];
+	MRCOwned<id<MTLRenderPipelineState>> m_interlace_pipeline[NUM_INTERLACE_SHADERS];
 	MRCOwned<id<MTLRenderPipelineState>> m_datm_pipeline[2];
 	MRCOwned<id<MTLRenderPipelineState>> m_stencil_clear_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_primid_init_pipeline[2][2];
