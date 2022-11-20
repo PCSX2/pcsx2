@@ -30798,6 +30798,8 @@ SLPM-66212:
   name: "Sega Rally 2006"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes rainbow textures.
 SLPM-66213:
   name: "BioHazard 4"
   region: "NTSC-J"
