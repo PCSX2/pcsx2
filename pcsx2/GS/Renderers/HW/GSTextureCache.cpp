@@ -446,6 +446,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 
 	Target* dst = nullptr;
 	auto& list = m_dst[type];
+	Target* old_found = nullptr;
+
 	if (!is_frame)
 	{
 		for (auto i = list.begin(); i != list.end(); ++i)
@@ -477,8 +479,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 				// If the frame is older than 30 frames (0.5 seconds) then it hasn't been updated for ages, so it's probably not a valid output frame.
 				// The rest of the checks will get better equality, so suffer less from misdetection.
 				// Kind of arbitrary but it's low enough to not break Grandia Xtreme and high enough not to break Mission Impossible Operation Surma.
-				if (t->m_age > 30)
+				if (t->m_age > 30 && !old_found)
+				{
+					old_found = t;
 					continue;
+				}
 
 				dst = t;
 				GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x -> 0x%x %s)", size.x, size.y, dst->m_texture->GetID(), bp, t->m_end_block, psm_str(TEX0.PSM));
@@ -497,6 +502,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 				// Make sure the target is inside the texture
 				if (t->m_TEX0.TBP0 <= bp && bp <= t->m_end_block && t->Inside(bp, TEX0.TBW, TEX0.PSM, GSVector4i(0, 0, real_w, real_h)))
 				{
+					if (old_found && t->m_age > 4)
+					{
+						continue;
+					}
+
 					dst = t;
 					GL_CACHE("TC: Lookup Frame %dx%d, inclusive hit: %d (0x%x, took 0x%x -> 0x%x %s)", size.x, size.y, t->m_texture->GetID(), bp, t->m_TEX0.TBP0, t->m_end_block, psm_str(TEX0.PSM));
 
@@ -506,6 +516,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 					break;
 				}
 			}
+		}
+
+		if (!dst && old_found)
+		{
+			dst = old_found;
 		}
 
 		// 3rd try ! Try to find a frame that doesn't contain valid data (honestly I'm not sure we need to do it)
@@ -530,7 +545,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 	{
 		GL_CACHE("TC: Lookup %s(%s) %dx%d, hit: %d (0x%x, %s)", is_frame ? "Frame" : "Target", to_string(type), size.x, size.y, dst->m_texture->GetID(), bp, psm_str(TEX0.PSM));
 
-		dst->Update();
+		dst->Update(!is_frame || old_found == dst);
 
 		const GSVector2& old_s = dst->m_texture->GetScale();
 		if (new_s != old_s)
@@ -573,7 +588,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 
 		if (dst_match)
 		{
-			dst_match->Update();
+			dst_match->Update(true);
 			calcRescale(dst_match->m_texture);
 			dst = CreateTarget(TEX0, new_size.x, new_size.y, type, clear);
 			dst->m_32_bits_fmt = dst_match->m_32_bits_fmt;
@@ -624,7 +639,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 			max_h = std::min<int>(max_h, TEX0.TBW * 64);
 
 			dst->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, TEX0.TBW * 64, is_frame ? real_h : max_h), TEX0.PSM, TEX0.TBW));
-			dst->Update();
+			dst->Update(true);
 		}
 	}
 	if (used)
@@ -733,7 +748,7 @@ void GSTextureCache::ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVect
 			dst->ResizeTexture(upsc_width, upsc_height);
 			dst->m_dirty.push_back(GSDirtyRect(r, TEX0.PSM, TEX0.TBW));
 			GetTargetHeight(TEX0.TBP0, TEX0.TBW, TEX0.PSM, r.w);
-			dst->Update();
+			dst->Update(true);
 		}
 	}
 }
@@ -1753,7 +1768,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_valid_rect = dst->m_valid;
 		src->m_end_block = dst->m_end_block;
 
-		dst->Update();
+		dst->Update(true);
 
 		// do not round here!!! if edge becomes a black pixel and addressing mode is clamp => everything outside the clamped area turns into black (kh2 shadows)
 
@@ -2666,9 +2681,10 @@ GSTextureCache::Target::Target(const GIFRegTEX0& TEX0, const bool depth_supporte
 	m_dirty_alpha = GSLocalMemory::m_psm[TEX0.PSM].trbpp != 24;
 }
 
-void GSTextureCache::Target::Update()
+void GSTextureCache::Target::Update(bool reset_age)
 {
-	Surface::UpdateAge();
+	if(reset_age)
+		Surface::UpdateAge();
 
 	// FIXME: the union of the rects may also update wrong parts of the render target (but a lot faster :)
 	// GH: it must be doable
@@ -2770,7 +2786,7 @@ void GSTextureCache::Target::UpdateIfDirtyIntersects(const GSVector4i& rc)
 		// but, to keep things simple, just update the whole thing
 		GL_CACHE("TC: Update dirty rectangle [%d,%d,%d,%d] due to intersection with [%d,%d,%d,%d]",
 			dirty_rc.x, dirty_rc.y, dirty_rc.z, dirty_rc.w, rc.x, rc.y, rc.z, rc.w);
-		Update();
+		Update(true);
 		break;
 	}
 }

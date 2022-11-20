@@ -203,7 +203,7 @@ public:
 
 		void UpdateValidity(const GSVector4i& rect);
 
-		void Update();
+		void Update(bool reset_age);
 
 		/// Updates the target, if the dirty area intersects with the specified rectangle.
 		void UpdateIfDirtyIntersects(const GSVector4i& rc);
