@@ -2795,7 +2795,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 	static constexpr const char* s_vsync_values[] = {"Off", "On", "Adaptive"};
 	static constexpr const char* s_deinterlacing_options[] = {"Automatic (Default)", "None", "Weave (Top Field First, Sawtooth)",
 		"Weave (Bottom Field First, Sawtooth)", "Bob (Top Field First)", "Bob (Bottom Field First)", "Blend (Top Field First, Half FPS)",
-		"Blend (Bottom Field First, Half FPS)", "Adaptive (Top Field First", "Adaptive (Bottom Field First)"};
+		"Blend (Bottom Field First, Half FPS)", "Adaptive (Top Field First)", "Adaptive (Bottom Field First)"};
 	static const char* s_resolution_options[] = {
 		"Native (PS2)",
 		"1.25x Native",
@@ -3032,8 +3032,21 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 
 	MenuHeading("Post-Processing");
 	{
-		const bool shadeboost_active = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "ShadeBoost", false);
+		static constexpr const char* s_cas_options[] = {
+			"Disabled", "Sharpen Only (Internal Resolution)", "Sharpen and Resize (Display Resolution)"};
+		const bool cas_active = (GetEffectiveIntSetting(bsi, "EmuCore/GS", "CASMode", 0) != static_cast<int>(GSCASMode::Disabled));
+
 		DrawToggleSetting(bsi, "FXAA", "Enables FXAA post-processing shader.", "EmuCore/GS", "fxaa", false);
+		DrawIntListSetting(bsi, "Contrast Adaptive Sharpening", "Enables FidelityFX Contrast Adaptive Sharpening.", "EmuCore/GS", "CASMode",
+			static_cast<int>(GSCASMode::Disabled), s_cas_options, std::size(s_cas_options));
+		DrawIntSpinBoxSetting(bsi, "CAS Sharpness", "Determines the intensity the sharpening effect in CAS post-processing.", "EmuCore/GS",
+			"CASSharpness", 50, 0, 100, 1, "%d%%", cas_active);
+	}
+
+	MenuHeading("Filters");
+	{
+		const bool shadeboost_active = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "ShadeBoost", false);
+
 		DrawToggleSetting(bsi, "Shade Boost", "Enables brightness/contrast/saturation adjustment.", "EmuCore/GS", "ShadeBoost", false);
 		DrawIntRangeSetting(bsi, "Shade Boost Brightness", "Adjusts brightness. 50 is normal.", "EmuCore/GS", "ShadeBoost_Brightness", 50,
 			1, 100, "%d", shadeboost_active);
@@ -3847,8 +3860,7 @@ void FullscreenUI::DrawGameFixesSettingsPage()
 	DrawToggleSetting(bsi, "EE Timing Hack",
 		"Known to affect following games: Digital Devil Saga (Fixes FMV and crashes), SSX (Fixes bad graphics and crashes).",
 		"EmuCore/Gamefixes", "EETimingHack", false);
-	DrawToggleSetting(bsi, "Instant DMA Hack",
-		"Known to affect following games: Fire Pro Wrestling Z (Bad ring graphics).",
+	DrawToggleSetting(bsi, "Instant DMA Hack", "Known to affect following games: Fire Pro Wrestling Z (Bad ring graphics).",
 		"EmuCore/Gamefixes", "InstantDMAHack", false);
 	DrawToggleSetting(bsi, "Handle DMAC writes when it is busy.",
 		"Known to affect following games: Mana Khemia 1 (Going \"off campus\"), Metal Saga (Intro FMV), Pilot Down Behind Enemy Lines.",

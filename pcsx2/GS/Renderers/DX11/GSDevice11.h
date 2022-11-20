@@ -122,7 +122,12 @@ private:
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0, int bufIdx = 0) final;
 	void DoFXAA(GSTexture* sTex, GSTexture* dTex) final;
 	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) final;
+#ifndef PCSX2_CORE
 	void DoExternalFX(GSTexture* sTex, GSTexture* dTex) final;
+#endif
+
+	bool CreateCASShaders();
+	bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) final;
 
 	wil::com_ptr_nothrow<ID3D11Device> m_dev;
 	wil::com_ptr_nothrow<ID3D11DeviceContext> m_ctx;
@@ -209,6 +214,13 @@ private:
 		wil::com_ptr_nothrow<ID3D11BlendState> bs;
 		wil::com_ptr_nothrow<ID3D11PixelShader> primid_init_ps[2];
 	} m_date;
+
+	struct
+	{
+		wil::com_ptr_nothrow<ID3D11Buffer> cb;
+		wil::com_ptr_nothrow<ID3D11ComputeShader> cs_upscale;
+		wil::com_ptr_nothrow<ID3D11ComputeShader> cs_sharpen;
+	} m_cas;
 
 	// Shaders...
 

@@ -710,6 +710,7 @@ public:
 		bool framebuffer_fetch    : 1; ///< Can sample from the framebuffer without texture barriers.
 		bool dual_source_blend    : 1; ///< Can use alpha output as a blend factor.
 		bool stencil_buffer       : 1; ///< Supports stencil buffer, and can use for DATE.
+		bool cas_sharpening       : 1; ///< Supports sufficient functionality for contrast adaptive sharpening.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));
@@ -740,6 +741,7 @@ protected:
 	static constexpr int   NUM_INTERLACE_SHADERS = 5;
 	static constexpr float MAD_SENSITIVITY = 0.08f;
 	static constexpr u32   MAX_POOLED_TEXTURES = 300;
+	static constexpr u32   NUM_CAS_CONSTANTS = 12; // 8 plus src offset x/y, 16 byte alignment
 
 	GSTexture* m_merge = nullptr;
 	GSTexture* m_weavebob = nullptr;
@@ -747,6 +749,7 @@ protected:
 	GSTexture* m_mad = nullptr;
 	GSTexture* m_target_tmp = nullptr;
 	GSTexture* m_current = nullptr;
+	GSTexture* m_cas = nullptr;
 	struct
 	{
 		size_t stride, start, count, limit;
@@ -766,7 +769,15 @@ protected:
 	virtual void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset, int bufIdx) = 0;
 	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) {}
 	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) {}
+#ifndef PCSX2_CORE
 	virtual void DoExternalFX(GSTexture* sTex, GSTexture* dTex) {}
+#endif
+
+	/// Resolves CAS shader includes for the specified source.
+	static bool GetCASShaderSource(std::string* source);
+
+	/// Applies CAS and writes to the destination texture, which should be a RWTexture.
+	virtual bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) = 0;
 
 public:
 	GSDevice();
@@ -847,7 +858,11 @@ public:
 	void Interlace(const GSVector2i& ds, int field, int mode, float yoffset);
 	void FXAA();
 	void ShadeBoost();
+#ifndef PCSX2_CORE
 	void ExternalFX();
+#endif
+
+	void CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, const GSVector4& draw_rect, bool sharpen_only);
 
 	bool ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h, bool clear = true, bool prefer_reuse = false);
 	bool ResizeTexture(GSTexture** t, int w, int h, bool prefer_reuse = false);

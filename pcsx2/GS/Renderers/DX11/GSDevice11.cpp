@@ -23,6 +23,7 @@
 #include "Host.h"
 #include "HostDisplay.h"
 #include "ShaderCacheVersion.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 #include <fstream>
 #include <sstream>
@@ -350,6 +351,7 @@ bool GSDevice11::Create()
 			return false;
 	}
 
+	CreateCASShaders();
 	return true;
 }
 
@@ -506,6 +508,9 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 		case GSTexture::Type::Offscreen:
 			desc.Usage = D3D11_USAGE_STAGING;
 			desc.CPUAccessFlags |= D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+			break;
+		case GSTexture::Type::RWTexture:
+			desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
 			break;
 	}
 
@@ -839,6 +844,8 @@ void GSDevice11::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool 
 	StretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[shader].get(), m_interlace.cb.get(), linear);
 }
 
+#ifndef PCSX2_CORE
+
 void GSDevice11::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 {
 	const GSVector2i s = dTex->GetSize();
@@ -885,6 +892,8 @@ void GSDevice11::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 	StretchRect(sTex, sRect, dTex, dRect, m_shaderfx.ps.get(), m_shaderfx.cb.get(), true);
 }
 
+#endif
+
 void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 {
 	const GSVector2i s = dTex->GetSize();
@@ -923,6 +932,55 @@ void GSDevice11::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float para
 	m_ctx->UpdateSubresource(m_shadeboost.cb.get(), 0, nullptr, params, 0, 0);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_shadeboost.ps.get(), m_shadeboost.cb.get(), true);
+}
+
+bool GSDevice11::CreateCASShaders()
+{
+	CD3D11_BUFFER_DESC desc(NUM_CAS_CONSTANTS * sizeof(u32), D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DEFAULT);
+	HRESULT hr = m_dev->CreateBuffer(&desc, nullptr, m_cas.cb.put());
+	if (FAILED(hr))
+		return false;
+
+	std::optional<std::string> cas_source(Host::ReadResourceFileToString("shaders/dx11/cas.hlsl"));
+	if (!cas_source.has_value() || !GetCASShaderSource(&cas_source.value()))
+		return false;
+
+	static constexpr D3D_SHADER_MACRO sharpen_only_macros[] = {
+		{"CAS_SHARPEN_ONLY", "1"},
+		{nullptr, nullptr}};
+
+	m_cas.cs_sharpen = m_shader_cache.GetComputeShader(m_dev.get(), cas_source.value(), sharpen_only_macros, "main");
+	m_cas.cs_upscale = m_shader_cache.GetComputeShader(m_dev.get(), cas_source.value(), nullptr, "main");
+	if (!m_cas.cs_sharpen || !m_cas.cs_upscale)
+		return false;
+
+	m_features.cas_sharpening = true;
+	return true;
+}
+
+bool GSDevice11::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants)
+{
+	static const int threadGroupWorkRegionDim = 16;
+	const int dispatchX = (dTex->GetWidth() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
+	const int dispatchY = (dTex->GetHeight() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
+
+	ID3D11ShaderResourceView* srvs[1] = {*static_cast<GSTexture11*>(sTex)};
+	ID3D11UnorderedAccessView* uavs[1] = {*static_cast<GSTexture11*>(dTex)};
+	m_ctx->OMSetRenderTargets(0, nullptr, nullptr);
+	m_ctx->UpdateSubresource(m_cas.cb.get(), 0, nullptr, constants.data(), 0, 0);
+	m_ctx->CSSetConstantBuffers(0, 1, m_cas.cb.addressof());
+	m_ctx->CSSetShader(sharpen_only ? m_cas.cs_sharpen.get() : m_cas.cs_upscale.get(), nullptr, 0);
+	m_ctx->CSSetShaderResources(0, std::size(srvs), srvs);
+	m_ctx->CSSetUnorderedAccessViews(0, std::size(uavs), uavs, nullptr);
+	m_ctx->Dispatch(dispatchX, dispatchY, 1);
+
+	// clear bindings out to prevent hazards
+	uavs[0] = nullptr;
+	srvs[0] = nullptr;
+	m_ctx->CSSetShaderResources(0, std::size(srvs), srvs);
+	m_ctx->CSSetUnorderedAccessViews(0, std::size(uavs), uavs, nullptr);
+
+	return true;
 }
 
 void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm)

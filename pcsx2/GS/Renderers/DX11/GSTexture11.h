@@ -26,6 +26,7 @@ class GSTexture11 final : public GSTexture
 	wil::com_ptr_nothrow<ID3D11ShaderResourceView> m_srv;
 	wil::com_ptr_nothrow<ID3D11RenderTargetView> m_rtv;
 	wil::com_ptr_nothrow<ID3D11DepthStencilView> m_dsv;
+	wil::com_ptr_nothrow<ID3D11UnorderedAccessView> m_uav;
 	D3D11_TEXTURE2D_DESC m_desc;
 	int m_mapped_subresource;
 
@@ -47,4 +48,5 @@ public:
 	operator ID3D11ShaderResourceView*();
 	operator ID3D11RenderTargetView*();
 	operator ID3D11DepthStencilView*();
+	operator ID3D11UnorderedAccessView*();
 };

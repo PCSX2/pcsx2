@@ -126,6 +126,24 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, u32 width, u32 heigh
 			return std::make_unique<GSTextureVK>(type, format, std::move(texture));
 		}
 
+		case Type::RWTexture:
+		{
+			pxAssert(levels == 1);
+
+			Vulkan::Texture texture;
+			if (!texture.Create(width, height, levels, 1, vk_format, VK_SAMPLE_COUNT_1_BIT,
+					VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
+					VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+						VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT))
+			{
+				return {};
+			}
+
+			Vulkan::Util::SetObjectName(
+				g_vulkan_context->GetDevice(), texture.GetImage(), "%ux%u RW texture", width, height);
+			return std::make_unique<GSTextureVK>(type, format, std::move(texture));
+		}
+
 		default:
 			return {};
 	}

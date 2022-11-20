@@ -23,6 +23,7 @@
 #include "Host.h"
 #include "HostDisplay.h"
 #include "ShaderCacheVersion.h"
+#include "IconsFontAwesome5.h"
 #include <cinttypes>
 #include <fstream>
 #include <sstream>
@@ -503,6 +504,12 @@ bool GSDeviceOGL::Create()
 			return false;
 		m_shadeboost.ps.RegisterUniform("params");
 		m_shadeboost.ps.SetName("Shadeboost pipe");
+	}
+
+	if (!CreateCASPrograms() && GSConfig.CASMode != GSCASMode::Disabled)
+	{
+		Host::AddIconOSDMessage("CASUnsupported", ICON_FA_EXCLAMATION_TRIANGLE,
+			"CAS is not available, your graphics driver does not supported the required functionality.", 10.0f);
 	}
 
 	// ****************************************************************
@@ -1425,9 +1432,10 @@ void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	StretchRect(sTex, sRect, dTex, dRect, m_fxaa.ps, true);
 }
 
+#ifndef PCSX2_CORE
+
 void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 {
-#ifndef PCSX2_CORE
 	// Lazy compile
 	if (!m_shaderfx.ps.IsValid())
 	{
@@ -1480,8 +1488,9 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 	m_shaderfx.ps.Uniform4f(2, 0.0f, 0.0f, 0.0f, 0.0f);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_shaderfx.ps, true);
-#endif
 }
+
+#endif
 
 void GSDeviceOGL::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4])
 {
@@ -1605,6 +1614,67 @@ void GSDeviceOGL::ClearSamplerCache()
 	{
 		m_ps_ss[key] = CreateSampler(PSSamplerSelector(key));
 	}
+}
+
+bool GSDeviceOGL::CreateCASPrograms()
+{
+	// Image load store and GLSL 420pack is core in GL4.2, no need to check.
+	m_features.cas_sharpening = GLAD_GL_VERSION_4_2 && GLAD_GL_ARB_compute_shader;
+	if (!m_features.cas_sharpening)
+	{
+		Console.Warning("Compute shaders not supported, CAS is unavailable.");
+		return false;
+	}
+
+	std::optional<std::string> cas_source(Host::ReadResourceFileToString("shaders/opengl/cas.glsl"));
+	if (!cas_source.has_value() || !GetCASShaderSource(&cas_source.value()))
+	{
+		m_features.cas_sharpening = false;
+		return false;
+	}
+
+	const char* header =
+		"#version 420\n"
+		"#extension GL_ARB_compute_shader : require\n";
+	const char* sharpen_params[2] = {
+		"#define CAS_SHARPEN_ONLY false\n",
+		"#define CAS_SHARPEN_ONLY true\n"};
+
+	if (!m_shader_cache.GetComputeProgram(&m_cas.upscale_ps, fmt::format("{}{}{}", header, sharpen_params[0], cas_source.value())) ||
+		!m_shader_cache.GetComputeProgram(&m_cas.sharpen_ps, fmt::format("{}{}{}", header, sharpen_params[1], cas_source.value())))
+	{
+		m_features.cas_sharpening = false;
+		return false;
+	}
+
+	const auto link_uniforms = [](GL::Program& prog) {
+		prog.RegisterUniform("const0");
+		prog.RegisterUniform("const1");
+		prog.RegisterUniform("srcOffset");
+	};
+	link_uniforms(m_cas.upscale_ps);
+	link_uniforms(m_cas.sharpen_ps);
+
+	return true;
+}
+
+bool GSDeviceOGL::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants)
+{
+	const GL::Program& prog = sharpen_only ? m_cas.sharpen_ps : m_cas.upscale_ps;
+	prog.Bind();
+	prog.Uniform4uiv(0, &constants[0]);
+	prog.Uniform4uiv(1, &constants[4]);
+	prog.Uniform2iv(2, reinterpret_cast<const s32*>(&constants[8]));
+
+	PSSetShaderResource(0, sTex);
+	glBindImageTexture(0, static_cast<GSTextureOGL*>(dTex)->GetID(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+
+	static const int threadGroupWorkRegionDim = 16;
+	const int dispatchX = (dTex->GetWidth() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
+	const int dispatchY = (dTex->GetHeight() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
+	glDispatchCompute(dispatchX, dispatchY, 1);
+
+	return true;
 }
 
 void GSDeviceOGL::OMAttachRt(GSTextureOGL* rt)

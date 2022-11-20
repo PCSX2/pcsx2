@@ -38,7 +38,7 @@ public:
 
 	__fi D3D12::Texture& GetTexture() { return m_texture; }
 	__fi const D3D12::DescriptorHandle& GetSRVDescriptor() const { return m_texture.GetSRVDescriptor(); }
-	__fi const D3D12::DescriptorHandle& GetRTVOrDSVHandle() const { return m_texture.GetRTVOrDSVDescriptor(); }
+	__fi const D3D12::DescriptorHandle& GetRTVOrDSVHandle() const { return m_texture.GetWriteDescriptor(); }
 	__fi D3D12_RESOURCE_STATES GetResourceState() const { return m_texture.GetState(); }
 	__fi DXGI_FORMAT GetNativeFormat() const { return m_texture.GetFormat(); }
 	__fi ID3D12Resource* GetResource() const { return m_texture.GetResource(); }

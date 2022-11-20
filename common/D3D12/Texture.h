@@ -46,7 +46,7 @@ namespace D3D12
 		__fi ID3D12Resource* GetResource() const { return m_resource.get(); }
 		__fi D3D12MA::Allocation* GetAllocation() const { return m_allocation.get(); }
 		__fi const DescriptorHandle& GetSRVDescriptor() const { return m_srv_descriptor; }
-		__fi const DescriptorHandle& GetRTVOrDSVDescriptor() const { return m_rtv_or_dsv_descriptor; }
+		__fi const DescriptorHandle& GetWriteDescriptor() const { return m_write_descriptor; }
 		__fi D3D12_RESOURCE_STATES GetState() const { return m_state; }
 
 		__fi u32 GetWidth() const { return m_width; }
@@ -83,11 +83,20 @@ namespace D3D12
 		static bool CreateSRVDescriptor(ID3D12Resource* resource, u32 levels, DXGI_FORMAT format, DescriptorHandle* dh);
 		static bool CreateRTVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, DescriptorHandle* dh);
 		static bool CreateDSVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, DescriptorHandle* dh);
+		static bool CreateUAVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, DescriptorHandle* dh);
+
+		enum class WriteDescriptorType : u8
+		{
+			None,
+			RTV,
+			DSV,
+			UAV
+		};
 
 		ComPtr<ID3D12Resource> m_resource;
 		ComPtr<D3D12MA::Allocation> m_allocation;
 		DescriptorHandle m_srv_descriptor = {};
-		DescriptorHandle m_rtv_or_dsv_descriptor = {};
+		DescriptorHandle m_write_descriptor = {};
 		u32 m_width = 0;
 		u32 m_height = 0;
 		u32 m_levels = 0;
@@ -95,6 +104,6 @@ namespace D3D12
 
 		D3D12_RESOURCE_STATES m_state = D3D12_RESOURCE_STATE_COMMON;
 
-		bool m_is_depth_view = false;
+		WriteDescriptorType m_write_descriptor_type = WriteDescriptorType::None;
 	};
 } // namespace D3D12

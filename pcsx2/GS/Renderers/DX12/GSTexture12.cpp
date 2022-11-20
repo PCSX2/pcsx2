@@ -99,6 +99,21 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, u32 width, u32 heigh
 			return std::make_unique<GSTexture12>(type, format, std::move(texture));
 		}
 
+		case Type::RWTexture:
+		{
+			pxAssert(levels == 1);
+
+			D3D12::Texture texture;
+			if (!texture.Create(width, height, levels, d3d_format, srv_format, DXGI_FORMAT_UNKNOWN,
+					DXGI_FORMAT_UNKNOWN, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12MA::ALLOCATION_FLAG_COMMITTED))
+			{
+				return {};
+			}
+
+			D3D12::SetObjectNameFormatted(texture.GetResource(), "%ux%u RW texture", width, height);
+			return std::make_unique<GSTexture12>(type, format, std::move(texture));
+		}
+
 		default:
 			return {};
 	}
@@ -381,12 +396,12 @@ void GSTexture12::CommitClear(ID3D12GraphicsCommandList* cmdlist)
 	if (IsDepthStencil())
 	{
 		m_texture.TransitionToState(cmdlist, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-		cmdlist->ClearDepthStencilView(m_texture.GetRTVOrDSVDescriptor(), D3D12_CLEAR_FLAG_DEPTH, m_clear_value.depth, 0, 0, nullptr);
+		cmdlist->ClearDepthStencilView(m_texture.GetWriteDescriptor(), D3D12_CLEAR_FLAG_DEPTH, m_clear_value.depth, 0, 0, nullptr);
 	}
 	else
 	{
 		m_texture.TransitionToState(cmdlist, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		cmdlist->ClearRenderTargetView(m_texture.GetRTVOrDSVDescriptor(), m_clear_value.color, 0, nullptr);
+		cmdlist->ClearRenderTargetView(m_texture.GetWriteDescriptor(), m_clear_value.color, 0, nullptr);
 	}
 
 	SetState(GSTexture::State::Dirty);

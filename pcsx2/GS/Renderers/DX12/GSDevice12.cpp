@@ -156,6 +156,7 @@ bool GSDevice12::Create()
 		return false;
 	}
 
+	CompileCASPipelines();
 	InitializeState();
 	InitializeSamplers();
 	return true;
@@ -785,6 +786,82 @@ void GSDevice12::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	EndRenderPass();
 
 	static_cast<GSTexture12*>(dTex)->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+}
+
+bool GSDevice12::CompileCASPipelines()
+{
+	D3D12::RootSignatureBuilder rsb;
+	rsb.Add32BitConstants(0, NUM_CAS_CONSTANTS, D3D12_SHADER_VISIBILITY_ALL);
+	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+	m_cas_root_signature = rsb.Create(false);
+	if (!m_cas_root_signature)
+		return false;
+
+	std::optional<std::string> cas_source(Host::ReadResourceFileToString("shaders/dx11/cas.hlsl"));
+	if (!cas_source.has_value() || !GetCASShaderSource(&cas_source.value()))
+		return false;
+
+	static constexpr D3D_SHADER_MACRO sharpen_only_macros[] = {
+		{"CAS_SHARPEN_ONLY", "1"},
+		{nullptr, nullptr}};
+
+	const ComPtr<ID3DBlob> cs_upscale(m_shader_cache.GetComputeShader(cas_source.value(), nullptr, "main"));
+	const ComPtr<ID3DBlob> cs_sharpen(m_shader_cache.GetComputeShader(cas_source.value(), sharpen_only_macros, "main"));
+	if (!cs_upscale || !cs_sharpen)
+		return false;
+
+	D3D12::ComputePipelineBuilder cpb;
+	cpb.SetRootSignature(m_cas_root_signature.get());
+	cpb.SetShader(cs_upscale->GetBufferPointer(), cs_upscale->GetBufferSize());
+	m_cas_upscale_pipeline = cpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
+	cpb.SetShader(cs_sharpen->GetBufferPointer(), cs_sharpen->GetBufferSize());
+	m_cas_sharpen_pipeline = cpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
+	if (!m_cas_upscale_pipeline || !m_cas_sharpen_pipeline)
+		return false;
+
+	m_features.cas_sharpening = true;
+	return true;
+}
+
+bool GSDevice12::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants)
+{
+	EndRenderPass();
+
+	GSTexture12* const sTex12 = static_cast<GSTexture12*>(sTex);
+	GSTexture12* const dTex12 = static_cast<GSTexture12*>(dTex);
+	D3D12::DescriptorHandle sTexDH, dTexDH;
+	if (!GetTextureGroupDescriptors(&sTexDH, &sTex12->GetTexture().GetSRVDescriptor(), 1) ||
+		!GetTextureGroupDescriptors(&dTexDH, &dTex12->GetTexture().GetWriteDescriptor(), 1))
+	{
+		ExecuteCommandList(false, "Ran out of descriptors for CAS");
+		if (!GetTextureGroupDescriptors(&sTexDH, &sTex12->GetTexture().GetSRVDescriptor(), 1) ||
+			!GetTextureGroupDescriptors(&dTexDH, &dTex12->GetTexture().GetWriteDescriptor(), 1))
+		{
+			Console.Error("Failed to allocate CAS descriptors.");
+			return false;
+		}
+	}
+
+	ID3D12GraphicsCommandList* const cmdlist = g_d3d12_context->GetCommandList();
+	const D3D12_RESOURCE_STATES old_state = sTex12->GetTexture().GetState();
+	sTex12->GetTexture().TransitionToState(cmdlist, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	dTex12->GetTexture().TransitionToState(cmdlist, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+	cmdlist->SetComputeRootSignature(m_cas_root_signature.get());
+	cmdlist->SetComputeRoot32BitConstants(CAS_ROOT_SIGNATURE_PARAM_PUSH_CONSTANTS, NUM_CAS_CONSTANTS, constants.data(), 0);
+	cmdlist->SetComputeRootDescriptorTable(CAS_ROOT_SIGNATURE_PARAM_SRC_TEXTURE, sTexDH);
+	cmdlist->SetComputeRootDescriptorTable(CAS_ROOT_SIGNATURE_PARAM_DST_TEXTURE, dTexDH);
+	cmdlist->SetPipelineState(sharpen_only ? m_cas_sharpen_pipeline.get() : m_cas_upscale_pipeline.get());
+	m_dirty_flags |= DIRTY_FLAG_PIPELINE;
+
+	static const int threadGroupWorkRegionDim = 16;
+	const int dispatchX = (dTex->GetWidth() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
+	const int dispatchY = (dTex->GetHeight() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
+	cmdlist->Dispatch(dispatchX, dispatchY, 1);
+
+	sTex12->GetTexture().TransitionToState(cmdlist, old_state);
+	return true;
 }
 
 void GSDevice12::IASetVertexBuffer(const void* vertex, size_t stride, size_t count)
