@@ -266,8 +266,8 @@ bool GSRenderer::Merge(int field)
 				if (display_diff.y >= 4 || !GSConfig.PCRTCAntiBlur)
 					off.y = display_diff.y;
 
-
-				if (samesrc)
+				// Need to check if only circuit 2 is enabled. Stuntman toggles circuit 1 on and off every other frame.
+				if (samesrc || m_regs->PMODE.EN == 2)
 				{
 					// Adjusting the screen offset when using a negative offset.
 					const int videomode = static_cast<int>(GetVideoMode()) - 1;
