@@ -99,7 +99,7 @@ void recJALR()
 	EE::Profiler.EmitOp(eeOpcode::JALR);
 
 	const u32 newpc = pc + 4;
-	const bool swap = (EmuConfig.Gamefixes.GoemonTlbHack || _Rd_ == _Rs_) ? false : TrySwapDelaySlot(_Rs_, 0, _Rd_);
+	const bool swap = (EmuConfig.Gamefixes.GoemonTlbHack || _Rd_ == _Rs_) ? false : TrySwapDelaySlot(_Rs_, 0, _Rd_, true);
 
 	// uncomment when there are NO instructions that need to call interpreter
 	//	int mmreg;

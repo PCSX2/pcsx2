@@ -311,7 +311,7 @@ static void _setupBranchTest(u32*(jmpType)(u32), bool isLikely)
 {
 	printCOP2("COP2 Branch");
 	const u32 branchTo = ((s32)_Imm_ * 4) + pc;
-	const bool swap = isLikely ? false : TrySwapDelaySlot(0, 0, 0);
+	const bool swap = isLikely ? false : TrySwapDelaySlot(0, 0, 0, false);
 	_eeFlushAllDirty();
 	//xTEST(ptr32[&vif1Regs.stat._u32], 0x4);
 	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x100);
