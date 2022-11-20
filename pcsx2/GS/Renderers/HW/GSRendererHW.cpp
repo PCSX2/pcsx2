@@ -1691,7 +1691,6 @@ void GSRendererHW::Draw()
 	// The rectangle of the draw
 	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
 
-
 	if (!GSConfig.UserHacks_DisableSafeFeatures)
 	{
 		// Constant Direct Write without texture/test/blending (aka a GS mem clear)
@@ -1701,13 +1700,13 @@ void GSRendererHW::Draw()
 			&& !m_context->TEST.ATE // no alpha test
 			&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
 			&& (m_vt.m_eq.rgba == 0xFFFF) // constant color write
-			&& m_r.x == 0 && m_r.y == 0) { // Likely full buffer write
+			&& m_r.x == 0 && m_r.y == 0) // Likely full buffer write
+		{
 
 			if (OI_GsMemClear() && m_r.w > 1024)
 			{
 				if ((fm & fm_mask) != fm_mask)
 				{
-
 					m_tc->InvalidateVideoMem(context->offset.fb, m_r, true);
 
 					m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, context->FRAME.Block());
@@ -1840,7 +1839,8 @@ void GSRendererHW::Draw()
 				&& !m_context->TEST.ATE // no alpha test
 				&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
 				&& (m_vt.m_eq.rgba == 0xFFFF) // constant color write
-				&& m_r.x == 0 && m_r.y == 0) { // Likely full buffer write
+				&& m_r.x == 0 && m_r.y == 0) // Likely full buffer write
+		{
 			OI_DoubleHalfClear(rt, ds);
 		}
 	}
