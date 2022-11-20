@@ -9138,6 +9138,11 @@ SLED-53083:
   region: "PAL-M5"
   clampModes:
     vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
+SLED-53097:
+  name: "Worms 4 - Mayhem [Demo]"
+  region: "PAL-M5"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLED-53109:
   name: "Juiced [Demo]"
   region: "PAL-M5"
@@ -16083,6 +16088,8 @@ SLES-53096:
   name: "Worms 4 - Mayhem"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLES-53098:
   name: "Conspiracy - Weapons of Mass Destruction"
   region: "PAL-M5"
