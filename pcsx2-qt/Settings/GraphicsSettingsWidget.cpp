@@ -87,12 +87,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 	m_ui.setupUi(this);
 
-	// start hidden, fixup in updateRendererDependentOptions()
-	m_ui.hardwareRendererGroup->setVisible(false);
-	m_ui.verticalLayout->removeWidget(m_ui.hardwareRendererGroup);
-	m_ui.softwareRendererGroup->setVisible(false);
-	m_ui.verticalLayout->removeWidget(m_ui.softwareRendererGroup);
-
 	//////////////////////////////////////////////////////////////////////////
 	// Global Settings
 	//////////////////////////////////////////////////////////////////////////
@@ -325,7 +319,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	}
 
 	connect(m_ui.renderer, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GraphicsSettingsWidget::onRendererChanged);
-	connect(m_ui.enableHWFixes, &QCheckBox::stateChanged, this, &GraphicsSettingsWidget::onEnableHardwareFixesChanged);
+	connect(m_ui.enableHWFixes, &QCheckBox::stateChanged, this, &GraphicsSettingsWidget::updateRendererDependentOptions);
 	connect(m_ui.textureFiltering, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onTextureFilteringChange);
 	connect(m_ui.swTextureFiltering, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onSWTextureFilteringChange);
 	updateRendererDependentOptions();
@@ -623,13 +617,6 @@ void GraphicsSettingsWidget::onGpuPaletteConversionChanged(int state)
 	m_ui.anisotropicFiltering->setEnabled(!enabled);
 }
 
-void GraphicsSettingsWidget::onEnableHardwareFixesChanged()
-{
-	const bool enabled = (m_ui.enableHWFixes->checkState() == Qt::Checked);
-	m_ui.hardwareRendererGroup->setTabEnabled(2, enabled);
-	m_ui.hardwareRendererGroup->setTabEnabled(3, enabled);
-}
-
 GSRendererType GraphicsSettingsWidget::getEffectiveRenderer() const
 {
 	const GSRendererType type =
@@ -651,58 +638,20 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 
 	const bool is_hardware = (type == GSRendererType::DX11 || type == GSRendererType::DX12 || type == GSRendererType::OGL || type == GSRendererType::VK || type == GSRendererType::Metal);
 	const bool is_software = (type == GSRendererType::SW);
-	const int current_tab = m_hardware_renderer_visible ? m_ui.hardwareRendererGroup->currentIndex() : m_ui.softwareRendererGroup->currentIndex();
+	const bool hw_fixes = (is_hardware && m_ui.enableHWFixes->checkState() == Qt::Checked);
+	const int prev_tab = m_ui.tabs->currentIndex();
 
-	// move advanced tab to the correct parent
-	static constexpr std::array<const char*, 3> move_tab_names = {{"Display", "OSD", "Advanced"}};
-	const std::array<QWidget*, 3> move_tab_pointers = {{m_ui.gameDisplayTab, m_ui.osdTab, m_ui.advancedTab}};
-	for (size_t i = 0; i < move_tab_pointers.size(); i++)
-	{
-		QWidget* tab = move_tab_pointers[i];
-		const QString tab_label(tr(move_tab_names[i]));
-		if (const int index = m_ui.softwareRendererGroup->indexOf(tab); index >= 0 && is_hardware)
-			m_ui.softwareRendererGroup->removeTab(index);
-		if (const int index = m_ui.hardwareRendererGroup->indexOf(tab); index >= 0 && is_software)
-			m_ui.hardwareRendererGroup->removeTab(index);
-		if (const int index = m_ui.hardwareRendererGroup->indexOf(tab); index < 0 && is_hardware)
-			m_ui.hardwareRendererGroup->insertTab((i == 0) ? 0 : m_ui.hardwareRendererGroup->count(), tab, tab_label);
-		if (const int index = m_ui.softwareRendererGroup->indexOf(tab); index < 0 && is_software)
-			m_ui.softwareRendererGroup->insertTab((i == 0) ? 0 : m_ui.softwareRendererGroup->count(), tab, tab_label);
-	}
+	m_ui.tabs->setTabVisible(1, is_hardware); // hw rendering
+	m_ui.tabs->setTabVisible(2, is_software); // sw rendering
+	m_ui.tabs->setTabVisible(3, hw_fixes); // hardware fixes
+	m_ui.tabs->setTabVisible(4, hw_fixes); // upscaling fixes
+	m_ui.tabs->setTabVisible(5, is_hardware); // texture replacement
 
-	if (m_hardware_renderer_visible != is_hardware)
-	{
-		m_ui.hardwareRendererGroup->setVisible(is_hardware);
-		if (!is_hardware)
-		{
-			m_ui.verticalLayout->removeWidget(m_ui.hardwareRendererGroup);
-		}
-		else
-		{
-			// map first two tabs over, skip hacks
-			m_ui.verticalLayout->insertWidget(1, m_ui.hardwareRendererGroup);
-			m_ui.hardwareRendererGroup->setCurrentIndex((current_tab < 2) ? current_tab : (current_tab + 3));
-		}
-
-		m_hardware_renderer_visible = is_hardware;
-	}
-
-	if (m_software_renderer_visible != is_software)
-	{
-		m_ui.softwareRendererGroup->setVisible(is_software);
-		if (is_hardware)
-		{
-			m_ui.verticalLayout->removeWidget(m_ui.softwareRendererGroup);
-		}
-		else
-		{
-			// software has no hacks tabs
-			m_ui.verticalLayout->insertWidget(1, m_ui.softwareRendererGroup);
-			m_ui.softwareRendererGroup->setCurrentIndex((current_tab >= 5) ? (current_tab - 3) : (current_tab >= 2 ? 1 : current_tab));
-		}
-
-		m_software_renderer_visible = is_software;
-	}
+	// move back to the renderer if we're on one of the now-hidden tabs
+	if (is_software && (prev_tab == 1 || (prev_tab >= 2 && prev_tab <= 5)))
+		m_ui.tabs->setCurrentIndex(2);
+	else if (is_hardware && prev_tab == 2)
+		m_ui.tabs->setCurrentIndex(1);
 
 	m_ui.overrideTextureBarriers->setDisabled(is_sw_dx);
 	m_ui.overrideGeometryShader->setDisabled(is_sw_dx);
@@ -799,8 +748,4 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 				m_ui.fullscreenModes->setCurrentIndex(m_ui.fullscreenModes->count() - 1);
 		}
 	}
-
-	m_ui.enableHWFixes->setEnabled(is_hardware);
-	if (is_hardware)
-		onEnableHardwareFixesChanged();
 }
