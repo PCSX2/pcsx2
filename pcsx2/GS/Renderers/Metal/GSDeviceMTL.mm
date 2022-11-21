@@ -596,7 +596,8 @@ void GSDeviceMTL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool
 	GSMTLInterlacePSUniform cb = {};
 	cb.ZrH = {static_cast<float>(bufIdx), 1.0f / ds.y, ds.y, MAD_SENSITIVITY};
 
-	DoStretchRect(sTex, sRect, dTex, dRect, m_interlace_pipeline[shader], linear, shader > 1 ? LoadAction::DontCareIfFull : LoadAction::Load, &cb, sizeof(cb));
+	const bool can_discard = shader == 0 || shader == 3;
+	DoStretchRect(sTex, sRect, dTex, dRect, m_interlace_pipeline[shader], linear, !can_discard ? LoadAction::DontCareIfFull : LoadAction::Load, &cb, sizeof(cb));
 }}
 
 void GSDeviceMTL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
