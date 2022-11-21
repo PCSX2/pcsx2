@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>658</width>
-    <height>890</height>
+    <height>476</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -56,7 +56,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QTabWidget" name="hardwareRendererGroup">
+    <widget class="QTabWidget" name="tabs">
      <property name="currentIndex">
       <number>0</number>
      </property>
@@ -671,6 +671,88 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="softwareRenderingTab">
+      <attribute name="title">
+       <string>Rendering</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout_9">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_37">
+         <property name="text">
+          <string>Texture Filtering:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="swTextureFiltering">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <item>
+          <property name="text">
+           <string>Nearest</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Bilinear (Forced)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Bilinear (PS2)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Bilinear (Forced excluding sprite)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Extra Rendering Threads:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="extraSWThreads">
+         <property name="suffix">
+          <string> threads</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="swMipmap">
+           <property name="text">
+            <string>Mipmapping</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="swAutoFlush">
+           <property name="text">
+            <string>Auto Flush</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
      <widget class="QGroupBox" name="hardwareFixesTab">
       <attribute name="title">
        <string>Hardware Fixes</string>
@@ -1126,6 +1208,221 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="postProcessingTab">
+      <attribute name="title">
+       <string>Post-Processing</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="QGroupBox" name="groupBox_5">
+         <property name="title">
+          <string>Sharpening/Anti-Aliasing</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_17">
+            <property name="text">
+             <string>Contrast Adaptive Sharpening:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <widget class="QComboBox" name="casMode">
+              <item>
+               <property name="text">
+                <string>Disabled</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Sharpen Only (Internal Resolution)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Sharpen and Resize (Display Resolution)</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <item>
+               <widget class="QLabel" name="label_43">
+                <property name="text">
+                 <string>Sharpness:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="casSharpness">
+                <property name="suffix">
+                 <string>%</string>
+                </property>
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+                <property name="value">
+                 <number>50</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="QCheckBox" name="fxaa">
+            <property name="text">
+             <string>FXAA</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_7">
+         <property name="title">
+          <string>Filters</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_5">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_35">
+            <property name="text">
+             <string>TV Shader:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="tvShader">
+            <item>
+             <property name="text">
+              <string>None</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Scanline Filter</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Diagonal Filter</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Triangular Filter</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Wave Filter</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Lottes CRT</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="shadeBoost">
+            <property name="text">
+             <string>Shade Boost</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_31">
+              <property name="text">
+               <string>Brightness:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="shadeBoostBrightness">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_32">
+              <property name="text">
+               <string>Contrast:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="shadeBoostContrast">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_33">
+              <property name="text">
+               <string>Saturation</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="shadeBoostSaturation">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_5">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>111</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
      <widget class="QGroupBox" name="osdTab">
       <attribute name="title">
        <string>OSD</string>
@@ -1230,192 +1527,6 @@
              </widget>
             </item>
            </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_5">
-         <property name="title">
-          <string>Post-Processing</string>
-         </property>
-         <layout class="QFormLayout" name="formLayout_2">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_17">
-            <property name="text">
-             <string>CAS Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
-            <item>
-             <widget class="QComboBox" name="casMode">
-              <item>
-               <property name="text">
-                <string>Disabled</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Sharpen Only (Internal Resolution)</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Sharpen and Upscale (Display Resolution)</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_7">
-              <item>
-               <widget class="QLabel" name="label_43">
-                <property name="text">
-                 <string>Sharpness:</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSpinBox" name="casSharpness">
-                <property name="suffix">
-                 <string>%</string>
-                </property>
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-                <property name="value">
-                 <number>50</number>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </item>
-          <item row="2" column="0">
-           <widget class="QCheckBox" name="shadeBoost">
-            <property name="text">
-             <string>Shade Boost</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
-            <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_31">
-              <property name="text">
-               <string>Brightness:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="shadeBoostBrightness">
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>100</number>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_32">
-              <property name="text">
-               <string>Contrast:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="shadeBoostContrast">
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>100</number>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_33">
-              <property name="text">
-               <string>Saturation</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="shadeBoostSaturation">
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>100</number>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="3" column="0">
-           <widget class="QCheckBox" name="fxaa">
-            <property name="text">
-             <string>FXAA</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_35">
-            <property name="text">
-             <string>TV Shader</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="tvShader">
-            <item>
-             <property name="text">
-              <string>None</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Scanline Filter</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Diagonal Filter</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Triangular Filter</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Wave Filter</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Lottes CRT</string>
-             </property>
-            </item>
-           </widget>
           </item>
          </layout>
         </widget>
@@ -1609,104 +1720,6 @@
           </size>
          </property>
         </spacer>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-   </item>
-   <item>
-    <widget class="QTabWidget" name="softwareRendererGroup">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>203</height>
-      </size>
-     </property>
-     <property name="documentMode">
-      <bool>true</bool>
-     </property>
-     <widget class="QGroupBox" name="softwareRendererSettings">
-      <attribute name="title">
-       <string>Rendering</string>
-      </attribute>
-      <layout class="QFormLayout" name="formLayout_3">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_37">
-         <property name="text">
-          <string>Texture Filtering:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="swTextureFiltering">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="layoutDirection">
-          <enum>Qt::LeftToRight</enum>
-         </property>
-         <item>
-          <property name="text">
-           <string>Nearest</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Bilinear (Forced)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Bilinear (PS2)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Bilinear (Forced excluding sprite)</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_9">
-         <property name="text">
-          <string>Extra Rendering Threads:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QSpinBox" name="extraSWThreads">
-         <property name="suffix">
-          <string> threads</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0" colspan="2">
-        <layout class="QGridLayout" name="gridLayout_2">
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="swMipmap">
-           <property name="text">
-            <string>Mipmapping</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="swAutoFlush">
-           <property name="text">
-            <string>Auto Flush</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </item>
       </layout>
      </widget>
