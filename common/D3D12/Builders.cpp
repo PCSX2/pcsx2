@@ -223,6 +223,56 @@ void GraphicsPipelineBuilder::SetDepthStencilFormat(DXGI_FORMAT format)
 	m_desc.DSVFormat = format;
 }
 
+
+ComputePipelineBuilder::ComputePipelineBuilder()
+{
+	Clear();
+}
+
+void ComputePipelineBuilder::Clear()
+{
+	std::memset(&m_desc, 0, sizeof(m_desc));
+}
+
+wil::com_ptr_nothrow<ID3D12PipelineState> ComputePipelineBuilder::Create(ID3D12Device* device, bool clear /*= true*/)
+{
+	wil::com_ptr_nothrow<ID3D12PipelineState> ps;
+	HRESULT hr = device->CreateComputePipelineState(&m_desc, IID_PPV_ARGS(ps.put()));
+	if (FAILED(hr))
+	{
+		Console.Error("CreateComputePipelineState() failed: %08X", hr);
+		return {};
+	}
+
+	if (clear)
+		Clear();
+
+	return ps;
+}
+
+wil::com_ptr_nothrow<ID3D12PipelineState> ComputePipelineBuilder::Create(ID3D12Device* device, ShaderCache& cache, bool clear /*= true*/)
+{
+	wil::com_ptr_nothrow<ID3D12PipelineState> pso = cache.GetPipelineState(device, m_desc);
+	if (!pso)
+		return {};
+
+	if (clear)
+		Clear();
+
+	return pso;
+}
+
+void ComputePipelineBuilder::SetRootSignature(ID3D12RootSignature* rs)
+{
+	m_desc.pRootSignature = rs;
+}
+
+void ComputePipelineBuilder::SetShader(const void* data, u32 data_size)
+{
+	m_desc.CS.pShaderBytecode = data;
+	m_desc.CS.BytecodeLength = data_size;
+}
+
 RootSignatureBuilder::RootSignatureBuilder()
 {
 	Clear();

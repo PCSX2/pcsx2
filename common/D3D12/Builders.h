@@ -114,8 +114,26 @@ namespace D3D12
 		void SetDepthStencilFormat(DXGI_FORMAT format);
 
 	private:
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC m_desc{};
-		std::array<D3D12_INPUT_ELEMENT_DESC, MAX_VERTEX_ATTRIBUTES> m_input_elements{};
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC m_desc;
+		std::array<D3D12_INPUT_ELEMENT_DESC, MAX_VERTEX_ATTRIBUTES> m_input_elements;
+	};
+
+	class ComputePipelineBuilder
+	{
+	public:
+		ComputePipelineBuilder();
+		~ComputePipelineBuilder() = default;
+
+		void Clear();
+
+		wil::com_ptr_nothrow<ID3D12PipelineState> Create(ID3D12Device* device, bool clear = true);
+		wil::com_ptr_nothrow<ID3D12PipelineState> Create(ID3D12Device* device, ShaderCache& cache, bool clear = true);
+
+		void SetRootSignature(ID3D12RootSignature* rs);
+
+		void SetShader(const void* data, u32 data_size);
+	private:
+		D3D12_COMPUTE_PIPELINE_STATE_DESC m_desc;
 	};
 
 } // namespace D3D12
