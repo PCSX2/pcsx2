@@ -237,6 +237,7 @@ public:
 	MRCOwned<id<MTLFence>> m_spin_fence;
 
 	// Functions and Pipeline States
+	MRCOwned<id<MTLComputePipelineState>> m_cas_pipeline[2];
 	MRCOwned<id<MTLRenderPipelineState>> m_convert_pipeline[static_cast<int>(ShaderConvert::Count)];
 	MRCOwned<id<MTLRenderPipelineState>> m_present_pipeline[static_cast<int>(PresentShader::Count)];
 	MRCOwned<id<MTLRenderPipelineState>> m_convert_pipeline_copy[2];
@@ -359,6 +360,7 @@ public:
 
 	MRCOwned<id<MTLFunction>> LoadShader(NSString* name);
 	MRCOwned<id<MTLRenderPipelineState>> MakePipeline(MTLRenderPipelineDescriptor* desc, id<MTLFunction> vertex, id<MTLFunction> fragment, NSString* name);
+	MRCOwned<id<MTLComputePipelineState>> MakeComputePipeline(id<MTLFunction> compute, NSString* name);
 	bool Create() override;
 
 	void ClearRenderTarget(GSTexture* t, const GSVector4& c) override;

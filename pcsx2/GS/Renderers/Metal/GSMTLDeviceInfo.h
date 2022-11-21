@@ -42,6 +42,7 @@ struct GSMTLDevice
 		bool framebuffer_fetch;
 		bool primid;
 		bool slow_color_compression; ///< Color compression seems to slow down rt read on AMD
+		bool has_fast_half;
 		MetalVersion shader_version;
 		int max_texsize;
 	};

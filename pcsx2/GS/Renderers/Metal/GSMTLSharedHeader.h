@@ -57,6 +57,13 @@ struct GSMTLInterlacePSUniform
 	vector_float4 ZrH;
 };
 
+struct GSMTLCASPSUniform
+{
+	vector_uint4 const0;
+	vector_uint4 const1;
+	vector_int2 srcOffset;
+};
+
 struct GSMTLMainVertex
 {
 	vector_float2 st;
@@ -132,6 +139,7 @@ enum class GSMTLExpandType : unsigned char
 
 enum GSMTLFnConstants
 {
+	GSMTLConstantIndex_CAS_SHARPEN_ONLY,
 	GSMTLConstantIndex_SCALING_FACTOR,
 	GSMTLConstantIndex_FRAMEBUFFER_FETCH,
 	GSMTLConstantIndex_FST,
