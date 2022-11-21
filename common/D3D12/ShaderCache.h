@@ -41,6 +41,7 @@ namespace D3D12
 			PixelShader,
 			ComputeShader,
 			GraphicsPipeline,
+			ComputePipeline,
 		};
 
 		ShaderCache();
@@ -77,6 +78,7 @@ namespace D3D12
 			const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main");
 
 		ComPtr<ID3D12PipelineState> GetPipelineState(ID3D12Device* device, const D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc);
+		ComPtr<ID3D12PipelineState> GetPipelineState(ID3D12Device* device, const D3D12_COMPUTE_PIPELINE_STATE_DESC& desc);
 
 	private:
 		static constexpr u32 FILE_VERSION = 1;
@@ -120,6 +122,7 @@ namespace D3D12
 		static CacheIndexKey GetShaderCacheKey(EntryType type, const std::string_view& shader_code,
 			const D3D_SHADER_MACRO* macros, const char* entry_point);
 		static CacheIndexKey GetPipelineCacheKey(const D3D12_GRAPHICS_PIPELINE_STATE_DESC& gpdesc);
+		static CacheIndexKey GetPipelineCacheKey(const D3D12_COMPUTE_PIPELINE_STATE_DESC& gpdesc);
 
 		bool CreateNew(const std::string& index_filename, const std::string& blob_filename, std::FILE*& index_file,
 			std::FILE*& blob_file);
@@ -132,6 +135,9 @@ namespace D3D12
 			const D3D_SHADER_MACRO* macros, const char* entry_point);
 		ComPtr<ID3D12PipelineState> CompileAndAddPipeline(ID3D12Device* device, const CacheIndexKey& key,
 			const D3D12_GRAPHICS_PIPELINE_STATE_DESC& gpdesc);
+		ComPtr<ID3D12PipelineState> CompileAndAddPipeline(ID3D12Device* device, const CacheIndexKey& key,
+			const D3D12_COMPUTE_PIPELINE_STATE_DESC& gpdesc);
+		bool AddPipelineToBlob(const CacheIndexKey& key, ID3D12PipelineState* pso);
 
 		std::string m_base_path;
 
