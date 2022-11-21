@@ -355,8 +355,14 @@ void FileMemoryCard::Open()
 			// Translation note: detailed description should mention that the memory card will be disabled
 			// for the duration of this session.
 			Host::ReportFormattedErrorAsync("Memory Card", "Access denied to memory card: \n\n%s\n\n"
-				"The PS2-slot %d has been automatically disabled.  You can correct the problem\nand re-enable it at any time using Config:Memory cards from the main menu.",
-				fname.c_str(), slot);
+				"Another instance of PCSX2 may be using this memory card. Close any other instances of PCSX2, or restart your computer.%s",
+				fname.c_str(),
+#ifdef WIN32
+				"\n\nIf your memory card is in a write-protected folder such as \"Program Files\" or \"Program Files (x86)\", move it to another folder, such as \"Documents\" or \"Desktop\"."
+#else
+				""
+#endif
+				);
 		}
 		else // Load checksum
 		{
