@@ -794,6 +794,7 @@ if(USE_VULKAN)
 endif()
 
 set(pcsx2GSMetalShaders
+	GS/Renderers/Metal/cas.metal
 	GS/Renderers/Metal/convert.metal
 	GS/Renderers/Metal/present.metal
 	GS/Renderers/Metal/merge.metal

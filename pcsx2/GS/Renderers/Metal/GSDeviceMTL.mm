@@ -503,6 +503,9 @@ GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Type type, int width, int heigh
 			else
 				[desc setUsage:MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget];
 			break;
+		case GSTexture::Type::RWTexture:
+			[desc setUsage:MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite];
+			break;
 		default:
 			[desc setUsage:MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget];
 	}
@@ -625,9 +628,24 @@ void GSDeviceMTL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 #endif
 
 bool GSDeviceMTL::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants)
-{
-	return false;
-}
+{ @autoreleasepool {
+	static constexpr int threadGroupWorkRegionDim = 16;
+	const int dispatchX = (dTex->GetWidth() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
+	const int dispatchY = (dTex->GetHeight() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
+	static_assert(sizeof(constants) == sizeof(GSMTLCASPSUniform));
+
+	EndRenderPass();
+	id<MTLComputeCommandEncoder> enc = [GetRenderCmdBuf() computeCommandEncoder];
+	[enc setLabel:@"CAS"];
+	[enc setComputePipelineState:m_cas_pipeline[sharpen_only]];
+	[enc setTexture:static_cast<GSTextureMTL*>(sTex)->GetTexture() atIndex:0];
+	[enc setTexture:static_cast<GSTextureMTL*>(dTex)->GetTexture() atIndex:1];
+	[enc setBytes:&constants length:sizeof(constants) atIndex:GSMTLBufferIndexUniforms];
+	[enc dispatchThreadgroups:MTLSizeMake(dispatchX, dispatchY, 1)
+	    threadsPerThreadgroup:MTLSizeMake(64, 1, 1)];
+	[enc endEncoding];
+	return true;
+}}
 
 MRCOwned<id<MTLFunction>> GSDeviceMTL::LoadShader(NSString* name)
 {
@@ -649,6 +667,26 @@ MRCOwned<id<MTLRenderPipelineState>> GSDeviceMTL::MakePipeline(MTLRenderPipeline
 	[desc setFragmentFunction:fragment];
 	NSError* err;
 	MRCOwned<id<MTLRenderPipelineState>> res = MRCTransfer([m_dev.dev newRenderPipelineStateWithDescriptor:desc error:&err]);
+	if (unlikely(err))
+	{
+		NSString* msg = [NSString stringWithFormat:@"Failed to create pipeline %@: %@", name, [err localizedDescription]];
+		Console.Error("%s", [msg UTF8String]);
+		throw GSRecoverableError();
+	}
+	return res;
+}
+
+MRCOwned<id<MTLComputePipelineState>> GSDeviceMTL::MakeComputePipeline(id<MTLFunction> compute, NSString* name)
+{
+	MRCOwned<MTLComputePipelineDescriptor*> desc = MRCTransfer([MTLComputePipelineDescriptor new]);
+	[desc setLabel:name];
+	[desc setComputeFunction:compute];
+	NSError* err;
+	MRCOwned<id<MTLComputePipelineState>> res = MRCTransfer([m_dev.dev
+		newComputePipelineStateWithDescriptor:desc
+		                              options:0
+		                           reflection:nil
+		                                error:&err]);
 	if (unlikely(err))
 	{
 		NSString* msg = [NSString stringWithFormat:@"Failed to create pipeline %@: %@", name, [err localizedDescription]];
@@ -704,6 +742,7 @@ bool GSDeviceMTL::Create()
 	m_features.framebuffer_fetch = m_dev.features.framebuffer_fetch;
 	m_features.dual_source_blend = true;
 	m_features.stencil_buffer = true;
+	m_features.cas_sharpening = true;
 
 	try
 	{
@@ -725,12 +764,13 @@ bool GSDeviceMTL::Create()
 		[clearSpinBuffer fillBuffer:m_spin_buffer range:NSMakeRange(0, 4) value:0];
 		[clearSpinBuffer updateFence:m_spin_fence];
 		[clearSpinBuffer endEncoding];
-		NSError* err = nullptr;
-		m_spin_pipeline = MRCTransfer([m_dev.dev newComputePipelineStateWithFunction:LoadShader(@"waste_time") error:&err]);
-		if (err)
+		m_spin_pipeline = MakeComputePipeline(LoadShader(@"waste_time"), @"waste_time");
+
+		for (int sharpen_only = 0; sharpen_only < 2; sharpen_only++)
 		{
-			Console.Error("Failed to create spin pipeline: %s", [[err localizedDescription] UTF8String]);
-			return false;
+			setFnConstantB(m_fn_constants, sharpen_only, GSMTLConstantIndex_CAS_SHARPEN_ONLY);
+			NSString* shader = m_dev.features.has_fast_half ? @"CASHalf" : @"CASFloat";
+			m_cas_pipeline[sharpen_only] = MakeComputePipeline(LoadShader(shader), sharpen_only ? @"CAS Sharpen" : @"CAS Upscale");
 		}
 
 		m_hw_vertex = MRCTransfer([MTLVertexDescriptor new]);
