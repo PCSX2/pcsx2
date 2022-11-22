@@ -1447,7 +1447,7 @@ void GSApp::Init()
 	m_default_configuration["FullscreenMode"]                             = "";
 	m_default_configuration["fxaa"]                                       = "0";
 	m_default_configuration["HWDownloadMode"]                             = std::to_string(static_cast<u8>(GSHardwareDownloadMode::Enabled));
-	m_default_configuration["GSDumpCompression"]                          = std::to_string(static_cast<u8>(GSDumpCompressionMethod::LZMA));
+	m_default_configuration["GSDumpCompression"]                          = std::to_string(static_cast<u8>(GSDumpCompressionMethod::Zstandard));
 	m_default_configuration["HWSpinGPUForReadbacks"]                      = "0";
 	m_default_configuration["HWSpinCPUForReadbacks"]                      = "0";
 	m_default_configuration["pcrtc_antiblur"]                             = "1";
