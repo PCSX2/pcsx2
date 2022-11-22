@@ -85,29 +85,39 @@ void BIOSSettingsWidget::listRefreshed(const QVector<BIOSInfo>& items)
 
 		switch (bi.region)
 		{
-			case 2: // Japan
+			case 0: // Japan
 				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/NTSC-J.png").arg(res_path)));
 				break;
 
-			case 3: // USA
+			case 1: // USA
 				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/NTSC-U.png").arg(res_path)));
 				break;
 
-			case 4: // Europe
+			case 2: // Europe
 				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/PAL-E.png").arg(res_path)));
 				break;
 
-			case 7: // China
-				item->setIcon(0, QIcon(QStringLiteral("%1/icons//flags/NTSC-C.png").arg(res_path)));
+			case 3: // Oceania
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/PAL-A.png").arg(res_path)));
 				break;
 
-			case 5: // HK
+			case 4: // Asia
 				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/NTSC-HK.png").arg(res_path)));
 				break;
 
-			case 6: // Free
-			case 0: // T10K
-			case 1: // Test
+			case 5: // Russia
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/PAL-R.png").arg(res_path)));
+				break;
+
+			case 6: // China
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/NTSC-C.png").arg(res_path)));
+				break;
+
+			case 7: // Mexico, flag is missing
+
+			case 8: // T10K
+			case 9: // Test
+			case 10: // Free
 			default:
 				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/NTSC-J.png").arg(res_path)));
 				break;

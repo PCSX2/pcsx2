@@ -88,21 +88,37 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 				break;
 			}
 
+			// TODO: some regions can be detected only from rom1
+			/* 
+			switch (rom1:DVDID[4])
+			{
+				// clang-format off
+				case 'O': zone = "Oceania";region = 3;  break;
+				case 'R': zone = "Russia"; region = 5;  break;
+				case 'M': zone = "Mexico"; region = 7;  break;
+				// clang-format on
+			}
+			*/
+
 			switch (romver[4])
 			{
 				// clang-format off
-				case 'T': zone = "T10K";   region = 0; break;
-				case 'X': zone = "Test";   region = 1; break;
-				case 'J': zone = "Japan";  region = 2; break;
-				case 'A': zone = "USA";    region = 3; break;
-				case 'E': zone = "Europe"; region = 4; break;
-				case 'H': zone = "HK";     region = 5; break;
-				case 'P': zone = "Free";   region = 6; break;
-				case 'C': zone = "China";  region = 7; break;
+				case 'J': zone = "Japan";  region = 0;  break;
+				case 'A': zone = "USA";    region = 1;  break;
+				case 'E': zone = "Europe"; region = 2;  break;
+				// case 'E': zone = "Oceania";region = 3;  break; // Not implemented
+				case 'H': zone = "Asia";   region = 4;  break;
+				// case 'E': zone = "Russia"; region = 3;  break; // Not implemented
+				case 'C': zone = "China";  region = 6;  break;
+				// case 'A': zone = "Mexico"; region = 7;  break; // Not implemented
+				case 'T': zone = "T10K";   region = 8;  break;
+				case 'X': zone = "Test";   region = 9;  break;
+				case 'P': zone = "Free";   region = 10; break;
 				// clang-format on
 				default:
 					zone.clear();
 					zone += romver[4];
+					region = 0;
 					break;
 			}
 

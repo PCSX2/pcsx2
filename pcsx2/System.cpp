@@ -435,6 +435,11 @@ std::string SysGetBiosDiscID()
 	// FIXME: we should return a serial based on
 	// the BIOS being run (either a checksum of the BIOS roms, and/or a string based on BIOS
 	// region and revision).
+	// Good candidate can be first part of EXTINFO data in the BIOS rom:
+	// Example for romver 0160EC20010704
+	// 20010704-160707,ROMconf,PS20160EC20010704.bin,kuma@rom-server/~/f10k/g/app/rom
+	// 20010704-160707 can be used as unique ID for Bios
+	// rom0:EXTINFO first 15 bytes
 
 	return {};
 }
