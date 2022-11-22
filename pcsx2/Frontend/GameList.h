@@ -124,6 +124,7 @@ namespace GameList
 
 	/// Add played time for the specified serial.
 	void AddPlayedTimeForSerial(const std::string& serial, std::time_t last_time, std::time_t add_time);
+	void ClearPlayedTimeForSerial(const std::string& serial);
 
 	/// Returns the total time played for a game. Requires the game to be scanned in the list.
 	std::time_t GetCachedPlayedTimeForSerial(const std::string& serial);

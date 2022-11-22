@@ -1294,6 +1294,9 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		connect(menu.addAction(tr("Exclude From List")), &QAction::triggered,
 			[this, entry]() { getSettingsDialog()->getGameListSettingsWidget()->addExcludedPath(entry->path); });
 
+		connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered,
+			[this, entry]() { clearGameListEntryPlayTime(entry); });
+
 		menu.addSeparator();
 
 		if (!s_vm_valid)
@@ -2372,6 +2375,19 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 	}
 
 	m_game_list_widget->refreshGridCovers();
+}
+
+void MainWindow::clearGameListEntryPlayTime(const GameList::Entry* entry)
+{
+	if (QMessageBox::question(this, tr("Confirm Reset"),
+		tr("Are you sure you want to reset the play time for '%1'?\n\nThis action cannot be undone.")
+		.arg(QString::fromStdString(entry->title))) != QMessageBox::Yes)
+	{
+		return;
+	}
+
+	GameList::ClearPlayedTimeForSerial(entry->serial);
+	m_game_list_widget->refresh(false);
 }
 
 std::optional<bool> MainWindow::promptForResumeState(const QString& save_state_path)
