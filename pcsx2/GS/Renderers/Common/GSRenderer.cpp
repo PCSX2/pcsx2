@@ -403,6 +403,14 @@ bool GSRenderer::Merge(int field)
 	if (GSConfig.FXAA)
 		g_gs_device->FXAA();
 
+	g_gs_device->SetSnapshot();
+
+	// Sharpens biinear at lower resolutions, almost nearest but with more uniform pixels.
+	if (GSConfig.LinearPresent == GSPostBilinearMode::BilinearSharp && (g_host_display->GetWindowWidth() > fs.x || g_host_display->GetWindowHeight() > fs.y))
+	{
+		g_gs_device->Resize(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight());
+	}
+
 	if (m_scanmask_used)
 		m_scanmask_used--;
 
@@ -643,7 +651,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
 
 			g_gs_device->PresentRect(current, src_uv, nullptr, draw_rect,
-				s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent);
+				s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
 		}
 
 		Host::EndPresentFrame();
@@ -708,7 +716,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 				Path::GetFileName(m_dump->GetPath())), Host::OSD_INFO_DURATION);
 		}
 
-		if (GSTexture* t = g_gs_device->GetCurrent())
+		if (GSTexture* t = g_gs_device->GetSnapshot())
 		{
 			const std::string path(m_snapshot + ".png");
 			if (t->Save(path))
@@ -850,7 +858,7 @@ void GSRenderer::PresentCurrentFrame()
 			const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
 
 			g_gs_device->PresentRect(current, src_uv, nullptr, draw_rect,
-				s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent);
+				s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
 		}
 
 		Host::EndPresentFrame();
