@@ -2225,11 +2225,11 @@ void MainWindow::setDisplayFullscreen(const std::string& fullscreen_mode)
 	{
 		if (g_host_display->SetFullscreen(true, width, height, refresh_rate))
 		{
-			Host::AddOSDMessage("Acquired exclusive fullscreen.", 10.0f);
+			Host::AddOSDMessage("Acquired exclusive fullscreen.", Host::OSD_INFO_DURATION);
 		}
 		else
 		{
-			Host::AddOSDMessage("Failed to acquire exclusive fullscreen.", 10.0f);
+			Host::AddOSDMessage("Failed to acquire exclusive fullscreen.", Host::OSD_WARNING_DURATION);
 		}
 	}
 }

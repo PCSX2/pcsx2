@@ -295,7 +295,8 @@ bool GSDeviceVK::CheckFeatures()
 	if (!m_features.texture_barrier && !m_features.stencil_buffer)
 	{
 		Host::AddKeyedOSDMessage("GSDeviceVK_NoTextureBarrierOrStencilBuffer",
-			"Stencil buffers and texture barriers are both unavailable, this will break some graphical effects.", 10.0f);
+			"Stencil buffers and texture barriers are both unavailable, this will break some graphical effects.",
+			Host::OSD_WARNING_DURATION);
 	}
 
 	return true;
@@ -469,7 +470,8 @@ bool GSDeviceVK::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTextu
 		{
 			m_warned_slow_spin = true;
 			Host::AddKeyedOSDMessage("GSDeviceVK_NoCalibratedTimestamps",
-				"Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.", 10.0f);
+				"Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.",
+				Host::OSD_WARNING_DURATION);
 		}
 	}
 

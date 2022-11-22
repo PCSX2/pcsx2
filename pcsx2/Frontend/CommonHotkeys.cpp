@@ -48,7 +48,7 @@ static void HotkeyAdjustTargetSpeed(double delta)
 	gsUpdateFrequency(EmuConfig);
 	GetMTGS().UpdateVSyncMode();
 	Host::AddIconOSDMessage("SpeedChanged", ICON_FA_CLOCK,
-		fmt::format("Target speed set to {:.0f}%.", std::round(EmuConfig.Framerate.NominalScalar * 100.0)), 5.0f);
+		fmt::format("Target speed set to {:.0f}%.", std::round(EmuConfig.Framerate.NominalScalar * 100.0)), Host::OSD_QUICK_DURATION);
 }
 
 static constexpr s32 CYCLE_SAVE_STATE_SLOTS = 10;
@@ -80,13 +80,13 @@ static void HotkeyCycleSaveSlot(s32 delta)
 		if (len > 0 && date_buf[len - 1] == '\n')
 			date_buf[len - 1] = 0;
 
-		Host::AddIconOSDMessage(
-			"CycleSaveSlot", ICON_FA_SEARCH, fmt::format("Save slot {} selected (last save: {}).", s_current_save_slot, date_buf), 5.0f);
+		Host::AddIconOSDMessage("CycleSaveSlot", ICON_FA_SEARCH,
+			fmt::format("Save slot {} selected (last save: {}).", s_current_save_slot, date_buf), Host::OSD_QUICK_DURATION);
 	}
 	else
 	{
-		Host::AddIconOSDMessage(
-			"CycleSaveSlot", ICON_FA_SEARCH, fmt::format("Save slot {} selected (no save yet).", s_current_save_slot), 5.0f);
+		Host::AddIconOSDMessage("CycleSaveSlot", ICON_FA_SEARCH, fmt::format("Save slot {} selected (no save yet).", s_current_save_slot),
+			Host::OSD_QUICK_DURATION);
 	}
 }
 
@@ -95,15 +95,16 @@ static void HotkeyLoadStateSlot(s32 slot)
 	const u32 crc = VMManager::GetGameCRC();
 	if (crc == 0)
 	{
-		Host::AddIconOSDMessage(
-			"LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE, "Cannot load state from a slot without a game running.", 10.0f);
+		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE, "Cannot load state from a slot without a game running.",
+			Host::OSD_INFO_DURATION);
 		return;
 	}
 
 	const std::string serial(VMManager::GetGameSerial());
 	if (!VMManager::HasSaveStateInSlot(serial.c_str(), crc, slot))
 	{
-		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE, fmt::format("No save state found in slot {}.", slot));
+		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE, fmt::format("No save state found in slot {}.", slot),
+			Host::OSD_INFO_DURATION);
 		return;
 	}
 
@@ -114,8 +115,8 @@ static void HotkeySaveStateSlot(s32 slot)
 {
 	if (VMManager::GetGameCRC() == 0)
 	{
-		Host::AddIconOSDMessage(
-			"SaveStateToSlot", ICON_FA_EXCLAMATION_TRIANGLE, "Cannot save state to a slot without a game running.", 10.0f);
+		Host::AddIconOSDMessage("SaveStateToSlot", ICON_FA_EXCLAMATION_TRIANGLE, "Cannot save state to a slot without a game running.",
+			Host::OSD_INFO_DURATION);
 		return;
 	}
 

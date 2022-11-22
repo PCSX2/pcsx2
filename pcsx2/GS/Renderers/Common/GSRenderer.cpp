@@ -694,7 +694,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 
 			Host::AddKeyedOSDMessage("GSDump", fmt::format("Saving {0} GS dump {1} to '{2}'",
 				(m_dump_frames == 1) ? "single frame" : "multi-frame", compression_str,
-				Path::GetFileName(m_dump->GetPath())), 10.0f);
+				Path::GetFileName(m_dump->GetPath())), Host::OSD_INFO_DURATION);
 		}
 
 		if (GSTexture* t = g_gs_device->GetCurrent())
@@ -703,11 +703,11 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			if (t->Save(path))
 			{
 				Host::AddKeyedOSDMessage("GSScreenshot",
-					fmt::format("Screenshot saved to '{}'.", Path::GetFileName(path)), 10.0f);
+					fmt::format("Screenshot saved to '{}'.", Path::GetFileName(path)), Host::OSD_INFO_DURATION);
 			}
 			else
 			{
-				Host::AddFormattedOSDMessage(10.0f, "Failed to save screenshot to '%s'.", path.c_str());
+				Host::AddFormattedOSDMessage(Host::OSD_ERROR_DURATION, "Failed to save screenshot to '%s'.", path.c_str());
 			}
 		}
 
@@ -718,7 +718,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 		const bool last = (m_dump_frames == 0);
 		if (m_dump->VSync(field, last, m_regs))
 		{
-			Host::AddKeyedOSDMessage("GSDump", fmt::format("Saved GS dump to '{}'.", Path::GetFileName(m_dump->GetPath())), 10.0f);
+			Host::AddKeyedOSDMessage("GSDump", fmt::format("Saved GS dump to '{}'.", Path::GetFileName(m_dump->GetPath())), Host::OSD_INFO_DURATION);
 			m_dump.reset();
 		}
 		else if (!last)

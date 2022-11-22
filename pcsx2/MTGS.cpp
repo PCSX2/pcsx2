@@ -28,6 +28,7 @@
 
 #include "Host.h"
 #include "HostDisplay.h"
+#include "IconsFontAwesome5.h"
 
 #ifndef PCSX2_CORE
 #include "gui/Dialogs/ModalPopups.h"
@@ -986,8 +987,8 @@ void SysMtgsThread::SwitchRenderer(GSRendererType renderer, bool display_message
 
 	if (display_message)
 	{
-		Host::AddKeyedFormattedOSDMessage("SwitchRenderer", 10.0f, "Switching to %s renderer...",
-			Pcsx2Config::GSOptions::GetRendererName(renderer));
+		Host::AddIconOSDMessage("SwitchRenderer", ICON_FA_MAGIC, fmt::format("Switching to {} renderer...",
+			Pcsx2Config::GSOptions::GetRendererName(renderer)), Host::OSD_INFO_DURATION);
 	}
 
 	RunOnGSThread([renderer]() {
