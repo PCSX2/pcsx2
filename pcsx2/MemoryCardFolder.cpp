@@ -1728,7 +1728,7 @@ void FolderMemoryCard::SetTimeLastReadToNow()
 void FolderMemoryCard::SetTimeLastWrittenToNow()
 {
 	// CHANGE: this was local time milliseconds, which might be problematic...
-	m_timeLastWritten = std::time(nullptr);// wxGetLocalTimeMillis().GetValue();
+	m_timeLastWritten = std::time(nullptr); // wxGetLocalTimeMillis().GetValue();
 	m_framesUntilFlush = FramesAfterWriteUntilFlush;
 }
 
@@ -2080,7 +2080,7 @@ void FileAccessHelper::WriteIndex(const std::string& baseFolderName, MemoryCardF
 	}
 	else
 	{
-		Console.Warning(fmt::format("(FileAccesHelper::WriteIndex()) '{}' has null parent",Path::Combine(baseFolderName,(const char*)entry->entry.data.name)));
+		Console.Warning(fmt::format("(FileAccesHelper::WriteIndex()) '{}' has null parent", Path::Combine(baseFolderName, (const char*)entry->entry.data.name)));
 	}
 
 	char cleanName[sizeof(entry->entry.data.name)];
@@ -2352,7 +2352,7 @@ s32 FolderMemoryCardAggregator::Save(uint slot, const u8* src, u32 adr, int size
 	{
 		const std::string_view filename = Path::GetFileName(m_cards[slot].GetFolderName());
 		Host::AddIconOSDMessage(fmt::format("MemoryCardSave{}", slot), ICON_FA_SD_CARD,
-			fmt::format("Memory card '{}' was saved to storage.", filename), 10.0f);
+			fmt::format("Memory card '{}' was saved to storage.", filename), Host::OSD_INFO_DURATION);
 	}
 
 	return saveResult;

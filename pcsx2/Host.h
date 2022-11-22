@@ -46,6 +46,13 @@ struct HostKeyEvent
 
 namespace Host
 {
+	/// Typical durations for OSD messages.
+	static constexpr float OSD_CRITICAL_ERROR_DURATION = 20.0f;
+	static constexpr float OSD_ERROR_DURATION = 15.0f;
+	static constexpr float OSD_WARNING_DURATION = 10.0f;
+	static constexpr float OSD_INFO_DURATION = 5.0f;
+	static constexpr float OSD_QUICK_DURATION = 2.5f;
+
 	/// Reads a file from the resources directory of the application.
 	/// This may be outside of the "normal" filesystem on platforms such as Mac.
 	std::optional<std::vector<u8>> ReadResourceFile(const char* filename);

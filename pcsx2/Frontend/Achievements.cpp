@@ -1468,7 +1468,7 @@ void Achievements::GameChanged(u32 crc)
 		if (crc != 0)
 		{
 			Host::AddKeyedOSDMessage(
-				"retroachievements_disc_read_failed", "Failed to read executable from disc. Achievements disabled.", 10.0f);
+				"retroachievements_disc_read_failed", "Failed to read executable from disc. Achievements disabled.", Host::OSD_CRITICAL_ERROR_DURATION);
 		}
 
 		s_last_game_crc = 0;

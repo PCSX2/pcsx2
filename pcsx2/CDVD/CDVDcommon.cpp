@@ -413,7 +413,7 @@ bool DoCDVDopen()
 	CDVD->getTD(0, &td);
 
 #ifdef PCSX2_CORE
-	Host::AddKeyedOSDMessage("BlockDumpCreate", fmt::format("Saving CDVD block dump to '{}'.", temp), 10.0f);
+	Host::AddKeyedOSDMessage("BlockDumpCreate", fmt::format("Saving CDVD block dump to '{}'.", temp), Host::OSD_INFO_DURATION);
 #endif
 
 	blockDumpFile.Create(std::move(temp), 2);

@@ -338,7 +338,7 @@ bool GSreopen(bool recreate_display, const Pcsx2Config::GSOptions& old_config)
 
 			Host::AddKeyedOSDMessage("GSReopenFailed", fmt::format("Failed to open {} display, switching back to {}.",
 														   HostDisplay::RenderAPIToString(GetAPIForRenderer(GSConfig.Renderer)),
-														   HostDisplay::RenderAPIToString(GetAPIForRenderer(old_config.Renderer)), 10.0f));
+														   HostDisplay::RenderAPIToString(GetAPIForRenderer(old_config.Renderer)), Host::OSD_CRITICAL_ERROR_DURATION));
 			GSConfig = old_config;
 		}
 	}
@@ -358,7 +358,7 @@ bool GSreopen(bool recreate_display, const Pcsx2Config::GSOptions& old_config)
 			}
 		}
 
-		Host::AddKeyedOSDMessage("GSReopenFailed","Failed to reopen, restoring old configuration.", 10.0f);
+		Host::AddKeyedOSDMessage("GSReopenFailed","Failed to reopen, restoring old configuration.", Host::OSD_CRITICAL_ERROR_DURATION);
 		GSConfig = old_config;
 		if (!DoGSOpen(GSConfig.Renderer, basemem))
 		{
@@ -1679,7 +1679,7 @@ void GSApp::SetConfig(const char* entry, int value)
 static void HotkeyAdjustUpscaleMultiplier(s32 delta)
 {
 	const u32 new_multiplier = static_cast<u32>(std::clamp(static_cast<s32>(EmuConfig.GS.UpscaleMultiplier) + delta, 1, 8));
-	Host::AddKeyedFormattedOSDMessage("UpscaleMultiplierChanged", 10.0f, "Upscale multiplier set to %ux.", new_multiplier);
+	Host::AddKeyedFormattedOSDMessage("UpscaleMultiplierChanged", Host::OSD_QUICK_DURATION, "Upscale multiplier set to %ux.", new_multiplier);
 	EmuConfig.GS.UpscaleMultiplier = new_multiplier;
 
 	// this is pretty slow. we only really need to flush the TC and recompile shaders.
@@ -1690,7 +1690,7 @@ static void HotkeyAdjustUpscaleMultiplier(s32 delta)
 static void HotkeyAdjustZoom(double delta)
 {
 	const double new_zoom = std::clamp(EmuConfig.GS.Zoom + delta, 1.0, 200.0);
-	Host::AddKeyedFormattedOSDMessage("ZoomChanged", 10.0f, "Zoom set to %.1f%%.", new_zoom);
+	Host::AddKeyedFormattedOSDMessage("ZoomChanged", Host::OSD_QUICK_DURATION, "Zoom set to %.1f%%.", new_zoom);
 	EmuConfig.GS.Zoom = new_zoom;
 
 	// no need to go through the full settings update for this
@@ -1740,7 +1740,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys)
 
 		 // technically this races, but the worst that'll happen is one frame uses the old AR.
 		 EmuConfig.CurrentAspectRatio = static_cast<AspectRatioType>((static_cast<int>(EmuConfig.CurrentAspectRatio) + 1) % static_cast<int>(AspectRatioType::MaxCount));
-		 Host::AddKeyedFormattedOSDMessage("CycleAspectRatio", 10.0f, "Aspect ratio set to '%s'.", Pcsx2Config::GSOptions::AspectRatioNames[static_cast<int>(EmuConfig.CurrentAspectRatio)]);
+		 Host::AddKeyedFormattedOSDMessage("CycleAspectRatio", Host::OSD_QUICK_DURATION, "Aspect ratio set to '%s'.", Pcsx2Config::GSOptions::AspectRatioNames[static_cast<int>(EmuConfig.CurrentAspectRatio)]);
 	 }},
 	{"CycleMipmapMode", "Graphics", "Cycle Hardware Mipmapping", [](s32 pressed) {
 		 if (pressed)
@@ -1750,7 +1750,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys)
 		 static constexpr std::array<const char*, CYCLE_COUNT> option_names = {{"Automatic", "Off", "Basic (Generated)", "Full (PS2)"}};
 
 		 const HWMipmapLevel new_level = static_cast<HWMipmapLevel>(((static_cast<s32>(EmuConfig.GS.HWMipmap) + 2) % CYCLE_COUNT) - 1);
-		 Host::AddKeyedFormattedOSDMessage("CycleMipmapMode", 10.0f, "Hardware mipmapping set to '%s'.", option_names[static_cast<s32>(new_level) + 1]);
+		 Host::AddKeyedFormattedOSDMessage("CycleMipmapMode", Host::OSD_QUICK_DURATION, "Hardware mipmapping set to '%s'.", option_names[static_cast<s32>(new_level) + 1]);
 		 EmuConfig.GS.HWMipmap = new_level;
 
 		 GetMTGS().RunOnGSThread([new_level]() {
@@ -1777,7 +1777,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys)
 		 }};
 
 		 const GSInterlaceMode new_mode = static_cast<GSInterlaceMode>((static_cast<s32>(EmuConfig.GS.InterlaceMode) + 1) % static_cast<s32>(GSInterlaceMode::Count));
-		 Host::AddKeyedFormattedOSDMessage("CycleInterlaceMode", 10.0f, "Deinterlace mode set to '%s'.", option_names[static_cast<s32>(new_mode)]);
+		 Host::AddKeyedFormattedOSDMessage("CycleInterlaceMode", Host::OSD_QUICK_DURATION, "Deinterlace mode set to '%s'.", option_names[static_cast<s32>(new_mode)]);
 		 EmuConfig.GS.InterlaceMode = new_mode;
 
 		 GetMTGS().RunOnGSThread([new_mode]() { GSConfig.InterlaceMode = new_mode; });
@@ -1794,7 +1794,9 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys)
 		 if (!pressed)
 		 {
 			 EmuConfig.GS.DumpReplaceableTextures = !EmuConfig.GS.DumpReplaceableTextures;
-			 Host::AddKeyedOSDMessage("ToggleTextureReplacements", EmuConfig.GS.DumpReplaceableTextures ? "Texture dumping is now enabled." : "Texture dumping is now disabled.", 10.0f);
+			 Host::AddKeyedOSDMessage("ToggleTextureReplacements",
+				 EmuConfig.GS.DumpReplaceableTextures ? "Texture dumping is now enabled." : "Texture dumping is now disabled.",
+				 Host::OSD_INFO_DURATION);
 			 GetMTGS().ApplySettings();
 		 }
 	 }},
@@ -1802,7 +1804,9 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys)
 		 if (!pressed)
 		 {
 			 EmuConfig.GS.LoadTextureReplacements = !EmuConfig.GS.LoadTextureReplacements;
-			 Host::AddKeyedOSDMessage("ToggleTextureReplacements", EmuConfig.GS.LoadTextureReplacements ? "Texture replacements are now enabled." : "Texture replacements are now disabled.", 10.0f);
+			 Host::AddKeyedOSDMessage("ToggleTextureReplacements",
+				 EmuConfig.GS.LoadTextureReplacements ? "Texture replacements are now enabled." : "Texture replacements are now disabled.",
+				 Host::OSD_INFO_DURATION);
 			 GetMTGS().ApplySettings();
 		 }
 	 }},
@@ -1811,11 +1815,11 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys)
 		 {
 			 if (!EmuConfig.GS.LoadTextureReplacements)
 			 {
-				 Host::AddKeyedOSDMessage("ReloadTextureReplacements", "Texture replacements are not enabled.", 10.0f);
+				 Host::AddKeyedOSDMessage("ReloadTextureReplacements", "Texture replacements are not enabled.", Host::OSD_INFO_DURATION);
 			 }
 			 else
 			 {
-				 Host::AddKeyedOSDMessage("ReloadTextureReplacements", "Reloading texture replacements...", 10.0f);
+				 Host::AddKeyedOSDMessage("ReloadTextureReplacements", "Reloading texture replacements...", Host::OSD_INFO_DURATION);
 				 GetMTGS().RunOnGSThread([]() {
 					 GSTextureReplacements::ReloadReplacementMap();
 				 });

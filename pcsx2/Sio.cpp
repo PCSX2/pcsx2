@@ -27,6 +27,7 @@
 
 #include "common/Timer.h"
 #include "Recording/InputRecording.h"
+#include "IconsFontAwesome5.h"
 
 #define SIO0LOG_ENABLE 0
 #define SIO2LOG_ENABLE 0
@@ -954,7 +955,7 @@ void AutoEject::Clear(size_t port, size_t slot)
 
 void AutoEject::SetAll()
 {
-	Host::AddKeyedFormattedOSDMessage("AutoEjectAllSet", 10.0f, "Force ejecting all memory cards");
+	Host::AddIconOSDMessage("AutoEjectAllSet", ICON_FA_SD_CARD, "Force ejecting all memory cards.", Host::OSD_INFO_DURATION);
 
 	for (size_t port = 0; port < SIO::PORTS; port++)
 	{

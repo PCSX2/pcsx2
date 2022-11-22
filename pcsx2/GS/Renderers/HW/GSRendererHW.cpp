@@ -214,7 +214,7 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 
 	if (m_tc->GetHashCacheMemoryUsage() > 1024 * 1024 * 1024)
 	{
-		Host::AddKeyedFormattedOSDMessage("HashCacheOverflow", 15.0f, "Hash cache has used %.2f MB of VRAM, disabling.",
+		Host::AddKeyedFormattedOSDMessage("HashCacheOverflow", Host::OSD_ERROR_DURATION, "Hash cache has used %.2f MB of VRAM, disabling.",
 			static_cast<float>(m_tc->GetHashCacheMemoryUsage()) / 1048576.0f);
 		m_tc->RemoveAll();
 		g_gs_device->PurgePool();

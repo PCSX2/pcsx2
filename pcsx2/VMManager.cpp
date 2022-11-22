@@ -622,11 +622,11 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 		if (cheat_count > 0 || s_active_widescreen_patches > 0 || s_active_no_interlacing_patches > 0)
 		{
 			message += " are active.";
-			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE, message, 5.0f);
+			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE, message, Host::OSD_INFO_DURATION);
 		}
 		else if (show_messages_when_disabled)
 		{
-			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE, "No cheats or patches (widescreen, compatibility or others) are found / enabled.", 8.0f);
+			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE, "No cheats or patches (widescreen, compatibility or others) are found / enabled.", Host::OSD_INFO_DURATION);
 		}
 	}
 }
@@ -1203,7 +1203,7 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 			if (!FileSystem::RenamePath(filename, backup_filename.c_str()))
 			{
 				Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
-					fmt::format("Failed to back up old save state {}.", Path::GetFileName(filename)));
+					fmt::format("Failed to back up old save state {}.", Path::GetFileName(filename)), Host::OSD_ERROR_DURATION);
 			}
 		}
 
@@ -1225,7 +1225,8 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 	}
 	catch (Exception::BaseException& e)
 	{
-		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE, fmt::format("Failed to save save state: {}.", e.DiagMsg()), 15.0f);
+		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE, fmt::format("Failed to save save state: {}.", e.DiagMsg()),
+			Host::OSD_ERROR_DURATION);
 		return false;
 	}
 }
@@ -1239,11 +1240,13 @@ void VMManager::ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
 	if (SaveState_ZipToDisk(std::move(elist), std::move(screenshot), filename))
 	{
 		if (slot_for_message >= 0 && VMManager::HasValidVM())
-			Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_SAVE, fmt::format("State saved to slot {}.", slot_for_message), 10.0f);
+			Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_SAVE, fmt::format("State saved to slot {}.", slot_for_message),
+				Host::OSD_QUICK_DURATION);
 	}
 	else
 	{
-		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE, fmt::format("Failed to save save state to slot {}.", slot_for_message), 15.0f);
+		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE, fmt::format("Failed to save save state to slot {}.", slot_for_message),
+			Host::OSD_ERROR_DURATION);
 	}
 
 	DevCon.WriteLn("Zipping save state to '%s' took %.2f ms", filename, timer.GetTimeMilliseconds());
@@ -1342,7 +1345,7 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 	}
 #endif
 
-	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN, fmt::format("Loading state from slot {}...", slot), 5.0f);
+	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN, fmt::format("Loading state from slot {}...", slot), Host::OSD_QUICK_DURATION);
 	return DoLoadState(filename.c_str());
 }
 
@@ -1405,19 +1408,20 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 	if (result)
 	{
 		if (source == CDVD_SourceType::NoDisc)
-			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, "Disc removed.", 5.0f);
+			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, "Disc removed.", Host::OSD_INFO_DURATION);
 		else
-			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, fmt::format("Disc changed to '{}'.", display_name), 5.0f);
+			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, fmt::format("Disc changed to '{}'.", display_name), Host::OSD_INFO_DURATION);
 	}
 	else
 	{
-		Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, fmt::format("Failed to open new disc image '{}'. Reverting to old image.", display_name), 20.0f);
+		Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, fmt::format("Failed to open new disc image '{}'. Reverting to old image.", display_name),
+			Host::OSD_ERROR_DURATION);
 		CDVDsys_ChangeSource(old_type);
 		if (!old_path.empty())
 			CDVDsys_SetFile(old_type, std::move(old_path));
 		if (!DoCDVDopen())
 		{
-			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, "Failed to switch back to old disc image. Removing disc.", 20.0f);
+			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, "Failed to switch back to old disc image. Removing disc.", Host::OSD_CRITICAL_ERROR_DURATION);
 			CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
 			DoCDVDopen();
 		}
@@ -1803,7 +1807,7 @@ void VMManager::EnforceAchievementsChallengeModeSettings()
 	// Can't use cheats.
 	if (EmuConfig.EnableCheats)
 	{
-		Host::AddKeyedOSDMessage("ChallengeDisableCheats", "Cheats have been disabled due to achievements hardcore mode.", 10.0f);
+		Host::AddKeyedOSDMessage("ChallengeDisableCheats", "Cheats have been disabled due to achievements hardcore mode.", Host::OSD_WARNING_DURATION);
 		EmuConfig.EnableCheats = false;
 	}
 
@@ -1863,7 +1867,7 @@ void VMManager::WarnAboutUnsafeSettings()
 	{
 		if (messages.back() == '\n')
 			messages.pop_back();
-		Host::AddKeyedOSDMessage("unsafe_settings_warning", std::move(messages), 10.0f);
+		Host::AddKeyedOSDMessage("unsafe_settings_warning", std::move(messages), Host::OSD_WARNING_DURATION);
 	}
 	else
 	{
@@ -1898,7 +1902,7 @@ void VMManager::WarnAboutUnsafeSettings()
 	{
 		if (messages.back() == '\n')
 			messages.pop_back();
-		Host::AddKeyedOSDMessage("performance_settings_warning", std::move(messages), 10.0f);
+		Host::AddKeyedOSDMessage("performance_settings_warning", std::move(messages), Host::OSD_WARNING_DURATION);
 	}
 	else
 	{
