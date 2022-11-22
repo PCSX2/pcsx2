@@ -883,8 +883,8 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& path
 			continue;
 
 		// found it!
-		line_entry.last_played_time = last_time;
-		line_entry.total_played_time += add_time;
+		line_entry.last_played_time = (last_time != 0) ? last_time : 0;
+		line_entry.total_played_time = (last_time != 0) ? (line_entry.total_played_time + add_time) : 0;
 
 		std::string new_line(MakePlayedTimeLine(serial, line_entry));
 		if (FileSystem::FSeek64(fp.get(), line_pos, SEEK_SET) != 0 ||
@@ -897,12 +897,15 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& path
 		return line_entry;
 	}
 
-	// new entry.
-	std::string new_line(MakePlayedTimeLine(serial, new_entry));
-	if (FileSystem::FSeek64(fp.get(), 0, SEEK_END) != 0 ||
-		std::fwrite(new_line.data(), new_line.length(), 1, fp.get()) != 1)
+	if (last_time != 0)
 	{
-		Console.Error("Failed to write '%s'.", path.c_str());
+		// new entry.
+		std::string new_line(MakePlayedTimeLine(serial, new_entry));
+		if (FileSystem::FSeek64(fp.get(), 0, SEEK_END) != 0 ||
+			std::fwrite(new_line.data(), new_line.length(), 1, fp.get()) != 1)
+		{
+			Console.Error("Failed to write '%s'.", path.c_str());
+		}
 	}
 
 	return new_entry;
@@ -927,6 +930,25 @@ void GameList::AddPlayedTimeForSerial(const std::string& serial, std::time_t las
 		entry.total_played_time = pt.total_played_time;
 	}
 }
+
+void GameList::ClearPlayedTimeForSerial(const std::string& serial)
+{
+	if (serial.empty())
+		return;
+
+	UpdatePlayedTimeFile(GetPlayedTimeFile(), serial, 0, 0);
+
+	std::unique_lock<std::recursive_mutex> lock(s_mutex);
+	for (GameList::Entry& entry : s_entries)
+	{
+		if (entry.serial != serial)
+			continue;
+
+		entry.last_played_time = 0;
+		entry.total_played_time = 0;
+	}
+}
+
 
 std::time_t GameList::GetCachedPlayedTimeForSerial(const std::string& serial)
 {

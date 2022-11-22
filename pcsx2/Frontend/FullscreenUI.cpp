@@ -5142,12 +5142,13 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 		{ICON_FA_COMPACT_DISC " Default Boot", false},
 		{ICON_FA_LIGHTBULB " Fast Boot", false},
 		{ICON_FA_MAGIC " Slow Boot", false},
+		{ICON_FA_FOLDER_MINUS " Reset Play Time", false},
 		{ICON_FA_WINDOW_CLOSE " Close Menu", false},
 	};
 
 	const bool has_resume_state = VMManager::HasSaveStateInSlot(entry->serial.c_str(), entry->crc, -1);
 	OpenChoiceDialog(entry->title.c_str(), false, std::move(options),
-		[has_resume_state, entry_path = entry->path](s32 index, const std::string& title, bool checked) {
+		[has_resume_state, entry_path = entry->path, entry_serial = entry->serial](s32 index, const std::string& title, bool checked) {
 			switch (index)
 			{
 				case 0: // Open Game Properties
@@ -5167,6 +5168,9 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 					break;
 				case 5: // Slow Boot
 					DoStartPath(entry_path, std::nullopt, false);
+					break;
+				case 6: // Reset Play Time
+					GameList::ClearPlayedTimeForSerial(entry_serial);
 					break;
 				default:
 					break;
