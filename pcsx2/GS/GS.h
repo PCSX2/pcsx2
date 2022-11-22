@@ -137,6 +137,7 @@ public:
 	std::vector<GSSetting> m_gs_texture_preloading;
 	std::vector<GSSetting> m_gs_hack;
 	std::vector<GSSetting> m_gs_generic_list;
+	std::vector<GSSetting> m_gs_tex_display_list;
 	std::vector<GSSetting> m_gs_offset_hack;
 	std::vector<GSSetting> m_gs_hw_mipmapping;
 	std::vector<GSSetting> m_gs_crc_level;

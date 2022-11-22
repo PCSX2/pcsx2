@@ -465,8 +465,12 @@ PostTab::PostTab(wxWindow* parent)
 	PaddedBoxSizer<wxStaticBoxSizer> shader_box(wxVERTICAL, this, "Custom Shader");
 
 	auto not_vk_prereq = [this] { return !m_is_vk_hw; };
+	
+	PaddedBoxSizer<wxStaticBoxSizer> tex_filter_box(wxVERTICAL, this, "Debug");
+	auto* tex_filter_grid_box = new wxFlexGridSizer(2, space, space);
 
-	m_ui.addCheckBox(shader_box.inner, "Texture Filtering of Display", "linear_present", IDC_LINEAR_PRESENT);
+	m_ui.addComboBoxAndLabel(tex_filter_grid_box, "Texture Filtering of Display:", "linear_present_mode", &theApp.m_gs_tex_display_list, IDC_LINEAR_PRESENT);
+
 	m_ui.addCheckBox(shader_box.inner, "FXAA Shader (PgUp)",           "fxaa",           IDC_FXAA);
 
 	CheckboxPrereq shade_boost_check(m_ui.addCheckBox(shader_box.inner, "Enable Shade Boost", "ShadeBoost", IDC_SHADEBOOST));
@@ -480,6 +484,7 @@ PostTab::PostTab(wxWindow* parent)
 	m_ui.addSliderAndLabel(shader_boost_grid, "Saturation:", "ShadeBoost_Saturation", 0, 100, 50, -1, shade_boost_check);
 
 	shade_boost_box->Add(shader_boost_grid, wxSizerFlags().Expand());
+	shader_box->Add(tex_filter_grid_box, wxSizerFlags().Expand());
 	shader_box->Add(shade_boost_box.outer, wxSizerFlags().Expand());
 
 	CheckboxPrereq ext_shader_check(m_ui.addCheckBox(shader_box.inner, "Enable External Shader", "shaderfx", IDC_SHADER_FX, not_vk_prereq));
@@ -500,7 +505,6 @@ PostTab::PostTab(wxWindow* parent)
 	tv_box->AddGrowableCol(1);
 	m_ui.addComboBoxAndLabel(tv_box, "TV Shader:", "TVShader", &theApp.m_gs_tv_shaders);
 	shader_box->Add(tv_box, wxSizerFlags().Expand());
-
 	tab_box->Add(shader_box.outer, wxSizerFlags().Expand());
 	SetSizerAndFit(tab_box.outer);
 }

@@ -104,13 +104,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.fmvAspectRatio, "EmuCore/GS", "FMVAspectRatioSwitch",
 		Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames, FMVAspectRatioSwitchType::Off);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.interlacing, "EmuCore/GS", "deinterlace_mode", DEFAULT_INTERLACE_MODE);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.bilinearFiltering, "EmuCore/GS", "linear_present", true);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.bilinearFiltering, "EmuCore/GS", "linear_present_mode", static_cast<int>(GSPostBilinearMode::BilinearSmooth));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.integerScaling, "EmuCore/GS", "IntegerScaling", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.PCRTCOffsets, "EmuCore/GS", "pcrtc_offsets", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.PCRTCOverscan, "EmuCore/GS", "pcrtc_overscan", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.PCRTCAntiBlur, "EmuCore/GS", "pcrtc_antiblur", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.DisableInterlaceOffset, "EmuCore/GS", "disable_interlace_offset", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.internalResolutionScreenshots, "EmuCore/GS", "InternalResolutionScreenshots", false);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.zoom, "EmuCore/GS", "Zoom", 100.0f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.stretchY, "EmuCore/GS", "StretchY", 100.0f);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cropLeft, "EmuCore/GS", "CropLeft", 0);
@@ -347,7 +346,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.DisableInterlaceOffset, tr("Disable Interlace Offset"), tr("Unchecked"),
 			tr("Disables interlacing offset which may reduce blurring in some situations."));
 
-		dialog->registerWidgetHelp(m_ui.bilinearFiltering, tr("Bilinear Filtering"), tr("Checked"),
+		dialog->registerWidgetHelp(m_ui.bilinearFiltering, tr("Bilinear Filtering"), tr("Bilinear (Sharp)"),
 			tr("Enables bilinear post processing filter. Smooths the overall picture as it is displayed on the screen. Corrects positioning between pixels."));
 
 		dialog->registerWidgetHelp(m_ui.PCRTCOffsets, tr("Screen Offsets"), tr("Unchecked"),
@@ -364,9 +363,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		
 		dialog->registerWidgetHelp(m_ui.vsync, tr("VSync"), tr("Unchecked"),
 			tr("Enable this option to match PCSX2's refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (eg. running at non-100% speed)."));
-
-		dialog->registerWidgetHelp(m_ui.internalResolutionScreenshots, tr("Internal Resolution Screenshots"), tr("Unchecked"),
-			tr("Saves screenshots at internal render resolution and without postprocessing. If this option is disabled, the screenshots will be taken at the window's resolution. Internal resolution screenshots can be very large at high rendering scales."));
 
 		dialog->registerWidgetHelp(m_ui.integerScaling, tr("Integer Scaling"), tr("Unchecked"),
 			tr("Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games."));

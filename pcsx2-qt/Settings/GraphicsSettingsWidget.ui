@@ -201,14 +201,14 @@
          </item>
         </widget>
        </item>
-       <item row="4" column="0">
+       <item row="5" column="0">
         <widget class="QLabel" name="label_21">
          <property name="text">
           <string>Zoom:</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="5" column="1">
         <widget class="QSpinBox" name="zoom">
          <property name="suffix">
           <string>%</string>
@@ -221,14 +221,14 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="0">
+       <item row="6" column="0">
         <widget class="QLabel" name="label_24">
          <property name="text">
           <string>Stretch Height:</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="6" column="1">
         <widget class="QSpinBox" name="stretchY">
          <property name="suffix">
           <string>%</string>
@@ -241,14 +241,14 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
+       <item row="7" column="0">
         <widget class="QLabel" name="label_26">
          <property name="text">
           <string>Crop:</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="7" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1,0,1,0,1,0,1">
          <item>
           <widget class="QLabel" name="label_39">
@@ -320,26 +320,19 @@
          </item>
         </layout>
        </item>
-       <item row="7" column="0" colspan="2">
+       <item row="8" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout_5">
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="DisableInterlaceOffset">
+           <property name="text">
+            <string>Disable Interlace Offset</string>
+           </property>
+          </widget>
+         </item>
          <item row="1" column="0">
           <widget class="QCheckBox" name="vsync">
            <property name="text">
             <string>VSync</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="bilinearFiltering">
-           <property name="text">
-            <string>Bilinear Filtering</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="internalResolutionScreenshots">
-           <property name="text">
-            <string>Internal Resolution Screenshots</string>
            </property>
           </widget>
          </item>
@@ -364,14 +357,7 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="0">
-          <widget class="QCheckBox" name="DisableInterlaceOffset">
-           <property name="text">
-            <string>Disable Interlace Offset</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
+         <item row="0" column="0">
           <widget class="QCheckBox" name="PCRTCAntiBlur">
            <property name="text">
             <string>Anti-Blur</string>
@@ -382,6 +368,32 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_17">
+         <property name="text">
+          <string>Bilinear Filtering</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QComboBox" name="bilinearFiltering">
+         <item>
+          <property name="text">
+           <string>None</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Bilinear (Smooth)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Bilinear (Sharp)</string>
+          </property>
+         </item>
+        </widget>
        </item>
       </layout>
      </widget>

@@ -309,6 +309,12 @@ void GSDevice::ClearCurrent()
 	m_mad = nullptr;
 	m_target_tmp = nullptr;
 	m_cas = nullptr;
+	m_temp_snapshot = nullptr;
+}
+
+void GSDevice::SetSnapshot()
+{
+	m_temp_snapshot = m_current;
 }
 
 void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
@@ -439,6 +445,25 @@ void GSDevice::ShadeBoost()
 
 		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert::COPY, false);
 		DoShadeBoost(m_target_tmp, m_current, params);
+	}
+}
+
+void GSDevice::Resize(int width, int height)
+{
+	GSVector2i s = m_current->GetSize();
+	int multiplier = 1;
+
+	while (width > s.x || height > s.y)
+	{
+		s = m_current->GetSize() * GSVector2i(++multiplier);
+	}
+
+	if (ResizeTexture(&m_target_tmp, GSTexture::Type::RenderTarget, s.x, s.y))
+	{
+		const GSVector4 sRect(0, 0, 1, 1);
+		const GSVector4 dRect(0, 0, s.x, s.y);
+		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert::COPY, false);
+		m_current = m_target_tmp;
 	}
 }
 

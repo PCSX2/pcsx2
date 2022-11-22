@@ -144,6 +144,13 @@ enum class GSInterlaceMode : u8
 	Count
 };
 
+enum class GSPostBilinearMode : u8
+{
+	Off,
+	BilinearSmooth,
+	BilinearSharp,
+};
+
 // Ordering was done to keep compatibility with older ini file.
 enum class BiFiltering : u8
 {
@@ -484,7 +491,6 @@ struct Pcsx2Config
 					PCRTCOffsets : 1,
 					PCRTCOverscan : 1,
 					IntegerScaling : 1,
-					LinearPresent : 1,
 					SyncToHostRefreshRate : 1,
 					UseDebugDevice : 1,
 					UseBlitSwapChain : 1,
@@ -560,6 +566,7 @@ struct Pcsx2Config
 		AspectRatioType AspectRatio{AspectRatioType::RAuto4_3_3_2};
 		FMVAspectRatioSwitchType FMVAspectRatioSwitch{FMVAspectRatioSwitchType::Off};
 		GSInterlaceMode InterlaceMode{GSInterlaceMode::Automatic};
+		GSPostBilinearMode LinearPresent{ GSPostBilinearMode::BilinearSmooth };
 
 		float Zoom{100.0f};
 		float StretchY{100.0f};

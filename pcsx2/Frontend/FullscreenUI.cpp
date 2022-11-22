@@ -2793,6 +2793,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		"11", //GSRendererType::Null
 	};
 	static constexpr const char* s_vsync_values[] = {"Off", "On", "Adaptive"};
+	static constexpr const char* s_bilinear_present_options[] = {"Off", "Bilinear (Smooth)", "Bilinear (Sharp)"};
 	static constexpr const char* s_deinterlacing_options[] = {"Automatic (Default)", "None", "Weave (Top Field First, Sawtooth)",
 		"Weave (Bottom Field First, Sawtooth)", "Bob (Top Field First)", "Bob (Bottom Field First)", "Blend (Top Field First, Half FPS)",
 		"Blend (Bottom Field First, Half FPS)", "Adaptive (Top Field First)", "Adaptive (Bottom Field First)"};
@@ -2877,15 +2878,13 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		100, 10, 300, "%d%%");
 	DrawIntRectSetting(bsi, "Crop", "Crops the image, while respecting aspect ratio.", "EmuCore/GS", "CropLeft", 0, "CropTop", 0,
 		"CropRight", 0, "CropBottom", 0, 0, 720, "%dpx");
-	DrawToggleSetting(
-		bsi, "Bilinear Upscaling", "Smooths out the image when upscaling the console to the screen.", "EmuCore/GS", "linear_present", true);
+	DrawIntListSetting(bsi, "Bilinear Upscaling",
+		"Smooths out the image when upscaling the console to the screen.", "EmuCore/GS", "linear_present_mode",
+		static_cast<int>(GSPostBilinearMode::BilinearSharp), s_bilinear_present_options, std::size(s_bilinear_present_options));
 	DrawToggleSetting(bsi, "Integer Upscaling",
 		"Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer "
 		"number. May result in a sharper image in some 2D games.",
 		"EmuCore/GS", "IntegerScaling", false);
-	DrawToggleSetting(bsi, "Internal Resolution Screenshots",
-		"Save screenshots at the full render resolution, rather than display resolution.", "EmuCore/GS", "InternalResolutionScreenshots",
-		false);
 	DrawToggleSetting(bsi, "Screen Offsets", "Enables PCRTC Offsets which position the screen as the game requests.", "EmuCore/GS",
 		"pcrtc_offsets", false);
 	DrawToggleSetting(bsi, "Show Overscan",

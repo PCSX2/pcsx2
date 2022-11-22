@@ -1354,6 +1354,10 @@ void GSApp::Init()
 	m_gs_texture_preloading.push_back(GSSetting(static_cast<u32>(TexturePreloadingLevel::Partial), "Partial", ""));
 	m_gs_texture_preloading.push_back(GSSetting(static_cast<u32>(TexturePreloadingLevel::Full), "Full", "Hash Cache"));
 
+	m_gs_tex_display_list.push_back(GSSetting(static_cast<u32>(GSPostBilinearMode::Off), "None", ""));
+	m_gs_tex_display_list.push_back(GSSetting(static_cast<u32>(GSPostBilinearMode::BilinearSmooth), "Bilinear (Smooth)", ""));
+	m_gs_tex_display_list.push_back(GSSetting(static_cast<u32>(GSPostBilinearMode::BilinearSharp), "Bilinear (Sharp)", ""));
+
 	m_gs_generic_list.push_back(GSSetting(-1, "Automatic", "Default"));
 	m_gs_generic_list.push_back(GSSetting(0, "Force-Disabled", ""));
 	m_gs_generic_list.push_back(GSSetting(1, "Force-Enabled", ""));
@@ -1455,7 +1459,7 @@ void GSApp::Init()
 	m_default_configuration["pcrtc_overscan"]                             = "0";
 	m_default_configuration["IntegerScaling"]                             = "0";
 	m_default_configuration["deinterlace_mode"]                           = std::to_string(static_cast<s8>(GSInterlaceMode::Automatic));
-	m_default_configuration["linear_present"]                             = "1";
+	m_default_configuration["linear_present_mode"]                        = std::to_string(static_cast<s8>(GSPostBilinearMode::BilinearSmooth));
 	m_default_configuration["LoadTextureReplacements"]                    = "0";
 	m_default_configuration["LoadTextureReplacementsAsync"]               = "1";
 	m_default_configuration["MaxAnisotropy"]                              = "0";
