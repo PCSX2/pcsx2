@@ -213,8 +213,6 @@ public:
 private:
 	static FILE* m_debug_gl_file;
 
-	bool m_disable_hw_gl_draw;
-
 	// Place holder for the GLSL shader code (to avoid useless reload)
 	std::string m_shader_common_header;
 	std::string m_shader_tfx_vgs;

@@ -1430,7 +1430,6 @@ void GSApp::Init()
 	m_default_configuration["CaptureWidth"]                               = "640";
 	m_default_configuration["crc_hack_level"]                             = std::to_string(static_cast<s8>(CRCHackLevel::Automatic));
 	m_default_configuration["CrcHacksExclusions"]                         = "";
-	m_default_configuration["disable_hw_gl_draw"]                         = "0";
 	m_default_configuration["disable_shader_cache"]                       = "0";
 	m_default_configuration["DisableDualSourceBlend"]                     = "0";
 	m_default_configuration["DisableFramebufferFetch"]                    = "0";

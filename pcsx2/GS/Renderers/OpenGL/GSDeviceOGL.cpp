@@ -57,8 +57,6 @@ GSDeviceOGL::GSDeviceOGL()
 #ifdef ENABLE_OGL_DEBUG
 	m_debug_gl_file = fopen("GS_opengl_debug.txt", "w");
 #endif
-
-	m_disable_hw_gl_draw = theApp.GetConfigB("disable_hw_gl_draw");
 }
 
 GSDeviceOGL::~GSDeviceOGL()
@@ -723,25 +721,19 @@ void GSDeviceOGL::DrawPrimitive()
 
 void GSDeviceOGL::DrawIndexedPrimitive()
 {
-	if (!m_disable_hw_gl_draw)
-	{
-		g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-		glDrawElementsBaseVertex(m_draw_topology, static_cast<u32>(m_index.count), GL_UNSIGNED_INT,
-			reinterpret_cast<void*>(static_cast<u32>(m_index.start) * sizeof(u32)), static_cast<GLint>(m_vertex.start));
-	}
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+	glDrawElementsBaseVertex(m_draw_topology, static_cast<u32>(m_index.count), GL_UNSIGNED_INT,
+		reinterpret_cast<void*>(static_cast<u32>(m_index.start) * sizeof(u32)), static_cast<GLint>(m_vertex.start));
 }
 
 void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 {
 	//ASSERT(offset + count <= (int)m_index.count);
 
-	if (!m_disable_hw_gl_draw)
-	{
-		g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-		glDrawElementsBaseVertex(m_draw_topology, count, GL_UNSIGNED_INT,
-			reinterpret_cast<void*>((static_cast<u32>(m_index.start) + static_cast<u32>(offset)) * sizeof(u32)),
-			static_cast<GLint>(m_vertex.start));
-	}
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+	glDrawElementsBaseVertex(m_draw_topology, count, GL_UNSIGNED_INT,
+		reinterpret_cast<void*>((static_cast<u32>(m_index.start) + static_cast<u32>(offset)) * sizeof(u32)),
+		static_cast<GLint>(m_vertex.start));
 }
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
