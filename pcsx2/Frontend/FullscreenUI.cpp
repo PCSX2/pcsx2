@@ -2633,8 +2633,11 @@ void FullscreenUI::DrawEmulationSettingsPage()
 		"EnableWideScreenPatches", false);
 	DrawToggleSetting(bsi, "Enable No-Interlacing Patches", "Enables loading no-interlacing patches from pnach files.", "EmuCore",
 		"EnableNoInterlacingPatches", false);
-	DrawToggleSetting(bsi, "Enable Per-Game Settings", "Enables loading ini overlays from gamesettings, or custom settings per-game.",
-		"EmuCore", "EnablePerGameSettings", true);
+	if (DrawToggleSetting(bsi, "Enable Per-Game Settings", "Enables loading ini overlays from gamesettings, or custom settings per-game.",
+			"EmuCore", "EnablePerGameSettings", IsEditingGameSettings(bsi)))
+	{
+		Host::RunOnCPUThread(&VMManager::ReloadGameSettings);
+	}
 	DrawToggleSetting(bsi, "Enable Host Filesystem", "Enables access to files from the host: namespace in the virtual machine.", "EmuCore",
 		"HostFs", false);
 	DrawToggleSetting(bsi, "Warn About Unsafe Settings", "Displays warnings when settings are enabled which may break games.", "EmuCore",

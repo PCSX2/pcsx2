@@ -421,7 +421,7 @@ void VMManager::RequestDisplaySize(float scale /*= 0.0f*/)
 bool VMManager::UpdateGameSettingsLayer()
 {
 	std::unique_ptr<INISettingsInterface> new_interface;
-	if (s_game_crc != 0)
+	if (s_game_crc != 0 && Host::GetBaseBoolSettingValue("EmuCore", "EnablePerGameSettings", true))
 	{
 		std::string filename(GetGameSettingsPath(s_game_serial.c_str(), s_game_crc));
 		if (!FileSystem::FileExists(filename.c_str()))
