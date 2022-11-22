@@ -858,11 +858,11 @@ void GSRendererHW::ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector
 	m_tc->ExpandTarget(BITBLTBUF, r);
 }
 
-void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
+void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool eewrite)
 {
 	// printf("[%d] InvalidateVideoMem %d,%d - %d,%d %05x (%d)\n", (int)m_perfmon.GetFrame(), r.left, r.top, r.right, r.bottom, (int)BITBLTBUF.DBP, (int)BITBLTBUF.DPSM);
 
-	m_tc->InvalidateVideoMem(m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM), r);
+	m_tc->InvalidateVideoMem(m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM), r, eewrite);
 }
 
 void GSRendererHW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut)
@@ -1703,18 +1703,18 @@ void GSRendererHW::Draw()
 			&& m_r.x == 0 && m_r.y == 0) // Likely full buffer write
 		{
 
-			if (OI_GsMemClear() && m_r.w > 1024)
+			if (OI_GsMemClear() /*&& m_r.w > 1024*/)
 			{
 				if ((fm & fm_mask) != fm_mask)
 				{
-					m_tc->InvalidateVideoMem(context->offset.fb, m_r, true);
+					m_tc->InvalidateVideoMem(context->offset.fb, m_r, false, true);
 
 					m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, context->FRAME.Block());
 				}
 
 				if (zm != 0xffffffff)
 				{
-					m_tc->InvalidateVideoMem(context->offset.zb, m_r, false);
+					m_tc->InvalidateVideoMem(context->offset.zb, m_r, false, false);
 
 					m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, context->ZBUF.Block());
 				}
@@ -1916,7 +1916,7 @@ void GSRendererHW::Draw()
 		//rt->m_valid = rt->m_valid.runion(r);
 		rt->UpdateValidity(m_r);
 
-		m_tc->InvalidateVideoMem(context->offset.fb, m_r, false);
+		m_tc->InvalidateVideoMem(context->offset.fb, m_r, false, false);
 
 		m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, context->FRAME.Block());
 	}
@@ -1926,7 +1926,7 @@ void GSRendererHW::Draw()
 		//ds->m_valid = ds->m_valid.runion(r);
 		ds->UpdateValidity(m_r);
 
-		m_tc->InvalidateVideoMem(context->offset.zb, m_r, false);
+		m_tc->InvalidateVideoMem(context->offset.zb, m_r, false, false);
 
 		m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, context->ZBUF.Block());
 	}

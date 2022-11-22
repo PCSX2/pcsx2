@@ -785,7 +785,7 @@ void GSTextureCache::InvalidateVideoMemType(int type, u32 bp)
 
 // Goal: invalidate data sent to the GPU when the source (GS memory) is modified
 // Called each time you want to write to the GS memory
-void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& rect, bool target)
+void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& rect, bool eewrite, bool target)
 {
 	u32 bp = off.bp();
 	u32 bw = off.bw();
@@ -950,7 +950,8 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 						t->m_texture ? t->m_texture->GetID() : 0,
 						t->m_TEX0.TBP0, r.x, r.y, r.z, r.w);
 					t->m_TEX0.TBW = bw;
-					t->m_age = 0;
+					if(eewrite && t->m_age < 30)
+						t->m_age = 0;
 					t->m_dirty.push_back(GSDirtyRect(r, psm, bw));
 				}
 				else
@@ -963,6 +964,8 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					const SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
 					if (so.is_valid)
 					{
+						if (eewrite && t->m_age < 30)
+							t->m_age = 0;
 						// Offset from Target to Write in Target coords.
 						t->m_dirty.push_back(GSDirtyRect(so.b2a_offset, psm, bw));
 						GL_CACHE("TC: Dirty in the middle [aggressive] of Target(%s) %d [PSM:%s BP:0x%x->0x%x BW:%u rect(%d,%d=>%d,%d)] write[PSM:%s BP:0x%x BW:%u rect(%d,%d=>%d,%d)]",
@@ -1035,7 +1038,8 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 								t->m_TEX0.TBP0);
 							// TODO: do not add this rect above too
 							t->m_TEX0.TBW = bw;
-							t->m_age = 0;
+							if (eewrite && t->m_age < 30)
+								t->m_age = 0;
 							t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top - y, r.right, r.bottom - y), psm, bw));
 							continue;
 						}
@@ -1062,7 +1066,8 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 							t->m_texture ? t->m_texture->GetID() : 0,
 							t->m_TEX0.TBP0, t->m_end_block,
 							r.left, r.top + y, r.right, r.bottom + y, bw);
-						t->m_age = 0;
+						if (eewrite && t->m_age < 30)
+							t->m_age = 0;
 						t->m_TEX0.TBW = bw;
 						t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top + y, r.right, r.bottom + y), psm, bw));
 						continue;
@@ -1073,8 +1078,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					const SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
 					if (so.is_valid)
 					{
-						// Don't reset the age on old targets, possibly misdetection, it upsets Urban Reign.
-						if (t->m_age < 30)
+						if (eewrite && t->m_age < 30)
 							t->m_age = 0;
 
 						t->m_dirty.push_back(GSDirtyRect(so.b2a_offset, psm, bw));
@@ -1335,7 +1339,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		scaled_dx, scaled_dy);
 
 	// Invalidate any sources that overlap with the target (since they're now stale).
-	InvalidateVideoMem(g_gs_renderer->m_mem.GetOffset(DBP, DBW, DPSM), GSVector4i(dx, dy, dx + w, dy + h), false);
+	InvalidateVideoMem(g_gs_renderer->m_mem.GetOffset(DBP, DBW, DPSM), GSVector4i(dx, dy, dx + w, dy + h),false, false);
 	return true;
 }
 
