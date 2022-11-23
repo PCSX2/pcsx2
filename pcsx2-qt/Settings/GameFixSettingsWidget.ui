@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -23,160 +23,194 @@
    <property name="rightMargin">
     <number>0</number>
    </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
-    <widget class="QGroupBox" name="groupBox">
-     <property name="title">
-      <string>Game Fixes (NOT recommended to change globally)</string>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <widget class="QCheckBox" name="FpuNegDivHack">
-        <property name="text">
-         <string>FPU Negative Divide Hack (For Gundam Games)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="FpuMulHack">
-        <property name="text">
-         <string>FPU Multiply Hack (For Tales of Destiny)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="SoftwareRendererFMVHack">
-        <property name="text">
-         <string>Use Software Renderer For FMVs</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="SkipMPEGHack">
-        <property name="text">
-         <string>Skip MPEG Hack (Skips Videos/FMVs)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="GoemonTlbHack">
-        <property name="text">
-         <string>Preload TLB Hack (For Goemon)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="EETimingHack">
-        <property name="text">
-         <string>EE Timing Hack (General Purpose Timing Hack)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="InstantDMAHack">
-        <property name="text">
-         <string>Instant DMA Hack (Good for cache emulation problems)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="OPHFlagHack">
-        <property name="text">
-         <string>OPH Flag Hack (For Bleach Blade Battlers)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="GIFFIFOHack">
-        <property name="text">
-         <string>Emulate GIF FIFO (Correct But Slower)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="DMABusyHack">
-        <property name="text">
-         <string>DMA Busy Hack (Deny Writes When Busy)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="VIF1StallHack">
-        <property name="text">
-         <string>Delay VIF1 Stalls (For SOCOM 2 HUD/Spy Hunter)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="VIFFIFOHack">
-        <property name="text">
-         <string>Emulate VIF FIFO (Correct But Slower)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="FullVU0SyncHack">
-        <property name="text">
-         <string>Full VU0 Synchronization (Correct But Slower)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="IbitHack">
-        <property name="text">
-         <string>VU I Bit Hack (For Scarface The World is Yours/Crash Tag Team Racing)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="VuAddSubHack">
-        <property name="text">
-         <string>VU Add Hack (For Tri-Ace Games)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="VUOverflowHack">
-        <property name="text">
-         <string>VU Overflow Hack (Superman Returns)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="VUSyncHack">
-        <property name="text">
-         <string>VU Sync (Run Behind, M-Bit games)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="XgKickHack">
-        <property name="text">
-         <string>VU XGKick Sync (Correct But Slower)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="BlitInternalFPSHack">
-        <property name="text">
-         <string>Force Blit Internal FPS Detection (When auto-detection fails)</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>674</width>
+        <height>533</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Game Fixes (NOT recommended to change globally)</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QCheckBox" name="FpuNegDivHack">
+            <property name="text">
+             <string>FPU Negative Divide Hack (For Gundam Games)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="FpuMulHack">
+            <property name="text">
+             <string>FPU Multiply Hack (For Tales of Destiny)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="SoftwareRendererFMVHack">
+            <property name="text">
+             <string>Use Software Renderer For FMVs</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="SkipMPEGHack">
+            <property name="text">
+             <string>Skip MPEG Hack (Skips Videos/FMVs)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="GoemonTlbHack">
+            <property name="text">
+             <string>Preload TLB Hack (For Goemon)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="EETimingHack">
+            <property name="text">
+             <string>EE Timing Hack (General Purpose Timing Hack)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="InstantDMAHack">
+            <property name="text">
+             <string>Instant DMA Hack (Good for cache emulation problems)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="OPHFlagHack">
+            <property name="text">
+             <string>OPH Flag Hack (For Bleach Blade Battlers)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="GIFFIFOHack">
+            <property name="text">
+             <string>Emulate GIF FIFO (Correct But Slower)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="DMABusyHack">
+            <property name="text">
+             <string>DMA Busy Hack (Deny Writes When Busy)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="VIF1StallHack">
+            <property name="text">
+             <string>Delay VIF1 Stalls (For SOCOM 2 HUD/Spy Hunter)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="VIFFIFOHack">
+            <property name="text">
+             <string>Emulate VIF FIFO (Correct But Slower)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="FullVU0SyncHack">
+            <property name="text">
+             <string>Full VU0 Synchronization (Correct But Slower)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="IbitHack">
+            <property name="text">
+             <string>VU I Bit Hack (For Scarface The World is Yours/Crash Tag Team Racing)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="VuAddSubHack">
+            <property name="text">
+             <string>VU Add Hack (For Tri-Ace Games)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="VUOverflowHack">
+            <property name="text">
+             <string>VU Overflow Hack (Superman Returns)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="VUSyncHack">
+            <property name="text">
+             <string>VU Sync (Run Behind, M-Bit games)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="XgKickHack">
+            <property name="text">
+             <string>VU XGKick Sync (Correct But Slower)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="BlitInternalFPSHack">
+            <property name="text">
+             <string>Force Blit Internal FPS Detection (When auto-detection fails)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
     </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>

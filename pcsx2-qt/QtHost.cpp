@@ -1359,6 +1359,11 @@ bool QtHost::IsOnUIThread()
 	return (QThread::currentThread() == ui_thread);
 }
 
+bool QtHost::ShouldShowAdvancedSettings()
+{
+	return Host::GetBaseBoolSettingValue("UI", "ShowAdvancedSettings", false);
+}
+
 void QtHost::RunOnUIThread(const std::function<void()>& func, bool block /*= false*/)
 {
 	// main window always exists, so it's fine to attach it to that.

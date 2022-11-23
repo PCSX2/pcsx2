@@ -57,7 +57,6 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.inhibitScreensaver, "EmuCore", "InhibitScreensaver", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.confirmShutdown, "UI", "ConfirmShutdown", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.saveStateOnShutdown, "EmuCore", "SaveStateOnShutdown", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnStart, "UI", "StartPaused", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnFocusLoss, "UI", "PauseOnFocusLoss", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.backupSaveStates, "EmuCore", "BackupSavestate", false);
 
@@ -74,9 +73,14 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 		MainWindow::DEFAULT_THEME_NAME);
 	connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit themeChanged(); });
 
-	dialog->registerWidgetHelp(
-		m_ui.inhibitScreensaver, tr("Inhibit Screensaver"), tr("Checked"),
-		tr("Prevents the screen saver from activating and the host from sleeping while emulation is running."));
+	// Per-game settings is special, we don't want to bind it if we're editing per-game settings.
+	m_ui.perGameSettings->setEnabled(!dialog->isPerGameSettings());
+	if (!dialog->isPerGameSettings())
+	{
+		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnStart, "UI", "StartPaused", false);
+		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.perGameSettings, "EmuCore", "EnablePerGameSettings", true);
+		connect(m_ui.perGameSettings, &QCheckBox::stateChanged, g_emu_thread, &EmuThread::reloadGameSettings);
+	}
 
 	if (!dialog->isPerGameSettings() && AutoUpdaterDialog::isSupported())
 	{
@@ -115,6 +119,9 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 	}
 
 	dialog->registerWidgetHelp(
+		m_ui.inhibitScreensaver, tr("Inhibit Screensaver"), tr("Checked"),
+		tr("Prevents the screen saver from activating and the host from sleeping while emulation is running."));
+	dialog->registerWidgetHelp(
 		m_ui.confirmShutdown, tr("Confirm Shutdown"), tr("Checked"),
 		tr("Determines whether a prompt will be displayed to confirm shutting down the virtual machine "
 		   "when the hotkey is pressed."));
@@ -138,6 +145,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 	dialog->registerWidgetHelp(
 		m_ui.hideMainWindow, tr("Hide Main Window When Running"), tr("Unchecked"),
 		tr("Hides the main window (with the game list) when a game is running, requires Render To Separate Window to be enabled."));
+	dialog->registerWidgetHelp(m_ui.perGameSettings, tr("Enable Per-Game Settings"), tr("Checked"),
+		tr("When enabled, custom per-game settings will be appled. Disable to always use the global configuration."));
 	dialog->registerWidgetHelp(
 		m_ui.discordPresence, tr("Enable Discord Presence"), tr("Unchecked"),
 		tr("Shows the game you are currently playing as part of your profile in Discord."));

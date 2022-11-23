@@ -18,90 +18,86 @@
 #include <QtWidgets/QMessageBox>
 #include <algorithm>
 
-#include "pcsx2/HostSettings.h"
-
+#include "AdvancedSettingsWidget.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 #include "SettingsDialog.h"
-#include "SystemSettingsWidget.h"
 
-static constexpr int MINIMUM_EE_CYCLE_RATE = -3;
-static constexpr int MAXIMUM_EE_CYCLE_RATE = 3;
-static constexpr int DEFAULT_EE_CYCLE_RATE = 0;
-static constexpr int DEFAULT_EE_CYCLE_SKIP = 0;
-
-SystemSettingsWidget::SystemSettingsWidget(SettingsDialog* dialog, QWidget* parent)
-	: QWidget(parent)
-	, m_dialog(dialog)
+AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+	: QWidget(parent), m_dialog(dialog)
 {
 	SettingsInterface* sif = dialog->getSettingsInterface();
 
 	m_ui.setupUi(this);
 
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.eeCycleSkipping, "EmuCore/Speedhacks", "EECycleSkip", DEFAULT_EE_CYCLE_SKIP);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.affinityControl, "EmuCore/CPU", "AffinityControlMode", 0);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeRecompiler, "EmuCore/CPU/Recompiler", "EnableEE", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeCache, "EmuCore/CPU/Recompiler", "EnableEECache", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeINTCSpinDetection, "EmuCore/Speedhacks", "IntcStat", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeWaitLoopDetection, "EmuCore/Speedhacks", "WaitLoop", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeFastmem, "EmuCore/CPU/Recompiler", "EnableFastmem", true);
 
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.MTVU, "EmuCore/Speedhacks", "vuThread", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.instantVU1, "EmuCore/Speedhacks", "vu1Instant", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu0Recompiler, "EmuCore/CPU/Recompiler", "EnableVU0", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu1Recompiler, "EmuCore/CPU/Recompiler", "EnableVU1", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vuFlagHack, "EmuCore/Speedhacks", "vuFlagHack", true);
+
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.eeRoundingMode, "EmuCore/CPU", "FPU.Roundmode", 3);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.vuRoundingMode, "EmuCore/CPU", "VU.Roundmode", 3);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastCDVD, "EmuCore/Speedhacks", "fastCDVD", false);
-
-	// Allow for FastCDVD for per-game settings only 
-	m_ui.fastCDVD->setEnabled(m_dialog->isPerGameSettings());
-
 	if (m_dialog->isPerGameSettings())
 	{
-		m_ui.eeCycleRate->insertItem(
-			0, tr("Use Global Setting [%1]")
-				   .arg(m_ui.eeCycleRate->itemText(
-					   std::clamp(Host::GetBaseIntSettingValue("EmuCore/Speedhacks", "EECycleRate", DEFAULT_EE_CYCLE_RATE) - MINIMUM_EE_CYCLE_RATE,
-						   0, MAXIMUM_EE_CYCLE_RATE - MINIMUM_EE_CYCLE_RATE))));
 		m_ui.eeClampMode->insertItem(0, tr("Use Global Setting [%1]").arg(m_ui.eeClampMode->itemText(getGlobalClampingModeIndex(false))));
 		m_ui.vuClampMode->insertItem(0, tr("Use Global Setting [%1]").arg(m_ui.vuClampMode->itemText(getGlobalClampingModeIndex(true))));
 	}
-
-	const std::optional<int> cycle_rate =
-		m_dialog->getIntValue("EmuCore/Speedhacks", "EECycleRate", sif ? std::nullopt : std::optional<int>(DEFAULT_EE_CYCLE_RATE));
-	m_ui.eeCycleRate->setCurrentIndex(cycle_rate.has_value() ? (std::clamp(cycle_rate.value(), MINIMUM_EE_CYCLE_RATE, MAXIMUM_EE_CYCLE_RATE) +
-																   (0 - MINIMUM_EE_CYCLE_RATE) + static_cast<int>(m_dialog->isPerGameSettings())) :
-                                                               0);
-	connect(m_ui.eeCycleRate, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int index) {
-		std::optional<int> value;
-		if (!m_dialog->isPerGameSettings() || index > 0)
-			value = MINIMUM_EE_CYCLE_RATE + index - static_cast<int>(m_dialog->isPerGameSettings());
-		m_dialog->setIntSettingValue("EmuCore/Speedhacks", "EECycleRate", value);
-	});
-
 	m_ui.eeClampMode->setCurrentIndex(getClampingModeIndex(false));
 	m_ui.vuClampMode->setCurrentIndex(getClampingModeIndex(true));
 	connect(m_ui.eeClampMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) { setClampingMode(false, index); });
 	connect(m_ui.vuClampMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) { setClampingMode(true, index); });
 
-	dialog->registerWidgetHelp(m_ui.eeCycleRate, tr("Cycle Rate"), tr("100% (Normal Speed)"),
-		tr("Higher values may increase internal framerate in games, but will increase CPU requirements substantially. "
-			"Lower values will reduce the CPU load allowing lightweight games to run full speed on weaker CPUs."));
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.iopRecompiler, "EmuCore/CPU/Recompiler", "EnableIOP", true);
 
-	dialog->registerWidgetHelp(m_ui.eeCycleSkipping, tr("Cycle Skip"), tr("None"),
-		tr("Makes the emulated Emotion Engine skip cycles. "
-		   "Helps a small subset of games like SOTC. Most of the time it's harmful to performance."));
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gameFixes, "EmuCore", "EnableGameFixes", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.patches, "EmuCore", "EnablePatches", true);
 
-	dialog->registerWidgetHelp(m_ui.MTVU, tr("MTVU (Multi-threaded VU1)"), tr("Checked"),
-		tr("Generally a speedup on CPUs with 3 or more threads. "
-		   "Safe for most games, but a few are incompatible and may hang."));
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.ntscFrameRate, "EmuCore/GS", "FramerateNTSC", 59.94f);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.palFrameRate, "EmuCore/GS", "FrameratePAL", 50.00f);
 
-	dialog->registerWidgetHelp(m_ui.instantVU1, tr("Instant VU1"), tr("Checked"),
-		tr("Runs VU1 instantly. Provides a modest speed improvement in most games. "
-		   "Safe for most games, but a few games may exhibit graphical errors."));
+	dialog->registerWidgetHelp(m_ui.eeRecompiler, tr("Enable Recompiler"), tr("Checked"),
+		tr("Performs just - in - time binary translation of 64 - bit MIPS - IV machine code to x86."));
 
-	dialog->registerWidgetHelp(m_ui.fastCDVD, tr("Enable Fast CDVD"), tr("Unchecked"),
-		tr("Fast disc access, less loading times. Check HDLoader compatibility lists for known games that have issues with this."));
+	dialog->registerWidgetHelp(m_ui.eeWaitLoopDetection, tr("Wait Loop Detection"), tr("Checked"),
+		tr("Moderate speedup for some games, with no known side effects."));
+
+	dialog->registerWidgetHelp(m_ui.eeCache, tr("Enable Cache (Slow)"), tr("Unchecked"),
+		tr("Interpreter only, provided for diagnostic."));
+
+	dialog->registerWidgetHelp(m_ui.eeINTCSpinDetection, tr("INTC Spin Detection"), tr("Checked"),
+		tr("Huge speedup for some games, with almost no compatibility side effects."));
+
+	dialog->registerWidgetHelp(m_ui.eeFastmem, tr("Enable Fast Memory Access"), tr("Checked"),
+		tr("Uses backpatching to avoid register flushing on every memory access."));
+
+	dialog->registerWidgetHelp(m_ui.vu0Recompiler, tr("Enable VU0 Recompiler"), tr("Checked"),
+		tr("Enables VU0 Recompiler."));
+
+	dialog->registerWidgetHelp(m_ui.vu1Recompiler, tr("Enable VU1 Recompiler"), tr("Checked"),
+		tr("Enables VU1 Recompiler."));
+
+	dialog->registerWidgetHelp(m_ui.vuFlagHack, tr("mVU Flag Hack"), tr("Checked"),
+		tr("Good speedup and high compatibility, may cause graphical errors."));
+
+	dialog->registerWidgetHelp(m_ui.iopRecompiler, tr("Enable Recompiler"), tr("Checked"),
+		tr("Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86."));
+
+	dialog->registerWidgetHelp(m_ui.gameFixes, tr("Enable Game Fixes"), tr("Checked"),
+		tr("Automatically loads and applies gamefixes to known problematic games on game start."));
+
+	dialog->registerWidgetHelp(m_ui.patches, tr("Enable Compatibility Patches"), tr("Checked"),
+		tr("Automatically loads and applies compatibility patches to known problematic games."));
 }
 
-SystemSettingsWidget::~SystemSettingsWidget() = default;
+AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
 
-int SystemSettingsWidget::getGlobalClampingModeIndex(bool vu) const
+int AdvancedSettingsWidget::getGlobalClampingModeIndex(bool vu) const
 {
 	if (Host::GetBaseBoolSettingValue("EmuCore/CPU/Recompiler", vu ? "vuSignOverflow" : "fpuFullMode", false))
 		return 3;
@@ -115,7 +111,7 @@ int SystemSettingsWidget::getGlobalClampingModeIndex(bool vu) const
 	return 0;
 }
 
-int SystemSettingsWidget::getClampingModeIndex(bool vu) const
+int AdvancedSettingsWidget::getClampingModeIndex(bool vu) const
 {
 	// This is so messy... maybe we should just make the mode an int in the settings too...
 	const bool base = m_dialog->isPerGameSettings() ? 1 : 0;
@@ -138,7 +134,7 @@ int SystemSettingsWidget::getClampingModeIndex(bool vu) const
 		return 0; // no per game override
 }
 
-void SystemSettingsWidget::setClampingMode(bool vu, int index)
+void AdvancedSettingsWidget::setClampingMode(bool vu, int index)
 {
 	std::optional<bool> first, second, third;
 

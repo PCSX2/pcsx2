@@ -16,7 +16,7 @@
   <property name="windowTitle">
    <string>PCSX2</string>
   </property>
-  <widget class="QStackedWidget" name="mainContainer" />
+  <widget class="QStackedWidget" name="mainContainer"/>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
@@ -90,7 +90,6 @@
     <addaction name="actionGameListSettings"/>
     <addaction name="actionBIOSSettings"/>
     <addaction name="actionEmulationSettings"/>
-    <addaction name="actionSystemSettings"/>
     <addaction name="actionGraphicsSettings"/>
     <addaction name="actionAudioSettings"/>
     <addaction name="actionMemoryCardSettings"/>
@@ -126,18 +125,8 @@
       <string>Switch Renderer</string>
      </property>
     </widget>
-    <addaction name="separator"/>
     <addaction name="menuDebugSwitchRenderer"/>
-    <addaction name="actionToggleSoftwareRendering"/>
     <addaction name="separator"/>
-    <addaction name="actionSaveBlockDump"/>
-    <addaction name="actionSaveGSDump"/>
-    <addaction name="separator"/>
-    <addaction name="actionReloadPatches"/>
-    <addaction name="separator"/>
-    <addaction name="actionEnableSystemConsole"/>
-    <addaction name="actionEnableFileLogging"/>
-    <addaction name="actionEnableVerboseLogging"/>
     <addaction name="actionEnableLogTimestamps"/>
     <addaction name="separator"/>
     <addaction name="actionEnableEEConsoleLogging"/>
@@ -194,7 +183,18 @@
     </widget>
     <addaction name="actionOpenDataDirectory"/>
     <addaction name="actionCoverDownloader"/>
+    <addaction name="separator"/>
+    <addaction name="actionToggleSoftwareRendering"/>
+    <addaction name="actionReloadPatches"/>
     <addaction name="menuInput_Recording"/>
+    <addaction name="separator"/>
+    <addaction name="actionEnableSystemConsole"/>
+    <addaction name="actionEnableFileLogging"/>
+    <addaction name="actionEnableVerboseLogging"/>
+    <addaction name="separator"/>
+    <addaction name="actionShowAdvancedSettings"/>
+    <addaction name="actionSaveBlockDump"/>
+    <addaction name="actionSaveGSDump"/>
    </widget>
    <addaction name="menuSystem"/>
    <addaction name="menuSettings"/>
@@ -363,15 +363,6 @@
    </property>
    <property name="text">
     <string>&amp;BIOS</string>
-   </property>
-  </action>
-  <action name="actionSystemSettings">
-   <property name="icon">
-    <iconset theme="artboard-2-line">
-     <normaloff>.</normaloff>.</iconset>
-   </property>
-   <property name="text">
-    <string>System</string>
    </property>
   </action>
   <action name="actionEmulationSettings">
@@ -863,6 +854,14 @@
   <action name="actionCoverDownloader">
    <property name="text">
     <string>Cover Downloader...</string>
+   </property>
+  </action>
+  <action name="actionShowAdvancedSettings">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Advanced Settings</string>
    </property>
   </action>
  </widget>

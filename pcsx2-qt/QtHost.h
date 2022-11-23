@@ -220,6 +220,9 @@ namespace QtHost
 	/// Returns true if the calling thread is the UI thread.
 	bool IsOnUIThread();
 
+	/// Returns true if advanced settings should be shown.
+	bool ShouldShowAdvancedSettings();
+
 	/// Executes a function on the UI thread.
 	void RunOnUIThread(const std::function<void()>& func, bool block = false);
 
