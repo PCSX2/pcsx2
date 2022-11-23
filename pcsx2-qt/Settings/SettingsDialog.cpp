@@ -28,7 +28,7 @@
 #include "QtUtils.h"
 #include "SettingsDialog.h"
 
-#include "AdvancedSystemSettingsWidget.h"
+#include "AdvancedSettingsWidget.h"
 #include "AudioSettingsWidget.h"
 #include "BIOSSettingsWidget.h"
 #include "EmulationSettingsWidget.h"
@@ -41,7 +41,6 @@
 #include "HotkeySettingsWidget.h"
 #include "InterfaceSettingsWidget.h"
 #include "MemoryCardSettingsWidget.h"
-#include "SystemSettingsWidget.h"
 
 #ifdef ENABLE_ACHIEVEMENTS
 #include "AchievementSettingsWidget.h"
@@ -72,7 +71,7 @@ SettingsDialog::SettingsDialog(QWidget* parent, std::unique_ptr<SettingsInterfac
 
 void SettingsDialog::setupUi(const GameList::Entry* game)
 {
-	const bool show_advanced_settings = true;
+	const bool show_advanced_settings = QtHost::ShouldShowAdvancedSettings();
 
 	m_ui.setupUi(this);
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -107,20 +106,12 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	// Common to both per-game and global settings.
 	addWidget(m_emulation_settings = new EmulationSettingsWidget(this, m_ui.settingsContainer), tr("Emulation"), QStringLiteral("dashboard-line"),
 		tr("<strong>Emulation Settings</strong><hr>These options determine the configuration of frame pacing and game settings.<br><br>Mouse over an option for additional information."));
-	addWidget(m_system_settings = new SystemSettingsWidget(this, m_ui.settingsContainer), tr("System"), QStringLiteral("artboard-2-line"),
-		tr("<strong>System Settings</strong><hr>These options determine the configuration of the simulated console.<br><br>Mouse over an option for additional information."));
 
-	if (show_advanced_settings)
+	// Only show the game fixes for per-game settings, there's really no reason to be setting them globally.
+	if (show_advanced_settings && isPerGameSettings())
 	{
-		addWidget(m_advanced_system_settings = new AdvancedSystemSettingsWidget(this, m_ui.settingsContainer), tr("Advanced System"),
-			QStringLiteral("artboard-2-line"), tr("<strong>Advanced System Settings</strong><hr>These are Advanced options to determine the configuration of the simulated console.<br><br>Mouse over an option for additional information."));
-
-		// Only show the game fixes for per-game settings, there's really no reason to be setting them globally.
-		if (isPerGameSettings())
-		{
-			addWidget(m_game_fix_settings_widget = new GameFixSettingsWidget(this, m_ui.settingsContainer), tr("Game Fix"),
-				QStringLiteral("close-line"), tr("<strong>Game Fix Settings</strong><hr>Gamefixes can work around incorrect emulation in some titles<br>however they can also cause problems in games if used incorrectly.<br>It is best to leave them all disabled unless advised otherwise."));
-		}
+		addWidget(m_game_fix_settings_widget = new GameFixSettingsWidget(this, m_ui.settingsContainer), tr("Game Fix"),
+			QStringLiteral("close-line"), tr("<strong>Game Fix Settings</strong><hr>Gamefixes can work around incorrect emulation in some titles<br>however they can also cause problems in games if used incorrectly.<br>It is best to leave them all disabled unless advised otherwise."));
 	}
 
 	addWidget(m_graphics_settings = new GraphicsSettingsWidget(this, m_ui.settingsContainer), tr("Graphics"), QStringLiteral("brush-line"),
@@ -171,6 +162,12 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 		placeholder_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 		addWidget(placeholder_label, std::move(title), std::move(icon_text), std::move(help_text));
 #endif
+	}
+
+	if (show_advanced_settings)
+	{
+		addWidget(m_advanced_settings = new AdvancedSettingsWidget(this, m_ui.settingsContainer), tr("Advanced"),
+			QStringLiteral("artboard-2-line"), tr("<strong>Advanced Settings</strong><hr>These are advanced options to determine the configuration of the simulated console.<br><br>Mouse over an option for additional information."));
 	}
 
 	m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);

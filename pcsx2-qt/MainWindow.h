@@ -156,6 +156,7 @@ private Q_SLOTS:
 	void onScreenshotActionTriggered();
 	void onSaveGSDumpActionTriggered();
 	void onBlockDumpActionToggled(bool checked);
+	void onShowAdvancedSettingsToggled(bool checked);
 
 	// Input Recording
 	void onInputRecNewActionTriggered();

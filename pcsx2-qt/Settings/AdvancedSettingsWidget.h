@@ -17,17 +17,17 @@
 
 #include <QtWidgets/QWidget>
 
-#include "ui_SystemSettingsWidget.h"
+#include "ui_AdvancedSettingsWidget.h"
 
 class SettingsDialog;
 
-class SystemSettingsWidget : public QWidget
+class AdvancedSettingsWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	SystemSettingsWidget(SettingsDialog* dialog, QWidget* parent);
-	~SystemSettingsWidget();
+	AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	~AdvancedSettingsWidget();
 
 private:
 	int getGlobalClampingModeIndex(bool vu) const;
@@ -36,5 +36,5 @@ private:
 
 	SettingsDialog* m_dialog;
 
-	Ui::SystemSettingsWidget m_ui;
+	Ui::AdvancedSystemSettingsWidget m_ui;
 };

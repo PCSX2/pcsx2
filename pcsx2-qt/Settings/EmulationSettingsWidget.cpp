@@ -26,6 +26,10 @@
 #include "SettingWidgetBinder.h"
 #include "SettingsDialog.h"
 
+static constexpr int MINIMUM_EE_CYCLE_RATE = -3;
+static constexpr int MAXIMUM_EE_CYCLE_RATE = 3;
+static constexpr int DEFAULT_EE_CYCLE_RATE = 0;
+static constexpr int DEFAULT_EE_CYCLE_SKIP = 0;
 static constexpr u32 DEFAULT_FRAME_LATENCY = 2;
 
 EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget* parent)
@@ -46,66 +50,84 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 	connect(m_ui.optimalFramePacing, &QCheckBox::stateChanged, this, &EmulationSettingsWidget::onOptimalFramePacingChanged);
 	m_ui.optimalFramePacing->setTristate(dialog->isPerGameSettings());
 
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cheats, "EmuCore", "EnableCheats", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.widescreenPatches, "EmuCore", "EnableWideScreenPatches", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.noInterlacingPatches, "EmuCore", "EnableNoInterlacingPatches", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hostFilesystem, "EmuCore", "HostFs", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.warnAboutUnsafeSettings, "EmuCore", "WarnAboutUnsafeSettings", true);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.eeCycleSkipping, "EmuCore/Speedhacks", "EECycleSkip", DEFAULT_EE_CYCLE_SKIP);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.affinityControl, "EmuCore/CPU", "AffinityControlMode", 0);
 
-	// Per-game settings is special, we don't want to bind it if we're editing per-game settings.
-	m_ui.perGameSettings->setEnabled(!dialog->isPerGameSettings());
-	if (!dialog->isPerGameSettings())
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.MTVU, "EmuCore/Speedhacks", "vuThread", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.instantVU1, "EmuCore/Speedhacks", "vu1Instant", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastCDVD, "EmuCore/Speedhacks", "fastCDVD", false);
+
+	if (m_dialog->isPerGameSettings())
 	{
-		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.perGameSettings, "EmuCore", "EnablePerGameSettings", true);
-		connect(m_ui.perGameSettings, &QCheckBox::stateChanged, g_emu_thread, &EmuThread::reloadGameSettings);
+		m_ui.eeCycleRate->insertItem(
+			0, tr("Use Global Setting [%1]")
+				   .arg(m_ui.eeCycleRate->itemText(
+					   std::clamp(Host::GetBaseIntSettingValue("EmuCore/Speedhacks", "EECycleRate", DEFAULT_EE_CYCLE_RATE) - MINIMUM_EE_CYCLE_RATE,
+						   0, MAXIMUM_EE_CYCLE_RATE - MINIMUM_EE_CYCLE_RATE))));
 	}
+	else
+	{
+		// Allow for FastCDVD for per-game settings only
+		m_ui.systemSettingsLayout->removeWidget(m_ui.fastCDVD);
+		m_ui.fastCDVD->deleteLater();
+	}
+
+	const std::optional<int> cycle_rate =
+		m_dialog->getIntValue("EmuCore/Speedhacks", "EECycleRate", sif ? std::nullopt : std::optional<int>(DEFAULT_EE_CYCLE_RATE));
+	m_ui.eeCycleRate->setCurrentIndex(cycle_rate.has_value() ? (std::clamp(cycle_rate.value(), MINIMUM_EE_CYCLE_RATE, MAXIMUM_EE_CYCLE_RATE) +
+																   (0 - MINIMUM_EE_CYCLE_RATE) + static_cast<int>(m_dialog->isPerGameSettings())) :
+                                                               0);
+	connect(m_ui.eeCycleRate, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int index) {
+		std::optional<int> value;
+		if (!m_dialog->isPerGameSettings() || index > 0)
+			value = MINIMUM_EE_CYCLE_RATE + index - static_cast<int>(m_dialog->isPerGameSettings());
+		m_dialog->setIntSettingValue("EmuCore/Speedhacks", "EECycleRate", value);
+	});
+
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cheats, "EmuCore", "EnableCheats", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hostFilesystem, "EmuCore", "HostFs", false);
 
 	dialog->registerWidgetHelp(m_ui.normalSpeed, tr("Normal Speed"), "100%",
 		tr("Sets the target emulation speed. It is not guaranteed that this speed will be reached, "
 		   "and if not, the emulator will run as fast as it can manage."));
-
 	dialog->registerWidgetHelp(m_ui.fastForwardSpeed, tr("Fast Forward Speed"), tr("User Preference"),
 		tr("Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled."));
-
 	dialog->registerWidgetHelp(m_ui.slowMotionSpeed, tr("Slow Motion Speed"), tr("User Preference"),
 		tr("Sets the slow motion speed. This speed will be used when the slow motion hotkey is pressed/toggled."));	
-
 	dialog->registerWidgetHelp(m_ui.speedLimiter, tr("Speed Limiter"), tr("Checked"),
 		tr("Limits the emulation to the appropriate framerate for the currently running game."));
 
+	dialog->registerWidgetHelp(m_ui.eeCycleRate, tr("Cycle Rate"), tr("100% (Normal Speed)"),
+		tr("Higher values may increase internal framerate in games, but will increase CPU requirements substantially. "
+		   "Lower values will reduce the CPU load allowing lightweight games to run full speed on weaker CPUs."));
+	dialog->registerWidgetHelp(m_ui.eeCycleSkipping, tr("Cycle Skip"), tr("None"),
+		tr("Makes the emulated Emotion Engine skip cycles. "
+		   "Helps a small subset of games like SOTC. Most of the time it's harmful to performance."));
+	dialog->registerWidgetHelp(m_ui.MTVU, tr("MTVU (Multi-threaded VU1)"), tr("Checked"),
+		tr("Generally a speedup on CPUs with 3 or more threads. "
+		   "Safe for most games, but a few are incompatible and may hang."));
+	dialog->registerWidgetHelp(m_ui.instantVU1, tr("Instant VU1"), tr("Checked"),
+		tr("Runs VU1 instantly. Provides a modest speed improvement in most games. "
+		   "Safe for most games, but a few games may exhibit graphical errors."));
+	dialog->registerWidgetHelp(m_ui.fastCDVD, tr("Enable Fast CDVD"), tr("Unchecked"),
+		tr("Fast disc access, less loading times. Check HDLoader compatibility lists for known games that have issues with this."));
+	dialog->registerWidgetHelp(m_ui.cheats, tr("Enable Cheats"), tr("Unchecked"),
+		tr("Automatically loads and applies cheats on game start."));
+	dialog->registerWidgetHelp(m_ui.hostFilesystem, tr("Enable Host Filesystem"), tr("Unchecked"),
+		tr("Allows games and homebrew to access files / folders directly on the host computer."));
+
+	dialog->registerWidgetHelp(m_ui.optimalFramePacing, tr("Optimal Frame Pacing"), tr("Unchecked"),
+		tr("Sets the vsync queue size to 0, making every frame be completed and presented by the GS before input is polled, and the next frame begins. "
+		   "Using this setting can reduce input lag, at the cost of measurably higher CPU and GPU requirements."));
+	dialog->registerWidgetHelp(m_ui.maxFrameLatency, tr("Maximum Frame Latency"), tr("2 Frames"),
+		tr("Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. "
+		   "Higher values can assist with smoothing out irregular frame times, but add additional input lag."));
 	dialog->registerWidgetHelp(m_ui.syncToHostRefreshRate, tr("Scale To Host Refresh Rate"), tr("Unchecked"),
 		tr("Adjusts the emulation speed so the console's refresh rate matches the host's refresh rate when both VSync and "
 		   "Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of "
 		   "potentially increasing the emulation speed by less than 1%. Scale To Host Refresh Rate will not take effect if "
 		   "the console's refresh rate is too far from the host's refresh rate. Users with variable refresh rate displays "
 		   "should disable this option."));
-
-	dialog->registerWidgetHelp(m_ui.cheats, tr("Enable Cheats"), tr("Unchecked"),
-		tr("Automatically loads and applies cheats on game start."));
-	
-	dialog->registerWidgetHelp(m_ui.hostFilesystem, tr("Enable Host Filesystem"), tr("Unchecked"),
-		tr("Allows games and homebrew to access files / folders directly on the host computer."));
-
-	dialog->registerWidgetHelp(m_ui.widescreenPatches, tr("Enable Widescreen Patches"), tr("Unchecked"),
-		tr("Automatically loads and applies widescreen patches on game start. Can cause issues."));
-
-	dialog->registerWidgetHelp(m_ui.noInterlacingPatches, tr("Enable No-Interlacing Patches"), tr("Unchecked"),
-		tr("Automatically loads and applies no-interlacing patches on game start. Can cause issues."));
-
-	dialog->registerWidgetHelp(m_ui.perGameSettings, tr("Enable Per-Game Settings"), tr("Checked"),
-		tr("When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should "
-		   "leave this option enabled except when testing enhancements with incompatible games."));
-
-	dialog->registerWidgetHelp(m_ui.optimalFramePacing, tr("Optimal Frame Pacing"), tr("Unchecked"),
-		tr("Sets the vsync queue size to 0, making every frame be completed and presented by the GS before input is polled, and the next frame begins. "
-		   "Using this setting can reduce input lag, at the cost of measurably higher CPU and GPU requirements."));
-
-	dialog->registerWidgetHelp(m_ui.maxFrameLatency, tr("Maximum Frame Latency"), tr("2 Frames"),
-		tr("Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. "
-		   "Higher values can assist with smoothing out irregular frame times, but add additional input lag."));
-
-	dialog->registerWidgetHelp(m_ui.warnAboutUnsafeSettings, tr("Warn About Unsafe Settings"),
-		tr("Checked"), tr("Displays warnings when settings are enabled which may break games."));
 
 	updateOptimalFramePacing();
 }

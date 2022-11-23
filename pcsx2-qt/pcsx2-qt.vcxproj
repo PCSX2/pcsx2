@@ -146,9 +146,8 @@
     <ClCompile Include="Settings\GameListSettingsWidget.cpp" />
     <ClCompile Include="Settings\GraphicsSettingsWidget.cpp" />
     <ClCompile Include="Settings\InterfaceSettingsWidget.cpp" />
-    <ClCompile Include="Settings\SystemSettingsWidget.cpp" />
     <ClCompile Include="Settings\SettingsDialog.cpp" />
-    <ClCompile Include="Settings\AdvancedSystemSettingsWidget.cpp" />
+    <ClCompile Include="Settings\AdvancedSettingsWidget.cpp" />
     <ClCompile Include="Settings\GameFixSettingsWidget.cpp" />
     <ClCompile Include="Settings\HotkeySettingsWidget.cpp" />
     <ClCompile Include="Settings\InputBindingDialog.cpp" />
@@ -180,14 +179,13 @@
     <ClCompile Include="QtUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="Settings\SystemSettingsWidget.h" />
     <QtMoc Include="Settings\InterfaceSettingsWidget.h" />
     <QtMoc Include="Settings\GameListSettingsWidget.h" />
     <QtMoc Include="Settings\BIOSSettingsWidget.h" />
     <QtMoc Include="Settings\EmulationSettingsWidget.h" />
     <QtMoc Include="Settings\GraphicsSettingsWidget.h" />
     <QtMoc Include="Settings\SettingsDialog.h" />
-    <QtMoc Include="Settings\AdvancedSystemSettingsWidget.h" />
+    <QtMoc Include="Settings\AdvancedSettingsWidget.h" />
     <QtMoc Include="Settings\GameFixSettingsWidget.h" />
     <QtMoc Include="Settings\HotkeySettingsWidget.h" />
     <QtMoc Include="Settings\InputBindingDialog.h" />
@@ -239,9 +237,8 @@
     <ClCompile Include="$(IntDir)Settings\moc_GameListSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_GraphicsSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_InterfaceSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_SystemSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_SettingsDialog.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_AdvancedSystemSettingsWidget.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_AdvancedSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_GameFixSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_HotkeySettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_InputBindingDialog.cpp" />
@@ -284,9 +281,6 @@
     <QtUi Include="Settings\SettingsDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="Settings\SystemSettingsWidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
     <QtUi Include="Settings\GameListSettingsWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
@@ -302,7 +296,7 @@
     <QtUi Include="Settings\InterfaceSettingsWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="Settings\AdvancedSystemSettingsWidget.ui">
+    <QtUi Include="Settings\AdvancedSettingsWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\GameFixSettingsWidget.ui">

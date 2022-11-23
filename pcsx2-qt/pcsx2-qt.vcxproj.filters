@@ -65,9 +65,6 @@
     <ClCompile Include="Settings\SettingsDialog.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
-    <ClCompile Include="Settings\SystemSettingsWidget.cpp">
-      <Filter>Settings</Filter>
-    </ClCompile>
     <ClCompile Include="$(IntDir)Settings\moc_BIOSSettingsWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
@@ -86,13 +83,10 @@
     <ClCompile Include="$(IntDir)Settings\moc_SettingsDialog.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_SystemSettingsWidget.cpp">
+    <ClCompile Include="$(IntDir)Settings\moc_AdvancedSettingsWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_AdvancedSystemSettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="Settings\AdvancedSystemSettingsWidget.cpp">
+    <ClCompile Include="Settings\AdvancedSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)Settings\moc_GameFixSettingsWidget.cpp">
@@ -291,10 +285,7 @@
     <QtMoc Include="Settings\SettingsDialog.h">
       <Filter>Settings</Filter>
     </QtMoc>
-    <QtMoc Include="Settings\SystemSettingsWidget.h">
-      <Filter>Settings</Filter>
-    </QtMoc>
-    <QtMoc Include="Settings\AdvancedSystemSettingsWidget.h">
+    <QtMoc Include="Settings\AdvancedSettingsWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>
     <QtMoc Include="Settings\GameFixSettingsWidget.h">
@@ -391,13 +382,10 @@
     <QtUi Include="Settings\InterfaceSettingsWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
-    <QtUi Include="Settings\SystemSettingsWidget.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
     <QtUi Include="Settings\SettingsDialog.ui">
       <Filter>Settings</Filter>
     </QtUi>
-    <QtUi Include="Settings\AdvancedSystemSettingsWidget.ui">
+    <QtUi Include="Settings\AdvancedSettingsWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\GameFixSettingsWidget.ui">
