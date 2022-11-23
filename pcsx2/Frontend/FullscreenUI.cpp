@@ -170,7 +170,6 @@ namespace FullscreenUI
 		Interface,
 		BIOS,
 		Emulation,
-		System,
 		Graphics,
 		Audio,
 		MemoryCard,
@@ -287,7 +286,6 @@ namespace FullscreenUI
 	static void DrawCoverDownloaderWindow();
 	static void DrawBIOSSettingsPage();
 	static void DrawEmulationSettingsPage();
-	static void DrawSystemSettingsPage();
 	static void DrawGraphicsSettingsPage();
 	static void DrawAudioSettingsPage();
 	static void DrawMemoryCardSettingsPage();
@@ -2229,17 +2227,16 @@ void FullscreenUI::DrawSettingsWindow()
 	{
 		static constexpr float ITEM_WIDTH = 25.0f;
 
-		static constexpr const char* global_icons[] = {ICON_FA_WINDOW_MAXIMIZE, ICON_FA_MICROCHIP, ICON_FA_SLIDERS_H, ICON_FA_HDD,
-			ICON_FA_MAGIC, ICON_FA_HEADPHONES, ICON_FA_SD_CARD, ICON_FA_GAMEPAD, ICON_FA_KEYBOARD, ICON_FA_TROPHY, ICON_FA_FOLDER_OPEN,
-			ICON_FA_COGS};
-		static constexpr const char* per_game_icons[] = {ICON_FA_PARAGRAPH, ICON_FA_SLIDERS_H, ICON_FA_HDD, ICON_FA_MAGIC,
-			ICON_FA_HEADPHONES, ICON_FA_SD_CARD, ICON_FA_GAMEPAD, ICON_FA_BAN};
+		static constexpr const char* global_icons[] = {ICON_FA_WINDOW_MAXIMIZE, ICON_FA_MICROCHIP, ICON_FA_SLIDERS_H, ICON_FA_MAGIC,
+			ICON_FA_HEADPHONES, ICON_FA_SD_CARD, ICON_FA_GAMEPAD, ICON_FA_KEYBOARD, ICON_FA_TROPHY, ICON_FA_FOLDER_OPEN, ICON_FA_COGS};
+		static constexpr const char* per_game_icons[] = {
+			ICON_FA_PARAGRAPH, ICON_FA_SLIDERS_H, ICON_FA_MAGIC, ICON_FA_HEADPHONES, ICON_FA_SD_CARD, ICON_FA_GAMEPAD, ICON_FA_BAN};
 		static constexpr SettingsPage global_pages[] = {SettingsPage::Interface, SettingsPage::BIOS, SettingsPage::Emulation,
-			SettingsPage::System, SettingsPage::Graphics, SettingsPage::Audio, SettingsPage::MemoryCard, SettingsPage::Controller,
-			SettingsPage::Hotkey, SettingsPage::Achievements, SettingsPage::Folders, SettingsPage::Advanced};
-		static constexpr SettingsPage per_game_pages[] = {SettingsPage::Summary, SettingsPage::Emulation, SettingsPage::System,
-			SettingsPage::Graphics, SettingsPage::Audio, SettingsPage::MemoryCard, SettingsPage::Controller, SettingsPage::GameFixes};
-		static constexpr const char* titles[] = {"Summary", "Interface Settings", "BIOS Settings", "Emulation Settings", "System Settings",
+			SettingsPage::Graphics, SettingsPage::Audio, SettingsPage::MemoryCard, SettingsPage::Controller, SettingsPage::Hotkey,
+			SettingsPage::Achievements, SettingsPage::Folders, SettingsPage::Advanced};
+		static constexpr SettingsPage per_game_pages[] = {SettingsPage::Summary, SettingsPage::Emulation, SettingsPage::Graphics,
+			SettingsPage::Audio, SettingsPage::MemoryCard, SettingsPage::Controller, SettingsPage::GameFixes};
+		static constexpr const char* titles[] = {"Summary", "Interface Settings", "BIOS Settings", "Emulation Settings",
 			"Graphics Settings", "Audio Settings", "Memory Card Settings", "Controller Settings", "Hotkey Settings",
 			"Achievements Settings", "Folder Settings", "Advanced Settings", "Game Fixes"};
 
@@ -2325,10 +2322,6 @@ void FullscreenUI::DrawSettingsWindow()
 
 			case SettingsPage::Emulation:
 				DrawEmulationSettingsPage();
-				break;
-
-			case SettingsPage::System:
-				DrawSystemSettingsPage();
 				break;
 
 			case SettingsPage::Graphics:
@@ -2445,6 +2438,12 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		"Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next "
 		"time.",
 		"EmuCore", "SaveStateOnShutdown", false);
+	if (DrawToggleSetting(bsi, ICON_FA_WRENCH " Enable Per-Game Settings",
+			"Enables loading ini overlays from gamesettings, or custom settings per-game.", "EmuCore", "EnablePerGameSettings",
+			IsEditingGameSettings(bsi)))
+	{
+		Host::RunOnCPUThread(&VMManager::ReloadGameSettings);
+	}
 	if (DrawToggleSetting(bsi, ICON_FA_PAINT_BRUSH " Use Light Theme", "Uses a light coloured theme instead of the default dark theme.",
 			"UI", "UseLightFullscreenUITheme", false))
 	{
@@ -2486,6 +2485,8 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		"EmuCore/GS", "OsdShowSettings", false);
 	DrawToggleSetting(bsi, ICON_FA_GAMEPAD " Show Inputs",
 		"Shows the current controller state of the system in the bottom-left corner of the display.", "EmuCore/GS", "OsdShowInputs", false);
+	DrawToggleSetting(bsi, ICON_FA_EXCLAMATION_CIRCLE " Warn About Unsafe Settings",
+		"Displays warnings when settings are enabled which may break games.", "EmuCore", "WarnAboutUnsafeSettings", true);
 
 	MenuHeading("Operations");
 	if (MenuButton(ICON_FA_FOLDER_MINUS " Reset Settings", "Resets configuration to defaults (excluding controller settings).",
@@ -2591,6 +2592,12 @@ void FullscreenUI::DrawEmulationSettingsPage()
 		5.00f,
 		10.00f,
 	};
+	static constexpr const char* ee_cycle_rate_settings[] = {
+		"50% Speed", "60% Speed", "75% Speed", "100% Speed (Default)", "130% Speed", "180% Speed", "300% Speed"};
+	static constexpr const char* ee_cycle_skip_settings[] = {
+		"Normal (Default)", "Mild Underclock", "Moderate Underclock", "Maximum Underclock"};
+	static constexpr const char* affinity_control_settings[] = {
+		"Disabled", "EE > VU > GS", "EE > GS > VU", "VU > EE > GS", "VU > GS > EE", "GS > EE > VU", "GS > VU > EE"};
 	static constexpr const char* queue_entries[] = {"0 Frames (Hard Sync)", "1 Frame", "2 Frames", "3 Frames"};
 
 	SettingsInterface* bsi = GetEditingSettingsInterface();
@@ -2607,6 +2614,30 @@ void FullscreenUI::DrawEmulationSettingsPage()
 		speed_entries, speed_values, std::size(speed_entries));
 	DrawToggleSetting(
 		bsi, "Enable Speed Limiter", "When disabled, the game will run as fast as possible.", "EmuCore/GS", "FrameLimitEnable", true);
+
+	MenuHeading("System Settings");
+
+	DrawIntListSetting(bsi, "EE Cycle Rate", "Underclocks or overclocks the emulated Emotion Engine CPU.", "EmuCore/Speedhacks",
+		"EECycleRate", 0, ee_cycle_rate_settings, std::size(ee_cycle_rate_settings), -3);
+	DrawIntListSetting(bsi, "EE Cycle Skipping", "Adds a penalty to the Emulated Emotion Engine for executing VU programs.",
+		"EmuCore/Speedhacks", "EECycleSkip", 0, ee_cycle_skip_settings, std::size(ee_cycle_skip_settings));
+	DrawIntListSetting(bsi, "Affinity Control Mode",
+		"Pins emulation threads to CPU cores to potentially improve performance/frame time variance.", "EmuCore/CPU", "AffinityControlMode",
+		0, affinity_control_settings, std::size(affinity_control_settings), 0);
+	DrawToggleSetting(bsi, "Enable MTVU (Multi-Threaded VU1)", "Uses a second thread for VU1 micro programs. Sizable speed boost.",
+		"EmuCore/Speedhacks", "vuThread", false);
+	DrawToggleSetting(bsi, "Enable Instant VU1",
+		"Reduces timeslicing between VU1 and EE recompilers, effectively running VU1 at an infinite clock speed.", "EmuCore/Speedhacks",
+		"vu1Instant", true);
+	DrawToggleSetting(bsi, "Enable Cheats", "Enables loading cheats from pnach files.", "EmuCore", "EnableCheats", false);
+	DrawToggleSetting(bsi, "Enable Host Filesystem", "Enables access to files from the host: namespace in the virtual machine.", "EmuCore",
+		"HostFs", false);
+
+	if (IsEditingGameSettings(bsi))
+	{
+		DrawToggleSetting(
+			bsi, "Enable Fast CDVD", "Fast disc access, less loading times. Not recommended.", "EmuCore/Speedhacks", "fastCDVD", false);
+	}
 
 	MenuHeading("Frame Pacing/Latency Control");
 
@@ -2625,23 +2656,6 @@ void FullscreenUI::DrawEmulationSettingsPage()
 
 	DrawToggleSetting(bsi, "Adjust To Host Refresh Rate", "Speeds up emulation so that the guest refresh rate matches the host.",
 		"EmuCore/GS", "SyncToHostRefreshRate", false);
-
-	MenuHeading("Game Settings");
-
-	DrawToggleSetting(bsi, "Enable Cheats", "Enables loading cheats from pnach files.", "EmuCore", "EnableCheats", false);
-	DrawToggleSetting(bsi, "Enable Widescreen Patches", "Enables loading widescreen patches from pnach files.", "EmuCore",
-		"EnableWideScreenPatches", false);
-	DrawToggleSetting(bsi, "Enable No-Interlacing Patches", "Enables loading no-interlacing patches from pnach files.", "EmuCore",
-		"EnableNoInterlacingPatches", false);
-	if (DrawToggleSetting(bsi, "Enable Per-Game Settings", "Enables loading ini overlays from gamesettings, or custom settings per-game.",
-			"EmuCore", "EnablePerGameSettings", IsEditingGameSettings(bsi)))
-	{
-		Host::RunOnCPUThread(&VMManager::ReloadGameSettings);
-	}
-	DrawToggleSetting(bsi, "Enable Host Filesystem", "Enables access to files from the host: namespace in the virtual machine.", "EmuCore",
-		"HostFs", false);
-	DrawToggleSetting(bsi, "Warn About Unsafe Settings", "Displays warnings when settings are enabled which may break games.", "EmuCore",
-		"WarnAboutUnsafeSettings", true);
 
 	EndMenuButtons();
 }
@@ -2709,53 +2723,6 @@ void FullscreenUI::DrawClampingModeSetting(SettingsInterface* bsi, const char* t
 				CloseChoiceDialog();
 			});
 	}
-}
-
-void FullscreenUI::DrawSystemSettingsPage()
-{
-	static constexpr const char* ee_cycle_rate_settings[] = {
-		"50% Speed", "60% Speed", "75% Speed", "100% Speed (Default)", "130% Speed", "180% Speed", "300% Speed"};
-	static constexpr const char* ee_cycle_skip_settings[] = {
-		"Normal (Default)", "Mild Underclock", "Moderate Underclock", "Maximum Underclock"};
-	static constexpr const char* ee_rounding_mode_settings[] = {"Nearest", "Negative", "Positive", "Chop/Zero (Default)"};
-	static constexpr const char* affinity_control_settings[] = {
-		"Disabled", "EE > VU > GS", "EE > GS > VU", "VU > EE > GS", "VU > GS > EE", "GS > EE > VU", "GS > VU > EE"};
-
-	SettingsInterface* bsi = GetEditingSettingsInterface();
-
-	BeginMenuButtons();
-
-	MenuHeading("Emotion Engine (MIPS-III/MIPS-IV)");
-	DrawIntListSetting(bsi, "Cycle Rate", "Underclocks or overclocks the emulated Emotion Engine CPU.", "EmuCore/Speedhacks", "EECycleRate",
-		0, ee_cycle_rate_settings, std::size(ee_cycle_rate_settings), -3);
-	DrawIntListSetting(bsi, "Cycle Skip", "Adds a penalty to the Emulated Emotion Engine for executing VU programs.", "EmuCore/Speedhacks",
-		"EECycleSkip", 0, ee_cycle_skip_settings, std::size(ee_cycle_skip_settings));
-	DrawIntListSetting(bsi, "Rounding Mode##ee_rounding_mode",
-		"Determines how the results of floating-point operations are rounded. Some games need specific settings.", "EmuCore/CPU",
-		"FPU.Roundmode", 3, ee_rounding_mode_settings, std::size(ee_rounding_mode_settings));
-	DrawClampingModeSetting(bsi, "Clamping Mode##ee_clamping_mode",
-		"Determines how out-of-range floating point numbers are handled. Some games need specific settings.", false);
-	DrawIntListSetting(bsi, "Affinity Control Mode",
-		"Pins emulation threads to CPU cores to potentially improve performance/frame time variance.", "EmuCore/CPU", "AffinityControlMode",
-		0, affinity_control_settings, std::size(affinity_control_settings), 0);
-
-	MenuHeading("Vector Units");
-	DrawIntListSetting(bsi, "Rounding Mode##vu_rounding_mode",
-		"Determines how the results of floating-point operations are rounded. Some games need specific settings.", "EmuCore/CPU",
-		"VU.Roundmode", 3, ee_rounding_mode_settings, std::size(ee_rounding_mode_settings));
-	DrawClampingModeSetting(bsi, "Clamping Mode##vu_clamping_mode",
-		"Determines how out-of-range floating point numbers are handled. Some games need specific settings.", true);
-	DrawToggleSetting(bsi, "Enable MTVU (Multi-Threaded VU1)", "Uses a second thread for VU1 micro programs. Sizable speed boost.",
-		"EmuCore/Speedhacks", "vuThread", false);
-	DrawToggleSetting(bsi, "Enable Instant VU1",
-		"Reduces timeslicing between VU1 and EE recompilers, effectively running VU1 at an infinite clock speed.", "EmuCore/Speedhacks",
-		"vu1Instant", true);
-
-	MenuHeading("I/O Processor (MIPS-I)");
-	DrawToggleSetting(
-		bsi, "Enable Fast CDVD", "Fast disc access, less loading times. Not recommended.", "EmuCore/Speedhacks", "fastCDVD", false);
-
-	EndMenuButtons();
 }
 
 void FullscreenUI::DrawGraphicsSettingsPage()
@@ -2878,9 +2845,13 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		100, 10, 300, "%d%%");
 	DrawIntRectSetting(bsi, "Crop", "Crops the image, while respecting aspect ratio.", "EmuCore/GS", "CropLeft", 0, "CropTop", 0,
 		"CropRight", 0, "CropBottom", 0, 0, 720, "%dpx");
-	DrawIntListSetting(bsi, "Bilinear Upscaling",
-		"Smooths out the image when upscaling the console to the screen.", "EmuCore/GS", "linear_present_mode",
-		static_cast<int>(GSPostBilinearMode::BilinearSharp), s_bilinear_present_options, std::size(s_bilinear_present_options));
+	DrawToggleSetting(bsi, "Enable Widescreen Patches", "Enables loading widescreen patches from pnach files.", "EmuCore",
+		"EnableWideScreenPatches", false);
+	DrawToggleSetting(bsi, "Enable No-Interlacing Patches", "Enables loading no-interlacing patches from pnach files.", "EmuCore",
+		"EnableNoInterlacingPatches", false);
+	DrawIntListSetting(bsi, "Bilinear Upscaling", "Smooths out the image when upscaling the console to the screen.", "EmuCore/GS",
+		"linear_present_mode", static_cast<int>(GSPostBilinearMode::BilinearSharp), s_bilinear_present_options,
+		std::size(s_bilinear_present_options));
 	DrawToggleSetting(bsi, "Integer Upscaling",
 		"Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer "
 		"number. May result in a sharper image in some 2D games.",
@@ -3788,9 +3759,22 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 
 void FullscreenUI::DrawAdvancedSettingsPage()
 {
+	static constexpr const char* ee_rounding_mode_settings[] = {"Nearest", "Negative", "Positive", "Chop/Zero (Default)"};
+
 	SettingsInterface* bsi = GetEditingSettingsInterface();
 
+	const bool show_advanced_settings = IsEditingGameSettings(bsi) ? Host::GetBaseBoolSettingValue("UI", "ShowAdvancedSettings", false) :
+                                                                     bsi->GetBoolValue("UI", "ShowAdvancedSettings", false);
+
 	BeginMenuButtons();
+
+	if (!IsEditingGameSettings(bsi))
+	{
+		DrawToggleSetting(bsi, "Show Advanced Settings",
+			"Changing these options may cause games to become non-functional. Modify at your own risk, the PCSX2 team will not provide "
+			"support for configurations with these settings changed.",
+			"UI", "ShowAdvancedSettings", false);
+	}
 
 	MenuHeading("Logging");
 
@@ -3798,41 +3782,61 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 		"EnableSystemConsole", false);
 	DrawToggleSetting(bsi, "File Logging", "Writes log messages to emulog.txt.", "Logging", "EnableFileLogging", false);
 	DrawToggleSetting(bsi, "Verbose Logging", "Writes dev log messages to log sinks.", "Logging", "EnableVerbose", false, !IsDevBuild);
-	DrawToggleSetting(bsi, "Log Timestamps", "Writes timestamps alongside log messages.", "Logging", "EnableTimestamps", true);
-	DrawToggleSetting(
-		bsi, "EE Console", "Writes debug messages from the game's EE code to the console.", "Logging", "EnableEEConsole", true);
-	DrawToggleSetting(
-		bsi, "IOP Console", "Writes debug messages from the game's IOP code to the console.", "Logging", "EnableIOPConsole", true);
-	DrawToggleSetting(bsi, "CDVD Verbose Reads", "Logs disc reads from games.", "EmuCore", "CdvdVerboseReads", false);
 
-	MenuHeading("Advanced System");
+	if (show_advanced_settings)
+	{
+		DrawToggleSetting(bsi, "Log Timestamps", "Writes timestamps alongside log messages.", "Logging", "EnableTimestamps", true);
+		DrawToggleSetting(
+			bsi, "EE Console", "Writes debug messages from the game's EE code to the console.", "Logging", "EnableEEConsole", true);
+		DrawToggleSetting(
+			bsi, "IOP Console", "Writes debug messages from the game's IOP code to the console.", "Logging", "EnableIOPConsole", true);
+		DrawToggleSetting(bsi, "CDVD Verbose Reads", "Logs disc reads from games.", "EmuCore", "CdvdVerboseReads", false);
+	}
 
-	DrawToggleSetting(bsi, "Enable EE Recompiler",
-		"Performs just-in-time binary translation of 64-bit MIPS-IV machine code to native code.", "EmuCore/CPU/Recompiler", "EnableEE",
-		true);
-	DrawToggleSetting(
-		bsi, "Enable EE Cache", "Enables simulation of the EE's cache. Slow.", "EmuCore/CPU/Recompiler", "EnableEECache", false);
-	DrawToggleSetting(bsi, "Enable INTC Spin Detection", "Huge speedup for some games, with almost no compatibility side effects.",
-		"EmuCore/Speedhacks", "IntcStat", true);
-	DrawToggleSetting(bsi, "Enable Wait Loop Detection", "Moderate speedup for some games, with no known side effects.",
-		"EmuCore/Speedhacks", "WaitLoop", true);
-	DrawToggleSetting(bsi, "Enable Fast Memory Access", "Uses backpatching to avoid register flushing on every memory access.",
-		"EmuCore/CPU/Recompiler", "EnableFastmem", true);
-	DrawToggleSetting(bsi, "Enable VU0 Recompiler (Micro Mode)",
-		"New Vector Unit recompiler with much improved compatibility. Recommended.", "EmuCore/CPU/Recompiler", "EnableVU0", true);
-	DrawToggleSetting(bsi, "Enable VU1 Recompiler", "New Vector Unit recompiler with much improved compatibility. Recommended.",
-		"EmuCore/CPU/Recompiler", "EnableVU1", true);
-	DrawToggleSetting(bsi, "Enable VU Flag Optimization", "Good speedup and high compatibility, may cause graphical errors.",
-		"EmuCore/Speedhacks", "vuFlagHack", true);
-	DrawToggleSetting(bsi, "Enable IOP Recompiler",
-		"Performs just-in-time binary translation of 32-bit MIPS-I machine code to native code.", "EmuCore/CPU/Recompiler", "EnableIOP",
-		true);
+	if (show_advanced_settings)
+	{
+		MenuHeading("Emotion Engine");
 
-	MenuHeading("Graphics");
+		DrawIntListSetting(bsi, "Rounding Mode##ee_rounding_mode",
+			"Determines how the results of floating-point operations are rounded. Some games need specific settings.", "EmuCore/CPU",
+			"FPU.Roundmode", 3, ee_rounding_mode_settings, std::size(ee_rounding_mode_settings));
+		DrawClampingModeSetting(bsi, "Clamping Mode##ee_clamping_mode",
+			"Determines how out-of-range floating point numbers are handled. Some games need specific settings.", false);
 
-	DrawToggleSetting(bsi, "Use Debug Device", "Enables API-level validation of graphics commands", "EmuCore/GS", "UseDebugDevice", false);
+		DrawToggleSetting(bsi, "Enable EE Recompiler",
+			"Performs just-in-time binary translation of 64-bit MIPS-IV machine code to native code.", "EmuCore/CPU/Recompiler", "EnableEE",
+			true);
+		DrawToggleSetting(
+			bsi, "Enable EE Cache", "Enables simulation of the EE's cache. Slow.", "EmuCore/CPU/Recompiler", "EnableEECache", false);
+		DrawToggleSetting(bsi, "Enable INTC Spin Detection", "Huge speedup for some games, with almost no compatibility side effects.",
+			"EmuCore/Speedhacks", "IntcStat", true);
+		DrawToggleSetting(bsi, "Enable Wait Loop Detection", "Moderate speedup for some games, with no known side effects.",
+			"EmuCore/Speedhacks", "WaitLoop", true);
+		DrawToggleSetting(bsi, "Enable Fast Memory Access", "Uses backpatching to avoid register flushing on every memory access.",
+			"EmuCore/CPU/Recompiler", "EnableFastmem", true);
 
+		MenuHeading("Vector Units");
+		DrawIntListSetting(bsi, "Rounding Mode##vu_rounding_mode",
+			"Determines how the results of floating-point operations are rounded. Some games need specific settings.", "EmuCore/CPU",
+			"VU.Roundmode", 3, ee_rounding_mode_settings, std::size(ee_rounding_mode_settings));
+		DrawClampingModeSetting(bsi, "Clamping Mode##vu_clamping_mode",
+			"Determines how out-of-range floating point numbers are handled. Some games need specific settings.", true);
+		DrawToggleSetting(bsi, "Enable VU0 Recompiler (Micro Mode)",
+			"New Vector Unit recompiler with much improved compatibility. Recommended.", "EmuCore/CPU/Recompiler", "EnableVU0", true);
+		DrawToggleSetting(bsi, "Enable VU1 Recompiler", "New Vector Unit recompiler with much improved compatibility. Recommended.",
+			"EmuCore/CPU/Recompiler", "EnableVU1", true);
+		DrawToggleSetting(bsi, "Enable VU Flag Optimization", "Good speedup and high compatibility, may cause graphical errors.",
+			"EmuCore/Speedhacks", "vuFlagHack", true);
 
+		MenuHeading("I/O Processor");
+		DrawToggleSetting(bsi, "Enable IOP Recompiler",
+			"Performs just-in-time binary translation of 32-bit MIPS-I machine code to native code.", "EmuCore/CPU/Recompiler", "EnableIOP",
+			true);
+
+		MenuHeading("Graphics");
+		DrawToggleSetting(
+			bsi, "Use Debug Device", "Enables API-level validation of graphics commands", "EmuCore/GS", "UseDebugDevice", false);
+	}
 
 	EndMenuButtons();
 }
