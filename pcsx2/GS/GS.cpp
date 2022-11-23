@@ -1403,6 +1403,10 @@ void GSApp::Init()
 	m_gs_tv_shaders.push_back(GSSetting(4, "Wave filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(5, "Lottes CRT filter", ""));
 
+	m_gs_casmode.push_back(GSSetting(static_cast<u32>(GSCASMode::Disabled), "Disabled", ""));
+	m_gs_casmode.push_back(GSSetting(static_cast<u32>(GSCASMode::SharpenOnly), "Sharpen Only", "Internal Resolution"));
+	m_gs_casmode.push_back(GSSetting(static_cast<u32>(GSCASMode::SharpenAndResize), "Sharpen And Resize", "Display Resolution"));
+
 	m_gs_hw_download_mode.push_back(GSSetting(static_cast<u32>(GSHardwareDownloadMode::Enabled), "Accurate", "Recommended"));
 	m_gs_hw_download_mode.push_back(GSSetting(static_cast<u32>(GSHardwareDownloadMode::NoReadbacks), "Disable Readbacks", "Synchronize GS Thread"));
 	m_gs_hw_download_mode.push_back(GSSetting(static_cast<u32>(GSHardwareDownloadMode::Unsynchronized), "Unsynchronized", "Non-Deterministic"));
@@ -1508,6 +1512,8 @@ void GSApp::Init()
 	m_default_configuration["ThreadedPresentation"]                       = "0";
 	m_default_configuration["TriFilter"]                                  = std::to_string(static_cast<s8>(TriFiltering::Automatic));
 	m_default_configuration["TVShader"]                                   = "0";
+	m_default_configuration["CASMode"]                                    = std::to_string(static_cast<u8>(GSCASMode::Disabled));
+	m_default_configuration["CASSharpness"]                               = "50";
 	m_default_configuration["upscale_multiplier"]                         = "1";
 	m_default_configuration["UseBlitSwapChain"]                           = "0";
 	m_default_configuration["UseDebugDevice"]                             = "0";
