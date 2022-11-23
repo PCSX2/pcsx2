@@ -1703,7 +1703,7 @@ void GSRendererHW::Draw()
 			&& m_r.x == 0 && m_r.y == 0) // Likely full buffer write
 		{
 
-			if (OI_GsMemClear() /*&& m_r.w > 1024*/)
+			if (OI_GsMemClear() && m_r.w > 1024)
 			{
 				if ((fm & fm_mask) != fm_mask)
 				{
