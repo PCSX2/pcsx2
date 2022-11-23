@@ -1785,6 +1785,7 @@ SCED-50642:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SCED-50675:
   name: "Official PlayStation 2 Magazine Demo 16"
   region: "PAL-M5"
@@ -1854,6 +1855,7 @@ SCED-50907:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SCED-50945:
   name: "Official PlayStation 2 Magazine Demo 20"
   region: "PAL-M5"
@@ -2877,6 +2879,7 @@ SCES-50490:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SCES-50491:
   name: "Final Fantasy X"
   region: "PAL-F"
@@ -2884,6 +2887,7 @@ SCES-50491:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SCES-50492:
   name: "Final Fantasy X"
   region: "PAL-G"
@@ -2892,6 +2896,7 @@ SCES-50492:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters..
 SCES-50493:
   name: "Final Fantasy X"
   region: "PAL-I"
@@ -2899,6 +2904,7 @@ SCES-50493:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SCES-50494:
   name: "Final Fantasy X"
   region: "PAL-S"
@@ -2906,6 +2912,7 @@ SCES-50494:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SCES-50499:
   name: "Ecco the Dolphin - Defender of the Future"
   region: "PAL-M5"
@@ -7843,6 +7850,8 @@ SCUS-97405:
   name: "ATV Offroad Fury 3"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    MTVUSpeedHack: 0 # Increases FPS drastically.
 SCUS-97406:
   name: "Jampack Demo Disc Vol.10 - Summer 2004 [M-Rated]"
   region: "NTSC-U"
@@ -7994,6 +8003,8 @@ SCUS-97436:
 SCUS-97437:
   name: "ATV Offroad Fury 3 [Demo]"
   region: "NTSC-U"
+  speedHacks:
+    MTVUSpeedHack: 0 # Increases FPS drastically.
 SCUS-97438:
   name: "EyeToy - Antigrav [Demo]"
   region: "NTSC-U"
@@ -8356,6 +8367,8 @@ SCUS-97513:
 SCUS-97514:
   name: "ATV Offroad Fury 3 [Greatest Hits]"
   region: "NTSC-U"
+  speedHacks:
+    MTVUSpeedHack: 0 # Increases FPS drastically.
 SCUS-97515:
   name: "Hot Shots Golf FORE! [Greatest Hits]"
   region: "NTSC-U"
@@ -9113,6 +9126,7 @@ SLED-52852:
     vuClampMode: 3 # Removes occasional SPS where the head goes into nightmare fuel.
   gsHWFixes:
     halfPixelOffset: 1 # Reduces ghosting.
+    roundSprite: 1 # Reduces ghosting even more.
 SLED-52875:
   name: "Sega Superstars [Demo]"
   region: "PAL-E"
@@ -10538,6 +10552,9 @@ SLES-50591:
 SLES-50592:
   name: "No One Lives Forever"
   region: "PAL-M5"
+  gsHWFixes:
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending and also needs Full Blending to fix the lighting.
 SLES-50606:
   name: "State of Emergency"
   region: "PAL-M4"
@@ -14620,6 +14637,10 @@ SLES-52533:
 SLES-52534:
   name: "Crimson Tears"
   region: "PAL-M3"
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes blurriness.
+    roundSprite: 2 # Reduces misalignment bloom effects.
+#    deinterlace: 6 # Game requires blend tff deinterlacing when auto for 'fixing' shimmer on character models and more flickering or half weaved, though the game suffers from the field order.
 SLES-52535:
   name: "Rumble Roses"
   region: "PAL-M5"
@@ -15022,6 +15043,7 @@ SLES-52669:
     vuClampMode: 3 # Removes occasional SPS where the head goes into nightmare fuel.
   gsHWFixes:
     halfPixelOffset: 1 # Reduces ghosting.
+    roundSprite: 1 # Reduces ghosting even more.
 SLES-52670:
   name: "Second Sight"
   region: "PAL-M5"
@@ -17744,6 +17766,8 @@ SLES-53753:
 SLES-53754:
   name: "ATV Offroad Fury 3"
   region: "PAL-M6"
+  speedHacks:
+    MTVUSpeedHack: 0 # Increases FPS drastically.
 SLES-53755:
   name: "Castlevania - Curse of Darkness"
   region: "PAL-M5"
@@ -19370,8 +19394,9 @@ SLES-54455:
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
-    mergeSprite: 1 # Fixes blurriness but removes bloom.
+    mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
     wrapGSMem: 1 # Fixes FMVs missing video pieces.
+    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLES-54456:
   name: "Beverly Hills Cop"
   region: "PAL-M11"
@@ -19537,6 +19562,7 @@ SLES-54516:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
     wrapGSMem: 1 # Fixes FMVs missing video pieces.
+    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLES-54517:
   name: "Thrillville"
   region: "PAL-M3"
@@ -19544,6 +19570,7 @@ SLES-54517:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
     wrapGSMem: 1 # Fixes FMVs missing video pieces.
+    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLES-54518:
   name: "Clumsy Shumsy"
   region: "PAL-E"
@@ -20263,12 +20290,14 @@ SLES-54806:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
     wrapGSMem: 1 # Fixes FMVs missing video pieces.
+    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLES-54807:
   name: "Thrillville - Off the Rails"
   region: "PAL-F"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
     wrapGSMem: 1 # Fixes FMVs missing video pieces.
+    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLES-54809:
   name: "Charlotte's Web"
   region: "PAL-A"
@@ -20479,8 +20508,9 @@ SLES-54887:
   name: "Thrillville - Verrückte Achterbahn"
   region: "PAL-G"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes misaligned bloom effects.
+    halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
     wrapGSMem: 1 # Fixes FMVs missing video pieces.
+    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLES-54888:
   name: "Pro Biker 2"
   region: "PAL-E"
@@ -20834,14 +20864,16 @@ SLES-55010:
   name: "Thrillville - Fuori dai Binari"
   region: "PAL-I"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes misaligned bloom effects.
+    halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
     wrapGSMem: 1 # Fixes FMVs missing video pieces.
+    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLES-55011:
   name: "Thrillville - Fuera de Control"
   region: "PAL-S"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes misaligned bloom effects.
+    halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
     wrapGSMem: 1 # Fixes FMVs missing video pieces.
+    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLES-55012:
   name: "Golden Compass, The"
   region: "PAL-M5"
@@ -22030,7 +22062,7 @@ SLES-55579:
   clampModes:
     vuClampMode: 0
   gsHWFixes:
-    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing when auto for the FMVs.
+    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the FMVs.
 SLES-55581:
   name: "FIFA 10"
   region: "PAL-M5"
@@ -23138,6 +23170,7 @@ SLKA-25214:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLKA-25215:
   name: "Shining Wind"
   region: "NTSC-K"
@@ -23238,6 +23271,7 @@ SLKA-25252:
     vuClampMode: 3 # Removes occasional SPS where the head goes into nightmare fuel.
   gsHWFixes:
     halfPixelOffset: 1 # Reduces ghosting.
+    roundSprite: 1 # Reduces ghosting even more.
 SLKA-25254:
   name: "Digimon Rumble Arena 2"
   region: "NTSC-K"
@@ -27119,6 +27153,7 @@ SLPM-65115:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLPM-65116:
   name: "Lilie no Atelier Plus - Salburg no Renkinjutsushi 3"
   region: "NTSC-J"
@@ -28620,6 +28655,10 @@ SLPM-65575:
   name: "Crimson Tears"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes blurriness.
+    roundSprite: 2 # Reduces misalignment bloom effects.
+#    deinterlace: 6 # Game requires blend tff deinterlacing when auto for 'fixing' shimmer on character models and more flickering or half weaved, though the game suffers from the field order.
 SLPM-65576:
   name: "Tantei Jinguuji Saburou - Kind of Blue"
   region: "NTSC-J"
@@ -29797,6 +29836,7 @@ SLPM-65927:
     vuClampMode: 3 # Removes occasional SPS where the head goes into nightmare fuel.
   gsHWFixes:
     halfPixelOffset: 1 # Reduces ghosting.
+    roundSprite: 1 # Reduces ghosting even more.
 SLPM-65928:
   name: "SuperLite 2000 Series - Memories Off Mix"
   region: "NTSC-J"
@@ -30499,6 +30539,7 @@ SLPM-66124:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLPM-66125:
   name: "Final Fantasy X-2 [Ultimate Hits]"
   region: "NTSC-J"
@@ -32600,6 +32641,7 @@ SLPM-66677:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLPM-66678:
   name: "Final Fantasy X-2 - International + Last Mission [Ultimate Hits]"
   region: "NTSC-J"
@@ -33799,6 +33841,7 @@ SLPM-67513:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLPM-67514:
   name: "Kessen"
   region: "NTSC-K"
@@ -35835,6 +35878,7 @@ SLPS-25050:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLPS-25051:
   name: "Missing Blue"
   region: "NTSC-J"
@@ -35961,6 +36005,7 @@ SLPS-25088:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLPS-25094:
   name: "Reveal Fantasia"
   region: "NTSC-J"
@@ -39019,6 +39064,7 @@ SLPS-72501:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLPS-72502:
   name: "Tales of Destiny 2 [Mega Hits]"
   region: "NTSC-J"
@@ -39690,6 +39736,9 @@ SLUS-20028:
   name: "No One Lives Forever"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending and also needs Full Blending to fix the lighting.
 SLUS-20029:
   name: "Top Gear Daredevil"
   region: "NTSC-U"
@@ -40808,9 +40857,10 @@ SLUS-20312:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 1 # Fix reverse control and boss in some places.
+    eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLUS-20313:
   name: "Wave Rally"
   region: "NTSC-U"
@@ -43126,6 +43176,7 @@ SLUS-20804:
     vuClampMode: 3 # Removes occasional SPS where the head goes into nightmare fuel.
   gsHWFixes:
     halfPixelOffset: 1 # Reduces ghosting.
+    roundSprite: 1 # Reduces ghosting even more.
 SLUS-20805:
   name: "Yu Yu Hakusho - Dark Tournament"
   region: "NTSC-U"
@@ -43824,6 +43875,10 @@ SLUS-20948:
   name: "Crimson Tears"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes blurriness.
+    roundSprite: 2 # Reduces misalignment bloom effects.
+#    deinterlace: 6 # Game requires blend tff deinterlacing when auto for 'fixing' shimmer on character models and more flickering or half weaved, though the game suffers from the field order.
 SLUS-20949:
   name: "Street Fighter Anniversary Collection"
   region: "NTSC-U"
@@ -46341,6 +46396,7 @@ SLUS-21413:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
     wrapGSMem: 1 # Fixes FMVs missing video pieces.
+    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLUS-21414:
   name: "Delta Force - Black Hawk Down - Team Sabre"
   region: "NTSC-U"
@@ -47206,6 +47262,7 @@ SLUS-21611:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
     wrapGSMem: 1 # Fixes FMVs missing video pieces.
+    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLUS-21612:
   name: "Legend of the Dragon"
   region: "NTSC-U"
@@ -48513,7 +48570,7 @@ SLUS-21902:
   clampModes:
     vuClampMode: 0
   gsHWFixes:
-    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing when auto for the FMVs.
+    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the FMVs.
 SLUS-21904:
   name: "Teenage Mutant Ninja Turtles - Smash-Up"
   region: "NTSC-U"
@@ -49519,6 +49576,8 @@ SLUS-97133:
 SLUS-97405:
   name: "ATV Offroad Fury 3 [Greatest Hits]"
   region: "NTSC-U"
+  speedHacks:
+    MTVUSpeedHack: 0 # Increases FPS drastically.
 SLUS-97657:
   name: "MLB 11 - The Show"
   region: "NTSC-U"
