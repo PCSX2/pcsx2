@@ -86,6 +86,38 @@ void GSTextureCache::RemoveAll()
 	m_target_heights.clear();
 }
 
+void GSTextureCache::AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw)
+{
+	bool skipdirty = false;
+	bool canskip = true;
+	std::vector<GSDirtyRect>::iterator it = target->m_dirty.begin();
+	while (it != target->m_dirty.end())
+	{
+		if (it[0].bw == bw && it[0].psm == psm)
+		{
+			if (it[0].r.rintersect(rect).eq(rect) && canskip)
+			{
+				skipdirty = true;
+				break;
+			}
+
+			// Edges lined up so just expand the dirty rect
+			if (it[0].r.xzxz().eq(rect.xzxz()) ||
+				it[0].r.ywyw().eq(rect.ywyw()))
+			{
+				rect = rect.runion(it[0].r);
+				it = target->m_dirty.erase(it);
+				canskip = false;
+				continue;
+			}
+		}
+		++it;
+	}
+
+	if (!skipdirty)
+		target->m_dirty.push_back(GSDirtyRect(rect, psm, bw));
+}
+
 GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette)
 {
 	if (GSConfig.UserHacks_DisableDepthSupport)
@@ -638,7 +670,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 			// h is likely smaller than w (true most of the time). Reduce the upload size (speed)
 			max_h = std::min<int>(max_h, TEX0.TBW * 64);
 
-			dst->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, TEX0.TBW * 64, is_frame ? real_h : max_h), TEX0.PSM, TEX0.TBW));
+			const GSVector4i newrect = GSVector4i(0, 0, TEX0.TBW * 64, is_frame ? real_h : max_h);
+			AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW);
 			dst->Update(true);
 		}
 	}
@@ -708,8 +741,9 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 	g_gs_device->Recycle(old_texture);
 	t->m_texture = new_texture;
 
+	const GSVector4i newrect = GSVector4i(0, 0, t->m_TEX0.TBW * 64, needed_height);
 	// We unconditionally preload the frame here, because otherwise we'll end up with blackness for one frame (when the expand happens).
-	t->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, t->m_TEX0.TBW * 64, needed_height), t->m_TEX0.PSM, t->m_TEX0.TBW));
+	AddDirtyRectTarget(t, newrect, t->m_TEX0.PSM, t->m_TEX0.TBW);
 
 	// Inject the new height back into the cache.
 	GetTargetHeight(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, static_cast<u32>(needed_height));
@@ -747,7 +781,7 @@ void GSTextureCache::ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVect
 		{
 			if (dst->ResizeTexture(upsc_width, upsc_height))
 			{
-				dst->m_dirty.push_back(GSDirtyRect(r, TEX0.PSM, TEX0.TBW));
+				AddDirtyRectTarget(dst, r, TEX0.PSM, TEX0.TBW);
 				GetTargetHeight(TEX0.TBP0, TEX0.TBW, TEX0.PSM, r.w);
 				dst->Update(true);
 			}
@@ -952,9 +986,11 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 						t->m_texture ? t->m_texture->GetID() : 0,
 						t->m_TEX0.TBP0, r.x, r.y, r.z, r.w);
 					t->m_TEX0.TBW = bw;
-					if(eewrite && t->m_age < 30)
+
+					if(eewrite)
 						t->m_age = 0;
-					t->m_dirty.push_back(GSDirtyRect(r, psm, bw));
+
+					AddDirtyRectTarget(t, r, psm, bw);
 				}
 				else
 				{
@@ -963,13 +999,13 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					// Possibly because the block layout is opposite for the 32bit colour and depth, it never actually overwrites the depth, so this is kind of a miss detection.
 					// The new code rightfully calculates that the depth does not become dirty, but in other cases, like bigger draws of the same format
 					// it might become invalid, so we check below and erase as before if so.
-					const SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
+					SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
 					if (so.is_valid)
 					{
-						if (eewrite && t->m_age < 30)
+						if (eewrite)
 							t->m_age = 0;
-						// Offset from Target to Write in Target coords.
-						t->m_dirty.push_back(GSDirtyRect(so.b2a_offset, psm, bw));
+
+						AddDirtyRectTarget(t, so.b2a_offset, psm, bw);
 						GL_CACHE("TC: Dirty in the middle [aggressive] of Target(%s) %d [PSM:%s BP:0x%x->0x%x BW:%u rect(%d,%d=>%d,%d)] write[PSM:%s BP:0x%x BW:%u rect(%d,%d=>%d,%d)]",
 							to_string(type),
 							t->m_texture ? t->m_texture->GetID() : 0,
@@ -999,7 +1035,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 						delete t;
 					}
 					else
-						i++;
+						++i;
 					continue;
 				}
 			}
@@ -1012,7 +1048,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 				t->m_dirty_alpha = false;
 			}
 
-			i++;
+			++i;
 
 			// GH: Try to detect texture write that will overlap with a target buffer
 			// TODO Use ComputeSurfaceOffset below.
@@ -1040,9 +1076,12 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 								t->m_TEX0.TBP0);
 							// TODO: do not add this rect above too
 							t->m_TEX0.TBW = bw;
-							if (eewrite && t->m_age < 30)
+
+							if (eewrite)
 								t->m_age = 0;
-							t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top - y, r.right, r.bottom - y), psm, bw));
+
+							const GSVector4i dirty_r = GSVector4i(r.left, r.top - y, r.right, r.bottom - y);
+							AddDirtyRectTarget(t, dirty_r, psm, bw);
 							continue;
 						}
 					}
@@ -1068,22 +1107,26 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 							t->m_texture ? t->m_texture->GetID() : 0,
 							t->m_TEX0.TBP0, t->m_end_block,
 							r.left, r.top + y, r.right, r.bottom + y, bw);
-						if (eewrite && t->m_age < 30)
+
+						if (eewrite)
 							t->m_age = 0;
+
 						t->m_TEX0.TBW = bw;
-						t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top + y, r.right, r.bottom + y), psm, bw));
+
+						const GSVector4i dirty_r = GSVector4i(r.left, r.top + y, r.right, r.bottom + y);
+						AddDirtyRectTarget(t, dirty_r, psm, bw);
 						continue;
 					}
 				}
 				else if (GSConfig.UserHacks_TextureInsideRt && t->Overlaps(bp, bw, psm, rect) && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
 				{
-					const SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
+					SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
 					if (so.is_valid)
 					{
-						if (eewrite && t->m_age < 30)
+						if (eewrite)
 							t->m_age = 0;
 
-						t->m_dirty.push_back(GSDirtyRect(so.b2a_offset, psm, bw));
+						AddDirtyRectTarget(t, so.b2a_offset, psm, bw);
 					}
 				}
 #endif
@@ -2376,8 +2419,8 @@ bool GSTextureCache::Surface::ResizeTexture(int new_width, int new_height, GSVec
 	try
 	{
 		tex = m_texture->IsDepthStencil() ?
-				  g_gs_device->CreateDepthStencil(new_width, new_height, m_texture->GetFormat(), clear) :
-                  g_gs_device->CreateRenderTarget(new_width, new_height, m_texture->GetFormat(), clear);
+				g_gs_device->CreateDepthStencil(new_width, new_height, m_texture->GetFormat(), clear) :
+				g_gs_device->CreateRenderTarget(new_width, new_height, m_texture->GetFormat(), clear);
 	}
 	catch (const std::bad_alloc&)
 	{
@@ -2808,7 +2851,7 @@ void GSTextureCache::Target::Update(bool reset_age)
 
 void GSTextureCache::Target::UpdateIfDirtyIntersects(const GSVector4i& rc)
 {
-	for (const auto& dirty : m_dirty)
+	for (auto& dirty : m_dirty)
 	{
 		const GSVector4i dirty_rc(dirty.GetDirtyRect(m_TEX0));
 		if (dirty_rc.rintersect(rc).rempty())

@@ -23,14 +23,14 @@ GSDirtyRect::GSDirtyRect() :
 {
 }
 
-GSDirtyRect::GSDirtyRect(const GSVector4i& r, const u32 psm, const u32 bw) :
+GSDirtyRect::GSDirtyRect(GSVector4i& r, u32 psm, u32 bw) :
 	r(r),
 	psm(psm),
 	bw(bw)
 {
 }
 
-const GSVector4i GSDirtyRect::GetDirtyRect(const GIFRegTEX0& TEX0) const
+GSVector4i GSDirtyRect::GetDirtyRect(GIFRegTEX0& TEX0)
 {
 	GSVector4i _r;
 
@@ -55,13 +55,13 @@ const GSVector4i GSDirtyRect::GetDirtyRect(const GIFRegTEX0& TEX0) const
 
 //
 
-const GSVector4i GSDirtyRectList::GetDirtyRect(const GIFRegTEX0& TEX0, const GSVector2i& size) const
+GSVector4i GSDirtyRectList::GetDirtyRect(GIFRegTEX0& TEX0, const GSVector2i& size)
 {
 	if (!empty())
 	{
 		GSVector4i r(INT_MAX, INT_MAX, 0, 0);
 
-		for (const auto& dirty_rect : *this)
+		for (auto& dirty_rect : *this)
 		{
 			r = r.runion(dirty_rect.GetDirtyRect(TEX0));
 		}
@@ -74,9 +74,9 @@ const GSVector4i GSDirtyRectList::GetDirtyRect(const GIFRegTEX0& TEX0, const GSV
 	return GSVector4i::zero();
 }
 
-const GSVector4i GSDirtyRectList::GetDirtyRectAndClear(const GIFRegTEX0& TEX0, const GSVector2i& size)
+GSVector4i GSDirtyRectList::GetDirtyRectAndClear(GIFRegTEX0& TEX0, const GSVector2i& size)
 {
-	const GSVector4i r = GetDirtyRect(TEX0, size);
+	GSVector4i r = GetDirtyRect(TEX0, size);
 	clear();
 	return r;
 }

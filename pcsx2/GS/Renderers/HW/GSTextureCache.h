@@ -332,6 +332,7 @@ public:
 	void Read(Source* t, const GSVector4i& r);
 	void RemoveAll();
 	void RemovePartial();
+	void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw);
 
 	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, const GSVector2i* lod);
 	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette = false);
