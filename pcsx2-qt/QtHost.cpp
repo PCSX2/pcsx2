@@ -94,6 +94,7 @@ static bool s_batch_mode = false;
 static bool s_nogui_mode = false;
 static bool s_start_fullscreen_ui = false;
 static bool s_start_fullscreen_ui_fullscreen = false;
+static bool s_test_config_and_exit = false;
 
 //////////////////////////////////////////////////////////////////////////
 // CPU Thread
@@ -1604,6 +1605,7 @@ void QtHost::PrintCommandLineHelp(const std::string_view& progname)
 	std::fprintf(stderr, "  -fullscreen: Enters fullscreen mode immediately after starting.\n");
 	std::fprintf(stderr, "  -nofullscreen: Prevents fullscreen mode from triggering if enabled.\n");
 	std::fprintf(stderr, "  -earlyconsolelog: Forces logging of early console messages to console.\n");
+	std::fprintf(stderr, "  -testconfig: Initializes configuration and checks version, then exits.\n");
 #ifdef ENABLE_RAINTEGRATION
 	std::fprintf(stderr, "  -raintegration: Use RAIntegration instead of built-in achievement support.\n");
 #endif
@@ -1721,6 +1723,11 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 				s_start_fullscreen_ui = true;
 				continue;
 			}
+			else if (CHECK_ARG(QStringLiteral("-testconfig")))
+			{
+				s_test_config_and_exit = true;
+				continue;
+			}
 #ifdef ENABLE_RAINTEGRATION
 			else if (CHECK_ARG(QStringLiteral("-raintegration")))
 			{
@@ -1831,6 +1838,10 @@ int main(int argc, char* argv[])
 	if (!QtHost::InitializeConfig())
 		return EXIT_FAILURE;
 
+	// Are we just setting up the configuration?
+	if (s_test_config_and_exit)
+		return EXIT_SUCCESS;
+
 	// Set theme before creating any windows.
 	MainWindow::updateApplicationTheme();
 	MainWindow* main_window = new MainWindow();
@@ -1872,6 +1883,10 @@ int main(int argc, char* argv[])
 		g_main_window->close();
 		delete g_main_window;
 	}
+
+	// Ensure config is written. Prevents destruction order issues.
+	if (s_base_settings_interface->IsDirty())
+		s_base_settings_interface->Save();
 
 	// Ensure emulog is flushed.
 	if (emuLog)
