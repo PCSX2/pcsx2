@@ -172,7 +172,6 @@ PAPX-90517:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Reduces post-processing misalignment.
-    roundSprite: 2 # Reduces post-processing misalignment.
 PBGP-0061:
   name: "Suika A.S+ Eternal Name [First Press Limited Edition]"
   region: "NTSC-J"
@@ -5741,7 +5740,6 @@ SCPS-15066:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Reduces post-processing misalignment.
-    roundSprite: 2 # Reduces post-processing misalignment.
 SCPS-15067:
   name: "Dokodemo Issyo - Toro to Nagare Boshi"
   region: "NTSC-J"
@@ -13411,7 +13409,6 @@ SLES-51918:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Reduces post-processing misalignment.
-    roundSprite: 2 # Reduces post-processing misalignment.
 SLES-51924:
   name: "World War Zero - Ironstorm"
   region: "PAL-M5"
@@ -13507,7 +13504,6 @@ SLES-51961:
   region: "PAL-E"
   gsHWFixes:
     autoFlush: 1 # Reduces post-processing misalignment.
-    roundSprite: 2 # Reduces post-processing misalignment.
 SLES-51963:
   name: "FIFA 2004"
   region: "PAL-F-G"
@@ -22904,7 +22900,6 @@ SLKA-25120:
   region: "NTSC-K"
   gsHWFixes:
     autoFlush: 1 # Reduces post-processing misalignment.
-    roundSprite: 2 # Reduces post-processing misalignment.
 SLKA-25122:
   name: "Sonic Heroes"
   region: "NTSC-K"
@@ -42844,7 +42839,6 @@ SLUS-20743:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Reduces post-processing misalignment.
-    roundSprite: 2 # Reduces post-processing misalignment.
 SLUS-20744:
   name: "EverQuest - Online Adventures - Frontiers"
   region: "NTSC-U"
@@ -49123,7 +49117,6 @@ SLUS-29069:
   region: "NTSC-U"
   gsHWFixes:
     autoFlush: 1 # Reduces post-processing misalignment.
-    roundSprite: 2 # Reduces post-processing misalignment.
 SLUS-29070:
   name: "XIII [Demo]"
   region: "NTSC-U"
