@@ -82,6 +82,7 @@ namespace VMManager
 	static void CheckForDEV9ConfigChanges(const Pcsx2Config& old_config);
 	static void CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config);
 	static void EnforceAchievementsChallengeModeSettings();
+	static void LogUnsafeSettingsToConsole(const std::string& messages);
 	static void WarnAboutUnsafeSettings();
 
 	static bool AutoDetectSource(const std::string& filename);
@@ -1824,6 +1825,26 @@ void VMManager::EnforceAchievementsChallengeModeSettings()
 	EmuConfig.Speedhacks.EECycleSkip = 0;
 }
 
+void VMManager::LogUnsafeSettingsToConsole(const std::string& messages)
+{
+	// a not-great way of getting rid of the icons for the console message
+	std::string console_messages(messages);
+	for (;;)
+	{
+		const std::string::size_type pos = console_messages.find("\xef");
+		if (pos != std::string::npos)
+		{
+			console_messages.erase(pos, pos + 3);
+			console_messages.insert(pos, "[Unsafe Settings]");
+		}
+		else
+		{
+			break;
+		}
+	}
+	Console.Warning(console_messages);
+}
+
 void VMManager::WarnAboutUnsafeSettings()
 {
 	std::string messages;
@@ -1846,6 +1867,8 @@ void VMManager::WarnAboutUnsafeSettings()
 		messages += ICON_FA_BLENDER " Blending is below basic, this may break effects in some games.\n";
 	if (EmuConfig.GS.CRCHack != CRCHackLevel::Automatic)
 		messages += ICON_FA_FIRST_AID " CRC Fix Level is not set to default, this may break effects in some games.\n";
+	if (EmuConfig.GS.HWDownloadMode != GSHardwareDownloadMode::Enabled)
+		messages += ICON_FA_DOWNLOAD " Hardware Download Mode is not set to Accurate, this may break rendering in some games.\n";
 	if (EmuConfig.Cpu.sseMXCSR.GetRoundMode() != SSEround_Chop || EmuConfig.Cpu.sseVUMXCSR.GetRoundMode() != SSEround_Chop)
 		messages += ICON_FA_MICROCHIP " EE FPU Round Mode is not set to default, this may break some games.\n";
 	if (!EmuConfig.Cpu.Recompiler.fpuOverflow || EmuConfig.Cpu.Recompiler.fpuExtraOverflow || EmuConfig.Cpu.Recompiler.fpuFullMode)
@@ -1867,6 +1890,8 @@ void VMManager::WarnAboutUnsafeSettings()
 	{
 		if (messages.back() == '\n')
 			messages.pop_back();
+
+		LogUnsafeSettingsToConsole(messages);
 		Host::AddKeyedOSDMessage("unsafe_settings_warning", std::move(messages), Host::OSD_WARNING_DURATION);
 	}
 	else
@@ -1902,6 +1927,8 @@ void VMManager::WarnAboutUnsafeSettings()
 	{
 		if (messages.back() == '\n')
 			messages.pop_back();
+
+		LogUnsafeSettingsToConsole(messages);
 		Host::AddKeyedOSDMessage("performance_settings_warning", std::move(messages), Host::OSD_WARNING_DURATION);
 	}
 	else
