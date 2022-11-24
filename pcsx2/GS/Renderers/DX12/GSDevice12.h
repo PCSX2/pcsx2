@@ -297,7 +297,7 @@ public:
 	/// Ends any render pass, executes the command buffer, and invalidates cached state.
 	void ExecuteCommandList(bool wait_for_completion);
 	void ExecuteCommandList(bool wait_for_completion, const char* reason, ...);
-	void ExecuteCommandListAndRestartRenderPass(const char* reason);
+	void ExecuteCommandListAndRestartRenderPass(bool wait_for_completion, const char* reason);
 
 	/// Set dirty flags on everything to force re-bind at next draw time.
 	void InvalidateCachedState();

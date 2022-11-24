@@ -324,7 +324,16 @@ GSTexture* GSDevice12::CreateSurface(GSTexture::Type type, int width, int height
 	DXGI_FORMAT d3d_format, srv_format, rtv_format, dsv_format;
 	LookupNativeFormat(format, &d3d_format, &srv_format, &rtv_format, &dsv_format);
 
-	return GSTexture12::Create(type, clamped_width, clamped_height, levels, format, d3d_format, srv_format, rtv_format, dsv_format).release();
+	std::unique_ptr<GSTexture12> tex(GSTexture12::Create(type, clamped_width, clamped_height, levels, format, d3d_format, srv_format, rtv_format, dsv_format));
+	if (!tex)
+	{
+		// We're probably out of vram, try flushing the command buffer to release pending textures.
+		PurgePool();
+		ExecuteCommandListAndRestartRenderPass(true, "Couldn't allocate texture.");
+		tex = GSTexture12::Create(type, clamped_width, clamped_height, levels, format, d3d_format, srv_format, rtv_format, dsv_format);
+	}
+
+	return tex.release();
 }
 
 bool GSDevice12::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map)
@@ -869,7 +878,7 @@ void GSDevice12::IASetVertexBuffer(const void* vertex, size_t stride, size_t cou
 	const u32 size = static_cast<u32>(stride) * static_cast<u32>(count);
 	if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
 	{
-		ExecuteCommandListAndRestartRenderPass("Uploading to vertex buffer");
+		ExecuteCommandListAndRestartRenderPass(false, "Uploading to vertex buffer");
 		if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
 			pxFailRel("Failed to reserve space for vertices");
 	}
@@ -889,7 +898,7 @@ bool GSDevice12::IAMapVertexBuffer(void** vertex, size_t stride, size_t count)
 	const u32 size = static_cast<u32>(stride) * static_cast<u32>(count);
 	if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
 	{
-		ExecuteCommandListAndRestartRenderPass("Mapping bytes to vertex buffer");
+		ExecuteCommandListAndRestartRenderPass(false, "Mapping bytes to vertex buffer");
 		if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
 			pxFailRel("Failed to reserve space for vertices");
 	}
@@ -915,7 +924,7 @@ void GSDevice12::IASetIndexBuffer(const void* index, size_t count)
 	const u32 size = sizeof(u32) * static_cast<u32>(count);
 	if (!m_index_stream_buffer.ReserveMemory(size, sizeof(u32)))
 	{
-		ExecuteCommandListAndRestartRenderPass("Uploading bytes to index buffer");
+		ExecuteCommandListAndRestartRenderPass(false, "Uploading bytes to index buffer");
 		if (!m_index_stream_buffer.ReserveMemory(size, sizeof(u32)))
 			pxFailRel("Failed to reserve space for vertices");
 	}
@@ -1841,13 +1850,13 @@ void GSDevice12::ExecuteCommandList(bool wait_for_completion, const char* reason
 	ExecuteCommandList(wait_for_completion);
 }
 
-void GSDevice12::ExecuteCommandListAndRestartRenderPass(const char* reason)
+void GSDevice12::ExecuteCommandListAndRestartRenderPass(bool wait_for_completion, const char* reason)
 {
 	Console.Warning("Vulkan: Executing command buffer due to '%s'", reason);
 
 	const bool was_in_render_pass = m_in_render_pass;
 	EndRenderPass();
-	g_d3d12_context->ExecuteCommandList(D3D12::Context::WaitType::None);
+	g_d3d12_context->ExecuteCommandList(GetWaitType(wait_for_completion, GSConfig.HWSpinCPUForReadbacks));
 	InvalidateCachedState();
 
 	if (was_in_render_pass)
@@ -2002,7 +2011,7 @@ void GSDevice12::SetUtilityTexture(GSTexture* dtex, const D3D12::DescriptorHandl
 
 		if (!GetTextureGroupDescriptors(&m_utility_texture_gpu, &handle, 1))
 		{
-			ExecuteCommandListAndRestartRenderPass("Ran out of utility texture descriptors");
+			ExecuteCommandListAndRestartRenderPass(false, "Ran out of utility texture descriptors");
 			SetUtilityTexture(dtex, sampler);
 			return;
 		}
@@ -2015,7 +2024,7 @@ void GSDevice12::SetUtilityTexture(GSTexture* dtex, const D3D12::DescriptorHandl
 
 		if (!g_d3d12_context->GetSamplerAllocator().LookupSingle(&m_utility_sampler_gpu, sampler))
 		{
-			ExecuteCommandListAndRestartRenderPass("Ran out of utility sampler descriptors");
+			ExecuteCommandListAndRestartRenderPass(false, "Ran out of utility sampler descriptors");
 			SetUtilityTexture(dtex, sampler);
 			return;
 		}
@@ -2286,7 +2295,7 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 				return false;
 			}
 
-			ExecuteCommandListAndRestartRenderPass("Ran out of vertex uniform space");
+			ExecuteCommandListAndRestartRenderPass(false, "Ran out of vertex uniform space");
 			return ApplyTFXState(true);
 		}
 
@@ -2307,7 +2316,7 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 				return false;
 			}
 
-			ExecuteCommandListAndRestartRenderPass("Ran out of pixel uniform space");
+			ExecuteCommandListAndRestartRenderPass(false, "Ran out of pixel uniform space");
 			return ApplyTFXState(true);
 		}
 
@@ -2321,7 +2330,7 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 	{
 		if (!g_d3d12_context->GetSamplerAllocator().LookupGroup(&m_tfx_samplers_handle_gpu, m_tfx_samplers.data()))
 		{
-			ExecuteCommandListAndRestartRenderPass("Ran out of sampler groups");
+			ExecuteCommandListAndRestartRenderPass(false, "Ran out of sampler groups");
 			return ApplyTFXState(true);
 		}
 
@@ -2332,7 +2341,7 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 	{
 		if (!GetTextureGroupDescriptors(&m_tfx_textures_handle_gpu, m_tfx_textures.data(), 2))
 		{
-			ExecuteCommandListAndRestartRenderPass("Ran out of TFX texture descriptor groups");
+			ExecuteCommandListAndRestartRenderPass(false, "Ran out of TFX texture descriptor groups");
 			return ApplyTFXState(true);
 		}
 
@@ -2343,7 +2352,7 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 	{
 		if (!GetTextureGroupDescriptors(&m_tfx_rt_textures_handle_gpu, m_tfx_textures.data() + 2, 2))
 		{
-			ExecuteCommandListAndRestartRenderPass("Ran out of TFX RT descriptor descriptor groups");
+			ExecuteCommandListAndRestartRenderPass(false, "Ran out of TFX RT descriptor descriptor groups");
 			return ApplyTFXState(true);
 		}
 
