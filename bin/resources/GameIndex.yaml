@@ -5101,7 +5101,7 @@ SCKA-20072:
   region: "NTSC-K"
 SCKA-20073:
   name: "Final Fantasy XII"
-  region: "NTSC-J"
+  region: "NTSC-K"
 SCKA-20078:
   name: "Killzone [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -22634,7 +22634,7 @@ SLKA-25013:
     - "SLKA-25012"
 SLKA-25014:
   name: "Evolution Snowboarding"
-  region: "NTSC-J"
+  region: "NTSC-K"
 SLKA-25015:
   name: "Evolution Skateboarding"
   region: "NTSC-K"
@@ -22643,10 +22643,10 @@ SLKA-25018:
   region: "NTSC-K"
 SLKA-25021:
   name: "Shinobi"
-  region: "NTSC-M3"
+  region: "NTSC-K"
   compat: 5
 SLKA-25024:
-  name: "Disneys Stitch - Experiment 626"
+  name: "Disney's Stitch - Experiment 626"
   region: "NTSC-K"
 SLKA-25026:
   name: "Chaos Legion"
@@ -22792,7 +22792,7 @@ SLKA-25067:
   region: "NTSC-K"
 SLKA-25070:
   name: "Guilty Gear XX Reload - The Midnight Carnival"
-  region: "NTSC-J-K"
+  region: "NTSC-K"
 SLKA-25071:
   name: "Tantei Jinguji Saburo 8 Innocent Black"
   region: "NTSC-K"
@@ -22851,7 +22851,7 @@ SLKA-25086:
     vuClampMode: 2 # Missing geometry with microVU.
 SLKA-25087:
   name: "FIFA Soccer 2004"
-  region: "NTSC-J"
+  region: "NTSC-K"
   compat: 5
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
@@ -23315,7 +23315,7 @@ SLKA-25262:
   region: "NTSC-K"
 SLKA-25263:
   name: "NanoBreaker"
-  region: "NTSC-J"
+  region: "NTSC-K"
   compat: 5
 SLKA-25264:
   name: "Full Spectrum Warrior"
