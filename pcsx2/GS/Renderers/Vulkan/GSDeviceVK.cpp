@@ -406,7 +406,16 @@ GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int width, int height
 	const u32 clamped_width = static_cast<u32>(std::clamp<int>(1, width, g_vulkan_context->GetMaxImageDimension2D()));
 	const u32 clamped_height = static_cast<u32>(std::clamp<int>(1, height, g_vulkan_context->GetMaxImageDimension2D()));
 
-	return GSTextureVK::Create(type, clamped_width, clamped_height, levels, format, LookupNativeFormat(format)).release();
+	std::unique_ptr<GSTexture> tex(GSTextureVK::Create(type, clamped_width, clamped_height, levels, format, LookupNativeFormat(format)));
+	if (!tex)
+	{
+		// We're probably out of vram, try flushing the command buffer to release pending textures.
+		PurgePool();
+		ExecuteCommandBufferAndRestartRenderPass(true, "Couldn't allocate texture.");
+		tex = GSTextureVK::Create(type, clamped_width, clamped_height, levels, format, LookupNativeFormat(format));
+	}
+
+	return tex.release();
 }
 
 bool GSDeviceVK::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map)
@@ -928,7 +937,7 @@ void GSDeviceVK::IASetVertexBuffer(const void* vertex, size_t stride, size_t cou
 	const u32 size = static_cast<u32>(stride) * static_cast<u32>(count);
 	if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
 	{
-		ExecuteCommandBufferAndRestartRenderPass("Uploading bytes to vertex buffer");
+		ExecuteCommandBufferAndRestartRenderPass(false, "Uploading bytes to vertex buffer");
 		if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
 			pxFailRel("Failed to reserve space for vertices");
 	}
@@ -948,7 +957,7 @@ bool GSDeviceVK::IAMapVertexBuffer(void** vertex, size_t stride, size_t count)
 	const u32 size = static_cast<u32>(stride) * static_cast<u32>(count);
 	if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
 	{
-		ExecuteCommandBufferAndRestartRenderPass("Mapping bytes to vertex buffer");
+		ExecuteCommandBufferAndRestartRenderPass(false, "Mapping bytes to vertex buffer");
 		if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
 			pxFailRel("Failed to reserve space for vertices");
 	}
@@ -974,7 +983,7 @@ void GSDeviceVK::IASetIndexBuffer(const void* index, size_t count)
 	const u32 size = sizeof(u32) * static_cast<u32>(count);
 	if (!m_index_stream_buffer.ReserveMemory(size, sizeof(u32)))
 	{
-		ExecuteCommandBufferAndRestartRenderPass("Uploading bytes to index buffer");
+		ExecuteCommandBufferAndRestartRenderPass(false, "Uploading bytes to index buffer");
 		if (!m_index_stream_buffer.ReserveMemory(size, sizeof(u32)))
 			pxFailRel("Failed to reserve space for vertices");
 	}
@@ -2353,14 +2362,14 @@ void GSDeviceVK::ExecuteCommandBuffer(bool wait_for_completion, const char* reas
 	ExecuteCommandBuffer(wait_for_completion);
 }
 
-void GSDeviceVK::ExecuteCommandBufferAndRestartRenderPass(const char* reason)
+void GSDeviceVK::ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completion, const char* reason)
 {
 	Console.Warning("Vulkan: Executing command buffer due to '%s'", reason);
 
 	const VkRenderPass render_pass = m_current_render_pass;
 	const GSVector4i render_pass_area(m_current_render_pass_area);
 	EndRenderPass();
-	g_vulkan_context->ExecuteCommandBuffer(Vulkan::Context::WaitType::None);
+	g_vulkan_context->ExecuteCommandBuffer(GetWaitType(wait_for_completion, GSConfig.HWSpinCPUForReadbacks));
 	InvalidateCachedState();
 
 	if (render_pass != VK_NULL_HANDLE)
@@ -2673,7 +2682,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 				return false;
 			}
 
-			ExecuteCommandBufferAndRestartRenderPass("Ran out of vertex uniform space");
+			ExecuteCommandBufferAndRestartRenderPass(false, "Ran out of vertex uniform space");
 			return ApplyTFXState(true);
 		}
 
@@ -2694,7 +2703,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 				return false;
 			}
 
-			ExecuteCommandBufferAndRestartRenderPass("Ran out of pixel uniform space");
+			ExecuteCommandBufferAndRestartRenderPass(false, "Ran out of pixel uniform space");
 			return ApplyTFXState(true);
 		}
 
@@ -2725,7 +2734,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 				return false;
 			}
 
-			ExecuteCommandBufferAndRestartRenderPass("Ran out of TFX texture descriptors");
+			ExecuteCommandBufferAndRestartRenderPass(false, "Ran out of TFX texture descriptors");
 			return ApplyTFXState(true);
 		}
 
@@ -2749,7 +2758,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 				return false;
 			}
 
-			ExecuteCommandBufferAndRestartRenderPass("Ran out of TFX sampler descriptors");
+			ExecuteCommandBufferAndRestartRenderPass(false, "Ran out of TFX sampler descriptors");
 			return ApplyTFXState(true);
 		}
 
@@ -2823,7 +2832,7 @@ bool GSDeviceVK::ApplyUtilityState(bool already_execed)
 				return false;
 			}
 
-			ExecuteCommandBufferAndRestartRenderPass("Ran out of utility descriptors");
+			ExecuteCommandBufferAndRestartRenderPass(false, "Ran out of utility descriptors");
 			return ApplyTFXState(true);
 		}
 
