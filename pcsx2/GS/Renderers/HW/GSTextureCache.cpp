@@ -745,10 +745,12 @@ void GSTextureCache::ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVect
 		const int upsc_height = std::max(rect_scaled.y, dst->m_texture->GetHeight());
 		if (dst->m_texture->GetWidth() < upsc_width || dst->m_texture->GetHeight() < upsc_height)
 		{
-			dst->ResizeTexture(upsc_width, upsc_height);
-			dst->m_dirty.push_back(GSDirtyRect(r, TEX0.PSM, TEX0.TBW));
-			GetTargetHeight(TEX0.TBP0, TEX0.TBW, TEX0.PSM, r.w);
-			dst->Update(true);
+			if (dst->ResizeTexture(upsc_width, upsc_height))
+			{
+				dst->m_dirty.push_back(GSDirtyRect(r, TEX0.PSM, TEX0.TBW));
+				GetTargetHeight(TEX0.TBP0, TEX0.TBW, TEX0.PSM, r.w);
+				dst->Update(true);
+			}
 		}
 	}
 }
@@ -1320,14 +1322,25 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	const int required_dh = scaled_dy + scaled_h;
 	if ((scaled_dx + scaled_w) <= dst->m_texture->GetWidth() && required_dh > dst->m_texture->GetHeight())
 	{
-		const int new_height = dy + h;
+		int new_height = dy + h;
 		if (new_height > GSRendererHW::MAX_FRAMEBUFFER_HEIGHT)
 			return false;
 
+		// Align height to page size, that way we don't do too many small resizes (Dark Cloud).
+		new_height = Common::AlignUpPow2(new_height, static_cast<unsigned>(GSLocalMemory::m_psm[DPSM].bs.y));
+
+		// We don't recycle the old texture here, because the height cache will track the new size,
+		// so the old size won't get created again.
 		const int scaled_new_height = static_cast<int>(static_cast<float>(new_height) * scale.y);
 		GL_INS("Resize %dx%d target to %dx%d for move", dst->m_texture->GetWidth(), dst->m_texture->GetHeight(), dst->m_texture->GetHeight(), scaled_new_height);
-		dst->ResizeTexture(dst->m_texture->GetWidth(), scaled_new_height);
 		GetTargetHeight(DBP, DBW, DPSM, new_height);
+
+		if (!dst->ResizeTexture(dst->m_texture->GetWidth(), scaled_new_height, false))
+		{
+			// Resize failed, probably ran out of VRAM, better luck next time. Fall back to CPU.
+			// We injected the new height into the cache, so hopefully won't happen again.
+			return false;
+		}
 	}
 
 	// Make sure the copy doesn't go out of bounds (it shouldn't).
@@ -2344,26 +2357,36 @@ bool GSTextureCache::Surface::Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i
 	return overlap;
 }
 
-void GSTextureCache::Surface::ResizeTexture(int new_width, int new_height)
+bool GSTextureCache::Surface::ResizeTexture(int new_width, int new_height, bool recycle_old)
 {
-	ResizeTexture(new_width, new_height, m_texture->GetScale());
+	return ResizeTexture(new_width, new_height, m_texture->GetScale(), recycle_old);
 }
 
-void GSTextureCache::Surface::ResizeTexture(int new_width, int new_height, GSVector2 new_scale)
+bool GSTextureCache::Surface::ResizeTexture(int new_width, int new_height, GSVector2 new_scale, bool recycle_old)
 {
 	const int width = m_texture->GetWidth();
 	const int height = m_texture->GetHeight();
 	if (width == new_width && height == new_height)
-		return;
+		return true;
 
+	// These exceptions *really* need to get lost. This gets called outside of draws, which just crashes
+	// when it tries to propogate the exception back.
 	const bool clear = (new_width > width || new_height > height);
-	GSTexture* tex = m_texture->IsDepthStencil() ?
-						 g_gs_device->CreateDepthStencil(new_width, new_height, m_texture->GetFormat(), clear) :
-                         g_gs_device->CreateRenderTarget(new_width, new_height, m_texture->GetFormat(), clear);
+	GSTexture* tex = nullptr;
+	try
+	{
+		tex = m_texture->IsDepthStencil() ?
+				  g_gs_device->CreateDepthStencil(new_width, new_height, m_texture->GetFormat(), clear) :
+                  g_gs_device->CreateRenderTarget(new_width, new_height, m_texture->GetFormat(), clear);
+	}
+	catch (const std::bad_alloc&)
+	{
+	}
+
 	if (!tex)
 	{
-		Console.Error("(GSTextureCache::Surface::ResizeTexture) Failed to allocate %dx%d texture", new_width, new_height);
-		return;
+		Console.Error("(ResizeTexture) Failed to allocate %dx%d texture from %dx%d texture", new_width, new_height, width, height);
+		return false;
 	}
 
 	tex->SetScale(new_scale);
@@ -2381,8 +2404,13 @@ void GSTextureCache::Surface::ResizeTexture(int new_width, int new_height, GSVec
 		g_gs_device->CopyRect(m_texture, tex, rc, 0, 0);
 	}
 
-	g_gs_device->Recycle(m_texture);
+	if (recycle_old)
+		g_gs_device->Recycle(m_texture);
+	else
+		delete m_texture;
+
 	m_texture = tex;
+	return true;
 }
 
 // GSTextureCache::Source
