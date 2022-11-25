@@ -301,6 +301,7 @@ namespace FullscreenUI
 	static bool IsEditingGameSettings(SettingsInterface* bsi);
 	static SettingsInterface* GetEditingSettingsInterface();
 	static SettingsInterface* GetEditingSettingsInterface(bool game_settings);
+	static bool ShouldShowAdvancedSettings(SettingsInterface* bsi);
 	static void SetSettingsChanged(SettingsInterface* bsi);
 	static bool GetEffectiveBoolSetting(SettingsInterface* bsi, const char* section, const char* key, bool default_value);
 	static s32 GetEffectiveIntSetting(SettingsInterface* bsi, const char* section, const char* key, s32 default_value);
@@ -1165,6 +1166,12 @@ SettingsInterface* FullscreenUI::GetEditingSettingsInterface()
 SettingsInterface* FullscreenUI::GetEditingSettingsInterface(bool game_settings)
 {
 	return (game_settings && s_game_settings_interface) ? s_game_settings_interface.get() : Host::Internal::GetBaseSettingsLayer();
+}
+
+bool FullscreenUI::ShouldShowAdvancedSettings(SettingsInterface* bsi)
+{
+	return IsEditingGameSettings(bsi) ? Host::GetBaseBoolSettingValue("UI", "ShowAdvancedSettings", false) :
+                                        bsi->GetBoolValue("UI", "ShowAdvancedSettings", false);
 }
 
 void FullscreenUI::SetSettingsChanged(SettingsInterface* bsi)
@@ -2240,8 +2247,11 @@ void FullscreenUI::DrawSettingsWindow()
 			"Graphics Settings", "Audio Settings", "Memory Card Settings", "Controller Settings", "Hotkey Settings",
 			"Achievements Settings", "Folder Settings", "Advanced Settings", "Game Fixes"};
 
-		const bool game_settings = IsEditingGameSettings(GetEditingSettingsInterface());
-		const u32 count = game_settings ? std::size(per_game_pages) : std::size(global_pages);
+		SettingsInterface* bsi = GetEditingSettingsInterface();
+		const bool game_settings = IsEditingGameSettings(bsi);
+
+		const u32 count = game_settings ? (ShouldShowAdvancedSettings(bsi) ? std::size(per_game_pages) : (std::size(per_game_pages) - 1)) :
+                                          std::size(global_pages);
 		const char* const* icons = game_settings ? per_game_icons : global_icons;
 		const SettingsPage* pages = game_settings ? per_game_pages : global_pages;
 		u32 index = 0;
@@ -3763,8 +3773,7 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 
 	SettingsInterface* bsi = GetEditingSettingsInterface();
 
-	const bool show_advanced_settings = IsEditingGameSettings(bsi) ? Host::GetBaseBoolSettingValue("UI", "ShowAdvancedSettings", false) :
-                                                                     bsi->GetBoolValue("UI", "ShowAdvancedSettings", false);
+	const bool show_advanced_settings = ShouldShowAdvancedSettings(bsi);
 
 	BeginMenuButtons();
 
