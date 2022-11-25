@@ -28,6 +28,11 @@ void* _aligned_malloc(size_t size, size_t align)
 #if defined(__USE_ISOC11) && !defined(ASAN_WORKAROUND) // not supported yet on gcc 4.9
 	return aligned_alloc(align, size);
 #else
+#ifdef __APPLE__
+	// MacOS has a bug where posix_memalign is ridiculously slow on unaligned sizes
+	// This especially bad on M1s for some reason
+	size = (size + align - 1) & ~(align - 1);
+#endif
 	void* result = 0;
 	posix_memalign(&result, align, size);
 	return result;
