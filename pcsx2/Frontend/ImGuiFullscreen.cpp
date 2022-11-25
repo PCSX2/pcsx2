@@ -1584,8 +1584,8 @@ void ImGuiFullscreen::PopulateFileSelectorItems()
 	{
 		for (std::string& root_path : FileSystem::GetRootDirectoryList())
 		{
-			s_file_selector_items.emplace_back(
-				StringUtil::StdStringFromFormat(ICON_FA_FOLDER " %s", root_path.c_str()), std::move(root_path), false);
+			std::string title(fmt::format(ICON_FA_FOLDER " {}", root_path));
+			s_file_selector_items.emplace_back(std::move(title), std::move(root_path), false);
 		}
 	}
 	else
@@ -1599,7 +1599,12 @@ void ImGuiFullscreen::PopulateFileSelectorItems()
 		if (sep_pos != std::string::npos)
 		{
 			parent_path = s_file_selector_current_directory.substr(0, sep_pos);
-			//FIXME FileSystem::CanonicalizePath(parent_path, true);
+
+#ifndef _WIN32
+			// Special case for going to root list on Linux.
+			if (parent_path.empty() && s_file_selector_current_directory.size() > 1)
+				parent_path = "/";
+#endif
 		}
 
 		s_file_selector_items.emplace_back(ICON_FA_FOLDER_OPEN " <Parent Directory>", std::move(parent_path), false);
@@ -1607,19 +1612,16 @@ void ImGuiFullscreen::PopulateFileSelectorItems()
 			if ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) != (rhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY))
 				return (lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) != 0;
 
-			// return std::lexicographical_compare(lhs.FileName.begin(), lhs.FileName.end(), rhs.FileName.begin(),
-			// rhs.FileName.end());
-			return (StringUtil::Strcasecmp(lhs.FileName.c_str(), rhs.FileName.c_str()) < 0);
+			return std::lexicographical_compare(lhs.FileName.begin(), lhs.FileName.end(), rhs.FileName.begin(), rhs.FileName.end());
 		});
 
 		for (const FILESYSTEM_FIND_DATA& fd : results)
 		{
-			std::string full_path(StringUtil::StdStringFromFormat(
-				"%s" FS_OSPATH_SEPARATOR_STR "%s", s_file_selector_current_directory.c_str(), fd.FileName.c_str()));
+			std::string full_path(Path::Combine(s_file_selector_current_directory, fd.FileName));
 
 			if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
 			{
-				std::string title(StringUtil::StdStringFromFormat(ICON_FA_FOLDER " %s", fd.FileName.c_str()));
+				std::string title(fmt::format(ICON_FA_FOLDER " {}", fd.FileName));
 				s_file_selector_items.emplace_back(std::move(title), std::move(full_path), false);
 			}
 			else
@@ -1631,7 +1633,7 @@ void ImGuiFullscreen::PopulateFileSelectorItems()
 					continue;
 				}
 
-				std::string title(StringUtil::StdStringFromFormat(ICON_FA_FILE " %s", fd.FileName.c_str()));
+				std::string title(fmt::format(ICON_FA_FILE " {}", fd.FileName));
 				s_file_selector_items.emplace_back(std::move(title), std::move(full_path), true);
 			}
 		}
@@ -1640,7 +1642,7 @@ void ImGuiFullscreen::PopulateFileSelectorItems()
 
 void ImGuiFullscreen::SetFileSelectorDirectory(std::string dir)
 {
-	while (!dir.empty() && dir.back() == FS_OSPATH_SEPARATOR_CHARACTER)
+	while (dir.size() > 1 && dir.back() == FS_OSPATH_SEPARATOR_CHARACTER)
 		dir.erase(dir.size() - 1);
 
 	s_file_selector_current_directory = std::move(dir);
