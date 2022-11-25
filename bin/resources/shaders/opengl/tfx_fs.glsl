@@ -955,7 +955,7 @@ void ps_main()
 
 #if PS_ZCLAMP
 	gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
-#endif 
+#endif
 }
 
 #endif

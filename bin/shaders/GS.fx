@@ -290,7 +290,7 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
     #define lumaNW luma4B.w
     #define lumaN luma4B.z
     #define lumaW luma4B.x
-    
+
     #else
     float4 rgbyM = FxaaTexTop(tex, posM);
     rgbyM.w = AvgLuminance(rgbyM.xyz);
@@ -736,7 +736,7 @@ float4 BiLinearPass(float4 color, float2 texcoord)
 
 #if BICUBIC_FILTERING == 1
 float4 BicubicFilter(SamplerState texSample, float2 texcoord)
-{  
+{
     float texelSizeX = pixelSize.x;
     float texelSizeY = pixelSize.y;
 
@@ -789,7 +789,7 @@ float4 GaussianPass(float4 color, float2 texcoord)
         pixelSize.x /= 2.0;
         pixelSize.y /= 2.0;
     }
-    
+
     float2 dx = float2(pixelSize.x * GaussianSpread, 0.0);
     float2 dy = float2(0.0, pixelSize.y * GaussianSpread);
 
@@ -1067,7 +1067,7 @@ float4 TexSharpenPass(float4 color, float2 texcoord)
 float4 VibrancePass(float4 color, float2 texcoord)
 {
     float vib = Vibrance;
-    
+
     #if GLSL == 1
     float3 luma = float3(AvgLuminance(color.rgb));
     #else
@@ -1304,7 +1304,7 @@ float3 TmCurve(float3 color)
 float4 TonemapPass(float4 color, float2 texcoord)
 {
     float3 tonemap = color.rgb;
-    
+
     float blackLevel = length(tonemap);
     tonemap = ScaleLuminance(tonemap);
 
@@ -1647,7 +1647,7 @@ float3 CelColor(in float3 RGB)
 }
 
 float4 CelPass(float4 color, float2 uv0)
-{   
+{
     float3 yuv;
     float3 sum = color.rgb;
 
@@ -1681,11 +1681,11 @@ float4 CelPass(float4 color, float2 uv0)
 
         lum[i] = AvgLuminance(col[i].xyz);
         yuv = RGBtoYUV(col[i]);
-        
+
         #if UseYuvLuma == 1
         yuv.r = round(yuv.r * thresholds.r) / thresholds.r;
         #endif
-        
+
         yuv = YUVtoRGB(yuv);
         sum += yuv;
     }
@@ -1974,7 +1974,7 @@ float4 TemperaturePass(float4 color, float2 texcoord)
 float4 ScanlinesPass(float4 color, float2 texcoord, float4 fragcoord)
 {
     float4 intensity;
-    
+
     #if GLSL == 1
     fragcoord = gl_FragCoord;
     #endif
@@ -2210,7 +2210,7 @@ float3 Tri(float2 pos)
 
 float2 Warp(float2 pos)
 {
-    pos = pos * 2.0-1.0;    
+    pos = pos * 2.0-1.0;
     pos *= float2(1.0 + (pos.y*pos.y) * (HorizontalWarp), 1.0 + (pos.x*pos.x) * (VerticalWarp));
     return pos * 0.5 + 0.5;
 }
@@ -2233,7 +2233,7 @@ float3 Mask(float2 pos)
     mask *= lines;
 
     return mask;
-    
+
     #elif MaskingType == 2
     // Aperture-grille.
     pos.x = frac(pos.x/3.0);
@@ -2244,7 +2244,7 @@ float3 Mask(float2 pos)
     else mask.b = MaskAmountLight;
 
     return mask;
-    
+
     #elif MaskingType == 3
     // Stretched VGA style shadow mask (same as prior shaders).
     pos.x += pos.y*3.0;
@@ -2256,7 +2256,7 @@ float3 Mask(float2 pos)
     else mask.b = MaskAmountLight;
 
     return mask;
-    
+
     #else
     // VGA style shadow mask.
     pos.xy = floor(pos.xy*float2(1.0, 0.5));
@@ -2352,11 +2352,11 @@ float4 DebandPass(float4 color, float2 texcoord)
     for(int i=0; i < int(DebandSampleCount); i++)
     {
         float4 cn = float4(sample_tex(TextureSampler, texcoord + on[i]).rgb, 1.0);
-        
+
         #if (DEBAND_SKIP_THRESHOLD_TEST == 0)
         if(is_within_threshold(col0, cn.rgb))
         #endif
-        
+
         accu += cn;
     }
 
@@ -2502,7 +2502,7 @@ PS_OUTPUT ps_main(VS_OUTPUT input)
     #if SCANLINES == 1
     color = ScanlinesPass(color, texcoord, position);
     #endif
-    
+
     #if SP_DITHERING == 1
     color = DitherPass(color, texcoord);
     #endif

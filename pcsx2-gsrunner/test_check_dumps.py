@@ -59,7 +59,7 @@ def check_regression_test(baselinedir, testdir, name):
             continue
 
         framenum = int(matches[1])
-        
+
         path1 = os.path.join(dir1, imagename)
         path2 = os.path.join(dir2, imagename)
         if not os.path.isfile(path2):
@@ -92,7 +92,7 @@ def check_regression_test(baselinedir, testdir, name):
 
 def check_regression_tests(baselinedir, testdir):
     gamedirs = glob.glob(baselinedir + "/*", recursive=False)
-    
+
     success = 0
     failure = 0
 

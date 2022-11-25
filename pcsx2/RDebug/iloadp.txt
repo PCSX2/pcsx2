@@ -1,6 +1,6 @@
 ILOADP_MODULE_INFO{
-        u16     flags          дддд© <ддд©
-        u16     version        <ддды дддды
+        u16     flags          О©╫О©╫О©╫д© <О©╫О©╫д©
+        u16     version        <О©╫О©╫О©╫О©╫ О©╫О©╫О©╫О©╫О©╫
         u32     addr
 	u32	sz_text
 	u32	sz_data

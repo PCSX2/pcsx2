@@ -75,7 +75,7 @@ sub check_c_format {
         if ($line =~ /^#:\s*(.*)/) {
             my $old_index = $index;
             $index = $1; # help for debug
-            
+
             if (scalar(@c_symbol) > 0 and not $is_empty) {
                 print "$old_index\n";
                 print "Error: translation miss some c format\n";

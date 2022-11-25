@@ -39,7 +39,7 @@
 	<string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
-	<key>LSApplicationCategoryType</key> 
+	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.games</string>
 </dict>
 </plist>

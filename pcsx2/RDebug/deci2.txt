@@ -1,18 +1,18 @@
 pcsx2 log->debugger tty mapping
-ммммммммммммммммммммммммяммямммдддбдддбддддддддддддддддд©
-Bios                    ЁEEЁ  0   ЁIOPЁ  Bios           Ё
-CPU & MMI & COP0 & FPU  ЁEEЁ  1   ЁIOPЁ  IOP cpu        Ё
-VU0 & VUMicro           ЁEEЁ  2   ЁIOPЁ  HW             Ё
-VIF                     ЁEEЁ  3   ЁIOPЁ  GTE            Ё
-GIF                     ЁEEЁ  4   ЁIOPЁ  GPU            Ё
-DMA                     ЁEEЁ  5   ЁIOPЁ  DMA            Ё
-HW & Unknown Memory     ЁEEЁ  6   ЁIOPЁ  Unknown Memory Ё
-ELF & Scratch pad       ЁEEЁ  7   ЁIOPЁ  PAD            Ё
-IPU                     ЁEEЁ  8   ЁIOPЁ  CDR            Ё
-SIF & RPC services      ЁEEЁ  9   ЁIOPЁ                 Ё
-                        Ё  Ё      Ё   Ё                 Ё
-SysMessage              ЁEEЁKernelЁIOPЁ  SysMessage     Ё
-ддддддддддддддддддддддддаддаддддддадддаддддддддддддддддды
+О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫д©
+Bios                    О©╫EEО©╫  0   О©╫IOPО©╫  Bios           О©╫
+CPU & MMI & COP0 & FPU  О©╫EEО©╫  1   О©╫IOPО©╫  IOP cpu        О©╫
+VU0 & VUMicro           О©╫EEО©╫  2   О©╫IOPО©╫  HW             О©╫
+VIF                     О©╫EEО©╫  3   О©╫IOPО©╫  GTE            О©╫
+GIF                     О©╫EEО©╫  4   О©╫IOPО©╫  GPU            О©╫
+DMA                     О©╫EEО©╫  5   О©╫IOPО©╫  DMA            О©╫
+HW & Unknown Memory     О©╫EEО©╫  6   О©╫IOPО©╫  Unknown Memory О©╫
+ELF & Scratch pad       О©╫EEО©╫  7   О©╫IOPО©╫  PAD            О©╫
+IPU                     О©╫EEО©╫  8   О©╫IOPО©╫  CDR            О©╫
+SIF & RPC services      О©╫EEО©╫  9   О©╫IOPО©╫                 О©╫
+                        О©╫  О©╫      О©╫   О©╫                 О©╫
+SysMessage              О©╫EEО©╫KernelО©╫IOPО©╫  SysMessage     О©╫
+О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫
 PRODG: 230,130,    120,121,122,110-119,11F,210-219,21F,410
 CW:    230,130,150,120,121,    210-219,21F,110-119,11F
 

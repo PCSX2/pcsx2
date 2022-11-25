@@ -52,7 +52,7 @@ void ps_depth_copy()
 void ps_filter_transparency()
 {
 	vec4 c = sample_c(v_tex);
-	
+
 	c.a = dot(c.rgb, vec3(0.299, 0.587, 0.114));
 
 	o_col0 = c;
@@ -339,7 +339,7 @@ void ps_yuv()
 void main()
 {
 	o_col0 = vec4(0x7FFFFFFF);
-	
+
 	#ifdef ps_stencil_image_init_0
 		if((127.5f / 255.0f) < sample_c(v_tex).a) // < 0x80 pass (== 0x80 should not pass)
 			o_col0 = vec4(-1);

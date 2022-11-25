@@ -23,7 +23,7 @@ sudo cp /usr/local/bin/patchelf /tmp/squashfs-root/usr/bin/patchelf
 cd "$GITHUB_WORKSPACE"
 ninja -C build install
 cp ./pcsx2/gui/Resources/AppIcon64.png ./squashfs-root/PCSX2.png
-cp ./linux_various/PCSX2.desktop.in ./squashfs-root/PCSX2.desktop 
+cp ./linux_various/PCSX2.desktop.in ./squashfs-root/PCSX2.desktop
 sed -i -e 's|Categories=@PCSX2_MENU_CATEGORIES@|Categories=Game;Emulator;|g' ./squashfs-root/PCSX2.desktop
 sed -i -e 's|__GL_THREADED_OPTIMIZATIONS=1|__GL_THREADED_OPTIMIZATIONS=0|g' ./squashfs-root/PCSX2.desktop
 curl -sSfL "https://github.com/AppImage/AppImageKit/releases/download/continuous/runtime-$APPARCH" -o ./squashfs-root/runtime

@@ -28,7 +28,7 @@ The following is a list of *general* style recommendations that will make review
         *   Looking at the project's commit history will help with keeping prefixes consistent overtime, *there is no strictly enforced list*.
 
     *   Try to keep messages brief and informative
-    
+
     *   Remove unnecessary commits and squash commits together when appropriate.
         *   If you are not familiar with rebasing with git, check out the following resources:
             *   CLI - https://thoughtbot.com/blog/git-interactive-rebase-squash-amend-rewriting-history

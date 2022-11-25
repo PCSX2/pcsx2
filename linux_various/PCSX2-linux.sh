@@ -51,7 +51,7 @@ then
     return 1 # warning exit will kill current terminal
 fi
 
-# Allow to ship .so library with the build to avoid version issue 
+# Allow to ship .so library with the build to avoid version issue
 MY_LD_LIBRARY_PATH=${MY_LD_LIBRARY_PATH:+$MY_LD_LIBRARY_PATH:}$DIR/3rdPartyLibs
 
 # openSUSE don't follow FHS !!!!

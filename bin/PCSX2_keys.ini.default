@@ -9,7 +9,7 @@
 # best to completely avoid them at this file. GS uses:
 # F5         - Deinterlace modes
 # PAGE_UP    - FXAA antialiasing (HW and SW)
-# PAGE_DOWN  - Cycles through dither modes (HW) 
+# PAGE_DOWN  - Cycles through dither modes (HW)
 # DELETE     - Software Antialiasing (AA1)
 # HOME       - FX shader
 # INSERT     - Hardware mipmapping
