@@ -49,7 +49,7 @@ void ps_main3()
 {
 	// We take half the lines from the current frame and stores them in the MAD frame buffer.
 	// the MAD frame buffer is split in 2 consecutive banks of 2 fields each, the fields in each bank
-	// are interleaved (top field at even lines and bottom field at odd lines). 
+	// are interleaved (top field at even lines and bottom field at odd lines).
 	// When the source texture has an odd vres, the first line of bank 1 would be an odd index
 	// causing the wrong lines to be discarded, so a vertical offset (lofs) is added to the vertical
 	// position of the destination texture to force the proper field alignment
@@ -154,7 +154,7 @@ void ps_main4()
 
 
 	// selecting deinterlacing output
-	
+
 	if ((vpos & 1) == field)
 	{
 		// output coordinate present on current field

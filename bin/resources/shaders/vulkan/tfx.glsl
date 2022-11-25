@@ -97,7 +97,7 @@ layout(location = 0) in VSOutput
 		vec4 c;
 	#else
 		flat vec4 c;
-	#endif		
+	#endif
 } gsIn[];
 
 layout(location = 0) out GSOutput

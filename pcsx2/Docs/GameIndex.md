@@ -141,7 +141,7 @@ The clamp modes are also numerically based.
 ### GS Hardware General Fixes
 
 *   conservativeFramebuffer
-        [`0` or `1`] 
+        [`0` or `1`]
         {Off or On}
         Default: On (`1`)
 *   texturePreloading

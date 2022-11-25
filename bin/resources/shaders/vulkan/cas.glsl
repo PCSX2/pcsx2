@@ -27,7 +27,7 @@ layout(push_constant) uniform const_buffer
 };
 
 layout(set=0, binding=0) uniform texture2D imgSrc;
-layout(set=0, binding=1, rgba8) uniform writeonly image2D imgDst; 
+layout(set=0, binding=1, rgba8) uniform writeonly image2D imgDst;
 layout(constant_id=0) const int sharpenOnly = 0;
 
 #define A_GPU 1
@@ -35,7 +35,7 @@ layout(constant_id=0) const int sharpenOnly = 0;
 
 #include "ffx_a.h"
 
-AF3 CasLoad(ASU2 p) 
+AF3 CasLoad(ASU2 p)
 {
     return texelFetch(imgSrc, srcOffset + ivec2(p), 0).rgb;
 }

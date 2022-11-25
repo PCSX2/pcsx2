@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License along with PCSX2.
 # If not, see <http://www.gnu.org/licenses/>.
 
-# This basic script convert an jpeg/png image to a .h include file 
+# This basic script convert an jpeg/png image to a .h include file
 # compatible with PCSX2 gui
 
 use File::Basename;

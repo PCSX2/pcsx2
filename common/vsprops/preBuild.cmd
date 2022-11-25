@@ -6,7 +6,7 @@
 :: The git.exe program is part of the msysgit installation.
 ::
 :: MsysGit can be downloaded from http://msysgit.github.io/
-:: 
+::
 :: Usage: preBuild.cmd ProjectSrcDir VspropsDir
 ::
 ::    ProjectSrcDir - $(ProjectDir)\.. - Top-level Directory of project source code.
