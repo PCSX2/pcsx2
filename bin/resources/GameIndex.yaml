@@ -36889,6 +36889,8 @@ SLPS-25352:
   name: "Espgaluda"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    texturePreloading: 1 # Performs much better with partial preload.
 SLPS-25353:
   name: "Xenosaga Freaks"
   region: "NTSC-J"
