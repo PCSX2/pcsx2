@@ -1,0 +1,30 @@
+# EditorConfig: http://EditorConfig.org
+
+# Top-most EditorConfig file
+root = true
+
+# Unix-style newlines with a newline ending every file
+[*]
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+charset = utf-8
+
+# Tab indentation
+[*.{cpp,h,js,cmake,mm,inl,in}]
+indent_style = tab
+
+# 1 space
+[*.{ui}]
+indent_style = space
+indent_size = 1
+
+# 2 space
+[*.{js,xml,c,py,asm,cmd,nsi,nsh,tex}]
+indent_style = space
+indent_size = 2
+
+# 4 space
+[*.{sh,pl}]
+indent_style = space
+indent_size = 4
