@@ -137,7 +137,7 @@ public:
 		// Allocate an empty cell for all buckets
 		for (auto& bucket : m_bucket)
 		{
-			if ((bucket = (nVifBlock*)_aligned_malloc(sizeof(nVifBlock), 64)) == nullptr)
+			if ((bucket = (nVifBlock*)_aligned_malloc(sizeof(nVifBlock), 16)) == nullptr)
 			{
 				pxFailRel("Failed to allocate HashBucket Chain on reset");
 			}
