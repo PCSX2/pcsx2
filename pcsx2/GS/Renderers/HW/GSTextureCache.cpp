@@ -529,15 +529,15 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 		// 2nd try ! Try to find a frame at the requested bp -> bp + size is inside of (or equal to)
 		if (!dst)
 		{
+			const u32 needed_end = GSLocalMemory::m_psm[TEX0.PSM].info.bn(real_w - 1, real_h - 1, bp, TEX0.TBW);
 			for (auto t : list)
 			{
 				// Make sure the target is inside the texture
 				if (t->m_TEX0.TBP0 <= bp && bp <= t->m_end_block && t->Inside(bp, TEX0.TBW, TEX0.PSM, GSVector4i(0, 0, real_w, real_h)))
 				{
-					if (old_found && t->m_age > 4)
-					{
+					// If we already have an old one, make sure the "new" one matches at least on one end (double buffer?).
+					if (old_found && (t->m_age > 4 || (t->m_TEX0.TBP0 != bp && needed_end != t->m_end_block)))
 						continue;
-					}
 
 					dst = t;
 					GL_CACHE("TC: Lookup Frame %dx%d, inclusive hit: %d (0x%x, took 0x%x -> 0x%x %s)", size.x, size.y, t->m_texture->GetID(), bp, t->m_TEX0.TBP0, t->m_end_block, psm_str(TEX0.PSM));
@@ -783,7 +783,7 @@ void GSTextureCache::ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVect
 			{
 				AddDirtyRectTarget(dst, r, TEX0.PSM, TEX0.TBW);
 				GetTargetHeight(TEX0.TBP0, TEX0.TBW, TEX0.PSM, r.w);
-				dst->Update(true);
+				dst->UpdateValidity(r);
 			}
 		}
 	}
