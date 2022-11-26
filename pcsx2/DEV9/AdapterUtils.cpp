@@ -30,10 +30,14 @@
 #include <sys/sysctl.h>
 #include <sys/socket.h>
 #include <net/if.h>
+#include <net/if_dl.h>
 #include <net/route.h>
 
 #include "common/Assertions.h"
 
+#elif defined(__linux__)
+#include <sys/ioctl.h>
+#include <unistd.h>
 #endif
 #endif
 
@@ -42,7 +46,7 @@
 using namespace PacketReader::IP;
 
 #ifdef _WIN32
-bool AdapterUtils::GetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer)
+bool AdapterUtils::GetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer)
 {
 	int neededSize = 128;
 	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
@@ -79,7 +83,7 @@ bool AdapterUtils::GetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSE
 
 	do
 	{
-		if (strcmp(pAdapterInfo->AdapterName, name.c_str()) == 0)
+		if (strcmp(pAdapterInfo->AdapterName, name) == 0)
 		{
 			*adapter = *pAdapterInfo;
 			buffer->swap(AdapterInfo);
@@ -509,3 +513,63 @@ std::vector<IP_Address> AdapterUtils::GetDNS(ifaddrs* adapter)
 	return collection;
 }
 #endif
+bool AdapterUtils::GetAdapterMAC(u8 (&mac)[6], const char* adapter_name)
+{
+	bool retval = false;
+#ifdef _WIN32
+	IP_ADAPTER_ADDRESSES adapterInfo;
+	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
+
+	if (AdapterUtils::GetWin32Adapter(adapter_name, &adapterInfo, &buffer))
+	{
+		memcpy(mac, adapterInfo.PhysicalAddress, 6);
+		retval = true;
+	}
+
+#elif defined(__linux__)
+	struct ifreq ifr;
+	int fd = socket(AF_INET, SOCK_DGRAM, 0);
+	strncpy(ifr.ifr_name, adapter_name, IFNAMSIZ - 1);
+	if (0 == ioctl(fd, SIOCGIFHWADDR, &ifr))
+	{
+		retval = true;
+		memcpy(mac, ifr.ifr_hwaddr.sa_data, 6);
+	}
+	else
+	{
+		Console.Error("Could not get MAC address for adapter: %s", adapter_name);
+	}
+	close(fd);
+#elif defined(__APPLE__) || defined(__FreeBSD__)
+	// https://stackoverflow.com/a/10593782
+	int mib[6];
+	size_t len;
+	mib[0] = CTL_NET;
+	mib[1] = PF_ROUTE;
+	mib[2] = 0;
+	mib[3] = AF_LINK;
+	mib[4] = NET_RT_IFLIST;
+	if ((mib[5] = if_nametoindex(adapter_name)) == 0)
+	{
+		Console.Error("Could not get MAC address for adapter %s, failed to get interface index", adapter_name);
+		return false;
+	}
+	if ((sysctl(mib, 6, nullptr, &len, nullptr, 0) < 0) || len < sizeof(if_msghdr) + sizeof(sockaddr_dl))
+	{
+		Console.Error("Could not get MAC address for adapter %s, sysctl failed", adapter_name);
+		return false;
+	}
+	std::unique_ptr<char[]> buf = std::make_unique<char[]>(len);
+	if (sysctl(mib, 6, buf.get(), &len, nullptr, 0) < 0)
+	{
+		Console.Error("Could not get MAC address for adapter %s, sysctl failed", adapter_name);
+		return false;
+	}
+	const char* ptr = LLADDR(reinterpret_cast<const sockaddr_dl*>(buf.get() + sizeof(if_msghdr)));
+	memcpy(mac, ptr, 6);
+	retval = true;
+#else
+	Console.Error("Could not get MAC address for adapter, OS not supported");
+#endif
+	return retval;
+}

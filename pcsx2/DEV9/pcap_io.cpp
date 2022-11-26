@@ -25,14 +25,6 @@
 //#include <ws2tcpip.h>
 //#include <comdef.h>
 #include "common/StringUtil.h"
-#elif defined(__linux__)
-#include <sys/ioctl.h>
-#include <net/if.h>
-#include <unistd.h>
-#elif defined(__POSIX__)
-#include <sys/types.h>
-#include <ifaddrs.h>
-#include <unistd.h>
 #endif
 
 #include <stdio.h>
@@ -64,40 +56,6 @@ char namebuff[256];
 ip_address ps2_ip;
 mac_address ps2_mac;
 mac_address host_mac;
-
-// Fetches the MAC address and prints it
-int GetMACAddress(const std::string& adapter, mac_address* addr)
-{
-	int retval = 0;
-#ifdef _WIN32
-	IP_ADAPTER_ADDRESSES adapterInfo;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
-
-	if (AdapterUtils::GetWin32Adapter(adapter, &adapterInfo, &buffer))
-	{
-		memcpy(addr, adapterInfo.PhysicalAddress, 6);
-		retval = 1;
-	}
-
-#elif defined(__linux__)
-	struct ifreq ifr;
-	int fd = socket(AF_INET, SOCK_DGRAM, 0);
-	strcpy(ifr.ifr_name, adapter.c_str());
-	if (0 == ioctl(fd, SIOCGIFHWADDR, &ifr))
-	{
-		retval = 1;
-		memcpy(addr, ifr.ifr_hwaddr.sa_data, 6);
-	}
-	else
-	{
-		Console.Error("Could not get MAC address for adapter: %s", adapter.c_str());
-	}
-	close(fd);
-#else
-	Console.Error("Could not get MAC address for adapter, OS not supported");
-#endif
-	return retval;
-}
 
 int pcap_io_init(const std::string& adapter, bool switched, mac_address virtual_mac)
 {
@@ -294,7 +252,7 @@ PCAPAdapter::PCAPAdapter()
 	mac_address hostMAC;
 	mac_address newMAC;
 
-	GetMACAddress(EmuConfig.DEV9.EthDevice, &hostMAC);
+	AdapterUtils::GetAdapterMAC(hostMAC.bytes, EmuConfig.DEV9.EthDevice.c_str());
 	memcpy(&newMAC, ps2MAC, 6);
 
 	//Lets take the hosts last 2 bytes to make it unique on Xlink
@@ -314,7 +272,7 @@ PCAPAdapter::PCAPAdapter()
 #ifdef _WIN32
 	IP_ADAPTER_ADDRESSES adapter;
 	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
-	if (AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
+	if (AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice.c_str(), &adapter, &buffer))
 		InitInternalServer(&adapter);
 	else
 	{
@@ -386,7 +344,7 @@ void PCAPAdapter::reloadSettings()
 #ifdef _WIN32
 	IP_ADAPTER_ADDRESSES adapter;
 	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
-	if (AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
+	if (AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice.c_str(), &adapter, &buffer))
 		ReloadInternalServer(&adapter);
 	else
 		ReloadInternalServer(nullptr);
@@ -442,7 +400,7 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 		IP_ADAPTER_ADDRESSES adapterInfo;
 		std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
 
-		if (AdapterUtils::GetWin32Adapter(entry.guid, &adapterInfo, &buffer))
+		if (AdapterUtils::GetWin32Adapter(entry.guid.c_str(), &adapterInfo, &buffer))
 			entry.name = StringUtil::WideStringToUTF8String(std::wstring(adapterInfo.FriendlyName));
 		else
 		{
