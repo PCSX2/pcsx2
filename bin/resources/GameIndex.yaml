@@ -17597,8 +17597,6 @@ SLES-53702:
   name: "Resident Evil 4"
   region: "PAL-M5"
   compat: 5
-  gameFixes:
-    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLES-53703:
@@ -17799,8 +17797,6 @@ SLES-53755:
 SLES-53756:
   name: "Resident Evil 4"
   region: "PAL-M5"
-  gameFixes:
-    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLES-53758:
