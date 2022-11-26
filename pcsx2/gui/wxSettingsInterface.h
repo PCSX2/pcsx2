@@ -49,6 +49,9 @@ public:
 	bool RemoveFromStringList(const char* section, const char* key, const char* item) override;
 	bool AddToStringList(const char* section, const char* key, const char* item) override;
 
+	std::vector<std::pair<std::string, std::string>> GetKeyValueList(const char* section) const override;
+	void SetKeyValueList(const char* section, const std::vector<std::pair<std::string, std::string>>& items) override;
+
 	bool ContainsValue(const char* section, const char* key) const override;
 	void DeleteValue(const char* section, const char* key) override;
 	void ClearSection(const char* section) override;
