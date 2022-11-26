@@ -1051,6 +1051,8 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& e
 
 void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent& event)
 {
+	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build or switch to the Qt version!\nOld recordings should still play correctly!");
+	return;
 	const bool emulation_initially_paused = CoreThread.IsPaused();
 	const bool recording_initially_paused = g_InputRecordingControls.IsPaused();
 
@@ -1077,6 +1079,8 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent& event)
 
 void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
 {
+	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build or switch to the Qt version!\nOld recordings should still play correctly!");
+	return;
 	const bool initiallyPaused = g_InputRecordingControls.IsPaused();
 
 	if (!initiallyPaused)
@@ -1123,11 +1127,15 @@ void MainEmuFrame::ApplyFirstFrameStatus()
 
 void MainEmuFrame::Menu_Recording_Stop_Click(wxCommandEvent& event)
 {
+	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build or switch to the Qt version!\nOld recordings should still play correctly!");
+	return;
 	StopInputRecording();
 }
 
 void MainEmuFrame::Menu_Recording_Config_FrameAdvance(wxCommandEvent& event)
 {
+	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build or switch to the Qt version!\nOld recordings should still play correctly!");
+	return;
 	long result = wxGetNumberFromUser(_("Enter the number of frames to advance per advance"), _("Number of Frames"), _("Configure Frame Advance"), g_Conf->inputRecording.m_frame_advance_amount, 1, INT_MAX);
 	if (result != -1)
 	{
@@ -1161,23 +1169,31 @@ void MainEmuFrame::StopInputRecording()
 
 void MainEmuFrame::Menu_Recording_TogglePause_Click(wxCommandEvent& event)
 {
+	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build or switch to the Qt version!\nOld recordings should still play correctly!");
+	return;
 	if (g_Conf->EmuOptions.EnableRecordingTools)
 		g_InputRecordingControls.TogglePause();
 }
 
 void MainEmuFrame::Menu_Recording_FrameAdvance_Click(wxCommandEvent& event)
 {
+	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build or switch to the Qt version!\nOld recordings should still play correctly!");
+	return;
 	if (g_Conf->EmuOptions.EnableRecordingTools)
 		g_InputRecordingControls.FrameAdvance();
 }
 
 void MainEmuFrame::Menu_Recording_ToggleRecordingMode_Click(wxCommandEvent& event)
 {
+	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build or switch to the Qt version!\nOld recordings should still play correctly!");
+	return;
 	if (g_Conf->EmuOptions.EnableRecordingTools)
 		g_InputRecordingControls.RecordModeToggle();
 }
 
 void MainEmuFrame::Menu_Recording_VirtualPad_Open_Click(wxCommandEvent& event)
 {
+	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build or switch to the Qt version!\nOld recordings should still play correctly!");
+	return;
 	g_InputRecording.ShowVirtualPad(event.GetId() - MenuId_Recording_VirtualPad_Port0);
 }
