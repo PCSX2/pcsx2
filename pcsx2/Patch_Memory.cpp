@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2022  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -196,7 +196,7 @@ void handle_extended_t(IniPatch *p)
 		}
 		else if ((p->addr & 0xF0000000) == 0x40000000)			// 4aaaaaaa nnnnssss + Another line
 		{
-			IterationCount = ((u32)p->data & 0xFFFF0000) / 0x10000;
+			IterationCount = ((u32)p->data & 0xFFFF0000) >> 16;
 			IterationIncrement = ((u32)p->data & 0x0000FFFF) * 4;
 			PrevCheatAddr = (u32)p->addr & 0x0FFFFFFF;
 			PrevCheatType = 0x4000;
@@ -247,135 +247,256 @@ void handle_extended_t(IniPatch *p)
 				memWrite16((u32)p->addr & 0x0FFFFFFF, (u16)(mem ^ (p->data & 0x0000FFFF)));
 			}
 		}
-		else if (p->addr < 0xE0000000)
+		else if ((p->addr & 0xF0000000) == 0xD0000000 || (p->addr & 0xF0000000) == 0xE0000000)
 		{
-			if (((u32)p->data & 0xFFFF0000) == 0x00000000)		// Daaaaaaa 0000dddd
-			{
-				u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
-				if (mem != (0x0000FFFF & (u32)p->data))
-				{
-					SkipCount = 1;
-				}
-				PrevCheatType = 0;
-			}
-			else if (((u32)p->data & 0xFFFF0000) == 0x00100000)	// Daaaaaaa 0010dddd
-			{
-				u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
-				if (mem == (0x0000FFFF & (u32)p->data))
-				{
-					SkipCount = 1;
-				}
-				PrevCheatType = 0;
-			}
-			else if (((u32)p->data & 0xFFFF0000) == 0x00200000)	// Daaaaaaa 0020dddd
-			{
-				u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
-				if (mem >= (0x0000FFFF & (u32)p->data))
-				{
-					SkipCount = 1;
-				}
-				PrevCheatType = 0;
-			}
-			else if (((u32)p->data & 0xFFFF0000) == 0x00300000)	// Daaaaaaa 0030dddd
-			{
-				u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
-				if (mem <= (0x0000FFFF & (u32)p->data))
-				{
-					SkipCount = 1;
-				}
-				PrevCheatType = 0;
-			}
-		}
-		else if (p->addr < 0xF0000000)
-		{
-			if (((u32)p->data & 0xF0000000) == 0x00000000)		// Ezyyvvvv 0aaaaaaa
-			{
-				u8 z = ((u32)p->addr & 0x0F000000) / 0x01000000;
+			u32 addr = (u32)p->addr;
+			u32 data = (u32)p->data;
 
-				if (z == 0)											// E0yyvvvv 0aaaaaaa
+			// Since D-codes now have the additional functionality present in PS2rd which
+			// incorporates E-code-like functionality by making use of the unused bits in
+			// D-codes, the E-codes are now just converted to D-codes to reduce bloat.
+
+			if ((addr & 0xF0000000) == 0xE0000000)
+			{
+				// Ezyyvvvv taaaaaaa  ->  Daaaaaaa yytzvvvv
+				addr = 0xD0000000 | ((u32)p->data & 0x0FFFFFFF);
+				data = 0x00000000 | ((u32)p->addr & 0x0000FFFF);
+				data = data | ((u32)p->addr & 0x00FF0000) << 8;
+				data = data | ((u32)p->addr & 0x0F000000) >> 8;
+				data = data | ((u32)p->data & 0xF0000000) >> 8;
+			}
+
+			const u8 type = (data & 0x000F0000) >> 16;
+			const u8 cond = (data & 0x00F00000) >> 20;
+
+			if (cond == 0)										// Daaaaaaa yy0zvvvv
+			{
+				if (type == 0)										// Daaaaaaa yy00vvvv
 				{
-					u16 mem = memRead16((u32)p->data & 0x0FFFFFFF);
-					if (mem != (0x0000FFFF & (u32)p->addr))
+					u16 mem = memRead16(addr & 0x0FFFFFFF);
+					if (mem != (data & 0x0000FFFF))
 					{
-						SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+						SkipCount = (data & 0xFF000000) >> 24;
+						if (!SkipCount)
+						{
+							SkipCount = 1;
+						}
 					}
 					PrevCheatType = 0;
 				}
-				else if (z == 1)									// E1yy00vv 0aaaaaaa
+				else if (type == 1)									// Daaaaaaa yy0100vv
 				{
-					u8 mem = memRead8((u32)p->data & 0x0FFFFFFF);
-					if (mem != (0x000000FF & (u32)p->addr))
+					u8 mem = memRead8(addr & 0x0FFFFFFF);
+					if (mem != (data & 0x000000FF))
 					{
-						SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+						SkipCount = (data & 0xFF000000) >> 24;
+						if (!SkipCount)
+						{
+							SkipCount = 1;
+						}
 					}
 					PrevCheatType = 0;
 				}
 			}
-			else if (((u32)p->data & 0xF0000000) == 0x10000000)	// Ezyyvvvv 1aaaaaaa
+			else if (cond == 1)									// Daaaaaaa yy1zvvvv
 			{
-				u8 z = ((u32)p->addr & 0x0F000000) / 0x01000000;
-
-				if (z == 0)											// E0yyvvvv 1aaaaaaa
+				if (type == 0)										// Daaaaaaa yy10vvvv
 				{
-					u16 mem = memRead16((u32)p->data & 0x0FFFFFFF);
-					if (mem == (0x0000FFFF & (u32)p->addr))
+					u16 mem = memRead16(addr & 0x0FFFFFFF);
+					if (mem == (data & 0x0000FFFF))
 					{
-						SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+						SkipCount = (data & 0xFF000000) >> 24;
+						if (!SkipCount)
+						{
+							SkipCount = 1;
+						}
 					}
 					PrevCheatType = 0;
 				}
-				else if (z == 1)									// E1yy00vv 1aaaaaaa
+				else if (type == 1)									// Daaaaaaa yy1100vv
 				{
-					u8 mem = memRead8((u32)p->data & 0x0FFFFFFF);
-					if (mem == (0x000000FF & (u32)p->addr))
+					u8 mem = memRead8(addr & 0x0FFFFFFF);
+					if (mem == (data & 0x000000FF))
 					{
-						SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+						SkipCount = (data & 0xFF000000) >> 24;
+						if (!SkipCount)
+						{
+							SkipCount = 1;
+						}
 					}
 					PrevCheatType = 0;
 				}
 			}
-			else if (((u32)p->data & 0xF0000000) == 0x20000000)	// Ezyyvvvv 2aaaaaaa
+			else if (cond == 2)									// Daaaaaaa yy2zvvvv
 			{
-				u8 z = ((u32)p->addr & 0x0F000000) / 0x01000000;
-
-				if (z == 0)											// E0yyvvvv 2aaaaaaa
+				if (type == 0)										// Daaaaaaa yy20vvvv
 				{
-					u16 mem = memRead16((u32)p->data & 0x0FFFFFFF);
-					if (mem >= (0x0000FFFF & (u32)p->addr))
+					u16 mem = memRead16(addr & 0x0FFFFFFF);
+					if (mem >= (data & 0x0000FFFF))
 					{
-						SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+						SkipCount = (data & 0xFF000000) >> 24;
+						if (!SkipCount)
+						{
+							SkipCount = 1;
+						}
 					}
 					PrevCheatType = 0;
 				}
-				else if (z == 1)									// E1yy00vv 2aaaaaaa
+				else if (type == 1)									// Daaaaaaa yy2100vv
 				{
-					u8 mem = memRead8((u32)p->data & 0x0FFFFFFF);
-					if (mem >= (0x000000FF & (u32)p->addr))
+					u8 mem = memRead8(addr & 0x0FFFFFFF);
+					if (mem >= (data & 0x000000FF))
 					{
-						SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+						SkipCount = (data & 0xFF000000) >> 24;
+						if (!SkipCount)
+						{
+							SkipCount = 1;
+						}
 					}
 					PrevCheatType = 0;
 				}
 			}
-			else if (((u32)p->data & 0xF0000000) == 0x30000000)	// Ezyyvvvv 3aaaaaaa
+			else if (cond == 3)									// Daaaaaaa yy3zvvvv
 			{
-				u8 z = ((u32)p->addr & 0x0F000000) / 0x01000000;
-
-				if (z == 0)											// E0yyvvvv 3aaaaaaa
+				if (type == 0)										// Daaaaaaa yy30vvvv
 				{
-					u16 mem = memRead16((u32)p->data & 0x0FFFFFFF);
-					if (mem <= (0x0000FFFF & (u32)p->addr))
+					u16 mem = memRead16(addr & 0x0FFFFFFF);
+					if (mem <= (data & 0x0000FFFF))
 					{
-						SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+						SkipCount = (data & 0xFF000000) >> 24;
+						if (!SkipCount)
+						{
+							SkipCount = 1;
+						}
 					}
 					PrevCheatType = 0;
 				}
-				else if (z == 1)									// E1yy00vv 3aaaaaaa
+				else if (type == 1)									// Daaaaaaa yy3100vv
 				{
-					u8 mem = memRead8((u32)p->data & 0x0FFFFFFF);
-					if (mem <= (0x000000FF & (u32)p->addr))
+					u8 mem = memRead8(addr & 0x0FFFFFFF);
+					if (mem <= (data & 0x000000FF))
 					{
-						SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+						SkipCount = (data & 0xFF000000) >> 24;
+						if (!SkipCount)
+						{
+							SkipCount = 1;
+						}
+					}
+					PrevCheatType = 0;
+				}
+			}
+			else if (cond == 4)									// Daaaaaaa yy4zvvvv
+			{
+				if (type == 0)										// Daaaaaaa yy40vvvv
+				{
+					u16 mem = memRead16(addr & 0x0FFFFFFF);
+					if (mem & (data & 0x0000FFFF))
+					{
+						SkipCount = (data & 0xFF000000) >> 24;
+						if (!SkipCount)
+						{
+							SkipCount = 1;
+						}
+					}
+					PrevCheatType = 0;
+				}
+				else if (type == 1)									// Daaaaaaa yy4100vv
+				{
+					u8 mem = memRead8(addr & 0x0FFFFFFF);
+					if (mem & (data & 0x000000FF))
+					{
+						SkipCount = (data & 0xFF000000) >> 24;
+						if (!SkipCount)
+						{
+							SkipCount = 1;
+						}
+					}
+					PrevCheatType = 0;
+				}
+			}
+			else if (cond == 5)									// Daaaaaaa yy5zvvvv
+			{
+				if (type == 0)										// Daaaaaaa yy50vvvv
+				{
+					u16 mem = memRead16(addr & 0x0FFFFFFF);
+					if (!(mem & (data & 0x0000FFFF)))
+					{
+						SkipCount = (data & 0xFF000000) >> 24;
+						if (!SkipCount)
+						{
+							SkipCount = 1;
+						}
+					}
+					PrevCheatType = 0;
+				}
+				else if (type == 1)									// Daaaaaaa yy5100vv
+				{
+					u8 mem = memRead8(addr & 0x0FFFFFFF);
+					if (!(mem & (data & 0x000000FF)))
+					{
+						SkipCount = (data & 0xFF000000) >> 24;
+						if (!SkipCount)
+						{
+							SkipCount = 1;
+						}
+					}
+					PrevCheatType = 0;
+				}
+			}
+			else if (cond == 6)									// Daaaaaaa yy6zvvvv
+			{
+				if (type == 0)										// Daaaaaaa yy60vvvv
+				{
+					u16 mem = memRead16(addr & 0x0FFFFFFF);
+					if (mem | (data & 0x0000FFFF))
+					{
+						SkipCount = (data & 0xFF000000) >> 24;
+						if (!SkipCount)
+						{
+							SkipCount = 1;
+						}
+					}
+					PrevCheatType = 0;
+				}
+				else if (type == 1)									// Daaaaaaa yy6100vv
+				{
+					u8 mem = memRead8(addr & 0x0FFFFFFF);
+					if (mem | (data & 0x000000FF))
+					{
+						SkipCount = (data & 0xFF000000) >> 24;
+						if (!SkipCount)
+						{
+							SkipCount = 1;
+						}
+					}
+					PrevCheatType = 0;
+				}
+			}
+			else if (cond == 7)									// Daaaaaaa yy7zvvvv
+			{
+				if (type == 0)										// Daaaaaaa yy70vvvv
+				{
+					u16 mem = memRead16(addr & 0x0FFFFFFF);
+					if (!(mem | (data & 0x0000FFFF)))
+					{
+						SkipCount = (data & 0xFF000000) >> 24;
+						if (!SkipCount)
+						{
+							SkipCount = 1;
+						}
+					}
+					PrevCheatType = 0;
+				}
+				else if (type == 1)									// Daaaaaaa yy7100vv
+				{
+					u8 mem = memRead8(addr & 0x0FFFFFFF);
+					if (!(mem | (data & 0x000000FF)))
+					{
+						SkipCount = (data & 0xFF000000) >> 24;
+						if (!SkipCount)
+						{
+							SkipCount = 1;
+						}
 					}
 					PrevCheatType = 0;
 				}
