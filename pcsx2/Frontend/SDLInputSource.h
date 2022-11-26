@@ -92,4 +92,5 @@ private:
 
 	bool m_sdl_subsystem_initialized = false;
 	bool m_controller_enhanced_mode = false;
+	std::vector<std::pair<std::string, std::string>> m_sdl_hints;
 };
