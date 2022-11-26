@@ -134,124 +134,57 @@ private:
 class PadData
 {
 public:
+	/// Create a struct containing the PAD data from the global PAD state
+	/// see - `g_key_status`
+	PadData(const int port, const int slot);
+	PadData(const int port, const int slot, const std::array<u8, 18> data);
+
 	/// Constants
 	static constexpr u8 ANALOG_VECTOR_NEUTRAL = 127;
 
-	enum class BufferIndex
-	{
-		PressedFlagsGroupOne,
-		PressedFlagsGroupTwo,
-		RightAnalogXVector,
-		RightAnalogYVector,
-		LeftAnalogXVector,
-		LeftAnalogYVector,
-		RightPressure,
-		LeftPressure,
-		UpPressure,
-		DownPressure,
-		TrianglePressure,
-		CirclePressure,
-		CrossPressure,
-		SquarePressure,
-		L1Pressure,
-		R1Pressure,
-		L2Pressure,
-		R2Pressure
-	};
+	int m_ext_port;
+	int m_port;
+	int m_slot;
 
-	/// Analog Sticks - 0-255 (127 center)
-	u8 m_leftAnalogX = ANALOG_VECTOR_NEUTRAL;
-	u8 m_leftAnalogY = ANALOG_VECTOR_NEUTRAL;
-	u8 m_rightAnalogX = ANALOG_VECTOR_NEUTRAL;
-	u8 m_rightAnalogY = ANALOG_VECTOR_NEUTRAL;
+	// Analog Sticks - <x, y> - 0-255 (127 center)
+	std::tuple<u8, u8> m_rightAnalog = {ANALOG_VECTOR_NEUTRAL, ANALOG_VECTOR_NEUTRAL};
+	std::tuple<u8, u8> m_leftAnalog = {ANALOG_VECTOR_NEUTRAL, ANALOG_VECTOR_NEUTRAL};
 
-	/// Pressure Buttons - 0-255
-	u8 m_circlePressure = 0;
-	u8 m_crossPressure = 0;
-	u8 m_squarePressure = 0;
-	u8 m_trianglePressure = 0;
-	u8 m_downPressure = 0;
-	u8 m_leftPressure = 0;
-	u8 m_rightPressure = 0;
-	u8 m_upPressure = 0;
-	u8 m_l1Pressure = 0;
-	u8 m_l2Pressure = 0;
-	u8 m_r1Pressure = 0;
-	u8 m_r2Pressure = 0;
+	u8 m_compactPressFlagsGroupOne = 255;
+	u8 m_compactPressFlagsGroupTwo = 255;
 
-	u8* const m_allIntensities[16]{
-		&m_rightAnalogX,
-		&m_rightAnalogY,
-		&m_leftAnalogX,
-		&m_leftAnalogY,
-		&m_rightPressure,
-		&m_leftPressure,
-		&m_upPressure,
-		&m_downPressure,
-		&m_trianglePressure,
-		&m_circlePressure,
-		&m_crossPressure,
-		&m_squarePressure,
-		&m_l1Pressure,
-		&m_r1Pressure,
-		&m_l2Pressure,
-		&m_r2Pressure,
-	};
+	// Buttons <pressed, pressure (0-255)>
+	std::tuple<bool, u8> m_circle = {false, 0};
+	std::tuple<bool, u8> m_cross = {false, 0};
+	std::tuple<bool, u8> m_square = {false, 0};
+	std::tuple<bool, u8> m_triangle = {false, 0};
 
-	/// Pressure Button Flags
-	struct ButtonFlag
-	{
-		bool m_pressed = false;
-		const u8 m_BITMASK;
-		constexpr ButtonFlag(u8 maskValue)
-			: m_BITMASK(maskValue)
-		{
-		}
+	std::tuple<bool, u8> m_down = {false, 0};
+	std::tuple<bool, u8> m_left = {false, 0};
+	std::tuple<bool, u8> m_right = {false, 0};
+	std::tuple<bool, u8> m_up = {false, 0};
 
-		void setPressedState(u8 bufVal) noexcept
-		{
-			m_pressed = (~bufVal & m_BITMASK) > 0;
-		}
+	std::tuple<bool, u8> m_l1 = {false, 0};
+	std::tuple<bool, u8> m_l2 = {false, 0};
+	std::tuple<bool, u8> m_r1 = {false, 0};
+	std::tuple<bool, u8> m_r2 = {false, 0};
 
-		u8 getMaskIfPressed() const noexcept
-		{
-			return m_pressed ? m_BITMASK : 0;
-		}
-	};
-	/// NOTE - It shouldn't be possible to depress a button while also having no pressure
-	/// But for the sake of completeness, it should be tracked.
-	ButtonFlag m_circlePressed{0b00100000};
-	ButtonFlag m_crossPressed{0b01000000};
-	ButtonFlag m_squarePressed{0b10000000};
-	ButtonFlag m_trianglePressed{0b00010000};
-	ButtonFlag m_downPressed{0b01000000};
-	ButtonFlag m_leftPressed{0b10000000};
-	ButtonFlag m_rightPressed{0b00100000};
-	ButtonFlag m_upPressed{0b00010000};
-	ButtonFlag m_l1Pressed{0b00000100};
-	ButtonFlag m_l2Pressed{0b00000001};
-	ButtonFlag m_r1Pressed{0b00001000};
-	ButtonFlag m_r2Pressed{0b00000010};
+	// Buttons <pressed>
+	bool m_start = false;
+	bool m_select = false;
+	bool m_l3 = false;
+	bool m_r3 = false;
 
-	/// Normal (un)pressed buttons
-	ButtonFlag m_select{0b00000001};
-	ButtonFlag m_start{0b00001000};
-	ButtonFlag m_l3{0b00000010};
-	ButtonFlag m_r3{0b00000100};
+	// Overrides the actual controller's state with the the values in this struct
+	void OverrideActualController() const;
 
-	// Given the input buffer and the current index, updates the correct field(s)
-	void UpdateControllerData(u16 bufIndex, u8 const bufVal) noexcept;
-	u8 PollControllerData(u16 bufIndex) const noexcept;
-
-	// Prints current PadData to the Controller Log filter which disabled by default
-	void LogPadData(u8 const& port);
+	// Prints current PadData to the Controller Log filter which is disabled by default
+	void LogPadData() const;
 
 private:
 
 #ifndef PCSX2_CORE
 	wxString RawPadBytesToString(int start, int end);
-#else
-	std::string RawPadBytesToString(int start, int end);
 #endif
 };
 

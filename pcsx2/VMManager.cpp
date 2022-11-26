@@ -369,7 +369,7 @@ std::string VMManager::GetGameSettingsPath(const std::string_view& game_serial, 
 
 	return game_serial.empty() ?
 			   Path::Combine(EmuFolders::GameSettings, fmt::format("{:08X}.ini", game_crc)) :
-               Path::Combine(EmuFolders::GameSettings, fmt::format("{}_{:08X}.ini", sanitized_serial, game_crc));
+			   Path::Combine(EmuFolders::GameSettings, fmt::format("{}_{:08X}.ini", sanitized_serial, game_crc));
 }
 
 std::string VMManager::GetInputProfilePath(const std::string_view& name)
@@ -1129,7 +1129,7 @@ void VMManager::Reset()
 	if (g_InputRecording.isActive())
 	{
 		g_InputRecording.handleReset();
-		GSPresentCurrentFrame();
+		GetMTGS().PresentCurrentFrame();
 	}
 }
 
@@ -1188,7 +1188,7 @@ bool VMManager::DoLoadState(const char* filename)
 		if (g_InputRecording.isActive())
 		{
 			g_InputRecording.handleLoadingSavestate();
-			GSPresentCurrentFrame();
+			GetMTGS().PresentCurrentFrame();
 		}
 		return true;
 	}
@@ -1557,6 +1557,23 @@ void VMManager::Internal::VSyncOnCPUThread()
 	}
 
 	Host::CPUThreadVSync();
+
+	if (EmuConfig.EnableRecordingTools)
+	{
+		// This code is called _before_ Counter's vsync end, and _after_ vsync start
+		if (g_InputRecording.isActive())
+		{
+			// Process any outstanding recording actions (ie. toggle mode, stop the recording, etc)
+			g_InputRecording.processRecordQueue();
+			g_InputRecording.getControls().processControlQueue();
+			// Increment our internal frame counter, used to keep track of when we hit the end, etc.
+			g_InputRecording.incFrameCounter();
+			g_InputRecording.handleExceededFrameCounter();
+		}
+		// At this point, the PAD data has been read from the user for the current frame
+		// so we can either read from it, or overwrite it!
+		g_InputRecording.handleControllerDataUpdate();
+	}
 }
 
 void VMManager::CheckForCPUConfigChanges(const Pcsx2Config& old_config)

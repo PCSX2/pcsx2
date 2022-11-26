@@ -161,22 +161,19 @@ public:
 		POWER_ON,
 		FROM_SAVESTATE
 	};
-	
+
 	bool create(const std::string& filename, const bool fromSaveState, const std::string& authorName);
 	bool play(const std::string& path);
 	void stop();
 
-	void queryFirstByte(const u8 data);
-	void querySecondByte(const u8 bufVal);
-	void controllerInterrupt(const u8 port, const size_t fifoSize, u8& dataIn, u8& dataOut);
+	void handleControllerDataUpdate();
+	void saveControllerData(const PadData& data, const int port, const int slot);
+	std::optional<PadData> updateControllerData(const int port, const int slot);
 	void incFrameCounter();
 	u64 getFrameCounter() const;
 	bool isActive() const;
+	void processRecordQueue();
 
-	// Main handler for ingesting input data and either saving it to the recording file (recording)
-	// or mutating it to the contents of the recording file (replaying)
-	void ControllerInterrupt(u8 port, size_t fifoSize, u8 dataIn, u8 dataOut);
-    
 	void handleExceededFrameCounter();
 	void handleReset();
 	void handleLoadingSavestate();
@@ -187,11 +184,6 @@ public:
 	const InputRecordingFile& getData() const;
 
 private:
-	// - https://github.com/PCSX2/pcsx2/blob/7db9627ff6986c2d3faeecc58525a0e32da2f29f/pcsx2/PAD/Windows/PAD.cpp#L1141
-	static constexpr u8 s_READ_DATA_AND_VIBRATE_QUERY_FIRST_BYTE = 0x79;
-	// - https://github.com/PCSX2/pcsx2/blob/7db9627ff6986c2d3faeecc58525a0e32da2f29f/pcsx2/PAD/Windows/PAD.cpp#L1142
-	static constexpr u8 s_READ_DATA_AND_VIBRATE_QUERY_SECOND_BYTE = 0x5A;
-
 	InputRecordingControls m_controls;
 	InputRecordingFile m_file;
 
@@ -202,12 +194,16 @@ private:
 	bool m_pad_data_available = false;
 	bool m_watching_for_rerecords = false;
 
+	// A consistent way to run actions at the end of the each frame (ie. stop the recording)
+	std::queue<std::function<void()>> m_recordingQueue;
+
 	u32 m_frame_counter = 0;
 	// Either 0 for a power-on movie, or the g_FrameCount that is stored on the starting frame
 	u32 m_starting_frame = 0;
 
 	void initializeState();
 	void setStartingFrame(u32 startingFrame);
+	void closeActiveFile();
 
 private:
 	// Resolve the name and region of the game currently loaded using the GameDB

@@ -614,11 +614,6 @@ static __fi void VSyncStart(u32 sCycle)
 		// Not doing so would sacrifice a frame of a savestate-based recording when loading any savestate
 #ifndef PCSX2_CORE
 		g_InputRecordingControls.HandlePausingAndLocking();
-#else
-		if (g_InputRecording.isActive())
-		{
-			g_InputRecording.handleExceededFrameCounter();
-		}
 #endif
 	}
 
@@ -685,12 +680,6 @@ static __fi void VSyncEnd(u32 sCycle)
 	if (EmuConfig.EnableRecordingTools)
 	{
 		g_InputRecordingControls.CheckPauseStatus();
-	}
-#else
-	if (EmuConfig.EnableRecordingTools && g_InputRecording.isActive())
-	{
-		g_InputRecording.getControls().processControlQueue();
-		g_InputRecording.incFrameCounter();
 	}
 #endif
 
